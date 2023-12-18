@@ -4,108 +4,78 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1B490C35274
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 18 Dec 2023 15:57:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 10E03C35274
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 18 Dec 2023 16:15:38 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 8C10D404A0;
-	Mon, 18 Dec 2023 15:57:58 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 8C10D404A0
+	by smtp2.osuosl.org (Postfix) with ESMTP id B0BE640018;
+	Mon, 18 Dec 2023 16:15:37 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B0BE640018
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1702915078;
-	bh=ZPhLIgcZ9ImuCnEb7NMuKRXY28N2K8c+c2v7vvm3xY8=;
-	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
+	s=default; t=1702916137;
+	bh=0IKX1GzAoVvuURJw+nrmnqLfp3dnKJGMX/ySRKjZoBg=;
+	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=0+dIB+7x77z+VjZXwEx3nN5J0DvcxlYx1kNv5VxIXRAsHchkGxWnlmkWLThjg/y3g
-	 E9csLPzQYyytFrREQYHz6YDc8KlR0NHtgUTcSCFRrJcOJQc427P0b4PPRGjjXql3rR
-	 LqVgR5ueYTjCBA3GebuvhBpiqg2KFqAmVf6LPVUNMG6ROO1DD7s+qJw6MJ521VgXcr
-	 JWaABSHzNx1FeIwx6PjLJsRZlUv8GDt4NDL3cneOUSXfqDaZN7VulW717FpHr/Q2zt
-	 qcuarDtSrRyyQEe1a/0L5IO5+hCHaVa9O83bp7rSFY5Okhr27tTAi6SADGGDt8c5MQ
-	 LFJx67CHd/NZA==
+	b=ONjecmuV5h9p5wgaP0eFxNGgLLFO2cez2vMu7LV8NAbVuFGUbWp8/Ps4sYAxvwFmS
+	 xCb0pH88RNsSFp3invNViseyrplj5kLfKlVh/2CUYyr3amTF2Mn4sF7g6LSpAUjpnh
+	 Eyx9twimSsUdsJqLFu+ZJQ1AmfXuxf/RdVMhUVS4rZwTrQEXco1p/+v9jgRRqhpCPU
+	 yFiCb59XV0RT+2MIacbXwsCiw1vgdhj0Zv4NfUJxeNwV75Ti96GZ+CvdCnPxcVVQgV
+	 OHikLfyI+PltC3lzrbYaH9/itedduoJYtSuwNCpKrlbp9KfzZYboqHcRDa2ksvxT2e
+	 sY7uct9qeQmGg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id jVc9OlcjwZwT; Mon, 18 Dec 2023 15:57:57 +0000 (UTC)
+	with ESMTP id WibN0zytlyOL; Mon, 18 Dec 2023 16:15:35 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 1DF754042B;
-	Mon, 18 Dec 2023 15:57:57 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 1DF754042B
+	by smtp2.osuosl.org (Postfix) with ESMTP id 30E634044C;
+	Mon, 18 Dec 2023 16:15:35 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 30E634044C
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 11E141BF3E8
- for <intel-wired-lan@lists.osuosl.org>; Mon, 18 Dec 2023 15:57:56 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 955041BF427
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 18 Dec 2023 07:02:55 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id DD8268179A
- for <intel-wired-lan@lists.osuosl.org>; Mon, 18 Dec 2023 15:57:55 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org DD8268179A
+ by smtp1.osuosl.org (Postfix) with ESMTP id 60B6181FA6
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 18 Dec 2023 07:02:55 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 60B6181FA6
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id tlgspbDE9HW8 for <intel-wired-lan@lists.osuosl.org>;
- Mon, 18 Dec 2023 15:57:55 +0000 (UTC)
-Received: from mail-yb1-xb29.google.com (mail-yb1-xb29.google.com
- [IPv6:2607:f8b0:4864:20::b29])
- by smtp1.osuosl.org (Postfix) with ESMTPS id E19D081771
- for <intel-wired-lan@lists.osuosl.org>; Mon, 18 Dec 2023 15:57:54 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E19D081771
-Received: by mail-yb1-xb29.google.com with SMTP id
- 3f1490d57ef6-dbcd0928530so1948687276.1
- for <intel-wired-lan@lists.osuosl.org>; Mon, 18 Dec 2023 07:57:54 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20230601; t=1702915074; x=1703519874;
- h=in-reply-to:content-disposition:mime-version:references:message-id
- :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
- :message-id:reply-to;
- bh=zygwJSjMe2eYUZaDyLafoB0FdFlBGABC230eRNUsyrM=;
- b=DCvc3/sSfGT9KNICs9uykqULnXSPRh3+i4LzpkxdqmWxKsmTUou8YuBjar1mxK/BWo
- Xipk31bTVGM6/2/ATGDQwXvbjcaiZHhu0MNXez8v6h+FOOFJaIf/j3gLoiE35pS/bHVj
- C5XVIw3JF0CjN/0q0a7YcSdzWUHlRpxtxM16G0jY4ik4NO/CRLS94cyHTUFA8QPWH+uF
- Jh8Bhh5MN3jriZl/VML44yCnmoNy7Jtqzejh8bLmB+VGALqOO5OJad0/5o042ynEgkgJ
- HGY82NkSr02jHWxlotSHaScGGnwUxET8PxUrnYkF9PMZ6tDYEuVSjE+UVltxfdyTOKt0
- 995w==
-X-Gm-Message-State: AOJu0YxTvogryfbLVkZaVilygk0xRuLUGKu5CZUMATFLonbDxZEvLohr
- v4EHLryQODgdgNJ+EAcW5wA=
-X-Google-Smtp-Source: AGHT+IHenxc44IBKqvf9+YpIc5gdTJ+X6U7J9szWeK56xk4R6IXcAibg8OOKyP6YFyuok23IHHMF0w==
-X-Received: by 2002:a05:6902:245:b0:db7:dad0:60c1 with SMTP id
- k5-20020a056902024500b00db7dad060c1mr8289686ybs.78.1702915073569; 
- Mon, 18 Dec 2023 07:57:53 -0800 (PST)
-Received: from localhost ([2601:344:8301:57f0:9c41:1dd2:7d5d:e008])
- by smtp.gmail.com with ESMTPSA id
- g13-20020a258a0d000000b00d8674371317sm7720490ybl.36.2023.12.18.07.57.44
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 18 Dec 2023 07:57:46 -0800 (PST)
-Date: Mon, 18 Dec 2023 07:57:43 -0800
-From: Yury Norov <yury.norov@gmail.com>
-To: Alexander Lobakin <aleksander.lobakin@intel.com>,
- Alexander Potapenko <glider@google.com>
-Message-ID: <ZYBr98sd+XzSfy9v@yury-ThinkPad>
-References: <20231207164911.14330-1-marcin.szycik@linux.intel.com>
- <b3e5ec09-d01b-0cea-69ea-c7406ea3f8b5@intel.com>
- <13f7d3b4-214c-4987-9adc-1c14ae686946@intel.com>
- <aeb76f91-ab1d-b951-f895-d618622b137b@intel.com>
- <539ae7a3-c769-4cf6-b82f-74e05b01f619@linux.intel.com>
- <67e287f5-b126-4049-9f3b-f05bf216c8b9@intel.com>
- <20231215084924.40b47a7e@kernel.org>
- <ff8cfb1e-8a03-4a82-a651-3424bf9787a6@linux.intel.com>
- <1eb475bb-d2ba-4cf3-a2ce-36263b61b5ff@intel.com>
+ with ESMTP id sct2N57sVwvV for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 18 Dec 2023 07:02:54 +0000 (UTC)
+X-Greylist: delayed 439 seconds by postgrey-1.37 at util1.osuosl.org;
+ Mon, 18 Dec 2023 07:02:49 UTC
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org CFA4B81EAC
+Received: from mail-m25492.xmail.ntesmail.com (mail-m25492.xmail.ntesmail.com
+ [103.129.254.92])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id CFA4B81EAC
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 18 Dec 2023 07:02:49 +0000 (UTC)
+Received: from [172.23.77.185] (unknown [121.32.254.148])
+ by mail-m12741.qiye.163.com (Hmail) with ESMTPA id 47A809E0588;
+ Mon, 18 Dec 2023 14:54:50 +0800 (CST)
+Message-ID: <3ca71217-4291-45e4-9073-9e32c5177e29@sangfor.com.cn>
+Date: Mon, 18 Dec 2023 14:54:49 +0800
 MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <1eb475bb-d2ba-4cf3-a2ce-36263b61b5ff@intel.com>
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20230601; t=1702915074; x=1703519874; darn=lists.osuosl.org;
- h=in-reply-to:content-disposition:mime-version:references:message-id
- :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
- bh=zygwJSjMe2eYUZaDyLafoB0FdFlBGABC230eRNUsyrM=;
- b=XuhJZmy/XwHFXGF+WGfiuWPDaeBGkrJcp2l9nub7T3BkdPp70s1vP3EBAF5PSbxuXz
- QjOfD8fdp/FLxlp7/chUr+Mb0ZWO2CUHlgLzPx9FPCHKd93ojFiLp+vo5lgt8NNOIcjx
- r7QzhRy09Js0DzJxy5zH/uWw7WZ5O+AEYKYPDitzQsnjmuoBJHW7nIAwTQnNo318DIDD
- pHRrnqLSTG8h7mCGSJX2XYArPHbzK/ANFUZXIXSiiFdh0kSwPxNRwZwqS5kOQcmW3nNJ
- dOwOcOsGFylur8LwKKMQnKOLfvlZybB3fYjcvnmT906mfYtbKCPog609qHMPzZKEx62y
- FOrg==
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
- header.a=rsa-sha256 header.s=20230601 header.b=XuhJZmy/
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next v4 0/7] Add PFCP filter
- support
+User-Agent: Mozilla Thunderbird
+Content-Language: en-US
+To: Brett Creeley <bcreeley@amd.com>, jesse.brandeburg@intel.com,
+ anthony.l.nguyen@intel.com, davem@davemloft.net, edumazet@google.com,
+ kuba@kernel.org, pabeni@redhat.com
+References: <20231213104912.16153-1-xiaoke@sangfor.com.cn>
+ <0edc953a-0357-d054-d9a2-e9a86e90233d@amd.com>
+From: "xiaoke@sangfor.com.cn" <xiaoke@sangfor.com.cn>
+In-Reply-To: <0edc953a-0357-d054-d9a2-e9a86e90233d@amd.com>
+X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
+ tZV1koWUFITzdXWS1ZQUlXWQ8JGhUIEh9ZQVlCGhlPVk4eQh8dQx9JShlOTFUTARMWGhIXJBQOD1
+ lXWRgSC1lBWUpJSlVISVVJTk9VSk9DWVdZFhoPEhUdFFlBWU9LSFVKTU9JTE5VSktLVUpCS0tZBg
+ ++
+X-HM-Tid: 0a8c7bb4b97cb214kuuu47a809e0588
+X-HM-MType: 1
+X-HM-Sender-Digest: e1kMHhlZQR0aFwgeV1kSHx4VD1lBWUc6Ngg6Nxw4UTwxSioDKyhKDVEU
+ SRowC01VSlVKTEtJQ0NJT0JKSU9MVTMWGhIXVQMSGhQQHjsIGhUcHRQJVRgUFlUYFUVZV1kSC1lB
+ WUpJSlVISVVJTk9VSk9DWVdZCAFZQUlOSkI3Bg++
+X-Mailman-Approved-At: Mon, 18 Dec 2023 16:15:33 +0000
+Subject: Re: [Intel-wired-lan] [net PATCH] i40e: fix use-after-free in
+ i40e_aqc_add_filters()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -118,72 +88,29 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: jiri@resnulli.us, wojciech.drewek@intel.com, idosch@nvidia.com,
- jesse.brandeburg@intel.com, Eric Dumazet <edumazet@google.com>,
- Marcin Szycik <marcin.szycik@linux.intel.com>,
- Tony Nguyen <anthony.l.nguyen@intel.com>, michal.swiatkowski@linux.intel.com,
- Jakub Kicinski <kuba@kernel.org>, netdev@vger.kernel.org, pabeni@redhat.com,
- davem@davemloft.net, intel-wired-lan@lists.osuosl.org
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Cc: intel-wired-lan@lists.osuosl.org, zhudi2@huawei.com, dinghui@sangfor.com.cn,
+ linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="utf-8"; Format="flowed"
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-+ Alexander Potapenko
-
-On Mon, Dec 18, 2023 at 01:47:01PM +0100, Alexander Lobakin wrote:
-> From: Marcin Szycik <marcin.szycik@linux.intel.com>
-> Date: Mon, 18 Dec 2023 11:04:01 +0100
-> 
-> > 
-> > 
-> > On 15.12.2023 17:49, Jakub Kicinski wrote:
-> >> On Fri, 15 Dec 2023 11:11:23 +0100 Alexander Lobakin wrote:
-> >>> Ping? :s
-> >>> Or should we resubmit?
-> >>
-> >> Can you wait for next merge window instead?
-> >> We're getting flooded with patches as everyone seemingly tries to get
-> >> their own (i.e. the most important!) work merged before the end of 
-> >> the year. The set of PRs from the bitmap tree which Linus decided
-> >> not to pull is not empty. So we'd have to go figure out what's exactly
-> >> is in that branch we're supposed to pull, and whether it's fine.
-> >> It probably is, but you see, this is a problem which can be solved by
-> >> waiting, and letting Linus pull it himself. While the 150 patches we're
-> >> getting a day now have to be looked at.
-> > 
-> > Let's wait to the next window then.
-> 
-> Hey Yury,
-> 
-> Given that PFCP will be resent in the next window...
-> 
-> Your "boys" tree is in fact self-contained -- those are mostly
-> optimizations and cleanups, and for the new API -- bitmap_{read,write}()
-> -- it has internal users (after "bitmap: make bitmap_{get,set}_value8()
-> use bitmap_{read,write}()"). IOW, I don't see a reason for not merging
-> it into your main for-next tree (this week :p).
-> What do you think?
-
-I think that there's already enough mess with this patch. Alexander
-submitted new version of his MTE series together with the patch.
-
-https://lore.kernel.org/lkml/ZXtciaxTKFBiui%2FX@yury-ThinkPad/T/
-
-Now you're asking me to merge it separately. I don't want to undercut
-arm64 folks.
-
-Can you guys decide what you want? If you want to move
-bitmap_read/write() with my branch, I need to send it in -next for
-testing ASAP. And for that, as I already said, I need at least one
-active user in current kernel tree. (Yes, bitmap_get_value8() counts.)
-
-If you want to move it this way, please resend all the patches
-together.
-
-Thanks,
-Yury
-_______________________________________________
-Intel-wired-lan mailing list
-Intel-wired-lan@osuosl.org
-https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+T24gMjAyMy8xMi8xNiAxOjE2LCBCcmV0dCBDcmVlbGV5IHdyb3RlOgo+IE9uIDEyLzEzLzIwMjMg
+Mjo0OSBBTSwgS2UgWGlhbyB3cm90ZToKPj4gQ2F1dGlvbjogVGhpcyBtZXNzYWdlIG9yaWdpbmF0
+ZWQgZnJvbSBhbiBFeHRlcm5hbCBTb3VyY2UuIFVzZSBwcm9wZXIgCj4+IGNhdXRpb24gd2hlbiBv
+cGVuaW5nIGF0dGFjaG1lbnRzLCBjbGlja2luZyBsaW5rcywgb3IgcmVzcG9uZGluZy4KPj4KPj4K
+Pj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvbmV0L2V0aGVybmV0L2ludGVsL2k0MGUvaTQwZV9tYWlu
+LmMgCj4+IGIvZHJpdmVycy9uZXQvZXRoZXJuZXQvaW50ZWwvaTQwZS9pNDBlX21haW4uYwo+PiBp
+bmRleCAxYWI4ZGJlMmQ4ODAuLjE2YjU3NGQ2OTg0MyAxMDA2NDQKPj4gLS0tIGEvZHJpdmVycy9u
+ZXQvZXRoZXJuZXQvaW50ZWwvaTQwZS9pNDBlX21haW4uYwo+PiArKysgYi9kcml2ZXJzL25ldC9l
+dGhlcm5ldC9pbnRlbC9pNDBlL2k0MGVfbWFpbi5jCj4+IEBAIC0xMDgsMTEgKzEwOCwxNyBAQCBz
+dGF0aWMgdm9pZCBuZXRkZXZfaHdfYWRkcl9yZWZjbnQoc3RydWN0IAo+PiBpNDBlX21hY19maWx0
+ZXIgKmYsCj4+IMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgIHN0cnVjdCBuZXRfZGV2aWNlICpuZXRkZXYsIGludCBkZWx0
+YSkKPj4gwqAgewo+PiDCoMKgwqDCoMKgwqDCoMKgIHN0cnVjdCBuZXRkZXZfaHdfYWRkciAqaGE7
+Cj4+ICvCoMKgwqDCoMKgwqAgc3RydWN0IG5ldGRldl9od19hZGRyX2xpc3QgKmhhX2xpc3Q7Cj4g
+Cj4gTml0LCBuZWVkcyB0byBiZSBpbiBSZXZlcnNlIENocmlzdG1hcyBUcmVlIChSQ1QpIG9yZGVy
+LgoKVGhhbmtzLCBJIHdpbGwgc2VuZCB0aGUgVjIgdG8gZm9sbG93IHRoZSBydWxlLgpfX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpJbnRlbC13aXJlZC1sYW4g
+bWFpbGluZyBsaXN0CkludGVsLXdpcmVkLWxhbkBvc3Vvc2wub3JnCmh0dHBzOi8vbGlzdHMub3N1
+b3NsLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2ludGVsLXdpcmVkLWxhbgo=
