@@ -4,76 +4,84 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D6201C35274
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 21 Dec 2023 15:35:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 65987C35274
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 21 Dec 2023 16:18:09 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 645AA423E4;
-	Thu, 21 Dec 2023 15:35:31 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 645AA423E4
+	by smtp4.osuosl.org (Postfix) with ESMTP id 0E70C4222D;
+	Thu, 21 Dec 2023 16:18:09 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0E70C4222D
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1703172931;
-	bh=09KJd3RIqj8GUgnPv0DL3rWeTThcHNGQHcDBR1bZOcg=;
-	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=vP0PEGWUgcxqm2Gf6jEJWrnFdvsOrKss0PxMjyQHWwp6s71GtV3uJSAWNwG2wZO4D
-	 el/OQcr8mHFFlV2zS1CnvJCJAx/EH8Krlr4D8w+kRGkPhFi0K7rbWxFK2G+Rd6cylG
-	 E4C0nZGEH9kD8FQFMeIfJW3xlgJLuxdyQz9yiDgkjSoynRd1grm3Txy2sj0NG2ZDjF
-	 RtLS4SWSoh8t9sABDnfyrCHbT5xeVkjmrLvtBZs2fO95uPnh5qJw+jXHvbIWEfuqgp
-	 P6jH8eSZVdc8+gqa8tcZt9iG0c+UCivWEsczWFU7zRxa9wByWY104hNJn1O5ekksBq
-	 YaxNXv3D3a1BA==
+	s=default; t=1703175489;
+	bh=tgPy97qEoVW/CkjJSZPEpC1RA9RqVYacRnuJeCipZsk=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=B2xpvWHomSniEGOvoDpmb6fgfFaKxgfREYqXoT7GYFddj9iGYeFgOxiogx88yzxbM
+	 X+4Yx9dcqGUrWfcuziUZ+erD6P/5D1MdW4T6n/26R/Hv1Vsip96Ie2674Xe8Aydq9S
+	 TJIm1kyOP0DqN6v5EIJ7Hye++4FGDZ3GCTxYn7BjFZr5D9Ysxy/+W9hx6vMd5q7fUa
+	 pAnHxzLoMrWY26/qNNOcVUUKvPHEXj4sVSV9eJWnUftgwV7IoFjywheoDHgHiB8Vyx
+	 OWP1mKcac0czGlaDxqBc28ORgbPtfZXtu76WfAj8wvXlZy+I1StDSwLnAms67vS0tJ
+	 dynJ2nLbbhFdw==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id wf8sV_9rk7cc; Thu, 21 Dec 2023 15:35:30 +0000 (UTC)
+	with ESMTP id f5KwbYsP6Qwu; Thu, 21 Dec 2023 16:18:08 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 63F3D423F2;
-	Thu, 21 Dec 2023 15:35:30 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 63F3D423F2
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 670011BF381
- for <intel-wired-lan@lists.osuosl.org>; Thu, 21 Dec 2023 15:35:28 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id A6F194222E;
+	Thu, 21 Dec 2023 16:18:07 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org A6F194222E
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 5F5131BF3BF
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 21 Dec 2023 09:33:05 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 3292E437F9
- for <intel-wired-lan@lists.osuosl.org>; Thu, 21 Dec 2023 15:35:28 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 3292E437F9
+ by smtp1.osuosl.org (Postfix) with ESMTP id 332FA83A0A
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 21 Dec 2023 09:33:05 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 332FA83A0A
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id qo-U5nusD9tj for <intel-wired-lan@lists.osuosl.org>;
- Thu, 21 Dec 2023 15:35:27 +0000 (UTC)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 4F1F0402E6
- for <intel-wired-lan@lists.osuosl.org>; Thu, 21 Dec 2023 15:35:27 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 4F1F0402E6
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by dfw.source.kernel.org (Postfix) with ESMTP id 0044B6198E;
- Thu, 21 Dec 2023 15:35:25 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 66998C433C8;
- Thu, 21 Dec 2023 15:35:23 +0000 (UTC)
-Date: Thu, 21 Dec 2023 16:35:19 +0100
-From: Simon Horman <horms@kernel.org>
-To: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Message-ID: <20231221153519.GB1056991@kernel.org>
-References: <20231220173837.3326983-1-aleksandr.loktionov@intel.com>
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id BcWOoZZPxoXf for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 21 Dec 2023 09:33:04 +0000 (UTC)
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.12])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id AC835833B7
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 21 Dec 2023 09:33:03 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org AC835833B7
+X-IronPort-AV: E=McAfee;i="6600,9927,10930"; a="3188438"
+X-IronPort-AV: E=Sophos;i="6.04,293,1695711600"; 
+   d="scan'208";a="3188438"
+Received: from orsmga001.jf.intel.com ([10.7.209.18])
+ by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 21 Dec 2023 01:33:02 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10930"; a="810918114"
+X-IronPort-AV: E=Sophos;i="6.04,293,1695711600"; d="scan'208";a="810918114"
+Received: from inlubt0316.iind.intel.com ([10.191.20.213])
+ by orsmga001.jf.intel.com with ESMTP; 21 Dec 2023 01:32:55 -0800
+From: lakshmi.sowjanya.d@intel.com
+To: tglx@linutronix.de, jstultz@google.com, giometti@enneenne.com,
+ corbet@lwn.net, linux-kernel@vger.kernel.org
+Date: Thu, 21 Dec 2023 15:02:44 +0530
+Message-Id: <20231221093254.9599-1-lakshmi.sowjanya.d@intel.com>
+X-Mailer: git-send-email 2.35.3
 MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <20231220173837.3326983-1-aleksandr.loktionov@intel.com>
+X-Mailman-Approved-At: Thu, 21 Dec 2023 16:18:06 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1703172925;
- bh=MRVxiUU/5WhXcsoURMm4LApVrWo9wUSaDt/JjoevQs8=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=tJCPJQpPNph9pG0BBZn/XdIkiSaFTgkKt/OQTQlWywW92h8xv3o20oUswuydj5Yu1
- zjur+uQiynr2diojouIXHrNHU/SLwWlf3zYEphwQGqgHFGYh2IREMTxnnFQs34ACQ+
- xUnBkNB1nWKiCMggrmbAjhVIQsj/qSy/vlYqazcO6HB81JZCAlt7hAQBfJSFAHk72j
- 4KQfGzW4qZqCMH5flhX9V5ky2uTsbZveDVf36vUTNbC2B4yYB+3Ih+Do9oMKNr8nU0
- 8+H6nZ7vHbwGCv8LYuKiaufZgCzZUiGLErxLDArOYGA0+FkMTntvs5/wv3BD0J5XOd
- NBy4aFLzEBtJw==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=tJCPJQpP
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next v2] i40e: add trace events
- related to SFP module IOCTLs
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1703151183; x=1734687183;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=RNfmASP2goLFqQvl0CMtUIBdraEA3ADsaIbtIGPBOE4=;
+ b=f3J75pkPMSUvKHZIKRbcNdVsRHGp7k1RPk7WAaouxG4Hbb34Oo/vLHve
+ LTBVrGhm9Kvnklw0XxucHI0ANsKOxd6cp0akCL4kW8qBkpqy3xJCpz4ua
+ k3+IdU1nu8FqFdbAGxv15ZIHt/ZPjqwd+co8HTQsKuUY13s9ejTrJsi+A
+ MRvUBLYJdg+z/QVdg5ViazSocuzTPMn/HFsnQC3sYGX8Rq1cx4Vl3ZD/n
+ EFPa6086f2taD10bgZ2bDLymdgy3eVzaA/QyDgUnmRS7EZ4/8OcanH4hh
+ tJWrePrHS4gmqqJyZo4MN/zS7yb/Qz/YO8ud8VlFw+VeEII84uvJnAZhx
+ Q==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=f3J75pkP
+Subject: [Intel-wired-lan] [RFC PATCH v2 00/10] Add support for Intel PPS
+ Generator
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,47 +94,116 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: anthony.l.nguyen@intel.com, intel-wired-lan@lists.osuosl.org,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>, netdev@vger.kernel.org
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Cc: christopher.s.hall@intel.com, lakshmi.sowjanya.d@intel.com,
+ linux-doc@vger.kernel.org, netdev@vger.kernel.org, pandith.n@intel.com,
+ x86@kernel.org, eddie.dong@intel.com, jesse.brandeburg@intel.com,
+ linux-sound@vger.kernel.org, alexandre.torgue@foss.st.com,
+ mallikarjunappa.sangannavar@intel.com, joabreu@synopsys.com,
+ intel-wired-lan@lists.osuosl.org, mcoquelin.stm32@gmail.com,
+ thejesh.reddy.t.r@intel.com, perex@perex.cz, anthony.l.nguyen@intel.com,
+ andriy.shevchenko@linux.intel.com, davem@davemloft.net
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-T24gV2VkLCBEZWMgMjAsIDIwMjMgYXQgMDY6Mzg6MzdQTSArMDEwMCwgQWxla3NhbmRyIExva3Rp
-b25vdiB3cm90ZToKPiBBZGQgdHJhY2UgZXZlbnRzIHJlbGF0ZWQgdG8gU0ZQIG1vZHVsZSBJT0NU
-THMgZm9yIHRyb3VibGVzaG9vdGluZy4KPiAKPiBFeGFtcGxlOgo+ICAgICAgICAgZWNobyAiaTQw
-ZV8qIiA+L3N5cy9rZXJuZWwvdHJhY2luZy9zZXRfZnRyYWNlX2ZpbHRlcgo+ICAgICAgICAgZWNo
-byAiaTQwZV9pb2N0bCoiID4vc3lzL2tlcm5lbC90cmFjaW5nL2V2ZW50cy9pNDBlL2ZpbHRlcgo+
-ICAgICAgICAgZWNobyAxICA+L3N5cy9rZXJuZWwvdHJhY2luZy90cmFjaW5nX29uCj4gICAgICAg
-ICBlY2hvIDEgID4vc3lzL2tlcm5lbC90cmFjaW5nL2V2ZW50cy9pNDBlL2VuYWJsZQo+ICAgICAg
-ICAgLi4uCj4gICAgICAgICBjYXQgICAgIC9zeXMva2VybmVsL3RyYWNpbmcvdHJhY2UKPiAKPiBS
-aWV3ZWQtYnk6IFByemVtZWsgS2l0c3plbCA8cHJ6ZW15c2xhdy5raXRzemVsQGludGVsLmNvbT4K
-PiBTaWduZWQtb2ZmLWJ5OiBBbGVrc2FuZHIgTG9rdGlvbm92IDxhbGVrc2FuZHIubG9rdGlvbm92
-QGludGVsLmNvbT4KPiAtLS0KPiB2MS0+djIgYXBwbGllZCB0byBwcm9wZXIgZ2l0IGJyYW5jaAo+
-IC0tLQo+ICBkcml2ZXJzL25ldC9ldGhlcm5ldC9pbnRlbC9pNDBlL2k0MGVfZXRodG9vbC5jIHwg
-IDUgKysrKysKPiAgZHJpdmVycy9uZXQvZXRoZXJuZXQvaW50ZWwvaTQwZS9pNDBlX3RyYWNlLmgg
-ICB8IDE4ICsrKysrKysrKysrKysrKysrKwo+ICAyIGZpbGVzIGNoYW5nZWQsIDIzIGluc2VydGlv
-bnMoKykKPiAKPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9uZXQvZXRoZXJuZXQvaW50ZWwvaTQwZS9p
-NDBlX2V0aHRvb2wuYyBiL2RyaXZlcnMvbmV0L2V0aGVybmV0L2ludGVsL2k0MGUvaTQwZV9ldGh0
-b29sLmMKPiBpbmRleCBjODQxNzc5Li5iZGYyYjZiIDEwMDY0NAo+IC0tLSBhL2RyaXZlcnMvbmV0
-L2V0aGVybmV0L2ludGVsL2k0MGUvaTQwZV9ldGh0b29sLmMKPiArKysgYi9kcml2ZXJzL25ldC9l
-dGhlcm5ldC9pbnRlbC9pNDBlL2k0MGVfZXRodG9vbC5jCj4gQEAgLTEwNzQsNiArMTA3NCw3IEBA
-IHN0YXRpYyBpbnQgaTQwZV9nZXRfbGlua19rc2V0dGluZ3Moc3RydWN0IG5ldF9kZXZpY2UgKm5l
-dGRldiwKPiAgCWV0aHRvb2xfbGlua19rc2V0dGluZ3NfemVyb19saW5rX21vZGUoa3MsIHN1cHBv
-cnRlZCk7Cj4gIAlldGh0b29sX2xpbmtfa3NldHRpbmdzX3plcm9fbGlua19tb2RlKGtzLCBhZHZl
-cnRpc2luZyk7Cj4gIAo+ICsJaTQwZV90cmFjZShpb2N0bF9nZXRfbGlua19rc2V0dGluZ3MsIHBm
-LCBod19saW5rX2luZm8tPmxpbmtfaW5mbyk7Cj4gIAlpZiAobGlua191cCkKPiAgCQlpNDBlX2dl
-dF9zZXR0aW5nc19saW5rX3VwKGh3LCBrcywgbmV0ZGV2LCBwZik7Cj4gIAllbHNlCgpIaSBBbGVr
-c2FuZHIsCgpJIHRoaW5rIHRoYXQgaTQwZV90cmFjZS5oIG5lZWRzIHRvIGJlIGluY2x1ZGVkIGlu
-IGk0MGVfZXRodG9vbC5jCmFzIHBhcnQgb2YgdGhpcyBwYXRjaC4KCiAuLi4vaTQwZV9ldGh0b29s
-LmM6IEluIGZ1bmN0aW9uIOKAmGk0MGVfZ2V0X2xpbmtfa3NldHRpbmdz4oCZOgogLi4uL2k0MGVf
-ZXRodG9vbC5jOjEwNzc6OTogZXJyb3I6IGltcGxpY2l0IGRlY2xhcmF0aW9uIG9mIGZ1bmN0aW9u
-IOKAmGk0MGVfdHJhY2XigJkgWy1XZXJyb3I9aW1wbGljaXQtZnVuY3Rpb24tZGVjbGFyYXRpb25d
-CiAxMDc3IHwgICAgICAgICBpNDBlX3RyYWNlKGlvY3RsX2dldF9saW5rX2tzZXR0aW5ncywgcGYs
-IGh3X2xpbmtfaW5mby0+bGlua19pbmZvKTsKICAgICAgfCAgICAgICAgIF5+fn5+fn5+fn4KCi4u
-LgoKRmxhZ2dlZCBieSBnY2MtMTMgVz0xIGJ1aWxkCgouLi4KCi0tIApwdy1ib3Q6IGNoYW5nZXMt
-cmVxdWVzdGVkCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-CkludGVsLXdpcmVkLWxhbiBtYWlsaW5nIGxpc3QKSW50ZWwtd2lyZWQtbGFuQG9zdW9zbC5vcmcK
-aHR0cHM6Ly9saXN0cy5vc3Vvc2wub3JnL21haWxtYW4vbGlzdGluZm8vaW50ZWwtd2lyZWQtbGFu
-Cg==
+From: Lakshmi Sowjanya D <lakshmi.sowjanya.d@intel.com>
+
+The goal of the PPS(Pulse Per Second) hardware/software is to generate a
+signal from the system on a wire so that some third-party hardware can
+observe that signal and judge how close the system's time is to another
+system or piece of hardware.
+
+Existing methods (like parallel ports) require software to flip a bit at
+just the right time to create a PPS signal. Many things can prevent
+software from doing this precisely. This (Timed I/O) method is better
+because software only "arms" the hardware in advance and then depends on
+the hardware to "fire" and flip the signal at just the right time.
+
+To generate a PPS signal with this new hardware, the kernel wakes up
+twice a second, once for 1->0 edge and other for the 0->1 edge. It does
+this shortly (~10ms) before the actual change in the signal needs to be
+made. It computes the TSC value at which edge will happen, convert to a
+value hardware understands and program this value to Timed I/O hardware.
+The actual edge transition happens without any further action from the
+kernel.
+
+The result here is a signal coming out of the system that is roughly
+1,000 times more accurate than the old methods. If the system is heavily
+loaded, the difference in accuracy is larger in old methods.
+Facebook and Google are the customers that use this feature. 
+
+Application Interface:
+The API to use Timed I/O is very simple. It is enabled and disabled by
+writing a '1' or '0' value to the sysfs enable attribute associated with
+the Timed I/O PPS device. Each Timed I/O pin is represented by a PPS
+device. When enabled, a pulse-per-second(PPS) synchronized with the
+system clock is continuously produced on the Timed I/O pin, otherwise it
+is pulled low.
+
+The Timed I/O signal on the motherboard is enabled in the BIOS setup.
+
+This patchset is dependent on [1]
+
+References:
+https://en.wikipedia.org/wiki/Pulse-per-second_signal
+https://drive.google.com/file/d/1vkBRRDuELmY8I3FlfOZaEBp-DxLW6t_V/view
+https://youtu.be/JLUTT-lrDqw
+
+Patch 1 adds base clock properties in clocksource structure
+Patch 2 adds function to convert realtime to base clock
+Patch 3 - 7 removes reference to convert_art_to_tsc function across
+drivers
+Patch 8 adds the pps(pulse per second) generator tio driver to the pps
+subsystem.
+Patch 9 documentation and usage of the pps tio generator module.
+Patch 10 includes documentation for sysfs interface.
+
+[1] https://lore.kernel.org/netdev/20231215220612.173603-2-peter.hilber@opensynergy.com/T/
+
+Please help to review the changes.
+
+Thanks in advance,
+Sowjanya
+
+Lakshmi Sowjanya D (5):
+  x86/tsc: Add base clock properties in clocksource structure
+  timekeeping: Add function to convert realtime to base clock
+  pps: generators: Add PPS Generator TIO Driver
+  Documentation: driver-api: pps: Add Intel Timed I/O PPS generator
+  ABI: pps: Add ABI documentation for Intel TIO
+
+Thomas Gleixner (5):
+  e10002: remove convert_art_to_tsc()
+  igc: remove convert_art_to_tsc()
+  stmmac: intel: remove convert_art_to_tsc()
+  ALSA: hda: remove convert_art_to_tsc()
+  ice/ptp: remove convert_art_to_tsc()
+
+ .../ABI/testing/sysfs-platform-pps-tio        |   7 +
+ Documentation/driver-api/pps.rst              |  22 ++
+ arch/x86/include/asm/tsc.h                    |   3 -
+ arch/x86/kernel/tsc.c                         |  94 ++-----
+ drivers/net/ethernet/intel/e1000e/ptp.c       |   3 +-
+ drivers/net/ethernet/intel/ice/ice_ptp.c      |   2 +-
+ drivers/net/ethernet/intel/igc/igc_ptp.c      |   6 +-
+ .../net/ethernet/stmicro/stmmac/dwmac-intel.c |   3 +-
+ drivers/pps/generators/Kconfig                |  16 ++
+ drivers/pps/generators/Makefile               |   1 +
+ drivers/pps/generators/pps_gen_tio.c          | 238 ++++++++++++++++++
+ include/linux/clocksource.h                   |  27 ++
+ include/linux/clocksource_ids.h               |   1 +
+ include/linux/timekeeping.h                   |   6 +
+ kernel/time/timekeeping.c                     | 112 ++++++++-
+ sound/pci/hda/hda_controller.c                |   3 +-
+ 16 files changed, 459 insertions(+), 85 deletions(-)
+ create mode 100644 Documentation/ABI/testing/sysfs-platform-pps-tio
+ create mode 100644 drivers/pps/generators/pps_gen_tio.c
+
+-- 
+2.35.3
+
+_______________________________________________
+Intel-wired-lan mailing list
+Intel-wired-lan@osuosl.org
+https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
