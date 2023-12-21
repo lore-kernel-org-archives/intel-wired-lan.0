@@ -4,64 +4,64 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 41126C35274
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 21 Dec 2023 16:18:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B64A6C35274
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 21 Dec 2023 16:18:31 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 00C964223B;
-	Thu, 21 Dec 2023 16:18:28 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 00C964223B
+	by smtp4.osuosl.org (Postfix) with ESMTP id 75B5D417D2;
+	Thu, 21 Dec 2023 16:18:31 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 75B5D417D2
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1703175508;
-	bh=5Lfz62QsRSYCCmvJugGhU//3VjNs3k4oB4E5E3LhtAU=;
+	s=default; t=1703175511;
+	bh=8EZYStBxXaWQ/+KmNJf8cBA0nfELuOQyeRoGuiDU/zA=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=1pCGQedaPgDrnieBh9RPQOlCgzX/7VfzKMdGYPCZC7W4Q1arf+ESOrvvHN8jwlrl7
-	 KtYYFhf0n7Jm0UaiCjny9LjC8n3Fl1JAz6pE5Y2Wg8w8PdvVCdhQFzA+92NzjYDKSW
-	 kP3mace5K+nnTwtMavzCqeU5D18/c1lAtjXyp/jmYUNcvPLBw3JTEIVO7hhfyfxC97
-	 s+gq8zmWOOPAbVvy1pyhMHWF8JjzzPWARBRAeZxLdVIFkmEEmCImppdCZQVxSskdZo
-	 zB2m/zXtRGM6nhz9pFv56Q4tiJ7+YxyKMDkr7Sl6wutqSLcm//9Ns/xCsXvt4HhXmM
-	 B8Zidi/q8lPOA==
+	b=8Fn/3oYoLJ43/l097Hv1l2hsCGbTBszLvsoYC/0MBbUqqt+wheOupkgGKdiOpiehx
+	 DNzSn/WmfDxO8Ru/ST2xSpbMxtOA4IgpZuXfr9bZMhYPGSO8NasAE3WY8XE0+hXokg
+	 iFHNrMh8veOFv+SHJFceg6ZxsxGGXT1qvKdTXBKsNzRxM6OaGy9yZtkdjMKXK4O6M2
+	 7a5o7Nwwhl2rxMgHmRX0/KCFWtRJVa/BZpVTS2iUCrh+wpLA18Tzk+5n9r95jILFxG
+	 t8zKI445Mb+PD7sQGd8Oo5E41uodByL/bQDGGHiadwvN2dhczvBD1Aok572iBvt0ic
+	 6NDe2HlQPx1pQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id m7lYL3nIiHXb; Thu, 21 Dec 2023 16:18:26 +0000 (UTC)
+	with ESMTP id EbyH-F5_5trl; Thu, 21 Dec 2023 16:18:30 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 270774222D;
-	Thu, 21 Dec 2023 16:18:26 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 270774222D
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id BD3DD1BF3BF
- for <intel-wired-lan@lists.osuosl.org>; Thu, 21 Dec 2023 09:33:29 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 6C36742237;
+	Thu, 21 Dec 2023 16:18:30 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 6C36742237
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 1AA271BF3BF
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 21 Dec 2023 09:33:36 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 94F2780ECA
- for <intel-wired-lan@lists.osuosl.org>; Thu, 21 Dec 2023 09:33:29 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 94F2780ECA
+ by smtp4.osuosl.org (Postfix) with ESMTP id E6C2E408B2
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 21 Dec 2023 09:33:35 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E6C2E408B2
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 0tcbWHBvB466 for <intel-wired-lan@lists.osuosl.org>;
- Thu, 21 Dec 2023 09:33:29 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id L62DC87ilW41 for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 21 Dec 2023 09:33:35 +0000 (UTC)
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.12])
- by smtp1.osuosl.org (Postfix) with ESMTPS id D150A80EA8
- for <intel-wired-lan@lists.osuosl.org>; Thu, 21 Dec 2023 09:33:28 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D150A80EA8
-X-IronPort-AV: E=McAfee;i="6600,9927,10930"; a="3188558"
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 349F4408AE
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 21 Dec 2023 09:33:35 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 349F4408AE
+X-IronPort-AV: E=McAfee;i="6600,9927,10930"; a="3188566"
 X-IronPort-AV: E=Sophos;i="6.04,293,1695711600"; 
-   d="scan'208";a="3188558"
+   d="scan'208";a="3188566"
 Received: from orsmga001.jf.intel.com ([10.7.209.18])
  by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 21 Dec 2023 01:33:28 -0800
+ 21 Dec 2023 01:33:34 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10930"; a="810918202"
-X-IronPort-AV: E=Sophos;i="6.04,293,1695711600"; d="scan'208";a="810918202"
+X-IronPort-AV: E=McAfee;i="6600,9927,10930"; a="810918208"
+X-IronPort-AV: E=Sophos;i="6.04,293,1695711600"; d="scan'208";a="810918208"
 Received: from inlubt0316.iind.intel.com ([10.191.20.213])
- by orsmga001.jf.intel.com with ESMTP; 21 Dec 2023 01:33:21 -0800
+ by orsmga001.jf.intel.com with ESMTP; 21 Dec 2023 01:33:27 -0800
 From: lakshmi.sowjanya.d@intel.com
 To: tglx@linutronix.de, jstultz@google.com, giometti@enneenne.com,
  corbet@lwn.net, linux-kernel@vger.kernel.org
-Date: Thu, 21 Dec 2023 15:02:48 +0530
-Message-Id: <20231221093254.9599-5-lakshmi.sowjanya.d@intel.com>
+Date: Thu, 21 Dec 2023 15:02:49 +0530
+Message-Id: <20231221093254.9599-6-lakshmi.sowjanya.d@intel.com>
 X-Mailer: git-send-email 2.35.3
 In-Reply-To: <20231221093254.9599-1-lakshmi.sowjanya.d@intel.com>
 References: <20231221093254.9599-1-lakshmi.sowjanya.d@intel.com>
@@ -69,21 +69,21 @@ MIME-Version: 1.0
 X-Mailman-Approved-At: Thu, 21 Dec 2023 16:18:06 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1703151209; x=1734687209;
+ t=1703151215; x=1734687215;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=FqzmFJD7Hjfw0d9iCOZZDYcOM+cgVL/B/wnjWMOn7QY=;
- b=A/BcfrWut87MppKhCfM4aerC7XSLR3Ws1ZsOmUeLQlB5EAcNYq89wApB
- rS8Cosz4ZPCRc6e3stm3Ws4V4WYCO6f4kB9ifGA6EC7S1l5kzyGQtaho1
- MkTYT4EFVnIF7ZdDsf/YPNfP3usyXDS33zr0C5tzVdeG1f9+hWZhrBWpm
- R6ZrJZWpz2U2AhwdC3fRoYpeMvpK/DLMBXsUWWC2pg48m0R4bk2+DwJpH
- hGObVNrF6Fw4fVSCdUAe1rsWDLoFlX2jDUVDEGzupvLALZU9Fz9PLjd4S
- 4/wbSBVRd5sDRYo0MrhBOR7bGoA42bNADJdixpWnBIHDAsn7MFUyCi4gM
- g==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ bh=uUU6Aeoh21pgVprRQuKox95GRqR5aTWn9mMsl4N1jcQ=;
+ b=OmOLVkKaphR3ic2AjZOGtX2O6V6ARGnMcKPfQFS70sb0hyEJGrMINUzX
+ 6WGSX1jOd2JTcefiwx5jcLGMYTJNGsmqmRqSsYZ2wIdyMmHS45fpD0ENM
+ Y8eSauY4YbJs3i1/PfdP3P0D/6LqAwD7NtXolGn4IpK3LOwm3XtwzBMVD
+ F3b+aufflt5GQRDvkfYSd8V0ZxXDheAVViKa6CF4nl/svAGkuPtjjZ44f
+ qrrTvNowoQgvZiGQoEaxCJyL/vsO4X7ShNPj6Q+HUh9nf85vA/SDdJCBP
+ yTA3gPlPc2TdsedLAA7DmdILDvTDe638VrR2fo671Hou3e2ZMUOof4NFg
+ A==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=A/BcfrWu
-Subject: [Intel-wired-lan] [RFC PATCH v2 04/10] igc: remove
+ header.a=rsa-sha256 header.s=Intel header.b=OmOLVkKa
+Subject: [Intel-wired-lan] [RFC PATCH v2 05/10] stmmac: intel: remove
  convert_art_to_tsc()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
@@ -118,26 +118,26 @@ clocksource ID as input to get_device_system_crosststamp().
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Lakshmi Sowjanya D <lakshmi.sowjanya.d@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc_ptp.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/stmicro/stmmac/dwmac-intel.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_ptp.c b/drivers/net/ethernet/intel/igc/igc_ptp.c
-index 928f38792203..11108eb075bc 100644
---- a/drivers/net/ethernet/intel/igc/igc_ptp.c
-+++ b/drivers/net/ethernet/intel/igc/igc_ptp.c
-@@ -911,7 +911,11 @@ static bool igc_is_crosststamp_supported(struct igc_adapter *adapter)
- static struct system_counterval_t igc_device_tstamp_to_system(u64 tstamp)
- {
- #if IS_ENABLED(CONFIG_X86_TSC) && !defined(CONFIG_UML)
--	return convert_art_ns_to_tsc(tstamp);
-+	return (struct system_counterval_t) {
-+		.cs_id    = CSID_X86_ART,
-+		.cycles    = tstamp,
-+		.nsecs    = true,
-+	};
- #else
- 	return (struct system_counterval_t) { };
- #endif
+diff --git a/drivers/net/ethernet/stmicro/stmmac/dwmac-intel.c b/drivers/net/ethernet/stmicro/stmmac/dwmac-intel.c
+index 60283543ffc8..e73fa34237d3 100644
+--- a/drivers/net/ethernet/stmicro/stmmac/dwmac-intel.c
++++ b/drivers/net/ethernet/stmicro/stmmac/dwmac-intel.c
+@@ -390,10 +390,11 @@ static int intel_crosststamp(ktime_t *device,
+ 		*device = ns_to_ktime(ptp_time);
+ 		read_unlock_irqrestore(&priv->ptp_lock, flags);
+ 		get_arttime(priv->mii, intel_priv->mdio_adhoc_addr, &art_time);
+-		*system = convert_art_to_tsc(art_time);
++		system->cycles = art_time;
+ 	}
+ 
+ 	system->cycles *= intel_priv->crossts_adj;
++	system->cs_id = CSID_X86_ART;
+ 	priv->plat->flags &= ~STMMAC_FLAG_INT_SNAPSHOT_EN;
+ 
+ 	return 0;
 -- 
 2.35.3
 
