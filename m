@@ -4,85 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 86CAAC46CD4
-	for <intel-wired-lan@archiver.kernel.org>; Sat, 23 Dec 2023 02:59:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 26EE5C46CD4
+	for <intel-wired-lan@archiver.kernel.org>; Sat, 23 Dec 2023 02:59:13 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 428F340348;
-	Sat, 23 Dec 2023 02:59:08 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 428F340348
+	by smtp4.osuosl.org (Postfix) with ESMTP id DC2BB428A0;
+	Sat, 23 Dec 2023 02:59:12 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org DC2BB428A0
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1703300348;
-	bh=27zflorS1gjLyxBd6tYcPhxvWQDH/0XHa7jcRhH2guI=;
+	s=default; t=1703300352;
+	bh=i2bWeQDUbH4nYaLgTloInWuuaQ2vzazyjXQw5oOGpN0=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=7wcQnSIiJV49sZN4OpmbhMXZdNby1koOu6br5YlHSSiQ6j+3nyXW3EYlsDdCt9EY/
-	 C20+Le5uhWJ6A6Lxzy2HxD1FSTdCzFcl9MQwBmIbfRxy85EJpBh3s+urtDGtMoXHVO
-	 rqsT6gYGxA4QqhAgbfIe0F3qPL+ysbIPNZvnEZ9dvAnbBCb45KHtK5XfludDsM3iaC
-	 SC57QuOAePIBZHy3lfwaCvpgqQYSW4YrvL9efIa+ZoDp9rsek5LnQ+F1Yw6rI7szUO
-	 0gBi2r3WpKUty8qKQ3BNHAiol/TLBZh6ZO9yDHZqNbEevLlwkE+3Jld7DpK6aPTVcW
-	 BS0rdtGUsPxPQ==
+	b=K4MvO8oFtMZ5sgBb0guKRcIsZm2uOUYZ5hGg4lN8MyRvLxAvaUJj9hUqnMMbJN8hd
+	 yzcaUs8bxND7NG1383EPB9PFDxIBqJCohD8uewrNhGb6OIKVAi6A3js7nQcIicctRW
+	 E1fMz9Xmsfj4PqcloABXWKtCfHC2ykovXk9zDxBKJg17jUhECG1PP/WagTsJZRnNj9
+	 1CGZuFSnueJiH6fYCyvmnkAnHShk1irveiAPgyCgptShlNNXY10qMT8E9xv/3CHMZp
+	 La3ciaCoA4jeV3VnNyVJrkfOVfjZc3Fe9m0hXvHXa6PglXZq57j+ypOAnHQuerns1d
+	 sW4rbQfhArgfQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 0EnBfKBluPmi; Sat, 23 Dec 2023 02:59:07 +0000 (UTC)
+	with ESMTP id 0EY_cC-CGcQu; Sat, 23 Dec 2023 02:59:11 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 2C46A42CEE;
-	Sat, 23 Dec 2023 02:59:07 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2C46A42CEE
+	by smtp4.osuosl.org (Postfix) with ESMTP id 996A042D48;
+	Sat, 23 Dec 2023 02:59:11 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 996A042D48
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id AF9AB1BF3EC
- for <intel-wired-lan@lists.osuosl.org>; Sat, 23 Dec 2023 02:58:51 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 1F1CA1BF3EC
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 23 Dec 2023 02:58:56 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 882E960A9B
- for <intel-wired-lan@lists.osuosl.org>; Sat, 23 Dec 2023 02:58:51 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 882E960A9B
+ by smtp3.osuosl.org (Postfix) with ESMTP id 0531060A9B
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 23 Dec 2023 02:58:56 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 0531060A9B
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id z0ZnLs2mLdoU for <intel-wired-lan@lists.osuosl.org>;
- Sat, 23 Dec 2023 02:58:51 +0000 (UTC)
+ with ESMTP id EgbfWUP9IiNG for <intel-wired-lan@lists.osuosl.org>;
+ Sat, 23 Dec 2023 02:58:55 +0000 (UTC)
 Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.20])
- by smtp3.osuosl.org (Postfix) with ESMTPS id AADE160A8A
- for <intel-wired-lan@lists.osuosl.org>; Sat, 23 Dec 2023 02:58:50 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org AADE160A8A
-X-IronPort-AV: E=McAfee;i="6600,9927,10932"; a="386610867"
-X-IronPort-AV: E=Sophos;i="6.04,298,1695711600"; d="scan'208";a="386610867"
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 320EB60A8A
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 23 Dec 2023 02:58:55 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 320EB60A8A
+X-IronPort-AV: E=McAfee;i="6600,9927,10932"; a="386610875"
+X-IronPort-AV: E=Sophos;i="6.04,298,1695711600"; d="scan'208";a="386610875"
 Received: from orviesa001.jf.intel.com ([10.64.159.141])
  by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 22 Dec 2023 18:58:50 -0800
+ 22 Dec 2023 18:58:54 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.04,298,1695711600"; d="scan'208";a="25537492"
+X-IronPort-AV: E=Sophos;i="6.04,298,1695711600"; d="scan'208";a="25537497"
 Received: from newjersey.igk.intel.com ([10.102.20.203])
- by orviesa001.jf.intel.com with ESMTP; 22 Dec 2023 18:58:47 -0800
+ by orviesa001.jf.intel.com with ESMTP; 22 Dec 2023 18:58:50 -0800
 From: Alexander Lobakin <aleksander.lobakin@intel.com>
 To: "David S. Miller" <davem@davemloft.net>,
  Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
  Paolo Abeni <pabeni@redhat.com>
-Date: Sat, 23 Dec 2023 03:55:32 +0100
-Message-ID: <20231223025554.2316836-13-aleksander.lobakin@intel.com>
+Date: Sat, 23 Dec 2023 03:55:33 +0100
+Message-ID: <20231223025554.2316836-14-aleksander.lobakin@intel.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20231223025554.2316836-1-aleksander.lobakin@intel.com>
 References: <20231223025554.2316836-1-aleksander.lobakin@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1703300330; x=1734836330;
+ t=1703300335; x=1734836335;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=lwem7QAKrTATP+Ps1asjKzaTx+4QKgH8qLT9fJ4NywM=;
- b=jVkDPg5NTNw/M/bNdjDvryr0p6l7/Rx/CcUtoify5Af/wMpgCON3zmC4
- C9fMrL7mtzbnxknyEVO4eXEM2UH59DH+iQ3P+bweet4fMQ0TxipjneHy7
- /O9kFJViFmCzFdMwuej94EzW2gjgnofkHOLoXDec/MKvfm//DZ0PWzyY0
- xJh7bHsTaTN6VzDi3GvpUSYZQWoCGYcLh7czOalCQ3L+v4LeRbLzRJTLa
- pvccrnBy5U/5s2Ei1YPFXw3pp/1yUga7zDZE7B+aCKZ9A/BczbizMXXyh
- dep+WXZe8pMoC4FEHnMPhYaL9Se/Ho/x77Tgc2ZjqdDZWC/Ni4zsslwn4
+ bh=w7O2LkdFgRPFTPe5I5rq1IJGyzwbW3hKjP3uSaNFJgU=;
+ b=aomeJIhDMWUS19petCbIpHh2n5/LzFo5q7N6LgbxFWfx77iGJZNdLHSE
+ 6nKxXK8uf1R9iz2OAsCRcRhQn0JYdJaB21WirdocXB2Ec3KkCi7sc74SG
+ HrPPUFqMjTt7hRQBmoffxWdRr1uRloHM87BsknrM0QOfMyqYoHUTvV7VH
+ Yr/3aMnsgLQ2FFsMQk6KdexehADQ4ydMqqgcDIR3ECMy0xr7Z200R03lj
+ YZTzya8BGUzLOlSX/4a7DsU6UpULHjNMjoj+Z8qR3BF3R3z9CKfra0/d7
+ Sg52WDcwC7xJ2YKKXMLnKV/wvAjQ1s0YlkFuTS9y1mzqJKmWy++4fyIsR
  Q==;
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=jVkDPg5N
-Subject: [Intel-wired-lan] [PATCH RFC net-next 12/34] xdp: add generic
- xdp_buff_add_frag()
+ header.a=rsa-sha256 header.s=Intel header.b=aomeJIhD
+Subject: [Intel-wired-lan] [PATCH RFC net-next 13/34] xdp: add generic
+ xdp_build_skb_from_buff()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -107,104 +107,155 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The code piece which would attach a frag to &xdp_buff is almost
-identical across the drivers supporting XDP multi-buffer on Rx.
-Make it a generic elegant onelner.
-Also, I see lots of drivers calculating frags_truesize as
-`xdp->frame_sz * nr_frags`. I can't say this is fully correct, since
-frags might be backed by chunks of different sizes, especially with
-stuff like the header split. Even page_pool_alloc() can give you two
-different truesizes on two subsequent requests to allocate the same
-buffer size. Add a field to &skb_shared_info (unionized as there's no
-free slot currently on x6_64) to track the "true" truesize. It can be
-used later when updating an skb.
+The code which builds an skb from an &xdp_buff keeps multiplying itself
+around the drivers with almost no changes. Let's try to stop that by
+adding a generic function.
+There's __xdp_build_skb_from_frame() already, so just convert it to take
+&xdp_buff instead, while making the original one a wrapper. The original
+one always took an already allocated skb, allow both variants here -- if
+no skb passed, which is expected when calling from a driver, pick one via
+napi_build_skb().
 
 Signed-off-by: Alexander Lobakin <aleksander.lobakin@intel.com>
 ---
- include/linux/skbuff.h | 14 ++++++++++----
- include/net/xdp.h      | 36 +++++++++++++++++++++++++++++++++++-
- 2 files changed, 45 insertions(+), 5 deletions(-)
+ include/net/xdp.h |  4 +++
+ net/core/xdp.c    | 89 +++++++++++++++++++++++++++++++----------------
+ 2 files changed, 63 insertions(+), 30 deletions(-)
 
-diff --git a/include/linux/skbuff.h b/include/linux/skbuff.h
-index ea5c8ab3ed00..e350efa04070 100644
---- a/include/linux/skbuff.h
-+++ b/include/linux/skbuff.h
-@@ -598,11 +598,17 @@ struct skb_shared_info {
- 	 * Warning : all fields before dataref are cleared in __alloc_skb()
- 	 */
- 	atomic_t	dataref;
--	unsigned int	xdp_frags_size;
- 
--	/* Intermediate layers must ensure that destructor_arg
--	 * remains valid until skb destructor */
--	void *		destructor_arg;
-+	union {
-+		struct {
-+			unsigned int	xdp_frags_size;
-+			u32		xdp_frags_truesize;
-+		};
-+
-+		/* Intermediate layers must ensure that destructor_arg
-+		 * remains valid until skb destructor */
-+		void *		destructor_arg;
-+	};
- 
- 	/* must be last field, see pskb_expand_head() */
- 	skb_frag_t	frags[MAX_SKB_FRAGS];
 diff --git a/include/net/xdp.h b/include/net/xdp.h
-index 909c0bc50517..a3dc0f39b437 100644
+index a3dc0f39b437..4fcf0ac48345 100644
 --- a/include/net/xdp.h
 +++ b/include/net/xdp.h
-@@ -165,6 +165,34 @@ xdp_get_buff_len(const struct xdp_buff *xdp)
- 	return len;
+@@ -276,6 +276,10 @@ xdp_update_skb_shared_info(struct sk_buff *skb, u8 nr_frags,
+ void xdp_warn(const char *msg, const char *func, const int line);
+ #define XDP_WARN(msg) xdp_warn(msg, __func__, __LINE__)
+ 
++struct sk_buff *__xdp_build_skb_from_buff(struct sk_buff *skb,
++					  const struct xdp_buff *xdp);
++#define xdp_build_skb_from_buff(xdp) __xdp_build_skb_from_buff(NULL, xdp)
++
+ struct xdp_frame *xdp_convert_zc_to_xdp_frame(struct xdp_buff *xdp);
+ struct sk_buff *__xdp_build_skb_from_frame(struct xdp_frame *xdpf,
+ 					   struct sk_buff *skb,
+diff --git a/net/core/xdp.c b/net/core/xdp.c
+index 03ebdb21ea62..ed73b97472b4 100644
+--- a/net/core/xdp.c
++++ b/net/core/xdp.c
+@@ -609,45 +609,77 @@ int xdp_alloc_skb_bulk(void **skbs, int n_skb, gfp_t gfp)
  }
+ EXPORT_SYMBOL_GPL(xdp_alloc_skb_bulk);
  
-+static inline bool xdp_buff_add_frag(struct xdp_buff *xdp, struct page *page,
-+				     u32 offset, u32 size, u32 truesize)
-+{
-+	struct skb_shared_info *sinfo = xdp_get_shared_info_from_buff(xdp);
-+
-+	if (!xdp_buff_has_frags(xdp)) {
-+		sinfo->nr_frags = 0;
-+
-+		sinfo->xdp_frags_size = 0;
-+		sinfo->xdp_frags_truesize = 0;
-+
-+		xdp_buff_set_frags_flag(xdp);
-+	}
-+
-+	if (unlikely(sinfo->nr_frags == MAX_SKB_FRAGS))
-+		return false;
-+
-+	__skb_fill_page_desc_noacc(sinfo, sinfo->nr_frags++, page, offset,
-+				   size);
-+	sinfo->xdp_frags_size += size;
-+	sinfo->xdp_frags_truesize += truesize;
-+
-+	if (unlikely(page_is_pfmemalloc(page)))
-+		xdp_buff_set_frag_pfmemalloc(xdp);
-+
-+	return true;
-+}
-+
- struct xdp_frame {
- 	void *data;
- 	u16 len;
-@@ -230,7 +258,13 @@ xdp_update_skb_shared_info(struct sk_buff *skb, u8 nr_frags,
- 			   unsigned int size, unsigned int truesize,
- 			   bool pfmemalloc)
+-struct sk_buff *__xdp_build_skb_from_frame(struct xdp_frame *xdpf,
+-					   struct sk_buff *skb,
+-					   struct net_device *dev)
++struct sk_buff *__xdp_build_skb_from_buff(struct sk_buff *skb,
++					  const struct xdp_buff *xdp)
  {
--	skb_shinfo(skb)->nr_frags = nr_frags;
-+	struct skb_shared_info *sinfo = skb_shinfo(skb);
-+
-+	sinfo->nr_frags = nr_frags;
-+	/* ``destructor_arg`` is unionized with ``xdp_frags_{,true}size``,
-+	 * reset it after that these fields aren't used anymore.
-+	 */
-+	sinfo->destructor_arg = NULL;
+-	struct skb_shared_info *sinfo = xdp_get_shared_info_from_frame(xdpf);
+-	unsigned int headroom, frame_size;
+-	void *hard_start;
+-	u8 nr_frags;
++	const struct xdp_rxq_info *rxq = xdp->rxq;
++	const struct skb_shared_info *sinfo;
++	u32 nr_frags = 0;
  
- 	skb->len += size;
- 	skb->data_len += size;
+ 	/* xdp frags frame */
+-	if (unlikely(xdp_frame_has_frags(xdpf)))
++	if (unlikely(xdp_buff_has_frags(xdp))) {
++		sinfo = xdp_get_shared_info_from_buff(xdp);
+ 		nr_frags = sinfo->nr_frags;
++	}
+ 
+-	/* Part of headroom was reserved to xdpf */
+-	headroom = sizeof(*xdpf) + xdpf->headroom;
++	net_prefetch(xdp->data_meta);
+ 
+-	/* Memory size backing xdp_frame data already have reserved
+-	 * room for build_skb to place skb_shared_info in tailroom.
+-	 */
+-	frame_size = xdpf->frame_sz;
++	if (!skb) {
++		skb = napi_build_skb(xdp->data_hard_start, xdp->frame_sz);
++		if (unlikely(!skb))
++			return NULL;
++	} else {
++		/* build_skb_around() can return NULL only when !skb, which
++		 * is impossible here.
++		 */
++		build_skb_around(skb, xdp->data_hard_start, xdp->frame_sz);
++	}
+ 
+-	hard_start = xdpf->data - headroom;
+-	skb = build_skb_around(skb, hard_start, frame_size);
+-	if (unlikely(!skb))
+-		return NULL;
++	skb_reserve(skb, xdp->data - xdp->data_hard_start);
++	__skb_put(skb, xdp->data_end - xdp->data);
++	if (xdp->data > xdp->data_meta)
++		skb_metadata_set(skb, xdp->data - xdp->data_meta);
++
++	if (rxq->mem.type == MEM_TYPE_PAGE_POOL)
++		skb_mark_for_recycle(skb);
+ 
+-	skb_reserve(skb, headroom);
+-	__skb_put(skb, xdpf->len);
+-	if (xdpf->metasize)
+-		skb_metadata_set(skb, xdpf->metasize);
++	/* __xdp_rxq_info_reg() sets these two together */
++	if (rxq->reg_state == REG_STATE_REGISTERED)
++		skb_record_rx_queue(skb, rxq->queue_index);
++
++	if (unlikely(nr_frags)) {
++		u32 truesize = sinfo->xdp_frags_truesize ? :
++			       nr_frags * xdp->frame_sz;
+ 
+-	if (unlikely(xdp_frame_has_frags(xdpf)))
+ 		xdp_update_skb_shared_info(skb, nr_frags,
+-					   sinfo->xdp_frags_size,
+-					   nr_frags * xdpf->frame_sz,
+-					   xdp_frame_is_frag_pfmemalloc(xdpf));
++					   sinfo->xdp_frags_size, truesize,
++					   xdp_buff_is_frag_pfmemalloc(xdp));
++	}
+ 
+ 	/* Essential SKB info: protocol and skb->dev */
+-	skb->protocol = eth_type_trans(skb, dev);
++	skb->protocol = eth_type_trans(skb, rxq->dev);
++
++	return skb;
++}
++EXPORT_SYMBOL_GPL(__xdp_build_skb_from_buff);
++
++struct sk_buff *__xdp_build_skb_from_frame(struct xdp_frame *xdpf,
++					   struct sk_buff *skb,
++					   struct net_device *dev)
++{
++	struct xdp_rxq_info rxq = {
++		.dev		= dev,
++		.mem		= xdpf->mem,
++	};
++	struct xdp_buff xdp;
++
++	/* Check early instead of delegating it to build_skb_around() */
++	if (unlikely(!skb))
++		return NULL;
++
++	xdp.rxq = &rxq;
++	xdp_convert_frame_to_buff(xdpf, &xdp);
++	__xdp_build_skb_from_buff(skb, &xdp);
+ 
+ 	/* Optional SKB info, currently missing:
+ 	 * - HW checksum info		(skb->ip_summed)
+@@ -655,9 +687,6 @@ struct sk_buff *__xdp_build_skb_from_frame(struct xdp_frame *xdpf,
+ 	 * - RX ring dev queue index	(skb_record_rx_queue)
+ 	 */
+ 
+-	if (xdpf->mem.type == MEM_TYPE_PAGE_POOL)
+-		skb_mark_for_recycle(skb);
+-
+ 	/* Allow SKB to reuse area used by xdp_frame */
+ 	xdp_scrub_frame(xdpf);
+ 
 -- 
 2.43.0
 
