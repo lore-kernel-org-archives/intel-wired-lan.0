@@ -1,94 +1,95 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AB4FAC46CD4
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 26 Dec 2023 10:49:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EF699C4706F
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 26 Dec 2023 16:30:20 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 39CC58131F;
-	Tue, 26 Dec 2023 10:49:17 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 39CC58131F
+	by smtp3.osuosl.org (Postfix) with ESMTP id 9A97460A5F;
+	Tue, 26 Dec 2023 16:30:20 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 9A97460A5F
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1703587757;
-	bh=8/VGP4Kppl4AzHEASDtt99yCfkvKv9VuU1tSLvgBtdA=;
-	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
+	s=default; t=1703608220;
+	bh=HEXRHZmq8iHpgH0xBeQhv/Gusv8R2X/xEdygLERpyuQ=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=Ueuaf1HhHA/kALbhUaq3IQppOCAhibV7NL8qSGVC0uUtrJ1pXTIuCBthkAsWxMNrT
-	 HomTwjSWHZYfb6FPDq1rmew8u6eW+e0I33ExfmpG4q2heD2Chxl376bxHkZ2L2Mgzb
-	 GFNbTSk4TQ5cdj54QfDKY7eVlXz9XfeRDRAYULhdxoSOTXhrXWpH5bEzbApRVZ36Fc
-	 AtSvSl90Wrs3UVWqHigYTJqkN/u3L6MaDudchRk8BuUKKTKdL4Ab8BOnWtqbhgWcat
-	 rS6ReA+xAVe0yRuO3spYrXi21sSJr4EuLX4KoCIB8WNdYw+GS1j3v2wB8nGrHGagBu
-	 ZvhUNMY0S1M0w==
+	b=4D1h6JK4b84SgGYwwTtHJDMmLHL7mkrv+AHxJK3SrZZLpVBM/2WiAP62/vLAy7w+x
+	 IwYa4u/jTjiXcKdQX3DtYw+PpU837h7QM0GzabtbPPTr8K8yMH16mrWz1uY2XF1/PR
+	 ZCuTyCcxLN7cFH7B+nx6XWNP8q6USiQeXsBRbboie9+0i2UvvQ4XE3y9NwxoyhkNaG
+	 srOOJNuOpQRFzk5eu0XGOPBhezbYwUS34WjVfdGU0RWF3W8pR+dxiEEjz7RiQEc7zr
+	 IRnvNMaUwDgUpmV73cwzI6x6LKZ1KtA9Uwjmbe6kUala1DFkhVS1NM1GCJslvy/sQm
+	 bhiDFcqUcmyPw==
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp3.osuosl.org ([127.0.0.1])
+	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id rt9fQG3Fqa-h; Tue, 26 Dec 2023 16:30:18 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp3.osuosl.org (Postfix) with ESMTP id 8948260D5F;
+	Tue, 26 Dec 2023 16:30:16 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8948260D5F
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 9E7E91BF279
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 24 Dec 2023 16:31:10 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp1.osuosl.org (Postfix) with ESMTP id 7C5EC81BCB
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 24 Dec 2023 16:31:10 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7C5EC81BCB
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
-	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id UUziSMFTKszw; Tue, 26 Dec 2023 10:49:16 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 3DF8D81321;
-	Tue, 26 Dec 2023 10:49:16 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 3DF8D81321
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 6C7DF1BF489
- for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Dec 2023 10:49:15 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 42DBD40544
- for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Dec 2023 10:49:15 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 42DBD40544
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id eaCySzcC9plh for <intel-wired-lan@lists.osuosl.org>;
- Tue, 26 Dec 2023 10:49:14 +0000 (UTC)
-Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.151])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 728714053D
- for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Dec 2023 10:49:14 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 728714053D
-X-IronPort-AV: E=McAfee;i="6600,9927,10934"; a="376481340"
-X-IronPort-AV: E=Sophos;i="6.04,306,1695711600"; d="scan'208";a="376481340"
-Received: from orsmga007.jf.intel.com ([10.7.209.58])
- by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 26 Dec 2023 02:49:11 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10934"; a="771144233"
-X-IronPort-AV: E=Sophos;i="6.04,306,1695711600"; d="scan'208";a="771144233"
-Received: from naamamex-mobl.ger.corp.intel.com (HELO [10.245.129.131])
- ([10.245.129.131])
- by orsmga007-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 26 Dec 2023 02:49:08 -0800
-Message-ID: <96e4933c-a2aa-4401-a440-c11f1e95b891@linux.intel.com>
-Date: Tue, 26 Dec 2023 12:49:05 +0200
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id SjZi5Wwx3CJd for <intel-wired-lan@lists.osuosl.org>;
+ Sun, 24 Dec 2023 16:31:06 +0000 (UTC)
+Received: from mail1.merlins.org (magic.merlins.org [209.81.13.136])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 7212681BB4
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 24 Dec 2023 16:31:06 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7212681BB4
+Received: from lfbn-idf3-1-20-89.w81-249.abo.wanadoo.fr ([81.249.147.89]:34258
+ helo=sauron.svh.merlins.org) by mail1.merlins.org with esmtpsa 
+ (Cipher TLS1.3:ECDHE_SECP256R1__RSA_PSS_RSAE_SHA256__AES_256_GCM:256) (Exim
+ 4.94.2 #2)
+ id 1rHRNE-0003Da-5q by authid <merlins.org> with srv_auth_plain;
+ Sun, 24 Dec 2023 08:30:44 -0800
+Received: from merlin by sauron.svh.merlins.org with local (Exim 4.92)
+ (envelope-from <marc@merlins.org>)
+ id 1rHRND-0001u5-1N; Sun, 24 Dec 2023 08:30:43 -0800
+Date: Sun, 24 Dec 2023 08:30:43 -0800
+From: Marc MERLIN <marc@merlins.org>
+To: Heiner Kallweit <hkallweit1@gmail.com>
+Message-ID: <20231224163043.GA6759@merlins.org>
+References: <20231206113934.8d7819857574.I2deb5804ef1739a2af307283d320ef7d82456494@changeid>
+ <20231206084448.53b48c49@kernel.org>
+ <e6f227ee701e1ee37e8f568b1310d240a2b8935a.camel@sipsolutions.net>
+ <a44865f5-3a07-d60a-c333-59c012bfa2fb@intel.com>
+ <20231207094021.1419b5d0@kernel.org>
+ <20231211045200.GC24475@merlins.org>
+ <83dc80d3-1c26-405d-a08d-2db4bc318ac8@gmail.com>
+ <20231215174634.GA10053@merlins.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-To: Kurt Kanzenbach <kurt@linutronix.de>,
- Jesse Brandeburg <jesse.brandeburg@intel.com>,
- Tony Nguyen <anthony.l.nguyen@intel.com>,
- Vinicius Costa Gomes <vinicius.gomes@intel.com>
-References: <20231201075043.7822-1-kurt@linutronix.de>
- <20231201075043.7822-3-kurt@linutronix.de>
-Content-Language: en-US
-From: "naamax.meir" <naamax.meir@linux.intel.com>
-In-Reply-To: <20231201075043.7822-3-kurt@linutronix.de>
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1703587754; x=1735123754;
- h=message-id:date:mime-version:subject:to:cc:references:
- from:in-reply-to:content-transfer-encoding;
- bh=633pHdQbE69gzbvLRHJH9ISmMg75na5iFxxZDuaNerI=;
- b=kYonIKyBvM+njfUfY+jSKxJGyfx2DC+wPPwRRSESJsK9WHT3w99YM5d2
- NQseuNamPj2iaZFiCz8CY/nu294PmX+rk2PfpAbS15OPidEoYsc2+dR8q
- VriRwQqBe8aQGEZ50uVUR2H7enrGCfzguPAYqzWI3lZ2tzZCSq9YMuh2V
- 1oDQyCDFGLiXrytB0DDYLRmg+EIKDiYmdZLSWF8s0Re3jd8J2737NDD24
- Uf1il6rUdSILutphEmpnQ2HT9pWTa/jMwmeSb4OpGDXSHW1LJF7YaGj6o
- 6iHRCnWI8uTVYsB+oJrmTXg/jiK484lBvSxPZ/ZZ5wgtiBfGrOGBn8psw
- A==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=kYonIKyB
-Subject: Re: [Intel-wired-lan] [PATCH iwl-net v2 2/2] igc: Check VLAN TCI
- mask
+Content-Disposition: inline
+In-Reply-To: <20231215174634.GA10053@merlins.org>
+X-Sysadmin: BOFH
+X-URL: http://marc.merlins.org/
+X-SA-Exim-Connect-IP: 81.249.147.89
+X-SA-Exim-Mail-From: marc@merlins.org
+X-Mailman-Approved-At: Tue, 26 Dec 2023 16:30:10 +0000
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt;
+ c=relaxed/relaxed; d=merlins.org
+ ; s=key; h=In-Reply-To:Content-Type:MIME-Version:References:Message-ID:
+ Subject:Cc:To:From:Date:Sender:Reply-To:Content-Transfer-Encoding:Content-ID:
+ Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
+ :Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:List-Subscribe:
+ List-Post:List-Owner:List-Archive;
+ bh=ev/AwsBshGk27Lyapy+0cmZFl40djkk5uMqzCqLFKnQ=; b=LBXNRQa7mr65+UzvHajmNA/Tw4
+ E5nrhuQjrGj7X+lk/UsjtKGy8RjHewpHVidfc8eSKQ4+42/6BHCE8YFzYOfXFrw7op0X+lOfce4jd
+ nBZ3QvY0dMa+2gTeyoYl78O7jGn07FW7VkgYVJzz2stb19bcA83QXtRZtTp8udm3RQ5cWhE7fB4yq
+ 930wLAe2nxrO36YVUj9ZyRYt2Lc9WiCy1mbQ/xGZsQnfy66SUTIvqDftDH1QR9d5bWXQpB5t1r4EB
+ a9sm6R8ffB27OUOM2tGNNRA4T0b838rlXFlELBNQEjaBp/vj9efzGFKvzdoIYUqtNWp8oWvn9QhA2
+ 7AyH4q0Q==;
+Subject: Re: [Intel-wired-lan] [PATCH net v3] net: ethtool: do runtime PM
+ outside RTNL
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,59 +102,43 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, Eric Dumazet <edumazet@google.com>,
- intel-wired-lan@lists.osuosl.org, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, "David S. Miller" <davem@davemloft.net>
+Cc: Jakub Kicinski <kuba@kernel.org>, Johannes Berg <johannes@sipsolutions.net>,
+ netdev@vger.kernel.org,
+ "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On 12/1/2023 09:50, Kurt Kanzenbach wrote:
-> Currently the driver accepts VLAN TCI steering rules regardless of the
-> configured mask. And things might fail silently or with confusing error
-> messages to the user.
+On Fri, Dec 15, 2023 at 09:46:34AM -0800, Marc MERLIN wrote:
+> On Fri, Dec 15, 2023 at 02:42:01PM +0100, Heiner Kallweit wrote:
+> > Why don't you simply disable runtime pm for the affected device as a
+> > workaround? This can be done via sysfs.
 > 
-> There are two ways to handle the VLAN TCI mask:
-> 
->   1. Match on the PCP field using a VLAN prio filter
->   2. Match on complete TCI field using a flex filter
-> 
-> Therefore, add checks and code for that.
-> 
-> For instance the following rule is invalid and will be converted into a
-> VLAN prio rule which is not correct:
-> |root@host:~# ethtool -N enp3s0 flow-type ether vlan 0x0001 m 0xf000 \
-> |             action 1
-> |Added rule with ID 61
-> |root@host:~# ethtool --show-ntuple enp3s0
-> |4 RX rings available
-> |Total 1 rules
-> |
-> |Filter: 61
-> |        Flow Type: Raw Ethernet
-> |        Src MAC addr: 00:00:00:00:00:00 mask: FF:FF:FF:FF:FF:FF
-> |        Dest MAC addr: 00:00:00:00:00:00 mask: FF:FF:FF:FF:FF:FF
-> |        Ethertype: 0x0 mask: 0xFFFF
-> |        VLAN EtherType: 0x0 mask: 0xffff
-> |        VLAN: 0x1 mask: 0x1fff
-> |        User-defined: 0x0 mask: 0xffffffffffffffff
-> |        Action: Direct to queue 1
-> 
-> After:
-> |root@host:~# ethtool -N enp3s0 flow-type ether vlan 0x0001 m 0xf000 \
-> |             action 1
-> |rmgr: Cannot insert RX class rule: Operation not supported
-> 
-> Fixes: 7991487ecb2d ("igc: Allow for Flex Filters to be installed")
-> Signed-off-by: Kurt Kanzenbach <kurt@linutronix.de>
-> Acked-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-> ---
->   drivers/net/ethernet/intel/igc/igc.h         |  1 +
->   drivers/net/ethernet/intel/igc/igc_ethtool.c | 28 +++++++++++++++++---
->   2 files changed, 26 insertions(+), 3 deletions(-)
+> 1) because I didn't know what the exact bug was and how to work around it :)
 
-Tested-by: Naama Meir <naamax.meir@linux.intel.com>
+Mmmh, so I need to test an ubuntu kernel (6.5.0-14) because of sound
+issues in mainline TOT, and I can't boot the kernel to completion
+without hititng this hang bug. I'm not exactly sure which part of the
+boot triggers it.
+
+I can't patch that kernel easily. How exactly do I disable runtime PM
+from the kernel command line for "that device" which I'm not even sure
+which one it is.  If it's the eth device, I already removed the igc
+module to prevent it from loading, and I also removed the ethtool
+binary, but I'm still getting the hang.
+
+On the plus side, with 6.6.8 and the old patch which I understand is not
+the ideal solution, I can confirm that I've been running problem free
+until now, so thanks again for that interim patch.
+
+Thanks,
+Marc
+-- 
+"A mouse is a device used to point at the xterm you want to type in" - A.S.R.
+ 
+Home page: http://marc.merlins.org/                       | PGP 7F55D5F27AAF9D08
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
