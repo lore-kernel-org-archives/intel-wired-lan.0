@@ -4,66 +4,93 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E789BC3DA6E
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  3 Jan 2024 16:03:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BA046C3DA6E
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  3 Jan 2024 16:17:37 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 78EF9400D9;
-	Wed,  3 Jan 2024 16:03:39 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 78EF9400D9
+	by smtp2.osuosl.org (Postfix) with ESMTP id 12BA3419BD;
+	Wed,  3 Jan 2024 16:17:37 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 12BA3419BD
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1704297819;
-	bh=72/jrflfX9QyKhRf+2tovaTy3tKCYO3arBi8VRaq8jc=;
-	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
+	s=default; t=1704298657;
+	bh=daSKfQY32qjKgh4ylR2vvvKeSvs6AhzA1EqOHh58CRc=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=lrwUgLZpenBkAPfujcHs9kMFddyqZF13Mll9R+YAe4xcHl2iGfkkgsfTpIseU2zSF
-	 NoF01B0PhgBmt3mwWo/tpgf4cuK4Tr64UOCf3CQxirrydGOBl90NOGIQVp2y1iA1cO
-	 NTE3tWWfR7H5QCs4z/JJsPYm2WwTpITg27VP9zwWfhhrDAfxZni2JTVOx9QK6WREJ+
-	 DTZip73rYm2azPlu/qqkhV3YiGk0GwWqnsxi9VKFvIT+Xk+o4Qw7JjWiPgiH9yp7IZ
-	 bCkLp5s8uEuEnhQji2O1xg4cpG+slyBIqAmVyquZS/cQ+H2yMP5lgn1wQc4l2t0F9s
-	 OdWZBw/bP5tLA==
+	b=k5xfRyO9wtTaarPIIgSa137YOe8VkFWO/nfGg3smTGte5yk2jsvEW1mHt+5/MAkM6
+	 U8VNijbonZs4S/HavZJWjO2pgcAIoLzWVC05I5c2PGi2tqFrK+OiH8A5wcZyOn88CW
+	 Kjr07oXxsHMZMJ+aIdk3EhtSUxp1qs04sEShuV6MRuz0dJkQI2BRxFfFvPNwqCzCzA
+	 7d3Ju5dQ07rQzelSco1/Rs8IUKpI+KkhuOeTktS5mNF+HoTA8oHQ+gU3t2yZWjWvPT
+	 3bH1xeV/wU0PwIrJs0EXMTS19iLSRe4EaHdRmLv1/qRL18w9/RueXY8AvNcDLglo23
+	 T+bvqdSC3/ldQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id DVmh9UBmYc3U; Wed,  3 Jan 2024 16:03:39 +0000 (UTC)
+	with ESMTP id DuZn9Keg5i18; Wed,  3 Jan 2024 16:17:36 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id B0AAC40391;
-	Wed,  3 Jan 2024 16:03:38 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B0AAC40391
+	by smtp2.osuosl.org (Postfix) with ESMTP id 1939041953;
+	Wed,  3 Jan 2024 16:17:36 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 1939041953
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 4921B1BF3F3
- for <intel-wired-lan@lists.osuosl.org>; Wed,  3 Jan 2024 16:03:37 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 5D8561BF471
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  3 Jan 2024 08:20:40 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 210306102E
- for <intel-wired-lan@lists.osuosl.org>; Wed,  3 Jan 2024 16:03:37 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 210306102E
+ by smtp3.osuosl.org (Postfix) with ESMTP id 4133E60AFB
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  3 Jan 2024 08:20:40 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4133E60AFB
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 8KBS082TtLG3 for <intel-wired-lan@lists.osuosl.org>;
- Wed,  3 Jan 2024 16:03:36 +0000 (UTC)
-Received: from mx3.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
- by smtp3.osuosl.org (Postfix) with ESMTPS id C7DC060C34
- for <intel-wired-lan@lists.osuosl.org>; Wed,  3 Jan 2024 16:03:35 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C7DC060C34
-Received: from [172.23.38.41] (unknown [85.119.46.8])
- (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested) (Authenticated sender: pmenzel)
- by mx.molgen.mpg.de (Postfix) with ESMTPSA id 1B72C61E5FE03;
- Wed,  3 Jan 2024 17:02:35 +0100 (CET)
-Message-ID: <0187c784-9eb7-4699-a3d0-2ed11c4e7326@molgen.mpg.de>
-Date: Wed, 3 Jan 2024 17:02:33 +0100
+ with ESMTP id btg63Gcq8YEs for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  3 Jan 2024 08:20:37 +0000 (UTC)
+Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.65])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 3B1AB60EE9
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  3 Jan 2024 08:20:37 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3B1AB60EE9
+X-IronPort-AV: E=McAfee;i="6600,9927,10941"; a="400789294"
+X-IronPort-AV: E=Sophos;i="6.04,327,1695711600"; d="scan'208";a="400789294"
+Received: from orsmga002.jf.intel.com ([10.7.209.21])
+ by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 03 Jan 2024 00:20:28 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10941"; a="779928866"
+X-IronPort-AV: E=Sophos;i="6.04,327,1695711600"; d="scan'208";a="779928866"
+Received: from sgruszka-mobl.ger.corp.intel.com (HELO localhost)
+ ([10.252.51.153])
+ by orsmga002-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 03 Jan 2024 00:20:25 -0800
+Date: Wed, 3 Jan 2024 09:20:23 +0100
+From: Stanislaw Gruszka <stanislaw.gruszka@linux.intel.com>
+To: Heiner Kallweit <hkallweit1@gmail.com>
+Message-ID: <ZZUYx9hhdVD+wAnG@linux.intel.com>
+References: <20231204200710.40c291e60cea.I2deb5804ef1739a2af307283d320ef7d82456494@changeid>
+ <d0fc7d04-e3c9-47c0-487e-666cb2a4e3bc@intel.com>
+ <709eff7500f2da223df9905ce49c026a881cb0e0.camel@sipsolutions.net>
+ <3e7ae1f5-77e3-a561-2d6b-377026b1fd26@intel.com>
+ <c1189a1982630f71dd106c3963e0fa71fa6c8a76.camel@sipsolutions.net>
+ <64684afc-3dbb-453e-9c90-bf2a86e70c50@gmail.com>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Content-Language: en-US
-To: Arnd Bergmann <arnd@kernel.org>
-References: <20240103102458.3687963-1-arnd@kernel.org>
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-In-Reply-To: <20240103102458.3687963-1-arnd@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-Subject: Re: [Intel-wired-lan] [PATCH] ice: fix building withouto XDP
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <64684afc-3dbb-453e-9c90-bf2a86e70c50@gmail.com>
+X-Mailman-Approved-At: Wed, 03 Jan 2024 16:17:34 +0000
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1704270037; x=1735806037;
+ h=date:from:to:cc:subject:message-id:references:
+ mime-version:in-reply-to;
+ bh=0Ul4OlGMi2BplcTsZp5Kk6kGh3sCmw9tmO1+Lmr7FJM=;
+ b=dPhIkd0zryUmY75xp5aRVitYQAcqTk1TnNDt0EXnB0LKNp06EtmBwt7x
+ eermX7HoPYfiQNFtos8wo71tMTbMS2GkPVaxKhBoOYFLHbuO4PidqvNCQ
+ tJFmenZN874KPgIh6WSK0x3chN039WZyrwj8NVnYXos2++tyC470Vwg8V
+ Rq/zFfe8dqwwHTLIM0YIxiB2hS9pio1ylOJrpHWKbiJaCANLdUzvbuVoo
+ neDlUYTTSHUlTH0qBfwJF+gL8tHSpf0gAp5SzdoMOoKcEQ+Qv6tTjoR81
+ Z8kY2xi4mYVfc9jr3q3AB8vuzej9Mw0WHDhPRhXYyC/45Vzz/QvoR5j7v
+ Q==;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=dPhIkd0z
+Subject: Re: [Intel-wired-lan] [RFC PATCH] net: ethtool: do runtime PM
+ outside RTNL
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,27 +103,42 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Paolo Abeni <pabeni@redhat.com>,
- Maciej Fijalkowski <maciej.fijalkowski@intel.com>,
- Daniel Borkmann <daniel@iogearbox.net>, Arnd Bergmann <arnd@arndb.de>,
- Larysa Zaremba <larysa.zaremba@intel.com>, netdev@vger.kernel.org,
- Jesse Brandeburg <jesse.brandeburg@intel.com>,
- Alexei Starovoitov <ast@kernel.org>, Eric Dumazet <edumazet@google.com>,
- "David S. Miller" <davem@davemloft.net>,
- Tony Nguyen <anthony.l.nguyen@intel.com>, Simon Horman <horms@kernel.org>,
- Jakub Kicinski <kuba@kernel.org>, intel-wired-lan@lists.osuosl.org,
- Piotr Raczynski <piotr.raczynski@intel.com>,
- Amritha Nambiar <amritha.nambiar@intel.com>, linux-kernel@vger.kernel.org
+Cc: Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Marc MERLIN <marc@merlins.org>, Jesse Brandeburg <jesse.brandeburg@intel.com>,
+ Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
+ Tony Nguyen <anthony.l.nguyen@intel.com>, netdev@vger.kernel.org,
+ intel-wired-lan@lists.osuosl.org, Johannes Berg <johannes@sipsolutions.net>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Dear Arnd,
+On Wed, Dec 06, 2023 at 12:59:09PM +0100, Heiner Kallweit wrote:
+> On 06.12.2023 10:37, Johannes Berg wrote:
+> > On Wed, 2023-12-06 at 09:46 +0100, Przemek Kitszel wrote:
+> >>
+> >> That sounds right too; one could argue if your fix is orthogonal to that
+> >> or not. I would say that your fix makes core net code more robust
+> >> against drivers from past millennia. :)
+> >> igc folks are notified, no idea how much time it would take to propose
+> >> a fix.
+> > 
+> > Maybe it should be on whoever added runtime pm to ethtool ;-)
+> > 
+> > Heiner, the igc driver was already doing this when you added
+> > pm_runtime_get_sync() ops, was there a discussion at the time, or just
+> > missed?
+> > 
+> I think it went unnoticed at that time that igc is acquiring RTNL
+> in runtime-resume. I'm just astonished that this pops up only now,
+> considering that the change was done more than 2 yrs ago.
 
+PM runtime is disabled by default for igc (driver do not call
+pm_runtime_allow()). It has to be enabled explicitly by user write
+to pci sysfs power/control file. And after that link up/down or
+ethtool has to be used to trigger this deadlock, so quite unlikely
+scenario.
 
-Thank you for your patch. There is a small typo in the commit message 
-summary: withouto → without
+Is possible though, that some power saving daemon start enabling
+pm runtime for devices, so that why issue become visible.
 
-
-Kind regards,
-
-Paul
+Regards
+Stanislaw
