@@ -1,101 +1,102 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 47556C47074
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  4 Jan 2024 14:47:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EE944C47073
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  4 Jan 2024 16:22:44 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id CC95660C08;
-	Thu,  4 Jan 2024 14:47:49 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org CC95660C08
+	by smtp2.osuosl.org (Postfix) with ESMTP id 754CA404F1;
+	Thu,  4 Jan 2024 16:22:44 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 754CA404F1
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1704379669;
-	bh=gfVBwkOH/qOR6M4rih0KUy+5jfSd6PJn/IuBN+59/14=;
-	h=Date:From:To:In-Reply-To:Subject:List-Id:List-Unsubscribe:
-	 List-Archive:List-Post:List-Help:List-Subscribe:Cc:From;
-	b=v7nvuZQv+c9g+Nxj/27ClZgAE0Y7t/Wzzeav3/ibjSaPHDC3GoO80fE8cSWmaZV36
-	 MgfEmUgLNZ9KqOskkPXYvSi3vvXWDV3bL6kQC7bjBdy1uWXFoAabHWHdSaA/UBmB6c
-	 POdQzyikCwGs7E8ALuuqbxCNKDF0tcVI0RNsTYdZmTYmXA/FH45zjSj65bwtjLJ4bu
-	 cbwoGpdud7JwWzyITHEv3kxnYAWa3Q4ZGvL/UZV/D3RvpG1mHjlEoq/q5Zsq353EGQ
-	 H1NJb700/cEiK24saa4bXgxVDAh0dMg7RqDHlRrFyLFve4VjlPXHWcv7qN0XSD1jI8
-	 uFC2uCixDfZvg==
+	s=default; t=1704385364;
+	bh=GUTtB9m6M/z1F9wOOEilIMS9iUI36DBSZLKQRroWd8Y=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=RNF+2QQ/yAEPbNVsNoUVZYnXTgN4uENRJU5jQSQg3smrEldCe6skMdaf5YMVWigYT
+	 4VSTKCCDVq1lI/z8WtBSkHV39lZrXRokRgEz+TfiOosQP9BTTpk0XSQbsXOBO9jv1J
+	 3LLvMUQxlOVy1ETexVQwJZP1oHg175pWwBxyBynz8XymlbUXw9ywTpGZgeTtoXJ0jv
+	 KO8e7CJG+zy84nO9P7AbH6mjScV2nxGxhM3pqE/vMVmfGn3InoaU8iqgzRvzi1VVQG
+	 PK9N3Jdana4M2/+IAnGJnyJSavcy0u9k4YNXJod+feh5cwz3/UD/M2NplBQ+h6LxIy
+	 J70CNPvmSmKFQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id oIrFV02Ksyld; Thu,  4 Jan 2024 14:47:49 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 6qPETLd4MA6e; Thu,  4 Jan 2024 16:22:43 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id BC062611CE;
-	Thu,  4 Jan 2024 14:47:48 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org BC062611CE
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 544101BF422
- for <intel-wired-lan@lists.osuosl.org>; Thu,  4 Jan 2024 14:47:47 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id E19FA40143;
+	Thu,  4 Jan 2024 16:22:42 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org E19FA40143
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id D791E1BF955
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  4 Jan 2024 01:02:01 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 38D55837AC
- for <intel-wired-lan@lists.osuosl.org>; Thu,  4 Jan 2024 14:47:47 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 38D55837AC
+ by smtp4.osuosl.org (Postfix) with ESMTP id AC3284193F
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  4 Jan 2024 01:02:01 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org AC3284193F
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id Dr-1NIekWtg0 for <intel-wired-lan@lists.osuosl.org>;
- Thu,  4 Jan 2024 14:47:46 +0000 (UTC)
-Received: from mail-lf1-x12d.google.com (mail-lf1-x12d.google.com
- [IPv6:2a00:1450:4864:20::12d])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 964BE82CCA
- for <intel-wired-lan@lists.osuosl.org>; Thu,  4 Jan 2024 14:47:45 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 964BE82CCA
-Received: by mail-lf1-x12d.google.com with SMTP id
- 2adb3069b0e04-50eabfac2b7so608661e87.0
- for <intel-wired-lan@lists.osuosl.org>; Thu, 04 Jan 2024 06:47:45 -0800 (PST)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id Q7pbX57vAVUW for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  4 Jan 2024 01:02:00 +0000 (UTC)
+Received: from mail-pf1-x42e.google.com (mail-pf1-x42e.google.com
+ [IPv6:2607:f8b0:4864:20::42e])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 58BD14193C
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  4 Jan 2024 01:02:00 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 58BD14193C
+Received: by mail-pf1-x42e.google.com with SMTP id
+ d2e1a72fcca58-6d9cb95ddd1so2712b3a.1
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 03 Jan 2024 17:02:00 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20230601; t=1704379663; x=1704984463;
- h=in-reply-to:content-disposition:mime-version:message-id:subject:cc
- :to:from:date:x-gm-message-state:from:to:cc:subject:date:message-id
+ d=1e100.net; s=20230601; t=1704330119; x=1704934919;
+ h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+ :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
  :reply-to;
- bh=gfVBwkOH/qOR6M4rih0KUy+5jfSd6PJn/IuBN+59/14=;
- b=AtWN37aobnFJ9ug8NBCJtTWHh3m6FHrlC+f3i32NEfj2oNzJCA1c2DM8MazuiqAaJH
- 1q+dNfvDFOagcVSLSyvk0TA80TQJIv83/uHvr9mS30UaM7kpUa44Iby+yIzTe/ENO6ET
- l6jk517G21S45y6yByZbN4Vsq8UehVqWKh/xvX4GBLUFEBLEX2l0yJHZby32MdM8yDTt
- YXwf6gTVEnYCNlpf4W4h2C0otJNx+2mZpnmx8aamqjMa24FBFBWbNd65k6lqGS461pUn
- VziT5mbeXGQTgZiDeNLcwYm8lRgCbu6jJWgjdZy0uJx/id7wW0Vb/xk+mQUUFg9WBDhI
- 1fOA==
-X-Gm-Message-State: AOJu0Ywovg2ZRpYQupuKh2GRH/FVyTbsHAfNH6y9ITASIZvC128l+rfc
- HvM0feXkYPdCHXbOVPg6CuzTDdTJz8DZpQ==
-X-Google-Smtp-Source: AGHT+IF117QXnpuvzxN4k7ZWFQU+WS2Vnv3gcLBVFPn+SbU8WR2VxRUpgBrqVdYwYz6vf0xwXjJxXQ==
-X-Received: by 2002:a05:6512:ba8:b0:50e:7be3:d325 with SMTP id
- b40-20020a0565120ba800b0050e7be3d325mr458204lfv.86.1704379663433; 
- Thu, 04 Jan 2024 06:47:43 -0800 (PST)
-Received: from localhost ([102.140.209.237]) by smtp.gmail.com with ESMTPSA id
- x7-20020a50ba87000000b005527cfaa2dfsm19534526ede.49.2024.01.04.06.47.42
+ bh=GUTtB9m6M/z1F9wOOEilIMS9iUI36DBSZLKQRroWd8Y=;
+ b=jB1Drma57sUW/Wd6hwvkGs5fHx1tJkEvWclmbx/H2kSxFafm1I2E/zdfMND5uzNN9+
+ 5EalmVI813f4eMtFAJ54BksuNzzd8/6yAlIvizQR5LbydYIcckpsmoNcvOGan3NJSI41
+ FTNn028HpzWI2J8FaAhkXDCQi+M18y18ggcbjwQCcGkJq9+LZfJxwbJnbDRhtlpojnpJ
+ lWtXFMQU3/TW2AgHX3rlyHUWVwsfDrgfAwc3mxR0gd92oXJUw/gOvlJqyuwIbokPr6kb
+ fX3I0bPy1zB4wVfHw6dRJ67HBAugcP2m5IwtRnbx43NO2wHLwzDICgOgvf+pU5AoJTjq
+ fG1g==
+X-Gm-Message-State: AOJu0Yx3LAbUVZduER1OFPE+YKnQB6Yb2LAd+zDU1wVtFScZ9WA+ZJJF
+ HVTZ3DJLfHDJvKN2RyS00vXIzl+etueTNO53Y1Mfy1tnug==
+X-Google-Smtp-Source: AGHT+IG5V+rWMVERqBwU2wtsk1BUYMyHmWZuvo7erq08WB09VY45/EGvaZs+qai1vPHitlI+bfRjBQ==
+X-Received: by 2002:a17:90a:318a:b0:28c:b189:cf15 with SMTP id
+ j10-20020a17090a318a00b0028cb189cf15mr3527856pjb.20.1704330118737; 
+ Wed, 03 Jan 2024 17:01:58 -0800 (PST)
+Received: from arista-Idaville.sjc.aristanetworks.com ([74.123.28.10])
+ by smtp.googlemail.com with ESMTPSA id
+ er14-20020a17090af6ce00b0028be4e9b0a5sm2341608pjb.28.2024.01.03.17.01.57
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 04 Jan 2024 06:47:42 -0800 (PST)
-Date: Thu, 4 Jan 2024 17:47:39 +0300
-From: Dan Carpenter <dan.carpenter@linaro.org>
-To: oe-kbuild@lists.linux.dev, Jedrzej Jagielski <jedrzej.jagielski@intel.com>,
- intel-wired-lan@lists.osuosl.org
-Message-ID: <08d8b75e-af80-438b-8006-9121b8444f49@moroto.mountain>
+ Wed, 03 Jan 2024 17:01:58 -0800 (PST)
+From: Prasad Koya <prasad@arista.com>
+To: intel-wired-lan@lists.osuosl.org
+Date: Wed,  3 Jan 2024 17:01:44 -0800
+Message-Id: <20240104010144.2137857-1-prasad@arista.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240103101135.386891-1-jedrzej.jagielski@intel.com>
+Content-Transfer-Encoding: 8bit
+X-Mailman-Approved-At: Thu, 04 Jan 2024 16:22:42 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=linaro.org; s=google; t=1704379663; x=1704984463; darn=lists.osuosl.org;
- h=in-reply-to:content-disposition:mime-version:message-id:subject:cc
- :to:from:date:from:to:cc:subject:date:message-id:reply-to;
- bh=gfVBwkOH/qOR6M4rih0KUy+5jfSd6PJn/IuBN+59/14=;
- b=m/f/Wr2GuZYVSCcv8RRD5r5czAVNdEAdhGGdR09CKC9vriO1TNSPAGdRTTvh9hKJ6j
- CZk67NC4bOovUm6ZhDvMfjL/zir90bA9WqWWoSoiMh4114u5i9Ls6HuIGoHKoANJ+EUf
- CXfBpup4wRDD1EMkosXQm6EGXO8sv1RvmzO+U1Eqaf0aQSXyvU4gicWD6pSK4AKJW8Y4
- O94lxz4nF/IBt1fJnTXKwD6t70P1tzxcXVcJZvsZcRhpe3IFx+nVVT+fSqMarcfnriAc
- Bbs6addILfVK5GjqFSwe09EMeaGhzlPxs0qbikOG2tyekfR1PVOyPOxhu95G86xLR9jr
- kJwA==
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org
- header.a=rsa-sha256 header.s=google header.b=m/f/Wr2G
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next v1] ixgbe: Convert ret val
- type from s32 to int
+ d=arista.com; s=google; t=1704330119; x=1704934919; darn=lists.osuosl.org;
+ h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+ :to:from:from:to:cc:subject:date:message-id:reply-to;
+ bh=GUTtB9m6M/z1F9wOOEilIMS9iUI36DBSZLKQRroWd8Y=;
+ b=E3yeqgEdu35/qfgVngf0EBuMdWiwBB8pevxIDdiw34Y3IvGGyZw8mLfwXQyPyR2ITR
+ 2aq+MbtUnVTl/XRGmBoGWm5jyWGMfaw3edALIiKXpC0ykggl9fCgs5dyEFwICN3oU37k
+ XR6yJF0YK+u7svcw2Y0wL5wxvUM1B6mtU2gd/3uXdp/0I5LQBMM/h1h61rrd+bXYWha7
+ 2ORP4guqJgJv4t/dvCTIRtmEG4NjPKsOhbhHDBDlOUejaBu40XaL7+kO+hx6VHvh8jTq
+ Bb3QZ0vi6on0A8xsSXCKQa3uxsgVc8flKy0Au7oxgpAyr7Fo2hUuHA8L7v0xbM8F+ICA
+ cK8Q==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key) header.d=arista.com header.i=@arista.com
+ header.a=rsa-sha256 header.s=google header.b=E3yeqgEd
+Subject: [Intel-wired-lan] [PATCH] [iwl-net] igc: write to phy power
+ management and management control registers to power up/power down the phy
+ during interface up/down
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -108,76 +109,100 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, Jedrzej Jagielski <jedrzej.jagielski@intel.com>,
- anthony.l.nguyen@intel.com, oe-kbuild-all@lists.linux.dev,
- Jacob Keller <jacob.e.keller@intel.com>
+Cc: Salam <noureddine@arista.com>, Naama Meir <naamax.meir@linux.intel.com>,
+ Jesse Brandeburg <jesse.brandeburg@intel.com>, sasha.neftin@intel.com,
+ gilligan@arista.com, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>, "David S . Miller" <davem@davemloft.net>,
+ Prasad Koya <prasad@arista.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Hi Jedrzej,
+ For I225/226 parts, when the interface is set down with "ip
+ link set <dev> down", interface is down but the PHY (led) continues
+ to be up. This patch makes the phy to be actually off/on during
+ interface down/up events.
 
-kernel test robot noticed the following build warnings:
+Signed-off-by: Prasad Koya <prasad@arista.com>
+---
+ drivers/net/ethernet/intel/igc/igc_defines.h |  3 ++
+ drivers/net/ethernet/intel/igc/igc_phy.c     | 42 +++++++++++++-------
+ 2 files changed, 31 insertions(+), 14 deletions(-)
 
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
-
-url:    https://github.com/intel-lab-lkp/linux/commits/Jedrzej-Jagielski/ixgbe-Convert-ret-val-type-from-s32-to-int/20240103-182213
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/horms/ipvs.git master
-patch link:    https://lore.kernel.org/r/20240103101135.386891-1-jedrzej.jagielski%40intel.com
-patch subject: [PATCH iwl-next v1] ixgbe: Convert ret val type from s32 to int
-config: i386-randconfig-141-20240104 (https://download.01.org/0day-ci/archive/20240104/202401041701.6QKTsZmx-lkp@intel.com/config)
-compiler: gcc-12 (Debian 12.2.0-14) 12.2.0
-
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Reported-by: Dan Carpenter <dan.carpenter@linaro.org>
-| Closes: https://lore.kernel.org/r/202401041701.6QKTsZmx-lkp@intel.com/
-
-New smatch warnings:
-drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c:2884 ixgbe_get_lcd_t_x550em() warn: missing error code? 'status'
-drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c:3130 ixgbe_enter_lplu_t_x550em() warn: missing error code? 'status'
-
-Old smatch warnings:
-drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c:2890 ixgbe_get_lcd_t_x550em() warn: missing error code? 'status'
-
-vim +/status +2884 drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-
-9ea222bfe41f87 Jedrzej Jagielski 2024-01-03  2866  static int ixgbe_get_lcd_t_x550em(struct ixgbe_hw *hw,
-6ac7439459606a Don Skidmore      2015-06-17  2867  				  ixgbe_link_speed *lcd_speed)
-6ac7439459606a Don Skidmore      2015-06-17  2868  {
-6ac7439459606a Don Skidmore      2015-06-17  2869  	u16 an_lp_status;
-9ea222bfe41f87 Jedrzej Jagielski 2024-01-03  2870  	int status;
-6ac7439459606a Don Skidmore      2015-06-17  2871  	u16 word = hw->eeprom.ctrl_word_3;
-6ac7439459606a Don Skidmore      2015-06-17  2872  
-6ac7439459606a Don Skidmore      2015-06-17  2873  	*lcd_speed = IXGBE_LINK_SPEED_UNKNOWN;
-6ac7439459606a Don Skidmore      2015-06-17  2874  
-6ac7439459606a Don Skidmore      2015-06-17  2875  	status = hw->phy.ops.read_reg(hw, IXGBE_AUTO_NEG_LP_STATUS,
-4dc4000b35119f Emil Tantilov     2016-09-26  2876  				      MDIO_MMD_AN,
-6ac7439459606a Don Skidmore      2015-06-17  2877  				      &an_lp_status);
-6ac7439459606a Don Skidmore      2015-06-17  2878  	if (status)
-6ac7439459606a Don Skidmore      2015-06-17  2879  		return status;
-6ac7439459606a Don Skidmore      2015-06-17  2880  
-6ac7439459606a Don Skidmore      2015-06-17  2881  	/* If link partner advertised 1G, return 1G */
-6ac7439459606a Don Skidmore      2015-06-17  2882  	if (an_lp_status & IXGBE_AUTO_NEG_LP_1000BASE_CAP) {
-6ac7439459606a Don Skidmore      2015-06-17  2883  		*lcd_speed = IXGBE_LINK_SPEED_1GB_FULL;
-6ac7439459606a Don Skidmore      2015-06-17 @2884  		return status;
-
-Smatch only warns about missing error codes when the function returns an
-int.  :P  The bug predates your patch obvoiusly.
-
-6ac7439459606a Don Skidmore      2015-06-17  2885  	}
-6ac7439459606a Don Skidmore      2015-06-17  2886  
-6ac7439459606a Don Skidmore      2015-06-17  2887  	/* If 10G disabled for LPLU via NVM D10GMP, then return no valid LCD */
-6ac7439459606a Don Skidmore      2015-06-17  2888  	if ((hw->bus.lan_id && (word & NVM_INIT_CTRL_3_D10GMP_PORT1)) ||
-6ac7439459606a Don Skidmore      2015-06-17  2889  	    (word & NVM_INIT_CTRL_3_D10GMP_PORT0))
-6ac7439459606a Don Skidmore      2015-06-17  2890  		return status;
-6ac7439459606a Don Skidmore      2015-06-17  2891  
-6ac7439459606a Don Skidmore      2015-06-17  2892  	/* Link partner not capable of lower speeds, return 10G */
-6ac7439459606a Don Skidmore      2015-06-17  2893  	*lcd_speed = IXGBE_LINK_SPEED_10GB_FULL;
-6ac7439459606a Don Skidmore      2015-06-17  2894  	return status;
-6ac7439459606a Don Skidmore      2015-06-17  2895  }
-
+diff --git a/drivers/net/ethernet/intel/igc/igc_defines.h b/drivers/net/ethernet/intel/igc/igc_defines.h
+index b3037016f31d..6f60f5bd9cc7 100644
+--- a/drivers/net/ethernet/intel/igc/igc_defines.h
++++ b/drivers/net/ethernet/intel/igc/igc_defines.h
+@@ -684,4 +684,7 @@
+ #define IGC_LTRMAXV_LSNP_REQ		0x00008000 /* LTR Snoop Requirement */
+ #define IGC_LTRMAXV_SCALE_SHIFT		10
+ 
++/* PHY Power management register */
++#define IGC_GO_LINK_DISCONNECT		0x0020	   /* Go Link Disconnect */
++
+ #endif /* _IGC_DEFINES_H_ */
+diff --git a/drivers/net/ethernet/intel/igc/igc_phy.c b/drivers/net/ethernet/intel/igc/igc_phy.c
+index 53b77c969c85..319cdf876f4e 100644
+--- a/drivers/net/ethernet/intel/igc/igc_phy.c
++++ b/drivers/net/ethernet/intel/igc/igc_phy.c
+@@ -107,12 +107,22 @@ s32 igc_phy_has_link(struct igc_hw *hw, u32 iterations,
+  */
+ void igc_power_up_phy_copper(struct igc_hw *hw)
+ {
+-	u16 mii_reg = 0;
++	struct igc_phy_info *phy = &hw->phy;
++	u32 phpm, manc;
++
++	if (phy->ops.acquire(hw))
++		return;
++
++	manc = rd32(IGC_MANC);
++	manc &= ~IGC_MANC_BLK_PHY_RST_ON_IDE;
++	wr32(IGC_MANC, manc);
+ 
+-	/* The PHY will retain its settings across a power down/up cycle */
+-	hw->phy.ops.read_reg(hw, PHY_CONTROL, &mii_reg);
+-	mii_reg &= ~MII_CR_POWER_DOWN;
+-	hw->phy.ops.write_reg(hw, PHY_CONTROL, mii_reg);
++	phpm = rd32(IGC_I225_PHPM);
++	phpm &= ~IGC_GO_LINK_DISCONNECT;
++	wr32(IGC_I225_PHPM, phpm);
++	usleep_range(100, 200);
++
++	hw->phy.ops.release(hw);
+ }
+ 
+ /**
+@@ -124,17 +134,21 @@ void igc_power_up_phy_copper(struct igc_hw *hw)
+  */
+ void igc_power_down_phy_copper(struct igc_hw *hw)
+ {
+-	u16 mii_reg = 0;
+-
+-	/* The PHY will retain its settings across a power down/up cycle */
+-	hw->phy.ops.read_reg(hw, PHY_CONTROL, &mii_reg);
+-	mii_reg |= MII_CR_POWER_DOWN;
++	struct igc_phy_info *phy = &hw->phy;
++	u32 phpm, manc;
+ 
+-	/* Temporary workaround - should be removed when PHY will implement
+-	 * IEEE registers as properly
+-	 */
+-	/* hw->phy.ops.write_reg(hw, PHY_CONTROL, mii_reg);*/
++	if (phy->ops.acquire(hw))
++		return;
++	/* Set "Go Link Disconnect" bit in the PHPM register to turn off the PHY */
++	phpm = rd32(IGC_I225_PHPM);
++	phpm |= IGC_GO_LINK_DISCONNECT;
++	wr32(IGC_I225_PHPM, phpm);
+ 	usleep_range(1000, 2000);
++
++	manc = rd32(IGC_MANC);
++	wr32(IGC_MANC, manc | IGC_MANC_BLK_PHY_RST_ON_IDE);
++
++	phy->ops.release(hw);
+ }
+ 
+ /**
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+2.25.1
 
