@@ -4,86 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 23DE3C4706C
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 12 Jan 2024 10:09:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 85A0FC4707C
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 12 Jan 2024 10:24:39 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id A791242E55;
-	Fri, 12 Jan 2024 10:09:49 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org A791242E55
+	by smtp4.osuosl.org (Postfix) with ESMTP id 40DE442D4F;
+	Fri, 12 Jan 2024 10:24:39 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 40DE442D4F
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1705054189;
-	bh=93IYNYTSQivSR+C4TjUcUiSLxfYl5ZGLUdhQ7ksEFgg=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1705055079;
+	bh=JZT60HepIMIFSaKHVFpHlfly7yzLdnjByIQNye7SMdc=;
+	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=fqtPBV48R5ewSKCKUDQ7rNZIl4lw8KSAzY93xuDdmEk+qlB5xcU1EmoIUhK5J1LAS
-	 UGkBALptxfRX3xCYQuyOwCn2kZov8ts9xoXVL0BboYny4GhMpsPCSRjt0dyXAC98W1
-	 8ZpKCgodmbinZDIFc1O/mXqwwVBXsQW9Laz6AxQ7bsPwg+Exs0jCbhN47H1ckACT6e
-	 ZVYP7PE62xA0OvazqdU3nL6SEGjpPV355LiNuV9sJ+2O2lGq5PKg/ICMu9vbCxxJ9D
-	 JGSOK4wJ8nU/OgU7+RGajMoS9wBRKQxEcZh/E3L65hStQV0d5ENfux6c0FUzaWNSut
-	 YTTidaUuFcr/w==
+	b=eYwujexxm++SuV2gC2MQuMOASkOSa3BjF0l+6OPq80GoSh3OUtCaoGGDVMShteX8L
+	 la+xWNpKFISQUwxzsSujCnNgFeKfeHsI6RP6ssGaLxO17FwSsqWjcuqcCJ9fApSgqY
+	 YOxv0mH3t2b9TeNAfPrh2WAeQ0TFXuNxXpOIQVy6PkfxIzh4X9HaPqH92DIw3H17Fg
+	 toJM38t2NxAwQKcvM6EyEneh5z1YkaaTgit2hbmnmM9+gN3t00oTz2stv4TTmrX7qO
+	 yQbD9JTvJa/Km0rLlGjcxIaEPh8Fyd3C2l7eBFflRk8l8rHJPCw4BZ+Ufw/C+orRSH
+	 eXq3urpunRNBw==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id CBE6CtWRJLVt; Fri, 12 Jan 2024 10:09:49 +0000 (UTC)
+	with ESMTP id HY-pIKjsQka5; Fri, 12 Jan 2024 10:24:38 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id CF37A42E4B;
-	Fri, 12 Jan 2024 10:09:48 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org CF37A42E4B
+	by smtp4.osuosl.org (Postfix) with ESMTP id 1B4E942E21;
+	Fri, 12 Jan 2024 10:24:38 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1B4E942E21
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id BA30F1BF5DD
- for <intel-wired-lan@lists.osuosl.org>; Fri, 12 Jan 2024 10:09:47 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 5C20F1BF2BE
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 12 Jan 2024 10:24:36 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 8F8D183B67
- for <intel-wired-lan@lists.osuosl.org>; Fri, 12 Jan 2024 10:09:47 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8F8D183B67
+ by smtp1.osuosl.org (Postfix) with ESMTP id 292F38443F
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 12 Jan 2024 10:24:36 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 292F38443F
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 4yOPriugx0CW for <intel-wired-lan@lists.osuosl.org>;
- Fri, 12 Jan 2024 10:09:45 +0000 (UTC)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.11])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 016E083AC0
- for <intel-wired-lan@lists.osuosl.org>; Fri, 12 Jan 2024 10:09:44 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 016E083AC0
-X-IronPort-AV: E=McAfee;i="6600,9927,10950"; a="5867350"
-X-IronPort-AV: E=Sophos;i="6.04,189,1695711600"; 
-   d="scan'208";a="5867350"
-Received: from orsmga006.jf.intel.com ([10.7.209.51])
- by fmvoesa105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 12 Jan 2024 02:09:32 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10950"; a="759083275"
-X-IronPort-AV: E=Sophos;i="6.04,189,1695711600"; d="scan'208";a="759083275"
-Received: from os-delivery.igk.intel.com ([10.102.18.218])
- by orsmga006.jf.intel.com with ESMTP; 12 Jan 2024 02:09:29 -0800
-From: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Date: Fri, 12 Jan 2024 10:59:44 +0100
-Message-Id: <20240112095945.450590-2-jedrzej.jagielski@intel.com>
-X-Mailer: git-send-email 2.31.1
-In-Reply-To: <20240112095945.450590-1-jedrzej.jagielski@intel.com>
-References: <20240112095945.450590-1-jedrzej.jagielski@intel.com>
+ with ESMTP id TIi0TCbJ737L for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 12 Jan 2024 10:24:34 +0000 (UTC)
+Received: from mx3.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 33CFB83FE6
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 12 Jan 2024 10:24:34 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 33CFB83FE6
+Received: from [192.168.0.6] (ip5f5af452.dynamic.kabel-deutschland.de
+ [95.90.244.82])
+ (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested) (Authenticated sender: pmenzel)
+ by mx.molgen.mpg.de (Postfix) with ESMTPSA id 5508761E5FE03;
+ Fri, 12 Jan 2024 11:23:57 +0100 (CET)
+Message-ID: <60188b64-35d7-4cf3-baff-52c4343202b5@molgen.mpg.de>
+Date: Fri, 12 Jan 2024 11:23:55 +0100
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1705054185; x=1736590185;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=KYlwYu/JnYFP0dZJ9hFqUmlC0ICBzK/58VCU/teM4uE=;
- b=Tm4uS8qOdglxuE3DUW/4Y76CJs8YGj3au1wN/ye3y+Aqi57HaydBlNmr
- NKqKjwscJW6mo5wBMSy3i97ZTIRo38uoUmrIjBzpMYfz8qMLM0FRiYO7K
- kV8etb7mof6GzzftLmw5l/I021JsAmc55aOgghW9O5rJVbULl6jwnCO7a
- 1pseOGrcZ5wO5YW/PwVYevxzXmRh3qhxZdFLOlKJ6hPw0z8KlvW499eoW
- O+6Ul6zU5vK8vfZgbt0p0HAYBpNh492LkJ9boCz+vL6Lf0qV3nZYQ/EpN
- oD1DnHmL4JPDkkWk/rZVCZnUDnMxZw5T+hA6DFmh7ZjAsFb/ddzTN8Tie
- A==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=Tm4uS8qO
-Subject: [Intel-wired-lan] [PATCH iwl-next v1 1/2] i40e: Add read alternate
- indirect command
+User-Agent: Mozilla Thunderbird
+Content-Language: en-US
+To: Jaroslav Pulchart <jaroslav.pulchart@gooddata.com>
+References: <CAK8fFZ7Xi3=1HFY400firmpRWzHDPsi90cUU5bjOkF00KNZWeA@mail.gmail.com>
+ <bce78734-d359-499b-9693-05549e6a73a4@intel.com>
+ <CAK8fFZ6PqCwgt1n4iuROs=76esQVSOS-HHL=0eN7+efeKT25Uw@mail.gmail.com>
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+In-Reply-To: <CAK8fFZ6PqCwgt1n4iuROs=76esQVSOS-HHL=0eN7+efeKT25Uw@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Subject: Re: [Intel-wired-lan] [REGRESSION] Intel ICE Ethernet driver in
+ linux >= 6.6.9 triggers extra memory consumption and cause continous
+ kswapd* usage and continuous swapping
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,114 +81,163 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Aleksandr Loktionov <aleksandr.loktionov@intel.com>, netdev@vger.kernel.org,
- Przemyslaw R Karpinski <przemyslaw.r.karpinski@intel.com>,
- anthony.l.nguyen@intel.com, Jedrzej Jagielski <jedrzej.jagielski@intel.com>
+Cc: regressions@lists.linux.dev, Daniel Secik <daniel.secik@gooddata.com>,
+ Jesse Brandeburg <jesse.brandeburg@intel.com>,
+ Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Dave Ertman <david.m.ertman@intel.com>, intel-wired-lan@lists.osuosl.org,
+ Igor Raits <igor@gooddata.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Przemyslaw R Karpinski <przemyslaw.r.karpinski@intel.com>
+[Cc: +regressions@lists.linux.dev]
 
-Introduce implementation of 0x0903 Admin Queue command.
-This indirect command reads a block of data from the alternate structure
-of memory. The command defines the number of Dwords to be read and the
-starting address inside the alternate structure.
-
-Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Signed-off-by: Przemyslaw R Karpinski <przemyslaw.r.karpinski@intel.com>
-Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
----
- .../net/ethernet/intel/i40e/i40e_adminq_cmd.h |  4 +-
- drivers/net/ethernet/intel/i40e/i40e_common.c | 40 +++++++++++++++++++
- .../net/ethernet/intel/i40e/i40e_prototype.h  |  3 ++
- 3 files changed, 45 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-index 18a1c3b6d72c..50785f7e6d08 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-@@ -1983,14 +1983,14 @@ I40E_CHECK_CMD_LENGTH(i40e_aqc_alternate_write);
-  * Indirect read (indirect 0x0903)
-  */
- 
--struct i40e_aqc_alternate_ind_write {
-+struct i40e_aqc_alternate_ind_read_write {
- 	__le32 address;
- 	__le32 length;
- 	__le32 addr_high;
- 	__le32 addr_low;
- };
- 
--I40E_CHECK_CMD_LENGTH(i40e_aqc_alternate_ind_write);
-+I40E_CHECK_CMD_LENGTH(i40e_aqc_alternate_ind_read_write);
- 
- /* Done alternate write (direct 0x0904)
-  * uses i40e_aq_desc
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
-index de6ca6295742..93971c9c98cc 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_common.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
-@@ -4375,6 +4375,46 @@ static int i40e_aq_alternate_read(struct i40e_hw *hw,
- 	return status;
- }
- 
-+/**
-+ * i40e_aq_alternate_read_indirect
-+ * @hw: pointer to the hardware structure
-+ * @addr: address of the alternate structure field
-+ * @dw_count: number of alternate structure fields to read
-+ * @buffer: pointer to the command buffer
-+ *
-+ * Read 'dw_count' dwords from alternate structure starting at 'addr' and
-+ * place them in 'buffer'. The buffer should be allocated by caller.
-+ *
-+ **/
-+int i40e_aq_alternate_read_indirect(struct i40e_hw *hw, u32 addr, u32 dw_count,
-+				    void *buffer)
-+{
-+	struct i40e_aqc_alternate_ind_read_write *cmd_resp;
-+	struct i40e_aq_desc desc;
-+	int status;
-+
-+	if (!buffer)
-+		return -EINVAL;
-+
-+	cmd_resp = (struct i40e_aqc_alternate_ind_read_write *)&desc.params.raw;
-+
-+	i40e_fill_default_direct_cmd_desc(&desc,
-+					  i40e_aqc_opc_alternate_read_indirect);
-+
-+	desc.flags |= cpu_to_le16(I40E_AQ_FLAG_RD);
-+	desc.flags |= cpu_to_le16(I40E_AQ_FLAG_BUF);
-+	if (dw_count > I40E_AQ_LARGE_BUF / 4)
-+		desc.flags |= cpu_to_le16((u16)I40E_AQ_FLAG_LB);
-+
-+	cmd_resp->address = cpu_to_le32(addr);
-+	cmd_resp->length = cpu_to_le32(dw_count);
-+
-+	status = i40e_asq_send_command(hw, &desc, buffer,
-+				       lower_16_bits(4 * dw_count), NULL);
-+
-+	return status;
-+}
-+
- /**
-  * i40e_aq_suspend_port_tx
-  * @hw: pointer to the hardware structure
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_prototype.h b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
-index af4269330581..37c23a0bded6 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_prototype.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
-@@ -322,6 +322,9 @@ i40e_aq_rem_cloud_filters_bb(struct i40e_hw *hw, u16 seid,
- 			     u8 filter_count);
- int i40e_read_lldp_cfg(struct i40e_hw *hw,
- 		       struct i40e_lldp_variables *lldp_cfg);
-+
-+int i40e_aq_alternate_read_indirect(struct i40e_hw *hw, u32 addr, u32 dw_count,
-+				    void *buffer);
- int
- i40e_aq_suspend_port_tx(struct i40e_hw *hw, u16 seid,
- 			struct i40e_asq_cmd_details *cmd_details);
--- 
-2.31.1
-
+Am 11.01.24 um 09:26 schrieb Jaroslav Pulchart:
+>>
+>> On 1/8/2024 2:49 AM, Jaroslav Pulchart wrote:
+>>> Hello
+>>
+>> First, thank you for your work trying to chase this!
+>>
+>>>
+>>> I would like to report a regression triggered by recent change in
+>>> Intel ICE Ethernet driver in the 6.6.9 linux kernel. The problem was
+>>> bisected and the regression is triggered by
+>>> fc4d6d136d42fab207b3ce20a8ebfd61a13f931f "ice: alter feature support
+>>> check for SRIOV and LAG" commit and originally reported as part of
+>>> https://lore.kernel.org/linux-mm/CAK8fFZ4DY+GtBA40Pm7Nn5xCHy+51w3sfxPqkqpqakSXYyX+Wg@mail.gmail.com/T/#m5217c62beb03b3bc75d7dd4b1d9bab64a3e68826
+>>> thread.
+>>
+>> I think that's a bad bisect. There is no reason I could understand for
+>> that change to cause a continuous or large leak, it really doesn't make
+>> any sense. Reverting it consistently helps? You're not just rewinding
+>> the tree back to that point, right? just running 6.6.9 without that
+>> patch? (sorry for being pedantic, just trying to be certain)
+>>
+> 
+> Reverting just the single bisected commit continuously helps for >=
+> 6.6.9 and as well for current 6.7.
+> We cannot use any new linux kernel without reverting it due to this
+> extra memory utilization.
+> 
+>>
+>>>> However, after the following patch we see that more NUMA nodes have
+>>>> such a low amount of memory and  that is causing constant reclaiming
+>>>> of memory because it looks like something inside of the kernel ate all
+>>>> the memory. This is right after the start of the system as well.
+>>>
+>>>   I'm reporting it here as it is a different problem than the original
+>>> thread. The commit introduces a low memory problem per each numa node
+>>> of the first socket (node0 .. node3 in our case) and cause constant
+>>> kswapd* 100% CPU usage. See attached 6.6.9-kswapd_usage.png. The low
+>>> memory issue is nicely visible in "numastat -m", see attached files:
+>>> * numastat_m-6.6.10_28GB_HP_ice_revert.txt   >= 6.6.9 with reverted ice commit
+>>> * numastat_m-6.6.10_28GB_HP_no_revert.txt    >= 6.6.9 vanilla
+>>> the server "is fresh" (after reboot), without running any application load.
+>>
+>> OK, so the initial allocations of your system is running your system out
+>> of memory.
+>>
+>> Are you running jumbo frames on your ethernet interfaces?
+>>
+> 
+> Yes, we are (MTU 9000).
+> 
+>> Do you have /proc/slabinfo output from working/non-working boot?
+>>
+> 
+> Yes, I have a complete sos report so I can pick-up files from there.
+> See attached
+> slabinfo.vanila (non-working)
+> slabinfo.reverted (working)
+> 
+>>>
+>>> $ grep MemFree numastat_m-6.6.10_28GB_HP_ice_revert.txt
+>>> numastat_m-6.6.10_28GB_HP_no_revert.txt
+>>> numastat_m-6.6.10_28GB_HP_ice_revert.txt:MemFree
+>>> 2756.89         2754.86          100.39         2278.43         < ice
+>>> fix is reverted, we have ~2GB free per numa, except one, like before
+>>> == no issue
+>>> numastat_m-6.6.10_28GB_HP_ice_revert.txt:MemFree
+>>> 3551.29         1530.52         2212.04         3488.09
+>>> ...
+>>> numastat_m-6.6.10_28GB_HP_no_revert.txt:MemFree
+>>> 127.52           66.49          120.23          263.47               <
+>>
+>>
+>>> ice fix is present, we see just few MB free per each node, this will
+>>> cause kswapd utilization!
+>>> numastat_m-6.6.10_28GB_HP_no_revert.txt:MemFree
+>>> 3322.18         3134.47          195.55          879.17
+>>> ...
+>>>
+>>> If you have some hints on how to debug what is actually occupying all
+>>> that memory and some fix of the problem will be nice. We can provide
+>>> testing and more reports if needed to analyze the issue. We reverted
+>>> the commit fc4d6d136d42fab207b3ce20a8ebfd61a13f931f as a workaround
+>>> till we know a proper fix.
+>>
+>> My first suspicion is that we're contributing to the problem by running
+>> out of receive descriptors memory.
+>>
+>> Can we see the ethtool -S stats from the freshly booted system that's
+>> running out of memory or doing OOM? Also, all the standard debugging
+>> info (at least once please), devlink dev info, any other configuration
+>> specifics? What networking config (bonding? anything else?)
+>>
+> 
+> The system is not in OOM, it starts to continuously utilize four
+> kswapd0-4 of each numa node from the first CPU socket processes (each
+> at 100% and all doing swap in/out) after the system start to be used
+> by application due to "low memory".
+> 
+> We have two 25G 2P E810-XXV Adapters. The first port of each (em1 +
+> p3p1) is connected and they're bonded in LACP. Second ports (em2 and
+> p3p2) are unused.
+> 
+> See attached file for working:
+> ethtool_-S_em1.reverted
+> ethtool_-S_em2.reverted
+> ethtool_-S_p3p1.reverted
+> ethtool_-S_p3p2.reverted
+> 
+> See attached file for non-working:
+> ethtool_-S_em1.vanila
+> ethtool_-S_em2.vanila
+> ethtool_-S_p3p1.vanila
+> ethtool_-S_p3p2.vanila
+> 
+> 
+>> Do you have a bugzilla.kernel.org bug yet where you can upload larger
+>> files like dmesg and others?
+> 
+> I do not have yet, I will create a new one and ping you then.
+> 
+>>
+>> Also, I'm curious if your problem goes away if you change / reduce the
+>> number of queues per port. use ethtool -L eth0 combined 4 ?
+>>
+> 
+> I will try and give you feedback soon.
+> 
+>> You also said something about reproducing when launching / destroying
+>> virtual machines with VF passthrough?
+> 
+> The memory usage is there from boot without running any VMs. The issue
+> is that the host has low memory for self and it starts to use kswapd
+> when we start to use it by starting vms.
+> 
+>>
+>> Can you reproduce the issue without starting qemu (just doing bare-metal
+>> SR-IOV instance creation/destruction via
+>> /sys/class/net/eth0/device/sriov_numvfs ?)
+>>
+> 
+> Yes we can reproduce it without qemu running, the extra memory usage
+> is from the beginning after boot, not depending on any running VM.
+> 
+> We do not use SR-IOV.
+> 
+>> Thanks
+> 
+> Thanks,
+> Jaroslav Pulchart
