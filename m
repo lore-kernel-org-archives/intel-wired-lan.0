@@ -1,85 +1,86 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E7042C47077
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 12 Jan 2024 03:00:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5ABC9C4707C
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 12 Jan 2024 10:09:37 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 6FB9D8442D;
-	Fri, 12 Jan 2024 03:00:23 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 6FB9D8442D
+	by smtp4.osuosl.org (Postfix) with ESMTP id F24D542DB6;
+	Fri, 12 Jan 2024 10:09:36 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org F24D542DB6
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1705028423;
-	bh=mHxsD3vGrpoQGl3vcSwuxi2WNi7Ux/WzEviD/iSTRbQ=;
+	s=default; t=1705054177;
+	bh=4dxvn5uCMMKTsaMZsUM/6xem9yrDV+cAeBPReCl1hgA=;
 	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=Ct+r0fFn7GaDVYayy/oeX6FUUnEPBPN8rq1wOXIM5yTbKVxk8Aa3+1V2hfy53ANcU
-	 gb5dxArqOf16pUHngcZIfiQW4E6UyelADnPddZpj2ngXy0K4ccDbiqxU3h2nHtKYnr
-	 cjyH0ej3O3LIShY+5I03cpWd5XYuTvJFCrbLRLW4Z1o/8DdVvoCeBBa63uijwWqWVv
-	 G6LZs5TXuGSOiATjNf1tf6TQI5zFfH+Z/2hc4e3xC3wIZV53MopVCuq+ZPq2woWrX/
-	 Oa9WThBK3sSWPbB9YMDfKSjib1rNF3sfvxJR14M1WCOSpcTtvz7bA5p/Cgi+OsD8XR
-	 OmzV34E8cQu5g==
+	b=ipM1EY5QqVu0y421E1tVzuSvCWdHyf6Md9EHBbB3mLU7i0hFliRYvWqaDxqcyf2bc
+	 Y4e0UW2GnmiHKTh+xdRsk47LfhpiSsROc00uiQzjsDd0cLiamYaagj/TsAJdAMfV55
+	 kT24rZTKZZxlmFCMsuclsWyvp6FrIHPx9lQ8h+/ih7hKK0qP4kBL8vtwKWH+qGFe/G
+	 S1VF+sN0oRNNSEqYmfi+JGrA1/6V20XYju/dO+xB6Y5IUcICemR+puBEB3Yr8qP9cC
+	 CjLucIT/mqAb4t6Sa31evni7bTLGu98PRlp4Fx5z2dVb4iK3b9zvpXBzB8PSzQ4/iN
+	 kUEFRjzU4gV6Q==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
-	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 9P0b12mvy6ma; Fri, 12 Jan 2024 03:00:22 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id kMfMwwVXIjxT; Fri, 12 Jan 2024 10:09:36 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 7735D8403A;
-	Fri, 12 Jan 2024 03:00:22 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7735D8403A
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id B6A9D1BF37A
- for <intel-wired-lan@lists.osuosl.org>; Fri, 12 Jan 2024 03:00:20 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 39F0C42DD6;
+	Fri, 12 Jan 2024 10:09:36 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 39F0C42DD6
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id EC6F91BF5DD
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 12 Jan 2024 10:09:34 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 8C1BD4399C
- for <intel-wired-lan@lists.osuosl.org>; Fri, 12 Jan 2024 03:00:20 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 8C1BD4399C
+ by smtp3.osuosl.org (Postfix) with ESMTP id C38F86FA2D
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 12 Jan 2024 10:09:34 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C38F86FA2D
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id vzrvSiQA8uLD for <intel-wired-lan@lists.osuosl.org>;
- Fri, 12 Jan 2024 03:00:17 +0000 (UTC)
-Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 350FE4055F
- for <intel-wired-lan@lists.osuosl.org>; Fri, 12 Jan 2024 03:00:14 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 350FE4055F
-X-UUID: ae53ff116344415d96418585a4d93d84-20240112
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.35, REQID:6a2b0c87-dd81-4c55-9f0b-66abea040b8a, IP:10,
- URL:0,TC:0,Content:-25,EDM:25,RT:0,SF:-15,FILE:0,BULK:0,RULE:Release_Ham,A
- CTION:release,TS:-5
-X-CID-INFO: VERSION:1.1.35, REQID:6a2b0c87-dd81-4c55-9f0b-66abea040b8a, IP:10,
- UR
- L:0,TC:0,Content:-25,EDM:25,RT:0,SF:-15,FILE:0,BULK:0,RULE:Release_Ham,ACT
- ION:release,TS:-5
-X-CID-META: VersionHash:5d391d7, CLOUDID:676b437f-4f93-4875-95e7-8c66ea833d57,
- B
- ulkID:2401121059378NCKGCC4,BulkQuantity:0,Recheck:0,SF:66|38|24|17|19|44|1
- 02,TC:nil,Content:0,EDM:5,IP:-2,URL:1,File:nil,Bulk:nil,QS:nil,BEC:nil,COL
- :0,OSI:0,OSA:0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0
-X-CID-BVR: 0
-X-CID-BAS: 0,_,0,_
-X-CID-FACTOR: TF_CID_SPAM_FAS, TF_CID_SPAM_FSD, TF_CID_SPAM_FSI,
- TF_CID_SPAM_ULS, TF_CID_SPAM_SNR
-X-UUID: ae53ff116344415d96418585a4d93d84-20240112
-X-User: chentao@kylinos.cn
-Received: from kernel.. [(116.128.244.171)] by mailgw
- (envelope-from <chentao@kylinos.cn>)
- (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
- with ESMTP id 544651348; Fri, 12 Jan 2024 10:59:34 +0800
-From: Kunwu Chan <chentao@kylinos.cn>
-To: jesse.brandeburg@intel.com, anthony.l.nguyen@intel.com,
- davem@davemloft.net, edumazet@google.com, kuba@kernel.org,
- pabeni@redhat.com
-Date: Fri, 12 Jan 2024 10:58:53 +0800
-Message-Id: <20240112025853.123048-1-chentao@kylinos.cn>
-X-Mailer: git-send-email 2.39.2
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id gHz--kDPmEzK for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 12 Jan 2024 10:09:34 +0000 (UTC)
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.11])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 2FC016F652
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 12 Jan 2024 10:09:34 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2FC016F652
+X-IronPort-AV: E=McAfee;i="6600,9927,10950"; a="5867344"
+X-IronPort-AV: E=Sophos;i="6.04,189,1695711600"; 
+   d="scan'208";a="5867344"
+Received: from orsmga006.jf.intel.com ([10.7.209.51])
+ by fmvoesa105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 12 Jan 2024 02:09:30 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10950"; a="759083268"
+X-IronPort-AV: E=Sophos;i="6.04,189,1695711600"; d="scan'208";a="759083268"
+Received: from os-delivery.igk.intel.com ([10.102.18.218])
+ by orsmga006.jf.intel.com with ESMTP; 12 Jan 2024 02:09:28 -0800
+From: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Date: Fri, 12 Jan 2024 10:59:43 +0100
+Message-Id: <20240112095945.450590-1-jedrzej.jagielski@intel.com>
+X-Mailer: git-send-email 2.31.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Subject: [Intel-wired-lan] [PATCH v2] igb: Fix string truncation warnings in
- igb_set_fw_version
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1705054174; x=1736590174;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=k538U04y1+gFCDAOeeVHduwRHtJ/O1vY62vfMQ93t+4=;
+ b=d3DnJ03AW6GLmof3c/AD2Njf5eVAGQ/kYZOOOj5O2+mXMls2Si431pIL
+ dUU7RKbzkc0SCGPAiNbFg3LFGejA92/SbGYYK2CfHwCE5lwSbEN5omuYN
+ XG7EzU+SNt6xWCzVbynEYwpUemHjWxmnu82ZDT5+nnOujxG983HW08E49
+ htwss2jq4M9CI81DeCCxkaV3O0nWqmnlCzmiR6Zy5gvv2nQBJ20Aadg6q
+ wTdzc/ixVBAVg7ARf2x2lK+4de0p9vhhVT322vpaof5lJCsbyMmTc3jv2
+ 9llSEliQ4AdwcrTm7bCo6UKnypTUZ97HyHZDUgN+axb0MZcafOA/GVxq/
+ Q==;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=d3DnJ03A
+Subject: [Intel-wired-lan] [PATCH iwl-next v1 0/2] i40e: Log FW state in
+ recovery mode
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,113 +93,33 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Kunwu Chan <chentao@kylinos.cn>, Kunwu Chan <kunwu.chan@hotmail.com>,
- przemyslaw.kitszel@intel.com, linux-kernel@vger.kernel.org,
- intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- jacob.e.keller@intel.com
+Cc: netdev@vger.kernel.org, anthony.l.nguyen@intel.com,
+ Jedrzej Jagielski <jedrzej.jagielski@intel.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-'commit 1978d3ead82c ("intel: fix string truncation warnings")'
-fix '-Wformat-truncation=' warnings in igb_main.c by using kasprintf.
+Introduce logging FW state in recovery mode functionality.
 
-kasprintf() returns a pointer to dynamically allocated memory
-which can be NULL upon failure.
+1st patch adds implementation of admin command reading content of alt
+ram.
+2nd patch utilices the command to get trace buffer data and logs it
+when entering recovery mode.
 
-Fix this warning by using a larger space for adapter->fw_version,
-and then fall back and continue to use snprintf.
+Jedrzej Jagielski (1):
+  i40e-linux: Add support for reading Trace Buffer
 
-Fixes: 1978d3ead82c ("intel: fix string truncation warnings")
-Signed-off-by: Kunwu Chan <chentao@kylinos.cn>
-Cc: Kunwu Chan <kunwu.chan@hotmail.com>
-Suggested-by: Jakub Kicinski <kuba@kernel.org>
+Przemyslaw R Karpinski (1):
+  i40e: Add read alternate indirect command
 
----
-v2: Fall back to use snprintf and a larger space,as suggested by
-https://lore.kernel.org/all/20231212132637.1b0fb8aa@kernel.org/
----
- drivers/net/ethernet/intel/igb/igb.h      |  2 +-
- drivers/net/ethernet/intel/igb/igb_main.c | 35 ++++++++++++-----------
- 2 files changed, 19 insertions(+), 18 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e.h        |  2 +
+ .../net/ethernet/intel/i40e/i40e_adminq_cmd.h |  4 +-
+ drivers/net/ethernet/intel/i40e/i40e_common.c | 40 +++++++++++++++++++
+ drivers/net/ethernet/intel/i40e/i40e_main.c   | 35 ++++++++++++++++
+ .../net/ethernet/intel/i40e/i40e_prototype.h  |  3 ++
+ .../net/ethernet/intel/i40e/i40e_register.h   |  2 +
+ drivers/net/ethernet/intel/i40e/i40e_type.h   |  5 +++
+ 7 files changed, 89 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
-index a2b759531cb7..3c2dc7bdebb5 100644
---- a/drivers/net/ethernet/intel/igb/igb.h
-+++ b/drivers/net/ethernet/intel/igb/igb.h
-@@ -637,7 +637,7 @@ struct igb_adapter {
- 		struct timespec64 period;
- 	} perout[IGB_N_PEROUT];
- 
--	char fw_version[32];
-+	char fw_version[48];
- #ifdef CONFIG_IGB_HWMON
- 	struct hwmon_buff *igb_hwmon_buff;
- 	bool ets;
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index b2295caa2f0a..ce762d77d2c1 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -3069,7 +3069,6 @@ void igb_set_fw_version(struct igb_adapter *adapter)
- {
- 	struct e1000_hw *hw = &adapter->hw;
- 	struct e1000_fw_version fw;
--	char *lbuf;
- 
- 	igb_get_fw_version(hw, &fw);
- 
-@@ -3077,34 +3076,36 @@ void igb_set_fw_version(struct igb_adapter *adapter)
- 	case e1000_i210:
- 	case e1000_i211:
- 		if (!(igb_get_flash_presence_i210(hw))) {
--			lbuf = kasprintf(GFP_KERNEL, "%2d.%2d-%d",
--					 fw.invm_major, fw.invm_minor,
--					 fw.invm_img_type);
-+			snprintf(adapter->fw_version,
-+				 sizeof(adapter->fw_version),
-+				 "%2d.%2d-%d",
-+				 fw.invm_major, fw.invm_minor,
-+				 fw.invm_img_type);
- 			break;
- 		}
- 		fallthrough;
- 	default:
- 		/* if option rom is valid, display its version too */
- 		if (fw.or_valid) {
--			lbuf = kasprintf(GFP_KERNEL, "%d.%d, 0x%08x, %d.%d.%d",
--					 fw.eep_major, fw.eep_minor,
--					 fw.etrack_id, fw.or_major, fw.or_build,
--					 fw.or_patch);
-+			snprintf(adapter->fw_version,
-+				 sizeof(adapter->fw_version),
-+				 "%d.%d, 0x%08x, %d.%d.%d",
-+				 fw.eep_major, fw.eep_minor, fw.etrack_id,
-+				 fw.or_major, fw.or_build, fw.or_patch);
- 		/* no option rom */
- 		} else if (fw.etrack_id != 0X0000) {
--			lbuf = kasprintf(GFP_KERNEL, "%d.%d, 0x%08x",
--					 fw.eep_major, fw.eep_minor,
--					 fw.etrack_id);
-+			snprintf(adapter->fw_version,
-+				 sizeof(adapter->fw_version),
-+				 "%d.%d, 0x%08x",
-+				 fw.eep_major, fw.eep_minor, fw.etrack_id);
- 		} else {
--			lbuf = kasprintf(GFP_KERNEL, "%d.%d.%d", fw.eep_major,
--					 fw.eep_minor, fw.eep_build);
-+			snprintf(adapter->fw_version,
-+				 sizeof(adapter->fw_version),
-+				 "%d.%d.%d",
-+				 fw.eep_major, fw.eep_minor, fw.eep_build);
- 		}
- 		break;
- 	}
--
--	/* the truncate happens here if it doesn't fit */
--	strscpy(adapter->fw_version, lbuf, sizeof(adapter->fw_version));
--	kfree(lbuf);
- }
- 
- /**
 -- 
-2.39.2
+2.31.1
 
