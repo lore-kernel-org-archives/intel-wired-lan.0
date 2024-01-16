@@ -1,99 +1,84 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E8302C47077
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 16 Jan 2024 16:16:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DBB97C47077
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 16 Jan 2024 19:46:01 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 671C161183;
-	Tue, 16 Jan 2024 16:16:12 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 671C161183
+	by smtp2.osuosl.org (Postfix) with ESMTP id 735B942F4D;
+	Tue, 16 Jan 2024 19:46:01 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 735B942F4D
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1705421772;
-	bh=ArVkJJlNDO0F2DIfmT0Sy+zs4DhujdMQiBeMUoROCgA=;
-	h=References:In-Reply-To:From:Date:To:Subject:List-Id:
+	s=default; t=1705434361;
+	bh=ZyiZ5S8q2BUnRYxD4nXBjDivk9EXuCOs0Joq+4YHCPI=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=GGerv0LYZvshyH8iTCDqqczERruMmci23LOIzgb10N2jl2Jt10KGTImjdK2REKEYg
-	 Eq9/NnZgoy7DqOcAvrhE6y0koz8rVxEe3a0s55mQd1aDFXlvl3i9yNzKjgF65GmU/R
-	 AHkuQFPLoJhJPAFTLusLf4CGGfpJ+MkvLuc2krzVgEjwhrlmJZKdeD5jHVNJn62IwU
-	 jkEChGDL5MN1lRdHnDjGp2rV0SKs7on1TNfm4SCofq+yfTqCdLQEZiZ+XcMICy76B6
-	 /4veC8BYI15F6achRU5R6GRwb09awqhkoRIjAvxYjBWn0ORpcsbL3l6jcq+kuG4x9S
-	 Q0KsdO2XIyRkw==
+	b=JkRRHnz+MHxw2g7R79CZwOmbIHcOxnlwi/aM3HaBD9GptApZXjv2z/mCItm627Kva
+	 FdzwmkB69MuYWLLcN4c/KYG291jW3uDJUPDtaGdmxrgevPsUzd2XQrz4xhC/0WIEru
+	 iiuYbPSh5vKhuZ5+xxYeNnkSjceuSS7RnRG37vJcxpRX1LraYaOzHOeJdj2CyfW83a
+	 vUZTdAjosqe2JPhacXlZHjaTcP8PAl6ZUfb/LWuuWB3psww1x4udd3xk29YR5Apgdy
+	 UtDgEQcnhK+OETY92DMPYnpC/k4mmBvto8pFPM01aRDyKmGcUOtIa1pLx/47tepJFv
+	 9hZZLUD7gKrEg==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id fk7vmuWQSH55; Tue, 16 Jan 2024 16:16:10 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id GsB5aoiUAFzu; Tue, 16 Jan 2024 19:46:00 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id C621961168;
-	Tue, 16 Jan 2024 16:16:09 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C621961168
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 410461BF358
- for <intel-wired-lan@lists.osuosl.org>; Sun, 14 Jan 2024 12:06:10 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 1D62340629;
+	Tue, 16 Jan 2024 19:46:00 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 1D62340629
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 9232D1BF846
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 16 Jan 2024 19:45:58 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 1BA6B60AEE
- for <intel-wired-lan@lists.osuosl.org>; Sun, 14 Jan 2024 12:06:10 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 1BA6B60AEE
+ by smtp4.osuosl.org (Postfix) with ESMTP id 66EBD418EF
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 16 Jan 2024 19:45:58 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 66EBD418EF
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id gsdQZfDR2CsH for <intel-wired-lan@lists.osuosl.org>;
- Sun, 14 Jan 2024 12:06:08 +0000 (UTC)
-Received: from mail-lj1-x22d.google.com (mail-lj1-x22d.google.com
- [IPv6:2a00:1450:4864:20::22d])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 8E18F60AEC
- for <intel-wired-lan@lists.osuosl.org>; Sun, 14 Jan 2024 12:06:07 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8E18F60AEC
-Received: by mail-lj1-x22d.google.com with SMTP id
- 38308e7fff4ca-2ccbc328744so94616921fa.3
- for <intel-wired-lan@lists.osuosl.org>; Sun, 14 Jan 2024 04:06:07 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20230601; t=1705233965; x=1705838765;
- h=content-transfer-encoding:cc:to:subject:message-id:date:from
- :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
- :subject:date:message-id:reply-to;
- bh=ArVkJJlNDO0F2DIfmT0Sy+zs4DhujdMQiBeMUoROCgA=;
- b=EvgZExvOR2/VfuozjK6GjYmDHeN/lxZ8JTs4G+Q1nSTOAGN0nJBm8wmu7WJaiHUcWb
- IOQHxwsVCLBEmpB0pyhOWjW5xg39xIkfpoCwjbNOddTV3X1xd0TgPLtuxxb84o3BA3yH
- wwmAZIzOU7VoAqzr6azZnZpfzYsn9roLu0d7m+8IjqCIy7g5bgRVNcbfkW13Vf4bUJeC
- v74idx+3cC0ZcHz2BE0rUeLGNVhKZGn6rBkoyYljMXVQwOc5E7uElEwD+QzvWnRv3yVZ
- 6HrIrqtVAGhxUSmQg+LW+Jdobf2gWBfiPQAxbqXGKYU3xutdhxk/U0qoekIA8FCFUwDw
- /Z7g==
-X-Gm-Message-State: AOJu0YyaABFhekdc9bdT7uxAPkNjrXLHux0d+emgOIPipKwkpdPsCFKF
- 5r4psnuiECh3bPOws3kwNi0iuR6dSzthKoy63Qpe0rEE92FR
-X-Google-Smtp-Source: AGHT+IFeP6TMKlC5EDAfD3/H9mE2dri5QbT2KNEkepgczVkz7a7u+KOTlN/1i/UVrXzdMEoC2c52JC/r35YlMr0lIc0=
-X-Received: by 2002:a2e:93c3:0:b0:2cc:2678:6d35 with SMTP id
- p3-20020a2e93c3000000b002cc26786d35mr1759501ljh.6.1705233964910; Sun, 14 Jan
- 2024 04:06:04 -0800 (PST)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id H3rVkETgSRs5 for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 16 Jan 2024 19:45:57 +0000 (UTC)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 7ECEA418BE
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 16 Jan 2024 19:45:57 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 7ECEA418BE
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+ by dfw.source.kernel.org (Postfix) with ESMTP id 5DD5961366;
+ Tue, 16 Jan 2024 19:45:56 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 78697C433C7;
+ Tue, 16 Jan 2024 19:45:54 +0000 (UTC)
+From: Sasha Levin <sashal@kernel.org>
+To: linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org
+Date: Tue, 16 Jan 2024 14:39:41 -0500
+Message-ID: <20240116194225.250921-75-sashal@kernel.org>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20240116194225.250921-1-sashal@kernel.org>
+References: <20240116194225.250921-1-sashal@kernel.org>
 MIME-Version: 1.0
-References: <CAK8fFZ7Xi3=1HFY400firmpRWzHDPsi90cUU5bjOkF00KNZWeA@mail.gmail.com>
- <bce78734-d359-499b-9693-05549e6a73a4@intel.com>
-In-Reply-To: <bce78734-d359-499b-9693-05549e6a73a4@intel.com>
-From: Igor Raits <igor@gooddata.com>
-Date: Sun, 14 Jan 2024 13:05:52 +0100
-Message-ID: <CA+9S74j7LKDJ5U7RDdkUW3UPch9P9U47AyZcbpvQfHGHzW14Qg@mail.gmail.com>
-To: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Mailman-Approved-At: Tue, 16 Jan 2024 16:16:07 +0000
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gooddata.com; s=google; t=1705233965; x=1705838765; darn=lists.osuosl.org;
- h=content-transfer-encoding:cc:to:subject:message-id:date:from
- :in-reply-to:references:mime-version:from:to:cc:subject:date
- :message-id:reply-to;
- bh=ArVkJJlNDO0F2DIfmT0Sy+zs4DhujdMQiBeMUoROCgA=;
- b=FFwa9RhAAh8ym5j8cAh+xNHTXeI14XP3iSN1mbp4AAukXbQDZNv8w1SRezTajWlKkB
- 9TuvVfkrIfXfwqEW5sQv2ri6xPWz3eZsCrMmB2IQAVKEzsi+v3yrpNDNfHTv8ixhpfIR
- T/0mRSSsGTWp34vgLbhCxt/2Co/hSCUi+dUlU=
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (1024-bit key) header.d=gooddata.com header.i=@gooddata.com
- header.a=rsa-sha256 header.s=google header.b=FFwa9RhA
-Subject: Re: [Intel-wired-lan] [REGRESSION] Intel ICE Ethernet driver in
- linux >= 6.6.9 triggers extra memory consumption and cause continous
- kswapd* usage and continuous swapping
+X-stable: review
+X-Patchwork-Hint: Ignore
+X-stable-base: Linux 6.7
+Content-Transfer-Encoding: 8bit
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=kernel.org; s=k20201202; t=1705434356;
+ bh=fb+rSqackNrEamRiTGHIZnRlCBOWduArWkzZg/Qv0aI=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=f0pqcxyEnkxqY2l0GAHkFJfYSW1qBwn/09a8B2mlkMYK9MhenQTVvBK+8LrPf8JeV
+ hZgMmBirUK1k0X5ACfeXLmvYI33TGwK4ESJY1Gp1M4s4ifgOfTlIkNd+xq1Zh8Cqo3
+ tE/a/L7H9i1TyW4TZlOvCeJp1R9S3S3juEDvg/2S0K/VXXDnSU3SVvp8B/NGLRQZtr
+ AqGU7iyyEF60bZspfDXu9U5ZgcYV3roGemzpBl1GKfNRAGSnvfg9g8ig4dU4reJxjZ
+ fun1RiUYyehWu305Mt/QCibpvNzL5SHIlKL4yHICtKfUsm0DwY8rDxkL47cL2qv7Ha
+ bMbokpyYHYNEA==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20201202 header.b=f0pqcxyE
+Subject: [Intel-wired-lan] [PATCH AUTOSEL 6.7 075/108] ice: fix
+ ICE_AQ_VSI_Q_OPT_RSS_* register values
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,47 +91,108 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: intel-wired-lan@lists.osuosl.org,
- Jaroslav Pulchart <jaroslav.pulchart@gooddata.com>,
- Tony Nguyen <anthony.l.nguyen@intel.com>,
- Daniel Secik <daniel.secik@gooddata.com>,
- Dave Ertman <david.m.ertman@intel.com>
+Cc: Sasha Levin <sashal@kernel.org>,
+ Wojciech Drewek <wojciech.drewek@intel.com>, intel-wired-lan@lists.osuosl.org,
+ Ahmed Zaki <ahmed.zaki@intel.com>,
+ Jesse Brandeburg <jesse.brandeburg@intel.com>, edumazet@google.com,
+ anthony.l.nguyen@intel.com, netdev@vger.kernel.org,
+ Jakub Kicinski <kuba@kernel.org>, pabeni@redhat.com, davem@davemloft.net
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Hi Jesse,
+From: Ahmed Zaki <ahmed.zaki@intel.com>
 
-On Wed, Jan 10, 2024 at 7:08=E2=80=AFPM Jesse Brandeburg
-<jesse.brandeburg@intel.com> wrote:
->
-> Also, I'm curious if your problem goes away if you change / reduce the
-> number of queues per port. use ethtool -L eth0 combined 4 ?
+[ Upstream commit 20f73b60bb5c276cee9b1a530f100c677bc74af8 ]
 
-I've tried a similar thing out on our servers and it does reclaim a
-lot of memory.
+Fix the values of the ICE_AQ_VSI_Q_OPT_RSS_* registers. Shifting is
+already done when the values are used, no need to double shift. Bug was
+not discovered earlier since only ICE_AQ_VSI_Q_OPT_RSS_TPLZ (Zero) is
+currently used.
 
-# nodestats | awk '/MemFree:/ { for (i =3D 2; i <=3D NF; i++) total +=3D $i
-} END { print "Total MemFree: " total " MiB" }'
-Total MemFree: 53934 MiB
-# for i in p3p2 em2; do ethtool -L $i combined 2; done # <--- these
-are the ports we don't use at all (they are DOWN, not part of any LAG,
-etc.)
-# nodestats | awk '/MemFree:/ { for (i =3D 2; i <=3D NF; i++) total +=3D $i
-} END { print "Total MemFree: " total " MiB" }'
-Total MemFree: 55279 MiB
-# echo "Hey, here is my 1.4GiB"
-# for i in p3p1 em1; do ethtool -L $i combined 2; done # <--- these
-are the ports that we do use
-# nodestats | awk '/MemFree:/ { for (i =3D 2; i <=3D NF; i++) total +=3D $i
-} END { print "Total MemFree: " total " MiB" }'
-Total MemFree: 58371 MiB
-# echo "Hey, here is another 3GiB"
+Also, rename ICE_AQ_VSI_Q_OPT_RSS_XXX to ICE_AQ_VSI_Q_OPT_RSS_HASH_XXX
+for consistency.
 
-P.S> I've done these tests on a slightly different server that has
-more memory (hence more HPs and different amounts of memory per NUMA)
-but we have the same problem on both setups.
+Co-developed-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Reviewed-by: Wojciech Drewek <wojciech.drewek@intel.com>
+Signed-off-by: Ahmed Zaki <ahmed.zaki@intel.com>
+Link: https://lore.kernel.org/r/20231213003321.605376-5-ahmed.zaki@intel.com
+Signed-off-by: Jakub Kicinski <kuba@kernel.org>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/net/ethernet/intel/ice/ice_adminq_cmd.h |  8 ++++----
+ drivers/net/ethernet/intel/ice/ice_lib.c        |  4 ++--
+ drivers/net/ethernet/intel/ice/ice_virtchnl.c   | 12 +++++-------
+ 3 files changed, 11 insertions(+), 13 deletions(-)
 
-Maybe an important point, we set irq affinity to one specific NUMA as
-that was increasing performance when we did tests so maybe for us the
-better setup would be to set up combined 6 for ports that we use and
-combined 2 for ports that we do not use.
+diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+index fbd5d92182d3..812a35d79b95 100644
+--- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+@@ -491,10 +491,10 @@ struct ice_aqc_vsi_props {
+ #define ICE_AQ_VSI_Q_OPT_RSS_GBL_LUT_M		(0xF << ICE_AQ_VSI_Q_OPT_RSS_GBL_LUT_S)
+ #define ICE_AQ_VSI_Q_OPT_RSS_HASH_S		6
+ #define ICE_AQ_VSI_Q_OPT_RSS_HASH_M		(0x3 << ICE_AQ_VSI_Q_OPT_RSS_HASH_S)
+-#define ICE_AQ_VSI_Q_OPT_RSS_TPLZ		(0x0 << ICE_AQ_VSI_Q_OPT_RSS_HASH_S)
+-#define ICE_AQ_VSI_Q_OPT_RSS_SYM_TPLZ		(0x1 << ICE_AQ_VSI_Q_OPT_RSS_HASH_S)
+-#define ICE_AQ_VSI_Q_OPT_RSS_XOR		(0x2 << ICE_AQ_VSI_Q_OPT_RSS_HASH_S)
+-#define ICE_AQ_VSI_Q_OPT_RSS_JHASH		(0x3 << ICE_AQ_VSI_Q_OPT_RSS_HASH_S)
++#define ICE_AQ_VSI_Q_OPT_RSS_HASH_TPLZ		0x0U
++#define ICE_AQ_VSI_Q_OPT_RSS_HASH_SYM_TPLZ	0x1U
++#define ICE_AQ_VSI_Q_OPT_RSS_HASH_XOR		0x2U
++#define ICE_AQ_VSI_Q_OPT_RSS_HASH_JHASH		0x3U
+ 	u8 q_opt_tc;
+ #define ICE_AQ_VSI_Q_OPT_TC_OVR_S		0
+ #define ICE_AQ_VSI_Q_OPT_TC_OVR_M		(0x1F << ICE_AQ_VSI_Q_OPT_TC_OVR_S)
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index 1bad6e17f9be..24f95880a2ed 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -1186,12 +1186,12 @@ static void ice_set_rss_vsi_ctx(struct ice_vsi_ctx *ctxt, struct ice_vsi *vsi)
+ 	case ICE_VSI_PF:
+ 		/* PF VSI will inherit RSS instance of PF */
+ 		lut_type = ICE_AQ_VSI_Q_OPT_RSS_LUT_PF;
+-		hash_type = ICE_AQ_VSI_Q_OPT_RSS_TPLZ;
++		hash_type = ICE_AQ_VSI_Q_OPT_RSS_HASH_TPLZ;
+ 		break;
+ 	case ICE_VSI_VF:
+ 		/* VF VSI will gets a small RSS table which is a VSI LUT type */
+ 		lut_type = ICE_AQ_VSI_Q_OPT_RSS_LUT_VSI;
+-		hash_type = ICE_AQ_VSI_Q_OPT_RSS_TPLZ;
++		hash_type = ICE_AQ_VSI_Q_OPT_RSS_HASH_TPLZ;
+ 		break;
+ 	default:
+ 		dev_dbg(dev, "Unsupported VSI type %s\n",
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl.c b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
+index 1c7b4ded948b..8872f7a4f432 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
+@@ -823,8 +823,8 @@ static int ice_vc_handle_rss_cfg(struct ice_vf *vf, u8 *msg, bool add)
+ 		int status;
+ 
+ 		lut_type = ICE_AQ_VSI_Q_OPT_RSS_LUT_VSI;
+-		hash_type = add ? ICE_AQ_VSI_Q_OPT_RSS_XOR :
+-				ICE_AQ_VSI_Q_OPT_RSS_TPLZ;
++		hash_type = add ? ICE_AQ_VSI_Q_OPT_RSS_HASH_XOR :
++				ICE_AQ_VSI_Q_OPT_RSS_HASH_TPLZ;
+ 
+ 		ctx = kzalloc(sizeof(*ctx), GFP_KERNEL);
+ 		if (!ctx) {
+@@ -832,11 +832,9 @@ static int ice_vc_handle_rss_cfg(struct ice_vf *vf, u8 *msg, bool add)
+ 			goto error_param;
+ 		}
+ 
+-		ctx->info.q_opt_rss = ((lut_type <<
+-					ICE_AQ_VSI_Q_OPT_RSS_LUT_S) &
+-				       ICE_AQ_VSI_Q_OPT_RSS_LUT_M) |
+-				       (hash_type &
+-					ICE_AQ_VSI_Q_OPT_RSS_HASH_M);
++		ctx->info.q_opt_rss =
++			FIELD_PREP(ICE_AQ_VSI_Q_OPT_RSS_LUT_M, lut_type) |
++			FIELD_PREP(ICE_AQ_VSI_Q_OPT_RSS_HASH_M, hash_type);
+ 
+ 		/* Preserve existing queueing option setting */
+ 		ctx->info.q_opt_rss |= (vsi->info.q_opt_rss &
+-- 
+2.43.0
+
