@@ -4,80 +4,80 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 26776C47DAF
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 16 Jan 2024 19:57:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 99407C47077
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 16 Jan 2024 20:00:20 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id B3B7440382;
-	Tue, 16 Jan 2024 19:57:47 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B3B7440382
+	by smtp2.osuosl.org (Postfix) with ESMTP id 5513D4352D;
+	Tue, 16 Jan 2024 20:00:20 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 5513D4352D
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1705435067;
-	bh=R7cD969KfBkZA787xolt119GWX/h4vfCpgkl23sheEA=;
+	s=default; t=1705435220;
+	bh=HRLxZtA0RBTOFkRdpMmkiuCzQAibDlgUspYgrA5I60Q=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=Qse0Lk1LKw+uR98CHGCq3ydoy9sXH4MeCKB62OXejRHlBAvaOSLyaXIKb4AABHreZ
-	 UhRhbX6uVG5W39Ddi6VPhJ+38SyhKGPoJe/xqi9rT3juwGehRr5NsqKU3WpuVcp8UL
-	 1wy/llb1yLBPGaD6U4E7j/HYJMmNk0sxyYQTNEM6eznYdnGRbVHsjQSkUSLyBFENEv
-	 4y6FFYqo2uLix3JyZ1iZOwOWo8k8+gyCK9L+e4GsLv8DEcmQiXuLj9TRW+va63KoVx
-	 JYAoCP7pp7u+H5cDbB41Fg06Ct/BQcXnfIpKqB28ezGv4zP82pzT1545SrddXJixcq
-	 k++amZ1sqai8A==
+	b=fDha/Ude3K0CFEaMQmoM3v7l9p87VAthJ7iy3ihfcDllOlbDJXNLff5H1oAZT7y0S
+	 1XL+qngHeYawlioC74u/EWmMQYhbI64CDApK+iarW0XNDdjUFKGAfVFtzYKDIaPWOs
+	 1U+qonxNkO9vDBNBk0OERNSsdaKAkqEdYX5dMqjs0Ywn1Kc1kof/8D/rBJMxsEu1jp
+	 6nT2IkliEPv50JkjYNjpp9X7UCpnjbKhj3wMXL3UUbQlX6I1oAYHFrsmEH4xm4Y7Cy
+	 5aiO+tkgMFHaEQd+WgsCTqy8U5qjb03Ax8qSNpNtWxFdFz384Z2ka70/1LwSwivWQO
+	 NMQTbdtwL8tAQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 3c94_2iTEKLJ; Tue, 16 Jan 2024 19:57:45 +0000 (UTC)
+	with ESMTP id U4_LMcIAJJ5P; Tue, 16 Jan 2024 20:00:19 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 3FD3C40640;
-	Tue, 16 Jan 2024 19:57:45 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 3FD3C40640
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 77BD51BF846
- for <intel-wired-lan@lists.osuosl.org>; Tue, 16 Jan 2024 19:57:44 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 4B29840382;
+	Tue, 16 Jan 2024 20:00:19 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 4B29840382
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 597BC1BF846
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 16 Jan 2024 20:00:17 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 4A60D831EF
- for <intel-wired-lan@lists.osuosl.org>; Tue, 16 Jan 2024 19:57:44 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4A60D831EF
+ by smtp3.osuosl.org (Postfix) with ESMTP id 41F7961184
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 16 Jan 2024 20:00:14 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 41F7961184
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id lEQ-FHO4qfhs for <intel-wired-lan@lists.osuosl.org>;
- Tue, 16 Jan 2024 19:57:43 +0000 (UTC)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 88B8B83155
- for <intel-wired-lan@lists.osuosl.org>; Tue, 16 Jan 2024 19:57:43 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 88B8B83155
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id jlnVilqAXtqY for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 16 Jan 2024 20:00:13 +0000 (UTC)
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id F287061182
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 16 Jan 2024 20:00:12 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org F287061182
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by dfw.source.kernel.org (Postfix) with ESMTP id C704C60B51;
- Tue, 16 Jan 2024 19:57:42 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C7AACC433F1;
- Tue, 16 Jan 2024 19:57:40 +0000 (UTC)
+ by ams.source.kernel.org (Postfix) with ESMTP id CDDFEB80E53;
+ Tue, 16 Jan 2024 20:00:10 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2F5F7C433F1;
+ Tue, 16 Jan 2024 20:00:08 +0000 (UTC)
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Date: Tue, 16 Jan 2024 14:54:05 -0500
-Message-ID: <20240116195511.255854-66-sashal@kernel.org>
+Date: Tue, 16 Jan 2024 14:57:49 -0500
+Message-ID: <20240116195834.257313-46-sashal@kernel.org>
 X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20240116195511.255854-1-sashal@kernel.org>
-References: <20240116195511.255854-1-sashal@kernel.org>
+In-Reply-To: <20240116195834.257313-1-sashal@kernel.org>
+References: <20240116195834.257313-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
-X-stable-base: Linux 6.1.73
+X-stable-base: Linux 5.15.147
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1705435062;
- bh=puRV9+d/Db0XBkDKUHK/iRtAtFxjI+BZTX6e20CdEhI=;
+ d=kernel.org; s=k20201202; t=1705435210;
+ bh=YEKxVFb8kTUR6f6Mai4ASANniRxV5+Wp2hJcmh3ljQY=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=dudsoOwH5E+JCmjiT1mnj7sBPUkx6d3VpEw7A9YM07ibzWicfUTWWdmB17iRwLVLg
- ssVu3W2nQWUqEbUQc5p+hw8mzgX3xwKZawHhWOt3RIWi5CkN/WKGxtX9GT9Jmdt4HA
- RYIhv5y0nqZwKx/xwlCQdXkJ25IsLCwdLusWXn7/phlsfrLgswMpJWa+AFBzZSwRU8
- gxXv4mL8nU3MBKBDd7X7BXU6DpNH7o6CHE25IAG6rXGUfJKdprHyQBaUSUQ6huRhTk
- gk0YhjR+8AW2AxyU8+6R097kjo/M4K8P+2UqUwNTm10fY/1qtlgpX/OYBnE/qFpjP9
- nGFHC3vs0bxDg==
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ b=FaI9+lOmQOOapU82er92Wmxrrohx/95eznMnLi0ZSDmjmQhGjzcvkOhYUXtFfUA2x
+ YXtDgq98l7WwyQr9uKkxvnc2AvG9farCG9u+OqDi5Y++z8PaSQwDDxMtj1uu4R809k
+ G5EZYQHpM65v88KngAo1wWCabsAdY9p3LKUDhTAch95Fh1qJGKRXwm30lF+Kmiolnc
+ imoPnAJm+CnAq8qzVLYbZl2Eg4msYOXrRXQAG7btS+EXJAUTeeHowvyiRicPJ1+zhu
+ pq9H/R2b1MmyJPRjdElrf0x1JtPjLnvP/eUxR9DiZYuIIvFBelbbE7xcV7rKkGfeTy
+ pxnte2VET+88Q==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=dudsoOwH
-Subject: [Intel-wired-lan] [PATCH AUTOSEL 6.1 66/68] i40e: Fix VF disable
+ header.a=rsa-sha256 header.s=k20201202 header.b=FaI9+lOm
+Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.15 46/47] i40e: Fix VF disable
  behavior to block all traffic
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
@@ -132,7 +132,7 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  2 files changed, 33 insertions(+)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index cb925baf72ce..21d6deb23f54 100644
+index 7950b18cb7a4..17109789b12a 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
 @@ -2577,6 +2577,14 @@ static int i40e_vc_enable_queues_msg(struct i40e_vf *vf, u8 *msg)
@@ -150,7 +150,7 @@ index cb925baf72ce..21d6deb23f54 100644
  	if (!test_bit(I40E_VF_STATE_ACTIVE, &vf->vf_states)) {
  		aq_ret = I40E_ERR_PARAM;
  		goto error_param;
-@@ -4630,9 +4638,12 @@ int i40e_ndo_set_vf_link_state(struct net_device *netdev, int vf_id, int link)
+@@ -4604,9 +4612,12 @@ int i40e_ndo_set_vf_link_state(struct net_device *netdev, int vf_id, int link)
  	struct i40e_link_status *ls = &pf->hw.phy.link_info;
  	struct virtchnl_pf_event pfe;
  	struct i40e_hw *hw = &pf->hw;
@@ -163,7 +163,7 @@ index cb925baf72ce..21d6deb23f54 100644
  
  	if (test_and_set_bit(__I40E_VIRTCHNL_OP_PENDING, pf->state)) {
  		dev_warn(&pf->pdev->dev, "Unable to configure VFs, other operation is pending.\n");
-@@ -4655,17 +4666,38 @@ int i40e_ndo_set_vf_link_state(struct net_device *netdev, int vf_id, int link)
+@@ -4629,17 +4640,38 @@ int i40e_ndo_set_vf_link_state(struct net_device *netdev, int vf_id, int link)
  	switch (link) {
  	case IFLA_VF_LINK_STATE_AUTO:
  		vf->link_forced = false;
