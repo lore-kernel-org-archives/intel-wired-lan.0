@@ -4,74 +4,78 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A3FD7C4725D
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 19 Jan 2024 11:06:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F2C55C4725D
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 19 Jan 2024 14:49:57 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 07BCF42C6D;
-	Fri, 19 Jan 2024 11:06:25 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 07BCF42C6D
+	by smtp4.osuosl.org (Postfix) with ESMTP id 92824421C4;
+	Fri, 19 Jan 2024 14:49:57 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 92824421C4
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1705662385;
-	bh=mqGE8/V8zgG3PeWrPUc6QzHMY48GdktqfSRMTBZU6aM=;
-	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
+	s=default; t=1705675797;
+	bh=/Evk07pOXfDxcBaHw9qxWdw/BUJxVtQ6PwywBrP5GsY=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Reply-To:From;
-	b=Et0DHAHj0Pzx903PqoT7keXJN3N2T9gVvYHDngvfCQqnBNT3I706cXGLvQvIXVZYA
-	 b8RrGAPT4dPiwF6jCiia8Bcs1gVo4WpWU7e8b7IVKecVa5P3nzbyqwfWyzVo2y+yMN
-	 5TugsTUeI39yJ+q034C/1MmcSusmMvtk2T4kFaTOXIm61TDGiDexHNK3CmwlKfV6uW
-	 YxNPYsjCgkHKP/ojClMp+GdgrvgvPBGVCWqBGsbPDxGpmdMK8qMClRMphqZ0F9i3LT
-	 vtIVZDwhpYuy7PTJLIqOuJc7H4AUfiJuyQ9Of6mWBGl2aPaTh9uJchmTbm3H4i/fSH
-	 gbhhv/GNWT3jA==
+	 Cc:From;
+	b=aEOd7AwHMmBooQwomUw0wjN8EB0kRW6nAxVNzlqaYCUbfD/+zN2f1v7t9KAmE5KfY
+	 a9fog+YW1lowdomxgKmaSitrUPSGs1+5yux/nyOXzRYPQy44nFPq666fX43ZM7wxUU
+	 YL3INUKZdntTC80Vwnzd4hoXPKYGA16PA+74BtnDgFw76IhUX6LCA43J597VCsp6y8
+	 FQjuYlQT0xmYnJQfzWjTQi0KbvCwfVielpHoES+mcf4REIFEHyJObpVHWKD9Nn6qNZ
+	 YgtUQkpIhiBiWUdDMPrF7obcblHiuiti3iVgXadh7H4+AZdeCL4QEw0TZYQpJI7RXR
+	 JNTiNWIW/YNJw==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id eCWSvDtqygGS; Fri, 19 Jan 2024 11:06:24 +0000 (UTC)
+	with ESMTP id l2HFifIue1Cf; Fri, 19 Jan 2024 14:49:57 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id F242042C77;
-	Fri, 19 Jan 2024 11:06:23 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org F242042C77
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 159621BF5A6
- for <intel-wired-lan@lists.osuosl.org>; Fri, 19 Jan 2024 11:06:23 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id CE951421D1;
+	Fri, 19 Jan 2024 14:49:56 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org CE951421D1
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 501481BF35A
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 19 Jan 2024 14:49:35 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id DD7E56F76F
- for <intel-wired-lan@lists.osuosl.org>; Fri, 19 Jan 2024 11:06:22 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org DD7E56F76F
+ by smtp4.osuosl.org (Postfix) with ESMTP id 26CFC4219D
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 19 Jan 2024 14:49:35 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 26CFC4219D
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id VFA0wgSTu_fg for <intel-wired-lan@lists.osuosl.org>;
- Fri, 19 Jan 2024 11:06:21 +0000 (UTC)
-X-Greylist: delayed 2584 seconds by postgrey-1.37 at util1.osuosl.org;
- Fri, 19 Jan 2024 11:06:21 UTC
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B1CDB60BA0
-Received: from wp530.webpack.hosteurope.de (wp530.webpack.hosteurope.de
- [80.237.130.52])
- by smtp3.osuosl.org (Postfix) with ESMTPS id B1CDB60BA0
- for <intel-wired-lan@lists.osuosl.org>; Fri, 19 Jan 2024 11:06:21 +0000 (UTC)
-Received: from [2a02:8108:8980:2478:8cde:aa2c:f324:937e]; authenticated
- by wp530.webpack.hosteurope.de running ExIM with esmtpsa
- (TLS1.3:ECDHE_RSA_AES_128_GCM_SHA256:128)
- id 1rQm1q-0005M4-8D; Fri, 19 Jan 2024 11:23:14 +0100
-Message-ID: <0489bb44-c21d-4a90-b7e3-300b2313dc3a@leemhuis.info>
-Date: Fri, 19 Jan 2024 11:23:13 +0100
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id I2o1ejsN08hm for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 19 Jan 2024 14:49:33 +0000 (UTC)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org
+ [IPv6:2604:1380:4641:c500::1])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 1D0624218B
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 19 Jan 2024 14:49:32 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1D0624218B
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+ by dfw.source.kernel.org (Postfix) with ESMTP id 031ED619E2;
+ Fri, 19 Jan 2024 14:49:32 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8FC55C433F1;
+ Fri, 19 Jan 2024 14:49:29 +0000 (UTC)
+Date: Fri, 19 Jan 2024 14:49:26 +0000
+From: Simon Horman <horms@kernel.org>
+To: Suresh Kumar <suresh2514@gmail.com>
+Message-ID: <20240119144926.GA89683@kernel.org>
+References: <20240119131652.8050-1-suresh2514@gmail.com>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Content-Language: en-US, de-DE
-To: intel-wired-lan@lists.osuosl.org,
- Linux kernel regressions list <regressions@lists.linux.dev>
-References: <CAK8fFZ7Xi3=1HFY400firmpRWzHDPsi90cUU5bjOkF00KNZWeA@mail.gmail.com>
-From: "Linux regression tracking (Thorsten Leemhuis)"
- <regressions@leemhuis.info>
-In-Reply-To: <CAK8fFZ7Xi3=1HFY400firmpRWzHDPsi90cUU5bjOkF00KNZWeA@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-bounce-key: webpack.hosteurope.de; regressions@leemhuis.info; 1705662381;
- 43607038; 
-X-HE-SMSGID: 1rQm1q-0005M4-8D
-Subject: Re: [Intel-wired-lan] [REGRESSION] Intel ICE Ethernet driver in
- linux >= 6.6.9 triggers extra memory consumption and cause continous
- kswapd* usage and continuous swapping
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240119131652.8050-1-suresh2514@gmail.com>
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=kernel.org; s=k20201202; t=1705675771;
+ bh=hCsjv91Yj4g0mu9TcH2Xv3lssnwsCBwDQBHzNUt9fjU=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=CcUDEGoOFlcLo+0ZJN8vUz0TsUYBvRn2MSjEw9MRuxGor91adf5VbKu9ojYSgtNO4
+ kId5csymMPuYgpMxvigwacpP1EHfXn+XdukEQs+mkq0FIXTlFiOO1vs70PVVgY6sBP
+ GGmRWFZXPvqkdoMGzh2Zq02GXHL+G8ZRV6Zyv39U9YPCxOzr+WKZJTKOcvrkds3kOm
+ kwIMCj6z2iAaOIoYCCyryl9oS6K8Xbk/UCmSauqVHq1SHavRCY17ETnyjN6xVAB1nB
+ HPESE3H8wd6ihIoJrc7/u+BqXZSA5mue2NeWPiEE087Z13Oa1ZwvXoRYSi8mLwnekj
+ +5iwZ2vt9T5Sw==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20201202 header.b=CcUDEGoO
+Subject: Re: [Intel-wired-lan] [PATCH] i40e: print correct hw max rss count
+ in kernel ring buffer
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,36 +88,61 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Reply-To: Linux regressions mailing list <regressions@lists.linux.dev>
+Cc: intel-wired-lan@lists.osuosl.org, jesse.brandeburg@intel.com,
+ linux-kernel@vger.kernel.org, edumazet@google.com, anthony.l.nguyen@intel.com,
+ netdev@vger.kernel.org, kuba@kernel.org, pabeni@redhat.com,
+ davem@davemloft.net
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-[TLDR: I'm adding this report to the list of tracked Linux kernel
-regressions; the text you find below is based on a few templates
-paragraphs you might have encountered already in similar form.
-See link in footer if these mails annoy you.]
-
-On 08.01.24 11:49, Jaroslav Pulchart wrote:
+On Fri, Jan 19, 2024 at 06:46:52PM +0530, Suresh Kumar wrote:
+> The value printed for  "HW max RSS count" is wrong in kernel dmesg for i40e
+> NICs:
 > 
-> I would like to report a regression triggered by recent change in
-> Intel ICE Ethernet driver in the 6.6.9 linux kernel. The problem was
-> bisected and the regression is triggered by
-> fc4d6d136d42fab207b3ce20a8ebfd61a13f931f "ice: alter feature support
-> check for SRIOV and LAG" commit and originally reported as part of
-> https://lore.kernel.org/linux-mm/CAK8fFZ4DY+GtBA40Pm7Nn5xCHy+51w3sfxPqkqpqakSXYyX+Wg@mail.gmail.com/T/#m5217c62beb03b3bc75d7dd4b1d9bab64a3e68826
-> thread.
+>   ... i40e 0000:63:00.0: User requested queue count/HW max RSS count: 48/64
+> 
+> whereas  ethtool reports the correct value from "vsi->num_queue_pairs"
+> 
+> Channel parameters for eno33:
+> Pre-set maximums:
+> RX:     n/a
+> TX:     n/a
+> Other:      1
+> Combined:   96
+> Current hardware settings:
+> RX:     n/a
+> TX:     n/a
+> Other:      1
+> Combined:   96  <-------
+> 
+> and is misleading.
+> 
+> This value is printed from 'pf->rss_size_max' which seems hardcoded.
+> 
+> Below commit also removed this 64 limit:
+> 
+> Commit e56afa599609d3afe8b0ce24b553ab95e9782502
+> Author: Amritha Nambiar <amritha.nambiar@intel.com>
+> Date:   Wed Nov 8 16:38:43 2017 -0800
+> 
+>     i40e: Remove limit of 64 max queues per channel
 
-Thanks for the report. To be sure the issue doesn't fall through the
-cracks unnoticed, I'm adding it to regzbot, the Linux kernel regression
-tracking bot:
+Hi Suresh,
 
-#regzbot ^introduced 4d50fcdc2476ee
-#regzbot title net: ice: extra memory consumption and cause continous
-kswapd* usage and continuous swapping
-#regzbot ignore-activity
+I think it would be more normal to cite this commit something like this:
 
-Ciao, Thorsten (wearing his 'the Linux kernel's regression tracker' hat)
---
-Everything you wanna know about Linux kernel regression tracking:
-https://linux-regtracking.leemhuis.info/about/#tldr
-That page also explains what to do if mails like this annoy you.
+The limit of 64 was removed by
+commit e56afa599609 ("i40e: Remove limit of 64 max queues per channel")
+
+Also, it's not clear to me if this should be considered a fix or not.
+If not, which I lean towards, then it should probably be targeted
+at iwl-next.
+
+	Subject: [PATCH iwl-next] ...
+
+If it is a fix, then it should have a Fixes tag and probably
+be targeted at iwl.
+
+	Subject: [PATCH iwl] ...
+
+...
