@@ -1,81 +1,92 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1806AC4725D
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 22 Jan 2024 11:07:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4A95CC4725D
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 22 Jan 2024 12:36:35 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id AA80B416B1;
-	Mon, 22 Jan 2024 11:07:31 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org AA80B416B1
+	by smtp1.osuosl.org (Postfix) with ESMTP id 84D0182532;
+	Mon, 22 Jan 2024 12:36:34 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 84D0182532
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1705921651;
-	bh=nU5rYGS3itVFIYSFlq4h7KTmfnCa0z8VRwez/GcVW+Q=;
-	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
+	s=default; t=1705926994;
+	bh=i3+OM7b32DsHurqc92jj3KBYwZrTfrLHuI0lmFac8Yo=;
+	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=BbfcSvUTHmT6fxQFVg3XypvWZ4kKg2VmluQ1ALBOmAC6fDdMME8e5TOafsnkBG48L
-	 gvvZa7wajJMVcd1fk/4COzvjmVniPXhsxJL8Oz9DGMHITxyqZpUdnA6wh/iwn6ANvl
-	 vS7RWLXfKNYb62/KaOfTjEyi8F96jJnEICcGbjvsmlxwZMQfWeoVDcR8zh/t1O02+o
-	 WZAZ+7oak1FE/AatpwtKZ51NY4zaMQQo6i7kSPQ8cX/muV4bv9QWIyry759CsxQL6s
-	 6xCY9LOMXNHoBB+NwXNqlwUG23zDySxGv18mrPVDjjfgMyFqqARCJs88Aar8+A5mYU
-	 F4gNkj9kWREJw==
+	b=OYmg9ywUzIZEpo3EdFmDNwcz+tfKq5GncRhXkgMVfRGIS6mJJQ+f1ByIocS0rWSKz
+	 Ymsdr8RzEuFCTRPRZ+S83CLxchIvyrtynoGzp3gdbs31tglMQQeYGDErS7tbcwv6Wz
+	 vVAGKOSeXQnz2eJC/oATtOJXs+Qua/1Wds353nxbPnr0wBVKslhg0+eZHR/EozEZZA
+	 oxJIkGMO04bta3n2+3DQyWdviNljOGwMcw4YM/uuu3X6Oa0D4XKFbAns69+LiRQlZ3
+	 sIcatG89XzgFGY/4ISPDmL/Wcn8DNQ/N2x6bu6wBqgIkJfqIS4Ah//DWvfOmbaYBov
+	 LDxi+FFsP8dWg==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
-	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id m7Uc8jb8Mf-s; Mon, 22 Jan 2024 11:07:31 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id R1LpmOzXK5P4; Mon, 22 Jan 2024 12:36:34 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 00F82416C5;
-	Mon, 22 Jan 2024 11:07:31 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 00F82416C5
+	by smtp1.osuosl.org (Postfix) with ESMTP id AD74C824CE;
+	Mon, 22 Jan 2024 12:36:33 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org AD74C824CE
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 82D031BF3DC
- for <intel-wired-lan@lists.osuosl.org>; Mon, 22 Jan 2024 11:07:29 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 06E941BF3E9
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 22 Jan 2024 12:36:32 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 5A21F60EE0
- for <intel-wired-lan@lists.osuosl.org>; Mon, 22 Jan 2024 11:07:29 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 5A21F60EE0
+ by smtp3.osuosl.org (Postfix) with ESMTP id D383160BA9
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 22 Jan 2024 12:36:31 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org D383160BA9
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 8RQz_fxAvzjS for <intel-wired-lan@lists.osuosl.org>;
- Mon, 22 Jan 2024 11:07:28 +0000 (UTC)
-Received: from ams.source.kernel.org (ams.source.kernel.org
- [IPv6:2604:1380:4601:e00::1])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 98CB460B99
- for <intel-wired-lan@lists.osuosl.org>; Mon, 22 Jan 2024 11:07:28 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 98CB460B99
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by ams.source.kernel.org (Postfix) with ESMTP id 855F9B80A26;
- Mon, 22 Jan 2024 11:07:25 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id F0B4DC433F1;
- Mon, 22 Jan 2024 11:07:21 +0000 (UTC)
-Date: Mon, 22 Jan 2024 11:07:19 +0000
-From: Simon Horman <horms@kernel.org>
-To: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Message-ID: <20240122110719.GC126470@kernel.org>
-References: <d39bbffb8817499cc2ae636cdef3b9c1eba59618.1705771534.git.christophe.jaillet@wanadoo.fr>
+ with ESMTP id nDQyLpoQIMcn for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 22 Jan 2024 12:36:31 +0000 (UTC)
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.12])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id E75E860BD0
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 22 Jan 2024 12:36:30 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E75E860BD0
+X-IronPort-AV: E=McAfee;i="6600,9927,10960"; a="8569489"
+X-IronPort-AV: E=Sophos;i="6.05,211,1701158400"; 
+   d="scan'208";a="8569489"
+Received: from fmviesa002.fm.intel.com ([10.60.135.142])
+ by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 22 Jan 2024 04:36:29 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.05,211,1701158400"; d="scan'208";a="19973510"
+Received: from mszycik-mobl1.ger.corp.intel.com (HELO [10.237.140.122])
+ ([10.237.140.122])
+ by fmviesa002-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 22 Jan 2024 04:36:28 -0800
+Message-ID: <324a30c2-c4a0-487e-bad9-9977c6e503ba@linux.intel.com>
+Date: Mon, 22 Jan 2024 13:36:25 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <d39bbffb8817499cc2ae636cdef3b9c1eba59618.1705771534.git.christophe.jaillet@wanadoo.fr>
+User-Agent: Mozilla Thunderbird
+Content-Language: en-US
+To: Dave Ertman <david.m.ertman@intel.com>, intel-wired-lan@lists.osuosl.org
+References: <20240119211517.127142-1-david.m.ertman@intel.com>
+From: Marcin Szycik <marcin.szycik@linux.intel.com>
+In-Reply-To: <20240119211517.127142-1-david.m.ertman@intel.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1705921644;
- bh=5gE+Km5fi/TLlf+ZbAr7bjFoCBGdCvtbA843YDHnPdo=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=IuKILk40lppFwkQ3einuh+aBf9EHDFc+HzB4nd9+TtD9RD8cFXoLb9uH0b4wcO+l5
- ZgLolbB4kBvfbwMSNrdrt/DX6AdvlyCth5hF6iWkiIlyoyIRSFCRRp25OxYZNLH3y+
- hS6J8bEWWqa7aGoYc/N0uJ5A58jQBo7moXbm94fXOfi+eVUfAEAHY2Rr8blocQIcsO
- ajf6rqjrYgNlqJcKQ4SMOOBsFcXbNNRAsSAo+eNg6ghbMwFRi9I2q34o76bh7w4Q7n
- VTvdOtNITDJ0/WmwMVcBlOzG7leefF8TlyW8g72DnSu42/vcq2xUuXF7Zzg8g9L7g8
- KhDKkzWdD59sA==
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1705926991; x=1737462991;
+ h=message-id:date:mime-version:subject:to:cc:references:
+ from:in-reply-to:content-transfer-encoding;
+ bh=FonPDTkq8bm+MzOhIHp03CNgxfktHG90NHq3K6u9+R8=;
+ b=ejqsdNFIBQj6bK1+vGQ+C6LsBIwg//AFuZ1+07Yv8S1iY3cEXaMy8Fas
+ RXQ8Sedo+8zYzG+WDWTkJ9GMtC0OPTuZVuqrFjB18yeT7A2D3tgFpLKuV
+ QjAKj078EpmSuojXhrs8BZiF9L0vI0rCpFC4gf+e+4vZ/mjGiDwQ0jRgm
+ ykUXf6oJNCp8L+0PdqiV2QbUw+ti0RX/fVGwugz1SX7CjAvigXMpi1rSS
+ xv/ttc/AZjX6SDRyidnAVRJJHJUzDYkG85mdhxbP6mGWyAZKCf4kT2Bde
+ K/9U5wju88BTD9rHOXTwCwwU97eIO9pprcF4o+4mBQV65uLnAj9G9qzNK
+ A==;
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=IuKILk40
-Subject: Re: [Intel-wired-lan] [PATCH] ixgbe: Fix an error handling path in
- ixgbe_read_iosf_sb_reg_x550()
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=ejqsdNFI
+Subject: Re: [Intel-wired-lan] [PATCH iwl-net] ice: Add check for lport
+ extraction to LAG init
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,26 +99,93 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: intel-wired-lan@lists.osuosl.org, kernel-janitors@vger.kernel.org,
- Jesse Brandeburg <jesse.brandeburg@intel.com>, linux-kernel@vger.kernel.org,
- Eric Dumazet <edumazet@google.com>, Tony Nguyen <anthony.l.nguyen@intel.com>,
- Jeff Kirsher <jeffrey.t.kirsher@intel.com>, netdev@vger.kernel.org,
- Jakub Kicinski <kuba@kernel.org>, Mark Rustad <mark.d.rustad@intel.com>,
- Paolo Abeni <pabeni@redhat.com>, "David S. Miller" <davem@davemloft.net>
+Cc: netdev@vger.kernel.org, Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Sat, Jan 20, 2024 at 06:25:36PM +0100, Christophe JAILLET wrote:
-> All error handling paths, except this one, go to 'out' where
-> release_swfw_sync() is called.
-> This call balances the acquire_swfw_sync() call done at the beginning of
-> the function.
-> 
-> Branch to the error handling path in order to correctly release some
-> resources in case of error.
-> 
-> Fixes: ae14a1d8e104 ("ixgbe: Fix IOSF SB access issues")
-> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
 
-Reviewed-by: Simon Horman <horms@kernel.org>
 
+On 19.01.2024 22:15, Dave Ertman wrote:
+> To fully support initializing the LAG support code, a DDP package that
+> extracts the logical port from the metadata is required.  If such a
+> package is not present, there could be difficulties in supporting some
+> bond types.
+> 
+> Add a check into the initialization flow that will bypass the new paths
+> if any of the support pieces are missing.
+> 
+> Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+
+Reviewed-by: Marcin Szycik <marcin.szycik@linux.intel.com>
+
+> Fixes: df006dd4b1dc ("ice: Add initial support framework for LAG")
+> Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ice/ice_lag.c | 25 ++++++++++++++++++++++--
+>  drivers/net/ethernet/intel/ice/ice_lag.h |  3 +++
+>  2 files changed, 26 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/ice/ice_lag.c b/drivers/net/ethernet/intel/ice/ice_lag.c
+> index 2a25323105e5..467372d541d2 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_lag.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_lag.c
+> @@ -151,6 +151,27 @@ ice_lag_find_hw_by_lport(struct ice_lag *lag, u8 lport)
+>  	return NULL;
+>  }
+>  
+> +/**
+> + * ice_pkg_has_lport_extract - check if lport extraction supported
+> + * @hw: HW struct
+> + */
+> +static bool ice_pkg_has_lport_extract(struct ice_hw *hw)
+> +{
+> +	int i;
+> +
+> +	for (i = 0; i < hw->blk[ICE_BLK_SW].es.count; i++) {
+> +		u16 offset;
+> +		u8 fv_prot;
+> +
+> +		ice_find_prot_off(hw, ICE_BLK_SW, ICE_SW_DEFAULT_PROFILE, i,
+> +				  &fv_prot, &offset);
+> +		if (fv_prot == ICE_FV_PROT_MDID &&
+> +		    offset == ICE_LP_EXT_BUF_OFFSET)
+> +			return true;
+> +	}
+> +	return false;
+> +}
+> +
+>  /**
+>   * ice_lag_find_primary - returns pointer to primary interfaces lag struct
+>   * @lag: local interfaces lag struct
+> @@ -1206,7 +1227,7 @@ static void ice_lag_del_prune_list(struct ice_lag *lag, struct ice_pf *event_pf)
+>  }
+>  
+>  /**
+> - * ice_lag_init_feature_support_flag - Check for NVM support for LAG
+> + * ice_lag_init_feature_support_flag - Check for package and NVM support for LAG
+>   * @pf: PF struct
+>   */
+>  static void ice_lag_init_feature_support_flag(struct ice_pf *pf)
+> @@ -1219,7 +1240,7 @@ static void ice_lag_init_feature_support_flag(struct ice_pf *pf)
+>  	else
+>  		ice_clear_feature_support(pf, ICE_F_ROCE_LAG);
+>  
+> -	if (caps->sriov_lag)
+> +	if (caps->sriov_lag && ice_pkg_has_lport_extract(&pf->hw))
+>  		ice_set_feature_support(pf, ICE_F_SRIOV_LAG);
+>  	else
+>  		ice_clear_feature_support(pf, ICE_F_SRIOV_LAG);
+> diff --git a/drivers/net/ethernet/intel/ice/ice_lag.h b/drivers/net/ethernet/intel/ice/ice_lag.h
+> index ede833dfa658..183b38792ef2 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_lag.h
+> +++ b/drivers/net/ethernet/intel/ice/ice_lag.h
+> @@ -17,6 +17,9 @@ enum ice_lag_role {
+>  #define ICE_LAG_INVALID_PORT 0xFF
+>  
+>  #define ICE_LAG_RESET_RETRIES		5
+> +#define ICE_SW_DEFAULT_PROFILE		0
+> +#define ICE_FV_PROT_MDID		255
+> +#define ICE_LP_EXT_BUF_OFFSET		32
+>  
+>  struct ice_pf;
+>  struct ice_vf;
