@@ -4,62 +4,62 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 448D5C47DDB
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 23 Jan 2024 10:52:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 709A5C47258
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 23 Jan 2024 10:52:16 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id EE176417FB;
-	Tue, 23 Jan 2024 10:52:11 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org EE176417FB
+	by smtp4.osuosl.org (Postfix) with ESMTP id 1C0BD4174B;
+	Tue, 23 Jan 2024 10:52:16 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1C0BD4174B
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1706007132;
-	bh=RTKJDmoxOyMLJT4Fsa0UkXWRmQdQ7ZrgzDUqM66pDg8=;
+	s=default; t=1706007136;
+	bh=ffhuWf2VMkE775m1cNL5uutu0tbpKrOeF+6C1b+8OEc=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=Isp76EDGMFRq4wkyiOj6RfAvhp+04C+cORt/ziYtyimhGdEzzGH6OmiNen3Ybd6s5
-	 7TAcDsHxt9tXxplb4Y56Xo14D4aMNNB5TkfEgsQ0qPF4OB5INbKK8HQnIRVY9g+9nv
-	 Io7WwiAOBKkaJi+YcnNhRhUmAwOeM4ZaEyklKYzRFbJkTr6m+X7YHDYofr4QWCdCe6
-	 62IWaDSz2K2nVEBYFxtO8pv9yaRN6B0gA3SS++NwDD9WsPH6E02iunPN9oTIfTkQEt
-	 rVoKdEuA+TWw1elzz/MW12iVEFSnRQp06PZVNxQrZzRM3ZJ1mlURGmZCSxYOTzNW3a
-	 uKSwn7DlN4Y+g==
+	b=hBvC+k5WtTCpLCAiHYPuKMdRnDfMTrQjMPaWI6II3ZCijFRlkDA3cEF4qvwQD5N1A
+	 vrPxYLnuy0k+H4m82Ox9o+pbTa8FBy1RQFKG8SkvuTN1i6r3zYOellhk1pcetccJ+V
+	 JwcgfteqSzufdd0v6VCcki0dhXfwAhCqBKyFMtYuyeOTnKcdI/pepqLPH0VEpWU9Ke
+	 PSPb9pTqyVphFhuZ8meg7ev+lmVWy4BXvOiJK8fi4Fcz/pGQ7lXvIu55r9q/Ew2XF+
+	 sfDF3cVLVzdx32u4e9mZAyONvpwutcTxJYvwmwLZ6aQuB1n09Hhz+0q6yLS77o4h3d
+	 ELYmYvqhIpFkw==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id lVUIj52LM0T8; Tue, 23 Jan 2024 10:52:11 +0000 (UTC)
+	with ESMTP id 25CiPZicX2uu; Tue, 23 Jan 2024 10:52:15 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 18EC6418D2;
-	Tue, 23 Jan 2024 10:52:11 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 18EC6418D2
+	by smtp4.osuosl.org (Postfix) with ESMTP id 4DE65418A2;
+	Tue, 23 Jan 2024 10:52:15 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4DE65418A2
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 578C21BF299
- for <intel-wired-lan@lists.osuosl.org>; Tue, 23 Jan 2024 10:52:00 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 6D7B61BF299
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 23 Jan 2024 10:52:02 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 3155B8238A
- for <intel-wired-lan@lists.osuosl.org>; Tue, 23 Jan 2024 10:52:00 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 3155B8238A
+ by smtp1.osuosl.org (Postfix) with ESMTP id 463EC8238A
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 23 Jan 2024 10:52:02 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 463EC8238A
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id fc8MYU03cYnl for <intel-wired-lan@lists.osuosl.org>;
- Tue, 23 Jan 2024 10:51:59 +0000 (UTC)
+ with ESMTP id 9rMOg8f2XuMT for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 23 Jan 2024 10:52:01 +0000 (UTC)
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.10])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 6B0E082382
- for <intel-wired-lan@lists.osuosl.org>; Tue, 23 Jan 2024 10:51:59 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 6B0E082382
-X-IronPort-AV: E=McAfee;i="6600,9927,10961"; a="8877614"
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 98A3A82382
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 23 Jan 2024 10:52:01 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 98A3A82382
+X-IronPort-AV: E=McAfee;i="6600,9927,10961"; a="8877623"
 X-IronPort-AV: E=Sophos;i="6.05,214,1701158400"; 
-   d="scan'208";a="8877614"
+   d="scan'208";a="8877623"
 Received: from orviesa001.jf.intel.com ([10.64.159.141])
  by fmvoesa104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 23 Jan 2024 02:51:59 -0800
+ 23 Jan 2024 02:52:01 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.05,214,1701158400"; d="scan'208";a="34365384"
+X-IronPort-AV: E=Sophos;i="6.05,214,1701158400"; d="scan'208";a="34365407"
 Received: from kkolacin-desk1.igk.intel.com ([10.102.102.152])
- by orviesa001.jf.intel.com with ESMTP; 23 Jan 2024 02:51:57 -0800
+ by orviesa001.jf.intel.com with ESMTP; 23 Jan 2024 02:52:00 -0800
 From: Karol Kolacinski <karol.kolacinski@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Tue, 23 Jan 2024 11:51:27 +0100
-Message-Id: <20240123105131.2842935-4-karol.kolacinski@intel.com>
+Date: Tue, 23 Jan 2024 11:51:28 +0100
+Message-Id: <20240123105131.2842935-5-karol.kolacinski@intel.com>
 X-Mailer: git-send-email 2.40.1
 In-Reply-To: <20240123105131.2842935-1-karol.kolacinski@intel.com>
 References: <20240123105131.2842935-1-karol.kolacinski@intel.com>
@@ -67,22 +67,22 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1706007119; x=1737543119;
+ t=1706007122; x=1737543122;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=mw+LQ+tfDJ3i9Mdu1+gnRTqn6EyfBM3pRIDtFd6F7/U=;
- b=XPL7uYPCJN1Ib7MICrHSPb+8/BhbNZzZsRL2vSicRAwxeDTeyPdq2rqA
- +xN5XahtA2kXvg68zL1fVpTJlaA8iRCSddqUiQA2yKEKURLXEgSg7A6ME
- hu61xzXjUs7s4jvd2xJtXVCMUJW99xEKsTQVzKPjQvmM0VZAa++OSwxQ9
- e64DPZhZVJcpPwZIzwSSFBGpxceVF5moR5fo/8ulqFlAnURoVq0VnelwU
- vH5DGzdEaWQEE988A0uLkKBcn1NeFxrDn8C0p8G2Vav7AHDMuum5T+P3S
- OnSZaSBiaHNkAnHmxYHww1z5q6A67So5MIf0egyl5w7szR6V7U1KInd8l
- A==;
+ bh=l2zbQsoH+QHd/usOBxoSPjVj31op4Z/h6N+2WiXcFsc=;
+ b=R62tH+1mP8KEFrRbNQBsnKDOFhDun/OExfsGldXXzdoDF52D/SGfux0h
+ eoxNXWOotX1q3OnU/VAOeMTWAuU/XSXF6Ps3IIyFKUj7rDEtjbzBCRFnR
+ i1WtlWyNtMZLWPF1B4xtUa2t8Lo8sxFDMaP2fD75FepfGyHA4toS9sUD2
+ vfPfKt/9uFQSRG2JAijI+j1++YrNa/2i3QtKTp8m0Eise6M/HkuK7u8sm
+ aNkYMBrssUsq+F1xoAVHFLFLTX4woo8sqvE8GrppHFj8CmIWI2XI1DhFi
+ IO/gfrKERHk94ou0lQS4L5RrJkkvvriBUxuKTuL06gboZFiKI8BHFJTeD
+ g==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=XPL7uYPC
-Subject: [Intel-wired-lan] [PATCH v7 iwl-next 3/7] ice: rename verify_cached
- to has_ready_bitmap
+ header.a=rsa-sha256 header.s=Intel header.b=R62tH+1m
+Subject: [Intel-wired-lan] [PATCH v7 iwl-next 4/7] ice: don't check
+ has_ready_bitmap in E810 functions
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,113 +103,70 @@ Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 From: Jacob Keller <jacob.e.keller@intel.com>
 
-The tx->verify_cached flag is used to inform the Tx timestamp tracking
-code whether it needs to verify the cached Tx timestamp value against
-a previous captured value. This is necessary on E810 hardware which does
-not have a Tx timestamp ready bitmap.
-
-In addition, we currently rely on the fact that the
-ice_get_phy_tx_tstamp_ready() function returns all 1s for E810 hardware.
-Instead of introducing a brand new flag, rename and verify_cached to
-has_ready_bitmap, inverting the relevant checks.
+E810 hardware does not have a Tx timestamp ready bitmap. Don't check
+has_ready_bitmap in E810-specific functions.
+Add has_ready_bitmap check in ice_ptp_process_tx_tstamp() to stop
+relying on the fact that ice_get_phy_tx_tstamp_ready() returns all 1s.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
 Reviewed-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
-V6 -> V7: renamed one missed verify_cached
-V5 -> V6: split the patch and left only rename part here
+V5 -> V6: introduced this patch which was a part of a previous one
 
- drivers/net/ethernet/intel/ice/ice_ptp.c | 12 ++++++------
- drivers/net/ethernet/intel/ice/ice_ptp.h |  8 +++++---
- 2 files changed, 11 insertions(+), 9 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_ptp.c | 23 +++++++++++------------
+ 1 file changed, 11 insertions(+), 12 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
-index 96b5f992f127..a10e0018b2e2 100644
+index a10e0018b2e2..69d11dbda22c 100644
 --- a/drivers/net/ethernet/intel/ice/ice_ptp.c
 +++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-@@ -606,11 +606,11 @@ void ice_ptp_complete_tx_single_tstamp(struct ice_ptp_tx *tx)
- 	 * timestamp. If it is not, skip this for now assuming it hasn't yet
- 	 * been captured by hardware.
+@@ -601,17 +601,13 @@ void ice_ptp_complete_tx_single_tstamp(struct ice_ptp_tx *tx)
+ 	/* Read the low 32 bit value */
+ 	raw_tstamp |= (u64)rd32(&pf->hw, PF_SB_ATQBAH);
+ 
+-	/* For PHYs which don't implement a proper timestamp ready bitmap,
+-	 * verify that the timestamp value is different from the last cached
+-	 * timestamp. If it is not, skip this for now assuming it hasn't yet
+-	 * been captured by hardware.
++	/* Devices using this interface always verify the timestamp differs
++	 * relative to the last cached timestamp value.
  	 */
--	if (!drop_ts && tx->verify_cached &&
-+	if (!drop_ts && !tx->has_ready_bitmap &&
- 	    raw_tstamp == tx->tstamps[idx].cached_tstamp)
+-	if (!drop_ts && !tx->has_ready_bitmap &&
+-	    raw_tstamp == tx->tstamps[idx].cached_tstamp)
++	if (raw_tstamp == tx->tstamps[idx].cached_tstamp)
  		return;
  
--	if (tx->verify_cached && raw_tstamp)
-+	if (!tx->has_ready_bitmap && raw_tstamp)
- 		tx->tstamps[idx].cached_tstamp = raw_tstamp;
+-	if (!tx->has_ready_bitmap && raw_tstamp)
+-		tx->tstamps[idx].cached_tstamp = raw_tstamp;
++	tx->tstamps[idx].cached_tstamp = raw_tstamp;
  	clear_bit(idx, tx->in_use);
  	skb = tx->tstamps[idx].skb;
-@@ -751,7 +751,7 @@ static void ice_ptp_process_tx_tstamp(struct ice_ptp_tx *tx)
- 		 * from the last cached timestamp. If it is not, skip this for
- 		 * now assuming it hasn't yet been captured by hardware.
+ 	tx->tstamps[idx].skb = NULL;
+@@ -701,9 +697,11 @@ static void ice_ptp_process_tx_tstamp(struct ice_ptp_tx *tx)
+ 	hw = &pf->hw;
+ 
+ 	/* Read the Tx ready status first */
+-	err = ice_get_phy_tx_tstamp_ready(hw, tx->block, &tstamp_ready);
+-	if (err)
+-		return;
++	if (tx->has_ready_bitmap) {
++		err = ice_get_phy_tx_tstamp_ready(hw, tx->block, &tstamp_ready);
++		if (err)
++			return;
++	}
+ 
+ 	/* Drop packets if the link went down */
+ 	link_up = ptp_port->link_up;
+@@ -731,7 +729,8 @@ static void ice_ptp_process_tx_tstamp(struct ice_ptp_tx *tx)
+ 		 * If we do not, the hardware logic for generating a new
+ 		 * interrupt can get stuck on some devices.
  		 */
--		if (!drop_ts && tx->verify_cached &&
-+		if (!drop_ts && !tx->has_ready_bitmap &&
- 		    raw_tstamp == tx->tstamps[idx].cached_tstamp)
- 			continue;
- 
-@@ -761,7 +761,7 @@ static void ice_ptp_process_tx_tstamp(struct ice_ptp_tx *tx)
- 
- skip_ts_read:
- 		spin_lock_irqsave(&tx->lock, flags);
--		if (tx->verify_cached && raw_tstamp)
-+		if (!tx->has_ready_bitmap && raw_tstamp)
- 			tx->tstamps[idx].cached_tstamp = raw_tstamp;
- 		clear_bit(idx, tx->in_use);
- 		skb = tx->tstamps[idx].skb;
-@@ -1014,7 +1014,7 @@ ice_ptp_init_tx_e82x(struct ice_pf *pf, struct ice_ptp_tx *tx, u8 port)
- 	tx->block = port / ICE_PORTS_PER_QUAD;
- 	tx->offset = (port % ICE_PORTS_PER_QUAD) * INDEX_PER_PORT_E82X;
- 	tx->len = INDEX_PER_PORT_E82X;
--	tx->verify_cached = 0;
-+	tx->has_ready_bitmap = 1;
- 
- 	return ice_ptp_alloc_tx_tracker(tx);
- }
-@@ -1037,7 +1037,7 @@ ice_ptp_init_tx_e810(struct ice_pf *pf, struct ice_ptp_tx *tx)
- 	 * verify new timestamps against cached copy of the last read
- 	 * timestamp.
- 	 */
--	tx->verify_cached = 1;
-+	tx->has_ready_bitmap = 0;
- 
- 	return ice_ptp_alloc_tx_tracker(tx);
- }
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.h b/drivers/net/ethernet/intel/ice/ice_ptp.h
-index afe454abe997..aa7a5588d11d 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp.h
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp.h
-@@ -100,7 +100,7 @@ struct ice_perout_channel {
-  * the last timestamp we read for a given index. If the current timestamp
-  * value is the same as the cached value, we assume a new timestamp hasn't
-  * been captured. This avoids reporting stale timestamps to the stack. This is
-- * only done if the verify_cached flag is set in ice_ptp_tx structure.
-+ * only done if the has_ready_bitmap flag is not set in ice_ptp_tx structure.
-  */
- struct ice_tx_tstamp {
- 	struct sk_buff *skb;
-@@ -130,7 +130,9 @@ enum ice_tx_tstamp_work {
-  * @init: if true, the tracker is initialized;
-  * @calibrating: if true, the PHY is calibrating the Tx offset. During this
-  *               window, timestamps are temporarily disabled.
-- * @verify_cached: if true, verify new timestamp differs from last read value
-+ * @has_ready_bitmap: if true, the hardware has a valid Tx timestamp ready
-+ *                    bitmap register. If false, fall back to verifying new
-+ *                    timestamp values against previously cached copy.
-  * @last_ll_ts_idx_read: index of the last LL TS read by the FW
-  */
- struct ice_ptp_tx {
-@@ -143,7 +145,7 @@ struct ice_ptp_tx {
- 	u8 len;
- 	u8 init : 1;
- 	u8 calibrating : 1;
--	u8 verify_cached : 1;
-+	u8 has_ready_bitmap : 1;
- 	s8 last_ll_ts_idx_read;
- };
+-		if (!(tstamp_ready & BIT_ULL(phy_idx))) {
++		if (tx->has_ready_bitmap &&
++		    !(tstamp_ready & BIT_ULL(phy_idx))) {
+ 			if (drop_ts)
+ 				goto skip_ts_read;
  
 -- 
 2.40.1
