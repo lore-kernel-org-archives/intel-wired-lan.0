@@ -4,79 +4,78 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EE79AC47DDB
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 23 Jan 2024 16:26:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id ACCCAC47DDB
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 23 Jan 2024 16:38:25 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 7CD3E4011A;
-	Tue, 23 Jan 2024 16:26:01 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 7CD3E4011A
+	by smtp2.osuosl.org (Postfix) with ESMTP id 454C440217;
+	Tue, 23 Jan 2024 16:38:25 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 454C440217
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1706027161;
-	bh=NvUIQluKlHwuY0RyyjEf6elrQeh0AtWEivc9YLeLMS8=;
+	s=default; t=1706027905;
+	bh=JtSi1DPjchm+io+iEWDnkuWbq3vhD11YxTPw8EqKf3Y=;
 	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=a4K26MPB11YVZuFUtb4lIQ+SH/GpvrPuQxXyF3p38qv3cO5lK9QTedU35xkUkssPP
-	 WphAOuOl+kXOFewrNK3djA+abAjQGutKBtnZmwHNzA4kefCXuFdZQJxC7BuaebWMRi
-	 EqQ+yg9xPaf57Is/7vzQqDaLod5efKURmlE1sNnCtMuHxvYh5d7xF1i0TBv2GhvKf0
-	 S9ncmqVeCwOOhKgNj89eAojU0A1sqFhNVMvVfnML+Xtktqaqd2XTytKQmtoPaRV4xS
-	 DsvgZw+U4Ku3JlmOdQqLorMfjT0CXaqRK1Wu9jitjjhF2AnMxnBfIHB1tbLM36HBXH
-	 xei9aoIxC09vw==
+	b=aHlLZT1dS4oeo4tfdtt0ONkFDhX95Pl1/TbV+zwAheMkrMfZBqmXMZSzLyBvLPMuM
+	 T4HAENJosl64qoFczOL+HJQfIwQQTjLIPacq8Ym9zJs5axu/rGLKodBYbVNswg65KK
+	 NDUJU+iJx529lK+Tgy0VG2kfu9J2eG8+0KF0fqKAMuQ1p1XRk7Lbpt/QnUEGjGq7/d
+	 bGNzxztfaIY++LHil10yhRiSBwO4Cgam9uUrL/TsWpxcIXlcljD4h7pCkIONGJi7WM
+	 aBi809Am8BFfS2QoQLqOovHD/IbS2PAUJqCTExLxjpjrXxP8AT22bvzU7ALpSgLx+L
+	 W7G5EtVr80iZg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id cg5ACujhSq0c; Tue, 23 Jan 2024 16:26:00 +0000 (UTC)
+	with ESMTP id H6CZTsqLA7vL; Tue, 23 Jan 2024 16:38:24 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 661BB403BE;
-	Tue, 23 Jan 2024 16:26:00 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 661BB403BE
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 249061BF3A6
- for <intel-wired-lan@lists.osuosl.org>; Tue, 23 Jan 2024 16:25:58 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 50E43402C3;
+	Tue, 23 Jan 2024 16:38:24 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 50E43402C3
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id D6A5D1BF3A6
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 23 Jan 2024 16:38:22 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 08E6A830D7
- for <intel-wired-lan@lists.osuosl.org>; Tue, 23 Jan 2024 16:25:58 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 08E6A830D7
+ by smtp2.osuosl.org (Postfix) with ESMTP id B96E5402C3
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 23 Jan 2024 16:38:22 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B96E5402C3
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 2eHjqLkEo7t5 for <intel-wired-lan@lists.osuosl.org>;
- Tue, 23 Jan 2024 16:25:57 +0000 (UTC)
-Received: from sin.source.kernel.org (sin.source.kernel.org
- [IPv6:2604:1380:40e1:4800::1])
- by smtp1.osuosl.org (Postfix) with ESMTPS id E98CF82F77
- for <intel-wired-lan@lists.osuosl.org>; Tue, 23 Jan 2024 16:25:56 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E98CF82F77
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id T0xrbBstrW4t for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 23 Jan 2024 16:38:22 +0000 (UTC)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id E7E6B40217
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 23 Jan 2024 16:38:21 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org E7E6B40217
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by sin.source.kernel.org (Postfix) with ESMTP id EA8FECE2B95;
- Tue, 23 Jan 2024 16:25:52 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C5435C433C7;
- Tue, 23 Jan 2024 16:25:50 +0000 (UTC)
-Date: Tue, 23 Jan 2024 16:25:47 +0000
+ by dfw.source.kernel.org (Postfix) with ESMTP id C379A61378;
+ Tue, 23 Jan 2024 16:38:20 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 14C09C433C7;
+ Tue, 23 Jan 2024 16:38:18 +0000 (UTC)
+Date: Tue, 23 Jan 2024 16:38:16 +0000
 From: Simon Horman <horms@kernel.org>
-To: Alan Brady <alan.brady@intel.com>
-Message-ID: <20240123162547.GA254773@kernel.org>
-References: <20240122211125.840833-1-alan.brady@intel.com>
- <20240122211125.840833-2-alan.brady@intel.com>
+To: Karol Kolacinski <karol.kolacinski@intel.com>
+Message-ID: <20240123163816.GE254773@kernel.org>
+References: <20240118174552.2565889-1-karol.kolacinski@intel.com>
+ <20240118174552.2565889-2-karol.kolacinski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20240122211125.840833-2-alan.brady@intel.com>
+In-Reply-To: <20240118174552.2565889-2-karol.kolacinski@intel.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1706027152;
- bh=Db/jN7Jo2Il34tau7l6TXAThDAYrdAUA/UZhgrIh4Qw=;
+ d=kernel.org; s=k20201202; t=1706027900;
+ bh=neiDqjqlrAq+P9Dr03DcL5TOcjt9yIK/jkFGhWRFMI4=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=q5ni6bSFBx5yE0uNeFPBXhRFxOrVjlLBoWxSViJdx0Q7kjcfRuXo+KqDghmh+0av1
- 0iwIXIpDkAdpflGuqVdNNdTbe09dPC1F2rw6Vr5vi3+QTQtQA2eJVUKKhJkddHRy5W
- HcFEQRZGocc85Gs+nJtkRhJbPRfEpDarpHtfewP4Cpbi5BJSZt8C5INzAVuWR6jAxP
- YLwp/hHiDFMGmbd2EN+vN8Rs5uoN6vOwNQpG2+itY1y3XxO8QYJ2S5iBeCPD0VHeSf
- nIaWxoYd1rRaJkKMQOoerdIbC/y1rq+7U/3Wu0O7PB+FpzkAjAeo3CJ/s+z16ZINqK
- 7/lPapy0VGaew==
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ b=esa6oijTUzGsIB68xmQGVR3YIm2FmzzQ2URUJt3Y/kqVyeMQkpJiibfFcpoLjaIyA
+ 6/Q1zWaLXLtsABbNN93v3d6vZS48Jq60K7rUfZsbCBFehQj2Du7XmAZzU5gHmr7aBZ
+ gVofmds9R4BKYUupCr+nhqWpkvPYZoeiqWl7fV1MdEMTJjSDx5e7c4OIvoyvBgQ+DF
+ 4Bkm9pxOFLT1nP+TSuJvdoWK/W9UleXq1QDoj2B/hgUKOU2x8m+/hi2/BW1XiupsqR
+ 8QjOHpz/42/G7BL5M04HDfS3CJYrxWQ2F5jg9kT7ROMZKkWQNgL74vUCW71zLGG+lD
+ C+sb9/DCJyQsA==
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=q5ni6bSF
-Subject: Re: [Intel-wired-lan] [PATCH 1/6 iwl-next] idpf: implement virtchnl
- transaction manager
+ header.a=rsa-sha256 header.s=k20201202 header.b=esa6oijT
+Subject: Re: [Intel-wired-lan] [PATCH v6 iwl-next 1/7] ice: introduce PTP
+ state machine
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,79 +88,27 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, Joshua Hay <joshua.a.hay@intel.com>,
- intel-wired-lan@lists.osuosl.org, Igor Bagnucki <igor.bagnucki@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Cc: Jacob Keller <jacob.e.keller@intel.com>, netdev@vger.kernel.org,
+ anthony.l.nguyen@intel.com, intel-wired-lan@lists.osuosl.org,
+ jesse.brandeburg@intel.com
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Mon, Jan 22, 2024 at 01:11:20PM -0800, Alan Brady wrote:
-> This starts refactoring how virtchnl messages are handled by adding a
-> transaction manager (idpf_vc_xn_manager).
+On Thu, Jan 18, 2024 at 06:45:46PM +0100, Karol Kolacinski wrote:
+> Add PTP state machine so that the driver can correctly identify PTP
+> state around resets.
+> When the driver got information about ungraceful reset, PTP was not
+> prepared for reset and it returned error. When this situation occurs,
+> prepare PTP before rebuilding its structures.
 > 
-> There are two primary motivations here which are to enable handling of
-> multiple messages at once and to make it more robust in general. As it
-> is right now, the driver may only have one pending message at a time and
-> there's no guarantee that the response we receive was actually intended
-> for the message we sent prior.
-> 
-> This works by utilizing a "cookie" field of the message descriptor. It
-> is arbitrary what data we put in the cookie and the response is required
-> to have the same cookie the original message was sent with. Then using a
-> "transaction" abstraction that uses the completion API to pair responses
-> to the message it belongs to.
-> 
-> The cookie works such that the first half is the index to the
-> transaction in our array, and the second half is a "salt" that gets
-> incremented every message. This enables quick lookups into the array and
-> also ensuring we have the correct message. The salt is necessary because
-> after, for example, a message times out and we deem the response was
-> lost for some reason, we could theoretically reuse the same index but
-> using a different salt ensures that when we do actually get a response
-> it's not the old message that timed out previously finally coming in.
-> Since the number of transactions allocated is U8_MAX and the salt is 8
-> bits, we can never have a conflict because we can't roll over the salt
-> without using more transactions than we have available.
-> 
-> This starts by only converting the VIRTCHNL2_OP_VERSION message to use
-> this new transaction API. Follow up patches will convert all virtchnl
-> messages to use the API.
-> 
-> Reviewed-by: Igor Bagnucki <igor.bagnucki@intel.com>
-> Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
-> Signed-off-by: Alan Brady <alan.brady@intel.com>
-> Co-developed-by: Joshua Hay <joshua.a.hay@intel.com>
-> Signed-off-by: Joshua Hay <joshua.a.hay@intel.com>
+> Co-authored-by: Karol Kolacinski <karol.kolacinski@intel.com>
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
+> Reviewed-by: Jacob Keller <jacob.e.keller@intel.com>
+> ---
+> V5 -> V6: refactored prepare_for_reset() bit in ice_ptp_reset()
 
-...
+Thanks for the update.
 
-> +/**
-> + * idpf_vc_xn_init - Initialize virtchnl transaction object
-> + * @vcxn_mngr: pointer to vc transaction manager struct
-> + */
-> +static void idpf_vc_xn_init(struct idpf_vc_xn_manager *vcxn_mngr)
-> +{
-> +	int i;
-> +
-> +	spin_lock_init(&vcxn_mngr->xn_bm_lock);
-> +
-> +	for (i = 0; i < ARRAY_SIZE(vcxn_mngr->ring); i++) {
-> +		struct idpf_vc_xn *xn = &vcxn_mngr->ring[i];
-> +
-> +		xn->state = IDPF_VC_XN_IDLE;
-> +		xn->idx = i;
-> +		idpf_vc_xn_release_bufs(xn);
-> +		init_completion(&xn->completed);
-> +	}
+Reviewed-by: Simon Horman <horms@kernel.org>
 
-Hi Alan and Joshua,
-
-I'm slightly surprised to see that
-it is safe to initialise xn_bm_lock above,
-but it needs to be taken below.
-
-> +
-> +	spin_lock_bh(&vcxn_mngr->xn_bm_lock);
-> +	bitmap_set(vcxn_mngr->free_xn_bm, 0, IDPF_VC_XN_RING_LEN);
-> +	spin_unlock_bh(&vcxn_mngr->xn_bm_lock);
-> +}
