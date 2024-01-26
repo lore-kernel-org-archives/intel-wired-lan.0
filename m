@@ -1,81 +1,80 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 42EB1C47422
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 26 Jan 2024 17:51:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DFE37C47DDB
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 26 Jan 2024 19:32:02 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id DD6E860736;
-	Fri, 26 Jan 2024 17:51:15 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org DD6E860736
+	by smtp4.osuosl.org (Postfix) with ESMTP id 6651F42158;
+	Fri, 26 Jan 2024 19:32:02 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 6651F42158
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1706291475;
-	bh=y/gn9Av1E/VqEldp1KCO4KYwLn2ZVlnq3IVY2kh0GEo=;
+	s=default; t=1706297522;
+	bh=jEJ8aMPjBWMpqg5C0dRsCMzUhhrn6JUTlvI0tBNqAUo=;
 	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=vIpNPm1vhNjlC6437k7SeGoq0OnVT7prKaAfw4pZjWG0Zs+eNoxxaVh8npCabH11F
-	 54FmfO5boBw+c3u26gNdFD9yCK52WH8owoizX68FeRNRZ0cIngnTrgRefqcHrZA7hF
-	 yPlUIQ772+DR0rBObVQS5S04NUk7hdfQ8XR6Wr2QZsTCr65OaI7hkUXqhZN2urxrxU
-	 Idqiyoe/qRE3k+H1vxZKAyBYUSVipNOXuY9Zd5wCD3z4gYaUTlZmWB98oiOBFSan9V
-	 1X3xfrHgyRwvV4wQWvOrsjRlUDdtBWdiVqYXJtX5VRAZtbFt5NJi4l7KTTQjQs9pNg
-	 dKMo9H/oYWaKg==
+	b=72kLeG5dzJ6jYAoGzDKBMprEL3cJ9nq1okVrtZe5hbw2XTT9GEtZUxYMyZcWX4ALZ
+	 dpVFfgprR+/oen5WlpaxzWJtDlF89fFcjF2pbr4cku2Yk3n+PyDhsnSA7Gakb9mAol
+	 7YqPPM10CzOrNb9rorPITaecBvRf0iSQ+wcDOqm62RaCWhkuLudXQQZjELhXu+AMmM
+	 8wVV1DzIa/uHjn/73gq2MlFe6s67JUtfX0hbNhwPIWDICR3c72BmW4Xgnw2hEi2Ckp
+	 SGe2AOjM0YSy1UU0siam2wtkjMe8ELt0PQRPqTMSmGOB4vijjeUOAJ2HH70bggKTmv
+	 WqV3MZrGT+oMg==
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp4.osuosl.org ([127.0.0.1])
+	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 8MAA0fpUWqCH; Fri, 26 Jan 2024 19:32:01 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp4.osuosl.org (Postfix) with ESMTP id 2EE684215A;
+	Fri, 26 Jan 2024 19:32:01 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2EE684215A
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 21D121BF2F4
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 26 Jan 2024 19:32:00 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp3.osuosl.org (Postfix) with ESMTP id ECBD561499
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 26 Jan 2024 19:31:59 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org ECBD561499
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id rn6ry7m7Mhl7; Fri, 26 Jan 2024 17:51:15 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 3163660807;
-	Fri, 26 Jan 2024 17:51:15 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3163660807
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id ECA271BF2B9
- for <intel-wired-lan@lists.osuosl.org>; Fri, 26 Jan 2024 17:51:13 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id C2D608437E
- for <intel-wired-lan@lists.osuosl.org>; Fri, 26 Jan 2024 17:51:13 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C2D608437E
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id pEO4L32Va8rK for <intel-wired-lan@lists.osuosl.org>;
- Fri, 26 Jan 2024 17:51:13 +0000 (UTC)
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id L6Zh-8ubRVPE for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 26 Jan 2024 19:31:58 +0000 (UTC)
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 19E718404F
- for <intel-wired-lan@lists.osuosl.org>; Fri, 26 Jan 2024 17:51:13 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 19E718404F
+ by smtp3.osuosl.org (Postfix) with ESMTPS id B568E60F21
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 26 Jan 2024 19:31:58 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B568E60F21
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by dfw.source.kernel.org (Postfix) with ESMTP id D607B62554;
- Fri, 26 Jan 2024 17:51:11 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 08330C433C7;
- Fri, 26 Jan 2024 17:51:09 +0000 (UTC)
-Date: Fri, 26 Jan 2024 17:51:07 +0000
+ by dfw.source.kernel.org (Postfix) with ESMTP id 9F36D62308;
+ Fri, 26 Jan 2024 19:31:57 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C1B4FC433F1;
+ Fri, 26 Jan 2024 19:31:55 +0000 (UTC)
+Date: Fri, 26 Jan 2024 19:31:52 +0000
 From: Simon Horman <horms@kernel.org>
-To: Lukasz Plachno <lukasz.plachno@intel.com>
-Message-ID: <20240126175107.GB401354@kernel.org>
-References: <20240124152141.15077-1-lukasz.plachno@intel.com>
- <20240124152141.15077-3-lukasz.plachno@intel.com>
+To: Wojciech Drewek <wojciech.drewek@intel.com>
+Message-ID: <20240126193152.GC401354@kernel.org>
+References: <20240125085459.13096-1-wojciech.drewek@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20240124152141.15077-3-lukasz.plachno@intel.com>
+In-Reply-To: <20240125085459.13096-1-wojciech.drewek@intel.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1706291471;
- bh=xYlmBsenQr8hdoyjMRz9OkQNyQh55NtukTE75S7Jg3I=;
+ d=kernel.org; s=k20201202; t=1706297517;
+ bh=0/gi19UjEgJe4xm59PJQWWgwTm1xGi9jlTcxXelyEr4=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=cH9oC6SYOD5onM/srS2Szrc1q/27LPbRpKWSA8+tlEIXyGuW/45IYeMinRoDbwSMn
- J+b8sC3hf0xVGajlbB8RPDv58XcrNS1TWmX1W7Qw7kqIangeW5LmM8isrqiyCLpmnv
- ufYzqZoacM6ZlNH/wdbJqsObg64WYVNqEANmhxHEQCzHSFO25Ucevqyj5BEGbDQWSD
- Lxje2meCm3Q3n4k9TdmbDRm+gHP2PAPeYudAB9d0yhKGBcpYG6dRGcro0/jZqrdDOO
- +dWQz2YYALSGf2zgwfcvpfwzq48LXdVl6SRHw43ZUDu4FEz5nCPe5HJV7yoiQeo08j
- wTVKSz19SjNTg==
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ b=CeFX1CME2O6T9rk7uTOsI66c0vGvv958hv7NxrVDQBRwFFcmX1ud4nxVb7paO4/ZI
+ lTgqLTrTC3JfOmY2NNgQN0RHXFDwKuByEN/zhWq5U7Hjls1BjtqdVGEHLmLO+xIThc
+ B5GpEqEBo2n0B0jgACIEmPkyfFksByd7yHfYEsAAM67aM6XhqDNCEN8SAyRoRpQfQj
+ bAQH4oFFDiNres/dr6gNfByN9L/VyRuF0u31TfsPKr507BXq+bYhFqWqA/6D2NpL0c
+ HrY0juRMXjlF7MA8TselGrtlISgMy/f9x3gtOFeOD8N6WZK+zywf1+YKQHWHAWpQ0T
+ uhZwHrnRx2nAQ==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=cH9oC6SY
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next v4 2/2] ice: Implement
- 'flow-type ether' rules
+ header.a=rsa-sha256 header.s=k20201202 header.b=CeFX1CME
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next v2] ice: Remove and readd
+ netdev during devlink reload
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,47 +87,31 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: brett.creeley@amd.com, Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Mateusz Pacuszka <mateuszx.pacuszka@intel.com>,
- Jakub Buchocki <jakubx.buchocki@intel.com>, intel-wired-lan@lists.osuosl.org,
- netdev@vger.kernel.org
+Cc: jiri@resnulli.us, netdev@vger.kernel.org, intel-wired-lan@lists.osuosl.org,
+ paul.m.stillwell.jr@intel.com, przemyslaw.kitszel@intel.com,
+ vadim.fedorenko@linux.dev
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Wed, Jan 24, 2024 at 04:21:41PM +0100, Lukasz Plachno wrote:
-> From: Jakub Buchocki <jakubx.buchocki@intel.com>
+On Thu, Jan 25, 2024 at 09:54:59AM +0100, Wojciech Drewek wrote:
+> Recent changes to the devlink reload (commit 9b2348e2d6c9
+> ("devlink: warn about existing entities during reload-reinit"))
+> force the drivers to destroy devlink ports during reinit.
+> Adjust ice driver to this requirement, unregister netdvice, destroy
+> devlink port. ice_init_eth() was removed and all the common code
+> between probe and reload was moved to ice_load().
 > 
-> Add support for 'flow-type ether' Flow Director rules via ethtool.
+> During devlink reload we can't take devl_lock (it's already taken)
+> and in ice_probe() we have to lock it. Use devl_* variant of the API
+> which does not acquire and release devl_lock. Guard ice_load()
+> with devl_lock only in case of probe.
 > 
-> Rules not containing masks are processed by the Flow Director,
-> and support the following set of input parameters in all combinations:
-> src, dst, proto, vlan-etype, vlan, action.
+> Introduce ice_debugfs_fwlog_deinit() in order to release PF's
+> debugfs entries. Move ice_debugfs_exit() call to ice_module_exit().
 > 
-> It is possible to specify address mask in ethtool parameters but only
-> 00:00:00:00:00 and FF:FF:FF:FF:FF are valid.
-> The same applies to proto, vlan-etype and vlan masks:
-> only 0x0000 and 0xffff masks are valid.
-> 
-> Signed-off-by: Jakub Buchocki <jakubx.buchocki@intel.com>
-> Co-developed-by: Mateusz Pacuszka <mateuszx.pacuszka@intel.com>
-> Signed-off-by: Mateusz Pacuszka <mateuszx.pacuszka@intel.com>
+> Suggested-by: Jiri Pirko <jiri@nvidia.com>
 > Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
-> Signed-off-by: Lukasz Plachno <lukasz.plachno@intel.com>
+> Signed-off-by: Wojciech Drewek <wojciech.drewek@intel.com>
 
-...
+Reviewed-by: Simon Horman <horms@kernel.org>
 
-> +/**
-> + * ice_set_ether_flow_seg
-
-nit: @dev should be documented here.
-
-> + * @seg: flow segment for programming
-> + * @eth_spec: mask data from ethtool
-> + *
-> + * Return: 0 on success and errno in case of error.
-> + */
-> +static int ice_set_ether_flow_seg(struct device *dev,
-> +				  struct ice_flow_seg_info *seg,
-> +				  struct ethhdr *eth_spec)
-
-...
