@@ -4,67 +4,67 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DB4D1C47422
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 26 Jan 2024 11:13:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D7AF8C47422
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 26 Jan 2024 12:20:28 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 71EE181839;
-	Fri, 26 Jan 2024 11:13:26 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 71EE181839
+	by smtp1.osuosl.org (Postfix) with ESMTP id 646BB836C5;
+	Fri, 26 Jan 2024 12:20:28 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 646BB836C5
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1706267606;
-	bh=Vk9u1I4vNB2nwLljmjUk1jQ6ixCBNTy86Cxs4jWTr0c=;
+	s=default; t=1706271628;
+	bh=muqaJK5yxdWPtsteEh8rv8RW4eolqlMeFQuBFD9p780=;
 	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=hv27QI8L9ReeCPc7qnNkpCwJWn2hSsAJ06AonoUQUjASnK/FVb3QI1dN0ZEKcajis
-	 0e6605rMCOLsh1fjnZ1Mz5lZUpzGKgD2UYt/sigJ9GANnn/kKrVZiv9/vO1Fobh22I
-	 Ofp4jpu1ZcmVFW/Px9Lnm2KStTtLW/afMC8aFOgKt5wV7ehV9OX9sgncxjcpeSBEOm
-	 3Odc7kXJU2YkY5SUYiCiRDBdUIYgtEh8/vT0Eprkpgg6ymxXAf1+JHtgD92ceJyeMF
-	 yf6e97kv9+y7NmsDYVWTtN8YUkYVVRuRXqJ9AZC2mlYcSPUGF8xqgYzzKKNWf2wq4A
-	 W1qGvegje5iWA==
+	b=WcrS6fZYnhQ2Y4tF1RX4gbPWglHYDAoHUkWWJJNa4afnLQ/eeyVz1YF5/kZ0NhBDe
+	 8Kti5MzB/P+bnwfXjgzOwoopHFguQpVG+8NgMnfu7fie0jbt17rBihOts2OPI4tJxM
+	 pOxzcbJNyM2hV77rMlHCfYsM6V8+pn++FfeBlEyBWGrbFLCPhHrab8Pl9e4GGE4plS
+	 eiAPyXDdpUW4biWp1ZTSzc7xn8t6/fGcbJkiN3OhctEpiud9BqgsIUlx+8ArOzJtrw
+	 gw3afUH6KxgwEWjmzRmYZnP8dIgt9gN8SgdBG42NEyN/4mL7HYOm1Gct9U8OT02vrZ
+	 Wu3HoPUNfoPOA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
 	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id dNNnWS11Lle5; Fri, 26 Jan 2024 11:13:24 +0000 (UTC)
+	with ESMTP id qs7SPEJv4U_Q; Fri, 26 Jan 2024 12:20:27 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 4E11181775;
-	Fri, 26 Jan 2024 11:13:24 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4E11181775
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id C34B41BF3D8
- for <intel-wired-lan@lists.osuosl.org>; Fri, 26 Jan 2024 11:13:22 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 9B61A836F6;
+	Fri, 26 Jan 2024 12:20:27 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9B61A836F6
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 830531BF363
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 26 Jan 2024 12:20:26 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 9B17A41EB5
- for <intel-wired-lan@lists.osuosl.org>; Fri, 26 Jan 2024 11:13:22 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9B17A41EB5
+ by smtp3.osuosl.org (Postfix) with ESMTP id 5AB2060BF1
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 26 Jan 2024 12:20:26 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 5AB2060BF1
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 0aHXF3TyPimi for <intel-wired-lan@lists.osuosl.org>;
- Fri, 26 Jan 2024 11:13:21 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id cvamc0F5hwI7 for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 26 Jan 2024 12:20:24 +0000 (UTC)
 Received: from mx3.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
- by smtp4.osuosl.org (Postfix) with ESMTPS id E55C041EB3
- for <intel-wired-lan@lists.osuosl.org>; Fri, 26 Jan 2024 11:13:20 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E55C041EB3
+ by smtp3.osuosl.org (Postfix) with ESMTPS id B52D860BB1
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 26 Jan 2024 12:20:24 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B52D860BB1
 Received: from [141.14.220.34] (g34.guest.molgen.mpg.de [141.14.220.34])
  (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested) (Authenticated sender: pmenzel)
- by mx.molgen.mpg.de (Postfix) with ESMTPSA id 1597761E5FE05;
- Fri, 26 Jan 2024 12:12:34 +0100 (CET)
-Message-ID: <fb90ae9c-1f83-424c-878a-8b7e472bb6f0@molgen.mpg.de>
-Date: Fri, 26 Jan 2024 12:12:32 +0100
+ by mx.molgen.mpg.de (Postfix) with ESMTPSA id 9E80061E5FE05;
+ Fri, 26 Jan 2024 13:20:08 +0100 (CET)
+Message-ID: <ef60b488-35d1-46f3-8ecd-f373b22bdf37@molgen.mpg.de>
+Date: Fri, 26 Jan 2024 13:20:08 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Content-Language: en-US
-To: Takeru Hayasaka <hayatake396@gmail.com>
-References: <20240126045220.861125-1-hayatake396@gmail.com>
+To: Sasha Neftin <sasha.neftin@intel.com>
+References: <20240124055700.818996-1-sasha.neftin@intel.com>
 From: Paul Menzel <pmenzel@molgen.mpg.de>
-In-Reply-To: <20240126045220.861125-1-hayatake396@gmail.com>
+In-Reply-To: <20240124055700.818996-1-sasha.neftin@intel.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-Subject: Re: [Intel-wired-lan] [PATCH net-next v3] ethtool: ice: Support for
- RSS settings to GTP from ethtool
+Subject: Re: [Intel-wired-lan] [PATCH iwl-net v1 1/1] igc: Remove temporary
+ workaround
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,38 +77,52 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Jonathan Corbet <corbet@lwn.net>, vladimir.oltean@nxp.com,
- linux-doc@vger.kernel.org, Jesse Brandeburg <jesse.brandeburg@intel.com>,
- laforge@gnumonks.org, linux-kernel@vger.kernel.org,
- Eric Dumazet <edumazet@google.com>, netdev@vger.kernel.org,
- Tony Nguyen <anthony.l.nguyen@intel.com>, intel-wired-lan@lists.osuosl.org,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- "David S. Miller" <davem@davemloft.net>, mailhol.vincent@wanadoo.fr
+Cc: intel-wired-lan@lists.osuosl.org
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Dear Takeru,
+Dear Sasha,
 
 
-This patch was sent at least four(?) times to the mailing list. Could 
-you please sent a patch tagged with [RESENT] or a v4, so there won’t be 
-several replies to different threads.
+Thank you for your patch. As always some nits.
 
-One nit below:
+Am 24.01.24 um 06:57 schrieb Sasha Neftin:
+> PHY_CONTROL register works as defined in the IEEE 802.3 specification.
 
-Am 26.01.24 um 05:52 schrieb Takeru Hayasaka:
-> This is a patch that enables RSS functionality for GTP packets using
-> ethtool.
-> A user can include her TEID and make RSS work for GTP-U over IPv4 by
-> doing the following:
-> `ethtool -N ens3 rx-flow-hash gtpu4 sde`
-> In addition to gtpu(4|6), we now support gtpc(4|6),gtpc(4|6)t,gtpu(4|6)e,
-> gtpu(4|6)u, and gtpu(4|6)d.
+Remove the dot/period as the parenthesis follow?
 
-Should you sent another iteration, please do not break lines, just 
-because a sentence ends, and please add a blank line between paragraphs.
+> (IEEE 802.3-2008 22.2.4.1). Tide up the temporary workaround.
 
-[…]
+I’d be more specific in the commit message summary/title. Maybe (now idea):
+
+igc: Enable PHY_CONTROL
+
+How did you test this?
+
+> Fixes: 5586838fe9ce ("igc: Add code for PHY support")
+> Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+> ---
+>   drivers/net/ethernet/intel/igc/igc_phy.c | 6 +-----
+>   1 file changed, 1 insertion(+), 5 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/igc/igc_phy.c b/drivers/net/ethernet/intel/igc/igc_phy.c
+> index 7cd8716d2ffa..861f37076861 100644
+> --- a/drivers/net/ethernet/intel/igc/igc_phy.c
+> +++ b/drivers/net/ethernet/intel/igc/igc_phy.c
+> @@ -130,11 +130,7 @@ void igc_power_down_phy_copper(struct igc_hw *hw)
+>   	/* The PHY will retain its settings across a power down/up cycle */
+>   	hw->phy.ops.read_reg(hw, PHY_CONTROL, &mii_reg);
+>   	mii_reg |= MII_CR_POWER_DOWN;
+> -
+> -	/* Temporary workaround - should be removed when PHY will implement
+> -	 * IEEE registers as properly
+> -	 */
+> -	/* hw->phy.ops.write_reg(hw, PHY_CONTROL, mii_reg);*/
+> +	hw->phy.ops.write_reg(hw, PHY_CONTROL, mii_reg);
+>   	usleep_range(1000, 2000);
+>   }
+
+Reviewed-by: Paul Menzel <pmenzel@molgen.mpg.de>
 
 
 Kind regards,
