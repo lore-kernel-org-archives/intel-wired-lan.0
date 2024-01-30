@@ -4,78 +4,79 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BD964C47DDF
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 30 Jan 2024 13:12:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D47E9C46CD2
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 30 Jan 2024 13:12:42 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 5397883276;
-	Tue, 30 Jan 2024 13:12:08 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 5397883276
+	by smtp1.osuosl.org (Postfix) with ESMTP id 8FF048176A;
+	Tue, 30 Jan 2024 13:12:42 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8FF048176A
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1706620328;
-	bh=OkLitXttwTUb/zXy/QPOOiy+a2/dYq/gNOT2sYOoFQw=;
+	s=default; t=1706620362;
+	bh=H/RTD1RwoRpdXnixtMCfeH2Plmj1QSMcfkNvWENkY8o=;
 	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=IoYGZ44FR20aSj2/530E1fw7fetS9WA8zfyJ48EAZvj5SwFZXHEmj5QufL6XE0xqt
-	 AAdU8ME/9MXshznZ6QzCKYtRsB8eAr0gt9uO8JO1s4KTT9UJirPJXxafGEFO/sgKA6
-	 oT2+ZBzTUObsb5xxFLaUMz7y0TDd8g+1uV8cF8EqrbxtZWV36DS8tn22Fr356cwe59
-	 jxLYTp0H85SGviMn5kdxUKDhU1VNATtNCmkHCtkIyPUaBBufsIqvLn/R09P4HXD95m
-	 0EmGDcc7ui990SZlh2k08DnqJiGT0Gs6aPq8NysRDAiHDsxcHBfKiqhseHijqfsffS
-	 G+OZ/8Q2HgQwg==
+	b=R/GK/9IS9q7DicfPnnTMVyppSXE2tPXhhXD8+Xut91u/0vXmg3DFAnf5hbQ9H3tRZ
+	 ewoqp5rTwI6tKN9sPMpLqUM0LbpWTHGcx3C4OgwuvnGLeASH7lGroYaAyaoOdZ93Av
+	 AJ8tP7j8MgcL1Jk36xlWv3svvCJSn0qRKO9c2Sfdp4YGIIDKCV/EgveCLLa1b0kkoK
+	 iz3Q9k/L8yk9nRxdTBduJnptnY8pod4A6I9o6RudsW50JqKP3NUx7EwPdAi+su7AMM
+	 FxHLrbn1GmzKCFl9mArXgbxEyHJ0MrjiGjyWpfQPbSArFCWX5S1OIQJec4iiVlOFaj
+	 M39lGale1U7Bg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
 	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id fyT6-ZLmVsWb; Tue, 30 Jan 2024 13:12:07 +0000 (UTC)
+	with ESMTP id 51WunzA4VL1k; Tue, 30 Jan 2024 13:12:42 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 63AE082446;
-	Tue, 30 Jan 2024 13:12:07 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 63AE082446
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id AFFC71BF2A5
- for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Jan 2024 13:12:05 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id C6C2482325;
+	Tue, 30 Jan 2024 13:12:41 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C6C2482325
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 3E5C41BF2A5
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Jan 2024 13:12:39 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 91C8341BBD
- for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Jan 2024 13:12:05 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 91C8341BBD
+ by smtp3.osuosl.org (Postfix) with ESMTP id 173E960BB0
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Jan 2024 13:12:39 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 173E960BB0
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 6RrBjIHWJwDq for <intel-wired-lan@lists.osuosl.org>;
- Tue, 30 Jan 2024 13:12:03 +0000 (UTC)
-Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 66C2A41B42
- for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Jan 2024 13:12:03 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 66C2A41B42
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id T2cSzpExM7-N for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 30 Jan 2024 13:12:38 +0000 (UTC)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org
+ [IPv6:2604:1380:4641:c500::1])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 6AD1B60586
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Jan 2024 13:12:38 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 6AD1B60586
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by sin.source.kernel.org (Postfix) with ESMTP id 31894CE182E;
- Tue, 30 Jan 2024 13:11:59 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D12BAC433F1;
- Tue, 30 Jan 2024 13:11:42 +0000 (UTC)
-Date: Tue, 30 Jan 2024 13:11:37 +0000
+ by dfw.source.kernel.org (Postfix) with ESMTP id 2086360B47;
+ Tue, 30 Jan 2024 13:12:37 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 44CF9C433F1;
+ Tue, 30 Jan 2024 13:12:32 +0000 (UTC)
+Date: Tue, 30 Jan 2024 13:12:25 +0000
 From: Simon Horman <horms@kernel.org>
 To: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
-Message-ID: <20240130131137.GH351311@kernel.org>
+Message-ID: <20240130131225.GI351311@kernel.org>
 References: <20240126130503.14197-1-jedrzej.jagielski@intel.com>
- <20240126130503.14197-3-jedrzej.jagielski@intel.com>
+ <20240126130503.14197-2-jedrzej.jagielski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20240126130503.14197-3-jedrzej.jagielski@intel.com>
+In-Reply-To: <20240126130503.14197-2-jedrzej.jagielski@intel.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1706620318;
- bh=EJ7lOS3Ds/Vj4BBISEpE3TpcTQc+OaYbGCsQqTvbFTM=;
+ d=kernel.org; s=k20201202; t=1706620356;
+ bh=zJEMnhEsbSau/vuSXwKgJowpq9X91ZF4cDUW9NsJboo=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=f2uErQRlD08eQ7ERt8Ru9DLzLIVy/uvJ3xUgzzW4e49v67dTtFngHQXX3A5Js2pwN
- +dKMV+T/4sI9y79Z+LYA/DEuFz81Haf7E2sktHAqBhl4qPUEcdBdLQ7k8OdnC+jWxx
- 7zyvd9eT05Ek12b68PNaA9rFiqFuH9sO3Bb7p00sORoHfNidnYtWL/lkNQNip8Eyuq
- cC93/1llLN5Fect6XXuPbwNf31TuKuXksoADSqTGv28ujHbMeHTfk7Q2On1anzBadb
- i8yDziEuftqwzfj9HklzPZXzRod+LUJg4E6R2P3eWsYmI/eYT9v0yZ7/NL96eAAfLc
- S8eWXPVnIbWow==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ b=UAOV9sw6SVot2WvXcnG1bTk52CPGXM1bXJ1f2iLd3FawJO3fcxwJUvg4xmBMoQp5O
+ UuszCIhnoHiScmobd1pXKDc/f9WkqAQK4TG2tekeaH1J4s0SU19aj5HyBieUFPKXFk
+ 3mBHJkttqMAGvOcQvO3PJ1ODVlFZVlV4tCKhXvIb9G9Rl+tgP7mnWybTwVWzLdsYsS
+ JrfGIqr+txvXb6fVcTHR3EX+Wq6AQEXsmEJ3/1YcBHWuF3B1NFr3mFD5aSZqlEa8M4
+ wozyBrjOGmREbtq/KAADJT4fBsEPfi1GHq+6hAjSBiuHyKjgbVNk9/HOs5i1saQMEU
+ uTcXzJ66gflCw==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=f2uErQRl
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next v4 3/3] ixgbe: Clarify the
- values of the returning status
+ header.a=rsa-sha256 header.s=k20201202 header.b=UAOV9sw6
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next v4 2/3] ixgbe: Rearrange args
+ to fix reverse Christmas tree
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,28 +90,17 @@ List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Cc: anthony.l.nguyen@intel.com, intel-wired-lan@lists.osuosl.org,
- Dan Carpenter <dan.carpenter@linaro.org>, netdev@vger.kernel.org
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>, netdev@vger.kernel.org
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Fri, Jan 26, 2024 at 02:05:03PM +0100, Jedrzej Jagielski wrote:
-> Converting s32 functions to regular int in the previous patch of the series
-> caused triggering smatch warnings about missing error code.
+On Fri, Jan 26, 2024 at 02:05:02PM +0100, Jedrzej Jagielski wrote:
+> Clean up the code touched during type conversion by the previous patch
+> of the series.
 > 
-> New smatch warnings:
-> drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c:2884 ixgbe_get_lcd_t_x550em() warn: missing error code? 'status'
-> drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c:3130 ixgbe_enter_lplu_t_x550em() warn: missing error code? 'status'
-> 
-> Old smatch warnings:
-> drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c:2890 ixgbe_get_lcd_t_x550em() warn: missing error code? 'status'
-> 
-> Fix it by clearly stating returning error code as 0.
-> 
-> Reported-by: kernel test robot <lkp@intel.com>
-> Reported-by: Dan Carpenter <dan.carpenter@linaro.org>
-> Closes: https://lore.kernel.org/r/202401041701.6QKTsZmx-lkp@intel.com/
+> Suggested-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 > Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
 
-Thanks, nice to see this cleaned up.
-
 Reviewed-by: Simon Horman <horms@kernel.org>
+
