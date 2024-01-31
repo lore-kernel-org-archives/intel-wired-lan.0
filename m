@@ -1,80 +1,88 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A6EF8C47258
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 31 Jan 2024 21:13:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7F988C47258
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 31 Jan 2024 21:52:16 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 0A1F7614E4;
-	Wed, 31 Jan 2024 21:13:09 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 0A1F7614E4
+	by smtp1.osuosl.org (Postfix) with ESMTP id 137A3843E1;
+	Wed, 31 Jan 2024 21:52:16 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 137A3843E1
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1706735589;
-	bh=CeBv//p4KifhhJq8A/dJibUw8SEEng+UVVtN4T8ou1A=;
-	h=Date:From:To:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=5PLxeIMdhIOn0JLeFpc+V60p2+ytA7DAr7dMgZkwM+egA6CGti6qx555+VzRbILXH
-	 UUKBEcczS7G86pRdKgbITlmovDlaeRCjZuYrYPGpTJ+kcgFFac1JmUtRcRDynHM9oP
-	 PGgBzBV9UhgC8/nQiONMq9DgTCwh/t2xN0ArUtqy3Y+Z1DmxIm+sgl4xPNehI/gSY5
-	 ibECEK9L7Mz9n4bt8teumD1A91L0/h6GNFOwA44Wh7xv48xuWzirJsg3s8pz1rgbdY
-	 /syG5rUQE0Zk9rRZNqyLx9MHQZ+9ULIlPFextksJjGCukm6AZfidv/HiIaobh+11S8
-	 4oV9Li1UdqwTQ==
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id bwhSv6AK3eDi; Wed, 31 Jan 2024 21:13:08 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 4BD61614E6;
-	Wed, 31 Jan 2024 21:13:08 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4BD61614E6
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 6BFB71BF4DB
- for <intel-wired-lan@lists.osuosl.org>; Wed, 31 Jan 2024 21:13:06 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 3F88D84563
- for <intel-wired-lan@lists.osuosl.org>; Wed, 31 Jan 2024 21:13:06 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 3F88D84563
+	s=default; t=1706737936;
+	bh=fj5+KnvCjkCA1VROQAJb+6GvG3Q73hjeaDvJBILdGpQ=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=3z4oJ+8IsO3rbq4DkoNR4Ro57et4VccX73y1WWaFF/PJ4IhZhcQyQf8OG8F0bEn5O
+	 loyhQMQEtGkJpF+gfiZYLVISS9dPuvuk7gaiZgXtaYIS0J10NR2zArV0ed8iIMzM/R
+	 6x2n9wTF1jJKJJ+oHmNzX1jNzOuihGhbnwL2kgCEhPFre1yNSFm5PrXNkhFpM24sy8
+	 2sKIA8Qlxbdn+jtUcAb0X7IeKJ8dZseDfPS0tg6kwDTnJHug5s2KYGQAUQmLCI6eCD
+	 bgQ+0kRfYd6GqCqfeL2YvCuHR1MdOwAIQlMraP/+dlvgoTH526dAF9JJY8HPg+26xX
+	 pXpA2Ei7mr6eg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id M933LH3rMUyS for <intel-wired-lan@lists.osuosl.org>;
- Wed, 31 Jan 2024 21:13:05 +0000 (UTC)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
- by smtp1.osuosl.org (Postfix) with ESMTPS id A82DB84561
- for <intel-wired-lan@lists.osuosl.org>; Wed, 31 Jan 2024 21:13:05 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org A82DB84561
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by dfw.source.kernel.org (Postfix) with ESMTP id 05C6E619EB;
- Wed, 31 Jan 2024 21:13:04 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2990BC43394;
- Wed, 31 Jan 2024 21:13:01 +0000 (UTC)
-Date: Wed, 31 Jan 2024 13:12:58 -0800
-From: Jakub Kicinski <kuba@kernel.org>
-To: Takeru Hayasaka <hayatake396@gmail.com>
-Message-ID: <20240131131258.47c05b7e@kernel.org>
-In-Reply-To: <20240131134621.1017530-1-hayatake396@gmail.com>
-References: <20240131134621.1017530-1-hayatake396@gmail.com>
+	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 3i1c1Izzd34V; Wed, 31 Jan 2024 21:52:15 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp1.osuosl.org (Postfix) with ESMTP id 2E46184512;
+	Wed, 31 Jan 2024 21:52:15 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2E46184512
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 961C01BF2E4
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 31 Jan 2024 21:52:13 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp2.osuosl.org (Postfix) with ESMTP id 6B00C40580
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 31 Jan 2024 21:52:13 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 6B00C40580
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id dQUgN1L-SUg7 for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 31 Jan 2024 21:52:12 +0000 (UTC)
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.9])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 27B2740139
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 31 Jan 2024 21:52:12 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 27B2740139
+X-IronPort-AV: E=McAfee;i="6600,9927,10969"; a="10497117"
+X-IronPort-AV: E=Sophos;i="6.05,233,1701158400"; d="scan'208";a="10497117"
+Received: from orsmga002.jf.intel.com ([10.7.209.21])
+ by fmvoesa103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 31 Jan 2024 13:52:04 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10969"; a="788730047"
+X-IronPort-AV: E=Sophos;i="6.05,233,1701158400"; d="scan'208";a="788730047"
+Received: from jekeller-desk.amr.corp.intel.com (HELO
+ jekeller-desk.jekeller.internal) ([10.166.241.1])
+ by orsmga002-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 31 Jan 2024 13:52:03 -0800
+From: Jacob Keller <jacob.e.keller@intel.com>
+To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>,
+ Anthony Nguyen <anthony.l.nguyen@intel.com>
+Date: Wed, 31 Jan 2024 13:51:58 -0800
+Message-ID: <20240131215158.2173207-1-jacob.e.keller@intel.com>
+X-Mailer: git-send-email 2.41.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1706735583;
- bh=KpeAZao1g931gOPKrARuB7csMwiSRG+PLjdP6UwwNN0=;
- h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=mHYp/br4PIDgr2Q2UoE2YGQ9ybcMX5UUpZjaqU4OWWRx3mz93/SKLXjbGoMBcqGtJ
- HzH+OOvNl1XNol3OrCKwFgZVB5YZ/czTicEfZwCOO3r30cN7qCdZL9YYzDhhuY2+wx
- WX7CYjDJ5Rf8IdaXwg7R99cFfEn485JP9llYEuzEUYGewIzg/vvrE2l6t3xoFYLd1O
- 4sC/m+sJXDsu/0g+faGE4XrVPbT3PeneVq5q4gD6CDUEUw1pZaqdyT3qI+DLHjG2xw
- ZobrCtsxoRmenhAMZPVTSRgwwZCvVdLzp8fOV/SPY1NthbyXZAgUVfW91qKJM5dPe7
- wxnnYftoxanVw==
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=mHYp/br4
-Subject: Re: [Intel-wired-lan] [PATCH net-next v6] ethtool: ice: Support for
- RSS settings to GTP from ethtool
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1706737932; x=1738273932;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=lKkRqeaz2y70e2A0fYlX14vw+bD/RdWNknzwV4+utxQ=;
+ b=HP6HzbqLVhdshCrn0AhW2upSXgcIojewGXPZUY51d4wvX/9x989bYsSl
+ dcSj1lyj/svUyKzWIz26LC0RYEv3NeZOwdsi+VRiZ526ZzkqzCuSc/GyT
+ p1EwSl+rYrs9fsRdCkK0D2dg8/djvK4fC/Zir3E9uqWwXmQOQxL7YIa0t
+ QFKDnLIMJnfmEugjwmenEKIpNSOGqYU7sKZbGyvXZSOR9ES3Vhj8kjsz6
+ AvPrDILWPih3KZJCDw58CLtXY1Pi5FDcsWs4wdZeq8eb2z77Tjc1f7rUa
+ i7j4EbLE2yY5VHkHcnlln0ez4Mg3QGOwvKxbmSz2d2fEuL15CQRxFjF1j
+ g==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=HP6HzbqL
+Subject: [Intel-wired-lan] [PATCH iwl-net] ice: virtchnl: stop pretending to
+ support RSS over AQ or registers
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,25 +95,92 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Jonathan Corbet <corbet@lwn.net>, netdev@vger.kernel.org,
- linux-doc@vger.kernel.org, Jesse Brandeburg <jesse.brandeburg@intel.com>,
- laforge@gnumonks.org, linux-kernel@vger.kernel.org,
- Eric Dumazet <edumazet@google.com>, Tony Nguyen <anthony.l.nguyen@intel.com>,
- vladimir.oltean@nxp.com, intel-wired-lan@lists.osuosl.org,
- Paolo Abeni <pabeni@redhat.com>, "David S. Miller" <davem@davemloft.net>,
- mailhol.vincent@wanadoo.fr
+Cc: Jacob Keller <jacob.e.keller@intel.com>, Alan Brady <alan.brady@intel.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Wed, 31 Jan 2024 13:46:22 +0000 Takeru Hayasaka wrote:
->  .../device_drivers/ethernet/intel/ice.rst     | 21 ++++-
->  drivers/net/ethernet/intel/ice/ice_ethtool.c  | 82 +++++++++++++++++++
->  drivers/net/ethernet/intel/ice/ice_flow.h     | 31 +++++--
->  drivers/net/ethernet/intel/ice/ice_lib.c      | 37 +++++++++
->  include/uapi/linux/ethtool.h                  | 48 +++++++++++
+The E800 series hardware uses the same iAVF driver as older devices,
+including the virtchnl negotiation scheme.
 
-Could you split the uAPI changes and the driver changes to two separate
-commits? You should post them as a patch series, but combining them
-into a single commit makes the uAPI addition to easy to miss.
+This negotiation scheme includes a mechanism to determine what type of RSS
+should be supported, including RSS over PF virtchnl messages, RSS over
+firmware AdminQ messages, and RSS via direct register access.
+
+The PF driver will always prefer VIRTCHNL_VF_OFFLOAD_RSS_PF if its
+supported by the VF driver. However, if an older VF driver is loaded, it
+may request only VIRTCHNL_VF_OFFLOAD_RSS_REG or VIRTCHNL_VF_OFFLOAD_RSS_AQ.
+
+The ice driver happily agrees to support these methods. Unfortunately, the
+underlying hardware does not support these mechanisms. The E800 series VFs
+don't have the appropriate registers for RSS_REG. The mailbox queue used by
+VFs for VF to PF communication blocks messages which do not have the
+VF-to-PF opcode.
+
+Stop lying to the VF that it could support RSS over AdminQ or registers, as
+these interfaces do not work when the hardware is operating on an E800
+series device.
+
+In practice this is unlikely to be hit by any normal user. The iAVF driver
+has supported RSS over PF virtchnl commands since 2016, and always defaults
+to using RSS_PF if possible.
+
+In principle, nothing actually stops the existing VF from attempting to
+access the registers or send an AQ command. However a properly coded VF
+will check the capability flags and will report a more useful error if it
+detects a case where the driver does not support the RSS offloads that it
+does.
+
+Fixes: 1071a8358a28 ("ice: Implement virtchnl commands for AVF support")
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Reviewed-by: Alan Brady <alan.brady@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_virtchnl.c           | 9 +--------
+ drivers/net/ethernet/intel/ice/ice_virtchnl_allowlist.c | 2 --
+ 2 files changed, 1 insertion(+), 10 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl.c b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
+index c925813ec9ca..6f2328a049bf 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
+@@ -440,7 +440,6 @@ static int ice_vc_get_vf_res_msg(struct ice_vf *vf, u8 *msg)
+ 		vf->driver_caps = *(u32 *)msg;
+ 	else
+ 		vf->driver_caps = VIRTCHNL_VF_OFFLOAD_L2 |
+-				  VIRTCHNL_VF_OFFLOAD_RSS_REG |
+ 				  VIRTCHNL_VF_OFFLOAD_VLAN;
+ 
+ 	vfres->vf_cap_flags = VIRTCHNL_VF_OFFLOAD_L2;
+@@ -453,14 +452,8 @@ static int ice_vc_get_vf_res_msg(struct ice_vf *vf, u8 *msg)
+ 	vfres->vf_cap_flags |= ice_vc_get_vlan_caps(hw, vf, vsi,
+ 						    vf->driver_caps);
+ 
+-	if (vf->driver_caps & VIRTCHNL_VF_OFFLOAD_RSS_PF) {
++	if (vf->driver_caps & VIRTCHNL_VF_OFFLOAD_RSS_PF)
+ 		vfres->vf_cap_flags |= VIRTCHNL_VF_OFFLOAD_RSS_PF;
+-	} else {
+-		if (vf->driver_caps & VIRTCHNL_VF_OFFLOAD_RSS_AQ)
+-			vfres->vf_cap_flags |= VIRTCHNL_VF_OFFLOAD_RSS_AQ;
+-		else
+-			vfres->vf_cap_flags |= VIRTCHNL_VF_OFFLOAD_RSS_REG;
+-	}
+ 
+ 	if (vf->driver_caps & VIRTCHNL_VF_OFFLOAD_RX_FLEX_DESC)
+ 		vfres->vf_cap_flags |= VIRTCHNL_VF_OFFLOAD_RX_FLEX_DESC;
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_allowlist.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_allowlist.c
+index 5e19d48a05b4..d796dbd2a440 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_allowlist.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_allowlist.c
+@@ -13,8 +13,6 @@
+  * - opcodes needed by VF when caps are activated
+  *
+  * Caps that don't use new opcodes (no opcodes should be allowed):
+- * - VIRTCHNL_VF_OFFLOAD_RSS_AQ
+- * - VIRTCHNL_VF_OFFLOAD_RSS_REG
+  * - VIRTCHNL_VF_OFFLOAD_WB_ON_ITR
+  * - VIRTCHNL_VF_OFFLOAD_CRC
+  * - VIRTCHNL_VF_OFFLOAD_RX_POLLING
+
+base-commit: d0005e76b73b095138cee9d662831761ffde84a8
 -- 
-pw-bot: cr
+2.41.0
+
