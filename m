@@ -4,63 +4,63 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BC8B0C47DB3
-	for <intel-wired-lan@archiver.kernel.org>; Fri,  2 Feb 2024 14:55:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9F64BC47DB3
+	for <intel-wired-lan@archiver.kernel.org>; Fri,  2 Feb 2024 14:55:52 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 72B114374D;
-	Fri,  2 Feb 2024 14:55:47 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 72B114374D
+	by smtp2.osuosl.org (Postfix) with ESMTP id 42D6743770;
+	Fri,  2 Feb 2024 14:55:52 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 42D6743770
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1706885747;
-	bh=OksPROaUvQkaJh1dljDcayAAYPAf3Iyccfa2bV8KDlI=;
+	s=default; t=1706885752;
+	bh=1m2BdCbR5J5byV0Qm16XD7IZ6HsR0hiIiLN9T8A3uLo=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=S9DGbxmTGH8CK1gMaMxzKYUI5iJpYu6jOMwfbgaGgL5AOtazCzdU3TpR40T3P2/me
-	 sLkoQ6bJ40siD17MYVi4as7ljBYqh0vbW7tb//KoVN/ZzSCZ8NRrhb60PcqUlvwRMj
-	 xOhF96ZnnV1KaaEGP9tIlBQuNTQOZL9ytx19eGiHwUkd+7TfC0cAYO7gXRV0z9CqKz
-	 B3bvFNi74ULxk1lmoVwJayjVPTSHznQ8PApLwHN7Ej6C31DUiox934gSsnCKScuOFO
-	 amqt2LtpstqSXNEg1BxCi7PxOg95XZtsWMiCgFBohD2qU0UzpnE9JvRMyLqwzf1SP2
-	 gh9UIsTqOVy2g==
+	b=h8hiTO+xMyrZueQDf1H08aleP78hlQ0DbevCsAe0VJJTmcBoG6eRgNRkOH4gSDBZi
+	 O4BStl6A3haL2IRsk2PUTHgnIFdNy83kBU/YIA/1SsRwaT9D/drdSvIsbCCrBjT4SZ
+	 UDsM9/cs3dNIg2j+oBBhcO5VyusQjidstG4U2fzPlifVzb1L7ZqSDb+qlCiLB7MR/Q
+	 D67bw9xmaVm7zy8u2vrmHt07K0fYiMdo3gzKXsIW7FHqoPSAhxWYvA/spkwVvdIygC
+	 n+SnjymGKU+hZYtj+78zf2pxOmBfb1aERJxDE+OMSNxRc/imB9U0is/fo9kydkLM6x
+	 jASBVxRons5SA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id X7prekIfnHeI; Fri,  2 Feb 2024 14:55:47 +0000 (UTC)
+	with ESMTP id y-YMCHJh6BzJ; Fri,  2 Feb 2024 14:55:51 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 94BCD43760;
-	Fri,  2 Feb 2024 14:55:46 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 94BCD43760
+	by smtp2.osuosl.org (Postfix) with ESMTP id 3184643767;
+	Fri,  2 Feb 2024 14:55:51 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 3184643767
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 4DB631BF99D
- for <intel-wired-lan@lists.osuosl.org>; Fri,  2 Feb 2024 14:55:40 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 27A361BF99D
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  2 Feb 2024 14:55:41 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 8E6E2426FE
+ by smtp4.osuosl.org (Postfix) with ESMTP id AF7DD4224C
  for <intel-wired-lan@lists.osuosl.org>; Fri,  2 Feb 2024 14:55:39 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 8E6E2426FE
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org AF7DD4224C
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id oTFu0wxASs0v for <intel-wired-lan@lists.osuosl.org>;
- Fri,  2 Feb 2024 14:55:39 +0000 (UTC)
+ with ESMTP id Tn-P00_deYX9 for <intel-wired-lan@lists.osuosl.org>;
+ Fri,  2 Feb 2024 14:55:38 +0000 (UTC)
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.11])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 07AC34224C
+ by smtp4.osuosl.org (Postfix) with ESMTPS id CBBBB42084
  for <intel-wired-lan@lists.osuosl.org>; Fri,  2 Feb 2024 14:55:38 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 07AC34224C
-X-IronPort-AV: E=McAfee;i="6600,9927,10971"; a="10823043"
-X-IronPort-AV: E=Sophos;i="6.05,238,1701158400"; d="scan'208";a="10823043"
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org CBBBB42084
+X-IronPort-AV: E=McAfee;i="6600,9927,10971"; a="10823025"
+X-IronPort-AV: E=Sophos;i="6.05,238,1701158400"; d="scan'208";a="10823025"
 Received: from orviesa009.jf.intel.com ([10.64.159.149])
  by fmvoesa105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 02 Feb 2024 06:55:36 -0800
+ 02 Feb 2024 06:55:27 -0800
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.05,238,1701158400"; 
-   d="scan'208";a="98474"
+   d="scan'208";a="98422"
 Received: from wasp.igk.intel.com (HELO GK3153-DR2-R750-36946.localdomain.com)
  ([10.102.20.192])
- by orviesa009.jf.intel.com with ESMTP; 02 Feb 2024 06:55:34 -0800
+ by orviesa009.jf.intel.com with ESMTP; 02 Feb 2024 06:55:25 -0800
 From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Fri,  2 Feb 2024 15:59:26 +0100
-Message-ID: <20240202145929.12444-7-michal.swiatkowski@linux.intel.com>
+Date: Fri,  2 Feb 2024 15:59:23 +0100
+Message-ID: <20240202145929.12444-4-michal.swiatkowski@linux.intel.com>
 X-Mailer: git-send-email 2.42.0
 In-Reply-To: <20240202145929.12444-1-michal.swiatkowski@linux.intel.com>
 References: <20240202145929.12444-1-michal.swiatkowski@linux.intel.com>
@@ -71,18 +71,19 @@ X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  t=1706885739; x=1738421739;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=PNyrbCjywjNlIXYg5ByVAotjsH2kxGncIfNEMqdut3Q=;
- b=OXtEjXW5tFXeN5pDcYIjpz4ns2ArJml17jQx42duIZW2OQPobG9GmfLW
- uTFhnZHKxcRfobWfkNAu0HF6K/mjlAgnUZOsqKzq/MFmsURV+7p8JnDAo
- dk3bsvYYT5tA+Bh+RcWjShYXDGSbfIUNDccpQEPTDVPSxQB7JwkZ46NQ5
- Ds71ZKYtrH/QkH5ASV2QTzh1HMAu7ZP+7kTtwx7m+YyKAqvqUc5Wwp7vO
- gQE9TPwB8l5+096np9wM+l78rwb4X+6fMgwHoGri9qHjIn3OkCdBcB1rs
- 5IUOBRXU9cikliUKHTKmkQGwU15NV4pLpHWvHWUlmFKfTOQ7tDfyjkIxD
- w==;
+ bh=b3TBo+2T3bhHQrRaE8PQde+Tpb0ao34ggdfzRQGIPrw=;
+ b=JcagfMQnWgHVLEzuuxqNVYtyFy8h70Ds358HdgVtncupCNUOk8Qlhflc
+ EY0X2VALt1CABg9DLKhraDyoftIImxeq2iIbV7gpBmPRGuJ/OwuhuTmlK
+ 2zezscGdWeI4yUZpKPZRKProV5naWTneVvaQivtYL+RTKqXCqNRP54nBY
+ 7N7cDzdH0M7cGLPP92vjR6Lnqq8w3UzFsgJxFoL4uJZ1uZykVjcrt2QdE
+ d1iTr9A4WVbV5yDgWtXwveQqLfD0lm/XA51clbMxZCYU3OajEcBcbinsF
+ jlgOIBnbnJkcnGLCniELyQJU5boCRvCmy3w/9zCzZD9lMYUI0cOFRhUFo
+ g==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=OXtEjXW5
-Subject: [Intel-wired-lan] [iwl-next v2 6/8] ice: change repr::id values
+ header.a=rsa-sha256 header.s=Intel header.b=JcagfMQn
+Subject: [Intel-wired-lan] [iwl-next v2 3/8] ice: default Tx rule instead of
+ to queue
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,51 +103,236 @@ Cc: wojciech.drewek@intel.com, marcin.szycik@intel.com,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Instead of getting repr::id from xa_alloc() value, set it to the
-src_vsi::num_vsi value. It is unique for each PR.
+Steer all packets that miss other rules to PF VSI. Previously in
+switchdev mode, PF VSI received missed packets, but only ones marked
+as Rx. Now it is receiving all missed packets.
 
-Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+To queue rule per PR isn't needed, because we use PF VSI instead of
+control VSI now, and it's already correctly configured.
+
+Add flag to correctly set LAN_EN bit in default Tx rule. It shouldn't
+allow packet to go outside when there is a match.
+
 Reviewed-by: Marcin Szycik <marcin.szycik@linux.intel.com>
 Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_eswitch.c | 5 ++---
- drivers/net/ethernet/intel/ice/ice_repr.c    | 1 +
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_eswitch.c | 107 +++----------------
+ drivers/net/ethernet/intel/ice/ice_repr.h    |   4 -
+ drivers/net/ethernet/intel/ice/ice_switch.c  |   4 +
+ drivers/net/ethernet/intel/ice/ice_switch.h  |   5 +-
+ 4 files changed, 23 insertions(+), 97 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_eswitch.c b/drivers/net/ethernet/intel/ice/ice_eswitch.c
-index 76fa114f22c9..5eba8dec9f94 100644
+index 8ad271534d80..50b3de700837 100644
 --- a/drivers/net/ethernet/intel/ice/ice_eswitch.c
 +++ b/drivers/net/ethernet/intel/ice/ice_eswitch.c
-@@ -319,7 +319,7 @@ ice_eswitch_mode_set(struct devlink *devlink, u16 mode,
+@@ -10,85 +10,6 @@
+ #include "ice_devlink.h"
+ #include "ice_tc_lib.h"
  
- 		dev_info(ice_pf_to_dev(pf), "PF %d changed eswitch mode to switchdev",
- 			 pf->hw.pf_id);
--		xa_init_flags(&pf->eswitch.reprs, XA_FLAGS_ALLOC);
-+		xa_init(&pf->eswitch.reprs);
- 		NL_SET_ERR_MSG_MOD(extack, "Changed eswitch mode to switchdev");
- 		break;
+-/**
+- * ice_eswitch_del_sp_rules - delete adv rules added on PRs
+- * @pf: pointer to the PF struct
+- *
+- * Delete all advanced rules that were used to forward packets with the
+- * device's VSI index to the corresponding eswitch ctrl VSI queue.
+- */
+-static void ice_eswitch_del_sp_rules(struct ice_pf *pf)
+-{
+-	struct ice_repr *repr;
+-	unsigned long id;
+-
+-	xa_for_each(&pf->eswitch.reprs, id, repr) {
+-		if (repr->sp_rule.rid)
+-			ice_rem_adv_rule_by_id(&pf->hw, &repr->sp_rule);
+-	}
+-}
+-
+-/**
+- * ice_eswitch_add_sp_rule - add adv rule with device's VSI index
+- * @pf: pointer to PF struct
+- * @repr: pointer to the repr struct
+- *
+- * This function adds advanced rule that forwards packets with
+- * device's VSI index to the corresponding eswitch ctrl VSI queue.
+- */
+-static int ice_eswitch_add_sp_rule(struct ice_pf *pf, struct ice_repr *repr)
+-{
+-	struct ice_vsi *ctrl_vsi = pf->eswitch.control_vsi;
+-	struct ice_adv_rule_info rule_info = { 0 };
+-	struct ice_adv_lkup_elem *list;
+-	struct ice_hw *hw = &pf->hw;
+-	const u16 lkups_cnt = 1;
+-	int err;
+-
+-	list = kcalloc(lkups_cnt, sizeof(*list), GFP_ATOMIC);
+-	if (!list)
+-		return -ENOMEM;
+-
+-	ice_rule_add_src_vsi_metadata(list);
+-
+-	rule_info.sw_act.flag = ICE_FLTR_TX;
+-	rule_info.sw_act.vsi_handle = ctrl_vsi->idx;
+-	rule_info.sw_act.fltr_act = ICE_FWD_TO_Q;
+-	rule_info.sw_act.fwd_id.q_id = hw->func_caps.common_cap.rxq_first_id +
+-				       ctrl_vsi->rxq_map[repr->q_id];
+-	rule_info.flags_info.act |= ICE_SINGLE_ACT_LB_ENABLE;
+-	rule_info.flags_info.act_valid = true;
+-	rule_info.tun_type = ICE_SW_TUN_AND_NON_TUN;
+-	rule_info.src_vsi = repr->src_vsi->idx;
+-
+-	err = ice_add_adv_rule(hw, list, lkups_cnt, &rule_info,
+-			       &repr->sp_rule);
+-	if (err)
+-		dev_err(ice_pf_to_dev(pf), "Unable to add slow-path rule for eswitch for PR %d",
+-			repr->id);
+-
+-	kfree(list);
+-	return err;
+-}
+-
+-static int
+-ice_eswitch_add_sp_rules(struct ice_pf *pf)
+-{
+-	struct ice_repr *repr;
+-	unsigned long id;
+-	int err;
+-
+-	xa_for_each(&pf->eswitch.reprs, id, repr) {
+-		err = ice_eswitch_add_sp_rule(pf, repr);
+-		if (err) {
+-			ice_eswitch_del_sp_rules(pf);
+-			return err;
+-		}
+-	}
+-
+-	return 0;
+-}
+-
+ /**
+  * ice_eswitch_setup_env - configure eswitch HW filters
+  * @pf: pointer to PF struct
+@@ -102,7 +23,6 @@ static int ice_eswitch_setup_env(struct ice_pf *pf)
+ 	struct ice_vsi *ctrl_vsi = pf->eswitch.control_vsi;
+ 	struct net_device *netdev = uplink_vsi->netdev;
+ 	struct ice_vsi_vlan_ops *vlan_ops;
+-	bool rule_added = false;
+ 
+ 	ice_remove_vsi_fltr(&pf->hw, uplink_vsi->idx);
+ 
+@@ -112,17 +32,19 @@ static int ice_eswitch_setup_env(struct ice_pf *pf)
+ 	netif_addr_unlock_bh(netdev);
+ 
+ 	if (ice_vsi_add_vlan_zero(uplink_vsi))
++		goto err_vlan_zero;
++
++	if (ice_cfg_dflt_vsi(uplink_vsi->port_info, uplink_vsi->idx, true,
++			     ICE_FLTR_RX))
+ 		goto err_def_rx;
+ 
+-	if (!ice_is_dflt_vsi_in_use(uplink_vsi->port_info)) {
+-		if (ice_set_dflt_vsi(uplink_vsi))
+-			goto err_def_rx;
+-		rule_added = true;
+-	}
++	if (ice_cfg_dflt_vsi(uplink_vsi->port_info, uplink_vsi->idx, true,
++			     ICE_FLTR_TX))
++		goto err_def_tx;
+ 
+ 	vlan_ops = ice_get_compat_vsi_vlan_ops(uplink_vsi);
+ 	if (vlan_ops->dis_rx_filtering(uplink_vsi))
+-		goto err_dis_rx;
++		goto err_vlan_filtering;
+ 
+ 	if (ice_vsi_update_security(uplink_vsi, ice_vsi_ctx_set_allow_override))
+ 		goto err_override_uplink;
+@@ -141,10 +63,15 @@ static int ice_eswitch_setup_env(struct ice_pf *pf)
+ 	ice_vsi_update_security(uplink_vsi, ice_vsi_ctx_clear_allow_override);
+ err_override_uplink:
+ 	vlan_ops->ena_rx_filtering(uplink_vsi);
+-err_dis_rx:
+-	if (rule_added)
+-		ice_clear_dflt_vsi(uplink_vsi);
++err_vlan_filtering:
++	ice_cfg_dflt_vsi(uplink_vsi->port_info, uplink_vsi->idx, false,
++			 ICE_FLTR_TX);
++err_def_tx:
++	ice_cfg_dflt_vsi(uplink_vsi->port_info, uplink_vsi->idx, false,
++			 ICE_FLTR_RX);
+ err_def_rx:
++	ice_vsi_del_vlan_zero(uplink_vsi);
++err_vlan_zero:
+ 	ice_fltr_add_mac_and_broadcast(uplink_vsi,
+ 				       uplink_vsi->port_info->mac.perm_addr,
+ 				       ICE_FWD_TO_VSI);
+@@ -585,7 +512,6 @@ void ice_eswitch_stop_all_tx_queues(struct ice_pf *pf)
+ 
+ static void ice_eswitch_stop_reprs(struct ice_pf *pf)
+ {
+-	ice_eswitch_del_sp_rules(pf);
+ 	ice_eswitch_stop_all_tx_queues(pf);
+ 	ice_eswitch_napi_disable(&pf->eswitch.reprs);
+ }
+@@ -594,7 +520,6 @@ static void ice_eswitch_start_reprs(struct ice_pf *pf)
+ {
+ 	ice_eswitch_napi_enable(&pf->eswitch.reprs);
+ 	ice_eswitch_start_all_tx_queues(pf);
+-	ice_eswitch_add_sp_rules(pf);
+ }
+ 
+ static void
+diff --git a/drivers/net/ethernet/intel/ice/ice_repr.h b/drivers/net/ethernet/intel/ice/ice_repr.h
+index b107e058d538..34823f58cd23 100644
+--- a/drivers/net/ethernet/intel/ice/ice_repr.h
++++ b/drivers/net/ethernet/intel/ice/ice_repr.h
+@@ -16,10 +16,6 @@ struct ice_repr {
+ 	int q_id;
+ 	u32 id;
+ 	u8 parent_mac[ETH_ALEN];
+-#ifdef CONFIG_ICE_SWITCHDEV
+-	/* info about slow path rule */
+-	struct ice_rule_query_data sp_rule;
+-#endif
+ };
+ 
+ struct ice_repr *ice_repr_add_vf(struct ice_vf *vf);
+diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
+index 53dd64768035..6937b2a3c9fe 100644
+--- a/drivers/net/ethernet/intel/ice/ice_switch.c
++++ b/drivers/net/ethernet/intel/ice/ice_switch.c
+@@ -2532,6 +2532,9 @@ static void ice_fill_sw_info(struct ice_hw *hw, struct ice_fltr_info *fi)
+ 			fi->lan_en = true;
+ 		}
  	}
-@@ -426,8 +426,7 @@ ice_eswitch_attach(struct ice_pf *pf, struct ice_vf *vf)
- 	if (err)
- 		goto err_setup_repr;
++
++	if (fi->flag & ICE_FLTR_TX_ONLY)
++		fi->lan_en = false;
+ }
  
--	err = xa_alloc(&pf->eswitch.reprs, &repr->id, repr,
--		       XA_LIMIT(1, INT_MAX), GFP_KERNEL);
-+	err = xa_insert(&pf->eswitch.reprs, repr->id, repr, GFP_KERNEL);
- 	if (err)
- 		goto err_xa_alloc;
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_repr.c b/drivers/net/ethernet/intel/ice/ice_repr.c
-index a5c24da31b88..b4fb74271811 100644
---- a/drivers/net/ethernet/intel/ice/ice_repr.c
-+++ b/drivers/net/ethernet/intel/ice/ice_repr.c
-@@ -345,6 +345,7 @@ ice_repr_add(struct ice_pf *pf, struct ice_vsi *src_vsi, const u8 *parent_mac)
+ /**
+@@ -3907,6 +3910,7 @@ ice_cfg_dflt_vsi(struct ice_port_info *pi, u16 vsi_handle, bool set,
+ 	} else if (f_info.flag & ICE_FLTR_TX) {
+ 		f_info.src_id = ICE_SRC_ID_VSI;
+ 		f_info.src = hw_vsi_id;
++		f_info.flag |= ICE_FLTR_TX_ONLY;
  	}
+ 	f_list_entry.fltr_info = f_info;
  
- 	repr->src_vsi = src_vsi;
-+	repr->id = src_vsi->vsi_num;
- 	np = netdev_priv(repr->netdev);
- 	np->repr = repr;
+diff --git a/drivers/net/ethernet/intel/ice/ice_switch.h b/drivers/net/ethernet/intel/ice/ice_switch.h
+index 9cf819b20d9c..1e579b866233 100644
+--- a/drivers/net/ethernet/intel/ice/ice_switch.h
++++ b/drivers/net/ethernet/intel/ice/ice_switch.h
+@@ -8,8 +8,9 @@
+ 
+ #define ICE_SW_CFG_MAX_BUF_LEN 2048
+ #define ICE_DFLT_VSI_INVAL 0xff
+-#define ICE_FLTR_RX BIT(0)
+-#define ICE_FLTR_TX BIT(1)
++#define ICE_FLTR_RX		BIT(0)
++#define ICE_FLTR_TX		BIT(1)
++#define ICE_FLTR_TX_ONLY	BIT(2)
+ #define ICE_VSI_INVAL_ID 0xffff
+ #define ICE_INVAL_Q_HANDLE 0xFFFF
  
 -- 
 2.42.0
