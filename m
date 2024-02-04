@@ -4,65 +4,63 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EB2CEC48286
-	for <intel-wired-lan@archiver.kernel.org>; Sun,  4 Feb 2024 15:12:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 013AFC4828F
+	for <intel-wired-lan@archiver.kernel.org>; Sun,  4 Feb 2024 20:09:10 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 7C1A041737;
-	Sun,  4 Feb 2024 15:12:56 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 7C1A041737
+	by smtp4.osuosl.org (Postfix) with ESMTP id 78AEC41612;
+	Sun,  4 Feb 2024 20:09:10 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 78AEC41612
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1707059576;
-	bh=gflw4YyLuMAe2h5xazTuDp4SL2Shijesbk5Fa6ADkLI=;
+	s=default; t=1707077350;
+	bh=ouVZksEXK/xMPgXsQ/OT9ohmeeL5dL9MmZKGpPPQFb0=;
 	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=y8WeIy1b0U7G45xDo4yudqDYWjkcaPwOQO7lrxb/mHIMMhzmEhVAbW5MQ99E4ALUs
-	 1N+N7DEUIG+yYoecQFq55K//vxAfzbRMNv2fAd8p9ysugTYqIO1gIPbWWydG3TXxXU
-	 RdX0NU12Cinjixu/8AUn7zhIe9QfInrIFlfu/Wm5fI1zYE7CH+k7KSmYx4CQDKuSE/
-	 F+IgW9NBlMEp7qWHlUpbQYeJMNKiwu3HEv63cKC1mrA9SSRc9PySybrljahFoU8axJ
-	 75mqgvDmfhqVjfldprfC+5p0qSF3+Xz8kdt2PnMKUFv1FyoopdFn1izvpacqrOqzZi
-	 evQ19nYX1wkaA==
+	b=UU5bfpwmg1TegQMVm5THFL7T1iAKqPPGFSDgZ3+lDaW78iruJrsYgjfMjtG596ltB
+	 vBr0HhxNXCmyUoWoWsSY6Pk+yBWnAUiVXQRZq9wmWzEmI9gIcuywrjupNzL5ZUUYIh
+	 nFp5a4gWkP4OjQrvdVteOnKBI7/sYIWfWZ16gMA7zEJ5JurQCFwUK11TLTiYaxlAJS
+	 0cFUYVHOZUVmpweH5HOK44MbBpRDIOnDigjjHSaoLoStwvI8fxCKc4arf33Drx+7NM
+	 pGfFiLR9zyx7tHNbdDybp//7b4dstwAzrB0CQ00L+viR9xDMKrk2XgFxdqSLhJQ7YT
+	 C4Xrk6+lePwaQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id DmaEYsRQHWbI; Sun,  4 Feb 2024 15:12:56 +0000 (UTC)
+	with ESMTP id sCm89Gd8OPKj; Sun,  4 Feb 2024 20:09:10 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id B97E141741;
-	Sun,  4 Feb 2024 15:12:55 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B97E141741
+	by smtp4.osuosl.org (Postfix) with ESMTP id A072C416B7;
+	Sun,  4 Feb 2024 20:09:09 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org A072C416B7
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 4788B1BF47A
- for <intel-wired-lan@lists.osuosl.org>; Sun,  4 Feb 2024 15:12:54 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id ACFED1BF425
+ for <intel-wired-lan@lists.osuosl.org>; Sun,  4 Feb 2024 20:09:07 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 1CB5D41741
- for <intel-wired-lan@lists.osuosl.org>; Sun,  4 Feb 2024 15:12:54 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1CB5D41741
+ by smtp4.osuosl.org (Postfix) with ESMTP id 783B240974
+ for <intel-wired-lan@lists.osuosl.org>; Sun,  4 Feb 2024 20:09:07 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 783B240974
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id OqsnGQqEmlny for <intel-wired-lan@lists.osuosl.org>;
- Sun,  4 Feb 2024 15:12:52 +0000 (UTC)
-X-Greylist: delayed 427 seconds by postgrey-1.37 at util1.osuosl.org;
- Sun, 04 Feb 2024 15:12:52 UTC
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org A74F841737
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.17])
- by smtp4.osuosl.org (Postfix) with ESMTPS id A74F841737
- for <intel-wired-lan@lists.osuosl.org>; Sun,  4 Feb 2024 15:12:52 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10973"; a="550259"
+ with ESMTP id Leoj-G_lMxWz for <intel-wired-lan@lists.osuosl.org>;
+ Sun,  4 Feb 2024 20:09:05 +0000 (UTC)
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.18])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 3751F4022F
+ for <intel-wired-lan@lists.osuosl.org>; Sun,  4 Feb 2024 20:09:05 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3751F4022F
+X-IronPort-AV: E=McAfee;i="6600,9927,10973"; a="304425"
 X-IronPort-AV: E=Sophos;i="6.05,242,1701158400"; 
-   d="scan'208";a="550259"
-Received: from orsmga001.jf.intel.com ([10.7.209.18])
- by orvoesa109.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 04 Feb 2024 07:05:44 -0800
+   d="scan'208";a="304425"
+Received: from fmviesa004.fm.intel.com ([10.60.135.144])
+ by fmvoesa112.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 04 Feb 2024 12:09:04 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10973"; a="823649190"
-X-IronPort-AV: E=Sophos;i="6.05,242,1701158400"; d="scan'208";a="823649190"
+X-IronPort-AV: E=Sophos;i="6.05,242,1701158400"; 
+   d="scan'208";a="5185667"
 Received: from naamamex-mobl.ger.corp.intel.com (HELO [10.124.132.248])
  ([10.124.132.248])
- by orsmga001-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 04 Feb 2024 07:05:41 -0800
-Message-ID: <1e8740a0-b2b3-41d3-a554-9fb2d79dd32a@linux.intel.com>
-Date: Sun, 4 Feb 2024 17:05:37 +0200
+ by fmviesa004-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 04 Feb 2024 12:08:59 -0800
+Message-ID: <2b2029bd-083f-444f-ab55-ac63827a9f5e@linux.intel.com>
+Date: Sun, 4 Feb 2024 22:08:57 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Content-Language: en-US
@@ -71,29 +69,29 @@ To: Kurt Kanzenbach <kurt@linutronix.de>,
  Tony Nguyen <anthony.l.nguyen@intel.com>,
  Vinicius Costa Gomes <vinicius.gomes@intel.com>
 References: <20240124085532.58841-1-kurt@linutronix.de>
- <20240124085532.58841-3-kurt@linutronix.de>
+ <20240124085532.58841-4-kurt@linutronix.de>
 From: "naamax.meir" <naamax.meir@linux.intel.com>
-In-Reply-To: <20240124085532.58841-3-kurt@linutronix.de>
+In-Reply-To: <20240124085532.58841-4-kurt@linutronix.de>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1707059573; x=1738595573;
+ t=1707077345; x=1738613345;
  h=message-id:date:mime-version:subject:to:cc:references:
  from:in-reply-to:content-transfer-encoding;
- bh=AJAMi8u56refPBbstHaeF9yjwnclv72YCW5sJ51shrE=;
- b=P7m3RMhGQSy5YKcou/zEKOX4VtYqWG8xGNrjqh44xeNzI4QhFvSZySrs
- C+8HUswVAoM5gc6k58RONm8bkE/NOSisrOJqtIPB+GMduB0WhMbAQZWWa
- l31QN/6dPJ/Yu890GXLK7osi8vmnNoFt6n2MCPok2GzrUzif41LMrDf+2
- zQK8M323Rj1e+m7wr1vRNyNzX82vIP0I213xeNgp5MElNn19WnSTkoyLB
- YfEc8MlIBNHgcYwredr6oqRV2ZWPW72QGWNx6vsY+Fq8w4AfTxPBiR0sA
- DVsnAFAudW4ROq/pkQkM7hwtU3etVoQcSRmENBmNGNdYJ0oea5gUtsFZA
+ bh=iAxMkmIBEx6JRTOgplejPllumoRaDR5CtoZ4eNtC3bc=;
+ b=AsQ87Mi9pINtRQ2p3EX/rgtZMWdD55RirzmVNuIoSrjhCpeVcZ06Nnbw
+ L+gYJ+uYJ86scNmJOFv57KkSFpwhi1zkNk3oa40SA9rzIeKaHfZ3rpdPt
+ x58nQep87W7KTyEnVa3ywtXkDI7GR1+77Hri5hGUObe8mMYN+5Cx6J/wf
+ GOJgNwZoA7sRk5PJY5trfyyqVU24OvnmlsTF0w/IDvQUYh8FqHdYC29/s
+ Biw1roptblwnlGADZAUVOwmp0O3t0LaNbwjzEuDtC0vrQUQa4lpE1cagJ
+ tr/O/0n6kR4dgt9n7Szq893bucqoJmCQrl5CMXUgtHcESecT8k6BE9mM/
  Q==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=P7m3RMhG
-Subject: Re: [Intel-wired-lan] [PATCH v2 iwl-next 2/3] igc: Use netdev
- printing functions for flex filters
+ header.a=rsa-sha256 header.s=Intel header.b=AsQ87Mi9
+Subject: Re: [Intel-wired-lan] [PATCH v2 iwl-next 3/3] igc: Unify filtering
+ rule fields
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -114,13 +112,15 @@ Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 On 1/24/2024 10:55, Kurt Kanzenbach wrote:
-> All igc filter implementations use netdev_*() printing functions except for
-> the flex filters. Unify it.
+> All filtering parameters such as EtherType and VLAN TCI are stored in host
+> byte order except for the VLAN EtherType. Unify it.
 > 
 > Signed-off-by: Kurt Kanzenbach <kurt@linutronix.de>
 > Acked-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
 > ---
->   drivers/net/ethernet/intel/igc/igc_main.c | 9 ++++-----
->   1 file changed, 4 insertions(+), 5 deletions(-)
+>   drivers/net/ethernet/intel/igc/igc.h         |  2 +-
+>   drivers/net/ethernet/intel/igc/igc_ethtool.c |  4 ++--
+>   drivers/net/ethernet/intel/igc/igc_main.c    | 10 ++++++----
+>   3 files changed, 9 insertions(+), 7 deletions(-)
 
 Tested-by: Naama Meir <naamax.meir@linux.intel.com>
