@@ -4,97 +4,93 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 97C83C4828D
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  6 Feb 2024 14:04:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B9700C48297
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  6 Feb 2024 14:04:49 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 410A661162;
-	Tue,  6 Feb 2024 14:04:41 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 410A661162
+	by smtp3.osuosl.org (Postfix) with ESMTP id 741C261162;
+	Tue,  6 Feb 2024 14:04:49 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 741C261162
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1707228281;
-	bh=4Nr6dU2rmCXT6AY8jPwfs2yNfoItq4kTnpt7lysw1dY=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=ivaPpYhzHwix3nqvZ0FXe8h7oN4XrNX6RXlE1gTM2nxJPi9c3ctVK4iEz3pM8cCpR
-	 MRffhOLhJCsRHMs9PdOnABkNJcensyApTang2tnu7c+o/MAIyo5kkH9i2XnbCjLJ4r
-	 5TlrKXWKw7pkFqBVpGlPNtCuNl+iCqLzbDxIdLbnp9wus9NHgaBNcnvWzNfcESaMVE
-	 Q/2ewIMy4TODdPk1/VMVlhjppHQ7ED/ABNLszHGkwKFj1LwEFgoWKawitbtw9KB+Kx
-	 G9JQtoiP14+5WKVm0hIjEjcfvPs8WAaOGVqbaQLgoyuHo9n5oT+s/As4aD5D1pXsXh
-	 Eo10D3fvS1kiw==
+	s=default; t=1707228289;
+	bh=z/M/WwmGUvtmKpZSZnWHOmFWw5R+K2qMdURhljnGxJs=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=jpxN9AQc0fAkQainLiD0EuRXztDeV3pooAnNDHCIf1MCoi+z+AyBYQQL8Kvfs/1sq
+	 98z4vAmIssxM0JPVNwOjdBoHCJCm0lVvIet2EH+WNtfrZ4WkwVHJxYA7v+YdkaYIJu
+	 kf8HqzOXTI+XmhbruiyEAc/KM32S5l6R92Ekv6+sn3UW5tcSluMuf9eO2s9HLXUQ9q
+	 OP6dnBLa5KZShMQ5kFAhk/obKisOg21HIuEKhHZ+3nrgeZKcjmc7aZ7lZe6ECTgCy1
+	 flT3DnCuPEH8nAhiQlXySsybXBEZSgYgbYNDpb8Yq8JFk1fS0/6webUEXytvRhb9rv
+	 z0PkTLCtu4Liw==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id oY7bcvVN03fI; Tue,  6 Feb 2024 14:04:40 +0000 (UTC)
+	with ESMTP id 0RRaLVwSww5W; Tue,  6 Feb 2024 14:04:49 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 7C6C2611AD;
-	Tue,  6 Feb 2024 14:04:40 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7C6C2611AD
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id E89A21BF576
- for <intel-wired-lan@lists.osuosl.org>; Tue,  6 Feb 2024 14:04:38 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id B027F611AD;
+	Tue,  6 Feb 2024 14:04:48 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B027F611AD
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id F32421BF576
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  6 Feb 2024 14:04:46 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id D3C7C81F9C
- for <intel-wired-lan@lists.osuosl.org>; Tue,  6 Feb 2024 14:04:38 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id CA40D40B5B
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  6 Feb 2024 14:04:46 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org CA40D40B5B
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id xYlvuuKC7tLD for <intel-wired-lan@lists.osuosl.org>;
- Tue,  6 Feb 2024 14:04:38 +0000 (UTC)
-X-Greylist: delayed 426 seconds by postgrey-1.37 at util1.osuosl.org;
- Tue, 06 Feb 2024 14:04:37 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org E2A0581ED9
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E2A0581ED9
-Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.14;
- helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com;
- receiver=<UNKNOWN> 
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id tw3TzJUhdtNm for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  6 Feb 2024 14:04:46 +0000 (UTC)
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.14])
- by smtp1.osuosl.org (Postfix) with ESMTPS id E2A0581ED9
- for <intel-wired-lan@lists.osuosl.org>; Tue,  6 Feb 2024 14:04:37 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10975"; a="905144"
+ by smtp2.osuosl.org (Postfix) with ESMTPS id EA407404D8
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  6 Feb 2024 14:04:45 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org EA407404D8
+X-IronPort-AV: E=McAfee;i="6600,9927,10975"; a="905192"
 X-IronPort-AV: E=Sophos;i="6.05,247,1701158400"; 
-   d="scan'208";a="905144"
-Received: from fmviesa006.fm.intel.com ([10.60.135.146])
+   d="scan'208";a="905192"
+Received: from fmviesa009.fm.intel.com ([10.60.135.149])
  by fmvoesa108.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 06 Feb 2024 05:57:30 -0800
+ 06 Feb 2024 05:57:39 -0800
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.05,247,1701158400"; 
-   d="scan'208";a="1309627"
+   d="scan'208";a="1008739"
 Received: from ijarvine-desk1.ger.corp.intel.com (HELO localhost)
  ([10.246.36.139])
- by fmviesa006-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 06 Feb 2024 05:57:25 -0800
+ by fmviesa009-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 06 Feb 2024 05:57:34 -0800
 From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
 To: linux-pci@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>,
  Jesse Brandeburg <jesse.brandeburg@intel.com>,
- intel-wired-lan@lists.osuosl.org, Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Tue,  6 Feb 2024 15:57:13 +0200
-Message-Id: <20240206135717.8565-1-ilpo.jarvinen@linux.intel.com>
+ intel-wired-lan@lists.osuosl.org, Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
+ "Oliver O'Halloran" <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Date: Tue,  6 Feb 2024 15:57:14 +0200
+Message-Id: <20240206135717.8565-2-ilpo.jarvinen@linux.intel.com>
 X-Mailer: git-send-email 2.39.2
+In-Reply-To: <20240206135717.8565-1-ilpo.jarvinen@linux.intel.com>
+References: <20240206135717.8565-1-ilpo.jarvinen@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1707228278; x=1738764278;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=+6R/x2mXrJ2mSjnMfGMWqrnVr3TA5VqeovMhAdWHed8=;
- b=KcTcGHxCA2LctJHKxiIcwYuB6WG9dAhec5Y7/umSbOO8yL9Lt/QMnsIf
- BRAmMKM9Bt1TSNzuSbw9RYqkPGKko4RLW+OHLDiEBJrrRPvF2CDgEx6gW
- Tz2qM5yUthYZK1XZNonQwNc8LkFCjDeZMazBsKpuHmESQ7tshSXmlRFdV
- 6Ov4PFCo5rDgqowXcCmtwSwkT71HaUgWd5J2wid9volIVCbhmKIf9ktOK
- pEqkRn2ZyBE4qZujYp2/WYcGaAtNhime0tqDAHHGzGl7NIkUXCqNrYSpQ
- 5e1OZp538DGYpdEan4p4o1/L9nDEvqQYcW4dvamiPbGO1nJ3/wAo85pq2
+ t=1707228286; x=1738764286;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=ra907z3zlnnpibGxKFs9lZMq1UE08Wke5uzxQlZ+qJU=;
+ b=XEApLcWMdNjcy+PhBDugvvcQju92+/naJoL+uUslSYg6FS1o7ZcsejUO
+ JtKalZw3Vdgw6EykdKWp1bjlVJbHiu6R3LuiOHleMK8V2lUJtNnTNm0YR
+ FnYG9GE93iMYC1hrV5QfjaGY1GonFucs/4O09ezk9xn5HWnafLeatpfpi
+ 6rYWtMK5I0KUEIzZYymRDUZ1OCzYklrRtzgzdpbu3K/pZsVBIMHOMrQ9J
+ KC+Lo/yO/MEe7q/ByGHk85isprNwdKtjiz2DDyjrHSrVPHWmeV20zkIxH
+ qjWmNoVZ+ApKwhewbO7B0hAdcuJgiekZea9Nd2rGuLrh+v52GWqU2njdv
  A==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dmarc=none (p=none dis=none)
- header.from=linux.intel.com
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=KcTcGHxC
-Subject: [Intel-wired-lan] [PATCH 0/4] PCI: Consolidate TLP Log reading and
- printing
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=XEApLcWM
+Subject: [Intel-wired-lan] [PATCH 1/4] PCI/AER: Cleanup register variable
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -107,46 +103,48 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Oliver O'Halloran <oohall@gmail.com>, linux-efi@vger.kernel.org,
- Tony Luck <tony.luck@intel.com>, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
- Eric Dumazet <edumazet@google.com>, Paolo Abeni <pabeni@redhat.com>,
- Borislav Petkov <bp@alien8.de>,
+Cc: linux-efi@vger.kernel.org, netdev@vger.kernel.org,
+ "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
+ Tony Luck <tony.luck@intel.com>, Borislav Petkov <bp@alien8.de>,
  =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
- Jakub Kicinski <kuba@kernel.org>, Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, Ard Biesheuvel <ardb@kernel.org>,
- linux-edac@vger.kernel.org
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+ Ard Biesheuvel <ardb@kernel.org>, linux-edac@vger.kernel.org
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-This series consolidates AER & DPC TLP Log handling code. Helpers are
-added for reading and printing the TLP Log and the format is made to
-include E-E Prefixes in both cases (previously only one DPC RP PIO
-displayed the E-E Prefixes).
+Use u32 for PCIe Capability register variable and name it aercc
+(Advanced Error Capabilities and Control register, PCIe r6.1 sec
+7.8.4.7) instead of temp.
 
-I'd appreciate if people familiar with ixgbe could check the error
-handling conversion within the driver is correct.
+Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@linux.intel.com>
+---
+ drivers/pci/pcie/aer.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-Ilpo Järvinen (4):
-  PCI/AER: Cleanup register variable
-  PCI: Generalize TLP Header Log reading
-  PCI: Add TLP Prefix reading into pcie_read_tlp_log()
-  PCI: Create helper to print TLP Header and Prefix Log
-
- drivers/firmware/efi/cper.c                   |  4 +-
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 39 +++------
- drivers/pci/ats.c                             |  2 +-
- drivers/pci/pci.c                             | 79 +++++++++++++++++++
- drivers/pci/pci.h                             |  2 +-
- drivers/pci/pcie/aer.c                        | 28 ++-----
- drivers/pci/pcie/dpc.c                        | 31 ++++----
- drivers/pci/probe.c                           | 14 ++--
- include/linux/aer.h                           | 16 ++--
- include/linux/pci.h                           |  2 +-
- include/ras/ras_event.h                       | 10 +--
- include/uapi/linux/pci_regs.h                 |  2 +
- 12 files changed, 145 insertions(+), 84 deletions(-)
-
+diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
+index 05fc30bb5134..e31e6a9a7773 100644
+--- a/drivers/pci/pcie/aer.c
++++ b/drivers/pci/pcie/aer.c
+@@ -1210,7 +1210,7 @@ int aer_get_device_error_info(struct pci_dev *dev, struct aer_err_info *info)
+ {
+ 	int type = pci_pcie_type(dev);
+ 	int aer = dev->aer_cap;
+-	int temp;
++	u32 aercc;
+ 
+ 	/* Must reset in this function */
+ 	info->status = 0;
+@@ -1241,8 +1241,8 @@ int aer_get_device_error_info(struct pci_dev *dev, struct aer_err_info *info)
+ 			return 0;
+ 
+ 		/* Get First Error Pointer */
+-		pci_read_config_dword(dev, aer + PCI_ERR_CAP, &temp);
+-		info->first_error = PCI_ERR_CAP_FEP(temp);
++		pci_read_config_dword(dev, aer + PCI_ERR_CAP, &aercc);
++		info->first_error = PCI_ERR_CAP_FEP(aercc);
+ 
+ 		if (info->status & AER_LOG_TLP_MASKS) {
+ 			info->tlp_header_valid = 1;
 -- 
 2.39.2
 
