@@ -4,79 +4,91 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BE9C5C4828D
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  6 Feb 2024 15:38:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 86495C48297
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  6 Feb 2024 16:04:36 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 59DE041590;
-	Tue,  6 Feb 2024 15:38:11 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 59DE041590
+	by smtp2.osuosl.org (Postfix) with ESMTP id 3294E4168E;
+	Tue,  6 Feb 2024 16:04:36 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 3294E4168E
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1707233891;
-	bh=HcRdM+xyPVPY/68XA8jP+tIUSlfkOLnEtyZxspjOPlw=;
+	s=default; t=1707235476;
+	bh=mUixx3iBL3zLfOd+J4Lc/59gG+HVlflMASxiV2Jzw18=;
 	h=Date:From:To:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=MLVxKnB6aC/77kaWzIuyn6P0e5Hbprd66GlF4cwrV8JIqXxOxgt7OK/nCWEonb4Gy
-	 h2hYtnm3GfSoRd9vyO4pPUkLBI1bDNHwQpnynP4nZCbs5PdWcl9tM1WizB06WLxTiM
-	 4ljbwlBGxO8u75vhn80RsSSkiAXupm26cCXn6iYw8I0rQ6MfrSc88+W/Kfpk/ZRFbf
-	 zqZGW9U2Zs9dNJG+lVcmCKjrxxo7m+5qfpXmAdDs9bj5D0ke6pkOc1DOg2E2/5/ZAb
-	 kLNbsKa5JCbaIl0OOkk6NYLtFBA8M5mcbbcCfqJRSSNBP+I+VsyBgNW9yXWGIrJhKi
-	 26xyx6p6YRSgw==
+	b=mjjjVH7L4bN3YAmjx3geWjgTMeIIAvOKrQP8cE1yDBrFRPfo4vJV0iyQqTGyoCZXZ
+	 +2NBbT8XgyBi8VrdyNcyv0S527Ak23QR4zcr7jlSyi95SP2SEQgqQUAg3mgShynMLv
+	 /Q9q/h3d/mRlz+HgP+o/Bh6nwME/QYNVhEukR1Zy4psRfc/GuvJ/QpzCc7+J+kY0x6
+	 NSuKsi8jBU/Ibuz97GsrMZsX+N+Mz5Z42CfgyBr67AwLwEOmv9rRC4gEttWAYXmopy
+	 YY/UErRyQKXTrzSQYuTY4ShcIOegI8wjzER4Kv6vQdsK0l+I+YDeUbnYZsSZK7zyXr
+	 UYa9g/EYsbuzQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id u8GoQYP4OGXY; Tue,  6 Feb 2024 15:38:10 +0000 (UTC)
+	with ESMTP id 3LOQ-FeQ3Ccp; Tue,  6 Feb 2024 16:04:34 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 602F1415C2;
-	Tue,  6 Feb 2024 15:38:10 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 602F1415C2
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 66B971BF215
- for <intel-wired-lan@lists.osuosl.org>; Tue,  6 Feb 2024 15:38:08 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 387EB416DE;
+	Tue,  6 Feb 2024 16:04:34 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 387EB416DE
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 370B61BF27C
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  6 Feb 2024 09:34:36 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 398A141590
- for <intel-wired-lan@lists.osuosl.org>; Tue,  6 Feb 2024 15:38:08 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 398A141590
+ by smtp1.osuosl.org (Postfix) with ESMTP id 22D2481F31
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  6 Feb 2024 09:34:36 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id rz5rFvR5UAGf for <intel-wired-lan@lists.osuosl.org>;
- Tue,  6 Feb 2024 15:38:06 +0000 (UTC)
-Received: from sin.source.kernel.org (sin.source.kernel.org
- [IPv6:2604:1380:40e1:4800::1])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 89217415A2
- for <intel-wired-lan@lists.osuosl.org>; Tue,  6 Feb 2024 15:38:06 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 89217415A2
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by sin.source.kernel.org (Postfix) with ESMTP id 1DE9BCE13D7;
- Tue,  6 Feb 2024 15:38:02 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 70DB0C433F1;
- Tue,  6 Feb 2024 15:38:00 +0000 (UTC)
-Date: Tue, 6 Feb 2024 07:37:59 -0800
-From: Jakub Kicinski <kuba@kernel.org>
-To: Alexander Lobakin <aleksander.lobakin@intel.com>
-Message-ID: <20240206073759.4d948d1e@kernel.org>
-In-Reply-To: <c90e7c78-47e9-46d0-a4e5-cb4aca737d11@intel.com>
-References: <20240201122216.2634007-1-aleksander.lobakin@intel.com>
- <c90e7c78-47e9-46d0-a4e5-cb4aca737d11@intel.com>
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id p_BPardFoHeB for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  6 Feb 2024 09:34:35 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=217.70.178.240;
+ helo=mslow1.mail.gandi.net; envelope-from=maxime.chevallier@bootlin.com;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 0980081F07
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 0980081F07
+Received: from mslow1.mail.gandi.net (mslow1.mail.gandi.net [217.70.178.240])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 0980081F07
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  6 Feb 2024 09:34:34 +0000 (UTC)
+Received: from relay5-d.mail.gandi.net (unknown [217.70.183.197])
+ by mslow1.mail.gandi.net (Postfix) with ESMTP id C5943C0362
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  6 Feb 2024 09:34:32 +0000 (UTC)
+Received: by mail.gandi.net (Postfix) with ESMTPSA id 82AA31C0004;
+ Tue,  6 Feb 2024 09:34:26 +0000 (UTC)
+Date: Tue, 6 Feb 2024 10:34:25 +0100
+From: Maxime Chevallier <maxime.chevallier@bootlin.com>
+To: Andrew Lunn <andrew@lunn.ch>
+Message-ID: <20240206103425.28e64a8f@device-28.home>
+In-Reply-To: <20240204-keee-u32-cleanup-v1-7-fb6e08329d9a@lunn.ch>
+References: <20240204-keee-u32-cleanup-v1-0-fb6e08329d9a@lunn.ch>
+ <20240204-keee-u32-cleanup-v1-7-fb6e08329d9a@lunn.ch>
+Organization: Bootlin
+X-Mailer: Claws Mail 4.2.0 (GTK 3.24.39; x86_64-redhat-linux-gnu)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1707233881;
- bh=GS8UEbSCgKgB/gRexnGVpyWM7USUW2+rfEyDI5KxFn4=;
- h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=MeC0/nmpBcpRMXw4qehV9ITDmznAf7JstSxhzuhPvmSPmjuZdqbsqo9BNmRWeWoWd
- o6eg1wrNN0GLFHvCP4CrxHM1IUwHDsbtV2bixepEFmxUcEkfWDFOuQWczE7xxRSG3e
- fkjZ9WfXNGazSJn3AhGHp8LkWiNAfqf0MISuAAroSLY8+e2CMIL38rjyPOIA1Hr4af
- I/WAm6tx7tx/or2mxg+UxmdYJA41uax1G65P1WiukM+x0qx0inmSelMJJaw8HwkCgk
- pf5HGsj/y9OPoA+7/Isz2zUwgz2b/aQ3J1pOh51tJl+5J6UnLmIkqdM6dBb6L22Lkb
- A9JQU7chc1uxw==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=MeC0/nmp
-Subject: Re: [Intel-wired-lan] [PATCH net-next v5 00/21] ice: add PFCP
- filter support
+X-GND-Sasl: maxime.chevallier@bootlin.com
+X-Mailman-Approved-At: Tue, 06 Feb 2024 16:04:25 +0000
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=bootlin.com; s=gm1; t=1707212067;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=mUixx3iBL3zLfOd+J4Lc/59gG+HVlflMASxiV2Jzw18=;
+ b=hcbmDRNjnQSZaxjzQPjZaqpaUocQchlBfZMaA3xreLWsdAsx14y6e5eZgqWEo5sjYasnrp
+ xYzbetFMgNPSu4OEmfDPKxqlTnqL4FWDXd6VzqliPfUpJj3DeXHLeIkm7gt8UGQtPYlk/9
+ UjxrS9LqjLOos/Xo7m/onVAtOjvwV2bWZATLG9xY3f2reOlsaYA9Ona79A9+nueZCrenZk
+ FxB52U/y+uRDgVcFRXgUY0xy5Imi0AT8RZKPnger7moODGcgBM1SO0XZAjAEI5hdnon/CU
+ se8Lj8Pb0pUgMFmK5PeXHLjJxl9Dh1jYx6kuP/EwwI9GFL/5lfNnbmy55l5boA==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dmarc=pass (p=reject dis=none)
+ header.from=bootlin.com
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256
+ header.s=gm1 header.b=hcbmDRNj
+Subject: Re: [Intel-wired-lan] [PATCH 7/8] net: intel: igb: Use linkmode
+ helpers for EEE
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,36 +101,78 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Andy Shevchenko <andy@kernel.org>, linux-s390@vger.kernel.org,
- ntfs3@lists.linux.dev, Wojciech Drewek <wojciech.drewek@intel.com>,
- Yury Norov <yury.norov@gmail.com>, Ido Schimmel <idosch@nvidia.com>,
- Rasmus Villemoes <linux@rasmusvillemoes.dk>, dm-devel@redhat.com,
- linux-kernel@vger.kernel.org, Jiri Pirko <jiri@resnulli.us>,
- Eric Dumazet <edumazet@google.com>,
- Marcin Szycik <marcin.szycik@linux.intel.com>,
- Alexander Potapenko <glider@google.com>, Simon Horman <horms@kernel.org>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Michal Swiatkowski <michal.swiatkowski@linux.intel.com>,
- netdev@vger.kernel.org, Paolo Abeni <pabeni@redhat.com>,
- "David S. Miller" <davem@davemloft.net>, linux-btrfs@vger.kernel.org,
- intel-wired-lan@lists.osuosl.org
+Cc: Ariel Elior <aelior@marvell.com>, Manish Chopra <manishc@marvell.com>,
+ netdev@vger.kernel.org, linux-usb@vger.kernel.org,
+ Jesse Brandeburg <jesse.brandeburg@intel.com>, linux-kernel@vger.kernel.org,
+ Eric Dumazet <edumazet@google.com>, Tony Nguyen <anthony.l.nguyen@intel.com>,
+ intel-wired-lan@lists.osuosl.org, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>, "David S. Miller" <davem@davemloft.net>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Tue, 6 Feb 2024 13:46:44 +0100 Alexander Lobakin wrote:
-> > Add support for creating PFCP filters in switchdev mode. Add pfcp module
-> > that allows to create a PFCP-type netdev. The netdev then can be passed to
-> > tc when creating a filter to indicate that PFCP filter should be created.  
+Hello Andrew,
+
+On Sun, 04 Feb 2024 17:40:24 -0600
+Andrew Lunn <andrew@lunn.ch> wrote:
+
+> Make use of the existing linkmode helpers for converting PHY EEE
+> register values into links modes, now that ethtool_keee uses link
+> modes, rather than u32 values.
 > 
-> I believe folks agreed that bitmap_{read,write}() should stay inline,
-> ping then?
+> Signed-off-by: Andrew Lunn <andrew@lunn.ch>
 
-It's probably fine, IMHO. I mean, I think we agree that the rarely used
-inlines should not sit in a header included by half of the kernel (not
-an exaggeration). But IMHO a better fix would be to move out whatever
-cpumask.h xarray.h and other common headers depend on to a cut-down
-version rather than making your helpers not inline.
+[...]
 
-So I think all we need for now is for people to ack the respective
-patches? Looks like cio and ntfs and missing acks, so are some of 
-the bitops core patches.
+> @@ -3109,6 +3111,8 @@ static int igb_set_eee(struct net_device *netdev,
+>  		       struct ethtool_keee *edata)
+>  {
+>  	struct igb_adapter *adapter = netdev_priv(netdev);
+> +	__ETHTOOL_DECLARE_LINK_MODE_MASK(supported) = {};
+> +	__ETHTOOL_DECLARE_LINK_MODE_MASK(tmp) = {};
+>  	struct e1000_hw *hw = &adapter->hw;
+>  	struct ethtool_keee eee_curr;
+>  	bool adv1g_eee = true, adv100m_eee = true;
+> @@ -3138,14 +3142,21 @@ static int igb_set_eee(struct net_device *netdev,
+>  			return -EINVAL;
+>  		}
+>  
+> -		if (!edata->advertised_u32 || (edata->advertised_u32 &
+> -		    ~(ADVERTISE_100_FULL | ADVERTISE_1000_FULL))) {
+> +		linkmode_set_bit(ETHTOOL_LINK_MODE_1000baseT_Full_BIT,
+> +				 supported);
+> +		linkmode_set_bit(ETHTOOL_LINK_MODE_100baseT_Full_BIT,
+> +				 supported);
+> +		if (linkmode_andnot(tmp, edata->advertised, supported)) {
+>  			dev_err(&adapter->pdev->dev,
+>  				"EEE Advertisement supports only 100Tx and/or 100T full duplex\n");
+>  			return -EINVAL;
+>  		}
+> -		adv100m_eee = !!(edata->advertised_u32 & ADVERTISE_100_FULL);
+> -		adv1g_eee = !!(edata->advertised_u32 & ADVERTISE_1000_FULL);
+> +		adv100m_eee = linkmode_test_bit(
+> +			ETHTOOL_LINK_MODE_100baseT_Full_BIT,
+> +			edata->advertised);
+> +		adv1g_eee = linkmode_test_bit(
+> +			ETHTOOL_LINK_MODE_100baseT_Full_BIT,
+
+Probably a typo, I think it should be ETHTOOL_LINK_MODE_1000baseT_Full_BIT
+here :)
+
+> +			edata->advertised);
+>  
+>  	} else if (!edata->eee_enabled) {
+>  		dev_err(&adapter->pdev->dev,
+> @@ -3153,7 +3164,7 @@ static int igb_set_eee(struct net_device *netdev,
+>  		return -EINVAL;
+>  	}
+>  
+> -	adapter->eee_advert = ethtool_adv_to_mmd_eee_adv_t(edata->advertised_u32);
+> +	adapter->eee_advert = linkmode_to_mii_eee_cap1_t(edata->advertised);
+>  	if (hw->dev_spec._82575.eee_disable != !edata->eee_enabled) {
+>  		hw->dev_spec._82575.eee_disable = !edata->eee_enabled;
+>  		adapter->flags |= IGB_FLAG_EEE;
+> 
+
+Thanks,
+
+Maxime
