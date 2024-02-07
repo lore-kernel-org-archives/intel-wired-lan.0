@@ -4,88 +4,92 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7D39DC4828F
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  7 Feb 2024 23:21:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6936BC4828F
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  7 Feb 2024 23:24:22 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 42D4A42729;
-	Wed,  7 Feb 2024 23:21:23 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 220B343422;
+	Wed,  7 Feb 2024 23:24:22 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id JaE4uTkyG3ym; Wed,  7 Feb 2024 23:21:22 +0000 (UTC)
+	with ESMTP id azg7zjhmFL9t; Wed,  7 Feb 2024 23:24:20 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 20453426D2
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 003D942883
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1707348082;
-	bh=zssMSmQOt7ginUmUh1dOI+azKW2zTjSe0lNKjoC9OUA=;
-	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=DnIVstihZ/DmJriuVEVxASbSNp1ekKq6vUQHaapnFGJFmqLAkcO8fPX6ge+vBriLj
-	 EfzYxvyTJKLb9llJdPJpZcUta6YFJcGX9Bnv5kC0JkkDWO+nuF+1oiqBjm+ghINI1g
-	 Wh0sNUaOHGFOsWqamriD884eSVxCrLr3wrRCn/bjHpfSWO2lk4WxdgHeXn8DVjf3VE
-	 NwhHK7flyFh4VBFu8KXVlfb34l2jzZAXVHVJUdWroKSIvTEojNLjKlKn/OsoXv80Sa
-	 4D3nm4okbqNJRCBcyzTEtfPINxpl2zCtHb0kJnUxYEgFueMffiO0u/4yC/zflFh8g5
-	 Z110U3IAxo4uw==
+	s=default; t=1707348260;
+	bh=7G/D/MZV+9ign5X9CCZzBe87yHbpPygcYb20WXFi/iI=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=B9Hl8yk4ILwq6GKNfyXk0krr1RgwV2jg1aGahtE+7u5KnLbiiC/MkUwiOaiDoxMd0
+	 eLKQkR6hRoNjEkIs3/Uf7qTa3tik5KBDazjWu3nnHmsEMPxmiffpDVBUAWaUKOVFDq
+	 DRuzEQ0g5WTGH1YbmG2QXAeEgwMmwE/DoncWwP8wmNj4rGd0t3rS1x7sJgU7wehecx
+	 fvcrZlEJC2DE3jwFQnVTxccjxdnZHaSVjV1FLQfWmfpOxmYMr8OjK5JWfObvvb9wlW
+	 A5SmeRTK+Mhf+HpbWc+q7wgkn7cTETfO9DKnShSuAwrhp9u9s14kr1NULz9cRvFvfA
+	 weFFOqfCYHbDg==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 20453426D2;
-	Wed,  7 Feb 2024 23:21:22 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 8EEF11BF82C
- for <intel-wired-lan@lists.osuosl.org>; Wed,  7 Feb 2024 23:21:20 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 003D942883;
+	Wed,  7 Feb 2024 23:24:19 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id C628B1BF82C
+ for <intel-wired-lan@osuosl.org>; Wed,  7 Feb 2024 23:24:17 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 87D7760C15
- for <intel-wired-lan@lists.osuosl.org>; Wed,  7 Feb 2024 23:21:20 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id B161785087
+ for <intel-wired-lan@osuosl.org>; Wed,  7 Feb 2024 23:24:17 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 2Pv41V-jBI7X for <intel-wired-lan@lists.osuosl.org>;
- Wed,  7 Feb 2024 23:21:19 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.7;
- helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 65E2E60A5C
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 65E2E60A5C
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.7])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 65E2E60A5C
- for <intel-wired-lan@lists.osuosl.org>; Wed,  7 Feb 2024 23:21:19 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10977"; a="26545628"
-X-IronPort-AV: E=Sophos;i="6.05,252,1701158400"; d="scan'208";a="26545628"
-Received: from orsmga001.jf.intel.com ([10.7.209.18])
- by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 07 Feb 2024 15:21:18 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10977"; a="824656460"
-X-IronPort-AV: E=Sophos;i="6.05,252,1701158400"; d="scan'208";a="824656460"
-Received: from lkp-server01.sh.intel.com (HELO 01f0647817ea) ([10.239.97.150])
- by orsmga001.jf.intel.com with ESMTP; 07 Feb 2024 15:21:16 -0800
-Received: from kbuild by 01f0647817ea with local (Exim 4.96)
- (envelope-from <lkp@intel.com>) id 1rXrEA-000386-1q
- for intel-wired-lan@lists.osuosl.org; Wed, 07 Feb 2024 23:21:14 +0000
-Date: Thu, 08 Feb 2024 07:20:32 +0800
-From: kernel test robot <lkp@intel.com>
-To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Message-ID: <202402080728.RORGdogH-lkp@intel.com>
-User-Agent: s-nail v14.9.24
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1707348079; x=1738884079;
- h=date:from:to:subject:message-id;
- bh=bhYoe5ukK6+LJmx3m4z0dgxsor1Seirynict2q6QK8M=;
- b=IYnbcrDennpuYWVZT/iDyprftyDLz3hhy+NHj/N93o8hQP7zrigdFIoK
- T/GCTG6YbN3uTuCi/KS7dScmZuyV30HQFQlgklHD2nuW5MPRymvoTrAZn
- 5uu9EWgAPpDUFQY7n+th7K1ZJqoCMhU2ob9sog+UELTbrCxXcPspe6cFe
- F8omhrrAMGonCGYw9VADv0B4/iLHcTpnVEggvQE8OaqkgT0bi7CF4GKJd
- il1QB5hTaR+xHcBgiYM11OnNg47rHtRIR5yRTNmx4M22h1og2e/lKJaqr
- HQfr8JLu5PgteTmn4TY8h4sIoQ6+j5OvIUX8OSM7TzmDjWJi8gNMrpPXG
- Q==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id BZUDcvwaTfQD for <intel-wired-lan@osuosl.org>;
+ Wed,  7 Feb 2024 23:24:16 +0000 (UTC)
+X-Greylist: delayed 487 seconds by postgrey-1.37 at util1.osuosl.org;
+ Wed, 07 Feb 2024 23:24:16 UTC
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 618C585082
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 618C585082
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=17.58.6.47;
+ helo=pv50p00im-zteg10021401.me.com; envelope-from=ernesto@castellotti.net;
+ receiver=<UNKNOWN> 
+Received: from pv50p00im-zteg10021401.me.com (pv50p00im-zteg10021401.me.com
+ [17.58.6.47]) by smtp1.osuosl.org (Postfix) with ESMTPS id 618C585082
+ for <intel-wired-lan@osuosl.org>; Wed,  7 Feb 2024 23:24:16 +0000 (UTC)
+Received: from localhost.localdomain (pv50p00im-dlb-asmtp-mailmevip.me.com
+ [17.56.9.10])
+ by pv50p00im-zteg10021401.me.com (Postfix) with ESMTPSA id 629A58E001E;
+ Wed,  7 Feb 2024 23:16:06 +0000 (UTC)
+From: Ernesto Castellotti <ernesto@castellotti.net>
+To: anthony.l.nguyen@intel.com, intel-wired-lan@osuosl.org,
+ piotr.kwapulinski@intel.com
+Date: Thu,  8 Feb 2024 00:15:21 +0100
+Message-ID: <20240207231524.51753-1-ernesto@castellotti.net>
+X-Mailer: git-send-email 2.43.0
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-GUID: -r3MuP5d8tkvdrHTykfitOF41qPJjLYa
+X-Proofpoint-ORIG-GUID: -r3MuP5d8tkvdrHTykfitOF41qPJjLYa
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.272,Aquarius:18.0.1011,Hydra:6.0.619,FMLib:17.11.176.26
+ definitions=2024-02-07_09,2024-02-07_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 adultscore=0
+ suspectscore=0
+ phishscore=0 bulkscore=0 clxscore=1030 mlxlogscore=999 malwarescore=0
+ mlxscore=0 spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.19.0-2308100000 definitions=main-2402070170
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=castellotti.net; s=sig1; t=1707347769;
+ bh=7G/D/MZV+9ign5X9CCZzBe87yHbpPygcYb20WXFi/iI=;
+ h=From:To:Subject:Date:Message-ID:MIME-Version;
+ b=VXcJ0fEa284gO7YWHMUFMAX0J3rCLE0IpRlKNz7Jqxlc/RRPl+eam/BpZ2K57excO
+ e2W2Q7vuTeqHyh9w3wtGil0d7Jnym/seuEjweCO9yW8NnKBUeLzx+0kgksOXB3XIlH
+ EGynd/polyt4/0m5ujxJolTvs7kbfIy6ezycLO6h5WUImy8H5e/C1C3seeENR0sHs2
+ pMlsQWv3GfBxFZ1sSA4U6kmfV1hRI33E/b5aMLIBTfjHkxzrlG/VXe+67EhMtMu1Cc
+ HVqNo/Uty6Ss+bph/epTnbdI7dX5PTUeFh8xM7r56goN0dAR99dMcBIEN2IogRPX+m
+ SBubYkhsULapA==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
- header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ header.from=castellotti.net
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=IYnbcrDe
-Subject: [Intel-wired-lan] [tnguy-next-queue:10GbE] BUILD SUCCESS
- ef3dd596504777266619252efff67149aa921ed3
+ unprotected) header.d=castellotti.net header.i=@castellotti.net
+ header.a=rsa-sha256 header.s=sig1 header.b=VXcJ0fEa
+Subject: [Intel-wired-lan] [PATCH iwl-next v2] ixgbe: Add 1000BASE-BX support
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,268 +102,251 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
+Cc: Ernesto Castellotti <ernesto@castellotti.net>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git 10GbE
-branch HEAD: ef3dd596504777266619252efff67149aa921ed3  ixgbe: Clarify the values of the returning status
+Added support for 1000BASE-BX, i.e. Gigabit Ethernet over single strand
+of single-mode fiber.
+The initialization of a 1000BASE-BX SFP is the same as 1000BASE-SX/LX
+with the only difference that the Bit Rate Nominal Value must be
+checked to make sure it is a Gigabit Ethernet transceiver, as described
+by the SFF-8472 specification.
 
-elapsed time: 1477m
+This was tested with the FS.com SFP-GE-BX 1310/1490nm 10km transceiver:
+$ ethtool -m eth4
+        Identifier                                : 0x03 (SFP)
+        Extended identifier                       : 0x04 (GBIC/SFP defined by 2-wire interface ID)
+        Connector                                 : 0x07 (LC)
+        Transceiver codes                         : 0x00 0x00 0x00 0x40 0x00 0x00 0x00 0x00 0x00
+        Transceiver type                          : Ethernet: BASE-BX10
+        Encoding                                  : 0x01 (8B/10B)
+        BR, Nominal                               : 1300MBd
+        Rate identifier                           : 0x00 (unspecified)
+        Length (SMF,km)                           : 10km
+        Length (SMF)                              : 10000m
+        Length (50um)                             : 0m
+        Length (62.5um)                           : 0m
+        Length (Copper)                           : 0m
+        Length (OM3)                              : 0m
+        Laser wavelength                          : 1310nm
+        Vendor name                               : FS
+        Vendor OUI                                : 64:9d:99
+        Vendor PN                                 : SFP-GE-BX
+        Vendor rev                                :
+        Option values                             : 0x20 0x0a
+        Option                                    : RX_LOS implemented
+        Option                                    : TX_FAULT implemented
+        Option                                    : Power level 3 requirement
+        BR margin, max                            : 0%
+        BR margin, min                            : 0%
+        Vendor SN                                 : S2202359108
+        Date code                                 : 220307
+        Optical diagnostics support               : Yes
+        Laser bias current                        : 17.650 mA
+        Laser output power                        : 0.2132 mW / -6.71 dBm
+        Receiver signal average optical power     : 0.2740 mW / -5.62 dBm
+        Module temperature                        : 47.30 degrees C / 117.13 degrees F
+        Module voltage                            : 3.2576 V
+        Alarm/warning flags implemented           : Yes
+        Laser bias current high alarm             : Off
+        Laser bias current low alarm              : Off
+        Laser bias current high warning           : Off
+        Laser bias current low warning            : Off
+        Laser output power high alarm             : Off
+        Laser output power low alarm              : Off
+        Laser output power high warning           : Off
+        Laser output power low warning            : Off
+        Module temperature high alarm             : Off
+        Module temperature low alarm              : Off
+        Module temperature high warning           : Off
+        Module temperature low warning            : Off
+        Module voltage high alarm                 : Off
+        Module voltage low alarm                  : Off
+        Module voltage high warning               : Off
+        Module voltage low warning                : Off
+        Laser rx power high alarm                 : Off
+        Laser rx power low alarm                  : Off
+        Laser rx power high warning               : Off
+        Laser rx power low warning                : Off
+        Laser bias current high alarm threshold   : 110.000 mA
+        Laser bias current low alarm threshold    : 1.000 mA
+        Laser bias current high warning threshold : 100.000 mA
+        Laser bias current low warning threshold  : 1.000 mA
+        Laser output power high alarm threshold   : 0.7079 mW / -1.50 dBm
+        Laser output power low alarm threshold    : 0.0891 mW / -10.50 dBm
+        Laser output power high warning threshold : 0.6310 mW / -2.00 dBm
+        Laser output power low warning threshold  : 0.1000 mW / -10.00 dBm
+        Module temperature high alarm threshold   : 90.00 degrees C / 194.00 degrees F
+        Module temperature low alarm threshold    : -45.00 degrees C / -49.00 degrees F
+        Module temperature high warning threshold : 85.00 degrees C / 185.00 degrees F
+        Module temperature low warning threshold  : -40.00 degrees C / -40.00 degrees F
+        Module voltage high alarm threshold       : 3.7950 V
+        Module voltage low alarm threshold        : 2.8050 V
+        Module voltage high warning threshold     : 3.4650 V
+        Module voltage low warning threshold      : 3.1350 V
+        Laser rx power high alarm threshold       : 0.7079 mW / -1.50 dBm
+        Laser rx power low alarm threshold        : 0.0028 mW / -25.53 dBm
+        Laser rx power high warning threshold     : 0.6310 mW / -2.00 dBm
+        Laser rx power low warning threshold      : 0.0032 mW / -24.95 dBm
 
-configs tested: 246
-configs skipped: 3
+Signed-off-by: Ernesto Castellotti <ernesto@castellotti.net>
+---
+v2: Fixed indentation/style issues as per review by Tony Nguyen
+v1: https://lore.kernel.org/intel-wired-lan/20240127174803.20793-1-ernesto@castellotti.net/
+---
+ .../net/ethernet/intel/ixgbe/ixgbe_82599.c    |  4 ++-
+ .../net/ethernet/intel/ixgbe/ixgbe_ethtool.c  |  2 ++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c  | 32 ++++++++++++++++---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h  |  2 ++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h |  3 ++
+ 5 files changed, 38 insertions(+), 5 deletions(-)
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-tested configs:
-alpha                            alldefconfig   gcc  
-alpha                             allnoconfig   gcc  
-alpha                            allyesconfig   gcc  
-alpha                               defconfig   gcc  
-arc                              allmodconfig   gcc  
-arc                               allnoconfig   gcc  
-arc                              allyesconfig   gcc  
-arc                                 defconfig   gcc  
-arc                   randconfig-001-20240207   gcc  
-arc                   randconfig-001-20240208   gcc  
-arc                   randconfig-002-20240207   gcc  
-arc                   randconfig-002-20240208   gcc  
-arm                              allmodconfig   gcc  
-arm                               allnoconfig   clang
-arm                              allyesconfig   gcc  
-arm                     davinci_all_defconfig   clang
-arm                                 defconfig   clang
-arm                        keystone_defconfig   gcc  
-arm                        neponset_defconfig   gcc  
-arm                            qcom_defconfig   clang
-arm                   randconfig-001-20240208   gcc  
-arm                   randconfig-002-20240208   gcc  
-arm                   randconfig-003-20240208   gcc  
-arm                   randconfig-004-20240207   gcc  
-arm                        shmobile_defconfig   gcc  
-arm                        spear6xx_defconfig   clang
-arm                           tegra_defconfig   gcc  
-arm64                            allmodconfig   clang
-arm64                             allnoconfig   gcc  
-arm64                               defconfig   gcc  
-arm64                 randconfig-004-20240208   gcc  
-csky                             allmodconfig   gcc  
-csky                              allnoconfig   gcc  
-csky                             allyesconfig   gcc  
-csky                                defconfig   gcc  
-csky                  randconfig-001-20240207   gcc  
-csky                  randconfig-001-20240208   gcc  
-csky                  randconfig-002-20240207   gcc  
-csky                  randconfig-002-20240208   gcc  
-hexagon                          allmodconfig   clang
-hexagon                           allnoconfig   clang
-hexagon                          allyesconfig   clang
-hexagon                             defconfig   clang
-i386                             allmodconfig   gcc  
-i386                              allnoconfig   gcc  
-i386                             allyesconfig   gcc  
-i386         buildonly-randconfig-001-20240208   gcc  
-i386         buildonly-randconfig-002-20240208   clang
-i386         buildonly-randconfig-003-20240208   gcc  
-i386         buildonly-randconfig-004-20240208   gcc  
-i386         buildonly-randconfig-005-20240208   gcc  
-i386         buildonly-randconfig-006-20240208   gcc  
-i386                  randconfig-001-20240207   gcc  
-i386                  randconfig-001-20240208   gcc  
-i386                  randconfig-002-20240208   gcc  
-i386                  randconfig-003-20240207   gcc  
-i386                  randconfig-003-20240208   gcc  
-i386                  randconfig-004-20240207   gcc  
-i386                  randconfig-004-20240208   clang
-i386                  randconfig-005-20240207   gcc  
-i386                  randconfig-005-20240208   gcc  
-i386                  randconfig-006-20240208   gcc  
-i386                  randconfig-011-20240207   gcc  
-i386                  randconfig-011-20240208   clang
-i386                  randconfig-012-20240207   gcc  
-i386                  randconfig-012-20240208   clang
-i386                  randconfig-013-20240207   gcc  
-i386                  randconfig-013-20240208   clang
-i386                  randconfig-014-20240207   gcc  
-i386                  randconfig-014-20240208   clang
-i386                  randconfig-015-20240207   gcc  
-i386                  randconfig-015-20240208   clang
-i386                  randconfig-016-20240207   gcc  
-i386                  randconfig-016-20240208   gcc  
-loongarch                        allmodconfig   gcc  
-loongarch                         allnoconfig   gcc  
-loongarch                        allyesconfig   gcc  
-loongarch                           defconfig   gcc  
-loongarch             randconfig-001-20240207   gcc  
-loongarch             randconfig-001-20240208   gcc  
-loongarch             randconfig-002-20240207   gcc  
-loongarch             randconfig-002-20240208   gcc  
-m68k                             allmodconfig   gcc  
-m68k                              allnoconfig   gcc  
-m68k                             allyesconfig   gcc  
-m68k                          amiga_defconfig   gcc  
-m68k                       bvme6000_defconfig   gcc  
-m68k                                defconfig   gcc  
-m68k                          multi_defconfig   gcc  
-microblaze                       allmodconfig   gcc  
-microblaze                        allnoconfig   gcc  
-microblaze                       allyesconfig   gcc  
-microblaze                          defconfig   gcc  
-mips                             allmodconfig   gcc  
-mips                              allnoconfig   gcc  
-mips                             allyesconfig   gcc  
-mips                        bcm47xx_defconfig   clang
-mips                        bcm63xx_defconfig   clang
-mips                         db1xxx_defconfig   clang
-mips                           gcw0_defconfig   clang
-mips                      loongson3_defconfig   gcc  
-mips                      pic32mzda_defconfig   gcc  
-nios2                            allmodconfig   gcc  
-nios2                             allnoconfig   gcc  
-nios2                            allyesconfig   gcc  
-nios2                               defconfig   gcc  
-nios2                 randconfig-001-20240207   gcc  
-nios2                 randconfig-001-20240208   gcc  
-nios2                 randconfig-002-20240207   gcc  
-nios2                 randconfig-002-20240208   gcc  
-openrisc                         allmodconfig   gcc  
-openrisc                          allnoconfig   gcc  
-openrisc                         allyesconfig   gcc  
-openrisc                            defconfig   gcc  
-openrisc                    or1ksim_defconfig   gcc  
-parisc                           allmodconfig   gcc  
-parisc                            allnoconfig   gcc  
-parisc                           allyesconfig   gcc  
-parisc                              defconfig   gcc  
-parisc                generic-64bit_defconfig   gcc  
-parisc                randconfig-001-20240207   gcc  
-parisc                randconfig-001-20240208   gcc  
-parisc                randconfig-002-20240207   gcc  
-parisc                randconfig-002-20240208   gcc  
-parisc64                            defconfig   gcc  
-powerpc                          allmodconfig   gcc  
-powerpc                           allnoconfig   gcc  
-powerpc                          allyesconfig   clang
-powerpc                   bluestone_defconfig   clang
-powerpc                      chrp32_defconfig   clang
-powerpc                     ep8248e_defconfig   gcc  
-powerpc                      ep88xc_defconfig   gcc  
-powerpc                    gamecube_defconfig   clang
-powerpc                     kilauea_defconfig   clang
-powerpc                      mgcoge_defconfig   clang
-powerpc                 mpc8313_rdb_defconfig   gcc  
-powerpc                     mpc83xx_defconfig   clang
-powerpc                      ppc40x_defconfig   clang
-powerpc               randconfig-002-20240208   gcc  
-powerpc               randconfig-003-20240207   gcc  
-powerpc               randconfig-003-20240208   gcc  
-powerpc                     tqm5200_defconfig   gcc  
-powerpc                     tqm8560_defconfig   gcc  
-powerpc64             randconfig-001-20240208   gcc  
-powerpc64             randconfig-002-20240207   gcc  
-powerpc64             randconfig-002-20240208   gcc  
-powerpc64             randconfig-003-20240207   gcc  
-powerpc64             randconfig-003-20240208   gcc  
-riscv                            allmodconfig   clang
-riscv                             allnoconfig   gcc  
-riscv                            allyesconfig   clang
-riscv                               defconfig   clang
-riscv                    nommu_virt_defconfig   clang
-riscv                 randconfig-001-20240208   gcc  
-riscv                 randconfig-002-20240207   gcc  
-s390                             allmodconfig   clang
-s390                              allnoconfig   clang
-s390                             allyesconfig   gcc  
-s390                          debug_defconfig   gcc  
-s390                                defconfig   clang
-s390                  randconfig-001-20240207   gcc  
-s390                  randconfig-002-20240207   gcc  
-s390                  randconfig-002-20240208   gcc  
-sh                               allmodconfig   gcc  
-sh                                allnoconfig   gcc  
-sh                               allyesconfig   gcc  
-sh                                  defconfig   gcc  
-sh                        edosk7705_defconfig   gcc  
-sh                             espt_defconfig   gcc  
-sh                     magicpanelr2_defconfig   gcc  
-sh                    randconfig-001-20240207   gcc  
-sh                    randconfig-001-20240208   gcc  
-sh                    randconfig-002-20240207   gcc  
-sh                    randconfig-002-20240208   gcc  
-sh                           se7343_defconfig   gcc  
-sh                   secureedge5410_defconfig   gcc  
-sh                           sh2007_defconfig   gcc  
-sh                        sh7757lcr_defconfig   gcc  
-sh                        sh7763rdp_defconfig   gcc  
-sh                             shx3_defconfig   gcc  
-sparc                            allmodconfig   gcc  
-sparc                             allnoconfig   gcc  
-sparc                            allyesconfig   gcc  
-sparc                               defconfig   gcc  
-sparc64                          allmodconfig   gcc  
-sparc64                          allyesconfig   gcc  
-sparc64                             defconfig   gcc  
-sparc64               randconfig-001-20240207   gcc  
-sparc64               randconfig-001-20240208   gcc  
-sparc64               randconfig-002-20240207   gcc  
-sparc64               randconfig-002-20240208   gcc  
-um                               alldefconfig   clang
-um                               allmodconfig   clang
-um                                allnoconfig   clang
-um                               allyesconfig   gcc  
-um                                  defconfig   clang
-um                    randconfig-002-20240207   gcc  
-um                    randconfig-002-20240208   gcc  
-um                           x86_64_defconfig   clang
-x86_64                            allnoconfig   clang
-x86_64       buildonly-randconfig-001-20240207   clang
-x86_64       buildonly-randconfig-002-20240207   clang
-x86_64       buildonly-randconfig-003-20240207   gcc  
-x86_64       buildonly-randconfig-003-20240208   gcc  
-x86_64       buildonly-randconfig-004-20240207   clang
-x86_64       buildonly-randconfig-005-20240207   clang
-x86_64       buildonly-randconfig-006-20240207   clang
-x86_64                              defconfig   gcc  
-x86_64                randconfig-001-20240207   clang
-x86_64                randconfig-001-20240208   gcc  
-x86_64                randconfig-002-20240207   gcc  
-x86_64                randconfig-002-20240208   gcc  
-x86_64                randconfig-003-20240207   gcc  
-x86_64                randconfig-003-20240208   gcc  
-x86_64                randconfig-004-20240207   gcc  
-x86_64                randconfig-005-20240207   clang
-x86_64                randconfig-005-20240208   gcc  
-x86_64                randconfig-006-20240207   clang
-x86_64                randconfig-006-20240208   gcc  
-x86_64                randconfig-011-20240207   clang
-x86_64                randconfig-011-20240208   gcc  
-x86_64                randconfig-012-20240207   gcc  
-x86_64                randconfig-012-20240208   gcc  
-x86_64                randconfig-013-20240207   clang
-x86_64                randconfig-014-20240207   clang
-x86_64                randconfig-015-20240207   gcc  
-x86_64                randconfig-016-20240207   gcc  
-x86_64                randconfig-071-20240207   gcc  
-x86_64                randconfig-072-20240207   clang
-x86_64                randconfig-073-20240207   clang
-x86_64                randconfig-073-20240208   gcc  
-x86_64                randconfig-074-20240207   gcc  
-x86_64                randconfig-075-20240207   gcc  
-x86_64                randconfig-075-20240208   gcc  
-x86_64                randconfig-076-20240207   clang
-x86_64                randconfig-076-20240208   gcc  
-x86_64                          rhel-8.3-rust   clang
-x86_64                               rhel-8.3   gcc  
-xtensa                            allnoconfig   gcc  
-xtensa                           allyesconfig   gcc  
-xtensa                       common_defconfig   gcc  
-xtensa                          iss_defconfig   gcc  
-xtensa                randconfig-001-20240207   gcc  
-xtensa                randconfig-001-20240208   gcc  
-xtensa                randconfig-002-20240207   gcc  
-xtensa                randconfig-002-20240208   gcc  
-
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c
+index 339e106a5732..7943e8c59f2f 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c
+@@ -334,7 +334,9 @@ static s32 ixgbe_get_link_capabilities_82599(struct ixgbe_hw *hw,
+ 	    hw->phy.sfp_type == ixgbe_sfp_type_1g_lx_core0 ||
+ 	    hw->phy.sfp_type == ixgbe_sfp_type_1g_lx_core1 ||
+ 	    hw->phy.sfp_type == ixgbe_sfp_type_1g_sx_core0 ||
+-	    hw->phy.sfp_type == ixgbe_sfp_type_1g_sx_core1) {
++	    hw->phy.sfp_type == ixgbe_sfp_type_1g_sx_core1 ||
++	    hw->phy.sfp_type == ixgbe_sfp_type_1g_bx_core0 ||
++	    hw->phy.sfp_type == ixgbe_sfp_type_1g_bx_core1) {
+ 		*speed = IXGBE_LINK_SPEED_1GB_FULL;
+ 		*autoneg = true;
+ 		return 0;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+index 9a63457712c7..4387beeda1ad 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+@@ -349,6 +349,8 @@ static int ixgbe_get_link_ksettings(struct net_device *netdev,
+ 		case ixgbe_sfp_type_1g_sx_core1:
+ 		case ixgbe_sfp_type_1g_lx_core0:
+ 		case ixgbe_sfp_type_1g_lx_core1:
++		case ixgbe_sfp_type_1g_bx_core0:
++		case ixgbe_sfp_type_1g_bx_core1:
+ 			ethtool_link_ksettings_add_link_mode(cmd, supported,
+ 							     FIBRE);
+ 			ethtool_link_ksettings_add_link_mode(cmd, advertising,
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
+index f28140a05f09..e398ad00b851 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
+@@ -1537,6 +1537,7 @@ s32 ixgbe_identify_sfp_module_generic(struct ixgbe_hw *hw)
+ 	u8 comp_codes_1g = 0;
+ 	u8 comp_codes_10g = 0;
+ 	u8 oui_bytes[3] = {0, 0, 0};
++	u8 bitrate_nominal = 0;
+ 	u8 cable_tech = 0;
+ 	u8 cable_spec = 0;
+ 	u16 enforce_sfp = 0;
+@@ -1576,7 +1577,12 @@ s32 ixgbe_identify_sfp_module_generic(struct ixgbe_hw *hw)
+ 	status = hw->phy.ops.read_i2c_eeprom(hw,
+ 					     IXGBE_SFF_CABLE_TECHNOLOGY,
+ 					     &cable_tech);
++	if (status)
++		goto err_read_i2c_eeprom;
+ 
++	status = hw->phy.ops.read_i2c_eeprom(hw,
++					     IXGBE_SFF_BITRATE_NOMINAL,
++					     &bitrate_nominal);
+ 	if (status)
+ 		goto err_read_i2c_eeprom;
+ 
+@@ -1659,6 +1665,18 @@ s32 ixgbe_identify_sfp_module_generic(struct ixgbe_hw *hw)
+ 			else
+ 				hw->phy.sfp_type =
+ 					ixgbe_sfp_type_1g_lx_core1;
++		/* Support only Ethernet 1000BASE-BX10, checking the Bit Rate
++		 * Nominal Value as per SFF-8472 by convention 1.25 Gb/s should
++		 * be rounded up to 0Dh (13 in units of 100 MBd) for 1000BASE-BX
++		 */
++		} else if ((comp_codes_1g & IXGBE_SFF_BASEBX10_CAPABLE) &&
++			   (bitrate_nominal == 0xD)) {
++			if (hw->bus.lan_id == 0)
++				hw->phy.sfp_type =
++					ixgbe_sfp_type_1g_bx_core0;
++			else
++				hw->phy.sfp_type =
++					ixgbe_sfp_type_1g_bx_core1;
+ 		} else {
+ 			hw->phy.sfp_type = ixgbe_sfp_type_unknown;
+ 		}
+@@ -1747,7 +1765,9 @@ s32 ixgbe_identify_sfp_module_generic(struct ixgbe_hw *hw)
+ 	      hw->phy.sfp_type == ixgbe_sfp_type_1g_lx_core0 ||
+ 	      hw->phy.sfp_type == ixgbe_sfp_type_1g_lx_core1 ||
+ 	      hw->phy.sfp_type == ixgbe_sfp_type_1g_sx_core0 ||
+-	      hw->phy.sfp_type == ixgbe_sfp_type_1g_sx_core1)) {
++	      hw->phy.sfp_type == ixgbe_sfp_type_1g_sx_core1 ||
++	      hw->phy.sfp_type == ixgbe_sfp_type_1g_bx_core0 ||
++	      hw->phy.sfp_type == ixgbe_sfp_type_1g_bx_core1)) {
+ 		hw->phy.type = ixgbe_phy_sfp_unsupported;
+ 		return -EOPNOTSUPP;
+ 	}
+@@ -1763,7 +1783,9 @@ s32 ixgbe_identify_sfp_module_generic(struct ixgbe_hw *hw)
+ 	      hw->phy.sfp_type == ixgbe_sfp_type_1g_lx_core0 ||
+ 	      hw->phy.sfp_type == ixgbe_sfp_type_1g_lx_core1 ||
+ 	      hw->phy.sfp_type == ixgbe_sfp_type_1g_sx_core0 ||
+-	      hw->phy.sfp_type == ixgbe_sfp_type_1g_sx_core1)) {
++	      hw->phy.sfp_type == ixgbe_sfp_type_1g_sx_core1 ||
++	      hw->phy.sfp_type == ixgbe_sfp_type_1g_bx_core0 ||
++	      hw->phy.sfp_type == ixgbe_sfp_type_1g_bx_core1)) {
+ 		/* Make sure we're a supported PHY type */
+ 		if (hw->phy.type == ixgbe_phy_sfp_intel)
+ 			return 0;
+@@ -1999,12 +2021,14 @@ s32 ixgbe_get_sfp_init_sequence_offsets(struct ixgbe_hw *hw,
+ 	if (sfp_type == ixgbe_sfp_type_da_act_lmt_core0 ||
+ 	    sfp_type == ixgbe_sfp_type_1g_lx_core0 ||
+ 	    sfp_type == ixgbe_sfp_type_1g_cu_core0 ||
+-	    sfp_type == ixgbe_sfp_type_1g_sx_core0)
++	    sfp_type == ixgbe_sfp_type_1g_sx_core0 ||
++	    sfp_type == ixgbe_sfp_type_1g_bx_core0)
+ 		sfp_type = ixgbe_sfp_type_srlr_core0;
+ 	else if (sfp_type == ixgbe_sfp_type_da_act_lmt_core1 ||
+ 		 sfp_type == ixgbe_sfp_type_1g_lx_core1 ||
+ 		 sfp_type == ixgbe_sfp_type_1g_cu_core1 ||
+-		 sfp_type == ixgbe_sfp_type_1g_sx_core1)
++		 sfp_type == ixgbe_sfp_type_1g_sx_core1 ||
++		 sfp_type == ixgbe_sfp_type_1g_bx_core1)
+ 		sfp_type = ixgbe_sfp_type_srlr_core1;
+ 
+ 	/* Read offset to PHY init contents */
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h
+index ef72729d7c93..b5bc60916402 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h
+@@ -17,6 +17,7 @@
+ #define IXGBE_SFF_1GBE_COMP_CODES	0x6
+ #define IXGBE_SFF_10GBE_COMP_CODES	0x3
+ #define IXGBE_SFF_CABLE_TECHNOLOGY	0x8
++#define IXGBE_SFF_BITRATE_NOMINAL	0xC
+ #define IXGBE_SFF_CABLE_SPEC_COMP	0x3C
+ #define IXGBE_SFF_SFF_8472_SWAP		0x5C
+ #define IXGBE_SFF_SFF_8472_COMP		0x5E
+@@ -39,6 +40,7 @@
+ #define IXGBE_SFF_1GBASESX_CAPABLE		0x1
+ #define IXGBE_SFF_1GBASELX_CAPABLE		0x2
+ #define IXGBE_SFF_1GBASET_CAPABLE		0x8
++#define IXGBE_SFF_BASEBX10_CAPABLE		0x64
+ #define IXGBE_SFF_10GBASESR_CAPABLE		0x10
+ #define IXGBE_SFF_10GBASELR_CAPABLE		0x20
+ #define IXGBE_SFF_SOFT_RS_SELECT_MASK		0x8
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+index 61b9774b3d31..f111a671ee82 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+@@ -3210,6 +3210,9 @@ enum ixgbe_sfp_type {
+ 	ixgbe_sfp_type_1g_sx_core1 = 12,
+ 	ixgbe_sfp_type_1g_lx_core0 = 13,
+ 	ixgbe_sfp_type_1g_lx_core1 = 14,
++	ixgbe_sfp_type_1g_bx_core0 = 15,
++	ixgbe_sfp_type_1g_bx_core1 = 16,
++
+ 	ixgbe_sfp_type_not_present = 0xFFFE,
+ 	ixgbe_sfp_type_unknown = 0xFFFF
+ };
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+2.43.0
+
