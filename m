@@ -1,88 +1,99 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3196DC4828F
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  8 Feb 2024 15:23:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 70323C4828F
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  8 Feb 2024 16:06:35 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id D9D3384337;
-	Thu,  8 Feb 2024 15:23:56 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 1D34F61594;
+	Thu,  8 Feb 2024 16:06:35 +0000 (UTC)
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp3.osuosl.org ([127.0.0.1])
+	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id l9zcBY-w_XUI; Thu,  8 Feb 2024 16:06:34 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4F2C3615A6
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1707408394;
+	bh=SAalLMEPsSD/09IiHiwS+PzKyKGItg6LwK/MHBE68Iw=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=0MlrctjDfojs3ZBwhkoLskVHk/Jpd5ShoApwxg784/ykUpkRqtDZ+hZHuIahX3J03
+	 Ms1UtioE+DtJWlKNppumoaSdvBPJ1y3aJNpyRsgOldeCRcyHtGfWYr8CH6Vwtk3MOH
+	 QmHJzayF+bSIu/JE5djlP17TZTGFTXnDe+ITfg8Jn/dPraP/bt16tAiiRF/M3tUKsD
+	 J7hf2i4poCeuzuPSbl17sAM8uruNXSu/UJVY62zItD3XxcDXkty0yPzIPAGW7ioJ3Y
+	 TzpCU/eGjHSBgV9C7RWgvzrD8SFff+3unbOiIKQ57b9oL7IhlENUHLBq3a4uO+An8x
+	 rxrblb/QhKB8Q==
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp3.osuosl.org (Postfix) with ESMTP id 4F2C3615A6;
+	Thu,  8 Feb 2024 16:06:34 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 644ED1BF831
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Feb 2024 08:25:09 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp1.osuosl.org (Postfix) with ESMTP id 4F514840D9
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Feb 2024 08:25:09 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
-	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id zL1B9u6P9xuh; Thu,  8 Feb 2024 15:23:56 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 581BC8437B
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1707405836;
-	bh=+kce5mcXQl7hMctqyOMZfgjjjiVlSJf9xfNn4LQeJUM=;
-	h=Date:From:To:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=lXwxZ1lFGyzLYPDT5K4QeoObL2ra4Y0pl6GmdvwiwJKhxrLGuolHxqP0IUYz53eoX
-	 GlbxW2qquGxoJIjF9GvzdYR+bgG7HComRkLkIWr3DGCKjxV68kW/bpVEBPYTZEEASF
-	 BSmsE9+penb2vUx+vYpQYxTexlSrLpbB+YQQmtLtbIuAI3kP2HqkmsgH0JbkqZCtF1
-	 GnbhhhDKfIdIYR/0IvcqzgTCsuDhSQnqMDJqQCjM/2CVY0JheqqmensmdxQ5d0RF0G
-	 MdTHX/V1MzP8/phu2muWMracbct28N09hgBsfblK3g6630JQf729AExiu36Kr7RZw2
-	 iBiw0T+F9LhdA==
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 581BC8437B;
-	Thu,  8 Feb 2024 15:23:56 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 4BE641BF2C8
- for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Feb 2024 15:23:55 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 42C0745AC6
- for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Feb 2024 15:23:55 +0000 (UTC)
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id zgqhf5Yp6uMg for <intel-wired-lan@lists.osuosl.org>;
- Thu,  8 Feb 2024 15:23:54 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=139.178.84.217;
- helo=dfw.source.kernel.org; envelope-from=kuba@kernel.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org A104A45969
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org A104A45969
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
- by smtp4.osuosl.org (Postfix) with ESMTPS id A104A45969
- for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Feb 2024 15:23:54 +0000 (UTC)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by dfw.source.kernel.org (Postfix) with ESMTP id 695C361DC5;
- Thu,  8 Feb 2024 15:23:53 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 76ACCC433C7;
- Thu,  8 Feb 2024 15:23:52 +0000 (UTC)
-Date: Thu, 8 Feb 2024 07:23:51 -0800
-From: Jakub Kicinski <kuba@kernel.org>
-To: Takeru Hayasaka <hayatake396@gmail.com>
-Message-ID: <20240208072351.3a806dda@kernel.org>
-In-Reply-To: <CADFiAcK_XjLNjzZuF+OZDWjZA4tFB8VgeYXVJHR8+N3XryGxwA@mail.gmail.com>
-References: <20240131134621.1017530-1-hayatake396@gmail.com>
- <20240131131258.47c05b7e@kernel.org>
- <CADFiAc+y_SXGtVqZkLoiWw-YBArMovMkuWw3X596QDwEtdBJ2g@mail.gmail.com>
- <CADFiAcK_XjLNjzZuF+OZDWjZA4tFB8VgeYXVJHR8+N3XryGxwA@mail.gmail.com>
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id XvdA8tVVgZmg for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  8 Feb 2024 08:25:08 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.129.124;
+ helo=us-smtp-delivery-124.mimecast.com; envelope-from=ksundara@redhat.com;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 7343A840D1
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7343A840D1
+Received: from us-smtp-delivery-124.mimecast.com
+ (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 7343A840D1
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Feb 2024 08:25:08 +0000 (UTC)
+Received: from mimecast-mx02.redhat.com (mx-ext.redhat.com [66.187.233.73])
+ by relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-5--56nbYMXOe67JYmp2I98qA-1; Thu,
+ 08 Feb 2024 03:25:05 -0500
+X-MC-Unique: -56nbYMXOe67JYmp2I98qA-1
+Received: from smtp.corp.redhat.com (int-mx05.intmail.prod.int.rdu2.redhat.com
+ [10.11.54.5])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 81FAE38143B7;
+ Thu,  8 Feb 2024 08:25:04 +0000 (UTC)
+Received: from ksundara-mac.redhat.com (unknown [10.74.17.171])
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 597301103A;
+ Thu,  8 Feb 2024 08:24:58 +0000 (UTC)
+From: Karthik Sundaravel <ksundara@redhat.com>
+To: jesse.brandeburg@intel.com, anthony.l.nguyen@intel.com,
+ davem@davemloft.net, edumazet@google.com, kuba@kernel.org,
+ pabeni@redhat.com, intel-wired-lan@lists.osuosl.org,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Date: Thu,  8 Feb 2024 13:54:54 +0530
+Message-Id: <20240208082455.66726-1-ksundara@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1707405833;
- bh=vUl54UiVAR4pVki952Goznem4donRfaYG3IjD6EekXQ=;
- h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=LODppW7PtGvkE4PNz81HxVQ1dcOwNal6ChR1BqpOMA9BuRbKEX7HNjyed+nY29NnQ
- n3q1wE/Iy/RIaiVzIWAtsKMxHOncuAmgcl6g2XkgATi32YD34dO0uF6EVMHSNl+3fk
- 3XiSZ2kBzQwiQdPgXkQIePu0O+wVm+h0w6x90174waTE0kwX+mG0RU2r0Z8W9Vuxup
- kxJk3ulzlmsOep+relRv9BJbFwvbjQz+WR+GJwYa2rI6Ey9lYeZxI/2EXvL7Ozuijw
- BODRWTXPZrQS0Dd4urDd12MoG9lc5+IUOM4BK75NF1QddfmcU/qJorb2nDqZgrkOep
- AfaM9v9wX6NQg==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+Content-Transfer-Encoding: 8bit
+X-Scanned-By: MIMEDefang 3.4.1 on 10.11.54.5
+X-Mailman-Approved-At: Thu, 08 Feb 2024 16:06:32 +0000
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=redhat.com; 
+ s=mimecast20190719; t=1707380706;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:
+ content-transfer-encoding:content-transfer-encoding;
+ bh=SAalLMEPsSD/09IiHiwS+PzKyKGItg6LwK/MHBE68Iw=;
+ b=KZpihYXhCI2x3bGvObI44gJkgCqn7w+hZ96t0mFy3xBFY5xLMfL6z3ILh71mDmn160lOAV
+ qEhoCOCzO7fNle41rPbYp7VGqDcTc5RM0sebdgtpQV1Pu0buu3i1pB70+nFUahndwIS5E5
+ larvv2LqzFQDzBS5/4SbXyoDuvjb6Wg=
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
- header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=LODppW7P
-Subject: Re: [Intel-wired-lan] [PATCH net-next v6] ethtool: ice: Support for
- RSS settings to GTP from ethtool
+ header.from=redhat.com
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (1024-bit key,
+ unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
+ header.s=mimecast20190719 header.b=KZpihYXh
+Subject: [Intel-wired-lan] [PATCH v2] ice: Add get/set hw address for VFs
+ using devlink commands
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,21 +106,92 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Jonathan Corbet <corbet@lwn.net>, netdev@vger.kernel.org,
- linux-doc@vger.kernel.org, Jesse Brandeburg <jesse.brandeburg@intel.com>,
- laforge@gnumonks.org, linux-kernel@vger.kernel.org,
- Eric Dumazet <edumazet@google.com>, Tony Nguyen <anthony.l.nguyen@intel.com>,
- vladimir.oltean@nxp.com, intel-wired-lan@lists.osuosl.org,
- Paolo Abeni <pabeni@redhat.com>, "David S. Miller" <davem@davemloft.net>,
- mailhol.vincent@wanadoo.fr
+Cc: pmenzel@molgen.mpg.de, aharivel@redhat.com, jiri@resnulli.us,
+ cfontain@redhat.com, vchundur@redhat.com, ksundara@redhat.com,
+ michal.swiatkowski@linux.intel.com, rjarry@redhat.com
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Thu, 8 Feb 2024 16:34:49 +0900 Takeru Hayasaka wrote:
-> Hello Jakub-san, and all reviewers and maintainers,
-> 
-> It has been a week since I last received any feedback on this patch. I
-> apologize for the inconvenience during this busy period, but I would
-> greatly appreciate it if you could continue the review.
 
-We're expecting a v7 with the patch split into two.
+
+Thanks for the review comments and suggestions.
+In the V2 version of the patch, I have called ice_set_vf_mac() directly from the devlink port function handlers.
+
+I did the following testing to verify the changes.
+
+root@10:~# ethtool -i enp8s0f0np0 | grep bus
+bus-info: 0000:08:00.0
+
+root@10:~# devlink dev eswitch set pci/0000:08:00.0 mode switchdev
+Warning: ice: Changed eswitch mode to switchdev.
+
+root@10:~# echo 4 > /sys/class/net/enp8s0f0np0/device/sriov_numvfs 
+
+root@10:~# devlink port show
+pci/0000:08:00.0/0: type eth netdev enp8s0f0np0 flavour physical port 0 splittable true lanes 8
+pci/0000:08:00.0/2: type eth netdev enp8s0f0npf0vf0 flavour pcivf controller 0 pfnum 0 vfnum 0 external false splittable false
+  function:
+    hw_addr 1a:33:f2:e7:64:d8
+pci/0000:08:00.0/3: type eth netdev enp8s0f0npf0vf3 flavour pcivf controller 0 pfnum 0 vfnum 3 external false splittable false
+  function:
+    hw_addr 4e:ef:ca:9e:e7:5d
+pci/0000:08:00.0/4: type eth netdev enp8s0f0npf0vf1 flavour pcivf controller 0 pfnum 0 vfnum 1 external false splittable false
+  function:
+    hw_addr 5a:f0:e3:f8:41:93
+pci/0000:08:00.0/5: type eth netdev enp8s0f0npf0vf2 flavour pcivf controller 0 pfnum 0 vfnum 2 external false splittable false
+  function:
+    hw_addr 1a:62:c6:4b:d2:f0
+pci/0000:08:00.1/0: type eth netdev enp8s0f1np1 flavour physical port 1 splittable false
+
+root@10:~# devlink port function set  pci/0000:08:00.0/5 hw_addr 00:11:22:33:44:55
+
+root@10:~# devlink port show
+pci/0000:08:00.0/0: type eth netdev enp8s0f0np0 flavour physical port 0 splittable true lanes 8
+pci/0000:08:00.0/2: type eth netdev enp8s0f0npf0vf0 flavour pcivf controller 0 pfnum 0 vfnum 0 external false splittable false
+  function:
+    hw_addr 1a:33:f2:e7:64:d8
+pci/0000:08:00.0/3: type eth netdev enp8s0f0npf0vf3 flavour pcivf controller 0 pfnum 0 vfnum 3 external false splittable false
+  function:
+    hw_addr 4e:ef:ca:9e:e7:5d
+pci/0000:08:00.0/4: type eth netdev enp8s0f0npf0vf1 flavour pcivf controller 0 pfnum 0 vfnum 1 external false splittable false
+  function:
+    hw_addr 5a:f0:e3:f8:41:93
+pci/0000:08:00.0/5: type eth netdev enp8s0f0npf0vf2 flavour pcivf controller 0 pfnum 0 vfnum 2 external false splittable false
+  function:
+    hw_addr 00:11:22:33:44:55
+pci/0000:08:00.1/0: type eth netdev enp8s0f1np1 flavour physical port 1 splittable false
+
+root@10:~# ip link show enp8s0f0np0
+12: enp8s0f0np0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP mode DEFAULT group default qlen 1000
+    link/ether 40:a6:b7:18:dd:68 brd ff:ff:ff:ff:ff:ff
+    vf 0     link/ether 1a:33:f2:e7:64:d8 brd ff:ff:ff:ff:ff:ff, spoof checking on, link-state enable, trust off
+    vf 1     link/ether 5a:f0:e3:f8:41:93 brd ff:ff:ff:ff:ff:ff, spoof checking on, link-state enable, trust off
+    vf 2     link/ether 00:11:22:33:44:55 brd ff:ff:ff:ff:ff:ff, spoof checking on, link-state enable, trust off
+    vf 3     link/ether 4e:ef:ca:9e:e7:5d brd ff:ff:ff:ff:ff:ff, spoof checking on, link-state enable, trust off
+    
+root@10:~# ip link set dev enp8s0f0np0 vf 2 mac AA:BB:CC:DD:EE:FF
+
+root@10:~# ip link show enp8s0f0np0
+12: enp8s0f0np0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP mode DEFAULT group default qlen 1000
+    link/ether 40:a6:b7:18:dd:68 brd ff:ff:ff:ff:ff:ff
+    vf 0     link/ether 1a:33:f2:e7:64:d8 brd ff:ff:ff:ff:ff:ff, spoof checking on, link-state enable, trust off
+    vf 1     link/ether 5a:f0:e3:f8:41:93 brd ff:ff:ff:ff:ff:ff, spoof checking on, link-state enable, trust off
+    vf 2     link/ether aa:bb:cc:dd:ee:ff brd ff:ff:ff:ff:ff:ff, spoof checking on, link-state enable, trust off
+    vf 3     link/ether 4e:ef:ca:9e:e7:5d brd ff:ff:ff:ff:ff:ff, spoof checking on, link-state enable, trust off
+
+root@10:~# devlink port show
+pci/0000:08:00.0/0: type eth netdev enp8s0f0np0 flavour physical port 0 splittable true lanes 8
+pci/0000:08:00.0/2: type eth netdev enp8s0f0npf0vf0 flavour pcivf controller 0 pfnum 0 vfnum 0 external false splittable false
+  function:
+    hw_addr 1a:33:f2:e7:64:d8
+pci/0000:08:00.0/3: type eth netdev enp8s0f0npf0vf3 flavour pcivf controller 0 pfnum 0 vfnum 3 external false splittable false
+  function:
+    hw_addr 4e:ef:ca:9e:e7:5d
+pci/0000:08:00.0/4: type eth netdev enp8s0f0npf0vf1 flavour pcivf controller 0 pfnum 0 vfnum 1 external false splittable false
+  function:
+    hw_addr 5a:f0:e3:f8:41:93
+pci/0000:08:00.0/5: type eth netdev enp8s0f0npf0vf2 flavour pcivf controller 0 pfnum 0 vfnum 2 external false splittable false
+  function:
+    hw_addr aa:bb:cc:dd:ee:ff
+pci/0000:08:00.1/0: type eth netdev enp8s0f1np1 flavour physical port 1 splittable false
+
