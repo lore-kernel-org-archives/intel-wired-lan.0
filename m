@@ -4,97 +4,96 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 38DF2C4829A
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 13 Feb 2024 11:51:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A7ABAC4829A
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 13 Feb 2024 11:55:18 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id F096940193;
-	Tue, 13 Feb 2024 11:51:24 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 484C54015F;
+	Tue, 13 Feb 2024 11:55:18 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id V9b8d8nGkNiI; Tue, 13 Feb 2024 11:51:22 +0000 (UTC)
+	with ESMTP id LgXBZDINCRax; Tue, 13 Feb 2024 11:55:17 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 73EAB4015F
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 0F00240193
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1707825082;
-	bh=jLW4b9HW+XWNKXKllSXN2kgG3NiuVZ0glYw5AkkFB24=;
+	s=default; t=1707825317;
+	bh=n4SNCvBXoupiTT7ZEzJsdIolfMX9EOO1FSzxXOKQMPk=;
 	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=8BF/BKCtW7lnMNNVR0jhOIMtfNlEWnt7YxKopnk30ua593JWnpzsbXL6tkOp4L/Yf
-	 ZLMjBi4vf7SWnNvVH/Ojcd17jHPGGj+2/EO50Nt9wi6Y0FeYs4zUw5hpHDRcLTK92c
-	 Tw2gEzR2594ZTZbnefp7B2m9OngJVDQn8nkchT9PK9ME0Jiad6ct+CpeonpDbKFj0c
-	 97/2fj9fxirVBCdoxr4mVi55TLdghz5lbsgO7fuBgRBmzlqUD5+6zyV+972bHr7nNy
-	 L8ENMb3A0qywnb81H2kg5rRoBUJFueJAgUnz3JWYwA9AsLfsu+6cSADgtUzmtUU0Kj
-	 PoipdDCec3LEA==
+	b=krghDB59p8lFp4HJHp+Va3sIeJBJ5LOEFokddN+U+7NgkxsYm+NjFyWOoROqOdC/g
+	 GJSRQsHl76d4W9hv8zBaEzPQGcCLU/Pna8wRzSV47YSA/T/6ZOjeps5Sc+AYKoO9fB
+	 YTtkRpQm21TuCraFmv6uLtH6DgELyQmaIClKBqn1Ops71cwvCtlOvikHYDde4qemQl
+	 BunxGgxCe+iH6jNq4zTYKLSi3Rz9DPdYirKL/IIMD2901lsrnvg4uKBiD+2gtKJoqb
+	 BR1kjmKx96MZa844MpT+NdS0ozpbZ4J2ZOiBCTrSqRNyJMtWqsb62tIb94tJrFb+ka
+	 nc+URuiscWjgg==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 73EAB4015F;
-	Tue, 13 Feb 2024 11:51:22 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 8C9C01BF421
- for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Feb 2024 11:51:21 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 0F00240193;
+	Tue, 13 Feb 2024 11:55:17 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 5E8021BF421
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Feb 2024 11:55:15 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 7860180C4B
- for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Feb 2024 11:51:21 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 4A85D407E2
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Feb 2024 11:55:15 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id fEeG26al0yKh for <intel-wired-lan@lists.osuosl.org>;
- Tue, 13 Feb 2024 11:51:20 +0000 (UTC)
-Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.19;
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id qB2NecmZpwru for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 13 Feb 2024 11:55:14 +0000 (UTC)
+Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.18;
  helo=mgamail.intel.com; envelope-from=michal.swiatkowski@linux.intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 90CDE80BD0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 90CDE80BD0
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.19])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 90CDE80BD0
- for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Feb 2024 11:51:20 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10982"; a="1680941"
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 4AEA8407A8
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4AEA8407A8
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.18])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 4AEA8407A8
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Feb 2024 11:55:13 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10982"; a="1950196"
 X-IronPort-AV: E=Sophos;i="6.06,157,1705392000"; 
-   d="scan'208";a="1680941"
-Received: from fmviesa005.fm.intel.com ([10.60.135.145])
- by orvoesa111.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 13 Feb 2024 03:51:19 -0800
+   d="scan'208";a="1950196"
+Received: from orviesa001.jf.intel.com ([10.64.159.141])
+ by orvoesa110.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 13 Feb 2024 03:55:13 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.06,157,1705392000"; 
-   d="scan'208";a="7507615"
+X-IronPort-AV: E=Sophos;i="6.06,157,1705392000"; d="scan'208";a="40333197"
 Received: from unknown (HELO mev-dev) ([10.237.112.144])
- by fmviesa005-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 13 Feb 2024 03:51:17 -0800
-Date: Tue, 13 Feb 2024 12:51:09 +0100
+ by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 13 Feb 2024 03:55:10 -0800
+Date: Tue, 13 Feb 2024 12:55:07 +0100
 From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 To: Jiri Pirko <jiri@resnulli.us>
-Message-ID: <ZctXrfWiYkopStMt@mev-dev>
-References: <20240213073509.77622-1-michal.swiatkowski@linux.intel.com>
- <20240213073509.77622-2-michal.swiatkowski@linux.intel.com>
- <ZcswSYA5GqtOb3ll@nanopsycho> <Zcs95HiZz5g4QUwt@mev-dev>
- <ZctTL05gEf_7XbhX@nanopsycho>
+Message-ID: <ZctYm9CVJzV+uxip@mev-dev>
+References: <20240213072724.77275-1-michal.swiatkowski@linux.intel.com>
+ <20240213072724.77275-8-michal.swiatkowski@linux.intel.com>
+ <ZcsvYt4-f_MHT3QC@nanopsycho> <Zcs8LsRrbOfUdIL7@mev-dev>
+ <ZctSpPamhrlF4ILg@nanopsycho>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <ZctTL05gEf_7XbhX@nanopsycho>
+In-Reply-To: <ZctSpPamhrlF4ILg@nanopsycho>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1707825080; x=1739361080;
+ t=1707825314; x=1739361314;
  h=date:from:to:cc:subject:message-id:references:
  mime-version:in-reply-to;
- bh=uS4M8+vsGmkHQK0cf9nAqcZUWp7CBWnXPvPw6e0tukM=;
- b=EYEwYK5Q/8OTx7973NW3xJA8X+Sz/0/oE7pRI2bPXBivLNrwGjsF+Owf
- KZA1mM0vK4YjUzXAEDYYXDpMkCA6KK3Qt8eBzId3ijLZTJ9g9qzyLutGq
- PQ8moumkKl1+7joslZPrMpD6ZV6N2ihGU4G7GEh3D2qLgldkHGFRg3KuY
- IMmXop0EayZ1LI5WES2WtuZzmXX2jqPlsMNzJlNohHnhBQvnBeetHxgpy
- AkHKYp7so997u8R5nFHqKIsxkhHRA5vyEsviiaIUZHTZq4fPUKfJ9lrOu
- UaQLzlTYR11Tvh7Z7/IRwdYnMD9tCzRSn6Fy8wS4E49RL8LPQkxaZdJuk
- w==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ bh=qm1sw6jJok4ULz7jLovqLsgiQQmmvysBI3GV8CbBq64=;
+ b=USjvy1rdpqHX94x6NVBBQc0gAO6HyR5N95Eo3w7jQFFqy9R8jWj23U4f
+ XY1w5M8aq4MwUT0AtzY7CaSygWhTDj3jDu02OHu3fG2UJZ6ZzjlcEAjam
+ zal0JWRugwUdTOlSkJhyRTk5dGpK1FpH4jPYDKpbSEwsn8MEaEKnGAtma
+ yTtUCqkOJeCRKOgl5y/V9fsFqsA5TYZMNEd9R2w+LmThGzliOhDUkEiZT
+ jWEu45degTIcJk1uHbESeViWgx1rh8J4TT5dE7UP4WkQzqsoZrE5N0UPL
+ BWQcszOceP0aUWrdh0uU+yFVIVRRyRDtmhfmSTMIrByNkDHTwYJtGqtOZ
+ g==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=none (p=none dis=none)
  header.from=linux.intel.com
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=EYEwYK5Q
-Subject: Re: [Intel-wired-lan] [iwl-next v1 1/7] ice: devlink PF MSI-X max
- and min parameter
+ header.s=Intel header.b=USjvy1rd
+Subject: Re: [Intel-wired-lan] [iwl-next v1 07/15] ice: add auxiliary device
+ sfnum attribute
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -107,117 +106,110 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: wojciech.drewek@intel.com, marcin.szycik@intel.com, netdev@vger.kernel.org,
- konrad.knitter@intel.com, pawel.chmielewski@intel.com,
- intel-wired-lan@lists.osuosl.org, nex.sw.ncis.nat.hpm.dev@intel.com,
+Cc: maciej.fijalkowski@intel.com, netdev@vger.kernel.org,
+ michal.kubiak@intel.com, intel-wired-lan@lists.osuosl.org,
  pio.raczynski@gmail.com, sridhar.samudrala@intel.com, jacob.e.keller@intel.com,
+ wojciech.drewek@intel.com, Piotr Raczynski <piotr.raczynski@intel.com>,
  przemyslaw.kitszel@intel.com
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Tue, Feb 13, 2024 at 12:31:59PM +0100, Jiri Pirko wrote:
-> Tue, Feb 13, 2024 at 11:01:08AM CET, michal.swiatkowski@linux.intel.com wrote:
-> >On Tue, Feb 13, 2024 at 10:03:05AM +0100, Jiri Pirko wrote:
-> >> Tue, Feb 13, 2024 at 08:35:03AM CET, michal.swiatkowski@linux.intel.com wrote:
-> >> >Use generic devlink PF MSI-X parameter to allow user to change MSI-X
-> >> >range.
+On Tue, Feb 13, 2024 at 12:29:40PM +0100, Jiri Pirko wrote:
+> Tue, Feb 13, 2024 at 10:53:50AM CET, michal.swiatkowski@linux.intel.com wrote:
+> >On Tue, Feb 13, 2024 at 09:59:14AM +0100, Jiri Pirko wrote:
+> >> Tue, Feb 13, 2024 at 08:27:16AM CET, michal.swiatkowski@linux.intel.com wrote:
+> >> >From: Piotr Raczynski <piotr.raczynski@intel.com>
+> >> >
+> >> >Add read only sysfs attribute for each auxiliary subfunction
+> >> >device. This attribute is needed for orchestration layer
+> >> >to distinguish SF devices from each other since there is no
+> >> >native devlink mechanism to represent the connection between
+> >> >devlink instance and the devlink port created for the port
+> >> >representor.
 > >> >
 > >> >Reviewed-by: Wojciech Drewek <wojciech.drewek@intel.com>
+> >> >Signed-off-by: Piotr Raczynski <piotr.raczynski@intel.com>
 > >> >Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 > >> >---
-> >> > drivers/net/ethernet/intel/ice/ice.h         |  8 ++
-> >> > drivers/net/ethernet/intel/ice/ice_devlink.c | 82 ++++++++++++++++++++
-> >> > drivers/net/ethernet/intel/ice/ice_irq.c     |  6 ++
-> >> > 3 files changed, 96 insertions(+)
+> >> > drivers/net/ethernet/intel/ice/ice_sf_eth.c | 31 +++++++++++++++++++++
+> >> > 1 file changed, 31 insertions(+)
 > >> >
-> >> >diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-> >> >index c4127d5f2be3..24085f3c0966 100644
-> >> >--- a/drivers/net/ethernet/intel/ice/ice.h
-> >> >+++ b/drivers/net/ethernet/intel/ice/ice.h
-> >> >@@ -94,6 +94,7 @@
-> >> > #define ICE_MIN_LAN_TXRX_MSIX	1
-> >> > #define ICE_MIN_LAN_OICR_MSIX	1
-> >> > #define ICE_MIN_MSIX		(ICE_MIN_LAN_TXRX_MSIX + ICE_MIN_LAN_OICR_MSIX)
-> >> >+#define ICE_MAX_MSIX		256
-> >> > #define ICE_FDIR_MSIX		2
-> >> > #define ICE_RDMA_NUM_AEQ_MSIX	4
-> >> > #define ICE_MIN_RDMA_MSIX	2
-> >> >@@ -535,6 +536,12 @@ struct ice_agg_node {
-> >> > 	u8 valid;
-> >> > };
+> >> >diff --git a/drivers/net/ethernet/intel/ice/ice_sf_eth.c b/drivers/net/ethernet/intel/ice/ice_sf_eth.c
+> >> >index ab90db52a8fc..abee733710a5 100644
+> >> >--- a/drivers/net/ethernet/intel/ice/ice_sf_eth.c
+> >> >+++ b/drivers/net/ethernet/intel/ice/ice_sf_eth.c
+> >> >@@ -224,6 +224,36 @@ static void ice_sf_dev_release(struct device *device)
+> >> > 	kfree(sf_dev);
+> >> > }
 > >> > 
-> >> >+struct ice_pf_msix {
-> >> >+	u16 cur;
-> >> >+	u16 min;
-> >> >+	u16 max;
-> >> >+};
-> >> >+
-> >> > struct ice_pf {
-> >> > 	struct pci_dev *pdev;
-> >> > 
-> >> >@@ -604,6 +611,7 @@ struct ice_pf {
-> >> > 	struct msi_map ll_ts_irq;	/* LL_TS interrupt MSIX vector */
-> >> > 	u16 max_pf_txqs;	/* Total Tx queues PF wide */
-> >> > 	u16 max_pf_rxqs;	/* Total Rx queues PF wide */
-> >> >+	struct ice_pf_msix msix;
-> >> > 	u16 num_lan_msix;	/* Total MSIX vectors for base driver */
-> >> > 	u16 num_lan_tx;		/* num LAN Tx queues setup */
-> >> > 	u16 num_lan_rx;		/* num LAN Rx queues setup */
-> >> >diff --git a/drivers/net/ethernet/intel/ice/ice_devlink.c b/drivers/net/ethernet/intel/ice/ice_devlink.c
-> >> >index cc717175178b..b82ff9556a4b 100644
-> >> >--- a/drivers/net/ethernet/intel/ice/ice_devlink.c
-> >> >+++ b/drivers/net/ethernet/intel/ice/ice_devlink.c
-> >> >@@ -1603,6 +1603,78 @@ enum ice_param_id {
-> >> > 	ICE_DEVLINK_PARAM_ID_LOOPBACK,
-> >> > };
-> >> > 
-> >> >+static int
-> >> >+ice_devlink_msix_max_pf_get(struct devlink *devlink, u32 id,
-> >> >+			    struct devlink_param_gset_ctx *ctx)
+> >> >+static ssize_t
+> >> >+sfnum_show(struct device *dev, struct device_attribute *attr, char *buf)
 > >> >+{
-> >> >+	struct ice_pf *pf = devlink_priv(devlink);
+> >> >+	struct devlink_port_attrs *attrs;
+> >> >+	struct auxiliary_device *adev;
+> >> >+	struct ice_sf_dev *sf_dev;
 > >> >+
-> >> >+	ctx->val.vu16 = pf->msix.max;
+> >> >+	adev = to_auxiliary_dev(dev);
+> >> >+	sf_dev = ice_adev_to_sf_dev(adev);
+> >> >+	attrs = &sf_dev->dyn_port->devlink_port.attrs;
 > >> >+
-> >> >+	return 0;
+> >> >+	return sysfs_emit(buf, "%u\n", attrs->pci_sf.sf);
 > >> >+}
 > >> >+
-> >> >+static int
-> >> >+ice_devlink_msix_max_pf_set(struct devlink *devlink, u32 id,
-> >> >+			    struct devlink_param_gset_ctx *ctx)
-> >> >+{
-> >> >+	struct ice_pf *pf = devlink_priv(devlink);
-> >> >+	u16 max = ctx->val.vu16;
+> >> >+static DEVICE_ATTR_RO(sfnum);
 > >> >+
-> >> >+	pf->msix.max = max;
+> >> >+static struct attribute *ice_sf_device_attrs[] = {
+> >> >+	&dev_attr_sfnum.attr,
+> >> >+	NULL,
+> >> >+};
+> >> >+
+> >> >+static const struct attribute_group ice_sf_attr_group = {
+> >> >+	.attrs = ice_sf_device_attrs,
+> >> >+};
+> >> >+
+> >> >+static const struct attribute_group *ice_sf_attr_groups[2] = {
+> >> >+	&ice_sf_attr_group,
+> >> >+	NULL
+> >> >+};
+> >> >+
+> >> > /**
+> >> >  * ice_sf_eth_activate - Activate Ethernet subfunction port
+> >> >  * @dyn_port: the dynamic port instance for this subfunction
+> >> >@@ -262,6 +292,7 @@ ice_sf_eth_activate(struct ice_dynamic_port *dyn_port,
+> >> > 	sf_dev->dyn_port = dyn_port;
+> >> > 	sf_dev->adev.id = id;
+> >> > 	sf_dev->adev.name = "sf";
+> >> >+	sf_dev->adev.dev.groups = ice_sf_attr_groups;
 > >> 
-> >> What's permanent about this exactly?
-> >> 
+> >> Ugh. Custom driver sysfs files like this are always very questionable.
+> >> Don't do that please. If you need to expose sfnum, please think about
+> >> some common way. Why exactly you need to expose it?
 > >
-> >I want to store the value here after driver reinit. Isn't it enough to
-> >use this parameter type? Which one should be used for this purpose?
+> >Uh, hard question. I will drop it and check if it still needed to expose
+> >the sfnum, probably no, as I have never used this sysfs during testing.
+> >
+> >Should devlink be used for it?
 > 
-> Documentation/networking/devlink/devlink-params.rst say:
-> 
-> .. list-table:: Possible configuration modes
->    :widths: 5 90
-> 
->    * - Name
->      - Description
->    * - ``runtime``
->      - set while the driver is running, and takes effect immediately. No
->        reset is required.
->    * - ``driverinit``
->      - applied while the driver initializes. Requires the user to restart
->        the driver using the ``devlink`` reload command.
->    * - ``permanent``
->      - written to the device's non-volatile memory. A hard reset is required
->        for it to take effect.
+> sfnum is exposed over devlink on the port representor. If you need to
+> expose it on the actual SF, we have to figure it out. But again, why?
 > 
 > 
-> [...]
-Thanks for pointing it, I changed the idea during developing it (at
-first I wanted to store it in NVM) and forgot to change the type.
 
-I will go with driverinit param.
+Only one argument why which I have in my mind is to support it in the legacy
+mode. But probably subfunctions shouldn't be supported in legacy mode.
+Thanks, I will remove it and use sfnum expose from representor.
 
+> >
+> >Thanks
+> >
+> >> 
+> >> pw-bot: cr
+> >> 
+> >> 
+> >> > 	sf_dev->adev.dev.release = ice_sf_dev_release;
+> >> > 	sf_dev->adev.dev.parent = &pdev->dev;
+> >> > 
+> >> >-- 
+> >> >2.42.0
+> >> >
+> >> >
