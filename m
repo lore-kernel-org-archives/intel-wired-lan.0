@@ -4,66 +4,66 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 17DD5C4829A
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 13 Feb 2024 07:23:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3CEAEC48BC4
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 13 Feb 2024 07:23:30 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id C5D8660B13;
-	Tue, 13 Feb 2024 07:23:26 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id C888160AF4;
+	Tue, 13 Feb 2024 07:23:29 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id znuQWIjoUN5a; Tue, 13 Feb 2024 07:23:23 +0000 (UTC)
+	with ESMTP id hwhko8NrTqMI; Tue, 13 Feb 2024 07:23:28 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8428F60AF9
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 5D14F60B14
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1707809003;
-	bh=HlM3l8bGOXf0P6zceZfFp2lQqc3revqkX4w9dsWdANg=;
+	s=default; t=1707809008;
+	bh=bn6QzL+7yFha90SvKr5XD+Ka5c6tDPlncX5EgpijdVQ=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=AEkTn6YIxwGi7zsQHopjGHaOqGr7iHbXQsb2wOwIQcPccM9XmiesQVYMIxP5/a2MG
-	 tXNqzsdF+WwdDYLLeY87oruCND5T7FLkCyOvR2XcS6klVGCSLsSlUMyb6ZnMn/nlj2
-	 eKiIsGN9bQjwSpfTxuiL4SrD8XsMr5Bp1M9n2XyKltBfWOTEaN6yaY3EYwmMotNKDD
-	 q2nhjxHqd4/YU2f6jsQIZyWPa2ickHf/15QyuDNDG0JhEzYAkfqVGjHNeJqlD8wQqd
-	 GCa/JeycTpJeLFqjjKKbmx/8Xls7srfbCfOrtdVn2iZIs579FKuFJgezwLHhqHfhQC
-	 ogf9vgzX2aZhA==
+	b=DWlYDVSwAWNXf5S6FpEwvX3JM5kjo7dsNVldQKlr3afphivp5NOrZI840rg5vZxkI
+	 JDuvXwi3ttZqGJunFG8HUr7etpGrNsB5NFpovPu1w6HNlIBzhFHO+L5LI7Dt3FBoEW
+	 b1mJpB8dm1/Go+0aI9yX5NFGkwCduhAIHUC4E9+G/A6jvaUQL/b38biQ8++H4Ai+j7
+	 D1tOulC/ybtL1A2cpgjRRMqKj1i/8XvKjOmBs0qsN7Of+QyKWx74RTB+swDgSIj6ih
+	 BSPezhjBYLxOGAHa0FnYr/KDlQCcZZPSuCk73+l62/JjQgARy3W6/2debjzZoFonzh
+	 3neiFYmJjI5nA==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 8428F60AF9;
-	Tue, 13 Feb 2024 07:23:23 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 5D14F60B14;
+	Tue, 13 Feb 2024 07:23:28 +0000 (UTC)
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 332911BF5F5
- for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Feb 2024 07:23:22 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 4FD031BF5F5
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Feb 2024 07:23:27 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 1FFBE40898
- for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Feb 2024 07:23:22 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 48FD040898
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Feb 2024 07:23:27 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id IP2yrUjwkA9j for <intel-wired-lan@lists.osuosl.org>;
- Tue, 13 Feb 2024 07:23:20 +0000 (UTC)
+ with ESMTP id 27v7UgnY68JW for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 13 Feb 2024 07:23:26 +0000 (UTC)
 Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.7;
  helo=mgamail.intel.com; envelope-from=michal.swiatkowski@linux.intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 1861240833
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1861240833
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org C229C40833
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C229C40833
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.7])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 1861240833
- for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Feb 2024 07:23:20 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10982"; a="27247950"
-X-IronPort-AV: E=Sophos;i="6.06,156,1705392000"; d="scan'208";a="27247950"
+ by smtp4.osuosl.org (Postfix) with ESMTPS id C229C40833
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Feb 2024 07:23:25 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10982"; a="27247959"
+X-IronPort-AV: E=Sophos;i="6.06,156,1705392000"; d="scan'208";a="27247959"
 Received: from fmviesa003.fm.intel.com ([10.60.135.143])
  by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 12 Feb 2024 23:23:20 -0800
+ 12 Feb 2024 23:23:25 -0800
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.06,156,1705392000"; 
-   d="scan'208";a="7385239"
+   d="scan'208";a="7385277"
 Received: from wasp.igk.intel.com (HELO GK3153-DR2-R750-36946.localdomain.com)
  ([10.102.20.192])
- by fmviesa003.fm.intel.com with ESMTP; 12 Feb 2024 23:23:17 -0800
+ by fmviesa003.fm.intel.com with ESMTP; 12 Feb 2024 23:23:22 -0800
 From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Tue, 13 Feb 2024 08:27:13 +0100
-Message-ID: <20240213072724.77275-5-michal.swiatkowski@linux.intel.com>
+Date: Tue, 13 Feb 2024 08:27:15 +0100
+Message-ID: <20240213072724.77275-7-michal.swiatkowski@linux.intel.com>
 X-Mailer: git-send-email 2.42.0
 In-Reply-To: <20240213072724.77275-1-michal.swiatkowski@linux.intel.com>
 References: <20240213072724.77275-1-michal.swiatkowski@linux.intel.com>
@@ -71,25 +71,25 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1707809000; x=1739345000;
+ t=1707809006; x=1739345006;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=ykPmhxfSNwtY+KZkDyY97dGYi2i26OegfC48AU48FNA=;
- b=QEKu/+MiduWwZu6PnvYpWxLyv+vYhCaf1X+7Zj7JDs2Vpx7yAOmi4Rmb
- RHF4PRROc6vPH6PfNPF8UMl5RSt1mMH4ldrQctMdkBIuKgReRnXymFzWm
- Yl2eK8VnFiayuhOPzr1DgA22tqjQBm9w/UxrJPAOdLxEduXp38VVHtQYO
- Hz/poZYS8F2d7f3W+A2j+xZGrxpt1Nz/r7W525bFLU6R+fv0/KH6VLtaY
- bAHtxleH0YWvHqSjUgA36aNUvcoeGI5X00EIASylKKG50tFwpavl2eyNG
- t6sL2B6ZILdkDifxmRXDahhaunAxDWNaVCuhqB/oC/Iv6nNs2ZD4Rk5u6
+ bh=FNky3ZWtWQItq8HFffPdJXMQ/RUIGkQEqldTmVoFgvM=;
+ b=aKG/E6AYhgM1YduCRhPf8wkJjT7jfL2HvH+ib9YdG6wPdsGUVow//RTN
+ ilVybrHNYNfUH7OcuBjVu0WqwKBMiedSA5ZB/XbSvCkXQYPmn+ypFgyPy
+ M9vhgLtJ9E5ELdqtV9tSlb8z9d5FHuAS0LvxwVBoJ/DatuniIvKA9W3p2
+ 5jDOxV1E2NxiYAkbzNdUx/N96zCJVg8VxNjnTGqcrCm//VzbbFT15xwR/
+ udcrg1ZO8doCI7CXNV5gD2mGJR0tCnSnoz4gL04TQDE05F2d4nRvL3Lpu
+ nCIu97uyWkHtAVExPsAaX45IR9qutqCL87W4ciUMwgJ9Mf5hxSOczvD5y
  A==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=none (p=none dis=none)
  header.from=linux.intel.com
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=QEKu/+Mi
-Subject: [Intel-wired-lan] [iwl-next v1 04/15] ice: add basic devlink
- subfunctions support
+ header.a=rsa-sha256 header.s=Intel header.b=aKG/E6AY
+Subject: [Intel-wired-lan] [iwl-next v1 06/15] ice: add subfunction aux
+ driver support
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -112,854 +112,439 @@ Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 From: Piotr Raczynski <piotr.raczynski@intel.com>
 
-Implement devlink port handlers responsible for ethernet type devlink
-subfunctions. Create subfunction devlink port and setup all resources
-needed for a subfunction netdev to operate. Configure new VSI for each
-new subfunction, initialize and configure interrupts and Tx/Rx resources.
-Set correct MAC filters and create new netdev.
-
-For now, subfunction is limited to only one Tx/Rx queue pair.
-
-Only allocate new subfunction VSI with devlink port new command.
-This makes sure that real resources are configured only when a new
-subfunction gets activated. Allocate and free subfunction MSIX
-interrupt vectors using new API calls with pci_msix_alloc_irq_at
-and pci_msix_free_irq.
-
-Temporarily, before adding auxiliary bus driver for subfunctions,
-configure subfunction netdev directly for the created devlink
-port. This will be modified in the next patch to properly that handle
-devlink port as the port representor.
-
-Support both automatic and manual subfunction numbers. If no subfunction
-number is provided, use xa_alloc to pick a number automatically. This
-will find the first free index and use that as the number. This reduces
-burden on users in the simple case where a specific number is not
-required. It may also be slightly faster to check that a number exists
-since xarray lookup should be faster than a linear scan of the dyn_ports
-xarray.
+Instead of only registering devlink port by the ice driver itself,
+let PF driver only register port representor for a given subfunction.
+Then, aux driver is supposed to register its own devlink instance and
+register virtual devlink port.
 
 Reviewed-by: Wojciech Drewek <wojciech.drewek@intel.com>
-Co-developed-by: Jacob Keller <jacob.e.keller@intel.com>
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 Signed-off-by: Piotr Raczynski <piotr.raczynski@intel.com>
 Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 ---
- drivers/net/ethernet/intel/ice/Makefile       |   1 +
- .../intel/ice/devlink/ice_devlink_port.c      | 508 ++++++++++++++++++
- .../intel/ice/devlink/ice_devlink_port.h      |  30 ++
- drivers/net/ethernet/intel/ice/ice.h          |   4 +
- drivers/net/ethernet/intel/ice/ice_devlink.c  |   3 +
- drivers/net/ethernet/intel/ice/ice_lib.c      |   5 +-
- drivers/net/ethernet/intel/ice/ice_lib.h      |   2 +
- drivers/net/ethernet/intel/ice/ice_main.c     |  14 +-
- drivers/net/ethernet/intel/ice/ice_sf_eth.c   | 138 +++++
- drivers/net/ethernet/intel/ice/ice_sf_eth.h   |  15 +
- 10 files changed, 716 insertions(+), 4 deletions(-)
- create mode 100644 drivers/net/ethernet/intel/ice/ice_sf_eth.c
- create mode 100644 drivers/net/ethernet/intel/ice/ice_sf_eth.h
+ .../intel/ice/devlink/ice_devlink_port.c      |  52 ++++-
+ .../intel/ice/devlink/ice_devlink_port.h      |   6 +
+ drivers/net/ethernet/intel/ice/ice_devlink.c  |  28 ++-
+ drivers/net/ethernet/intel/ice/ice_devlink.h  |   3 +
+ drivers/net/ethernet/intel/ice/ice_main.c     |   9 +
+ drivers/net/ethernet/intel/ice/ice_sf_eth.c   | 214 ++++++++++++++++--
+ drivers/net/ethernet/intel/ice/ice_sf_eth.h   |  21 ++
+ 7 files changed, 302 insertions(+), 31 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/Makefile b/drivers/net/ethernet/intel/ice/Makefile
-index cd4ab46d72a7..d56a7165df95 100644
---- a/drivers/net/ethernet/intel/ice/Makefile
-+++ b/drivers/net/ethernet/intel/ice/Makefile
-@@ -31,6 +31,7 @@ ice-y := ice_main.o	\
- 	 ice_idc.o	\
- 	 ice_devlink.o	\
- 	 devlink/ice_devlink_port.o	\
-+	 ice_sf_eth.o	\
- 	 ice_ddp.o	\
- 	 ice_fw_update.o \
- 	 ice_lag.o	\
 diff --git a/drivers/net/ethernet/intel/ice/devlink/ice_devlink_port.c b/drivers/net/ethernet/intel/ice/devlink/ice_devlink_port.c
-index c8c823467fcf..90efceaddb02 100644
+index 90efceaddb02..33f290fed3d8 100644
 --- a/drivers/net/ethernet/intel/ice/devlink/ice_devlink_port.c
 +++ b/drivers/net/ethernet/intel/ice/devlink/ice_devlink_port.c
-@@ -10,6 +10,8 @@
- #include "ice_eswitch.h"
- #include "ice_fw_update.h"
- #include "ice_dcb_lib.h"
-+#include "ice_sf_eth.h"
-+#include "ice_fltr.h"
- 
- static int ice_active_port_option = -1;
- 
-@@ -432,3 +434,509 @@ void ice_devlink_destroy_vf_port(struct ice_vf *vf)
+@@ -434,6 +434,48 @@ void ice_devlink_destroy_vf_port(struct ice_vf *vf)
  	devlink_port_unregister(&vf->devlink_port);
  }
  
 +/**
-+ * ice_activate_dynamic_port - Activate a dynamic port
-+ * @dyn_port: dynamic port instance to activate
-+ * @extack: extack for reporting error messages
++ * ice_devlink_create_sf_dev_port - Register virtual port for a subfunction
++ * @sf_dev: the subfunction device to create a devlink port for
 + *
-+ * Activate the dynamic port based on its flavour.
-+ *
-+ * Return: zero on success or an error code on failure.
-+ */
-+static int
-+ice_activate_dynamic_port(struct ice_dynamic_port *dyn_port,
-+			  struct netlink_ext_ack *extack)
-+{
-+	int err;
-+
-+	switch (dyn_port->devlink_port.attrs.flavour) {
-+	case DEVLINK_PORT_FLAVOUR_PCI_SF:
-+		err = ice_sf_eth_activate(dyn_port, extack);
-+		if (err)
-+			return err;
-+		break;
-+	default:
-+		NL_SET_ERR_MSG_MOD(extack, "Unsupported port flavour");
-+		return -EOPNOTSUPP;
-+	}
-+
-+	dyn_port->active = 1;
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_deactivate_dynamic_port - Deactivate a dynamic port
-+ * @dyn_port: dynamic port instance to deactivate
-+ *
-+ * Undo activation of a dynamic port.
-+ */
-+static void ice_deactivate_dynamic_port(struct ice_dynamic_port *dyn_port)
-+{
-+	switch (dyn_port->devlink_port.attrs.flavour) {
-+	case DEVLINK_PORT_FLAVOUR_PCI_SF:
-+		ice_sf_eth_deactivate(dyn_port);
-+		break;
-+	default:
-+		WARN(1, "Attempting to deactivate port with unexpected port flavour %d",
-+		     dyn_port->devlink_port.attrs.flavour);
-+	}
-+
-+	dyn_port->active = 0;
-+}
-+
-+/**
-+ * ice_dealloc_dynamic_port - Deallocate and remove a dynamic port
-+ * @dyn_port: dynamic port instance to deallocate
-+ *
-+ * Free resources associated with a dynamically added devlink port. Will
-+ * deactivate the port if its currently active.
-+ */
-+static void ice_dealloc_dynamic_port(struct ice_dynamic_port *dyn_port)
-+{
-+	struct devlink_port *devlink_port = &dyn_port->devlink_port;
-+	struct ice_pf *pf = dyn_port->pf;
-+
-+	if (dyn_port->active)
-+		ice_deactivate_dynamic_port(dyn_port);
-+
-+	if (devlink_port->attrs.flavour == DEVLINK_PORT_FLAVOUR_PCI_SF)
-+		xa_erase(&pf->sf_nums, devlink_port->attrs.pci_sf.sf);
-+
-+	devl_port_unregister(devlink_port);
-+	ice_vsi_free(dyn_port->vsi);
-+	xa_erase(&pf->dyn_ports, dyn_port->vsi->idx);
-+	kfree(dyn_port);
-+}
-+
-+/**
-+ * ice_dealloc_all_dynamic_ports - Deallocate all dynamic devlink ports
-+ * @pf: pointer to the pf structure
-+ */
-+void ice_dealloc_all_dynamic_ports(struct ice_pf *pf)
-+{
-+	struct devlink *devlink = priv_to_devlink(pf);
-+	struct ice_dynamic_port *dyn_port;
-+	unsigned long index;
-+
-+	devl_lock(devlink);
-+	xa_for_each(&pf->dyn_ports, index, dyn_port)
-+		ice_dealloc_dynamic_port(dyn_port);
-+	devl_unlock(devlink);
-+}
-+
-+/**
-+ * ice_devlink_port_new_check_attr - Check that new port attributes are valid
-+ * @pf: pointer to the PF structure
-+ * @new_attr: the attributes for the new port
-+ * @extack: extack for reporting error messages
-+ *
-+ * Check that the attributes for the new port are valid before continuing to
-+ * allocate the devlink port.
++ * Register virtual flavour devlink port for the subfunction auxiliary device
++ * created after activating a dynamically added devlink port.
 + *
 + * Return: zero on success or an error code on failure.
 + */
-+static int
-+ice_devlink_port_new_check_attr(struct ice_pf *pf,
-+				const struct devlink_port_new_attrs *new_attr,
-+				struct netlink_ext_ack *extack)
-+{
-+	if (new_attr->flavour != DEVLINK_PORT_FLAVOUR_PCI_SF) {
-+		NL_SET_ERR_MSG_MOD(extack, "Flavour other than pcisf is not supported");
-+		return -EOPNOTSUPP;
-+	}
-+
-+	if (new_attr->controller_valid) {
-+		NL_SET_ERR_MSG_MOD(extack, "Setting controller is not supported");
-+		return -EOPNOTSUPP;
-+	}
-+
-+	if (new_attr->port_index_valid) {
-+		NL_SET_ERR_MSG_MOD(extack, "Port index is autogenerated by the driver");
-+		return -EOPNOTSUPP;
-+	}
-+
-+	if (new_attr->pfnum != pf->hw.bus.func) {
-+		NL_SET_ERR_MSG_MOD(extack, "Incorrect pfnum supplied");
-+		return -EINVAL;
-+	}
-+
-+	if (!pci_msix_can_alloc_dyn(pf->pdev)) {
-+		NL_SET_ERR_MSG_MOD(extack, "Dynamic MSIX-X interrupt allocation is not supported");
-+		return -EOPNOTSUPP;
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_devlink_port_del - devlink handler for port delete
-+ * @devlink: pointer to devlink
-+ * @port: devlink port to be deleted
-+ * @extack: pointer to extack
-+ *
-+ * Deletes devlink port and deallocates all resources associated with
-+ * created subfunction.
-+ *
-+ * Return: zero on success or an error code on failure.
-+ */
-+static int
-+ice_devlink_port_del(struct devlink *devlink, struct devlink_port *port,
-+		     struct netlink_ext_ack *extack)
-+{
-+	struct ice_dynamic_port *dyn_port;
-+
-+	dyn_port = ice_devlink_port_to_dyn(port);
-+	if (!dyn_port) {
-+		NL_SET_ERR_MSG_MOD(extack, "Failed to find Subfunction port with a given index");
-+		return -EINVAL;
-+	}
-+
-+	ice_dealloc_dynamic_port(dyn_port);
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_devlink_port_fn_hw_addr_set - devlink handler for mac address set
-+ * @port: pointer to devlink port
-+ * @hw_addr: hw address to set
-+ * @hw_addr_len: hw address length
-+ * @extack: extack for reporting error messages
-+ *
-+ * Sets mac address for the port, verifies arguments and copies address
-+ * to the subfunction structure.
-+ *
-+ * Return: zero on success or an error code on failure.
-+ */
-+static int
-+ice_devlink_port_fn_hw_addr_set(struct devlink_port *port, const u8 *hw_addr,
-+				int hw_addr_len,
-+				struct netlink_ext_ack *extack)
-+{
-+	struct ice_dynamic_port *dyn_port;
-+
-+	if (port->attrs.flavour != DEVLINK_PORT_FLAVOUR_PCI_SF) {
-+		NL_SET_ERR_MSG_MOD(extack, "Port is not a Subfunction");
-+		return -EOPNOTSUPP;
-+	}
-+
-+	dyn_port = ice_devlink_port_to_dyn(port);
-+
-+	if (hw_addr_len != ETH_ALEN || !is_valid_ether_addr(hw_addr)) {
-+		NL_SET_ERR_MSG_MOD(extack, "Invalid ethernet address");
-+		return -EADDRNOTAVAIL;
-+	}
-+
-+	if (ether_addr_equal(dyn_port->hw_addr, hw_addr)) {
-+		NL_SET_ERR_MSG_MOD(extack, "address already set");
-+		return 0;
-+	}
-+
-+	ether_addr_copy(dyn_port->hw_addr, hw_addr);
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_devlink_port_fn_hw_addr_get - devlink handler for mac address get
-+ * @port: pointer to devlink port
-+ * @hw_addr: hw address to set
-+ * @hw_addr_len: hw address length
-+ * @extack: extack for reporting error messages
-+ *
-+ * Returns mac address for the port.
-+ *
-+ * Return: zero on success or an error code on failure.
-+ */
-+static int
-+ice_devlink_port_fn_hw_addr_get(struct devlink_port *port, u8 *hw_addr,
-+				int *hw_addr_len,
-+				struct netlink_ext_ack *extack)
-+{
-+	struct ice_dynamic_port *dyn_port;
-+
-+	if (port->attrs.flavour != DEVLINK_PORT_FLAVOUR_PCI_SF)
-+		return -EOPNOTSUPP;
-+
-+	dyn_port = ice_devlink_port_to_dyn(port);
-+
-+	ether_addr_copy(hw_addr, dyn_port->hw_addr);
-+	*hw_addr_len = ETH_ALEN;
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_devlink_port_fn_state_set - devlink handler for port state set
-+ * @port: pointer to devlink port
-+ * @state: state to set
-+ * @extack: extack for reporting error messages
-+ *
-+ * Activates or deactivates the port.
-+ *
-+ * Return: zero on success or an error code on failure.
-+ */
-+static int
-+ice_devlink_port_fn_state_set(struct devlink_port *port,
-+			      enum devlink_port_fn_state state,
-+			      struct netlink_ext_ack *extack)
-+{
-+	struct ice_dynamic_port *dyn_port;
-+
-+	if (port->attrs.flavour != DEVLINK_PORT_FLAVOUR_PCI_SF) {
-+		NL_SET_ERR_MSG_MOD(extack, "Port is not a Subfunction");
-+		return -EOPNOTSUPP;
-+	}
-+
-+	dyn_port = ice_devlink_port_to_dyn(port);
-+
-+	switch (state) {
-+	case DEVLINK_PORT_FN_STATE_ACTIVE:
-+		if (!dyn_port->active)
-+			return ice_activate_dynamic_port(dyn_port, extack);
-+		break;
-+	case DEVLINK_PORT_FN_STATE_INACTIVE:
-+		if (dyn_port->active)
-+			ice_deactivate_dynamic_port(dyn_port);
-+		break;
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_devlink_port_fn_state_get - devlink handler for port state get
-+ * @port: pointer to devlink port
-+ * @state: admin configured state of the port
-+ * @opstate: current port operational state
-+ * @extack: extack for reporting error messages
-+ *
-+ * Gets port state.
-+ *
-+ * Return: zero on success or an error code on failure.
-+ */
-+static int
-+ice_devlink_port_fn_state_get(struct devlink_port *port,
-+			      enum devlink_port_fn_state *state,
-+			      enum devlink_port_fn_opstate *opstate,
-+			      struct netlink_ext_ack *extack)
-+{
-+	struct ice_dynamic_port *dyn_port;
-+
-+	if (port->attrs.flavour != DEVLINK_PORT_FLAVOUR_PCI_SF) {
-+		NL_SET_ERR_MSG_MOD(extack, "Port is not a Subfunction");
-+		return -EOPNOTSUPP;
-+	}
-+
-+	dyn_port = ice_devlink_port_to_dyn(port);
-+
-+	if (dyn_port->active) {
-+		*state = DEVLINK_PORT_FN_STATE_ACTIVE;
-+		*opstate = DEVLINK_PORT_FN_OPSTATE_ATTACHED;
-+	} else {
-+		*state = DEVLINK_PORT_FN_STATE_INACTIVE;
-+		*opstate = DEVLINK_PORT_FN_OPSTATE_DETACHED;
-+	}
-+
-+	return 0;
-+}
-+
-+static const struct devlink_port_ops ice_devlink_port_sf_ops = {
-+	.port_del = ice_devlink_port_del,
-+	.port_fn_hw_addr_get = ice_devlink_port_fn_hw_addr_get,
-+	.port_fn_hw_addr_set = ice_devlink_port_fn_hw_addr_set,
-+	.port_fn_state_get = ice_devlink_port_fn_state_get,
-+	.port_fn_state_set = ice_devlink_port_fn_state_set,
-+};
-+
-+/**
-+ * ice_reserve_sf_num - Reserve a subfunction number for this port
-+ * @pf: pointer to the pf structure
-+ * @new_attr: devlink port attributes requested
-+ * @extack: extack for reporting error messages
-+ * @sfnum: on success, the sf number reserved
-+ *
-+ * Reserve a subfunction number for this port. Only called for
-+ * DEVLINK_PORT_FLAVOUR_PCI_SF ports.
-+ *
-+ * Return: zero on success or an error code on failure.
-+ */
-+static int
-+ice_reserve_sf_num(struct ice_pf *pf,
-+		   const struct devlink_port_new_attrs *new_attr,
-+		   struct netlink_ext_ack *extack, u32 *sfnum)
-+{
-+	int err;
-+
-+	/* If user didn't request an explicit number, pick one */
-+	if (!new_attr->sfnum_valid)
-+		return xa_alloc(&pf->sf_nums, sfnum, NULL, xa_limit_32b,
-+				GFP_KERNEL);
-+
-+	/* Otherwise, check and use the number provided */
-+	err = xa_insert(&pf->sf_nums, new_attr->sfnum, NULL, GFP_KERNEL);
-+	if (err) {
-+		if (err == -EBUSY)
-+			NL_SET_ERR_MSG_MOD(extack, "Subfunction with given sfnum already exists");
-+		return err;
-+	}
-+
-+	*sfnum = new_attr->sfnum;
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_devlink_create_sf_port - Register PCI subfunction devlink port
-+ * @dyn_port: the dynamic port instance structure for this subfunction
-+ * @sfnum: the subfunction number to use for the port
-+ *
-+ * Register PCI subfunction flavour devlink port for a dynamically added
-+ * subfunction port.
-+ *
-+ * Return: zero on success or an error code on failure.
-+ */
-+static int
-+ice_devlink_create_sf_port(struct ice_dynamic_port *dyn_port, u32 sfnum)
++int ice_devlink_create_sf_dev_port(struct ice_sf_dev *sf_dev)
 +{
 +	struct devlink_port_attrs attrs = {};
 +	struct devlink_port *devlink_port;
++	struct ice_dynamic_port *dyn_port;
 +	struct devlink *devlink;
 +	struct ice_vsi *vsi;
 +	struct device *dev;
 +	struct ice_pf *pf;
 +	int err;
 +
++	dyn_port = sf_dev->dyn_port;
 +	vsi = dyn_port->vsi;
 +	pf = dyn_port->pf;
 +	dev = ice_pf_to_dev(pf);
 +
-+	devlink_port = &dyn_port->devlink_port;
++	devlink_port = &sf_dev->priv->devlink_port;
 +
-+	attrs.flavour = DEVLINK_PORT_FLAVOUR_PCI_SF;
-+	attrs.pci_sf.pf = pf->hw.bus.func;
-+	attrs.pci_sf.sf = sfnum;
++	attrs.flavour = DEVLINK_PORT_FLAVOUR_VIRTUAL;
 +
 +	devlink_port_attrs_set(devlink_port, &attrs);
-+	devlink = priv_to_devlink(pf);
++	devlink = priv_to_devlink(sf_dev->priv);
 +
-+	err = devl_port_register_with_ops(devlink, devlink_port, vsi->idx,
-+					  &ice_devlink_port_sf_ops);
-+	if (err) {
-+		dev_err(dev, "Failed to create devlink port for Subfunction %d",
++	devl_lock(devlink);
++	err = devl_port_register(devlink, devlink_port, vsi->idx);
++	if (err)
++		dev_err(dev, "Failed to create virtual devlink port for auxiliary subfunction device %d",
 +			vsi->idx);
-+		return err;
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_alloc_dynamic_port - Allocate new dynamic port
-+ * @pf: pointer to the pf structure
-+ * @new_attr: devlink port attributes requested
-+ * @extack: extack for reporting error messages
-+ * @devlink_port: index of newly created devlink port
-+ *
-+ * Allocate a new dynamic port instance and prepare it for configuration
-+ * with devlink.
-+ *
-+ * Return: zero on success or an error code on failure.
-+ */
-+static int
-+ice_alloc_dynamic_port(struct ice_pf *pf,
-+		       const struct devlink_port_new_attrs *new_attr,
-+		       struct netlink_ext_ack *extack,
-+		       struct devlink_port **devlink_port)
-+{
-+	struct ice_dynamic_port *dyn_port;
-+	struct ice_vsi *vsi;
-+	u32 sfnum;
-+	int err;
-+
-+	if (new_attr->flavour == DEVLINK_PORT_FLAVOUR_PCI_SF) {
-+		err = ice_reserve_sf_num(pf, new_attr, extack, &sfnum);
-+		if (err)
-+			return err;
-+	}
-+
-+	dyn_port = kzalloc(sizeof(*dyn_port), GFP_KERNEL);
-+	if (!dyn_port) {
-+		err = -ENOMEM;
-+		goto unroll_reserve_sf_num;
-+	}
-+
-+	vsi = ice_vsi_alloc(pf);
-+	if (!vsi) {
-+		NL_SET_ERR_MSG_MOD(extack, "Unable to allocate VSI");
-+		err = -ENOMEM;
-+		goto unroll_dyn_port_alloc;
-+	}
-+
-+	dyn_port->vsi = vsi;
-+	dyn_port->pf = pf;
-+	dyn_port->active = 0;
-+	eth_random_addr(dyn_port->hw_addr);
-+
-+	err = xa_insert(&pf->dyn_ports, vsi->idx, dyn_port, GFP_KERNEL);
-+	if (err) {
-+		NL_SET_ERR_MSG_MOD(extack, "Port index reservation failed");
-+		goto unroll_vsi_alloc;
-+	}
-+
-+	err = ice_devlink_create_sf_port(dyn_port, sfnum);
-+	if (err) {
-+		NL_SET_ERR_MSG_MOD(extack, "Port registration failed");
-+		goto unroll_xa_insert;
-+	}
-+
-+	*devlink_port = &dyn_port->devlink_port;
-+
-+	return 0;
-+
-+unroll_xa_insert:
-+	xa_erase(&pf->dyn_ports, vsi->idx);
-+unroll_vsi_alloc:
-+	ice_vsi_free(vsi);
-+unroll_dyn_port_alloc:
-+	kfree(dyn_port);
-+unroll_reserve_sf_num:
-+	if (new_attr->flavour == DEVLINK_PORT_FLAVOUR_PCI_SF)
-+		xa_erase(&pf->sf_nums, sfnum);
++	devl_unlock(devlink);
 +
 +	return err;
 +}
 +
-+/**
-+ * ice_devlink_port_new - devlink handler for the new port
-+ * @devlink: pointer to devlink
-+ * @new_attr: pointer to the port new attributes
-+ * @extack: extack for reporting error messages
-+ * @devlink_port: pointer to a new port
-+ *
-+ * Creates new devlink port, checks new port attributes and reject
-+ * any unsupported parameters, allocates new subfunction for that port.
-+ *
-+ * Return: zero on success or an error code on failure.
-+ */
-+int
-+ice_devlink_port_new(struct devlink *devlink,
-+		     const struct devlink_port_new_attrs *new_attr,
-+		     struct netlink_ext_ack *extack,
-+		     struct devlink_port **devlink_port)
-+{
-+	struct ice_pf *pf = (struct ice_pf *)devlink_priv(devlink);
-+	struct device *dev = ice_pf_to_dev(pf);
-+	int err;
+ /**
+  * ice_activate_dynamic_port - Activate a dynamic port
+  * @dyn_port: dynamic port instance to activate
+@@ -731,13 +773,15 @@ ice_devlink_port_fn_state_get(struct devlink_port *port,
+ 
+ 	dyn_port = ice_devlink_port_to_dyn(port);
+ 
+-	if (dyn_port->active) {
++	if (dyn_port->active)
+ 		*state = DEVLINK_PORT_FN_STATE_ACTIVE;
+-		*opstate = DEVLINK_PORT_FN_OPSTATE_ATTACHED;
+-	} else {
++	else
+ 		*state = DEVLINK_PORT_FN_STATE_INACTIVE;
 +
-+	dev_dbg(dev, "%s flavour:%d index:%d pfnum:%d\n", __func__,
-+		new_attr->flavour, new_attr->port_index, new_attr->pfnum);
-+
-+	err = ice_devlink_port_new_check_attr(pf, new_attr, extack);
-+	if (err)
-+		return err;
-+
-+	return ice_alloc_dynamic_port(pf, new_attr, extack, devlink_port);
-+}
-+
++	if (dyn_port->sf_dev && dyn_port->sf_dev->adev.dev.driver)
++		*opstate = DEVLINK_PORT_FN_OPSTATE_ATTACHED;
++	else
+ 		*opstate = DEVLINK_PORT_FN_OPSTATE_DETACHED;
+-	}
+ 
+ 	return 0;
+ }
 diff --git a/drivers/net/ethernet/intel/ice/devlink/ice_devlink_port.h b/drivers/net/ethernet/intel/ice/devlink/ice_devlink_port.h
-index 983d136f5ddf..2bb203c1713f 100644
+index 2bb203c1713f..96d57ed54d7f 100644
 --- a/drivers/net/ethernet/intel/ice/devlink/ice_devlink_port.h
 +++ b/drivers/net/ethernet/intel/ice/devlink/ice_devlink_port.h
-@@ -4,9 +4,39 @@
- #ifndef _ICE_DEVLINK_PORT_H_
- #define _ICE_DEVLINK_PORT_H_
+@@ -13,6 +13,7 @@
+  * @devlink_port: the associated devlink port structure
+  * @pf: pointer to the PF private structure
+  * @vsi: the VSI associated with this port
++ * @sf_dev: dynamic port device private data
+  *
+  * An instance of a dynamically added devlink port. Each port flavour
+  */
+@@ -22,6 +23,10 @@ struct ice_dynamic_port {
+ 	struct devlink_port devlink_port;
+ 	struct ice_pf *pf;
+ 	struct ice_vsi *vsi;
++	/* Flavour-specific implementation data */
++	union {
++		struct ice_sf_dev *sf_dev;
++	};
+ };
  
-+#include "../ice.h"
-+
-+/**
-+ * struct ice_dynamic_port - Track dynamically added devlink port instance
-+ * @hw_addr: the HW address for this port
-+ * @active: true if the port has been activated
-+ * @devlink_port: the associated devlink port structure
-+ * @pf: pointer to the PF private structure
-+ * @vsi: the VSI associated with this port
-+ *
-+ * An instance of a dynamically added devlink port. Each port flavour
-+ */
-+struct ice_dynamic_port {
-+	u8 hw_addr[ETH_ALEN];
-+	u8 active : 1;
-+	struct devlink_port devlink_port;
-+	struct ice_pf *pf;
-+	struct ice_vsi *vsi;
-+};
-+
-+void ice_dealloc_all_dynamic_ports(struct ice_pf *pf);
-+
- int ice_devlink_create_pf_port(struct ice_pf *pf);
+ void ice_dealloc_all_dynamic_ports(struct ice_pf *pf);
+@@ -30,6 +35,7 @@ int ice_devlink_create_pf_port(struct ice_pf *pf);
  void ice_devlink_destroy_pf_port(struct ice_pf *pf);
  int ice_devlink_create_vf_port(struct ice_vf *vf);
  void ice_devlink_destroy_vf_port(struct ice_vf *vf);
++int ice_devlink_create_sf_dev_port(struct ice_sf_dev *sf_dev);
  
-+#define ice_devlink_port_to_dyn(p) \
-+	container_of(port, struct ice_dynamic_port, devlink_port)
-+
-+int
-+ice_devlink_port_new(struct devlink *devlink,
-+		     const struct devlink_port_new_attrs *new_attr,
-+		     struct netlink_ext_ack *extack,
-+		     struct devlink_port **devlink_port);
- #endif /* _ICE_DEVLINK_PORT_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index c40fc339a604..767ea80684e7 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -646,6 +646,9 @@ struct ice_pf {
- 	struct ice_eswitch eswitch;
- 	struct ice_esw_br_port *br_port;
- 
-+	struct xarray dyn_ports;
-+	struct xarray sf_nums;
-+
- #define ICE_INVALID_AGG_NODE_ID		0
- #define ICE_PF_AGG_NODE_ID_START	1
- #define ICE_MAX_PF_AGG_NODES		32
-@@ -902,6 +905,7 @@ int ice_vsi_open(struct ice_vsi *vsi);
- void ice_set_ethtool_ops(struct net_device *netdev);
- void ice_set_ethtool_repr_ops(struct net_device *netdev);
- void ice_set_ethtool_safe_mode_ops(struct net_device *netdev);
-+void ice_set_ethtool_sf_ops(struct net_device *netdev);
- u16 ice_get_avail_txq_count(struct ice_pf *pf);
- u16 ice_get_avail_rxq_count(struct ice_pf *pf);
- int ice_vsi_recfg_qs(struct ice_vsi *vsi, int new_rx, int new_tx, bool locked);
+ #define ice_devlink_port_to_dyn(p) \
+ 	container_of(port, struct ice_dynamic_port, devlink_port)
 diff --git a/drivers/net/ethernet/intel/ice/ice_devlink.c b/drivers/net/ethernet/intel/ice/ice_devlink.c
-index e5f275ca82e5..c186e793153d 100644
+index c186e793153d..6278ff3eb7c9 100644
 --- a/drivers/net/ethernet/intel/ice/ice_devlink.c
 +++ b/drivers/net/ethernet/intel/ice/ice_devlink.c
-@@ -6,6 +6,7 @@
- #include "ice.h"
- #include "ice_lib.h"
- #include "ice_devlink.h"
-+#include "devlink/ice_devlink_port.h"
- #include "ice_eswitch.h"
- #include "ice_fw_update.h"
- #include "ice_dcb_lib.h"
-@@ -1131,6 +1132,8 @@ static const struct devlink_ops ice_devlink_ops = {
- 
- 	.rate_leaf_parent_set = ice_devlink_set_parent,
- 	.rate_node_parent_set = ice_devlink_set_parent,
-+
-+	.port_new = ice_devlink_port_new,
- };
- 
- static int
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 8706d0589caa..3472011922c1 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -7,6 +7,7 @@
- #include "ice_lib.h"
- #include "ice_fltr.h"
- #include "ice_dcb_lib.h"
-+#include "ice_type.h"
- #include "ice_vsi_vlan_ops.h"
- 
- /**
-@@ -440,7 +441,7 @@ static int ice_vsi_alloc_ring_stats(struct ice_vsi *vsi)
-  * This deallocates the VSI's queue resources, removes it from the PF's
-  * VSI array if necessary, and deallocates the VSI
-  */
--static void ice_vsi_free(struct ice_vsi *vsi)
-+void ice_vsi_free(struct ice_vsi *vsi)
- {
- 	struct ice_pf *pf = NULL;
- 	struct device *dev;
-@@ -612,7 +613,7 @@ ice_vsi_alloc_def(struct ice_vsi *vsi, struct ice_channel *ch)
-  *
-  * returns a pointer to a VSI on success, NULL on failure.
-  */
--static struct ice_vsi *ice_vsi_alloc(struct ice_pf *pf)
-+struct ice_vsi *ice_vsi_alloc(struct ice_pf *pf)
- {
- 	struct device *dev = ice_pf_to_dev(pf);
- 	struct ice_vsi *vsi = NULL;
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.h b/drivers/net/ethernet/intel/ice/ice_lib.h
-index aa3a85d31f95..9cc7cc57e41a 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.h
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.h
-@@ -97,6 +97,8 @@ void ice_dis_vsi(struct ice_vsi *vsi, bool locked);
- 
- int ice_vsi_rebuild(struct ice_vsi *vsi, u32 vsi_flags);
- int ice_vsi_cfg(struct ice_vsi *vsi, struct ice_vsi_cfg_params *params);
-+struct ice_vsi *ice_vsi_alloc(struct ice_pf *pf);
-+void ice_vsi_free(struct ice_vsi *vsi);
- 
- bool ice_is_reset_in_progress(unsigned long *state);
- int ice_wait_for_reset(struct ice_pf *pf, unsigned long timeout);
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index b0f6a11ae744..e4269a7df7d6 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -16,6 +16,7 @@
- #include "ice_devlink.h"
- #include "ice_hwmon.h"
- #include "devlink/ice_devlink_port.h"
-+#include "ice_sf_eth.h"
- /* Including ice_trace.h with CREATE_TRACE_POINTS defined will generate the
-  * ice tracepoint functions. This must be done exactly once across the
-  * ice driver.
-@@ -3929,6 +3930,9 @@ static void ice_deinit_pf(struct ice_pf *pf)
- 
- 	if (pf->ptp.clock)
- 		ptp_clock_unregister(pf->ptp.clock);
-+
-+	xa_destroy(&pf->dyn_ports);
-+	xa_destroy(&pf->sf_nums);
+@@ -1382,18 +1382,21 @@ static void ice_devlink_free(void *devlink_ptr)
  }
  
  /**
-@@ -4022,6 +4026,9 @@ static int ice_init_pf(struct ice_pf *pf)
- 	hash_init(pf->vfs.table);
- 	ice_mbx_init_snapshot(&pf->hw);
+- * ice_allocate_pf - Allocate devlink and return PF structure pointer
++ * ice_devlink_alloc - Allocate devlink and return devlink priv pointer
+  * @dev: the device to allocate for
++ * @priv_size: size of the priv memory
++ * @ops: pointer to devlink ops for this device
+  *
+- * Allocate a devlink instance for this device and return the private area as
+- * the PF structure. The devlink memory is kept track of through devres by
+- * adding an action to remove it when unwinding.
++ * Allocate a devlink instance for this device and return the private pointer
++ * The devlink memory is kept track of through devres by adding an action to
++ * remove it when unwinding.
+  */
+-struct ice_pf *ice_allocate_pf(struct device *dev)
++void *ice_devlink_alloc(struct device *dev, size_t priv_size,
++			const struct devlink_ops *ops)
+ {
+ 	struct devlink *devlink;
  
-+	xa_init(&pf->dyn_ports);
-+	xa_init(&pf->sf_nums);
+-	devlink = devlink_alloc(&ice_devlink_ops, sizeof(struct ice_pf), dev);
++	devlink = devlink_alloc(ops, priv_size, dev);
+ 	if (!devlink)
+ 		return NULL;
+ 
+@@ -1404,6 +1407,19 @@ struct ice_pf *ice_allocate_pf(struct device *dev)
+ 	return devlink_priv(devlink);
+ }
+ 
++/**
++ * ice_allocate_pf - Allocate devlink and return PF structure pointer
++ * @dev: the device to allocate for
++ *
++ * Allocate a devlink instance for this device and return the private area as
++ * the PF structure. The devlink memory is kept track of through devres by
++ * adding an action to remove it when unwinding.
++ */
++struct ice_pf *ice_allocate_pf(struct device *dev)
++{
++	return ice_devlink_alloc(dev, sizeof(struct ice_pf), &ice_devlink_ops);
++}
 +
+ /**
+  * ice_devlink_register - Register devlink interface for this PF
+  * @pf: the PF to register the devlink for.
+diff --git a/drivers/net/ethernet/intel/ice/ice_devlink.h b/drivers/net/ethernet/intel/ice/ice_devlink.h
+index d291c0e2e17b..4f4a7254bcc8 100644
+--- a/drivers/net/ethernet/intel/ice/ice_devlink.h
++++ b/drivers/net/ethernet/intel/ice/ice_devlink.h
+@@ -5,6 +5,9 @@
+ #define _ICE_DEVLINK_H_
+ 
+ struct ice_pf *ice_allocate_pf(struct device *dev);
++void *
++ice_devlink_alloc(struct device *dev, size_t priv_size,
++		  const struct devlink_ops *ops);
+ 
+ void ice_devlink_register(struct ice_pf *pf);
+ void ice_devlink_unregister(struct ice_pf *pf);
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index e4269a7df7d6..7ff96da33e8d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -5750,8 +5750,16 @@ static int __init ice_module_init(void)
+ 		goto err_dest_lag_wq;
+ 	}
+ 
++	status = ice_sf_driver_register();
++	if (status) {
++		pr_err("failed to register SF driver, err %d\n", status);
++		goto err_sf_driver;
++	}
++
+ 	return 0;
+ 
++err_sf_driver:
++	pci_unregister_driver(&ice_driver);
+ err_dest_lag_wq:
+ 	destroy_workqueue(ice_lag_wq);
+ 	ice_debugfs_exit();
+@@ -5769,6 +5777,7 @@ module_init(ice_module_init);
+  */
+ static void __exit ice_module_exit(void)
+ {
++	ice_sf_driver_unregister();
+ 	pci_unregister_driver(&ice_driver);
+ 	ice_debugfs_exit();
+ 	destroy_workqueue(ice_wq);
+diff --git a/drivers/net/ethernet/intel/ice/ice_sf_eth.c b/drivers/net/ethernet/intel/ice/ice_sf_eth.c
+index f45ac76f0f43..ab90db52a8fc 100644
+--- a/drivers/net/ethernet/intel/ice/ice_sf_eth.c
++++ b/drivers/net/ethernet/intel/ice/ice_sf_eth.c
+@@ -6,6 +6,7 @@
+ #include "ice_txrx.h"
+ #include "ice_fltr.h"
+ #include "ice_sf_eth.h"
++#include "ice_devlink.h"
+ #include "devlink/ice_devlink_port.h"
+ 
+ static const struct net_device_ops ice_sf_netdev_ops = {
+@@ -24,15 +25,16 @@ static const struct net_device_ops ice_sf_netdev_ops = {
+ 
+ /**
+  * ice_sf_cfg_netdev - Allocate, configure and register a netdev
+- * @dyn_port: subfunction associated with configured netdev
++ * @sf_dev: subfunction associated with configured netdev
+  *
+  * Returns 0 on success, negative value on failure
+  */
+-static int ice_sf_cfg_netdev(struct ice_dynamic_port *dyn_port)
++static int ice_sf_cfg_netdev(struct ice_sf_dev *sf_dev)
+ {
+-	struct net_device *netdev;
++	struct ice_dynamic_port *dyn_port = sf_dev->dyn_port;
+ 	struct ice_vsi *vsi = dyn_port->vsi;
+ 	struct ice_netdev_priv *np;
++	struct net_device *netdev;
+ 	int err;
+ 
+ 	netdev = alloc_etherdev_mqs(sizeof(*np), vsi->alloc_txq,
+@@ -40,7 +42,7 @@ static int ice_sf_cfg_netdev(struct ice_dynamic_port *dyn_port)
+ 	if (!netdev)
+ 		return -ENOMEM;
+ 
+-	SET_NETDEV_DEV(netdev, &vsi->back->pdev->dev);
++	SET_NETDEV_DEV(netdev, &sf_dev->adev.dev);
+ 	set_bit(ICE_VSI_NETDEV_ALLOCD, vsi->state);
+ 	vsi->netdev = netdev;
+ 	np = netdev_priv(netdev);
+@@ -56,7 +58,7 @@ static int ice_sf_cfg_netdev(struct ice_dynamic_port *dyn_port)
+ 	ether_addr_copy(netdev->perm_addr, dyn_port->hw_addr);
+ 	netdev->netdev_ops = &ice_sf_netdev_ops;
+ 	ice_set_ethtool_sf_ops(netdev);
+-	SET_NETDEV_DEVLINK_PORT(netdev, &dyn_port->devlink_port);
++	SET_NETDEV_DEVLINK_PORT(netdev, &sf_dev->priv->devlink_port);
+ 
+ 	err = register_netdev(netdev);
+ 	if (err) {
+@@ -71,45 +73,70 @@ static int ice_sf_cfg_netdev(struct ice_dynamic_port *dyn_port)
  	return 0;
  }
  
-@@ -5250,6 +5257,8 @@ static void ice_remove(struct pci_dev *pdev)
- 	struct ice_pf *pf = pci_get_drvdata(pdev);
- 	int i;
++static const struct devlink_ops ice_sf_devlink_ops;
++
+ /**
+- * ice_sf_eth_activate - Activate Ethernet subfunction port
+- * @dyn_port: the dynamic port instance for this subfunction
+- * @extack: extack for reporting error messages
++ * ice_sf_dev_probe - subfunction driver probe function
++ * @adev: pointer to the auxiliary device
++ * @id: pointer to the auxiliary_device id
+  *
+- * Setups netdev resources and filters for a subfunction.
++ * Configure VSI and netdev resources for the subfunction device.
+  *
+  * Return: zero on success or an error code on failure.
+  */
+-int
+-ice_sf_eth_activate(struct ice_dynamic_port *dyn_port,
+-		    struct netlink_ext_ack *extack)
++static int ice_sf_dev_probe(struct auxiliary_device *adev,
++			    const struct auxiliary_device_id *id)
+ {
++	struct ice_sf_dev *sf_dev = ice_adev_to_sf_dev(adev);
++	struct ice_dynamic_port *dyn_port = sf_dev->dyn_port;
+ 	struct ice_vsi_cfg_params params = {};
+ 	struct ice_vsi *vsi = dyn_port->vsi;
+ 	struct ice_pf *pf = dyn_port->pf;
++	struct device *dev = &adev->dev;
++	struct ice_sf_priv *priv;
+ 	int err;
  
-+	ice_dealloc_all_dynamic_ports(pf);
-+
- 	for (i = 0; i < ICE_MAX_RESET_WAIT; i++) {
- 		if (!ice_is_reset_in_progress(pf->state))
- 			break;
-@@ -6561,7 +6570,8 @@ static int ice_up_complete(struct ice_vsi *vsi)
+ 	params.type = ICE_VSI_SF;
+ 	params.pi = pf->hw.port_info;
+ 	params.flags = ICE_VSI_FLAG_INIT;
  
- 	if (vsi->port_info &&
- 	    (vsi->port_info->phy.link_info.link_info & ICE_AQ_LINK_UP) &&
--	    vsi->netdev && vsi->type == ICE_VSI_PF) {
-+	    ((vsi->netdev && vsi->type == ICE_VSI_PF) ||
-+	     (vsi->netdev && vsi->type == ICE_VSI_SF))) {
- 		ice_print_link_msg(vsi, true);
- 		netif_tx_start_all_queues(vsi->netdev);
- 		netif_carrier_on(vsi->netdev);
-@@ -7217,7 +7227,7 @@ int ice_vsi_open(struct ice_vsi *vsi)
- 
- 	ice_vsi_cfg_netdev_tc(vsi, vsi->tc_cfg.ena_tc);
- 
--	if (vsi->type == ICE_VSI_PF) {
-+	if (vsi->type == ICE_VSI_PF || vsi->type == ICE_VSI_SF) {
- 		/* Notify the stack of the actual queue counts. */
- 		err = netif_set_real_num_tx_queues(vsi->netdev, vsi->num_txq);
- 		if (err)
-diff --git a/drivers/net/ethernet/intel/ice/ice_sf_eth.c b/drivers/net/ethernet/intel/ice/ice_sf_eth.c
-new file mode 100644
-index 000000000000..f569f176f29f
---- /dev/null
-+++ b/drivers/net/ethernet/intel/ice/ice_sf_eth.c
-@@ -0,0 +1,138 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/* Copyright (c) 2023, Intel Corporation. */
-+
-+#include "ice.h"
-+#include "ice_lib.h"
-+#include "ice_txrx.h"
-+#include "ice_fltr.h"
-+#include "ice_sf_eth.h"
-+#include "devlink/ice_devlink_port.h"
-+
-+static const struct net_device_ops ice_sf_netdev_ops = {
-+	.ndo_open = ice_open,
-+	.ndo_stop = ice_stop,
-+	.ndo_start_xmit = ice_start_xmit,
-+	.ndo_vlan_rx_add_vid = ice_vlan_rx_add_vid,
-+	.ndo_vlan_rx_kill_vid = ice_vlan_rx_kill_vid,
-+	.ndo_change_mtu = ice_change_mtu,
-+	.ndo_get_stats64 = ice_get_stats64,
-+	.ndo_tx_timeout = ice_tx_timeout,
-+	.ndo_bpf = ice_xdp,
-+	.ndo_xdp_xmit = ice_xdp_xmit,
-+	.ndo_xsk_wakeup = ice_xsk_wakeup,
-+};
-+
-+/**
-+ * ice_sf_cfg_netdev - Allocate, configure and register a netdev
-+ * @dyn_port: subfunction associated with configured netdev
-+ *
-+ * Returns 0 on success, negative value on failure
-+ */
-+static int ice_sf_cfg_netdev(struct ice_dynamic_port *dyn_port)
-+{
-+	struct net_device *netdev;
-+	struct ice_vsi *vsi = dyn_port->vsi;
-+	struct ice_netdev_priv *np;
-+	int err;
-+
-+	netdev = alloc_etherdev_mqs(sizeof(*np), vsi->alloc_txq,
-+				    vsi->alloc_rxq);
-+	if (!netdev)
-+		return -ENOMEM;
-+
-+	SET_NETDEV_DEV(netdev, &vsi->back->pdev->dev);
-+	set_bit(ICE_VSI_NETDEV_ALLOCD, vsi->state);
-+	vsi->netdev = netdev;
-+	np = netdev_priv(netdev);
-+	np->vsi = vsi;
-+
-+	ice_set_netdev_features(netdev);
-+
-+	netdev->xdp_features = NETDEV_XDP_ACT_BASIC | NETDEV_XDP_ACT_REDIRECT |
-+			       NETDEV_XDP_ACT_XSK_ZEROCOPY |
-+			       NETDEV_XDP_ACT_RX_SG;
-+
-+	eth_hw_addr_set(netdev, dyn_port->hw_addr);
-+	ether_addr_copy(netdev->perm_addr, dyn_port->hw_addr);
-+	netdev->netdev_ops = &ice_sf_netdev_ops;
-+	SET_NETDEV_DEVLINK_PORT(netdev, &dyn_port->devlink_port);
-+
-+	err = register_netdev(netdev);
-+	if (err) {
-+		free_netdev(netdev);
-+		vsi->netdev = NULL;
++	priv = ice_devlink_alloc(&adev->dev, sizeof(struct ice_sf_priv),
++				 &ice_sf_devlink_ops);
++	if (!priv) {
++		dev_err(dev, "Subfunction devlink alloc failed");
 +		return -ENOMEM;
 +	}
-+	set_bit(ICE_VSI_NETDEV_REGISTERED, vsi->state);
-+	netif_carrier_off(netdev);
-+	netif_tx_stop_all_queues(netdev);
 +
-+	return 0;
++	priv->dev = sf_dev;
++	sf_dev->priv = priv;
++
++	devlink_register(priv_to_devlink(priv));
++
+ 	err = ice_vsi_cfg(vsi, &params);
+ 	if (err) {
+-		NL_SET_ERR_MSG_MOD(extack, "Subfunction vsi config failed");
++		dev_err(dev, "Subfunction vsi config failed");
+ 		return err;
+ 	}
+ 
+-	err = ice_sf_cfg_netdev(dyn_port);
++	err = ice_devlink_create_sf_dev_port(sf_dev);
++	if (err)
++		dev_dbg(dev, "Cannot add ice virtual devlink port for subfunction");
++
++	err = ice_sf_cfg_netdev(sf_dev);
+ 	if (err) {
+-		NL_SET_ERR_MSG_MOD(extack, "Subfunction netdev config failed");
++		dev_err(dev, "subfunction netdev config failed");
+ 		goto err_vsi_decfg;
+ 	}
+ 
+ 	err = ice_fltr_add_mac_and_broadcast(vsi, vsi->netdev->dev_addr,
+ 					     ICE_FWD_TO_VSI);
++
+ 	if (err)
+-		NL_SET_ERR_MSG_MOD(extack, "can't add MAC filters for subfunction VSI");
++		dev_dbg(dev, "can't add MAC filters %pM for VSI %d\n",
++			vsi->netdev->dev_addr, vsi->idx);
+ 
++	dev_dbg(dev, "MAC %pM filter added for vsi %d\n", vsi->netdev->dev_addr,
++		vsi->idx);
+ 	ice_napi_add(vsi);
+ 
+ 	return err;
+@@ -120,20 +147,165 @@ ice_sf_eth_activate(struct ice_dynamic_port *dyn_port,
+ }
+ 
+ /**
+- * ice_sf_eth_deactivate - Deactivate subfunction
+- * @dyn_port: the dynamic port instance for this subfunction
++ * ice_sf_dev_remove - subfunction driver remove function
++ * @adev: pointer to the auxiliary device
+  *
+- * Free netdev resources and filters for a subfunction.
++ * Deinitalize VSI and netdev resources for the subfunction device.
+  */
+-void ice_sf_eth_deactivate(struct ice_dynamic_port *dyn_port)
++static void ice_sf_dev_remove(struct auxiliary_device *adev)
+ {
++	struct ice_sf_dev *sf_dev = ice_adev_to_sf_dev(adev);
++	struct devlink *devlink = priv_to_devlink(sf_dev->priv);
++	struct ice_dynamic_port *dyn_port = sf_dev->dyn_port;
+ 	struct ice_vsi *vsi = dyn_port->vsi;
+ 
+ 	ice_vsi_close(vsi);
++
+ 	unregister_netdev(vsi->netdev);
+ 	clear_bit(ICE_VSI_NETDEV_REGISTERED, vsi->state);
++	devlink_port_unregister(&sf_dev->priv->devlink_port);
+ 	free_netdev(vsi->netdev);
+-	clear_bit(ICE_VSI_NETDEV_ALLOCD, vsi->state);
+ 	vsi->netdev = NULL;
++	clear_bit(ICE_VSI_NETDEV_ALLOCD, vsi->state);
++	devlink_unregister(devlink);
++	devlink_free(devlink);
+ 	ice_vsi_decfg(vsi);
+ }
++
++static const struct auxiliary_device_id ice_sf_dev_id_table[] = {
++	{ .name = "ice.sf", },
++	{ },
++};
++
++MODULE_DEVICE_TABLE(auxiliary, ice_sf_dev_id_table);
++
++static struct auxiliary_driver ice_sf_driver = {
++	.name = "sf",
++	.probe = ice_sf_dev_probe,
++	.remove = ice_sf_dev_remove,
++	.id_table = ice_sf_dev_id_table
++};
++
++static DEFINE_XARRAY_ALLOC1(ice_sf_aux_id);
++
++/**
++ * ice_sf_driver_register - Register new auxiliary subfunction driver
++ *
++ * Return: zero on success or an error code on failure.
++ */
++int ice_sf_driver_register(void)
++{
++	return auxiliary_driver_register(&ice_sf_driver);
++}
++
++/**
++ * ice_sf_driver_unregister - Unregister new auxiliary subfunction driver
++ *
++ * Return: zero on success or an error code on failure.
++ */
++void ice_sf_driver_unregister(void)
++{
++	auxiliary_driver_unregister(&ice_sf_driver);
++}
++
++/**
++ * ice_sf_dev_release - Release device associated with auxiliary device
++ * @device: pointer to the device
++ *
++ * Since most of the code for subfunction deactivation is handled in
++ * the remove handler, here just free tracking resources.
++ */
++static void ice_sf_dev_release(struct device *device)
++{
++	struct auxiliary_device *adev = to_auxiliary_dev(device);
++	struct ice_sf_dev *sf_dev = ice_adev_to_sf_dev(adev);
++
++	xa_erase(&ice_sf_aux_id, adev->id);
++	kfree(sf_dev);
 +}
 +
 +/**
@@ -967,7 +552,8 @@ index 000000000000..f569f176f29f
 + * @dyn_port: the dynamic port instance for this subfunction
 + * @extack: extack for reporting error messages
 + *
-+ * Setups netdev resources and filters for a subfunction.
++ * Activate the dynamic port as an Ethernet subfunction. Setup the netdev
++ * resources associated and initialize the auxiliary device.
 + *
 + * Return: zero on success or an error code on failure.
 + */
@@ -975,80 +561,115 @@ index 000000000000..f569f176f29f
 +ice_sf_eth_activate(struct ice_dynamic_port *dyn_port,
 +		    struct netlink_ext_ack *extack)
 +{
-+	struct ice_vsi_cfg_params params = {};
-+	struct ice_vsi *vsi = dyn_port->vsi;
 +	struct ice_pf *pf = dyn_port->pf;
++	struct ice_sf_dev *sf_dev;
++	struct pci_dev *pdev;
 +	int err;
++	u32 id;
 +
-+	params.type = ICE_VSI_SF;
-+	params.pi = pf->hw.port_info;
-+	params.flags = ICE_VSI_FLAG_INIT;
-+
-+	err = ice_vsi_cfg(vsi, &params);
++	err  = xa_alloc(&ice_sf_aux_id, &id, NULL, xa_limit_32b,
++			GFP_KERNEL);
 +	if (err) {
-+		NL_SET_ERR_MSG_MOD(extack, "Subfunction vsi config failed");
++		NL_SET_ERR_MSG_MOD(extack, "Could not allocate subfunction ID");
 +		return err;
 +	}
 +
-+	err = ice_sf_cfg_netdev(dyn_port);
++	sf_dev = kzalloc(sizeof(*sf_dev), GFP_KERNEL);
++	if (!sf_dev) {
++		err = -ENOMEM;
++		NL_SET_ERR_MSG_MOD(extack, "Could not allocate sf_dev memory");
++		goto xa_erase;
++	}
++	pdev = pf->pdev;
++
++	sf_dev->dyn_port = dyn_port;
++	sf_dev->adev.id = id;
++	sf_dev->adev.name = "sf";
++	sf_dev->adev.dev.release = ice_sf_dev_release;
++	sf_dev->adev.dev.parent = &pdev->dev;
++
++	err = auxiliary_device_init(&sf_dev->adev);
 +	if (err) {
-+		NL_SET_ERR_MSG_MOD(extack, "Subfunction netdev config failed");
-+		goto err_vsi_decfg;
++		NL_SET_ERR_MSG_MOD(extack, "Failed to initialize auxiliary device");
++		goto sf_dev_free;
 +	}
 +
-+	err = ice_fltr_add_mac_and_broadcast(vsi, vsi->netdev->dev_addr,
-+					     ICE_FWD_TO_VSI);
-+	if (err)
-+		NL_SET_ERR_MSG_MOD(extack, "can't add MAC filters for subfunction VSI");
++	err = auxiliary_device_add(&sf_dev->adev);
++	if (err) {
++		NL_SET_ERR_MSG_MOD(extack, "Auxiliary device failed to probe");
++		goto aux_dev_uninit;
++	}
 +
-+	ice_napi_add(vsi);
++	dyn_port->sf_dev = sf_dev;
 +
-+	return err;
++	return 0;
 +
-+err_vsi_decfg:
-+	ice_vsi_decfg(vsi);
++aux_dev_uninit:
++	auxiliary_device_uninit(&sf_dev->adev);
++sf_dev_free:
++	kfree(sf_dev);
++xa_erase:
++	xa_erase(&ice_sf_aux_id, id);
++
 +	return err;
 +}
 +
 +/**
-+ * ice_sf_eth_deactivate - Deactivate subfunction
++ * ice_sf_eth_deactivate - Deactivate Ethernet subfunction port
 + * @dyn_port: the dynamic port instance for this subfunction
 + *
-+ * Free netdev resources and filters for a subfunction.
++ * Deactivate the Ethernet subfunction, removing its auxiliary device and the
++ * associated resources.
 + */
 +void ice_sf_eth_deactivate(struct ice_dynamic_port *dyn_port)
 +{
-+	struct ice_vsi *vsi = dyn_port->vsi;
++	struct ice_sf_dev *sf_dev = dyn_port->sf_dev;
 +
-+	ice_vsi_close(vsi);
-+	unregister_netdev(vsi->netdev);
-+	clear_bit(ICE_VSI_NETDEV_REGISTERED, vsi->state);
-+	free_netdev(vsi->netdev);
-+	clear_bit(ICE_VSI_NETDEV_ALLOCD, vsi->state);
-+	vsi->netdev = NULL;
-+	ice_vsi_decfg(vsi);
++	if (sf_dev) {
++		auxiliary_device_delete(&sf_dev->adev);
++		auxiliary_device_uninit(&sf_dev->adev);
++	}
++
++	dyn_port->sf_dev = NULL;
 +}
 diff --git a/drivers/net/ethernet/intel/ice/ice_sf_eth.h b/drivers/net/ethernet/intel/ice/ice_sf_eth.h
-new file mode 100644
-index 000000000000..f4b8b36b1a67
---- /dev/null
+index f4b8b36b1a67..366344c3ff90 100644
+--- a/drivers/net/ethernet/intel/ice/ice_sf_eth.h
 +++ b/drivers/net/ethernet/intel/ice/ice_sf_eth.h
-@@ -0,0 +1,15 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/* Copyright (c) 2023, Intel Corporation. */
+@@ -4,12 +4,33 @@
+ #ifndef _ICE_SF_ETH_H_
+ #define _ICE_SF_ETH_H_
+ 
++#include <linux/auxiliary_bus.h>
+ #include "ice.h"
+ #include "devlink/ice_devlink_port.h"
+ 
++struct ice_sf_dev {
++	struct auxiliary_device adev;
++	struct ice_dynamic_port *dyn_port;
++	struct ice_sf_priv *priv;
++};
 +
-+#ifndef _ICE_SF_ETH_H_
-+#define _ICE_SF_ETH_H_
++struct ice_sf_priv {
++	struct ice_sf_dev *dev;
++	struct devlink_port devlink_port;
++};
 +
-+#include "ice.h"
-+#include "devlink/ice_devlink_port.h"
++static inline struct
++ice_sf_dev *ice_adev_to_sf_dev(struct auxiliary_device *adev)
++{
++	return container_of(adev, struct ice_sf_dev, adev);
++}
 +
-+int
-+ice_sf_eth_activate(struct ice_dynamic_port *dyn_port,
-+		    struct netlink_ext_ack *extack);
-+void ice_sf_eth_deactivate(struct ice_dynamic_port *dyn_port);
+ int
+ ice_sf_eth_activate(struct ice_dynamic_port *dyn_port,
+ 		    struct netlink_ext_ack *extack);
+ void ice_sf_eth_deactivate(struct ice_dynamic_port *dyn_port);
+ 
++int ice_sf_driver_register(void);
++void ice_sf_driver_unregister(void);
 +
-+#endif /* _ICE_SF_ETH_H_ */
+ #endif /* _ICE_SF_ETH_H_ */
 -- 
 2.42.0
 
