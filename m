@@ -4,87 +4,94 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2166AC48260
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 13 Feb 2024 12:12:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 37AEAC48260
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 13 Feb 2024 12:51:13 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id D1E064117B;
-	Tue, 13 Feb 2024 12:12:37 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id CFFC44144E;
+	Tue, 13 Feb 2024 12:51:12 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id dRc0VS04wcxV; Tue, 13 Feb 2024 12:12:37 +0000 (UTC)
+	with ESMTP id TZvTTUt5RZrh; Tue, 13 Feb 2024 12:51:11 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org E8B754117D
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 9720340442
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1707826357;
-	bh=G6E1c5a70uX5WskRb30AYCKyrJuyjaP4ln0W8y14wHk=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=vureEayatOUFX6unAcgQicHrRAVkl6BDLFnHhitXWgn478B/LhIe+IVbY8gc0wEmX
-	 ZNX0TZtb5VwfV4wBIdT4vfeflD0u4Yu6uf/P5ALUn12psne+dZpaW/ApicBNbPluFv
-	 oJrEmcx5kkju7BHI/i2ZUZ5Ni2vkNUOToIRAUvy5CLKh70LesradJUJD5iU6YG5u2O
-	 lEgsdJi5yJTqmH5WQuS/2jbaXUjW9Hdb/TY+RBUHcgeXSlp4ckfJB5ROGdwJtTYFEK
-	 re0s5vyVgXJDhAsG7NKCmvLaAht3yzXzF/J+OByVITXQdqD3lPWfuRvPdoAHawJ0v6
-	 zWNp32RflntmQ==
+	s=default; t=1707828671;
+	bh=8tIBwTWunCYtvmkXco8BJGVYVFlIQ5ZjamMEG21A2mk=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=MZLNOAxNYxbsJu1CM3l8j1Z9OkHEtrSTnDCpnwVY9uOFC7SpMLdH/N7vh9p+UZqJR
+	 K2tsLp1EkVCG4EsWWooV6gxLYVKm2/f5Gt8SEr0NY8n/fZU+qqYkmm8TTJL8pKhC54
+	 RSqMN5SZTYFyDzg1KliTtrnJEVBNUCaR0xlA1yPf1H5zk1QU/i1AQd9OlNJBUWxzwu
+	 v9BqUXQr351botDMsrTrGxkNh+M7oHp23YWTb7Bvzl7YYaLpavFvqyAYM9xykWdEvW
+	 JOEXlDoPyWdsB895MWwFUxRNO2PwDmurNbwp4JaKzSQJNkRXJzoWExatEYNPa9DkKE
+	 Lyq3Tq/Lcn4gQ==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id E8B754117D;
-	Tue, 13 Feb 2024 12:12:36 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 2093B1BF2FC
- for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Feb 2024 12:12:35 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 9720340442;
+	Tue, 13 Feb 2024 12:51:11 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 1A3D01BF41A
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Feb 2024 12:51:10 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 0A0B740442
- for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Feb 2024 12:12:35 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 0647560B57
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Feb 2024 12:51:10 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id wYh1h6OTCDxy for <intel-wired-lan@lists.osuosl.org>;
- Tue, 13 Feb 2024 12:12:34 +0000 (UTC)
-X-Greylist: delayed 1085 seconds by postgrey-1.37 at util1.osuosl.org;
- Tue, 13 Feb 2024 12:12:33 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 5B4C8411A1
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 5B4C8411A1
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2a0a:edc0:2:b01:1d::104; helo=metis.whiteo.stw.pengutronix.de;
- envelope-from=ore@pengutronix.de; receiver=<UNKNOWN> 
-Received: from metis.whiteo.stw.pengutronix.de
- (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 5B4C8411A1
- for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Feb 2024 12:12:33 +0000 (UTC)
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
- by metis.whiteo.stw.pengutronix.de with esmtps
- (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.92)
- (envelope-from <ore@pengutronix.de>)
- id 1rZrMc-0004OR-HU; Tue, 13 Feb 2024 12:54:14 +0100
-Received: from [2a0a:edc0:0:1101:1d::ac] (helo=dude04.red.stw.pengutronix.de)
- by drehscheibe.grey.stw.pengutronix.de with esmtps (TLS1.3) tls
- TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 (Exim 4.94.2)
- (envelope-from <ore@pengutronix.de>)
- id 1rZrMa-000TeD-46; Tue, 13 Feb 2024 12:54:12 +0100
-Received: from ore by dude04.red.stw.pengutronix.de with local (Exim 4.96)
- (envelope-from <ore@pengutronix.de>) id 1rZrMa-001k76-0B;
- Tue, 13 Feb 2024 12:54:12 +0100
-From: Oleksij Rempel <o.rempel@pengutronix.de>
-To: Jesse Brandeburg <jesse.brandeburg@intel.com>,
- Tony Nguyen <anthony.l.nguyen@intel.com>,
- "David S. Miller" <davem@davemloft.net>,
- Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, Richard Cochran <richardcochran@gmail.com>
-Date: Tue, 13 Feb 2024 12:54:10 +0100
-Message-Id: <20240213115410.415573-1-o.rempel@pengutronix.de>
-X-Mailer: git-send-email 2.39.2
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id yit1tmbcqNou for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 13 Feb 2024 12:51:08 +0000 (UTC)
+Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.14;
+ helo=mgamail.intel.com; envelope-from=michal.swiatkowski@linux.intel.com;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org A806860B31
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A806860B31
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.14])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id A806860B31
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Feb 2024 12:51:07 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10982"; a="5650561"
+X-IronPort-AV: E=Sophos;i="6.06,157,1705392000"; 
+   d="scan'208";a="5650561"
+Received: from fmviesa010.fm.intel.com ([10.60.135.150])
+ by orvoesa106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 13 Feb 2024 04:51:06 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.06,157,1705392000"; 
+   d="scan'208";a="2832183"
+Received: from unknown (HELO mev-dev) ([10.237.112.144])
+ by fmviesa010-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 13 Feb 2024 04:51:03 -0800
+Date: Tue, 13 Feb 2024 13:50:59 +0100
+From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+To: Karthik Sundaravel <ksundara@redhat.com>
+Message-ID: <ZctlswYbV1RHU2ip@mev-dev>
+References: <20240209100912.82473-1-ksundara@redhat.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: ore@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de);
- SAEximRunCond expanded to false
-X-PTX-Original-Recipient: intel-wired-lan@lists.osuosl.org
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240209100912.82473-1-ksundara@redhat.com>
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1707828668; x=1739364668;
+ h=date:from:to:cc:subject:message-id:references:
+ mime-version:in-reply-to;
+ bh=cgc6WEo6KiUkTPoF8lda8b4oPP94RffhPHS5Dx9J9go=;
+ b=k44LFWt2UcSJnhsqaAjCE2BzUaXQ+EOhsZYPaA9DjvTDjNEuaWbwAeHu
+ VxYyfsphFf0URoZBX77XX9xTH9K9vkbwH0v8MwHxWUpdRf41PhzJ5sWLT
+ YiWq9uBVCuUNNlkXaKmBwDqVlhywUIkOYRhzz4AYNlmWchusi03nboQjh
+ QPYm0Vo0M/Hq4fVLMrUCQB+Em51wpXN+Thybw9WJrz+snYrXqZLITD/Da
+ DhpZJdgWq5KpgIBjYyofPziCfwNBhxRa7xCOL50K+gB6fFXi5g2OsVLly
+ FQW/3oUWvr6SohIkRetQFXv1NEvaMDRl5IfETx1Nso84eMN33O+bl6CNT
+ A==;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=none (p=none dis=none)
- header.from=pengutronix.de
-Subject: [Intel-wired-lan] [PATCH net v1 1/1] igb: extend PTP timestamp
- adjustments to i211
+ header.from=linux.intel.com
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=k44LFWt2
+Subject: Re: [Intel-wired-lan] [PATCH v3] ice: Add get/set hw address for
+ VFs using devlink commands
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,55 +104,137 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Oleksij Rempel <o.rempel@pengutronix.de>, intel-wired-lan@lists.osuosl.org,
- linux-kernel@vger.kernel.org, kernel@pengutronix.de, netdev@vger.kernel.org
+Cc: pmenzel@molgen.mpg.de, aharivel@redhat.com, jiri@resnulli.us,
+ cfontain@redhat.com, intel-wired-lan@lists.osuosl.org,
+ jesse.brandeburg@intel.com, linux-kernel@vger.kernel.org, edumazet@google.com,
+ anthony.l.nguyen@intel.com, vchundur@redhat.com, netdev@vger.kernel.org,
+ jacob.e.keller@intel.com, kuba@kernel.org, rjarry@redhat.com,
+ pabeni@redhat.com, davem@davemloft.net
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The i211 requires the same PTP timestamp adjustments as the i210,
-according to its datasheet. To ensure consistent timestamping across
-different platforms, this change extends the existing adjustments to
-include the i211.
+On Fri, Feb 09, 2024 at 03:39:12PM +0530, Karthik Sundaravel wrote:
+> Changing the MAC address of the VFs are not available
+> via devlink. Add the function handlers to set and get
+> the HW address for the VFs.
+> 
+> Signed-off-by: Karthik Sundaravel <ksundara@redhat.com>
+> ---
+>  drivers/net/ethernet/intel/ice/ice_devlink.c | 86 +++++++++++++++++++-
+>  1 file changed, 85 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/ice/ice_devlink.c b/drivers/net/ethernet/intel/ice/ice_devlink.c
+> index 80dc5445b50d..7ed61b10312c 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_devlink.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_devlink.c
+> @@ -1576,6 +1576,89 @@ void ice_devlink_destroy_pf_port(struct ice_pf *pf)
+>  	devlink_port_unregister(&pf->devlink_port);
+>  }
+>  
+> +/**
+> + * ice_devlink_port_get_vf_mac_address - .port_fn_hw_addr_get devlink handler
+> + * @port: devlink port structure
+> + * @hw_addr: MAC address of the port
+> + * @hw_addr_len: length of MAC address
+> + * @extack: extended netdev ack structure
+> + *
+> + * Callback for the devlink .port_fn_hw_addr_get operation
+> + * Return: zero on success or an error code on failure.
+> + */
+> +
+> +static int ice_devlink_port_get_vf_mac_address(struct devlink_port *port,
+> +					       u8 *hw_addr, int *hw_addr_len,
+> +					       struct netlink_ext_ack *extack)
+> +{
+> +	struct devlink_port_attrs *attrs = &port->attrs;
+> +	struct devlink_port_pci_vf_attrs *pci_vf;
+> +	struct devlink *devlink = port->devlink;
+> +	struct ice_pf *pf;
+> +	struct ice_vf *vf;
+> +	int vf_id;
+> +
+> +	pf = devlink_priv(devlink);
+> +	if (attrs->flavour == DEVLINK_PORT_FLAVOUR_PCI_VF) {
+> +		pci_vf = &attrs->pci_vf;
+> +		vf_id = pci_vf->vf;
+> +	} else {
+> +		NL_SET_ERR_MSG_MOD(extack, "Unable to get the vf id");
+> +		return -EADDRNOTAVAIL;
+> +	}
+> +	vf = ice_get_vf_by_id(pf, vf_id);
+You need to call ice_put_vf(vf); when you finish with vf.
 
-The adjustment result are tested and comparable for i210 and i211 based
-systems.
+This way to get vf pointer is fine, I wonder if it can be done using
+container_of on port variable. Jake, what do you think?
+CC: Jacob Keller
 
-Fixes: 3f544d2a4d5c ("igb: adjust PTP timestamps for Tx/Rx latency")
-Signed-off-by: Oleksij Rempel <o.rempel@pengutronix.de>
----
- drivers/net/ethernet/intel/igb/igb_ptp.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+> +	if (!vf) {
+> +		NL_SET_ERR_MSG_MOD(extack, "Unable to get the vf");
+> +		return -EINVAL;
+> +	}
+> +	ether_addr_copy(hw_addr, vf->dev_lan_addr);
+> +	*hw_addr_len = ETH_ALEN;
+> +	return 0;
+> +}
+> +
+> +/**
+> + * ice_devlink_port_set_vf_mac_address - .port_fn_hw_addr_set devlink handler
+> + * @port: devlink port structure
+> + * @hw_addr: MAC address of the port
+> + * @hw_addr_len: length of MAC address
+> + * @extack: extended netdev ack structure
+> + *
+> + * Callback for the devlink .port_fn_hw_addr_set operation
+> + * Return: zero on success or an error code on failure.
+> + */
+> +static int ice_devlink_port_set_vf_mac_address(struct devlink_port *port,
+> +					       const u8 *hw_addr,
+> +					       int hw_addr_len,
+> +					       struct netlink_ext_ack *extack)
+> +{
+> +	struct net_device *netdev = port->type_eth.netdev;
+Is it PF netdev?
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_ptp.c b/drivers/net/ethernet/intel/igb/igb_ptp.c
-index 319c544b9f04..f94570556120 100644
---- a/drivers/net/ethernet/intel/igb/igb_ptp.c
-+++ b/drivers/net/ethernet/intel/igb/igb_ptp.c
-@@ -957,7 +957,7 @@ static void igb_ptp_tx_hwtstamp(struct igb_adapter *adapter)
- 
- 	igb_ptp_systim_to_hwtstamp(adapter, &shhwtstamps, regval);
- 	/* adjust timestamp for the TX latency based on link speed */
--	if (adapter->hw.mac.type == e1000_i210) {
-+	if (hw->mac.type == e1000_i210 || hw->mac.type == e1000_i211) {
- 		switch (adapter->link_speed) {
- 		case SPEED_10:
- 			adjust = IGB_I210_TX_LATENCY_10;
-@@ -1003,6 +1003,7 @@ int igb_ptp_rx_pktstamp(struct igb_q_vector *q_vector, void *va,
- 			ktime_t *timestamp)
- {
- 	struct igb_adapter *adapter = q_vector->adapter;
-+	struct e1000_hw *hw = &adapter->hw;
- 	struct skb_shared_hwtstamps ts;
- 	__le64 *regval = (__le64 *)va;
- 	int adjust = 0;
-@@ -1022,7 +1023,7 @@ int igb_ptp_rx_pktstamp(struct igb_q_vector *q_vector, void *va,
- 	igb_ptp_systim_to_hwtstamp(adapter, &ts, le64_to_cpu(regval[1]));
- 
- 	/* adjust timestamp for the RX latency based on link speed */
--	if (adapter->hw.mac.type == e1000_i210) {
-+	if (hw->mac.type == e1000_i210 || hw->mac.type == e1000_i211) {
- 		switch (adapter->link_speed) {
- 		case SPEED_10:
- 			adjust = IGB_I210_RX_LATENCY_10;
--- 
-2.39.2
-
+> +	struct devlink_port_attrs *attrs = &port->attrs;
+> +	struct devlink_port_pci_vf_attrs *pci_vf;
+> +	u8 mac[ETH_ALEN];
+> +	int vf_id;
+> +
+> +	if (attrs->flavour == DEVLINK_PORT_FLAVOUR_PCI_VF) {
+> +		pci_vf = &attrs->pci_vf;
+> +		vf_id = pci_vf->vf;
+> +	} else {
+> +		NL_SET_ERR_MSG_MOD(extack, "Unable to get the vf id");
+> +		return -EADDRNOTAVAIL;
+> +	}
+> +
+> +	if (!netdev) {
+> +		NL_SET_ERR_MSG_MOD(extack, "Unable to get the netdev");
+> +		return -EADDRNOTAVAIL;
+> +	}
+> +	ether_addr_copy(mac, hw_addr);
+> +
+> +	return ice_set_vf_mac(netdev, vf_id, mac);
+> +}
+> +
+> +static const struct devlink_port_ops ice_devlink_vf_port_ops = {
+> +	.port_fn_hw_addr_get = ice_devlink_port_get_vf_mac_address,
+> +	.port_fn_hw_addr_set = ice_devlink_port_set_vf_mac_address,
+> +};
+> +
+>  /**
+>   * ice_devlink_create_vf_port - Create a devlink port for this VF
+>   * @vf: the VF to create a port for
+> @@ -1611,7 +1694,8 @@ int ice_devlink_create_vf_port(struct ice_vf *vf)
+>  	devlink_port_attrs_set(devlink_port, &attrs);
+>  	devlink = priv_to_devlink(pf);
+>  
+> -	err = devlink_port_register(devlink, devlink_port, vsi->idx);
+> +	err = devlink_port_register_with_ops(devlink, devlink_port,
+> +					     vsi->idx, &ice_devlink_vf_port_ops);
+>  	if (err) {
+>  		dev_err(dev, "Failed to create devlink port for VF %d, error %d\n",
+>  			vf->vf_id, err);
+> -- 
+> 2.39.3 (Apple Git-145)
+> 
