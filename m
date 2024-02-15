@@ -4,85 +4,98 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 88D72C4829E
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 15 Feb 2024 14:54:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 447B7C48BC4
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 15 Feb 2024 15:34:02 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 2A65F418D2;
-	Thu, 15 Feb 2024 14:54:18 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id E33DC41B14;
+	Thu, 15 Feb 2024 15:34:01 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id Hbsq4fQxOJ5S; Thu, 15 Feb 2024 14:54:17 +0000 (UTC)
+	with ESMTP id tFd_zQZ3bzcC; Thu, 15 Feb 2024 15:34:01 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1C62041BED
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3FF1941B6E
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1708008857;
-	bh=IT6a5Nw4dZlYOm4J/MrtHC1WGfvjoiWJ6lT8CMBCrxg=;
-	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=GXGczm4OYVpypf6/IOfcpCf2YGTOE5n4/dw5TPp+QfwQbcChiBmcRKczjC33FUGgs
-	 FDso6hcNQWgU9xpGZjJ7c9xyTG/nH5yW+r6qbuM1pQl5GQ+YOYXQuUAwYFtMYupW52
-	 ud/raBoHm9greXULoWx7lvJmBzF8Ip6NWL0te1HtKdE6uIVEy/3rIns5oAYAWKNTSj
-	 yXXEVBke742oON7zV27oF+kC9cE32UU4QLiG7Mu26vknaJ2tA104FB+DcLZ6XDECXh
-	 3SCXh3SusBXVeMCLkPJt8Gb5tguZPq47ciFUerzWs+GDHbV9x7YCljIYqyr/fBUaFD
-	 Ic6Rm2IGrqBdw==
+	s=default; t=1708011241;
+	bh=CGLIiOezS/B69QKtvQ2+4znP2qmka4h4Kq5uSfWJywM=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Reply-To:From;
+	b=uTwcI9kE6wVDZ3R/Q66C/x9zlZKOWqfD0MAuqGybMqsjsOrEVIIfvSD+hSnBub9H+
+	 aSuK55HuxHJDVGgkAJpO0fhUxb/XpxEfDEkglXj7I61C+cjdK2e1/qNO+mh9HuojA+
+	 G+89DGndvnfM/Z7YxCkz8SdKisZe3c91mp9EFJDdCzHuyA33CND261EyLkleuQo33+
+	 o/xx4v9cXHezROjTvsPntgaabP+Xq/zq4H/XHg605nagMaouHwSOojeQKPSDKIm+S9
+	 MNrt4brPpw+KjGFcUmkwlKaFgje4QEiSv3AwN9uDnWavPPi0e8JURgcxuNV7Tvwnae
+	 C4OyKhTKxhlyA==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 1C62041BED;
-	Thu, 15 Feb 2024 14:54:17 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id DC2581BF575
- for <intel-wired-lan@lists.osuosl.org>; Thu, 15 Feb 2024 11:07:43 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 3FF1941B6E;
+	Thu, 15 Feb 2024 15:34:01 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id D94891BF292
+ for <intel-wired-lan@osuosl.org>; Thu, 15 Feb 2024 15:33:58 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id C88226075B
- for <intel-wired-lan@lists.osuosl.org>; Thu, 15 Feb 2024 11:07:43 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id C586641B6E
+ for <intel-wired-lan@osuosl.org>; Thu, 15 Feb 2024 15:33:58 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id upPkQ9pJOKav for <intel-wired-lan@lists.osuosl.org>;
- Thu, 15 Feb 2024 11:07:42 +0000 (UTC)
-X-Greylist: delayed 318 seconds by postgrey-1.37 at util1.osuosl.org;
- Thu, 15 Feb 2024 11:07:42 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 258D260668
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 258D260668
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=45.83.229.9;
- helo=mail.ycharbi.fr; envelope-from=kernel.org-fo5k2w@ycharbi.fr;
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id ZhPZrmei9HMJ for <intel-wired-lan@osuosl.org>;
+ Thu, 15 Feb 2024 15:33:58 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=17.57.156.17;
+ helo=ci74p00im-qukt09082702.me.com; envelope-from=ernesto@castellotti.net;
  receiver=<UNKNOWN> 
-Received: from mail.ycharbi.fr (mail.ycharbi.fr [45.83.229.9])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 258D260668
- for <intel-wired-lan@lists.osuosl.org>; Thu, 15 Feb 2024 11:07:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 172CA41B14
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 172CA41B14
+Received: from ci74p00im-qukt09082702.me.com (ci74p00im-qukt09082702.me.com
+ [17.57.156.17])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 172CA41B14
+ for <intel-wired-lan@osuosl.org>; Thu, 15 Feb 2024 15:33:57 +0000 (UTC)
+Received: from [10.44.0.54] (ci77p00im-dlb-asmtp-mailmevip.me.com
+ [17.57.156.26])
+ by ci74p00im-qukt09082702.me.com (Postfix) with ESMTPSA id 5D97515400D9;
+ Thu, 15 Feb 2024 15:33:55 +0000 (UTC)
+Message-ID: <d28eb982fc9f696a56be4ba591e4b6efd1057e84.camel@castellotti.net>
+From: Ernesto Castellotti <ernesto@castellotti.net>
+To: Przemek Kitszel <przemyslaw.kitszel@intel.com>, 
+ anthony.l.nguyen@intel.com, intel-wired-lan@osuosl.org, 
+ piotr.kwapulinski@intel.com
+Date: Thu, 15 Feb 2024 16:33:52 +0100
+In-Reply-To: <82fa1430-eae7-4635-b663-9fbf8336c891@intel.com>
+References: <20240207231524.51753-1-ernesto@castellotti.net>
+ <82fa1430-eae7-4635-b663-9fbf8336c891@intel.com>
+Content-Type: text/plain; charset="UTF-8"
+User-Agent: Evolution 3.50.4 
 MIME-Version: 1.0
-Date: Thu, 15 Feb 2024 11:02:18 +0000
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-From: kernel.org-fo5k2w@ycharbi.fr
-Message-ID: <8267673cce94022974bcf35b2bf0f6545105d03e@ycharbi.fr>
-TLS-Required: No
-To: jesse.brandeburg@intel.com, anthony.l.nguyen@intel.com
-X-Mailman-Approved-At: Thu, 15 Feb 2024 14:54:15 +0000
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=ycharbi.fr; s=mail; 
- t=1707994938; bh=IT6a5Nw4dZlYOm4J/MrtHC1WGfvjoiWJ6lT8CMBCrxg=;
- h=Date:List-Unsubscribe:From:Subject:To:Cc:From;
- b=Gey/D1rY1Hh6LQ8897aj1ktICIoWwsHtOVA1Dz4ABSCaqriRfzCPyfCC36nDOKxzx
- 7WDcI7QIoQZQHF8pWTWu4i+sQtg2J7u5JyMgFRIg4yf3oJ7EFeGAlV1btEWdfnOCmk
- FkldulEYtnKqVKDO5/ahsGkhUftH0Fri5FFiBp2u+PQZLs7NMXr8sOSjS+16q2InpM
- 1B4DU6JHi+WXQGnQqcje6fGZnBoVzrDo8Tu1hXqNFVr2WnyenJJskK3etGXvkDjSoP
- UWnXwsCE5f63JNvIMrdt8kodP8s98azNKIz9t/1hMVj4OLOUcwW0x14wtuDMfVnuCY
- hgfNVT8UiarSj/XniYofUtMAe/8UqYNRULX6wjzin9MHdl1mwXLtHqoCy/uijoXBxy
- CYoo8ORCyLuof44QM4725YIFKCfu9vG5oJ/69ogGFk+F/TnXRpUbTFY4dYmWjw4iY+
- LJf5JaTXYo1p0kxJ1/DJyGeZFLO16A+DeT4pUh+ircDF2eIOSzsfo1HIhgMtUvEGuk
- bv6ICX2XyptQAJtjFnjF8piGk6d55sI1o/TudOxWge1L27FEz0wxaqT74TvOwlzzBQ
- ck2qRo3k1z0SGSbC+4dJBRLG3tiAZ3QwgNUzCSaI4WomcJqyqxEhc0ffdVU0YLnYBz
- jaUqQSjaPoDOYK7wxeTulh/Q=
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-GUID: GislSjuLKdq4RDMVI_3ae8hmp0-VHCE4
+X-Proofpoint-ORIG-GUID: GislSjuLKdq4RDMVI_3ae8hmp0-VHCE4
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.272,Aquarius:18.0.1011,Hydra:6.0.619,FMLib:17.11.176.26
+ definitions=2024-02-15_14,2024-02-14_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=0
+ adultscore=0 spamscore=0
+ mlxlogscore=976 bulkscore=0 malwarescore=0 mlxscore=0 clxscore=1030
+ phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.19.0-2308100000 definitions=main-2402150126
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=castellotti.net; s=sig1; t=1708011237;
+ bh=CGLIiOezS/B69QKtvQ2+4znP2qmka4h4Kq5uSfWJywM=;
+ h=Message-ID:Subject:From:To:Date:Content-Type:MIME-Version;
+ b=REAldWqysHtbpkDEudjn6R9Qte/4BYXBVvppQ5zIqZDETONZW1sdp+el8ApjL1ngM
+ uWBACxmEXclTcoCp5kRc/GkZQ3PMbKEm+Bu3xRkwwYseUsIwPpE63FDq0UTlha38qH
+ 2QYUkHa5vsKBcAA2hF4bRCt5ffi6amFA7uAyOkyA7sVHmbQvxzqFsxEQZkCYA5W0G0
+ FmpcJ6KEmwUfu+86yGmmWVorUaQVBi8EhetFkbSw1xQeDFrOf3JL2Al1WJTVb24gLx
+ 0lSDbyfAkjqt5PX3FpbKmQucaF11RO4zCihVk+b7mE1NNSDuF8hgd0YL7bmgrT0Ipe
+ zuum5H4Pqk9MA==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
- header.from=ycharbi.fr
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (4096-bit key,
- unprotected) header.d=ycharbi.fr header.i=@ycharbi.fr header.a=rsa-sha256
- header.s=mail header.b=Gey/D1rY
-Subject: [Intel-wired-lan] Non-functional ixgbe driver between Intel X553
- chipset and Cisco switch via kernel >=6.1 under Debian
+ header.from=castellotti.net
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=castellotti.net header.i=@castellotti.net
+ header.a=rsa-sha256 header.s=sig1 header.b=REAldWqy
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next v2] ixgbe: Add 1000BASE-BX
+ support
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,91 +108,37 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, intel-wired-lan@lists.osuosl.org
+Reply-To: 82fa1430-eae7-4635-b663-9fbf8336c891@intel.com
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Hello,
+On Thu, 2024-02-15 at 15:46 +0100, Przemek Kitszel wrote:
+> > diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h
+> > index ef72729d7c93..b5bc60916402 100644
+> > --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h
+> > +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h
+> > @@ -17,6 +17,7 @@
+> >   #define IXGBE_SFF_1GBE_COMP_CODES	0x6
+> >   #define IXGBE_SFF_10GBE_COMP_CODES	0x3
+> >   #define IXGBE_SFF_CABLE_TECHNOLOGY	0x8
+> > +#define IXGBE_SFF_BITRATE_NOMINAL	0xC
+> >   #define IXGBE_SFF_CABLE_SPEC_COMP	0x3C
+> >   #define IXGBE_SFF_SFF_8472_SWAP		0x5C
+> >   #define IXGBE_SFF_SFF_8472_COMP		0x5E
+> > @@ -39,6 +40,7 @@
+> >   #define IXGBE_SFF_1GBASESX_CAPABLE		0x1
+> >   #define IXGBE_SFF_1GBASELX_CAPABLE		0x2
+> >   #define IXGBE_SFF_1GBASET_CAPABLE		0x8
+> > +#define IXGBE_SFF_BASEBX10_CAPABLE		0x64
+> 
+> this define looks off - perhaps it should be named
+> IXGBE_SFF_1GBASEBX_CAPABLE?
 
-(Please note that I don't speak English, sorry if the traction is not fai=
-thful to your language)
+I had thought about it too, however BASEBX10 for SFF-8472 specification can also 
+be used for non-Gigabit Ethernet transceivers, so to me it is a bit incorrect 
+to call it 1GBASEBX (this is why I have to check the nominal bitrate).
 
-Following Bjorn Helgaas's advice (https://bugzilla.kernel.org/show_bug.cg=
-i?id=3D218050#c14), I'm coming to you in the hope of finding a solution t=
-o a problem encountered by several users of the ixgbe driver. The subject=
- has been discussed in the messages and comments on the following pages:
-https://marc.info/?l=3Dlinux-netdev&m=3D170118007007901&w=3D2
-https://forum.proxmox.com/threads/intel-x553-sfp-ixgbe-no-go-on-pve8.1351=
-29/
-https://www.servethehome.com/the-everything-fanless-home-server-firewall-=
-router-and-nas-appliance-qotom-qnap-teamgroup/
-https://www.servethehome.com/intel-x553-networking-and-proxmox-ve-8-1-3/?=
-unapproved=3D518173&moderation-hash=3De57a05288058d3ff253ceb42e9ada905
-https://forum.proxmox.com/threads/proxmox-8-kernel-6-2-16-4-pve-ixgbe-dri=
-ver-fails-to-load-due-to-pci-device-probing-failure.131203/
-https://bugzilla.kernel.org/show_bug.cgi?id=3D218491
-https://bugzilla.kernel.org/show_bug.cgi?id=3D218050
+By the way, thanks for the review!
 
-Having myself decided to purchase a Qotom Q20332G9-S10 machine with X553 =
-chipset for testing purposes, I can see the effectiveness of the connecti=
-on problem between the PC's X553 SFP+ and a Cisco switch SFP+. For my par=
-t, this happens under GNU/Linux Debian 12 - kernel 6.1.76 and Sid - kerne=
-l 6.6.13. So it's not specific to Proxmox.
-I should point out that under GNU/Linux Debian 11 - kernel 5.10, the netw=
-ork card (X553 via ixgbe) works without problems. So this is a relatively=
- "recent" bug.
+Ernesto
 
-Here's my test environment:
-- 1 Qotom Q20332G9-S10 (I used a 16GB Intel Optane M10 M.2 SSD with a fre=
-sh GNU/Linux Debian 12)
-- 1 Cisco DAC cable (tested with a 1M and a 3M)
-- 1 PC with Mellanox Connectx-3 2x SFP+ network card (running GNU/Linux D=
-ebian SID installed several years ago)
-- 1 Cisco 3560CX-12PD-S switch (2 SFP+ ports) with IOS 15.2(7)E2
-
-Connecting the Qotom Q20332G9-S10 (X553) to the Mellanox Connectx-3 works=
- without a hitch and without any special handling (the linux-image-6.1.0-=
-17-amd64 ixgbe driver works in this configuration). Full 10gbps speeds be=
-tween the two with an "iperf".
-
-At this stage, I've ruled out a hardware incompatibility (OSI level 1) si=
-nce the DAC works with the X553. So there's no need to use compatibility =
-tricks as suggested in the link comments with the "allow_unsupported_sfp=
-=3D1" parameter. This will be useless in the following tests (I've checke=
-d).
-
-Where it gets tricky is when you connect it (the Qotom) to the Cisco swit=
-ch.
-Before an "ip link eno1 up", the Cisco raises the link on its side, but t=
-he Debian doesn't (link DOWN). After the "ip link eno1 up", the link drop=
-s and never comes back. There does seem to be a driver problem in recent =
-kernels (GNU/Linux Debian Stable and Sid).
-
-After compiling the driver manually (https://downloadmirror.intel.com/812=
-532/ixgbe-5.19.9.tar.gz) following the documentation already shared by ot=
-hers (https://www.xmodulo.com/download-install-ixgbe-driver-ubuntu-debian=
-.html), it works with the Cisco (after a "shut/no shut" of the latter's 1=
-0gbe port).
-
-So we end up with a working machine (I even configured and used the SR-IO=
-V successfully right afterwards).
-
-PS: I also tested with Debian Sid
-
-I've finally tried the commands you were giving Skyler without any result=
- (rmmod ixgbe; modprobe ixgbe; ethtool -S eno1 | grep fault).
-
-For the moment, the Qotom machine is dedicated to testing, so I'm availab=
-le to carry out any manipulations you may wish to make to advance the sub=
-ject.
-Can we work on diagnosing this problem so that the next stable release of=
- Debian is fully functional with this Intel network card?
-
-Best regards.
-
-=E2=A2=80=E2=A3=B4=E2=A0=BE=E2=A0=BB=E2=A2=B6=E2=A3=A6=E2=A0=80
-=E2=A3=BE=E2=A0=81=E2=A2=A0=E2=A0=92=E2=A0=80=E2=A3=BF=E2=A1=81 Yohan Cha=
-rbi
-=E2=A2=BF=E2=A1=84=E2=A0=98=E2=A0=B7=E2=A0=9A=E2=A0=8B=E2=A0=80 Cordialem=
-ent
-=E2=A0=88=E2=A0=B3=E2=A3=84=E2=A0=80
