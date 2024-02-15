@@ -4,199 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 469CAC48BC4
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 15 Feb 2024 14:53:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 88D72C4829E
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 15 Feb 2024 14:54:18 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id E29DE418D2;
-	Thu, 15 Feb 2024 14:53:45 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 2A65F418D2;
+	Thu, 15 Feb 2024 14:54:18 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id CuPPcKEB171r; Thu, 15 Feb 2024 14:53:45 +0000 (UTC)
+	with ESMTP id Hbsq4fQxOJ5S; Thu, 15 Feb 2024 14:54:17 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E7F3441BED
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1C62041BED
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1708008825;
-	bh=w5Da/G9cyVeg9Lp1ng/XEXwbz0Jp5SzF9v1tQR9Oq3o=;
-	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=vz7dL/6kDHc/TGf7kbXjfWFbi9QjUjUhyUZNva8g1ZZCORsKnsIJhpVmZksPpamst
-	 fHntQnAHgRfag0aOhXv1AeSoQ1TDPxqMS82hlM3keQAg5CjiSNGQMAPZkvMKBGFBD4
-	 o1MxXYODmHzR26OzDODl26P615PTEOTDDl+vZMvhNKAIseRZL5jXXIqVAuzJmUqrK4
-	 GY/LGw9rU5JWQ0+MpWYnYi1UGtXAi1XuUzfF0WyF3p+jUyh0HWMp+lVsBknvUSUgD7
-	 4y+fgefr/M7SVs9Z6br02Pr6IuN7SEo9o4hHIocifopBkqyxUi7PnEZg/g9x+7/vv+
-	 w6QL5bE5OZPew==
+	s=default; t=1708008857;
+	bh=IT6a5Nw4dZlYOm4J/MrtHC1WGfvjoiWJ6lT8CMBCrxg=;
+	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=GXGczm4OYVpypf6/IOfcpCf2YGTOE5n4/dw5TPp+QfwQbcChiBmcRKczjC33FUGgs
+	 FDso6hcNQWgU9xpGZjJ7c9xyTG/nH5yW+r6qbuM1pQl5GQ+YOYXQuUAwYFtMYupW52
+	 ud/raBoHm9greXULoWx7lvJmBzF8Ip6NWL0te1HtKdE6uIVEy/3rIns5oAYAWKNTSj
+	 yXXEVBke742oON7zV27oF+kC9cE32UU4QLiG7Mu26vknaJ2tA104FB+DcLZ6XDECXh
+	 3SCXh3SusBXVeMCLkPJt8Gb5tguZPq47ciFUerzWs+GDHbV9x7YCljIYqyr/fBUaFD
+	 Ic6Rm2IGrqBdw==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id E7F3441BED;
-	Thu, 15 Feb 2024 14:53:44 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 00CFB1BF844
- for <intel-wired-lan@osuosl.org>; Thu, 15 Feb 2024 14:53:43 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 1C62041BED;
+	Thu, 15 Feb 2024 14:54:17 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id DC2581BF575
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 15 Feb 2024 11:07:43 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id DFBD441BED
- for <intel-wired-lan@osuosl.org>; Thu, 15 Feb 2024 14:53:43 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id C88226075B
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 15 Feb 2024 11:07:43 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id E-kM6Q5VfmsB for <intel-wired-lan@osuosl.org>;
- Thu, 15 Feb 2024 14:53:43 +0000 (UTC)
-X-Greylist: delayed 427 seconds by postgrey-1.37 at util1.osuosl.org;
- Thu, 15 Feb 2024 14:53:42 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org C5FE2418D2
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C5FE2418D2
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.17;
- helo=mgamail.intel.com; envelope-from=przemyslaw.kitszel@intel.com;
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id upPkQ9pJOKav for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 15 Feb 2024 11:07:42 +0000 (UTC)
+X-Greylist: delayed 318 seconds by postgrey-1.37 at util1.osuosl.org;
+ Thu, 15 Feb 2024 11:07:42 UTC
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 258D260668
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 258D260668
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=45.83.229.9;
+ helo=mail.ycharbi.fr; envelope-from=kernel.org-fo5k2w@ycharbi.fr;
  receiver=<UNKNOWN> 
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.17])
- by smtp4.osuosl.org (Postfix) with ESMTPS id C5FE2418D2
- for <intel-wired-lan@osuosl.org>; Thu, 15 Feb 2024 14:53:42 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10984"; a="2235410"
-X-IronPort-AV: E=Sophos;i="6.06,161,1705392000"; 
-   d="scan'208";a="2235410"
-Received: from fmviesa004.fm.intel.com ([10.60.135.144])
- by orvoesa109.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 15 Feb 2024 06:46:34 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.06,161,1705392000"; 
-   d="scan'208";a="8181016"
-Received: from orsmsx601.amr.corp.intel.com ([10.22.229.14])
- by fmviesa004.fm.intel.com with ESMTP/TLS/AES256-GCM-SHA384;
- 15 Feb 2024 06:46:34 -0800
-Received: from orsmsx611.amr.corp.intel.com (10.22.229.24) by
- ORSMSX601.amr.corp.intel.com (10.22.229.14) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.35; Thu, 15 Feb 2024 06:46:33 -0800
-Received: from orsmsx610.amr.corp.intel.com (10.22.229.23) by
- ORSMSX611.amr.corp.intel.com (10.22.229.24) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.35; Thu, 15 Feb 2024 06:46:32 -0800
-Received: from ORSEDG601.ED.cps.intel.com (10.7.248.6) by
- orsmsx610.amr.corp.intel.com (10.22.229.23) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.35 via Frontend Transport; Thu, 15 Feb 2024 06:46:32 -0800
-Received: from NAM11-CO1-obe.outbound.protection.outlook.com (104.47.56.169)
- by edgegateway.intel.com (134.134.137.102) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.1.2507.35; Thu, 15 Feb 2024 06:46:32 -0800
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=LlFAXkfszqHuTsrpYAN85fFIqc5RzMIJY4DvqnisjWRpsaNzSv3Q59QAntEClWjW+aWvWThQ1dS4v2zVQcVG5dSAYNGO0fHWuyJjQZ5A1IdU2R0Q/2wWcQtKWHO9gqChtvawx2vTHcqNDb/tqI4QvAFUvr+BUaTk2L1ZYDy5qEdLPVEv/UU+KPTI5VsTy2I/suHtwJcdzErUMRo03t5JmabLs/Ih3neDylXq6vsDUgr03lXfVo+OtOY5FdPGwj9iASKlfN5Sx8HgUThKRk8TeU5ZnQvYtrVXZAntnT32EVPD6cLfp2pipk8Pps2oq9XqwGwuUbb+tRBvWldJSV68QA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=w5Da/G9cyVeg9Lp1ng/XEXwbz0Jp5SzF9v1tQR9Oq3o=;
- b=h8mfgUpniV+BZpz9wBNEw17vvI319EryTSZwebb5JEXdS1l5JWyVyIZFXkmUmN7+LeD8PsosVuKHT3011pjQyVxO9RfJ1O07Cj85MYlvyZieno+/yaDt/QpZ/+bw95IFI48eZVCJPPG8rcFSW1lI08CzrtSXKfjuHXfxzCukBVIeqMFXPylG/HoYtMpVr6xHAx9QUq2lwWeJNP7kgz03Co2dfMzAH3ToNY+gvYxEcFrkwS61bzt8mToOuJEqkHTqV4MIqHc33Q/yGIEzifpkz0Ys5xWnAGvCojs4QA0zMVoScwThY1omvB3B+dQ3CbLbaH2vw8vTGfFty6DlGOAjwQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
- dkim=pass header.d=intel.com; arc=none
-Received: from MN6PR11MB8102.namprd11.prod.outlook.com (2603:10b6:208:46d::9)
- by PH8PR11MB6927.namprd11.prod.outlook.com (2603:10b6:510:225::10)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7270.27; Thu, 15 Feb
- 2024 14:46:30 +0000
-Received: from MN6PR11MB8102.namprd11.prod.outlook.com
- ([fe80::b1b8:dbaa:aa04:a6bf]) by MN6PR11MB8102.namprd11.prod.outlook.com
- ([fe80::b1b8:dbaa:aa04:a6bf%7]) with mapi id 15.20.7292.026; Thu, 15 Feb 2024
- 14:46:30 +0000
-Message-ID: <82fa1430-eae7-4635-b663-9fbf8336c891@intel.com>
-Date: Thu, 15 Feb 2024 15:46:25 +0100
-User-Agent: Mozilla Thunderbird
-Content-Language: en-US
-To: Ernesto Castellotti <ernesto@castellotti.net>,
- <anthony.l.nguyen@intel.com>, <intel-wired-lan@osuosl.org>,
- <piotr.kwapulinski@intel.com>
-References: <20240207231524.51753-1-ernesto@castellotti.net>
-From: Przemek Kitszel <przemyslaw.kitszel@intel.com>
-In-Reply-To: <20240207231524.51753-1-ernesto@castellotti.net>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: FR4P281CA0255.DEUP281.PROD.OUTLOOK.COM
- (2603:10a6:d10:f5::18) To MN6PR11MB8102.namprd11.prod.outlook.com
- (2603:10b6:208:46d::9)
+Received: from mail.ycharbi.fr (mail.ycharbi.fr [45.83.229.9])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 258D260668
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 15 Feb 2024 11:07:42 +0000 (UTC)
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: MN6PR11MB8102:EE_|PH8PR11MB6927:EE_
-X-MS-Office365-Filtering-Correlation-Id: 1ba1896f-3397-4241-4808-08dc2e34e539
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: j6M9F5WUw/bHFPv0BvYAHWdZDPoIEC55zkfqmjyOCALp2R0qWnmF4yfPaFD/N5l3B0STDSiTQETkTna7c3wytQh3taWO9Hlgqw3Q099Lv6BMOfK/6GHPIApzVXjUUC7p30p1uK1MRzLI09nus3Ta843MTZFX8rMMXjG77VKhVA8wLQ21CDKRmwmPlK1yMGwsASwk5gtA1PAYVo7y17Pe6sCMGyROlyKX/3ilMhg6WvRtkfyxVHpUJmV5GVq7coUc8Qfr5gXFDLteeltaweRG/LQnIfGw6EzONmqLUzKlZ8cOwKuIYvaY6Z1dyPS5DBjLkzC3RL03rgO+D76BW7/gR0bFMZljwYRlMDqgHUwP7XoltmXSSm2+btF0HMAV/t1mGNH9B9UlUDYeL/hHhWszmAQRGJLI4y2mjS4HEHjK6IlYC0DJLqsx5IZNG8pONM4dfK4V8hl5zNOqOmi32YuKuccjuIjRoHerKpxapov0/iB0Pe6f8MrQsiUog/59zgTbiDQSPKWl0y695X6HpnkuO/uAwpSBc2z7qqOk3EgNKOg=
-X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:MN6PR11MB8102.namprd11.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230031)(346002)(39860400002)(366004)(136003)(396003)(376002)(230922051799003)(64100799003)(451199024)(186009)(1800799012)(316002)(6512007)(6486002)(6666004)(6636002)(26005)(2616005)(53546011)(36756003)(478600001)(5660300002)(66946007)(66476007)(8676002)(8936002)(38100700002)(66556008)(2906002)(82960400001)(31696002)(6506007)(966005)(86362001)(83380400001)(41300700001)(31686004);
- DIR:OUT; SFP:1101; 
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?eGRvUFJwYWowajdmWlM3Sm5qV0tSbXM0d3V5dUNzU0h5NWFQLzFXK2tXKyt0?=
- =?utf-8?B?T1o5M044cGZJRnJXNVZGMkZocE5WUGZOQzNYdGx3OC9wMjFpMzFTK1BNaHlu?=
- =?utf-8?B?bXRqSlJqUVhsb2dQd3FzWW9ac2YwaHVncHVLUCtWZ3hqSzdGK1pMNVQ5U3Nk?=
- =?utf-8?B?OHNpRFp5UnVCNzF6cXp6YWxtWWpENEpmWURNR1dyKy91Q1RXZDBMR3NyYllR?=
- =?utf-8?B?T3NyZU9XVVgxemZiWUFrN3dXckZUcmJ0eTF0S3pvNTJPaDYrT0pGSmp4R2hC?=
- =?utf-8?B?dE5HTzNERkp0M2FYS0lzUCtIOE8vMzRGMlNpV2xjRExKZnZ2UzZlRGZubE8v?=
- =?utf-8?B?UzYzcUhwWjdxSHJzdWxRNUszWFNtTnY5MHRYM2t1K2xRRGVkVnNLT1FQSVhU?=
- =?utf-8?B?eVlqMy9YNlkwemp6ZGcvU2NYTWFpd3NvdHl4R0FjK1BNTlVDdWFRYSt5TDZ6?=
- =?utf-8?B?QlNGbDRWbGVxK3Jid1p1OWxWcloydmVqcE85MjFNVW4rTEtXK2kxSy9rL1Bk?=
- =?utf-8?B?ZHlHQzQySG92eTN5NmxIYy96TWdDTDNSS2E3bjIwQkllSjk5aDZ6cDhIMTd5?=
- =?utf-8?B?MXFKbkdIOW0rOVRIRmJYL1l5WFV5YVZRVTlrMTRWc1RDNitLRnJWalR5dDVK?=
- =?utf-8?B?cGNiUTVjRENXVFQ0UVRyR3hneEZsRU9QSFA2NjFGMmJ0WURnTjdNbm5DQkl6?=
- =?utf-8?B?WWhWa3o3ZjAvaUtjQm90V0thR2NSMEVKYXNqcVhGTGVabHdxZ0ZjOGc2R3lE?=
- =?utf-8?B?NHY2czRiUm50N2NHMVBmRWd3dVNXWkFUWG9FZWwvNTArRmVucWNoWFlWT0dt?=
- =?utf-8?B?cVZRaWZidlVpbCsvT28yU3ZQUk9BRERXVzVweXJ6ejRJbC8zbTNYdkRhNG9O?=
- =?utf-8?B?blF3elZuYTBmcXZ1R2hxdzNlc3RmZDRyVU01NXFBdGpPL3NRaHNZNVUwaFBJ?=
- =?utf-8?B?dmpmZkJnL1dXTVA1RHFmcGpBcTdrczBHWUtiVmxxdzVHdTRYbTFRZHpXL0ht?=
- =?utf-8?B?bHlZdUdSVDNSclU4L3pGOXJFaUNFYmJvZTVtSWs5ZHhCeVlaLzQyZXgxM0xY?=
- =?utf-8?B?NlVZN1dJb0oxSkRQeFhmREZ3d2M1TGpvcTM3bnV3YXBERDRIK3UvZG0rTDhH?=
- =?utf-8?B?RjdqYzdLZGNLc2dRVWE1VEJFQzUwZFl6WHppdGUySC9OaGpDNkRDUUZhdDdj?=
- =?utf-8?B?dUhMNjBzTmUzRHhDY3VISHlRbHoxZHE5c3AyK25FR3hUQ095bUZzNTdkblhX?=
- =?utf-8?B?NURNZDFzcnNkS3hnS3FiSVFZNk81L2hwODBiVnFZMG5EVnU5Z3NPaG1UU3hy?=
- =?utf-8?B?Wll0bno5ajFrTUxrZzhTRXpTZG9FRmVxZEk5R3VqbHBXakxwR2hCUEYzc1Bu?=
- =?utf-8?B?MGYvYnMxbEdGUlBtRmMwcVdvNDVYWHhuOVV1NmxRWFp0WFNYMkdrQ2lrbElH?=
- =?utf-8?B?cm9RclNIZGJJUDhXbHh2Mk5WV1dIU2ZhNWk1MGVJYU9yVGZCZSs1Vjk2cUZG?=
- =?utf-8?B?d2EvTVlJOEZLbDRCbDhCYVh2NXllL3JwWnZka0tpR2NaamFqQS93eXMyU3Ru?=
- =?utf-8?B?THVCczNjMEYrN01GRlc5TmFmOXNkWTlnQzh1WFNKSjg0eXpOQW1MVndmN2Vo?=
- =?utf-8?B?RlkwYmJFMlljaHJpUnpkOTR1QnF4cW9nZ3Y4WmpjVVQ2Wlk0V01JTUlNZno4?=
- =?utf-8?B?RElob1ZYMzR3dDB1eElyN3hYYUxnWjRVcE1RU2ZxSXJqMytPTkRYdkdZRUc0?=
- =?utf-8?B?SFd6dXZTNTVXU29Sd2tMMGYyYUxUcmlOVnFZbEN5dEQ1OXNPam9zYTk3cVg0?=
- =?utf-8?B?czB3TTI1eTJPWlZIK2JjcCtIOXM4ZmlTdk1SdjdsVlNiOEJ2MzB3ZFkydHR5?=
- =?utf-8?B?RkxTUjhwcVJ1d1ZGTjh5WndPalJxd3ZOVzZESTlOOHhGTTl1SU5EY2tsdnRs?=
- =?utf-8?B?V2ZtYTNaVlB6dVhYeUVQQlZSK29oVHcrRlV1dzdoSENGdnFueDNhQ0syajJH?=
- =?utf-8?B?SXdES2dVMnJORmZrQWdpdGs1MkhVRkZ6ZEsxQ1EzdjFDcS9qQ3A2V0lGWmlq?=
- =?utf-8?B?cldCUGUyNGl1c3VReEZQTDJqYXVKN1loUHVSaVJHSTNXeUtzdXBnQWwyRFpZ?=
- =?utf-8?B?V3M0ZmgxTUNTR3NIOWRtOGNtR2Q3SmpnUFJIa0VmbEZHejdjK1dhNWFpZGQv?=
- =?utf-8?B?M3c9PQ==?=
-X-MS-Exchange-CrossTenant-Network-Message-Id: 1ba1896f-3397-4241-4808-08dc2e34e539
-X-MS-Exchange-CrossTenant-AuthSource: MN6PR11MB8102.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 Feb 2024 14:46:30.0788 (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: M4N6sXiF+Tu1FBS4vBoboNw/klwtZGXmIVOgi7Rf8nKq0Hsse218S+iFpMxToZmPTxp1o3YXQWVtaSjoMdopubUlmTTxwMC9QvQafzYlUAQ=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH8PR11MB6927
-X-OriginatorOrg: intel.com
+Date: Thu, 15 Feb 2024 11:02:18 +0000
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+From: kernel.org-fo5k2w@ycharbi.fr
+Message-ID: <8267673cce94022974bcf35b2bf0f6545105d03e@ycharbi.fr>
+TLS-Required: No
+To: jesse.brandeburg@intel.com, anthony.l.nguyen@intel.com
+X-Mailman-Approved-At: Thu, 15 Feb 2024 14:54:15 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1708008823; x=1739544823;
- h=message-id:date:subject:to:references:from:in-reply-to:
- content-transfer-encoding:mime-version;
- bh=Qr0rMsiPoUQYYOqwr4X5QHpKHUxWoAMCcbmWK7mX+P8=;
- b=l2wK7qPKd/njSshLt383ZqXZ6kihMzRz7TqaY0wWCLGib4PKIM43tLez
- MWMV8kU7mO37RgxoXaYMJY8ElgWTalH9QNa2OEBGE+YZofIK7eiLGLRzq
- 4RyVYZuL/Wz87AZU068eldxsbGrQRhEazfycA42TMlc52H8iX2BTbcYzk
- XpR5zZ4psGZvQmp4jdKXGLjqFfDC18gESSarB/iJlRdGHFp8UIuo/TsvX
- AQWc+AU8uVIDmxJEbu6KhuN9rGw4bBUfbXDYqg0jixUG04be0MtkLffWO
- R3bCNjMP59E1UsEoQsPxuwumlBU9GtYjn+l8C+aPD17PJx/a3WSshtnAH
- A==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ d=ycharbi.fr; s=mail; 
+ t=1707994938; bh=IT6a5Nw4dZlYOm4J/MrtHC1WGfvjoiWJ6lT8CMBCrxg=;
+ h=Date:List-Unsubscribe:From:Subject:To:Cc:From;
+ b=Gey/D1rY1Hh6LQ8897aj1ktICIoWwsHtOVA1Dz4ABSCaqriRfzCPyfCC36nDOKxzx
+ 7WDcI7QIoQZQHF8pWTWu4i+sQtg2J7u5JyMgFRIg4yf3oJ7EFeGAlV1btEWdfnOCmk
+ FkldulEYtnKqVKDO5/ahsGkhUftH0Fri5FFiBp2u+PQZLs7NMXr8sOSjS+16q2InpM
+ 1B4DU6JHi+WXQGnQqcje6fGZnBoVzrDo8Tu1hXqNFVr2WnyenJJskK3etGXvkDjSoP
+ UWnXwsCE5f63JNvIMrdt8kodP8s98azNKIz9t/1hMVj4OLOUcwW0x14wtuDMfVnuCY
+ hgfNVT8UiarSj/XniYofUtMAe/8UqYNRULX6wjzin9MHdl1mwXLtHqoCy/uijoXBxy
+ CYoo8ORCyLuof44QM4725YIFKCfu9vG5oJ/69ogGFk+F/TnXRpUbTFY4dYmWjw4iY+
+ LJf5JaTXYo1p0kxJ1/DJyGeZFLO16A+DeT4pUh+ircDF2eIOSzsfo1HIhgMtUvEGuk
+ bv6ICX2XyptQAJtjFnjF8piGk6d55sI1o/TudOxWge1L27FEz0wxaqT74TvOwlzzBQ
+ ck2qRo3k1z0SGSbC+4dJBRLG3tiAZ3QwgNUzCSaI4WomcJqyqxEhc0ffdVU0YLnYBz
+ jaUqQSjaPoDOYK7wxeTulh/Q=
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
- header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=l2wK7qPK
-X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=intel.com;
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next v2] ixgbe: Add 1000BASE-BX
- support
+ header.from=ycharbi.fr
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (4096-bit key,
+ unprotected) header.d=ycharbi.fr header.i=@ycharbi.fr header.a=rsa-sha256
+ header.s=mail header.b=Gey/D1rY
+Subject: [Intel-wired-lan] Non-functional ixgbe driver between Intel X553
+ chipset and Cisco switch via kernel >=6.1 under Debian
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -209,66 +95,91 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
+Cc: netdev@vger.kernel.org, intel-wired-lan@lists.osuosl.org
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On 2/8/24 00:15, Ernesto Castellotti wrote:
-> Added support for 1000BASE-BX, i.e. Gigabit Ethernet over single strand
-> of single-mode fiber.
-> The initialization of a 1000BASE-BX SFP is the same as 1000BASE-SX/LX
-> with the only difference that the Bit Rate Nominal Value must be
-> checked to make sure it is a Gigabit Ethernet transceiver, as described
-> by the SFF-8472 specification.
-> 
+Hello,
 
-Thank you for your patch!, and sorry for long break in review process.
+(Please note that I don't speak English, sorry if the traction is not fai=
+thful to your language)
 
-[...]
+Following Bjorn Helgaas's advice (https://bugzilla.kernel.org/show_bug.cg=
+i?id=3D218050#c14), I'm coming to you in the hope of finding a solution t=
+o a problem encountered by several users of the ixgbe driver. The subject=
+ has been discussed in the messages and comments on the following pages:
+https://marc.info/?l=3Dlinux-netdev&m=3D170118007007901&w=3D2
+https://forum.proxmox.com/threads/intel-x553-sfp-ixgbe-no-go-on-pve8.1351=
+29/
+https://www.servethehome.com/the-everything-fanless-home-server-firewall-=
+router-and-nas-appliance-qotom-qnap-teamgroup/
+https://www.servethehome.com/intel-x553-networking-and-proxmox-ve-8-1-3/?=
+unapproved=3D518173&moderation-hash=3De57a05288058d3ff253ceb42e9ada905
+https://forum.proxmox.com/threads/proxmox-8-kernel-6-2-16-4-pve-ixgbe-dri=
+ver-fails-to-load-due-to-pci-device-probing-failure.131203/
+https://bugzilla.kernel.org/show_bug.cgi?id=3D218491
+https://bugzilla.kernel.org/show_bug.cgi?id=3D218050
 
-> 
-> Signed-off-by: Ernesto Castellotti <ernesto@castellotti.net>
-> ---
-> v2: Fixed indentation/style issues as per review by Tony Nguyen
-> v1: https://lore.kernel.org/intel-wired-lan/20240127174803.20793-1-ernesto@castellotti.net/
-> ---
->   .../net/ethernet/intel/ixgbe/ixgbe_82599.c    |  4 ++-
->   .../net/ethernet/intel/ixgbe/ixgbe_ethtool.c  |  2 ++
->   drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c  | 32 ++++++++++++++++---
->   drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h  |  2 ++
->   drivers/net/ethernet/intel/ixgbe/ixgbe_type.h |  3 ++
->   5 files changed, 38 insertions(+), 5 deletions(-)
-> 
+Having myself decided to purchase a Qotom Q20332G9-S10 machine with X553 =
+chipset for testing purposes, I can see the effectiveness of the connecti=
+on problem between the PC's X553 SFP+ and a Cisco switch SFP+. For my par=
+t, this happens under GNU/Linux Debian 12 - kernel 6.1.76 and Sid - kerne=
+l 6.6.13. So it's not specific to Proxmox.
+I should point out that under GNU/Linux Debian 11 - kernel 5.10, the netw=
+ork card (X553 via ixgbe) works without problems. So this is a relatively=
+ "recent" bug.
 
-[...]
+Here's my test environment:
+- 1 Qotom Q20332G9-S10 (I used a 16GB Intel Optane M10 M.2 SSD with a fre=
+sh GNU/Linux Debian 12)
+- 1 Cisco DAC cable (tested with a 1M and a 3M)
+- 1 PC with Mellanox Connectx-3 2x SFP+ network card (running GNU/Linux D=
+ebian SID installed several years ago)
+- 1 Cisco 3560CX-12PD-S switch (2 SFP+ ports) with IOS 15.2(7)E2
 
-> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h
-> index ef72729d7c93..b5bc60916402 100644
-> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h
-> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h
-> @@ -17,6 +17,7 @@
->   #define IXGBE_SFF_1GBE_COMP_CODES	0x6
->   #define IXGBE_SFF_10GBE_COMP_CODES	0x3
->   #define IXGBE_SFF_CABLE_TECHNOLOGY	0x8
-> +#define IXGBE_SFF_BITRATE_NOMINAL	0xC
->   #define IXGBE_SFF_CABLE_SPEC_COMP	0x3C
->   #define IXGBE_SFF_SFF_8472_SWAP		0x5C
->   #define IXGBE_SFF_SFF_8472_COMP		0x5E
-> @@ -39,6 +40,7 @@
->   #define IXGBE_SFF_1GBASESX_CAPABLE		0x1
->   #define IXGBE_SFF_1GBASELX_CAPABLE		0x2
->   #define IXGBE_SFF_1GBASET_CAPABLE		0x8
-> +#define IXGBE_SFF_BASEBX10_CAPABLE		0x64
+Connecting the Qotom Q20332G9-S10 (X553) to the Mellanox Connectx-3 works=
+ without a hitch and without any special handling (the linux-image-6.1.0-=
+17-amd64 ixgbe driver works in this configuration). Full 10gbps speeds be=
+tween the two with an "iperf".
 
-this define looks off - perhaps it should be named
-IXGBE_SFF_1GBASEBX_CAPABLE?
+At this stage, I've ruled out a hardware incompatibility (OSI level 1) si=
+nce the DAC works with the X553. So there's no need to use compatibility =
+tricks as suggested in the link comments with the "allow_unsupported_sfp=
+=3D1" parameter. This will be useless in the following tests (I've checke=
+d).
 
->   #define IXGBE_SFF_10GBASESR_CAPABLE		0x10
->   #define IXGBE_SFF_10GBASELR_CAPABLE		0x20
->   #define IXGBE_SFF_SOFT_RS_SELECT_MASK		0x8
+Where it gets tricky is when you connect it (the Qotom) to the Cisco swit=
+ch.
+Before an "ip link eno1 up", the Cisco raises the link on its side, but t=
+he Debian doesn't (link DOWN). After the "ip link eno1 up", the link drop=
+s and never comes back. There does seem to be a driver problem in recent =
+kernels (GNU/Linux Debian Stable and Sid).
 
-[...]
+After compiling the driver manually (https://downloadmirror.intel.com/812=
+532/ixgbe-5.19.9.tar.gz) following the documentation already shared by ot=
+hers (https://www.xmodulo.com/download-install-ixgbe-driver-ubuntu-debian=
+.html), it works with the Cisco (after a "shut/no shut" of the latter's 1=
+0gbe port).
 
-code looks fine (as much as our ixgbe will go ;))
+So we end up with a working machine (I even configured and used the SR-IO=
+V successfully right afterwards).
 
-just one nitpick, so:
-Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+PS: I also tested with Debian Sid
+
+I've finally tried the commands you were giving Skyler without any result=
+ (rmmod ixgbe; modprobe ixgbe; ethtool -S eno1 | grep fault).
+
+For the moment, the Qotom machine is dedicated to testing, so I'm availab=
+le to carry out any manipulations you may wish to make to advance the sub=
+ject.
+Can we work on diagnosing this problem so that the next stable release of=
+ Debian is fully functional with this Intel network card?
+
+Best regards.
+
+=E2=A2=80=E2=A3=B4=E2=A0=BE=E2=A0=BB=E2=A2=B6=E2=A3=A6=E2=A0=80
+=E2=A3=BE=E2=A0=81=E2=A2=A0=E2=A0=92=E2=A0=80=E2=A3=BF=E2=A1=81 Yohan Cha=
+rbi
+=E2=A2=BF=E2=A1=84=E2=A0=98=E2=A0=B7=E2=A0=9A=E2=A0=8B=E2=A0=80 Cordialem=
+ent
+=E2=A0=88=E2=A0=B3=E2=A3=84=E2=A0=80
