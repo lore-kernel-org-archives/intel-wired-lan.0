@@ -1,89 +1,77 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8D2FCC48BC3
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 15 Feb 2024 00:36:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D0E98C4829E
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 15 Feb 2024 07:01:36 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 29EB76087A;
-	Thu, 15 Feb 2024 00:36:25 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 573E082EDB;
+	Thu, 15 Feb 2024 07:01:36 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 4vnBSPAqVPdw; Thu, 15 Feb 2024 00:36:24 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id r0PGnlWFSpyw; Thu, 15 Feb 2024 07:01:35 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 85EF36082B
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7942282F06
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1707957384;
-	bh=QLph1JoyWcnqY2DB8EDKjrG11uusoT3vmoG/hX/6chU=;
-	h=Date:From:To:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1707980495;
+	bh=VoLUIX8u33n0q3TxwS0HmTEIs1TM5oAx2BX97vu864o=;
+	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=sP4FfiyzWwZ2UDFN6kH2qKVGo6JeIxFMGgKkDuhzzf0EBiBNgpijYWrCRFEzd2uqK
-	 dZ9OyzhKmrZHZn+2BIxPfdXdUkc4557nOYBnc969eIj2OQEqWQnWmVarW1we4N0WdX
-	 R483myQoGmehTiaj4xmjnzKBS2H6X0odmJXGbcP7r+Y4DjnyccRjGLexf0sPyDys1+
-	 fUlx9Yoltfc4dTvAn9EKRsdLmXCyTHiKoRhW/iGmOBgm1cWXbc7Yj0YO9SJP2i14nq
-	 ZnSZQwBViyvcauf5Bi6v7j7ZMfRAvH0U6MSStCiO1mtar8Nlhj9P1lxh7WZL4jxXk9
-	 KUQvWUi5FomMg==
+	b=WJQJ+r7Ue6ORmsZgDVHVZnz4eU+vYVkN2hbwMqzZTTay3H61u4UwwHIWcCxs3m0Wl
+	 j/mP7CmE7AbfbMt+sk6FML0mf0cblj9qslaxtX34gKGOKtUlQ3OZJt1Ie1AM8xIjMB
+	 OyDOOweRxfzU1s/+CBmrUZiuKE52Ppcf+LAEBW76DWDAX0qDhF+LIQpaF7m6sVmc79
+	 nIMGkTnZsPpGtAybX+n8tyN5JFmm6/F2czoOsyUARhqRHpjkcNYTzT8Gc+gnZHxhr7
+	 /FtWwc1AWBcy3puNkp7mJlSdnljVb9tOblH8QdYBtI6JBslsrAN0/OPhhncFI0S+lf
+	 gwn0zkl0Tnq0A==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 85EF36082B;
-	Thu, 15 Feb 2024 00:36:24 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 13B161BF321
- for <intel-wired-lan@lists.osuosl.org>; Thu, 15 Feb 2024 00:36:23 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 7942282F06;
+	Thu, 15 Feb 2024 07:01:35 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 05A9A1BF5AE
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 15 Feb 2024 07:01:33 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id F2D1440131
- for <intel-wired-lan@lists.osuosl.org>; Thu, 15 Feb 2024 00:36:22 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id D744982F06
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 15 Feb 2024 07:01:33 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 2QjENIxKTzEN for <intel-wired-lan@lists.osuosl.org>;
- Thu, 15 Feb 2024 00:36:22 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org;
- envelope-from=kuba@kernel.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 05E5240017
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 05E5240017
-Received: from dfw.source.kernel.org (dfw.source.kernel.org
- [IPv6:2604:1380:4641:c500::1])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 05E5240017
- for <intel-wired-lan@lists.osuosl.org>; Thu, 15 Feb 2024 00:36:21 +0000 (UTC)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by dfw.source.kernel.org (Postfix) with ESMTP id C32B861879;
- Thu, 15 Feb 2024 00:36:20 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2BA12C433C7;
- Thu, 15 Feb 2024 00:36:20 +0000 (UTC)
-Date: Wed, 14 Feb 2024 16:36:19 -0800
-From: Jakub Kicinski <kuba@kernel.org>
-To: Alexander Lobakin <aleksander.lobakin@intel.com>
-Message-ID: <20240214163619.522486a5@kernel.org>
-In-Reply-To: <2e3001f8-a079-4d44-863f-979baca3b38c@intel.com>
-References: <20240208004243.1762223-1-alan.brady@intel.com>
- <2e3001f8-a079-4d44-863f-979baca3b38c@intel.com>
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id bmTOnDNJAt9X for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 15 Feb 2024 07:01:32 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=141.14.17.11;
+ helo=mx3.molgen.mpg.de; envelope-from=pmenzel@molgen.mpg.de;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 3E3AD82EDB
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 3E3AD82EDB
+Received: from mx3.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 3E3AD82EDB
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 15 Feb 2024 07:01:30 +0000 (UTC)
+Received: from [192.168.0.224] (ip5f5aeca7.dynamic.kabel-deutschland.de
+ [95.90.236.167])
+ (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested) (Authenticated sender: pmenzel)
+ by mx.molgen.mpg.de (Postfix) with ESMTPSA id A176561E5FE01;
+ Thu, 15 Feb 2024 08:00:55 +0100 (CET)
+Message-ID: <fc1be95d-b34b-4153-ba0b-f124180a33ec@molgen.mpg.de>
+Date: Thu, 15 Feb 2024 08:00:54 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+User-Agent: Mozilla Thunderbird
+To: Andrew Lunn <andrew@lunn.ch>
+References: <20240214-keee-u32-cleanup-v2-0-4ac534b83d66@lunn.ch>
+Content-Language: en-US
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+In-Reply-To: <20240214-keee-u32-cleanup-v2-0-4ac534b83d66@lunn.ch>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1707957380;
- bh=yZXNywq+jH/3EcQoyJzddecCsyCJjxBPogPn3wRz2uw=;
- h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=i9vsonBpx2wAuAlmBY9H4eDBR5bGQS/s05Nh33yEbBBlNqzqlJ9jbcBe5rjGoSWdy
- YutQ1F7QF72ileYdBJ7xQRYdWbUq2pJY9WuY+VAg2luZR+uATMTRbJEWCapV7Mv7pB
- kuLss72PPFr5Iodj6uOJUPj6AHsVXYCESG/J3d17e9lTJRIaQ08sw4iGJbY8DnGiFi
- m2E8Pf40bPLfJT7vSlDNCQJec8pcHCaryZzxq4ogmaVJRJIzfksiNJf33MHKIY8dKq
- rY05d4dOQuQB2ibY3D/pZ4zQQdDpGItuLjVhkWR1d8kQshESxlerhxwsH3DZTN0Hwk
- yz2V3L4LcQ02Q==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=i9vsonBp
-Subject: Re: [Intel-wired-lan] [PATCH 1/1 iwl-net] idpf: disable local BH
- when scheduling napi for marker packets
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dmarc=none (p=none dis=none)
+ header.from=molgen.mpg.de
+Subject: Re: [Intel-wired-lan] [PATCH net-next v2 0/8] drivers: net: Convert
+ EEE handling to use linkmode bitmaps
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,28 +84,76 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Emil Tantilov <emil.s.tantilov@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Jesse Brandeburg <jesse.brandeburg@intel.com>,
- intel-wired-lan@lists.osuosl.org, Alan Brady <alan.brady@intel.com>,
- netdev@vger.kernel.org
+Cc: Ariel Elior <aelior@marvell.com>, Manish Chopra <manishc@marvell.com>,
+ netdev@vger.kernel.org, linux-usb@vger.kernel.org,
+ Jesse Brandeburg <jesse.brandeburg@intel.com>, linux-kernel@vger.kernel.org,
+ Eric Dumazet <edumazet@google.com>, Tony Nguyen <anthony.l.nguyen@intel.com>,
+ intel-wired-lan@lists.osuosl.org, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>, "David S. Miller" <davem@davemloft.net>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Tue, 13 Feb 2024 14:16:47 +0100 Alexander Lobakin wrote:
-> > Fix softirq's not being handled during napi_schedule() call when
-> > receiving marker packets for queue disable by disabling local bottom
-> > half.  
-> 
-> BTW, how exactly does this help?
-> 
-> __napi_schedule() already disables interrupts (local_irq_save()).
-> napi_schedule_prep() only has READ_ONCE() and other atomic read/write
-> helpers.
-> 
-> It's always been safe to call napi_schedule() with enabled BH, so I
-> don't really understand how this works.
+Dear Andrew,
 
-Sorry for late reply. IIRC the problem isn't a race but the fact that
-local_irq_restore() does not have a hook for BH. IOW we may just set 
-the bit that the BH is pending but never call into softirq.c to run it.
+
+Thank you very much for this patch-set.
+
+
+Am 15.02.24 um 12:13 AM schrieb Andrew Lunn:
+> EEE has until recently been limited to lower speeds due to the use of
+> the legacy u32 for link speeds. This restriction has been lifted, with
+> the use of linkmode bitmaps. This patchset convert some MAC drivers
+
+Maybe reference the commit introducing them?
+
+One small nit: convert*s*
+
+> still using the old _u32 to link modes, with the aim of soon being
+> able to remove the legacy _u32 members in the keee structure.
+> 
+> A couple of Intel drivers do odd things with EEE, setting the autoneg
+> bit. It is unclear why, no other driver does, ethtool does not display
+> it, and EEE is always negotiated. One patch in this series deletes
+> this code. Comments on why its actually useful and should be kept are
+> gratefully received.
+
+Nice find.
+
+
+Kind regards,
+
+Paul
+
+
+> Signed-off-by: Andrew Lunn <andrew@lunn.ch>
+> ---
+> Changes in v2:
+> - igb: Fix type 100BaseT to 1000BaseT.
+> - Link to v1: https://lore.kernel.org/r/20240204-keee-u32-cleanup-v1-0-fb6e08329d9a@lunn.ch
+> 
+> ---
+> Andrew Lunn (8):
+>        net: usb: r8152: Use linkmode helpers for EEE
+>        net: usb: ax88179_178a: Use linkmode helpers for EEE
+>        net: qlogic: qede: Use linkmode helpers for EEE
+>        net: ethernet: ixgbe: Convert EEE to use linkmodes
+>        net: intel: i40e/igc: Remove setting Autoneg in EEE capabilities
+>        net: intel: e1000e: Use linkmode helpers for EEE
+>        net: intel: igb: Use linkmode helpers for EEE
+>        net: intel: igc: Use linkmode helpers for EEE
+> 
+>   drivers/net/ethernet/intel/e1000e/ethtool.c      | 17 +++++--
+>   drivers/net/ethernet/intel/i40e/i40e_ethtool.c   |  7 +--
+>   drivers/net/ethernet/intel/igb/igb_ethtool.c     | 33 ++++++++-----
+>   drivers/net/ethernet/intel/igc/igc_ethtool.c     | 13 ++---
+>   drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c | 48 ++++++++++---------
+>   drivers/net/ethernet/qlogic/qede/qede_ethtool.c  | 60 +++++++++++++++---------
+>   drivers/net/usb/Kconfig                          |  1 +
+>   drivers/net/usb/ax88179_178a.c                   |  9 ++--
+>   drivers/net/usb/r8152.c                          | 31 ++++++------
+>   9 files changed, 123 insertions(+), 96 deletions(-)
+> ---
+> base-commit: d1d77120bc2867b3e449e07ee656a26b2fb03d1e
+> change-id: 20240204-keee-u32-cleanup-b86d68458d80
+> 
+> Best regards,
