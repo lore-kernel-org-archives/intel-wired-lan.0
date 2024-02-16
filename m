@@ -4,91 +4,94 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BB29EC48260
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 16 Feb 2024 22:06:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D1022C48BF3
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 16 Feb 2024 22:06:52 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 640554213F;
-	Fri, 16 Feb 2024 22:06:51 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 79C5A42189;
+	Fri, 16 Feb 2024 22:06:52 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id Gu_fYt-LE9BK; Fri, 16 Feb 2024 22:06:50 +0000 (UTC)
+	with ESMTP id m3sVUQBd7HdP; Fri, 16 Feb 2024 22:06:51 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 976D642175
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 96D3C42175
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1708121210;
-	bh=GjEH5YI84Tj2wQAblElkebbq4TKBR8cTJ/BHVamvT5o=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=Pd/lt3+3EK7HIy5xuLZRDgSmSakoXx7baeN0vUxGG6mTRDb4EKBxYD786OHE0nw5y
-	 NwAueuYkIM7bcJipY1HMZEIYLvV534hqhg84DgJvol4UYTT7escf035pzxt2KXRn6g
-	 ROLyVELZLKJTsvpmp5du8P5VGULdyavZ+bs/M3K9eYeaFzZne8+ZZH1eU+5YRMB1ed
-	 hRisQwWclGHAp2ws7NwbZJfqAUGUfB6LQNkxU1Xft4yC/0CQ0v6JUm0eL3on+ZaS0x
-	 Z5K9cHPwr8KZZIpWac5etzcodKxWuUx78Dp91g9Epph/OuV2/lOfxn225TmWWBHZxi
-	 kl7QMlFPYxGsw==
+	s=default; t=1708121211;
+	bh=ogKiw2uSZaLmhcXwQhXarOIK0R8BX1sUvrg5URsrClk=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=gohi6P6VATXmmkc9BW06xY9keAM9OhOLHkLFB6TyviuWuUquIegMV2oIUhhQpaJOC
+	 ShbAfNhopVMx+rH7eoE4Xa4jF5xDVgeSOjjpszY34g0w4Oxy1Z3J/Rtv55ZDpStAlO
+	 e2TNPeT4UZKY9lA38YFgO2efZqAaJfVMJcIcl0mniMnk5OVuqpV2ujntWy4uygwdK6
+	 7fV4Bgr6WX0qxNLy/DAEtNAvGgvPuMYfNoYGzjmHwEWrTGRYfnIdCWj9W00/z/L0On
+	 /TnOIXVwU8I5Pq70fUj0q+FCihB6jRHjnY8g1XS4EdUxHdXwD9rpPpGOMHFzLQ2uV1
+	 fluip+5nBUgtg==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 976D642175;
-	Fri, 16 Feb 2024 22:06:50 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 96D3C42175;
+	Fri, 16 Feb 2024 22:06:51 +0000 (UTC)
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 3E7C21BF25F
- for <intel-wired-lan@lists.osuosl.org>; Fri, 16 Feb 2024 22:06:46 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 59F5B1BF25F
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 16 Feb 2024 22:06:47 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 9537B840B7
+ by smtp1.osuosl.org (Postfix) with ESMTP id C2679840B9
  for <intel-wired-lan@lists.osuosl.org>; Fri, 16 Feb 2024 22:06:45 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id EMMetaZRHqFy for <intel-wired-lan@lists.osuosl.org>;
- Fri, 16 Feb 2024 22:06:44 +0000 (UTC)
+ with ESMTP id 8nqWdi8L3v_I for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 16 Feb 2024 22:06:45 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.20;
  helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org AD363840B0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org AD363840B0
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 2283F840B3
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2283F840B3
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.20])
- by smtp1.osuosl.org (Postfix) with ESMTPS id AD363840B0
- for <intel-wired-lan@lists.osuosl.org>; Fri, 16 Feb 2024 22:06:44 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10986"; a="2134197"
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 2283F840B3
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 16 Feb 2024 22:06:45 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10986"; a="2134199"
 X-IronPort-AV: E=Sophos;i="6.06,165,1705392000"; 
-   d="scan'208";a="2134197"
+   d="scan'208";a="2134199"
 Received: from orviesa009.jf.intel.com ([10.64.159.149])
  by orvoesa112.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  16 Feb 2024 14:06:43 -0800
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.06,165,1705392000"; 
-   d="scan'208";a="3983842"
+   d="scan'208";a="3983848"
 Received: from jekeller-desk.amr.corp.intel.com ([10.166.241.1])
  by orviesa009-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  16 Feb 2024 14:06:43 -0800
 From: Jacob Keller <jacob.e.keller@intel.com>
 To: Anthony Nguyen <anthony.l.nguyen@intel.com>,
  Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Date: Fri, 16 Feb 2024 14:06:34 -0800
-Message-ID: <20240216220638.2558451-1-jacob.e.keller@intel.com>
+Date: Fri, 16 Feb 2024 14:06:36 -0800
+Message-ID: <20240216220638.2558451-3-jacob.e.keller@intel.com>
 X-Mailer: git-send-email 2.41.0
+In-Reply-To: <20240216220638.2558451-1-jacob.e.keller@intel.com>
+References: <20240216220638.2558451-1-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
  t=1708121205; x=1739657205;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=rGxSLKXDWJMef0A8slN8T3duaK5roZKDzrjoC90jvPY=;
- b=TGhVvw+nhlD9fbaON6JV1dNcodmKAEST81wXBRSWdYqDQlqtjJiN+mWT
- wnDPJ19o1id6tcv0wuyoAaCARPkL61Kej0On7jJMtuoPJivUXewcHvcw1
- sG5jUQaoRZJrWPQzuIr77NNcAuf90Pw9Vpdi2+OQ3L/ESsXVAbNaTkaAD
- 2cyYXQERC7n2cBr5DvdCgk4GHau9vGU1C0GSViCP+8HSEgXq5qyPuwYFx
- /P+MxSSlcv8b77JEgXK2VcLE9nx2BZbHIKcfiOFq8702LX7hP1UeuOSu+
- Fm8MhmMg4/XfJ4PvMLxgxXJ6J7fBQZ9i5AI6quzxm6r61v3uqIPQ0sVS3
- Q==;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=gM07+SsvqrhVQ9LFzHwPfluPwRBgYQoO8bHDd6kp0yg=;
+ b=IJ94FsK3hsuNManDPlvCn7/8xW/KQqBspipIyxw4/0954zubYCMJ/Q38
+ eSQemiHTgvabkvbjRuWPI6AMQYAxMCHitoQ2dAzDCNnMScEcXVyWoy8Cf
+ DpKDT1AbTEr/CIMl/YHGa1m6XYttzAn1d3Jt1Oanvlzrl3LwhP7Tdg+vc
+ uU8oEKhXhXt9hf2Vmt1OWqT6bPxEOxOgCSDSDodoRZhhHpUGClD4APc64
+ bjRumE5b5LzceVDi4CDwZYpHuj6lw0jDAiMDH56T0n0lllDN77QqUI2uX
+ nLtpZa4VAyyTlQLlox951fDz9OaXBSYC2XC14eYi8qWrf9lSVaxwVEac9
+ w==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=TGhVvw+n
-Subject: [Intel-wired-lan] [PATCH iwl-next 0/4] ice: use relative VSI index
- for VFs VSIs
+ header.a=rsa-sha256 header.s=Intel header.b=IJ94FsK3
+Subject: [Intel-wired-lan] [PATCH iwl-next 2/4] ice: remove unnecessary
+ duplicate checks for VF VSI ID
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,60 +109,43 @@ Cc: Jacob Keller <jacob.e.keller@intel.com>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The ice driver currently communicates firmware VSI numbers to its virtual
-functions over virtchnl. For E800 series hardware, the VF driver has no
-direct use of the VSI number.
+The ice_vc_fdir_param_check() function validates that the VSI ID of the
+virtchnl flow director command matches the VSI number of the VF. This is
+already checked by the call to ice_vc_isvalid_vsi_id() immediately
+following this.
 
-Some older legacy hardware could use the actual VSI number when
-communicating directly to firmware via the AdminQ. The E800 hardware does
-not allow this, and all communication happens over mailbox to the PF. The
-VFs do not have a direct access to the firmware. Additionally, none of the
-registers exposed to the VF depend on the VSI number.
+This check is unnecessary since ice_vc_isvalid_vsi_id() already confirms
+this by checking that the VSI ID can locate the VSI associated with the VF
+structure.
 
-Further, the PF is able to lookup the VSI for the VF without using the
-number provided by the VF over virtchnl. Thus, there is no reason that the
-number provided to the VF must actually be a real VSI number, nor does it
-need to be distinct across multiple VFs.
+Furthermore, a following change is going to refactor the ice driver to
+report VSI IDs using a relative index for each VF instead of reporting the
+PF VSI number. This additional check would break that logic since it
+enforces that the VSI ID matches the VSI number.
 
-This series modifies the ice driver to send a relative VSI number to the VF
-instead of sending the firmware values. This simplifies the interface with
-the VF, as the PF can simply validate this relative number. Currently, only
-a single VSI is provided to each VF. Thus, a simple static value of 1 is
-used. We can easily extend this to use a proper relative index if we enable
-multiple VSIs for a VF in the future.
+Since this check duplicates  the logic in ice_vc_isvalid_vsi_id() and gets
+in the way of refactoring that logic, remove it.
 
-First, a couple of patches cleanup a few places in the code which still use
-the VF VSI IDs. Then, the VSI ID logic over virtchnl is changed to use the
-static values. Finally, the vf->lan_vsi_num field is no longer used and only
-set, so we can simplify the driver further by removing this entirely.
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c | 3 ---
+ 1 file changed, 3 deletions(-)
 
-This eliminates a path for leaking information about the PF state to the VF,
-and simplifies the PF driver logic. Several of the removed code flows
-required an iterated scan over the VSI list to locate the VSI with the
-reported VSI number.
-
-Finally, this has significant value for a future series implementing VF live
-migration. Now that the PF always passes relative VSI indexes, migration
-will no longer need to worry about migrating the absolute VSI numbers sent
-previously, which will simplify both the migration process as well as
-continued handling of a migrated VF after a migration event completes.
-
-Jacob Keller (4):
-  ice: pass VSI pointer into ice_vc_isvalid_q_id
-  ice: remove unnecessary duplicate checks for VF VSI ID
-  ice: use relative VSI index for VFs instead of PF VSI number
-  ice: remove vf->lan_vsi_num field
-
- drivers/net/ethernet/intel/ice/ice_sriov.c    |  1 -
- drivers/net/ethernet/intel/ice/ice_vf_lib.c   | 10 +-----
- drivers/net/ethernet/intel/ice/ice_vf_lib.h   |  5 ---
- drivers/net/ethernet/intel/ice/ice_virtchnl.c | 31 +++++++------------
- drivers/net/ethernet/intel/ice/ice_virtchnl.h |  9 ++++++
- .../ethernet/intel/ice/ice_virtchnl_fdir.c    |  3 --
- 6 files changed, 22 insertions(+), 37 deletions(-)
-
-
-base-commit: 6cffde791c4f1c276fdfcf068554c3c77de35f40
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
+index f001553e1a1a..8e4ff3af86c6 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
+@@ -94,9 +94,6 @@ ice_vc_fdir_param_check(struct ice_vf *vf, u16 vsi_id)
+ 	if (!(vf->driver_caps & VIRTCHNL_VF_OFFLOAD_FDIR_PF))
+ 		return -EINVAL;
+ 
+-	if (vsi_id != vf->lan_vsi_num)
+-		return -EINVAL;
+-
+ 	if (!ice_vc_isvalid_vsi_id(vf, vsi_id))
+ 		return -EINVAL;
+ 
 -- 
 2.41.0
 
