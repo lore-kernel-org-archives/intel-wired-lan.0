@@ -4,75 +4,95 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2D7C0C48260
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 16 Feb 2024 21:27:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A5A9BC48260
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 16 Feb 2024 22:06:48 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id DEB634001F;
-	Fri, 16 Feb 2024 21:27:17 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 429AF42090;
+	Fri, 16 Feb 2024 22:06:48 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id xdukgigv2fd1; Fri, 16 Feb 2024 21:27:17 +0000 (UTC)
+	with ESMTP id Rw8pjbNsMMBy; Fri, 16 Feb 2024 22:06:47 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E504E41E01
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 674DE4211C
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1708118837;
-	bh=dG0YlRI4U6uYW4mlGnXVOL+C+TfUPlPagPba4PNsE28=;
-	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
+	s=default; t=1708121207;
+	bh=aK8Hvhav/LuTqNueVcWhpzTtj8XxE1kKMqh9dd1tnXQ=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=T4ZAAizuTakTfihJ5UaUdPnF4d6RQVtKaKyqatVtQCY9DqQ9grM+LWiseBhZLXsFo
-	 lmhppFKGayZ+tUHbVYPYGqLx07VyoONuj1wO+gWQu2ezMc13EW/KoW34gY5mrC+Vz+
-	 EqGa3NEgfbJ+sz/PW0s5PNF3JBT1ssatVJ75vEtRDGwcQ7aMGa3Cax0yOe4Z8Jrr+Z
-	 FJFoVAd3QbxHAeSf8WV0euY/SVTZkACfGMeWUMqW0MUxe/zGvv+bSDyu4n0gbMiyXC
-	 B4hKXDmR2wnEiwu909AeAKuMnhylcOY9vMyJ6twHEy3R7D/6j31/P30h7b9kWnetYm
-	 grGgBTFemE/hw==
+	b=5EW2/aF2KGc+mJ7DQZ79MITx2a7+22jLqgrLh0VHqmAgHQ9KV0EguueVIS9DJbhOb
+	 nrkdODgFfA1THCTNkJP4tPiinpV4jsUgGVhjetdBhH34XiKP13TtfXJ6WrzNOcPSOl
+	 MhL+SvDnLVfUZLD7kUIE+YZX3Fc/7HOCeMAladqDfatK+aGrRFEtXTBeIV0MCwbve4
+	 ltcBp2rkLpHv4L+kPMEg85AGuaaEu2EctxtJ1VYcFPZ60I7OvF/o+GLg5L8sQNaLH3
+	 bOvFzgjBUN7rnOEI0NaGqL/f3xoSN0XXt3wXe3xZJ+e9ZgiX0BOAPTsgBLR0JWzczg
+	 YzAOELTVRts0g==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id E504E41E01;
-	Fri, 16 Feb 2024 21:27:16 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id B7AEB1BF2C7
- for <intel-wired-lan@osuosl.org>; Fri, 16 Feb 2024 21:27:15 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 674DE4211C;
+	Fri, 16 Feb 2024 22:06:47 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 4A2AC1BF25F
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 16 Feb 2024 22:06:45 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id A30E641E01
- for <intel-wired-lan@osuosl.org>; Fri, 16 Feb 2024 21:27:15 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 3D144840B6
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 16 Feb 2024 22:06:45 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id yyUzDgDX3Km2 for <intel-wired-lan@osuosl.org>;
- Fri, 16 Feb 2024 21:27:14 +0000 (UTC)
-X-Greylist: delayed 527 seconds by postgrey-1.37 at util1.osuosl.org;
- Fri, 16 Feb 2024 21:27:11 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 64B974001F
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 64B974001F
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=141.14.17.11;
- helo=mx3.molgen.mpg.de; envelope-from=pmenzel@molgen.mpg.de;
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id jBThzoSrTkV9 for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 16 Feb 2024 22:06:44 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.20;
+ helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
  receiver=<UNKNOWN> 
-Received: from mx3.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 64B974001F
- for <intel-wired-lan@osuosl.org>; Fri, 16 Feb 2024 21:27:11 +0000 (UTC)
-Received: from [192.168.44.133] (unknown [185.238.219.82])
- (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested) (Authenticated sender: pmenzel)
- by mx.molgen.mpg.de (Postfix) with ESMTPSA id A347B61E5FE01;
- Fri, 16 Feb 2024 22:18:04 +0100 (CET)
-Message-ID: <cc999834-3068-42ab-a3e7-f83115d7d901@molgen.mpg.de>
-Date: Fri, 16 Feb 2024 22:18:03 +0100
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 241F2840AD
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 241F2840AD
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.20])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 241F2840AD
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 16 Feb 2024 22:06:43 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10986"; a="2134198"
+X-IronPort-AV: E=Sophos;i="6.06,165,1705392000"; 
+   d="scan'208";a="2134198"
+Received: from orviesa009.jf.intel.com ([10.64.159.149])
+ by orvoesa112.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 16 Feb 2024 14:06:43 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.06,165,1705392000"; 
+   d="scan'208";a="3983845"
+Received: from jekeller-desk.amr.corp.intel.com ([10.166.241.1])
+ by orviesa009-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 16 Feb 2024 14:06:43 -0800
+From: Jacob Keller <jacob.e.keller@intel.com>
+To: Anthony Nguyen <anthony.l.nguyen@intel.com>,
+ Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+Date: Fri, 16 Feb 2024 14:06:35 -0800
+Message-ID: <20240216220638.2558451-2-jacob.e.keller@intel.com>
+X-Mailer: git-send-email 2.41.0
+In-Reply-To: <20240216220638.2558451-1-jacob.e.keller@intel.com>
+References: <20240216220638.2558451-1-jacob.e.keller@intel.com>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Content-Language: en-US
-To: Martin Kulas <kulas@mpia.de>
-References: <7b655203-0dba-4531-956a-c63048f7de10@mpia.de>
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-In-Reply-To: <7b655203-0dba-4531-956a-c63048f7de10@mpia.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dmarc=none (p=none dis=none)
- header.from=molgen.mpg.de
-Subject: Re: [Intel-wired-lan] Intel E810-XXVDA2: Too high TX timestamp read
- latency
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1708121204; x=1739657204;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=+HRmaEMWcRS0vEJgY/977JQcSJZr5WmH9qBmB5DRTGM=;
+ b=K4J8b07RCx7RtVT3kmUjSlJbkyhPaVOjsgGGmCT0ZE02XIW0qmFKzQ0y
+ +GzlGlnLSH18qdMZkWHhRuxtPpnSnozdc7FVPGMUYiCxEUJ/OSQq/Gde9
+ Ux7vkS8Jl3YIAkPjaFruDaBpydO0SMy7WHEMQwBWmeLfsxGPNnc6g2ZGz
+ vdoUZUQI5XZ3mX7o5f5K8j5vzKig5Hz28F6YjeHnRtuXBvArAUQVoqaAu
+ t6G+xItPMy3pNsDjvvogOpW+yAGoJ+ueoLJ0p2uUrvovBHCYZd/fYLs77
+ 3AHEeZziH2Hpvw8twGgV0JO+PLUPcNBtZXuhTAxW5N4A88UbooawS+XjR
+ g==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=intel.com
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=K4J8b07R
+Subject: [Intel-wired-lan] [PATCH iwl-next 1/4] ice: pass VSI pointer into
+ ice_vc_isvalid_q_id
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -85,67 +105,128 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: intel-wired-lan@osuosl.org, Karol Kolacinski <karol.kolacinski@intel.com>
+Cc: Jacob Keller <jacob.e.keller@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-[Cc: +Karol]
+The ice_vc_isvalid_q_id() function takes a VSI index and a queue ID. It
+looks up the VSI from its index, and then validates that the queue number
+is valid for that VSI.
 
-Dear Martin,
+The VSI ID passed is typically a VSI index from the VF. This VSI number is
+validated by the PF to ensure that it matches the VSI associated with the
+VF already.
 
+In every flow where ice_vc_isvalid_q_id() is called, the PF driver already
+has a pointer to the VSI associated with the VF. This pointer is obtained
+using ice_get_vf_vsi(), rather than looking up the VSI using the index sent
+by the VF.
 
-Am 16.02.24 um 15:18 schrieb Martin Kulas:
+Since we already know which VSI to operate on, we can modify
+ice_vc_isvalid_q_id() to take a VSI pointer instead of a VSI index. Pass
+the VSI we found from ice_get_vf_vsi() instead of re-doing the lookup. This
+removes some unnecessary computation and scanning of the VSI list.
 
-> My time-sensitive user space application reads out
-> the hardware TX timestamp via poll() and recvmsg(MSG_ERRQUEUE).
-> On an Intel E810-XXVDA2 (for SFP), it takes roughly 700 microseconds 
-> until the TX timestamp is available in user space (Linux 6.7.4).
-> This latency of 700 microseconds is far too high for my application.
-> For comparison, on an Intel X550 card (Twisted pair),
-> my application retrieves the TX timestamp in roughly 30 microseconds
-> which is acceptable.
-> 
-> The output of ethtool of the tested E810-XXVDA2:
-> 
-> # ethtool -i enp65s0f1np1
-> driver: ice
-> version: 6.7.4
-> firmware-version: 4.40 0x8001c96c 1.3534.0
-> expansion-rom-version:
-> bus-info: 0000:41:00.1
-> supports-statistics: yes
-> supports-test: yes
-> supports-eeprom-access: yes
-> supports-register-dump: yes
-> supports-priv-flags: yes
-> #
-> 
-> When searching for a solution about this high latency TX timestamp read,
-> I found the following thread from 2022:
-> 
-> https://patchwork.ozlabs.org/project/intel-wired-lan/patch/20220802145757.273270-1-karol.kolacinski@intel.com/#2963591
-> 
-> Is this patch already in the current Linux Kernel 6.7.4 or is it pending?
+It also removes the last place where the driver directly used the VSI
+number from the VF. This will pave the way for refactoring to communicate
+relative VSI numbers to the VF instead of absolute numbers from the PF
+space.
 
-In the metadata on the patchwork page it says *Accepted*, and it seems 
-to be commit 1229b33973c7 (ice: Add low latency Tx timestamp read) added 
-to Linux 6.1-rc1, so it should be in Linux 6.1.
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_virtchnl.c | 22 +++++++++----------
+ 1 file changed, 10 insertions(+), 12 deletions(-)
 
-Please build the Linux kernel from this commit to rule out any 
-regression. (If that commit actually should support such low times that 
-you require. The commit message says something about 20 ms before.)
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl.c b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
+index 6f2328a049bf..29449030174f 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
+@@ -555,17 +555,15 @@ bool ice_vc_isvalid_vsi_id(struct ice_vf *vf, u16 vsi_id)
+ 
+ /**
+  * ice_vc_isvalid_q_id
+- * @vf: pointer to the VF info
+- * @vsi_id: VSI ID
++ * @vsi: VSI to check queue ID against
+  * @qid: VSI relative queue ID
+  *
+  * check for the valid queue ID
+  */
+-static bool ice_vc_isvalid_q_id(struct ice_vf *vf, u16 vsi_id, u8 qid)
++static bool ice_vc_isvalid_q_id(struct ice_vsi *vsi, u8 qid)
+ {
+-	struct ice_vsi *vsi = ice_find_vsi(vf->pf, vsi_id);
+ 	/* allocated Tx and Rx queues should be always equal for VF VSI */
+-	return (vsi && (qid < vsi->alloc_txq));
++	return qid < vsi->alloc_txq;
+ }
+ 
+ /**
+@@ -1323,7 +1321,7 @@ static int ice_vc_ena_qs_msg(struct ice_vf *vf, u8 *msg)
+ 	 */
+ 	q_map = vqs->rx_queues;
+ 	for_each_set_bit(vf_q_id, &q_map, ICE_MAX_RSS_QS_PER_VF) {
+-		if (!ice_vc_isvalid_q_id(vf, vqs->vsi_id, vf_q_id)) {
++		if (!ice_vc_isvalid_q_id(vsi, vf_q_id)) {
+ 			v_ret = VIRTCHNL_STATUS_ERR_PARAM;
+ 			goto error_param;
+ 		}
+@@ -1345,7 +1343,7 @@ static int ice_vc_ena_qs_msg(struct ice_vf *vf, u8 *msg)
+ 
+ 	q_map = vqs->tx_queues;
+ 	for_each_set_bit(vf_q_id, &q_map, ICE_MAX_RSS_QS_PER_VF) {
+-		if (!ice_vc_isvalid_q_id(vf, vqs->vsi_id, vf_q_id)) {
++		if (!ice_vc_isvalid_q_id(vsi, vf_q_id)) {
+ 			v_ret = VIRTCHNL_STATUS_ERR_PARAM;
+ 			goto error_param;
+ 		}
+@@ -1450,7 +1448,7 @@ static int ice_vc_dis_qs_msg(struct ice_vf *vf, u8 *msg)
+ 		q_map = vqs->tx_queues;
+ 
+ 		for_each_set_bit(vf_q_id, &q_map, ICE_MAX_RSS_QS_PER_VF) {
+-			if (!ice_vc_isvalid_q_id(vf, vqs->vsi_id, vf_q_id)) {
++			if (!ice_vc_isvalid_q_id(vsi, vf_q_id)) {
+ 				v_ret = VIRTCHNL_STATUS_ERR_PARAM;
+ 				goto error_param;
+ 			}
+@@ -1476,7 +1474,7 @@ static int ice_vc_dis_qs_msg(struct ice_vf *vf, u8 *msg)
+ 		bitmap_zero(vf->rxq_ena, ICE_MAX_RSS_QS_PER_VF);
+ 	} else if (q_map) {
+ 		for_each_set_bit(vf_q_id, &q_map, ICE_MAX_RSS_QS_PER_VF) {
+-			if (!ice_vc_isvalid_q_id(vf, vqs->vsi_id, vf_q_id)) {
++			if (!ice_vc_isvalid_q_id(vsi, vf_q_id)) {
+ 				v_ret = VIRTCHNL_STATUS_ERR_PARAM;
+ 				goto error_param;
+ 			}
+@@ -1532,7 +1530,7 @@ ice_cfg_interrupt(struct ice_vf *vf, struct ice_vsi *vsi, u16 vector_id,
+ 	for_each_set_bit(vsi_q_id_idx, &qmap, ICE_MAX_RSS_QS_PER_VF) {
+ 		vsi_q_id = vsi_q_id_idx;
+ 
+-		if (!ice_vc_isvalid_q_id(vf, vsi->vsi_num, vsi_q_id))
++		if (!ice_vc_isvalid_q_id(vsi, vsi_q_id))
+ 			return VIRTCHNL_STATUS_ERR_PARAM;
+ 
+ 		q_vector->num_ring_rx++;
+@@ -1546,7 +1544,7 @@ ice_cfg_interrupt(struct ice_vf *vf, struct ice_vsi *vsi, u16 vector_id,
+ 	for_each_set_bit(vsi_q_id_idx, &qmap, ICE_MAX_RSS_QS_PER_VF) {
+ 		vsi_q_id = vsi_q_id_idx;
+ 
+-		if (!ice_vc_isvalid_q_id(vf, vsi->vsi_num, vsi_q_id))
++		if (!ice_vc_isvalid_q_id(vsi, vsi_q_id))
+ 			return VIRTCHNL_STATUS_ERR_PARAM;
+ 
+ 		q_vector->num_ring_tx++;
+@@ -1703,7 +1701,7 @@ static int ice_vc_cfg_qs_msg(struct ice_vf *vf, u8 *msg)
+ 		    qpi->txq.headwb_enabled ||
+ 		    !ice_vc_isvalid_ring_len(qpi->txq.ring_len) ||
+ 		    !ice_vc_isvalid_ring_len(qpi->rxq.ring_len) ||
+-		    !ice_vc_isvalid_q_id(vf, qci->vsi_id, qpi->txq.queue_id)) {
++		    !ice_vc_isvalid_q_id(vsi, qpi->txq.queue_id)) {
+ 			goto error_param;
+ 		}
+ 
+-- 
+2.41.0
 
-> Can you recommend anything else in order to reduce the TX timestamp
-> read latency?
-> 
-> If you know a better place for this issue,  please let me now!
-I think this is the right place.
-
-
-Kind regards,
-
-Paul
-
-
-[1]: 
-https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=1229b33973c7b89e989945a3edae7a17b6f909da
