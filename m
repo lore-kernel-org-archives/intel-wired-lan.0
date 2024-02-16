@@ -4,68 +4,68 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D1022C48BF3
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 16 Feb 2024 22:06:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3CDD6C48260
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 16 Feb 2024 22:06:54 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 79C5A42189;
-	Fri, 16 Feb 2024 22:06:52 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id BEECA42182;
+	Fri, 16 Feb 2024 22:06:53 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id m3sVUQBd7HdP; Fri, 16 Feb 2024 22:06:51 +0000 (UTC)
+	with ESMTP id pqj8ks1Y_iy0; Fri, 16 Feb 2024 22:06:53 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 96D3C42175
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org EBCCA421D2
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1708121211;
-	bh=ogKiw2uSZaLmhcXwQhXarOIK0R8BX1sUvrg5URsrClk=;
+	s=default; t=1708121213;
+	bh=Xv3nrUGWsuvcZf5ijddZHXAx4SXMRMLWOWwM8aGZi6c=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=gohi6P6VATXmmkc9BW06xY9keAM9OhOLHkLFB6TyviuWuUquIegMV2oIUhhQpaJOC
-	 ShbAfNhopVMx+rH7eoE4Xa4jF5xDVgeSOjjpszY34g0w4Oxy1Z3J/Rtv55ZDpStAlO
-	 e2TNPeT4UZKY9lA38YFgO2efZqAaJfVMJcIcl0mniMnk5OVuqpV2ujntWy4uygwdK6
-	 7fV4Bgr6WX0qxNLy/DAEtNAvGgvPuMYfNoYGzjmHwEWrTGRYfnIdCWj9W00/z/L0On
-	 /TnOIXVwU8I5Pq70fUj0q+FCihB6jRHjnY8g1XS4EdUxHdXwD9rpPpGOMHFzLQ2uV1
-	 fluip+5nBUgtg==
+	b=3wgngDxFSZKXTqFEpGMAfI6l+Ig01QXX9EjGh3+51Ioq7B1iAsrHtWKbquzbivIzo
+	 VOYGi4FnZTAVa8Hx2nQqKmeSNgNihTJ/8BEM69bo8SZFyoz7ZRmyMr+0D9yGRBDlg+
+	 lnLXCr56u+HQHwrSjaidtfP6es6i0h2cqcO1eorj+SSguCJ3ZVTtMtrWAnFOBOaKoK
+	 wYuesKW+PYK9Z6XNOs7V87B11Kcro+cICNM7Npq1oxTc/fnwqSlArJVdadH6bUbNM+
+	 fb2YRe1zOOyN3/FMml58gllXT5cvKkn0WuxopGBz5VIdms8+LTTfoq10Jvjc/92GTZ
+	 5eDqhsPrO2QZA==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 96D3C42175;
-	Fri, 16 Feb 2024 22:06:51 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id EBCCA421D2;
+	Fri, 16 Feb 2024 22:06:52 +0000 (UTC)
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 59F5B1BF25F
- for <intel-wired-lan@lists.osuosl.org>; Fri, 16 Feb 2024 22:06:47 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 5DB0A1BF25F
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 16 Feb 2024 22:06:48 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id C2679840B9
- for <intel-wired-lan@lists.osuosl.org>; Fri, 16 Feb 2024 22:06:45 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 2BEB3840B3
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 16 Feb 2024 22:06:46 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 8nqWdi8L3v_I for <intel-wired-lan@lists.osuosl.org>;
+ with ESMTP id uXHTGZ0sl_eB for <intel-wired-lan@lists.osuosl.org>;
  Fri, 16 Feb 2024 22:06:45 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.20;
  helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 2283F840B3
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2283F840B3
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 67366840AD
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 67366840AD
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.20])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 2283F840B3
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 67366840AD
  for <intel-wired-lan@lists.osuosl.org>; Fri, 16 Feb 2024 22:06:45 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10986"; a="2134199"
+X-IronPort-AV: E=McAfee;i="6600,9927,10986"; a="2134201"
 X-IronPort-AV: E=Sophos;i="6.06,165,1705392000"; 
-   d="scan'208";a="2134199"
+   d="scan'208";a="2134201"
 Received: from orviesa009.jf.intel.com ([10.64.159.149])
  by orvoesa112.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  16 Feb 2024 14:06:43 -0800
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.06,165,1705392000"; 
-   d="scan'208";a="3983848"
+   d="scan'208";a="3983854"
 Received: from jekeller-desk.amr.corp.intel.com ([10.166.241.1])
  by orviesa009-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  16 Feb 2024 14:06:43 -0800
 From: Jacob Keller <jacob.e.keller@intel.com>
 To: Anthony Nguyen <anthony.l.nguyen@intel.com>,
  Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Date: Fri, 16 Feb 2024 14:06:36 -0800
-Message-ID: <20240216220638.2558451-3-jacob.e.keller@intel.com>
+Date: Fri, 16 Feb 2024 14:06:38 -0800
+Message-ID: <20240216220638.2558451-5-jacob.e.keller@intel.com>
 X-Mailer: git-send-email 2.41.0
 In-Reply-To: <20240216220638.2558451-1-jacob.e.keller@intel.com>
 References: <20240216220638.2558451-1-jacob.e.keller@intel.com>
@@ -76,22 +76,22 @@ X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  t=1708121205; x=1739657205;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=gM07+SsvqrhVQ9LFzHwPfluPwRBgYQoO8bHDd6kp0yg=;
- b=IJ94FsK3hsuNManDPlvCn7/8xW/KQqBspipIyxw4/0954zubYCMJ/Q38
- eSQemiHTgvabkvbjRuWPI6AMQYAxMCHitoQ2dAzDCNnMScEcXVyWoy8Cf
- DpKDT1AbTEr/CIMl/YHGa1m6XYttzAn1d3Jt1Oanvlzrl3LwhP7Tdg+vc
- uU8oEKhXhXt9hf2Vmt1OWqT6bPxEOxOgCSDSDodoRZhhHpUGClD4APc64
- bjRumE5b5LzceVDi4CDwZYpHuj6lw0jDAiMDH56T0n0lllDN77QqUI2uX
- nLtpZa4VAyyTlQLlox951fDz9OaXBSYC2XC14eYi8qWrf9lSVaxwVEac9
- w==;
+ bh=gQn5bHYIlJihZ1oVwJZmrjgSJBZjdsqFcUMZfAyWmsI=;
+ b=Q/xTZLayOZgNPsqgs5NkW/oXPlZjFl3XIaCm22X/lDrMl5Rtljk+XJuv
+ +CsqWEjCK/MU+EDfsUlFD+pFsYXonJf9zdpooYXf1GoVvPTpUZwpRGZ8A
+ sqCl2yCM0suyCaVniRI/hutIJd0adAQwzz2dhztrdylgSqJLnfLuWQ2B8
+ LDCnlMtEN9q0h1t41jbahpVzaMHUI93YzOBsD41rTLutlU89ZFxHb322E
+ YhYKNKBRB/XwivzeGhZuWipLMr1Wbyr7xFGft2/D+UJHInHqOnnZoqalx
+ UFNK8B1QEWY9TsmRD9EshqLjkCnkvRJ2MrS3A4vNZ45xE4mL/Cus2sRJU
+ Q==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=IJ94FsK3
-Subject: [Intel-wired-lan] [PATCH iwl-next 2/4] ice: remove unnecessary
- duplicate checks for VF VSI ID
+ header.a=rsa-sha256 header.s=Intel header.b=Q/xTZLay
+Subject: [Intel-wired-lan] [PATCH iwl-next 4/4] ice: remove vf->lan_vsi_num
+ field
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -109,43 +109,85 @@ Cc: Jacob Keller <jacob.e.keller@intel.com>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The ice_vc_fdir_param_check() function validates that the VSI ID of the
-virtchnl flow director command matches the VSI number of the VF. This is
-already checked by the call to ice_vc_isvalid_vsi_id() immediately
-following this.
-
-This check is unnecessary since ice_vc_isvalid_vsi_id() already confirms
-this by checking that the VSI ID can locate the VSI associated with the VF
-structure.
-
-Furthermore, a following change is going to refactor the ice driver to
-report VSI IDs using a relative index for each VF instead of reporting the
-PF VSI number. This additional check would break that logic since it
-enforces that the VSI ID matches the VSI number.
-
-Since this check duplicates  the logic in ice_vc_isvalid_vsi_id() and gets
-in the way of refactoring that logic, remove it.
+The lan_vsi_num field of the VF structure is no longer used for any
+purpose. Remove it.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c | 3 ---
- 1 file changed, 3 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_sriov.c  |  1 -
+ drivers/net/ethernet/intel/ice/ice_vf_lib.c | 10 +---------
+ drivers/net/ethernet/intel/ice/ice_vf_lib.h |  5 -----
+ 3 files changed, 1 insertion(+), 15 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
-index f001553e1a1a..8e4ff3af86c6 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
-@@ -94,9 +94,6 @@ ice_vc_fdir_param_check(struct ice_vf *vf, u16 vsi_id)
- 	if (!(vf->driver_caps & VIRTCHNL_VF_OFFLOAD_FDIR_PF))
- 		return -EINVAL;
+diff --git a/drivers/net/ethernet/intel/ice/ice_sriov.c b/drivers/net/ethernet/intel/ice/ice_sriov.c
+index 706b5ee8ec89..2485abd95672 100644
+--- a/drivers/net/ethernet/intel/ice/ice_sriov.c
++++ b/drivers/net/ethernet/intel/ice/ice_sriov.c
+@@ -238,7 +238,6 @@ static struct ice_vsi *ice_vf_vsi_setup(struct ice_vf *vf)
+ 	}
  
--	if (vsi_id != vf->lan_vsi_num)
--		return -EINVAL;
+ 	vf->lan_vsi_idx = vsi->idx;
+-	vf->lan_vsi_num = vsi->vsi_num;
+ 
+ 	return vsi;
+ }
+diff --git a/drivers/net/ethernet/intel/ice/ice_vf_lib.c b/drivers/net/ethernet/intel/ice/ice_vf_lib.c
+index 2ffdae9a82df..21d26e19338a 100644
+--- a/drivers/net/ethernet/intel/ice/ice_vf_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_vf_lib.c
+@@ -280,12 +280,6 @@ int ice_vf_reconfig_vsi(struct ice_vf *vf)
+ 		return err;
+ 	}
+ 
+-	/* Update the lan_vsi_num field since it might have been changed. The
+-	 * PF lan_vsi_idx number remains the same so we don't need to change
+-	 * that.
+-	 */
+-	vf->lan_vsi_num = vsi->vsi_num;
 -
- 	if (!ice_vc_isvalid_vsi_id(vf, vsi_id))
- 		return -EINVAL;
+ 	return 0;
+ }
  
+@@ -315,7 +309,6 @@ static int ice_vf_rebuild_vsi(struct ice_vf *vf)
+ 	 * vf->lan_vsi_idx
+ 	 */
+ 	vsi->vsi_num = ice_get_hw_vsi_num(&pf->hw, vsi->idx);
+-	vf->lan_vsi_num = vsi->vsi_num;
+ 
+ 	return 0;
+ }
+@@ -1315,13 +1308,12 @@ int ice_vf_init_host_cfg(struct ice_vf *vf, struct ice_vsi *vsi)
+ }
+ 
+ /**
+- * ice_vf_invalidate_vsi - invalidate vsi_idx/vsi_num to remove VSI access
++ * ice_vf_invalidate_vsi - invalidate vsi_idx to remove VSI access
+  * @vf: VF to remove access to VSI for
+  */
+ void ice_vf_invalidate_vsi(struct ice_vf *vf)
+ {
+ 	vf->lan_vsi_idx = ICE_NO_VSI;
+-	vf->lan_vsi_num = ICE_NO_VSI;
+ }
+ 
+ /**
+diff --git a/drivers/net/ethernet/intel/ice/ice_vf_lib.h b/drivers/net/ethernet/intel/ice/ice_vf_lib.h
+index 0cc9034065c5..fec16919ec19 100644
+--- a/drivers/net/ethernet/intel/ice/ice_vf_lib.h
++++ b/drivers/net/ethernet/intel/ice/ice_vf_lib.h
+@@ -109,11 +109,6 @@ struct ice_vf {
+ 	u8 spoofchk:1;
+ 	u8 link_forced:1;
+ 	u8 link_up:1;			/* only valid if VF link is forced */
+-	/* VSI indices - actual VSI pointers are maintained in the PF structure
+-	 * When assigned, these will be non-zero, because VSI 0 is always
+-	 * the main LAN VSI for the PF.
+-	 */
+-	u16 lan_vsi_num;		/* ID as used by firmware */
+ 	unsigned int min_tx_rate;	/* Minimum Tx bandwidth limit in Mbps */
+ 	unsigned int max_tx_rate;	/* Maximum Tx bandwidth limit in Mbps */
+ 	DECLARE_BITMAP(vf_states, ICE_VF_STATES_NBITS);	/* VF runtime states */
 -- 
 2.41.0
 
