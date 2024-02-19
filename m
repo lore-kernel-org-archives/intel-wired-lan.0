@@ -4,95 +4,82 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3A7A9C48BC3
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 19 Feb 2024 10:22:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 34AE2C48BF8
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 19 Feb 2024 11:30:06 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 35689408F0;
-	Mon, 19 Feb 2024 10:22:26 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id D0E7340A71;
+	Mon, 19 Feb 2024 11:30:05 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id dnxsbTdbmqkK; Mon, 19 Feb 2024 10:22:25 +0000 (UTC)
+	with ESMTP id Cyf93i-ZvSdx; Mon, 19 Feb 2024 11:30:04 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org EF00B40A14
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org A582140A61
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1708338145;
-	bh=IGnZuQAAnxyfkcuRXNmUQ9M9oh/by0HBvKdFxUnbr5o=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1708342204;
+	bh=bgzjdYmk6DMGwVpQJpBmTTAVptXw+eOArmMtWvY8dy0=;
+	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=9BJQV0EI4W5qf2cAM0kFfCaZBaM8iSsNhIlYPoGMp/UdoPefzhlv8s0D/3vhkPrhy
-	 CkeZ0G3RIjn2Jp6X4D52Ly9ftF9Rv+2SnjwUpx2wNvrzoOdQ/NdnU12UCUAOzSVZ8t
-	 T9S+7DykOAySE2DcY0F1Xx7lP7sjIGfxrNXy2vLKdXOcAu3ZrdMVBA3+GZT6NjNjQT
-	 HwzgQxiAf4wACjC9+FzOTB9ZQHe0ld+dEKt9Ax/zO4Ahu13h4OMaEkdQvPNJXF4AUw
-	 4VI4y27NmxKG/nr+eo4A4YrpX32EMwH5KSLqkjbQz7w4P07GfLezFG85s5tL9syvmC
-	 zPzg07R6MzRVg==
+	b=9aytA6ueoVnCeghJQUem2IgjglMZKGeqhCO4lqNAZx3COzVHOlIl8cAzXbzNCiMeu
+	 oXAQe16mwuTfN7OCokVs6MRxA6sWVnOxSbdfDjAOD3c1i8F9KcfUCsejOowTnEeLFS
+	 FHULBDQgzp3t/tCzNh6YNaACbpCX8DtZ+yIaDlARanvm9p5ONg+sqz7Wa8Afo7lPXN
+	 UrjBTxFfzDRylvbL0kRIlyQ1wmBX9M4vNBdrIXY0RQsF09BEXuC2AYiUxWO6/f/6Jx
+	 Ivt4Otp5RPJn5sHoarBYBLXCoYcrHIjsFFWaW8zPccknBXf6rO0y0wYYyfm3lumX02
+	 XnTqvaL0vAPyQ==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id EF00B40A14;
-	Mon, 19 Feb 2024 10:22:24 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 8745C1BF3DB
- for <intel-wired-lan@lists.osuosl.org>; Mon, 19 Feb 2024 10:22:17 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id A582140A61;
+	Mon, 19 Feb 2024 11:30:04 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 066011BF370
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 19 Feb 2024 11:30:03 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 7358640797
- for <intel-wired-lan@lists.osuosl.org>; Mon, 19 Feb 2024 10:22:17 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id E4BE840A61
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 19 Feb 2024 11:30:02 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id ajhAJG8VNorK for <intel-wired-lan@lists.osuosl.org>;
- Mon, 19 Feb 2024 10:22:16 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.18;
- helo=mgamail.intel.com; envelope-from=mateusz.polchlopek@intel.com;
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id nwFwSSCekSsW for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 19 Feb 2024 11:30:01 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=80.237.130.52;
+ helo=wp530.webpack.hosteurope.de; envelope-from=regressions@leemhuis.info;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 9AE4D40794
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9AE4D40794
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.18])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 9AE4D40794
- for <intel-wired-lan@lists.osuosl.org>; Mon, 19 Feb 2024 10:22:16 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10988"; a="2514759"
-X-IronPort-AV: E=Sophos;i="6.06,170,1705392000"; 
-   d="scan'208";a="2514759"
-Received: from orsmga001.jf.intel.com ([10.7.209.18])
- by orvoesa110.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 19 Feb 2024 02:15:08 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10988"; a="826984903"
-X-IronPort-AV: E=Sophos;i="6.06,170,1705392000"; d="scan'208";a="826984903"
-Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by orsmga001.jf.intel.com with ESMTP; 19 Feb 2024 02:15:05 -0800
-Received: from fedora.igk.intel.com (Metan_eth.igk.intel.com [10.123.220.124])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id 84A2E135F0;
- Mon, 19 Feb 2024 10:15:04 +0000 (GMT)
-From: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Date: Mon, 19 Feb 2024 05:05:59 -0500
-Message-Id: <20240219100555.7220-6-mateusz.polchlopek@intel.com>
-X-Mailer: git-send-email 2.38.1
-In-Reply-To: <20240219100555.7220-1-mateusz.polchlopek@intel.com>
-References: <20240219100555.7220-1-mateusz.polchlopek@intel.com>
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 6EB62409C8
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 6EB62409C8
+Received: from wp530.webpack.hosteurope.de (wp530.webpack.hosteurope.de
+ [80.237.130.52])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 6EB62409C8
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 19 Feb 2024 11:30:00 +0000 (UTC)
+Received: from [2a02:8108:8980:2478:8cde:aa2c:f324:937e]; authenticated
+ by wp530.webpack.hosteurope.de running ExIM with esmtpsa
+ (TLS1.3:ECDHE_RSA_AES_128_GCM_SHA256:128)
+ id 1rc1qN-0006Ut-2r; Mon, 19 Feb 2024 12:29:55 +0100
+Message-ID: <5727309c-6ced-45b8-bb0c-110b3893aa4f@leemhuis.info>
+Date: Mon, 19 Feb 2024 12:29:54 +0100
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1708338137; x=1739874137;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=DT+HJ/MRBgBoch9D0gcN3G58vRVjIVWEk0CwB5FZWGk=;
- b=cquIF8H7gese1yXWFmUzfa4T9OQ+R8LaXKnPLSKe+5q6JNVtOAQMYpA+
- bJnR/3k3sYtgOD9y9y48wwzpNR5CpmTEPzEeV5Kjwcfj1PBIKdrZjDq3K
- vbVYIcNq7B5egd00qYM6b01Q/QQohIooqDwEIEHsRUMDGknT93FIJuWvZ
- y0gON/k7561qfoVhtlLBmqiKAH+6Gvp0AWLWfQ1PO3zS4zTIMq28PfOSL
- KCmf3E63p+X4uyqkeiSLgNpHbTrs7tuJID4xRy4dNfmGoUsADIURc66Js
- azHpMHz4p/ZEX1yb0aSTPNvgHQ93VZr0lhEEspTTypEVdZM6eNU3wFvhg
- g==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=cquIF8H7
-Subject: [Intel-wired-lan] [PATCH iwl-next v4 5/5] ice: Document
- tx_scheduling_layers parameter
+User-Agent: Mozilla Thunderbird
+Content-Language: en-US, de-DE
+To: Jaroslav Pulchart <jaroslav.pulchart@gooddata.com>,
+ Jakub Kicinski <kuba@kernel.org>
+References: <CAK8fFZ7Xi3=1HFY400firmpRWzHDPsi90cUU5bjOkF00KNZWeA@mail.gmail.com>
+ <bce78734-d359-499b-9693-05549e6a73a4@intel.com>
+ <CAK8fFZ6PqCwgt1n4iuROs=76esQVSOS-HHL=0eN7+efeKT25Uw@mail.gmail.com>
+ <898b6ac8-186d-4675-a1e7-abd78b885d01@leemhuis.info>
+ <20240201065726.50a0b1f2@kernel.org>
+ <CAK8fFZ6jige-zA5YPMKVf3bB2gCL8WDrY-SCs5EWeJBn5A7YQg@mail.gmail.com>
+From: Thorsten Leemhuis <regressions@leemhuis.info>
+In-Reply-To: <CAK8fFZ6jige-zA5YPMKVf3bB2gCL8WDrY-SCs5EWeJBn5A7YQg@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-bounce-key: webpack.hosteurope.de; regressions@leemhuis.info; 1708342201;
+ 66ee2f78; 
+X-HE-SMSGID: 1rc1qN-0006Ut-2r
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dmarc=none (p=none dis=none)
+ header.from=leemhuis.info
+Subject: Re: [Intel-wired-lan] [REGRESSION] Intel ICE Ethernet driver in
+ linux >= 6.6.9 triggers extra memory consumption and cause continous
+ kswapd* usage and continuous swapping
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,76 +92,58 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, Mateusz Polchlopek <mateusz.polchlopek@intel.com>,
- Michal Wilczynski <michal.wilczynski@intel.com>, horms@kernel.org,
- przemyslaw.kitszel@intel.com
+Cc: Linux regressions mailing list <regressions@lists.linux.dev>,
+ Daniel Secik <daniel.secik@gooddata.com>,
+ Jesse Brandeburg <jesse.brandeburg@intel.com>,
+ Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Dave Ertman <david.m.ertman@intel.com>, Igor Raits <igor@gooddata.com>,
+ intel-wired-lan@lists.osuosl.org
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Michal Wilczynski <michal.wilczynski@intel.com>
+On 01.02.24 18:19, Jaroslav Pulchart wrote:
+>>
+>> On Wed, 24 Jan 2024 15:29:38 +0100 Linux regression tracking (Thorsten
+>> Leemhuis) wrote:
+>>>>> I think that's a bad bisect. There is no reason I could understand for
+>>>>> that change to cause a continuous or large leak, it really doesn't make
+>>>>> any sense. Reverting it consistently helps? You're not just rewinding
+>>>>> the tree back to that point, right? just running 6.6.9 without that
+>>>>> patch? (sorry for being pedantic, just trying to be certain)
+>>>>
+>>>> Reverting just the single bisected commit continuously helps for >=
+>>>> 6.6.9 and as well for current 6.7.
+>>>> We cannot use any new linux kernel without reverting it due to this
+>>>> extra memory utilization.
+>>>
+>>> Quick query: what's the status wrt to this regression? Looks like
+>>> nothing happened in the past week.
+>>
+>> Is someone working on this? Indeed the commit in question looks
+>> harmless but can't argue with the revert helping :S
+> 
+> No clue if someone is working on it,
 
-New driver specific parameter 'tx_scheduling_layers' was introduced.
-Describe parameter in the documentation.
+Yeah, a quick public status update would be really helpful. And maybe
+some debugging tips that might enable Jaroslav to pinpoint the real
+problem.
 
-Signed-off-by: Michal Wilczynski <michal.wilczynski@intel.com>
-Co-developed-by: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
-Signed-off-by: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
----
- Documentation/networking/devlink/ice.rst | 41 ++++++++++++++++++++++++
- 1 file changed, 41 insertions(+)
+> however the commit itself is a
+> trigger of some other issue.
+> 
+> The analysis of my colleague Igor (see previous email) shows the
+> memory consumption is caused by queues of each ice network interface
+> (even the unused ones). Our final fix was to lower the queues to 6 for
+> used interfaces and 2 of unused interfaces manually.
 
-diff --git a/Documentation/networking/devlink/ice.rst b/Documentation/networking/devlink/ice.rst
-index efc6be109dc3..1ae46dee0fd5 100644
---- a/Documentation/networking/devlink/ice.rst
-+++ b/Documentation/networking/devlink/ice.rst
-@@ -36,6 +36,47 @@ Parameters
-        The latter allows for bandwidth higher than external port speed
-        when looping back traffic between VFs. Works with 8x10G and 4x25G
-        cards.
-+   * - ``tx_scheduling_layers``
-+     - permanent
-+     - The ice hardware uses hierarchical scheduling for Tx with a fixed
-+       number of layers in the scheduling tree. Root node is representing a
-+       port, while all the leaves represents the queues. This way of
-+       configuring Tx scheduler allows features like DCB or devlink-rate
-+       (documented below) for fine-grained configuration how much BW is given
-+       to any given queue or group of queues, as scheduling parameters can be
-+       configured at any given layer of the tree. By default 9-layer tree
-+       topology was deemed best for most workloads, as it gives optimal
-+       performance to configurability ratio. However for some specific cases,
-+       this might not be the case. A great example would be sending traffic to
-+       queues that is not a multiple of 8. Since in 9-layer topology maximum
-+       number of children is limited to 8, the 9th queue has a different parent
-+       than the rest, and it's given more BW credits. This causes a problem
-+       when the system is sending traffic to 9 queues:
-+
-+       | tx_queue_0_packets: 24163396
-+       | tx_queue_1_packets: 24164623
-+       | tx_queue_2_packets: 24163188
-+       | tx_queue_3_packets: 24163701
-+       | tx_queue_4_packets: 24163683
-+       | tx_queue_5_packets: 24164668
-+       | tx_queue_6_packets: 23327200
-+       | tx_queue_7_packets: 24163853
-+       | tx_queue_8_packets: 91101417 < Too much traffic is sent to 9th
-+
-+       Sometimes this might be a big concern, so the idea is to empower the
-+       user to switch to 5-layer topology, enabling performance gains but
-+       sacrificing configurability for features like DCB and devlink-rate.
-+
-+       This parameter gives user flexibility to choose the 5-layer transmit
-+       scheduler topology. After switching parameter reboot is required for
-+       the feature to start working.
-+
-+       User could choose 9 (the default) or 5 as a value of parameter, e.g.:
-+       $ devlink dev param set pci/0000:16:00.0 name tx_scheduling_layers
-+       value 5 cmode permanent
-+
-+       And verify that value has been set:
-+       $ devlink dev param show pci/0000:16:00.0 name tx_scheduling_layers
- 
- Info versions
- =============
--- 
-2.38.1
+Despite the above allow me to ask: Can you live with that workaround?
+Ideally of course this should be fixed, but well, the world sometimes is
+a tricky place. :-/
 
+Ciao, Thorsten (wearing his 'the Linux kernel's regression tracker' hat)
+--
+Everything you wanna know about Linux kernel regression tracking:
+https://linux-regtracking.leemhuis.info/about/#tldr
+If I did something stupid, please tell me, as explained on that page.
+
+#regzbot poke
