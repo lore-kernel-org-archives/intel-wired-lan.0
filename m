@@ -4,89 +4,92 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 46163C48BC4
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 20 Feb 2024 10:55:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 61851C48BC3
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 20 Feb 2024 10:55:46 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id B74E3409E9;
-	Tue, 20 Feb 2024 10:55:44 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id CC27741192;
+	Tue, 20 Feb 2024 10:55:45 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 3ZhFpa-gAl1r; Tue, 20 Feb 2024 10:55:43 +0000 (UTC)
+	with ESMTP id TpKeul2RIRYq; Tue, 20 Feb 2024 10:55:45 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B2EB740A46
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 11BD340A46
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1708426543;
-	bh=9bvIwoKgd+YMN9aJpsdiwkl1aJqihy6VhDsQR6HMyo4=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=Kq9MgvwG0fMfa+P+007cH3hXAGY0VUfuWmDda0YVNPEMf3GtOk3RUyAebyl7BLHht
-	 1z32QkEwXTt2B6s02q2/L1bn6qPDaqxQkASpNd6Xkb9MKWVYjpuCZjE85monYcWbjd
-	 dSiMmVUrV30iF4F4xEjMNxKVAiN7Cs7uorvmywheTJAcyQDp6WQUrvQSa/5E4iSrF/
-	 LToT1R7FzGRrcawvY1CwaN0DSkXINL0DtHKf9ot+2OlSwtbhz/AwAa9mCggA/2btbJ
-	 vczCtKmJLBAOnynRuzuaAqTGm6/UzhI7m3FPVgABS3PbFU1KWtLkRRtLtTDpGIldmW
-	 PT3GvypTBmcMQ==
+	s=default; t=1708426545;
+	bh=RNqkBr5EXhbmCwdWwaeHlc038ZzRJWj4C9AjW6/MlPQ=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=vp2XnTHN3ebDBhs5FBV/joiMsMAUstCnbKGQ2GbVT3J6/BjgGMUfE6AG4s3rqUDDJ
+	 kV9/x6ZFeD9dNjSVNVgVfDZI+U9oE4D1IoWncvFZgoyWH8iW1qIF9bYNrHu5+9IOUu
+	 7FBCTNZB4MT95n96ZIpMQNv/NllWXSvkpjNawXB+EZR6vhRFHuvbaIWyqpjHP+K8Lt
+	 CG/xVrseg2lWr5IvDJhD4BPV63/nKblOYryipBAc2rTsdz+rt311VIDgWioaOMr5X3
+	 YOOsSHsRc8NU13U1QNAb4o1eAxTWyohyjaoSiTu6ZpxzLF4jX+fH7iq2qnZLWc8NAH
+	 KKAXrtQw9EEGg==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id B2EB740A46;
-	Tue, 20 Feb 2024 10:55:43 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 11BD340A46;
+	Tue, 20 Feb 2024 10:55:45 +0000 (UTC)
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 9B21A1BF279
- for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Feb 2024 10:55:42 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 2E61D1BF279
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Feb 2024 10:55:43 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 93A7941583
- for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Feb 2024 10:55:42 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 27D904155D
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Feb 2024 10:55:43 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id x_k4kpg2FmCr for <intel-wired-lan@lists.osuosl.org>;
+ with ESMTP id LbSN0OBfpK3t for <intel-wired-lan@lists.osuosl.org>;
  Tue, 20 Feb 2024 10:55:42 +0000 (UTC)
 Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.12;
  helo=mgamail.intel.com; envelope-from=michal.swiatkowski@linux.intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org E1A104155D
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E1A104155D
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 5E0444157C
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 5E0444157C
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.12])
- by smtp4.osuosl.org (Postfix) with ESMTPS id E1A104155D
- for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Feb 2024 10:55:41 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10989"; a="13934158"
-X-IronPort-AV: E=Sophos;i="6.06,172,1705392000"; d="scan'208";a="13934158"
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 5E0444157C
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Feb 2024 10:55:42 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10989"; a="13934162"
+X-IronPort-AV: E=Sophos;i="6.06,172,1705392000"; d="scan'208";a="13934162"
 Received: from fmviesa010.fm.intel.com ([10.60.135.150])
  by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 20 Feb 2024 02:55:40 -0800
+ 20 Feb 2024 02:55:42 -0800
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.06,172,1705392000"; 
-   d="scan'208";a="4734485"
+   d="scan'208";a="4734489"
 Received: from wasp.igk.intel.com (HELO GK3153-DR2-R750-36946.localdomain.com)
  ([10.102.20.192])
- by fmviesa010.fm.intel.com with ESMTP; 20 Feb 2024 02:55:39 -0800
+ by fmviesa010.fm.intel.com with ESMTP; 20 Feb 2024 02:55:40 -0800
 From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Tue, 20 Feb 2024 11:59:48 +0100
-Message-ID: <20240220105950.6814-1-michal.swiatkowski@linux.intel.com>
+Date: Tue, 20 Feb 2024 11:59:49 +0100
+Message-ID: <20240220105950.6814-2-michal.swiatkowski@linux.intel.com>
 X-Mailer: git-send-email 2.42.0
+In-Reply-To: <20240220105950.6814-1-michal.swiatkowski@linux.intel.com>
+References: <20240220105950.6814-1-michal.swiatkowski@linux.intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
  t=1708426542; x=1739962542;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=FOQu5qKbXJVFuxXYfcyWb7ERDO73+C1UvTc0Xxrvbj8=;
- b=VRjPQyfAqyYiocNRnDf5FQE7+BCTUYFAfXLGc3mguk294L9/WRkOAeCS
- DR2C8tU5+qCUyGn+znfyviRgpJjptavEo7lwbyG2qtI6WfwW9K1wJrcw6
- i81YZjKisAqyFY5ps7hfNZSZOuRxOGSZe6sOUsTlq/dpTNWsTiF6cUQim
- GOm2w9iYEYArFiGZdrRqMW2FRdW+J+jvIUdeQSLxUtZ2fKb0ysGE/HcqI
- vKFPTsurEAKiBjfiY7ppyLCcRgfHaK6o52A0BxvBR4o6ZwkjFpUlacOra
- cqJ5NooBalSBlQ48qAHcnAqTaIt/sqxdmXkJSjHQNVpcv/xdVedRf4rJ9
- w==;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=iXy9l0bdbeQqEXnZFJi+2J80dy5971br0gFmslEOHsE=;
+ b=PyosXVBvcBG/52v/Uejj8JMEEJw/suVBJ2B1sAwDciYKMKzmzIz+Eqka
+ 037mg+lz12A9Ummig986oqGWe/QIH6iWUnNbfnJKsNF+Tfx4xihiF8wff
+ nBNQcI2NF8YfHN2zdAyArQhuPbq6qoSvtDFdy5t+Ty/8SS3aBl9DHviqF
+ 3br8j2AQ3tJ8oAshvulv8NapMc9uCLRqfrbYQDXF9+FppSSibSG0JMKZm
+ b92TNH1xwLmIh9OULMjh4Yv398IwQYhMZCHuduf4J18qluWZ5dSjLA/Rb
+ Q5ozW624KIYt3VldiWLP9vzaltocmnImoSg8OWIueVZuC4feq+ZMq6KI+
+ A==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=none (p=none dis=none)
  header.from=linux.intel.com
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=VRjPQyfA
-Subject: [Intel-wired-lan] [iwl-next v1 0/2] ice: extend tc flower offload
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=PyosXVBv
+Subject: [Intel-wired-lan] [iwl-next v1 1/2] ice: tc: check src_vsi in case
+ of traffic from VF
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,24 +102,59 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org,
- Michal Swiatkowski <michal.swiatkowski@linux.intel.com>,
- wojciech.drewek@intel.com, marcin.szycik@intel.com,
- sridhar.samudrala@intel.com
+Cc: wojciech.drewek@intel.com, marcin.szycik@intel.com, netdev@vger.kernel.org,
+ Jedrzej Jagielski <jedrzej.jagielski@intel.com>, sridhar.samudrala@intel.com,
+ Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Extend hardware support for tc flower to match ip_proto field (patch 2)
-and source VSI metadata when the packets are sent from VF (patch 1).
+In case of traffic going from the VF (so ingress for port representor)
+there should be a check for source VSI. It is needed for hardware to not
+match packets from different port with filters added on other port.
 
-Michal Swiatkowski (2):
-  ice: tc: check src_vsi in case of traffic from VF
-  ice: tc: allow ip_proto matching
+It is only for "from VF" traffic, because other traffic direction
+doesn't have source VSI.
 
- drivers/net/ethernet/intel/ice/ice_tc_lib.c | 25 +++++++++++++++++++--
- drivers/net/ethernet/intel/ice/ice_tc_lib.h |  1 +
- 2 files changed, 24 insertions(+), 2 deletions(-)
+Reviewed-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
+Reviewed-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
+Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_tc_lib.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
+diff --git a/drivers/net/ethernet/intel/ice/ice_tc_lib.c b/drivers/net/ethernet/intel/ice/ice_tc_lib.c
+index b890410a2bc0..49ed5fd7db10 100644
+--- a/drivers/net/ethernet/intel/ice/ice_tc_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_tc_lib.c
+@@ -28,6 +28,8 @@ ice_tc_count_lkups(u32 flags, struct ice_tc_flower_lyr_2_4_hdrs *headers,
+ 	 * - ICE_TC_FLWR_FIELD_VLAN_TPID (present if specified)
+ 	 * - Tunnel flag (present if tunnel)
+ 	 */
++	if (fltr->direction == ICE_ESWITCH_FLTR_EGRESS)
++		lkups_cnt++;
+ 
+ 	if (flags & ICE_TC_FLWR_FIELD_TENANT_ID)
+ 		lkups_cnt++;
+@@ -363,6 +365,11 @@ ice_tc_fill_rules(struct ice_hw *hw, u32 flags,
+ 	/* Always add direction metadata */
+ 	ice_rule_add_direction_metadata(&list[ICE_TC_METADATA_LKUP_IDX]);
+ 
++	if (tc_fltr->direction == ICE_ESWITCH_FLTR_EGRESS) {
++		ice_rule_add_src_vsi_metadata(&list[i]);
++		i++;
++	}
++
+ 	rule_info->tun_type = ice_sw_type_from_tunnel(tc_fltr->tunnel_type);
+ 	if (tc_fltr->tunnel_type != TNL_LAST) {
+ 		i = ice_tc_fill_tunnel_outer(flags, tc_fltr, list, i);
+@@ -820,6 +827,7 @@ ice_eswitch_add_tc_fltr(struct ice_vsi *vsi, struct ice_tc_flower_fltr *fltr)
+ 
+ 	/* specify the cookie as filter_rule_id */
+ 	rule_info.fltr_rule_id = fltr->cookie;
++	rule_info.src_vsi = vsi->idx;
+ 
+ 	ret = ice_add_adv_rule(hw, list, lkups_cnt, &rule_info, &rule_added);
+ 	if (ret == -EEXIST) {
 -- 
 2.42.0
 
