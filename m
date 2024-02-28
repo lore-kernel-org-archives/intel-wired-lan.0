@@ -4,111 +4,109 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8EAA3C5478C
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 28 Feb 2024 16:12:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D9C54C5478C
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 28 Feb 2024 16:14:04 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 5D624401BC;
-	Wed, 28 Feb 2024 16:12:51 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id A0D8E41738;
+	Wed, 28 Feb 2024 16:14:04 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id inLC7-lk2GKm; Wed, 28 Feb 2024 16:12:50 +0000 (UTC)
+	with ESMTP id lSVx_eTLRJAx; Wed, 28 Feb 2024 16:14:04 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C3EA14052E
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E771E409F0
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1709136770;
-	bh=/Zr38ZfbAtVyJs0WSKTX26b9HT0iMoobWLC4JSkjjuk=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=TQ0uXfy0e49poC4N+Pp1TLOSMra6nTSvH/ehORGCUWRhpf7Swqy4lKzEGvoEDkzhh
-	 yJZql6jkHO8vON6UtjRNiHGQNSKJ/KBvgB9l5KN7QGgCivle7vPciAQhHvJdsjys++
-	 uebqhnrsbaGrLPqqOtSYDe+2EI7LYPrhMehXsi255vSHBjncRKqpRCIRutX7rTrjuA
-	 Ru7xADLcIz3yMiyQRSso1uqyJZLjfDn1RZaTpJki1cf0ZmnQiAKnvrqjXHYZzp7B+R
-	 pK8jk9DsbAUvPgMzVncWOink2o6L9yOmURhQLeeIN9zCrv+SyNvWkbzxMljrnznQkj
-	 RqXUj27Mvhk0Q==
+	s=default; t=1709136844;
+	bh=45YCxhrvUCz1KlVt7J4vAlQKroPfuxlv6s5YsGgz7tQ=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=7BVXz8U+tdxo7yv1ztxHJANjo8JvPkquC6nQz7hVbAwspQDLMyxmXE9isdWZJ6QhJ
+	 c4QN1RyceZ7UIcmysoOjGmxUySuHUH8UEhBIwAOnM815o0kWbpx/SqgfQw5rb4rpwP
+	 veREMyWzgjgOG6iwLYQh1xFYPXlv+RgYc0s9JnLmKCWaaA+6k0pCuU2RmCiQ1jokJn
+	 9xSSvzotLOegqZ45257Taa0QAVT7jAILwfJ47WLgerxpyDdfLvXfneuTuFjbsLqTZn
+	 K2FtTkdvla7YoiE5Na4orlI5gVQvQjO9h56eRfC/pxR69xXIUVuuMq7B3L7ZxSYXmj
+	 OH0JDhmG4HyJw==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id C3EA14052E;
-	Wed, 28 Feb 2024 16:12:50 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id CD1561BF294
- for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Feb 2024 15:56:29 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id E771E409F0;
+	Wed, 28 Feb 2024 16:14:03 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 9F6C81BF2B3
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Feb 2024 16:14:02 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id C5C23401A1
- for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Feb 2024 15:56:29 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 9885B822C3
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Feb 2024 16:14:02 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id mqqr_-rTBCju for <intel-wired-lan@lists.osuosl.org>;
- Wed, 28 Feb 2024 15:56:28 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id dJbHLhvnj0hf for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 28 Feb 2024 16:14:02 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2a00:1450:4864:20::232; helo=mail-lj1-x232.google.com;
- envelope-from=rand.sec96@gmail.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 4ABE1400D9
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 4ABE1400D9
-Received: from mail-lj1-x232.google.com (mail-lj1-x232.google.com
- [IPv6:2a00:1450:4864:20::232])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 4ABE1400D9
- for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Feb 2024 15:56:28 +0000 (UTC)
-Received: by mail-lj1-x232.google.com with SMTP id
- 38308e7fff4ca-2d2ab9c5e83so19428001fa.2
- for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Feb 2024 07:56:28 -0800 (PST)
+ client-ip=2607:f8b0:4864:20::112d; helo=mail-yw1-x112d.google.com;
+ envelope-from=yury.norov@gmail.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org CAE29821A4
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org CAE29821A4
+Received: from mail-yw1-x112d.google.com (mail-yw1-x112d.google.com
+ [IPv6:2607:f8b0:4864:20::112d])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id CAE29821A4
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Feb 2024 16:14:01 +0000 (UTC)
+Received: by mail-yw1-x112d.google.com with SMTP id
+ 00721157ae682-60821136c5aso40309697b3.1
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Feb 2024 08:14:01 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20230601; t=1709135786; x=1709740586;
- h=content-transfer-encoding:mime-version:message-id:date:subject:cc
- :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
- :reply-to;
- bh=/Zr38ZfbAtVyJs0WSKTX26b9HT0iMoobWLC4JSkjjuk=;
- b=IQg3wHcTa3LF85w/zBcrEXGNMcc103DZKUHBcJkwGsWz7DguiO4tmKk3p940DmG6ge
- GnudxZryoU1ITVvdweC+gdgBN8zqpbjgPQY2gd98q4HjCVHNMqWHK5goZ5YhPzoZGDG/
- svv0jmX0zOrFZNEF6jh9iGxSsauXq9MEwxmozrREz8y1iCikKrye9bdV3213oSvdWFmt
- OpIS97UaoZ1qEOxIeMz+uXJ3KDUR02WpNtw0tZCzHbRwbQUCrPleQDNBRzWFLU6SJA4C
- vzM7/lDGVkNOqzpg0D/9Uvm2FwJPL/0dg6/Df4rb0izV7AiSQn3V0I5dW4plTGIA7pCn
- xaOA==
+ d=1e100.net; s=20230601; t=1709136840; x=1709741640;
+ h=in-reply-to:content-disposition:mime-version:references:message-id
+ :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+ :message-id:reply-to;
+ bh=45YCxhrvUCz1KlVt7J4vAlQKroPfuxlv6s5YsGgz7tQ=;
+ b=NOA6wWtFwXU+gSlgLUHd2o0Fh//KVNhjp3gMoirLLMiCtXKwMrLQM/F41TruXeqRIR
+ d4p+iQvReFMNlbysmGKfKJtbz5X881K2M8Pl5nZ66vB1Uy6E65G4kwmaD5bi9PcN+mfX
+ 2rNX4w17tbqUlu2b6l23qsKXmeDCuD9faoqkU0m2XSpI/7SEfC03WCQzNj0P7ZH9L/4O
+ +WWd+8NohDoBSAmGKHUgVCQ8OJwUczs4Oj518DQRNwUNkthccsZ75pt07j9rCnzMI3Ln
+ j7xQNrAI5GLR4TLrAGwSBk2Kjd65TktI8ih7vrIlGFCsNwiw03/trSOhpf1ZYN7yYWZI
+ Ri5A==
 X-Forwarded-Encrypted: i=1;
- AJvYcCU7yssMcTzGLWyUklfnJbPqDEw2dLbyeE+efllxVrqHuK6cBxayKowlEmUbcijq/K9qvEfoPVVSPPjr/so/L3AJNlIOhiWLWNjXKAtdcqna9w==
-X-Gm-Message-State: AOJu0YxxXx62NhX2e/Rg+h9yv3fM/kwTv7pA3UU6pRYFzaH2zAeXxQFh
- NYp/CKRJIfUANAJuPG7G9+gJxlb4md9OJqshmEK6eQqxVQcJRtW2
-X-Google-Smtp-Source: AGHT+IFNobqy9dV9FmZ8nJcVhIZ7gSPgpm3c1uQL5miWa0hstEvZcs9iBhGYN77ZysQDhJVYR3TbGA==
-X-Received: by 2002:a2e:a716:0:b0:2d2:e554:976 with SMTP id
- s22-20020a2ea716000000b002d2e5540976mr351159lje.14.1709135785839; 
- Wed, 28 Feb 2024 07:56:25 -0800 (PST)
-Received: from rand-ubuntu-development.dl.local (mail.confident.ru.
- [85.114.29.218]) by smtp.gmail.com with ESMTPSA id
- e1-20020a2e8ec1000000b002d2d8d2ee45sm164863ljl.12.2024.02.28.07.56.25
+ AJvYcCWXUJ82HKLJXr16tJkePkRBWGugPMkroT/C2zNHgn2jOp5J47tYA2CknPgfnb+8SDfOVxPEByLGgcsi2tZXBnsFdc8Khgcv+zRLcTvnntW4hg==
+X-Gm-Message-State: AOJu0Yxtkg6keqO1/0z80t+cam3ieLhLHIaOPr62wL6QzGU7x7r2J9bE
+ KP50XbqMcWDi4CWcMB4ThuGUlwygzMnQ+QaRYCG4CQBjuA/ob0NB
+X-Google-Smtp-Source: AGHT+IF/XdTViG4nS4Tgw4GzisgwWwhJcP/ftilWPL2A7fbswfOIesX+rYdfS2+pLR0JyM0z6TybVg==
+X-Received: by 2002:a81:f903:0:b0:608:e694:ffcd with SMTP id
+ x3-20020a81f903000000b00608e694ffcdmr4873054ywm.43.1709136840492; 
+ Wed, 28 Feb 2024 08:14:00 -0800 (PST)
+Received: from localhost ([2601:344:8301:57f0:2256:57ae:919c:373f])
+ by smtp.gmail.com with ESMTPSA id
+ w65-20020a817b44000000b00604198c3cafsm2438101ywc.61.2024.02.28.08.13.59
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 28 Feb 2024 07:56:25 -0800 (PST)
-From: Rand Deeb <rand.sec96@gmail.com>
-To: Jesse Brandeburg <jesse.brandeburg@intel.com>,
- Tony Nguyen <anthony.l.nguyen@intel.com>,
- "David S . Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>,
- intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Date: Wed, 28 Feb 2024 18:54:48 +0300
-Message-Id: <20240228155448.121603-1-rand.sec96@gmail.com>
-X-Mailer: git-send-email 2.34.1
+ Wed, 28 Feb 2024 08:14:00 -0800 (PST)
+Date: Wed, 28 Feb 2024 08:13:59 -0800
+From: Yury Norov <yury.norov@gmail.com>
+To: Alexander Lobakin <aleksander.lobakin@intel.com>
+Message-ID: <Zd9bxxRQboZI98KX@yury-ThinkPad>
+References: <20240201122216.2634007-1-aleksander.lobakin@intel.com>
+ <20240201122216.2634007-3-aleksander.lobakin@intel.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Mailman-Approved-At: Wed, 28 Feb 2024 16:12:49 +0000
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240201122216.2634007-3-aleksander.lobakin@intel.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20230601; t=1709135786; x=1709740586; darn=lists.osuosl.org;
- h=content-transfer-encoding:mime-version:message-id:date:subject:cc
- :to:from:from:to:cc:subject:date:message-id:reply-to;
- bh=/Zr38ZfbAtVyJs0WSKTX26b9HT0iMoobWLC4JSkjjuk=;
- b=WWEDr1XnpnGrruJNx/dZyAh3264yXejbb3iF3FQn6Ufsv/sVKC/I0Tscte7lj2oQ5Q
- P0aqki7CbsXq5UgKWUpFdje9MT+u+x4bxUz05J/n2qgF767hHIT37BQ7r0RScEZPlsaL
- 83mJ5h3lafPeFjI1vgUxu/LGuooDgfYORYKQhP84USrkE6x9xqPu/K9HoSPb2MRR0s4r
- suIN5fbzXjtfZ/8ls/p0iGSIF8zeaIJ0RPP+ygEHaJcPz7FJpmXA7Ska8C3+5X0cWvmb
- SbMc1dLgxNW83K5NZX4++DxUR5ckoUm1Prd9JIx46XThsVSUjOMSeHdao21TU0TAoPEG
- FVzw==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ d=gmail.com; s=20230601; t=1709136840; x=1709741640; darn=lists.osuosl.org;
+ h=in-reply-to:content-disposition:mime-version:references:message-id
+ :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+ bh=45YCxhrvUCz1KlVt7J4vAlQKroPfuxlv6s5YsGgz7tQ=;
+ b=OxjWWAxPVSzaLQPPQma0qHh9PALd0PiDadHLCqDRB7AIrXoI/ZaJ3ACtZasOLd0aju
+ M7YiDXPbUz8njuvStrwMiRAxY69BF4IkbJrAMICQu0qVqjUeNCq/XY6y3IlkrBgmfQSx
+ 9KiHKRuMHCBrLn0zHpebSpvX56uxtmmYYmRabg0QPMF77Oc9dmH9qcvPvJ5nMSwbhQ0F
+ 00J1NeX1aCwPLZp81QmKeMMetqA9pRvfkPUhiIZUULwDiH8Mjyaml24TQttQPUh+c+i/
+ fhscrbGdlnjZhpB7e7TowsgIp4v9qHFLgl5eo+bkJ4d2UvZu+m5iJJJVD2Im8VAqyVht
+ vqJg==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=gmail.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20230601 header.b=WWEDr1Xn
-Subject: [Intel-wired-lan] [PATCH] net: ice: Fix potential NULL pointer
- dereference in ice_bridge_setlink()
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
+ header.a=rsa-sha256 header.s=20230601 header.b=OxjWWAxP
+Subject: Re: [Intel-wired-lan] [PATCH net-next v5 02/21] lib/test_bitmap:
+ add tests for bitmap_{read, write}()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -121,34 +119,41 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: voskresenski.stanislav@confident.ru, deeb.rand@confident.ru,
- lvc-project@linuxtesting.org, Rand Deeb <rand.sec96@gmail.com>
+Cc: Rasmus Villemoes <linux@rasmusvillemoes.dk>, dm-devel@redhat.com,
+ Alexander Potapenko <glider@google.com>, Jiri Pirko <jiri@resnulli.us>,
+ linux-s390@vger.kernel.org, Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ intel-wired-lan@lists.osuosl.org, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>, Wojciech Drewek <wojciech.drewek@intel.com>,
+ Ido Schimmel <idosch@nvidia.com>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Andy Shevchenko <andy@kernel.org>, Eric Dumazet <edumazet@google.com>,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Marcin Szycik <marcin.szycik@linux.intel.com>, Simon Horman <horms@kernel.org>,
+ Michal Swiatkowski <michal.swiatkowski@linux.intel.com>, ntfs3@lists.linux.dev,
+ "David S. Miller" <davem@davemloft.net>, linux-btrfs@vger.kernel.org
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The function ice_bridge_setlink() may encounter a NULL pointer dereference
-if nlmsg_find_attr() returns NULL and br_spec is dereferenced subsequently
-in nla_for_each_nested(). To address this issue, add a check to ensure that
-br_spec is not NULL before proceeding with the nested attribute iteration.
+On Thu, Feb 01, 2024 at 01:21:57PM +0100, Alexander Lobakin wrote:
+> From: Alexander Potapenko <glider@google.com>
+> 
+> Add basic tests ensuring that values can be added at arbitrary positions
+> of the bitmap, including those spanning into the adjacent unsigned
+> longs.
+> 
+> Two new performance tests, test_bitmap_read_perf() and
+> test_bitmap_write_perf(), can be used to assess future performance
+> improvements of bitmap_read() and bitmap_write():
+> 
+> [    0.431119][    T1] test_bitmap: Time spent in test_bitmap_read_perf:	615253
+> [    0.433197][    T1] test_bitmap: Time spent in test_bitmap_write_perf:	916313
+> 
+> (numbers from a Intel(R) Xeon(R) Gold 6154 CPU @ 3.00GHz machine running
+> QEMU).
+> 
+> Signed-off-by: Alexander Potapenko <glider@google.com>
+> Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> Acked-by: Yury Norov <yury.norov@gmail.com>
+> Signed-off-by: Alexander Lobakin <aleksander.lobakin@intel.com>
 
-Signed-off-by: Rand Deeb <rand.sec96@gmail.com>
----
- drivers/net/ethernet/intel/ice/ice_main.c | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 4f0d63fa5709..ba2bbd53d543 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -6530,6 +6530,8 @@ ice_bridge_setlink(struct net_device *dev, struct nlmsghdr *nlh,
- 	pf_sw = pf->first_sw;
- 	/* find the attribute in the netlink message */
- 	br_spec = nlmsg_find_attr(nlh, sizeof(struct ifinfomsg), IFLA_AF_SPEC);
-+	if (!br_spec)
-+		return -EINVAL;
- 
- 	nla_for_each_nested(attr, br_spec, rem) {
- 		__u16 mode;
--- 
-2.34.1
-
+Signed-off-by: Yury Norov <yury.norov@gmail.com>
