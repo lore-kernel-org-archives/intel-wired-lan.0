@@ -4,185 +4,113 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7EDEDC5478C
-	for <intel-wired-lan@archiver.kernel.org>; Fri,  1 Mar 2024 15:28:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6ACD2C54E49
+	for <intel-wired-lan@archiver.kernel.org>; Fri,  1 Mar 2024 15:47:12 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 3A2E760FCD;
-	Fri,  1 Mar 2024 15:28:27 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id E913D6177E;
+	Fri,  1 Mar 2024 15:47:11 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id psIXmbyrXYJv; Fri,  1 Mar 2024 15:28:26 +0000 (UTC)
+	with ESMTP id tl1LBortqq7x; Fri,  1 Mar 2024 15:47:10 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7847C6104D
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 58BA06173E
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1709306906;
-	bh=DVpc2hqdtTLPuV74AR2Dvd/12zrwpOeHNgpLRiJ1cxM=;
-	h=From:To:Date:References:In-Reply-To:Subject:List-Id:
+	s=default; t=1709308030;
+	bh=45+oyGUScWBaVKRiotg0onHCdUVCKkP4++L4vN3JsYA=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=qiGw9ikK6V0ZRlFD0t0/cdgvm51OTneKth503yYTeZBwBhLUjv45mo175lqyySn9h
-	 MoANIZvJC7V+P/AXVMBJwV3i33bRWKABLskLcwaec1/BAKSeSnjzv0wSWt9ExVasZc
-	 /MwjJpxOC5IE11jJ//+SpN3yEs0cVf2ZYXkUee6S0sI8LLB+6Cpo2Bl71ftyL2z3a/
-	 zhKBKueM9LAyO2+eyZeiIZTaoeMmg4LD2JWr3x3dRwRc1YCRMsl75LTrZqRORJL9Jl
-	 Dqi5NQJ4cIuEX7g17wxkPWu2KQXMCdHwUcNvLgOHCU1tpbxpucHqwjPsIlhM69Rxa8
-	 SpLaO1BpYDbvA==
+	b=3cq3568oGJ82P0Frc/Ayo1RykaQCWrnjRB+ouQzfePsEfMP1Ue7CM3BAqKJFDxHkD
+	 GQkz18sI7gYv4mZnmrskiTbVObt1zSG/BxftaOS2CyCNx7QdbhPy1WGFBcy5vj8TVX
+	 F2/0lyS0sxvKY27NNFGn8hNIMIuj6Px79um5z5FsrxmRP19EEImb0PDZwjfmp2J98k
+	 SXj8HfJgOeQ/1RtKaRMn41Wgxw66nyVjtS+P4pgmEQhUCF/pP5Mc08IwICjlQxPSb0
+	 3a6NUFhH7aNuXzi/xwyz4zgDS+Biic+8kLZz9V9zzVr+/OkjpW5Im8rBGsO3kXn46E
+	 lsQymb1hFmPEw==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 7847C6104D;
-	Fri,  1 Mar 2024 15:28:26 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 782301BF326
- for <intel-wired-lan@lists.osuosl.org>; Fri,  1 Mar 2024 15:28:25 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 58BA06173E;
+	Fri,  1 Mar 2024 15:47:10 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id A00811BF326
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  1 Mar 2024 15:47:08 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 6361A41EB7
- for <intel-wired-lan@lists.osuosl.org>; Fri,  1 Mar 2024 15:28:25 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 9834540193
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  1 Mar 2024 15:47:08 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id zVvCM7EPjUoV for <intel-wired-lan@lists.osuosl.org>;
- Fri,  1 Mar 2024 15:28:24 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.19;
- helo=mgamail.intel.com; envelope-from=rafal.romanowski@intel.com;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 717A241EB6
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 717A241EB6
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.19])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 717A241EB6
- for <intel-wired-lan@lists.osuosl.org>; Fri,  1 Mar 2024 15:28:24 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,11000"; a="3699062"
-X-IronPort-AV: E=Sophos;i="6.06,196,1705392000"; 
-   d="scan'208";a="3699062"
-Received: from fmviesa008.fm.intel.com ([10.60.135.148])
- by orvoesa111.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 01 Mar 2024 07:21:16 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.06,196,1705392000"; 
-   d="scan'208";a="8364677"
-Received: from fmsmsx601.amr.corp.intel.com ([10.18.126.81])
- by fmviesa008.fm.intel.com with ESMTP/TLS/AES256-GCM-SHA384;
- 01 Mar 2024 07:21:15 -0800
-Received: from fmsmsx610.amr.corp.intel.com (10.18.126.90) by
- fmsmsx601.amr.corp.intel.com (10.18.126.81) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.35; Fri, 1 Mar 2024 07:21:14 -0800
-Received: from FMSEDG603.ED.cps.intel.com (10.1.192.133) by
- fmsmsx610.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.35 via Frontend Transport; Fri, 1 Mar 2024 07:21:14 -0800
-Received: from NAM02-DM3-obe.outbound.protection.outlook.com (104.47.56.41) by
- edgegateway.intel.com (192.55.55.68) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.1.2507.35; Fri, 1 Mar 2024 07:21:12 -0800
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=YO7Eq6CIxkMos2C1evSZqr19mnOQBxTvTV0G5/mbQtx2LM0J65efU4HxEC82cHEvDkMJ4ca5ngrzD3erx7cAjrbyZ1Qdb6ikH+xIUvWmBI/+lFVi7EwqNKU30jVIOT1XQ0Ct2Nf94PU5enRstFvCrcprcY0vusk8Vo0Qh7jJXhiD+LrTO/IIZcykjOYikFvqEy8sIEPKFcFvKsIt3YcaLyeMIQ83RdkWeEXbhcWfFZBBggicnxauij5OQVJfzuskHp1i5pnvy+Z0LWCXSf5C3EEGRKoMZUNWgIjkx1ZLmdlhTwwmvJqVUev+r92u6ZHGt3/ag50OpTIVZVFihFVB1w==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=DVpc2hqdtTLPuV74AR2Dvd/12zrwpOeHNgpLRiJ1cxM=;
- b=ec116ivZWdAOeFjF7txPiK89TuK9gMXTBm/h8xRE9pHFPpm28RyUcGuplyqabpexM/4VNjSCvpeE6nTNA9pPGjStyGRHLtUZqVg8s1ZDVx3zb6iylZy0f4iyW0jR/HxwmsRWWisPPJTG0pF5WH5l60M3XvT50Wj6QQ5ba23gase3U8jHAuvh99DD9Gx80zjDlExCbGUJHEAYweWpd4FcpAiXy9He1jN/jCOJu4Vo9Asfn4pLbC5ityELu1KNvhLpgC8SGb4rz2QBMjFQGIaq1TdhD59I2eA3V4VOkeAdLytGSwr3cEI7PvX4NJM4vBotEWxEvUDjOYOxTvnYG3U8qA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
- dkim=pass header.d=intel.com; arc=none
-Received: from SJ0PR11MB5865.namprd11.prod.outlook.com (2603:10b6:a03:428::13)
- by SA1PR11MB7697.namprd11.prod.outlook.com (2603:10b6:806:33a::19)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7362.18; Fri, 1 Mar
- 2024 15:21:10 +0000
-Received: from SJ0PR11MB5865.namprd11.prod.outlook.com
- ([fe80::1859:eed7:cd98:cc08]) by SJ0PR11MB5865.namprd11.prod.outlook.com
- ([fe80::1859:eed7:cd98:cc08%7]) with mapi id 15.20.7362.010; Fri, 1 Mar 2024
- 15:21:10 +0000
-From: "Romanowski, Rafal" <rafal.romanowski@intel.com>
-To: "Keller, Jacob E" <jacob.e.keller@intel.com>, "Nguyen, Anthony L"
- <anthony.l.nguyen@intel.com>, Intel Wired LAN
- <intel-wired-lan@lists.osuosl.org>
-Thread-Topic: [Intel-wired-lan] [PATCH iwl-next 3/4] ice: use relative VSI
- index for VFs instead of PF VSI number
-Thread-Index: AQHaYSSK1R3m6KlG8U6rs0q/kpmjgLEjFb/w
-Date: Fri, 1 Mar 2024 15:21:10 +0000
-Message-ID: <SJ0PR11MB586501A13618C71956D2ACC18F5E2@SJ0PR11MB5865.namprd11.prod.outlook.com>
-References: <20240216220638.2558451-1-jacob.e.keller@intel.com>
- <20240216220638.2558451-4-jacob.e.keller@intel.com>
-In-Reply-To: <20240216220638.2558451-4-jacob.e.keller@intel.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: SJ0PR11MB5865:EE_|SA1PR11MB7697:EE_
-x-ms-office365-filtering-correlation-id: 63f4ede5-2b1a-4c84-0c09-08dc3a03397e
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam: BCL:0;
-x-microsoft-antispam-message-info: 5f6Y7N5y6v9WAxhCCnRBG5vSKmgN5gH34t0IzOPQCpOqez38l6q6Bw+bh2Ye0KTfRdGV+vou9Z5Uh+5JhzYs3ooDZrlF1rj9DjlyiL1t0akpJPIKc96GG9bXsQRZPAUQKjavtmrUrfAtyl+VXwTa8IT0PDxZRxdSZnhAhUQHq4rmoSBUMmYjvw77P81Sy5kQbaIqqoXT6b/3ky/Y3tLJ2nbaWO70v7LmMfe5EK2gLTC3GooJlFFwRdP+aSeHZd2W+YStJ3PUP+m9H9nD4mjHL3p7ys+T+swMoYEuWVWsxdFm+GLQuOmes2UeLUCaZ/ggxa0xU/6L7Rcnz3LuZrDhgY5Bh0YrNSDlbqxlQ7diHAzWHVmNhsrHBLYkWWcd6+tkzpJhab8p/wZUIqXXEoTNcFnboK/YSCairXFWWhzlo+4mR2Yu6tBLT6iDs19lg6ZydtU8Xs+tqw16q2/63xN//GkhQZbC7QHG0zOtTvEf5hhSAJ4wrVpTDc7JNmO7eT8btICfIXtfBk3mtdWtNGy/4B0d1sQKJs7cdcfMWWkQUdk2N8wayU30jMt1o/jW7xcfajxsgSwfIfiNTIqB3KeOvf8HMsvnqf/R18gDTT3u+iSkowrfzUbM41/JUoLJu7beGVnYXxzFNN3xiBc7x4nQVuRFRoflbaKkNFuW+rqMfHu8IGLiamo706wsrjmKKFfODSA1WMJEll2pLvPytYDE0wQT+uaDEERj87sIEWkRqGg=
-x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:SJ0PR11MB5865.namprd11.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230031)(38070700009); DIR:OUT; SFP:1101; 
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0: =?us-ascii?Q?4K5pv3mcE4s+4eXh6wMwssuR9d31riB1JVnCxzQBmF8hLciOnoKTl2yrODDe?=
- =?us-ascii?Q?5MqfC8kcFK8UWKHtV4SiW4D/xN7SEDTboHPl4mTQQT3MJKPzz84w78pBN1Wd?=
- =?us-ascii?Q?gNeZQx72+XVICHk3bXOYMSpFz4olXJqKiwCo+BbaCHCgbU4PeooK08o5BF6h?=
- =?us-ascii?Q?pKeRqTC3vxvD0RB8S8Dc4v3/qmDyNnSu1/8YtdUTlsjXjHW+T6xhL0HvQ6AC?=
- =?us-ascii?Q?Ps6b1MMZrMBFU7qPpvHk7kp/p0muLVuHldV9/k24x+ik6u96smkNd8hMpbGE?=
- =?us-ascii?Q?RaGcPBhJbgVAVGnzBLK7plrsRn/MUJPFG0ytxvwTuASZ99mihNYclbNKqQkr?=
- =?us-ascii?Q?7OY3pvwMbpIww04TjunCZEuhK2xZJWQaygOBVeuojvvms1JAclL5Yx+b1fpr?=
- =?us-ascii?Q?tWUKu/MVtghhwASKk4CN7g/9i3RoRl6z0/hPJvs4mT1mVEkxzfjwdwsd0dQ5?=
- =?us-ascii?Q?1C43S9zLGt7VG7URru2iY446S7nVEM1Lz0nNMWpBJqBfKzCGDzCDnVaXU/Jb?=
- =?us-ascii?Q?ICxu+SlkpM1KTzFrZCE0762KqRoClliOE9K8+OK6v2EYjR9DZ3iQmAXBFETh?=
- =?us-ascii?Q?UuQlC+WlaiVDdMqxwrZyjFpJRkGR8M3M1A/S71mEqiM3UZZLdZxnf6Yi/0mF?=
- =?us-ascii?Q?6qztDwHbVIWcFDS4GS5WJ0NJi+yyVSioUZqohbtTwTLK3vY5BHcdEZJHATm5?=
- =?us-ascii?Q?aGDttG9gjoZFHv0tOrf1wCxDGt55yQTR0E3/lJEj2d6kZELrywG4be9cyctR?=
- =?us-ascii?Q?8ZJfroMwXVGj5pyNLcOBf8JPjmHMba0hooNr441PLtrdcDN6UYuz+MIAbcFc?=
- =?us-ascii?Q?Pg6VM2JD6gCGe9yUOK9ki/doshrL8JNOM+hF1/0lXyQuJsW1l8dcBzgum2lm?=
- =?us-ascii?Q?nqK/fxkVN6++gUYDg0CE3m/gPq/SHqa50gB24/nIqeFwBVU77PlJ4NCBpU5P?=
- =?us-ascii?Q?Rom+s6LL8kS/nRzVenaEglxBIYnb18/DEga/76zjzozSQ4d7577GC2rT7OAM?=
- =?us-ascii?Q?lrg7qkLMwGGvVHSoFWEzXSi/3fHLPzGrjrv3ovkDprhjJMYFfJzdRYlJm7v5?=
- =?us-ascii?Q?bM37qwfzfHj8I0ye5xhuhFMYSye1e/A/XZv2HheRRqXSV45CvvssbxFzd/+G?=
- =?us-ascii?Q?a6oVQ5Z3o4Qvj5hmXPneYksWMmSoWGyHhhzWQySKHZshrNc+4qOz0ChBL4oR?=
- =?us-ascii?Q?3u44vvggqjzKdheTpZ4ywaUX2tpi6SVSOnNqI2TR2UkJgto9nzIqZsg8BXwm?=
- =?us-ascii?Q?3QgIZGBcZYVm277PrigVTtdrY1HTCCFD1cH8yjwT98My2P4QLjbVEMJPWRTG?=
- =?us-ascii?Q?tdF3CFFuqMx3eut46dzoMlM/ICyQcz6sIaEloyfYCuqDPVm90hJyoy+AFP+M?=
- =?us-ascii?Q?CxvvVhzN2zkEfl399EYWWWcxkfnfunF9P4+AN7h4A8cv8dxne8DJHb0TQ7ro?=
- =?us-ascii?Q?c5+dcYbvu9kURNsnCaZOEultN1mc3x4AAQIyEFzUMg8+VzOuGlXSrIl2U09S?=
- =?us-ascii?Q?ylrJl4aEFYYo7JdEhSmpw1XsPI49aqgP993msn+NufX/T2k02i5JRhb11dOC?=
- =?us-ascii?Q?CeBP5+Z0DtVGra+SmpQfS656QSeEJhjx0i1Gp8+e?=
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id Z4m-EByRqH6w for <intel-wired-lan@lists.osuosl.org>;
+ Fri,  1 Mar 2024 15:47:06 +0000 (UTC)
+Received-SPF: None (mailfrom) identity=mailfrom;
+ client-ip=2a00:1450:4864:20::334; helo=mail-wm1-x334.google.com;
+ envelope-from=jiri@resnulli.us; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org CE44C40119
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org CE44C40119
+Received: from mail-wm1-x334.google.com (mail-wm1-x334.google.com
+ [IPv6:2a00:1450:4864:20::334])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id CE44C40119
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  1 Mar 2024 15:47:03 +0000 (UTC)
+Received: by mail-wm1-x334.google.com with SMTP id
+ 5b1f17b1804b1-412c9fecf78so4484865e9.2
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 01 Mar 2024 07:47:03 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20230601; t=1709308022; x=1709912822;
+ h=in-reply-to:content-disposition:mime-version:references:message-id
+ :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+ :message-id:reply-to;
+ bh=45+oyGUScWBaVKRiotg0onHCdUVCKkP4++L4vN3JsYA=;
+ b=h1Cs3B440HahAg8p6Ue222W5Wyi9+I7uyXuf+DTLDVxFrDc0qj56R7QGej7ytkK+uR
+ RNyr5NfQ4YX05WKbE7sB9Fjcd1/KVNnjZ+wPeDrCAn4JPpUzwK0z2UqvnGIe8Xn8u1QE
+ n4PawU3QjTIzE8PCtz/Sw7R/h2JBwP3OGx/7bmhK4YmwS524Ge1QqlL19S5MmxorUNsR
+ r5CKghQnZDi0H9Vd20H2YAs3GZVWDH0O2hg6LdH8K/asctArYXKZn1V1UiwIzeznnrDf
+ Pmo35CHKD6o3SY8RugVuoMi1XujtACJUVvdNqvs2jm8rQPg6tRW86yay2NApuUruxEYP
+ 6hxA==
+X-Forwarded-Encrypted: i=1;
+ AJvYcCWyYT3iFpO2KpsgRKjlJiv9aqsYgMigXiEP067cGoZ1QYXZVSuUSuDLt6jUaOVABGVdtzCr+j222bPzK6dtwvBhHf1rXwwqLoI4Pur37XEemg==
+X-Gm-Message-State: AOJu0YxnErpXZNloFPncYSCZExJmXydGzivJdqvEhtKhBAKwrLakV2pW
+ +e+sbvhcQaf+U/6vbHAY2m49u0Ita2Gu+LKBLS7/XB4iQ3odbz/XE4RNTFr4ax0=
+X-Google-Smtp-Source: AGHT+IFAkrvIirhc0b8Kb3FrAbr65uOsUmnoJ10pC9bAt5hxMVYlESmPPxePB0QYRA96dBh1NQpDTQ==
+X-Received: by 2002:a05:600c:c1a:b0:412:b4c:58da with SMTP id
+ fm26-20020a05600c0c1a00b004120b4c58damr1656796wmb.9.1709308021841; 
+ Fri, 01 Mar 2024 07:47:01 -0800 (PST)
+Received: from localhost ([193.47.165.251]) by smtp.gmail.com with ESMTPSA id
+ v6-20020a5d59c6000000b0033d926bf7b5sm5043205wry.76.2024.03.01.07.47.00
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Fri, 01 Mar 2024 07:47:00 -0800 (PST)
+Date: Fri, 1 Mar 2024 16:46:58 +0100
+From: Jiri Pirko <jiri@resnulli.us>
+To: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
+Message-ID: <ZeH4cpze2MPM4FAK@nanopsycho>
+References: <20240228142054.474626-1-mateusz.polchlopek@intel.com>
+ <20240228142054.474626-5-mateusz.polchlopek@intel.com>
+ <Zd9X5GPEZEIOIyWs@nanopsycho>
+ <f776a527-bfd2-45de-bace-1b1c3f9dcb68@intel.com>
 MIME-Version: 1.0
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: SJ0PR11MB5865.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 63f4ede5-2b1a-4c84-0c09-08dc3a03397e
-X-MS-Exchange-CrossTenant-originalarrivaltime: 01 Mar 2024 15:21:10.3353 (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: 72EVlODBxPcCOsnIfXzlck0LpMYtx2dxTglFk6CN9Er4MlqXUnXFrNarv+TMN5blPnHaH9j0VlpZVm44eFvozUnOPlGRPqso6ArXK17ZwCo=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA1PR11MB7697
-X-OriginatorOrg: intel.com
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1709306905; x=1740842905;
- h=from:to:cc:subject:date:message-id:references:
- in-reply-to:content-transfer-encoding:mime-version;
- bh=A9FaJafYGnE/PenGx3WGIlywDWteV6Clv5YsyJLqrUY=;
- b=Ojy3mqCBnsmOUBASUIYPok+mZPPtKj2h0QTERLfseus4S6D9oUfAylAV
- ILEeJORZ4TUBLVdDuid7qokm8Gntfl67/7LE2FVr5G/BM25VQU1Gk1pJI
- bAHRJx0TUyXxZCgPkN7DFdPUhi3jJlJyfu2GoJoj2W08RD7LiNd/1h3mX
- ftpJ3CFL5pmhoFuW9emY2dthh+z29Z/l2Mw3ALt2wZEf+toyPwP4sl8L7
- oIuaSCnMASNfHbLSdr1NeXisYiGfCLu+1fGnA8L8j/231ZQSs9ThP2DXB
- I3nfS/aEjp1s3xZwFTzIbg0WoKXBSiVQQ0G75SsGPpVKtjOBzDQRSy3Nj
- w==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <f776a527-bfd2-45de-bace-1b1c3f9dcb68@intel.com>
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=resnulli-us.20230601.gappssmtp.com; s=20230601; t=1709308022; x=1709912822;
+ darn=lists.osuosl.org; 
+ h=in-reply-to:content-disposition:mime-version:references:message-id
+ :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+ bh=45+oyGUScWBaVKRiotg0onHCdUVCKkP4++L4vN3JsYA=;
+ b=ydr8kzSeccAXtDYxr7xcvwJ3EDiQrN5D0LzklrVTYQh9ZKWhMWcFOZPhDolcsjULxh
+ j2FiEMvfgR8Y0hCOIi+qgEsAASLKpbFwMrxSnPqe55bC445E1JTdyVSr/qV7Zfmla7YG
+ iLpuU4QRATd+tqUPQiYkdxZ5E4DxQ7+pirChL8mZo9gwYD76BcWc3CPyOqTWoQW+2N3g
+ vj/rF9C3zi+XPoSw7Hg8jUTEWR9UC7oQ86MUmrwjMVHYWv7dLi4Re7va8WZahK+CYOSR
+ ppfuC4uOSEpy0BCB45lnVm7fn7v93I4aqk2gTsUEKRwbZ9OMnb3ov93FtNXklciX0ZOL
+ PXZg==
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dmarc=none (p=none dis=none)
+ header.from=resnulli.us
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=Ojy3mqCB
-X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=intel.com;
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next 3/4] ice: use relative VSI
- index for VFs instead of PF VSI number
+ unprotected) header.d=resnulli-us.20230601.gappssmtp.com
+ header.i=@resnulli-us.20230601.gappssmtp.com header.a=rsa-sha256
+ header.s=20230601 header.b=ydr8kzSe
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next v5 4/5] ice: Add
+ tx_scheduling_layers devlink param
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -195,90 +123,375 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: "Keller, Jacob E" <jacob.e.keller@intel.com>, "Kitszel,
- Przemyslaw" <przemyslaw.kitszel@intel.com>
+Cc: andrew@lunn.ch, michal.wilczynski@intel.com, netdev@vger.kernel.org,
+ lukasz.czapnik@intel.com, victor.raj@intel.com,
+ intel-wired-lan@lists.osuosl.org, horms@kernel.org,
+ przemyslaw.kitszel@intel.com, kuba@kernel.org
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Jacob Keller
-> Sent: Friday, February 16, 2024 11:07 PM
-> To: Nguyen, Anthony L <anthony.l.nguyen@intel.com>; Intel Wired LAN
-> <intel-wired-lan@lists.osuosl.org>
-> Cc: Keller, Jacob E <jacob.e.keller@intel.com>; Kitszel, Przemyslaw
-> <przemyslaw.kitszel@intel.com>
-> Subject: [Intel-wired-lan] [PATCH iwl-next 3/4] ice: use relative VSI ind=
-ex for
-> VFs instead of PF VSI number
->=20
-> When initializing over virtchnl, the PF is required to pass a VSI ID to t=
-he VF as
-> part of its capabilities exchange. The VF driver reports this value back =
-to the PF
-> in a variety of commands. The PF driver validates that this value matches=
- the
-> value it sent to the VF.
->=20
-> Some hardware families such as the E700 series could use this value when
-> reading RSS registers or communicating directly with firmware over the Ad=
-min
-> Queue.
->=20
-> However, E800 series hardware does not support any of these interfaces an=
-d
-> the VF's only use for this value is to report it back to the PF. Thus, th=
-ere is no
-> requirement that this value be an actual VSI ID value of any kind.
->=20
-> The PF driver already does not trust that the VF sends it a real VSI ID.
-> The VSI structure is always looked up from the VF structure. The PF does
-> validate that the VSI ID provided matches a VSI associated with the VF, b=
-ut
-> otherwise does not use the VSI ID for any purpose.
->=20
-> Instead of reporting the VSI number relative to the PF space, report a fi=
-xed
-> value of 1. When communicating with the VF over virtchnl, validate that t=
-he
-> VSI number is returned appropriately.
->=20
-> This avoids leaking information about the firmware of the PF state.
-> Currently the ice driver only supplies a VF with a single VSI. However, i=
-t
-> appears that virtchnl has some support for allowing multiple VSIs. I did =
-not
-> attempt to implement this. However, space is left open to allow further r=
-elative
-> indexes if additional VSIs are provided in future feature development. Fo=
-r this
-> reason, keep the ice_vc_isvalid_vsi_id function in place to allow extendi=
-ng it for
-> multiple VSIs in the future.
->=20
-> This change will also simplify handling of live migration in a future ser=
-ies. Since
-> we no longer will provide a real VSI number to the VF, there will be no n=
-eed to
-> keep track of this number when migrating to a new host.
->=20
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
-> ---
->  drivers/net/ethernet/intel/ice/ice_virtchnl.c | 9 ++-------
-> drivers/net/ethernet/intel/ice/ice_virtchnl.h | 9 +++++++++
->  2 files changed, 11 insertions(+), 7 deletions(-)
->=20
-> diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-> b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-> index 29449030174f..1ff9818b4c84 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-> @@ -499,7 +499,7 @@ static int ice_vc_get_vf_res_msg(struct ice_vf *vf, u=
-8
+Fri, Mar 01, 2024 at 02:41:56PM CET, mateusz.polchlopek@intel.com wrote:
+>
+>
+>On 2/28/2024 4:57 PM, Jiri Pirko wrote:
+>> Wed, Feb 28, 2024 at 03:20:53PM CET, mateusz.polchlopek@intel.com wrote:
+>> > From: Lukasz Czapnik <lukasz.czapnik@intel.com>
+>> > 
+>> > It was observed that Tx performance was inconsistent across all queues
+>> > and/or VSIs and that it was directly connected to existing 9-layer
+>> > topology of the Tx scheduler.
+>> > 
+>> > Introduce new private devlink param - tx_scheduling_layers. This parameter
+>> > gives user flexibility to choose the 5-layer transmit scheduler topology
+>> > which helps to smooth out the transmit performance.
+>> > 
+>> > Allowed parameter values are 5 and 9.
+>> > 
+>> > Example usage:
+>> > 
+>> > Show:
+>> > devlink dev param show pci/0000:4b:00.0 name tx_scheduling_layers
+>> > pci/0000:4b:00.0:
+>> >   name tx_scheduling_layers type driver-specific
+>> >     values:
+>> >       cmode permanent value 9
+>> > 
+>> > Set:
+>> > devlink dev param set pci/0000:4b:00.0 name tx_scheduling_layers value 5
+>> > cmode permanent
+>> > 
+>> > devlink dev param set pci/0000:4b:00.0 name tx_scheduling_layers value 9
+>> > cmode permanent
+>> > 
+>> > Signed-off-by: Lukasz Czapnik <lukasz.czapnik@intel.com>
+>> > Co-developed-by: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
+>> > Signed-off-by: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
+>> > ---
+>> > .../net/ethernet/intel/ice/ice_adminq_cmd.h   |   8 +
+>> > drivers/net/ethernet/intel/ice/ice_devlink.c  | 169 ++++++++++++++++++
+>> > .../net/ethernet/intel/ice/ice_fw_update.c    |   7 +-
+>> > .../net/ethernet/intel/ice/ice_fw_update.h    |   3 +
+>> > drivers/net/ethernet/intel/ice/ice_nvm.c      |   7 +-
+>> > drivers/net/ethernet/intel/ice/ice_nvm.h      |   3 +
+>> > 6 files changed, 189 insertions(+), 8 deletions(-)
+>> > 
+>> > diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+>> > index 02102e937b30..4143b50bd15d 100644
+>> > --- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+>> > +++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+>> > @@ -1692,6 +1692,14 @@ struct ice_aqc_nvm {
+>> > };
+>> > 
+>> > #define ICE_AQC_NVM_START_POINT			0
+>> > +#define ICE_AQC_NVM_TX_TOPO_MOD_ID             0x14B
+>> > +
+>> > +struct ice_aqc_nvm_tx_topo_user_sel {
+>> > +	__le16 length;
+>> > +	u8 data;
+>> > +#define ICE_AQC_NVM_TX_TOPO_USER_SEL	BIT(4)
+>> > +	u8 reserved;
+>> > +};
+>> > 
+>> > /* NVM Checksum Command (direct, 0x0706) */
+>> > struct ice_aqc_nvm_checksum {
+>> > diff --git a/drivers/net/ethernet/intel/ice/ice_devlink.c b/drivers/net/ethernet/intel/ice/ice_devlink.c
+>> > index cc717175178b..db4872990e51 100644
+>> > --- a/drivers/net/ethernet/intel/ice/ice_devlink.c
+>> > +++ b/drivers/net/ethernet/intel/ice/ice_devlink.c
+>> > @@ -770,6 +770,167 @@ ice_devlink_port_unsplit(struct devlink *devlink, struct devlink_port *port,
+>> > 	return ice_devlink_port_split(devlink, port, 1, extack);
+>> > }
+>> > 
+>> > +/**
+>> > + * ice_get_tx_topo_user_sel - Read user's choice from flash
+>> > + * @pf: pointer to pf structure
+>> > + * @layers: value read from flash will be saved here
+>> > + *
+>> > + * Reads user's preference for Tx Scheduler Topology Tree from PFA TLV.
+>> > + *
+>> > + * Returns zero when read was successful, negative values otherwise.
+>> > + */
+>> > +static int ice_get_tx_topo_user_sel(struct ice_pf *pf, uint8_t *layers)
+>> > +{
+>> > +	struct ice_aqc_nvm_tx_topo_user_sel usr_sel = {};
+>> > +	struct ice_hw *hw = &pf->hw;
+>> > +	int err;
+>> > +
+>> > +	err = ice_acquire_nvm(hw, ICE_RES_READ);
+>> > +	if (err)
+>> > +		return err;
+>> > +
+>> > +	err = ice_aq_read_nvm(hw, ICE_AQC_NVM_TX_TOPO_MOD_ID, 0,
+>> > +			     sizeof(usr_sel), &usr_sel, true, true, NULL);
+>> > +	if (err)
+>> > +		goto exit_release_res;
+>> > +
+>> > +	if (usr_sel.data & ICE_AQC_NVM_TX_TOPO_USER_SEL)
+>> > +		*layers = ICE_SCHED_5_LAYERS;
+>> > +       else
+>> > +		*layers = ICE_SCHED_9_LAYERS;
+>> > +
+>> > +exit_release_res:
+>> > +	ice_release_nvm(hw);
+>> > +
+>> > +	return err;
+>> > +}
+>> > +
+>> > +/**
+>> > + * ice_update_tx_topo_user_sel - Save user's preference in flash
+>> > + * @pf: pointer to pf structure
+>> > + * @layers: value to be saved in flash
+>> > + *
+>> > + * Variable "layers" defines user's preference about number of layers in Tx
+>> > + * Scheduler Topology Tree. This choice should be stored in PFA TLV field
+>> > + * and be picked up by driver, next time during init.
+>> > + *
+>> > + * Returns zero when save was successful, negative values otherwise.
+>> > + */
+>> > +static int ice_update_tx_topo_user_sel(struct ice_pf *pf, int layers)
+>> > +{
+>> > +	struct ice_aqc_nvm_tx_topo_user_sel usr_sel = {};
+>> > +	struct ice_hw *hw = &pf->hw;
+>> > +	int err;
+>> > +
+>> > +	err = ice_acquire_nvm(hw, ICE_RES_WRITE);
+>> > +	if (err)
+>> > +		return err;
+>> > +
+>> > +	err = ice_aq_read_nvm(hw, ICE_AQC_NVM_TX_TOPO_MOD_ID, 0,
+>> > +			      sizeof(usr_sel), &usr_sel, true, true, NULL);
+>> > +	if (err)
+>> > +		goto exit_release_res;
+>> > +
+>> > +	if (layers == ICE_SCHED_5_LAYERS)
+>> > +		usr_sel.data |= ICE_AQC_NVM_TX_TOPO_USER_SEL;
+>> > +	else
+>> > +		usr_sel.data &= ~ICE_AQC_NVM_TX_TOPO_USER_SEL;
+>> > +
+>> > +	err = ice_write_one_nvm_block(pf, ICE_AQC_NVM_TX_TOPO_MOD_ID, 2,
+>> > +				      sizeof(usr_sel.data), &usr_sel.data,
+>> > +				      true, NULL, NULL);
+>> > +	if (err)
+>> > +		err = -EIO;
+>> > +
+>> > +exit_release_res:
+>> > +	ice_release_nvm(hw);
+>> > +
+>> > +	return err;
+>> > +}
+>> > +
+>> > +/**
+>> > + * ice_devlink_tx_sched_layers_get - Get tx_scheduling_layers parameter
+>> > + * @devlink: pointer to the devlink instance
+>> > + * @id: the parameter ID to set
+>> > + * @ctx: context to store the parameter value
+>> > + *
+>> > + * Returns zero on success and negative value on failure.
+>> > + */
+>> > +static int ice_devlink_tx_sched_layers_get(struct devlink *devlink, u32 id,
+>> > +					   struct devlink_param_gset_ctx *ctx)
+>> > +{
+>> > +	struct ice_pf *pf = devlink_priv(devlink);
+>> > +	struct device *dev = ice_pf_to_dev(pf);
+>> > +	int err;
+>> > +
+>> > +	err = ice_get_tx_topo_user_sel(pf, &ctx->val.vu8);
+>> > +	if (err) {
+>> > +		dev_warn(dev, "Failed to read Tx Scheduler Tree - User Selection data from flash\n");
+>> 
+>> I wonder why we don't propagate extack to these callbacks. Care to add
+>> it and use it instead of dmesg please?
+>> 
+>> 
+>
+>Good point Jiri, but it is 'get' (in 'set' the same situation) function from
+>DEVLINK_PARAM_DRIVER which defines that in 'set'/'get' there is no extack
+
+So add it.
 
 
-Tested-by: Rafal Romanowski <rafal.romanowski@intel.com>
+>parameter. From 'get' function I can probably remove this message as it is
+>not so important and just return error code...
+>
+>> > +		return -EIO;
+>> > +	}
+>> > +
+>> > +	return 0;
+>> > +}
+>> > +
+>> > +/**
+>> > + * ice_devlink_tx_sched_layers_set - Set tx_scheduling_layers parameter
+>> > + * @devlink: pointer to the devlink instance
+>> > + * @id: the parameter ID to set
+>> > + * @ctx: context to get the parameter value
+>> > + *
+>> > + * Returns zero on success and negative value on failure.
+>> > + */
+>> > +static int ice_devlink_tx_sched_layers_set(struct devlink *devlink, u32 id,
+>> > +					   struct devlink_param_gset_ctx *ctx)
+>> > +{
+>> > +	struct ice_pf *pf = devlink_priv(devlink);
+>> > +	struct device *dev = ice_pf_to_dev(pf);
+>> > +	int err;
+>> > +
+>> > +	err = ice_update_tx_topo_user_sel(pf, ctx->val.vu8);
+>> > +	if (err)
+>> > +		return -EIO;
+>> > +
+>> > +	dev_warn(dev, "Tx scheduling layers have been changed on this device. You must reboot the system for the change to take effect.");
+>> 
+>> Reboot the system? Why not re-plug the whole building while you are at
+>> it? :)
+>> 
+>> 
+>
+>... but what about 'set' function? The information about reboot has to stay
+>and still - there is no extack in 'set' function.
+
+My point is, do you really need to "reboot"? Message like this sounds
+very odd coming from a nic driver. Woundn't pci slot powercycle do the
+trick for example?
 
 
-
+>
+>> > +
+>> > +	return 0;
+>> > +}
+>> > +
+>> > +/**
+>> > + * ice_devlink_tx_sched_layers_validate - Validate passed tx_scheduling_layers
+>> > + *                                       parameter value
+>> > + * @devlink: unused pointer to devlink instance
+>> > + * @id: the parameter ID to validate
+>> > + * @val: value to validate
+>> > + * @extack: netlink extended ACK structure
+>> > + *
+>> > + * Supported values are:
+>> > + * - 5 - five layers Tx Scheduler Topology Tree
+>> > + * - 9 - nine layers Tx Scheduler Topology Tree
+>> > + *
+>> > + * Returns zero when passed parameter value is supported. Negative value on
+>> > + * error.
+>> > + */
+>> > +static int ice_devlink_tx_sched_layers_validate(struct devlink *devlink, u32 id,
+>> > +					        union devlink_param_value val,
+>> > +					        struct netlink_ext_ack *extack)
+>> > +{
+>> > +	struct ice_pf *pf = devlink_priv(devlink);
+>> > +	struct ice_hw *hw = &pf->hw;
+>> > +
+>> > +	if (!hw->func_caps.common_cap.tx_sched_topo_comp_mode_en) {
+>> > +		NL_SET_ERR_MSG_MOD(extack, "Error: Requested feature is not supported by the FW on this device. Update the FW and run this command again.");
+>> 
+>> Drop the "Error: " prefix. Does not make sense to have it. Also, "Update
+>> FW" remark looks quite odd.
+>> 
+>> > +		return -EOPNOTSUPP;
+>> > +	}
+>> > +
+>> > +	if (val.vu8 != ICE_SCHED_5_LAYERS && val.vu8 != ICE_SCHED_9_LAYERS) {
+>> > +		NL_SET_ERR_MSG_MOD(extack, "Error: Wrong number of tx scheduler layers provided.");
+>> 
+>> Drop the "Error: " prefix. Does not make sense to have it.
+>> 
+>> 
+>> > +		return -EINVAL;
+>> > +	}
+>> > +
+>> > +	return 0;
+>> > +}
+>> > +
+>> > /**
+>> >   * ice_tear_down_devlink_rate_tree - removes devlink-rate exported tree
+>> >   * @pf: pf struct
+>> > @@ -1601,6 +1762,7 @@ static int ice_devlink_loopback_validate(struct devlink *devlink, u32 id,
+>> > enum ice_param_id {
+>> > 	ICE_DEVLINK_PARAM_ID_BASE = DEVLINK_PARAM_GENERIC_ID_MAX,
+>> > 	ICE_DEVLINK_PARAM_ID_LOOPBACK,
+>> > +	ICE_DEVLINK_PARAM_ID_TX_BALANCE,
+>> > };
+>> > 
+>> > static const struct devlink_param ice_devlink_params[] = {
+>> > @@ -1618,6 +1780,13 @@ static const struct devlink_param ice_devlink_params[] = {
+>> > 			     ice_devlink_loopback_get,
+>> > 			     ice_devlink_loopback_set,
+>> > 			     ice_devlink_loopback_validate),
+>> > +	DEVLINK_PARAM_DRIVER(ICE_DEVLINK_PARAM_ID_TX_BALANCE,
+>> > +			     "tx_scheduling_layers",
+>> > +			     DEVLINK_PARAM_TYPE_U8,
+>> > +			     BIT(DEVLINK_PARAM_CMODE_PERMANENT),
+>> > +			     ice_devlink_tx_sched_layers_get,
+>> > +			     ice_devlink_tx_sched_layers_set,
+>> > +			     ice_devlink_tx_sched_layers_validate),
+>> > };
+>> > 
+>> > static void ice_devlink_free(void *devlink_ptr)
+>> > diff --git a/drivers/net/ethernet/intel/ice/ice_fw_update.c b/drivers/net/ethernet/intel/ice/ice_fw_update.c
+>> > index 319a2d6fe26c..f81db6c107c8 100644
+>> > --- a/drivers/net/ethernet/intel/ice/ice_fw_update.c
+>> > +++ b/drivers/net/ethernet/intel/ice/ice_fw_update.c
+>> > @@ -286,10 +286,9 @@ ice_send_component_table(struct pldmfw *context, struct pldmfw_component *compon
+>> >   *
+>> >   * Returns: zero on success, or a negative error code on failure.
+>> >   */
+>> > -static int
+>> > -ice_write_one_nvm_block(struct ice_pf *pf, u16 module, u32 offset,
+>> > -			u16 block_size, u8 *block, bool last_cmd,
+>> > -			u8 *reset_level, struct netlink_ext_ack *extack)
+>> > +int ice_write_one_nvm_block(struct ice_pf *pf, u16 module, u32 offset,
+>> > +			    u16 block_size, u8 *block, bool last_cmd,
+>> > +			    u8 *reset_level, struct netlink_ext_ack *extack)
+>> > {
+>> > 	u16 completion_module, completion_retval;
+>> > 	struct device *dev = ice_pf_to_dev(pf);
+>> > diff --git a/drivers/net/ethernet/intel/ice/ice_fw_update.h b/drivers/net/ethernet/intel/ice/ice_fw_update.h
+>> > index 750574885716..04b200462757 100644
+>> > --- a/drivers/net/ethernet/intel/ice/ice_fw_update.h
+>> > +++ b/drivers/net/ethernet/intel/ice/ice_fw_update.h
+>> > @@ -9,5 +9,8 @@ int ice_devlink_flash_update(struct devlink *devlink,
+>> > 			     struct netlink_ext_ack *extack);
+>> > int ice_get_pending_updates(struct ice_pf *pf, u8 *pending,
+>> > 			    struct netlink_ext_ack *extack);
+>> > +int ice_write_one_nvm_block(struct ice_pf *pf, u16 module, u32 offset,
+>> > +			    u16 block_size, u8 *block, bool last_cmd,
+>> > +			    u8 *reset_level, struct netlink_ext_ack *extack);
+>> > 
+>> > #endif
+>> > diff --git a/drivers/net/ethernet/intel/ice/ice_nvm.c b/drivers/net/ethernet/intel/ice/ice_nvm.c
+>> > index d4e05d2cb30c..84eab92dc03c 100644
+>> > --- a/drivers/net/ethernet/intel/ice/ice_nvm.c
+>> > +++ b/drivers/net/ethernet/intel/ice/ice_nvm.c
+>> > @@ -18,10 +18,9 @@
+>> >   *
+>> >   * Read the NVM using the admin queue commands (0x0701)
+>> >   */
+>> > -static int
+>> > -ice_aq_read_nvm(struct ice_hw *hw, u16 module_typeid, u32 offset, u16 length,
+>> > -		void *data, bool last_command, bool read_shadow_ram,
+>> > -		struct ice_sq_cd *cd)
+>> > +int ice_aq_read_nvm(struct ice_hw *hw, u16 module_typeid, u32 offset,
+>> > +		    u16 length, void *data, bool last_command,
+>> > +		    bool read_shadow_ram, struct ice_sq_cd *cd)
+>> > {
+>> > 	struct ice_aq_desc desc;
+>> > 	struct ice_aqc_nvm *cmd;
+>> > diff --git a/drivers/net/ethernet/intel/ice/ice_nvm.h b/drivers/net/ethernet/intel/ice/ice_nvm.h
+>> > index 774c2317967d..63cdc6bdac58 100644
+>> > --- a/drivers/net/ethernet/intel/ice/ice_nvm.h
+>> > +++ b/drivers/net/ethernet/intel/ice/ice_nvm.h
+>> > @@ -14,6 +14,9 @@ struct ice_orom_civd_info {
+>> > 
+>> > int ice_acquire_nvm(struct ice_hw *hw, enum ice_aq_res_access_type access);
+>> > void ice_release_nvm(struct ice_hw *hw);
+>> > +int ice_aq_read_nvm(struct ice_hw *hw, u16 module_typeid, u32 offset,
+>> > +		    u16 length, void *data, bool last_command,
+>> > +		    bool read_shadow_ram, struct ice_sq_cd *cd);
+>> > int
+>> > ice_read_flat_nvm(struct ice_hw *hw, u32 offset, u32 *length, u8 *data,
+>> > 		  bool read_shadow_ram);
+>> > -- 
+>> > 2.38.1
+>> > 
+>
+>Other comments will be resolved in the next version.
+>Thanks
