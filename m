@@ -4,66 +4,66 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E9FFCC54E41
-	for <intel-wired-lan@archiver.kernel.org>; Fri,  1 Mar 2024 11:50:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5EEBCC5478C
+	for <intel-wired-lan@archiver.kernel.org>; Fri,  1 Mar 2024 11:50:10 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 9A4FF4194E;
-	Fri,  1 Mar 2024 11:50:04 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 285A94197A;
+	Fri,  1 Mar 2024 11:50:10 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id tDjSyfvAyd4c; Fri,  1 Mar 2024 11:50:04 +0000 (UTC)
+	with ESMTP id iQJd1w4KNGQ7; Fri,  1 Mar 2024 11:50:09 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 52CC841969
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org DD65F41960
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1709293803;
-	bh=VfQ6fMwDajFvn14kgV9NgYsw96t2WQNC+/BW1acpLx8=;
+	s=default; t=1709293809;
+	bh=OksPROaUvQkaJh1dljDcayAAYPAf3Iyccfa2bV8KDlI=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=OuUZO503VgZHbf4r3YUMB0naCBEMUL5usKecGI7QFqElwlrfgvfo7hRc0OexywkFE
-	 jxH2Z2WUdMJaj2LqfB4qFmv/uxrNbqWDquMkkXyneveH/sz3fqpHbRXVY7jCSKczNH
-	 ZLG/35KRoX3Hc9sdAIkgUmtvKzImMeYEs0H5JR68UXz36+49H7iQ3Np46E8x6zU+Oh
-	 tnG5bng5GP7cN5criOss+uwjb6jHOH++NtyHEuKlvEzvXq8G5nNw4lOU5+5kWFXPvq
-	 JW3co1IypCqHd4mUgBNQ0kqy+N2sfFNjaDkc6SNUF+d4g9uuoi7NbqDGDRjbmLnKG/
-	 K6E6sq0qiS5cQ==
+	b=G8Rv/APAQdZquwbEjAqZR95HjkKZ5b5MqWBXIYKZHxcfJ8V/h0ExXjCOQdiYVJfg4
+	 ZbpGMr0DR0O5xEif1IvrG7tUmO4OH4pLIhlJgJRu/0S5k7wISYcRtiNspF0lFUcQ6o
+	 8bS7hMtannJuqJS80sHP2JgzYZvH68Z1VIh8AiMTuxAaeIR/jmUjaBDbF3+XiWUm45
+	 3ha5q3Dda+Mx6aiCORLQR/GJPC0EiNMbE7symLibpNPSwjVM8j7H+bQW3FUzK0ycSN
+	 qq0S7JTbkwgsA0hxkCG9aJk2aSf+bRJ4031wlvfIfIuHnw1OzOnnb3dplXJn+f5fF7
+	 HLUF8QSIhexvg==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 52CC841969;
-	Fri,  1 Mar 2024 11:50:03 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id DD65F41960;
+	Fri,  1 Mar 2024 11:50:08 +0000 (UTC)
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 7A6941BF5F5
- for <intel-wired-lan@lists.osuosl.org>; Fri,  1 Mar 2024 11:50:00 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 477D21BF5F5
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  1 Mar 2024 11:50:07 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 62FC14192E
- for <intel-wired-lan@lists.osuosl.org>; Fri,  1 Mar 2024 11:50:00 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 3401E41972
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  1 Mar 2024 11:50:07 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id l_KJa5g7xd39 for <intel-wired-lan@lists.osuosl.org>;
- Fri,  1 Mar 2024 11:49:59 +0000 (UTC)
+ with ESMTP id hbvZc5d-UpSk for <intel-wired-lan@lists.osuosl.org>;
+ Fri,  1 Mar 2024 11:50:06 +0000 (UTC)
 Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.17;
  helo=mgamail.intel.com; envelope-from=michal.swiatkowski@linux.intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 65E4E4194E
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 65E4E4194E
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 3A0BC4194B
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 3A0BC4194B
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.17])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 65E4E4194E
- for <intel-wired-lan@lists.osuosl.org>; Fri,  1 Mar 2024 11:49:59 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10999"; a="4000055"
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 3A0BC4194B
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  1 Mar 2024 11:50:06 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10999"; a="4000073"
 X-IronPort-AV: E=Sophos;i="6.06,196,1705392000"; 
-   d="scan'208";a="4000055"
+   d="scan'208";a="4000073"
 Received: from fmviesa001.fm.intel.com ([10.60.135.141])
  by orvoesa109.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 01 Mar 2024 03:49:59 -0800
+ 01 Mar 2024 03:50:04 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.06,196,1705392000"; d="scan'208";a="39195040"
+X-IronPort-AV: E=Sophos;i="6.06,196,1705392000"; d="scan'208";a="39195084"
 Received: from wasp.igk.intel.com (HELO GK3153-DR2-R750-36946.localdomain.com)
  ([10.102.20.192])
- by fmviesa001.fm.intel.com with ESMTP; 01 Mar 2024 03:49:57 -0800
+ by fmviesa001.fm.intel.com with ESMTP; 01 Mar 2024 03:50:02 -0800
 From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Fri,  1 Mar 2024 12:54:10 +0100
-Message-ID: <20240301115414.502097-5-michal.swiatkowski@linux.intel.com>
+Date: Fri,  1 Mar 2024 12:54:12 +0100
+Message-ID: <20240301115414.502097-7-michal.swiatkowski@linux.intel.com>
 X-Mailer: git-send-email 2.42.0
 In-Reply-To: <20240301115414.502097-1-michal.swiatkowski@linux.intel.com>
 References: <20240301115414.502097-1-michal.swiatkowski@linux.intel.com>
@@ -71,25 +71,24 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1709293799; x=1740829799;
+ t=1709293806; x=1740829806;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=FLIY5kfD3ncERyoI7+bk+IFigu6koSUMnW5kLntfDlM=;
- b=PSiNsTjO/6X0r7bVOY11qpAlXII1IFmlf1Oc1d5++61D6a/qtDVJZUEi
- v/7k3KPBw7H4yBrZozS9M4ERVnYgX8iTJFV1d23JC0DlFOwg4IXc5t758
- evMSihsPx2Q42nJIU5fhluDngTKRGKNyJ7SLuqPD4wuveYb2ulIMrqhT0
- llRID2JAX7vOnyWB3/rr2ZTGM/Vo+HrS9OF5yciI6xZEX4NGEyG311Hip
- 1cm4CL3XVyk/hIHIHZ/Z4MA/9Ov547clboMgePH4ZEA2TP+SeyiegsPnz
- QENtRt5w7RZtZfDWJ/meDbA7DdAhqtBEmGtzYlIJ5SLfSEV2j2mjq8Gr+
- A==;
+ bh=PNyrbCjywjNlIXYg5ByVAotjsH2kxGncIfNEMqdut3Q=;
+ b=BG8tjI72HlzYS79G7mVpu+0buKPvr1LpKoKMcAughfEg1JbeP1aH3+0x
+ 8n4+1ngBt0TE+0/fUqVblb5Be4QzCrY/GhTrQPX3kEe+wI+JNmsEj0deM
+ 7/7p0YEvWKgqaeopE18WDaI6+b9Mq1/7Cjm6LZQH9HEfFHy6DXrfA4Xul
+ sOA+DkG6+LFrm+XH8tu6ggGTpjoBjNUO76IBn0L1yxrf+7CCJ9GtN/LeL
+ uCcSFhBIXYkwWxoZC2T1NvUbUemiLzCOz0Pk+lK+1pDKV1tpZbVi0Mm6u
+ cBfcFr6rzvBzuxsTKgkMUqE9EqckkT1fPD0yxKkojX50Q2TyqJSySkNwH
+ Q==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=none (p=none dis=none)
  header.from=linux.intel.com
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=PSiNsTjO
-Subject: [Intel-wired-lan] [iwl-next v3 4/8] ice: control default Tx rule in
- lag
+ header.a=rsa-sha256 header.s=Intel header.b=BG8tjI72
+Subject: [Intel-wired-lan] [iwl-next v3 6/8] ice: change repr::id values
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -109,138 +108,52 @@ Cc: wojciech.drewek@intel.com, marcin.szycik@intel.com,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Tx rule in switchdev was changed to use PF instead of additional control
-plane VSI. Because of that during lag we should control it. Control
-means to add and remove the default Tx rule during lag active/inactive
-switching.
+Instead of getting repr::id from xa_alloc() value, set it to the
+src_vsi::num_vsi value. It is unique for each PR.
 
-It can be done the same way as default Rx rule.
-
-Reviewed-by: Wojciech Drewek <wojciech.drewek@intel.com>
+Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Reviewed-by: Marcin Szycik <marcin.szycik@linux.intel.com>
 Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_lag.c | 44 +++++++++++++++++++-----
- drivers/net/ethernet/intel/ice/ice_lag.h |  3 +-
- 2 files changed, 37 insertions(+), 10 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_eswitch.c | 5 ++---
+ drivers/net/ethernet/intel/ice/ice_repr.c    | 1 +
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_lag.c b/drivers/net/ethernet/intel/ice/ice_lag.c
-index a7a342809935..0cb4a5e5c00c 100644
---- a/drivers/net/ethernet/intel/ice/ice_lag.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lag.c
-@@ -202,11 +202,12 @@ static struct ice_lag *ice_lag_find_primary(struct ice_lag *lag)
-  * @act: rule action
-  * @recipe_id: recipe id for the new rule
-  * @rule_idx: pointer to rule index
-+ * @direction: ICE_FLTR_RX or ICE_FLTR_TX
-  * @add: boolean on whether we are adding filters
-  */
- static int
- ice_lag_cfg_fltr(struct ice_lag *lag, u32 act, u16 recipe_id, u16 *rule_idx,
--		 bool add)
-+		 u8 direction, bool add)
- {
- 	struct ice_sw_rule_lkup_rx_tx *s_rule;
- 	u16 s_rule_sz, vsi_num;
-@@ -231,9 +232,16 @@ ice_lag_cfg_fltr(struct ice_lag *lag, u32 act, u16 recipe_id, u16 *rule_idx,
+diff --git a/drivers/net/ethernet/intel/ice/ice_eswitch.c b/drivers/net/ethernet/intel/ice/ice_eswitch.c
+index 76fa114f22c9..5eba8dec9f94 100644
+--- a/drivers/net/ethernet/intel/ice/ice_eswitch.c
++++ b/drivers/net/ethernet/intel/ice/ice_eswitch.c
+@@ -319,7 +319,7 @@ ice_eswitch_mode_set(struct devlink *devlink, u16 mode,
  
- 		act |= FIELD_PREP(ICE_SINGLE_ACT_VSI_ID_M, vsi_num);
+ 		dev_info(ice_pf_to_dev(pf), "PF %d changed eswitch mode to switchdev",
+ 			 pf->hw.pf_id);
+-		xa_init_flags(&pf->eswitch.reprs, XA_FLAGS_ALLOC);
++		xa_init(&pf->eswitch.reprs);
+ 		NL_SET_ERR_MSG_MOD(extack, "Changed eswitch mode to switchdev");
+ 		break;
+ 	}
+@@ -426,8 +426,7 @@ ice_eswitch_attach(struct ice_pf *pf, struct ice_vf *vf)
+ 	if (err)
+ 		goto err_setup_repr;
  
--		s_rule->hdr.type = cpu_to_le16(ICE_AQC_SW_RULES_T_LKUP_RX);
- 		s_rule->recipe_id = cpu_to_le16(recipe_id);
--		s_rule->src = cpu_to_le16(hw->port_info->lport);
-+		if (direction == ICE_FLTR_RX) {
-+			s_rule->hdr.type =
-+				cpu_to_le16(ICE_AQC_SW_RULES_T_LKUP_RX);
-+			s_rule->src = cpu_to_le16(hw->port_info->lport);
-+		} else {
-+			s_rule->hdr.type =
-+				cpu_to_le16(ICE_AQC_SW_RULES_T_LKUP_TX);
-+			s_rule->src = cpu_to_le16(vsi_num);
-+		}
- 		s_rule->act = cpu_to_le32(act);
- 		s_rule->hdr_len = cpu_to_le16(DUMMY_ETH_HDR_LEN);
- 		opc = ice_aqc_opc_add_sw_rules;
-@@ -266,9 +274,27 @@ ice_lag_cfg_dflt_fltr(struct ice_lag *lag, bool add)
- {
- 	u32 act = ICE_SINGLE_ACT_VSI_FORWARDING |
- 		ICE_SINGLE_ACT_VALID_BIT | ICE_SINGLE_ACT_LAN_ENABLE;
-+	int err;
-+
-+	err = ice_lag_cfg_fltr(lag, act, lag->pf_recipe, &lag->pf_rx_rule_id,
-+			       ICE_FLTR_RX, add);
-+	if (err)
-+		goto err_rx;
+-	err = xa_alloc(&pf->eswitch.reprs, &repr->id, repr,
+-		       XA_LIMIT(1, INT_MAX), GFP_KERNEL);
++	err = xa_insert(&pf->eswitch.reprs, repr->id, repr, GFP_KERNEL);
+ 	if (err)
+ 		goto err_xa_alloc;
  
--	return ice_lag_cfg_fltr(lag, act, lag->pf_recipe,
--				&lag->pf_rule_id, add);
-+	act = ICE_SINGLE_ACT_VSI_FORWARDING | ICE_SINGLE_ACT_VALID_BIT |
-+	      ICE_SINGLE_ACT_LB_ENABLE;
-+	err = ice_lag_cfg_fltr(lag, act, lag->pf_recipe, &lag->pf_tx_rule_id,
-+			       ICE_FLTR_TX, add);
-+	if (err)
-+		goto err_tx;
-+
-+	return 0;
-+
-+err_tx:
-+	ice_lag_cfg_fltr(lag, act, lag->pf_recipe, &lag->pf_rx_rule_id,
-+			 ICE_FLTR_RX, !add);
-+err_rx:
-+	return err;
- }
- 
- /**
-@@ -284,7 +310,7 @@ ice_lag_cfg_drop_fltr(struct ice_lag *lag, bool add)
- 		  ICE_SINGLE_ACT_DROP;
- 
- 	return ice_lag_cfg_fltr(lag, act, lag->lport_recipe,
--				&lag->lport_rule_idx, add);
-+				&lag->lport_rule_idx, ICE_FLTR_RX, add);
- }
- 
- /**
-@@ -310,7 +336,7 @@ ice_lag_cfg_pf_fltrs(struct ice_lag *lag, void *ptr)
- 	dev = ice_pf_to_dev(lag->pf);
- 
- 	/* interface not active - remove old default VSI rule */
--	if (bonding_info->slave.state && lag->pf_rule_id) {
-+	if (bonding_info->slave.state && lag->pf_rx_rule_id) {
- 		if (ice_lag_cfg_dflt_fltr(lag, false))
- 			dev_err(dev, "Error removing old default VSI filter\n");
- 		if (ice_lag_cfg_drop_fltr(lag, true))
-@@ -319,7 +345,7 @@ ice_lag_cfg_pf_fltrs(struct ice_lag *lag, void *ptr)
+diff --git a/drivers/net/ethernet/intel/ice/ice_repr.c b/drivers/net/ethernet/intel/ice/ice_repr.c
+index a5c24da31b88..b4fb74271811 100644
+--- a/drivers/net/ethernet/intel/ice/ice_repr.c
++++ b/drivers/net/ethernet/intel/ice/ice_repr.c
+@@ -345,6 +345,7 @@ ice_repr_add(struct ice_pf *pf, struct ice_vsi *src_vsi, const u8 *parent_mac)
  	}
  
- 	/* interface becoming active - add new default VSI rule */
--	if (!bonding_info->slave.state && !lag->pf_rule_id) {
-+	if (!bonding_info->slave.state && !lag->pf_rx_rule_id) {
- 		if (ice_lag_cfg_dflt_fltr(lag, true))
- 			dev_err(dev, "Error adding new default VSI filter\n");
- 		if (lag->lport_rule_idx && ice_lag_cfg_drop_fltr(lag, false))
-@@ -2149,7 +2175,7 @@ void ice_lag_rebuild(struct ice_pf *pf)
+ 	repr->src_vsi = src_vsi;
++	repr->id = src_vsi->vsi_num;
+ 	np = netdev_priv(repr->netdev);
+ 	np->repr = repr;
  
- 	ice_lag_cfg_cp_fltr(lag, true);
- 
--	if (lag->pf_rule_id)
-+	if (lag->pf_rx_rule_id)
- 		if (ice_lag_cfg_dflt_fltr(lag, true))
- 			dev_err(ice_pf_to_dev(pf), "Error adding default VSI rule in rebuild\n");
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_lag.h b/drivers/net/ethernet/intel/ice/ice_lag.h
-index 183b38792ef2..bab2c83142a1 100644
---- a/drivers/net/ethernet/intel/ice/ice_lag.h
-+++ b/drivers/net/ethernet/intel/ice/ice_lag.h
-@@ -43,7 +43,8 @@ struct ice_lag {
- 	u8 primary:1; /* this is primary */
- 	u16 pf_recipe;
- 	u16 lport_recipe;
--	u16 pf_rule_id;
-+	u16 pf_rx_rule_id;
-+	u16 pf_tx_rule_id;
- 	u16 cp_rule_idx;
- 	u16 lport_rule_idx;
- 	u8 role;
 -- 
 2.42.0
 
