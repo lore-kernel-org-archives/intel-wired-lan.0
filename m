@@ -4,95 +4,159 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AC5CDC54E41
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  5 Mar 2024 17:14:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 15B15C54798
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  5 Mar 2024 17:16:43 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 72D7F417C7;
-	Tue,  5 Mar 2024 17:14:54 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id C44C7417B3;
+	Tue,  5 Mar 2024 17:16:43 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id BtK8gdQSgvAd; Tue,  5 Mar 2024 17:14:52 +0000 (UTC)
+	with ESMTP id ZA5pK962a9gO; Tue,  5 Mar 2024 17:16:42 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 8F633417C6
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 0EE3F4178E
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1709658892;
-	bh=KTaLLXGyUld46s2NLb1vQNgQrF3gSAhYeftM6Jmdbro=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1709659002;
+	bh=p087UwovzbZm5pthj3inO7MRK9slpzOeoMMfg0l1dfo=;
+	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=6/JCMzbvHesXqMEd4zVL11cq4x5Jn9iP6pBGJOGY8zt6T+D283okFZTWl/LXEnQlG
-	 q0UogEmj4wziY31HbJp6H9wqusovobZKoWF800Vqx9uFIe79GJ9W5IZW8mrIoydePR
-	 0QKicPQVteTgT0Yjm9LV3SGS7yR79orN/ng9zR+F42HLL2+KyaS+VxPugZm2Eky+BV
-	 YWnSK7li56jPyzS7PTQU4yLiou/BPkeaYLLlwZuIFSKD/ANRN2y/imi6/6yEDzKqdd
-	 hRSFwCp/IZDAdmnfrfbroJPCbrl1JxJJ2f6uKR1j6mZTv2tTwF8cIJNQpt2AzEUEQC
-	 quuJ/ZYL3Yzdg==
+	b=nMuQxidwxfFA/2iuM8dNOJxI5irXTl2PMn5Xq/MMNQ7hGt4Ynjphgirxa1D5k6fl6
+	 qFmeJKrWplzrnj3id0RJI1f7tJzoCtHMT16xloZHyfCrPgx8B9YS8koIFfu3DtO8iX
+	 L0jD2vpqkj0ZM9f2fNIwVAgQtfLxkOtzWmbzqNbwbT9p6N/9fr9USt6nR58fAhTb8h
+	 bi1gfkRLjLeGiTJEH0Zf5jejw+tUiQKkbtPYdsZFfBw5TauVCfg7KFpDJiY9vUai4H
+	 W7FkxixhHGyCNMnavnT8Kfa4btZeERwi6Xol5vqRCHTtDp8r6vmG5WXvOXEG28bNeg
+	 LtLuTce9Ti3pQ==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 8F633417C6;
-	Tue,  5 Mar 2024 17:14:52 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id E3DF71BF3A4
- for <intel-wired-lan@lists.osuosl.org>; Tue,  5 Mar 2024 17:14:47 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 0EE3F4178E;
+	Tue,  5 Mar 2024 17:16:42 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 91AE81BF3A4
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  5 Mar 2024 17:16:40 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id D00F582661
- for <intel-wired-lan@lists.osuosl.org>; Tue,  5 Mar 2024 17:14:47 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 893D7410E6
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  5 Mar 2024 17:16:40 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id PR6oOVHvG1Bd for <intel-wired-lan@lists.osuosl.org>;
- Tue,  5 Mar 2024 17:14:46 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.16;
- helo=mgamail.intel.com; envelope-from=mateusz.polchlopek@intel.com;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org C46978264A
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C46978264A
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.16])
- by smtp1.osuosl.org (Postfix) with ESMTPS id C46978264A
- for <intel-wired-lan@lists.osuosl.org>; Tue,  5 Mar 2024 17:14:46 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,11003"; a="4808162"
-X-IronPort-AV: E=Sophos;i="6.06,205,1705392000"; 
-   d="scan'208";a="4808162"
-Received: from orviesa007.jf.intel.com ([10.64.159.147])
- by fmvoesa110.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 05 Mar 2024 09:07:42 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.06,205,1705392000"; 
-   d="scan'208";a="9860208"
-Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by orviesa007.jf.intel.com with ESMTP; 05 Mar 2024 09:07:37 -0800
-Received: from fedora.igk.intel.com (Metan_eth.igk.intel.com [10.123.220.124])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id B64A9381A6;
- Tue,  5 Mar 2024 14:47:59 +0000 (GMT)
-From: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Date: Tue,  5 Mar 2024 09:39:41 -0500
-Message-Id: <20240305143942.23757-6-mateusz.polchlopek@intel.com>
-X-Mailer: git-send-email 2.38.1
-In-Reply-To: <20240305143942.23757-1-mateusz.polchlopek@intel.com>
-References: <20240305143942.23757-1-mateusz.polchlopek@intel.com>
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id SXAXXxwM0BPy for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  5 Mar 2024 17:16:39 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=40.107.94.47;
+ helo=nam10-mw2-obe.outbound.protection.outlook.com;
+ envelope-from=shannon.nelson@amd.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org C58EE40752
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C58EE40752
+Received: from NAM10-MW2-obe.outbound.protection.outlook.com
+ (mail-mw2nam10on2047.outbound.protection.outlook.com [40.107.94.47])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id C58EE40752
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  5 Mar 2024 17:16:38 +0000 (UTC)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=OeOIBpjaIDhbHw9GGrhLiYRC1WQnFZIgIG6Udv3ISA+EVNqQ7+NmN9GBmJnUArT1Y3iFBCNvYIA2ioenaxklHGpmERWyiExH/aGpbB+EIgRAwidv7ocL4CEF3QkIjYtpoIuY52C4dRCIWSxGSQxVsVFxHYpjoG1qfGE+hl91ECWY6WIaEqNGboVXcB+Hyn7nt/fkjWCkU0PDdNcfiYsrgeGcA8QK87CxVGLxtKhHXY6bEvWU6UhJwnya2qakQZjQyS4OI7lhNHU3yJOyDlf+6UMqKyOsSIP408tT1UXXAOphToBkgwfkFrVPxdJ5BCXbiLf0Dv924OGzvA4Xjjyexw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=p087UwovzbZm5pthj3inO7MRK9slpzOeoMMfg0l1dfo=;
+ b=EFsmsj3dnOCzF2Lw/ZfrCQmd+/Je2Eo/suxxsNJdQhUY5XeE+ATm7zxlzrvmTARgaDO6raIsVN1BsXkZXFYjASzE78gi3koLWovYAVIjPgTqB0Me9GHOqhTPd92XMT/7FYikLO5Q4rtGKa0Wz1ngBTen+Z3KwjHzYCRgBsFTRHywhH84tMN069Ajp5hdI03b5CAMYDDND7nbxh0QqzHZRrbE4TyRH2kOJy+dbIwFyulrIvyqLmwJaaV7RHczJdQAORbnm1Xlp3pDVHRC5UnmOzVpAix7xQFpgr0qZjRSjvWXzhqMcmIfksYClkUyE9S68TTf5kWTwH7tIq4hkZp9cg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
+ header.d=amd.com; arc=none
+Received: from DS0PR12MB6583.namprd12.prod.outlook.com (2603:10b6:8:d1::12) by
+ CYXPR12MB9337.namprd12.prod.outlook.com (2603:10b6:930:d8::20) with
+ Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.7339.38; Tue, 5 Mar 2024 17:16:31 +0000
+Received: from DS0PR12MB6583.namprd12.prod.outlook.com
+ ([fe80::e4b7:89f7:ca60:1b12]) by DS0PR12MB6583.namprd12.prod.outlook.com
+ ([fe80::e4b7:89f7:ca60:1b12%5]) with mapi id 15.20.7362.019; Tue, 5 Mar 2024
+ 17:16:31 +0000
+Message-ID: <406f8592-1b69-496a-b9c1-842f54a45f3d@amd.com>
+Date: Tue, 5 Mar 2024 09:16:27 -0800
+User-Agent: Mozilla Thunderbird
+To: Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ intel-wired-lan@lists.osuosl.org
+References: <20240305160252.68708-1-przemyslaw.kitszel@intel.com>
+Content-Language: en-US
+From: "Nelson, Shannon" <shannon.nelson@amd.com>
+In-Reply-To: <20240305160252.68708-1-przemyslaw.kitszel@intel.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: PH0PR07CA0102.namprd07.prod.outlook.com
+ (2603:10b6:510:4::17) To DS0PR12MB6583.namprd12.prod.outlook.com
+ (2603:10b6:8:d1::12)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1709658887; x=1741194887;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=R5U8JdImvwmRpfWpOTNASqbRuMnRkivt5tAve6h/kC8=;
- b=RMbCBvAIUs1vpdROQUCDoUAeE3jWRNByNV/aH6bicbdQa0cT2B5YBHvP
- R+bHP5z8chArqTjETifnuigcE8nzej+lhTRb+265oGGe6IRioYjYvMlzT
- o9fOKvdsA+G7ryQdzrQAOph6OcKqnNkP0+XOpQkGBTml4oWr1FZg8r8iF
- Zn+4LNGb0ItF746bUUXlL5Jc2IZ/fvxtPHjSZOyL4VUy6H/dOqiS2mkLA
- GGytwDEQMPe/qtdnbarjpkqQ9x7R7PUHfs0jG8MdaIVoAWx5qS/6NHiw1
- ykjzWbEXwuxEWLnQyITl/9gmezN2b4Szc/wFMfXa3AXSQExxreDiEvaAi
- w==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=RMbCBvAI
-Subject: [Intel-wired-lan] [PATCH iwl-next v6 5/6] ice: Add
- tx_scheduling_layers devlink param
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DS0PR12MB6583:EE_|CYXPR12MB9337:EE_
+X-MS-Office365-Filtering-Correlation-Id: 02426d9f-f59c-4799-4b94-08dc3d38003a
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: TblSL6p1i40B5cQMe0oxoTH/k5BC3wp19E12537bLx0sErrpZfhqdacEc5mOEhr1IJqJySmcTP6jcYuVwF1eMhGOknwbujO/Lr0OMKDco+/RDcie7MAWQ9Qjpzts1YHXhCXPz30eZ2z2OMJBxLXyS5PdP/3E7nu+GU5GehJ4a5YO+mBif5SzZYFAO7Pmwhm7OsUW2CQErVbE6KhhCmtoA9Qd8USTBK8AMmo5UeUuMNYuG+kT1xN9bVGhId8X83cbMcfMb9S4xAJZJ10Bcc+T2/WgFxu600sshj+gZeyIBXPmhrjf7zKprKRPPAsHE0XgQv2qB282kH6YOOSrbJIz3LWiSEJAKMcDtujPACjeoIgk8IxQ1rrt0+XRCCtpsAaXPk57uUP6eMmCpv0BTr2Q06V9wR6ttBdlbFmJh7O8J/8386EnpZRoZ3a2XdgJHM4863G/0J5D/gP36b/JjJgz7H35Z+opVtUmje/jkH7Vys0tuWSUW0PriGJGTSyOcgkSf9QcB+SKzsDzgRP1j3FO0jOFt2SpzQjnc3lpbsZZ0dkn7vgs1uoUkCyHN83V81TPwegsdBv9SZuehU+1d2a0b0nvOd04EmACB2X0tvI/U3k=
+X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:DS0PR12MB6583.namprd12.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(13230031)(376005); DIR:OUT; SFP:1101; 
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?eXdoSmJZNGpUMzgrRTBUaHZnQ0ZzU21OR1pja0VGZkRMbTY4SVhxR3FCd3hy?=
+ =?utf-8?B?cnBhTEpidXVEZGdoQjJtdDN3dksvVHRTR1dMd2tSaXVsZXFtdGdSUXdrL3ND?=
+ =?utf-8?B?aUorY3JZTUdBMDM4aTRPYklNVFRtL3g1dEtibS9VY240WnJHZ3ZxZ243Qy9N?=
+ =?utf-8?B?bFphOVluL0lKaWZXMkxhU3JoSzZ0dS8vM1hPdUdNVndrd0Vac2s1Nit2Mkhv?=
+ =?utf-8?B?NjRHV25mQklSb0NnMlZzeGFoUDl2dVV4NWZEdks1RlBOQytFQUJvbDB4Z0xI?=
+ =?utf-8?B?NEYyaHpYMXA2NkFaMkluNW5CT2R2emZ4TWVmbWYyVWtjdEphT3laRGhWVGRX?=
+ =?utf-8?B?RHYxK0xxMUNYd09lcmdFSmhjM0oyUzRpWTk3RmpNeE5jeUZjT1NoUjI5WTlG?=
+ =?utf-8?B?UndTaXZGV3NtR2w1V2JmY1lna081ZUpubkJRNlRIQjdudTZGbXhzT3hFWTQz?=
+ =?utf-8?B?ZG1zNk5IU0FMRXl0K1B5NHhCVkJqZnYrRnF5aCtyb3Y3UzFOMDJzY3Vsd1k4?=
+ =?utf-8?B?VEV2TlpsR3pwVEo3SDU3QTYxbTQ4NHBJVWZ3U1dneEhWczRKRjNhbWFXNTBQ?=
+ =?utf-8?B?cXVGRGdYUFhhZncvcUVNVGFYdjNwQmZZdmYxWHg4dFVWQ2RIZ01yVU1ONThn?=
+ =?utf-8?B?QkVTeDNrRFpnMFBMZzBtZ2lsQ2xjSjlNWXg3SjZSRytTZHVuYUhEWDEwSEt5?=
+ =?utf-8?B?cnFSeGQ1eUFjbVc0QkRBNW9LamNBemg4Yng4WkFWeHVXcy9KQ3lQeXQ2UHpz?=
+ =?utf-8?B?MmpOS00wajhBSXlmcnlEWDN1dWFNSGNzOFo0SjdJaTYreUZ5K2ZKd24zejV2?=
+ =?utf-8?B?RGZLQzk4anRPeXNTcXQrQlMxNkxjSEVsbXJ4RVFqUjAxUHFpWjdPVGVYNGNn?=
+ =?utf-8?B?YXJGSlhjZ1lpNk9yay9vRUlWbndSS3FYRFhQU0pXR0xMdnc5dnFybkU0bzdU?=
+ =?utf-8?B?eTNCYnMvWnJmY0RSczkzK0RhTE43Y0FZQldidEpoRGd5d3R4MFVtYkpPdWNG?=
+ =?utf-8?B?R0xRNUdERE5XVkgvVGlQMVFFL09mZUhHUGFEYmVIM1RxenF6THMwTnZSUE1W?=
+ =?utf-8?B?c0F2dkRkT3Y4MDM5c0NHNm10UnJtbGJKMDVodGhEeGxVZWI2S2lHeVFUTkky?=
+ =?utf-8?B?alNlWEg0aFdlZlhpdGdUMEpORnBhRlNTRDNwc0pZZWl6T25SNldFUlRva3Z0?=
+ =?utf-8?B?U2pMN0orL2NGQ3F2MTVlWlBuNDNCSVB5ODVWUko0bFhOajVTVjRxSWlxVkxL?=
+ =?utf-8?B?WGpwWXdNUUFsZ0ZlUncrUUZ6V1NqR0U0RklxaVR0azFZQ25KYlRtc2s4M0JL?=
+ =?utf-8?B?THJKN2M1UFdHV0paN2FvelFlOXQ0UlRMVHpuUTZ4SmVjejZWRU1YcUVzV3JU?=
+ =?utf-8?B?M2FsNjVlVzVTbHNraEVaYUVtMlRyWTZkdWM4c0d5akd4L01JVDJweUF3ZHJa?=
+ =?utf-8?B?aWNoQ3hIN1FDd0Q3QkxlaE5pVlM3eXEzSlZUY0VqbE02MnM5YmdXaU5ES1Rs?=
+ =?utf-8?B?dXVvbEs5cEM3RDdtbEM2M1h6RUlMcnNWMk90OTNTV3V2UEdtU0xDN08za2tG?=
+ =?utf-8?B?NjVwOEs1U1g2em1Fa201SHg2bm9xSVM3SjhXVjNJK0lHNTdSQ2VQeWpXYmhn?=
+ =?utf-8?B?TG1iclE1alh6blV0eTYyOExCS1B2K3RpemdKaVJqcEFOb1ZYdWN5U0FDMzkx?=
+ =?utf-8?B?UGhpOHpZSDRVTjRCZWhhVktmeWwyRldoVGdob2JzV0NWcHFVMTZPcHRGYmRK?=
+ =?utf-8?B?N3NEdUlGUDB1Y2dCWEQ4SFJiS3BKZWpkUWZueE0vdXBzL05FaURKOWkzbmhs?=
+ =?utf-8?B?V2haV3FDK09kV2g4d2hxOWtIUG1LOHI2NjVvN1hmQm9rVTBHRUp6NUl6bFBl?=
+ =?utf-8?B?UnRDUldIZTl5cHhsRXU1emgyVmFoUEdud2ttSXl4WFpISWE0Nk1Pd3BEYUps?=
+ =?utf-8?B?MUV2LzVLUWFTcFFRak94T3kyb1R1NjlCRVlDSUY1QUExdzFhNWE1TFdOUkpK?=
+ =?utf-8?B?WFlQU293b3o0c3RBenN2Q1JIemlYMlBaQVFVMHJ5Uk0vSkY5QmZsejRpb1RP?=
+ =?utf-8?B?R29ZVUFxZXFGOUtFSHkwcFdDaE1NOXYxdXdZc2tweVozYVZ6bVdzWXFOSzRa?=
+ =?utf-8?Q?PLEyKsGwylMiaEz6DD78xS2Fz?=
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 02426d9f-f59c-4799-4b94-08dc3d38003a
+X-MS-Exchange-CrossTenant-AuthSource: DS0PR12MB6583.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 05 Mar 2024 17:16:31.2404 (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 7r9g83cCIUtwosYfyujDUrJ4G8BlWOxo5YzK4DmReAFzO6XcJzHZkXPxCnkWW2kzGjt+CCuvwuNi0+CYKOBvUg==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: CYXPR12MB9337
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=amd.com; s=selector1; 
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=p087UwovzbZm5pthj3inO7MRK9slpzOeoMMfg0l1dfo=;
+ b=ij0iE5oixp30EMZTEcDCpJKzz/ZMA7q2NFbhd0CJ0CeGBjhvSKHKfj4krYt4Ll9V4JQVIm02LmaMh9c4z41FX8hHlFp4Dz6gtBjAEKH936O11TK8F3qLTF7rkPbWEG/6Wi0yn3ZL0d+hgu+x6y9DRSJvD+P+mp0/bIexjAW7/rA=
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dmarc=pass (p=quarantine dis=none)
+ header.from=amd.com
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (1024-bit key,
+ unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256
+ header.s=selector1 header.b=ij0iE5oi
+X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=amd.com;
+Subject: Re: [Intel-wired-lan] [PATCH iwl-net] ixgbe: avoid sleeping
+ allocation in ixgbe_ipsec_vf_add_sa()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,336 +169,80 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: andrew@lunn.ch, jiri@resnulli.us, michal.wilczynski@intel.com,
- Mateusz Polchlopek <mateusz.polchlopek@intel.com>, netdev@vger.kernel.org,
- lukasz.czapnik@intel.com, victor.raj@intel.com, anthony.l.nguyen@intel.com,
- horms@kernel.org, przemyslaw.kitszel@intel.com, kuba@kernel.org
+Cc: netdev@vger.kernel.org, lukasz.czapnik@intel.com,
+ Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Michal Kubiak <michal.kubiak@intel.com>,
+ Dan Carpenter <dan.carpenter@linaro.org>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Lukasz Czapnik <lukasz.czapnik@intel.com>
+On 3/5/2024 8:02 AM, Przemek Kitszel wrote:
+> Change kzalloc() flags used in ixgbe_ipsec_vf_add_sa() to GFP_ATOMIC, to
+> avoid sleeping in IRQ context.
+> 
+> Dan Carpenter, with the help of Smatch, has found following issue:
+> The patch eda0333ac293: "ixgbe: add VF IPsec management" from Aug 13,
+> 2018 (linux-next), leads to the following Smatch static checker
+> warning: drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c:917 ixgbe_ipsec_vf_add_sa()
+>          warn: sleeping in IRQ context
+> 
+> The call tree that Smatch is worried about is:
+> ixgbe_msix_other() <- IRQ handler
+> -> ixgbe_msg_task()
+>     -> ixgbe_rcv_msg_from_vf()
+>        -> ixgbe_ipsec_vf_add_sa()
+> 
+> Reported-by: Dan Carpenter <dan.carpenter@linaro.org>
+> Link: https://lore.kernel.org/intel-wired-lan/db31a0b0-4d9f-4e6b-aed8-88266eb5665c@moroto.mountain
+> Reviewed-by: Michal Kubiak <michal.kubiak@intel.com>
+> Signed-off-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 
-It was observed that Tx performance was inconsistent across all queues
-and/or VSIs and that it was directly connected to existing 9-layer
-topology of the Tx scheduler.
+Thanks, that should work.
 
-Introduce new private devlink param - tx_scheduling_layers. This parameter
-gives user flexibility to choose the 5-layer transmit scheduler topology
-which helps to smooth out the transmit performance.
+Reviewed-by: Shannon Nelson <shannon.nelson@amd.com>
 
-Allowed parameter values are 5 and 9.
 
-Example usage:
-
-Show:
-devlink dev param show pci/0000:4b:00.0 name tx_scheduling_layers
-pci/0000:4b:00.0:
-  name tx_scheduling_layers type driver-specific
-    values:
-      cmode permanent value 9
-
-Set:
-devlink dev param set pci/0000:4b:00.0 name tx_scheduling_layers value 5
-cmode permanent
-
-devlink dev param set pci/0000:4b:00.0 name tx_scheduling_layers value 9
-cmode permanent
-
-Signed-off-by: Lukasz Czapnik <lukasz.czapnik@intel.com>
-Co-developed-by: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
-Signed-off-by: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
----
- .../net/ethernet/intel/ice/ice_adminq_cmd.h   |   9 +
- drivers/net/ethernet/intel/ice/ice_devlink.c  | 175 +++++++++++++++++-
- .../net/ethernet/intel/ice/ice_fw_update.c    |   7 +-
- .../net/ethernet/intel/ice/ice_fw_update.h    |   3 +
- drivers/net/ethernet/intel/ice/ice_nvm.c      |   7 +-
- drivers/net/ethernet/intel/ice/ice_nvm.h      |   3 +
- 6 files changed, 195 insertions(+), 9 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-index 0487c425ae24..e76c388b9905 100644
---- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-@@ -1684,6 +1684,15 @@ struct ice_aqc_nvm {
- 
- #define ICE_AQC_NVM_START_POINT			0
- 
-+#define ICE_AQC_NVM_TX_TOPO_MOD_ID		0x14B
-+
-+struct ice_aqc_nvm_tx_topo_user_sel {
-+	__le16 length;
-+	u8 data;
-+#define ICE_AQC_NVM_TX_TOPO_USER_SEL	BIT(4)
-+	u8 reserved;
-+};
-+
- /* NVM Checksum Command (direct, 0x0706) */
- struct ice_aqc_nvm_checksum {
- 	u8 flags;
-diff --git a/drivers/net/ethernet/intel/ice/ice_devlink.c b/drivers/net/ethernet/intel/ice/ice_devlink.c
-index c0a89a1b4e88..f94793db460c 100644
---- a/drivers/net/ethernet/intel/ice/ice_devlink.c
-+++ b/drivers/net/ethernet/intel/ice/ice_devlink.c
-@@ -770,6 +770,168 @@ ice_devlink_port_unsplit(struct devlink *devlink, struct devlink_port *port,
- 	return ice_devlink_port_split(devlink, port, 1, extack);
- }
- 
-+/**
-+ * ice_get_tx_topo_user_sel - Read user's choice from flash
-+ * @pf: pointer to pf structure
-+ * @layers: value read from flash will be saved here
-+ *
-+ * Reads user's preference for Tx Scheduler Topology Tree from PFA TLV.
-+ *
-+ * Returns zero when read was successful, negative values otherwise.
-+ */
-+static int ice_get_tx_topo_user_sel(struct ice_pf *pf, uint8_t *layers)
-+{
-+	struct ice_aqc_nvm_tx_topo_user_sel usr_sel = {};
-+	struct ice_hw *hw = &pf->hw;
-+	int err;
-+
-+	err = ice_acquire_nvm(hw, ICE_RES_READ);
-+	if (err)
-+		return err;
-+
-+	err = ice_aq_read_nvm(hw, ICE_AQC_NVM_TX_TOPO_MOD_ID, 0,
-+			      sizeof(usr_sel), &usr_sel, true, true, NULL);
-+	if (err)
-+		goto exit_release_res;
-+
-+	if (usr_sel.data & ICE_AQC_NVM_TX_TOPO_USER_SEL)
-+		*layers = ICE_SCHED_5_LAYERS;
-+	else
-+		*layers = ICE_SCHED_9_LAYERS;
-+
-+exit_release_res:
-+	ice_release_nvm(hw);
-+
-+	return err;
-+}
-+
-+/**
-+ * ice_update_tx_topo_user_sel - Save user's preference in flash
-+ * @pf: pointer to pf structure
-+ * @layers: value to be saved in flash
-+ *
-+ * Variable "layers" defines user's preference about number of layers in Tx
-+ * Scheduler Topology Tree. This choice should be stored in PFA TLV field
-+ * and be picked up by driver, next time during init.
-+ *
-+ * Returns zero when save was successful, negative values otherwise.
-+ */
-+static int ice_update_tx_topo_user_sel(struct ice_pf *pf, int layers)
-+{
-+	struct ice_aqc_nvm_tx_topo_user_sel usr_sel = {};
-+	struct ice_hw *hw = &pf->hw;
-+	int err;
-+
-+	err = ice_acquire_nvm(hw, ICE_RES_WRITE);
-+	if (err)
-+		return err;
-+
-+	err = ice_aq_read_nvm(hw, ICE_AQC_NVM_TX_TOPO_MOD_ID, 0,
-+			      sizeof(usr_sel), &usr_sel, true, true, NULL);
-+	if (err)
-+		goto exit_release_res;
-+
-+	if (layers == ICE_SCHED_5_LAYERS)
-+		usr_sel.data |= ICE_AQC_NVM_TX_TOPO_USER_SEL;
-+	else
-+		usr_sel.data &= ~ICE_AQC_NVM_TX_TOPO_USER_SEL;
-+
-+	err = ice_write_one_nvm_block(pf, ICE_AQC_NVM_TX_TOPO_MOD_ID, 2,
-+				      sizeof(usr_sel.data), &usr_sel.data,
-+				      true, NULL, NULL);
-+	if (err)
-+		err = -EIO;
-+
-+exit_release_res:
-+	ice_release_nvm(hw);
-+
-+	return err;
-+}
-+
-+/**
-+ * ice_devlink_tx_sched_layers_get - Get tx_scheduling_layers parameter
-+ * @devlink: pointer to the devlink instance
-+ * @id: the parameter ID to set
-+ * @ctx: context to store the parameter value
-+ *
-+ * Returns zero on success and negative value on failure.
-+ */
-+static int ice_devlink_tx_sched_layers_get(struct devlink *devlink, u32 id,
-+					   struct devlink_param_gset_ctx *ctx)
-+{
-+	struct ice_pf *pf = devlink_priv(devlink);
-+	int err;
-+
-+	err = ice_get_tx_topo_user_sel(pf, &ctx->val.vu8);
-+	if (err)
-+		return -EIO;
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_devlink_tx_sched_layers_set - Set tx_scheduling_layers parameter
-+ * @devlink: pointer to the devlink instance
-+ * @id: the parameter ID to set
-+ * @ctx: context to get the parameter value
-+ * @extack: netlink extended ACK structure
-+ *
-+ * Returns zero on success and negative value on failure.
-+ */
-+static int ice_devlink_tx_sched_layers_set(struct devlink *devlink, u32 id,
-+					   struct devlink_param_gset_ctx *ctx,
-+					   struct netlink_ext_ack *extack)
-+{
-+	struct ice_pf *pf = devlink_priv(devlink);
-+	int err;
-+
-+	err = ice_update_tx_topo_user_sel(pf, ctx->val.vu8);
-+	if (err)
-+		return -EIO;
-+
-+	NL_SET_ERR_MSG_MOD(extack,
-+			   "Tx scheduling layers have been changed on this device. You must do the PCI slot powercycle for the change to take effect.");
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_devlink_tx_sched_layers_validate - Validate passed tx_scheduling_layers
-+ *                                       parameter value
-+ * @devlink: unused pointer to devlink instance
-+ * @id: the parameter ID to validate
-+ * @val: value to validate
-+ * @extack: netlink extended ACK structure
-+ *
-+ * Supported values are:
-+ * - 5 - five layers Tx Scheduler Topology Tree
-+ * - 9 - nine layers Tx Scheduler Topology Tree
-+ *
-+ * Returns zero when passed parameter value is supported. Negative value on
-+ * error.
-+ */
-+static int ice_devlink_tx_sched_layers_validate(struct devlink *devlink, u32 id,
-+						union devlink_param_value val,
-+						struct netlink_ext_ack *extack)
-+{
-+	struct ice_pf *pf = devlink_priv(devlink);
-+	struct ice_hw *hw = &pf->hw;
-+
-+	if (!hw->func_caps.common_cap.tx_sched_topo_comp_mode_en) {
-+		NL_SET_ERR_MSG_MOD(extack,
-+				   "Requested feature is not supported by the FW on this device.");
-+		return -EOPNOTSUPP;
-+	}
-+
-+	if (val.vu8 != ICE_SCHED_5_LAYERS && val.vu8 != ICE_SCHED_9_LAYERS) {
-+		NL_SET_ERR_MSG_MOD(extack,
-+				   "Wrong number of tx scheduler layers provided.");
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
- /**
-  * ice_tear_down_devlink_rate_tree - removes devlink-rate exported tree
-  * @pf: pf struct
-@@ -1478,6 +1640,11 @@ static int ice_devlink_enable_iw_validate(struct devlink *devlink, u32 id,
- 	return 0;
- }
- 
-+enum ice_param_id {
-+	ICE_DEVLINK_PARAM_ID_BASE = DEVLINK_PARAM_GENERIC_ID_MAX,
-+	ICE_DEVLINK_PARAM_ID_TX_BALANCE,
-+};
-+
- static const struct devlink_param ice_devlink_params[] = {
- 	DEVLINK_PARAM_GENERIC(ENABLE_ROCE, BIT(DEVLINK_PARAM_CMODE_RUNTIME),
- 			      ice_devlink_enable_roce_get,
-@@ -1487,7 +1654,13 @@ static const struct devlink_param ice_devlink_params[] = {
- 			      ice_devlink_enable_iw_get,
- 			      ice_devlink_enable_iw_set,
- 			      ice_devlink_enable_iw_validate),
--
-+	DEVLINK_PARAM_DRIVER(ICE_DEVLINK_PARAM_ID_TX_BALANCE,
-+			     "tx_scheduling_layers",
-+			     DEVLINK_PARAM_TYPE_U8,
-+			     BIT(DEVLINK_PARAM_CMODE_PERMANENT),
-+			     ice_devlink_tx_sched_layers_get,
-+			     ice_devlink_tx_sched_layers_set,
-+			     ice_devlink_tx_sched_layers_validate),
- };
- 
- static void ice_devlink_free(void *devlink_ptr)
-diff --git a/drivers/net/ethernet/intel/ice/ice_fw_update.c b/drivers/net/ethernet/intel/ice/ice_fw_update.c
-index 319a2d6fe26c..f81db6c107c8 100644
---- a/drivers/net/ethernet/intel/ice/ice_fw_update.c
-+++ b/drivers/net/ethernet/intel/ice/ice_fw_update.c
-@@ -286,10 +286,9 @@ ice_send_component_table(struct pldmfw *context, struct pldmfw_component *compon
-  *
-  * Returns: zero on success, or a negative error code on failure.
-  */
--static int
--ice_write_one_nvm_block(struct ice_pf *pf, u16 module, u32 offset,
--			u16 block_size, u8 *block, bool last_cmd,
--			u8 *reset_level, struct netlink_ext_ack *extack)
-+int ice_write_one_nvm_block(struct ice_pf *pf, u16 module, u32 offset,
-+			    u16 block_size, u8 *block, bool last_cmd,
-+			    u8 *reset_level, struct netlink_ext_ack *extack)
- {
- 	u16 completion_module, completion_retval;
- 	struct device *dev = ice_pf_to_dev(pf);
-diff --git a/drivers/net/ethernet/intel/ice/ice_fw_update.h b/drivers/net/ethernet/intel/ice/ice_fw_update.h
-index 750574885716..04b200462757 100644
---- a/drivers/net/ethernet/intel/ice/ice_fw_update.h
-+++ b/drivers/net/ethernet/intel/ice/ice_fw_update.h
-@@ -9,5 +9,8 @@ int ice_devlink_flash_update(struct devlink *devlink,
- 			     struct netlink_ext_ack *extack);
- int ice_get_pending_updates(struct ice_pf *pf, u8 *pending,
- 			    struct netlink_ext_ack *extack);
-+int ice_write_one_nvm_block(struct ice_pf *pf, u16 module, u32 offset,
-+			    u16 block_size, u8 *block, bool last_cmd,
-+			    u8 *reset_level, struct netlink_ext_ack *extack);
- 
- #endif
-diff --git a/drivers/net/ethernet/intel/ice/ice_nvm.c b/drivers/net/ethernet/intel/ice/ice_nvm.c
-index d4e05d2cb30c..84eab92dc03c 100644
---- a/drivers/net/ethernet/intel/ice/ice_nvm.c
-+++ b/drivers/net/ethernet/intel/ice/ice_nvm.c
-@@ -18,10 +18,9 @@
-  *
-  * Read the NVM using the admin queue commands (0x0701)
-  */
--static int
--ice_aq_read_nvm(struct ice_hw *hw, u16 module_typeid, u32 offset, u16 length,
--		void *data, bool last_command, bool read_shadow_ram,
--		struct ice_sq_cd *cd)
-+int ice_aq_read_nvm(struct ice_hw *hw, u16 module_typeid, u32 offset,
-+		    u16 length, void *data, bool last_command,
-+		    bool read_shadow_ram, struct ice_sq_cd *cd)
- {
- 	struct ice_aq_desc desc;
- 	struct ice_aqc_nvm *cmd;
-diff --git a/drivers/net/ethernet/intel/ice/ice_nvm.h b/drivers/net/ethernet/intel/ice/ice_nvm.h
-index 774c2317967d..63cdc6bdac58 100644
---- a/drivers/net/ethernet/intel/ice/ice_nvm.h
-+++ b/drivers/net/ethernet/intel/ice/ice_nvm.h
-@@ -14,6 +14,9 @@ struct ice_orom_civd_info {
- 
- int ice_acquire_nvm(struct ice_hw *hw, enum ice_aq_res_access_type access);
- void ice_release_nvm(struct ice_hw *hw);
-+int ice_aq_read_nvm(struct ice_hw *hw, u16 module_typeid, u32 offset,
-+		    u16 length, void *data, bool last_command,
-+		    bool read_shadow_ram, struct ice_sq_cd *cd);
- int
- ice_read_flat_nvm(struct ice_hw *hw, u32 offset, u32 *length, u8 *data,
- 		  bool read_shadow_ram);
--- 
-2.38.1
-
+> ---
+>   drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c | 16 ++++++++--------
+>   1 file changed, 8 insertions(+), 8 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
+> index 13a6fca31004..866024f2b9ee 100644
+> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
+> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
+> @@ -914,7 +914,13 @@ int ixgbe_ipsec_vf_add_sa(struct ixgbe_adapter *adapter, u32 *msgbuf, u32 vf)
+>                  goto err_out;
+>          }
+> 
+> -       xs = kzalloc(sizeof(*xs), GFP_KERNEL);
+> +       algo = xfrm_aead_get_byname(aes_gcm_name, IXGBE_IPSEC_AUTH_BITS, 1);
+> +       if (unlikely(!algo)) {
+> +               err = -ENOENT;
+> +               goto err_out;
+> +       }
+> +
+> +       xs = kzalloc(sizeof(*xs), GFP_ATOMIC);
+>          if (unlikely(!xs)) {
+>                  err = -ENOMEM;
+>                  goto err_out;
+> @@ -930,14 +936,8 @@ int ixgbe_ipsec_vf_add_sa(struct ixgbe_adapter *adapter, u32 *msgbuf, u32 vf)
+>                  memcpy(&xs->id.daddr.a4, sam->addr, sizeof(xs->id.daddr.a4));
+>          xs->xso.dev = adapter->netdev;
+> 
+> -       algo = xfrm_aead_get_byname(aes_gcm_name, IXGBE_IPSEC_AUTH_BITS, 1);
+> -       if (unlikely(!algo)) {
+> -               err = -ENOENT;
+> -               goto err_xs;
+> -       }
+> -
+>          aead_len = sizeof(*xs->aead) + IXGBE_IPSEC_KEY_BITS / 8;
+> -       xs->aead = kzalloc(aead_len, GFP_KERNEL);
+> +       xs->aead = kzalloc(aead_len, GFP_ATOMIC);
+>          if (unlikely(!xs->aead)) {
+>                  err = -ENOMEM;
+>                  goto err_xs;
+> 
+> base-commit: 9b23fceb4158a3636ce4a2bda28ab03dcfa6a26f
+> --
+> 2.43.0
+> 
