@@ -4,91 +4,95 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 17CAFC54E41
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  5 Mar 2024 17:09:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CC9D5C54E41
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  5 Mar 2024 17:14:48 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id D98CC40A3E;
-	Tue,  5 Mar 2024 17:09:22 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 87E73417BF;
+	Tue,  5 Mar 2024 17:14:48 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id r5icNZoFKx2x; Tue,  5 Mar 2024 17:09:22 +0000 (UTC)
+	with ESMTP id 3Z8SpcpbiVCR; Tue,  5 Mar 2024 17:14:47 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org EBD9B41790
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 886DE417C1
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1709658562;
-	bh=LL7rvlFR072ZAiMQNUSu97Sy5tKGaUEfkrSLhQ05gdE=;
+	s=default; t=1709658887;
+	bh=jja+L2RV6kDaeLsyzKtPidSijAqEQ8jppK18VhorY+4=;
 	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=Z3Z2/xPnJbUzXdqs8lzwc6kYr6tmGkVeYj2QCmNxU7HvC+JcNSAuD8/jlqKEi0wUA
-	 uEsZRAqH3uNzd5C9AZn50RTktEaEzLwf9/ViSoysFh21dHcBG3Z25MBwfGKofFQ5Fj
-	 GfwAdvpr+AGjYoLsPu6qH6+liSHfnQ1cSuZiyMiZxFxVRfFB6jcRKELu6PxVBgE5ME
-	 dkwLJpV8/IGleVsMi9+EdYExmyDz6LiaoOYnMBFW0GlnlmnEbwoyMaWGhvVXTKXoKN
-	 Q4s5abZyt+D32ekLGP3ASala0LRRJfste1z4TnR0eLfiJw+etYZZ/H0PHp23IxCs4U
-	 c/+cv5+UdAXIQ==
+	b=OvRpnOUASezbFakEoA3cdsm+c4TTvI4BQAvYo6wTIPj9Di9Fs/iBxjQnlPJKOk8dz
+	 IzcjZkiFJkoHQTeCFhuCoJqtmyuDDfKbd+RwfNFBNFcVZ9Jlvn9DfIsshWGF0jpVBJ
+	 GOJRj+263O6K0KXCwZv1P/IcSrcJagAcFWhpixabRG/sN0bObRhb7pKUn4J9RB7i4n
+	 DRTn4N6SBryG0GgKEmBkA1Bcyx32XHN8i4W5iModpR2YTeimDA9rbGzTN4xS2Yw880
+	 3flBiPkEvrbtrgpag1UN+Fq3O0UicG4QXXInxSoctxkLkvSNwExkOgLxLiKbZ9O9AV
+	 OOQ/UGZRSLayg==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id EBD9B41790;
-	Tue,  5 Mar 2024 17:09:21 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 859D01BF3A4
- for <intel-wired-lan@lists.osuosl.org>; Tue,  5 Mar 2024 17:09:20 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 886DE417C1;
+	Tue,  5 Mar 2024 17:14:47 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 474A11BF3A4
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  5 Mar 2024 17:14:46 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 7EEF141790
- for <intel-wired-lan@lists.osuosl.org>; Tue,  5 Mar 2024 17:09:20 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 40E4D82661
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  5 Mar 2024 17:14:46 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id vOAGUZ2nBoyN for <intel-wired-lan@lists.osuosl.org>;
- Tue,  5 Mar 2024 17:09:19 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.17;
- helo=mgamail.intel.com; envelope-from=przemyslaw.kitszel@intel.com;
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id ncHCF2uor_XX for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  5 Mar 2024 17:14:45 +0000 (UTC)
+X-Greylist: delayed 427 seconds by postgrey-1.37 at util1.osuosl.org;
+ Tue, 05 Mar 2024 17:14:45 UTC
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 1C0938264A
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 1C0938264A
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.16;
+ helo=mgamail.intel.com; envelope-from=mateusz.polchlopek@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 6F0A540A3E
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 6F0A540A3E
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.17])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 6F0A540A3E
- for <intel-wired-lan@lists.osuosl.org>; Tue,  5 Mar 2024 17:09:19 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,11003"; a="4085254"
-X-IronPort-AV: E=Sophos;i="6.06,206,1705392000"; 
-   d="scan'208";a="4085254"
-Received: from orviesa002.jf.intel.com ([10.64.159.142])
- by fmvoesa111.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 05 Mar 2024 09:08:37 -0800
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.16])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 1C0938264A
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  5 Mar 2024 17:14:45 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,11003"; a="4808142"
+X-IronPort-AV: E=Sophos;i="6.06,205,1705392000"; 
+   d="scan'208";a="4808142"
+Received: from orviesa007.jf.intel.com ([10.64.159.147])
+ by fmvoesa110.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 05 Mar 2024 09:07:37 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.06,205,1705392000"; d="scan'208";a="40324709"
+X-IronPort-AV: E=Sophos;i="6.06,205,1705392000"; 
+   d="scan'208";a="9860163"
 Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by orviesa002.jf.intel.com with ESMTP; 05 Mar 2024 09:08:34 -0800
-Received: from pkitszel-desk.tendawifi.com (unknown [10.254.153.213])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id 71F58397D2;
- Tue,  5 Mar 2024 16:03:12 +0000 (GMT)
-From: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+ by orviesa007.jf.intel.com with ESMTP; 05 Mar 2024 09:07:33 -0800
+Received: from fedora.igk.intel.com (Metan_eth.igk.intel.com [10.123.220.124])
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id 9E2CD3818E;
+ Tue,  5 Mar 2024 14:47:35 +0000 (GMT)
+From: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Tue,  5 Mar 2024 17:02:02 +0100
-Message-ID: <20240305160252.68708-1-przemyslaw.kitszel@intel.com>
-X-Mailer: git-send-email 2.43.0
+Date: Tue,  5 Mar 2024 09:39:36 -0500
+Message-Id: <20240305143942.23757-1-mateusz.polchlopek@intel.com>
+X-Mailer: git-send-email 2.38.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1709658559; x=1741194559;
+ t=1709658885; x=1741194885;
  h=from:to:cc:subject:date:message-id:mime-version:
  content-transfer-encoding;
- bh=1Ttryv65xjQQ9A5IdThtYsIeWh9vhLYLdU8wVPWkY1s=;
- b=RhX/3hFuDS0d3yF9bpbp4fY/nVQBHPGfkl+juxCS52FrWL7k3xQgmTs2
- qU+qQgv1zqRAanY7li1j3EUtrPHXhffcyDa0T8d08k7jmWZND8zqFVSCp
- 7Ant04C7POEMQOLQkiKbXFgiih+gRITC3+NLgHfYm3kbxjPeKXZHCtjMu
- Pi7GtrHnyPgcQmK1IepilyknyEfDH6RaR1MmbtLDmQ8aYxY0QWdvsJ0j9
- shx6jnCbMhWF+5IMxVhfNLqYTGXcqwYgDxSSRQpVL57V1KJkt4LRTRD2i
- Fo2P6+aJm7MrPJHLCZSG9XlNKO6HaVxx8tSdliSutY5j3I1WAsMLV1W8o
- w==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ bh=6zc4B6XoXOREqzJ8dO7/tHHPEVwMnCAGbQLKR9LdAJU=;
+ b=OIws5CL7QeHhHeCjDzLjPxOuy81cc6FD7OKyEFEi0WTwgxeUrcAk7USu
+ ObQcfww3emNee4sFKC2lb0/FHRK0b/z3FwQYsItGNihdZd/8deM+kHTYi
+ 2zF1KL2zZrfDujrmiwg7KtFXZ4Y2XD/jdRm2RSIyEUVL3bWgzeu3jK6Os
+ XPEJFi0HD9HZFRRan7OLPF5Pr8dsYaOgrKkpdfBJIrlQJCzsTxdDWTBKy
+ u2CfpyZYixa/7tdxr/CZ62W/kZIffcoEcqFGgGO9gd3p23z2SiSfNwr47
+ YIpXgbi/MUcx6KVNcfk5e8zJkJkYlHzsyHed3z/KY2+ZsbiNkP0tTUoPa
+ g==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=RhX/3hFu
-Subject: [Intel-wired-lan] [PATCH iwl-net] ixgbe: avoid sleeping allocation
- in ixgbe_ipsec_vf_add_sa()
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=OIws5CL7
+Subject: [Intel-wired-lan] [PATCH iwl-next v6 0/6] ice: Support 5 layer Tx
+ scheduler topology
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,75 +105,108 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, lukasz.czapnik@intel.com,
- Michal Kubiak <michal.kubiak@intel.com>,
- Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Dan Carpenter <dan.carpenter@linaro.org>,
- Shannon Nelson <shannon.nelson@amd.com>
+Cc: andrew@lunn.ch, jiri@resnulli.us, michal.wilczynski@intel.com,
+ Mateusz Polchlopek <mateusz.polchlopek@intel.com>, netdev@vger.kernel.org,
+ lukasz.czapnik@intel.com, victor.raj@intel.com, anthony.l.nguyen@intel.com,
+ horms@kernel.org, przemyslaw.kitszel@intel.com, kuba@kernel.org
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Change kzalloc() flags used in ixgbe_ipsec_vf_add_sa() to GFP_ATOMIC, to
-avoid sleeping in IRQ context.
+For performance reasons there is a need to have support for selectable
+Tx scheduler topology. Currently firmware supports only the default
+9-layer and 5-layer topology. This patch series enables switch from
+default to 5-layer topology, if user decides to opt-in.
 
-Dan Carpenter, with the help of Smatch, has found following issue:
-The patch eda0333ac293: "ixgbe: add VF IPsec management" from Aug 13,
-2018 (linux-next), leads to the following Smatch static checker
-warning: drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c:917 ixgbe_ipsec_vf_add_sa()
-	warn: sleeping in IRQ context
+I sent it again to iwl list, because we need to test that change,
+devlink change is rather mechanical. @Tony - who should send it to
+netdev list after getting Tested-by tag from our Validation?
 
-The call tree that Smatch is worried about is:
-ixgbe_msix_other() <- IRQ handler
--> ixgbe_msg_task()
-   -> ixgbe_rcv_msg_from_vf()
-      -> ixgbe_ipsec_vf_add_sa()
-
-Reported-by: Dan Carpenter <dan.carpenter@linaro.org>
-Link: https://lore.kernel.org/intel-wired-lan/db31a0b0-4d9f-4e6b-aed8-88266eb5665c@moroto.mountain
-Reviewed-by: Michal Kubiak <michal.kubiak@intel.com>
-Signed-off-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c | 16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
+v6:
+- extended devlink_param *set pointer to accept one more parameter - extack
+- adjusted all drivers that use *set pointer to pass one more parameter
+- updated Documentation - changed "reboot" to "PCI slot powercycle", kept Kuba's ACK
+- removed "Error: " prefix from NL_SET_ERR_MSG_MOD function in ice_devlink.c
+- removed/adjusted messages sent to end user in ice_devlink.c
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
-index 13a6fca31004..866024f2b9ee 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
-@@ -914,7 +914,13 @@ int ixgbe_ipsec_vf_add_sa(struct ixgbe_adapter *adapter, u32 *msgbuf, u32 vf)
- 		goto err_out;
- 	}
- 
--	xs = kzalloc(sizeof(*xs), GFP_KERNEL);
-+	algo = xfrm_aead_get_byname(aes_gcm_name, IXGBE_IPSEC_AUTH_BITS, 1);
-+	if (unlikely(!algo)) {
-+		err = -ENOENT;
-+		goto err_out;
-+	}
-+
-+	xs = kzalloc(sizeof(*xs), GFP_ATOMIC);
- 	if (unlikely(!xs)) {
- 		err = -ENOMEM;
- 		goto err_out;
-@@ -930,14 +936,8 @@ int ixgbe_ipsec_vf_add_sa(struct ixgbe_adapter *adapter, u32 *msgbuf, u32 vf)
- 		memcpy(&xs->id.daddr.a4, sam->addr, sizeof(xs->id.daddr.a4));
- 	xs->xso.dev = adapter->netdev;
- 
--	algo = xfrm_aead_get_byname(aes_gcm_name, IXGBE_IPSEC_AUTH_BITS, 1);
--	if (unlikely(!algo)) {
--		err = -ENOENT;
--		goto err_xs;
--	}
--
- 	aead_len = sizeof(*xs->aead) + IXGBE_IPSEC_KEY_BITS / 8;
--	xs->aead = kzalloc(aead_len, GFP_KERNEL);
-+	xs->aead = kzalloc(aead_len, GFP_ATOMIC);
- 	if (unlikely(!xs->aead)) {
- 		err = -ENOMEM;
- 		goto err_xs;
+v5:
+- updated Documentation commit as suggested in v4 
+https://lore.kernel.org/netdev/20240228142054.474626-1-mateusz.polchlopek@intel.com/
 
-base-commit: 9b23fceb4158a3636ce4a2bda28ab03dcfa6a26f
+v4:
+- restored the initial way of passing firmware data to ice_cfg_tx_topo
+  function in ice_init_tx_topology function in ice_main.c file. In v2
+  and v3 version it was passed as const u8 parameter which caused kernel
+  crash. Because of this change I decided to drop all Reviewed-by tags.
+https://lore.kernel.org/netdev/20240219100555.7220-1-mateusz.polchlopek@intel.com/
+
+v3:
+- fixed documentation warnings
+https://lore.kernel.org/netdev/20231009090711.136777-1-mateusz.polchlopek@intel.com/
+
+v2:
+- updated documentation
+- reorder of variables list (default-init first)
+- comments changed to be more descriptive
+- added elseif's instead of few if's
+- returned error when ice_request_fw fails
+- ice_cfg_tx_topo() changed to take const u8 as parameter (get rid of copy
+  buffer)
+- renamed all "balance" occurences to the new one
+- prevent fail of ice_aq_read_nvm() function
+- unified variables names (int err instead of int status in few
+  functions)
+- some smaller fixes, typo fixes
+https://lore.kernel.org/netdev/20231006110212.96305-1-mateusz.polchlopek@intel.com/
+
+v1:
+https://lore.kernel.org/netdev/20230523174008.3585300-1-anthony.l.nguyen@intel.com/
+---
+
+Lukasz Czapnik (1):
+  ice: Add tx_scheduling_layers devlink param
+
+Mateusz Polchlopek (1):
+  devlink: extend devlink_param *set pointer
+
+Michal Wilczynski (2):
+  ice: Enable switching default Tx scheduler topology
+  ice: Document tx_scheduling_layers parameter
+
+Raj Victor (2):
+  ice: Support 5 layer topology
+  ice: Adjust the VSI/Aggregator layers
+
+ Documentation/networking/devlink/ice.rst      |  47 ++++
+ .../net/ethernet/broadcom/bnxt/bnxt_devlink.c |   6 +-
+ .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  32 +++
+ drivers/net/ethernet/intel/ice/ice_common.c   |   5 +
+ drivers/net/ethernet/intel/ice/ice_ddp.c      | 199 +++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_ddp.h      |   2 +
+ drivers/net/ethernet/intel/ice/ice_devlink.c  | 211 ++++++++++++++++--
+ .../net/ethernet/intel/ice/ice_fw_update.c    |   7 +-
+ .../net/ethernet/intel/ice/ice_fw_update.h    |   3 +
+ drivers/net/ethernet/intel/ice/ice_main.c     | 102 +++++++--
+ drivers/net/ethernet/intel/ice/ice_nvm.c      |   7 +-
+ drivers/net/ethernet/intel/ice/ice_nvm.h      |   3 +
+ drivers/net/ethernet/intel/ice/ice_sched.c    |  37 +--
+ drivers/net/ethernet/intel/ice/ice_sched.h    |   3 +
+ drivers/net/ethernet/intel/ice/ice_type.h     |   1 +
+ drivers/net/ethernet/mellanox/mlx4/main.c     |   6 +-
+ .../net/ethernet/mellanox/mlx5/core/eswitch.c |   3 +-
+ .../mellanox/mlx5/core/eswitch_offloads.c     |   3 +-
+ .../net/ethernet/mellanox/mlx5/core/fs_core.c |   3 +-
+ .../ethernet/mellanox/mlx5/core/fw_reset.c    |   3 +-
+ .../mellanox/mlxsw/spectrum_acl_tcam.c        |   3 +-
+ .../ethernet/netronome/nfp/devlink_param.c    |   3 +-
+ drivers/net/ethernet/qlogic/qed/qed_devlink.c |   3 +-
+ drivers/net/wwan/iosm/iosm_ipc_devlink.c      |   3 +-
+ include/net/devlink.h                         |   3 +-
+ include/net/dsa.h                             |   3 +-
+ net/devlink/param.c                           |   7 +-
+ net/dsa/devlink.c                             |   3 +-
+ 28 files changed, 627 insertions(+), 84 deletions(-)
+
 -- 
-2.43.0
+2.38.1
 
