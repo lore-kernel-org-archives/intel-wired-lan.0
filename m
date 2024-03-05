@@ -4,68 +4,68 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9EDB6C54798
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  5 Mar 2024 17:07:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1E032C54E4A
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  5 Mar 2024 17:08:00 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 3011041790;
-	Tue,  5 Mar 2024 17:07:57 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id C37264179C;
+	Tue,  5 Mar 2024 17:07:59 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id BMxKhnFsQkzD; Tue,  5 Mar 2024 17:07:56 +0000 (UTC)
+	with ESMTP id Ln6ESCILIAvD; Tue,  5 Mar 2024 17:07:58 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 6BD08400A6
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 553594178F
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1709658476;
-	bh=Me4Xk10atc4PR7t/I6qZ8lgrUTQGbBFPgI6Lcgl0e0g=;
+	s=default; t=1709658478;
+	bh=iANh/v6Qy63Cz6c8/J/tBYLhzMG58fAFeR/D2zY819E=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=5YCUlCl0FXMfCn8UmAe7SLcGMmCop6KzOZg4Q9OCPKkdNOMsADQ/i+tBkdH0Vjg8r
-	 8wxJlihUwBVsEH7unqagKlvkeLj9DTbKYhR0y7tHAYVBwRW3DJB8sD3FaXT29mTijj
-	 TZpnA36LvU46SktFBrCviw030R9Ejyb7+wq0WaPIGJwFCCDIx6lOWxDDVLjVAg+jgp
-	 SybXATE0sK6wihDJ4235UInlvgLz7okQjjwnTwP2byHAq0UspNuTHhLh3hFmR1lXxG
-	 kTZs3SVEgbt3KkUyaGe1y70VCQBrJQBj0SO8vboUfZRD+y4MGtWf88h9LBsyEcGVD/
-	 9BslfucFibTew==
+	b=bPyDpLN3iap1ZqakIELNpOIFbWhhEsltdreu42i5NTD1gMvEDpIG4Nxo2Ptmiokcq
+	 cwdJN3bHomAmKZgBoRGFGkfWrGPh/e1h9aUafyWFrz/XTj1K0xjzMCchps50giDZ7p
+	 p6CQ5puOuoJpYOdV5xK83uStkitf6l1jZHBeu55eaat3TEuGu95/1eCoLT+m9ZmK8h
+	 8n/yItmBYqRU7lUsoqrFO1BI+X9SevQabBxOd8QD5i4QuUuw9cYbk/a7WGfKAIzRmf
+	 GyYWuEjQQqSByCT53kFp3UbvyZ43sPDhJg+Y4WF+9mA5/zYIYz99o6xIYr14Ihupqt
+	 38XK0J+SlTeyQ==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 6BD08400A6;
-	Tue,  5 Mar 2024 17:07:56 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 553594178F;
+	Tue,  5 Mar 2024 17:07:58 +0000 (UTC)
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 41D951BF3A4
- for <intel-wired-lan@lists.osuosl.org>; Tue,  5 Mar 2024 17:07:55 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 4FAFF1BF3A4
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  5 Mar 2024 17:07:56 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 2C2AB4159C
+ by smtp4.osuosl.org (Postfix) with ESMTP id 4699941584
  for <intel-wired-lan@lists.osuosl.org>; Tue,  5 Mar 2024 17:07:55 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id NCaN0-QoIbJ3 for <intel-wired-lan@lists.osuosl.org>;
- Tue,  5 Mar 2024 17:07:53 +0000 (UTC)
+ with ESMTP id k1mXWOwGXj8N for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  5 Mar 2024 17:07:54 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.19;
  helo=mgamail.intel.com; envelope-from=mateusz.polchlopek@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 6198A41584
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 6198A41584
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 2B00341586
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2B00341586
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.19])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 6198A41584
- for <intel-wired-lan@lists.osuosl.org>; Tue,  5 Mar 2024 17:07:52 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,11003"; a="4085266"
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 2B00341586
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  5 Mar 2024 17:07:54 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,11003"; a="4085292"
 X-IronPort-AV: E=Sophos;i="6.06,205,1705392000"; 
-   d="scan'208";a="4085266"
+   d="scan'208";a="4085292"
 Received: from fmviesa003.fm.intel.com ([10.60.135.143])
  by orvoesa111.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 05 Mar 2024 09:07:39 -0800
+ 05 Mar 2024 09:07:42 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.06,206,1705392000"; d="scan'208";a="14021220"
+X-IronPort-AV: E=Sophos;i="6.06,206,1705392000"; d="scan'208";a="14021223"
 Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by fmviesa003.fm.intel.com with ESMTP; 05 Mar 2024 09:07:35 -0800
+ by fmviesa003.fm.intel.com with ESMTP; 05 Mar 2024 09:07:38 -0800
 Received: from fedora.igk.intel.com (Metan_eth.igk.intel.com [10.123.220.124])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id 93B81381A4;
- Tue,  5 Mar 2024 14:47:54 +0000 (GMT)
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id AEDE7381AA;
+ Tue,  5 Mar 2024 14:48:02 +0000 (GMT)
 From: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Tue,  5 Mar 2024 09:39:39 -0500
-Message-Id: <20240305143942.23757-4-mateusz.polchlopek@intel.com>
+Date: Tue,  5 Mar 2024 09:39:42 -0500
+Message-Id: <20240305143942.23757-7-mateusz.polchlopek@intel.com>
 X-Mailer: git-send-email 2.38.1
 In-Reply-To: <20240305143942.23757-1-mateusz.polchlopek@intel.com>
 References: <20240305143942.23757-1-mateusz.polchlopek@intel.com>
@@ -73,26 +73,25 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1709658474; x=1741194474;
+ t=1709658475; x=1741194475;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=hmvvG+IN0jDRAlrV0IJG7funIm+rGn7Eo2MgzVmVgLE=;
- b=UD8ll2qjXunglHfrJUzOujKR2egswXUdM+QSZvfp3gqb28uM55Mi2EPd
- 2aluwB5f2VDAHGywdDKMNaudQgl/apFOkOzEX3MKzFW7h+ISvrkuRDjjS
- tEtjUk02qnOmzHQ24B1ZjIEQ9V9ZvgWCR1B9Up6GEvxbJd8Uwe83ZG9GY
- qjoGnld7G5LYlSs0izn1HFRInzRgTTkIRTn4qLa+1LQf5IRlbl29tkIGF
- OBhU0qQIeIbnOsDQwjVrjz3rtfH5QbYZsMlyZ8+eO1No8PtZlRaFTW04b
- AJDCBSmVa+rViz70Rifk6EPJgCvUObw255WXMSq/la6Q3AKtX+urPlu0J
- Q==;
+ bh=mfVPlkDZyL7XfaKrP/G/OosZCKObphqD9SyqS/J4aTw=;
+ b=X+EQ75Vx4FmUfntOCJKsr85GLAFaM4leKTMovfAP+Fm3PIGPt7va7VQw
+ GFygV1Okonuyu0CZH6nz+pRryi0WYxhovH0Nf6j6G+d2kFXRLkrXb23og
+ P/CsXx8NJao0fZaNvCNyK1+WzjDdBrQTlf05RTAX7ZAguiW28J2KPycRJ
+ djQIoiGhsj8y6Bx//jxjPeFzFNDG6Xcqj/O5Plmp8JugWBF0/WMdUQR2y
+ njlqtv8asA9XPvi4ovJ72n/omSkFQv+Estfhm9NwXBtg7PrHlZ9Ezpm+A
+ GXiQVoKgaX09IVeB9Rr06+WFxGsDxXdHe5wu8jY3nIAAFXRF2IMO/KLPY
+ w==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=UD8ll2qj
-Subject: [Intel-wired-lan] [PATCH iwl-next v6 3/6] ice: Adjust the
- VSI/Aggregator layers
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=X+EQ75Vx
+Subject: [Intel-wired-lan] [PATCH iwl-next v6 6/6] ice: Document
+ tx_scheduling_layers parameter
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -112,115 +111,77 @@ Cc: andrew@lunn.ch, jiri@resnulli.us, michal.wilczynski@intel.com,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Raj Victor <victor.raj@intel.com>
+From: Michal Wilczynski <michal.wilczynski@intel.com>
 
-Adjust the VSI/Aggregator layers based on the number of logical layers
-supported by the FW. Currently the VSI and Aggregator layers are
-fixed based on the 9 layer scheduler tree layout. Due to performance
-reasons the number of layers of the scheduler tree is changing from
-9 to 5. It requires a readjustment of these VSI/Aggregator layer values.
+New driver specific parameter 'tx_scheduling_layers' was introduced.
+Describe parameter in the documentation.
 
-Signed-off-by: Raj Victor <victor.raj@intel.com>
-Co-developed-by: Michal Wilczynski <michal.wilczynski@intel.com>
 Signed-off-by: Michal Wilczynski <michal.wilczynski@intel.com>
+Acked-by: Jakub Kicinski <kuba@kernel.org>
+Co-developed-by: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
 Signed-off-by: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_sched.c | 37 +++++++++++-----------
- 1 file changed, 19 insertions(+), 18 deletions(-)
+ Documentation/networking/devlink/ice.rst | 47 ++++++++++++++++++++++++
+ 1 file changed, 47 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_sched.c b/drivers/net/ethernet/intel/ice/ice_sched.c
-index d174a4eeb899..1ac3686328ae 100644
---- a/drivers/net/ethernet/intel/ice/ice_sched.c
-+++ b/drivers/net/ethernet/intel/ice/ice_sched.c
-@@ -1128,12 +1128,11 @@ u8 ice_sched_get_vsi_layer(struct ice_hw *hw)
- 	 *     5 or less       sw_entry_point_layer
- 	 */
- 	/* calculate the VSI layer based on number of layers. */
--	if (hw->num_tx_sched_layers > ICE_VSI_LAYER_OFFSET + 1) {
--		u8 layer = hw->num_tx_sched_layers - ICE_VSI_LAYER_OFFSET;
--
--		if (layer > hw->sw_entry_point_layer)
--			return layer;
--	}
-+	if (hw->num_tx_sched_layers == ICE_SCHED_9_LAYERS)
-+		return hw->num_tx_sched_layers - ICE_VSI_LAYER_OFFSET;
-+	else if (hw->num_tx_sched_layers == ICE_SCHED_5_LAYERS)
-+		/* qgroup and VSI layers are same */
-+		return hw->num_tx_sched_layers - ICE_QGRP_LAYER_OFFSET;
- 	return hw->sw_entry_point_layer;
- }
- 
-@@ -1150,13 +1149,10 @@ u8 ice_sched_get_agg_layer(struct ice_hw *hw)
- 	 *     7 or less       sw_entry_point_layer
- 	 */
- 	/* calculate the aggregator layer based on number of layers. */
--	if (hw->num_tx_sched_layers > ICE_AGG_LAYER_OFFSET + 1) {
--		u8 layer = hw->num_tx_sched_layers - ICE_AGG_LAYER_OFFSET;
--
--		if (layer > hw->sw_entry_point_layer)
--			return layer;
--	}
--	return hw->sw_entry_point_layer;
-+	if (hw->num_tx_sched_layers == ICE_SCHED_9_LAYERS)
-+		return hw->num_tx_sched_layers - ICE_AGG_LAYER_OFFSET;
-+	else
-+		return hw->sw_entry_point_layer;
- }
- 
- /**
-@@ -1510,10 +1506,11 @@ ice_sched_get_free_qparent(struct ice_port_info *pi, u16 vsi_handle, u8 tc,
- {
- 	struct ice_sched_node *vsi_node, *qgrp_node;
- 	struct ice_vsi_ctx *vsi_ctx;
-+	u8 qgrp_layer, vsi_layer;
- 	u16 max_children;
--	u8 qgrp_layer;
- 
- 	qgrp_layer = ice_sched_get_qgrp_layer(pi->hw);
-+	vsi_layer = ice_sched_get_vsi_layer(pi->hw);
- 	max_children = pi->hw->max_children[qgrp_layer];
- 
- 	vsi_ctx = ice_get_vsi_ctx(pi->hw, vsi_handle);
-@@ -1524,6 +1521,12 @@ ice_sched_get_free_qparent(struct ice_port_info *pi, u16 vsi_handle, u8 tc,
- 	if (!vsi_node)
- 		return NULL;
- 
-+	/* If the queue group and VSI layer are same then queues
-+	 * are all attached directly to VSI
-+	 */
-+	if (qgrp_layer == vsi_layer)
-+		return vsi_node;
+diff --git a/Documentation/networking/devlink/ice.rst b/Documentation/networking/devlink/ice.rst
+index 7f30ebd5debb..8fc8480e2d2b 100644
+--- a/Documentation/networking/devlink/ice.rst
++++ b/Documentation/networking/devlink/ice.rst
+@@ -21,6 +21,53 @@ Parameters
+    * - ``enable_iwarp``
+      - runtime
+      - mutually exclusive with ``enable_roce``
++   * - ``tx_scheduling_layers``
++     - permanent
++     - The ice hardware uses hierarchical scheduling for Tx with a fixed
++       number of layers in the scheduling tree. Each of them are decision
++       points. Root node represents a port, while all the leaves represent
++       the queues. This way of configuring the Tx scheduler allows features
++       like DCB or devlink-rate (documented below) to configure how much
++       bandwidth is given to any given queue or group of queues, enabling
++       fine-grained control because scheduling parameters can be configured
++       at any given layer of the tree.
 +
- 	/* get the first queue group node from VSI sub-tree */
- 	qgrp_node = ice_sched_get_first_node(pi, vsi_node, qgrp_layer);
- 	while (qgrp_node) {
-@@ -3199,7 +3202,7 @@ ice_sched_add_rl_profile(struct ice_port_info *pi,
- 	u8 profile_type;
- 	int status;
++       The default 9-layer tree topology was deemed best for most workloads,
++       as it gives an optimal ratio of performance to configurability. However,
++       for some specific cases, this 9-layer topology might not be desired.
++       One example would be sending traffic to queues that are not a multiple
++       of 8. Because the maximum radix is limited to 8 in 9-layer topology,
++       the 9th queue has a different parent than the rest, and it's given
++       more bandwidth credits. This causes a problem when the system is
++       sending traffic to 9 queues:
++
++       | tx_queue_0_packets: 24163396
++       | tx_queue_1_packets: 24164623
++       | tx_queue_2_packets: 24163188
++       | tx_queue_3_packets: 24163701
++       | tx_queue_4_packets: 24163683
++       | tx_queue_5_packets: 24164668
++       | tx_queue_6_packets: 23327200
++       | tx_queue_7_packets: 24163853
++       | tx_queue_8_packets: 91101417 < Too much traffic is sent from 9th
++
++       To address this need, you can switch to a 5-layer topology, which
++       changes the maximum topology radix to 512. With this enhancement,
++       the performance characteristic is equal as all queues can be assigned
++       to the same parent in the tree. The obvious drawback of this solution
++       is a lower configuration depth of the tree.
++
++       Use the ``tx_scheduling_layer`` parameter with the devlink command
++       to change the transmit scheduler topology. To use 5-layer topology,
++       use a value of 5. For example:
++       $ devlink dev param set pci/0000:16:00.0 name tx_scheduling_layers
++       value 5 cmode permanent
++       Use a value of 9 to set it back to the default value.
++
++       You must reboot the system for the selected topology to take effect.
++
++       To verify that value has been set:
++       $ devlink dev param show pci/0000:16:00.0 name tx_scheduling_layers
  
--	if (layer_num >= ICE_AQC_TOPO_MAX_LEVEL_NUM)
-+	if (!pi || layer_num >= pi->hw->num_tx_sched_layers)
- 		return NULL;
- 	switch (rl_type) {
- 	case ICE_MIN_BW:
-@@ -3215,8 +3218,6 @@ ice_sched_add_rl_profile(struct ice_port_info *pi,
- 		return NULL;
- 	}
- 
--	if (!pi)
--		return NULL;
- 	hw = pi->hw;
- 	list_for_each_entry(rl_prof_elem, &pi->rl_prof_list[layer_num],
- 			    list_entry)
-@@ -3446,7 +3447,7 @@ ice_sched_rm_rl_profile(struct ice_port_info *pi, u8 layer_num, u8 profile_type,
- 	struct ice_aqc_rl_profile_info *rl_prof_elem;
- 	int status = 0;
- 
--	if (layer_num >= ICE_AQC_TOPO_MAX_LEVEL_NUM)
-+	if (layer_num >= pi->hw->num_tx_sched_layers)
- 		return -EINVAL;
- 	/* Check the existing list for RL profile */
- 	list_for_each_entry(rl_prof_elem, &pi->rl_prof_list[layer_num],
+ Info versions
+ =============
 -- 
 2.38.1
 
