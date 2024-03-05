@@ -1,110 +1,88 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AEEEFC48BF6
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  5 Mar 2024 02:23:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 38388C5478C
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  5 Mar 2024 03:35:35 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id F0FA860D4D;
-	Tue,  5 Mar 2024 02:23:00 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 93FCF40C1F;
+	Tue,  5 Mar 2024 03:35:34 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 2p76xkGnMZrK; Tue,  5 Mar 2024 02:22:59 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id ysn7688PmhJc; Tue,  5 Mar 2024 03:35:33 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3DA6060BD6
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org CFE6540189
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1709605379;
-	bh=lyDBQ+22yrp72E595L3mg2lYk2PEqYaqKKUdLQjHJus=;
-	h=References:In-Reply-To:From:Date:To:Subject:List-Id:
+	s=default; t=1709609733;
+	bh=XAnzuFK8ILWfnTluYVDANBYiPElUY+Bnvfq23P20BfA=;
+	h=Date:From:To:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=IYWX5luhF//5DZQse910yLtHGhGsCd0O1x+RvKZNMv5wIdEfkE/gP1jJ70xT09mGy
-	 Hk8OTvlB/EVepDsZoZscorJMiBAuc+RCCKai2BEzERbcLZWb4NPdRBEYQVKQHYvK/8
-	 A9l4AlAi0jdGzlh64CmULuODEG/EiYagaxOyOLi2mI7VPFaf0sxhP1PAjbdJUz4hH5
-	 dWFwBaWoKVGrRJ2acXQIbN/kHvDD8rjguTkIm9rEDl7/OzwSr5Fyj47vY2qI6Asiym
-	 uQlAfOEPmhC97MyA7SMR7jRSRkNcNz1TYTByWsO3Uh/0teQddY+j7u7fAMTNivzS5+
-	 Xb3i0Xq8mThHA==
+	b=crr+1GSG8BiLKJD/EVyyevj5j9BaqV5tErricBTXgbmw5HGL7yMWR2HqdN7D5fhcJ
+	 CubZyPy1VnpqXGRSu5nDAyIpMlz3ygAsRuvrhQz6cYr79Wsuvb6D1FwWgkpRL1NO5E
+	 H2r7vTp9+1dqJhAKQr5C/FF6meLSrtrQUiTU0yr7191qcj4B7tbwWOOMFdaaOS/Tvu
+	 Eky4sO+zOovie8TIvjyKv+ijQIZlN1ydOqYsf4aTKELZK7kU1k9s8ozO4aPaYxwghJ
+	 l92AyxtOlzkAk4v6jV7JttWCPf4PmIGBtQzcDfTBdM+ISVNuTIK2iB/u6ItKRRfSTG
+	 oGoeQyZIrMc/g==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 3DA6060BD6;
-	Tue,  5 Mar 2024 02:22:59 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id B72081BF2A9
- for <intel-wired-lan@lists.osuosl.org>; Tue,  5 Mar 2024 02:22:57 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id CFE6540189;
+	Tue,  5 Mar 2024 03:35:33 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 5D5271BF3C2
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  5 Mar 2024 03:35:31 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id A23A18219C
- for <intel-wired-lan@lists.osuosl.org>; Tue,  5 Mar 2024 02:22:57 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 48348607A8
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  5 Mar 2024 03:35:31 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id pjPlRgP5FdDK for <intel-wired-lan@lists.osuosl.org>;
- Tue,  5 Mar 2024 02:22:56 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id OX8L61Jdemos for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  5 Mar 2024 03:35:30 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2607:f8b0:4864:20::e30; helo=mail-vs1-xe30.google.com;
- envelope-from=erwanaliasr1@gmail.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 4040C82198
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4040C82198
-Received: from mail-vs1-xe30.google.com (mail-vs1-xe30.google.com
- [IPv6:2607:f8b0:4864:20::e30])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 4040C82198
- for <intel-wired-lan@lists.osuosl.org>; Tue,  5 Mar 2024 02:22:55 +0000 (UTC)
-Received: by mail-vs1-xe30.google.com with SMTP id
- ada2fe7eead31-472b709bb5fso209731137.2
- for <intel-wired-lan@lists.osuosl.org>; Mon, 04 Mar 2024 18:22:55 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20230601; t=1709605375; x=1710210175;
- h=content-transfer-encoding:cc:to:subject:message-id:date:from
- :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
- :subject:date:message-id:reply-to;
- bh=lyDBQ+22yrp72E595L3mg2lYk2PEqYaqKKUdLQjHJus=;
- b=WCiM3ZRhyUjJTum4dhmjUbavVn+Kn9N4Gjtnyv7/KKva4XbJGQAup00d/pzjOQJmi5
- 96Y+b9qyjgdtdNhOR07dfxbU0RXzTsj2vENAuFo1bVUaXs3/Z44jxm7bUGdt0PfoIuxq
- ZQA6BGsHa8n0vjjKFmCnb7lHiZO+bPTEi3PRitrKBewKAeYeHhHFnlMgUF2mE3esdBm/
- KXyP0XNLv+5DycBuiCubAtAFU/xj3AVdGNaQlgXTzKyJ0hERgJ/zC3P9PU08+zSPXEAp
- azItY1vgce88a5OueheCISH0giCtrXvKYClypstYK1ReKI/utSbLxty9qtuxXolbS6zs
- XvvQ==
-X-Forwarded-Encrypted: i=1;
- AJvYcCVgF4Qk0Hfs89kS1eQZxCTtDWVCrWxkAkRWwJOBEdXy4JWeSUMdMA5S46tA/E0Xv6r3OuP3mmqEkD/F6T5iEfR/uLfMQUEGIl01FipDos5Rbw==
-X-Gm-Message-State: AOJu0YxeS2iTOaxHvfYzlCWYU3VyDyTIuSRTzcdcFag+xP1PHsQglTBc
- UqJDyQ1yeTFOD4mwE0/jsJdQ9+6yyeZCalda0Hzfr0+SKAuEfGUCY5s2KxhxeImmWjoiy0xH0+a
- O+bPxGYStGzcGXf3SeBFUof9QVAA=
-X-Google-Smtp-Source: AGHT+IEJjbVykwk6l7yGQdOtaLiYdeBNq/pEj+9wBlBNqTGI1CEUlzvLT+rU73oRpT1flJVazofNP8/bDQLys9OKogI=
-X-Received: by 2002:a67:efcf:0:b0:470:4454:c40e with SMTP id
- s15-20020a67efcf000000b004704454c40emr573764vsp.14.1709605374582; Mon, 04 Mar
- 2024 18:22:54 -0800 (PST)
+ client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org;
+ envelope-from=kuba@kernel.org; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 6F864606C6
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 6F864606C6
+Received: from dfw.source.kernel.org (dfw.source.kernel.org
+ [IPv6:2604:1380:4641:c500::1])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 6F864606C6
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  5 Mar 2024 03:35:30 +0000 (UTC)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+ by dfw.source.kernel.org (Postfix) with ESMTP id D012F61320;
+ Tue,  5 Mar 2024 03:35:28 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E2584C433F1;
+ Tue,  5 Mar 2024 03:35:27 +0000 (UTC)
+Date: Mon, 4 Mar 2024 19:35:26 -0800
+From: Jakub Kicinski <kuba@kernel.org>
+To: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
+Message-ID: <20240304193526.788ff854@kernel.org>
+In-Reply-To: <20240228142054.474626-6-mateusz.polchlopek@intel.com>
+References: <20240228142054.474626-1-mateusz.polchlopek@intel.com>
+ <20240228142054.474626-6-mateusz.polchlopek@intel.com>
 MIME-Version: 1.0
-References: <20240227192704.376176-1-e.velu@criteo.com>
- <827d22da-fb32-1012-422d-d283b28ce5ec@intel.com>
-In-Reply-To: <827d22da-fb32-1012-422d-d283b28ce5ec@intel.com>
-From: Erwan Velu <erwanaliasr1@gmail.com>
-Date: Tue, 5 Mar 2024 03:22:43 +0100
-Message-ID: <CAL2Jzuzf54qcsCM4CAUOLaogWrBL=Mm4ma_4pRbaf8A=dZeOFQ@mail.gmail.com>
-To: Tony Nguyen <anthony.l.nguyen@intel.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20230601; t=1709605375; x=1710210175; darn=lists.osuosl.org;
- h=content-transfer-encoding:cc:to:subject:message-id:date:from
- :in-reply-to:references:mime-version:from:to:cc:subject:date
- :message-id:reply-to;
- bh=lyDBQ+22yrp72E595L3mg2lYk2PEqYaqKKUdLQjHJus=;
- b=XrnurvlC/pJjkSGwfy8IvUt46CGMsPDaX13eR4726LAiVr+pDmaV/ZiHY5BzM06VoB
- oY3TkPWg1CwKt5VzAOweZa4QQ/RmARbNVJc/gutJem8fNRt2/o+WbFS/d5hP7CgkG9Jz
- kS5UHzwaMJS9ivMMIgW9xPFt7mIdSoVDQGpZQPVyX1SpOn8+YPzkHIDYNOozWoSayX11
- UfuRwwVVttohcu3tnAPIKQrLiaYwybZdEwqkOFhxMb3U5rummmNrYiWFbAU18h4lxcA4
- CWqVcfuisCpfB6rm8pqDDcvrzEmh+epMyXejIBhrl+9kjX6DAtxubyB7pvO9h2bpeyry
- lUgw==
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=kernel.org; s=k20201202; t=1709609728;
+ bh=zZHekIqHtxy9dF3Cfkpb6Ll2S+QrL7GBUTKgt/C6P8M=;
+ h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+ b=ILLd+Vie75LndCUKeIG3+B3tLSOVQszlcYxsYR5/nsOX0k4iyDyoeEQcugZRfkwe9
+ 5aCzAqtiV/6GZVUr2q8pJ+mZbMdzRmSwYAeMjvP3gVDMtz550cy6XI1vmKR35d4lOO
+ 1SXSgiiMX1V55TlJHTEJJ3benVUC0ftP6JC8AzSB3r/Z1R2xqFHWMubpUg8zpFFP/f
+ +mr08iVYx3B0x6pU8B9Ql7q2YL4zvu5ZaYz8c0/DLtZX4yj4F5JOSsJ6SNelOqNTCc
+ VWDv9OEpaWjvXzFBUPFxafAUXhyvUqoa7lROaeDUGufA+gsEeA5rB5RCh5fs7eFjL+
+ Vhll/AFIqNErg==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
- header.from=gmail.com
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20230601 header.b=XrnurvlC
-Subject: Re: [Intel-wired-lan] [PATCH] i40e: Prevent setting MTU if greater
- than MFS
+ header.from=kernel.org
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20201202 header.b=ILLd+Vie
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next v5 5/5] ice: Document
+ tx_scheduling_layers parameter
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -117,30 +95,21 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Erwan Velu <e.velu@criteo.com>, linux-kernel@vger.kernel.org,
- Eric Dumazet <edumazet@google.com>, intel-wired-lan@lists.osuosl.org,
- netdev@vger.kernel.org, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, "David S. Miller" <davem@davemloft.net>
+Cc: andrew@lunn.ch, jiri@resnulli.us, michal.wilczynski@intel.com,
+ netdev@vger.kernel.org, lukasz.czapnik@intel.com, victor.raj@intel.com,
+ intel-wired-lan@lists.osuosl.org, horms@kernel.org,
+ przemyslaw.kitszel@intel.com
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Le lun. 4 mars 2024 =C3=A0 23:10, Tony Nguyen <anthony.l.nguyen@intel.com> =
-a =C3=A9crit :
-> > Signed-off-by: Erwan Velu <e.velu@criteo.com>
->
-> The Author and Sign-off needs to be fixed; they don't match.
->
-> WARNING: From:/Signed-off-by: email address mismatch: 'From: Erwan Velu
-> <erwanaliasr1@gmail.com>' !=3D 'Signed-off-by: Erwan Velu <e.velu@criteo.=
-com>'
+On Wed, 28 Feb 2024 09:20:54 -0500 Mateusz Polchlopek wrote:
+> From: Michal Wilczynski <michal.wilczynski@intel.com>
+> 
+> New driver specific parameter 'tx_scheduling_layers' was introduced.
+> Describe parameter in the documentation.
+> 
+> Signed-off-by: Michal Wilczynski <michal.wilczynski@intel.com>
+> Co-developed-by: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
+> Signed-off-by: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
 
-Yeah, I have a complicated email setup between my personal and
-professional emails.
-I'll see how I can fix that.
-
-I was also wondering if I shouldn't subtract I40E_PACKET_HDR_PAD from
-the mfs to be more accurate, can you confirm this ?
-
-If one can have a look at what is the exact procedure to fix the MFS
-size when too small, that would be lovely/ideal in addition to my
-patch.
+Acked-by: Jakub Kicinski <kuba@kernel.org>
