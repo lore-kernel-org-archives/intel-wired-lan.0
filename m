@@ -1,91 +1,90 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6ED64C54E58
-	for <intel-wired-lan@archiver.kernel.org>; Fri,  8 Mar 2024 14:59:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CFD6CC54E58
+	for <intel-wired-lan@archiver.kernel.org>; Fri,  8 Mar 2024 17:54:06 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 2A26D40A46;
-	Fri,  8 Mar 2024 14:59:48 +0000 (UTC)
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
-	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id MiD0_N732gCU; Fri,  8 Mar 2024 14:59:46 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 067ED4095D
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1709909986;
-	bh=sTyIX7GRru7T7c7KVK1dq9J8vpQwX04o5aa6ToBbXKY=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=9fRWOfQIc8Q7LJnWbK6Us4GxJEOgEKUILyi/cfnNe86GTUH8RWIjxXQEGuCF+KmMX
-	 uq7oBOX8P41uiQEAOAB1dcwFZAFy1/SZWWSomjUKMFksJvpXFOHL2k747Yw1AV9yH0
-	 RxzXXJhJgbPtf0eEUEAOxofyfQVpy8S7k7vnJHFH7l/f2BowmcO8ryyAisoV9l+WoO
-	 CT6ne3bj159t6G56BTO9R54jDdd7iEm6PyKA6UQafordFM2gZtrseqnVLGuu3WfY+b
-	 fjkejzzpUlnhRNlxBDsdeFxHy5TwHxAH13waJ5eVx2dIFED0HMN5Ftfxs3UYYRKXID
-	 V8/q0Xz8q6Zig==
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 067ED4095D;
-	Fri,  8 Mar 2024 14:59:46 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 9C5591BF23C
- for <intel-wired-lan@lists.osuosl.org>; Fri,  8 Mar 2024 10:59:18 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 8603441A32
- for <intel-wired-lan@lists.osuosl.org>; Fri,  8 Mar 2024 10:59:18 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 7C88741E17;
+	Fri,  8 Mar 2024 17:54:06 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id F_L5Ut5j0eJU for <intel-wired-lan@lists.osuosl.org>;
- Fri,  8 Mar 2024 10:59:17 +0000 (UTC)
-Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.10;
- helo=mgamail.intel.com; envelope-from=dariusz.aftanski@linux.intel.com;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 76FC641A04
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 76FC641A04
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.10])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 76FC641A04
- for <intel-wired-lan@lists.osuosl.org>; Fri,  8 Mar 2024 10:59:17 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,11006"; a="22061215"
-X-IronPort-AV: E=Sophos;i="6.07,109,1708416000"; d="scan'208";a="22061215"
-Received: from orviesa009.jf.intel.com ([10.64.159.149])
- by orvoesa102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 08 Mar 2024 02:59:17 -0800
+	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id OEhJynKsLx5E; Fri,  8 Mar 2024 17:54:04 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org CA87B41E09
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1709920444;
+	bh=cqSaj3KcDf7480qo0p7VgFX0XBSo42jITQklxXw0F68=;
+	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=cQsOo8PjLiwkTQdUvWGyFr76TkQpUYtzADh4wRn0UrwTUN5FZfmL4Ji5M/ooG5RN/
+	 7nPBqGT5YWS3+VnnqXoKpKfNesodELBmf8jcHX+0ednikiq/VA5V5N2WknlOF8eHyc
+	 uca5U8CfNYyNYXJSkLtZHeCFGiEmdNxPX5rY1EOIa9zFIK7Pxsn9SKEmNzIiMZU0ee
+	 k6UOnu71g0krSZg5At9GriLzGS8aXx+UyGNv0o7BUMfPcCjJFETZlyFRBWwEMblt7y
+	 Cg3l1ZlqF1MxKdKm7lg1mmYqW3ekXUSNTM7VbIxd/MtsbaJS7uUgjewR8zkHvvuXON
+	 QpgRS5TPei6nw==
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp4.osuosl.org (Postfix) with ESMTP id CA87B41E09;
+	Fri,  8 Mar 2024 17:54:04 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id E125B1BF417
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  8 Mar 2024 17:54:03 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp2.osuosl.org (Postfix) with ESMTP id CC60840533
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  8 Mar 2024 17:54:02 +0000 (UTC)
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id cGHeABs_R1uy for <intel-wired-lan@lists.osuosl.org>;
+ Fri,  8 Mar 2024 17:54:01 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.9;
+ helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 3F59140194
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 3F59140194
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.9])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 3F59140194
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  8 Mar 2024 17:54:00 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,11007"; a="15372496"
+X-IronPort-AV: E=Sophos;i="6.07,110,1708416000"; d="scan'208";a="15372496"
+Received: from fmviesa006.fm.intel.com ([10.60.135.146])
+ by fmvoesa103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 08 Mar 2024 09:54:00 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.07,109,1708416000"; d="scan'208";a="10471781"
-Received: from ngic1.igk.intel.com (HELO Oahu.igk.intel.com) ([10.237.112.172])
- by orviesa009.jf.intel.com with ESMTP; 08 Mar 2024 02:59:16 -0800
-From: Dariusz Aftanski <dariusz.aftanski@linux.intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Date: Fri,  8 Mar 2024 11:58:42 +0100
-Message-ID: <20240308105842.141723-1-dariusz.aftanski@linux.intel.com>
-X-Mailer: git-send-email 2.44.0
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Mailman-Approved-At: Fri, 08 Mar 2024 14:59:43 +0000
+X-IronPort-AV: E=Sophos;i="6.07,110,1708416000"; d="scan'208";a="10629187"
+Received: from lkp-server01.sh.intel.com (HELO b21307750695) ([10.239.97.150])
+ by fmviesa006.fm.intel.com with ESMTP; 08 Mar 2024 09:53:58 -0800
+Received: from kbuild by b21307750695 with local (Exim 4.96)
+ (envelope-from <lkp@intel.com>) id 1riePs-0006aN-07;
+ Fri, 08 Mar 2024 17:53:56 +0000
+Date: Sat, 09 Mar 2024 01:52:56 +0800
+From: kernel test robot <lkp@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Message-ID: <202403090150.0gkUdeIc-lkp@intel.com>
+User-Agent: s-nail v14.9.24
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1709895558; x=1741431558;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=f0q/a0xnG5kf2q9i0qrlrTW4lXpdu1y5FLz5rkNT36w=;
- b=iayzZyVaM5xYlxP6c33cnD/EdeZ01njxcK9d2u312mhQFyUuxX2Fiebb
- bl2YoEz+S+/y60cSslp4p+AjZqgZ9PWxCKB8/jUi1EO1pj32vFDXE6aUG
- 32DAZviuJGhIup+Z7MiHi4MSdsGBMS0tqYa6BiFk1OA2PDvjw9wbRpwmc
- OyGcnbOvb4C5rmbhsjukTjxSWXM/pMLhd51Avcw1nYGZXa49sCoG7/hm+
- VskOPCCtr0DFE028HbRuGNIK9eBz8GoX8/08Ii3PL6BVs44Hd1LhRoUSh
- iqM91PrHk/CNmaJT4uQceJwgQyYGhdpuN+z848/mqoU/6YZnItXl9iKo8
- g==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dmarc=none (p=none dis=none)
- header.from=linux.intel.com
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ t=1709920441; x=1741456441;
+ h=date:from:to:cc:subject:message-id;
+ bh=yMdNs/VqwsWFn+SUzhLU8RKSEy8dOcBRQP0T9oEujAc=;
+ b=fHio6rConaQUN7zX7rEYhljgrwnBEDgrW3a+S8yzJ8sQEIdnlc41kfMl
+ 4VdPwOVuNc+8y13Cbpe0aSk1d563eEtIoXNuwhkY3wGphFap7YOMbo5M/
+ Dy8tXUfwQzxn5rlyxX7ExFjxOUaRJatYMg/DP6RqLuT7YH17YCHA9QnD1
+ oAEBaNYjMgyF6JkvFvYjC7stCv+JsP5xKg/nGPLZX2wR7bBhbsudFtAwd
+ PDFrlQbuGlpLdj3WuOqglelq2n4LDC786JIFjPUtCKMDb8VAcKyR5bUAD
+ vPT5V7v7cO3H6PCqBWZrKnwqv14RrkmRRV+jcZc5JsjJsEbaYMhwTnZvG
+ A==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=intel.com
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=iayzZyVa
-Subject: [Intel-wired-lan] [iwl-next v1] ice: Remove ndo_get_phys_port_name
+ header.s=Intel header.b=fHio6rCo
+Subject: [Intel-wired-lan] [linux-next:master] BUILD REGRESSION
+ 8ffc8b1bbd505e27e2c8439d326b6059c906c9dd
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,72 +97,350 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, Dariusz Aftanski <dariusz.aftanski@linux.intel.com>,
- Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+Cc: netdev@vger.kernel.org, Linux Memory Management List <linux-mm@kvack.org>,
+ intel-wired-lan@lists.osuosl.org, linux-mtd@lists.infradead.org,
+ bpf@vger.kernel.org, linux-omap@vger.kernel.org
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-ndo_get_phys_port_name is never actually used, as in switchdev
-devklink is always being created.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git master
+branch HEAD: 8ffc8b1bbd505e27e2c8439d326b6059c906c9dd  Add linux-next specific files for 20240308
 
-Reviewed-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
-Signed-off-by: Dariusz Aftanski <dariusz.aftanski@linux.intel.com>
----
- drivers/net/ethernet/intel/ice/ice_repr.c | 34 -----------------------
- 1 file changed, 34 deletions(-)
+Error/Warning reports:
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_repr.c b/drivers/net/ethernet/intel/ice/ice_repr.c
-index 5f30fb131f74..1f2242a4990e 100644
---- a/drivers/net/ethernet/intel/ice/ice_repr.c
-+++ b/drivers/net/ethernet/intel/ice/ice_repr.c
-@@ -8,39 +8,6 @@
- #include "ice_tc_lib.h"
- #include "ice_dcb_lib.h"
- 
--/**
-- * ice_repr_get_sw_port_id - get port ID associated with representor
-- * @repr: pointer to port representor
-- */
--static int ice_repr_get_sw_port_id(struct ice_repr *repr)
--{
--	return repr->src_vsi->back->hw.port_info->lport;
--}
--
--/**
-- * ice_repr_get_phys_port_name - get phys port name
-- * @netdev: pointer to port representor netdev
-- * @buf: write here port name
-- * @len: max length of buf
-- */
--static int
--ice_repr_get_phys_port_name(struct net_device *netdev, char *buf, size_t len)
--{
--	struct ice_netdev_priv *np = netdev_priv(netdev);
--	struct ice_repr *repr = np->repr;
--	int res;
--
--	/* Devlink port is registered and devlink core is taking care of name formatting. */
--	if (repr->vf->devlink_port.devlink)
--		return -EOPNOTSUPP;
--
--	res = snprintf(buf, len, "pf%dvfr%d", ice_repr_get_sw_port_id(repr),
--		       repr->id);
--	if (res <= 0)
--		return -EOPNOTSUPP;
--	return 0;
--}
--
- /**
-  * ice_repr_get_stats64 - get VF stats for VFPR use
-  * @netdev: pointer to port representor netdev
-@@ -240,7 +207,6 @@ ice_repr_setup_tc(struct net_device *netdev, enum tc_setup_type type,
- }
- 
- static const struct net_device_ops ice_repr_netdev_ops = {
--	.ndo_get_phys_port_name = ice_repr_get_phys_port_name,
- 	.ndo_get_stats64 = ice_repr_get_stats64,
- 	.ndo_open = ice_repr_open,
- 	.ndo_stop = ice_repr_stop,
+https://lore.kernel.org/oe-kbuild-all/202403082209.vkIG6nqH-lkp@intel.com
+
+Error/Warning: (recently discovered and may have been fixed)
+
+drivers/mtd/ubi/nvmem.c:34:9: error: incompatible pointer types passing 'int *' to parameter of type 'uint64_t *' (aka 'unsigned long long *') [-Werror,-Wincompatible-pointer-types]
+
+Error/Warning ids grouped by kconfigs:
+
+gcc_recent_errors
+|-- alpha-allyesconfig
+|   `-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+|-- arc-allmodconfig
+|   `-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+|-- arc-allyesconfig
+|   `-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+|-- arm-allmodconfig
+|   |-- arch-arm-mach-omap2-prm33xx.c:warning:expecting-prototype-for-am33xx_prm_global_warm_sw_reset().-Prototype-was-for-am33xx_prm_global_sw_reset()-instead
+|   `-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+|-- arm-allyesconfig
+|   |-- arch-arm-mach-omap2-prm33xx.c:warning:expecting-prototype-for-am33xx_prm_global_warm_sw_reset().-Prototype-was-for-am33xx_prm_global_sw_reset()-instead
+|   `-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+|-- arm64-defconfig
+|   `-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+|-- csky-allmodconfig
+|   `-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+|-- csky-allyesconfig
+|   `-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+|-- i386-allmodconfig
+|   `-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+|-- i386-allyesconfig
+|   `-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+|-- i386-buildonly-randconfig-004-20240308
+|   `-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+|-- i386-randconfig-141-20240308
+|   `-- drivers-net-ethernet-intel-i40e-i40e_main.c-i40e_veb_release()-error:uninitialized-symbol-vsi-.
+|-- loongarch-allmodconfig
+|   `-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+|-- loongarch-defconfig
+|   `-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+|-- loongarch-randconfig-002-20240308
+|   `-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+|-- m68k-allmodconfig
+|   `-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+|-- m68k-allyesconfig
+|   `-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+|-- microblaze-allmodconfig
+|   `-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+|-- microblaze-allyesconfig
+|   `-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+|-- mips-allyesconfig
+|   |-- (.ref.text):relocation-truncated-to-fit:R_MIPS_26-against-start_secondary
+|   |-- (.text):relocation-truncated-to-fit:R_MIPS_26-against-kernel_entry
+|   `-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+|-- nios2-allmodconfig
+|   `-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+|-- nios2-allyesconfig
+|   `-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+|-- nios2-randconfig-002-20240308
+|   `-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+|-- openrisc-allyesconfig
+|   `-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+|-- parisc-allmodconfig
+|   `-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+|-- parisc-allyesconfig
+|   `-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+|-- powerpc-allmodconfig
+|   `-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+|-- s390-allyesconfig
+|   `-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+|-- sh-allmodconfig
+|   `-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+|-- sh-allyesconfig
+|   `-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+|-- sparc-allmodconfig
+|   `-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+|-- sparc64-allmodconfig
+|   `-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+|-- sparc64-allyesconfig
+|   `-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+|-- sparc64-randconfig-002-20240308
+|   `-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+|-- um-allyesconfig
+|   `-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+|-- x86_64-randconfig-016-20240308
+|   `-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+|-- x86_64-randconfig-073-20240308
+|   `-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+`-- x86_64-randconfig-074-20240308
+    `-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+clang_recent_errors
+|-- arm-defconfig
+|   |-- ERROR:__aeabi_uldivmod-drivers-gpu-drm-sun4i-sun4i-drm-hdmi.ko-undefined
+|   |-- arch-arm-mach-omap2-prm33xx.c:warning:expecting-prototype-for-am33xx_prm_global_warm_sw_reset().-Prototype-was-for-am33xx_prm_global_sw_reset()-instead
+|   `-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+|-- arm-imx_v6_v7_defconfig
+|   `-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+|-- arm-randconfig-004-20240308
+|   `-- arch-arm-mach-omap2-prm33xx.c:warning:expecting-prototype-for-am33xx_prm_global_warm_sw_reset().-Prototype-was-for-am33xx_prm_global_sw_reset()-instead
+|-- arm64-allmodconfig
+|   |-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+|   `-- kernel-bpf-bpf_struct_ops.c:warning:bitwise-operation-between-different-enumeration-types-(-enum-bpf_type_flag-and-enum-bpf_reg_type-)
+|-- arm64-randconfig-003-20240308
+|   `-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+|-- hexagon-allmodconfig
+|   `-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+|-- hexagon-allyesconfig
+|   |-- drivers-mtd-ubi-nvmem.c:error:incompatible-pointer-types-passing-int-to-parameter-of-type-uint64_t-(aka-unsigned-long-long-)-Werror-Wincompatible-pointer-types
+|   `-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+|-- hexagon-randconfig-001-20240308
+|   `-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+|-- i386-randconfig-002-20240308
+|   `-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+|-- i386-randconfig-012-20240308
+|   `-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+|-- i386-randconfig-014-20240308
+|   `-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+|-- mips-ci20_defconfig
+|   `-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+|-- powerpc-allyesconfig
+|   |-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+|   `-- kernel-bpf-bpf_struct_ops.c:warning:bitwise-operation-between-different-enumeration-types-(-enum-bpf_type_flag-and-enum-bpf_reg_type-)
+|-- powerpc-randconfig-003-20240308
+|   `-- kernel-bpf-bpf_struct_ops.c:warning:bitwise-operation-between-different-enumeration-types-(-enum-bpf_type_flag-and-enum-bpf_reg_type-)
+|-- riscv-allmodconfig
+|   |-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+|   `-- kernel-bpf-bpf_struct_ops.c:warning:bitwise-operation-between-different-enumeration-types-(-enum-bpf_type_flag-and-enum-bpf_reg_type-)
+|-- riscv-allyesconfig
+|   |-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+|   `-- kernel-bpf-bpf_struct_ops.c:warning:bitwise-operation-between-different-enumeration-types-(-enum-bpf_type_flag-and-enum-bpf_reg_type-)
+|-- riscv-randconfig-001-20240308
+|   `-- kernel-bpf-bpf_struct_ops.c:warning:bitwise-operation-between-different-enumeration-types-(-enum-bpf_type_flag-and-enum-bpf_reg_type-)
+|-- s390-allmodconfig
+|   |-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+|   `-- kernel-bpf-bpf_struct_ops.c:warning:bitwise-operation-between-different-enumeration-types-(-enum-bpf_type_flag-and-enum-bpf_reg_type-)
+|-- s390-defconfig
+|   `-- kernel-bpf-bpf_struct_ops.c:warning:bitwise-operation-between-different-enumeration-types-(-enum-bpf_type_flag-and-enum-bpf_reg_type-)
+|-- x86_64-allmodconfig
+|   `-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+|-- x86_64-allyesconfig
+|   `-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+|-- x86_64-randconfig-002-20240308
+|   `-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+|-- x86_64-randconfig-003-20240308
+|   `-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+`-- x86_64-randconfig-161-20240308
+    `-- fs-ubifs-journal.c:warning:expecting-prototype-for-wake_up_reservation().-Prototype-was-for-add_or_start_queue()-instead
+
+elapsed time: 746m
+
+configs tested: 179
+configs skipped: 3
+
+tested configs:
+alpha                             allnoconfig   gcc  
+alpha                            allyesconfig   gcc  
+alpha                               defconfig   gcc  
+arc                              allmodconfig   gcc  
+arc                               allnoconfig   gcc  
+arc                              allyesconfig   gcc  
+arc                                 defconfig   gcc  
+arc                   randconfig-001-20240308   gcc  
+arc                   randconfig-002-20240308   gcc  
+arm                              allmodconfig   gcc  
+arm                               allnoconfig   clang
+arm                              allyesconfig   gcc  
+arm                                 defconfig   clang
+arm                       imx_v6_v7_defconfig   clang
+arm                   randconfig-001-20240308   gcc  
+arm                   randconfig-002-20240308   clang
+arm                   randconfig-003-20240308   clang
+arm                   randconfig-004-20240308   clang
+arm                        realview_defconfig   clang
+arm64                            allmodconfig   clang
+arm64                             allnoconfig   gcc  
+arm64                               defconfig   gcc  
+arm64                 randconfig-001-20240308   clang
+arm64                 randconfig-002-20240308   clang
+arm64                 randconfig-003-20240308   clang
+arm64                 randconfig-004-20240308   gcc  
+csky                             allmodconfig   gcc  
+csky                              allnoconfig   gcc  
+csky                             allyesconfig   gcc  
+csky                                defconfig   gcc  
+csky                  randconfig-001-20240308   gcc  
+csky                  randconfig-002-20240308   gcc  
+hexagon                          allmodconfig   clang
+hexagon                           allnoconfig   clang
+hexagon                          allyesconfig   clang
+hexagon                             defconfig   clang
+hexagon               randconfig-001-20240308   clang
+hexagon               randconfig-002-20240308   clang
+i386                             allmodconfig   gcc  
+i386                              allnoconfig   gcc  
+i386                             allyesconfig   gcc  
+i386         buildonly-randconfig-001-20240308   clang
+i386         buildonly-randconfig-002-20240308   clang
+i386         buildonly-randconfig-003-20240308   gcc  
+i386         buildonly-randconfig-004-20240308   gcc  
+i386         buildonly-randconfig-005-20240308   gcc  
+i386         buildonly-randconfig-006-20240308   clang
+i386                                defconfig   clang
+i386                  randconfig-001-20240308   clang
+i386                  randconfig-002-20240308   clang
+i386                  randconfig-003-20240308   clang
+i386                  randconfig-004-20240308   gcc  
+i386                  randconfig-005-20240308   clang
+i386                  randconfig-006-20240308   clang
+i386                  randconfig-011-20240308   gcc  
+i386                  randconfig-012-20240308   clang
+i386                  randconfig-013-20240308   clang
+i386                  randconfig-014-20240308   clang
+i386                  randconfig-015-20240308   gcc  
+i386                  randconfig-016-20240308   gcc  
+loongarch                        allmodconfig   gcc  
+loongarch                         allnoconfig   gcc  
+loongarch                           defconfig   gcc  
+loongarch             randconfig-001-20240308   gcc  
+loongarch             randconfig-002-20240308   gcc  
+m68k                             allmodconfig   gcc  
+m68k                              allnoconfig   gcc  
+m68k                             allyesconfig   gcc  
+m68k                         apollo_defconfig   gcc  
+m68k                                defconfig   gcc  
+m68k                        m5407c3_defconfig   gcc  
+m68k                            mac_defconfig   gcc  
+microblaze                       allmodconfig   gcc  
+microblaze                        allnoconfig   gcc  
+microblaze                       allyesconfig   gcc  
+microblaze                          defconfig   gcc  
+mips                              allnoconfig   gcc  
+mips                             allyesconfig   gcc  
+mips                          ath25_defconfig   clang
+mips                         bigsur_defconfig   gcc  
+mips                           ci20_defconfig   clang
+mips                         db1xxx_defconfig   clang
+nios2                            allmodconfig   gcc  
+nios2                             allnoconfig   gcc  
+nios2                            allyesconfig   gcc  
+nios2                               defconfig   gcc  
+nios2                 randconfig-001-20240308   gcc  
+nios2                 randconfig-002-20240308   gcc  
+openrisc                          allnoconfig   gcc  
+openrisc                         allyesconfig   gcc  
+openrisc                            defconfig   gcc  
+parisc                           allmodconfig   gcc  
+parisc                            allnoconfig   gcc  
+parisc                           allyesconfig   gcc  
+parisc                              defconfig   gcc  
+parisc                randconfig-001-20240308   gcc  
+parisc                randconfig-002-20240308   gcc  
+parisc64                            defconfig   gcc  
+powerpc                      acadia_defconfig   clang
+powerpc                          allmodconfig   gcc  
+powerpc                           allnoconfig   gcc  
+powerpc                          allyesconfig   clang
+powerpc                       eiger_defconfig   clang
+powerpc                      ep88xc_defconfig   gcc  
+powerpc                  mpc866_ads_defconfig   clang
+powerpc               randconfig-001-20240308   gcc  
+powerpc               randconfig-002-20240308   clang
+powerpc               randconfig-003-20240308   clang
+powerpc64             randconfig-001-20240308   gcc  
+powerpc64             randconfig-002-20240308   clang
+powerpc64             randconfig-003-20240308   clang
+riscv                            allmodconfig   clang
+riscv                             allnoconfig   gcc  
+riscv                            allyesconfig   clang
+riscv                               defconfig   clang
+riscv                    nommu_k210_defconfig   clang
+riscv                 randconfig-001-20240308   clang
+riscv                 randconfig-002-20240308   clang
+s390                             allmodconfig   clang
+s390                              allnoconfig   clang
+s390                             allyesconfig   gcc  
+s390                                defconfig   clang
+s390                  randconfig-001-20240308   gcc  
+s390                  randconfig-002-20240308   gcc  
+sh                               allmodconfig   gcc  
+sh                                allnoconfig   gcc  
+sh                               allyesconfig   gcc  
+sh                                  defconfig   gcc  
+sh                    randconfig-001-20240308   gcc  
+sh                    randconfig-002-20240308   gcc  
+sh                      rts7751r2d1_defconfig   gcc  
+sparc                            allmodconfig   gcc  
+sparc                             allnoconfig   gcc  
+sparc                               defconfig   gcc  
+sparc64                          allmodconfig   gcc  
+sparc64                          allyesconfig   gcc  
+sparc64                             defconfig   gcc  
+sparc64               randconfig-001-20240308   gcc  
+sparc64               randconfig-002-20240308   gcc  
+um                               alldefconfig   clang
+um                               allmodconfig   clang
+um                                allnoconfig   clang
+um                               allyesconfig   gcc  
+um                                  defconfig   clang
+um                             i386_defconfig   gcc  
+um                    randconfig-001-20240308   clang
+um                    randconfig-002-20240308   gcc  
+um                           x86_64_defconfig   clang
+x86_64                            allnoconfig   clang
+x86_64                           allyesconfig   clang
+x86_64       buildonly-randconfig-001-20240308   clang
+x86_64       buildonly-randconfig-002-20240308   gcc  
+x86_64       buildonly-randconfig-003-20240308   gcc  
+x86_64       buildonly-randconfig-004-20240308   clang
+x86_64       buildonly-randconfig-005-20240308   gcc  
+x86_64       buildonly-randconfig-006-20240308   gcc  
+x86_64                              defconfig   gcc  
+x86_64                randconfig-001-20240308   gcc  
+x86_64                randconfig-002-20240308   clang
+x86_64                randconfig-003-20240308   clang
+x86_64                randconfig-004-20240308   clang
+x86_64                randconfig-005-20240308   gcc  
+x86_64                randconfig-006-20240308   gcc  
+x86_64                randconfig-011-20240308   clang
+x86_64                randconfig-012-20240308   gcc  
+x86_64                randconfig-013-20240308   clang
+x86_64                randconfig-014-20240308   clang
+x86_64                randconfig-015-20240308   gcc  
+x86_64                randconfig-016-20240308   gcc  
+x86_64                randconfig-071-20240308   clang
+x86_64                randconfig-072-20240308   gcc  
+x86_64                randconfig-073-20240308   gcc  
+x86_64                randconfig-074-20240308   gcc  
+x86_64                randconfig-075-20240308   gcc  
+x86_64                randconfig-076-20240308   gcc  
+x86_64                          rhel-8.3-rust   clang
+xtensa                            allnoconfig   gcc  
+xtensa                randconfig-001-20240308   gcc  
+xtensa                randconfig-002-20240308   gcc  
+
 -- 
-2.44.0
-
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
