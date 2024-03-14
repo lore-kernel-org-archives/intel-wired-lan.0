@@ -4,104 +4,93 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7C86BC54E60
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 14 Mar 2024 15:12:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3DC25C54E67
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 14 Mar 2024 15:12:04 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 1357A40E46;
-	Thu, 14 Mar 2024 15:12:02 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 684314109D;
+	Thu, 14 Mar 2024 15:12:03 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id ePCxZ2yrn_dc; Thu, 14 Mar 2024 15:12:01 +0000 (UTC)
+	with ESMTP id nzfjNHvwa8LE; Thu, 14 Mar 2024 15:12:02 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2A6DA4109D
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 6BB93410A3
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1710429121;
-	bh=07iWg96Ug0ar28khXr8VtZgNx/Y3grwqg1hNcNbM4k4=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=T0Jrh+kwfWwv2nnxFki8axr3OauSIVfmGYXFmokdzh7/ZLFrwEd6WsRXnXAawW0uu
-	 44xacqqPtuhOhqLObCZ0LIzN+VzZdb8UIygPXJBfEcCePDKC/dTZgx4XCkstOoSPik
-	 kLS371EkhwmOU13TF7YpBWDLEbnjbiXOe4963ccyGj/+bQrZvN55xT0BG6hSAL7N/q
-	 jizqA3XsonByMHLs4zAoTp/U7qEWIkoeQyUbmKygFRZDWTqZfB1hajmtDKYOfsLpC/
-	 nQU+iAeDeRf9UNhIgYvI5H8aGLQ5Lwqkc3gjCh8FSbO2XCxN9z7NbBCb3wgBHUMPXv
-	 7dNznU93lW3mw==
+	s=default; t=1710429122;
+	bh=0OL4LzRBFl80pfUqgwbmr9DML9X2re08EQDheZVyXs8=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=H2KnV49ifUik67CL0XiJIZXQly9hfwz3dZCEh5R2FpLnXLavDCvYix/liBAFwdyDv
+	 GPVSjmtIXW/gyvhYensRuSg9p5ZxU9P54yRojh67hqysZOuPEUREPpK7ulhQ5UAo9A
+	 t0h9eD/TeSKagUxgKgKQSnQEj2CeicaaJcjCkLTfLdXAW6Dnxu0rMSzGjsUJvc2m+e
+	 ouek1TBVdfKtqf7O960TNCctetfoPV70PUIZGYNWgYm3E+Vnw9WJ2qF7x3q9lbQpz3
+	 4noSCx8TU1IOKaVd2WhSKQcV6fILLqp9GSz7gqEC3RIZ3Tb0EF/B4sxEdLdtc8Mbw3
+	 sVQjY3Cdl0jmQ==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 2A6DA4109D;
-	Thu, 14 Mar 2024 15:12:01 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 2A1B11BF31B
- for <intel-wired-lan@lists.osuosl.org>; Thu, 14 Mar 2024 09:15:31 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 6BB93410A3;
+	Thu, 14 Mar 2024 15:12:02 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id BE0651BF267
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 14 Mar 2024 10:55:09 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 1773A40472
- for <intel-wired-lan@lists.osuosl.org>; Thu, 14 Mar 2024 09:15:31 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id A92CC81318
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 14 Mar 2024 10:55:09 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id qbXUe8m7SX-8 for <intel-wired-lan@lists.osuosl.org>;
- Thu, 14 Mar 2024 09:15:30 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2a00:1450:4864:20::42d; helo=mail-wr1-x42d.google.com;
- envelope-from=ulrich.weber@gmail.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 405C5402D4
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 405C5402D4
-Received: from mail-wr1-x42d.google.com (mail-wr1-x42d.google.com
- [IPv6:2a00:1450:4864:20::42d])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 405C5402D4
- for <intel-wired-lan@lists.osuosl.org>; Thu, 14 Mar 2024 09:15:30 +0000 (UTC)
-Received: by mail-wr1-x42d.google.com with SMTP id
- ffacd0b85a97d-33d90dfe73cso433643f8f.0
- for <intel-wired-lan@lists.osuosl.org>; Thu, 14 Mar 2024 02:15:30 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20230601; t=1710407728; x=1711012528;
- h=content-transfer-encoding:mime-version:message-id:date:subject:to
- :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
- bh=07iWg96Ug0ar28khXr8VtZgNx/Y3grwqg1hNcNbM4k4=;
- b=ExfB3Lhfg4rDlW97L6/RBxJx3DGYgBu3fJbtoJ/RvNhlarujNH7XjvrHJ+FSAMi8o6
- WN85bWOXCAHApLtkBpdoObiodtOZnytyWjiSY3cUaMoVA2M1O1iWjIEuQieykinsbVdW
- dqPBZheC9e+0+OAu/QcyKaVvGuePn8IAT1CvEj3COVCtknG0bOV2+1xrp6z1xBmOE/Ji
- Y7lKWWf447bE6OHF1Unh87qGDy0Vi/s1YTx12YRQn27WhvX3dOd7xUmKOkPIJWfJcGzf
- WpPjrEAcxSW/w5j3sACnf4Yt5nMoB9t7OrCxiCZ/TEl3V39QNswNd+hG6j3QvYptKYGV
- Tv0Q==
-X-Gm-Message-State: AOJu0Yy+vbF4R7TWN8tuR8DqWJ0H3zmhzqMfTr7k0XRRw/O0jSej/zTe
- CN9JT++TTXXIZKCy07I+uW1YlrWoSC1IF76L2hMKDxUM38MV/kvTXcnr+jmi
-X-Google-Smtp-Source: AGHT+IG908+PQ3nzLBjI0GQDkzIAmuEmSz4l/nrwvTsC9+ftw/0SdlwgCdcIf5wdw5CCK59J8srTtg==
-X-Received: by 2002:adf:e745:0:b0:33e:7991:6105 with SMTP id
- c5-20020adfe745000000b0033e79916105mr969650wrn.16.1710407727888; 
- Thu, 14 Mar 2024 02:15:27 -0700 (PDT)
-Received: from x11-12c.kopla.local ([87.130.86.114])
- by smtp.googlemail.com with ESMTPSA id
- n28-20020adf8b1c000000b0033e745176f5sm264751wra.110.2024.03.14.02.15.27
- for <intel-wired-lan@lists.osuosl.org>
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 14 Mar 2024 02:15:27 -0700 (PDT)
-From: Ulrich Weber <ulrich.weber@gmail.com>
-To: intel-wired-lan@lists.osuosl.org
-Date: Thu, 14 Mar 2024 10:15:13 +0100
-Message-Id: <20240314091513.25984-1-ulrich.weber@gmail.com>
-X-Mailer: git-send-email 2.40.1
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id Du2Og1ThaFBf for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 14 Mar 2024 10:55:09 +0000 (UTC)
+X-Greylist: delayed 1160 seconds by postgrey-1.37 at util1.osuosl.org;
+ Thu, 14 Mar 2024 10:55:08 UTC
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org E2EC2812F7
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E2EC2812F7
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=193.142.43.55;
+ helo=galois.linutronix.de; envelope-from=bigeasy@linutronix.de;
+ receiver=<UNKNOWN> 
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id E2EC2812F7
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 14 Mar 2024 10:55:08 +0000 (UTC)
+Date: Thu, 14 Mar 2024 11:35:45 +0100
+From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+To: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Message-ID: <20240314103545.Ljj-g-iS@linutronix.de>
+References: <20240313-igc_txts_comment-v1-1-4e8438739323@linutronix.de>
+ <d87f0752-a7ea-45b6-9a79-aac0c6cac882@intel.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <d87f0752-a7ea-45b6-9a79-aac0c6cac882@intel.com>
 X-Mailman-Approved-At: Thu, 14 Mar 2024 15:11:58 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20230601; t=1710407728; x=1711012528; darn=lists.osuosl.org;
- h=content-transfer-encoding:mime-version:message-id:date:subject:to
- :from:from:to:cc:subject:date:message-id:reply-to;
- bh=07iWg96Ug0ar28khXr8VtZgNx/Y3grwqg1hNcNbM4k4=;
- b=EO2xQnYqGSw6C5jyTxNkJKqLvVA+qTZRA3SxgfvK3frGTNDNBLLomGuGbSY14hn1bU
- 47Kiwir4eG+S7veEe+fXm4uuXpfCIJ3UpCp1j8MSQ6G905c5iLv1ypw8Huqhyf8lP1km
- DIIwfahfSZXFOJX8J1OwAp+jtqCOqjbF4v5IfEAIq1AaWRz8HEv+crvsXs2my+StYC4R
- 7pzV3fWExY+7tk5p64RC2IBoJlsLlLnDMx93lBneGQ8BnGivSk9AeiWMkp61//lbG0M0
- Ors6mgG0Qh/UMV/dHIjfLXJz/6iz7qLvukOrbM54KT5F90fkPBj5WfXtvyuSEnZgMevJ
- A+ZA==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ d=linutronix.de; s=2020; t=1710412546;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ in-reply-to:in-reply-to:references:references;
+ bh=0OL4LzRBFl80pfUqgwbmr9DML9X2re08EQDheZVyXs8=;
+ b=r+HbErt/F+5Gy8G53OnnF6CbJ72Yan3ossy7LKaGnU5DkTJ1TgrXsSrb3PMb4m4N7QWmFb
+ dJATEIE8EZdz1VjVVGXcb7TBEps7ycRpDFILGPtiQMd+rv4o8i8MvTEP/WL+Di913oDGIx
+ RHUggNgw9XbvWQImP6fOb7ZogmGswHbaWRYwCwCHkAmru2JFsmmqTrcCiOzudfFc1acCH4
+ vKC4MfZslrpTnOumkZETpKYpJBcG84U49TlG2bUdh6PpXKRZlx9pODB5FjhjJQ6OUwcKVl
+ PcgVdUM+M6JwWLkxFsAVMEVz5JjuRx+PRbvE7Wy0mBD8gI9kC9buyh/9KCTn5A==
+X-Mailman-Original-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
+ d=linutronix.de; s=2020e; t=1710412546;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ in-reply-to:in-reply-to:references:references;
+ bh=0OL4LzRBFl80pfUqgwbmr9DML9X2re08EQDheZVyXs8=;
+ b=Zo7EGD0L2JlZp/xDGcf7aSMkWDJGphoZ5Q2pD49k2TQCix70rv5pLjW9tYtuZiCVC4+5v2
+ 6H8IpOplKfyWw8Dw==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
- header.from=gmail.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
- header.a=rsa-sha256 header.s=20230601 header.b=EO2xQnYq
-Subject: [Intel-wired-lan] [PATCH] ice: set ethtool autoneg based on active
- cfg
+ header.from=linutronix.de
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key, unprotected) header.d=linutronix.de
+ header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=r+HbErt/; 
+ dkim=pass header.d=linutronix.de header.i=@linutronix.de
+ header.a=ed25519-sha256 header.s=2020e header.b=Zo7EGD0L
+Subject: Re: [Intel-wired-lan] [PATCH iwl-net] igc: Remove stale comment
+ about Tx timestamping
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -114,60 +103,33 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
+Cc: Muhammad Husaini Zulkifli <muhammad.husaini.zulkifli@intel.com>,
+ Vinicius Costa Gomes <vinicius.gomes@intel.com>,
+ Vladimir Oltean <vladimir.oltean@nxp.com>,
+ Kurt Kanzenbach <kurt@linutronix.de>, Eric Dumazet <edumazet@google.com>,
+ netdev@vger.kernel.org, Tony Nguyen <anthony.l.nguyen@intel.com>,
+ intel-wired-lan@lists.osuosl.org, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>, "David S. Miller" <davem@davemloft.net>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Current logic uses ICE_AQ_AN_COMPLETED information to
-flag if autonegotiation is enabled or disabled.
+On 2024-03-14 11:21:38 [+0100], Przemek Kitszel wrote:
+> On 3/13/24 14:03, Kurt Kanzenbach wrote:
+> > The initial igc Tx timestamping implementation used only one register for
+> > retrieving Tx timestamps. Commit 3ed247e78911 ("igc: Add support for
+> > multiple in-flight TX timestamps") added support for utilizing all four of
+> > them e.g., for multiple domain support. Remove the stale comment/FIXME.
+> > 
+> > Fixes: 3ed247e78911 ("igc: Add support for multiple in-flight TX timestamps")
+> 
+> I would remove fixes tag (but keep the mention in commit msg).
+> And I would also target it to iwl-next when the window will open.
+> 
+> Rationale: it's really not a fix.
 
-Since new ethtool netlink interface checks if there is
-a configuration change or not and ignores the call, if
-there is no change, this makes is impossible to disable
-autonegotiation on links without established autoneg.
+It is a fix as it removes something that is not accurate. But it only
+changes a comment so it has not outcome in the binary. I think what you
+mean is that you wish that it will not be backported stable. Still
+people reading the code of a v6.6 kernel might get confused.
 
-This will change the logic to check the active phy
-configuration if autoneg is enabled or not.
-
-Signed-off-by: Ulrich Weber <ulrich.weber@gmail.com>
----
- src/ice_ethtool.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
-
-diff --git a/src/ice_ethtool.c b/src/ice_ethtool.c
-index e1eeb16babb3..8fe475944f2c 100644
---- a/src/ice_ethtool.c
-+++ b/src/ice_ethtool.c
-@@ -2857,10 +2857,6 @@ ice_get_link_ksettings(struct net_device *netdev,
- 	else
- 		ice_get_settings_link_down(ks, netdev);
- 
--	/* set autoneg settings */
--	ks->base.autoneg = (hw_link_info->an_info & ICE_AQ_AN_COMPLETED) ?
--		AUTONEG_ENABLE : AUTONEG_DISABLE;
--
- 	/* set media type settings */
- 
- 	switch (vsi->port_info->phy.media_type) {
-@@ -2912,6 +2908,10 @@ ice_get_link_ksettings(struct net_device *netdev,
- 	if (err)
- 		goto done;
- 
-+	/* set autoneg settings based on active configuration */
-+	ks->base.autoneg = ice_is_phy_caps_an_enabled(caps) ?
-+		AUTONEG_ENABLE : AUTONEG_DISABLE;
-+
- 	/* Set the advertised flow control based on the PHY capability */
- 	if ((caps->caps & ICE_AQC_PHY_EN_TX_LINK_PAUSE) &&
- 	    (caps->caps & ICE_AQC_PHY_EN_RX_LINK_PAUSE)) {
-@@ -2960,7 +2960,7 @@ ice_get_link_ksettings(struct net_device *netdev,
- 		ethtool_link_ksettings_add_link_mode(ks, supported, FEC_RS);
- #endif /* ETHTOOL_GFECPARAM */
- 
--	/* Set supported and advertised autoneg */
-+	/* Set supported and advertised autoneg based on media */
- 	if (ice_is_phy_caps_an_enabled(caps)) {
- 		ethtool_link_ksettings_add_link_mode(ks, supported, Autoneg);
- 		ethtool_link_ksettings_add_link_mode(ks, advertising, Autoneg);
--- 
-2.40.1
-
+Sebastian
