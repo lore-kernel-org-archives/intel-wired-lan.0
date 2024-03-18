@@ -4,71 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5BA21C54E58
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 18 Mar 2024 14:31:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 394AAC54E5D
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 18 Mar 2024 14:31:32 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 1B40A405D2;
+	by smtp4.osuosl.org (Postfix) with ESMTP id 9699B4051E;
 	Mon, 18 Mar 2024 14:31:31 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id FQjvszcM8LyR; Mon, 18 Mar 2024 14:31:29 +0000 (UTC)
+	with ESMTP id QXSGtWevAyuB; Mon, 18 Mar 2024 14:31:31 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 77FED405C1
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org CACC3405C3
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1710772289;
-	bh=nWwHtoZl1wbbpHMnDuTuwYTm4XvT6TfDawuxJMzon0k=;
+	s=default; t=1710772290;
+	bh=vQZXNVyZu0WSGh4NASypClU3bS3FTyECK464OaQui/8=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=V61sJoV8PGnmXJIrPfo/Rd3+RroicX+fcxmSdTvsGQHBum7rn2+uuuWFHoQEhsiv5
-	 JvR0hacOr8c3sEdB0whOpfmK2gFnAR+2VXx/kC9kFpUE17SKzGpGyNESXy/17MXDjS
-	 BtCdhjPOY/DqM+auqUmz2HpvYQxhEQn3q5Y988iaEtkSR/ASoA5pvpKnl+gdyJ3FJQ
-	 g/gsd1YJAMPPzsE/cL6NsWjxUVv3fLxhsyFWbIuSERo57GkZ9VTxui6xp9RXqodiGK
-	 bSkDk83T8+k9D0TbwNtUnXCJnLf0tqVLwl3ddJCjs7BpelwDJnSaP8x2R1r8cDyIna
-	 sBf4b511au1Aw==
+	b=SG3Wy0bAAVXwwKPvpKhqkWMLciM0He0F+pWE67hvdz1ha/EZGKdK7GQ61FKmfvbKj
+	 Ew8UEuvb4v0dBSPndYeMAwjeONpTtkORRdKKKgTQtEFEtJrufeD0yrv8qYq1Lc3Zro
+	 fNYtu76R7oW1Gs2yPzJ25CXhC9loS6kMvl+C53GZfgxHwXL06TrLLF0PcMvz/ywR6M
+	 KNCZFb/ouYEF2mC0TcLvg++oiknOcvqSONdLAcZLlxeU8dkb0v7UoP9JszQVTmIulz
+	 PNNr17zsiMeUeDThuUDfrfH2YCsV7AIK/UxUdF5gkr93EibICmm9qYVBGQRlKORxE5
+	 4E8lrwCblt14A==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 77FED405C1;
-	Mon, 18 Mar 2024 14:31:29 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id CACC3405C3;
+	Mon, 18 Mar 2024 14:31:30 +0000 (UTC)
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 12D7F1BF5A0
- for <intel-wired-lan@lists.osuosl.org>; Mon, 18 Mar 2024 14:31:26 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id ABDD01BF5A0
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 18 Mar 2024 14:31:27 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 0052040A14
+ by smtp2.osuosl.org (Postfix) with ESMTP id 96DF140204
  for <intel-wired-lan@lists.osuosl.org>; Mon, 18 Mar 2024 14:31:26 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id hnH01cEI_puu for <intel-wired-lan@lists.osuosl.org>;
+ with ESMTP id IrRFgUJXfw6s for <intel-wired-lan@lists.osuosl.org>;
  Mon, 18 Mar 2024 14:31:25 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.133.124;
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.129.124;
  helo=us-smtp-delivery-124.mimecast.com; envelope-from=ivecera@redhat.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 3B3F940204
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 3B3F940204
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org A45D0409EB
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org A45D0409EB
 Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.133.124])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 3B3F940204
+ (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id A45D0409EB
  for <intel-wired-lan@lists.osuosl.org>; Mon, 18 Mar 2024 14:31:25 +0000 (UTC)
 Received: from mimecast-mx02.redhat.com (mx-ext.redhat.com [66.187.233.73])
  by relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-108-_t9FFwtvOZixWHm-wYPoug-1; Mon,
- 18 Mar 2024 10:31:20 -0400
-X-MC-Unique: _t9FFwtvOZixWHm-wYPoug-1
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-345-wRCjYqtSNuawUApmu45OJg-1; Mon,
+ 18 Mar 2024 10:31:19 -0400
+X-MC-Unique: wRCjYqtSNuawUApmu45OJg-1
 Received: from smtp.corp.redhat.com (int-mx03.intmail.prod.int.rdu2.redhat.com
  [10.11.54.3])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 5D6033802131;
- Mon, 18 Mar 2024 14:31:19 +0000 (UTC)
-Received: from p1.luc.cera.cz (unknown [10.45.224.33])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 04DEA112131D;
+ by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 916BA1C04196;
  Mon, 18 Mar 2024 14:31:17 +0000 (UTC)
+Received: from p1.luc.cera.cz (unknown [10.45.224.33])
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 38670112131D;
+ Mon, 18 Mar 2024 14:31:16 +0000 (UTC)
 From: Ivan Vecera <ivecera@redhat.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Mon, 18 Mar 2024 15:30:51 +0100
-Message-ID: <20240318143058.287014-8-ivecera@redhat.com>
+Date: Mon, 18 Mar 2024 15:30:50 +0100
+Message-ID: <20240318143058.287014-7-ivecera@redhat.com>
 In-Reply-To: <20240318143058.287014-1-ivecera@redhat.com>
 References: <20240318143058.287014-1-ivecera@redhat.com>
 MIME-Version: 1.0
@@ -81,18 +81,18 @@ X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  to:to:cc:cc:mime-version:mime-version:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=nWwHtoZl1wbbpHMnDuTuwYTm4XvT6TfDawuxJMzon0k=;
- b=fgPq13SJn19LbP/ojCjsHqB2LxCPQruqO/r0JLum32MZyDmAr43cV4PLRhkBqvBUbAa4QH
- Bh8IF/Ni1it4iz5NOVHvf9m9yEgoysIpS9IvAmCJPr33n+Nnd1br3g1Hg6llVA4LSXbLGF
- 9SVa1iSxKjEjvQ6tZO5EuB0bfPcj9tQ=
+ bh=vQZXNVyZu0WSGh4NASypClU3bS3FTyECK464OaQui/8=;
+ b=BTMgSWY030124Q8ysiHwHjvCL92Jm09YrYdGV3zxURVWk2TqVexw0kfGC2e44n285Ug7D2
+ 2GRtZ1drfMcOAXfEj22uAMD3wXPVmVxe/RBwt/eb/FH4UL4qkRGe2iTA14uHTdRVbZ/U9d
+ shk87eNiOVVhYS/xlXBFZtbQNNGFroc=
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=redhat.com
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=fgPq13SJ
-Subject: [Intel-wired-lan] [PATCH iwl-next 7/7] i40e: Add and use helper to
- reconfigure TC for given VSI
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=BTMgSWY0
+Subject: [Intel-wired-lan] [PATCH iwl-next 6/7] i40e: Add helper to access
+ main VEB
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -112,85 +112,139 @@ Cc: "open list:NETWORKING DRIVERS" <netdev@vger.kernel.org>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Add helper i40e_vsi_reconfig_tc(vsi) that configures TC
-for given VSI using previously stored TC bitmap.
+Add a helper to access main VEB:
 
-Effectively replaces open-coded patterns:
-
-enabled_tc = vsi->tc_config.enabled_tc;
-vsi->tc_config.enabled_tc = 0;
-i40e_vsi_config_tc(vsi, enabled_tc);
+i40e_pf_get_main_veb(pf) replaces 'pf->veb[pf->lan_veb]'
 
 Signed-off-by: Ivan Vecera <ivecera@redhat.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 31 +++++++++++++++------
- 1 file changed, 23 insertions(+), 8 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e.h        | 11 ++++++++
+ .../net/ethernet/intel/i40e/i40e_ethtool.c    |  9 +++----
+ drivers/net/ethernet/intel/i40e/i40e_main.c   | 27 ++++++++++++-------
+ 3 files changed, 31 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 2e1955064abb..6c25d02ea05e 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -5924,6 +5924,27 @@ static int i40e_vsi_config_tc(struct i40e_vsi *vsi, u8 enabled_tc)
- 	return ret;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+index fb0b913692e1..2f135db416cf 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -1401,4 +1401,15 @@ i40e_pf_get_veb_by_seid(struct i40e_pf *pf, u16 seid)
+ 	return NULL;
  }
  
 +/**
-+ * i40e_vsi_reconfig_tc - Reconfigure VSI Tx Scheduler for stored TC map
-+ * @vsi: VSI to be reconfigured
++ * i40e_pf_get_main_veb - get pointer to main VEB
++ * @pf: pointer to a PF
 + *
-+ * This reconfigures a particular VSI for TCs that are mapped to the
-+ * TC bitmap stored previously for the VSI.
-+ *
-+ * NOTE:
-+ * It is expected that the VSI queues have been quisced before calling
-+ * this function.
++ * Return pointer to main VEB or NULL if it does not exist
 + **/
-+static int i40e_vsi_reconfig_tc(struct i40e_vsi *vsi)
++static inline struct i40e_veb *i40e_pf_get_main_veb(struct i40e_pf *pf)
 +{
-+	u8 enabled_tc;
-+
-+	enabled_tc = vsi->tc_config.enabled_tc;
-+	vsi->tc_config.enabled_tc = 0;
-+
-+	return i40e_vsi_config_tc(vsi, enabled_tc);
++	return (pf->lan_veb != I40E_NO_VEB) ? pf->veb[pf->lan_veb] : NULL;
 +}
 +
- /**
-  * i40e_get_link_speed - Returns link speed for the interface
-  * @vsi: VSI to be configured
-@@ -14290,7 +14311,6 @@ static struct i40e_vsi *i40e_vsi_reinit_setup(struct i40e_vsi *vsi)
- 	struct i40e_vsi *main_vsi;
- 	u16 alloc_queue_pairs;
- 	struct i40e_pf *pf;
--	u8 enabled_tc;
- 	int ret;
+ #endif /* _I40E_H_ */
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index 5cd0d1b45f01..4e28785c9fb2 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -2425,14 +2425,11 @@ static void i40e_get_ethtool_stats(struct net_device *netdev,
+ 	if (vsi->type != I40E_VSI_MAIN || pf->hw.partition_id != 1)
+ 		goto check_data_pointer;
  
- 	if (!vsi)
-@@ -14323,10 +14343,8 @@ static struct i40e_vsi *i40e_vsi_reinit_setup(struct i40e_vsi *vsi)
- 	 * layout configurations.
+-	veb_stats = ((pf->lan_veb != I40E_NO_VEB) &&
+-		     (pf->lan_veb < I40E_MAX_VEB) &&
+-		     test_bit(I40E_FLAG_VEB_STATS_ENA, pf->flags));
++	veb = i40e_pf_get_main_veb(pf);
++	veb_stats = veb && test_bit(I40E_FLAG_VEB_STATS_ENA, pf->flags);
+ 
+-	if (veb_stats) {
+-		veb = pf->veb[pf->lan_veb];
++	if (veb_stats)
+ 		i40e_update_veb_stats(veb);
+-	}
+ 
+ 	/* If veb stats aren't enabled, pass NULL instead of the veb so that
+ 	 * we initialize stats to zero and update the data pointer
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index d6dbd0fd79eb..2e1955064abb 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -2480,7 +2480,7 @@ static int i40e_set_promiscuous(struct i40e_pf *pf, bool promisc)
+ 	int aq_ret;
+ 
+ 	if (vsi->type == I40E_VSI_MAIN &&
+-	    pf->lan_veb != I40E_NO_VEB &&
++	    i40e_pf_get_main_veb(pf) &&
+ 	    !test_bit(I40E_FLAG_MFP_ENA, pf->flags)) {
+ 		/* set defport ON for Main VSI instead of true promisc
+ 		 * this way we will get all unicast/multicast and VLAN
+@@ -9916,6 +9916,7 @@ static void i40e_veb_link_event(struct i40e_veb *veb, bool link_up)
+ static void i40e_link_event(struct i40e_pf *pf)
+ {
+ 	struct i40e_vsi *vsi = i40e_pf_get_main_vsi(pf);
++	struct i40e_veb *veb = i40e_pf_get_main_veb(pf);
+ 	u8 new_link_speed, old_link_speed;
+ 	bool new_link, old_link;
+ 	int status;
+@@ -9955,8 +9956,8 @@ static void i40e_link_event(struct i40e_pf *pf)
+ 	/* Notify the base of the switch tree connected to
+ 	 * the link.  Floating VEBs are not notified.
  	 */
- 	main_vsi = i40e_pf_get_main_vsi(pf);
--	enabled_tc = main_vsi->tc_config.enabled_tc;
--	main_vsi->tc_config.enabled_tc = 0;
- 	main_vsi->seid = pf->main_vsi_seid;
--	i40e_vsi_config_tc(main_vsi, enabled_tc);
-+	i40e_vsi_reconfig_tc(main_vsi);
+-	if (pf->lan_veb < I40E_MAX_VEB && pf->veb[pf->lan_veb])
+-		i40e_veb_link_event(pf->veb[pf->lan_veb], new_link);
++	if (veb)
++		i40e_veb_link_event(veb, new_link);
+ 	else
+ 		i40e_vsi_link_event(vsi, new_link);
  
- 	if (vsi->type == I40E_VSI_MAIN)
- 		i40e_rm_default_mac_filter(vsi, pf->hw.mac.perm_addr);
-@@ -15085,11 +15103,8 @@ static int i40e_setup_pf_switch(struct i40e_pf *pf, bool reinit, bool lock_acqui
+@@ -14892,7 +14893,8 @@ static void i40e_setup_pf_switch_element(struct i40e_pf *pf,
+ 		/* Main VEB? */
+ 		if (uplink_seid != pf->mac_seid)
+ 			break;
+-		if (pf->lan_veb >= I40E_MAX_VEB) {
++		veb = i40e_pf_get_main_veb(pf);
++		if (!veb) {
+ 			int v;
+ 
+ 			/* find existing or else empty VEB */
+@@ -14906,12 +14908,15 @@ static void i40e_setup_pf_switch_element(struct i40e_pf *pf,
+ 				pf->lan_veb = v;
+ 			}
  		}
- 	} else {
- 		/* force a reset of TC and queue layout configurations */
--		u8 enabled_tc = main_vsi->tc_config.enabled_tc;
--
--		main_vsi->tc_config.enabled_tc = 0;
- 		main_vsi->seid = pf->main_vsi_seid;
--		i40e_vsi_config_tc(main_vsi, enabled_tc);
-+		i40e_vsi_reconfig_tc(main_vsi);
- 	}
- 	i40e_vlan_stripping_disable(main_vsi);
+-		if (pf->lan_veb >= I40E_MAX_VEB)
++
++		/* Try to get again main VEB as pf->lan_veb may have changed */
++		veb = i40e_pf_get_main_veb(pf);
++		if (!veb)
+ 			break;
  
+-		pf->veb[pf->lan_veb]->seid = seid;
+-		pf->veb[pf->lan_veb]->uplink_seid = pf->mac_seid;
+-		pf->veb[pf->lan_veb]->pf = pf;
++		veb->seid = seid;
++		veb->uplink_seid = pf->mac_seid;
++		veb->pf = pf;
+ 		break;
+ 	case I40E_SWITCH_ELEMENT_TYPE_VSI:
+ 		if (num_reported != 1)
+@@ -15056,13 +15061,15 @@ static int i40e_setup_pf_switch(struct i40e_pf *pf, bool reinit, bool lock_acqui
+ 	/* first time setup */
+ 	main_vsi = i40e_pf_get_main_vsi(pf);
+ 	if (!main_vsi || reinit) {
++		struct i40e_veb *veb;
+ 		u16 uplink_seid;
+ 
+ 		/* Set up the PF VSI associated with the PF's main VSI
+ 		 * that is already in the HW switch
+ 		 */
+-		if (pf->lan_veb < I40E_MAX_VEB && pf->veb[pf->lan_veb])
+-			uplink_seid = pf->veb[pf->lan_veb]->seid;
++		veb = i40e_pf_get_main_veb(pf);
++		if (veb)
++			uplink_seid = veb->seid;
+ 		else
+ 			uplink_seid = pf->mac_seid;
+ 		if (!main_vsi)
 -- 
 2.43.0
 
