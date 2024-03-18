@@ -1,87 +1,87 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 76B07C54E58
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 18 Mar 2024 18:56:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 70EACC54E58
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 18 Mar 2024 20:02:27 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 20DCB40AD2;
-	Mon, 18 Mar 2024 18:56:10 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 1638160830;
+	Mon, 18 Mar 2024 20:02:27 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
-	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id zOlwi96jAY7z; Mon, 18 Mar 2024 18:56:09 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id t6AqpCItaTVX; Mon, 18 Mar 2024 20:02:26 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 6569740AC7
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 68335607E0
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1710788169;
-	bh=duuddDut5vlrYRvIm1t6aLVZyhCGlTS0L2ycdkckqvg=;
+	s=default; t=1710792146;
+	bh=4Nif+R+uIeAEicEQtBLuFIAt04fj4KzhHhsjSDA4fK8=;
 	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=I+YCH5V3YyrqX/sET3ZJXg9AGiqiWZPWxAdUdCnYZGocpOhj9yDYRAG00se4YNoZx
-	 OV4fTzodwpcj4SxKAf/adfYAjyHCz07FFo/uHRuOKlAQjSept5vdWgr9qCebCxrDqX
-	 8Lf1VfsAUsxpYR7Cr6LFef8W5IzpAunJo8ZVjM0n27qo7uY5UdQFKlG0iTkK2GyTWM
-	 jRVaqXnk7Apq5bkk8z1O2o8zBjjcykj/PmteXjgCemMN7s36TU+etCAiJ0Of4gLQrt
-	 oP4pjhp8dNHFulmFkYBK38HfoJV+Rz30fbSbuXB79QxZO24DoB3oBv66pSVrkLVFrf
-	 m2OAHk50tP37Q==
+	b=dAmmsFFDvsdqF2MyxbwosG07nRinjGPV4I+ItJVstkHe5VgM7DOXSlniAUTSEMAsd
+	 sUm+CrfBSafCKvS/h12RnW16XUTkoMUA0DWmE7g8X5NMPF9O1QTi3zLAYROpng2Hbm
+	 Gh5LUMD8AxxA0N2HF54si8/aUAd7i3IM5WRnVoCiFsZI8orBMMouyx1YwtlYORg6En
+	 MJBqv6yNt86+1VkxQtmIEHqg1SEI2XpPrXtbVs9Sq3axKXnnXM/uQ9pB6QzOAPwdiu
+	 wPs3qB39LNo+k/qMcyNO18rbYe1lz6NPeI5gVHGROc6amql+B0cRWDQGEVgUkoSLTO
+	 LeWvXoP0iH+MQ==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 6569740AC7;
-	Mon, 18 Mar 2024 18:56:09 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 87E2E1BF2EC
- for <intel-wired-lan@lists.osuosl.org>; Mon, 18 Mar 2024 18:56:07 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 68335607E0;
+	Mon, 18 Mar 2024 20:02:26 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 1CFEA1BF2C1
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 18 Mar 2024 20:02:25 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 80D01402EF
- for <intel-wired-lan@lists.osuosl.org>; Mon, 18 Mar 2024 18:56:07 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 0830581452
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 18 Mar 2024 20:02:25 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id Oe5Z_4BPflvT for <intel-wired-lan@lists.osuosl.org>;
- Mon, 18 Mar 2024 18:56:05 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id qU7EJBuZJ2Vt for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 18 Mar 2024 20:02:24 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=139.178.84.217;
  helo=dfw.source.kernel.org; envelope-from=horms@kernel.org;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 28B41402D8
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 28B41402D8
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 66F9A8144A
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 66F9A8144A
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 28B41402D8
- for <intel-wired-lan@lists.osuosl.org>; Mon, 18 Mar 2024 18:56:04 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 66F9A8144A
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 18 Mar 2024 20:02:24 +0000 (UTC)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by dfw.source.kernel.org (Postfix) with ESMTP id B5CF860C6F;
- Mon, 18 Mar 2024 18:56:03 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4F01EC433F1;
- Mon, 18 Mar 2024 18:56:02 +0000 (UTC)
-Date: Mon, 18 Mar 2024 18:55:59 +0000
+ by dfw.source.kernel.org (Postfix) with ESMTP id ECD9560D2B;
+ Mon, 18 Mar 2024 20:02:22 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4DEC5C43390;
+ Mon, 18 Mar 2024 20:02:20 +0000 (UTC)
+Date: Mon, 18 Mar 2024 20:02:18 +0000
 From: Simon Horman <horms@kernel.org>
-To: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
-Message-ID: <20240318185559.GF1623@kernel.org>
-References: <20240312105259.2450-1-michal.swiatkowski@linux.intel.com>
+To: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
+Message-ID: <20240318200218.GB185808@kernel.org>
+References: <20240308113919.11787-1-mateusz.polchlopek@intel.com>
+ <20240308113919.11787-2-mateusz.polchlopek@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20240312105259.2450-1-michal.swiatkowski@linux.intel.com>
+In-Reply-To: <20240308113919.11787-2-mateusz.polchlopek@intel.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1710788163;
- bh=kYvnPw14h8YwaEiRVbmaKUb01aCbhWa/d3miwMevjjY=;
+ d=kernel.org; s=k20201202; t=1710792142;
+ bh=4M30qJs3MhfwH6o1pNlm9jq/i1wEFxv2FMm/CPETW/k=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=PDmCrTskdIiTzZR1A9vrrHmKD2qUtg/MwBGgCcND7gvMiXbKsNPRDajX5L5J+Evvj
- c4NQDzAc1rOzd4sxeYQYX64MIl3ARqhxyMOcBh3TCK297FKAn7lr4O3LU2vNzIzS19
- CaBjqT8EEW6+0Ow7XxrcFb7Wa1ayZjRs82dsO6Kp3GXjoxQyY4LME+iUvdeal5Y9ae
- nd4gvC0kJtAA3qMUUXJ+XxEISdG1yejZCPUPjcmFedxmfqblQQfgmvVVeiM0c3wVut
- N0/8N8gEH54/3O+bsya6N+2rdYfuXSX9cgQ+dqrJf9PjdnKNbJqmpJU780Ui+BgKJI
- 06QYZowBGDGzQ==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ b=kORWP9pQFM9AzKD5QcuSi8LIAmHK/Tr0ixrLcuhvlOiIgnPM/VTnimS8udP1Ec5qp
+ +HCa/Lyi/cSr4yQb3I2WsHxPtpt4CoGXOQ5p2BpvB+4amJy87ADb+x6O/YD+mvCnv4
+ oYrs0epOAYLhBhuh0cG3eBBfgEt9ASB4KV4BYqTXeFSM37hooYFvis2jNZwFPQJsfJ
+ 2yNzVCAob5xofUoFcoBrgaDhaX07vw+1IocZe5zc+GRTAxFSY/Nr+76Unoha8R783k
+ 3SZGawFEEgdF/Je2xJ0rBb1vpp4w7bOniPxUYUTbU9te1wfx2wcG1mTHzQahDLDnh6
+ xHZAGszKndZbg==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=PDmCrTsk
-Subject: Re: [Intel-wired-lan] [iwl-net v1] ice: tc: do default match on all
- profiles
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20201202 header.b=kORWP9pQ
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next v7 1/6] devlink: extend
+ devlink_param *set pointer
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,32 +94,23 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, Marcin Szycik <marcin.szycik@linux.intel.com>,
- intel-wired-lan@lists.osuosl.org, Michal Kubiak <michal.kubiak@intel.com>
+Cc: andrew@lunn.ch, jiri@resnulli.us, michal.wilczynski@intel.com,
+ netdev@vger.kernel.org, lukasz.czapnik@intel.com, victor.raj@intel.com,
+ kuba@kernel.org, anthony.l.nguyen@intel.com, Jiri Pirko <jiri@nvidia.com>,
+ przemyslaw.kitszel@intel.com, intel-wired-lan@lists.osuosl.org
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Tue, Mar 12, 2024 at 11:52:59AM +0100, Michal Swiatkowski wrote:
-> A simple non-tunnel rule (e.g. matching only on destination MAC) in
-> hardware will be hit only if the packet isn't a tunnel. In software
-> execution of the same command, the rule will match both tunnel and
-> non-tunnel packets.
+On Fri, Mar 08, 2024 at 06:39:14AM -0500, Mateusz Polchlopek wrote:
+> Extend devlink_param *set function pointer to take extack as a param.
+> Sometimes it is needed to pass information to the end user from set
+> function. It is more proper to use for that netlink instead of passing
+> message to dmesg.
 > 
-> Change the hardware behaviour to match tunnel and non-tunnel packets in
-> this case. Do this by considering all profiles when adding non-tunnel rule
-> (rule not added on tunnel, or not redirecting to tunnel).
-> 
-> Example command:
-> tc filter add dev pf0 ingress protocol ip flower skip_sw action mirred \
-> 	egress redirect dev pr0
-> 
-> It should match also tunneled packets, the same as command with skip_hw
-> will do in software.
-> 
-> Fixes: 9e300987d4a8 ("ice: VXLAN and Geneve TC support")
-> Reviewed-by: Marcin Szycik <marcin.szycik@linux.intel.com>
-> Reviewed-by: Michal Kubiak <michal.kubiak@intel.com>
-> Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+> Reviewed-by: Jiri Pirko <jiri@nvidia.com>
+> Signed-off-by: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
 
-Reviewed-by: Simon Horman <horms@kernel.org>
+Hi Mateusz,
 
+FWIIW, I think there are several (new?) users of this callback
+present in net-next now which will also need to be updated.
