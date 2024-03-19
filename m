@@ -4,159 +4,108 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D3667C54E60
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 19 Mar 2024 13:33:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3C98DC54E5D
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 19 Mar 2024 14:17:23 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 7B3DC60A9C;
-	Tue, 19 Mar 2024 13:33:57 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id C2F8060AFB;
+	Tue, 19 Mar 2024 14:17:22 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id yFz_hLeGNLXr; Tue, 19 Mar 2024 13:33:56 +0000 (UTC)
+	with ESMTP id 1WhI5mHOPWze; Tue, 19 Mar 2024 14:17:22 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C135D6061F
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2953760AFD
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1710855236;
-	bh=EJZwKwx5Qgr94CJ72QMcxqIEx2fDsV3FHNLUiT5jD7s=;
-	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=dMB0r3AIW0VNt66nOFyTCLpJCy5v8+0625+eJ7Y9Oz/FBv7DlTtXFBdw38X6euXxe
-	 cQ94FLQQjIZtRWdjqc7vG8X9Fy2QyTJ/bD0gCwvr4UT0LrF9QOvcWkeBcPJwd84aUb
-	 9utBTahTN+L/iw+oNI52/3rCCAPPAHPo7s3yMgtbnF6Mlp7mDVFQNWJ2B4py7CkjE6
-	 UORbDsf61J13z6qy6J7h61WDIkiJppNIKJK+jItpeXtC1tgTOD03kkZjNucSqP6V9S
-	 1IG/cHqMJA6/cTiMH+++FOkOK/cO6CTgSQYN9/kC3qjdQ6WqmZW33vAEpUctnm0SRk
-	 HB5GT31Ihum3Q==
+	s=default; t=1710857842;
+	bh=Y4EkBPaev4WA4b0+PhyugvZ3SM0zSNAP+U0AbsiXKCg=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=AAmN6yubIj+GubIwCQfM9fePiIM155xKzHSxDKc5lnsR1p64fy1bybLERVzp8EmVo
+	 r0bgdcnHf7VNFjJRLJ60VrB+qVrnQMKK6nklyMEbv4/3fG3C10iSy7KZMO5S1J9ig4
+	 VeJoZDZkF/Az0cB+UphVAynROJibM8lN1lgw4gqcFlujjQ3OumhSdFqmJvIEhHheHT
+	 9ssSHrfb5ZMZayqOrQDKzul4g0JElyUJVV3AuvOWppqmB1g9kdiUp2WuOqAKIwDpdS
+	 1P4jZYxLr0W4yZacQn5jWOkrBJdWFVe9q7Rc+pAUIJIJL3itpy7npgogdgl+eabzux
+	 DtxO32uM/swtQ==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id C135D6061F;
-	Tue, 19 Mar 2024 13:33:56 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 5F56F1BF954
- for <intel-wired-lan@lists.osuosl.org>; Tue, 19 Mar 2024 13:33:55 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 2953760AFD;
+	Tue, 19 Mar 2024 14:17:22 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id A3BA31BF2AA
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 19 Mar 2024 14:17:20 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 58C6740BC8
- for <intel-wired-lan@lists.osuosl.org>; Tue, 19 Mar 2024 13:33:55 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 8F0B860AFD
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 19 Mar 2024 14:17:20 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id yX1zCyRUsrRd for <intel-wired-lan@lists.osuosl.org>;
- Tue, 19 Mar 2024 13:33:54 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=40.107.14.139;
- helo=eur01-ve1-obe.outbound.protection.outlook.com;
- envelope-from=e.velu@criteo.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 0CB6B40BC5
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 0CB6B40BC5
-Received: from EUR01-VE1-obe.outbound.protection.outlook.com
- (mail-ve1eur01on2139.outbound.protection.outlook.com [40.107.14.139])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 0CB6B40BC5
- for <intel-wired-lan@lists.osuosl.org>; Tue, 19 Mar 2024 13:33:53 +0000 (UTC)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=iB+YCV1BUI9iTevbms5qWuOgQh3krukIgozYTrMwLbp8NKTz+cnVHv90AIlmn26+qddPpZUQcEI9Ul3OxrJKsPmcfqoP/2u3NycNRHbRiMMquzdk3HlSolkCTh4r7CrUMBEITFqrNWk4tJcye478nLBokzmLOK/tKJJITcwWZuugaHJOKyOl2yvxTelkdhq9qY1IB0TpeI2NVOY+u39TUZJ2I0MFc8nmxQCAItM89jN3cFi/w1AdpUeRyTWJP3piKiw+FLpgmtjNKCU7hzorIszFA8Z3tFraVPqAZwRU/UAJhn+hNqF5Q9JdUUuS+2MyWgUFfjqb2mFo/iD5PnHLxQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=EJZwKwx5Qgr94CJ72QMcxqIEx2fDsV3FHNLUiT5jD7s=;
- b=CK9n1WxRkd+XqtfTjGAXMqa4MeVdkKl5z4xpjxiF3lH1A02MBOp8WSC4Z3iAte6o3j2j5Ker2fkojsS7+uo70uAbvSDDidBVI0biusEB2tl8RKToXtLKe6aZEIdlYcIV2ROj/beaTDjAHA3oDmwjeEWzmtubh2gh0zZjBe6v1v9d1yZIkX4fpq+vBDI8lykHPRILe/kke9vmcUG4vbOLkxWBk2ebXYmgmk2fOAEXXZl74tGOtD8OkzVa2QAuem7f70kNzSYyQ40kMAQBQQM+JryI4L5IIGu4P53VUh57p4P60rXP40QYUwXecamv04UGAl3FB0SpBBFwnNaw6VE+sg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=criteo.com; dmarc=pass action=none header.from=criteo.com;
- dkim=pass header.d=criteo.com; arc=none
-Received: from PAXPR04MB8989.eurprd04.prod.outlook.com (2603:10a6:102:20c::11)
- by PR3PR04MB7244.eurprd04.prod.outlook.com (2603:10a6:102:8e::23)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7386.26; Tue, 19 Mar
- 2024 13:33:50 +0000
-Received: from PAXPR04MB8989.eurprd04.prod.outlook.com
- ([fe80::c508:de0c:3808:6f2]) by PAXPR04MB8989.eurprd04.prod.outlook.com
- ([fe80::c508:de0c:3808:6f2%4]) with mapi id 15.20.7386.023; Tue, 19 Mar 2024
- 13:33:50 +0000
-Message-ID: <4ed9a005-6f16-4fb6-b9a8-f753ad78eac6@criteo.com>
-Date: Tue, 19 Mar 2024 14:33:49 +0100
-User-Agent: Mozilla Thunderbird
-Content-Language: en-US
-To: Simon Horman <horms@kernel.org>
-References: <20240313090719.33627-2-e.velu@criteo.com>
- <20240318174503.GE1623@kernel.org>
- <d33b98de-dfc0-445e-bdd7-0ae76d050ed4@criteo.com>
- <20240319122024.GJ185808@kernel.org>
-From: Erwan Velu <e.velu@criteo.com>
-In-Reply-To: <20240319122024.GJ185808@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: PR0P264CA0197.FRAP264.PROD.OUTLOOK.COM
- (2603:10a6:100:1f::17) To PAXPR04MB8989.eurprd04.prod.outlook.com
- (2603:10a6:102:20c::11)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id 0gne12dOq2mb for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 19 Mar 2024 14:17:20 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2a00:1450:4864:20::32f; helo=mail-wm1-x32f.google.com;
+ envelope-from=erwanaliasr1@gmail.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 9230560AFB
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 9230560AFB
+Received: from mail-wm1-x32f.google.com (mail-wm1-x32f.google.com
+ [IPv6:2a00:1450:4864:20::32f])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 9230560AFB
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 19 Mar 2024 14:17:19 +0000 (UTC)
+Received: by mail-wm1-x32f.google.com with SMTP id
+ 5b1f17b1804b1-414618e6820so9405185e9.0
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 19 Mar 2024 07:17:19 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20230601; t=1710857837; x=1711462637;
+ h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+ :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+ :reply-to;
+ bh=Y4EkBPaev4WA4b0+PhyugvZ3SM0zSNAP+U0AbsiXKCg=;
+ b=Aj5nL6YGksMIpohRIA2l//AO5bcpOQ48jASAsK+v70HcPfyFNDMaRi8e5LilrKZWQC
+ O0fy7wJSLOiYKh10ppecc2VPZNh7TvxOZK/YZF6VhtaHS7kIFQkBoDpsJE25o0sBG1XO
+ CYQR+CdPw2M8IdbwRC3CGLHeeW9zJYiaOYQbVjNIMSDhq035guAOxzNh9OypP5SGzHp0
+ +YJ2GdC9TpfMGcEL543DZuZtVXgSkGpgIrj/FIqNddlWWmmK0T5tMkqBJ659RdZ2CmyC
+ xcGRIB/u04ZtSI2fm1eD9imqxc4xpt5EEgXBKCWlPEcG+O6dy9GLhYQK0e+sMTzrCi+C
+ +89Q==
+X-Forwarded-Encrypted: i=1;
+ AJvYcCUunhwR1SCfy8T/ydXtC45AdpeyPT5bGipyxy0ASS1emd3TCPHW9lqkKUlqbMhxj6SKnKjpiO8Dt2XZblwNVkgRt0/Nsy5u/VmjfI0eo076Hw==
+X-Gm-Message-State: AOJu0Yy5c1V117M6VBUqqe/BCP1phDgqmxegpd8HKBafqtkGSYfWqrwf
+ sH5p51QJGCcw0e2Lv37eW3XcuDGyu++E+beMYAPIY8Gl8lEfPpXf
+X-Google-Smtp-Source: AGHT+IEK8XrtocceWWhBNn+d2cIikTbZWC/WQ87q2BgD41zOpII6MKkVrVIWowkSVZkfbLK83FmmYQ==
+X-Received: by 2002:a05:600c:314a:b0:413:ef69:df65 with SMTP id
+ h10-20020a05600c314a00b00413ef69df65mr2325547wmo.20.1710857837111; 
+ Tue, 19 Mar 2024 07:17:17 -0700 (PDT)
+Received: from macminim1.retailmedia.com
+ ([2a01:e0a:b14:c1f0:617b:c61e:d65f:861e])
+ by smtp.googlemail.com with ESMTPSA id
+ f2-20020a7bc8c2000000b00414041032casm520189wml.1.2024.03.19.07.17.16
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Tue, 19 Mar 2024 07:17:16 -0700 (PDT)
+From: Erwan Velu <erwanaliasr1@gmail.com>
+X-Google-Original-From: Erwan Velu <e.velu@criteo.com>
+To: 
+Date: Tue, 19 Mar 2024 15:16:55 +0100
+Message-ID: <20240319141657.2783609-1-e.velu@criteo.com>
+X-Mailer: git-send-email 2.44.0
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: PAXPR04MB8989:EE_|PR3PR04MB7244:EE_
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: cImAhg8TVeFZYquqYpxmgNwXCFSa2vcWWu+nthxXi5NX7VsY3wIAVXlkUNo0/mVSfak1JE8Vz/Oht2R7KaJSrmmyg8w4VIvc/AvZ9HVyl/SYVE2zNHzLp4ZPnpVKB4ZuK7EnLj5MUvKm2h0UOzCpaFfPGGpewUlzlXneLZkVb7lolOzC2+4iOwSaOAhXmCtkW0kz4X0/CC38k0j/66FZIB33Guc8cARB/Z9SetsZmDkpFAJ17/7laGHQ4qJcW7BKBPhrr/biOysqTrbaEFwhgRMpIAEmtcoAYtB9jsyxNSlH/SmTecquxitY1IKRkz2oNv6RGXpmGwuNecSkEj77Ff0DFAvHPwvVO8OSnKAxbEXpLPHimwN0Dtop24oA7OQpdYtCUqxvML5PdR2/OFumNEoWPkdSsWQs8eMxXMm0cNSKMyvVee5RlBMX1OmEcXPKwqHTLimYIQu/1/jeDvi5jykQNTqaoJekVRBOvMtFfw6KJG/T3DyHmycc5u7uF/e2ZeJQHvLhsw4lLvKspK9A4jTQXRJ3Pw0qBVwllmFCubz28yS46TpeDOVYUugwYhY0Xdn9J4wVIweS5mO87yVuxXrr+ph4xjP5Uvn+CUurV+BtXYzMlMv/kQLzGkSRuuIC1g3mfPcU+pJsFkh/0TuKNpRUpTip5w5B5/MubZ43h+c=
-X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:PAXPR04MB8989.eurprd04.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230031)(7416005)(366007)(376005)(1800799015); DIR:OUT; SFP:1102; 
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?bnRHV2pDWVBrYy9xSjhHT2RUYkx2b3NKSjZaaU1qRGkwMHp0aDdJWmRvVHQ1?=
- =?utf-8?B?K2VGNUQxaThrOHZvN3NWeUxCaERTNzZVQU1IdmFKVFNrclNQYzluWllMUVpG?=
- =?utf-8?B?TEkyMXZLMmRYaC83ZVZKaFBsK2pZS3ZRaCtaUmc3WTg0ZDVMNnI3NnJBRC9a?=
- =?utf-8?B?TXA0UjJBY1VPYUU5MzVTc0lWU292dm9LMlI1aUZtc3pxQVc0NU5DVVpGM3Zx?=
- =?utf-8?B?ZzE1dzRPbFg3ekZuaXVuRHloajZqdTdOU21rQWR2eFM0aS9ZbGN5YTI1RDRt?=
- =?utf-8?B?WmpFcHRubFExKzlzVng0aHBLc2FzbkFIaWVIUklNZzZ2VFYxWGtiTUpRdlpV?=
- =?utf-8?B?eFFMQzFlcnFvUlVSWnhWZ1YxbFp3Yjh0dWIwWWlmUW92WUJ6MUpFUnNJL0Fu?=
- =?utf-8?B?ZmwveUg5TER1ZXh5ZjBQYUNPMnZTUmI3T0Y4dUpyU2VreU9hZlA0U1JEb0Ra?=
- =?utf-8?B?UnJMYkNEVytTem1hVmhCdWx1cDU5OVZmYzBuZHRtRmhiVzlQYUY1bXlLT0xt?=
- =?utf-8?B?d3JubFdSa29LSkI4WUhsRXdwZEdNT3hVd1hRTk9LcSs0UDlwcTAwYldIM1V4?=
- =?utf-8?B?VUN6YTZCSHdzbHFVb0U4QkVOWEMyYlBWeThCQUVrdEkwdzFqanJHSE8wNGtm?=
- =?utf-8?B?NUEyRVlERk02eU9rQVVJbHlBaldhMUxMa1BFOUJXRmJTK29pTjhMdmJIYVIr?=
- =?utf-8?B?RHJhYkF2Nk9ueVY0djk1SzlWZlZSVXFQeHA3dFIyc1dyY3hMWmlMQm5Ycmpa?=
- =?utf-8?B?WU5UUzUwYk1ab2hJSGl3RXhUTnFYS3QxZFlIMTlrMmxWQ1lUYStpaTFwYzlX?=
- =?utf-8?B?b1VCVzYvYkFZVXh1bHBZdytjS1FNQXFzOWdHWXMyT2FRY2NzbFBBSkJhOFVw?=
- =?utf-8?B?aW5STmpVK28xNWNpRzB1OFE2a1psaG1RN2pjV2Z2ek1VYVR4V3REMzJxNDB2?=
- =?utf-8?B?MDd2bG5xOTNiNmRXNkNQcEZtYlFCdk5xNnk4M2svQ2tjZ3c4OXp1TzYxSEdL?=
- =?utf-8?B?U3FwV0NrZTBwZ29oQ3N4bytpa2dMR3E2eW4vWW44V2s0TW5PK2dZY0piNGNq?=
- =?utf-8?B?eWc4Y2J2SE03MXRqaGJrYW5hMjEvMFVqL24wL1V1ZXpHSkN2S0Job2dvdkZK?=
- =?utf-8?B?NG9LOExrb3FnUEFDbFpGeHloNUhJOTY2VWhwcUlUNlVUNUFBeDN4WDRhcFZo?=
- =?utf-8?B?N3pPeDVqTHpqVWVKK2Fsd2VvbUdPaWFUT3h0NWdWNkxNd0hTT09wVzJ0T3g1?=
- =?utf-8?B?QlpkRm9KNFJ2WXo5NG9yMHB3cUtQOUUreFpNVlVHNzV2SHlRRHR3K1did1lr?=
- =?utf-8?B?UXA4RG1hbmhKWDZRWWdFcmZGT0FQQWV6SFQ1a1NqMHg0TFVtaWlZN2gyOXMy?=
- =?utf-8?B?MDZNN0F5SzJZNGtZZEg3b3N1VGFoTHltdzB4a3N2czdSYVBsYWt0K2NZQlpY?=
- =?utf-8?B?Rm1kZzFKR2crY3FwNWR3NGsyaWh5K05OZldEdWZleVNTK0NQUGp1R3pyZDA4?=
- =?utf-8?B?R3paMllRN0tQdkJVWUhoaWtuQ2RpbnJRUWlVZFQ2bFl4RlRhcm9XOS9LeDdu?=
- =?utf-8?B?bGpGaU4wVWZxS0NSSVR0MmFoNU1RZXdaeTltS0ttbmlqM0sxeFQvaTBHeVdh?=
- =?utf-8?B?d2lsMTgzcy9jSzhqellHT1FYRmx3aGlnYnJNM2JjNmdVajR1Q3M3cE9OOGtP?=
- =?utf-8?B?L0p5bWVCeS9zaTd4Y2NYWkEyeFczeXBqMEoycm96ckcrWmY4RDJKMUpJOWtw?=
- =?utf-8?B?R1JTZ1FhZlkyRnAzNnZraU9EMTYxV3hmRjEzTGhWMVFnQTBFSVdIZ0JJVGlP?=
- =?utf-8?B?V1M0M2gyRzc0V0xZWTYralIrdHp0aG42bm5QVzZ6aWpQUHk4Y3hnZlI4NTdP?=
- =?utf-8?B?UmMyMVRxRnJZUUlHY3U0eHBXUlNqNTF1SlV2OEFRY1VHRno1UlA4M2hRUHNB?=
- =?utf-8?B?aW55YmxKSDcwek5ESVJXcjdRd3JEclB6Z2RyUTlwOC82OXBibjdPbmMyNHFv?=
- =?utf-8?B?c0Zad3NhZDZBdzZBQ1ZjWkFpNlZQZmYrL01Uc2duQkU2VkNmbCs0Rk03SHR1?=
- =?utf-8?B?QjYxSWMxdlhkU3pBbXBLMFd3eG5EZkllcTRiTHE2QmdsQ2JiYVF4LzlWd1I5?=
- =?utf-8?B?c3llcTEzSHR2YnhuM0lIZnRqaEpLOGZzRUxOQm1xcGNxUm9nWmRZemJJMTJW?=
- =?utf-8?Q?Nuqg7Zzm4e/8W6zK5Dh3qR5V8DqDXtNfPo2N+F21ALep?=
-X-OriginatorOrg: criteo.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: cf270319-5f99-48d2-b5c1-08dc4819362c
-X-MS-Exchange-CrossTenant-AuthSource: PAXPR04MB8989.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 19 Mar 2024 13:33:50.1835 (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 2a35d8fd-574d-48e3-927c-8c398e225a01
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: JfejCPBod5FLPfpuez5xcR9sNml28vuIMkEZtu6GstmZN0Va0dhMZO0QRmEapr+YUU73ejoBq7V9RIdG1Dai8A==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PR3PR04MB7244
+Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=criteo.com; s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=EJZwKwx5Qgr94CJ72QMcxqIEx2fDsV3FHNLUiT5jD7s=;
- b=GC52OMZ86ihqq25TImQ+dwVR712tshQPAhRJTFQS0cc4SqJukBfpaIE/fQ3mZCoMpu+RLZ55tMtRIRy2HwCf/hk+kj7TmrAPlbBDeLp434YncRP8cV2SxvVeEsJECyT90dADHyuwCzJJsC9IZdYl3tbjLZN2S/r5C5l2j1mpe+jPsDKpm/lxsxYpaW3EXWMvxlBFhjsWCh84e79MBZ8bYIuJY2hw9BfJb6EpPxw8mSeXF6RRxcgd3g4ZrRCD6RzOYJfkDhCWkMxFf+fFm6XJd/rP9Cpnt5K0S8+L7YPkg3uEIQJpKfOzqSgRRRy9PJEC9BcZugf9bad+DS1zs1B9yA==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dmarc=pass (p=reject dis=none)
- header.from=criteo.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ d=gmail.com; s=20230601; t=1710857837; x=1711462637; darn=lists.osuosl.org;
+ h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+ :to:from:from:to:cc:subject:date:message-id:reply-to;
+ bh=Y4EkBPaev4WA4b0+PhyugvZ3SM0zSNAP+U0AbsiXKCg=;
+ b=LTzMLJVCpBxxcJynpqTQO7mWONDyIBYWz3h3e/AjBidlqPpSYs3QUvzaxKm0CGUF1c
+ SOguNLQN1I4TfnikZ9YjE6aW35lF+3qgkurRdOAUtNtKLPeWtT21St0TeDb1ZSv/mOxV
+ OLH+U/rh90VtOikEn7oB2XoUPWclSTXi+Xa2IGStNw1Z6LTIB3wmklWv0P3k6wWIGkmU
+ 0AXbRjtQC2rOR3agPpGI6UpA7uPgq0w9U31O0No9X7Eg+HO63wNBjGifCK/pqmE/lvg6
+ k8CbWXXq1ssJHCj/N61TaulkTckvvSRlLDv2rNByL6zg7L4Nlg/zT58WVwwR4rVjiwvm
+ Oxug==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=gmail.com
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key,
- unprotected) header.d=criteo.com header.i=@criteo.com header.a=rsa-sha256
- header.s=selector2 header.b=GC52OMZ8
-Subject: Re: [Intel-wired-lan] [PATCH v4 iwl-net] i40e: Prevent setting MTU
- if greater than MFS
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20230601 header.b=LTzMLJVC
+Subject: [Intel-wired-lan] [PATCH iwl-net] i40e: Report MFS in decimal base
+ instead of hex
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -169,20 +118,54 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Erwan Velu <erwanaliasr1@gmail.com>, intel-wired-lan@lists.osuosl.org,
- linux-kernel@vger.kernel.org, Eric Dumazet <edumazet@google.com>,
- Tony Nguyen <anthony.l.nguyen@intel.com>, netdev@vger.kernel.org,
+Cc: Erwan Velu <e.velu@criteo.com>, linux-kernel@vger.kernel.org,
+ Eric Dumazet <edumazet@google.com>, netdev@vger.kernel.org,
+ Tony Nguyen <anthony.l.nguyen@intel.com>, intel-wired-lan@lists.osuosl.org,
  Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
  "David S. Miller" <davem@davemloft.net>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Le 19/03/2024 à 13:20, Simon Horman a écrit :
-[...]
-> FWIIW, I think handling these questions in follow-up patches is fine.
+If the MFS is set below the default (0x2600), a warning message is
+reported like the following :
 
-I wonder if the previous patch must be merged first, so I can reference 
-it in the commit message, or if I should shoot it now.
+	MFS for port 1 has been set below the default: 600
 
-Erwan,
+This message is a bit confusing as the number shown here (600) is in
+fact an hexa number: 0x600 = 1536
+
+Without any explicit "0x" prefix, this message is read like the MFS is
+set to 600 bytes.
+
+MFS, as per MTUs, are usually expressed in decimal base.
+
+This commit reports both current and default MFS values in decimal
+so it's less confusing for end-users.
+
+A typical warning message looks like the following :
+
+	MFS for port 1 (1536) has been set below the default (9728)
+
+Signed-off-by: Erwan Velu <e.velu@criteo.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 85ecf2f3de18..9a142562db38 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -16106,8 +16106,8 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	val = FIELD_GET(I40E_PRTGL_SAH_MFS_MASK,
+ 			rd32(&pf->hw, I40E_PRTGL_SAH));
+ 	if (val < MAX_FRAME_SIZE_DEFAULT)
+-		dev_warn(&pdev->dev, "MFS for port %x has been set below the default: %x\n",
+-			 pf->hw.port, val);
++		dev_warn(&pdev->dev, "MFS for port %x (%d) has been set below the default (%d)\n",
++			 pf->hw.port, val, MAX_FRAME_SIZE_DEFAULT);
+ 
+ 	/* Add a filter to drop all Flow control frames from any VSI from being
+ 	 * transmitted. By doing so we stop a malicious VF from sending out
+-- 
+2.44.0
 
