@@ -1,113 +1,111 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A43BEC54E58
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 20 Mar 2024 12:33:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9DCB2C54E58
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 20 Mar 2024 15:07:54 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 3E5E140895;
-	Wed, 20 Mar 2024 12:33:01 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 3CACA820A4;
+	Wed, 20 Mar 2024 15:07:54 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
-	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 2GcjQLt78q9g; Wed, 20 Mar 2024 12:33:00 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id eRN8sn4tebpj; Wed, 20 Mar 2024 15:07:53 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 42E134088C
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7C31E820A5
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1710937980;
-	bh=KhP5z213JRHgg+2Y4l04p0agR635gtrVnTmlg2I++II=;
-	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
+	s=default; t=1710947273;
+	bh=t8EtD8zegIhUQWzA/oDS70j+Z9o9c4kykZ4EUai9up0=;
+	h=References:In-Reply-To:From:Date:To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=RY5LUClwITfDZvSi7x5h+yX7/IXRYCQjc+8NLe7UwrMpn0a3PcTcz1HtOkCnwMAf0
-	 OZ2F3RSygChNPTpLwQ8N4rp0OVBmmK4idyGyM4AWO/nGdCpwW4xN2HNcw9/QRjxWYn
-	 61Ooopth9wOwHvq9e9+RNolcQ5q440nS2dbt40xp28gdr4ABtvkFInHV4EBBMBtv+q
-	 TNmGrgzShpwoOIzam6BE59O05yYiw2l8YXjCDh3kM+LHl6T/XUlucF38HWQgf0QWs9
-	 i4LLEr8tvXYMqUB+OITHHwUqLWLDePbPZSEkorB2K4uGPMJ5gXjKdepPKU7hGAbICX
-	 S8lG8vzSKoOEg==
+	b=6hRBgbFh7k3TfWvMwA67aKcq6H2dBAU8aqg5GM+nqPgR1YO5tmbRPLZucpuA1G5uo
+	 vvuu5bddPxuNBOaySmCiFUF9D4gB3+UnpNRIo0xokvWPUpAReQEeYk1K+GJsOgLsje
+	 jsPCG1Rf3vx0OjBbTM0jzTOYeyyH/0r+iTo15Yj7UjN6NYjr1Mmy+9k2oN8sNw3VcI
+	 VbOAkA0xNrmrky6eRRLfDwLdeudr1eL48xXq6Kf6UMRDNO796sWG1Vs1Q746iNiLMi
+	 dtO4W8SWteOIas+fl6AvvYDyHfU/AlCxoraiIUPqat9qFhzSRjksGkz4Sq8gT/9bwT
+	 MnUfIre2fhChA==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 42E134088C;
-	Wed, 20 Mar 2024 12:33:00 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 65E821BF5F8
- for <intel-wired-lan@lists.osuosl.org>; Wed, 20 Mar 2024 12:32:58 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 7C31E820A5;
+	Wed, 20 Mar 2024 15:07:53 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 12E731BF28F
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 19 Mar 2024 22:30:09 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 519DB60676
- for <intel-wired-lan@lists.osuosl.org>; Wed, 20 Mar 2024 12:32:58 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id F2FC0414B5
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 19 Mar 2024 22:30:08 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id E8KVH-mZb4YD for <intel-wired-lan@lists.osuosl.org>;
- Wed, 20 Mar 2024 12:32:57 +0000 (UTC)
-X-Greylist: delayed 484 seconds by postgrey-1.37 at util1.osuosl.org;
- Wed, 20 Mar 2024 12:32:55 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 6AFBB60625
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 6AFBB60625
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=212.227.17.11;
- helo=mout.web.de; envelope-from=markus.elfring@web.de; receiver=<UNKNOWN> 
-Received: from mout.web.de (mout.web.de [212.227.17.11])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 6AFBB60625
- for <intel-wired-lan@lists.osuosl.org>; Wed, 20 Mar 2024 12:32:55 +0000 (UTC)
-X-UI-Sender-Class: 814a7b36-bfc1-4dae-8640-3722d8ec6cd6
-Received: from [192.168.178.21] ([94.31.90.95]) by smtp.web.de (mrweb106
- [213.165.67.124]) with ESMTPSA (Nemesis) id 1N9LIc-1qjpQC2DWG-015dwE; Wed, 20
- Mar 2024 13:18:48 +0100
-Message-ID: <4b8ee072-70bc-4a0a-8e43-e244f8ee2f22@web.de>
-Date: Wed, 20 Mar 2024 13:18:33 +0100
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id TmihqQ3dtqbL for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 19 Mar 2024 22:30:07 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2a00:1450:4864:20::330; helo=mail-wm1-x330.google.com;
+ envelope-from=jstultz@google.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 8D928414B6
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 8D928414B6
+Received: from mail-wm1-x330.google.com (mail-wm1-x330.google.com
+ [IPv6:2a00:1450:4864:20::330])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 8D928414B6
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 19 Mar 2024 22:30:06 +0000 (UTC)
+Received: by mail-wm1-x330.google.com with SMTP id
+ 5b1f17b1804b1-41467b42b98so14345e9.1
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 19 Mar 2024 15:30:06 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20230601; t=1710887404; x=1711492204;
+ h=content-transfer-encoding:cc:to:subject:message-id:date:from
+ :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+ :subject:date:message-id:reply-to;
+ bh=t8EtD8zegIhUQWzA/oDS70j+Z9o9c4kykZ4EUai9up0=;
+ b=Je+UOhoVl3xNHf58dSg8Z4F0M4p7pQXyK71wWTZBIpZe4JGhShhnEXpZPNgtPKCgzq
+ SeFHTTnSetJXoiTNo3BGlm2tVcIjZeHMh4pIm4YhYFfwpQ0FoIXl0mCtzBP8jfQTuBGU
+ DWeembpzvuH1BBua7xuJWmgyJDvBij8gPaGZw/bx/qJ4ZOPFKi5sow40axHFd5QnyOcb
+ MOAihV0X3YmuvgHAgEOVuawTVg4/p6vD3ZGQmbymEKg+k2tt2k244Ut2cULO6n4Jgoxl
+ Xo7LZIhoAZektUmHHq1MN8NfIhqsS6xQ9L2STn2UwPcFpNOhp3Fn/YsgvmpqRP52P+Px
+ tkxg==
+X-Forwarded-Encrypted: i=1;
+ AJvYcCWEgyb6vtbmQtcpPl0psbMxg8vSotAwDQiLaJIHv5+pCPhXC/4wEPZwCyf07+kdfda5aTgRsSI0COtlBWdvsXuDuh8htoCk3o1HryCS9gyyCg==
+X-Gm-Message-State: AOJu0YxVdDrhxNxGGXIXp+12jKL2FiO4jQMfY8ZZ7PepfLFcbdIagKbO
+ kHPzN1/EILJruGmh2a+93UVwXeLP9GD03zX9m4EIwlTSMP/LS/KqsV6MWFE7nL5HBidbdAF5XIY
+ cPJxEtrijKi2OlgI8XFR8h7suAJksdngXVE8=
+X-Google-Smtp-Source: AGHT+IFnGQzm4jMjcrzDlbzN56akGGgkj3uAyRKTIsnW0UhcIBF+MbiMv0KxT6M+rBMt9Ny+pOt1FU4BU9vpN+72B78=
+X-Received: by 2002:a05:600c:3051:b0:414:1ee:f399 with SMTP id
+ n17-20020a05600c305100b0041401eef399mr89401wmh.2.1710887404353; Tue, 19 Mar
+ 2024 15:30:04 -0700 (PDT)
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-To: Dan Carpenter <dan.carpenter@linaro.org>,
- kernel-janitors@vger.kernel.org, netdev@vger.kernel.org,
- intel-wired-lan@lists.osuosl.org,
- Maciej Fijalkowski <maciej.fijalkowski@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Tony Nguyen <anthony.l.nguyen@intel.com>
-References: <77145930-e3df-4e77-a22d-04851cf3a426@moroto.mountain>
-Content-Language: en-GB
-From: Markus Elfring <Markus.Elfring@web.de>
-In-Reply-To: <77145930-e3df-4e77-a22d-04851cf3a426@moroto.mountain>
-Content-Type: text/plain; charset=UTF-8
+References: <20240319130547.4195-1-lakshmi.sowjanya.d@intel.com>
+ <20240319130547.4195-3-lakshmi.sowjanya.d@intel.com>
+In-Reply-To: <20240319130547.4195-3-lakshmi.sowjanya.d@intel.com>
+From: John Stultz <jstultz@google.com>
+Date: Tue, 19 Mar 2024 15:29:51 -0700
+Message-ID: <CANDhNCpP6Nd_iYtdgW+RyH1g7c-eyHR+j-LV4gv8rKWu9QkzhQ@mail.gmail.com>
+To: lakshmi.sowjanya.d@intel.com
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:PTUuB43Z3DS7y5k1LlzvJWE5GpgoYr2z888JWO4A8Mid5gKORZl
- MkpJK4sPj0ibCEfU/Pw4f5+CIFy2gNMghqQLHOhx/qdJ2joepGCvIS4FT/vzNi3ZISYJm5m
- W0rWME1EqkcsjFu2+pZtTZTKhWraCRg+epsZkoQ6DCHkmtw8Mxj9kbPwzJj8jb9ofEii8JW
- 9eLlGudzZsRxA81ao1Igw==
-UI-OutboundReport: notjunk:1;M01:P0:I/COkzrdeRM=;q6ywcjjufhBAyy/52jzodOn5/r0
- GSS4Vh4hH9B2zcNwlsWf6O+HsZwdZ7L/aH60pv0JzXw6rtXreVBY3boo27BqZSQJW1OC0iJJ5
- zrhvHu4KA25genAPnGpk9VoJCecPJPSqyndPYSiiimFi3icsDDB+t4QWv+uPGfFweZ9x7ylcp
- ILy+L0iwHtTlavA7dhkUnM69nCEYNLBdz7w49uz+LD8eAaJVkCEKl79i8udgNFju5/mDkPINL
- xS+4vTW/MrKo8kTzhg5uiCNFd/cVs0WKrPEJ6cKbhI5GO9nZhII1BRiZw3w6n1R2fXm0ASAx0
- P5ja5y+aIu07hAW4GmX6fkFfb+oNVD1pE6BIPy1n93zHPAcuPRvTgYDTGENXo/d0VpZmyupxP
- Ig33Dh3va/p8JmdwDNX1CHHNHdt6DAAUksGgTBiXl44fSyTHMgxBCQgvAeW5M9EBTrYA9r/Ii
- P0kC07s1sjkBYWHsZvEo4e7Ulp335gjgtmH4za/hTCLfOQBM8xNV0CwcHf/kj4dRTJDqtwEnP
- /lnppqPS7kWKpoUARE/17+at6eCzANbH4uOaM+z5UNtWOZ8bgn9L6ywT0u9aJze2Q2jBUlNEy
- 00uJpVuaW979Aj0jICPJZLPmShJVXnP4OpiEdWE8SMVmRygeSEKZXyaxBbzdeiZ6JJ9UD4iNj
- G+20dv/DXGrQQUxHLSEnU/4AxkWZrV1tPM9mC3epcFHkl/GQPY+NikfLtWCFzmgZ4c0ymj1ep
- FK3dwYVrsEuUJK3KJbYKHTvBX6F4HOMgUxUyzVMNN/eonX6pflgQbnQ7tD/WtIfNzqwVtjZFn
- lSKd/G7oTSQa0OC6tpVfrrmcWcaRXVgIIDCtRVXAXkbJI=
+X-Mailman-Approved-At: Wed, 20 Mar 2024 15:07:52 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=web.de; 
- s=s29768273; t=1710937973; x=1711542773; i=markus.elfring@web.de;
- bh=KhP5z213JRHgg+2Y4l04p0agR635gtrVnTmlg2I++II=;
- h=X-UI-Sender-Class:Date:To:Cc:References:Subject:From:
- In-Reply-To;
- b=uKzeO9Rck+sh1+twjJYM5Z8gmlGzv2YtFvWXYYz6P1m7T5buiGATOxrrKAiiMV0D
- EORYfKdcJheLTgDTUO9fVz6FIR5hluZ06p5Hr0oA2Hc7Rc7h+wxO8YkWAjhIYH34r
- lkn0QFVXL4rrWZIM1JYOiQJmX/VnD/Zheu6bXQpl9X29NfIgCGwQOY3Z9SLbKQ9TG
- vVDEdUuf3MxIpclIF6DTHt100VTh4csobr5gnlyk4na6KIzPBv1lCzD6qBiZLvGa2
- ofVmBcUFCixruXHr81gwTOb0G1p4RdlsqeQ1KXgQ5fHr5Ld7UMlanrt6843Txj0Kx
- UctDiird1cQOdHrZwQ==
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dmarc=pass (p=quarantine dis=none)
- header.from=web.de
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ d=google.com; s=20230601; t=1710887404; x=1711492204; darn=lists.osuosl.org;
+ h=content-transfer-encoding:cc:to:subject:message-id:date:from
+ :in-reply-to:references:mime-version:from:to:cc:subject:date
+ :message-id:reply-to;
+ bh=t8EtD8zegIhUQWzA/oDS70j+Z9o9c4kykZ4EUai9up0=;
+ b=kHbmY+HZOuLep3Ulvnzh0eIoOp1VEkpcyXcVgKvs91TFHDOwmSav+IQOTgBfQaHYZs
+ 4+tdROi0+c4ovIQDRsFOCMpmVuo17MuCeGM5rSaU8YEQPtB1EFjQ3ZJXyYTWhDhmFcmw
+ 4NKIfhxy2ZZs9/Y2AT8NUPg/OgVGdlNp0ynLEHU5CsPONfvg/7wHT1c8B1AUQ7sIJB/k
+ Vr2p+oczBZZbsowK2/2Jp4Gv6nW4FetWn82flVs3vjNef0Efxi2TmAUDSVZsDSEPSTlg
+ XxA5t+NOTf1ExpyVtLjIK/4+GRZ5Xu2JkqwHQa15OL7OX5BVc5gWdkqfDGB+Z89PJAnT
+ 5yrg==
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dmarc=pass (p=reject dis=none)
+ header.from=google.com
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key,
- unprotected) header.d=web.de header.i=markus.elfring@web.de
- header.a=rsa-sha256 header.s=s29768273 header.b=uKzeO9Rc
-Subject: Re: [Intel-wired-lan] [PATCH net] ice: Fix freeing uninitialized
- pointers
+ unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256
+ header.s=20230601 header.b=kHbmY+HZ
+Subject: Re: [Intel-wired-lan] [PATCH v5 02/11] timekeeping: Add function to
+ convert realtime to base clock
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -120,60 +118,86 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Pucha Himasekhar Reddy <himasekharx.reddy.pucha@intel.com>,
- Jiri Pirko <jiri@resnulli.us>, LKML <linux-kernel@vger.kernel.org>,
- Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, "David S. Miller" <davem@davemloft.net>
+Cc: linux-doc@vger.kernel.org, mallikarjunappa.sangannavar@intel.com,
+ alexandre.torgue@foss.st.com, perex@perex.cz, anthony.l.nguyen@intel.com,
+ thejesh.reddy.t.r@intel.com, christopher.s.hall@intel.com, corbet@lwn.net,
+ x86@kernel.org, joabreu@synopsys.com, peter.hilber@opensynergy.com,
+ intel-wired-lan@lists.osuosl.org, subramanian.mohan@intel.com,
+ linux-sound@vger.kernel.org, tglx@linutronix.de,
+ andriy.shevchenko@linux.intel.com, giometti@enneenne.com,
+ netdev@vger.kernel.org, pandith.n@intel.com, eddie.dong@intel.com,
+ linux-kernel@vger.kernel.org, mcoquelin.stm32@gmail.com,
+ basavaraj.goudar@intel.com, davem@davemloft.net
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-> Automatically cleaned up pointers need to be initialized before exiting
-> their scope.  In this case, they need to be initialized to NULL before
-> any return statement.
-
-I suggest to reconsider such information a bit more.
-
-
-=E2=80=A6
-> +++ b/drivers/net/ethernet/intel/ice/ice_common.c
-> @@ -1002,8 +1002,8 @@ static void ice_get_itr_intrl_gran(struct ice_hw *=
-hw)
+On Tue, Mar 19, 2024 at 6:06=E2=80=AFAM <lakshmi.sowjanya.d@intel.com> wrot=
+e:
+>
+> From: Lakshmi Sowjanya D <lakshmi.sowjanya.d@intel.com>
+>
+> PPS(Pulse Per Second) generates signals in realtime, but Timed IO
+> hardware understands time in base clock reference. Add an interface,
+> ktime_real_to_base_clock() to convert realtime to base clock.
+>
+> Convert the base clock to the system clock using convert_base_to_cs() in
+> get_device_system_crosststamp().
+>
+> Add the helper function timekeeping_clocksource_has_base(), to check
+> whether the current clocksource has the same base clock. This will be
+> used by Timed IO device to check if the base clock is X86_ART(Always
+> Running Timer).
+>
+> Co-developed-by: Thomas Gleixner <tglx@linutronix.de>
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> Co-developed-by: Christopher S. Hall <christopher.s.hall@intel.com>
+> Signed-off-by: Christopher S. Hall <christopher.s.hall@intel.com>
+> Signed-off-by: Lakshmi Sowjanya D <lakshmi.sowjanya.d@intel.com>
+> ---
+>  include/linux/timekeeping.h |   6 +++
+>  kernel/time/timekeeping.c   | 105 +++++++++++++++++++++++++++++++++++-
+>  2 files changed, 109 insertions(+), 2 deletions(-)
+>
+> diff --git a/include/linux/timekeeping.h b/include/linux/timekeeping.h
+> index 7e50cbd97f86..1b2a4a37bf93 100644
+> --- a/include/linux/timekeeping.h
+> +++ b/include/linux/timekeeping.h
+> @@ -275,12 +275,18 @@ struct system_device_crosststamp {
+>   *             timekeeping code to verify comparability of two cycle val=
+ues.
+>   *             The default ID, CSID_GENERIC, does not identify a specifi=
+c
+>   *             clocksource.
+> + * @nsecs:     @cycles is in nanoseconds.
 >   */
->  int ice_init_hw(struct ice_hw *hw)
->  {
-> -	struct ice_aqc_get_phy_caps_data *pcaps __free(kfree);
-> -	void *mac_buf __free(kfree);
-> +	struct ice_aqc_get_phy_caps_data *pcaps __free(kfree) =3D NULL;
-> +	void *mac_buf __free(kfree) =3D NULL;
->  	u16 mac_buf_len;
->  	int status;
+>  struct system_counterval_t {
+>         u64                     cycles;
+>         enum clocksource_ids    cs_id;
+> +       bool                    nsecs;
 
-How do you think about to reduce the scope for affected local variables in=
-stead
-with the help of a small script (like the following) for the semantic patc=
-h language?
+Apologies, this is a bit of an annoying bikeshed request, but maybe
+use_nsecs here?
+There are plenty of places where nsecs fields hold actual nanoseconds,
+so what you have might be easy to misread in the future.
 
+Also, at least in this series, I'm not sure I see where this nsecs
+value gets set? Maybe something to split out and add in a separate
+patch, where its use is more clear?
 
-@movement1@
-attribute name __free;
-@@
--struct ice_aqc_get_phy_caps_data *pcaps __free(kfree);
- ... when any
-+struct ice_aqc_get_phy_caps_data *
- pcaps
-+__free(kfree)
- =3D kzalloc(sizeof(*pcaps), ...);
+> +bool timekeeping_clocksource_has_base(enum clocksource_ids id)
+> +{
+> +       unsigned int seq;
+> +       bool ret;
+> +
+> +       do {
+> +               seq =3D read_seqcount_begin(&tk_core.seq);
+> +               ret =3D tk_core.timekeeper.tkr_mono.clock->base ?
+> +               tk_core.timekeeper.tkr_mono.clock->base->id =3D=3D id : f=
+alse;
 
-@movement2@
-attribute name __free;
-@@
--void *mac_buf __free(kfree);
- ... when any
-+void *
- mac_buf
-+__free(kfree)
- =3D kcalloc(2, sizeof(struct ice_aqc_manage_mac_read_resp), ...);
+Again, bikeshed nit: I know folks like ternaries for conciseness, but
+once you've crossed a single line, I'd often prefer to read an if
+statement.
 
-
-Regards,
-Markus
+thanks
+-john
