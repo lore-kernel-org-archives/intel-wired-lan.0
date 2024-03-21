@@ -1,111 +1,102 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2F0FFC54E68
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 21 Mar 2024 15:49:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C062FC6FD1F
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 21 Mar 2024 18:03:15 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id B9AC160E7A;
-	Thu, 21 Mar 2024 15:49:40 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 5EC17404D3;
+	Thu, 21 Mar 2024 18:03:15 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id uoAb7D-ZX_0l; Thu, 21 Mar 2024 15:49:39 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id uEbn-4dGpmRG; Thu, 21 Mar 2024 18:03:14 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C979660E7D
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org C38384033F
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1711036179;
-	bh=nn0KXLTmKo1UAHS+ioXMLgSp1Jk0+gNJVUyK//P+Ags=;
+	s=default; t=1711044194;
+	bh=nRNk8DmXe6CPB4/6YrKVTsejbGfE1zUOjTQsm19OqvI=;
 	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=maPhbwAeyI2z1BHA6fwcetnHS0mBTjHOu+fTG/n7pVE2rqfFd0TOifw1wwGCui1Dr
-	 lM+HMhMaqJFBQtKDENjGod7Tt+Wtfz/vyqzi1aIlqQqt44dWySoZsx7Oz/86sVPdfG
-	 6jeWsUeml8K62viPzco0IVh5nxBWZHICEU47WeRTkyZj6IIqm3qvO9SAzd0lE/+L/+
-	 a843OH8KkcyzueSMJQ+CZK2bGJ5khNO9nC/cJMx90sN/ASGc011YX3BkLrAD1aDWb7
-	 ohf38R5alkIJkSpXBt7bTmh4BSPx6exHTXTSdXtG3ux6c8RvnoGCNrut7ZGklzzA22
-	 LcSVl6j21yACw==
+	b=yBuPFqOp7R8u9sq1WVhGLsDmFsUzlhPxx1mjPEGR1GE9BEIWiz+zpmXLZWrA/aUgC
+	 APAi4IbrAzKGhEuvYaKsEX44D1jo/qPaAB7wyXDNdw1Okla0FWBnVuzTMLuUPssqdO
+	 bPLFSs19TBHnifkM1OhTd8Zwav7pdBqMsvMUsuA6AZcJ5sHqH7tuWioD71CqlvVTRM
+	 IWC26hQQ/gryNVI0PFgz7kwfSRiBd2GUEKAFwSZ60tJrjcxVJcN+13rsKRfEUAfKDN
+	 GEpo/wUBfh02XnV+BgP5yybbE6xYZhK0vwSRpAgJFwPHg7fDj1ubi1tzRBbJQVIq50
+	 GnLEUdLLmxvGA==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id C979660E7D;
-	Thu, 21 Mar 2024 15:49:39 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id E2A2C1BF3F6
- for <intel-wired-lan@lists.osuosl.org>; Thu, 21 Mar 2024 15:49:37 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id C38384033F;
+	Thu, 21 Mar 2024 18:03:14 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 8C7341BF2F3
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 21 Mar 2024 18:03:12 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id D63FF820DA
- for <intel-wired-lan@lists.osuosl.org>; Thu, 21 Mar 2024 15:49:37 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 780E0401D8
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 21 Mar 2024 18:03:12 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id YQYreja10of1 for <intel-wired-lan@lists.osuosl.org>;
- Thu, 21 Mar 2024 15:49:36 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2a00:1450:4864:20::32c; helo=mail-wm1-x32c.google.com;
- envelope-from=dan.carpenter@linaro.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 68FCF81440
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 68FCF81440
-Received: from mail-wm1-x32c.google.com (mail-wm1-x32c.google.com
- [IPv6:2a00:1450:4864:20::32c])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 68FCF81440
- for <intel-wired-lan@lists.osuosl.org>; Thu, 21 Mar 2024 15:49:35 +0000 (UTC)
-Received: by mail-wm1-x32c.google.com with SMTP id
- 5b1f17b1804b1-414787c73c7so177365e9.0
- for <intel-wired-lan@lists.osuosl.org>; Thu, 21 Mar 2024 08:49:35 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20230601; t=1711036173; x=1711640973;
- h=in-reply-to:content-disposition:mime-version:references:message-id
- :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
- :message-id:reply-to;
- bh=nn0KXLTmKo1UAHS+ioXMLgSp1Jk0+gNJVUyK//P+Ags=;
- b=nQMrL8MHZB3xEBLQMaLdOM5qW0aew7doYEGw7pc3miHX08fTIgdbBnO+x15MUnHoMU
- BS3Jf0LdH9iT+NN3OyRjyEIJqA2lSmKBR/jNQrPNzQVeECPbMwOEXCP8S5/E974vSKBM
- YFS+eMiJA5CtiO0GpHcUcV6CihbedIMSv/OQ6odOjNsUsGJm+dGTTGbe1tva0XnPdwxF
- kTUDtm0yUd8Nqkx89q58qLImeJ1TZ/9RNX8cBCoGwnS51/JfA8WhGROIJQg67zzRPsVt
- WO/4niBZ3rMPnrWLS5N9DPV4+SjM64za/wbCryG6LFdKxUyjSA8CDFsGbMGwBql2bPaD
- MW4A==
-X-Forwarded-Encrypted: i=1;
- AJvYcCXv4u8uUbU4smEIqgDLkhrmp7JUDMmG4wx2tJkAIbkOi6sByuMLAzzmcX5y4itTCjSzgIqCceNWXUPUcG5zhqrvJi+nqkj6XTIAa4F8YURIaQ==
-X-Gm-Message-State: AOJu0YzmYZKJlUaCCqtBj04kyKrJwJj3OpQTCPZ3xxOno5NptdESYTdx
- VI3zTUyz99RLMqChUODOJlIVINv+FzqZC/rfN11etetDpksof7cVPOCLyAlXjTk=
-X-Google-Smtp-Source: AGHT+IHS0COvGmxGWKzVrLFKmJH2kCt88HgGRRr5C/qE0aKfK7wiVDsrmhkHV9SjTOUK91PmmME4Iw==
-X-Received: by 2002:a05:600c:218e:b0:414:a6d:52d8 with SMTP id
- e14-20020a05600c218e00b004140a6d52d8mr1687053wme.17.1711036172968; 
- Thu, 21 Mar 2024 08:49:32 -0700 (PDT)
-Received: from localhost ([102.222.70.76]) by smtp.gmail.com with ESMTPSA id
- jh2-20020a05600ca08200b00413e63bb140sm5997582wmb.41.2024.03.21.08.49.32
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 21 Mar 2024 08:49:32 -0700 (PDT)
-Date: Thu, 21 Mar 2024 18:49:29 +0300
-From: Dan Carpenter <dan.carpenter@linaro.org>
-To: Jiri Pirko <jiri@resnulli.us>
-Message-ID: <dd392ed9-9f68-4364-bc9a-ab95d6b54cda@moroto.mountain>
-References: <0efe132b-b343-4438-bb00-5a4b82722ed3@moroto.mountain>
- <ZfxTjYUPAFz_LRlk@nanopsycho>
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id hnOpzMv9xCgE for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 21 Mar 2024 18:03:10 +0000 (UTC)
+Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.16;
+ helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 27FD7400B5
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 27FD7400B5
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.16])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 27FD7400B5
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 21 Mar 2024 18:03:09 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,11020"; a="6180633"
+X-IronPort-AV: E=Sophos;i="6.07,143,1708416000"; 
+   d="scan'208";a="6180633"
+Received: from fmsmga002.fm.intel.com ([10.253.24.26])
+ by orvoesa108.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 21 Mar 2024 11:03:09 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,11020"; a="914717075"
+X-IronPort-AV: E=Sophos;i="6.07,143,1708416000"; d="scan'208";a="914717075"
+Received: from smile.fi.intel.com ([10.237.72.54])
+ by fmsmga002.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 21 Mar 2024 11:03:04 -0700
+Received: from andy by smile.fi.intel.com with local (Exim 4.97)
+ (envelope-from <andriy.shevchenko@linux.intel.com>)
+ id 1rnMkm-0000000ExcL-2Dkx; Thu, 21 Mar 2024 20:03:00 +0200
+Date: Thu, 21 Mar 2024 20:03:00 +0200
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: Markus Elfring <Markus.Elfring@web.de>
+Message-ID: <Zfx2VL7xnj4rQoV8@smile.fi.intel.com>
+References: <77145930-e3df-4e77-a22d-04851cf3a426@moroto.mountain>
+ <d2b1f3bd-42f1-483b-916e-3735b39a30e1@web.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <ZfxTjYUPAFz_LRlk@nanopsycho>
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=linaro.org; s=google; t=1711036173; x=1711640973; darn=lists.osuosl.org;
- h=in-reply-to:content-disposition:mime-version:references:message-id
- :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
- bh=nn0KXLTmKo1UAHS+ioXMLgSp1Jk0+gNJVUyK//P+Ags=;
- b=HbAUaUJcsc7rL4AfmrdGO7I0fcOZX5Zzc4vjzo5NTYF3v1s0DodGZZW07KMHU6wmgH
- j4BrFPX1DjFgnkUx/N/5fx/shOh4mTMF2bHFQp29n5pLHS4Nf1r5MK+3wz6+ScsqcRWN
- eRrbqkzLt3LWbFsAE8WZOO8atktOBLNA8ndUDyrJpV0L1rexnfVEm2Gw+Mlz8Z5UuPUo
- edfJH9xzkN6tCHhcek3latFYtcJ0VCKgU7g0CaFc8JmKu+makHe0Kf0WlSy5vgJayUfn
- MWzIoputxt0ePy19qvG1uf+Fvm+iyfkgnSJcr3asx+wKM9xny91FriUaLh8ZTxxn/F6M
- +yew==
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=linaro.org
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <d2b1f3bd-42f1-483b-916e-3735b39a30e1@web.de>
+Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1711044190; x=1742580190;
+ h=date:from:to:cc:subject:message-id:references:
+ mime-version:content-transfer-encoding:in-reply-to;
+ bh=cpK068KVvFXrGJJCmc7jXbXiOVvPQ+oU7A4+RLoU+Qw=;
+ b=LjblWkn46DoJ4D30T1Q4+Xd2HPvwa1M93IlbrFEIGc4mVKHokGBICI3L
+ k1DV7xeY8QPHGYUMy0tVVOBiZnxjfeftq4YU77n1MWAnsZ/BEAMIY9/M7
+ oaH4WY8SApKWwNspi8MOYAtUd9IKT4dY70kznKAf2nW1rZ7r8tAImk8ik
+ xwyoD0fAxtGAxRseivGItDo6DzvJ2ee3HGygKUfqQaF5KYv+fX1soZP5k
+ nyhCpxkMqF8PNDNd0LYoU3ljR1uGPC8/2x0idbHxZNPJ7G/ykfxpeVyNh
+ Bn02mls4QgT04iL1Cs6qIjrvVbGU323Or3xdjJBpT8/070h2lmqx61438
+ A==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dmarc=none (p=none dis=none)
+ header.from=linux.intel.com
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key,
- unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256
- header.s=google header.b=HbAUaUJc
-Subject: Re: [Intel-wired-lan] [PATCH v2 net] ice: Fix freeing uninitialized
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=LjblWkn4
+Subject: Re: [Intel-wired-lan] [PATCH net] ice: Fix freeing uninitialized
  pointers
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
@@ -119,49 +110,67 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Maciej Fijalkowski <maciej.fijalkowski@intel.com>,
+Cc: Jiri Pirko <jiri@resnulli.us>,
+ Pucha Himasekhar Reddy <himasekharx.reddy.pucha@intel.com>,
+ Maciej Fijalkowski <maciej.fijalkowski@intel.com>,
+ Kees Cook <keescook@chromium.org>, netdev@vger.kernel.org,
+ Lukasz Czapnik <lukasz.czapnik@intel.com>, kernel-janitors@vger.kernel.org,
+ LKML <linux-kernel@vger.kernel.org>, Julia Lawall <julia.lawall@inria.fr>,
+ Alexander Lobakin <aleksander.lobakin@intel.com>,
+ Eric Dumazet <edumazet@google.com>, David Laight <David.Laight@aculab.com>,
+ intel-wired-lan@lists.osuosl.org, Jonathan Cameron <jic23@kernel.org>,
+ Jakub Kicinski <kuba@kernel.org>,
  Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
- Eric Dumazet <edumazet@google.com>, netdev@vger.kernel.org,
- Tony Nguyen <anthony.l.nguyen@intel.com>, intel-wired-lan@lists.osuosl.org,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- "David S. Miller" <davem@davemloft.net>
+ Tony Nguyen <anthony.l.nguyen@intel.com>, Paolo Abeni <pabeni@redhat.com>,
+ "David S. Miller" <davem@davemloft.net>,
+ Dan Carpenter <dan.carpenter@linaro.org>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Thu, Mar 21, 2024 at 04:34:37PM +0100, Jiri Pirko wrote:
-> >The change to ice_update_link_info() isn't required because it's
-> >assigned on the very next line...  But I did that because it's harmless
-> >and makes __free() stuff easier to verify.  I felt like moving the
-> >declarations into the code would be controversial and it also ends up
-> >making the lines really long.
+On Thu, Mar 21, 2024 at 06:59:00PM +0100, Markus Elfring wrote:
+
+…
+
+> > +++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+> > @@ -941,11 +941,11 @@ static u64 ice_loopback_test(struct net_device *netdev)
+> >  	struct ice_netdev_priv *np = netdev_priv(netdev);
+> >  	struct ice_vsi *orig_vsi = np->vsi, *test_vsi;
+> >  	struct ice_pf *pf = orig_vsi->back;
+> > +	u8 *tx_frame __free(kfree) = NULL;
+> >  	u8 broadcast[ETH_ALEN], ret = 0;
+> >  	int num_frames, valid_frames;
+> >  	struct ice_tx_ring *tx_ring;
+> >  	struct ice_rx_ring *rx_ring;
+> > -	u8 *tx_frame __free(kfree);
+> >  	int i;
 > >
-> >		goto goto err_unroll_sched;
-> >
-> >	struct ice_aqc_get_phy_caps_data *pcaps __free(kfree) =
-> >		kzalloc(sizeof(*pcaps), GFP_KERNEL);
+> >  	netdev_info(netdev, "loopback test\n");
 > 
-> Yeah, that is why I'm proposing KZALLOC_FREE helper:
-> https://lore.kernel.org/all/20240315132249.2515468-1-jiri@resnulli.us/
+> How do you think about to reduce the scope for the affected local variable instead
+> with the help of a small script (like the following) for the semantic patch language?
 > 
+> @movement@
+> attribute name __free;
+> @@
+> -u8 *tx_frame __free(kfree);
+>  int i;
+>  ... when any
+>  if (ice_fltr_add_mac(test_vsi, ...))
+>  { ... }
+> +
+> +{
+> +u8 *tx_frame __free(kfree) = NULL;
+>  if (ice_lbtest_create_frame(pf, &tx_frame, ...))
+>  { ... }
+>  ... when any
+> +}
+> +
+>  valid_frames = ice_lbtest_receive_frames(...);
 
-I like the idea, but I'm not keen on the format.  What about something
-like?
+I believe you don't understand what the scope of the above can be.
 
-#define __ALLOC(p) p __free(kfree) = kzalloc(sizeof(*p), GFP_KERNEL)
+-- 
+With Best Regards,
+Andy Shevchenko
 
-	struct ice_aqc_get_phy_caps_data *__ALLOC(pcaps);
 
-I'm not a huge fan of putting functions which can fail into the
-declaration block but I feel like we're going to officially say that
-small allocations can't fail.
-
-https://lwn.net/Articles/964793/
-https://lore.kernel.org/all/170925937840.24797.2167230750547152404@noble.neil.brown.name/
-
-Normally we would try to delay the allocations until after all the
-sanity checks have run but that's optimizing for the failure case.  In
-the normal case we're going to want these allocations.
-
-regards,
-damn carpenter
