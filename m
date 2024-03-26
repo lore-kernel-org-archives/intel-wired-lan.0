@@ -4,93 +4,124 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 83ACEC6FD1F
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 26 Mar 2024 16:45:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 90416C6FD1F
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 26 Mar 2024 17:03:39 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 50F1841529;
-	Tue, 26 Mar 2024 16:45:53 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 06F784042D;
+	Tue, 26 Mar 2024 17:03:39 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Tmi5YaifdbAc; Tue, 26 Mar 2024 16:45:52 +0000 (UTC)
+ id 3N8m7lyql6Zr; Tue, 26 Mar 2024 17:03:37 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 8C74740484
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 111A14036F
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1711471552;
-	bh=B5heRpOQuxDQC6SCYnpXiJeCvHirKFGt3SfPQrU+PHM=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1711472617;
+	bh=rFF3IEv1pQkVliIlfBa5Tw/0KDEQACYRpeKK2HhiYeY=;
+	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=BOV1FAHhvEL8cIuwwx9XZ4noqSfue8AUnTLSDEjzew8WDHd8RIVFo+6VLscyJ1IVD
-	 00Z/1PJyZjYBmGC9zh4ZT2iwo0RlyiG9e2N/aXpqwzKYktEgJTGlRh24VcnXdIkiPn
-	 JA1P5pob9gtDjroXkTNBsxbNt9XjK05msrYo0s4dCtjZUOACY/YmIhiWtxKW/p0dWD
-	 ZXg8UkfarY0R3ga2dHXkU3IxAUqaLvm2cgByzUPQqj44gSKeJ4u0a6NEgUjnOe/etP
-	 EK10Mf8a8uW4OpP3JmQwEfs+pVVIMLngk+wpI7dF1yVYIxQgHwVseodhJDCF0QTbGq
-	 xLiLNVKOABrLw==
+	b=GZJRWxvGVkIPZzl3dITpOTjiJ0UaKvtzbiLnrijlMP8Txc0R8iT9BQqhW+E4/e/bU
+	 bFTHNclp9hP7GDmVtcdpKMMHiJG6TUz5xrJYVvZq7VbT+vhYjt0KRayLPnkYN2VR1d
+	 jE2ws2g2Oa4TmrT/NHfitXRk0b/xm56dFIpjW7Dj9Av4bXTnw4KXaWvGV1YgPbs3pj
+	 46FadZWKpFW2v4vnk/y8MKbsjd1t9wvKOG2LxtLoGpeQ7XOjHZmBjypLwRBSjk8Oxp
+	 x7ImdaW5SRJ/p7Vm5ePvxTc6ensXuJ9QfdWsh2u23Moqz+VPf2il/OkO944op2RHcU
+	 b3t5iTg5aAUag==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 8C74740484;
-	Tue, 26 Mar 2024 16:45:52 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 9C6561BF364
- for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Mar 2024 16:45:49 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 111A14036F;
+	Tue, 26 Mar 2024 17:03:37 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id EDF701BF487
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Mar 2024 17:03:34 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 8760181FE4
- for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Mar 2024 16:45:48 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id E6802605B5
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Mar 2024 17:03:34 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 16XZbu_NVm4W for <intel-wired-lan@lists.osuosl.org>;
- Tue, 26 Mar 2024 16:45:48 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.17;
- helo=mgamail.intel.com; envelope-from=paul.greenwalt@intel.com;
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id eUzWScwfS4Cm for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 26 Mar 2024 17:03:34 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=44.202.169.35;
+ helo=omta036.useast.a.cloudfilter.net; envelope-from=gustavo@embeddedor.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org D2DA981FED
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D2DA981FED
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.17])
- by smtp1.osuosl.org (Postfix) with ESMTPS id D2DA981FED
- for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Mar 2024 16:45:47 +0000 (UTC)
-X-CSE-ConnectionGUID: My1k48qsSsC14Xo/PxYo2A==
-X-CSE-MsgGUID: 5+i+gBDCTnu+HlZulPmpvA==
-X-IronPort-AV: E=McAfee;i="6600,9927,11025"; a="6641364"
-X-IronPort-AV: E=Sophos;i="6.07,156,1708416000"; 
-   d="scan'208";a="6641364"
-Received: from orviesa006.jf.intel.com ([10.64.159.146])
- by orvoesa109.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 26 Mar 2024 09:45:47 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.07,156,1708416000"; d="scan'208";a="16454711"
-Received: from unknown (HELO fedora.jf.intel.com) ([10.166.244.154])
- by orviesa006.jf.intel.com with ESMTP; 26 Mar 2024 09:45:47 -0700
-From: Paul Greenwalt <paul.greenwalt@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Date: Tue, 26 Mar 2024 12:36:35 -0400
-Message-ID: <20240326163635.1529314-2-paul.greenwalt@intel.com>
-X-Mailer: git-send-email 2.41.0
-In-Reply-To: <20240326163635.1529314-1-paul.greenwalt@intel.com>
-References: <20240326163635.1529314-1-paul.greenwalt@intel.com>
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org BEEAA60594
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org BEEAA60594
+Received: from omta036.useast.a.cloudfilter.net
+ (omta036.useast.a.cloudfilter.net [44.202.169.35])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id BEEAA60594
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Mar 2024 17:03:33 +0000 (UTC)
+Received: from eig-obgw-5007a.ext.cloudfilter.net ([10.0.29.141])
+ by cmsmtp with ESMTPS
+ id ocShrtgT8uh6spACyrjz31; Tue, 26 Mar 2024 17:03:32 +0000
+Received: from gator4166.hostgator.com ([108.167.133.22]) by cmsmtp with ESMTPS
+ id pACbrw2tJeXgGpACbrC32v; Tue, 26 Mar 2024 17:03:10 +0000
+X-Authority-Analysis: v=2.4 cv=Q/PU4Z2a c=1 sm=1 tr=0 ts=6602ffce
+ a=1YbLdUo/zbTtOZ3uB5T3HA==:117 a=zXgy4KOrraTBHT4+ULisNA==:17
+ a=IkcTkHD0fZMA:10 a=K6JAEmCyrfEA:10 a=wYkD_t78qR0A:10 a=cm27Pg_UAAAA:8
+ a=QyXUC8HyAAAA:8 a=VwQbUJbxAAAA:8 a=WFmGiULL8WMXhObYpVMA:9 a=QEXdDO2ut3YA:10
+ a=xmb-EsYY8bH0VWELuYED:22 a=AjGcO6oz07-iQ99wixmX:22
+Received: from [201.172.173.147] (port=44416 helo=[192.168.15.10])
+ by gator4166.hostgator.com with esmtpsa (TLS1.2) tls
+ TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 (Exim 4.96.2)
+ (envelope-from <gustavo@embeddedor.com>) id 1rpACR-001bkE-26;
+ Tue, 26 Mar 2024 12:02:59 -0500
+Message-ID: <8d2c9cb1-6f2e-4ad4-a1b7-25e6ae953a65@embeddedor.com>
+Date: Tue, 26 Mar 2024 11:02:57 -0600
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1711471548; x=1743007548;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=+CPRoVEvK1MUffkHd8kdGqWuyQyqdXJNYwSLZD3tE7I=;
- b=cxMowhnLX8YwcgYn9mSV84WwyZQK6V+TzmnKKpr9kAW6YRtZlPEObrHm
- iF8yb8ehbg8DT2ukJYgK43IVIiB4J0jzPZvRYEI0qb4o0QWgzqANGHQPE
- sYklVxt3++FVd2miZU4RWmOvgsn2ZbC0zuvU/kblhY18eh+VcsHHqqOyd
- QF0LhPcyMPl/sl72vm56HWh+drHiV4gcIDSbZB70DasrBmFaQE1PAhDVS
- bs68Qw25UV3fJ/y/KByhhEQUQ4DrvhLuLpAAou+NSnfpi+m1lIPJ5i8jc
- CHfVVrU1XMo5WXYRCVnqXGs18q8FGAEf7GNjqho9/bwTM18eIGXaSLPXn
- A==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=cxMowhnL
-Subject: [Intel-wired-lan] [PATCH iwl-next v1 2/2] ice: update E830 device
- ids and comments
+User-Agent: Mozilla Thunderbird
+Content-Language: en-US
+To: Alexander Lobakin <aleksander.lobakin@intel.com>,
+ "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>
+References: <20240326164116.645718-1-aleksander.lobakin@intel.com>
+ <20240326164116.645718-2-aleksander.lobakin@intel.com>
+From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+In-Reply-To: <20240326164116.645718-2-aleksander.lobakin@intel.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-AntiAbuse: This header was added to track abuse,
+ please include it with any abuse report
+X-AntiAbuse: Primary Hostname - gator4166.hostgator.com
+X-AntiAbuse: Original Domain - lists.osuosl.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - embeddedor.com
+X-BWhitelist: no
+X-Source-IP: 201.172.173.147
+X-Source-L: No
+X-Exim-ID: 1rpACR-001bkE-26
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
+X-Source-Sender: ([192.168.15.10]) [201.172.173.147]:44416
+X-Source-Auth: gustavo@embeddedor.com
+X-Email-Count: 4
+X-Org: HG=hgshared;ORG=hostgator;
+X-Source-Cap: Z3V6aWRpbmU7Z3V6aWRpbmU7Z2F0b3I0MTY2Lmhvc3RnYXRvci5jb20=
+X-Local-Domain: yes
+X-CMAE-Envelope: MS4xfGQxFH3P38lNyoGvJQlIP2bSfZBSflnHeeHdKsfpHFD6S/9uc4QCmzIJxsczv1vnqu/PupT9B+Nn0ySBU7ZB1iqeiN6IGPKKhkpHO7Yq3jMSia+4biYm
+ 2yBT3rFxQyEea3b7jKlSIj+KRMf3FDOMXeWw1ojR1joQqqdL1FcX6kkw6uVZhhK6axmbVl8ILYTmq+2pM/csfeVL4kubnJkpIX+jaOZ2/V0vh1pbf0KbuQAC
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt;
+ c=relaxed/relaxed; 
+ d=embeddedor.com; s=default; h=Content-Transfer-Encoding:Content-Type:
+ In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:Message-ID:Sender
+ :Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+ Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
+ List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=rFF3IEv1pQkVliIlfBa5Tw/0KDEQACYRpeKK2HhiYeY=; b=qYEHpAGvILy9Vl9Ea56ZcsQpyp
+ 5d1O12jQAdIGi1w7Xrqw62FzGswWZxmT2PVF7Csv1Oaic02tq+Dw5jWbGdtwDxpW6AMjzrjMDzdIX
+ +6cEfQ/fj0fb5N4QLa1Dr0OF9AjqoO1XtiYRC7tQPvv+ThlFXcX7RYWEJ96NGi9E23LEOQe7HnjCw
+ y7f3FAxvRaKtJjlgZjQ9VGjcqg1Xs2BzrBZITc7HE+Z2Gibi25Tk682p5eSQf999TCh1g74rwisUm
+ 5IQiCmg7p1mPjkPeF5xdwdiVrY4fkoPRbXj2y/mfCPCMglN0D7XXhvQhCdfSISEiJtgHHvPrdZLB+
+ dUX4mstA==;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dmarc=none (p=none dis=none)
+ header.from=embeddedor.com
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=embeddedor.com header.i=@embeddedor.com
+ header.a=rsa-sha256 header.s=default header.b=qYEHpAGv
+Subject: Re: [Intel-wired-lan] [PATCH net-next 1/3] compiler_types: add
+ Endianness-dependent __counted_by_{le, be}
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,87 +134,89 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Wojciech Drewek <wojciech.drewek@intel.com>,
- Paul Greenwalt <paul.greenwalt@intel.com>
+Cc: Kees Cook <keescook@chromium.org>, netdev@vger.kernel.org,
+ "Gustavo A. R. Silva" <gustavoars@kernel.org>, linux-kernel@vger.kernel.org,
+ Nathan Chancellor <nathan@kernel.org>, intel-wired-lan@lists.osuosl.org,
+ linux-hardening@vger.kernel.org, Simon Horman <horms@kernel.org>,
+ nex.sw.ncis.osdt.itp.upstreaming@intel.com
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Update existing E830 device ids and comments to align with new naming 'C'
-for 100G and 'CC' for 200G.
 
-Reviewed-by: Wojciech Drewek <wojciech.drewek@intel.com>
-Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
----
- drivers/net/ethernet/intel/ice/ice_common.c |  8 ++++----
- drivers/net/ethernet/intel/ice/ice_devids.h | 16 ++++++++--------
- drivers/net/ethernet/intel/ice/ice_main.c   |  8 ++++----
- 3 files changed, 16 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index acfae3cd5b6c..199049e08a78 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -160,10 +160,10 @@ static int ice_set_mac_type(struct ice_hw *hw)
- 	case ICE_DEV_ID_E825C_SGMII:
- 		hw->mac_type = ICE_MAC_GENERIC_3K_E825;
- 		break;
--	case ICE_DEV_ID_E830_BACKPLANE:
--	case ICE_DEV_ID_E830_QSFP56:
--	case ICE_DEV_ID_E830_SFP:
--	case ICE_DEV_ID_E830_SFP_DD:
-+	case ICE_DEV_ID_E830CC_BACKPLANE:
-+	case ICE_DEV_ID_E830CC_QSFP56:
-+	case ICE_DEV_ID_E830CC_SFP:
-+	case ICE_DEV_ID_E830CC_SFP_DD:
- 	case ICE_DEV_ID_E830C_BACKPLANE:
- 	case ICE_DEV_ID_E830_XXV_BACKPLANE:
- 	case ICE_DEV_ID_E830C_QSFP:
-diff --git a/drivers/net/ethernet/intel/ice/ice_devids.h b/drivers/net/ethernet/intel/ice/ice_devids.h
-index c37b2b450b02..9a1bc434f167 100644
---- a/drivers/net/ethernet/intel/ice/ice_devids.h
-+++ b/drivers/net/ethernet/intel/ice/ice_devids.h
-@@ -16,14 +16,14 @@
- #define ICE_DEV_ID_E823L_1GBE		0x124F
- /* Intel(R) Ethernet Connection E823-L for QSFP */
- #define ICE_DEV_ID_E823L_QSFP		0x151D
--/* Intel(R) Ethernet Controller E830-C for backplane */
--#define ICE_DEV_ID_E830_BACKPLANE	0x12D1
--/* Intel(R) Ethernet Controller E830-C for QSFP */
--#define ICE_DEV_ID_E830_QSFP56		0x12D2
--/* Intel(R) Ethernet Controller E830-C for SFP */
--#define ICE_DEV_ID_E830_SFP		0x12D3
--/* Intel(R) Ethernet Controller E830-C for SFP-DD */
--#define ICE_DEV_ID_E830_SFP_DD		0x12D4
-+/* Intel(R) Ethernet Controller E830-CC for backplane */
-+#define ICE_DEV_ID_E830CC_BACKPLANE	0x12D1
-+/* Intel(R) Ethernet Controller E830-CC for QSFP */
-+#define ICE_DEV_ID_E830CC_QSFP56	0x12D2
-+/* Intel(R) Ethernet Controller E830-CC for SFP */
-+#define ICE_DEV_ID_E830CC_SFP		0x12D3
-+/* Intel(R) Ethernet Controller E830-CC for SFP-DD */
-+#define ICE_DEV_ID_E83CC0_SFP_DD	0x12D4
- /* Intel(R) Ethernet Controller E830-C for backplane */
- #define ICE_DEV_ID_E830C_BACKPLANE	0x12D5
- /* Intel(R) Ethernet Controller E830-C for QSFP */
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 2f198bf3d8b1..3c76c3ffe7a4 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -5691,10 +5691,10 @@ static const struct pci_device_id ice_pci_tbl[] = {
- 	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E825C_QSFP), },
- 	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E825C_SFP), },
- 	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E825C_SGMII), },
--	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E830_BACKPLANE) },
--	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E830_QSFP56) },
--	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E830_SFP) },
--	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E830_SFP_DD) },
-+	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E830CC_BACKPLANE) },
-+	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E830CC_QSFP56) },
-+	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E830CC_SFP) },
-+	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E830CC_SFP_DD) },
- 	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E830C_BACKPLANE), },
- 	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E830_XXV_BACKPLANE), },
- 	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E830C_QSFP), },
--- 
-2.41.0
+On 3/26/24 10:41, Alexander Lobakin wrote:
+> Some structures contain flexible arrays at the end and the counter for
+> them, but the counter has explicit Endianness and thus __counted_by()
+> can't be used directly.
+> 
+> To increase test coverage for potential problems without breaking
+> anything, introduce __counted_by_{le,be}() defined depending on
+> platform's Endianness to either __counted_by() when applicable or noop
+> otherwise.
+> Maybe it would be a good idea to introduce such attributes on compiler
+> level if possible, but for now let's stop on what we have.
+> 
+> Acked-by: Kees Cook <keescook@chromium.org>
+> Signed-off-by: Alexander Lobakin <aleksander.lobakin@intel.com>
 
+LGTM:
+
+Acked-by: Gustavo A. R. Silva <gustavoars@kernel.org>
+
+Thanks
+--
+Gustavo
+
+> ---
+>   Documentation/conf.py          |  2 ++
+>   scripts/kernel-doc             |  1 +
+>   include/linux/compiler_types.h | 11 +++++++++++
+>   3 files changed, 14 insertions(+)
+> 
+> diff --git a/Documentation/conf.py b/Documentation/conf.py
+> index d148f3e8dd57..0c2205d536b3 100644
+> --- a/Documentation/conf.py
+> +++ b/Documentation/conf.py
+> @@ -75,6 +75,8 @@ if major >= 3:
+>               "__rcu",
+>               "__user",
+>               "__force",
+> +            "__counted_by_le",
+> +            "__counted_by_be",
+>   
+>               # include/linux/compiler_attributes.h:
+>               "__alias",
+> diff --git a/scripts/kernel-doc b/scripts/kernel-doc
+> index 967f1abb0edb..1474e95dbe4f 100755
+> --- a/scripts/kernel-doc
+> +++ b/scripts/kernel-doc
+> @@ -1143,6 +1143,7 @@ sub dump_struct($$) {
+>           $members =~ s/\s*$attribute/ /gi;
+>           $members =~ s/\s*__aligned\s*\([^;]*\)/ /gos;
+>           $members =~ s/\s*__counted_by\s*\([^;]*\)/ /gos;
+> +        $members =~ s/\s*__counted_by_(le|be)\s*\([^;]*\)/ /gos;
+>           $members =~ s/\s*__packed\s*/ /gos;
+>           $members =~ s/\s*CRYPTO_MINALIGN_ATTR/ /gos;
+>           $members =~ s/\s*____cacheline_aligned_in_smp/ /gos;
+> diff --git a/include/linux/compiler_types.h b/include/linux/compiler_types.h
+> index 2abaa3a825a9..a29ba6ef1e27 100644
+> --- a/include/linux/compiler_types.h
+> +++ b/include/linux/compiler_types.h
+> @@ -282,6 +282,17 @@ struct ftrace_likely_data {
+>   #define __no_sanitize_or_inline __always_inline
+>   #endif
+>   
+> +/*
+> + * Apply __counted_by() when the Endianness matches to increase test coverage.
+> + */
+> +#ifdef __LITTLE_ENDIAN
+> +#define __counted_by_le(member)	__counted_by(member)
+> +#define __counted_by_be(member)
+> +#else
+> +#define __counted_by_le(member)
+> +#define __counted_by_be(member)	__counted_by(member)
+> +#endif
+> +
+>   /* Do not trap wrapping arithmetic within an annotated function. */
+>   #ifdef CONFIG_UBSAN_SIGNED_WRAP
+>   # define __signed_wrap __attribute__((no_sanitize("signed-integer-overflow")))
