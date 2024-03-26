@@ -4,67 +4,67 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D27E0C54E67
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 26 Mar 2024 16:31:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 451A1C54E67
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 26 Mar 2024 16:31:30 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 6AE7D4154E;
-	Tue, 26 Mar 2024 16:31:24 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id F020041547;
+	Tue, 26 Mar 2024 16:31:29 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id upiayvedKPSf; Tue, 26 Mar 2024 16:31:23 +0000 (UTC)
+ id nvHJitDs6NgT; Tue, 26 Mar 2024 16:31:28 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 968A64151B
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 2F05741552
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1711470683;
-	bh=V3NdGfgJ3Y3xYL8gc7RVZm+v0C5ywWxSXnYwD50QNf4=;
+	s=default; t=1711470688;
+	bh=1wMb1JFdhSwYN1D9RlKaZcRJM8qZqp7IeFFSKmVemH0=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=VUe/mxyp8RIkKJi78pShGy21PZ74Gy7MJgATn3fCpcx4WgTL+IuQ91h8uka+27OrF
-	 QhLz7Od6utSAC+fBT1iCQoNtojhUnzXWeyb1WjCAeBLL/i0SfB2dp06+Q6/GNO+gSg
-	 xzAoPHUoqxwpZsmqwlRDVFnTKJATnz3JloJylSagbzRuWkssG9+72AWgMvLHAyRKY0
-	 iK4ttGg5Ls88EUJ3bugTEGbeQFKHbU4RA1MX1XbnSR2tMtjyB5340oQZCDquGdD+17
-	 89vXb3xv40bMItJXPrH8sDQCC0SV/jyubYwQQKTNtAwsPUlIegj8ekwKr5Ct2GFTEU
-	 dAZDY0gnGxE/A==
+	b=K45q/+VN8833E2JPc4BPkObrNh6CdMMsAENqguMzF4C3adfuSf8sMTj0KoxNVDPI4
+	 ZJzS6i9N4tJsp017qauCA6tRGjBu/RtE09n/Jot9c5i1fgSLE0H3CdKNmjdty8a98p
+	 StGKcZWxDXgsguTCQYnkYoZ9ZZvmaWBB5x91dt/Nphl5y9AHY/YRjHLRz7AdIizGna
+	 8UkYmn3VFkXgJb3XKLHm+kS8a2je+yLKFpMSZO0Mup8bQmPwq3Sx68jTfBpQS5hNMo
+	 Dwr6LY781UngwhAXUVdev0cx5T8Y1/d0WPO2aRoVWcRtBv2QwU9PRtkqbCqMbfce33
+	 K5tTyiafDJXng==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 968A64151B;
-	Tue, 26 Mar 2024 16:31:23 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 0B31C1BF20D
- for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Mar 2024 16:31:22 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 2F05741552;
+	Tue, 26 Mar 2024 16:31:28 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 265161BF2CB
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Mar 2024 16:31:24 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 369EF4064D
- for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Mar 2024 16:31:20 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 14BB84154E
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Mar 2024 16:31:24 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id FstN3vyasL5b for <intel-wired-lan@lists.osuosl.org>;
- Tue, 26 Mar 2024 16:31:19 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id R-e73py08Lwp for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 26 Mar 2024 16:31:23 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.15;
  helo=mgamail.intel.com; envelope-from=karol.kolacinski@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org D4D664068C
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D4D664068C
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 1984B41511
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 1984B41511
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.15])
- by smtp4.osuosl.org (Postfix) with ESMTPS id D4D664068C
- for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Mar 2024 16:31:18 +0000 (UTC)
-X-CSE-ConnectionGUID: Yxjqh7SBRcqdtDC7evTIqg==
-X-CSE-MsgGUID: l0sfxxikSR+2Y2pl2+tJ1w==
-X-IronPort-AV: E=McAfee;i="6600,9927,11025"; a="6725034"
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 1984B41511
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Mar 2024 16:31:23 +0000 (UTC)
+X-CSE-ConnectionGUID: FMysbVVtS4ObVT9KCIE2fw==
+X-CSE-MsgGUID: JAZXeIUDTr2ofTXmxniEPg==
+X-IronPort-AV: E=McAfee;i="6600,9927,11025"; a="6725044"
 X-IronPort-AV: E=Sophos;i="6.07,156,1708416000"; 
-   d="scan'208";a="6725034"
+   d="scan'208";a="6725044"
 Received: from orviesa005.jf.intel.com ([10.64.159.145])
  by fmvoesa109.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 26 Mar 2024 09:24:13 -0700
+ 26 Mar 2024 09:24:19 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.07,156,1708416000"; d="scan'208";a="20729287"
+X-IronPort-AV: E=Sophos;i="6.07,156,1708416000"; d="scan'208";a="20729293"
 Received: from kkolacin-desk1.igk.intel.com ([10.102.102.152])
- by orviesa005.jf.intel.com with ESMTP; 26 Mar 2024 09:24:11 -0700
+ by orviesa005.jf.intel.com with ESMTP; 26 Mar 2024 09:24:17 -0700
 From: Karol Kolacinski <karol.kolacinski@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Tue, 26 Mar 2024 17:22:27 +0100
-Message-ID: <20240326162339.146053-20-karol.kolacinski@intel.com>
+Date: Tue, 26 Mar 2024 17:22:29 +0100
+Message-ID: <20240326162339.146053-22-karol.kolacinski@intel.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20240326162339.146053-14-karol.kolacinski@intel.com>
 References: <20240326162339.146053-14-karol.kolacinski@intel.com>
@@ -72,25 +72,25 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1711470679; x=1743006679;
+ t=1711470683; x=1743006683;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=yr5zOTqCUcLgqRbdJNu5E7bEj/Raluc6r3n+6K8txno=;
- b=hePvEh+g4PdqJ1620znz6sGzusHyw1hpz/xhFxe+rV9IesICn/DtDloP
- 1bK8Fhuew4rRnDEr/0bBgLKV0w7nR3vURCQ4E+042R0NjIfgnVyJwqGjA
- qaQi23LRu7mjWjjUce9AU23izNwPh9J6a3pyJ98bEeZujVZQslyYQHHCS
- FEU1wLNl+1S4GynOzoGokPHue9OWw6hZd3bwuHyF0xTr4/SchZC8IjrNd
- Qwy4GVMxIwu/5ziYOOR+lriv9Zoy81SgFLUmXpRuOZBSieX5JkUFtVPd9
- BclgWFbuliozFDtLFoU7Uz4GYxffUUDcxfuo8xubqaR+G05iiFVFkxg7O
- w==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ bh=rezNxpxRVkHIThRxy4KO/mLVpc8HQy9QSfOEpWI7KBg=;
+ b=g3/eql0wZTFpe1ZYh36dzQ7j8M7SZFHH4yDecDX1VqOLKMhAoQBwUgGQ
+ JY67qqsgbgJD/h6uWwPijiKE35nIHeg3YtaL0e6sdc2GvQPiUNXi1I2fl
+ 4adAjgo2wyriC8KZQdMBgdWRO8T/2kkYGaSf265J7kRFeLp/uGR4WfSYM
+ A+rvG/azHlOcPJpy6jIYxwdnvDWvZn22S2KJkup3sIlFGW+c1+tUvfdHb
+ +zbnN4I52ilYJjtLdrNFbOBl6YtjniKU4QaWcu6R7mHeTDXSkW3JxHo21
+ xKX1EPbd6p0OA5JSIy0C0wCI5kCRfqTQplVW54vPZyMYz65iCI3CkePej
+ g==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=hePvEh+g
-Subject: [Intel-wired-lan] [PATCH iwl-next 06/12] ice: Introduce
- ice_get_base_incval() helper
+ header.a=rsa-sha256 header.s=Intel header.b=g3/eql0w
+Subject: [Intel-wired-lan] [PATCH iwl-next 08/12] ice: Change CGU regs
+ struct to anonymous
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,65 +106,191 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Cc: netdev@vger.kernel.org,
  Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>,
  Karol Kolacinski <karol.kolacinski@intel.com>, anthony.l.nguyen@intel.com,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Jacob Keller <jacob.e.keller@intel.com>
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+Simplify the code by using anonymous struct in CGU registers instead of
+naming each structure 'field'.
 
-Add a new helper for getting base clock increment value for specific HW.
-
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Suggested-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Reviewed-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
 Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_ptp.c    |  7 +------
- drivers/net/ethernet/intel/ice/ice_ptp_hw.h | 12 ++++++++++++
- 2 files changed, 13 insertions(+), 6 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_cgu_regs.h | 12 ++---
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.c   | 44 +++++++++----------
+ 2 files changed, 28 insertions(+), 28 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
-index 6c74881e302c..b6379875a894 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-@@ -1229,12 +1229,7 @@ static u64 ice_base_incval(struct ice_pf *pf)
- 	struct ice_hw *hw = &pf->hw;
- 	u64 incval;
+diff --git a/drivers/net/ethernet/intel/ice/ice_cgu_regs.h b/drivers/net/ethernet/intel/ice/ice_cgu_regs.h
+index 57abd52386d0..36aeb10eefb7 100644
+--- a/drivers/net/ethernet/intel/ice/ice_cgu_regs.h
++++ b/drivers/net/ethernet/intel/ice/ice_cgu_regs.h
+@@ -23,7 +23,7 @@ union nac_cgu_dword9 {
+ 		u32 clk_synce0_amp : 2;
+ 		u32 one_pps_out_amp : 2;
+ 		u32 misc24 : 12;
+-	} field;
++	};
+ 	u32 val;
+ };
  
--	if (ice_is_e810(hw))
--		incval = ICE_PTP_NOMINAL_INCVAL_E810;
--	else if (ice_e82x_time_ref(hw) < NUM_ICE_TIME_REF_FREQ)
--		incval = ice_e82x_nominal_incval(ice_e82x_time_ref(hw));
--	else
--		incval = UNKNOWN_INCVAL_E82X;
-+	incval = ice_get_base_incval(hw);
+@@ -39,7 +39,7 @@ union nac_cgu_dword19 {
+ 		u32 japll_ndivratio : 4;
+ 		u32 japll_iref_ndivratio : 3;
+ 		u32 misc27 : 1;
+-	} field;
++	};
+ 	u32 val;
+ };
  
- 	dev_dbg(ice_pf_to_dev(pf), "PTP: using base increment value of 0x%016llx\n",
- 		incval);
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
-index 5223e17d2806..d477d334b1d8 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
-@@ -285,6 +285,18 @@ int ice_get_cgu_rclk_pin_info(struct ice_hw *hw, u8 *base_idx, u8 *pin_num);
- int ice_cgu_get_output_pin_state_caps(struct ice_hw *hw, u8 pin_id,
- 				      unsigned long *caps);
+@@ -63,7 +63,7 @@ union nac_cgu_dword22 {
+ 		u32 fdpllclk_sel_div2 : 1;
+ 		u32 time1588clk_sel_div2 : 1;
+ 		u32 misc3 : 1;
+-	} field;
++	};
+ 	u32 val;
+ };
  
-+static inline u64 ice_get_base_incval(struct ice_hw *hw)
-+{
-+	switch (hw->ptp.phy_model) {
-+	case ICE_PHY_E810:
-+		return ICE_PTP_NOMINAL_INCVAL_E810;
-+	case ICE_PHY_E82X:
-+		return ice_e82x_nominal_incval(ice_e82x_time_ref(hw));
-+	default:
-+		return 0;
-+	}
-+}
-+
- #define PFTSYN_SEM_BYTES	4
+@@ -77,7 +77,7 @@ union nac_cgu_dword24 {
+ 		u32 ext_synce_sel : 1;
+ 		u32 ref1588_ck_div : 4;
+ 		u32 time_ref_sel : 1;
+-	} field;
++	};
+ 	u32 val;
+ };
  
- #define ICE_PTP_CLOCK_INDEX_0	0x00
+@@ -92,7 +92,7 @@ union tspll_cntr_bist_settings {
+ 		u32 i_plllock_cnt_6_0 : 7;
+ 		u32 i_plllock_cnt_10_7 : 4;
+ 		u32 reserved200 : 4;
+-	} field;
++	};
+ 	u32 val;
+ };
+ 
+@@ -109,7 +109,7 @@ union tspll_ro_bwm_lf {
+ 		u32 afcdone_cri : 1;
+ 		u32 feedfwrdgain_cal_cri_7_0 : 8;
+ 		u32 m2fbdivmod_cri_7_0 : 8;
+-	} field;
++	};
+ 	u32 val;
+ };
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
+index 1ff3103d03c3..aaa888fe55d3 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
++++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
+@@ -385,14 +385,14 @@ static int ice_cfg_cgu_pll_e82x(struct ice_hw *hw,
+ 
+ 	/* Log the current clock configuration */
+ 	ice_debug(hw, ICE_DBG_PTP, "Current CGU configuration -- %s, clk_src %s, clk_freq %s, PLL %s\n",
+-		  dw24.field.ts_pll_enable ? "enabled" : "disabled",
+-		  ice_clk_src_str(dw24.field.time_ref_sel),
+-		  ice_clk_freq_str(dw9.field.time_ref_freq_sel),
+-		  bwm_lf.field.plllock_true_lock_cri ? "locked" : "unlocked");
++		  dw24.ts_pll_enable ? "enabled" : "disabled",
++		  ice_clk_src_str(dw24.time_ref_sel),
++		  ice_clk_freq_str(dw9.time_ref_freq_sel),
++		  bwm_lf.plllock_true_lock_cri ? "locked" : "unlocked");
+ 
+ 	/* Disable the PLL before changing the clock source or frequency */
+-	if (dw24.field.ts_pll_enable) {
+-		dw24.field.ts_pll_enable = 0;
++	if (dw24.ts_pll_enable) {
++		dw24.ts_pll_enable = 0;
+ 
+ 		err = ice_write_cgu_reg_e82x(hw, NAC_CGU_DWORD24, dw24.val);
+ 		if (err)
+@@ -400,7 +400,7 @@ static int ice_cfg_cgu_pll_e82x(struct ice_hw *hw,
+ 	}
+ 
+ 	/* Set the frequency */
+-	dw9.field.time_ref_freq_sel = clk_freq;
++	dw9.time_ref_freq_sel = clk_freq;
+ 	err = ice_write_cgu_reg_e82x(hw, NAC_CGU_DWORD9, dw9.val);
+ 	if (err)
+ 		return err;
+@@ -410,8 +410,8 @@ static int ice_cfg_cgu_pll_e82x(struct ice_hw *hw,
+ 	if (err)
+ 		return err;
+ 
+-	dw19.field.tspll_fbdiv_intgr = e822_cgu_params[clk_freq].feedback_div;
+-	dw19.field.tspll_ndivratio = 1;
++	dw19.tspll_fbdiv_intgr = e822_cgu_params[clk_freq].feedback_div;
++	dw19.tspll_ndivratio = 1;
+ 
+ 	err = ice_write_cgu_reg_e82x(hw, NAC_CGU_DWORD19, dw19.val);
+ 	if (err)
+@@ -422,8 +422,8 @@ static int ice_cfg_cgu_pll_e82x(struct ice_hw *hw,
+ 	if (err)
+ 		return err;
+ 
+-	dw22.field.time1588clk_div = e822_cgu_params[clk_freq].post_pll_div;
+-	dw22.field.time1588clk_sel_div2 = 0;
++	dw22.time1588clk_div = e822_cgu_params[clk_freq].post_pll_div;
++	dw22.time1588clk_sel_div2 = 0;
+ 
+ 	err = ice_write_cgu_reg_e82x(hw, NAC_CGU_DWORD22, dw22.val);
+ 	if (err)
+@@ -434,16 +434,16 @@ static int ice_cfg_cgu_pll_e82x(struct ice_hw *hw,
+ 	if (err)
+ 		return err;
+ 
+-	dw24.field.ref1588_ck_div = e822_cgu_params[clk_freq].refclk_pre_div;
+-	dw24.field.tspll_fbdiv_frac = e822_cgu_params[clk_freq].frac_n_div;
+-	dw24.field.time_ref_sel = clk_src;
++	dw24.ref1588_ck_div = e822_cgu_params[clk_freq].refclk_pre_div;
++	dw24.tspll_fbdiv_frac = e822_cgu_params[clk_freq].frac_n_div;
++	dw24.time_ref_sel = clk_src;
+ 
+ 	err = ice_write_cgu_reg_e82x(hw, NAC_CGU_DWORD24, dw24.val);
+ 	if (err)
+ 		return err;
+ 
+ 	/* Finally, enable the PLL */
+-	dw24.field.ts_pll_enable = 1;
++	dw24.ts_pll_enable = 1;
+ 
+ 	err = ice_write_cgu_reg_e82x(hw, NAC_CGU_DWORD24, dw24.val);
+ 	if (err)
+@@ -456,17 +456,17 @@ static int ice_cfg_cgu_pll_e82x(struct ice_hw *hw,
+ 	if (err)
+ 		return err;
+ 
+-	if (!bwm_lf.field.plllock_true_lock_cri) {
++	if (!bwm_lf.plllock_true_lock_cri) {
+ 		dev_warn(ice_hw_to_dev(hw), "CGU PLL failed to lock\n");
+ 		return -EBUSY;
+ 	}
+ 
+ 	/* Log the current clock configuration */
+ 	ice_debug(hw, ICE_DBG_PTP, "New CGU configuration -- %s, clk_src %s, clk_freq %s, PLL %s\n",
+-		  dw24.field.ts_pll_enable ? "enabled" : "disabled",
+-		  ice_clk_src_str(dw24.field.time_ref_sel),
+-		  ice_clk_freq_str(dw9.field.time_ref_freq_sel),
+-		  bwm_lf.field.plllock_true_lock_cri ? "locked" : "unlocked");
++		  dw24.ts_pll_enable ? "enabled" : "disabled",
++		  ice_clk_src_str(dw24.time_ref_sel),
++		  ice_clk_freq_str(dw9.time_ref_freq_sel),
++		  bwm_lf.plllock_true_lock_cri ? "locked" : "unlocked");
+ 
+ 	return 0;
+ }
+@@ -489,8 +489,8 @@ static int ice_init_cgu_e82x(struct ice_hw *hw)
+ 		return err;
+ 
+ 	/* Disable sticky lock detection so lock err reported is accurate */
+-	cntr_bist.field.i_plllock_sel_0 = 0;
+-	cntr_bist.field.i_plllock_sel_1 = 0;
++	cntr_bist.i_plllock_sel_0 = 0;
++	cntr_bist.i_plllock_sel_1 = 0;
+ 
+ 	err = ice_write_cgu_reg_e82x(hw, TSPLL_CNTR_BIST_SETTINGS,
+ 				     cntr_bist.val);
 -- 
 2.43.0
 
