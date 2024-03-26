@@ -4,95 +4,194 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 110D7CD11DD
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 26 Mar 2024 14:40:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 62F9AC54E67
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 26 Mar 2024 14:55:44 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id C49D340841;
-	Tue, 26 Mar 2024 14:40:40 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 1DB474064D;
+	Tue, 26 Mar 2024 14:55:44 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id pvs_-5wwXF-X; Tue, 26 Mar 2024 14:40:40 +0000 (UTC)
+ id 5l6rPO5WWI1k; Tue, 26 Mar 2024 14:55:43 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C5A604080F
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D11B440589
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1711464040;
-	bh=LcUjuUZcMtKLNC3jdwiYywI1vJoFmdq1GbFODxD3OSo=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1711464942;
+	bh=AFiGdtVpYvGkYQpcQdwjuZS8tPo6pz+PizLTBxbITEc=;
+	h=From:To:Date:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=6OFJsSoB7yaO+ZolDamQcYa3GZAMfQSIfWhYb3sdZNf5I+9pPuAuR+T6c0gxRKU8Q
-	 8JsVNqYrVE8P09OGP3AaOrpEhaqypWbF0BaetILuKyMm145Bo0eluZhWveQ/B4zRdn
-	 XmMuUC+rZ+69mBZKYrAWSp5Mxi6Rxv3LQ7u2SSQskbg0SVbmMYFnYokQt9X5NZTm5c
-	 l6OVY8kgZWlfyfqr3V6f+cG/Uts3WMoB5lUoR6x3ifz717+HRPlhfVlWBstsuSBIrA
-	 yf1+IIOEVowyqbzLYBB0uK71wzN8mbzRvBxR2K2RA0vIPcfumn4Owa/HPkMdR/gUpt
-	 0jIF/kFgTon9g==
+	b=tq6Bhmcd3bw7Tu3DFQeSPAzc0NrAA0Ubz78/JAGRRcKSDe7UpcYDoR9b0I/D2p0VR
+	 1bBiA2/71ck2GkFPjJihHidt0gO3YXtrdaxxhiQxVhQR1SJbO8vjVXRO82AlJ6EVFa
+	 ZN71NxSEPeJfRPG9M/IG+56VqDCklVXfKWJoDZ74m4KyBpRgcgyvbNoOeCmCHSW00U
+	 Yw8N9XWOCbCDHLGe6/NfEzxWNAcGDX0VQ+6K1aAfXhHZP/EyF+tlSDjywlQ8Ckrs+L
+	 goEXMkDOydD9rC6QascMrRC6KuyF/ycKA+NS7I0AfJaEcw00BhMBFJVYRMoC/fTgRw
+	 i0EboN51T28vw==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id C5A604080F;
-	Tue, 26 Mar 2024 14:40:39 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 88E071BF4E2
- for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Mar 2024 14:40:38 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id D11B440589;
+	Tue, 26 Mar 2024 14:55:42 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 679D71BF4E2
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Mar 2024 14:55:41 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 75DE0414EF
- for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Mar 2024 14:40:38 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 51E5E40589
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Mar 2024 14:55:41 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id rIUlEMRJHyK2 for <intel-wired-lan@lists.osuosl.org>;
- Tue, 26 Mar 2024 14:40:37 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.12;
- helo=mgamail.intel.com; envelope-from=mateusz.polchlopek@intel.com;
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id CuUIKtskNT1V for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 26 Mar 2024 14:55:40 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.11;
+ helo=mgamail.intel.com; envelope-from=yoong.siang.song@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 4EFA5414DE
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 4EFA5414DE
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.12])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 4EFA5414DE
- for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Mar 2024 14:40:37 +0000 (UTC)
-X-CSE-ConnectionGUID: Nb+bSO6vSjiZExbZP98ECw==
-X-CSE-MsgGUID: iIQoiG5mSk6/idH0LtQ87g==
-X-IronPort-AV: E=McAfee;i="6600,9927,11025"; a="10296887"
-X-IronPort-AV: E=Sophos;i="6.07,156,1708416000"; d="scan'208";a="10296887"
-Received: from orviesa006.jf.intel.com ([10.64.159.146])
- by fmvoesa106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 26 Mar 2024 07:40:27 -0700
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org A195640562
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org A195640562
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.11])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id A195640562
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Mar 2024 14:55:38 +0000 (UTC)
+X-CSE-ConnectionGUID: 3yVz4LF4TqGHEGY0LATEwg==
+X-CSE-MsgGUID: bvk4O7pXSeqzW/ULO+rQ2A==
+X-IronPort-AV: E=McAfee;i="6600,9927,11025"; a="17064665"
+X-IronPort-AV: E=Sophos;i="6.07,156,1708416000"; d="scan'208";a="17064665"
+Received: from orviesa005.jf.intel.com ([10.64.159.145])
+ by orvoesa103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 26 Mar 2024 07:55:37 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.07,156,1708416000"; d="scan'208";a="16412479"
-Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by orviesa006.jf.intel.com with ESMTP; 26 Mar 2024 07:40:23 -0700
-Received: from fedora.igk.intel.com (Metan_eth.igk.intel.com [10.123.220.124])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id C4C322819E;
- Tue, 26 Mar 2024 14:40:21 +0000 (GMT)
-From: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Date: Tue, 26 Mar 2024 10:30:42 -0400
-Message-Id: <20240326143042.9240-7-mateusz.polchlopek@intel.com>
-X-Mailer: git-send-email 2.38.1
-In-Reply-To: <20240326143042.9240-1-mateusz.polchlopek@intel.com>
-References: <20240326143042.9240-1-mateusz.polchlopek@intel.com>
+X-IronPort-AV: E=Sophos;i="6.07,156,1708416000"; d="scan'208";a="20705240"
+Received: from orsmsx602.amr.corp.intel.com ([10.22.229.15])
+ by orviesa005.jf.intel.com with ESMTP/TLS/AES256-GCM-SHA384;
+ 26 Mar 2024 07:55:38 -0700
+Received: from orsmsx603.amr.corp.intel.com (10.22.229.16) by
+ ORSMSX602.amr.corp.intel.com (10.22.229.15) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.35; Tue, 26 Mar 2024 07:55:37 -0700
+Received: from orsedg603.ED.cps.intel.com (10.7.248.4) by
+ orsmsx603.amr.corp.intel.com (10.22.229.16) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.35 via Frontend Transport; Tue, 26 Mar 2024 07:55:37 -0700
+Received: from NAM11-BN8-obe.outbound.protection.outlook.com (104.47.58.169)
+ by edgegateway.intel.com (134.134.137.100) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.1.2507.35; Tue, 26 Mar 2024 07:55:36 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=BOKaAMvS/XuYUhAhzzX7SNF9y8xpSTuxdZBkA1sWBto4RPHdoXkcHZ1YGwZctloR55QzC2we6AZwZkCM1bFVLaUHxJNpGRSapZZoHG/ypw5a972CS6qpEYfHIVhiROaDflwVnVddEKFlxoUR77Rxe7w4ItCKIpLAFAR8A0piZMgj0cyzsk/T3v4rwLDRAID9fg4+NLzH7zSAdv0ZqInB+op5h4OhKUCevUJXwjZo/VNUlBn2kUHScI3SD+kigl6njCPohshukbbXBI9OwnIG8YlwB8iKefNqVUNhMMsi0NBfEYWnqH+RFvk37rNX1hOpqGZKhYihqEUkKCVHvTitXA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=AFiGdtVpYvGkYQpcQdwjuZS8tPo6pz+PizLTBxbITEc=;
+ b=fYaXBmYAyFI01mpxbHA9b66s5+o5nto5bfilGuQE2L8KzzDxsBZNgOpcb0CqomEyUBKCC/mPgqWaLOpkL77aHnWmvf4xHWhnid9Pk6jvOW4jIeNQn9mVZ6xsOeUsz2GWXkfmpM1alExp7V39ajhCjHiT6eTJCcvOw0+9/S9At9tS/MmJRNuqhZDd75fuk6Io5Q8e8xkz1MMIhcZSyVn9sku/x8SWRcXc/HoaPf1iDjPC3wceHjM8HlesZR8qJUWTFF8U9wTfilm6i9424NSJWI/D4MKOrJTQ8Ln/kJdtqQVMrn1dXyC9Pxyu5v+N5kXwVommekaBIWiAarPD/nOGuw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Received: from PH0PR11MB5830.namprd11.prod.outlook.com (2603:10b6:510:129::20)
+ by SA1PR11MB8475.namprd11.prod.outlook.com (2603:10b6:806:3a3::21)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7409.33; Tue, 26 Mar
+ 2024 14:55:33 +0000
+Received: from PH0PR11MB5830.namprd11.prod.outlook.com
+ ([fe80::9445:5793:b0b7:711a]) by PH0PR11MB5830.namprd11.prod.outlook.com
+ ([fe80::9445:5793:b0b7:711a%7]) with mapi id 15.20.7409.031; Tue, 26 Mar 2024
+ 14:55:33 +0000
+From: "Song, Yoong Siang" <yoong.siang.song@intel.com>
+To: Kurt Kanzenbach <kurt@linutronix.de>, "Bezdeka, Florian"
+ <florian.bezdeka@siemens.com>, "Brandeburg, Jesse"
+ <jesse.brandeburg@intel.com>, "Nguyen, Anthony L"
+ <anthony.l.nguyen@intel.com>, "David S . Miller" <davem@davemloft.net>, "Eric
+ Dumazet" <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni
+ <pabeni@redhat.com>, Richard Cochran <richardcochran@gmail.com>, "Alexei
+ Starovoitov" <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, Jesper
+ Dangaard Brouer <hawk@kernel.org>, John Fastabend <john.fastabend@gmail.com>, 
+ Stanislav Fomichev <sdf@google.com>, "Gomes, Vinicius"
+ <vinicius.gomes@intel.com>, "Fijalkowski, Maciej"
+ <maciej.fijalkowski@intel.com>
+Thread-Topic: [xdp-hints] Re: [PATCH iwl-next,v4 1/1] igc: Add Tx hardware
+ timestamp request for AF_XDP zero-copy packet
+Thread-Index: AQHaf1vDcRX66gQlB0+gJtjiHFgRbLFJ/peAgAAUiKA=
+Date: Tue, 26 Mar 2024 14:55:33 +0000
+Message-ID: <PH0PR11MB583028B2023E1E809B45B51DD8352@PH0PR11MB5830.namprd11.prod.outlook.com>
+References: <20240325020928.1987947-1-yoong.siang.song@intel.com>
+ <d2623ac0f1cb07a23976416cdcf9eee1986747b0.camel@siemens.com>
+ <87h6gtb0p0.fsf@kurt.kurt.home>
+In-Reply-To: <87h6gtb0p0.fsf@kurt.kurt.home>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: PH0PR11MB5830:EE_|SA1PR11MB8475:EE_
+x-ld-processed: 46c98d88-e344-4ed4-8496-4ed7712e255d,ExtAddr
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: mFVgk/6+3g4sIDRq/Eh0X5zPto+0ldenQi3e8iawaUyf/AVw0oOeDmlS0kXIuVVvBWMWM/W+b0QZfFF23IIHgK7MbslP6NU6oIXAAsUNDz74P6AH9q6LJCN/aannqfQn0WHTEB4Rc2qoBIUjSpNIlv1PbHIS5Su9EOdK1n/BCor9ZRkLiJ2CSiX0x6Rsbw26pnPB4qkzmDruH/6ZQZIVd3SDZLWEfWkD39PFDKMzCXDh9ME0aS6ENBwbROFh1H/4BMJ7rEJlp/SFOyo9O7Lfuooi58Dfw8qg/+2fJVnr25tjc9cDq+w6NWyUhh6hOz9FOgTI6dSK2OyWtiQDBcz6bvDyahClCrkpUGluBFO25XtV9kpiMK6DFYFC1fuxrrZ9f1iDeOVOYy9kR64MzfHoD/o16T69z9LT4COD7SU+f0Sp1T+N9DK6oQYrzTMidfXVwybBBChGnNonGhxw8P+nNSSfmGHmhJdPFhrRzdjdXQ49nLtAQDeeSLrWrc+GKXkbW4O7BOK0zjAxzazlX9DRUK60WjVGgZpcioYgtS4rQatuzcIk3yYsRlcTHO/CD0ylO34YiYoBScyEc1qEEg0AZzXqGF2HmmHn2gYWFUoZjBNw8M0+e+h6hjcrQDBxD4o/lXLVgwwvg1ZRPX9nlOfBlg==
+x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:PH0PR11MB5830.namprd11.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(13230031)(376005)(366007)(1800799015)(7416005)(921011); DIR:OUT; SFP:1102;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0: =?us-ascii?Q?og/6LcLMwYMQGxTSXlch13FqdWAhQD7qFlu5OgdW8pyfz32UV6EprUZ3a6IR?=
+ =?us-ascii?Q?FM8uqCyCj9F4Kbmr6uYr40S6ViLJIwt8GSpkHwInUhP/WKFkbE1c/CRqTdc6?=
+ =?us-ascii?Q?Fnlx+vIMb+dWS2CXd+k4zOh6DHGbopzutSf7qoJOv+bpcpT0ek55C007bV+n?=
+ =?us-ascii?Q?blrPwD5QCAwafIhu9OR7cvMVfLTGJVGBk4CxKMdJc0FMZG2UwECGvkItXF5k?=
+ =?us-ascii?Q?UvI6BbZbu5dhBQADUjjorYzEpFZEmipEodivSc9pe8x8OhZQYKreSL6pMB7D?=
+ =?us-ascii?Q?6DEfh6Gzd74FgUUNuVXqHhKCeCHepn3eMQQGHHFUBw5cUGc9fv0xJdBJd2lU?=
+ =?us-ascii?Q?iVkw4axHXXKBDplm+D9pRs/NevfohkqUPlWIFh4KcdJtGrBV0zrjfEXhWl0j?=
+ =?us-ascii?Q?+zxH7C27t+92YbgJgBORFLiZ2rma8xXmeU5l++1gMvhJDJtQip4UVTAVUPGa?=
+ =?us-ascii?Q?n/rNk5CV7em3/PfgySvfwfbOm0GU68DJN3L4q2nNrCse9D+soU0nJ4upc4oE?=
+ =?us-ascii?Q?9GmNrVd2etLwcE7gBpzVbeJfhuoh4y4JToYtqoPR1ZNX7uKnKWp1Jezy/fX3?=
+ =?us-ascii?Q?TgALBWfAeDGFrn+Ik23eordwjOHhUnUFBOcod1qgb5OqEfpEiBIHWqMoB9OO?=
+ =?us-ascii?Q?9N7WFarsl/RbPK/SV0M4UJYKBVKiyzss1V0X90XSqVyOuLYn8ACoGoL8twcn?=
+ =?us-ascii?Q?LjxqMiQsQRdIO7xemTb92zI1AI4glj6agidsxpz4d1VaoPcJ5FN5JivtxE2C?=
+ =?us-ascii?Q?GOluqh+iAzjMrGMhQZ6Z1hwhw9ptT1y+iNjwzNIs6HUPLUVVUVhpfjexfDHG?=
+ =?us-ascii?Q?C2APDQf6AJ8jIwSL/3vKemEbrrBxTxSzixucpQ08iZ45mC2BbXpM+nt+Q/7T?=
+ =?us-ascii?Q?+I8jIh7FItR3HFhiDW06Ahpp7oZ8yoxkOSjTrnUcZYQVO2nX7tzFpwaOmhaA?=
+ =?us-ascii?Q?94M5J0I140HFqcRfDLwJeL6dTa4zWHN8X0QafYPdznJG4zJcYu4jqAr2l7O0?=
+ =?us-ascii?Q?pQp16BuTWMhwfuoAqKVYdKIY/a22PFxaZOKUzvBFhzKkrd5zJCsCeie96hkK?=
+ =?us-ascii?Q?avTa0vU5vTcM3WqzMIEKpNgSOo1QIc4XFTA96rTO6ab8kxyRe7qkO+XXyWnq?=
+ =?us-ascii?Q?5Bx7M9hgGMQjiGVYh07yfWDuJmGLpSkoQFrqX9c9kyfEnXfRbHe0OYgeqqXA?=
+ =?us-ascii?Q?zErUktcPFnCWAhQAG34FaAHelMeX1KiapTKN1aMqwy2fTgDENepa7KdwL9IL?=
+ =?us-ascii?Q?O3uBF49D9+lGDndJXH1PeGg7NCeAWL0Q3yMY9N5jF2PajxVzlaPs0zwApQ/j?=
+ =?us-ascii?Q?JLZaGfp+CrYade3PcuSTvF97Sba8cM/aKP0LL3xF2PPpO0Fs/3UeAE0Wyr7m?=
+ =?us-ascii?Q?YFxI7KmcMP0aYTIF843idE/YPhcnc4JLAuOyjxRl5HpIrABrijoRUySdJEnW?=
+ =?us-ascii?Q?u0Shlie8Vpg2sLroZ+A/iarwEKaZm2Ni+Zf43jr8LauFlVhFYP4jgkh4SYzC?=
+ =?us-ascii?Q?gVXQ5F18kErGbhCoiyo1zjJxJLZo7aWUkIgw3j9PI7gZLR/furKi1glmqmAx?=
+ =?us-ascii?Q?DlYeMU6kQjmCwBgMnAwB5kaoeACj38jkpcG6le5uta3WeO2jDZJTq99vybrn?=
+ =?us-ascii?Q?+g=3D=3D?=
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: PH0PR11MB5830.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: a1c5213e-82e4-4a90-856e-08dc4da4c9d3
+X-MS-Exchange-CrossTenant-originalarrivaltime: 26 Mar 2024 14:55:33.5628 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: UkAxq41FP9fx4KtprjHbZYgUcSmqFkfZ1ZVRPlksHAcHzapw9GJ9P5xlZwJklv/OBSKVnEo9ioFrcR0iDwYI3WreRT8XSR3bcJjQqO2RfAQ=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA1PR11MB8475
+X-OriginatorOrg: intel.com
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1711464037; x=1743000037;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=ayp3w+xzqn0hd9fHMdrwa/nbYUX3VcDmHtiOLt5hPWs=;
- b=GU40hR2ffG+diaJ633t5eJ1BXilgnjHN3YrXj1LXpWjvIcvnkC6v//Nl
- Zg0MVjekWfxeuNoteSx/FbDlgTpqazm7BJXB7YT2ASWBkUxD+GRIiBjM8
- 3nvZ0y7no0s6HPW7l2hQ1aiu2NSM6JI5GGros2Y6Os3QQf7XWjK2yLpEv
- scESdEdUOWHyo3gOr6QeS2edLc1Av/SnYnrObNqaeFmG3uh+sYAGw2Cfc
- y7O4qB1qMgMrDvvxslcmumXUSpo3dZvQ1vZTBzN6pTwunAawJeNkitXR1
- Fu9KGRSonIsaaB4uYvSTDxi4JKcqNTzXNsGNqmWIwehBZ4WLVcOkTz8va
- A==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ t=1711464939; x=1743000939;
+ h=from:to:cc:subject:date:message-id:references:
+ in-reply-to:content-transfer-encoding:mime-version;
+ bh=AFiGdtVpYvGkYQpcQdwjuZS8tPo6pz+PizLTBxbITEc=;
+ b=gC/ApS5asi+bsnuQCJBL5Xmrjinam5hjCas8A2u9icJ2Et+h+byz1j5f
+ fgAEoLy1bdOYi+GNNkpDmkbh/d6w6/mvczH+1mgpwrWQsDQG4cqBVRZyr
+ B1ur4bQVnNqoQemnoL4Tks16W8XBPSa0rFnBa7do8+yuHHkcfXapnBrWQ
+ ap472ypnQ5a8mYfPgZABs7TiV6vKgEUr0zKX6UPjiKca/59IlHOKTkxL6
+ zLv0U/lAU5GubgDDiiWPod3HUMOgMPjo8RJ8P6Z/pqjIJEmn/v29voSGA
+ w0J2flKER/oUFsd+ziAIF5+ax1K29QD7JpOMe2yQu5vEU2ePZ1614lHiz
+ Q==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=GU40hR2f
-Subject: [Intel-wired-lan] [PATCH net-next v8 6/6] ice: Document
- tx_scheduling_layers parameter
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=gC/ApS5a
+Subject: Re: [Intel-wired-lan] [xdp-hints] Re: [PATCH iwl-next,
+ v4 1/1] igc: Add Tx hardware timestamp request for AF_XDP zero-copy
+ packet
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,87 +204,85 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: andrew@lunn.ch, jiri@resnulli.us, michal.wilczynski@intel.com,
- Mateusz Polchlopek <mateusz.polchlopek@intel.com>, netdev@vger.kernel.org,
- lukasz.czapnik@intel.com, victor.raj@intel.com, Jiri Pirko <jiri@nvidia.com>,
- anthony.l.nguyen@intel.com, horms@kernel.org, przemyslaw.kitszel@intel.com,
- kuba@kernel.org
+Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "bpf@vger.kernel.org" <bpf@vger.kernel.org>,
+ "xdp-hints@xdp-project.net" <xdp-hints@xdp-project.net>,
+ "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Michal Wilczynski <michal.wilczynski@intel.com>
+On Tuesday, March 26, 2024 9:08 PM, Kurt Kanzenbach <kurt@linutronix.de> wr=
+ote:
+>Hi Florian,
+>
+>On Tue Mar 26 2024, Florian Bezdeka wrote:
+>> On Mon, 2024-03-25 at 10:09 +0800, Song Yoong Siang wrote:
+>>> This patch adds support to per-packet Tx hardware timestamp request to
+>>> AF_XDP zero-copy packet via XDP Tx metadata framework. Please note that
+>>> user needs to enable Tx HW timestamp capability via igc_ioctl() with
+>>> SIOCSHWTSTAMP cmd before sending xsk Tx hardware timestamp request.
+>>>
+>>> Same as implementation in RX timestamp XDP hints kfunc metadata, Timer =
+0
+>>> (adjustable clock) is used in xsk Tx hardware timestamp. i225/i226 have
+>>> four sets of timestamping registers. *skb and *xsk_tx_buffer pointers
+>>> are used to indicate whether the timestamping register is already occup=
+ied.
+>>
+>> Let me make sure that I fully understand that: In my own words:
+>>
+>> With that applied I'm able to get the point in time from the device
+>> when a specific frame made it to the wire. I have to enable that
+>> functionality using the mentioned ioctl() call first, and then check
+>> the meta area (located in the umem right before the frame payload)
+>> while consuming the completion queue/ring. Correct?
 
-New driver specific parameter 'tx_scheduling_layers' was introduced.
-Describe parameter in the documentation.
+Hi Florian,
 
-Signed-off-by: Michal Wilczynski <michal.wilczynski@intel.com>
-Acked-by: Jakub Kicinski <kuba@kernel.org>
-Reviewed-by: Jiri Pirko <jiri@nvidia.com>
-Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Co-developed-by: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
-Signed-off-by: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
----
- Documentation/networking/devlink/ice.rst | 47 ++++++++++++++++++++++++
- 1 file changed, 47 insertions(+)
+Yes, you are right. But before you pass the frame to driver, make sure
+you request Tx metadata hardware timestamp feature by setting
+XDP_TXMD_FLAGS_TIMESTAMP flag.
+You can refer to tools/testing/selftests/bpf/xdp_hw_metadata.c
+on how to do it.=20
 
-diff --git a/Documentation/networking/devlink/ice.rst b/Documentation/networking/devlink/ice.rst
-index 7f30ebd5debb..830c04354222 100644
---- a/Documentation/networking/devlink/ice.rst
-+++ b/Documentation/networking/devlink/ice.rst
-@@ -21,6 +21,53 @@ Parameters
-    * - ``enable_iwarp``
-      - runtime
-      - mutually exclusive with ``enable_roce``
-+   * - ``tx_scheduling_layers``
-+     - permanent
-+     - The ice hardware uses hierarchical scheduling for Tx with a fixed
-+       number of layers in the scheduling tree. Each of them are decision
-+       points. Root node represents a port, while all the leaves represent
-+       the queues. This way of configuring the Tx scheduler allows features
-+       like DCB or devlink-rate (documented below) to configure how much
-+       bandwidth is given to any given queue or group of queues, enabling
-+       fine-grained control because scheduling parameters can be configured
-+       at any given layer of the tree.
-+
-+       The default 9-layer tree topology was deemed best for most workloads,
-+       as it gives an optimal ratio of performance to configurability. However,
-+       for some specific cases, this 9-layer topology might not be desired.
-+       One example would be sending traffic to queues that are not a multiple
-+       of 8. Because the maximum radix is limited to 8 in 9-layer topology,
-+       the 9th queue has a different parent than the rest, and it's given
-+       more bandwidth credits. This causes a problem when the system is
-+       sending traffic to 9 queues:
-+
-+       | tx_queue_0_packets: 24163396
-+       | tx_queue_1_packets: 24164623
-+       | tx_queue_2_packets: 24163188
-+       | tx_queue_3_packets: 24163701
-+       | tx_queue_4_packets: 24163683
-+       | tx_queue_5_packets: 24164668
-+       | tx_queue_6_packets: 23327200
-+       | tx_queue_7_packets: 24163853
-+       | tx_queue_8_packets: 91101417 < Too much traffic is sent from 9th
-+
-+       To address this need, you can switch to a 5-layer topology, which
-+       changes the maximum topology radix to 512. With this enhancement,
-+       the performance characteristic is equal as all queues can be assigned
-+       to the same parent in the tree. The obvious drawback of this solution
-+       is a lower configuration depth of the tree.
-+
-+       Use the ``tx_scheduling_layer`` parameter with the devlink command
-+       to change the transmit scheduler topology. To use 5-layer topology,
-+       use a value of 5. For example:
-+       $ devlink dev param set pci/0000:16:00.0 name tx_scheduling_layers
-+       value 5 cmode permanent
-+       Use a value of 9 to set it back to the default value.
-+
-+       You must do PCI slot powercycle for the selected topology to take effect.
-+
-+       To verify that value has been set:
-+       $ devlink dev param show pci/0000:16:00.0 name tx_scheduling_layers
- 
- Info versions
- =============
--- 
-2.38.1
+>>
+>> If so, we now have a feedback channel for meta information for/from TX.
+>> Are there any plans - or would it be possible - to support Earliest
+>> TxTime First (NET_SCHED_ETF) QDisc based on that channel? In the past
+>> we had the problem that we we're missing a feedback channel to
+>> communicate back invalid lunch times.
+>
+>Just asking: How would that work? AFAIK XDP bypasses the Qdisc
+>layer. Currently invalid Launch Times are accounted in the ETF Qdisc
+>itself. Does that mean every driver has to take care of it?
+>
+>Thanks,
+>Kurt
 
+Florian & Kurt,
+
+Yes, me and Stanislav are trying to add Earliest TxTime First / Launch Time=
+ to the framework.
+Please refer to [1] for the patchset. The metadata framework will just pass=
+ the
+Launch time value to driver, and driver need to handle the rest.
+In the patchset, I am enabling it on stmmac driver only, but we need more d=
+rivers
+to check whether the design is feasible for different drivers, cause each d=
+river is
+having their own limitation on launch time. Therefore, after this tx hwts p=
+atch accepted,
+I will try to enable launch time on igc driver, and submit new version.=20
+
+Kurt is right that current metadata framework is lacking a way to feedback =
+whether
+the launch time is invalid or not. Maybe we can try to enable launch time w=
+ithout feedback,
+then discuss about the status report design.
+
+[1] https://patchwork.kernel.org/project/netdevbpf/cover/20231203165129.174=
+0512-1-yoong.siang.song@intel.com/
+
+Thanks & Regards
+Siang
