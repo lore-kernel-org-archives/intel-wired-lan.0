@@ -4,70 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E3769CD1283
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 26 Mar 2024 12:00:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BD2C8C6FD1F
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 26 Mar 2024 12:00:47 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id A58A560AD4;
-	Tue, 26 Mar 2024 12:00:44 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 7EB8460B06;
+	Tue, 26 Mar 2024 12:00:47 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id O3sZUtnpBjWo; Tue, 26 Mar 2024 12:00:44 +0000 (UTC)
+ id t04noMuCEey1; Tue, 26 Mar 2024 12:00:45 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org BA74C60AF2
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8A98D60AEB
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1711454443;
-	bh=5a4wTdvsJICfDiUSYEFWVnIdBEB1AZfOo2oe8/tKze8=;
+	s=default; t=1711454445;
+	bh=p8NZ9dwNKKbEe+uxObFT6XHsfQQgxwAEi+SYr/gQ8mA=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=CcqyR6zRYjB2neaImsAtyDe91kZuCATe/5/8068+o76sqlLg/6E+UnWumS+UW0QcG
-	 UOISZBZy5ZGc9YU/oLsURSe4K1rO+zNLq0W0QVKuPl6BRRmpc+QEnO2o4JBxeGWoAc
-	 GNr0r4cRwlSv8AmxmDYBL07SUi+NgECg7OsS7W8X4lzoCCdI7Z/dP6Le0EeZ60X9St
-	 vlwQRaCRjHxAKUmlx7gNZDa9Gv69/qENOH7yRvvzPesnBEJ3IqlaR9FyP2W40uzf5T
-	 zo9NdDyqNXcj66jkgwIkyqpvXS5tEB0KZs3xRHdFYPZLnci/sPUfPeW5AlK6b7D1wQ
-	 +4ra8yAk84dfQ==
+	b=J088/SL6mJ+QfeaesgzeXUZ6jPaEWvuTneWMPw4fMHdLtoqIzjEKV37pybpUujk1R
+	 ct8UiYQnntAFHcOHZHxjXWCElU06wxcmDaUwUb+Yrb3k+cTRKM3SNOn3SnnI23l88h
+	 nPuSZR6YXUYUTCQR9uLSFizMk9JBr8YGY1VPg37oBjcBtVz5hPsttFViZl7+iQ6jxb
+	 kxNrCr6IsMIHZzsze2b7rpsT230QrKxkhy0dNnF8/EoOFyiwKHTM3JqQrDfhbOHoEJ
+	 L2FH8K3T2KZXlZ4yJ+FioK4F9bIUrjUUCb7Zs8wjY3LlCcVuhKxf0zZjXyxAJQNrUj
+	 s2XfxgTtJqHhg==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id BA74C60AF2;
-	Tue, 26 Mar 2024 12:00:43 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id DB1AB1BF95F
- for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Mar 2024 12:00:40 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 8A98D60AEB;
+	Tue, 26 Mar 2024 12:00:45 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 560FF1BF45A
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Mar 2024 12:00:41 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 6D096407A6
- for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Mar 2024 12:00:39 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id D1C454010C
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Mar 2024 12:00:40 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id MFElgk5iZMIv for <intel-wired-lan@lists.osuosl.org>;
- Tue, 26 Mar 2024 12:00:38 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 98N1FmAzqPUU for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 26 Mar 2024 12:00:39 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.20;
  helo=mgamail.intel.com; envelope-from=mateusz.polchlopek@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 9F5BF407F5
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9F5BF407F5
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org B65F4414C3
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B65F4414C3
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.20])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 9F5BF407F5
- for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Mar 2024 12:00:37 +0000 (UTC)
-X-CSE-ConnectionGUID: ZqNXqxTITb6nI9sbob/mLw==
-X-CSE-MsgGUID: RzCFhAffQwiDrc3A1kxZgg==
-X-IronPort-AV: E=McAfee;i="6600,9927,11024"; a="6394792"
+ by smtp2.osuosl.org (Postfix) with ESMTPS id B65F4414C3
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Mar 2024 12:00:39 +0000 (UTC)
+X-CSE-ConnectionGUID: ziK0+ZwcSxKAGvbzhyS1Xg==
+X-CSE-MsgGUID: 64nuQYk/QVKGp57tE2RiTg==
+X-IronPort-AV: E=McAfee;i="6600,9927,11024"; a="6394840"
 X-IronPort-AV: E=Sophos;i="6.07,156,1708416000"; 
-   d="scan'208";a="6394792"
+   d="scan'208";a="6394840"
 Received: from fmviesa008.fm.intel.com ([10.60.135.148])
  by orvoesa112.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 26 Mar 2024 05:00:37 -0700
+ 26 Mar 2024 05:00:39 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.07,156,1708416000"; d="scan'208";a="16019522"
+X-IronPort-AV: E=Sophos;i="6.07,156,1708416000"; d="scan'208";a="16019578"
 Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by fmviesa008.fm.intel.com with ESMTP; 26 Mar 2024 05:00:28 -0700
+ by fmviesa008.fm.intel.com with ESMTP; 26 Mar 2024 05:00:36 -0700
 Received: from fedora.igk.intel.com (Metan_eth.igk.intel.com [10.123.220.124])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id 0358828195;
- Tue, 26 Mar 2024 12:00:27 +0000 (GMT)
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id A33A628198;
+ Tue, 26 Mar 2024 12:00:34 +0000 (GMT)
 From: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Tue, 26 Mar 2024 07:51:08 -0400
-Message-Id: <20240326115116.10040-4-mateusz.polchlopek@intel.com>
+Date: Tue, 26 Mar 2024 07:51:11 -0400
+Message-Id: <20240326115116.10040-7-mateusz.polchlopek@intel.com>
 X-Mailer: git-send-email 2.38.1
 In-Reply-To: <20240326115116.10040-1-mateusz.polchlopek@intel.com>
 References: <20240326115116.10040-1-mateusz.polchlopek@intel.com>
@@ -75,25 +75,25 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1711454438; x=1742990438;
+ t=1711454440; x=1742990440;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=8eBltkLPrUD5FeW/5LPAKmS+1EwfhuKIBx90nJafOv4=;
- b=Jab2U2yt0yaTsgS0nTAVBieK2Q/4rUTJxdsDcfExr71FebXQOgC6RPNH
- UELHK8sW+p9046nfmDBHyJI07+0yO+OozavApMwQa+SkOHN1Z6pGv94My
- 4CAxyXE4vNpfewdOkTdmBP1ylFCD/J+hxgT/wM/sKwyypiRxNBOHHZ/dD
- hU1mzOs5GPLAePd/qZL8kZTf86lYytxJ7PeGi1U69vmv7uOcRd9oJHetU
- h4sv2hOIwPwd6SOg7eFEzAqXJxhNE2gcJ5PZfDWrZM5QH46kHWiuDxNte
- T9Y0CAiG6VobX10ew3BLlgxK+YpPJjovxr2OHrWbACjSVPQlC3I1MB4qv
- Q==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ bh=a4v199lS4QgEFIvJ7UyQlcvDlBJlIUR+S2C9QDqLCNU=;
+ b=K0j5AQYUMNSBnxACgAh4t1u4OdQ5b/oeAFSrCIgNG1znuKx0Tt6sAPw/
+ 9gE3jXsMK3HwDKeKMDM+TRqyvO5V2t/ZgPzBu4vnBTbbWHUhH6IcRkqI/
+ Kqzg6C25HYKFD1kveourYqevVUr+NoLpoePLA5/mf210JrNXFwZp50Mfc
+ yB5VpcvEEFWUCaUhe3fUC3ovSs30FKzbXfkfBobUkJVJSYxCtCkjL5Gc7
+ e6uPMB7cJmBmc0l9bJ8ChCZIjEyGcni+QxLZyDL/a6AedAbov+okUuW07
+ 8GwK0TcetB2+hQ/Ltu254eU170P+RCfUV3nMirp6oZlNJylNri4jCZrPY
+ g==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=Jab2U2yt
-Subject: [Intel-wired-lan] [PATCH iwl-next v1 03/12] virtchnl: add
- enumeration for the rxdid format
+ header.a=rsa-sha256 header.s=Intel header.b=K0j5AQYU
+Subject: [Intel-wired-lan] [PATCH iwl-next v1 06/12] iavf: add initial
+ framework for registering PTP clock
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -107,106 +107,236 @@ List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Cc: Jacob Keller <jacob.e.keller@intel.com>, netdev@vger.kernel.org,
- Wojciech Drewek <wojciech.drewek@intel.com>,
+ Wojciech Drewek <wojciech.drewek@intel.com>, Ahmed Zaki <ahmed.zaki@intel.com>,
  Mateusz Polchlopek <mateusz.polchlopek@intel.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 From: Jacob Keller <jacob.e.keller@intel.com>
 
-Support for allowing VF to negotiate the descriptor format requires that
-the VF specify which descriptor format to use when requesting Rx queues.
-The VF is supposed to request the set of supported formats via the new
-VIRTCHNL_OP_GET_SUPPORTED_RXDIDS, and then set one of the supported
-formats in the rxdid field of the virtchnl_rxq_info structure.
-
-The virtchnl.h header does not provide an enumeration of the format
-values. The existing implementations in the PF directly use the values
-from the DDP package.
-
-Make the formats explicit by defining an enumeration of the RXDIDs.
-Provide an enumeration for the values as well as the bit positions as
-returned by the supported_rxdids data from the
-VIRTCHNL_OP_GET_SUPPORTED_RXDIDS.
+Add the iavf_ptp.c file and fill it in with a skeleton framework to
+allow registering the PTP clock device.
+Add implementation of helper functions to check if a PTP capability
+is supported and handle change in PTP capabilities.
+Enabling virtual clock would be possible, though it would probably
+perform poorly due to the lack of direct time access.
 
 Reviewed-by: Wojciech Drewek <wojciech.drewek@intel.com>
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Co-developed-by: Ahmed Zaki <ahmed.zaki@intel.com>
+Signed-off-by: Ahmed Zaki <ahmed.zaki@intel.com>
+Co-developed-by: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
 Signed-off-by: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
 ---
- include/linux/avf/virtchnl.h | 46 ++++++++++++++++++++++++++++++++++++
- 1 file changed, 46 insertions(+)
+ drivers/net/ethernet/intel/iavf/Makefile      |   3 +-
+ drivers/net/ethernet/intel/iavf/iavf_main.c   |   6 +
+ drivers/net/ethernet/intel/iavf/iavf_ptp.c    | 123 ++++++++++++++++++
+ drivers/net/ethernet/intel/iavf/iavf_ptp.h    |  10 ++
+ .../net/ethernet/intel/iavf/iavf_virtchnl.c   |   2 +
+ 5 files changed, 143 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/net/ethernet/intel/iavf/iavf_ptp.c
 
-diff --git a/include/linux/avf/virtchnl.h b/include/linux/avf/virtchnl.h
-index 91974c06f3d2..31cddf2b7228 100644
---- a/include/linux/avf/virtchnl.h
-+++ b/include/linux/avf/virtchnl.h
-@@ -303,6 +303,46 @@ struct virtchnl_txq_info {
+diff --git a/drivers/net/ethernet/intel/iavf/Makefile b/drivers/net/ethernet/intel/iavf/Makefile
+index 2d154a4e2fd7..06a5d2752246 100644
+--- a/drivers/net/ethernet/intel/iavf/Makefile
++++ b/drivers/net/ethernet/intel/iavf/Makefile
+@@ -13,4 +13,5 @@ obj-$(CONFIG_IAVF) += iavf.o
  
- VIRTCHNL_CHECK_STRUCT_LEN(24, virtchnl_txq_info);
+ iavf-objs := iavf_main.o iavf_ethtool.o iavf_virtchnl.o iavf_fdir.o \
+ 	     iavf_adv_rss.o \
+-	     iavf_txrx.o iavf_common.o iavf_adminq.o
++	     iavf_txrx.o iavf_common.o iavf_adminq.o \
++	     iavf_ptp.o
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
+index ea2034d7914a..6feabb1c62d1 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_main.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
+@@ -2875,6 +2875,9 @@ static void iavf_init_config_adapter(struct iavf_adapter *adapter)
+ 		/* request initial VLAN offload settings */
+ 		iavf_set_vlan_offload_features(adapter, 0, netdev->features);
  
-+/* RX descriptor IDs (range from 0 to 63) */
-+enum virtchnl_rx_desc_ids {
-+	VIRTCHNL_RXDID_0_16B_BASE		= 0,
-+	VIRTCHNL_RXDID_1_32B_BASE		= 1,
-+	VIRTCHNL_RXDID_2_FLEX_SQ_NIC		= 2,
-+	VIRTCHNL_RXDID_3_FLEX_SQ_SW		= 3,
-+	VIRTCHNL_RXDID_4_FLEX_SQ_NIC_VEB	= 4,
-+	VIRTCHNL_RXDID_5_FLEX_SQ_NIC_ACL	= 5,
-+	VIRTCHNL_RXDID_6_FLEX_SQ_NIC_2		= 6,
-+	VIRTCHNL_RXDID_7_HW_RSVD		= 7,
-+	/* 8 through 15 are reserved */
-+	VIRTCHNL_RXDID_16_COMMS_GENERIC		= 16,
-+	VIRTCHNL_RXDID_17_COMMS_AUX_VLAN	= 17,
-+	VIRTCHNL_RXDID_18_COMMS_AUX_IPV4	= 18,
-+	VIRTCHNL_RXDID_19_COMMS_AUX_IPV6	= 19,
-+	VIRTCHNL_RXDID_20_COMMS_AUX_FLOW	= 20,
-+	VIRTCHNL_RXDID_21_COMMS_AUX_TCP		= 21,
-+	/* 22 through 63 are reserved */
-+};
++	/* Setup initial PTP configuration */
++	iavf_ptp_init(adapter);
 +
-+/* RX descriptor ID bitmasks */
-+enum virtchnl_rx_desc_id_bitmasks {
-+	VIRTCHNL_RXDID_0_16B_BASE_M		= BIT(VIRTCHNL_RXDID_0_16B_BASE),
-+	VIRTCHNL_RXDID_1_32B_BASE_M		= BIT(VIRTCHNL_RXDID_1_32B_BASE),
-+	VIRTCHNL_RXDID_2_FLEX_SQ_NIC_M		= BIT(VIRTCHNL_RXDID_2_FLEX_SQ_NIC),
-+	VIRTCHNL_RXDID_3_FLEX_SQ_SW_M		= BIT(VIRTCHNL_RXDID_3_FLEX_SQ_SW),
-+	VIRTCHNL_RXDID_4_FLEX_SQ_NIC_VEB_M	= BIT(VIRTCHNL_RXDID_4_FLEX_SQ_NIC_VEB),
-+	VIRTCHNL_RXDID_5_FLEX_SQ_NIC_ACL_M	= BIT(VIRTCHNL_RXDID_5_FLEX_SQ_NIC_ACL),
-+	VIRTCHNL_RXDID_6_FLEX_SQ_NIC_2_M	= BIT(VIRTCHNL_RXDID_6_FLEX_SQ_NIC_2),
-+	VIRTCHNL_RXDID_7_HW_RSVD_M		= BIT(VIRTCHNL_RXDID_7_HW_RSVD),
-+	/* 8 through 15 are reserved */
-+	VIRTCHNL_RXDID_16_COMMS_GENERIC_M	= BIT(VIRTCHNL_RXDID_16_COMMS_GENERIC),
-+	VIRTCHNL_RXDID_17_COMMS_AUX_VLAN_M	= BIT(VIRTCHNL_RXDID_17_COMMS_AUX_VLAN),
-+	VIRTCHNL_RXDID_18_COMMS_AUX_IPV4_M	= BIT(VIRTCHNL_RXDID_18_COMMS_AUX_IPV4),
-+	VIRTCHNL_RXDID_19_COMMS_AUX_IPV6_M	= BIT(VIRTCHNL_RXDID_19_COMMS_AUX_IPV6),
-+	VIRTCHNL_RXDID_20_COMMS_AUX_FLOW_M	= BIT(VIRTCHNL_RXDID_20_COMMS_AUX_FLOW),
-+	VIRTCHNL_RXDID_21_COMMS_AUX_TCP_M	= BIT(VIRTCHNL_RXDID_21_COMMS_AUX_TCP),
-+	/* 22 through 63 are reserved */
-+};
+ 	iavf_schedule_finish_config(adapter);
+ 	return;
+ 
+@@ -5331,6 +5334,9 @@ static void iavf_remove(struct pci_dev *pdev)
+ 	}
+ 
+ 	iavf_misc_irq_disable(adapter);
 +
- /* virtchnl_rxq_info_flags
-  *
-  * Definition of bits in the flags field of the virtchnl_rxq_info structure.
-@@ -337,6 +377,11 @@ struct virtchnl_rxq_info {
- 	u32 databuffer_size;
- 	u32 max_pkt_size;
- 	u8 crc_disable;
-+	/* see enum virtchnl_rx_desc_ids;
-+	 * only used when VIRTCHNL_VF_OFFLOAD_RX_FLEX_DESC is supported. Note
-+	 * that when the offload is not supported, the descriptor format aligns
-+	 * with VIRTCHNL_RXDID_1_32B_BASE.
++	iavf_ptp_release(adapter);
++
+ 	/* Shut down all the garbage mashers on the detention level */
+ 	cancel_work_sync(&adapter->reset_task);
+ 	cancel_delayed_work_sync(&adapter->watchdog_task);
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_ptp.c b/drivers/net/ethernet/intel/iavf/iavf_ptp.c
+new file mode 100644
+index 000000000000..0f09d918d269
+--- /dev/null
++++ b/drivers/net/ethernet/intel/iavf/iavf_ptp.c
+@@ -0,0 +1,123 @@
++// SPDX-License-Identifier: GPL-2.0
++/* Copyright(c) 2024 Intel Corporation. */
++
++#include "iavf.h"
++
++/**
++ * iavf_ptp_cap_supported - Check if a PTP capability is supported
++ * @adapter: private adapter structure
++ * @cap: the capability bitmask to check
++ *
++ * Return true if every capability set in cap is also set in the enabled
++ * capabilities reported by the PF.
++ */
++bool iavf_ptp_cap_supported(struct iavf_adapter *adapter, u32 cap)
++{
++	if (!PTP_ALLOWED(adapter))
++		return false;
++
++	/* Only return true if every bit in cap is set in hw_caps.caps */
++	return (adapter->ptp.hw_caps.caps & cap) == cap;
++}
++
++/**
++ * iavf_ptp_register_clock - Register a new PTP for userspace
++ * @adapter: private adapter structure
++ *
++ * Allocate and register a new PTP clock device if necessary.
++ */
++static int iavf_ptp_register_clock(struct iavf_adapter *adapter)
++{
++	struct ptp_clock_info *ptp_info = &adapter->ptp.info;
++	struct device *dev = &adapter->pdev->dev;
++
++	memset(ptp_info, 0, sizeof(*ptp_info));
++
++	snprintf(ptp_info->name, sizeof(ptp_info->name) - 1, "%s-%s-clk",
++		 dev_driver_string(dev),
++		 dev_name(dev));
++	ptp_info->owner = THIS_MODULE;
++
++	adapter->ptp.clock = ptp_clock_register(ptp_info, dev);
++	if (IS_ERR(adapter->ptp.clock))
++		return PTR_ERR(adapter->ptp.clock);
++
++	dev_info(&adapter->pdev->dev, "PTP clock %s registered\n",
++		 adapter->ptp.info.name);
++	return 0;
++}
++
++/**
++ * iavf_ptp_init - Initialize PTP support if capability was negotiated
++ * @adapter: private adapter structure
++ *
++ * Initialize PTP functionality, based on the capabilities that the PF has
++ * enabled for this VF.
++ */
++void iavf_ptp_init(struct iavf_adapter *adapter)
++{
++	struct device *dev = &adapter->pdev->dev;
++	int err;
++
++	if (WARN_ON(adapter->ptp.initialized)) {
++		dev_err(dev, "PTP functionality was already initialized!\n");
++		return;
++	}
++
++	if (!iavf_ptp_cap_supported(adapter, VIRTCHNL_1588_PTP_CAP_READ_PHC)) {
++		dev_dbg(dev, "Device does not have PTP clock support\n");
++		return;
++	}
++
++	err = iavf_ptp_register_clock(adapter);
++	if (err) {
++		dev_warn(dev, "Failed to register PTP clock device (%d)\n",
++			 err);
++		return;
++	}
++
++	adapter->ptp.initialized = true;
++}
++
++/**
++ * iavf_ptp_release - Disable PTP support
++ * @adapter: private adapter structure
++ *
++ * Release all PTP resources that were previously initialized.
++ */
++void iavf_ptp_release(struct iavf_adapter *adapter)
++{
++	if (!IS_ERR_OR_NULL(adapter->ptp.clock)) {
++		dev_info(&adapter->pdev->dev, "removing PTP clock %s\n",
++			 adapter->ptp.info.name);
++		ptp_clock_unregister(adapter->ptp.clock);
++		adapter->ptp.clock = NULL;
++	}
++
++	adapter->ptp.initialized = false;
++}
++
++/**
++ * iavf_ptp_process_caps - Handle change in PTP capabilities
++ * @adapter: private adapter structure
++ *
++ * Handle any state changes necessary due to change in PTP capabilities, such
++ * as after a device reset or change in configuration from the PF.
++ */
++void iavf_ptp_process_caps(struct iavf_adapter *adapter)
++{
++	struct device *dev = &adapter->pdev->dev;
++
++	dev_dbg(dev, "PTP capabilities changed at runtime\n");
++
++	/* Check if the device gained or lost necessary access to support the
++	 * PTP hardware clock. If so, driver must respond appropriately by
++	 * creating or destroying the PTP clock device.
 +	 */
- 	u8 rxdid;
- 	u8 flags; /* see virtchnl_rxq_info_flags */
- 	u8 pad1;
-@@ -1040,6 +1085,7 @@ struct virtchnl_filter {
- VIRTCHNL_CHECK_STRUCT_LEN(272, virtchnl_filter);
++	if (adapter->ptp.initialized &&
++	    !iavf_ptp_cap_supported(adapter, VIRTCHNL_1588_PTP_CAP_READ_PHC))
++		iavf_ptp_release(adapter);
++	else if (!adapter->ptp.initialized &&
++		 iavf_ptp_cap_supported(adapter, VIRTCHNL_1588_PTP_CAP_READ_PHC))
++		iavf_ptp_init(adapter);
++}
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_ptp.h b/drivers/net/ethernet/intel/iavf/iavf_ptp.h
+index aee4e2da0b9a..4939c219bd18 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_ptp.h
++++ b/drivers/net/ethernet/intel/iavf/iavf_ptp.h
+@@ -4,9 +4,19 @@
+ #ifndef _IAVF_PTP_H_
+ #define _IAVF_PTP_H_
  
- struct virtchnl_supported_rxdids {
-+	/* see enum virtchnl_rx_desc_id_bitmasks */
- 	u64 supported_rxdids;
++#include <linux/ptp_clock_kernel.h>
++
+ /* fields used for PTP support */
+ struct iavf_ptp {
+ 	struct virtchnl_ptp_caps hw_caps;
++	bool initialized;
++	struct ptp_clock_info info;
++	struct ptp_clock *clock;
  };
  
++void iavf_ptp_init(struct iavf_adapter *adapter);
++void iavf_ptp_release(struct iavf_adapter *adapter);
++void iavf_ptp_process_caps(struct iavf_adapter *adapter);
++bool iavf_ptp_cap_supported(struct iavf_adapter *adapter, u32 cap);
++
+ #endif /* _IAVF_PTP_H_ */
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+index f922e177146d..12ce169699cf 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+@@ -2511,6 +2511,8 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
+ 	case VIRTCHNL_OP_1588_PTP_GET_CAPS:
+ 		memcpy(&adapter->ptp.hw_caps, msg,
+ 		       min_t(u16, msglen, sizeof(adapter->ptp.hw_caps)));
++		/* process any state change needed due to new capabilities */
++		iavf_ptp_process_caps(adapter);
+ 	break;
+ 	case VIRTCHNL_OP_ENABLE_QUEUES:
+ 		/* enable transmits */
 -- 
 2.38.1
 
