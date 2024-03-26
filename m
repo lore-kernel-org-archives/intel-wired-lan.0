@@ -4,85 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5BABCC54E67
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 26 Mar 2024 14:36:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 62B0EC54E67
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 26 Mar 2024 14:36:29 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 0895F407B9;
-	Tue, 26 Mar 2024 14:36:10 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 1DB72407F7;
+	Tue, 26 Mar 2024 14:36:29 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id mudGYbVFhbeJ; Tue, 26 Mar 2024 14:36:09 +0000 (UTC)
+ id uJCNMnlipInd; Tue, 26 Mar 2024 14:36:27 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 31C36407F7
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org ECFD2407FF
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1711463769;
-	bh=z9Ns9Fv8nSShSPTfKy/EiXntGsk26cM/LR2PUVAHE8A=;
+	s=default; t=1711463787;
+	bh=QPsIbe1xORzujQlI2i5zZmGJjoOLX9u7cDoSEsjGRO4=;
 	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=o0cNscS+fet+ZSrLxJY2+qb+xHbvlaNLx6g9E9nJoI9vu3il7voLyCRhoy8WaqFsu
-	 Q+qKqdx0o4kdLe7Ows1OZ5mFBy0n3RcHZIJ5UgVPnGcOiyRIEVqBaIV53oS9+klX2D
-	 Q7YN1dDIXaeCMsMb5D+xpi8SwOPufWmXp749L6PCyera1jqHBppFmB1mIVoL0owkQv
-	 jDZNmz2WefELuHnVyFYxP7wU3e7AolBwnBmqy51JMEPUYkQYbXfcnWIrvAOqU/5jAH
-	 kb/CU2eUNSXwOPMi9cQ/X+1OAzuDssw8wF6TdAyJiZMmPR72jljRqIYakOANZaLGdD
-	 ZGxpjQOuc0AiQ==
+	b=mOlsv3Su/+hlzlVBelQrOsNxSMs9hLm74FrgSFwhQEZ4nagPjN3PrzW/5NLrak0MZ
+	 6Y1bLryK7cdZZVO9K7g2Kp7jgZfIcWSgGEd96LpE9WePJf7WOlVACet5BH3oKdO0PC
+	 oIb0EgdyTMDIRmU4nk9S8NQJFVS64coFK+FIR36DzSvWj6TpSwBrMUGiwxj6GczA36
+	 ZboymnflRT4yfOt/j0zqVVftccWwoCimfZ0s3Bz6cH/Y6pyR1rY5G/UM1hGvweSxkz
+	 QuN2yfTHcSnCOJ3tLYXixs5KVL2oTm2lo3RZdkhAEir+u9n0rDfrULaILT5YaWKJAL
+	 Ry1kO7jkaZBbA==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 31C36407F7;
-	Tue, 26 Mar 2024 14:36:09 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 5C35D1BF4E2
- for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Mar 2024 14:36:07 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id ECFD2407FF;
+	Tue, 26 Mar 2024 14:36:26 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id E7C771BF4E2
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Mar 2024 14:36:25 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 561E160836
- for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Mar 2024 14:36:07 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id D3507407F7
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Mar 2024 14:36:25 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id OANJ-C-l-2v9 for <intel-wired-lan@lists.osuosl.org>;
- Tue, 26 Mar 2024 14:36:06 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id JP-JxEDiMlmy for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 26 Mar 2024 14:36:25 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org;
+ client-ip=2604:1380:40e1:4800::1; helo=sin.source.kernel.org;
  envelope-from=horms@kernel.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org AA76F607B9
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org AA76F607B9
-Received: from dfw.source.kernel.org (dfw.source.kernel.org
- [IPv6:2604:1380:4641:c500::1])
- by smtp3.osuosl.org (Postfix) with ESMTPS id AA76F607B9
- for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Mar 2024 14:36:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org D9EEE407B9
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D9EEE407B9
+Received: from sin.source.kernel.org (sin.source.kernel.org
+ [IPv6:2604:1380:40e1:4800::1])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id D9EEE407B9
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Mar 2024 14:36:24 +0000 (UTC)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by dfw.source.kernel.org (Postfix) with ESMTP id DEF0F6123F;
- Tue, 26 Mar 2024 14:36:05 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7787CC43390;
- Tue, 26 Mar 2024 14:36:02 +0000 (UTC)
-Date: Tue, 26 Mar 2024 14:36:00 +0000
+ by sin.source.kernel.org (Postfix) with ESMTP id 53627CE20B6;
+ Tue, 26 Mar 2024 14:36:22 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 79317C433F1;
+ Tue, 26 Mar 2024 14:36:18 +0000 (UTC)
+Date: Tue, 26 Mar 2024 14:36:16 +0000
 From: Simon Horman <horms@kernel.org>
 To: Bjorn Helgaas <helgaas@kernel.org>
-Message-ID: <20240326143600.GZ403975@kernel.org>
+Message-ID: <20240326143616.GA403975@kernel.org>
 References: <20240325222951.1460656-1-helgaas@kernel.org>
- <20240325222951.1460656-3-helgaas@kernel.org>
+ <20240325222951.1460656-4-helgaas@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20240325222951.1460656-3-helgaas@kernel.org>
+In-Reply-To: <20240325222951.1460656-4-helgaas@kernel.org>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1711463765;
- bh=T8xVXkMmTHcXVBfih/lyulMOMgOEEKuUVkaSFMpq/h0=;
+ d=kernel.org; s=k20201202; t=1711463781;
+ bh=T5+Ilvr1b291b954quPpgBb3WMNDJu0NuiX26qSRQHM=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=fwxxIuMlcmMjiYy2E2+Gui0I7rU3vuw/GTXmGcHrjCjPQBzYSCqbHrS8coW9GcPdE
- eBunKhyWoTi3rjx28+dTHxKzljq+4SAGc28Rh7GTwos0zZwc3EIOa5gvsJ2KrHkyVL
- jPQ6/03CrtKIengXLAN2vU6iPoa3DWmP/pAAYZchH2zxyU+GWRwRkUYLuQ/N3abShp
- I7VGiAVD60hgYzz6HQxNWYK0J+BwMzLRCGNiXiYIdxbmPai4g8HsvlbPKy61dd6rgY
- WX47PiVKO232bk2iELiZ4v4R8+dLtmGScst2XPf7isSd/30DpyWNMH4jQPImmP1sW5
- FUtmXRhESu/JA==
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ b=HOLND2jcqr9pzlZ0/W6u68xW9sxo5LaL+MKtPF7dPa0aiJMCqkhT98LeRf0bujSJM
+ Aa4TBjibbEVL3Hv0ClMRocZaoqSY1KnXqSGMtGZNwipJeC+dR8i1BxCeuRWdkaO2xq
+ QWn6ElobDNbOk5GfozD4c+Jbhr3JX2FVbEZCHzc3dDXxxtOqPY0x0AxUPoR9JUY5qZ
+ n0vU4KN7M7ATBm3/UzyCjDoZc4K15QFWoJMRmGJWaC8m+P1u2Gwb5r7AZPWd6HK7So
+ +sAeH/GwaJqoKLpWHJpYhNM4SuLIbDKFbTHC5Ubbvnax06TQgknCruQB8sPLh/hPzM
+ An5+oSrus34kw==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=fwxxIuMl
-Subject: Re: [Intel-wired-lan] [PATCH 2/3] igb: Remove redundant runtime
- resume for ethtool_ops
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=HOLND2jc
+Subject: Re: [Intel-wired-lan] [PATCH 3/3] igc: Remove redundant runtime
+ resume for ethtool ops
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -107,13 +108,12 @@ Cc: Konstantin Khlebnikov <khlebnikov@openvz.org>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Mon, Mar 25, 2024 at 05:29:50PM -0500, Bjorn Helgaas wrote:
+On Mon, Mar 25, 2024 at 05:29:51PM -0500, Bjorn Helgaas wrote:
 > From: Bjorn Helgaas <bhelgaas@google.com>
 > 
-> 749ab2cd1270 ("igb: add basic runtime PM support") added
-> ethtool_ops.begin() and .complete(), which used pm_runtime_get_sync() to
-> resume suspended devices before any ethtool_ops callback and allow suspend
-> after it completed.
+> 8c5ad0dae93c ("igc: Add ethtool support") added ethtool_ops.begin() and
+> .complete(), which used pm_runtime_get_sync() to resume suspended devices
+> before any ethtool_ops callback and allow suspend after it completed.
 > 
 > Subsequently, f32a21376573 ("ethtool: runtime-resume netdev parent before
 > ethtool ioctl ops") added pm_runtime_get_sync() in the dev_ethtool() path,
