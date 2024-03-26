@@ -4,85 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 35D9CC6FD1F
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 26 Mar 2024 11:20:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 31C97CD11DD
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 26 Mar 2024 11:20:31 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id C0ED560820;
-	Tue, 26 Mar 2024 11:20:18 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id E5E8D60820;
+	Tue, 26 Mar 2024 11:20:30 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id pX6qCBt7cLOP; Tue, 26 Mar 2024 11:20:18 +0000 (UTC)
+ id AkbYSKfT5JyM; Tue, 26 Mar 2024 11:20:30 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3D92C60AAF
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 5656F60AAF
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1711452018;
-	bh=mkzQtD+/6fFGHG6nBoNsQSZGyplaVcbH+RbFHATZfME=;
+	s=default; t=1711452030;
+	bh=j7/DOi4mHQpFRpC2gN1HtFtXEvGwmHUVgRQuWzq2HYE=;
 	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=DrWE/6jUXJcfSymGC0sj8djfiO1sWGwy2vtT4Pi/lixhCvvCCtMoNCFeK5ps7kkc8
-	 X58ILU8xuUcwUxQoZpCpgcPJrPzCeqmN7QG8c3dhhsmqQdIrnDy1RPNAyIQi7Aerj5
-	 QS/QE1kvJwT+Xd78QXawDWOX+FCEIDdBA0HCDYOU7r190ZRhKygp87NxkfAtkZxh+l
-	 uv/ypEqyMlBZl8mltArWkljeN2kjiTJC3J1ACm2mnxW4W3G0y4kK4eLSzoCHvsL11V
-	 h3BdfWO4RPvD6v8IqMDm2Je+CIw1HdjLxdxTYLWBbtepdvqnTEAVGdkuPs5C+qAoSn
-	 MaIPJtHhWHcvg==
+	b=yy4iQI2VhuVUmEWDcR5K9kE4RPjgli2KRLEgeJULOP+aYP0s9pFtzV6PUlTQYH7Gi
+	 u6peaH0bOyjmPY8EMMRZds5HW33xl6T/gWeYTmZS37iT2JpT9UVVjrGi9AfTkvy0uq
+	 9i5+h4pv3mEMrENCil5futtPL3HaRHTTdBtUNlWIDIOzAv0Q2r2aC53vXjQv3nd/Nm
+	 8F2WxR8fptU7J6CGlJA12TuYOm3QMjlEeSFNeoCyFJP/xCVmzsHy72NAJAHfI3MSWs
+	 MamB4RVvUiRA7k1+WtANY8iQkMLFoZP2MIrrhJquIbWa1o+6hrWfIhl3iJCXHS7dPo
+	 wvnUWRRxCb6+w==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 3D92C60AAF;
-	Tue, 26 Mar 2024 11:20:18 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id DB9F71BF45A
- for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Mar 2024 11:20:16 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 5656F60AAF;
+	Tue, 26 Mar 2024 11:20:30 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 8B1441BF45A
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Mar 2024 11:20:28 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id C7C0E60AAF
- for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Mar 2024 11:20:16 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 7585B4078F
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Mar 2024 11:20:28 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 7eQbGZwg_tSg for <intel-wired-lan@lists.osuosl.org>;
- Tue, 26 Mar 2024 11:20:16 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 0YiqjYjolBoL for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 26 Mar 2024 11:20:27 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=139.178.84.217;
  helo=dfw.source.kernel.org; envelope-from=horms@kernel.org;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 2001960820
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2001960820
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 9E4F54028F
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9E4F54028F
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 2001960820
- for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Mar 2024 11:20:15 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 9E4F54028F
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Mar 2024 11:20:27 +0000 (UTC)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by dfw.source.kernel.org (Postfix) with ESMTP id E689A60DBA;
- Tue, 26 Mar 2024 11:20:14 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 63B73C43394;
- Tue, 26 Mar 2024 11:20:13 +0000 (UTC)
-Date: Tue, 26 Mar 2024 11:20:11 +0000
+ by dfw.source.kernel.org (Postfix) with ESMTP id DE74860A78;
+ Tue, 26 Mar 2024 11:20:26 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3BB87C433F1;
+ Tue, 26 Mar 2024 11:20:25 +0000 (UTC)
+Date: Tue, 26 Mar 2024 11:20:23 +0000
 From: Simon Horman <horms@kernel.org>
 To: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
-Message-ID: <20240326112011.GK403975@kernel.org>
+Message-ID: <20240326112023.GL403975@kernel.org>
 References: <20240325213433.829161-1-michal.swiatkowski@linux.intel.com>
- <20240325213433.829161-3-michal.swiatkowski@linux.intel.com>
+ <20240325213433.829161-4-michal.swiatkowski@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20240325213433.829161-3-michal.swiatkowski@linux.intel.com>
+In-Reply-To: <20240325213433.829161-4-michal.swiatkowski@linux.intel.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1711452014;
- bh=01/BEHa9F9gCUEBCWWK/wR+sQ3S7GO2TUEPteNvdMbQ=;
+ d=kernel.org; s=k20201202; t=1711452026;
+ bh=rKe++Rz2WAQ6DvWQZx1Q6tqtL8Tl7Iu18OHMBTq2orQ=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=Bjq6Mgypitwq+GXodBGgYQK4M7Do7yHs+qtmL5GyiS2EBEJKv4gQjCaIihUF4fKuB
- 3/FVhIC2qsNQlsQ7fuX58Gdk1VaKcIVwW0w1bvPsAv51O2Be2wdwtvTD7XkHs/pPdR
- qVyPWOdDaodH/KzRurkAPgAOzrhNlJZZCvMxeiNT81Vio4iCh6LXb34mS8mGGZ2DqJ
- nUO27lW0j3brcFJnN7I5M7TYUcTW4hRzuvmPRla2a56hfrA+6NJ8htrIMJdAAs2CY9
- pjlJGtNmhHYDCBKRgCXV45SdEijEpDTcez6WJDz8nSl2dyhfuZj+lEBG75hUHZUF3S
- RgpQGvL32SM3g==
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ b=dcJukP7+lgDuv2FBqGUKVAvYgPp00hcQ/opXeHXH4F1Xi8qMGRIeqqVEPITIa/rWd
+ FGArHLyErjkGHshFFBg35uI2OQtbduTQWtM0j0hN4qoMYR/1CNWHMpkhw3D8U7yXY7
+ 5eMGYzUipgQHshq4ubWP9XVmJ0A+J1dy+bR0sXnAPbHknZg9QvbytBSLm5ukJYW4SO
+ azOHB0VtwoDJKxthemP91Esiz7uzUMB797+/5o7pn9sjXlYXiz7hjKiweqJTR06rkQ
+ SXs3HPlzROJZCKKyDCJCTmLUU+LPVQosHnBzNmHkChkJ+DhBDrmg0o35SWhLnrmiRz
+ FCWbR08UXsLtQ==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=Bjq6Mgyp
-Subject: Re: [Intel-wired-lan] [iwl-next v1 2/3] ice: move devlink port code
- to a separate file
+ header.s=k20201202 header.b=dcJukP7+
+Subject: Re: [Intel-wired-lan] [iwl-next v1 3/3] ice: hold devlink lock for
+ whole init/cleanup
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,23 +95,19 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Piotr Raczynski <piotr.raczynski@intel.com>, netdev@vger.kernel.org,
- intel-wired-lan@lists.osuosl.org, Wojciech Drewek <wojciech.drewek@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Cc: Jiri Pirko <jiri@resnulli.us>, netdev@vger.kernel.org,
+ Wojciech Drewek <wojciech.drewek@intel.com>, intel-wired-lan@lists.osuosl.org
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Mon, Mar 25, 2024 at 10:34:32PM +0100, Michal Swiatkowski wrote:
-> From: Piotr Raczynski <piotr.raczynski@intel.com>
+On Mon, Mar 25, 2024 at 10:34:33PM +0100, Michal Swiatkowski wrote:
+> Simplify devlink lock code in driver by taking it for whole init/cleanup
+> path. Instead of calling devlink functions that taking lock call the
+> lockless versions.
 > 
-> Keep devlink related code in a separate file. More devlink port code and
-> handlers will be added here for other port operations.
-> 
-> Remove no longer needed include of our devlink.h in ice_lib.c.
-> 
-> Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+> Suggested-by: Jiri Pirko <jiri@resnulli.us>
+> Reviewed-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 > Reviewed-by: Wojciech Drewek <wojciech.drewek@intel.com>
-> Signed-off-by: Piotr Raczynski <piotr.raczynski@intel.com>
 > Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 
 Reviewed-by: Simon Horman <horms@kernel.org>
