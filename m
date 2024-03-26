@@ -4,67 +4,67 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 451A1C54E67
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 26 Mar 2024 16:31:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B218FC6FD1F
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 26 Mar 2024 16:31:29 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id F020041547;
+	by smtp2.osuosl.org (Postfix) with ESMTP id 4FF8D41522;
 	Tue, 26 Mar 2024 16:31:29 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id nvHJitDs6NgT; Tue, 26 Mar 2024 16:31:28 +0000 (UTC)
+ id qkfRiQma3DTq; Tue, 26 Mar 2024 16:31:26 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 2F05741552
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org EE6F44152D
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1711470688;
-	bh=1wMb1JFdhSwYN1D9RlKaZcRJM8qZqp7IeFFSKmVemH0=;
+	s=default; t=1711470686;
+	bh=BSecbe+KVKRBLdPwCnsiwdwhOEz9ZPP/1W+wwX4+qmI=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=K45q/+VN8833E2JPc4BPkObrNh6CdMMsAENqguMzF4C3adfuSf8sMTj0KoxNVDPI4
-	 ZJzS6i9N4tJsp017qauCA6tRGjBu/RtE09n/Jot9c5i1fgSLE0H3CdKNmjdty8a98p
-	 StGKcZWxDXgsguTCQYnkYoZ9ZZvmaWBB5x91dt/Nphl5y9AHY/YRjHLRz7AdIizGna
-	 8UkYmn3VFkXgJb3XKLHm+kS8a2je+yLKFpMSZO0Mup8bQmPwq3Sx68jTfBpQS5hNMo
-	 Dwr6LY781UngwhAXUVdev0cx5T8Y1/d0WPO2aRoVWcRtBv2QwU9PRtkqbCqMbfce33
-	 K5tTyiafDJXng==
+	b=Gm1ausn7paV3FslwDEXUia563jlCjkYiLt7TxPGnXAhU2UkW34MpivZ4UM2JnwI98
+	 o2tfNgB2AGrEQhelHdySYWTmteClFJIMDIoQN0tXtbObgU7NFBZuFdyylYMkyLX14b
+	 E4T/CznvawO0L2t/RFmgtYtnV0QJ4on2mmDcYk8Fz4gp1VyhaQ+iKJPanR8X17Otma
+	 htLOtmVrW5xy29ZZPz2SNRU/1aUv9vO9l82QYcUmhL5EtyqJeEBhq7G2e/goTruSDP
+	 1/nYV+1fJp0lFzfqovPBqc6/u1trluJ/4QUJozYuGamBNTZ96S61vnhWaurEUB47ZY
+	 U44Vli6xTXJ1Q==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 2F05741552;
-	Tue, 26 Mar 2024 16:31:28 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 265161BF2CB
+	by smtp2.osuosl.org (Postfix) with ESMTP id EE6F44152D;
+	Tue, 26 Mar 2024 16:31:25 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 169881BF20D
  for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Mar 2024 16:31:24 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 14BB84154E
- for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Mar 2024 16:31:24 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id E7AB840582
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Mar 2024 16:31:20 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id R-e73py08Lwp for <intel-wired-lan@lists.osuosl.org>;
- Tue, 26 Mar 2024 16:31:23 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id fSkFJ7Xq18v8 for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 26 Mar 2024 16:31:18 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.15;
  helo=mgamail.intel.com; envelope-from=karol.kolacinski@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 1984B41511
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 1984B41511
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 4751340571
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4751340571
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.15])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 1984B41511
- for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Mar 2024 16:31:23 +0000 (UTC)
-X-CSE-ConnectionGUID: FMysbVVtS4ObVT9KCIE2fw==
-X-CSE-MsgGUID: JAZXeIUDTr2ofTXmxniEPg==
-X-IronPort-AV: E=McAfee;i="6600,9927,11025"; a="6725044"
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 4751340571
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Mar 2024 16:31:15 +0000 (UTC)
+X-CSE-ConnectionGUID: wMM60kzKTQiTpjhEjk+d/A==
+X-CSE-MsgGUID: TC/uAqvpSEKJ3JpA5tO9oQ==
+X-IronPort-AV: E=McAfee;i="6600,9927,11025"; a="6725030"
 X-IronPort-AV: E=Sophos;i="6.07,156,1708416000"; 
-   d="scan'208";a="6725044"
+   d="scan'208";a="6725030"
 Received: from orviesa005.jf.intel.com ([10.64.159.145])
  by fmvoesa109.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 26 Mar 2024 09:24:19 -0700
+ 26 Mar 2024 09:24:10 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.07,156,1708416000"; d="scan'208";a="20729293"
+X-IronPort-AV: E=Sophos;i="6.07,156,1708416000"; d="scan'208";a="20729283"
 Received: from kkolacin-desk1.igk.intel.com ([10.102.102.152])
- by orviesa005.jf.intel.com with ESMTP; 26 Mar 2024 09:24:17 -0700
+ by orviesa005.jf.intel.com with ESMTP; 26 Mar 2024 09:24:08 -0700
 From: Karol Kolacinski <karol.kolacinski@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Tue, 26 Mar 2024 17:22:29 +0100
-Message-ID: <20240326162339.146053-22-karol.kolacinski@intel.com>
+Date: Tue, 26 Mar 2024 17:22:26 +0100
+Message-ID: <20240326162339.146053-19-karol.kolacinski@intel.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20240326162339.146053-14-karol.kolacinski@intel.com>
 References: <20240326162339.146053-14-karol.kolacinski@intel.com>
@@ -72,25 +72,24 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1711470683; x=1743006683;
+ t=1711470678; x=1743006678;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=rezNxpxRVkHIThRxy4KO/mLVpc8HQy9QSfOEpWI7KBg=;
- b=g3/eql0wZTFpe1ZYh36dzQ7j8M7SZFHH4yDecDX1VqOLKMhAoQBwUgGQ
- JY67qqsgbgJD/h6uWwPijiKE35nIHeg3YtaL0e6sdc2GvQPiUNXi1I2fl
- 4adAjgo2wyriC8KZQdMBgdWRO8T/2kkYGaSf265J7kRFeLp/uGR4WfSYM
- A+rvG/azHlOcPJpy6jIYxwdnvDWvZn22S2KJkup3sIlFGW+c1+tUvfdHb
- +zbnN4I52ilYJjtLdrNFbOBl6YtjniKU4QaWcu6R7mHeTDXSkW3JxHo21
- xKX1EPbd6p0OA5JSIy0C0wCI5kCRfqTQplVW54vPZyMYz65iCI3CkePej
- g==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ bh=3Z3oLxLYHLML6ccjxBqriwhWzxq6Kn8pxJlgEysLqCw=;
+ b=k5LUFrcBNydyWEcW3h7kcrYi36ruMqjKP1ALvvdwxETqZE6hWPWAUJwI
+ c3XPQv2r+WGzykz37vBSgEL1hOiRs51EkixQPwKP2ALSgU54A/MDmr6U8
+ PJ4CIF0etqfBkqC6KcPksGqkkzhJUXvOx5pLBVuvu7+74ytLrjBNyxijX
+ LhnIdZZUgxfqIMZHqIwBEg6mzlKXYIAEOe8HNwCOLA1kwBqnv79atVmAC
+ 4ty9h5HpXpf3BnKODHeaXQFirSDiArviiIJVXPmHGuBSaMcyGTw/gked5
+ NsOWOP81GlwELZFyUK5oQDO6b/TDEky2cHBqR60hOtqbs5zY8JjfrPNM2
+ w==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=g3/eql0w
-Subject: [Intel-wired-lan] [PATCH iwl-next 08/12] ice: Change CGU regs
- struct to anonymous
+ header.a=rsa-sha256 header.s=Intel header.b=k5LUFrcB
+Subject: [Intel-wired-lan] [PATCH iwl-next 05/12] ice: Move CGU block
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,194 +102,1138 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org,
+Cc: Sergey Temerkhanov <sergey.temerkhanov@intel.com>, netdev@vger.kernel.org,
  Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>,
  Karol Kolacinski <karol.kolacinski@intel.com>, anthony.l.nguyen@intel.com,
  Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Simplify the code by using anonymous struct in CGU registers instead of
-naming each structure 'field'.
+From: Sergey Temerkhanov <sergey.temerkhanov@intel.com>
 
-Suggested-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Move CGU block to the beginning of ice_ptp_hw.c
+
+Signed-off-by: Sergey Temerkhanov <sergey.temerkhanov@intel.com>
 Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Reviewed-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
 Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_cgu_regs.h | 12 ++---
- drivers/net/ethernet/intel/ice/ice_ptp_hw.c   | 44 +++++++++----------
- 2 files changed, 28 insertions(+), 28 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.c | 986 ++++++++++----------
+ 1 file changed, 492 insertions(+), 494 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_cgu_regs.h b/drivers/net/ethernet/intel/ice/ice_cgu_regs.h
-index 57abd52386d0..36aeb10eefb7 100644
---- a/drivers/net/ethernet/intel/ice/ice_cgu_regs.h
-+++ b/drivers/net/ethernet/intel/ice/ice_cgu_regs.h
-@@ -23,7 +23,7 @@ union nac_cgu_dword9 {
- 		u32 clk_synce0_amp : 2;
- 		u32 one_pps_out_amp : 2;
- 		u32 misc24 : 12;
--	} field;
-+	};
- 	u32 val;
- };
- 
-@@ -39,7 +39,7 @@ union nac_cgu_dword19 {
- 		u32 japll_ndivratio : 4;
- 		u32 japll_iref_ndivratio : 3;
- 		u32 misc27 : 1;
--	} field;
-+	};
- 	u32 val;
- };
- 
-@@ -63,7 +63,7 @@ union nac_cgu_dword22 {
- 		u32 fdpllclk_sel_div2 : 1;
- 		u32 time1588clk_sel_div2 : 1;
- 		u32 misc3 : 1;
--	} field;
-+	};
- 	u32 val;
- };
- 
-@@ -77,7 +77,7 @@ union nac_cgu_dword24 {
- 		u32 ext_synce_sel : 1;
- 		u32 ref1588_ck_div : 4;
- 		u32 time_ref_sel : 1;
--	} field;
-+	};
- 	u32 val;
- };
- 
-@@ -92,7 +92,7 @@ union tspll_cntr_bist_settings {
- 		u32 i_plllock_cnt_6_0 : 7;
- 		u32 i_plllock_cnt_10_7 : 4;
- 		u32 reserved200 : 4;
--	} field;
-+	};
- 	u32 val;
- };
- 
-@@ -109,7 +109,7 @@ union tspll_ro_bwm_lf {
- 		u32 afcdone_cri : 1;
- 		u32 feedfwrdgain_cal_cri_7_0 : 8;
- 		u32 m2fbdivmod_cri_7_0 : 8;
--	} field;
-+	};
- 	u32 val;
- };
- 
 diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-index 1ff3103d03c3..aaa888fe55d3 100644
+index fe533d2a0153..9322027f69de 100644
 --- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
 +++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-@@ -385,14 +385,14 @@ static int ice_cfg_cgu_pll_e82x(struct ice_hw *hw,
+@@ -226,6 +226,287 @@ static u64 ice_ptp_read_src_incval(struct ice_hw *hw)
+ 	return ((u64)(hi & INCVAL_HIGH_M) << 32) | lo;
+ }
  
- 	/* Log the current clock configuration */
- 	ice_debug(hw, ICE_DBG_PTP, "Current CGU configuration -- %s, clk_src %s, clk_freq %s, PLL %s\n",
++/**
++ * ice_read_cgu_reg_e82x - Read a CGU register
++ * @hw: pointer to the HW struct
++ * @addr: Register address to read
++ * @val: storage for register value read
++ *
++ * Read the contents of a register of the Clock Generation Unit. Only
++ * applicable to E822 devices.
++ */
++static int ice_read_cgu_reg_e82x(struct ice_hw *hw, u32 addr, u32 *val)
++{
++	struct ice_sbq_msg_input cgu_msg;
++	int err;
++
++	cgu_msg.opcode = ice_sbq_msg_rd;
++	cgu_msg.dest_dev = cgu;
++	cgu_msg.msg_addr_low = addr;
++	cgu_msg.msg_addr_high = 0x0;
++
++	err = ice_sbq_rw_reg(hw, &cgu_msg);
++	if (err) {
++		ice_debug(hw, ICE_DBG_PTP, "Failed to read CGU register 0x%04x, err %d\n",
++			  addr, err);
++		return err;
++	}
++
++	*val = cgu_msg.data;
++
++	return err;
++}
++
++/**
++ * ice_write_cgu_reg_e82x - Write a CGU register
++ * @hw: pointer to the HW struct
++ * @addr: Register address to write
++ * @val: value to write into the register
++ *
++ * Write the specified value to a register of the Clock Generation Unit. Only
++ * applicable to E822 devices.
++ */
++static int ice_write_cgu_reg_e82x(struct ice_hw *hw, u32 addr, u32 val)
++{
++	struct ice_sbq_msg_input cgu_msg;
++	int err;
++
++	cgu_msg.opcode = ice_sbq_msg_wr;
++	cgu_msg.dest_dev = cgu;
++	cgu_msg.msg_addr_low = addr;
++	cgu_msg.msg_addr_high = 0x0;
++	cgu_msg.data = val;
++
++	err = ice_sbq_rw_reg(hw, &cgu_msg);
++	if (err) {
++		ice_debug(hw, ICE_DBG_PTP, "Failed to write CGU register 0x%04x, err %d\n",
++			  addr, err);
++		return err;
++	}
++
++	return err;
++}
++
++/**
++ * ice_clk_freq_str - Convert time_ref_freq to string
++ * @clk_freq: Clock frequency
++ *
++ * Convert the specified TIME_REF clock frequency to a string.
++ */
++static const char *ice_clk_freq_str(u8 clk_freq)
++{
++	switch ((enum ice_time_ref_freq)clk_freq) {
++	case ICE_TIME_REF_FREQ_25_000:
++		return "25 MHz";
++	case ICE_TIME_REF_FREQ_122_880:
++		return "122.88 MHz";
++	case ICE_TIME_REF_FREQ_125_000:
++		return "125 MHz";
++	case ICE_TIME_REF_FREQ_153_600:
++		return "153.6 MHz";
++	case ICE_TIME_REF_FREQ_156_250:
++		return "156.25 MHz";
++	case ICE_TIME_REF_FREQ_245_760:
++		return "245.76 MHz";
++	default:
++		return "Unknown";
++	}
++}
++
++/**
++ * ice_clk_src_str - Convert time_ref_src to string
++ * @clk_src: Clock source
++ *
++ * Convert the specified clock source to its string name.
++ */
++static const char *ice_clk_src_str(u8 clk_src)
++{
++	switch ((enum ice_clk_src)clk_src) {
++	case ICE_CLK_SRC_TCX0:
++		return "TCX0";
++	case ICE_CLK_SRC_TIME_REF:
++		return "TIME_REF";
++	default:
++		return "Unknown";
++	}
++}
++
++/**
++ * ice_cfg_cgu_pll_e82x - Configure the Clock Generation Unit
++ * @hw: pointer to the HW struct
++ * @clk_freq: Clock frequency to program
++ * @clk_src: Clock source to select (TIME_REF, or TCX0)
++ *
++ * Configure the Clock Generation Unit with the desired clock frequency and
++ * time reference, enabling the PLL which drives the PTP hardware clock.
++ */
++static int ice_cfg_cgu_pll_e82x(struct ice_hw *hw,
++				enum ice_time_ref_freq clk_freq,
++				enum ice_clk_src clk_src)
++{
++	union tspll_ro_bwm_lf bwm_lf;
++	union nac_cgu_dword19 dw19;
++	union nac_cgu_dword22 dw22;
++	union nac_cgu_dword24 dw24;
++	union nac_cgu_dword9 dw9;
++	int err;
++
++	if (clk_freq >= NUM_ICE_TIME_REF_FREQ) {
++		dev_warn(ice_hw_to_dev(hw), "Invalid TIME_REF frequency %u\n",
++			 clk_freq);
++		return -EINVAL;
++	}
++
++	if (clk_src >= NUM_ICE_CLK_SRC) {
++		dev_warn(ice_hw_to_dev(hw), "Invalid clock source %u\n",
++			 clk_src);
++		return -EINVAL;
++	}
++
++	if (clk_src == ICE_CLK_SRC_TCX0 &&
++	    clk_freq != ICE_TIME_REF_FREQ_25_000) {
++		dev_warn(ice_hw_to_dev(hw),
++			 "TCX0 only supports 25 MHz frequency\n");
++		return -EINVAL;
++	}
++
++	err = ice_read_cgu_reg_e82x(hw, NAC_CGU_DWORD9, &dw9.val);
++	if (err)
++		return err;
++
++	err = ice_read_cgu_reg_e82x(hw, NAC_CGU_DWORD24, &dw24.val);
++	if (err)
++		return err;
++
++	err = ice_read_cgu_reg_e82x(hw, TSPLL_RO_BWM_LF, &bwm_lf.val);
++	if (err)
++		return err;
++
++	/* Log the current clock configuration */
++	ice_debug(hw, ICE_DBG_PTP, "Current CGU configuration -- %s, clk_src %s, clk_freq %s, PLL %s\n",
++		  dw24.field.ts_pll_enable ? "enabled" : "disabled",
++		  ice_clk_src_str(dw24.field.time_ref_sel),
++		  ice_clk_freq_str(dw9.field.time_ref_freq_sel),
++		  bwm_lf.field.plllock_true_lock_cri ? "locked" : "unlocked");
++
++	/* Disable the PLL before changing the clock source or frequency */
++	if (dw24.field.ts_pll_enable) {
++		dw24.field.ts_pll_enable = 0;
++
++		err = ice_write_cgu_reg_e82x(hw, NAC_CGU_DWORD24, dw24.val);
++		if (err)
++			return err;
++	}
++
++	/* Set the frequency */
++	dw9.field.time_ref_freq_sel = clk_freq;
++	err = ice_write_cgu_reg_e82x(hw, NAC_CGU_DWORD9, dw9.val);
++	if (err)
++		return err;
++
++	/* Configure the TS PLL feedback divisor */
++	err = ice_read_cgu_reg_e82x(hw, NAC_CGU_DWORD19, &dw19.val);
++	if (err)
++		return err;
++
++	dw19.field.tspll_fbdiv_intgr = e822_cgu_params[clk_freq].feedback_div;
++	dw19.field.tspll_ndivratio = 1;
++
++	err = ice_write_cgu_reg_e82x(hw, NAC_CGU_DWORD19, dw19.val);
++	if (err)
++		return err;
++
++	/* Configure the TS PLL post divisor */
++	err = ice_read_cgu_reg_e82x(hw, NAC_CGU_DWORD22, &dw22.val);
++	if (err)
++		return err;
++
++	dw22.field.time1588clk_div = e822_cgu_params[clk_freq].post_pll_div;
++	dw22.field.time1588clk_sel_div2 = 0;
++
++	err = ice_write_cgu_reg_e82x(hw, NAC_CGU_DWORD22, dw22.val);
++	if (err)
++		return err;
++
++	/* Configure the TS PLL pre divisor and clock source */
++	err = ice_read_cgu_reg_e82x(hw, NAC_CGU_DWORD24, &dw24.val);
++	if (err)
++		return err;
++
++	dw24.field.ref1588_ck_div = e822_cgu_params[clk_freq].refclk_pre_div;
++	dw24.field.tspll_fbdiv_frac = e822_cgu_params[clk_freq].frac_n_div;
++	dw24.field.time_ref_sel = clk_src;
++
++	err = ice_write_cgu_reg_e82x(hw, NAC_CGU_DWORD24, dw24.val);
++	if (err)
++		return err;
++
++	/* Finally, enable the PLL */
++	dw24.field.ts_pll_enable = 1;
++
++	err = ice_write_cgu_reg_e82x(hw, NAC_CGU_DWORD24, dw24.val);
++	if (err)
++		return err;
++
++	/* Wait to verify if the PLL locks */
++	usleep_range(1000, 5000);
++
++	err = ice_read_cgu_reg_e82x(hw, TSPLL_RO_BWM_LF, &bwm_lf.val);
++	if (err)
++		return err;
++
++	if (!bwm_lf.field.plllock_true_lock_cri) {
++		dev_warn(ice_hw_to_dev(hw), "CGU PLL failed to lock\n");
++		return -EBUSY;
++	}
++
++	/* Log the current clock configuration */
++	ice_debug(hw, ICE_DBG_PTP, "New CGU configuration -- %s, clk_src %s, clk_freq %s, PLL %s\n",
++		  dw24.field.ts_pll_enable ? "enabled" : "disabled",
++		  ice_clk_src_str(dw24.field.time_ref_sel),
++		  ice_clk_freq_str(dw9.field.time_ref_freq_sel),
++		  bwm_lf.field.plllock_true_lock_cri ? "locked" : "unlocked");
++
++	return 0;
++}
++
++/**
++ * ice_init_cgu_e82x - Initialize CGU with settings from firmware
++ * @hw: pointer to the HW structure
++ *
++ * Initialize the Clock Generation Unit of the E822 device.
++ */
++static int ice_init_cgu_e82x(struct ice_hw *hw)
++{
++	struct ice_ts_func_info *ts_info = &hw->func_caps.ts_func_info;
++	union tspll_cntr_bist_settings cntr_bist;
++	int err;
++
++	err = ice_read_cgu_reg_e82x(hw, TSPLL_CNTR_BIST_SETTINGS,
++				    &cntr_bist.val);
++	if (err)
++		return err;
++
++	/* Disable sticky lock detection so lock err reported is accurate */
++	cntr_bist.field.i_plllock_sel_0 = 0;
++	cntr_bist.field.i_plllock_sel_1 = 0;
++
++	err = ice_write_cgu_reg_e82x(hw, TSPLL_CNTR_BIST_SETTINGS,
++				     cntr_bist.val);
++	if (err)
++		return err;
++
++	/* Configure the CGU PLL using the parameters from the function
++	 * capabilities.
++	 */
++	err = ice_cfg_cgu_pll_e82x(hw, ts_info->time_ref,
++				   (enum ice_clk_src)ts_info->clk_src);
++	if (err)
++		return err;
++
++	return 0;
++}
++
+ /**
+  * ice_ptp_tmr_cmd_to_src_reg - Convert to source timer command value
+  * @hw: pointer to HW struct
+@@ -567,214 +848,21 @@ ice_read_64b_phy_reg_e82x(struct ice_hw *hw, u8 port, u16 low_addr, u64 *val)
+ }
+ 
+ /**
+- * ice_write_phy_reg_e82x - Write a PHY register
+- * @hw: pointer to the HW struct
+- * @port: PHY port to write to
+- * @offset: PHY register offset to write
+- * @val: The value to write to the register
+- *
+- * Write a PHY register for the given port over the device sideband queue.
+- */
+-static int
+-ice_write_phy_reg_e82x(struct ice_hw *hw, u8 port, u16 offset, u32 val)
+-{
+-	struct ice_sbq_msg_input msg = {0};
+-	int err;
+-
+-	ice_fill_phy_msg_e82x(hw, &msg, port, offset);
+-	msg.opcode = ice_sbq_msg_wr;
+-	msg.data = val;
+-
+-	err = ice_sbq_rw_reg(hw, &msg);
+-	if (err) {
+-		ice_debug(hw, ICE_DBG_PTP, "Failed to send message to PHY, err %d\n",
+-			  err);
+-		return err;
+-	}
+-
+-	return 0;
+-}
+-
+-/**
+- * ice_write_40b_phy_reg_e82x - Write a 40b value to the PHY
+- * @hw: pointer to the HW struct
+- * @port: port to write to
+- * @low_addr: offset of the low register
+- * @val: 40b value to write
+- *
+- * Write the provided 40b value to the two associated registers by splitting
+- * it up into two chunks, the lower 8 bits and the upper 32 bits.
+- */
+-static int
+-ice_write_40b_phy_reg_e82x(struct ice_hw *hw, u8 port, u16 low_addr, u64 val)
+-{
+-	u32 low, high;
+-	u16 high_addr;
+-	int err;
+-
+-	/* Only operate on registers known to be split into a lower 8 bit
+-	 * register and an upper 32 bit register.
+-	 */
+-	if (!ice_is_40b_phy_reg_e82x(low_addr, &high_addr)) {
+-		ice_debug(hw, ICE_DBG_PTP, "Invalid 40b register addr 0x%08x\n",
+-			  low_addr);
+-		return -EINVAL;
+-	}
+-
+-	low = (u32)(val & P_REG_40B_LOW_M);
+-	high = (u32)(val >> P_REG_40B_HIGH_S);
+-
+-	err = ice_write_phy_reg_e82x(hw, port, low_addr, low);
+-	if (err) {
+-		ice_debug(hw, ICE_DBG_PTP, "Failed to write to low register 0x%08x\n, err %d",
+-			  low_addr, err);
+-		return err;
+-	}
+-
+-	err = ice_write_phy_reg_e82x(hw, port, high_addr, high);
+-	if (err) {
+-		ice_debug(hw, ICE_DBG_PTP, "Failed to write to high register 0x%08x\n, err %d",
+-			  high_addr, err);
+-		return err;
+-	}
+-
+-	return 0;
+-}
+-
+-/**
+- * ice_write_64b_phy_reg_e82x - Write a 64bit value to PHY registers
+- * @hw: pointer to the HW struct
+- * @port: PHY port to read from
+- * @low_addr: offset of the lower register to read from
+- * @val: the contents of the 64bit value to write to PHY
+- *
+- * Write the 64bit value to the two associated 32bit PHY registers. The offset
+- * is always specified as the lower register, and the high address is looked
+- * up. This function only operates on registers known to be two parts of
+- * a 64bit value.
+- */
+-static int
+-ice_write_64b_phy_reg_e82x(struct ice_hw *hw, u8 port, u16 low_addr, u64 val)
+-{
+-	u32 low, high;
+-	u16 high_addr;
+-	int err;
+-
+-	/* Only operate on registers known to be split into two 32bit
+-	 * registers.
+-	 */
+-	if (!ice_is_64b_phy_reg_e82x(low_addr, &high_addr)) {
+-		ice_debug(hw, ICE_DBG_PTP, "Invalid 64b register addr 0x%08x\n",
+-			  low_addr);
+-		return -EINVAL;
+-	}
+-
+-	low = lower_32_bits(val);
+-	high = upper_32_bits(val);
+-
+-	err = ice_write_phy_reg_e82x(hw, port, low_addr, low);
+-	if (err) {
+-		ice_debug(hw, ICE_DBG_PTP, "Failed to write to low register 0x%08x\n, err %d",
+-			  low_addr, err);
+-		return err;
+-	}
+-
+-	err = ice_write_phy_reg_e82x(hw, port, high_addr, high);
+-	if (err) {
+-		ice_debug(hw, ICE_DBG_PTP, "Failed to write to high register 0x%08x\n, err %d",
+-			  high_addr, err);
+-		return err;
+-	}
+-
+-	return 0;
+-}
+-
+-/**
+- * ice_fill_quad_msg_e82x - Fill message data for quad register access
+- * @hw: pointer to the HW struct
+- * @msg: the PHY message buffer to fill in
+- * @quad: the quad to access
+- * @offset: the register offset
+- *
+- * Fill a message buffer for accessing a register in a quad shared between
+- * multiple PHYs.
+- */
+-static int ice_fill_quad_msg_e82x(struct ice_hw *hw,
+-				  struct ice_sbq_msg_input *msg, u8 quad,
+-				  u16 offset)
+-{
+-	u32 addr;
+-
+-	if (quad >= ICE_GET_QUAD_NUM(hw->ptp.num_lports))
+-		return -EINVAL;
+-
+-	msg->dest_dev = rmn_0;
+-
+-	if (!(quad % ICE_GET_QUAD_NUM(hw->ptp.ports_per_phy)))
+-		addr = Q_0_BASE + offset;
+-	else
+-		addr = Q_1_BASE + offset;
+-
+-	msg->msg_addr_low = lower_16_bits(addr);
+-	msg->msg_addr_high = upper_16_bits(addr);
+-
+-	return 0;
+-}
+-
+-/**
+- * ice_read_quad_reg_e82x - Read a PHY quad register
+- * @hw: pointer to the HW struct
+- * @quad: quad to read from
+- * @offset: quad register offset to read
+- * @val: on return, the contents read from the quad
+- *
+- * Read a quad register over the device sideband queue. Quad registers are
+- * shared between multiple PHYs.
+- */
+-int
+-ice_read_quad_reg_e82x(struct ice_hw *hw, u8 quad, u16 offset, u32 *val)
+-{
+-	struct ice_sbq_msg_input msg = {0};
+-	int err;
+-
+-	err = ice_fill_quad_msg_e82x(hw, &msg, quad, offset);
+-	if (err)
+-		return err;
+-
+-	msg.opcode = ice_sbq_msg_rd;
+-
+-	err = ice_sbq_rw_reg(hw, &msg);
+-	if (err) {
+-		ice_debug(hw, ICE_DBG_PTP, "Failed to send message to PHY, err %d\n",
+-			  err);
+-		return err;
+-	}
+-
+-	*val = msg.data;
+-
+-	return 0;
+-}
+-
+-/**
+- * ice_write_quad_reg_e82x - Write a PHY quad register
++ * ice_write_phy_reg_e82x - Write a PHY register
+  * @hw: pointer to the HW struct
+- * @quad: quad to write to
+- * @offset: quad register offset to write
++ * @port: PHY port to write to
++ * @offset: PHY register offset to write
+  * @val: The value to write to the register
+  *
+- * Write a quad register over the device sideband queue. Quad registers are
+- * shared between multiple PHYs.
++ * Write a PHY register for the given port over the device sideband queue.
+  */
+-int
+-ice_write_quad_reg_e82x(struct ice_hw *hw, u8 quad, u16 offset, u32 val)
++static int
++ice_write_phy_reg_e82x(struct ice_hw *hw, u8 port, u16 offset, u32 val)
+ {
+ 	struct ice_sbq_msg_input msg = {0};
+ 	int err;
+ 
+-	err = ice_fill_quad_msg_e82x(hw, &msg, quad, offset);
+-	if (err)
+-		return err;
+-
++	ice_fill_phy_msg_e82x(hw, &msg, port, offset);
+ 	msg.opcode = ice_sbq_msg_wr;
+ 	msg.data = val;
+ 
+@@ -789,394 +877,304 @@ ice_write_quad_reg_e82x(struct ice_hw *hw, u8 quad, u16 offset, u32 val)
+ }
+ 
+ /**
+- * ice_read_phy_tstamp_e82x - Read a PHY timestamp out of the quad block
++ * ice_write_40b_phy_reg_e82x - Write a 40b value to the PHY
+  * @hw: pointer to the HW struct
+- * @quad: the quad to read from
+- * @idx: the timestamp index to read
+- * @tstamp: on return, the 40bit timestamp value
++ * @port: port to write to
++ * @low_addr: offset of the low register
++ * @val: 40b value to write
+  *
+- * Read a 40bit timestamp value out of the two associated registers in the
+- * quad memory block that is shared between the internal PHYs of the E822
+- * family of devices.
++ * Write the provided 40b value to the two associated registers by splitting
++ * it up into two chunks, the lower 8 bits and the upper 32 bits.
+  */
+ static int
+-ice_read_phy_tstamp_e82x(struct ice_hw *hw, u8 quad, u8 idx, u64 *tstamp)
++ice_write_40b_phy_reg_e82x(struct ice_hw *hw, u8 port, u16 low_addr, u64 val)
+ {
+-	u16 lo_addr, hi_addr;
+-	u32 lo, hi;
++	u32 low, high;
++	u16 high_addr;
+ 	int err;
+ 
+-	lo_addr = (u16)TS_L(Q_REG_TX_MEMORY_BANK_START, idx);
+-	hi_addr = (u16)TS_H(Q_REG_TX_MEMORY_BANK_START, idx);
++	/* Only operate on registers known to be split into a lower 8 bit
++	 * register and an upper 32 bit register.
++	 */
++	if (!ice_is_40b_phy_reg_e82x(low_addr, &high_addr)) {
++		ice_debug(hw, ICE_DBG_PTP, "Invalid 40b register addr 0x%08x\n",
++			  low_addr);
++		return -EINVAL;
++	}
+ 
+-	err = ice_read_quad_reg_e82x(hw, quad, lo_addr, &lo);
++	low = (u32)(val & P_REG_40B_LOW_M);
++	high = (u32)(val >> P_REG_40B_HIGH_S);
++
++	err = ice_write_phy_reg_e82x(hw, port, low_addr, low);
+ 	if (err) {
+-		ice_debug(hw, ICE_DBG_PTP, "Failed to read low PTP timestamp register, err %d\n",
+-			  err);
++		ice_debug(hw, ICE_DBG_PTP, "Failed to write to low register 0x%08x\n, err %d",
++			  low_addr, err);
+ 		return err;
+ 	}
+ 
+-	err = ice_read_quad_reg_e82x(hw, quad, hi_addr, &hi);
++	err = ice_write_phy_reg_e82x(hw, port, high_addr, high);
+ 	if (err) {
+-		ice_debug(hw, ICE_DBG_PTP, "Failed to read high PTP timestamp register, err %d\n",
+-			  err);
++		ice_debug(hw, ICE_DBG_PTP, "Failed to write to high register 0x%08x\n, err %d",
++			  high_addr, err);
+ 		return err;
+ 	}
+ 
+-	/* For E822 based internal PHYs, the timestamp is reported with the
+-	 * lower 8 bits in the low register, and the upper 32 bits in the high
+-	 * register.
+-	 */
+-	*tstamp = ((u64)hi) << TS_PHY_HIGH_S | ((u64)lo & TS_PHY_LOW_M);
+-
+ 	return 0;
+ }
+ 
+ /**
+- * ice_clear_phy_tstamp_e82x - Clear a timestamp from the quad block
++ * ice_write_64b_phy_reg_e82x - Write a 64bit value to PHY registers
+  * @hw: pointer to the HW struct
+- * @quad: the quad to read from
+- * @idx: the timestamp index to reset
+- *
+- * Read the timestamp out of the quad to clear its timestamp status bit from
+- * the PHY quad block that is shared between the internal PHYs of the E822
+- * devices.
+- *
+- * Note that unlike E810, software cannot directly write to the quad memory
+- * bank registers. E822 relies on the ice_get_phy_tx_tstamp_ready() function
+- * to determine which timestamps are valid. Reading a timestamp auto-clears
+- * the valid bit.
+- *
+- * To directly clear the contents of the timestamp block entirely, discarding
+- * all timestamp data at once, software should instead use
+- * ice_ptp_reset_ts_memory_quad_e82x().
++ * @port: PHY port to read from
++ * @low_addr: offset of the lower register to read from
++ * @val: the contents of the 64bit value to write to PHY
+  *
+- * This function should only be called on an idx whose bit is set according to
+- * ice_get_phy_tx_tstamp_ready().
++ * Write the 64bit value to the two associated 32bit PHY registers. The offset
++ * is always specified as the lower register, and the high address is looked
++ * up. This function only operates on registers known to be two parts of
++ * a 64bit value.
+  */
+ static int
+-ice_clear_phy_tstamp_e82x(struct ice_hw *hw, u8 quad, u8 idx)
++ice_write_64b_phy_reg_e82x(struct ice_hw *hw, u8 port, u16 low_addr, u64 val)
+ {
+-	u64 unused_tstamp;
++	u32 low, high;
++	u16 high_addr;
+ 	int err;
+ 
+-	err = ice_read_phy_tstamp_e82x(hw, quad, idx, &unused_tstamp);
+-	if (err) {
+-		ice_debug(hw, ICE_DBG_PTP, "Failed to read the timestamp register for quad %u, idx %u, err %d\n",
+-			  quad, idx, err);
+-		return err;
++	/* Only operate on registers known to be split into two 32bit
++	 * registers.
++	 */
++	if (!ice_is_64b_phy_reg_e82x(low_addr, &high_addr)) {
++		ice_debug(hw, ICE_DBG_PTP, "Invalid 64b register addr 0x%08x\n",
++			  low_addr);
++		return -EINVAL;
+ 	}
+ 
+-	return 0;
+-}
+-
+-/**
+- * ice_ptp_reset_ts_memory_quad_e82x - Clear all timestamps from the quad block
+- * @hw: pointer to the HW struct
+- * @quad: the quad to read from
+- *
+- * Clear all timestamps from the PHY quad block that is shared between the
+- * internal PHYs on the E822 devices.
+- */
+-void ice_ptp_reset_ts_memory_quad_e82x(struct ice_hw *hw, u8 quad)
+-{
+-	ice_write_quad_reg_e82x(hw, quad, Q_REG_TS_CTRL, Q_REG_TS_CTRL_M);
+-	ice_write_quad_reg_e82x(hw, quad, Q_REG_TS_CTRL, ~(u32)Q_REG_TS_CTRL_M);
+-}
+-
+-/**
+- * ice_ptp_reset_ts_memory_e82x - Clear all timestamps from all quad blocks
+- * @hw: pointer to the HW struct
+- */
+-static void ice_ptp_reset_ts_memory_e82x(struct ice_hw *hw)
+-{
+-	unsigned int quad;
+-
+-	for (quad = 0; quad < ICE_GET_QUAD_NUM(hw->ptp.num_lports); quad++)
+-		ice_ptp_reset_ts_memory_quad_e82x(hw, quad);
+-}
+-
+-/**
+- * ice_read_cgu_reg_e82x - Read a CGU register
+- * @hw: pointer to the HW struct
+- * @addr: Register address to read
+- * @val: storage for register value read
+- *
+- * Read the contents of a register of the Clock Generation Unit. Only
+- * applicable to E822 devices.
+- */
+-static int
+-ice_read_cgu_reg_e82x(struct ice_hw *hw, u32 addr, u32 *val)
+-{
+-	struct ice_sbq_msg_input cgu_msg;
+-	int err;
+-
+-	cgu_msg.opcode = ice_sbq_msg_rd;
+-	cgu_msg.dest_dev = cgu;
+-	cgu_msg.msg_addr_low = addr;
+-	cgu_msg.msg_addr_high = 0x0;
++	low = lower_32_bits(val);
++	high = upper_32_bits(val);
+ 
+-	err = ice_sbq_rw_reg(hw, &cgu_msg);
++	err = ice_write_phy_reg_e82x(hw, port, low_addr, low);
+ 	if (err) {
+-		ice_debug(hw, ICE_DBG_PTP, "Failed to read CGU register 0x%04x, err %d\n",
+-			  addr, err);
++		ice_debug(hw, ICE_DBG_PTP, "Failed to write to low register 0x%08x\n, err %d",
++			  low_addr, err);
+ 		return err;
+ 	}
+ 
+-	*val = cgu_msg.data;
++	err = ice_write_phy_reg_e82x(hw, port, high_addr, high);
++	if (err) {
++		ice_debug(hw, ICE_DBG_PTP, "Failed to write to high register 0x%08x\n, err %d",
++			  high_addr, err);
++		return err;
++	}
+ 
+-	return err;
++	return 0;
+ }
+ 
+ /**
+- * ice_write_cgu_reg_e82x - Write a CGU register
++ * ice_fill_quad_msg_e82x - Fill message data for quad register access
+  * @hw: pointer to the HW struct
+- * @addr: Register address to write
+- * @val: value to write into the register
++ * @msg: the PHY message buffer to fill in
++ * @quad: the quad to access
++ * @offset: the register offset
+  *
+- * Write the specified value to a register of the Clock Generation Unit. Only
+- * applicable to E822 devices.
++ * Fill a message buffer for accessing a register in a quad shared between
++ * multiple PHYs.
+  */
+-static int
+-ice_write_cgu_reg_e82x(struct ice_hw *hw, u32 addr, u32 val)
++static int ice_fill_quad_msg_e82x(struct ice_hw *hw,
++				  struct ice_sbq_msg_input *msg, u8 quad,
++				  u16 offset)
+ {
+-	struct ice_sbq_msg_input cgu_msg;
+-	int err;
+-
+-	cgu_msg.opcode = ice_sbq_msg_wr;
+-	cgu_msg.dest_dev = cgu;
+-	cgu_msg.msg_addr_low = addr;
+-	cgu_msg.msg_addr_high = 0x0;
+-	cgu_msg.data = val;
++	u32 addr;
+ 
+-	err = ice_sbq_rw_reg(hw, &cgu_msg);
+-	if (err) {
+-		ice_debug(hw, ICE_DBG_PTP, "Failed to write CGU register 0x%04x, err %d\n",
+-			  addr, err);
+-		return err;
+-	}
++	if (quad >= ICE_GET_QUAD_NUM(hw->ptp.num_lports))
++		return -EINVAL;
+ 
+-	return err;
+-}
++	msg->dest_dev = rmn_0;
+ 
+-/**
+- * ice_clk_freq_str - Convert time_ref_freq to string
+- * @clk_freq: Clock frequency
+- *
+- * Convert the specified TIME_REF clock frequency to a string.
+- */
+-static const char *ice_clk_freq_str(u8 clk_freq)
+-{
+-	switch ((enum ice_time_ref_freq)clk_freq) {
+-	case ICE_TIME_REF_FREQ_25_000:
+-		return "25 MHz";
+-	case ICE_TIME_REF_FREQ_122_880:
+-		return "122.88 MHz";
+-	case ICE_TIME_REF_FREQ_125_000:
+-		return "125 MHz";
+-	case ICE_TIME_REF_FREQ_153_600:
+-		return "153.6 MHz";
+-	case ICE_TIME_REF_FREQ_156_250:
+-		return "156.25 MHz";
+-	case ICE_TIME_REF_FREQ_245_760:
+-		return "245.76 MHz";
+-	default:
+-		return "Unknown";
+-	}
+-}
++	if (!(quad % ICE_GET_QUAD_NUM(hw->ptp.ports_per_phy)))
++		addr = Q_0_BASE + offset;
++	else
++		addr = Q_1_BASE + offset;
+ 
+-/**
+- * ice_clk_src_str - Convert time_ref_src to string
+- * @clk_src: Clock source
+- *
+- * Convert the specified clock source to its string name.
+- */
+-static const char *ice_clk_src_str(u8 clk_src)
+-{
+-	switch ((enum ice_clk_src)clk_src) {
+-	case ICE_CLK_SRC_TCX0:
+-		return "TCX0";
+-	case ICE_CLK_SRC_TIME_REF:
+-		return "TIME_REF";
+-	default:
+-		return "Unknown";
+-	}
++	msg->msg_addr_low = lower_16_bits(addr);
++	msg->msg_addr_high = upper_16_bits(addr);
++
++	return 0;
+ }
+ 
+ /**
+- * ice_cfg_cgu_pll_e82x - Configure the Clock Generation Unit
++ * ice_read_quad_reg_e82x - Read a PHY quad register
+  * @hw: pointer to the HW struct
+- * @clk_freq: Clock frequency to program
+- * @clk_src: Clock source to select (TIME_REF, or TCX0)
++ * @quad: quad to read from
++ * @offset: quad register offset to read
++ * @val: on return, the contents read from the quad
+  *
+- * Configure the Clock Generation Unit with the desired clock frequency and
+- * time reference, enabling the PLL which drives the PTP hardware clock.
++ * Read a quad register over the device sideband queue. Quad registers are
++ * shared between multiple PHYs.
+  */
+-static int
+-ice_cfg_cgu_pll_e82x(struct ice_hw *hw, enum ice_time_ref_freq clk_freq,
+-		     enum ice_clk_src clk_src)
++int
++ice_read_quad_reg_e82x(struct ice_hw *hw, u8 quad, u16 offset, u32 *val)
+ {
+-	union tspll_ro_bwm_lf bwm_lf;
+-	union nac_cgu_dword19 dw19;
+-	union nac_cgu_dword22 dw22;
+-	union nac_cgu_dword24 dw24;
+-	union nac_cgu_dword9 dw9;
++	struct ice_sbq_msg_input msg = {0};
+ 	int err;
+ 
+-	if (clk_freq >= NUM_ICE_TIME_REF_FREQ) {
+-		dev_warn(ice_hw_to_dev(hw), "Invalid TIME_REF frequency %u\n",
+-			 clk_freq);
+-		return -EINVAL;
+-	}
+-
+-	if (clk_src >= NUM_ICE_CLK_SRC) {
+-		dev_warn(ice_hw_to_dev(hw), "Invalid clock source %u\n",
+-			 clk_src);
+-		return -EINVAL;
+-	}
+-
+-	if (clk_src == ICE_CLK_SRC_TCX0 &&
+-	    clk_freq != ICE_TIME_REF_FREQ_25_000) {
+-		dev_warn(ice_hw_to_dev(hw),
+-			 "TCX0 only supports 25 MHz frequency\n");
+-		return -EINVAL;
+-	}
+-
+-	err = ice_read_cgu_reg_e82x(hw, NAC_CGU_DWORD9, &dw9.val);
++	err = ice_fill_quad_msg_e82x(hw, &msg, quad, offset);
+ 	if (err)
+ 		return err;
+ 
+-	err = ice_read_cgu_reg_e82x(hw, NAC_CGU_DWORD24, &dw24.val);
+-	if (err)
+-		return err;
++	msg.opcode = ice_sbq_msg_rd;
+ 
+-	err = ice_read_cgu_reg_e82x(hw, TSPLL_RO_BWM_LF, &bwm_lf.val);
+-	if (err)
++	err = ice_sbq_rw_reg(hw, &msg);
++	if (err) {
++		ice_debug(hw, ICE_DBG_PTP, "Failed to send message to PHY, err %d\n",
++			  err);
+ 		return err;
+-
+-	/* Log the current clock configuration */
+-	ice_debug(hw, ICE_DBG_PTP, "Current CGU configuration -- %s, clk_src %s, clk_freq %s, PLL %s\n",
 -		  dw24.field.ts_pll_enable ? "enabled" : "disabled",
 -		  ice_clk_src_str(dw24.field.time_ref_sel),
 -		  ice_clk_freq_str(dw9.field.time_ref_freq_sel),
 -		  bwm_lf.field.plllock_true_lock_cri ? "locked" : "unlocked");
-+		  dw24.ts_pll_enable ? "enabled" : "disabled",
-+		  ice_clk_src_str(dw24.time_ref_sel),
-+		  ice_clk_freq_str(dw9.time_ref_freq_sel),
-+		  bwm_lf.plllock_true_lock_cri ? "locked" : "unlocked");
- 
- 	/* Disable the PLL before changing the clock source or frequency */
+-
+-	/* Disable the PLL before changing the clock source or frequency */
 -	if (dw24.field.ts_pll_enable) {
 -		dw24.field.ts_pll_enable = 0;
-+	if (dw24.ts_pll_enable) {
-+		dw24.ts_pll_enable = 0;
- 
- 		err = ice_write_cgu_reg_e82x(hw, NAC_CGU_DWORD24, dw24.val);
- 		if (err)
-@@ -400,7 +400,7 @@ static int ice_cfg_cgu_pll_e82x(struct ice_hw *hw,
+-
+-		err = ice_write_cgu_reg_e82x(hw, NAC_CGU_DWORD24, dw24.val);
+-		if (err)
+-			return err;
  	}
  
- 	/* Set the frequency */
+-	/* Set the frequency */
 -	dw9.field.time_ref_freq_sel = clk_freq;
-+	dw9.time_ref_freq_sel = clk_freq;
- 	err = ice_write_cgu_reg_e82x(hw, NAC_CGU_DWORD9, dw9.val);
- 	if (err)
- 		return err;
-@@ -410,8 +410,8 @@ static int ice_cfg_cgu_pll_e82x(struct ice_hw *hw,
- 	if (err)
- 		return err;
+-	err = ice_write_cgu_reg_e82x(hw, NAC_CGU_DWORD9, dw9.val);
+-	if (err)
+-		return err;
+-
+-	/* Configure the TS PLL feedback divisor */
+-	err = ice_read_cgu_reg_e82x(hw, NAC_CGU_DWORD19, &dw19.val);
+-	if (err)
+-		return err;
++	*val = msg.data;
  
 -	dw19.field.tspll_fbdiv_intgr = e822_cgu_params[clk_freq].feedback_div;
 -	dw19.field.tspll_ndivratio = 1;
-+	dw19.tspll_fbdiv_intgr = e822_cgu_params[clk_freq].feedback_div;
-+	dw19.tspll_ndivratio = 1;
++	return 0;
++}
  
- 	err = ice_write_cgu_reg_e82x(hw, NAC_CGU_DWORD19, dw19.val);
- 	if (err)
-@@ -422,8 +422,8 @@ static int ice_cfg_cgu_pll_e82x(struct ice_hw *hw,
+-	err = ice_write_cgu_reg_e82x(hw, NAC_CGU_DWORD19, dw19.val);
+-	if (err)
+-		return err;
++/**
++ * ice_write_quad_reg_e82x - Write a PHY quad register
++ * @hw: pointer to the HW struct
++ * @quad: quad to write to
++ * @offset: quad register offset to write
++ * @val: The value to write to the register
++ *
++ * Write a quad register over the device sideband queue. Quad registers are
++ * shared between multiple PHYs.
++ */
++int
++ice_write_quad_reg_e82x(struct ice_hw *hw, u8 quad, u16 offset, u32 val)
++{
++	struct ice_sbq_msg_input msg = {0};
++	int err;
+ 
+-	/* Configure the TS PLL post divisor */
+-	err = ice_read_cgu_reg_e82x(hw, NAC_CGU_DWORD22, &dw22.val);
++	err = ice_fill_quad_msg_e82x(hw, &msg, quad, offset);
  	if (err)
  		return err;
  
 -	dw22.field.time1588clk_div = e822_cgu_params[clk_freq].post_pll_div;
 -	dw22.field.time1588clk_sel_div2 = 0;
-+	dw22.time1588clk_div = e822_cgu_params[clk_freq].post_pll_div;
-+	dw22.time1588clk_sel_div2 = 0;
+-
+-	err = ice_write_cgu_reg_e82x(hw, NAC_CGU_DWORD22, dw22.val);
+-	if (err)
+-		return err;
++	msg.opcode = ice_sbq_msg_wr;
++	msg.data = val;
  
- 	err = ice_write_cgu_reg_e82x(hw, NAC_CGU_DWORD22, dw22.val);
- 	if (err)
-@@ -434,16 +434,16 @@ static int ice_cfg_cgu_pll_e82x(struct ice_hw *hw,
- 	if (err)
+-	/* Configure the TS PLL pre divisor and clock source */
+-	err = ice_read_cgu_reg_e82x(hw, NAC_CGU_DWORD24, &dw24.val);
+-	if (err)
++	err = ice_sbq_rw_reg(hw, &msg);
++	if (err) {
++		ice_debug(hw, ICE_DBG_PTP, "Failed to send message to PHY, err %d\n",
++			  err);
  		return err;
++	}
  
 -	dw24.field.ref1588_ck_div = e822_cgu_params[clk_freq].refclk_pre_div;
 -	dw24.field.tspll_fbdiv_frac = e822_cgu_params[clk_freq].frac_n_div;
 -	dw24.field.time_ref_sel = clk_src;
-+	dw24.ref1588_ck_div = e822_cgu_params[clk_freq].refclk_pre_div;
-+	dw24.tspll_fbdiv_frac = e822_cgu_params[clk_freq].frac_n_div;
-+	dw24.time_ref_sel = clk_src;
++	return 0;
++}
  
- 	err = ice_write_cgu_reg_e82x(hw, NAC_CGU_DWORD24, dw24.val);
- 	if (err)
- 		return err;
+-	err = ice_write_cgu_reg_e82x(hw, NAC_CGU_DWORD24, dw24.val);
+-	if (err)
+-		return err;
++/**
++ * ice_read_phy_tstamp_e82x - Read a PHY timestamp out of the quad block
++ * @hw: pointer to the HW struct
++ * @quad: the quad to read from
++ * @idx: the timestamp index to read
++ * @tstamp: on return, the 40bit timestamp value
++ *
++ * Read a 40bit timestamp value out of the two associated registers in the
++ * quad memory block that is shared between the internal PHYs of the E822
++ * family of devices.
++ */
++static int
++ice_read_phy_tstamp_e82x(struct ice_hw *hw, u8 quad, u8 idx, u64 *tstamp)
++{
++	u16 lo_addr, hi_addr;
++	u32 lo, hi;
++	int err;
  
- 	/* Finally, enable the PLL */
+-	/* Finally, enable the PLL */
 -	dw24.field.ts_pll_enable = 1;
-+	dw24.ts_pll_enable = 1;
++	lo_addr = (u16)TS_L(Q_REG_TX_MEMORY_BANK_START, idx);
++	hi_addr = (u16)TS_H(Q_REG_TX_MEMORY_BANK_START, idx);
  
- 	err = ice_write_cgu_reg_e82x(hw, NAC_CGU_DWORD24, dw24.val);
- 	if (err)
-@@ -456,17 +456,17 @@ static int ice_cfg_cgu_pll_e82x(struct ice_hw *hw,
- 	if (err)
+-	err = ice_write_cgu_reg_e82x(hw, NAC_CGU_DWORD24, dw24.val);
+-	if (err)
++	err = ice_read_quad_reg_e82x(hw, quad, lo_addr, &lo);
++	if (err) {
++		ice_debug(hw, ICE_DBG_PTP, "Failed to read low PTP timestamp register, err %d\n",
++			  err);
  		return err;
++	}
  
+-	/* Wait to verify if the PLL locks */
+-	usleep_range(1000, 5000);
+-
+-	err = ice_read_cgu_reg_e82x(hw, TSPLL_RO_BWM_LF, &bwm_lf.val);
+-	if (err)
++	err = ice_read_quad_reg_e82x(hw, quad, hi_addr, &hi);
++	if (err) {
++		ice_debug(hw, ICE_DBG_PTP, "Failed to read high PTP timestamp register, err %d\n",
++			  err);
+ 		return err;
+-
 -	if (!bwm_lf.field.plllock_true_lock_cri) {
-+	if (!bwm_lf.plllock_true_lock_cri) {
- 		dev_warn(ice_hw_to_dev(hw), "CGU PLL failed to lock\n");
- 		return -EBUSY;
+-		dev_warn(ice_hw_to_dev(hw), "CGU PLL failed to lock\n");
+-		return -EBUSY;
  	}
  
- 	/* Log the current clock configuration */
- 	ice_debug(hw, ICE_DBG_PTP, "New CGU configuration -- %s, clk_src %s, clk_freq %s, PLL %s\n",
+-	/* Log the current clock configuration */
+-	ice_debug(hw, ICE_DBG_PTP, "New CGU configuration -- %s, clk_src %s, clk_freq %s, PLL %s\n",
 -		  dw24.field.ts_pll_enable ? "enabled" : "disabled",
 -		  ice_clk_src_str(dw24.field.time_ref_sel),
 -		  ice_clk_freq_str(dw9.field.time_ref_freq_sel),
 -		  bwm_lf.field.plllock_true_lock_cri ? "locked" : "unlocked");
-+		  dw24.ts_pll_enable ? "enabled" : "disabled",
-+		  ice_clk_src_str(dw24.time_ref_sel),
-+		  ice_clk_freq_str(dw9.time_ref_freq_sel),
-+		  bwm_lf.plllock_true_lock_cri ? "locked" : "unlocked");
++	/* For E822 based internal PHYs, the timestamp is reported with the
++	 * lower 8 bits in the low register, and the upper 32 bits in the high
++	 * register.
++	 */
++	*tstamp = ((u64)hi) << TS_PHY_HIGH_S | ((u64)lo & TS_PHY_LOW_M);
  
  	return 0;
  }
-@@ -489,8 +489,8 @@ static int ice_init_cgu_e82x(struct ice_hw *hw)
- 		return err;
  
- 	/* Disable sticky lock detection so lock err reported is accurate */
+ /**
+- * ice_init_cgu_e82x - Initialize CGU with settings from firmware
+- * @hw: pointer to the HW structure
++ * ice_clear_phy_tstamp_e82x - Clear a timestamp from the quad block
++ * @hw: pointer to the HW struct
++ * @quad: the quad to read from
++ * @idx: the timestamp index to reset
+  *
+- * Initialize the Clock Generation Unit of the E822 device.
++ * Read the timestamp out of the quad to clear its timestamp status bit from
++ * the PHY quad block that is shared between the internal PHYs of the E822
++ * devices.
++ *
++ * Note that unlike E810, software cannot directly write to the quad memory
++ * bank registers. E822 relies on the ice_get_phy_tx_tstamp_ready() function
++ * to determine which timestamps are valid. Reading a timestamp auto-clears
++ * the valid bit.
++ *
++ * To directly clear the contents of the timestamp block entirely, discarding
++ * all timestamp data at once, software should instead use
++ * ice_ptp_reset_ts_memory_quad_e82x().
++ *
++ * This function should only be called on an idx whose bit is set according to
++ * ice_get_phy_tx_tstamp_ready().
+  */
+-static int ice_init_cgu_e82x(struct ice_hw *hw)
++static int
++ice_clear_phy_tstamp_e82x(struct ice_hw *hw, u8 quad, u8 idx)
+ {
+-	struct ice_ts_func_info *ts_info = &hw->func_caps.ts_func_info;
+-	union tspll_cntr_bist_settings cntr_bist;
++	u64 unused_tstamp;
+ 	int err;
+ 
+-	err = ice_read_cgu_reg_e82x(hw, TSPLL_CNTR_BIST_SETTINGS,
+-				    &cntr_bist.val);
+-	if (err)
++	err = ice_read_phy_tstamp_e82x(hw, quad, idx, &unused_tstamp);
++	if (err) {
++		ice_debug(hw, ICE_DBG_PTP, "Failed to read the timestamp register for quad %u, idx %u, err %d\n",
++			  quad, idx, err);
+ 		return err;
++	}
+ 
+-	/* Disable sticky lock detection so lock err reported is accurate */
 -	cntr_bist.field.i_plllock_sel_0 = 0;
 -	cntr_bist.field.i_plllock_sel_1 = 0;
-+	cntr_bist.i_plllock_sel_0 = 0;
-+	cntr_bist.i_plllock_sel_1 = 0;
++	return 0;
++}
  
- 	err = ice_write_cgu_reg_e82x(hw, TSPLL_CNTR_BIST_SETTINGS,
- 				     cntr_bist.val);
+-	err = ice_write_cgu_reg_e82x(hw, TSPLL_CNTR_BIST_SETTINGS,
+-				     cntr_bist.val);
+-	if (err)
+-		return err;
++/**
++ * ice_ptp_reset_ts_memory_quad_e82x - Clear all timestamps from the quad block
++ * @hw: pointer to the HW struct
++ * @quad: the quad to read from
++ *
++ * Clear all timestamps from the PHY quad block that is shared between the
++ * internal PHYs on the E822 devices.
++ */
++void ice_ptp_reset_ts_memory_quad_e82x(struct ice_hw *hw, u8 quad)
++{
++	ice_write_quad_reg_e82x(hw, quad, Q_REG_TS_CTRL, Q_REG_TS_CTRL_M);
++	ice_write_quad_reg_e82x(hw, quad, Q_REG_TS_CTRL, ~(u32)Q_REG_TS_CTRL_M);
++}
+ 
+-	/* Configure the CGU PLL using the parameters from the function
+-	 * capabilities.
+-	 */
+-	err = ice_cfg_cgu_pll_e82x(hw, ts_info->time_ref,
+-				   (enum ice_clk_src)ts_info->clk_src);
+-	if (err)
+-		return err;
++/**
++ * ice_ptp_reset_ts_memory_e82x - Clear all timestamps from all quad blocks
++ * @hw: pointer to the HW struct
++ */
++static void ice_ptp_reset_ts_memory_e82x(struct ice_hw *hw)
++{
++	unsigned int quad;
+ 
+-	return 0;
++	for (quad = 0; quad < ICE_GET_QUAD_NUM(hw->ptp.num_lports); quad++)
++		ice_ptp_reset_ts_memory_quad_e82x(hw, quad);
+ }
+ 
+ /**
 -- 
 2.43.0
 
