@@ -4,69 +4,69 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CF399CD1280
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 27 Mar 2024 15:25:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0D0F3C54E67
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 27 Mar 2024 15:25:02 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 9034F81BE3;
-	Wed, 27 Mar 2024 15:25:00 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id BDDA682044;
+	Wed, 27 Mar 2024 15:25:01 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id KJP9kRYsPg8B; Wed, 27 Mar 2024 15:24:59 +0000 (UTC)
+ id 22oTLlgg9umO; Wed, 27 Mar 2024 15:25:00 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org EB81C812F3
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 0C56382046
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1711553099;
-	bh=Wm5jJaDrCo1M8WZ/bofSLqYCLZU+GC/xrwTQ7OkDVkc=;
+	s=default; t=1711553100;
+	bh=tgFg6sTtz6QRJVA8Re8iHDgua9BHlrBDvW701XIhinw=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=q9RUl/+8ZeGOcp+txNxU8tataZqrgLf8VXrVtwOXMBfCQ5JM77Y28JAKmhhSq4p5u
-	 YhHQs29r5rB0u3AsOWy0KX0BpHSnBe+gbMkdxHQPvbNJgLljC65Mv9JUxD1hiKBKqR
-	 7+kr7Ij8WOW6a7ov3y3nAuEwXTCLhL5LWlJLFHKkWmkWc8gZt93V0BB/if82XfHu2Q
-	 KeMiY84msSkBj/WlUirBZtKzJ3EH20JoYyO64YDh0Hs1pcMJply5EhsvqwZPJdrSIe
-	 W6TXkuyhM57wtsirATHlYP0gEOzvJw9d7iM6oDTk2PfwVaPrgsa6freXOjHvZJ6sWz
-	 4CDFc/kMleDSg==
+	b=heOR33TM08MFutWM0iuKB5GukwmWlhnBtLMrz1seEd3lqYtlmIh3aFYChsQrR2F6t
+	 bLEqomKCLSBF1Xdxv+SICSZBJjVH3SkC9V10BdiidEe2guspgaYflns+CzYk07s+mk
+	 fkRSB4YBY/RYF5znyNxWc6yas0muonN/zSfzHGJuH4tMtvPjvn1OmnA+o6GW7HxykV
+	 g+HphteS9MSZl0SJfEqTldIoGr1/LX3Ejt+flZzT+C1vNa3KED64klxr6C7bUOjSz7
+	 7XhBgIAV26XDrfgkusA1zkH7DFwWHhTFEMXnpqtynuH3sbFZiQIv8iLSzD4X3zzTqX
+	 iaFfO4fvLYUEQ==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id EB81C812F3;
-	Wed, 27 Mar 2024 15:24:58 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 0C56382046;
+	Wed, 27 Mar 2024 15:25:00 +0000 (UTC)
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 91C101BF418
- for <intel-wired-lan@lists.osuosl.org>; Wed, 27 Mar 2024 15:24:53 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id ACD101BF418
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 27 Mar 2024 15:24:54 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 8960340144
- for <intel-wired-lan@lists.osuosl.org>; Wed, 27 Mar 2024 15:24:52 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id A622A40144
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 27 Mar 2024 15:24:53 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 0FBVTJLcox7U for <intel-wired-lan@lists.osuosl.org>;
+ id wzu_9tXknLrn for <intel-wired-lan@lists.osuosl.org>;
  Wed, 27 Mar 2024 15:24:51 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.19;
  helo=mgamail.intel.com; envelope-from=aleksander.lobakin@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org C7ADA40547
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org C7ADA40547
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org ECB4F4015A
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org ECB4F4015A
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.19])
- by smtp2.osuosl.org (Postfix) with ESMTPS id C7ADA40547
- for <intel-wired-lan@lists.osuosl.org>; Wed, 27 Mar 2024 15:24:51 +0000 (UTC)
-X-CSE-ConnectionGUID: 2eabhkMRQhS0pn3M2g2RsA==
-X-CSE-MsgGUID: Agx4zsDOSVyHk69+YGYU6g==
-X-IronPort-AV: E=McAfee;i="6600,9927,11026"; a="6518134"
+ by smtp2.osuosl.org (Postfix) with ESMTPS id ECB4F4015A
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 27 Mar 2024 15:24:50 +0000 (UTC)
+X-CSE-ConnectionGUID: r03HkBa9QuK4m7P2FmsTCw==
+X-CSE-MsgGUID: CaR0R5eOS6eRgPBRkSUOUw==
+X-IronPort-AV: E=McAfee;i="6600,9927,11026"; a="6518083"
 X-IronPort-AV: E=Sophos;i="6.07,159,1708416000"; 
-   d="scan'208";a="6518134"
+   d="scan'208";a="6518083"
 Received: from fmviesa008.fm.intel.com ([10.60.135.148])
  by orvoesa111.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 27 Mar 2024 08:24:51 -0700
+ 27 Mar 2024 08:24:40 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.07,159,1708416000"; d="scan'208";a="16414150"
+X-IronPort-AV: E=Sophos;i="6.07,159,1708416000"; d="scan'208";a="16414078"
 Received: from newjersey.igk.intel.com ([10.102.20.203])
- by fmviesa008.fm.intel.com with ESMTP; 27 Mar 2024 08:24:48 -0700
+ by fmviesa008.fm.intel.com with ESMTP; 27 Mar 2024 08:24:36 -0700
 From: Alexander Lobakin <aleksander.lobakin@intel.com>
 To: "David S. Miller" <davem@davemloft.net>,
  Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
  Paolo Abeni <pabeni@redhat.com>
-Date: Wed, 27 Mar 2024 16:23:42 +0100
-Message-ID: <20240327152358.2368467-6-aleksander.lobakin@intel.com>
+Date: Wed, 27 Mar 2024 16:23:38 +0100
+Message-ID: <20240327152358.2368467-2-aleksander.lobakin@intel.com>
 X-Mailer: git-send-email 2.44.0
 In-Reply-To: <20240327152358.2368467-1-aleksander.lobakin@intel.com>
 References: <20240327152358.2368467-1-aleksander.lobakin@intel.com>
@@ -77,22 +77,22 @@ X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  t=1711553091; x=1743089091;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=OA1Ptf4IMx7vsr5cedXMrz/h7QDUB7xfD+abDh4DUJg=;
- b=DigO8vSjEU7DaVbmK5Z2IXee6Wrck95ORrO3qWOISnkxwZ8SrjOSrwzX
- peg3uCZ8Oa1YJN3wsXLJbbx+iMApyhYT55RVMOW00CcfM8j+lk4+FKKK/
- n8n6HxyhI/JOSjMU6BTKYORCL4aJbey0iNG2Zpz5fyFKEOla8ZdiBOtDS
- j0qLdxOF7UPCA/BfcYE98GomZcz8GjALpBxLSZBuQbR9UlKEb24jCh75r
- se5eXOwG6TNKgRCYsrfqUxHflD5HvwiWOUF2MDcQf0EBMGW7Ee1u4PnGV
- 3ZrsmvZDIcd+CbzfcVsLi6fSWX/i+yplt5uqRdPXz/SxwcAqkVW2087uQ
- w==;
+ bh=8qODhYyvaUk14kxfdEdYZD1YkZRxZEhZyVTOUCP3lbk=;
+ b=lUHCTr3esmOA0O9mHkN2Q4P6Us/JS7uGO/WLyZ9mxjRHFMpL074yDPLn
+ I4TFfhVzu0/W1AjkwWNswWTCAeIod5UtY4DnK/t5lxpzrnY3M1HfcGY0r
+ 92IIaykKJvEtVFtHCDPEOZHx+Ex054JqIvdcaV+eA9JopZwVPNW8xx+ec
+ 3pLRNfdSRwJN8xktobGL0WH9fbkWVF+ZaxVrfxwJUMnqFlTloggln9LPA
+ QERd0g/lccXZSGX0L3o6juMIwWksZQvV4VanazXk0W9KeRi0Vmx6rtbZq
+ O3UsQlrDUsn2kYhsddCBbyXKAgI7wwxJC971Qaz2nAoE1RV8ikeu/V5SV
+ Q==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=DigO8vSj
-Subject: [Intel-wired-lan] [PATCH net-next v6 05/21] bitops: make
- BYTES_TO_BITS() treewide-available
+ header.a=rsa-sha256 header.s=Intel header.b=lUHCTr3e
+Subject: [Intel-wired-lan] [PATCH net-next v6 01/21] lib/bitmap: add
+ bitmap_{read, write}()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,97 +105,141 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Yury Norov <yury.norov@gmail.com>, netdev@vger.kernel.org,
+Cc: Arnd Bergmann <arnd@arndb.de>, Yury Norov <yury.norov@gmail.com>,
+ netdev@vger.kernel.org, William Breathitt Gray <william.gray@linaro.org>,
  linux-kernel@vger.kernel.org, Alexander Lobakin <aleksander.lobakin@intel.com>,
  intel-wired-lan@lists.osuosl.org, nex.sw.ncis.osdt.itp.upstreaming@intel.com,
  Alexander Potapenko <glider@google.com>,
  Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>
+ Syed Nayyar Waris <syednwaris@gmail.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Avoid open-coding that simple expression each time by moving
-BYTES_TO_BITS() from the probes code to <linux/bitops.h> to export
-it to the rest of the kernel.
-Simplify the macro while at it. `BITS_PER_LONG / sizeof(long)` always
-equals to %BITS_PER_BYTE, regardless of the target architecture.
-Do the same for the tools ecosystem as well (incl. its version of
-bitops.h). The previous implementation had its implicit type of long,
-while the new one is int, so adjust the format literal accordingly in
-the perf code.
+From: Syed Nayyar Waris <syednwaris@gmail.com>
 
-Suggested-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+The two new functions allow reading/writing values of length up to
+BITS_PER_LONG bits at arbitrary position in the bitmap.
+
+The code was taken from "bitops: Introduce the for_each_set_clump macro"
+by Syed Nayyar Waris with a number of changes and simplifications:
+ - instead of using roundup(), which adds an unnecessary dependency
+   on <linux/math.h>, we calculate space as BITS_PER_LONG-offset;
+ - indentation is reduced by not using else-clauses (suggested by
+   checkpatch for bitmap_get_value());
+ - bitmap_get_value()/bitmap_set_value() are renamed to bitmap_read()
+   and bitmap_write();
+ - some redundant computations are omitted.
+
+Cc: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: Syed Nayyar Waris <syednwaris@gmail.com>
+Signed-off-by: William Breathitt Gray <william.gray@linaro.org>
+Link: https://lore.kernel.org/lkml/fe12eedf3666f4af5138de0e70b67a07c7f40338.1592224129.git.syednwaris@gmail.com/
+Suggested-by: Yury Norov <yury.norov@gmail.com>
+Co-developed-by: Alexander Potapenko <glider@google.com>
+Signed-off-by: Alexander Potapenko <glider@google.com>
+Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 Acked-by: Yury Norov <yury.norov@gmail.com>
+Signed-off-by: Yury Norov <yury.norov@gmail.com>
 Signed-off-by: Alexander Lobakin <aleksander.lobakin@intel.com>
 ---
- include/linux/bitops.h         | 2 ++
- tools/include/linux/bitops.h   | 2 ++
- kernel/trace/trace_probe.c     | 2 --
- tools/perf/util/probe-finder.c | 4 +---
- 4 files changed, 5 insertions(+), 5 deletions(-)
+ include/linux/bitmap.h | 77 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 77 insertions(+)
 
-diff --git a/include/linux/bitops.h b/include/linux/bitops.h
-index f7f5a783da2a..e0cd09eb91cd 100644
---- a/include/linux/bitops.h
-+++ b/include/linux/bitops.h
-@@ -21,6 +21,8 @@
- #define BITS_TO_U32(nr)		__KERNEL_DIV_ROUND_UP(nr, BITS_PER_TYPE(u32))
- #define BITS_TO_BYTES(nr)	__KERNEL_DIV_ROUND_UP(nr, BITS_PER_TYPE(char))
- 
-+#define BYTES_TO_BITS(nb)	((nb) * BITS_PER_BYTE)
-+
- extern unsigned int __sw_hweight8(unsigned int w);
- extern unsigned int __sw_hweight16(unsigned int w);
- extern unsigned int __sw_hweight32(unsigned int w);
-diff --git a/tools/include/linux/bitops.h b/tools/include/linux/bitops.h
-index 7319f6ced108..272f15d0e434 100644
---- a/tools/include/linux/bitops.h
-+++ b/tools/include/linux/bitops.h
-@@ -20,6 +20,8 @@
- #define BITS_TO_U32(nr)		DIV_ROUND_UP(nr, BITS_PER_TYPE(u32))
- #define BITS_TO_BYTES(nr)	DIV_ROUND_UP(nr, BITS_PER_TYPE(char))
- 
-+#define BYTES_TO_BITS(nb)	((nb) * BITS_PER_BYTE)
-+
- extern unsigned int __sw_hweight8(unsigned int w);
- extern unsigned int __sw_hweight16(unsigned int w);
- extern unsigned int __sw_hweight32(unsigned int w);
-diff --git a/kernel/trace/trace_probe.c b/kernel/trace/trace_probe.c
-index 217169de0920..cd5cab0be1f3 100644
---- a/kernel/trace/trace_probe.c
-+++ b/kernel/trace/trace_probe.c
-@@ -1180,8 +1180,6 @@ parse_probe_arg(char *arg, const struct fetch_type *type,
- 	return ret;
+diff --git a/include/linux/bitmap.h b/include/linux/bitmap.h
+index aa4096126553..914c23e96f26 100644
+--- a/include/linux/bitmap.h
++++ b/include/linux/bitmap.h
+@@ -83,6 +83,10 @@ struct device;
+  *  bitmap_to_arr64(buf, src, nbits)            Copy nbits from buf to u64[] dst
+  *  bitmap_get_value8(map, start)               Get 8bit value from map at start
+  *  bitmap_set_value8(map, value, start)        Set 8bit value to map at start
++ *  bitmap_read(map, start, nbits)              Read an nbits-sized value from
++ *                                              map at start
++ *  bitmap_write(map, value, start, nbits)      Write an nbits-sized value to
++ *                                              map at start
+  *
+  * Note, bitmap_zero() and bitmap_fill() operate over the region of
+  * unsigned longs, that is, bits behind bitmap till the unsigned long
+@@ -754,6 +758,79 @@ static inline void bitmap_set_value8(unsigned long *map, unsigned long value,
+ 	map[index] |= value << offset;
  }
  
--#define BYTES_TO_BITS(nb)	((BITS_PER_LONG * (nb)) / sizeof(long))
--
- /* Bitfield type needs to be parsed into a fetch function */
- static int __parse_bitfield_probe_arg(const char *bf,
- 				      const struct fetch_type *t,
-diff --git a/tools/perf/util/probe-finder.c b/tools/perf/util/probe-finder.c
-index c8923375e30d..630e16c54ed5 100644
---- a/tools/perf/util/probe-finder.c
-+++ b/tools/perf/util/probe-finder.c
-@@ -186,8 +186,6 @@ static int convert_variable_location(Dwarf_Die *vr_die, Dwarf_Addr addr,
- 	return ret2;
- }
++/**
++ * bitmap_read - read a value of n-bits from the memory region
++ * @map: address to the bitmap memory region
++ * @start: bit offset of the n-bit value
++ * @nbits: size of value in bits, nonzero, up to BITS_PER_LONG
++ *
++ * Returns: value of @nbits bits located at the @start bit offset within the
++ * @map memory region. For @nbits = 0 and @nbits > BITS_PER_LONG the return
++ * value is undefined.
++ */
++static inline unsigned long bitmap_read(const unsigned long *map,
++					unsigned long start,
++					unsigned long nbits)
++{
++	size_t index = BIT_WORD(start);
++	unsigned long offset = start % BITS_PER_LONG;
++	unsigned long space = BITS_PER_LONG - offset;
++	unsigned long value_low, value_high;
++
++	if (unlikely(!nbits || nbits > BITS_PER_LONG))
++		return 0;
++
++	if (space >= nbits)
++		return (map[index] >> offset) & BITMAP_LAST_WORD_MASK(nbits);
++
++	value_low = map[index] & BITMAP_FIRST_WORD_MASK(start);
++	value_high = map[index + 1] & BITMAP_LAST_WORD_MASK(start + nbits);
++	return (value_low >> offset) | (value_high << space);
++}
++
++/**
++ * bitmap_write - write n-bit value within a memory region
++ * @map: address to the bitmap memory region
++ * @value: value to write, clamped to nbits
++ * @start: bit offset of the n-bit value
++ * @nbits: size of value in bits, nonzero, up to BITS_PER_LONG.
++ *
++ * bitmap_write() behaves as-if implemented as @nbits calls of __assign_bit(),
++ * i.e. bits beyond @nbits are ignored:
++ *
++ *   for (bit = 0; bit < nbits; bit++)
++ *           __assign_bit(start + bit, bitmap, val & BIT(bit));
++ *
++ * For @nbits == 0 and @nbits > BITS_PER_LONG no writes are performed.
++ */
++static inline void bitmap_write(unsigned long *map, unsigned long value,
++				unsigned long start, unsigned long nbits)
++{
++	size_t index;
++	unsigned long offset;
++	unsigned long space;
++	unsigned long mask;
++	bool fit;
++
++	if (unlikely(!nbits || nbits > BITS_PER_LONG))
++		return;
++
++	mask = BITMAP_LAST_WORD_MASK(nbits);
++	value &= mask;
++	offset = start % BITS_PER_LONG;
++	space = BITS_PER_LONG - offset;
++	fit = space >= nbits;
++	index = BIT_WORD(start);
++
++	map[index] &= (fit ? (~(mask << offset)) : ~BITMAP_FIRST_WORD_MASK(start));
++	map[index] |= value << offset;
++	if (fit)
++		return;
++
++	map[index + 1] &= BITMAP_FIRST_WORD_MASK(start + nbits);
++	map[index + 1] |= (value >> space);
++}
++
+ #endif /* __ASSEMBLY__ */
  
--#define BYTES_TO_BITS(nb)	((nb) * BITS_PER_LONG / sizeof(long))
--
- static int convert_variable_type(Dwarf_Die *vr_die,
- 				 struct probe_trace_arg *tvar,
- 				 const char *cast, bool user_access)
-@@ -217,7 +215,7 @@ static int convert_variable_type(Dwarf_Die *vr_die,
- 		total = dwarf_bytesize(vr_die);
- 		if (boffs < 0 || total < 0)
- 			return -ENOENT;
--		ret = snprintf(buf, 16, "b%d@%d/%zd", bsize, boffs,
-+		ret = snprintf(buf, 16, "b%d@%d/%d", bsize, boffs,
- 				BYTES_TO_BITS(total));
- 		goto formatted;
- 	}
+ #endif /* __LINUX_BITMAP_H */
 -- 
 2.44.0
 
