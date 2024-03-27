@@ -4,69 +4,69 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DB443CD11DD
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 27 Mar 2024 14:30:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 326A6C54E67
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 27 Mar 2024 14:30:32 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 92E0E81F88;
-	Wed, 27 Mar 2024 14:30:30 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id D600C8204D;
+	Wed, 27 Mar 2024 14:30:31 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id syZSt_oGOB5Z; Wed, 27 Mar 2024 14:30:30 +0000 (UTC)
+ id mLJlWPbEaEE6; Wed, 27 Mar 2024 14:30:31 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org EE75881FDC
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2361C8201C
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1711549830;
-	bh=bhtrMxRIBaBdE7YxwV2QkkpGLkKtGlJ4PAWik8sHAL8=;
+	s=default; t=1711549831;
+	bh=Lrv8dEqMlGqmX6pygY1tFYnSYid6I3scJBTixQw16B4=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=mzC6VrQR8y1EAFbMZLhfSZxDIfcjEmBOvb+UErS5Y18yccakFEALhm5udXnriwOA7
-	 G6NKJtRTNTT6UlyZ3ZHVyxfnP1IZq+3asFbpHb4jo41+3KyC2aqdLRebJY/caPUCdo
-	 Lt93OaYjdyX+dqTvwRpkbaI3vz+IMQwG19BplfjGwdkGPNneI1RVzZOq2jLswb0EI2
-	 fWPj3BnLOr+c8ZOzVxBSW7X0NsRhFM+jlNLpaNai3WnRN0lu73+1w/XSBhcclwzx1C
-	 SpCHrVisB4YUgCR65pDln02Tqdm2IgFHz7may5kHOFO7Yxpr3rZ66wTJtHO+c7FGfo
-	 OepvczaDR4FvQ==
+	b=boNh3W1T1lGZ3APX2tkkyFyLLH/+koJgGky9XKELVXXwJyOUGucAzhILMjSkY96Jm
+	 oTUuTVEhSKdgtRM5Z5ExY5VB8RGVyiUI/QpvCxf6HnYwarwso5guD2/aTx+sgbJRXk
+	 9fsFaez8mB4CUAPSzd91brrRlZYbjdnAwNR08luuIXkyLULb5QgXb2ZP62fE3grALp
+	 /Z8mdFKahWyBL5j5TuVnK2eDmsQ41IY4BMo84utfcRJkeJO7I/htZgf/KwLoOLoiRH
+	 +RCNA3Ng4dxYELzow9oGHESSrp7Y0DY5PaM8rPF1qrucxgZhtSDVKRy2IIxpFoUVIq
+	 HqXZTQCKYS4Qg==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id EE75881FDC;
-	Wed, 27 Mar 2024 14:30:29 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 2361C8201C;
+	Wed, 27 Mar 2024 14:30:31 +0000 (UTC)
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id BDD3E1BF279
- for <intel-wired-lan@lists.osuosl.org>; Wed, 27 Mar 2024 14:30:26 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 0CA2C1BF279
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 27 Mar 2024 14:30:28 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id B34E581FC7
- for <intel-wired-lan@lists.osuosl.org>; Wed, 27 Mar 2024 14:30:26 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 039A381FD0
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 27 Mar 2024 14:30:28 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id rw-8UR6vDvq3 for <intel-wired-lan@lists.osuosl.org>;
- Wed, 27 Mar 2024 14:30:21 +0000 (UTC)
+ id yYIn1sUCZ2n9 for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 27 Mar 2024 14:30:27 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.21;
  helo=mgamail.intel.com; envelope-from=aleksander.lobakin@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 3AF1181F88
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 3AF1181F88
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 2DC9E81F88
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2DC9E81F88
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.21])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 3AF1181F88
- for <intel-wired-lan@lists.osuosl.org>; Wed, 27 Mar 2024 14:30:21 +0000 (UTC)
-X-CSE-ConnectionGUID: 5XkUH/aWSyukDcoatrx3Aw==
-X-CSE-MsgGUID: 1KFZCkgMSAKTKh0Y9xDCiA==
-X-IronPort-AV: E=McAfee;i="6600,9927,11026"; a="6592526"
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 2DC9E81F88
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 27 Mar 2024 14:30:27 +0000 (UTC)
+X-CSE-ConnectionGUID: 1dAzg/LiSdWya278nnU24Q==
+X-CSE-MsgGUID: rR6fbPJ9QrmZTz/063ehxg==
+X-IronPort-AV: E=McAfee;i="6600,9927,11026"; a="6592547"
 X-IronPort-AV: E=Sophos;i="6.07,159,1708416000"; 
-   d="scan'208";a="6592526"
+   d="scan'208";a="6592547"
 Received: from fmviesa004.fm.intel.com ([10.60.135.144])
  by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 27 Mar 2024 07:23:15 -0700
+ 27 Mar 2024 07:23:21 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.07,159,1708416000"; d="scan'208";a="20973064"
+X-IronPort-AV: E=Sophos;i="6.07,159,1708416000"; d="scan'208";a="20973106"
 Received: from newjersey.igk.intel.com ([10.102.20.203])
- by fmviesa004.fm.intel.com with ESMTP; 27 Mar 2024 07:23:13 -0700
+ by fmviesa004.fm.intel.com with ESMTP; 27 Mar 2024 07:23:19 -0700
 From: Alexander Lobakin <aleksander.lobakin@intel.com>
 To: "David S. Miller" <davem@davemloft.net>,
  Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
  Paolo Abeni <pabeni@redhat.com>
-Date: Wed, 27 Mar 2024 15:22:39 +0100
-Message-ID: <20240327142241.1745989-2-aleksander.lobakin@intel.com>
+Date: Wed, 27 Mar 2024 15:22:41 +0100
+Message-ID: <20240327142241.1745989-4-aleksander.lobakin@intel.com>
 X-Mailer: git-send-email 2.44.0
 In-Reply-To: <20240327142241.1745989-1-aleksander.lobakin@intel.com>
 References: <20240327142241.1745989-1-aleksander.lobakin@intel.com>
@@ -74,25 +74,25 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1711549821; x=1743085821;
+ t=1711549827; x=1743085827;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=7vqygDDKbWmFw/FAY/rPhdZQEFODtjXCpRmC6ygQulQ=;
- b=ABoQ932FpObMU3svpOu8YlDknHUDY8c19Bh+muYElSSsyK2F3+5LX7yr
- BH2JTJ3Qk25d31lfnT7AYP9jY0XvaYP26jK/6eGNMIrtpbqoU1IBIp+2R
- L9mdtzT539e/vx4YGgJ1AIID/9LLte6N7ZD2Si/FW7MgbnK0Z+NakC/EZ
- EJP7yFxjwxAiLLOj9rvj5TIOsDP6p+DYapYe7FYhw8grmETXKWgoWQ6Ki
- pYD/RZNnI50jLBuvfHV25Qu9zBwiC2bfwDWWVFxdfHXYDlYbMndOBiBZ3
- /hgrmTL5FNLrVBRNXKYzQkvD3ZevkApAyxY5jxd+hL/lNguwDg6hNImu7
- w==;
+ bh=iiy+IT/DztQVWAIWT58TrPOTIu+zB11vMHnxpdfkMvE=;
+ b=c199Jt+VyKa9TV/6Ht2YM0/VMmo64kdkEU5kuroPxKSIlTXWtN/W5dyp
+ Q9TpEoCuoLHBwuEiz7vZEptwsssO1YileUynqDFbe+qJ28hLz/+AbNIRv
+ Kr32kzGn5M6EbdpFFRXp3h92OwTmMoRtErUDCWmcmpa7dmgza+vskqtbt
+ BUbl9jjD8+zV1eEHuNMEwKlBvJd2FJT5IEVdcCE5XiokY8SXAW1yPsJkw
+ wVvjNW58KLP0TsbjSKRN6jm324wfVwz1IeJqH3R3OdAg4l4famByiumOf
+ DjJoGgdc4ZjM0uxpAXCmgImyYsOxvE5Hp4KueMQiiDICofVEfduZtICMy
+ g==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=ABoQ932F
-Subject: [Intel-wired-lan] [PATCH net-next v2 1/3] compiler_types: add
- Endianness-dependent __counted_by_{le, be}
+ header.a=rsa-sha256 header.s=Intel header.b=c199Jt+V
+Subject: [Intel-wired-lan] [PATCH net-next v2 3/3] idpf: sprinkle
+ __counted_by{, _le}() in the virtchnl2 header
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -114,73 +114,118 @@ Cc: Kees Cook <keescook@chromium.org>, netdev@vger.kernel.org,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Some structures contain flexible arrays at the end and the counter for
-them, but the counter has explicit Endianness and thus __counted_by()
-can't be used directly.
-
-To increase test coverage for potential problems without breaking
-anything, introduce __counted_by_{le,be}() defined depending on
-platform's Endianness to either __counted_by() when applicable or noop
-otherwise.
-Maybe it would be a good idea to introduce such attributes on compiler
-level if possible, but for now let's stop on what we have.
+Both virtchnl2.h and its consumer idpf_virtchnl.c are very error-prone.
+There are 10 structures with flexible arrays at the end, but 9 of them
+has flex member counter in Little Endian.
+Make the code a bit more robust by applying __counted_by_le() to those
+9. LE platforms is the main target for this driver, so they would
+receive additional protection.
+While we're here, add __counted_by() to virtchnl2_ptype::proto_id, as
+its counter is `u8` regardless of the Endianness.
+Compile test on x86_64 (LE) didn't reveal any new issues after applying
+the attributes.
 
 Acked-by: Kees Cook <keescook@chromium.org>
 Acked-by: Gustavo A. R. Silva <gustavoars@kernel.org>
 Signed-off-by: Alexander Lobakin <aleksander.lobakin@intel.com>
 ---
- Documentation/conf.py          |  2 ++
- scripts/kernel-doc             |  1 +
- include/linux/compiler_types.h | 11 +++++++++++
- 3 files changed, 14 insertions(+)
+ drivers/net/ethernet/intel/idpf/virtchnl2.h | 20 ++++++++++----------
+ 1 file changed, 10 insertions(+), 10 deletions(-)
 
-diff --git a/Documentation/conf.py b/Documentation/conf.py
-index d148f3e8dd57..0c2205d536b3 100644
---- a/Documentation/conf.py
-+++ b/Documentation/conf.py
-@@ -75,6 +75,8 @@ if major >= 3:
-             "__rcu",
-             "__user",
-             "__force",
-+            "__counted_by_le",
-+            "__counted_by_be",
+diff --git a/drivers/net/ethernet/intel/idpf/virtchnl2.h b/drivers/net/ethernet/intel/idpf/virtchnl2.h
+index 29419211b3d9..63deb120359c 100644
+--- a/drivers/net/ethernet/intel/idpf/virtchnl2.h
++++ b/drivers/net/ethernet/intel/idpf/virtchnl2.h
+@@ -555,7 +555,7 @@ VIRTCHNL2_CHECK_STRUCT_LEN(32, virtchnl2_queue_reg_chunk);
+ struct virtchnl2_queue_reg_chunks {
+ 	__le16 num_chunks;
+ 	u8 pad[6];
+-	struct virtchnl2_queue_reg_chunk chunks[];
++	struct virtchnl2_queue_reg_chunk chunks[] __counted_by_le(num_chunks);
+ };
+ VIRTCHNL2_CHECK_STRUCT_LEN(8, virtchnl2_queue_reg_chunks);
  
-             # include/linux/compiler_attributes.h:
-             "__alias",
-diff --git a/scripts/kernel-doc b/scripts/kernel-doc
-index 967f1abb0edb..1474e95dbe4f 100755
---- a/scripts/kernel-doc
-+++ b/scripts/kernel-doc
-@@ -1143,6 +1143,7 @@ sub dump_struct($$) {
-         $members =~ s/\s*$attribute/ /gi;
-         $members =~ s/\s*__aligned\s*\([^;]*\)/ /gos;
-         $members =~ s/\s*__counted_by\s*\([^;]*\)/ /gos;
-+        $members =~ s/\s*__counted_by_(le|be)\s*\([^;]*\)/ /gos;
-         $members =~ s/\s*__packed\s*/ /gos;
-         $members =~ s/\s*CRYPTO_MINALIGN_ATTR/ /gos;
-         $members =~ s/\s*____cacheline_aligned_in_smp/ /gos;
-diff --git a/include/linux/compiler_types.h b/include/linux/compiler_types.h
-index 2abaa3a825a9..a29ba6ef1e27 100644
---- a/include/linux/compiler_types.h
-+++ b/include/linux/compiler_types.h
-@@ -282,6 +282,17 @@ struct ftrace_likely_data {
- #define __no_sanitize_or_inline __always_inline
- #endif
+@@ -703,7 +703,7 @@ struct virtchnl2_config_tx_queues {
+ 	__le32 vport_id;
+ 	__le16 num_qinfo;
+ 	u8 pad[10];
+-	struct virtchnl2_txq_info qinfo[];
++	struct virtchnl2_txq_info qinfo[] __counted_by_le(num_qinfo);
+ };
+ VIRTCHNL2_CHECK_STRUCT_LEN(16, virtchnl2_config_tx_queues);
  
-+/*
-+ * Apply __counted_by() when the Endianness matches to increase test coverage.
-+ */
-+#ifdef __LITTLE_ENDIAN
-+#define __counted_by_le(member)	__counted_by(member)
-+#define __counted_by_be(member)
-+#else
-+#define __counted_by_le(member)
-+#define __counted_by_be(member)	__counted_by(member)
-+#endif
-+
- /* Do not trap wrapping arithmetic within an annotated function. */
- #ifdef CONFIG_UBSAN_SIGNED_WRAP
- # define __signed_wrap __attribute__((no_sanitize("signed-integer-overflow")))
+@@ -782,7 +782,7 @@ struct virtchnl2_config_rx_queues {
+ 	__le32 vport_id;
+ 	__le16 num_qinfo;
+ 	u8 pad[18];
+-	struct virtchnl2_rxq_info qinfo[];
++	struct virtchnl2_rxq_info qinfo[] __counted_by_le(num_qinfo);
+ };
+ VIRTCHNL2_CHECK_STRUCT_LEN(24, virtchnl2_config_rx_queues);
+ 
+@@ -868,7 +868,7 @@ VIRTCHNL2_CHECK_STRUCT_LEN(32, virtchnl2_vector_chunk);
+ struct virtchnl2_vector_chunks {
+ 	__le16 num_vchunks;
+ 	u8 pad[14];
+-	struct virtchnl2_vector_chunk vchunks[];
++	struct virtchnl2_vector_chunk vchunks[] __counted_by_le(num_vchunks);
+ };
+ VIRTCHNL2_CHECK_STRUCT_LEN(16, virtchnl2_vector_chunks);
+ 
+@@ -912,7 +912,7 @@ struct virtchnl2_rss_lut {
+ 	__le16 lut_entries_start;
+ 	__le16 lut_entries;
+ 	u8 pad[4];
+-	__le32 lut[];
++	__le32 lut[] __counted_by_le(lut_entries);
+ };
+ VIRTCHNL2_CHECK_STRUCT_LEN(12, virtchnl2_rss_lut);
+ 
+@@ -977,7 +977,7 @@ struct virtchnl2_ptype {
+ 	u8 ptype_id_8;
+ 	u8 proto_id_count;
+ 	__le16 pad;
+-	__le16 proto_id[];
++	__le16 proto_id[] __counted_by(proto_id_count);
+ } __packed __aligned(2);
+ VIRTCHNL2_CHECK_STRUCT_LEN(6, virtchnl2_ptype);
+ 
+@@ -1104,7 +1104,7 @@ struct virtchnl2_rss_key {
+ 	__le32 vport_id;
+ 	__le16 key_len;
+ 	u8 pad;
+-	u8 key_flex[];
++	u8 key_flex[] __counted_by_le(key_len);
+ } __packed;
+ VIRTCHNL2_CHECK_STRUCT_LEN(7, virtchnl2_rss_key);
+ 
+@@ -1131,7 +1131,7 @@ VIRTCHNL2_CHECK_STRUCT_LEN(16, virtchnl2_queue_chunk);
+ struct virtchnl2_queue_chunks {
+ 	__le16 num_chunks;
+ 	u8 pad[6];
+-	struct virtchnl2_queue_chunk chunks[];
++	struct virtchnl2_queue_chunk chunks[] __counted_by_le(num_chunks);
+ };
+ VIRTCHNL2_CHECK_STRUCT_LEN(8, virtchnl2_queue_chunks);
+ 
+@@ -1195,7 +1195,7 @@ struct virtchnl2_queue_vector_maps {
+ 	__le32 vport_id;
+ 	__le16 num_qv_maps;
+ 	u8 pad[10];
+-	struct virtchnl2_queue_vector qv_maps[];
++	struct virtchnl2_queue_vector qv_maps[] __counted_by_le(num_qv_maps);
+ };
+ VIRTCHNL2_CHECK_STRUCT_LEN(16, virtchnl2_queue_vector_maps);
+ 
+@@ -1247,7 +1247,7 @@ struct virtchnl2_mac_addr_list {
+ 	__le32 vport_id;
+ 	__le16 num_mac_addr;
+ 	u8 pad[2];
+-	struct virtchnl2_mac_addr mac_addr_list[];
++	struct virtchnl2_mac_addr mac_addr_list[] __counted_by_le(num_mac_addr);
+ };
+ VIRTCHNL2_CHECK_STRUCT_LEN(8, virtchnl2_mac_addr_list);
+ 
 -- 
 2.44.0
 
