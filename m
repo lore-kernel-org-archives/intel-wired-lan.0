@@ -4,134 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 607BEC54E67
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 27 Mar 2024 15:08:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 783E1C47DD9
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 27 Mar 2024 15:08:58 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 152598109C;
-	Wed, 27 Mar 2024 15:08:59 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 31FE8814B5;
+	Wed, 27 Mar 2024 15:08:58 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id AzFw0tdTu9N3; Wed, 27 Mar 2024 15:08:57 +0000 (UTC)
+ id F2N29GY6oWME; Wed, 27 Mar 2024 15:08:54 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 3ED14812D2
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 453C781066
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1711552135;
-	bh=FGUoqKxAQrqnoBrdwR+KD2Oip1GwaKOaioEDRMyB75o=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1711552134;
+	bh=fByIanEmW68zoeuMzwFKxYQkATUHKnuj3gjfgT0E8fc=;
+	h=To:References:From:Date:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=kt6JKMAbcx2BYFpkyaMjOkc3BBLTdM3BJIvGk8SeL1I6f0sS736YsDpZ4fVyqo1/4
-	 LSKAB8cgpLirpSMWaS0yvkzViJ586SnRUNzFS+0AUuTQrofEqc8gzd+frWJzdbSEWl
-	 kXHE9SzTqntEBL1IGYBCUXvdzZ6QQoAO/PNTWOq1pwpIJzasW79jenuniV3TWyPsCY
-	 04nmLeRR7l0dhpBaCKZkUGgfGHA+lHaM+0O1MH/AQrBPS0vOXIxMIFlA676B6TBuT1
-	 WB5/LwVSFP68uEby/Ez3d39nEvW4hEWvQqYRbj7VvZUNCXCem7G14wbXtpx9W2FvG3
-	 qfvfPp6T7ejhA==
+	b=IiIth+g9rrNWpd/WWLbxMRhfbC5a/0msZDvJLhHWjULybI4idTgvFIr2yOPQaFK5z
+	 TtqEibpTKVeYy27LXpQoyfH3e+wPm4/+v4sCDBVxe5eGmM1r/Wy7BBPCpYaP1Nv6C/
+	 /21K4F0rbkn2nVSoXGmVJKSIVRVtFkjq4mCa7BF5t/u6CuItY6Jh67oQxSwAVrY9AD
+	 JXKWQBNOSKJTwbbzxuzchcpPwhAryQ1EsP3sytJGELJWW5RJws5HWnT2ZhYj/Qh7XU
+	 SQ8fyVAld4wuHYzvQtCNzjohehU8pX4B4fbxeaciic9koLjsC6TTZDzmV/ZrVKlZWz
+	 guZeh1qhcYuYg==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 3ED14812D2;
-	Wed, 27 Mar 2024 15:08:55 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 7A17E1BF407
- for <intel-wired-lan@lists.osuosl.org>; Wed, 27 Mar 2024 11:26:10 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 453C781066;
+	Wed, 27 Mar 2024 15:08:54 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 0B0591BF348
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 27 Mar 2024 02:19:57 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 6614260B63
- for <intel-wired-lan@lists.osuosl.org>; Wed, 27 Mar 2024 11:26:10 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 037834018A
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 27 Mar 2024 02:19:57 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id GD4jdnNVbc0y for <intel-wired-lan@lists.osuosl.org>;
- Wed, 27 Mar 2024 11:26:09 +0000 (UTC)
-X-Greylist: delayed 303 seconds by postgrey-1.37 at util1.osuosl.org;
- Wed, 27 Mar 2024 11:26:08 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org EED4F6082A
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org EED4F6082A
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=185.136.64.228;
- helo=mta-64-228.siemens.flowmailer.net;
- envelope-from=fm-68982-20240327112102a7df1fc80ac0eb92ac-t60bk1@rts-flowmailer.siemens.com;
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id QUl3-Cyio3xL for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 27 Mar 2024 02:19:55 +0000 (UTC)
+X-Greylist: delayed 946 seconds by postgrey-1.37 at util1.osuosl.org;
+ Wed, 27 Mar 2024 02:19:54 UTC
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org EC130400D6
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org EC130400D6
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=45.249.212.187;
+ helo=szxga01-in.huawei.com; envelope-from=shenjian15@huawei.com;
  receiver=<UNKNOWN> 
-Received: from mta-64-228.siemens.flowmailer.net
- (mta-64-228.siemens.flowmailer.net [185.136.64.228])
- by smtp3.osuosl.org (Postfix) with ESMTPS id EED4F6082A
- for <intel-wired-lan@lists.osuosl.org>; Wed, 27 Mar 2024 11:26:08 +0000 (UTC)
-Received: by mta-64-228.siemens.flowmailer.net with ESMTPSA id
- 20240327112102a7df1fc80ac0eb92ac
- for <intel-wired-lan@lists.osuosl.org>;
- Wed, 27 Mar 2024 12:21:02 +0100
-Message-ID: <ab114fcc84c50723bb88d40ccbbeedf7b48dbe0e.camel@siemens.com>
-From: Florian Bezdeka <florian.bezdeka@siemens.com>
-To: "Song, Yoong Siang" <yoong.siang.song@intel.com>, Kurt Kanzenbach
- <kurt@linutronix.de>, "Brandeburg, Jesse" <jesse.brandeburg@intel.com>, 
- "Nguyen, Anthony L" <anthony.l.nguyen@intel.com>, "David S . Miller"
- <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, Jakub Kicinski
- <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Richard Cochran
- <richardcochran@gmail.com>, Alexei Starovoitov <ast@kernel.org>, Daniel
- Borkmann <daniel@iogearbox.net>, Jesper Dangaard Brouer <hawk@kernel.org>,
- John Fastabend <john.fastabend@gmail.com>, Stanislav Fomichev
- <sdf@google.com>, "Gomes, Vinicius" <vinicius.gomes@intel.com>,
- "Fijalkowski, Maciej" <maciej.fijalkowski@intel.com>
-Date: Wed, 27 Mar 2024 12:21:01 +0100
-In-Reply-To: <PH0PR11MB583028B2023E1E809B45B51DD8352@PH0PR11MB5830.namprd11.prod.outlook.com>
-References: <20240325020928.1987947-1-yoong.siang.song@intel.com>
- <d2623ac0f1cb07a23976416cdcf9eee1986747b0.camel@siemens.com>
- <87h6gtb0p0.fsf@kurt.kurt.home>
- <PH0PR11MB583028B2023E1E809B45B51DD8352@PH0PR11MB5830.namprd11.prod.outlook.com>
-Autocrypt: =?US-ASCII?Q?addr=3Dflorian.bezdeka@siemen?=
- =?US-ASCII?Q?s.com;_prefer-encrypt=3Dmutual?=
- =?US-ASCII?Q?;_keydata=3DmQENBFwsf8QBCAC2f4AQWu92LZC4bKyUYRxWIpWqGz790s?=
- =?US-ASCII?Q?pcYkXO7M8kfea4iC8qMxv2hT4HT0LTncRP6WiovVN2PeoOBfN5BSa5z?=
- =?US-ASCII?Q?LIrZGVXh7KmbdKhwhVU+ynoTq9G5uaO2Kos7Vv7nNCuatIq8tSNILuoB?=
- =?US-ASCII?Q?DFTAZnJW3y1V7YOwhDCPl5gbLSYqUY3OE0yksbtCcVI5istT4ED6mjQ?=
- =?US-ASCII?Q?9W+3uH1LrgFeEF0oxTjrEPxO5ZYATz0f/TYC8WiM0sMrV+n0eMDntlzA?=
- =?US-ASCII?Q?63D6lcRi5mNp2jPsJkq3tbWqyCrAe1sKPVJB44ekFwCk0kDIuhR13Q3R?=
- =?US-ASCII?Q?HE4Or/9sznhMUQjYueWXvTZfzH/VsQJHABEBAAG0LUZsb3JpYW4gQmV6?=
- =?US-ASCII?Q?ZGVrYSA8Zmxvcmlhbi5iZXpkZWthQHNpZW1lbnMuY29tPokBVAQTAQg?=
- =?US-ASCII?Q?APhYhBAzL4P3jiTHdthsq4cj0O1fnOEBVBQJcLH/FAhsDBQkB4TOABQs?=
- =?US-ASCII?Q?JCAcCBhUKCQgLAgQWAgMBAh4BAheAAAoJEMj0O1fnOEBVc6YIAJ8oO4x?=
- =?US-ASCII?Q?TjOCpjxaS8XQE6VW50HE9I6ShbQVWUEGhF4qzJaACTQDjdg/aio7qNRa?=
- =?US-ASCII?Q?mnAy83Hy9sAxKVhXs+1R1fstN+JO8zgD3tJspucUkCiXlYu+Qcv2d6C?=
- =?US-ASCII?Q?ostv+h4nv8fkSoeLfsQu3GJt6W0RN7t+8H/9fUMXyuB8GWo4bhaZcti6?=
- =?US-ASCII?Q?78CotGLs6UGZpYEGiAMto8+9zVO/tdY1BkREM6bCVeQ9FnnpTRQy/tU5?=
- =?US-ASCII?Q?xemMWJI64UUP92TUIbQ3TZKAz4iG/Mle+YjiHBGrJM7TxjE3sDg5J2Fa?=
- =?US-ASCII?Q?HX4wmZPKGdB6wANKupf6HMMt2y7gduVmMKzgb8PDMLPZwWBSvjELQqz?=
- =?US-ASCII?Q?hiZAQ0EYLSqZwEIAIR4HMTQC4F4YxatIl6MIDY03zD4M3ZQpgyQ6QFL9?=
- =?US-ASCII?Q?Dq0I+PGc7A6z5rsGl76+D8pDFSN2BBJiLLlQadxKc3ZyTTlRp4bc=09bf?=
- =?US-ASCII?Q?FZRmsAXwVfLtBauXxGo9pkyhk8Vcjb2EJm6XR8PH99buGOXlFfTLsmeA?=
- =?US-ASCII?Q?ji/F4jU3qlUnwZMBvHZwRSFqOGdwKPMvW3FppfmREQ0o4xJ4b/bxGXx?=
- =?US-ASCII?Q?ko21uyR/S5rEJx6X8Ukw95h3JinXHx/g2cjbKHrWBDKoqtX9IZCamDny?=
- =?US-ASCII?Q?R+sfLWQbOKOrLNYLwLAQwOTVlZWTgue10G1q6Zi0r8RQ2T1Uy+ZLYagv?=
- =?US-ASCII?Q?Cbzp/lT7p3mv3ba68llX896c0AEQEAAbQ/QmV6ZGVrYSwgRmxvcmlhbj?=
- =?US-ASCII?Q?sgQmV6ZGVrYSBGbG9yaWFuIDxmbG9yaWFuLmJlemRla2FAc2llbWVuc?=
- =?US-ASCII?Q?y5jb20+iQEcBBABCAAGBQJgtKpnAAoJEEoHyE9rG1dPpJYH+gPnqpu7h?=
- =?US-ASCII?Q?4fsWOxco38e74MsazoUdfndTYP5tgaYTVE51ZhOZBl+4jYaywsmmFm9g?=
- =?US-ASCII?Q?6N4Tw3GiMEDB4YU1X7gQZ60fDKpYL5SnCu5qZirJ4RCV4LDA0789ir+6?=
- =?US-ASCII?Q?8/zfwXBTV5QoMH0+MkXB4BL+Km3f7X/GdN5oRoItAyKDBcEfGJo6afT?=
- =?US-ASCII?Q?PtcUdI9n7ExCSfJwb0SBvvkvUsdNppFDGOOHSioINbEHBs2VUvE43toM?=
- =?US-ASCII?Q?4mPLfhFIAtDcn5Byt80/kotU8v3Iyf86NYCa+0h77xTsKHcCUqe8Rvow?=
- =?US-ASCII?Q?bCIbig9GGbbd54TasfqQQOiAkn/WeGl33+UIVX1Q8zo7eyMJHzLJQ3I=3D?=
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id EC130400D6
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 27 Mar 2024 02:19:54 +0000 (UTC)
+Received: from mail.maildlp.com (unknown [172.19.163.48])
+ by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4V48zS32r9zwQN1;
+ Wed, 27 Mar 2024 10:01:24 +0800 (CST)
+Received: from dggpeml500022.china.huawei.com (unknown [7.185.36.66])
+ by mail.maildlp.com (Postfix) with ESMTPS id 4AAA218005D;
+ Wed, 27 Mar 2024 10:04:04 +0800 (CST)
+Received: from [10.67.120.135] (10.67.120.135) by
+ dggpeml500022.china.huawei.com (7.185.36.66) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.1.2507.35; Wed, 27 Mar 2024 10:04:03 +0800
+To: Kurt Kanzenbach <kurt@linutronix.de>, Jesse Brandeburg
+ <jesse.brandeburg@intel.com>, Tony Nguyen <anthony.l.nguyen@intel.com>,
+ "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>
+References: <20240212-igc_mqprio-v2-1-587924e6b18c@linutronix.de>
+From: "shenjian (K)" <shenjian15@huawei.com>
+Message-ID: <41a56bb7-8845-f85b-c470-a3683bac8b69@huawei.com>
+Date: Wed, 27 Mar 2024 10:04:03 +0800
+User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:52.0) Gecko/20100101
+ Thunderbird/52.5.2
 MIME-Version: 1.0
-X-Flowmailer-Platform: Siemens
-Feedback-ID: 519:519-68982:519-21489:flowmailer
+In-Reply-To: <20240212-igc_mqprio-v2-1-587924e6b18c@linutronix.de>
+Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Originating-IP: [10.67.120.135]
+X-ClientProxiedBy: dggems701-chm.china.huawei.com (10.3.19.178) To
+ dggpeml500022.china.huawei.com (7.185.36.66)
 X-Mailman-Approved-At: Wed, 27 Mar 2024 15:08:51 +0000
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt;
- c=relaxed/relaxed; s=fm1; 
- d=siemens.com; i=florian.bezdeka@siemens.com;
- h=Date:From:Subject:To:Message-ID:MIME-Version:Content-Type:Content-Transfer-Encoding:Cc:References:In-Reply-To;
- bh=FGUoqKxAQrqnoBrdwR+KD2Oip1GwaKOaioEDRMyB75o=;
- b=CGUw99V0HjizVNE3UApeXPD9+uHHhXmsyZEYTUgE0MzTD4w1Ozpmo4TFQYF8JQH0iggT0x
- QFWgSKmbprLsTPXnbQNXgj8wqlD6W8TbXgIU71ZoghtuBRT1gnSqTZW9Dee668Vuhvc6h0ls
- wzj5DDPanluAH3AB7DEsFcAseISXY=;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dmarc=pass (p=reject dis=none)
- header.from=siemens.com
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (1024-bit key,
- unprotected) header.d=siemens.com header.i=florian.bezdeka@siemens.com
- header.a=rsa-sha256 header.s=fm1 header.b=CGUw99V0
-Subject: Re: [Intel-wired-lan] [xdp-hints] Re: [PATCH iwl-next,
- v4 1/1] igc: Add Tx hardware timestamp request for AF_XDP zero-copy
- packet
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dmarc=pass (p=quarantine dis=none)
+ header.from=huawei.com
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next v2] igc: Add MQPRIO offload
+ support
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -144,110 +96,329 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "bpf@vger.kernel.org" <bpf@vger.kernel.org>,
- "xdp-hints@xdp-project.net" <xdp-hints@xdp-project.net>,
- "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: Vinicius Costa Gomes <vinicius.gomes@intel.com>, netdev@vger.kernel.org,
+ Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+ intel-wired-lan@lists.osuosl.org
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Tue, 2024-03-26 at 14:55 +0000, Song, Yoong Siang wrote:
-> On Tuesday, March 26, 2024 9:08 PM, Kurt Kanzenbach <kurt@linutronix.de> =
-wrote:
-> > Hi Florian,
-> >=20
-> > On Tue Mar 26 2024, Florian Bezdeka wrote:
-> > > On Mon, 2024-03-25 at 10:09 +0800, Song Yoong Siang wrote:
-> > > > This patch adds support to per-packet Tx hardware timestamp request=
- to
-> > > > AF_XDP zero-copy packet via XDP Tx metadata framework. Please note =
-that
-> > > > user needs to enable Tx HW timestamp capability via igc_ioctl() wit=
-h
-> > > > SIOCSHWTSTAMP cmd before sending xsk Tx hardware timestamp request.
-> > > >=20
-> > > > Same as implementation in RX timestamp XDP hints kfunc metadata, Ti=
-mer 0
-> > > > (adjustable clock) is used in xsk Tx hardware timestamp. i225/i226 =
-have
-> > > > four sets of timestamping registers. *skb and *xsk_tx_buffer pointe=
-rs
-> > > > are used to indicate whether the timestamping register is already o=
-ccupied.
-> > >=20
-> > > Let me make sure that I fully understand that: In my own words:
-> > >=20
-> > > With that applied I'm able to get the point in time from the device
-> > > when a specific frame made it to the wire. I have to enable that
-> > > functionality using the mentioned ioctl() call first, and then check
-> > > the meta area (located in the umem right before the frame payload)
-> > > while consuming the completion queue/ring. Correct?
->=20
-> Hi Florian,
->=20
-> Yes, you are right. But before you pass the frame to driver, make sure
-> you request Tx metadata hardware timestamp feature by setting
-> XDP_TXMD_FLAGS_TIMESTAMP flag.
-> You can refer to tools/testing/selftests/bpf/xdp_hw_metadata.c
-> on how to do it.=20
 
-Got it. Thanks!
 
->=20
-> > >=20
-> > > If so, we now have a feedback channel for meta information for/from T=
-X.
-> > > Are there any plans - or would it be possible - to support Earliest
-> > > TxTime First (NET_SCHED_ETF) QDisc based on that channel? In the past
-> > > we had the problem that we we're missing a feedback channel to
-> > > communicate back invalid lunch times.
-> >=20
-> > Just asking: How would that work? AFAIK XDP bypasses the Qdisc
-> > layer. Currently invalid Launch Times are accounted in the ETF Qdisc
-> > itself. Does that mean every driver has to take care of it?
-> >=20
-> > Thanks,
-> > Kurt
->=20
-> Florian & Kurt,
->=20
-> Yes, me and Stanislav are trying to add Earliest TxTime First / Launch Ti=
-me to the framework.
-> Please refer to [1] for the patchset. The metadata framework will just pa=
-ss the
-> Launch time value to driver, and driver need to handle the rest.
-> In the patchset, I am enabling it on stmmac driver only, but we need more=
- drivers
-> to check whether the design is feasible for different drivers, cause each=
- driver is
-> having their own limitation on launch time. Therefore, after this tx hwts=
- patch accepted,
-> I will try to enable launch time on igc driver, and submit new version.=
-=20
+在 2024/3/26 21:34, Kurt Kanzenbach 写道:
+> Add support for offloading MQPRIO. The hardware has four priorities as well
+> as four queues. Each queue must be a assigned with a unique priority.
+>
+> However, the priorities are only considered in TSN Tx mode. There are two
+> TSN Tx modes. In case of MQPRIO the Qbv capability is not required.
+> Therefore, use the legacy TSN Tx mode, which performs strict priority
+> arbitration.
+>
+> Example for mqprio with hardware offload:
+>
+> |tc qdisc replace dev ${INTERFACE} handle 100 parent root mqprio num_tc 4 \
+> |   map 0 0 0 0 0 1 2 3 0 0 0 0 0 0 0 0 \
+> |   queues 1@0 1@1 1@2 1@3 \
+> |   hw 1
+>
+> The mqprio Qdisc also allows to configure the `preemptible_tcs'. However,
+> frame preemption is not supported yet.
+>
+> Tested on Intel i225 and implemented by following data sheet section 7.5.2,
+> Transmit Scheduling.
+>
+> Signed-off-by: Kurt Kanzenbach <kurt@linutronix.de>
+> ---
+> Changes in v2:
+> - Improve changelog (Paul Menzel)
+> - Link to v1: https://lore.kernel.org/r/20240212-igc_mqprio-v1-1-7aed95b736db@linutronix.de
+> ---
+>   drivers/net/ethernet/intel/igc/igc.h         | 10 +++-
+>   drivers/net/ethernet/intel/igc/igc_defines.h |  9 ++++
+>   drivers/net/ethernet/intel/igc/igc_main.c    | 69 +++++++++++++++++++++++++++
+>   drivers/net/ethernet/intel/igc/igc_regs.h    |  2 +
+>   drivers/net/ethernet/intel/igc/igc_tsn.c     | 71 +++++++++++++++++++++++++++-
+>   5 files changed, 157 insertions(+), 4 deletions(-)
+>
+> diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
+> index 90316dc58630..49ba753ce957 100644
+> --- a/drivers/net/ethernet/intel/igc/igc.h
+> +++ b/drivers/net/ethernet/intel/igc/igc.h
+> @@ -227,6 +227,10 @@ struct igc_adapter {
+>   	 */
+>   	spinlock_t qbv_tx_lock;
+>   
+> +	bool strict_priority_enable;
+> +	u8 num_tc;
+> +	u16 queue_per_tc[IGC_MAX_TX_QUEUES];
+> +
+>   	/* OS defined structs */
+>   	struct pci_dev *pdev;
+>   	/* lock for statistics */
+> @@ -346,9 +350,11 @@ extern char igc_driver_name[];
+>   #define IGC_FLAG_RX_LEGACY		BIT(16)
+>   #define IGC_FLAG_TSN_QBV_ENABLED	BIT(17)
+>   #define IGC_FLAG_TSN_QAV_ENABLED	BIT(18)
+> +#define IGC_FLAG_TSN_LEGACY_ENABLED	BIT(19)
+>   
+> -#define IGC_FLAG_TSN_ANY_ENABLED \
+> -	(IGC_FLAG_TSN_QBV_ENABLED | IGC_FLAG_TSN_QAV_ENABLED)
+> +#define IGC_FLAG_TSN_ANY_ENABLED				\
+> +	(IGC_FLAG_TSN_QBV_ENABLED | IGC_FLAG_TSN_QAV_ENABLED |	\
+> +	 IGC_FLAG_TSN_LEGACY_ENABLED)
+>   
+>   #define IGC_FLAG_RSS_FIELD_IPV4_UDP	BIT(6)
+>   #define IGC_FLAG_RSS_FIELD_IPV6_UDP	BIT(7)
+> diff --git a/drivers/net/ethernet/intel/igc/igc_defines.h b/drivers/net/ethernet/intel/igc/igc_defines.h
+> index 5f92b3c7c3d4..73502a0b4df7 100644
+> --- a/drivers/net/ethernet/intel/igc/igc_defines.h
+> +++ b/drivers/net/ethernet/intel/igc/igc_defines.h
+> @@ -547,6 +547,15 @@
+>   
+>   #define IGC_MAX_SR_QUEUES		2
+>   
+> +#define IGC_TXARB_TXQ_PRIO_0_SHIFT	0
+> +#define IGC_TXARB_TXQ_PRIO_1_SHIFT	2
+> +#define IGC_TXARB_TXQ_PRIO_2_SHIFT	4
+> +#define IGC_TXARB_TXQ_PRIO_3_SHIFT	6
+> +#define IGC_TXARB_TXQ_PRIO_0_MASK	GENMASK(1, 0)
+> +#define IGC_TXARB_TXQ_PRIO_1_MASK	GENMASK(3, 2)
+> +#define IGC_TXARB_TXQ_PRIO_2_MASK	GENMASK(5, 4)
+> +#define IGC_TXARB_TXQ_PRIO_3_MASK	GENMASK(7, 6)
+> +
+>   /* Receive Checksum Control */
+>   #define IGC_RXCSUM_CRCOFL	0x00000800   /* CRC32 offload enable */
+>   #define IGC_RXCSUM_PCSD		0x00002000   /* packet checksum disabled */
+> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+> index 2e1cfbd82f4f..b17764973d74 100644
+> --- a/drivers/net/ethernet/intel/igc/igc_main.c
+> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
+> @@ -6415,6 +6415,13 @@ static int igc_tc_query_caps(struct igc_adapter *adapter,
+>   	struct igc_hw *hw = &adapter->hw;
+>   
+>   	switch (base->type) {
+> +	case TC_SETUP_QDISC_MQPRIO: {
+> +		struct tc_mqprio_caps *caps = base->caps;
+> +
+> +		caps->validate_queue_counts = true;
+> +
+> +		return 0;
+> +	}
+>   	case TC_SETUP_QDISC_TAPRIO: {
+>   		struct tc_taprio_caps *caps = base->caps;
+>   
+> @@ -6432,6 +6439,65 @@ static int igc_tc_query_caps(struct igc_adapter *adapter,
+>   	}
+>   }
+>   
+> +static void igc_save_mqprio_params(struct igc_adapter *adapter, u8 num_tc,
+> +				   u16 *offset)
+> +{
+> +	int i;
+> +
+> +	adapter->strict_priority_enable = true;
+> +	adapter->num_tc = num_tc;
+> +
+> +	for (i = 0; i < num_tc; i++)
+> +		adapter->queue_per_tc[i] = offset[i];
+> +}
+> +
+> +static int igc_tsn_enable_mqprio(struct igc_adapter *adapter,
+> +				 struct tc_mqprio_qopt_offload *mqprio)
+> +{
+> +	struct igc_hw *hw = &adapter->hw;
+> +	int i;
+> +
+> +	if (hw->mac.type != igc_i225)
+> +		return -EOPNOTSUPP;
+> +
+> +	if (!mqprio->qopt.num_tc) {
+> +		adapter->strict_priority_enable = false;
+> +		goto apply;
+> +	}
+> +
+> +	/* There are as many TCs as Tx queues. */
+> +	if (mqprio->qopt.num_tc != adapter->num_tx_queues) {
+> +		NL_SET_ERR_MSG_FMT_MOD(mqprio->extack,
+> +				       "Only %d traffic classes supported",
+> +				       adapter->num_tx_queues);
+> +		return -EOPNOTSUPP;
+> +	}
+> +
+> +	/* Only one queue per TC is supported. */
+> +	for (i = 0; i < mqprio->qopt.num_tc; i++) {
+> +		if (mqprio->qopt.count[i] != 1) {
+> +			NL_SET_ERR_MSG_MOD(mqprio->extack,
+> +					   "Only one queue per TC supported");
+> +			return -EOPNOTSUPP;
+> +		}
+> +	}
+When mqprio enabled for igc, only one queue per TC supported. Is 
+set_channels by ethtool
+allowed in this case ?  If not, it's better to add limitation in 
+icg_ethtool_set_channels.
 
-Nice to hear! Keep me in the loop and let me know if I could support
-somehow.
+Thanks,
 
->=20
-> Kurt is right that current metadata framework is lacking a way to feedbac=
-k whether
-> the launch time is invalid or not. Maybe we can try to enable launch time=
- without feedback,
-> then discuss about the status report design.
+Jian
 
-In case the launch time is invalid - couldn't we simply skip the frame
-and "forward" it back to the application (completion queue/ring) after
-adjusting some meta-information (like the TX timestamps in this patch)
-telling the application what happened?
-
-Thanks a lot!
-Florian
-
->=20
-> [1] https://patchwork.kernel.org/project/netdevbpf/cover/20231203165129.1=
-740512-1-yoong.siang.song@intel.com/
->=20
-> Thanks & Regards
-> Siang
+> +
+> +	/* Preemption is not supported yet. */
+> +	if (mqprio->preemptible_tcs) {
+> +		NL_SET_ERR_MSG_MOD(mqprio->extack,
+> +				   "Preemption is not supported yet");
+> +		return -EOPNOTSUPP;
+> +	}
+> +
+> +	igc_save_mqprio_params(adapter, mqprio->qopt.num_tc,
+> +			       mqprio->qopt.offset);
+> +
+> +	mqprio->qopt.hw = TC_MQPRIO_HW_OFFLOAD_TCS;
+> +
+> +apply:
+> +	return igc_tsn_offload_apply(adapter);
+> +}
+> +
+>   static int igc_setup_tc(struct net_device *dev, enum tc_setup_type type,
+>   			void *type_data)
+>   {
+> @@ -6451,6 +6517,9 @@ static int igc_setup_tc(struct net_device *dev, enum tc_setup_type type,
+>   	case TC_SETUP_QDISC_CBS:
+>   		return igc_tsn_enable_cbs(adapter, type_data);
+>   
+> +	case TC_SETUP_QDISC_MQPRIO:
+> +		return igc_tsn_enable_mqprio(adapter, type_data);
+> +
+>   	default:
+>   		return -EOPNOTSUPP;
+>   	}
+> diff --git a/drivers/net/ethernet/intel/igc/igc_regs.h b/drivers/net/ethernet/intel/igc/igc_regs.h
+> index e5b893fc5b66..c83c723f7c7e 100644
+> --- a/drivers/net/ethernet/intel/igc/igc_regs.h
+> +++ b/drivers/net/ethernet/intel/igc/igc_regs.h
+> @@ -238,6 +238,8 @@
+>   #define IGC_TQAVCC(_n)		(0x3004 + ((_n) * 0x40))
+>   #define IGC_TQAVHC(_n)		(0x300C + ((_n) * 0x40))
+>   
+> +#define IGC_TXARB		0x3354 /* Tx Arbitration Control TxARB - RW */
+> +
+>   /* System Time Registers */
+>   #define IGC_SYSTIML	0x0B600  /* System time register Low - RO */
+>   #define IGC_SYSTIMH	0x0B604  /* System time register High - RO */
+> diff --git a/drivers/net/ethernet/intel/igc/igc_tsn.c b/drivers/net/ethernet/intel/igc/igc_tsn.c
+> index 22cefb1eeedf..5e2e1c6076f3 100644
+> --- a/drivers/net/ethernet/intel/igc/igc_tsn.c
+> +++ b/drivers/net/ethernet/intel/igc/igc_tsn.c
+> @@ -46,6 +46,9 @@ static unsigned int igc_tsn_new_flags(struct igc_adapter *adapter)
+>   	if (is_cbs_enabled(adapter))
+>   		new_flags |= IGC_FLAG_TSN_QAV_ENABLED;
+>   
+> +	if (adapter->strict_priority_enable)
+> +		new_flags |= IGC_FLAG_TSN_LEGACY_ENABLED;
+> +
+>   	return new_flags;
+>   }
+>   
+> @@ -84,7 +87,7 @@ void igc_tsn_adjust_txtime_offset(struct igc_adapter *adapter)
+>   static int igc_tsn_disable_offload(struct igc_adapter *adapter)
+>   {
+>   	struct igc_hw *hw = &adapter->hw;
+> -	u32 tqavctrl;
+> +	u32 tqavctrl, txarb;
+>   	int i;
+>   
+>   	wr32(IGC_GTXOFFSET, 0);
+> @@ -106,7 +109,26 @@ static int igc_tsn_disable_offload(struct igc_adapter *adapter)
+>   	wr32(IGC_QBVCYCLET_S, 0);
+>   	wr32(IGC_QBVCYCLET, NSEC_PER_SEC);
+>   
+> +	/* Reset mqprio TC configuration. */
+> +	netdev_reset_tc(adapter->netdev);
+> +
+> +	/* Restore the default Tx arbitration: Priority 0 has the highest
+> +	 * priority and is assigned to queue 0 and so on and so forth.
+> +	 */
+> +	txarb = rd32(IGC_TXARB);
+> +	txarb &= ~(IGC_TXARB_TXQ_PRIO_0_MASK |
+> +		   IGC_TXARB_TXQ_PRIO_1_MASK |
+> +		   IGC_TXARB_TXQ_PRIO_2_MASK |
+> +		   IGC_TXARB_TXQ_PRIO_3_MASK);
+> +
+> +	txarb |= 0x00 << IGC_TXARB_TXQ_PRIO_0_SHIFT;
+> +	txarb |= 0x01 << IGC_TXARB_TXQ_PRIO_1_SHIFT;
+> +	txarb |= 0x02 << IGC_TXARB_TXQ_PRIO_2_SHIFT;
+> +	txarb |= 0x03 << IGC_TXARB_TXQ_PRIO_3_SHIFT;
+> +	wr32(IGC_TXARB, txarb);
+> +
+>   	adapter->flags &= ~IGC_FLAG_TSN_QBV_ENABLED;
+> +	adapter->flags &= ~IGC_FLAG_TSN_LEGACY_ENABLED;
+>   
+>   	return 0;
+>   }
+> @@ -123,6 +145,50 @@ static int igc_tsn_enable_offload(struct igc_adapter *adapter)
+>   	wr32(IGC_DTXMXPKTSZ, IGC_DTXMXPKTSZ_TSN);
+>   	wr32(IGC_TXPBS, IGC_TXPBSIZE_TSN);
+>   
+> +	if (adapter->strict_priority_enable) {
+> +		u32 txarb;
+> +		int err;
+> +
+> +		err = netdev_set_num_tc(adapter->netdev, adapter->num_tc);
+> +		if (err)
+> +			return err;
+> +
+> +		for (i = 0; i < adapter->num_tc; i++) {
+> +			err = netdev_set_tc_queue(adapter->netdev, i, 1,
+> +						  adapter->queue_per_tc[i]);
+> +			if (err)
+> +				return err;
+> +		}
+> +
+> +		/* In case the card is configured with less than four queues. */
+> +		for (; i < IGC_MAX_TX_QUEUES; i++)
+> +			adapter->queue_per_tc[i] = i;
+> +
+> +		/* Configure queue priorities according to the user provided
+> +		 * mapping.
+> +		 */
+> +		txarb = rd32(IGC_TXARB);
+> +		txarb &= ~(IGC_TXARB_TXQ_PRIO_0_MASK |
+> +			   IGC_TXARB_TXQ_PRIO_1_MASK |
+> +			   IGC_TXARB_TXQ_PRIO_2_MASK |
+> +			   IGC_TXARB_TXQ_PRIO_3_MASK);
+> +		txarb |= adapter->queue_per_tc[3] << IGC_TXARB_TXQ_PRIO_0_SHIFT;
+> +		txarb |= adapter->queue_per_tc[2] << IGC_TXARB_TXQ_PRIO_1_SHIFT;
+> +		txarb |= adapter->queue_per_tc[1] << IGC_TXARB_TXQ_PRIO_2_SHIFT;
+> +		txarb |= adapter->queue_per_tc[0] << IGC_TXARB_TXQ_PRIO_3_SHIFT;
+> +		wr32(IGC_TXARB, txarb);
+> +
+> +		/* Enable legacy TSN mode which will do strict priority without
+> +		 * any other TSN features.
+> +		 */
+> +		tqavctrl = rd32(IGC_TQAVCTRL);
+> +		tqavctrl |= IGC_TQAVCTRL_TRANSMIT_MODE_TSN;
+> +		tqavctrl &= ~IGC_TQAVCTRL_ENHANCED_QAV;
+> +		wr32(IGC_TQAVCTRL, tqavctrl);
+> +
+> +		return 0;
+> +	}
+> +
+>   	for (i = 0; i < adapter->num_tx_queues; i++) {
+>   		struct igc_ring *ring = adapter->tx_ring[i];
+>   		u32 txqctl = 0;
+> @@ -339,7 +405,8 @@ int igc_tsn_offload_apply(struct igc_adapter *adapter)
+>   	 * cannot be changed dynamically. Require reset the adapter.
+>   	 */
+>   	if (netif_running(adapter->netdev) &&
+> -	    (igc_is_device_id_i225(hw) || !adapter->qbv_count)) {
+> +	    (igc_is_device_id_i225(hw) || !adapter->qbv_count ||
+> +	     !adapter->strict_priority_enable)) {
+>   		schedule_work(&adapter->reset_task);
+>   		return 0;
+>   	}
+>
+> ---
+> base-commit: 537c2e91d3549e5d6020bb0576cf9b54a845255f
+> change-id: 20240212-igc_mqprio-039650006128
+>
+> Best regards,
 
