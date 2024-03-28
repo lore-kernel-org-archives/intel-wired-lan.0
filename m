@@ -4,106 +4,90 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F133DCD1283
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 28 Mar 2024 15:44:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 42792CD1284
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 28 Mar 2024 15:52:20 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 9FB0460E68;
-	Thu, 28 Mar 2024 15:44:31 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id F0CA960E69;
+	Thu, 28 Mar 2024 15:52:19 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id S9T7pj0-LmFm; Thu, 28 Mar 2024 15:44:30 +0000 (UTC)
+ id zzCX0_phlxBJ; Thu, 28 Mar 2024 15:52:19 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org D42FE60E4E
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 0220D60E60
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1711640670;
-	bh=lfCJkz0NV4LNlg16H4z9u4Tyaak9D9MaxCwxDTUgm50=;
-	h=References:In-Reply-To:From:Date:To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=2jhN+H7yZ4+odiY/aofQIjJQveM3GiDnissXb//4aAPRTegW5mI2vuf5vigxTpWKB
-	 /iHMJ/puAqbRKE1VxLTHKuxGqlGK0/SOXewvIqGMRf2pAi9Q2vSQkNWz/PnWvxukNG
-	 Ik3xSeWnJ78GmmLNbPMPygMkymBFoK9VNbae0oHGxAugiGEz6t10GF4HuJywca1+py
-	 WYJj/KIjJw5Hj3IQqfl0OHIu+pn/n9Y4K7Z8ELSv7/MLH11gz/6Fbg6YC3LpO1xrvb
-	 Ur+oKUnHlrHkfMNJluvfCdaZ8lEgRKYgimp8XxtL6Ad/UMhyi2zdq3t4vwmvN7Hkea
-	 tAWfrn1/sxwVQ==
+	s=default; t=1711641139;
+	bh=AOupPr7OPtunmMWVybMhK+8TP1VvjHO0adnplLr/utM=;
+	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=1Y3pgUw9ACdYJ3LgHKYyjx/C3FJ3b0u2N16SpZ/rYJxKANLAZixU1ETzuLAF7zI1o
+	 RNZaCd0eubIiY0riBDzxVUibDbRvXdkJ4mhTy1VkMODOT6cZbexYIEdXI0ixaqf0aE
+	 MvTmPVh+TeKJZzgSO3p9Yze5aPyDX6OwXyKuJA9oRvDp+w/Q3RsUgM1cnRHQlkCnEq
+	 z9/lMUxRnBRLYLYuW3dnMPXNe7cVmqhGjyulTGcFN6i5KPazqSbjtVXM40ikf0NOnt
+	 +S9MuMyCwrmXUO4wiJjMtqKfRdjHcbUVMcmZnxVEYdF0o8iZrULoZOnfe9KRH/afzs
+	 G1dYbshAn3ZKw==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id D42FE60E4E;
-	Thu, 28 Mar 2024 15:44:30 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 0220D60E60;
+	Thu, 28 Mar 2024 15:52:19 +0000 (UTC)
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 7BA121BF3A7
- for <intel-wired-lan@lists.osuosl.org>; Thu, 28 Mar 2024 10:53:11 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id E2CBD1BF380
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 28 Mar 2024 15:52:17 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 66D85403AC
- for <intel-wired-lan@lists.osuosl.org>; Thu, 28 Mar 2024 10:53:11 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id DA7134178F
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 28 Mar 2024 15:52:17 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id DQAPh2KkgRLk for <intel-wired-lan@lists.osuosl.org>;
- Thu, 28 Mar 2024 10:53:10 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2607:f8b0:4864:20::102f; helo=mail-pj1-x102f.google.com;
- envelope-from=geethasowjanya.kornu@gmail.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 0ADD3401D5
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 0ADD3401D5
-Received: from mail-pj1-x102f.google.com (mail-pj1-x102f.google.com
- [IPv6:2607:f8b0:4864:20::102f])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 0ADD3401D5
- for <intel-wired-lan@lists.osuosl.org>; Thu, 28 Mar 2024 10:53:09 +0000 (UTC)
-Received: by mail-pj1-x102f.google.com with SMTP id
- 98e67ed59e1d1-29dedcd244dso635238a91.0
- for <intel-wired-lan@lists.osuosl.org>; Thu, 28 Mar 2024 03:53:09 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20230601; t=1711623189; x=1712227989;
- h=content-transfer-encoding:cc:to:subject:message-id:date:from
- :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
- :subject:date:message-id:reply-to;
- bh=lfCJkz0NV4LNlg16H4z9u4Tyaak9D9MaxCwxDTUgm50=;
- b=NfSghTi5VZWEOilm5uPa42gs48pwlXQuo2vmEW/UWvjXIw8fIecuKP2cuR5jGADQvL
- 80dy6vxDJwvACKjWkuz0XV2aB9nFPROY4/qy/LufiDNKM/nA+6tGasWhccL+Siuf796E
- /p9V4Tmw0KNxj0g++lbV33a2AGK/qjoXNe9CBvwodOPg4ELvduFDW5wQpUJnIb93c9v/
- T87P2IzuWq9feLLRERQTiKW6JaRKz09L588AjOg/fkjOcz+WgAakeCDlm8qmXuJA49fX
- qkFIt0xgEeWOwDcBR/AzmXHmKkQKOQqg9N1+LBLElIn1cpTlnNX6WXS+3/pa2vVwl23n
- X4Gg==
-X-Gm-Message-State: AOJu0YwGgvxkZvTGXoMRsSm6oAq9pprMHKn85yRvZhMTDaEhZHif2Gg9
- 5ytOX9oZ6QRjPBDA//HhGMG7Pg34L9HtE5o7wDsBiOJiYpkVhD98FBhFDCLMjiBbnQH9IC+uIZ1
- 5cewTGNQX5+CwczNI4TqVWegpdS4=
-X-Google-Smtp-Source: AGHT+IFwWldsBeFdr8zFcP7EfGeTcGYDRszNZfDGOHJg+M5jsArJUn7O5UUnsjadRgVeOth6d3KqOOFBQ3KRxhqIfek=
-X-Received: by 2002:a17:90a:6985:b0:29d:fe34:fa16 with SMTP id
- s5-20020a17090a698500b0029dfe34fa16mr2366601pjj.21.1711623188963; Thu, 28 Mar
- 2024 03:53:08 -0700 (PDT)
-MIME-Version: 1.0
-References: <20240328093405.336378-14-karol.kolacinski@intel.com>
- <20240328093405.336378-17-karol.kolacinski@intel.com>
-In-Reply-To: <20240328093405.336378-17-karol.kolacinski@intel.com>
-From: geethasowjanya <geethasowjanya.kornu@gmail.com>
-Date: Thu, 28 Mar 2024 16:22:57 +0530
-Message-ID: <CAJFAVwokuo-x51LzEZQKCd-MQAQFeV-Gctqq97LPYnM9SKgGKQ@mail.gmail.com>
-To: Karol Kolacinski <karol.kolacinski@intel.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Mailman-Approved-At: Thu, 28 Mar 2024 15:44:29 +0000
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20230601; t=1711623189; x=1712227989; darn=lists.osuosl.org;
- h=content-transfer-encoding:cc:to:subject:message-id:date:from
- :in-reply-to:references:mime-version:from:to:cc:subject:date
- :message-id:reply-to;
- bh=lfCJkz0NV4LNlg16H4z9u4Tyaak9D9MaxCwxDTUgm50=;
- b=XGhxTfkBhal05cBr20VFkbriVzYsQlFXLoELkfjutsY1S9HXI7o3Huj/FVF8lw2TQu
- /OvPeskM/ZkSUbaFMkZXKCC0m09PNs98Ytj7fli5OnNeNDDrPGbQpGeYMSw7iFg0UVG/
- bzlpUBZREfUTVDPC+FuNNMaQdiHg6WZVPjrXTVB0chUw9onaMW5NOvtQuxYUs40B1T/9
- bp5cef2T0W+s54mEVglnjyDwehX8d7CXALWXPOXgcwiw8xEOOm6JjDQbgHDDQaQdzaAH
- g57J/uipKNVqd/5+/esi+vQDQfNWGq0bKBSHCtqdclUbxnbTFS+8ZjUm3E4maON/hG5h
- rvFw==
+ id JnMPO3HRc1Rq for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 28 Mar 2024 15:52:16 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.17;
+ helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 924CD41780
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 924CD41780
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.17])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 924CD41780
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 28 Mar 2024 15:52:16 +0000 (UTC)
+X-CSE-ConnectionGUID: Mt8N7QNlQ2OamvpIEe5XrQ==
+X-CSE-MsgGUID: CCQxnW11Qeib6iSgBaL9ww==
+X-IronPort-AV: E=McAfee;i="6600,9927,11027"; a="6914847"
+X-IronPort-AV: E=Sophos;i="6.07,162,1708416000"; 
+   d="scan'208";a="6914847"
+Received: from orviesa010.jf.intel.com ([10.64.159.150])
+ by orvoesa109.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 28 Mar 2024 08:52:14 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.07,162,1708416000"; d="scan'208";a="16524715"
+Received: from lkp-server01.sh.intel.com (HELO be39aa325d23) ([10.239.97.150])
+ by orviesa010.jf.intel.com with ESMTP; 28 Mar 2024 08:52:12 -0700
+Received: from kbuild by be39aa325d23 with local (Exim 4.96)
+ (envelope-from <lkp@intel.com>) id 1rps30-0002Hq-16
+ for intel-wired-lan@lists.osuosl.org; Thu, 28 Mar 2024 15:52:10 +0000
+Date: Thu, 28 Mar 2024 23:51:39 +0800
+From: kernel test robot <lkp@intel.com>
+To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+Message-ID: <202403282338.VzqTb9ft-lkp@intel.com>
+User-Agent: s-nail v14.9.24
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1711641137; x=1743177137;
+ h=date:from:to:subject:message-id;
+ bh=4BcEmBNShXw5lXiH4u6tXqFOEo6lVXydAwxwMceDSpg=;
+ b=TOZAZEYTgEu9um+nuGRI4HDUi+6+H7iA4u4hWh322MoM43B87PvKOPG6
+ XSAM1PObu/9wAyu3JidJNxI2KsmeJQkixPZ+z4zFAMyN5Os2euY6ShTZf
+ 0iSSPeeF60ZDHX7MHhuO8EvTgV2oXF/DugqXOKPNiZ7gf0FLkFYnxPl3r
+ IaWsPVsZP8B6me+twXaMpu7DSHnCRYBLbXY1xGgoVIShKNYWn3eZ31yKX
+ LOGwPXcRWvPqsCBOloNR8aGd0e0mwIpxXwrQ344lVbWLpJ4nJdhm3L7zJ
+ ypn638SYsYbpZ9J2jZYYLTlRCMpEqpPGxCcL66FlKA8c+jznIAHQvaPAH
+ w==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none)
- header.from=gmail.com
+ header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key,
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20230601 header.b=XGhxTfkB
-Subject: Re: [Intel-wired-lan] [PATCH v2 iwl-next 03/12] ice: Implement Tx
- interrupt enablement functions
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=TOZAZEYT
+Subject: [Intel-wired-lan] [tnguy-net-queue:1GbE] BUILD SUCCESS
+ 861e8086029e003305750b4126ecd6617465f5c7
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -116,215 +100,183 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Sergey Temerkhanov <sergey.temerkhanov@intel.com>, netdev@vger.kernel.org,
- Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>,
- anthony.l.nguyen@intel.com, Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- intel-wired-lan@lists.osuosl.org
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Thu, Mar 28, 2024 at 3:04=E2=80=AFPM Karol Kolacinski
-<karol.kolacinski@intel.com> wrote:
->
-> From: Sergey Temerkhanov <sergey.temerkhanov@intel.com>
->
-> Introduce functions enabling/disabling Tx TS interrupts
-> for the E822 and ETH56G PHYs
->
-> Signed-off-by: Sergey Temerkhanov <sergey.temerkhanov@intel.com>
-> Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
-> Reviewed-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
-> Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
-> ---
->  drivers/net/ethernet/intel/ice/ice_ptp.c    | 63 ++++++++++-----------
->  drivers/net/ethernet/intel/ice/ice_ptp_hw.c | 31 ++++++++++
->  drivers/net/ethernet/intel/ice/ice_ptp_hw.h |  4 +-
->  3 files changed, 63 insertions(+), 35 deletions(-)
->
-> diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ether=
-net/intel/ice/ice_ptp.c
-> index 8150f949dfd3..3019988a43c8 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_ptp.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-> @@ -1457,42 +1457,43 @@ void ice_ptp_link_change(struct ice_pf *pf, u8 po=
-rt, bool linkup)
->   * @ena: bool value to enable or disable interrupt
->   * @threshold: Minimum number of packets at which intr is triggered
->   *
-> - * Utility function to enable or disable Tx timestamp interrupt and thre=
-shold
-> + * Utility function to configure all the PHY interrupt settings, includi=
-ng
-> + * whether the PHY interrupt is enabled, and what threshold to use. Also
-> + * configures The E82X timestamp owner to react to interrupts from all P=
-HYs.
->   */
->  static int ice_ptp_cfg_phy_interrupt(struct ice_pf *pf, bool ena, u32 th=
-reshold)
->  {
-> +       struct device *dev =3D ice_pf_to_dev(pf);
->         struct ice_hw *hw =3D &pf->hw;
-> -       int err =3D 0;
-> -       int quad;
-> -       u32 val;
->
->         ice_ptp_reset_ts_memory(hw);
->
-> -       for (quad =3D 0; quad < ICE_GET_QUAD_NUM(hw->ptp.num_lports); qua=
-d++) {
-> -               err =3D ice_read_quad_reg_e82x(hw, quad, Q_REG_TX_MEM_GBL=
-_CFG,
-> -                                            &val);
-> -               if (err)
-> -                       break;
-> -
-> -               if (ena) {
-> -                       val |=3D Q_REG_TX_MEM_GBL_CFG_INTR_ENA_M;
-> -                       val &=3D ~Q_REG_TX_MEM_GBL_CFG_INTR_THR_M;
-> -                       val |=3D FIELD_PREP(Q_REG_TX_MEM_GBL_CFG_INTR_THR=
-_M,
-> -                                         threshold);
-> -               } else {
-> -                       val &=3D ~Q_REG_TX_MEM_GBL_CFG_INTR_ENA_M;
-> +       switch (hw->ptp.phy_model) {
-> +       case ICE_PHY_E82X: {
-> +               int quad;
-> +
-> +               for (quad =3D 0; quad < ICE_GET_QUAD_NUM(hw->ptp.num_lpor=
-ts);
-> +                    quad++) {
-> +                       int err;
-> +
-> +                       err =3D ice_phy_cfg_intr_e82x(hw, quad, ena, thre=
-shold);
-> +                       if (err) {
-> +                               dev_err(dev, "Failed to configure PHY int=
-errupt for quad %d, err %d\n",
-> +                                       quad, err);
-> +                               return err;
-> +                       }
->                 }
->
-> -               err =3D ice_write_quad_reg_e82x(hw, quad, Q_REG_TX_MEM_GB=
-L_CFG,
-> -                                             val);
-> -               if (err)
-> -                       break;
-> +               return 0;
-> +       }
-> +       case ICE_PHY_E810:
-> +               return 0;
-> +       case ICE_PHY_UNSUP:
-> +       default:
-> +               dev_warn(dev, "%s: Unexpected PHY model %d\n", __func__,
-> +                        hw->ptp.phy_model);
-> +               return -EOPNOTSUPP;
->         }
-> -
-> -       if (err)
-> -               dev_err(ice_pf_to_dev(pf), "PTP failed in intr ena, err %=
-d\n",
-> -                       err);
-> -       return err;
->  }
->
->  /**
-> @@ -3010,12 +3011,10 @@ static int ice_ptp_init_owner(struct ice_pf *pf)
->         /* Release the global hardware lock */
->         ice_ptp_unlock(hw);
->
-> -       if (!ice_is_e810(hw)) {
-> -               /* Enable quad interrupts */
-> -               err =3D ice_ptp_cfg_phy_interrupt(pf, true, 1);
-> -               if (err)
-> -                       goto err_exit;
-> -       }
-> +       /* Configure PHY interrupt settings */
-> +       err =3D ice_ptp_cfg_phy_interrupt(pf, true, 1);
-> +       if (err)
-> +               goto err_exit;
->
->         /* Ensure we have a clock device */
->         err =3D ice_ptp_create_clock(pf);
-> diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c b/drivers/net/et=
-hernet/intel/ice/ice_ptp_hw.c
-> index c892b966c3b8..12f04ad263c5 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-> @@ -2715,6 +2715,37 @@ ice_get_phy_tx_tstamp_ready_e82x(struct ice_hw *hw=
-, u8 quad, u64 *tstamp_ready)
->         return 0;
->  }
->
-> +/**
-> + * ice_phy_cfg_intr_e82x - Configure TX timestamp interrupt
-> + * @hw: pointer to the HW struct
-> + * @quad: the timestamp quad
-> + * @ena: enable or disable interrupt
-> + * @threshold: interrupt threshold
-> + *
-> + * Configure TX timestamp interrupt for the specified quad
-> + */
-> +
-> +int ice_phy_cfg_intr_e82x(struct ice_hw *hw, u8 quad, bool ena, u8 thres=
-hold)
-> +{
-> +       int err;
-> +       u32 val;
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git 1GbE
+branch HEAD: 861e8086029e003305750b4126ecd6617465f5c7  e1000e: move force SMBUS from enable ulp function to avoid PHY loss issue
 
-Reverse Christmas trees.
-> +
-> +       err =3D ice_read_quad_reg_e82x(hw, quad, Q_REG_TX_MEM_GBL_CFG, &v=
-al);
-> +       if (err)
-> +               return err;
-> +
-> +       val &=3D ~Q_REG_TX_MEM_GBL_CFG_INTR_ENA_M;
-> +       if (ena) {
-> +               val |=3D Q_REG_TX_MEM_GBL_CFG_INTR_ENA_M;
-> +               val &=3D ~Q_REG_TX_MEM_GBL_CFG_INTR_THR_M;
-> +               val |=3D FIELD_PREP(Q_REG_TX_MEM_GBL_CFG_INTR_THR_M, thre=
-shold);
-> +       }
-> +
-> +       err =3D ice_write_quad_reg_e82x(hw, quad, Q_REG_TX_MEM_GBL_CFG, v=
-al);
-> +
-> +       return err;
-> +}
-> +
->  /**
->   * ice_ptp_init_phy_e82x - initialize PHY parameters
->   * @ptp: pointer to the PTP HW struct
-> diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h b/drivers/net/et=
-hernet/intel/ice/ice_ptp_hw.h
-> index 6246de3bacf3..5645b20a9f87 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
-> +++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
-> @@ -265,6 +265,7 @@ int ice_stop_phy_timer_e82x(struct ice_hw *hw, u8 por=
-t, bool soft_reset);
->  int ice_start_phy_timer_e82x(struct ice_hw *hw, u8 port);
->  int ice_phy_cfg_tx_offset_e82x(struct ice_hw *hw, u8 port);
->  int ice_phy_cfg_rx_offset_e82x(struct ice_hw *hw, u8 port);
-> +int ice_phy_cfg_intr_e82x(struct ice_hw *hw, u8 quad, bool ena, u8 thres=
-hold);
->
->  /* E810 family functions */
->  int ice_read_sma_ctrl_e810t(struct ice_hw *hw, u8 *data);
-> @@ -342,11 +343,8 @@ int ice_cgu_get_output_pin_state_caps(struct ice_hw =
-*hw, u8 pin_id,
->  #define Q_REG_TX_MEM_GBL_CFG           0xC08
->  #define Q_REG_TX_MEM_GBL_CFG_LANE_TYPE_S       0
->  #define Q_REG_TX_MEM_GBL_CFG_LANE_TYPE_M       BIT(0)
-> -#define Q_REG_TX_MEM_GBL_CFG_TX_TYPE_S 1
->  #define Q_REG_TX_MEM_GBL_CFG_TX_TYPE_M ICE_M(0xFF, 1)
-> -#define Q_REG_TX_MEM_GBL_CFG_INTR_THR_S        9
->  #define Q_REG_TX_MEM_GBL_CFG_INTR_THR_M ICE_M(0x3F, 9)
-> -#define Q_REG_TX_MEM_GBL_CFG_INTR_ENA_S        15
->  #define Q_REG_TX_MEM_GBL_CFG_INTR_ENA_M        BIT(15)
->
->  /* Tx Timestamp data registers */
-> --
-> 2.43.0
->
->
+elapsed time: 1244m
+
+configs tested: 161
+configs skipped: 3
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+tested configs:
+alpha                             allnoconfig   gcc  
+alpha                            allyesconfig   gcc  
+alpha                               defconfig   gcc  
+arc                              allmodconfig   gcc  
+arc                               allnoconfig   gcc  
+arc                              allyesconfig   gcc  
+arc                                 defconfig   gcc  
+arc                     haps_hs_smp_defconfig   gcc  
+arc                   randconfig-001-20240328   gcc  
+arc                   randconfig-002-20240328   gcc  
+arm                              allmodconfig   gcc  
+arm                               allnoconfig   clang
+arm                              allyesconfig   gcc  
+arm                                 defconfig   clang
+arm                          ixp4xx_defconfig   gcc  
+arm                          moxart_defconfig   gcc  
+arm                       multi_v4t_defconfig   clang
+arm                   randconfig-001-20240328   gcc  
+arm                   randconfig-002-20240328   gcc  
+arm                   randconfig-003-20240328   gcc  
+arm                   randconfig-004-20240328   gcc  
+arm                         s5pv210_defconfig   gcc  
+arm                           sama5_defconfig   gcc  
+arm64                            allmodconfig   clang
+arm64                             allnoconfig   gcc  
+arm64                               defconfig   gcc  
+arm64                 randconfig-001-20240328   gcc  
+arm64                 randconfig-002-20240328   gcc  
+arm64                 randconfig-003-20240328   gcc  
+arm64                 randconfig-004-20240328   gcc  
+csky                             allmodconfig   gcc  
+csky                              allnoconfig   gcc  
+csky                             allyesconfig   gcc  
+csky                                defconfig   gcc  
+csky                  randconfig-001-20240328   gcc  
+csky                  randconfig-002-20240328   gcc  
+hexagon                          allmodconfig   clang
+hexagon                           allnoconfig   clang
+hexagon                          allyesconfig   clang
+hexagon                             defconfig   clang
+hexagon               randconfig-001-20240328   clang
+hexagon               randconfig-002-20240328   clang
+i386                             allmodconfig   gcc  
+i386                              allnoconfig   gcc  
+i386                             allyesconfig   gcc  
+i386         buildonly-randconfig-001-20240328   gcc  
+i386         buildonly-randconfig-002-20240328   gcc  
+i386         buildonly-randconfig-003-20240328   clang
+i386         buildonly-randconfig-004-20240328   gcc  
+i386         buildonly-randconfig-005-20240328   gcc  
+i386         buildonly-randconfig-006-20240328   gcc  
+i386                                defconfig   clang
+i386                  randconfig-001-20240328   clang
+i386                  randconfig-002-20240328   clang
+i386                  randconfig-003-20240328   clang
+i386                  randconfig-004-20240328   clang
+i386                  randconfig-005-20240328   gcc  
+i386                  randconfig-006-20240328   gcc  
+i386                  randconfig-011-20240328   clang
+i386                  randconfig-012-20240328   clang
+i386                  randconfig-013-20240328   clang
+i386                  randconfig-014-20240328   clang
+i386                  randconfig-015-20240328   clang
+i386                  randconfig-016-20240328   clang
+loongarch                        allmodconfig   gcc  
+loongarch                         allnoconfig   gcc  
+loongarch                           defconfig   gcc  
+loongarch             randconfig-001-20240328   gcc  
+loongarch             randconfig-002-20240328   gcc  
+m68k                             allmodconfig   gcc  
+m68k                              allnoconfig   gcc  
+m68k                             allyesconfig   gcc  
+m68k                         amcore_defconfig   gcc  
+m68k                                defconfig   gcc  
+microblaze                       allmodconfig   gcc  
+microblaze                        allnoconfig   gcc  
+microblaze                       allyesconfig   gcc  
+microblaze                          defconfig   gcc  
+mips                              allnoconfig   gcc  
+mips                             allyesconfig   gcc  
+mips                          ath25_defconfig   clang
+mips                           gcw0_defconfig   clang
+mips                           ip22_defconfig   gcc  
+mips                           ip32_defconfig   clang
+mips                     loongson1c_defconfig   gcc  
+mips                           rs90_defconfig   gcc  
+nios2                            allmodconfig   gcc  
+nios2                             allnoconfig   gcc  
+nios2                            allyesconfig   gcc  
+nios2                               defconfig   gcc  
+nios2                 randconfig-001-20240328   gcc  
+nios2                 randconfig-002-20240328   gcc  
+openrisc                          allnoconfig   gcc  
+openrisc                         allyesconfig   gcc  
+openrisc                            defconfig   gcc  
+parisc                           allmodconfig   gcc  
+parisc                            allnoconfig   gcc  
+parisc                           allyesconfig   gcc  
+parisc                              defconfig   gcc  
+parisc                randconfig-001-20240328   gcc  
+parisc                randconfig-002-20240328   gcc  
+parisc64                            defconfig   gcc  
+powerpc                          allmodconfig   gcc  
+powerpc                           allnoconfig   gcc  
+powerpc                          allyesconfig   clang
+powerpc               randconfig-001-20240328   clang
+powerpc               randconfig-002-20240328   clang
+powerpc               randconfig-003-20240328   clang
+powerpc                  storcenter_defconfig   gcc  
+powerpc64             randconfig-001-20240328   clang
+powerpc64             randconfig-002-20240328   gcc  
+powerpc64             randconfig-003-20240328   gcc  
+riscv                            allmodconfig   clang
+riscv                             allnoconfig   gcc  
+riscv                            allyesconfig   clang
+riscv                               defconfig   clang
+riscv                 randconfig-001-20240328   gcc  
+riscv                 randconfig-002-20240328   gcc  
+s390                             allmodconfig   clang
+s390                              allnoconfig   clang
+s390                             allyesconfig   gcc  
+s390                                defconfig   clang
+s390                  randconfig-001-20240328   clang
+s390                  randconfig-002-20240328   clang
+sh                               allmodconfig   gcc  
+sh                                allnoconfig   gcc  
+sh                               allyesconfig   gcc  
+sh                                  defconfig   gcc  
+sh                        dreamcast_defconfig   gcc  
+sh                    randconfig-001-20240328   gcc  
+sh                    randconfig-002-20240328   gcc  
+sh                          urquell_defconfig   gcc  
+sparc                            allmodconfig   gcc  
+sparc                             allnoconfig   gcc  
+sparc                               defconfig   gcc  
+sparc64                          allmodconfig   gcc  
+sparc64                          allyesconfig   gcc  
+sparc64                             defconfig   gcc  
+sparc64               randconfig-001-20240328   gcc  
+sparc64               randconfig-002-20240328   gcc  
+um                               allmodconfig   clang
+um                                allnoconfig   clang
+um                               allyesconfig   gcc  
+um                                  defconfig   clang
+um                             i386_defconfig   gcc  
+um                    randconfig-001-20240328   gcc  
+um                    randconfig-002-20240328   gcc  
+um                           x86_64_defconfig   clang
+x86_64                            allnoconfig   clang
+x86_64                           allyesconfig   clang
+x86_64       buildonly-randconfig-001-20240328   gcc  
+x86_64       buildonly-randconfig-002-20240328   clang
+x86_64       buildonly-randconfig-003-20240328   gcc  
+x86_64       buildonly-randconfig-004-20240328   gcc  
+x86_64       buildonly-randconfig-005-20240328   gcc  
+x86_64       buildonly-randconfig-006-20240328   gcc  
+x86_64                              defconfig   gcc  
+x86_64                          rhel-8.3-rust   clang
+xtensa                            allnoconfig   gcc  
+xtensa                randconfig-001-20240328   gcc  
+xtensa                randconfig-002-20240328   gcc  
+
+-- 
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
