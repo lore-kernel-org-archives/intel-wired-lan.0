@@ -4,92 +4,88 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 646DECD1288
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 29 Mar 2024 01:16:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 61B4BCD1284
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 29 Mar 2024 01:50:36 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id EC7638291D;
-	Fri, 29 Mar 2024 01:16:24 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id F409B82451;
+	Fri, 29 Mar 2024 01:50:35 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id fPDKDS42MaBe; Fri, 29 Mar 2024 01:16:24 +0000 (UTC)
+ id fency-Te4Lag; Fri, 29 Mar 2024 01:50:35 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 307B382B53
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 20BE78248C
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1711674984;
-	bh=3RKnMe7mNNeAoOYHUASgIBvOnW0UOGbUcuVkApPdG4Q=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1711677035;
+	bh=iPAKIEjvU3VCr37SleVfOBe5jogZgCI8GkjqRtVPpHM=;
+	h=From:Date:References:In-Reply-To:To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=HvSzTv9KrOP5PZWvoOo5ngB24qU8LsnEdFAibKlm5eoDsJ+INXcNBAahvSbtoPbwN
-	 NMsxuJT4bHphKQbNjqONyv4PiBLevI+JN9x7w+TP/27Yk90FS/jxq9hUCXbIdFmO9j
-	 P2/ZomNLHDgIQBbvs/5i52m6iKf7E9Q9LpBdAmempAqjDSqffliXp6ZA4ug4QD3pcN
-	 /r0WYaps4vaF22tHMUdJ5RjHHfM+5/cKL6Nv2mY8Nrcmjp+T9cmXCrnXJ+HELDsPr3
-	 mdwJYU6qZ5BBGf7hDMwe0H+4BQqLU31bIg24E1kDg0NMVoYagbKu1tkzP06C3+Bxz0
-	 4BL6gj4hkP5Pw==
+	b=TivwlQyheKFBl1jt9g9oaT7Q9pkgfEfwfGi5t2u+YAtpk3CGT0t6uSsiIbh4j9MaL
+	 ePmnCgYg6k16rde5/iAc24CIBx6nMTH+RViF+fIhUfzGq+ZWc4GmXiyGJkLk5MAYWS
+	 nRNKuzpOsbS/NV0m7UP4PQCvLL9+8r01FgfxTfw2kZmVhzFI5xEVFykrw9zrEJK/an
+	 O8SAF73qzhH+kiP+NCjZrmSG+DliLbSt2PmfV+5y3d7uNEXCur2hawBa7LT36IIKQ5
+	 6dclImJTb6yqIIq1T9eFrTx3ckqJWysK39QCvaaDf/bh2HeDHVKF6E5INkwslMxduy
+	 06LfLY4DcyMeA==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 307B382B53;
-	Fri, 29 Mar 2024 01:16:24 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 20BE78248C;
+	Fri, 29 Mar 2024 01:50:35 +0000 (UTC)
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 0A1101BF83C
- for <intel-wired-lan@lists.osuosl.org>; Fri, 29 Mar 2024 01:16:22 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 751581BF83C
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 29 Mar 2024 01:50:33 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 2DA8F8291A
- for <intel-wired-lan@lists.osuosl.org>; Fri, 29 Mar 2024 01:16:21 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 599828248C
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 29 Mar 2024 01:50:33 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id AgFer0YyFch9 for <intel-wired-lan@lists.osuosl.org>;
- Fri, 29 Mar 2024 01:16:20 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.8;
- helo=mgamail.intel.com; envelope-from=paul.greenwalt@intel.com;
+ id GA4nnOv54Arx for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 29 Mar 2024 01:50:32 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=139.178.84.217;
+ helo=dfw.source.kernel.org; envelope-from=patchwork-bot+netdevbpf@kernel.org;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 5C2A58291D
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 5C2A58291D
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.8])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 5C2A58291D
- for <intel-wired-lan@lists.osuosl.org>; Fri, 29 Mar 2024 01:16:20 +0000 (UTC)
-X-CSE-ConnectionGUID: D121v1YfRpepyCm4BWYdoA==
-X-CSE-MsgGUID: ZxMjaoF/SKmxEAiTgCjpRA==
-X-IronPort-AV: E=McAfee;i="6600,9927,11027"; a="24356385"
-X-IronPort-AV: E=Sophos;i="6.07,162,1708416000"; d="scan'208";a="24356385"
-Received: from orviesa010.jf.intel.com ([10.64.159.150])
- by fmvoesa102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 28 Mar 2024 18:16:19 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.07,162,1708416000"; d="scan'208";a="16655067"
-Received: from unknown (HELO fedora.jf.intel.com) ([10.166.244.154])
- by orviesa010.jf.intel.com with ESMTP; 28 Mar 2024 18:16:18 -0700
-From: Paul Greenwalt <paul.greenwalt@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Date: Thu, 28 Mar 2024 21:07:08 -0400
-Message-ID: <20240329010708.2805384-2-paul.greenwalt@intel.com>
-X-Mailer: git-send-email 2.41.0
-In-Reply-To: <20240329010708.2805384-1-paul.greenwalt@intel.com>
-References: <20240329010708.2805384-1-paul.greenwalt@intel.com>
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 5828482451
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 5828482451
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 5828482451
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 29 Mar 2024 01:50:31 +0000 (UTC)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+ by dfw.source.kernel.org (Postfix) with ESMTP id 97C5C618BF;
+ Fri, 29 Mar 2024 01:50:30 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id E6F79C43394;
+ Fri, 29 Mar 2024 01:50:29 +0000 (UTC)
+Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org
+ (localhost.localdomain [127.0.0.1])
+ by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id
+ CE6E2D95064; Fri, 29 Mar 2024 01:50:29 +0000 (UTC)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+From: patchwork-bot+netdevbpf@kernel.org
+Message-Id: <171167702984.13430.7602410766409441835.git-patchwork-notify@kernel.org>
+Date: Fri, 29 Mar 2024 01:50:29 +0000
+References: <20240327040213.3153864-1-kuba@kernel.org>
+In-Reply-To: <20240327040213.3153864-1-kuba@kernel.org>
+To: Jakub Kicinski <kuba@kernel.org>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1711674980; x=1743210980;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=CvZehSbWKeBh4QuMGgjE+8fKhFS+fC9i6U7CwwtnJW8=;
- b=aDWPg93FGaG0WPB0BAlzwxgnw4RswuOXgsETdk9n60QhJvMcuG/XKTBF
- rogd+Vrr65e1jiR48juxCAzlGchSmdM/hjBDdMlBoepJeUVuMKji4Jwj5
- xkMl972qyZCD7YV8ullgRO6BBQkiRoyfAPYYOU6l44hzEqW6fvB68N0jP
- Ffamz3HxaiS8pstIjEAYF5GhvBi8KmggW6BrhurSdhGv+Vzhq4xtI3KcC
- pkpCJsApREAf2BPfv1ZunL7dFmSkxSPz15FjAjKQWYNfxpgYyz2WJd6m1
- JUa1cUihoZAbR8pPC5IaiF8Z/S1gVbbEWCCWJZqa8Txu5zbKLaGlm8ruF
- w==;
+ d=kernel.org; s=k20201202; t=1711677030;
+ bh=LadFdNAs2gpLM+Z83RwB1YgHe33AxmBjBG1qdF9v/KE=;
+ h=Subject:From:Date:References:In-Reply-To:To:Cc:From;
+ b=nE0v6JjoY/LFuCnfpSDV7ZHt278ZCYBN+PU/uw02W6pWrVBW9aDwsIuP2TOPC6bhV
+ FqSPdVxE7o4WWujh1RTsKe3f3JzVHQJ6VgjFGqOLdI/tKGHkYW6E3n6Au7s5HglENk
+ BTWJv6XYrtFDbPg0m77yapwSfBkcVqgsBkVAS+ZgbDPif+10B1elw9SdFbEt5fVg6b
+ +qXHbD2IERxu7K4njn3nxTaXyJzbS6Vn5B/mfLP83i4hxgfhUr/MLHLCBHlIiubsm1
+ A1Xlzgui7+jhbwmBZPtugw469ia5/eAKnF8wXEtE2uJbK9+CDWnzYZj9gD76SHSuzg
+ /+xUZ11adfNZw==
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
- header.from=intel.com
+ header.from=kernel.org
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=aDWPg93F
-Subject: [Intel-wired-lan] [PATCH iwl-next v3 2/2] ice: update E830 device
- ids and comments
+ dkim=pass (2048-bit key,
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=nE0v6Jjo
+Subject: Re: [Intel-wired-lan] [PATCH net-next v2] net: remove gfp_mask from
+ napi_alloc_skb()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,89 +98,37 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Wojciech Drewek <wojciech.drewek@intel.com>,
- Paul Greenwalt <paul.greenwalt@intel.com>
+Cc: siyanteng@loongson.cn, netdev@vger.kernel.org, alexandre.torgue@foss.st.com,
+ aleksander.lobakin@intel.com, edumazet@google.com, joabreu@synopsys.com,
+ anthony.l.nguyen@intel.com, mcoquelin.stm32@gmail.com,
+ intel-wired-lan@lists.osuosl.org, pabeni@redhat.com, davem@davemloft.net,
+ alexs@kernel.org
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Update existing E830 device ids and comments to align with new naming 'C'
-for 100G and 'CC' for 200G.
+Hello:
 
-Reviewed-by: Wojciech Drewek <wojciech.drewek@intel.com>
-Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
----
-v2 -> v3: fix compiler error
----
- drivers/net/ethernet/intel/ice/ice_common.c |  8 ++++----
- drivers/net/ethernet/intel/ice/ice_devids.h | 16 ++++++++--------
- drivers/net/ethernet/intel/ice/ice_main.c   |  8 ++++----
- 3 files changed, 16 insertions(+), 16 deletions(-)
+This patch was applied to netdev/net-next.git (main)
+by Jakub Kicinski <kuba@kernel.org>:
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index acfae3cd5b6c..199049e08a78 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -160,10 +160,10 @@ static int ice_set_mac_type(struct ice_hw *hw)
- 	case ICE_DEV_ID_E825C_SGMII:
- 		hw->mac_type = ICE_MAC_GENERIC_3K_E825;
- 		break;
--	case ICE_DEV_ID_E830_BACKPLANE:
--	case ICE_DEV_ID_E830_QSFP56:
--	case ICE_DEV_ID_E830_SFP:
--	case ICE_DEV_ID_E830_SFP_DD:
-+	case ICE_DEV_ID_E830CC_BACKPLANE:
-+	case ICE_DEV_ID_E830CC_QSFP56:
-+	case ICE_DEV_ID_E830CC_SFP:
-+	case ICE_DEV_ID_E830CC_SFP_DD:
- 	case ICE_DEV_ID_E830C_BACKPLANE:
- 	case ICE_DEV_ID_E830_XXV_BACKPLANE:
- 	case ICE_DEV_ID_E830C_QSFP:
-diff --git a/drivers/net/ethernet/intel/ice/ice_devids.h b/drivers/net/ethernet/intel/ice/ice_devids.h
-index c37b2b450b02..34fd604132f5 100644
---- a/drivers/net/ethernet/intel/ice/ice_devids.h
-+++ b/drivers/net/ethernet/intel/ice/ice_devids.h
-@@ -16,14 +16,14 @@
- #define ICE_DEV_ID_E823L_1GBE		0x124F
- /* Intel(R) Ethernet Connection E823-L for QSFP */
- #define ICE_DEV_ID_E823L_QSFP		0x151D
--/* Intel(R) Ethernet Controller E830-C for backplane */
--#define ICE_DEV_ID_E830_BACKPLANE	0x12D1
--/* Intel(R) Ethernet Controller E830-C for QSFP */
--#define ICE_DEV_ID_E830_QSFP56		0x12D2
--/* Intel(R) Ethernet Controller E830-C for SFP */
--#define ICE_DEV_ID_E830_SFP		0x12D3
--/* Intel(R) Ethernet Controller E830-C for SFP-DD */
--#define ICE_DEV_ID_E830_SFP_DD		0x12D4
-+/* Intel(R) Ethernet Controller E830-CC for backplane */
-+#define ICE_DEV_ID_E830CC_BACKPLANE	0x12D1
-+/* Intel(R) Ethernet Controller E830-CC for QSFP */
-+#define ICE_DEV_ID_E830CC_QSFP56	0x12D2
-+/* Intel(R) Ethernet Controller E830-CC for SFP */
-+#define ICE_DEV_ID_E830CC_SFP		0x12D3
-+/* Intel(R) Ethernet Controller E830-CC for SFP-DD */
-+#define ICE_DEV_ID_E830CC_SFP_DD	0x12D4
- /* Intel(R) Ethernet Controller E830-C for backplane */
- #define ICE_DEV_ID_E830C_BACKPLANE	0x12D5
- /* Intel(R) Ethernet Controller E830-C for QSFP */
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 2f198bf3d8b1..3c76c3ffe7a4 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -5691,10 +5691,10 @@ static const struct pci_device_id ice_pci_tbl[] = {
- 	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E825C_QSFP), },
- 	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E825C_SFP), },
- 	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E825C_SGMII), },
--	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E830_BACKPLANE) },
--	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E830_QSFP56) },
--	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E830_SFP) },
--	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E830_SFP_DD) },
-+	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E830CC_BACKPLANE) },
-+	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E830CC_QSFP56) },
-+	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E830CC_SFP) },
-+	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E830CC_SFP_DD) },
- 	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E830C_BACKPLANE), },
- 	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E830_XXV_BACKPLANE), },
- 	{ PCI_VDEVICE(INTEL, ICE_DEV_ID_E830C_QSFP), },
+On Tue, 26 Mar 2024 21:02:12 -0700 you wrote:
+> __napi_alloc_skb() is napi_alloc_skb() with the added flexibility
+> of choosing gfp_mask. This is a NAPI function, so GFP_ATOMIC is
+> implied. The only practical choice the caller has is whether to
+> set __GFP_NOWARN. But that's a false choice, too, allocation failures
+> in atomic context will happen, and printing warnings in logs,
+> effectively for a packet drop, is both too much and very likely
+> non-actionable.
+> 
+> [...]
+
+Here is the summary with links:
+  - [net-next,v2] net: remove gfp_mask from napi_alloc_skb()
+    https://git.kernel.org/netdev/net-next/c/6e9b01909a81
+
+You are awesome, thank you!
 -- 
-2.41.0
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/patchwork/pwbot.html
+
 
