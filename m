@@ -4,70 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C7DB1CD11DD
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 29 Mar 2024 09:25:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1874FCD1288
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 29 Mar 2024 09:25:59 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 668EE60E14;
-	Fri, 29 Mar 2024 09:25:56 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id C4B5660EDF;
+	Fri, 29 Mar 2024 09:25:59 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id eihPvpcRJ3YD; Fri, 29 Mar 2024 09:25:54 +0000 (UTC)
+ id DGuIQWscHMvn; Fri, 29 Mar 2024 09:25:57 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A415E60EE3
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 084F360EDC
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1711704354;
-	bh=UqhCyORgj5GcwNc7uCcVM3JqCsD6FB7bQWuCquuFiTM=;
+	s=default; t=1711704357;
+	bh=QfReFrZqfRZvsRvC874VbstcW809ib1r3Q2Z6m2MRTA=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=ITeQy7m3IsnMkJdlp2HweYTWE0lNje4OQ4VWb188cvvrEF9tccO8tJDrfJSnCeetS
-	 et343GVU3IX75NGfdiupC5/uyFjb5f/2NihVPHoOis7rPFYQCnQ7KAsAwv3py0OR6a
-	 LvO3YNZfxuriW1uxRkMkzj0gNj+13fNGloQ2Q+tjPxFMEFuQPkJfvyDTmtb4OJKyV+
-	 /5zYOzmTiEEJ/x/uRDtx1pgYSMbZlgqNfidyUNADzKj48Z8K1SUzIkwr3AMTq2eANA
-	 G54qse3lsuTL9eX3K50TjDyR09xCqurHSsA39bF/r5A22LheDbqakkgcRG6CMF9TtJ
-	 KCEPpZPR8jiTA==
+	b=MKZnXi0z+GLFgrzUcjDs//0e7gCeCp0zMBa5RrQIRyjaOF4XF37emwqJOXGEskRrY
+	 Am+zzQVHzjo4I3/gNwPdJOhVSTl1I6DHwGQNqP+MI2u/IPnF6/U+NcJzFlOHRxP+Rp
+	 kZ4FrHoko53qjg81WbwhDrcJnpMcMLgQu96QSdvKKZBYufmWkt4qAfXi11yjiiLQAO
+	 R7pWtXWk1LJ0YP8+50l/Yv8TNI7+LW3Pj7F9u2hwd21Z8qLaDeQMoCS4pwra8el3pC
+	 LT2KfJBZW0qeIEeIe3Ezp9kOkTrhgD/6T73qYvoVCZN0+/T7qMmq1Epxq4Mjn/qgIZ
+	 HvLtVjCC78GGg==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id A415E60EE3;
-	Fri, 29 Mar 2024 09:25:54 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 2B6DD1BF288
+	by smtp3.osuosl.org (Postfix) with ESMTP id 084F360EDC;
+	Fri, 29 Mar 2024 09:25:57 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 479891BF990
  for <intel-wired-lan@lists.osuosl.org>; Fri, 29 Mar 2024 09:25:49 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 257AA416E2
- for <intel-wired-lan@lists.osuosl.org>; Fri, 29 Mar 2024 09:25:49 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 9A03D60E8B
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 29 Mar 2024 09:25:48 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id FLGxJF9P-6Jn for <intel-wired-lan@lists.osuosl.org>;
- Fri, 29 Mar 2024 09:25:47 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id BZ2Rp5JotkNh for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 29 Mar 2024 09:25:46 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.14;
  helo=mgamail.intel.com; envelope-from=wojciech.drewek@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 32A6F416D5
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 32A6F416D5
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 9B0E660E14
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 9B0E660E14
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.14])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 32A6F416D5
- for <intel-wired-lan@lists.osuosl.org>; Fri, 29 Mar 2024 09:25:47 +0000 (UTC)
-X-CSE-ConnectionGUID: rEgx1qlwTSWkQSZ6r/oJRQ==
-X-CSE-MsgGUID: kiXVY9/aQ4mkhL6fpZCRCg==
-X-IronPort-AV: E=McAfee;i="6600,9927,11027"; a="7107038"
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 9B0E660E14
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 29 Mar 2024 09:25:46 +0000 (UTC)
+X-CSE-ConnectionGUID: mnZ2Ck8hSyOoHCZqAKTKlw==
+X-CSE-MsgGUID: 9cJnUWrrShWg6JjRJThWSg==
+X-IronPort-AV: E=McAfee;i="6600,9927,11027"; a="7107024"
 X-IronPort-AV: E=Sophos;i="6.07,164,1708416000"; 
-   d="scan'208";a="7107038"
+   d="scan'208";a="7107024"
 Received: from fmviesa008.fm.intel.com ([10.60.135.148])
  by fmvoesa108.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 29 Mar 2024 02:25:40 -0700
+ 29 Mar 2024 02:25:38 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.07,164,1708416000"; d="scan'208";a="16986861"
+X-IronPort-AV: E=Sophos;i="6.07,164,1708416000"; d="scan'208";a="16986846"
 Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by fmviesa008.fm.intel.com with ESMTP; 29 Mar 2024 02:25:37 -0700
+ by fmviesa008.fm.intel.com with ESMTP; 29 Mar 2024 02:25:36 -0700
 Received: from rozewie.igk.intel.com (unknown [10.211.8.69])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id C928134943;
- Fri, 29 Mar 2024 09:25:33 +0000 (GMT)
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id AEAEA34930;
+ Fri, 29 Mar 2024 09:25:31 +0000 (GMT)
 From: Wojciech Drewek <wojciech.drewek@intel.com>
 To: netdev@vger.kernel.org
-Date: Fri, 29 Mar 2024 10:23:21 +0100
-Message-Id: <20240329092321.16843-4-wojciech.drewek@intel.com>
+Date: Fri, 29 Mar 2024 10:23:19 +0100
+Message-Id: <20240329092321.16843-2-wojciech.drewek@intel.com>
 X-Mailer: git-send-email 2.40.1
 In-Reply-To: <20240329092321.16843-1-wojciech.drewek@intel.com>
 References: <20240329092321.16843-1-wojciech.drewek@intel.com>
@@ -78,23 +78,22 @@ X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  t=1711704347; x=1743240347;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=Y9CqrKl53Ske4ILI9lXD+tMwZ8stKJdibrX4YniAq3Q=;
- b=Mrcz45pQ4K4qybGMFHHWq8Bh1DgglKw5yf6hZX9wxxxAqgtOvMtxko0Q
- h1VuT/wlcfhxlRLIaVadAKdTIrGNjBVPX0jhw9E7BEuvSYfz+ZS10jMab
- iLBZZh6j7wQhbNOxudl171DwP5eDMSairJhxm37oSWTtL1KxgAD1dasUd
- ++8lXNMCu54wbbzTcpcYSWVnDINbYfXn4FO3E09cIFN7H3nNTWfaqSf83
- T6Ea/CsWDCzYIV0sV/EWOs6TsOEHgzXlsE/oYV0tg1CWZHEwAxGrNr/8S
- 2z9znXJVUJAls2etPi6DuJ9+Uxh4s/Uwo47+P76UUILKKxGGeueYSH2MI
+ bh=pu2MSPeH1BVvl++UV7pRuBGpoSwO9e7YqqrHoST27O0=;
+ b=Oej+Gf9FJNhFMXl/lUlOiTBNGONIesMpYytHFi4Nn2dCYQQ3m8lWIltF
+ Ak3+lOcyPMArLajckp87Pu8y/OENKv6LTKSOUYl+ei3gLtqG1arWUcPQg
+ mpvaEW6gkXhCKfNxAMEaa3p3GONC8mbuubiqvUC0w7Juc6jzkw1w8Ju1/
+ D7xXofMS1YIMpZQG6HLaqRCjJXAz/tKsHej5JXfZgnF62pLg4INpaNMkI
+ ktcuCUQLRUl/q16sbFFlSHGdr+5/lWxv6o+A+6tLGi2N3ug3X5ziW2ocH
+ 9ciMK46pTWXacaklXZzggw8mspO4saHE2xB9F8OQZHS2X92xs091akr7N
  g==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=Mrcz45pQ
-Subject: [Intel-wired-lan] [PATCH net-next 3/3] ice: Implement ethtool max
- power configuration
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=Oej+Gf9F
+Subject: [Intel-wired-lan] [PATCH net-next 1/3] ethtool: Make module API
+ more generic
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -114,738 +113,256 @@ Cc: simon.horman@corigine.com, idosch@nvidia.com, edumazet@google.com,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Implement get_module_power_cfg and set_module_power_cfg ethtool ops.
-Only a part of the parameters provided by those callbacks are going
-to be supported, power policy is not on one of them.
-Introduce new NVM module, Cage Max Power Override which allows
-to change default max power values in the cages. This module
-have an array of 8 words, each one of them is associated with
-different cage. If ICE_AQC_NVM_CMPO_ENABLE bit is set then
-firmware will use maximum power stored in the given word.
+Prepare to introduce new attributes to ethtool module API by making
+some of the names more generic.
 
-The overall sum of the powers in the board cannot exceed
-board maximum, which is stored in EMP settings NVM module.
-Before changing the maximum power check if the new value will not
-broke this limit.
-
-Minimum limit per cage is based on the type of the cage, SFP or
-QSFP.
-
-Maximum limit per cage is calculated with below formula:
-max_power_per_board - (number_of_cages - 1) * min_power_per_cage
+Rename:
+ethtool_module_power_mode_params -> ethtool_module_power_params
+  This structure will have more fields than just mode or mode_policy.
+get_module_power_mode -> get_module_power_cfg
+set_module_power_mode -> set_module_power_cfg
+  Those operations are going to be used for more cases than just
+  setting or getting power mode.
 
 Reviewed-by: Marcin Szycik <marcin.szycik@linux.intel.com>
-Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Signed-off-by: Wojciech Drewek <wojciech.drewek@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice.h          |   2 +
- .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  21 +
- drivers/net/ethernet/intel/ice/ice_common.c   |  46 ++
- drivers/net/ethernet/intel/ice/ice_common.h   |   3 +
- drivers/net/ethernet/intel/ice/ice_devlink.c  |  14 +-
- drivers/net/ethernet/intel/ice/ice_ethtool.c  | 461 ++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_nvm.c      |   2 +-
- drivers/net/ethernet/intel/ice/ice_nvm.h      |   3 +
- drivers/net/ethernet/intel/ice/ice_type.h     |   4 +
- 9 files changed, 550 insertions(+), 6 deletions(-)
+ .../net/ethernet/mellanox/mlxsw/core_env.c    |  2 +-
+ .../net/ethernet/mellanox/mlxsw/core_env.h    |  2 +-
+ drivers/net/ethernet/mellanox/mlxsw/minimal.c |  8 +++---
+ .../mellanox/mlxsw/spectrum_ethtool.c         |  8 +++---
+ include/linux/ethtool.h                       | 20 ++++++-------
+ net/ethtool/module.c                          | 28 +++++++++----------
+ 6 files changed, 33 insertions(+), 35 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index c4127d5f2be3..ca145ce2b1eb 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -655,6 +655,8 @@ struct ice_pf {
- 	struct ice_agg_node vf_agg_node[ICE_MAX_VF_AGG_NODES];
- 	struct ice_dplls dplls;
- 	struct device *hwmon_dev;
-+
-+	int split_cnt;
+diff --git a/drivers/net/ethernet/mellanox/mlxsw/core_env.c b/drivers/net/ethernet/mellanox/mlxsw/core_env.c
+index 53b150b7ae4e..3d7841f0ceec 100644
+--- a/drivers/net/ethernet/mellanox/mlxsw/core_env.c
++++ b/drivers/net/ethernet/mellanox/mlxsw/core_env.c
+@@ -581,7 +581,7 @@ EXPORT_SYMBOL(mlxsw_env_reset_module);
+ int
+ mlxsw_env_get_module_power_mode(struct mlxsw_core *mlxsw_core, u8 slot_index,
+ 				u8 module,
+-				struct ethtool_module_power_mode_params *params,
++				struct ethtool_module_power_params *params,
+ 				struct netlink_ext_ack *extack)
+ {
+ 	struct mlxsw_env *mlxsw_env = mlxsw_core_env(mlxsw_core);
+diff --git a/drivers/net/ethernet/mellanox/mlxsw/core_env.h b/drivers/net/ethernet/mellanox/mlxsw/core_env.h
+index a197e3ae069c..979a35e967b3 100644
+--- a/drivers/net/ethernet/mellanox/mlxsw/core_env.h
++++ b/drivers/net/ethernet/mellanox/mlxsw/core_env.h
+@@ -35,7 +35,7 @@ int mlxsw_env_reset_module(struct net_device *netdev,
+ int
+ mlxsw_env_get_module_power_mode(struct mlxsw_core *mlxsw_core, u8 slot_index,
+ 				u8 module,
+-				struct ethtool_module_power_mode_params *params,
++				struct ethtool_module_power_params *params,
+ 				struct netlink_ext_ack *extack);
+ 
+ int
+diff --git a/drivers/net/ethernet/mellanox/mlxsw/minimal.c b/drivers/net/ethernet/mellanox/mlxsw/minimal.c
+index f0ceb196a6ce..df46962e92b4 100644
+--- a/drivers/net/ethernet/mellanox/mlxsw/minimal.c
++++ b/drivers/net/ethernet/mellanox/mlxsw/minimal.c
+@@ -152,7 +152,7 @@ static int mlxsw_m_reset(struct net_device *netdev, u32 *flags)
+ 
+ static int
+ mlxsw_m_get_module_power_mode(struct net_device *netdev,
+-			      struct ethtool_module_power_mode_params *params,
++			      struct ethtool_module_power_params *params,
+ 			      struct netlink_ext_ack *extack)
+ {
+ 	struct mlxsw_m_port *mlxsw_m_port = netdev_priv(netdev);
+@@ -165,7 +165,7 @@ mlxsw_m_get_module_power_mode(struct net_device *netdev,
+ 
+ static int
+ mlxsw_m_set_module_power_mode(struct net_device *netdev,
+-			      const struct ethtool_module_power_mode_params *params,
++			      const struct ethtool_module_power_params *params,
+ 			      struct netlink_ext_ack *extack)
+ {
+ 	struct mlxsw_m_port *mlxsw_m_port = netdev_priv(netdev);
+@@ -182,8 +182,8 @@ static const struct ethtool_ops mlxsw_m_port_ethtool_ops = {
+ 	.get_module_eeprom	= mlxsw_m_get_module_eeprom,
+ 	.get_module_eeprom_by_page = mlxsw_m_get_module_eeprom_by_page,
+ 	.reset			= mlxsw_m_reset,
+-	.get_module_power_mode	= mlxsw_m_get_module_power_mode,
+-	.set_module_power_mode	= mlxsw_m_set_module_power_mode,
++	.get_module_power_cfg	= mlxsw_m_get_module_power_mode,
++	.set_module_power_cfg	= mlxsw_m_set_module_power_mode,
  };
  
- extern struct workqueue_struct *ice_lag_wq;
-diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-index 540c0bdca936..daf53e00a497 100644
---- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-@@ -1497,6 +1497,10 @@ struct ice_aqc_link_topo_addr {
- struct ice_aqc_get_link_topo {
- 	struct ice_aqc_link_topo_addr addr;
- 	u8 node_part_num;
-+#define ICE_AQC_GET_LINK_TOPO_NODE_NR_SFP_PLUS		0x11
-+#define ICE_AQC_GET_LINK_TOPO_NODE_NR_SFP28		0x12
-+#define ICE_AQC_GET_LINK_TOPO_NODE_NR_QSFP_PLUS		0x13
-+#define ICE_AQC_GET_LINK_TOPO_NODE_NR_QSFP28		0x14
- #define ICE_AQC_GET_LINK_TOPO_NODE_NR_PCA9575		0x21
- #define ICE_AQC_GET_LINK_TOPO_NODE_NR_ZL30632_80032	0x24
- #define ICE_AQC_GET_LINK_TOPO_NODE_NR_SI5383_5384	0x25
-@@ -1664,6 +1668,23 @@ struct ice_aqc_nvm {
- 	__le32 addr_low;
+ static int
+diff --git a/drivers/net/ethernet/mellanox/mlxsw/spectrum_ethtool.c b/drivers/net/ethernet/mellanox/mlxsw/spectrum_ethtool.c
+index 0f29e9c19411..5ea7241bfaba 100644
+--- a/drivers/net/ethernet/mellanox/mlxsw/spectrum_ethtool.c
++++ b/drivers/net/ethernet/mellanox/mlxsw/spectrum_ethtool.c
+@@ -1214,7 +1214,7 @@ static int mlxsw_sp_reset(struct net_device *dev, u32 *flags)
+ 
+ static int
+ mlxsw_sp_get_module_power_mode(struct net_device *dev,
+-			       struct ethtool_module_power_mode_params *params,
++			       struct ethtool_module_power_params *params,
+ 			       struct netlink_ext_ack *extack)
+ {
+ 	struct mlxsw_sp_port *mlxsw_sp_port = netdev_priv(dev);
+@@ -1228,7 +1228,7 @@ mlxsw_sp_get_module_power_mode(struct net_device *dev,
+ 
+ static int
+ mlxsw_sp_set_module_power_mode(struct net_device *dev,
+-			       const struct ethtool_module_power_mode_params *params,
++			       const struct ethtool_module_power_params *params,
+ 			       struct netlink_ext_ack *extack)
+ {
+ 	struct mlxsw_sp_port *mlxsw_sp_port = netdev_priv(dev);
+@@ -1262,8 +1262,8 @@ const struct ethtool_ops mlxsw_sp_port_ethtool_ops = {
+ 	.get_eth_ctrl_stats		= mlxsw_sp_get_eth_ctrl_stats,
+ 	.get_rmon_stats			= mlxsw_sp_get_rmon_stats,
+ 	.reset				= mlxsw_sp_reset,
+-	.get_module_power_mode		= mlxsw_sp_get_module_power_mode,
+-	.set_module_power_mode		= mlxsw_sp_set_module_power_mode,
++	.get_module_power_cfg		= mlxsw_sp_get_module_power_mode,
++	.set_module_power_cfg		= mlxsw_sp_set_module_power_mode,
  };
  
-+#define ICE_AQC_NVM_CMPO_MOD_ID			0x153
-+#define ICE_AQC_NVM_EMP_SETTINGS_MOD_ID		0x0F
-+#define ICE_AQC_NVM_MAX_PWR_LIMIT_OFFSET	0x1A
-+#define ICE_AQC_NVM_DFLT_MAX_PWR_MASK		GENMASK(7, 0)
-+#define ICE_AQC_NVM_BOARD_MAX_PWR_MASK		GENMASK(15, 8)
-+
-+#define ICE_NUM_OF_CAGES 8
-+
-+#define ICE_AQC_NVM_CMPO_ENABLE		BIT(8)
-+#define ICE_AQC_NVM_CMPO_POWER_MASK	GENMASK(7, 0)
-+
-+/* Cage Max Power override NVM module */
-+struct ice_aqc_nvm_cmpo {
-+	__le16 length;
-+	__le16 cages_cfg[ICE_NUM_OF_CAGES];
-+};
-+
- #define ICE_AQC_NVM_START_POINT			0
+ struct mlxsw_sp1_port_link_mode {
+diff --git a/include/linux/ethtool.h b/include/linux/ethtool.h
+index 9901e563f706..f3af6b31c9f1 100644
+--- a/include/linux/ethtool.h
++++ b/include/linux/ethtool.h
+@@ -506,12 +506,12 @@ struct ethtool_module_eeprom {
+ };
  
- /* NVM Checksum Command (direct, 0x0706) */
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index f4ac3c30b124..081f6b6dbc30 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -571,6 +571,23 @@ static bool ice_is_media_cage_present(struct ice_port_info *pi)
- 					    NULL);
+ /**
+- * struct ethtool_module_power_mode_params - module power mode parameters
++ * struct ethtool_module_power_params - module power parameters
+  * @policy: The power mode policy enforced by the host for the plug-in module.
+  * @mode: The operational power mode of the plug-in module. Should be filled by
+  *	device drivers on get operations.
+  */
+-struct ethtool_module_power_mode_params {
++struct ethtool_module_power_params {
+ 	enum ethtool_module_power_mode_policy policy;
+ 	enum ethtool_module_power_mode mode;
+ };
+@@ -804,10 +804,10 @@ struct ethtool_rxfh_param {
+  * @get_eth_ctrl_stats: Query some of the IEEE 802.3 MAC Ctrl statistics.
+  * @get_rmon_stats: Query some of the RMON (RFC 2819) statistics.
+  *	Set %ranges to a pointer to zero-terminated array of byte ranges.
+- * @get_module_power_mode: Get the power mode policy for the plug-in module
++ * @get_module_power_cfg: Get the power mode policy for the plug-in module
+  *	used by the network device and its operational power mode, if
+  *	plugged-in.
+- * @set_module_power_mode: Set the power mode policy for the plug-in module
++ * @set_module_power_cfg: Set the power mode policy for the plug-in module
+  *	used by the network device.
+  * @get_mm: Query the 802.3 MAC Merge layer state.
+  * @set_mm: Set the 802.3 MAC Merge layer parameters.
+@@ -940,12 +940,12 @@ struct ethtool_ops {
+ 	void	(*get_rmon_stats)(struct net_device *dev,
+ 				  struct ethtool_rmon_stats *rmon_stats,
+ 				  const struct ethtool_rmon_hist_range **ranges);
+-	int	(*get_module_power_mode)(struct net_device *dev,
+-					 struct ethtool_module_power_mode_params *params,
+-					 struct netlink_ext_ack *extack);
+-	int	(*set_module_power_mode)(struct net_device *dev,
+-					 const struct ethtool_module_power_mode_params *params,
+-					 struct netlink_ext_ack *extack);
++	int	(*get_module_power_cfg)(struct net_device *dev,
++					struct ethtool_module_power_params *params,
++					struct netlink_ext_ack *extack);
++	int	(*set_module_power_cfg)(struct net_device *dev,
++					const struct ethtool_module_power_params *params,
++					struct netlink_ext_ack *extack);
+ 	int	(*get_mm)(struct net_device *dev, struct ethtool_mm_state *state);
+ 	int	(*set_mm)(struct net_device *dev, struct ethtool_mm_cfg *cfg,
+ 			  struct netlink_ext_ack *extack);
+diff --git a/net/ethtool/module.c b/net/ethtool/module.c
+index ceb575efc290..193ca4642e04 100644
+--- a/net/ethtool/module.c
++++ b/net/ethtool/module.c
+@@ -12,7 +12,7 @@ struct module_req_info {
+ 
+ struct module_reply_data {
+ 	struct ethnl_reply_data	base;
+-	struct ethtool_module_power_mode_params power;
++	struct ethtool_module_power_params power;
+ };
+ 
+ #define MODULE_REPDATA(__reply_base) \
+@@ -24,16 +24,16 @@ const struct nla_policy ethnl_module_get_policy[ETHTOOL_A_MODULE_HEADER + 1] = {
+ 	[ETHTOOL_A_MODULE_HEADER] = NLA_POLICY_NESTED(ethnl_header_policy),
+ };
+ 
+-static int module_get_power_mode(struct net_device *dev,
+-				 struct module_reply_data *data,
+-				 struct netlink_ext_ack *extack)
++static int module_get_power_cfg(struct net_device *dev,
++				struct module_reply_data *data,
++				struct netlink_ext_ack *extack)
+ {
+ 	const struct ethtool_ops *ops = dev->ethtool_ops;
+ 
+-	if (!ops->get_module_power_mode)
++	if (!ops->get_module_power_cfg)
+ 		return 0;
+ 
+-	return ops->get_module_power_mode(dev, &data->power, extack);
++	return ops->get_module_power_cfg(dev, &data->power, extack);
  }
  
-+int ice_get_port_cage_node(struct ice_hw *hw, u8 index,
-+			   u16 *node_handle, u8 *node_part_number)
-+{
-+	struct ice_aqc_get_link_topo cmd = {};
-+
-+	cmd.addr.topo_params.node_type_ctx =
-+		FIELD_PREP(ICE_AQC_LINK_TOPO_NODE_TYPE_M,
-+			   ICE_AQC_LINK_TOPO_NODE_TYPE_CAGE);
-+	cmd.addr.topo_params.node_type_ctx |=
-+		FIELD_PREP(ICE_AQC_LINK_TOPO_NODE_CTX_M,
-+			   ICE_AQC_LINK_TOPO_NODE_CTX_GLOBAL);
-+	cmd.addr.topo_params.index = index;
-+
-+	return ice_aq_get_netlist_node(hw, &cmd, node_part_number,
-+				       node_handle);
-+}
-+
- /**
-  * ice_get_media_type - Gets media type
-  * @pi: port information structure
-@@ -5723,6 +5740,29 @@ static bool ice_is_fw_api_min_ver(struct ice_hw *hw, u8 maj, u8 min, u8 patch)
- 	return false;
- }
+ static int module_prepare_data(const struct ethnl_req_info *req_base,
+@@ -48,7 +48,7 @@ static int module_prepare_data(const struct ethnl_req_info *req_base,
+ 	if (ret < 0)
+ 		return ret;
  
-+/**
-+ * ice_is_fw_min_ver
-+ * @hw: pointer to the hardware structure
-+ * @maj: major version
-+ * @min: minor version
-+ * @patch: patch version
-+ *
-+ * Checks if the firmware is minimum version
-+ */
-+static bool ice_is_fw_min_ver(struct ice_hw *hw, u8 maj, u8 min, u8 patch)
-+{
-+	if (hw->fw_maj_ver > maj)
-+		return true;
-+	if (hw->fw_maj_ver == maj) {
-+		if (hw->fw_min_ver > min)
-+			return true;
-+		if (hw->fw_min_ver == min && hw->fw_patch >= patch)
-+			return true;
-+	}
-+
-+	return false;
-+}
-+
- /**
-  * ice_fw_supports_link_override
-  * @hw: pointer to the hardware structure
-@@ -5736,6 +5776,12 @@ bool ice_fw_supports_link_override(struct ice_hw *hw)
- 				     ICE_FW_API_LINK_OVERRIDE_PATCH);
- }
+-	ret = module_get_power_mode(dev, data, info->extack);
++	ret = module_get_power_cfg(dev, data, info->extack);
+ 	if (ret < 0)
+ 		goto out_complete;
  
-+bool ice_fw_supports_cmpo(struct ice_hw *hw)
-+{
-+	return ice_is_fw_min_ver(hw, ICE_FW_CMPO_MAJ, ICE_FW_CMPO_MIN,
-+				 ICE_FW_CMPO_PATCH);
-+}
-+
- /**
-  * ice_get_link_default_override
-  * @ldo: pointer to the link default override struct
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
-index ffb22c7ce28b..c476fbf60400 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.h
-+++ b/drivers/net/ethernet/intel/ice/ice_common.h
-@@ -96,6 +96,8 @@ bool ice_is_phy_rclk_in_netlist(struct ice_hw *hw);
- bool ice_is_clock_mux_in_netlist(struct ice_hw *hw);
- bool ice_is_cgu_in_netlist(struct ice_hw *hw);
- bool ice_is_gps_in_netlist(struct ice_hw *hw);
-+int ice_get_port_cage_node(struct ice_hw *hw, u8 index,
-+			   u16 *node_handle, u8 *node_part_number);
- int
- ice_aq_get_netlist_node(struct ice_hw *hw, struct ice_aqc_get_link_topo *cmd,
- 			u8 *node_part_number, u16 *node_handle);
-@@ -117,6 +119,7 @@ int
- ice_aq_set_phy_cfg(struct ice_hw *hw, struct ice_port_info *pi,
- 		   struct ice_aqc_set_phy_cfg_data *cfg, struct ice_sq_cd *cd);
- bool ice_fw_supports_link_override(struct ice_hw *hw);
-+bool ice_fw_supports_cmpo(struct ice_hw *hw);
- int
- ice_get_link_default_override(struct ice_link_default_override_tlv *ldo,
- 			      struct ice_port_info *pi);
-diff --git a/drivers/net/ethernet/intel/ice/ice_devlink.c b/drivers/net/ethernet/intel/ice/ice_devlink.c
-index 3c3616f0f811..8d5ce9c2ca91 100644
---- a/drivers/net/ethernet/intel/ice/ice_devlink.c
-+++ b/drivers/net/ethernet/intel/ice/ice_devlink.c
-@@ -1604,6 +1604,14 @@ ice_devlink_set_port_split_options(struct ice_pf *pf,
- 		return;
+@@ -109,10 +109,8 @@ ethnl_set_module_validate(struct ethnl_req_info *req_info,
+ 	if (!tb[ETHTOOL_A_MODULE_POWER_MODE_POLICY])
+ 		return 0;
+ 
+-	if (!ops->get_module_power_mode || !ops->set_module_power_mode) {
+-		NL_SET_ERR_MSG_ATTR(info->extack,
+-				    tb[ETHTOOL_A_MODULE_POWER_MODE_POLICY],
+-				    "Setting power mode policy is not supported by this device");
++	if (!ops->get_module_power_cfg || !ops->set_module_power_cfg) {
++		NL_SET_ERR_MSG(info->extack, "Setting power config is not supported by this device");
+ 		return -EOPNOTSUPP;
  	}
  
-+	pf->split_cnt = options[active_idx].pmd;
-+
-+	/* As FW supports only port split options for whole device,
-+	 * set port split options only for first PF.
-+	 */
-+	if (pf->hw.pf_id != 0)
-+		return;
-+
- 	/* find the biggest available port split count */
- 	for (i = 0; i < option_count; i++)
- 		attrs->lanes = max_t(int, attrs->lanes, options[i].pmd);
-@@ -1648,11 +1656,7 @@ int ice_devlink_create_pf_port(struct ice_pf *pf)
- 	attrs.flavour = DEVLINK_PORT_FLAVOUR_PHYSICAL;
- 	attrs.phys.port_number = pf->hw.bus.func;
+@@ -122,8 +120,8 @@ ethnl_set_module_validate(struct ethnl_req_info *req_info,
+ static int
+ ethnl_set_module(struct ethnl_req_info *req_info, struct genl_info *info)
+ {
+-	struct ethtool_module_power_mode_params power = {};
+-	struct ethtool_module_power_mode_params power_new;
++	struct ethtool_module_power_params power = {};
++	struct ethtool_module_power_params power_new;
+ 	const struct ethtool_ops *ops;
+ 	struct net_device *dev = req_info->dev;
+ 	struct nlattr **tb = info->attrs;
+@@ -132,14 +130,14 @@ ethnl_set_module(struct ethnl_req_info *req_info, struct genl_info *info)
+ 	ops = dev->ethtool_ops;
  
--	/* As FW supports only port split options for whole device,
--	 * set port split options only for first PF.
--	 */
--	if (pf->hw.pf_id == 0)
--		ice_devlink_set_port_split_options(pf, &attrs);
-+	ice_devlink_set_port_split_options(pf, &attrs);
+ 	power_new.policy = nla_get_u8(tb[ETHTOOL_A_MODULE_POWER_MODE_POLICY]);
+-	ret = ops->get_module_power_mode(dev, &power, info->extack);
++	ret = ops->get_module_power_cfg(dev, &power, info->extack);
+ 	if (ret < 0)
+ 		return ret;
  
- 	ice_devlink_set_switch_id(pf, &attrs.switch_id);
+ 	if (power_new.policy == power.policy)
+ 		return 0;
  
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index 255a9c8151b4..b38a984b44a2 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -4297,6 +4297,465 @@ ice_get_module_eeprom(struct net_device *netdev,
- 	return 0;
+-	ret = ops->set_module_power_mode(dev, &power_new, info->extack);
++	ret = ops->set_module_power_cfg(dev, &power_new, info->extack);
+ 	return ret < 0 ? ret : 1;
  }
  
-+/**
-+ * ice_get_min_pwr_allowed - Get min power allowed
-+ * @hw: pointer to the hardware structure
-+ * @extack: extended ACK from the Netlink message
-+ *
-+ * Values are constant based on the cage type.
-+ * Return value in mW.
-+ */
-+static int ice_get_min_pwr_allowed(struct ice_hw *hw,
-+				   struct netlink_ext_ack *extack)
-+{
-+	u8 node_part_number;
-+	u16 node_handle;
-+	int err;
-+
-+	err = ice_get_port_cage_node(hw, 0, &node_handle, &node_part_number);
-+	if (err) {
-+		NL_SET_ERR_MSG_MOD(extack, "Failed to get cage node handle");
-+		return err;
-+	}
-+
-+	switch (node_part_number) {
-+	case ICE_AQC_GET_LINK_TOPO_NODE_NR_SFP_PLUS:
-+	case ICE_AQC_GET_LINK_TOPO_NODE_NR_SFP28:
-+		return 1000;
-+	case ICE_AQC_GET_LINK_TOPO_NODE_NR_QSFP_PLUS:
-+	case ICE_AQC_GET_LINK_TOPO_NODE_NR_QSFP28:
-+		return 1500;
-+	default:
-+		return -EINVAL;
-+	}
-+}
-+
-+/**
-+ * ice_pwr_nvm_to_ethtool - Convert NVM values to ethtool
-+ * @pwr: power from NVM
-+ */
-+static u32 ice_pwr_nvm_to_ethtool(u32 pwr)
-+{
-+	/* ethtool takes power values in mW */
-+	pwr *= 1000;
-+	/* 0.5 W resolution */
-+	pwr /= 2;
-+
-+	return pwr;
-+}
-+
-+/**
-+ * ice_pwr_ethtool_to_nvm - Convert ethtool values to NVM
-+ * @pwr: power from ethtool, in mW
-+ */
-+static u32 ice_pwr_ethtool_to_nvm(u32 pwr)
-+{
-+	/* 0.5 W resolution */
-+	pwr *= 2;
-+	/* ethtool takes power values in mW */
-+	pwr /= 1000;
-+
-+	return pwr;
-+}
-+
-+/**
-+ * ice_get_num_of_cages - Get number of cages in the board
-+ * @hw: pointer to the hardware structure
-+ *
-+ * We have as many cages as netlist nodes of cage type.
-+ */
-+static int ice_get_num_of_cages(struct ice_hw *hw)
-+{
-+	int i, err, cage_count = 0;
-+	u8 node_part_number;
-+	u16 node_handle;
-+
-+	for (i = 0; i < ICE_NUM_OF_CAGES; i++) {
-+		err = ice_get_port_cage_node(hw, i, &node_handle,
-+					     &node_part_number);
-+		if (!err && node_handle)
-+			cage_count++;
-+	}
-+
-+	return cage_count;
-+}
-+
-+/**
-+ * ice_get_board_max_pwr - Get max power allowed per board
-+ * @hw: pointer to the hardware structure
-+ *
-+ * Board maximum power is stored in EMP settings NVM module
-+ */
-+static int ice_get_board_max_pwr(struct ice_hw *hw)
-+{
-+	u16 board_max_pwr;
-+	__le16 data;
-+	int err;
-+
-+	err = ice_acquire_nvm(hw, ICE_RES_READ);
-+	if (err)
-+		return err;
-+
-+	err = ice_aq_read_nvm(hw, ICE_AQC_NVM_EMP_SETTINGS_MOD_ID,
-+			      ICE_AQC_NVM_MAX_PWR_LIMIT_OFFSET,
-+			      sizeof(data), &data,
-+			      true, false, NULL);
-+	if (err) {
-+		ice_release_nvm(hw);
-+		return err;
-+	}
-+
-+	ice_release_nvm(hw);
-+
-+	board_max_pwr = __le16_to_cpu(data);
-+	board_max_pwr = FIELD_GET(ICE_AQC_NVM_BOARD_MAX_PWR_MASK,
-+				  board_max_pwr);
-+
-+	return ice_pwr_nvm_to_ethtool(board_max_pwr);
-+}
-+
-+/**
-+ * ice_get_max_pwr_allowed - Get max power allowed per cage
-+ * @hw: pointer to the hardware structure
-+ * @min_pwr_allowed: min allowed power
-+ * @cage_count: number of cages in the board
-+ */
-+static int ice_get_max_pwr_allowed(struct ice_hw *hw, u32 min_pwr_allowed,
-+				   int cage_count)
-+{
-+	int board_max_pwr;
-+
-+	board_max_pwr = ice_get_board_max_pwr(hw);
-+	if (board_max_pwr < 0)
-+		return board_max_pwr;
-+
-+	return board_max_pwr - (cage_count - 1) * min_pwr_allowed;
-+}
-+
-+/**
-+ * ice_get_cage_idx - Get index to the cage
-+ * @pf: pointer to the PF structure
-+ * @cage_count: number of cages in the board
-+ * @extack: extended ACK from the Netlink message
-+ *
-+ * Get index to the cage and validate if the given PF
-+ * is associated with the cage.
-+ */
-+static int ice_get_cage_idx(struct ice_pf *pf, int cage_count,
-+			    struct netlink_ext_ack *extack)
-+{
-+	/* if there is only on cage, PF 0 is responsoble for it */
-+	if (cage_count == 1) {
-+		if (pf->hw.pf_id == 0)
-+			return 0;
-+		goto err;
-+	} else if (cage_count == 4) {
-+		/* if there are 4 cages, than port split is not supported
-+		 * so each PF is responsoble for its cage
-+		 */
-+		return pf->hw.pf_id;
-+	} else if (cage_count == 2) {
-+		/* We have 2 cages, PF 0 always takes care of the first one.
-+		 * If the split_cnt is 2 than PF 1 takes care of the second cage.
-+		 * If the split_cnt is 4 than PF 2 takes care of the second cage.
-+		 * If the split_cnt is 8 than PF 4 takes care of the second cage.
-+		 * So, the formula for the second cage is pf_id * 2 == split_cnt
-+		 */
-+		if (pf->hw.pf_id == 0 || pf->hw.pf_id * 2 == pf->split_cnt)
-+			return pf->hw.pf_id;
-+	}
-+
-+err:
-+	NL_SET_ERR_MSG_MOD(extack, "Cage maximum power cannot be requested for selected port");
-+
-+	return -EPERM;
-+}
-+
-+/**
-+ * ice_get_dflt_max_pwr - Get dflt max power
-+ * @hw: pointer to the hardware structure
-+ *
-+ * Default max power is stored in EMP settings NVM module
-+ */
-+static int ice_get_dflt_max_pwr(struct ice_hw *hw)
-+{
-+	__le16 data;
-+	u16 pwr;
-+	int ret;
-+
-+	ret = ice_acquire_nvm(hw, ICE_RES_READ);
-+	if (ret)
-+		return ret;
-+
-+	ret = ice_aq_read_nvm(hw, ICE_AQC_NVM_EMP_SETTINGS_MOD_ID,
-+			      ICE_AQC_NVM_MAX_PWR_LIMIT_OFFSET, sizeof(data),
-+			      &data, true, false, NULL);
-+	if (ret) {
-+		ice_release_nvm(hw);
-+		return ret;
-+	}
-+
-+	ice_release_nvm(hw);
-+
-+	pwr = __le16_to_cpu(data);
-+	pwr = FIELD_GET(ICE_AQC_NVM_DFLT_MAX_PWR_MASK, pwr);
-+
-+	return ice_pwr_nvm_to_ethtool(pwr);
-+}
-+
-+/**
-+ * ice_get_max_pwr_set - Get currently set max power
-+ * @hw: pointer to the hardware structure
-+ * @idx: index of the cage
-+ *
-+ * If cmpo enable bit is set, use the value from
-+ * CMPO module otherwise use default value.
-+ */
-+static int ice_get_max_pwr_set(struct ice_hw *hw, int idx)
-+{
-+	struct ice_aqc_nvm_cmpo data;
-+	int max_pwr_set;
-+	u16 temp;
-+	int ret;
-+
-+	ret = ice_acquire_nvm(hw, ICE_RES_READ);
-+	if (ret)
-+		return ret;
-+
-+	ret = ice_aq_read_nvm(hw, ICE_AQC_NVM_CMPO_MOD_ID, 0, sizeof(data),
-+			      &data, true, false, NULL);
-+	if (ret) {
-+		ice_release_nvm(hw);
-+		return ret;
-+	}
-+
-+	ice_release_nvm(hw);
-+
-+	temp = le16_to_cpu(data.cages_cfg[idx]);
-+
-+	if (FIELD_GET(ICE_AQC_NVM_CMPO_ENABLE, temp)) {
-+		max_pwr_set = FIELD_GET(ICE_AQC_NVM_CMPO_POWER_MASK, temp);
-+		return ice_pwr_nvm_to_ethtool(max_pwr_set);
-+	} else {
-+		return ice_get_dflt_max_pwr(hw);
-+	}
-+}
-+
-+/**
-+ * ice_get_module_power_cfg - Get device's power setting
-+ * @dev: network device
-+ * @params: output parameters
-+ * @extack: extended ACK from the Netlink message
-+ *
-+ * We care only about min_pwr_allowed, max_pwr_allowed and max_pwr_set params.
-+ */
-+static int
-+ice_get_module_power_cfg(struct net_device *dev,
-+			 struct ethtool_module_power_params *params,
-+			 struct netlink_ext_ack *extack)
-+{
-+	int min_pwr_allowed, max_pwr_allowed, max_pwr_set, cage_count;
-+	struct ice_netdev_priv *np = netdev_priv(dev);
-+	struct ice_vsi *vsi = np->vsi;
-+	struct ice_pf *pf = vsi->back;
-+	struct ice_hw *hw = &pf->hw;
-+	int idx;
-+
-+	if (!ice_fw_supports_cmpo(hw)) {
-+		NL_SET_ERR_MSG_MOD(extack, "Cage maximum power request is unsupported by the current firmware");
-+		return -EOPNOTSUPP;
-+	}
-+
-+	cage_count = ice_get_num_of_cages(hw);
-+
-+	idx = ice_get_cage_idx(pf, cage_count, extack);
-+	if (idx < 0)
-+		return idx;
-+
-+	min_pwr_allowed = ice_get_min_pwr_allowed(hw, extack);
-+	if (min_pwr_allowed < 0) {
-+		NL_SET_ERR_MSG_MOD(extack, "Unable to get min power limit");
-+		return min_pwr_allowed;
-+	}
-+
-+	max_pwr_allowed = ice_get_max_pwr_allowed(hw, min_pwr_allowed,
-+						  cage_count);
-+	if (max_pwr_allowed < 0) {
-+		NL_SET_ERR_MSG_MOD(extack, "Unable to get max power limit");
-+		return max_pwr_allowed;
-+	}
-+
-+	max_pwr_set = ice_get_max_pwr_set(hw, idx);
-+	if (max_pwr_set < 0) {
-+		NL_SET_ERR_MSG_MOD(extack, "Unable to get max power currently set");
-+		return max_pwr_set;
-+	}
-+
-+	params->min_pwr_allowed = min_pwr_allowed;
-+	params->max_pwr_allowed = max_pwr_allowed;
-+	params->max_pwr_set = max_pwr_set;
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_check_board_pwr_sum - Check if the new sum exceeds the board maximum.
-+ * @hw: pointer to the hardware structure
-+ * @data: current power config from NVM
-+ * @idx: index of the cage we want to update
-+ * @power: new power value from ethtool
-+ * @cage_count: number of cages in the board
-+ * @extack: extended ACK from the Netlink message
-+ *
-+ * Get number of cages, board maximum and default power value.
-+ * Add up all values. If cmpo enable bit is set, use the value from
-+ * CMPO module otherwise use default value.
-+ */
-+static int
-+ice_check_board_pwr_sum(struct ice_hw *hw, struct ice_aqc_nvm_cmpo *data,
-+			int idx, u32 power, int cage_count,
-+			struct netlink_ext_ack *extack)
-+{
-+	int board_max_pwr, dflt_pwr, max_pwr_set, sum = 0;
-+	u16 temp;
-+	int i;
-+
-+	board_max_pwr = ice_get_board_max_pwr(hw);
-+	if (board_max_pwr < 0)
-+		return board_max_pwr;
-+
-+	dflt_pwr = ice_get_dflt_max_pwr(hw);
-+	if (dflt_pwr < 0)
-+		return dflt_pwr;
-+
-+	for (i = 0; i < cage_count; i++) {
-+		temp = le16_to_cpu(data->cages_cfg[i]);
-+
-+		/* skipping the cage we want to update with the new value, we
-+		 * want to add the new power, not the value from NVM
-+		 */
-+		if (i == idx)
-+			continue;
-+
-+		if (FIELD_GET(ICE_AQC_NVM_CMPO_ENABLE, temp)) {
-+			max_pwr_set = FIELD_GET(ICE_AQC_NVM_CMPO_POWER_MASK,
-+						temp);
-+			sum += ice_pwr_nvm_to_ethtool(max_pwr_set);
-+		} else {
-+			sum += dflt_pwr;
-+		}
-+	}
-+
-+	sum += power;
-+
-+	if (sum > board_max_pwr) {
-+		NL_SET_ERR_MSG_MOD(extack, "Sum of power values is out of range: overbudgeting board level.");
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_set_module_power_cfg - Update device's power setting
-+ * @dev: network device
-+ * @params: new power config
-+ * @extack: extended ACK from the Netlink message
-+ *
-+ * We care only about max_pwr_set and max_pwr_reset params.
-+ */
-+static int
-+ice_set_module_power_cfg(struct net_device *dev,
-+			 const struct ethtool_module_power_params *params,
-+			 struct netlink_ext_ack *extack)
-+{
-+	struct ice_netdev_priv *np = netdev_priv(dev);
-+	struct ice_vsi *vsi = np->vsi;
-+	struct ice_pf *pf = vsi->back;
-+	struct ice_aqc_nvm_cmpo data;
-+	struct ice_hw *hw = &pf->hw;
-+	int idx, ret, cage_count;
-+	u16 power;
-+
-+	if (params->policy) {
-+		NL_SET_ERR_MSG_MOD(extack, "Unsupported power parameter.");
-+		return -EOPNOTSUPP;
-+	}
-+
-+	if (!ice_fw_supports_cmpo(hw)) {
-+		NL_SET_ERR_MSG_MOD(extack, "Cage maximum power request is unsupported by the current firmware.");
-+		return -EOPNOTSUPP;
-+	}
-+
-+	if (params->max_pwr_set % 500) {
-+		NL_SET_ERR_MSG_MOD(extack, "Unsupported power resolution, use 500 mW resolution.");
-+		return -EOPNOTSUPP;
-+	}
-+
-+	cage_count = ice_get_num_of_cages(hw);
-+
-+	idx = ice_get_cage_idx(pf, cage_count, extack);
-+	if (idx < 0)
-+		return idx;
-+
-+	ret = ice_acquire_nvm(hw, ICE_RES_READ);
-+	if (ret)
-+		return ret;
-+
-+	ret = ice_aq_read_nvm(hw, ICE_AQC_NVM_CMPO_MOD_ID, 0, sizeof(data),
-+			      &data, true, false, NULL);
-+	if (ret) {
-+		ice_release_nvm(hw);
-+		NL_SET_ERR_MSG_MOD(extack, "Failed to read NVM power config.");
-+		return ret;
-+	}
-+
-+	ice_release_nvm(hw);
-+
-+	power = ice_pwr_ethtool_to_nvm(params->max_pwr_set);
-+
-+	if (power) {
-+		ret = ice_check_board_pwr_sum(hw, &data, idx,
-+					      params->max_pwr_set, cage_count,
-+					      extack);
-+		if (ret)
-+			return ret;
-+
-+		data.cages_cfg[idx] =
-+			cpu_to_le16(power & ICE_AQC_NVM_CMPO_POWER_MASK);
-+		data.cages_cfg[idx] |= cpu_to_le16(ICE_AQC_NVM_CMPO_ENABLE);
-+	} else {
-+		data.cages_cfg[idx] &= ~cpu_to_le16(ICE_AQC_NVM_CMPO_ENABLE);
-+	}
-+
-+	ret = ice_acquire_nvm(hw, ICE_RES_WRITE);
-+	if (ret)
-+		return ret;
-+
-+	ret = ice_aq_update_nvm(hw, ICE_AQC_NVM_CMPO_MOD_ID, 2,
-+				sizeof(data.cages_cfg), data.cages_cfg,
-+				false, 0, NULL);
-+	if (ret) {
-+		ice_release_nvm(hw);
-+		NL_SET_ERR_MSG_MOD(extack, "Failed to update NVM power config.");
-+		return ret;
-+	}
-+
-+	ret = ice_nvm_write_activate(&pf->hw, ICE_AQC_NVM_ACTIV_REQ_EMPR,
-+				     NULL);
-+	if (ret) {
-+		ice_release_nvm(hw);
-+		NL_SET_ERR_MSG_MOD(extack, "Failed to save NVM power config.");
-+		return ret;
-+	}
-+
-+	ice_release_nvm(hw);
-+
-+	dev_info(ice_pf_to_dev(pf), "Reboot is required to complete power change.");
-+
-+	return 0;
-+}
-+
- static const struct ethtool_ops ice_ethtool_ops = {
- 	.cap_rss_ctx_supported  = true,
- 	.supported_coalesce_params = ETHTOOL_COALESCE_USECS |
-@@ -4344,6 +4803,8 @@ static const struct ethtool_ops ice_ethtool_ops = {
- 	.set_fecparam		= ice_set_fecparam,
- 	.get_module_info	= ice_get_module_info,
- 	.get_module_eeprom	= ice_get_module_eeprom,
-+	.get_module_power_cfg	= ice_get_module_power_cfg,
-+	.set_module_power_cfg	= ice_set_module_power_cfg,
- };
- 
- static const struct ethtool_ops ice_ethtool_safe_mode_ops = {
-diff --git a/drivers/net/ethernet/intel/ice/ice_nvm.c b/drivers/net/ethernet/intel/ice/ice_nvm.c
-index d4e05d2cb30c..f3ef1211acd7 100644
---- a/drivers/net/ethernet/intel/ice/ice_nvm.c
-+++ b/drivers/net/ethernet/intel/ice/ice_nvm.c
-@@ -18,7 +18,7 @@
-  *
-  * Read the NVM using the admin queue commands (0x0701)
-  */
--static int
-+int
- ice_aq_read_nvm(struct ice_hw *hw, u16 module_typeid, u32 offset, u16 length,
- 		void *data, bool last_command, bool read_shadow_ram,
- 		struct ice_sq_cd *cd)
-diff --git a/drivers/net/ethernet/intel/ice/ice_nvm.h b/drivers/net/ethernet/intel/ice/ice_nvm.h
-index 774c2317967d..63cdc6bdac58 100644
---- a/drivers/net/ethernet/intel/ice/ice_nvm.h
-+++ b/drivers/net/ethernet/intel/ice/ice_nvm.h
-@@ -14,6 +14,9 @@ struct ice_orom_civd_info {
- 
- int ice_acquire_nvm(struct ice_hw *hw, enum ice_aq_res_access_type access);
- void ice_release_nvm(struct ice_hw *hw);
-+int ice_aq_read_nvm(struct ice_hw *hw, u16 module_typeid, u32 offset,
-+		    u16 length, void *data, bool last_command,
-+		    bool read_shadow_ram, struct ice_sq_cd *cd);
- int
- ice_read_flat_nvm(struct ice_hw *hw, u32 offset, u32 *length, u8 *data,
- 		  bool read_shadow_ram);
-diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-index 08ec5efdafe6..91506ddc5419 100644
---- a/drivers/net/ethernet/intel/ice/ice_type.h
-+++ b/drivers/net/ethernet/intel/ice/ice_type.h
-@@ -1152,6 +1152,10 @@ struct ice_aq_get_set_rss_lut_params {
- #define ICE_FW_API_LINK_OVERRIDE_MIN		5
- #define ICE_FW_API_LINK_OVERRIDE_PATCH		2
- 
-+#define ICE_FW_CMPO_MAJ				7
-+#define ICE_FW_CMPO_MIN				4
-+#define ICE_FW_CMPO_PATCH			1
-+
- #define ICE_SR_WORDS_IN_1KB		512
- 
- /* AQ API version for LLDP_FILTER_CONTROL */
 -- 
 2.40.1
 
