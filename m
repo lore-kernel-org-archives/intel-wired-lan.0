@@ -1,103 +1,92 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A3F63C6FD1F
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 29 Mar 2024 11:39:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2208ACD11DD
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 29 Mar 2024 12:29:18 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 6C8D182180;
-	Fri, 29 Mar 2024 11:39:32 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 9F9D84171B;
+	Fri, 29 Mar 2024 12:29:17 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 12sXW2eQsiAC; Fri, 29 Mar 2024 11:39:31 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id EKbyCO1Xx25B; Fri, 29 Mar 2024 12:29:16 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C5A898214D
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9058B415B9
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1711712371;
-	bh=FK8A23miDHbqPRxLibE/Tluxq4eEnO3hVEz87xBavLM=;
-	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
+	s=default; t=1711715356;
+	bh=AhgI0gLin0DIKQFCqQWZQdXCZszgkRxwSDljE2fNLP8=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=oisfsvQO4VCsBSI9dxGTtgO1CBHo+KgALUom2GlpNofD4Lb1zlM6B/y1zqy+AHimo
-	 ++3YstFrBzBlq3O3X+Uc6dtuuEqiZ/U1cGwNlm3GAAdAcEiCDdLiPaEveTW+mw22VZ
-	 7cNvB0L6eTCTo7/Ok0gTh2CBg1H9sAtFSRMd6zEsS0khI+1h9u9BoXaahhB+e+ZUMm
-	 2fDXxFWvK9GfyupD5QxBrvKeZKx1GwuXAc/eHuI6hORJtOZ7CK++jo/5HMvXTgkG/1
-	 rH2cdSUPeAQh/1CBAq8HgGx2uGkPGZkuA6ephc2wcPN5bhBffv3Z+CVGsSWn/6hy6h
-	 22hdBVYMWCDYg==
+	b=9CUxbWErQMDDoVarD4eDOS6R25oYXt5r6KTGW91PjxNwHuvfgYO6LHSEWyX3z40Ut
+	 VpJxrWyhM5fLoH24rL0umBCfLeLK/954okyLDRUg0Tzm9AuSG6MKe4CvNceNT+Glwx
+	 xphMbAlr1Ln4viOLnjqhf4HQtutfGbjq4eazK61upqHu+n45UYLtZGZ+kBMN0q50lc
+	 LhIybsUlf8dWIcn1HG2cX1ZCdTBoe8RVhJ4QXq4dhv0G2aStOE9gVrUBYY8hhG2jBQ
+	 gSyQdm35+kOlm3/W+TaX9ykvL9RZrYEJc0QQibzR3lrB+xx0iB6u0duWbRqJ12OmCZ
+	 +WQCUmJCXriUw==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id C5A898214D;
-	Fri, 29 Mar 2024 11:39:31 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 3F8DD1BF298
- for <intel-wired-lan@lists.osuosl.org>; Fri, 29 Mar 2024 11:39:30 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 9058B415B9;
+	Fri, 29 Mar 2024 12:29:16 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 0708B1BF2C6
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 29 Mar 2024 12:29:15 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 388BE8214D
- for <intel-wired-lan@lists.osuosl.org>; Fri, 29 Mar 2024 11:39:30 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id F355940B49
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 29 Mar 2024 12:29:14 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id TYcpS2Xy-FRL for <intel-wired-lan@lists.osuosl.org>;
- Fri, 29 Mar 2024 11:39:29 +0000 (UTC)
-Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.13;
- helo=mgamail.intel.com; envelope-from=marcin.szycik@linux.intel.com;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 775338212E
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 775338212E
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.13])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 775338212E
- for <intel-wired-lan@lists.osuosl.org>; Fri, 29 Mar 2024 11:39:29 +0000 (UTC)
-X-CSE-ConnectionGUID: 1mUuLSv0R+eu2WCXwJaORw==
-X-CSE-MsgGUID: YLlfgSmSQN6RNfE6C9fYsA==
-X-IronPort-AV: E=McAfee;i="6600,9927,11027"; a="9855563"
-X-IronPort-AV: E=Sophos;i="6.07,164,1708416000"; 
-   d="scan'208";a="9855563"
-Received: from fmviesa006.fm.intel.com ([10.60.135.146])
- by fmvoesa107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 29 Mar 2024 04:39:29 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.07,164,1708416000"; d="scan'208";a="16988890"
-Received: from mszycik-mobl1.ger.corp.intel.com (HELO [10.246.35.198])
- ([10.246.35.198])
- by fmviesa006-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 29 Mar 2024 04:39:27 -0700
-Message-ID: <7ded72b3-4c22-43d4-a5b5-191ef643c6c1@linux.intel.com>
-Date: Fri, 29 Mar 2024 12:39:24 +0100
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id Vf0RR61Yv2Dp for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 29 Mar 2024 12:29:14 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2604:1380:40e1:4800::1; helo=sin.source.kernel.org;
+ envelope-from=sashal@kernel.org; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org BFEF840B0F
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org BFEF840B0F
+Received: from sin.source.kernel.org (sin.source.kernel.org
+ [IPv6:2604:1380:40e1:4800::1])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id BFEF840B0F
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 29 Mar 2024 12:29:13 +0000 (UTC)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+ by sin.source.kernel.org (Postfix) with ESMTP id 2F5AFCE2F85;
+ Fri, 29 Mar 2024 12:29:09 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 03001C433C7;
+ Fri, 29 Mar 2024 12:29:06 +0000 (UTC)
+From: Sasha Levin <sashal@kernel.org>
+To: linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org
+Date: Fri, 29 Mar 2024 08:25:59 -0400
+Message-ID: <20240329122652.3082296-63-sashal@kernel.org>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20240329122652.3082296-1-sashal@kernel.org>
+References: <20240329122652.3082296-1-sashal@kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-From: Marcin Szycik <marcin.szycik@linux.intel.com>
-To: Simon Horman <horms@kernel.org>
-References: <20240326164455.735739-1-marcin.szycik@linux.intel.com>
- <20240328173450.GH651713@kernel.org>
- <fbf9dae9-c023-4b15-b3d8-6b19240f59b0@linux.intel.com>
-Content-Language: en-US
-In-Reply-To: <fbf9dae9-c023-4b15-b3d8-6b19240f59b0@linux.intel.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+X-stable: review
+X-Patchwork-Hint: Ignore
+X-stable-base: Linux 6.8.2
+Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1711712370; x=1743248370;
- h=message-id:date:mime-version:subject:from:to:cc:
- references:in-reply-to:content-transfer-encoding;
- bh=hKYtQkSeZ5ltpeJ0N8ysOEzYzpezyP4+EXMnh1ySvx0=;
- b=jH/fciLYfi/zCNn/RZJtaUAZkhoweeiWZC6ufSY3tde02kGbzhUMM7j0
- QXdwcwBosxWurHmz3PAynrM9U0JxxJmHJ5qHNIqkFoGIRSl/wCYc/O17V
- O/wwnTtnGVFoRquOCYHsyL8WSeTtJ0Y+8j0Xq06rn95hE04vYD21NgnVL
- hw3bK8fwRoK+72y8VJFX/57y/Sq9QRwSX/eZSa63sRmQpg/wFLQY1kU2o
- kPoll0LANi9CpEDa0jilS9XI5JzW/T140maS9ta58LNYAV48T4t7b6CG6
- R76p9T0hOyK0pRmfG88lPg91BaObZx3igCCAeGQenvjqlQNnxjeMx5UO0
- g==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dmarc=none (p=none dis=none)
- header.from=linux.intel.com
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ d=kernel.org; s=k20201202; t=1711715348;
+ bh=r04ih+R+QLaanuRfoFajyez1KZEQnSMxlDoyFKVImUo=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=FoMiZSBXaX66qA5yzAw6pVlpnsY65CqqkXDIrxJWoilmBUv4z4sD0Yn8fRK9ZS5FK
+ ClAMjWTXWIywCBfLb6QZECrvR40JADAU1ZlflYhjtYaAZYJ9qYIbgMPY143rAGNizN
+ jT9TKA66iVDB5tTzbVyXvW/TgRwPeYI/MYHeU4TsUcZJehmfaYEamE92WTQKE9KuNy
+ bmsMkiNKs46Zr865dYSw6nuDhvXj5jba6Poiel/8vdd5roPv8V/bDfYL8yBthdzBRv
+ oasIN0XPYi/L1/5mq+3V0NfTZYv/eVR44pWNG1XlVKcbOAaM2T6YiAebnr6Xy85uSA
+ dZWsxRfAhzVxQ==
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=kernel.org
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=jH/fciLY
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next v3] ice: Reset VF on Tx MDD
- event
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=FoMiZSBX
+Subject: [Intel-wired-lan] [PATCH AUTOSEL 6.8 63/68] ice: use relative VSI
+ index for VFs instead of PF VSI number
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -110,55 +99,111 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Wojciech Drewek <wojciech.drewek@intel.com>, netdev@vger.kernel.org,
- pawel.chmielewski@intel.com, anthony.l.nguyen@intel.com,
- Liang-Min Wang <liang-min.wang@intel.com>, intel-wired-lan@lists.osuosl.org
+Cc: Sasha Levin <sashal@kernel.org>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>, davem@davemloft.net,
+ edumazet@google.com, netdev@vger.kernel.org,
+ Tony Nguyen <anthony.l.nguyen@intel.com>, intel-wired-lan@lists.osuosl.org,
+ Jacob Keller <jacob.e.keller@intel.com>, kuba@kernel.org, pabeni@redhat.com,
+ Rafal Romanowski <rafal.romanowski@intel.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
+From: Jacob Keller <jacob.e.keller@intel.com>
 
+[ Upstream commit 11fbb1bfb5bc8c98b2d7db9da332b5e568f4aaab ]
 
-On 29.03.2024 12:31, Marcin Szycik wrote:
-> 
-> 
-> On 28.03.2024 18:34, Simon Horman wrote:
->> On Tue, Mar 26, 2024 at 05:44:55PM +0100, Marcin Szycik wrote:
->>> In cases when VF sends malformed packets that are classified as malicious,
->>> sometimes it causes Tx queue to freeze. This frozen queue can be stuck
->>> for several minutes being unusable. This behavior can be reproduced with
->>> a faulty userspace app running on VF.
->>>
->>> When Malicious Driver Detection event occurs and the mdd-auto-reset-vf
->>> private flag is set, perform a graceful VF reset to quickly bring VF back
->>> to operational state. Add a log message to notify about the cause of
->>> the reset. Add a helper for this to be reused for both TX and RX events.
->>>
->>> Reviewed-by: Wojciech Drewek <wojciech.drewek@intel.com>
->>> Co-developed-by: Liang-Min Wang <liang-min.wang@intel.com>
->>> Signed-off-by: Liang-Min Wang <liang-min.wang@intel.com>
->>> Signed-off-by: Marcin Szycik <marcin.szycik@linux.intel.com>
->>
->> Hi Marcin,
->>
->> If I read this correctly then a reset may be performed for several
->> different conditions - values of different registers - for a VF
->> as checked in a for loop.
->>
->> I am wondering if multiple resets could occur for the same VF within
->> an iteration of the for loop - because more than one of the conditions is
->> met. And, if so, is this ok?
-> 
-> Hi Simon,
-> 
-> Good point. Nothing too bad should happen, as ice_reset_vf() acquires mutex lock
+When initializing over virtchnl, the PF is required to pass a VSI ID to the
+VF as part of its capabilities exchange. The VF driver reports this value
+back to the PF in a variety of commands. The PF driver validates that this
+value matches the value it sent to the VF.
 
-Sorry, that mutex doesn't matter much here, as we'd call another ice_reset_vf()
-after previous one is done anyway.
+Some hardware families such as the E700 series could use this value when
+reading RSS registers or communicating directly with firmware over the
+Admin Queue.
 
-> (in fact two locks), so several resets would just happen in sequence. However,
-> it doesn't make much sense to reset VF multiple times, so maybe instead of issuing
-> reset on each condition, I'll set some flag, and after checking all registers I'll
-> trigger reset if that flag is set. What do you think?
-> 
-> Thanks,
-> Marcin
+However, E800 series hardware does not support any of these interfaces and
+the VF's only use for this value is to report it back to the PF. Thus,
+there is no requirement that this value be an actual VSI ID value of any
+kind.
+
+The PF driver already does not trust that the VF sends it a real VSI ID.
+The VSI structure is always looked up from the VF structure. The PF does
+validate that the VSI ID provided matches a VSI associated with the VF, but
+otherwise does not use the VSI ID for any purpose.
+
+Instead of reporting the VSI number relative to the PF space, report a
+fixed value of 1. When communicating with the VF over virtchnl, validate
+that the VSI number is returned appropriately.
+
+This avoids leaking information about the firmware of the PF state.
+Currently the ice driver only supplies a VF with a single VSI. However, it
+appears that virtchnl has some support for allowing multiple VSIs. I did
+not attempt to implement this. However, space is left open to allow further
+relative indexes if additional VSIs are provided in future feature
+development. For this reason, keep the ice_vc_isvalid_vsi_id function in
+place to allow extending it for multiple VSIs in the future.
+
+This change will also simplify handling of live migration in a future
+series. Since we no longer will provide a real VSI number to the VF, there
+will be no need to keep track of this number when migrating to a new host.
+
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Tested-by: Rafal Romanowski <rafal.romanowski@intel.com>
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/net/ethernet/intel/ice/ice_virtchnl.c | 9 ++-------
+ drivers/net/ethernet/intel/ice/ice_virtchnl.h | 9 +++++++++
+ 2 files changed, 11 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl.c b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
+index 6f2328a049bf1..7b550d7d96b68 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
+@@ -499,7 +499,7 @@ static int ice_vc_get_vf_res_msg(struct ice_vf *vf, u8 *msg)
+ 	vfres->rss_lut_size = ICE_LUT_VSI_SIZE;
+ 	vfres->max_mtu = ice_vc_get_max_frame_size(vf);
+ 
+-	vfres->vsi_res[0].vsi_id = vf->lan_vsi_num;
++	vfres->vsi_res[0].vsi_id = ICE_VF_VSI_ID;
+ 	vfres->vsi_res[0].vsi_type = VIRTCHNL_VSI_SRIOV;
+ 	vfres->vsi_res[0].num_queue_pairs = vsi->num_txq;
+ 	ether_addr_copy(vfres->vsi_res[0].default_mac_addr,
+@@ -545,12 +545,7 @@ static void ice_vc_reset_vf_msg(struct ice_vf *vf)
+  */
+ bool ice_vc_isvalid_vsi_id(struct ice_vf *vf, u16 vsi_id)
+ {
+-	struct ice_pf *pf = vf->pf;
+-	struct ice_vsi *vsi;
+-
+-	vsi = ice_find_vsi(pf, vsi_id);
+-
+-	return (vsi && (vsi->vf == vf));
++	return vsi_id == ICE_VF_VSI_ID;
+ }
+ 
+ /**
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl.h b/drivers/net/ethernet/intel/ice/ice_virtchnl.h
+index 60dfbe05980aa..3a41158691532 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl.h
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl.h
+@@ -19,6 +19,15 @@
+ #define ICE_MAX_MACADDR_PER_VF		18
+ #define ICE_FLEX_DESC_RXDID_MAX_NUM	64
+ 
++/* VFs only get a single VSI. For ice hardware, the VF does not need to know
++ * its VSI index. However, the virtchnl interface requires a VSI number,
++ * mainly due to legacy hardware.
++ *
++ * Since the VF doesn't need this information, report a static value to the VF
++ * instead of leaking any information about the PF or hardware setup.
++ */
++#define ICE_VF_VSI_ID	1
++
+ struct ice_virtchnl_ops {
+ 	int (*get_ver_msg)(struct ice_vf *vf, u8 *msg);
+ 	int (*get_vf_res_msg)(struct ice_vf *vf, u8 *msg);
+-- 
+2.43.0
+
