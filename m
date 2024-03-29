@@ -4,87 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A0E6CCD11DD
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 29 Mar 2024 12:31:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DDE2EC6FD1F
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 29 Mar 2024 12:33:07 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 4CBB7416B0;
-	Fri, 29 Mar 2024 12:31:47 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id A3C294172A;
+	Fri, 29 Mar 2024 12:33:07 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id LwB6HLEPJOhK; Fri, 29 Mar 2024 12:31:45 +0000 (UTC)
+ id vPWaBEA98tB4; Fri, 29 Mar 2024 12:33:06 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org F32B641720
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9187F41731
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1711715505;
-	bh=PG0HJEUdYDnff3CTvWO+b8xhfzjd0yLQEm0zE5pxJN4=;
+	s=default; t=1711715586;
+	bh=wIKZIeh+e5/oCwD6pk6DYaEG4943zfxGLrakRseQCfc=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=6TMPDswz7aY/aepZ74iKoNesTgHGnVVGq38ST1DVon2S5PS7tUF5SeRKUXCmiu/t7
-	 75MWlRCgU1EWOuMLyR6fHnT7EBvTsXFCmaHcddGObDdilRODv8f3Up5pDt+X7s9rUl
-	 lSdb/fy3PmUWkqxN29VG6/xHW70OYnzlnn8/QPE9d9mJNxGDBQ/jmBHMUdSgQTAjXc
-	 nIXEzgranHJFUkzZmSI4mjj6W4rYGIajIeQS4TcRbBY+c4mf6EMHr7knrJrP4/o0lz
-	 JKWdsv1VI1Z3o5aktuajtwGHBFmXieTU54S27awOrJ8bgzA2s6arHHiS+xguZRk23M
-	 g1ZzcxONFhUig==
+	b=izl/1YUk01KIOwIQIgE+uDKdCa3LfO3gWr3NkHh+Xmh9oRvIKkLRLu4BGWoFUFUAa
+	 L2eJgNijvAz3Tmw/lEbeBpPAeVwYXure9iyrPKZjUe7t21WqE6JO14b2KvIwA588NH
+	 CgYcSOpZLZ43QFj2P3KSvUXhPGmBDYr/e/K3zmVdItrf6fvRPOGN6HTqxiDmsz8WoZ
+	 UWvL4QkaH3ul0u3MWSV6dUJv1edmwoJ/n52InTdZodfSeU7x/GGNItO2sgSRlQ4+is
+	 OwTC+GB0aKj+hmXbJpFRhjYu/WoMu11sESylZbDOIObongg4YIju1Kv0CCHYtlg6tV
+	 j1fgLV9YW9eRQ==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id F32B641720;
-	Fri, 29 Mar 2024 12:31:44 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 9187F41731;
+	Fri, 29 Mar 2024 12:33:06 +0000 (UTC)
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id E10541BF2C6
- for <intel-wired-lan@lists.osuosl.org>; Fri, 29 Mar 2024 12:31:43 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id B27921BF2C6
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 29 Mar 2024 12:33:04 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id D7A2A82CDE
- for <intel-wired-lan@lists.osuosl.org>; Fri, 29 Mar 2024 12:31:42 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 9C10082CDE
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 29 Mar 2024 12:33:04 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Kpk_U7G9n12M for <intel-wired-lan@lists.osuosl.org>;
- Fri, 29 Mar 2024 12:31:42 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=139.178.84.217;
- helo=dfw.source.kernel.org; envelope-from=sashal@kernel.org;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org EEFEE82CFA
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org EEFEE82CFA
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
- by smtp1.osuosl.org (Postfix) with ESMTPS id EEFEE82CFA
- for <intel-wired-lan@lists.osuosl.org>; Fri, 29 Mar 2024 12:31:41 +0000 (UTC)
+ id 3qf8QYzNPhJB for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 29 Mar 2024 12:33:02 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org;
+ envelope-from=sashal@kernel.org; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 6E731813B5
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 6E731813B5
+Received: from dfw.source.kernel.org (dfw.source.kernel.org
+ [IPv6:2604:1380:4641:c500::1])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 6E731813B5
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 29 Mar 2024 12:33:02 +0000 (UTC)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by dfw.source.kernel.org (Postfix) with ESMTP id 3913A61927;
- Fri, 29 Mar 2024 12:31:41 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 85962C433F1;
- Fri, 29 Mar 2024 12:31:39 +0000 (UTC)
+ by dfw.source.kernel.org (Postfix) with ESMTP id 9C91A61926;
+ Fri, 29 Mar 2024 12:33:01 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id F27AEC433C7;
+ Fri, 29 Mar 2024 12:32:59 +0000 (UTC)
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Date: Fri, 29 Mar 2024 08:29:18 -0400
-Message-ID: <20240329122956.3083859-48-sashal@kernel.org>
+Date: Fri, 29 Mar 2024 08:31:47 -0400
+Message-ID: <20240329123207.3085013-28-sashal@kernel.org>
 X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20240329122956.3083859-1-sashal@kernel.org>
-References: <20240329122956.3083859-1-sashal@kernel.org>
+In-Reply-To: <20240329123207.3085013-1-sashal@kernel.org>
+References: <20240329123207.3085013-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
-X-stable-base: Linux 6.6.23
+X-stable-base: Linux 6.1.83
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1711715501;
- bh=xuO52jC+rzKh9ZGu2ZBZBSIiT9ch8p/qMshlFTcaWgM=;
+ d=kernel.org; s=k20201202; t=1711715581;
+ bh=aSBzOgThcesMCBVYD8sSDS7JOXh9jaKZ0CAgz+tz7fo=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=sBOk8ZGyS+lUM7qFNutKyzMkOhugABcTW3JiURgpbVt+eVOT+fmaqXVcfmxuMBMwI
- CDHG3wyjoth4UrCAZVUDaVk9d+QiSh0yx/j9e66Ry5qtyDiG/DC+qyADlmkSdCCzh1
- UddEqtteAyX17BWMO11nbYq7Q1ajH58gb7roTzZeUjUYgJ5m6F8dV+I/amBF/BDGE9
- gPpk7Fd/awO4k0U7QX8WkfC+7F7WQIYU1Ife7gaxo4SGzvzTQndwdZJ9sAsMCSlDPs
- CW2RLh9SSvtFdTo+sLBL9vH0rsbW8ugWpLKH8/F5/qHA2mhzCvcsCHaQ+Bk+NdplUZ
- z17AMdWHOnW5Q==
+ b=BgSV/DS9GtEYrrVc0c9FZNlU/th0nUCZD18XrvwqIFj9SbnKnCSjfVvBP44bJh330
+ GlCFuA2SaeGKxphOrmGraHpYGT22VDCIr8KegiRTbSZDSae17xQ4RnneR7LU8RW1/M
+ gf7CGi6vd8Ap4oU35gJoJJeWFSunIMoPaPLJ6wf3Jr055rSRFhOWbicFkh5E1IFi43
+ mWNz9/6ycvv20+6aRJDy+xUW31DMiux1stVghCiuuGNdmqpG7uwyeo/7Ri8o6Lrf+s
+ eAT7ovrvya9gFw9ImhlohUDj+2etamv0j5nM0bI4xvAoWazq+0VIF85OfGn6KHyULg
+ Sy5Fwy8/+J/ww==
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=kernel.org
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=sBOk8ZGy
-Subject: [Intel-wired-lan] [PATCH AUTOSEL 6.6 48/52] ice: use relative VSI
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20201202 header.b=BgSV/DS9
+Subject: [Intel-wired-lan] [PATCH AUTOSEL 6.1 28/31] ice: use relative VSI
  index for VFs instead of PF VSI number
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
@@ -157,11 +157,11 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  2 files changed, 11 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl.c b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-index e7ab78bb0f861..668afc018a3fc 100644
+index 6c03ebf81ffda..e2a737157c3dc 100644
 --- a/drivers/net/ethernet/intel/ice/ice_virtchnl.c
 +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-@@ -503,7 +503,7 @@ static int ice_vc_get_vf_res_msg(struct ice_vf *vf, u8 *msg)
- 	vfres->rss_lut_size = ICE_LUT_VSI_SIZE;
+@@ -500,7 +500,7 @@ static int ice_vc_get_vf_res_msg(struct ice_vf *vf, u8 *msg)
+ 	vfres->rss_lut_size = ICE_VSIQF_HLUT_ARRAY_SIZE;
  	vfres->max_mtu = ice_vc_get_max_frame_size(vf);
  
 -	vfres->vsi_res[0].vsi_id = vf->lan_vsi_num;
@@ -169,7 +169,7 @@ index e7ab78bb0f861..668afc018a3fc 100644
  	vfres->vsi_res[0].vsi_type = VIRTCHNL_VSI_SRIOV;
  	vfres->vsi_res[0].num_queue_pairs = vsi->num_txq;
  	ether_addr_copy(vfres->vsi_res[0].default_mac_addr,
-@@ -549,12 +549,7 @@ static void ice_vc_reset_vf_msg(struct ice_vf *vf)
+@@ -546,12 +546,7 @@ static void ice_vc_reset_vf_msg(struct ice_vf *vf)
   */
  bool ice_vc_isvalid_vsi_id(struct ice_vf *vf, u16 vsi_id)
  {
@@ -184,12 +184,12 @@ index e7ab78bb0f861..668afc018a3fc 100644
  
  /**
 diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl.h b/drivers/net/ethernet/intel/ice/ice_virtchnl.h
-index cd747718de738..a0d03f350dfc7 100644
+index b5a3fd8adbb4e..6073d3b2d2d65 100644
 --- a/drivers/net/ethernet/intel/ice/ice_virtchnl.h
 +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl.h
-@@ -19,6 +19,15 @@
+@@ -18,6 +18,15 @@
+  */
  #define ICE_MAX_MACADDR_PER_VF		18
- #define ICE_FLEX_DESC_RXDID_MAX_NUM	64
  
 +/* VFs only get a single VSI. For ice hardware, the VF does not need to know
 + * its VSI index. However, the virtchnl interface requires a VSI number,
