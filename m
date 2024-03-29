@@ -4,67 +4,67 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4529FC6FD1F
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 29 Mar 2024 16:17:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 00E16CD1290
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 29 Mar 2024 16:17:57 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 14026417A4;
-	Fri, 29 Mar 2024 16:17:54 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id C08A4417AE;
+	Fri, 29 Mar 2024 16:17:57 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id mUclRp7Any2O; Fri, 29 Mar 2024 16:17:53 +0000 (UTC)
+ id 9lGlJt9O33hl; Fri, 29 Mar 2024 16:17:57 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 09C29417A3
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B90C5417A8
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1711729073;
-	bh=0jxC2U2hWA61164v/BdC/Hvkg4UAZDi5VT8iHmLr+eY=;
+	s=default; t=1711729077;
+	bh=Xa4mNhwX4VpFt3HAFUtB0x2bUW1MXjI6J1/D4uXfbNg=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=tMEkqxueaQO6AnYen3zUtnXDxswzfKJ4Ro9w26ts95BVU4j6tlUVEU9HUdtomMqH5
-	 72PUwgnCPlE/dM+8YNo8/TatpWWamQxIMFdBKsWC5Sseaj7tvUnixb9Rg6JEGP8TbT
-	 lW01xMCbdxs0K/q2vRMgPxHsE0oyEVp4luoibN1DQft+X8OlKHmQrOAoyHwMJLP3nk
-	 GT8etIJDdUQv5Mq0gXxYM6sml57UrJF03unmMkNIgb/HgqMftTGvEoVj2Y/TOqmBxm
-	 omp/lb8FfMUJkRNK46CQ8qJi7T3CbK1jykzF7w8EKo6sh0Dwiz8Ot/XT8Q1jCBjFiS
-	 a2kYKPSpIbd/w==
+	b=xDNSiQY+aIhy9/g/2ptxMwgUtONQqmWZS/VnbZvD55V2fMN2GU2Ku/Sn+moAVhUmR
+	 ZtAxw4iA1pAY8T4TQ8etABoTdiC24Xbu7KlZsTLqxm/79D29ET6hgGFkAP6Pf+D3b0
+	 q3E/1a1rd8OyZN3vyhCT25XanZgQAFmpeHwexEM063zfRXr0QebW29swHAIUnV+she
+	 61g6a5prn5rjmJGG9vbrE99b6//Xz5H2OX8wDpFt8FkfeZX4/yBaYx0rzGr+7sX11S
+	 Zs44NZgSRW0VqHgDXLVBvjUSCX/BwdUU2K+8ug5uy0gEHPJGRt4+1AE8k39HUZdqly
+	 57b9RkyTpwObA==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 09C29417A3;
-	Fri, 29 Mar 2024 16:17:53 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id B90C5417A8;
+	Fri, 29 Mar 2024 16:17:56 +0000 (UTC)
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id B427C1BF41B
- for <intel-wired-lan@lists.osuosl.org>; Fri, 29 Mar 2024 16:17:45 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 07FF11BF41B
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 29 Mar 2024 16:17:49 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id AC67882D45
- for <intel-wired-lan@lists.osuosl.org>; Fri, 29 Mar 2024 16:17:44 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 0356782D45
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 29 Mar 2024 16:17:49 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id f06eFliKSBpx for <intel-wired-lan@lists.osuosl.org>;
- Fri, 29 Mar 2024 16:17:40 +0000 (UTC)
+ id uNkAXwsf9S6a for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 29 Mar 2024 16:17:48 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.16;
  helo=mgamail.intel.com; envelope-from=karol.kolacinski@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org A339C82DD9
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org A339C82DD9
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 4E49F82D96
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4E49F82D96
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.16])
- by smtp1.osuosl.org (Postfix) with ESMTPS id A339C82DD9
- for <intel-wired-lan@lists.osuosl.org>; Fri, 29 Mar 2024 16:17:39 +0000 (UTC)
-X-CSE-ConnectionGUID: e7lDJAmrSbSleRTnZ+zzwA==
-X-CSE-MsgGUID: bHH/WhhgQ4GwUD7ec8+pwg==
-X-IronPort-AV: E=McAfee;i="6600,9927,11028"; a="7038310"
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 4E49F82D96
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 29 Mar 2024 16:17:48 +0000 (UTC)
+X-CSE-ConnectionGUID: cfNky7C6SESHhBFsqe5y7w==
+X-CSE-MsgGUID: wGVp7OaZRS+x8k9JVGGJvg==
+X-IronPort-AV: E=McAfee;i="6600,9927,11028"; a="7038342"
 X-IronPort-AV: E=Sophos;i="6.07,165,1708416000"; 
-   d="scan'208";a="7038310"
+   d="scan'208";a="7038342"
 Received: from fmviesa005.fm.intel.com ([10.60.135.145])
  by orvoesa108.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 29 Mar 2024 09:17:39 -0700
+ 29 Mar 2024 09:17:48 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.07,165,1708416000"; d="scan'208";a="21474495"
+X-IronPort-AV: E=Sophos;i="6.07,165,1708416000"; d="scan'208";a="21474544"
 Received: from kkolacin-desk1.igk.intel.com ([10.102.102.152])
- by fmviesa005.fm.intel.com with ESMTP; 29 Mar 2024 09:17:37 -0700
+ by fmviesa005.fm.intel.com with ESMTP; 29 Mar 2024 09:17:46 -0700
 From: Karol Kolacinski <karol.kolacinski@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Fri, 29 Mar 2024 17:09:41 +0100
-Message-ID: <20240329161730.47777-16-karol.kolacinski@intel.com>
+Date: Fri, 29 Mar 2024 17:09:45 +0100
+Message-ID: <20240329161730.47777-20-karol.kolacinski@intel.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20240329161730.47777-14-karol.kolacinski@intel.com>
 References: <20240329161730.47777-14-karol.kolacinski@intel.com>
@@ -72,25 +72,25 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1711729060; x=1743265060;
+ t=1711729068; x=1743265068;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=+FNXSIdp4PgvGGhy6YrPwX+eUbvzDZcSoeepn2O5ZOk=;
- b=lfAcCY/kAkeP18rvsgWLeazXsNd204/cvaBEU6JSe4k5SBbEgyvXItQw
- N4MaqyagBo7GjcIxH34X/BwVhUiX9APy64IBB9EX5r3vGtcorUVWjVLqX
- smtkpJql7295Xu5JQ9em/++oaxKZBsL/6dFcV36NrVYMq3rb01p8DiQn7
- TjgW6twJEpZqPrygN1FY5lAOxTsc07ZHi/Lle5H1ESHQGnLMorAKz+WkQ
- HVA2niWiPOUr4SqTa2nl3Ubn64ZvxZk08zpJocOUwqACYIkC1QXIZt373
- Fw13pQBZn+MkzlTHZiioeU+Kg0nAYtk/KczJVBs4HdR03dwMHhk8Fjs1h
+ bh=ERHAALLSA2vzNMYtvNj4cUg4n40CUGxACTCDlBu/TEw=;
+ b=HRlk//JC4YVzpYdTS4AnocNdGeEUv8xQztzuVnWjzCddOpY1VHiuk2Ke
+ GMMeoVgETB/oiaHj+9LAaLcPJzePYCL+XUc0yZ5M2vc3h4pTr2EbwjeY0
+ jQUHT5Y4ZM6b24J7TNx/9iXO9vexF/vtaawVksan5aUEmcbgxcJ3Mikrt
+ dA/uDdno8uaAlbBAxMnj5ijL9jETz0lfDZ7yQPNaHzLkGQfK9GFPmMXKu
+ rsESrrsGp722sdWV32evcDB5GhjtR/L+E+4NM7WaC8zmPJFxf0pWLPY/e
+ 9Lm7SV/f94DkqBmR5i9De7cBOqMIZjLZfkFW0ZdkhZAli3SkG6x6SNJkx
  Q==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=lfAcCY/k
-Subject: [Intel-wired-lan] [PATCH v4 iwl-next 02/12] ice: Introduce helper
- to get tmr_cmd_reg values
+ header.a=rsa-sha256 header.s=Intel header.b=HRlk//JC
+Subject: [Intel-wired-lan] [PATCH v4 iwl-next 06/12] ice: Introduce
+ ice_get_base_incval() helper
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -113,222 +113,58 @@ Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 From: Jacob Keller <jacob.e.keller@intel.com>
 
-Multiple places in the driver code need to convert enum ice_ptp_tmr_cmd
-values into register bits for both the main timer and the PHY port
-timers. The main MAC register has one bit scheme for timer commands,
-while the PHY commands use a different scheme.
-
-The E810 and E830 devices use the same scheme for port commands as used
-for the main timer. However, E822 and ETH56G hardware has a separate
-scheme used by the PHY.
-
-Introduce helper functions to convert the timer command enumeration into
-the register values, reducing some code duplication, and making it
-easier to later refactor the individual port write commands.
+Add a new helper for getting base clock increment value for specific HW.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Reviewed-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
 Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_ptp_hw.c | 140 ++++++++++++--------
- drivers/net/ethernet/intel/ice/ice_ptp_hw.h |   2 +-
- 2 files changed, 89 insertions(+), 53 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_ptp.c    |  7 +------
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.h | 12 ++++++++++++
+ 2 files changed, 13 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-index e86ca6cada79..c892b966c3b8 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-@@ -227,40 +227,114 @@ static u64 ice_ptp_read_src_incval(struct ice_hw *hw)
- }
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
+index 7980482bbf56..cd2dab7b4c44 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp.c
++++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
+@@ -1210,12 +1210,7 @@ static u64 ice_base_incval(struct ice_pf *pf)
+ 	struct ice_hw *hw = &pf->hw;
+ 	u64 incval;
  
- /**
-- * ice_ptp_src_cmd - Prepare source timer for a timer command
-- * @hw: pointer to HW structure
-+ * ice_ptp_tmr_cmd_to_src_reg - Convert to source timer command value
-+ * @hw: pointer to HW struct
-  * @cmd: Timer command
-  *
-- * Prepare the source timer for an upcoming timer sync command.
-+ * Returns: the source timer command register value for the given PTP timer
-+ * command.
-  */
--void ice_ptp_src_cmd(struct ice_hw *hw, enum ice_ptp_tmr_cmd cmd)
-+static u32 ice_ptp_tmr_cmd_to_src_reg(struct ice_hw *hw,
-+				      enum ice_ptp_tmr_cmd cmd)
- {
--	u32 cmd_val;
--	u8 tmr_idx;
-+	u32 cmd_val, tmr_idx;
-+
-+	switch (cmd) {
-+	case ICE_PTP_INIT_TIME:
-+		cmd_val = GLTSYN_CMD_INIT_TIME;
-+		break;
-+	case ICE_PTP_INIT_INCVAL:
-+		cmd_val = GLTSYN_CMD_INIT_INCVAL;
-+		break;
-+	case ICE_PTP_ADJ_TIME:
-+		cmd_val = GLTSYN_CMD_ADJ_TIME;
-+		break;
-+	case ICE_PTP_ADJ_TIME_AT_TIME:
-+		cmd_val = GLTSYN_CMD_ADJ_INIT_TIME;
-+		break;
-+	case ICE_PTP_NOP:
-+	case ICE_PTP_READ_TIME:
-+		cmd_val = GLTSYN_CMD_READ_TIME;
-+		break;
-+	default:
-+		dev_warn(ice_hw_to_dev(hw),
-+			 "Ignoring unrecognized timer command %u\n", cmd);
-+		cmd_val = 0;
-+	}
+-	if (ice_is_e810(hw))
+-		incval = ICE_PTP_NOMINAL_INCVAL_E810;
+-	else if (ice_e82x_time_ref(hw) < NUM_ICE_TIME_REF_FREQ)
+-		incval = ice_e82x_nominal_incval(ice_e82x_time_ref(hw));
+-	else
+-		incval = UNKNOWN_INCVAL_E82X;
++	incval = ice_get_base_incval(hw);
  
- 	tmr_idx = ice_get_ptp_src_clock_index(hw);
--	cmd_val = tmr_idx << SEL_CPK_SRC;
-+
-+	return tmr_idx | cmd_val << SEL_CPK_SRC;
-+}
-+
-+/**
-+ * ice_ptp_tmr_cmd_to_port_reg- Convert to port timer command value
-+ * @hw: pointer to HW struct
-+ * @cmd: Timer command
-+ *
-+ * Note that some hardware families use a different command register value for
-+ * the PHY ports, while other hardware families use the same register values
-+ * as the source timer.
-+ *
-+ * Returns: the PHY port timer command register value for the given PTP timer
-+ * command.
-+ */
-+static u32 ice_ptp_tmr_cmd_to_port_reg(struct ice_hw *hw,
-+				       enum ice_ptp_tmr_cmd cmd)
-+{
-+	u32 cmd_val, tmr_idx;
-+
-+	/* Certain hardware families share the same register values for the
-+	 * port register and source timer register.
-+	 */
-+	switch (hw->ptp.phy_model) {
-+	case ICE_PHY_E810:
-+		return ice_ptp_tmr_cmd_to_src_reg(hw, cmd) & TS_CMD_MASK_E810;
-+	default:
-+		break;
-+	}
- 
- 	switch (cmd) {
- 	case ICE_PTP_INIT_TIME:
--		cmd_val |= GLTSYN_CMD_INIT_TIME;
-+		cmd_val = PHY_CMD_INIT_TIME;
- 		break;
- 	case ICE_PTP_INIT_INCVAL:
--		cmd_val |= GLTSYN_CMD_INIT_INCVAL;
-+		cmd_val = PHY_CMD_INIT_INCVAL;
- 		break;
- 	case ICE_PTP_ADJ_TIME:
--		cmd_val |= GLTSYN_CMD_ADJ_TIME;
-+		cmd_val = PHY_CMD_ADJ_TIME;
- 		break;
- 	case ICE_PTP_ADJ_TIME_AT_TIME:
--		cmd_val |= GLTSYN_CMD_ADJ_INIT_TIME;
-+		cmd_val = PHY_CMD_ADJ_TIME_AT_TIME;
- 		break;
- 	case ICE_PTP_READ_TIME:
--		cmd_val |= GLTSYN_CMD_READ_TIME;
-+		cmd_val = PHY_CMD_READ_TIME;
- 		break;
- 	case ICE_PTP_NOP:
-+		cmd_val = 0;
- 		break;
-+	default:
-+		dev_warn(ice_hw_to_dev(hw),
-+			 "Ignoring unrecognized timer command %u\n", cmd);
-+		cmd_val = 0;
- 	}
- 
-+	tmr_idx = ice_get_ptp_src_clock_index(hw);
-+
-+	return tmr_idx | cmd_val << SEL_PHY_SRC;
-+}
-+
-+/**
-+ * ice_ptp_src_cmd - Prepare source timer for a timer command
-+ * @hw: pointer to HW structure
-+ * @cmd: Timer command
-+ *
-+ * Prepare the source timer for an upcoming timer sync command.
-+ */
-+void ice_ptp_src_cmd(struct ice_hw *hw, enum ice_ptp_tmr_cmd cmd)
-+{
-+	u32 cmd_val = ice_ptp_tmr_cmd_to_src_reg(hw, cmd);
-+
- 	wr32(hw, GLTSYN_CMD, cmd_val);
- }
- 
-@@ -3023,47 +3097,9 @@ static int ice_ptp_prep_phy_incval_e810(struct ice_hw *hw, u64 incval)
-  */
- static int ice_ptp_port_cmd_e810(struct ice_hw *hw, enum ice_ptp_tmr_cmd cmd)
- {
--	u32 cmd_val, val;
--	int err;
-+	u32 val = ice_ptp_tmr_cmd_to_port_reg(hw, cmd);
- 
--	switch (cmd) {
--	case ICE_PTP_INIT_TIME:
--		cmd_val = GLTSYN_CMD_INIT_TIME;
--		break;
--	case ICE_PTP_INIT_INCVAL:
--		cmd_val = GLTSYN_CMD_INIT_INCVAL;
--		break;
--	case ICE_PTP_ADJ_TIME:
--		cmd_val = GLTSYN_CMD_ADJ_TIME;
--		break;
--	case ICE_PTP_READ_TIME:
--		cmd_val = GLTSYN_CMD_READ_TIME;
--		break;
--	case ICE_PTP_ADJ_TIME_AT_TIME:
--		cmd_val = GLTSYN_CMD_ADJ_INIT_TIME;
--		break;
--	case ICE_PTP_NOP:
--		return 0;
--	}
--
--	/* Read, modify, write */
--	err = ice_read_phy_reg_e810(hw, ETH_GLTSYN_CMD, &val);
--	if (err) {
--		ice_debug(hw, ICE_DBG_PTP, "Failed to read GLTSYN_CMD, err %d\n", err);
--		return err;
--	}
--
--	/* Modify necessary bits only and perform write */
--	val &= ~TS_CMD_MASK_E810;
--	val |= cmd_val;
--
--	err = ice_write_phy_reg_e810(hw, ETH_GLTSYN_CMD, val);
--	if (err) {
--		ice_debug(hw, ICE_DBG_PTP, "Failed to write back GLTSYN_CMD, err %d\n", err);
--		return err;
--	}
--
--	return 0;
-+	return ice_write_phy_reg_e810(hw, E810_ETH_GLTSYN_CMD, val);
- }
- 
- /**
+ 	dev_dbg(ice_pf_to_dev(pf), "PTP: using base increment value of 0x%016llx\n",
+ 		incval);
 diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
-index 3dce09af0d78..6246de3bacf3 100644
+index 5223e17d2806..d477d334b1d8 100644
 --- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
 +++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
-@@ -485,7 +485,7 @@ int ice_cgu_get_output_pin_state_caps(struct ice_hw *hw, u8 pin_id,
- #define ETH_GLTSYN_SHADJ_H(_i)		(0x0300037C + ((_i) * 32))
+@@ -285,6 +285,18 @@ int ice_get_cgu_rclk_pin_info(struct ice_hw *hw, u8 *base_idx, u8 *pin_num);
+ int ice_cgu_get_output_pin_state_caps(struct ice_hw *hw, u8 pin_id,
+ 				      unsigned long *caps);
  
- /* E810 timer command register */
--#define ETH_GLTSYN_CMD			0x03000344
-+#define E810_ETH_GLTSYN_CMD		0x03000344
++static inline u64 ice_get_base_incval(struct ice_hw *hw)
++{
++	switch (hw->ptp.phy_model) {
++	case ICE_PHY_E810:
++		return ICE_PTP_NOMINAL_INCVAL_E810;
++	case ICE_PHY_E82X:
++		return ice_e82x_nominal_incval(ice_e82x_time_ref(hw));
++	default:
++		return 0;
++	}
++}
++
+ #define PFTSYN_SEM_BYTES	4
  
- /* Source timer incval macros */
- #define INCVAL_HIGH_M			0xFF
+ #define ICE_PTP_CLOCK_INDEX_0	0x00
 -- 
 2.43.0
 
