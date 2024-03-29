@@ -4,67 +4,67 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A359EC6FD1F
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 29 Mar 2024 11:24:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3E192CD128E
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 29 Mar 2024 11:24:17 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 6563D82410;
-	Fri, 29 Mar 2024 11:24:09 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id D4CDB8248C;
+	Fri, 29 Mar 2024 11:24:16 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id wBTfZueVo-FY; Fri, 29 Mar 2024 11:24:08 +0000 (UTC)
+ id ICsd6qUI6V9X; Fri, 29 Mar 2024 11:24:15 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B8AF582560
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8214882CB7
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1711711447;
-	bh=e65wl8tiJW9/pgBTU6g+xHrsbCP1SnpqKyQwLSNqF0c=;
+	s=default; t=1711711455;
+	bh=ckBjsvr1Sv8jQ8TWrsQCf0qNC6IDOXrSELwY2blzxew=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=FCIhBqrgLwAV3O6qwT37lV/M1X3ndymY+2RrsP//QTCf5fe/gedtoL53jM0J05xzg
-	 jA0IR4L16ewJyBbdR6mzobcRWjjZ49N3f+ibgY5tDJdiyP3MjOw0t/NkRdyKzdYbnX
-	 t1Xu8p+BQJ7jX/T6GRUQb81yrOyEYNCHQEHoMXS5Nz8ZybWr8A7Y0fVFeVfj7ym9BY
-	 whR39ycEBsdY5LewIefxtVFv3lOyZWUlq9R159/ofAGNdiAbcvTXK67OkKRFhe7Zi7
-	 aauvRVMMmbe9ZNwJjRYhl9OOfKQZytOFDY1xAIPbicgSqm0wRCv64SHLUIp1C3cNw4
-	 pzA0P4GyA8xVA==
+	b=7UrZJj6Qmhgj7gpZI+07Crcli7Q6u17JHgYJqqNg68POlP6akO7dex8ktXjFH1X6M
+	 QhMJKCr7A5Zqny5/jHYuQvSil18TItXjy81pt5fyh9NexRyponGmi6UEhrOa8SKZzM
+	 I8VyYxBsISDiufjsTb67f8PfhM/h+UYE+VsZPJysfjfEqBkwwCIi0NNMoyC7t2dbqe
+	 iU8aLS5nq7F8Fkux5XSHSZBErJmuQYtZaPBzcHjKJEPXodMAlNyZvIVpxPA5O3IpMu
+	 +4fXSSjOO4+PkwVkIJx+Zp8wHueOJurTYSh8TjRVkVFU1azxRCEmuwDiSQxRhnLOEV
+	 zvr94eQqRvdOg==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id B8AF582560;
-	Fri, 29 Mar 2024 11:24:07 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 8214882CB7;
+	Fri, 29 Mar 2024 11:24:15 +0000 (UTC)
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 042131BF990
- for <intel-wired-lan@lists.osuosl.org>; Fri, 29 Mar 2024 11:24:04 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id E35981BF298
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 29 Mar 2024 11:24:08 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id F21C260EE3
- for <intel-wired-lan@lists.osuosl.org>; Fri, 29 Mar 2024 11:24:03 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id D120D60EDE
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 29 Mar 2024 11:24:08 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id JOso3oDy_1n3 for <intel-wired-lan@lists.osuosl.org>;
- Fri, 29 Mar 2024 11:24:03 +0000 (UTC)
+ id VclSavdRaTpO for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 29 Mar 2024 11:24:08 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.19;
  helo=mgamail.intel.com; envelope-from=karol.kolacinski@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 1037360EDE
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 1037360EDE
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 151FB6067C
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 151FB6067C
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.19])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 1037360EDE
- for <intel-wired-lan@lists.osuosl.org>; Fri, 29 Mar 2024 11:24:02 +0000 (UTC)
-X-CSE-ConnectionGUID: zQmKlw22SYCF/KiIQp8vSA==
-X-CSE-MsgGUID: HOZqYWSPQHe0wLEiXoqL6g==
-X-IronPort-AV: E=McAfee;i="6600,9927,11027"; a="6755196"
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 151FB6067C
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 29 Mar 2024 11:24:08 +0000 (UTC)
+X-CSE-ConnectionGUID: gm/GUseRTL2r66dkilsf5w==
+X-CSE-MsgGUID: Vp6DbeBSSauFqlnC39No0Q==
+X-IronPort-AV: E=McAfee;i="6600,9927,11027"; a="6755210"
 X-IronPort-AV: E=Sophos;i="6.07,164,1708416000"; 
-   d="scan'208";a="6755196"
+   d="scan'208";a="6755210"
 Received: from fmviesa010.fm.intel.com ([10.60.135.150])
  by fmvoesa113.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 29 Mar 2024 04:24:03 -0700
+ 29 Mar 2024 04:24:08 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.07,164,1708416000"; d="scan'208";a="16836736"
+X-IronPort-AV: E=Sophos;i="6.07,164,1708416000"; d="scan'208";a="16836749"
 Received: from kkolacin-desk1.igk.intel.com ([10.102.102.152])
- by fmviesa010.fm.intel.com with ESMTP; 29 Mar 2024 04:24:01 -0700
+ by fmviesa010.fm.intel.com with ESMTP; 29 Mar 2024 04:24:05 -0700
 From: Karol Kolacinski <karol.kolacinski@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Fri, 29 Mar 2024 12:21:52 +0100
-Message-ID: <20240329112339.29642-22-karol.kolacinski@intel.com>
+Date: Fri, 29 Mar 2024 12:21:54 +0100
+Message-ID: <20240329112339.29642-24-karol.kolacinski@intel.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20240329112339.29642-14-karol.kolacinski@intel.com>
 References: <20240329112339.29642-14-karol.kolacinski@intel.com>
@@ -72,25 +72,25 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1711711443; x=1743247443;
+ t=1711711448; x=1743247448;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=aAaqn5K+enAAyzTXqsmMCBU3zBHfQpMn8j8z1f28cHM=;
- b=LSUobW7e4Mcr5gM55J8FVaypavliyQumOZcJ2ReKtipXpWdhYRAiiwc0
- bOvsHQXND6byUAdPflw+CU+yeZQ2i0OQDfKUbgN3dxHBkAqnrGiLOQwSI
- xpeqkB2/2UzI+lW5X7FjHO+c18pwbEvDZlWlYQ018XlBdCGBxK+cDXlhV
- cp5HKAo1CGeCnDJfhpF9ZvsRYxI7P6957cxo8G1rB5toJ2FasNUO+KZ42
- IrSrAn/vwahXYmHf+if7P+zDiuYGAr8OOgc+8IspTDc2q9X/K8UpXq70x
- FTrcpBlfzDPBPJuPT9rQ4Z5wBqnXUjMoEHm3Deg8yXz9TVgDo6i+yCIP5
- w==;
+ bh=JrUkXcNdjOZJ1Wu3RmqyCqV6Vxal8/gbGe1iJVlE/Uo=;
+ b=O0jjEesGhc3sD8QW6YC9ehQ2/ot5zqb+4yAn+6hM5zLs4lYS36VfQ1D6
+ vFkLjotgZTjTPIFYMFduwijG+/nQTZJFulB5+eqAmZJPrV2wzfgRnlpca
+ z82yh4gs7XpYzkSesL9039AlhGk3G3dzCCHwlltk0bjzifjSlbwPrMXB9
+ iCzB7v6ZNWrFLR/pixgb8yv8LvyL1RMRiZa0KuRB4JQpfhq2uTBiV0WES
+ d1y0nYsFhWbfr1dg5aW1ziJ3xDgvNeCyJD4yGAFD7l1xUg7mS1cN5/qq8
+ 4w2LYPT1NkMHU5EZxubfmypMUUfaJ6WdmkcutCuGHqx6+Jz4fdWL18EKr
+ g==;
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=LSUobW7e
-Subject: [Intel-wired-lan] [PATCH v3 iwl-next 08/12] ice: Change CGU regs
- struct to anonymous
+ header.a=rsa-sha256 header.s=Intel header.b=O0jjEesG
+Subject: [Intel-wired-lan] [PATCH v3 iwl-next 10/12] ice: Add NAC Topology
+ device capability parser
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,192 +105,124 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Cc: netdev@vger.kernel.org,
  Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
  Karol Kolacinski <karol.kolacinski@intel.com>, anthony.l.nguyen@intel.com,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>
+ Pawel Kaminski <pawel.kaminski@intel.com>,
+ Mateusz Polchlopek <mateusz.polchlopek@intel.com>,
+ Prathisna Padmasanan <prathisna.padmasanan@intel.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Simplify the code by using anonymous struct in CGU registers instead of
-naming each structure 'field'.
+From: Grzegorz Nitka <grzegorz.nitka@intel.com>
 
-Suggested-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Add new device capability ICE_AQC_CAPS_NAC_TOPOLOGY which allows to
+determine the mode of operation (1 or 2 NAC).
+Define a new structure to store data from new capability and
+corresponding parser code.
+
+Co-developed-by: Prathisna Padmasanan <prathisna.padmasanan@intel.com>
+Signed-off-by: Prathisna Padmasanan <prathisna.padmasanan@intel.com>
+Signed-off-by: Grzegorz Nitka <grzegorz.nitka@intel.com>
+Reviewed-by: Pawel Kaminski <pawel.kaminski@intel.com>
+Reviewed-by: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
 Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Reviewed-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
 Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_cgu_regs.h | 12 ++---
- drivers/net/ethernet/intel/ice/ice_ptp_hw.c   | 44 +++++++++----------
- 2 files changed, 28 insertions(+), 28 deletions(-)
+ .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  1 +
+ drivers/net/ethernet/intel/ice/ice_common.c   | 31 +++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_type.h     | 10 ++++++
+ 3 files changed, 42 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_cgu_regs.h b/drivers/net/ethernet/intel/ice/ice_cgu_regs.h
-index 57abd52386d0..36aeb10eefb7 100644
---- a/drivers/net/ethernet/intel/ice/ice_cgu_regs.h
-+++ b/drivers/net/ethernet/intel/ice/ice_cgu_regs.h
-@@ -23,7 +23,7 @@ union nac_cgu_dword9 {
- 		u32 clk_synce0_amp : 2;
- 		u32 one_pps_out_amp : 2;
- 		u32 misc24 : 12;
--	} field;
-+	};
- 	u32 val;
- };
- 
-@@ -39,7 +39,7 @@ union nac_cgu_dword19 {
- 		u32 japll_ndivratio : 4;
- 		u32 japll_iref_ndivratio : 3;
- 		u32 misc27 : 1;
--	} field;
-+	};
- 	u32 val;
- };
- 
-@@ -63,7 +63,7 @@ union nac_cgu_dword22 {
- 		u32 fdpllclk_sel_div2 : 1;
- 		u32 time1588clk_sel_div2 : 1;
- 		u32 misc3 : 1;
--	} field;
-+	};
- 	u32 val;
- };
- 
-@@ -77,7 +77,7 @@ union nac_cgu_dword24 {
- 		u32 ext_synce_sel : 1;
- 		u32 ref1588_ck_div : 4;
- 		u32 time_ref_sel : 1;
--	} field;
-+	};
- 	u32 val;
- };
- 
-@@ -92,7 +92,7 @@ union tspll_cntr_bist_settings {
- 		u32 i_plllock_cnt_6_0 : 7;
- 		u32 i_plllock_cnt_10_7 : 4;
- 		u32 reserved200 : 4;
--	} field;
-+	};
- 	u32 val;
- };
- 
-@@ -109,7 +109,7 @@ union tspll_ro_bwm_lf {
- 		u32 afcdone_cri : 1;
- 		u32 feedfwrdgain_cal_cri_7_0 : 8;
- 		u32 m2fbdivmod_cri_7_0 : 8;
--	} field;
-+	};
- 	u32 val;
- };
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-index 2450f5dbaf08..9f39bf6c2c80 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-@@ -385,14 +385,14 @@ static int ice_cfg_cgu_pll_e82x(struct ice_hw *hw,
- 
- 	/* Log the current clock configuration */
- 	ice_debug(hw, ICE_DBG_PTP, "Current CGU configuration -- %s, clk_src %s, clk_freq %s, PLL %s\n",
--		  dw24.field.ts_pll_enable ? "enabled" : "disabled",
--		  ice_clk_src_str(dw24.field.time_ref_sel),
--		  ice_clk_freq_str(dw9.field.time_ref_freq_sel),
--		  bwm_lf.field.plllock_true_lock_cri ? "locked" : "unlocked");
-+		  dw24.ts_pll_enable ? "enabled" : "disabled",
-+		  ice_clk_src_str(dw24.time_ref_sel),
-+		  ice_clk_freq_str(dw9.time_ref_freq_sel),
-+		  bwm_lf.plllock_true_lock_cri ? "locked" : "unlocked");
- 
- 	/* Disable the PLL before changing the clock source or frequency */
--	if (dw24.field.ts_pll_enable) {
--		dw24.field.ts_pll_enable = 0;
-+	if (dw24.ts_pll_enable) {
-+		dw24.ts_pll_enable = 0;
- 
- 		err = ice_write_cgu_reg_e82x(hw, NAC_CGU_DWORD24, dw24.val);
- 		if (err)
-@@ -400,7 +400,7 @@ static int ice_cfg_cgu_pll_e82x(struct ice_hw *hw,
- 	}
- 
- 	/* Set the frequency */
--	dw9.field.time_ref_freq_sel = clk_freq;
-+	dw9.time_ref_freq_sel = clk_freq;
- 	err = ice_write_cgu_reg_e82x(hw, NAC_CGU_DWORD9, dw9.val);
- 	if (err)
- 		return err;
-@@ -410,8 +410,8 @@ static int ice_cfg_cgu_pll_e82x(struct ice_hw *hw,
- 	if (err)
- 		return err;
- 
--	dw19.field.tspll_fbdiv_intgr = e822_cgu_params[clk_freq].feedback_div;
--	dw19.field.tspll_ndivratio = 1;
-+	dw19.tspll_fbdiv_intgr = e822_cgu_params[clk_freq].feedback_div;
-+	dw19.tspll_ndivratio = 1;
- 
- 	err = ice_write_cgu_reg_e82x(hw, NAC_CGU_DWORD19, dw19.val);
- 	if (err)
-@@ -422,8 +422,8 @@ static int ice_cfg_cgu_pll_e82x(struct ice_hw *hw,
- 	if (err)
- 		return err;
- 
--	dw22.field.time1588clk_div = e822_cgu_params[clk_freq].post_pll_div;
--	dw22.field.time1588clk_sel_div2 = 0;
-+	dw22.time1588clk_div = e822_cgu_params[clk_freq].post_pll_div;
-+	dw22.time1588clk_sel_div2 = 0;
- 
- 	err = ice_write_cgu_reg_e82x(hw, NAC_CGU_DWORD22, dw22.val);
- 	if (err)
-@@ -434,16 +434,16 @@ static int ice_cfg_cgu_pll_e82x(struct ice_hw *hw,
- 	if (err)
- 		return err;
- 
--	dw24.field.ref1588_ck_div = e822_cgu_params[clk_freq].refclk_pre_div;
--	dw24.field.tspll_fbdiv_frac = e822_cgu_params[clk_freq].frac_n_div;
--	dw24.field.time_ref_sel = clk_src;
-+	dw24.ref1588_ck_div = e822_cgu_params[clk_freq].refclk_pre_div;
-+	dw24.tspll_fbdiv_frac = e822_cgu_params[clk_freq].frac_n_div;
-+	dw24.time_ref_sel = clk_src;
- 
- 	err = ice_write_cgu_reg_e82x(hw, NAC_CGU_DWORD24, dw24.val);
- 	if (err)
- 		return err;
- 
- 	/* Finally, enable the PLL */
--	dw24.field.ts_pll_enable = 1;
-+	dw24.ts_pll_enable = 1;
- 
- 	err = ice_write_cgu_reg_e82x(hw, NAC_CGU_DWORD24, dw24.val);
- 	if (err)
-@@ -456,17 +456,17 @@ static int ice_cfg_cgu_pll_e82x(struct ice_hw *hw,
- 	if (err)
- 		return err;
- 
--	if (!bwm_lf.field.plllock_true_lock_cri) {
-+	if (!bwm_lf.plllock_true_lock_cri) {
- 		dev_warn(ice_hw_to_dev(hw), "CGU PLL failed to lock\n");
- 		return -EBUSY;
- 	}
- 
- 	/* Log the current clock configuration */
- 	ice_debug(hw, ICE_DBG_PTP, "New CGU configuration -- %s, clk_src %s, clk_freq %s, PLL %s\n",
--		  dw24.field.ts_pll_enable ? "enabled" : "disabled",
--		  ice_clk_src_str(dw24.field.time_ref_sel),
--		  ice_clk_freq_str(dw9.field.time_ref_freq_sel),
--		  bwm_lf.field.plllock_true_lock_cri ? "locked" : "unlocked");
-+		  dw24.ts_pll_enable ? "enabled" : "disabled",
-+		  ice_clk_src_str(dw24.time_ref_sel),
-+		  ice_clk_freq_str(dw9.time_ref_freq_sel),
-+		  bwm_lf.plllock_true_lock_cri ? "locked" : "unlocked");
- 
- 	return 0;
+diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+index 540c0bdca936..8eaf030a29c9 100644
+--- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+@@ -121,6 +121,7 @@ struct ice_aqc_list_caps_elem {
+ #define ICE_AQC_CAPS_PCIE_RESET_AVOIDANCE		0x0076
+ #define ICE_AQC_CAPS_POST_UPDATE_RESET_RESTRICT		0x0077
+ #define ICE_AQC_CAPS_NVM_MGMT				0x0080
++#define ICE_AQC_CAPS_NAC_TOPOLOGY			0x0087
+ #define ICE_AQC_CAPS_FW_LAG_SUPPORT			0x0092
+ #define ICE_AQC_BIT_ROCEV2_LAG				0x01
+ #define ICE_AQC_BIT_SRIOV_LAG				0x02
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index 7d3098e19bc0..3b20a9a2935c 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -2577,6 +2577,34 @@ ice_parse_sensor_reading_cap(struct ice_hw *hw, struct ice_hw_dev_caps *dev_p,
+ 		  dev_p->supported_sensors);
  }
-@@ -489,8 +489,8 @@ static int ice_init_cgu_e82x(struct ice_hw *hw)
- 		return err;
  
- 	/* Disable sticky lock detection so lock err reported is accurate */
--	cntr_bist.field.i_plllock_sel_0 = 0;
--	cntr_bist.field.i_plllock_sel_1 = 0;
-+	cntr_bist.i_plllock_sel_0 = 0;
-+	cntr_bist.i_plllock_sel_1 = 0;
++/**
++ * ice_parse_nac_topo_dev_caps - Parse ICE_AQC_CAPS_NAC_TOPOLOGY cap
++ * @hw: pointer to the HW struct
++ * @dev_p: pointer to device capabilities structure
++ * @cap: capability element to parse
++ *
++ * Parse ICE_AQC_CAPS_NAC_TOPOLOGY for device capabilities.
++ */
++static void ice_parse_nac_topo_dev_caps(struct ice_hw *hw,
++					struct ice_hw_dev_caps *dev_p,
++					struct ice_aqc_list_caps_elem *cap)
++{
++	dev_p->nac_topo.mode = le32_to_cpu(cap->number);
++	dev_p->nac_topo.id = le32_to_cpu(cap->phys_id) & ICE_NAC_TOPO_ID_M;
++
++	dev_info(ice_hw_to_dev(hw),
++		 "PF is configured in %s mode with IP instance ID %d\n",
++		 (dev_p->nac_topo.mode & ICE_NAC_TOPO_PRIMARY_M) ?
++		 "primary" : "secondary", dev_p->nac_topo.id);
++
++	ice_debug(hw, ICE_DBG_INIT, "dev caps: nac topology is_primary = %d\n",
++		  !!(dev_p->nac_topo.mode & ICE_NAC_TOPO_PRIMARY_M));
++	ice_debug(hw, ICE_DBG_INIT, "dev caps: nac topology is_dual = %d\n",
++		  !!(dev_p->nac_topo.mode & ICE_NAC_TOPO_DUAL_M));
++	ice_debug(hw, ICE_DBG_INIT, "dev caps: nac topology id = %d\n",
++		  dev_p->nac_topo.id);
++}
++
+ /**
+  * ice_parse_dev_caps - Parse device capabilities
+  * @hw: pointer to the HW struct
+@@ -2628,6 +2656,9 @@ ice_parse_dev_caps(struct ice_hw *hw, struct ice_hw_dev_caps *dev_p,
+ 		case ICE_AQC_CAPS_SENSOR_READING:
+ 			ice_parse_sensor_reading_cap(hw, dev_p, &cap_resp[i]);
+ 			break;
++		case ICE_AQC_CAPS_NAC_TOPOLOGY:
++			ice_parse_nac_topo_dev_caps(hw, dev_p, &cap_resp[i]);
++			break;
+ 		default:
+ 			/* Don't list common capabilities as unknown */
+ 			if (!found)
+diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
+index 2baf305a0c95..948c4bdbb206 100644
+--- a/drivers/net/ethernet/intel/ice/ice_type.h
++++ b/drivers/net/ethernet/intel/ice/ice_type.h
+@@ -372,6 +372,15 @@ struct ice_ts_dev_info {
+ 	u8 ts_ll_int_read;
+ };
  
- 	err = ice_write_cgu_reg_e82x(hw, TSPLL_CNTR_BIST_SETTINGS,
- 				     cntr_bist.val);
++#define ICE_NAC_TOPO_PRIMARY_M	BIT(0)
++#define ICE_NAC_TOPO_DUAL_M	BIT(1)
++#define ICE_NAC_TOPO_ID_M	GENMASK(0xF, 0)
++
++struct ice_nac_topology {
++	u32 mode;
++	u8 id;
++};
++
+ /* Function specific capabilities */
+ struct ice_hw_func_caps {
+ 	struct ice_hw_common_caps common_cap;
+@@ -393,6 +402,7 @@ struct ice_hw_dev_caps {
+ 	u32 num_flow_director_fltr;	/* Number of FD filters available */
+ 	struct ice_ts_dev_info ts_dev_info;
+ 	u32 num_funcs;
++	struct ice_nac_topology nac_topo;
+ 	/* bitmap of supported sensors
+ 	 * bit 0 - internal temperature sensor
+ 	 * bit 31:1 - Reserved
 -- 
 2.43.0
 
