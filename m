@@ -4,99 +4,200 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 209A0CD1288
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  3 Apr 2024 10:24:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 25EF3CD129A
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  3 Apr 2024 10:27:27 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id ADC63416F2;
-	Wed,  3 Apr 2024 10:24:30 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id DF31340127;
+	Wed,  3 Apr 2024 10:27:26 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id J0zXBvtrEl91; Wed,  3 Apr 2024 10:24:29 +0000 (UTC)
+ id urSuTzbMLBqH; Wed,  3 Apr 2024 10:27:26 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 7D8CB416D2
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 10F6A416C3
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1712139869;
-	bh=bFCusQXTEJPSqlCiKaM1AsrTUPFslAoksS0S8KEmahM=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1712140046;
+	bh=KY3RiYgYAZkV7OKIygBdtVsQQjYhzwbw/Yc9vbgXtpg=;
+	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=Y4RlQ+UXwey7Nx5rVlmVsSlYu+Jsn3K0rDk81RCJrAlq+oAHyLo7DAbrC+AZ+OBMu
-	 G1MsrZ5wxPL36ht0V3Gz3E2083fZhzBVP/u5zxojt9gT2MDCDGXRNmNTGWJ2kUPiKG
-	 9lpCNp7p5x0V0lbnVeqwnzaaCzpsnQwQlFRw9AwS4XFiwnNAiqRv+rRuvh8Hsh3uSL
-	 T/+v3rAUoEZiGpYQbZAUvuSx7XR04Fdtzz+PHF0Hc03ydMN8KQMRbRJHwH8kYRm2oQ
-	 RWq+dr7kaXuyL79k8qgSV7/V5fTZYej9m/gGAf8RtjkKXTcfVmwgFpKS+jdf/JBV0A
-	 AtNZCeX28cMwg==
+	b=uGUSSDY2fNS5iDHYc+46O7zdSDHRVXVrvWSF07kBmfQRYt9T2xXFZJsYiacfJBNuy
+	 Qw3OUvOUbeNP2mnD+CZ7kHxqKM48/8nGVO9GGsaOJlH3AHfvt1owAkuRV5mUYyJ5+i
+	 ePDrBMPs7CoHv2aX+uB4z1GtCytf/u+LPlxHJg24zkUgRepe8SkGz9J/eERTz62jIq
+	 ht9gbxjnr72pKkAx1nKpsqmr9vyN2AinhEUaYSS9PhEIDufAhuig8hb9vaHzBIq1Wi
+	 5W/CvkvdOulbBeKHzRWX9xOdA5r5Epk1ddxazAEikdJh+0HEb02dqTT9O2jXN9QvuC
+	 3Td4V+8IaogUw==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 7D8CB416D2;
-	Wed,  3 Apr 2024 10:24:29 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id EB4FE1BF349
- for <intel-wired-lan@lists.osuosl.org>; Wed,  3 Apr 2024 10:24:26 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 10F6A416C3;
+	Wed,  3 Apr 2024 10:27:26 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 6C5751BF349
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  3 Apr 2024 10:27:24 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id CFADC40127
- for <intel-wired-lan@lists.osuosl.org>; Wed,  3 Apr 2024 10:24:26 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 6502B60E18
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  3 Apr 2024 10:27:24 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Ie4zkFiDMpEO for <intel-wired-lan@lists.osuosl.org>;
- Wed,  3 Apr 2024 10:24:25 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.21;
- helo=mgamail.intel.com; envelope-from=lukasz.plachno@intel.com;
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 2YufSIyqrfM2 for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  3 Apr 2024 10:27:23 +0000 (UTC)
+X-Greylist: delayed 428 seconds by postgrey-1.37 at util1.osuosl.org;
+ Wed, 03 Apr 2024 10:27:23 UTC
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 7E4E460D77
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7E4E460D77
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.18;
+ helo=mgamail.intel.com; envelope-from=wojciech.drewek@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org BC315416D6
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org BC315416D6
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.21])
- by smtp2.osuosl.org (Postfix) with ESMTPS id BC315416D6
- for <intel-wired-lan@lists.osuosl.org>; Wed,  3 Apr 2024 10:24:24 +0000 (UTC)
-X-CSE-ConnectionGUID: ou8eqZecTEq/ieSGY0bXDQ==
-X-CSE-MsgGUID: JjAZT8S9QnCy9R5C6qrtYg==
-X-IronPort-AV: E=McAfee;i="6600,9927,11032"; a="7282839"
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.18])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 7E4E460D77
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  3 Apr 2024 10:27:23 +0000 (UTC)
+X-CSE-ConnectionGUID: bu/ZSjWPRBS3zW4+W/ZjXQ==
+X-CSE-MsgGUID: sT8AX24STzW6K4L6WegbUg==
+X-IronPort-AV: E=McAfee;i="6600,9927,11032"; a="7520682"
 X-IronPort-AV: E=Sophos;i="6.07,177,1708416000"; 
-   d="scan'208";a="7282839"
-Received: from fmviesa010.fm.intel.com ([10.60.135.150])
- by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 03 Apr 2024 03:24:24 -0700
-X-CSE-ConnectionGUID: vCvN94t3Q7aSnlFZCOY0bg==
-X-CSE-MsgGUID: CWL/sfVrT7GLBtM6/t1Twg==
+   d="scan'208";a="7520682"
+Received: from fmviesa003.fm.intel.com ([10.60.135.143])
+ by orvoesa110.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 03 Apr 2024 03:20:14 -0700
+X-CSE-ConnectionGUID: InwUHsXdTTCYU8yFozzRdQ==
+X-CSE-MsgGUID: 8B48xVU5Q5GZpLQm+zv8zw==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.07,177,1708416000"; d="scan'208";a="18292420"
-Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by fmviesa010.fm.intel.com with ESMTP; 03 Apr 2024 03:24:20 -0700
-Received: from lplachno-mobl.ger.corp.intel.com
- (lplachno-mobl.ger.corp.intel.com [10.245.83.30])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id 87515369EC;
- Wed,  3 Apr 2024 11:24:17 +0100 (IST)
-From: Lukasz Plachno <lukasz.plachno@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Date: Wed,  3 Apr 2024 12:24:02 +0200
-Message-Id: <20240403102402.20144-3-lukasz.plachno@intel.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20240403102402.20144-1-lukasz.plachno@intel.com>
-References: <20240403102402.20144-1-lukasz.plachno@intel.com>
-MIME-Version: 1.0
+X-IronPort-AV: E=Sophos;i="6.07,177,1708416000"; d="scan'208";a="22865885"
+Received: from fmsmsx601.amr.corp.intel.com ([10.18.126.81])
+ by fmviesa003.fm.intel.com with ESMTP/TLS/AES256-GCM-SHA384;
+ 03 Apr 2024 03:20:06 -0700
+Received: from fmsmsx611.amr.corp.intel.com (10.18.126.91) by
+ fmsmsx601.amr.corp.intel.com (10.18.126.81) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.35; Wed, 3 Apr 2024 03:20:06 -0700
+Received: from fmsmsx611.amr.corp.intel.com (10.18.126.91) by
+ fmsmsx611.amr.corp.intel.com (10.18.126.91) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.35; Wed, 3 Apr 2024 03:20:05 -0700
+Received: from fmsedg602.ED.cps.intel.com (10.1.192.136) by
+ fmsmsx611.amr.corp.intel.com (10.18.126.91) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.35 via Frontend Transport; Wed, 3 Apr 2024 03:20:05 -0700
+Received: from NAM11-DM6-obe.outbound.protection.outlook.com (104.47.57.169)
+ by edgegateway.intel.com (192.55.55.71) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.1.2507.35; Wed, 3 Apr 2024 03:20:05 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=f0lL5rf7vDX/8qN+sroBeSRXP0xsuTligQ1ziQ/MK0Mxygx9cFgvDI248gKoMANCMNdPkVQIlJg2qevoJ9qvO2gXIOFdP1i/2B+AJidGP4oLkViclXRq5tNUmdRI/qIYgymlA/vzmv4q5yFdg0nB88pwCnr2CoUhx2NavqMw2HmnwTjfKOFCTj+78DjitNttbt200jdwf/4ED5kV5Zu6xw4+L8yChZsx0XTamcCmOarXjvYrnFV+0gm4QFzOhCqTCaSScRSwImf9VoVkW6gu3EXL1UhnvpV5DJwxg9DkfNdG57GUaNeho8cGPyXxwLynAbhtKmwKpcqJQxkgXR9YCw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=KY3RiYgYAZkV7OKIygBdtVsQQjYhzwbw/Yc9vbgXtpg=;
+ b=lWiaqGFCKCqgfpxwiktGgT4Lte1F2qGJFKayWDg75KorhDlR3pPR5+zC+wagS/YHLizKpMTDdyVmKerDWHdrqoeKo75GdXFrksSBZLciY6Zm0WgSCy6Wmf2k+H3R1hCdwPeCfeLJXM5r4+u7ja8vuxo/R32KRuewhRNED7lhu6OX05SO0If9btibj2Sj1fqErXIGIGa7bvlPwcfTVNSUkVMXeqmX2zl9jgZCGiOkCeO5kqZCWmbFRhO4plpAmMetjYeRgDxvO9kr9VULROanH2Z+QZyGzLYt3Kspe5Y5fr1WYfaHGW86KZkpbB0itQ4Uf4r39VgY3HeKC/I9p2vGyg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Received: from MW4PR11MB5776.namprd11.prod.outlook.com (2603:10b6:303:183::9)
+ by SJ0PR11MB6768.namprd11.prod.outlook.com (2603:10b6:a03:47f::8)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7409.31; Wed, 3 Apr
+ 2024 10:20:04 +0000
+Received: from MW4PR11MB5776.namprd11.prod.outlook.com
+ ([fe80::2ac3:a242:4abe:a665]) by MW4PR11MB5776.namprd11.prod.outlook.com
+ ([fe80::2ac3:a242:4abe:a665%4]) with mapi id 15.20.7452.019; Wed, 3 Apr 2024
+ 10:20:03 +0000
+Message-ID: <348ead57-cdb8-4db7-a3d7-e8053a5f00c1@intel.com>
+Date: Wed, 3 Apr 2024 12:19:57 +0200
+User-Agent: Mozilla Thunderbird
+To: Jakub Kicinski <kuba@kernel.org>
+References: <20240329092321.16843-1-wojciech.drewek@intel.com>
+ <20240329092321.16843-3-wojciech.drewek@intel.com>
+ <20240329152954.26a7ce75@kernel.org>
+ <f7c6264e-9a16-4232-aba2-fde91eb51fb7@intel.com>
+ <20240402073421.2528ce4f@kernel.org>
+Content-Language: en-US
+From: Wojciech Drewek <wojciech.drewek@intel.com>
+In-Reply-To: <20240402073421.2528ce4f@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
+X-ClientProxiedBy: MI0P293CA0009.ITAP293.PROD.OUTLOOK.COM
+ (2603:10a6:290:44::6) To MW4PR11MB5776.namprd11.prod.outlook.com
+ (2603:10b6:303:183::9)
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: MW4PR11MB5776:EE_|SJ0PR11MB6768:EE_
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: /yPBBl65dASjdLfLB4WUzPlGPHVy/4zrHjS5gMe2dglP+vhq1jIfSaGp7oBYxNa5OaYIb2W3dhHiVYLDh2RLpGS7cqkQ4jUKjoaKbZGXHg9mQfMkK/cTgfdhm4d6t60aw1WBrbtg7VPI9d0w+jGQBqO5zOe2eEUUj4Mv0dTpos+ZCddAL9RJad22lDt13yoYT1Y8Uz1drpM0p5lnIABTKF8W4Ehc837SnEV8STbwISmH2PPK39qD/Tg0WL5KK41Vcbl0zgGej7kR+GxlpD80btGbxpD23w+fC6vuyF9U82AgiqCb7bVrN2L0isOWgidkLEycJv3/CKHfOVMjg7JXHqvYaL1J9cFyfMc8uNvopgMwGKPOslnwwWxLi/9gSicandHVkY6Z0mUVVPdZufnclYwV/wJvZnLBof3juue+a1/JSkzcCKATonZ0t2qybe4hy3dH3mUuQDOVoAnfJy2jjaDIAjCJ2j9sfGIlfKhv/leEa9vnWV7v7qYMTb49YEsvvI/gvv69N+zV+cO7zOPnL/JteE0IsFlHp8BM8Fk3fO+Bt5IHvMKjbisOgESKgQnnfz90l4r6dpvqmby9UffsFdcAsvFFER40k3K0EaAkGCluz3gRfzNS5EiiSOSrqZJ0p7Qm84l4WZt2Q2PWR7Y75MDXIpl3LhF6pUsG96hUXRo=
+X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:MW4PR11MB5776.namprd11.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(13230031)(376005)(1800799015)(366007); DIR:OUT; SFP:1102; 
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?dWFGdkdUZHp4S0wwdFkzT2IralVyK1B4NGV1L1hVQTNwUG5xb1hFSmRRbW9x?=
+ =?utf-8?B?RE41d2tIUmVGbWdxVWFaUUVpRzJ6M2IrRFM0TGY1a0NjWnJyWnNqT1FhL2Rj?=
+ =?utf-8?B?TjFmUmJxQ0I5TUhpOHRxZDFZQ1FZRGVoL3RJQmVaTTR6cXFGbTlzVFFhNmEw?=
+ =?utf-8?B?QUhHRjE2b1V3NnAweTVLaFp6WTBDMFMrSnJIWUtiUGZRVit3RHdYMDQ4bStF?=
+ =?utf-8?B?NWQ2Nm5VN0lRMEE2RUlpV1Q3R1E3L3djdHVOS3pIeklzZ0lVZXphakpZUnVz?=
+ =?utf-8?B?MTZndGdiWS8xbnZ3aldLT3BubTlqZEpMVkFrZlhqTlZQNWh3R0hjWitTWWNq?=
+ =?utf-8?B?RVA1ZUhrWWlHQ1Yvd1l2MThrb0lpT3NQMFJWM2x4OEtvblpxZXdKaW5qMVBM?=
+ =?utf-8?B?eU1USzZNR1BzSjgzUFg1MWVnZE9CVmZLdlNJLzl3UENlNTV0ZmNLaUVyTFZx?=
+ =?utf-8?B?ZzVydW5NbXkyVUZkampUTERhVVBJZExDbC9nM3N5eTVEVXA0Wm9BV0I0SjVr?=
+ =?utf-8?B?VGVETnptOWljaGEwekUrZ1lRK2EyNlRrS3ZXbEExaEMya0xaUnJmQ0k3Y3Zs?=
+ =?utf-8?B?NTRHdDJiTUN1T1l5MEVqb283S2xLOStMYlRrOVJJSzdHNmFUWjhlemViM3Rr?=
+ =?utf-8?B?NmV5YndVejVZUldBNHRpaVJ3V080TUkwUjlUbktTNW5QazlCLzdGRlF4dDk2?=
+ =?utf-8?B?bHFSZ1dTTEx0bEUxQWZ6YUhIUnVDY0RLZFZJbklyVGY1ZkMwMzhWNzdGVkRN?=
+ =?utf-8?B?QS81ay9nUWpQekRsT3pSUld2c0N1VG9sZnJlNXlnREl4a09ncmZKZEJERXhq?=
+ =?utf-8?B?OUhZdHp3bFdRS0RDRld4MnZTditYUDd0d0dTZ1didmVDZjN4bmhxNUs3aEpl?=
+ =?utf-8?B?NzQ2SzM4dTZ1WEtvdHNrTC80TitRanoza1RiVWo1dlNnNytaMXNjWVlITGZ3?=
+ =?utf-8?B?Qjcra1VkbkpxaXVrOUVlL2xaZWk2N2ZHZjF0WUJzbXlDQjBObndWQXIzUEl6?=
+ =?utf-8?B?SWs1ZGhZRWYzOUpNYmFQZ0xiTTZDbzVZVHNVVVVFbGh6OXJaQzB0blp0VmVp?=
+ =?utf-8?B?Z0NyU2NXYWJnMDRrUjBVc0NMTnY4Nm4vajgyWUNDL3NhVC9lV3ByOHR1ZDI1?=
+ =?utf-8?B?MXpaTTBSTURBeXVHMG9YWFhXa1E1bVFHcjhRZW5UNllzNHhDNS9LZncrMFRh?=
+ =?utf-8?B?cVBpaVd4aTdReEE3bjVidjJqT0VFOEJZQUdXZ1ppTGhCSDZWYXNWSGREdnEv?=
+ =?utf-8?B?dWtzVU5GZzdDTDhQZVpOT002QzN0Z2NQN2xpMXErUWw0R0RCKzRoSGtKSkFr?=
+ =?utf-8?B?ZHFkWmhrNlFhUUV1ZGF1a3dXTWZUT2hmTUIrSjloMEN3ZG90SndHaVBGUzQ5?=
+ =?utf-8?B?ZkRyQkVJdS9WeW1iQnRqZjYvWkY5b1pYZW1rc214MXZaeVByY3BQN213Q3Rx?=
+ =?utf-8?B?bUN3WDZsSHJSYkoxb1dnT1FEKzE1VEoxWmZ4ZlZlR1pWamF4M0JMLzNQNjA5?=
+ =?utf-8?B?M1ZpeHZUL1RpNUx5TURYRHdqQnY0MlNpM3RISG9lZmloY0RmRVJVWFFMV1hQ?=
+ =?utf-8?B?UjdqOXVOQmRjVlVpZ2svaUlIajZnemg0OGpPRXJIMzZsNGhNT0NEeGxaVGJk?=
+ =?utf-8?B?anRpbDNBNHpVb1VRRTkweDdHMFoyR2d4NVJMd3hwdXowNkkrZmtUaDJoOW9X?=
+ =?utf-8?B?dzF3ZmV6T0dsaGloNmZrQUlaU0FURjNYSTIvOWtMNWtqZ0V4SzhHQUZiZnd1?=
+ =?utf-8?B?WHVMSXROR3Jrc3UrcWVtTlp4ekw3M3lUQjdjL0c3SzZvMHAxb2orVFZvS1BC?=
+ =?utf-8?B?T1lvR0VlZzB5M3VGMm5hbDdHR2dkRHpsdUJpVFhWZEVOQjVKcWZaQ0JaUmZP?=
+ =?utf-8?B?eXUrOFVsbTVIUEpRWFFxa05vNFJhT2k3WWhpbVVCSGxFNzA3MmhzbytDdmU1?=
+ =?utf-8?B?dUNXZVhwaUorV2NRUTlVM2hRMWlmQ1dXV2lESFRINXY3VlYwRHMvN1YzNlNT?=
+ =?utf-8?B?L0w5QVpwVzNxVmtJKzcyOE11a0E0N01Nd0dCbEU0QzF2bUNPWlYydmFpcW8z?=
+ =?utf-8?B?VHNxKy9idWZQc2Ivajl3eEhvRHpmcXhXV2JvaU12ZTdoU2NKa2xwR0tja29F?=
+ =?utf-8?B?Ti9YN0VFQ1N2NG0zSDlQVzRPVkVqaGNUd3BMT2lqYU1pdngyRDcyK2ZyUk1y?=
+ =?utf-8?B?WWc9PQ==?=
+X-MS-Exchange-CrossTenant-Network-Message-Id: fcad343a-22f8-4e17-c507-08dc53c7a08c
+X-MS-Exchange-CrossTenant-AuthSource: MW4PR11MB5776.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 03 Apr 2024 10:20:03.9439 (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 1SQO/ieApOKD9IVAyiBvXS4kMopH9DF80Whsl81BB+l+xKjCxNHhOaypvCajgiZ4JR9nkNrl5HlEsGQ/i8aLSqbuxkzEB2LB9sEYsOxylUM=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ0PR11MB6768
+X-OriginatorOrg: intel.com
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1712139864; x=1743675864;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=uNOLacg2qm0+fPm3ZyE0z6ok+kKEpqyRQXW12oUvqx0=;
- b=LJ65ADfFzxlNiA+PDPtXM2eKXWnv/QM1dMO+c+igzyPHqG5IJ7I8zd42
- N+4Rof/0+4sqB2PpNLCSm5YPPupCRAlfM2SX9rGD2/zxZZP7QPrDOH/Sn
- uv4TDHbr5yaNTmveZ+1LTKWOaVI9HEhdpz48J6mmftZZBhxcSnjbez8dQ
- mt9NoTBT6FW0nVfpyidpJyPVyjde5YTDLKRoNHXQ44Xk/8XqXPhdvagXJ
- /vSQryFFg1xD/ygItvEKJc2vaqgnK6iOcDOsTS/8bYxqAXAJpQ7LZdOUs
- Y80LfioSuOgXqYIz6vsRdSDI0K0feUzYkc1Bxz8leUU46P4EV8J4Zf7z4
+ t=1712140043; x=1743676043;
+ h=message-id:date:subject:to:cc:references:from:
+ in-reply-to:content-transfer-encoding:mime-version;
+ bh=bkBNn/nHsnJhCe012+WVHieWlwgEddlc76DN7URwC6Q=;
+ b=Eh0goiENGj9W7vJ0vnLwm4CvzorQ34NRQR0HWroL5f7jrnZb0eDNT3J+
+ ygwWimm189BeEkSVFvaFa6C8XxUYjNljDKkK7O90RycKQCzR8y0MH7C7+
+ DtrXds978ckPMEeQ4KZ7q2v+D1q9f2PKRiuzKQLg7bXczvQAkys+MqCJX
+ V9bWUPXtqOgQoFIgpnW+lDIG3HMmvu/+ZjuL4Wjw+dsWQmaYfWXtHOWxs
+ Y/ePOYr8hG/BC2be3uUZycunbhMGGr7Y75FvlFATqhf/iPlhmw/1/LfkW
+ 59+3aPNMpddpqLk1v1H+ssQymWmU1UieEn4/3gReyDOKvsxr3e/Z/aBez
  Q==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=LJ65ADfF
-Subject: [Intel-wired-lan] [PATCH iwl-next v8 2/2] ice: Implement 'flow-type
- ether' rules
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=Eh0goiEN
+Subject: Re: [Intel-wired-lan] [PATCH net-next 2/3] ethtool: Introduce max
+ power support
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -109,342 +210,117 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: pmenzel@molgen.mpg.de, brett.creeley@amd.com, netdev@vger.kernel.org,
- Jakub Buchocki <jakubx.buchocki@intel.com>, aleksander.lobakin@intel.com,
- Lukasz Plachno <lukasz.plachno@intel.com>, horms@kernel.org,
- Mateusz Pacuszka <mateuszx.pacuszka@intel.com>,
- Jacob Keller <jacob.e.keller@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Cc: netdev@vger.kernel.org, edumazet@google.com, marcin.szycik@linux.intel.com,
+ anthony.l.nguyen@intel.com, idosch@nvidia.com,
+ intel-wired-lan@lists.osuosl.org, pabeni@redhat.com,
+ przemyslaw.kitszel@intel.com
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Jakub Buchocki <jakubx.buchocki@intel.com>
 
-Add support for 'flow-type ether' Flow Director rules via ethtool.
 
-Create packet segment info for filter configuration based on ethtool
-command parameters. Reuse infrastructure already created for
-ipv4 and ipv6 flows to convert packet segment into
-extraction sequence, which is later used to program the filter
-inside Flow Director block of the Rx pipeline.
+On 02.04.2024 16:34, Jakub Kicinski wrote:
+> On Tue, 2 Apr 2024 13:25:07 +0200 Wojciech Drewek wrote:
+>> On 29.03.2024 23:29, Jakub Kicinski wrote:
+>>> On Fri, 29 Mar 2024 10:23:20 +0100 Wojciech Drewek wrote:  
+>>>> Some modules use nonstandard power levels. Adjust ethtool
+>>>> module implementation to support new attributes that will allow user
+>>>> to change maximum power.
+>>>>
+>>>> Add three new get attributes:
+>>>> ETHTOOL_A_MODULE_MAX_POWER_SET (used for set as well) - currently set
+>>>>   maximum power in the cage  
+>>>
+>>> 1) I'd keep the ETHTOOL_A_MODULE_POWER_ prefix, consistently.
+>>>
+>>> 2) The _SET makes it sound like an action. Can we go with
+>>>    ETHTOOL_A_MODULE_POWER_MAX ? Or ETHTOOL_A_MODULE_POWER_LIMIT?
+>>>    Yes, ETHTOOL_A_MODULE_POWER_LIMIT
+>>>         ETHTOOL_A_MODULE_POWER_MAX
+>>>         ETHTOOL_A_MODULE_POWER_MIN
+>>>    would sound pretty good to me.  
+>>
+>> Makes sense, although ETHTOOL_A_MODULE_POWER_LIMIT does not say if
+>> it's max or min limit. What about:
+>> ETHTOOL_A_MODULE_POWER_MAX_LIMIT
+>> ETHTOOL_A_MODULE_POWER_UPPER_LIMIT
+> 
+> Is it possible to "limit" min power? 🧐️
 
-Rules not containing masks are processed by the Flow Director,
-and support the following set of input parameters in all combinations:
-src, dst, proto, vlan-etype, vlan, action.
+Right, I'll stick with ETHTOOL_A_MODULE_POWER_LIMIT
 
-It is possible to specify address mask in ethtool parameters but only
-00:00:00:00:00 and FF:FF:FF:FF:FF are valid.
-The same applies to proto, vlan-etype and vlan masks:
-only 0x0000 and 0xffff masks are valid.
+> This is not HTB where "unused power" can go to the sibling cage...
+>>>> +		} else if (power_new.max_pwr_set < power.min_pwr_allowed) {
+>>>> +			NL_SET_ERR_MSG(info->extack, "Provided value is lower than minimum allowed");
+>>>> +			return -EINVAL;
+>>>> +		}
+>>>> +	}
+>>>> +
+>>>> +	ethnl_update_policy(&power_new.policy,
+>>>> +			    tb[ETHTOOL_A_MODULE_POWER_MODE_POLICY], &mod);
+>>>> +	ethnl_update_u8(&power_new.max_pwr_reset,
+>>>> +			tb[ETHTOOL_A_MODULE_MAX_POWER_RESET], &mod);  
+>>>
+>>> I reckon reset should not be allowed if none of the max_pwr values 
+>>> are set (i.e. most likely driver doesn't support the config)?  
+>>
+>> Hmmm, I think we can allow to reset if the currently set limit is the default one.
+>> Right now only the driver could catch such scenario because we don't have a parameter
+>> that driver could use to inform the ethtool about the default value.
+>> I hope that answers your question since I'm not 100% sure if that's what you asked about :)
+> 
+> Let me put it differently. How do we know that the driver doesn't
+> support setting the power policy? AFAIU we assume driver supports
+> it when it reports min_pwr_allowed || max_pwr_allowed from get.
+> If that's not the case we should add a cap bit like
+> cap_link_lanes_supported.
+> 
+> So what I'm saying is that if driver doesn't support the feature,
+> we should error out if user space gave us any 
+> tb[ETHTOOL_A_MODULE_MAX_POWER* attribute
 
-Testing:
-  (DUT) iperf3 -s
-  (DUT) ethtool -U ens785f0np0 flow-type ether dst <ens785f0np0 mac> \
-        action 10
-  (DUT) watch 'ethtool -S ens785f0np0 | grep rx_queue'
-  (LP)  iperf3 -c ${DUT_IP}
+Ok, I get now. Normally checking ops->set_module_power_cfg pointer would
+be enough but here we have two features in one callback. Right now I assumed
+that the driver will check which attributes were provided by the userspace
+and will print error (like I did in ice_set_module_power_cfg) if the driver
+does not support given attribute.
 
-  Counters increase only for:
-    'rx_queue_10_packets'
-    'rx_queue_10_bytes'
+You're saying that if min_pwr_allowed or max_pwr_allowed taken from get op
+are 0 than we should not allow to set max_pwr_reset and max_pwr_set?
+And similarly if policy was 0 than we should not allow to set it?
 
-Signed-off-by: Jakub Buchocki <jakubx.buchocki@intel.com>
-Co-developed-by: Mateusz Pacuszka <mateuszx.pacuszka@intel.com>
-Signed-off-by: Mateusz Pacuszka <mateuszx.pacuszka@intel.com>
-Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Signed-off-by: Lukasz Plachno <lukasz.plachno@intel.com>
-Reviewed-by: Jacob Keller <jacob.e.keller@intel.com>
----
- .../net/ethernet/intel/ice/ice_ethtool_fdir.c | 138 +++++++++++++++++-
- drivers/net/ethernet/intel/ice/ice_fdir.c     |  26 ++++
- drivers/net/ethernet/intel/ice/ice_fdir.h     |   5 +
- drivers/net/ethernet/intel/ice/ice_type.h     |   1 +
- 4 files changed, 169 insertions(+), 1 deletion(-)
+I can implement whichever option you prefer.
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool_fdir.c b/drivers/net/ethernet/intel/ice/ice_ethtool_fdir.c
-index 9a1a04f5f146..ab3121aee412 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool_fdir.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool_fdir.c
-@@ -41,6 +41,8 @@ static struct in6_addr zero_ipv6_addr_mask = {
- static int ice_fltr_to_ethtool_flow(enum ice_fltr_ptype flow)
- {
- 	switch (flow) {
-+	case ICE_FLTR_PTYPE_NONF_ETH:
-+		return ETHER_FLOW;
- 	case ICE_FLTR_PTYPE_NONF_IPV4_TCP:
- 		return TCP_V4_FLOW;
- 	case ICE_FLTR_PTYPE_NONF_IPV4_UDP:
-@@ -72,6 +74,8 @@ static int ice_fltr_to_ethtool_flow(enum ice_fltr_ptype flow)
- static enum ice_fltr_ptype ice_ethtool_flow_to_fltr(int eth)
- {
- 	switch (eth) {
-+	case ETHER_FLOW:
-+		return ICE_FLTR_PTYPE_NONF_ETH;
- 	case TCP_V4_FLOW:
- 		return ICE_FLTR_PTYPE_NONF_IPV4_TCP;
- 	case UDP_V4_FLOW:
-@@ -137,6 +141,10 @@ int ice_get_ethtool_fdir_entry(struct ice_hw *hw, struct ethtool_rxnfc *cmd)
- 	memset(&fsp->m_ext, 0, sizeof(fsp->m_ext));
- 
- 	switch (fsp->flow_type) {
-+	case ETHER_FLOW:
-+		fsp->h_u.ether_spec = rule->eth;
-+		fsp->m_u.ether_spec = rule->eth_mask;
-+		break;
- 	case IPV4_USER_FLOW:
- 		fsp->h_u.usr_ip4_spec.ip_ver = ETH_RX_NFC_IP4;
- 		fsp->h_u.usr_ip4_spec.proto = 0;
-@@ -1193,6 +1201,120 @@ ice_set_fdir_ip6_usr_seg(struct ice_flow_seg_info *seg,
- 	return 0;
- }
- 
-+/**
-+ * ice_fdir_vlan_valid - validate VLAN data for Flow Director rule
-+ * @dev: network interface device structure
-+ * @fsp: pointer to ethtool Rx flow specification
-+ *
-+ * Return: true if vlan data is valid, false otherwise
-+ */
-+static bool ice_fdir_vlan_valid(struct device *dev,
-+				struct ethtool_rx_flow_spec *fsp)
-+{
-+	if (fsp->m_ext.vlan_etype && !eth_type_vlan(fsp->h_ext.vlan_etype))
-+		return false;
-+
-+	if (fsp->m_ext.vlan_tci && ntohs(fsp->h_ext.vlan_tci) >= VLAN_N_VID)
-+		return false;
-+
-+	/* proto and vlan must have vlan-etype defined */
-+	if (fsp->m_u.ether_spec.h_proto && fsp->m_ext.vlan_tci &&
-+	    !fsp->m_ext.vlan_etype) {
-+		dev_warn(dev, "Filter with proto and vlan require also vlan-etype");
-+		return false;
-+	}
-+
-+	return true;
-+}
-+
-+/**
-+ * ice_set_ether_flow_seg
-+ * @dev: network interface device structure
-+ * @seg: flow segment for programming
-+ * @eth_spec: mask data from ethtool
-+ *
-+ * Return: 0 on success and errno in case of error.
-+ */
-+static int ice_set_ether_flow_seg(struct device *dev,
-+				  struct ice_flow_seg_info *seg,
-+				  struct ethhdr *eth_spec)
-+{
-+	ICE_FLOW_SET_HDRS(seg, ICE_FLOW_SEG_HDR_ETH);
-+
-+	/* empty rules are not valid */
-+	if (is_zero_ether_addr(eth_spec->h_source) &&
-+	    is_zero_ether_addr(eth_spec->h_dest) &&
-+	    !eth_spec->h_proto)
-+		return -EINVAL;
-+
-+	/* Ethertype */
-+	if (eth_spec->h_proto == htons(0xFFFF)) {
-+		ice_flow_set_fld(seg, ICE_FLOW_FIELD_IDX_ETH_TYPE,
-+				 ICE_FLOW_FLD_OFF_INVAL,
-+				 ICE_FLOW_FLD_OFF_INVAL,
-+				 ICE_FLOW_FLD_OFF_INVAL, false);
-+	} else if (eth_spec->h_proto) {
-+		dev_warn(dev, "Only 0x0000 or 0xffff proto mask is allowed for flow-type ether");
-+		return -EOPNOTSUPP;
-+	}
-+
-+	/* Source MAC address */
-+	if (is_broadcast_ether_addr(eth_spec->h_source))
-+		ice_flow_set_fld(seg, ICE_FLOW_FIELD_IDX_ETH_SA,
-+				 ICE_FLOW_FLD_OFF_INVAL, ICE_FLOW_FLD_OFF_INVAL,
-+				 ICE_FLOW_FLD_OFF_INVAL, false);
-+	else if (!is_zero_ether_addr(eth_spec->h_source))
-+		goto err_mask;
-+
-+	/* Destination MAC address */
-+	if (is_broadcast_ether_addr(eth_spec->h_dest))
-+		ice_flow_set_fld(seg, ICE_FLOW_FIELD_IDX_ETH_DA,
-+				 ICE_FLOW_FLD_OFF_INVAL, ICE_FLOW_FLD_OFF_INVAL,
-+				 ICE_FLOW_FLD_OFF_INVAL, false);
-+	else if (!is_zero_ether_addr(eth_spec->h_dest))
-+		goto err_mask;
-+
-+	return 0;
-+
-+err_mask:
-+	dev_warn(dev, "Only 00:00:00:00:00:00 or ff:ff:ff:ff:ff:ff MAC address mask is allowed for flow-type ether");
-+	return -EOPNOTSUPP;
-+}
-+
-+/**
-+ * ice_set_fdir_vlan_seg
-+ * @seg: flow segment for programming
-+ * @ext_masks: masks for additional RX flow fields
-+ */
-+static int
-+ice_set_fdir_vlan_seg(struct ice_flow_seg_info *seg,
-+		      struct ethtool_flow_ext *ext_masks)
-+{
-+	ICE_FLOW_SET_HDRS(seg, ICE_FLOW_SEG_HDR_VLAN);
-+
-+	if (ext_masks->vlan_etype) {
-+		if (ext_masks->vlan_etype != htons(0xFFFF))
-+			return -EOPNOTSUPP;
-+
-+		ice_flow_set_fld(seg, ICE_FLOW_FIELD_IDX_S_VLAN,
-+				 ICE_FLOW_FLD_OFF_INVAL,
-+				 ICE_FLOW_FLD_OFF_INVAL,
-+				 ICE_FLOW_FLD_OFF_INVAL, false);
-+	}
-+
-+	if (ext_masks->vlan_tci) {
-+		if (ext_masks->vlan_tci != htons(0xFFFF))
-+			return -EOPNOTSUPP;
-+
-+		ice_flow_set_fld(seg, ICE_FLOW_FIELD_IDX_C_VLAN,
-+				 ICE_FLOW_FLD_OFF_INVAL,
-+				 ICE_FLOW_FLD_OFF_INVAL,
-+				 ICE_FLOW_FLD_OFF_INVAL, false);
-+	}
-+
-+	return 0;
-+}
-+
- /**
-  * ice_cfg_fdir_xtrct_seq - Configure extraction sequence for the given filter
-  * @pf: PF structure
-@@ -1209,7 +1331,7 @@ ice_cfg_fdir_xtrct_seq(struct ice_pf *pf, struct ethtool_rx_flow_spec *fsp,
- 	struct device *dev = ice_pf_to_dev(pf);
- 	enum ice_fltr_ptype fltr_idx;
- 	struct ice_hw *hw = &pf->hw;
--	bool perfect_filter;
-+	bool perfect_filter = false;
- 	int ret;
- 
- 	seg = devm_kzalloc(dev, sizeof(*seg), GFP_KERNEL);
-@@ -1262,6 +1384,16 @@ ice_cfg_fdir_xtrct_seq(struct ice_pf *pf, struct ethtool_rx_flow_spec *fsp,
- 		ret = ice_set_fdir_ip6_usr_seg(seg, &fsp->m_u.usr_ip6_spec,
- 					       &perfect_filter);
- 		break;
-+	case ETHER_FLOW:
-+		ret = ice_set_ether_flow_seg(dev, seg, &fsp->m_u.ether_spec);
-+		if (!ret && (fsp->m_ext.vlan_etype || fsp->m_ext.vlan_tci)) {
-+			if (!ice_fdir_vlan_valid(dev, fsp)) {
-+				ret = -EINVAL;
-+				break;
-+			}
-+			ret = ice_set_fdir_vlan_seg(seg, &fsp->m_ext);
-+		}
-+		break;
- 	default:
- 		ret = -EINVAL;
- 	}
-@@ -1823,6 +1955,10 @@ ice_set_fdir_input_set(struct ice_vsi *vsi, struct ethtool_rx_flow_spec *fsp,
- 		input->mask.v6.tc = fsp->m_u.usr_ip6_spec.tclass;
- 		input->mask.v6.proto = fsp->m_u.usr_ip6_spec.l4_proto;
- 		break;
-+	case ETHER_FLOW:
-+		input->eth = fsp->h_u.ether_spec;
-+		input->eth_mask = fsp->m_u.ether_spec;
-+		break;
- 	default:
- 		/* not doing un-parsed flow types */
- 		return -EINVAL;
-diff --git a/drivers/net/ethernet/intel/ice/ice_fdir.c b/drivers/net/ethernet/intel/ice/ice_fdir.c
-index 1f7b26f38818..26b357c0ae15 100644
---- a/drivers/net/ethernet/intel/ice/ice_fdir.c
-+++ b/drivers/net/ethernet/intel/ice/ice_fdir.c
-@@ -4,6 +4,8 @@
- #include "ice_common.h"
- 
- /* These are training packet headers used to program flow director filters. */
-+static const u8 ice_fdir_eth_pkt[22];
-+
- static const u8 ice_fdir_tcpv4_pkt[] = {
- 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
- 	0x00, 0x00, 0x00, 0x00, 0x08, 0x00, 0x45, 0x00,
-@@ -416,6 +418,11 @@ static const u8 ice_fdir_ip6_tun_pkt[] = {
- 
- /* Flow Director no-op training packet table */
- static const struct ice_fdir_base_pkt ice_fdir_pkt[] = {
-+	{
-+		ICE_FLTR_PTYPE_NONF_ETH,
-+		sizeof(ice_fdir_eth_pkt), ice_fdir_eth_pkt,
-+		sizeof(ice_fdir_eth_pkt), ice_fdir_eth_pkt,
-+	},
- 	{
- 		ICE_FLTR_PTYPE_NONF_IPV4_TCP,
- 		sizeof(ice_fdir_tcpv4_pkt), ice_fdir_tcpv4_pkt,
-@@ -914,6 +921,21 @@ ice_fdir_get_gen_prgm_pkt(struct ice_hw *hw, struct ice_fdir_fltr *input,
- 	 * perspective. The input from user is from Rx filter perspective.
- 	 */
- 	switch (flow) {
-+	case ICE_FLTR_PTYPE_NONF_ETH:
-+		ice_pkt_insert_mac_addr(loc, input->eth.h_dest);
-+		ice_pkt_insert_mac_addr(loc + ETH_ALEN, input->eth.h_source);
-+		if (input->ext_data.vlan_tag || input->ext_data.vlan_type) {
-+			ice_pkt_insert_u16(loc, ICE_ETH_TYPE_F_OFFSET,
-+					   input->ext_data.vlan_type);
-+			ice_pkt_insert_u16(loc, ICE_ETH_VLAN_TCI_OFFSET,
-+					   input->ext_data.vlan_tag);
-+			ice_pkt_insert_u16(loc, ICE_ETH_TYPE_VLAN_OFFSET,
-+					   input->eth.h_proto);
-+		} else {
-+			ice_pkt_insert_u16(loc, ICE_ETH_TYPE_F_OFFSET,
-+					   input->eth.h_proto);
-+		}
-+		break;
- 	case ICE_FLTR_PTYPE_NONF_IPV4_TCP:
- 		ice_pkt_insert_u32(loc, ICE_IPV4_DST_ADDR_OFFSET,
- 				   input->ip.v4.src_ip);
-@@ -1201,6 +1223,10 @@ ice_fdir_comp_rules(struct ice_fdir_fltr *a,  struct ice_fdir_fltr *b)
- 	 * same flow_type.
- 	 */
- 	switch (flow_type) {
-+	case ICE_FLTR_PTYPE_NONF_ETH:
-+		if (!memcmp(&a->eth, &b->eth, sizeof(a->eth)))
-+			return true;
-+		break;
- 	case ICE_FLTR_PTYPE_NONF_IPV4_TCP:
- 	case ICE_FLTR_PTYPE_NONF_IPV4_UDP:
- 	case ICE_FLTR_PTYPE_NONF_IPV4_SCTP:
-diff --git a/drivers/net/ethernet/intel/ice/ice_fdir.h b/drivers/net/ethernet/intel/ice/ice_fdir.h
-index 1b9b84490689..021ecbac7848 100644
---- a/drivers/net/ethernet/intel/ice/ice_fdir.h
-+++ b/drivers/net/ethernet/intel/ice/ice_fdir.h
-@@ -8,6 +8,9 @@
- #define ICE_FDIR_MAX_RAW_PKT_SIZE	(512 + ICE_FDIR_TUN_PKT_OFF)
- 
- /* macros for offsets into packets for flow director programming */
-+#define ICE_ETH_TYPE_F_OFFSET		12
-+#define ICE_ETH_VLAN_TCI_OFFSET		14
-+#define ICE_ETH_TYPE_VLAN_OFFSET	16
- #define ICE_IPV4_SRC_ADDR_OFFSET	26
- #define ICE_IPV4_DST_ADDR_OFFSET	30
- #define ICE_IPV4_TCP_SRC_PORT_OFFSET	34
-@@ -159,6 +162,8 @@ struct ice_fdir_fltr {
- 	struct list_head fltr_node;
- 	enum ice_fltr_ptype flow_type;
- 
-+	struct ethhdr eth, eth_mask;
-+
- 	union {
- 		struct ice_fdir_v4 v4;
- 		struct ice_fdir_v6 v6;
-diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-index 08ec5efdafe6..4049ae40c4fb 100644
---- a/drivers/net/ethernet/intel/ice/ice_type.h
-+++ b/drivers/net/ethernet/intel/ice/ice_type.h
-@@ -203,6 +203,7 @@ struct ice_phy_info {
- enum ice_fltr_ptype {
- 	/* NONE - used for undef/error */
- 	ICE_FLTR_PTYPE_NONF_NONE = 0,
-+	ICE_FLTR_PTYPE_NONF_ETH,
- 	ICE_FLTR_PTYPE_NONF_IPV4_UDP,
- 	ICE_FLTR_PTYPE_NONF_IPV4_TCP,
- 	ICE_FLTR_PTYPE_NONF_IPV4_SCTP,
--- 
-2.34.1
+> 
+>>>> +	if (!mod)
+>>>>  		return 0;
+>>>>  
+>>>> +	if (power_new.max_pwr_reset && power_new.max_pwr_set) {  
+>>>
+>>> Mmm. How is that gonna work? The driver is going to set max_pwr_set
+>>> to what's currently configured. So the user is expected to send
+>>> ETHTOOL_A_MODULE_MAX_POWER_SET = 0
+>>> ETHTOOL_A_MODULE_MAX_POWER_RESET = 1
+>>> to reset?  
+>>
+>> Yes, that was my intention. Using both of those attributes at the same time is not allowed.
+> 
+> To be clear the code is:
+> 
+>  	ret = ops->get_module_power_cfg(dev, &power, info->extack);
+>  	if (ret < 0)
+>  		return ret;
+> 
+> 	power_new.max_pwr_set = power.max_pwr_set;
+> 
+> 	ethnl_update_u32(&power_new.max_pwr_set,
+> 			 tb[ETHTOOL_A_MODULE_MAX_POWER_SET], &mod);
+>  	// ...
+>  
+> 	if (power_new.max_pwr_reset && power_new.max_pwr_set) {
+> 
+> so if driver reports .max_pwr_set from get we may fall into this if
+> I think you got it but anyway..
+
+Oh, I see, I'll check the attributes at the beginning before reading them
 
