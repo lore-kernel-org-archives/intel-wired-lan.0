@@ -1,116 +1,97 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2EFC8CD1284
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  4 Apr 2024 14:59:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 771DACD1292
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  4 Apr 2024 15:45:53 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id CE6AE82F9B;
-	Thu,  4 Apr 2024 14:59:22 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 2C64F41BD1;
+	Thu,  4 Apr 2024 15:45:53 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id YPy2x2Bl_N6w; Thu,  4 Apr 2024 14:59:18 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id UE4XXjmZvjMp; Thu,  4 Apr 2024 15:45:51 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org CB1D482E22
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 833A941BDD
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1712242758;
-	bh=kymbtRijImHzx1uzUVzp0DJJ2oqh16GSp6MK4aRhzhs=;
-	h=Date:To:From:Subject:List-Id:List-Unsubscribe:List-Archive:
+	s=default; t=1712245551;
+	bh=/kmQitHfMAOnw9sEJCLEPRmiFdxkQrDSqRJ3Pfv0C8g=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=P6OM4cJaEsgy7j5+95LHT+5hB0EnbcBYuSZsNC2xeMsWduu3MLow1LT1HxgPSF3FT
-	 cFvPqhMLJoQhoFLvO0i1qf/SGujA48RJlzHKprJlYmwsIaZq4RKyzIIHnbqhgQzEsd
-	 O/bMwVj/7Ijp42NYL2bOS1r+mWlpRFtjWRcI4bd+dbTUASeUaSlUvz/kib56R5APDk
-	 m5tv6Kmb2YjakJaUw4tE4sU2sbwjz+VsNC3FRq/bzRiKhS099rEygSgm5xRbq7dAb2
-	 KrUCYfCOV16H+Uo9LCtWprdRhLdybvatmKQTM/uGmG0JCUuzEQ0osAK9jyQxqkGpzK
-	 6HEXaxK1zjAMg==
+	b=TLftzQgLhUlqJcV8CbIpxXMqSTZ/PM3CDftOdHEptJvys8pQTeOV3GPPhzPHYq93/
+	 e8i8LpDKzSKBVBzNqof+cM1fwnx7A9tyrW9DDWQxtHoDCRnyYlKQjre5ck6MkHJmgo
+	 VxrTXYuilq/sVbFpMeUbc+5bygoPncqdWUji5oXVJ30kS1cJtqFQ1mPFlt7mTlAiTL
+	 NKbKiGos44u1aA3XILFUJaUjRZMUl/2Zxi8qasOL2QCULF9MJEFtR0/fZb7bq42oYz
+	 pLNZDdaR8STC8Yfj7bEQhTj8B1NM3aMHwIrAtzchiM84H6ifgh4W/E5ifb3Y/dxXp1
+	 s6XzAgdJLh4Sg==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id CB1D482E22;
-	Thu,  4 Apr 2024 14:59:18 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 808AA1BF424
- for <intel-wired-lan@lists.osuosl.org>; Wed,  3 Apr 2024 16:55:27 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 833A941BDD;
+	Thu,  4 Apr 2024 15:45:51 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id D5E381BF41F
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  4 Apr 2024 15:45:50 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 6CC8282242
- for <intel-wired-lan@lists.osuosl.org>; Wed,  3 Apr 2024 16:55:27 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id C13496076D
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  4 Apr 2024 15:45:50 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id eFTSiqhIZpcQ for <intel-wired-lan@lists.osuosl.org>;
- Wed,  3 Apr 2024 16:55:26 +0000 (UTC)
-Received-SPF: None (mailfrom) identity=mailfrom;
- client-ip=2a00:1450:4864:20::135; helo=mail-lf1-x135.google.com;
- envelope-from=mgregr@netx.as; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 9F5F582241
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9F5F582241
-Received: from mail-lf1-x135.google.com (mail-lf1-x135.google.com
- [IPv6:2a00:1450:4864:20::135])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 9F5F582241
- for <intel-wired-lan@lists.osuosl.org>; Wed,  3 Apr 2024 16:55:24 +0000 (UTC)
-Received: by mail-lf1-x135.google.com with SMTP id
- 2adb3069b0e04-516c114addaso54878e87.3
- for <intel-wired-lan@lists.osuosl.org>; Wed, 03 Apr 2024 09:55:24 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20230601; t=1712163322; x=1712768122;
- h=content-transfer-encoding:cc:subject:from:to:content-language
- :user-agent:mime-version:date:message-id:x-gm-message-state:from:to
- :cc:subject:date:message-id:reply-to;
- bh=kymbtRijImHzx1uzUVzp0DJJ2oqh16GSp6MK4aRhzhs=;
- b=RC2CGWgUVY8tTQY0e8FfJYHNVrMeRazTtFD61rv25ftskYSKFtGZpPCV/41+AWWMQT
- 3IEeVpFz4yZ48QR/F8vOBz4I/DHnDupzyit5F4BX8apknduH1NUJTegWTbyiEvP466pw
- Le6GtB1KDi2n05vi/C/ktqfESEXHynufCJTwK01uF4axhXzSzUO5zGQ6tNa6SSCcEVzg
- rkzKhk0flZYUACnNPNsoJo6d+ji98eW8wwi30w2ZnX+TVxl+G9HgxIOExsv6L8XamhkZ
- JiUCPl2qhNKPXyTFCNlb9kL/z0Ko8Hd+qQnYKOw1QUzNFYRjzD+FzbxYLW7Rdp6iRCA+
- Z01g==
-X-Gm-Message-State: AOJu0YyvCvoqTy2eHf+LML8uW/BpgCojtKibkOXgZ5bC4BL1K51x9Z+d
- W7YckkY8mfK+6R6o2wRwdAr/AjsEiVVnX+xxaVQ/3QleC+PTTEGCFcCzaogLtJTK7vzccJJiVhR
- w
-X-Google-Smtp-Source: AGHT+IG40HOPZWDXfTQ+EHP1v68u0pW5CJ46mD/aEezq6mLLAMGBzju/EBdSgln0GvlJdTT3N+6I+A==
-X-Received: by 2002:a19:9143:0:b0:515:b69e:8ddf with SMTP id
- y3-20020a199143000000b00515b69e8ddfmr52454lfj.55.1712163322127; 
- Wed, 03 Apr 2024 09:55:22 -0700 (PDT)
-Received: from ?IPV6:2a00:1028:83a2:105e:e915:ac4:fb66:3674?
- (dynamic-2a00-1028-83a2-105e-e915-0ac4-fb66-3674.ipv6.o2.cz.
- [2a00:1028:83a2:105e:e915:ac4:fb66:3674])
- by smtp.gmail.com with ESMTPSA id
- n27-20020a170906089b00b00a5172363ee2sm495683eje.225.2024.04.03.09.55.21
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Wed, 03 Apr 2024 09:55:21 -0700 (PDT)
-Message-ID: <1be45a76-90af-4813-824f-8398b69745a9@netx.as>
-Date: Wed, 3 Apr 2024 18:55:20 +0200
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id MIKyBc9J6cZm for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  4 Apr 2024 15:45:49 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.12;
+ helo=mgamail.intel.com; envelope-from=aleksander.lobakin@intel.com;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 72E7460761
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 72E7460761
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.12])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 72E7460761
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  4 Apr 2024 15:45:49 +0000 (UTC)
+X-CSE-ConnectionGUID: ckUDc6chQbOZP26tqcOEgw==
+X-CSE-MsgGUID: Qseatqj9T724udBwigIUkQ==
+X-IronPort-AV: E=McAfee;i="6600,9927,11034"; a="11312079"
+X-IronPort-AV: E=Sophos;i="6.07,179,1708416000"; d="scan'208";a="11312079"
+Received: from fmviesa005.fm.intel.com ([10.60.135.145])
+ by fmvoesa106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 04 Apr 2024 08:45:48 -0700
+X-CSE-ConnectionGUID: 4u9Ci6LzQfCQCyn/ATdUdw==
+X-CSE-MsgGUID: 4+OyyTrXTb6b+0tX9wohJg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.07,179,1708416000"; d="scan'208";a="23288031"
+Received: from newjersey.igk.intel.com ([10.102.20.203])
+ by fmviesa005.fm.intel.com with ESMTP; 04 Apr 2024 08:45:44 -0700
+From: Alexander Lobakin <aleksander.lobakin@intel.com>
+To: "David S. Miller" <davem@davemloft.net>,
+ Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>
+Date: Thu,  4 Apr 2024 17:43:53 +0200
+Message-ID: <20240404154402.3581254-1-aleksander.lobakin@intel.com>
+X-Mailer: git-send-email 2.44.0
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Content-Language: en-US
-To: intel-wired-lan@lists.osuosl.org
-From: =?UTF-8?B?TWF0xJtqIEdyw6lncg==?= <mgregr@netx.as>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Mailman-Approved-At: Thu, 04 Apr 2024 14:59:17 +0000
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=netx-as.20230601.gappssmtp.com; s=20230601; t=1712163322; x=1712768122;
- darn=lists.osuosl.org; 
- h=content-transfer-encoding:cc:subject:from:to:content-language
- :user-agent:mime-version:date:message-id:from:to:cc:subject:date
- :message-id:reply-to;
- bh=kymbtRijImHzx1uzUVzp0DJJ2oqh16GSp6MK4aRhzhs=;
- b=QqPK0v4PR7sf4GGu0AHp4VOo/6XRtdSJWBCLXRC0q89H9sJSbY3RipjXzZgGRPJz9x
- llizAf2CWMG2MECCJ7r4lpLxGb858IGq4ymnlGUq64hlguZZ+LqVV+fQBOZGE4d3Dd9f
- jxXj8QxqdNgZwSE/4r0zyqRTwwteFcd0ln3hVj8DRyqB/eqcw/SwpG8nSdr3J4lMptX6
- UI/rCCjiiwsQo83XIEWMiq+1im86jw/Q/eDbDPJcR5BlJZ8oGNyYxdDfM2ZfIcejHkRJ
- Y8GZFh0X1LJTy13l5JiQ6jLk5DXolX9QrsL4a4iGz4FOLxHx3W4SzAAHhdBA98o/+Azs
- dddQ==
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dmarc=none (p=none dis=none)
- header.from=netx.as
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+Content-Transfer-Encoding: 8bit
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1712245550; x=1743781550;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=38WmI8KudBPQM/Ql3r656lB+f7qXdMLAJz3Qm77YaIo=;
+ b=ZVm8R54yJoJG2uDGXOGwWpkwPXa2sfLOIgNnI65tgYdWIfVwBrL6I5X5
+ ErMYVPGrf5jr5PYUUgdhJMxCnKmuxN3ZdwJCpRHH7p74WiM1CbAfOBoDV
+ +joPxt58K3wUzKX8YQWb85WzNi/bVS8oO6iMEHg6kqpjRG6TVm4jsqP9v
+ /CPu8mlUucx74wq8A9kLj9ExFwluuiAqNm0XbuMCCNLMjzvzViIYRUPy6
+ cLX6HUoMuZ/67OOCsNBJVXT/ad5hJpFMHnKEPDjuEZo0e8jhfXKXJLR/R
+ 3xehaa8bZJsH+bw9yW2PQbW0rHaSXbedlVa8uG9OE1jE1JL/YBgqHHYZ6
+ A==;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=intel.com
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key,
- unprotected) header.d=netx-as.20230601.gappssmtp.com
- header.i=@netx-as.20230601.gappssmtp.com header.a=rsa-sha256
- header.s=20230601 header.b=QqPK0v4P
-Subject: [Intel-wired-lan] ice: lldp packets dropped after changing number
- of channels
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=ZVm8R54y
+Subject: [Intel-wired-lan] [PATCH net-next v9 0/9] net: intel: start The
+ Great Code Dedup + Page Pool for iavf
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -123,93 +104,192 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Peter Nagy <nagy@netx.as>
+Cc: Jesper Dangaard Brouer <hawk@kernel.org>, linux-mm@kvack.org,
+ netdev@vger.kernel.org, Alexander Duyck <alexanderduyck@fb.com>,
+ Ilias Apalodimas <ilias.apalodimas@linaro.org>, linux-kernel@vger.kernel.org,
+ Alexander Lobakin <aleksander.lobakin@intel.com>,
+ Yunsheng Lin <linyunsheng@huawei.com>, intel-wired-lan@lists.osuosl.org,
+ nex.sw.ncis.osdt.itp.upstreaming@intel.com, Christoph Lameter <cl@linux.com>,
+ Andrew Morton <akpm@linux-foundation.org>, Vlastimil Babka <vbabka@suse.cz>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Hello,
-   we are facing an issue with Intel 100G E810-C card. If we change 
-number of channels using ethtool -L, LLDP packets stop to be forwarded 
-to the network stack and user space.
+Here's a two-shot: introduce {,Intel} Ethernet common library (libeth and
+libie) and switch iavf to Page Pool. Details are in the commit messages;
+here's a summary:
 
-Firmware-based lldp agent is disabled:
+Not a secret there's a ton of code duplication between two and more Intel
+ethernet modules. Before introducing new changes, which would need to be
+copied over again, start decoupling the already existing duplicate
+functionality into a new module, which will be shared between several
+Intel Ethernet drivers. The first name that came to my mind was
+"libie" -- "Intel Ethernet common library". Also this sounds like
+"lovelie" (-> one word, no "lib I E" pls) and can be expanded as
+"lib Internet Explorer" :P
+The "generic", pure-software part is placed separately, so that it can be
+easily reused in any driver by any vendor without linking to the Intel
+pre-200G guts. In a few words, it's something any modern driver does the
+same way, but nobody moved it level up (yet).
+The series is only the beginning. From now on, adding every new feature
+or doing any good driver refactoring will remove much more lines than add
+for quite some time. There's a basic roadmap with some deduplications
+planned already, not speaking of that touching every line now asks:
+"can I share this?". The final destination is very ambitious: have only
+one unified driver for at least i40e, ice, iavf, and idpf with a struct
+ops for each generation. That's never gonna happen, right? But you still
+can at least try.
+PP conversion for iavf lands within the same series as these two are tied
+closely. libie will support Page Pool model only, so that a driver can't
+use much of the lib until it's converted. iavf is only the example, the
+rest will eventually be converted soon on a per-driver basis. That is
+when it gets really interesting. Stay tech.
 
-# ethtool --show-priv-flags hge11
-Private flags for hge11:
-link-down-on-close     : off
-fw-lldp-agent          : off
-vf-true-promisc-support: off
-mdd-auto-reset-vf      : off
-vf-vlan-pruning        : off
-legacy-rx              : off
+Alexander Lobakin (9):
+  net: intel: introduce {,Intel} Ethernet common library
+  iavf: kill "legacy-rx" for good
+  iavf: drop page splitting and recycling
+  slab: introduce kvmalloc_array_node() and kvcalloc_node()
+  page_pool: constify some read-only function arguments
+  page_pool: add DMA-sync-for-CPU inline helper
+  libeth: add Rx buffer management
+  iavf: pack iavf_ring more efficiently
+  iavf: switch to Page Pool
 
-[  363.664628] ice 0000:41:00.0: The DDP package was successfully 
-loaded: ICE COMMS Package version 1.3.45.0
-[  363.983822] ice 0000:41:00.0: 252.048 Gb/s available PCIe bandwidth 
-(16.0 GT/s PCIe x16 link)
-[  364.003040] ice 0000:41:00.0: PTP init successful
-[  364.202873] ice 0000:41:00.0: DCB is enabled in the hardware, max 
-number of TCs supported on this port are 8
-[  364.202880] ice 0000:41:00.0: FW LLDP is disabled, DCBx/LLDP in SW mode.
-[  364.203045] ice 0000:41:00.0: Commit DCB Configuration to the hardware
+ MAINTAINERS                                   |   4 +-
+ drivers/net/ethernet/intel/Kconfig            |   7 +
+ drivers/net/ethernet/intel/libeth/Kconfig     |   9 +
+ drivers/net/ethernet/intel/libie/Kconfig      |  10 +
+ drivers/net/ethernet/intel/Makefile           |   3 +
+ drivers/net/ethernet/intel/libeth/Makefile    |   6 +
+ drivers/net/ethernet/intel/libie/Makefile     |   6 +
+ include/net/page_pool/types.h                 |   4 +-
+ .../net/ethernet/intel/i40e/i40e_prototype.h  |   7 -
+ drivers/net/ethernet/intel/i40e/i40e_type.h   |  88 ---
+ drivers/net/ethernet/intel/iavf/iavf.h        |   2 +-
+ .../net/ethernet/intel/iavf/iavf_prototype.h  |   7 -
+ drivers/net/ethernet/intel/iavf/iavf_txrx.h   | 146 +----
+ drivers/net/ethernet/intel/iavf/iavf_type.h   |  90 ---
+ .../net/ethernet/intel/ice/ice_lan_tx_rx.h    | 320 ----------
+ include/linux/net/intel/libie/rx.h            |  50 ++
+ include/linux/slab.h                          |  17 +-
+ include/net/libeth/rx.h                       | 242 ++++++++
+ include/net/page_pool/helpers.h               |  34 +-
+ drivers/net/ethernet/intel/i40e/i40e_common.c | 253 --------
+ drivers/net/ethernet/intel/i40e/i40e_main.c   |   1 +
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c   |  72 +--
+ drivers/net/ethernet/intel/iavf/iavf_common.c | 253 --------
+ .../net/ethernet/intel/iavf/iavf_ethtool.c    | 140 -----
+ drivers/net/ethernet/intel/iavf/iavf_main.c   |  40 +-
+ drivers/net/ethernet/intel/iavf/iavf_txrx.c   | 551 +++---------------
+ .../net/ethernet/intel/iavf/iavf_virtchnl.c   |  17 +-
+ drivers/net/ethernet/intel/ice/ice_main.c     |   1 +
+ drivers/net/ethernet/intel/ice/ice_txrx_lib.c | 111 +---
+ drivers/net/ethernet/intel/libeth/rx.c        | 150 +++++
+ drivers/net/ethernet/intel/libie/rx.c         | 124 ++++
+ net/core/page_pool.c                          |  10 +-
+ 32 files changed, 819 insertions(+), 1956 deletions(-)
+ create mode 100644 drivers/net/ethernet/intel/libeth/Kconfig
+ create mode 100644 drivers/net/ethernet/intel/libie/Kconfig
+ create mode 100644 drivers/net/ethernet/intel/libeth/Makefile
+ create mode 100644 drivers/net/ethernet/intel/libie/Makefile
+ create mode 100644 include/linux/net/intel/libie/rx.h
+ create mode 100644 include/net/libeth/rx.h
+ create mode 100644 drivers/net/ethernet/intel/libeth/rx.c
+ create mode 100644 drivers/net/ethernet/intel/libie/rx.c
 
-The channels are set to the default values:
+---
+libeth has way more generic functionality and code in the idpf XDP
+tree[0], take a look if you want to have more complete picture of
+what this really is about.
 
-ethtool -l hge11
-Channel parameters for hge11:
-Pre-set maximums:
-RX:		64
-TX:		64
-Other:		n/a
-Combined:	64
-Current hardware settings:
-RX:		0
-TX:		0
-Other:		n/a
-Combined:	64
+From v8[1]:
+* rebase on top of net-next (6.9-rc1+);
+* introduce kvmalloc_array_node() and kvcalloc_node();
+* make Rx buffer management NUMA-aware;
+* resolve kdoc issues (Jakub, me).
 
-We are able to see the LLDP frames:
+From v7[2]:
+* drop Page Pool optimization prereqs;
+* drop generic stats part: will redo to the new per-queue stats later;
+* split libie into "generic" and "fnic" (i40e, ice, iavf) parts;
+* use shorter and modern struct names;
+* #1: allow to compile-out hotpath IPv6 code when !CONFIG_IPV6;
+* #1: generate XDP RSS hash directly in the lookup table;
+* #8: fix rare skb nullptr deref bug.
 
-tcpdump -i hge11 -nn 'ether proto 0x88cc'
-16:21:08.528229 4c:ae:a3:6a:80:ee > 01:80:c2:00:00:0e, ethertype LLDP 
-(0x88cc), length 347: LLDP, length 333: test-hp5945
-16:21:09.528501 4c:ae:a3:6a:80:ee > 01:80:c2:00:00:0e, ethertype LLDP 
-(0x88cc), length 347: LLDP, length 333: test-hp5945
-16:21:10.528325 4c:ae:a3:6a:80:ee > 01:80:c2:00:00:0e, ethertype LLDP 
-(0x88cc), length 347: LLDP, length 333: test-hp5945
-16:21:11.528217 4c:ae:a3:6a:80:ee > 01:80:c2:00:00:0e, ethertype LLDP 
-(0x88cc), length 347: LLDP, length 333: test-hp5945
+From v6[3]:
+* #04: resolve ethtool_puts() Git conflict (Jakub);
+* #06: pick RB from Ilias;
+* no functional changes.
 
-However, if we changed the number of channels, e.g.:
+From v5[4]:
+* drop Page Pool DMA shortcut: will pick up Eric's more global DMA sync
+  optimization[5] and expand it to cover both IOMMU and direct DMA a bit
+  later (Yunsheng);
+* drop per-queue Page Pool Ethtool stats: they are now exported via
+  generic Netlink interface (Jakub);
+* #01: leave a comment why exactly this alignment (Jakub, Yunsheng);
+* #08: make use of page_pool_params::netdev when calculating PP params;
+* #08: rename ``libie_rx_queue`` -> ``libie_buf_queue``.
 
-ethtool -L hge11 combined 63
+From v4[6]:
+* make use of Jakub's &page_pool_params split;
+* #01: prevent frag fields from spanning into 2 cachelines after
+  splitting &page_pool_params into fast and slow;
+* #02-03: bring back the DMA sync shortcut, now as a per-page flag
+  (me, Yunsheng);
+* #04: let libie have its own Kconfig to stop further bloating of poor
+  intel/Kconfig;
+* #06: merge page split-reuse-recycle drop into one commit (Alex);
+* #07: decouple constifying of several Page Pool function arguments
+  into a separate commit, constify some more;
+* #09: stop abusing internal PP fields in the driver code (Yunsheng);
+* #09: calculate DMA sync size (::max_len) correctly: within one page,
+  not one buffer (Yunsheng);
+* #10: decouple rearranging &iavf_ring into separate commit, optimize
+  it even more;
+* #11: let the driver get back to the last descriptor to process after
+  an skb allocation fail, don't drop it (Alex);
+* #11: stop touching unrelated stuff like watchdog timeout etc. (Alex);
+* fix "Return:" in the kdoc (now `W=12 C=1` is clean), misc typos.
 
-no LLDP frames are seen using tcpdump.
+From v3[7]:
+* base on the latest net-next, update bloat-o-meter and perf stats;
+* split generic PP optimizations into a separate series;
+* drop "optimize hotpath a bunch" commit: a lot of [controversial]
+  changes in one place, worth own series (Alex);
+* 02: pick Rev-by (Alex);
+* 03: move in-place recycling removal here from the dropped patch;
+* 05: new, add libie Rx buffer API separatelly from IAVF changes;
+* 05-06: use new "hybrid" allocation API from[8] to reduce memory usage
+  when a page can fit more than 1 truesize (also asked by David);
+* 06: merge with "always use order-0 page" commit to reduce diffs and
+  simplify things (Alex);
+* 09: fix page_alloc_fail counter.
 
-There is a workaround - enable and disable fw-lldp-agent using ethool. 
-However enabling/disabling fw-lldp-agent using the ethtool flaps the 
-link which is a problem as a connectivity is lost for a short time period.
+From v2[9]:
+* 0006: fix page_pool.h include in OcteonTX2 files (Jakub, Patchwork);
+* no functional changes.
 
-Kernel version is 6.8.2, but we see the issue with previous versions as 
-well. Firmware version is
+From v1[10]:
+* 0006: new (me, Jakub);
+* 0008: give the helpers more intuitive names (Jakub, Ilias);
+*  -^-: also expand their kdoc a bit for the same reason;
+*  -^-: fix kdoc copy-paste issue (Patchwork, Jakub);
+* 0011: drop `inline` from C file (Patchwork, Jakub).
 
-ethtool -i hge11
-driver: ice
-version: 6.8.2
-firmware-version: 4.40 0x8001c967 1.3534.0
+[0] https://github.com/alobakin/linux/commits/idpf-libie-new
+[1] https://lore.kernel.org/netdev/20240308141833.2966600-1-aleksander.lobakin@intel.com
+[2] https://lore.kernel.org/netdev/20231213112835.2262651-1-aleksander.lobakin@intel.com
+[3] https://lore.kernel.org/netdev/20231207172010.1441468-1-aleksander.lobakin@intel.com
+[4] https://lore.kernel.org/netdev/20231124154732.1623518-1-aleksander.lobakin@intel.com
+[5] https://lore.kernel.org/netdev/20221115182841.2640176-1-edumazet@google.com
+[6] https://lore.kernel.org/netdev/20230705155551.1317583-1-aleksander.lobakin@intel.com
+[7] https://lore.kernel.org/netdev/20230530150035.1943669-1-aleksander.lobakin@intel.com
+[8] https://lore.kernel.org/netdev/20230629120226.14854-1-linyunsheng@huawei.com
+[9] https://lore.kernel.org/netdev/20230525125746.553874-1-aleksander.lobakin@intel.com
+[10] https://lore.kernel.org/netdev/20230516161841.37138-1-aleksander.lobakin@intel.com
 
-lspci info:
+-- 
+2.44.0
 
-41:00.1 Ethernet controller: Intel Corporation Ethernet Controller 
-E810-C for QSFP (rev 02)
-   Subsystem: Intel Corporation Ethernet Network Adapter E810-C-Q2
-   Product Name: Intel(R) Ethernet Network Adapter E810-CQDA2
-   Read-only fields:
-   [V1] Vendor specific: Intel(R) Ethernet Network Adapter E810-CQDA2
-   [PN] Part number: K91258-011
-   [SN] Serial number: 6CFE545A0C20
-   [V2] Vendor specific: 4022
-
-
-Best regards,
-M.
