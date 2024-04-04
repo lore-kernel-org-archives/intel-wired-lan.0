@@ -4,199 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DC71ACD1292
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  4 Apr 2024 12:45:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 41B82CD1284
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  4 Apr 2024 12:55:40 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id ABF1F41A05;
-	Thu,  4 Apr 2024 12:45:58 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id E464C4185E;
+	Thu,  4 Apr 2024 12:55:39 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id S8TCMPs0NKeb; Thu,  4 Apr 2024 12:45:57 +0000 (UTC)
+ id Zw8oOQBESPYu; Thu,  4 Apr 2024 12:55:38 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3710941A42
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3A27A41839
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1712234757;
-	bh=bZsm+wbvk54NBM4m8QDxceaWnjF4JXlvUW+Ncy7bGjo=;
-	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
+	s=default; t=1712235338;
+	bh=ViUegWaXlivcRT6tyb5DdL8TZIko2HJfQNQ8reLljuU=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=MBKs1QToy6sgzmCPTRwin8yYegtPJdA+mSNaE4rRKzxTXdaA4bace4FY8e4lw1wMV
-	 oCoXMi456t9meTPOgHDT0y/rJ6pjyHtJs1O8uaIh/+LE8w3wii9Wy15cICfXXS077+
-	 l+kfGg54iSmG4OHI1YbgSzGuxjBPDgCN81+8vOY6efkVFxM4y74BLvN/yure4FWhdS
-	 sNFqjRKD2804MwamB3PhPA4HR6bC69jJv2SbXZLW9uaF4jeU0Wo/UcH4wb7Ell+E8L
-	 jXwgiROFSChFQZryX+qGdtsI4Bic886Hwm6y6pinyjKVowxtvTD4v3VxkZfIgz96HH
-	 DW1aAO/8Zfz4g==
+	b=EyvDIq0biH6hUNmRlHPhoZJGAzEGQRCXyegGGj2JwmT5EE7yPppxXHhzMckaUANYS
+	 IUpilTjj0BJJDfzRxpQP/V3gLaU1TFSPPiAuWAnPKk894qyGuvzg+EQmzsNHiK1ZH7
+	 aWvfNo2V0CWwHlltfPqH2zx/s2aEdmIZLXDTFyN3R8w8ovDn6/gaACelI4HBSIeQoh
+	 DkqGhsU8ItcoOfGQS1D6HkYy9Fzc1tMq2ulXxSIz57thS6xNde6eowzeiCUfDAf26D
+	 +ZbqR0J3rd3Vlq5xJH1CgVWCb8fcSIpjNl2cdJ6dlc3T58Qwp5vjKXOcB6xuv2gJBA
+	 o4UTcFoaSzW4w==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 3710941A42;
-	Thu,  4 Apr 2024 12:45:57 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 3A27A41839;
+	Thu,  4 Apr 2024 12:55:38 +0000 (UTC)
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 187B11BF3D8
- for <intel-wired-lan@lists.osuosl.org>; Thu,  4 Apr 2024 12:45:55 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 0376A1BF3D8
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  4 Apr 2024 12:55:35 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 1044582F37
- for <intel-wired-lan@lists.osuosl.org>; Thu,  4 Apr 2024 12:45:55 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id E035482D40
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  4 Apr 2024 12:55:35 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 9LOslVYaXNUL for <intel-wired-lan@lists.osuosl.org>;
- Thu,  4 Apr 2024 12:45:53 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.19;
- helo=mgamail.intel.com; envelope-from=wojciech.drewek@intel.com;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 9D38082D40
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9D38082D40
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.19])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 9D38082D40
- for <intel-wired-lan@lists.osuosl.org>; Thu,  4 Apr 2024 12:45:53 +0000 (UTC)
-X-CSE-ConnectionGUID: 9hjPH2GiRw+U68gYqH4z9w==
-X-CSE-MsgGUID: khZkBpuhTcG17SnEiQRzCA==
-X-IronPort-AV: E=McAfee;i="6600,9927,11033"; a="7374488"
-X-IronPort-AV: E=Sophos;i="6.07,179,1708416000"; 
-   d="scan'208";a="7374488"
-Received: from orviesa008.jf.intel.com ([10.64.159.148])
- by fmvoesa113.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 04 Apr 2024 05:45:53 -0700
-X-CSE-ConnectionGUID: Lf9gPxgPS1ix4pSTwMHH2A==
-X-CSE-MsgGUID: s1cLWOcvT8ukMh7ecb3reA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.07,178,1708416000"; d="scan'208";a="19368164"
-Received: from fmsmsx602.amr.corp.intel.com ([10.18.126.82])
- by orviesa008.jf.intel.com with ESMTP/TLS/AES256-GCM-SHA384;
- 04 Apr 2024 05:45:52 -0700
-Received: from fmsmsx611.amr.corp.intel.com (10.18.126.91) by
- fmsmsx602.amr.corp.intel.com (10.18.126.82) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.35; Thu, 4 Apr 2024 05:45:52 -0700
-Received: from fmsmsx603.amr.corp.intel.com (10.18.126.83) by
- fmsmsx611.amr.corp.intel.com (10.18.126.91) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.35; Thu, 4 Apr 2024 05:45:51 -0700
-Received: from fmsedg602.ED.cps.intel.com (10.1.192.136) by
- fmsmsx603.amr.corp.intel.com (10.18.126.83) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.35 via Frontend Transport; Thu, 4 Apr 2024 05:45:51 -0700
-Received: from NAM02-BN1-obe.outbound.protection.outlook.com (104.47.51.41) by
- edgegateway.intel.com (192.55.55.71) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.1.2507.35; Thu, 4 Apr 2024 05:45:51 -0700
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=XBz+hLnNbOtkIlyKrtNuQtJkokCQFnljFNgtCLv8JejLQU3qwwSXS1nBUaV86eUptBu8h4fO9a9hBiFOU25bUCt7dM4yVjQ+P6Qj/TCogXRnQQAtZZFrr5xBLN0KIyPR+A43NkoYAyAJJZXCUxedDYvQH5e/ty5h2yaYATfnC9N3j7qCTY/SMeeg/PjwJckAN1cT9qjgRXGwpwW3LkG/YLeJa0BbIlS0kjhU+ww7IdhM2G69B0M01OFUsKqKUyve9+njf1/yEBFmZgrx+cjOfC3HH88dW8bNmYy8NbIJSskyiwLhWSpb2tAmaWFWzbTHyBThGqnmJ2CYj/Gqsj+nzQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=bZsm+wbvk54NBM4m8QDxceaWnjF4JXlvUW+Ncy7bGjo=;
- b=XFp3NsYB5zTxOaIxIzz6gv4XmvxkpHLmAAiUcZ8wYCL1AVjxpoWnVbEtKAWq8WS/K0TG0q+BmNrzErO0nwMQ1NCb+JoiywWPwPDit1NQTewBT69Iat31tsONo8UGTYPLHj9GLxoR/gXXfdwrVFaGr6eW302ipJXa2mN+djkhx0n1sC4TlhL503LdMTkFD9d0htqloT2gu/7vgP9LxIVv/DAMgLxxI8g7lxv5OjkSKQIu1gTtr87I5UyBiIOS96+aLZbc2Czalbwp1GLl+D2k5tQCWU5BxhoQ5eQuPj5FeaEPrdkhf4LCpjrSnbRy9F4ID4bXjI57ozpgJ6Kb3FuaZA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
- dkim=pass header.d=intel.com; arc=none
-Received: from MW4PR11MB5776.namprd11.prod.outlook.com (2603:10b6:303:183::9)
- by CY8PR11MB7876.namprd11.prod.outlook.com (2603:10b6:930:7d::5) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7409.33; Thu, 4 Apr
- 2024 12:45:48 +0000
-Received: from MW4PR11MB5776.namprd11.prod.outlook.com
- ([fe80::2ac3:a242:4abe:a665]) by MW4PR11MB5776.namprd11.prod.outlook.com
- ([fe80::2ac3:a242:4abe:a665%4]) with mapi id 15.20.7452.019; Thu, 4 Apr 2024
- 12:45:48 +0000
-Message-ID: <206686dc-c39b-4b52-a35c-914b93fe3f36@intel.com>
-Date: Thu, 4 Apr 2024 14:45:43 +0200
-User-Agent: Mozilla Thunderbird
-To: Andrew Lunn <andrew@lunn.ch>
-References: <20240329092321.16843-1-wojciech.drewek@intel.com>
- <38d874e3-f25b-4af2-8c1c-946ab74c1925@lunn.ch>
- <a3fd2b83-93af-4a59-a651-1ffe0dbddbe4@intel.com>
- <dc601a7c-7bb7-4857-8991-43357b15ed5a@lunn.ch>
- <ad026426-f6a4-4581-b090-31ab65fb4782@intel.com>
- <61a89488-e79a-4175-8868-3de36af7f62d@lunn.ch>
-Content-Language: en-US
-From: Wojciech Drewek <wojciech.drewek@intel.com>
-In-Reply-To: <61a89488-e79a-4175-8868-3de36af7f62d@lunn.ch>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: WA2P291CA0014.POLP291.PROD.OUTLOOK.COM
- (2603:10a6:1d0:1e::25) To MW4PR11MB5776.namprd11.prod.outlook.com
- (2603:10b6:303:183::9)
+ id kOlyf8Z2vWiT for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  4 Apr 2024 12:55:35 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2604:1380:40e1:4800::1; helo=sin.source.kernel.org;
+ envelope-from=horms@kernel.org; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 031ED82BFD
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 031ED82BFD
+Received: from sin.source.kernel.org (sin.source.kernel.org
+ [IPv6:2604:1380:40e1:4800::1])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 031ED82BFD
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  4 Apr 2024 12:55:34 +0000 (UTC)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+ by sin.source.kernel.org (Postfix) with ESMTP id 4F6F1CE2FCB;
+ Thu,  4 Apr 2024 12:55:30 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 81528C433F1;
+ Thu,  4 Apr 2024 12:55:27 +0000 (UTC)
+Date: Thu, 4 Apr 2024 13:55:25 +0100
+From: Simon Horman <horms@kernel.org>
+To: Lukasz Plachno <lukasz.plachno@intel.com>
+Message-ID: <20240404125525.GQ26556@kernel.org>
+References: <20240403102402.20144-1-lukasz.plachno@intel.com>
+ <20240403102402.20144-3-lukasz.plachno@intel.com>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: MW4PR11MB5776:EE_|CY8PR11MB7876:EE_
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: 6DcjmfeumLP3VW2byDO9/V66VJQSEngS2KuJb5PQZx2Tbls58RUuDpIKQByJpp0dQFknkImtmyJy85ybv+zbYkFmDwqSwip8sY6fco86M4wPRgdmwxhcwhnF5quGqdcK4Z2ZyDu24tOkTFnVAo1G20CjWHp5PKOhlU4ObG5spwNpKaJZ/qe+j5N0CkS6Krlzk96CeuNJUDHghJQMoHBQEtMarqWcQoYqy5zReRied4omOAbfGOTDMydPoUAye+mtOtRRLmzVdRb6GYJNMDi2tzkg8CO0cUjmS8PIZULi1V3apmp3y9Tm2k6Q9t30W09HBBqGNZfD4kFAFObQqcGdnMRjLgak/pcUm93VrUT0O/kLffr5QGtC4Ar5vy4eIhDk9gNRP0uTgI8MQBXUJgunG/aMG4wpX0/MOa9Co8YAU8bhU0Bn28/KGpErY0jkp1h72PE69+Qpz2XUMgk0PuAeYtWKdfO8iexzM5tk/XVaDWBtXNTsNf+VqkHRhhL8vKg6YGCmFXAtscv9vrw0pn4yGv+j9MbZqh8RbaF1XQzstbuLafVulNoCYANd/qVy82D4/VVZtZgOOMQHxZDi2vMwoFyOgKZo0VzobHfO+mb436K5im0kgF4OfqGpsySoAMZYjDEsLc65hiuHl5NbuidDKYT3j5aGnRMf1+MSvHELyRA=
-X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:MW4PR11MB5776.namprd11.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230031)(366007)(1800799015)(376005); DIR:OUT; SFP:1102; 
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?SDd5YURTbm9TckR1N2d0NEh6M2s2eTh0UzdCbms5RWJycFVwTElNUUY4QVY3?=
- =?utf-8?B?UnZjWDVscEEySTZoWUZzeGx5cjM0NjIyS0ZSYlUrR08xQUJWN1JGSUh4Tmlk?=
- =?utf-8?B?YnRCV2FOYURpTzAybFh4NUtpTEpLTnI4NWlhZXM5SW5lTFVKNVNEYWMzU2VY?=
- =?utf-8?B?L2hXd0NPNHJKVklubXFFVTJqdFE4cFI4N0g1ZUdWcEZIVTVzNXo3SU9rZ29z?=
- =?utf-8?B?c2pMYytkZlo0M2R0Ymc3dnE2dXRhTlNKOTB4M1hudW9tUGlKWlhnVFN6dzhi?=
- =?utf-8?B?MGRTVW1wMlhmNTJRS21rUmF6bFE0Y3lZWjBSWkxWdzVWOWQ5SVVuanppSUt4?=
- =?utf-8?B?M3NvWnpsNXBnVzFjWGlydnM3a3BNU05CZzdOU3BJQjIvRm82eVMwYVVTOGFL?=
- =?utf-8?B?VUN0SVpvelB5WE1oR29TcFVkWEkzOEpwN1BVR3N0RE5pRTR5T0t1V0IrZXFw?=
- =?utf-8?B?SWtmZlkrZmdrTCtka3JqczUxZFQ5NWZCdXN5K3FYaDhTbzcvK0pRTnJZOTl3?=
- =?utf-8?B?TVdMSC8yWlJCYTVNdmlEYXZtNnhFcUFmNVJiMTBSMk0yVURJcElDcjRqMitn?=
- =?utf-8?B?cVZ0ZGFNdHBBM2tBa2orZUNrcEN0L2txRjlROE82Z0ZOV0VVYkZiVFJRTFQ2?=
- =?utf-8?B?bnM1MHRUc0hTeG9BbFNOcTg0Uk4vQk1yMnA1bGM0U0lRUTY1UzYzVmRkblhi?=
- =?utf-8?B?L2kvMlVWV0xCS0Z2VldYaXlZSVFzQWVaalZ4SjNwVmdnUVhKeDdSK0ZveXFo?=
- =?utf-8?B?NGFrRklNSEJLaTRoRGt1b0dreE92RVlTSWgrQWJGaDYxa0Rock9qcHRlUWJX?=
- =?utf-8?B?RE5lV3BJeENRd2h2ODNBdkJDNjduaEdTVno1dlFUREZiS1ViVGpGM3pWYVla?=
- =?utf-8?B?KytMZVo4dXRvcGcxZ0dKOURPQ21sa251N2YwSlZHcHlSY1VwcTZIdFBpMWx4?=
- =?utf-8?B?TFB0UG55bXN3dXh6NjdndlQxS2tBRXBaNW1YSHBnd2c4bCt3TWRxZXpnT1Jl?=
- =?utf-8?B?ZllMZUJuKzJPYks3anVleTJWbFVUYkJNUFFHVGF0cXdwRS9LZWsyTForbjVw?=
- =?utf-8?B?Wno4OG0xMURMWThaT3M4emRzRi9UUlg3clA2QjIwZUFLZVQ4YndEeTVyN2hz?=
- =?utf-8?B?Tmx5WUtjc055K3JVS0R6S3dZWDhpbnlYbHJVRktTVEVUVEh4SnZWRE5uMFNn?=
- =?utf-8?B?VTVuNUtieGZmZ1pUVjEyY003dnNwcC94V1hnRkNBcGlBN0pmN29UNVFONENV?=
- =?utf-8?B?T0RxUlZoL1V6UGtYT2NtTXMxb0d2cEU4TEgyL2cwYlp3WjN4S2NKVmdrM1Ur?=
- =?utf-8?B?WXQvWW93c3dqblFDdTNGMGpiQXZCa0RJSExkd2VSeUVHSy8yVndzV0wrc3dD?=
- =?utf-8?B?aE9IdHlpaTBDUVN0bDhrTGljUVBCMitnNEZ0Yy9HQTRZc1pYSWkrdEI0YWxx?=
- =?utf-8?B?VUlIS2ZzU2dKM0VrN1BmemxHdFhJcmwraFdSSVd2TWJia0lxSThZRng0ZXNT?=
- =?utf-8?B?aUxHUk8zdWFkNTI2ZGQ3d2FPZFpOMzZjSlBUMTJkRXJncnVXbGVCYmJqUGo5?=
- =?utf-8?B?L2swWEpCc010cDBNSVpacVQ4QXNqakJkWThmdGZLdGZrZm85ZHJSUXoyTzRn?=
- =?utf-8?B?Sis4S0hCenNFVGxwSXR3dHNBZ0M0M0pobGNuZHZqTEg5TjhpcXBWR3FPZjNC?=
- =?utf-8?B?SytuVDBITXRwT0Nka2ovd3VmMTRDMUEycDRNZ3RYeDJyT2dzQlhJNlFpYkNT?=
- =?utf-8?B?SE43bURVQWRKanVrY3phN1FmdjhEbkllSEFUaW85WHEzdnlqTEtMY2FQNzla?=
- =?utf-8?B?Tm5MQUV2ck1iMEh2d1hObDNnNUNoMVBoZFpGYjRWb0VwdzgxU0V6ZVhoTytO?=
- =?utf-8?B?NlR5SktFWkZXVkY0N1NKU3plVXZhcWI0ejBnZmliTlZ6enBLVTlpSWVJWnM1?=
- =?utf-8?B?N0JCY24xSFo5eXI3THFBblJaOUpmNWxwbWJGY2pwNE9MbU1kRGMvN3RhMUlH?=
- =?utf-8?B?QUFhcDQ3cG5oVGl3RFBwQTFmc0V2VDBRVjJJQVRRVmhPR0VuaDQ0UUc4UXFB?=
- =?utf-8?B?bVB5bHhXS3c1OG5OUE5xSHpIdHZhYnJ5NCthMFgwTk1mWVZ5TWlRUXF4bnVY?=
- =?utf-8?B?aXNtUUwwdEZaK2pyZlA4eExReXcwWVlhUk5wd3NqSzhmUzlZU0g2enlOTXEx?=
- =?utf-8?B?V2c9PQ==?=
-X-MS-Exchange-CrossTenant-Network-Message-Id: 3a124873-349c-4314-1cf0-08dc54a52751
-X-MS-Exchange-CrossTenant-AuthSource: MW4PR11MB5776.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 04 Apr 2024 12:45:48.8528 (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: hCPKSSjTUbd/D1hHnC9xTPMx9ikI7yqtgUVYcEm2y/5HJTJ8AY/pGn76H74PvlL3lCd71E5kKuhVIQeUT09PNQY7aSNO4nyK1qKdbTelJzk=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: CY8PR11MB7876
-X-OriginatorOrg: intel.com
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240403102402.20144-3-lukasz.plachno@intel.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1712234754; x=1743770754;
- h=message-id:date:subject:to:cc:references:from:
- in-reply-to:content-transfer-encoding:mime-version;
- bh=wLv9/pr2EIGiz2xhMwy1FInzGK52is7/MX2DXmk4ZuU=;
- b=Hg2YBLmsYC1LZi1xGas8GF7VWa3NAnXWYVQnyUUt98NrCb7jBXr+jhOi
- H2e4AsIR/vc81XNWzoK5xe4AT8ZNBkVLC9yO9udpPc1WudBhOs3dsx1E7
- PJOM+2XmfmvtvWgUSWhzrUT6ayGFv1kRbL6iz+NdU1xGlqAQVLYKP9Clo
- Bp6dcqZBRPLyDI3czZnda5OZwnsvutbYPTu6uCUyUc3XnglVBpIXrVuyS
- ByvkRzZtXyD+c7gRbIt9ycGreQyPeDuUDriYzS8HOnM3GzGi0Me7my36S
- I1YVJV1bwO0xiw2IBoI37eOxQEOJJGP1I96Crp4ot5b+azCzvWA4GOwVZ
- Q==;
+ d=kernel.org; s=k20201202; t=1712235329;
+ bh=piYo9QgAQMJLzSMJ3LRhK+TE3bBd7tdG5/UH/HfIJc0=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=IUDEOBspoRxl/DL7MB77NtCe+CapCd0Y8/dwk83ZnBkwXRHtpBTFfC/92Un7GZPEY
+ ekVMARg5hIsRmYeHMeVdJTmOBRPxFFdlqlQhucDAMGC3PeOzPg+xa/Nj/essVyvZii
+ UerZRHaEBQ0CiToYRVBb5pKM1VTBE8Q8iR1SC55GpAPxRkwuwZjkm508K0L58H6r0l
+ e3el3gIXOrs8tPyF+mjsiKFlExp83Lan56AB4FPDWFjhV99SGayMjMdZSF1MB8Ch5s
+ s3oo+tgel35LpVM2MrkAZ6ks6Z+XqEvpWQdYYQ7FMahk1XevXE0vgfvDCvWe+f3g2F
+ 1/KROFhLVjJmg==
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
- header.from=intel.com
+ header.from=kernel.org
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=Hg2YBLms
-Subject: Re: [Intel-wired-lan] [PATCH net-next 0/3] ethtool: Max power
- support
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=IUDEOBsp
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next v8 2/2] ice: Implement
+ 'flow-type ether' rules
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -209,56 +96,52 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: pabeni@redhat.com, netdev@vger.kernel.org, edumazet@google.com,
- marcin.szycik@linux.intel.com, anthony.l.nguyen@intel.com, idosch@nvidia.com,
- kuba@kernel.org, intel-wired-lan@lists.osuosl.org,
- przemyslaw.kitszel@intel.com
+Cc: pmenzel@molgen.mpg.de, brett.creeley@amd.com, netdev@vger.kernel.org,
+ Jakub Buchocki <jakubx.buchocki@intel.com>, aleksander.lobakin@intel.com,
+ intel-wired-lan@lists.osuosl.org,
+ Mateusz Pacuszka <mateuszx.pacuszka@intel.com>,
+ Jacob Keller <jacob.e.keller@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-
-
-On 03.04.2024 15:49, Andrew Lunn wrote:
->>> $ ethtool --set-module enp1s0f0np0 power-max-set 4000
->>>
->>> actually talk to the SFP module and tell it the maximum power it can
->>> consume. So in this case, it is not the cage, but the module?
->>
->> It does not work that way in ice example.
->>>
->>> Or is it talking to some entity which is managing the overall power
->>> consumption of a number of cages, and asking it to allocate a maximum
->>> of 4W to this cage. It might return an error message saying there is
->>> no power budget left?
->>
->> That's right, we talk to firmware to set those restrictions.
->> In the ice implementation, the driver is responsible for checking if the
->> overall board budget is not exceeded.
+On Wed, Apr 03, 2024 at 12:24:02PM +0200, Lukasz Plachno wrote:
+> From: Jakub Buchocki <jakubx.buchocki@intel.com>
 > 
-> So i can get the board to agree that the cage can supply 3W to the
-> module, but how do i then tell the module this?
-
-I'd assume it is not possible, if the module consumes more power
-than maximum than the link will not come up and error will be printed.
-
+> Add support for 'flow-type ether' Flow Director rules via ethtool.
 > 
-> I would also suggest you don't focus too much on ICE. I find it better
-> to think about an abstract system. A board with a power supply to a
-> number of SFP cages, and some cages have modules in them. What does
-> the kAPI look like, the use cases for this abstract system.
+> Create packet segment info for filter configuration based on ethtool
+> command parameters. Reuse infrastructure already created for
+> ipv4 and ipv6 flows to convert packet segment into
+> extraction sequence, which is later used to program the filter
+> inside Flow Director block of the Rx pipeline.
+> 
+> Rules not containing masks are processed by the Flow Director,
+> and support the following set of input parameters in all combinations:
+> src, dst, proto, vlan-etype, vlan, action.
+> 
+> It is possible to specify address mask in ethtool parameters but only
+> 00:00:00:00:00 and FF:FF:FF:FF:FF are valid.
+> The same applies to proto, vlan-etype and vlan masks:
+> only 0x0000 and 0xffff masks are valid.
+> 
+> Testing:
+>   (DUT) iperf3 -s
+>   (DUT) ethtool -U ens785f0np0 flow-type ether dst <ens785f0np0 mac> \
+>         action 10
+>   (DUT) watch 'ethtool -S ens785f0np0 | grep rx_queue'
+>   (LP)  iperf3 -c ${DUT_IP}
+> 
+>   Counters increase only for:
+>     'rx_queue_10_packets'
+>     'rx_queue_10_bytes'
+> 
+> Signed-off-by: Jakub Buchocki <jakubx.buchocki@intel.com>
+> Co-developed-by: Mateusz Pacuszka <mateuszx.pacuszka@intel.com>
+> Signed-off-by: Mateusz Pacuszka <mateuszx.pacuszka@intel.com>
+> Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+> Signed-off-by: Lukasz Plachno <lukasz.plachno@intel.com>
+> Reviewed-by: Jacob Keller <jacob.e.keller@intel.com>
 
-My design for this API is to have an option to get and set maximum
-power that the module in the cage can consume. It's not about modifying
-module's power consumption, it's about setting restrictions for it.
+Reviewed-by: Simon Horman <horms@kernel.org>
 
-The use case is to let the user change maximum power in the given cage
-(so he can plug in the module with higher power consumption). Before that
-he will lower maximum power in different cage. Thanks to that the overall
-budget for the board won't be exceeded. Does it make sense for the abstract
-system you described?
-
-> 
->     Andrew
-> 
-> 
-> 
