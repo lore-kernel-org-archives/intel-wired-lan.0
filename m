@@ -4,94 +4,96 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 771DACD1292
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  4 Apr 2024 15:45:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3C59CCD129C
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  4 Apr 2024 15:46:07 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 2C64F41BD1;
-	Thu,  4 Apr 2024 15:45:53 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 08C9A41BEE;
+	Thu,  4 Apr 2024 15:46:07 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id UE4XXjmZvjMp; Thu,  4 Apr 2024 15:45:51 +0000 (UTC)
+ id FBGiAEgk9FLM; Thu,  4 Apr 2024 15:46:06 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 833A941BDD
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4D1DF41BD1
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1712245551;
-	bh=/kmQitHfMAOnw9sEJCLEPRmiFdxkQrDSqRJ3Pfv0C8g=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=TLftzQgLhUlqJcV8CbIpxXMqSTZ/PM3CDftOdHEptJvys8pQTeOV3GPPhzPHYq93/
-	 e8i8LpDKzSKBVBzNqof+cM1fwnx7A9tyrW9DDWQxtHoDCRnyYlKQjre5ck6MkHJmgo
-	 VxrTXYuilq/sVbFpMeUbc+5bygoPncqdWUji5oXVJ30kS1cJtqFQ1mPFlt7mTlAiTL
-	 NKbKiGos44u1aA3XILFUJaUjRZMUl/2Zxi8qasOL2QCULF9MJEFtR0/fZb7bq42oYz
-	 pLNZDdaR8STC8Yfj7bEQhTj8B1NM3aMHwIrAtzchiM84H6ifgh4W/E5ifb3Y/dxXp1
-	 s6XzAgdJLh4Sg==
+	s=default; t=1712245566;
+	bh=Jy1d0Xv2XVaArfdhoR+MsiwJ8k5Lq9Q2bv5xCRNmIAQ=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=H/OuDOeq6aanH97Mkk50zRrab3Q3GnyOSsCm8h0/klfnbJ/6geQu7dMXoB8gUmTn1
+	 MnySTFb1sU26McBs2A991xib05UTe0RnvA67CPN3tlqfmvDSj/J7LziJhFHuL633mj
+	 fqbMeMva17W/pjyRClcGkjGRlU8QqAO+eFgzTs5IYVwvuoZBZsksdgHMkQy6D2CAt1
+	 BDktCLhugBjqTLydxBgGrGLUit1QB+bNrTRoRn9CVTI0vj1QUq+/epSganr0cQXGnv
+	 bTJnMSAvEZYeoWvPQPq2ZgX7CZStQLkE819oIqa6yRCsRffjkwmomMukIjQe2iobV5
+	 LMiy0BttaDSdg==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 833A941BDD;
-	Thu,  4 Apr 2024 15:45:51 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 4D1DF41BD1;
+	Thu,  4 Apr 2024 15:46:06 +0000 (UTC)
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id D5E381BF41F
- for <intel-wired-lan@lists.osuosl.org>; Thu,  4 Apr 2024 15:45:50 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id A33641BF232
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  4 Apr 2024 15:46:04 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id C13496076D
- for <intel-wired-lan@lists.osuosl.org>; Thu,  4 Apr 2024 15:45:50 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 911FC6076D
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  4 Apr 2024 15:46:04 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id MIKyBc9J6cZm for <intel-wired-lan@lists.osuosl.org>;
- Thu,  4 Apr 2024 15:45:49 +0000 (UTC)
+ id v5fOvE5rnajK for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  4 Apr 2024 15:46:04 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.12;
  helo=mgamail.intel.com; envelope-from=aleksander.lobakin@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 72E7460761
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 72E7460761
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org D163B60761
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org D163B60761
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.12])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 72E7460761
- for <intel-wired-lan@lists.osuosl.org>; Thu,  4 Apr 2024 15:45:49 +0000 (UTC)
-X-CSE-ConnectionGUID: ckUDc6chQbOZP26tqcOEgw==
-X-CSE-MsgGUID: Qseatqj9T724udBwigIUkQ==
-X-IronPort-AV: E=McAfee;i="6600,9927,11034"; a="11312079"
-X-IronPort-AV: E=Sophos;i="6.07,179,1708416000"; d="scan'208";a="11312079"
+ by smtp3.osuosl.org (Postfix) with ESMTPS id D163B60761
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  4 Apr 2024 15:46:03 +0000 (UTC)
+X-CSE-ConnectionGUID: 3L1wNy4tSUGE9h5W/uZChg==
+X-CSE-MsgGUID: 3o6mngw6TT+hcSqBl+7e0g==
+X-IronPort-AV: E=McAfee;i="6600,9927,11034"; a="11312192"
+X-IronPort-AV: E=Sophos;i="6.07,179,1708416000"; d="scan'208";a="11312192"
 Received: from fmviesa005.fm.intel.com ([10.60.135.145])
  by fmvoesa106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 04 Apr 2024 08:45:48 -0700
-X-CSE-ConnectionGUID: 4u9Ci6LzQfCQCyn/ATdUdw==
-X-CSE-MsgGUID: 4+OyyTrXTb6b+0tX9wohJg==
+ 04 Apr 2024 08:46:04 -0700
+X-CSE-ConnectionGUID: FHLVSIiOR0mFs333aBuJww==
+X-CSE-MsgGUID: 3qwMB2+XR9Kfr0a3faOH4w==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.07,179,1708416000"; d="scan'208";a="23288031"
+X-IronPort-AV: E=Sophos;i="6.07,179,1708416000"; d="scan'208";a="23288071"
 Received: from newjersey.igk.intel.com ([10.102.20.203])
- by fmviesa005.fm.intel.com with ESMTP; 04 Apr 2024 08:45:44 -0700
+ by fmviesa005.fm.intel.com with ESMTP; 04 Apr 2024 08:46:00 -0700
 From: Alexander Lobakin <aleksander.lobakin@intel.com>
 To: "David S. Miller" <davem@davemloft.net>,
  Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
  Paolo Abeni <pabeni@redhat.com>
-Date: Thu,  4 Apr 2024 17:43:53 +0200
-Message-ID: <20240404154402.3581254-1-aleksander.lobakin@intel.com>
+Date: Thu,  4 Apr 2024 17:43:57 +0200
+Message-ID: <20240404154402.3581254-5-aleksander.lobakin@intel.com>
 X-Mailer: git-send-email 2.44.0
+In-Reply-To: <20240404154402.3581254-1-aleksander.lobakin@intel.com>
+References: <20240404154402.3581254-1-aleksander.lobakin@intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1712245550; x=1743781550;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=38WmI8KudBPQM/Ql3r656lB+f7qXdMLAJz3Qm77YaIo=;
- b=ZVm8R54yJoJG2uDGXOGwWpkwPXa2sfLOIgNnI65tgYdWIfVwBrL6I5X5
- ErMYVPGrf5jr5PYUUgdhJMxCnKmuxN3ZdwJCpRHH7p74WiM1CbAfOBoDV
- +joPxt58K3wUzKX8YQWb85WzNi/bVS8oO6iMEHg6kqpjRG6TVm4jsqP9v
- /CPu8mlUucx74wq8A9kLj9ExFwluuiAqNm0XbuMCCNLMjzvzViIYRUPy6
- cLX6HUoMuZ/67OOCsNBJVXT/ad5hJpFMHnKEPDjuEZo0e8jhfXKXJLR/R
- 3xehaa8bZJsH+bw9yW2PQbW0rHaSXbedlVa8uG9OE1jE1JL/YBgqHHYZ6
- A==;
+ t=1712245564; x=1743781564;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=0zdNtgo/Mi03+32brAD9ZsQQUigrMfXyFWjV5uvo34w=;
+ b=HyZNI5d069LO6orr0Ksgq0Gnk3qwF2vGqbFbprMUWVYfuIlSBQsYFxfE
+ xjaxmYIgBGshNl4odULEdBJrKq1GjhNKUNC/NrN7lVCGsumOdogry3oUB
+ NPjuQfF3wBSq5VOtumOybsptI8gp8lTBraj4jIlUMy/xAbjk1VxUrYdRj
+ EnyyOQ/Fq9s8xh+eSluVX6EU1QgfvyW5mXlwx89ltGeH10wBgwjtY0Ubn
+ OFuT7RJcOQDNRlNSOoqb9CokPrzSTVNYdqmgKFLUaQMSNPpO8Cs42Sqqo
+ EvlYtVSyYyY7X9XHaonFXJK+VrusmTuANhf20r5Al6Q09H5oR/ebJDtqW
+ Q==;
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=ZVm8R54y
-Subject: [Intel-wired-lan] [PATCH net-next v9 0/9] net: intel: start The
- Great Code Dedup + Page Pool for iavf
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=HyZNI5d0
+Subject: [Intel-wired-lan] [PATCH net-next v9 4/9] slab: introduce
+ kvmalloc_array_node() and kvcalloc_node()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -114,182 +116,49 @@ Cc: Jesper Dangaard Brouer <hawk@kernel.org>, linux-mm@kvack.org,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Here's a two-shot: introduce {,Intel} Ethernet common library (libeth and
-libie) and switch iavf to Page Pool. Details are in the commit messages;
-here's a summary:
+Add NUMA-aware counterparts for kvmalloc_array() and kvcalloc() to be
+able to flexibly allocate arrays for a particular node.
+Rewrite kvmalloc_array() to kvmalloc_array_node(NUMA_NO_NODE) call.
 
-Not a secret there's a ton of code duplication between two and more Intel
-ethernet modules. Before introducing new changes, which would need to be
-copied over again, start decoupling the already existing duplicate
-functionality into a new module, which will be shared between several
-Intel Ethernet drivers. The first name that came to my mind was
-"libie" -- "Intel Ethernet common library". Also this sounds like
-"lovelie" (-> one word, no "lib I E" pls) and can be expanded as
-"lib Internet Explorer" :P
-The "generic", pure-software part is placed separately, so that it can be
-easily reused in any driver by any vendor without linking to the Intel
-pre-200G guts. In a few words, it's something any modern driver does the
-same way, but nobody moved it level up (yet).
-The series is only the beginning. From now on, adding every new feature
-or doing any good driver refactoring will remove much more lines than add
-for quite some time. There's a basic roadmap with some deduplications
-planned already, not speaking of that touching every line now asks:
-"can I share this?". The final destination is very ambitious: have only
-one unified driver for at least i40e, ice, iavf, and idpf with a struct
-ops for each generation. That's never gonna happen, right? But you still
-can at least try.
-PP conversion for iavf lands within the same series as these two are tied
-closely. libie will support Page Pool model only, so that a driver can't
-use much of the lib until it's converted. iavf is only the example, the
-rest will eventually be converted soon on a per-driver basis. That is
-when it gets really interesting. Stay tech.
-
-Alexander Lobakin (9):
-  net: intel: introduce {,Intel} Ethernet common library
-  iavf: kill "legacy-rx" for good
-  iavf: drop page splitting and recycling
-  slab: introduce kvmalloc_array_node() and kvcalloc_node()
-  page_pool: constify some read-only function arguments
-  page_pool: add DMA-sync-for-CPU inline helper
-  libeth: add Rx buffer management
-  iavf: pack iavf_ring more efficiently
-  iavf: switch to Page Pool
-
- MAINTAINERS                                   |   4 +-
- drivers/net/ethernet/intel/Kconfig            |   7 +
- drivers/net/ethernet/intel/libeth/Kconfig     |   9 +
- drivers/net/ethernet/intel/libie/Kconfig      |  10 +
- drivers/net/ethernet/intel/Makefile           |   3 +
- drivers/net/ethernet/intel/libeth/Makefile    |   6 +
- drivers/net/ethernet/intel/libie/Makefile     |   6 +
- include/net/page_pool/types.h                 |   4 +-
- .../net/ethernet/intel/i40e/i40e_prototype.h  |   7 -
- drivers/net/ethernet/intel/i40e/i40e_type.h   |  88 ---
- drivers/net/ethernet/intel/iavf/iavf.h        |   2 +-
- .../net/ethernet/intel/iavf/iavf_prototype.h  |   7 -
- drivers/net/ethernet/intel/iavf/iavf_txrx.h   | 146 +----
- drivers/net/ethernet/intel/iavf/iavf_type.h   |  90 ---
- .../net/ethernet/intel/ice/ice_lan_tx_rx.h    | 320 ----------
- include/linux/net/intel/libie/rx.h            |  50 ++
- include/linux/slab.h                          |  17 +-
- include/net/libeth/rx.h                       | 242 ++++++++
- include/net/page_pool/helpers.h               |  34 +-
- drivers/net/ethernet/intel/i40e/i40e_common.c | 253 --------
- drivers/net/ethernet/intel/i40e/i40e_main.c   |   1 +
- drivers/net/ethernet/intel/i40e/i40e_txrx.c   |  72 +--
- drivers/net/ethernet/intel/iavf/iavf_common.c | 253 --------
- .../net/ethernet/intel/iavf/iavf_ethtool.c    | 140 -----
- drivers/net/ethernet/intel/iavf/iavf_main.c   |  40 +-
- drivers/net/ethernet/intel/iavf/iavf_txrx.c   | 551 +++---------------
- .../net/ethernet/intel/iavf/iavf_virtchnl.c   |  17 +-
- drivers/net/ethernet/intel/ice/ice_main.c     |   1 +
- drivers/net/ethernet/intel/ice/ice_txrx_lib.c | 111 +---
- drivers/net/ethernet/intel/libeth/rx.c        | 150 +++++
- drivers/net/ethernet/intel/libie/rx.c         | 124 ++++
- net/core/page_pool.c                          |  10 +-
- 32 files changed, 819 insertions(+), 1956 deletions(-)
- create mode 100644 drivers/net/ethernet/intel/libeth/Kconfig
- create mode 100644 drivers/net/ethernet/intel/libie/Kconfig
- create mode 100644 drivers/net/ethernet/intel/libeth/Makefile
- create mode 100644 drivers/net/ethernet/intel/libie/Makefile
- create mode 100644 include/linux/net/intel/libie/rx.h
- create mode 100644 include/net/libeth/rx.h
- create mode 100644 drivers/net/ethernet/intel/libeth/rx.c
- create mode 100644 drivers/net/ethernet/intel/libie/rx.c
-
+Signed-off-by: Alexander Lobakin <aleksander.lobakin@intel.com>
 ---
-libeth has way more generic functionality and code in the idpf XDP
-tree[0], take a look if you want to have more complete picture of
-what this really is about.
+ include/linux/slab.h | 17 +++++++++++++++--
+ 1 file changed, 15 insertions(+), 2 deletions(-)
 
-From v8[1]:
-* rebase on top of net-next (6.9-rc1+);
-* introduce kvmalloc_array_node() and kvcalloc_node();
-* make Rx buffer management NUMA-aware;
-* resolve kdoc issues (Jakub, me).
-
-From v7[2]:
-* drop Page Pool optimization prereqs;
-* drop generic stats part: will redo to the new per-queue stats later;
-* split libie into "generic" and "fnic" (i40e, ice, iavf) parts;
-* use shorter and modern struct names;
-* #1: allow to compile-out hotpath IPv6 code when !CONFIG_IPV6;
-* #1: generate XDP RSS hash directly in the lookup table;
-* #8: fix rare skb nullptr deref bug.
-
-From v6[3]:
-* #04: resolve ethtool_puts() Git conflict (Jakub);
-* #06: pick RB from Ilias;
-* no functional changes.
-
-From v5[4]:
-* drop Page Pool DMA shortcut: will pick up Eric's more global DMA sync
-  optimization[5] and expand it to cover both IOMMU and direct DMA a bit
-  later (Yunsheng);
-* drop per-queue Page Pool Ethtool stats: they are now exported via
-  generic Netlink interface (Jakub);
-* #01: leave a comment why exactly this alignment (Jakub, Yunsheng);
-* #08: make use of page_pool_params::netdev when calculating PP params;
-* #08: rename ``libie_rx_queue`` -> ``libie_buf_queue``.
-
-From v4[6]:
-* make use of Jakub's &page_pool_params split;
-* #01: prevent frag fields from spanning into 2 cachelines after
-  splitting &page_pool_params into fast and slow;
-* #02-03: bring back the DMA sync shortcut, now as a per-page flag
-  (me, Yunsheng);
-* #04: let libie have its own Kconfig to stop further bloating of poor
-  intel/Kconfig;
-* #06: merge page split-reuse-recycle drop into one commit (Alex);
-* #07: decouple constifying of several Page Pool function arguments
-  into a separate commit, constify some more;
-* #09: stop abusing internal PP fields in the driver code (Yunsheng);
-* #09: calculate DMA sync size (::max_len) correctly: within one page,
-  not one buffer (Yunsheng);
-* #10: decouple rearranging &iavf_ring into separate commit, optimize
-  it even more;
-* #11: let the driver get back to the last descriptor to process after
-  an skb allocation fail, don't drop it (Alex);
-* #11: stop touching unrelated stuff like watchdog timeout etc. (Alex);
-* fix "Return:" in the kdoc (now `W=12 C=1` is clean), misc typos.
-
-From v3[7]:
-* base on the latest net-next, update bloat-o-meter and perf stats;
-* split generic PP optimizations into a separate series;
-* drop "optimize hotpath a bunch" commit: a lot of [controversial]
-  changes in one place, worth own series (Alex);
-* 02: pick Rev-by (Alex);
-* 03: move in-place recycling removal here from the dropped patch;
-* 05: new, add libie Rx buffer API separatelly from IAVF changes;
-* 05-06: use new "hybrid" allocation API from[8] to reduce memory usage
-  when a page can fit more than 1 truesize (also asked by David);
-* 06: merge with "always use order-0 page" commit to reduce diffs and
-  simplify things (Alex);
-* 09: fix page_alloc_fail counter.
-
-From v2[9]:
-* 0006: fix page_pool.h include in OcteonTX2 files (Jakub, Patchwork);
-* no functional changes.
-
-From v1[10]:
-* 0006: new (me, Jakub);
-* 0008: give the helpers more intuitive names (Jakub, Ilias);
-*  -^-: also expand their kdoc a bit for the same reason;
-*  -^-: fix kdoc copy-paste issue (Patchwork, Jakub);
-* 0011: drop `inline` from C file (Patchwork, Jakub).
-
-[0] https://github.com/alobakin/linux/commits/idpf-libie-new
-[1] https://lore.kernel.org/netdev/20240308141833.2966600-1-aleksander.lobakin@intel.com
-[2] https://lore.kernel.org/netdev/20231213112835.2262651-1-aleksander.lobakin@intel.com
-[3] https://lore.kernel.org/netdev/20231207172010.1441468-1-aleksander.lobakin@intel.com
-[4] https://lore.kernel.org/netdev/20231124154732.1623518-1-aleksander.lobakin@intel.com
-[5] https://lore.kernel.org/netdev/20221115182841.2640176-1-edumazet@google.com
-[6] https://lore.kernel.org/netdev/20230705155551.1317583-1-aleksander.lobakin@intel.com
-[7] https://lore.kernel.org/netdev/20230530150035.1943669-1-aleksander.lobakin@intel.com
-[8] https://lore.kernel.org/netdev/20230629120226.14854-1-linyunsheng@huawei.com
-[9] https://lore.kernel.org/netdev/20230525125746.553874-1-aleksander.lobakin@intel.com
-[10] https://lore.kernel.org/netdev/20230516161841.37138-1-aleksander.lobakin@intel.com
-
+diff --git a/include/linux/slab.h b/include/linux/slab.h
+index e53cbfa18325..d1d1fa5e7983 100644
+--- a/include/linux/slab.h
++++ b/include/linux/slab.h
+@@ -774,14 +774,27 @@ static inline __alloc_size(1) void *kvzalloc(size_t size, gfp_t flags)
+ 	return kvmalloc(size, flags | __GFP_ZERO);
+ }
+ 
+-static inline __alloc_size(1, 2) void *kvmalloc_array(size_t n, size_t size, gfp_t flags)
++static inline __alloc_size(1, 2) void *
++kvmalloc_array_node(size_t n, size_t size, gfp_t flags, int node)
+ {
+ 	size_t bytes;
+ 
+ 	if (unlikely(check_mul_overflow(n, size, &bytes)))
+ 		return NULL;
+ 
+-	return kvmalloc(bytes, flags);
++	return kvmalloc_node(bytes, flags, node);
++}
++
++static inline __alloc_size(1, 2) void *
++kvmalloc_array(size_t n, size_t size, gfp_t flags)
++{
++	return kvmalloc_array_node(n, size, flags, NUMA_NO_NODE);
++}
++
++static inline __alloc_size(1, 2) void *
++kvcalloc_node(size_t n, size_t size, gfp_t flags, int node)
++{
++	return kvmalloc_array_node(n, size, flags | __GFP_ZERO, node);
+ }
+ 
+ static inline __alloc_size(1, 2) void *kvcalloc(size_t n, size_t size, gfp_t flags)
 -- 
 2.44.0
 
