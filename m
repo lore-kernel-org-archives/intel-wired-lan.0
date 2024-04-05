@@ -4,69 +4,69 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4D5A8CD1299
-	for <intel-wired-lan@archiver.kernel.org>; Fri,  5 Apr 2024 10:07:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 85E8CCD1296
+	for <intel-wired-lan@archiver.kernel.org>; Fri,  5 Apr 2024 10:07:16 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 0592B8226F;
-	Fri,  5 Apr 2024 10:07:14 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 501F08227A;
+	Fri,  5 Apr 2024 10:07:16 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id fYEPtZfAnswu; Fri,  5 Apr 2024 10:07:14 +0000 (UTC)
+ id eZxQficWRVMY; Fri,  5 Apr 2024 10:07:15 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 0D2A58227A
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9EEBB82289
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1712311634;
-	bh=ai1roJ15SJkWbpy8fv8u2zrVI3zjjCI4dvtQWD0e6KQ=;
+	s=default; t=1712311635;
+	bh=VcEkyQaVLyyBx1Xcx84dXqZY4QneoQTc5t51C+eTNWY=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=H9YyE75UE0wiASfI94UC+rOvDqIgC/m1FN0upfOv/RAfHZjN9Cy7mDYpMjd7tMlAa
-	 vLqLAGsDbxdWr1xNXvUVZ3Xr6y67zFHw1aHmJVKU1wHBgHTHKyhOMTKfcTwwoOb4ik
-	 CMqAdgrsLkdOh5sa8FZdIl1kWFazLe62tvc7yvEe0WuAXM0RyRWEhYKoNXEuQVfVSN
-	 VVR/sxtc2s7+qAJ6TzYphjqIw95wn/oOp1ahiL2L9gd7AACH6KGGn0HsNiaa8OZv4m
-	 lohWm5opWPkyqjoBXS1GjOkTyQoMg9/fzoocC1z7x5BRmH3h0vRE02ya5NO9R6ej0U
-	 d3ElTbi3qHvTw==
+	b=p1wRAr2rkbE3RznMOiW4ByKlKJjdIPNbyUtEvNcI06t0BlDd5QuLuyVlWys3Js7Pu
+	 IdVrhQQ7EK2K/bCRlQDT07TTB4fmuWFi4wocKESgVnh864jZzu+otcI/Clswy+MCrJ
+	 BC4vCmW118WwdQGjfpSzr+g+gIAqK1qjuXI5FSnWMe+SNPkAi5VUUL2z5+tiOutkge
+	 dH9hJisL6Cmeb5rlzcgpseSZ7ycqAjCPaEWSXWuZjCOitxeuJOaHSh6yszF6pDGxLg
+	 W3YhiV3trsncdx4WRpSPO6sYq8WKj/k6YBLz2F39h8rRZoa9lZR3LjGQ0/4iV13SfE
+	 m2s9dw3d7TgbQ==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 0D2A58227A;
-	Fri,  5 Apr 2024 10:07:14 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 9EEBB82289;
+	Fri,  5 Apr 2024 10:07:15 +0000 (UTC)
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 99A851BF385
- for <intel-wired-lan@lists.osuosl.org>; Fri,  5 Apr 2024 10:07:04 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 3EE741BF385
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  5 Apr 2024 10:07:06 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 86C7982217
- for <intel-wired-lan@lists.osuosl.org>; Fri,  5 Apr 2024 10:07:04 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 35D1782234
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  5 Apr 2024 10:07:06 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id YJaCZJ7GH03U for <intel-wired-lan@lists.osuosl.org>;
- Fri,  5 Apr 2024 10:07:03 +0000 (UTC)
+ id 0MWstr6blDjW for <intel-wired-lan@lists.osuosl.org>;
+ Fri,  5 Apr 2024 10:07:05 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.19;
  helo=mgamail.intel.com; envelope-from=karol.kolacinski@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org A7CF982214
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org A7CF982214
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 7935D82214
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7935D82214
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.19])
- by smtp1.osuosl.org (Postfix) with ESMTPS id A7CF982214
- for <intel-wired-lan@lists.osuosl.org>; Fri,  5 Apr 2024 10:07:03 +0000 (UTC)
-X-CSE-ConnectionGUID: C0/tvi78T+GV0a1pbKR+jQ==
-X-CSE-MsgGUID: 8Hs2WBe3RViVAYhc18Bg0A==
-X-IronPort-AV: E=McAfee;i="6600,9927,11034"; a="7493948"
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 7935D82214
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  5 Apr 2024 10:07:05 +0000 (UTC)
+X-CSE-ConnectionGUID: jrEjCcK3T0GeIBsGD/4vyQ==
+X-CSE-MsgGUID: nNvNLo9QToyowXmU5U5dRA==
+X-IronPort-AV: E=McAfee;i="6600,9927,11034"; a="7493964"
 X-IronPort-AV: E=Sophos;i="6.07,181,1708416000"; 
-   d="scan'208";a="7493948"
+   d="scan'208";a="7493964"
 Received: from orviesa007.jf.intel.com ([10.64.159.147])
  by fmvoesa113.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 05 Apr 2024 03:07:03 -0700
-X-CSE-ConnectionGUID: 9IxiA88zTN+9pHcNCxK6Gg==
-X-CSE-MsgGUID: xYOGbvseR7+TiFOOZPvHEg==
+ 05 Apr 2024 03:07:05 -0700
+X-CSE-ConnectionGUID: 9S/WgSfDR+yTtFNbIodMqg==
+X-CSE-MsgGUID: GXgR0yRVQQKQFZlKrCfhoA==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.07,181,1708416000"; d="scan'208";a="19536141"
+X-IronPort-AV: E=Sophos;i="6.07,181,1708416000"; d="scan'208";a="19536174"
 Received: from kkolacin-desk1.igk.intel.com ([10.102.102.152])
- by orviesa007.jf.intel.com with ESMTP; 05 Apr 2024 03:07:02 -0700
+ by orviesa007.jf.intel.com with ESMTP; 05 Apr 2024 03:07:04 -0700
 From: Karol Kolacinski <karol.kolacinski@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Fri,  5 Apr 2024 11:57:15 +0200
-Message-ID: <20240405100648.144756-17-karol.kolacinski@intel.com>
+Date: Fri,  5 Apr 2024 11:57:16 +0200
+Message-ID: <20240405100648.144756-18-karol.kolacinski@intel.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20240405100648.144756-14-karol.kolacinski@intel.com>
 References: <20240405100648.144756-14-karol.kolacinski@intel.com>
@@ -74,25 +74,25 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1712311623; x=1743847623;
+ t=1712311625; x=1743847625;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=VUjc07/O2AnsdYN9j7j+UdMBTUDwCU4wJIYPpRL/8wY=;
- b=Sdweg83tQfNxuysTHGJ0QqSrxgea192lNpJuMJ6pYdfgYBn4pQuu8hcl
- WQ8e2+ps3c1vqYZiasIvXq9GjJqInhU2WL22MHjZLRyXF1/qUxHYKR1U6
- s+01qt9JYWdT+3R/T4pfYklO/pkuZaYxcv0J7FGIBvtPx7njP7lTaMbh+
- b88w0XFSbeuVXsWWFnSpBGecqSQfKM5X5TJv+4nhjsuYvT+9a3d1iETSX
- WSs0aNaqFGROL7BnKWBV5WPANEH9yE7Eqx4wAg0ssifPttJeE/nk1DdPR
- 8UW6YT0Mv4lDKyOPZrXQmy9LsyROHhdZsrgXVsdouZ6TIh6DgePCCuzYO
- Q==;
+ bh=pjdW3rHfTH/ULFHjNp9yphnnD4pBVED7Ka/okI7hORI=;
+ b=e4ba9lc9Omz0FCzTknA36nxDKgTPjumlqFnl34ep3PUEzvbtQNuv8Mtz
+ Sae7w74TxAyvQYcvHdG9MaAdE7bAve49ySppqwOThMuyX/VBy/Y937luS
+ M0+Z+VqUV/TzZ6ApMkhgEA8EdIoKDOy755UVf/JMa94eXwlomLU/wivhP
+ h5xTccdOv1lJh5BUcoH0vHjFGTUGJFgP8Q7U8ncOY5P0T134HdmOL5E7D
+ la3Nud2YnEJREo2kBubs8H+Io6f0RW6A7grOelWCetwlfgsDv6Glib7dk
+ eA4rTpyj02LpYASlT1Kxe6otloXt1ZIZYtOAHfnsYOPrAiqyrCWCe1jjc
+ w==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=Sdweg83t
-Subject: [Intel-wired-lan] [PATCH v6 iwl-next 03/12] ice: Implement Tx
- interrupt enablement functions
+ header.a=rsa-sha256 header.s=Intel header.b=e4ba9lc9
+Subject: [Intel-wired-lan] [PATCH v6 iwl-next 04/12] ice: Add PHY
+ OFFSET_READY register clearing
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,185 +105,103 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Sergey Temerkhanov <sergey.temerkhanov@intel.com>, netdev@vger.kernel.org,
+Cc: netdev@vger.kernel.org,
  Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>,
  Karol Kolacinski <karol.kolacinski@intel.com>, anthony.l.nguyen@intel.com,
  Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Sergey Temerkhanov <sergey.temerkhanov@intel.com>
+Add a possibility to mark all transmitted/received timestamps as invalid
+by clearing PHY OFFSET_READY registers.
 
-Introduce functions enabling/disabling Tx TS interrupts
-for the E822 and ETH56G PHYs
-
-Signed-off-by: Sergey Temerkhanov <sergey.temerkhanov@intel.com>
 Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Reviewed-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
 Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
 ---
-V5 -> V6: Adjusted return in ice_phy_cfg_intr_e82x()
-
- drivers/net/ethernet/intel/ice/ice_ptp.c    | 63 ++++++++++-----------
- drivers/net/ethernet/intel/ice/ice_ptp_hw.c | 29 ++++++++++
- drivers/net/ethernet/intel/ice/ice_ptp_hw.h |  4 +-
- 3 files changed, 61 insertions(+), 35 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_ptp.c    | 11 ++++---
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.c | 32 +++++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.h |  1 +
+ 3 files changed, 40 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
-index cca9d09b2d61..18d5dff6b872 100644
+index 18d5dff6b872..6899b331f322 100644
 --- a/drivers/net/ethernet/intel/ice/ice_ptp.c
 +++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-@@ -1457,42 +1457,43 @@ void ice_ptp_link_change(struct ice_pf *pf, u8 port, bool linkup)
-  * @ena: bool value to enable or disable interrupt
-  * @threshold: Minimum number of packets at which intr is triggered
-  *
-- * Utility function to enable or disable Tx timestamp interrupt and threshold
-+ * Utility function to configure all the PHY interrupt settings, including
-+ * whether the PHY interrupt is enabled, and what threshold to use. Also
-+ * configures The E82X timestamp owner to react to interrupts from all PHYs.
-  */
- static int ice_ptp_cfg_phy_interrupt(struct ice_pf *pf, bool ena, u32 threshold)
- {
-+	struct device *dev = ice_pf_to_dev(pf);
+@@ -1930,11 +1930,14 @@ ice_ptp_settime64(struct ptp_clock_info *info, const struct timespec64 *ts)
  	struct ice_hw *hw = &pf->hw;
--	int err = 0;
--	int quad;
--	u32 val;
+ 	int err;
  
- 	ice_ptp_reset_ts_memory(hw);
- 
--	for (quad = 0; quad < ICE_GET_QUAD_NUM(hw->ptp.num_lports); quad++) {
--		err = ice_read_quad_reg_e82x(hw, quad, Q_REG_TX_MEM_GBL_CFG,
--					     &val);
--		if (err)
--			break;
--
--		if (ena) {
--			val |= Q_REG_TX_MEM_GBL_CFG_INTR_ENA_M;
--			val &= ~Q_REG_TX_MEM_GBL_CFG_INTR_THR_M;
--			val |= FIELD_PREP(Q_REG_TX_MEM_GBL_CFG_INTR_THR_M,
--					  threshold);
--		} else {
--			val &= ~Q_REG_TX_MEM_GBL_CFG_INTR_ENA_M;
-+	switch (hw->ptp.phy_model) {
-+	case ICE_PHY_E82X: {
-+		int quad;
-+
-+		for (quad = 0; quad < ICE_GET_QUAD_NUM(hw->ptp.num_lports);
-+		     quad++) {
-+			int err;
-+
-+			err = ice_phy_cfg_intr_e82x(hw, quad, ena, threshold);
-+			if (err) {
-+				dev_err(dev, "Failed to configure PHY interrupt for quad %d, err %d\n",
-+					quad, err);
-+				return err;
-+			}
- 		}
- 
--		err = ice_write_quad_reg_e82x(hw, quad, Q_REG_TX_MEM_GBL_CFG,
--					      val);
--		if (err)
--			break;
-+		return 0;
+-	/* For Vernier mode, we need to recalibrate after new settime
+-	 * Start with disabling timestamp block
++	/* For Vernier mode on E82X, we need to recalibrate after new settime.
++	 * Start with marking timestamps as invalid.
+ 	 */
+-	if (pf->ptp.port.link_up)
+-		ice_ptp_port_phy_stop(&pf->ptp.port);
++	if (hw->ptp.phy_model == ICE_PHY_E82X) {
++		err = ice_ptp_clear_phy_offset_ready_e82x(hw);
++		if (err)
++			dev_warn(ice_pf_to_dev(pf), "Failed to mark timestamps as invalid before settime\n");
 +	}
-+	case ICE_PHY_E810:
-+		return 0;
-+	case ICE_PHY_UNSUP:
-+	default:
-+		dev_warn(dev, "%s: Unexpected PHY model %d\n", __func__,
-+			 hw->ptp.phy_model);
-+		return -EOPNOTSUPP;
- 	}
--
--	if (err)
--		dev_err(ice_pf_to_dev(pf), "PTP failed in intr ena, err %d\n",
--			err);
--	return err;
- }
  
- /**
-@@ -3010,12 +3011,10 @@ static int ice_ptp_init_owner(struct ice_pf *pf)
- 	/* Release the global hardware lock */
- 	ice_ptp_unlock(hw);
- 
--	if (!ice_is_e810(hw)) {
--		/* Enable quad interrupts */
--		err = ice_ptp_cfg_phy_interrupt(pf, true, 1);
--		if (err)
--			goto err_exit;
--	}
-+	/* Configure PHY interrupt settings */
-+	err = ice_ptp_cfg_phy_interrupt(pf, true, 1);
-+	if (err)
-+		goto err_exit;
- 
- 	/* Ensure we have a clock device */
- 	err = ice_ptp_create_clock(pf);
+ 	if (!ice_ptp_lock(hw)) {
+ 		err = -EBUSY;
 diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-index 0d8e051ff93b..bd25ebd976bc 100644
+index bd25ebd976bc..3c0efdd3cb8a 100644
 --- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
 +++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-@@ -2715,6 +2715,35 @@ ice_get_phy_tx_tstamp_ready_e82x(struct ice_hw *hw, u8 quad, u64 *tstamp_ready)
+@@ -2405,6 +2405,38 @@ int ice_phy_cfg_rx_offset_e82x(struct ice_hw *hw, u8 port)
  	return 0;
  }
  
 +/**
-+ * ice_phy_cfg_intr_e82x - Configure TX timestamp interrupt
++ * ice_ptp_clear_phy_offset_ready_e82x - Clear PHY TX_/RX_OFFSET_READY registers
 + * @hw: pointer to the HW struct
-+ * @quad: the timestamp quad
-+ * @ena: enable or disable interrupt
-+ * @threshold: interrupt threshold
 + *
-+ * Configure TX timestamp interrupt for the specified quad
++ * Clear PHY TX_/RX_OFFSET_READY registers, effectively marking all transmitted
++ * and received timestamps as invalid.
 + */
-+
-+int ice_phy_cfg_intr_e82x(struct ice_hw *hw, u8 quad, bool ena, u8 threshold)
++int ice_ptp_clear_phy_offset_ready_e82x(struct ice_hw *hw)
 +{
-+	int err;
-+	u32 val;
++	u8 port;
 +
-+	err = ice_read_quad_reg_e82x(hw, quad, Q_REG_TX_MEM_GBL_CFG, &val);
-+	if (err)
-+		return err;
++	for (port = 0; port < hw->ptp.num_lports; port++) {
++		int err;
 +
-+	val &= ~Q_REG_TX_MEM_GBL_CFG_INTR_ENA_M;
-+	if (ena) {
-+		val |= Q_REG_TX_MEM_GBL_CFG_INTR_ENA_M;
-+		val &= ~Q_REG_TX_MEM_GBL_CFG_INTR_THR_M;
-+		val |= FIELD_PREP(Q_REG_TX_MEM_GBL_CFG_INTR_THR_M, threshold);
++		err = ice_write_phy_reg_e82x(hw, port, P_REG_TX_OR, 0);
++		if (err) {
++			dev_warn(ice_hw_to_dev(hw),
++				 "Failed to clear PHY TX_OFFSET_READY register\n");
++			return err;
++		}
++
++		err = ice_write_phy_reg_e82x(hw, port, P_REG_RX_OR, 0);
++		if (err) {
++			dev_warn(ice_hw_to_dev(hw),
++				 "Failed to clear PHY RX_OFFSET_READY register\n");
++			return err;
++		}
 +	}
 +
-+	return ice_write_quad_reg_e82x(hw, quad, Q_REG_TX_MEM_GBL_CFG, val);
++	return 0;
 +}
 +
  /**
-  * ice_ptp_init_phy_e82x - initialize PHY parameters
-  * @ptp: pointer to the PTP HW struct
+  * ice_read_phy_and_phc_time_e82x - Simultaneously capture PHC and PHY time
+  * @hw: pointer to the HW struct
 diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
-index 6246de3bacf3..5645b20a9f87 100644
+index 5645b20a9f87..5223e17d2806 100644
 --- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
 +++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
-@@ -265,6 +265,7 @@ int ice_stop_phy_timer_e82x(struct ice_hw *hw, u8 port, bool soft_reset);
- int ice_start_phy_timer_e82x(struct ice_hw *hw, u8 port);
- int ice_phy_cfg_tx_offset_e82x(struct ice_hw *hw, u8 port);
- int ice_phy_cfg_rx_offset_e82x(struct ice_hw *hw, u8 port);
-+int ice_phy_cfg_intr_e82x(struct ice_hw *hw, u8 quad, bool ena, u8 threshold);
- 
- /* E810 family functions */
- int ice_read_sma_ctrl_e810t(struct ice_hw *hw, u8 *data);
-@@ -342,11 +343,8 @@ int ice_cgu_get_output_pin_state_caps(struct ice_hw *hw, u8 pin_id,
- #define Q_REG_TX_MEM_GBL_CFG		0xC08
- #define Q_REG_TX_MEM_GBL_CFG_LANE_TYPE_S	0
- #define Q_REG_TX_MEM_GBL_CFG_LANE_TYPE_M	BIT(0)
--#define Q_REG_TX_MEM_GBL_CFG_TX_TYPE_S	1
- #define Q_REG_TX_MEM_GBL_CFG_TX_TYPE_M	ICE_M(0xFF, 1)
--#define Q_REG_TX_MEM_GBL_CFG_INTR_THR_S	9
- #define Q_REG_TX_MEM_GBL_CFG_INTR_THR_M ICE_M(0x3F, 9)
--#define Q_REG_TX_MEM_GBL_CFG_INTR_ENA_S	15
- #define Q_REG_TX_MEM_GBL_CFG_INTR_ENA_M	BIT(15)
- 
- /* Tx Timestamp data registers */
+@@ -208,6 +208,7 @@ int ice_ptp_init_time(struct ice_hw *hw, u64 time);
+ int ice_ptp_write_incval(struct ice_hw *hw, u64 incval);
+ int ice_ptp_write_incval_locked(struct ice_hw *hw, u64 incval);
+ int ice_ptp_adj_clock(struct ice_hw *hw, s32 adj);
++int ice_ptp_clear_phy_offset_ready_e82x(struct ice_hw *hw);
+ int ice_read_phy_tstamp(struct ice_hw *hw, u8 block, u8 idx, u64 *tstamp);
+ int ice_clear_phy_tstamp(struct ice_hw *hw, u8 block, u8 idx);
+ void ice_ptp_reset_ts_memory(struct ice_hw *hw);
 -- 
 2.43.0
 
