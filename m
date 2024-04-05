@@ -4,77 +4,97 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BB96CCD11C2
-	for <intel-wired-lan@archiver.kernel.org>; Fri,  5 Apr 2024 13:59:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6F0DBC67861
+	for <intel-wired-lan@archiver.kernel.org>; Fri,  5 Apr 2024 14:00:03 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 6E4BC41595;
-	Fri,  5 Apr 2024 13:59:55 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 3F15941595;
+	Fri,  5 Apr 2024 14:00:03 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id erLhEiVW2Koz; Fri,  5 Apr 2024 13:59:53 +0000 (UTC)
+ id rGl0dpsuvvkX; Fri,  5 Apr 2024 14:00:02 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 3A6B7415A0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 34F3C41577
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1712325593;
-	bh=5Za0C9oFMykzd1Cjz1BEQ7ZrozkcIWJXXEcksMGjWjI=;
+	s=default; t=1712325602;
+	bh=2Kv6qMWAmnaqt3cgud+S76vNqEBfICL6nSWnd2Ljxzc=;
 	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=7j6j9YV/jwVXxEEqsVFXiPfv5AAZCMcdgpL7y5jimVKz1LpJS4hWdDD2GnDhYHuP3
-	 fIxp5YF23JgMCJopihJoh9c7M5jjiNRfyc+WFFSjEp1dCuOgHD38/KrLBI0LGKaTbF
-	 5Usmaag6N41iliOLwphONxITPKO2VCkiyLsP4zUUNq4fkfvBdL3QMDjpdhG3qs2w3r
-	 OCRoJAs3GVSkoJkex7QBgUdOINewRTNyU9S0UFK0aIUClmM7QHJR4LtUCL8AOe6pD0
-	 zbltr4gPykxc/oD/V+b51r+5zfAALAMS2wTuhIJqncuGh3YmVJtSsTUVA7s6abH3SX
-	 QqIRFDA+iRTYg==
+	b=LgcFxoaNf65zophsK9eJhedrLf3tQoG82LrtCBlORAxsS5mNhV8j5cCZODT77Pfsj
+	 Y7U24QuLbcmmzO5A8cmb5YIIwIOPDLcGesGO5s0Mlm+tABq/o5t/aq9sjFpLfP2yUg
+	 FwnBdJQTuZLRtqU1w0gGPjRYvukJPvAxnwfsDnZgXLETRWJXb+ovANaMaCdzGqmGJh
+	 fI0YwOTqt9Om+yY7PBuLvtJI9JRv7KvYBUJHPRE+P0ZtjS9N+JTeFjaX9BtdafNqve
+	 iQRBmfG41FyaLat+u8hPmTdXxf+bLzZeiDTHIgNvKRvu/Qx04pCcf9C73TanuQCUd1
+	 ZeEsZN29OXrPQ==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 3A6B7415A0;
-	Fri,  5 Apr 2024 13:59:53 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 34F3C41577;
+	Fri,  5 Apr 2024 14:00:02 +0000 (UTC)
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 0DB441BF385
- for <intel-wired-lan@lists.osuosl.org>; Fri,  5 Apr 2024 10:12:26 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 98F6A1BF232
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  5 Apr 2024 13:59:54 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id EB7A140133
- for <intel-wired-lan@lists.osuosl.org>; Fri,  5 Apr 2024 10:12:24 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 8301F41592
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  5 Apr 2024 13:59:54 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Osqx3dT0s602 for <intel-wired-lan@lists.osuosl.org>;
- Fri,  5 Apr 2024 10:12:23 +0000 (UTC)
-X-Greylist: delayed 582 seconds by postgrey-1.37 at util1.osuosl.org;
- Fri, 05 Apr 2024 10:12:22 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 3AFE040A98
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 3AFE040A98
-Received-SPF: None (mailfrom) identity=mailfrom;
- client-ip=2a01:4f8:150:2161:1:b009:f23e:0; helo=bmailout3.hostsharing.net;
- envelope-from=foo00@h08.hostsharing.net; receiver=<UNKNOWN> 
-Received: from bmailout3.hostsharing.net (bmailout3.hostsharing.net
- [IPv6:2a01:4f8:150:2161:1:b009:f23e:0])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 3AFE040A98
- for <intel-wired-lan@lists.osuosl.org>; Fri,  5 Apr 2024 10:12:22 +0000 (UTC)
-Received: from h08.hostsharing.net (h08.hostsharing.net [83.223.95.28])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256
- client-signature RSA-PSS (4096 bits) client-digest SHA256)
- (Client CN "*.hostsharing.net", Issuer "RapidSSL TLS RSA CA G1" (verified OK))
- by bmailout3.hostsharing.net (Postfix) with ESMTPS id 015C9100DA1A6;
- Fri,  5 Apr 2024 12:02:33 +0200 (CEST)
-Received: by h08.hostsharing.net (Postfix, from userid 100393)
- id C87935FC4DA; Fri,  5 Apr 2024 12:02:32 +0200 (CEST)
-Date: Fri, 5 Apr 2024 12:02:32 +0200
-From: Lukas Wunner <lukas@wunner.de>
-To: Roman Lozko <lozko.roma@gmail.com>
-Message-ID: <Zg_MOG1OufptoRph@wunner.de>
-References: <CAEhC_B=ksywxCG_+aQqXUrGEgKq+4mqnSV8EBHOKbC3-Obj9+Q@mail.gmail.com>
+ id 0dq2uQrUYMQI for <intel-wired-lan@lists.osuosl.org>;
+ Fri,  5 Apr 2024 13:59:53 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.13;
+ helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org DAA864016D
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org DAA864016D
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.13])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id DAA864016D
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  5 Apr 2024 13:59:52 +0000 (UTC)
+X-CSE-ConnectionGUID: JRSbavVfQ9eeyYOIxmtCNg==
+X-CSE-MsgGUID: U5yCPTuXRW+fjAJd3IquSg==
+X-IronPort-AV: E=McAfee;i="6600,9927,11035"; a="10625018"
+X-IronPort-AV: E=Sophos;i="6.07,181,1708416000"; d="scan'208";a="10625018"
+Received: from fmviesa009.fm.intel.com ([10.60.135.149])
+ by fmvoesa107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 05 Apr 2024 06:59:51 -0700
+X-CSE-ConnectionGUID: BwDrBxxWQ82yQRx8HnmAug==
+X-CSE-MsgGUID: VtAYIJv0QNmKeaVe/X/lwA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.07,181,1708416000"; d="scan'208";a="19194085"
+Received: from lkp-server01.sh.intel.com (HELO e61807b1d151) ([10.239.97.150])
+ by fmviesa009.fm.intel.com with ESMTP; 05 Apr 2024 06:59:48 -0700
+Received: from kbuild by e61807b1d151 with local (Exim 4.96)
+ (envelope-from <lkp@intel.com>) id 1rsk6c-0002LC-0U;
+ Fri, 05 Apr 2024 13:59:46 +0000
+Date: Fri, 5 Apr 2024 21:58:56 +0800
+From: kernel test robot <lkp@intel.com>
+To: Karol Kolacinski <karol.kolacinski@intel.com>,
+ intel-wired-lan@lists.osuosl.org
+Message-ID: <202404052136.o9Cbreqn-lkp@intel.com>
+References: <20240405100648.144756-19-karol.kolacinski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <CAEhC_B=ksywxCG_+aQqXUrGEgKq+4mqnSV8EBHOKbC3-Obj9+Q@mail.gmail.com>
-X-Mailman-Approved-At: Fri, 05 Apr 2024 13:59:51 +0000
+In-Reply-To: <20240405100648.144756-19-karol.kolacinski@intel.com>
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1712325593; x=1743861593;
+ h=date:from:to:cc:subject:message-id:references:
+ mime-version:in-reply-to;
+ bh=F85+f1rlvH5QrZHeUd9aBhK9Uht+YIMvPImsvnkMVnE=;
+ b=LHIjff4UrfkWCXHw9XHGPZ9gKkquBjSTUwPx+93y//vPYoSZSTRuxBKF
+ JDkn9L05gSVGmJwFSsfDCyawNOdbwZhA+am6IteeTbDqRKqzogmTIv1xB
+ HdRvIr0i8gARA+S3PEU1EVkjxxQdCG0fBjsNgrsMKgGW0aenQOt35S284
+ 81uzBPSgiyyioTYKmOhAuBXSZ8SpczlyhfolFVoIH4r8unXKMFx7gVy2b
+ eGlZarkoVyb053Q+ncXohVE2EA8gj0GzWdxLKPxyOlnlMpZJwKvvAUd1z
+ YlNdIOwFRoqRiRQmxRGyl+zl03qM9vsjTtQkxTR5fwklBgpn0u32qcwVD
+ w==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dmarc=none (p=none dis=none)
- header.from=wunner.de
-Subject: Re: [Intel-wired-lan] Deadlock in pciehp on dock disconnect
+ dmarc=pass (p=none dis=none)
+ header.from=intel.com
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=LHIjff4U
+Subject: Re: [Intel-wired-lan] [PATCH v6 iwl-next 05/12] ice: Move CGU block
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,336 +107,179 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Kurt Kanzenbach <kurt@linutronix.de>, intel-wired-lan@lists.osuosl.org,
- linux-pci@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>,
- Christian Marangi <ansuelsmth@gmail.com>, Eric Dumazet <edumazet@google.com>,
- netdev@vger.kernel.org, Tony Nguyen <anthony.l.nguyen@intel.com>,
- Sean Christopherson <seanjc@google.com>, Bjorn Helgaas <bhelgaas@google.com>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- "David S. Miller" <davem@davemloft.net>,
- Heiner Kallweit <hkallweit1@gmail.com>
+Cc: Sergey Temerkhanov <sergey.temerkhanov@intel.com>, netdev@vger.kernel.org,
+ oe-kbuild-all@lists.linux.dev,
+ Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>,
+ Karol Kolacinski <karol.kolacinski@intel.com>, anthony.l.nguyen@intel.com,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-[cc += netdev maintainers]
+Hi Karol,
 
-On Fri, Apr 05, 2024 at 11:14:01AM +0200, Roman Lozko wrote:
-> Hi, I'm using HP G4 Thunderbolt docking station, and recently (?)
-> kernel started to "partially" deadlock after disconnecting the dock
-> station. This results in inability to turn network interfaces on or
-> off, system can't reboot, `sudo` does not work (guess because it uses
-> DNS).
-> 
-> It started to occur ~two weeks ago, don't know why, I did not change
-> anything at that time. First seen on 6.8.2, nothing changed with
-> 6.9.0-rc2.
+kernel test robot noticed the following build warnings:
 
-This is not a pciehp issue, it's a networking issue:
+[auto build test WARNING on 0a3074e5b4b523fb60f4ae9fb32bb180ea1fb6ef]
 
-In the stacktrace you've provided below, the rtnl_lock() is acquired
-recursively, which leads to the deadlock:
+url:    https://github.com/intel-lab-lkp/linux/commits/Karol-Kolacinski/ice-Introduce-ice_ptp_hw-struct/20240405-180941
+base:   0a3074e5b4b523fb60f4ae9fb32bb180ea1fb6ef
+patch link:    https://lore.kernel.org/r/20240405100648.144756-19-karol.kolacinski%40intel.com
+patch subject: [PATCH v6 iwl-next 05/12] ice: Move CGU block
+config: i386-allmodconfig (https://download.01.org/0day-ci/archive/20240405/202404052136.o9Cbreqn-lkp@intel.com/config)
+compiler: gcc-13 (Ubuntu 13.2.0-4ubuntu3) 13.2.0
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20240405/202404052136.o9Cbreqn-lkp@intel.com/reproduce)
 
-unregister_netdev() acquires rtnl_lock(), indirectly invokes
-netdev_trig_deactivate() upon unregistering some LED, thereby
-calling unregister_netdevice_notifier(), which tries to
-acquire rtnl_lock() again.
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202404052136.o9Cbreqn-lkp@intel.com/
 
-From a quick look at the source files involved, this doesn't look
-like something new, though I note LED support for igc was added
-only recently with ea578703b03d ("igc: Add support for LEDs on
-i225/i226"), which went into v6.9-rc1.
+All warnings (new ones prefixed by >>):
 
-The other hanging tasks are simply waiting for rtnl_lock() as well.
+   drivers/net/ethernet/intel/ice/ice_ptp_hw.c: In function 'ice_read_cgu_reg_e82x':
+>> drivers/net/ethernet/intel/ice/ice_ptp_hw.c:244:25: warning: initialization of 'unsigned int' from 'u32 *' {aka 'unsigned int *'} makes integer from pointer without a cast [-Wint-conversion]
+     244 |                 .data = val
+         |                         ^~~
+   drivers/net/ethernet/intel/ice/ice_ptp_hw.c:244:25: note: (near initialization for 'cgu_msg.data')
+   In file included from <command-line>:
+   drivers/net/ethernet/intel/ice/ice_ptp_hw.c: In function 'ice_write_40b_phy_reg_e82x':
+   include/uapi/linux/bits.h:9:19: warning: right shift count is negative [-Wshift-count-negative]
+       9 |          (~_UL(0) >> (__BITS_PER_LONG - 1 - (h))))
+         |                   ^~
+   include/linux/compiler_types.h:440:23: note: in definition of macro '__compiletime_assert'
+     440 |                 if (!(condition))                                       \
+         |                       ^~~~~~~~~
+   include/linux/compiler_types.h:460:9: note: in expansion of macro '_compiletime_assert'
+     460 |         _compiletime_assert(condition, msg, __compiletime_assert_, __COUNTER__)
+         |         ^~~~~~~~~~~~~~~~~~~
+   include/linux/build_bug.h:39:37: note: in expansion of macro 'compiletime_assert'
+      39 | #define BUILD_BUG_ON_MSG(cond, msg) compiletime_assert(!(cond), msg)
+         |                                     ^~~~~~~~~~~~~~~~~~
+   include/linux/bitfield.h:65:17: note: in expansion of macro 'BUILD_BUG_ON_MSG'
+      65 |                 BUILD_BUG_ON_MSG(!__builtin_constant_p(_mask),          \
+         |                 ^~~~~~~~~~~~~~~~
+   include/linux/bitfield.h:155:17: note: in expansion of macro '__BF_FIELD_CHECK'
+     155 |                 __BF_FIELD_CHECK(_mask, _reg, 0U, "FIELD_GET: ");       \
+         |                 ^~~~~~~~~~~~~~~~
+   drivers/net/ethernet/intel/ice/ice_ptp_hw.c:908:16: note: in expansion of macro 'FIELD_GET'
+     908 |         high = FIELD_GET(P_REG_40B_HIGH_M, val);
+         |                ^~~~~~~~~
+   include/linux/bits.h:35:38: note: in expansion of macro '__GENMASK'
+      35 |         (GENMASK_INPUT_CHECK(h, l) + __GENMASK(h, l))
+         |                                      ^~~~~~~~~
+   drivers/net/ethernet/intel/ice/ice_ptp_hw.h:381:41: note: in expansion of macro 'GENMASK'
+     381 | #define P_REG_40B_HIGH_M                GENMASK(39, 8)
+         |                                         ^~~~~~~
+   drivers/net/ethernet/intel/ice/ice_ptp_hw.c:908:26: note: in expansion of macro 'P_REG_40B_HIGH_M'
+     908 |         high = FIELD_GET(P_REG_40B_HIGH_M, val);
+         |                          ^~~~~~~~~~~~~~~~
+   include/uapi/linux/bits.h:9:19: warning: right shift count is negative [-Wshift-count-negative]
+       9 |          (~_UL(0) >> (__BITS_PER_LONG - 1 - (h))))
+         |                   ^~
+   include/linux/compiler_types.h:440:23: note: in definition of macro '__compiletime_assert'
+     440 |                 if (!(condition))                                       \
+         |                       ^~~~~~~~~
+   include/linux/compiler_types.h:460:9: note: in expansion of macro '_compiletime_assert'
+     460 |         _compiletime_assert(condition, msg, __compiletime_assert_, __COUNTER__)
+         |         ^~~~~~~~~~~~~~~~~~~
+   include/linux/build_bug.h:39:37: note: in expansion of macro 'compiletime_assert'
+      39 | #define BUILD_BUG_ON_MSG(cond, msg) compiletime_assert(!(cond), msg)
+         |                                     ^~~~~~~~~~~~~~~~~~
+   include/linux/bitfield.h:67:17: note: in expansion of macro 'BUILD_BUG_ON_MSG'
+      67 |                 BUILD_BUG_ON_MSG((_mask) == 0, _pfx "mask is zero");    \
+         |                 ^~~~~~~~~~~~~~~~
+   include/linux/bitfield.h:155:17: note: in expansion of macro '__BF_FIELD_CHECK'
+     155 |                 __BF_FIELD_CHECK(_mask, _reg, 0U, "FIELD_GET: ");       \
+         |                 ^~~~~~~~~~~~~~~~
+   drivers/net/ethernet/intel/ice/ice_ptp_hw.c:908:16: note: in expansion of macro 'FIELD_GET'
+     908 |         high = FIELD_GET(P_REG_40B_HIGH_M, val);
+         |                ^~~~~~~~~
+   include/linux/bits.h:35:38: note: in expansion of macro '__GENMASK'
+      35 |         (GENMASK_INPUT_CHECK(h, l) + __GENMASK(h, l))
+         |                                      ^~~~~~~~~
+   drivers/net/ethernet/intel/ice/ice_ptp_hw.h:381:41: note: in expansion of macro 'GENMASK'
+     381 | #define P_REG_40B_HIGH_M                GENMASK(39, 8)
+         |                                         ^~~~~~~
+   drivers/net/ethernet/intel/ice/ice_ptp_hw.c:908:26: note: in expansion of macro 'P_REG_40B_HIGH_M'
+     908 |         high = FIELD_GET(P_REG_40B_HIGH_M, val);
+         |                          ^~~~~~~~~~~~~~~~
+   include/uapi/linux/bits.h:9:19: warning: right shift count is negative [-Wshift-count-negative]
+       9 |          (~_UL(0) >> (__BITS_PER_LONG - 1 - (h))))
+         |                   ^~
+   include/linux/compiler_types.h:440:23: note: in definition of macro '__compiletime_assert'
+     440 |                 if (!(condition))                                       \
+         |                       ^~~~~~~~~
+   include/linux/compiler_types.h:460:9: note: in expansion of macro '_compiletime_assert'
+     460 |         _compiletime_assert(condition, msg, __compiletime_assert_, __COUNTER__)
+         |         ^~~~~~~~~~~~~~~~~~~
+   include/linux/build_bug.h:39:37: note: in expansion of macro 'compiletime_assert'
+      39 | #define BUILD_BUG_ON_MSG(cond, msg) compiletime_assert(!(cond), msg)
+         |                                     ^~~~~~~~~~~~~~~~~~
+   include/linux/bitfield.h:68:17: note: in expansion of macro 'BUILD_BUG_ON_MSG'
+      68 |                 BUILD_BUG_ON_MSG(__builtin_constant_p(_val) ?           \
+         |                 ^~~~~~~~~~~~~~~~
+   include/linux/bitfield.h:155:17: note: in expansion of macro '__BF_FIELD_CHECK'
+     155 |                 __BF_FIELD_CHECK(_mask, _reg, 0U, "FIELD_GET: ");       \
+         |                 ^~~~~~~~~~~~~~~~
+   drivers/net/ethernet/intel/ice/ice_ptp_hw.c:908:16: note: in expansion of macro 'FIELD_GET'
+     908 |         high = FIELD_GET(P_REG_40B_HIGH_M, val);
+         |                ^~~~~~~~~
+   include/linux/bits.h:35:38: note: in expansion of macro '__GENMASK'
+      35 |         (GENMASK_INPUT_CHECK(h, l) + __GENMASK(h, l))
+         |                                      ^~~~~~~~~
+   drivers/net/ethernet/intel/ice/ice_ptp_hw.h:381:41: note: in expansion of macro 'GENMASK'
+     381 | #define P_REG_40B_HIGH_M                GENMASK(39, 8)
+         |                                         ^~~~~~~
+   drivers/net/ethernet/intel/ice/ice_ptp_hw.c:908:26: note: in expansion of macro 'P_REG_40B_HIGH_M'
+     908 |         high = FIELD_GET(P_REG_40B_HIGH_M, val);
+         |                          ^~~~~~~~~~~~~~~~
+   include/uapi/linux/bits.h:9:19: warning: right shift count is negative [-Wshift-count-negative]
+       9 |          (~_UL(0) >> (__BITS_PER_LONG - 1 - (h))))
+         |                   ^~
+   include/linux/compiler_types.h:440:23: note: in definition of macro '__compiletime_assert'
+     440 |                 if (!(condition))                                       \
 
 
-> pciehp stack trace:
-> INFO: task irq/122-pciehp:209 blocked for more than 120 seconds.
->       Not tainted 6.9.0-rc2 #1
-> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-> task:irq/122-pciehp  state:D stack:0     pid:209   tgid:209   ppid:2
->    flags:0x00004000
-> Call Trace:
->  <TASK>
->  __schedule+0x5dd/0x1380
->  schedule+0x6e/0xf0
->  schedule_preempt_disabled+0x15/0x20
->  __mutex_lock+0x2a0/0x750
->  unregister_netdevice_notifier+0x40/0x150
->  netdev_trig_deactivate+0x1f/0x60 [ledtrig_netdev c68f5c964fe428d1a2169816a653c62dba2f2e01]
->  led_trigger_set+0x102/0x330
->  led_classdev_unregister+0x4b/0x110
->  release_nodes+0x3d/0xb0
->  devres_release_all+0x8b/0xc0
->  device_del+0x34f/0x3c0
->  unregister_netdevice_many_notify+0x80b/0xaf0
->  unregister_netdev+0x7c/0xd0
->  igc_remove+0xd8/0x1e0 [igc d1bcf7b726f7370e167c72960cdb27ae7f970357]
->  pci_device_remove+0x3f/0xb0
->  device_release_driver_internal+0x1be/0x2d0
->  pci_stop_bus_device+0x68/0xa0
->  pci_stop_bus_device+0x39/0xa0
->  pci_stop_bus_device+0x39/0xa0
->  pciehp_unconfigure_device+0x12b/0x1d0
->  pciehp_disable_slot+0x65/0x120
->  pciehp_handle_presence_or_link_change+0x7a/0x450
->  pciehp_ist+0xf5/0x320
->  irq_thread_fn+0x1d/0x40
->  irq_thread+0x19b/0x260
->  kthread+0x147/0x160
->  ret_from_fork+0x34/0x40
->  ret_from_fork_asm+0x11/0x20
->  </TASK>
-> 
-> Other affected kernel threads
-> INFO: task NetworkManager:1294 blocked for more than 120 seconds.
->       Not tainted 6.9.0-rc2 #1
-> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-> task:NetworkManager  state:D stack:0     pid:1294  tgid:1294  ppid:1
->    flags:0x00000002
-> Call Trace:
->  <TASK>
->  __schedule+0x5dd/0x1380
->  schedule+0x6e/0xf0
->  schedule_preempt_disabled+0x15/0x20
->  __mutex_lock+0x2a0/0x750
->  netlink_dump+0x1c4/0x3f0
->  __netlink_dump_start+0x2b3/0x340
->  rtnetlink_rcv_msg+0x469/0x4a0
->  netlink_rcv_skb+0xed/0x120
->  netlink_unicast+0x2ce/0x3f0
->  netlink_sendmsg+0x39c/0x450
->  ____sys_sendmsg+0x1a5/0x2a0
->  ___sys_sendmsg+0x293/0x2d0
->  __x64_sys_sendmsg+0x10d/0x140
->  do_syscall_64+0x92/0x170
->  entry_SYSCALL_64_after_hwframe+0x46/0x4e
-> RIP: 0033:0x7971ac52c02b
-> RSP: 002b:00007ffc684c09a0 EFLAGS: 00000293 ORIG_RAX: 000000000000002e
-> RAX: ffffffffffffffda RBX: 00005661e9bc5be0 RCX: 00007971ac52c02b
-> RDX: 0000000000000000 RSI: 00007ffc684c09e0 RDI: 000000000000000d
-> RBP: 00007ffc684c09c0 R08: 0000000000000000 R09: 0000000000000001
-> R10: 0000000000000001 R11: 0000000000000293 R12: 0000000000000001
-> R13: 0000000000000000 R14: 00005661e9c45030 R15: 00005661e9bc5cac
->  </TASK>
-> INFO: task geoclue:2325 blocked for more than 120 seconds.
->       Not tainted 6.9.0-rc2 #1
-> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-> task:geoclue         state:D stack:0     pid:2325  tgid:2325  ppid:1
->    flags:0x00000002
-> Call Trace:
->  <TASK>
->  __schedule+0x5dd/0x1380
->  schedule+0x6e/0xf0
->  schedule_preempt_disabled+0x15/0x20
->  __mutex_lock+0x2a0/0x750
->  netlink_dump+0x1c4/0x3f0
->  __netlink_dump_start+0x2b3/0x340
->  rtnetlink_rcv_msg+0x469/0x4a0
->  netlink_rcv_skb+0xed/0x120
->  netlink_unicast+0x2ce/0x3f0
->  netlink_sendmsg+0x39c/0x450
->  __sys_sendto+0x2c8/0x350
->  __x64_sys_sendto+0x26/0x30
->  do_syscall_64+0x92/0x170
->  entry_SYSCALL_64_after_hwframe+0x46/0x4e
-> RIP: 0033:0x7ad712b2beea
-> RSP: 002b:00007fff94c1fd80 EFLAGS: 00000246 ORIG_RAX: 000000000000002c
-> RAX: ffffffffffffffda RBX: 0000000000000000 RCX: 00007ad712b2beea
-> RDX: 0000000000000014 RSI: 00007fff94c1fe10 RDI: 0000000000000007
-> RBP: 00007fff94c1fdb0 R08: 0000000000000000 R09: 0000000000000000
-> R10: 0000000000004000 R11: 0000000000000246 R12: 00007fff94c1fe10
-> R13: 0000000000000014 R14: 0000000000000000 R15: 0000000000000000
->  </TASK>
-> INFO: task pool-geoclue:84396 blocked for more than 120 seconds.
->       Not tainted 6.9.0-rc2 #1
-> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-> task:pool-geoclue    state:D stack:0     pid:84396 tgid:2325  ppid:1
->    flags:0x00000002
-> Call Trace:
->  <TASK>
->  __schedule+0x5dd/0x1380
->  schedule+0x6e/0xf0
->  schedule_preempt_disabled+0x15/0x20
->  __mutex_lock+0x2a0/0x750
->  netlink_dump+0x1c4/0x3f0
->  __netlink_dump_start+0x2b3/0x340
->  rtnetlink_rcv_msg+0x469/0x4a0
->  netlink_rcv_skb+0xed/0x120
->  netlink_unicast+0x2ce/0x3f0
->  netlink_sendmsg+0x39c/0x450
->  __sys_sendto+0x2c8/0x350
->  __x64_sys_sendto+0x26/0x30
->  do_syscall_64+0x92/0x170
->  entry_SYSCALL_64_after_hwframe+0x46/0x4e
-> RIP: 0033:0x7ad712b2c0e4
-> RSP: 002b:00007ad6e7dfdf40 EFLAGS: 00000293 ORIG_RAX: 000000000000002c
-> RAX: ffffffffffffffda RBX: 0000000000000000 RCX: 00007ad712b2c0e4
-> RDX: 0000000000000014 RSI: 00007ad6e7dff070 RDI: 000000000000000b
-> RBP: 00007ad6e7dfdf80 R08: 00007ad6e7dff014 R09: 000000000000000c
-> R10: 0000000000000000 R11: 0000000000000293 R12: 000000000000000b
-> R13: 0000000000000010 R14: 00007ad6e7dff030 R15: 00000000d3fb1bea
->  </TASK>
-> INFO: task Qt bearer threa:4002 blocked for more than 120 seconds.
->       Not tainted 6.9.0-rc2 #1
-> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-> task:Qt bearer threa state:D stack:0     pid:4002  tgid:3506
-> ppid:3034   flags:0x00000002
-> Call Trace:
->  <TASK>
->  __schedule+0x5dd/0x1380
->  schedule+0x6e/0xf0
->  schedule_preempt_disabled+0x15/0x20
->  __mutex_lock+0x2a0/0x750
->  netlink_dump+0x1c4/0x3f0
->  __netlink_dump_start+0x2b3/0x340
->  rtnetlink_rcv_msg+0x469/0x4a0
->  netlink_rcv_skb+0xed/0x120
->  netlink_unicast+0x2ce/0x3f0
->  netlink_sendmsg+0x39c/0x450
->  __sys_sendto+0x2c8/0x350
->  __x64_sys_sendto+0x26/0x30
->  do_syscall_64+0x92/0x170
->  entry_SYSCALL_64_after_hwframe+0x46/0x4e
-> RIP: 0033:0x76f3c692beea
-> RSP: 002b:000076f3a51fecb0 EFLAGS: 00000246 ORIG_RAX: 000000000000002c
-> RAX: ffffffffffffffda RBX: 0000000000000000 RCX: 000076f3c692beea
-> RDX: 0000000000000020 RSI: 000076f3a51fed60 RDI: 0000000000000023
-> RBP: 000076f3a51fece0 R08: 0000000000000000 R09: 0000000000000000
-> R10: 0000000000000000 R11: 0000000000000246 R12: 000076f3a51fee38
-> R13: 000076f378026b30 R14: 000076f3a51fed30 R15: 000076f378026b48
->  </TASK>
-> INFO: task gnome-software:3529 blocked for more than 120 seconds.
->       Not tainted 6.9.0-rc2 #1
-> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-> task:gnome-software  state:D stack:0     pid:3529  tgid:3529
-> ppid:3034   flags:0x00000002
-> Call Trace:
->  <TASK>
->  __schedule+0x5dd/0x1380
->  schedule+0x6e/0xf0
->  schedule_preempt_disabled+0x15/0x20
->  __mutex_lock+0x2a0/0x750
->  netlink_dump+0x1c4/0x3f0
->  __netlink_dump_start+0x2b3/0x340
->  rtnetlink_rcv_msg+0x469/0x4a0
->  netlink_rcv_skb+0xed/0x120
->  netlink_unicast+0x2ce/0x3f0
->  netlink_sendmsg+0x39c/0x450
->  __sys_sendto+0x2c8/0x350
->  __x64_sys_sendto+0x26/0x30
->  do_syscall_64+0x92/0x170
->  entry_SYSCALL_64_after_hwframe+0x46/0x4e
-> RIP: 0033:0x7d6be892beea
-> RSP: 002b:00007ffd94e01560 EFLAGS: 00000246 ORIG_RAX: 000000000000002c
-> RAX: ffffffffffffffda RBX: 0000000000000000 RCX: 00007d6be892beea
-> RDX: 0000000000000014 RSI: 00007ffd94e015f0 RDI: 000000000000000d
-> RBP: 00007ffd94e01590 R08: 0000000000000000 R09: 0000000000000000
-> R10: 0000000000004000 R11: 0000000000000246 R12: 00007ffd94e015f0
-> R13: 0000000000000014 R14: 0000000000000000 R15: 0000000000000000
->  </TASK>
-> INFO: task Qt bearer threa:3960 blocked for more than 120 seconds.
->       Not tainted 6.9.0-rc2 #1
-> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-> task:Qt bearer threa state:D stack:0     pid:3960  tgid:3550
-> ppid:3034   flags:0x00000002
-> Call Trace:
->  <TASK>
->  __schedule+0x5dd/0x1380
->  schedule+0x6e/0xf0
->  schedule_preempt_disabled+0x15/0x20
->  __mutex_lock+0x2a0/0x750
->  netlink_dump+0x1c4/0x3f0
->  __netlink_dump_start+0x2b3/0x340
->  rtnetlink_rcv_msg+0x469/0x4a0
->  netlink_rcv_skb+0xed/0x120
->  netlink_unicast+0x2ce/0x3f0
->  netlink_sendmsg+0x39c/0x450
->  __sys_sendto+0x2c8/0x350
->  __x64_sys_sendto+0x26/0x30
->  do_syscall_64+0x92/0x170
->  entry_SYSCALL_64_after_hwframe+0x46/0x4e
-> RIP: 0033:0x777a42b2beea
-> RSP: 002b:0000777a2abfecf0 EFLAGS: 00000246 ORIG_RAX: 000000000000002c
-> RAX: ffffffffffffffda RBX: 0000000000000000 RCX: 0000777a42b2beea
-> RDX: 0000000000000020 RSI: 0000777a2abfeda0 RDI: 000000000000001d
-> RBP: 0000777a2abfed20 R08: 0000000000000000 R09: 0000000000000000
-> R10: 0000000000000000 R11: 0000000000000246 R12: 0000777a2abfee78
-> R13: 0000777a080285b0 R14: 0000777a2abfed70 R15: 0000777a080285c8
->  </TASK>
-> INFO: task xdg-desktop-por:3821 blocked for more than 120 seconds.
->       Not tainted 6.9.0-rc2 #1
-> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-> task:xdg-desktop-por state:D stack:0     pid:3821  tgid:3821
-> ppid:2776   flags:0x00000002
-> Call Trace:
->  <TASK>
->  __schedule+0x5dd/0x1380
->  schedule+0x6e/0xf0
->  schedule_preempt_disabled+0x15/0x20
->  __mutex_lock+0x2a0/0x750
->  netlink_dump+0x1c4/0x3f0
->  __netlink_dump_start+0x2b3/0x340
->  rtnetlink_rcv_msg+0x469/0x4a0
->  netlink_rcv_skb+0xed/0x120
->  netlink_unicast+0x2ce/0x3f0
->  netlink_sendmsg+0x39c/0x450
->  __sys_sendto+0x2c8/0x350
->  __x64_sys_sendto+0x26/0x30
->  do_syscall_64+0x92/0x170
->  entry_SYSCALL_64_after_hwframe+0x46/0x4e
-> RIP: 0033:0x79d76612beea
-> RSP: 002b:00007ffd480942a0 EFLAGS: 00000246 ORIG_RAX: 000000000000002c
-> RAX: ffffffffffffffda RBX: 0000000000000000 RCX: 000079d76612beea
-> RDX: 0000000000000014 RSI: 00007ffd48094330 RDI: 0000000000000008
-> RBP: 00007ffd480942d0 R08: 0000000000000000 R09: 0000000000000000
-> R10: 0000000000004000 R11: 0000000000000246 R12: 00007ffd48094330
-> R13: 0000000000000014 R14: 0000000000000000 R15: 0000000000000000
->  </TASK>
-> INFO: task DNS Res~ver #11:25588 blocked for more than 120 seconds.
->       Not tainted 6.9.0-rc2 #1
-> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-> task:DNS Res~ver #11 state:D stack:0     pid:25588 tgid:4934
-> ppid:3070   flags:0x00000002
-> Call Trace:
->  <TASK>
->  __schedule+0x5dd/0x1380
->  schedule+0x6e/0xf0
->  schedule_preempt_disabled+0x15/0x20
->  __mutex_lock+0x2a0/0x750
->  netlink_dump+0x1c4/0x3f0
->  __netlink_dump_start+0x2b3/0x340
->  rtnetlink_rcv_msg+0x469/0x4a0
->  netlink_rcv_skb+0xed/0x120
->  netlink_unicast+0x2ce/0x3f0
->  netlink_sendmsg+0x39c/0x450
->  __sys_sendto+0x2c8/0x350
->  __x64_sys_sendto+0x26/0x30
->  do_syscall_64+0x92/0x170
->  entry_SYSCALL_64_after_hwframe+0x46/0x4e
-> RIP: 0033:0x72d65892c0e4
-> RSP: 002b:000072d649cbb880 EFLAGS: 00000293 ORIG_RAX: 000000000000002c
-> RAX: ffffffffffffffda RBX: 0000000000000000 RCX: 000072d65892c0e4
-> RDX: 0000000000000014 RSI: 000072d649cbc9b0 RDI: 0000000000000053
-> RBP: 000072d649cbb8c0 R08: 000072d649cbc954 R09: 000000000000000c
-> R10: 0000000000000000 R11: 0000000000000293 R12: 0000000000000053
-> R13: 0000000000000010 R14: 000072d649cbc970 R15: 00000000b48fd654
->  </TASK>
-> INFO: task kworker/u88:2:31385 blocked for more than 120 seconds.
->       Not tainted 6.9.0-rc2 #1
-> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-> task:kworker/u88:2   state:D stack:0     pid:31385 tgid:31385 ppid:2
->    flags:0x00004000
-> Workqueue: ipv6_addrconf addrconf_verify_work
-> Call Trace:
->  <TASK>
->  __schedule+0x5dd/0x1380
->  schedule+0x6e/0xf0
->  schedule_preempt_disabled+0x15/0x20
->  __mutex_lock+0x2a0/0x750
->  addrconf_verify_work+0x20/0x30
->  process_scheduled_works+0x1f4/0x450
->  worker_thread+0x349/0x5e0
->  kthread+0x147/0x160
->  ret_from_fork+0x34/0x40
->  ret_from_fork_asm+0x11/0x20
->  </TASK>
+vim +244 drivers/net/ethernet/intel/ice/ice_ptp_hw.c
+
+   228	
+   229	/**
+   230	 * ice_read_cgu_reg_e82x - Read a CGU register
+   231	 * @hw: pointer to the HW struct
+   232	 * @addr: Register address to read
+   233	 * @val: storage for register value read
+   234	 *
+   235	 * Read the contents of a register of the Clock Generation Unit. Only
+   236	 * applicable to E822 devices.
+   237	 */
+   238	static int ice_read_cgu_reg_e82x(struct ice_hw *hw, u32 addr, u32 *val)
+   239	{
+   240		struct ice_sbq_msg_input cgu_msg = {
+   241			.opcode = ice_sbq_msg_rd,
+   242			.dest_dev = cgu,
+   243			.msg_addr_low = addr,
+ > 244			.data = val
+   245		};
+   246		int err;
+   247	
+   248		cgu_msg.opcode = ice_sbq_msg_rd;
+   249		cgu_msg.dest_dev = cgu;
+   250		cgu_msg.msg_addr_low = addr;
+   251		cgu_msg.msg_addr_high = 0x0;
+   252	
+   253		err = ice_sbq_rw_reg(hw, &cgu_msg);
+   254		if (err) {
+   255			ice_debug(hw, ICE_DBG_PTP, "Failed to read CGU register 0x%04x, err %d\n",
+   256				  addr, err);
+   257			return err;
+   258		}
+   259	
+   260		*val = cgu_msg.data;
+   261	
+   262		return 0;
+   263	}
+   264	
+
+-- 
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
