@@ -1,101 +1,201 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C4F8FCD1299
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 10 Apr 2024 12:26:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 08A53CD11C2
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 10 Apr 2024 13:01:48 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 9636060A74;
-	Wed, 10 Apr 2024 12:26:54 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id fO4NtpR4qqv0; Wed, 10 Apr 2024 12:26:53 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 06DDA60A84
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1712752013;
-	bh=+QlSe/vvMMPWcVNO/vb6BBzA7/opqS4nzr70XCqpT9g=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=LTqp69U7gQd4y1wBmwRkITV/CGJLz22QTgcr+LUYphhpgQGUzucdh9c95o5rYYdwu
-	 LeOSkLgbYHjZiYhdoBJ/gTu4vQYU0tdDGbLvfxKQ1Knqyx0JC9HsfbWDoYU+vY2Iu4
-	 +IlU2TpZ80YhPscj8QzJO0x/TJqv8W/2g585mdlDg98lzN1/NbiNgeK6iUqBzyoWMN
-	 s0Rwtl+PFc6eGMqAQB3CMC6gWj/Jza1WhWowGQXTGTBTpSppwe/w1mKRQv+6IjQfq6
-	 lBP2Scmf4Pb+7t0rM1/Hy88KTNuCCBGMqi6czKUaofbkUh6rjdMdsdya+DXgOYFsto
-	 UrzYeiFCvDkYg==
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 06DDA60A84;
-	Wed, 10 Apr 2024 12:26:52 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 88E7F1BF3C1
- for <intel-wired-lan@lists.osuosl.org>; Wed, 10 Apr 2024 12:26:43 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 6D46181C46
- for <intel-wired-lan@lists.osuosl.org>; Wed, 10 Apr 2024 12:26:41 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 6DBBD81E42;
+	Wed, 10 Apr 2024 13:01:48 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id mEs3f0SF66Ni for <intel-wired-lan@lists.osuosl.org>;
- Wed, 10 Apr 2024 12:26:40 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.19;
- helo=mgamail.intel.com; envelope-from=mateusz.polchlopek@intel.com;
+ id jR5x4DtZsjTW; Wed, 10 Apr 2024 13:01:47 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9423081E78
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1712754107;
+	bh=n4cMIj+EqcCItM+efIRhnECUaWO7hZIbwpsxGS6pdU8=;
+	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=dqiAo5Lz/+vLgK93bb4llVp+oUgQGpTbsfn6IFbwQ4p1mGINhRlshO2aToStqkR15
+	 LvfEJMR1mwbUgy+xBrp9l26aISYEwBnyG/Ip6r0EGkmaB3Tczc2UqC99AxD4phmVXX
+	 scmtswxuLl4OXg3qQlXFiN6Mr2hpPpWTxCaYu7wyF81xP7FV8KgxdJbesn7370q/Gt
+	 X6dopKiOWENOrI6od7BrnDDbUA8CPkVlUG5yPDt/EqpyFnLXCJbw6HfVI7ilRpB1Sf
+	 oL9SLovV3HVEpOjgaXlnjbmhHCqhWLvE3PhZVt9F/TFpxOWL5WVaUKjuMx+mnxhs8I
+	 Ct3/ANFyK0Xnw==
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp1.osuosl.org (Postfix) with ESMTP id 9423081E78;
+	Wed, 10 Apr 2024 13:01:47 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 4E1DF1BF3C1
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 10 Apr 2024 13:01:46 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp4.osuosl.org (Postfix) with ESMTP id 38B5D41551
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 10 Apr 2024 13:01:46 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id lsnZyVWELk9E for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 10 Apr 2024 13:01:45 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.14;
+ helo=mgamail.intel.com; envelope-from=przemyslaw.kitszel@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 78F9381C21
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 78F9381C21
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.19])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 78F9381C21
- for <intel-wired-lan@lists.osuosl.org>; Wed, 10 Apr 2024 12:26:40 +0000 (UTC)
-X-CSE-ConnectionGUID: Hl+nNcbnR2uEurBuUClajA==
-X-CSE-MsgGUID: 3+mlK3/NQ6a+PIi2I4KjgQ==
-X-IronPort-AV: E=McAfee;i="6600,9927,11039"; a="7982297"
-X-IronPort-AV: E=Sophos;i="6.07,190,1708416000"; 
-   d="scan'208";a="7982297"
-Received: from fmviesa001.fm.intel.com ([10.60.135.141])
- by orvoesa111.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 10 Apr 2024 05:26:40 -0700
-X-CSE-ConnectionGUID: f4GPnvxuQBmGh0L57voz/Q==
-X-CSE-MsgGUID: qJXdY43YQAirUqaEAz675w==
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org E6F724154F
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E6F724154F
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.14])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id E6F724154F
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 10 Apr 2024 13:01:44 +0000 (UTC)
+X-CSE-ConnectionGUID: K22zaohbTtCkcTlnb8vKTQ==
+X-CSE-MsgGUID: eElH3saKSFmeZZ8repNEow==
+X-IronPort-AV: E=McAfee;i="6600,9927,11039"; a="11951007"
+X-IronPort-AV: E=Sophos;i="6.07,190,1708416000"; d="scan'208";a="11951007"
+Received: from fmviesa004.fm.intel.com ([10.60.135.144])
+ by orvoesa106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 10 Apr 2024 06:01:42 -0700
+X-CSE-ConnectionGUID: WGZLhib6SpqaZMpu5rlw+g==
+X-CSE-MsgGUID: VDnf34/SRLGaF7rsKxvbYA==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.07,190,1708416000"; d="scan'208";a="51760159"
-Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by fmviesa001.fm.intel.com with ESMTP; 10 Apr 2024 05:26:37 -0700
-Received: from fedora.igk.intel.com (Metan_eth.igk.intel.com [10.123.220.124])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id 40A362879D;
- Wed, 10 Apr 2024 13:26:36 +0100 (IST)
-From: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Date: Wed, 10 Apr 2024 08:17:06 -0400
-Message-Id: <20240410121706.6223-13-mateusz.polchlopek@intel.com>
-X-Mailer: git-send-email 2.38.1
-In-Reply-To: <20240410121706.6223-1-mateusz.polchlopek@intel.com>
-References: <20240410121706.6223-1-mateusz.polchlopek@intel.com>
-MIME-Version: 1.0
+X-IronPort-AV: E=Sophos;i="6.07,190,1708416000"; d="scan'208";a="25178630"
+Received: from orsmsx602.amr.corp.intel.com ([10.22.229.15])
+ by fmviesa004.fm.intel.com with ESMTP/TLS/AES256-GCM-SHA384;
+ 10 Apr 2024 06:01:42 -0700
+Received: from orsmsx612.amr.corp.intel.com (10.22.229.25) by
+ ORSMSX602.amr.corp.intel.com (10.22.229.15) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.35; Wed, 10 Apr 2024 06:01:41 -0700
+Received: from orsmsx602.amr.corp.intel.com (10.22.229.15) by
+ ORSMSX612.amr.corp.intel.com (10.22.229.25) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.35; Wed, 10 Apr 2024 06:01:41 -0700
+Received: from ORSEDG601.ED.cps.intel.com (10.7.248.6) by
+ orsmsx602.amr.corp.intel.com (10.22.229.15) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.35 via Frontend Transport; Wed, 10 Apr 2024 06:01:41 -0700
+Received: from NAM10-BN7-obe.outbound.protection.outlook.com (104.47.70.101)
+ by edgegateway.intel.com (134.134.137.102) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.1.2507.35; Wed, 10 Apr 2024 06:01:40 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=JH5Shuv3yJcYV5EyKmeePkUaWLzB6bBXPkPTiEhAXDkxQa9F+PWGJcVYEhYc5TOUFBDeRLVUu/IClm/Szaqj2POHyCH30Fkq7sGPVzYQCFkICCC7w/KAGOABpf4CNmuw/p2ACK5Owd9+8Mfnp6BTlz8m0zrLiA35/yKJJSS+I32tDGIaNTTS4r3QdqlEinIkZv0by3476iFSU23KKGGveCD5pdUp+Q4vvxecRS9QCkC+PFK/xaqMhxTyfbn2PviGH2gEXxvLt7G+eK/9XJ2pSuqlYQn4YvevbcZyMGnXjmlI+oGAMRDWsOjEYuwP//I6EoPPFcz6IIf+Pjd6ClY7FQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=n4cMIj+EqcCItM+efIRhnECUaWO7hZIbwpsxGS6pdU8=;
+ b=c4Ia/3OLjeefKPAeNlvphgeJAENu+KcsyEPmE6Fwq0GsPBeTpcgXxULLnqrMhGBOur/uLzCKQAn6dy/Iy6awYs6WEG0+9Lx2bXQEnHPafDQrfEkFTozA2mL5QpZJAOin9pQYlBsqoPBkjMlx93+UEhkXJoTjtkKh2dHWWJMG5KCcZw3rWMKmyyEgQayJiO1ReLU6vS3xE2MwRczuuex3ETsf1x6yvsPxQJ0NDOdaL9MDSy7d8HGgbmyN6klSVSMsE/ctKIEikcabsUgseFlTNc8z4LZ7XUyBF3M6Ro62AUZ/TsGUOEHKWFpMCFcZ8bqChTq0FlU9WSff+N6jB2swnw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Received: from MN6PR11MB8102.namprd11.prod.outlook.com (2603:10b6:208:46d::9)
+ by PH8PR11MB6753.namprd11.prod.outlook.com (2603:10b6:510:1c8::22)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7409.31; Wed, 10 Apr
+ 2024 13:01:38 +0000
+Received: from MN6PR11MB8102.namprd11.prod.outlook.com
+ ([fe80::5c8:d560:c544:d9cf]) by MN6PR11MB8102.namprd11.prod.outlook.com
+ ([fe80::5c8:d560:c544:d9cf%5]) with mapi id 15.20.7430.045; Wed, 10 Apr 2024
+ 13:01:38 +0000
+Message-ID: <61a952aa-1b3e-43c7-9f35-ab53e492305a@intel.com>
+Date: Wed, 10 Apr 2024 15:01:32 +0200
+User-Agent: Mozilla Thunderbird
+Content-Language: en-US
+To: Alexander Lobakin <aleksander.lobakin@intel.com>
+References: <20240404154402.3581254-1-aleksander.lobakin@intel.com>
+ <20240404154402.3581254-8-aleksander.lobakin@intel.com>
+ <45eb2bf1-e7b0-4045-82b3-93b9f81b7988@intel.com>
+ <bebf1a1a-e4ec-4ec0-9d01-57a51bcf14ca@intel.com>
+ <9d389192-63c4-44e8-b863-6323b45aec0f@intel.com>
+ <36a067fa-75c0-4e7d-b704-229deea2d440@intel.com>
+From: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+In-Reply-To: <36a067fa-75c0-4e7d-b704-229deea2d440@intel.com>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
 Content-Transfer-Encoding: 8bit
+X-ClientProxiedBy: DB9PR02CA0018.eurprd02.prod.outlook.com
+ (2603:10a6:10:1d9::23) To MN6PR11MB8102.namprd11.prod.outlook.com
+ (2603:10b6:208:46d::9)
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: MN6PR11MB8102:EE_|PH8PR11MB6753:EE_
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: K56s2h5XiN+caFpM69Bc+qJkuMALOYtc74NjQfMuHTC1nf2+Myky9n2Uj5zP3/vpl9Wsn5XRoHMEW58Gl3d33TU25sINqwbKBDVeXFxBfdHQspvA7aG5RdlDS96JO6kKCbTUhBxmkaaA5lG3Tbnx+vb1UoY2K7jOdgz+AGxHZP0Rot8ib5SaSJlHJdSuprfsk1UnYqEOHoYzl/7UFs5LTWu2hv5J2XDQpbLlCt8j6WNW/a+k/0MmCRs9cpWeWweuODQCPPckD6OI3ySruSWmxu+U6hMqgN55LRrJzo29UDv+I8Ad9xJtV9SZzjWyrm8qr5/qvfGoElmjSKBfOXqIcnYxzMc6idqBDQ6d0uhtmwXOFaAQtONHX3/aCdCVPYZJOZ+YS+2ZCB9V343z+J/W0iXOCjUjK+qQ2YJfu/M92LhPYNNlaDHoooXda9ojDc5ADLQcIG9p43SLCDnTsFtuiDevLWewyLuc2lgJIjPeSuWuHV9THr3Ar6jxziG6nRBIz6RgQvqAlVHHm4rtxbKEtUnVggbVQc1f1JZquHZNA6KDrg6HHwoZaP3SoMF/038R85Jgsc8K9KJw/M6Re5js6jxrMt9yYg0Xjk4eY7Nsbu/CrevG9l39ouo8AXVJE9JrUYNQ/ouT0Xe0krBtTUxMvZYFGxyhK1dNyPJjRJ6K8kk=
+X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:MN6PR11MB8102.namprd11.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(13230031)(376005)(366007)(7416005)(1800799015); DIR:OUT; SFP:1102; 
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?aWpnZXFJeUhTTXJramNhWXVkN2FCSVJSaGl1VlVrWUdMa2xwY3VlSkVqRitq?=
+ =?utf-8?B?NlZobDA4eXR3VHh6cUEyeFBSTnVlY3NCNmZpV1huWDFvNWQ4VE9pZldwYzZQ?=
+ =?utf-8?B?bTFoNlI5aisybGo4VEpQYUxZUVFLRC9na3B3aDdjRDVQQThrK0pmQkd1UnlP?=
+ =?utf-8?B?TDJlS0JhSHZYM3ZhZXNoNWZFTVR2TlFSM2RNMkJLWmh3Sm9jTWErckRubVYz?=
+ =?utf-8?B?WjYyckQ2dnlFVTJnZzV6aG5YSFh5QUNPRlN3SW83U2didWhWUEQ5QVJuY08w?=
+ =?utf-8?B?RlExKzdRazN1SHFTelkxelQxUHg3eHJ2N1J2aFlWb1lMQ2pyRXNXMmFiNVRj?=
+ =?utf-8?B?aWpqTThuZko4elFJMnhrR2VrVVBZZjNRblVjZ3N6aVdmNndsTjM4WHVZSnBo?=
+ =?utf-8?B?eEZWZElZcXhFTzdScTFzWmtuOTBKdzRacEdnVmd2SEJ0TTd4eG96ZEk2U2tq?=
+ =?utf-8?B?QmhkdGdGQ1FON010bnFvZ3dBQ2NSNUtzQVRPd1VMQTFrMGR3ZWl5S2ErK2dB?=
+ =?utf-8?B?QkFMQzBvMjRaSy85Q1ZtdkJ5U1NGS0xOOG1xMTdMS0JHQndzU3QvSU9xWXN5?=
+ =?utf-8?B?TlozekprKzgrbmpLWVdCbEJhRWhaUVluSFVtdHp1RzhEY1RqWVErUENYQkRJ?=
+ =?utf-8?B?OHdBYTBDaTRlUWFrTitmeTJXcFdTR2xNUkpXM3daL0NHU29wMHFMZXhlQjlt?=
+ =?utf-8?B?aTZvWVZTcElHaklHZ2JpYmR3dnFWZ3JDdVkra05hS1hWalVsclBXby94UnNG?=
+ =?utf-8?B?SDdpRU5UL2IzajUrOGpZYkpEdWVhR1FvQlNTRjB0MXh0Z09UbTN2SFNVd3h6?=
+ =?utf-8?B?RGh0ZWkrUWFjcndRZnBFTnA5ckdFV3lZMlpISTlhSk9yL3dTYnM3SkRzemE3?=
+ =?utf-8?B?NHNQcm10U1RJcUVBTEphTVhuNUkzbFlhZ2NXS0NVZkdNNlN0NzduNWtxK2hS?=
+ =?utf-8?B?RkVIQlFrOFlDY0c2U2lzN2ZpaEFFOGcwOEJwMGlUclRoR3BTank2amdTeU1z?=
+ =?utf-8?B?a09lOW5LVERoL0llU2xRR1pwME43ZThtNkwvRkROaExwOTE0WXpGVVRmeitt?=
+ =?utf-8?B?NlJrY3o3L2FNbTVBSUtaRnFzQzh5bFpFVzJ6UkI0ZE5USnZyM3NDMkt6VWNo?=
+ =?utf-8?B?ZWtsWVpBN21FQ0hZYTlXcW96VWYxcklWdU5BUXdjN0RlWGUwTlRYTG5rdzhY?=
+ =?utf-8?B?MVEwS3JMRkZiVFg0QnduaFd3dUJFK3pkYm1ZakhnMEVjK2o0VExUVzhXM3h5?=
+ =?utf-8?B?NW9CNUhKejBEODErS0V2V3UxY1BiYUhwU1VNVmduWWxWWVY5U2hJaU02anR0?=
+ =?utf-8?B?VWFrQUpFcEYweklLc0ptdlNmbjVIOG04L3QyVURaazEzL29ueE9YMndvWkxw?=
+ =?utf-8?B?ZXJMM3B1bnBybG1FQjIrb05PUjRia0VHdXpBanRCbUpFWWtsRmtwa3pVRUto?=
+ =?utf-8?B?TDR4SGRyYWhOOUR2bmhyYS9CZjY1aVdyNEdYaG42TmM5aFNlNTNNS0xvT0gv?=
+ =?utf-8?B?M3FTdHZGVnFiRVBNTSthdWFPMFJhMGxYUnVLdTBCNjFGVllON1hZKzMyRmRX?=
+ =?utf-8?B?TEsyaWlGSEc0VVRicUg3ajVIRldCRWdtS2lMVkVYTHZSWEFKK0ZZUFJQM0p2?=
+ =?utf-8?B?RUIxRkIwRmovS0lBWUdNYmFCZ2R2dlp1VnpXQ3JwellZcWtQOWc3UTBYV3dW?=
+ =?utf-8?B?bFcxWGhRdXhCQlEwSlg1UkpuQ1ZNR2wxZ1djMkhHbDQ2NjAwa2p5YUt3RXNw?=
+ =?utf-8?B?bTZzRHBhbFBRaTNPMytOaEg5UEoyditSMzBBTVVmVjUxT21YODVOekxhQ0lO?=
+ =?utf-8?B?L2w5djUyYzc5L0pRVFJKRTlPVHV5UGNoYm01UkxoSUY0VVk4bnFoSy91ZmNa?=
+ =?utf-8?B?REp6Qm5YSXVXU2JXVDNZbWRKeHdrSTdvSFlIczdKM3Z5eDlhd0llQWVKb2Nl?=
+ =?utf-8?B?NlpUSERXWjJuRk0zZ0NEVGRjcWRtRURXcE9teE40MDRtS2I5eUowckZYbWtk?=
+ =?utf-8?B?MjJZUXhVNlV5SnNFbmxYVUt4NkU4bFZMUzFNVEwzUDdSVTVrVTdvWTMyc2dP?=
+ =?utf-8?B?b1JjZVR4RUhJL2NtcG9GcnZSMTN0OTRTL0gva25TamFuNHF4enRuUXRWV0RO?=
+ =?utf-8?B?R3NMb0dpaWFLdGpxMG5VWFBNMlhORlJhc2pBa3AzNUhGZHBvcFNGOXVuQk9x?=
+ =?utf-8?Q?OA8ZCDyB2PoAVZXhuiyRXr4=3D?=
+X-MS-Exchange-CrossTenant-Network-Message-Id: f6716eec-4b81-45c7-26cc-08dc595e5bd4
+X-MS-Exchange-CrossTenant-AuthSource: MN6PR11MB8102.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 10 Apr 2024 13:01:38.3302 (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: BMY4kpeJTN2eqze3mcoMWhsVKrFyKyaQszj1ytoFZ0K5sKWpQ1Hh4JVoEsstmbBEnDlZIHONmEg4+eWSWVCQn0hkNW2Iqh9U66Im8hSPMqI=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH8PR11MB6753
+X-OriginatorOrg: intel.com
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1712752000; x=1744288000;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=8etUKHNJG31eTKGit/6QcJyQW5g+REOseSxs35Lehik=;
- b=SsELMgAPH2DcjVtNJJNQce24oPyY3Ypk+IIvSYEMsHLf03fIePmXysM6
- y38mUI+EmVjT1hTIY5ozbsVoghdL7znVxjKph0yJ/rfNoyDxeul+ikwBH
- uCRmnnCNQdY5rez2qDneFOlGGeAkvnqoMGC20wyXw+DHObYLNQXsLhNW1
- WldQ9SF5YGnbTF2Rw8DMNiey9ltfrr+Qanj3FJ4v6hNOJVggAEa+GrqLq
- QWU7JqVyzhA3TpP8ktsJFm/8hkE9xoKMSSIFfkFVvN/gOpvmE9C08hETz
- qSxiDg8LsSpDARY09QmLr3dIh4xAccP+N59dkOpT6zAXrlt6J3Ef1krnv
- w==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ t=1712754105; x=1744290105;
+ h=message-id:date:subject:to:cc:references:from:
+ in-reply-to:content-transfer-encoding:mime-version;
+ bh=qgHuLOyx7MWIf58FxJo1rF1v8NPdIl3CEsuN4Q8dsyw=;
+ b=Vp761peLFtHZwYeMYhjMgfUh8qeUD7VRVuXQs05/rHBWZay6ZNqH0D3f
+ VUtjGWJj0TS0WtUhBKGYYjX4Am1WmCfyU+3bKXYUy5mMM9conJyr2r9/Q
+ fsbIFcYyQdUpCxRVdzTaRfxW6IDM4ca8aFw3OSthqd2X15aEAtJJpX00K
+ D+zgDhtkCAj3EI+i0OTsm+Sc841B26b4k3kwbQxUF89B08qyDXm4JJBtX
+ mFfD4iW87g/5NocRZqO35c6dmVe4vdyjfqLjRFQG4XlGVxMB2tNfUCujm
+ gWRfIZN629mZzhPutNdd2Jo3ZpuUEIYUmiuZBZQt4KeBRkYasGmGdgMAF
+ Q==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=SsELMgAP
-Subject: [Intel-wired-lan] [PATCH iwl-next v4 12/12] iavf: add support for
- Rx timestamps to hotpath
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=Vp761peL
+Subject: Re: [Intel-wired-lan] [PATCH net-next v9 7/9] libeth: add Rx buffer
+ management
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -108,226 +208,91 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Wojciech Drewek <wojciech.drewek@intel.com>, netdev@vger.kernel.org,
- anthony.l.nguyen@intel.com, horms@kernel.org,
- Mateusz Polchlopek <mateusz.polchlopek@intel.com>,
- Jacob Keller <jacob.e.keller@intel.com>
+Cc: Jesper Dangaard Brouer <hawk@kernel.org>, netdev@vger.kernel.org,
+ Alexander Duyck <alexanderduyck@fb.com>, Ilias
+ Apalodimas <ilias.apalodimas@linaro.org>, Yunsheng Lin <linyunsheng@huawei.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, Eric Dumazet <edumazet@google.com>,
+ intel-wired-lan@lists.osuosl.org, nex.sw.ncis.osdt.itp.upstreaming@intel.com,
+ Jakub Kicinski <kuba@kernel.org>, Christoph Lameter <cl@linux.com>,
+ Paolo Abeni <pabeni@redhat.com>, "David S. Miller" <davem@davemloft.net>,
+ Vlastimil Babka <vbabka@suse.cz>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+On 4/10/24 13:49, Alexander Lobakin wrote:
+> From: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+> Date: Tue, 9 Apr 2024 12:58:33 +0200
+> 
+>> On 4/8/24 11:09, Alexander Lobakin wrote:
+>>> From: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+>>> Date: Fri, 5 Apr 2024 12:32:55 +0200
+>>>
+>>>> On 4/4/24 17:44, Alexander Lobakin wrote:
+>>>>> Add a couple intuitive helpers to hide Rx buffer implementation details
+>>>
+>>> [...]
+>>>
+>>>>> +struct libeth_fqe {
+>>>>> +    struct page        *page;
+>>>>> +    u32            offset;
+>>>>> +    u32            truesize;
+>>>>> +} __aligned_largest;
+>>>>> +
+>>>>> +/**
+>>>>> + * struct libeth_fq - structure representing a buffer queue
+>>>>> + * @fp: hotpath part of the structure
+>>>>> + * @pp: &page_pool for buffer management
+>>>>> + * @fqes: array of Rx buffers
+>>>>> + * @truesize: size to allocate per buffer, w/overhead
+>>>>> + * @count: number of descriptors/buffers the queue has
+>>>>> + * @buf_len: HW-writeable length per each buffer
+>>>>> + * @nid: ID of the closest NUMA node with memory
+>>>>> + */
+>>>>> +struct libeth_fq {
+>>>>> +    struct_group_tagged(libeth_fq_fp, fp,
+>>>>> +        struct page_pool    *pp;
+>>>>> +        struct libeth_fqe    *fqes;
+>>>>> +
+>>>>> +        u32            truesize;
+>>>>> +        u32            count;
+>>>>> +    );
+>>>>> +
+>>>>> +    /* Cold fields */
+>>>>> +    u32            buf_len;
+>>>>> +    int            nid;
+>>>>> +};
+>>>>
+>>>> [...]
+>>>>
+>>>> Could you please unpack the meaning of `fq` and `fqe` acronyms here?
+>>>
+>>> Rx:
+>>>
+>>> RQ -- receive queue, on which you get Rx DMA complete descriptors
+>>> FQ -- fill queue, the one you fill with free buffers
+>>>     FQE -- fill queue element, i.e. smth like "iavf_rx_buffer" or whatever
+>>>
+>>> Tx:
+>>>
+>>> SQ -- send queue, the one you fill with buffers to transmit
+>>>     SQE -- send queue element, i.e. "iavf_tx_buffer"
+>>> CQ -- completion queue, on which you get Tx DMA complete descriptors
+>>>
+>>> XDPSQ, XSkRQ etc. -- same as above, but for XDP / XSk
+>>>
+>>> I know that rxq, txq, bufq, complq is more common since it's been used
+>>> for years, but I like these "new" ones more :>
+>>>
+>>
+>> Thank you, that sounds right. If you happen to sent v10, a bit of code
+>> comment with this info would be useful ;)
+> 
+> The current kdoc in front of each struct and function declaration is not
+> enough? :D
+> 
+> Thanks,
+> Olek
 
-Add support for receive timestamps to the Rx hotpath. This support only
-works when using the flexible descriptor format, so make sure that we
-request this format by default if we have receive timestamp support
-available in the PTP capabilities.
-
-In order to report the timestamps to userspace, we need to perform
-timestamp extension. The Rx descriptor does actually contain the "40
-bit" timestamp. However, upper 32 bits which contain nanoseconds are
-conveniently stored separately in the descriptor. We could extract the
-32bits and lower 8 bits, then perform a bitwise OR to calculate the
-40bit value. This makes no sense, because the timestamp extension
-algorithm would simply discard the lower 8 bits anyways.
-
-Thus, implement timestamp extension as iavf_ptp_extend_32b_timestamp(),
-and extract and forward only the 32bits of nominal nanoseconds.
-
-Reviewed-by: Wojciech Drewek <wojciech.drewek@intel.com>
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-Signed-off-by: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
----
- drivers/net/ethernet/intel/iavf/iavf_main.c |  9 +++
- drivers/net/ethernet/intel/iavf/iavf_ptp.c  | 67 +++++++++++++++++++++
- drivers/net/ethernet/intel/iavf/iavf_ptp.h  |  4 ++
- drivers/net/ethernet/intel/iavf/iavf_txrx.c | 44 ++++++++++++++
- 4 files changed, 124 insertions(+)
-
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index d079d3bfb146..c5839b4b20d0 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -726,6 +726,15 @@ static u8 iavf_select_rx_desc_format(struct iavf_adapter *adapter)
- 	if (!RXDID_ALLOWED(adapter))
- 		return VIRTCHNL_RXDID_1_32B_BASE;
- 
-+	/* Rx timestamping requires the use of flexible NIC descriptors */
-+	if (iavf_ptp_cap_supported(adapter, VIRTCHNL_1588_PTP_CAP_RX_TSTAMP)) {
-+		if (supported_rxdids & BIT(VIRTCHNL_RXDID_2_FLEX_SQ_NIC))
-+			return VIRTCHNL_RXDID_2_FLEX_SQ_NIC;
-+
-+		dev_dbg(&adapter->pdev->dev,
-+			"Unable to negotiate flexible descriptor format.\n");
-+	}
-+
- 	/* Warn if the PF does not list support for the default legacy
- 	 * descriptor format. This shouldn't happen, as this is the format
- 	 * used if VIRTCHNL_VF_OFFLOAD_RX_FLEX_DESC is not supported. It is
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_ptp.c b/drivers/net/ethernet/intel/iavf/iavf_ptp.c
-index 0e5cae23f9be..f422ce4cc3fc 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_ptp.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_ptp.c
-@@ -428,6 +428,9 @@ void iavf_ptp_release(struct iavf_adapter *adapter)
- 	adapter->aq_required &= ~IAVF_FLAG_AQ_SEND_PTP_CMD;
- 	spin_unlock(&adapter->ptp.aq_cmd_lock);
- 
-+	adapter->ptp.hwtstamp_config.rx_filter = HWTSTAMP_FILTER_NONE;
-+	iavf_ptp_disable_rx_tstamp(adapter);
-+
- 	adapter->ptp.initialized = false;
- }
- 
-@@ -461,3 +464,67 @@ void iavf_ptp_process_caps(struct iavf_adapter *adapter)
- 		iavf_ptp_disable_rx_tstamp(adapter);
- 	}
- }
-+
-+/**
-+ * iavf_ptp_extend_32b_timestamp - Convert a 32b nanoseconds timestamp to 64b
-+ * nanoseconds
-+ * @cached_phc_time: recently cached copy of PHC time
-+ * @in_tstamp: Ingress/egress 32b nanoseconds timestamp value
-+ *
-+ * Hardware captures timestamps which contain only 32 bits of nominal
-+ * nanoseconds, as opposed to the 64bit timestamps that the stack expects.
-+ *
-+ * Extend the 32bit nanosecond timestamp using the following algorithm and
-+ * assumptions:
-+ *
-+ * 1) have a recently cached copy of the PHC time
-+ * 2) assume that the in_tstamp was captured 2^31 nanoseconds (~2.1
-+ *    seconds) before or after the PHC time was captured.
-+ * 3) calculate the delta between the cached time and the timestamp
-+ * 4) if the delta is smaller than 2^31 nanoseconds, then the timestamp was
-+ *    captured after the PHC time. In this case, the full timestamp is just
-+ *    the cached PHC time plus the delta.
-+ * 5) otherwise, if the delta is larger than 2^31 nanoseconds, then the
-+ *    timestamp was captured *before* the PHC time, i.e. because the PHC
-+ *    cache was updated after the timestamp was captured by hardware. In this
-+ *    case, the full timestamp is the cached time minus the inverse delta.
-+ *
-+ * This algorithm works even if the PHC time was updated after a Tx timestamp
-+ * was requested, but before the Tx timestamp event was reported from
-+ * hardware.
-+ *
-+ * This calculation primarily relies on keeping the cached PHC time up to
-+ * date. If the timestamp was captured more than 2^31 nanoseconds after the
-+ * PHC time, it is possible that the lower 32bits of PHC time have
-+ * overflowed more than once, and we might generate an incorrect timestamp.
-+ *
-+ * This is prevented by (a) periodically updating the cached PHC time once
-+ * a second, and (b) discarding any Tx timestamp packet if it has waited for
-+ * a timestamp for more than one second.
-+ */
-+u64 iavf_ptp_extend_32b_timestamp(u64 cached_phc_time, u32 in_tstamp)
-+{
-+	const u64 mask = GENMASK_ULL(31, 0);
-+	u32 delta;
-+	u64 ns;
-+
-+	/* Calculate the delta between the lower 32bits of the cached PHC
-+	 * time and the in_tstamp value
-+	 */
-+	delta = (in_tstamp - (u32)(cached_phc_time & mask));
-+
-+	/* Do not assume that the in_tstamp is always more recent than the
-+	 * cached PHC time. If the delta is large, it indicates that the
-+	 * in_tstamp was taken in the past, and should be converted
-+	 * forward.
-+	 */
-+	if (delta > (mask / 2)) {
-+		/* reverse the delta calculation here */
-+		delta = ((u32)(cached_phc_time & mask) - in_tstamp);
-+		ns = cached_phc_time - delta;
-+	} else {
-+		ns = cached_phc_time + delta;
-+	}
-+
-+	return ns;
-+}
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_ptp.h b/drivers/net/ethernet/intel/iavf/iavf_ptp.h
-index 337bf184a7ea..66e113ae27f5 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_ptp.h
-+++ b/drivers/net/ethernet/intel/iavf/iavf_ptp.h
-@@ -6,6 +6,9 @@
- 
- #include <linux/ptp_clock_kernel.h>
- 
-+/* bit indicating whether a 40bit timestamp is valid */
-+#define IAVF_PTP_40B_TSTAMP_VALID	BIT(0)
-+
- /* structure used to queue PTP commands for processing */
- struct iavf_ptp_aq_cmd {
- 	struct list_head list;
-@@ -38,5 +41,6 @@ void iavf_virtchnl_send_ptp_cmd(struct iavf_adapter *adapter);
- long iavf_ptp_do_aux_work(struct ptp_clock_info *ptp);
- int iavf_ptp_get_ts_config(struct iavf_adapter *adapter, struct ifreq *ifr);
- int iavf_ptp_set_ts_config(struct iavf_adapter *adapter, struct ifreq *ifr);
-+u64 iavf_ptp_extend_32b_timestamp(u64 cached_phc_time, u32 in_tstamp);
- 
- #endif /* _IAVF_PTP_H_ */
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_txrx.c b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
-index b97da9c946ce..eaefb223008c 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_txrx.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
-@@ -1237,6 +1237,48 @@ static void iavf_flex_rx_hash(struct iavf_ring *ring,
- 	}
- }
- 
-+/**
-+ * iavf_flex_rx_tstamp - Capture Rx timestamp from the descriptor
-+ * @rx_ring: descriptor ring
-+ * @rx_desc: specific descriptor
-+ * @skb: skb currently being received
-+ *
-+ * Read the Rx timestamp value from the descriptor and pass it to the stack.
-+ *
-+ * This function only operates on the VIRTCHNL_RXDID_2_FLEX_SQ_NIC flexible
-+ * descriptor writeback format.
-+ */
-+static void iavf_flex_rx_tstamp(struct iavf_ring *rx_ring,
-+				union iavf_rx_desc *rx_desc,
-+				struct sk_buff *skb)
-+{
-+	struct skb_shared_hwtstamps *skb_tstamps;
-+	struct iavf_adapter *adapter;
-+	u32 tstamp;
-+	u64 ns;
-+
-+	/* Skip processing if timestamps aren't enabled */
-+	if (!(rx_ring->flags & IAVF_TXRX_FLAGS_HW_TSTAMP))
-+		return;
-+
-+	/* Check if this Rx descriptor has a valid timestamp */
-+	if (!(rx_desc->flex_wb.ts_low & IAVF_PTP_40B_TSTAMP_VALID))
-+		return;
-+
-+	adapter = netdev_priv(rx_ring->netdev);
-+
-+	/* the ts_low field only contains the valid bit and sub-nanosecond
-+	 * precision, so we don't need to extract it.
-+	 */
-+	tstamp = le32_to_cpu(rx_desc->flex_wb.flex_ts.ts_high);
-+	ns = iavf_ptp_extend_32b_timestamp(adapter->ptp.cached_phc_time,
-+					   tstamp);
-+
-+	skb_tstamps = skb_hwtstamps(skb);
-+	memset(skb_tstamps, 0, sizeof(*skb_tstamps));
-+	skb_tstamps->hwtstamp = ns_to_ktime(ns);
-+}
-+
- /**
-  * iavf_process_skb_fields - Populate skb header fields from Rx descriptor
-  * @rx_ring: rx descriptor ring packet is being transacted on
-@@ -1260,6 +1302,8 @@ static void iavf_process_skb_fields(struct iavf_ring *rx_ring,
- 		iavf_flex_rx_hash(rx_ring, rx_desc, skb, rx_ptype);
- 
- 		iavf_flex_rx_csum(rx_ring->vsi, skb, rx_desc);
-+
-+		iavf_flex_rx_tstamp(rx_ring, rx_desc, skb);
- 	}
- 
- 	skb_record_rx_queue(skb, rx_ring->queue_index);
--- 
-2.38.1
-
+I've asked my initial question just after reading it thrice, without
+your reply `FQE` was as meaningful as `ABC`
