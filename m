@@ -4,69 +4,69 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D89A6C4345F
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 12 Apr 2024 06:26:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 42D80C4345F
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 12 Apr 2024 06:26:34 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 86C6B41F43;
-	Fri, 12 Apr 2024 06:26:29 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id EC44B41F3E;
+	Fri, 12 Apr 2024 06:26:33 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id YTtrFWhQTwGf; Fri, 12 Apr 2024 06:26:28 +0000 (UTC)
+ id CySiMqqiKqum; Fri, 12 Apr 2024 06:26:31 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 35EC641FA7
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org AF76E41ED0
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1712903188;
-	bh=AAOkIHlDFc4eH2gLJg+l+imOKKhOT5hX/oUmJ/aF2n4=;
+	s=default; t=1712903191;
+	bh=kJTaMlnxNIwQALWPzJo9Y9mkKZUlq9gTFbbIlGcjXEg=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=TV2vhpleRU75keaCU/EAThcPC5V8xSvRz1xFhJfd/pgJL+zNXO3ET0sfVlut5FcAy
-	 CBEGkS7bsCPugYXLNplQvvX61Kt3uuQyjf8yAU62JQnXLqEadjmkaUJi7xpRU1sGOD
-	 +XiO8RnHgp7Z7/YtJjvok/vL/DRz0gTUIUiAXOxYZmbQwI9ahOpFdSlFcoZnBZ+76w
-	 mMK/hg41FF/rQtuWUZsM9nTlO0sGYAMkRkGMjWhsZVpcb5xns9uO1t0gzkf/2GwX91
-	 EF5/Ex8o8Ora76cyFG9IUbhYULNgYe5MvrdtQF8jlhKG45M/g27Ju0agoOsUnFNCE1
-	 5Vl5sbkpJ0HFw==
+	b=9FgxPqtxs/FcxcYVjxHZANKRzqEn+/K6ZGgwJNQ8zOHfDzAzX89FNvt10RiMPMEN4
+	 7/BLpGYB1e8IgftFRJ/m5Dnpvr9gu0YDPTbCzZdXqufIgUNI3CCAfSlwNpygFGesys
+	 orQ9SUH6dzmU19IYcaNZKQJlyFez2jqLeFkxpHKj490dEOgyi0jPAaDQsQQEBzVjUm
+	 vPQo0NVSP1PDbJUgGF6tnApa8JAPPZj57mqTLXL06iKtgZrjBEFQKc5VHPIi/nyIaP
+	 XLtX7jAJBBN3CXj450z0ztoNp18G6LYB44kF12BurtlTzGqFfBtQ0pKf/X5Ew97+lY
+	 C4WP/Ff6HBjVA==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 35EC641FA7;
-	Fri, 12 Apr 2024 06:26:28 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id AF76E41ED0;
+	Fri, 12 Apr 2024 06:26:31 +0000 (UTC)
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 0C1541BF312
- for <intel-wired-lan@lists.osuosl.org>; Fri, 12 Apr 2024 06:26:27 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 3B3FC1BF312
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 12 Apr 2024 06:26:30 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id ECF2A40446
- for <intel-wired-lan@lists.osuosl.org>; Fri, 12 Apr 2024 06:26:26 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 35DC840540
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 12 Apr 2024 06:26:30 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 1CYWuESBROwz for <intel-wired-lan@lists.osuosl.org>;
- Fri, 12 Apr 2024 06:26:26 +0000 (UTC)
+ id ubu5qT5EovZ5 for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 12 Apr 2024 06:26:29 +0000 (UTC)
 Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.11;
  helo=mgamail.intel.com; envelope-from=michal.swiatkowski@linux.intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 01C8A40217
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 01C8A40217
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 68E7540446
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 68E7540446
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.11])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 01C8A40217
- for <intel-wired-lan@lists.osuosl.org>; Fri, 12 Apr 2024 06:26:25 +0000 (UTC)
-X-CSE-ConnectionGUID: PIzowqgoSpS7QxxEGa0wlg==
-X-CSE-MsgGUID: VVZv1gjnSEm3brp9klAlXQ==
-X-IronPort-AV: E=McAfee;i="6600,9927,11041"; a="18952959"
-X-IronPort-AV: E=Sophos;i="6.07,195,1708416000"; d="scan'208";a="18952959"
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 68E7540446
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 12 Apr 2024 06:26:29 +0000 (UTC)
+X-CSE-ConnectionGUID: q+tFHh78R36cPRGNAXfuKQ==
+X-CSE-MsgGUID: t0E29JutReeY3WM/OZtV8w==
+X-IronPort-AV: E=McAfee;i="6600,9927,11041"; a="18952966"
+X-IronPort-AV: E=Sophos;i="6.07,195,1708416000"; d="scan'208";a="18952966"
 Received: from orviesa009.jf.intel.com ([10.64.159.149])
  by fmvoesa105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 11 Apr 2024 23:26:25 -0700
-X-CSE-ConnectionGUID: h6b3YcvXRgmEzJHVAR9t7Q==
-X-CSE-MsgGUID: aon3xRQeT7mI/VHfXakIFg==
+ 11 Apr 2024 23:26:29 -0700
+X-CSE-ConnectionGUID: Otg8klPlT5iZgQ1f8g7TNQ==
+X-CSE-MsgGUID: FyWT2il0RuGOqk5CPCrdNA==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.07,195,1708416000"; d="scan'208";a="21105124"
+X-IronPort-AV: E=Sophos;i="6.07,195,1708416000"; d="scan'208";a="21105129"
 Received: from wasp.igk.intel.com (HELO GK3153-DR2-R750-36946.localdomain.com)
  ([10.102.20.192])
- by orviesa009.jf.intel.com with ESMTP; 11 Apr 2024 23:26:23 -0700
+ by orviesa009.jf.intel.com with ESMTP; 11 Apr 2024 23:26:26 -0700
 From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Fri, 12 Apr 2024 08:30:51 +0200
-Message-ID: <20240412063053.339795-6-michal.swiatkowski@linux.intel.com>
+Date: Fri, 12 Apr 2024 08:30:52 +0200
+Message-ID: <20240412063053.339795-7-michal.swiatkowski@linux.intel.com>
 X-Mailer: git-send-email 2.42.0
 In-Reply-To: <20240412063053.339795-1-michal.swiatkowski@linux.intel.com>
 References: <20240412063053.339795-1-michal.swiatkowski@linux.intel.com>
@@ -74,24 +74,25 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1712903186; x=1744439186;
+ t=1712903189; x=1744439189;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=ez1w0Nj7peK4ZK0fGlkLj63gDG+27o1SRcsfZRV0G7k=;
- b=lXcDIGogr5a24DBoTgV+EWTISt5W3DWe3CVL2r64jBRDQsQdx9W9Pytc
- U4F9oQ3JppRpZyfvBGbqgkF7cTNNdEfhJcmpe1BMT7p2hPSxsFOfbugrq
- FfiBK205xdAg1KTlMyV6YgpXx1fMYp17Cm/sC6GVZFHZFYuIFdYrXslns
- MVogFRYBzqx7gEkN8DjJ8iO87IXwjrhCN5F9v1EiggW073me4j8x8SIAo
- r2Vc6pvvL4gnqSJKJpIaW/K/kOVH2Oc8P+YO4kU2GLKuNh3Ynwmp9X2xu
- 0kvnzNBsV5v/Jxgk9moZhxUQ0nIEwviF51sOiR1nOA3vBauIDfqcFJkIF
+ bh=A9td/u3rL3CsEVlgoV3nHZed2uzaUWhm37Vu6ewAR6k=;
+ b=H2uN1nZSuvO07ib8rrOThAOern+onS1Tg7ahNCEJojaB/QqWowiPhr+2
+ X3f6fbGdrsjroZ/NAKiN8OZIRROs6iF3u4JgWB4ad2fI7kw8KkneqJEz+
+ G81uqZuEBzSDedD1v2WadS8k1pTzUhHq/4P18PXNNYnvkk4vAjsrPfZfO
+ dOiIqzLfwuKhqcmN97yokHx3rgWM30Dqexh9PqBypt9g/0t6j58Fo/tAb
+ jLSyN9gMeSHfdY50hPFWgCj4iUnMwW8oiOkuO+yGhMfvxMaH3hwWYdbru
+ q9Nds8EiLicqDp/nsgdNTphJwG+KARf6C46zlDUPvk8a7zCiPnSvODZnE
  w==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=none (p=none dis=none)
  header.from=linux.intel.com
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=lXcDIGog
-Subject: [Intel-wired-lan] [iwl-next v3 5/7] ice: base subfunction aux driver
+ header.a=rsa-sha256 header.s=Intel header.b=H2uN1nZS
+Subject: [Intel-wired-lan] [iwl-next v3 6/7] ice: implement netdev for
+ subfunction
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -116,225 +117,143 @@ Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 From: Piotr Raczynski <piotr.raczynski@intel.com>
 
-Implement subfunction driver. It is probe when subfunction port is
-activated.
+Configure netdevice for subfunction usecase. Mostly it is reusing ops
+from the PF netdevice.
 
-VSI is already created. During the probe VSI is being configured.
-MAC unicast and broadcast filter is added to allow traffic to pass.
+SF netdev is linked to devlink port registered after SF activation.
 
 Signed-off-by: Piotr Raczynski <piotr.raczynski@intel.com>
 Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 ---
- drivers/net/ethernet/intel/ice/Makefile     |   1 +
- drivers/net/ethernet/intel/ice/ice_main.c   |  10 ++
- drivers/net/ethernet/intel/ice/ice_sf_eth.c | 130 ++++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_sf_eth.h |   9 ++
- 4 files changed, 150 insertions(+)
- create mode 100644 drivers/net/ethernet/intel/ice/ice_sf_eth.c
+ drivers/net/ethernet/intel/ice/ice_sf_eth.c | 85 ++++++++++++++++++++-
+ 1 file changed, 84 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/Makefile b/drivers/net/ethernet/intel/ice/Makefile
-index 03500e28ac99..4d987f5dcdc1 100644
---- a/drivers/net/ethernet/intel/ice/Makefile
-+++ b/drivers/net/ethernet/intel/ice/Makefile
-@@ -31,6 +31,7 @@ ice-y := ice_main.o	\
- 	 ice_idc.o	\
- 	 devlink/devlink.o	\
- 	 devlink/devlink_port.o \
-+	 ice_sf_eth.o	\
- 	 ice_ddp.o	\
- 	 ice_fw_update.o \
- 	 ice_lag.o	\
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 29552598ddb6..f55e3340b608 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -15,6 +15,7 @@
- #include "ice_dcb_nl.h"
- #include "devlink/devlink.h"
- #include "devlink/devlink_port.h"
-+#include "ice_sf_eth.h"
- #include "ice_hwmon.h"
- /* Including ice_trace.h with CREATE_TRACE_POINTS defined will generate the
-  * ice tracepoint functions. This must be done exactly once across the
-@@ -5857,8 +5858,16 @@ static int __init ice_module_init(void)
- 		goto err_dest_lag_wq;
- 	}
- 
-+	status = ice_sf_driver_register();
-+	if (status) {
-+		pr_err("Failed to register SF driver, err %d\n", status);
-+		goto err_sf_driver;
-+	}
-+
- 	return 0;
- 
-+err_sf_driver:
-+	pci_unregister_driver(&ice_driver);
- err_dest_lag_wq:
- 	destroy_workqueue(ice_lag_wq);
- 	ice_debugfs_exit();
-@@ -5876,6 +5885,7 @@ module_init(ice_module_init);
-  */
- static void __exit ice_module_exit(void)
- {
-+	ice_sf_driver_unregister();
- 	pci_unregister_driver(&ice_driver);
- 	ice_debugfs_exit();
- 	destroy_workqueue(ice_wq);
 diff --git a/drivers/net/ethernet/intel/ice/ice_sf_eth.c b/drivers/net/ethernet/intel/ice/ice_sf_eth.c
-new file mode 100644
-index 000000000000..70f7cbe6c609
---- /dev/null
+index 70f7cbe6c609..2b69dd5facf9 100644
+--- a/drivers/net/ethernet/intel/ice/ice_sf_eth.c
 +++ b/drivers/net/ethernet/intel/ice/ice_sf_eth.c
-@@ -0,0 +1,130 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/* Copyright (c) 2024, Intel Corporation. */
-+#include "ice.h"
-+#include "ice_lib.h"
-+#include "ice_fltr.h"
-+#include "ice_sf_eth.h"
-+#include "devlink/devlink_port.h"
-+#include "devlink/devlink.h"
+@@ -2,11 +2,85 @@
+ /* Copyright (c) 2024, Intel Corporation. */
+ #include "ice.h"
+ #include "ice_lib.h"
++#include "ice_txrx.h"
+ #include "ice_fltr.h"
+ #include "ice_sf_eth.h"
+ #include "devlink/devlink_port.h"
+ #include "devlink/devlink.h"
+ 
++static const struct net_device_ops ice_sf_netdev_ops = {
++	.ndo_open = ice_open,
++	.ndo_stop = ice_stop,
++	.ndo_start_xmit = ice_start_xmit,
++	.ndo_vlan_rx_add_vid = ice_vlan_rx_add_vid,
++	.ndo_vlan_rx_kill_vid = ice_vlan_rx_kill_vid,
++	.ndo_change_mtu = ice_change_mtu,
++	.ndo_get_stats64 = ice_get_stats64,
++	.ndo_tx_timeout = ice_tx_timeout,
++	.ndo_bpf = ice_xdp,
++	.ndo_xdp_xmit = ice_xdp_xmit,
++	.ndo_xsk_wakeup = ice_xsk_wakeup,
++};
 +
 +/**
-+ * ice_sf_dev_probe - subfunction driver probe function
-+ * @adev: pointer to the auxiliary device
-+ * @id: pointer to the auxiliary_device id
++ * ice_sf_cfg_netdev - Allocate, configure and register a netdev
++ * @dyn_port: subfunction associated with configured netdev
++ * @devlink_port: subfunction devlink port to be linked with netdev
 + *
-+ * Configure VSI and netdev resources for the subfunction device.
-+ *
-+ * Return: zero on success or an error code on failure.
++ * Return: 0 on success, negative value on failure
 + */
-+static int ice_sf_dev_probe(struct auxiliary_device *adev,
-+			    const struct auxiliary_device_id *id)
++static int ice_sf_cfg_netdev(struct ice_dynamic_port *dyn_port,
++			     struct devlink_port *devlink_port)
 +{
-+	struct ice_sf_dev *sf_dev = ice_adev_to_sf_dev(adev);
-+	struct ice_dynamic_port *dyn_port = sf_dev->dyn_port;
-+	struct ice_vsi_cfg_params params = {};
 +	struct ice_vsi *vsi = dyn_port->vsi;
-+	struct ice_pf *pf = dyn_port->pf;
-+	struct device *dev = &adev->dev;
-+	struct ice_sf_priv *priv;
++	struct ice_netdev_priv *np;
++	struct net_device *netdev;
 +	int err;
 +
-+	params.type = ICE_VSI_SF;
-+	params.pi = pf->hw.port_info;
-+	params.flags = ICE_VSI_FLAG_INIT;
++	netdev = alloc_etherdev_mqs(sizeof(*np), vsi->alloc_txq,
++				    vsi->alloc_rxq);
++	if (!netdev)
++		return -ENOMEM;
 +
-+	priv = ice_allocate_sf(&adev->dev);
-+	if (!priv) {
-+		dev_err(dev, "Subfunction devlink alloc failed");
++	SET_NETDEV_DEV(netdev, &vsi->back->pdev->dev);
++	set_bit(ICE_VSI_NETDEV_ALLOCD, vsi->state);
++	vsi->netdev = netdev;
++	np = netdev_priv(netdev);
++	np->vsi = vsi;
++
++	ice_set_netdev_features(netdev);
++
++	netdev->xdp_features = NETDEV_XDP_ACT_BASIC | NETDEV_XDP_ACT_REDIRECT |
++			       NETDEV_XDP_ACT_XSK_ZEROCOPY |
++			       NETDEV_XDP_ACT_RX_SG;
++
++	eth_hw_addr_set(netdev, dyn_port->hw_addr);
++	ether_addr_copy(netdev->perm_addr, dyn_port->hw_addr);
++	netdev->netdev_ops = &ice_sf_netdev_ops;
++	SET_NETDEV_DEVLINK_PORT(netdev, devlink_port);
++
++	err = register_netdev(netdev);
++	if (err) {
++		free_netdev(netdev);
++		vsi->netdev = NULL;
 +		return -ENOMEM;
 +	}
++	set_bit(ICE_VSI_NETDEV_REGISTERED, vsi->state);
++	netif_carrier_off(netdev);
++	netif_tx_stop_all_queues(netdev);
 +
-+	priv->dev = sf_dev;
-+	sf_dev->priv = priv;
++	return 0;
++}
 +
-+	devlink_register(priv_to_devlink(priv));
++static void ice_sf_decfg_netdev(struct ice_vsi *vsi)
++{
++	unregister_netdev(vsi->netdev);
++	clear_bit(ICE_VSI_NETDEV_REGISTERED, vsi->state);
++	free_netdev(vsi->netdev);
++	vsi->netdev = NULL;
++	clear_bit(ICE_VSI_NETDEV_ALLOCD, vsi->state);
++}
 +
-+	err = ice_vsi_cfg(vsi, &params);
+ /**
+  * ice_sf_dev_probe - subfunction driver probe function
+  * @adev: pointer to the auxiliary device
+@@ -55,18 +129,26 @@ static int ice_sf_dev_probe(struct auxiliary_device *adev,
+ 		goto err_vsi_decfg;
+ 	}
+ 
++	err = ice_sf_cfg_netdev(dyn_port, &sf_dev->priv->devlink_port);
 +	if (err) {
-+		dev_err(dev, "Subfunction vsi config failed");
-+		return err;
-+	}
-+
-+	err = ice_devlink_create_sf_dev_port(sf_dev);
-+	if (err) {
-+		dev_err(dev, "Cannot add ice virtual devlink port for subfunction");
-+		goto err_vsi_decfg;
-+	}
-+
-+	err = ice_fltr_add_mac_and_broadcast(vsi, vsi->netdev->dev_addr,
-+					     ICE_FWD_TO_VSI);
-+	if (err) {
-+		dev_err(dev, "can't add MAC filters %pM for VSI %d\n",
-+			vsi->netdev->dev_addr, vsi->idx);
++		dev_err(dev, "Subfunction netdev config failed");
 +		goto err_devlink_destroy;
 +	}
 +
-+	ice_napi_add(vsi);
-+
-+	return err;
-+
-+err_devlink_destroy:
-+	ice_devlink_destroy_sf_dev_port(sf_dev);
-+err_vsi_decfg:
-+	ice_vsi_decfg(vsi);
-+	return err;
-+}
-+
-+/**
-+ * ice_sf_dev_remove - subfunction driver remove function
-+ * @adev: pointer to the auxiliary device
-+ *
-+ * Deinitalize VSI and netdev resources for the subfunction device.
-+ */
-+static void ice_sf_dev_remove(struct auxiliary_device *adev)
-+{
-+	struct ice_sf_dev *sf_dev = ice_adev_to_sf_dev(adev);
-+	struct devlink *devlink = priv_to_devlink(sf_dev->priv);
-+	struct ice_dynamic_port *dyn_port = sf_dev->dyn_port;
-+	struct ice_vsi *vsi = dyn_port->vsi;
-+
-+	ice_vsi_close(vsi);
-+
-+	ice_devlink_destroy_sf_dev_port(sf_dev);
-+	devlink_unregister(devlink);
-+	devlink_free(devlink);
-+	ice_vsi_decfg(vsi);
-+}
-+
-+static const struct auxiliary_device_id ice_sf_dev_id_table[] = {
-+	{ .name = "ice.sf", },
-+	{ },
-+};
-+
-+MODULE_DEVICE_TABLE(auxiliary, ice_sf_dev_id_table);
-+
-+static struct auxiliary_driver ice_sf_driver = {
-+	.name = "sf",
-+	.probe = ice_sf_dev_probe,
-+	.remove = ice_sf_dev_remove,
-+	.id_table = ice_sf_dev_id_table
-+};
-+
-+/**
-+ * ice_sf_driver_register - Register new auxiliary subfunction driver
-+ *
-+ * Return: zero on success or an error code on failure.
-+ */
-+int ice_sf_driver_register(void)
-+{
-+	return auxiliary_driver_register(&ice_sf_driver);
-+}
-+
-+/**
-+ * ice_sf_driver_unregister - Unregister new auxiliary subfunction driver
-+ *
-+ * Return: zero on success or an error code on failure.
-+ */
-+void ice_sf_driver_unregister(void)
-+{
-+	auxiliary_driver_unregister(&ice_sf_driver);
-+}
-diff --git a/drivers/net/ethernet/intel/ice/ice_sf_eth.h b/drivers/net/ethernet/intel/ice/ice_sf_eth.h
-index a08f8b2bceef..e972c50f96c9 100644
---- a/drivers/net/ethernet/intel/ice/ice_sf_eth.h
-+++ b/drivers/net/ethernet/intel/ice/ice_sf_eth.h
-@@ -18,4 +18,13 @@ struct ice_sf_priv {
- 	struct devlink_port devlink_port;
- };
+ 	err = ice_fltr_add_mac_and_broadcast(vsi, vsi->netdev->dev_addr,
+ 					     ICE_FWD_TO_VSI);
+ 	if (err) {
+ 		dev_err(dev, "can't add MAC filters %pM for VSI %d\n",
+ 			vsi->netdev->dev_addr, vsi->idx);
+-		goto err_devlink_destroy;
++		goto err_netdev_decfg;
+ 	}
  
-+static inline struct
-+ice_sf_dev *ice_adev_to_sf_dev(struct auxiliary_device *adev)
-+{
-+	return container_of(adev, struct ice_sf_dev, adev);
-+}
-+
-+int ice_sf_driver_register(void);
-+void ice_sf_driver_unregister(void);
-+
- #endif /* _ICE_SF_ETH_H_ */
+ 	ice_napi_add(vsi);
+ 
+ 	return err;
+ 
++err_netdev_decfg:
++	ice_sf_decfg_netdev(vsi);
+ err_devlink_destroy:
+ 	ice_devlink_destroy_sf_dev_port(sf_dev);
+ err_vsi_decfg:
+@@ -89,6 +171,7 @@ static void ice_sf_dev_remove(struct auxiliary_device *adev)
+ 
+ 	ice_vsi_close(vsi);
+ 
++	ice_sf_decfg_netdev(vsi);
+ 	ice_devlink_destroy_sf_dev_port(sf_dev);
+ 	devlink_unregister(devlink);
+ 	devlink_free(devlink);
 -- 
 2.42.0
 
