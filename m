@@ -4,68 +4,68 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2BF7AC00A94
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 12 Apr 2024 13:11:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1A46EC00A94
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 12 Apr 2024 13:11:43 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 95D3C60899;
-	Fri, 12 Apr 2024 13:11:35 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 7E12D60898;
+	Fri, 12 Apr 2024 13:11:42 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id wgTeE8t2gIbn; Fri, 12 Apr 2024 13:11:34 +0000 (UTC)
+ id 6MnxUBIpZzwf; Fri, 12 Apr 2024 13:11:41 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 522DE6088D
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 0E448608BA
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1712927494;
-	bh=VcEkyQaVLyyBx1Xcx84dXqZY4QneoQTc5t51C+eTNWY=;
+	s=default; t=1712927501;
+	bh=VsMplHZKPsaJxBGni2SNGW3xnnzG7wZ0sLhcn6CILHA=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=lw+sj0/lBaoMTufoKWya0hWxzwn12f4QhM7wRAn/TSyUmE8ting8ZQ+6JXyCoMtsr
-	 FG7naon5kkmCopjufJZoAu1KDfDFsSGu0EvIq68ZwUVjBtQDI6JgttNFyMt2j/eWzO
-	 qCbwi1ziXcaQ9gH9V6HFtiYviaEjZWe0E4aNLwofmZFdPWNf7DvtT0dblpO9qYKzQU
-	 LSa8i59XaVtoUL4PkdfV6JmqdVoic2D3UBCvGax24VasfVyO7SoGuXZ3twEPG9PB/C
-	 9nJOJPmuFfdoaMrgLVxZnEghJt0btyBoZJK6OEkImrtorSnlL/i9zT+vEZy/kOv1cd
-	 NrZz+LCcJ5/Gw==
+	b=HSu6nub7IPPU96qPKrPCkwP/a/n71oRP1u+tEartKOyfzGyLM/aj+QTpHovuOgts6
+	 kD5df4R+fRkgBZh5J0ek9kq6LGKZFw26pOnBbhoAOFQrFXCVmH/NO/yS8/2amg5H5N
+	 pBsigj/u+YlmFrfGIjSdt4oApAG8F9WDzKEELPXzLl0TNxuaww5nAWmS0V6K+Jnz2K
+	 YWNHg6QmFliFO69MaqIXTrptNGPWtFxueouDvAxHWVunAlNoYaStCjKOSBuHA79aRD
+	 wCA0SfKeBf6FjmiTr+pZlP8OIDAzv4n8P4pLyOer3R7VtPiSyF9uUlM7iF6YCEPvkk
+	 7F2WeRVp1W8nA==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 522DE6088D;
-	Fri, 12 Apr 2024 13:11:34 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 2FA491BF3A9
- for <intel-wired-lan@lists.osuosl.org>; Fri, 12 Apr 2024 13:11:29 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 0E448608BA;
+	Fri, 12 Apr 2024 13:11:41 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 575D31BF997
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 12 Apr 2024 13:11:30 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 0238C8228C
- for <intel-wired-lan@lists.osuosl.org>; Fri, 12 Apr 2024 13:11:27 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 5354A60774
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 12 Apr 2024 13:11:29 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Q9W07jEf5uqP for <intel-wired-lan@lists.osuosl.org>;
- Fri, 12 Apr 2024 13:11:26 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id apNhkNctAYIT for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 12 Apr 2024 13:11:28 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.14;
  helo=mgamail.intel.com; envelope-from=karol.kolacinski@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org E68E782290
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E68E782290
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 59284607B9
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 59284607B9
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.14])
- by smtp1.osuosl.org (Postfix) with ESMTPS id E68E782290
- for <intel-wired-lan@lists.osuosl.org>; Fri, 12 Apr 2024 13:11:25 +0000 (UTC)
-X-CSE-ConnectionGUID: GDGZQdYyTbigmPFaUalV+g==
-X-CSE-MsgGUID: 9ueaJaEDSKGr6PJkeFaBCA==
-X-IronPort-AV: E=McAfee;i="6600,9927,11041"; a="12230967"
-X-IronPort-AV: E=Sophos;i="6.07,196,1708416000"; d="scan'208";a="12230967"
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 59284607B9
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 12 Apr 2024 13:11:28 +0000 (UTC)
+X-CSE-ConnectionGUID: m7olGVosQ++r05zpLsbWBA==
+X-CSE-MsgGUID: dy1wjaXqR82KJ/bNPlfJVA==
+X-IronPort-AV: E=McAfee;i="6600,9927,11041"; a="12230987"
+X-IronPort-AV: E=Sophos;i="6.07,196,1708416000"; d="scan'208";a="12230987"
 Received: from fmviesa001.fm.intel.com ([10.60.135.141])
  by orvoesa106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 12 Apr 2024 06:11:18 -0700
-X-CSE-ConnectionGUID: P9aeT+WgRl24NCMmHLTjew==
-X-CSE-MsgGUID: bqqP+BDbRD+5/X2hCa5uHw==
+ 12 Apr 2024 06:11:27 -0700
+X-CSE-ConnectionGUID: dbzmVEiHQMW0XhAyMO3BsQ==
+X-CSE-MsgGUID: RvT/HuPbSWe+g1edHyjIDg==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.07,196,1708416000"; d="scan'208";a="52384887"
+X-IronPort-AV: E=Sophos;i="6.07,196,1708416000"; d="scan'208";a="52384911"
 Received: from kkolacin-desk1.igk.intel.com ([10.102.102.152])
- by fmviesa001.fm.intel.com with ESMTP; 12 Apr 2024 06:11:16 -0700
+ by fmviesa001.fm.intel.com with ESMTP; 12 Apr 2024 06:11:26 -0700
 From: Karol Kolacinski <karol.kolacinski@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Fri, 12 Apr 2024 15:06:47 +0200
-Message-ID: <20240412131104.322851-18-karol.kolacinski@intel.com>
+Date: Fri, 12 Apr 2024 15:06:51 +0200
+Message-ID: <20240412131104.322851-22-karol.kolacinski@intel.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20240412131104.322851-14-karol.kolacinski@intel.com>
 References: <20240412131104.322851-14-karol.kolacinski@intel.com>
@@ -73,25 +73,25 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1712927486; x=1744463486;
+ t=1712927488; x=1744463488;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=pjdW3rHfTH/ULFHjNp9yphnnD4pBVED7Ka/okI7hORI=;
- b=O486G61HiX2XNVS4+UG/0/ilI/TS0+DxgJD+pw/URyNEaMuE0inKZ6Hj
- ZrpK8CoBFrk66NlTccVlfGmtUnOOTSMHuXSJIl9kGAYuYPsBD4SPqiG3A
- zQE3J6/kdKicQdjo3ZB1YcQVF+Y+9CwpLUH0JUrgpoFjgDKZduOs3zjVw
- K13ZJ2Xhlmd4IC2EfZqWRKxE9ng3Xf7AH3bm75gj5CQgP35Kt2cCUw9Ix
- 7ZseZApzR1YsBVdRLVSAUlBjfIlJlJp02yh8HmiPkw63xlhfYKr9KN5dT
- KTZg2W4PMte8S4K0PPAK0YYqrIqSaQB4UFTCyy9xCu8rNNr4SK4ntAso2
- Q==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ bh=0KL7E6b2a70200YiReFdH4joiVc1Vkvvv4oKoGFcufc=;
+ b=gcvpYaYH2ybZVd/Fm+KYwiUwXEKNzhBm8FZCgPuAFknvsFK7s5EidxRS
+ 4HqHafBbYCJBBJXSDMDuYeOwb4bnFQvpuLeIM+xPCXwoyXrTTYfxTGVQh
+ 49OPSsxWvYXPOz7tred5PGCeMkDbywc6aeIXTz5js16JO1GdE7I7bJ9gR
+ NZKKu4FwoFEz7hPtWoYN+ETfN2o/nX5GCQTjOMxRnOYh4demmJfTx0KBS
+ I3U3vycPe+sOQaA7znlBXAJQNL2DUBtGnEVmQV1KdQS2ZqBoXL+02m8q+
+ b2sy23Dvg6Uz5zUQSKY+D3Iz0aqcwgtTIzzCiw/M7ShR4z5zMi944Iax8
+ w==;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=O486G61H
-Subject: [Intel-wired-lan] [PATCH v8 iwl-next 04/12] ice: Add PHY
- OFFSET_READY register clearing
+ header.a=rsa-sha256 header.s=Intel header.b=gcvpYaYH
+Subject: [Intel-wired-lan] [PATCH v8 iwl-next 08/12] ice: Change CGU regs
+ struct to anonymous
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -111,96 +111,187 @@ Cc: netdev@vger.kernel.org,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Add a possibility to mark all transmitted/received timestamps as invalid
-by clearing PHY OFFSET_READY registers.
+Simplify the code by using anonymous struct in CGU registers instead of
+naming each structure 'field'.
 
+Suggested-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Reviewed-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
 Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_ptp.c    | 11 ++++---
- drivers/net/ethernet/intel/ice/ice_ptp_hw.c | 32 +++++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_ptp_hw.h |  1 +
- 3 files changed, 40 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_cgu_regs.h | 12 ++---
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.c   | 44 +++++++++----------
+ 2 files changed, 28 insertions(+), 28 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
-index 18d5dff6b872..6899b331f322 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-@@ -1930,11 +1930,14 @@ ice_ptp_settime64(struct ptp_clock_info *info, const struct timespec64 *ts)
- 	struct ice_hw *hw = &pf->hw;
- 	int err;
+diff --git a/drivers/net/ethernet/intel/ice/ice_cgu_regs.h b/drivers/net/ethernet/intel/ice/ice_cgu_regs.h
+index 57abd52386d0..36aeb10eefb7 100644
+--- a/drivers/net/ethernet/intel/ice/ice_cgu_regs.h
++++ b/drivers/net/ethernet/intel/ice/ice_cgu_regs.h
+@@ -23,7 +23,7 @@ union nac_cgu_dword9 {
+ 		u32 clk_synce0_amp : 2;
+ 		u32 one_pps_out_amp : 2;
+ 		u32 misc24 : 12;
+-	} field;
++	};
+ 	u32 val;
+ };
  
--	/* For Vernier mode, we need to recalibrate after new settime
--	 * Start with disabling timestamp block
-+	/* For Vernier mode on E82X, we need to recalibrate after new settime.
-+	 * Start with marking timestamps as invalid.
- 	 */
--	if (pf->ptp.port.link_up)
--		ice_ptp_port_phy_stop(&pf->ptp.port);
-+	if (hw->ptp.phy_model == ICE_PHY_E82X) {
-+		err = ice_ptp_clear_phy_offset_ready_e82x(hw);
-+		if (err)
-+			dev_warn(ice_pf_to_dev(pf), "Failed to mark timestamps as invalid before settime\n");
-+	}
+@@ -39,7 +39,7 @@ union nac_cgu_dword19 {
+ 		u32 japll_ndivratio : 4;
+ 		u32 japll_iref_ndivratio : 3;
+ 		u32 misc27 : 1;
+-	} field;
++	};
+ 	u32 val;
+ };
  
- 	if (!ice_ptp_lock(hw)) {
- 		err = -EBUSY;
+@@ -63,7 +63,7 @@ union nac_cgu_dword22 {
+ 		u32 fdpllclk_sel_div2 : 1;
+ 		u32 time1588clk_sel_div2 : 1;
+ 		u32 misc3 : 1;
+-	} field;
++	};
+ 	u32 val;
+ };
+ 
+@@ -77,7 +77,7 @@ union nac_cgu_dword24 {
+ 		u32 ext_synce_sel : 1;
+ 		u32 ref1588_ck_div : 4;
+ 		u32 time_ref_sel : 1;
+-	} field;
++	};
+ 	u32 val;
+ };
+ 
+@@ -92,7 +92,7 @@ union tspll_cntr_bist_settings {
+ 		u32 i_plllock_cnt_6_0 : 7;
+ 		u32 i_plllock_cnt_10_7 : 4;
+ 		u32 reserved200 : 4;
+-	} field;
++	};
+ 	u32 val;
+ };
+ 
+@@ -109,7 +109,7 @@ union tspll_ro_bwm_lf {
+ 		u32 afcdone_cri : 1;
+ 		u32 feedfwrdgain_cal_cri_7_0 : 8;
+ 		u32 m2fbdivmod_cri_7_0 : 8;
+-	} field;
++	};
+ 	u32 val;
+ };
+ 
 diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-index bd25ebd976bc..3c0efdd3cb8a 100644
+index c04678536eab..fec349382a31 100644
 --- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
 +++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-@@ -2405,6 +2405,38 @@ int ice_phy_cfg_rx_offset_e82x(struct ice_hw *hw, u8 port)
+@@ -383,14 +383,14 @@ static int ice_cfg_cgu_pll_e82x(struct ice_hw *hw,
+ 
+ 	/* Log the current clock configuration */
+ 	ice_debug(hw, ICE_DBG_PTP, "Current CGU configuration -- %s, clk_src %s, clk_freq %s, PLL %s\n",
+-		  dw24.field.ts_pll_enable ? "enabled" : "disabled",
+-		  ice_clk_src_str(dw24.field.time_ref_sel),
+-		  ice_clk_freq_str(dw9.field.time_ref_freq_sel),
+-		  bwm_lf.field.plllock_true_lock_cri ? "locked" : "unlocked");
++		  dw24.ts_pll_enable ? "enabled" : "disabled",
++		  ice_clk_src_str(dw24.time_ref_sel),
++		  ice_clk_freq_str(dw9.time_ref_freq_sel),
++		  bwm_lf.plllock_true_lock_cri ? "locked" : "unlocked");
+ 
+ 	/* Disable the PLL before changing the clock source or frequency */
+-	if (dw24.field.ts_pll_enable) {
+-		dw24.field.ts_pll_enable = 0;
++	if (dw24.ts_pll_enable) {
++		dw24.ts_pll_enable = 0;
+ 
+ 		err = ice_write_cgu_reg_e82x(hw, NAC_CGU_DWORD24, dw24.val);
+ 		if (err)
+@@ -398,7 +398,7 @@ static int ice_cfg_cgu_pll_e82x(struct ice_hw *hw,
+ 	}
+ 
+ 	/* Set the frequency */
+-	dw9.field.time_ref_freq_sel = clk_freq;
++	dw9.time_ref_freq_sel = clk_freq;
+ 	err = ice_write_cgu_reg_e82x(hw, NAC_CGU_DWORD9, dw9.val);
+ 	if (err)
+ 		return err;
+@@ -408,8 +408,8 @@ static int ice_cfg_cgu_pll_e82x(struct ice_hw *hw,
+ 	if (err)
+ 		return err;
+ 
+-	dw19.field.tspll_fbdiv_intgr = e822_cgu_params[clk_freq].feedback_div;
+-	dw19.field.tspll_ndivratio = 1;
++	dw19.tspll_fbdiv_intgr = e822_cgu_params[clk_freq].feedback_div;
++	dw19.tspll_ndivratio = 1;
+ 
+ 	err = ice_write_cgu_reg_e82x(hw, NAC_CGU_DWORD19, dw19.val);
+ 	if (err)
+@@ -420,8 +420,8 @@ static int ice_cfg_cgu_pll_e82x(struct ice_hw *hw,
+ 	if (err)
+ 		return err;
+ 
+-	dw22.field.time1588clk_div = e822_cgu_params[clk_freq].post_pll_div;
+-	dw22.field.time1588clk_sel_div2 = 0;
++	dw22.time1588clk_div = e822_cgu_params[clk_freq].post_pll_div;
++	dw22.time1588clk_sel_div2 = 0;
+ 
+ 	err = ice_write_cgu_reg_e82x(hw, NAC_CGU_DWORD22, dw22.val);
+ 	if (err)
+@@ -432,16 +432,16 @@ static int ice_cfg_cgu_pll_e82x(struct ice_hw *hw,
+ 	if (err)
+ 		return err;
+ 
+-	dw24.field.ref1588_ck_div = e822_cgu_params[clk_freq].refclk_pre_div;
+-	dw24.field.tspll_fbdiv_frac = e822_cgu_params[clk_freq].frac_n_div;
+-	dw24.field.time_ref_sel = clk_src;
++	dw24.ref1588_ck_div = e822_cgu_params[clk_freq].refclk_pre_div;
++	dw24.tspll_fbdiv_frac = e822_cgu_params[clk_freq].frac_n_div;
++	dw24.time_ref_sel = clk_src;
+ 
+ 	err = ice_write_cgu_reg_e82x(hw, NAC_CGU_DWORD24, dw24.val);
+ 	if (err)
+ 		return err;
+ 
+ 	/* Finally, enable the PLL */
+-	dw24.field.ts_pll_enable = 1;
++	dw24.ts_pll_enable = 1;
+ 
+ 	err = ice_write_cgu_reg_e82x(hw, NAC_CGU_DWORD24, dw24.val);
+ 	if (err)
+@@ -454,17 +454,17 @@ static int ice_cfg_cgu_pll_e82x(struct ice_hw *hw,
+ 	if (err)
+ 		return err;
+ 
+-	if (!bwm_lf.field.plllock_true_lock_cri) {
++	if (!bwm_lf.plllock_true_lock_cri) {
+ 		dev_warn(ice_hw_to_dev(hw), "CGU PLL failed to lock\n");
+ 		return -EBUSY;
+ 	}
+ 
+ 	/* Log the current clock configuration */
+ 	ice_debug(hw, ICE_DBG_PTP, "New CGU configuration -- %s, clk_src %s, clk_freq %s, PLL %s\n",
+-		  dw24.field.ts_pll_enable ? "enabled" : "disabled",
+-		  ice_clk_src_str(dw24.field.time_ref_sel),
+-		  ice_clk_freq_str(dw9.field.time_ref_freq_sel),
+-		  bwm_lf.field.plllock_true_lock_cri ? "locked" : "unlocked");
++		  dw24.ts_pll_enable ? "enabled" : "disabled",
++		  ice_clk_src_str(dw24.time_ref_sel),
++		  ice_clk_freq_str(dw9.time_ref_freq_sel),
++		  bwm_lf.plllock_true_lock_cri ? "locked" : "unlocked");
+ 
  	return 0;
  }
+@@ -487,8 +487,8 @@ static int ice_init_cgu_e82x(struct ice_hw *hw)
+ 		return err;
  
-+/**
-+ * ice_ptp_clear_phy_offset_ready_e82x - Clear PHY TX_/RX_OFFSET_READY registers
-+ * @hw: pointer to the HW struct
-+ *
-+ * Clear PHY TX_/RX_OFFSET_READY registers, effectively marking all transmitted
-+ * and received timestamps as invalid.
-+ */
-+int ice_ptp_clear_phy_offset_ready_e82x(struct ice_hw *hw)
-+{
-+	u8 port;
-+
-+	for (port = 0; port < hw->ptp.num_lports; port++) {
-+		int err;
-+
-+		err = ice_write_phy_reg_e82x(hw, port, P_REG_TX_OR, 0);
-+		if (err) {
-+			dev_warn(ice_hw_to_dev(hw),
-+				 "Failed to clear PHY TX_OFFSET_READY register\n");
-+			return err;
-+		}
-+
-+		err = ice_write_phy_reg_e82x(hw, port, P_REG_RX_OR, 0);
-+		if (err) {
-+			dev_warn(ice_hw_to_dev(hw),
-+				 "Failed to clear PHY RX_OFFSET_READY register\n");
-+			return err;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
- /**
-  * ice_read_phy_and_phc_time_e82x - Simultaneously capture PHC and PHY time
-  * @hw: pointer to the HW struct
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
-index 5645b20a9f87..5223e17d2806 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
-@@ -208,6 +208,7 @@ int ice_ptp_init_time(struct ice_hw *hw, u64 time);
- int ice_ptp_write_incval(struct ice_hw *hw, u64 incval);
- int ice_ptp_write_incval_locked(struct ice_hw *hw, u64 incval);
- int ice_ptp_adj_clock(struct ice_hw *hw, s32 adj);
-+int ice_ptp_clear_phy_offset_ready_e82x(struct ice_hw *hw);
- int ice_read_phy_tstamp(struct ice_hw *hw, u8 block, u8 idx, u64 *tstamp);
- int ice_clear_phy_tstamp(struct ice_hw *hw, u8 block, u8 idx);
- void ice_ptp_reset_ts_memory(struct ice_hw *hw);
+ 	/* Disable sticky lock detection so lock err reported is accurate */
+-	cntr_bist.field.i_plllock_sel_0 = 0;
+-	cntr_bist.field.i_plllock_sel_1 = 0;
++	cntr_bist.i_plllock_sel_0 = 0;
++	cntr_bist.i_plllock_sel_1 = 0;
+ 
+ 	err = ice_write_cgu_reg_e82x(hw, TSPLL_CNTR_BIST_SETTINGS,
+ 				     cntr_bist.val);
 -- 
 2.43.0
 
