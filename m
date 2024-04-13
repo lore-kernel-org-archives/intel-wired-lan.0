@@ -1,100 +1,95 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7CFE8C4345F
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 12 Apr 2024 21:59:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D6A3FC4345F
+	for <intel-wired-lan@archiver.kernel.org>; Sat, 13 Apr 2024 16:24:41 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 533A741C9E;
-	Fri, 12 Apr 2024 21:59:17 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 8DD716065C;
+	Sat, 13 Apr 2024 16:24:41 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id rIkB0jczv1Q5; Fri, 12 Apr 2024 21:59:15 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id wOHq-jqI15u7; Sat, 13 Apr 2024 16:24:40 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 5CF9741C9A
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8C28960A49
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1712959155;
-	bh=eG2QlF4LYlhGpwYm8dgioviMgxQ8WQgUi6TsPB1/xEM=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=d92v3Hi8TjtDbeYRFZdApAJTngvjTKenPAQt67IivfmbjKBJqslrKhw+6XRBRLZ25
-	 oRtUHI0eCpYLNZUhMMjRKu6IlxE1i9AqsxYMhVQsUjVsqky0BBCRPzq1keGf9Uj8jZ
-	 G0BFbLxgN4D4NWPaf/JEB7nJmr0lJxWb59zZ2ZiPBluQqNlf/4BmKhVl4bHKj9kmB9
-	 gywcCk/RTPxPFWRRVnZ/0Nix8MGK/wLPF+mZ9Bc6ukfYenP8a/ePyVbMZNK0uK++tk
-	 yW/e0cRhe8+ziNt/tbS6vNSJEIYmN46+RiioHKs0LI7BGdPLdKg9Gtr8b53XS7kNoN
-	 eTOFiFHFffabA==
+	s=default; t=1713025480;
+	bh=JBVuoOsO9BS2yqF59ajlL3Ao6UYwiZsFURTsEwvZY7o=;
+	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=ObNrUcRjx86KUhrsL8kE8e50XjU83PzjtUP6zbiYMf5lcOWpGFWrGC0QPh/F4SGPp
+	 i0EbidJn4Nle4bh6eTAikEFz5YAc2tVW7r+DhJLrpR7WPKL+1HVZwZ7upXC1xhC3Gd
+	 z6tuKZ4Ak6zL3bqG9iPyNoNP2MYlzcHcpzmTtvnz3Jznfg4/cGrE9r2rT5Lg1LTkz+
+	 tivPdBNkuUAqI7AAeL+iw+XBJw18OZiZ5al6Yy0Kb+eEpnBkIIRNXDu8nvIP3smLpJ
+	 AuC0Bttk25BXMZjqRVlj9nYxdRUOyWVS19VEHVD2erqe+0FESK4nJvgToNL16fBRnR
+	 RbP512JVsZSsg==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 5CF9741C9A;
-	Fri, 12 Apr 2024 21:59:15 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 8C28960A49;
+	Sat, 13 Apr 2024 16:24:40 +0000 (UTC)
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id A2F3B1BF997
- for <intel-wired-lan@lists.osuosl.org>; Fri, 12 Apr 2024 18:51:46 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 0621A1BF407
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 13 Apr 2024 16:24:39 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 6C6DB820D4
- for <intel-wired-lan@lists.osuosl.org>; Fri, 12 Apr 2024 18:51:44 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id E534F8146B
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 13 Apr 2024 16:24:38 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 8UZ9-N9bQCNv for <intel-wired-lan@lists.osuosl.org>;
- Fri, 12 Apr 2024 18:51:43 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.21;
- helo=mgamail.intel.com; envelope-from=anil.samal@intel.com;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 49AC2820D5
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 49AC2820D5
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.21])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 49AC2820D5
- for <intel-wired-lan@lists.osuosl.org>; Fri, 12 Apr 2024 18:51:43 +0000 (UTC)
-X-CSE-ConnectionGUID: JlCgHXlSTnauK07wmdYKIg==
-X-CSE-MsgGUID: MLxoY247TyG4Stp2Z25qXw==
-X-IronPort-AV: E=McAfee;i="6600,9927,11042"; a="8333644"
-X-IronPort-AV: E=Sophos;i="6.07,196,1708416000"; 
-   d="scan'208";a="8333644"
-Received: from orviesa005.jf.intel.com ([10.64.159.145])
- by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 12 Apr 2024 11:51:42 -0700
-X-CSE-ConnectionGUID: JFZTiI5+RpmSTkicVcc9VA==
-X-CSE-MsgGUID: wwTOxkRXR0CEafvreEPL3Q==
+ id YYLz4K6LH0Y1 for <intel-wired-lan@lists.osuosl.org>;
+ Sat, 13 Apr 2024 16:24:38 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.15;
+ helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org D4DB88145C
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D4DB88145C
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.15])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id D4DB88145C
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 13 Apr 2024 16:24:37 +0000 (UTC)
+X-CSE-ConnectionGUID: oV1NjYm5Rtqlxm8tApjIOQ==
+X-CSE-MsgGUID: NNj677pqR2eef7o/aBLZkg==
+X-IronPort-AV: E=McAfee;i="6600,9927,11043"; a="8641640"
+X-IronPort-AV: E=Sophos;i="6.07,199,1708416000"; 
+   d="scan'208";a="8641640"
+Received: from orviesa009.jf.intel.com ([10.64.159.149])
+ by fmvoesa109.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 13 Apr 2024 09:24:36 -0700
+X-CSE-ConnectionGUID: NACFHLztSJSKi55X2XpvKw==
+X-CSE-MsgGUID: mYfeb6zMTCyIdcTuvhS1lg==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.07,196,1708416000"; d="scan'208";a="26108567"
-Received: from c3-1-server.sj.intel.com ([10.232.18.246])
- by orviesa005-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 12 Apr 2024 11:51:42 -0700
-From: Anil Samal <anil.samal@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Date: Fri, 12 Apr 2024 11:49:20 -0700
-Message-ID: <20240412185135.297368-5-anil.samal@intel.com>
-X-Mailer: git-send-email 2.44.0
-In-Reply-To: <20240412185135.297368-1-anil.samal@intel.com>
-References: <20240412185135.297368-1-anil.samal@intel.com>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Mailman-Approved-At: Fri, 12 Apr 2024 21:59:08 +0000
+X-IronPort-AV: E=Sophos;i="6.07,199,1708416000"; d="scan'208";a="21492692"
+Received: from unknown (HELO 23c141fc0fd8) ([10.239.97.151])
+ by orviesa009.jf.intel.com with ESMTP; 13 Apr 2024 09:24:36 -0700
+Received: from kbuild by 23c141fc0fd8 with local (Exim 4.96)
+ (envelope-from <lkp@intel.com>) id 1rvgB6-0002uV-2z
+ for intel-wired-lan@lists.osuosl.org; Sat, 13 Apr 2024 16:24:32 +0000
+Date: Sun, 14 Apr 2024 00:23:52 +0800
+From: kernel test robot <lkp@intel.com>
+To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+Message-ID: <202404140050.ppGngWSl-lkp@intel.com>
+User-Agent: s-nail v14.9.24
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1712947903; x=1744483903;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=IjzF9EddhClC6e0fFw59kdNwCknxPdY3D4BtyEFNaCQ=;
- b=im7lQbeHYcyABjmRrgEannfuAvkhjPCXKVo0Bs4ROS4fZFVbVsUTtHav
- pwWLPrltV+3y2kYt0RTYG1R2S9FX8G0wwvy5RkW6hJ6IQJvZhgY7bornE
- tMZqMovihY4NQU/z/y5VaqeVzmwiqIJpYYHH7XiDlnu6uRtXN0mTGiSw3
- GXTzlzwdNdchJaZd9A7e1UOdDSmGBI5JrydbTlKgFgXYX1yv5iSACiS8+
- 14YoURF0JebEcBghzw8ysuUF6zn7C6CRn9QFjUzuVodwSmpj4lEG0Wd7K
- 89e8m12a2tYhtilB3SuNpmw1bjrNfONuNcXegKXg/4vcJwuguglEMpNF/
- Q==;
+ t=1713025478; x=1744561478;
+ h=date:from:to:subject:message-id;
+ bh=eNmJNn9R764eYvc6KyPoQwNi4T26jKBCXKwh349dTso=;
+ b=GiubzGk0qxn1xpqOaYHhjPAUqyV0+YzhiR20rfFf5D4HbFl6IX/GVfz1
+ /8sdyHW36wgk4M95CUqw5zX6VSXwaBXcYC19QP4l8PIq2HeWW0jrRy/Ik
+ 4obwCXM0KOHIxZWOJ0pL2E2ibdlGIlkkq6THqtTLytRCKleKBCtidxPNG
+ uae+xiYO21g6JQbfbNmNhrSg9sqlG+SLCF8OQE6jAbkv/9/lFfZer9vgR
+ I5KitDWU1zpjI7ZfRKSB9rlWrciyjobEL45AQD/qhN5PB8t5fyc8BrL55
+ XnjOCYD5dx5Hf26oequeW/2FUurn6v2QwNFQbfhSZ8GSeecoMz0NRiyhh
+ g==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=im7lQbeH
-Subject: [Intel-wired-lan] [PATCH iwl-next 4/4] ice: Implement driver
- functionality to dump serdes equalizer values
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=GiubzGk0
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ e296c9f4fd90c98aef1650766485625bb921976c
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -107,394 +102,148 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, lukasz.czapnik@intel.com,
- Anil Samal <anil.samal@intel.com>, leszek.pepiak@intel.com,
- przemyslaw.kitszel@intel.com, jacob.e.keller@intel.com
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-To debug link issues in the field, serdes Tx/Rx equalizer values
-help to determine the health of serdes lane.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
+branch HEAD: e296c9f4fd90c98aef1650766485625bb921976c  ice: Fix checking for unsupported keys on non-tunnel device
 
-Extend 'ethtool -d' option to dump serdes Tx/Rx equalizer.
-The following list of equalizer param is supported
-a. rx_equalization_pre2
-b. rx_equalization_pre1
-c. rx_equalization_post1
-d. rx_equalization_bflf
-e. rx_equalization_bfhf
-f. rx_equalization_drate
-g. tx_equalization_pre1
-h. tx_equalization_pre3
-i. tx_equalization_atten
-j. tx_equalization_post1
-k. tx_equalization_pre2
+elapsed time: 1455m
 
-Reviewed-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Signed-off-by: Anil Samal <anil.samal@intel.com>
----
- .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  51 ++++++
- drivers/net/ethernet/intel/ice/ice_common.c   |  40 +++++
- drivers/net/ethernet/intel/ice/ice_common.h   |   2 +
- drivers/net/ethernet/intel/ice/ice_ethtool.c  | 157 +++++++++++++++++-
- drivers/net/ethernet/intel/ice/ice_ethtool.h  |  19 +++
- 5 files changed, 267 insertions(+), 2 deletions(-)
+configs tested: 126
+configs skipped: 4
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-index e76c388b9905..92d96c85d924 100644
---- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-@@ -1460,6 +1460,55 @@ struct ice_aqc_get_sensor_reading_resp {
- 	} data;
- };
- 
-+/* DNL call command (indirect 0x0682)
-+ * Struct is used for both command and response
-+ */
-+struct ice_aqc_dnl_call_command {
-+	u8 ctx; /* Used in command, reserved in response */
-+	u8 reserved;
-+	__le16 activity_id;
-+#define ICE_AQC_ACT_ID_DNL 0x1129
-+	__le32 reserved1;
-+	__le32 addr_high;
-+	__le32 addr_low;
-+};
-+
-+struct ice_aqc_dnl_equa_param {
-+	__le16 data_in;
-+#define ICE_AQC_RX_EQU_SHIFT 8
-+#define ICE_AQC_RX_EQU_PRE2 (0x10 << ICE_AQC_RX_EQU_SHIFT)
-+#define ICE_AQC_RX_EQU_PRE1 (0x11 << ICE_AQC_RX_EQU_SHIFT)
-+#define ICE_AQC_RX_EQU_POST1 (0x12 << ICE_AQC_RX_EQU_SHIFT)
-+#define ICE_AQC_RX_EQU_BFLF (0x13 << ICE_AQC_RX_EQU_SHIFT)
-+#define ICE_AQC_RX_EQU_BFHF (0x14 << ICE_AQC_RX_EQU_SHIFT)
-+#define ICE_AQC_RX_EQU_DRATE (0x15 << ICE_AQC_RX_EQU_SHIFT)
-+#define ICE_AQC_TX_EQU_PRE1 0x0
-+#define ICE_AQC_TX_EQU_PRE3 0x3
-+#define ICE_AQC_TX_EQU_ATTEN 0x4
-+#define ICE_AQC_TX_EQU_POST1 0x8
-+#define ICE_AQC_TX_EQU_PRE2 0xC
-+	__le16 op_code_serdes_sel;
-+#define ICE_AQC_OP_CODE_SHIFT 4
-+#define ICE_AQC_OP_CODE_RX_EQU (0x9 << ICE_AQC_OP_CODE_SHIFT)
-+#define ICE_AQC_OP_CODE_TX_EQU (0x10 << ICE_AQC_OP_CODE_SHIFT)
-+	__le32 reserved[3];
-+};
-+
-+struct ice_aqc_dnl_equa_respon {
-+	/* Equalization value can be negative */
-+	int val;
-+	__le32 reserved[3];
-+};
-+
-+/* DNL call command/response buffer (indirect 0x0682) */
-+struct ice_aqc_dnl_call {
-+	union {
-+		struct ice_aqc_dnl_equa_param txrx_equa_reqs;
-+		__le32 stores[4];
-+		struct ice_aqc_dnl_equa_respon txrx_equa_resp;
-+	} sto;
-+};
-+
- struct ice_aqc_link_topo_params {
- 	u8 lport_num;
- 	u8 lport_num_valid;
-@@ -2563,6 +2612,7 @@ struct ice_aq_desc {
- 		struct ice_aqc_get_link_status get_link_status;
- 		struct ice_aqc_event_lan_overflow lan_overflow;
- 		struct ice_aqc_get_link_topo get_link_topo;
-+		struct ice_aqc_dnl_call_command dnl_call;
- 		struct ice_aqc_i2c read_write_i2c;
- 		struct ice_aqc_read_i2c_resp read_i2c_resp;
- 		struct ice_aqc_get_set_tx_topo get_set_tx_topo;
-@@ -2687,6 +2737,7 @@ enum ice_adminq_opc {
- 	ice_aqc_opc_set_phy_rec_clk_out			= 0x0630,
- 	ice_aqc_opc_get_phy_rec_clk_out			= 0x0631,
- 	ice_aqc_opc_get_sensor_reading			= 0x0632,
-+	ice_aqc_opc_dnl_call                            = 0x0682,
- 	ice_aqc_opc_get_link_topo			= 0x06E0,
- 	ice_aqc_opc_read_i2c				= 0x06E2,
- 	ice_aqc_opc_write_i2c				= 0x06E3,
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index 1a00efb1e51d..c361470b9009 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -3299,6 +3299,46 @@ int ice_update_link_info(struct ice_port_info *pi)
- 	return status;
- }
- 
-+/**
-+ * ice_aq_get_phy_equalization - function to read serdes equaliser
-+ * value from firmware using admin queue command.
-+ * @hw: pointer to the HW struct
-+ * @data_in: represents the serdes equalization parameter requested
-+ * @op_code: represents the serdes number and flag to represent tx or rx
-+ * @serdes_num: represents the serdes number
-+ * @output: pointer to the caller-supplied buffer to return serdes equaliser
-+ *
-+ * Returns non-zero status on error and 0 on success.
-+ */
-+int ice_aq_get_phy_equalization(struct ice_hw *hw, u16 data_in, u16 op_code,
-+				u8 serdes_num, int *output)
-+{
-+	struct ice_aqc_dnl_call_command *cmd;
-+	struct ice_aqc_dnl_call buf = {};
-+	struct ice_aq_desc desc;
-+	int err = 0;
-+
-+	if (!hw || !output)
-+		return -EINVAL;
-+
-+	buf.sto.txrx_equa_reqs.data_in = cpu_to_le16(data_in);
-+	buf.sto.txrx_equa_reqs.op_code_serdes_sel =
-+		cpu_to_le16(op_code | (serdes_num & 0xF));
-+	cmd = &desc.params.dnl_call;
-+	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_dnl_call);
-+	desc.flags |= cpu_to_le16(ICE_AQ_FLAG_BUF |
-+				  ICE_AQ_FLAG_RD |
-+				  ICE_AQ_FLAG_SI);
-+	desc.datalen = cpu_to_le16(sizeof(struct ice_aqc_dnl_call));
-+	cmd->activity_id = cpu_to_le16(ICE_AQC_ACT_ID_DNL);
-+
-+	err = ice_aq_send_cmd(hw, &desc, &buf, sizeof(struct ice_aqc_dnl_call),
-+			      NULL);
-+	*output = err ? 0 : buf.sto.txrx_equa_resp.val;
-+
-+	return err;
-+}
-+
- #define FEC_REG_PORT(port) {	\
- 	FEC_CORR_LOW_REG_PORT##port,		\
- 	FEC_CORR_HIGH_REG_PORT##port,	\
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
-index 6b888efce593..f4cff37e895a 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.h
-+++ b/drivers/net/ethernet/intel/ice/ice_common.h
-@@ -142,6 +142,8 @@ int
- ice_get_link_default_override(struct ice_link_default_override_tlv *ldo,
- 			      struct ice_port_info *pi);
- bool ice_is_phy_caps_an_enabled(struct ice_aqc_get_phy_caps_data *caps);
-+int ice_aq_get_phy_equalization(struct ice_hw *hw, u16 data_in, u16 op_code,
-+				u8 serdes_num, int *output);
- int
- ice_aq_get_fec_stats(struct ice_hw *hw, u16 pcs_quad, u16 pcs_port,
- 		     enum ice_fec_stats_types fec_type, u32 *output);
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index 732e402ed419..bdfe105f26e3 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -463,7 +463,8 @@ ice_get_drvinfo(struct net_device *netdev, struct ethtool_drvinfo *drvinfo)
- 
- static int ice_get_regs_len(struct net_device __always_unused *netdev)
- {
--	return sizeof(ice_regs_dump_list);
-+	return (sizeof(ice_regs_dump_list) +
-+		sizeof(struct ice_regdump_to_ethtool));
- }
- 
- /**
-@@ -731,6 +732,156 @@ static int ice_get_port_topology(struct ice_hw *hw, u8 lport,
- 	return 0;
- }
- 
-+/**
-+ * ice_get_tx_rx_equa - read serdes tx rx equaliser param
-+ * @hw: pointer to the HW struct
-+ * @serdes_num: represents the serdes number
-+ * @ptr: structure to read all serdes parameter for given serdes
-+ * returns all serdes equalization parameter supported per serdes number
-+ */
-+static int ice_get_tx_rx_equa(struct ice_hw *hw, u8 serdes_num,
-+			      struct ice_serdes_equalization_to_ethtool *ptr)
-+{
-+	int err;
-+
-+	if (!ptr)
-+		return -EOPNOTSUPP;
-+
-+	err = ice_aq_get_phy_equalization(hw, ICE_AQC_TX_EQU_PRE1,
-+					  ICE_AQC_OP_CODE_TX_EQU, serdes_num,
-+					  &ptr->tx_equalization_pre1);
-+	if (err)
-+		return err;
-+
-+	err = ice_aq_get_phy_equalization(hw, ICE_AQC_TX_EQU_PRE3,
-+					  ICE_AQC_OP_CODE_TX_EQU, serdes_num,
-+					  &ptr->tx_equalization_pre3);
-+	if (err)
-+		return err;
-+
-+	err = ice_aq_get_phy_equalization(hw, ICE_AQC_TX_EQU_ATTEN,
-+					  ICE_AQC_OP_CODE_TX_EQU, serdes_num,
-+					  &ptr->tx_equalization_atten);
-+	if (err)
-+		return err;
-+
-+	err = ice_aq_get_phy_equalization(hw, ICE_AQC_TX_EQU_POST1,
-+					  ICE_AQC_OP_CODE_TX_EQU, serdes_num,
-+					  &ptr->tx_equalization_post1);
-+	if (err)
-+		return err;
-+
-+	err = ice_aq_get_phy_equalization(hw, ICE_AQC_TX_EQU_PRE2,
-+					  ICE_AQC_OP_CODE_TX_EQU, serdes_num,
-+					  &ptr->tx_equalization_pre2);
-+	if (err)
-+		return err;
-+
-+	err = ice_aq_get_phy_equalization(hw, ICE_AQC_RX_EQU_PRE2,
-+					  ICE_AQC_OP_CODE_RX_EQU, serdes_num,
-+					  &ptr->rx_equalization_pre2);
-+	if (err)
-+		return err;
-+
-+	err = ice_aq_get_phy_equalization(hw, ICE_AQC_RX_EQU_PRE1,
-+					  ICE_AQC_OP_CODE_RX_EQU, serdes_num,
-+					  &ptr->rx_equalization_pre1);
-+	if (err)
-+		return err;
-+
-+	err = ice_aq_get_phy_equalization(hw, ICE_AQC_RX_EQU_POST1,
-+					  ICE_AQC_OP_CODE_RX_EQU, serdes_num,
-+					  &ptr->rx_equalization_post1);
-+	if (err)
-+		return err;
-+
-+	err = ice_aq_get_phy_equalization(hw, ICE_AQC_RX_EQU_BFLF,
-+					  ICE_AQC_OP_CODE_RX_EQU, serdes_num,
-+					  &ptr->rx_equalization_bflf);
-+	if (err)
-+		return err;
-+
-+	err = ice_aq_get_phy_equalization(hw, ICE_AQC_RX_EQU_BFHF,
-+					  ICE_AQC_OP_CODE_RX_EQU, serdes_num,
-+					  &ptr->rx_equalization_bfhf);
-+	if (err)
-+		return err;
-+
-+	err = ice_aq_get_phy_equalization(hw, ICE_AQC_RX_EQU_DRATE,
-+					  ICE_AQC_OP_CODE_RX_EQU, serdes_num,
-+					  &ptr->rx_equalization_drate);
-+	if (err)
-+		return err;
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_get_extended_regs - returns FEC correctable, uncorrectable stats per
-+ *                         pcsquad, pcsport
-+ * @netdev: pointer to net device structure
-+ * @p: output buffer to fill requested register dump
-+ *
-+ * Returns error/success
-+ */
-+static int ice_get_extended_regs(struct net_device *netdev, void *p)
-+{
-+	struct ice_regdump_to_ethtool *ice_prv_regs_buf;
-+	struct ice_netdev_priv *np = netdev_priv(netdev);
-+	struct ice_port_topology port_topology = {};
-+	struct ice_port_info *pi;
-+	struct ice_pf *pf;
-+	struct ice_hw *hw;
-+	unsigned int i;
-+	int err;
-+
-+	pf = np->vsi->back;
-+	hw = &pf->hw;
-+	pi = np->vsi->port_info;
-+
-+	if (!pi) {
-+		netdev_info(netdev, "Port info structure is null\n");
-+		return -EINVAL;
-+	}
-+
-+	/* Serdes parameters are not supported if not the PF VSI */
-+	if (np->vsi->type != ICE_VSI_PF) {
-+		netdev_info(netdev, "Supported VSI type PF : failed\n");
-+		return -EINVAL;
-+	}
-+
-+	err = ice_get_port_topology(hw, pi->lport, &port_topology);
-+	if (err) {
-+		netdev_info(netdev, "Extended register dump failed Lport %d\n",
-+			    pi->lport);
-+		return -EINVAL;
-+	}
-+
-+	if (port_topology.serdes_lane_count > 4) {
-+		netdev_info(netdev, "Extended register dump failed:  Lport %d Serdes count %d\n",
-+			    pi->lport, port_topology.serdes_lane_count);
-+		return -EINVAL;
-+	}
-+
-+	ice_prv_regs_buf = p;
-+
-+	/* Get serdes equalization parameter for available serdes */
-+	for (i = 0; i < port_topology.serdes_lane_count; i++) {
-+		u8 serdes_num = 0;
-+
-+		serdes_num = port_topology.primary_serdes_lane + i;
-+		err = ice_get_tx_rx_equa(hw, serdes_num,
-+					 &ice_prv_regs_buf->equalization[i]);
-+		if (err) {
-+			netdev_info(netdev, "Lport:Serd %d:%d equa get err:%d",
-+				    pi->lport, serdes_num, err);
-+			return -EINVAL;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
- static void
- ice_get_regs(struct net_device *netdev, struct ethtool_regs *regs, void *p)
- {
-@@ -740,10 +891,12 @@ ice_get_regs(struct net_device *netdev, struct ethtool_regs *regs, void *p)
- 	u32 *regs_buf = (u32 *)p;
- 	unsigned int i;
- 
--	regs->version = 1;
-+	regs->version = 2;
- 
- 	for (i = 0; i < ARRAY_SIZE(ice_regs_dump_list); ++i)
- 		regs_buf[i] = rd32(hw, ice_regs_dump_list[i]);
-+
-+	ice_get_extended_regs(netdev, (void *)&regs_buf[i]);
- }
- 
- static u32 ice_get_msglevel(struct net_device *netdev)
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.h b/drivers/net/ethernet/intel/ice/ice_ethtool.h
-index ffc8ad180e61..9acccae38625 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.h
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.h
-@@ -9,6 +9,25 @@ struct ice_phy_type_to_ethtool {
- 	u8 link_mode;
- };
- 
-+struct ice_serdes_equalization_to_ethtool {
-+	int rx_equalization_pre2;
-+	int rx_equalization_pre1;
-+	int rx_equalization_post1;
-+	int rx_equalization_bflf;
-+	int rx_equalization_bfhf;
-+	int rx_equalization_drate;
-+	int tx_equalization_pre1;
-+	int tx_equalization_pre3;
-+	int tx_equalization_atten;
-+	int tx_equalization_post1;
-+	int tx_equalization_pre2;
-+};
-+
-+struct ice_regdump_to_ethtool {
-+	/* A multilane port can have max 4 serdes */
-+	struct ice_serdes_equalization_to_ethtool equalization[4];
-+};
-+
- /* Port topology from lport i.e.
-  * serdes mapping, pcsquad, macport, cage etc...
-  */
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+tested configs:
+alpha                             allnoconfig   gcc  
+alpha                            allyesconfig   gcc  
+alpha                               defconfig   gcc  
+arc                              allmodconfig   gcc  
+arc                               allnoconfig   gcc  
+arc                              allyesconfig   gcc  
+arc                                 defconfig   gcc  
+arc                   randconfig-001-20240413   gcc  
+arc                   randconfig-002-20240413   gcc  
+arm                              allmodconfig   gcc  
+arm                               allnoconfig   clang
+arm                              allyesconfig   gcc  
+arm                                 defconfig   clang
+arm                   randconfig-001-20240413   clang
+arm                   randconfig-002-20240413   gcc  
+arm                   randconfig-003-20240413   clang
+arm                   randconfig-004-20240413   clang
+arm64                            allmodconfig   clang
+arm64                             allnoconfig   gcc  
+arm64                               defconfig   gcc  
+arm64                 randconfig-001-20240413   clang
+arm64                 randconfig-002-20240413   clang
+arm64                 randconfig-003-20240413   clang
+arm64                 randconfig-004-20240413   clang
+csky                             allmodconfig   gcc  
+csky                              allnoconfig   gcc  
+csky                             allyesconfig   gcc  
+csky                                defconfig   gcc  
+csky                  randconfig-001-20240413   gcc  
+csky                  randconfig-002-20240413   gcc  
+hexagon                           allnoconfig   clang
+hexagon                          allyesconfig   clang
+hexagon                             defconfig   clang
+hexagon               randconfig-001-20240413   clang
+hexagon               randconfig-002-20240413   clang
+i386                             allmodconfig   gcc  
+i386                              allnoconfig   gcc  
+i386                             allyesconfig   gcc  
+i386         buildonly-randconfig-001-20240413   gcc  
+i386         buildonly-randconfig-002-20240413   gcc  
+i386         buildonly-randconfig-003-20240413   clang
+i386         buildonly-randconfig-004-20240413   clang
+i386         buildonly-randconfig-005-20240413   clang
+i386         buildonly-randconfig-006-20240413   clang
+i386                                defconfig   clang
+i386                  randconfig-001-20240413   clang
+i386                  randconfig-002-20240413   gcc  
+i386                  randconfig-003-20240413   clang
+i386                  randconfig-004-20240413   gcc  
+i386                  randconfig-005-20240413   clang
+i386                  randconfig-006-20240413   clang
+i386                  randconfig-011-20240413   gcc  
+i386                  randconfig-012-20240413   clang
+i386                  randconfig-013-20240413   gcc  
+i386                  randconfig-014-20240413   gcc  
+i386                  randconfig-015-20240413   clang
+i386                  randconfig-016-20240413   gcc  
+loongarch                        allmodconfig   gcc  
+loongarch                         allnoconfig   gcc  
+loongarch                           defconfig   gcc  
+loongarch             randconfig-001-20240413   gcc  
+loongarch             randconfig-002-20240413   gcc  
+m68k                             allmodconfig   gcc  
+m68k                              allnoconfig   gcc  
+m68k                             allyesconfig   gcc  
+m68k                                defconfig   gcc  
+microblaze                       allmodconfig   gcc  
+microblaze                        allnoconfig   gcc  
+microblaze                       allyesconfig   gcc  
+microblaze                          defconfig   gcc  
+mips                              allnoconfig   gcc  
+mips                             allyesconfig   gcc  
+nios2                            allmodconfig   gcc  
+nios2                             allnoconfig   gcc  
+nios2                            allyesconfig   gcc  
+nios2                               defconfig   gcc  
+nios2                 randconfig-001-20240413   gcc  
+nios2                 randconfig-002-20240413   gcc  
+openrisc                          allnoconfig   gcc  
+openrisc                         allyesconfig   gcc  
+openrisc                            defconfig   gcc  
+parisc                           allmodconfig   gcc  
+parisc                            allnoconfig   gcc  
+parisc                           allyesconfig   gcc  
+parisc                              defconfig   gcc  
+parisc                randconfig-001-20240413   gcc  
+parisc                randconfig-002-20240413   gcc  
+parisc64                            defconfig   gcc  
+powerpc                           allnoconfig   gcc  
+powerpc               randconfig-001-20240413   clang
+riscv                             allnoconfig   gcc  
+riscv                               defconfig   clang
+s390                             allmodconfig   clang
+s390                              allnoconfig   clang
+s390                             allyesconfig   gcc  
+s390                                defconfig   clang
+sh                               allmodconfig   gcc  
+sh                                allnoconfig   gcc  
+sh                               allyesconfig   gcc  
+sh                                  defconfig   gcc  
+sparc                            allmodconfig   gcc  
+sparc                             allnoconfig   gcc  
+sparc                               defconfig   gcc  
+sparc64                          allmodconfig   gcc  
+sparc64                          allyesconfig   gcc  
+sparc64                             defconfig   gcc  
+um                               allmodconfig   clang
+um                                allnoconfig   clang
+um                               allyesconfig   gcc  
+um                                  defconfig   clang
+um                             i386_defconfig   gcc  
+um                           x86_64_defconfig   clang
+x86_64                            allnoconfig   clang
+x86_64                           allyesconfig   clang
+x86_64       buildonly-randconfig-001-20240413   gcc  
+x86_64       buildonly-randconfig-002-20240413   gcc  
+x86_64       buildonly-randconfig-003-20240413   gcc  
+x86_64       buildonly-randconfig-004-20240413   gcc  
+x86_64       buildonly-randconfig-005-20240413   gcc  
+x86_64       buildonly-randconfig-006-20240413   gcc  
+x86_64                              defconfig   gcc  
+x86_64                randconfig-001-20240413   gcc  
+x86_64                randconfig-002-20240413   gcc  
+x86_64                randconfig-003-20240413   gcc  
+x86_64                          rhel-8.3-rust   clang
+xtensa                            allnoconfig   gcc  
+
 -- 
-2.44.0
-
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
