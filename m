@@ -1,111 +1,93 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3CC41C4345F
-	for <intel-wired-lan@archiver.kernel.org>; Sun, 14 Apr 2024 07:44:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A4D21C4345F
+	for <intel-wired-lan@archiver.kernel.org>; Sun, 14 Apr 2024 09:15:36 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id B6C75812FC;
-	Sun, 14 Apr 2024 07:44:19 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 58D8C400FD;
+	Sun, 14 Apr 2024 09:15:36 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 2tn8sXDLS-a3; Sun, 14 Apr 2024 07:44:19 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id ANsGYHmrb5UD; Sun, 14 Apr 2024 09:15:35 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org CC7F4812FF
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 7C57540137
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1713080658;
-	bh=AMdpA8RlfBLfoieep1hVzJ7jhYlO38p3jYoF5ComMRE=;
-	h=From:Date:To:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=V2BqXZ+cQ5/bTTtDmv5Dmbvcn+oeNAmBhbtfgbI0J+nikSzeiot2EpK/DqjAcUItA
-	 x31gD3W8v5F6/LJMZeo/9so523oOn1ZINC6F2ZVkwfePA1iBduoCxmcRQrfVthK01H
-	 UmpuOvpnvNM+m2OeWIhzUMwBinOOwbF4T1l8iqbI+1ZpfPpYXw1cRcuzqscGzW8RFg
-	 LseB4avGC5ccGo+UvkZj6l87y886dtAJRcWC8qpaO3gx2S3Ui3lHi4m6tDMXw94qfe
-	 kfQeqAuN5sd7jcW/funwPWI5nSUjGV5BbEniBwSHP/qkWkiJeuIonemq83x1vcxCpd
-	 iQOo7rVbGr1UQ==
+	s=default; t=1713086135;
+	bh=22LCWs6JU/zxgBjYTEA2rm5irDIXx8aJeQExD/3BR+A=;
+	h=From:To:In-Reply-To:References:Date:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=XSs1NUmqmEm+J62AX99FhyIYeyfGJsxtM+FPZiHOK2bm9sB1OSSZ9jvT1b7C5nZaD
+	 v9s9uf9FZkZ75zrNIJR+j0zwTI5MDll8EB9pgGiPL9ksnfbw1cDOL7guhHcjQ/3ePr
+	 dWA1a9eNS5ZGFpGoYoT1NVvW6TYDz+EgAQw2yVPGpQzAtZgsGzSXoBVTUeGhuYf8ya
+	 6tP8B9e3SYBg68QqDzZxPeZxsRuJjHFPoDJd90wMwTcqpw4UWbtha6m3jrEML1ah54
+	 YHdy8LEMAIUXCkWtx/5aIJQKI/1omHVJ3ndhfFEGdTccWOCdVC4bEMqHEAHm2r1NpD
+	 SeVzk5ELso5hg==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id CC7F4812FF;
-	Sun, 14 Apr 2024 07:44:18 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 42A681BF40B
- for <intel-wired-lan@lists.osuosl.org>; Sun, 14 Apr 2024 07:44:17 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 7C57540137;
+	Sun, 14 Apr 2024 09:15:35 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 155161BF28C
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 14 Apr 2024 09:15:34 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 3124B605D9
- for <intel-wired-lan@lists.osuosl.org>; Sun, 14 Apr 2024 07:44:17 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 0DAA340137
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 14 Apr 2024 09:15:34 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id KSiCM0nRGWbM for <intel-wired-lan@lists.osuosl.org>;
- Sun, 14 Apr 2024 07:44:16 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=193.142.43.55;
- helo=galois.linutronix.de; envelope-from=kurt@linutronix.de;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 10DE1605D8
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 10DE1605D8
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 10DE1605D8
- for <intel-wired-lan@lists.osuosl.org>; Sun, 14 Apr 2024 07:44:15 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id Jl6QhWnIBjO2 for <intel-wired-lan@lists.osuosl.org>;
+ Sun, 14 Apr 2024 09:15:33 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de;
+ envelope-from=kurt@linutronix.de; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org D2B30400FD
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org D2B30400FD
+Received: from galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2a0a:51c0:0:12e:550::1])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id D2B30400FD
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 14 Apr 2024 09:15:32 +0000 (UTC)
 From: Kurt Kanzenbach <kurt@linutronix.de>
-Date: Sun, 14 Apr 2024 09:44:10 +0200
+To: Lukas Wunner <lukas@wunner.de>, Roman Lozko <lozko.roma@gmail.com>
+In-Reply-To: <Zhubjkscu9HPgUcA@wunner.de>
+References: <20240411-igc_led_deadlock-v1-1-0da98a3c68c5@linutronix.de>
+ <Zhubjkscu9HPgUcA@wunner.de>
+Date: Sun, 14 Apr 2024 11:15:26 +0200
+Message-ID: <877ch0b901.fsf@kurt.kurt.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20240411-igc_led_deadlock-v1-1-0da98a3c68c5@linutronix.de>
-X-B4-Tracking: v=1; b=H4sIAEmJG2YC/x2NXQqDMBAGryL73ICRhP5cpRTZJJ+6NI0lEVsQ7
- 97Yx2EYZqOCLCh0azbKWKXInCroU0N+4jRCSahMXduZ1mitZPR9ROgDOMTZP9WZXbjYqzWDBdX
- McYFymZOfjvDFZUE+xDtjkO//dSf5RJWw0GPffxJBiQqEAAAA
-To: Jesse Brandeburg <jesse.brandeburg@intel.com>, 
- Tony Nguyen <anthony.l.nguyen@intel.com>, 
- "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
- Andrew Lunn <andrew@lunn.ch>
-X-Developer-Signature: v=1; a=openpgp-sha256; l=5716; i=kurt@linutronix.de;
- h=from:subject:message-id; bh=T3sQtI9yJr/LQHwe3aNKV8VQwb7RsSAGk07/EDgrTuk=;
- b=owEBbQKS/ZANAwAKAcGT0fKqRnOCAcsmYgBmG4lKN5OTTn+04LJurGm1RqD4IfqotEHijWzml
- kEyjMBWl7eJAjMEAAEKAB0WIQS8ub+yyMN909/bWZLBk9HyqkZzggUCZhuJSgAKCRDBk9HyqkZz
- gk4qEACE/RT5geUGH56mZfrSkY0oyiOhaErd8ZYuUC/I8aPnmOXjQxayLqGiyEBJEeTjIgPZaU2
- AhKvNDILPo+AQE08hbAIIkgdjT5quytGQIRRSyaaRV5Wr2JtXVitFTW8A35Nxx50D3EindcyNl7
- KcRqZJ+cR81KMS+vYdqCuGc9TFjxaQfaeD+TB7d4sNQJL9xCumfpr8okryrgBk4XUzHteAYpUDv
- mbFm1DgsjNTpwqXxLa3c0XBlbKCJJC6I2hmqMH7undWUFjlv4EJu+S/2QIBTXhHXPT+WLuaTwcL
- 5TwPpz0/RelsfqY0DRT3bJMvGJBVLZ1ZEyjktlLMGIbEbynjFcrB8wxtLTfxWwfx/h09gp6i7zE
- Zqp+CNVJYBU49FUZU0dfxRc824BlAwpJ8SxdsPv+1s2kpJJWAhS8F/Ri/etOub/ROtaNL6x+pF4
- VFu61AYiNGVi9GSwdn6SY/GGX//VqlQLSbLQIjcVwJoIDM30NXMwMBgang2olXw2NMhlh0IAMb3
- tBgYR3J3sgPhRJShSrhHr5LmhxRxN5lo7MAJzLS9f4HWhA0dFjEPLNfuk2uMllDJjLk22ucuZFz
- XQiFK5+AEf6oU9JQDQvHMLkbyX0OlxlgtIzolcRS2rIsU3mCw6aoGlWNpOxNrv/C3cx0RWm2MMT
- mL6IH0kFlEGhwKA==
-X-Developer-Key: i=kurt@linutronix.de; a=openpgp;
- fpr=BCB9BFB2C8C37DD3DFDB5992C193D1F2AA467382
+Content-Type: multipart/signed; boundary="=-=-=";
+ micalg=pgp-sha512; protocol="application/pgp-signature"
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=linutronix.de; s=2020; t=1713080651;
+ d=linutronix.de; s=2020; t=1713086128;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding;
- bh=AMdpA8RlfBLfoieep1hVzJ7jhYlO38p3jYoF5ComMRE=;
- b=WOjE8dd5v4M3mQvpSvM49fQwyWymMzTxltPeSfMx5ifYbifnT2arARNzmVqlLj8lrIrD4q
- HGyUASvyOgHIOogWuCRA2HC2BBU5KeX7nTy+1jJYRT/Qq/K2HaiMIynhxCHdw4+0jjZk6g
- qKH8oJhTxR8Df1YW38lDp6vO9FDdfsz24EoEZ2Zz43LorpRCwTQGO/VCvHuCdMib82srFe
- 0TfTKJ7piWont5nAVItCsYN3r3pCD2SlG3SMbjvDXGLr9J2Z84e0LjGTseuEtxP7Em69sf
- VFvt8JvycuP2TkpUn12a6x0hBTqr8Ts9VxM1W3iGVryPoMyUy7JaTUhgmag8Aw==
+ in-reply-to:in-reply-to:references:references;
+ bh=22LCWs6JU/zxgBjYTEA2rm5irDIXx8aJeQExD/3BR+A=;
+ b=Oe9sEK6Rd10dd0rlosxkYryx2N/7YAQTA8PO+pdHoU6IEnc3sqyPAVtq/hKpCrsVU/QrN1
+ Qrm6rWUA0YOs/u0UlKzoQ5a65SLekr4SDXws4ZFEz+YZU7T5bUJYSIsFsjX0eggr8LB8wy
+ 86rohHnA/d/5iJgco4rVgVld1w6XenUftmEfmpd/IUAQDAE8mAMgJc7PHVz9nGFEilLZ3L
+ OcsoZnQRej3+wa9meGW11bHMNWfBJGtFS7KNeX2yZwJUzTvCqtWsWXdlLSB+WIa21BSUdd
+ XhQhcpjnPqJbBLMDqMxVCsfdqoNUCPsIttD6kRv2BaXZLW8zHjI14vByrKd/Jg==
 X-Mailman-Original-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
- d=linutronix.de; s=2020e; t=1713080651;
+ d=linutronix.de; s=2020e; t=1713086128;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding;
- bh=AMdpA8RlfBLfoieep1hVzJ7jhYlO38p3jYoF5ComMRE=;
- b=4uwPNXo1uTLPXV+l/aIH/PdHdknbwnqXn438hoQ8qaDg+cztrZcfv+BC+3Kn1MTYUlILRR
- QFtB0622cqatowAg==
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ in-reply-to:in-reply-to:references:references;
+ bh=22LCWs6JU/zxgBjYTEA2rm5irDIXx8aJeQExD/3BR+A=;
+ b=5IYxmnEFWUysnFHuwgw1UfVvvIrXJX317xHObbSrLE22Sf8nO/G+sSRjTCxbLkksRWUdW2
+ PN3L52ehQUgQohDA==
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=linutronix.de
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key, unprotected) header.d=linutronix.de
- header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=WOjE8dd5; 
+ header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=Oe9sEK6R; 
  dkim=pass header.d=linutronix.de header.i=@linutronix.de
- header.a=ed25519-sha256 header.s=2020e header.b=4uwPNXo1
-Subject: [Intel-wired-lan] [PATCH iwl-net] igc: Fix deadlock on module
+ header.a=ed25519-sha256 header.s=2020e header.b=5IYxmnEF
+Subject: Re: [Intel-wired-lan] [PATCH iwl-net] igc: Fix deadlock on module
  removal
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
@@ -119,167 +101,84 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Sasha Neftin <sasha.neftin@intel.com>, netdev@vger.kernel.org,
- Kurt Kanzenbach <kurt@linutronix.de>, Lukas Wunner <lukas@wunner.de>,
- intel-wired-lan@lists.osuosl.org
+Cc: Andrew Lunn <andrew@lunn.ch>, Sasha Neftin <sasha.neftin@intel.com>,
+ intel-wired-lan@lists.osuosl.org, Eric Dumazet <edumazet@google.com>,
+ Tony Nguyen <anthony.l.nguyen@intel.com>, netdev@vger.kernel.org,
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+ "David S. Miller" <davem@davemloft.net>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The removal of the igc module leads to a deadlock:
+--=-=-=
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-|[Mon Apr  8 17:38:55 2024]  __mutex_lock.constprop.0+0x3e5/0x7a0
-|[Mon Apr  8 17:38:55 2024]  ? preempt_count_add+0x85/0xd0
-|[Mon Apr  8 17:38:55 2024]  __mutex_lock_slowpath+0x13/0x20
-|[Mon Apr  8 17:38:55 2024]  mutex_lock+0x3b/0x50
-|[Mon Apr  8 17:38:55 2024]  rtnl_lock+0x19/0x20
-|[Mon Apr  8 17:38:55 2024]  unregister_netdevice_notifier+0x2a/0xc0
-|[Mon Apr  8 17:38:55 2024]  netdev_trig_deactivate+0x25/0x70
-|[Mon Apr  8 17:38:55 2024]  led_trigger_set+0xe2/0x2d0
-|[Mon Apr  8 17:38:55 2024]  led_classdev_unregister+0x4f/0x100
-|[Mon Apr  8 17:38:55 2024]  devm_led_classdev_release+0x15/0x20
-|[Mon Apr  8 17:38:55 2024]  release_nodes+0x47/0xc0
-|[Mon Apr  8 17:38:55 2024]  devres_release_all+0x9f/0xe0
-|[Mon Apr  8 17:38:55 2024]  device_del+0x272/0x3c0
-|[Mon Apr  8 17:38:55 2024]  netdev_unregister_kobject+0x8c/0xa0
-|[Mon Apr  8 17:38:55 2024]  unregister_netdevice_many_notify+0x530/0x7c0
-|[Mon Apr  8 17:38:55 2024]  unregister_netdevice_queue+0xad/0xf0
-|[Mon Apr  8 17:38:55 2024]  unregister_netdev+0x21/0x30
-|[Mon Apr  8 17:38:55 2024]  igc_remove+0xfb/0x1f0 [igc]
-|[Mon Apr  8 17:38:55 2024]  pci_device_remove+0x42/0xb0
-|[Mon Apr  8 17:38:55 2024]  device_remove+0x43/0x70
+Hi Lukas,
 
-unregister_netdev() acquires the RNTL lock and releases the LEDs bound
-to that netdevice. However, netdev_trig_deactivate() and later
-unregister_netdevice_notifier() try to acquire the RTNL lock again.
+On Sun Apr 14 2024, Lukas Wunner wrote:
+> [cc +=3D Roman Lozko who originally reported the issue]
+>
+> On Sun, Apr 14, 2024 at 09:44:10AM +0200, Kurt Kanzenbach wrote:
+>> unregister_netdev() acquires the RNTL lock and releases the LEDs bound
+>> to that netdevice. However, netdev_trig_deactivate() and later
+>> unregister_netdevice_notifier() try to acquire the RTNL lock again.
+>>=20
+>> Avoid this situation by not using the device-managed LED class
+>> functions.
+>>=20
+>> Suggested-by: Lukas Wunner <lukas@wunner.de>
+>> Fixes: ea578703b03d ("igc: Add support for LEDs on i225/i226")
+>> Signed-off-by: Kurt Kanzenbach <kurt@linutronix.de>
+>
+> This patch is almost a 1:1 copy of the patch I submitted on April 5:
+>
+> https://lore.kernel.org/all/ZhBN9p1yOyciXkzw@wunner.de/
+>
+> I think it is mandatory that you include a Signed-off-by with my name
+> in that case.  Arguably the commit author ("From:") should also be me.
 
-Avoid this situation by not using the device-managed LED class
-functions.
+I was a bit unsure how to proceed with that. See below.
 
-Suggested-by: Lukas Wunner <lukas@wunner.de>
-Fixes: ea578703b03d ("igc: Add support for LEDs on i225/i226")
-Signed-off-by: Kurt Kanzenbach <kurt@linutronix.de>
----
- drivers/net/ethernet/intel/igc/igc.h      |  4 ++++
- drivers/net/ethernet/intel/igc/igc_leds.c | 37 ++++++++++++++++++++++++-------
- drivers/net/ethernet/intel/igc/igc_main.c |  3 +++
- 3 files changed, 36 insertions(+), 8 deletions(-)
+>
+> Moreover this is missing a Reported-by tag with Roman Lozko's name.
+>
+> AFAICS the only changes that you made are:
+> - rename igc_led_teardown() to igc_led_free()
+> - rename ret to err
+> - replace devm_kcalloc() with kcalloc()
+>   (and you introduced a memory leak while doing so, see below)
+>
+> Honestly I don't see how those small changes justify omitting a
+> Signed-off-by or assuming authorship.
+>
+> I would have been happy to submit a patch myself, I was waiting
+> for a Tested-by from Roman or you.
 
-diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
-index 90316dc58630..9f352cbe5d56 100644
---- a/drivers/net/ethernet/intel/igc/igc.h
-+++ b/drivers/net/ethernet/intel/igc/igc.h
-@@ -164,6 +164,8 @@ struct igc_ring {
- 	struct xsk_buff_pool *xsk_pool;
- } ____cacheline_internodealigned_in_smp;
- 
-+struct igc_led_classdev;
-+
- /* Board specific private data structure */
- struct igc_adapter {
- 	struct net_device *netdev;
-@@ -298,6 +300,7 @@ struct igc_adapter {
- 
- 	/* LEDs */
- 	struct mutex led_mutex;
-+	struct igc_led_classdev *leds;
- };
- 
- void igc_up(struct igc_adapter *adapter);
-@@ -723,6 +726,7 @@ void igc_ptp_read(struct igc_adapter *adapter, struct timespec64 *ts);
- void igc_ptp_tx_tstamp_event(struct igc_adapter *adapter);
- 
- int igc_led_setup(struct igc_adapter *adapter);
-+void igc_led_free(struct igc_adapter *adapter);
- 
- #define igc_rx_pg_size(_ring) (PAGE_SIZE << igc_rx_pg_order(_ring))
- 
-diff --git a/drivers/net/ethernet/intel/igc/igc_leds.c b/drivers/net/ethernet/intel/igc/igc_leds.c
-index bf240c5daf86..eee550cdb1d5 100644
---- a/drivers/net/ethernet/intel/igc/igc_leds.c
-+++ b/drivers/net/ethernet/intel/igc/igc_leds.c
-@@ -236,8 +236,8 @@ static void igc_led_get_name(struct igc_adapter *adapter, int index, char *buf,
- 		 pci_dev_id(adapter->pdev), index);
- }
- 
--static void igc_setup_ldev(struct igc_led_classdev *ldev,
--			   struct net_device *netdev, int index)
-+static int igc_setup_ldev(struct igc_led_classdev *ldev,
-+			  struct net_device *netdev, int index)
- {
- 	struct igc_adapter *adapter = netdev_priv(netdev);
- 	struct led_classdev *led_cdev = &ldev->led;
-@@ -257,24 +257,45 @@ static void igc_setup_ldev(struct igc_led_classdev *ldev,
- 	led_cdev->hw_control_get = igc_led_hw_control_get;
- 	led_cdev->hw_control_get_device = igc_led_hw_control_get_device;
- 
--	devm_led_classdev_register(&netdev->dev, led_cdev);
-+	return led_classdev_register(&netdev->dev, led_cdev);
- }
- 
- int igc_led_setup(struct igc_adapter *adapter)
- {
- 	struct net_device *netdev = adapter->netdev;
--	struct device *dev = &netdev->dev;
- 	struct igc_led_classdev *leds;
--	int i;
-+	int i, err;
- 
- 	mutex_init(&adapter->led_mutex);
- 
--	leds = devm_kcalloc(dev, IGC_NUM_LEDS, sizeof(*leds), GFP_KERNEL);
-+	leds = kcalloc(IGC_NUM_LEDS, sizeof(*leds), GFP_KERNEL);
- 	if (!leds)
- 		return -ENOMEM;
- 
--	for (i = 0; i < IGC_NUM_LEDS; i++)
--		igc_setup_ldev(leds + i, netdev, i);
-+	for (i = 0; i < IGC_NUM_LEDS; i++) {
-+		err = igc_setup_ldev(leds + i, netdev, i);
-+		if (err)
-+			goto err;
-+	}
-+
-+	adapter->leds = leds;
- 
- 	return 0;
-+
-+err:
-+	for (i--; i >= 0; i--)
-+		led_classdev_unregister(&((leds + i)->led));
-+
-+	return err;
-+}
-+
-+void igc_led_free(struct igc_adapter *adapter)
-+{
-+	struct igc_led_classdev *leds = adapter->leds;
-+	int i;
-+
-+	for (i = 0; i < IGC_NUM_LEDS; i++)
-+		led_classdev_unregister(&((leds + i)->led));
-+
-+	kfree(leds);
- }
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 35ad40a803cb..4d975d620a8e 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -7021,6 +7021,9 @@ static void igc_remove(struct pci_dev *pdev)
- 	cancel_work_sync(&adapter->watchdog_task);
- 	hrtimer_cancel(&adapter->hrtimer);
- 
-+	if (IS_ENABLED(CONFIG_IGC_LEDS))
-+		igc_led_free(adapter);
-+
- 	/* Release control of h/w to f/w.  If f/w is AMT enabled, this
- 	 * would have already happened in close and is redundant.
- 	 */
+Perfect. I was wondering why you are not submitting the patch
+yourself. Then, please go ahead and submit the patch. Feel free to add
+my Tested-by.
 
----
-base-commit: 7efd0a74039fb6b584be2cb91c1d0ef0bd796ee1
-change-id: 20240411-igc_led_deadlock-7abd85954f5e
+Thanks,
+Kurt
 
-Best regards,
--- 
-Kurt Kanzenbach <kurt@linutronix.de>
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
 
+-----BEGIN PGP SIGNATURE-----
+
+iQJHBAEBCgAxFiEEvLm/ssjDfdPf21mSwZPR8qpGc4IFAmYbnq8THGt1cnRAbGlu
+dXRyb25peC5kZQAKCRDBk9HyqkZzgpWsEACe07fEP5jsHlnLQYv+N0UEBa0gqAlt
+Y17BtyVPOongY6Ge9rwriuFpRkVKe9hDU3DMtEDtElaERsGY5/q62QEHdSFz2Xph
+8swJ6gm3APXfuDHo/ojcRhiYZq72LtQC1BzpK1GmoubBxuCEClgD8CbLk796aSdC
+KGJ7ZHOlcncGQRBtXb3BGeO8OJ/3W4HxFxWxiuAaMyA0C/IJYEQHkf2tkEuRPlt4
+wRDSWwe1kiOCk/XNcfQyoGGgQLTRwxmNhMbsisXT2OWUOP79yqhEI5uEiBZvTDdN
+NeEkYLEn2RyFzVBgF4x4qdjkXWhEyXoK3xZ7widWaYv8OK9ApXyqrAe2ETpfm7Cl
+ZyysXawhtREtOEHi9Ngx+CFYqMPAZogsBCF+DJFCdJbGH36ltFiM04JCWRuxSnfA
+izD3Qe/jDutHQXUCVk7DOpDBLLzDq+aAusHMPCG+aGf3SPGMSiFPtSLCFD/A3O1O
+8t5/X49C2zgdKmVkunN4iLdwA9UrXb6ZikuMNT0D/1r2KRaYyY1OPSvCR5lU3HQ0
+E7ASKm7MmUoFmpVvNcrmfEXUyUyPHCa1I6E4GTJ4auivuPOv/JUeFxxvoM94mMWD
+O9/PljgDLwjg8O3kxkKKBlH6aiKiQ0UsocWh4oX9ZWHlGqKzkPNBLES/KmmhtxwS
+Dr0nzYMcgyF79g==
+=viC8
+-----END PGP SIGNATURE-----
+--=-=-=--
