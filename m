@@ -4,89 +4,77 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A4D21C4345F
-	for <intel-wired-lan@archiver.kernel.org>; Sun, 14 Apr 2024 09:15:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 44516C4345F
+	for <intel-wired-lan@archiver.kernel.org>; Sun, 14 Apr 2024 09:17:58 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 58D8C400FD;
-	Sun, 14 Apr 2024 09:15:36 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 0D9B640396;
+	Sun, 14 Apr 2024 09:17:58 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ANsGYHmrb5UD; Sun, 14 Apr 2024 09:15:35 +0000 (UTC)
+ id pxMjNA-fkoTN; Sun, 14 Apr 2024 09:17:57 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 7C57540137
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 2583640137
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1713086135;
-	bh=22LCWs6JU/zxgBjYTEA2rm5irDIXx8aJeQExD/3BR+A=;
-	h=From:To:In-Reply-To:References:Date:Subject:List-Id:
+	s=default; t=1713086277;
+	bh=NHPcUl8fxDC7LyYEBHeTLjtRtQDpl2KyGHtQ3K8DsBE=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=XSs1NUmqmEm+J62AX99FhyIYeyfGJsxtM+FPZiHOK2bm9sB1OSSZ9jvT1b7C5nZaD
-	 v9s9uf9FZkZ75zrNIJR+j0zwTI5MDll8EB9pgGiPL9ksnfbw1cDOL7guhHcjQ/3ePr
-	 dWA1a9eNS5ZGFpGoYoT1NVvW6TYDz+EgAQw2yVPGpQzAtZgsGzSXoBVTUeGhuYf8ya
-	 6tP8B9e3SYBg68QqDzZxPeZxsRuJjHFPoDJd90wMwTcqpw4UWbtha6m3jrEML1ah54
-	 YHdy8LEMAIUXCkWtx/5aIJQKI/1omHVJ3ndhfFEGdTccWOCdVC4bEMqHEAHm2r1NpD
-	 SeVzk5ELso5hg==
+	b=P//nGjCba5GcxhJ6D2KqZ1/yN30qGoVJdCXZuhzNbS8771yFoZQZ9q9xieYMxO6Bw
+	 3d6+NKPspFzaVrkUsy1ypoBbsKimpAkjcCk+r+JHly9kPD2G+KacYxTJ3yZjuj9k14
+	 kLU93MZtMNmbgCp2J+AEG5aDflCGvnXeCHTJ+Ncvl+yNfnP5BsRCKvZM4Gy9kA2NOo
+	 BfjaemrLcShUhOY6teRtXrrwSkgw4jPd1+SdabDyLmA6hCOtCHzEdiybwv36/4iacU
+	 s4YCL/HVGE9JYSQ2Bf1T7S+05b3mFi5hf2DQOi6ZC6ij41N88bYrLveIh4Thm7UVbl
+	 4VIfzZbPAdXfw==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 7C57540137;
-	Sun, 14 Apr 2024 09:15:35 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 155161BF28C
- for <intel-wired-lan@lists.osuosl.org>; Sun, 14 Apr 2024 09:15:34 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 2583640137;
+	Sun, 14 Apr 2024 09:17:57 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id B44051BF28C
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 14 Apr 2024 09:17:55 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 0DAA340137
- for <intel-wired-lan@lists.osuosl.org>; Sun, 14 Apr 2024 09:15:34 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 9E05F81E89
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 14 Apr 2024 09:17:55 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Jl6QhWnIBjO2 for <intel-wired-lan@lists.osuosl.org>;
- Sun, 14 Apr 2024 09:15:33 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de;
- envelope-from=kurt@linutronix.de; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org D2B30400FD
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org D2B30400FD
-Received: from galois.linutronix.de (Galois.linutronix.de
- [IPv6:2a0a:51c0:0:12e:550::1])
- by smtp2.osuosl.org (Postfix) with ESMTPS id D2B30400FD
- for <intel-wired-lan@lists.osuosl.org>; Sun, 14 Apr 2024 09:15:32 +0000 (UTC)
-From: Kurt Kanzenbach <kurt@linutronix.de>
-To: Lukas Wunner <lukas@wunner.de>, Roman Lozko <lozko.roma@gmail.com>
-In-Reply-To: <Zhubjkscu9HPgUcA@wunner.de>
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 9KVYO0RX7whw for <intel-wired-lan@lists.osuosl.org>;
+ Sun, 14 Apr 2024 09:17:54 +0000 (UTC)
+X-Greylist: delayed 599 seconds by postgrey-1.37 at util1.osuosl.org;
+ Sun, 14 Apr 2024 09:17:53 UTC
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org C438481E2E
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C438481E2E
+Received-SPF: Pass (sender SPF authorized) identity=helo;
+ client-ip=2a01:37:1000::53df:5f64:0; helo=bmailout1.hostsharing.net;
+ envelope-from=foo00@h08.hostsharing.net; receiver=<UNKNOWN> 
+Received: from bmailout1.hostsharing.net (bmailout1.hostsharing.net
+ [IPv6:2a01:37:1000::53df:5f64:0])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id C438481E2E
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 14 Apr 2024 09:17:53 +0000 (UTC)
+Received: from h08.hostsharing.net (h08.hostsharing.net
+ [IPv6:2a01:37:1000::53df:5f1c:0])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256
+ client-signature RSA-PSS (4096 bits) client-digest SHA256)
+ (Client CN "*.hostsharing.net", Issuer "RapidSSL TLS RSA CA G1" (verified OK))
+ by bmailout1.hostsharing.net (Postfix) with ESMTPS id B0CB43001F874;
+ Sun, 14 Apr 2024 11:02:06 +0200 (CEST)
+Received: by h08.hostsharing.net (Postfix, from userid 100393)
+ id 8F6CBEE4D; Sun, 14 Apr 2024 11:02:06 +0200 (CEST)
+Date: Sun, 14 Apr 2024 11:02:06 +0200
+From: Lukas Wunner <lukas@wunner.de>
+To: Kurt Kanzenbach <kurt@linutronix.de>,
+	Roman Lozko <lozko.roma@gmail.com>
+Message-ID: <Zhubjkscu9HPgUcA@wunner.de>
 References: <20240411-igc_led_deadlock-v1-1-0da98a3c68c5@linutronix.de>
- <Zhubjkscu9HPgUcA@wunner.de>
-Date: Sun, 14 Apr 2024 11:15:26 +0200
-Message-ID: <877ch0b901.fsf@kurt.kurt.home>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
- micalg=pgp-sha512; protocol="application/pgp-signature"
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=linutronix.de; s=2020; t=1713086128;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=22LCWs6JU/zxgBjYTEA2rm5irDIXx8aJeQExD/3BR+A=;
- b=Oe9sEK6Rd10dd0rlosxkYryx2N/7YAQTA8PO+pdHoU6IEnc3sqyPAVtq/hKpCrsVU/QrN1
- Qrm6rWUA0YOs/u0UlKzoQ5a65SLekr4SDXws4ZFEz+YZU7T5bUJYSIsFsjX0eggr8LB8wy
- 86rohHnA/d/5iJgco4rVgVld1w6XenUftmEfmpd/IUAQDAE8mAMgJc7PHVz9nGFEilLZ3L
- OcsoZnQRej3+wa9meGW11bHMNWfBJGtFS7KNeX2yZwJUzTvCqtWsWXdlLSB+WIa21BSUdd
- XhQhcpjnPqJbBLMDqMxVCsfdqoNUCPsIttD6kRv2BaXZLW8zHjI14vByrKd/Jg==
-X-Mailman-Original-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
- d=linutronix.de; s=2020e; t=1713086128;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=22LCWs6JU/zxgBjYTEA2rm5irDIXx8aJeQExD/3BR+A=;
- b=5IYxmnEFWUysnFHuwgw1UfVvvIrXJX317xHObbSrLE22Sf8nO/G+sSRjTCxbLkksRWUdW2
- PN3L52ehQUgQohDA==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=linutronix.de
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key, unprotected) header.d=linutronix.de
- header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=Oe9sEK6R; 
- dkim=pass header.d=linutronix.de header.i=@linutronix.de
- header.a=ed25519-sha256 header.s=2020e header.b=5IYxmnEF
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240411-igc_led_deadlock-v1-1-0da98a3c68c5@linutronix.de>
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dmarc=none (p=none dis=none)
+ header.from=wunner.de
 Subject: Re: [Intel-wired-lan] [PATCH iwl-net] igc: Fix deadlock on module
  removal
 X-BeenThere: intel-wired-lan@osuosl.org
@@ -109,76 +97,91 @@ Cc: Andrew Lunn <andrew@lunn.ch>, Sasha Neftin <sasha.neftin@intel.com>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
---=-=-=
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+[cc += Roman Lozko who originally reported the issue]
 
-Hi Lukas,
+On Sun, Apr 14, 2024 at 09:44:10AM +0200, Kurt Kanzenbach wrote:
+> unregister_netdev() acquires the RNTL lock and releases the LEDs bound
+> to that netdevice. However, netdev_trig_deactivate() and later
+> unregister_netdevice_notifier() try to acquire the RTNL lock again.
+> 
+> Avoid this situation by not using the device-managed LED class
+> functions.
+> 
+> Suggested-by: Lukas Wunner <lukas@wunner.de>
+> Fixes: ea578703b03d ("igc: Add support for LEDs on i225/i226")
+> Signed-off-by: Kurt Kanzenbach <kurt@linutronix.de>
 
-On Sun Apr 14 2024, Lukas Wunner wrote:
-> [cc +=3D Roman Lozko who originally reported the issue]
->
-> On Sun, Apr 14, 2024 at 09:44:10AM +0200, Kurt Kanzenbach wrote:
->> unregister_netdev() acquires the RNTL lock and releases the LEDs bound
->> to that netdevice. However, netdev_trig_deactivate() and later
->> unregister_netdevice_notifier() try to acquire the RTNL lock again.
->>=20
->> Avoid this situation by not using the device-managed LED class
->> functions.
->>=20
->> Suggested-by: Lukas Wunner <lukas@wunner.de>
->> Fixes: ea578703b03d ("igc: Add support for LEDs on i225/i226")
->> Signed-off-by: Kurt Kanzenbach <kurt@linutronix.de>
->
-> This patch is almost a 1:1 copy of the patch I submitted on April 5:
->
-> https://lore.kernel.org/all/ZhBN9p1yOyciXkzw@wunner.de/
->
-> I think it is mandatory that you include a Signed-off-by with my name
-> in that case.  Arguably the commit author ("From:") should also be me.
+This patch is almost a 1:1 copy of the patch I submitted on April 5:
 
-I was a bit unsure how to proceed with that. See below.
+https://lore.kernel.org/all/ZhBN9p1yOyciXkzw@wunner.de/
 
->
-> Moreover this is missing a Reported-by tag with Roman Lozko's name.
->
-> AFAICS the only changes that you made are:
-> - rename igc_led_teardown() to igc_led_free()
-> - rename ret to err
-> - replace devm_kcalloc() with kcalloc()
->   (and you introduced a memory leak while doing so, see below)
->
-> Honestly I don't see how those small changes justify omitting a
-> Signed-off-by or assuming authorship.
->
-> I would have been happy to submit a patch myself, I was waiting
-> for a Tested-by from Roman or you.
+I think it is mandatory that you include a Signed-off-by with my name
+in that case.  Arguably the commit author ("From:") should also be me.
 
-Perfect. I was wondering why you are not submitting the patch
-yourself. Then, please go ahead and submit the patch. Feel free to add
-my Tested-by.
+Moreover this is missing a Reported-by tag with Roman Lozko's name.
+
+AFAICS the only changes that you made are:
+- rename igc_led_teardown() to igc_led_free()
+- rename ret to err
+- replace devm_kcalloc() with kcalloc()
+  (and you introduced a memory leak while doing so, see below)
+
+Honestly I don't see how those small changes justify omitting a
+Signed-off-by or assuming authorship.
+
+I would have been happy to submit a patch myself, I was waiting
+for a Tested-by from Roman or you.
+
+
+> --- a/drivers/net/ethernet/intel/igc/igc.h
+> +++ b/drivers/net/ethernet/intel/igc/igc.h
+> @@ -164,6 +164,8 @@ struct igc_ring {
+>  	struct xsk_buff_pool *xsk_pool;
+>  } ____cacheline_internodealigned_in_smp;
+>  
+> +struct igc_led_classdev;
+
+Unnecessary forward declaration, this compiled fine for me without it.
+
+
+>  int igc_led_setup(struct igc_adapter *adapter)
+>  {
+>  	struct net_device *netdev = adapter->netdev;
+> -	struct device *dev = &netdev->dev;
+>  	struct igc_led_classdev *leds;
+> -	int i;
+> +	int i, err;
+>  
+>  	mutex_init(&adapter->led_mutex);
+>  
+> -	leds = devm_kcalloc(dev, IGC_NUM_LEDS, sizeof(*leds), GFP_KERNEL);
+> +	leds = kcalloc(IGC_NUM_LEDS, sizeof(*leds), GFP_KERNEL);
+>  	if (!leds)
+>  		return -ENOMEM;
+>  
+> -	for (i = 0; i < IGC_NUM_LEDS; i++)
+> -		igc_setup_ldev(leds + i, netdev, i);
+> +	for (i = 0; i < IGC_NUM_LEDS; i++) {
+> +		err = igc_setup_ldev(leds + i, netdev, i);
+> +		if (err)
+> +			goto err;
+> +	}
+> +
+> +	adapter->leds = leds;
+>  
+>  	return 0;
+> +
+> +err:
+> +	for (i--; i >= 0; i--)
+> +		led_classdev_unregister(&((leds + i)->led));
+> +
+> +	return err;
+> +}
+
+"leds" allocation is leaked in the error path.
+
+This memory leak was not present in my original patch.  Not good!
 
 Thanks,
-Kurt
 
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQJHBAEBCgAxFiEEvLm/ssjDfdPf21mSwZPR8qpGc4IFAmYbnq8THGt1cnRAbGlu
-dXRyb25peC5kZQAKCRDBk9HyqkZzgpWsEACe07fEP5jsHlnLQYv+N0UEBa0gqAlt
-Y17BtyVPOongY6Ge9rwriuFpRkVKe9hDU3DMtEDtElaERsGY5/q62QEHdSFz2Xph
-8swJ6gm3APXfuDHo/ojcRhiYZq72LtQC1BzpK1GmoubBxuCEClgD8CbLk796aSdC
-KGJ7ZHOlcncGQRBtXb3BGeO8OJ/3W4HxFxWxiuAaMyA0C/IJYEQHkf2tkEuRPlt4
-wRDSWwe1kiOCk/XNcfQyoGGgQLTRwxmNhMbsisXT2OWUOP79yqhEI5uEiBZvTDdN
-NeEkYLEn2RyFzVBgF4x4qdjkXWhEyXoK3xZ7widWaYv8OK9ApXyqrAe2ETpfm7Cl
-ZyysXawhtREtOEHi9Ngx+CFYqMPAZogsBCF+DJFCdJbGH36ltFiM04JCWRuxSnfA
-izD3Qe/jDutHQXUCVk7DOpDBLLzDq+aAusHMPCG+aGf3SPGMSiFPtSLCFD/A3O1O
-8t5/X49C2zgdKmVkunN4iLdwA9UrXb6ZikuMNT0D/1r2KRaYyY1OPSvCR5lU3HQ0
-E7ASKm7MmUoFmpVvNcrmfEXUyUyPHCa1I6E4GTJ4auivuPOv/JUeFxxvoM94mMWD
-O9/PljgDLwjg8O3kxkKKBlH6aiKiQ0UsocWh4oX9ZWHlGqKzkPNBLES/KmmhtxwS
-Dr0nzYMcgyF79g==
-=viC8
------END PGP SIGNATURE-----
---=-=-=--
+Lukas
