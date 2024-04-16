@@ -4,80 +4,82 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9E2D1C4345F
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 16 Apr 2024 14:54:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0EE57C04FF6
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 16 Apr 2024 14:54:18 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 5C8AE402DD;
-	Tue, 16 Apr 2024 14:54:17 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 7D386402DB;
+	Tue, 16 Apr 2024 14:54:18 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id A2YcdkVIFtLy; Tue, 16 Apr 2024 14:54:16 +0000 (UTC)
+ id ENlaNIcr2_PX; Tue, 16 Apr 2024 14:54:17 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 737EB402BF
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org BEDA7402BF
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1713279256;
-	bh=yWPju8bFKzHPmEvi9VdCj/VzG3eSDCsEdTAMlP9wmho=;
+	s=default; t=1713279257;
+	bh=Cdex+RLb2jzqXfAekeGWlDlcKGNNQhFdd260BFjkXVo=;
 	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=sz3mQ5An8a8b2j92rXL5f0PZABnZJznDzgKrE8roPCuuPx/6XBKOyxZV8LSQT5TXG
-	 sKEbLvucpk29EWtKQ+TU/yg9CUAedFOWsoAjKmwRkUYqn8iL0pmsQ7HKpjF4VGaVIG
-	 Q7M7G8Cr5S3THVPpXwQAu3flGrX545TtKvezN7xiz97PZREC1pq2Bjix2t3x/d7oSG
-	 g6pLNBfpe31KVU+e/TnrVkSeFGuOPQNbIBeynWTYyU0OH5KKCgtW2WIjZx3rh2HbqW
-	 tdISgR6zTFnpGRlAlOZs8dEzHCyAXQv0SU1h3ix035LsvWElAUNJ5Djr/TOzkMjWuO
-	 9gEscczWaaC4A==
+	b=m0KVTZo013xhVsj5hbDeGS/ST3Lz15lobP4nmZeTUM66T5aZhfpa2jYv+bfzOgnAG
+	 6uAUqeTMpFtgURsjH3CZJSMR2cfyvFydEs15ny2cLaFyopWjlqLUZi0f8d+cH5vAIP
+	 9B+pL4jDK6QJvG8dpZjRTXKPBkE9LXS86Qya4GPwjVGHatHWKyNefaF/IHgWnSqZV2
+	 0RN8OskBLpskOs1imAs6lKLJqtokb8o1LXhtpBnsVPXwavRUXTk22P34oUtp//HaJw
+	 rAlcpcETFI6BHGMUQPDnUjvjB34HC6bonrGkq4DrYFTNpYOXaZWrrJd/IzlUFRGRt1
+	 5U/sgv6QBiaEA==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 737EB402BF;
-	Tue, 16 Apr 2024 14:54:16 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id A65ED1BF27C
+	by smtp4.osuosl.org (Postfix) with ESMTP id BEDA7402BF;
+	Tue, 16 Apr 2024 14:54:17 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id BC3C41BF977
  for <intel-wired-lan@lists.osuosl.org>; Tue, 16 Apr 2024 14:54:15 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 9EC38605BB
+ by smtp2.osuosl.org (Postfix) with ESMTP id A8B0240BA7
  for <intel-wired-lan@lists.osuosl.org>; Tue, 16 Apr 2024 14:54:15 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 1jTOuAxY8KNh for <intel-wired-lan@lists.osuosl.org>;
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 33MlHPQ2n7ex for <intel-wired-lan@lists.osuosl.org>;
  Tue, 16 Apr 2024 14:54:15 +0000 (UTC)
+X-Greylist: delayed 602 seconds by postgrey-1.37 at util1.osuosl.org;
+ Tue, 16 Apr 2024 14:54:13 UTC
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 9F25640383
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 9F25640383
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=193.104.135.124;
  helo=mail1.fiberby.net; envelope-from=ast@fiberby.net; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 9F6A7605AC
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 9F6A7605AC
 Received: from mail1.fiberby.net (mail1.fiberby.net [193.104.135.124])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 9F6A7605AC
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 9F25640383
  for <intel-wired-lan@lists.osuosl.org>; Tue, 16 Apr 2024 14:54:13 +0000 (UTC)
 Received: from x201s (193-104-135-243.ip4.fiberby.net [193.104.135.243])
- by mail1.fiberby.net (Postfix) with ESMTPSA id C7327600AF;
+ by mail1.fiberby.net (Postfix) with ESMTPSA id 71B41600A2;
  Tue, 16 Apr 2024 14:43:50 +0000 (UTC)
 Received: by x201s (Postfix, from userid 1000)
- id 3185F203455; Tue, 16 Apr 2024 14:43:27 +0000 (UTC)
+ id B5812202498; Tue, 16 Apr 2024 14:43:20 +0000 (UTC)
 From: =?UTF-8?q?Asbj=C3=B8rn=20Sloth=20T=C3=B8nnesen?= <ast@fiberby.net>
 To: intel-wired-lan@lists.osuosl.org
-Date: Tue, 16 Apr 2024 14:43:25 +0000
-Message-ID: <20240416144325.15319-1-ast@fiberby.net>
+Date: Tue, 16 Apr 2024 14:43:19 +0000
+Message-ID: <20240416144320.15300-1-ast@fiberby.net>
 X-Mailer: git-send-email 2.43.0
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=fiberby.net; s=202008; t=1713278649;
- bh=5BwHBYqxMFeIngfy155cTEhlu7ALrPnplvMVvaMfee0=;
+ bh=1ISri2bYvVsZAxWaG9HkNxGsuBog0gqAtEuAMx45XWs=;
  h=From:To:Cc:Subject:Date:From;
- b=Xgb85BgKLWsdRhM36K3eRzcf4c9sMeZX5xgUX0gQUPqGHoy2FUs/6nFwcqiQwx/0e
- izTYlD7ipM+2kp9dWZfiJfbhUlIc1N8Ec26EjadQUwcNQVp3uAG+Hg97/Qm/Wg1+xb
- BLURF7GjjF7V2qn7U/8HD93L3sVmancpYp1/AtXCWpPj4w/4GF+1RIIjYs//9yRtFS
- TlqqtjUwS5HcmYgKCzetYA5plB3rj4D7lMMRQeS1wi3JMtnsTkh1KORyiR2DIAHnY0
- oJ8evaBerEj6DPiis11bO/+rIYju6KBSWG9XEX4i9Di83kGkUEpEM9o9y6RXkT/5ri
- 7JsOZ3Nnt/hUA==
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ b=cJ77AM88UOdtiL1hxDlCM/LDyadeS5Fy4mTUBJZ0bVwdC0BAa5qi/0Tepp86grPka
+ VTRhnsMsOkx71RdasvKCZM4gyoNMJVcquFGND2lIX1sECz9YsgAxq91W+LNFDN7jpV
+ T8PrgAtr0OEqOhdfxLDOVS5hd4dMAcvazMFESrpKpxN9JOU55v1weh310C/1bB1fGh
+ dLhaIXut+mYSpUmSMiZsEoJOFkDKuBDItY4UR/dLgNZXa6SvS7G/2bXSAK/Kw/bQIx
+ kCg5VHbl7GxQmUjkw0Vnq/EtO/5bV+eYWh8ubbCNjv5hIkJekGPac9stRnzO6F9wnu
+ p5u0BFCA7Ztpg==
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=reject dis=none)
  header.from=fiberby.net
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=fiberby.net header.i=@fiberby.net header.a=rsa-sha256
- header.s=202008 header.b=Xgb85BgK
-Subject: [Intel-wired-lan] [PATCH iwl-next] iavf: flower: validate control
+ header.s=202008 header.b=cJ77AM88
+Subject: [Intel-wired-lan] [PATCH iwl-next] i40e: flower: validate control
  flags
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
@@ -111,14 +113,14 @@ Only compile-tested.
 
 Signed-off-by: Asbjørn Sloth Tønnesen <ast@fiberby.net>
 ---
- drivers/net/ethernet/intel/iavf/iavf_main.c | 4 ++++
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 4 ++++
  1 file changed, 4 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index 13361a780ece..f14355d52f47 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -3757,6 +3757,10 @@ static int iavf_parse_cls_flower(struct iavf_adapter *adapter,
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 0bdcdea0be3e..e219f757820d 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -8643,6 +8643,10 @@ static int i40e_parse_cls_flower(struct i40e_vsi *vsi,
  
  		flow_rule_match_control(rule, &match);
  		addr_type = match.key->addr_type;
