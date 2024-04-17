@@ -4,70 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 50FABC001CC
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 17 Apr 2024 14:15:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 32CC4C04FFF
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 17 Apr 2024 14:15:54 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 2211180C2B;
-	Wed, 17 Apr 2024 14:15:52 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id A145180E46;
+	Wed, 17 Apr 2024 14:15:53 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id RDENnq8A1IRe; Wed, 17 Apr 2024 14:15:51 +0000 (UTC)
+ id 5fFPmxp1V4y7; Wed, 17 Apr 2024 14:15:53 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org F087D80EA6
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 195C380EBB
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1713363351;
-	bh=fpFmv9FPPYCq8jC71/FwJtJ/MSZgURW8DwNANjJ8eYc=;
+	s=default; t=1713363353;
+	bh=2XCWnOO8chSASxslRMz7FoxWxYeNJrfqpyzLPicEu5Q=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=vmbJsy1oKC+lsLVDKhB67jjKx7GyF631rY86W7z12mbgaDbQAjYzDiAkXa44hBjVV
-	 y4LEcMKCkcYOUL2vxE6D9VuDrr1MnaBUCQIuntQdgNbS6IOHp99nNeWfoimZSLup/W
-	 XsRB+YYnQ7oEN1ebjdzWOcLjNrrbp8VNTdKAttjxxBaS+MNfzS3B3Igg7HOmtdchpY
-	 N5FNz4UctXvMUcp/Kppk6lc1DSahv0d38n/956PUQEpBcmIC7qN48Qr2obqEsvyPBJ
-	 Jnu6EpIAMvEMHhJsHEGJvbrrK2fRDQPIcuUIbnU6CrKQaC4Yx4KSwLTQePo6WycwgJ
-	 KHMCaLJWxDJLg==
+	b=EzEIifjSgutxMTdMBbO7o0PAm8SHEx1uRmn9qlsFN+TRKePJDpbcaY4IZcsW5IXBs
+	 4T6eeimXpwCb87n3ocYofY6V4D1tek/Uq1dEcP7hgqbxqiR/KeK/PXGhWpo5V0/r0B
+	 eNdNVqsHBWha3oKWsxRM+7fdYI6OS2GDzGABl4s0m36chEov/c3E4K0fBFdpusBY4c
+	 OMq0qU/F6fWqDyFXMqcyzzvo5YiOjRbgqct1f5QOd5mAy2MX60xkDhz5cEIWeuMhwe
+	 N+wpmpYkX0VIBXzInc4ng0edOsxaYl26HA8PShmkBM95Nhhhib9kvRLCBDJkPp4X91
+	 vm+R+MEzvOtbQ==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id F087D80EA6;
-	Wed, 17 Apr 2024 14:15:50 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 195C380EBB;
+	Wed, 17 Apr 2024 14:15:53 +0000 (UTC)
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 074B81BF46D
- for <intel-wired-lan@lists.osuosl.org>; Wed, 17 Apr 2024 14:15:49 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 3FC751BF46D
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 17 Apr 2024 14:15:50 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id E689A60833
- for <intel-wired-lan@lists.osuosl.org>; Wed, 17 Apr 2024 14:15:47 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 345F460884
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 17 Apr 2024 14:15:50 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id wBo7UtjJpRkj for <intel-wired-lan@lists.osuosl.org>;
- Wed, 17 Apr 2024 14:15:47 +0000 (UTC)
+ id 8bh6-H0JqqtP for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 17 Apr 2024 14:15:49 +0000 (UTC)
 Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.19;
  helo=mgamail.intel.com; envelope-from=michal.swiatkowski@linux.intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 07E3960884
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 07E3960884
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 813CC60833
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 813CC60833
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.19])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 07E3960884
- for <intel-wired-lan@lists.osuosl.org>; Wed, 17 Apr 2024 14:15:46 +0000 (UTC)
-X-CSE-ConnectionGUID: tvBBB/5rSFq1zhkpID4a2w==
-X-CSE-MsgGUID: lA+Ef5oiT7OXWtNd0pHklg==
-X-IronPort-AV: E=McAfee;i="6600,9927,11046"; a="8737133"
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 813CC60833
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 17 Apr 2024 14:15:49 +0000 (UTC)
+X-CSE-ConnectionGUID: CD3RDOjpRR2qhJgyP7XfHg==
+X-CSE-MsgGUID: Q7xzlfYFSpGfo8Zso8uOUA==
+X-IronPort-AV: E=McAfee;i="6600,9927,11046"; a="8737137"
 X-IronPort-AV: E=Sophos;i="6.07,209,1708416000"; 
-   d="scan'208";a="8737133"
+   d="scan'208";a="8737137"
 Received: from orviesa001.jf.intel.com ([10.64.159.141])
  by orvoesa111.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 17 Apr 2024 07:15:46 -0700
-X-CSE-ConnectionGUID: 9njc0x2rSnqkqiSyUVmQvA==
-X-CSE-MsgGUID: JNTHSu7dTBmbNRtK5adDWA==
+ 17 Apr 2024 07:15:50 -0700
+X-CSE-ConnectionGUID: MM4sNz4iReGDtdlKbdCsxQ==
+X-CSE-MsgGUID: eNDdauv2TXmWVG8ZgRHXVw==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.07,209,1708416000"; d="scan'208";a="60050445"
+X-IronPort-AV: E=Sophos;i="6.07,209,1708416000"; d="scan'208";a="60050475"
 Received: from wasp.igk.intel.com (HELO GK3153-DR2-R750-36946.localdomain.com)
  ([10.102.20.192])
- by orviesa001.jf.intel.com with ESMTP; 17 Apr 2024 07:15:39 -0700
+ by orviesa001.jf.intel.com with ESMTP; 17 Apr 2024 07:15:46 -0700
 From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Wed, 17 Apr 2024 16:20:22 +0200
-Message-ID: <20240417142028.2171-3-michal.swiatkowski@linux.intel.com>
+Date: Wed, 17 Apr 2024 16:20:24 +0200
+Message-ID: <20240417142028.2171-5-michal.swiatkowski@linux.intel.com>
 X-Mailer: git-send-email 2.42.0
 In-Reply-To: <20240417142028.2171-1-michal.swiatkowski@linux.intel.com>
 References: <20240417142028.2171-1-michal.swiatkowski@linux.intel.com>
@@ -75,25 +75,25 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1713363348; x=1744899348;
+ t=1713363350; x=1744899350;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=DmHCHej35FjKJFaofsoziev1DDoRSek/JObUPUMPKT8=;
- b=iICoZrymQarWWXMWvroAwNqgMFI1cWbPQMRdwwCMwF37JrrVB1yJZsm+
- cD1D0VES2Xr7lCWWtwU7KbWEuQ6/LXooLGYK2qW/DJzIIc7f2Dm+a3c3q
- hlBu0HL2jdWE3yYJOweDRTejdib7AZrE5nQmgmdInsicB8oIx16o3z4Jp
- XEdtJ/LZwDJJIGG4vbc2v+Apr8UK57osEUcfKhNA9zI5V0yV0wUF2L0S7
- DASYC9Y14BV2Gu0NikFd+4XRkfqTtGebIl1BjaUxjMKnTIjo8v6rA8kqQ
- D9QH4CaimD5o0x1eoHvpj2rs0ioSgZ7U6pcehRhXnVrRrJfegpquMygIC
+ bh=1E2uszQfk+zUo+ucnNQQ2WB7gVrzkrOrAWmc+rg1JxU=;
+ b=bIE8PaVmkguMeMntiPUamXEbhkIHcZISf7rMDa6cNNMAokUWR8NgugdP
+ 2QMP/6SaVXZ8Pugx6Jh21Fu9MqdcwdaJSPii8Szuxz3WXpXqsaJZfVeEu
+ QRvNS0WX77ZlWJgHF2/8z+GQyLZgYhR/bKXxEsDwLslCwfT6wkLTohQVK
+ GATG8wgoCOdbQlGcazOSjpuymtv95P6tZ/IZZVPfRuRhIh1TtrmoWQNhb
+ m79J7x/RNQet7Wj4fKhqcjx48UI6YvwqAKz0rR5b3+y4M0+PV0UEjjsUP
+ OAPxStGenoa462Ee7YVBiLd71f46gqgGYNfDV2ZJ+X+OB+9JdAmYKvZ+U
  Q==;
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=none (p=none dis=none)
  header.from=linux.intel.com
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=iICoZrym
-Subject: [Intel-wired-lan] [iwl-next v4 2/8] ice: export ice ndo_ops
- functions
+ header.a=rsa-sha256 header.s=Intel header.b=bIE8PaVm
+Subject: [Intel-wired-lan] [iwl-next v4 4/8] ice: treat subfunction VSI the
+ same as PF VSI
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -113,183 +113,41 @@ Cc: maciej.fijalkowski@intel.com, sridhar.samudrala@intel.com,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Piotr Raczynski <piotr.raczynski@intel.com>
+When subfunction VSI is open the same code as for PF VSI should be
+executed. Also when up is complete. Reflect that in code by adding
+subfunction VSI to consideration.
 
-Make some of the netdevice_ops functions visible from outside for
-another VSI type created netdev.
+In case of stopping, PF doesn't have additional tasks, so the same
+is with subfunction VSI.
 
-Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Reviewed-by: Wojciech Drewek <wojciech.drewek@intel.com>
-Signed-off-by: Piotr Raczynski <piotr.raczynski@intel.com>
 Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice.h      |  8 +++++
- drivers/net/ethernet/intel/ice/ice_lib.c  | 22 ++++++++++++++
- drivers/net/ethernet/intel/ice/ice_lib.h  |  1 +
- drivers/net/ethernet/intel/ice/ice_main.c | 37 ++++-------------------
- 4 files changed, 37 insertions(+), 31 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_main.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index 67a3236ab1fc..5f7757a44b72 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -982,6 +982,14 @@ void ice_unload(struct ice_pf *pf);
- void ice_adv_lnk_speed_maps_init(void);
- int ice_init_dev(struct ice_pf *pf);
- void ice_deinit_dev(struct ice_pf *pf);
-+int ice_change_mtu(struct net_device *netdev, int new_mtu);
-+void ice_tx_timeout(struct net_device *netdev, unsigned int txqueue);
-+int ice_xdp(struct net_device *dev, struct netdev_bpf *xdp);
-+void ice_set_netdev_features(struct net_device *netdev);
-+int ice_vlan_rx_add_vid(struct net_device *netdev, __be16 proto, u16 vid);
-+int ice_vlan_rx_kill_vid(struct net_device *netdev, __be16 proto, u16 vid);
-+void ice_get_stats64(struct net_device *netdev,
-+		     struct rtnl_link_stats64 *stats);
- 
- /**
-  * ice_set_rdma_cap - enable RDMA support
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 06909bf3b517..cff0bb6ba428 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -2846,6 +2846,28 @@ void ice_vsi_set_napi_queues(struct ice_vsi *vsi)
- 		ice_q_vector_set_napi_queues(vsi->q_vectors[i]);
- }
- 
-+/**
-+ * ice_napi_add - register NAPI handler for the VSI
-+ * @vsi: VSI for which NAPI handler is to be registered
-+ *
-+ * This function is only called in the driver's load path. Registering the NAPI
-+ * handler is done in ice_vsi_alloc_q_vector() for all other cases (i.e. resume,
-+ * reset/rebuild, etc.)
-+ */
-+void ice_napi_add(struct ice_vsi *vsi)
-+{
-+	int v_idx;
-+
-+	if (!vsi->netdev)
-+		return;
-+
-+	ice_for_each_q_vector(vsi, v_idx) {
-+		netif_napi_add(vsi->netdev, &vsi->q_vectors[v_idx]->napi,
-+			       ice_napi_poll);
-+		__ice_q_vector_set_napi_queues(vsi->q_vectors[v_idx], false);
-+	}
-+}
-+
- /**
-  * ice_vsi_release - Delete a VSI and free its resources
-  * @vsi: the VSI being removed
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.h b/drivers/net/ethernet/intel/ice/ice_lib.h
-index 9cd23afe5f15..a57213062b7f 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.h
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.h
-@@ -90,6 +90,7 @@ void __ice_q_vector_set_napi_queues(struct ice_q_vector *q_vector, bool locked);
- void ice_q_vector_set_napi_queues(struct ice_q_vector *q_vector);
- 
- void ice_vsi_set_napi_queues(struct ice_vsi *vsi);
-+void ice_napi_add(struct ice_vsi *vsi);
- 
- int ice_vsi_release(struct ice_vsi *vsi);
- 
 diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 8a4d9029434f..058d2a8836b0 100644
+index 9bbb7b328ae9..29552598ddb6 100644
 --- a/drivers/net/ethernet/intel/ice/ice_main.c
 +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -3059,7 +3059,7 @@ static int ice_xdp_safe_mode(struct net_device __always_unused *dev,
-  * @dev: netdevice
-  * @xdp: XDP command
-  */
--static int ice_xdp(struct net_device *dev, struct netdev_bpf *xdp)
-+int ice_xdp(struct net_device *dev, struct netdev_bpf *xdp)
- {
- 	struct ice_netdev_priv *np = netdev_priv(dev);
- 	struct ice_vsi *vsi = np->vsi;
-@@ -3518,28 +3518,6 @@ static int ice_req_irq_msix_misc(struct ice_pf *pf)
- 	return 0;
- }
+@@ -6677,7 +6677,8 @@ static int ice_up_complete(struct ice_vsi *vsi)
  
--/**
-- * ice_napi_add - register NAPI handler for the VSI
-- * @vsi: VSI for which NAPI handler is to be registered
-- *
-- * This function is only called in the driver's load path. Registering the NAPI
-- * handler is done in ice_vsi_alloc_q_vector() for all other cases (i.e. resume,
-- * reset/rebuild, etc.)
-- */
--static void ice_napi_add(struct ice_vsi *vsi)
--{
--	int v_idx;
--
--	if (!vsi->netdev)
--		return;
--
--	ice_for_each_q_vector(vsi, v_idx) {
--		netif_napi_add(vsi->netdev, &vsi->q_vectors[v_idx]->napi,
--			       ice_napi_poll);
--		__ice_q_vector_set_napi_queues(vsi->q_vectors[v_idx], false);
--	}
--}
--
- /**
-  * ice_set_ops - set netdev and ethtools ops for the given netdev
-  * @vsi: the VSI associated with the new netdev
-@@ -3573,7 +3551,7 @@ static void ice_set_ops(struct ice_vsi *vsi)
-  * ice_set_netdev_features - set features for the given netdev
-  * @netdev: netdev instance
-  */
--static void ice_set_netdev_features(struct net_device *netdev)
-+void ice_set_netdev_features(struct net_device *netdev)
- {
- 	struct ice_pf *pf = ice_netdev_to_pf(netdev);
- 	bool is_dvm_ena = ice_is_dvm_ena(&pf->hw);
-@@ -3755,8 +3733,7 @@ ice_lb_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi)
-  *
-  * net_device_ops implementation for adding VLAN IDs
-  */
--static int
--ice_vlan_rx_add_vid(struct net_device *netdev, __be16 proto, u16 vid)
-+int ice_vlan_rx_add_vid(struct net_device *netdev, __be16 proto, u16 vid)
- {
- 	struct ice_netdev_priv *np = netdev_priv(netdev);
- 	struct ice_vsi_vlan_ops *vlan_ops;
-@@ -3818,8 +3795,7 @@ ice_vlan_rx_add_vid(struct net_device *netdev, __be16 proto, u16 vid)
-  *
-  * net_device_ops implementation for removing VLAN IDs
-  */
--static int
--ice_vlan_rx_kill_vid(struct net_device *netdev, __be16 proto, u16 vid)
-+int ice_vlan_rx_kill_vid(struct net_device *netdev, __be16 proto, u16 vid)
- {
- 	struct ice_netdev_priv *np = netdev_priv(netdev);
- 	struct ice_vsi_vlan_ops *vlan_ops;
-@@ -7052,7 +7028,6 @@ void ice_update_pf_stats(struct ice_pf *pf)
-  * @netdev: network interface device structure
-  * @stats: main device statistics structure
-  */
--static
- void ice_get_stats64(struct net_device *netdev, struct rtnl_link_stats64 *stats)
- {
- 	struct ice_netdev_priv *np = netdev_priv(netdev);
-@@ -7725,7 +7700,7 @@ static void ice_rebuild(struct ice_pf *pf, enum ice_reset_req reset_type)
-  *
-  * Returns 0 on success, negative on failure
-  */
--static int ice_change_mtu(struct net_device *netdev, int new_mtu)
-+int ice_change_mtu(struct net_device *netdev, int new_mtu)
- {
- 	struct ice_netdev_priv *np = netdev_priv(netdev);
- 	struct ice_vsi *vsi = np->vsi;
-@@ -8149,7 +8124,7 @@ ice_bridge_setlink(struct net_device *dev, struct nlmsghdr *nlh,
-  * @netdev: network interface device structure
-  * @txqueue: Tx queue
-  */
--static void ice_tx_timeout(struct net_device *netdev, unsigned int txqueue)
-+void ice_tx_timeout(struct net_device *netdev, unsigned int txqueue)
- {
- 	struct ice_netdev_priv *np = netdev_priv(netdev);
- 	struct ice_tx_ring *tx_ring = NULL;
+ 	if (vsi->port_info &&
+ 	    (vsi->port_info->phy.link_info.link_info & ICE_AQ_LINK_UP) &&
+-	    ((vsi->netdev && vsi->type == ICE_VSI_PF))) {
++	    ((vsi->netdev && vsi->type == ICE_VSI_PF) ||
++	     (vsi->netdev && vsi->type == ICE_VSI_SF))) {
+ 		ice_print_link_msg(vsi, true);
+ 		netif_tx_start_all_queues(vsi->netdev);
+ 		netif_carrier_on(vsi->netdev);
+@@ -7375,7 +7376,7 @@ int ice_vsi_open(struct ice_vsi *vsi)
+ 
+ 	ice_vsi_cfg_netdev_tc(vsi, vsi->tc_cfg.ena_tc);
+ 
+-	if (vsi->type == ICE_VSI_PF) {
++	if (vsi->type == ICE_VSI_PF || vsi->type == ICE_VSI_SF) {
+ 		/* Notify the stack of the actual queue counts. */
+ 		err = netif_set_real_num_tx_queues(vsi->netdev, vsi->num_txq);
+ 		if (err)
 -- 
 2.42.0
 
