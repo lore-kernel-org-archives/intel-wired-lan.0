@@ -4,94 +4,73 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7A223C05023
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 18 Apr 2024 15:03:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 858A1C4345F
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 18 Apr 2024 15:07:38 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 38E654016A;
-	Thu, 18 Apr 2024 15:03:03 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 463934019A;
+	Thu, 18 Apr 2024 15:07:38 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id vEMkiWlxi660; Thu, 18 Apr 2024 15:02:59 +0000 (UTC)
+ id d0Y7EkjybvRl; Thu, 18 Apr 2024 15:07:35 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 02B2741561
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E830E40266
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1713452575;
-	bh=31gRuhOgrMOigy+IfblEh9upqYXlujfKut2KdVCFRAU=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=A+KSL5HGJA72nlpcZrcWO57k7r21pCc+xsCJfaEydex7jv/v9oq5wTCOsDpbkv/HT
-	 vnKn0X5+1c1XNrJ4vqKZAo1zxP9CkYJ6+mRHJ0aqmZyz0j9xf/0wi99NfbbWQsmLkK
-	 83DSSZNu4Vq3g6ZI+o4WhO0G1xEn/5VdeTwHwu/+UYtmimy7+RiiYg37RcaTLA9VF/
-	 RZcOI4eRdj8RgV6ztsW1MspmYkzsFQAnzlriafLLJLku9adirQ1gILNjdXwyOahDZP
-	 c1b1svVKoQIOJQdls2s9dbrz2yUSObIASAcdxK5bN48rZI4kVHK2dHXDULEnx1lZf7
-	 tOqBket/+qKeg==
+	s=default; t=1713452855;
+	bh=1qz6R1nWTZ26oO9siRBDnxACVIX3piGFMlSNju3MhRg=;
+	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=Nu0zLJAXo9l9idNex2+da4KQ9e1SEMaCspGYchGB+v/Y3dUzE8+9L3vAQOQETTUk7
+	 lhYaiJbydqkM+5Y9frm5961l4Izb4WoL7L+7xuLXLnbamgdttLSUNJpF50QS9sX1CI
+	 sd8V6d/y4MRWs0Z45O3hpeF6HaORmBE0DgOx+FRTXFP3V1iFdu6kaWraJmT9TBvil0
+	 mT2DfaxHsnGRVM87vc/8RQeStPZ8nWNFwDnGKcSlJ0T5jKWeOErYoDrjzmej0l/gtF
+	 jadX0asn51os6HuzjPqZb/+yEnsLLfXTbN26kXciKEzMseMH2BClKiKqA42g7Vn2kD
+	 PkuY7h0T4pHDw==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 02B2741561;
-	Thu, 18 Apr 2024 15:02:55 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id E830E40266;
+	Thu, 18 Apr 2024 15:07:34 +0000 (UTC)
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 3E1541BF286
- for <intel-wired-lan@lists.osuosl.org>; Thu, 18 Apr 2024 11:03:52 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 4D6711BF3CA
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 18 Apr 2024 15:07:34 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 32C8F415C6
- for <intel-wired-lan@lists.osuosl.org>; Thu, 18 Apr 2024 11:03:52 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 38E4740542
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 18 Apr 2024 15:07:34 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id voLKrpPJbMUr for <intel-wired-lan@lists.osuosl.org>;
- Thu, 18 Apr 2024 11:03:47 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.15;
- helo=mgamail.intel.com; envelope-from=sergey.temerkhanov@intel.com;
+ id A3pMiA4zJ9Qu for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 18 Apr 2024 15:07:29 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=141.14.17.11;
+ helo=mx3.molgen.mpg.de; envelope-from=pmenzel@molgen.mpg.de;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 43900415BD
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 43900415BD
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.15])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 43900415BD
- for <intel-wired-lan@lists.osuosl.org>; Thu, 18 Apr 2024 11:03:47 +0000 (UTC)
-X-CSE-ConnectionGUID: 29BRTD+8S8mAJHh/SU7dqQ==
-X-CSE-MsgGUID: gb3lOFo8RamWP29DVnn9QA==
-X-IronPort-AV: E=McAfee;i="6600,9927,11047"; a="12763757"
-X-IronPort-AV: E=Sophos;i="6.07,212,1708416000"; d="scan'208";a="12763757"
-Received: from fmviesa008.fm.intel.com ([10.60.135.148])
- by orvoesa107.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 18 Apr 2024 04:03:46 -0700
-X-CSE-ConnectionGUID: rp+MM2n5QnW6wQO2sVPBdw==
-X-CSE-MsgGUID: q1Uq+MiOSmiGEPggHSDVwg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.07,212,1708416000"; d="scan'208";a="23021657"
-Received: from unknown (HELO localhost.igk.intel.com) ([10.211.13.141])
- by fmviesa008.fm.intel.com with ESMTP; 18 Apr 2024 04:03:45 -0700
-From: Sergey Temerkhanov <sergey.temerkhanov@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Date: Thu, 18 Apr 2024 13:03:18 +0200
-Message-Id: <20240418110318.67202-1-sergey.temerkhanov@intel.com>
-X-Mailer: git-send-email 2.35.3
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 8C0AF40160
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 8C0AF40160
+Received: from mx3.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 8C0AF40160
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 18 Apr 2024 15:07:27 +0000 (UTC)
+Received: from [141.14.220.34] (g34.guest.molgen.mpg.de [141.14.220.34])
+ (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested) (Authenticated sender: pmenzel)
+ by mx.molgen.mpg.de (Postfix) with ESMTPSA id EBBC361E5FE06;
+ Thu, 18 Apr 2024 17:07:08 +0200 (CEST)
+Message-ID: <21507396-3615-41e3-b8dd-5fbac046d5b0@molgen.mpg.de>
+Date: Thu, 18 Apr 2024 17:07:08 +0200
 MIME-Version: 1.0
-Organization: Intel Technology Poland sp. z o.o. - ul. Slowackiego 173,
- 80-298 Gdansk - KRS 101882 - NIP 957-07-52-316
+User-Agent: Mozilla Thunderbird
+To: Sergey Temerkhanov <sergey.temerkhanov@intel.com>
+References: <20240418110318.67202-1-sergey.temerkhanov@intel.com>
+Content-Language: en-US
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+In-Reply-To: <20240418110318.67202-1-sergey.temerkhanov@intel.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Mailman-Approved-At: Thu, 18 Apr 2024 15:02:49 +0000
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1713438227; x=1744974227;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=eAVw/Rm28PRAbnn5C8EDuezCyUUUpKWahTorxk/3Nt4=;
- b=i9+ZVBXGig7RWEOV9oZbPQa9z55gETR9IEjcCzAxlr3rYyODJf2uZ01b
- atyNvx93LD6Xn3WYqznsHfqsfPpg3pXqpAIkvHX1F6IP53NBhjcs9cA4+
- NImwdp2PzFapikMoZi5yYz7DsK0ZWJyGVhrV0CLj0/msbSzsjZEZky6BH
- fAgNK6grtvTUdLEE3VV88pwrwfx2yYi+DJcN2gHYeR7e3mrkvOsO3mv8O
- st8RZD7uPiH2ldPIfzHZjWHyWMs1VKyEyZq+/MGG0tdkscYMEHG+QsOCd
- XJLj08ilccsw9oF/WH6zV8fvUBQ6+1cKsanwuV+iJub+TBuBKuTZ/N5Ah
- Q==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=i9+ZVBXG
-Subject: [Intel-wired-lan] [PATCH iwl-next] ice: Extend auxbus device naming
+ dmarc=none (p=none dis=none)
+ header.from=molgen.mpg.de
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next] ice: Extend auxbus device
+ naming
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -104,65 +83,32 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Sergey Temerkhanov <sergey.temerkhanov@intel.com>, netdev@vger.kernel.org,
+Cc: netdev@vger.kernel.org, intel-wired-lan@lists.osuosl.org,
  Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Include segment/domain number in the device name to distinguish
-between PCI devices located on different root complexes in
-multi-segment configurations
+Dear Sergey,
 
-Signed-off-by: Sergey Temerkhanov <sergey.temerkhanov@intel.com>
-Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
----
- drivers/net/ethernet/intel/ice/ice_ptp.c | 12 ++++++++----
- 1 file changed, 8 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
-index 0f17fc1181d2..54fe1931d598 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-@@ -2893,6 +2893,7 @@ ice_ptp_auxbus_create_id_table(struct ice_pf *pf, const char *name)
- static int ice_ptp_register_auxbus_driver(struct ice_pf *pf)
- {
- 	struct auxiliary_driver *aux_driver;
-+	struct pci_dev *pdev = pf->pdev;
- 	struct ice_ptp *ptp;
- 	struct device *dev;
- 	char *name;
-@@ -2903,8 +2904,9 @@ static int ice_ptp_register_auxbus_driver(struct ice_pf *pf)
- 	aux_driver = &ptp->ports_owner.aux_driver;
- 	INIT_LIST_HEAD(&ptp->ports_owner.ports);
- 	mutex_init(&ptp->ports_owner.lock);
--	name = devm_kasprintf(dev, GFP_KERNEL, "ptp_aux_dev_%u_%u_clk%u",
--			      pf->pdev->bus->number, PCI_SLOT(pf->pdev->devfn),
-+	name = devm_kasprintf(dev, GFP_KERNEL, "ptp_aux_dev_%u_%u_%u_clk%u",
-+			      pci_domain_nr(pdev->bus), pdev->bus->number,
-+			      PCI_SLOT(pdev->devfn),
- 			      ice_get_ptp_src_clock_index(&pf->hw));
- 	if (!name)
- 		return -ENOMEM;
-@@ -3106,6 +3108,7 @@ static void ice_ptp_release_auxbus_device(struct device *dev)
- static int ice_ptp_create_auxbus_device(struct ice_pf *pf)
- {
- 	struct auxiliary_device *aux_dev;
-+	struct pci_dev *pdev = pf->pdev;
- 	struct ice_ptp *ptp;
- 	struct device *dev;
- 	char *name;
-@@ -3118,8 +3121,9 @@ static int ice_ptp_create_auxbus_device(struct ice_pf *pf)
- 
- 	aux_dev = &ptp->port.aux_dev;
- 
--	name = devm_kasprintf(dev, GFP_KERNEL, "ptp_aux_dev_%u_%u_clk%u",
--			      pf->pdev->bus->number, PCI_SLOT(pf->pdev->devfn),
-+	name = devm_kasprintf(dev, GFP_KERNEL, "ptp_aux_dev_%u_%u_%u_clk%u",
-+			      pci_domain_nr(pdev->bus), pdev->bus->number,
-+			      PCI_SLOT(pdev->devfn),
- 			      ice_get_ptp_src_clock_index(&pf->hw));
- 	if (!name)
- 		return -ENOMEM;
--- 
-2.35.3
+Thank you for your patch.
 
+Am 18.04.24 um 13:03 schrieb Sergey Temerkhanov:
+> Include segment/domain number in the device name to distinguish
+> between PCI devices located on different root complexes in
+> multi-segment configurations
+
+Can you please paste the old and new name in the commit message?
+
+> Signed-off-by: Sergey Temerkhanov <sergey.temerkhanov@intel.com>
+> Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+> ---
+>   drivers/net/ethernet/intel/ice/ice_ptp.c | 12 ++++++++----
+>   1 file changed, 8 insertions(+), 4 deletions(-)
+
+[…]
+
+
+Kind regards,
+
+Paul
