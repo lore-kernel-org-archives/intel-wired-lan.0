@@ -4,100 +4,110 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C5288C04FF8
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 18 Apr 2024 11:55:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8DF67C4345F
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 18 Apr 2024 12:04:38 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 838834012F;
-	Thu, 18 Apr 2024 11:55:31 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 605614012F;
+	Thu, 18 Apr 2024 12:04:38 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id bueJxKGch1y1; Thu, 18 Apr 2024 11:55:30 +0000 (UTC)
+ id d1Z4UGiNDsvf; Thu, 18 Apr 2024 12:04:34 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org CC02B40511
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 7847B40523
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1713441330;
-	bh=vnixqKiDXHI7L4w/q0hjM2HcmHja315QfS82FTsRAn8=;
+	s=default; t=1713441874;
+	bh=37f3ccn//ByTUoAR5JHG4cni1pFUTiZHTlyJI9lNZHw=;
 	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=nBkdMfiL4qmBpyIykvPafmw1G2DwrR1pD6efiQUnGPq9d1rjWxr7N5NkxESGEFEIc
-	 jQBqyYEgUmUrkKCPIlIU1GslrPhTAzoNHdTCHAClL13/d7yokaX9tS6FIwfzQ0TGxn
-	 MRXeyyvOk25pIvFhtgQiQ81Qf306EhB4Wb2AkOPhTo5MAs03oTEkGP90udX4RrBH7i
-	 Rbf07bfHfAMlZXfMvwATcx1oPyFXif1z7iEEgYVZLb9YbYFS5adRKDY83cA0s7qkSy
-	 g0URVY5ngW+PSlzx/CyvvEVykav6zod+mWWSqQK3EOSF5lpX0FpS7/UsDhv+6mdxIv
-	 5tuy8uPNgWAWg==
+	b=Cf6GAf8Ejpmoab6GJKMeum7RohX089EQKlecKaWn2aM8Va4bCAZpZfBPsG2Pwk4ed
+	 s+rt6YqusG4BYIWBoxVcis05icMapQDGx1Nt+ggglJ6970LO0o+sTsjOaeN/VdhWi9
+	 plUZOmuRaIWK8jn237KrTATlXJwyqcFpoODoAdEC8JCLOIHEHtTNHNWK1fsQxt9LhL
+	 o8AjMp5gi6uYRMFPPWcYEmygBIiONVz59uwtkogdFm1jrreiv0FyQ4UEvqyzD43R7i
+	 XbBIn5K3huFfAF2/AECF4KOxYQreaFHH3yF7V4ayyFsAiKwltGPs41D9dXwoNR+wmC
+	 v2U7FHA6BXEeQ==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id CC02B40511;
-	Thu, 18 Apr 2024 11:55:30 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 504411BF3F2
- for <intel-wired-lan@lists.osuosl.org>; Thu, 18 Apr 2024 11:55:29 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 7847B40523;
+	Thu, 18 Apr 2024 12:04:34 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 9F3F81BF373
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 18 Apr 2024 12:04:32 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 3B74640511
- for <intel-wired-lan@lists.osuosl.org>; Thu, 18 Apr 2024 11:55:29 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 97230402C4
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 18 Apr 2024 12:04:32 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 9IXjgsiyEOHQ for <intel-wired-lan@lists.osuosl.org>;
- Thu, 18 Apr 2024 11:55:28 +0000 (UTC)
-Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.14;
- helo=mgamail.intel.com; envelope-from=michal.swiatkowski@linux.intel.com;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 699334012F
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 699334012F
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.14])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 699334012F
- for <intel-wired-lan@lists.osuosl.org>; Thu, 18 Apr 2024 11:55:28 +0000 (UTC)
-X-CSE-ConnectionGUID: V9mxq06uTeGJPhrQL5Fg7g==
-X-CSE-MsgGUID: 95dX9CcUQ92SIB9nE8Aqaw==
-X-IronPort-AV: E=McAfee;i="6600,9927,11047"; a="9204854"
-X-IronPort-AV: E=Sophos;i="6.07,212,1708416000"; 
-   d="scan'208";a="9204854"
-Received: from fmviesa009.fm.intel.com ([10.60.135.149])
- by fmvoesa108.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 18 Apr 2024 04:55:27 -0700
-X-CSE-ConnectionGUID: BRMNBJ1DTxOiScOWaf1H3A==
-X-CSE-MsgGUID: Y3uqJNdJToyBcARFJe13cQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.07,212,1708416000"; d="scan'208";a="23040305"
-Received: from unknown (HELO mev-dev) ([10.237.112.144])
- by fmviesa009-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 18 Apr 2024 04:55:25 -0700
-Date: Thu, 18 Apr 2024 13:55:03 +0200
-From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
-To: Shay Drori <shayd@nvidia.com>
-Message-ID: <ZiEKF8Hm+ccuVedQ@mev-dev>
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 4HjPE5auszZ0 for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 18 Apr 2024 12:04:27 +0000 (UTC)
+Received-SPF: None (mailfrom) identity=mailfrom;
+ client-ip=2a00:1450:4864:20::629; helo=mail-ej1-x629.google.com;
+ envelope-from=jiri@resnulli.us; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org DB301402BC
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org DB301402BC
+Received: from mail-ej1-x629.google.com (mail-ej1-x629.google.com
+ [IPv6:2a00:1450:4864:20::629])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id DB301402BC
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 18 Apr 2024 12:04:24 +0000 (UTC)
+Received: by mail-ej1-x629.google.com with SMTP id
+ a640c23a62f3a-a51f9ad7684so40128066b.2
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 18 Apr 2024 05:04:24 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20230601; t=1713441863; x=1714046663;
+ h=in-reply-to:content-disposition:mime-version:references:message-id
+ :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+ :message-id:reply-to;
+ bh=37f3ccn//ByTUoAR5JHG4cni1pFUTiZHTlyJI9lNZHw=;
+ b=cWpeqtYEYwOK9uJiOx4H5rVMZfj+Gf/tYgc7O5YXnfve5D0VaXnsJ4GNTQQ+ll4jR6
+ DaH4sqx61Pwl0rC2/xzSnGkYv//1xPp/yIkfRz0X7eKpSBZly9s6hYBf2eijx/ectkte
+ 3mA1u2jfQyB05x6uPESzADuPct9o9q31orkx42VwwABMiJxZpZKKKFmnMLM1677nA+iy
+ aNvVrBiSgvyB2190Mjys5uKDwQWDBocIxMGdOd6mQUngbXYyOV3mq0jxMz9IX3bpnNyC
+ YRuKw5bNHzn4KXqCRAKD7UmjoQ0egmRk7eU7PBxATA08XUsn7ydZBbuu3LFcfuXX1b35
+ 0DdA==
+X-Gm-Message-State: AOJu0YxNdoUS4l5h6/ZZgo8VDY5wPTj1wbH9Y+PLCp3rPD8IoKVZghLK
+ mdD43RVf6MUX8+bNE2QxQ85snONCKvNnaZPIZG3JwEZhgLRnk/3tgU+Cmywsyq8=
+X-Google-Smtp-Source: AGHT+IH7SHBw7rC7zllH17bUzX7FhKAwi9y3jf1g1iOqWa0GZ7feR7s5nEWChL+Fwranei5nHBwbRg==
+X-Received: by 2002:a50:cdc1:0:b0:56b:986b:b4e7 with SMTP id
+ h1-20020a50cdc1000000b0056b986bb4e7mr2035401edj.27.1713441862964; 
+ Thu, 18 Apr 2024 05:04:22 -0700 (PDT)
+Received: from localhost (78-80-105-131.customers.tmcz.cz. [78.80.105.131])
+ by smtp.gmail.com with ESMTPSA id
+ s12-20020aa7c54c000000b0057025ea16f2sm790411edr.39.2024.04.18.05.04.22
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 18 Apr 2024 05:04:22 -0700 (PDT)
+Date: Thu, 18 Apr 2024 14:04:21 +0200
+From: Jiri Pirko <jiri@resnulli.us>
+To: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+Message-ID: <ZiEMRcP7QN5zVd8Z@nanopsycho>
 References: <20240417142028.2171-1-michal.swiatkowski@linux.intel.com>
- <20240417142028.2171-9-michal.swiatkowski@linux.intel.com>
- <0045c1a5-1065-40b3-ae61-1f372d4a89e5@nvidia.com>
- <1b678660-7ee7-44d0-91a7-14985d2c469e@nvidia.com>
+ <20240417142028.2171-6-michal.swiatkowski@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1b678660-7ee7-44d0-91a7-14985d2c469e@nvidia.com>
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1713441328; x=1744977328;
- h=date:from:to:cc:subject:message-id:references:
- mime-version:in-reply-to;
- bh=BjG0eEXPzantOD1jcelhGWFZa+JGWFo4s5JCsisY2Nk=;
- b=CeDsHEoxdPpsTDwGfzde94iXFMN/oC367QV8WRjVV65fZBDuhX9AS3Dv
- wZArTCBm+BHq+dmFBLKHcbNwy+FbG8aKFeOGHc6kt2VDftA+YDT9ar5nM
- /HDLeGB5iuXOiH228JVENXutMeJJrjyJgw0ALRS7hNWPAlGU8SeA6558w
- OohuTBgsBZDNpTBzFWCo/A2BpYFSVfvH/byHrlhAUUVf74UULlMikYU25
- VhoGgl1HpFgDHP7Z6X+qIp6r/FCG2tjNdTrcMqDo2bRC9nu7g8mN/v+nw
- 6Ips42p8ADa7I4CVF1F3qk+vB1ZJRv499zaNHY8rA+3RnoV06LCSn3VjW
- w==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+In-Reply-To: <20240417142028.2171-6-michal.swiatkowski@linux.intel.com>
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=resnulli-us.20230601.gappssmtp.com; s=20230601; t=1713441863; x=1714046663;
+ darn=lists.osuosl.org; 
+ h=in-reply-to:content-disposition:mime-version:references:message-id
+ :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+ bh=37f3ccn//ByTUoAR5JHG4cni1pFUTiZHTlyJI9lNZHw=;
+ b=j3daUWZf2YgLIVLp8EY7aKQGTwbWF2W1ijpcOCtMvM8cdiX8g5GmgcrdG4/qDbhiLn
+ lrsVsOaBE37mJSd8SliXLVyNIDE8b2ULhOPta5kt74Mj0qrmIbv0dRIeKMWYOm691Mm1
+ QBK82kEnV9IDXGKKrvkBf7nHxt0i/WqbcMSBXJlbyk/OaHYV9iIvq6AyFw0WRpn59g55
+ Y4vjby9f4Ccc3qrSBsixvUPScya3HB/l0M4xOy2XMwkGSjsVPrgStwGZmYlAVGc80b/v
+ 6dhBqu7hCqcnv2iQazWkR5ke5vBmY6fixEYrVl7Dm1A5xTqNxt5NIuiaMJJoGQ7JYA2O
+ 8LJg==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=none (p=none dis=none)
- header.from=linux.intel.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ header.from=resnulli.us
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=CeDsHEox
-Subject: Re: [Intel-wired-lan] [iwl-next v4 8/8] ice: allow to activate and
- deactivate subfunction
+ unprotected) header.d=resnulli-us.20230601.gappssmtp.com
+ header.i=@resnulli-us.20230601.gappssmtp.com header.a=rsa-sha256
+ header.s=20230601 header.b=j3daUWZf
+Subject: Re: [Intel-wired-lan] [iwl-next v4 5/8] ice: allocate devlink for
+ subfunction
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -118,76 +128,30 @@ Cc: maciej.fijalkowski@intel.com, mateusz.polchlopek@intel.com,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Thu, Apr 18, 2024 at 11:12:47AM +0300, Shay Drori wrote:
-> resend as plain test
-> 
-> On 18/04/2024 10:53, Shay Drori wrote:
-> > On 17/04/2024 17:20, Michal Swiatkowski wrote:
-> > > +/**
-> > > + * ice_devlink_port_fn_state_get - devlink handler for port state get
-> > > + * @port: pointer to devlink port
-> > > + * @state: admin configured state of the port
-> > > + * @opstate: current port operational state
-> > > + * @extack: extack for reporting error messages
-> > > + *
-> > > + * Gets port state.
-> > > + *
-> > > + * Return: zero on success or an error code on failure.
-> > > + */
-> > > +static int
-> > > +ice_devlink_port_fn_state_get(struct devlink_port *port,
-> > > +			      enum devlink_port_fn_state *state,
-> > > +			      enum devlink_port_fn_opstate *opstate,
-> > > +			      struct netlink_ext_ack *extack)
-> > > +{
-> > > +	struct ice_dynamic_port *dyn_port;
-> > > +
-> > > +	dyn_port = ice_devlink_port_to_dyn(port);
-> > > +
-> > > +	if (dyn_port->active) {
-> > > +		*state = DEVLINK_PORT_FN_STATE_ACTIVE;
-> > > +		*opstate = DEVLINK_PORT_FN_OPSTATE_ATTACHED;
-> > 
-> > 
-> > DEVLINK_PORT_FN_OPSTATE_ATTACHED means the SF is up/bind[1].
-> > ice is using auxiliary bus for SFs, which means user can unbind it
-> > via the auxiliary sysfs (/sys/bus/auxiliary/drivers/ice_sf/unbind).
-> > In this case[2], you need to return:
-> > *state = DEVLINK_PORT_FN_STATE_ACTIVE;
-> > *opstate = DEVLINK_PORT_FN_OPSTATE_DETACHED;
-> > 
+Wed, Apr 17, 2024 at 04:20:25PM CEST, michal.swiatkowski@linux.intel.com wrote:
+>From: Piotr Raczynski <piotr.raczynski@intel.com>
 
-Thanks, I didn't think about unbinding/binding the aux driver via sysfs.
+[...]
 
-To be sure:
-- user create the subfunction:
-INACTIVE, DETACHED
-- user activate it:
-ACTIVE, ATTACHED
-- user unbind driver:
-ACTIVE, DETACHED
-- user can bind it again as long as subfunction port is ACTIVE
-is it right?
+>+/**
+>+ * ice_allocate_sf - Allocate devlink and return SF structure pointer
+>+ * @dev: the device to allocate for
+>+ *
+>+ * Allocate a devlink instance for SF.
+>+ *
+>+ * Return: void pointer to allocated memory
+>+ */
+>+struct ice_sf_priv *ice_allocate_sf(struct device *dev)
 
-I will fix the comment from previous patch and add state tracking for
-ATTACHED/DETACHED.
+This is devlink instance for SF auxdev. Please make sure it is properly
+linked with the devlink port instance using devl_port_fn_devlink_set()
+See mlx5 implementation for inspiration.
 
-Thanks,
-Michal
 
-> > 
-> > [1]
-> > Documentation from include/uapi/linux/devlink.h:
-> > 
-> > * @DEVLINK_PORT_FN_OPSTATE_ATTACHED: Driver is attached to the function.
-> > <...>
-> > * @DEVLINK_PORT_FN_OPSTATE_DETACHED: Driver is detached from the function.
-> > 
-> > > +	} else {
-> > > +		*state = DEVLINK_PORT_FN_STATE_INACTIVE;
-> > > +		*opstate = DEVLINK_PORT_FN_OPSTATE_DETACHED;
-> > > +	}
-> > > +
-> > > +	return 0;
-> > > +}
-> > > +
+>+{
+>+	return ice_devlink_alloc(dev, sizeof(struct ice_sf_priv),
+>+				 &ice_sf_devlink_ops);
+>+}
+>+
+
+[...]
