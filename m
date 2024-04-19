@@ -1,101 +1,99 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 40AE2C07C79
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 19 Apr 2024 08:18:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5030CC04FF6
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 19 Apr 2024 09:20:44 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id C9B59812AE;
-	Fri, 19 Apr 2024 08:18:51 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id E3C264184F;
+	Fri, 19 Apr 2024 09:20:43 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id SwwAs51fgGHA; Fri, 19 Apr 2024 08:18:50 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id NkNLRFlAGdfF; Fri, 19 Apr 2024 09:20:41 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org A984780E84
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 556D7402E4
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1713514730;
-	bh=nA7N79TgLmsjj1s6TdnsgFZ45GdoVapm5CuK5IESPG4=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=yF4oBRACKYpMlqi/XQXOoQBer2CMxTuXhkCbeXo4vA8u9KGgq4By1sGpZ5Y7VShyc
-	 eT7ULTz0o2EfMCkgGwxC0OAa1OzYnjuCxZT4fPxPhsVrA0J8C+Rg3WIPfCuEzFnE3n
-	 CrXqW8cZjjHnbfqQEg6nWkyexbAZw/qa2Wcnr3UYlaJW80fEBNy1ILtoH8qyUU3iIY
-	 BXvwr45cVDYXeFw6bDhfo8cTcNVSSBKreWJSZUnZbY7GXfLkJDbP5X4c7G+ZtL+AzG
-	 berADSh07Z4BJ7mrtwmNgSQhI/nZg2amEURPCdmshszoTS1th1HOqD8+hbdkoUW5sp
-	 lnShB24Tv3ocw==
+	s=default; t=1713518441;
+	bh=ToO8cs/iiKffaMk1kgRW2H7LzvEW3gZLNhpTlUcq4to=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=lSCnr2oBkHeq3Ena8UjkX+BRB9GwnrxgZdqlJGbeZAV4DSv/k7r7/0H910mTFjS9Q
+	 yFf/XQBeEojjW8zLTTQYa0cdQHjl4uufCHj1LVp2aXA4ZfMNVXapaNuEeSXg6NRoi5
+	 23dAEEOQ1r7VGwRdEiUi06BDmW0I5K480jkr4y7IvCcM9qjUmlICjgPgvrKL6RQYxl
+	 U8g1+D8PGo6AAKTfhfUX0ajsPjViAocZoZn+YLa+LGJ5PuoRjEUURLMagN8B41X8Kb
+	 Ga60Z0uJdaUXVICOXRRXlsChBQ4F/Ok8ZYP8/lFSaP0tDNUZtINAOOU6kup6e7puqY
+	 MuEhbXII14C6A==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id A984780E84;
-	Fri, 19 Apr 2024 08:18:50 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id ED7D11BF288
- for <intel-wired-lan@lists.osuosl.org>; Fri, 19 Apr 2024 08:18:46 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 556D7402E4;
+	Fri, 19 Apr 2024 09:20:41 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 4FF481BF82D
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 19 Apr 2024 09:20:39 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id E6C4D40548
- for <intel-wired-lan@lists.osuosl.org>; Fri, 19 Apr 2024 08:18:46 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 3B876607A7
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 19 Apr 2024 09:20:39 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id qhZOE3diUHcV for <intel-wired-lan@lists.osuosl.org>;
- Fri, 19 Apr 2024 08:18:45 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.21;
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id PSMXXvVuJ19r for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 19 Apr 2024 09:20:38 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.16;
  helo=mgamail.intel.com; envelope-from=mateusz.polchlopek@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 62C35402B7
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 62C35402B7
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.21])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 62C35402B7
- for <intel-wired-lan@lists.osuosl.org>; Fri, 19 Apr 2024 08:18:45 +0000 (UTC)
-X-CSE-ConnectionGUID: 3ROsKL0lTlKVh0NUgxpZcA==
-X-CSE-MsgGUID: FTWbm7bpSfqupNc0NYDyNA==
-X-IronPort-AV: E=McAfee;i="6600,9927,11047"; a="9028091"
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 050EF6062A
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 050EF6062A
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.16])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 050EF6062A
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 19 Apr 2024 09:20:37 +0000 (UTC)
+X-CSE-ConnectionGUID: 3JTVB7GvRZqdXywzGW7JiA==
+X-CSE-MsgGUID: JMkrIq4LR6WC369XOyrVcg==
+X-IronPort-AV: E=McAfee;i="6600,9927,11047"; a="9238399"
 X-IronPort-AV: E=Sophos;i="6.07,213,1708416000"; 
-   d="scan'208";a="9028091"
-Received: from orviesa009.jf.intel.com ([10.64.159.149])
- by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 19 Apr 2024 01:18:46 -0700
-X-CSE-ConnectionGUID: AHohsY3zSVGHOS/ZaEf1Ig==
-X-CSE-MsgGUID: /VbnR/LKR4K1DPGRN9EXcw==
+   d="scan'208";a="9238399"
+Received: from orviesa001.jf.intel.com ([10.64.159.141])
+ by orvoesa108.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 19 Apr 2024 02:20:37 -0700
+X-CSE-ConnectionGUID: HwqDJ7lqQs+uRd1N6u90Mg==
+X-CSE-MsgGUID: M4Pp741XSSSFRXlUYqLYpw==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.07,213,1708416000"; d="scan'208";a="23244470"
+X-IronPort-AV: E=Sophos;i="6.07,213,1708416000"; d="scan'208";a="60716016"
 Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by orviesa009.jf.intel.com with ESMTP; 19 Apr 2024 01:18:40 -0700
+ by orviesa001.jf.intel.com with ESMTP; 19 Apr 2024 02:20:33 -0700
 Received: from fedora.igk.intel.com (Metan_eth.igk.intel.com [10.123.220.124])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id 4596728198;
- Fri, 19 Apr 2024 09:18:29 +0100 (IST)
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id 1A99428197;
+ Fri, 19 Apr 2024 10:20:25 +0100 (IST)
 From: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Fri, 19 Apr 2024 04:08:53 -0400
-Message-Id: <20240419080854.10000-6-mateusz.polchlopek@intel.com>
+Date: Fri, 19 Apr 2024 05:11:04 -0400
+Message-Id: <20240419091104.13495-1-mateusz.polchlopek@intel.com>
 X-Mailer: git-send-email 2.38.1
-In-Reply-To: <20240419080854.10000-1-mateusz.polchlopek@intel.com>
-References: <20240419080854.10000-1-mateusz.polchlopek@intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1713514726; x=1745050726;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=NDdm7ujsswUhF/3zIsW29A/ubvXDbXilrP4hWySOuDw=;
- b=XwlBy1QDJj+olb6LjxnYNBeRDqtiA2dYkVeUB0p5CTDuzY97Jgq0yQye
- mYzPRlJaw99WCnRuamwU2MJo/IFT+avMJjUpph8tt1txaZz4ZmQohi6Af
- qj9V2fstnkBvVOYgXvDXp0JHVrbhx3udK3nNvnGsG0xlEV4xVh/v0hBJx
- Oz9aXyqay7sOmCbM96kuSD8LQd+ybEBuW8tVuC+0iGz8y7CQLdzrETQEY
- 3ymriozc52wURoqHHhl4Mfelghnz0ufjWoSd0AGJi4BjJ33zs0bbEuqBs
- gREhsrXH1qOevE2mpJHfd8+Jpkq4d5PmI1d17TKwt5rLnTLeM5kJL8sKb
+ t=1713518438; x=1745054438;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=kLUTdPqERbSM74gcLikb57dC1Eif7yEcCMXkhnb6xPo=;
+ b=d6kTlc73NVNTxh/QKyVCWtfpuKMpwca/nxx4QE+uWkvsktZdxEqXlTP5
+ f5a5gCOqHUQI1aady3cvDCCSKoTuOPVIW6liOhSSEe6bp4iB1PRbl2m0m
+ Vr5ZUWiYRuU71VZ9G2xxti+x6N2OyRp6gWOMotzt0mhmSA62r3uzkmFHv
+ VSUWsW/RdrB1EUKu8s0pp/LBk7PsjQ9V/Q7KPSXShEXAkEvdpyq8w1RIW
+ NBb6TANyMTZ/SCH8kuPCk94m16gjGcP00Tl9ThO0Rdvope0rZH+U3urYq
+ tI49SnVfvB3Wnq2wZb1JHLjHZGXWPBTB8dNEUVTaw5QimKsdwXKmawtSA
  g==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=XwlBy1QD
-Subject: [Intel-wired-lan] [PATCH net-next v10 5/6] ice: Add
- tx_scheduling_layers devlink param
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=d6kTlc73
+Subject: [Intel-wired-lan] [PATCH iwl-next v1] ice: refactor struct
+ ice_vsi_cfg_params to be inside of struct ice_vsi
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -108,345 +106,357 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Pucha Himasekhar Reddy <himasekharx.reddy.pucha@intel.com>, andrew@lunn.ch,
- jiri@resnulli.us, michal.wilczynski@intel.com,
- Mateusz Polchlopek <mateusz.polchlopek@intel.com>, netdev@vger.kernel.org,
- lukasz.czapnik@intel.com, victor.raj@intel.com, anthony.l.nguyen@intel.com,
- horms@kernel.org, przemyslaw.kitszel@intel.com, kuba@kernel.org
+Cc: netdev@vger.kernel.org, Vaishnavi Tipireddy <vaishnavi.tipireddy@intel.com>,
+ anthony.l.nguyen@intel.com, Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Mateusz Polchlopek <mateusz.polchlopek@intel.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Lukasz Czapnik <lukasz.czapnik@intel.com>
+Refactor struct ice_vsi_cfg_params to be embedded into struct ice_vsi.
+Prior to that the members of the struct were scattered around ice_vsi,
+and were copy-pasted for purposes of reinit.
+Now we have struct handy, and it is easier to have something sticky
+in the flags field.
 
-It was observed that Tx performance was inconsistent across all queues
-and/or VSIs and that it was directly connected to existing 9-layer
-topology of the Tx scheduler.
-
-Introduce new private devlink param - tx_scheduling_layers. This parameter
-gives user flexibility to choose the 5-layer transmit scheduler topology
-which helps to smooth out the transmit performance.
-
-Allowed parameter values are 5 and 9.
-
-Example usage:
-
-Show:
-devlink dev param show pci/0000:4b:00.0 name tx_scheduling_layers
-pci/0000:4b:00.0:
-  name tx_scheduling_layers type driver-specific
-    values:
-      cmode permanent value 9
-
-Set:
-devlink dev param set pci/0000:4b:00.0 name tx_scheduling_layers value 5
-cmode permanent
-
-devlink dev param set pci/0000:4b:00.0 name tx_scheduling_layers value 9
-cmode permanent
-
-Signed-off-by: Lukasz Czapnik <lukasz.czapnik@intel.com>
+Suggested-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Tested-by: Pucha Himasekhar Reddy <himasekharx.reddy.pucha@intel.com>
-Co-developed-by: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
+Reviewed-by: Vaishnavi Tipireddy <vaishnavi.tipireddy@intel.com>
 Signed-off-by: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
 ---
- .../net/ethernet/intel/ice/devlink/devlink.c  | 172 +++++++++++++++++-
- .../net/ethernet/intel/ice/ice_adminq_cmd.h   |   9 +
- .../net/ethernet/intel/ice/ice_fw_update.c    |   7 +-
- .../net/ethernet/intel/ice/ice_fw_update.h    |   3 +
- drivers/net/ethernet/intel/ice/ice_nvm.c      |   7 +-
- drivers/net/ethernet/intel/ice/ice_nvm.h      |   3 +
- 6 files changed, 191 insertions(+), 10 deletions(-)
+ .../net/ethernet/intel/ice/devlink/devlink.c  |  6 +--
+ drivers/net/ethernet/intel/ice/ice.h          | 14 ++++---
+ drivers/net/ethernet/intel/ice/ice_lib.c      | 33 ++++++----------
+ drivers/net/ethernet/intel/ice/ice_lib.h      | 39 +------------------
+ drivers/net/ethernet/intel/ice/ice_main.c     |  8 ++--
+ drivers/net/ethernet/intel/ice/ice_sriov.c    |  2 +-
+ drivers/net/ethernet/intel/ice/ice_vf_lib.c   |  8 ++--
+ 7 files changed, 30 insertions(+), 80 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/devlink/devlink.c b/drivers/net/ethernet/intel/ice/devlink/devlink.c
-index acbace240977..d191c5709899 100644
+index be9244bb8bbc..0f1a46636b45 100644
 --- a/drivers/net/ethernet/intel/ice/devlink/devlink.c
 +++ b/drivers/net/ethernet/intel/ice/devlink/devlink.c
-@@ -523,6 +523,156 @@ ice_devlink_reload_empr_finish(struct ice_pf *pf,
- 	return 0;
- }
+@@ -1043,18 +1043,16 @@ static int ice_devlink_set_parent(struct devlink_rate *devlink_rate,
+ static int ice_devlink_reinit_up(struct ice_pf *pf)
+ {
+ 	struct ice_vsi *vsi = ice_get_main_vsi(pf);
+-	struct ice_vsi_cfg_params params;
+ 	int err;
  
-+/**
-+ * ice_get_tx_topo_user_sel - Read user's choice from flash
-+ * @pf: pointer to pf structure
-+ * @layers: value read from flash will be saved here
-+ *
-+ * Reads user's preference for Tx Scheduler Topology Tree from PFA TLV.
-+ *
-+ * Return: zero when read was successful, negative values otherwise.
-+ */
-+static int ice_get_tx_topo_user_sel(struct ice_pf *pf, uint8_t *layers)
-+{
-+	struct ice_aqc_nvm_tx_topo_user_sel usr_sel = {};
-+	struct ice_hw *hw = &pf->hw;
-+	int err;
-+
-+	err = ice_acquire_nvm(hw, ICE_RES_READ);
-+	if (err)
-+		return err;
-+
-+	err = ice_aq_read_nvm(hw, ICE_AQC_NVM_TX_TOPO_MOD_ID, 0,
-+			      sizeof(usr_sel), &usr_sel, true, true, NULL);
-+	if (err)
-+		goto exit_release_res;
-+
-+	if (usr_sel.data & ICE_AQC_NVM_TX_TOPO_USER_SEL)
-+		*layers = ICE_SCHED_5_LAYERS;
-+	else
-+		*layers = ICE_SCHED_9_LAYERS;
-+
-+exit_release_res:
-+	ice_release_nvm(hw);
-+
-+	return err;
-+}
-+
-+/**
-+ * ice_update_tx_topo_user_sel - Save user's preference in flash
-+ * @pf: pointer to pf structure
-+ * @layers: value to be saved in flash
-+ *
-+ * Variable "layers" defines user's preference about number of layers in Tx
-+ * Scheduler Topology Tree. This choice should be stored in PFA TLV field
-+ * and be picked up by driver, next time during init.
-+ *
-+ * Return: zero when save was successful, negative values otherwise.
-+ */
-+static int ice_update_tx_topo_user_sel(struct ice_pf *pf, int layers)
-+{
-+	struct ice_aqc_nvm_tx_topo_user_sel usr_sel = {};
-+	struct ice_hw *hw = &pf->hw;
-+	int err;
-+
-+	err = ice_acquire_nvm(hw, ICE_RES_WRITE);
-+	if (err)
-+		return err;
-+
-+	err = ice_aq_read_nvm(hw, ICE_AQC_NVM_TX_TOPO_MOD_ID, 0,
-+			      sizeof(usr_sel), &usr_sel, true, true, NULL);
-+	if (err)
-+		goto exit_release_res;
-+
-+	if (layers == ICE_SCHED_5_LAYERS)
-+		usr_sel.data |= ICE_AQC_NVM_TX_TOPO_USER_SEL;
-+	else
-+		usr_sel.data &= ~ICE_AQC_NVM_TX_TOPO_USER_SEL;
-+
-+	err = ice_write_one_nvm_block(pf, ICE_AQC_NVM_TX_TOPO_MOD_ID, 2,
-+				      sizeof(usr_sel.data), &usr_sel.data,
-+				      true, NULL, NULL);
-+exit_release_res:
-+	ice_release_nvm(hw);
-+
-+	return err;
-+}
-+
-+/**
-+ * ice_devlink_tx_sched_layers_get - Get tx_scheduling_layers parameter
-+ * @devlink: pointer to the devlink instance
-+ * @id: the parameter ID to set
-+ * @ctx: context to store the parameter value
-+ *
-+ * Return: zero on success and negative value on failure.
-+ */
-+static int ice_devlink_tx_sched_layers_get(struct devlink *devlink, u32 id,
-+					   struct devlink_param_gset_ctx *ctx)
-+{
-+	struct ice_pf *pf = devlink_priv(devlink);
-+	int err;
-+
-+	err = ice_get_tx_topo_user_sel(pf, &ctx->val.vu8);
-+	if (err)
-+		return err;
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_devlink_tx_sched_layers_set - Set tx_scheduling_layers parameter
-+ * @devlink: pointer to the devlink instance
-+ * @id: the parameter ID to set
-+ * @ctx: context to get the parameter value
-+ * @extack: netlink extended ACK structure
-+ *
-+ * Return: zero on success and negative value on failure.
-+ */
-+static int ice_devlink_tx_sched_layers_set(struct devlink *devlink, u32 id,
-+					   struct devlink_param_gset_ctx *ctx,
-+					   struct netlink_ext_ack *extack)
-+{
-+	struct ice_pf *pf = devlink_priv(devlink);
-+	int err;
-+
-+	err = ice_update_tx_topo_user_sel(pf, ctx->val.vu8);
-+	if (err)
-+		return err;
-+
-+	NL_SET_ERR_MSG_MOD(extack,
-+			   "Tx scheduling layers have been changed on this device. You must do the PCI slot powercycle for the change to take effect.");
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_devlink_tx_sched_layers_validate - Validate passed tx_scheduling_layers
-+ *                                        parameter value
-+ * @devlink: unused pointer to devlink instance
-+ * @id: the parameter ID to validate
-+ * @val: value to validate
-+ * @extack: netlink extended ACK structure
-+ *
-+ * Supported values are:
-+ * - 5 - five layers Tx Scheduler Topology Tree
-+ * - 9 - nine layers Tx Scheduler Topology Tree
-+ *
-+ * Return: zero when passed parameter value is supported. Negative value on
-+ * error.
-+ */
-+static int ice_devlink_tx_sched_layers_validate(struct devlink *devlink, u32 id,
-+						union devlink_param_value val,
-+						struct netlink_ext_ack *extack)
-+{
-+	if (val.vu8 != ICE_SCHED_5_LAYERS && val.vu8 != ICE_SCHED_9_LAYERS) {
-+		NL_SET_ERR_MSG_MOD(extack,
-+				   "Wrong number of tx scheduler layers provided.");
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
- /**
-  * ice_tear_down_devlink_rate_tree - removes devlink-rate exported tree
-  * @pf: pf struct
-@@ -1235,6 +1385,11 @@ ice_devlink_enable_iw_validate(struct devlink *devlink, u32 id,
- 	return 0;
- }
+ 	err = ice_init_dev(pf);
+ 	if (err)
+ 		return err;
  
-+enum ice_param_id {
-+	ICE_DEVLINK_PARAM_ID_BASE = DEVLINK_PARAM_GENERIC_ID_MAX,
-+	ICE_DEVLINK_PARAM_ID_TX_SCHED_LAYERS,
-+};
-+
- static const struct devlink_param ice_devlink_params[] = {
- 	DEVLINK_PARAM_GENERIC(ENABLE_ROCE, BIT(DEVLINK_PARAM_CMODE_RUNTIME),
- 			      ice_devlink_enable_roce_get,
-@@ -1244,7 +1399,13 @@ static const struct devlink_param ice_devlink_params[] = {
- 			      ice_devlink_enable_iw_get,
- 			      ice_devlink_enable_iw_set,
- 			      ice_devlink_enable_iw_validate),
+-	params = ice_vsi_to_params(vsi);
+-	params.flags = ICE_VSI_FLAG_INIT;
++	vsi->flags = ICE_VSI_FLAG_INIT;
+ 
+ 	rtnl_lock();
+-	err = ice_vsi_cfg(vsi, &params);
++	err = ice_vsi_cfg(vsi);
+ 	rtnl_unlock();
+ 	if (err)
+ 		goto err_vsi_cfg;
+diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
+index 67a3236ab1fc..6ad8002b22e1 100644
+--- a/drivers/net/ethernet/intel/ice/ice.h
++++ b/drivers/net/ethernet/intel/ice/ice.h
+@@ -331,7 +331,6 @@ struct ice_vsi {
+ 	struct net_device *netdev;
+ 	struct ice_sw *vsw;		 /* switch this VSI is on */
+ 	struct ice_pf *back;		 /* back pointer to PF */
+-	struct ice_port_info *port_info; /* back pointer to port_info */
+ 	struct ice_rx_ring **rx_rings;	 /* Rx ring array */
+ 	struct ice_tx_ring **tx_rings;	 /* Tx ring array */
+ 	struct ice_q_vector **q_vectors; /* q_vector array */
+@@ -349,12 +348,9 @@ struct ice_vsi {
+ 	/* tell if only dynamic irq allocation is allowed */
+ 	bool irq_dyn_alloc;
+ 
+-	enum ice_vsi_type type;
+ 	u16 vsi_num;			/* HW (absolute) index of this VSI */
+ 	u16 idx;			/* software index in pf->vsi[] */
+ 
+-	struct ice_vf *vf;		/* VF associated with this VSI */
 -
-+	DEVLINK_PARAM_DRIVER(ICE_DEVLINK_PARAM_ID_TX_SCHED_LAYERS,
-+			     "tx_scheduling_layers",
-+			     DEVLINK_PARAM_TYPE_U8,
-+			     BIT(DEVLINK_PARAM_CMODE_PERMANENT),
-+			     ice_devlink_tx_sched_layers_get,
-+			     ice_devlink_tx_sched_layers_set,
-+			     ice_devlink_tx_sched_layers_validate),
- };
+ 	u16 num_gfltr;
+ 	u16 num_bfltr;
  
- static void ice_devlink_free(void *devlink_ptr)
-@@ -1304,9 +1465,16 @@ void ice_devlink_unregister(struct ice_pf *pf)
- int ice_devlink_register_params(struct ice_pf *pf)
- {
- 	struct devlink *devlink = priv_to_devlink(pf);
-+	struct ice_hw *hw = &pf->hw;
-+	size_t params_size;
+@@ -446,12 +442,18 @@ struct ice_vsi {
+ 	u8 old_numtc;
+ 	u16 old_ena_tc;
+ 
+-	struct ice_channel *ch;
+-
+ 	/* setup back reference, to which aggregator node this VSI
+ 	 * corresponds to
+ 	 */
+ 	struct ice_agg_node *agg_node;
 +
-+	params_size =  ARRAY_SIZE(ice_devlink_params);
-+
-+	if (!hw->func_caps.common_cap.tx_sched_topo_comp_mode_en)
-+		params_size--;
++	struct_group_tagged(ice_vsi_cfg_params, params,
++		struct ice_port_info *port_info; /* back pointer to port_info */
++		struct ice_channel *ch; /* VSI's channel structure, may be NULL */
++		struct ice_vf *vf; /* VF associated with this VSI, may be NULL */
++		u32 flags; /* VSI flags used for rebuild and configuration */
++		enum ice_vsi_type type; /* the type of the VSI */
++	);
+ } ____cacheline_internodealigned_in_smp;
  
- 	return devl_params_register(devlink, ice_devlink_params,
--				    ARRAY_SIZE(ice_devlink_params));
-+				    params_size);
- }
- 
- void ice_devlink_unregister_params(struct ice_pf *pf)
-diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-index 0487c425ae24..e76c388b9905 100644
---- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-@@ -1684,6 +1684,15 @@ struct ice_aqc_nvm {
- 
- #define ICE_AQC_NVM_START_POINT			0
- 
-+#define ICE_AQC_NVM_TX_TOPO_MOD_ID		0x14B
-+
-+struct ice_aqc_nvm_tx_topo_user_sel {
-+	__le16 length;
-+	u8 data;
-+#define ICE_AQC_NVM_TX_TOPO_USER_SEL	BIT(4)
-+	u8 reserved;
-+};
-+
- /* NVM Checksum Command (direct, 0x0706) */
- struct ice_aqc_nvm_checksum {
- 	u8 flags;
-diff --git a/drivers/net/ethernet/intel/ice/ice_fw_update.c b/drivers/net/ethernet/intel/ice/ice_fw_update.c
-index 319a2d6fe26c..f81db6c107c8 100644
---- a/drivers/net/ethernet/intel/ice/ice_fw_update.c
-+++ b/drivers/net/ethernet/intel/ice/ice_fw_update.c
-@@ -286,10 +286,9 @@ ice_send_component_table(struct pldmfw *context, struct pldmfw_component *compon
-  *
-  * Returns: zero on success, or a negative error code on failure.
+ /* struct that defines an interrupt vector */
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index d06e7c82c433..5371e91f6bbb 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -2227,10 +2227,8 @@ static int ice_vsi_cfg_tc_lan(struct ice_pf *pf, struct ice_vsi *vsi)
+ /**
+  * ice_vsi_cfg_def - configure default VSI based on the type
+  * @vsi: pointer to VSI
+- * @params: the parameters to configure this VSI with
   */
 -static int
--ice_write_one_nvm_block(struct ice_pf *pf, u16 module, u32 offset,
--			u16 block_size, u8 *block, bool last_cmd,
--			u8 *reset_level, struct netlink_ext_ack *extack)
-+int ice_write_one_nvm_block(struct ice_pf *pf, u16 module, u32 offset,
-+			    u16 block_size, u8 *block, bool last_cmd,
-+			    u8 *reset_level, struct netlink_ext_ack *extack)
+-ice_vsi_cfg_def(struct ice_vsi *vsi, struct ice_vsi_cfg_params *params)
++static int ice_vsi_cfg_def(struct ice_vsi *vsi)
  {
- 	u16 completion_module, completion_retval;
- 	struct device *dev = ice_pf_to_dev(pf);
-diff --git a/drivers/net/ethernet/intel/ice/ice_fw_update.h b/drivers/net/ethernet/intel/ice/ice_fw_update.h
-index 750574885716..04b200462757 100644
---- a/drivers/net/ethernet/intel/ice/ice_fw_update.h
-+++ b/drivers/net/ethernet/intel/ice/ice_fw_update.h
-@@ -9,5 +9,8 @@ int ice_devlink_flash_update(struct devlink *devlink,
- 			     struct netlink_ext_ack *extack);
- int ice_get_pending_updates(struct ice_pf *pf, u8 *pending,
- 			    struct netlink_ext_ack *extack);
-+int ice_write_one_nvm_block(struct ice_pf *pf, u16 module, u32 offset,
-+			    u16 block_size, u8 *block, bool last_cmd,
-+			    u8 *reset_level, struct netlink_ext_ack *extack);
+ 	struct device *dev = ice_pf_to_dev(vsi->back);
+ 	struct ice_pf *pf = vsi->back;
+@@ -2238,7 +2236,7 @@ ice_vsi_cfg_def(struct ice_vsi *vsi, struct ice_vsi_cfg_params *params)
  
- #endif
-diff --git a/drivers/net/ethernet/intel/ice/ice_nvm.c b/drivers/net/ethernet/intel/ice/ice_nvm.c
-index d4e05d2cb30c..84eab92dc03c 100644
---- a/drivers/net/ethernet/intel/ice/ice_nvm.c
-+++ b/drivers/net/ethernet/intel/ice/ice_nvm.c
-@@ -18,10 +18,9 @@
-  *
-  * Read the NVM using the admin queue commands (0x0701)
+ 	vsi->vsw = pf->first_sw;
+ 
+-	ret = ice_vsi_alloc_def(vsi, params->ch);
++	ret = ice_vsi_alloc_def(vsi, vsi->ch);
+ 	if (ret)
+ 		return ret;
+ 
+@@ -2263,7 +2261,7 @@ ice_vsi_cfg_def(struct ice_vsi *vsi, struct ice_vsi_cfg_params *params)
+ 	ice_vsi_set_tc_cfg(vsi);
+ 
+ 	/* create the VSI */
+-	ret = ice_vsi_init(vsi, params->flags);
++	ret = ice_vsi_init(vsi, vsi->flags);
+ 	if (ret)
+ 		goto unroll_get_qs;
+ 
+@@ -2383,23 +2381,16 @@ ice_vsi_cfg_def(struct ice_vsi *vsi, struct ice_vsi_cfg_params *params)
+ /**
+  * ice_vsi_cfg - configure a previously allocated VSI
+  * @vsi: pointer to VSI
+- * @params: parameters used to configure this VSI
   */
--static int
--ice_aq_read_nvm(struct ice_hw *hw, u16 module_typeid, u32 offset, u16 length,
--		void *data, bool last_command, bool read_shadow_ram,
--		struct ice_sq_cd *cd)
-+int ice_aq_read_nvm(struct ice_hw *hw, u16 module_typeid, u32 offset,
-+		    u16 length, void *data, bool last_command,
-+		    bool read_shadow_ram, struct ice_sq_cd *cd)
+-int ice_vsi_cfg(struct ice_vsi *vsi, struct ice_vsi_cfg_params *params)
++int ice_vsi_cfg(struct ice_vsi *vsi)
  {
- 	struct ice_aq_desc desc;
- 	struct ice_aqc_nvm *cmd;
-diff --git a/drivers/net/ethernet/intel/ice/ice_nvm.h b/drivers/net/ethernet/intel/ice/ice_nvm.h
-index 774c2317967d..63cdc6bdac58 100644
---- a/drivers/net/ethernet/intel/ice/ice_nvm.h
-+++ b/drivers/net/ethernet/intel/ice/ice_nvm.h
-@@ -14,6 +14,9 @@ struct ice_orom_civd_info {
+ 	struct ice_pf *pf = vsi->back;
+ 	int ret;
  
- int ice_acquire_nvm(struct ice_hw *hw, enum ice_aq_res_access_type access);
- void ice_release_nvm(struct ice_hw *hw);
-+int ice_aq_read_nvm(struct ice_hw *hw, u16 module_typeid, u32 offset,
-+		    u16 length, void *data, bool last_command,
-+		    bool read_shadow_ram, struct ice_sq_cd *cd);
- int
- ice_read_flat_nvm(struct ice_hw *hw, u32 offset, u32 *length, u8 *data,
- 		  bool read_shadow_ram);
+-	if (WARN_ON(params->type == ICE_VSI_VF && !params->vf))
++	if (WARN_ON(vsi->type == ICE_VSI_VF && !vsi->vf))
+ 		return -EINVAL;
+ 
+-	vsi->type = params->type;
+-	vsi->port_info = params->pi;
+-
+-	/* For VSIs which don't have a connected VF, this will be NULL */
+-	vsi->vf = params->vf;
+-
+-	ret = ice_vsi_cfg_def(vsi, params);
++	ret = ice_vsi_cfg_def(vsi);
+ 	if (ret)
+ 		return ret;
+ 
+@@ -2485,7 +2476,7 @@ ice_vsi_setup(struct ice_pf *pf, struct ice_vsi_cfg_params *params)
+ 	 * a port_info structure for it.
+ 	 */
+ 	if (WARN_ON(!(params->flags & ICE_VSI_FLAG_INIT)) ||
+-	    WARN_ON(!params->pi))
++	    WARN_ON(!params->port_info))
+ 		return NULL;
+ 
+ 	vsi = ice_vsi_alloc(pf);
+@@ -2494,7 +2485,8 @@ ice_vsi_setup(struct ice_pf *pf, struct ice_vsi_cfg_params *params)
+ 		return NULL;
+ 	}
+ 
+-	ret = ice_vsi_cfg(vsi, params);
++	vsi->params = *params;
++	ret = ice_vsi_cfg(vsi);
+ 	if (ret)
+ 		goto err_vsi_cfg;
+ 
+@@ -3041,7 +3033,6 @@ ice_vsi_realloc_stat_arrays(struct ice_vsi *vsi)
+  */
+ int ice_vsi_rebuild(struct ice_vsi *vsi, u32 vsi_flags)
+ {
+-	struct ice_vsi_cfg_params params = {};
+ 	struct ice_coalesce_stored *coalesce;
+ 	int prev_num_q_vectors;
+ 	struct ice_pf *pf;
+@@ -3050,9 +3041,7 @@ int ice_vsi_rebuild(struct ice_vsi *vsi, u32 vsi_flags)
+ 	if (!vsi)
+ 		return -EINVAL;
+ 
+-	params = ice_vsi_to_params(vsi);
+-	params.flags = vsi_flags;
+-
++	vsi->flags = vsi_flags;
+ 	pf = vsi->back;
+ 	if (WARN_ON(vsi->type == ICE_VSI_VF && !vsi->vf))
+ 		return -EINVAL;
+@@ -3062,7 +3051,7 @@ int ice_vsi_rebuild(struct ice_vsi *vsi, u32 vsi_flags)
+ 		goto err_vsi_cfg;
+ 
+ 	ice_vsi_decfg(vsi);
+-	ret = ice_vsi_cfg_def(vsi, &params);
++	ret = ice_vsi_cfg_def(vsi);
+ 	if (ret)
+ 		goto err_vsi_cfg;
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.h b/drivers/net/ethernet/intel/ice/ice_lib.h
+index 9cd23afe5f15..94ce8964dda6 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.h
++++ b/drivers/net/ethernet/intel/ice/ice_lib.h
+@@ -11,43 +11,6 @@
+ #define ICE_VSI_FLAG_INIT	BIT(0)
+ #define ICE_VSI_FLAG_NO_INIT	0
+ 
+-/**
+- * struct ice_vsi_cfg_params - VSI configuration parameters
+- * @pi: pointer to the port_info instance for the VSI
+- * @ch: pointer to the channel structure for the VSI, may be NULL
+- * @vf: pointer to the VF associated with this VSI, may be NULL
+- * @type: the type of VSI to configure
+- * @flags: VSI flags used for rebuild and configuration
+- *
+- * Parameter structure used when configuring a new VSI.
+- */
+-struct ice_vsi_cfg_params {
+-	struct ice_port_info *pi;
+-	struct ice_channel *ch;
+-	struct ice_vf *vf;
+-	enum ice_vsi_type type;
+-	u32 flags;
+-};
+-
+-/**
+- * ice_vsi_to_params - Get parameters for an existing VSI
+- * @vsi: the VSI to get parameters for
+- *
+- * Fill a parameter structure for reconfiguring a VSI with its current
+- * parameters, such as during a rebuild operation.
+- */
+-static inline struct ice_vsi_cfg_params ice_vsi_to_params(struct ice_vsi *vsi)
+-{
+-	struct ice_vsi_cfg_params params = {};
+-
+-	params.pi = vsi->port_info;
+-	params.ch = vsi->ch;
+-	params.vf = vsi->vf;
+-	params.type = vsi->type;
+-
+-	return params;
+-}
+-
+ const char *ice_vsi_type_str(enum ice_vsi_type vsi_type);
+ 
+ bool ice_pf_state_is_nominal(struct ice_pf *pf);
+@@ -101,7 +64,7 @@ void ice_vsi_decfg(struct ice_vsi *vsi);
+ void ice_dis_vsi(struct ice_vsi *vsi, bool locked);
+ 
+ int ice_vsi_rebuild(struct ice_vsi *vsi, u32 vsi_flags);
+-int ice_vsi_cfg(struct ice_vsi *vsi, struct ice_vsi_cfg_params *params);
++int ice_vsi_cfg(struct ice_vsi *vsi);
+ 
+ bool ice_is_reset_in_progress(unsigned long *state);
+ int ice_wait_for_reset(struct ice_pf *pf, unsigned long timeout);
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 80bc83f6e1ab..6e4d261d9e84 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -3684,7 +3684,7 @@ ice_pf_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi)
+ 	struct ice_vsi_cfg_params params = {};
+ 
+ 	params.type = ICE_VSI_PF;
+-	params.pi = pi;
++	params.port_info = pi;
+ 	params.flags = ICE_VSI_FLAG_INIT;
+ 
+ 	return ice_vsi_setup(pf, &params);
+@@ -3697,7 +3697,7 @@ ice_chnl_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi,
+ 	struct ice_vsi_cfg_params params = {};
+ 
+ 	params.type = ICE_VSI_CHNL;
+-	params.pi = pi;
++	params.port_info = pi;
+ 	params.ch = ch;
+ 	params.flags = ICE_VSI_FLAG_INIT;
+ 
+@@ -3718,7 +3718,7 @@ ice_ctrl_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi)
+ 	struct ice_vsi_cfg_params params = {};
+ 
+ 	params.type = ICE_VSI_CTRL;
+-	params.pi = pi;
++	params.port_info = pi;
+ 	params.flags = ICE_VSI_FLAG_INIT;
+ 
+ 	return ice_vsi_setup(pf, &params);
+@@ -3738,7 +3738,7 @@ ice_lb_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi)
+ 	struct ice_vsi_cfg_params params = {};
+ 
+ 	params.type = ICE_VSI_LB;
+-	params.pi = pi;
++	params.port_info = pi;
+ 	params.flags = ICE_VSI_FLAG_INIT;
+ 
+ 	return ice_vsi_setup(pf, &params);
+diff --git a/drivers/net/ethernet/intel/ice/ice_sriov.c b/drivers/net/ethernet/intel/ice/ice_sriov.c
+index a60dacf8942a..067712f4923f 100644
+--- a/drivers/net/ethernet/intel/ice/ice_sriov.c
++++ b/drivers/net/ethernet/intel/ice/ice_sriov.c
+@@ -225,7 +225,7 @@ static struct ice_vsi *ice_vf_vsi_setup(struct ice_vf *vf)
+ 	struct ice_vsi *vsi;
+ 
+ 	params.type = ICE_VSI_VF;
+-	params.pi = ice_vf_get_port_info(vf);
++	params.port_info = ice_vf_get_port_info(vf);
+ 	params.vf = vf;
+ 	params.flags = ICE_VSI_FLAG_INIT;
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_vf_lib.c b/drivers/net/ethernet/intel/ice/ice_vf_lib.c
+index c51e2482cad2..cf9f56a39b61 100644
+--- a/drivers/net/ethernet/intel/ice/ice_vf_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_vf_lib.c
+@@ -259,20 +259,18 @@ static void ice_vf_pre_vsi_rebuild(struct ice_vf *vf)
+ int ice_vf_reconfig_vsi(struct ice_vf *vf)
+ {
+ 	struct ice_vsi *vsi = ice_get_vf_vsi(vf);
+-	struct ice_vsi_cfg_params params = {};
+ 	struct ice_pf *pf = vf->pf;
+ 	int err;
+ 
+ 	if (WARN_ON(!vsi))
+ 		return -EINVAL;
+ 
+-	params = ice_vsi_to_params(vsi);
+-	params.flags = ICE_VSI_FLAG_NO_INIT;
++	vsi->flags = ICE_VSI_FLAG_NO_INIT;
+ 
+ 	ice_vsi_decfg(vsi);
+ 	ice_fltr_remove_all(vsi);
+ 
+-	err = ice_vsi_cfg(vsi, &params);
++	err = ice_vsi_cfg(vsi);
+ 	if (err) {
+ 		dev_err(ice_pf_to_dev(pf),
+ 			"Failed to reconfigure the VF%u's VSI, error %d\n",
+@@ -1243,7 +1241,7 @@ struct ice_vsi *ice_vf_ctrl_vsi_setup(struct ice_vf *vf)
+ 	struct ice_vsi *vsi;
+ 
+ 	params.type = ICE_VSI_CTRL;
+-	params.pi = ice_vf_get_port_info(vf);
++	params.port_info = ice_vf_get_port_info(vf);
+ 	params.vf = vf;
+ 	params.flags = ICE_VSI_FLAG_INIT;
+ 
 -- 
 2.38.1
 
