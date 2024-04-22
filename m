@@ -4,84 +4,84 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 50D9AC10F16
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 22 Apr 2024 17:39:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 368D5C10F1A
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 22 Apr 2024 17:39:39 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 1A28660AAA;
+	by smtp3.osuosl.org (Postfix) with ESMTP id E6EFD60AC9;
 	Mon, 22 Apr 2024 17:39:38 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 90Z2IdCGkkZ6; Mon, 22 Apr 2024 17:39:37 +0000 (UTC)
+ id YYXAvdG_YtSa; Mon, 22 Apr 2024 17:39:38 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4752A60AAE
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 587D4608AB
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1713807577;
-	bh=jL5u74w472gVJgaoFOuurGlZOko3LllmO61ppXmRiz4=;
+	s=default; t=1713807578;
+	bh=VjDIyXeRN5F/Rz1j7hLtt0c+k3OrZr+6KVwQKgEg9NA=;
 	h=From:Date:References:In-Reply-To:To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=c7eMw2rD3xWjPY/C6YhIA0bQZVJgKb9I2dZUr0PsCBfIMd1mgor7jZQtXNGd6RSLR
-	 rZjjpDIfO5AZm+iFXBL1TAcGn5wbk2K/ROOtqC2f8KTQLubeIXdI3bvzgC1DWDLoCq
-	 +LQSpHHiP9xYJe+AIeCETAKfpjAhx2sHhKnhh74+CtRTAh1EWJ4w0L8OVnfXmIIK1J
-	 jSCjlJFPtHHVMkgIR8TUKKiUhjwHaRrV+SDbOjJnZOz5VZiGMIZTu4Uaa2WwidvkZH
-	 uO7hCNrN7b/sf9ftqsiDOStrrHAgexNd6D1uWTEsKg05q8Dv8VlOar4QTwhRcVlp8B
-	 VFaJArTLIUVcw==
+	b=Htkk5YsWAxMaPa+Ld5zwZOEUTijxgI+Qv/SxOj2yrnCzN+lpjFSkewQBb47jaAytH
+	 sm2SQabCAATEbBHueSGJxAoZ0QI10FeRK8LjAjV1VY4D+bxvZGBN77diT0HvSRv/22
+	 d4OJIjflOJigVsrN/6M/6CVN++rW0umwaqAW235Q1YgkFMeGBQfW9Iwepxbe/6DuQT
+	 EYjRVQvbExqODgAbWNwsZ9x7vy4dNimLzT9gBZPGBV8zeCZ5qCS18tqZfs8Z4jIZK9
+	 /L8hRdxvBPSwTNzVOyg5jzsPsMZFWh53HcIpubnQtRfIBus4rCrSFZl1dOxd0MoMqL
+	 s8IJrNR2ABtIw==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 4752A60AAE;
-	Mon, 22 Apr 2024 17:39:37 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 587D4608AB;
+	Mon, 22 Apr 2024 17:39:38 +0000 (UTC)
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 7B4D61BF48B
- for <intel-wired-lan@lists.osuosl.org>; Mon, 22 Apr 2024 16:42:47 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 684241BF48B
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 22 Apr 2024 16:42:56 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 68B9760731
- for <intel-wired-lan@lists.osuosl.org>; Mon, 22 Apr 2024 16:42:47 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 5576060731
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 22 Apr 2024 16:42:56 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id p57TMPhEtUSc for <intel-wired-lan@lists.osuosl.org>;
- Mon, 22 Apr 2024 16:42:46 +0000 (UTC)
+ id ZLblDNlEzb9J for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 22 Apr 2024 16:42:55 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2607:f8b0:4864:20::636; helo=mail-pl1-x636.google.com;
+ client-ip=2607:f8b0:4864:20::62b; helo=mail-pl1-x62b.google.com;
  envelope-from=minhquangbui99@gmail.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org BBA5C60708
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org BBA5C60708
-Received: from mail-pl1-x636.google.com (mail-pl1-x636.google.com
- [IPv6:2607:f8b0:4864:20::636])
- by smtp3.osuosl.org (Postfix) with ESMTPS id BBA5C60708
- for <intel-wired-lan@lists.osuosl.org>; Mon, 22 Apr 2024 16:42:46 +0000 (UTC)
-Received: by mail-pl1-x636.google.com with SMTP id
- d9443c01a7336-1e65b29f703so33703515ad.3
- for <intel-wired-lan@lists.osuosl.org>; Mon, 22 Apr 2024 09:42:46 -0700 (PDT)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 96D3E60708
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 96D3E60708
+Received: from mail-pl1-x62b.google.com (mail-pl1-x62b.google.com
+ [IPv6:2607:f8b0:4864:20::62b])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 96D3E60708
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 22 Apr 2024 16:42:55 +0000 (UTC)
+Received: by mail-pl1-x62b.google.com with SMTP id
+ d9443c01a7336-1e86d56b3bcso27541695ad.1
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 22 Apr 2024 09:42:55 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20230601; t=1713804166; x=1714408966;
+ d=1e100.net; s=20230601; t=1713804175; x=1714408975;
  h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
  :mime-version:subject:date:from:x-gm-message-state:from:to:cc
  :subject:date:message-id:reply-to;
- bh=jL5u74w472gVJgaoFOuurGlZOko3LllmO61ppXmRiz4=;
- b=K77NQRzBvcC1sapV2vf8mpsgnwOPlWIuF00wYqzd2Z6K/oXpcjFu0ejyhnCbDp2Nyu
- C2PJuXhMXMkb1T7sOeYTrlftTggvBguxV+nk8bnRKcFOnTAwUDfiUNVhrfOaV+BR9gZH
- GM0F3y5LtkmrLVm+pJjMDzM0yTEqNnl6pHVC4cH0GoFJb/xEbmRAtzCxdv20FtBfalBu
- XudPvPl1YQsdSBPhJh4ygjiZegN09zSsgvi+iKPApO2wPiV9eSItbQE4dRDyos3BZgPn
- rTEZrY/IC8AD7tdOT8bkeuI0if0ueh0+nZRE3Q2tVpV35lrn4HYapj069K/01/0JkHbu
- k29g==
-X-Gm-Message-State: AOJu0YyptjtUPDIOS8dWeptzRXZ/uRC5PeV4L+j25BjxdU0Tzs/0j0yE
- BDV38xgk5+CpdPV2UXUMbGuGRRMF5MtLpoVMQSDOez5PFDaVMs6P
-X-Google-Smtp-Source: AGHT+IGFYxmbMrycOqL+3S4jQuGH3EvQ4YJVKxorFUyzvblrMx0EhcdYzSTzQFFqrVCB/jUZ0HpnMA==
-X-Received: by 2002:a17:902:b187:b0:1e4:17e4:3a30 with SMTP id
- s7-20020a170902b18700b001e417e43a30mr9577651plr.31.1713804166091; 
- Mon, 22 Apr 2024 09:42:46 -0700 (PDT)
+ bh=VjDIyXeRN5F/Rz1j7hLtt0c+k3OrZr+6KVwQKgEg9NA=;
+ b=Sm1ROCfRuT8lszqPNwY4xISHReF2SaZmEGb5R6D4nTnWLE2WF3A+nl/0QAQrHlJKan
+ 2soFJpFP89DcS/qd0w7flUpIxRCQOA8sE5hu0pQdMHj6MzlwUEj447r1GDfrNUXeCADt
+ uAAJ0xWZIRrA1CobkRbVoZ/dazo3/AJVF7jmbYByatL73QEIvaAqVwF0Mv+h9tFaR1HY
+ Jl9xBbt7mwQrSZNzZ6jkPBgdCVhZOqxRClE5tp0R035IEl5fMhgBCp0Tih354hW1I0sh
+ hxqnB4lIkMTRfQ6SNdOa5xdVpGgUSkhT2uNjHsEdB1yvAcfY+JlrZRPb4Aq3dBAaDMF8
+ igxg==
+X-Gm-Message-State: AOJu0Yzuv8/e5LBTmzFtO6drmnerbrRo1cAN1Vb9sIWfakoXczbdoVOY
+ wwPGrTPrRloXX+Rt0/ldFySC8Bu8G92OfNq+YUm1N+9S6aoJIThm
+X-Google-Smtp-Source: AGHT+IEBSDCtqMN9don4XWWjqMotOgj9q/MREDNxdL5MkB6wNycQQ0VxWmkAd//5A3lFd861WFvO0g==
+X-Received: by 2002:a17:903:120e:b0:1e3:dfdc:6972 with SMTP id
+ l14-20020a170903120e00b001e3dfdc6972mr13052319plh.9.1713804174824; 
+ Mon, 22 Apr 2024 09:42:54 -0700 (PDT)
 Received: from [127.0.1.1] ([2001:ee0:50f5:5d0:f32d:f608:a763:3732])
  by smtp.googlemail.com with ESMTPSA id
- p3-20020a170902780300b001e7b8c21ebesm8461702pll.225.2024.04.22.09.42.37
+ p3-20020a170902780300b001e7b8c21ebesm8461702pll.225.2024.04.22.09.42.46
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 22 Apr 2024 09:42:45 -0700 (PDT)
+ Mon, 22 Apr 2024 09:42:54 -0700 (PDT)
 From: Bui Quang Minh <minhquangbui99@gmail.com>
-Date: Mon, 22 Apr 2024 23:41:39 +0700
+Date: Mon, 22 Apr 2024 23:41:40 +0700
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20240422-fix-oob-read-v1-4-e02854c30174@gmail.com>
+Message-Id: <20240422-fix-oob-read-v1-5-e02854c30174@gmail.com>
 References: <20240422-fix-oob-read-v1-0-e02854c30174@gmail.com>
 In-Reply-To: <20240422-fix-oob-read-v1-0-e02854c30174@gmail.com>
 To: Jesse Brandeburg <jesse.brandeburg@intel.com>, 
@@ -108,24 +108,24 @@ To: Jesse Brandeburg <jesse.brandeburg@intel.com>,
 X-Mailer: b4 0.13.0
 X-Mailman-Approved-At: Mon, 22 Apr 2024 17:39:32 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20230601; t=1713804166; x=1714408966; darn=lists.osuosl.org;
+ d=gmail.com; s=20230601; t=1713804175; x=1714408975; darn=lists.osuosl.org;
  h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
  :mime-version:subject:date:from:from:to:cc:subject:date:message-id
  :reply-to;
- bh=jL5u74w472gVJgaoFOuurGlZOko3LllmO61ppXmRiz4=;
- b=QeU6F/2LgqSmR+cftFc+aonw940m/coJsJZw2Fnr2VpKHPrSrRy9mfFhK4l1q1QolO
- UQ8CIrwwdK+PHZbfaaRsHKYDU3HQk9f/2Nk03r+sRWYWWV9NOTf6dYmh2KMWEU6cORZx
- d2H+vp+ZaUKDmn4vgQ6Ipgk3I6UEjO1DZdn6QWvsUoTxj6cwOGgi3sFRbKVsuBik/9Ea
- KnjnvExafS8i6UDcgtSrwWCSEzGhKtw4/OPZ9qdP4+hiQBJPvui2d63Gkpgl+86H89Dl
- gHPL5VbCdOI8Jq9wH+mKLbzazKq4QyActWcvevwjsiiMFhAc90r5+RIb0Ny193iFRnPl
- WYZw==
+ bh=VjDIyXeRN5F/Rz1j7hLtt0c+k3OrZr+6KVwQKgEg9NA=;
+ b=XX2dtsGNp9JAG8nTrtlh09Ifjl976HrgpIqH4fagm8eJwLHXFAuiq9jlolkC4Dw/1I
+ Cb6/yAQvN1tR4xvOyx0jhmiw3EGRuzRtaPvESA7Nxti+NxZ6RdquV2CGxERwoExgGF4B
+ +JRY4syjsp52cQq4Joky3RBZndbQEa/rP9VV2gkfZ1pzqLFc281I/bndpnavCXGdxwPo
+ 8+f8p9RCDZakQVaZpJ+2l8gRQUbsyTq81VdOvgraysZdeWMuM3wXdHm7btfvkij+VQ43
+ FN1q3US91c7XoPbeZ/2Xgv5q4geJpxi1bcmgTtIZm93BWYUeBQsbz3QlUXqdcqt87RAR
+ V+8w==
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=gmail.com
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
- header.a=rsa-sha256 header.s=20230601 header.b=QeU6F/2L
-Subject: [Intel-wired-lan] [PATCH 4/5] drivers/scsi/qedf: ensure the copied
+ header.a=rsa-sha256 header.s=20230601 header.b=XX2dtsGN
+Subject: [Intel-wired-lan] [PATCH 5/5] drivers/s390/cio: ensure the copied
  buf is NULL terminated
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
@@ -147,30 +147,35 @@ Cc: Jens Axboe <axboe@kernel.dk>, linux-s390@vger.kernel.org,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Currently, we allocate a count-sized kernel buffer and copy count from
-userspace to that buffer. Later, we use kstrtouint on this buffer but we
-don't ensure that the string is terminated inside the buffer, this can
-lead to OOB read when using kstrtouint. Fix this issue by using
-memdup_user_nul instead of memdup_user.
+Currently, we allocate a lbuf-sized kernel buffer and copy lbuf from
+userspace to that buffer. Later, we use scanf on this buffer but we don't
+ensure that the string is terminated inside the buffer, this can lead to
+OOB read when using scanf. Fix this issue by allocating 1 more byte to at
+the end of buffer and write NULL terminator to the end of buffer after
+userspace copying.
 
-Fixes: 61d8658b4a43 ("scsi: qedf: Add QLogic FastLinQ offload FCoE driver framework.")
+Fixes: a4f17cc72671 ("s390/cio: add CRW inject functionality")
 Signed-off-by: Bui Quang Minh <minhquangbui99@gmail.com>
 ---
- drivers/scsi/qedf/qedf_debugfs.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/s390/cio/cio_inject.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/scsi/qedf/qedf_debugfs.c b/drivers/scsi/qedf/qedf_debugfs.c
-index 451fd236bfd0..96174353e389 100644
---- a/drivers/scsi/qedf/qedf_debugfs.c
-+++ b/drivers/scsi/qedf/qedf_debugfs.c
-@@ -170,7 +170,7 @@ qedf_dbg_debug_cmd_write(struct file *filp, const char __user *buffer,
- 	if (!count || *ppos)
- 		return 0;
+diff --git a/drivers/s390/cio/cio_inject.c b/drivers/s390/cio/cio_inject.c
+index 8613fa937237..9b69fbf49f60 100644
+--- a/drivers/s390/cio/cio_inject.c
++++ b/drivers/s390/cio/cio_inject.c
+@@ -95,10 +95,11 @@ static ssize_t crw_inject_write(struct file *file, const char __user *buf,
+ 		return -EINVAL;
+ 	}
  
--	kern_buf = memdup_user(buffer, count);
-+	kern_buf = memdup_user_nul(buffer, count);
- 	if (IS_ERR(kern_buf))
- 		return PTR_ERR(kern_buf);
+-	buffer = vmemdup_user(buf, lbuf);
++	buffer = vmemdup_user(buf, lbuf + 1);
+ 	if (IS_ERR(buffer))
+ 		return -ENOMEM;
+ 
++	buffer[lbuf] = '\0';
+ 	rc = sscanf(buffer, "%x %x %x %x %x %x %x", &slct, &oflw, &chn, &rsc, &anc,
+ 		    &erc, &rsid);
  
 
 -- 
