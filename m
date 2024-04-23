@@ -1,75 +1,114 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 512C9C4345F
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 23 Apr 2024 11:52:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 729F1C4345F
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 23 Apr 2024 13:14:40 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 0715441181;
-	Tue, 23 Apr 2024 11:52:37 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 1E6FA406D2;
+	Tue, 23 Apr 2024 13:14:40 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id C6f2GWx92v99; Tue, 23 Apr 2024 11:52:36 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id FDegyTBNnxpC; Tue, 23 Apr 2024 13:14:38 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 5832340464
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 522C640534
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1713873156;
-	bh=b08ZWZnzYPmUi2xmY3LoMKTD0DVBIwvuj/6aUIUX0WM=;
-	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
+	s=default; t=1713878078;
+	bh=1qmA1p4TjETBn8tLveLCfp0nlOJRrmTf789dX65XA5s=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=XiNjft92y4kJamSzcYuvnJhq9zaZk0DpSaQ0f2uThgjTXYd7laZev1W0KHg32bXHt
-	 AKKRxkOaPd7SDxW5tFkNlPLutoA6nOKKke9jmLFytr2oOrlMTm5MfJcoBE8b/EOxrB
-	 y7UA8y1B+lrL2C4hvxkdnhf/x7t+EUTykcqrkEX/OQw/9I1VSb9hSdOJqOi4rdZ0zN
-	 5f7RdSki9gSfW+2Z7NTRGBiKKYOAvDvl6p/ZyocAtiuFqHwr40RcfgduySGqH/CFto
-	 FU532qMznGASBB9xkb8Tj6yVrXceCZcDPueKR2dBcvhSKiXg9URX/tGtOvMP6WVzZn
-	 EGfHvDW+Yh4ug==
+	b=KwqCgCIftCzfzEVDt1DaUUEa2QlBrPWPnV69VyVcEDeDsWYVbUqrhTB+oNZ++QCnQ
+	 MoTlblETgjAuiGqiyRTK48s77mtQsM0njTrKNBY3StVRVA5eXb/0GOMPphxWKUZ7EC
+	 IObJ/nHwnDMSQnBbMR+pevbiaTWClF9rnDda0FHFFXLabXEvDNd93Y2fW/xFsgtATl
+	 L1J/nnq+bvXzryiywN4IxN+lDwBpT/VicbDRAwAgdc+wcBbITKxW0V9nOF2PTForM8
+	 GUCIXapJ86UMxbDBmgvX3uW65gLgGWzqePg1xkdyDlCTHVwzzGHGZU1K87K+loBD9I
+	 OTbM3B51SbcZQ==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 5832340464;
-	Tue, 23 Apr 2024 11:52:36 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 7546F1BF5B5
- for <intel-wired-lan@lists.osuosl.org>; Tue, 23 Apr 2024 11:52:35 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 522C640534;
+	Tue, 23 Apr 2024 13:14:38 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 0C88B1BF390
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 23 Apr 2024 13:14:37 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 5D7A940464
- for <intel-wired-lan@lists.osuosl.org>; Tue, 23 Apr 2024 11:52:35 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id E9C4981340
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 23 Apr 2024 13:14:36 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 9RhC3uKnPZzA for <intel-wired-lan@lists.osuosl.org>;
- Tue, 23 Apr 2024 11:52:34 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=141.14.17.11;
- helo=mx3.molgen.mpg.de; envelope-from=pmenzel@molgen.mpg.de;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 21D61400D9
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 21D61400D9
-Received: from mx3.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 21D61400D9
- for <intel-wired-lan@lists.osuosl.org>; Tue, 23 Apr 2024 11:52:32 +0000 (UTC)
-Received: from [141.14.220.34] (g34.guest.molgen.mpg.de [141.14.220.34])
- (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested) (Authenticated sender: pmenzel)
- by mx.molgen.mpg.de (Postfix) with ESMTPSA id B75D061E5FE36;
- Tue, 23 Apr 2024 13:52:26 +0200 (CEST)
-Message-ID: <5d30a9df-224e-4285-94d1-53f6995d648a@molgen.mpg.de>
-Date: Tue, 23 Apr 2024 13:52:26 +0200
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id iv47hLDmoOWu for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 23 Apr 2024 13:14:35 +0000 (UTC)
+Received-SPF: None (mailfrom) identity=mailfrom;
+ client-ip=2a00:1450:4864:20::435; helo=mail-wr1-x435.google.com;
+ envelope-from=jiri@resnulli.us; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 0F6328132F
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 0F6328132F
+Received: from mail-wr1-x435.google.com (mail-wr1-x435.google.com
+ [IPv6:2a00:1450:4864:20::435])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 0F6328132F
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 23 Apr 2024 13:14:33 +0000 (UTC)
+Received: by mail-wr1-x435.google.com with SMTP id
+ ffacd0b85a97d-34b66f0500aso815316f8f.3
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 23 Apr 2024 06:14:33 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20230601; t=1713878071; x=1714482871;
+ h=in-reply-to:content-disposition:mime-version:references:message-id
+ :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+ :message-id:reply-to;
+ bh=1qmA1p4TjETBn8tLveLCfp0nlOJRrmTf789dX65XA5s=;
+ b=Vcpb6FS4bFHQZ4RF/UUb2MBjISXplAjCe3KSpYCuge29TgxaIOf4MOn/RzwgvQn2v2
+ rCLOXN+E0lsZfERIkv5LnMlSMX19+WfGpRJlJBB3I09XkEFzfQ4+ivdrzwfiQKUG6dfN
+ a5MU0mEv+Ol6cOxKZjSUUKaGIKuE7EUBGebN8BLgXzycuhNbZ9vBI+rH2do9H7duXmlI
+ xztFd0fV3pCEzq492kxfAhG/5wlU0LmgQjIc+kEbf0riF1jS0CI9xGSJ2Ew65iqc4Z+N
+ Zii1xgclj9BiB+aK5o+rVD5tnZ0HUBR/VJTG+nXLu1+pmDdfiI77V56nS8c+C5GhZFr0
+ igQQ==
+X-Gm-Message-State: AOJu0Yy6lLCqrMKqG1UgGHDwG8CXIT2WqfNSbt10BVE/a6ubaDlwkc1o
+ TQpvxx4LL0+exOnrvNbVfaEqdo6FIwMIRU8aBFWW0JbC5Q/u0l/zAeujU6I4pcQ=
+X-Google-Smtp-Source: AGHT+IF4EPhB2yNAv8Dziy7d08f7B27xtumOJg9LPFpGkkeJRxZJJHQpmvHCWYjnxx424wL8nobBIA==
+X-Received: by 2002:a05:6000:c8e:b0:34a:2da1:c556 with SMTP id
+ dp14-20020a0560000c8e00b0034a2da1c556mr8585129wrb.37.1713878070900; 
+ Tue, 23 Apr 2024 06:14:30 -0700 (PDT)
+Received: from localhost (78-80-105-131.customers.tmcz.cz. [78.80.105.131])
+ by smtp.gmail.com with ESMTPSA id
+ b16-20020a5d40d0000000b00346406a5c80sm14619450wrq.32.2024.04.23.06.14.29
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Tue, 23 Apr 2024 06:14:30 -0700 (PDT)
+Date: Tue, 23 Apr 2024 15:14:28 +0200
+From: Jiri Pirko <jiri@resnulli.us>
+To: "Temerkhanov, Sergey" <sergey.temerkhanov@intel.com>
+Message-ID: <Zie0NIztebf5Qq1J@nanopsycho>
+References: <20240423091459.72216-1-sergey.temerkhanov@intel.com>
+ <ZiedKc5wE2-3LlaM@nanopsycho>
+ <MW3PR11MB468117FD76AC6D15970A6E1080112@MW3PR11MB4681.namprd11.prod.outlook.com>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-To: Corinna Vinschen <vinschen@redhat.com>
-References: <20240423102446.901450-1-vinschen@redhat.com>
-Content-Language: en-US
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-In-Reply-To: <20240423102446.901450-1-vinschen@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <MW3PR11MB468117FD76AC6D15970A6E1080112@MW3PR11MB4681.namprd11.prod.outlook.com>
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=resnulli-us.20230601.gappssmtp.com; s=20230601; t=1713878071; x=1714482871;
+ darn=lists.osuosl.org; 
+ h=in-reply-to:content-disposition:mime-version:references:message-id
+ :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+ bh=1qmA1p4TjETBn8tLveLCfp0nlOJRrmTf789dX65XA5s=;
+ b=Vwj4fAKmFwiMCwskbmQxZHHv1BLi95fOZ1ODFbpDcBdQjhL0/Oi1sgdrjbXwdjCvFN
+ lUqdLuCHNx+f3a3u3WJo4I+fvDO+3tZZ1p+zi4DQTSoKNafFFd9fvtBq9S3/SDnD08S/
+ Yb3AJKzT/Udkgw0wdgSK6n37CLeZbtYmUiHP5MhxM/MKr3NMwREIdIgr6CrLA1BfSA7K
+ l9VVJRNDiD5O0cZhnJ/07nDOIIeEzb/dONeXKuyI7AqUT5YiBjg7eWOWPSOyawKRYGRb
+ sLVwEafhtkcuervWDPiDzh9b3XO4PVekTM9O1FVWntRPrzNOkpvn9/DxDS8RbI7uecOc
+ rsmw==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=none (p=none dis=none)
- header.from=molgen.mpg.de
-Subject: Re: [Intel-wired-lan] [PATCH] igb: cope with large MAX_SKB_FRAGS.
+ header.from=resnulli.us
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=resnulli-us.20230601.gappssmtp.com
+ header.i=@resnulli-us.20230601.gappssmtp.com header.a=rsa-sha256
+ header.s=20230601 header.b=Vwj4fAKm
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next v2] ice: Extend auxbus device
+ naming
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -82,63 +121,129 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, intel-wired-lan@lists.osuosl.org
+Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
+ "Kitszel, Przemyslaw" <przemyslaw.kitszel@intel.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Dear Corinna,
+Tue, Apr 23, 2024 at 01:56:55PM CEST, sergey.temerkhanov@intel.com wrote:
+>
+>
+>> -----Original Message-----
+>> From: Jiri Pirko <jiri@resnulli.us>
+>> Sent: Tuesday, April 23, 2024 1:36 PM
+>> To: Temerkhanov, Sergey <sergey.temerkhanov@intel.com>
+>> Cc: intel-wired-lan@lists.osuosl.org; netdev@vger.kernel.org; Kitszel,
+>> Przemyslaw <przemyslaw.kitszel@intel.com>
+>> Subject: Re: [PATCH iwl-next v2] ice: Extend auxbus device naming
+>> 
+>> Tue, Apr 23, 2024 at 11:14:59AM CEST, sergey.temerkhanov@intel.com
+>> wrote:
+>> >Include segment/domain number in the device name to distinguish
+>> between
+>> >PCI devices located on different root complexes in multi-segment
+>> >configurations. Naming is changed from ptp_<bus>_<slot>_clk<clock>  to
+>> >ptp_<domain>_<bus>_<slot>_clk<clock>
+>> 
+>> I don't understand why you need to encode pci properties of a parent device
+>> into the auxiliary bus name. Could you please explain the motivation? Why
+>> you need a bus instance per PF?
+>> 
+>> The rest of the auxbus registrators don't do this. Could you please align? Just
+>> have one bus for ice driver and that's it.
+>
+>This patch adds support for multi-segment PCIe configurations.
+>An auxdev is created for each adapter, which has a clock, in the system. There can be
+
+You are trying to change auxiliary bus name.
 
 
-Thank you for the patch.
+>more than one adapter present, so there exists a possibility of device naming conflict.
+>To avoid it, auxdevs are named according to the PCI geographical addresses of the adapters.
+
+Why? It's the auxdev, the name should not contain anything related to
+PCI, no reason for it. I asked for motivation, you didn't provide any.
+
+Again, could you please avoid creating auxiliary bus per-PF and just
+have one auxiliary but per-ice-driver?
 
 
-Am 23.04.24 um 12:24 schrieb Corinna Vinschen:
-> From: Paolo Abeni <pabeni@redhat.com>
-
-It’d be great if you removed the trailing dot/period in the commit 
-message summary.
-
-> Sabrina reports that the igb driver does not cope well with large
-> MAX_SKB_FRAG values: setting MAX_SKB_FRAG to 45 causes payload
-> corruption on TX.
-> 
-> The root cause of the issue is that the driver does not take into
-> account properly the (possibly large) shared info size when selecting
-> the ring layout, and will try to fit two packets inside the same 4K
-> page even when the 1st fraglist will trump over the 2nd head.
-> 
-> Address the issue forcing the driver to fit a single packet per page,
-> leaving there enough room to store the (currently) largest possible
-> skb_shared_info.
-
-If you have a reproducer for this, it’d be great if you could document 
-it in the commit message.
-
-> Fixes: 3948b05950fd ("net: introduce a config option to tweak MAX_SKB_FRAG")
-> Reported-by: Jan Tluka <jtluka@redhat.com>
-> Reported-by: Jirka Hladky <jhladky@redhat.com>
-> Reported-by: Sabrina Dubroca <sd@queasysnail.net>
-> Tested-by: Sabrina Dubroca <sd@queasysnail.net>
-> Tested-by: Corinna Vinschen <vinschen@redhat.com>
-> Signed-off-by: Paolo Abeni <pabeni@redhat.com>
-> ---
->   drivers/net/ethernet/intel/igb/igb_main.c | 1 +
->   1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-> index a3f100769e39..22fb2c322bca 100644
-> --- a/drivers/net/ethernet/intel/igb/igb_main.c
-> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
-> @@ -4833,6 +4833,7 @@ static void igb_set_rx_buffer_len(struct igb_adapter *adapter,
->   
->   #if (PAGE_SIZE < 8192)
->   	if (adapter->max_frame_size > IGB_MAX_FRAME_BUILD_SKB ||
-> +	    SKB_HEAD_ALIGN(adapter->max_frame_size) > (PAGE_SIZE / 2) ||
->   	    rd32(E1000_RCTL) & E1000_RCTL_SBP)
->   		set_ring_uses_large_buffer(rx_ring);
->   #endif
-
-
-Kind regards,
-
-Paul
+>
+>Some systems may have adapters connected to different RCs which represent separate
+>PCI segments/domains. In such cases, BDF numbers  for these adapters can match, triggering
+>the naming conflict again. To avoid that, auxdev names are further extended to include the
+>segment/domain number.
+>  
+>> 
+>> 
+>> >
+>> >v1->v2
+>> >Rebase on top of the latest changes
+>> >
+>> >Signed-off-by: Sergey Temerkhanov <sergey.temerkhanov@intel.com>
+>> >Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+>> >---
+>> > drivers/net/ethernet/intel/ice/ice_ptp.c | 18 ++++++++++++------
+>> > 1 file changed, 12 insertions(+), 6 deletions(-)
+>> >
+>> >diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c
+>> >b/drivers/net/ethernet/intel/ice/ice_ptp.c
+>> >index 402436b72322..744b102f7636 100644
+>> >--- a/drivers/net/ethernet/intel/ice/ice_ptp.c
+>> >+++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
+>> >@@ -2993,8 +2993,9 @@ ice_ptp_auxbus_create_id_table(struct ice_pf
+>> *pf,
+>> >const char *name)  static int ice_ptp_register_auxbus_driver(struct
+>> >ice_pf *pf)  {
+>> > 	struct auxiliary_driver *aux_driver;
+>> >+	struct pci_dev *pdev = pf->pdev;
+>> > 	struct ice_ptp *ptp;
+>> >-	char busdev[8] = {};
+>> >+	char busdev[16] = {};
+>> > 	struct device *dev;
+>> > 	char *name;
+>> > 	int err;
+>> >@@ -3005,8 +3006,10 @@ static int ice_ptp_register_auxbus_driver(struct
+>> ice_pf *pf)
+>> > 	INIT_LIST_HEAD(&ptp->ports_owner.ports);
+>> > 	mutex_init(&ptp->ports_owner.lock);
+>> > 	if (ice_is_e810(&pf->hw))
+>> >-		sprintf(busdev, "%u_%u_", pf->pdev->bus->number,
+>> >-			PCI_SLOT(pf->pdev->devfn));
+>> >+		snprintf(busdev, sizeof(busdev), "%u_%u_%u_",
+>> >+			 pci_domain_nr(pdev->bus),
+>> >+			 pdev->bus->number,
+>> >+			 PCI_SLOT(pdev->devfn));
+>> > 	name = devm_kasprintf(dev, GFP_KERNEL, "ptp_%sclk%u", busdev,
+>> > 			      ice_get_ptp_src_clock_index(&pf->hw));
+>> > 	if (!name)
+>> >@@ -3210,8 +3213,9 @@ static void ice_ptp_release_auxbus_device(struct
+>> >device *dev)  static int ice_ptp_create_auxbus_device(struct ice_pf
+>> >*pf)  {
+>> > 	struct auxiliary_device *aux_dev;
+>> >+	struct pci_dev *pdev = pf->pdev;
+>> > 	struct ice_ptp *ptp;
+>> >-	char busdev[8] = {};
+>> >+	char busdev[16] = {};
+>> > 	struct device *dev;
+>> > 	char *name;
+>> > 	int err;
+>> >@@ -3224,8 +3228,10 @@ static int ice_ptp_create_auxbus_device(struct
+>> ice_pf *pf)
+>> > 	aux_dev = &ptp->port.aux_dev;
+>> >
+>> > 	if (ice_is_e810(&pf->hw))
+>> >-		sprintf(busdev, "%u_%u_", pf->pdev->bus->number,
+>> >-			PCI_SLOT(pf->pdev->devfn));
+>> >+		snprintf(busdev, sizeof(busdev), "%u_%u_%u_",
+>> >+			 pci_domain_nr(pdev->bus),
+>> >+			 pdev->bus->number,
+>> >+			 PCI_SLOT(pdev->devfn));
+>> >
+>> > 	name = devm_kasprintf(dev, GFP_KERNEL, "ptp_%sclk%u", busdev,
+>> > 			      ice_get_ptp_src_clock_index(&pf->hw));
+>> >--
+>> >2.35.3
+>> >
+>> >
