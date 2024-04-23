@@ -4,116 +4,111 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 44542C4345F
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 23 Apr 2024 15:17:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2E297C4345F
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 23 Apr 2024 15:30:37 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 03FD181FD8;
-	Tue, 23 Apr 2024 15:17:20 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id F1586812FD;
+	Tue, 23 Apr 2024 15:30:36 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id kbqIzvvX5h5k; Tue, 23 Apr 2024 15:17:19 +0000 (UTC)
+ id 967h1QOis5G6; Tue, 23 Apr 2024 15:30:35 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 1864A81FF4
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 0B945812D9
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1713885439;
-	bh=Vb/jtEQiqMYQ/ISAQh9mg0MTb6zQnFx3hOrCArI3w1E=;
-	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
+	s=default; t=1713886235;
+	bh=2PasE5zHDUZQpfPlcoJSnFo4u5YpglCrOsGZQUACmWk=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=DhNW8yy9zl/+kcuYeSUdKR8zHGI+LmrLcBCeDSx6PBA0uG3XCW60wSuzmE4Zrs66z
-	 FB4wUuy7Uwa5IHbV842NNX4UTz19WNrqA2ISWvn8fGLVR1Av0LLKYiJmM+nuVlN9bH
-	 imNL8+B/u5kNdObGp0ENQAcYYBcEWvvAdoJYw5mN614z7Mo88yPT1i6dTlw46Y4k1z
-	 rxLqDKCOULo86q2dRYy7cF6Q4cE4/TlenYDdkZbci+0SNYmofSatpFkWaMQCFRmtvH
-	 +ymzlTY1ZGvujWzLfsUQPfO97Jtya/3adhFecqs/sTIZptpZp3J1j+weNuLEz85wtG
-	 +nCwbYNjwMyEw==
+	 From;
+	b=47s4p4Cet3XQxqAvYt75r5ITg5ToHwdfQD00o1q/ozZhaYsyZaynq463+Wf3ACemW
+	 9ouwIFu+h090GTAh7RfQ7SKycZuS6O6vC4thi6/3N62coSx/cyvAXetFA4Mq2R4n4e
+	 VckGXQjxLqe2t/79xu2SKPN3S247WRut4NEonsD+aCK7pbkfbPUrH+bVwkbwxAG9bQ
+	 +vqKkh1PPYeOWhJXvViCNJqLErTZsRRb0ujx+wfI2R/1FtGAREcwNxibLcn9Y6YJNB
+	 m+MkRV8QMoFiUUEm03hNKaUt5GVS/dvtMgiDvxau61r94u1IdQkrrjme+J0pHpZZYC
+	 yoLZ2HWKszgOA==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 1864A81FF4;
-	Tue, 23 Apr 2024 15:17:19 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 0DEBE1BF28A
- for <intel-wired-lan@lists.osuosl.org>; Tue, 23 Apr 2024 14:46:50 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 0B945812D9;
+	Tue, 23 Apr 2024 15:30:35 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 4F5F71BF343
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 23 Apr 2024 15:30:33 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id ED591402E5
- for <intel-wired-lan@lists.osuosl.org>; Tue, 23 Apr 2024 14:46:49 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 399EC812D9
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 23 Apr 2024 15:30:33 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Khf7LPFYG3bS for <intel-wired-lan@lists.osuosl.org>;
- Tue, 23 Apr 2024 14:46:49 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2607:f8b0:4864:20::42e; helo=mail-pf1-x42e.google.com;
- envelope-from=minhquangbui99@gmail.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org D8CC7402E4
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D8CC7402E4
-Received: from mail-pf1-x42e.google.com (mail-pf1-x42e.google.com
- [IPv6:2607:f8b0:4864:20::42e])
- by smtp4.osuosl.org (Postfix) with ESMTPS id D8CC7402E4
- for <intel-wired-lan@lists.osuosl.org>; Tue, 23 Apr 2024 14:46:48 +0000 (UTC)
-Received: by mail-pf1-x42e.google.com with SMTP id
- d2e1a72fcca58-6ed0e9ccca1so5306449b3a.0
- for <intel-wired-lan@lists.osuosl.org>; Tue, 23 Apr 2024 07:46:48 -0700 (PDT)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 8gn4QNosDMyv for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 23 Apr 2024 15:30:32 +0000 (UTC)
+Received-SPF: None (mailfrom) identity=mailfrom;
+ client-ip=2a00:1450:4864:20::335; helo=mail-wm1-x335.google.com;
+ envelope-from=jiri@resnulli.us; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 9AF2380ABA
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9AF2380ABA
+Received: from mail-wm1-x335.google.com (mail-wm1-x335.google.com
+ [IPv6:2a00:1450:4864:20::335])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 9AF2380ABA
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 23 Apr 2024 15:30:09 +0000 (UTC)
+Received: by mail-wm1-x335.google.com with SMTP id
+ 5b1f17b1804b1-41a1d88723bso19034095e9.0
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 23 Apr 2024 08:30:09 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20230601; t=1713883608; x=1714488408;
- h=content-transfer-encoding:in-reply-to:from:content-language
- :references:cc:to:subject:user-agent:mime-version:date:message-id
- :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
- bh=Vb/jtEQiqMYQ/ISAQh9mg0MTb6zQnFx3hOrCArI3w1E=;
- b=ZuzToKG2Ec3x7i6fxDkfaSAC8KK+d4kVjjv/wmUg4S2dP9nVJBhh25h1uok/7lwEZQ
- Y4VQXkeRX9aCyysckHeP8/T0OjQVaJJWxvfewExZjlhjD3RLrS1JDc7wbnkOh0BV/Bo1
- krk/BheNi2Whv1XlRnIysE0Xe6Yw66Azz+gmkIHANF0Wg8W+QlQuY5uU0UoGT9oG9U0j
- g0Ow1ghzPdKswfPZQaWIkYU0ekoqFTs+eEnZDVuIOG8EMSqM3YKFydG3Hn64gUV1n9Q5
- dhe2u/cvAQS1uF/nlbwcVwEA+HGRoKS5DVzz4U+Q4ADmu9wgdcQUbikf/kOuDovonoG0
- 5uSw==
+ d=1e100.net; s=20230601; t=1713886207; x=1714491007;
+ h=in-reply-to:content-disposition:mime-version:references:message-id
+ :subject:to:from:date:x-gm-message-state:from:to:cc:subject:date
+ :message-id:reply-to;
+ bh=2PasE5zHDUZQpfPlcoJSnFo4u5YpglCrOsGZQUACmWk=;
+ b=YZ56W2rdtkBTXSGxHbBYmJB3+dqhGIWqwdfqhzh/WwVgnwpvPJdZhjKtTpg7V5wa4A
+ hqh6/tM8pCgoITMfZovoZkHVy/e1kj04UOf3Nr2aEGZo4W+rt3/5+WsZKkbQ+THqb1Or
+ o25AnFs2r2mmVzjIHxkSLN5E3bZEP1DhbYAm/XU9STzSUwvm5NANpzbgKFNFpW38KOmU
+ h+zVrXbiacI1M8iCaPZeZG8HjKLASdek9zU4aq8vvPSZ/POeEzHO4wVILKvCBtOt9XYk
+ pb4ZfMe8p6JPDP8ROebos6I32e13CYiW2/3vP43yZHnH4A+4cmzzpMqVsCpbO5ybGFPI
+ keTQ==
 X-Forwarded-Encrypted: i=1;
- AJvYcCWZ4d7kYut1n9p7A9ObPB99rrbHaXRTed3XkFR0DhlaU6JSS0gUPACjkv8unNF3Lu+/Cfs1ARjuD4IaKx6FnMynfebGGKJuGPRhIiv1uqCSCg==
-X-Gm-Message-State: AOJu0Yw0bWKzVFBPT64dQ/jehjl7AmsPEe1mjZm4oM3sbavYnWsHtLVo
- hOVLM6Oz2bG63ri0/4YU86lJTH8w52OGteFIG7COjZGkggFNnyi8
-X-Google-Smtp-Source: AGHT+IE1b3OGo1AOOyHI2O/gtQLNNZdbLcFXucTipISHaNiAukcRoQ6PFKyPGYCIilU3YAqWXr+loQ==
-X-Received: by 2002:a05:6a21:2792:b0:1aa:6a28:cf6e with SMTP id
- rn18-20020a056a21279200b001aa6a28cf6emr12043604pzb.48.1713883607972; 
- Tue, 23 Apr 2024 07:46:47 -0700 (PDT)
-Received: from ?IPV6:2001:ee0:50f5:5d0:b2f6:b23d:3030:9638?
- ([2001:ee0:50f5:5d0:b2f6:b23d:3030:9638])
- by smtp.gmail.com with ESMTPSA id
- l185-20020a6391c2000000b005ffd8019f01sm3689182pge.20.2024.04.23.07.46.38
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Tue, 23 Apr 2024 07:46:47 -0700 (PDT)
-Message-ID: <e4f5cbd0-c803-4c3c-9703-f52e56864106@gmail.com>
-Date: Tue, 23 Apr 2024 21:46:35 +0700
+ AJvYcCVKOfgS6EL7CSuKuWL2JXlowxVCraG92aF6b6kZl9is3aS1uXSAXxExv+ns3cV+IGQqLAtyohjDGyhYV54BPPWm8HTzYiqiLqkJi0MqvdycAg==
+X-Gm-Message-State: AOJu0YxqYdFSCf4kvu4eRRBOOiNa5hiEH+VvKqZD3x/JH0TGNNEZgR2Y
+ Vgx896UUOMtJ0SVryGYdKLbAj3giwFKRK00NED9+Jg7k2/EW1ICrxy8qx3VNlc0=
+X-Google-Smtp-Source: AGHT+IGtEkEhcb5mQc3KY/J9uWfPMgymkhpoR4p6Es6H93bP2NJvAnRHhoqtAk124PPyocNsK1fuzQ==
+X-Received: by 2002:adf:ec4d:0:b0:34a:2852:f119 with SMTP id
+ w13-20020adfec4d000000b0034a2852f119mr8476258wrn.36.1713886207063; 
+ Tue, 23 Apr 2024 08:30:07 -0700 (PDT)
+Received: from localhost ([193.47.165.251]) by smtp.gmail.com with ESMTPSA id
+ p5-20020a5d48c5000000b0034afaa9ca47sm6577931wrs.1.2024.04.23.08.30.05
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Tue, 23 Apr 2024 08:30:06 -0700 (PDT)
+Date: Tue, 23 Apr 2024 17:30:02 +0200
+From: Jiri Pirko <jiri@resnulli.us>
+To: netdev@vger.kernel.org, intel-wired-lan@lists.osuosl.org
+Message-ID: <ZifT-pli5-3KBd2i@nanopsycho>
+References: <20240423102446.901450-1-vinschen@redhat.com>
+ <Ziea2_SRYoGcy9Sw@nanopsycho>
+ <Zie9ffllQf8qxv2-@calimero.vinschen.de>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-To: Heiko Carstens <hca@linux.ibm.com>
-References: <20240422-fix-oob-read-v1-0-e02854c30174@gmail.com>
- <20240422-fix-oob-read-v1-5-e02854c30174@gmail.com>
- <20240423065052.10211-C-hca@linux.ibm.com>
-Content-Language: en-US
-From: Bui Quang Minh <minhquangbui99@gmail.com>
-In-Reply-To: <20240423065052.10211-C-hca@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Mailman-Approved-At: Tue, 23 Apr 2024 15:17:07 +0000
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Zie9ffllQf8qxv2-@calimero.vinschen.de>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20230601; t=1713883608; x=1714488408; darn=lists.osuosl.org;
- h=content-transfer-encoding:in-reply-to:from:content-language
- :references:cc:to:subject:user-agent:mime-version:date:message-id
- :from:to:cc:subject:date:message-id:reply-to;
- bh=Vb/jtEQiqMYQ/ISAQh9mg0MTb6zQnFx3hOrCArI3w1E=;
- b=C6BspBOgcDXuiWMQq5VEGsulwvwQimZ7OR3gMYr5BHwYYeEWx8gjc5jC59r8vYYIFi
- vorEjo+dt1MVMZuh5tQFaWXsRHEPMgr7R9iF5KRupisUc7kZw9YIaqfRWX0gSzG/6rd4
- juc40j/oXFkfBG3PvoBI9C5v4FttM6bHmUAFHKE+Iq59FNdb6P7Oy874Zp8t/Frz0zcK
- oOluZc5rma5kXgc26a9lrSgNcpuN/9NW5VO5sHY9lVvSspLBGzTsk579bFFy0Mxnu8ZF
- 87UowFZmmIBKQLQL4cLQ7SQddrB+RxXmJl8DQbSglKMtLgGyW+QmiOGK15CoA9UA16VO
- lCYg==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=gmail.com
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ d=resnulli-us.20230601.gappssmtp.com; s=20230601; t=1713886207; x=1714491007;
+ darn=lists.osuosl.org; 
+ h=in-reply-to:content-disposition:mime-version:references:message-id
+ :subject:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+ bh=2PasE5zHDUZQpfPlcoJSnFo4u5YpglCrOsGZQUACmWk=;
+ b=cPIjnCwq1EC5oTwhmqISfoxnmqei5UEXKDnq1CxTvHaX5r9knN+V5DdtQi/+yIsQHV
+ SJ8A7N2EdGyobRNEIsxJjnhIZQpEC1N3d3CfUtPFYIMxcq+j+DcRFe0GT5IKd8Jh31Km
+ RmNdcykf4XuSYkmhgJ4h1/jKY/fUXSny9zNZYK9gk2A4Um5ow8X7XSybG763Th9e8NhZ
+ rw4KCIbEeeBZRxKgu/WJu8oRcdS5gkmwYg9No/ksav7ariyuAKFL+/QaUFrVbZsPb2Ui
+ W6JwpNJ74M0x3qpeGplUDZPFXOhmU+GMf0ndaKAWSWPqmHApMTwdwSnrVUz9Y87B46OP
+ DEyg==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dmarc=none (p=none dis=none)
+ header.from=resnulli.us
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key,
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20230601 header.b=C6BspBOg
-Subject: Re: [Intel-wired-lan] [PATCH 5/5] drivers/s390/cio: ensure the
- copied buf is NULL terminated
+ unprotected) header.d=resnulli-us.20230601.gappssmtp.com
+ header.i=@resnulli-us.20230601.gappssmtp.com header.a=rsa-sha256
+ header.s=20230601 header.b=cPIjnCwq
+Subject: Re: [Intel-wired-lan] [PATCH] igb: cope with large MAX_SKB_FRAGS.
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -126,88 +121,47 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Javed Hasan <jhasan@marvell.com>, linux-kernel@vger.kernel.org,
- "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
- Eric Dumazet <edumazet@google.com>, Tony Nguyen <anthony.l.nguyen@intel.com>,
- Vineeth Vijayan <vneethv@linux.ibm.com>, linux-scsi@vger.kernel.org,
- Saurav Kashyap <saurav.kashyap@cavium.com>,
- Alexander Gordeev <agordeev@linux.ibm.com>, linux-s390@vger.kernel.org,
- Sudarsana Kalluru <sudarsana.kalluru@qlogic.com>,
- intel-wired-lan@lists.osuosl.org,
- Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- Christian Borntraeger <borntraeger@linux.ibm.com>,
- Vasily Gorbik <gor@linux.ibm.com>, Arun Easi <arun.easi@cavium.com>,
- Fabian Frederick <fabf@skynet.be>, Krishna Gudipati <kgudipat@brocade.com>,
- Manish Rangankar <manish.rangankar@cavium.com>, Jens Axboe <axboe@kernel.dk>,
- Nilesh Javali <nilesh.javali@cavium.com>, GR-Linux-NIC-Dev@marvell.com,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- Saurav Kashyap <skashyap@marvell.com>, Rasesh Mody <rmody@marvell.com>,
- netdev@vger.kernel.org, Anil Gurumurthy <anil.gurumurthy@qlogic.com>,
- Peter Oberparleiter <oberpar@linux.ibm.com>,
- "David S. Miller" <davem@davemloft.net>,
- GR-QLogic-Storage-Upstream@marvell.com, Sven Schnelle <svens@linux.ibm.com>,
- Sudarsana Kalluru <skalluru@marvell.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On 4/23/24 13:50, Heiko Carstens wrote:
-> On Mon, Apr 22, 2024 at 11:41:40PM +0700, Bui Quang Minh wrote:
->> Currently, we allocate a lbuf-sized kernel buffer and copy lbuf from
->> userspace to that buffer. Later, we use scanf on this buffer but we don't
->> ensure that the string is terminated inside the buffer, this can lead to
->> OOB read when using scanf. Fix this issue by allocating 1 more byte to at
->> the end of buffer and write NULL terminator to the end of buffer after
->> userspace copying.
->>
->> Fixes: a4f17cc72671 ("s390/cio: add CRW inject functionality")
->> Signed-off-by: Bui Quang Minh <minhquangbui99@gmail.com>
->> ---
->>   drivers/s390/cio/cio_inject.c | 3 ++-
->>   1 file changed, 2 insertions(+), 1 deletion(-)
->>
->> diff --git a/drivers/s390/cio/cio_inject.c b/drivers/s390/cio/cio_inject.c
->> index 8613fa937237..9b69fbf49f60 100644
->> --- a/drivers/s390/cio/cio_inject.c
->> +++ b/drivers/s390/cio/cio_inject.c
->> @@ -95,10 +95,11 @@ static ssize_t crw_inject_write(struct file *file, const char __user *buf,
->>   		return -EINVAL;
->>   	}
->>   
->> -	buffer = vmemdup_user(buf, lbuf);
->> +	buffer = vmemdup_user(buf, lbuf + 1);
->>   	if (IS_ERR(buffer))
->>   		return -ENOMEM;
->>   
->> +	buffer[lbuf] = '\0';
-> 
-> This would read one byte too much from user space, and could potentially
-> fault.
-> 
-> Why isn't this simply memdup_user_nul() like all others, which would do the
-> right thing?
+Tue, Apr 23, 2024 at 03:54:05PM CEST, vinschen@redhat.com wrote:
+>Hi Jiri,
+>
+>On Apr 23 13:26, Jiri Pirko wrote:
+>> Tue, Apr 23, 2024 at 12:24:46PM CEST, vinschen@redhat.com wrote:
+>> >From: Paolo Abeni <pabeni@redhat.com>
+>> >
+>> >Sabrina reports that the igb driver does not cope well with large
+>> >MAX_SKB_FRAG values: setting MAX_SKB_FRAG to 45 causes payload
+>> >corruption on TX.
+>> >
+>> >The root cause of the issue is that the driver does not take into
+>> >account properly the (possibly large) shared info size when selecting
+>> >the ring layout, and will try to fit two packets inside the same 4K
+>> >page even when the 1st fraglist will trump over the 2nd head.
+>> >
+>> >Address the issue forcing the driver to fit a single packet per page,
+>> >leaving there enough room to store the (currently) largest possible
+>> >skb_shared_info.
+>> >
+>> >Fixes: 3948b05950fd ("net: introduce a config option to tweak MAX_SKB_FRAG")
+>> >Reported-by: Jan Tluka <jtluka@redhat.com>
+>> >Reported-by: Jirka Hladky <jhladky@redhat.com>
+>> >Reported-by: Sabrina Dubroca <sd@queasysnail.net>
+>> >Tested-by: Sabrina Dubroca <sd@queasysnail.net>
+>> >Tested-by: Corinna Vinschen <vinschen@redhat.com>
+>> >Signed-off-by: Paolo Abeni <pabeni@redhat.com>
+>> >---
+>> > drivers/net/ethernet/intel/igb/igb_main.c | 1 +
+>> 
+>> Also, please use get_maintainer.pl script to get cclist.
+>
+>done and done in v2 (for which I forgot the "in-reply-to" now, d'uh)
 
-Thanks for your review. It's my mistake, I blindly follow the pattern in 
-rvu_debugfs
+In-reply-to is not needed. Send each V to separate thread.
 
-static ssize_t rvu_dbg_qsize_write(struct file *filp,
-				   const char __user *buffer, size_t count,
-				   loff_t *ppos, int blktype)
-{
-	cmd_buf = memdup_user(buffer, count + 1);
-	if (IS_ERR(cmd_buf))
-		return -ENOMEM;
-
-	cmd_buf[count] = '\0';
-}
-
-I will send a patch to fix this too.
-
-For this case, as the original code uses vmemdup_user, which internally 
-uses kvmalloc not kmalloc, so I try to keep the original behavior. And 
-vmemdup_user does not have the counterpart vmemdup_user_nul. I can 
-kvmalloc(lbuf + 1), then copy_to_user(lbuf) and set buffer[lbuf] = '\0' 
-or do you think I should create vmemdup_user_nul?
-
-Thanks,
-Quang Minh.
+>
+>Thanks,
+>Corinna
+>
+>
