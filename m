@@ -1,94 +1,133 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3AAC9C4345F
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 23 Apr 2024 14:52:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 429ECC4345F
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 23 Apr 2024 15:17:11 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id DFB654046D;
-	Tue, 23 Apr 2024 14:52:50 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 67aAeTuJP4PL; Tue, 23 Apr 2024 14:52:49 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 8F72D405E8
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1713883969;
-	bh=xwR8DFu/L7c7YI+AcYBS5fMmNJCCy9xNmc63LbdFu+E=;
-	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=Db/0Kl2G09ck1X4zDdobAm4hBQ7YgHWxzZxOOppCno43lFgjFKN58i9CHze8UMqmX
-	 rS9YLbqxZu/xCbHlAhE1S7OraEPn5hv/bUQgJWZhygJo/Ekk/EA3JuaRGGaT3NkvoW
-	 IbsTSl31rMU9Nw/3M+2rdwV3A4ncU1NyfsaVPuPK4DwibjPG/o3Z2CXB1n1kIAHtWZ
-	 UJajfp3+QWxH5SJ6068z3adbi5awe6N6ZPvQycRCc63cV1BbDFIxWCuSS5oM8uw2R1
-	 lWT5xxGUcsgukL6skEvoqPzKLOTV5FBgzCQdxle76Dzw5hwqfHisRT5KMSg44cp0WJ
-	 eX5D6Ghhqvbkw==
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 8F72D405E8;
-	Tue, 23 Apr 2024 14:52:49 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id D09D11BF28A
- for <intel-wired-lan@lists.osuosl.org>; Tue, 23 Apr 2024 14:52:47 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id BB29D81F34
- for <intel-wired-lan@lists.osuosl.org>; Tue, 23 Apr 2024 14:52:47 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 9A00581F85;
+	Tue, 23 Apr 2024 15:17:10 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Pzpvk6p7bKk0 for <intel-wired-lan@lists.osuosl.org>;
- Tue, 23 Apr 2024 14:52:46 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.12;
- helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 8EE6D81F2A
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8EE6D81F2A
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.12])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 8EE6D81F2A
- for <intel-wired-lan@lists.osuosl.org>; Tue, 23 Apr 2024 14:52:46 +0000 (UTC)
-X-CSE-ConnectionGUID: qol9a+glRSqdV1Jwy4eVLw==
-X-CSE-MsgGUID: 9h0WShVZQGmHHJ/cObOGPw==
-X-IronPort-AV: E=McAfee;i="6600,9927,11053"; a="13255904"
-X-IronPort-AV: E=Sophos;i="6.07,222,1708416000"; d="scan'208";a="13255904"
-Received: from orviesa001.jf.intel.com ([10.64.159.141])
- by fmvoesa106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 23 Apr 2024 07:52:41 -0700
-X-CSE-ConnectionGUID: +bzDI6AdTCSNMRugUcVn0g==
-X-CSE-MsgGUID: WdVz3jWrSx6a81btRleiSg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.07,222,1708416000"; d="scan'208";a="61848019"
-Received: from lkp-server01.sh.intel.com (HELO e434dd42e5a1) ([10.239.97.150])
- by orviesa001.jf.intel.com with ESMTP; 23 Apr 2024 07:52:33 -0700
-Received: from kbuild by e434dd42e5a1 with local (Exim 4.96)
- (envelope-from <lkp@intel.com>) id 1rzHVW-0000FW-2U
- for intel-wired-lan@lists.osuosl.org; Tue, 23 Apr 2024 14:52:30 +0000
-Date: Tue, 23 Apr 2024 22:52:24 +0800
-From: kernel test robot <lkp@intel.com>
-To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Message-ID: <202404232221.VY7uBDG0-lkp@intel.com>
-User-Agent: s-nail v14.9.24
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1713883966; x=1745419966;
- h=date:from:to:subject:message-id;
- bh=6ZnYh3fKnKKwmSfvp91hAI2ble9WddwARUe9Zq73g0c=;
- b=Fr/zyi9Hj3xEOG18qdLfD6RcltNt/dfh763JSPqHKJWRxugDD177XZGg
- HcPHvh6+i5WV+vJBSkgwYGoVsaHbCaNT4A6q9/hpmWWuhP8oEam165Hv6
- NxdkuyEeeYHRr7Vw7PRNnIsXOQ35aVGDsMc4L/g5aYmMpNJSca548//wM
- ENHr1M1EXcDQwUpzWb9AooKJPiztAHoNfVrkfYGRExSv3JIz+AUqFwlPq
- PpavXA+Q0Q61PgjXarj4EURPHkAevdQEdFFR1IpGN48csqEHrpDcwnFoB
- cJ+ulWB6umVNfyZxFQHtKYigmcTK+PFXV3fPI/nsPikU2sTV2UqnQuPgC
- Q==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ id O4zLwLBGjtX7; Tue, 23 Apr 2024 15:17:10 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C307B81F87
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1713885429;
+	bh=0vDYHtZfJ1aUyePbfpMoafpgYffvxy1KKavTMUyKAF4=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=9W/z1dsKuYsY0f+9hp4h2/c9HBh9eKM0KkuolxiMWQKY5iWSAP51m3Qoi/8q75Mp0
+	 C98RV9vARntGCH0LEknkpQpBjzH9ZJJRjcXd4FhqTpUHkoDFCUmxldOWKzUVv5zXvG
+	 Cv7fC0flA0UPt/AzajCTPhSiB5+/ha9zT8q9TJr2EhVrdwpPoIOi7DXU+E4Zs2zoDF
+	 Bhzt5OqxbYBv81t4jJxbK3To49vL9FDVVspAJ/gRRSfZpaSLAn/NB613mX4OSPA5Bl
+	 SjybJPhDxm5QpJ5xIY/D4iluq+v1/2sozbpPpPeexgoGTUYi4inay11E8etSje7WHl
+	 3K3HI29LWt8HQ==
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp1.osuosl.org (Postfix) with ESMTP id C307B81F87;
+	Tue, 23 Apr 2024 15:17:09 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 8975C1BF3DC
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 23 Apr 2024 06:51:12 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp3.osuosl.org (Postfix) with ESMTP id 8242060647
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 23 Apr 2024 06:51:12 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id vQT0kM9sIpyg for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 23 Apr 2024 06:51:11 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=hca@linux.ibm.com;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org F36A36063A
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org F36A36063A
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id F36A36063A
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 23 Apr 2024 06:51:10 +0000 (UTC)
+Received: from pps.filterd (m0353726.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id
+ 43N6WiAK032224; Tue, 23 Apr 2024 06:51:03 GMT
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3xp7t6g10p-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 23 Apr 2024 06:51:02 +0000
+Received: from m0353726.ppops.net (m0353726.ppops.net [127.0.0.1])
+ by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 43N6p1NU002965;
+ Tue, 23 Apr 2024 06:51:02 GMT
+Received: from ppma22.wdc07v.mail.ibm.com
+ (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+ by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3xp7t6g10g-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 23 Apr 2024 06:51:01 +0000
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+ by ppma22.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id
+ 43N6fD5W020920; Tue, 23 Apr 2024 06:51:00 GMT
+Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
+ by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3xmrdyv8r3-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 23 Apr 2024 06:51:00 +0000
+Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com
+ [10.20.54.103])
+ by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 43N6osOE41681280
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 23 Apr 2024 06:50:56 GMT
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id A1EEE2004D;
+ Tue, 23 Apr 2024 06:50:54 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 2956D20040;
+ Tue, 23 Apr 2024 06:50:54 +0000 (GMT)
+Received: from osiris (unknown [9.152.212.60])
+ by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+ Tue, 23 Apr 2024 06:50:54 +0000 (GMT)
+Date: Tue, 23 Apr 2024 08:50:52 +0200
+From: Heiko Carstens <hca@linux.ibm.com>
+To: Bui Quang Minh <minhquangbui99@gmail.com>
+Message-ID: <20240423065052.10211-C-hca@linux.ibm.com>
+References: <20240422-fix-oob-read-v1-0-e02854c30174@gmail.com>
+ <20240422-fix-oob-read-v1-5-e02854c30174@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240422-fix-oob-read-v1-5-e02854c30174@gmail.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: JfbWZJYjgQ-6sEoUNR3sO4YsC4Gb-N7m
+X-Proofpoint-ORIG-GUID: dN-FvMKmlspL8yk4i7YrijWq2YdDYnU8
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1011,Hydra:6.0.619,FMLib:17.11.176.26
+ definitions=2024-04-23_04,2024-04-22_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ clxscore=1011 suspectscore=0
+ priorityscore=1501 mlxscore=0 malwarescore=0 adultscore=0
+ lowpriorityscore=0 phishscore=0 mlxlogscore=965 bulkscore=0
+ impostorscore=0 spamscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2404010000 definitions=main-2404230019
+X-Mailman-Approved-At: Tue, 23 Apr 2024 15:17:07 +0000
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=ibm.com; h=date : from : to : cc :
+ subject : message-id : references : mime-version : content-type :
+ in-reply-to; s=pp1; bh=0vDYHtZfJ1aUyePbfpMoafpgYffvxy1KKavTMUyKAF4=;
+ b=p1KCIPLA0+3M/jOTJH91Ettn+kfkxFl9NTIwFZkm/W9bK1jNyvqDyW7u7eyRNiT2sHct
+ ykLF3vRjDdn61hsC1nO5dBh4XmTDd0Oa1toeaQZ/0x3My4VFJ5oPg2D9yS84c65Huu+c
+ dnjYWyrHG2dj8tYNBLIYnoDpnStf3ZwBWi9WL68PmylT+N2qQPo9uarstANzXbl82Cce
+ L26wYggPXUsxa/yyjkJOBDKuK6xXsHe6p6a5p3V4xzY1AXnI89/UmmdSGhPn+WyIJ5MR
+ GLM9dQZXRPFnxN6uA5VTFDa6X9LMRHEjDTQpS5c7GQnr9lCg2do4q/diWsEjB4qvBYoB PQ== 
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dmarc=none (p=none dis=none)
+ header.from=linux.ibm.com
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=Fr/zyi9H
-Subject: [Intel-wired-lan] [tnguy-next-queue:100GbE] BUILD SUCCESS
- 9afff0de30db149a1bf440db26a3ddd6a4f260d8
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=p1KCIPLA
+Subject: Re: [Intel-wired-lan] [PATCH 5/5] drivers/s390/cio: ensure the
+ copied buf is NULL terminated
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,181 +140,62 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
+Cc: Javed Hasan <jhasan@marvell.com>, linux-kernel@vger.kernel.org,
+ "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
+ Eric Dumazet <edumazet@google.com>, Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Vineeth Vijayan <vneethv@linux.ibm.com>, linux-scsi@vger.kernel.org,
+ Saurav Kashyap <saurav.kashyap@cavium.com>,
+ Alexander Gordeev <agordeev@linux.ibm.com>, linux-s390@vger.kernel.org,
+ Sudarsana Kalluru <sudarsana.kalluru@qlogic.com>,
+ intel-wired-lan@lists.osuosl.org,
+ Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>,
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+ Christian Borntraeger <borntraeger@linux.ibm.com>,
+ Vasily Gorbik <gor@linux.ibm.com>, Arun Easi <arun.easi@cavium.com>,
+ Fabian Frederick <fabf@skynet.be>, Krishna Gudipati <kgudipat@brocade.com>,
+ Manish Rangankar <manish.rangankar@cavium.com>, Jens Axboe <axboe@kernel.dk>,
+ Nilesh Javali <nilesh.javali@cavium.com>, GR-Linux-NIC-Dev@marvell.com,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ Saurav Kashyap <skashyap@marvell.com>, Rasesh Mody <rmody@marvell.com>,
+ netdev@vger.kernel.org, Anil Gurumurthy <anil.gurumurthy@qlogic.com>,
+ Peter Oberparleiter <oberpar@linux.ibm.com>,
+ "David S. Miller" <davem@davemloft.net>,
+ GR-QLogic-Storage-Upstream@marvell.com, Sven Schnelle <svens@linux.ibm.com>,
+ Sudarsana Kalluru <skalluru@marvell.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git 100GbE
-branch HEAD: 9afff0de30db149a1bf440db26a3ddd6a4f260d8  ice: Document tx_scheduling_layers parameter
+On Mon, Apr 22, 2024 at 11:41:40PM +0700, Bui Quang Minh wrote:
+> Currently, we allocate a lbuf-sized kernel buffer and copy lbuf from
+> userspace to that buffer. Later, we use scanf on this buffer but we don't
+> ensure that the string is terminated inside the buffer, this can lead to
+> OOB read when using scanf. Fix this issue by allocating 1 more byte to at
+> the end of buffer and write NULL terminator to the end of buffer after
+> userspace copying.
+> 
+> Fixes: a4f17cc72671 ("s390/cio: add CRW inject functionality")
+> Signed-off-by: Bui Quang Minh <minhquangbui99@gmail.com>
+> ---
+>  drivers/s390/cio/cio_inject.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/s390/cio/cio_inject.c b/drivers/s390/cio/cio_inject.c
+> index 8613fa937237..9b69fbf49f60 100644
+> --- a/drivers/s390/cio/cio_inject.c
+> +++ b/drivers/s390/cio/cio_inject.c
+> @@ -95,10 +95,11 @@ static ssize_t crw_inject_write(struct file *file, const char __user *buf,
+>  		return -EINVAL;
+>  	}
+>  
+> -	buffer = vmemdup_user(buf, lbuf);
+> +	buffer = vmemdup_user(buf, lbuf + 1);
+>  	if (IS_ERR(buffer))
+>  		return -ENOMEM;
+>  
+> +	buffer[lbuf] = '\0';
 
-elapsed time: 1059m
+This would read one byte too much from user space, and could potentially
+fault.
 
-configs tested: 159
-configs skipped: 4
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-tested configs:
-alpha                             allnoconfig   gcc  
-alpha                            allyesconfig   gcc  
-alpha                               defconfig   gcc  
-arc                              allmodconfig   gcc  
-arc                               allnoconfig   gcc  
-arc                              allyesconfig   gcc  
-arc                                 defconfig   gcc  
-arc                   randconfig-001-20240423   gcc  
-arc                   randconfig-002-20240423   gcc  
-arm                              allmodconfig   gcc  
-arm                               allnoconfig   clang
-arm                              allyesconfig   gcc  
-arm                                 defconfig   clang
-arm                          moxart_defconfig   gcc  
-arm                   randconfig-001-20240423   clang
-arm                   randconfig-002-20240423   clang
-arm                   randconfig-003-20240423   clang
-arm                   randconfig-004-20240423   gcc  
-arm                             rpc_defconfig   clang
-arm                       versatile_defconfig   gcc  
-arm64                            allmodconfig   clang
-arm64                             allnoconfig   gcc  
-arm64                               defconfig   gcc  
-arm64                 randconfig-001-20240423   clang
-arm64                 randconfig-002-20240423   gcc  
-arm64                 randconfig-003-20240423   clang
-arm64                 randconfig-004-20240423   clang
-csky                             allmodconfig   gcc  
-csky                              allnoconfig   gcc  
-csky                             allyesconfig   gcc  
-csky                                defconfig   gcc  
-csky                  randconfig-001-20240423   gcc  
-csky                  randconfig-002-20240423   gcc  
-hexagon                          allmodconfig   clang
-hexagon                           allnoconfig   clang
-hexagon                          allyesconfig   clang
-hexagon                             defconfig   clang
-hexagon               randconfig-001-20240423   clang
-hexagon               randconfig-002-20240423   clang
-i386                             allmodconfig   gcc  
-i386                              allnoconfig   gcc  
-i386                             allyesconfig   gcc  
-i386         buildonly-randconfig-001-20240423   clang
-i386         buildonly-randconfig-002-20240423   clang
-i386         buildonly-randconfig-003-20240423   gcc  
-i386         buildonly-randconfig-004-20240423   clang
-i386         buildonly-randconfig-005-20240423   clang
-i386         buildonly-randconfig-006-20240423   gcc  
-i386                                defconfig   clang
-i386                  randconfig-001-20240423   gcc  
-i386                  randconfig-002-20240423   gcc  
-i386                  randconfig-003-20240423   clang
-i386                  randconfig-004-20240423   gcc  
-i386                  randconfig-005-20240423   clang
-i386                  randconfig-006-20240423   clang
-i386                  randconfig-011-20240423   gcc  
-i386                  randconfig-012-20240423   clang
-i386                  randconfig-013-20240423   clang
-i386                  randconfig-014-20240423   gcc  
-i386                  randconfig-015-20240423   gcc  
-i386                  randconfig-016-20240423   clang
-loongarch                        allmodconfig   gcc  
-loongarch                         allnoconfig   gcc  
-loongarch                           defconfig   gcc  
-loongarch             randconfig-001-20240423   gcc  
-m68k                             allmodconfig   gcc  
-m68k                              allnoconfig   gcc  
-m68k                             allyesconfig   gcc  
-m68k                                defconfig   gcc  
-m68k                       m5249evb_defconfig   gcc  
-m68k                       m5275evb_defconfig   gcc  
-m68k                           virt_defconfig   gcc  
-microblaze                       allmodconfig   gcc  
-microblaze                        allnoconfig   gcc  
-microblaze                       allyesconfig   gcc  
-microblaze                          defconfig   gcc  
-microblaze                      mmu_defconfig   gcc  
-mips                              allnoconfig   gcc  
-mips                             allyesconfig   gcc  
-mips                      malta_kvm_defconfig   gcc  
-mips                      maltaaprp_defconfig   clang
-mips                        qi_lb60_defconfig   clang
-nios2                            allmodconfig   gcc  
-nios2                             allnoconfig   gcc  
-nios2                            allyesconfig   gcc  
-nios2                               defconfig   gcc  
-nios2                 randconfig-001-20240423   gcc  
-nios2                 randconfig-002-20240423   gcc  
-openrisc                          allnoconfig   gcc  
-openrisc                         allyesconfig   gcc  
-openrisc                            defconfig   gcc  
-parisc                           allmodconfig   gcc  
-parisc                            allnoconfig   gcc  
-parisc                           allyesconfig   gcc  
-parisc                              defconfig   gcc  
-parisc                randconfig-001-20240423   gcc  
-parisc64                            defconfig   gcc  
-powerpc                          allmodconfig   gcc  
-powerpc                           allnoconfig   gcc  
-powerpc                          allyesconfig   clang
-powerpc                      arches_defconfig   gcc  
-powerpc                       holly_defconfig   clang
-powerpc                 mpc834x_itx_defconfig   clang
-powerpc                 mpc836x_rdk_defconfig   clang
-powerpc                     rainier_defconfig   gcc  
-riscv                            allmodconfig   clang
-riscv                             allnoconfig   gcc  
-riscv                            allyesconfig   clang
-riscv                               defconfig   clang
-s390                             allmodconfig   clang
-s390                              allnoconfig   clang
-s390                             allyesconfig   gcc  
-s390                                defconfig   clang
-sh                               allmodconfig   gcc  
-sh                                allnoconfig   gcc  
-sh                               allyesconfig   gcc  
-sh                                  defconfig   gcc  
-sh                          r7780mp_defconfig   gcc  
-sparc                            allmodconfig   gcc  
-sparc                             allnoconfig   gcc  
-sparc                               defconfig   gcc  
-sparc64                          allmodconfig   gcc  
-sparc64                          allyesconfig   gcc  
-sparc64                             defconfig   gcc  
-um                               allmodconfig   clang
-um                                allnoconfig   clang
-um                               allyesconfig   gcc  
-um                                  defconfig   clang
-um                             i386_defconfig   gcc  
-um                           x86_64_defconfig   clang
-x86_64                            allnoconfig   clang
-x86_64                           allyesconfig   clang
-x86_64       buildonly-randconfig-001-20240423   clang
-x86_64       buildonly-randconfig-002-20240423   clang
-x86_64       buildonly-randconfig-003-20240423   gcc  
-x86_64       buildonly-randconfig-004-20240423   gcc  
-x86_64       buildonly-randconfig-005-20240423   clang
-x86_64       buildonly-randconfig-006-20240423   gcc  
-x86_64                              defconfig   gcc  
-x86_64                randconfig-001-20240423   clang
-x86_64                randconfig-002-20240423   gcc  
-x86_64                randconfig-003-20240423   gcc  
-x86_64                randconfig-004-20240423   gcc  
-x86_64                randconfig-005-20240423   gcc  
-x86_64                randconfig-006-20240423   gcc  
-x86_64                randconfig-011-20240423   gcc  
-x86_64                randconfig-012-20240423   gcc  
-x86_64                randconfig-013-20240423   clang
-x86_64                randconfig-014-20240423   clang
-x86_64                randconfig-015-20240423   clang
-x86_64                randconfig-016-20240423   gcc  
-x86_64                randconfig-071-20240423   clang
-x86_64                randconfig-072-20240423   clang
-x86_64                randconfig-073-20240423   clang
-x86_64                randconfig-074-20240423   gcc  
-x86_64                randconfig-075-20240423   gcc  
-x86_64                randconfig-076-20240423   gcc  
-x86_64                          rhel-8.3-rust   clang
-xtensa                            allnoconfig   gcc  
-
--- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+Why isn't this simply memdup_user_nul() like all others, which would do the
+right thing?
