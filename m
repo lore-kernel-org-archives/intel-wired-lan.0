@@ -4,69 +4,69 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5064BC4345F
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 24 Apr 2024 14:13:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 94379C4345F
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 24 Apr 2024 14:13:45 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id DDD2D820E4;
-	Wed, 24 Apr 2024 14:13:38 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 44EB280BAC;
+	Wed, 24 Apr 2024 14:13:45 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id cwyI76PYnmAZ; Wed, 24 Apr 2024 14:13:36 +0000 (UTC)
+ id nvUfMevH9CMu; Wed, 24 Apr 2024 14:13:40 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D36CB82125
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 1C77C82118
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1713968015;
-	bh=19w2kOzC/Cgr8EOFtwuN2TJob5rDJdbxRTYLkueTo3U=;
+	s=default; t=1713968020;
+	bh=S62kZ3LMJK9EpRIG9UiFwm+vCde6G9mmVDYB1Cd1DH4=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=ujPtvWbnCE7uN1Eq4guys38Jq4O+9foaVUUETyIsc3WCHyJUJTWkFcUGYzRzoCWvk
-	 4a1R2mc9YLaqjGFHuUhuiEc3M8yiWpJHzhTMR6Gug2dDRYGiFNilkX8Mw3vCqyo7zo
-	 4U++IK9u3Q9JN4XmVuVk/WsH6O9DPFec/U2xxksazaZAvsnOGkaNAXPagKmzOOPCB2
-	 crS3tlGlJQ/vHcVO/ZNZkBhmUh9AjfzZjeV8dqpi/mWYNTqnih6pNlZJCicdUXOyY6
-	 yf4woVYvrvft8iHCHEo49+XZSmqIFqaupFb1euOLvK4Nc12rHoETzFHwx6DXWxsFRU
-	 oLti32ufS5FxQ==
+	b=xg8J1syvdTwM8MwQS3r0b2M07Nf190LA8mj/GFWTXr2la865OVzdYQ2hvEaYO4L+g
+	 A7I5TbdfgjkIqwzaidszKrhzGumKJrXo5l2OKaeLpVHseORb4VC/Kq2rWQidKe2s5f
+	 JoeusFzNrkwP82UR5LiAYJTI9bFDDK+vSguYzGL9Q1ZO4dKU6VHXI0D8oHUylTmvw1
+	 Coz6ZdsQZIkjNcWG4g7MIF5uB5ZhkXXP746UWheHObhcLyXBFvUYzsVpcnrM+0csQd
+	 STCdquENckrSGZThUb9In4S309PWH95+xQ+naXYaYG5QQ+weUty1dDhshyzB9VdUD7
+	 nFINQaY9QcmHQ==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id D36CB82125;
-	Wed, 24 Apr 2024 14:13:35 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 1C77C82118;
+	Wed, 24 Apr 2024 14:13:40 +0000 (UTC)
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id A03121BF57C
- for <intel-wired-lan@lists.osuosl.org>; Wed, 24 Apr 2024 14:13:32 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 534F81BF57C
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 24 Apr 2024 14:13:36 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 9A048400CA
- for <intel-wired-lan@lists.osuosl.org>; Wed, 24 Apr 2024 14:13:32 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 4CA1940118
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 24 Apr 2024 14:13:36 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Iw0dkpHKgH6U for <intel-wired-lan@lists.osuosl.org>;
- Wed, 24 Apr 2024 14:13:30 +0000 (UTC)
+ id GxFB_xjjdrWb for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 24 Apr 2024 14:13:33 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.16;
  helo=mgamail.intel.com; envelope-from=piotr.kwapulinski@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org D7732400A3
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D7732400A3
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 6D6B3400CA
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 6D6B3400CA
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.16])
- by smtp4.osuosl.org (Postfix) with ESMTPS id D7732400A3
- for <intel-wired-lan@lists.osuosl.org>; Wed, 24 Apr 2024 14:13:29 +0000 (UTC)
-X-CSE-ConnectionGUID: 1NBwXC/qRlmM8QDmstFh8w==
-X-CSE-MsgGUID: 0RrW7VzOR5S1vcf87u3p6Q==
-X-IronPort-AV: E=McAfee;i="6600,9927,11054"; a="10138179"
-X-IronPort-AV: E=Sophos;i="6.07,226,1708416000"; d="scan'208";a="10138179"
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 6D6B3400CA
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 24 Apr 2024 14:13:33 +0000 (UTC)
+X-CSE-ConnectionGUID: mrzvg8UGSNml27ZeTJuafA==
+X-CSE-MsgGUID: WPbgLCouQFiYdxlBJwLgVg==
+X-IronPort-AV: E=McAfee;i="6600,9927,11054"; a="10138191"
+X-IronPort-AV: E=Sophos;i="6.07,226,1708416000"; d="scan'208";a="10138191"
 Received: from fmviesa001.fm.intel.com ([10.60.135.141])
  by fmvoesa110.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 24 Apr 2024 07:06:24 -0700
-X-CSE-ConnectionGUID: 6o101IvRS2Cl5zgCOZrhcQ==
-X-CSE-MsgGUID: tsTVd/DERgqHZLUXRreg3A==
+ 24 Apr 2024 07:06:27 -0700
+X-CSE-ConnectionGUID: /R4Gk4CjRzy53c6nZw1ocA==
+X-CSE-MsgGUID: 5kZfktDnT560+fsqCwLTtA==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.07,226,1708416000"; d="scan'208";a="55922923"
+X-IronPort-AV: E=Sophos;i="6.07,226,1708416000"; d="scan'208";a="55922978"
 Received: from amlin-018-251.igk.intel.com (HELO localhost.localdomain)
  ([10.102.18.251])
- by fmviesa001.fm.intel.com with ESMTP; 24 Apr 2024 07:06:14 -0700
+ by fmviesa001.fm.intel.com with ESMTP; 24 Apr 2024 07:06:23 -0700
 From: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Wed, 24 Apr 2024 16:22:49 +0200
-Message-Id: <20240424142251.3887-4-piotr.kwapulinski@intel.com>
+Date: Wed, 24 Apr 2024 16:22:51 +0200
+Message-Id: <20240424142251.3887-6-piotr.kwapulinski@intel.com>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <20240424142251.3887-1-piotr.kwapulinski@intel.com>
 References: <20240424142251.3887-1-piotr.kwapulinski@intel.com>
@@ -74,25 +74,25 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1713968009; x=1745504009;
+ t=1713968013; x=1745504013;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=R788fnVMEoA8qkg9wHBvKwtom/0vD+dcb6TaQosadRg=;
- b=S6kXf/4785AyHb8aLTlOP5WuLzkE038K/V+pLkFnbd7JBn6MX4Iabw/A
- NEYesVCJrVW7ZW9VGe1EudYzgxXfj4pxJwy7xD9nC/BCnvgfQKqHdUwfo
- ZTYHef8iX2pMDPV0k8AAiNowUdzeocHDUGt5vvLE2Y381NK8/4E0xBwjD
- T7S7kIfk0CeM2pDR+jyYUxGhEk/ai+/Q/QagRSUMi97wGZgLj4MXj8Vpp
- KDe+dJfhsX5NSV7/B7SHe2hkmAN/a5bg4EP+ESbeqqQSpaSmWQydMNkzy
- N6LlffIFLCjsVf9Ely6FcR3n0JTJWil0PxQv3ZPNs/IqStwbaXlyWqwp4
- Q==;
+ bh=qPBFSnHx6QcrpMucNy9VBGNdOosE9kgqygGjI+mH8SA=;
+ b=cvbIKl5cAyYU8TqtlpoqDwkxrk3D8ZVDvk4pxvy3fIOpqVnj+nQA4gIK
+ C8z8QCHP9lmbP0ICUcER/Hv5UDwDTH+OKUjieoxrd66hdKrUUm0LYXPzA
+ 4lUX190iYzaK+jRL249wmYH93xln9akmRBKZd4kOGS7+SvQe4V6WYKbRg
+ u2Z+gZ0QfM1xl4/qjDaDKQ+wkUeRYQXQW0yC8gvYEuLgrmvJKqesPO7BY
+ XDy4Gu/ObMe90eoqWNzIjF9KMeG+ex5jIiFcYO8kev2c3+AU4MzCL/UCF
+ SArrJsfkF0UOofVtbGldRtZPiotukUDhBPLdXx1W8MmFrwp5Mip5xvA4z
+ A==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=S6kXf/47
-Subject: [Intel-wired-lan] [PATCH iwl-next v5 3/5] ixgbe: Add link
- management support for E610 device
+ header.a=rsa-sha256 header.s=Intel header.b=cvbIKl5c
+Subject: [Intel-wired-lan] [PATCH iwl-next v5 5/5] ixgbe: Enable link
+ management in E610 device
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,1175 +106,1542 @@ List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Cc: Piotr Kwapulinski <piotr.kwapulinski@intel.com>, jiri@resnulli.us,
- Stefan Wegrzyn <stefan.wegrzyn@intel.com>, netdev@vger.kernel.org,
- Jedrzej Jagielski <jedrzej.jagielski@intel.com>, horms@kernel.org,
+ netdev@vger.kernel.org, Jedrzej Jagielski <jedrzej.jagielski@intel.com>,
+ horms@kernel.org, Carolyn Wyborny <carolyn.wyborny@intel.com>,
  Jan Glaza <jan.glaza@intel.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Add low level link management support for E610 device. Link management
-operations are handled via the Admin Command Interface. Add the following
-link management operations:
-- get link capabilities
-- set up link
-- get media type
-- get link status, link status events
-- link power management
+Add high level link management support for E610 device. Enable the
+following features:
+- driver load
+- bring up network interface
+- IP address assignment
+- pass traffic
+- show statistics (e.g. via ethtool)
+- disable network interface
+- driver unload
 
-Co-developed-by: Stefan Wegrzyn <stefan.wegrzyn@intel.com>
-Signed-off-by: Stefan Wegrzyn <stefan.wegrzyn@intel.com>
+Co-developed-by: Carolyn Wyborny <carolyn.wyborny@intel.com>
+Signed-off-by: Carolyn Wyborny <carolyn.wyborny@intel.com>
 Co-developed-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
 Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
 Reviewed-by: Jan Glaza <jan.glaza@intel.com>
 Signed-off-by: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c | 1080 +++++++++++++++++
- drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h |   32 +
- .../ethernet/intel/ixgbe/ixgbe_type_e610.h    |    1 +
- 3 files changed, 1113 insertions(+)
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h      |  15 +-
+ .../net/ethernet/intel/ixgbe/ixgbe_82599.c    |   3 +-
+ .../net/ethernet/intel/ixgbe/ixgbe_common.c   |  19 +-
+ .../net/ethernet/intel/ixgbe/ixgbe_dcb_nl.c   |   3 +-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c | 154 +++++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h |   1 +
+ .../net/ethernet/intel/ixgbe/ixgbe_ethtool.c  |   7 +-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c  |   3 +-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 435 +++++++++++++++++-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_mbx.c  |   4 +-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c  |   5 +-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c |  42 +-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x540.h |   7 +-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c |  29 +-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.h |  20 +
+ 15 files changed, 688 insertions(+), 59 deletions(-)
+ create mode 100644 drivers/net/ethernet/intel/ixgbe/ixgbe_x550.h
 
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+index 559b443..ea6df1e 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+@@ -1,5 +1,5 @@
+ /* SPDX-License-Identifier: GPL-2.0 */
+-/* Copyright(c) 1999 - 2018 Intel Corporation. */
++/* Copyright(c) 1999 - 2024 Intel Corporation. */
+ 
+ #ifndef _IXGBE_H_
+ #define _IXGBE_H_
+@@ -20,6 +20,7 @@
+ #include "ixgbe_type.h"
+ #include "ixgbe_common.h"
+ #include "ixgbe_dcb.h"
++#include "ixgbe_e610.h"
+ #if IS_ENABLED(CONFIG_FCOE)
+ #define IXGBE_FCOE
+ #include "ixgbe_fcoe.h"
+@@ -28,7 +29,6 @@
+ #include <linux/dca.h>
+ #endif
+ #include "ixgbe_ipsec.h"
+-
+ #include <net/xdp.h>
+ 
+ /* common prefix used by pr_<> macros */
+@@ -173,6 +173,7 @@ enum ixgbe_tx_flags {
+ #define VMDQ_P(p)   ((p) + adapter->ring_feature[RING_F_VMDQ].offset)
+ #define IXGBE_82599_VF_DEVICE_ID        0x10ED
+ #define IXGBE_X540_VF_DEVICE_ID         0x1515
++#define IXGBE_E610_VF_DEVICE_ID		0x57AD
+ 
+ #define UPDATE_VF_COUNTER_32bit(reg, last_counter, counter)	\
+ 	{							\
+@@ -654,6 +655,7 @@ struct ixgbe_adapter {
+ #define IXGBE_FLAG2_RSS_FIELD_IPV6_UDP		BIT(9)
+ #define IXGBE_FLAG2_PTP_PPS_ENABLED		BIT(10)
+ #define IXGBE_FLAG2_PHY_INTERRUPT		BIT(11)
++#define IXGBE_FLAG2_FW_ASYNC_EVENT		BIT(12)
+ #define IXGBE_FLAG2_VLAN_PROMISC		BIT(13)
+ #define IXGBE_FLAG2_EEE_CAPABLE			BIT(14)
+ #define IXGBE_FLAG2_EEE_ENABLED			BIT(15)
+@@ -661,7 +663,9 @@ struct ixgbe_adapter {
+ #define IXGBE_FLAG2_IPSEC_ENABLED		BIT(17)
+ #define IXGBE_FLAG2_VF_IPSEC_ENABLED		BIT(18)
+ #define IXGBE_FLAG2_AUTO_DISABLE_VF		BIT(19)
+-
++#define IXGBE_FLAG2_PHY_FW_LOAD_FAILED		BIT(20)
++#define IXGBE_FLAG2_NO_MEDIA			BIT(21)
++#define IXGBE_FLAG2_MOD_POWER_UNSUPPORTED	BIT(22)
+ 	/* Tx fast path data */
+ 	int num_tx_queues;
+ 	u16 tx_itr_setting;
+@@ -793,6 +797,7 @@ struct ixgbe_adapter {
+ 	u32 vferr_refcount;
+ 	struct ixgbe_mac_addr *mac_table;
+ 	struct kobject *info_kobj;
++	u16 lse_mask;
+ #ifdef CONFIG_IXGBE_HWMON
+ 	struct hwmon_buff *ixgbe_hwmon_buff;
+ #endif /* CONFIG_IXGBE_HWMON */
+@@ -849,6 +854,7 @@ static inline u8 ixgbe_max_rss_indices(struct ixgbe_adapter *adapter)
+ 	case ixgbe_mac_X550:
+ 	case ixgbe_mac_X550EM_x:
+ 	case ixgbe_mac_x550em_a:
++	case ixgbe_mac_e610:
+ 		return IXGBE_MAX_RSS_INDICES_X550;
+ 	default:
+ 		return 0;
+@@ -874,6 +880,7 @@ enum ixgbe_state_t {
+ 	__IXGBE_PTP_RUNNING,
+ 	__IXGBE_PTP_TX_IN_PROGRESS,
+ 	__IXGBE_RESET_REQUESTED,
++	__IXGBE_PHY_INIT_COMPLETE,
+ };
+ 
+ struct ixgbe_cb {
+@@ -896,6 +903,7 @@ enum ixgbe_boards {
+ 	board_x550em_x_fw,
+ 	board_x550em_a,
+ 	board_x550em_a_fw,
++	board_e610,
+ };
+ 
+ extern const struct ixgbe_info ixgbe_82598_info;
+@@ -906,6 +914,7 @@ extern const struct ixgbe_info ixgbe_X550EM_x_info;
+ extern const struct ixgbe_info ixgbe_x550em_x_fw_info;
+ extern const struct ixgbe_info ixgbe_x550em_a_info;
+ extern const struct ixgbe_info ixgbe_x550em_a_fw_info;
++extern const struct ixgbe_info ixgbe_e610_info;
+ #ifdef CONFIG_IXGBE_DCB
+ extern const struct dcbnl_rtnl_ops ixgbe_dcbnl_ops;
+ #endif
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c
+index cdaf087..964988b 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c
+@@ -1,5 +1,5 @@
+ // SPDX-License-Identifier: GPL-2.0
+-/* Copyright(c) 1999 - 2018 Intel Corporation. */
++/* Copyright(c) 1999 - 2024 Intel Corporation. */
+ 
+ #include <linux/pci.h>
+ #include <linux/delay.h>
+@@ -1615,6 +1615,7 @@ int ixgbe_fdir_set_input_mask_82599(struct ixgbe_hw *hw,
+ 	case ixgbe_mac_X550:
+ 	case ixgbe_mac_X550EM_x:
+ 	case ixgbe_mac_x550em_a:
++	case ixgbe_mac_e610:
+ 		IXGBE_WRITE_REG(hw, IXGBE_FDIRSCTPM, ~fdirtcpm);
+ 		break;
+ 	default:
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+index 3be1bfb..dd4a827 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+@@ -1,5 +1,5 @@
+ // SPDX-License-Identifier: GPL-2.0
+-/* Copyright(c) 1999 - 2018 Intel Corporation. */
++/* Copyright(c) 1999 - 2024 Intel Corporation. */
+ 
+ #include <linux/pci.h>
+ #include <linux/delay.h>
+@@ -58,6 +58,7 @@ bool ixgbe_device_supports_autoneg_fc(struct ixgbe_hw *hw)
+ 		switch (hw->device_id) {
+ 		case IXGBE_DEV_ID_X550EM_A_SFP:
+ 		case IXGBE_DEV_ID_X550EM_A_SFP_N:
++		case IXGBE_DEV_ID_E610_SFP:
+ 			supported = false;
+ 			break;
+ 		default:
+@@ -88,6 +89,8 @@ bool ixgbe_device_supports_autoneg_fc(struct ixgbe_hw *hw)
+ 		case IXGBE_DEV_ID_X550EM_A_10G_T:
+ 		case IXGBE_DEV_ID_X550EM_A_1G_T:
+ 		case IXGBE_DEV_ID_X550EM_A_1G_T_L:
++		case IXGBE_DEV_ID_E610_10G_T:
++		case IXGBE_DEV_ID_E610_2_5G_T:
+ 			supported = true;
+ 			break;
+ 		default:
+@@ -469,9 +472,14 @@ int ixgbe_clear_hw_cntrs_generic(struct ixgbe_hw *hw)
+ 		}
+ 	}
+ 
+-	if (hw->mac.type == ixgbe_mac_X550 || hw->mac.type == ixgbe_mac_X540) {
++	if (hw->mac.type == ixgbe_mac_X550 ||
++	    hw->mac.type == ixgbe_mac_X540 ||
++	    hw->mac.type == ixgbe_mac_e610) {
+ 		if (hw->phy.id == 0)
+ 			hw->phy.ops.identify(hw);
++	}
++
++	if (hw->mac.type == ixgbe_mac_X550 || hw->mac.type == ixgbe_mac_X540) {
+ 		hw->phy.ops.read_reg(hw, IXGBE_PCRC8ECL, MDIO_MMD_PCS, &i);
+ 		hw->phy.ops.read_reg(hw, IXGBE_PCRC8ECH, MDIO_MMD_PCS, &i);
+ 		hw->phy.ops.read_reg(hw, IXGBE_LDPCECL, MDIO_MMD_PCS, &i);
+@@ -2918,6 +2926,10 @@ u16 ixgbe_get_pcie_msix_count_generic(struct ixgbe_hw *hw)
+ 		pcie_offset = IXGBE_PCIE_MSIX_82599_CAPS;
+ 		max_msix_count = IXGBE_MAX_MSIX_VECTORS_82599;
+ 		break;
++	case ixgbe_mac_e610:
++		pcie_offset = IXGBE_PCIE_MSIX_E610_CAPS;
++		max_msix_count = IXGBE_MAX_MSIX_VECTORS_82599;
++		break;
+ 	default:
+ 		return 1;
+ 	}
+@@ -3366,7 +3378,8 @@ int ixgbe_check_mac_link_generic(struct ixgbe_hw *hw, ixgbe_link_speed *speed,
+ 		*speed = IXGBE_LINK_SPEED_1GB_FULL;
+ 		break;
+ 	case IXGBE_LINKS_SPEED_100_82599:
+-		if ((hw->mac.type >= ixgbe_mac_X550) &&
++		if ((hw->mac.type >= ixgbe_mac_X550 ||
++		     hw->mac.type == ixgbe_mac_e610) &&
+ 		    (links_reg & IXGBE_LINKS_SPEED_NON_STD))
+ 			*speed = IXGBE_LINK_SPEED_5GB_FULL;
+ 		else
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_dcb_nl.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_dcb_nl.c
+index e85f7d2..cf4e4a8 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_dcb_nl.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_dcb_nl.c
+@@ -1,5 +1,5 @@
+ // SPDX-License-Identifier: GPL-2.0
+-/* Copyright(c) 1999 - 2018 Intel Corporation. */
++/* Copyright(c) 1999 - 2024 Intel Corporation. */
+ 
+ #include "ixgbe.h"
+ #include <linux/dcbnl.h>
+@@ -154,6 +154,7 @@ static void ixgbe_dcbnl_get_perm_hw_addr(struct net_device *netdev,
+ 	case ixgbe_mac_82599EB:
+ 	case ixgbe_mac_X540:
+ 	case ixgbe_mac_X550:
++	case ixgbe_mac_e610:
+ 		for (j = 0; j < netdev->addr_len; j++, i++)
+ 			perm_addr[i] = adapter->hw.mac.san_addr[j];
+ 		break;
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c
-index 0afd1ad..369f05d 100644
+index 330c7e7..758b62e 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c
-@@ -1007,3 +1007,1083 @@ void ixgbe_copy_phy_caps_to_cfg(struct ixgbe_aci_cmd_get_phy_caps_data *caps,
- 	cfg->module_compliance_enforcement =
- 		caps->module_compliance_enforcement;
+@@ -3,6 +3,7 @@
+ 
+ #include "ixgbe_common.h"
+ #include "ixgbe_e610.h"
++#include "ixgbe_x550.h"
+ #include "ixgbe_type.h"
+ #include "ixgbe_x540.h"
+ #include "ixgbe_phy.h"
+@@ -2377,3 +2378,156 @@ int ixgbe_validate_eeprom_checksum_e610(struct ixgbe_hw *hw, u16 *checksum_val)
+ 
+ 	return err;
  }
 +
 +/**
-+ * ixgbe_aci_set_phy_cfg - set PHY configuration
-+ * @hw: pointer to the HW struct
-+ * @cfg: structure with PHY configuration data to be set
-+ *
-+ * Set the various PHY configuration parameters supported on the Port
-+ * using ACI command (0x0601).
-+ * One or more of the Set PHY config parameters may be ignored in an MFP
-+ * mode as the PF may not have the privilege to set some of the PHY Config
-+ * parameters.
-+ *
-+ * Return: the exit code of the operation.
-+ */
-+int ixgbe_aci_set_phy_cfg(struct ixgbe_hw *hw,
-+			  struct ixgbe_aci_cmd_set_phy_cfg_data *cfg)
-+{
-+	struct ixgbe_aci_desc desc;
-+	int err;
-+
-+	if (!cfg)
-+		return -EINVAL;
-+
-+	/* Ensure that only valid bits of cfg->caps can be turned on. */
-+	cfg->caps &= IXGBE_ACI_PHY_ENA_VALID_MASK;
-+
-+	ixgbe_fill_dflt_direct_cmd_desc(&desc, ixgbe_aci_opc_set_phy_cfg);
-+	desc.params.set_phy.lport_num = hw->bus.func;
-+	desc.flags |= IXGBE_ACI_FLAG_RD;
-+
-+	err = ixgbe_aci_send_cmd(hw, &desc, cfg, sizeof(*cfg));
-+
-+	if (!err)
-+		hw->phy.curr_user_phy_cfg = *cfg;
-+
-+	return err;
-+}
-+
-+/**
-+ * ixgbe_aci_set_link_restart_an - set up link and restart AN
-+ * @hw: pointer to the HW struct
-+ * @ena_link: if true: enable link, if false: disable link
-+ *
-+ * Function sets up the link and restarts the Auto-Negotiation over the link.
-+ *
-+ * Return: the exit code of the operation.
-+ */
-+int ixgbe_aci_set_link_restart_an(struct ixgbe_hw *hw, bool ena_link)
-+{
-+	struct ixgbe_aci_cmd_restart_an *cmd;
-+	struct ixgbe_aci_desc desc;
-+
-+	cmd = &desc.params.restart_an;
-+
-+	ixgbe_fill_dflt_direct_cmd_desc(&desc, ixgbe_aci_opc_restart_an);
-+
-+	cmd->cmd_flags = IXGBE_ACI_RESTART_AN_LINK_RESTART;
-+	cmd->lport_num = hw->bus.func;
-+	if (ena_link)
-+		cmd->cmd_flags |= IXGBE_ACI_RESTART_AN_LINK_ENABLE;
-+	else
-+		cmd->cmd_flags &= ~IXGBE_ACI_RESTART_AN_LINK_ENABLE;
-+
-+	return ixgbe_aci_send_cmd(hw, &desc, NULL, 0);
-+}
-+
-+/**
-+ * ixgbe_is_media_cage_present - check if media cage is present
-+ * @hw: pointer to the HW struct
-+ *
-+ * Identify presence of media cage using the ACI command (0x06E0).
-+ *
-+ * Return: true if media cage is present, else false. If no cage, then
-+ * media type is backplane or BASE-T.
-+ */
-+static bool ixgbe_is_media_cage_present(struct ixgbe_hw *hw)
-+{
-+	struct ixgbe_aci_cmd_get_link_topo *cmd;
-+	struct ixgbe_aci_desc desc;
-+
-+	cmd = &desc.params.get_link_topo;
-+
-+	ixgbe_fill_dflt_direct_cmd_desc(&desc, ixgbe_aci_opc_get_link_topo);
-+
-+	cmd->addr.topo_params.node_type_ctx =
-+		FIELD_PREP(IXGBE_ACI_LINK_TOPO_NODE_CTX_M,
-+			   IXGBE_ACI_LINK_TOPO_NODE_CTX_PORT);
-+
-+	/* Set node type. */
-+	cmd->addr.topo_params.node_type_ctx |=
-+		(IXGBE_ACI_LINK_TOPO_NODE_TYPE_M &
-+		 IXGBE_ACI_LINK_TOPO_NODE_TYPE_CAGE);
-+
-+	/* Node type cage can be used to determine if cage is present. If AQC
-+	 * returns error (ENOENT), then no cage present. If no cage present then
-+	 * connection type is backplane or BASE-T.
-+	 */
-+	return ixgbe_aci_get_netlist_node(hw, cmd, NULL, NULL);
-+}
-+
-+/**
-+ * ixgbe_get_media_type_from_phy_type - Gets media type based on phy type
-+ * @hw: pointer to the HW struct
-+ *
-+ * Try to identify the media type based on the phy type.
-+ * If more than one media type, the ixgbe_media_type_unknown is returned.
-+ * First, phy_type_low is checked, then phy_type_high.
-+ * If none are identified, the ixgbe_media_type_unknown is returned
-+ *
-+ * Return: type of a media based on phy type in form of enum.
-+ */
-+static enum ixgbe_media_type
-+ixgbe_get_media_type_from_phy_type(struct ixgbe_hw *hw)
-+{
-+	struct ixgbe_link_status *hw_link_info;
-+
-+	if (!hw)
-+		return ixgbe_media_type_unknown;
-+
-+	hw_link_info = &hw->link.link_info;
-+	if (hw_link_info->phy_type_low && hw_link_info->phy_type_high)
-+		/* If more than one media type is selected, report unknown */
-+		return ixgbe_media_type_unknown;
-+
-+	if (hw_link_info->phy_type_low) {
-+		/* 1G SGMII is a special case where some DA cable PHYs
-+		 * may show this as an option when it really shouldn't
-+		 * be since SGMII is meant to be between a MAC and a PHY
-+		 * in a backplane. Try to detect this case and handle it
-+		 */
-+		if (hw_link_info->phy_type_low == IXGBE_PHY_TYPE_LOW_1G_SGMII &&
-+		    (hw_link_info->module_type[IXGBE_ACI_MOD_TYPE_IDENT] ==
-+		    IXGBE_ACI_MOD_TYPE_BYTE1_SFP_PLUS_CU_ACTIVE ||
-+		    hw_link_info->module_type[IXGBE_ACI_MOD_TYPE_IDENT] ==
-+		    IXGBE_ACI_MOD_TYPE_BYTE1_SFP_PLUS_CU_PASSIVE))
-+			return ixgbe_media_type_da;
-+
-+		switch (hw_link_info->phy_type_low) {
-+		case IXGBE_PHY_TYPE_LOW_1000BASE_SX:
-+		case IXGBE_PHY_TYPE_LOW_1000BASE_LX:
-+		case IXGBE_PHY_TYPE_LOW_10GBASE_SR:
-+		case IXGBE_PHY_TYPE_LOW_10GBASE_LR:
-+		case IXGBE_PHY_TYPE_LOW_25GBASE_SR:
-+		case IXGBE_PHY_TYPE_LOW_25GBASE_LR:
-+			return ixgbe_media_type_fiber;
-+		case IXGBE_PHY_TYPE_LOW_10G_SFI_AOC_ACC:
-+		case IXGBE_PHY_TYPE_LOW_25G_AUI_AOC_ACC:
-+			return ixgbe_media_type_fiber;
-+		case IXGBE_PHY_TYPE_LOW_100BASE_TX:
-+		case IXGBE_PHY_TYPE_LOW_1000BASE_T:
-+		case IXGBE_PHY_TYPE_LOW_2500BASE_T:
-+		case IXGBE_PHY_TYPE_LOW_5GBASE_T:
-+		case IXGBE_PHY_TYPE_LOW_10GBASE_T:
-+		case IXGBE_PHY_TYPE_LOW_25GBASE_T:
-+			return ixgbe_media_type_copper;
-+		case IXGBE_PHY_TYPE_LOW_10G_SFI_DA:
-+		case IXGBE_PHY_TYPE_LOW_25GBASE_CR:
-+		case IXGBE_PHY_TYPE_LOW_25GBASE_CR_S:
-+		case IXGBE_PHY_TYPE_LOW_25GBASE_CR1:
-+			return ixgbe_media_type_da;
-+		case IXGBE_PHY_TYPE_LOW_25G_AUI_C2C:
-+			if (ixgbe_is_media_cage_present(hw))
-+				return ixgbe_media_type_aui;
-+			fallthrough;
-+		case IXGBE_PHY_TYPE_LOW_1000BASE_KX:
-+		case IXGBE_PHY_TYPE_LOW_2500BASE_KX:
-+		case IXGBE_PHY_TYPE_LOW_2500BASE_X:
-+		case IXGBE_PHY_TYPE_LOW_5GBASE_KR:
-+		case IXGBE_PHY_TYPE_LOW_10GBASE_KR_CR1:
-+		case IXGBE_PHY_TYPE_LOW_10G_SFI_C2C:
-+		case IXGBE_PHY_TYPE_LOW_25GBASE_KR:
-+		case IXGBE_PHY_TYPE_LOW_25GBASE_KR1:
-+		case IXGBE_PHY_TYPE_LOW_25GBASE_KR_S:
-+			return ixgbe_media_type_backplane;
-+		}
-+	} else {
-+		switch (hw_link_info->phy_type_high) {
-+		case IXGBE_PHY_TYPE_HIGH_10BASE_T:
-+			return ixgbe_media_type_copper;
-+		}
-+	}
-+	return ixgbe_media_type_unknown;
-+}
-+
-+/**
-+ * ixgbe_update_link_info - update status of the HW network link
-+ * @hw: pointer to the HW struct
-+ *
-+ * Update the status of the HW network link.
-+ *
-+ * Return: the exit code of the operation.
-+ */
-+int ixgbe_update_link_info(struct ixgbe_hw *hw)
-+{
-+	struct ixgbe_link_status *li;
-+	int err;
-+
-+	if (!hw)
-+		return -EINVAL;
-+
-+	li = &hw->link.link_info;
-+
-+	err = ixgbe_aci_get_link_info(hw, true, NULL);
-+	if (err)
-+		return err;
-+
-+	if (li->link_info & IXGBE_ACI_MEDIA_AVAILABLE) {
-+		struct ixgbe_aci_cmd_get_phy_caps_data __free(kfree) *pcaps;
-+
-+		pcaps =	kzalloc(sizeof(*pcaps), GFP_KERNEL);
-+		if (!pcaps)
-+			return -ENOMEM;
-+
-+		err = ixgbe_aci_get_phy_caps(hw, false,
-+					     IXGBE_ACI_REPORT_TOPO_CAP_MEDIA,
-+					     pcaps);
-+
-+		if (!err)
-+			memcpy(li->module_type, &pcaps->module_type,
-+			       sizeof(li->module_type));
-+	}
-+
-+	return err;
-+}
-+
-+/**
-+ * ixgbe_get_link_status - get status of the HW network link
-+ * @hw: pointer to the HW struct
-+ * @link_up: pointer to bool (true/false = linkup/linkdown)
-+ *
-+ * Variable link_up is true if link is up, false if link is down.
-+ * The variable link_up is invalid if status is non zero. As a
-+ * result of this call, link status reporting becomes enabled
-+ *
-+ * Return: the exit code of the operation.
-+ */
-+int ixgbe_get_link_status(struct ixgbe_hw *hw, bool *link_up)
-+{
-+	int err = 0;
-+
-+	if (!hw || !link_up)
-+		return -EINVAL;
-+
-+	if (hw->link.get_link_info) {
-+		err = ixgbe_update_link_info(hw);
-+		if (err)
-+			return err;
-+	}
-+
-+	*link_up = hw->link.link_info.link_info & IXGBE_ACI_LINK_UP;
-+
-+	return err;
-+}
-+
-+/**
-+ * ixgbe_aci_get_link_info - get the link status
-+ * @hw: pointer to the HW struct
-+ * @ena_lse: enable/disable LinkStatusEvent reporting
-+ * @link: pointer to link status structure - optional
-+ *
-+ * Get the current Link Status using ACI command (0x607).
-+ * The current link can be optionally provided to update
-+ * the status.
-+ *
-+ * Return: the link status of the adapter.
-+ */
-+int ixgbe_aci_get_link_info(struct ixgbe_hw *hw, bool ena_lse,
-+			    struct ixgbe_link_status *link)
-+{
-+	struct ixgbe_aci_cmd_get_link_status_data link_data = { 0 };
-+	struct ixgbe_aci_cmd_get_link_status *resp;
-+	struct ixgbe_link_status *li_old, *li;
-+	struct ixgbe_fc_info *hw_fc_info;
-+	enum ixgbe_media_type *hw_media_type;
-+	struct ixgbe_aci_desc desc;
-+	bool tx_pause, rx_pause;
-+	u16 cmd_flags;
-+	int err;
-+
-+	if (!hw)
-+		return -EINVAL;
-+
-+	li_old = &hw->link.link_info_old;
-+	hw_media_type = &hw->phy.media_type;
-+	li = &hw->link.link_info;
-+	hw_fc_info = &hw->fc;
-+
-+	ixgbe_fill_dflt_direct_cmd_desc(&desc, ixgbe_aci_opc_get_link_status);
-+	cmd_flags = (ena_lse) ? IXGBE_ACI_LSE_ENA : IXGBE_ACI_LSE_DIS;
-+	resp = &desc.params.get_link_status;
-+	resp->cmd_flags = cmd_flags;
-+	resp->lport_num = hw->bus.func;
-+
-+	err = ixgbe_aci_send_cmd(hw, &desc, &link_data, sizeof(link_data));
-+
-+	if (err)
-+		return err;
-+
-+	/* Save off old link status information. */
-+	*li_old = *li;
-+
-+	/* Update current link status information. */
-+	li->link_speed = link_data.link_speed;
-+	li->phy_type_low = link_data.phy_type_low;
-+	li->phy_type_high = link_data.phy_type_high;
-+	*hw_media_type = ixgbe_get_media_type_from_phy_type(hw);
-+	li->link_info = link_data.link_info;
-+	li->link_cfg_err = link_data.link_cfg_err;
-+	li->an_info = link_data.an_info;
-+	li->ext_info = link_data.ext_info;
-+	li->max_frame_size = link_data.max_frame_size;
-+	li->fec_info = link_data.cfg & IXGBE_ACI_FEC_MASK;
-+	li->topo_media_conflict = link_data.topo_media_conflict;
-+	li->pacing = link_data.cfg & (IXGBE_ACI_CFG_PACING_M |
-+				      IXGBE_ACI_CFG_PACING_TYPE_M);
-+
-+	/* Update fc info. */
-+	tx_pause = !!(link_data.an_info & IXGBE_ACI_LINK_PAUSE_TX);
-+	rx_pause = !!(link_data.an_info & IXGBE_ACI_LINK_PAUSE_RX);
-+	if (tx_pause && rx_pause)
-+		hw_fc_info->current_mode = ixgbe_fc_full;
-+	else if (tx_pause)
-+		hw_fc_info->current_mode = ixgbe_fc_tx_pause;
-+	else if (rx_pause)
-+		hw_fc_info->current_mode = ixgbe_fc_rx_pause;
-+	else
-+		hw_fc_info->current_mode = ixgbe_fc_none;
-+
-+	li->lse_ena = !!(resp->cmd_flags & IXGBE_ACI_LSE_IS_ENABLED);
-+
-+	/* Save link status information. */
-+	if (link)
-+		*link = *li;
-+
-+	/* Flag cleared so calling functions don't call AQ again. */
-+	hw->link.get_link_info = false;
-+
-+	return 0;
-+}
-+
-+/**
-+ * ixgbe_aci_set_event_mask - set event mask
-+ * @hw: pointer to the HW struct
-+ * @port_num: port number of the physical function
-+ * @mask: event mask to be set
-+ *
-+ * Set the event mask using ACI command (0x0613).
-+ *
-+ * Return: the exit code of the operation.
-+ */
-+int ixgbe_aci_set_event_mask(struct ixgbe_hw *hw, u8 port_num, u16 mask)
-+{
-+	struct ixgbe_aci_cmd_set_event_mask *cmd;
-+	struct ixgbe_aci_desc desc;
-+
-+	cmd = &desc.params.set_event_mask;
-+
-+	ixgbe_fill_dflt_direct_cmd_desc(&desc, ixgbe_aci_opc_set_event_mask);
-+
-+	cmd->lport_num = port_num;
-+
-+	cmd->event_mask = mask;
-+	return ixgbe_aci_send_cmd(hw, &desc, NULL, 0);
-+}
-+
-+/**
-+ * ixgbe_configure_lse - enable/disable link status events
-+ * @hw: pointer to the HW struct
-+ * @activate: bool value deciding if lse should be enabled nor disabled
-+ * @mask: event mask to be set; a set bit means deactivation of the
-+ * corresponding event
-+ *
-+ * Set the event mask and then enable or disable link status events
-+ *
-+ * Return: the exit code of the operation.
-+ */
-+int ixgbe_configure_lse(struct ixgbe_hw *hw, bool activate, u16 mask)
-+{
-+	int err;
-+
-+	err = ixgbe_aci_set_event_mask(hw, hw->bus.func, mask);
-+	if (err)
-+		return err;
-+
-+	/* Enabling link status events generation by fw */
-+	err = ixgbe_aci_get_link_info(hw, activate, NULL);
-+	if (err)
-+		return err;
-+
-+	return 0;
-+}
-+
-+/**
-+ * ixgbe_get_media_type_e610 - Gets media type
-+ * @hw: pointer to the HW struct
-+ *
-+ * In order to get the media type, the function gets PHY
-+ * capabilities and later on use them to identify the PHY type
-+ * checking phy_type_high and phy_type_low.
-+ *
-+ * Return: the type of media in form of ixgbe_media_type enum
-+ * or ixgbe_media_type_unknown in case of an error.
-+ */
-+enum ixgbe_media_type ixgbe_get_media_type_e610(struct ixgbe_hw *hw)
-+{
-+	struct ixgbe_aci_cmd_get_phy_caps_data pcaps;
-+	int rc;
-+
-+	rc = ixgbe_update_link_info(hw);
-+	if (rc)
-+		return ixgbe_media_type_unknown;
-+
-+	/* If there is no link but PHY (dongle) is available SW should use
-+	 * Get PHY Caps admin command instead of Get Link Status, find most
-+	 * significant bit that is set in PHY types reported by the command
-+	 * and use it to discover media type.
-+	 */
-+	if (!(hw->link.link_info.link_info & IXGBE_ACI_LINK_UP) &&
-+	    (hw->link.link_info.link_info & IXGBE_ACI_MEDIA_AVAILABLE)) {
-+		int highest_bit;
-+
-+		/* Get PHY Capabilities */
-+		rc = ixgbe_aci_get_phy_caps(hw, false,
-+					    IXGBE_ACI_REPORT_TOPO_CAP_MEDIA,
-+					    &pcaps);
-+		if (rc)
-+			return ixgbe_media_type_unknown;
-+
-+		highest_bit = fls64(pcaps.phy_type_high);
-+		if (highest_bit) {
-+			hw->link.link_info.phy_type_high =
-+				BIT_ULL(highest_bit - 1);
-+			hw->link.link_info.phy_type_low = 0;
-+		} else {
-+			highest_bit = fls64(pcaps.phy_type_low);
-+			if (highest_bit)
-+				hw->link.link_info.phy_type_low =
-+					BIT_ULL(highest_bit - 1);
-+		}
-+
-+		/* Based on search above try to discover media type */
-+		hw->phy.media_type = ixgbe_get_media_type_from_phy_type(hw);
-+	}
-+
-+	return hw->phy.media_type;
-+}
-+
-+/**
-+ * ixgbe_setup_link_e610 - Set up link
-+ * @hw: pointer to hardware structure
-+ * @speed: new link speed
-+ * @autoneg_wait: true when waiting for completion is needed
-+ *
-+ * Set up the link with the specified speed.
-+ *
-+ * Return: the exit code of the operation.
-+ */
-+int ixgbe_setup_link_e610(struct ixgbe_hw *hw, ixgbe_link_speed speed,
-+			  bool autoneg_wait)
-+{
-+	/* Simply request FW to perform proper PHY setup */
-+	return hw->phy.ops.setup_link_speed(hw, speed, autoneg_wait);
-+}
-+
-+/**
-+ * ixgbe_check_link_e610 - Determine link and speed status
-+ * @hw: pointer to hardware structure
-+ * @speed: pointer to link speed
-+ * @link_up: true when link is up
-+ * @link_up_wait_to_complete: bool used to wait for link up or not
-+ *
-+ * Determine if the link is up and the current link speed
-+ * using ACI command (0x0607).
-+ *
-+ * Return: the exit code of the operation.
-+ */
-+int ixgbe_check_link_e610(struct ixgbe_hw *hw, ixgbe_link_speed *speed,
-+			  bool *link_up, bool link_up_wait_to_complete)
-+{
-+	int err;
-+	u32 i;
-+
-+	if (!speed || !link_up)
-+		return -EINVAL;
-+
-+	/* Set get_link_info flag to ensure that fresh
-+	 * link information will be obtained from FW
-+	 * by sending Get Link Status admin command.
-+	 */
-+	hw->link.get_link_info = true;
-+
-+	/* Update link information in adapter context. */
-+	err = ixgbe_get_link_status(hw, link_up);
-+	if (err)
-+		return err;
-+
-+	/* Wait for link up if it was requested. */
-+	if (!link_up_wait_to_complete && *link_up) {
-+		for (i = 0; i < hw->mac.max_link_up_time; i++) {
-+			msleep(100);
-+			hw->link.get_link_info = true;
-+			err = ixgbe_get_link_status(hw, link_up);
-+			if (err)
-+				return err;
-+			if (*link_up)
-+				break;
-+		}
-+	}
-+
-+	/* Use link information in adapter context updated by the call
-+	 * to ixgbe_get_link_status() to determine current link speed.
-+	 * Link speed information is valid only when link up was
-+	 * reported by FW.
-+	 */
-+	if (*link_up) {
-+		switch (hw->link.link_info.link_speed) {
-+		case IXGBE_ACI_LINK_SPEED_10MB:
-+			*speed = IXGBE_LINK_SPEED_10_FULL;
-+			break;
-+		case IXGBE_ACI_LINK_SPEED_100MB:
-+			*speed = IXGBE_LINK_SPEED_100_FULL;
-+			break;
-+		case IXGBE_ACI_LINK_SPEED_1000MB:
-+			*speed = IXGBE_LINK_SPEED_1GB_FULL;
-+			break;
-+		case IXGBE_ACI_LINK_SPEED_2500MB:
-+			*speed = IXGBE_LINK_SPEED_2_5GB_FULL;
-+			break;
-+		case IXGBE_ACI_LINK_SPEED_5GB:
-+			*speed = IXGBE_LINK_SPEED_5GB_FULL;
-+			break;
-+		case IXGBE_ACI_LINK_SPEED_10GB:
-+			*speed = IXGBE_LINK_SPEED_10GB_FULL;
-+			break;
-+		default:
-+			*speed = IXGBE_LINK_SPEED_UNKNOWN;
-+			break;
-+		}
-+	} else {
-+		*speed = IXGBE_LINK_SPEED_UNKNOWN;
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * ixgbe_get_link_capabilities_e610 - Determine link capabilities
-+ * @hw: pointer to hardware structure
-+ * @speed: pointer to link speed
-+ * @autoneg: true when autoneg or autotry is enabled
-+ *
-+ * Determine speed and AN parameters of a link.
-+ *
-+ * Return: the exit code of the operation.
-+ */
-+int ixgbe_get_link_capabilities_e610(struct ixgbe_hw *hw,
-+				     ixgbe_link_speed *speed,
-+				     bool *autoneg)
-+{
-+	if (!speed || !autoneg)
-+		return -EINVAL;
-+
-+	*autoneg = true;
-+	*speed = hw->phy.speeds_supported;
-+
-+	return 0;
-+}
-+
-+/**
-+ * ixgbe_cfg_phy_fc - Configure PHY Flow Control (FC) data based on FC mode
-+ * @hw: pointer to hardware structure
-+ * @cfg: PHY configuration data to set FC mode
-+ * @req_mode: FC mode to configure
-+ *
-+ * Configures PHY Flow Control according to the provided configuration.
-+ *
-+ * Return: the exit code of the operation.
-+ */
-+int ixgbe_cfg_phy_fc(struct ixgbe_hw *hw,
-+		     struct ixgbe_aci_cmd_set_phy_cfg_data *cfg,
-+		     enum ixgbe_fc_mode req_mode)
-+{
-+	u8 pause_mask = 0x0;
-+
-+	if (!cfg)
-+		return -EINVAL;
-+
-+	switch (req_mode) {
-+	case ixgbe_fc_full:
-+		pause_mask |= IXGBE_ACI_PHY_EN_TX_LINK_PAUSE;
-+		pause_mask |= IXGBE_ACI_PHY_EN_RX_LINK_PAUSE;
-+		break;
-+	case ixgbe_fc_rx_pause:
-+		pause_mask |= IXGBE_ACI_PHY_EN_RX_LINK_PAUSE;
-+		break;
-+	case ixgbe_fc_tx_pause:
-+		pause_mask |= IXGBE_ACI_PHY_EN_TX_LINK_PAUSE;
-+		break;
-+	default:
-+		break;
-+	}
-+
-+	/* Clear the old pause settings. */
-+	cfg->caps &= ~(IXGBE_ACI_PHY_EN_TX_LINK_PAUSE |
-+		IXGBE_ACI_PHY_EN_RX_LINK_PAUSE);
-+
-+	/* Set the new capabilities. */
-+	cfg->caps |= pause_mask;
-+
-+	return 0;
-+}
-+
-+/**
-+ * ixgbe_setup_fc_e610 - Set up flow control
++ * ixgbe_reset_hw_e610 - Perform hardware reset
 + * @hw: pointer to hardware structure
 + *
-+ * Set up flow control. This has to be done during init time.
++ * Resets the hardware by resetting the transmit and receive units, masks
++ * and clears all interrupts, and perform a reset.
 + *
 + * Return: the exit code of the operation.
 + */
-+int ixgbe_setup_fc_e610(struct ixgbe_hw *hw)
++int ixgbe_reset_hw_e610(struct ixgbe_hw *hw)
 +{
-+	struct ixgbe_aci_cmd_get_phy_caps_data pcaps = { 0 };
-+	struct ixgbe_aci_cmd_set_phy_cfg_data cfg = { 0 };
++	u32 swfw_mask = hw->phy.phy_semaphore_mask;
++	u32 ctrl, i;
 +	int err;
 +
-+	/* Get the current PHY config */
-+	err = ixgbe_aci_get_phy_caps(hw, false,
-+				     IXGBE_ACI_REPORT_ACTIVE_CFG, &pcaps);
++	/* Call adapter stop to disable tx/rx and clear interrupts */
++	err = hw->mac.ops.stop_adapter(hw);
 +	if (err)
-+		return err;
++		goto reset_hw_out;
 +
-+	ixgbe_copy_phy_caps_to_cfg(&pcaps, &cfg);
++	/* Flush pending Tx transactions. */
++	ixgbe_clear_tx_pending(hw);
 +
-+	/* Configure the set PHY data */
-+	err = ixgbe_cfg_phy_fc(hw, &cfg, hw->fc.requested_mode);
++	hw->phy.ops.init(hw);
++mac_reset_top:
++	err = hw->mac.ops.acquire_swfw_sync(hw, swfw_mask);
 +	if (err)
-+		return err;
++		return -EBUSY;
++	ctrl = IXGBE_CTRL_RST;
++	ctrl |= IXGBE_READ_REG(hw, IXGBE_CTRL);
++	IXGBE_WRITE_REG(hw, IXGBE_CTRL, ctrl);
++	IXGBE_WRITE_FLUSH(hw);
++	hw->mac.ops.release_swfw_sync(hw, swfw_mask);
 +
-+	/* If the capabilities have changed, then set the new config */
-+	if (cfg.caps != pcaps.caps) {
-+		cfg.caps |= IXGBE_ACI_PHY_ENA_AUTO_LINK_UPDT;
-+
-+		err = ixgbe_aci_set_phy_cfg(hw, &cfg);
-+		if (err)
-+			return err;
++	/* Poll for reset bit to self-clear indicating reset is complete */
++	for (i = 0; i < 10; i++) {
++		udelay(1);
++		ctrl = IXGBE_READ_REG(hw, IXGBE_CTRL);
++		if (!(ctrl & IXGBE_CTRL_RST_MASK))
++			break;
 +	}
 +
-+	return err;
-+}
-+
-+/**
-+ * ixgbe_fc_autoneg_e610 - Configure flow control
-+ * @hw: pointer to hardware structure
-+ *
-+ * Configure Flow Control.
-+ */
-+void ixgbe_fc_autoneg_e610(struct ixgbe_hw *hw)
-+{
-+	int err;
-+
-+	/* Get current link err.
-+	 * Current FC mode will be stored in the hw context.
-+	 */
-+	err = ixgbe_aci_get_link_info(hw, false, NULL);
-+	if (err)
-+		goto out;
-+
-+	/* Check if the link is up */
-+	if (!(hw->link.link_info.link_info & IXGBE_ACI_LINK_UP)) {
++	if (ctrl & IXGBE_CTRL_RST_MASK)
 +		err = -EIO;
-+		goto out;
++	msleep(100);
++
++	/* Double resets are required for recovery from certain error
++	 * conditions.  Between resets, it is necessary to stall to allow time
++	 * for any pending HW events to complete.
++	 */
++	if (hw->mac.flags & IXGBE_FLAGS_DOUBLE_RESET_REQUIRED) {
++		hw->mac.flags &= ~IXGBE_FLAGS_DOUBLE_RESET_REQUIRED;
++		goto mac_reset_top;
 +	}
 +
-+	/* Check if auto-negotiation has completed */
-+	if (!(hw->link.link_info.an_info & IXGBE_ACI_AN_COMPLETED)) {
-+		err = -EIO;
-+		goto out;
-+	}
++	/* Set the Rx packet buffer size. */
++	IXGBE_WRITE_REG(hw, IXGBE_RXPBSIZE(0), GENMASK(18, 17));
 +
-+out:
-+	if (!err) {
-+		hw->fc.fc_was_autonegged = true;
-+	} else {
-+		hw->fc.fc_was_autonegged = false;
-+		hw->fc.current_mode = hw->fc.requested_mode;
-+	}
-+}
++	/* Store the permanent mac address */
++	hw->mac.ops.get_mac_addr(hw, hw->mac.perm_addr);
 +
-+/**
-+ * ixgbe_disable_rx_e610 - Disable RX unit
-+ * @hw: pointer to hardware structure
-+ *
-+ * Disable RX DMA unit on E610 with use of ACI command (0x000C).
-+ *
-+ * Return: the exit code of the operation.
-+ */
-+void ixgbe_disable_rx_e610(struct ixgbe_hw *hw)
-+{
-+	u32 rxctrl = IXGBE_READ_REG(hw, IXGBE_RXCTRL);
++	/* Store MAC address from RAR0, clear receive address registers, and
++	 * clear the multicast table.  Also reset num_rar_entries to 128,
++	 * since we modify this value when programming the SAN MAC address.
++	 */
++	hw->mac.num_rar_entries = 128;
++	hw->mac.ops.init_rx_addrs(hw);
 +
-+	if (rxctrl & IXGBE_RXCTRL_RXEN) {
-+		u32 pfdtxgswc;
-+		int err;
++	/* Initialize bus function number */
++	hw->mac.ops.set_lan_id(hw);
 +
-+		pfdtxgswc = IXGBE_READ_REG(hw, IXGBE_PFDTXGSWC);
-+		if (pfdtxgswc & IXGBE_PFDTXGSWC_VT_LBEN) {
-+			pfdtxgswc &= ~IXGBE_PFDTXGSWC_VT_LBEN;
-+			IXGBE_WRITE_REG(hw, IXGBE_PFDTXGSWC, pfdtxgswc);
-+			hw->mac.set_lben = true;
-+		} else {
-+			hw->mac.set_lben = false;
-+		}
-+
-+		err = ixgbe_aci_disable_rxen(hw);
-+
-+		/* If we fail - disable RX using register write */
-+		if (err) {
-+			rxctrl = IXGBE_READ_REG(hw, IXGBE_RXCTRL);
-+			if (rxctrl & IXGBE_RXCTRL_RXEN) {
-+				rxctrl &= ~IXGBE_RXCTRL_RXEN;
-+				IXGBE_WRITE_REG(hw, IXGBE_RXCTRL, rxctrl);
-+			}
-+		}
-+	}
-+}
-+
-+/**
-+ * ixgbe_init_phy_ops_e610 - PHY specific init
-+ * @hw: pointer to hardware structure
-+ *
-+ * Initialize any function pointers that were not able to be
-+ * set during init_shared_code because the PHY type was not known.
-+ *
-+ * Return: the exit code of the operation.
-+ */
-+int ixgbe_init_phy_ops_e610(struct ixgbe_hw *hw)
-+{
-+	struct ixgbe_mac_info *mac = &hw->mac;
-+	struct ixgbe_phy_info *phy = &hw->phy;
-+	int ret_val;
-+
-+	if (mac->ops.get_media_type(hw) == ixgbe_media_type_copper)
-+		phy->ops.set_phy_power = ixgbe_set_phy_power_e610;
-+	else
-+		phy->ops.set_phy_power = NULL;
-+
-+	/* Identify the PHY */
-+	ret_val = phy->ops.identify(hw);
-+	if (ret_val)
-+		return ret_val;
-+
-+	return ret_val;
-+}
-+
-+/**
-+ * ixgbe_identify_phy_e610 - Identify PHY
-+ * @hw: pointer to hardware structure
-+ *
-+ * Determine PHY type, supported speeds and PHY ID.
-+ *
-+ * Return: the exit code of the operation.
-+ */
-+int ixgbe_identify_phy_e610(struct ixgbe_hw *hw)
-+{
-+	struct ixgbe_aci_cmd_get_phy_caps_data pcaps;
-+	int err;
-+
-+	/* Set PHY type */
-+	hw->phy.type = ixgbe_phy_fw;
-+
-+	err = ixgbe_aci_get_phy_caps(hw, false,
-+				     IXGBE_ACI_REPORT_TOPO_CAP_MEDIA, &pcaps);
-+	if (err)
-+		return err;
-+
-+	if (!(pcaps.module_compliance_enforcement &
-+	      IXGBE_ACI_MOD_ENFORCE_STRICT_MODE)) {
-+		/* Handle lenient mode */
-+		err = ixgbe_aci_get_phy_caps(hw, false,
-+					     IXGBE_ACI_REPORT_TOPO_CAP_NO_MEDIA,
-+					     &pcaps);
-+		if (err)
-+			return err;
-+	}
-+
-+	/* Determine supported speeds */
-+	hw->phy.speeds_supported = IXGBE_LINK_SPEED_UNKNOWN;
-+
-+	if (pcaps.phy_type_high & IXGBE_PHY_TYPE_HIGH_10BASE_T ||
-+	    pcaps.phy_type_high & IXGBE_PHY_TYPE_HIGH_10M_SGMII)
-+		hw->phy.speeds_supported |= IXGBE_LINK_SPEED_10_FULL;
-+	if (pcaps.phy_type_low  & IXGBE_PHY_TYPE_LOW_100BASE_TX ||
-+	    pcaps.phy_type_low  & IXGBE_PHY_TYPE_LOW_100M_SGMII ||
-+	    pcaps.phy_type_high & IXGBE_PHY_TYPE_HIGH_100M_USXGMII)
-+		hw->phy.speeds_supported |= IXGBE_LINK_SPEED_100_FULL;
-+	if (pcaps.phy_type_low  & IXGBE_PHY_TYPE_LOW_1000BASE_T  ||
-+	    pcaps.phy_type_low  & IXGBE_PHY_TYPE_LOW_1000BASE_SX ||
-+	    pcaps.phy_type_low  & IXGBE_PHY_TYPE_LOW_1000BASE_LX ||
-+	    pcaps.phy_type_low  & IXGBE_PHY_TYPE_LOW_1000BASE_KX ||
-+	    pcaps.phy_type_low  & IXGBE_PHY_TYPE_LOW_1G_SGMII    ||
-+	    pcaps.phy_type_high & IXGBE_PHY_TYPE_HIGH_1G_USXGMII)
-+		hw->phy.speeds_supported |= IXGBE_LINK_SPEED_1GB_FULL;
-+	if (pcaps.phy_type_low  & IXGBE_PHY_TYPE_LOW_2500BASE_T   ||
-+	    pcaps.phy_type_low  & IXGBE_PHY_TYPE_LOW_2500BASE_X   ||
-+	    pcaps.phy_type_low  & IXGBE_PHY_TYPE_LOW_2500BASE_KX  ||
-+	    pcaps.phy_type_high & IXGBE_PHY_TYPE_HIGH_2500M_SGMII ||
-+	    pcaps.phy_type_high & IXGBE_PHY_TYPE_HIGH_2500M_USXGMII)
-+		hw->phy.speeds_supported |= IXGBE_LINK_SPEED_2_5GB_FULL;
-+	if (pcaps.phy_type_low  & IXGBE_PHY_TYPE_LOW_5GBASE_T  ||
-+	    pcaps.phy_type_low  & IXGBE_PHY_TYPE_LOW_5GBASE_KR ||
-+	    pcaps.phy_type_high & IXGBE_PHY_TYPE_HIGH_5G_USXGMII)
-+		hw->phy.speeds_supported |= IXGBE_LINK_SPEED_5GB_FULL;
-+	if (pcaps.phy_type_low  & IXGBE_PHY_TYPE_LOW_10GBASE_T       ||
-+	    pcaps.phy_type_low  & IXGBE_PHY_TYPE_LOW_10G_SFI_DA      ||
-+	    pcaps.phy_type_low  & IXGBE_PHY_TYPE_LOW_10GBASE_SR      ||
-+	    pcaps.phy_type_low  & IXGBE_PHY_TYPE_LOW_10GBASE_LR      ||
-+	    pcaps.phy_type_low  & IXGBE_PHY_TYPE_LOW_10GBASE_KR_CR1  ||
-+	    pcaps.phy_type_low  & IXGBE_PHY_TYPE_LOW_10G_SFI_AOC_ACC ||
-+	    pcaps.phy_type_low  & IXGBE_PHY_TYPE_LOW_10G_SFI_C2C     ||
-+	    pcaps.phy_type_high & IXGBE_PHY_TYPE_HIGH_10G_USXGMII)
-+		hw->phy.speeds_supported |= IXGBE_LINK_SPEED_10GB_FULL;
-+
-+	/* Initialize autoneg speeds */
-+	if (!hw->phy.autoneg_advertised)
-+		hw->phy.autoneg_advertised = hw->phy.speeds_supported;
-+
-+	/* Set PHY ID */
-+	memcpy(&hw->phy.id, pcaps.phy_id_oui, sizeof(u32));
-+
-+	hw->phy.eee_speeds_supported = IXGBE_LINK_SPEED_10_FULL |
-+				       IXGBE_LINK_SPEED_100_FULL |
-+				       IXGBE_LINK_SPEED_1GB_FULL;
-+	hw->phy.eee_speeds_advertised = hw->phy.eee_speeds_supported;
-+
-+	return 0;
-+}
-+
-+/**
-+ * ixgbe_identify_module_e610 - Identify SFP module type
-+ * @hw: pointer to hardware structure
-+ *
-+ * Identify the SFP module type.
-+ *
-+ * Return: the exit code of the operation.
-+ */
-+int ixgbe_identify_module_e610(struct ixgbe_hw *hw)
-+{
-+	bool media_available;
-+	u8 module_type;
-+	int err;
-+
-+	err = ixgbe_update_link_info(hw);
-+	if (err)
-+		goto err;
-+
-+	media_available =
-+		(hw->link.link_info.link_info & IXGBE_ACI_MEDIA_AVAILABLE);
-+
-+	if (media_available) {
-+		hw->phy.sfp_type = ixgbe_sfp_type_unknown;
-+
-+		/* Get module type from hw context updated by
-+		 * ixgbe_update_link_info()
-+		 */
-+		module_type = hw->link.link_info.module_type[IXGBE_ACI_MOD_TYPE_IDENT];
-+
-+		if ((module_type & IXGBE_ACI_MOD_TYPE_BYTE1_SFP_PLUS_CU_PASSIVE) ||
-+		    (module_type & IXGBE_ACI_MOD_TYPE_BYTE1_SFP_PLUS_CU_ACTIVE)) {
-+			hw->phy.sfp_type = ixgbe_sfp_type_da_cu;
-+		} else if (module_type & IXGBE_ACI_MOD_TYPE_BYTE1_10G_BASE_SR) {
-+			hw->phy.sfp_type = ixgbe_sfp_type_sr;
-+		} else if ((module_type & IXGBE_ACI_MOD_TYPE_BYTE1_10G_BASE_LR) ||
-+			   (module_type & IXGBE_ACI_MOD_TYPE_BYTE1_10G_BASE_LRM)) {
-+			hw->phy.sfp_type = ixgbe_sfp_type_lr;
-+		}
-+		err = 0;
-+	} else {
-+		hw->phy.sfp_type = ixgbe_sfp_type_not_present;
-+		err = -ENOENT;
-+	}
-+err:
++reset_hw_out:
 +	return err;
 +}
 +
-+/**
-+ * ixgbe_setup_phy_link_e610 - Sets up firmware-controlled PHYs
-+ * @hw: pointer to hardware structure
-+ *
-+ * Set the parameters for the firmware-controlled PHYs.
-+ *
-+ * Return: the exit code of the operation.
-+ */
-+int ixgbe_setup_phy_link_e610(struct ixgbe_hw *hw)
-+{
-+	struct ixgbe_aci_cmd_get_phy_caps_data pcaps;
-+	struct ixgbe_aci_cmd_set_phy_cfg_data pcfg;
-+	int err;
++static const struct ixgbe_mac_operations mac_ops_e610 = {
++	.init_hw			= ixgbe_init_hw_generic,
++	.start_hw			= ixgbe_start_hw_X540,
++	.clear_hw_cntrs			= ixgbe_clear_hw_cntrs_generic,
++	.enable_rx_dma			= ixgbe_enable_rx_dma_generic,
++	.get_mac_addr			= ixgbe_get_mac_addr_generic,
++	.get_device_caps		= ixgbe_get_device_caps_generic,
++	.stop_adapter			= ixgbe_stop_adapter_generic,
++	.set_lan_id			= ixgbe_set_lan_id_multi_port_pcie,
++	.set_rxpba			= ixgbe_set_rxpba_generic,
++	.check_link			= ixgbe_check_link_e610,
++	.blink_led_start		= ixgbe_blink_led_start_X540,
++	.blink_led_stop			= ixgbe_blink_led_stop_X540,
++	.set_rar			= ixgbe_set_rar_generic,
++	.clear_rar			= ixgbe_clear_rar_generic,
++	.set_vmdq			= ixgbe_set_vmdq_generic,
++	.set_vmdq_san_mac		= ixgbe_set_vmdq_san_mac_generic,
++	.clear_vmdq			= ixgbe_clear_vmdq_generic,
++	.init_rx_addrs			= ixgbe_init_rx_addrs_generic,
++	.update_mc_addr_list		= ixgbe_update_mc_addr_list_generic,
++	.enable_mc			= ixgbe_enable_mc_generic,
++	.disable_mc			= ixgbe_disable_mc_generic,
++	.clear_vfta			= ixgbe_clear_vfta_generic,
++	.set_vfta			= ixgbe_set_vfta_generic,
++	.fc_enable			= ixgbe_fc_enable_generic,
++	.set_fw_drv_ver			= ixgbe_set_fw_drv_ver_x550,
++	.init_uta_tables		= ixgbe_init_uta_tables_generic,
++	.set_mac_anti_spoofing		= ixgbe_set_mac_anti_spoofing,
++	.set_vlan_anti_spoofing		= ixgbe_set_vlan_anti_spoofing,
++	.set_source_address_pruning	=
++				ixgbe_set_source_address_pruning_x550,
++	.set_ethertype_anti_spoofing	=
++				ixgbe_set_ethertype_anti_spoofing_x550,
++	.disable_rx_buff		= ixgbe_disable_rx_buff_generic,
++	.enable_rx_buff			= ixgbe_enable_rx_buff_generic,
++	.enable_rx			= ixgbe_enable_rx_generic,
++	.disable_rx			= ixgbe_disable_rx_e610,
++	.led_on				= ixgbe_led_on_generic,
++	.led_off			= ixgbe_led_off_generic,
++	.init_led_link_act		= ixgbe_init_led_link_act_generic,
++	.reset_hw			= ixgbe_reset_hw_e610,
++	.get_media_type			= ixgbe_get_media_type_e610,
++	.setup_link			= ixgbe_setup_link_e610,
++	.get_link_capabilities		= ixgbe_get_link_capabilities_e610,
++	.get_bus_info			= ixgbe_get_bus_info_generic,
++	.acquire_swfw_sync		= ixgbe_acquire_swfw_sync_X540,
++	.release_swfw_sync		= ixgbe_release_swfw_sync_X540,
++	.init_swfw_sync			= ixgbe_init_swfw_sync_X540,
++	.prot_autoc_read		= prot_autoc_read_generic,
++	.prot_autoc_write		= prot_autoc_write_generic,
++	.setup_fc			= ixgbe_setup_fc_e610,
++	.fc_autoneg			= ixgbe_fc_autoneg_e610,
++};
 +
-+	err = ixgbe_aci_get_link_info(hw, false, NULL);
-+	if (err)
-+		goto err;
++static const struct ixgbe_phy_operations phy_ops_e610 = {
++	.init				= ixgbe_init_phy_ops_e610,
++	.identify			= ixgbe_identify_phy_e610,
++	.identify_sfp			= ixgbe_identify_module_e610,
++	.setup_link_speed		= ixgbe_setup_phy_link_speed_generic,
++	.setup_link			= ixgbe_setup_phy_link_e610,
++	.enter_lplu			= ixgbe_enter_lplu_e610,
++};
 +
-+	/* Set PHY Configuration only if media is available */
-+	if (!(hw->link.link_info.link_info & IXGBE_ACI_MEDIA_AVAILABLE)) {
-+		err = ixgbe_aci_set_link_restart_an(hw, false);
-+		if (err)
-+			goto err;
++static const struct ixgbe_eeprom_operations eeprom_ops_e610 = {
++	.read				= ixgbe_read_ee_aci_e610,
++	.validate_checksum		= ixgbe_validate_eeprom_checksum_e610,
++};
 +
-+		return 0;
-+	}
-+
-+	err = ixgbe_aci_get_phy_caps(hw, false, IXGBE_ACI_REPORT_DFLT_CFG,
-+				     &pcaps);
-+	if (err)
-+		goto err;
-+
-+	ixgbe_copy_phy_caps_to_cfg(&pcaps, &pcfg);
-+
-+	pcfg.caps |= IXGBE_ACI_PHY_ENA_LINK;
-+	pcfg.caps |= IXGBE_ACI_PHY_ENA_AUTO_LINK_UPDT;
-+
-+	/* Set default PHY types for a given speed */
-+	pcfg.phy_type_low = 0;
-+	pcfg.phy_type_high = 0;
-+
-+	if (hw->phy.autoneg_advertised & IXGBE_LINK_SPEED_10_FULL) {
-+		pcfg.phy_type_high |= IXGBE_PHY_TYPE_HIGH_10BASE_T;
-+		pcfg.phy_type_high |= IXGBE_PHY_TYPE_HIGH_10M_SGMII;
-+	}
-+	if (hw->phy.autoneg_advertised & IXGBE_LINK_SPEED_100_FULL) {
-+		pcfg.phy_type_low  |= IXGBE_PHY_TYPE_LOW_100BASE_TX;
-+		pcfg.phy_type_low  |= IXGBE_PHY_TYPE_LOW_100M_SGMII;
-+		pcfg.phy_type_high |= IXGBE_PHY_TYPE_HIGH_100M_USXGMII;
-+	}
-+	if (hw->phy.autoneg_advertised & IXGBE_LINK_SPEED_1GB_FULL) {
-+		pcfg.phy_type_low  |= IXGBE_PHY_TYPE_LOW_1000BASE_T;
-+		pcfg.phy_type_low  |= IXGBE_PHY_TYPE_LOW_1000BASE_SX;
-+		pcfg.phy_type_low  |= IXGBE_PHY_TYPE_LOW_1000BASE_LX;
-+		pcfg.phy_type_low  |= IXGBE_PHY_TYPE_LOW_1000BASE_KX;
-+		pcfg.phy_type_low  |= IXGBE_PHY_TYPE_LOW_1G_SGMII;
-+		pcfg.phy_type_high |= IXGBE_PHY_TYPE_HIGH_1G_USXGMII;
-+	}
-+	if (hw->phy.autoneg_advertised & IXGBE_LINK_SPEED_2_5GB_FULL) {
-+		pcfg.phy_type_low  |= IXGBE_PHY_TYPE_LOW_2500BASE_T;
-+		pcfg.phy_type_low  |= IXGBE_PHY_TYPE_LOW_2500BASE_X;
-+		pcfg.phy_type_low  |= IXGBE_PHY_TYPE_LOW_2500BASE_KX;
-+		pcfg.phy_type_high |= IXGBE_PHY_TYPE_HIGH_2500M_SGMII;
-+		pcfg.phy_type_high |= IXGBE_PHY_TYPE_HIGH_2500M_USXGMII;
-+	}
-+	if (hw->phy.autoneg_advertised & IXGBE_LINK_SPEED_5GB_FULL) {
-+		pcfg.phy_type_low  |= IXGBE_PHY_TYPE_LOW_5GBASE_T;
-+		pcfg.phy_type_low  |= IXGBE_PHY_TYPE_LOW_5GBASE_KR;
-+		pcfg.phy_type_high |= IXGBE_PHY_TYPE_HIGH_5G_USXGMII;
-+	}
-+	if (hw->phy.autoneg_advertised & IXGBE_LINK_SPEED_10GB_FULL) {
-+		pcfg.phy_type_low  |= IXGBE_PHY_TYPE_LOW_10GBASE_T;
-+		pcfg.phy_type_low  |= IXGBE_PHY_TYPE_LOW_10G_SFI_DA;
-+		pcfg.phy_type_low  |= IXGBE_PHY_TYPE_LOW_10GBASE_SR;
-+		pcfg.phy_type_low  |= IXGBE_PHY_TYPE_LOW_10GBASE_LR;
-+		pcfg.phy_type_low  |= IXGBE_PHY_TYPE_LOW_10GBASE_KR_CR1;
-+		pcfg.phy_type_low  |= IXGBE_PHY_TYPE_LOW_10G_SFI_AOC_ACC;
-+		pcfg.phy_type_low  |= IXGBE_PHY_TYPE_LOW_10G_SFI_C2C;
-+		pcfg.phy_type_high |= IXGBE_PHY_TYPE_HIGH_10G_USXGMII;
-+	}
-+
-+	/* Mask the set values to avoid requesting unsupported link types */
-+	pcfg.phy_type_low &= pcaps.phy_type_low;
-+	pcfg.phy_type_high &= pcaps.phy_type_high;
-+
-+	err = ixgbe_aci_set_phy_cfg(hw, &pcfg);
-+	if (err)
-+		goto err;
-+
-+	/* Request link restart - without putting it down */
-+	err = ixgbe_aci_set_link_restart_an(hw, true);
-+	if (err)
-+		goto err;
-+
-+err:
-+	return err;
-+}
-+
-+/**
-+ * ixgbe_set_phy_power_e610 - Control power for copper PHY
-+ * @hw: pointer to hardware structure
-+ * @on: true for on, false for off
-+ *
-+ * Set the power on/off of the PHY
-+ * by getting its capabilities and setting the appropriate
-+ * configuration parameters.
-+ *
-+ * Return: the exit code of the operation.
-+ */
-+int ixgbe_set_phy_power_e610(struct ixgbe_hw *hw, bool on)
-+{
-+	struct ixgbe_aci_cmd_get_phy_caps_data phy_caps = { 0 };
-+	struct ixgbe_aci_cmd_set_phy_cfg_data phy_cfg = { 0 };
-+	int err;
-+
-+	err = ixgbe_aci_get_phy_caps(hw, false,
-+				     IXGBE_ACI_REPORT_ACTIVE_CFG,
-+				     &phy_caps);
-+	if (err)
-+		return err;
-+
-+	ixgbe_copy_phy_caps_to_cfg(&phy_caps, &phy_cfg);
-+
-+	if (on)
-+		phy_cfg.caps &= ~IXGBE_ACI_PHY_ENA_LOW_POWER;
-+	else
-+		phy_cfg.caps |= IXGBE_ACI_PHY_ENA_LOW_POWER;
-+
-+	err = ixgbe_aci_set_phy_cfg(hw, &phy_cfg);
-+
-+	return err;
-+}
-+
-+/**
-+ * ixgbe_enter_lplu_e610 - Transition to low power states
-+ * @hw: pointer to hardware structure
-+ *
-+ * Configures Low Power Link Up on transition to low power states
-+ * (from D0 to non-D0). Link is required to enter LPLU so avoid resetting the
-+ * X557 PHY immediately prior to entering LPLU.
-+ *
-+ * Return: the exit code of the operation.
-+ */
-+int ixgbe_enter_lplu_e610(struct ixgbe_hw *hw)
-+{
-+	struct ixgbe_aci_cmd_get_phy_caps_data phy_caps = { 0 };
-+	struct ixgbe_aci_cmd_set_phy_cfg_data phy_cfg = { 0 };
-+	int err;
-+
-+	err = ixgbe_aci_get_phy_caps(hw, false,
-+				     IXGBE_ACI_REPORT_ACTIVE_CFG,
-+				     &phy_caps);
-+	if (err)
-+		return err;
-+
-+	ixgbe_copy_phy_caps_to_cfg(&phy_caps, &phy_cfg);
-+
-+	phy_cfg.low_power_ctrl_an |= IXGBE_ACI_PHY_EN_D3COLD_LOW_POWER_AUTONEG;
-+
-+	err = ixgbe_aci_set_phy_cfg(hw, &phy_cfg);
-+
-+	return err;
-+}
-+
-+/**
-+ * ixgbe_aci_get_netlist_node - get a node handle
-+ * @hw: pointer to the hw struct
-+ * @cmd: get_link_topo AQ structure
-+ * @node_part_number: output node part number if node found
-+ * @node_handle: output node handle parameter if node found
-+ *
-+ * Get the netlist node and assigns it to
-+ * the provided handle using ACI command (0x06E0).
-+ *
-+ * Return: the exit code of the operation.
-+ */
-+int ixgbe_aci_get_netlist_node(struct ixgbe_hw *hw,
-+			       struct ixgbe_aci_cmd_get_link_topo *cmd,
-+			       u8 *node_part_number, u16 *node_handle)
-+{
-+	struct ixgbe_aci_desc desc;
-+
-+	ixgbe_fill_dflt_direct_cmd_desc(&desc, ixgbe_aci_opc_get_link_topo);
-+	desc.params.get_link_topo = *cmd;
-+
-+	if (ixgbe_aci_send_cmd(hw, &desc, NULL, 0))
-+		return -EOPNOTSUPP;
-+
-+	if (node_handle)
-+		*node_handle = desc.params.get_link_topo.addr.handle;
-+	if (node_part_number)
-+		*node_part_number = desc.params.get_link_topo.node_part_num;
-+
-+	return 0;
-+}
++const struct ixgbe_info ixgbe_e610_info = {
++	.mac			= ixgbe_mac_e610,
++	.get_invariants		= ixgbe_get_invariants_X540,
++	.mac_ops		= &mac_ops_e610,
++	.eeprom_ops		= &eeprom_ops_e610,
++	.phy_ops		= &phy_ops_e610,
++	.mbx_ops		= &mbx_ops_generic,
++	.mvals			= ixgbe_mvals_x550em_a,
++};
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h
-index b5257fc..9be412a 100644
+index df54a80..69cd151 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h
-@@ -26,5 +26,37 @@ int ixgbe_aci_get_phy_caps(struct ixgbe_hw *hw, bool qual_mods, u8 report_mode,
- 			   struct ixgbe_aci_cmd_get_phy_caps_data *pcaps);
- void ixgbe_copy_phy_caps_to_cfg(struct ixgbe_aci_cmd_get_phy_caps_data *caps,
- 				struct ixgbe_aci_cmd_set_phy_cfg_data *cfg);
-+int ixgbe_aci_set_phy_cfg(struct ixgbe_hw *hw,
-+			  struct ixgbe_aci_cmd_set_phy_cfg_data *cfg);
-+int ixgbe_aci_set_link_restart_an(struct ixgbe_hw *hw, bool ena_link);
-+int ixgbe_update_link_info(struct ixgbe_hw *hw);
-+int ixgbe_get_link_status(struct ixgbe_hw *hw, bool *link_up);
-+int ixgbe_aci_get_link_info(struct ixgbe_hw *hw, bool ena_lse,
-+			    struct ixgbe_link_status *link);
-+int ixgbe_aci_set_event_mask(struct ixgbe_hw *hw, u8 port_num, u16 mask);
-+int ixgbe_configure_lse(struct ixgbe_hw *hw, bool activate, u16 mask);
-+enum ixgbe_media_type ixgbe_get_media_type_e610(struct ixgbe_hw *hw);
-+int ixgbe_setup_link_e610(struct ixgbe_hw *hw, ixgbe_link_speed speed,
-+			  bool autoneg_wait);
-+int ixgbe_check_link_e610(struct ixgbe_hw *hw, ixgbe_link_speed *speed,
-+			  bool *link_up, bool link_up_wait_to_complete);
-+int ixgbe_get_link_capabilities_e610(struct ixgbe_hw *hw,
-+				     ixgbe_link_speed *speed,
-+				     bool *autoneg);
-+int ixgbe_cfg_phy_fc(struct ixgbe_hw *hw,
-+		     struct ixgbe_aci_cmd_set_phy_cfg_data *cfg,
-+		     enum ixgbe_fc_mode req_mode);
-+int ixgbe_setup_fc_e610(struct ixgbe_hw *hw);
-+void ixgbe_fc_autoneg_e610(struct ixgbe_hw *hw);
-+void ixgbe_disable_rx_e610(struct ixgbe_hw *hw);
-+int ixgbe_init_phy_ops_e610(struct ixgbe_hw *hw);
-+int ixgbe_identify_phy_e610(struct ixgbe_hw *hw);
-+int ixgbe_identify_module_e610(struct ixgbe_hw *hw);
-+int ixgbe_setup_phy_link_e610(struct ixgbe_hw *hw);
-+int ixgbe_set_phy_power_e610(struct ixgbe_hw *hw, bool on);
-+int ixgbe_enter_lplu_e610(struct ixgbe_hw *hw);
-+int ixgbe_aci_get_netlist_node(struct ixgbe_hw *hw,
-+			       struct ixgbe_aci_cmd_get_link_topo *cmd,
-+			       u8 *node_part_number, u16 *node_handle);
+@@ -70,5 +70,6 @@ int ixgbe_read_flat_nvm(struct ixgbe_hw  *hw, u32 offset, u32 *length,
+ 			u8 *data, bool read_shadow_ram);
+ int ixgbe_read_ee_aci_e610(struct ixgbe_hw *hw, u16 offset, u16 *data);
+ int ixgbe_validate_eeprom_checksum_e610(struct ixgbe_hw *hw, u16 *checksum_val);
++int ixgbe_reset_hw_e610(struct ixgbe_hw *hw);
  
  #endif /* _IXGBE_E610_H_ */
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type_e610.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type_e610.h
-index ed7735b..a910978 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type_e610.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type_e610.h
-@@ -647,6 +647,7 @@ struct ixgbe_aci_cmd_link_topo_params {
- #define IXGBE_ACI_LINK_TOPO_NODE_TYPE_CLK_MUX	10
- #define IXGBE_ACI_LINK_TOPO_NODE_TYPE_GPS	11
- #define IXGBE_ACI_LINK_TOPO_NODE_CTX_S		4
-+#define IXGBE_ACI_LINK_TOPO_NODE_CTX_M		GENMASK(7, 4)
- #define IXGBE_ACI_LINK_TOPO_NODE_CTX_GLOBAL			0
- #define IXGBE_ACI_LINK_TOPO_NODE_CTX_BOARD			1
- #define IXGBE_ACI_LINK_TOPO_NODE_CTX_PORT			2
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+index 6e6e6f1..df8482c 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+@@ -1,5 +1,5 @@
+ // SPDX-License-Identifier: GPL-2.0
+-/* Copyright(c) 1999 - 2018 Intel Corporation. */
++/* Copyright(c) 1999 - 2024 Intel Corporation. */
+ 
+ /* ethtool support for ixgbe */
+ 
+@@ -17,7 +17,6 @@
+ #include "ixgbe.h"
+ #include "ixgbe_phy.h"
+ 
+-
+ enum {NETDEV_STATS, IXGBE_STATS};
+ 
+ struct ixgbe_stats {
+@@ -690,6 +689,7 @@ static void ixgbe_get_regs(struct net_device *netdev,
+ 		case ixgbe_mac_X550:
+ 		case ixgbe_mac_X550EM_x:
+ 		case ixgbe_mac_x550em_a:
++		case ixgbe_mac_e610:
+ 			regs_buff[35 + i] = IXGBE_READ_REG(hw, IXGBE_FCRTL_82599(i));
+ 			regs_buff[43 + i] = IXGBE_READ_REG(hw, IXGBE_FCRTH_82599(i));
+ 			break;
+@@ -1613,6 +1613,7 @@ static int ixgbe_reg_test(struct ixgbe_adapter *adapter, u64 *data)
+ 	case ixgbe_mac_X550:
+ 	case ixgbe_mac_X550EM_x:
+ 	case ixgbe_mac_x550em_a:
++	case ixgbe_mac_e610:
+ 		toggle = 0x7FFFF30F;
+ 		test = reg_test_82599;
+ 		break;
+@@ -1874,6 +1875,7 @@ static int ixgbe_setup_desc_rings(struct ixgbe_adapter *adapter)
+ 	case ixgbe_mac_X550:
+ 	case ixgbe_mac_X550EM_x:
+ 	case ixgbe_mac_x550em_a:
++	case ixgbe_mac_e610:
+ 		reg_data = IXGBE_READ_REG(&adapter->hw, IXGBE_DMATXCTL);
+ 		reg_data |= IXGBE_DMATXCTL_TE;
+ 		IXGBE_WRITE_REG(&adapter->hw, IXGBE_DMATXCTL, reg_data);
+@@ -1935,6 +1937,7 @@ static int ixgbe_setup_loopback_test(struct ixgbe_adapter *adapter)
+ 	case ixgbe_mac_X550:
+ 	case ixgbe_mac_X550EM_x:
+ 	case ixgbe_mac_x550em_a:
++	case ixgbe_mac_e610:
+ 		reg_data = IXGBE_READ_REG(hw, IXGBE_MACC);
+ 		reg_data |= IXGBE_MACC_FLU;
+ 		IXGBE_WRITE_REG(hw, IXGBE_MACC, reg_data);
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
+index 0ee943d..bd7ec73 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
+@@ -1,5 +1,5 @@
+ // SPDX-License-Identifier: GPL-2.0
+-/* Copyright(c) 1999 - 2018 Intel Corporation. */
++/* Copyright(c) 1999 - 2024 Intel Corporation. */
+ 
+ #include "ixgbe.h"
+ #include "ixgbe_sriov.h"
+@@ -107,6 +107,7 @@ static void ixgbe_get_first_reg_idx(struct ixgbe_adapter *adapter, u8 tc,
+ 	case ixgbe_mac_X550:
+ 	case ixgbe_mac_X550EM_x:
+ 	case ixgbe_mac_x550em_a:
++	case ixgbe_mac_e610:
+ 		if (num_tcs > 4) {
+ 			/*
+ 			 * TCs    : TC0/1 TC2/3 TC4-7
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 43e7e75..1c619f0 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -1,5 +1,5 @@
+ // SPDX-License-Identifier: GPL-2.0
+-/* Copyright(c) 1999 - 2018 Intel Corporation. */
++/* Copyright(c) 1999 - 2024 Intel Corporation. */
+ 
+ #include <linux/types.h>
+ #include <linux/module.h>
+@@ -72,6 +72,7 @@ static const struct ixgbe_info *ixgbe_info_tbl[] = {
+ 	[board_x550em_x_fw]	= &ixgbe_x550em_x_fw_info,
+ 	[board_x550em_a]	= &ixgbe_x550em_a_info,
+ 	[board_x550em_a_fw]	= &ixgbe_x550em_a_fw_info,
++	[board_e610]		= &ixgbe_e610_info,
+ };
+ 
+ /* ixgbe_pci_tbl - PCI Device ID Table
+@@ -130,6 +131,11 @@ static const struct pci_device_id ixgbe_pci_tbl[] = {
+ 	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_A_SFP), board_x550em_a },
+ 	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_A_1G_T), board_x550em_a_fw },
+ 	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_A_1G_T_L), board_x550em_a_fw },
++	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_E610_BACKPLANE), board_e610},
++	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_E610_SFP), board_e610},
++	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_E610_10G_T), board_e610},
++	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_E610_2_5G_T), board_e610},
++	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_E610_SGMII), board_e610},
+ 	/* required last entry */
+ 	{0, }
+ };
+@@ -173,6 +179,8 @@ static struct workqueue_struct *ixgbe_wq;
+ 
+ static bool ixgbe_check_cfg_remove(struct ixgbe_hw *hw, struct pci_dev *pdev);
+ static void ixgbe_watchdog_link_is_down(struct ixgbe_adapter *);
++static void ixgbe_watchdog_link_is_up(struct ixgbe_adapter *);
++static void ixgbe_watchdog_update_link(struct ixgbe_adapter *);
+ 
+ static const struct net_device_ops ixgbe_netdev_ops;
+ 
+@@ -236,8 +244,11 @@ static int ixgbe_get_parent_bus_info(struct ixgbe_adapter *adapter)
+  * bandwidth details should be gathered from the parent bus instead of from the
+  * device. Used to ensure that various locations all have the correct device ID
+  * checks.
++ *
++ * Return: true if information should be collected from the parent bus, false
++ *         otherwise
+  */
+-static inline bool ixgbe_pcie_from_parent(struct ixgbe_hw *hw)
++static bool ixgbe_pcie_from_parent(struct ixgbe_hw *hw)
+ {
+ 	switch (hw->device_id) {
+ 	case IXGBE_DEV_ID_82599_SFP_SF_QP:
+@@ -876,6 +887,7 @@ static void ixgbe_set_ivar(struct ixgbe_adapter *adapter, s8 direction,
+ 	case ixgbe_mac_X550:
+ 	case ixgbe_mac_X550EM_x:
+ 	case ixgbe_mac_x550em_a:
++	case ixgbe_mac_e610:
+ 		if (direction == -1) {
+ 			/* other causes */
+ 			msix_vector |= IXGBE_IVAR_ALLOC_VAL;
+@@ -915,6 +927,7 @@ void ixgbe_irq_rearm_queues(struct ixgbe_adapter *adapter,
+ 	case ixgbe_mac_X550:
+ 	case ixgbe_mac_X550EM_x:
+ 	case ixgbe_mac_x550em_a:
++	case ixgbe_mac_e610:
+ 		mask = (qmask & 0xFFFFFFFF);
+ 		IXGBE_WRITE_REG(&adapter->hw, IXGBE_EICS_EX(0), mask);
+ 		mask = (qmask >> 32);
+@@ -1025,7 +1038,7 @@ static u64 ixgbe_get_tx_pending(struct ixgbe_ring *ring)
+ 	return ((head <= tail) ? tail : tail + ring->count) - head;
+ }
+ 
+-static inline bool ixgbe_check_tx_hang(struct ixgbe_ring *tx_ring)
++static bool ixgbe_check_tx_hang(struct ixgbe_ring *tx_ring)
+ {
+ 	u32 tx_done = ixgbe_get_tx_completed(tx_ring);
+ 	u32 tx_done_old = tx_ring->tx_stats.tx_done_old;
+@@ -2515,6 +2528,7 @@ static void ixgbe_configure_msix(struct ixgbe_adapter *adapter)
+ 	case ixgbe_mac_X550:
+ 	case ixgbe_mac_X550EM_x:
+ 	case ixgbe_mac_x550em_a:
++	case ixgbe_mac_e610:
+ 		ixgbe_set_ivar(adapter, -1, 1, v_idx);
+ 		break;
+ 	default:
+@@ -2526,8 +2540,12 @@ static void ixgbe_configure_msix(struct ixgbe_adapter *adapter)
+ 	mask = IXGBE_EIMS_ENABLE_MASK;
+ 	mask &= ~(IXGBE_EIMS_OTHER |
+ 		  IXGBE_EIMS_MAILBOX |
++		  IXGBE_EIMS_FW_EVENT |
+ 		  IXGBE_EIMS_LSC);
+ 
++	if (adapter->hw.mac.type == ixgbe_mac_e610)
++		mask &= ~IXGBE_EIMS_FW_EVENT;
++
+ 	IXGBE_WRITE_REG(&adapter->hw, IXGBE_EIAC, mask);
+ }
+ 
+@@ -2744,6 +2762,7 @@ void ixgbe_write_eitr(struct ixgbe_q_vector *q_vector)
+ 	case ixgbe_mac_X550:
+ 	case ixgbe_mac_X550EM_x:
+ 	case ixgbe_mac_x550em_a:
++	case ixgbe_mac_e610:
+ 		/*
+ 		 * set the WDIS bit to not clear the timer bits and cause an
+ 		 * immediate assertion of the interrupt
+@@ -2966,6 +2985,222 @@ static void ixgbe_check_lsc(struct ixgbe_adapter *adapter)
+ 	}
+ }
+ 
++/**
++ * ixgbe_check_phy_fw_load - check if PHY FW load failed
++ * @adapter: pointer to adapter structure
++ * @link_cfg_err: bitmap from the link info structure
++ *
++ * Check if external PHY FW load failed and print an error message if it did.
++ */
++static void ixgbe_check_phy_fw_load(struct ixgbe_adapter *adapter,
++				    u8 link_cfg_err)
++{
++	if (!(link_cfg_err & IXGBE_ACI_LINK_EXTERNAL_PHY_LOAD_FAILURE)) {
++		adapter->flags2 &= ~IXGBE_FLAG2_PHY_FW_LOAD_FAILED;
++		return;
++	}
++
++	if (adapter->flags2 & IXGBE_FLAG2_PHY_FW_LOAD_FAILED)
++		return;
++
++	if (link_cfg_err & IXGBE_ACI_LINK_EXTERNAL_PHY_LOAD_FAILURE) {
++		netdev_err(adapter->netdev, "Device failed to load the FW for the external PHY. Please download and install the latest NVM for your device and try again\n");
++		adapter->flags2 |= IXGBE_FLAG2_PHY_FW_LOAD_FAILED;
++	}
++}
++
++/**
++ * ixgbe_check_module_power - check module power level
++ * @adapter: pointer to adapter structure
++ * @link_cfg_err: bitmap from the link info structure
++ *
++ * Check module power level returned by a previous call to aci_get_link_info
++ * and print error messages if module power level is not supported.
++ */
++static void ixgbe_check_module_power(struct ixgbe_adapter *adapter,
++				     u8 link_cfg_err)
++{
++	/* If module power level is supported, clear the flag. */
++	if (!(link_cfg_err & (IXGBE_ACI_LINK_INVAL_MAX_POWER_LIMIT |
++			      IXGBE_ACI_LINK_MODULE_POWER_UNSUPPORTED))) {
++		adapter->flags2 &= ~IXGBE_FLAG2_MOD_POWER_UNSUPPORTED;
++		return;
++	}
++
++	/* If IXGBE_FLAG2_MOD_POWER_UNSUPPORTED was previously set and the
++	 * above block didn't clear this bit, there's nothing to do.
++	 */
++	if (adapter->flags2 & IXGBE_FLAG2_MOD_POWER_UNSUPPORTED)
++		return;
++
++	if (link_cfg_err & IXGBE_ACI_LINK_INVAL_MAX_POWER_LIMIT) {
++		netdev_err(adapter->netdev, "The installed module is incompatible with the device's NVM image. Cannot start link\n");
++		adapter->flags2 |= IXGBE_FLAG2_MOD_POWER_UNSUPPORTED;
++	} else if (link_cfg_err & IXGBE_ACI_LINK_MODULE_POWER_UNSUPPORTED) {
++		netdev_err(adapter->netdev, "The module's power requirements exceed the device's power supply. Cannot start link\n");
++		adapter->flags2 |= IXGBE_FLAG2_MOD_POWER_UNSUPPORTED;
++	}
++}
++
++/**
++ * ixgbe_check_link_cfg_err - check if link configuration failed
++ * @adapter: pointer to adapter structure
++ * @link_cfg_err: bitmap from the link info structure
++ *
++ * Print if any link configuration failure happens due to the value in the
++ * link_cfg_err parameter in the link info structure.
++ */
++static void ixgbe_check_link_cfg_err(struct ixgbe_adapter *adapter,
++				     u8 link_cfg_err)
++{
++	ixgbe_check_module_power(adapter, link_cfg_err);
++	ixgbe_check_phy_fw_load(adapter, link_cfg_err);
++}
++
++/**
++ * ixgbe_process_link_status_event - process the link event
++ * @adapter: pointer to adapter structure
++ * @link_up: true if the physical link is up and false if it is down
++ * @link_speed: current link speed received from the link event
++ *
++ * Return: 0 on success and negative on failure.
++ */
++static int
++ixgbe_process_link_status_event(struct ixgbe_adapter *adapter, bool link_up,
++				u16 link_speed)
++{
++	struct ixgbe_hw *hw = &adapter->hw;
++	int status;
++
++	/* Update the link info structures and re-enable link events,
++	 * don't bail on failure due to other book keeping needed.
++	 */
++	status = ixgbe_update_link_info(hw);
++	if (status)
++		e_dev_err("Failed to update link status, err %d aq_err %d\n",
++			  status, hw->aci.last_status);
++
++	ixgbe_check_link_cfg_err(adapter, hw->link.link_info.link_cfg_err);
++
++	/* Check if the link state is up after updating link info, and treat
++	 * this event as an UP event since the link is actually UP now.
++	 */
++	if (hw->link.link_info.link_info & IXGBE_ACI_LINK_UP)
++		link_up = true;
++
++	/* Turn off PHY if media was removed. */
++	if (!(adapter->flags2 & IXGBE_FLAG2_NO_MEDIA) &&
++	    !(hw->link.link_info.link_info & IXGBE_ACI_MEDIA_AVAILABLE)) {
++		(adapter->flags2 |= IXGBE_FLAG2_NO_MEDIA);
++		if (ixgbe_aci_set_link_restart_an(hw, false))
++			e_dev_err("can't set link to OFF\n");
++	}
++
++	if (link_up == adapter->link_up &&
++	    link_up == netif_carrier_ok(adapter->netdev))
++		return 0;
++
++	if (link_up)
++		ixgbe_watchdog_link_is_up(adapter);
++	else
++		ixgbe_watchdog_link_is_down(adapter);
++
++	if (link_speed != adapter->link_speed) {
++		adapter->flags |= IXGBE_FLAG_NEED_LINK_UPDATE;
++		ixgbe_watchdog_update_link(adapter);
++	}
++
++	return 0;
++}
++
++/**
++ * ixgbe_handle_link_status_event - handle link status event via ACI
++ * @adapter: pointer to adapter structure
++ * @e: event structure containing link status info
++ */
++static void
++ixgbe_handle_link_status_event(struct ixgbe_adapter *adapter,
++			       struct ixgbe_aci_event *e)
++{
++	struct ixgbe_aci_cmd_get_link_status_data *link_data;
++	u16 link_speed;
++	bool link_up;
++
++	link_data = (struct ixgbe_aci_cmd_get_link_status_data *)e->msg_buf;
++
++	link_up = !!(link_data->link_info & IXGBE_ACI_LINK_UP);
++	link_speed = link_data->link_speed;
++
++	if (ixgbe_process_link_status_event(adapter, link_up, link_speed))
++		e_dev_warn("Could not process link status event");
++}
++
++/**
++ * ixgbe_schedule_fw_event - schedule Firmware event
++ * @adapter: pointer to the adapter structure
++ *
++ * If the adapter is not in down, removing or resetting state,
++ * an event is scheduled.
++ */
++static void ixgbe_schedule_fw_event(struct ixgbe_adapter *adapter)
++{
++	if (!test_bit(__IXGBE_DOWN, &adapter->state) &&
++	    !test_bit(__IXGBE_REMOVING, &adapter->state) &&
++	    !test_bit(__IXGBE_RESETTING, &adapter->state)) {
++		adapter->flags2 |= IXGBE_FLAG2_FW_ASYNC_EVENT;
++		ixgbe_service_event_schedule(adapter);
++	}
++}
++
++/**
++ * ixgbe_aci_event_cleanup - release msg_buf memory
++ * @event: pointer to the event holding msg_buf to be released
++ *
++ * Clean memory allocated for event's msg_buf. Implements auto memory cleanup.
++ */
++static void ixgbe_aci_event_cleanup(struct ixgbe_aci_event *event)
++{
++	kfree(event->msg_buf);
++}
++
++/**
++ * ixgbe_handle_fw_event - handle Firmware event
++ * @adapter: pointer to the adapter structure
++ *
++ * Obtain an event from ACI and then
++ * depending on the type of event through the opcode
++ * correspondingly process it.
++ */
++static void ixgbe_handle_fw_event(struct ixgbe_adapter *adapter)
++{
++	struct ixgbe_aci_event event __cleanup(ixgbe_aci_event_cleanup);
++	struct ixgbe_hw *hw = &adapter->hw;
++	bool pending = false;
++	int err;
++
++	if (adapter->flags2 & IXGBE_FLAG2_FW_ASYNC_EVENT)
++		adapter->flags2 &= ~IXGBE_FLAG2_FW_ASYNC_EVENT;
++	event.buf_len = IXGBE_ACI_MAX_BUFFER_SIZE;
++	event.msg_buf = kzalloc(event.buf_len, GFP_KERNEL);
++	if (!event.msg_buf)
++		return;
++
++	do {
++		err = ixgbe_aci_get_event(hw, &event, &pending);
++		if (err)
++			break;
++
++		switch (event.desc.opcode) {
++		case ixgbe_aci_opc_get_link_status:
++			ixgbe_handle_link_status_event(adapter, &event);
++			break;
++		default:
++			e_warn(hw, "unknown FW async event captured\n");
++			break;
++		}
++	} while (pending);
++}
++
+ static inline void ixgbe_irq_enable_queues(struct ixgbe_adapter *adapter,
+ 					   u64 qmask)
+ {
+@@ -2982,6 +3217,7 @@ static inline void ixgbe_irq_enable_queues(struct ixgbe_adapter *adapter,
+ 	case ixgbe_mac_X550:
+ 	case ixgbe_mac_X550EM_x:
+ 	case ixgbe_mac_x550em_a:
++	case ixgbe_mac_e610:
+ 		mask = (qmask & 0xFFFFFFFF);
+ 		if (mask)
+ 			IXGBE_WRITE_REG(hw, IXGBE_EIMS_EX(0), mask);
+@@ -3035,6 +3271,9 @@ static inline void ixgbe_irq_enable(struct ixgbe_adapter *adapter, bool queues,
+ 	case ixgbe_mac_X540:
+ 	case ixgbe_mac_X550:
+ 	case ixgbe_mac_X550EM_x:
++	case ixgbe_mac_e610:
++		mask |= IXGBE_EIMS_FW_EVENT;
++		fallthrough;
+ 	case ixgbe_mac_x550em_a:
+ 		if (adapter->hw.device_id == IXGBE_DEV_ID_X550EM_X_SFP ||
+ 		    adapter->hw.device_id == IXGBE_DEV_ID_X550EM_A_SFP ||
+@@ -3091,12 +3330,16 @@ static irqreturn_t ixgbe_msix_other(int irq, void *data)
+ 	if (eicr & IXGBE_EICR_MAILBOX)
+ 		ixgbe_msg_task(adapter);
+ 
++	if (eicr & IXGBE_EICR_FW_EVENT)
++		ixgbe_schedule_fw_event(adapter);
++
+ 	switch (hw->mac.type) {
+ 	case ixgbe_mac_82599EB:
+ 	case ixgbe_mac_X540:
+ 	case ixgbe_mac_X550:
+ 	case ixgbe_mac_X550EM_x:
+ 	case ixgbe_mac_x550em_a:
++	case ixgbe_mac_e610:
+ 		if (hw->phy.type == ixgbe_phy_x550em_ext_t &&
+ 		    (eicr & IXGBE_EICR_GPI_SDP0_X540)) {
+ 			adapter->flags2 |= IXGBE_FLAG2_PHY_INTERRUPT;
+@@ -3334,6 +3577,9 @@ static irqreturn_t ixgbe_intr(int irq, void *data)
+ 	if (eicr & IXGBE_EICR_LSC)
+ 		ixgbe_check_lsc(adapter);
+ 
++	if (eicr & IXGBE_EICR_FW_EVENT)
++		ixgbe_schedule_fw_event(adapter);
++
+ 	switch (hw->mac.type) {
+ 	case ixgbe_mac_82599EB:
+ 		ixgbe_check_sfp_event(adapter, eicr);
+@@ -3342,6 +3588,7 @@ static irqreturn_t ixgbe_intr(int irq, void *data)
+ 	case ixgbe_mac_X550:
+ 	case ixgbe_mac_X550EM_x:
+ 	case ixgbe_mac_x550em_a:
++	case ixgbe_mac_e610:
+ 		if (eicr & IXGBE_EICR_ECC) {
+ 			e_info(link, "Received ECC Err, initiating reset\n");
+ 			set_bit(__IXGBE_RESET_REQUESTED, &adapter->state);
+@@ -3442,6 +3689,7 @@ static inline void ixgbe_irq_disable(struct ixgbe_adapter *adapter)
+ 	case ixgbe_mac_X550:
+ 	case ixgbe_mac_X550EM_x:
+ 	case ixgbe_mac_x550em_a:
++	case ixgbe_mac_e610:
+ 		IXGBE_WRITE_REG(&adapter->hw, IXGBE_EIMC, 0xFFFF0000);
+ 		IXGBE_WRITE_REG(&adapter->hw, IXGBE_EIMC_EX(0), ~0);
+ 		IXGBE_WRITE_REG(&adapter->hw, IXGBE_EIMC_EX(1), ~0);
+@@ -4279,6 +4527,9 @@ static void ixgbe_set_rx_buffer_len(struct ixgbe_adapter *adapter)
+ 	int i;
+ 	u32 mhadd, hlreg0;
+ 
++	if (hw->mac.type == ixgbe_mac_e610)
++		max_frame += IXGBE_TS_HDR_LEN;
++
+ #ifdef IXGBE_FCOE
+ 	/* adjust max frame to be able to do baby jumbo for FCoE */
+ 	if ((adapter->flags & IXGBE_FLAG_FCOE_ENABLED) &&
+@@ -4359,6 +4610,7 @@ static void ixgbe_setup_rdrxctl(struct ixgbe_adapter *adapter)
+ 	case ixgbe_mac_X550:
+ 	case ixgbe_mac_X550EM_x:
+ 	case ixgbe_mac_x550em_a:
++	case ixgbe_mac_e610:
+ 		if (adapter->num_vfs)
+ 			rdrxctl |= IXGBE_RDRXCTL_PSP;
+ 		fallthrough;
+@@ -4526,6 +4778,7 @@ static void ixgbe_vlan_strip_disable(struct ixgbe_adapter *adapter)
+ 	case ixgbe_mac_X550:
+ 	case ixgbe_mac_X550EM_x:
+ 	case ixgbe_mac_x550em_a:
++	case ixgbe_mac_e610:
+ 		for (i = 0; i < adapter->num_rx_queues; i++) {
+ 			struct ixgbe_ring *ring = adapter->rx_ring[i];
+ 
+@@ -4564,6 +4817,7 @@ static void ixgbe_vlan_strip_enable(struct ixgbe_adapter *adapter)
+ 	case ixgbe_mac_X550:
+ 	case ixgbe_mac_X550EM_x:
+ 	case ixgbe_mac_x550em_a:
++	case ixgbe_mac_e610:
+ 		for (i = 0; i < adapter->num_rx_queues; i++) {
+ 			struct ixgbe_ring *ring = adapter->rx_ring[i];
+ 
+@@ -5149,6 +5403,7 @@ static int ixgbe_hpbthresh(struct ixgbe_adapter *adapter, int pb)
+ 	case ixgbe_mac_X550:
+ 	case ixgbe_mac_X550EM_x:
+ 	case ixgbe_mac_x550em_a:
++	case ixgbe_mac_e610:
+ 		dv_id = IXGBE_DV_X540(link, tc);
+ 		break;
+ 	default:
+@@ -5210,6 +5465,7 @@ static int ixgbe_lpbthresh(struct ixgbe_adapter *adapter, int pb)
+ 	case ixgbe_mac_X550:
+ 	case ixgbe_mac_X550EM_x:
+ 	case ixgbe_mac_x550em_a:
++	case ixgbe_mac_e610:
+ 		dv_id = IXGBE_LOW_DV_X540(tc);
+ 		break;
+ 	default:
+@@ -5511,6 +5767,48 @@ static void ixgbe_configure(struct ixgbe_adapter *adapter)
+ 	ixgbe_configure_dfwd(adapter);
+ }
+ 
++/**
++ * ixgbe_enable_link_status_events - enable link status events
++ * @adapter: pointer to the adapter structure
++ * @mask: event mask to be set
++ *
++ * Enables link status events by invoking ixgbe_configure_lse()
++ *
++ * Return: the exit code of the operation.
++ */
++static int ixgbe_enable_link_status_events(struct ixgbe_adapter *adapter,
++					   u16 mask)
++{
++	int err;
++
++	err = ixgbe_configure_lse(&adapter->hw, true, mask);
++	if (err)
++		return err;
++
++	adapter->lse_mask = mask;
++	return 0;
++}
++
++/**
++ * ixgbe_disable_link_status_events - disable link status events
++ * @adapter: pointer to the adapter structure
++ *
++ * Disables link status events by invoking ixgbe_configure_lse()
++ *
++ * Return: the exit code of the operation.
++ */
++static int ixgbe_disable_link_status_events(struct ixgbe_adapter *adapter)
++{
++	int err;
++
++	err = ixgbe_configure_lse(&adapter->hw, false, adapter->lse_mask);
++	if (err)
++		return err;
++
++	adapter->lse_mask = 0;
++	return 0;
++}
++
+ /**
+  * ixgbe_sfp_link_config - set up SFP+ link
+  * @adapter: pointer to private adapter struct
+@@ -5534,13 +5832,21 @@ static void ixgbe_sfp_link_config(struct ixgbe_adapter *adapter)
+  * ixgbe_non_sfp_link_config - set up non-SFP+ link
+  * @hw: pointer to private hardware struct
+  *
+- * Returns 0 on success, negative on failure
++ * Configure non-SFP link.
++ *
++ * Return: 0 on success, negative on failure
+  **/
+ static int ixgbe_non_sfp_link_config(struct ixgbe_hw *hw)
+ {
+-	u32 speed;
++	struct ixgbe_adapter *adapter = container_of(hw, struct ixgbe_adapter,
++						     hw);
++	u16 mask = ~((u16)(IXGBE_ACI_LINK_EVENT_UPDOWN |
++			   IXGBE_ACI_LINK_EVENT_MEDIA_NA |
++			   IXGBE_ACI_LINK_EVENT_MODULE_QUAL_FAIL |
++			   IXGBE_ACI_LINK_EVENT_PHY_FW_LOAD_FAIL));
+ 	bool autoneg, link_up = false;
+ 	int ret = -EIO;
++	u32 speed;
+ 
+ 	if (hw->mac.ops.check_link)
+ 		ret = hw->mac.ops.check_link(hw, &speed, &link_up, false);
+@@ -5563,12 +5869,52 @@ static int ixgbe_non_sfp_link_config(struct ixgbe_hw *hw)
+ 	if (ret)
+ 		return ret;
+ 
+-	if (hw->mac.ops.setup_link)
++	if (hw->mac.ops.setup_link) {
++		if (adapter->hw.mac.type == ixgbe_mac_e610) {
++			ret = ixgbe_enable_link_status_events(adapter, mask);
++			if (ret)
++				return ret;
++		}
+ 		ret = hw->mac.ops.setup_link(hw, speed, link_up);
++	}
+ 
+ 	return ret;
+ }
+ 
++/**
++ * ixgbe_check_media_subtask - Check for media
++ * @adapter: pointer to adapter structure
++ *
++ * If media is available, then initialize PHY user configuration if it is not
++ * been, and configure the PHY if the interface is up.
++ */
++static void ixgbe_check_media_subtask(struct ixgbe_adapter *adapter)
++{
++	struct ixgbe_hw *hw = &adapter->hw;
++
++	/* No need to check for media if it's already present */
++	if (!(adapter->flags2 & IXGBE_FLAG2_NO_MEDIA))
++		return;
++
++	/* Refresh link info and check if media is present */
++	if (ixgbe_update_link_info(hw))
++		return;
++
++	ixgbe_check_link_cfg_err(adapter, hw->link.link_info.link_cfg_err);
++
++	if (hw->link.link_info.link_info & IXGBE_ACI_MEDIA_AVAILABLE) {
++		/* PHY settings are reset on media insertion, reconfigure
++		 * PHY to preserve settings.
++		 */
++		if (!(ixgbe_non_sfp_link_config(&adapter->hw)))
++			adapter->flags2 &= ~IXGBE_FLAG2_NO_MEDIA;
++
++		/* A Link Status Event will be generated; the event handler
++		 * will complete bringing the interface up
++		 */
++	}
++}
++
+ /**
+  * ixgbe_clear_vf_stats_counters - Clear out VF stats after reset
+  * @adapter: board private structure
+@@ -5632,6 +5978,7 @@ static void ixgbe_setup_gpie(struct ixgbe_adapter *adapter)
+ 		case ixgbe_mac_X550:
+ 		case ixgbe_mac_X550EM_x:
+ 		case ixgbe_mac_x550em_a:
++		case ixgbe_mac_e610:
+ 		default:
+ 			IXGBE_WRITE_REG(hw, IXGBE_EIAM_EX(0), 0xFFFFFFFF);
+ 			IXGBE_WRITE_REG(hw, IXGBE_EIAM_EX(1), 0xFFFFFFFF);
+@@ -5982,6 +6329,7 @@ void ixgbe_disable_tx(struct ixgbe_adapter *adapter)
+ 	case ixgbe_mac_X550:
+ 	case ixgbe_mac_X550EM_x:
+ 	case ixgbe_mac_x550em_a:
++	case ixgbe_mac_e610:
+ 		IXGBE_WRITE_REG(hw, IXGBE_DMATXCTL,
+ 				(IXGBE_READ_REG(hw, IXGBE_DMATXCTL) &
+ 				 ~IXGBE_DMATXCTL_TE));
+@@ -6226,6 +6574,8 @@ void ixgbe_down(struct ixgbe_adapter *adapter)
+ 
+ 	ixgbe_clean_all_tx_rings(adapter);
+ 	ixgbe_clean_all_rx_rings(adapter);
++	if (adapter->hw.mac.type == ixgbe_mac_e610)
++		ixgbe_disable_link_status_events(adapter);
+ }
+ 
+ /**
+@@ -6281,6 +6631,7 @@ static void ixgbe_init_dcb(struct ixgbe_adapter *adapter)
+ 		break;
+ 	case ixgbe_mac_X540:
+ 	case ixgbe_mac_X550:
++	case ixgbe_mac_e610:
+ 		adapter->dcb_cfg.num_tcs.pg_tcs = X540_TRAFFIC_CLASS;
+ 		adapter->dcb_cfg.num_tcs.pfc_tcs = X540_TRAFFIC_CLASS;
+ 		break;
+@@ -6344,6 +6695,8 @@ static int ixgbe_sw_init(struct ixgbe_adapter *adapter,
+ 	hw->subsystem_vendor_id = pdev->subsystem_vendor;
+ 	hw->subsystem_device_id = pdev->subsystem_device;
+ 
++	hw->mac.max_link_up_time = IXGBE_LINK_UP_TIME;
++
+ 	/* get_invariants needs the device IDs */
+ 	ii->get_invariants(hw);
+ 
+@@ -6911,6 +7264,16 @@ int ixgbe_open(struct net_device *netdev)
+ 	ixgbe_up_complete(adapter);
+ 
+ 	udp_tunnel_nic_reset_ntf(netdev);
++	if (adapter->hw.mac.type == ixgbe_mac_e610) {
++		if (ixgbe_update_link_info(&adapter->hw))
++			e_dev_warn("ixgbe_update_link_info failed\n");
++
++		ixgbe_check_link_cfg_err(adapter,
++					 adapter->hw.link.link_info.link_cfg_err);
++
++		if (ixgbe_non_sfp_link_config(&adapter->hw))
++			e_dev_warn("link setup failed\n");
++	}
+ 
+ 	return 0;
+ 
+@@ -7064,6 +7427,7 @@ static int __ixgbe_shutdown(struct pci_dev *pdev, bool *enable_wake)
+ 	case ixgbe_mac_X550:
+ 	case ixgbe_mac_X550EM_x:
+ 	case ixgbe_mac_x550em_a:
++	case ixgbe_mac_e610:
+ 		pci_wake_from_d3(pdev, !!wufc);
+ 		break;
+ 	default:
+@@ -7211,6 +7575,7 @@ void ixgbe_update_stats(struct ixgbe_adapter *adapter)
+ 		case ixgbe_mac_X550:
+ 		case ixgbe_mac_X550EM_x:
+ 		case ixgbe_mac_x550em_a:
++		case ixgbe_mac_e610:
+ 			hwstats->pxonrxc[i] +=
+ 				IXGBE_READ_REG(hw, IXGBE_PXONRXCNT(i));
+ 			break;
+@@ -7223,11 +7588,12 @@ void ixgbe_update_stats(struct ixgbe_adapter *adapter)
+ 	for (i = 0; i < 16; i++) {
+ 		hwstats->qptc[i] += IXGBE_READ_REG(hw, IXGBE_QPTC(i));
+ 		hwstats->qprc[i] += IXGBE_READ_REG(hw, IXGBE_QPRC(i));
+-		if ((hw->mac.type == ixgbe_mac_82599EB) ||
+-		    (hw->mac.type == ixgbe_mac_X540) ||
+-		    (hw->mac.type == ixgbe_mac_X550) ||
+-		    (hw->mac.type == ixgbe_mac_X550EM_x) ||
+-		    (hw->mac.type == ixgbe_mac_x550em_a)) {
++		if (hw->mac.type == ixgbe_mac_82599EB ||
++		    hw->mac.type == ixgbe_mac_X540 ||
++		    hw->mac.type == ixgbe_mac_X550 ||
++		    hw->mac.type == ixgbe_mac_X550EM_x ||
++		    hw->mac.type == ixgbe_mac_x550em_a ||
++		    hw->mac.type == ixgbe_mac_e610) {
+ 			hwstats->qbtc[i] += IXGBE_READ_REG(hw, IXGBE_QBTC_L(i));
+ 			IXGBE_READ_REG(hw, IXGBE_QBTC_H(i)); /* to clear */
+ 			hwstats->qbrc[i] += IXGBE_READ_REG(hw, IXGBE_QBRC_L(i));
+@@ -7253,6 +7619,7 @@ void ixgbe_update_stats(struct ixgbe_adapter *adapter)
+ 	case ixgbe_mac_X550:
+ 	case ixgbe_mac_X550EM_x:
+ 	case ixgbe_mac_x550em_a:
++	case ixgbe_mac_e610:
+ 		/* OS2BMC stats are X540 and later */
+ 		hwstats->o2bgptc += IXGBE_READ_REG(hw, IXGBE_O2BGPTC);
+ 		hwstats->o2bspc += IXGBE_READ_REG(hw, IXGBE_O2BSPC);
+@@ -7553,6 +7920,7 @@ static void ixgbe_watchdog_link_is_up(struct ixgbe_adapter *adapter)
+ 	case ixgbe_mac_X550:
+ 	case ixgbe_mac_X550EM_x:
+ 	case ixgbe_mac_x550em_a:
++	case ixgbe_mac_e610:
+ 	case ixgbe_mac_82599EB: {
+ 		u32 mflcn = IXGBE_READ_REG(hw, IXGBE_MFLCN);
+ 		u32 fccfg = IXGBE_READ_REG(hw, IXGBE_FCCFG);
+@@ -8054,6 +8422,11 @@ static void ixgbe_service_task(struct work_struct *work)
+ 		ixgbe_service_event_complete(adapter);
+ 		return;
+ 	}
++	if (adapter->hw.mac.type == ixgbe_mac_e610) {
++		if (adapter->flags2 & IXGBE_FLAG2_FW_ASYNC_EVENT)
++			ixgbe_handle_fw_event(adapter);
++		ixgbe_check_media_subtask(adapter);
++	}
+ 	ixgbe_reset_subtask(adapter);
+ 	ixgbe_phy_interrupt_subtask(adapter);
+ 	ixgbe_sfp_detection_subtask(adapter);
+@@ -10772,6 +11145,24 @@ bool ixgbe_wol_supported(struct ixgbe_adapter *adapter, u16 device_id,
+ 	return false;
+ }
+ 
++/**
++ * ixgbe_set_fw_version_e610 - Set FW version specifically on E610 adapters
++ * @adapter: the adapter private structure
++ *
++ * This function is used by probe and ethtool to determine the FW version to
++ * format to display. The FW version is taken from the EEPROM/NVM.
++ *
++ */
++static void ixgbe_set_fw_version_e610(struct ixgbe_adapter *adapter)
++{
++	struct ixgbe_orom_info *orom = &adapter->hw.flash.orom;
++	struct ixgbe_nvm_info *nvm = &adapter->hw.flash.nvm;
++
++	snprintf(adapter->eeprom_id, sizeof(adapter->eeprom_id),
++		 "%x.%02x 0x%x %d.%d.%d", nvm->major, nvm->minor,
++		 nvm->eetrack, orom->major, orom->build, orom->patch);
++}
++
+ /**
+  * ixgbe_set_fw_version - Set FW version
+  * @adapter: the adapter private structure
+@@ -10784,6 +11175,11 @@ static void ixgbe_set_fw_version(struct ixgbe_adapter *adapter)
+ 	struct ixgbe_hw *hw = &adapter->hw;
+ 	struct ixgbe_nvm_version nvm_ver;
+ 
++	if (adapter->hw.mac.type == ixgbe_mac_e610) {
++		ixgbe_set_fw_version_e610(adapter);
++		return;
++	}
++
+ 	ixgbe_get_oem_prod_version(hw, &nvm_ver);
+ 	if (nvm_ver.oem_valid) {
+ 		snprintf(adapter->eeprom_id, sizeof(adapter->eeprom_id),
+@@ -10870,6 +11266,8 @@ static int ixgbe_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ #else
+ 		indices = IXGBE_MAX_RSS_INDICES;
+ #endif
++	} else if (ii->mac == ixgbe_mac_e610) {
++		indices = IXGBE_MAX_RSS_INDICES_X550;
+ 	}
+ 
+ 	netdev = alloc_etherdev_mq(sizeof(struct ixgbe_adapter), indices);
+@@ -10941,6 +11339,7 @@ static int ixgbe_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	switch (adapter->hw.mac.type) {
+ 	case ixgbe_mac_X550:
+ 	case ixgbe_mac_X550EM_x:
++	case ixgbe_mac_e610:
+ 		netdev->udp_tunnel_nic_info = &ixgbe_udp_tunnels_x550;
+ 		break;
+ 	case ixgbe_mac_x550em_a:
+@@ -10961,6 +11360,7 @@ static int ixgbe_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	case ixgbe_mac_X550:
+ 	case ixgbe_mac_X550EM_x:
+ 	case ixgbe_mac_x550em_a:
++	case ixgbe_mac_e610:
+ 		IXGBE_WRITE_REG(&adapter->hw, IXGBE_WUS, ~0);
+ 		break;
+ 	default:
+@@ -11133,6 +11533,8 @@ static int ixgbe_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	ether_addr_copy(hw->mac.addr, hw->mac.perm_addr);
+ 	ixgbe_mac_set_default_filter(adapter);
+ 
++	if (hw->mac.type == ixgbe_mac_e610)
++		mutex_init(&hw->aci.lock);
+ 	timer_setup(&adapter->service_timer, ixgbe_service_timer, 0);
+ 
+ 	if (ixgbe_removed(hw->hw_addr)) {
+@@ -11278,6 +11680,8 @@ static int ixgbe_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ err_register:
+ 	ixgbe_release_hw_control(adapter);
+ 	ixgbe_clear_interrupt_scheme(adapter);
++	if (hw->mac.type == ixgbe_mac_e610)
++		mutex_destroy(&adapter->hw.aci.lock);
+ err_sw_init:
+ 	ixgbe_disable_sriov(adapter);
+ 	adapter->flags2 &= ~IXGBE_FLAG2_SEARCH_FOR_SFP;
+@@ -11324,6 +11728,12 @@ static void ixgbe_remove(struct pci_dev *pdev)
+ 	set_bit(__IXGBE_REMOVING, &adapter->state);
+ 	cancel_work_sync(&adapter->service_task);
+ 
++	if (adapter->hw.mac.type == ixgbe_mac_e610)
++		ixgbe_disable_link_status_events(adapter);
++
++	if (adapter->hw.mac.type == ixgbe_mac_e610)
++		mutex_destroy(&adapter->hw.aci.lock);
++
+ 	if (adapter->mii_bus)
+ 		mdiobus_unregister(adapter->mii_bus);
+ 
+@@ -11455,6 +11865,9 @@ static pci_ers_result_t ixgbe_io_error_detected(struct pci_dev *pdev,
+ 		case ixgbe_mac_x550em_a:
+ 			device_id = IXGBE_DEV_ID_X550EM_A_VF;
+ 			break;
++		case ixgbe_mac_e610:
++			device_id = IXGBE_DEV_ID_E610_VF;
++			break;
+ 		default:
+ 			device_id = 0;
+ 			break;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_mbx.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_mbx.c
+index d67d77e..788b5af 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_mbx.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_mbx.c
+@@ -1,5 +1,5 @@
+ // SPDX-License-Identifier: GPL-2.0
+-/* Copyright(c) 1999 - 2018 Intel Corporation. */
++/* Copyright(c) 1999 - 2024 Intel Corporation. */
+ 
+ #include <linux/pci.h>
+ #include <linux/delay.h>
+@@ -283,6 +283,7 @@ static int ixgbe_check_for_rst_pf(struct ixgbe_hw *hw, u16 vf_number)
+ 	case ixgbe_mac_X550:
+ 	case ixgbe_mac_X550EM_x:
+ 	case ixgbe_mac_x550em_a:
++	case ixgbe_mac_e610:
+ 		vflre = IXGBE_READ_REG(hw, IXGBE_VFLREC(reg_offset));
+ 		break;
+ 	default:
+@@ -407,6 +408,7 @@ void ixgbe_init_mbx_params_pf(struct ixgbe_hw *hw)
+ 	    hw->mac.type != ixgbe_mac_X550 &&
+ 	    hw->mac.type != ixgbe_mac_X550EM_x &&
+ 	    hw->mac.type != ixgbe_mac_x550em_a &&
++	    hw->mac.type != ixgbe_mac_e610 &&
+ 	    hw->mac.type != ixgbe_mac_X540)
+ 		return;
+ 
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
+index 07eaa3c3..0a03a8b 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
+@@ -1,5 +1,5 @@
+ // SPDX-License-Identifier: GPL-2.0
+-/* Copyright(c) 1999 - 2018 Intel Corporation. */
++/* Copyright(c) 1999 - 2024 Intel Corporation. */
+ 
+ #include <linux/pci.h>
+ #include <linux/delay.h>
+@@ -1117,7 +1117,7 @@ int ixgbe_setup_phy_link_generic(struct ixgbe_hw *hw)
+ 	hw->phy.ops.read_reg(hw, IXGBE_MII_AUTONEG_VENDOR_PROVISION_1_REG,
+ 			     MDIO_MMD_AN, &autoneg_reg);
+ 
+-	if (hw->mac.type == ixgbe_mac_X550) {
++	if (hw->mac.type == ixgbe_mac_X550 || hw->mac.type == ixgbe_mac_e610) {
+ 		/* Set or unset auto-negotiation 5G advertisement */
+ 		autoneg_reg &= ~IXGBE_MII_5GBASE_T_ADVERTISE;
+ 		if ((hw->phy.autoneg_advertised & IXGBE_LINK_SPEED_5GB_FULL) &&
+@@ -1233,6 +1233,7 @@ static int ixgbe_get_copper_speeds_supported(struct ixgbe_hw *hw)
+ 
+ 	switch (hw->mac.type) {
+ 	case ixgbe_mac_X550:
++	case ixgbe_mac_e610:
+ 		hw->phy.speeds_supported |= IXGBE_LINK_SPEED_2_5GB_FULL;
+ 		hw->phy.speeds_supported |= IXGBE_LINK_SPEED_5GB_FULL;
+ 		break;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
+index f1ffa39..778dbbb 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
+@@ -1,5 +1,5 @@
+ // SPDX-License-Identifier: GPL-2.0
+-/* Copyright(c) 1999 - 2018 Intel Corporation. */
++/* Copyright(c) 1999 - 2024 Intel Corporation. */
+ 
+ #include <linux/pci.h>
+ #include <linux/delay.h>
+@@ -65,7 +65,9 @@ int ixgbe_setup_mac_link_X540(struct ixgbe_hw *hw, ixgbe_link_speed speed,
+  *  Resets the hardware by resetting the transmit and receive units, masks
+  *  and clears all interrupts, perform a PHY reset, and perform a link (MAC)
+  *  reset.
+- **/
++ *
++ *  Return: 0 on success, non-zero on failure
++ */
+ int ixgbe_reset_hw_X540(struct ixgbe_hw *hw)
+ {
+ 	u32 swfw_mask = hw->phy.phy_semaphore_mask;
+@@ -132,28 +134,30 @@ int ixgbe_reset_hw_X540(struct ixgbe_hw *hw)
+ 	hw->mac.num_rar_entries = IXGBE_X540_MAX_TX_QUEUES;
+ 	hw->mac.ops.init_rx_addrs(hw);
+ 
+-	/* Store the permanent SAN mac address */
+-	hw->mac.ops.get_san_mac_addr(hw, hw->mac.san_addr);
++	if (hw->mac.type != ixgbe_mac_e610) {
++		/* Store the permanent SAN mac address */
++		hw->mac.ops.get_san_mac_addr(hw, hw->mac.san_addr);
+ 
+-	/* Add the SAN MAC address to the RAR only if it's a valid address */
+-	if (is_valid_ether_addr(hw->mac.san_addr)) {
+-		/* Save the SAN MAC RAR index */
+-		hw->mac.san_mac_rar_index = hw->mac.num_rar_entries - 1;
++		/* Add the SAN MAC address to RAR if it's a valid address */
++		if (is_valid_ether_addr(hw->mac.san_addr)) {
++			/* Save the SAN MAC RAR index */
++			hw->mac.san_mac_rar_index = hw->mac.num_rar_entries - 1;
+ 
+-		hw->mac.ops.set_rar(hw, hw->mac.san_mac_rar_index,
+-				    hw->mac.san_addr, 0, IXGBE_RAH_AV);
++			hw->mac.ops.set_rar(hw, hw->mac.san_mac_rar_index,
++					    hw->mac.san_addr, 0, IXGBE_RAH_AV);
+ 
+-		/* clear VMDq pool/queue selection for this RAR */
+-		hw->mac.ops.clear_vmdq(hw, hw->mac.san_mac_rar_index,
+-				       IXGBE_CLEAR_VMDQ_ALL);
++			/* clear VMDq pool/queue selection for this RAR */
++			hw->mac.ops.clear_vmdq(hw, hw->mac.san_mac_rar_index,
++					       IXGBE_CLEAR_VMDQ_ALL);
+ 
+-		/* Reserve the last RAR for the SAN MAC address */
+-		hw->mac.num_rar_entries--;
+-	}
++			/* Reserve the last RAR for the SAN MAC address */
++			hw->mac.num_rar_entries--;
++		}
+ 
+-	/* Store the alternative WWNN/WWPN prefix */
+-	hw->mac.ops.get_wwn_prefix(hw, &hw->mac.wwnn_prefix,
+-				   &hw->mac.wwpn_prefix);
++		/* Store the alternative WWNN/WWPN prefix */
++		hw->mac.ops.get_wwn_prefix(hw, &hw->mac.wwnn_prefix,
++					   &hw->mac.wwpn_prefix);
++	}
+ 
+ 	return status;
+ }
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.h
+index b69a680..6ed360c 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.h
+@@ -1,5 +1,8 @@
+ /* SPDX-License-Identifier: GPL-2.0 */
+-/* Copyright(c) 1999 - 2018 Intel Corporation. */
++/* Copyright(c) 1999 - 2024 Intel Corporation. */
++
++#ifndef _IXGBE_X540_H_
++#define _IXGBE_X540_H_
+ 
+ #include "ixgbe_type.h"
+ 
+@@ -17,3 +20,5 @@ int ixgbe_acquire_swfw_sync_X540(struct ixgbe_hw *hw, u32 mask);
+ void ixgbe_release_swfw_sync_X540(struct ixgbe_hw *hw, u32 mask);
+ void ixgbe_init_swfw_sync_X540(struct ixgbe_hw *hw);
+ int ixgbe_init_eeprom_params_X540(struct ixgbe_hw *hw);
++
++#endif /* _IXGBE_X540_H_ */
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+index 2decb07..71f111f 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+@@ -1,7 +1,8 @@
+ // SPDX-License-Identifier: GPL-2.0
+-/* Copyright(c) 1999 - 2018 Intel Corporation. */
++/* Copyright(c) 1999 - 2024 Intel Corporation. */
+ 
+ #include "ixgbe_x540.h"
++#include "ixgbe_x550.h"
+ #include "ixgbe_type.h"
+ #include "ixgbe_common.h"
+ #include "ixgbe_phy.h"
+@@ -2819,9 +2820,9 @@ static int ixgbe_led_off_t_x550em(struct ixgbe_hw *hw, u32 led_idx)
+  *  semaphore, -EIO when command fails or -ENIVAL when incorrect
+  *  params passed.
+  **/
+-static int ixgbe_set_fw_drv_ver_x550(struct ixgbe_hw *hw, u8 maj, u8 min,
+-				     u8 build, u8 sub, u16 len,
+-				     const char *driver_ver)
++int ixgbe_set_fw_drv_ver_x550(struct ixgbe_hw *hw, u8 maj, u8 min,
++			      u8 build, u8 sub, u16 len,
++			      const char *driver_ver)
+ {
+ 	struct ixgbe_hic_drv_info2 fw_cmd;
+ 	int ret_val;
+@@ -3554,14 +3555,14 @@ static int ixgbe_reset_hw_X550em(struct ixgbe_hw *hw)
+ 	return status;
+ }
+ 
+-/** ixgbe_set_ethertype_anti_spoofing_X550 - Enable/Disable Ethertype
++/** ixgbe_set_ethertype_anti_spoofing_x550 - Enable/Disable Ethertype
+  *	anti-spoofing
+  *  @hw:  pointer to hardware structure
+  *  @enable: enable or disable switch for Ethertype anti-spoofing
+  *  @vf: Virtual Function pool - VF Pool to set for Ethertype anti-spoofing
+  **/
+-static void ixgbe_set_ethertype_anti_spoofing_X550(struct ixgbe_hw *hw,
+-						   bool enable, int vf)
++void ixgbe_set_ethertype_anti_spoofing_x550(struct ixgbe_hw *hw,
++					    bool enable, int vf)
+ {
+ 	int vf_target_reg = vf >> 3;
+ 	int vf_target_shift = vf % 8 + IXGBE_SPOOF_ETHERTYPEAS_SHIFT;
+@@ -3576,14 +3577,14 @@ static void ixgbe_set_ethertype_anti_spoofing_X550(struct ixgbe_hw *hw,
+ 	IXGBE_WRITE_REG(hw, IXGBE_PFVFSPOOF(vf_target_reg), pfvfspoof);
+ }
+ 
+-/** ixgbe_set_source_address_pruning_X550 - Enable/Disbale src address pruning
++/** ixgbe_set_source_address_pruning_x550 - Enable/Disbale src address pruning
+  *  @hw: pointer to hardware structure
+  *  @enable: enable or disable source address pruning
+  *  @pool: Rx pool to set source address pruning for
+  **/
+-static void ixgbe_set_source_address_pruning_X550(struct ixgbe_hw *hw,
+-						  bool enable,
+-						  unsigned int pool)
++void ixgbe_set_source_address_pruning_x550(struct ixgbe_hw *hw,
++					   bool enable,
++					   unsigned int pool)
+ {
+ 	u64 pfflp;
+ 
+@@ -3880,9 +3881,9 @@ static int ixgbe_write_phy_reg_x550a(struct ixgbe_hw *hw, u32 reg_addr,
+ 	.set_mac_anti_spoofing		= &ixgbe_set_mac_anti_spoofing, \
+ 	.set_vlan_anti_spoofing		= &ixgbe_set_vlan_anti_spoofing, \
+ 	.set_source_address_pruning	= \
+-				&ixgbe_set_source_address_pruning_X550, \
++				&ixgbe_set_source_address_pruning_x550, \
+ 	.set_ethertype_anti_spoofing	= \
+-				&ixgbe_set_ethertype_anti_spoofing_X550, \
++				&ixgbe_set_ethertype_anti_spoofing_x550, \
+ 	.disable_rx_buff		= &ixgbe_disable_rx_buff_generic, \
+ 	.enable_rx_buff			= &ixgbe_enable_rx_buff_generic, \
+ 	.get_thermal_sensor_data	= NULL, \
+@@ -4096,7 +4097,7 @@ static const u32 ixgbe_mvals_X550EM_x[IXGBE_MVALS_IDX_LIMIT] = {
+ 	IXGBE_MVALS_INIT(X550EM_x)
+ };
+ 
+-static const u32 ixgbe_mvals_x550em_a[IXGBE_MVALS_IDX_LIMIT] = {
++const u32 ixgbe_mvals_x550em_a[IXGBE_MVALS_IDX_LIMIT] = {
+ 	IXGBE_MVALS_INIT(X550EM_a)
+ };
+ 
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.h
+new file mode 100644
+index 0000000..3e4092f
+--- /dev/null
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.h
+@@ -0,0 +1,20 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/* Copyright(c) 2024 Intel Corporation. */
++
++#ifndef _IXGBE_X550_H_
++#define _IXGBE_X550_H_
++
++#include "ixgbe_type.h"
++
++extern const u32 ixgbe_mvals_x550em_a[IXGBE_MVALS_IDX_LIMIT];
++
++int ixgbe_set_fw_drv_ver_x550(struct ixgbe_hw *hw, u8 maj, u8 min,
++			      u8 build, u8 sub, u16 len,
++			      const char *driver_ver);
++void ixgbe_set_source_address_pruning_x550(struct ixgbe_hw *hw,
++					   bool enable,
++					   unsigned int pool);
++void ixgbe_set_ethertype_anti_spoofing_x550(struct ixgbe_hw *hw,
++					    bool enable, int vf);
++
++#endif /* _IXGBE_X550_H_ */
 -- 
 2.31.1
 
