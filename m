@@ -4,68 +4,68 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 564EEC19F4E
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 24 Apr 2024 13:37:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9FA1BC10F15
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 24 Apr 2024 13:37:57 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id D51C3415AE;
-	Wed, 24 Apr 2024 13:37:45 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 653B141599;
+	Wed, 24 Apr 2024 13:37:57 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id cZ41rVtvroSM; Wed, 24 Apr 2024 13:37:45 +0000 (UTC)
+ id E_YWwNQTHqcJ; Wed, 24 Apr 2024 13:37:56 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org D43AC415B4
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 7795A415B3
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1713965865;
-	bh=G9cJ/HjoC/yOCST9Y7CM8w9Aw/bGEtYDO4qQ0pbMCTI=;
+	s=default; t=1713965876;
+	bh=oYuAiaa+AKSf2UGBPc4e5mE8nqtgb4cRQJ2BKD9fBNc=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=4I2tw9118SKhbszjToT8FePqBWuVBOviksHvUEk98Xjlu8Rv+A+G27zM4HLCR1Nzt
-	 IqD3Y4cf/44QIO7jHkBwNly4WzGzRyGYpjoEuf0vthSQGVB18KcwyN3MHam0YaGGz6
-	 3d2u0fq6/f92GwIhWJf97CksCCVYCz6N5IwHSYz+NKCPnDD8ynVWGPLyjLdCo/hDSV
-	 TC17hiTmHxeBUuPnCxVqXQl5qLlrZcRFWcI7JqQgmV/R51/u+ITYJD4bo6XIwWEzaa
-	 0je5nfC7bOmlxs7a0oNw3u/rl9CW8TdAN7Bg+d9rUKolyc8MfzPMzewKtJTi/sWMNm
-	 Eq79IZFbTGiAw==
+	b=v22gXjlLnzfUoe/EtffzCqDLuGjOSuFLyRDeRtR7YIOs8DHEAlOyCN9DkSUNROD6/
+	 R1EB8sfvQDRDTaLzoMR8NqjZYYcJMQTpXr0voInSFpDs50aIkG07lzfQ9WOgcmTWGi
+	 h8x3tn4NULdFzUl550Yku1t7PWWxBW38VtaUSALG1zkuOnOLSG//f3C/5I+9LfZab9
+	 du5S7HqGqsFzFVrznHHm6PVhW0XXK4vNVKBDWnye+A/6mgsPTA2xoFTrq26zL62R+M
+	 aiqOEFkhyM119AtjEUY8wyPrjg9kAt8NIrlsIemlkZWkHVgsEtyo4BO0gakZX5mWrv
+	 iimqVzJRijl0g==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id D43AC415B4;
-	Wed, 24 Apr 2024 13:37:44 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 7795A415B3;
+	Wed, 24 Apr 2024 13:37:55 +0000 (UTC)
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 90D261BF2C1
- for <intel-wired-lan@lists.osuosl.org>; Wed, 24 Apr 2024 13:37:42 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 806FF1BF2C1
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 24 Apr 2024 13:37:51 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 7DDC460BB2
- for <intel-wired-lan@lists.osuosl.org>; Wed, 24 Apr 2024 13:37:42 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 7A6D860A65
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 24 Apr 2024 13:37:51 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id xOPOYmyMBUFY for <intel-wired-lan@lists.osuosl.org>;
- Wed, 24 Apr 2024 13:37:41 +0000 (UTC)
+ id IOsbTdRHBTuc for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 24 Apr 2024 13:37:51 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.8;
  helo=mgamail.intel.com; envelope-from=karol.kolacinski@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org A6DC6605CE
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A6DC6605CE
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org C4A5D605CE
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C4A5D605CE
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.8])
- by smtp3.osuosl.org (Postfix) with ESMTPS id A6DC6605CE
- for <intel-wired-lan@lists.osuosl.org>; Wed, 24 Apr 2024 13:37:41 +0000 (UTC)
-X-CSE-ConnectionGUID: ojGZ0CYZQIaj1Is/37YCKw==
-X-CSE-MsgGUID: hXjsEocHSs2uENqA/u825w==
-X-IronPort-AV: E=McAfee;i="6600,9927,11054"; a="27110453"
-X-IronPort-AV: E=Sophos;i="6.07,226,1708416000"; d="scan'208";a="27110453"
+ by smtp3.osuosl.org (Postfix) with ESMTPS id C4A5D605CE
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 24 Apr 2024 13:37:50 +0000 (UTC)
+X-CSE-ConnectionGUID: cb6c79KZRre/cjIS+K+vSQ==
+X-CSE-MsgGUID: ao5OOTT+SP6TGDvMgrReww==
+X-IronPort-AV: E=McAfee;i="6600,9927,11054"; a="27110480"
+X-IronPort-AV: E=Sophos;i="6.07,226,1708416000"; d="scan'208";a="27110480"
 Received: from orviesa010.jf.intel.com ([10.64.159.150])
  by fmvoesa102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 24 Apr 2024 06:37:41 -0700
-X-CSE-ConnectionGUID: rbHC/EKIQD29zAZMqb5Uaw==
-X-CSE-MsgGUID: zZ8FG0pjT8e1+hmSKtIvLA==
+ 24 Apr 2024 06:37:49 -0700
+X-CSE-ConnectionGUID: ajWBKAMRQYqqSEL8Ms+xdw==
+X-CSE-MsgGUID: dH2T6as4Q1uDmLdMgFYJPg==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.07,226,1708416000"; d="scan'208";a="24601080"
+X-IronPort-AV: E=Sophos;i="6.07,226,1708416000"; d="scan'208";a="24601128"
 Received: from kkolacin-desk1.igk.intel.com ([10.102.102.152])
- by orviesa010.jf.intel.com with ESMTP; 24 Apr 2024 06:37:39 -0700
+ by orviesa010.jf.intel.com with ESMTP; 24 Apr 2024 06:37:47 -0700
 From: Karol Kolacinski <karol.kolacinski@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Wed, 24 Apr 2024 15:30:11 +0200
-Message-ID: <20240424133542.113933-18-karol.kolacinski@intel.com>
+Date: Wed, 24 Apr 2024 15:30:14 +0200
+Message-ID: <20240424133542.113933-21-karol.kolacinski@intel.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20240424133542.113933-16-karol.kolacinski@intel.com>
 References: <20240424133542.113933-16-karol.kolacinski@intel.com>
@@ -73,25 +73,25 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1713965861; x=1745501861;
+ t=1713965870; x=1745501870;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=VXrmH2/YygY4e/rt1+ZokjRIE3fgIkg32DwN4unYXls=;
- b=kVqFCLxDrY3RJWnPGTSTHELcZ7+hFUQTRy+2kKzhe3U5N18JYF2763LS
- qunBQ4s6A/iZVAxcP42A2vHhbSXEt3prCZHVeMwZ11MQwgBgnnjDMUcEQ
- c7+HAcQLn8xHo2SjnHz/lSgsjPxIeKsPMSkh2BuOUY8/13viRBLWBX3ze
- sp3fmImRiMLccRhgkmZmADxlR8rWsbywNJVbMSYChasS+WizwIryEFPaf
- gwY61LrBl0b9DbXrDJvoVWrVVDgIIEdMubmuhbqA20Tluh7PRkmZFjatO
- GiTpZ67NVEmTlhsRHkPB2RotQtLE90WCu6PfXeF1io1Th3lGWP8or/2Be
- A==;
+ bh=zxtw6q2FZh2PnVubMGNSdvsJbu5toIuxCc9Ms/yAMPw=;
+ b=XfZ8g6e3oexXvwCa/i26AIxhFjxcDfoo1EBQtG53SS/R/Qagai4F3L96
+ zrw4g4FcmF6Y4+57o6BSTbgbBXeqYKCHbSlb2uakpR+TQLbv4U1nY5h/h
+ WdCJReuKzPLsNRvjs1SqNuQsM/3hdu9Oec4Upu+g1a9ceO7Jnt2yFpjer
+ ka8XxyJoexx8mebckZu1ZG3ZowGrO7Fp8tmVs2IPfjmdVZI6zMKOcVTkV
+ 3rgYVoS2DeyO/3iKrKswb/4I3iyC5+3JEsQovJzmIuooMTbbiNIIzOpq+
+ Gx8HtY0opm6q0/q1KKWnsVmitlZvvRepcEj0tUY8BEPAlmeSGV0U4bGUq
+ g==;
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=kVqFCLxD
-Subject: [Intel-wired-lan] [PATCH v10 iwl-next 03/12] ice: Implement Tx
- interrupt enablement functions
+ header.a=rsa-sha256 header.s=Intel header.b=XfZ8g6e3
+Subject: [Intel-wired-lan] [PATCH v10 iwl-next 06/12] ice: Introduce
+ ice_get_base_incval() helper
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -104,190 +104,85 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Sergey Temerkhanov <sergey.temerkhanov@intel.com>, netdev@vger.kernel.org,
+Cc: netdev@vger.kernel.org,
  Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>,
  Karol Kolacinski <karol.kolacinski@intel.com>, anthony.l.nguyen@intel.com,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Jacob Keller <jacob.e.keller@intel.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Sergey Temerkhanov <sergey.temerkhanov@intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
 
-Introduce functions enabling/disabling Tx TS interrupts
-for the E822 and ETH56G PHYs
+Add a new helper for getting base clock increment value for specific HW.
 
-Signed-off-by: Sergey Temerkhanov <sergey.temerkhanov@intel.com>
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Reviewed-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
 Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
 ---
-V5 -> V6: Adjusted return in ice_phy_cfg_intr_e82x()
+V4 -> V5: Removed unused UNKNOWN_INCVAL_E82X
 
- drivers/net/ethernet/intel/ice/ice_ptp.c    | 66 +++++++++++----------
- drivers/net/ethernet/intel/ice/ice_ptp_hw.c | 31 ++++++++++
- drivers/net/ethernet/intel/ice/ice_ptp_hw.h |  4 +-
- 3 files changed, 66 insertions(+), 35 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_ptp.c    |  9 +--------
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.h | 18 ++++++++++++++++++
+ 2 files changed, 19 insertions(+), 8 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
-index cca9d09b2d61..412555194c97 100644
+index 4ed2213247f7..923011c9609a 100644
 --- a/drivers/net/ethernet/intel/ice/ice_ptp.c
 +++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-@@ -1457,42 +1457,46 @@ void ice_ptp_link_change(struct ice_pf *pf, u8 port, bool linkup)
-  * @ena: bool value to enable or disable interrupt
-  * @threshold: Minimum number of packets at which intr is triggered
-  *
-- * Utility function to enable or disable Tx timestamp interrupt and threshold
-+ * Utility function to configure all the PHY interrupt settings, including
-+ * whether the PHY interrupt is enabled, and what threshold to use. Also
-+ * configures The E82X timestamp owner to react to interrupts from all PHYs.
-+ *
-+ * Return: 0 on success, -EOPNOTSUPP when PHY model incorrect, other error codes
-+ * when failed to configure PHY interrupt for E82X
-  */
- static int ice_ptp_cfg_phy_interrupt(struct ice_pf *pf, bool ena, u32 threshold)
- {
-+	struct device *dev = ice_pf_to_dev(pf);
+@@ -7,8 +7,6 @@
+ 
+ #define E810_OUT_PROP_DELAY_NS 1
+ 
+-#define UNKNOWN_INCVAL_E82X 0x100000000ULL
+-
+ static const struct ptp_pin_desc ice_pin_desc_e810t[] = {
+ 	/* name    idx   func         chan */
+ 	{ "GNSS",  GNSS, PTP_PF_EXTTS, 0, { 0, } },
+@@ -1210,12 +1208,7 @@ static u64 ice_base_incval(struct ice_pf *pf)
  	struct ice_hw *hw = &pf->hw;
--	int err = 0;
--	int quad;
--	u32 val;
+ 	u64 incval;
  
- 	ice_ptp_reset_ts_memory(hw);
+-	if (ice_is_e810(hw))
+-		incval = ICE_PTP_NOMINAL_INCVAL_E810;
+-	else if (ice_e82x_time_ref(hw) < NUM_ICE_TIME_REF_FREQ)
+-		incval = ice_e82x_nominal_incval(ice_e82x_time_ref(hw));
+-	else
+-		incval = UNKNOWN_INCVAL_E82X;
++	incval = ice_get_base_incval(hw);
  
--	for (quad = 0; quad < ICE_GET_QUAD_NUM(hw->ptp.num_lports); quad++) {
--		err = ice_read_quad_reg_e82x(hw, quad, Q_REG_TX_MEM_GBL_CFG,
--					     &val);
--		if (err)
--			break;
--
--		if (ena) {
--			val |= Q_REG_TX_MEM_GBL_CFG_INTR_ENA_M;
--			val &= ~Q_REG_TX_MEM_GBL_CFG_INTR_THR_M;
--			val |= FIELD_PREP(Q_REG_TX_MEM_GBL_CFG_INTR_THR_M,
--					  threshold);
--		} else {
--			val &= ~Q_REG_TX_MEM_GBL_CFG_INTR_ENA_M;
-+	switch (hw->ptp.phy_model) {
-+	case ICE_PHY_E82X: {
-+		int quad;
-+
-+		for (quad = 0; quad < ICE_GET_QUAD_NUM(hw->ptp.num_lports);
-+		     quad++) {
-+			int err;
-+
-+			err = ice_phy_cfg_intr_e82x(hw, quad, ena, threshold);
-+			if (err) {
-+				dev_err(dev, "Failed to configure PHY interrupt for quad %d, err %d\n",
-+					quad, err);
-+				return err;
-+			}
- 		}
- 
--		err = ice_write_quad_reg_e82x(hw, quad, Q_REG_TX_MEM_GBL_CFG,
--					      val);
--		if (err)
--			break;
-+		return 0;
-+	}
-+	case ICE_PHY_E810:
-+		return 0;
-+	case ICE_PHY_UNSUP:
-+	default:
-+		dev_warn(dev, "%s: Unexpected PHY model %d\n", __func__,
-+			 hw->ptp.phy_model);
-+		return -EOPNOTSUPP;
- 	}
--
--	if (err)
--		dev_err(ice_pf_to_dev(pf), "PTP failed in intr ena, err %d\n",
--			err);
--	return err;
- }
- 
- /**
-@@ -3010,12 +3014,10 @@ static int ice_ptp_init_owner(struct ice_pf *pf)
- 	/* Release the global hardware lock */
- 	ice_ptp_unlock(hw);
- 
--	if (!ice_is_e810(hw)) {
--		/* Enable quad interrupts */
--		err = ice_ptp_cfg_phy_interrupt(pf, true, 1);
--		if (err)
--			goto err_exit;
--	}
-+	/* Configure PHY interrupt settings */
-+	err = ice_ptp_cfg_phy_interrupt(pf, true, 1);
-+	if (err)
-+		goto err_exit;
- 
- 	/* Ensure we have a clock device */
- 	err = ice_ptp_create_clock(pf);
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-index 43aa83bc54c2..0a4026c8a3ba 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-@@ -2719,6 +2719,37 @@ ice_get_phy_tx_tstamp_ready_e82x(struct ice_hw *hw, u8 quad, u64 *tstamp_ready)
- 	return 0;
- }
- 
-+/**
-+ * ice_phy_cfg_intr_e82x - Configure TX timestamp interrupt
-+ * @hw: pointer to the HW struct
-+ * @quad: the timestamp quad
-+ * @ena: enable or disable interrupt
-+ * @threshold: interrupt threshold
-+ *
-+ * Configure TX timestamp interrupt for the specified quad
-+ *
-+ * Return: 0 on success, other error codes when failed to read/write quad
-+ */
-+
-+int ice_phy_cfg_intr_e82x(struct ice_hw *hw, u8 quad, bool ena, u8 threshold)
-+{
-+	int err;
-+	u32 val;
-+
-+	err = ice_read_quad_reg_e82x(hw, quad, Q_REG_TX_MEM_GBL_CFG, &val);
-+	if (err)
-+		return err;
-+
-+	val &= ~Q_REG_TX_MEM_GBL_CFG_INTR_ENA_M;
-+	if (ena) {
-+		val |= Q_REG_TX_MEM_GBL_CFG_INTR_ENA_M;
-+		val &= ~Q_REG_TX_MEM_GBL_CFG_INTR_THR_M;
-+		val |= FIELD_PREP(Q_REG_TX_MEM_GBL_CFG_INTR_THR_M, threshold);
-+	}
-+
-+	return ice_write_quad_reg_e82x(hw, quad, Q_REG_TX_MEM_GBL_CFG, val);
-+}
-+
- /**
-  * ice_ptp_init_phy_e82x - initialize PHY parameters
-  * @ptp: pointer to the PTP HW struct
+ 	dev_dbg(ice_pf_to_dev(pf), "PTP: using base increment value of 0x%016llx\n",
+ 		incval);
 diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
-index 6246de3bacf3..5645b20a9f87 100644
+index 2d8ba9c2251d..3fe12a1694fc 100644
 --- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
 +++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
-@@ -265,6 +265,7 @@ int ice_stop_phy_timer_e82x(struct ice_hw *hw, u8 port, bool soft_reset);
- int ice_start_phy_timer_e82x(struct ice_hw *hw, u8 port);
- int ice_phy_cfg_tx_offset_e82x(struct ice_hw *hw, u8 port);
- int ice_phy_cfg_rx_offset_e82x(struct ice_hw *hw, u8 port);
-+int ice_phy_cfg_intr_e82x(struct ice_hw *hw, u8 quad, bool ena, u8 threshold);
+@@ -285,6 +285,24 @@ int ice_get_cgu_rclk_pin_info(struct ice_hw *hw, u8 *base_idx, u8 *pin_num);
+ int ice_cgu_get_output_pin_state_caps(struct ice_hw *hw, u8 pin_id,
+ 				      unsigned long *caps);
  
- /* E810 family functions */
- int ice_read_sma_ctrl_e810t(struct ice_hw *hw, u8 *data);
-@@ -342,11 +343,8 @@ int ice_cgu_get_output_pin_state_caps(struct ice_hw *hw, u8 pin_id,
- #define Q_REG_TX_MEM_GBL_CFG		0xC08
- #define Q_REG_TX_MEM_GBL_CFG_LANE_TYPE_S	0
- #define Q_REG_TX_MEM_GBL_CFG_LANE_TYPE_M	BIT(0)
--#define Q_REG_TX_MEM_GBL_CFG_TX_TYPE_S	1
- #define Q_REG_TX_MEM_GBL_CFG_TX_TYPE_M	ICE_M(0xFF, 1)
--#define Q_REG_TX_MEM_GBL_CFG_INTR_THR_S	9
- #define Q_REG_TX_MEM_GBL_CFG_INTR_THR_M ICE_M(0x3F, 9)
--#define Q_REG_TX_MEM_GBL_CFG_INTR_ENA_S	15
- #define Q_REG_TX_MEM_GBL_CFG_INTR_ENA_M	BIT(15)
++/**
++ * ice_get_base_incval - Get base clock increment value
++ * @hw: pointer to the HW struct
++ *
++ * Return: base clock increment value for supported PHYs, 0 otherwise
++ */
++static inline u64 ice_get_base_incval(struct ice_hw *hw)
++{
++	switch (hw->ptp.phy_model) {
++	case ICE_PHY_E810:
++		return ICE_PTP_NOMINAL_INCVAL_E810;
++	case ICE_PHY_E82X:
++		return ice_e82x_nominal_incval(ice_e82x_time_ref(hw));
++	default:
++		return 0;
++	}
++}
++
+ #define PFTSYN_SEM_BYTES	4
  
- /* Tx Timestamp data registers */
+ #define ICE_PTP_CLOCK_INDEX_0	0x00
 -- 
 2.43.0
 
