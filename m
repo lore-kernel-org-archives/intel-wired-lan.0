@@ -4,212 +4,130 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 883CDC4345F
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 24 Apr 2024 15:19:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 70A75C10F15
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 24 Apr 2024 15:19:37 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 2AF32416A1;
+	by smtp2.osuosl.org (Postfix) with ESMTP id 82E1B40734;
 	Wed, 24 Apr 2024 15:19:36 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id yrD6k3jkJd2m; Wed, 24 Apr 2024 15:19:34 +0000 (UTC)
+ id b-6H3OpWDUzt; Wed, 24 Apr 2024 15:19:35 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 46E3B40734
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 448CC41690
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1713971974;
-	bh=LWGJZQ7K8dLVTBKLhCjTFAtoOcs1S0MYBXyDkT3DACo=;
-	h=From:To:Date:References:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=0Qv6sjpmJ94X3yP4q+EPrrvHG9h+zXxvVWBireg0QiFQnwqn2FYdoeu0fl5366BUv
-	 FjG37ccy2GPZuTmvkm8HcaXDCQbBdr/KSv5jZKTZFWsYS7SgrtSr3+k4cGgjo6jM3b
-	 iVzDwTYCoilwc7DhRfuDX9cibpe2l8D5IUxiotoFs1cpSXcLvQ9n4DJUUmnsCQ0FYH
-	 qL/ExiMO9UrkSTpiVd1Bnz8Escbt57SghvOmlBS52SH/C9Mc1nE090J+LLv9fdeZDW
-	 r39l3U9xwHWhlumeA5K5bB48SD4omVgvC8T0sUVZHLP1oISZaFc2j2l20nHTvZmvqm
-	 LpNGqfb+4rtig==
+	s=default; t=1713971975;
+	bh=9AlBe3kk5ztZRFTkgvZ6SOgy/VblETXj3psnO1nVDEQ=;
+	h=From:Date:To:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=Z5WCtRs4MO0rLFf6jiuRD+Z04Z8lXVD/assNRX6VJJWOlj4RKxrughQQhLLDxTwCt
+	 HBDzyr4tzghPsuB6E3ugv+R5c4VUh5vFpMYjzjzguaROQ/3hayFVRhv7rLNIzBZiIu
+	 xTov6urg8+Kp/HI1+pyuzZpaw1ODrFnzrAzHy16PpHNwDJUkbZIDtHTEL8TZJ3Vqv8
+	 UVxQORjeBsj5rDnoCnHbje+WlVfMD76TiW8UQthhSjNd3DEik89fYCQih5+BRPdZSo
+	 IqNlyb5/SQ4/guwDsOiKIis7ktKHQwhmPnD0PSJlLfg1vQoYLVtRNVw0dnkCSbWAhz
+	 J+t9c+DJONyng==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 46E3B40734;
-	Wed, 24 Apr 2024 15:19:34 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id E00381BF870
- for <intel-wired-lan@lists.osuosl.org>; Wed, 24 Apr 2024 05:48:12 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 448CC41690;
+	Wed, 24 Apr 2024 15:19:35 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 208911BF57C
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 24 Apr 2024 14:44:43 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id D638381DCB
- for <intel-wired-lan@lists.osuosl.org>; Wed, 24 Apr 2024 05:48:12 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 0C3AC60BE4
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 24 Apr 2024 14:44:43 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id bBH1sdiHOugO for <intel-wired-lan@lists.osuosl.org>;
- Wed, 24 Apr 2024 05:48:12 +0000 (UTC)
-X-Greylist: delayed 2090 seconds by postgrey-1.37 at util1.osuosl.org;
- Wed, 24 Apr 2024 05:48:11 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 0582381DA3
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 0582381DA3
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=67.231.156.173;
- helo=mx0b-0016f401.pphosted.com; envelope-from=hkelam@marvell.com;
- receiver=<UNKNOWN> 
-Received: from mx0b-0016f401.pphosted.com (mx0b-0016f401.pphosted.com
- [67.231.156.173])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 0582381DA3
- for <intel-wired-lan@lists.osuosl.org>; Wed, 24 Apr 2024 05:48:11 +0000 (UTC)
-Received: from pps.filterd (m0045851.ppops.net [127.0.0.1])
- by mx0b-0016f401.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 43O0qaZF022561;
- Tue, 23 Apr 2024 22:13:12 -0700
-Received: from nam10-mw2-obe.outbound.protection.outlook.com
- (mail-mw2nam10lp2101.outbound.protection.outlook.com [104.47.55.101])
- by mx0b-0016f401.pphosted.com (PPS) with ESMTPS id 3xmd7gmjh7-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 23 Apr 2024 22:13:12 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=giYiYIZ7wEEUTMDlbWVODql6aOBc0yrIbFvWTD1ujopNBsvn9LOvf1v10yFqG9wI9vLwpRlEVucXQccY+QnM/ysSY0nEh1mzrfooYlChvzPt9n9J2gqjS9BTPdAFjoi0Jio8seHSZgxio9O8oqJu6PEvaHXpzKweB8bdbnz12kOFHfj47/ikR4QB85cqmi13hDPF3e1usLPJmSw0l95WbzKtcRZzfv/79F6v90oNzWrRU4VMJrL8Nwg1+IXLpytMx4AO89ZzzK7V7w5FFOfo1A8IJl941gk9niaWa0AgJhCdZMefyL7H4eZpIf80Z/WV3Ie8mMTHDldMWbgpt9FaJw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=LWGJZQ7K8dLVTBKLhCjTFAtoOcs1S0MYBXyDkT3DACo=;
- b=eldSyRFHCDf/w+34Z2cTo25nA21xjwvE53TpW+pBV8sxEPprO40KNRrG/voy1QsvwBVlbqZDHWA9lWErgD3xUlXcmf4jtlSYjZ1vnLRtasN47Kmt1r407xKTYeoD/7qoODZ8i+8uO9x3ZKcfXhTG7ldYSf5OaALL6g/b3TbvtgrntMJpac8FwJtj3LDmrna/rFQZLlC+rTYhfmlgGEjPlo4+LGapT2sZO8eL9r0FmizUX4+xHrXbXedqyizRo7p+PYbuwVbkHZkCVQ1mG70nY1vDD2tKbMEEpNwotjG/1U0jJHXLqL0IduVpZTxGoStn0MgR+QpBguRttnGcE4z40Q==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=marvell.com; dmarc=pass action=none header.from=marvell.com;
- dkim=pass header.d=marvell.com; arc=none
-Received: from PH0PR18MB4474.namprd18.prod.outlook.com (2603:10b6:510:ea::22)
- by CO1PR18MB4572.namprd18.prod.outlook.com (2603:10b6:303:ff::5) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7472.45; Wed, 24 Apr
- 2024 05:13:10 +0000
-Received: from PH0PR18MB4474.namprd18.prod.outlook.com
- ([fe80::eeed:4f:2561:f916]) by PH0PR18MB4474.namprd18.prod.outlook.com
- ([fe80::eeed:4f:2561:f916%5]) with mapi id 15.20.7452.049; Wed, 24 Apr 2024
- 05:13:10 +0000
-From: Hariprasad Kelam <hkelam@marvell.com>
-To: =?utf-8?B?SWxwbyBKw6RydmluZW4=?= <ilpo.jarvinen@linux.intel.com>, Jesse
- Brandeburg <jesse.brandeburg@intel.com>, Tony Nguyen
- <anthony.l.nguyen@intel.com>, "David S. Miller" <davem@davemloft.net>, Eric
- Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, "intel-wired-lan@lists.osuosl.org"
- <intel-wired-lan@lists.osuosl.org>, "netdev@vger.kernel.org"
- <netdev@vger.kernel.org>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>
-Thread-Topic: [PATCH 1/1] net: e1000e & ixgbe: Remove PCI_HEADER_TYPE_MFD
- duplicates
-Thread-Index: AQHalgYZ+8V9FFDao0WWIO40kJFegA==
-Date: Wed, 24 Apr 2024 05:13:10 +0000
-Message-ID: <PH0PR18MB4474F39D49346BCAD5535021DE102@PH0PR18MB4474.namprd18.prod.outlook.com>
-References: <20240423144100.76522-1-ilpo.jarvinen@linux.intel.com>
-In-Reply-To: <20240423144100.76522-1-ilpo.jarvinen@linux.intel.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: PH0PR18MB4474:EE_|CO1PR18MB4572:EE_
-x-ms-office365-filtering-correlation-id: 004fc4cc-076d-4251-b8e6-08dc641d3c04
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam: BCL:0;
-x-microsoft-antispam-message-info: =?utf-8?B?RklBOTRPQ0JaTnhQUFdCOE5nSWhDaGM2Um9vWTVVYWl1bkRKMXUyZXdIRTVi?=
- =?utf-8?B?SU9FUjBEblljcFBNcU9CL1lvK3VkaHZkYjlFK0RiOElXdTk5aWVIR0NwYmZv?=
- =?utf-8?B?SzByYkhKaXRsVHh4MlZTMGVBL21iMUNlM09wVWY5OC9WbTl4VjJvRVFaMTJJ?=
- =?utf-8?B?elFRRTU0WWVtbUwyMzJFc292M3ppSXAwcjdtb2xxS1BQdUFNR3pYVExqdU1w?=
- =?utf-8?B?N3ZSWldCbU81NEpOa3FxQ0dyOVQrZkhQK2hSSG5jYnZhNFptUW5rRDEydnVC?=
- =?utf-8?B?Ync4QU1uR1JPYjZHek0xZGc3NW1BU3daam8yNHZrRHVjNnJWMk9wODRGRnAx?=
- =?utf-8?B?bDZPOWRCSXZNYXFjNHJQRGdkOC9kRUFSZmFaaW5XVUk0UktZa25MUmc3V1Iz?=
- =?utf-8?B?R25kSi80NFBOd0ZCYTgwWkkxQjduMkRPcS82ajNXTnU3OFRMRS9CeStYa1pm?=
- =?utf-8?B?a0oxS09ldnB6K3AzRDV0bm1lQmZKdUdMVkZCRUdrblN3OTNNZkd2TUhzTWox?=
- =?utf-8?B?M1NNRFlvZ21YVzJZc1N4VWJ3RnNQbzNtbkNXZ2VSZjlQdHJOMG9DVmhNQXgz?=
- =?utf-8?B?TzBURjV6RXFQK0k5NnZHYzAyZ1VpdjZsVUE1dytISStHRWxxV3VJRTVUYjBz?=
- =?utf-8?B?TkxLUW1vSzY1d05FV1BsYjE0c1V5OHE0elpxOFpkU21FcWdCNUFQVU1pQWR4?=
- =?utf-8?B?Q2VjVjI4aHhqRUZDMTBzTlJlN3h6NU9LYWwwK0loLy9HNnRoK0sxOXlmSzZj?=
- =?utf-8?B?YWd0NzRKQjJ1QjBoYllhZHE2M2xsS21yUjFTYTFuSi9aTEY5UjhIbm4za1Fk?=
- =?utf-8?B?VjVOQXhwdEZGZC9ObmliVkVkLy9kK3VCNlcxMW43NUJhTk91YUZVWG9ReEFW?=
- =?utf-8?B?Ykx6KzFHcFFCN0d4Y3ZUYk1wM3g3b2VBK3pZcUNIMHViM2tHd2s4RUMxWktk?=
- =?utf-8?B?aDZSQnhNVmRTRm9jQ0lpRlNUNE9RUGpLZnJ4YXVzR1FienlNOFhnNEFvQjJa?=
- =?utf-8?B?MDh3eGh3T0t1S1Q2M1doTkU3OFV0S3piYmtQK05VbUVMdWh6Y24rWi95SW14?=
- =?utf-8?B?b3Y4Q0tVUzBpNitJbVFyOWlNbmR6TExVUVVjbnErZzc3Q2VWczJRbTF6RWs1?=
- =?utf-8?B?dGRuL1RYSGJnUGt2OHR2czA2dFBGN0l3TFFKZm9VOVVyM1Fyd0plSFlyakxX?=
- =?utf-8?B?VUxPdkdkSEkvZTVMNGgwelZLcDl5UmJ0akpHQkJteG92TWxPRlBxOWprMmRj?=
- =?utf-8?B?SEt2UzJOU3R1ZGZPYkQxOEtnVUJKYzYvbGtNbEdxY25CeHpZUGFvZEJTeU1v?=
- =?utf-8?B?OWJ3ZDFZNEVVbjRpcDRzZXhDVlJLN1g1ekw4NEpLV1BReDNKYWJzM2lvbzYr?=
- =?utf-8?B?QW1JUEJkZ2VEZ1FVelhBTU1KQ1AwdDlqSkJRUzVRUDVVVTB1WEhoa051ZGJP?=
- =?utf-8?B?aGhndFVRUCtRb1hwR1ZHNVZpYWx4UEVNWUc2Mi9KQ0lyN1lRcG5ZSjlwTHNF?=
- =?utf-8?B?Y09KTHdDUjNqN05nMGp1THNOQ0h3ZFhYQTV0MEVHZEpjQzRpRWE0K1BwdGl6?=
- =?utf-8?B?ZFRKMEZ6WGlGcVhEaDNXWGRHK3VsWVdib0dlNVBLdHAwV01Nb1M2NkcxVll4?=
- =?utf-8?B?c0F4dWh1b3AzekJhT2JWd3g3ZTJaUDdxUE9pRGZ4WkJBS3pvaUg1OU9CUDZZ?=
- =?utf-8?B?dHVGT3FhVlhLOWJDL3Q0QVBLQXlGT1R2MW9waFIwbEFuQVVORFNRUGJ1SFNL?=
- =?utf-8?B?eFBxY0RTOWVhWXc5ZHFjSFBSSUxiL09RWS9pSnZpWldTSkd4TnhEVml0MjZ3?=
- =?utf-8?Q?IJULzeOwEgfOY54TBBvp2RVhdtyF2fChy+B7c=3D?=
-x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:PH0PR18MB4474.namprd18.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230031)(1800799015)(7416005)(366007)(376005)(921011)(38070700009);
- DIR:OUT; SFP:1102; 
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0: =?utf-8?B?MmJnNFROalFOTUthYnBYRFpLcmNMUXZXZEdjT0pWeEo5aFRnT1k0Z2twVVNN?=
- =?utf-8?B?dFZFeks0N2tPNUEzbmZ0TXJhS1ZLcTdPZ3NjdzZvV0lCaFAwQkt2NEx6TlZp?=
- =?utf-8?B?N0lacmd5blIyb0VqZEYrNTExZ0VhNWJVMWNsY2FXQm9wMDMzdXZoUUZTQjQ3?=
- =?utf-8?B?d3BVL3I1aTZQdlNnK0hkWHBYU1RqeWRzMW14VDQxclpYUW1tbndRYnczb3Jm?=
- =?utf-8?B?dFM3b3ZaU3NaeVhjcUcvOVAxekJtKzl5NkJEME1GWGc4aUpTWXVSTXVVQmND?=
- =?utf-8?B?NURtVER0L0xYdVc3MVhwUjNmYk44WldyVGdPNkRYVWxaWEt0dXFMS1R0V3kv?=
- =?utf-8?B?ekNWeHJ4WDN5RGp3R1dHYVg3Sko2ZWVLYXJBTDVhbkpPZzYxRDRpSkhnN0Fw?=
- =?utf-8?B?YjlCaENObFBTaFM1NW9Ka2poOEhOeDhnRHJSNTBpRkh6TnZHMk1ET0VXTUxa?=
- =?utf-8?B?MkNuQ0dWYkNPdVFwQXJlc2F0L2V6WUp1b21ldnd1UTVVV0F5MjFtMVFiNW9t?=
- =?utf-8?B?WXpGb3UzM1hGTE9uaGtEdHpLTWhyNVBxWXh4a21KcnN6Ymx2VVRueXo5T1Vq?=
- =?utf-8?B?ejBOSUJwUnZ3bnQvQmZhRDJEMUdjdTR0dFRscm81WG4rV1R4NnJPZkRHWnBs?=
- =?utf-8?B?ZkZvbktrZnpHOXo3bG1jdW1mdkNuMGMreVJMSjBrMkhBRWN2YXZYQktpck9t?=
- =?utf-8?B?Wks2dm9ocVEya05PNStYRnFKRFNOcnB4VzEwM1ZjY1pzL2pmbnp5MkRFSXNT?=
- =?utf-8?B?dUtTSEVWUmpBRWlTa1QvcUorajlwTStMd1JUYWJlU1JMR1hiSmJwbjBlZ3FT?=
- =?utf-8?B?SmgzZG1vbzZJOHlmRlZlWm81bFlRNUtxc2pseC8vY21UbDIyOCtPcXVHNzdO?=
- =?utf-8?B?TWdLdWVRNzVEY1lYSkptQTdhQ1FDbC8vcHRGUzdBZ29XVUhodUxaTDFrSUho?=
- =?utf-8?B?OE9WZ2pDWWRlS0RHSDdSQnoxV3hxWmdUK0l4NmR5c1pmanFOUmt3QTlqUVFl?=
- =?utf-8?B?dDhRMDRhcWsrZnpRR0JqRCtZTVpUTVFWMTNFcTdYc1k3ZDM0ZVFQdURqejlY?=
- =?utf-8?B?U0NZTjU1MTBiNkRFcE1pNjVJU1Fvb25FUmdQRDk1dThzNS9TMXJzRThVSXVw?=
- =?utf-8?B?QzhnWDBHRUVoeXgzbEQ4ZWlySk1YVmhWSzFGZ1ZQa1FQaFUzQXI0c2FrTjlq?=
- =?utf-8?B?T2Z6SG5JdFBTTHZDRVhzSHZoOUF4TjNyeVI2aGN5ODVLNkVBdlppbkxxUnVp?=
- =?utf-8?B?dXBOUENmaWh1akVDYlhNUzEvTlZTR016SFpHaEthSnc0YkRUNjMxeGQ3MFVU?=
- =?utf-8?B?dHNGMmhUQmRPMzcvSjRLb2szUVBubHRPVkhQVHJoU0E5VVQzZGhuZVJ2UHZY?=
- =?utf-8?B?TWdIU01ieWVTQWJpWXQwaEdDNGFlUmc4a25IU01Na213LzZYYkZCTjEvd3FT?=
- =?utf-8?B?ZStldzM0UElhUzVqbVNVa0FxSElXMEFhRlB2RERRYktJak96K1pIZzVuUDRF?=
- =?utf-8?B?Z2grb0NzTlY3N29tYzllOWllYS80S2lyU0hxQ252Q2puTEhvWU1jVzJORzJB?=
- =?utf-8?B?cjBiNHdQcS81Wm5PMzAyanlLd2FydnJYNkpQaDlUNnh1MnJhWXpjZVZ4WHpL?=
- =?utf-8?B?WXRUVDI1VW43cjJ2Mm8zTEx0OEZJQVU3cXVzdXdUYURqTGh5YmlzS0VCVHhZ?=
- =?utf-8?B?aGhHektockQ2c2lHbUxUYmpXaWJvSGtSNHNUaEpoRW4yQzZWd0JFa081STFU?=
- =?utf-8?B?RTNKMWo4NENWZlYzK01FZThUbnM1bWszTjg1cWxSSkFCUUZ3cHFSVDFrbG1G?=
- =?utf-8?B?TzROSFErdWpGa2JCOTZ4VkZwSDREVGFHK3gvTTNIdkIwVm4yRXphT0gvZ0lj?=
- =?utf-8?B?NVB2VWRhbGt3QTdyRDhXL2FoaW5JaTNvZTc0KzNCK1BaUDRaTTBhbkg1N0Uv?=
- =?utf-8?B?VjJlNjIvcmpPay82dTVVbkFOOWZnZG9iMTdIanI4bXhHZWVsYTBCNDQxR0dz?=
- =?utf-8?B?VURvQmxURW9JRE4yTnUwSy9BZkNNeEVjYStNVkpwVXhoNGhhdkNrNGpRRm9n?=
- =?utf-8?B?OXJKVm8rMGRXTWNIUFA2c3g1RXFyNlN5dGJtWUx6WUlISzc3bXFPOEpSdE9R?=
- =?utf-8?Q?kH4k=3D?=
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 2mjEYcIR9SZh for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 24 Apr 2024 14:44:42 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2607:f8b0:4864:20::431; helo=mail-pf1-x431.google.com;
+ envelope-from=minhquangbui99@gmail.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org E7F4260BD9
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E7F4260BD9
+Received: from mail-pf1-x431.google.com (mail-pf1-x431.google.com
+ [IPv6:2607:f8b0:4864:20::431])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id E7F4260BD9
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 24 Apr 2024 14:44:41 +0000 (UTC)
+Received: by mail-pf1-x431.google.com with SMTP id
+ d2e1a72fcca58-6ee0642f718so785639b3a.0
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 24 Apr 2024 07:44:41 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20230601; t=1713969881; x=1714574681;
+ h=cc:to:content-transfer-encoding:mime-version:message-id:date
+ :subject:from:x-gm-message-state:from:to:cc:subject:date:message-id
+ :reply-to;
+ bh=9AlBe3kk5ztZRFTkgvZ6SOgy/VblETXj3psnO1nVDEQ=;
+ b=YRRnsgDow+Y/zP2A45c0hFgYqBnpNNtVB6yS5VzCoLj5rEyNpEBzUnqMKRUHS1DITx
+ eJgMDeBONvLaTlm29OhcJ+0vtN98YNoBal8xoe8AKjgctldd+LEG/nLXhUiEbMxMH0KB
+ zzaEwIPNAe95Yn9mf2RfIX9YIVq42q6dXwMBW2CDPInmOsJ3jT9hkYHwq5Cx/B9s1V6f
+ GVmroTyrby/Kv9BgKLe1nqLbXl3Tu5VeNUCYXa/PFirwQjzyd6GE4B8jmEZ5iEZQcu75
+ n628zb8OF2v9qEQU+K9Riq2Phqi1V6TwLPEpJo09w8ALmL/5Qs4GtvQUajEvgvbKUo7B
+ vcfQ==
+X-Gm-Message-State: AOJu0YzAsQXvMjRJOpCyRlrMORgnQIIsae+hXeeKK+rhRs8TS/85mial
+ jdf3OuLKzxsTL8iibfE27CyzWKXsGnfBJcWTSxuGWm3ZFQmShVF7
+X-Google-Smtp-Source: AGHT+IEZ2apyKdcveQJKiKV0/EodXodOYVr/N97y8zIovzzSFGYRD4Ce2vZBNWEv4JnoIEF0HZVlwg==
+X-Received: by 2002:a05:6a20:3c8a:b0:1a9:97ab:d09a with SMTP id
+ b10-20020a056a203c8a00b001a997abd09amr4044692pzj.16.1713969880981; 
+ Wed, 24 Apr 2024 07:44:40 -0700 (PDT)
+Received: from [127.0.1.1] ([2001:ee0:50f5:5d0:6ca6:7f20:5242:67cc])
+ by smtp.googlemail.com with ESMTPSA id
+ a5-20020aa78e85000000b006e554afa254sm11495743pfr.38.2024.04.24.07.44.31
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Wed, 24 Apr 2024 07:44:40 -0700 (PDT)
+From: Bui Quang Minh <minhquangbui99@gmail.com>
+Date: Wed, 24 Apr 2024 21:44:17 +0700
+Message-Id: <20240424-fix-oob-read-v2-0-f1f1b53a10f4@gmail.com>
 MIME-Version: 1.0
-X-OriginatorOrg: marvell.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: PH0PR18MB4474.namprd18.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 004fc4cc-076d-4251-b8e6-08dc641d3c04
-X-MS-Exchange-CrossTenant-originalarrivaltime: 24 Apr 2024 05:13:10.2971 (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 70e1fb47-1155-421d-87fc-2e58f638b6e0
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: 2D+gaUlFRtAYQSdARsn2aJs1GdDO3hbpKi6WCkwOzyD6iadZjMn3/1t4SxM1HHckJ14705VRIW3X0BUjKG+kSA==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: CO1PR18MB4572
-X-Proofpoint-ORIG-GUID: U8M89Th7IMZlQANigpP3LLHQUi7V8bQR
-X-Proofpoint-GUID: U8M89Th7IMZlQANigpP3LLHQUi7V8bQR
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1011,Hydra:6.0.650,FMLib:17.11.176.26
- definitions=2024-04-24_02,2024-04-23_02,2023-05-22_02
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAMEaKWYC/3WMQQ6CMBBFr0Jm7ZhOqSm68h6GRS1TmESoaQ3Rk
+ N7dyt7l+z/vbZA5CWe4NBskXiVLXCroQwN+csvIKENl0EobZbTGIG+M8Y6J3YB0dmxDF1pLBFV
+ 5Jq7/nrv1lSfJr5g+e32l3/ontBIqZKW7k/GtImuu4+zkcfRxhr6U8gUzNIQ7qAAAAA==
+To: Jesse Brandeburg <jesse.brandeburg@intel.com>, 
+ Tony Nguyen <anthony.l.nguyen@intel.com>, 
+ "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
+ Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>, 
+ Rasesh Mody <rmody@marvell.com>, Sudarsana Kalluru <skalluru@marvell.com>, 
+ GR-Linux-NIC-Dev@marvell.com, Anil Gurumurthy <anil.gurumurthy@qlogic.com>, 
+ Sudarsana Kalluru <sudarsana.kalluru@qlogic.com>, 
+ "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, 
+ "Martin K. Petersen" <martin.petersen@oracle.com>, 
+ Fabian Frederick <fabf@skynet.be>, Saurav Kashyap <skashyap@marvell.com>, 
+ GR-QLogic-Storage-Upstream@marvell.com, 
+ Nilesh Javali <nilesh.javali@cavium.com>, Arun Easi <arun.easi@cavium.com>, 
+ Manish Rangankar <manish.rangankar@cavium.com>, 
+ Vineeth Vijayan <vneethv@linux.ibm.com>, 
+ Peter Oberparleiter <oberpar@linux.ibm.com>, 
+ Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, 
+ Alexander Gordeev <agordeev@linux.ibm.com>, 
+ Christian Borntraeger <borntraeger@linux.ibm.com>, 
+ Sven Schnelle <svens@linux.ibm.com>, Sunil Goutham <sgoutham@marvell.com>, 
+ Linu Cherian <lcherian@marvell.com>, Geetha sowjanya <gakula@marvell.com>, 
+ Jerin Jacob <jerinj@marvell.com>, hariprasad <hkelam@marvell.com>, 
+ Subbaraya Sundeep <sbhatta@marvell.com>
+X-Mailer: b4 0.13.0
 X-Mailman-Approved-At: Wed, 24 Apr 2024 15:19:32 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=marvell.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=LWGJZQ7K8dLVTBKLhCjTFAtoOcs1S0MYBXyDkT3DACo=;
- b=NM7mhivJa7FsTMvRsOfMsLEb/WjQAI4ob2nTiDPWiYB842J42sXkDfVHCzTU/ydjHHxTLmXRckKKayzG7g4WcRx51svXmfGYlgbp50Rm1BvR6BkT+sa7j0DPobaBAy7ISEbQ6C+mP34b1tIY1H71IVTr/7RBmirrxUj+HZJ9d6A=
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ d=gmail.com; s=20230601; t=1713969881; x=1714574681; darn=lists.osuosl.org;
+ h=cc:to:content-transfer-encoding:mime-version:message-id:date
+ :subject:from:from:to:cc:subject:date:message-id:reply-to;
+ bh=9AlBe3kk5ztZRFTkgvZ6SOgy/VblETXj3psnO1nVDEQ=;
+ b=OcoJTZMKilLSY0rWc8WSifIRV3EQ7I8JNzO+YlXZM+tcmRzn8DrKYt9LvQ4nJsFWag
+ 8dzi2G5JHo6ddXYsQCBxrPZbcTO/YRngDz23mru+De031R2DVyCEl/DaqRxRYJ3okMh1
+ hG/QMcWuijeQL6H4NZ/3H5fKF57fxEjhfbEYBSteLmLT6shttqQAJJo6eMucONUQEcTh
+ mkRAp+a2lOPR8K1Ck2P9i6rhYEBlLLMSF9o19PjzsQgY5UUDTjc9zRDbA2vLvtan+oiN
+ jqsJKNsQgrpGlU8tgTDghEu6xVZ7tM/a/k/AD0BIbxb+O1U4ACTgG5zIP/A1C+GJvsbS
+ 9MNQ==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
- header.from=marvell.com
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (1024-bit key,
- unprotected) header.d=marvell.com header.i=@marvell.com header.a=rsa-sha256
- header.s=selector1 header.b=NM7mhivJ
-Subject: [Intel-wired-lan] [PATCH 1/1] net: e1000e & ixgbe: Remove
- PCI_HEADER_TYPE_MFD duplicates
+ header.from=gmail.com
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
+ header.a=rsa-sha256 header.s=20230601 header.b=OcoJTZMK
+Subject: [Intel-wired-lan] [PATCH v2 0/6] Ensure the copied buf is NUL
+ terminated
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -222,36 +140,102 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
+Cc: Jens Axboe <axboe@kernel.dk>, linux-s390@vger.kernel.org,
+ linux-scsi@vger.kernel.org, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, intel-wired-lan@lists.osuosl.org,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Saurav Kashyap <saurav.kashyap@cavium.com>,
+ Bui Quang Minh <minhquangbui99@gmail.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-DQoNCj4gUENJX0hFQURFUl9UWVBFX01VTFRJRlVOQyBpcyBkZWZpbmUgYnkgZTEwMDBlIGFuZCBp
-eGdiZSBhbmQgYm90aCBhcmUNCj4gdW51c2VkLiBUaGVyZSBpcyBhbHJlYWR5IFBDSV9IRUFERVJf
-VFlQRV9NRkQgaW4gcGNpX3JlZ3MuaCBhbnl3YXkgd2hpY2gNCj4gc2hvdWxkIGJlIHVzZWQgaW5z
-dGVhZCBzbyByZW1vdmUgdGhlIGR1cGxpY2F0ZWQgZGVmaW5lcyBvZiBpdC4NCj4gDQo+IFNpZ25l
-ZC1vZmYtYnk6IElscG8gSsOkcnZpbmVuIDxpbHBvLmphcnZpbmVuQGxpbnV4LmludGVsLmNvbT4N
-Cj4gLS0tDQo+ICBkcml2ZXJzL25ldC9ldGhlcm5ldC9pbnRlbC9lMTAwMGUvZGVmaW5lcy5oICAg
-fCAyIC0tDQo+ICBkcml2ZXJzL25ldC9ldGhlcm5ldC9pbnRlbC9peGdiZS9peGdiZV90eXBlLmgg
-fCAxIC0NCj4gIDIgZmlsZXMgY2hhbmdlZCwgMyBkZWxldGlvbnMoLSkNCj4gDQo+IGRpZmYgLS1n
-aXQgYS9kcml2ZXJzL25ldC9ldGhlcm5ldC9pbnRlbC9lMTAwMGUvZGVmaW5lcy5oDQo+IGIvZHJp
-dmVycy9uZXQvZXRoZXJuZXQvaW50ZWwvZTEwMDBlL2RlZmluZXMuaA0KPiBpbmRleCAyM2E1OGNh
-ZGE0M2EuLjVlMmNmYTczZjg4OSAxMDA2NDQNCj4gLS0tIGEvZHJpdmVycy9uZXQvZXRoZXJuZXQv
-aW50ZWwvZTEwMDBlL2RlZmluZXMuaA0KPiArKysgYi9kcml2ZXJzL25ldC9ldGhlcm5ldC9pbnRl
-bC9lMTAwMGUvZGVmaW5lcy5oDQo+IEBAIC02NzksOCArNjc5LDYgQEANCj4gIC8qIFBDSS9QQ0kt
-WC9QQ0ktRVggQ29uZmlnIHNwYWNlICovDQo+ICAjZGVmaW5lIFBDSV9IRUFERVJfVFlQRV9SRUdJ
-U1RFUiAgICAgMHgwRQ0KPiANCj4gLSNkZWZpbmUgUENJX0hFQURFUl9UWVBFX01VTFRJRlVOQyAg
-ICAweDgwDQo+IC0NCj4gICNkZWZpbmUgUEhZX1JFVklTSU9OX01BU0sgICAgICAweEZGRkZGRkYw
-DQo+ICAjZGVmaW5lIE1BWF9QSFlfUkVHX0FERFJFU1MgICAgMHgxRiAgLyogNSBiaXQgYWRkcmVz
-cyBidXMgKDAtMHgxRikgKi8NCj4gICNkZWZpbmUgTUFYX1BIWV9NVUxUSV9QQUdFX1JFRyAweEYN
-Cj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvbmV0L2V0aGVybmV0L2ludGVsL2l4Z2JlL2l4Z2JlX3R5
-cGUuaA0KPiBiL2RyaXZlcnMvbmV0L2V0aGVybmV0L2ludGVsL2l4Z2JlL2l4Z2JlX3R5cGUuaA0K
-PiBpbmRleCBlZDQ0MGRkMGM0ZjkuLjg5N2ZlMzU3YjY1YiAxMDA2NDQNCj4gLS0tIGEvZHJpdmVy
-cy9uZXQvZXRoZXJuZXQvaW50ZWwvaXhnYmUvaXhnYmVfdHlwZS5oDQo+ICsrKyBiL2RyaXZlcnMv
-bmV0L2V0aGVybmV0L2ludGVsL2l4Z2JlL2l4Z2JlX3R5cGUuaA0KPiBAQCAtMjE3OSw3ICsyMTc5
-LDYgQEAgZW51bSB7DQo+ICAjZGVmaW5lIElYR0JFX1BDSV9MSU5LX1NQRUVEXzUwMDAgMHgyDQo+
-ICAjZGVmaW5lIElYR0JFX1BDSV9MSU5LX1NQRUVEXzgwMDAgMHgzDQo+ICAjZGVmaW5lIElYR0JF
-X1BDSV9IRUFERVJfVFlQRV9SRUdJU1RFUiAgMHgwRSAtI2RlZmluZQ0KPiBJWEdCRV9QQ0lfSEVB
-REVSX1RZUEVfTVVMVElGVU5DIDB4ODAgICNkZWZpbmUNCj4gSVhHQkVfUENJX0RFVklDRV9DT05U
-Uk9MMl8xNm1zICAweDAwMDUNCj4gDQo+ICAjZGVmaW5lIElYR0JFX1BDSURFVkNUUkwyX1RJTUVP
-X01BU0sJMHhmDQo+IC0tDQo+IDIuMzkuMg0KPiANClJldmlld2VkLWJ5OiBIYXJpcHJhc2FkIEtl
-bGFtIDxoa2VsYW1AbWFydmVsbC5jb20+DQo=
+Hi everyone,
+
+I found that some drivers contains an out-of-bound read pattern like this
+
+	kern_buf = memdup_user(user_buf, count);
+	...
+	sscanf(kern_buf, ...);
+
+The sscanf can be replaced by some other string-related functions. This
+pattern can lead to out-of-bound read of kern_buf in string-related
+functions.
+
+This series fix the above issue by replacing memdup_user with
+memdup_user_nul.
+
+Thanks,
+Quang Minh.
+
+To: Jesse Brandeburg <jesse.brandeburg@intel.com>
+To: Tony Nguyen <anthony.l.nguyen@intel.com>
+To: David S. Miller <davem@davemloft.net>
+To: Eric Dumazet <edumazet@google.com>
+To: Jakub Kicinski <kuba@kernel.org>
+To: Paolo Abeni <pabeni@redhat.com>
+To: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
+To: Rasesh Mody <rmody@marvell.com>
+To: Sudarsana Kalluru <skalluru@marvell.com>
+To: GR-Linux-NIC-Dev@marvell.com
+To: Anil Gurumurthy <anil.gurumurthy@qlogic.com>
+To: Sudarsana Kalluru <sudarsana.kalluru@qlogic.com>
+To: James E.J. Bottomley <James.Bottomley@HansenPartnership.com>
+To: Martin K. Petersen <martin.petersen@oracle.com>
+To: Fabian Frederick <fabf@skynet.be>
+To: Saurav Kashyap <skashyap@marvell.com>
+To: GR-QLogic-Storage-Upstream@marvell.com
+To: Nilesh Javali <nilesh.javali@cavium.com>
+To: Arun Easi <arun.easi@cavium.com>
+To: Manish Rangankar <manish.rangankar@cavium.com>
+To: Vineeth Vijayan <vneethv@linux.ibm.com>
+To: Peter Oberparleiter <oberpar@linux.ibm.com>
+To: Heiko Carstens <hca@linux.ibm.com>
+To: Vasily Gorbik <gor@linux.ibm.com>
+To: Alexander Gordeev <agordeev@linux.ibm.com>
+To: Christian Borntraeger <borntraeger@linux.ibm.com>
+To: Sven Schnelle <svens@linux.ibm.com>
+To: Dupuis, Chad <chad.dupuis@cavium.com>
+To: Sunil Goutham <sgoutham@marvell.com>
+To: Linu Cherian <lcherian@marvell.com>
+To: Geetha sowjanya <gakula@marvell.com>
+To: Jerin Jacob <jerinj@marvell.com>
+To: hariprasad <hkelam@marvell.com>
+To: Subbaraya Sundeep <sbhatta@marvell.com>
+Cc: intel-wired-lan@lists.osuosl.org
+Cc: netdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-scsi@vger.kernel.org
+Cc: Saurav Kashyap <saurav.kashyap@cavium.com>
+Cc: linux-s390@vger.kernel.org
+Cc: Jens Axboe <axboe@kernel.dk>
+Signed-off-by: Bui Quang Minh <minhquangbui99@gmail.com>
+
+Changes in v2:
+- Patch 5: use memdup_user_nul instead
+- Add patch 6
+- Link to v1: https://lore.kernel.org/r/20240422-fix-oob-read-v1-0-e02854c30174@gmail.com
+
+---
+Bui Quang Minh (6):
+      ice: ensure the copied buf is NUL terminated
+      bna: ensure the copied buf is NUL terminated
+      bfa: ensure the copied buf is NUL terminated
+      qedf: ensure the copied buf is NUL terminated
+      cio: ensure the copied buf is NUL terminated
+      octeontx2-af: avoid off-by-one read from userspace
+
+ drivers/net/ethernet/brocade/bna/bnad_debugfs.c         | 4 ++--
+ drivers/net/ethernet/intel/ice/ice_debugfs.c            | 8 ++++----
+ drivers/net/ethernet/marvell/octeontx2/af/rvu_debugfs.c | 4 +---
+ drivers/s390/cio/cio_inject.c                           | 2 +-
+ drivers/scsi/bfa/bfad_debugfs.c                         | 4 ++--
+ drivers/scsi/qedf/qedf_debugfs.c                        | 2 +-
+ 6 files changed, 11 insertions(+), 13 deletions(-)
+---
+base-commit: ed30a4a51bb196781c8058073ea720133a65596f
+change-id: 20240422-fix-oob-read-19ae7f8f3711
+
+Best regards,
+-- 
+Bui Quang Minh <minhquangbui99@gmail.com>
+
