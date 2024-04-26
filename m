@@ -4,92 +4,131 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 47DEAC4345F
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 26 Apr 2024 14:44:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4FB5AC4345F
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 26 Apr 2024 14:57:31 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id EDC8740309;
-	Fri, 26 Apr 2024 14:44:40 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 0AC1F41F76;
+	Fri, 26 Apr 2024 14:57:31 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id YPQIoxGeGlN9; Fri, 26 Apr 2024 14:44:40 +0000 (UTC)
+ id asPoBOot-mZD; Fri, 26 Apr 2024 14:57:29 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org EF0AC40949
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org F1A4641F72
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1714142680;
-	bh=xuq3eFnW4wuBkZ3mDODNgP4BiQjcXktdda7scHooKGY=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=JRKQL54uoFTZEnkmDAcQ2Amn/zPpqSd9/MLJXDGJjAuQVLlFhphSviIGVt3zOGPXo
-	 M5s6vVG0te+1a2XDW7QAeRCqVsiCuSlYIR7i0Q6uWN7ysvqGLQRLNzzkryVyE0dLIl
-	 keYuXwVVYpQNiYRaeaa9wCdlzePFXxj4m1rUR1rut/3HDyn1g1ZMT1wZxg3aoDg9CD
-	 xaLcyZvAS48Wx5pgetK91ND7Wr91+cHjTJBcDBi4IYY70Goezxt/DZpOom5/mTMuad
-	 fY+mXzfUIzzld9ZoiSYiivCGYAcp0BDKzv8l1cDUQ/j4XMI8cqlooSA/3+UB+i3DlT
-	 Q9MGFzRw8jiAA==
+	s=default; t=1714143449;
+	bh=Aaok4akx8+JwelwN/ppsY7WbWfpSN8p1AaPa1nlurvo=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=aEHhjVutJ+qPTgAdBGCf5itk3X2pU02QMS1yH5Rgm6I13vvUPKkmkZ9p94IuSkGZJ
+	 NPCE3JJRD/cl05lBEBGCFvVAP4hrVMfN7aBngyaVRFYKUxIwgJXSH0ky793ARoOYs2
+	 U6BwMo/36AaV9l/Ucydcw/2AfBMTN78awUPS1QV/n4PZpdPXhkW8b34dJIxSgyNcFe
+	 /y9mNvHFJjz9tslzC5G+wmGn1JY1KvV0WAbTGh0sono5sYd9jY977ZNMrHcO2KIlh7
+	 NKiFg2CDwQRs8UjaV6+pdTiDCJ+6ledVf9rsNbmCjmvIlveCbOV08VUThLM59Rmf+t
+	 ErGC8PQ7H2+hw==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id EF0AC40949;
-	Fri, 26 Apr 2024 14:44:39 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 558F31BF2C0
- for <intel-wired-lan@lists.osuosl.org>; Fri, 26 Apr 2024 14:44:38 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id F1A4641F72;
+	Fri, 26 Apr 2024 14:57:28 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 7C4E21BF2A6
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 26 Apr 2024 10:16:03 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 41050613E2
- for <intel-wired-lan@lists.osuosl.org>; Fri, 26 Apr 2024 14:44:38 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 602D241F0F
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 26 Apr 2024 10:16:03 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id G1H8HJXp6AMK for <intel-wired-lan@lists.osuosl.org>;
- Fri, 26 Apr 2024 14:44:37 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.13;
- helo=mgamail.intel.com; envelope-from=aleksander.lobakin@intel.com;
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id AdAJ7ZPUn4v9 for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 26 Apr 2024 10:16:01 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=148.163.158.5;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=agordeev@linux.ibm.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org DA55E613B8
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org DA55E613B8
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.13])
- by smtp3.osuosl.org (Postfix) with ESMTPS id DA55E613B8
- for <intel-wired-lan@lists.osuosl.org>; Fri, 26 Apr 2024 14:44:36 +0000 (UTC)
-X-CSE-ConnectionGUID: 2/FfEzGATsefRWNe4lkAAQ==
-X-CSE-MsgGUID: j2iET+ESRhSdMp359I1KgQ==
-X-IronPort-AV: E=McAfee;i="6600,9927,11056"; a="21027169"
-X-IronPort-AV: E=Sophos;i="6.07,232,1708416000"; d="scan'208";a="21027169"
-Received: from fmviesa007.fm.intel.com ([10.60.135.147])
- by orvoesa105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 26 Apr 2024 07:44:36 -0700
-X-CSE-ConnectionGUID: TSpeNl3CRVa+TG14ajS9gA==
-X-CSE-MsgGUID: lRRvpSkZQn6dyH8QEoaxqg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.07,232,1708416000"; d="scan'208";a="25441219"
-Received: from newjersey.igk.intel.com ([10.102.20.203])
- by fmviesa007.fm.intel.com with ESMTP; 26 Apr 2024 07:44:33 -0700
-From: Alexander Lobakin <aleksander.lobakin@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Date: Fri, 26 Apr 2024 16:44:08 +0200
-Message-ID: <20240426144408.1353962-1-aleksander.lobakin@intel.com>
-X-Mailer: git-send-email 2.44.0
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org C9D3441EF0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C9D3441EF0
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id C9D3441EF0
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 26 Apr 2024 10:15:59 +0000 (UTC)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id
+ 43QA3CRq012436; Fri, 26 Apr 2024 10:15:48 GMT
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3xra62g0uq-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 26 Apr 2024 10:15:48 +0000
+Received: from m0360072.ppops.net (m0360072.ppops.net [127.0.0.1])
+ by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 43QAFllU030841;
+ Fri, 26 Apr 2024 10:15:47 GMT
+Received: from ppma22.wdc07v.mail.ibm.com
+ (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+ by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3xra62g0uj-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 26 Apr 2024 10:15:47 +0000
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+ by ppma22.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id
+ 43Q8N5Sn021021; Fri, 26 Apr 2024 10:10:46 GMT
+Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
+ by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3xmre0f8u9-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 26 Apr 2024 10:10:46 +0000
+Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com
+ [10.20.54.104])
+ by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 43QAAeZn30540508
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Fri, 26 Apr 2024 10:10:42 GMT
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 8446420063;
+ Fri, 26 Apr 2024 10:10:40 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 3285C2004D;
+ Fri, 26 Apr 2024 10:10:37 +0000 (GMT)
+Received: from li-008a6a4c-3549-11b2-a85c-c5cc2836eea2.ibm.com (unknown
+ [9.171.4.163]) by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+ Fri, 26 Apr 2024 10:10:37 +0000 (GMT)
+Date: Fri, 26 Apr 2024 12:10:35 +0200
+From: Alexander Gordeev <agordeev@linux.ibm.com>
+To: Bui Quang Minh <minhquangbui99@gmail.com>, Jakub Kicinski <kuba@kernel.org>
+Message-ID: <Zit9myOJp0SYFL1F@li-008a6a4c-3549-11b2-a85c-c5cc2836eea2.ibm.com>
+References: <20240424-fix-oob-read-v2-0-f1f1b53a10f4@gmail.com>
+ <20240424-fix-oob-read-v2-5-f1f1b53a10f4@gmail.com>
+ <ZikiZsSTGUUM69GE@li-008a6a4c-3549-11b2-a85c-c5cc2836eea2.ibm.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1714142677; x=1745678677;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=c0dO8Re1PPSOl6/PX/WShnH30RI1DTXQ2uGy1lx3ZGY=;
- b=QxHf3TveYWXhXkZs6VpVLsMZ8hCHVNxNzGmRuJ5SDkv5NciWWk45Xut0
- US/KD4LApuDQ8VbilrbLhbvyx90hJVP/3oOByjv7yEYMouKaBQPT5TBBa
- vvOE4CS6cIrkxawuG02Lab7kQwHeNIsrXEcOgncH+sowT8eyQgIF0fEWG
- rPP7XGDToKC0mBblX7WyAxnglr1ePH6KsQ6LPNr9OlapAUHwkPVWb4kgG
- ZTzGcp40dhhaFENcFdFrO4r35g5vTDrWkxv4Cgue8YcEooaTSwsuo6OCT
- NoRiNHUGvjm4MrRnNnjb4ktGAg2oh+5IetB1d8jMTdwEhxUiVYGCOkxaq
- w==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ZikiZsSTGUUM69GE@li-008a6a4c-3549-11b2-a85c-c5cc2836eea2.ibm.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: nwzmHa-XFUQKTaw4oYDH1K-dtAII8FVL
+X-Proofpoint-GUID: fy_d-znjR1XF0iGIbw_36HPeZjIuI1Lh
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1011,Hydra:6.0.650,FMLib:17.11.176.26
+ definitions=2024-04-26_09,2024-04-26_02,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ clxscore=1015
+ lowpriorityscore=0 priorityscore=1501 impostorscore=0 bulkscore=0
+ adultscore=0 mlxscore=0 spamscore=0 phishscore=0 malwarescore=0
+ mlxlogscore=721 suspectscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2404010000 definitions=main-2404260067
+X-Mailman-Approved-At: Fri, 26 Apr 2024 14:57:27 +0000
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=ibm.com; h=date : from : to : cc :
+ subject : message-id : references : mime-version : content-type :
+ in-reply-to; s=pp1; bh=Aaok4akx8+JwelwN/ppsY7WbWfpSN8p1AaPa1nlurvo=;
+ b=msW2IDHklridPA49V4Yn6HHDnEqXh+aKAz0bWIaNe0idSkv7PvIbkpYeYc9esxhPabzW
+ 4X4CMusBRpMEzG4/LmnYXrL8IcwCVKFzFskC5zzdH2qnizCHK2kPsASdowEkMCp76sba
+ BPKCL33+JNzpY4IS+CeFNJIpUjIsTAqpHs0bdkzjH+Lu9h7Gyv7Ldlr26w8/ipvnUjha
+ VbM2+zZdSp6jDJZiWyk0gzAIth9gkvj65KKHMrf/h6nXkToaBxgJhQtK/N/8afpfZbY1
+ N39Pacl5FM+QS2nAxapGZLI981J2wF2FwIZVAOfPxb41EJjC5iqsoWHhwM2T6AGDOpS/ vA== 
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dmarc=none (p=none dis=none)
+ header.from=linux.ibm.com
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=QxHf3Tve
-Subject: [Intel-wired-lan] [PATCH iwl] idpf: don't enable NAPI and
- interrupts prior to allocating Rx buffers
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=msW2IDHk
+Subject: Re: [Intel-wired-lan] [PATCH v2 5/6] cio: ensure the copied buf is
+ NUL terminated
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,109 +141,40 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Wojciech Drewek <wojciech.drewek@intel.com>, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, Alexander Lobakin <aleksander.lobakin@intel.com>,
- Eric Dumazet <edumazet@google.com>, Michal Kubiak <michal.kubiak@intel.com>,
- nex.sw.ncis.osdt.itp.upstreaming@intel.com, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, "David S. Miller" <davem@davemloft.net>
+Cc: Subbaraya Sundeep <sbhatta@marvell.com>, linux-kernel@vger.kernel.org,
+ "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
+ Eric Dumazet <edumazet@google.com>, Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Vineeth Vijayan <vneethv@linux.ibm.com>, linux-scsi@vger.kernel.org,
+ Saurav Kashyap <saurav.kashyap@cavium.com>,
+ Linu Cherian <lcherian@marvell.com>, linux-s390@vger.kernel.org,
+ Sudarsana Kalluru <sudarsana.kalluru@qlogic.com>,
+ intel-wired-lan@lists.osuosl.org,
+ Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>,
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+ Sunil Goutham <sgoutham@marvell.com>,
+ Christian Borntraeger <borntraeger@linux.ibm.com>,
+ Vasily Gorbik <gor@linux.ibm.com>, Geetha sowjanya <gakula@marvell.com>,
+ Arun Easi <arun.easi@cavium.com>, Heiko Carstens <hca@linux.ibm.com>,
+ Fabian Frederick <fabf@skynet.be>,
+ Manish Rangankar <manish.rangankar@cavium.com>, Jens Axboe <axboe@kernel.dk>,
+ Nilesh Javali <nilesh.javali@cavium.com>, GR-Linux-NIC-Dev@marvell.com,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ Saurav Kashyap <skashyap@marvell.com>, Rasesh Mody <rmody@marvell.com>,
+ netdev@vger.kernel.org, Anil Gurumurthy <anil.gurumurthy@qlogic.com>,
+ Peter Oberparleiter <oberpar@linux.ibm.com>,
+ "David S. Miller" <davem@davemloft.net>,
+ GR-QLogic-Storage-Upstream@marvell.com, hariprasad <hkelam@marvell.com>,
+ Sven Schnelle <svens@linux.ibm.com>, Jerin Jacob <jerinj@marvell.com>,
+ Sudarsana Kalluru <skalluru@marvell.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Currently, idpf enables NAPI and interrupts prior to allocating Rx
-buffers.
-This may lead to frame loss (there are no buffers to place incoming
-frames) and even crashes on quick ifup-ifdown. Interrupts must be
-enabled only after all the resources are here and available.
-Split interrupt init into two phases: initialization and enabling,
-and perform the second only after the queues are fully initialized.
-Note that we can't just move interrupt initialization down the init
-process, as the queues must have correct a ::q_vector pointer set
-and NAPI already added in order to allocate buffers correctly.
-Also, during the deinit process, disable HW interrupts first and
-only then disable NAPI. Otherwise, there can be a HW event leading
-to napi_schedule(), but the NAPI will already be unavailable.
+On Wed, Apr 24, 2024 at 05:16:56PM +0200, Alexander Gordeev wrote:
+> Applied, thanks!
 
-Fixes: d4d558718266 ("idpf: initialize interrupts and enable vport")
-Reported-by: Michal Kubiak <michal.kubiak@intel.com>
-Reviewed-by: Wojciech Drewek <wojciech.drewek@intel.com>
-Signed-off-by: Alexander Lobakin <aleksander.lobakin@intel.com>
----
- drivers/net/ethernet/intel/idpf/idpf_txrx.h |  1 +
- drivers/net/ethernet/intel/idpf/idpf_lib.c  |  1 +
- drivers/net/ethernet/intel/idpf/idpf_txrx.c | 12 +++++++-----
- 3 files changed, 9 insertions(+), 5 deletions(-)
+Hi Jakub,
 
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.h b/drivers/net/ethernet/intel/idpf/idpf_txrx.h
-index 3d046b81e507..551391e20464 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_txrx.h
-+++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.h
-@@ -990,6 +990,7 @@ int idpf_vport_intr_alloc(struct idpf_vport *vport);
- void idpf_vport_intr_update_itr_ena_irq(struct idpf_q_vector *q_vector);
- void idpf_vport_intr_deinit(struct idpf_vport *vport);
- int idpf_vport_intr_init(struct idpf_vport *vport);
-+void idpf_vport_intr_ena(struct idpf_vport *vport);
- enum pkt_hash_types idpf_ptype_to_htype(const struct idpf_rx_ptype_decoded *decoded);
- int idpf_config_rss(struct idpf_vport *vport);
- int idpf_init_rss(struct idpf_vport *vport);
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_lib.c b/drivers/net/ethernet/intel/idpf/idpf_lib.c
-index 5d3532c27d57..ae8a48c48070 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_lib.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_lib.c
-@@ -1394,6 +1394,7 @@ static int idpf_vport_open(struct idpf_vport *vport, bool alloc_res)
- 	}
- 
- 	idpf_rx_init_buf_tail(vport);
-+	idpf_vport_intr_ena(vport);
- 
- 	err = idpf_send_config_queues_msg(vport);
- 	if (err) {
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.c b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-index 285da2177ee4..b023704bbbda 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-@@ -3746,9 +3746,9 @@ static void idpf_vport_intr_ena_irq_all(struct idpf_vport *vport)
-  */
- void idpf_vport_intr_deinit(struct idpf_vport *vport)
- {
-+	idpf_vport_intr_dis_irq_all(vport);
- 	idpf_vport_intr_napi_dis_all(vport);
- 	idpf_vport_intr_napi_del_all(vport);
--	idpf_vport_intr_dis_irq_all(vport);
- 	idpf_vport_intr_rel_irq(vport);
- }
- 
-@@ -4179,7 +4179,6 @@ int idpf_vport_intr_init(struct idpf_vport *vport)
- 
- 	idpf_vport_intr_map_vector_to_qs(vport);
- 	idpf_vport_intr_napi_add_all(vport);
--	idpf_vport_intr_napi_ena_all(vport);
- 
- 	err = vport->adapter->dev_ops.reg_ops.intr_reg_init(vport);
- 	if (err)
-@@ -4193,17 +4192,20 @@ int idpf_vport_intr_init(struct idpf_vport *vport)
- 	if (err)
- 		goto unroll_vectors_alloc;
- 
--	idpf_vport_intr_ena_irq_all(vport);
--
- 	return 0;
- 
- unroll_vectors_alloc:
--	idpf_vport_intr_napi_dis_all(vport);
- 	idpf_vport_intr_napi_del_all(vport);
- 
- 	return err;
- }
- 
-+void idpf_vport_intr_ena(struct idpf_vport *vport)
-+{
-+	idpf_vport_intr_napi_ena_all(vport);
-+	idpf_vport_intr_ena_irq_all(vport);
-+}
-+
- /**
-  * idpf_config_rss - Send virtchnl messages to configure RSS
-  * @vport: virtual port
--- 
-2.44.0
+I just want to make sure you do not have plans to pull this patch
+via the net tree, right? (I schedulled it for the s390 tree already).
 
+Thanks!
