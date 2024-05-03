@@ -4,125 +4,117 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F0D2BC4345F
-	for <intel-wired-lan@archiver.kernel.org>; Fri,  3 May 2024 15:25:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D1192C4345F
+	for <intel-wired-lan@archiver.kernel.org>; Fri,  3 May 2024 15:28:12 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 67520416CA;
-	Fri,  3 May 2024 15:25:50 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 7E2CA41F07;
+	Fri,  3 May 2024 15:28:12 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 4kSO-7VSaj-a; Fri,  3 May 2024 15:25:49 +0000 (UTC)
+ id R1UMd8KMMOsu; Fri,  3 May 2024 15:28:11 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 239B741730
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0331D41730
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1714749949;
-	bh=yl4g964HKYijZxc2oD7Ff8fnLIuQoEhMIWpaXs8VMMw=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=jiXs81nHrOmbnh8qd9UEKj/1kOqnpXkdoK28K0vo/aj10cPCOj/PjTSrnVgsmFZDI
-	 CWOb3oN1lOX/MwsGrsSsHSTdtZZWzGe7KqGpA4FWk0ElzPC9zbZt1VTchS0rWPcqk8
-	 hjWkuUvJII1gV3eTpHnkA47pV2KlyLLIl8EwEcKFEmaRMuxwiGYxg3EP4UnaY5JDnH
-	 Yln0YvkEFXaa64NyPG0SgT/yN9sYjOqJtgQD6BOuyZPUaD8sKhS0W6Ccq0iBglyLin
-	 +PmhMggHkomAv7rpS7xfhQ7b9tsD4PBikDKTUKpx+6KReKdMKSNpykhpRbjpbeXycY
-	 pP5Jo3oPujFqA==
+	s=default; t=1714750091;
+	bh=HQocY+zIiybxmg572V2oftlBH1WtE88jZjblSyh+67E=;
+	h=References:In-Reply-To:From:Date:To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=67hqRbQB3Y1Boqo19YjYwmXtiEE5vjmiYLto6wpUhWKNYuE+UdwvbEvRWgRCCY9Ig
+	 E64+T/ldPmY4mu9Bi4nhe/1K7V3VJqPadYGCpTXo9TVTk9JqgmZjKIPGSc7RenFVGq
+	 zxPClJQgDAwG6o4RbFyA0HVAorwce6kONmyzyYRZOsKtvT/WWfXHVeJHpDTLwpIQAg
+	 rvqOPWJAqGDxJE/8qFH3/BAaCc28DIVnvECy/T2/Mhtw0bszqsO0GHNwbt5O6sGfhx
+	 fheGYxpbxjzGHBnkE965cLvXhgpfKweXNodaKYlqWinnDp6gFGp/FMlk4wyeowXWh6
+	 GlQYlGkXWpJ5Q==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 239B741730;
-	Fri,  3 May 2024 15:25:49 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 0331D41730;
+	Fri,  3 May 2024 15:28:11 +0000 (UTC)
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 15A8F1BF30D
- for <intel-wired-lan@lists.osuosl.org>; Fri,  3 May 2024 15:25:47 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 253931BF2AF
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  3 May 2024 07:44:21 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id F398541730
- for <intel-wired-lan@lists.osuosl.org>; Fri,  3 May 2024 15:25:46 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 0D88440983
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  3 May 2024 07:44:21 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id H96WG-6QzDzY for <intel-wired-lan@lists.osuosl.org>;
- Fri,  3 May 2024 15:25:45 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=thinhtr@linux.ibm.com;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 24D0B416CA
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 24D0B416CA
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 24D0B416CA
- for <intel-wired-lan@lists.osuosl.org>; Fri,  3 May 2024 15:25:44 +0000 (UTC)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id
- 443ES8pw003813; Fri, 3 May 2024 15:25:38 GMT
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3xw1qag4mu-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 03 May 2024 15:25:37 +0000
-Received: from m0353725.ppops.net (m0353725.ppops.net [127.0.0.1])
- by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 443FL0E2023323;
- Fri, 3 May 2024 15:25:37 GMT
-Received: from ppma13.dal12v.mail.ibm.com
- (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
- by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3xw1qag4mk-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 03 May 2024 15:25:37 +0000
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
- by ppma13.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id
- 443F004X011821; Fri, 3 May 2024 15:25:36 GMT
-Received: from smtprelay02.dal12v.mail.ibm.com ([172.16.1.4])
- by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 3xsdwmp1nt-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 03 May 2024 15:25:36 +0000
-Received: from smtpav05.wdc07v.mail.ibm.com (smtpav05.wdc07v.mail.ibm.com
- [10.39.53.232])
- by smtprelay02.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 443FPXic26804972
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 3 May 2024 15:25:35 GMT
-Received: from smtpav05.wdc07v.mail.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 5D2FD58059;
- Fri,  3 May 2024 15:25:33 +0000 (GMT)
-Received: from smtpav05.wdc07v.mail.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id BA8395805F;
- Fri,  3 May 2024 15:25:32 +0000 (GMT)
-Received: from linux.vnet.ibm.com (unknown [9.41.99.196])
- by smtpav05.wdc07v.mail.ibm.com (Postfix) with ESMTP;
- Fri,  3 May 2024 15:25:32 +0000 (GMT)
-From: Thinh Tran <thinhtr@linux.ibm.com>
-To: netdev@vger.kernel.org, kuba@kernel.org, anthony.l.nguyen@intel.com,
- aleksandr.loktionov@intel.com
-Date: Fri,  3 May 2024 10:25:09 -0500
-Message-Id: <20240503152509.372-1-thinhtr@linux.ibm.com>
-X-Mailer: git-send-email 2.25.1
+ id vqIAk4C7MedA for <intel-wired-lan@lists.osuosl.org>;
+ Fri,  3 May 2024 07:44:19 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=185.125.188.122;
+ helo=smtp-relay-internal-0.canonical.com;
+ envelope-from=en-wei.wu@canonical.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 268BB4094D
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 268BB4094D
+Received: from smtp-relay-internal-0.canonical.com
+ (smtp-relay-internal-0.canonical.com [185.125.188.122])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 268BB4094D
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  3 May 2024 07:44:18 +0000 (UTC)
+Received: from mail-wr1-f69.google.com (mail-wr1-f69.google.com
+ [209.85.221.69])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by smtp-relay-internal-0.canonical.com (Postfix) with ESMTPS id D77174249F
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  3 May 2024 07:44:15 +0000 (UTC)
+Received: by mail-wr1-f69.google.com with SMTP id
+ ffacd0b85a97d-349cafdc8f0so5162117f8f.1
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 03 May 2024 00:44:15 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20230601; t=1714722255; x=1715327055;
+ h=content-transfer-encoding:cc:to:subject:message-id:date:from
+ :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+ :subject:date:message-id:reply-to;
+ bh=HQocY+zIiybxmg572V2oftlBH1WtE88jZjblSyh+67E=;
+ b=IeyvCGGeAXclINHgCbDATRqud10pRBi+l/r/E8Iv4nI0lil2E7gQhEPKpHNaFaVKHk
+ iUyK1J8iFMc6CxDCj/qdkMBmxzreg+FvsWXsPySfp16IS/suXnYBPrN7HRvzPp5Uvjaf
+ 1aJbiCE2cU6aBk2KpwWPr4+laHPnfPgD7JF1EcAotSyXzAw0mjHMwSYoW2hT3IigyMNa
+ 3/hebFuD+qOmpSMRZHs7XQhoHHTR/0kkkVL2WJ5yvOxIEMUBwrWyI7EGlgUYh3yXx2t1
+ uxaSqdknd3piqiLusPLJAp/FiYD955i80WFaigzaOu2pu1bVs9JjKPUdBIy46LTnjxTe
+ AIbA==
+X-Forwarded-Encrypted: i=1;
+ AJvYcCXhRTNkbjMS18iwYI0iRNptocCZjiMkCd0qrT7UEZvR81RUKWEIXeTQCEc6oBne+f9j3P0/i15K4++Ni0BbHZ0X89KrgXynl5+aOVuJzdmSWg==
+X-Gm-Message-State: AOJu0YzZ8Cp7LML7C6L0JGc3+1TkiIyosq358yjYzmuyIB5Zyhb+cNcb
+ xbblWq6qbBbZeAEHWVrRiUmumZClDimIa0dPGZKL+PPHHC1XEMVrHZxolUZdwoG8fzOS2Zy/6ta
+ FCQKDjVOpY8mG4qGXmpfuRJddL2D/eCjy4AupiYQRyjz3qI0VWYnFg5txzlx1U45Ljfq99J+cGS
+ uss0kYxqWbFZ/7dBrekzZXzQLte1M0yz7SGWppf6lfCCwvm1jMNTZyBZkP+Q==
+X-Received: by 2002:a05:6000:112:b0:34c:fd73:55d with SMTP id
+ o18-20020a056000011200b0034cfd73055dmr1722872wrx.70.1714722255536; 
+ Fri, 03 May 2024 00:44:15 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IHShT4u1aVmW6SGvB2TY5tSgwQwi7lin2dyXVmQGaomNM8W6zmFoTjKiJLXEOTsSv0jrb2dbsuiZNCqCaVckFY=
+X-Received: by 2002:a05:6000:112:b0:34c:fd73:55d with SMTP id
+ o18-20020a056000011200b0034cfd73055dmr1722849wrx.70.1714722255134; Fri, 03
+ May 2024 00:44:15 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: yr9NMls3P6hh2CHhmbs7Q_fL4ImBgdHO
-X-Proofpoint-GUID: 0VkdAi_18R7i2zDHlLGoO09Czi_iINvd
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1011,Hydra:6.0.650,FMLib:17.11.176.26
- definitions=2024-05-03_09,2024-05-03_02,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 clxscore=1015
- malwarescore=0 adultscore=0 suspectscore=0 phishscore=0 priorityscore=1501
- spamscore=0 mlxlogscore=999 lowpriorityscore=0 bulkscore=0 mlxscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2404010000
- definitions=main-2405030108
+References: <20240502091215.13068-1-en-wei.wu@canonical.com>
+ <4bd85100-0f3d-4e38-973c-e6938f304dde@molgen.mpg.de>
+In-Reply-To: <4bd85100-0f3d-4e38-973c-e6938f304dde@molgen.mpg.de>
+From: En-Wei WU <en-wei.wu@canonical.com>
+Date: Fri, 3 May 2024 15:44:04 +0800
+Message-ID: <CAMqyJG3mD0bcPoZg5ay-3PqgPvCR1OaraE6X00kH1QRTE3XNMw@mail.gmail.com>
+To: Paul Menzel <pmenzel@molgen.mpg.de>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Mailman-Approved-At: Fri, 03 May 2024 15:28:09 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=ibm.com; h=from : to : cc : subject
- : date : message-id : mime-version : content-transfer-encoding; s=pp1;
- bh=yl4g964HKYijZxc2oD7Ff8fnLIuQoEhMIWpaXs8VMMw=;
- b=jpOZwAdFadSTkBh8F9+OOqur1WscHh6C1qCss4QIvqsyrIGVgkojTSDnXrbnv5ph29KO
- 1Bo9DVR6oNbX45KtrRONQNHAknpZJkxwmFis+0hBN5jD+1iqvkCbZWgNzlyXY245CrWr
- Cfynfs4FfToMiNhtN6haBbXOt1qpRH0dflN1IguvWSjN43OBR4YA66t9qOtdM91iAn0/
- nfeglUVluGFyCQEXVadJEmuTKEZ/KAycOyYm1SxKIffvdteMSaHV0eksYAaIpZRmp3vc
- lId2I6DEw2xJmC1aP6ACgqq4+yNfrc9gK0WsU3PoVdK9dH+MbBZhDjsDqkDgSe/8vcND KA== 
+ d=canonical.com; s=20210705; t=1714722255;
+ bh=HQocY+zIiybxmg572V2oftlBH1WtE88jZjblSyh+67E=;
+ h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+ To:Cc:Content-Type;
+ b=iJyz60oM3SH1R7K98X9ir0hOYo345rqXnopVU6w4o9PWnv6IeOLWhHBV3HbRssaHZ
+ eTwxTOgvjP2/6BJKT+5HflAIYmctcXnpFQUzrk0Y9m8Fo6UQFZa/x3Wv3lUrj76WpZ
+ XTqygFJfj7Nb2Bi0Vm0iRLjXAZkDRWfkU8+FW9ZyhLRVQyXH3KLC6fLZ8UlbxX2dG+
+ DFrQmPj4nqpqST9vYaSkDnBF8qIHf3rPTi///h4SJkwsRUdMpTpViEzr+WQeGWB6/T
+ 7QpYnJN38s7Hq1xc2eOKpwmDi/HtWfoLXriH025XfIB0C8hKBJSlXfodlZVPTDxpAA
+ Zy94NoZqT/CWQ==
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dmarc=none (p=none dis=none)
- header.from=linux.ibm.com
+ dmarc=pass (p=none dis=none)
+ header.from=canonical.com
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com
- header.a=rsa-sha256 header.s=pp1 header.b=jpOZwAdF
-Subject: [Intel-wired-lan] [PATCH iwl-net] i40e: Fix repeated EEH reports in
- MSI domain
+ dkim=pass (2048-bit key,
+ unprotected) header.d=canonical.com header.i=@canonical.com
+ header.a=rsa-sha256 header.s=20210705 header.b=iJyz60oM
+Subject: Re: [Intel-wired-lan] [PATCH] e1000e: fix link fluctuations problem
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -135,141 +127,153 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: edumazet@google.com, intel-wired-lan@lists.osuosl.org,
- Thinh Tran <thinhtr@linux.ibm.com>, Robert Thomas <rob.thomas@ibm.com>,
- pabeni@redhat.com, davem@davemloft.net
+Cc: anthony.l.nguyen@intel.com, netdev@vger.kernel.org, rickywu0421@gmail.com,
+ linux-kernel@vger.kernel.org, edumazet@google.com,
+ intel-wired-lan@lists.osuosl.org, kuba@kernel.org, pabeni@redhat.com,
+ davem@davemloft.net
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The patch fixes an issue when repeated EEH reports with a single error
-on the bus of Intel X710 4-port 10G Base-T adapter, in the MSI domain
-causing the devices to be permanently disabled.  It fully resets and
-restart the devices when handling the PCI EEH error.
+Dear Paul Menzel,
 
-Two new functions, i40e_io_suspend() and i40e_io_resume(), have been
-introduced.  These functions were refactor from the existing
-i40e_suspend() and i40e_resume() respectively.  This refactoring was
-done due to concerns about the logic of the I40E_SUSPENSED state, which
-caused the device not able to recover.  The functios are now used in the
-EEH handling for device suspend/resume callbacks.
+Thank you for your quick response.
 
-- In the PCI error detected callback, replaced i40e_prep_for_reset()
-  with i40e_io_suspend(). The chance is to fully suspend all I/O
-  operations
-- In the PCI error slot reset callback, replaced pci_enable_device_mem()
-  with pci_enable_device(). This change enables both I/O and memory of 
-  the device.
+> Do you mean ho*t*-plugging?
+> Increas*ing*?
 
-- In the PCI error resume callback, replace i40e_handle_reset_warning()
-  with i40e_io_resume(). This change allows the system to resume I/O 
-  operations
+Yes, sorry about the misspelling.
 
-Fixes: a5f3d2c17b07 ("powerpc/pseries/pci: Add MSI domains")
+> Could you please document what NICs you saw this
+Yes. I saw this in Intel I219-LM. I haven't seen this bug on other NICs.
 
-Signed-off-by: Thinh Tran <thinhtr@linux.ibm.com>
-Tested-by: Robert Thomas <rob.thomas@ibm.com>
+> and if it is documented in any datasheet/errata?
+No, we couldn't find any datasheet/errata documenting this.
 
----
- drivers/net/ethernet/intel/i40e/i40e_main.c | 29 ++++++++++++++++-----
- 1 file changed, 22 insertions(+), 7 deletions(-)
+> Does this have any downsides on systems with non-buggy hardware?
+No, I've tested other non-buggy hardwares (like I219-V) and it has no
+effect on them.
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 48b9ddb2b1b3..58418aa9231e 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -54,6 +54,9 @@ static int i40e_get_capabilities(struct i40e_pf *pf,
- 				 enum i40e_admin_queue_opc list_type);
- static bool i40e_is_total_port_shutdown_enabled(struct i40e_pf *pf);
- 
-+static int i40e_io_suspend(struct i40e_pf *pf);
-+static int i40e_io_resume(struct i40e_pf *pf);
-+
- /* i40e_pci_tbl - PCI Device ID Table
-  *
-  * Last entry must be all 0s
-@@ -11138,6 +11141,8 @@ static void i40e_reset_and_rebuild(struct i40e_pf *pf, bool reinit,
- 	ret = i40e_reset(pf);
- 	if (!ret)
- 		i40e_rebuild(pf, reinit, lock_acquired);
-+	else
-+		dev_err(&pf->pdev->dev, "%s: i40e_reset() FAILED", __func__);
- }
- 
- /**
-@@ -16327,7 +16332,7 @@ static pci_ers_result_t i40e_pci_error_detected(struct pci_dev *pdev,
- 
- 	/* shutdown all operations */
- 	if (!test_bit(__I40E_SUSPENDED, pf->state))
--		i40e_prep_for_reset(pf);
-+		i40e_io_suspend(pf);
- 
- 	/* Request a slot reset */
- 	return PCI_ERS_RESULT_NEED_RESET;
-@@ -16349,7 +16354,8 @@ static pci_ers_result_t i40e_pci_error_slot_reset(struct pci_dev *pdev)
- 	u32 reg;
- 
- 	dev_dbg(&pdev->dev, "%s\n", __func__);
--	if (pci_enable_device_mem(pdev)) {
-+	/* enable I/O and memory of the device  */
-+	if (pci_enable_device(pdev)) {
- 		dev_info(&pdev->dev,
- 			 "Cannot re-enable PCI device after reset.\n");
- 		result = PCI_ERS_RESULT_DISCONNECT;
-@@ -16411,8 +16417,7 @@ static void i40e_pci_error_resume(struct pci_dev *pdev)
- 	dev_dbg(&pdev->dev, "%s\n", __func__);
- 	if (test_bit(__I40E_SUSPENDED, pf->state))
- 		return;
--
--	i40e_handle_reset_warning(pf, false);
-+	i40e_io_resume(pf);
- }
- 
- /**
-@@ -16521,11 +16526,16 @@ static void i40e_shutdown(struct pci_dev *pdev)
- static int __maybe_unused i40e_suspend(struct device *dev)
- {
- 	struct i40e_pf *pf = dev_get_drvdata(dev);
--	struct i40e_hw *hw = &pf->hw;
- 
- 	/* If we're already suspended, then there is nothing to do */
- 	if (test_and_set_bit(__I40E_SUSPENDED, pf->state))
- 		return 0;
-+	return i40e_io_suspend(pf);
-+}
-+
-+static int i40e_io_suspend(struct i40e_pf *pf)
-+{
-+	struct i40e_hw *hw = &pf->hw;
- 
- 	set_bit(__I40E_DOWN, pf->state);
- 
-@@ -16572,11 +16582,16 @@ static int __maybe_unused i40e_suspend(struct device *dev)
- static int __maybe_unused i40e_resume(struct device *dev)
- {
- 	struct i40e_pf *pf = dev_get_drvdata(dev);
--	int err;
- 
- 	/* If we're not suspended, then there is nothing to do */
- 	if (!test_bit(__I40E_SUSPENDED, pf->state))
- 		return 0;
-+	return i40e_io_resume(pf);
-+}
-+
-+static int i40e_io_resume(struct i40e_pf *pf)
-+{
-+	int err;
- 
- 	/* We need to hold the RTNL lock prior to restoring interrupt schemes,
- 	 * since we're going to be restoring queues
-@@ -16588,7 +16603,7 @@ static int __maybe_unused i40e_resume(struct device *dev)
- 	 */
- 	err = i40e_restore_interrupt_scheme(pf);
- 	if (err) {
--		dev_err(dev, "Cannot restore interrupt scheme: %d\n",
-+		dev_err(&pf->pdev->dev, "Cannot restore interrupt scheme: %d\n",
- 			err);
- 	}
- 
--- 
-2.39.3
+>Could you please split this hunk into a separate patch?
+Sure! I'll send the v2 patchset soon.
 
+> Are there any other  public bug reports and discussions you could referen=
+ce?
+No. We have an internal private bug report but it cannot be exposed to
+the public.
+
+Thank you for your time.
+
+On Fri, 3 May 2024 at 13:34, Paul Menzel <pmenzel@molgen.mpg.de> wrote:
+>
+> [Fix address jesse.brandeburg@intel.co*m*]
+>
+>
+> Dear Ricky,
+>
+>
+> Thank you for your patch.
+>
+>
+> Am 02.05.24 um 11:12 schrieb Ricky Wu:
+> > As described in https://bugzilla.kernel.org/show_bug.cgi?id=3D218642,
+> > some e1000e NIC reports link up -> link down -> link up when hog-pluggi=
+ng
+>
+> Do you mean ho*t*-plugging?
+>
+> > the Ethernet cable.
+> >
+> > The problem is because the unstable behavior of Link Status bit in
+> > PHY Status Register of some e1000e NIC. When we re-plug the cable,
+> > the e1000e_phy_has_link_generic() (called after the Link-Status-Changed
+> > interrupt) has read this bit with 1->0->1 (1=3Dlink up, 0=3Dlink down)
+> > and e1000e reports it to net device layer respectively.
+>
+> Wow. I guess this was =E2=80=9Cfun=E2=80=9D to debug. Could you please do=
+cument, what
+> NICs you saw this, and if it is documented in any datasheet/errata?
+>
+> > This patch solves the problem by passing polling delays on
+> > e1000e_phy_has_link_generic() so that it will not get the unstable
+> > states of Link Status bit.
+>
+> Does this have any downsides on systems with non-buggy hardware?
+>
+> > Also, the sleep codes in e1000e_phy_has_link_generic() only take
+> > effect when error occurs reading the MII register. Moving these codes
+> > forward to the beginning of the loop so that the polling delays passed
+> > into this function can take effect on any situation.
+>
+> Could you please split this hunk into a separate patch?
+>
+> Should it Fixes: tag be added?
+>
+> Are there any other  public bug reports and discussions you could referen=
+ce?
+>
+> Link: https://bugzilla.kernel.org/show_bug.cgi?id=3D218642
+>
+> > Signed-off-by: Ricky Wu <en-wei.wu@canonical.com>
+> > ---
+> >   drivers/net/ethernet/intel/e1000e/ich8lan.c |  5 ++++-
+> >   drivers/net/ethernet/intel/e1000e/phy.c     | 10 ++++++----
+> >   2 files changed, 10 insertions(+), 5 deletions(-)
+> >
+> > diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/=
+ethernet/intel/e1000e/ich8lan.c
+> > index f9e94be36e97..c462aa6e6dee 100644
+> > --- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
+> > +++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+> > @@ -1427,8 +1427,11 @@ static s32 e1000_check_for_copper_link_ich8lan(s=
+truct e1000_hw *hw)
+> >       /* First we want to see if the MII Status Register reports
+> >        * link.  If so, then we want to get the current speed/duplex
+> >        * of the PHY.
+> > +      * Some PHYs have link fluctuations with the instability of
+> > +      * Link Status bit (BMSR_LSTATUS) in MII Status Register.
+> > +      * Increase the iteration times and delay solves the problem.
+>
+> Increas*ing*?
+>
+> >        */
+> > -     ret_val =3D e1000e_phy_has_link_generic(hw, 1, 0, &link);
+> > +     ret_val =3D e1000e_phy_has_link_generic(hw, COPPER_LINK_UP_LIMIT,=
+ 100000, &link);
+>
+> Could you please document how 100000 was chosen?
+>
+> >       if (ret_val)
+> >               goto out;
+> >
+> > diff --git a/drivers/net/ethernet/intel/e1000e/phy.c b/drivers/net/ethe=
+rnet/intel/e1000e/phy.c
+> > index 93544f1cc2a5..ef056363d721 100644
+> > --- a/drivers/net/ethernet/intel/e1000e/phy.c
+> > +++ b/drivers/net/ethernet/intel/e1000e/phy.c
+> > @@ -1776,7 +1776,13 @@ s32 e1000e_phy_has_link_generic(struct e1000_hw =
+*hw, u32 iterations,
+> >       u16 i, phy_status;
+> >
+> >       *success =3D false;
+> > +
+> >       for (i =3D 0; i < iterations; i++) {
+> > +             if (usec_interval >=3D 1000)
+> > +                     msleep(usec_interval / 1000);
+> > +             else
+> > +                     udelay(usec_interval);
+> > +
+> >               /* Some PHYs require the MII_BMSR register to be read
+> >                * twice due to the link bit being sticky.  No harm doing
+> >                * it across the board.
+> > @@ -1799,10 +1805,6 @@ s32 e1000e_phy_has_link_generic(struct e1000_hw =
+*hw, u32 iterations,
+> >                       *success =3D true;
+> >                       break;
+> >               }
+> > -             if (usec_interval >=3D 1000)
+> > -                     msleep(usec_interval / 1000);
+> > -             else
+> > -                     udelay(usec_interval);
+> >       }
+> >
+> >       return ret_val;
