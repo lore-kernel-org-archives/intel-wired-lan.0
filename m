@@ -4,84 +4,79 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6BBBDC10F1A
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  7 May 2024 12:29:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CF15CC25B75
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  7 May 2024 12:31:48 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 0903340670;
-	Tue,  7 May 2024 12:29:32 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 49DAB406AC;
+	Tue,  7 May 2024 12:31:48 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 3jdheqv4XlFk; Tue,  7 May 2024 12:29:32 +0000 (UTC)
+ id URpzxNSbDNHh; Tue,  7 May 2024 12:31:46 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1707040269
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0639C40669
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1715084972;
-	bh=5V+1nFSAUkiuiW5zI+KiDr7XGM1wYhBwOjZiie4eCy4=;
+	s=default; t=1715085106;
+	bh=3Px43D9WhbnEpU5l+CqafWytQt70Xp5M2g0c30Ems/k=;
 	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=YadCbhXB6JFVSJl95zlaJcH6FdL+7PEO9LxqOIs7eBficthXyo1rWOPN+jPSJ3cWV
-	 0cTb0KVk4cg8O3DhuIr/mbYdPydo2ipxeXeTCTPfraCHMiMa2Q7ZconUTLlPtlEm9Y
-	 5Xo8bH9BXKdi9+zWz3mUeNuuf6ioZvaT0F95mXce1U//pf1HURDDHjXWCNp04oJOI0
-	 REaXSSV76JYW9HgFAmceMU5CrmfgzjKNXo3VSl5BA+fyfVYAZcIAqGRUfE7QDn4TJj
-	 DWkY447Wb0IKVXd8nHlyk7gGGjZg90jyJykrNTwe8tpBzUOY2HsLsbPe7c0NFtRXJk
-	 GrNh4Lyp8MaTA==
+	b=zsyevhYd9Fc/2apboL7lzyOhev1UWt9pTYisWycczRp9yrv0l2mYIVTm5UlAvGkSB
+	 rO0P1SoRiX6oxupnQFFZm62eUMLKyaN+AXhhV8rXQy+j/yNxDNda/ObGOLlW/dd/01
+	 BfE3RrurKnCmN/TuE4CPtW4jvxH26lAF/a5oZl1EPtmzi1tH49bF689OFC12yKgR24
+	 4ADGTXpfZWN7xg/hbC67laa/6u23VeDdTKH8J+DtUq3d9vISGfsutdPqS1Acr4xpJ8
+	 tcaiJa76iJs63IjE4URssPPAym4UY0P4AaMyndSt/d0zADA686gLn6Zh5+6bNC7jKv
+	 +N9vgv4GCG3ag==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 1707040269;
-	Tue,  7 May 2024 12:29:32 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 0639C40669;
+	Tue,  7 May 2024 12:31:46 +0000 (UTC)
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 3754B1BF386
- for <intel-wired-lan@lists.osuosl.org>; Tue,  7 May 2024 12:29:31 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 784DA1BF386
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  7 May 2024 12:31:44 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 303D86059B
- for <intel-wired-lan@lists.osuosl.org>; Tue,  7 May 2024 12:29:31 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 644996073E
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  7 May 2024 12:31:44 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id OBQAWEsk3oNC for <intel-wired-lan@lists.osuosl.org>;
- Tue,  7 May 2024 12:29:30 +0000 (UTC)
+ id kxtkbBblkPv3 for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  7 May 2024 12:31:43 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=156.67.10.101;
  helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 33DF960598
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 33DF960598
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 7D6896073C
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7D6896073C
 Received: from vps0.lunn.ch (vps0.lunn.ch [156.67.10.101])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 33DF960598
- for <intel-wired-lan@lists.osuosl.org>; Tue,  7 May 2024 12:29:30 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 7D6896073C
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  7 May 2024 12:31:43 +0000 (UTC)
 Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
  (envelope-from <andrew@lunn.ch>)
- id 1s4Jwj-00Equp-Oa; Tue, 07 May 2024 14:29:25 +0200
-Date: Tue, 7 May 2024 14:29:25 +0200
+ id 1s4Jyu-00Eqvr-FF; Tue, 07 May 2024 14:31:40 +0200
+Date: Tue, 7 May 2024 14:31:40 +0200
 From: Andrew Lunn <andrew@lunn.ch>
-To: En-Wei WU <en-wei.wu@canonical.com>
-Message-ID: <010c2d24-201e-4aba-b4a1-d973545121a7@lunn.ch>
-References: <20240503101824.32717-1-en-wei.wu@canonical.com>
- <7f533913-fba9-4a29-86a5-d3b32ac44632@intel.com>
- <CAMqyJG1Fyt1pZJqEjQN_kqXwfJ+HnqvW1PnAOEEpzoS9f37KBg@mail.gmail.com>
- <d2d9c0a8-6d4f-4aff-84f3-35fc2bff49b7@intel.com>
- <CAMqyJG2S4yvO-UiCiWydO+9uzOWpeKR9tmMDWrw=m6O7pd3m0w@mail.gmail.com>
+To: Ricky Wu <en-wei.wu@canonical.com>
+Message-ID: <83a2c15e-12ef-4a33-a1f1-8801acb78724@lunn.ch>
+References: <20240503101836.32755-1-en-wei.wu@canonical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <CAMqyJG2S4yvO-UiCiWydO+9uzOWpeKR9tmMDWrw=m6O7pd3m0w@mail.gmail.com>
+In-Reply-To: <20240503101836.32755-1-en-wei.wu@canonical.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt;
  c=relaxed/relaxed; d=lunn.ch; 
  s=20171124; h=In-Reply-To:Content-Disposition:Content-Type:MIME-Version:
  References:Message-ID:Subject:Cc:To:From:Date:From:Sender:Reply-To:Subject:
  Date:Message-ID:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:
  Content-ID:Content-Description:Content-Disposition:In-Reply-To:References;
- bh=5V+1nFSAUkiuiW5zI+KiDr7XGM1wYhBwOjZiie4eCy4=; b=YsqoD66pR6k8Uver9MP2Vpm5EA
- Q1gzlHM+IqOrnrZBXnp18aN58tO+r8SsxPBJTIWAAna58kgC0OLj29qbwvP4QNvDwrgXm3VJSS1p6
- ySAN+0ihKOMD/LDg+QvguGfBx7S9TblyZnHzePTTu6NMNMRWcUscLEuQiuMC6Qot6rrQ=;
+ bh=3Px43D9WhbnEpU5l+CqafWytQt70Xp5M2g0c30Ems/k=; b=Y0NtwsojhHStF8f3VH6h1sO+2B
+ M6X1WwknVEX4bCk+DZwVEJAcpUTAyL6229GYiRwaJQjCmrO6Y7UGeg05SNMu73RhYT7wqi2IvM9oT
+ kV4ltxYkmYvgg0Wkbz5ssPUHTU9ySdrX+Hjni7E6zkD+yX1td1plyenWT9S3A0SnXI6Q=;
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=lunn.ch
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (1024-bit key,
- unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256
- header.s=20171124 header.b=YsqoD66p
-Subject: Re: [Intel-wired-lan] [PATCH v2 1/2] e1000e: let the sleep codes
- run every time
+ dkim=pass (1024-bit key) header.d=lunn.ch header.i=@lunn.ch
+ header.a=rsa-sha256 header.s=20171124 header.b=Y0Ntwsoj
+Subject: Re: [Intel-wired-lan] [PATCH v2 2/2] e1000e: fix link fluctuations
+ problem
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,24 +89,18 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Sasha Neftin <sasha.neftin@intel.com>, anthony.l.nguyen@intel.com,
- netdev@vger.kernel.org, rickywu0421@gmail.com, linux-kernel@vger.kernel.org,
- edumazet@google.com, pabeni@redhat.com, intel-wired-lan@lists.osuosl.org,
- "Lifshits, Vitaly" <vitaly.lifshits@intel.com>, kuba@kernel.org, "Ruinskiy,
- Dima" <dima.ruinskiy@intel.com>, davem@davemloft.net
+Cc: netdev@vger.kernel.org, rickywu0421@gmail.com, linux-kernel@vger.kernel.org,
+ edumazet@google.com, intel-wired-lan@lists.osuosl.org, kuba@kernel.org,
+ anthony.l.nguyen@intel.com, pabeni@redhat.com, davem@davemloft.net
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-> > (1) How serious this problem is. It is normal for link establishment to
-> > take a few seconds from plugging the cable (due to PHY
-> > auto-negotiation), and I can accept some link instability during that time.
-> Actually, the problem is not critical since the link will be up
-> permanently after the unstable up-down problem when hot-plugging. And
-> it has no functional impact on the system. But this problem can lead
-> to a failure in our script (for Canonical Certification), and it's not
-> tolerable.
+On Fri, May 03, 2024 at 06:18:36PM +0800, Ricky Wu wrote:
+> As described in https://bugzilla.kernel.org/show_bug.cgi?id=218642,
+> Intel I219-LM reports link up -> link down -> link up after hot-plugging
+> the Ethernet cable.
 
-Please could you describe your test. We should be sure you are fixing
-the right thing. Maybe the test is broken, not the driver...
+Please could you quote some parts of 802.3 which state this is a
+problem. How is this breaking the standard.
 
-    Andrew
+	Andrew
