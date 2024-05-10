@@ -1,106 +1,99 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9D6AAC25B74
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 10 May 2024 14:28:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F0213C25B10
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 10 May 2024 15:03:02 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 54EF96163D;
-	Fri, 10 May 2024 14:28:09 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Lwi-Fc5u3SYQ; Fri, 10 May 2024 14:28:08 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C113861639
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1715351288;
-	bh=rYW0LxEqgOaRN3oUt0E43wedccYIYp53L33/c6IKwY0=;
-	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=LpnSvU2pViZHn6JO5/QKok4ge/e5L3OhDMrsGvEAmQUaYKiHyZYQ2BvAY/lf3iru6
-	 Ycj8UrjeVlcWG3undL9vuHS2exVKQOxj0SmFFO55UYM0Pl9iauO2W+ns3pZHmVqxPn
-	 Tz/83nFRa62ENyFKuWSMl0lZDBUEIKrW9TWcNUwvEvbh1qm5PPsDVO9CIv4sZ1f7fp
-	 ketdhuOET9NJ4GvDMZNIjUt+yXDN08EGSMPdeMhFMvXf8rlmLYYiLnGABp6ozB/oXE
-	 QjbPEoUJeBQWX5wMSpn89YZ3cfFP3+KcUJ1ZZRdgWHwrFos+lica7d0OUAABhV/7/d
-	 1x1g2B3ytBXtg==
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id C113861639;
-	Fri, 10 May 2024 14:28:08 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id D194C1BF34E
- for <intel-wired-lan@lists.osuosl.org>; Fri, 10 May 2024 14:28:06 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id B7BDD845DA
- for <intel-wired-lan@lists.osuosl.org>; Fri, 10 May 2024 14:28:06 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 6D307845E2;
+	Fri, 10 May 2024 15:03:02 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id paiPJZO6SpS8 for <intel-wired-lan@lists.osuosl.org>;
- Fri, 10 May 2024 14:28:06 +0000 (UTC)
-Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.16;
- helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com;
+ id ZljkJadbwKrd; Fri, 10 May 2024 15:03:01 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 55A50845E4
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1715353381;
+	bh=9zCXWnNgj+Ho1fw6LIt2R64mR3Jj2EPqIVCgHZHd+Mw=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=GEcGNfvrMIlh+aj+3MoglaCwkulJfrpNWdSBv+hicu3tcKwKb5oRT7vYbSwudmiTA
+	 T/eTI6CHTc/9+d2UANGXJ8mL1WzFuT7cDusszBbA/1tm8duRn2OICSs4eHYFaiJjUa
+	 bvEK6C72gowv4PqSASVZKnmKpepvskaT2g5oPLB3eegv0C6PgGSL/63D3DiE0euQcP
+	 LrSJq2gQxblxq9dCEt5LDEYfbxVQG6KuG/ptMTxGfOuv+Q2Ny55e9Knr1pkyTJUqPQ
+	 MI3z3EmSFffSdNt+5yzMw2/fe72BDoBgsKH7ny2xkvzD7PZ8L3Ew1UwxX9DbYOO1KL
+	 +cRmSR4nLMBNg==
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp1.osuosl.org (Postfix) with ESMTP id 55A50845E4;
+	Fri, 10 May 2024 15:03:01 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 4B0B71BF846
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 10 May 2024 06:52:57 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp4.osuosl.org (Postfix) with ESMTP id 3DF6242377
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 10 May 2024 06:52:57 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id QY89bPCCUT-Z for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 10 May 2024 06:52:56 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.19;
+ helo=mgamail.intel.com; envelope-from=anil.samal@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org D515A845B9
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D515A845B9
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.16])
- by smtp1.osuosl.org (Postfix) with ESMTPS id D515A845B9
- for <intel-wired-lan@lists.osuosl.org>; Fri, 10 May 2024 14:28:05 +0000 (UTC)
-X-CSE-ConnectionGUID: zGFsWElwR5uY0LXiGthXEA==
-X-CSE-MsgGUID: 6sT73+UVRdeP7NbvImG+Rw==
-X-IronPort-AV: E=McAfee;i="6600,9927,11068"; a="11460547"
-X-IronPort-AV: E=Sophos;i="6.08,151,1712646000"; d="scan'208";a="11460547"
-Received: from fmviesa008.fm.intel.com ([10.60.135.148])
- by orvoesa108.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 10 May 2024 07:28:04 -0700
-X-CSE-ConnectionGUID: RfUGcRtZRjGlOkFb8E3Fkg==
-X-CSE-MsgGUID: haEr3iRVQ/+b1G/BD2RmpQ==
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org CAD9F42370
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org CAD9F42370
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.19])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id CAD9F42370
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 10 May 2024 06:52:55 +0000 (UTC)
+X-CSE-ConnectionGUID: w2st9WFPR6uKvFqjOPvSGQ==
+X-CSE-MsgGUID: SiZhnUxSQ3i2i5oztVdD2Q==
+X-IronPort-AV: E=McAfee;i="6600,9927,11068"; a="11138279"
+X-IronPort-AV: E=Sophos;i="6.08,150,1712646000"; d="scan'208";a="11138279"
+Received: from fmviesa005.fm.intel.com ([10.60.135.145])
+ by orvoesa111.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 09 May 2024 23:52:52 -0700
+X-CSE-ConnectionGUID: fHbpBoTiRqaTNtJinkdhAg==
+X-CSE-MsgGUID: jdT+2zdcR9KUj7kK/VL4CQ==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.08,151,1712646000"; d="scan'208";a="29577789"
-Received: from smile.fi.intel.com ([10.237.72.54])
- by fmviesa008.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 10 May 2024 07:27:59 -0700
-Received: from andy by smile.fi.intel.com with local (Exim 4.97)
- (envelope-from <andriy.shevchenko@linux.intel.com>)
- id 1s5RE3-000000067xv-15tJ; Fri, 10 May 2024 17:27:55 +0300
-Date: Fri, 10 May 2024 17:27:55 +0300
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To: "D, Lakshmi Sowjanya" <lakshmi.sowjanya.d@intel.com>
-Message-ID: <Zj4u64qC4d2FXSQW@smile.fi.intel.com>
-References: <20240430085225.18086-1-lakshmi.sowjanya.d@intel.com>
- <20240430085225.18086-11-lakshmi.sowjanya.d@intel.com>
- <ZjD3ztepVkb5RlVE@smile.fi.intel.com>
- <CY8PR11MB7364F43C08D75878205599A5C4E62@CY8PR11MB7364.namprd11.prod.outlook.com>
+X-IronPort-AV: E=Sophos;i="6.08,150,1712646000"; d="scan'208";a="33950259"
+Received: from c3-1-server.sj.intel.com ([10.232.18.246])
+ by fmviesa005-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 09 May 2024 23:52:50 -0700
+From: Anil Samal <anil.samal@intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Date: Thu,  9 May 2024 23:50:40 -0700
+Message-ID: <20240510065243.906877-2-anil.samal@intel.com>
+X-Mailer: git-send-email 2.44.0
+In-Reply-To: <20240510065243.906877-1-anil.samal@intel.com>
+References: <20240510065243.906877-1-anil.samal@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CY8PR11MB7364F43C08D75878205599A5C4E62@CY8PR11MB7364.namprd11.prod.outlook.com>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
+Content-Transfer-Encoding: 8bit
+X-Mailman-Approved-At: Fri, 10 May 2024 15:02:58 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1715351286; x=1746887286;
- h=date:from:to:cc:subject:message-id:references:
- mime-version:in-reply-to;
- bh=kz2991U92lAyIp31g+FlBWFiotk7FNz3VZrEBJoZ0qw=;
- b=Fe+HQIFzwgKydGSMxCJRZq5Co0mAmfXSVKMY/FpUcYRnO1EZsIMV/2px
- pwoZCyBXZE5YQAkKzyOwCPyqOav4IX28yk9vi89CA05EztdOfbbYgD75o
- kLM4tHQ4v3gLgLoJBQ2vXEGzCe072FSAuUWESQc3UzRl7u81vQ+eGzzRx
- +2VF7C5zaYwH43B62x2LZhst72l+3jGpBURW+TNePfDmIpnRD7PHL60c5
- HL1gEJJ6KnJd8jyIHAf7nWW3qGSJWW9H08F+5wHjzgsqSDpMYFax5V5z3
- GIFJ1Q9RqlrybOXDaJqHC9VhBedmR6FrZ68+qxE7vs9ILhXLYLqq1pgso
- g==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dmarc=none (p=none dis=none)
- header.from=linux.intel.com
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=Fe+HQIFz
-Subject: Re: [Intel-wired-lan] [PATCH v7 10/12] pps: generators: Add PPS
- Generator TIO Driver
+ t=1715323976; x=1746859976;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=XmtiBOlFChF0ay3Cyi8VtV0AufD3HI0EkTZQj2hHCYk=;
+ b=lljJ9wspC5tN07vDZ85loE8llOIkx3udT+4ww5nUOMchEUuLvXt4GkWZ
+ 5vqoSaFk0aSzhY0I36/TQWBz0AzrMErZtIWdxZuPDnaXO3a3g2soGJJBy
+ TQ/9XWORHjIatPZb7KcWIyqfQvrlN1xz5d/F/wDsdSZT7nuhyss0hlt7W
+ 08H5SVCf8GiWBVuVtO//YfsNjUYKHUl1D+GfYA5y1760dGiN7dheNQ1vb
+ BN6XTbUgW8wC6TyqMW5bJm1wdELRXGUQ+UPnPedyZElOn7YhQCgrTTmKQ
+ yfWwK5mjLL4Joq86wOX2nQGvd8te2bef9HuNXoDgm7yLHMhJBxZLcYFsF
+ Q==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=intel.com
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=lljJ9wsp
+Subject: [Intel-wired-lan] [PATCH iwl-next v2 1/3] ice: Extend Sideband
+ Queue command to support dynamic flag
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -113,38 +106,143 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
- "alexandre.torgue@foss.st.com" <alexandre.torgue@foss.st.com>,
- "perex@perex.cz" <perex@perex.cz>, "Nguyen,
- Anthony L" <anthony.l.nguyen@intel.com>, "T R,
- Thejesh Reddy" <thejesh.reddy.t.r@intel.com>, "Hall,
- Christopher S" <christopher.s.hall@intel.com>,
- "corbet@lwn.net" <corbet@lwn.net>, "x86@kernel.org" <x86@kernel.org>,
- "joabreu@synopsys.com" <joabreu@synopsys.com>,
- "peter.hilber@opensynergy.com" <peter.hilber@opensynergy.com>,
- "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>, "Mohan,
- Subramanian" <subramanian.mohan@intel.com>,
- "linux-sound@vger.kernel.org" <linux-sound@vger.kernel.org>,
- "tglx@linutronix.de" <tglx@linutronix.de>,
- "giometti@enneenne.com" <giometti@enneenne.com>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>, "N,
- Pandith" <pandith.n@intel.com>, "Dong, Eddie" <eddie.dong@intel.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "mcoquelin.stm32@gmail.com" <mcoquelin.stm32@gmail.com>,
- "jstultz@google.com" <jstultz@google.com>,
- "davem@davemloft.net" <davem@davemloft.net>
+Cc: --cc=anthony.l.nguyen@intel.com, netdev@vger.kernel.org,
+ --cc=jesse.brandeburg@intel.com, --cc=leszek.pepiak@intel.com,
+ Anil Samal <anil.samal@intel.com>,
+ Anthony L Nguyen <anthony.l.nguyen@intel.com>,
+ --cc=przemyslaw.kitszel@intel.com, --cc=lukasz.czapnik@intel.com
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Thu, May 09, 2024 at 04:38:49AM +0000, D, Lakshmi Sowjanya wrote:
+Current driver implementation for Sideband Queue supports a
+fixed flag (ICE_AQ_FLAG_RD). To retrieve FEC statistics from
+firmware, Sideband Queue command is used with a different flag.
 
-> Will update as suggested.
+Extend API for Sideband Queue command to use 'flag' as input
+argument.
 
-Just a side note: Since the series most likely missed v6.10, don't forget to
-bump dates and versions in ABI documentation in the next version.
+Reviewed-by: Anthony L Nguyen <anthony.l.nguyen@intel.com>
+Reviewed-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Signed-off-by: Anil Samal <anil.samal@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_common.c |  5 +++--
+ drivers/net/ethernet/intel/ice/ice_common.h |  2 +-
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.c | 16 ++++++++--------
+ 3 files changed, 12 insertions(+), 11 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index 5649b257e631..9a0a533613ff 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -1473,8 +1473,9 @@ ice_sbq_send_cmd(struct ice_hw *hw, struct ice_sbq_cmd_desc *desc,
+  * ice_sbq_rw_reg - Fill Sideband Queue command
+  * @hw: pointer to the HW struct
+  * @in: message info to be filled in descriptor
++ * @flag: flag to fill desc structure
+  */
+-int ice_sbq_rw_reg(struct ice_hw *hw, struct ice_sbq_msg_input *in)
++int ice_sbq_rw_reg(struct ice_hw *hw, struct ice_sbq_msg_input *in, u16 flag)
+ {
+ 	struct ice_sbq_cmd_desc desc = {0};
+ 	struct ice_sbq_msg_req msg = {0};
+@@ -1498,7 +1499,7 @@ int ice_sbq_rw_reg(struct ice_hw *hw, struct ice_sbq_msg_input *in)
+ 		 */
+ 		msg_len -= sizeof(msg.data);
+ 
+-	desc.flags = cpu_to_le16(ICE_AQ_FLAG_RD);
++	desc.flags = cpu_to_le16(flag);
+ 	desc.opcode = cpu_to_le16(ice_sbq_opc_neigh_dev_req);
+ 	desc.param0.cmd_len = cpu_to_le16(msg_len);
+ 	status = ice_sbq_send_cmd(hw, &desc, &msg, msg_len, NULL);
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
+index ffb22c7ce28b..42cda1bbbaab 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.h
++++ b/drivers/net/ethernet/intel/ice/ice_common.h
+@@ -201,7 +201,7 @@ int ice_replay_vsi(struct ice_hw *hw, u16 vsi_handle);
+ void ice_replay_post(struct ice_hw *hw);
+ struct ice_q_ctx *
+ ice_get_lan_q_ctx(struct ice_hw *hw, u16 vsi_handle, u8 tc, u16 q_handle);
+-int ice_sbq_rw_reg(struct ice_hw *hw, struct ice_sbq_msg_input *in);
++int ice_sbq_rw_reg(struct ice_hw *hw, struct ice_sbq_msg_input *in, u16 flag);
+ int
+ ice_aq_get_cgu_abilities(struct ice_hw *hw,
+ 			 struct ice_aqc_get_cgu_abilities *abilities);
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
+index 2b9423a173bb..e97b73d1b0f4 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
++++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
+@@ -433,7 +433,7 @@ ice_read_phy_reg_e82x(struct ice_hw *hw, u8 port, u16 offset, u32 *val)
+ 	ice_fill_phy_msg_e82x(&msg, port, offset);
+ 	msg.opcode = ice_sbq_msg_rd;
+ 
+-	err = ice_sbq_rw_reg(hw, &msg);
++	err = ice_sbq_rw_reg(hw, &msg, ICE_AQ_FLAG_RD);
+ 	if (err) {
+ 		ice_debug(hw, ICE_DBG_PTP, "Failed to send message to PHY, err %d\n",
+ 			  err);
+@@ -511,7 +511,7 @@ ice_write_phy_reg_e82x(struct ice_hw *hw, u8 port, u16 offset, u32 val)
+ 	msg.opcode = ice_sbq_msg_wr;
+ 	msg.data = val;
+ 
+-	err = ice_sbq_rw_reg(hw, &msg);
++	err = ice_sbq_rw_reg(hw, &msg, ICE_AQ_FLAG_RD);
+ 	if (err) {
+ 		ice_debug(hw, ICE_DBG_PTP, "Failed to send message to PHY, err %d\n",
+ 			  err);
+@@ -667,7 +667,7 @@ ice_read_quad_reg_e82x(struct ice_hw *hw, u8 quad, u16 offset, u32 *val)
+ 
+ 	msg.opcode = ice_sbq_msg_rd;
+ 
+-	err = ice_sbq_rw_reg(hw, &msg);
++	err = ice_sbq_rw_reg(hw, &msg, ICE_AQ_FLAG_RD);
+ 	if (err) {
+ 		ice_debug(hw, ICE_DBG_PTP, "Failed to send message to PHY, err %d\n",
+ 			  err);
+@@ -702,7 +702,7 @@ ice_write_quad_reg_e82x(struct ice_hw *hw, u8 quad, u16 offset, u32 val)
+ 	msg.opcode = ice_sbq_msg_wr;
+ 	msg.data = val;
+ 
+-	err = ice_sbq_rw_reg(hw, &msg);
++	err = ice_sbq_rw_reg(hw, &msg, ICE_AQ_FLAG_RD);
+ 	if (err) {
+ 		ice_debug(hw, ICE_DBG_PTP, "Failed to send message to PHY, err %d\n",
+ 			  err);
+@@ -840,7 +840,7 @@ ice_read_cgu_reg_e82x(struct ice_hw *hw, u32 addr, u32 *val)
+ 	cgu_msg.msg_addr_low = addr;
+ 	cgu_msg.msg_addr_high = 0x0;
+ 
+-	err = ice_sbq_rw_reg(hw, &cgu_msg);
++	err = ice_sbq_rw_reg(hw, &cgu_msg, ICE_AQ_FLAG_RD);
+ 	if (err) {
+ 		ice_debug(hw, ICE_DBG_PTP, "Failed to read CGU register 0x%04x, err %d\n",
+ 			  addr, err);
+@@ -873,7 +873,7 @@ ice_write_cgu_reg_e82x(struct ice_hw *hw, u32 addr, u32 val)
+ 	cgu_msg.msg_addr_high = 0x0;
+ 	cgu_msg.data = val;
+ 
+-	err = ice_sbq_rw_reg(hw, &cgu_msg);
++	err = ice_sbq_rw_reg(hw, &cgu_msg, ICE_AQ_FLAG_RD);
+ 	if (err) {
+ 		ice_debug(hw, ICE_DBG_PTP, "Failed to write CGU register 0x%04x, err %d\n",
+ 			  addr, err);
+@@ -2660,7 +2660,7 @@ static int ice_read_phy_reg_e810(struct ice_hw *hw, u32 addr, u32 *val)
+ 	msg.opcode = ice_sbq_msg_rd;
+ 	msg.dest_dev = rmn_0;
+ 
+-	err = ice_sbq_rw_reg(hw, &msg);
++	err = ice_sbq_rw_reg(hw, &msg, ICE_AQ_FLAG_RD);
+ 	if (err) {
+ 		ice_debug(hw, ICE_DBG_PTP, "Failed to send message to PHY, err %d\n",
+ 			  err);
+@@ -2691,7 +2691,7 @@ static int ice_write_phy_reg_e810(struct ice_hw *hw, u32 addr, u32 val)
+ 	msg.dest_dev = rmn_0;
+ 	msg.data = val;
+ 
+-	err = ice_sbq_rw_reg(hw, &msg);
++	err = ice_sbq_rw_reg(hw, &msg, ICE_AQ_FLAG_RD);
+ 	if (err) {
+ 		ice_debug(hw, ICE_DBG_PTP, "Failed to send message to PHY, err %d\n",
+ 			  err);
 -- 
-With Best Regards,
-Andy Shevchenko
-
+2.44.0
 
