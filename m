@@ -1,78 +1,101 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3502DC25B75
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 15 May 2024 05:09:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 622B0C25B75
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 15 May 2024 09:25:53 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id D4DDD813B8;
-	Wed, 15 May 2024 05:09:16 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 04B94405B6;
+	Wed, 15 May 2024 09:25:53 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Ma7RNyBPeKdV; Wed, 15 May 2024 05:09:16 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id eBl2N4F-HLxQ; Wed, 15 May 2024 09:25:51 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 46411813BA
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org CC97C40545
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1715749756;
-	bh=xjuyT2bwzvZOSpnPUS+SzF7hRVQUrhS9ss9o29ocqFQ=;
-	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=PJ5IT3sW4XUGvNUlYCjhDHSty4bPz+iu5kaFiFmKT+ycj5s0Ax4ulDo5arBQNk1Ae
-	 j3lQe3k5KD0TGdlW/imSB3y+ZSQ4dJ0tb6uBNagmnrCOATHHbEeEXAO12uTIycLdUB
-	 B2n0fgjrMR8Zy4DSdYxMTLgANdxngIuu9a9dkb8uJ/VEaRXCop4AbvPWzVHeHOu0cb
-	 j5O0DnV2vDmk7IFkJ2Iub5B7oUX7Pgr3NNcVH7+dWFU1MzDbVS7GzK/9kOuULFqzxM
-	 2n+xeGitM/DcmxaMUehGMQS0bUexT+bgNxPjn3NfBWR3v9Hl8a02G1/T8X/cJ8wByR
-	 m9eqsQmOKtazg==
+	s=default; t=1715765151;
+	bh=cwgmU20xqKj4JxIRaIo+XjkFH1Bokj6japGSVd7cJpA=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=1I1UvNFbJtY0almrEKCnciQhsh3j+fvHWaavyOKPHn+/2sx8NB/M+10vFXngita++
+	 2Hy+jZRtBamjGCHvQDoPbdXO9RQZ0rKM1fIj+4ROhd/KRkwk+CJ615ubl9+xcf3RMW
+	 kGYSf003GK1RW+RMEiCG2aAG60Zlj71EDnxrfx2IkM/ghu4anVId5vjhBdfv9IiqQO
+	 26AYIJ4RCAFf28wq6ZtNhIVaK7W1Jyi/NViKRsBOnNc9EwT7/Finv0DI2WNtDRGFeY
+	 zRGzPMpTM/yyIIaz36e/glQw1HTgkvkcr/7IIqtNVnaF5OW1XN6oe5GhMAHdrhOaxE
+	 6+STh11Q/u9WA==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 46411813BA;
-	Wed, 15 May 2024 05:09:16 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id C1D261BF852
- for <intel-wired-lan@lists.osuosl.org>; Wed, 15 May 2024 05:09:14 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id CC97C40545;
+	Wed, 15 May 2024 09:25:51 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 4DF061BF2EA
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 15 May 2024 09:25:50 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id AF2EC40B2C
- for <intel-wired-lan@lists.osuosl.org>; Wed, 15 May 2024 05:09:14 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 387A040545
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 15 May 2024 09:25:50 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 8xQ9OBxH2r26 for <intel-wired-lan@lists.osuosl.org>;
- Wed, 15 May 2024 05:09:13 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=141.14.17.11;
- helo=mx3.molgen.mpg.de; envelope-from=pmenzel@molgen.mpg.de;
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id c84OCcrDN9_q for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 15 May 2024 09:25:48 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.133.124;
+ helo=us-smtp-delivery-124.mimecast.com; envelope-from=mschmidt@redhat.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 6973940AF9
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 6973940AF9
-Received: from mx3.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 6973940AF9
- for <intel-wired-lan@lists.osuosl.org>; Wed, 15 May 2024 05:09:12 +0000 (UTC)
-Received: from [192.168.0.2] (ip5f5af258.dynamic.kabel-deutschland.de
- [95.90.242.88])
- (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org DF6A340518
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org DF6A340518
+Received: from us-smtp-delivery-124.mimecast.com
+ (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id DF6A340518
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 15 May 2024 09:25:47 +0000 (UTC)
+Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
+ [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-66-ko1Hznd6OVeBiirvtz07Sw-1; Wed, 15 May 2024 05:25:40 -0400
+X-MC-Unique: ko1Hznd6OVeBiirvtz07Sw-1
+Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.rdu2.redhat.com
+ [10.11.54.8])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested) (Authenticated sender: pmenzel)
- by mx.molgen.mpg.de (Postfix) with ESMTPSA id 7A16B61E5FE07;
- Wed, 15 May 2024 07:08:38 +0200 (CEST)
-Message-ID: <275f19df-f0c2-405c-9a99-7776a8565532@molgen.mpg.de>
-Date: Wed, 15 May 2024 07:08:37 +0200
+ (No client certificate requested)
+ by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 4D643803785;
+ Wed, 15 May 2024 09:25:40 +0000 (UTC)
+Received: from localhost.localdomain (unknown [10.45.224.127])
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 3649BC15BB1;
+ Wed, 15 May 2024 09:25:37 +0000 (UTC)
+From: Michal Schmidt <mschmidt@redhat.com>
+To: Jesse Brandeburg <jesse.brandeburg@intel.com>,
+ Tony Nguyen <anthony.l.nguyen@intel.com>,
+ "David S. Miller" <davem@davemloft.net>,
+ Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Michal Kubiak <michal.kubiak@intel.com>,
+ Alexander Lobakin <aleksander.lobakin@intel.com>
+Date: Wed, 15 May 2024 11:24:14 +0200
+Message-ID: <20240515092414.158079-1-mschmidt@redhat.com>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-To: Thinh Tran <thinhtr@linux.ibm.com>
-References: <20240514202141.408-1-thinhtr@linux.ibm.com>
- <20240514202141.408-2-thinhtr@linux.ibm.com>
-Content-Language: en-US
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-In-Reply-To: <20240514202141.408-2-thinhtr@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dmarc=none (p=none dis=none)
- header.from=molgen.mpg.de
-Subject: Re: [Intel-wired-lan] [PATCH iwl-net V3,
- 1/2] i40e: fractoring out i40e_suspend/i40e_resume
+Content-Transfer-Encoding: 8bit
+X-Scanned-By: MIMEDefang 3.4.1 on 10.11.54.8
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=redhat.com; 
+ s=mimecast20190719; t=1715765146;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:
+ content-transfer-encoding:content-transfer-encoding;
+ bh=cwgmU20xqKj4JxIRaIo+XjkFH1Bokj6japGSVd7cJpA=;
+ b=NjFhvf4/m0X+SGXlt5hM/Rpfrlyw6dydNEhGKmxHbWG0IhvoNdDQaYZnCShdq9ZMJwHEkD
+ s/pcSZj3E9D7yTX9UTHzS4HL60VrPAdGZdFyYCsW8Gp4PZ/iyMzhXGpY5RvBWQ4iCXeCkF
+ 8JNhZLf6DK160DZf2C7vPQashD8NR/Y=
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=redhat.com
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=NjFhvf4/
+Subject: [Intel-wired-lan] [PATCH net] idpf: don't skip over ethtool
+ tcp-data-split setting
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -85,22 +108,48 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: pabeni@redhat.com, netdev@vger.kernel.org, rob.thomas@ibm.com,
- aleksandr.loktionov@intel.com, edumazet@google.com, anthony.l.nguyen@intel.com,
- horms@kernel.org, przemyslaw.kitszel@intel.com, kuba@kernel.org,
- intel-wired-lan@lists.osuosl.org, davem@davemloft.net
+Cc: netdev@vger.kernel.org, Xu Du <xudu@redhat.com>,
+ intel-wired-lan@lists.osuosl.org, linux-kernel@vger.kernel.org
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Dear Thinh,
+Disabling tcp-data-split on idpf silently fails:
+  # ethtool -G $NETDEV tcp-data-split off
+  # ethtool -g $NETDEV | grep 'TCP data split'
+  TCP data split:        on
 
+But it works if you also change 'tx' or 'rx':
+  # ethtool -G $NETDEV tcp-data-split off tx 256
+  # ethtool -g $NETDEV | grep 'TCP data split'
+  TCP data split:        off
 
-Thank you for your patch. Two minor comments for the title: Please use 
-imperative mood and fix a typo:
+The bug is in idpf_set_ringparam, where it takes a shortcut out if the
+TX and RX sizes are not changing. Fix it by checking also if the
+tcp-data-split setting remains unchanged. Only then can the soft reset
+be skipped.
 
-Factor out i40e_suspend/i40e_resume
+Fixes: 9b1aa3ef2328 ("idpf: add get/set for Ethtool's header split ringparam")
+Reported-by: Xu Du <xudu@redhat.com>
+Closes: https://issues.redhat.com/browse/RHEL-36182
+Signed-off-by: Michal Schmidt <mschmidt@redhat.com>
+---
+ drivers/net/ethernet/intel/idpf/idpf_ethtool.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_ethtool.c b/drivers/net/ethernet/intel/idpf/idpf_ethtool.c
+index 986d429d1175..6972d728431c 100644
+--- a/drivers/net/ethernet/intel/idpf/idpf_ethtool.c
++++ b/drivers/net/ethernet/intel/idpf/idpf_ethtool.c
+@@ -376,7 +376,8 @@ static int idpf_set_ringparam(struct net_device *netdev,
+ 			    new_tx_count);
+ 
+ 	if (new_tx_count == vport->txq_desc_count &&
+-	    new_rx_count == vport->rxq_desc_count)
++	    new_rx_count == vport->rxq_desc_count &&
++	    kring->tcp_data_split == idpf_vport_get_hsplit(vport))
+ 		goto unlock_mutex;
+ 
+ 	if (!idpf_vport_set_hsplit(vport, kring->tcp_data_split)) {
+-- 
+2.44.0
 
-Kind regards,
-
-Paul
