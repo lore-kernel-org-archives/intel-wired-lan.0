@@ -4,75 +4,75 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8936FC25B75
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 15 May 2024 04:58:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3502DC25B75
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 15 May 2024 05:09:17 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 1F93881FA8;
-	Wed, 15 May 2024 04:58:26 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id D4DDD813B8;
+	Wed, 15 May 2024 05:09:16 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id QNdGZ53SVOmg; Wed, 15 May 2024 04:58:23 +0000 (UTC)
+ id Ma7RNyBPeKdV; Wed, 15 May 2024 05:09:16 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org BE7A681FA1
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 46411813BA
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1715749103;
-	bh=UtAcPLNP6kgouwqAN92MLqB090/ibbS5kEQlJQkS2+k=;
+	s=default; t=1715749756;
+	bh=xjuyT2bwzvZOSpnPUS+SzF7hRVQUrhS9ss9o29ocqFQ=;
 	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=984kWdi300kReLlXzMtEsGRulRWYQ9AHUO/932nntj+cjx0v4Bz/318aXA3cVzHn/
-	 Mhq++d969qR/qgQprHGiDN4oQpGytk57yYKyfuMhfBDgKUyfpH60HEdEFRFqhVHE3j
-	 4pSXhw8m6cJxMtMSb9e4GAwSnhWkZaM/6N3oQ7BpnoDVSFnnqg5cbmKS4XihFGQqZ/
-	 ARroU6e9oTQzM4BUbt9l8jwDZyKWcnasudgxWaUYN8Kc+s7KGeJ1J1P3FEZPJdcbuO
-	 FIZkcal2r3t/l8Ddmijk1kzAs1n8WXwIAL1Dwz0UbVJ8iesfxW2GF0GCNZDVkJqBrO
-	 QJuI25qE9YLcQ==
+	b=PJ5IT3sW4XUGvNUlYCjhDHSty4bPz+iu5kaFiFmKT+ycj5s0Ax4ulDo5arBQNk1Ae
+	 j3lQe3k5KD0TGdlW/imSB3y+ZSQ4dJ0tb6uBNagmnrCOATHHbEeEXAO12uTIycLdUB
+	 B2n0fgjrMR8Zy4DSdYxMTLgANdxngIuu9a9dkb8uJ/VEaRXCop4AbvPWzVHeHOu0cb
+	 j5O0DnV2vDmk7IFkJ2Iub5B7oUX7Pgr3NNcVH7+dWFU1MzDbVS7GzK/9kOuULFqzxM
+	 2n+xeGitM/DcmxaMUehGMQS0bUexT+bgNxPjn3NfBWR3v9Hl8a02G1/T8X/cJ8wByR
+	 m9eqsQmOKtazg==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id BE7A681FA1;
-	Wed, 15 May 2024 04:58:23 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 46411813BA;
+	Wed, 15 May 2024 05:09:16 +0000 (UTC)
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 5222F1BF2A7
- for <intel-wired-lan@lists.osuosl.org>; Wed, 15 May 2024 04:58:22 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id C1D261BF852
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 15 May 2024 05:09:14 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 37FC34043A
- for <intel-wired-lan@lists.osuosl.org>; Wed, 15 May 2024 04:58:22 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id AF2EC40B2C
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 15 May 2024 05:09:14 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id IM2fqbBQaUSo for <intel-wired-lan@lists.osuosl.org>;
- Wed, 15 May 2024 04:58:20 +0000 (UTC)
+ id 8xQ9OBxH2r26 for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 15 May 2024 05:09:13 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=141.14.17.11;
  helo=mx3.molgen.mpg.de; envelope-from=pmenzel@molgen.mpg.de;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 021834000B
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 021834000B
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 6973940AF9
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 6973940AF9
 Received: from mx3.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 021834000B
- for <intel-wired-lan@lists.osuosl.org>; Wed, 15 May 2024 04:58:18 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 6973940AF9
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 15 May 2024 05:09:12 +0000 (UTC)
 Received: from [192.168.0.2] (ip5f5af258.dynamic.kabel-deutschland.de
  [95.90.242.88])
  (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested) (Authenticated sender: pmenzel)
- by mx.molgen.mpg.de (Postfix) with ESMTPSA id 7C45461E5FE07;
- Wed, 15 May 2024 06:57:40 +0200 (CEST)
-Message-ID: <23f86436-cd8a-45b0-9378-1ec3adecfc82@molgen.mpg.de>
-Date: Wed, 15 May 2024 06:57:39 +0200
+ by mx.molgen.mpg.de (Postfix) with ESMTPSA id 7A16B61E5FE07;
+ Wed, 15 May 2024 07:08:38 +0200 (CEST)
+Message-ID: <275f19df-f0c2-405c-9a99-7776a8565532@molgen.mpg.de>
+Date: Wed, 15 May 2024 07:08:37 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-To: Oliver Sang <oliver.sang@intel.com>
-References: <202405150942.f9b873b1-oliver.sang@intel.com>
+To: Thinh Tran <thinhtr@linux.ibm.com>
+References: <20240514202141.408-1-thinhtr@linux.ibm.com>
+ <20240514202141.408-2-thinhtr@linux.ibm.com>
 Content-Language: en-US
 From: Paul Menzel <pmenzel@molgen.mpg.de>
-In-Reply-To: <202405150942.f9b873b1-oliver.sang@intel.com>
+In-Reply-To: <20240514202141.408-2-thinhtr@linux.ibm.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=none (p=none dis=none)
  header.from=molgen.mpg.de
-Subject: Re: [Intel-wired-lan] [linus:master] [e1000e] 861e808602:
- suspend-stress.fail (e1000e: move force SMBUS from enable ulp function to
- avoid PHY loss issue)
+Subject: Re: [Intel-wired-lan] [PATCH iwl-net V3,
+ 1/2] i40e: fractoring out i40e_suspend/i40e_resume
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -85,87 +85,22 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Dima Ruinskiy <dima.ruinskiy@intel.com>, yu.c.chen@intel.com,
- linux-kernel@vger.kernel.org, oliver.sang@intel.com,
- Tony Nguyen <anthony.l.nguyen@intel.com>, oe-lkp@lists.linux.dev,
- Vitaly Lifshits <vitaly.lifshits@intel.com>, rui.zhang@intel.com,
- intel-wired-lan@lists.osuosl.org, Naama Meir <naamax.meir@linux.intel.com>
+Cc: pabeni@redhat.com, netdev@vger.kernel.org, rob.thomas@ibm.com,
+ aleksandr.loktionov@intel.com, edumazet@google.com, anthony.l.nguyen@intel.com,
+ horms@kernel.org, przemyslaw.kitszel@intel.com, kuba@kernel.org,
+ intel-wired-lan@lists.osuosl.org, davem@davemloft.net
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Dear Oliver,
+Dear Thinh,
 
 
-Thank you for the report.
+Thank you for your patch. Two minor comments for the title: Please use 
+imperative mood and fix a typo:
 
-Am 15.05.24 um 03:50 schrieb kernel test robot:
-
-> kernel test robot noticed "suspend-stress.fail" on:
-> 
-> commit: 861e8086029e003305750b4126ecd6617465f5c7 ("e1000e: move force SMBUS from enable ulp function to avoid PHY loss issue")
-> https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git master
-> 
-> [test failed on linus/master a7c840ba5fa78d7761b9fedc33d69cef44986d79]
-> [test failed on linux-next/master 6ba6c795dc73c22ce2c86006f17c4aa802db2a60]
-> 
-> in testcase: suspend-stress
-> version:
-> with following parameters:
-> 
-> 	mode: freeze
-> 	iterations: 10
-> 
-> 
-> 
-> compiler: gcc-13
-> test machine: 4 threads (Broadwell) with 8G memory
-> 
-> (please refer to attached dmesg/kmsg for entire log/backtrace)
-> 
-> 
-> 
-> If you fix the issue in a separate patch/commit (i.e. not just a new version of
-> the same patch/commit), kindly add following tags
-> | Reported-by: kernel test robot <oliver.sang@intel.com>
-> | Closes: https://lore.kernel.org/oe-lkp/202405150942.f9b873b1-oliver.sang@intel.com
-> 
-> test started
-> 
-> <--- but cannot really run suspend-stress tests successfully
-> 
-> 
-> as a contrast, for parent, we always noticed the jobs run smoothly
-> 
-> SUSPEND RESUME TEST STARTED
-> Suspend to freeze 1/10:
-> /usr/bin/wget -q --timeout=3600 --tries=1 --local-encoding=UTF-8 http://internal-lkp-server:80/~lkp/cgi-bin/lkp-jobfile-append-var?job_file=/lkp/jobs/scheduled/lkp-bdw-nuc1/suspend-stress-10-freeze-debian-x86_64-20180403.cgz-6dbdd4de0362-20240406-63993-p7cw6d-0.yaml&job_state=suspending-1/10 -O /dev/null
-> Done
-> Sleep for 10 seconds
-> 
-> ...
-> 
-> Suspend to freeze 10/10:
-> /usr/bin/wget -q --timeout=3600 --tries=1 --local-encoding=UTF-8 http://internal-lkp-server:80/~lkp/cgi-bin/lkp-jobfile-append-var?job_file=/lkp/jobs/scheduled/lkp-bdw-nuc1/suspend-stress-10-freeze-debian-x86_64-20180403.cgz-6dbdd4de0362-20240406-63993-p7cw6d-0.yaml&job_state=suspending-10/10 -O /dev/null
-> Done
-> Sleep for 10 seconds
-> SUSPEND RESUME TEST SUCCESS
-> 
-> The kernel config and materials to reproduce are available at:
-> https://download.01.org/0day-ci/archive/20240515/202405150942.f9b873b1-oliver.sang@intel.com
-> 
-> 
-> if you need more information, please let us know. Thanks!
-
-Can you please share on what test system this fails, and provide the 
-hardware information?
-
-Also, do you have Linux logs until starting the tests?
+Factor out i40e_suspend/i40e_resume
 
 
 Kind regards,
 
 Paul
-
-
-PS: In the Cc: header field, your address misses an l in domain part 
-intel.com.
