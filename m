@@ -4,96 +4,84 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BD527C25B74
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 16 May 2024 08:27:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CFFC6C25B74
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 16 May 2024 08:28:04 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 834D941C9D;
-	Thu, 16 May 2024 08:27:55 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id A26984092B;
+	Thu, 16 May 2024 08:28:04 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id gd7OShhyvNiW; Thu, 16 May 2024 08:27:54 +0000 (UTC)
+ id QZHX4ImO8BCD; Thu, 16 May 2024 08:28:03 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 64E4F41C7D
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 5FBA941C91
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1715848074;
-	bh=Wp3xz/jEXktsfVHXaP1pl4p7Vr0VDUO5oIkhNKKtxrw=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=d6YnERLcpBRaCiC3wPmivOCNcDK7glxEkDoSoa+CqePcVTIiPXhUixTWJJ7R7PqzD
-	 sj8/MULunVZpf5TrkAil73Ugd/JCj50JFAR5NN1B+4Hd8XHBQNOu5yvAm7qeNumldH
-	 9dodxsFoqXu1FszyIpW6BnbHR0ZEc/Kd0Ey+mKIw+ZTOvn0avLAlkQzY9nLSgD/sdy
-	 7xw5rMD0G9wObfLBSwJ5GY8HUs/gAmYdlQaGz7Uthpq3KHC4WdK9/32Qmvl5ZzfnF/
-	 dEE5UHhjBqx5Kox7yW+RzqI2AHP3KYJU817AMV4IfAWqNVwTD0LCPwMpSX3DQMpIa0
-	 a9xZQfN+VnRzA==
+	s=default; t=1715848083;
+	bh=d4hJtdBjJHYV39NdueoN5H8ZPgS1hyw5FDu5MtqkEXM=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=s6O98nj/NTel+UGaLhEQPkj9APsAmSmUaNsaLmwnUAHIW0hMK/IGmSCFfY6tcFIZU
+	 6K1NsGEwvC5sCbcw9YhhM/1aLjNluJaxfuPdnD1zLaAs6QLm+q99J8+DxvOfpcDXVQ
+	 ilVCTjFVI6ap57iVxZyb1eJcIlXAcegFwRN8EdCPRuZC0SL/E3CCnADDu4evDD4tDl
+	 cLlBhVRRiw6begHPB9u3GC1ZTNwLqpm6joBvSO91oFMEV6ndVZyfENZHREGlDObUTl
+	 MGiQTvgSh8bDmEhguQkTnovUoLdlzrHLYTCMU+f4S018zInisYDfrPPFofv/fQ7eSo
+	 WxIVIr17s6IMw==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 64E4F41C7D;
-	Thu, 16 May 2024 08:27:54 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id EB4621BF855
- for <intel-wired-lan@lists.osuosl.org>; Thu, 16 May 2024 08:27:52 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 5FBA941C91;
+	Thu, 16 May 2024 08:28:03 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id C85F01BF855
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 16 May 2024 08:28:01 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id D74E241C91
- for <intel-wired-lan@lists.osuosl.org>; Thu, 16 May 2024 08:27:52 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id C181840795
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 16 May 2024 08:28:01 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ZpfdcP9F7mpc for <intel-wired-lan@lists.osuosl.org>;
- Thu, 16 May 2024 08:27:51 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.129.124;
- helo=us-smtp-delivery-124.mimecast.com; envelope-from=ksundara@redhat.com;
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id sCybh5rsVmUb for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 16 May 2024 08:28:01 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=139.178.84.217;
+ helo=dfw.source.kernel.org; envelope-from=horms@kernel.org;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 5E66C4092B
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 5E66C4092B
-Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.129.124])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 5E66C4092B
- for <intel-wired-lan@lists.osuosl.org>; Thu, 16 May 2024 08:27:51 +0000 (UTC)
-Received: from mimecast-mx02.redhat.com (mx-ext.redhat.com [66.187.233.73])
- by relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-349-yw0N3rezPtq1pnTrowYLiQ-1; Thu,
- 16 May 2024 04:27:46 -0400
-X-MC-Unique: yw0N3rezPtq1pnTrowYLiQ-1
-Received: from smtp.corp.redhat.com (int-mx09.intmail.prod.int.rdu2.redhat.com
- [10.11.54.9])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 974C83C025B8;
- Thu, 16 May 2024 08:27:45 +0000 (UTC)
-Received: from ksundara-mac.redhat.com (unknown [10.74.17.49])
- by smtp.corp.redhat.com (Postfix) with ESMTP id E4CF85ADC45;
- Thu, 16 May 2024 08:27:37 +0000 (UTC)
-From: Karthik Sundaravel <ksundara@redhat.com>
-To: jesse.brandeburg@intel.com, wojciech.drewek@intel.com, sumang@marvell.com,
- jacob.e.keller@intel.com, anthony.l.nguyen@intel.com, davem@davemloft.net,
- edumazet@google.com, kuba@kernel.org, pabeni@redhat.com,
- intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, horms@kernel.org
-Date: Thu, 16 May 2024 13:57:32 +0530
-Message-Id: <20240516082733.35783-1-ksundara@redhat.com>
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 07CCC40794
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 07CCC40794
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 07CCC40794
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 16 May 2024 08:28:00 +0000 (UTC)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+ by dfw.source.kernel.org (Postfix) with ESMTP id 6310461627;
+ Thu, 16 May 2024 08:28:00 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A6C04C113CC;
+ Thu, 16 May 2024 08:27:56 +0000 (UTC)
+Date: Thu, 16 May 2024 09:27:54 +0100
+From: Simon Horman <horms@kernel.org>
+To: Larysa Zaremba <larysa.zaremba@intel.com>
+Message-ID: <20240516082754.GE179178@kernel.org>
+References: <20240515160246.5181-1-larysa.zaremba@intel.com>
+ <20240515160246.5181-2-larysa.zaremba@intel.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Scanned-By: MIMEDefang 3.4.1 on 10.11.54.9
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=redhat.com; 
- s=mimecast20190719; t=1715848070;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:
- content-transfer-encoding:content-transfer-encoding;
- bh=Wp3xz/jEXktsfVHXaP1pl4p7Vr0VDUO5oIkhNKKtxrw=;
- b=MtotPSTE4VgaoccBj3njR9y1e63N1t2kB0U/Uc6DF2konp5FwOQgXLgMfY46HrItQkHPZW
- uY/fcaU34W3fV9ad/B4N0cD5T+GJ7C4kwnUoAaHIb4IeareO9SmEb6UAREvf7e9lZ1K6vl
- zyxKcpmrRNe5kpXSloT4/hXKOPC+yBY=
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240515160246.5181-2-larysa.zaremba@intel.com>
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=kernel.org; s=k20201202; t=1715848080;
+ bh=K6LjZar4C+lKcaUcvKF9CUktTgIY/qpM6WOPF5lY1uw=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=IVM2U5GL41lJTUzuQNHCDzbJ+lZ1NsJiUnnwHsjBArxf3Mu3rushEXOEiGkSlD744
+ ei3h/xt4Jw3/iEtIvTsF7imzCrsQ6E9BMT/EkCahgBOMpl085ZVphA05HiT1AnFAIh
+ 0tY9NIFSMskjH/g8z1vuBFhVSE4e2HwRcdkMmwQB4BnFpZuhpmvZFM6TfvaCGEYHI/
+ AUBxKyZGlJjB4ndP/dggyUP+2mC5HEVfCxhczi92o0NzrwSWSpYaSlBQc9lQnAYOds
+ ew7Sy2fRPYk1ygWnnQ0V8axIeRde63H0zPvIKUNJgaY/awJFPweqdhj4NPfj4vzYgL
+ sQgI4500BrPZA==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
- header.from=redhat.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (1024-bit key,
- unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=MtotPSTE
-Subject: [Intel-wired-lan] [PATCH iwl-next v10] ice: Add get/set hw address
- for VFs using devlink commands
+ header.from=kernel.org
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20201202 header.b=IVM2U5GL
+Subject: Re: [Intel-wired-lan] [PATCH iwl-net 1/3] ice: remove af_xdp_zc_qps
+ bitmap
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,59 +94,35 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: pmenzel@molgen.mpg.de, aharivel@redhat.com, jiri@resnulli.us,
- cfontain@redhat.com, vchundur@redhat.com, ksundara@redhat.com,
- michal.swiatkowski@linux.intel.com, bcreeley@amd.com, rjarry@redhat.com
+Cc: maciej.fijalkowski@intel.com, Jesper Dangaard Brouer <hawk@kernel.org>,
+ Daniel Borkmann <daniel@iogearbox.net>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ John Fastabend <john.fastabend@gmail.com>, Alexei Starovoitov <ast@kernel.org>,
+ "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
+ intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
+ Jacob Keller <jacob.e.keller@intel.com>, Jakub Kicinski <kuba@kernel.org>,
+ bpf@vger.kernel.org, Paolo Abeni <pabeni@redhat.com>,
+ Magnus Karlsson <magnus.karlsson@gmail.com>, igor.bagnucki@intel.com,
+ linux-kernel@vger.kernel.org
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Dear Maintainers,
-    Thanks for the review and suggestions for my patch.
+On Wed, May 15, 2024 at 06:02:14PM +0200, Larysa Zaremba wrote:
+> Referenced commit has introduced a bitmap to distinguish between ZC and
+> copy-mode AF_XDP queues, because xsk_get_pool_from_qid() does not do this
+> for us.
+> 
+> The bitmap would be especially useful when restoring previous state after
+> rebuild, if only it was not reallocated in the process. This leads to e.g.
+> xdpsock dying after changing number of queues.
+> 
+> Instead of preserving the bitmap during the rebuild, remove it completely
+> and distinguish between ZC and copy-mode queues based on the presence of
+> a device associated with the pool.
+> 
+> Fixes: e102db780e1c ("ice: track AF_XDP ZC enabled queues in bitmap")
+> Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+> Signed-off-by: Larysa Zaremba <larysa.zaremba@intel.com>
 
-v9 -> v10
---------
-- Refactor ice_set_vf_mac() to use reuse the common code blocks
-  for setting the MAC addresses in both netdev and devlink flow.
-
-v8 -> v9
---------
-- Rebasing against dev-queue branch of next-queue tree
-
-v7 -> v8
---------
-- Added const keyword for the parameter ``mac`` in ice_set_vf_fn_mac()
-
-v6 -> v7
---------
-- Addressed Smatch and checkpatch issues
-
-v5 -> v6
---------
-- Changed data type of vf_id to u16
-- Used container_of(port, struct ice_vf, devlink_port) to
-  get the vf instead of ice_get_vf_by_id()/ice_put_vf()
-
-v4 -> v5
---------
-- Cloned ice_set_vf_mac() to ice_set_vf_fn_mac() so that the
-  parameter ice_pf is used instead of net_device of vf
-- removed redundant error handling
-
-v3 -> v4
---------
-- Released the vf device by calling ice_put_vf()
-
-v2 -> v3
---------
-- Fill the extack message instead of dev_err()
-
-v1 -> v2
---------
-- called ice_set_vf_mac() directly from the devlink port function
-  handlers.
-
-RFC -> v1
----------
-- Add the function handlers to set and get the HW address for the
-  VF representor ports.
+Reviewed-by: Simon Horman <horms@kernel.org>
 
