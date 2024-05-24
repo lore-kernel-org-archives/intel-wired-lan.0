@@ -4,93 +4,95 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8A421C25B74
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 24 May 2024 14:56:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6E714C25B7C
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 24 May 2024 14:56:13 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 214B940998;
-	Fri, 24 May 2024 14:56:04 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 278C1409A7;
+	Fri, 24 May 2024 14:56:13 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id jzgRwjsdlPHU; Fri, 24 May 2024 14:56:03 +0000 (UTC)
+ id s6XhVhBGVOGS; Fri, 24 May 2024 14:56:11 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1115540988
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 90AF0409AF
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1716562563;
-	bh=u5z/e8MlJsO27tQGpdKRmdguU0OmqsNH5EQ/CdYnqB0=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=TWJMgNUXBZhcVZRmLAdyuBSpg4cZzrJBYTrc3+QZ8934vrLDKAgaGDxh2ocOdSK3N
-	 6DeOLqWbl0T30Ng1D9Swa3uScHdyWkqN+VFW0WUo8XkvBOF6hxQrgU1Fnltgc2jexP
-	 ZXlouiQgXv/IlTQllssJSxXDNnVwSNkUU6u6aShA6EUy57BaTxqjmKBkjJku6R1I20
-	 ysJ9Wlhlvg4tjZIFHHY8q0Sm+qul1Y/LYmVAXoJKMLENkCHOzEbvauIwRgwooCiwDn
-	 kDU8VaGg276fdpTSa+yvJPFgYEilFGoUueLiEJr2Fr/AoitxHcDeAeKI6xdIfKzueV
-	 W7gfQM/+40TQw==
+	s=default; t=1716562571;
+	bh=s3aR1Ne5XrZ1piWys+EF4tu+3lFMS2Wo3HQzZq7HjwQ=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=XYs8qxpvKYLmUFN0CBJ5Bs26J38nx/92x7hVgpGm69wrlyw9h3EgdcbA1JdyEON7Z
+	 B641KYTu2aHbAS1hVOi+gW8HGB3DrcQtH9XLsm1fEOvtuBvhsdv0/74M4JiLCCL8Ro
+	 BGWprEvWbzRgiwSbSu0Qg/6Neni2zhBsFN4wtD2nbqMTfqdUZGgk/mcqbxl6J/2U/9
+	 Z8oeZa82NzvNGX4fDuIg3ablQgPY1wjApqRpIkhLzaleNkhuWimG/J1KDtXvA/b5gM
+	 5VwqXvoLhyXrXH0qgucHexRfsyqAkG1Vxaa2LXEcXLgLfiEoboy0mFa/fsQo7+mmyJ
+	 yUoPwSNs01nYg==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 1115540988;
-	Fri, 24 May 2024 14:56:03 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 90AF0409AF;
+	Fri, 24 May 2024 14:56:11 +0000 (UTC)
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 4AAF61BF31B
- for <intel-wired-lan@lists.osuosl.org>; Fri, 24 May 2024 14:56:01 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id B9ADD1CFA9A
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 24 May 2024 14:56:08 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 346A640988
- for <intel-wired-lan@lists.osuosl.org>; Fri, 24 May 2024 14:56:01 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 960AE409A2
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 24 May 2024 14:56:08 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id VygVJfU97H4i for <intel-wired-lan@lists.osuosl.org>;
- Fri, 24 May 2024 14:56:00 +0000 (UTC)
+ id jJ8lPrWCGoHu for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 24 May 2024 14:56:06 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.13;
  helo=mgamail.intel.com; envelope-from=piotr.kwapulinski@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 1521640969
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1521640969
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 94B894098B
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 94B894098B
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.13])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 1521640969
- for <intel-wired-lan@lists.osuosl.org>; Fri, 24 May 2024 14:55:59 +0000 (UTC)
-X-CSE-ConnectionGUID: u3qcITvuSqShp6SFJF1FzQ==
-X-CSE-MsgGUID: dRiAHtpTTbekFlNvTBUZpw==
-X-IronPort-AV: E=McAfee;i="6600,9927,11082"; a="24070366"
-X-IronPort-AV: E=Sophos;i="6.08,185,1712646000"; d="scan'208";a="24070366"
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 94B894098B
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 24 May 2024 14:56:06 +0000 (UTC)
+X-CSE-ConnectionGUID: AUA/VjvbQsSepJZlYxaYNw==
+X-CSE-MsgGUID: D/IZyE//RxyxnnA10vMS9w==
+X-IronPort-AV: E=McAfee;i="6600,9927,11082"; a="24070378"
+X-IronPort-AV: E=Sophos;i="6.08,185,1712646000"; d="scan'208";a="24070378"
 Received: from orviesa010.jf.intel.com ([10.64.159.150])
  by orvoesa105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 24 May 2024 07:56:00 -0700
-X-CSE-ConnectionGUID: yHEWC3Q6QxaR5iqWHDubaQ==
-X-CSE-MsgGUID: pP9nWGpRSeyjY+TNx+xF6A==
+ 24 May 2024 07:56:07 -0700
+X-CSE-ConnectionGUID: lQPFQhfBQY6U9sXkiH40Gg==
+X-CSE-MsgGUID: aCTNrZGpQxGty5FPv39aOQ==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.08,185,1712646000"; d="scan'208";a="33946047"
+X-IronPort-AV: E=Sophos;i="6.08,185,1712646000"; d="scan'208";a="33946067"
 Received: from amlin-018-251.igk.intel.com (HELO localhost.localdomain)
  ([10.102.18.251])
- by orviesa010.jf.intel.com with ESMTP; 24 May 2024 07:55:57 -0700
+ by orviesa010.jf.intel.com with ESMTP; 24 May 2024 07:56:05 -0700
 From: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Fri, 24 May 2024 17:13:04 +0200
-Message-Id: <20240524151311.78939-1-piotr.kwapulinski@intel.com>
+Date: Fri, 24 May 2024 17:13:06 +0200
+Message-Id: <20240524151311.78939-3-piotr.kwapulinski@intel.com>
 X-Mailer: git-send-email 2.31.1
+In-Reply-To: <20240524151311.78939-1-piotr.kwapulinski@intel.com>
+References: <20240524151311.78939-1-piotr.kwapulinski@intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1716562561; x=1748098561;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=AewH8JA9HIUsgxrnXtqykExha6GUv7XIEJDRz2IYeDM=;
- b=K4TX5gbIWXLeWGZJTiyvDDckCRuJga7W2GMygGId20yDQpjgyaI0YA/7
- eihc+kCvsi4SpRewAxEgmvS7v+dArz1mr+Uuc6PdfgW8CrVOUvQvBVnVV
- fAqR83MIp0qtCiv/eCcD5bW9LXrzxHlM13Gr3XuDOG7RHWBMIabmhBplq
- oV62ocEWkFpmAvQyVvjDnuQvheQ2aoF+EZWORQwQLTooe6IZAyu/vWU3p
- WyJ5PWuDGexicJrQ2Av/xkV8uHEYV1ql6VSIMuifSgnbutliDmeIx3xbj
- 2Z0+nROQLMJrimeULMx6qUaZc/IcKfACDNk18ykHt6JPTdU5dBIcfGFmQ
- g==;
+ t=1716562567; x=1748098567;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=2bDkrOUYUqPqNXXYN8COTZFWj86fTsmgJSOn9qgTKTs=;
+ b=PJFdx8m0pLchpH/i+/wVQ46K6/oL5y1X60UPFiNBuxyF3hETWnFeyAJk
+ 4LuBcqYcYHiDxL0ciGsVhhUCKG0M5hCb0zdGIxleemBQmxW3HdF19HZaR
+ QDNBIS4vZokGhueaUtdRfHCNrQgwNdb5o2MN6NDiqt1YaUB+w5DNmOtwI
+ n2fo50zzcFfEhD5wlm/j5/MZpcT15GGpab2LYnBXubvWF4a9AuQF9bfSx
+ 81+LAMX1vX0KXt7XBtNThaklA8KtBasd3VEzEIv9q3B7p23wvBqHMowrf
+ UY10tO4A9pIOGTOqPFiMItt/k4ZlFKPbxIpKMDZWQtjh1b4A5uAgKLlkO
+ w==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=K4TX5gbI
-Subject: [Intel-wired-lan] [PATCH iwl-next v6 0/7] ixgbe: Add support for
- Intel(R) E610 device
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=PJFdx8m0
+Subject: [Intel-wired-lan] [PATCH iwl-next v6 2/7] ixgbe: Add support for
+ E610 device capabilities detection
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,81 +105,577 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Piotr Kwapulinski <piotr.kwapulinski@intel.com>, netdev@vger.kernel.org,
- pmenzel@molgen.mpg.de
+Cc: Piotr Kwapulinski <piotr.kwapulinski@intel.com>, pmenzel@molgen.mpg.de,
+ Jan Sokolowski <jan.sokolowski@intel.com>,
+ Stefan Wegrzyn <stefan.wegrzyn@intel.com>, netdev@vger.kernel.org,
+ Jedrzej Jagielski <jedrzej.jagielski@intel.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Add initial support for Intel(R) E610 Series of network devices. The E610
-is based on X550 but adds firmware managed link, enhanced security
-capabilities and support for updated server manageability.
+Add low level support for E610 device capabilities detection. The
+capabilities are discovered via the Admin Command Interface. Discover the
+following capabilities:
+- function caps: vmdq, dcb, rss, rx/tx qs, msix, nvm, orom, reset
+- device caps: vsi, fdir, 1588
+- phy caps
 
-This patch series adds low level support for the following features and
-enables link management.
+Co-developed-by: Stefan Wegrzyn <stefan.wegrzyn@intel.com>
+Signed-off-by: Stefan Wegrzyn <stefan.wegrzyn@intel.com>
+Co-developed-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
+Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
+Reviewed-by: Jan Sokolowski <jan.sokolowski@intel.com>
+Signed-off-by: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c | 517 ++++++++++++++++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h |  11 +
+ 2 files changed, 528 insertions(+)
 
-Piotr Kwapulinski (7):
-  ixgbe: Add support for E610 FW Admin Command Interface
-  ixgbe: Add support for E610 device capabilities detection
-  ixgbe: Add link management support for E610 device
-  ixgbe: Add support for NVM handling in E610 device
-  ixgbe: Add ixgbe_x540 multiple header inclusion protection
-  ixgbe: Clean up the E610 link management related code
-  ixgbe: Enable link management in E610 device
-
- drivers/net/ethernet/intel/ixgbe/Makefile     |    4 +-
- drivers/net/ethernet/intel/ixgbe/ixgbe.h      |   14 +-
- .../net/ethernet/intel/ixgbe/ixgbe_82599.c    |    3 +-
- .../net/ethernet/intel/ixgbe/ixgbe_common.c   |   19 +-
- .../net/ethernet/intel/ixgbe/ixgbe_dcb_nl.c   |    3 +-
- drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c | 2545 +++++++++++++++++
- drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h |   75 +
- .../net/ethernet/intel/ixgbe/ixgbe_ethtool.c  |    6 +-
- drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c  |    3 +-
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |  430 ++-
- drivers/net/ethernet/intel/ixgbe/ixgbe_mbx.c  |    4 +-
- drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c  |    5 +-
- drivers/net/ethernet/intel/ixgbe/ixgbe_type.h |   71 +-
- .../ethernet/intel/ixgbe/ixgbe_type_e610.h    | 1062 +++++++
- drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c |   12 +-
- drivers/net/ethernet/intel/ixgbe/ixgbe_x540.h |    7 +-
- drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c |   29 +-
- drivers/net/ethernet/intel/ixgbe/ixgbe_x550.h |   20 +
- 18 files changed, 4265 insertions(+), 47 deletions(-)
- create mode 100644 drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c
- create mode 100644 drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h
- create mode 100644 drivers/net/ethernet/intel/ixgbe/ixgbe_type_e610.h
- create mode 100644 drivers/net/ethernet/intel/ixgbe/ixgbe_x550.h
-
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c
+index eb611cb..0afd1ad 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c
+@@ -490,3 +490,520 @@ void ixgbe_release_res(struct ixgbe_hw *hw, enum ixgbe_aci_res_ids res)
+ 		total_delay++;
+ 	}
+ }
++
++/**
++ * ixgbe_parse_e610_caps - Parse common device/function capabilities
++ * @hw: pointer to the HW struct
++ * @caps: pointer to common capabilities structure
++ * @elem: the capability element to parse
++ * @prefix: message prefix for tracing capabilities
++ *
++ * Given a capability element, extract relevant details into the common
++ * capability structure.
++ *
++ * Return: true if the capability matches one of the common capability ids,
++ * false otherwise.
++ */
++static bool ixgbe_parse_e610_caps(struct ixgbe_hw *hw,
++				  struct ixgbe_hw_caps *caps,
++				  struct ixgbe_aci_cmd_list_caps_elem *elem,
++				  const char *prefix)
++{
++	u32 logical_id = elem->logical_id;
++	u32 phys_id = elem->phys_id;
++	u32 number = elem->number;
++	u16 cap = elem->cap;
++
++	switch (cap) {
++	case IXGBE_ACI_CAPS_VALID_FUNCTIONS:
++		caps->valid_functions = number;
++		break;
++	case IXGBE_ACI_CAPS_SRIOV:
++		caps->sr_iov_1_1 = (number == 1);
++		break;
++	case IXGBE_ACI_CAPS_VMDQ:
++		caps->vmdq = (number == 1);
++		break;
++	case IXGBE_ACI_CAPS_DCB:
++		caps->dcb = (number == 1);
++		caps->active_tc_bitmap = logical_id;
++		caps->maxtc = phys_id;
++		break;
++	case IXGBE_ACI_CAPS_RSS:
++		caps->rss_table_size = number;
++		caps->rss_table_entry_width = logical_id;
++		break;
++	case IXGBE_ACI_CAPS_RXQS:
++		caps->num_rxq = number;
++		caps->rxq_first_id = phys_id;
++		break;
++	case IXGBE_ACI_CAPS_TXQS:
++		caps->num_txq = number;
++		caps->txq_first_id = phys_id;
++		break;
++	case IXGBE_ACI_CAPS_MSIX:
++		caps->num_msix_vectors = number;
++		caps->msix_vector_first_id = phys_id;
++		break;
++	case IXGBE_ACI_CAPS_NVM_VER:
++		break;
++	case IXGBE_ACI_CAPS_MAX_MTU:
++		caps->max_mtu = number;
++		break;
++	case IXGBE_ACI_CAPS_PCIE_RESET_AVOIDANCE:
++		caps->pcie_reset_avoidance = (number > 0);
++		break;
++	case IXGBE_ACI_CAPS_POST_UPDATE_RESET_RESTRICT:
++		caps->reset_restrict_support = (number == 1);
++		break;
++	case IXGBE_ACI_CAPS_EXT_TOPO_DEV_IMG0:
++	case IXGBE_ACI_CAPS_EXT_TOPO_DEV_IMG1:
++	case IXGBE_ACI_CAPS_EXT_TOPO_DEV_IMG2:
++	case IXGBE_ACI_CAPS_EXT_TOPO_DEV_IMG3:
++	{
++		u8 index = cap - IXGBE_ACI_CAPS_EXT_TOPO_DEV_IMG0;
++
++		caps->ext_topo_dev_img_ver_high[index] = number;
++		caps->ext_topo_dev_img_ver_low[index] = logical_id;
++		caps->ext_topo_dev_img_part_num[index] =
++			FIELD_GET(IXGBE_EXT_TOPO_DEV_IMG_PART_NUM_M, phys_id);
++		caps->ext_topo_dev_img_load_en[index] =
++			(phys_id & IXGBE_EXT_TOPO_DEV_IMG_LOAD_EN) != 0;
++		caps->ext_topo_dev_img_prog_en[index] =
++			(phys_id & IXGBE_EXT_TOPO_DEV_IMG_PROG_EN) != 0;
++		break;
++	}
++	default:
++		/* Not one of the recognized common capabilities */
++		return false;
++	}
++
++	return true;
++}
++
++/**
++ * ixgbe_parse_valid_functions_cap - Parse IXGBE_ACI_CAPS_VALID_FUNCTIONS caps
++ * @hw: pointer to the HW struct
++ * @dev_p: pointer to device capabilities structure
++ * @cap: capability element to parse
++ *
++ * Parse IXGBE_ACI_CAPS_VALID_FUNCTIONS for device capabilities.
++ */
++static void
++ixgbe_parse_valid_functions_cap(struct ixgbe_hw *hw,
++				struct ixgbe_hw_dev_caps *dev_p,
++				struct ixgbe_aci_cmd_list_caps_elem *cap)
++{
++	u32 number = cap->number;
++
++	dev_p->num_funcs = hweight32(number);
++}
++
++/**
++ * ixgbe_parse_vf_dev_caps - Parse IXGBE_ACI_CAPS_VF device caps
++ * @hw: pointer to the HW struct
++ * @dev_p: pointer to device capabilities structure
++ * @cap: capability element to parse
++ *
++ * Parse IXGBE_ACI_CAPS_VF for device capabilities.
++ */
++static void ixgbe_parse_vf_dev_caps(struct ixgbe_hw *hw,
++				    struct ixgbe_hw_dev_caps *dev_p,
++				    struct ixgbe_aci_cmd_list_caps_elem *cap)
++{
++	u32 number = cap->number;
++
++	dev_p->num_vfs_exposed = number;
++}
++
++/**
++ * ixgbe_parse_vsi_dev_caps - Parse IXGBE_ACI_CAPS_VSI device caps
++ * @hw: pointer to the HW struct
++ * @dev_p: pointer to device capabilities structure
++ * @cap: capability element to parse
++ *
++ * Parse IXGBE_ACI_CAPS_VSI for device capabilities.
++ */
++static void ixgbe_parse_vsi_dev_caps(struct ixgbe_hw *hw,
++				     struct ixgbe_hw_dev_caps *dev_p,
++				     struct ixgbe_aci_cmd_list_caps_elem *cap)
++{
++	u32 number = cap->number;
++
++	dev_p->num_vsi_allocd_to_host = number;
++}
++
++/**
++ * ixgbe_parse_fdir_dev_caps - Parse IXGBE_ACI_CAPS_FD device caps
++ * @hw: pointer to the HW struct
++ * @dev_p: pointer to device capabilities structure
++ * @cap: capability element to parse
++ *
++ * Parse IXGBE_ACI_CAPS_FD for device capabilities.
++ */
++static void ixgbe_parse_fdir_dev_caps(struct ixgbe_hw *hw,
++				      struct ixgbe_hw_dev_caps *dev_p,
++				      struct ixgbe_aci_cmd_list_caps_elem *cap)
++{
++	u32 number = cap->number;
++
++	dev_p->num_flow_director_fltr = number;
++}
++
++/**
++ * ixgbe_parse_dev_caps - Parse device capabilities
++ * @hw: pointer to the HW struct
++ * @dev_p: pointer to device capabilities structure
++ * @buf: buffer containing the device capability records
++ * @cap_count: the number of capabilities
++ *
++ * Helper device to parse device (0x000B) capabilities list. For
++ * capabilities shared between device and function, this relies on
++ * ixgbe_parse_e610_caps.
++ *
++ * Loop through the list of provided capabilities and extract the relevant
++ * data into the device capabilities structured.
++ */
++static void ixgbe_parse_dev_caps(struct ixgbe_hw *hw,
++				 struct ixgbe_hw_dev_caps *dev_p,
++				 void *buf, u32 cap_count)
++{
++	struct ixgbe_aci_cmd_list_caps_elem *cap_resp;
++	u32 i;
++
++	cap_resp = (struct ixgbe_aci_cmd_list_caps_elem *)buf;
++
++	memset(dev_p, 0, sizeof(*dev_p));
++
++	for (i = 0; i < cap_count; i++) {
++		u16 cap = cap_resp[i].cap;
++
++		ixgbe_parse_e610_caps(hw, &dev_p->common_cap, &cap_resp[i],
++				      "dev caps");
++
++		switch (cap) {
++		case IXGBE_ACI_CAPS_VALID_FUNCTIONS:
++			ixgbe_parse_valid_functions_cap(hw, dev_p,
++							&cap_resp[i]);
++			break;
++		case IXGBE_ACI_CAPS_VF:
++			ixgbe_parse_vf_dev_caps(hw, dev_p, &cap_resp[i]);
++			break;
++		case IXGBE_ACI_CAPS_VSI:
++			ixgbe_parse_vsi_dev_caps(hw, dev_p, &cap_resp[i]);
++			break;
++		case  IXGBE_ACI_CAPS_FD:
++			ixgbe_parse_fdir_dev_caps(hw, dev_p, &cap_resp[i]);
++			break;
++		default:
++			/* Don't list common capabilities as unknown */
++			break;
++		}
++	}
++}
++
++/**
++ * ixgbe_parse_vf_func_caps - Parse IXGBE_ACI_CAPS_VF function caps
++ * @hw: pointer to the HW struct
++ * @func_p: pointer to function capabilities structure
++ * @cap: pointer to the capability element to parse
++ *
++ * Extract function capabilities for IXGBE_ACI_CAPS_VF.
++ */
++static void ixgbe_parse_vf_func_caps(struct ixgbe_hw *hw,
++				     struct ixgbe_hw_func_caps *func_p,
++				     struct ixgbe_aci_cmd_list_caps_elem *cap)
++{
++	u32 logical_id = cap->logical_id;
++	u32 number = cap->number;
++
++	func_p->num_allocd_vfs = number;
++	func_p->vf_base_id = logical_id;
++}
++
++/**
++ * ixgbe_get_num_per_func - determine number of resources per PF
++ * @hw: pointer to the HW structure
++ * @max: value to be evenly split between each PF
++ *
++ * Determine the number of valid functions by going through the bitmap returned
++ * from parsing capabilities and use this to calculate the number of resources
++ * per PF based on the max value passed in.
++ *
++ * Return: the number of resources per PF or 0, if no PH are available.
++ */
++static u32 ixgbe_get_num_per_func(struct ixgbe_hw *hw, u32 max)
++{
++#define IXGBE_CAPS_VALID_FUNCS_M	GENMASK(7, 0)
++	u8 funcs = hweight8(hw->dev_caps.common_cap.valid_functions &
++			    IXGBE_CAPS_VALID_FUNCS_M);
++
++	return funcs ? (max / funcs) : 0;
++}
++
++/**
++ * ixgbe_parse_vsi_func_caps - Parse IXGBE_ACI_CAPS_VSI function caps
++ * @hw: pointer to the HW struct
++ * @func_p: pointer to function capabilities structure
++ * @cap: pointer to the capability element to parse
++ *
++ * Extract function capabilities for IXGBE_ACI_CAPS_VSI.
++ */
++static void ixgbe_parse_vsi_func_caps(struct ixgbe_hw *hw,
++				      struct ixgbe_hw_func_caps *func_p,
++				      struct ixgbe_aci_cmd_list_caps_elem *cap)
++{
++	func_p->guar_num_vsi = ixgbe_get_num_per_func(hw, IXGBE_MAX_VSI);
++}
++
++/**
++ * ixgbe_parse_func_caps - Parse function capabilities
++ * @hw: pointer to the HW struct
++ * @func_p: pointer to function capabilities structure
++ * @buf: buffer containing the function capability records
++ * @cap_count: the number of capabilities
++ *
++ * Helper function to parse function (0x000A) capabilities list. For
++ * capabilities shared between device and function, this relies on
++ * ixgbe_parse_e610_caps.
++ *
++ * Loop through the list of provided capabilities and extract the relevant
++ * data into the function capabilities structured.
++ */
++static void ixgbe_parse_func_caps(struct ixgbe_hw *hw,
++				  struct ixgbe_hw_func_caps *func_p,
++				  void *buf, u32 cap_count)
++{
++	struct ixgbe_aci_cmd_list_caps_elem *cap_resp;
++	u32 i;
++
++	cap_resp = (struct ixgbe_aci_cmd_list_caps_elem *)buf;
++
++	memset(func_p, 0, sizeof(*func_p));
++
++	for (i = 0; i < cap_count; i++) {
++		u16 cap = cap_resp[i].cap;
++
++		ixgbe_parse_e610_caps(hw, &func_p->common_cap,
++				      &cap_resp[i], "func caps");
++
++		switch (cap) {
++		case IXGBE_ACI_CAPS_VF:
++			ixgbe_parse_vf_func_caps(hw, func_p, &cap_resp[i]);
++			break;
++		case IXGBE_ACI_CAPS_VSI:
++			ixgbe_parse_vsi_func_caps(hw, func_p, &cap_resp[i]);
++			break;
++		default:
++			/* Don't list common capabilities as unknown */
++			break;
++		}
++	}
++}
++
++/**
++ * ixgbe_aci_list_caps - query function/device capabilities
++ * @hw: pointer to the HW struct
++ * @buf: a buffer to hold the capabilities
++ * @buf_size: size of the buffer
++ * @cap_count: if not NULL, set to the number of capabilities reported
++ * @opc: capabilities type to discover, device or function
++ *
++ * Get the function (0x000A) or device (0x000B) capabilities description from
++ * firmware and store it in the buffer.
++ *
++ * If the cap_count pointer is not NULL, then it is set to the number of
++ * capabilities firmware will report. Note that if the buffer size is too
++ * small, it is possible the command will return -ENOMEM. The
++ * cap_count will still be updated in this case. It is recommended that the
++ * buffer size be set to IXGBE_ACI_MAX_BUFFER_SIZE (the largest possible
++ * buffer that firmware could return) to avoid this.
++ *
++ * Return: the exit code of the operation.
++ * Exit code of -ENOMEM means the buffer size is too small.
++ */
++int ixgbe_aci_list_caps(struct ixgbe_hw *hw, void *buf, u16 buf_size,
++			u32 *cap_count, enum ixgbe_aci_opc opc)
++{
++	struct ixgbe_aci_cmd_list_caps *cmd;
++	struct ixgbe_aci_desc desc;
++	int err;
++
++	cmd = &desc.params.get_cap;
++
++	if (opc != ixgbe_aci_opc_list_func_caps &&
++	    opc != ixgbe_aci_opc_list_dev_caps)
++		return -EINVAL;
++
++	ixgbe_fill_dflt_direct_cmd_desc(&desc, opc);
++	err = ixgbe_aci_send_cmd(hw, &desc, buf, buf_size);
++
++	if (cap_count)
++		*cap_count = cmd->count;
++
++	return err;
++}
++
++/**
++ * ixgbe_discover_dev_caps - Read and extract device capabilities
++ * @hw: pointer to the hardware structure
++ * @dev_caps: pointer to device capabilities structure
++ *
++ * Read the device capabilities and extract them into the dev_caps structure
++ * for later use.
++ *
++ * Return: the exit code of the operation.
++ */
++int ixgbe_discover_dev_caps(struct ixgbe_hw *hw,
++			    struct ixgbe_hw_dev_caps *dev_caps)
++{
++	u8 *cbuf __free(kfree);
++	u32 cap_count;
++	int err;
++
++	cbuf = kzalloc(IXGBE_ACI_MAX_BUFFER_SIZE, GFP_KERNEL);
++	if (!cbuf)
++		return -ENOMEM;
++	/* Although the driver doesn't know the number of capabilities the
++	 * device will return, we can simply send a 4KB buffer, the maximum
++	 * possible size that firmware can return.
++	 */
++	cap_count = IXGBE_ACI_MAX_BUFFER_SIZE /
++		    sizeof(struct ixgbe_aci_cmd_list_caps_elem);
++
++	err = ixgbe_aci_list_caps(hw, cbuf, IXGBE_ACI_MAX_BUFFER_SIZE,
++				  &cap_count,
++				  ixgbe_aci_opc_list_dev_caps);
++	if (!err)
++		ixgbe_parse_dev_caps(hw, dev_caps, cbuf, cap_count);
++
++	return err;
++}
++
++/**
++ * ixgbe_discover_func_caps - Read and extract function capabilities
++ * @hw: pointer to the hardware structure
++ * @func_caps: pointer to function capabilities structure
++ *
++ * Read the function capabilities and extract them into the func_caps structure
++ * for later use.
++ *
++ * Return: the exit code of the operation.
++ */
++int ixgbe_discover_func_caps(struct ixgbe_hw *hw,
++			     struct ixgbe_hw_func_caps *func_caps)
++{
++	u8 *cbuf __free(kfree);
++	u32 cap_count;
++	int err;
++
++	cbuf = kzalloc(IXGBE_ACI_MAX_BUFFER_SIZE, GFP_KERNEL);
++	if (!cbuf)
++		return -ENOMEM;
++
++	/* Although the driver doesn't know the number of capabilities the
++	 * device will return, we can simply send a 4KB buffer, the maximum
++	 * possible size that firmware can return.
++	 */
++	cap_count = IXGBE_ACI_MAX_BUFFER_SIZE /
++		    sizeof(struct ixgbe_aci_cmd_list_caps_elem);
++
++	err = ixgbe_aci_list_caps(hw, cbuf, IXGBE_ACI_MAX_BUFFER_SIZE,
++				  &cap_count,
++				  ixgbe_aci_opc_list_func_caps);
++	if (!err)
++		ixgbe_parse_func_caps(hw, func_caps, cbuf, cap_count);
++
++	return err;
++}
++
++/**
++ * ixgbe_aci_disable_rxen - disable RX
++ * @hw: pointer to the HW struct
++ *
++ * Request a safe disable of Receive Enable using ACI command (0x000C).
++ *
++ * Return: the exit code of the operation.
++ */
++int ixgbe_aci_disable_rxen(struct ixgbe_hw *hw)
++{
++	struct ixgbe_aci_cmd_disable_rxen *cmd;
++	struct ixgbe_aci_desc desc;
++
++	cmd = &desc.params.disable_rxen;
++
++	ixgbe_fill_dflt_direct_cmd_desc(&desc, ixgbe_aci_opc_disable_rxen);
++
++	cmd->lport_num = hw->bus.func;
++
++	return ixgbe_aci_send_cmd(hw, &desc, NULL, 0);
++}
++
++/**
++ * ixgbe_aci_get_phy_caps - returns PHY capabilities
++ * @hw: pointer to the HW struct
++ * @qual_mods: report qualified modules
++ * @report_mode: report mode capabilities
++ * @pcaps: structure for PHY capabilities to be filled
++ *
++ * Returns the various PHY capabilities supported on the Port
++ * using ACI command (0x0600).
++ *
++ * Return: the exit code of the operation.
++ */
++int ixgbe_aci_get_phy_caps(struct ixgbe_hw *hw, bool qual_mods, u8 report_mode,
++			   struct ixgbe_aci_cmd_get_phy_caps_data *pcaps)
++{
++	struct ixgbe_aci_cmd_get_phy_caps *cmd;
++	u16 pcaps_size = sizeof(*pcaps);
++	struct ixgbe_aci_desc desc;
++	int err;
++
++	cmd = &desc.params.get_phy;
++
++	if (!pcaps || (report_mode & ~IXGBE_ACI_REPORT_MODE_M))
++		return -EINVAL;
++
++	ixgbe_fill_dflt_direct_cmd_desc(&desc, ixgbe_aci_opc_get_phy_caps);
++
++	if (qual_mods)
++		cmd->param0 |= IXGBE_ACI_GET_PHY_RQM;
++
++	cmd->param0 |= report_mode;
++	err = ixgbe_aci_send_cmd(hw, &desc, pcaps, pcaps_size);
++
++	if (!err && report_mode == IXGBE_ACI_REPORT_TOPO_CAP_MEDIA) {
++		hw->phy.phy_type_low = pcaps->phy_type_low;
++		hw->phy.phy_type_high = pcaps->phy_type_high;
++		memcpy(hw->link.link_info.module_type, &pcaps->module_type,
++		       sizeof(hw->link.link_info.module_type));
++	}
++
++	return err;
++}
++
++/**
++ * ixgbe_copy_phy_caps_to_cfg - Copy PHY ability data to configuration data
++ * @caps: PHY ability structure to copy data from
++ * @cfg: PHY configuration structure to copy data to
++ *
++ * Helper function to copy data from PHY capabilities data structure
++ * to PHY configuration data structure
++ */
++void ixgbe_copy_phy_caps_to_cfg(struct ixgbe_aci_cmd_get_phy_caps_data *caps,
++				struct ixgbe_aci_cmd_set_phy_cfg_data *cfg)
++{
++	if (!caps || !cfg)
++		return;
++
++	memset(cfg, 0, sizeof(*cfg));
++	cfg->phy_type_low = caps->phy_type_low;
++	cfg->phy_type_high = caps->phy_type_high;
++	cfg->caps = caps->caps;
++	cfg->low_power_ctrl_an = caps->low_power_ctrl_an;
++	cfg->eee_cap = caps->eee_cap;
++	cfg->eeer_value = caps->eeer_value;
++	cfg->link_fec_opt = caps->link_fec_options;
++	cfg->module_compliance_enforcement =
++		caps->module_compliance_enforcement;
++}
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h
+index 18b831b..b5257fc 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h
+@@ -15,5 +15,16 @@ void ixgbe_fill_dflt_direct_cmd_desc(struct ixgbe_aci_desc *desc, u16 opcode);
+ int ixgbe_acquire_res(struct ixgbe_hw *hw, enum ixgbe_aci_res_ids res,
+ 		      enum ixgbe_aci_res_access_type access, u32 timeout);
+ void ixgbe_release_res(struct ixgbe_hw *hw, enum ixgbe_aci_res_ids res);
++int ixgbe_aci_list_caps(struct ixgbe_hw *hw, void *buf, u16 buf_size,
++			u32 *cap_count, enum ixgbe_aci_opc opc);
++int ixgbe_discover_dev_caps(struct ixgbe_hw *hw,
++			    struct ixgbe_hw_dev_caps *dev_caps);
++int ixgbe_discover_func_caps(struct ixgbe_hw *hw,
++			     struct ixgbe_hw_func_caps *func_caps);
++int ixgbe_aci_disable_rxen(struct ixgbe_hw *hw);
++int ixgbe_aci_get_phy_caps(struct ixgbe_hw *hw, bool qual_mods, u8 report_mode,
++			   struct ixgbe_aci_cmd_get_phy_caps_data *pcaps);
++void ixgbe_copy_phy_caps_to_cfg(struct ixgbe_aci_cmd_get_phy_caps_data *caps,
++				struct ixgbe_aci_cmd_set_phy_cfg_data *cfg);
+ 
+ #endif /* _IXGBE_E610_H_ */
 -- 
-V1 -> V2:
-  - fix for no previous prototypes for ixgbe_set_fw_drv_ver_x550,
-    ixgbe_set_ethertype_anti_spoofing_x550 and
-    ixgbe_set_source_address_pruning_x550
-  - fix variable type mismatch: u16, u32, u64
-  - fix inaccurate doc for ixgbe_aci_desc
-  - remove extra buffer allocation in ixgbe_aci_send_cmd_execute
-  - replace custom loops with generic fls64 in ixgbe_get_media_type_e610
-  - add buffer caching and optimization in ixgbe_aci_send_cmd
-V2 -> V3:
-  - revert ixgbe_set_eee_capable inlining
-  - update copyright date
-V3 -> V4:
-  - cleanup local variables in ixgbe_get_num_per_func
-  - remove redundant casting in ixgbe_aci_disable_rxen
-V4 -> V5:
-  - remove unnecessary structure members initialization
-  - remove unnecessary casting
-  - fix comments
-V5 -> V6:
-  - create dedicated patch for ixgbe_x540 multiple header inclusion protection
-  - extend debug messages
-  - add descriptive constant for Receive Address Registers
-  - remove unrelated changes
-  - create dedicated patch for code cleanup
-  - remove and cleanup of some conditions
-  - spelling fixes
-  
-Eventually I decided not to create a dedicated patch for ixgbe_schedule_fw_event(). In order it makes sense it would require to extract some extra event code as well. This extra code is explicitly dedicated to link management i.e. to what the specific patch implements.
-
 2.31.1
 
