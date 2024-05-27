@@ -1,76 +1,98 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F224CC25B74
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 27 May 2024 14:53:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 739FEC25B78
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 27 May 2024 18:58:40 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id BB073606C6;
-	Mon, 27 May 2024 14:53:44 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 0449681E39;
+	Mon, 27 May 2024 18:58:40 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 4LHw8GY7pZ_E; Mon, 27 May 2024 14:53:44 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id UUZDsQ8FWgm1; Mon, 27 May 2024 18:58:39 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org EFA35608B7
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org EBDEB81E1A
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1716821624;
-	bh=aRBXGHVxa5RsJqJQrWtgH28ywjA+m+p779kK2/pSvFk=;
-	h=From:Date:To:References:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=1HhH6+nGuf3OU00EFOTgpG7AOJB6sxOvT9xFqN8K3Q7B+tzMlF12rDX6za1XiP3sB
-	 5191+zVc45ZhthsJZSeNwmRL63RSnubEZNdrBIWEGum8lPAkx1c0L+9fEjv59xW803
-	 tH5r3ka9j5yQKlxOn/I8xST11+GWUXvJtppG75CTdj8eCM64khDBI2FrBdDYs2mFEa
-	 3B11AUZJsEIgWzKMJ1Z8DwkAlLYfbG+6bKI9P4TUIIOEFtPe4aU2z2maQKQiGKT5IW
-	 tvnq6cDAZ1WH+tg/V47Kp4QERjL7cbOfzySsfnYlv6PX6ZUbY4c1Cswe4m0GwbHiqV
-	 0D0VzPKKoOTVw==
+	s=default; t=1716836319;
+	bh=BUbepeShUAYsjyGYNzi9UJx213VOSaow57EKJYNAZrA=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=pYJTJMLoLrvU42rVHeGcy3njvOJsonq67Y0hOz0Mdfecj71E98EH1FEngW90N+Zqp
+	 gv6G3pIewfBTik6f/T6iEJu/eL1DpGxsxxb4p4XUCYsau4aFPYPHTgJkIqox6j7cTe
+	 XZSvt6/39tDegAWxiGvXCKd5nwwRkpxuhm1R0dXzuwh0yI7ABbJ1aj6iJGOoVM1EhP
+	 UTwuXoiJ6Ba7wx+5Z6JnThLgzjW8uXJ33bQhD67XGCc2YQNVDgrxNQ1pc73LQbICmf
+	 WaBWAn/UYwwdwwd45LL0JOnPIo1XT2uX3rpixdjmwj8LA9qS7St+kt0iQvekVz3id/
+	 X0YwMsOKsP/Jg==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id EFA35608B7;
-	Mon, 27 May 2024 14:53:43 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 950301D1E16
- for <intel-wired-lan@lists.osuosl.org>; Mon, 27 May 2024 14:53:42 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id EBDEB81E1A;
+	Mon, 27 May 2024 18:58:38 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 83B0F1D1FEE
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 27 May 2024 18:58:37 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id A29BE40253
- for <intel-wired-lan@lists.osuosl.org>; Mon, 27 May 2024 14:53:41 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 7BAEE81E1A
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 27 May 2024 18:58:37 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 2_GUUugA1cxb for <intel-wired-lan@lists.osuosl.org>;
- Mon, 27 May 2024 14:53:41 +0000 (UTC)
-Received-SPF: Softfail (mailfrom) identity=mailfrom; client-ip=62.142.5.81;
- helo=fgw20-7.mail.saunalahti.fi; envelope-from=andy.shevchenko@gmail.com;
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id EANC0ze5RQy3 for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 27 May 2024 18:58:36 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.15;
+ helo=mgamail.intel.com; envelope-from=ahmed.zaki@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org C63754016B
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org C63754016B
-Received: from fgw20-7.mail.saunalahti.fi (fgw20-7.mail.saunalahti.fi
- [62.142.5.81])
- by smtp2.osuosl.org (Postfix) with ESMTPS id C63754016B
- for <intel-wired-lan@lists.osuosl.org>; Mon, 27 May 2024 14:53:40 +0000 (UTC)
-Received: from localhost (88-113-26-230.elisa-laajakaista.fi [88.113.26.230])
- by fgw23.mail.saunalahti.fi (Halon) with ESMTP
- id a799409f-1c36-11ef-80bb-005056bdfda7;
- Mon, 27 May 2024 17:37:33 +0300 (EEST)
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Date: Mon, 27 May 2024 17:37:33 +0300
-To: "D, Lakshmi Sowjanya" <lakshmi.sowjanya.d@intel.com>
-Message-ID: <ZlSarRwF1vEbfzlP@surfacebook.localdomain>
-References: <20240513103813.5666-1-lakshmi.sowjanya.d@intel.com>
- <20240513103813.5666-13-lakshmi.sowjanya.d@intel.com>
- <ZkH37Sc9LU4zmcGB@smile.fi.intel.com>
- <CY8PR11MB7364A367739AA57107DBBE6AC4F02@CY8PR11MB7364.namprd11.prod.outlook.com>
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 2307080E83
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2307080E83
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.15])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 2307080E83
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 27 May 2024 18:58:34 +0000 (UTC)
+X-CSE-ConnectionGUID: y9Ww1uh4TJa6/H8D5LYLNw==
+X-CSE-MsgGUID: O43GfZBOT8+Zajh259uWKQ==
+X-IronPort-AV: E=McAfee;i="6600,9927,11085"; a="13353914"
+X-IronPort-AV: E=Sophos;i="6.08,193,1712646000"; d="scan'208";a="13353914"
+Received: from fmviesa009.fm.intel.com ([10.60.135.149])
+ by fmvoesa109.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 27 May 2024 11:58:34 -0700
+X-CSE-ConnectionGUID: zBfRQOdJRUuZMQzD2UgsWA==
+X-CSE-MsgGUID: ou97szs1Tzy+zjMkMfpaGw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.08,193,1712646000"; d="scan'208";a="34910002"
+Received: from rfrazer-mobl3.amr.corp.intel.com (HELO azaki-desk1.intel.com)
+ ([10.125.110.208])
+ by fmviesa009-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 27 May 2024 11:58:31 -0700
+From: Ahmed Zaki <ahmed.zaki@intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Date: Mon, 27 May 2024 12:57:57 -0600
+Message-ID: <20240527185810.3077299-1-ahmed.zaki@intel.com>
+X-Mailer: git-send-email 2.43.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CY8PR11MB7364A367739AA57107DBBE6AC4F02@CY8PR11MB7364.namprd11.prod.outlook.com>
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dmarc=fail (p=none dis=none)
- header.from=gmail.com
-Subject: Re: [Intel-wired-lan] [PATCH v8 12/12] ABI: pps: Add ABI
- documentation for Intel TIO
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1716836316; x=1748372316;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=KlcpWklQ5ACkWuplTx/6ZWYFd3VezVk6vhnqFjWNih8=;
+ b=KZiRZs9fOQK46kx8/hOOfrRjBl7lHZCzLYhWAUl0da1IIBMsJFooKINq
+ DqZwZfzu/XBuCCLpHnyiwrHBnlNzxdAnyw7HKEXBo67Wv3yjnfM9bU5vR
+ 7IEdxV9nGZkhUeLRN455krnCWf8UaibhgdtdjBl7mTU25rSJhsG/US2jX
+ R8xwnS2WpO34jyG1DPLxomjk3ayb3Vck1kqSPpLhWCNhE8MTeSjDY/BrW
+ 5PohIGn2JPLRwe+X6dXBMLxqmzPz4tSi6nddy12+uY2F8atrmX7CFVUDB
+ 5fzJc+kOt9OSW/xFnBYgPKyDSnZda19ul4G9b1Uh9eQe3fzNTsgH63GhU
+ Q==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=intel.com
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=KZiRZs9f
+Subject: [Intel-wired-lan] [PATCH iwl-next v2 00/13] ice: iavf: add support
+ for TC U32 filters on VFs
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,64 +105,93 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
- "alexandre.torgue@foss.st.com" <alexandre.torgue@foss.st.com>,
- "perex@perex.cz" <perex@perex.cz>, "Nguyen,
- Anthony L" <anthony.l.nguyen@intel.com>, "T R,
- Thejesh Reddy" <thejesh.reddy.t.r@intel.com>, "Hall,
- Christopher S" <christopher.s.hall@intel.com>,
- "corbet@lwn.net" <corbet@lwn.net>, "x86@kernel.org" <x86@kernel.org>,
- "joabreu@synopsys.com" <joabreu@synopsys.com>,
- "peter.hilber@opensynergy.com" <peter.hilber@opensynergy.com>,
- "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>, "Mohan,
- Subramanian" <subramanian.mohan@intel.com>,
- "linux-sound@vger.kernel.org" <linux-sound@vger.kernel.org>,
- "tglx@linutronix.de" <tglx@linutronix.de>,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- "giometti@enneenne.com" <giometti@enneenne.com>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>, "N,
- Pandith" <pandith.n@intel.com>, "Dong, Eddie" <eddie.dong@intel.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "mcoquelin.stm32@gmail.com" <mcoquelin.stm32@gmail.com>,
- "jstultz@google.com" <jstultz@google.com>,
- "davem@davemloft.net" <davem@davemloft.net>
+Cc: jacob.e.keller@intel.com, netdev@vger.kernel.org,
+ anthony.l.nguyen@intel.com, Ahmed Zaki <ahmed.zaki@intel.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Mon, May 27, 2024 at 11:53:07AM +0000, D, Lakshmi Sowjanya kirjoitti:
-> > -----Original Message-----
-> > From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> > Sent: Monday, May 13, 2024 4:52 PM
-> > On Mon, May 13, 2024 at 04:08:13PM +0530, lakshmi.sowjanya.d@intel.com
-> > wrote:
+The Intel® Ethernet 800 Series is designed with a pipeline that has
+an on-chip programmable capability called Dynamic Device Personalization
+(DDP). A DDP package is loaded by the driver during probe time. The DDP
+package programs functionality in both the parser and switching blocks in
+the pipeline, allowing dynamic support for new and existing protocols.
+Once the pipeline is configured, the driver can identify the protocol and
+apply any HW action in different stages, for example, direct packets to
+desired hardware queues (flow director), queue groups or drop.  
 
-...
+Patches 1-8 introduce a DDP package parser API that enables different
+pipeline stages in the driver to learn the HW parser capabilities from 
+the DDP package that is downloaded to HW. The parser library takes raw
+packet patterns and masks (in binary) indicating the packet protocol fields
+to be matched and generates the final HW profiles that can be applied at
+the required stage. With this API, raw flow filtering for FDIR or RSS
+could be done on new protocols or headers without any driver or Kernel
+updates (only need to update the DDP package). These patches were submitted
+before [1] but were not accepted mainly due to lack of a user.
 
-> > > +Date:		June 2024
-> > 
-> > Is this checked by phb?
-> > 
-> > "the v6.11 kernel predictions: merge window closes on Sunday, 2024-08-04
-> > and  release on Sunday, 2024-09-29"
-> 
-> I have taken from phb but my understanding is that any probable month before
-> merge window should be added.
+Patches 9-11 extend the virtchnl support to allow the VF to request raw
+flow director filters. Upon receiving the raw FDIR filter request, the PF
+driver allocates and runs a parser lib instance and generates the hardware
+profile definitions required to program the FDIR stage. These were also
+submitted before [2].
 
-I didn't get this. You meant the merge window for the next cycle after your
-changes are expected to land?
+Finally, patches 12 and 13 add TC U32 filter support to the iavf driver.
+Using the parser API, the ice driver runs the raw patterns sent by the
+user and then adds a new profile to the FDIR stage associated with the VF's
+VSI. Refer to examples in patch 13 commit message.
 
-> I want to know if it should be the month when the merge window closes? (i.e
-> in this case August)?
+[1]: Link: https://lore.kernel.org/netdev/20230904021455.3944605-1-junfeng.guo@intel.com/
+[2]: Link: https://lists.osuosl.org/pipermail/intel-wired-lan/Week-of-Mon-20230814/036333.html 
 
-My common sense tells me that there will be no real users (except developers)
-for any kernel that's marked as vX.Y-rcZ. Assuming that we announce the ABI in
-the release, we should use date of the estimated relase. In this case I would
-use September 2024.
+---
+v2:
+  - No changes, just cc netdev
 
-> > > +KernelVersion:	6.11
+Ahmed Zaki (2):
+  iavf: refactor add/del FDIR filters
+  iavf: add support for offloading tc U32 cls filters
+
+Junfeng Guo (11):
+  ice: add parser create and destroy skeleton
+  ice: parse and init various DDP parser sections
+  ice: add debugging functions for the parser sections
+  ice: add parser internal helper functions
+  ice: add parser execution main loop
+  ice: support turning on/off the parser's double vlan mode
+  ice: add UDP tunnels support to the parser
+  ice: add API for parser profile initialization
+  virtchnl: support raw packet in protocol header
+  ice: add method to disable FDIR SWAP option
+  ice: enable FDIR filters from raw binary patterns for VFs
+
+ drivers/net/ethernet/intel/iavf/iavf.h        |   30 +
+ .../net/ethernet/intel/iavf/iavf_ethtool.c    |   59 +-
+ drivers/net/ethernet/intel/iavf/iavf_fdir.c   |   85 +-
+ drivers/net/ethernet/intel/iavf/iavf_fdir.h   |   13 +-
+ drivers/net/ethernet/intel/iavf/iavf_main.c   |  148 +-
+ .../net/ethernet/intel/iavf/iavf_virtchnl.c   |   25 +-
+ drivers/net/ethernet/intel/ice/Makefile       |    2 +
+ drivers/net/ethernet/intel/ice/ice_common.h   |    1 +
+ drivers/net/ethernet/intel/ice/ice_ddp.c      |   10 +-
+ drivers/net/ethernet/intel/ice/ice_ddp.h      |   13 +
+ .../net/ethernet/intel/ice/ice_flex_pipe.c    |   96 +-
+ .../net/ethernet/intel/ice/ice_flex_pipe.h    |    7 +-
+ drivers/net/ethernet/intel/ice/ice_flow.c     |  106 +-
+ drivers/net/ethernet/intel/ice/ice_flow.h     |    4 +
+ drivers/net/ethernet/intel/ice/ice_parser.c   | 2389 +++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_parser.h   |  540 ++++
+ .../net/ethernet/intel/ice/ice_parser_rt.c    |  860 ++++++
+ drivers/net/ethernet/intel/ice/ice_type.h     |    1 +
+ drivers/net/ethernet/intel/ice/ice_vf_lib.c   |    2 +-
+ drivers/net/ethernet/intel/ice/ice_vf_lib.h   |    8 +
+ drivers/net/ethernet/intel/ice/ice_virtchnl.c |    6 +-
+ .../ethernet/intel/ice/ice_virtchnl_fdir.c    |  400 ++-
+ include/linux/avf/virtchnl.h                  |   13 +-
+ 23 files changed, 4726 insertions(+), 92 deletions(-)
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_parser.c
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_parser.h
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_parser_rt.c
 
 -- 
-With Best Regards,
-Andy Shevchenko
-
+2.43.0
 
