@@ -4,68 +4,68 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B048CC25B78
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 28 May 2024 13:15:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id ACF61C27C44
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 28 May 2024 13:15:48 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 80E1281FDE;
-	Tue, 28 May 2024 13:15:44 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 76F9B820C4;
+	Tue, 28 May 2024 13:15:48 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id A9Oyqu_H6AVT; Tue, 28 May 2024 13:15:44 +0000 (UTC)
+ id I1e0n-_tkyDH; Tue, 28 May 2024 13:15:47 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org DF42D82017
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org A830A820C1
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1716902143;
-	bh=MgJdr/29aXqKlnBeBMrwb8w4S3x91siklZKAr86mK6c=;
+	s=default; t=1716902147;
+	bh=YBMR1bdTgc/Woue9nGu9pSrwAn4aDhDNWYZyw2sDXv4=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=H8t82oavSLJ2PQIIszijmyGC4s5oEfKAHEA8ohWNUXNyd6yq5yWnFK7KZzbYaUajk
-	 T3PvimAg2GAFtnMQtuDfMIE1T4NA01Oe0W8cWkxzcaKTECUfifvwB57f96eQgMybzV
-	 G916TvqP92Cfegj68s4z53rhzJEJlOpa/vXLIC33xb8evxlEw0KDKXoFBzXjTdQkhH
-	 0+2qfIgzNzSkfPZaJm86g8f9XrH282SQZrekHQZlmIoUG1wpPW2tn/4H0GBiahuoBP
-	 wXN7TmowpnJREZsAZjLb6Ecp7QrBgef9AwnGwwdqySGQZRYCf/Ayf/y72Ei5mbsvkk
-	 u2zyyATubxGsQ==
+	b=oAjiTtig57cLM8pvsxOJG0pBMfrXHO8Jw8cpwRdwHSM28a3Nc9KB4G2FuLj2H66pK
+	 G4k4UkRbjoL99y9WniOvomw9Ical9uk2I3BcWOnHVoSV7z9RIHKa1mXXlk7pf6VlgN
+	 lRlA5AWvIp2isK1F2Z1FW6+oylJiB2ySxwYQLrahjX8MXmfJVGPLmbilVD/EeXVg61
+	 ofZFo8iHV+nq7ORc0QjgALYLKfNUrDCoMb7R8Wq0QSsCqq1s1qlujLsr7D4ba5Bwfb
+	 aa8ou4xA51jqKFcFw+GrJsqto2z5fwSx3FhHPEUm2LGvbUgk4ky89t3tpU6QB5kw/g
+	 L8mN0HhD8ycBA==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id DF42D82017;
-	Tue, 28 May 2024 13:15:43 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id A830A820C1;
+	Tue, 28 May 2024 13:15:47 +0000 (UTC)
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 4C6B81D281D
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 May 2024 13:15:40 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 759A11D281C
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 May 2024 13:15:44 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 3617F8201D
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 May 2024 13:15:40 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 6CEBE82012
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 May 2024 13:15:44 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id XUFcERmKsSJ5 for <intel-wired-lan@lists.osuosl.org>;
- Tue, 28 May 2024 13:15:39 +0000 (UTC)
+ id e8nMLUNnhrJH for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 28 May 2024 13:15:44 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.21;
  helo=mgamail.intel.com; envelope-from=maciej.fijalkowski@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 2E06381FDE
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2E06381FDE
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org BF71581FDE
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org BF71581FDE
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.21])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 2E06381FDE
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 May 2024 13:15:39 +0000 (UTC)
-X-CSE-ConnectionGUID: a72rx8lWTRC/2GAEtU6VCg==
-X-CSE-MsgGUID: kj9giFokSiWsuSJxhmxZPQ==
-X-IronPort-AV: E=McAfee;i="6600,9927,11085"; a="13193540"
-X-IronPort-AV: E=Sophos;i="6.08,195,1712646000"; d="scan'208";a="13193540"
+ by smtp1.osuosl.org (Postfix) with ESMTPS id BF71581FDE
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 May 2024 13:15:43 +0000 (UTC)
+X-CSE-ConnectionGUID: ITQXvkhORdKTq1Q55eH2fA==
+X-CSE-MsgGUID: gE0yA9IjS7KN/mhBAcwGRQ==
+X-IronPort-AV: E=McAfee;i="6600,9927,11085"; a="13193553"
+X-IronPort-AV: E=Sophos;i="6.08,195,1712646000"; d="scan'208";a="13193553"
 Received: from orviesa003.jf.intel.com ([10.64.159.143])
  by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 28 May 2024 06:15:40 -0700
-X-CSE-ConnectionGUID: oOTIR56jR+C4jLxYQEJyqg==
-X-CSE-MsgGUID: sf69Gwt4RLKQXloVN8OBpw==
+ 28 May 2024 06:15:44 -0700
+X-CSE-ConnectionGUID: J6Ag7psJQYS+bugeluUNug==
+X-CSE-MsgGUID: yR1PiVKwQki+JoWWuV67yA==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.08,195,1712646000"; d="scan'208";a="39891136"
+X-IronPort-AV: E=Sophos;i="6.08,195,1712646000"; d="scan'208";a="39891155"
 Received: from boxer.igk.intel.com ([10.102.20.173])
- by orviesa003.jf.intel.com with ESMTP; 28 May 2024 06:15:37 -0700
+ by orviesa003.jf.intel.com with ESMTP; 28 May 2024 06:15:42 -0700
 From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Tue, 28 May 2024 15:14:23 +0200
-Message-Id: <20240528131429.3012910-6-maciej.fijalkowski@intel.com>
+Date: Tue, 28 May 2024 15:14:25 +0200
+Message-Id: <20240528131429.3012910-8-maciej.fijalkowski@intel.com>
 X-Mailer: git-send-email 2.35.3
 In-Reply-To: <20240528131429.3012910-1-maciej.fijalkowski@intel.com>
 References: <20240528131429.3012910-1-maciej.fijalkowski@intel.com>
@@ -73,25 +73,25 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1716902140; x=1748438140;
+ t=1716902144; x=1748438144;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=kIt/ZTFBn9CaI96lLJdikL/BzSIZijxoQUVVgIOAlUE=;
- b=isKN1ueTlOY6mBe8J8Uzo/W+q0g2jFlMuBxBAVwSl1KiXlaU9bTIoTs1
- CHBiBEZzJ9AUH6pg0BxQqtizBfzpZL2+4tYT4c2oEJGyH34gcqkYPRac9
- RywGz6lPg1FhA1paYonsIEdDtPTQmSouXcKeC4+n06wltp/b9cbyLXhD7
- 86nNRcFQZJ6i4WWWS8xPhvRdVDk3Wqwpn/Q/nnc7FvvA+eLRJ3dIySAMQ
- ibjKd81RYE7NtwDF0p1yKqxdTQeXCIhB5MuXGtF2CDbtxbbHjdSoCV1GN
- A5ROeLVaiwS0KZwogaiXqHEUAbKSvXWrDO+uZ3E2lRggTf7M/456K3BAf
- g==;
+ bh=4Tu1vWmHZq1dZhCwiajusm9P0b3jYlUYGR9h4gmDQJg=;
+ b=Vl74P8oPbZqAF3WbuWQ3a3dk/N+iA0xPV2iPF1mci7BoHvutHPDfhCR4
+ 9KoCMqjdVQWoxO9Vj1NNc89rQIwNrnSrnV05jgcLkdxGPgOWw1Ps6QTg8
+ WT4HjVh+EOaTfNzpSJvAaIbobaqTioLJsYlCT6RR5RnsusS0vpKsnnPQS
+ BZBOLQdoGErgtP4jlutgXo9WXlg+qtWpHcf1IqRqi7l8otdrb4djOrJbr
+ T5ehzgCwh51yStE5vrzfd5ifNZGO7y3X5TvIORSTGHaO595topUmKrMv6
+ b6UKj+bT/cAHUilYYNzyypBHA4nmQAiKC7Ds06YqY+5yAOyx1DzVut5C4
+ A==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=isKN1ueT
-Subject: [Intel-wired-lan] [PATCH iwl-net 05/11] ice: toggle netif_carrier
- when setting up XSK pool
+ header.a=rsa-sha256 header.s=Intel header.b=Vl74P8oP
+Subject: [Intel-wired-lan] [PATCH iwl-net 07/11] ice: add missing WRITE_ONCE
+ when clearing ice_rx_ring::xdp_prog
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -110,38 +110,28 @@ Cc: Maciej Fijalkowski <maciej.fijalkowski@intel.com>, larysa.zaremba@intel.com,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-In order to prevent Tx timeout issues, toggle the netif_carrier when
-disabling and enabling queue pair during XSK pool setup. One of
-conditions checked on running in the background dev_watchdog() is
-netif_carrier_ok(), so let us turn it off when we disable the queues
-that belong to a q_vector where XSK pool is being configured.
+It is read by data path and modified from process context on remote cpu
+so it is needed to use WRITE_ONCE to clear the pointer.
 
-Fixes: 2d4238f55697 ("ice: Add support for AF_XDP")
+Fixes: efc2214b6047 ("ice: Add support for XDP")
 Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_xsk.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/net/ethernet/intel/ice/ice_txrx.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_xsk.c b/drivers/net/ethernet/intel/ice/ice_xsk.c
-index 3dcab89be256..8c5006f37310 100644
---- a/drivers/net/ethernet/intel/ice/ice_xsk.c
-+++ b/drivers/net/ethernet/intel/ice/ice_xsk.c
-@@ -181,6 +181,7 @@ static int ice_qp_dis(struct ice_vsi *vsi, u16 q_idx)
- 	}
- 
- 	synchronize_net();
-+	netif_carrier_off(vsi->netdev);
- 	netif_tx_stop_queue(netdev_get_tx_queue(vsi->netdev, q_idx));
- 
- 	ice_qvec_dis_irq(vsi, rx_ring, q_vector);
-@@ -250,6 +251,7 @@ static int ice_qp_ena(struct ice_vsi *vsi, u16 q_idx)
- 	ice_qvec_ena_irq(vsi, q_vector);
- 
- 	netif_tx_start_queue(netdev_get_tx_queue(vsi->netdev, q_idx));
-+	netif_carrier_on(vsi->netdev);
- 	clear_bit(ICE_CFG_BUSY, vsi->state);
- 
- 	return fail;
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
+index f4b2b1bca234..4c115531beba 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.c
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
+@@ -456,7 +456,7 @@ void ice_free_rx_ring(struct ice_rx_ring *rx_ring)
+ 	if (rx_ring->vsi->type == ICE_VSI_PF)
+ 		if (xdp_rxq_info_is_reg(&rx_ring->xdp_rxq))
+ 			xdp_rxq_info_unreg(&rx_ring->xdp_rxq);
+-	rx_ring->xdp_prog = NULL;
++	WRITE_ONCE(rx_ring->xdp_prog, NULL);
+ 	if (rx_ring->xsk_pool) {
+ 		kfree(rx_ring->xdp_buf);
+ 		rx_ring->xdp_buf = NULL;
 -- 
 2.34.1
 
