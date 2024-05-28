@@ -4,95 +4,74 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 52BE6C25B78
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 28 May 2024 10:43:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8341EC25B78
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 28 May 2024 10:44:05 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 0D27640BF3;
-	Tue, 28 May 2024 10:43:58 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 53C8240C11;
+	Tue, 28 May 2024 10:44:05 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id gA_Ipgk4CD59; Tue, 28 May 2024 10:43:57 +0000 (UTC)
+ id 1OMgngduIHhl; Tue, 28 May 2024 10:44:04 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 2816B405D4
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 6DB1540BEB
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1716893037;
-	bh=HeoGSwILJ04pCnIDKh8I4so7PifrbTtVtURUYl1zDmo=;
-	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
+	s=default; t=1716893044;
+	bh=3faOPifPRG9dKAVE7mUuA5lPJ+JvcjysQfIytj1tAfM=;
+	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=3jkwn7+olVwc9mQzZ5Gf+evzWSVlffbC60dCp/l/qTzNXsy603Ue6Pm5rgPSAf3Ib
-	 bjWeUPP0dcvyUfGIyJ5vo+dgGB3lvj2yoj0adawq4gXhujdnWqdVZ0sIVpgWAcgIXj
-	 QGPy3zSfLZysjM5uamEoEX2MRzZlT51gHAWjsfhPAasiSr7UyY3HP1I+SkyHgPqqtG
-	 IJZY37hPEPh/O8+etuZaL1BAhpSAruqnb826lvQeZZH2V0D8b2rLaTJ4c0RQ+CMAPn
-	 pfVq20nD1BtN+OFwxZXf2sSiaQDpYq8vtJkNS92VxOc8j2dscXmlE6FpyHIFbryFee
-	 fG2NRa8awDFLw==
+	b=OuhHcTLCc4L9KtDVgpNNXLPFWhm2U1rA5qXLzvwSoMVUQ+x4LaKHtiGOPbOOg+ZkQ
+	 Qa9jbQiczuw4SwXk1qAFW8B3aQ5+Qhrxh1WtdBaszxJ+ywBNjR8+Tmq2FiJR3MwyhF
+	 FIjoFH7DOKPxqt3ptiCHlMT6MBDu7TmNcogB15od8LKcVOlZm6xY1XxEMXQdTDh2Gf
+	 pxYprSxm1EHoVGK06f+/FSHWsozSIpQOzjwBCLfz+Lmu9WKHNQs1mjGLPTjB/STGP9
+	 d0EUwAH68FuUVZUzm+TPf5CWqiERiACMt4hwYUh5rIkTBS3Wi6NZ2G/kC+9QBarpOI
+	 ZvJKfbE2bG2wQ==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 2816B405D4;
-	Tue, 28 May 2024 10:43:57 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id DB7921D26AA
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 May 2024 10:43:54 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 6DB1540BEB;
+	Tue, 28 May 2024 10:44:04 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id A22DF1D26AA
+ for <intel-wired-lan@osuosl.org>; Tue, 28 May 2024 10:44:03 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id C718980C32
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 May 2024 10:43:54 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 8E7DA405A3
+ for <intel-wired-lan@osuosl.org>; Tue, 28 May 2024 10:44:03 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id h_aH-lKszzXy for <intel-wired-lan@lists.osuosl.org>;
- Tue, 28 May 2024 10:43:54 +0000 (UTC)
-Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.18;
- helo=mgamail.intel.com; envelope-from=michal.swiatkowski@linux.intel.com;
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id UbNKvLsfV4ON for <intel-wired-lan@osuosl.org>;
+ Tue, 28 May 2024 10:44:01 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=141.14.17.11;
+ helo=mx3.molgen.mpg.de; envelope-from=pmenzel@molgen.mpg.de;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org C3FD380C28
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C3FD380C28
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.18])
- by smtp1.osuosl.org (Postfix) with ESMTPS id C3FD380C28
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 May 2024 10:43:53 +0000 (UTC)
-X-CSE-ConnectionGUID: GlsBPB14SeiYVQuJ+cWLJA==
-X-CSE-MsgGUID: lgZTMC6ITHuflisgNaGHig==
-X-IronPort-AV: E=McAfee;i="6600,9927,11085"; a="13001693"
-X-IronPort-AV: E=Sophos;i="6.08,195,1712646000"; d="scan'208";a="13001693"
-Received: from fmviesa003.fm.intel.com ([10.60.135.143])
- by fmvoesa112.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 28 May 2024 03:43:53 -0700
-X-CSE-ConnectionGUID: jj070PvSQhKUAU35PmDPIA==
-X-CSE-MsgGUID: X5hnXjsSSeulPrJQrCdEKw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.08,195,1712646000"; d="scan'208";a="39470586"
-Received: from unknown (HELO mev-dev) ([10.237.112.144])
- by fmviesa003-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 28 May 2024 03:43:50 -0700
-Date: Tue, 28 May 2024 12:43:02 +0200
-From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
-To: Ricky Wu <en-wei.wu@canonical.com>
-Message-ID: <ZlW1NiQOpf6497Tg@mev-dev>
-References: <20240528100315.24290-1-en-wei.wu@canonical.com>
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 7EC3C405A0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 7EC3C405A0
+Received: from mx3.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 7EC3C405A0
+ for <intel-wired-lan@osuosl.org>; Tue, 28 May 2024 10:43:59 +0000 (UTC)
+Received: from [141.14.13.3] (g258.RadioFreeInternet.molgen.mpg.de
+ [141.14.13.3])
+ (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested) (Authenticated sender: pmenzel)
+ by mx.molgen.mpg.de (Postfix) with ESMTPSA id 06C3061E5FE01;
+ Tue, 28 May 2024 12:43:40 +0200 (CEST)
+Message-ID: <9ca46bff-e118-436f-81c7-4d2c53556a42@molgen.mpg.de>
+Date: Tue, 28 May 2024 12:43:39 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240528100315.24290-1-en-wei.wu@canonical.com>
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1716893033; x=1748429033;
- h=date:from:to:cc:subject:message-id:references:
- mime-version:in-reply-to;
- bh=faO5qzmy4SrjD0t39u78b/WW8X2p7Mw4t5HKMKNoD2A=;
- b=G03z/wMtixNL9LJeB5ZPuhQjhP65RM0H3eEzMIDi51ZCxwaplB0GOeZL
- dWFulM/GzuD77LamLekxkvd/62v7mpFC8hLmui7XHH5ceZul0JNYjKbgM
- ZevHl8TnvwBFELSASLuog8LTkKWkp809pYtj6L6xeJ6Ynk4ZMw2y3vMKn
- egzSjdqEJtgav/mkOxpgnyYgFt94p4Xf7fhLkNU6pxq0csTuU3mW1IF9C
- pehsWOHrvBxBLPvdU+FDzJqiTNhzUxgEfvOpv00nXhJj0a6rYhPzNNMlL
- h98dFh30FtdcnP4dz8esOQBLmKlBemN1kY5J7m43zZXhKwxwk301SM7tl
- A==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+User-Agent: Mozilla Thunderbird
+To: Vitaly Lifshits <vitaly.lifshits@intel.com>
+References: <20240528103329.784584-1-vitaly.lifshits@intel.com>
+Content-Language: en-US
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+In-Reply-To: <20240528103329.784584-1-vitaly.lifshits@intel.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=none (p=none dis=none)
- header.from=linux.intel.com
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=G03z/wMt
-Subject: Re: [Intel-wired-lan] [PATCH] ice: irdma hardware init failed after
- suspend/resume
+ header.from=molgen.mpg.de
+Subject: Re: [Intel-wired-lan] [PATCH iwl-net v1 1/1] e1000e: Fix S0ix
+ residency on Meteor Lake corporate systems
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,69 +84,230 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, rickywu0421@gmail.com, linux-kernel@vger.kernel.org,
- edumazet@google.com, anthony.l.nguyen@intel.com, kuba@kernel.org,
- intel-wired-lan@lists.osuosl.org, pabeni@redhat.com, davem@davemloft.net
+Cc: intel-wired-lan@osuosl.org, Dima Ruinskiy <dima.ruinskiy@intel.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Tue, May 28, 2024 at 06:03:15PM +0800, Ricky Wu wrote:
-> A bug in https://bugzilla.kernel.org/show_bug.cgi?id=218906 describes
-> that irdma would break and report hardware initialization failed after
-> suspend/resume with Intel E810 NIC (tested on 6.9.0-rc5).
+Dear Vitaly,
+
+
+Thank you for the patch.
+
+Am 28.05.24 um 12:33 schrieb Vitaly Lifshits:
+> From: Dima Ruinskiy <dima.ruinskiy@intel.com>
 > 
-> The problem is caused due to the collision between the irq numbers
-> requested in irdma and the irq numbers requested in other drivers
-> after suspend/resume.
-> 
-> The irq numbers used by irdma are derived from ice's ice_pf->msix_entries
-> which stores mappings between MSI-X index and Linux interrupt number.
-> It's supposed to be cleaned up when suspend and rebuilt in resume but
-> it's not, causing irdma using the old irq numbers stored in the old
-> ice_pf->msix_entries to request_irq() when resume. And eventually
-> collide with other drivers.
-> 
-> This patch fixes this problem. On suspend, we call ice_deinit_rdma() to
-> clean up the ice_pf->msix_entries (and free the MSI-X vectors used by
-> irdma if we've dynamically allocated them). On Resume, we call
-> ice_init_rdma() to rebuild the ice_pf->msix_entries (and allocate the
-> MSI-X vectors if we would like to dynamically allocate them).
-> 
-> Signed-off-by: Ricky Wu <en-wei.wu@canonical.com>
+> On vPro systems,the  configuration of the I219-LM to achieve power
+
+s/,the  /, the /
+
+> gating and S0ix residency is split between the driver and the CSME FW.
+> It was discovered that in some scenarios, where the network cable is
+> connected and then disconnected, S0ix residency is not always reached.
+
+Disconnected at any point, or just during suspend?
+
+Any URL to the reports?
+
+> This was root-caused to a subset of I219-LM register writes that are not
+> performed by the CSME FW. Therefore, the driver should perform these
+> register writes on corporate setups, regardless of the CSME FW state.
+
+Is that documented somewhere?
+
+Please add more information about the affected systems, and the test 
+environment (firmware versions, …).
+
+> Fixes: cc23f4f0b6b9 ("e1000e: Add support for Meteor Lake")
+> Signed-off-by: Dima Ruinskiy <dima.ruinskiy@intel.com>
+> Signed-off-by: Vitaly.Lifshits <vitaly.lifshits@intel.com>
+
+The line above with the dot can be removed.
+
+> Signed-off-by: Vitaly Lifshits <vitaly.lifshits@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_main.c | 6 +++++-
->  1 file changed, 5 insertions(+), 1 deletion(-)
+>   drivers/net/ethernet/intel/e1000e/netdev.c | 132 ++++++++++-----------
+>   1 file changed, 66 insertions(+), 66 deletions(-)
 > 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-> index f60c022f7960..ec3cbadaa162 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_main.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-> @@ -5544,7 +5544,7 @@ static int ice_suspend(struct device *dev)
->  	 */
->  	disabled = ice_service_task_stop(pf);
->  
-> -	ice_unplug_aux_dev(pf);
-> +	ice_deinit_rdma(pf);
->  
->  	/* Already suspended?, then there is nothing to do */
->  	if (test_and_set_bit(ICE_SUSPENDED, pf->state)) {
-> @@ -5624,6 +5624,10 @@ static int ice_resume(struct device *dev)
->  	if (ret)
->  		dev_err(dev, "Cannot restore interrupt scheme: %d\n", ret);
->  
-> +	ret = ice_init_rdma(pf);
-> +	if (ret)
-> +		dev_err(dev, "Reinitialize RDMA during resume failed: %d\n", ret);
+> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+> index da5c59daf8ba..3cd161c6672b 100644
+> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
+> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+> @@ -6363,49 +6363,49 @@ static void e1000e_s0ix_entry_flow(struct e1000_adapter *adapter)
+>   		mac_data |= E1000_EXTCNF_CTRL_GATE_PHY_CFG;
+>   		ew32(EXTCNF_CTRL, mac_data);
+>   
+> -		/* Enable the Dynamic Power Gating in the MAC */
+> -		mac_data = er32(FEXTNVM7);
+> -		mac_data |= BIT(22);
+> -		ew32(FEXTNVM7, mac_data);
+> -
+>   		/* Disable disconnected cable conditioning for Power Gating */
+>   		mac_data = er32(DPGFR);
+>   		mac_data |= BIT(2);
+>   		ew32(DPGFR, mac_data);
+>   
+> -		/* Don't wake from dynamic Power Gating with clock request */
+> -		mac_data = er32(FEXTNVM12);
+> -		mac_data |= BIT(12);
+> -		ew32(FEXTNVM12, mac_data);
+> -
+> -		/* Ungate PGCB clock */
+> -		mac_data = er32(FEXTNVM9);
+> -		mac_data &= ~BIT(28);
+> -		ew32(FEXTNVM9, mac_data);
+> -
+> -		/* Enable K1 off to enable mPHY Power Gating */
+> -		mac_data = er32(FEXTNVM6);
+> -		mac_data |= BIT(31);
+> -		ew32(FEXTNVM6, mac_data);
+> -
+> -		/* Enable mPHY power gating for any link and speed */
+> -		mac_data = er32(FEXTNVM8);
+> -		mac_data |= BIT(9);
+> -		ew32(FEXTNVM8, mac_data);
+> -
+>   		/* Enable the Dynamic Clock Gating in the DMA and MAC */
+>   		mac_data = er32(CTRL_EXT);
+>   		mac_data |= E1000_CTRL_EXT_DMA_DYN_CLK_EN;
+>   		ew32(CTRL_EXT, mac_data);
+> -
+> -		/* No MAC DPG gating SLP_S0 in modern standby
+> -		 * Switch the logic of the lanphypc to use PMC counter
+> -		 */
+> -		mac_data = er32(FEXTNVM5);
+> -		mac_data |= BIT(7);
+> -		ew32(FEXTNVM5, mac_data);
+>   	}
+>   
+> +	/* Enable the Dynamic Power Gating in the MAC */
+> +	mac_data = er32(FEXTNVM7);
+> +	mac_data |= BIT(22);
+> +	ew32(FEXTNVM7, mac_data);
 > +
->  	clear_bit(ICE_DOWN, pf->state);
->  	/* Now perform PF reset and rebuild */
->  	reset_type = ICE_RESET_PFR;
+> +	/* Don't wake from dynamic Power Gating with clock request */
+> +	mac_data = er32(FEXTNVM12);
+> +	mac_data |= BIT(12);
+> +	ew32(FEXTNVM12, mac_data);
+> +
+> +	/* Ungate PGCB clock */
+> +	mac_data = er32(FEXTNVM9);
+> +	mac_data &= ~BIT(28);
+> +	ew32(FEXTNVM9, mac_data);
+> +
+> +	/* Enable K1 off to enable mPHY Power Gating */
+> +	mac_data = er32(FEXTNVM6);
+> +	mac_data |= BIT(31);
+> +	ew32(FEXTNVM6, mac_data);
+> +
+> +	/* Enable mPHY power gating for any link and speed */
+> +	mac_data = er32(FEXTNVM8);
+> +	mac_data |= BIT(9);
+> +	ew32(FEXTNVM8, mac_data);
+> +
+> +	/* No MAC DPG gating SLP_S0 in modern standby
+> +	 * Switch the logic of the lanphypc to use PMC counter
+> +	 */
+> +	mac_data = er32(FEXTNVM5);
+> +	mac_data |= BIT(7);
+> +	ew32(FEXTNVM5, mac_data);
+> +
+>   	/* Disable the time synchronization clock */
+>   	mac_data = er32(FEXTNVM7);
+>   	mac_data |= BIT(31);
+> @@ -6498,33 +6498,6 @@ static void e1000e_s0ix_exit_flow(struct e1000_adapter *adapter)
+>   	} else {
+>   		/* Request driver unconfigure the device from S0ix */
+>   
+> -		/* Disable the Dynamic Power Gating in the MAC */
+> -		mac_data = er32(FEXTNVM7);
+> -		mac_data &= 0xFFBFFFFF;
+> -		ew32(FEXTNVM7, mac_data);
+> -
+> -		/* Disable mPHY power gating for any link and speed */
+> -		mac_data = er32(FEXTNVM8);
+> -		mac_data &= ~BIT(9);
+> -		ew32(FEXTNVM8, mac_data);
+> -
+> -		/* Disable K1 off */
+> -		mac_data = er32(FEXTNVM6);
+> -		mac_data &= ~BIT(31);
+> -		ew32(FEXTNVM6, mac_data);
+> -
+> -		/* Disable Ungate PGCB clock */
+> -		mac_data = er32(FEXTNVM9);
+> -		mac_data |= BIT(28);
+> -		ew32(FEXTNVM9, mac_data);
+> -
+> -		/* Cancel not waking from dynamic
+> -		 * Power Gating with clock request
+> -		 */
+> -		mac_data = er32(FEXTNVM12);
+> -		mac_data &= ~BIT(12);
+> -		ew32(FEXTNVM12, mac_data);
+> -
+>   		/* Cancel disable disconnected cable conditioning
+>   		 * for Power Gating
+>   		 */
+> @@ -6537,13 +6510,6 @@ static void e1000e_s0ix_exit_flow(struct e1000_adapter *adapter)
+>   		mac_data &= 0xFFF7FFFF;
+>   		ew32(CTRL_EXT, mac_data);
+>   
+> -		/* Revert the lanphypc logic to use the internal Gbe counter
+> -		 * and not the PMC counter
+> -		 */
+> -		mac_data = er32(FEXTNVM5);
+> -		mac_data &= 0xFFFFFF7F;
+> -		ew32(FEXTNVM5, mac_data);
+> -
+>   		/* Enable the periodic inband message,
+>   		 * Request PCIe clock in K1 page770_17[10:9] =01b
+>   		 */
+> @@ -6581,6 +6547,40 @@ static void e1000e_s0ix_exit_flow(struct e1000_adapter *adapter)
+>   	mac_data &= ~BIT(31);
+>   	mac_data |= BIT(0);
+>   	ew32(FEXTNVM7, mac_data);
+> +
+> +	/* Disable the Dynamic Power Gating in the MAC */
+> +	mac_data = er32(FEXTNVM7);
+> +	mac_data &= 0xFFBFFFFF;
+> +	ew32(FEXTNVM7, mac_data);
+> +
+> +	/* Disable mPHY power gating for any link and speed */
+> +	mac_data = er32(FEXTNVM8);
+> +	mac_data &= ~BIT(9);
+> +	ew32(FEXTNVM8, mac_data);
+> +
+> +	/* Disable K1 off */
+> +	mac_data = er32(FEXTNVM6);
+> +	mac_data &= ~BIT(31);
+> +	ew32(FEXTNVM6, mac_data);
+> +
+> +	/* Disable Ungate PGCB clock */
+> +	mac_data = er32(FEXTNVM9);
+> +	mac_data |= BIT(28);
+> +	ew32(FEXTNVM9, mac_data);
+> +
+> +	/* Cancel not waking from dynamic
+> +	 * Power Gating with clock request
+> +	 */
+> +	mac_data = er32(FEXTNVM12);
+> +	mac_data &= ~BIT(12);
+> +	ew32(FEXTNVM12, mac_data);
+> +
+> +	/* Revert the lanphypc logic to use the internal Gbe counter
+> +	 * and not the PMC counter
+> +	 */
+> +	mac_data = er32(FEXTNVM5);
+> +	mac_data &= 0xFFFFFF7F;
+> +	ew32(FEXTNVM5, mac_data);
+>   }
+>   
+>   static int e1000e_pm_freeze(struct device *dev)
 
-Looks fine, thanks for the fix. You can add fixes tag and target it to a
-net tree.
+Doesn’t moving this out of the branch and running it unconditionally 
+affect a lot more systems than Meteor Lake?
 
-Reviewed-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 
-> -- 
-> 2.43.0
-> 
+Kind regards,
+
+Paul
