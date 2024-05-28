@@ -1,213 +1,101 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E0DB6C25B78
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 28 May 2024 16:00:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E4C08C25B78
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 28 May 2024 17:45:45 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 958BA41557;
-	Tue, 28 May 2024 16:00:52 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 84EF660EFD;
+	Tue, 28 May 2024 17:45:45 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id Ki4lyED7pC8l; Tue, 28 May 2024 17:45:42 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3929B60A5F
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1716918342;
+	bh=xlpBiK/R+XPpfCrWxMepKek7a11jmdI6mI/jhE1KdxY=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=DkevHf7KAbTq3nL77+82PNqj2cNBUqclaH++lvVybxgZB72bhLSM4EUex06tcWDcN
+	 2D17wD0Eom9/rY0ZQwm0VX5NSRUihonmo1l38XjemjHZiP2qa0dt/ho9Tc1Qko9E5j
+	 8gi2xuAA7k3jXypFl+dO5obQ7U8r6Au4ZhG16Rkgc51ds501++5GNQakYRVMPs3CRw
+	 eyBnTufQFZ9shoQJJwEQ0IMlP55Wu7kDOZOS3w+w+WXxPv+0sPwbCLKbepIX6vFMNJ
+	 hq8ezb64x7EHkoWSJvB2TRxk8pemQ5gJzQWgbhJQhSzSkEfS67Uu9CP/T5XEMjxNrv
+	 4TID2RRgx4Tsw==
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp3.osuosl.org (Postfix) with ESMTP id 3929B60A5F;
+	Tue, 28 May 2024 17:45:42 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 437D31D17CF
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 May 2024 17:45:40 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp2.osuosl.org (Postfix) with ESMTP id 2F0C94013B
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 May 2024 17:45:40 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id kRZTQGRkfemi; Tue, 28 May 2024 16:00:51 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 9E9FA41572
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1716912051;
-	bh=9+pA8rY8nay0fvrWiSVNBrgm8oieDpKx8Rr3tlD78nA=;
-	h=From:To:Date:References:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=zbuvNbq6QJ5IPK/G7RlKelFfsHj1fo171IbSnt9bzCbPErfqwkCUT58hwMd3FK/HP
-	 Taj2Z7RydbDWcIdPrdfnMDb8RQKR9BFJ+1ZJV+6DNFuPnb4/xTfyrPqx+7tNY3y7hX
-	 H4zX/WUWRXzt+1dBz9ZGtOtbEckEthuwdtNlu6kopA10r+WU15RqbmYlPqsMj+pZab
-	 aVycH4ViHZ+QQiVaWMOCm4UBlBbq/FYqyOfBasFnS9DzijTm1Y1DC2UQ3024wLXiXb
-	 ILsx8+/LBjfqOlh/pJAcwgFKDWRhWh8IFA8d83eiT52nic0HU6Jr+J08HFcgXuUEXm
-	 rlO5OhS+MmIyA==
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 9E9FA41572;
-	Tue, 28 May 2024 16:00:51 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 7A99C1D29FF
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 May 2024 16:00:47 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 6528F40582
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 May 2024 16:00:47 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id SraiZeacsgyq for <intel-wired-lan@lists.osuosl.org>;
- Tue, 28 May 2024 16:00:46 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.11;
- helo=mgamail.intel.com; envelope-from=himasekharx.reddy.pucha@intel.com;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org DA7D84051C
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org DA7D84051C
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.11])
- by smtp4.osuosl.org (Postfix) with ESMTPS id DA7D84051C
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 May 2024 16:00:45 +0000 (UTC)
-X-CSE-ConnectionGUID: vmGW/tMhT6yFIGaIdYBrDw==
-X-CSE-MsgGUID: 8zQOFq3LSZ6gdRjK3V1Xng==
-X-IronPort-AV: E=McAfee;i="6600,9927,11085"; a="23875171"
-X-IronPort-AV: E=Sophos;i="6.08,195,1712646000"; d="scan'208";a="23875171"
-Received: from orviesa005.jf.intel.com ([10.64.159.145])
- by fmvoesa105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 28 May 2024 09:00:34 -0700
-X-CSE-ConnectionGUID: l/9SV4jGQk22/NK5BaN+BQ==
-X-CSE-MsgGUID: T62lRdNkS86XmSXou5gEkQ==
+ id t_sYNea0eeFj for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 28 May 2024 17:45:39 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.14;
+ helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org CA0EC400B9
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org CA0EC400B9
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.14])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id CA0EC400B9
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 May 2024 17:45:38 +0000 (UTC)
+X-CSE-ConnectionGUID: AqwVw8jVQc6+bDotL+CSxA==
+X-CSE-MsgGUID: /r0gFkFLS8qX4A6Avjcd1Q==
+X-IronPort-AV: E=McAfee;i="6600,9927,11085"; a="13505881"
+X-IronPort-AV: E=Sophos;i="6.08,196,1712646000"; d="scan'208";a="13505881"
+Received: from fmviesa005.fm.intel.com ([10.60.135.145])
+ by fmvoesa108.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 28 May 2024 10:45:38 -0700
+X-CSE-ConnectionGUID: x3/T6SLIRtCoYgVeoKLVUA==
+X-CSE-MsgGUID: fhQL5Qx1StCvGMJZkuVQMQ==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.08,195,1712646000"; d="scan'208";a="39974688"
-Received: from fmsmsx602.amr.corp.intel.com ([10.18.126.82])
- by orviesa005.jf.intel.com with ESMTP/TLS/AES256-GCM-SHA384;
- 28 May 2024 09:00:33 -0700
-Received: from fmsmsx610.amr.corp.intel.com (10.18.126.90) by
- fmsmsx602.amr.corp.intel.com (10.18.126.82) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.39; Tue, 28 May 2024 09:00:33 -0700
-Received: from fmsedg602.ED.cps.intel.com (10.1.192.136) by
- fmsmsx610.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.39 via Frontend Transport; Tue, 28 May 2024 09:00:33 -0700
-Received: from NAM12-BN8-obe.outbound.protection.outlook.com (104.47.55.169)
- by edgegateway.intel.com (192.55.55.71) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.1.2507.39; Tue, 28 May 2024 09:00:33 -0700
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=K3ZJ1FUgGwBa+Qa8caUMpXGrqOuQMNEN1oAqDReMkTtYE1r5YQlksVlImmxe0FDQ7KoCh+dBiySWXurbnwco6Pl8lthLgvdk/uZIw99S55TjRzde5za3qrzng6fFOB/cBQ1FA10F00oFmWl4AJ7hRmgOYj8Auo/GKRhiY4Vj3Pa48/osFtpyyAOdpCZ2kyzRK1I/8f+rsMNgJvAxGAJyCQOHOVdPBGy7w+H9oA9VQgUDCEXGLX3kmsTAXiVBQCwl/0jdK3Pio1ci9GPxk9GNeK4E+btl5TKCYpTrzkf1JlcMO+9oQp8hmNaCwo+LzXfkcnDQNHRP/NLD3qjoX6RiIQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=9+pA8rY8nay0fvrWiSVNBrgm8oieDpKx8Rr3tlD78nA=;
- b=GMzz+6qawPRGx/jndAbza3fkrHSe8BvXupb+VWS3r/1GZa8KCVK4LSRcZRy0nTI5C9PvfvP9qe/InS3eAE12yD7rYG3SkJIhp2lRBAexWnkPhfoBxpajx/vRPabzZtTqEyT6ihWRdx3UmnUdvLZ7aAKhXP5Wy1JK2j2nMpHr5tw09xWx2vzsEQCnAPn6CTLup/fxJZLiK0aOFr4khlyPcH0h4ELpQIQzMK1ndaB8k/QUvBAUkZrFcQ+ni0Uw+Y0/dgY1xiHzVyWDPoBgJxn07wXK/2AjraU2FIcNBLOQNyM7gqiaizbNFdv4gAioO5OU4cPMi1Fh9m8oYtNtZROvhw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
- dkim=pass header.d=intel.com; arc=none
-Received: from CYYPR11MB8429.namprd11.prod.outlook.com (2603:10b6:930:c2::15)
- by SJ0PR11MB7701.namprd11.prod.outlook.com (2603:10b6:a03:4e4::5)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7633.17; Tue, 28 May
- 2024 16:00:29 +0000
-Received: from CYYPR11MB8429.namprd11.prod.outlook.com
- ([fe80::4f97:ad9d:79a9:899f]) by CYYPR11MB8429.namprd11.prod.outlook.com
- ([fe80::4f97:ad9d:79a9:899f%6]) with mapi id 15.20.7611.016; Tue, 28 May 2024
- 16:00:29 +0000
-From: "Pucha, HimasekharX Reddy" <himasekharx.reddy.pucha@intel.com>
-To: mschmidt <mschmidt@redhat.com>, "Brandeburg, Jesse"
- <jesse.brandeburg@intel.com>, "Nguyen, Anthony L"
- <anthony.l.nguyen@intel.com>, "intel-wired-lan@lists.osuosl.org"
- <intel-wired-lan@lists.osuosl.org>
-Thread-Topic: [Intel-wired-lan] [PATCH iwl-next] ice: use
- irq_update_affinity_hint()
-Thread-Index: AQHarJ26SQLRDeFtdkOWUljIoZHN47Gs0y8g
-Date: Tue, 28 May 2024 16:00:29 +0000
-Message-ID: <CYYPR11MB84290E94EB390A247995D8DABDF12@CYYPR11MB8429.namprd11.prod.outlook.com>
-References: <20240522231256.587985-1-mschmidt@redhat.com>
-In-Reply-To: <20240522231256.587985-1-mschmidt@redhat.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: CYYPR11MB8429:EE_|SJ0PR11MB7701:EE_
-x-ms-office365-filtering-correlation-id: b777b0f6-d544-4c8f-c809-08dc7f2f4bdb
-x-ld-processed: 46c98d88-e344-4ed4-8496-4ed7712e255d,ExtAddr
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam: BCL:0; ARA:13230031|376005|366007|1800799015|38070700009;
-x-microsoft-antispam-message-info: =?us-ascii?Q?6YR1Op8/QUFYy3d/ep9A7NZUdUdfgyh/ymMBXfXqO7RQ0QAIRI6CLFd3wjqG?=
- =?us-ascii?Q?vNR/EOVkUp1Yc4NkmQa55GzBgHVvXbNPpXKoIB9gb3dCZKLGiY9XywtBm/Tt?=
- =?us-ascii?Q?ORqSFAFicYcsP1jHdYLec7zjh69dpuFSuURh6stu++dVeOrLU8J6zZDrBC3F?=
- =?us-ascii?Q?D/Vwwp3gPubvG6LfUnB7nSsuwiV+8uoFa62v/lcllMf0LRC89+6Y060HZIOk?=
- =?us-ascii?Q?lOQHNt1sCOm5gfUujw2S2d7udSsnz9qFYfIObn54783m3T+yfzgi/LAtwxSW?=
- =?us-ascii?Q?VzQqKhPTpWRAWQ2BXRs8q5o6X9tf18BIsxvIGfiP+K4yOwScqk9UfoWAzTrS?=
- =?us-ascii?Q?mfS+dkIOMbHxkD+6C8ue+aYCfHqSRHLjaxuuuUPg+0hkcpn7je+RT+circgQ?=
- =?us-ascii?Q?mwkYtV7pAZISJ8stfycJ7NJMm50S15s1o5SVdnHBNhL4kNdASAxx2zitXvsr?=
- =?us-ascii?Q?PS+SgvHNCA443ZQOpmT8MxLirzeSFTs2NxN1WV3hjoKHzWd+iuXj4z6f1ozs?=
- =?us-ascii?Q?Q7+Q32fiDcK5NKqJP1FLl3YV0Hx9pVi0Cczla1j2BOTkMe5koIySj/8Aw3Ek?=
- =?us-ascii?Q?vK+waotGiOL4PmJHrn3EKC1xx78Xd8w/ixU6KorDF8VuNhZqeHaIcoaYWUrN?=
- =?us-ascii?Q?6qVS2udIkAx0uqwXVXNm6bA9Ov0tvhkYE9eZpBUlZdBcI8LO7XNqVKmdY1VA?=
- =?us-ascii?Q?NHXSA64CrEsv8dX2Ue0ex3qkyybW+n0ozD7/CTGP/CQATJRzaEemGd2N3u5J?=
- =?us-ascii?Q?UKZOWYufzXgm629FGJDvCA1krJ8fJ3pRnu1fWb4oEIsf4Cl5/mMTk8/Qw/LZ?=
- =?us-ascii?Q?q3rZRjuln71lLLPMiUkWpFo7wOxbYkG2DwqeIkvWu7CI2+o6TLroV42nGnMs?=
- =?us-ascii?Q?myDEAUQ8Yo7PB5ryhjaU4S5aMQITcaHlczblIl9rTJKLDPkr/2ZitvW97JNv?=
- =?us-ascii?Q?U5FNARaGbFp/iFz/hKwXZ/SaxVWx+Cwy1jyVSuVRniPMQk5nqtUGA8w10dwp?=
- =?us-ascii?Q?jyhMFT1CVWa7Q5r7o3zJGqCZlytDsbhvsiRkhidlDbeSq410CLQ6ckCnNawP?=
- =?us-ascii?Q?9FhbgvVYdQwbUno3RFUtcmtZXcaGq+ewsoIATCi7srOMCDDJL5PJ2vS6jehb?=
- =?us-ascii?Q?KYW+jfnxuHfzBvavmNgK21BYG9UgP1AtkIJ5yXslvcnbaLWcLXjnzVbTLHjT?=
- =?us-ascii?Q?WGfMrHs6e+sQt6UpqzEs0LdgoPLvRmAIJZ8Jf1fcLe8BqredBvSGuGM9Butf?=
- =?us-ascii?Q?/p61C++3dFrGHxdSxZ8mYF9PpHp2ZeqX09SYPugNkw=3D=3D?=
-x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:CYYPR11MB8429.namprd11.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230031)(376005)(366007)(1800799015)(38070700009); DIR:OUT; SFP:1101; 
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0: =?us-ascii?Q?pkR76sUKZXwLxIAfgZ7BKqw2G/35p7g3+ueMopdC8f2nt4L+yG8vsV0VwPA5?=
- =?us-ascii?Q?zT1m0qzSjkin17PrkyjK0Rd/+0VKholCdXh+P5ObO9dnVNiH0z9jw2z0TR0i?=
- =?us-ascii?Q?I8K7RPXdcXiaea3QSfYDendSaZsqkJRyHUJFGLQKuMzeYe9Ri+r238O2Czr7?=
- =?us-ascii?Q?azo+X71Aoz9t4RBcKaSafkbNW9nr5Q+kOEEkV/3VfGStD86zi30jlDVR8yVM?=
- =?us-ascii?Q?vPpY7sKYvQsn+enTDdtYC2gnQNvaMR5T3FTEz1ufTgLCewFamc8lZ19mCez9?=
- =?us-ascii?Q?84yUs8c8MxH/60tFeaKbZGXKDtd9FbCTOm2Sjlnnee+QLwXbSc+2ubVNGchs?=
- =?us-ascii?Q?OkCUuaCVfJ9pV7CANu72uJDTqHPhftsSN4U3pAFQvw8n/5mRcL3hgfR3+x5g?=
- =?us-ascii?Q?w//VJV5ELx2fckdFLelBPbvkVzUt7xuQflCa02XjTyrc/XcPIjqsERDxvUQ6?=
- =?us-ascii?Q?w9fMTeGTy5a8KboucCpyzrCGFIcoB/bvmGJ64SsFbV9Xmn9uL+j3WAGhtmJN?=
- =?us-ascii?Q?J0xdp7bdwQBzKQEW+fdBnWK1lT0vneXIUVwDWmnJC+Pm6MWZAQqS6NW0Z1Qw?=
- =?us-ascii?Q?Q6BGPLwPPJAjaA5OlNUePk4bEHd2zAGMH8R5eRqeQrfLTWDFfby3TfAv9b+p?=
- =?us-ascii?Q?bNVueuPdkg+N1cuBdC0GQhY4C7AbwnTGeR0Mg8dBAC0bWLjC7tNwc5RqD5Va?=
- =?us-ascii?Q?xXResFDJbR67hmocVPCLY+UtjwgM9MACDxC2ar4/kX4Z28fpFDWYybIJIagQ?=
- =?us-ascii?Q?HCV//g+ZWe6LuZ2efu3t+mbuvbe6KSBBpv0f+swF+6+90Ees8Hz7ZemEeL9S?=
- =?us-ascii?Q?sMt4nQQL5dPpp14tLHabBE80U29Cn+eHoP3niKfQ/qB8//CK2AEuIyhX95wE?=
- =?us-ascii?Q?zYMqDerwyrxuNI+38HsS7mnbFhYfD0n5iC+yLJ54u5v1GyH90ANIUp50mXbb?=
- =?us-ascii?Q?tEyv7JxqEamB4dN0ftVvAXUrwQdNmJfVrZPXySW2HTeflS0qVkVAFuXSU3sF?=
- =?us-ascii?Q?wASfsJwcM2+77k91AGMwTtJXlkhxoT1FxausKG7U6bcYt7Vytwog/NfX8cJL?=
- =?us-ascii?Q?NQPBW9Mgg/w5cgwrgnVU2rG5f45CggbVNtDwqCcYkmZO8ahIbyh2y83MhT2H?=
- =?us-ascii?Q?WFAiCsPeNNnmWwCshCr+rd1U4lKsHklvUhyjPjvZ2Tjs/iP3cAx+uI0+X+jN?=
- =?us-ascii?Q?PGHXp0EzExw2PkxDZjtjTM8aMAn2j3e8j7CtjAfjOTazzA2dkE8jjiO7eFKD?=
- =?us-ascii?Q?N8TrzHjbxZuBqxOFh1g0wOrCUyriYrHXcMBG9+PRJIFnSu4DjF3j0B18M4p8?=
- =?us-ascii?Q?SXiDjcBEtBkx/SaHACDgW7EPH5ICFs2BIduHMiw6G282/yEgeDLM+UZbDd/E?=
- =?us-ascii?Q?JaO1o6zUWm3Pon6T6PIeEn5i5Gnc8C17UdrYqLQqmHzGlLh08JvZO7D0Js/E?=
- =?us-ascii?Q?Tk2WgHIYGjJ1X//w9wCwzK5vqmaYccjy9hPpxSYnvc65bc67a+8ycMO1xSjJ?=
- =?us-ascii?Q?BJjNgMBhnfiUQCv3vZd8/haFluYxTZjsK9RqDvvVpkaELhHRuscmdsO84NAk?=
- =?us-ascii?Q?Ywoo2LQzIvFPCo/G3pRfZhVfmqe8HIWQrhl+G4WhX539cXVg+0CLN4Wv/jVU?=
- =?us-ascii?Q?rA=3D=3D?=
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+X-IronPort-AV: E=Sophos;i="6.08,196,1712646000"; d="scan'208";a="39564722"
+Received: from unknown (HELO 0610945e7d16) ([10.239.97.151])
+ by fmviesa005.fm.intel.com with ESMTP; 28 May 2024 10:45:35 -0700
+Received: from kbuild by 0610945e7d16 with local (Exim 4.96)
+ (envelope-from <lkp@intel.com>) id 1sC0tB-000CYt-2R;
+ Tue, 28 May 2024 17:45:33 +0000
+Date: Wed, 29 May 2024 01:44:58 +0800
+From: kernel test robot <lkp@intel.com>
+To: Maciej Fijalkowski <maciej.fijalkowski@intel.com>,
+ intel-wired-lan@lists.osuosl.org
+Message-ID: <202405290101.PV6Uluyq-lkp@intel.com>
+References: <20240528131429.3012910-7-maciej.fijalkowski@intel.com>
 MIME-Version: 1.0
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: CYYPR11MB8429.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: b777b0f6-d544-4c8f-c809-08dc7f2f4bdb
-X-MS-Exchange-CrossTenant-originalarrivaltime: 28 May 2024 16:00:29.2051 (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: 74f8PgbCZu7gjnfcnIT21NJ+6TWrbMpc6d32n0IaVKfp12FSwQhPbj4j8cvQG8Hb1oLiClurd55Gt5L1Hp5dmPCspa7oCzwREFjaRI7wG+Jm6BkfNqbQTLvAt10dkIjU
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ0PR11MB7701
-X-OriginatorOrg: intel.com
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240528131429.3012910-7-maciej.fijalkowski@intel.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1716912046; x=1748448046;
- h=from:to:cc:subject:date:message-id:references:
- in-reply-to:content-transfer-encoding:mime-version;
- bh=o4zAr70ax6KsENkNEqeTL1zDl9X0KR3Vbz0nn/B2PQc=;
- b=nj6Zr/yPvtJ0tnFkLpg0xQAHfhexO31et7QosUpvbLCfUrPdGnRyFa/n
- dtANs7cnldzCIzZ25pYVoVI+NIaC6uJvjd7BIUi4zg+tsJ/kDjiQxYjGT
- niscB9HqoGrjtpkElprWX5W+4tovwHVjL65sc51/ZQaU+Y+VbuS31jIln
- /tTjhvQBhytuhbHVJDPAxMmo+kqJKkfMrkocM7XpRps+sYuSQJ4npY9vG
- JeuBlOSFdsa3pAf3DBjh3Q/4sXgx4Zy1WMxnZZNmGaxnlI9XEbZIaEYX4
- nL02ixR24Ssr2MP7Px/C7o8+3rQr3RIcTkNnhZc6KqMSUxEQcnQROf6NZ
- A==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ t=1716918339; x=1748454339;
+ h=date:from:to:cc:subject:message-id:references:
+ mime-version:in-reply-to;
+ bh=9vOcETVh+eilOe61R58LgMPUxUJOYEm8medA2diVors=;
+ b=e0c3Cjwx3dEdFhUoFZQSHJqVzOR3vuybGYkzFhaBxOvdZ99RE4A0RNjV
+ GR8zqSFXLN6zYpAsKlhNcr0lJgSZ4AMdpUBoniLpqzo/30ZzWc1Bfs+q7
+ U7a3AODhlhN+GxQt8FIHad3LVlJob6ilvcfusiqC0j/fqfKVMbAijOTNp
+ i4XsweBp/FAsc0ZkM1X9PNdALGrulcxyKn/9rwxYFUwm4QYoU9wrxlAIi
+ FCEHW3ZBsdJ9x+mDnk/NSg5IczncHLjP3MEfbeEk+XHzv6rF3ZXfWl9jA
+ FppiYHltfvF3Awb0w4MJWcgpDIDrdwpblZCcWIevbHlNX8e+YbBUsEGpA
+ g==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=nj6Zr/yP
-X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=intel.com;
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next] ice: use
- irq_update_affinity_hint()
+ header.s=Intel header.b=e0c3Cjwx
+Subject: Re: [Intel-wired-lan] [PATCH iwl-net 06/11] ice: improve updating
+ ice_{t, r}x_ring::xsk_pool
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -220,53 +108,119 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>, Nitesh Narayan Lal <nitesh@redhat.com>
+Cc: Maciej Fijalkowski <maciej.fijalkowski@intel.com>, larysa.zaremba@intel.com,
+ netdev@vger.kernel.org, michal.kubiak@intel.com, anthony.l.nguyen@intel.com,
+ oe-kbuild-all@lists.linux.dev, magnus.karlsson@intel.com
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of M=
-ichal Schmidt
-> Sent: Thursday, May 23, 2024 4:43 AM
-> To: Brandeburg, Jesse <jesse.brandeburg@intel.com>; Nguyen, Anthony L <an=
-thony.l.nguyen@intel.com>; intel-wired-lan@lists.osuosl.org
-> Cc: netdev@vger.kernel.org; Thomas Gleixner <tglx@linutronix.de>; Nitesh =
-Narayan Lal <nitesh@redhat.com>
-> Subject: [Intel-wired-lan] [PATCH iwl-next] ice: use irq_update_affinity_=
-hint()
->
-> irq_set_affinity_hint() is deprecated. Use irq_update_affinity_hint() ins=
-tead. This removes the side-effect of actually applying the affinity.
->
-> The driver does not really need to worry about spreading its IRQs across =
-CPUs. The core code already takes care of that.
-> On the contrary, when the driver applies affinities by itself, it breaks =
-the users' expectations:
-> 1. The user configures irqbalance with IRQBALANCE_BANNED_CPULIST in
->     order to prevent IRQs from being moved to certain CPUs that run a
->     real-time workload.
->  2. ice reconfigures VSIs at runtime due to a MIB change
->     (ice_dcb_process_lldp_set_mib_change). Reopening a VSI resets the
->     affinity in ice_vsi_req_irq_msix().
->  3. ice has no idea about irqbalance's config, so it may move an IRQ to
->     a banned CPU. The real-time workload suffers unacceptable latency.
->
-> I am not sure if updating the affinity hints is at all useful, because ir=
-qbalance ignores them since 2016 ([1]), but at least it's harmless.
->
-> This ice change is similar to i40e commit d34c54d1739c ("i40e: Use irq_up=
-date_affinity_hint()").
->
-> [1] https://github.com/Irqbalance/irqbalance/commit/dcc411e7bfdd
->
-> Signed-off-by: Michal Schmidt <mschmidt@redhat.com>
-> ---
->  drivers/net/ethernet/intel/ice/ice_lib.c  | 4 ++--  drivers/net/ethernet=
-/intel/ice/ice_main.c | 4 ++--
->  2 files changed, 4 insertions(+), 4 deletions(-)
->
+Hi Maciej,
 
-Tested-by: Pucha Himasekhar Reddy <himasekharx.reddy.pucha@intel.com> (A Co=
-ntingent worker at Intel)
+kernel test robot noticed the following build warnings:
 
+[auto build test WARNING on tnguy-net-queue/dev-queue]
+
+url:    https://github.com/intel-lab-lkp/linux/commits/Maciej-Fijalkowski/ice-respect-netif-readiness-in-AF_XDP-ZC-related-ndo-s/20240528-211914
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
+patch link:    https://lore.kernel.org/r/20240528131429.3012910-7-maciej.fijalkowski%40intel.com
+patch subject: [Intel-wired-lan] [PATCH iwl-net 06/11] ice: improve updating ice_{t, r}x_ring::xsk_pool
+config: alpha-allyesconfig (https://download.01.org/0day-ci/archive/20240529/202405290101.PV6Uluyq-lkp@intel.com/config)
+compiler: alpha-linux-gcc (GCC) 13.2.0
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20240529/202405290101.PV6Uluyq-lkp@intel.com/reproduce)
+
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202405290101.PV6Uluyq-lkp@intel.com/
+
+All warnings (new ones prefixed by >>):
+
+>> drivers/net/ethernet/intel/ice/ice_xsk.c:476: warning: Function parameter or struct member 'xsk_pool' not described in '__ice_alloc_rx_bufs_zc'
+>> drivers/net/ethernet/intel/ice/ice_xsk.c:525: warning: Function parameter or struct member 'xsk_pool' not described in 'ice_alloc_rx_bufs_zc'
+>> drivers/net/ethernet/intel/ice/ice_xsk.c:980: warning: Function parameter or struct member 'xsk_pool' not described in 'ice_xmit_pkt'
+>> drivers/net/ethernet/intel/ice/ice_xsk.c:1005: warning: Function parameter or struct member 'xsk_pool' not described in 'ice_xmit_pkt_batch'
+>> drivers/net/ethernet/intel/ice/ice_xsk.c:1038: warning: Function parameter or struct member 'xsk_pool' not described in 'ice_fill_tx_hw_ring'
+
+
+vim +476 drivers/net/ethernet/intel/ice/ice_xsk.c
+
+3876ff525de70ae Maciej Fijalkowski     2022-01-25  462  
+3876ff525de70ae Maciej Fijalkowski     2022-01-25  463  /**
+3876ff525de70ae Maciej Fijalkowski     2022-01-25  464   * __ice_alloc_rx_bufs_zc - allocate a number of Rx buffers
+3876ff525de70ae Maciej Fijalkowski     2022-01-25  465   * @rx_ring: Rx ring
+3876ff525de70ae Maciej Fijalkowski     2022-01-25  466   * @count: The number of buffers to allocate
+3876ff525de70ae Maciej Fijalkowski     2022-01-25  467   *
+3876ff525de70ae Maciej Fijalkowski     2022-01-25  468   * Place the @count of descriptors onto Rx ring. Handle the ring wrap
+3876ff525de70ae Maciej Fijalkowski     2022-01-25  469   * for case where space from next_to_use up to the end of ring is less
+3876ff525de70ae Maciej Fijalkowski     2022-01-25  470   * than @count. Finally do a tail bump.
+3876ff525de70ae Maciej Fijalkowski     2022-01-25  471   *
+3876ff525de70ae Maciej Fijalkowski     2022-01-25  472   * Returns true if all allocations were successful, false if any fail.
+3876ff525de70ae Maciej Fijalkowski     2022-01-25  473   */
+290b7dad8f9f257 Maciej Fijalkowski     2024-05-28  474  static bool __ice_alloc_rx_bufs_zc(struct ice_rx_ring *rx_ring,
+290b7dad8f9f257 Maciej Fijalkowski     2024-05-28  475  				   struct xsk_buff_pool *xsk_pool,  u16 count)
+3876ff525de70ae Maciej Fijalkowski     2022-01-25 @476  {
+d1fc4c6feac18f8 Maciej Fijalkowski     2022-03-17  477  	u32 nb_buffs_extra = 0, nb_buffs = 0;
+3876ff525de70ae Maciej Fijalkowski     2022-01-25  478  	union ice_32b_rx_flex_desc *rx_desc;
+3876ff525de70ae Maciej Fijalkowski     2022-01-25  479  	u16 ntu = rx_ring->next_to_use;
+3876ff525de70ae Maciej Fijalkowski     2022-01-25  480  	u16 total_count = count;
+3876ff525de70ae Maciej Fijalkowski     2022-01-25  481  	struct xdp_buff **xdp;
+3876ff525de70ae Maciej Fijalkowski     2022-01-25  482  
+3876ff525de70ae Maciej Fijalkowski     2022-01-25  483  	rx_desc = ICE_RX_DESC(rx_ring, ntu);
+3876ff525de70ae Maciej Fijalkowski     2022-01-25  484  	xdp = ice_xdp_buf(rx_ring, ntu);
+3876ff525de70ae Maciej Fijalkowski     2022-01-25  485  
+3876ff525de70ae Maciej Fijalkowski     2022-01-25  486  	if (ntu + count >= rx_ring->count) {
+290b7dad8f9f257 Maciej Fijalkowski     2024-05-28  487  		nb_buffs_extra = ice_fill_rx_descs(xsk_pool, xdp, rx_desc,
+3876ff525de70ae Maciej Fijalkowski     2022-01-25  488  						   rx_ring->count - ntu);
+d1fc4c6feac18f8 Maciej Fijalkowski     2022-03-17  489  		if (nb_buffs_extra != rx_ring->count - ntu) {
+d1fc4c6feac18f8 Maciej Fijalkowski     2022-03-17  490  			ntu += nb_buffs_extra;
+d1fc4c6feac18f8 Maciej Fijalkowski     2022-03-17  491  			goto exit;
+d1fc4c6feac18f8 Maciej Fijalkowski     2022-03-17  492  		}
+3876ff525de70ae Maciej Fijalkowski     2022-01-25  493  		rx_desc = ICE_RX_DESC(rx_ring, 0);
+3876ff525de70ae Maciej Fijalkowski     2022-01-25  494  		xdp = ice_xdp_buf(rx_ring, 0);
+3876ff525de70ae Maciej Fijalkowski     2022-01-25  495  		ntu = 0;
+3876ff525de70ae Maciej Fijalkowski     2022-01-25  496  		count -= nb_buffs_extra;
+3876ff525de70ae Maciej Fijalkowski     2022-01-25  497  		ice_release_rx_desc(rx_ring, 0);
+3876ff525de70ae Maciej Fijalkowski     2022-01-25  498  	}
+3876ff525de70ae Maciej Fijalkowski     2022-01-25  499  
+290b7dad8f9f257 Maciej Fijalkowski     2024-05-28  500  	nb_buffs = ice_fill_rx_descs(xsk_pool, xdp, rx_desc, count);
+3876ff525de70ae Maciej Fijalkowski     2022-01-25  501  
+db804cfc21e969a Magnus Karlsson        2021-09-22  502  	ntu += nb_buffs;
+8b51a13c37c24c0 Maciej Fijalkowski     2021-12-13  503  	if (ntu == rx_ring->count)
+2d4238f55697221 Krzysztof Kazimierczak 2019-11-04  504  		ntu = 0;
+2d4238f55697221 Krzysztof Kazimierczak 2019-11-04  505  
+d1fc4c6feac18f8 Maciej Fijalkowski     2022-03-17  506  exit:
+3876ff525de70ae Maciej Fijalkowski     2022-01-25  507  	if (rx_ring->next_to_use != ntu)
+2d4238f55697221 Krzysztof Kazimierczak 2019-11-04  508  		ice_release_rx_desc(rx_ring, ntu);
+2d4238f55697221 Krzysztof Kazimierczak 2019-11-04  509  
+3876ff525de70ae Maciej Fijalkowski     2022-01-25  510  	return total_count == (nb_buffs_extra + nb_buffs);
+3876ff525de70ae Maciej Fijalkowski     2022-01-25  511  }
+3876ff525de70ae Maciej Fijalkowski     2022-01-25  512  
+3876ff525de70ae Maciej Fijalkowski     2022-01-25  513  /**
+3876ff525de70ae Maciej Fijalkowski     2022-01-25  514   * ice_alloc_rx_bufs_zc - allocate a number of Rx buffers
+3876ff525de70ae Maciej Fijalkowski     2022-01-25  515   * @rx_ring: Rx ring
+3876ff525de70ae Maciej Fijalkowski     2022-01-25  516   * @count: The number of buffers to allocate
+3876ff525de70ae Maciej Fijalkowski     2022-01-25  517   *
+3876ff525de70ae Maciej Fijalkowski     2022-01-25  518   * Wrapper for internal allocation routine; figure out how many tail
+3876ff525de70ae Maciej Fijalkowski     2022-01-25  519   * bumps should take place based on the given threshold
+3876ff525de70ae Maciej Fijalkowski     2022-01-25  520   *
+3876ff525de70ae Maciej Fijalkowski     2022-01-25  521   * Returns true if all calls to internal alloc routine succeeded
+3876ff525de70ae Maciej Fijalkowski     2022-01-25  522   */
+290b7dad8f9f257 Maciej Fijalkowski     2024-05-28  523  bool ice_alloc_rx_bufs_zc(struct ice_rx_ring *rx_ring,
+290b7dad8f9f257 Maciej Fijalkowski     2024-05-28  524  			  struct xsk_buff_pool *xsk_pool, u16 count)
+3876ff525de70ae Maciej Fijalkowski     2022-01-25 @525  {
+3876ff525de70ae Maciej Fijalkowski     2022-01-25  526  	u16 rx_thresh = ICE_RING_QUARTER(rx_ring);
+b3056ae2b57858b Maciej Fijalkowski     2022-09-01  527  	u16 leftover, i, tail_bumps;
+3876ff525de70ae Maciej Fijalkowski     2022-01-25  528  
+b3056ae2b57858b Maciej Fijalkowski     2022-09-01  529  	tail_bumps = count / rx_thresh;
+b3056ae2b57858b Maciej Fijalkowski     2022-09-01  530  	leftover = count - (tail_bumps * rx_thresh);
+3876ff525de70ae Maciej Fijalkowski     2022-01-25  531  
+3876ff525de70ae Maciej Fijalkowski     2022-01-25  532  	for (i = 0; i < tail_bumps; i++)
+290b7dad8f9f257 Maciej Fijalkowski     2024-05-28  533  		if (!__ice_alloc_rx_bufs_zc(rx_ring, xsk_pool, rx_thresh))
+3876ff525de70ae Maciej Fijalkowski     2022-01-25  534  			return false;
+290b7dad8f9f257 Maciej Fijalkowski     2024-05-28  535  	return __ice_alloc_rx_bufs_zc(rx_ring, xsk_pool, leftover);
+2d4238f55697221 Krzysztof Kazimierczak 2019-11-04  536  }
+2d4238f55697221 Krzysztof Kazimierczak 2019-11-04  537  
+
+-- 
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
