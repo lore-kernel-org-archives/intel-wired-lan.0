@@ -4,94 +4,92 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7B3CDC27C44
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 28 May 2024 13:16:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 58EB2C25B78
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 28 May 2024 13:49:23 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 412C88204F;
-	Tue, 28 May 2024 13:16:10 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 09D1B8188B;
+	Tue, 28 May 2024 13:49:23 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id nDFmO3bz-O1b; Tue, 28 May 2024 13:16:09 +0000 (UTC)
+ id UfIK-jBmx85r; Tue, 28 May 2024 13:49:22 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 5DC1F8201C
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org EF8C18176E
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1716902169;
-	bh=Cwu7aZMBSXTlKgHCwi7bZ3aEC5qexQDX5enqGT0f9tc=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=k0ONmDunPmimTUSCHGcSrjtyrtNLRRmboYySul2U6IT35c7FxIHv+l5rN8vJEgjJg
-	 OpE2OKhBtK/tWAtPN49TZRcRKGB6RvfGC8OAD4C/1cAdj2S/sCj8qrXRWiwk3R6Q/b
-	 jqUsyVnR50zsk5u+NetlNIXcj7tJo3MIYW0k1Utanyx1ebDz5yJ56XnFTG245NLhcC
-	 TGlOk1jwG7bZ5wbkr8VWFPItUpWLL/LbmMMPaq6zf9sh+GUNmbjgLXeqtVXJGWLALi
-	 WGAF63lUIJ7b6+ImHEfRhEWVq6bWzVPk/Ujn5rvWWwE1TTBVPuJSkyP5mEKFJNT/ht
-	 UGRB3gJjbcJ8A==
+	s=default; t=1716904162;
+	bh=K3lU1rDAYc1X3TBcZ7SmlyQJFUaGlUU0be4VYV7lxGA=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=4K17/P/5eXyXW5W+diBZWQJEDYMJO2qa2phEth77jQm31/uWDxtIZyxNlGHs04g3k
+	 hxraKQJOku23Hdz29TAC6c8w/nlaH3q7X/C7ySb0ZskR/h1akwu6Yeb5gipg6dXJPk
+	 /wileXurXTvIZPxjytdrnQpsHpg16YBJzlUXQBlPWVsjGw6ISPvO9OhEZh3q9gU1va
+	 w469kf5xs1W7qTJ0E40up+NnIUJqcRurm2Ubebo3m2cm42qDxjTErH3RIlUGjeAXF0
+	 x3K2Ml8wJsKNO6usXjttRXks1/QWJFMHtwzmkBWOXRlAeBxn8BEOpYglwKnmV62fY9
+	 5MTiTsuQKBPuA==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 5DC1F8201C;
-	Tue, 28 May 2024 13:16:09 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 5AFA51D2822
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 May 2024 13:16:05 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id EF8C18176E;
+	Tue, 28 May 2024 13:49:21 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 21C041D2868
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 May 2024 13:49:20 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 6640681FDE
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 May 2024 13:16:04 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 0D27E60841
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 May 2024 13:49:20 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 8PTSUxqZWM-z for <intel-wired-lan@lists.osuosl.org>;
- Tue, 28 May 2024 13:16:03 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.21;
- helo=mgamail.intel.com; envelope-from=maciej.fijalkowski@intel.com;
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id fYJxS292iT_D for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 28 May 2024 13:49:19 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.15;
+ helo=mgamail.intel.com; envelope-from=aleksander.lobakin@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 9534B81FD7
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9534B81FD7
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.21])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 9534B81FD7
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 May 2024 13:16:03 +0000 (UTC)
-X-CSE-ConnectionGUID: rmUHV9h+SK+2iIzrzCu/tw==
-X-CSE-MsgGUID: M8W7ZQ8vQJ6NOjUT1wCdHw==
-X-IronPort-AV: E=McAfee;i="6600,9927,11085"; a="13193579"
-X-IronPort-AV: E=Sophos;i="6.08,195,1712646000"; d="scan'208";a="13193579"
-Received: from orviesa003.jf.intel.com ([10.64.159.143])
- by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 28 May 2024 06:15:50 -0700
-X-CSE-ConnectionGUID: Tk+RovD3Rg21ao04H38rUg==
-X-CSE-MsgGUID: +kyv3pA3QH+wXIBzfQW+wQ==
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 1D05560784
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 1D05560784
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.15])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 1D05560784
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 May 2024 13:49:18 +0000 (UTC)
+X-CSE-ConnectionGUID: 1nJqFnhZQjyUnVkX3axYNQ==
+X-CSE-MsgGUID: 4AwSftJ9RNuavn3uwy17TA==
+X-IronPort-AV: E=McAfee;i="6600,9927,11085"; a="13436971"
+X-IronPort-AV: E=Sophos;i="6.08,195,1712646000"; d="scan'208";a="13436971"
+Received: from orviesa008.jf.intel.com ([10.64.159.148])
+ by fmvoesa109.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 28 May 2024 06:49:18 -0700
+X-CSE-ConnectionGUID: HsgTr1Q9QTGVYZLBynusyA==
+X-CSE-MsgGUID: MZgd4IstT7inPchGoX479A==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.08,195,1712646000"; d="scan'208";a="39891177"
-Received: from boxer.igk.intel.com ([10.102.20.173])
- by orviesa003.jf.intel.com with ESMTP; 28 May 2024 06:15:48 -0700
-From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+X-IronPort-AV: E=Sophos;i="6.08,195,1712646000"; d="scan'208";a="35577389"
+Received: from newjersey.igk.intel.com ([10.102.20.203])
+ by orviesa008.jf.intel.com with ESMTP; 28 May 2024 06:49:15 -0700
+From: Alexander Lobakin <aleksander.lobakin@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Tue, 28 May 2024 15:14:28 +0200
-Message-Id: <20240528131429.3012910-11-maciej.fijalkowski@intel.com>
-X-Mailer: git-send-email 2.35.3
-In-Reply-To: <20240528131429.3012910-1-maciej.fijalkowski@intel.com>
-References: <20240528131429.3012910-1-maciej.fijalkowski@intel.com>
+Date: Tue, 28 May 2024 15:48:34 +0200
+Message-ID: <20240528134846.148890-1-aleksander.lobakin@intel.com>
+X-Mailer: git-send-email 2.45.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1716902164; x=1748438164;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=ETPGhiS7aB5sus5c74yVshGkoE8DOPIbYrYn+PvjTzk=;
- b=haYBOoFzEVPkFTBhsGDgcQ21UXADfxzBNFoX5STglKgYj2makDjgYNVC
- GCW6pgGQ2/cshyvR0Pg2wVbCxf0ftV4/lMepA8oSLgi04S1pEm+0iI25D
- X19fNwnH6Jv1rZnBxFSpaM0OOvPKT9rAHMX55LKqd2rIFH8yn9w64OK6W
- j80uZDSF6XM6BNf+MUmksxUQvlBFcPwGUcMV7YFsvEnPeK3yS/7HmAU7n
- h7oOhZrXMuQjQ7RftJkuVXFxO04DBjtXl9QeXjNDuGzg7VYIwnB3H1wXk
- RVX4P3GCwl2T6PuxtLHV6HH5x1iH5jwtyEHNcCoWbvIRMzWj3r8QwpXXy
- w==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ t=1716904159; x=1748440159;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=N1n/J3TdFsoMMp9tMgptlou6ON9SzyuaBDHKPoaxhO0=;
+ b=AJapwwEDARSA0jgRc1mGnbyyzNkJx6n7Qg36Z0wX/UOcfAELbev1LesG
+ 9t9s3nHgsVlHGHKS0HTzRvRCq+AfZQSh/RSH7sdiFB8fSbORJ/aKMiZBB
+ 68qa8ucSBLmg8mX9auGsCLAkSmW6dRacybuocIoE62rbl5745b7NrkING
+ e844gSBn5RXba3bwQRg2q+T15C5AeVFPkEVsboy12rRnUosB8oog1FE7p
+ 4fzfZlFO1ZV4zvqYZQC5GREh0jxwTrxlEZXMp3BU7vbDz/mZyc6N9Sx10
+ On49IPKFesMnt8HaWrKNPdUldl18cSlbYxtevyhXVR/eYmdOH4vmIyvAr
+ Q==;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=haYBOoFz
-Subject: [Intel-wired-lan] [PATCH iwl-net 10/11] ice: lock with PF state
- instead of VSI state in ice_xsk_pool_setup()
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=AJapwwED
+Subject: [Intel-wired-lan] [PATCH iwl-next 00/12] idpf: XDP chapter I:
+ convert Rx to libeth
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -104,58 +102,92 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, michal.kubiak@intel.com, anthony.l.nguyen@intel.com,
- magnus.karlsson@intel.com, larysa.zaremba@intel.com
+Cc: Mina Almasry <almasrymina@google.com>, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Alexander Lobakin <aleksander.lobakin@intel.com>,
+ Eric Dumazet <edumazet@google.com>, Tony Nguyen <anthony.l.nguyen@intel.com>,
+ nex.sw.ncis.osdt.itp.upstreaming@intel.com, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>, "David S. Miller" <davem@davemloft.net>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Larysa Zaremba <larysa.zaremba@intel.com>
+XDP for idpf is currently 5 chapters:
+* convert Rx to libeth (this);
+* convert Tx and stats to libeth;
+* generic XDP and XSk code changes, libeth_xdp;
+* actual XDP for idpf via libeth_xdp;
+* XSk for idpf (^).
 
-The main intent of using ICE_CFG_BUSY is to prevent the reset from
-starting, when other configuration is being processed. pf->state is checked
-before starting reset, but ice_xsk_pool_setup sets the flag in vsi->state,
-which is almost useless. Also, ICE_CFG_BUSY belongs to enum ice_pf_state,
-not ice_vsi_state.
+Part I does the following:
+* splits &idpf_queue into 4 (RQ, SQ, FQ, CQ) and puts them on a diet;
+* ensures optimal cacheline placement, strictly asserts CL sizes;
+* moves currently unused/dead singleq mode out of line;
+* reuses libeth's Rx ptype definitions and helpers;
+* uses libeth's Rx buffer management for both header and payload;
+* eliminates memcpy()s and coherent DMA uses on hotpath, uses
+  napi_build_skb() instead of in-place short skb allocation.
 
-Change vsi->state to pf->state in ice_xsk_pool_setup() locking code, so
-reset would not interfere with AF_XDP configuration.
+Most idpf patches, except for the queue split, removes more lines
+than adds.
+Expect far better memory utilization and +5-8% on Rx depending on
+the case (+17% on skb XDP_DROP :>).
 
-Fixes: 2d4238f55697 ("ice: Add support for AF_XDP")
-Signed-off-by: Larysa Zaremba <larysa.zaremba@intel.com>
+Alexander Lobakin (12):
+  libeth: add cacheline / struct alignment helpers
+  idpf: stop using macros for accessing queue descriptors
+  idpf: split &idpf_queue into 4 strictly-typed queue structures
+  idpf: avoid bloating &idpf_q_vector with big %NR_CPUS
+  idpf: strictly assert cachelines of queue and queue vector structures
+  idpf: merge singleq and splitq &net_device_ops
+  idpf: compile singleq code only under default-n CONFIG_IDPF_SINGLEQ
+  idpf: reuse libeth's definitions of parsed ptype structures
+  idpf: remove legacy Page Pool Ethtool stats
+  libeth: support different types of buffers for Rx
+  idpf: convert header split mode to libeth + napi_build_skb()
+  idpf: use libeth Rx buffer management for payload buffer
+
+ drivers/net/ethernet/intel/Kconfig            |   13 +-
+ drivers/net/ethernet/intel/idpf/Kconfig       |   26 +
+ drivers/net/ethernet/intel/idpf/Makefile      |    3 +-
+ scripts/kernel-doc                            |    1 +
+ drivers/net/ethernet/intel/idpf/idpf.h        |   11 +-
+ .../net/ethernet/intel/idpf/idpf_lan_txrx.h   |    2 +
+ drivers/net/ethernet/intel/idpf/idpf_txrx.h   |  800 +++++-----
+ include/net/libeth/cache.h                    |  100 ++
+ include/net/libeth/rx.h                       |   19 +
+ .../net/ethernet/intel/idpf/idpf_ethtool.c    |  152 +-
+ drivers/net/ethernet/intel/idpf/idpf_lib.c    |   88 +-
+ drivers/net/ethernet/intel/idpf/idpf_main.c   |    1 +
+ .../ethernet/intel/idpf/idpf_singleq_txrx.c   |  311 ++--
+ drivers/net/ethernet/intel/idpf/idpf_txrx.c   | 1410 +++++++++--------
+ .../net/ethernet/intel/idpf/idpf_virtchnl.c   |  178 ++-
+ drivers/net/ethernet/intel/libeth/rx.c        |  132 +-
+ 16 files changed, 1824 insertions(+), 1423 deletions(-)
+ create mode 100644 drivers/net/ethernet/intel/idpf/Kconfig
+ create mode 100644 include/net/libeth/cache.h
+
 ---
- drivers/net/ethernet/intel/ice/ice_xsk.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+Applies on top of "idpf: don't enable NAPI and interrupts prior to
+allocating Rx buffers" from the -net tree, otherwise may work unstable.
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_xsk.c b/drivers/net/ethernet/intel/ice/ice_xsk.c
-index fe4aa4b537dd..225d027d3d7a 100644
---- a/drivers/net/ethernet/intel/ice/ice_xsk.c
-+++ b/drivers/net/ethernet/intel/ice/ice_xsk.c
-@@ -370,6 +370,7 @@ int ice_xsk_pool_setup(struct ice_vsi *vsi, struct xsk_buff_pool *pool, u16 qid)
- {
- 	bool if_running, pool_present = !!pool;
- 	int ret = 0, pool_failure = 0;
-+	struct ice_pf *pf = vsi->back;
- 
- 	if (qid >= vsi->num_rxq || qid >= vsi->num_txq) {
- 		netdev_err(vsi->netdev, "Please use queue id in scope of combined queues count\n");
-@@ -383,7 +384,7 @@ int ice_xsk_pool_setup(struct ice_vsi *vsi, struct xsk_buff_pool *pool, u16 qid)
- 		struct ice_rx_ring *rx_ring = vsi->rx_rings[qid];
- 		int timeout = 50;
- 
--		while (test_and_set_bit(ICE_CFG_BUSY, vsi->state)) {
-+		while (test_and_set_bit(ICE_CFG_BUSY, pf->state)) {
- 			timeout--;
- 			if (!timeout)
- 				return -EBUSY;
-@@ -411,7 +412,7 @@ int ice_xsk_pool_setup(struct ice_vsi *vsi, struct xsk_buff_pool *pool, u16 qid)
- 			napi_schedule(&vsi->rx_rings[qid]->xdp_ring->q_vector->napi);
- 		else if (ret)
- 			netdev_err(vsi->netdev, "ice_qp_ena error = %d\n", ret);
--		clear_bit(ICE_CFG_BUSY, vsi->state);
-+		clear_bit(ICE_CFG_BUSY, pf->state);
- 	}
- 
- failure:
+From RFC[0]:
+*  *: add kdocs where needed and fix the existing ones to build cleanly;
+      fix minor checkpatch and codespell warnings;
+      add RBs from Przemek;
+* 01: fix kdoc script to understand new libeth_cacheline_group() macro;
+      add an additional assert for queue struct alignment;
+* 02: pick RB from Mina;
+* 06: make idpf_chk_linearize() static as it's now used only in one file;
+* 07: rephrase the commitmsg: HW supports it, but never wants;
+* 08: fix crashes on some configurations (Mina);
+* 11: constify header buffer pointer in idpf_rx_hsplit_wa().
+
+Testing hints: basic Rx regression tests (+ perf and memory usage
+before/after if needed).
+
+Note that I'm on a vacation starting 30th May and return 10th of June.
+I may sometimes reply, but no new versions in the meantime =\
+
+[0] https://lore.kernel.org/netdev/20240510152620.2227312-1-aleksander.lobakin@intel.com
 -- 
-2.34.1
+2.45.1
 
