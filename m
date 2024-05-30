@@ -1,96 +1,87 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DA485C25B75
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 29 May 2024 22:23:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C1762C25B75
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 30 May 2024 01:34:15 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 8CBB7403C4;
-	Wed, 29 May 2024 22:23:01 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id PcsbKdNPkZQt; Wed, 29 May 2024 22:22:59 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 7DB1540195
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1717021379;
-	bh=EHYtYmn1b+2O3tP3fda3tkdeBaiPk1qZAqsszTEBJzY=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=5/M1Daign0gVLnmExY+Wpj2dvHvU4vwbY9kwX5mE5GZ/5Jar6Pcudu4u5vemMzgdD
-	 RSUN6o2fW/a5iid8qW+OmaJ4uH44qmfrT0u5JZ/n7vpU/DlMQX0VpAqgHHTXayWvlY
-	 24D1QnQIsgCzM8b1KYeumatoa2ENKNEiG0qWejd9spi5/76OHuuPktMo7m2IQGI+/9
-	 vKZrLki7LVHBWpbfNRiHSWXIp6N8gIxkDs2yNIAZSUFED3ROWxnGhoglXXsMsZ83JN
-	 kq00YtCy+k97Lr4kLAM9/z0CuZyHEw9BOaMtiBHVDZe6MGvI+iYSgP/maNm0xLHug7
-	 UryxPDW2W1UYw==
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 7DB1540195;
-	Wed, 29 May 2024 22:22:59 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 83CFF1D32A0
- for <intel-wired-lan@lists.osuosl.org>; Wed, 29 May 2024 07:20:43 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 7A9DB81772
- for <intel-wired-lan@lists.osuosl.org>; Wed, 29 May 2024 07:20:43 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 5F1BC81248;
+	Thu, 30 May 2024 01:34:15 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id DP0tri_nffIV for <intel-wired-lan@lists.osuosl.org>;
- Wed, 29 May 2024 07:20:42 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.11;
- helo=mgamail.intel.com; envelope-from=karen.ostrowska@intel.com;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org B538281236
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B538281236
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.11])
- by smtp1.osuosl.org (Postfix) with ESMTPS id B538281236
- for <intel-wired-lan@lists.osuosl.org>; Wed, 29 May 2024 07:20:42 +0000 (UTC)
-X-CSE-ConnectionGUID: K6nhZ/yRS42a4NRU3Jfh6w==
-X-CSE-MsgGUID: omWRjnkYTMOFKdfV32TOqg==
-X-IronPort-AV: E=McAfee;i="6600,9927,11085"; a="23908583"
-X-IronPort-AV: E=Sophos;i="6.08,197,1712646000"; d="scan'208";a="23908583"
-Received: from fmviesa007.fm.intel.com ([10.60.135.147])
- by orvoesa103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 29 May 2024 00:20:42 -0700
-X-CSE-ConnectionGUID: PujpZo6DTIaqZ8E9ieU4qA==
-X-CSE-MsgGUID: m8YvJwBUQi6vm8EdmM6K3w==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.08,197,1712646000"; d="scan'208";a="35295623"
-Received: from unknown (HELO os-delivery.igk.intel.com) ([10.123.220.50])
- by fmviesa007.fm.intel.com with ESMTP; 29 May 2024 00:20:40 -0700
-From: Karen Ostrowska <karen.ostrowska@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Date: Wed, 29 May 2024 09:17:36 +0200
-Message-Id: <20240529071736.224973-1-karen.ostrowska@intel.com>
-X-Mailer: git-send-email 2.31.1
+ id UIlNP2G1YQKJ; Thu, 30 May 2024 01:34:14 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B63B18119C
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1717032854;
+	bh=RaSh+5Qr1Ehe9VBmBTLYUh3T4jmAwQF+YldRp59gM6I=;
+	h=Date:From:To:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=unO6tegqhlkj3SRxEAwszKePDT/oaLvzN+ek6AxAoNUXV4cmzmcFY+LZYghYXVNfE
+	 u658Izp061Aevo7SxgqkmMbOGr11ohbf6AjfEjIt/Nr/pE4W85dd79dZYkGPc51DeJ
+	 5aH9gdICNy3bmoJgJyAJQeogz2UGQ9IpgoBeLL0WauYbtohValI9ehCOdDIHhgvAfY
+	 g4foOb7C7qj+HPumvBEf7x6rJXABJ+aOMN4h+MUkEz0lVZK2suzkSJ7qZ9K5dNK+ZW
+	 ZboM/7OClCBa/LDL3Bg736Psb2AvzPl5mMppD2cruRU8CIo7on2WW2ER7UHKl4XD4I
+	 uS8X0ihakp2dQ==
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp1.osuosl.org (Postfix) with ESMTP id B63B18119C;
+	Thu, 30 May 2024 01:34:14 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 3B9BB1D402E
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 30 May 2024 01:34:13 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp2.osuosl.org (Postfix) with ESMTP id 33B7841380
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 30 May 2024 01:34:13 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id gfR98bvBDQfQ for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 30 May 2024 01:34:12 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=139.178.84.217;
+ helo=dfw.source.kernel.org; envelope-from=kuba@kernel.org; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 82AA84137C
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 82AA84137C
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 82AA84137C
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 30 May 2024 01:34:12 +0000 (UTC)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+ by dfw.source.kernel.org (Postfix) with ESMTP id 0BC4662013;
+ Thu, 30 May 2024 01:34:11 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3FAB7C113CC;
+ Thu, 30 May 2024 01:34:10 +0000 (UTC)
+Date: Wed, 29 May 2024 18:34:09 -0700
+From: Jakub Kicinski <kuba@kernel.org>
+To: Alexander Lobakin <aleksander.lobakin@intel.com>
+Message-ID: <20240529183409.29a914c2@kernel.org>
+In-Reply-To: <20240528134846.148890-2-aleksander.lobakin@intel.com>
+References: <20240528134846.148890-1-aleksander.lobakin@intel.com>
+ <20240528134846.148890-2-aleksander.lobakin@intel.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Mailman-Approved-At: Wed, 29 May 2024 22:22:58 +0000
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1716967243; x=1748503243;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=mlvptsq7XkvG6wp3U0Gjq2yqNUa4cp9Vs6EwoVYz544=;
- b=InEB0TJ6EB+naAyv4sK5pBGbxJ2RUkMgW6jO2yTKC27uwPDcsfyIfCfd
- 5qg2YKGUsD2qNSQODdJuEOJJs7Z2RqC7H1PcN4F6bLk9/Y5OukP+x/lGQ
- o0vyNLlnrnwd6F16DXLslvxqAnVJROWhlX+POBWdDdmUGb66VMY82+moE
- frFKnOVGfhYstSD3uCjcKnw6Yzl5diT9yEDmqKrlvweC4+ClRKICuOOYJ
- ulEHBczIJqA6tCi/E3o0cl40rZWALkhgmbC5/dD/V7SfGLypPCIctLxv8
- JczW06TqeTaHB148DV86pq4s48WcLwh/BNMoMNRMvoMEbS7X61WbPpLRw
- w==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ d=kernel.org; s=k20201202; t=1717032850;
+ bh=KyrREIinnHGspd2GO6w7tcxvikzFHN7sskNsxhF0axQ=;
+ h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+ b=X4Y9AxLytN8XEXvwFHoPdyYKFMJsQmhT7n9yvOt0VPfv54o+52u5v+dlViEl5jgkc
+ 69eVnHAIj/0G0eJHDStXhNrRcfpDVqQ9UJCRARg/IPxwl4sPtYnYBg9U/ou/cYQml/
+ bS7YOX5X8rXOpwMuquxOzrEm2JY2kvlOkxGUrdQsfPQA5Fi50Q0yLqtEUoHf5entl3
+ m8JL6gX0Z8IV4zOGAboXj1mwVwhQZsz0tlZxu2bQPcrX7AM/9qwAUV6sjH/MjMag3c
+ oCZYaAwndTMgFx18KcwvRaFcZ65kI7IeWJfRpe5zYZ1dZ4CFmYzeUv8Qr0enk9/GzP
+ l/rkRhSikAYOg==
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none)
- header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ header.from=kernel.org
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=InEB0TJ6
-Subject: [Intel-wired-lan] [PATCH iwl-net v1] ice: Rebuild TC queues on VSI
- queue reconfiguration
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=X4Y9AxLy
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next 01/12] libeth: add cacheline
+ / struct alignment helpers
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,55 +94,30 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Karen Ostrowska <karen.ostrowska@intel.com>, netdev@vger.kernel.org,
- Jan Sokolowski <jan.sokolowski@intel.com>,
- Wojciech Drewek <wojciech.drewek@intel.com>
+Cc: Mina Almasry <almasrymina@google.com>, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Eric Dumazet <edumazet@google.com>,
+ Tony Nguyen <anthony.l.nguyen@intel.com>,
+ nex.sw.ncis.osdt.itp.upstreaming@intel.com, intel-wired-lan@lists.osuosl.org,
+ Paolo Abeni <pabeni@redhat.com>, "David S. Miller" <davem@davemloft.net>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Jan Sokolowski <jan.sokolowski@intel.com>
+On Tue, 28 May 2024 15:48:35 +0200 Alexander Lobakin wrote:
+> diff --git a/scripts/kernel-doc b/scripts/kernel-doc
+> index 95a59ac78f82..d0cf9a2d82de 100755
+> --- a/scripts/kernel-doc
+> +++ b/scripts/kernel-doc
+> @@ -1155,6 +1155,7 @@ sub dump_struct($$) {
+>          $members =~ s/\bstruct_group_attr\s*\(([^,]*,){2}/STRUCT_GROUP(/gos;
+>          $members =~ s/\bstruct_group_tagged\s*\(([^,]*),([^,]*),/struct $1 $2; STRUCT_GROUP(/gos;
+>          $members =~ s/\b__struct_group\s*\(([^,]*,){3}/STRUCT_GROUP(/gos;
+> +        $members =~ s/\blibeth_cacheline_group\s*\(([^,]*,)/struct { } $1; STRUCT_GROUP(/gos;
+>          $members =~ s/\bSTRUCT_GROUP(\(((?:(?>[^)(]+)|(?1))*)\))[^;]*;/$2/gos;
+>  
+>          my $args = qr{([^,)]+)};
 
-TC queues needs to be correctly updated when the number of queues on
-a VSI is reconfigured, so netdev's queue and TC settings will be
-dynamically adjusted and could accurately represent the underlying
-hardware state after changes to the VSI queue counts.
-
-Fixes: 0754d65bd4be ("ice: Add infrastructure for mqprio support via ndo_setup_tc")
-Reviewed-by: Wojciech Drewek <wojciech.drewek@intel.com>
-Signed-off-by: Jan Sokolowski <jan.sokolowski@intel.com>
-Signed-off-by: Karen Ostrowska <karen.ostrowska@intel.com>
----
- drivers/net/ethernet/intel/ice/ice_main.c | 10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 1b61ca3a6eb6..a1798ec4d904 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -4136,7 +4136,7 @@ bool ice_is_wol_supported(struct ice_hw *hw)
- int ice_vsi_recfg_qs(struct ice_vsi *vsi, int new_rx, int new_tx, bool locked)
- {
- 	struct ice_pf *pf = vsi->back;
--	int err = 0, timeout = 50;
-+	int i, err = 0, timeout = 50;
- 
- 	if (!new_rx && !new_tx)
- 		return -EINVAL;
-@@ -4162,6 +4162,14 @@ int ice_vsi_recfg_qs(struct ice_vsi *vsi, int new_rx, int new_tx, bool locked)
- 
- 	ice_vsi_close(vsi);
- 	ice_vsi_rebuild(vsi, ICE_VSI_FLAG_NO_INIT);
-+
-+	ice_for_each_traffic_class(i) {
-+		if (vsi->tc_cfg.ena_tc & BIT(i))
-+			netdev_set_tc_queue(vsi->netdev,
-+					    vsi->tc_cfg.tc_info[i].netdev_tc,
-+					    vsi->tc_cfg.tc_info[i].qcount_tx,
-+					    vsi->tc_cfg.tc_info[i].qoffset);
-+	}
- 	ice_pf_dcb_recfg(pf, locked);
- 	ice_vsi_open(vsi);
- done:
--- 
-2.31.1
-
+Having per-driver grouping defines is a no-go.
+Do you need the defines in the first place?
+Are you sure the assert you're adding are not going to explode
+on some weird arch? Honestly, patch 5 feels like a little too
+much for a driver..
