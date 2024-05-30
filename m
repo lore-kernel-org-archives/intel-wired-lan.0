@@ -1,120 +1,115 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C5FC3C27C44
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 30 May 2024 14:21:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0469EC25B74
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 30 May 2024 17:11:18 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 787954094B;
-	Thu, 30 May 2024 14:21:46 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 984D14199B;
+	Thu, 30 May 2024 17:11:18 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id IbGVA33s-3DF; Thu, 30 May 2024 14:21:45 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id tXebuYQY1obY; Thu, 30 May 2024 17:11:17 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org F115D40151
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 704634178F
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1717078905;
-	bh=B2vGdF2dGkt21QsIPszG+5j1gbhrGScywHg+DXLmaj8=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=du30McqWwbxpq4jDdT1BujWQFvp0eNRnKYQCKE0WQ/CEuth+rqCh0J2ypBHK7LVfT
-	 Ac7DeGxZBeaHkE+pSqqJ9a6EO9qKpRA+KIE6pBckOU5N9P5V537mW3OUG4OUMQ9gLO
-	 iT3jrzWSb/M3H0BUk/QeLL7krHiiX43VcyeMsyhLqtsyeLdUGJucr2QDXy7yTDZAm5
-	 WWLcv9QBdWtJInqXHiRro0rQIhi2y9PG6QlE5jXdhpKu+Dm0a+bWiHdzkoJiRCPHp+
-	 N0nHFJUqUf1dpWj+eaZOqJaar/9J6ajyNpWJGZ7Ykec6iUCfu6HQ8cD51Qr0GD3nCO
-	 ATt1gdGhKePpg==
+	s=default; t=1717089077;
+	bh=b5dMIK+YmRjKcd+w3hKSLG4KLhKC/IhFM8M8zHEuCAE=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=hD+aZ4GXvf3sAEPhltEOso3achH47NIT+qpHPd5cex/d7zme6zPAQPgf/5KRQ0NR2
+	 iZxnKe6xAoBnBe06e+I4DqaCLk7K5URv/mJS55R2P2DalWnhkBNbIsJFoDF0bC4LPm
+	 Z5HLG66NCPa6YZ1HmYwxOKwU1DNGYOVLFb2RP9Oq2ynTU1dNgCsgEMd7wbV3i3n1mJ
+	 pdsTOohMz0r31hp8faTsJUE0UXeX9vGVeyAMIQYz5Us2rO4hlFxk1zYwsDqjh54FVB
+	 sPp6jpPkMNlrMQhYvpQLrvG6JePRfrdg2R67oagVsShqutQHeOs0WpaIxomU2RvCQs
+	 25OQi/MnAThIw==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id F115D40151;
-	Thu, 30 May 2024 14:21:44 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id A69C11D476F
- for <intel-wired-lan@lists.osuosl.org>; Thu, 30 May 2024 14:21:43 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 704634178F;
+	Thu, 30 May 2024 17:11:17 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id A984E1D48F3
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 30 May 2024 17:11:16 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 90B50842BB
- for <intel-wired-lan@lists.osuosl.org>; Thu, 30 May 2024 14:21:43 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 947A86062A
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 30 May 2024 17:11:16 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id apk_sw8ini9u for <intel-wired-lan@lists.osuosl.org>;
- Thu, 30 May 2024 14:21:42 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=185.125.188.123;
- helo=smtp-relay-internal-1.canonical.com;
- envelope-from=en-wei.wu@canonical.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 1B86B84294
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 1B86B84294
-Received: from smtp-relay-internal-1.canonical.com
- (smtp-relay-internal-1.canonical.com [185.125.188.123])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 1B86B84294
- for <intel-wired-lan@lists.osuosl.org>; Thu, 30 May 2024 14:21:41 +0000 (UTC)
-Received: from mail-pl1-f197.google.com (mail-pl1-f197.google.com
- [209.85.214.197])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by smtp-relay-internal-1.canonical.com (Postfix) with ESMTPS id 443033F316
- for <intel-wired-lan@lists.osuosl.org>; Thu, 30 May 2024 14:21:39 +0000 (UTC)
-Received: by mail-pl1-f197.google.com with SMTP id
- d9443c01a7336-1f4f00cff60so9516295ad.0
- for <intel-wired-lan@lists.osuosl.org>; Thu, 30 May 2024 07:21:39 -0700 (PDT)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id u84mgVo8n_YN for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 30 May 2024 17:11:15 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2607:f8b0:4864:20::634; helo=mail-pl1-x634.google.com;
+ envelope-from=yury.norov@gmail.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 28DF6605E7
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 28DF6605E7
+Received: from mail-pl1-x634.google.com (mail-pl1-x634.google.com
+ [IPv6:2607:f8b0:4864:20::634])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 28DF6605E7
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 30 May 2024 17:11:15 +0000 (UTC)
+Received: by mail-pl1-x634.google.com with SMTP id
+ d9443c01a7336-1f480624d0fso9139295ad.1
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 30 May 2024 10:11:14 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20230601; t=1717078898; x=1717683698;
- h=content-transfer-encoding:mime-version:message-id:date:subject:cc
- :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
- :reply-to;
- bh=B2vGdF2dGkt21QsIPszG+5j1gbhrGScywHg+DXLmaj8=;
- b=dK3zMTZTB5mxkChxXRj1zHKMN7L9mbbjJqsMNykhwGZ+Eop+RDajZE4lbEc9OYCvEq
- RFnVG0UqiKdmTQKEu1R2ceEhPOfNXNy63jaA1iCHX2TwBg/oCe5GKNbjFxqu51EbUnFN
- LxekhzT0bsQD6nRjhoT43D3gy3NSj/sqs76vHGtmziPVnEIl/m0Qz2PMGlX3zfOzqACu
- nA38tV2xKrYsS7QOt112xjcThl3pNKlMixiW4WEGJmASL+/VcOkJISn21TUYJuH7p9pO
- dBMzXBJcTWichnw+ylr+HDFrfQxS5jIQBHxVcH1a0dyn6U/2c09sU+a6m95WXYGQOF2O
- Fjnw==
+ d=1e100.net; s=20230601; t=1717089074; x=1717693874;
+ h=in-reply-to:content-transfer-encoding:content-disposition
+ :mime-version:references:message-id:subject:cc:to:from:date
+ :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+ bh=b5dMIK+YmRjKcd+w3hKSLG4KLhKC/IhFM8M8zHEuCAE=;
+ b=NLFKee1NaFbWXNNK194q39xs4yvJMHgNkS1VbskEL8elvZu1KkaSdvYm+Zw0oNG/8f
+ dZHiSbYIXQVK+HyfzFLot7gWcxbF4WJs9TZ3WUZuQ33HaOxKsbax7c8eCq8svBvmvfw4
+ TLn5Jomx9d4IfFsrru9/RxxMjy7+w+UO+XJ/1K7RCZUSH9sw00qx5R21PF6RaZZTPYW6
+ zy4E6tc/yrZTF7zTf6nwiA6yhjQ5SgtCkKWgzSliRciz/uuVQeZNkZRMye6ttli0yhov
+ XOgHNEPgteWF1xWgQi1k56iwRI2ewPFD/x5ycreVfzifzKussnMRswHSCvU8gQAO5sdc
+ MRqQ==
 X-Forwarded-Encrypted: i=1;
- AJvYcCXiagxHnN1H9YvbWUZM0ltnT5pTBoh9uQGqX3c62nS5ipCR2TyLvzaKnfnQjiMa+esqdC62xm1Vh5RZZqqfiEjV0oFcFZjkiYz2GycQ0ZOcrw==
-X-Gm-Message-State: AOJu0YwpS5rqnmCVgtsHIEOq7q0N/CYH0tijp+5ZdTcOcqykHDkfrOSu
- 3RI+f/L5DjRfJQBMQmqUZkTfG5ZLCr2VBHok5lUEwxTa57MYn/q4FG3bHtOXHVwNkzNEjQ6AE4Z
- F9ZX0Oo9UsGri1fO28tMpYDl/+kxphOfp9aMSj44FK7gLyGz7uS4RE78HI0nbgP90LlUpb/FGMr
- DmVA7QxKc=
-X-Received: by 2002:a17:903:234f:b0:1f4:6252:dba9 with SMTP id
- d9443c01a7336-1f6192ed35bmr21911695ad.9.1717078897726; 
- Thu, 30 May 2024 07:21:37 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IFj4WhAEo6jH3/j42l91y2guETPciufxMGGZdNuOrkvNj5+sjOxoLTEayUXIdr7icIln7gdog==
-X-Received: by 2002:a17:903:234f:b0:1f4:6252:dba9 with SMTP id
- d9443c01a7336-1f6192ed35bmr21911375ad.9.1717078897341; 
- Thu, 30 May 2024 07:21:37 -0700 (PDT)
-Received: from rickywu0421-ThinkPad-X1-Carbon-Gen-11.. ([150.116.44.221])
- by smtp.gmail.com with ESMTPSA id
- d9443c01a7336-1f44c967cd2sm118577925ad.166.2024.05.30.07.21.33
+ AJvYcCWrEaEzcWzyYx5XCeBEHgAYJviOe1je7dow5AwqXWW62NYec1azsL2qPDAZ8Z2GI2xMmsnqOeWSF7ZJzyxD6s9dO2n7sXHcCjUEhC2xiS7/Vg==
+X-Gm-Message-State: AOJu0YwER/U0CVxxxWj4wD/KUOCVRhdeVkLGwVrSMjxAEj0ZxkzCzpjJ
+ 6sNS3KY+K1ij2VcWlxF/3MzBq9b3qes+p/RJy1MdGx5K2V9fO9X7
+X-Google-Smtp-Source: AGHT+IEBj73siAJfZoLiX9gqpPn+nv1DxMqUBBrc8uKp//jC475DsqApjM9Y16BLcPTu9eoocFrNUA==
+X-Received: by 2002:a17:902:c7d2:b0:1f3:a14:5203 with SMTP id
+ d9443c01a7336-1f61962bd45mr20087525ad.38.1717089074324; 
+ Thu, 30 May 2024 10:11:14 -0700 (PDT)
+Received: from localhost ([216.228.127.129]) by smtp.gmail.com with ESMTPSA id
+ d9443c01a7336-1f6323dd824sm203895ad.128.2024.05.30.10.11.12
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 30 May 2024 07:21:37 -0700 (PDT)
-From: Ricky Wu <en-wei.wu@canonical.com>
-To: jesse.brandeburg@intel.com
-Date: Thu, 30 May 2024 22:21:31 +0800
-Message-ID: <20240530142131.26741-1-en-wei.wu@canonical.com>
-X-Mailer: git-send-email 2.43.0
+ Thu, 30 May 2024 10:11:13 -0700 (PDT)
+Date: Thu, 30 May 2024 10:11:11 -0700
+From: Yury Norov <yury.norov@gmail.com>
+To: Robin Murphy <robin.murphy@arm.com>
+Message-ID: <ZlizL6d1_ePq-eKs@yury-ThinkPad>
+References: <20240327152358.2368467-1-aleksander.lobakin@intel.com>
+ <20240327152358.2368467-14-aleksander.lobakin@intel.com>
+ <5a18f5ac-4e9a-4baf-b720-98eac7b6792f@arm.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <5a18f5ac-4e9a-4baf-b720-98eac7b6792f@arm.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=canonical.com; s=20210705; t=1717078899;
- bh=B2vGdF2dGkt21QsIPszG+5j1gbhrGScywHg+DXLmaj8=;
- h=From:To:Cc:Subject:Date:Message-ID:MIME-Version;
- b=GuxQ7xrz1nI0Dvkc8cIa3qufBmJFpGHQwIEark+91R7hevP3vvODWrGeZ6cwY2DQ+
- rod0ErNiU8L1WSEj8xeDLH3qkCSePSCxfJ4DIQR5mSkMvi9gerA4RKJW+ynnrFxFMO
- aGYofT4Aoq7UGl4c2kO6ABwnMCvSqw1gW+jDcW7VwwF+kQdHLkh7eA0ixUQEarpdyX
- tj8lGAQ++ot4yYHmnf+bXme3mNR64KxIPmYoWxHnnXR7J6dQXcCzODPcNbLiJjFE5H
- zc3b00fUNnShTk60em/T7mB791H0+BDmYyWbw4lPs/VtWvlEnUbJqGE9JhvrxLTJMb
- ii69fxePczU/w==
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ d=gmail.com; s=20230601; t=1717089074; x=1717693874; darn=lists.osuosl.org;
+ h=in-reply-to:content-transfer-encoding:content-disposition
+ :mime-version:references:message-id:subject:cc:to:from:date:from:to
+ :cc:subject:date:message-id:reply-to;
+ bh=b5dMIK+YmRjKcd+w3hKSLG4KLhKC/IhFM8M8zHEuCAE=;
+ b=nocljYB3UsgxWP4zo7G9YFbUDi2lfJ8Eph8AxD9OHB8VUvTKDWaOEZgWbfezAK7L4e
+ pmdsDRVr7qxio7Xfngc2JpMOGDXTfSRBTgzeCiE/9kU1noDEN5giYV9IufDLhe4VmkX1
+ Xp6UjPI/PQo5sKVXEPVwcXIp7oE+t1N7kHw8hENHCIZmYdOyPfAauh6uBS+ifEDsL5r2
+ K0TGoN+El7qiBgRU4bPzJmqmrA+n9EXPa9XlrlkYk7hazAzcnYLEEsnEWruGOk1vgJcB
+ i4igPKq5P7XGtXyVci3WvHkmfBTLz8D7WQGvxt4I0CMJbRwy1iwJ6LTWnqK5GYm0wZ0/
+ l4yg==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
- header.from=canonical.com
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ header.from=gmail.com
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key,
- unprotected) header.d=canonical.com header.i=@canonical.com
- header.a=rsa-sha256 header.s=20210705 header.b=GuxQ7xrz
-Subject: [Intel-wired-lan] [PATCH net,
- v2] ice: avoid IRQ collision to fix init failure on ACPI S3 resume
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20230601 header.b=nocljYB3
+Subject: Re: [Intel-wired-lan] [PATCH net-next v6 13/21] bitmap: make
+ bitmap_{get, set}_value8() use bitmap_{read, write}()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -127,72 +122,68 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: pmenzel@molgen.mpg.de, michal.swiatkowski@linux.intel.com,
- wojciech.drewek@intel.com, intel-wired-lan@lists.osuosl.org,
- rickywu0421@gmail.com, linux-kernel@vger.kernel.org, en-wei.wu@canonical.com,
- edumazet@google.com, Cyrus Lien <cyrus.lien@canonical.com>,
- anthony.l.nguyen@intel.com, netdev@vger.kernel.org, kuba@kernel.org,
- pabeni@redhat.com, davem@davemloft.net
+Cc: intel-wired-lan@lists.osuosl.org, linux-kernel@vger.kernel.org,
+ Alexander Lobakin <aleksander.lobakin@intel.com>,
+ Eric Dumazet <edumazet@google.com>, netdev@vger.kernel.org,
+ Alexander Potapenko <glider@google.com>,
+ nex.sw.ncis.osdt.itp.upstreaming@intel.com, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>, "David S. Miller" <davem@davemloft.net>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-A bug in https://bugzilla.kernel.org/show_bug.cgi?id=218906 describes
-that irdma would break and report hardware initialization failed after
-suspend/resume with Intel E810 NIC (tested on 6.9.0-rc5).
+On Wed, May 29, 2024 at 04:12:25PM +0100, Robin Murphy wrote:
+> Hi Alexander,
+> 
+> On 27/03/2024 3:23 pm, Alexander Lobakin wrote:
+> > Now that we have generic bitmap_read() and bitmap_write(), which are
+> > inline and try to take care of non-bound-crossing and aligned cases
+> > to keep them optimized, collapse bitmap_{get,set}_value8() into
+> > simple wrappers around the former ones.
+> > bloat-o-meter shows no difference in vmlinux and -2 bytes for
+> > gpio-pca953x.ko, which says the optimization didn't suffer due to
+> > that change. The converted helpers have the value width embedded
+> > and always compile-time constant and that helps a lot.
+> 
+> This change appears to have introduced a build failure for me on arm64
+> (with GCC 9.4.0 from Ubuntu 20.04.02) - reverting b44759705f7d makes
+> these errors go away again:
+> 
+> In file included from drivers/gpio/gpio-pca953x.c:12:
+> drivers/gpio/gpio-pca953x.c: In function ‘pca953x_probe’:
+> ./include/linux/bitmap.h:799:17: error: array subscript [1, 1024] is outside array bounds of ‘long unsigned int[1]’ [-Werror=array-bounds]
+>   799 |  map[index + 1] &= BITMAP_FIRST_WORD_MASK(start + nbits);
+>       |                 ^~
+> In file included from ./include/linux/atomic.h:5,
+>                  from drivers/gpio/gpio-pca953x.c:11:
+> drivers/gpio/gpio-pca953x.c:1015:17: note: while referencing ‘val’
+>  1015 |  DECLARE_BITMAP(val, MAX_LINE);
+>       |                 ^~~
+> ./include/linux/types.h:11:16: note: in definition of macro ‘DECLARE_BITMAP’
+>    11 |  unsigned long name[BITS_TO_LONGS(bits)]
+>       |                ^~~~
+> In file included from drivers/gpio/gpio-pca953x.c:12:
+> ./include/linux/bitmap.h:800:17: error: array subscript [1, 1024] is outside array bounds of ‘long unsigned int[1]’ [-Werror=array-bounds]
+>   800 |  map[index + 1] |= (value >> space);
+>       |  ~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~
+> In file included from ./include/linux/atomic.h:5,
+>                  from drivers/gpio/gpio-pca953x.c:11:
+> drivers/gpio/gpio-pca953x.c:1015:17: note: while referencing ‘val’
+>  1015 |  DECLARE_BITMAP(val, MAX_LINE);
+>       |                 ^~~
+> ./include/linux/types.h:11:16: note: in definition of macro ‘DECLARE_BITMAP’
+>    11 |  unsigned long name[BITS_TO_LONGS(bits)]
+>       |                ^~~~
+> 
+> I've not dug further since I don't have any interest in the pca953x
+> driver - it just happened to be enabled in my config, so for now I've
+> turned it off. However I couldn't obviously see any other reports of
+> this, so here it is.
 
-The problem is caused due to the collision between the irq numbers
-requested in irdma and the irq numbers requested in other drivers
-after suspend/resume.
+It's a compiler false-positive. The straightforward fix is to disable the warning
+For gcc9+, and it's in Andrew Morton's tree alrady. but there's some discussion 
+ongoing on how it should be mitigated properlu:
 
-The irq numbers used by irdma are derived from ice's ice_pf->msix_entries
-which stores mappings between MSI-X index and Linux interrupt number.
-It's supposed to be cleaned up when suspend and rebuilt in resume but
-it's not, causing irdma using the old irq numbers stored in the old
-ice_pf->msix_entries to request_irq() when resume. And eventually
-collide with other drivers.
+https://lore.kernel.org/all/0ab2702f-8245-4f02-beb7-dcc7d79d5416@app.fastmail.com/T/
 
-This patch fixes this problem. On suspend, we call ice_deinit_rdma() to
-clean up the ice_pf->msix_entries (and free the MSI-X vectors used by
-irdma if we've dynamically allocated them). On resume, we call
-ice_init_rdma() to rebuild the ice_pf->msix_entries (and allocate the
-MSI-X vectors if we would like to dynamically allocate them).
-
-Fixes: f9f5301e7e2d ("ice: Register auxiliary device to provide RDMA")
-Tested-by: Cyrus Lien <cyrus.lien@canonical.com>
-Signed-off-by: Ricky Wu <en-wei.wu@canonical.com>
----
-Changes in v2:
-- Change title
-- Add Fixes and Tested-by tags
-- Fix typo
----
- drivers/net/ethernet/intel/ice/ice_main.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index f60c022f7960..ec3cbadaa162 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -5544,7 +5544,7 @@ static int ice_suspend(struct device *dev)
- 	 */
- 	disabled = ice_service_task_stop(pf);
- 
--	ice_unplug_aux_dev(pf);
-+	ice_deinit_rdma(pf);
- 
- 	/* Already suspended?, then there is nothing to do */
- 	if (test_and_set_bit(ICE_SUSPENDED, pf->state)) {
-@@ -5624,6 +5624,10 @@ static int ice_resume(struct device *dev)
- 	if (ret)
- 		dev_err(dev, "Cannot restore interrupt scheme: %d\n", ret);
- 
-+	ret = ice_init_rdma(pf);
-+	if (ret)
-+		dev_err(dev, "Reinitialize RDMA during resume failed: %d\n", ret);
-+
- 	clear_bit(ICE_DOWN, pf->state);
- 	/* Now perform PF reset and rebuild */
- 	reset_type = ICE_RESET_PFR;
--- 
-2.43.0
-
+Thanks,
+YUry
