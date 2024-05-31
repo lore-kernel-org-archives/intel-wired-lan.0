@@ -4,86 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CBDAAC25B7E
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 31 May 2024 14:54:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D5D9AC25B75
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 31 May 2024 14:55:51 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 924C0417B9;
-	Fri, 31 May 2024 14:54:45 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 95D3A423A7;
+	Fri, 31 May 2024 14:55:51 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id vdTiQacbC1Y3; Fri, 31 May 2024 14:54:44 +0000 (UTC)
+ id ilMns4ek0XY1; Fri, 31 May 2024 14:55:50 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 668D0417FB
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C038741A69
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1717167284;
-	bh=AasHPWKDYc9EJ7GjRR3I2zHe/catfocahjruK5Sr8Ao=;
+	s=default; t=1717167350;
+	bh=ZQfF7+PlkJvIw11ehIm0Wg9c06qJT2GnKpEgepWLjdc=;
 	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=ZrnP+8EuY/sGe2Dzs2MMg0CIzkpi0G2JZaFYB1cLsdgdvhcpbdFQWvT0ykGe0P0iY
-	 UquhRa3pdBPPM5Wqnsh/FvzzEyetO4VoBDqUms651xauEGMqc/wGwvEMla20H6ge6F
-	 P5PTgJRl7h5Iuu/zGspJ0oEsb6QW/VDIlY/FMOj0V7LqGtezxcF++UQu0OD2iSPDgv
-	 Y8xkvoe8KEaOU31cSqdCmimhd2p9pWMD5rit7OBl2rJLN/K5rJwEWKsa+Y5XnU9oPk
-	 fxD1J8tMdncKH8R6E9xGIJrT9xA5Lk357rGZaafqkzYJF0NN8MyCh0hJydVNDK1Sff
-	 vfZQxR9oh9sPA==
+	b=4Ixl64HCLArXp9i/EZtxYbCgcRvMaxdgW8xGKgo67truaNmGSGXNj11805ND8Jvcl
+	 sgnEr5zacJ8p1Ibb4uhUqLm5US+6cQq8pUSE2xtQ6TT6+E8l8H/VcFf8pZUeAFDNhQ
+	 +w3Cyvob9LgOu+rUdv3O0XUfNPt/8lkQZLBEIfMx0YjKhpTFQLMpnX1VDLmhRfGlWl
+	 WbVCnBLWUTc8fr11nbJZomsZmXtExKZVgryMxg6oyRGTS+6ufR3wX06CKw1LeikzdL
+	 1LPZKl8NMBHq8zK4T4gqZy10L907vZZo4P1kHRYTEO4d6xqO/v3pGv1AmQl5Bzpvr/
+	 7BkRXzqSV7d2Q==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 668D0417FB;
-	Fri, 31 May 2024 14:54:44 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 9420F1D53A8
- for <intel-wired-lan@lists.osuosl.org>; Fri, 31 May 2024 14:54:43 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id C038741A69;
+	Fri, 31 May 2024 14:55:50 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 9EE1E1D53A8
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 31 May 2024 14:55:49 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 8AB8782207
- for <intel-wired-lan@lists.osuosl.org>; Fri, 31 May 2024 14:54:43 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 894BB41A69
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 31 May 2024 14:55:49 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id RiffA5ZQS49M for <intel-wired-lan@lists.osuosl.org>;
- Fri, 31 May 2024 14:54:42 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id yr378GsC-ZzQ for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 31 May 2024 14:55:48 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom;
  client-ip=2604:1380:40e1:4800::1; helo=sin.source.kernel.org;
  envelope-from=horms@kernel.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 183D0821F8
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 183D0821F8
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org A60BD41A00
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org A60BD41A00
 Received: from sin.source.kernel.org (sin.source.kernel.org
  [IPv6:2604:1380:40e1:4800::1])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 183D0821F8
- for <intel-wired-lan@lists.osuosl.org>; Fri, 31 May 2024 14:54:42 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTPS id A60BD41A00
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 31 May 2024 14:55:48 +0000 (UTC)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by sin.source.kernel.org (Postfix) with ESMTP id 194BCCE1CCA;
- Fri, 31 May 2024 14:54:38 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5487FC116B1;
- Fri, 31 May 2024 14:54:35 +0000 (UTC)
-Date: Fri, 31 May 2024 15:54:33 +0100
+ by sin.source.kernel.org (Postfix) with ESMTP id 356CECE1CB5;
+ Fri, 31 May 2024 14:55:46 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 28545C116B1;
+ Fri, 31 May 2024 14:55:41 +0000 (UTC)
+Date: Fri, 31 May 2024 15:55:38 +0100
 From: Simon Horman <horms@kernel.org>
 To: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
-Message-ID: <20240531145433.GK123401@kernel.org>
+Message-ID: <20240531145538.GL123401@kernel.org>
 References: <20240527151023.3634-1-piotr.kwapulinski@intel.com>
- <20240527151023.3634-2-piotr.kwapulinski@intel.com>
+ <20240527151023.3634-5-piotr.kwapulinski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20240527151023.3634-2-piotr.kwapulinski@intel.com>
+In-Reply-To: <20240527151023.3634-5-piotr.kwapulinski@intel.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1717167276;
- bh=Av7R+ie+lKmeY0v/wpCObfbqVXSTaAaZUt6YnpKNQrI=;
+ d=kernel.org; s=k20201202; t=1717167344;
+ bh=Hv2gYHqbGfnlZ96RHSeNWv1lmd20D/5nqOqdbNrMRmk=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=Y8I9dJwicdMSl+JcqW9rbcpOqwrAYuY8YAJ/y7hO9Ong+7Xf24/IpVZO7heXZepVD
- l35KNOFd026BpswlpR+zxR/LrIA406TRRCVIKLnJm/MrldL5b9DwExoMwqrMOxllXO
- ihs3BS6kI3OhhG1xDW5C94nigcDpDvjpGRQlMUwP0rzokcy6w8dBgIozgJpdBBe5Y+
- 5TzzBnH6XbhOUTjAqvNKK6tJNTQpnXYynyXf1ixMhKH4p403dOT3z59hhDnVwtMA8P
- sMTMzvPERZ0/PnDIfkCfaF0Va0KctsWcL0ZMGXUur+aS+m+zGxhzXodLNHybpqVock
- JhSe8UeC/tuCg==
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ b=FBVzZkMTtUWtbHT7zCGF8kEf6qNAMK0uagz5pr2tiurGqbCKw+QMNg8/gokzCtuyR
+ TY6As9J7mbi/toO/A2LGwu1Yj/tCfH5yPqpJ3nzvLg5bzTFiXr+eJFS14MKWdRG+vZ
+ yNiCJoTyiFcV2mK2xPSZTOMBnQfqLEOlJq9ifirSAfzStfYl4zhTlZ9KHYDlMA/UmX
+ +U42vlPzE3vngHef3tnNRwEEL1AeP4P0lYwHE6Ki6XsWtdRoyT+rzHpkSnfYpV0xwj
+ 4l2wEddmbEgLqPVZOSDe1hLccoKZMd1z1uZZMkPZLW71HLShHy0lFaM+KproD2rjBg
+ CBlSXLSXX/Zug==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=Y8I9dJwi
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next v7 1/7] ixgbe: Add support
- for E610 FW Admin Command Interface
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20201202 header.b=FBVzZkMT
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next v7 4/7] ixgbe: Add support
+ for NVM handling in E610 device
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,13 +102,13 @@ Cc: Stefan Wegrzyn <stefan.wegrzyn@intel.com>, netdev@vger.kernel.org,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Mon, May 27, 2024 at 05:10:17PM +0200, Piotr Kwapulinski wrote:
-> Add low level support for Admin Command Interface (ACI). ACI is the
-> Firmware interface used by a driver to communicate with E610 adapter. Add
-> the following ACI features:
-> - data structures, macros, register definitions
-> - commands handling
-> - events handling
+On Mon, May 27, 2024 at 05:10:20PM +0200, Piotr Kwapulinski wrote:
+> Add low level support for accessing NVM in E610 device. NVM operations are
+> handled via the Admin Command Interface. Add the following NVM specific
+> operations:
+> - acquire, release, read
+> - validate checksum
+> - read shadow ram
 > 
 > Co-developed-by: Stefan Wegrzyn <stefan.wegrzyn@intel.com>
 > Signed-off-by: Stefan Wegrzyn <stefan.wegrzyn@intel.com>
