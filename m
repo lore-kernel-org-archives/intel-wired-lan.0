@@ -4,84 +4,84 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6F441C25B75
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 31 May 2024 18:17:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 97D39C25B7C
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 31 May 2024 18:18:14 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 34E67423B2;
-	Fri, 31 May 2024 18:17:52 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 5BEE642426;
+	Fri, 31 May 2024 18:18:14 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id z5BqadHqdF5T; Fri, 31 May 2024 18:17:51 +0000 (UTC)
+ id og1W-QkKr016; Fri, 31 May 2024 18:18:13 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 6CF7B42402
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 8D86B42402
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1717179471;
-	bh=vpLWcTk3HhGZ7gm1iwwIzA4U8o6PwIRz5v0RH10IDos=;
+	s=default; t=1717179493;
+	bh=J5uvnBUMRA1oEXKbKaNzVV9Cs5B4SXdpBnapZkst04c=;
 	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=nwsofGIheZNaD+nDYfKFORXl8rLUFPxxG5Zwf+MW+fKJzItTUmMsQwTZ5QfR2QHxI
-	 uYlaLsNGQ3FLkegW5WSL5SVe0YQK+uc0tW0FMoDthmk6XBUjIBz0YAKnUXdMO+5Ehi
-	 Aj1k1qW3TNtM+CnqxptvGULOjnujNNjouPirk5L1HlwncjeKnqtu6ckFny58wX45Ts
-	 mWo+H6QuGxBwACUA2PY90HCQdWr94Eao0Lh+K6/YI1hmzj9kjTKo3BB2oP58nAHjHJ
-	 /xbAIbVGwPrvboEno4Ff5qdDZdDLtC+qaucMc2m7BqotiHmcMGzDdbNDDtRNNjkCMe
-	 CbXQfLj8PQviw==
+	b=PwTpGZJSWvnrc6utAEv75DFXn8xQrhvwP2FfLEfYFOzJJakI1iIebo8i9lwUIZi+1
+	 iA5oLCrcx93SfZBZO6q7ZxGm0XC/nB6y1MEtAxs2FyaTHYOK7AiCDLjNPO/Veg3J2J
+	 ykoV2+g3N6TteHMkcO4eI/9oLOCN6E6tMf/ZiV6xvuO148a1yAG8MqK36bgvBsTPYK
+	 EMTMsFLw8vsMXLuyjZtw08nzMNzAvKLZ8AGuccs06jY6SImJ/f1gNtnS89anOj7trV
+	 vdHv3uOpXTkkCqAmALC32ILd49Q8CfpyScoUmUP7uQxtYX15Q+XBR2I5hqoFJ0p48A
+	 8HdSqlDoGb3dg==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 6CF7B42402;
-	Fri, 31 May 2024 18:17:51 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 8D86B42402;
+	Fri, 31 May 2024 18:18:13 +0000 (UTC)
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 16F8B1BF36D
- for <intel-wired-lan@lists.osuosl.org>; Fri, 31 May 2024 18:17:50 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 76DAC1BF36D
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 31 May 2024 18:18:12 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 0214F40210
- for <intel-wired-lan@lists.osuosl.org>; Fri, 31 May 2024 18:17:50 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 61492400D1
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 31 May 2024 18:18:12 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id qBqWGQTJ2Aui for <intel-wired-lan@lists.osuosl.org>;
- Fri, 31 May 2024 18:17:49 +0000 (UTC)
+ id YZu29VNjkawe for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 31 May 2024 18:18:11 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=145.40.73.55;
  helo=sin.source.kernel.org; envelope-from=horms@kernel.org;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 33D2A400D1
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 33D2A400D1
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 90A8640210
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 90A8640210
 Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 33D2A400D1
- for <intel-wired-lan@lists.osuosl.org>; Fri, 31 May 2024 18:17:49 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 90A8640210
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 31 May 2024 18:18:11 +0000 (UTC)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by sin.source.kernel.org (Postfix) with ESMTP id C9C8BCE1B4D;
- Fri, 31 May 2024 18:17:46 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 243CEC2BD10;
- Fri, 31 May 2024 18:17:42 +0000 (UTC)
-Date: Fri, 31 May 2024 19:17:41 +0100
+ by sin.source.kernel.org (Postfix) with ESMTP id 8658BCE1C4A;
+ Fri, 31 May 2024 18:18:09 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BB895C2BD10;
+ Fri, 31 May 2024 18:18:05 +0000 (UTC)
+Date: Fri, 31 May 2024 19:18:03 +0100
 From: Simon Horman <horms@kernel.org>
 To: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
-Message-ID: <20240531181741.GN491852@kernel.org>
+Message-ID: <20240531181803.GO491852@kernel.org>
 References: <20240528043813.1342483-1-michal.swiatkowski@linux.intel.com>
- <20240528043813.1342483-12-michal.swiatkowski@linux.intel.com>
+ <20240528043813.1342483-14-michal.swiatkowski@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20240528043813.1342483-12-michal.swiatkowski@linux.intel.com>
+In-Reply-To: <20240528043813.1342483-14-michal.swiatkowski@linux.intel.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1717179466;
- bh=kZalsnTLkULIt/uoTSoEVR5Xcsq+eao/sF0mdh4bSUw=;
+ d=kernel.org; s=k20201202; t=1717179488;
+ bh=3D91g/xeI1LRPztWrq0QkS//sgRZFGWsOXXGLaURdJo=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=NeiSYwegPxhgwyKi9QkHsyhngUpyoSInWyP+jWgjHPH6dqTs3HnDVqKN9gpgb1xXY
- +r6lo59nFv7IM0Ddv+6nDR8xROVs/ZzJmR3NBAMQurb/oKdBq4D2DMsejfTNElLFqD
- PsaaB3XHgUuctooJBUUK0d/2tISSCDFJuF7Gdhlu0b3OWdSqUGTT+BsHgMR2poSq6g
- Q1VD1lb9KvpGcmhyngLc1dVZ1vkQvkHxAQmncdNywg6WYCot3/JfdSUbPpil1hcofV
- 07tXSd39f+I5ILZJBfV/62GhmsgykNsFnUJwWYBYzkENgAn12Nye8I15J5TTf1SDRW
- nNjRwDNJbwLhQ==
+ b=qLK6VLBJQvRBSt5Gqat0ByORiAnfGAwj5tVTFtH/7ufg2Qs57vSm422BoMSjv/Stz
+ uLYUuvFCzOWdh+VSzUMPfW3wD/au3iAs5gBkU8wzSmygtOdvrbq+E1scV8GZGlfWuv
+ tIOEugEKycnG44vzK18lAy/ZWvLtlExrXcl3EgGwcOkRbwDhum2xecIAtLIXN8UzxQ
+ 67q8sop9LvxOURRYnX8ei/wzig3g9xa+G2XJMfvxDqUunp9nLiuUQJSoCMShJn6lnd
+ rjxTmU3JXDKQsl90ubv2W+M56mOzzBn3/O744DyVnSSRodQcL13qajYUA/SqITEGNI
+ Y4MW5kH3xKrPg==
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=kernel.org
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=NeiSYweg
-Subject: Re: [Intel-wired-lan] [iwl-next v3 11/15] ice: check if SF is ready
- in ethtool ops
+ header.a=rsa-sha256 header.s=k20201202 header.b=qLK6VLBJ
+Subject: Re: [Intel-wired-lan] [iwl-next v3 13/15] ice: support subfunction
+ devlink Tx topology
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,10 +103,15 @@ Cc: shayd@nvidia.com, maciej.fijalkowski@intel.com,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Tue, May 28, 2024 at 06:38:09AM +0200, Michal Swiatkowski wrote:
-> Now there is another type of port representor. Correct checking if
-> parent device is ready to reflect also new PR type.
+On Tue, May 28, 2024 at 06:38:11AM +0200, Michal Swiatkowski wrote:
+> Flow for creating Tx topology is the same as for VF port representors,
+> but the devlink port is stored in different place (sf->devlink_port).
 > 
+> When creating VF devlink lock isn't taken, when creating subfunction it
+> is. Setting Tx topology function needs to take this lock, check if it
+> was taken before to not do it twice.
+> 
+> Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 > Reviewed-by: Wojciech Drewek <wojciech.drewek@intel.com>
 > Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 
