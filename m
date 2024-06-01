@@ -4,85 +4,90 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0CF19C25B76
-	for <intel-wired-lan@archiver.kernel.org>; Sat,  1 Jun 2024 09:08:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 83120C25B76
+	for <intel-wired-lan@archiver.kernel.org>; Sat,  1 Jun 2024 12:06:53 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id AF28E60833;
-	Sat,  1 Jun 2024 09:08:55 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 178B560820;
+	Sat,  1 Jun 2024 12:06:53 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 3dJlojJnq-zS; Sat,  1 Jun 2024 09:08:54 +0000 (UTC)
+ id cN7AbfSPYXDd; Sat,  1 Jun 2024 12:06:52 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 097FE60824
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 6FF4B60720
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1717232934;
-	bh=FP5vrqphm7lrNRWTL8h0eTEP1JIZQhEYEXtXCIYQpCg=;
+	s=default; t=1717243612;
+	bh=sDBdQ3N3Cu0FEIs5zYbsvCkBxZeRfNvSatcfI8fql7A=;
 	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=pWlehIGBuwlnNLZGlAjKeRjJn8XnLrfAWUhD/ZZuIDqEIXFfzhgZKlm+wEP2tChcI
-	 d0794dypPmIx2Qdl9KsvX+ZcCZBCNa3KjEP43vtiA2jpSpPciwuT+/cA3LR5y3xFv3
-	 DsJojmASYjJCYKnhMyTVDFp2umy+/DJPa3VrXDDzaGz+hQVuNomCa3/aZjp+edw3Bs
-	 NdbjdjHcspdOWuYscwTckH91Z5O6cHlQHmj+v+CuA64VnqUqLfeat+iejkFg001q2Z
-	 gG7icamAPP8a269nTDSV6s/PRfivv+GpQqbwc7hviGQDv7D/ZtY5qzSXNAHclFRMCI
-	 1e5XezIhtpUnQ==
+	b=qCT5HTAnYrtcbTGT6OPNEDRoblk9wjc3OaPuVZQe8ArhfRhhgR3fD98UMFmrGkdq6
+	 29cVB5AzGdtrha6eBOupu7l0Wmd5apHytB6IZ8M06vBX5pM0LbQSHviX6XHg5YklSg
+	 Xn5xvXo4e4vpsctBJa3xZdVfrOhF5Vy3XOgNNXLcnPoYnVQTfYCJYIAdlF9bRA6rNJ
+	 P9N1rg8GAqxNpCAhcRMWP2lfUQP0Gmj31JQ6UVNwAowaDzv6GsWjweum6v25FLyt1h
+	 UAJ39Kv5gyidgwQLn4l9A5kqgW++6pRaoqd00Txw6aV1HsS3gD2RQAOXgnpggtBrLW
+	 eDQOwsnnC6o4w==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 097FE60824;
-	Sat,  1 Jun 2024 09:08:54 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id DA7B61BF841
- for <intel-wired-lan@lists.osuosl.org>; Sat,  1 Jun 2024 09:08:52 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 6FF4B60720;
+	Sat,  1 Jun 2024 12:06:52 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 7DBD61BF2CD
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  1 Jun 2024 12:06:51 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id D179B80E7C
- for <intel-wired-lan@lists.osuosl.org>; Sat,  1 Jun 2024 09:08:52 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 69CCA60720
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  1 Jun 2024 12:06:51 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id BEbHHQUBVacx for <intel-wired-lan@lists.osuosl.org>;
- Sat,  1 Jun 2024 09:08:52 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=145.40.73.55;
- helo=sin.source.kernel.org; envelope-from=horms@kernel.org;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org B811A80E5F
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B811A80E5F
-Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
- by smtp1.osuosl.org (Postfix) with ESMTPS id B811A80E5F
- for <intel-wired-lan@lists.osuosl.org>; Sat,  1 Jun 2024 09:08:51 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id cO4CQkENtX8S for <intel-wired-lan@lists.osuosl.org>;
+ Sat,  1 Jun 2024 12:06:50 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2604:1380:40e1:4800::1; helo=sin.source.kernel.org;
+ envelope-from=horms@kernel.org; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org A1710606EB
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A1710606EB
+Received: from sin.source.kernel.org (sin.source.kernel.org
+ [IPv6:2604:1380:40e1:4800::1])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id A1710606EB
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  1 Jun 2024 12:06:50 +0000 (UTC)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by sin.source.kernel.org (Postfix) with ESMTP id E3F81CE0E3F;
- Sat,  1 Jun 2024 09:08:47 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 74123C116B1;
- Sat,  1 Jun 2024 09:08:44 +0000 (UTC)
-Date: Sat, 1 Jun 2024 10:08:42 +0100
+ by sin.source.kernel.org (Postfix) with ESMTP id 6C9C1CE0977;
+ Sat,  1 Jun 2024 12:06:46 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E4ED9C116B1;
+ Sat,  1 Jun 2024 12:06:43 +0000 (UTC)
+Date: Sat, 1 Jun 2024 13:06:41 +0100
 From: Simon Horman <horms@kernel.org>
-To: Alexander Lobakin <aleksander.lobakin@intel.com>
-Message-ID: <20240601090842.GZ491852@kernel.org>
-References: <20240528134846.148890-1-aleksander.lobakin@intel.com>
- <20240528134846.148890-13-aleksander.lobakin@intel.com>
+To: "Keller, Jacob E" <jacob.e.keller@intel.com>
+Message-ID: <20240601120641.GH491852@kernel.org>
+References: <20240527185810.3077299-1-ahmed.zaki@intel.com>
+ <20240527185810.3077299-12-ahmed.zaki@intel.com>
+ <20240531131802.GG123401@kernel.org>
+ <f2cf6650-a164-4d3c-a3d9-cc57c66069a5@intel.com>
+ <CO1PR11MB50893931EC0BE4F79FA46761D6FD2@CO1PR11MB5089.namprd11.prod.outlook.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20240528134846.148890-13-aleksander.lobakin@intel.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CO1PR11MB50893931EC0BE4F79FA46761D6FD2@CO1PR11MB5089.namprd11.prod.outlook.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1717232927;
- bh=h6AQp5HLvjkO9wvYFVJXTPoumQQtZPBpKKF3YIzdJKg=;
+ d=kernel.org; s=k20201202; t=1717243605;
+ bh=p5Sw3GRe1Lge4SnF2pmAC4IQ0ato2xmCd88hFsuZff8=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=tTQ2s5dFr/GugcK3CbwhywDOpEVAtHJNGU9YAnPAUzWTAFiRVj3ZiC9Pzr1zszFCD
- WnVldec/W9TDLZX+1ZtNVEmiOTgx1Qnjl1OLQCjcIuFprUzcJO7p8uhpfMdZ3hjFAX
- Hx6RW/VBRHdYXp1oFxcKCEakd6RuY4vYYUzg57jQc3o9EXom/bJe/UZVHtEgUC+1ZF
- 2svOXpBiDvjHUKNpq2EgY+wRtaEKC3KOa4vbgEK33oy/ajbmF1UntJzhbSZ9Mw18Yi
- Nhz584MG7oMj2v7BPxOymUda20jbqFC/89SUUta4eqyb2R/dXeVbT6Egx9bWFDokO+
- qHgILGYk5S1LQ==
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ b=ILjt9RouX1ucqRipERDIi+L/u5HdPvHVds7Ws10gho3vykMKgAg3HbaYTVcKm/PaW
+ 7c3PQePyZi24BoY0mqWrphT1ZP7wBlS24+9NU9kXI0+13wrKKOPo/rZnhWifG9Cu6I
+ SMomQxlUTdXhDkrEl0SnCXiiOVyfW69RQCf03Ne8hSMvuk2BmAAKTICn2t77a4IjSz
+ UTaYleqf0RwHNvZViknzYuUejkBw0jbYpcs8Nwcow8xzHRfsbmi5mVrMbnwFu8tM7N
+ z4TzPON4rzXbgA8NUE7TvUiVDrl5gD5LG7jp5PqKrLXBJxciJeTn+FeRe+IfQJXCU/
+ tXKxznl4dh8AQ==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=tTQ2s5dF
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next 12/12] idpf: use libeth Rx
- buffer management for payload buffer
+ header.s=k20201202 header.b=ILjt9Rou
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next v2 11/13] ice: enable FDIR
+ filters from raw binary patterns for VFs
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,110 +100,42 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Mina Almasry <almasrymina@google.com>,
- nex.sw.ncis.osdt.itp.upstreaming@intel.com, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, Eric Dumazet <edumazet@google.com>,
- Tony Nguyen <anthony.l.nguyen@intel.com>, Jakub Kicinski <kuba@kernel.org>,
- intel-wired-lan@lists.osuosl.org, Paolo Abeni <pabeni@redhat.com>,
- "David S. Miller" <davem@davemloft.net>,
- Dan Carpenter <dan.carpenter@linaro.org>
+Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>, "Zaki,
+ Ahmed" <ahmed.zaki@intel.com>, Marcin Szycik <marcin.szycik@linux.intel.com>,
+ "Nguyen, Anthony L" <anthony.l.nguyen@intel.com>, "Guo,
+ Junfeng" <junfeng.guo@intel.com>,
+ "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-+ Dan Carpenter
-
-On Tue, May 28, 2024 at 03:48:46PM +0200, Alexander Lobakin wrote:
-> idpf uses Page Pool for data buffers with hardcoded buffer lengths of
-> 4k for "classic" buffers and 2k for "short" ones. This is not flexible
-> and does not ensure optimal memory usage. Why would you need 4k buffers
-> when the MTU is 1500?
-> Use libeth for the data buffers and don't hardcode any buffer sizes. Let
-> them be calculated from the MTU for "classics" and then divide the
-> truesize by 2 for "short" ones. The memory usage is now greatly reduced
-> and 2 buffer queues starts make sense: on frames <= 1024, you'll recycle
-> (and resync) a page only after 4 HW writes rather than two.
+On Sat, Jun 01, 2024 at 12:24:14AM +0000, Keller, Jacob E wrote:
 > 
-> Signed-off-by: Alexander Lobakin <aleksander.lobakin@intel.com>
+> 
+> > -----Original Message-----
+> > From: Zaki, Ahmed <ahmed.zaki@intel.com>
+> > Sent: Friday, May 31, 2024 8:48 AM
+> > To: Simon Horman <horms@kernel.org>
+> > Cc: intel-wired-lan@lists.osuosl.org; netdev@vger.kernel.org; Keller, Jacob E
+> > <jacob.e.keller@intel.com>; Nguyen, Anthony L <anthony.l.nguyen@intel.com>;
+> > Guo, Junfeng <junfeng.guo@intel.com>; Marcin Szycik
+> > <marcin.szycik@linux.intel.com>
+> > Subject: Re: [PATCH iwl-next v2 11/13] ice: enable FDIR filters from raw binary
+> > patterns for VFs
+> > 
+> > 
+> > 
+> > On 2024-05-31 7:18 a.m., Simon Horman wrote:
+> > > On Mon, May 27, 2024 at 12:58:08PM -0600, Ahmed Zaki wrote:
+> > >> From: Junfeng Guo <junfeng.guo@intel.com>
+> > >
+> > > To me tweaking the order of includes seems to indicate
+> > > that something isn't quite right. Is there some sort of
+> > > dependency loop being juggled here?
+> > 
+> > This was needed because of the changes in ice_flow.h, struct ice_vsi is
+> > now used. I will check if there is a better fix.
+> > 
+> 
+> I think there is probably a dependency loop. Ice has had a lot of issues w.r.t. header includes ☹
 
-...
-
-> diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.c b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-
-...
-
-Hi Alexander,
-
-The code above the hunk below, starting at line 3321, is:
-
-		if (unlikely(!hdr_len && !skb)) {
-			hdr_len = idpf_rx_hsplit_wa(hdr, rx_buf, pkt_len);
-			pkt_len -= hdr_len;
-			u64_stats_update_begin(&rxq->stats_sync);
-			u64_stats_inc(&rxq->q_stats.hsplit_buf_ovf);
-			u64_stats_update_end(&rxq->stats_sync);
-		}
-		if (libeth_rx_sync_for_cpu(hdr, hdr_len)) {
-			skb = idpf_rx_build_skb(hdr, hdr_len);
-			if (!skb)
-				break;
-			u64_stats_update_begin(&rxq->stats_sync);
-			u64_stats_inc(&rxq->q_stats.hsplit_pkts);
-			u64_stats_update_end(&rxq->stats_sync);
-		}
-
-> @@ -3413,24 +3340,24 @@ static int idpf_rx_splitq_clean(struct idpf_rx_queue *rxq, int budget)
->  		hdr->page = NULL;
->  
->  payload:
-> -		if (pkt_len) {
-> -			idpf_rx_sync_for_cpu(rx_buf, pkt_len);
-> -			if (skb)
-> -				idpf_rx_add_frag(rx_buf, skb, pkt_len);
-> -			else
-> -				skb = idpf_rx_construct_skb(rxq, rx_buf,
-> -							    pkt_len);
-> -		} else {
-> -			idpf_rx_put_page(rx_buf);
-> -		}
-> +		if (!libeth_rx_sync_for_cpu(rx_buf, pkt_len))
-> +			goto skip_data;
-> +
-> +		if (skb)
-> +			idpf_rx_add_frag(rx_buf, skb, pkt_len);
-> +		else
-> +			skb = idpf_rx_build_skb(rx_buf, pkt_len);
->  
->  		/* exit if we failed to retrieve a buffer */
->  		if (!skb)
->  			break;
->  
-> -		idpf_rx_post_buf_refill(refillq, buf_id);
-> +skip_data:
-> +		rx_buf->page = NULL;
->  
-> +		idpf_rx_post_buf_refill(refillq, buf_id);
->  		IDPF_RX_BUMP_NTC(rxq, ntc);
-> +
->  		/* skip if it is non EOP desc */
->  		if (!idpf_rx_splitq_is_eop(rx_desc))
->  			continue;
-
-The code following this hunk, ending at line 3372, looks like this:
-
-		/* pad skb if needed (to make valid ethernet frame) */
-		if (eth_skb_pad(skb)) {
-			skb = NULL;
-			continue;
-		}
-		/* probably a little skewed due to removing CRC */
-		total_rx_bytes += skb->len;
-
-Smatch warns that:
-.../idpf_txrx.c:3372 idpf_rx_splitq_clean() error: we previously assumed 'skb' could be null (see line 3321)
-
-I think, but am not sure, this is because it thinks skb might
-be NULL at the point where "goto skip_data;" is now called above.
-
-Could you look into this?
-
-...
+Understood, let's leave that for another day :)
