@@ -4,70 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D3A54C27C50
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  4 Jun 2024 22:13:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 96FF3C25B78
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  4 Jun 2024 22:13:49 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 8F71D842D2;
-	Tue,  4 Jun 2024 22:13:46 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 3657980BDB;
+	Tue,  4 Jun 2024 22:13:49 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id pZMdmeWker_y; Tue,  4 Jun 2024 22:13:45 +0000 (UTC)
+ id 5OzKDfMoYwh4; Tue,  4 Jun 2024 22:13:48 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B3EFC842D5
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 1280580300
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1717539225;
-	bh=qSYXCOaQwgWVUcaLXaGZoXEpbVKXKCVdgvFbPdJT35g=;
+	s=default; t=1717539228;
+	bh=LwZYpla920XbMDCwQ3X1lM3vE65bNnhEcZ3J2nIoHaw=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=qFkIFiGa4WqkU3c9rn/GmgHDzgyMMiCI5mYlXOA2/p3WGKJR1xKYqHTi8/wlqCUKA
-	 d+H/wHC5xKIlNvoG6IFKkdWT91H+Ubix6o90aqsJj+zK+b8sB6dzPTioaluGrnrsrd
-	 ZZ/H3eLiNS5lzg31EkhdzKv+kmbHd8mVjxtfq7BpRWw8hP2hazj8aTC9LGPdMxRQYB
-	 L5kQNRW8lC6KSbvu6cIRGnH34jIfscrARsz3pYemTuJqLWjb+d9DRIy/4DVlww/8i2
-	 mB+MOr8iLcQCiA3fA6FCJcNYMuSSEJO7daqrSqGF8Nix14AWvDF6eIcgKV5M7SA5Zi
-	 hw/GRdzqoajyg==
+	b=4VwVBXGZGNZXYlb56ogTnz7Lh/GTg2r4ReIw2750f29NTikqhQUwtb57rwB3ftXWc
+	 zzjGE+4mK+hzDsPAlHI2MW9aASoRkCuC1OA2ScFqlODc/8M1fVxC9O+jNXnXwUpPyl
+	 dUxGGUnFjP1AEU9WdALPEHQMRPVwSFy3bBusl4ez95s8Qr7RPn05/uScEUe6NDfb1W
+	 FIftVxXagY6KW+tlDt+TWbzCZ5ckSSb8nTJgxFAaFV7ZLihy7D7hlXalgzEYN2CFeZ
+	 hXUR7YuMnx9c4aBYKVCl5x/O53FwvwODMHTP8oVPK/EkqaeG9ZwXDFjmVTHszwsBdW
+	 m0Lu5+tHtCang==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id B3EFC842D5;
-	Tue,  4 Jun 2024 22:13:45 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 1280580300;
+	Tue,  4 Jun 2024 22:13:48 +0000 (UTC)
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id CC93E1BF409
- for <intel-wired-lan@lists.osuosl.org>; Tue,  4 Jun 2024 22:13:38 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id CBC201BF409
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  4 Jun 2024 22:13:39 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 0C6E040227
+ by smtp4.osuosl.org (Postfix) with ESMTP id 59CCF40296
  for <intel-wired-lan@lists.osuosl.org>; Tue,  4 Jun 2024 22:13:40 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id awQa2_10fgeU for <intel-wired-lan@lists.osuosl.org>;
- Tue,  4 Jun 2024 22:13:39 +0000 (UTC)
+ id eEcH9oPFOMry for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  4 Jun 2024 22:13:37 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.9;
  helo=mgamail.intel.com; envelope-from=jesse.brandeburg@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 2994E402BC
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2994E402BC
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org D401C4026E
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D401C4026E
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.9])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 2994E402BC
- for <intel-wired-lan@lists.osuosl.org>; Tue,  4 Jun 2024 22:13:37 +0000 (UTC)
-X-CSE-ConnectionGUID: SWZTyAJxQDOzjajhOaYnZg==
-X-CSE-MsgGUID: YwEmfyNeTdWmqVDt3Jou5Q==
-X-IronPort-AV: E=McAfee;i="6600,9927,11093"; a="36635260"
-X-IronPort-AV: E=Sophos;i="6.08,214,1712646000"; d="scan'208";a="36635260"
+ by smtp4.osuosl.org (Postfix) with ESMTPS id D401C4026E
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  4 Jun 2024 22:13:36 +0000 (UTC)
+X-CSE-ConnectionGUID: yEXgdNRLRY+PScsyYTYI8g==
+X-CSE-MsgGUID: G6T4NqVTTcymyZx0IDkNiA==
+X-IronPort-AV: E=McAfee;i="6600,9927,11093"; a="36635267"
+X-IronPort-AV: E=Sophos;i="6.08,214,1712646000"; d="scan'208";a="36635267"
 Received: from fmviesa009.fm.intel.com ([10.60.135.149])
  by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  04 Jun 2024 15:13:33 -0700
-X-CSE-ConnectionGUID: KKCy8NccSemJUEV1mbMOIQ==
-X-CSE-MsgGUID: JkoBduhgSaSGLGRnaQZJQA==
+X-CSE-ConnectionGUID: 8ueFfticQIuvX4QYVHfsiw==
+X-CSE-MsgGUID: WKaPZkS4T1OFBSWIH2Cx7g==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.08,214,1712646000"; d="scan'208";a="37503239"
+X-IronPort-AV: E=Sophos;i="6.08,214,1712646000"; d="scan'208";a="37503245"
 Received: from jbrandeb-spr1.jf.intel.com ([10.166.28.233])
  by fmviesa009-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 04 Jun 2024 15:13:32 -0700
+ 04 Jun 2024 15:13:33 -0700
 From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 To: netdev@vger.kernel.org,
 	intel-wired-lan@lists.osuosl.org
-Date: Tue,  4 Jun 2024 15:13:22 -0700
-Message-ID: <20240604221327.299184-3-jesse.brandeburg@intel.com>
+Date: Tue,  4 Jun 2024 15:13:24 -0700
+Message-ID: <20240604221327.299184-5-jesse.brandeburg@intel.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20240604221327.299184-1-jesse.brandeburg@intel.com>
 References: <20240604221327.299184-1-jesse.brandeburg@intel.com>
@@ -78,22 +78,22 @@ X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  t=1717539217; x=1749075217;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=yc6ElQBcZA8tgKKGT53RjUXOd6H+SFj0vdcLHrYf8mo=;
- b=KaeGiJqKC74xCURVceQZd5AxSd1geJE486M2Xwy9YBxmL3eSQrxivZVt
- asaNkBE9NPhtC9JNsOP2bJ3sGwxLugRcOw5F2HJ+4ZloKU9LYtEdE/9xh
- s/J2UnkAsZpdYkslbrny3ZUEhWcdgO3Kq3EbrnVsrvi1tRrATaL330KuR
- 1hIXLeCNHXWqyyxa/sxOnWHt99R3ubb481pGvwHRtV/D+oct3K2E8tlZO
- gOgB3Tqs9b/ej05/0TCuBglAw7cmjkbjhovl/mtId3rBTH1H3h2r6UHux
- XyP1J80owOyWip6HnhPOVlt2XLk5uQmio3BkF/0gsTMnbZi42dyt57BxZ
+ bh=rL5kinlQFFzU1XTq/6TzJBFgGwuFIH/m9QaI0R7Q2QI=;
+ b=PEp8k7MHjtOvq1Fu/qu+g1iE51YugDv0+htKxVA2bedoJwnhmrVZRxDX
+ h0JUoNGe+bfPZP0gF6WUVc8URTAyC1JY2zKXUS49QTorBfm2aq4EYVvKB
+ /2HBtwgE4/O+pMBQ/9Dd96HheYtarFRNCrZCtxKv6E9scX/Wo1m09No5y
+ 2ARhrsQSIAv9uRU7AXqHVm2adUY5NHJYbf6EWVXZIfRXymEUh5GwpdZMq
+ dGH4NKzaMk4B/qy6qG9Ep/8j794cw1Acctv3y3S1qGvFfvmN3m6RkS+NX
+ 2qdRBaKCUNg8I19JSBrSUrC2bmwywO4iOVVXMtTY2V70gi+7AnQDd6Qgc
  w==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=KaeGiJqK
-Subject: [Intel-wired-lan] [PATCH iwl-next v1 2/5] ice: implement ethtool
- standard stats
+ header.a=rsa-sha256 header.s=Intel header.b=PEp8k7MH
+Subject: [Intel-wired-lan] [PATCH iwl-next v1 4/5] ice: implement transmit
+ hardware timestamp statistics
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -111,195 +111,76 @@ Cc: Jacob Keller <jacob.e.keller@intel.com>, linux-doc@vger.kernel.org,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Add support for MAC/pause/RMON stats. This enables reporting hardware
-statistics in a common way via:
+The kernel now has common statistics for transmit timestamps, so
+implement them in the ice driver.
 
-ethtool -S eth0 --all-groups
-and
-ethtool --include-statistics --show-pause eth0
+use via
+ethtool -I -T eth0
 
-While doing so, add support for one new stat, receive length error
-(RLEC), which is extremely unlikely to happen since most L2 frames have
-a type/length field specifying a "type", and raw ethernet frames aren't
-used much any longer.
-
-NOTE: I didn't implement Ctrl aka control frame stats because the
-hardware doesn't seem to implement support.
-
-Reviewed-by: Marcin Szycik <marcin.szycik@linux.intel.co
 Reviewed-by: Jacob Keller <jacob.e.keller@intel.com>
 Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 ---
-Example output:
 
-Standard stats for ens785f1np1:
-eth-mac-FramesTransmittedOK: 296
-eth-mac-FramesReceivedOK: 339
-eth-mac-FrameCheckSequenceErrors: 0
-eth-mac-OctetsTransmittedOK: 70410
-eth-mac-OctetsReceivedOK: 51414
-eth-mac-MulticastFramesXmittedOK: 124
-eth-mac-BroadcastFramesXmittedOK: 1
-eth-mac-MulticastFramesReceivedOK: 164
-eth-mac-BroadcastFramesReceivedOK: 3
-eth-mac-InRangeLengthErrors: 0
-eth-mac-FrameTooLongErrors: 0
-rmon-etherStatsUndersizePkts: 0
-rmon-etherStatsOversizePkts: 0
-rmon-etherStatsFragments: 0
-rmon-etherStatsJabbers: 0
-rx-rmon-etherStatsPkts64Octets: 31
-rx-rmon-etherStatsPkts65to127Octets: 265
-rx-rmon-etherStatsPkts128to255Octets: 26
-rx-rmon-etherStatsPkts256to511Octets: 7
-rx-rmon-etherStatsPkts512to1023Octets: 1
-rx-rmon-etherStatsPkts1024to1522Octets: 6
-rx-rmon-etherStatsPkts1523to9522Octets: 3
-tx-rmon-etherStatsPkts64Octets: 25
-tx-rmon-etherStatsPkts65to127Octets: 255
-tx-rmon-etherStatsPkts128to255Octets: 1
-tx-rmon-etherStatsPkts256to511Octets: 2
-tx-rmon-etherStatsPkts512to1023Octets: 1
-tx-rmon-etherStatsPkts1024to1522Octets: 1
-tx-rmon-etherStatsPkts1523to9522Octets: 11
-and
-Pause parameters for ens785f0np0:
-Autonegotiate:  on
-RX:             off
-TX:             off
-RX negotiated: off
-TX negotiated: off
+$ sudo ethtool -I -T eth0
+Time stamping parameters for eth0:
+Capabilities:
+        hardware-transmit
+        software-transmit
+        hardware-receive
+        software-receive
+        software-system-clock
+        hardware-raw-clock
+PTP Hardware Clock: 0
+Hardware Transmit Timestamp Modes:
+        off
+        on
+Hardware Receive Filter Modes:
+        none
+        all
 Statistics:
-  tx_pause_frames: 0
-  rx_pause_frames: 0
+  tx_pkts: 17
+  tx_lost: 0
+  tx_err: 0
 ---
- drivers/net/ethernet/intel/ice/ice_ethtool.c | 78 ++++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_main.c    |  3 +
- drivers/net/ethernet/intel/ice/ice_type.h    |  1 +
- 3 files changed, 82 insertions(+)
+ drivers/net/ethernet/intel/ice/ice_ethtool.c | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index 62c8205fceba..6f0a857f55c9 100644
+index 6f0a857f55c9..97a7a0632a1d 100644
 --- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
 +++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -4282,6 +4282,81 @@ ice_get_module_eeprom(struct net_device *netdev,
- 	return 0;
+@@ -4357,6 +4357,23 @@ static void ice_get_rmon_stats(struct net_device *netdev,
+ 	*ranges = ice_rmon_ranges;
  }
  
-+static void ice_get_eth_mac_stats(struct net_device *netdev,
-+				  struct ethtool_eth_mac_stats *mac_stats)
++/* ice_get_ts_stats - provide timestamping stats
++ * @netdev: the netdevice pointer from ethtool
++ * @ts_stats: the ethtool data structure to fill in
++ */
++static void ice_get_ts_stats(struct net_device *netdev,
++			     struct ethtool_ts_stats *ts_stats)
 +{
 +	struct ice_pf *pf = ice_netdev_to_pf(netdev);
-+	struct ice_hw_port_stats *ps = &pf->stats;
++	struct ice_ptp *ptp = &pf->ptp;
 +
-+	mac_stats->FramesTransmittedOK = ps->eth.tx_unicast +
-+					 ps->eth.tx_multicast +
-+					 ps->eth.tx_broadcast;
-+	mac_stats->FramesReceivedOK = ps->eth.rx_unicast +
-+				      ps->eth.rx_multicast +
-+				      ps->eth.rx_broadcast;
-+	mac_stats->FrameCheckSequenceErrors = ps->crc_errors;
-+	mac_stats->OctetsTransmittedOK = ps->eth.tx_bytes;
-+	mac_stats->OctetsReceivedOK = ps->eth.rx_bytes;
-+	mac_stats->MulticastFramesXmittedOK = ps->eth.tx_multicast;
-+	mac_stats->BroadcastFramesXmittedOK = ps->eth.tx_broadcast;
-+	mac_stats->MulticastFramesReceivedOK = ps->eth.rx_multicast;
-+	mac_stats->BroadcastFramesReceivedOK = ps->eth.rx_broadcast;
-+	mac_stats->InRangeLengthErrors = ps->rx_len_errors;
-+	mac_stats->FrameTooLongErrors = ps->rx_oversize;
-+}
-+
-+static void ice_get_pause_stats(struct net_device *netdev,
-+				struct ethtool_pause_stats *pause_stats)
-+{
-+	struct ice_pf *pf = ice_netdev_to_pf(netdev);
-+	struct ice_hw_port_stats *ps = &pf->stats;
-+
-+	pause_stats->tx_pause_frames = ps->link_xon_tx + ps->link_xoff_tx;
-+	pause_stats->rx_pause_frames = ps->link_xon_rx + ps->link_xoff_rx;
-+}
-+
-+static const struct ethtool_rmon_hist_range ice_rmon_ranges[] = {
-+	{    0,    64 },
-+	{   65,   127 },
-+	{  128,   255 },
-+	{  256,   511 },
-+	{  512,  1023 },
-+	{ 1024,  1522 },
-+	{ 1523,  9522 },
-+	{}
-+};
-+
-+static void ice_get_rmon_stats(struct net_device *netdev,
-+			       struct ethtool_rmon_stats *rmon,
-+			       const struct ethtool_rmon_hist_range **ranges)
-+{
-+	struct ice_pf *pf = ice_netdev_to_pf(netdev);
-+	struct ice_hw_port_stats *ps = &pf->stats;
-+
-+	rmon->undersize_pkts	= ps->rx_undersize;
-+	rmon->oversize_pkts	= ps->rx_oversize;
-+	rmon->fragments		= ps->rx_fragments;
-+	rmon->jabbers		= ps->rx_jabber;
-+
-+	rmon->hist[0]		= ps->rx_size_64;
-+	rmon->hist[1]		= ps->rx_size_127;
-+	rmon->hist[2]		= ps->rx_size_255;
-+	rmon->hist[3]		= ps->rx_size_511;
-+	rmon->hist[4]		= ps->rx_size_1023;
-+	rmon->hist[5]		= ps->rx_size_1522;
-+	rmon->hist[6]		= ps->rx_size_big;
-+
-+	rmon->hist_tx[0]	= ps->tx_size_64;
-+	rmon->hist_tx[1]	= ps->tx_size_127;
-+	rmon->hist_tx[2]	= ps->tx_size_255;
-+	rmon->hist_tx[3]	= ps->tx_size_511;
-+	rmon->hist_tx[4]	= ps->tx_size_1023;
-+	rmon->hist_tx[5]	= ps->tx_size_1522;
-+	rmon->hist_tx[6]	= ps->tx_size_big;
-+
-+	*ranges = ice_rmon_ranges;
++	ts_stats->pkts = ptp->tx_hwtstamp_good;
++	ts_stats->err = ptp->tx_hwtstamp_skipped +
++			ptp->tx_hwtstamp_flushed +
++			ptp->tx_hwtstamp_discarded;
++	ts_stats->lost = ptp->tx_hwtstamp_timeouts;
 +}
 +
  static const struct ethtool_ops ice_ethtool_ops = {
  	.cap_rss_ctx_supported  = true,
  	.supported_coalesce_params = ETHTOOL_COALESCE_USECS |
-@@ -4329,6 +4404,9 @@ static const struct ethtool_ops ice_ethtool_ops = {
- 	.set_fecparam		= ice_set_fecparam,
- 	.get_module_info	= ice_get_module_info,
- 	.get_module_eeprom	= ice_get_module_eeprom,
-+	.get_eth_mac_stats	= ice_get_eth_mac_stats,
-+	.get_pause_stats	= ice_get_pause_stats,
-+	.get_rmon_stats		= ice_get_rmon_stats,
+@@ -4407,6 +4424,7 @@ static const struct ethtool_ops ice_ethtool_ops = {
+ 	.get_eth_mac_stats	= ice_get_eth_mac_stats,
+ 	.get_pause_stats	= ice_get_pause_stats,
+ 	.get_rmon_stats		= ice_get_rmon_stats,
++	.get_ts_stats		= ice_get_ts_stats,
  };
  
  static const struct ethtool_ops ice_ethtool_safe_mode_ops = {
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index f60c022f7960..4db3a6056f41 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -7034,6 +7034,9 @@ void ice_update_pf_stats(struct ice_pf *pf)
- 			  &prev_ps->mac_remote_faults,
- 			  &cur_ps->mac_remote_faults);
- 
-+	ice_stat_update32(hw, GLPRT_RLEC(port), pf->stat_prev_loaded,
-+			  &prev_ps->rx_len_errors, &cur_ps->rx_len_errors);
-+
- 	ice_stat_update32(hw, GLPRT_RUC(port), pf->stat_prev_loaded,
- 			  &prev_ps->rx_undersize, &cur_ps->rx_undersize);
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-index f0796a93f428..b156d01196e2 100644
---- a/drivers/net/ethernet/intel/ice/ice_type.h
-+++ b/drivers/net/ethernet/intel/ice/ice_type.h
-@@ -1007,6 +1007,7 @@ struct ice_hw_port_stats {
- 	u64 error_bytes;		/* errbc */
- 	u64 mac_local_faults;		/* mlfc */
- 	u64 mac_remote_faults;		/* mrfc */
-+	u64 rx_len_errors;		/* rlec */
- 	u64 link_xon_rx;		/* lxonrxc */
- 	u64 link_xoff_rx;		/* lxoffrxc */
- 	u64 link_xon_tx;		/* lxontxc */
 -- 
 2.43.0
 
