@@ -4,95 +4,92 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8C15EC25B78
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  4 Jun 2024 12:57:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 930BDC25B78
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  4 Jun 2024 13:22:14 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 42D4961073;
-	Tue,  4 Jun 2024 12:57:23 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 4BDE061234;
+	Tue,  4 Jun 2024 13:22:14 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Sp0Cm6bTdZGu; Tue,  4 Jun 2024 12:57:21 +0000 (UTC)
+ id b5bo4hu9DmEi; Tue,  4 Jun 2024 13:22:13 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 979EE61060
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 95A5961202
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1717505841;
-	bh=91wxoVraCJyEFHLnARWx8bLTQTo1JOhp7iRUBcQAUkg=;
+	s=default; t=1717507333;
+	bh=PydXO3m0yG0q6OmRlQCCaIHdKT5pYWZnOgJCqD4Ixpg=;
 	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=W6lmYSSoLc4cHi4HX+KQp7IKayChFJEGz2C//Qp2fs0s6XCe/d1Dx/cs8LI1tT/tD
-	 WCWPOmNrHOZoAMvYccyFUVEDkw7G6HUREy0Jsy4E1dgMfbufDa/C+4sZRRypygrMKf
-	 XegM2anoB16x3xcnymlB1Lv6CoZ1C4r+kEzJLuv4c+x/Ooi+MeaMJIgKQg8dtOCqK8
-	 F0MMKh7hmEXczIqvm9v9MDcw9pQ5ZlRrFXWCmcmbZia/eyd88ngNlLL9KHKu/9lbh/
-	 KExagvzZa43Ya1YIBuu5gzrFpg2LffHxxSn7xvQhocUWsbSYYzWmd5ULe09KR+ZoO/
-	 4yibkpYV5NRUg==
+	b=NvDYdWDPWUIJWDhhqwmN+buVgle5jlJ2ov+3KHt2zL9b0VkEStz8/KQ6+E/XzwC9U
+	 qi9bdAkllP3H4vqcWLPxu3gMc91iStzKkUInK9xL39fP0sL8YEwJiAT3T53XP2GxQq
+	 xiRZiOLoZWgNAKg63CMHj7yjG3EuQXifhIv8xhGCfgIlugj/rj1NjjW2WlaElFSM1V
+	 TidYybFxlaQoURUIdEYgQBWgt6wzjA9biS8yQOZltuC5LHj1W025XbM4gKjWi1UxVh
+	 1yOHCqSAPiEgNncQNJQRVguOf5/xBcvoP8VdtuNxlGEpUu89mtS74fLsJGB73DzSqo
+	 A+Q49rMUMR0OQ==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 979EE61060;
-	Tue,  4 Jun 2024 12:57:21 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 0FF571BF2F9
- for <intel-wired-lan@lists.osuosl.org>; Tue,  4 Jun 2024 12:57:20 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 95A5961202;
+	Tue,  4 Jun 2024 13:22:13 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 967371BF2A2
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  4 Jun 2024 13:22:11 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id ED90D41571
- for <intel-wired-lan@lists.osuosl.org>; Tue,  4 Jun 2024 12:57:19 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 8262640511
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  4 Jun 2024 13:22:11 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id IFuk5YHEyrNE for <intel-wired-lan@lists.osuosl.org>;
- Tue,  4 Jun 2024 12:57:19 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.8;
- helo=mgamail.intel.com; envelope-from=wojciech.drewek@intel.com;
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 9KTMOxfGTG40 for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  4 Jun 2024 13:22:10 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.10;
+ helo=mgamail.intel.com; envelope-from=maciej.fijalkowski@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org E6EEE413CA
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E6EEE413CA
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.8])
- by smtp4.osuosl.org (Postfix) with ESMTPS id E6EEE413CA
- for <intel-wired-lan@lists.osuosl.org>; Tue,  4 Jun 2024 12:57:18 +0000 (UTC)
-X-CSE-ConnectionGUID: UDPhOLu8RUuJ9dpwK4cm1g==
-X-CSE-MsgGUID: NSbbgXzQSnyW3kMrPRtYkw==
-X-IronPort-AV: E=McAfee;i="6600,9927,11093"; a="31583608"
-X-IronPort-AV: E=Sophos;i="6.08,213,1712646000"; d="scan'208";a="31583608"
-Received: from orviesa006.jf.intel.com ([10.64.159.146])
- by fmvoesa102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 04 Jun 2024 05:57:18 -0700
-X-CSE-ConnectionGUID: nfqG6T0wSW+MpnJU7moK0Q==
-X-CSE-MsgGUID: 5XOJMMmaQ8u5HD1Mb3L2LQ==
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 12610404B4
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 12610404B4
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.10])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 12610404B4
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  4 Jun 2024 13:22:09 +0000 (UTC)
+X-CSE-ConnectionGUID: bulASic+QO6wAUlnfQTKVw==
+X-CSE-MsgGUID: HnMXazpcSUCc6G6A6G2d0A==
+X-IronPort-AV: E=McAfee;i="6600,9927,11093"; a="31552835"
+X-IronPort-AV: E=Sophos;i="6.08,213,1712646000"; d="scan'208";a="31552835"
+Received: from fmviesa009.fm.intel.com ([10.60.135.149])
+ by orvoesa102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 04 Jun 2024 06:22:09 -0700
+X-CSE-ConnectionGUID: 8Hm37LyARG2LAxP12L0XDw==
+X-CSE-MsgGUID: 5UvhuG29TNqg6ELoUKN1VQ==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.08,213,1712646000"; d="scan'208";a="37698338"
-Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by orviesa006.jf.intel.com with ESMTP; 04 Jun 2024 05:57:16 -0700
-Received: from rozewie.igk.intel.com (unknown [10.211.8.69])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id 09FDA125B4;
- Tue,  4 Jun 2024 13:57:14 +0100 (IST)
-From: Wojciech Drewek <wojciech.drewek@intel.com>
-To: netdev@vger.kernel.org
-Date: Tue,  4 Jun 2024 14:55:14 +0200
-Message-Id: <20240604125514.799333-1-wojciech.drewek@intel.com>
-X-Mailer: git-send-email 2.40.1
+X-IronPort-AV: E=Sophos;i="6.08,213,1712646000"; d="scan'208";a="37350091"
+Received: from boxer.igk.intel.com ([10.102.20.173])
+ by fmviesa009.fm.intel.com with ESMTP; 04 Jun 2024 06:22:07 -0700
+From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Date: Tue,  4 Jun 2024 15:21:47 +0200
+Message-Id: <20240604132155.3573752-1-maciej.fijalkowski@intel.com>
+X-Mailer: git-send-email 2.35.3
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1717505839; x=1749041839;
+ t=1717507330; x=1749043330;
  h=from:to:cc:subject:date:message-id:mime-version:
  content-transfer-encoding;
- bh=9QRE6QyhzZCtFs3LRqDV+9PpiMqhE5qgsLSY5FDmQ18=;
- b=P5RdKaLdupwepTJ3MuKkp1sfEwod/jcE5XQc7PIAL72Ka85cTg5XQYb6
- 1PWD8bBuKsPDKtCQO+kgdhYS81sbwIAAeQj7vX4/7T1hkndnBmxztymvC
- iwLMHX8Ai2c2TWHxEiK86++4of2E5FH+dyjT07ghV4Ls9urFnF1ZWyPB/
- g0g1xy0bxzJXNlmtmI7cAkve/f/VprpRHNUygqbTkglGpWlZ5+eZ3oBEi
- 9SRnGeBzeAsywY/qP2Miu3Kktlido8/VUxaIM63k+kWkHl1J5AxwqPazO
- rO/29WTpXh+S/T2eNO3gpdkFEVoZdzDNBw+AxhyNs1k+JBCmRl6wY1zEq
- w==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ bh=bjzwZh4LunZ2cpdfC/fNWkWwzMQXMBwkURvSvjTCarI=;
+ b=YkM9Pk3vQW7Q9MdTanfXSaYS4Ap6gLBblnZ5C8J+grLeOgU6EgB4gjr5
+ WjqEQ8eSn1ZA/dFv0KlJ0Tg2ZRIsPZXTykPlhdopRnhcDHQmhQcw+Z6vn
+ ppo59wbfMVPvATagBEAVLOek5GYmdqedzIWgM+URjBn2g1gTV106bLnWU
+ C8zGj5/rVu9uESaF4u/9vRp17MPHNROLCri5bvySX2pJ7DFCfSPnBjmnz
+ lvCPbXN+2GFcAKR3yUOUlPJH0UV3Ph2FgYpq5i+naG0denkXZMJKjkn/o
+ 7RmA9PgVqIew1GgCCasuA0m3pH/+OlT01wae75A4ouc7L6GS2ofpGHnJC
+ g==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=P5RdKaLd
-Subject: [Intel-wired-lan] [PATCH iwl-net v4] ice: implement AQ download pkg
- retry
+ header.s=Intel header.b=YkM9Pk3v
+Subject: [Intel-wired-lan] [PATCH v3 iwl-net 0/8] ice: fix AF_XDP ZC timeout
+ and concurrency issues
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,68 +102,64 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: jacob.e.keller@intel.com, kuba@kernel.org, intel-wired-lan@lists.osuosl.org
+Cc: Maciej Fijalkowski <maciej.fijalkowski@intel.com>, larysa.zaremba@intel.com,
+ netdev@vger.kernel.org, michal.kubiak@intel.com, anthony.l.nguyen@intel.com,
+ jacob.e.keller@intel.com, magnus.karlsson@intel.com
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-ice_aqc_opc_download_pkg (0x0C40) AQ sporadically returns error due
-to FW issue. Fix this by retrying five times before moving to
-Safe Mode. Sleep for 20 ms before retrying. This was tested with the
-4.40 firmware.
+Hi,
 
-Fixes: c76488109616 ("ice: Implement Dynamic Device Personalization (DDP) download")
-Reviewed-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
-Signed-off-by: Wojciech Drewek <wojciech.drewek@intel.com>
-Reviewed-by: Brett Creeley <brett.creeley@amd.com>
----
-v2: remove "failure" from log message
-v3: don't sleep in the last iteration of the wait loop
-v4: Mention the delay in the commit msg
----
- drivers/net/ethernet/intel/ice/ice_ddp.c | 23 +++++++++++++++++++++--
- 1 file changed, 21 insertions(+), 2 deletions(-)
+changes included in this patchset address an issue that customer has
+been facing when AF_XDP ZC Tx sockets were used in combination with flow
+control and regular Tx traffic.
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ddp.c b/drivers/net/ethernet/intel/ice/ice_ddp.c
-index ce5034ed2b24..f182179529b7 100644
---- a/drivers/net/ethernet/intel/ice/ice_ddp.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ddp.c
-@@ -1339,6 +1339,7 @@ ice_dwnld_cfg_bufs_no_lock(struct ice_hw *hw, struct ice_buf *bufs, u32 start,
- 
- 	for (i = 0; i < count; i++) {
- 		bool last = false;
-+		int try_cnt = 0;
- 		int status;
- 
- 		bh = (struct ice_buf_hdr *)(bufs + start + i);
-@@ -1346,8 +1347,26 @@ ice_dwnld_cfg_bufs_no_lock(struct ice_hw *hw, struct ice_buf *bufs, u32 start,
- 		if (indicate_last)
- 			last = ice_is_last_download_buffer(bh, i, count);
- 
--		status = ice_aq_download_pkg(hw, bh, ICE_PKG_BUF_SIZE, last,
--					     &offset, &info, NULL);
-+		while (1) {
-+			status = ice_aq_download_pkg(hw, bh, ICE_PKG_BUF_SIZE,
-+						     last, &offset, &info,
-+						     NULL);
-+			if (hw->adminq.sq_last_status != ICE_AQ_RC_ENOSEC &&
-+			    hw->adminq.sq_last_status != ICE_AQ_RC_EBADSIG)
-+				break;
-+
-+			try_cnt++;
-+
-+			if (try_cnt == 5)
-+				break;
-+
-+			msleep(20);
-+		}
-+
-+		if (try_cnt)
-+			dev_dbg(ice_hw_to_dev(hw),
-+				"ice_aq_download_pkg number of retries: %d\n",
-+				try_cnt);
- 
- 		/* Save AQ status from download package */
- 		if (status) {
+After executing:
+ethtool --set-priv-flags $dev link-down-on-close on
+ethtool -A $dev rx on tx on
+
+launching multiple ZC Tx sockets on $dev + pinging remote interface (so
+that regular Tx traffic is present) and then going through down/up of
+$dev, Tx timeout occured and then most of the time ice driver was unable
+to recover from that state.
+
+These patches combined together solve the described above issue on
+customer side. Main focus here is to forbid producing Tx descriptors
+when either carrier is not yet initialized or process of bringing
+interface down has already started.
+
+Thanks,
+Maciej
+
+v2->v3:
+- drop redundant braces in patch 3 [Shannon]
+- fix naming of ice_xsk_pool() in patch 6 [Shannon]
+- add review and test tags
+
+v1->v2:
+- fix kdoc issues in patch 6 and 8
+- drop Larysa's patches for now
+
+Maciej Fijalkowski (7):
+  ice: don't busy wait for Rx queue disable in ice_qp_dis()
+  ice: replace synchronize_rcu with synchronize_net
+  ice: modify error handling when setting XSK pool in ndo_bpf
+  ice: toggle netif_carrier when setting up XSK pool
+  ice: improve updating ice_{t,r}x_ring::xsk_pool
+  ice: add missing WRITE_ONCE when clearing ice_rx_ring::xdp_prog
+  ice: xsk: fix txq interrupt mapping
+
+Michal Kubiak (1):
+  ice: respect netif readiness in AF_XDP ZC related ndo's
+
+ drivers/net/ethernet/intel/ice/ice.h      |  11 +-
+ drivers/net/ethernet/intel/ice/ice_base.c |   4 +-
+ drivers/net/ethernet/intel/ice/ice_main.c |   2 +-
+ drivers/net/ethernet/intel/ice/ice_txrx.c |   6 +-
+ drivers/net/ethernet/intel/ice/ice_xsk.c  | 153 +++++++++++++---------
+ drivers/net/ethernet/intel/ice/ice_xsk.h  |   4 +-
+ 6 files changed, 104 insertions(+), 76 deletions(-)
+
 -- 
-2.40.1
+2.34.1
 
