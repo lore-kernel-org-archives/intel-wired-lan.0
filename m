@@ -4,91 +4,92 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3928DC25B76
-	for <intel-wired-lan@archiver.kernel.org>; Sun,  9 Jun 2024 01:51:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2AA73C27C53
+	for <intel-wired-lan@archiver.kernel.org>; Sun,  9 Jun 2024 06:53:17 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id C65D960741;
-	Sun,  9 Jun 2024 01:51:44 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 8C15D60628;
+	Sun,  9 Jun 2024 06:53:16 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id kQHlLGOCOzpe; Sun,  9 Jun 2024 01:51:42 +0000 (UTC)
+ id ju5MuhpU3vEo; Sun,  9 Jun 2024 06:53:16 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8E33D6072F
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org D921A60665
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1717897902;
-	bh=eFbYCH2gQThoPlFcXbQlPkr6oH+f8ARWQRZLPzlmd5c=;
-	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=Jm/HxvFRivGOOWOhR0CWTeXarNer+0heEox/xVs0tpCBwh4XP7rmmcFenfSH6GAJE
-	 qI8aP+Ztj+2Dtzhu20ltJFUbsfSK9CEZDmJ+QTzwY1KDI0JxAqU+in27bn2yk7TjTR
-	 1h5APr876UZTOWzrqDHSQF/9TsbDbQiQeFEXNH13+CKUgm70PAwBaesV5lc14MbZuC
-	 W92emhlY1Esu+FREqFE4rs/+RkTCxd40CxU1YIE4yDpDtrlQNqvi7RD+fOhazHi9xM
-	 5FtvWXoCXPrEOEEWoN+Fy8G+AAoYNKp07F1FguZNwufpVUdc6as2r3GLNzqk2D4i/p
-	 3E7gPdlvJ3PDQ==
+	s=default; t=1717915995;
+	bh=IILzNkV4OqqnNPTM0dvNM3BOjoc/471/8LtaHcB9MvU=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=dIWcTbTWtJkn5x61wdHbSV8LqJ6dYwz60PamEW7RkMy9R5ITW5KnfggGK/24ychjN
+	 1dlGEkUvdRt1KUbW/JfIDt6zyloWW/77moNK95Adbs3Ce8sCae0l91JiPQigclS6qe
+	 UMeFXbBB45dZkslmDnp7xDd8qsH8R1t3sJe88+A24BVeHLP0SkqZTy//YSbS3A4KSM
+	 QIOXJFlAKI6SH2R9Cje2UDMr1p33o/7FuNawPkj7CS3Q6uyGtPAVeceqcDFt1hiLqW
+	 LuduXUmD6nL+Zk86teBFy0IE2vZluf1pRYmOWxjCGlZCEC6oyqa1akcOyok4MK/SMc
+	 RTTUZggpa60dA==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 8E33D6072F;
-	Sun,  9 Jun 2024 01:51:42 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 6E1831BF400
- for <intel-wired-lan@lists.osuosl.org>; Sun,  9 Jun 2024 01:51:40 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id D921A60665;
+	Sun,  9 Jun 2024 06:53:15 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 304C21BF3F7
+ for <intel-wired-lan@lists.osuosl.org>; Sun,  9 Jun 2024 06:53:14 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 574ED406EF
- for <intel-wired-lan@lists.osuosl.org>; Sun,  9 Jun 2024 01:51:40 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 24BFC60665
+ for <intel-wired-lan@lists.osuosl.org>; Sun,  9 Jun 2024 06:53:14 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id jgfyKrAZPteR for <intel-wired-lan@lists.osuosl.org>;
- Sun,  9 Jun 2024 01:51:39 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.13;
- helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org C6886406EA
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C6886406EA
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.13])
- by smtp4.osuosl.org (Postfix) with ESMTPS id C6886406EA
- for <intel-wired-lan@lists.osuosl.org>; Sun,  9 Jun 2024 01:51:37 +0000 (UTC)
-X-CSE-ConnectionGUID: 1yHKkUNOTYiJbnQS0PxF9g==
-X-CSE-MsgGUID: OgSqwVZvTAKP2NAp68MwlA==
-X-IronPort-AV: E=McAfee;i="6600,9927,11097"; a="25695569"
-X-IronPort-AV: E=Sophos;i="6.08,224,1712646000"; d="scan'208";a="25695569"
-Received: from fmviesa003.fm.intel.com ([10.60.135.143])
- by orvoesa105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 08 Jun 2024 18:51:37 -0700
-X-CSE-ConnectionGUID: 0PMC3yJuQoSGjYP8uVwhOw==
-X-CSE-MsgGUID: OKofvQVZTXW34etSZZxTBg==
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id d6t9Ckbe1KX6 for <intel-wired-lan@lists.osuosl.org>;
+ Sun,  9 Jun 2024 06:53:13 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.16;
+ helo=mgamail.intel.com; envelope-from=sasha.neftin@intel.com;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 2206060628
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2206060628
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.16])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 2206060628
+ for <intel-wired-lan@lists.osuosl.org>; Sun,  9 Jun 2024 06:53:11 +0000 (UTC)
+X-CSE-ConnectionGUID: GR9anpFYScqJONWsZLu6Sw==
+X-CSE-MsgGUID: 7CIoenHTQTWpZxQ15WKszQ==
+X-IronPort-AV: E=McAfee;i="6600,9927,11097"; a="11982344"
+X-IronPort-AV: E=Sophos;i="6.08,225,1712646000"; d="scan'208";a="11982344"
+Received: from orviesa007.jf.intel.com ([10.64.159.147])
+ by fmvoesa110.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 08 Jun 2024 23:53:11 -0700
+X-CSE-ConnectionGUID: gyBO7rIxRmujWc9P/gy5Tg==
+X-CSE-MsgGUID: hadHARGyRwSVgvTZuCuVWA==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.08,224,1712646000"; d="scan'208";a="43140493"
-Received: from lkp-server01.sh.intel.com (HELO 8967fbab76b3) ([10.239.97.150])
- by fmviesa003.fm.intel.com with ESMTP; 08 Jun 2024 18:51:36 -0700
-Received: from kbuild by 8967fbab76b3 with local (Exim 4.96)
- (envelope-from <lkp@intel.com>) id 1sG7iX-0000kN-2r
- for intel-wired-lan@lists.osuosl.org; Sun, 09 Jun 2024 01:51:33 +0000
-Date: Sun, 09 Jun 2024 09:51:09 +0800
-From: kernel test robot <lkp@intel.com>
-To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Message-ID: <202406090908.lTF492HT-lkp@intel.com>
-User-Agent: s-nail v14.9.24
+X-IronPort-AV: E=Sophos;i="6.08,225,1712646000"; d="scan'208";a="39417690"
+Received: from unknown (HELO ccdlinuxdev11.iil.intel.com) ([143.185.162.51])
+ by orviesa007.jf.intel.com with ESMTP; 08 Jun 2024 23:53:11 -0700
+From: Sasha Neftin <sasha.neftin@intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Date: Sun,  9 Jun 2024 09:53:09 +0300
+Message-Id: <20240609065309.2049754-1-sasha.neftin@intel.com>
+X-Mailer: git-send-email 2.34.1
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1717897899; x=1749433899;
- h=date:from:to:subject:message-id;
- bh=kkQuZWK4+dDw6nGz1FEWlnSsJ8g5tAyTTKevnwk1erw=;
- b=GbgNT68FiQ4ftTeQtwRmkwckQQsTfwZz0luD0av6uJ2swUGppiDx2q2q
- HBTz6ZFjR/zUSrcVEhP20i7J+AoYMEre/9jgyeXx7/MbXVj58xZSpcacp
- XyeCJs2YbYSfp50oOub943O4iQUDSTFCiQOJu9lryIFJ2YuzaPTmta9Z0
- hHr041Qk7wze5m/XXmVJKsce4HymVLKwu5gVOHLYCIIIrbpDmnNZxD6gN
- PPlJTQ1svrFvDe13DHAPy9FJyEc3ZAzu96ebN4MRnn/ZGnlrvznDxhBGI
- y92mdqq2MZSUab5Fiugg8O1JwE9NsvaCRpF+t6Bvp8HQepNdIpSXw5wCg
- Q==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ t=1717915993; x=1749451993;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=86p5fNFEBptbakHo+aplP1GZW6k6M5vZxX0ILsmDHOI=;
+ b=eiT5IEx28Bv+pze96ObjtAEyFSgip2Ql1AtjXoye+NkMOfSrA9/yEdWM
+ X0i93X+GCNpntmlVBVinN0K52cTa4kes7g9ZiD6Mjfwscxoon2+x+sOSR
+ UGCPig0gLr0XeYQE0+UGrMmnX8y3RgZ66PYVDfrMdbfEonS/wwnH+1Nd1
+ u6c7hSN25fgoU/vG1rc7UDPa40zKUaXLj3AYhuKkcGgGKdbdcE27xQ2df
+ j+9g8Plei32tW4NRcL8AxXHgSzjJ9kglgSBkZSfSLmgTLdV3HxL22T35l
+ DkFOry7eYiHXeWY16LcW3OxtGr0+lkdZFpfRMtJQbUWUfAMYYRwbQFnRm
+ g==;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=GbgNT68F
-Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
- 3480b86d0ad6df1f7fd4978557bc016ad1ed8c64
+ header.s=Intel header.b=eiT5IEx2
+Subject: [Intel-wired-lan] [iwl-next v1 1/1] igc: Remove the internal
+ 'eee_advert' field
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,44 +102,72 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
+Cc: Sasha Neftin <sasha.neftin@intel.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
-branch HEAD: 3480b86d0ad6df1f7fd4978557bc016ad1ed8c64  ice: Do not get coalesce settings while in reset
+Since kernels 'ethtool_keee' structure is in use, the internal 'eee_advert'
+a field becomes pointless and can be removed.
 
-elapsed time: 1621m
+This patch comes to clean up this redundant code.
 
-configs tested: 22
-configs skipped: 2
+Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+---
+ drivers/net/ethernet/intel/igc/igc.h         | 1 -
+ drivers/net/ethernet/intel/igc/igc_ethtool.c | 6 ------
+ drivers/net/ethernet/intel/igc/igc_main.c    | 3 ---
+ 3 files changed, 10 deletions(-)
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-tested configs:
-i386         buildonly-randconfig-001-20240609   gcc  
-openrisc                          allnoconfig   gcc  
-openrisc                            defconfig   gcc  
-parisc                            allnoconfig   gcc  
-parisc                              defconfig   gcc  
-parisc64                            defconfig   gcc  
-powerpc                           allnoconfig   gcc  
-riscv                             allnoconfig   gcc  
-riscv                               defconfig   clang
-s390                              allnoconfig   clang
-s390                                defconfig   clang
-sh                                allnoconfig   gcc  
-sh                                  defconfig   gcc  
-sparc                             allnoconfig   gcc  
-sparc                               defconfig   gcc  
-sparc64                             defconfig   gcc  
-um                               allmodconfig   clang
-um                                allnoconfig   clang
-um                                  defconfig   clang
-um                             i386_defconfig   gcc  
-um                           x86_64_defconfig   clang
-xtensa                            allnoconfig   gcc  
-
+diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
+index 8b14c029eda1..c38b4d0f00ce 100644
+--- a/drivers/net/ethernet/intel/igc/igc.h
++++ b/drivers/net/ethernet/intel/igc/igc.h
+@@ -202,7 +202,6 @@ struct igc_adapter {
+ 	struct net_device *netdev;
+ 
+ 	struct ethtool_keee eee;
+-	u16 eee_advert;
+ 
+ 	unsigned long state;
+ 	unsigned int flags;
+diff --git a/drivers/net/ethernet/intel/igc/igc_ethtool.c b/drivers/net/ethernet/intel/igc/igc_ethtool.c
+index a80ac148b402..1e9241103aa9 100644
+--- a/drivers/net/ethernet/intel/igc/igc_ethtool.c
++++ b/drivers/net/ethernet/intel/igc/igc_ethtool.c
+@@ -1636,10 +1636,6 @@ static int igc_ethtool_get_eee(struct net_device *netdev,
+ 	linkmode_set_bit(ETHTOOL_LINK_MODE_100baseT_Full_BIT,
+ 			 edata->supported);
+ 
+-	if (hw->dev_spec._base.eee_enable)
+-		mii_eee_cap1_mod_linkmode_t(edata->advertised,
+-					    adapter->eee_advert);
+-
+ 	eeer = rd32(IGC_EEER);
+ 
+ 	/* EEE status on negotiated link */
+@@ -1700,8 +1696,6 @@ static int igc_ethtool_set_eee(struct net_device *netdev,
+ 		return -EINVAL;
+ 	}
+ 
+-	adapter->eee_advert = linkmode_to_mii_eee_cap1_t(edata->advertised);
+-
+ 	if (hw->dev_spec._base.eee_enable != edata->eee_enabled) {
+ 		hw->dev_spec._base.eee_enable = edata->eee_enabled;
+ 		adapter->flags |= IGC_FLAG_EEE;
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index c057d0afaf9a..772f425b1a24 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -4976,9 +4976,6 @@ void igc_up(struct igc_adapter *adapter)
+ 	/* start the watchdog. */
+ 	hw->mac.get_link_status = true;
+ 	schedule_work(&adapter->watchdog_task);
+-
+-	adapter->eee_advert = MDIO_EEE_100TX | MDIO_EEE_1000T |
+-			      MDIO_EEE_2_5GT;
+ }
+ 
+ /**
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+2.34.1
+
