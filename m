@@ -4,79 +4,83 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B0F4EC27C53
-	for <intel-wired-lan@archiver.kernel.org>; Sun,  9 Jun 2024 17:35:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 22DB2C27C55
+	for <intel-wired-lan@archiver.kernel.org>; Sun,  9 Jun 2024 17:35:08 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 7BAC56063E;
-	Sun,  9 Jun 2024 17:35:06 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id EB6E86060C;
+	Sun,  9 Jun 2024 17:35:07 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 9-8Murr7YxS3; Sun,  9 Jun 2024 17:35:04 +0000 (UTC)
+ id L6pA4rqwrqQC; Sun,  9 Jun 2024 17:35:06 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org D05A9607B6
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A91F7607CA
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1717954504;
-	bh=kQ39yrWSeLcfBXFbIW3/ujUEiVU2vTM6IiCeVabdV3U=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=n0abe3PkVw80rJfySCvG4uQp9nmDw2qZuc41rmbgD+BZowtS0+d5sFMJFu60k98pr
-	 Kyn0VMxj6tXqQ0SKM4FspCXwbwHvg4/t4Q30OyZs6g+gfKV8a/TC+voVcyDLUKVfcf
-	 Z7q6tiJgrnPrDVqKvGuUGjnzxC29t2HpPtT83tmv4uac22vd91BP4rzcXvNJmP4RBw
-	 ZiCCbQtXMKxrFwHaNNUtgYjzlo91unUZ+8hz/B5n4t7cDbrwQZL8w9p2Gv9WIIQq7Q
-	 OA3nvANVmuCLD3J8YfejHQK0mL9QWw+dsuZeMf5VRcfufDF0nCCB+suoOkSTgZwqOy
-	 QLp3eb5W7Zokg==
+	s=default; t=1717954505;
+	bh=Zum8GvX69SnWBe4DoCpsA1sTpckA29roiLcZVSZUWYc=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=dtAPFwdpaTclJSp/suBrkrfVm3eDtjl42162hPNWt9z0uR7n/aGbWfnrjyMzyqcMZ
+	 5Yx8ibZJ/J7G5Yuj2x0dG2WTV6Q3tuuKHr2RZ+vJY4E1PY9Omwv2ro4Whhchnh5qaM
+	 G3qsZwEnYz0Br8KZwELHbpd+3F5psZjDqFCtPRBtKpvIdYmnvqqmYjk5qgFZ8Sukze
+	 rn/S8+IPi5RwcRznlSpFefzp/uGMDhcJ1vaBoyynmJycyCgDTo3KqDRTZAgU8SO5c4
+	 xYAudEU/+sdLvQ52JXxdkVbU4USIvO7sZ3qxIvwqG146+1zVJH9C9aGFyGw0HsLat2
+	 DjUPm56rMQvQw==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id D05A9607B6;
-	Sun,  9 Jun 2024 17:35:04 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 8156B1BF589
- for <intel-wired-lan@lists.osuosl.org>; Sun,  9 Jun 2024 17:34:59 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id A91F7607CA;
+	Sun,  9 Jun 2024 17:35:05 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id CE02E1BF589
+ for <intel-wired-lan@lists.osuosl.org>; Sun,  9 Jun 2024 17:35:00 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 77D0540297
- for <intel-wired-lan@lists.osuosl.org>; Sun,  9 Jun 2024 17:34:58 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id BA325406A0
+ for <intel-wired-lan@lists.osuosl.org>; Sun,  9 Jun 2024 17:35:00 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id SX5y5GUcZsuh for <intel-wired-lan@lists.osuosl.org>;
- Sun,  9 Jun 2024 17:34:57 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 3KPU9y4WnxFo for <intel-wired-lan@lists.osuosl.org>;
+ Sun,  9 Jun 2024 17:35:00 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=193.104.135.124;
  helo=mail1.fiberby.net; envelope-from=ast@fiberby.net; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 0AF1740511
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 0AF1740511
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 75F4940639
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 75F4940639
 Received: from mail1.fiberby.net (mail1.fiberby.net [193.104.135.124])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 0AF1740511
- for <intel-wired-lan@lists.osuosl.org>; Sun,  9 Jun 2024 17:34:56 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 75F4940639
+ for <intel-wired-lan@lists.osuosl.org>; Sun,  9 Jun 2024 17:34:59 +0000 (UTC)
 Received: from x201s (193-104-135-243.ip4.fiberby.net [193.104.135.243])
- by mail1.fiberby.net (Postfix) with ESMTPSA id DE3E4600B1;
- Sun,  9 Jun 2024 17:34:34 +0000 (UTC)
+ by mail1.fiberby.net (Postfix) with ESMTPSA id 7C09B60178;
+ Sun,  9 Jun 2024 17:34:54 +0000 (UTC)
 Received: by x201s (Postfix, from userid 1000)
- id BD5A520407A; Sun, 09 Jun 2024 17:34:24 +0000 (UTC)
+ id AF31C204548; Sun, 09 Jun 2024 17:34:29 +0000 (UTC)
 From: =?UTF-8?q?Asbj=C3=B8rn=20Sloth=20T=C3=B8nnesen?= <ast@fiberby.net>
 To: netdev@vger.kernel.org
-Date: Sun,  9 Jun 2024 17:33:50 +0000
-Message-ID: <20240609173358.193178-1-ast@fiberby.net>
+Date: Sun,  9 Jun 2024 17:33:53 +0000
+Message-ID: <20240609173358.193178-4-ast@fiberby.net>
 X-Mailer: git-send-email 2.45.1
+In-Reply-To: <20240609173358.193178-1-ast@fiberby.net>
+References: <20240609173358.193178-1-ast@fiberby.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=fiberby.net; s=202008; t=1717954494;
- bh=JkrJak/o4liAaLBMuPCt9zcaNAf1wkkZu0Qot3yV6wg=;
- h=From:To:Cc:Subject:Date:From;
- b=EdXQqAH7a3qGW2gZRnfJJiAl70D1KwnUMbIefvkUaBBW79a5LcPm2PPvDwjOgGtpF
- nW2eIz5JrhxlPCkcB12sd2bqWz8zm+KB2lHJXfINxhQc+aXZBmBvD37CqzD5xr23eH
- 5haAvzvvdeM0JbwSzDTDwLEX7Vwi2unAgwNrjB8O4cXhz2mBYsx8LrtxrmiHtnLgkE
- ZgA1C5BrRNuQN5HFjihLedleg9fEqnFF7alBEFvz69z1SDwsBOMXiLVIr5hDJCROa3
- zONw2GyEI7FqiCMlSKbYJphr6KSLN6e2Aq4QbryqRP3jLSkYXbj6oHbLNI50VyZXC+
- PcC8O0/pko9GQ==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ d=fiberby.net; s=202008; t=1717954497;
+ bh=tui1WJ7baOGzKyf18IUbLIlkbfJr/Fu2MdHRU5e5qNY=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=IFoy71mOjo5t2qezRI5PX4FHJW2kFybFXf5/hSM0TMqBk3kMP/sGNkGumIoCuFrQ5
+ TTo8C972eigjkbLLRB7h4DkMJTwVRzZQ7S6s+I6sggSi+/0tvaP8LHuw6EEdKGFNcm
+ Z70WS5KqgE03OhEl7ptaV1AUZ35Z1pHszJ3PbBQzxPJVaQEBIjOPZYjk8c2Bd5VsqJ
+ kZAX5tODRrt0M/mF1lJwNFWwAH0QyLTkk6JZ87x9qiFJnCxmWAwJ6ktFcX++2W0UpP
+ bF3s2XtuIx5J2aVFAL8jd5vcZyTASLLxRcn9D0kLK1/9oumNB5T5f3biD5Z736NZrw
+ /XZNnNR0YcVYQ==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=reject dis=none)
  header.from=fiberby.net
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=fiberby.net header.i=@fiberby.net
- header.a=rsa-sha256 header.s=202008 header.b=EdXQqAH7
-Subject: [Intel-wired-lan] [PATCH net-next 0/5] net: flower: validate
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=fiberby.net header.i=@fiberby.net header.a=rsa-sha256
+ header.s=202008 header.b=IFoy71mO
+Subject: [Intel-wired-lan] [PATCH net-next 3/5] net/mlx5e: flower: validate
  encapsulation control flags
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
@@ -103,39 +107,40 @@ Cc: Louis Peens <louis.peens@corigine.com>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Now that all drivers properly rejects unsupported flower control flags
-used with FLOW_DISSECTOR_KEY_CONTROL, then time has come to add similar
-checks to the drivers supporting FLOW_DISSECTOR_KEY_ENC_CONTROL.
+Encapsulation control flags are currently not used anywhere,
+so all flags are currently unsupported by all drivers.
 
-There are currently just 4 drivers supporting this key, and
-3 of those currently doesn't validate encapsulated control flags.
+This patch adds validation of this assumption, so that
+encapsulation flags may be used in the future.
 
-Encapsulation control flags may currently be unused, but they should
-still be validated by the drivers, so that drivers will properly
-reject any new flags when they are introduced.
+In case any encapsulation control flags are masked,
+flow_rule_match_has_enc_control_flags() sets a NL extended
+error message, and we return -EOPNOTSUPP.
 
-This series adds some helper functions, and implements them in all
-4 drivers.
+Only compile tested.
 
-NB: It is currently discussed[1] to use encapsulation control flags
-for tunnel flags instead of the new FLOW_DISSECTOR_KEY_ENC_FLAGS.
+Signed-off-by: Asbjørn Sloth Tønnesen <ast@fiberby.net>
+---
+ drivers/net/ethernet/mellanox/mlx5/core/en/tc_tun.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-[1] https://lore.kernel.org/netdev/ZmFuxElwZiYJzBkh@dcaratti.users.ipa.redhat.com/
-
-Asbjørn Sloth Tønnesen (5):
-  flow_offload: add encapsulation control flag helpers
-  sfc: use flow_rule_is_supp_enc_control_flags()
-  net/mlx5e: flower: validate encapsulation control flags
-  nfp: flower: validate encapsulation control flags
-  ice: flower: validate encapsulation control flags
-
- drivers/net/ethernet/intel/ice/ice_tc_lib.c   |  4 +++
- .../ethernet/mellanox/mlx5/core/en/tc_tun.c   |  6 ++++
- .../ethernet/netronome/nfp/flower/offload.c   |  4 +++
- drivers/net/ethernet/sfc/tc.c                 |  5 +--
- include/net/flow_offload.h                    | 35 +++++++++++++++++++
- 5 files changed, 50 insertions(+), 4 deletions(-)
-
+diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en/tc_tun.c b/drivers/net/ethernet/mellanox/mlx5/core/en/tc_tun.c
+index 8dfb57f712b0d..721f35e597579 100644
+--- a/drivers/net/ethernet/mellanox/mlx5/core/en/tc_tun.c
++++ b/drivers/net/ethernet/mellanox/mlx5/core/en/tc_tun.c
+@@ -850,6 +850,12 @@ int mlx5e_tc_tun_parse(struct net_device *filter_dev,
+ 		flow_rule_match_enc_control(rule, &match);
+ 		addr_type = match.key->addr_type;
+ 
++		if (flow_rule_has_enc_control_flags(match.mask->flags,
++						    extack)) {
++			err = -EOPNOTSUPP;
++			goto out;
++		}
++
+ 		/* For tunnel addr_type used same key id`s as for non-tunnel */
+ 		if (addr_type == FLOW_DISSECTOR_KEY_IPV4_ADDRS) {
+ 			struct flow_match_ipv4_addrs match;
 -- 
 2.45.1
 
