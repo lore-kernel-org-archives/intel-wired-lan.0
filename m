@@ -4,107 +4,84 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7F1D9C27C53
-	for <intel-wired-lan@archiver.kernel.org>; Sun,  9 Jun 2024 13:23:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0B973C27C53
+	for <intel-wired-lan@archiver.kernel.org>; Sun,  9 Jun 2024 17:35:00 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 2A9326073C;
-	Sun,  9 Jun 2024 13:23:42 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 92F1C6066B;
+	Sun,  9 Jun 2024 17:35:00 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 4W5wy99tZqxr; Sun,  9 Jun 2024 13:23:41 +0000 (UTC)
+ id wIJY5GsaAqw5; Sun,  9 Jun 2024 17:35:00 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 448976061F
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org CDE626060C
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1717939421;
-	bh=25tOwBxb8NrUCwMNgIyHSiPtABS50jsxg2aCEapBvJ0=;
-	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
+	s=default; t=1717954499;
+	bh=nNTkumdBta08gIDxHhbCIB3WaKZAG26mzfa8zSbu0U4=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=l+B+wC3zKScrTvicjpkapaNM79ryVc/buL43e05UHUiDkbCrHhZbLRFhmY09Hwbe9
-	 4uRJrQi55bp5ObsNUC5yb2C/vrB/r5ABY5NZj3/aBpOT3OeHPkjB7GaIdMcMtM6ZXh
-	 qOb5iVHcklXrWgBAEEk5iKYWiDgPbt1YHTLh0LgLP+rN20Tu6FnVMNiZ/nvzXRaxlt
-	 kZJAvD82A3W8FCZI2C3uAb3pAh9pY9QHod09QtMJkf1jchwTAWsxMAm8cMpD97IzJN
-	 dnBV3zgkfmLxbxSbTsoyGQuPljgcjVQ5YpupRVG+Qhd0Gf2QtzkbVUBXl4juDg9Mh0
-	 Hhwc2WexzZsmA==
+	b=SVNJThIqCcDallmbi7ViFTSriiQMc+TEG08lVJpT/ZNUZo9LDnenOj24N9fZJ6YJP
+	 qrDhr+QwnSNDXSmJmSdsCShjncsapp+Z4k2yfKuCyRb4B6YMnjZK822PnackEVjn2w
+	 kmWs3ZLXdPD+brEQFqpbRMNrMz0apvSkx0Fev+XlToYXtgTak+p/UBbQRfhCgVMNGM
+	 vyHA/xhuRPudg+hgSSlUnoNysoPLoli+GltMSA8NUhjOExCWlRh0VJYAghe/DQDXDq
+	 gY03HEMGViHolL8TzpjeKeyJ6gEtt3w+Wgx28yrnOEJhuGl1PV7kP+cBF83AgKYWOc
+	 61OjCMin9v0dw==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 448976061F;
-	Sun,  9 Jun 2024 13:23:41 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 84D541BF41A
- for <intel-wired-lan@lists.osuosl.org>; Sun,  9 Jun 2024 13:23:39 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id CDE626060C;
+	Sun,  9 Jun 2024 17:34:59 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id EC5781BF589
+ for <intel-wired-lan@lists.osuosl.org>; Sun,  9 Jun 2024 17:34:57 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 7D715819F8
- for <intel-wired-lan@lists.osuosl.org>; Sun,  9 Jun 2024 13:23:39 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id D99B160627
+ for <intel-wired-lan@lists.osuosl.org>; Sun,  9 Jun 2024 17:34:57 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id DaPmIKgC7VXv for <intel-wired-lan@lists.osuosl.org>;
- Sun,  9 Jun 2024 13:23:38 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=212.227.17.12;
- helo=mout.web.de; envelope-from=markus.elfring@web.de; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 9B2DD819E6
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9B2DD819E6
-Received: from mout.web.de (mout.web.de [212.227.17.12])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 9B2DD819E6
- for <intel-wired-lan@lists.osuosl.org>; Sun,  9 Jun 2024 13:23:36 +0000 (UTC)
-X-UI-Sender-Class: 814a7b36-bfc1-4dae-8640-3722d8ec6cd6
-Received: from [192.168.178.21] ([94.31.83.95]) by smtp.web.de (mrweb106
- [213.165.67.124]) with ESMTPSA (Nemesis) id 1N9LIc-1sSJ2o4BzY-00ys40; Sun, 09
- Jun 2024 15:22:55 +0200
-Message-ID: <9903f5cb-f4e6-42f1-a8b1-b3b5da593dc7@web.de>
-Date: Sun, 9 Jun 2024 15:22:52 +0200
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id vGuWGQcDfOJj for <intel-wired-lan@lists.osuosl.org>;
+ Sun,  9 Jun 2024 17:34:57 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=193.104.135.124;
+ helo=mail1.fiberby.net; envelope-from=ast@fiberby.net; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org EB6506060C
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org EB6506060C
+Received: from mail1.fiberby.net (mail1.fiberby.net [193.104.135.124])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id EB6506060C
+ for <intel-wired-lan@lists.osuosl.org>; Sun,  9 Jun 2024 17:34:56 +0000 (UTC)
+Received: from x201s (193-104-135-243.ip4.fiberby.net [193.104.135.243])
+ by mail1.fiberby.net (Postfix) with ESMTPSA id E2F77600B4;
+ Sun,  9 Jun 2024 17:34:34 +0000 (UTC)
+Received: by x201s (Postfix, from userid 1000)
+ id 8C8052045EE; Sun, 09 Jun 2024 17:34:30 +0000 (UTC)
+From: =?UTF-8?q?Asbj=C3=B8rn=20Sloth=20T=C3=B8nnesen?= <ast@fiberby.net>
+To: netdev@vger.kernel.org
+Date: Sun,  9 Jun 2024 17:33:54 +0000
+Message-ID: <20240609173358.193178-5-ast@fiberby.net>
+X-Mailer: git-send-email 2.45.1
+In-Reply-To: <20240609173358.193178-1-ast@fiberby.net>
+References: <20240609173358.193178-1-ast@fiberby.net>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-To: Richard chien <richard.chien@hpe.com>, intel-wired-lan@lists.osuosl.org,
- netdev@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
- Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>
-References: <20240609081526.5621-1-richard.chien@hpe.com>
-Content-Language: en-GB
-From: Markus Elfring <Markus.Elfring@web.de>
-In-Reply-To: <20240609081526.5621-1-richard.chien@hpe.com>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:z17MGjTFufmAsVzFpzvj8lSI7qMzlUGSGK5xS9coywFkv1zog+w
- Wp6dw5fNs1QCmj4Uv/rpGe5PQxd64GZk8rjmzdz1PhUDzoytNLOmHuzu55Opvkv+RkFYg6y
- jY8uS3C9DRGOdtH0pnTauSUyS4LmRfCRKdRLb4jnwsxKYM9G86cqOgSqr8I9BntdkscaOKW
- zx/RfKIKeqnNYJtNzLzAw==
-UI-OutboundReport: notjunk:1;M01:P0:ZxIL5KsKow0=;V6dCDFstKp0XHYVZ9/UBAwozoYr
- XECA/KOp+Ounl5M33wIPnBceHaFMeEL5wVzEkWC1LtlmBCmO2QE2eLycecuhIZzbWhnz2HNHV
- LRHyY76hU+/VmjoV1udf/f5C8TpktOm59wawaVWG0bgO3kTm2j9kmHi0cDCgyNqsjMqYm+6cB
- ptS/9tcTv7qLCDMxyonjFVyjaiPTEuQ4T1HYvOH5rjvBAJGGghs5LFM2y2aFsbHxs38IUVaWe
- MYJUsnmxPZT2BzisCu3drOteDWofKSc9NmAB7wZNZlIAPZBIo7dbgkTxA/bwqBdf5sITAMxpy
- Qxvc3fY3r+FZhFnVGdZt25LS6v6D9uKpZp+xaUrLM6SvnXoTNuKPVC90hvzkTNhqcHQ+Y0Iij
- hoz14aG9ckHx4Pq78NHW4vaDrHSh2ZaHK9RCG/GXfbcTSnQ2mOSwlkFPcoDCJcsyFtiqNQRs7
- SUOhLa3d/MCtS6DtpqYI7QsU28STwB0B7lTjawh8MPdSQ8vDnF3/V1VoIW9ra8fUZ2XGFyg10
- GPX24Km0AGrwdvSqxjnpZ+Y9lFKu3oxiYvdLf55gQ/IlnfPH+LL5n+5ELMgm8iw7SInKxj9lw
- bCQ5z48ZoSUweVVJMOPF38JgbEngj0RxSE79PTZ+5wULVhiOfXTX3YGIJ81eMTnHENBqmU9Ci
- auWzA3i9+HB8ZfjzI+5rSlu2olNdRaHKrDeNEaoNE+kJ7hQm2KaNp6sDoxPPgeX4nhjaVV9Aa
- cu4JQWXum7SBxpXnKiasJ2Qn8KivxlfviLn4o9CmJl/ihC9rn5deQRhpgs0NpJ8AQ/qCx9ery
- ntxfSLdxD+x5eQw15AHGjr71hJVJpd39Bmj/FtL60X+tg=
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=web.de; 
- s=s29768273; t=1717939375; x=1718544175; i=markus.elfring@web.de;
- bh=25tOwBxb8NrUCwMNgIyHSiPtABS50jsxg2aCEapBvJ0=;
- h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:To:Cc:References:
- Subject:From:In-Reply-To:Content-Type:Content-Transfer-Encoding:
- cc:content-transfer-encoding:content-type:date:from:message-id:
- mime-version:reply-to:subject:to;
- b=Tv63ZLCh+AiQAEpCr2lPKO97YI1D6aZy7+1HJU5OeYjOR+kLXyhWop5dfdci7tuy
- 5OoIj0+RF0/1nuGcW6twYpd1MMpmsz48qafJmjAZ0ktyozJMGNdHTOqLYd1dx0Dm3
- 32b+weBTRZ+Bnme6+eJxP1dCjDI1OS5r4pa4lbyRhrUzqxmWSwfTND9OKz42cvCXD
- TUakUnAshr943/vRER4Z57oPLDfOZGBa4v7PVbaxCUGTJCVDDRqQa+gbDVDhqp3So
- 5TuFsEFEF1N3IyXdHulzixuF0DNKuyWwqnlnfj6snjsc+G7J7RXlLuafdKAdBwxb0
- 9Mli1YHwFKpUuT15IQ==
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dmarc=pass (p=quarantine dis=none)
- header.from=web.de
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+Content-Transfer-Encoding: 8bit
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=fiberby.net; s=202008; t=1717954494;
+ bh=t6x1tv97EU9SAZz9jzRF2dm87Yph3Q6Qy9KKIp/7l64=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=FHLyEX5cFRXCMaCxEXQ9Yb3NUuOeB8ZXuW2/sZ2EbA05SJnsXnG1jGXc3cRd27R3e
+ Lug9thFOPvT2s0r+YBLoZSIRjqW2OvQfyZVZ9BAwygRDnsCmCOi4y+T+WE24jZWUds
+ bvu+gLbyPhNKRb9LOrval2YJ5BVtVGn0G4/9W43d5GkqyKl4Wa9UMUcCHjI77gofxz
+ 5NuCgagsobeK1WsbwJRfqaOYGdhYo+Z/P5y+mU78OfW8Mp5sS0d/yQL+oYWFPaYW2Q
+ eP2x/vS6LLYhYnqnr4wJQnfnMpw2aZwSYg/9cau9rdqW10Dr9qP6Vg34FZhwtVxkHi
+ UorT6YIktC1eA==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dmarc=pass (p=reject dis=none)
+ header.from=fiberby.net
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key,
- unprotected) header.d=web.de header.i=markus.elfring@web.de
- header.a=rsa-sha256 header.s=s29768273 header.b=Tv63ZLCh
-Subject: Re: [Intel-wired-lan] [PATCH] igb: Add support for firmware update
+ unprotected) header.d=fiberby.net header.i=@fiberby.net header.a=rsa-sha256
+ header.s=202008 header.b=FHLyEX5c
+Subject: [Intel-wired-lan] [PATCH net-next 4/5] nfp: flower: validate
+ encapsulation control flags
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -117,42 +94,51 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Tony Nguyen <anthony.l.nguyen@intel.com>,
- LKML <linux-kernel@vger.kernel.org>, Richard chien <m8809301@gmail.com>
+Cc: Louis Peens <louis.peens@corigine.com>,
+ Davide Caratti <dcaratti@redhat.com>, Leon Romanovsky <leon@kernel.org>,
+ linux-net-drivers@amd.com, intel-wired-lan@lists.osuosl.org,
+ oss-drivers@corigine.com, i.maximets@ovn.org, Tariq Toukan <tariqt@nvidia.com>,
+ linux-kernel@vger.kernel.org, Edward Cree <ecree.xilinx@gmail.com>,
+ Eric Dumazet <edumazet@google.com>, Tony Nguyen <anthony.l.nguyen@intel.com>,
+ =?UTF-8?q?Asbj=C3=B8rn=20Sloth=20T=C3=B8nnesen?= <ast@fiberby.net>,
+ Martin Habets <habetsm.xilinx@gmail.com>, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>, Saeed Mahameed <saeedm@nvidia.com>,
+ "David S. Miller" <davem@davemloft.net>, linux-rdma@vger.kernel.org
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-> This patch adds support for firmware update to the in-tree igb driver an=
-d it is actually a port from the out-of-tree igb driver.
-> In-band firmware update is one of the essential system maintenance tasks=
-. To simplify this task, the Intel online firmware update
-=E2=80=A6
+Encapsulation control flags are currently not used anywhere,
+so all flags are currently unsupported by all drivers.
 
-Please improve such a change description also according to word wrapping
-because of more desirable text line lengths.
+This patch adds validation of this assumption, so that
+encapsulation flags may be used in the future.
 
+In case any encapsulation control flags are masked,
+flow_rule_match_has_enc_control_flags() sets a NL extended
+error message, and we return -EOPNOTSUPP.
 
-=E2=80=A6
-> +++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-> @@ -724,128 +724,282 @@ static void igb_get_regs(struct net_device *netd=
-ev,
->  		regs_buff[739] =3D rd32(E1000_I210_RR2DCDELAY);
->  }
->
-> -static int igb_get_eeprom_len(struct net_device *netdev)
-> -{
-> -	struct igb_adapter *adapter =3D netdev_priv(netdev);
-> -	return adapter->hw.nvm.word_size * 2;
-> +static u8 igb_nvmupd_get_module(u32 val)
-> +{
-> +        return (u8)(val & E1000_NVMUPD_MOD_PNT_MASK);
-> +}
-=E2=80=A6
+Only compile tested.
 
-Would you like to reconsider the indentation once more for your change app=
-roach?
-https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Do=
-cumentation/process/coding-style.rst?h=3Dv6.10-rc2#n18
+Signed-off-by: Asbjørn Sloth Tønnesen <ast@fiberby.net>
+---
+ drivers/net/ethernet/netronome/nfp/flower/offload.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-Regards,
-Markus
+diff --git a/drivers/net/ethernet/netronome/nfp/flower/offload.c b/drivers/net/ethernet/netronome/nfp/flower/offload.c
+index 8e0a890381b60..46ffc2c208930 100644
+--- a/drivers/net/ethernet/netronome/nfp/flower/offload.c
++++ b/drivers/net/ethernet/netronome/nfp/flower/offload.c
+@@ -321,6 +321,10 @@ nfp_flower_calculate_key_layers(struct nfp_app *app,
+ 
+ 		flow_rule_match_enc_control(rule, &enc_ctl);
+ 
++		if (flow_rule_has_enc_control_flags(enc_ctl.mask->flags,
++						    extack))
++			return -EOPNOTSUPP;
++
+ 		if (enc_ctl.mask->addr_type != 0xffff) {
+ 			NL_SET_ERR_MSG_MOD(extack, "unsupported offload: wildcarded protocols on tunnels are not supported");
+ 			return -EOPNOTSUPP;
+-- 
+2.45.1
+
