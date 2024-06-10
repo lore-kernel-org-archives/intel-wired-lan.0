@@ -4,69 +4,69 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C1CF9C27C6E
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 10 Jun 2024 07:39:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0B7D5C27C5E
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 10 Jun 2024 07:39:49 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 85152607C0;
-	Mon, 10 Jun 2024 07:39:46 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id B801C606F1;
+	Mon, 10 Jun 2024 07:39:49 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 7LZhVjoXhtgH; Mon, 10 Jun 2024 07:39:45 +0000 (UTC)
+ id 0hwB6FiaqhZ4; Mon, 10 Jun 2024 07:39:49 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org ABEC7607C8
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org DF42D60705
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1718005185;
-	bh=vQXVhH2S19ZegMYk2hwUZkFt0QBDia+p8ttsfSDgk5g=;
+	s=default; t=1718005188;
+	bh=zB/5jFC5Gy2APpWIEu+N+fdUIh3IBJcgdr7YJGeCUiI=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=fh3DWZ+dn5o2xCP+WoQPDF7cnNq1njYJ60xL+E61sMPLbF/ICdLO4qiTiaRs0AFnP
-	 oEwnYo5GJA4NOJGKOYoUwlHM7E6L6ROu7RP9Tx7aWv0Yz9hB6IUjvun9uOXsKSdt+u
-	 LX0ZBpAlJ//ovBOEpnVtFmJdSZXdd0zAvGqFOZWy18I08Rbe38maq5tvJtjRH4JdXu
-	 qpjgtBgTkvqPgfoVGr86jzYmecfm1mux9WINFFxjKPBThH8eWA8TBrQLKT4ysjYBEQ
-	 zz1pUndZO+qpDUCjKapNso9Z0s7gXHbA7NCLYsIBIEbKF/2qEE7bVYNnQroCAyE+TN
-	 hzaxEySrrjUGw==
+	b=eWd7k1hfqXDcJlC6D2QzwoxXr6+NDYMY7IGARCA4U2O3/gU+hu/Ldzx0kZpDZzho/
+	 bk45fIMWGhtzWNVXh0tN5gwF+yah3Jqgs5BTTP8l9MXIywoJ/7NXmNCMgItFgva3+L
+	 klnUzy1pmzalomV4mgQtktP2MihJjwClUGEat8hkpbn86Qr+SjtwUiKO5OEmJ3lsVe
+	 fYc6Wbycr7dYhi6HyI6t6n6X/kP9q6ZNl141kcX0ZWnBvMu8XYv3a+9TxnHB82adoX
+	 PfoS9L1ad70pFBz15vZ1L40bkya/8RFi+XwVaGV1K08UIgNha6kptNnmbhnGJ7WtdZ
+	 twM86qQg1e3rQ==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id ABEC7607C8;
-	Mon, 10 Jun 2024 07:39:45 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id DF42D60705;
+	Mon, 10 Jun 2024 07:39:48 +0000 (UTC)
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 70E2B1BF2B9
- for <intel-wired-lan@lists.osuosl.org>; Mon, 10 Jun 2024 07:39:44 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 697C71BF2B9
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 10 Jun 2024 07:39:47 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 6A23A405CD
- for <intel-wired-lan@lists.osuosl.org>; Mon, 10 Jun 2024 07:39:44 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 562B54024D
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 10 Jun 2024 07:39:47 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 5bFHm9-Z-SRu for <intel-wired-lan@lists.osuosl.org>;
- Mon, 10 Jun 2024 07:39:43 +0000 (UTC)
+ id wDRVJYmvvas0 for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 10 Jun 2024 07:39:46 +0000 (UTC)
 Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.19;
  helo=mgamail.intel.com; envelope-from=michal.swiatkowski@linux.intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 56AEA4057E
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 56AEA4057E
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 62F42405CD
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 62F42405CD
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.19])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 56AEA4057E
- for <intel-wired-lan@lists.osuosl.org>; Mon, 10 Jun 2024 07:39:43 +0000 (UTC)
-X-CSE-ConnectionGUID: C8iJxtR3T56V0ec/VcXnqQ==
-X-CSE-MsgGUID: Hs8q0msxSri9Ia5812iYog==
-X-IronPort-AV: E=McAfee;i="6600,9927,11098"; a="14448572"
-X-IronPort-AV: E=Sophos;i="6.08,227,1712646000"; d="scan'208";a="14448572"
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 62F42405CD
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 10 Jun 2024 07:39:46 +0000 (UTC)
+X-CSE-ConnectionGUID: AZtUxCsQQPevpG7gnvTRlA==
+X-CSE-MsgGUID: +Z+n0YrKS4ij6CH5X5VMVg==
+X-IronPort-AV: E=McAfee;i="6600,9927,11098"; a="14448580"
+X-IronPort-AV: E=Sophos;i="6.08,227,1712646000"; d="scan'208";a="14448580"
 Received: from fmviesa001.fm.intel.com ([10.60.135.141])
  by fmvoesa113.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 10 Jun 2024 00:39:43 -0700
-X-CSE-ConnectionGUID: BJOwvaQVRBa3RPolE97mUA==
-X-CSE-MsgGUID: T5zpgcBbQlaQTjb5FFCu2Q==
+ 10 Jun 2024 00:39:46 -0700
+X-CSE-ConnectionGUID: Lj6XFctzSsy9j7xT1uLHSQ==
+X-CSE-MsgGUID: 5T4McCH1SfG1P//un4lhkA==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.08,227,1712646000"; d="scan'208";a="70151258"
+X-IronPort-AV: E=Sophos;i="6.08,227,1712646000"; d="scan'208";a="70151268"
 Received: from wasp.igk.intel.com (HELO GK3153-DR2-R750-36946.localdomain.com)
  ([10.102.20.192])
- by fmviesa001.fm.intel.com with ESMTP; 10 Jun 2024 00:39:40 -0700
+ by fmviesa001.fm.intel.com with ESMTP; 10 Jun 2024 00:39:43 -0700
 From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Mon, 10 Jun 2024 09:44:32 +0200
-Message-ID: <20240610074434.1962735-3-michal.swiatkowski@linux.intel.com>
+Date: Mon, 10 Jun 2024 09:44:33 +0200
+Message-ID: <20240610074434.1962735-4-michal.swiatkowski@linux.intel.com>
 X-Mailer: git-send-email 2.42.0
 In-Reply-To: <20240610074434.1962735-1-michal.swiatkowski@linux.intel.com>
 References: <20240610074434.1962735-1-michal.swiatkowski@linux.intel.com>
@@ -74,25 +74,25 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1718005183; x=1749541183;
+ t=1718005186; x=1749541186;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=QIYH+SUWr2sVYaDXWXxSRCtzA7094H02K5Slg6Tci6Q=;
- b=UALhmSxVe7q3yh/tTO+KAtHdRUZ0jhjPZ0zUhU72dyBD0Ual7gaOoyNQ
- dwtjOLNDEQaIwYbBQEzzypkBWNmsoCZhjHgH2napg7XWYs0iGy3JT7jWq
- ab3KMF1HtqaJNyzlf2eMy0QrQY/qpaQrj0ZOqsqQAH1+xPFYQiPPfBxRx
- KBKWAQJtl2p5aCx7xjcNdxqMx3vBX0mQc9avQiwMVINcc8poNhmBFCZol
- Vl32s351JXblPL/S8LoqT+YqWOX30MmYqTCTGs1JhwAMZAXDf62oQceNv
- VbHH8dbW0PPvN75zVdGzBt7gEISK67LH2+sFc2rAn5upSiEgtK+HDx3cY
- w==;
+ bh=PfM8XjXN6/WU18JZS9mknua1WPAgEF86RL/6y9HcEao=;
+ b=arIF/1x1uHKOSOei3ETxB0K35UZRP5tneMs+vc4umykRyodh7brD5gu6
+ dzI23bCZDWSVLFSLqVh11jR3anoId+OsWaZRreNc21sJg1dIDcHu7Dkv3
+ wTPEHsrwD/nkYn4YPpyiydqn55tOazw8XXYoiVCyQAis9b4Edl2Ez+Ln5
+ p5Djp0EX2MDYjrr+AL0q7HHBQiGFeD4k6aZAMLj2/5X/rLLc8IvX1iU0j
+ Eob/4QMZr0ydF/QbX1Qaw/zlQNxst5trlroH8O7mEOge6m2H2BRL35UW2
+ 5y1HA2Ba75wtH9Y0e2QbKgmhp4cPphmM6MJ3D5Zdd8ME754/Hmc7zhgee
+ Q==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=none (p=none dis=none)
  header.from=linux.intel.com
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=UALhmSxV
-Subject: [Intel-wired-lan] [iwl-next v3 2/4] ice: move devlink locking
- outside the port creation
+ header.a=rsa-sha256 header.s=Intel header.b=arIF/1x1
+Subject: [Intel-wired-lan] [iwl-next v3 3/4] ice: move VSI configuration
+ outside repr setup
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -113,120 +113,155 @@ Cc: shayd@nvidia.com, maciej.fijalkowski@intel.com, sridhar.samudrala@intel.com,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-In case of subfunction lock will be taken for whole port creation and
-removing. Do the same in VF case.
+It is needed because subfunction port representor shouldn't configure
+the source VSI during representor creation.
+
+Move the code to separate function and call it only in case the VF port
+representor is being created.
 
 Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 ---
- drivers/net/ethernet/intel/ice/devlink/devlink.c      | 2 --
- drivers/net/ethernet/intel/ice/devlink/devlink_port.c | 4 ++--
- drivers/net/ethernet/intel/ice/ice_eswitch.c          | 9 +++++++--
- drivers/net/ethernet/intel/ice/ice_repr.c             | 2 --
- 4 files changed, 9 insertions(+), 8 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_eswitch.c | 55 ++++++++++++++------
+ drivers/net/ethernet/intel/ice/ice_eswitch.h | 10 ++++
+ drivers/net/ethernet/intel/ice/ice_repr.c    |  7 +++
+ 3 files changed, 57 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/devlink/devlink.c b/drivers/net/ethernet/intel/ice/devlink/devlink.c
-index 704e9ad5144e..f774781ab514 100644
---- a/drivers/net/ethernet/intel/ice/devlink/devlink.c
-+++ b/drivers/net/ethernet/intel/ice/devlink/devlink.c
-@@ -794,10 +794,8 @@ int ice_devlink_rate_init_tx_topology(struct devlink *devlink, struct ice_vsi *v
- 
- 	tc_node = pi->root->children[0];
- 	mutex_lock(&pi->sched_lock);
--	devl_lock(devlink);
- 	for (i = 0; i < tc_node->num_children; i++)
- 		ice_traverse_tx_tree(devlink, tc_node->children[i], tc_node, pf);
--	devl_unlock(devlink);
- 	mutex_unlock(&pi->sched_lock);
- 
- 	return 0;
-diff --git a/drivers/net/ethernet/intel/ice/devlink/devlink_port.c b/drivers/net/ethernet/intel/ice/devlink/devlink_port.c
-index 13e6790d3cae..c9fbeebf7fb9 100644
---- a/drivers/net/ethernet/intel/ice/devlink/devlink_port.c
-+++ b/drivers/net/ethernet/intel/ice/devlink/devlink_port.c
-@@ -407,7 +407,7 @@ int ice_devlink_create_vf_port(struct ice_vf *vf)
- 	devlink_port_attrs_set(devlink_port, &attrs);
- 	devlink = priv_to_devlink(pf);
- 
--	err = devlink_port_register(devlink, devlink_port, vsi->idx);
-+	err = devl_port_register(devlink, devlink_port, vsi->idx);
- 	if (err) {
- 		dev_err(dev, "Failed to create devlink port for VF %d, error %d\n",
- 			vf->vf_id, err);
-@@ -426,5 +426,5 @@ int ice_devlink_create_vf_port(struct ice_vf *vf)
- void ice_devlink_destroy_vf_port(struct ice_vf *vf)
- {
- 	devl_rate_leaf_destroy(&vf->devlink_port);
--	devlink_port_unregister(&vf->devlink_port);
-+	devl_port_unregister(&vf->devlink_port);
- }
 diff --git a/drivers/net/ethernet/intel/ice/ice_eswitch.c b/drivers/net/ethernet/intel/ice/ice_eswitch.c
-index b102db8b829a..7b57a6561a5a 100644
+index 7b57a6561a5a..3f73f46111fc 100644
 --- a/drivers/net/ethernet/intel/ice/ice_eswitch.c
 +++ b/drivers/net/ethernet/intel/ice/ice_eswitch.c
-@@ -423,6 +423,7 @@ static void ice_eswitch_start_reprs(struct ice_pf *pf)
- int
- ice_eswitch_attach(struct ice_pf *pf, struct ice_vf *vf)
- {
-+	struct devlink *devlink = priv_to_devlink(pf);
- 	struct ice_repr *repr;
- 	int err;
+@@ -117,17 +117,10 @@ static int ice_eswitch_setup_repr(struct ice_pf *pf, struct ice_repr *repr)
+ 	struct ice_vsi *vsi = repr->src_vsi;
+ 	struct metadata_dst *dst;
  
-@@ -437,7 +438,9 @@ ice_eswitch_attach(struct ice_pf *pf, struct ice_vf *vf)
+-	ice_remove_vsi_fltr(&pf->hw, vsi->idx);
+ 	repr->dst = metadata_dst_alloc(0, METADATA_HW_PORT_MUX,
+ 				       GFP_KERNEL);
+ 	if (!repr->dst)
+-		goto err_add_mac_fltr;
+-
+-	if (ice_vsi_update_security(vsi, ice_vsi_ctx_clear_antispoof))
+-		goto err_dst_free;
+-
+-	if (ice_vsi_add_vlan_zero(vsi))
+-		goto err_update_security;
++		return -ENOMEM;
  
- 	ice_eswitch_stop_reprs(pf);
+ 	netif_keep_dst(uplink_vsi->netdev);
  
-+	devl_lock(devlink);
- 	repr = ice_repr_add_vf(vf);
-+	devl_unlock(devlink);
- 	if (IS_ERR(repr)) {
- 		err = PTR_ERR(repr);
- 		goto err_create_repr;
-@@ -460,7 +463,9 @@ ice_eswitch_attach(struct ice_pf *pf, struct ice_vf *vf)
- err_xa_alloc:
- 	ice_eswitch_release_repr(pf, repr);
- err_setup_repr:
-+	devl_lock(devlink);
- 	ice_repr_rem_vf(repr);
-+	devl_unlock(devlink);
- err_create_repr:
- 	if (xa_empty(&pf->eswitch.reprs))
- 		ice_eswitch_disable_switchdev(pf);
-@@ -484,6 +489,7 @@ void ice_eswitch_detach(struct ice_pf *pf, struct ice_vf *vf)
- 		ice_eswitch_disable_switchdev(pf);
+@@ -136,16 +129,48 @@ static int ice_eswitch_setup_repr(struct ice_pf *pf, struct ice_repr *repr)
+ 	dst->u.port_info.lower_dev = uplink_vsi->netdev;
  
- 	ice_eswitch_release_repr(pf, repr);
-+	devl_lock(devlink);
- 	ice_repr_rem_vf(repr);
+ 	return 0;
++}
  
- 	if (xa_empty(&pf->eswitch.reprs)) {
-@@ -491,12 +497,11 @@ void ice_eswitch_detach(struct ice_pf *pf, struct ice_vf *vf)
- 		 * no point in keeping the nodes
- 		 */
- 		ice_devlink_rate_clear_tx_topology(ice_get_main_vsi(pf));
--		devl_lock(devlink);
- 		devl_rate_nodes_destroy(devlink);
--		devl_unlock(devlink);
- 	} else {
- 		ice_eswitch_start_reprs(pf);
- 	}
-+	devl_unlock(devlink);
+-err_update_security:
++/**
++ * ice_eswitch_cfg_vsi - configure VSI to work in slow-path
++ * @vsi: VSI structure of representee
++ * @mac: representee MAC
++ *
++ * Return: 0 on success, non-zero on error.
++ */
++int ice_eswitch_cfg_vsi(struct ice_vsi *vsi, const u8 *mac)
++{
++	int err;
++
++	ice_remove_vsi_fltr(&vsi->back->hw, vsi->idx);
++
++	err = ice_vsi_update_security(vsi, ice_vsi_ctx_clear_antispoof);
++	if (err)
++		goto err_update_security;
++
++	err = ice_vsi_add_vlan_zero(vsi);
++	if (err)
++		goto err_vlan_zero;
++
++	return 0;
++
++err_vlan_zero:
+ 	ice_vsi_update_security(vsi, ice_vsi_ctx_set_antispoof);
+-err_dst_free:
+-	metadata_dst_free(repr->dst);
+-	repr->dst = NULL;
+-err_add_mac_fltr:
+-	ice_fltr_add_mac_and_broadcast(vsi, repr->parent_mac, ICE_FWD_TO_VSI);
++err_update_security:
++	ice_fltr_add_mac_and_broadcast(vsi, mac, ICE_FWD_TO_VSI);
+ 
+-	return -ENODEV;
++	return err;
++}
++
++/**
++ * ice_eswitch_decfg_vsi - unroll changes done to VSI for switchdev
++ * @vsi: VSI structure of representee
++ * @mac: representee MAC
++ */
++void ice_eswitch_decfg_vsi(struct ice_vsi *vsi, const u8 *mac)
++{
++	ice_vsi_update_security(vsi, ice_vsi_ctx_set_antispoof);
++	ice_fltr_add_mac_and_broadcast(vsi, mac, ICE_FWD_TO_VSI);
  }
  
  /**
+diff --git a/drivers/net/ethernet/intel/ice/ice_eswitch.h b/drivers/net/ethernet/intel/ice/ice_eswitch.h
+index e2e5c0c75e7d..9a25606e9740 100644
+--- a/drivers/net/ethernet/intel/ice/ice_eswitch.h
++++ b/drivers/net/ethernet/intel/ice/ice_eswitch.h
+@@ -28,6 +28,9 @@ netdev_tx_t
+ ice_eswitch_port_start_xmit(struct sk_buff *skb, struct net_device *netdev);
+ struct net_device *ice_eswitch_get_target(struct ice_rx_ring *rx_ring,
+ 					  union ice_32b_rx_flex_desc *rx_desc);
++
++int ice_eswitch_cfg_vsi(struct ice_vsi *vsi, const u8 *mac);
++void ice_eswitch_decfg_vsi(struct ice_vsi *vsi, const u8 *mac);
+ #else /* CONFIG_ICE_SWITCHDEV */
+ static inline void ice_eswitch_detach(struct ice_pf *pf, struct ice_vf *vf) { }
+ 
+@@ -85,5 +88,12 @@ ice_eswitch_get_target(struct ice_rx_ring *rx_ring,
+ {
+ 	return rx_ring->netdev;
+ }
++
++static inline int ice_eswitch_cfg_vsi(struct ice_vsi *vsi, const u8 *mac)
++{
++	return -EOPNOTSUPP;
++}
++
++static inline void ice_eswitch_decfg_vsi(struct ice_vsi *vsi, const u8 *mac) { }
+ #endif /* CONFIG_ICE_SWITCHDEV */
+ #endif /* _ICE_ESWITCH_H_ */
 diff --git a/drivers/net/ethernet/intel/ice/ice_repr.c b/drivers/net/ethernet/intel/ice/ice_repr.c
-index fe83f305cc7d..35a6ac8c0466 100644
+index 35a6ac8c0466..bdda3401e343 100644
 --- a/drivers/net/ethernet/intel/ice/ice_repr.c
 +++ b/drivers/net/ethernet/intel/ice/ice_repr.c
-@@ -285,9 +285,7 @@ ice_repr_reg_netdev(struct net_device *netdev)
- 
- static void ice_repr_remove_node(struct devlink_port *devlink_port)
+@@ -306,6 +306,7 @@ static void ice_repr_rem(struct ice_repr *repr)
+ void ice_repr_rem_vf(struct ice_repr *repr)
  {
--	devl_lock(devlink_port->devlink);
- 	devl_rate_leaf_destroy(devlink_port);
--	devl_unlock(devlink_port->devlink);
- }
+ 	ice_repr_remove_node(&repr->vf->devlink_port);
++	ice_eswitch_decfg_vsi(repr->src_vsi, repr->parent_mac);
+ 	unregister_netdev(repr->netdev);
+ 	ice_devlink_destroy_vf_port(repr->vf);
+ 	ice_virtchnl_set_dflt_ops(repr->vf);
+@@ -401,11 +402,17 @@ struct ice_repr *ice_repr_add_vf(struct ice_vf *vf)
+ 	if (err)
+ 		goto err_netdev;
  
- /**
++	err = ice_eswitch_cfg_vsi(repr->src_vsi, repr->parent_mac);
++	if (err)
++		goto err_cfg_vsi;
++
+ 	ice_virtchnl_set_repr_ops(vf);
+ 	ice_repr_set_tx_topology(vf->pf);
+ 
+ 	return repr;
+ 
++err_cfg_vsi:
++	unregister_netdev(repr->netdev);
+ err_netdev:
+ 	ice_repr_rem(repr);
+ err_repr_add:
 -- 
 2.42.0
 
