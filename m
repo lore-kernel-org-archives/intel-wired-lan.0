@@ -4,91 +4,110 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 36213C27C53
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 12 Jun 2024 23:30:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3696FC27C53
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 12 Jun 2024 23:39:47 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id D87DB81E97;
-	Wed, 12 Jun 2024 23:30:23 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id CB7498130E;
+	Wed, 12 Jun 2024 23:39:46 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id pnG0Xz-bAL2W; Wed, 12 Jun 2024 23:30:23 +0000 (UTC)
+ id x2syqcUywGyc; Wed, 12 Jun 2024 23:39:46 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org CB86A81E70
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org EE3678133D
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1718235022;
-	bh=idNhATvznGdUIICE5v90Oq3WD6ozpeM8S9evINAKKjA=;
-	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=iWFTzRstGJ8qANc/HBg8v+EDfL6ZJS38ra51rpqQEOFYZfy2JOUAhiruhyEuNxzzY
-	 NIHAKBKE/90sO26LT76v3o6OWJQ/LjdrFtIrkeyK/Cx+No3PA5oMmlCAMlA9m59y9c
-	 NUmwqV8zSoKLpx4IMMc30oVajDF7UjlEoEIihsExx3FspB7gh2m/NuQn8dTVIohRSK
-	 QG6bHzF1h1G59YaDS9WWIueYy7u+LJABEM2u5Ys5uk3/7TKII62wa/FsklUxKcTtbY
-	 FOduPWElP3rI3di5cJa8BIja+eQd3sc80tLskFOJOoVoTWiDMDLMhCxbp0XiXLVX1H
-	 gi3A2a9yOglgA==
+	s=default; t=1718235586;
+	bh=5Ufu0W91jnsNezwewI2l9W+821zBoZ5SoHwqtrU6i9c=;
+	h=References:In-Reply-To:From:Date:To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=vxbt5ijfmMnjuDvBEObvMk0MZqEAXERTApW9ifhf4jtn7l2i0bL1BISf9L11eCM70
+	 u2tHZFOOi7IZ1wdQQZgeS2Qnc0SY+rvRwGaenJpjwNvk+bFsnYwPB0W8oICMT1g2Kb
+	 k+Ubk8dtr20k+TnDCvjkLd3eLH6HyuV3PxAk7KFdCwIF6zRmoSQ1FogHTR8fbfZSQn
+	 pj+W/LpOtr9PmKcGg4FJs87zKscVVV0oY2Lp+HOI6LuniMNEiE6r5fw19Fl2dNrfLm
+	 /A+vTAoVb00Go44R7rKcSivbGd5BZ7XGMb1oTgA+yenDahYQDHVVgy07CCP2OmjTYW
+	 tr6ayWFUt9SlQ==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id CB86A81E70;
-	Wed, 12 Jun 2024 23:30:22 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id ECCA71BF364
- for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Jun 2024 23:30:20 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id EE3678133D;
+	Wed, 12 Jun 2024 23:39:45 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 7A66D1BF376
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Jun 2024 18:02:25 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id E567C40160
- for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Jun 2024 23:30:20 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 6489F81171
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Jun 2024 18:02:25 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id wz5cn43b481N for <intel-wired-lan@lists.osuosl.org>;
- Wed, 12 Jun 2024 23:30:19 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.16;
- helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 8692140025
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 8692140025
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.16])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 8692140025
- for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Jun 2024 23:30:19 +0000 (UTC)
-X-CSE-ConnectionGUID: VopcKqoQS+m2b4dLYTflfw==
-X-CSE-MsgGUID: iVC2NGf9QIOf1F5ds1Ajfw==
-X-IronPort-AV: E=McAfee;i="6700,10204,11101"; a="12042607"
-X-IronPort-AV: E=Sophos;i="6.08,234,1712646000"; d="scan'208";a="12042607"
-Received: from orviesa004.jf.intel.com ([10.64.159.144])
- by fmvoesa110.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 12 Jun 2024 16:30:18 -0700
-X-CSE-ConnectionGUID: EljD75SJR4+S5NugRIraWA==
-X-CSE-MsgGUID: Ay50Xoz8R/WkbZd3WjR9Zg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.08,234,1712646000"; d="scan'208";a="45075786"
-Received: from lkp-server01.sh.intel.com (HELO 628d7d8b9fc6) ([10.239.97.150])
- by orviesa004.jf.intel.com with ESMTP; 12 Jun 2024 16:30:18 -0700
-Received: from kbuild by 628d7d8b9fc6 with local (Exim 4.96)
- (envelope-from <lkp@intel.com>) id 1sHXPz-00020U-0d
- for intel-wired-lan@lists.osuosl.org; Wed, 12 Jun 2024 23:30:15 +0000
-Date: Thu, 13 Jun 2024 07:29:24 +0800
-From: kernel test robot <lkp@intel.com>
-To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Message-ID: <202406130722.rbEmqb4X-lkp@intel.com>
-User-Agent: s-nail v14.9.24
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1718235019; x=1749771019;
- h=date:from:to:subject:message-id;
- bh=iT2Gd58rV5xwqJRGJUPBS0dlk+oemA4H2yLlBmct2EQ=;
- b=Jil4NJoNYs+60yCsPlFXmoCo1pvn9dDI9sF3uj1p0VJXieHdrYevfMF7
- sx07h1BvUKNmuX8LMuozd7hVz9Pnvb5voHIPE6CdPtIY4wybrEzkuodWw
- 92P9Mb8IU7ZLcX1QDWjP2E9Xj3qDWlwG86O/cFnSCUE4oSTQRE0HqdTRs
- 8R0FTcmJYccKZE+C0No3Mhn8+VkJwHkCZ01RUz5/fprsBY8GTyySfd8dt
- PfjnKfpfofmsa9kEtjPJ9fv/6IPGUZubv5TwnZ8suqa+KtaujhV8T80qr
- yx/TrqUyPMO1xetKhf34wzjXR41zhyg8S/Qzgvo5yjGYRpYJEjiJsWWen
- Q==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id wZsJINKTdONF for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 12 Jun 2024 18:02:24 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2607:f8b0:4864:20::1035; helo=mail-pj1-x1035.google.com;
+ envelope-from=decot@google.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 96BD880F21
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 96BD880F21
+Received: from mail-pj1-x1035.google.com (mail-pj1-x1035.google.com
+ [IPv6:2607:f8b0:4864:20::1035])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 96BD880F21
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Jun 2024 18:02:23 +0000 (UTC)
+Received: by mail-pj1-x1035.google.com with SMTP id
+ 98e67ed59e1d1-2c2d25b5432so50977a91.2
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Jun 2024 11:02:23 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20230601; t=1718215343; x=1718820143;
+ h=content-transfer-encoding:cc:to:subject:message-id:date:from
+ :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+ :subject:date:message-id:reply-to;
+ bh=5Ufu0W91jnsNezwewI2l9W+821zBoZ5SoHwqtrU6i9c=;
+ b=aFeRoN8cLF4hD0Att4TznCezsBQfydYE2+GrlLCtxQ2RaYJSQ9dHGUWWZTNkKY0HYx
+ IDh7zu+/ePoeBiYZAlWatPPqtc7ucDGyMrbMcGZboH+4j5Vhdld34nIxcWtYYg80LpO5
+ rpJHwwYUW560A9m4gK/5KLkDuLrRWpFxwBeETM/87KLkKj0kL8jOHLYeyTUk3Vr27g38
+ AwZlZCjAHgFTSSEWB5Nlr71TW0aFu73X79SRQOc64d8Q5/SYflPWIxtqKnn8dyLJpgYX
+ uaoZJ6rB7c40BeoP5qHpU+QH2HSs2g1YMopPOTS34DGLp6j5PCmVsp36ziNUD7dxJgHm
+ 9xyg==
+X-Forwarded-Encrypted: i=1;
+ AJvYcCWInexIpDryESYM9EsXcffWiJf0A0jELlvFI24U6Vm3eNW/aiiNUuAOgHH8GDRV2K6K1Y+Gr06c22Sd7qBJ6HIh5noaFLlz/Jgv+fv8SxDeiA==
+X-Gm-Message-State: AOJu0YwMB8gp/M3BBeh0r3sWhsxIejNbCyZBGzzjFxC7lq9IpDjJFprq
+ 4cE1mB5ws1rPnFXwsT952r0jadRNJ5Fiq2ajB+/I+dnhNtc3bIPHFIH+Dftw8E9k8rGVjBWwQgC
+ gEaB3+MUCq18H5e5dOY3hcwaK07cjZQ43Hncp
+X-Google-Smtp-Source: AGHT+IEQwSzrDmLBTYPaHrIuq3cIAvrEiVTrsKcSF+fDe6ObdM1YZpL6g0QOq5B1PpcsbHjvxfYSIj3EXYa3aj1ShS8=
+X-Received: by 2002:a17:90a:f197:b0:2c2:7e0e:4cba with SMTP id
+ 98e67ed59e1d1-2c4a770390cmr2462768a91.49.1718215342412; Wed, 12 Jun 2024
+ 11:02:22 -0700 (PDT)
+MIME-Version: 1.0
+References: <20240603184714.3697911-1-joshua.a.hay@intel.com>
+ <b30f34a1-48d6-4ff4-b375-d0eef5308261@gmail.com>
+ <cc76768c-d8d4-4c07-93c1-807f3159b573@intel.com>
+ <641b439b-2bc0-4f2b-9871-b522e1141cd1@intel.com>
+In-Reply-To: <641b439b-2bc0-4f2b-9871-b522e1141cd1@intel.com>
+From: David Decotigny <ddecotig@google.com>
+Date: Wed, 12 Jun 2024 11:01:46 -0700
+Message-ID: <CAG88wWaQaCf1rZAdh-5iWLYWOMfj3o6jtc0J=0_3pPDzP0Cyww@mail.gmail.com>
+To: Josh Hay <joshua.a.hay@intel.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Mailman-Approved-At: Wed, 12 Jun 2024 23:39:44 +0000
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=google.com; s=20230601; t=1718215343; x=1718820143; darn=lists.osuosl.org;
+ h=content-transfer-encoding:cc:to:subject:message-id:date:from
+ :in-reply-to:references:mime-version:from:to:cc:subject:date
+ :message-id:reply-to;
+ bh=5Ufu0W91jnsNezwewI2l9W+821zBoZ5SoHwqtrU6i9c=;
+ b=3/ivMAdsLGwR5UnLPqFfwfgGkV1R5t3/sGUxUxeEXDX2XGCVOgaBQHGC/HZydLzcWy
+ dC5swSc52Kg1fBdGEGJZ94j1kQ8TW7lnOXM2VJhc5ce+QEmyuHr1HTUKq+91n3nUQN/g
+ fDzAF1jnq2q/ioHrDZHQe4mMqZh/2pjsXE4eil3LpI/148Hg9NAd27hJJ2zyiNI1EheF
+ 4HLuJhq1CVdJbcXnnpQG//7eHk1HUTLtnqYW6RhOayYZmUvs7IOD//4xlC67qS4tLj4Z
+ 6I2gDOhASulq9KQGfVyPPxK+XEgTyOYXpX0rSpMZd9jutnC6hjhkGglW2pZg3BbAO3ZM
+ xwYA==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dmarc=pass (p=reject dis=none)
+ header.from=google.com
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=Jil4NJoN
-Subject: [Intel-wired-lan] [tnguy-net-queue:40GbE] BUILD SUCCESS
- fc9ea42acd47da605a03efb50eea6775220d7a92
+ unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256
+ header.s=20230601 header.b=3/ivMAds
+Subject: Re: [Intel-wired-lan] [PATCH iwl-net] idpf: extend tx watchdog
+ timeout
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,124 +120,140 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
+Cc: Alexander Lobakin <aleksander.lobakin@intel.com>,
+ Sridhar Samudrala <sridhar.samudrala@intel.com>,
+ intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git 40GbE
-branch HEAD: fc9ea42acd47da605a03efb50eea6775220d7a92  ice: implement AQ download pkg retry
+On Tue, Jun 11, 2024 at 11:13=E2=80=AFAM Josh Hay <joshua.a.hay@intel.com> =
+wrote:
+>
+>
+>
+> On 6/11/2024 3:44 AM, Alexander Lobakin wrote:
+> > From: David Decotigny <ddecotig@gmail.com>
+> > Date: Tue, 4 Jun 2024 16:34:48 -0700
+> >
+> >>
+> >>
+> >> On 6/3/2024 11:47 AM, Joshua Hay wrote:
+> >>>
+> >>> There are several reasons for a TX completion to take longer than usu=
+al
+> >>> to be written back by HW. For example, the completion for a packet th=
+at
+> >>> misses a rule will have increased latency. The side effect of these
+> >>> variable latencies for any given packet is out of order completions. =
+The
+> >>> stack sends packet X and Y. If packet X takes longer because of the r=
+ule
+> >>> miss in the example above, but packet Y hits, it can go on the wire
+> >>> immediately. Which also means it can be completed first.  The driver
+> >>> will then receive a completion for packet Y before packet X.  The dri=
+ver
+> >>> will stash the buffers for packet X in a hash table to allow the tx s=
+end
+> >>> queue descriptors for both packet X and Y to be reused. The driver wi=
+ll
+> >>> receive the completion for packet X sometime later and have to search
+> >>> the hash table for the associated packet.
+> >>>
+> >>> The driver cleans packets directly on the ring first, i.e. not out of
+> >>> order completions since they are to some extent considered "slow(er)
+> >>> path". However, certain workloads can increase the frequency of out o=
+f
+> >>> order completions thus introducing even more latency into the cleanin=
+g
+> >>> path. Bump up the timeout value to account for these workloads.
+> >>>
+> >>> Fixes: 0fe45467a104 ("idpf: add create vport and netdev configuration=
+")
+> >>> Reviewed-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
+> >>> Signed-off-by: Joshua Hay <joshua.a.hay@intel.com>
+> >>> ---
+> >>>    drivers/net/ethernet/intel/idpf/idpf_lib.c | 4 ++--
+> >>>    1 file changed, 2 insertions(+), 2 deletions(-)
+> >>
+> >>
+> >> We tested this patch with our intensive high-performance workloads tha=
+t
+> >> have been able to reproduce the issue, and it was sufficient to avoid =
+tx
+> >> timeouts. We also noticed that these longer timeouts are not unusual i=
+n
+> >> the smartnic space: we see 100s or 50s timeouts for a few NICs, and
+> >
+> > Example?
 
-elapsed time: 1681m
+a sample:
 
-configs tested: 102
-configs skipped: 3
+drivers/net/ethernet/cavium/thunder/nic.h:#define
+NICVF_TX_TIMEOUT                (50 * HZ)
+drivers/net/ethernet/cavium/thunder/nicvf_main.c:
+netdev->watchdog_timeo =3D NICVF_TX_TIMEOUT;
+drivers/net/ethernet/marvell/octeontx2/nic/otx2_common.h:#define
+OTX2_TX_TIMEOUT                (100 * HZ)
+drivers/net/ethernet/marvell/octeontx2/nic/otx2_pf.c:
+netdev->watchdog_timeo =3D OTX2_TX_TIMEOUT;
+drivers/net/ethernet/marvell/octeontx2/nic/otx2_vf.c:
+netdev->watchdog_timeo =3D OTX2_TX_TIMEOUT;
+drivers/net/ethernet/amazon/ena/ena_netdev.c:
+netdev->watchdog_timeo =3D msecs_to_jiffies(hints->netdev_wd_timeout);
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+> >
+> >> other NICs receive this timeout as a hint from the fw.
+> >>
+> >> Reviewed-by: David Decotigny <ddecotig@google.com>
+> >
+> > We either need to teach watchdog core to account OOOs or there's
+> > something really wrong in the driver. For example, how can we then
+> > distinguish if > 5 sec delay happened just due to an OOO or due to that
+> > something went bad with the HW?
+> >
+> > Note that there are several patches fixing Tx (incl. timeouts) in my
+> > tree, including yours (Joshua's) which you somehow didn't send yet ._.
+> > Maybe start from them first?
+>
+> I believe it was you who specifically asked our team to defer pushing
+> any upstream patches while you were working on the XDP series "to avoid
+> having to rebase", which was a reasonable request at the time. We also
+> had no reason to believe the existing upstream idpf implementation was
+> experiencing timeouts (it is being tested by numerous validation teams).
+> So there was no urgency to get those patches upstream. Which patches in
+> your tree do you believe fix specific timeout situations? It appears you
+> pulled in some of the changes from the out-of-tree driver, but those
+> were all enhancements. It wasn't until the workload that David mentioned
+> was run on the current driver that we had any indication there were
+> timeout issues.
 
-tested configs:
-alpha                             allnoconfig   gcc-13.2.0
-alpha                            allyesconfig   gcc-13.2.0
-alpha                               defconfig   gcc-13.2.0
-arc                               allnoconfig   gcc-13.2.0
-arc                                 defconfig   gcc-13.2.0
-arc                   randconfig-001-20240613   gcc-13.2.0
-arc                   randconfig-002-20240613   gcc-13.2.0
-arm                               allnoconfig   clang-19
-arm                                 defconfig   clang-14
-arm                   randconfig-001-20240613   gcc-13.2.0
-arm                   randconfig-002-20240613   clang-17
-arm                   randconfig-003-20240613   clang-19
-arm                   randconfig-004-20240613   clang-19
-arm64                             allnoconfig   gcc-13.2.0
-arm64                               defconfig   gcc-13.2.0
-arm64                 randconfig-001-20240613   gcc-13.2.0
-arm64                 randconfig-002-20240613   clang-19
-arm64                 randconfig-003-20240613   clang-19
-arm64                 randconfig-004-20240613   clang-19
-csky                              allnoconfig   gcc-13.2.0
-csky                                defconfig   gcc-13.2.0
-csky                  randconfig-001-20240613   gcc-13.2.0
-csky                  randconfig-002-20240613   gcc-13.2.0
-hexagon                          allmodconfig   clang-19
-hexagon                           allnoconfig   clang-19
-hexagon                          allyesconfig   clang-19
-hexagon                             defconfig   clang-19
-hexagon               randconfig-001-20240613   clang-19
-hexagon               randconfig-002-20240613   clang-15
-i386         buildonly-randconfig-001-20240612   gcc-13
-i386         buildonly-randconfig-002-20240612   gcc-8
-i386         buildonly-randconfig-003-20240612   gcc-13
-i386         buildonly-randconfig-004-20240612   clang-18
-i386         buildonly-randconfig-005-20240612   gcc-13
-i386         buildonly-randconfig-006-20240612   clang-18
-i386                  randconfig-001-20240612   gcc-8
-i386                  randconfig-002-20240612   clang-18
-i386                  randconfig-003-20240612   clang-18
-i386                  randconfig-004-20240612   clang-18
-i386                  randconfig-005-20240612   gcc-13
-i386                  randconfig-006-20240612   clang-18
-i386                  randconfig-011-20240612   clang-18
-i386                  randconfig-012-20240612   clang-18
-i386                  randconfig-013-20240612   clang-18
-i386                  randconfig-014-20240612   gcc-7
-i386                  randconfig-015-20240612   gcc-13
-i386                  randconfig-016-20240612   gcc-7
-loongarch                         allnoconfig   gcc-13.2.0
-loongarch                           defconfig   gcc-13.2.0
-loongarch             randconfig-001-20240613   gcc-13.2.0
-loongarch             randconfig-002-20240613   gcc-13.2.0
-m68k                              allnoconfig   gcc-13.2.0
-m68k                                defconfig   gcc-13.2.0
-microblaze                        allnoconfig   gcc-13.2.0
-microblaze                          defconfig   gcc-13.2.0
-mips                              allnoconfig   gcc-13.2.0
-nios2                             allnoconfig   gcc-13.2.0
-nios2                               defconfig   gcc-13.2.0
-nios2                 randconfig-001-20240613   gcc-13.2.0
-nios2                 randconfig-002-20240613   gcc-13.2.0
-openrisc                          allnoconfig   gcc-13.2.0
-openrisc                            defconfig   gcc-13.2.0
-parisc                            allnoconfig   gcc-13.2.0
-parisc                              defconfig   gcc-13.2.0
-parisc                randconfig-001-20240613   gcc-13.2.0
-parisc                randconfig-002-20240613   gcc-13.2.0
-parisc64                            defconfig   gcc-13.2.0
-powerpc                           allnoconfig   gcc-13.2.0
-powerpc               randconfig-001-20240613   clang-19
-powerpc               randconfig-002-20240613   clang-19
-powerpc               randconfig-003-20240613   clang-19
-powerpc64             randconfig-001-20240613   clang-19
-powerpc64             randconfig-002-20240613   clang-19
-powerpc64             randconfig-003-20240613   gcc-13.2.0
-riscv                             allnoconfig   gcc-13.2.0
-riscv                               defconfig   clang-19
-riscv                 randconfig-001-20240613   clang-19
-riscv                 randconfig-002-20240613   clang-19
-s390                              allnoconfig   clang-19
-s390                                defconfig   clang-19
-s390                  randconfig-001-20240613   gcc-13.2.0
-s390                  randconfig-002-20240613   gcc-13.2.0
-sh                                allnoconfig   gcc-13.2.0
-sh                                  defconfig   gcc-13.2.0
-sh                    randconfig-001-20240613   gcc-13.2.0
-sh                    randconfig-002-20240613   gcc-13.2.0
-sparc                             allnoconfig   gcc-13.2.0
-sparc                               defconfig   gcc-13.2.0
-sparc64                             defconfig   gcc-13.2.0
-sparc64               randconfig-001-20240613   gcc-13.2.0
-sparc64               randconfig-002-20240613   gcc-13.2.0
-um                               allmodconfig   clang-19
-um                                allnoconfig   clang-17
-um                               allyesconfig   gcc-13
-um                                  defconfig   clang-19
-um                             i386_defconfig   gcc-13
-um                    randconfig-001-20240613   gcc-9
-um                    randconfig-002-20240613   gcc-9
-um                           x86_64_defconfig   clang-15
-xtensa                            allnoconfig   gcc-13.2.0
-xtensa                randconfig-001-20240613   gcc-13.2.0
-xtensa                randconfig-002-20240613   gcc-13.2.0
+Some issues were observed with high cpu/memory/network utilization
+workloads such as a SAP HANA benchmark.
 
--- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+>
+> >
+> > I don't buy 30 seconds, at least for now. Maybe I'm missing something.
+> >
+> > Nacked-by: Alexander Lobakin <aleksander.lobakin@intel.com>
+>
+>
+> In the process of debugging the newly discovered timeout, our
+> architecture team made it clear that 5 seconds is too low for this type
+> of device, with a non deterministic pipeline where packets can take a
+> number of exception/slow paths. Admittedly, we don't know the exact
+> number, so the solution for the time being was to bump it up with a
+> comfortable buffer. As we tune things and debug with various workloads,
+> we can bring it back down. As David mentioned, there is precedent for an
+> extended timeout for smartnics. Why is it suddenly unacceptable for
+> Intel's device?
+>
+> >
+> > Thanks,
+> > Olek
+>
+> Thanks,
+> Josh
+--
+David Decotigny
+--
+David Decotigny
