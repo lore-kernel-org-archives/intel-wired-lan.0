@@ -1,97 +1,96 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 33C08C2BA15
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 14 Jun 2024 12:59:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E244BC27C79
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 14 Jun 2024 13:17:07 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id E1BAA4157C;
-	Fri, 14 Jun 2024 12:59:53 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 5113481A33;
+	Fri, 14 Jun 2024 13:17:07 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 1DJjb3xuh1Gf; Fri, 14 Jun 2024 12:59:53 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id hkfdtkPAFPCL; Fri, 14 Jun 2024 13:17:06 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 03A82414F9
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7E2FD81B8A
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1718369993;
-	bh=tG/x38xNik/BrmpUQB/VWMG8jkzYCc2i36aQgl4m/T0=;
+	s=default; t=1718371026;
+	bh=xINZR6+1wd4hl5509vBJtmOYRUw0xWdVs1qJ/ZRKrZk=;
 	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=gvMGvIlDVvHHOBb+pFUfx6mu5QHy9NZ8PwKrHVlHnSL9c33lr3gNTSAEs9NMv8LVb
-	 igN/j2MdT1tHEBaSSpmzadQYW4XJf0Gj6+vesPl9aXVqhqhUZtL5AfFP1fE9wX+vwV
-	 e4bRKZ2d+Af/615m/zzuuIbU9yH/ymbGrgLOV1J7gTbW+oQDDQjboE/UTJRxF6iAfS
-	 sFqSGKmNnzbV3eBR2+KFJfUC3ayFns/1mRO9jCBl3iMoEI7xjQqIFqkrYCSC2s2XMY
-	 ye4V9LAZYttNCXuiuDFP2uHaXOozrzVYJoDK4tu/K7o785W2lCzc+mF6BmULkrOL7/
-	 KxHOy/rn1v0oQ==
+	b=HNlsipHxgsgcZb6asm9yJJL8e+VjqyVWYyZ4+rL9vDcXV5yVkuf8ibxkqE95ljNv5
+	 YTtMFLmFYoBd3MSvh2esnLZGOPCLn3Vo0QemsCXpcX1clKHKP1f+EV6Y6MlxjZ8c6N
+	 pZntQUGykNf4BvRAQlWtVWfaWphFu4g92OoIoSC2LW+glpkObbDOC6AIw/UGVpQjWB
+	 Wh5M5s99eVePQy2Nc/YJTYpEEcjjuTo0OvWrp3dwMq7k6Y7iTi45Gp9LrZ6XRFtMya
+	 y6yBozU6LCmpLWIWIlXvDsGUSRxB2Awrvlgs0qubqaO0h3Y17M8rMrSXNtVLGyKs/M
+	 ef3+3Jg4USlVw==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 03A82414F9;
-	Fri, 14 Jun 2024 12:59:52 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 7E2FD81B8A;
+	Fri, 14 Jun 2024 13:17:06 +0000 (UTC)
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 685111BF331
- for <intel-wired-lan@lists.osuosl.org>; Fri, 14 Jun 2024 12:59:48 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 4CFE81BF976
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 14 Jun 2024 13:17:05 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 5294B610D5
- for <intel-wired-lan@lists.osuosl.org>; Fri, 14 Jun 2024 12:59:47 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 386F8610D6
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 14 Jun 2024 13:17:05 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 2lWOYmkrbVk1 for <intel-wired-lan@lists.osuosl.org>;
- Fri, 14 Jun 2024 12:59:45 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.7;
- helo=mgamail.intel.com; envelope-from=anil.samal@intel.com;
+ id rECwW-q8qhlS for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 14 Jun 2024 13:17:04 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.12;
+ helo=mgamail.intel.com; envelope-from=ahmed.zaki@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org CAB14610CF
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org CAB14610CF
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.7])
- by smtp3.osuosl.org (Postfix) with ESMTPS id CAB14610CF
- for <intel-wired-lan@lists.osuosl.org>; Fri, 14 Jun 2024 12:59:43 +0000 (UTC)
-X-CSE-ConnectionGUID: aAlCzcO+QQ+WJAlgrueCXA==
-X-CSE-MsgGUID: jWOHDiZxTDGWLQHtbLFxWA==
-X-IronPort-AV: E=McAfee;i="6700,10204,11103"; a="40669472"
-X-IronPort-AV: E=Sophos;i="6.08,237,1712646000"; d="scan'208";a="40669472"
-Received: from fmviesa009.fm.intel.com ([10.60.135.149])
- by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 14 Jun 2024 05:59:43 -0700
-X-CSE-ConnectionGUID: eTTcyTIZSSSKcxxBm7s6Jw==
-X-CSE-MsgGUID: zzKKVR2qTyiqkjeDdprhcw==
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org DF1FE610CF
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org DF1FE610CF
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.12])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id DF1FE610CF
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 14 Jun 2024 13:17:03 +0000 (UTC)
+X-CSE-ConnectionGUID: P6GPQRSIRF6NkV3ukwJirw==
+X-CSE-MsgGUID: o2lUi94PSHakgFzROg8jOg==
+X-IronPort-AV: E=McAfee;i="6700,10204,11103"; a="26673918"
+X-IronPort-AV: E=Sophos;i="6.08,237,1712646000"; d="scan'208";a="26673918"
+Received: from fmviesa001.fm.intel.com ([10.60.135.141])
+ by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 14 Jun 2024 06:16:58 -0700
+X-CSE-ConnectionGUID: 8VFvpNsgRAyvPxtFDU8XQg==
+X-CSE-MsgGUID: Ho35azoVTqicKZkZ8CW17A==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.08,237,1712646000"; d="scan'208";a="40593799"
-Received: from c3-1-server.sj.intel.com ([10.232.18.246])
- by fmviesa009-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 14 Jun 2024 05:59:43 -0700
-From: Anil Samal <anil.samal@intel.com>
+X-IronPort-AV: E=Sophos;i="6.08,237,1712646000"; d="scan'208";a="71687052"
+Received: from unknown (HELO azaki-desk1.intel.com) ([10.245.244.160])
+ by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 14 Jun 2024 06:16:53 -0700
+From: Ahmed Zaki <ahmed.zaki@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Fri, 14 Jun 2024 05:58:14 -0700
-Message-ID: <20240614125935.900102-1-anil.samal@intel.com>
-X-Mailer: git-send-email 2.44.0
+Date: Fri, 14 Jun 2024 07:18:42 -0600
+Message-ID: <20240614131842.277398-1-ahmed.zaki@intel.com>
+X-Mailer: git-send-email 2.43.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1718369984; x=1749905984;
+ t=1718371024; x=1749907024;
  h=from:to:cc:subject:date:message-id:mime-version:
  content-transfer-encoding;
- bh=02+m0Z/OMq/ZIVZ2UEQx+MfnnammXXAg4bkjeHmvZeM=;
- b=je57m4rtTZQcXe19dLE2IFFkZA3IgTGlwHm7IgvB9VBX+vqLvlWuHyqw
- gBBnPXRlaegmEXyKb20QxITm0YkVJizw8/KmGM1weUyItP9K8sOu+hgj/
- JlEAjhX4PrlX6BJ7KqJ7VGhWtMISqmJ8QPb1y0N0HXhEBqOUu51srJDfc
- 7rV0/gg8yz95QS+ctg4y0xPG8ysT2OxJAIe1l5S54f1RmoSeEPQcHQZMV
- t6n/EHc6UukYdYy1iZsNc0UgFm0zlqmJR6s+emXr7GtjU1lqQTzeNcx+1
- 4OTdZ74l8NlFHel2EQ+0Z3lspxtPfLRJkFyp3ETbqnJoxMZ1cG9JO44mg
- g==;
+ bh=vvhK7IRFIVJXTyKRo/6mCkuFIH1/XQhjzV6+mSnl6Zs=;
+ b=H7YxiyDjU0hqUp9P8rOPiKLItNNgOpslpYWNqwbZwgD1kEy/R+Ud/IMW
+ ipJ4PC01ILf1XBxlQNo09fvVHVbZmr1tQKfG3SB0L0+jBt4WmtnQ43rGh
+ LA3nn3iTPYtAuon14a0/oqzUmUKGhRRkY1CacY8NuvJQ02vOh5nibgWeo
+ bgrT7t3uHN0V0RoUwbvw7Q99UVXmU4HAXp744vftWkfnfegKCbIZYQkSR
+ jXDSVmZByOQdFPd6tgTjTAjX8ko6iT30UCqkMOjHCGipLuDpgIYYA45kY
+ pj+4lnpNDrB/zzqy9nNLYj4G+VvkidYJRet3WxZzHvoGkP6eOQMoatp4l
+ Q==;
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=je57m4rt
-Subject: [Intel-wired-lan] [PATCH iwl-next v3 0/3] ice:Support to dump PHY
- config, FEC
+ header.s=Intel header.b=H7YxiyDj
+Subject: [Intel-wired-lan] [PATCH iwl-next] ice: Add a per-VF limit on
+ number of FDIR filters
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -104,103 +103,130 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, lukasz.czapnik@intel.com,
- Anil Samal <anil.samal@intel.com>, leszek.pepiak@intel.com,
- anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com
+Cc: Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Ahmed Zaki <ahmed.zaki@intel.com>, stable@vger.kernel.org,
+ Sridhar Samudrala <sridhar.samudrala@intel.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Implementation to dump PHY configuration and FEC statistics to
-facilitate link level debugging of customer issues.  Implementation has
-two parts 
-  
-a.     Serdes equalization
-        # ethtool  -d eth0 
-        Output: 
-        Offset          Values
-        ------          ------
-        0x0000:         00 00 00 00 03 00 00 00 05 00 00 00 01 08 00 40
-        0x0010:         01 00 00 40 00 00 39 3c 01 00 00 00 00 00 00 00
-        0x0020:         00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-        ……
-        …..
-        0x01f0:         01 00 00 00 ef be ad de 8f 00 00 00 00 00 00 00
-        0x0200:         00 00 00 00 ef be ad de 00 00 00 00 00 00 00 00
-        0x0210:         00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-        0x0220:         00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-        0x0230:         00 00 00 00 00 00 00 00 00 00 00 00 fa ff 00 00
-        0x0240:         06 00 00 00 03 00 00 00 00 00 00 00 00 00 00 00
-        0x0250:         0f b0 0f b0 00 00 00 00 00 00 00 00 00 00 00 00
-        0x0260:         00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-        0x0270:         00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-        0x0280:         00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-        0x0290:         00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-        0x02a0:         00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-        0x02b0:         00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-        0x02c0:         00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-        0x02d0:         00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-        0x02e0:         00 00 00 00 00 00 00 00 00 00 00 00
-Current implementation appends 176 bytes i.e. 44 bytes * 4 serdes lane.
-For port with 2 serdes lane, first 88 bytes are valid values and
-remaining 88 bytes are filled with zero. Similarly for port with 1
-serdes lane, first 44 bytes are valid and remaining 132 bytes are marked
-zero. 
+While the iavf driver adds a s/w limit (128) on the number of FDIR
+filters that the VF can request, a malicious VF driver can request more
+than that and exhaust the resources for other VFs.
 
-Each set of serdes equalizer parameter (i.e. set of 44 bytes) follows
-below order 
-    a. rx_equalization_pre2
-    b. rx_equalization_pre1
-    c. rx_equalization_post1
-    d. rx_equalization_bflf
-    e. rx_equalization_bfhf
-    f. rx_equalization_drate
-    g. tx_equalization_pre1
-    h. tx_equalization_pre3
-    i. tx_equalization_atten
-    j. tx_equalization_post1
-    k. tx_equalization_pre2
-Where each individual equalizer parameter is of 4 bytes. As ethtool
-prints values as individual bytes, for little endian machine these
-values will be in reverse byte order. 
+Add a similar limit in ice.
 
-b.	FEC block counts
-        # ethtool  -I --show-fec eth0
-        Output:
-         FEC parameters for eth0:
-        Supported/Configured FEC encodings: Auto RS BaseR
-        Active FEC encoding: RS
-        Statistics:
-        corrected_blocks: 0
-         uncorrectable_blocks: 0
+CC: stable@vger.kernel.org
+Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Suggested-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
+Signed-off-by: Ahmed Zaki <ahmed.zaki@intel.com>
+---
+ .../net/ethernet/intel/ice/ice_ethtool_fdir.c    |  2 +-
+ drivers/net/ethernet/intel/ice/ice_fdir.h        |  3 +++
+ .../net/ethernet/intel/ice/ice_virtchnl_fdir.c   | 16 ++++++++++++++++
+ .../net/ethernet/intel/ice/ice_virtchnl_fdir.h   |  1 +
+ 4 files changed, 21 insertions(+), 1 deletion(-)
 
-This series do following:
-Patch 1 – Implementation to support user provided flag for side band
-queue command. 
-Patch 2 – Currently driver does not have a way to derive serdes lane
-number, pcs quad , pcs port from port number.So we introduced a
-mechanism to derive above info. 
-          Ethtool interface extension to include FEC statistics counter.
-Patch 3 – Ethtool interface extension to include serdes equalizer
-output.
-
-v1 -> v2, 
-   Squashed 4 commit to 3 commit. 
-   Removed extra null check of arguments.
-   Removed initialization of local variable that are not required.
-
-v2 -> v3
-   updated the argument for sideband queue function from "flag" to
-"flags"
-
- .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  51 ++
- drivers/net/ethernet/intel/ice/ice_common.c   |  99 +++-
- drivers/net/ethernet/intel/ice/ice_common.h   |  28 +-
- drivers/net/ethernet/intel/ice/ice_ethtool.c  | 449 +++++++++++++++++-
- drivers/net/ethernet/intel/ice/ice_ethtool.h  |  29 ++
- drivers/net/ethernet/intel/ice/ice_ptp_hw.c   |  20 +-
- drivers/net/ethernet/intel/ice/ice_type.h     |   8 +
- 7 files changed, 669 insertions(+), 15 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool_fdir.c b/drivers/net/ethernet/intel/ice/ice_ethtool_fdir.c
+index e3cab8e98f52..5412eff8ef23 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ethtool_fdir.c
++++ b/drivers/net/ethernet/intel/ice/ice_ethtool_fdir.c
+@@ -534,7 +534,7 @@ ice_parse_rx_flow_user_data(struct ethtool_rx_flow_spec *fsp,
+  *
+  * Returns the number of available flow director filters to this VSI
+  */
+-static int ice_fdir_num_avail_fltr(struct ice_hw *hw, struct ice_vsi *vsi)
++int ice_fdir_num_avail_fltr(struct ice_hw *hw, struct ice_vsi *vsi)
+ {
+ 	u16 vsi_num = ice_get_hw_vsi_num(hw, vsi->idx);
+ 	u16 num_guar;
+diff --git a/drivers/net/ethernet/intel/ice/ice_fdir.h b/drivers/net/ethernet/intel/ice/ice_fdir.h
+index 021ecbac7848..ab5b118daa2d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_fdir.h
++++ b/drivers/net/ethernet/intel/ice/ice_fdir.h
+@@ -207,6 +207,8 @@ struct ice_fdir_base_pkt {
+ 	const u8 *tun_pkt;
+ };
+ 
++struct ice_vsi;
++
+ int ice_alloc_fd_res_cntr(struct ice_hw *hw, u16 *cntr_id);
+ int ice_free_fd_res_cntr(struct ice_hw *hw, u16 cntr_id);
+ int ice_alloc_fd_guar_item(struct ice_hw *hw, u16 *cntr_id, u16 num_fltr);
+@@ -218,6 +220,7 @@ int
+ ice_fdir_get_gen_prgm_pkt(struct ice_hw *hw, struct ice_fdir_fltr *input,
+ 			  u8 *pkt, bool frag, bool tun);
+ int ice_get_fdir_cnt_all(struct ice_hw *hw);
++int ice_fdir_num_avail_fltr(struct ice_hw *hw, struct ice_vsi *vsi);
+ bool ice_fdir_is_dup_fltr(struct ice_hw *hw, struct ice_fdir_fltr *input);
+ bool ice_fdir_has_frag(enum ice_fltr_ptype flow);
+ struct ice_fdir_fltr *
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
+index b8df8d0b2d85..60bf71da53bd 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
+@@ -550,6 +550,8 @@ static void ice_vc_fdir_reset_cnt_all(struct ice_vf_fdir *fdir)
+ 		fdir->fdir_fltr_cnt[flow][0] = 0;
+ 		fdir->fdir_fltr_cnt[flow][1] = 0;
+ 	}
++
++	fdir->fdir_fltr_cnt_total = 0;
+ }
+ 
+ /**
+@@ -1694,6 +1696,7 @@ ice_vc_add_fdir_fltr_post(struct ice_vf *vf, struct ice_vf_fdir_ctx *ctx,
+ 	resp->status = status;
+ 	resp->flow_id = conf->flow_id;
+ 	vf->fdir.fdir_fltr_cnt[conf->input.flow_type][is_tun]++;
++	vf->fdir.fdir_fltr_cnt_total++;
+ 
+ 	ret = ice_vc_send_msg_to_vf(vf, ctx->v_opcode, v_ret,
+ 				    (u8 *)resp, len);
+@@ -1758,6 +1761,7 @@ ice_vc_del_fdir_fltr_post(struct ice_vf *vf, struct ice_vf_fdir_ctx *ctx,
+ 	resp->status = status;
+ 	ice_vc_fdir_remove_entry(vf, conf, conf->flow_id);
+ 	vf->fdir.fdir_fltr_cnt[conf->input.flow_type][is_tun]--;
++	vf->fdir.fdir_fltr_cnt_total--;
+ 
+ 	ret = ice_vc_send_msg_to_vf(vf, ctx->v_opcode, v_ret,
+ 				    (u8 *)resp, len);
+@@ -2074,6 +2078,7 @@ int ice_vc_add_fdir_fltr(struct ice_vf *vf, u8 *msg)
+ 	struct virtchnl_fdir_add *stat = NULL;
+ 	struct virtchnl_fdir_fltr_conf *conf;
+ 	enum virtchnl_status_code v_ret;
++	struct ice_vsi *vf_vsi;
+ 	struct device *dev;
+ 	struct ice_pf *pf;
+ 	int is_tun = 0;
+@@ -2082,6 +2087,17 @@ int ice_vc_add_fdir_fltr(struct ice_vf *vf, u8 *msg)
+ 
+ 	pf = vf->pf;
+ 	dev = ice_pf_to_dev(pf);
++	vf_vsi = ice_get_vf_vsi(vf);
++
++#define ICE_VF_MAX_FDIR_FILTERS	128
++	if (!ice_fdir_num_avail_fltr(&pf->hw, vf_vsi) ||
++	    vf->fdir.fdir_fltr_cnt_total >= ICE_VF_MAX_FDIR_FILTERS) {
++		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
++		dev_err(dev, "Max number of FDIR filters for VF %d is reached\n",
++			vf->vf_id);
++		goto err_exit;
++	}
++
+ 	ret = ice_vc_fdir_param_check(vf, fltr->vsi_id);
+ 	if (ret) {
+ 		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.h b/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.h
+index c5bcc8d7481c..ac6dcab454b4 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.h
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.h
+@@ -29,6 +29,7 @@ struct ice_vf_fdir_ctx {
+ struct ice_vf_fdir {
+ 	u16 fdir_fltr_cnt[ICE_FLTR_PTYPE_MAX][ICE_FD_HW_SEG_MAX];
+ 	int prof_entry_cnt[ICE_FLTR_PTYPE_MAX][ICE_FD_HW_SEG_MAX];
++	u16 fdir_fltr_cnt_total;
+ 	struct ice_fd_hw_prof **fdir_prof;
+ 
+ 	struct idr fdir_rule_idr;
 -- 
-2.44.0
+2.43.0
 
