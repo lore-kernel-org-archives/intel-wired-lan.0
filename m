@@ -4,92 +4,97 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8950AC27C4F
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 21 Jun 2024 08:44:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4F256C2BB85
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 21 Jun 2024 08:44:04 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 3A80D42EEA;
+	by smtp4.osuosl.org (Postfix) with ESMTP id EF31B42E45;
 	Fri, 21 Jun 2024 08:44:03 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id mOXE54WfuicX; Fri, 21 Jun 2024 08:44:02 +0000 (UTC)
+ id 4LHPR0VSjnqG; Fri, 21 Jun 2024 08:44:03 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 6170F42E45
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 67E7842F30
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1718959442;
-	bh=8QqVE+Gv5FhBvkU/fXcWacCn2rAAwntVLyLJyKvj0HU=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=LFrtlWq7Qc42U0wS+HW4ZaA8+jU3sHfDS97LUvKiolqW0il112R5HvVCQ0lobSpct
-	 dXKiYFMlx5nvQNmcBON48QW1j+RIO10g6RGN3TI5QXf4xQgb5h2cWy0qZpx3zr2rS2
-	 FW/uyaLIpJldrA9cPLsRzutf46Ps2MeYS2w5wH7APXrfa7aLswDgFrkpQu7JNJ658i
-	 7bRD0IZN0kla/9kjWcEGQZcHHpJgpnnwHyn3AdTVvFYBLRrTeGbFaTj88BrXcB8PUn
-	 DtoGBJYpbSITwh2qIpWnOjB70ETUQCO8obhcUB5/wImQ0pj2UVrqlisyNr1731vEhw
-	 HYgYA29m2iRIg==
+	s=default; t=1718959443;
+	bh=AcjZ1dusV/K6pb/MWhgbPubZuN8gFe20botAlWMTUrA=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=Uccy6uESoZd4UXF8AMnIXU/spvIjgkQT78uS/A5/TRJQC3ZKOxMixXdoWWw6R3VzG
+	 Mx9L6R59kHqr45wEGhHxPqco0e638B/VuHfMw4Oo4x+eF45+7JmUOXFElX54UturNR
+	 veE+3C9mToTZclUPmzSK8mE426X2wt0QZQOJBGPIgnTcU/H0g6rHEFZuzQJWo/jqk2
+	 U90DZGxgnrH1fXQcfBfHozLzaMm261J6Age2ZM4ASFC8qU4yJuPCVPJ9PAwSP4bXz5
+	 al1iiWJPF/+PaF+aWPuo10uaVTee3HnKRQZfmei9bsxpZQONG+iAJyA9qFtl8Ajjk4
+	 /A+prlvA4OtUQ==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 6170F42E45;
-	Fri, 21 Jun 2024 08:44:02 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id CE78D1BF841
- for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Jun 2024 08:43:57 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 67E7842F30;
+	Fri, 21 Jun 2024 08:44:03 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id B29621BF841
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Jun 2024 08:43:58 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id C376440257
- for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Jun 2024 08:43:56 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 92ABD414EE
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Jun 2024 08:43:58 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Fkj839q1LciX for <intel-wired-lan@lists.osuosl.org>;
- Fri, 21 Jun 2024 08:43:54 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id DM8XMuqQfoc1 for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 21 Jun 2024 08:43:57 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.18;
  helo=mgamail.intel.com; envelope-from=sergey.temerkhanov@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 5A17B400FB
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 5A17B400FB
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 74DEA409A5
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 74DEA409A5
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.18])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 5A17B400FB
- for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Jun 2024 08:43:53 +0000 (UTC)
-X-CSE-ConnectionGUID: fPOCFe+GQa27gd0soKgqvA==
-X-CSE-MsgGUID: IK1wcBhKSPa6DvOZCcZZgg==
-X-IronPort-AV: E=McAfee;i="6700,10204,11109"; a="16129474"
-X-IronPort-AV: E=Sophos;i="6.08,254,1712646000"; d="scan'208";a="16129474"
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 74DEA409A5
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Jun 2024 08:43:57 +0000 (UTC)
+X-CSE-ConnectionGUID: jzmtKk8rRb+S6m50Q75RNw==
+X-CSE-MsgGUID: cN57GSRQSZCXOtMq1X9A1g==
+X-IronPort-AV: E=McAfee;i="6700,10204,11109"; a="16129477"
+X-IronPort-AV: E=Sophos;i="6.08,254,1712646000"; d="scan'208";a="16129477"
 Received: from fmviesa002.fm.intel.com ([10.60.135.142])
  by orvoesa110.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 21 Jun 2024 01:43:52 -0700
-X-CSE-ConnectionGUID: o6sCZOlqTEWzdr3c4mep/Q==
-X-CSE-MsgGUID: Phe9FEdWSfSyFodYDlXmoQ==
+ 21 Jun 2024 01:43:56 -0700
+X-CSE-ConnectionGUID: AyCxbxCVT9SGuMiltqGg8Q==
+X-CSE-MsgGUID: k8+BQbMhTn+JZr7uQiqJSg==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.08,254,1712646000"; d="scan'208";a="65765165"
+X-IronPort-AV: E=Sophos;i="6.08,254,1712646000"; d="scan'208";a="65765171"
 Received: from unknown (HELO localhost.igk.intel.com) ([10.211.13.141])
- by fmviesa002.fm.intel.com with ESMTP; 21 Jun 2024 01:43:51 -0700
+ by fmviesa002.fm.intel.com with ESMTP; 21 Jun 2024 01:43:55 -0700
 From: Sergey Temerkhanov <sergey.temerkhanov@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Fri, 21 Jun 2024 10:42:40 +0200
-Message-ID: <20240621084244.26525-1-sergey.temerkhanov@intel.com>
+Date: Fri, 21 Jun 2024 10:42:42 +0200
+Message-ID: <20240621084244.26525-3-sergey.temerkhanov@intel.com>
 X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20240621084244.26525-1-sergey.temerkhanov@intel.com>
+References: <20240621084244.26525-1-sergey.temerkhanov@intel.com>
 MIME-Version: 1.0
+Organization: Intel Technology Poland sp. z o.o. - ul. Slowackiego 173,
+ 80-298 Gdansk - KRS 101882 - NIP 957-07-52-316
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1718959434; x=1750495434;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=3HBoWOKl6SbY13vd0tm05QnlOYhyCgkxJmDDKHhVy5E=;
- b=kx8W724Oz/EUFz5qJ8SP6lWsC/YI+TPuPd6MXCLfomKPqds3jcyiGNoq
- OffZB4IG5sSFwUX0aa0r60b9PF9EkCT+gqJ5Syd6F5C88vGgMIA5aSNxT
- mjEgrsiMf/QAaTz5JnNc28w+gIG6DNcl31zphQXZZQN+rmn9bglP0MtZ6
- nR5cF+Erl8EFjou/oQsFOQsWUcHxol5voENki4KQIqV7sKMWnFC8BiLPs
- 7WS2hdO1Zq1VgGj0zE7r/CI2d6jSUJ2TuYSheFvBue42d1OiPJqBNDovv
- DqcaVaF1iDHblJ0jVhMmlQxGBVvIhZvRdXM8FOGOVUEy6Cv1i5JyuX2Yu
- g==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ t=1718959437; x=1750495437;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=ox4UVVD8l0UB7uOobj3iQqzlawl6rmOUvrHDfuEAzK8=;
+ b=ZEhzhy8jeU0pgMkS+Kw6VMn6d4azHDnBMSGmrcqRWy8IGZg5YHWSrA4p
+ ISwZzvFeoe9roHxpQAda2JZ1//s2eHVVuWO15pRvohiiePX1VZUzT1Ef6
+ 6g1Og7vQBjtJdIDAtPbVsM4LILH1Qmd9Ntb+g0zF+3hNXikUHDHZECm/7
+ lGr72WGoW83KXJnuStbJaPRvXWRA2JOOg/S/pHHvNtLNaeDwvJGdNR1Y/
+ mJliCOPVoGVtHO7UXecPspo+CIRh6LECwcVmz0/A2UOYPjvbtUBohCLIs
+ ChLuLTXdA/Z7cA2Afar0nRv/Zm6ADaFcaLo5/DgDZkKD0YKbjHuO/RdHy
+ Q==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=kx8W724O
-Subject: [Intel-wired-lan] [RFC PATCH iwl-next v1 0/4] Replace auxbus with
- ice_adapter in the PTP support code
+ header.s=Intel header.b=ZEhzhy8j
+Subject: [Intel-wired-lan] [RFC PATCH iwl-next v1 2/4] ice: Add
+ ice_get_ctrl_ptp() wrapper to simplify the code
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,33 +107,43 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Sergey Temerkhanov <sergey.temerkhanov@intel.com>
+Cc: Sergey Temerkhanov <sergey.temerkhanov@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-This series replaces multiple aux buses and devices used in
-the PTP support code with struct ice_adapter holding the necessary
-shared data
+Add ice_get_ctrl_ptp() wrapper to simplify the PTP support code
+in the functions that do not use ctrl_pf directly
 
-Patches 1,2 add convenience wrappers
-Patch 3 does the main refactoring
-Patch 4 finalizes the refactoring
+Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Signed-off-by: Sergey Temerkhanov <sergey.temerkhanov@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_ptp.c | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
-Sergey Temerkhanov (4):
-  ice: Introduce ice_get_phy_model() wrapper
-  ice: Add ice_get_ctrl_ptp() wrapper to simplify the code
-  ice: Use ice_adapter for PTP shared data instead of auxdev
-  ice: Drop auxbus use for PTP to finalize ice_adapter move
-
- drivers/net/ethernet/intel/ice/ice.h         |   5 +
- drivers/net/ethernet/intel/ice/ice_adapter.c |   6 +
- drivers/net/ethernet/intel/ice/ice_adapter.h |  21 +-
- drivers/net/ethernet/intel/ice/ice_ptp.c     | 338 ++++---------------
- drivers/net/ethernet/intel/ice/ice_ptp.h     |  24 +-
- drivers/net/ethernet/intel/ice/ice_ptp_hw.c  |  22 +-
- drivers/net/ethernet/intel/ice/ice_ptp_hw.h  |   5 +
- 7 files changed, 111 insertions(+), 310 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
+index 57e1e5a5da4a..a2578bc2af54 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp.c
++++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
+@@ -16,6 +16,18 @@ static const struct ptp_pin_desc ice_pin_desc_e810t[] = {
+ 	{ "U.FL2", UFL2, PTP_PF_NONE, 2, { 0, } },
+ };
+ 
++static struct ice_pf *ice_get_ctrl_pf(struct ice_pf *pf)
++{
++	return !pf->adapter ? NULL : pf->adapter->ctrl_pf;
++}
++
++static struct ice_ptp *ice_get_ctrl_ptp(struct ice_pf *pf)
++{
++	struct ice_pf *ctrl_pf = ice_get_ctrl_pf(pf);
++
++	return !ctrl_pf ? NULL : &ctrl_pf->ptp;
++}
++
+ /**
+  * ice_get_sma_config_e810t
+  * @hw: pointer to the hw struct
 -- 
 2.43.0
 
