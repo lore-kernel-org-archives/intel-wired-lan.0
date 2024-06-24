@@ -4,71 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EAA15C2D0D1
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 24 Jun 2024 14:44:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9E478C2BD09
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 24 Jun 2024 14:44:05 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 8133480CC1;
-	Mon, 24 Jun 2024 14:44:03 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 5B44580C46;
+	Mon, 24 Jun 2024 14:44:05 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id VGsYeUaXHX8l; Mon, 24 Jun 2024 14:44:02 +0000 (UTC)
+ id GWm6yJDBs9S1; Mon, 24 Jun 2024 14:44:04 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C6DDB80CD7
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org A1C4880CA9
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1719240242;
-	bh=0Q1AjjqUzP5AwJaPJHVqfpDTA4M0RpIdgT5Rm9/wS2o=;
+	s=default; t=1719240244;
+	bh=rPRloTjzgkbSnFjqO/nUjNmw5rgTDk+xpIRUMx9tnfI=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=y8ZMIqujWmyH4JWpnlRUgRoy7UF8nhX74G6r9VQxOPReLGxyEZDIfhP5Ty63nUtxd
-	 DqS8Od3/T6oyPy93HXDJgnHFYZd/PnK1xiCNAMVR7dmo7lIsywjJMtrKGsHtJFvnFY
-	 Q2bArz09lvIBSTQzWuiQvEClLk/VeTbez+LoA52JEvkwfPwNySicEg6mrX1TUBfb4Y
-	 LcNaFYD3mfV6EsOwK+WI3SzdUAXH5TTL+cjgAw40lQYIwOpnKrihugdHkzMU/ZryPZ
-	 akJwtBoJLav8VwwUQXPHvwjKlxvQTF+VC5bG1CPU8DD4m+gSm4/YhXJkX6ldQss8up
-	 s+2P2QPwOwucg==
+	b=4L41Hi8eP2ICKacSFMV6OwJ0rpzGJAsXRXQ8FhYZxhfXIYu0Mzy8TIKzlP0/oYLhc
+	 3UfkIXtWyufCdxBttgdlaJqeWK7YN1s2ghzN27vBhh3O6AUtBl4yiKleDP52XXwxPb
+	 Mqhsc2ldGLENIMJVwBAHx8hKLZvZ+Q8bDdF37WLK4rgf2Kj3xJEJjpu4rbNzdHZ7DC
+	 E39PFUUvoi3vxw7T3BNwR1JEvlgBcx3VSjQOqVMMiL7hqWNJ151LJGFHBic+kZDQGn
+	 HzSb0axYZZBssts+Q3tm9oYgtP2m1us3+0Lbcl7Q5k1lCf+5tQqBNyGMn49oRTX+SM
+	 2RcRXo4axhysw==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id C6DDB80CD7;
-	Mon, 24 Jun 2024 14:44:02 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 4C2DD1BF591
- for <intel-wired-lan@lists.osuosl.org>; Mon, 24 Jun 2024 14:44:01 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id A1C4880CA9;
+	Mon, 24 Jun 2024 14:44:04 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id CF3BA1BF591
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 24 Jun 2024 14:44:02 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 3744280C9A
- for <intel-wired-lan@lists.osuosl.org>; Mon, 24 Jun 2024 14:44:01 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id BD82B608F4
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 24 Jun 2024 14:44:02 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id aKg0MFPJUQBt for <intel-wired-lan@lists.osuosl.org>;
- Mon, 24 Jun 2024 14:44:00 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 0F35HDSKGbQP for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 24 Jun 2024 14:44:02 +0000 (UTC)
 Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.20;
  helo=mgamail.intel.com; envelope-from=marcin.szycik@linux.intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 4BB5980C9C
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4BB5980C9C
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org E3851608C7
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E3851608C7
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.20])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 4BB5980C9C
- for <intel-wired-lan@lists.osuosl.org>; Mon, 24 Jun 2024 14:44:00 +0000 (UTC)
-X-CSE-ConnectionGUID: 1J14P5P2TDa34xCIbiPVtw==
-X-CSE-MsgGUID: 1KZYWH/0RYy+9og0se1/bQ==
-X-IronPort-AV: E=McAfee;i="6700,10204,11113"; a="16040477"
-X-IronPort-AV: E=Sophos;i="6.08,262,1712646000"; d="scan'208";a="16040477"
+ by smtp3.osuosl.org (Postfix) with ESMTPS id E3851608C7
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 24 Jun 2024 14:44:01 +0000 (UTC)
+X-CSE-ConnectionGUID: D87IfT/9TIidOrg+rbXn4Q==
+X-CSE-MsgGUID: cOV8Ow1nQDuQqpQGx5F2uQ==
+X-IronPort-AV: E=McAfee;i="6700,10204,11113"; a="16040481"
+X-IronPort-AV: E=Sophos;i="6.08,262,1712646000"; d="scan'208";a="16040481"
 Received: from orviesa008.jf.intel.com ([10.64.159.148])
  by orvoesa112.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 24 Jun 2024 07:44:00 -0700
-X-CSE-ConnectionGUID: /YbYC8JoR7yqLUkQxq8slQ==
-X-CSE-MsgGUID: OmjXfJyWR8yO8K3+3i6KUw==
+ 24 Jun 2024 07:44:01 -0700
+X-CSE-ConnectionGUID: jMqewO1ITaG4jE+AJjxAhw==
+X-CSE-MsgGUID: YyaEcxmsS1mgcV9paI33xA==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.08,262,1712646000"; d="scan'208";a="44022051"
+X-IronPort-AV: E=Sophos;i="6.08,262,1712646000"; d="scan'208";a="44022063"
 Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by orviesa008.jf.intel.com with ESMTP; 24 Jun 2024 07:43:58 -0700
+ by orviesa008.jf.intel.com with ESMTP; 24 Jun 2024 07:44:00 -0700
 Received: from mystra-4.igk.intel.com (mystra-4.igk.intel.com [10.123.220.40])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id F04EB27BB4;
- Mon, 24 Jun 2024 15:43:46 +0100 (IST)
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id C2F1827BB5;
+ Mon, 24 Jun 2024 15:43:47 +0100 (IST)
 From: Marcin Szycik <marcin.szycik@linux.intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Mon, 24 Jun 2024 16:45:25 +0200
-Message-ID: <20240624144530.690545-3-marcin.szycik@linux.intel.com>
+Date: Mon, 24 Jun 2024 16:45:26 +0200
+Message-ID: <20240624144530.690545-4-marcin.szycik@linux.intel.com>
 X-Mailer: git-send-email 2.45.0
 In-Reply-To: <20240624144530.690545-1-marcin.szycik@linux.intel.com>
 References: <20240624144530.690545-1-marcin.szycik@linux.intel.com>
@@ -76,25 +76,26 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1719240240; x=1750776240;
+ t=1719240242; x=1750776242;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=rZfZ8LRS4yetc2xWtSvNng1weoxkVzK97MXMga9e7+k=;
- b=R9DatYBLr5pP+txMmPSLXy10SArIt9BbgFIJ2z7h7OWlvt3t6RAhTfzF
- pLypox9xFsCswuqZC8R9sQ6HqxDZ0BNeYhek7LBnuL+5jAIgKMT5CB2Is
- qq6Ug3lUCG9tC57T+CBY7RckIuzcH84pieZdKZt0muUMCr/+onywsTqgT
- T/RjVLbUxQ/FpI7gSyFSlekdb+i3ao+3o35oH2VDNpSnY4/Tm5IrjQOqn
- 80d4ZMiTZofAaRroSe6sRKOZF+iijB/n3uwMPnAG0am2qpyl2m0j7pXx4
- ls0wHiV+EHVLiS2OTbY/U23oCV5vaK7iuXyNs61XxXp8q7oLhb+cYl4LB
- g==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ bh=toJnrKJIa3hFQBBM+1PHE5/G87dc1JlRWeQC+9LZfo0=;
+ b=M8dSCVV0VhRiEyj+u4FDRGLFdxgOGpGdGtQMFQLrLkPW9rMJGpAJ1+1y
+ cbJbIZyvr8zgu7S85yUS7lpe0RwD6/yhNROxqXDBENQAP7lvDYF89p+wz
+ K34Hi6/jF4Pve2DsDC0624ykFdGgwZOA0aaki18k6ZpUhtUyBG74T+vhl
+ aYHOmAvp7ydDcayEbVTudNoeNytZ0orDNFlO4HMKwrSzTKK6KH/vvG7zB
+ jfY5fc5Lvx1XSglpL6GNWzHSB3kEHa0KonFYeDmlp/q7b1cBRcvjNkw2R
+ j1bu4rUhvASm2ghvpebriEU+JVyTOirhyG+NLpHqsbnk1IoUR93iLCJju
+ w==;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=none (p=none dis=none)
  header.from=linux.intel.com
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=R9DatYBL
-Subject: [Intel-wired-lan] [PATCH iwl-next v2 2/7] ice: Remove reading all
- recipes before adding a new one
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=M8dSCVV0
+Subject: [Intel-wired-lan] [PATCH iwl-next v2 3/7] ice: Simplify bitmap
+ setting in adding recipe
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -115,101 +116,69 @@ Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 
-The content of the first read recipe is used as a template when adding a
-recipe. It isn't needed - only prune index is directly set from there. Set
-it in the code instead. Also, now there's no need to set rid and lookup
-indexes to 0, as the whole recipe buffer is initialized to 0.
+Remove unnecessary size checks when copying bitmaps in ice_add_sw_recipe()
+and replace them with compile time assert. Check if the bitmaps are equal
+size, as they are copied both ways.
 
 Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Co-developed-by: Marcin Szycik <marcin.szycik@linux.intel.com>
 Signed-off-by: Marcin Szycik <marcin.szycik@linux.intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_switch.c | 29 ++-------------------
- 1 file changed, 2 insertions(+), 27 deletions(-)
+v2: Replace sizeof(((struct s*)0)->f with sizeof_field() (thanks Alex!)
+---
+ drivers/net/ethernet/intel/ice/ice_switch.c | 24 ++++++++-------------
+ 1 file changed, 9 insertions(+), 15 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
-index 0d58cf185698..da065512889d 100644
+index da065512889d..3ee4242f9880 100644
 --- a/drivers/net/ethernet/intel/ice/ice_switch.c
 +++ b/drivers/net/ethernet/intel/ice/ice_switch.c
-@@ -5079,11 +5079,9 @@ ice_add_sw_recipe(struct ice_hw *hw, struct ice_sw_recipe *rm,
- {
- 	DECLARE_BITMAP(result_idx_bm, ICE_MAX_FV_WORDS);
- 	struct ice_aqc_recipe_content *content;
--	struct ice_aqc_recipe_data_elem *tmp;
- 	struct ice_aqc_recipe_data_elem *buf;
- 	struct ice_recp_grp_entry *entry;
- 	u16 free_res_idx;
--	u16 recipe_count;
- 	u8 chain_idx;
- 	u8 recps = 0;
- 	int status;
-@@ -5110,10 +5108,6 @@ ice_add_sw_recipe(struct ice_hw *hw, struct ice_sw_recipe *rm,
- 	if (rm->n_grp_count > ICE_MAX_CHAIN_RECIPE)
- 		return -ENOSPC;
- 
--	tmp = kcalloc(ICE_MAX_NUM_RECIPES, sizeof(*tmp), GFP_KERNEL);
--	if (!tmp)
--		return -ENOMEM;
--
- 	buf = devm_kcalloc(ice_hw_to_dev(hw), rm->n_grp_count, sizeof(*buf),
- 			   GFP_KERNEL);
- 	if (!buf) {
-@@ -5122,11 +5116,6 @@ ice_add_sw_recipe(struct ice_hw *hw, struct ice_sw_recipe *rm,
- 	}
- 
- 	bitmap_zero(rm->r_bitmap, ICE_MAX_NUM_RECIPES);
--	recipe_count = ICE_MAX_NUM_RECIPES;
--	status = ice_aq_get_recipe(hw, tmp, &recipe_count, ICE_SW_LKUP_MAC,
--				   NULL);
--	if (status || recipe_count == 0)
--		goto err_unroll;
- 
- 	/* Allocate the recipe resources, and configure them according to the
- 	 * match fields from protocol headers and extracted field vectors.
-@@ -5141,19 +5130,9 @@ ice_add_sw_recipe(struct ice_hw *hw, struct ice_sw_recipe *rm,
- 
- 		content = &buf[recps].content;
- 
--		/* Clear the result index of the located recipe, as this will be
--		 * updated, if needed, later in the recipe creation process.
--		 */
--		tmp[0].content.result_indx = 0;
--
--		buf[recps] = tmp[0];
- 		buf[recps].recipe_indx = (u8)entry->rid;
--		/* if the recipe is a non-root recipe RID should be programmed
--		 * as 0 for the rules to be applied correctly.
--		 */
--		content->rid = 0;
--		memset(&content->lkup_indx, 0,
--		       sizeof(content->lkup_indx));
-+
-+		buf[recps].content.act_ctrl |= ICE_AQ_RECIPE_ACT_PRUNE_INDX_M;
- 
- 		/* All recipes use look-up index 0 to match switch ID. */
- 		content->lkup_indx[0] = ICE_AQ_SW_ID_LKUP_IDX;
-@@ -5192,8 +5171,6 @@ ice_add_sw_recipe(struct ice_hw *hw, struct ice_sw_recipe *rm,
- 		}
- 
- 		/* fill recipe dependencies */
--		bitmap_zero((unsigned long *)buf[recps].recipe_bitmap,
--			    ICE_MAX_NUM_RECIPES);
- 		set_bit(buf[recps].recipe_indx,
- 			(unsigned long *)buf[recps].recipe_bitmap);
- 		content->act_ctrl_fwd_priority = rm->priority;
-@@ -5357,12 +5334,10 @@ ice_add_sw_recipe(struct ice_hw *hw, struct ice_sw_recipe *rm,
- 		recp->recp_created = true;
- 	}
- 	rm->root_buf = buf;
--	kfree(tmp);
- 	return status;
- 
- err_unroll:
- err_mem:
--	kfree(tmp);
- 	devm_kfree(ice_hw_to_dev(hw), buf);
- 	return status;
+@@ -5067,6 +5067,10 @@ ice_find_free_recp_res_idx(struct ice_hw *hw, const unsigned long *profiles,
+ 	return (u16)bitmap_weight(free_idx, ICE_MAX_FV_WORDS);
  }
+ 
++/* For memcpy in ice_add_sw_recipe. */
++static_assert(sizeof_field(struct ice_aqc_recipe_data_elem, recipe_bitmap) ==
++	      sizeof_field(struct ice_sw_recipe, r_bitmap));
++
+ /**
+  * ice_add_sw_recipe - function to call AQ calls to create switch recipe
+  * @hw: pointer to hardware structure
+@@ -5187,13 +5191,9 @@ ice_add_sw_recipe(struct ice_hw *hw, struct ice_sw_recipe *rm,
+ 		rm->root_rid = buf[0].recipe_indx;
+ 		set_bit(buf[0].recipe_indx, rm->r_bitmap);
+ 		buf[0].content.rid = rm->root_rid | ICE_AQ_RECIPE_ID_IS_ROOT;
+-		if (sizeof(buf[0].recipe_bitmap) >= sizeof(rm->r_bitmap)) {
+-			memcpy(buf[0].recipe_bitmap, rm->r_bitmap,
+-			       sizeof(buf[0].recipe_bitmap));
+-		} else {
+-			status = -EINVAL;
+-			goto err_unroll;
+-		}
++		memcpy(buf[0].recipe_bitmap, rm->r_bitmap,
++		       sizeof(buf[0].recipe_bitmap));
++
+ 		/* Applicable only for ROOT_RECIPE, set the fwd_priority for
+ 		 * the recipe which is getting created if specified
+ 		 * by user. Usually any advanced switch filter, which results
+@@ -5256,14 +5256,8 @@ ice_add_sw_recipe(struct ice_hw *hw, struct ice_sw_recipe *rm,
+ 			set_bit(entry->rid, rm->r_bitmap);
+ 		}
+ 		list_add(&last_chain_entry->l_entry, &rm->rg_list);
+-		if (sizeof(buf[recps].recipe_bitmap) >=
+-		    sizeof(rm->r_bitmap)) {
+-			memcpy(buf[recps].recipe_bitmap, rm->r_bitmap,
+-			       sizeof(buf[recps].recipe_bitmap));
+-		} else {
+-			status = -EINVAL;
+-			goto err_unroll;
+-		}
++		memcpy(buf[recps].recipe_bitmap, rm->r_bitmap,
++		       sizeof(buf[recps].recipe_bitmap));
+ 		content->act_ctrl_fwd_priority = rm->priority;
+ 
+ 		recps++;
 -- 
 2.45.0
 
