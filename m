@@ -4,94 +4,95 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 27F05C2BD09
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 24 Jun 2024 15:12:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8B168C2BD09
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 24 Jun 2024 15:16:59 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id D0AC640882;
-	Mon, 24 Jun 2024 15:12:42 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 41E2040679;
+	Mon, 24 Jun 2024 15:16:59 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 7QfCIOnjTH2q; Mon, 24 Jun 2024 15:12:41 +0000 (UTC)
+ id CrFKDB6sdgpY; Mon, 24 Jun 2024 15:16:58 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 6AB47405A6
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 477DD40681
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1719241961;
-	bh=Tnq47taocDPRy4tSwKO8P1XxzeCVhU1GkQxrcuWOgLc=;
+	s=default; t=1719242218;
+	bh=AwVCdgZlUDmJ45VLLA4nNde1IIXg185F51iHXPPd7UE=;
 	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=5RT3/q3Ucwfhxqo/UNqt84drbBZPxGmbZ1SS0Hrq1FP0PMO8v258i39oAom/iGyts
-	 X7CbSSmtSh1unzkj1FU9Mqs448ip4tuwytzekSVKyogA5Uj0onEOeb7ky+DRPD3AEn
-	 04dtelnQnscVAG+FCxmPVxOwSuNlzmfh4spPWmq9AOqYvtR3pDuRu+yz5o5RVU1pQ2
-	 sTGPHBEaInqmo9INQm3U9cTghKi/Kh9F5MD3htfEF6Ndw6qx48sqYRb0xwkmfNUYXp
-	 +qkRnvp2PfjdwHMydgden8m2KomCWa8joBC+WtCtYOtbCXdpBVhQO3FUtuiQBqnHlU
-	 JZof9IaG3Wtlw==
+	b=QQ07f0T+UpxvORLLoRj3sHCmjiQ2C7sKWLFSDoAnh9raWtJ81KWcwT5EyY51m/Af1
+	 +xjlcCLd7PRc6SBCzMEjWxBYIYk0/UyvKpKEFSUdZWuNZr1Gc2hyhB2+2LnCpuxVrx
+	 7Iu7T2uObLGP1Q0fuAvOHWNmbcX/7jUZzUuGyAfTlhAnNBj8mXrb0VDCGniOT0TGaG
+	 nqgj2oQe35b5RFbGtTQktY9AL1KbTCXieJMCZJc4QS082Pml31rTEBVn82CvumfVBN
+	 xMQTi2y+MJJYt8CzGYZdnTIv4kWhnV9RcTjXjqzwYzNQ1Y+OX/84yneZ1oRudVhffB
+	 yWLqbdFc6CXZw==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 6AB47405A6;
-	Mon, 24 Jun 2024 15:12:41 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 789F21BF476
- for <intel-wired-lan@lists.osuosl.org>; Mon, 24 Jun 2024 15:12:40 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 477DD40681;
+	Mon, 24 Jun 2024 15:16:58 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id F3FC21BF48B
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 24 Jun 2024 09:53:53 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 6592B606B4
- for <intel-wired-lan@lists.osuosl.org>; Mon, 24 Jun 2024 15:12:40 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id ECC554021D
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 24 Jun 2024 09:53:53 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Uxs8hIsymPOe for <intel-wired-lan@lists.osuosl.org>;
- Mon, 24 Jun 2024 15:12:39 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.12;
- helo=mgamail.intel.com; envelope-from=michal.kubiak@intel.com;
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id a2Pd-z8JPQtB for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 24 Jun 2024 09:53:53 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.133.124;
+ helo=us-smtp-delivery-124.mimecast.com; envelope-from=ihuguet@redhat.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 2EF816061D
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2EF816061D
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.12])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 2EF816061D
- for <intel-wired-lan@lists.osuosl.org>; Mon, 24 Jun 2024 15:12:38 +0000 (UTC)
-X-CSE-ConnectionGUID: MQEHz3t/Sl6Un+/rd9KwIw==
-X-CSE-MsgGUID: 4nYhukE6RpuqqLVhAVnBMA==
-X-IronPort-AV: E=McAfee;i="6700,10204,11113"; a="27627074"
-X-IronPort-AV: E=Sophos;i="6.08,262,1712646000"; d="scan'208";a="27627074"
-Received: from fmviesa002.fm.intel.com ([10.60.135.142])
- by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 24 Jun 2024 08:12:38 -0700
-X-CSE-ConnectionGUID: u6ucoV8KSWik23QA/WYhaw==
-X-CSE-MsgGUID: 7vBZ7LMxSyKbDqOgcfvKZg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.08,262,1712646000"; d="scan'208";a="66556006"
-Received: from kkazimiedevpc.igk.intel.com (HELO localhost.igk.intel.com)
- ([10.102.102.224])
- by fmviesa002-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 24 Jun 2024 08:12:36 -0700
-From: Michal Kubiak <michal.kubiak@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Date: Mon, 24 Jun 2024 17:12:13 +0200
-Message-Id: <20240624151213.1755714-1-michal.kubiak@intel.com>
-X-Mailer: git-send-email 2.33.1
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 17CCE4020B
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 17CCE4020B
+Received: from us-smtp-delivery-124.mimecast.com
+ (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 17CCE4020B
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 24 Jun 2024 09:53:52 +0000 (UTC)
+Received: from mx-prod-mc-02.mail-002.prod.us-west-2.aws.redhat.com
+ (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
+ relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-336-itAe-O5pPban2wpqRFSoXQ-1; Mon,
+ 24 Jun 2024 05:53:45 -0400
+X-MC-Unique: itAe-O5pPban2wpqRFSoXQ-1
+Received: from mx-prod-int-02.mail-002.prod.us-west-2.aws.redhat.com
+ (mx-prod-int-02.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.15])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by mx-prod-mc-02.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
+ id 74CAB195609F; Mon, 24 Jun 2024 09:53:43 +0000 (UTC)
+Received: from localhost.localdomain (unknown [10.39.192.153])
+ by mx-prod-int-02.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP
+ id 4704D1955E91; Mon, 24 Jun 2024 09:53:40 +0000 (UTC)
+From: =?UTF-8?q?=C3=8D=C3=B1igo=20Huguet?= <ihuguet@redhat.com>
+To: jesse.brandeburg@intel.com,
+	anthony.l.nguyen@intel.com
+Date: Mon, 24 Jun 2024 11:53:31 +0200
+Message-ID: <20240624095331.351039-1-ihuguet@redhat.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1719241959; x=1750777959;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=1mLMLaeZ0PYMCPUk2gK+0icJF037jF4pg8hK765BLZs=;
- b=nGlcO/r4awV0oSg5oVoB1gfKK2LuZ9OAGrMmDN3HpDRyVMoh035t852s
- dO1Y6lKHR7auLRbG6Pgx5H2JaxHH99pJqxLCnofFko7pUyzPWqumCobap
- 7+Sr3xtaMQBgCQLI9msX+YzAuJJwRsTm6gC6nRfz2/f2fmAbuWJi/Ft9l
- /9JjZHSHXe1IJX5/XOX8TMK+SvpmzJfsXoQZpfzsECIuwXVs3vfsV8BQO
- sYIbTS/fKQOh+IhkoPfff4Gfi8sS5PPRys9JZi64iffszWaH3EumvUhIs
- 5ts0dJTb2kQe//yCBNSbfAaTAu3UXAGnewGQP0KN4o5nHs5PVPxSIYAPS
- Q==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+X-Scanned-By: MIMEDefang 3.0 on 10.30.177.15
+X-Mailman-Approved-At: Mon, 24 Jun 2024 15:16:57 +0000
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=redhat.com; 
+ s=mimecast20190719; t=1719222831;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding;
+ bh=AwVCdgZlUDmJ45VLLA4nNde1IIXg185F51iHXPPd7UE=;
+ b=E9Ph+RSgt0bmkPGrUOw56CBQg4X0VQaTqZMTghsQs6JY5+ZLzBtvETT7QB1hENBsIpLLbf
+ rrRR1FfIlok3vlMPC0g/PoP0dHUPlNYfxbt4sIUQTI0kxdF2gh3P+YLC9TBZNpxRPK7/qv
+ hSW1ecZY90CcS3MRLJv1QgDcR/f04BE=
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
- header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=nGlcO/r4
-Subject: [Intel-wired-lan] [PATCH iwl-net v2] i40e: Fix XDP program
- unloading while removing the driver
+ header.from=redhat.com
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=E9Ph+RSg
+Subject: [Intel-wired-lan] [PATCH net-next] net: igc: return error for link
+ autoneg=off
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -104,126 +105,57 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: wojciech.drewek@intel.com, netdev@vger.kernel.org,
- Michal Kubiak <michal.kubiak@intel.com>, kuba@kernel.org,
- jacob.e.keller@intel.com, maciej.fijalkowski@intel.com,
- george.kuruvinakunnel@intel.com
+Cc: =?UTF-8?q?=C3=8D=C3=B1igo=20Huguet?= <ihuguet@redhat.com>,
+ netdev@vger.kernel.org, edumazet@google.com, intel-wired-lan@lists.osuosl.org,
+ kuba@kernel.org, pabeni@redhat.com, davem@davemloft.net
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The commit 6533e558c650 ("i40e: Fix reset path while removing
-the driver") introduced a new PF state "__I40E_IN_REMOVE" to block
-modifying the XDP program while the driver is being removed.
-Unfortunately, such a change is useful only if the ".ndo_bpf()"
-callback was called out of the rmmod context because unloading the
-existing XDP program is also a part of driver removing procedure.
-In other words, from the rmmod context the driver is expected to
-unload the XDP program without reporting any errors. Otherwise,
-the kernel warning with callstack is printed out to dmesg.
+The driver doesn't support force mode for the link settings. However, if
+the user request it, it's just ignored and success is returned. Return
+ENOTSUPP instead.
 
-Example failing scenario:
- 1. Load the i40e driver.
- 2. Load the XDP program.
- 3. Unload the i40e driver (using "rmmod" command).
-
-The example kernel warning log:
-
-[  +0.004646] WARNING: CPU: 94 PID: 10395 at net/core/dev.c:9290 unregister_netdevice_many_notify+0x7a9/0x870
-[...]
-[  +0.010959] RIP: 0010:unregister_netdevice_many_notify+0x7a9/0x870
-[...]
-[  +0.002726] Call Trace:
-[  +0.002457]  <TASK>
-[  +0.002119]  ? __warn+0x80/0x120
-[  +0.003245]  ? unregister_netdevice_many_notify+0x7a9/0x870
-[  +0.005586]  ? report_bug+0x164/0x190
-[  +0.003678]  ? handle_bug+0x3c/0x80
-[  +0.003503]  ? exc_invalid_op+0x17/0x70
-[  +0.003846]  ? asm_exc_invalid_op+0x1a/0x20
-[  +0.004200]  ? unregister_netdevice_many_notify+0x7a9/0x870
-[  +0.005579]  ? unregister_netdevice_many_notify+0x3cc/0x870
-[  +0.005586]  unregister_netdevice_queue+0xf7/0x140
-[  +0.004806]  unregister_netdev+0x1c/0x30
-[  +0.003933]  i40e_vsi_release+0x87/0x2f0 [i40e]
-[  +0.004604]  i40e_remove+0x1a1/0x420 [i40e]
-[  +0.004220]  pci_device_remove+0x3f/0xb0
-[  +0.003943]  device_release_driver_internal+0x19f/0x200
-[  +0.005243]  driver_detach+0x48/0x90
-[  +0.003586]  bus_remove_driver+0x6d/0xf0
-[  +0.003939]  pci_unregister_driver+0x2e/0xb0
-[  +0.004278]  i40e_exit_module+0x10/0x5f0 [i40e]
-[  +0.004570]  __do_sys_delete_module.isra.0+0x197/0x310
-[  +0.005153]  do_syscall_64+0x85/0x170
-[  +0.003684]  ? syscall_exit_to_user_mode+0x69/0x220
-[  +0.004886]  ? do_syscall_64+0x95/0x170
-[  +0.003851]  ? exc_page_fault+0x7e/0x180
-[  +0.003932]  entry_SYSCALL_64_after_hwframe+0x71/0x79
-[  +0.005064] RIP: 0033:0x7f59dc9347cb
-[  +0.003648] Code: 73 01 c3 48 8b 0d 65 16 0c 00 f7 d8 64 89 01 48 83
-c8 ff c3 66 2e 0f 1f 84 00 00 00 00 00 90 f3 0f 1e fa b8 b0 00 00 00 0f
-05 <48> 3d 01 f0 ff ff 73 01 c3 48 8b 0d 35 16 0c 00 f7 d8 64 89 01 48
-[  +0.018753] RSP: 002b:00007ffffac99048 EFLAGS: 00000206 ORIG_RAX: 00000000000000b0
-[  +0.007577] RAX: ffffffffffffffda RBX: 0000559b9bb2f6e0 RCX: 00007f59dc9347cb
-[  +0.007140] RDX: 0000000000000000 RSI: 0000000000000800 RDI: 0000559b9bb2f748
-[  +0.007146] RBP: 00007ffffac99070 R08: 1999999999999999 R09: 0000000000000000
-[  +0.007133] R10: 00007f59dc9a5ac0 R11: 0000000000000206 R12: 0000000000000000
-[  +0.007141] R13: 00007ffffac992d8 R14: 0000559b9bb2f6e0 R15: 0000000000000000
-[  +0.007151]  </TASK>
-[  +0.002204] ---[ end trace 0000000000000000 ]---
-
-Fix this by checking if the XDP program is being loaded or unloaded.
-Then, block only loading a new program while "__I40E_IN_REMOVE" is set.
-Also, move testing "__I40E_IN_REMOVE" flag to the beginning of XDP_SETUP
-callback to avoid unnecessary operations and checks.
-
-Fixes: 6533e558c650 ("i40e: Fix reset path while removing the driver")
-Signed-off-by: Michal Kubiak <michal.kubiak@intel.com>
-
+Signed-off-by: Íñigo Huguet <ihuguet@redhat.com>
 ---
+ drivers/net/ethernet/intel/igc/igc_ethtool.c | 18 ++++++++++--------
+ 1 file changed, 10 insertions(+), 8 deletions(-)
 
-v1 -> v2 changes:
- - simplify the fix according to Kuba's suggestions, i.e. remove
-   checking 'NETREG_UNREGISTERING' flag directly from ndo_bpf
-   and remove a separate handling for 'unregister' context.
- - update the commit message accordingly
- - add an example of the kernel warning for the issue being fixed.
-
-See:
-v1: <https://lore.kernel.org/netdev/20240528-net-2024-05-28-intel-net-fixes-v1-4-dc8593d2bbc6@intel.com/>
----
- drivers/net/ethernet/intel/i40e/i40e_main.c | 9 ++++-----
- 1 file changed, 4 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 284c3fad5a6e..310513d9321b 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -13293,6 +13293,10 @@ static int i40e_xdp_setup(struct i40e_vsi *vsi, struct bpf_prog *prog,
- 	bool need_reset;
- 	int i;
+diff --git a/drivers/net/ethernet/intel/igc/igc_ethtool.c b/drivers/net/ethernet/intel/igc/igc_ethtool.c
+index 93bce729be76..b7b32344d074 100644
+--- a/drivers/net/ethernet/intel/igc/igc_ethtool.c
++++ b/drivers/net/ethernet/intel/igc/igc_ethtool.c
+@@ -1832,6 +1832,12 @@ igc_ethtool_set_link_ksettings(struct net_device *netdev,
+ 		}
+ 	}
  
-+	/* VSI shall be deleted in a moment, block loading new programs */
-+	if (prog && test_bit(__I40E_IN_REMOVE, pf->state))
-+		return -EINVAL;
++	/* The driver does not support force mode yet */
++	if (cmd->base.autoneg == AUTONEG_DISABLE) {
++		netdev_err(dev, "Force mode currently not supported\n");
++		return -EOPNOTSUPP;
++	}
 +
- 	/* Don't allow frames that span over multiple buffers */
- 	if (vsi->netdev->mtu > frame_size - I40E_PACKET_HDR_PAD) {
- 		NL_SET_ERR_MSG_MOD(extack, "MTU too large for linear frames and XDP prog does not support frags");
-@@ -13301,14 +13305,9 @@ static int i40e_xdp_setup(struct i40e_vsi *vsi, struct bpf_prog *prog,
+ 	while (test_and_set_bit(__IGC_RESETTING, &adapter->state))
+ 		usleep_range(1000, 2000);
  
- 	/* When turning XDP on->off/off->on we reset and rebuild the rings. */
- 	need_reset = (i40e_enabled_xdp_vsi(vsi) != !!prog);
--
- 	if (need_reset)
- 		i40e_prep_for_reset(pf);
+@@ -1844,14 +1850,10 @@ igc_ethtool_set_link_ksettings(struct net_device *netdev,
+ 	if (ethtool_link_ksettings_test_link_mode(cmd, advertising, 2500baseT_Full))
+ 		advertising |= ADVERTISE_2500_FULL;
  
--	/* VSI shall be deleted in a moment, just return EINVAL */
--	if (test_bit(__I40E_IN_REMOVE, pf->state))
--		return -EINVAL;
--
- 	old_prog = xchg(&vsi->xdp_prog, prog);
+-	if (cmd->base.autoneg == AUTONEG_ENABLE) {
+-		hw->mac.autoneg = 1;
+-		hw->phy.autoneg_advertised = advertising;
+-		if (adapter->fc_autoneg)
+-			hw->fc.requested_mode = igc_fc_default;
+-	} else {
+-		netdev_info(dev, "Force mode currently not supported\n");
+-	}
++	hw->mac.autoneg = 1;
++	hw->phy.autoneg_advertised = advertising;
++	if (adapter->fc_autoneg)
++		hw->fc.requested_mode = igc_fc_default;
  
- 	if (need_reset) {
+ 	/* MDI-X => 2; MDI => 1; Auto => 3 */
+ 	if (cmd->base.eth_tp_mdix_ctrl) {
 -- 
-2.33.1
+2.44.0
 
