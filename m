@@ -1,100 +1,97 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 82E15C2BD09
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 24 Jun 2024 14:44:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 27F05C2BD09
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 24 Jun 2024 15:12:43 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 1EDA480CF8;
-	Mon, 24 Jun 2024 14:44:14 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id D0AC640882;
+	Mon, 24 Jun 2024 15:12:42 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id POFWR1Y5Ufeb; Mon, 24 Jun 2024 14:44:11 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 7QfCIOnjTH2q; Mon, 24 Jun 2024 15:12:41 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 94DC780CAE
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 6AB47405A6
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1719240251;
-	bh=9cd2ZmYLlcMXPLHluaY0OyOcWvro52qRTOQ76mwP8vw=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=a546OH4wNiD9Yb796x+M6Uz53Ve7YXCiLc2AXU7vs3Wfbtfmh+NXYgVfCZpaZedU3
-	 /+B+zGuUn065IT9wsjAFy0FS3XVW/Ixjdxg1y4ri7fVtpxnY/n+blfdcD+iI0S+Cvo
-	 KXWyM6meCwWbzqVU/d+9AoeyF3zqmYLlL550Pd+auKv5r1/XZIeSHtkFCT7XYHDRqj
-	 kJ0R7mThO1DcbbUDvPJhtJL8QdzOwkJurN8e1Ob+HKZolEqT9M55YJO3Zu2UcEp8qf
-	 0LWbGhzeOOtS+BNXZcJv903V+0dMG7yYfVnOZxJzvAlKPSrGbxGdK6et2annNmIbTY
-	 MDnhhrNj+iPXA==
+	s=default; t=1719241961;
+	bh=Tnq47taocDPRy4tSwKO8P1XxzeCVhU1GkQxrcuWOgLc=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=5RT3/q3Ucwfhxqo/UNqt84drbBZPxGmbZ1SS0Hrq1FP0PMO8v258i39oAom/iGyts
+	 X7CbSSmtSh1unzkj1FU9Mqs448ip4tuwytzekSVKyogA5Uj0onEOeb7ky+DRPD3AEn
+	 04dtelnQnscVAG+FCxmPVxOwSuNlzmfh4spPWmq9AOqYvtR3pDuRu+yz5o5RVU1pQ2
+	 sTGPHBEaInqmo9INQm3U9cTghKi/Kh9F5MD3htfEF6Ndw6qx48sqYRb0xwkmfNUYXp
+	 +qkRnvp2PfjdwHMydgden8m2KomCWa8joBC+WtCtYOtbCXdpBVhQO3FUtuiQBqnHlU
+	 JZof9IaG3Wtlw==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 94DC780CAE;
-	Mon, 24 Jun 2024 14:44:11 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 6AB47405A6;
+	Mon, 24 Jun 2024 15:12:41 +0000 (UTC)
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 573501BF591
- for <intel-wired-lan@lists.osuosl.org>; Mon, 24 Jun 2024 14:44:08 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 789F21BF476
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 24 Jun 2024 15:12:40 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 51FA660900
- for <intel-wired-lan@lists.osuosl.org>; Mon, 24 Jun 2024 14:44:08 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 6592B606B4
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 24 Jun 2024 15:12:40 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id rTaFy_-2Q0Of for <intel-wired-lan@lists.osuosl.org>;
- Mon, 24 Jun 2024 14:44:06 +0000 (UTC)
-Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.20;
- helo=mgamail.intel.com; envelope-from=marcin.szycik@linux.intel.com;
+ id Uxs8hIsymPOe for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 24 Jun 2024 15:12:39 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.12;
+ helo=mgamail.intel.com; envelope-from=michal.kubiak@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 6D914608F4
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 6D914608F4
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.20])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 6D914608F4
- for <intel-wired-lan@lists.osuosl.org>; Mon, 24 Jun 2024 14:44:06 +0000 (UTC)
-X-CSE-ConnectionGUID: tCZMPylYQrG8Rzmei9WzkA==
-X-CSE-MsgGUID: vRqJvil3S8KrpkHWTsSsGw==
-X-IronPort-AV: E=McAfee;i="6700,10204,11113"; a="16040499"
-X-IronPort-AV: E=Sophos;i="6.08,262,1712646000"; d="scan'208";a="16040499"
-Received: from orviesa008.jf.intel.com ([10.64.159.148])
- by orvoesa112.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 24 Jun 2024 07:44:06 -0700
-X-CSE-ConnectionGUID: abQcQwWmRwCuqRfoBgCXxA==
-X-CSE-MsgGUID: kNQtEAThQKa4nu3fYYObTg==
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 2EF816061D
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2EF816061D
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.12])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 2EF816061D
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 24 Jun 2024 15:12:38 +0000 (UTC)
+X-CSE-ConnectionGUID: MQEHz3t/Sl6Un+/rd9KwIw==
+X-CSE-MsgGUID: 4nYhukE6RpuqqLVhAVnBMA==
+X-IronPort-AV: E=McAfee;i="6700,10204,11113"; a="27627074"
+X-IronPort-AV: E=Sophos;i="6.08,262,1712646000"; d="scan'208";a="27627074"
+Received: from fmviesa002.fm.intel.com ([10.60.135.142])
+ by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 24 Jun 2024 08:12:38 -0700
+X-CSE-ConnectionGUID: u6ucoV8KSWik23QA/WYhaw==
+X-CSE-MsgGUID: 7vBZ7LMxSyKbDqOgcfvKZg==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.08,262,1712646000"; d="scan'208";a="44022109"
-Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by orviesa008.jf.intel.com with ESMTP; 24 Jun 2024 07:44:01 -0700
-Received: from mystra-4.igk.intel.com (mystra-4.igk.intel.com [10.123.220.40])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id 45BBA27BBC;
- Mon, 24 Jun 2024 15:43:49 +0100 (IST)
-From: Marcin Szycik <marcin.szycik@linux.intel.com>
+X-IronPort-AV: E=Sophos;i="6.08,262,1712646000"; d="scan'208";a="66556006"
+Received: from kkazimiedevpc.igk.intel.com (HELO localhost.igk.intel.com)
+ ([10.102.102.224])
+ by fmviesa002-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 24 Jun 2024 08:12:36 -0700
+From: Michal Kubiak <michal.kubiak@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Mon, 24 Jun 2024 16:45:28 +0200
-Message-ID: <20240624144530.690545-6-marcin.szycik@linux.intel.com>
-X-Mailer: git-send-email 2.45.0
-In-Reply-To: <20240624144530.690545-1-marcin.szycik@linux.intel.com>
-References: <20240624144530.690545-1-marcin.szycik@linux.intel.com>
+Date: Mon, 24 Jun 2024 17:12:13 +0200
+Message-Id: <20240624151213.1755714-1-michal.kubiak@intel.com>
+X-Mailer: git-send-email 2.33.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1719240246; x=1750776246;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=TC3Luz8RbdWE7Ar59gAC/P4B4Vz9n28qZWH54bDZhrU=;
- b=UIId1YPTNNq9SCbnVEQL9PnPpNYXudaSiY2BtmVu8BfvV3t9nL6q959F
- MZX4F9NRrlAkVzaVLdnzevI21S1O7PyLhdz8SMcoiL6Oo1/Qry4PyKsM9
- E+CK84Ss/ohG5obJKrDr4Vwz+hxLVoCOba+wzpGc829JlnORFDXhX9f3s
- SKY1jHaCNw0dByYg4XrK2rrS+uZMZMGTsiu+v5Dh5gxG0jO+GjXO8m4uu
- BFNPBKzNRjS2jNLne1UKOn3IofjTK3CLpFRkbs8eKOJ7sLtSICayvWong
- 2C5gHXireGj6+x9xmJ2kvGdSjuWFCWIrkxhS8nez/uBfFiKkYtcGowAYP
- g==;
+ t=1719241959; x=1750777959;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=1mLMLaeZ0PYMCPUk2gK+0icJF037jF4pg8hK765BLZs=;
+ b=nGlcO/r4awV0oSg5oVoB1gfKK2LuZ9OAGrMmDN3HpDRyVMoh035t852s
+ dO1Y6lKHR7auLRbG6Pgx5H2JaxHH99pJqxLCnofFko7pUyzPWqumCobap
+ 7+Sr3xtaMQBgCQLI9msX+YzAuJJwRsTm6gC6nRfz2/f2fmAbuWJi/Ft9l
+ /9JjZHSHXe1IJX5/XOX8TMK+SvpmzJfsXoQZpfzsECIuwXVs3vfsV8BQO
+ sYIbTS/fKQOh+IhkoPfff4Gfi8sS5PPRys9JZi64iffszWaH3EumvUhIs
+ 5ts0dJTb2kQe//yCBNSbfAaTAu3UXAGnewGQP0KN4o5nHs5PVPxSIYAPS
+ Q==;
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dmarc=none (p=none dis=none)
- header.from=linux.intel.com
+ dmarc=pass (p=none dis=none)
+ header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=UIId1YPT
-Subject: [Intel-wired-lan] [PATCH iwl-next v2 5/7] ice: Optimize switch
- recipe creation
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=nGlcO/r4
+Subject: [Intel-wired-lan] [PATCH iwl-net v2] i40e: Fix XDP program
+ unloading while removing the driver
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -107,791 +104,126 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, aleksander.lobakin@intel.com,
- przemyslaw.kitszel@intel.com, Marcin Szycik <marcin.szycik@linux.intel.com>,
- michal.swiatkowski@linux.intel.com
+Cc: wojciech.drewek@intel.com, netdev@vger.kernel.org,
+ Michal Kubiak <michal.kubiak@intel.com>, kuba@kernel.org,
+ jacob.e.keller@intel.com, maciej.fijalkowski@intel.com,
+ george.kuruvinakunnel@intel.com
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Currently when creating switch recipes, switch ID is always added as the
-first word in every recipe. There are only 5 words in a recipe, so one
-word is always wasted. This is also true for the last recipe, which stores
-result indexes (in case of chain recipes). Therefore the maximum usable
-length of a chain recipe is 4 * 4 = 16 words. 4 words in a recipe, 4
-recipes that can be chained (using a 5th one for result indexes).
+The commit 6533e558c650 ("i40e: Fix reset path while removing
+the driver") introduced a new PF state "__I40E_IN_REMOVE" to block
+modifying the XDP program while the driver is being removed.
+Unfortunately, such a change is useful only if the ".ndo_bpf()"
+callback was called out of the rmmod context because unloading the
+existing XDP program is also a part of driver removing procedure.
+In other words, from the rmmod context the driver is expected to
+unload the XDP program without reporting any errors. Otherwise,
+the kernel warning with callstack is printed out to dmesg.
 
-Current max size chained recipe:
-0: smmmm
-1: smmmm
-2: smmmm
-3: smmmm
-4: srrrr
+Example failing scenario:
+ 1. Load the i40e driver.
+ 2. Load the XDP program.
+ 3. Unload the i40e driver (using "rmmod" command).
 
-Where:
-s - switch ID
-m - regular match (e.g. ipv4 src addr, udp dst port, etc.)
-r - result index
+The example kernel warning log:
 
-Switch ID does not actually need to be present in every recipe, only in one
-of them (in case of chained recipe). This frees up to 8 extra words:
-3 from recipes in the middle (because first recipe still needs to have
-switch ID), and 5 from one extra recipe (because now the last recipe also
-does not have switch ID, so it can chain 1 more recipe).
+[  +0.004646] WARNING: CPU: 94 PID: 10395 at net/core/dev.c:9290 unregister_netdevice_many_notify+0x7a9/0x870
+[...]
+[  +0.010959] RIP: 0010:unregister_netdevice_many_notify+0x7a9/0x870
+[...]
+[  +0.002726] Call Trace:
+[  +0.002457]  <TASK>
+[  +0.002119]  ? __warn+0x80/0x120
+[  +0.003245]  ? unregister_netdevice_many_notify+0x7a9/0x870
+[  +0.005586]  ? report_bug+0x164/0x190
+[  +0.003678]  ? handle_bug+0x3c/0x80
+[  +0.003503]  ? exc_invalid_op+0x17/0x70
+[  +0.003846]  ? asm_exc_invalid_op+0x1a/0x20
+[  +0.004200]  ? unregister_netdevice_many_notify+0x7a9/0x870
+[  +0.005579]  ? unregister_netdevice_many_notify+0x3cc/0x870
+[  +0.005586]  unregister_netdevice_queue+0xf7/0x140
+[  +0.004806]  unregister_netdev+0x1c/0x30
+[  +0.003933]  i40e_vsi_release+0x87/0x2f0 [i40e]
+[  +0.004604]  i40e_remove+0x1a1/0x420 [i40e]
+[  +0.004220]  pci_device_remove+0x3f/0xb0
+[  +0.003943]  device_release_driver_internal+0x19f/0x200
+[  +0.005243]  driver_detach+0x48/0x90
+[  +0.003586]  bus_remove_driver+0x6d/0xf0
+[  +0.003939]  pci_unregister_driver+0x2e/0xb0
+[  +0.004278]  i40e_exit_module+0x10/0x5f0 [i40e]
+[  +0.004570]  __do_sys_delete_module.isra.0+0x197/0x310
+[  +0.005153]  do_syscall_64+0x85/0x170
+[  +0.003684]  ? syscall_exit_to_user_mode+0x69/0x220
+[  +0.004886]  ? do_syscall_64+0x95/0x170
+[  +0.003851]  ? exc_page_fault+0x7e/0x180
+[  +0.003932]  entry_SYSCALL_64_after_hwframe+0x71/0x79
+[  +0.005064] RIP: 0033:0x7f59dc9347cb
+[  +0.003648] Code: 73 01 c3 48 8b 0d 65 16 0c 00 f7 d8 64 89 01 48 83
+c8 ff c3 66 2e 0f 1f 84 00 00 00 00 00 90 f3 0f 1e fa b8 b0 00 00 00 0f
+05 <48> 3d 01 f0 ff ff 73 01 c3 48 8b 0d 35 16 0c 00 f7 d8 64 89 01 48
+[  +0.018753] RSP: 002b:00007ffffac99048 EFLAGS: 00000206 ORIG_RAX: 00000000000000b0
+[  +0.007577] RAX: ffffffffffffffda RBX: 0000559b9bb2f6e0 RCX: 00007f59dc9347cb
+[  +0.007140] RDX: 0000000000000000 RSI: 0000000000000800 RDI: 0000559b9bb2f748
+[  +0.007146] RBP: 00007ffffac99070 R08: 1999999999999999 R09: 0000000000000000
+[  +0.007133] R10: 00007f59dc9a5ac0 R11: 0000000000000206 R12: 0000000000000000
+[  +0.007141] R13: 00007ffffac992d8 R14: 0000559b9bb2f6e0 R15: 0000000000000000
+[  +0.007151]  </TASK>
+[  +0.002204] ---[ end trace 0000000000000000 ]---
 
-Max size chained recipe after changes:
-0: smmmm
-1: Mmmmm
-2: Mmmmm
-3: Mmmmm
-4: MMMMM
-5: Rrrrr
+Fix this by checking if the XDP program is being loaded or unloaded.
+Then, block only loading a new program while "__I40E_IN_REMOVE" is set.
+Also, move testing "__I40E_IN_REMOVE" flag to the beginning of XDP_SETUP
+callback to avoid unnecessary operations and checks.
 
-Extra usable words available after this change are highlighted with capital
-letters.
+Fixes: 6533e558c650 ("i40e: Fix reset path while removing the driver")
+Signed-off-by: Michal Kubiak <michal.kubiak@intel.com>
 
-Changing how switch ID is added is not straightforward, because it's not a
-regular lookup. Its FV index and mask can't be determined based on protocol
-+ offset pair read from package and instead need to be added manually.
-
-Additionally, change how result indexes are added. Currently they are
-always inserted in a new recipe at the end. Example for 13 words, (with
-above optimization, switch ID being one of the words):
-0: smmmm
-1: mmmmm
-2: mmmxx
-3: rrrxx
-
-Where:
-x - unused word
-
-In this and some other cases, the result indexes can be moved just after
-last matches because there are unused words, saving one recipe. Example
-for 13 words after both optimizations:
-0: smmmm
-1: mmmmm
-2: mmmrr
-
-Note how one less result index is needed in this case, because the last
-recipe does not need to "link" to itself.
-
-There are cases when adding an additional recipe for result indexes cannot
-be avoided. In that cases result indexes are all put in the last recipe.
-Example for 14 words after both optimizations:
-0: smmmm
-1: mmmmm
-2: mmmmx
-3: rrrxx
-
-With these two changes, recipes/rules are more space efficient, allowing
-more to be created in total.
-
-Co-developed-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
-Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
-Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Signed-off-by: Marcin Szycik <marcin.szycik@linux.intel.com>
 ---
- .../ethernet/intel/ice/ice_protocol_type.h    |  22 +-
- drivers/net/ethernet/intel/ice/ice_switch.c   | 525 +++++++-----------
- drivers/net/ethernet/intel/ice/ice_switch.h   |   2 +
- 3 files changed, 212 insertions(+), 337 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_protocol_type.h b/drivers/net/ethernet/intel/ice/ice_protocol_type.h
-index c396dabacef4..47e405bf1382 100644
---- a/drivers/net/ethernet/intel/ice/ice_protocol_type.h
-+++ b/drivers/net/ethernet/intel/ice/ice_protocol_type.h
-@@ -7,18 +7,24 @@
+v1 -> v2 changes:
+ - simplify the fix according to Kuba's suggestions, i.e. remove
+   checking 'NETREG_UNREGISTERING' flag directly from ndo_bpf
+   and remove a separate handling for 'unregister' context.
+ - update the commit message accordingly
+ - add an example of the kernel warning for the issue being fixed.
+
+See:
+v1: <https://lore.kernel.org/netdev/20240528-net-2024-05-28-intel-net-fixes-v1-4-dc8593d2bbc6@intel.com/>
+---
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 284c3fad5a6e..310513d9321b 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -13293,6 +13293,10 @@ static int i40e_xdp_setup(struct i40e_vsi *vsi, struct bpf_prog *prog,
+ 	bool need_reset;
+ 	int i;
  
- /* Each recipe can match up to 5 different fields. Fields to match can be meta-
-  * data, values extracted from packet headers, or results from other recipes.
-- * One of the 5 fields is reserved for matching the switch ID. So, up to 4
-- * recipes can provide intermediate results to another one through chaining,
-- * e.g. recipes 0, 1, 2, and 3 can provide intermediate results to recipe 4.
-+ * Therefore, up to 5 recipes can provide intermediate results to another one
-+ * through chaining, e.g. recipes 0, 1, 2, 3 and 4 can provide intermediate
-+ * results to recipe 5. Note that one of the fields in one of the recipes must
-+ * always be reserved for matching the switch ID.
-  */
--#define ICE_NUM_WORDS_RECIPE 4
-+#define ICE_NUM_WORDS_RECIPE 5
- 
--/* Max recipes that can be chained */
-+/* Max recipes that can be chained, not including the last one, which combines
-+ * intermediate results.
-+ */
- #define ICE_MAX_CHAIN_RECIPE 5
- 
--/* 1 word reserved for switch ID from allowed 5 words.
-- * So a recipe can have max 4 words. And you can chain 5 such recipes
-- * together. So maximum words that can be programmed for look up is 5 * 4.
-+/* Total max recipes in chain recipe (including intermediate results) */
-+#define ICE_MAX_CHAIN_RECIPE_RES (ICE_MAX_CHAIN_RECIPE + 1)
-+
-+/* A recipe can have max 5 words, and 5 recipes can be chained together (using
-+ * the 6th one, which would contain only result indexes). So maximum words that
-+ * can be programmed for lookup is 5 * 5 (not including intermediate results).
-  */
- #define ICE_MAX_CHAIN_WORDS (ICE_NUM_WORDS_RECIPE * ICE_MAX_CHAIN_RECIPE)
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
-index 81e5448da1aa..5a092dcea172 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.c
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.c
-@@ -2281,20 +2281,6 @@ static void ice_get_recp_to_prof_map(struct ice_hw *hw)
- 	}
- }
- 
--/**
-- * ice_collect_result_idx - copy result index values
-- * @buf: buffer that contains the result index
-- * @recp: the recipe struct to copy data into
-- */
--static void
--ice_collect_result_idx(struct ice_aqc_recipe_data_elem *buf,
--		       struct ice_sw_recipe *recp)
--{
--	if (buf->content.result_indx & ICE_AQ_RECIPE_RESULT_EN)
--		set_bit(buf->content.result_indx & ~ICE_AQ_RECIPE_RESULT_EN,
--			recp->res_idxs);
--}
--
- /**
-  * ice_get_recp_frm_fw - update SW bookkeeping from FW recipe entries
-  * @hw: pointer to hardware structure
-@@ -2377,11 +2363,11 @@ ice_get_recp_frm_fw(struct ice_hw *hw, struct ice_sw_recipe *recps, u8 rid,
- 		prof = find_first_bit(recipe_to_profile[idx],
- 				      ICE_MAX_NUM_PROFILES);
- 		for (i = 0; i < ICE_NUM_WORDS_RECIPE; i++) {
--			u8 lkup_indx = root_bufs.content.lkup_indx[i + 1];
-+			u8 lkup_indx = root_bufs.content.lkup_indx[i];
- 
- 			rg_entry->fv_idx[i] = lkup_indx;
- 			rg_entry->fv_mask[i] =
--				le16_to_cpu(root_bufs.content.mask[i + 1]);
-+				le16_to_cpu(root_bufs.content.mask[i]);
- 
- 			/* If the recipe is a chained recipe then all its
- 			 * child recipe's result will have a result index.
-@@ -4884,105 +4870,56 @@ ice_fill_valid_words(struct ice_adv_lkup_elem *rule,
- 	return ret_val;
- }
- 
--/**
-- * ice_create_first_fit_recp_def - Create a recipe grouping
-- * @hw: pointer to the hardware structure
-- * @lkup_exts: an array of protocol header extractions
-- * @rg_list: pointer to a list that stores new recipe groups
-- * @recp_cnt: pointer to a variable that stores returned number of recipe groups
-- *
-- * Using first fit algorithm, take all the words that are still not done
-- * and start grouping them in 4-word groups. Each group makes up one
-- * recipe.
-- */
--static int
--ice_create_first_fit_recp_def(struct ice_hw *hw,
--			      struct ice_prot_lkup_ext *lkup_exts,
--			      struct list_head *rg_list,
--			      u8 *recp_cnt)
--{
--	struct ice_pref_recipe_group *grp = NULL;
--	u8 j;
--
--	*recp_cnt = 0;
--
--	for (j = 0; j < lkup_exts->n_val_words; j++) {
--		if (!grp || grp->n_val_pairs == ICE_NUM_WORDS_RECIPE) {
--			struct ice_recp_grp_entry *entry;
--
--			entry = devm_kzalloc(ice_hw_to_dev(hw), sizeof(*entry),
--					     GFP_KERNEL);
--			if (!entry)
--				return -ENOMEM;
--
--			list_add(&entry->l_entry, rg_list);
--			grp = &entry->r_group;
--			(*recp_cnt)++;
--		}
--
--		grp->pairs[grp->n_val_pairs].prot_id =
--			lkup_exts->fv_words[j].prot_id;
--		grp->pairs[grp->n_val_pairs].off = lkup_exts->fv_words[j].off;
--		grp->mask[grp->n_val_pairs] = lkup_exts->field_mask[j];
--		grp->n_val_pairs++;
--	}
--
--	return 0;
--}
--
- /**
-  * ice_fill_fv_word_index - fill in the field vector indices for a recipe group
-  * @hw: pointer to the hardware structure
-- * @fv_list: field vector with the extraction sequence information
-- * @rg_list: recipe groupings with protocol-offset pairs
-+ * @rm: recipe management list entry
-  *
-  * Helper function to fill in the field vector indices for protocol-offset
-  * pairs. These indexes are then ultimately programmed into a recipe.
-  */
- static int
--ice_fill_fv_word_index(struct ice_hw *hw, struct list_head *fv_list,
--		       struct list_head *rg_list)
-+ice_fill_fv_word_index(struct ice_hw *hw, struct ice_sw_recipe *rm)
- {
- 	struct ice_sw_fv_list_entry *fv;
--	struct ice_recp_grp_entry *rg;
- 	struct ice_fv_word *fv_ext;
-+	u8 i;
- 
--	if (list_empty(fv_list))
--		return 0;
-+	if (list_empty(&rm->fv_list))
++	/* VSI shall be deleted in a moment, block loading new programs */
++	if (prog && test_bit(__I40E_IN_REMOVE, pf->state))
 +		return -EINVAL;
- 
--	fv = list_first_entry(fv_list, struct ice_sw_fv_list_entry,
-+	fv = list_first_entry(&rm->fv_list, struct ice_sw_fv_list_entry,
- 			      list_entry);
- 	fv_ext = fv->fv_ptr->ew;
- 
--	list_for_each_entry(rg, rg_list, l_entry) {
--		u8 i;
-+	/* Add switch id as the first word. */
-+	rm->fv_idx[0] = ICE_AQ_SW_ID_LKUP_IDX;
-+	rm->fv_mask[0] = ICE_AQ_SW_ID_LKUP_MASK;
-+	rm->n_ext_words++;
- 
--		for (i = 0; i < rg->r_group.n_val_pairs; i++) {
--			struct ice_fv_word *pr;
--			bool found = false;
--			u16 mask;
--			u8 j;
--
--			pr = &rg->r_group.pairs[i];
--			mask = rg->r_group.mask[i];
--
--			for (j = 0; j < hw->blk[ICE_BLK_SW].es.fvw; j++)
--				if (fv_ext[j].prot_id == pr->prot_id &&
--				    fv_ext[j].off == pr->off) {
--					found = true;
-+	for (i = 1; i < rm->n_ext_words; i++) {
-+		struct ice_fv_word *fv_word = &rm->ext_words[i - 1];
-+		u16 fv_mask = rm->word_masks[i - 1];
-+		bool found = false;
-+		u8 j;
- 
--					/* Store index of field vector */
--					rg->fv_idx[i] = j;
--					rg->fv_mask[i] = mask;
--					break;
--				}
-+		for (j = 0; j < hw->blk[ICE_BLK_SW].es.fvw; j++) {
-+			if (fv_ext[j].prot_id == fv_word->prot_id &&
-+			    fv_ext[j].off == fv_word->off) {
-+				found = true;
- 
--			/* Protocol/offset could not be found, caller gave an
--			 * invalid pair
--			 */
--			if (!found)
--				return -EINVAL;
-+				/* Store index of field vector */
-+				rm->fv_idx[i] = j;
-+				rm->fv_mask[i] = fv_mask;
-+				break;
-+			}
- 		}
 +
-+		/* Protocol/offset could not be found, caller gave an invalid
-+		 * pair.
-+		 */
-+		if (!found)
-+			return -EINVAL;
- 	}
+ 	/* Don't allow frames that span over multiple buffers */
+ 	if (vsi->netdev->mtu > frame_size - I40E_PACKET_HDR_PAD) {
+ 		NL_SET_ERR_MSG_MOD(extack, "MTU too large for linear frames and XDP prog does not support frags");
+@@ -13301,14 +13305,9 @@ static int i40e_xdp_setup(struct i40e_vsi *vsi, struct bpf_prog *prog,
  
- 	return 0;
-@@ -5055,6 +4992,69 @@ ice_find_free_recp_res_idx(struct ice_hw *hw, const unsigned long *profiles,
- 	return (u16)bitmap_weight(free_idx, ICE_MAX_FV_WORDS);
- }
- 
-+/**
-+ * ice_calc_recp_cnt - calculate number of recipes based on word count
-+ * @word_cnt: number of lookup words
-+ *
-+ * Word count should include switch ID word and regular lookup words.
-+ * Returns: number of recipes required to fit @word_cnt, including extra recipes
-+ * needed for recipe chaining (if needed).
-+ */
-+static int ice_calc_recp_cnt(u8 word_cnt)
-+{
-+	/* All words fit in a single recipe, no need for chaining. */
-+	if (word_cnt <= ICE_NUM_WORDS_RECIPE)
-+		return 1;
-+
-+	/* Recipe chaining required. Result indexes are fitted right after
-+	 * regular lookup words. In some cases a new recipe must be added in
-+	 * order to fit result indexes.
-+	 *
-+	 * While the word count increases, every 5 words an extra recipe needs
-+	 * to be added. However, by adding a recipe, one word for its result
-+	 * index must also be added, therefore every 4 words recipe count
-+	 * increases by 1. This calculation does not apply to word count == 1,
-+	 * which is handled above.
-+	 */
-+	return (word_cnt + 2) / (ICE_NUM_WORDS_RECIPE - 1);
-+}
-+
-+static void fill_recipe_template(struct ice_aqc_recipe_data_elem *recp, u16 rid,
-+				 const struct ice_sw_recipe *rm)
-+{
-+	int i;
-+
-+	recp->recipe_indx = rid;
-+	recp->content.act_ctrl |= ICE_AQ_RECIPE_ACT_PRUNE_INDX_M;
-+
-+	for (i = 0; i < ICE_NUM_WORDS_RECIPE; i++) {
-+		recp->content.lkup_indx[i] = ICE_AQ_RECIPE_LKUP_IGNORE;
-+		recp->content.mask[i] = cpu_to_le16(0);
-+	}
-+
-+	set_bit(rid, (unsigned long *)recp->recipe_bitmap);
-+	recp->content.act_ctrl_fwd_priority = rm->priority;
-+
-+	if (rm->need_pass_l2)
-+		recp->content.act_ctrl |= ICE_AQ_RECIPE_ACT_NEED_PASS_L2;
-+
-+	if (rm->allow_pass_l2)
-+		recp->content.act_ctrl |= ICE_AQ_RECIPE_ACT_ALLOW_PASS_L2;
-+}
-+
-+static void bookkeep_recipe(struct ice_sw_recipe *recipe,
-+			    struct ice_aqc_recipe_data_elem *r,
-+			    const struct ice_sw_recipe *rm)
-+{
-+	memcpy(recipe->r_bitmap, r->recipe_bitmap, sizeof(recipe->r_bitmap));
-+
-+	recipe->priority = r->content.act_ctrl_fwd_priority;
-+	recipe->tun_type = rm->tun_type;
-+	recipe->need_pass_l2 = rm->need_pass_l2;
-+	recipe->allow_pass_l2 = rm->allow_pass_l2;
-+	recipe->recp_created = true;
-+}
-+
- /* For memcpy in ice_add_sw_recipe. */
- static_assert(sizeof_field(struct ice_aqc_recipe_data_elem, recipe_bitmap) ==
- 	      sizeof_field(struct ice_sw_recipe, r_bitmap));
-@@ -5071,279 +5071,148 @@ ice_add_sw_recipe(struct ice_hw *hw, struct ice_sw_recipe *rm,
- {
- 	struct ice_aqc_recipe_data_elem *buf __free(kfree) = NULL;
- 	DECLARE_BITMAP(result_idx_bm, ICE_MAX_FV_WORDS);
--	struct ice_aqc_recipe_content *content;
--	struct ice_recp_grp_entry *entry;
--	u16 free_res_idx;
--	u8 chain_idx;
--	u8 recps = 0;
-+	struct ice_aqc_recipe_data_elem *root;
-+	struct ice_sw_recipe *recipe;
-+	u16 free_res_idx, rid;
-+	int lookup = 0;
-+	int recp_cnt;
- 	int status;
-+	int word;
-+	int i;
-+
-+	recp_cnt = ice_calc_recp_cnt(rm->n_ext_words);
- 
--	/* When more than one recipe are required, another recipe is needed to
--	 * chain them together. Matching a tunnel metadata ID takes up one of
--	 * the match fields in the chaining recipe reducing the number of
--	 * chained recipes by one.
--	 */
--	 /* check number of free result indices */
- 	bitmap_zero(result_idx_bm, ICE_MAX_FV_WORDS);
-+	bitmap_zero(rm->r_bitmap, ICE_MAX_NUM_RECIPES);
-+
-+	/* Check number of free result indices */
- 	free_res_idx = ice_find_free_recp_res_idx(hw, profiles, result_idx_bm);
- 
- 	ice_debug(hw, ICE_DBG_SW, "Result idx slots: %d, need %d\n",
--		  free_res_idx, rm->n_grp_count);
+ 	/* When turning XDP on->off/off->on we reset and rebuild the rings. */
+ 	need_reset = (i40e_enabled_xdp_vsi(vsi) != !!prog);
 -
--	if (rm->n_grp_count > 1) {
--		if (rm->n_grp_count > free_res_idx)
--			return -ENOSPC;
-+		  free_res_idx, recp_cnt);
+ 	if (need_reset)
+ 		i40e_prep_for_reset(pf);
  
--		rm->n_grp_count++;
--	}
+-	/* VSI shall be deleted in a moment, just return EINVAL */
+-	if (test_bit(__I40E_IN_REMOVE, pf->state))
+-		return -EINVAL;
 -
--	if (rm->n_grp_count > ICE_MAX_CHAIN_RECIPE)
-+	/* Last recipe doesn't need result index */
-+	if (recp_cnt - 1 > free_res_idx)
- 		return -ENOSPC;
+ 	old_prog = xchg(&vsi->xdp_prog, prog);
  
--	buf = kcalloc(rm->n_grp_count, sizeof(*buf), GFP_KERNEL);
-+	if (recp_cnt > ICE_MAX_CHAIN_RECIPE_RES)
-+		return -E2BIG;
-+
-+	buf = kcalloc(recp_cnt, sizeof(*buf), GFP_KERNEL);
- 	if (!buf)
- 		return -ENOMEM;
- 
--	bitmap_zero(rm->r_bitmap, ICE_MAX_NUM_RECIPES);
--
--	/* Allocate the recipe resources, and configure them according to the
--	 * match fields from protocol headers and extracted field vectors.
-+	/* Setup the non-root subrecipes. These do not contain lookups for other
-+	 * subrecipes results. Set associated recipe only to own recipe index.
-+	 * Each non-root subrecipe needs a free result index from FV.
-+	 *
-+	 * Note: only done if there is more than one recipe.
- 	 */
--	chain_idx = find_first_bit(result_idx_bm, ICE_MAX_FV_WORDS);
--	list_for_each_entry(entry, &rm->rg_list, l_entry) {
--		u8 i;
-+	for (i = 0; i < recp_cnt - 1; i++) {
-+		struct ice_aqc_recipe_content *content;
-+		u8 result_idx;
- 
--		status = ice_alloc_recipe(hw, &entry->rid);
-+		status = ice_alloc_recipe(hw, &rid);
- 		if (status)
- 			return status;
- 
--		content = &buf[recps].content;
--
--		buf[recps].recipe_indx = (u8)entry->rid;
--
--		buf[recps].content.act_ctrl |= ICE_AQ_RECIPE_ACT_PRUNE_INDX_M;
-+		fill_recipe_template(&buf[i], rid, rm);
- 
--		/* All recipes use look-up index 0 to match switch ID. */
--		content->lkup_indx[0] = ICE_AQ_SW_ID_LKUP_IDX;
--		content->mask[0] = cpu_to_le16(ICE_AQ_SW_ID_LKUP_MASK);
--		/* Setup lkup_indx 1..4 to INVALID/ignore and set the mask
--		 * to be 0
-+		result_idx = find_first_bit(result_idx_bm, ICE_MAX_FV_WORDS);
-+		/* Check if there really is a valid result index that can be
-+		 * used.
- 		 */
--		for (i = 1; i <= ICE_NUM_WORDS_RECIPE; i++) {
--			content->lkup_indx[i] = 0x80;
--			content->mask[i] = 0;
--		}
--
--		for (i = 0; i < entry->r_group.n_val_pairs; i++) {
--			content->lkup_indx[i + 1] = entry->fv_idx[i];
--			content->mask[i + 1] = cpu_to_le16(entry->fv_mask[i]);
-+		if (result_idx >= ICE_MAX_FV_WORDS) {
-+			ice_debug(hw, ICE_DBG_SW, "No chain index available\n");
-+			return -ENOSPC;
- 		}
-+		clear_bit(result_idx, result_idx_bm);
- 
--		if (rm->n_grp_count > 1) {
--			/* Checks to see if there really is a valid result index
--			 * that can be used.
--			 */
--			if (chain_idx >= ICE_MAX_FV_WORDS) {
--				ice_debug(hw, ICE_DBG_SW, "No chain index available\n");
--				return -ENOSPC;
--			}
-+		content = &buf[i].content;
-+		content->result_indx = ICE_AQ_RECIPE_RESULT_EN |
-+				       FIELD_PREP(ICE_AQ_RECIPE_RESULT_DATA_M,
-+						  result_idx);
- 
--			entry->chain_idx = chain_idx;
--			content->result_indx =
--				ICE_AQ_RECIPE_RESULT_EN |
--				FIELD_PREP(ICE_AQ_RECIPE_RESULT_DATA_M,
--					   chain_idx);
--			clear_bit(chain_idx, result_idx_bm);
--			chain_idx = find_first_bit(result_idx_bm,
--						   ICE_MAX_FV_WORDS);
--		}
-+		/* Set recipe association to be used for root recipe */
-+		set_bit(rid, rm->r_bitmap);
- 
--		/* fill recipe dependencies */
--		set_bit(buf[recps].recipe_indx,
--			(unsigned long *)buf[recps].recipe_bitmap);
--		content->act_ctrl_fwd_priority = rm->priority;
-+		word = 0;
-+		while (lookup < rm->n_ext_words &&
-+		       word < ICE_NUM_WORDS_RECIPE) {
-+			content->lkup_indx[word] = rm->fv_idx[lookup];
-+			content->mask[word] = cpu_to_le16(rm->fv_mask[lookup]);
- 
--		if (rm->need_pass_l2)
--			content->act_ctrl |= ICE_AQ_RECIPE_ACT_NEED_PASS_L2;
-+			lookup++;
-+			word++;
-+		}
- 
--		if (rm->allow_pass_l2)
--			content->act_ctrl |= ICE_AQ_RECIPE_ACT_ALLOW_PASS_L2;
--		recps++;
-+		recipe = &hw->switch_info->recp_list[rid];
-+		set_bit(result_idx, recipe->res_idxs);
-+		bookkeep_recipe(recipe, &buf[i], rm);
- 	}
- 
--	if (rm->n_grp_count == 1) {
--		rm->root_rid = buf[0].recipe_indx;
--		set_bit(buf[0].recipe_indx, rm->r_bitmap);
--		buf[0].content.rid = rm->root_rid | ICE_AQ_RECIPE_ID_IS_ROOT;
--		memcpy(buf[0].recipe_bitmap, rm->r_bitmap,
--		       sizeof(buf[0].recipe_bitmap));
--
--		/* Applicable only for ROOT_RECIPE, set the fwd_priority for
--		 * the recipe which is getting created if specified
--		 * by user. Usually any advanced switch filter, which results
--		 * into new extraction sequence, ended up creating a new recipe
--		 * of type ROOT and usually recipes are associated with profiles
--		 * Switch rule referreing newly created recipe, needs to have
--		 * either/or 'fwd' or 'join' priority, otherwise switch rule
--		 * evaluation will not happen correctly. In other words, if
--		 * switch rule to be evaluated on priority basis, then recipe
--		 * needs to have priority, otherwise it will be evaluated last.
--		 */
--		buf[0].content.act_ctrl_fwd_priority = rm->priority;
--	} else {
--		struct ice_recp_grp_entry *last_chain_entry;
--		u16 rid, i;
-+	/* Setup the root recipe */
-+	status = ice_alloc_recipe(hw, &rid);
-+	if (status)
-+		return status;
- 
--		/* Allocate the last recipe that will chain the outcomes of the
--		 * other recipes together
--		 */
--		status = ice_alloc_recipe(hw, &rid);
--		if (status)
--			return status;
-+	recipe = &hw->switch_info->recp_list[rid];
-+	recipe->is_root = true;
-+	root = &buf[recp_cnt - 1];
-+	fill_recipe_template(root, rid, rm);
- 
--		content = &buf[recps].content;
-+	/* Set recipe association, use previously set bitmap and own rid */
-+	set_bit(rid, rm->r_bitmap);
-+	memcpy(root->recipe_bitmap, rm->r_bitmap, sizeof(root->recipe_bitmap));
- 
--		buf[recps].recipe_indx = (u8)rid;
--		content->rid = (u8)rid;
--		content->rid |= ICE_AQ_RECIPE_ID_IS_ROOT;
--		/* the new entry created should also be part of rg_list to
--		 * make sure we have complete recipe
--		 */
--		last_chain_entry = devm_kzalloc(ice_hw_to_dev(hw),
--						sizeof(*last_chain_entry),
--						GFP_KERNEL);
--		if (!last_chain_entry)
--			return -ENOMEM;
-+	/* For non-root recipes rid should be 0, for root it should be correct
-+	 * rid value ored with 0x80 (is root bit).
-+	 */
-+	root->content.rid = rid | ICE_AQ_RECIPE_ID_IS_ROOT;
- 
--		last_chain_entry->rid = rid;
--		memset(&content->lkup_indx, 0, sizeof(content->lkup_indx));
--		/* All recipes use look-up index 0 to match switch ID. */
--		content->lkup_indx[0] = ICE_AQ_SW_ID_LKUP_IDX;
--		content->mask[0] = cpu_to_le16(ICE_AQ_SW_ID_LKUP_MASK);
--		for (i = 1; i <= ICE_NUM_WORDS_RECIPE; i++) {
--			content->lkup_indx[i] = ICE_AQ_RECIPE_LKUP_IGNORE;
--			content->mask[i] = 0;
--		}
-+	/* Fill remaining lookups in root recipe */
-+	word = 0;
-+	while (lookup < rm->n_ext_words &&
-+	       word < ICE_NUM_WORDS_RECIPE /* should always be true */) {
-+		root->content.lkup_indx[word] = rm->fv_idx[lookup];
-+		root->content.mask[word] = cpu_to_le16(rm->fv_mask[lookup]);
- 
--		i = 1;
--		/* update r_bitmap with the recp that is used for chaining */
--		set_bit(rid, rm->r_bitmap);
--		/* this is the recipe that chains all the other recipes so it
--		 * should not have a chaining ID to indicate the same
-+		lookup++;
-+		word++;
-+	}
-+
-+	/* Fill result indexes as lookups */
-+	i = 0;
-+	while (i < recp_cnt - 1 &&
-+	       word < ICE_NUM_WORDS_RECIPE /* should always be true */) {
-+		root->content.lkup_indx[word] = buf[i].content.result_indx &
-+						~ICE_AQ_RECIPE_RESULT_EN;
-+		root->content.mask[word] = cpu_to_le16(0xffff);
-+		/* For bookkeeping, it is needed to mark FV index as used for
-+		 * intermediate result.
- 		 */
--		last_chain_entry->chain_idx = ICE_INVAL_CHAIN_IND;
--		list_for_each_entry(entry, &rm->rg_list, l_entry) {
--			last_chain_entry->fv_idx[i] = entry->chain_idx;
--			content->lkup_indx[i] = entry->chain_idx;
--			content->mask[i++] = cpu_to_le16(0xFFFF);
--			set_bit(entry->rid, rm->r_bitmap);
--		}
--		list_add(&last_chain_entry->l_entry, &rm->rg_list);
--		memcpy(buf[recps].recipe_bitmap, rm->r_bitmap,
--		       sizeof(buf[recps].recipe_bitmap));
--		content->act_ctrl_fwd_priority = rm->priority;
-+		set_bit(root->content.lkup_indx[word], recipe->res_idxs);
- 
--		recps++;
--		rm->root_rid = (u8)rid;
-+		i++;
-+		word++;
- 	}
-+
-+	rm->root_rid = rid;
-+	bookkeep_recipe(&hw->switch_info->recp_list[rid], root, rm);
-+
-+	/* Program the recipe */
- 	status = ice_acquire_change_lock(hw, ICE_RES_WRITE);
- 	if (status)
- 		return status;
- 
--	status = ice_aq_add_recipe(hw, buf, rm->n_grp_count, NULL);
-+	status = ice_aq_add_recipe(hw, buf, recp_cnt, NULL);
- 	ice_release_change_lock(hw);
- 	if (status)
- 		return status;
- 
--	/* Every recipe that just got created add it to the recipe
--	 * book keeping list
--	 */
--	list_for_each_entry(entry, &rm->rg_list, l_entry) {
--		struct ice_switch_info *sw = hw->switch_info;
--		bool is_root, idx_found = false;
--		struct ice_sw_recipe *recp;
--		u16 idx, buf_idx = 0;
--
--		/* find buffer index for copying some data */
--		for (idx = 0; idx < rm->n_grp_count; idx++)
--			if (buf[idx].recipe_indx == entry->rid) {
--				buf_idx = idx;
--				idx_found = true;
--			}
--
--		if (!idx_found)
--			return -EIO;
--
--		recp = &sw->recp_list[entry->rid];
--		is_root = (rm->root_rid == entry->rid);
--		recp->is_root = is_root;
--
--		recp->root_rid = entry->rid;
--		recp->big_recp = (is_root && rm->n_grp_count > 1);
--
--		memcpy(&recp->ext_words, entry->r_group.pairs,
--		       entry->r_group.n_val_pairs * sizeof(struct ice_fv_word));
--
--		memcpy(recp->r_bitmap, buf[buf_idx].recipe_bitmap,
--		       sizeof(recp->r_bitmap));
--
--		/* Copy non-result fv index values and masks to recipe. This
--		 * call will also update the result recipe bitmask.
--		 */
--		ice_collect_result_idx(&buf[buf_idx], recp);
--
--		/* for non-root recipes, also copy to the root, this allows
--		 * easier matching of a complete chained recipe
--		 */
--		if (!is_root)
--			ice_collect_result_idx(&buf[buf_idx],
--					       &sw->recp_list[rm->root_rid]);
--
--		recp->n_ext_words = entry->r_group.n_val_pairs;
--		recp->chain_idx = entry->chain_idx;
--		recp->priority = buf[buf_idx].content.act_ctrl_fwd_priority;
--		recp->n_grp_count = rm->n_grp_count;
--		recp->tun_type = rm->tun_type;
--		recp->need_pass_l2 = rm->need_pass_l2;
--		recp->allow_pass_l2 = rm->allow_pass_l2;
--		recp->recp_created = true;
--	}
--
- 	return 0;
- }
- 
--/**
-- * ice_create_recipe_group - creates recipe group
-- * @hw: pointer to hardware structure
-- * @rm: recipe management list entry
-- * @lkup_exts: lookup elements
-- */
--static int
--ice_create_recipe_group(struct ice_hw *hw, struct ice_sw_recipe *rm,
--			struct ice_prot_lkup_ext *lkup_exts)
--{
--	u8 recp_count = 0;
--	int status;
--
--	rm->n_grp_count = 0;
--
--	/* Create recipes for words that are marked not done by packing them
--	 * as best fit.
--	 */
--	status = ice_create_first_fit_recp_def(hw, lkup_exts,
--					       &rm->rg_list, &recp_count);
--	if (!status) {
--		rm->n_grp_count += recp_count;
--		rm->n_ext_words = lkup_exts->n_val_words;
--		memcpy(&rm->ext_words, lkup_exts->fv_words,
--		       sizeof(rm->ext_words));
--		memcpy(rm->word_masks, lkup_exts->field_mask,
--		       sizeof(rm->word_masks));
--	}
--
--	return status;
--}
--
- /* ice_get_compat_fv_bitmap - Get compatible field vector bitmap for rule
-  * @hw: pointer to hardware structure
-  * @rinfo: other information regarding the rule e.g. priority and action info
-@@ -5504,12 +5373,10 @@ ice_add_adv_recipe(struct ice_hw *hw, struct ice_adv_lkup_elem *lkups,
- 	if (status)
- 		goto err_unroll;
- 
--	/* Group match words into recipes using preferred recipe grouping
--	 * criteria.
--	 */
--	status = ice_create_recipe_group(hw, rm, lkup_exts);
--	if (status)
--		goto err_unroll;
-+	/* Copy FV words and masks from lkup_exts to recipe struct. */
-+	rm->n_ext_words = lkup_exts->n_val_words;
-+	memcpy(rm->ext_words, lkup_exts->fv_words, sizeof(rm->ext_words));
-+	memcpy(rm->word_masks, lkup_exts->field_mask, sizeof(rm->word_masks));
- 
- 	/* set the recipe priority if specified */
- 	rm->priority = (u8)rinfo->priority;
-@@ -5520,7 +5387,7 @@ ice_add_adv_recipe(struct ice_hw *hw, struct ice_adv_lkup_elem *lkups,
- 	/* Find offsets from the field vector. Pick the first one for all the
- 	 * recipes.
- 	 */
--	status = ice_fill_fv_word_index(hw, &rm->fv_list, &rm->rg_list);
-+	status = ice_fill_fv_word_index(hw, rm);
- 	if (status)
- 		goto err_unroll;
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.h b/drivers/net/ethernet/intel/ice/ice_switch.h
-index 0c410ce29700..84530f57e84a 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.h
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.h
-@@ -227,6 +227,8 @@ struct ice_sw_recipe {
- 	 */
- 	struct ice_fv_word ext_words[ICE_MAX_CHAIN_WORDS];
- 	u16 word_masks[ICE_MAX_CHAIN_WORDS];
-+	u16 fv_idx[ICE_MAX_CHAIN_WORDS];
-+	u16 fv_mask[ICE_MAX_CHAIN_WORDS];
- 
- 	/* if this recipe is a collection of other recipe */
- 	u8 big_recp;
+ 	if (need_reset) {
 -- 
-2.45.0
+2.33.1
 
