@@ -4,94 +4,97 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4A5E8C2BD09
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 27 Jun 2024 14:54:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8BB57C3064D
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 27 Jun 2024 14:54:38 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 002B260E46;
+	by smtp3.osuosl.org (Postfix) with ESMTP id D27D060E42;
 	Thu, 27 Jun 2024 14:54:37 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id YqHcxgrDh5Al; Thu, 27 Jun 2024 14:54:36 +0000 (UTC)
+ id 4btJYRyd2z1M; Thu, 27 Jun 2024 14:54:37 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 1E86960E3A
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org EE4F760E2D
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1719500076;
-	bh=mdRTimbuV6op6GpNaAKQWsLbaOHk+VWKdx08XStPQPg=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=z2dLnFiL4UkJsDFZCaRe/LVAy+ged9e8HfYzx86jAU1y5pwsqxMnCC/j3D6stalh0
-	 C8Hinlk/9tskpY+xnQog0HvnbzOKS03MwjYn9B13vKrq/4Za9wq6SVNmrlxzODNXmK
-	 2EcgSbA4XcBVDiGGo0EoRmQBWhEwZ0upbIqSxwuKar4YxIBmX2MkaUyx4m0bgfHWlV
-	 4Ax8+ObfFf/kRQPaUwgN2a0eR/5u/widu0dMj2WzYTUlPpvVmBoTv/VceStZ7RfM8W
-	 Gyr9/0VibK1ZFdf9Ypk7V8KtbK8ffk64v+Y3KNr23ZGi1NSPX1my4QGLWw6s6G+8iT
-	 nYLT7IwmxsZXA==
+	s=default; t=1719500077;
+	bh=0Q1AjjqUzP5AwJaPJHVqfpDTA4M0RpIdgT5Rm9/wS2o=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=IVO9qInoTOJc6u1lGN/mB842I23Id0cSq/ngLyv6usvAGBsaGWHOO7OnzlXCzOCWg
+	 rwrUFKkrTWXLvexmbehqVu6I0b4BweXpSCoGZDe9iFBVFK94NV6QHHRVUVhu/5rXuh
+	 CHUw7WZ9khs5z4a2z5SJ9JR+IbzVfMsLz2+EBoTSDnQrxnfbFcHR00WaaB1K6103Fd
+	 9m6YZ9iPkig8jygJ1RnjYyMQvza9A84UQM4zF2rrLBR+3eM8z0hBLgLTTn+QWZ0Cvn
+	 BNYpU+orMgx9wO1woFR/8a9dkYQmm1jGPr0MJNsBBid7XAnNhXyPAEbzSeISAPDf0d
+	 WWOoaW10QMtvw==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 1E86960E3A;
+	by smtp3.osuosl.org (Postfix) with ESMTP id EE4F760E2D;
 	Thu, 27 Jun 2024 14:54:36 +0000 (UTC)
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id E4A241BF3EF
- for <intel-wired-lan@lists.osuosl.org>; Thu, 27 Jun 2024 14:54:34 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 44F4A1BF3EF
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 27 Jun 2024 14:54:35 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id D08C041624
- for <intel-wired-lan@lists.osuosl.org>; Thu, 27 Jun 2024 14:54:34 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 3215D41624
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 27 Jun 2024 14:54:35 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id vRR3vvvo8rmJ for <intel-wired-lan@lists.osuosl.org>;
- Thu, 27 Jun 2024 14:54:33 +0000 (UTC)
+ id 7ILivARvGlW8 for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 27 Jun 2024 14:54:34 +0000 (UTC)
 Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.12;
  helo=mgamail.intel.com; envelope-from=marcin.szycik@linux.intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 2EEA3415CD
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2EEA3415CD
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 00EFC415CE
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 00EFC415CE
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.12])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 2EEA3415CD
- for <intel-wired-lan@lists.osuosl.org>; Thu, 27 Jun 2024 14:54:32 +0000 (UTC)
-X-CSE-ConnectionGUID: yTdtoZo0SCa0ORMD7Lb3BA==
-X-CSE-MsgGUID: xDxXR9TnQma/wVsX0at32w==
-X-IronPort-AV: E=McAfee;i="6700,10204,11116"; a="20514943"
-X-IronPort-AV: E=Sophos;i="6.09,166,1716274800"; d="scan'208";a="20514943"
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 00EFC415CE
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 27 Jun 2024 14:54:33 +0000 (UTC)
+X-CSE-ConnectionGUID: b9Cv00YuTNCwbU54vAfv+A==
+X-CSE-MsgGUID: 6NnoCnbXRJ2+1oKC+eEtGw==
+X-IronPort-AV: E=McAfee;i="6700,10204,11116"; a="20514960"
+X-IronPort-AV: E=Sophos;i="6.09,166,1716274800"; d="scan'208";a="20514960"
 Received: from fmviesa002.fm.intel.com ([10.60.135.142])
  by fmvoesa106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 27 Jun 2024 07:54:19 -0700
-X-CSE-ConnectionGUID: ZtTLHv4ETYW0WhKSRdaG/w==
-X-CSE-MsgGUID: EXEYlwofRm6nlx8oipiwEQ==
+ 27 Jun 2024 07:54:26 -0700
+X-CSE-ConnectionGUID: OGbVbCBjSmWfD3qxv2U12A==
+X-CSE-MsgGUID: TSeuMoj2Tv+ZbfCY+Beh2A==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.09,166,1716274800"; d="scan'208";a="67616366"
+X-IronPort-AV: E=Sophos;i="6.09,166,1716274800"; d="scan'208";a="67616382"
 Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by fmviesa002.fm.intel.com with ESMTP; 27 Jun 2024 07:54:17 -0700
+ by fmviesa002.fm.intel.com with ESMTP; 27 Jun 2024 07:54:25 -0700
 Received: from mystra-4.igk.intel.com (mystra-4.igk.intel.com [10.123.220.40])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id AE98627BB6;
- Thu, 27 Jun 2024 15:54:04 +0100 (IST)
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id B8A6927BBD;
+ Thu, 27 Jun 2024 15:54:12 +0100 (IST)
 From: Marcin Szycik <marcin.szycik@linux.intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Thu, 27 Jun 2024 16:55:40 +0200
-Message-ID: <20240627145547.32621-1-marcin.szycik@linux.intel.com>
+Date: Thu, 27 Jun 2024 16:55:42 +0200
+Message-ID: <20240627145547.32621-3-marcin.szycik@linux.intel.com>
 X-Mailer: git-send-email 2.45.0
+In-Reply-To: <20240627145547.32621-1-marcin.szycik@linux.intel.com>
+References: <20240627145547.32621-1-marcin.szycik@linux.intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1719500073; x=1751036073;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=bNEOglout9SMjplcSItb/2ni81Kb2/DfFuwpqSFUEZs=;
- b=YYGhMSvb45LyFxVKmaPLfIAB5m2TbKQPR0n4JnnK8oX7xGdCc0QnozXK
- hC7AGFSfpD03Wzf3NEQKdAuZ7cdYU9rIoxS3O897i3Q/Mpsjux2blI3eo
- m/FpHKaJImwAZ7xYOHykXWCDp0Tgm44ZhoPkG6Zd91+FjhQ8+dhamdh1L
- sedCP30zTuxjuDfkbwRZ3i6mLVvnF8/vWdenF/f1VAi/V/ocSyWLhQUU1
- 3bQBX3imHuFrVpwsOCEJUPby0yo3upCG0L7g069td+QwUGgRP5YHJtG2h
- F41bZgiqvhtLtbRqPtYrOF4ZijSsPY8mxGvwpXZcM2H3pD06TRvoA8S64
+ t=1719500074; x=1751036074;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=rZfZ8LRS4yetc2xWtSvNng1weoxkVzK97MXMga9e7+k=;
+ b=j1k6LVyKVZz7xVyEdHYwtBOFz/Dlsex1L1RdvLtcGeyx3iiZL//n8ljE
+ ow9bO9xDzmSPTzodTDopukYcBo9nmkiVfYvuOfo4eW5/BxbDV+oC8laPL
+ m2w1r8qmMMcKNMgFyDoCfGCbsYv7blbBc3GHmQrAlBTh/IBbFR/UUUovg
+ +8SBQTrtOJwCnpMEaX9Ql63txL4M1bbV9MpWimNmeHDSoMLmcJ0zX4Mum
+ hX0KhfE3LvUHdzRLdMjARBHC7dkVYu56NG419xQ3zdcwz2WBLLvDx+dBs
+ DBOELZ31BcS6LRbpnhMqngSCUQUBaHshNgKtU15kXbd9impTpRh1Izma1
  g==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=none (p=none dis=none)
  header.from=linux.intel.com
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=YYGhMSvb
-Subject: [Intel-wired-lan] [PATCH iwl-next v3 0/7] Switch API optimizations
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=j1k6LVyK
+Subject: [Intel-wired-lan] [PATCH iwl-next v3 2/7] ice: Remove reading all
+ recipes before adding a new one
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -110,45 +113,103 @@ Cc: pmenzel@molgen.mpg.de, netdev@vger.kernel.org, aleksander.lobakin@intel.com,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Optimize the process of creating a recipe in the switch block by removing
-duplicate switch ID words and changing how result indexes are fitted into
-recipes. In many cases this can decrease the number of recipes required to
-add a certain set of rules, potentially allowing a more varied set of rules
-to be created. Total rule count will also increase, since less words will
-be left unused/wasted. There are only 64 rules available in total, so every
-one counts.
+From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 
-After this modification, many fields and some structs became unused or were
-simplified, resulting in overall simpler implementation.
+The content of the first read recipe is used as a template when adding a
+recipe. It isn't needed - only prune index is directly set from there. Set
+it in the code instead. Also, now there's no need to set rid and lookup
+indexes to 0, as the whole recipe buffer is initialized to 0.
 
-Marcin Szycik (4):
-  ice: Remove unused struct ice_prot_lkup_ext members
-  ice: Optimize switch recipe creation
-  ice: Remove unused members from switch API
-  ice: Add tracepoint for adding and removing switch rules
-
-Michal Swiatkowski (3):
-  ice: Remove reading all recipes before adding a new one
-  ice: Simplify bitmap setting in adding recipe
-  ice: remove unused recipe bookkeeping data
-
- drivers/net/ethernet/intel/ice/ice_common.c   |  11 +-
- .../ethernet/intel/ice/ice_protocol_type.h    |  43 +-
- drivers/net/ethernet/intel/ice/ice_switch.c   | 674 ++++++------------
- drivers/net/ethernet/intel/ice/ice_switch.h   |  20 +-
- drivers/net/ethernet/intel/ice/ice_trace.h    |  18 +
- drivers/net/ethernet/intel/ice/ice_type.h     |   2 +
- 6 files changed, 272 insertions(+), 496 deletions(-)
-
+Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Signed-off-by: Marcin Szycik <marcin.szycik@linux.intel.com>
 ---
-v3: Add tracepoint usage and exapmle output (patch 7)
-v2 [2]:
-* Nicify checking sizeof struct field
-* Add a tracepoint for tracking recipe/rule utilization (patch 7)
-v1: [1]
+ drivers/net/ethernet/intel/ice/ice_switch.c | 29 ++-------------------
+ 1 file changed, 2 insertions(+), 27 deletions(-)
 
-[1] https://lore.kernel.org/intel-wired-lan/20240618141157.1881093-1-marcin.szycik@linux.intel.com/T/#t
-[2] https://lore.kernel.org/intel-wired-lan/20240624144530.690545-1-marcin.szycik@linux.intel.com/T/#t
+diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
+index 0d58cf185698..da065512889d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_switch.c
++++ b/drivers/net/ethernet/intel/ice/ice_switch.c
+@@ -5079,11 +5079,9 @@ ice_add_sw_recipe(struct ice_hw *hw, struct ice_sw_recipe *rm,
+ {
+ 	DECLARE_BITMAP(result_idx_bm, ICE_MAX_FV_WORDS);
+ 	struct ice_aqc_recipe_content *content;
+-	struct ice_aqc_recipe_data_elem *tmp;
+ 	struct ice_aqc_recipe_data_elem *buf;
+ 	struct ice_recp_grp_entry *entry;
+ 	u16 free_res_idx;
+-	u16 recipe_count;
+ 	u8 chain_idx;
+ 	u8 recps = 0;
+ 	int status;
+@@ -5110,10 +5108,6 @@ ice_add_sw_recipe(struct ice_hw *hw, struct ice_sw_recipe *rm,
+ 	if (rm->n_grp_count > ICE_MAX_CHAIN_RECIPE)
+ 		return -ENOSPC;
+ 
+-	tmp = kcalloc(ICE_MAX_NUM_RECIPES, sizeof(*tmp), GFP_KERNEL);
+-	if (!tmp)
+-		return -ENOMEM;
+-
+ 	buf = devm_kcalloc(ice_hw_to_dev(hw), rm->n_grp_count, sizeof(*buf),
+ 			   GFP_KERNEL);
+ 	if (!buf) {
+@@ -5122,11 +5116,6 @@ ice_add_sw_recipe(struct ice_hw *hw, struct ice_sw_recipe *rm,
+ 	}
+ 
+ 	bitmap_zero(rm->r_bitmap, ICE_MAX_NUM_RECIPES);
+-	recipe_count = ICE_MAX_NUM_RECIPES;
+-	status = ice_aq_get_recipe(hw, tmp, &recipe_count, ICE_SW_LKUP_MAC,
+-				   NULL);
+-	if (status || recipe_count == 0)
+-		goto err_unroll;
+ 
+ 	/* Allocate the recipe resources, and configure them according to the
+ 	 * match fields from protocol headers and extracted field vectors.
+@@ -5141,19 +5130,9 @@ ice_add_sw_recipe(struct ice_hw *hw, struct ice_sw_recipe *rm,
+ 
+ 		content = &buf[recps].content;
+ 
+-		/* Clear the result index of the located recipe, as this will be
+-		 * updated, if needed, later in the recipe creation process.
+-		 */
+-		tmp[0].content.result_indx = 0;
+-
+-		buf[recps] = tmp[0];
+ 		buf[recps].recipe_indx = (u8)entry->rid;
+-		/* if the recipe is a non-root recipe RID should be programmed
+-		 * as 0 for the rules to be applied correctly.
+-		 */
+-		content->rid = 0;
+-		memset(&content->lkup_indx, 0,
+-		       sizeof(content->lkup_indx));
++
++		buf[recps].content.act_ctrl |= ICE_AQ_RECIPE_ACT_PRUNE_INDX_M;
+ 
+ 		/* All recipes use look-up index 0 to match switch ID. */
+ 		content->lkup_indx[0] = ICE_AQ_SW_ID_LKUP_IDX;
+@@ -5192,8 +5171,6 @@ ice_add_sw_recipe(struct ice_hw *hw, struct ice_sw_recipe *rm,
+ 		}
+ 
+ 		/* fill recipe dependencies */
+-		bitmap_zero((unsigned long *)buf[recps].recipe_bitmap,
+-			    ICE_MAX_NUM_RECIPES);
+ 		set_bit(buf[recps].recipe_indx,
+ 			(unsigned long *)buf[recps].recipe_bitmap);
+ 		content->act_ctrl_fwd_priority = rm->priority;
+@@ -5357,12 +5334,10 @@ ice_add_sw_recipe(struct ice_hw *hw, struct ice_sw_recipe *rm,
+ 		recp->recp_created = true;
+ 	}
+ 	rm->root_buf = buf;
+-	kfree(tmp);
+ 	return status;
+ 
+ err_unroll:
+ err_mem:
+-	kfree(tmp);
+ 	devm_kfree(ice_hw_to_dev(hw), buf);
+ 	return status;
+ }
 -- 
 2.45.0
 
