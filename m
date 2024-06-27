@@ -4,71 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2CE25C30659
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 27 Jun 2024 14:54:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2C56BC2BD09
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 27 Jun 2024 14:54:47 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id A05B860E76;
-	Thu, 27 Jun 2024 14:54:47 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id A594F60E68;
+	Thu, 27 Jun 2024 14:54:46 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 7D8eiFPdp1_f; Thu, 27 Jun 2024 14:54:47 +0000 (UTC)
+ id 9PZzrPlV1iRu; Thu, 27 Jun 2024 14:54:45 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E6D2F60E6F
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org BE2AD60E55
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1719500087;
-	bh=rPRloTjzgkbSnFjqO/nUjNmw5rgTDk+xpIRUMx9tnfI=;
+	s=default; t=1719500085;
+	bh=8vSBuQ82F7iNT8husqwecg4U3Q6jDb3EhnrwDYS/iZk=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=aahG0PJT5mQQIHtMFudFPuKjCHtx7zG4CD4Fk0G84svi7HeUhs/7KFgS4Y3XMNWmC
-	 5uY1LcTZyktFe5DnBFJ0zvQRi8tp8HFLOrueliHV2sgsDSXfjYYsGJv16g9pDWUBDZ
-	 vnw4wDPrNwwWh4GrjY6N/9irFjMffqde+GFIGz7qeSASyTCIt928TM4qbzXaTWKg2o
-	 8VvKxGuelSDl4wzKPcyKgSWBiRmaExmaLIk1AGrvbp0L108lq9aAr+vX0DtRrfoRr6
-	 Qz2BZkiyyr4dRsXiVc99PL5SBwd6Q6g0/gU3Ud2M5I2ebORVAuo90/Z6Tfc/1NoW8Z
-	 YEw2Kj4W1XqbQ==
+	b=oh09yN0ARY50lETfQf8SPKRqG5PYHzsAiCmfeTU4gs8eVnIR4zmthuKDYJjsKXX0s
+	 l2yTv00rKENoIj+t5xydyykULTdWZGAVvxWQ3wP4ocNw77G3l/BBWEpeU7ScQN0q8o
+	 tv5s/+NsOwCYv+oLOdNJBwbckOc4HgJsinGd0HQ84M5wBfLoDUHsOes2Tpkgy6tPI2
+	 bFGrZ4YzK6ne4vug3l3HsjbFgBhFdIWiepkvxn5LrC/+22T99F2YTQt9P75a2SIFSc
+	 oGUZhz8Yqldu/7572ibk8l3Sgfh5sutGE+Y39cc7jA+SxDcn4O8sLEq3anQlG2qZmq
+	 auyBlAA9qmFrw==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id E6D2F60E6F;
-	Thu, 27 Jun 2024 14:54:46 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id BE2AD60E55;
+	Thu, 27 Jun 2024 14:54:45 +0000 (UTC)
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 22D261BF3EF
- for <intel-wired-lan@lists.osuosl.org>; Thu, 27 Jun 2024 14:54:39 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 1262C1BF3EF
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 27 Jun 2024 14:54:38 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 6BC8D4167C
- for <intel-wired-lan@lists.osuosl.org>; Thu, 27 Jun 2024 14:54:37 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id CF1DC41610
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 27 Jun 2024 14:54:36 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id g4uayxMjJ2Jb for <intel-wired-lan@lists.osuosl.org>;
+ id SZrnVgMXSJww for <intel-wired-lan@lists.osuosl.org>;
  Thu, 27 Jun 2024 14:54:35 +0000 (UTC)
 Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.12;
  helo=mgamail.intel.com; envelope-from=marcin.szycik@linux.intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 0F33F415CD
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0F33F415CD
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org BDA934167C
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org BDA934167C
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.12])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 0F33F415CD
- for <intel-wired-lan@lists.osuosl.org>; Thu, 27 Jun 2024 14:54:34 +0000 (UTC)
-X-CSE-ConnectionGUID: 4YH3B41oTQKXZtE3spztPg==
-X-CSE-MsgGUID: OxcKtBUtRfST5FrnyC8KIQ==
-X-IronPort-AV: E=McAfee;i="6700,10204,11116"; a="20514966"
-X-IronPort-AV: E=Sophos;i="6.09,166,1716274800"; d="scan'208";a="20514966"
+ by smtp4.osuosl.org (Postfix) with ESMTPS id BDA934167C
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 27 Jun 2024 14:54:35 +0000 (UTC)
+X-CSE-ConnectionGUID: Q5hQENHqQQ6nD+pNrGRg/g==
+X-CSE-MsgGUID: QddDMYmyT2O3cwOuiL5uFw==
+X-IronPort-AV: E=McAfee;i="6700,10204,11116"; a="20514984"
+X-IronPort-AV: E=Sophos;i="6.09,166,1716274800"; d="scan'208";a="20514984"
 Received: from fmviesa002.fm.intel.com ([10.60.135.142])
  by fmvoesa106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 27 Jun 2024 07:54:28 -0700
-X-CSE-ConnectionGUID: G6F2t94USSmtg6TYo9TXjQ==
-X-CSE-MsgGUID: 1XGHoShCTVqb6ZuEOlHyCw==
+ 27 Jun 2024 07:54:32 -0700
+X-CSE-ConnectionGUID: pkBbbH5cQUKENspAzaWiFw==
+X-CSE-MsgGUID: FgbLce8sQKWsLEmGAnGdgA==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.09,166,1716274800"; d="scan'208";a="67616394"
+X-IronPort-AV: E=Sophos;i="6.09,166,1716274800"; d="scan'208";a="67616408"
 Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by fmviesa002.fm.intel.com with ESMTP; 27 Jun 2024 07:54:27 -0700
+ by fmviesa002.fm.intel.com with ESMTP; 27 Jun 2024 07:54:31 -0700
 Received: from mystra-4.igk.intel.com (mystra-4.igk.intel.com [10.123.220.40])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id 6F6E627BC1;
- Thu, 27 Jun 2024 15:54:13 +0100 (IST)
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id C0B5627BCC;
+ Thu, 27 Jun 2024 15:54:16 +0100 (IST)
 From: Marcin Szycik <marcin.szycik@linux.intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Thu, 27 Jun 2024 16:55:43 +0200
-Message-ID: <20240627145547.32621-4-marcin.szycik@linux.intel.com>
+Date: Thu, 27 Jun 2024 16:55:47 +0200
+Message-ID: <20240627145547.32621-8-marcin.szycik@linux.intel.com>
 X-Mailer: git-send-email 2.45.0
 In-Reply-To: <20240627145547.32621-1-marcin.szycik@linux.intel.com>
 References: <20240627145547.32621-1-marcin.szycik@linux.intel.com>
@@ -79,22 +79,22 @@ X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  t=1719500075; x=1751036075;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=toJnrKJIa3hFQBBM+1PHE5/G87dc1JlRWeQC+9LZfo0=;
- b=kcuutKd4sqdm2L3UXlH7EuFDPwDstipmUmC9YsKfiUNabyYsSLx25/pf
- Kek9F82eHnpBhmdVfLgTUW4zhW+CHd4fTYHrtl9QQZ1KY5cz9NnBKlpKu
- WJm3FDHzG/1zK3eVK2796uNjgWzLk1YcxYo3ljm3CC8Ep3OMHFMD25f2o
- dzDYxf+DNL2vP+a0amPqt3uGZE/765cMEI0Yble5ipO2iD3F59UBxybZh
- k4XTL0cgEcSKRBLAf+BUFW1HnD1KL9q8Lq2f8xkZVPfd2WeLJaKILW9Me
- Yyv6c+XKDdtz8bip6l2LrEGIpzUlHsryrC5wVDlOkjLHX9Yp7WnnA4tHZ
+ bh=eoFfAXCTy1Wvfh0fDOYD0+Dn9bIrke38elVoLryAzMc=;
+ b=lHGa8/3gvT38vnCBIsfGnOxnI6cuf/Y2uduosincv40t8jnGrwPobUpb
+ 1OESNGdM6CgJ9lmnhlFi6tY4skltS8f8FBKGMkFXEWPqRoniBY69dgt4n
+ loM3aaFcXJGCzaLkFffBwWjyPPC/611oeY8K3EsBer5al90um92l0GzNe
+ C0PV4maln6J6Uti1AJn8wwwwC1Flg4tG9XNHGDDkxFghndp7udun5jemV
+ ppioLlftO7lIbydlQG1dbSwozlrkzeSJDQtq1DKrNvrXTiTevDIKrd00n
+ /xT/6G7ocM88EAcMO4yDTvtl8v7e1gZlTIElO3l8toKFrrMMyd1qSH2lu
  A==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=none (p=none dis=none)
  header.from=linux.intel.com
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=kcuutKd4
-Subject: [Intel-wired-lan] [PATCH iwl-next v3 3/7] ice: Simplify bitmap
- setting in adding recipe
+ header.a=rsa-sha256 header.s=Intel header.b=lHGa8/3g
+Subject: [Intel-wired-lan] [PATCH iwl-next v3 7/7] ice: Add tracepoint for
+ adding and removing switch rules
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -113,71 +113,166 @@ Cc: pmenzel@molgen.mpg.de, netdev@vger.kernel.org, aleksander.lobakin@intel.com,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+Track the number of rules and recipes added to switch. Add a tracepoint to
+ice_aq_sw_rules(), which shows both rule and recipe count. This information
+can be helpful when designing a set of rules to program to the hardware, as
+it shows where the practical limit is. Actual limits are known (64 recipes,
+32k rules), but it's hard to translate these values to how many rules the
+*user* can actually create, because of extra metadata being implicitly
+added, and recipe/rule chaining. Chaining combines several recipes/rules to
+create a larger recipe/rule, so one large rule added by the user might
+actually consume multiple rules from hardware perspective.
 
-Remove unnecessary size checks when copying bitmaps in ice_add_sw_recipe()
-and replace them with compile time assert. Check if the bitmaps are equal
-size, as they are copied both ways.
+Rule counter is simply incremented/decremented in ice_aq_sw_rules(), since
+all rules are added or removed via it.
 
-Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+Counting recipes is harder, as recipes can't be removed (only overwritten).
+Recipes added via ice_aq_add_recipe() could end up being unused, when
+there is an error in later stages of rule creation. Instead, track the
+allocation and freeing of recipes, which should reflect the actual usage of
+recipes (if something fails after recipe(s) were created, caller should
+free them). Also, a number of recipes are loaded from NVM by default -
+initialize the recipe counter with the number of these recipes on switch
+initialization.
+
+Example configuration:
+  cd /sys/kernel/tracing
+  echo function > current_tracer
+  echo ice_aq_sw_rules > set_ftrace_filter
+  echo ice_aq_sw_rules > set_event
+  echo 1 > tracing_on
+  cat trace
+
+Example output:
+  tc-4097    [069] ...1.   787.595536: ice_aq_sw_rules <-ice_rem_adv_rule
+  tc-4097    [069] .....   787.595705: ice_aq_sw_rules: rules=9 recipes=15
+  tc-4098    [057] ...1.   787.652033: ice_aq_sw_rules <-ice_add_adv_rule
+  tc-4098    [057] .....   787.652201: ice_aq_sw_rules: rules=10 recipes=16
+
+Reviewed-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Co-developed-by: Marcin Szycik <marcin.szycik@linux.intel.com>
 Signed-off-by: Marcin Szycik <marcin.szycik@linux.intel.com>
----
-v2: Replace sizeof(((struct s*)0)->f with sizeof_field() (thanks Alex!)
----
- drivers/net/ethernet/intel/ice/ice_switch.c | 24 ++++++++-------------
- 1 file changed, 9 insertions(+), 15 deletions(-)
 
+---
+v3: Added example configuration and output
+---
+ drivers/net/ethernet/intel/ice/ice_common.c |  3 +++
+ drivers/net/ethernet/intel/ice/ice_switch.c | 22 +++++++++++++++++++--
+ drivers/net/ethernet/intel/ice/ice_trace.h  | 18 +++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_type.h   |  2 ++
+ 4 files changed, 43 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index 6abd1b3796ab..009716a12a26 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -934,6 +934,9 @@ static int ice_init_fltr_mgmt_struct(struct ice_hw *hw)
+ 	INIT_LIST_HEAD(&sw->vsi_list_map_head);
+ 	sw->prof_res_bm_init = 0;
+ 
++	/* Initialize recipe count with default recipes read from NVM */
++	sw->recp_cnt = ICE_SW_LKUP_LAST;
++
+ 	status = ice_init_def_sw_recp(hw);
+ 	if (status) {
+ 		devm_kfree(ice_hw_to_dev(hw), hw->switch_info);
 diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
-index da065512889d..3ee4242f9880 100644
+index 27828cdfe085..3caafcdc301f 100644
 --- a/drivers/net/ethernet/intel/ice/ice_switch.c
 +++ b/drivers/net/ethernet/intel/ice/ice_switch.c
-@@ -5067,6 +5067,10 @@ ice_find_free_recp_res_idx(struct ice_hw *hw, const unsigned long *profiles,
- 	return (u16)bitmap_weight(free_idx, ICE_MAX_FV_WORDS);
+@@ -3,6 +3,7 @@
+ 
+ #include "ice_lib.h"
+ #include "ice_switch.h"
++#include "ice_trace.h"
+ 
+ #define ICE_ETH_DA_OFFSET		0
+ #define ICE_ETH_ETHTYPE_OFFSET		12
+@@ -1961,6 +1962,15 @@ ice_aq_sw_rules(struct ice_hw *hw, void *rule_list, u16 rule_list_sz,
+ 	    hw->adminq.sq_last_status == ICE_AQ_RC_ENOENT)
+ 		status = -ENOENT;
+ 
++	if (!status) {
++		if (opc == ice_aqc_opc_add_sw_rules)
++			hw->switch_info->rule_cnt += num_rules;
++		else if (opc == ice_aqc_opc_remove_sw_rules)
++			hw->switch_info->rule_cnt -= num_rules;
++	}
++
++	trace_ice_aq_sw_rules(hw->switch_info);
++
+ 	return status;
  }
  
-+/* For memcpy in ice_add_sw_recipe. */
-+static_assert(sizeof_field(struct ice_aqc_recipe_data_elem, recipe_bitmap) ==
-+	      sizeof_field(struct ice_sw_recipe, r_bitmap));
-+
- /**
-  * ice_add_sw_recipe - function to call AQ calls to create switch recipe
-  * @hw: pointer to hardware structure
-@@ -5187,13 +5191,9 @@ ice_add_sw_recipe(struct ice_hw *hw, struct ice_sw_recipe *rm,
- 		rm->root_rid = buf[0].recipe_indx;
- 		set_bit(buf[0].recipe_indx, rm->r_bitmap);
- 		buf[0].content.rid = rm->root_rid | ICE_AQ_RECIPE_ID_IS_ROOT;
--		if (sizeof(buf[0].recipe_bitmap) >= sizeof(rm->r_bitmap)) {
--			memcpy(buf[0].recipe_bitmap, rm->r_bitmap,
--			       sizeof(buf[0].recipe_bitmap));
--		} else {
--			status = -EINVAL;
--			goto err_unroll;
--		}
-+		memcpy(buf[0].recipe_bitmap, rm->r_bitmap,
-+		       sizeof(buf[0].recipe_bitmap));
-+
- 		/* Applicable only for ROOT_RECIPE, set the fwd_priority for
- 		 * the recipe which is getting created if specified
- 		 * by user. Usually any advanced switch filter, which results
-@@ -5256,14 +5256,8 @@ ice_add_sw_recipe(struct ice_hw *hw, struct ice_sw_recipe *rm,
- 			set_bit(entry->rid, rm->r_bitmap);
- 		}
- 		list_add(&last_chain_entry->l_entry, &rm->rg_list);
--		if (sizeof(buf[recps].recipe_bitmap) >=
--		    sizeof(rm->r_bitmap)) {
--			memcpy(buf[recps].recipe_bitmap, rm->r_bitmap,
--			       sizeof(buf[recps].recipe_bitmap));
--		} else {
--			status = -EINVAL;
--			goto err_unroll;
--		}
-+		memcpy(buf[recps].recipe_bitmap, rm->r_bitmap,
-+		       sizeof(buf[recps].recipe_bitmap));
- 		content->act_ctrl_fwd_priority = rm->priority;
+@@ -2181,8 +2191,10 @@ int ice_alloc_recipe(struct ice_hw *hw, u16 *rid)
+ 	sw_buf->res_type = cpu_to_le16(res_type);
+ 	status = ice_aq_alloc_free_res(hw, sw_buf, buf_len,
+ 				       ice_aqc_opc_alloc_res);
+-	if (!status)
++	if (!status) {
+ 		*rid = le16_to_cpu(sw_buf->elem[0].e.sw_resp);
++		hw->switch_info->recp_cnt++;
++	}
  
- 		recps++;
+ 	return status;
+ }
+@@ -2196,7 +2208,13 @@ int ice_alloc_recipe(struct ice_hw *hw, u16 *rid)
+  */
+ static int ice_free_recipe_res(struct ice_hw *hw, u16 rid)
+ {
+-	return ice_free_hw_res(hw, ICE_AQC_RES_TYPE_RECIPE, 1, &rid);
++	int status;
++
++	status = ice_free_hw_res(hw, ICE_AQC_RES_TYPE_RECIPE, 1, &rid);
++	if (!status)
++		hw->switch_info->recp_cnt--;
++
++	return status;
+ }
+ 
+ /**
+diff --git a/drivers/net/ethernet/intel/ice/ice_trace.h b/drivers/net/ethernet/intel/ice/ice_trace.h
+index 244cddd2a9ea..07aab6e130cd 100644
+--- a/drivers/net/ethernet/intel/ice/ice_trace.h
++++ b/drivers/net/ethernet/intel/ice/ice_trace.h
+@@ -330,6 +330,24 @@ DEFINE_EVENT(ice_esw_br_port_template,
+ 	     TP_ARGS(port)
+ );
+ 
++DECLARE_EVENT_CLASS(ice_switch_stats_template,
++		    TP_PROTO(struct ice_switch_info *sw_info),
++		    TP_ARGS(sw_info),
++		    TP_STRUCT__entry(__field(u16, rule_cnt)
++				     __field(u8, recp_cnt)),
++		    TP_fast_assign(__entry->rule_cnt = sw_info->rule_cnt;
++				   __entry->recp_cnt = sw_info->recp_cnt;),
++		    TP_printk("rules=%u recipes=%u",
++			      __entry->rule_cnt,
++			      __entry->recp_cnt)
++);
++
++DEFINE_EVENT(ice_switch_stats_template,
++	     ice_aq_sw_rules,
++	     TP_PROTO(struct ice_switch_info *sw_info),
++	     TP_ARGS(sw_info)
++);
++
+ /* End tracepoints */
+ 
+ #endif /* _ICE_TRACE_H_ */
+diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
+index c330a436d11a..b6bc2de53b0a 100644
+--- a/drivers/net/ethernet/intel/ice/ice_type.h
++++ b/drivers/net/ethernet/intel/ice/ice_type.h
+@@ -764,6 +764,8 @@ struct ice_switch_info {
+ 	struct ice_sw_recipe *recp_list;
+ 	u16 prof_res_bm_init;
+ 	u16 max_used_prof_index;
++	u16 rule_cnt;
++	u8 recp_cnt;
+ 
+ 	DECLARE_BITMAP(prof_res_bm[ICE_MAX_NUM_PROFILES], ICE_MAX_FV_WORDS);
+ };
 -- 
 2.45.0
 
