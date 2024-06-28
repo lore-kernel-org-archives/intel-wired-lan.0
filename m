@@ -4,88 +4,84 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4F013C3065A
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 28 Jun 2024 18:25:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C5B09C30658
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 28 Jun 2024 18:36:49 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 0A90B415C7;
-	Fri, 28 Jun 2024 18:25:16 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 5BFA04059F;
+	Fri, 28 Jun 2024 18:36:49 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ZPHIaeo6sLe4; Fri, 28 Jun 2024 18:25:15 +0000 (UTC)
+ id B_fbDfhDWg-f; Fri, 28 Jun 2024 18:36:48 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 21727415DA
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 590B1405E7
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1719599115;
-	bh=rR45d/lZHGvOok3fJ8B3XHdpL43bL78+M4EQ/cx3AYo=;
+	s=default; t=1719599808;
+	bh=7bZF09M6R8O0C4JDZi6yzz4HIhxFtL/NIFvwaFWUPZE=;
 	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=kbY3ZDu8AkvkmY9O7D+LuQljRNCG8+H5I0xcezpr992J861+E45GZLp/x7phw/67L
-	 dw2NBeKIlIHGB9gMcjV7OUt8D9PRAqhbxcDDS68960Id5cuKcpQNgybdtrWlIWl8Uu
-	 1jYdDop/w5TjQfE16r7wlQqgN/XLBvMXUM572kQaaJ/PTyWC5xqQoNui1eWlsz+AX2
-	 UzUsr+T1MLDNKixlZVfhWUZ0ufOjlj5iBJSEEqo40FxRoEmaukNZ6rp7XxUM+9y7AT
-	 5S2OoNYp2ZsziBuAnsWN4b/GNbLgNndgyD0aAw0FbPYJ2PmjCf8vSAXA6VH9sVmzui
-	 9iNCnNyJj6XtA==
+	b=q7Eh6vNFlY1Cszgx/UMVSn5jK/zQ/Z2srveztjMXqdpfOhAhvmdeutpdILuVLlnes
+	 sWdIhTDJM/CV5hNxddgSnbpHsnyaQnvGAS3ZObsVpuzbCMA3gzdYSsKTB5sdUEG9qx
+	 L3kpcmK6nfg4ddLPTEzzBLq4agOvepiLaoS0DAdCFkDwuXz005ljzNcr0vp373jIBV
+	 T/mfCzVY1mkcHyZy/COEhJOdoXDPisrYb9IYaV9943Tbv5k9m3eUDqWEFNjIFFx6j+
+	 9Wfc+WjmkcllPcOr+k8KWkkvVInPdKIUZnSCCU3f77AfhKajtoTm2/Irr17TAwpXik
+	 EQAo+H5GA+4mQ==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 21727415DA;
-	Fri, 28 Jun 2024 18:25:15 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 590B1405E7;
+	Fri, 28 Jun 2024 18:36:48 +0000 (UTC)
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 54D341BF39A
- for <intel-wired-lan@lists.osuosl.org>; Fri, 28 Jun 2024 18:25:14 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id D8C221BF39A
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 28 Jun 2024 18:36:46 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 418AE830CD
- for <intel-wired-lan@lists.osuosl.org>; Fri, 28 Jun 2024 18:25:14 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id C46D9845B9
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 28 Jun 2024 18:36:46 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id nAOk-CVx8ZEr for <intel-wired-lan@lists.osuosl.org>;
- Fri, 28 Jun 2024 18:25:13 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org;
- envelope-from=horms@kernel.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 9FE02824DD
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9FE02824DD
-Received: from dfw.source.kernel.org (dfw.source.kernel.org
- [IPv6:2604:1380:4641:c500::1])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 9FE02824DD
- for <intel-wired-lan@lists.osuosl.org>; Fri, 28 Jun 2024 18:25:13 +0000 (UTC)
+ id WfFQuBcm-eq2 for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 28 Jun 2024 18:36:46 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=139.178.84.217;
+ helo=dfw.source.kernel.org; envelope-from=horms@kernel.org;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 0CD87845B5
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 0CD87845B5
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 0CD87845B5
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 28 Jun 2024 18:36:45 +0000 (UTC)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by dfw.source.kernel.org (Postfix) with ESMTP id 858EB6205B;
- Fri, 28 Jun 2024 18:25:12 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 22705C116B1;
- Fri, 28 Jun 2024 18:25:10 +0000 (UTC)
-Date: Fri, 28 Jun 2024 19:25:09 +0100
+ by dfw.source.kernel.org (Postfix) with ESMTP id 236B46223E;
+ Fri, 28 Jun 2024 18:36:45 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4D205C116B1;
+ Fri, 28 Jun 2024 18:36:43 +0000 (UTC)
+Date: Fri, 28 Jun 2024 19:36:41 +0100
 From: Simon Horman <horms@kernel.org>
-To: Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Message-ID: <20240628182509.GF837606@kernel.org>
-References: <20240618141157.1881093-1-marcin.szycik@linux.intel.com>
- <20240618141157.1881093-6-marcin.szycik@linux.intel.com>
- <20240628124409.GD783093@kernel.org>
- <5328363b-1ff0-439e-94f7-c6d3ca6039cd@intel.com>
+To: Marcin Szycik <marcin.szycik@linux.intel.com>
+Message-ID: <20240628183641.GG837606@kernel.org>
+References: <20240627145547.32621-1-marcin.szycik@linux.intel.com>
+ <20240627145547.32621-8-marcin.szycik@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <5328363b-1ff0-439e-94f7-c6d3ca6039cd@intel.com>
+In-Reply-To: <20240627145547.32621-8-marcin.szycik@linux.intel.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1719599112;
- bh=84F1j1O/PzUWmQC1iWnQz2NAnHWgc1MJHpiaRY3OPKM=;
+ d=kernel.org; s=k20201202; t=1719599804;
+ bh=Vu4DMeYFylySur1lZ4EtGg+jOO6nbzB22102RW+KNOs=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=lFICYDrQKIx7BTHu9tHllcKsW6lt0bEPpxzNSReN7qcjSJ0Hq5ZuaszVTw1W1LX/V
- 2JrfwU2qVaou2JMtZvK3nfKzm1zoVqdSiMpl6dpaagE/RS7WqCwu7d4olslG4x3Zm8
- 6i4Rr8agx62uQPR7d5fKqMksGIblmhSmmJkmxbi/MMLKGl8eU+wSz5h0TiS50d/p3l
- ZLHRaiVK15MT2PyD+Cafp+ehL4pqTIXTWLinI9e+XiBjP7OomYDowyJZOSD6n3eKmg
- v6KdM+1HwTgi8TSeYA4fs+W6ePH0lK5CCVUiMTmX1VwWWaQLFVNyYVP9/BT0UN7lZc
- j7M4Y19SBybuw==
+ b=Wjged7CM6F7FluzMhLSH8QUM3VRBeUwE1K9i7VgI4f2vSWHu2iihV2p3tq2qSFWD1
+ gyr7UlilP+EFBS2Ie3Ly1U8NbpLseZDomKPz+GHUb1pnZ3usAlMVKMdhMJC7zrjXxL
+ g5DyFaSSI1tiDfAp/qhk/RcNpLBNGrhOECaNaD0mM/lNlf6RyyqXo4EUdM3mA6iIcD
+ 5sxSDPQIsncDftfewK76bd4El3uX7XnPnLRuCUJ6H2s55nbvKlsioL+pcn6DZ/s6l+
+ g39Q+4cF1a+paUCqInhwth1UWiEmx1K2mtNifPyPY3vNuLg+PO4jslg7svoat3Ab2V
+ +iBkfgEDwxPYQ==
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=kernel.org
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=lFICYDrQ
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next 5/6] ice: Optimize switch
- recipe creation
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20201202 header.b=Wjged7CM
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next v3 7/7] ice: Add tracepoint
+ for adding and removing switch rules
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,36 +94,52 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, Marcin Szycik <marcin.szycik@linux.intel.com>,
- intel-wired-lan@lists.osuosl.org, michal.swiatkowski@linux.intel.com
+Cc: pmenzel@molgen.mpg.de, netdev@vger.kernel.org, aleksander.lobakin@intel.com,
+ intel-wired-lan@lists.osuosl.org, przemyslaw.kitszel@intel.com,
+ michal.swiatkowski@linux.intel.com
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Fri, Jun 28, 2024 at 03:56:55PM +0200, Przemek Kitszel wrote:
-> On 6/28/24 14:44, Simon Horman wrote:
-> > On Tue, Jun 18, 2024 at 04:11:56PM +0200, Marcin Szycik wrote:
-
-...
-
-> > I appreciate the detailed description above, it is very helpful.
-> > After a number of readings of this patch - it is complex -
-> > I was unable to find anything wrong. And I do like both the simplification
-> > and better hw utilisation that this patch (set) brings.
-> > 
-> > So from that perspective:
-> > 
-> > Reviewed-by: Simon Horman <horms@kernel.org>
-> > 
-> > I would say, however, that it might have been easier to review
-> > if somehow this patch was broken up into smaller pieces.
-> > I appreciate that, in a sense, that is what the other patches
-> > of this series do. But nonetheless... it is complex.
-> > 
-> > ...
+On Thu, Jun 27, 2024 at 04:55:47PM +0200, Marcin Szycik wrote:
+> Track the number of rules and recipes added to switch. Add a tracepoint to
+> ice_aq_sw_rules(), which shows both rule and recipe count. This information
+> can be helpful when designing a set of rules to program to the hardware, as
+> it shows where the practical limit is. Actual limits are known (64 recipes,
+> 32k rules), but it's hard to translate these values to how many rules the
+> *user* can actually create, because of extra metadata being implicitly
+> added, and recipe/rule chaining. Chaining combines several recipes/rules to
+> create a larger recipe/rule, so one large rule added by the user might
+> actually consume multiple rules from hardware perspective.
 > 
-> all of the "bugs" that I have internally found for this patch were
-> addressed by commit msg or comment changes ;)
-> what about you reviewing also patch 7 from v3 of this series?
+> Rule counter is simply incremented/decremented in ice_aq_sw_rules(), since
+> all rules are added or removed via it.
+> 
+> Counting recipes is harder, as recipes can't be removed (only overwritten).
+> Recipes added via ice_aq_add_recipe() could end up being unused, when
+> there is an error in later stages of rule creation. Instead, track the
+> allocation and freeing of recipes, which should reflect the actual usage of
+> recipes (if something fails after recipe(s) were created, caller should
+> free them). Also, a number of recipes are loaded from NVM by default -
+> initialize the recipe counter with the number of these recipes on switch
+> initialization.
+> 
+> Example configuration:
+>   cd /sys/kernel/tracing
+>   echo function > current_tracer
+>   echo ice_aq_sw_rules > set_ftrace_filter
+>   echo ice_aq_sw_rules > set_event
+>   echo 1 > tracing_on
+>   cat trace
+> 
+> Example output:
+>   tc-4097    [069] ...1.   787.595536: ice_aq_sw_rules <-ice_rem_adv_rule
+>   tc-4097    [069] .....   787.595705: ice_aq_sw_rules: rules=9 recipes=15
+>   tc-4098    [057] ...1.   787.652033: ice_aq_sw_rules <-ice_add_adv_rule
+>   tc-4098    [057] .....   787.652201: ice_aq_sw_rules: rules=10 recipes=16
+> 
+> Reviewed-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+> Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+> Signed-off-by: Marcin Szycik <marcin.szycik@linux.intel.com>
 
-Right, sorry about accidently reviewing an old version of the patchset.
-I will look at 7 from v3.
+Reviewed-by: Simon Horman <horms@kernel.org>
+
