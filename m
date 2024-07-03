@@ -4,71 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CC154C2BD09
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  3 Jul 2024 13:12:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 02577C30653
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  3 Jul 2024 13:12:50 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 92FD860EDC;
-	Wed,  3 Jul 2024 13:12:48 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id C67E060EF5;
+	Wed,  3 Jul 2024 13:12:50 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ZTExv5-ySJqg; Wed,  3 Jul 2024 13:12:48 +0000 (UTC)
+ id OTCs0vvsW1iT; Wed,  3 Jul 2024 13:12:49 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org F289C60EE0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4074A60EE5
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1720012368;
-	bh=Vzl0FcN97y2mYYNoAIyZCBF7x9Vv7Gk3m/uIV1aQA7s=;
+	s=default; t=1720012369;
+	bh=9KaU66tJnkFHxVYwNGGmcY/Uj7m/HarV11Qk7CWCZRo=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=qnt/zFp7ef6UzgWrISV4YCnrr/U1vyIc5Vs8WyBAPjK40fPnW2Gcfb4eMjXi3qcPl
-	 ryVnxpYjF5x0MxoT+yVxxJf06wI3D59oeUN/yTcGqqMj8WThBRstqNvjmTccOHCXIh
-	 BrltbEeHJlT9FeCRCIjnzyzdRZn7LYb1/loAObLipp0xbH1aLx+3Dce07JhCK+lGaY
-	 Itg6cNRgCupDnbBbmI3SC4UBvETNlLBhjFZL5rKH+3fuyjDlqe+2pUy8Rw6POQ5sv9
-	 Eyk/RcEWg7IEq74tTkq3PbOHYzcpmC3tBkIOr5+YuiB0JD/ralX71YTj1Lax+ifXwx
-	 6lWRJ7judt03g==
+	b=nyDNGjlemL7PkZnnI/7Xs+q2MBWJ8jLGL2afht4AJm9aOMdmi/+g0r9guawGK4o7x
+	 w8XPJqhLYPG+dy/t+Ohm61OtFVboI879DZfKu/rHRTlYsGoqprRIu0WVDZ/C/xXx62
+	 Oascr/Fc/qe/qkOcKDKZnO97dtSPLA52j+r0vzX4ymwfCnKRlIwyTxihlWLXShqy0V
+	 yTxG//K1EviZ4bJQZrrbswsMj4FX2C8T0Fb445K2Sv+k6rDMOlXIbQv2ov4M49I/dD
+	 Hou4Xn6J+caJD9SSCPx7qq+KKBN04Z7bXXx45B/G2PwlLKazNrU31U28GChfBstzau
+	 HssU1JVftbFGg==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id F289C60EE0;
-	Wed,  3 Jul 2024 13:12:47 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 4074A60EE5;
+	Wed,  3 Jul 2024 13:12:49 +0000 (UTC)
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 8D08D1BF31B
- for <intel-wired-lan@lists.osuosl.org>; Wed,  3 Jul 2024 13:12:41 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 9FED01BF31B
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  3 Jul 2024 13:12:43 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 79F3F40359
- for <intel-wired-lan@lists.osuosl.org>; Wed,  3 Jul 2024 13:12:41 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 8C8F24056B
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  3 Jul 2024 13:12:43 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 2-cSetKo52rc for <intel-wired-lan@lists.osuosl.org>;
- Wed,  3 Jul 2024 13:12:40 +0000 (UTC)
+ id Vb3X-mJeWc9e for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  3 Jul 2024 13:12:42 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.11;
  helo=mgamail.intel.com; envelope-from=mateusz.polchlopek@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 5569E40498
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 5569E40498
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 7642A40498
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 7642A40498
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.11])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 5569E40498
- for <intel-wired-lan@lists.osuosl.org>; Wed,  3 Jul 2024 13:12:40 +0000 (UTC)
-X-CSE-ConnectionGUID: iH2AqNXpTt+PxSF669m6Bw==
-X-CSE-MsgGUID: gu68RwQ/QIqsCfzDC11nuw==
-X-IronPort-AV: E=McAfee;i="6700,10204,11121"; a="27857103"
-X-IronPort-AV: E=Sophos;i="6.09,182,1716274800"; d="scan'208";a="27857103"
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 7642A40498
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  3 Jul 2024 13:12:42 +0000 (UTC)
+X-CSE-ConnectionGUID: vdlCWXtSSTOBoQYn4IWvuQ==
+X-CSE-MsgGUID: M8vnpLM1RtynXsW0H9Q83g==
+X-IronPort-AV: E=McAfee;i="6700,10204,11121"; a="27857147"
+X-IronPort-AV: E=Sophos;i="6.09,182,1716274800"; d="scan'208";a="27857147"
 Received: from fmviesa010.fm.intel.com ([10.60.135.150])
  by fmvoesa105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 03 Jul 2024 06:12:32 -0700
-X-CSE-ConnectionGUID: wGi9JZcbS0KE/MV3OggP2g==
-X-CSE-MsgGUID: FshCUYNJTqKk6J4RMxP/Tw==
+ 03 Jul 2024 06:12:35 -0700
+X-CSE-ConnectionGUID: h4paI16NSVaZ9zbM8ZjjRA==
+X-CSE-MsgGUID: cWdv3/j9TByEALayr0azhQ==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.09,182,1716274800"; d="scan'208";a="46321569"
+X-IronPort-AV: E=Sophos;i="6.09,182,1716274800"; d="scan'208";a="46321589"
 Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by fmviesa010.fm.intel.com with ESMTP; 03 Jul 2024 06:12:28 -0700
+ by fmviesa010.fm.intel.com with ESMTP; 03 Jul 2024 06:12:32 -0700
 Received: from fedora.igk.intel.com (Metan_eth.igk.intel.com [10.123.220.124])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id A18C428779;
- Wed,  3 Jul 2024 14:12:26 +0100 (IST)
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id A0B812877D;
+ Wed,  3 Jul 2024 14:12:30 +0100 (IST)
 From: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Wed,  3 Jul 2024 08:59:18 -0400
-Message-Id: <20240703125922.5625-3-mateusz.polchlopek@intel.com>
+Date: Wed,  3 Jul 2024 08:59:20 -0400
+Message-Id: <20240703125922.5625-5-mateusz.polchlopek@intel.com>
 X-Mailer: git-send-email 2.38.1
 In-Reply-To: <20240703125922.5625-1-mateusz.polchlopek@intel.com>
 References: <20240703125922.5625-1-mateusz.polchlopek@intel.com>
@@ -76,26 +76,25 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1720012361; x=1751548361;
+ t=1720012362; x=1751548362;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=TjSxyaf3Cir+Qz6O6R1xqKNcZgjVvLcFv4QVgnNtdf8=;
- b=GUn2OZjMhTgXzpYpGvAA7yjfdrOwJKUKLCGRQN3fXBNtvi77zRfZMEug
- dL5cCagyIhS8Zk/K1fnh0k5l+SB6KgmiAlydlAVGPLi4WKG2aewFD8x0/
- DKXdKbnF06TNuus3DC85Jqo4S6eBUHZh/1vEYDN6UGzKeJF9w1fOhAoTM
- WMtXGLKGnJafSmJLcp4Hh4oJyOhdr8Wka5WSkLDif90I06yBU4Jyu8l/a
- 33fSOrVHc1V7LtxU44XPeZ9OUm2hsY0HJ4GboS2MrTEIwO3BAiwWoRdqN
- JOCpwRnb6ys7gnVfiOllV/Wxg6SMGt/pBYF7r0+gvrPMUc0NrB9QsrcLZ
- A==;
+ bh=6YUvj8x7CBc4d6PYcb7HYz/bfW3oASOIRH1WMVTGBOA=;
+ b=VdKqt2wWhBf5fc9rHHoXld9HUk+7nI0XNDwsXh8uEHB/Gu6SqcY1Y6w/
+ DhQatD3hWqnrPBaCo61q6opKASYKsHk2P5qGRpm8sOQQnMGJKOI0qi4dj
+ tN0KKsATz6wi9eAG3Vrwix4DWRfB1+Nb1mLm0hbu8gk8Wv3PsC8IhD8Ou
+ fpSxCQqbOiLB/3Hxf1ztuCcSBAHNJ4rQRKHNssa8AjhOBOWGUSrzFyyFY
+ vNo9OQie9Qe7VGsr4E1B9IZmNIDthkp0yx6PSO1QvfoIF/72Czg0DYalk
+ gMcsEJ33N8VMH9RKYB5E1IWzCbA3sZuDFi5pS0cIMqKMUOrJqNgKcwYPB
+ Q==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=GUn2OZjM
-Subject: [Intel-wired-lan] [PATCH iwl-next v1 2/6] devlink: add
- devlink_fmsg_put() macro
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=VdKqt2wW
+Subject: [Intel-wired-lan] [PATCH iwl-next v1 4/6] ice: print ethtool stats
+ as part of Tx hang devlink health reporter
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -110,46 +109,165 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Cc: willemb@google.com, Wojciech Drewek <wojciech.drewek@intel.com>,
  dwaipayanray1@gmail.com, Mateusz Polchlopek <mateusz.polchlopek@intel.com>,
- linux-kernel@vger.kernel.org, joe@perches.com, edumazet@google.com,
- netdev@vger.kernel.org, apw@canonical.com, lukas.bulwahn@gmail.com,
- akpm@linux-foundation.org, Przemek Kitszel <przemyslaw.kitszel@intel.com>
+ linux-kernel@vger.kernel.org, Igor Bagnucki <igor.bagnucki@intel.com>,
+ joe@perches.com, edumazet@google.com, netdev@vger.kernel.org,
+ apw@canonical.com, lukas.bulwahn@gmail.com, akpm@linux-foundation.org,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 From: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 
-Add devlink_fmsg_put() that dispatches based on the type
-of the value to put, example: bool -> devlink_fmsg_bool_pair_put().
+Print the ethtool stats as part of Tx hang devlink health dump.
+
+Move the declarations of ethtool functions that devlink health uses out
+to a new file: ice_ethtool_common.h
+
+To utilize our existing ethtool code in this context, convert it to
+non-static.
 
 Signed-off-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Reviewed-by: Igor Bagnucki <igor.bagnucki@intel.com>
 Reviewed-by: Wojciech Drewek <wojciech.drewek@intel.com>
 Signed-off-by: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
 ---
- include/net/devlink.h | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+ .../intel/ice/devlink/devlink_health.c        | 32 +++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_ethtool.c  | 10 +++---
+ drivers/net/ethernet/intel/ice/ice_ethtool.h  |  2 ++
+ .../ethernet/intel/ice/ice_ethtool_common.h   | 19 +++++++++++
+ 4 files changed, 58 insertions(+), 5 deletions(-)
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_ethtool_common.h
 
-diff --git a/include/net/devlink.h b/include/net/devlink.h
-index db5eff6cb60f..85739bb731c1 100644
---- a/include/net/devlink.h
-+++ b/include/net/devlink.h
-@@ -1261,6 +1261,17 @@ enum devlink_trap_group_generic_id {
- 		.min_burst = _min_burst,				      \
- 	}
+diff --git a/drivers/net/ethernet/intel/ice/devlink/devlink_health.c b/drivers/net/ethernet/intel/ice/devlink/devlink_health.c
+index 311719e69ea5..d6956bba1da2 100644
+--- a/drivers/net/ethernet/intel/ice/devlink/devlink_health.c
++++ b/drivers/net/ethernet/intel/ice/devlink/devlink_health.c
+@@ -3,6 +3,7 @@
  
-+#define devlink_fmsg_put(fmsg, name, value) (			\
-+	_Generic((value),					\
-+		bool :		devlink_fmsg_bool_pair_put,	\
-+		u8 :		devlink_fmsg_u8_pair_put,	\
-+		u16 :		devlink_fmsg_u32_pair_put,	\
-+		u32 :		devlink_fmsg_u32_pair_put,	\
-+		u64 :		devlink_fmsg_u64_pair_put,	\
-+		char * :	devlink_fmsg_string_pair_put,	\
-+		const char * :	devlink_fmsg_string_pair_put)	\
-+	(fmsg, name, (value)))
+ #include "devlink_health.h"
+ #include "ice.h"
++#include "ice_ethtool_common.h"
+ 
+ #define ICE_DEVLINK_FMSG_PUT_FIELD(fmsg, obj, name) \
+ 	devlink_fmsg_put(fmsg, #name, (obj)->name)
+@@ -32,6 +33,36 @@ static void ice_devlink_health_report(struct devlink_health_reporter *reporter,
+ 	}
+ }
+ 
++static void ice_dump_ethtool_stats_to_fmsg(struct devlink_fmsg *fmsg,
++					   struct net_device *netdev)
++{
++	const u32 string_set = ETH_SS_STATS;
++	u64 *stats;
++	u8 *names;
++	int scnt;
 +
- enum {
- 	/* device supports reload operations */
- 	DEVLINK_F_RELOAD = 1UL << 0,
++	scnt = ice_get_sset_count(netdev, string_set);
++	devlink_fmsg_put(fmsg, "stats-cnt", (u32)scnt);
++	if (scnt <= 0)
++		return;
++
++	names = kcalloc(scnt, ETH_GSTRING_LEN, GFP_KERNEL);
++	stats = kcalloc(scnt, sizeof(*stats), GFP_KERNEL);
++	if (!names || !stats)
++		goto out;
++
++	ice_get_strings(netdev, string_set, names);
++	ice_get_ethtool_stats(netdev, NULL, stats);
++
++	devlink_fmsg_obj_nest_start(fmsg);
++	for (int i = 0; i < scnt; ++i)
++		devlink_fmsg_put(fmsg, &names[i * ETH_GSTRING_LEN], stats[i]);
++	devlink_fmsg_obj_nest_end(fmsg);
++out:
++	kfree(names);
++	kfree(stats);
++}
++
+ /**
+  * ice_fmsg_put_ptr - put hex value of pointer into fmsg
+  *
+@@ -77,6 +108,7 @@ static int ice_tx_hang_reporter_dump(struct devlink_health_reporter *reporter,
+ 	devlink_fmsg_binary_pair_put(fmsg, "desc", event->tx_ring->desc,
+ 				     size_mul(event->tx_ring->count,
+ 					      sizeof(struct ice_tx_desc)));
++	ice_dump_ethtool_stats_to_fmsg(fmsg, event->tx_ring->vsi->netdev);
+ 	devlink_fmsg_obj_nest_end(fmsg);
+ 
+ 	return 0;
+diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+index d1940fc6f2f5..91f16396e20d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
++++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+@@ -1522,7 +1522,7 @@ __ice_get_strings(struct net_device *netdev, u32 stringset, u8 *data,
+ 	}
+ }
+ 
+-static void ice_get_strings(struct net_device *netdev, u32 stringset, u8 *data)
++void ice_get_strings(struct net_device *netdev, u32 stringset, u8 *data)
+ {
+ 	struct ice_netdev_priv *np = netdev_priv(netdev);
+ 
+@@ -1900,7 +1900,7 @@ static int ice_set_priv_flags(struct net_device *netdev, u32 flags)
+ 	return ret;
+ }
+ 
+-static int ice_get_sset_count(struct net_device *netdev, int sset)
++int ice_get_sset_count(struct net_device *netdev, int sset)
+ {
+ 	switch (sset) {
+ 	case ETH_SS_STATS:
+@@ -2003,9 +2003,9 @@ __ice_get_ethtool_stats(struct net_device *netdev,
+ 	}
+ }
+ 
+-static void
+-ice_get_ethtool_stats(struct net_device *netdev,
+-		      struct ethtool_stats __always_unused *stats, u64 *data)
++void ice_get_ethtool_stats(struct net_device *netdev,
++			   struct ethtool_stats __always_unused *stats,
++			   u64 *data)
+ {
+ 	struct ice_netdev_priv *np = netdev_priv(netdev);
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.h b/drivers/net/ethernet/intel/ice/ice_ethtool.h
+index 9acccae38625..fd021d2813f8 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ethtool.h
++++ b/drivers/net/ethernet/intel/ice/ice_ethtool.h
+@@ -4,6 +4,8 @@
+ #ifndef _ICE_ETHTOOL_H_
+ #define _ICE_ETHTOOL_H_
+ 
++#include "ice_ethtool_common.h"
++
+ struct ice_phy_type_to_ethtool {
+ 	u64 aq_link_speed;
+ 	u8 link_mode;
+diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool_common.h b/drivers/net/ethernet/intel/ice/ice_ethtool_common.h
+new file mode 100644
+index 000000000000..0c772056f006
+--- /dev/null
++++ b/drivers/net/ethernet/intel/ice/ice_ethtool_common.h
+@@ -0,0 +1,19 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/* Copyright (c) 2024, Intel Corporation. */
++
++#ifndef _ICE_ETHTOOL_COMMON_H_
++#define _ICE_ETHTOOL_COMMON_H_
++
++/**
++ * DOC: ice_ethtool_common.h
++ *
++ * This header is for ethtool related code that is reused in other places.
++ */
++
++void ice_get_strings(struct net_device *netdev, u32 stringset, u8 *data);
++int ice_get_sset_count(struct net_device *netdev, int sset);
++void ice_get_ethtool_stats(struct net_device *netdev,
++			   struct ethtool_stats __always_unused *stats,
++			   u64 *data);
++
++#endif /* _ICE_ETHTOOL_COMMON_H_ */
 -- 
 2.38.1
 
