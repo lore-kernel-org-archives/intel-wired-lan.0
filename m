@@ -4,95 +4,112 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7AFAAC3DA47
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  8 Jul 2024 14:48:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4C91FC3271E
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  8 Jul 2024 15:12:45 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 3ABCC40AC9;
-	Mon,  8 Jul 2024 14:48:49 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id ECF6A40ADF;
+	Mon,  8 Jul 2024 15:12:44 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 0iVDvpCQKOp7; Mon,  8 Jul 2024 14:48:48 +0000 (UTC)
+ id A3oPOeQM1Wwb; Mon,  8 Jul 2024 15:12:43 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org DE82840B02
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 765E040454
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1720450128;
-	bh=GYu3GmAkBx15pC52xTYRlvnETdai7aI1nAeQEb1qbQE=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=jKEXYisu4OKPpg07zP8FZLr4FjYaNKIimDaS68PykBEpibbc/pD1Gy87rsh8KnjmC
-	 aZckqwtcZ5pIngHwGaCxxPSK19mUIRhR8TWpnQffVwktsNru9R0buygv6X0e6N7lmj
-	 neu1xYmWWyjsK4mtKMUxewrYx4yAqCZnQSSFjlfCGWtGDKp/+wbfT90y4GOLM+tvfA
-	 K0KTcMgsu/3wnN3NyRIoJMJDikyG8zz32DVQ+F/qRk4XD5OCYHTRddrDodV19l+y3r
-	 sEz6u+T152wwNTV3KLN/PDXkNoUpcQXLtCK3uuWQWQimmAtjcYrlvoqmpdpj+5mPlF
-	 ZSp/f8VFmbgsQ==
+	s=default; t=1720451563;
+	bh=s+XlZT7Zau6TfDZLEbOwy3xPtGFBs9GZzuVmW0T8wrc=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=mqzNYMYHliEV5JnnE1IjLvETRVbfDbzI6Z/UirgJm57Oo5cfCubcWUVSYfbiPoG6L
+	 rqKQLlZcZ8THGZD2kvKWu1RF6biIAFGCm8m1EhO66+9B7yEdlmoYLhRs03esmgWXZj
+	 1oM5xTNYD88yqYQ2P1ERPcNZjDQJtVph3p0Wrlk1/9gNHHlLyoIaYzQLoe/DwZ0zLk
+	 u60qZdkCyRciS5m3sUQX4Wh2KCjZAm6Tdi+hZn3viIZu2UH2gCdF0f5ak3YN/Q7FJQ
+	 AST+yDFGdON/cvfAcZu/w9X6w7BLA3ph4jF0Mq62X6WfFJhQqA8RgUrurFQpucM4VW
+	 6n635L2Q+ugkA==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id DE82840B02;
-	Mon,  8 Jul 2024 14:48:47 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 1E4E71BF97C
- for <intel-wired-lan@lists.osuosl.org>; Mon,  8 Jul 2024 14:48:44 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 765E040454;
+	Mon,  8 Jul 2024 15:12:43 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 48CE71BF281
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  5 Jul 2024 16:48:07 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 0ADFC4023E
- for <intel-wired-lan@lists.osuosl.org>; Mon,  8 Jul 2024 14:48:44 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 342F34018A
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  5 Jul 2024 16:48:07 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ZDqbU1V1jZC8 for <intel-wired-lan@lists.osuosl.org>;
- Mon,  8 Jul 2024 14:48:42 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.7;
- helo=mgamail.intel.com; envelope-from=anil.samal@intel.com;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 62E9E40260
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 62E9E40260
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.7])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 62E9E40260
- for <intel-wired-lan@lists.osuosl.org>; Mon,  8 Jul 2024 14:48:42 +0000 (UTC)
-X-CSE-ConnectionGUID: wSPiwX7EQr+H62qNCyMbdQ==
-X-CSE-MsgGUID: cDPTZ7baTa6uPDletp7H0A==
-X-IronPort-AV: E=McAfee;i="6700,10204,11127"; a="43076734"
-X-IronPort-AV: E=Sophos;i="6.09,192,1716274800"; d="scan'208";a="43076734"
-Received: from orviesa005.jf.intel.com ([10.64.159.145])
- by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 08 Jul 2024 07:48:42 -0700
-X-CSE-ConnectionGUID: kYUFQ0siSaarPJUkuKvUsw==
-X-CSE-MsgGUID: T+JNSGrxTcq/zSrR9Ddzhw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.09,192,1716274800"; d="scan'208";a="52473640"
-Received: from c3-1-server.sj.intel.com ([10.232.18.246])
- by orviesa005-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 08 Jul 2024 07:48:41 -0700
-From: Anil Samal <anil.samal@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Date: Mon,  8 Jul 2024 07:46:27 -0700
-Message-ID: <20240708144833.1337075-3-anil.samal@intel.com>
-X-Mailer: git-send-email 2.44.0
-In-Reply-To: <20240708144833.1337075-1-anil.samal@intel.com>
-References: <20240708144833.1337075-1-anil.samal@intel.com>
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id VujB7HVCtRc7 for <intel-wired-lan@lists.osuosl.org>;
+ Fri,  5 Jul 2024 16:48:06 +0000 (UTC)
+X-Greylist: delayed 552 seconds by postgrey-1.37 at util1.osuosl.org;
+ Fri, 05 Jul 2024 16:48:04 UTC
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 8D7AC40175
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 8D7AC40175
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=109.73.34.58;
+ helo=mx1.t-argos.ru; envelope-from=amishin@t-argos.ru; receiver=<UNKNOWN> 
+Received: from mx1.t-argos.ru (mx1.t-argos.ru [109.73.34.58])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 8D7AC40175
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  5 Jul 2024 16:48:04 +0000 (UTC)
+Received: from mx1.t-argos.ru (localhost [127.0.0.1])
+ by mx1.t-argos.ru (Postfix) with ESMTP id 88AC9100002;
+ Fri,  5 Jul 2024 19:38:02 +0300 (MSK)
+Received: from mx1.t-argos.ru.ru (ta-mail-02.ta.t-argos.ru [172.17.13.212])
+ by mx1.t-argos.ru (Postfix) with ESMTP;
+ Fri,  5 Jul 2024 19:36:53 +0300 (MSK)
+Received: from localhost.localdomain (172.17.215.5) by ta-mail-02
+ (172.17.13.212) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.9; Fri, 5 Jul 2024
+ 19:36:33 +0300
+From: Aleksandr Mishin <amishin@t-argos.ru>
+To: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+Date: Fri, 5 Jul 2024 19:36:20 +0300
+Message-ID: <20240705163620.12429-1-amishin@t-argos.ru>
+X-Mailer: git-send-email 2.30.2
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1720450123; x=1751986123;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=uFgXNVX6Vq+F9RV/2gOfPSV4p2x3vrxTGLXd8ZsGwOM=;
- b=kjK7cvuExcMJ7lJdbZAqlVmmbS7WByZ7Ffmw69dMd0f1UUzpC9btBcTk
- 7MnaGkjIuP1/V7xpSXv1/hLO53f8UypmlNu06UWvjoc+LoXC1744aQ0Da
- J8mOxgRX9uBt/iNybkAgxrqr+QPjGvhotBsi34OxiaQOZqp81F4L2rqPQ
- vNBNDqOrL8aIPph1yspvOK3fxGEK/VxgGO1N2juCpzqPlJOSJeNCPfBwR
- 9wNiABjO9MWXifp/5E5cFq/p2OkjdNVkg2T6/WzddEsHTLd6mYX9jPdxL
- V18LUKM4nwMp1AHvkrvUBYtFp5INxsTp0r1Fx4ZDuTiaFBb3qKhSs2K9p
- Q==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=kjK7cvuE
-Subject: [Intel-wired-lan] [PATCH iwl-next v4 2/3] ice: Implement driver
- functionality to dump fec statistics
+Content-Type: text/plain
+X-Originating-IP: [172.17.215.5]
+X-ClientProxiedBy: ta-mail-02.ta.t-argos.ru (172.17.13.212) To ta-mail-02
+ (172.17.13.212)
+X-KSMG-Rule-ID: 1
+X-KSMG-Message-Action: clean
+X-KSMG-AntiSpam-Lua-Profiles: 186342 [Jul 05 2024]
+X-KSMG-AntiSpam-Version: 6.1.0.4
+X-KSMG-AntiSpam-Envelope-From: amishin@t-argos.ru
+X-KSMG-AntiSpam-Rate: 0
+X-KSMG-AntiSpam-Status: not_detected
+X-KSMG-AntiSpam-Method: none
+X-KSMG-AntiSpam-Auth: dkim=none
+X-KSMG-AntiSpam-Info: LuaCore: 21 0.3.21
+ ebee5449fc125b2da45f1a6a6bc2c5c0c3ad0e05,
+ {Tracking_from_domain_doesnt_match_to}, mx1.t-argos.ru.ru:7.1.1;
+ t-argos.ru:7.1.1; 127.0.0.199:7.1.2;
+ d41d8cd98f00b204e9800998ecf8427e.com:7.1.1, FromAlignment: s
+X-MS-Exchange-Organization-SCL: -1
+X-KSMG-AntiSpam-Interceptor-Info: scan successful
+X-KSMG-AntiPhishing: Clean, bases: 2024/07/05 14:29:00
+X-KSMG-AntiVirus: Kaspersky Secure Mail Gateway, version 1.1.2.30,
+ bases: 2024/07/05 10:39:00 #25854340
+X-KSMG-AntiVirus-Status: Clean, skipped
+X-Mailman-Approved-At: Mon, 08 Jul 2024 15:12:42 +0000
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=t-argos.ru; s=mail; 
+ t=1720197482; bh=s+XlZT7Zau6TfDZLEbOwy3xPtGFBs9GZzuVmW0T8wrc=;
+ h=From:To:Subject:Date:Message-ID:MIME-Version:Content-Type;
+ b=WCqWs5G9OjmuaIJuFPb2XKbdhfiBWqQmmy4zZlEiypH3kqWGlAyi62lgTBJXYB6OD
+ ZKvz3TA7DYr9CH4EFXumApiQuFQH4Zj6fPV8F0on2/F+fMZep+79jKcDh5PSuyoxg4
+ FdvLjlzk5IPvDbo/3ScBccRMFbEWxHOis7n+i+ySqNpzWMy1WHOlSDrkWU+HWPmxj9
+ 6mljpmwFq8ViLQp1oGjSaMMOzgmCbEwZxVgvqcZ7t4WUPeAGpF2EueKMwEUBzTRGA4
+ qoIjkrd001ytwaMiCoUH/F7xsP6lOeuOcNuHhmXoUQMH0rPvWYDKtDXjsRbY0vgBT4
+ VdMpoShmJMP3Q==
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dmarc=pass (p=reject dis=none)
+ header.from=t-argos.ru
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=t-argos.ru header.i=@t-argos.ru header.a=rsa-sha256
+ header.s=mail header.b=WCqWs5G9
+Subject: [Intel-wired-lan] [PATCH net] ice: Adjust memory overrun in
+ ice_sched_add_root_node() and ice_sched_add_node()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,530 +122,60 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Pucha Himasekhar Reddy <himasekharx.reddy.pucha@intel.com>,
- netdev@vger.kernel.org, lukasz.czapnik@intel.com,
- Anil Samal <anil.samal@intel.com>, leszek.pepiak@intel.com,
- anthony.l.nguyen@intel.com, Simon Horman <horms@kernel.org>,
- przemyslaw.kitszel@intel.com, jacob.e.keller@intel.com, kuba@kernel.org
+Cc: lvc-project@linuxtesting.org, intel-wired-lan@lists.osuosl.org,
+ linux-kernel@vger.kernel.org, Eric Dumazet <edumazet@google.com>,
+ Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Aleksandr Mishin <amishin@t-argos.ru>, netdev@vger.kernel.org,
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+ "David S. Miller" <davem@davemloft.net>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-To debug link issues in the field, it is paramount to
-dump fec corrected/uncorrected block counts from firmware.
-Firmware requires PCS quad number and PCS port number to
-read FEC statistics. Current driver implementation does
-not maintain above physical properties of a port.
+In ice_sched_add_root_node() and ice_sched_add_node() there are calls to
+devm_kcalloc() in order to allocate memory for array of pointers to
+'ice_sched_node' structure. But in this calls there are 'sizeof(*root)'
+instead of 'sizeof(root)' and 'sizeof(*node)' instead of 'sizeof(node)'.
+So memory is allocated for structures instead pointers. This lead to
+significant memory overrun.
+Looks like it was done for "coverity[suspicious_sizeof] workaround".
 
-Add new driver API to derive physical properties of an input
-port.These properties include PCS quad number, PCS port number,
-serdes lane count, primary serdes lane number.
-Extend ethtool option '--show-fec' to support fec statistics.
-The IEEE standard mandates two sets of counters:
- - 30.5.1.1.17 aFECCorrectedBlocks
- - 30.5.1.1.18 aFECUncorrectableBlocks
+Adjust memory overrun by correcting devm_kcalloc() parameters.
 
-Standard defines above statistics per lane but current
-implementation supports total FEC statistics per port
-i.e. sum of all lane per port. Find sample output below
+Found by Linux Verification Center (linuxtesting.org) with SVACE.
 
-FEC parameters for ens21f0np0:
-Supported/Configured FEC encodings: Auto RS BaseR
-Active FEC encoding: RS
-Statistics:
-  corrected_blocks: 0
-  uncorrectable_blocks: 0
-
-Reviewed-by: Simon Horman <horms@kernel.org>
-Reviewed-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Signed-off-by: Anil Samal <anil.samal@intel.com>
-Tested-by: Pucha Himasekhar Reddy <himasekharx.reddy.pucha@intel.com> (A Contingent worker at Intel)
+Fixes: dc49c7723676 ("ice: Get MAC/PHY/link info and scheduler topology")
+Signed-off-by: Aleksandr Mishin <amishin@t-argos.ru>
 ---
- drivers/net/ethernet/intel/ice/ice_common.c  |  57 ++++
- drivers/net/ethernet/intel/ice/ice_common.h  |  24 ++
- drivers/net/ethernet/intel/ice/ice_ethtool.c | 304 +++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_ethtool.h |  10 +
- drivers/net/ethernet/intel/ice/ice_type.h    |   8 +
- 5 files changed, 403 insertions(+)
+ drivers/net/ethernet/intel/ice/ice_sched.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index 03e908405874..891fabfa4bb3 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -3375,6 +3375,63 @@ int ice_update_link_info(struct ice_port_info *pi)
- 	return status;
- }
+diff --git a/drivers/net/ethernet/intel/ice/ice_sched.c b/drivers/net/ethernet/intel/ice/ice_sched.c
+index ecf8f5d60292..d8b6054f3436 100644
+--- a/drivers/net/ethernet/intel/ice/ice_sched.c
++++ b/drivers/net/ethernet/intel/ice/ice_sched.c
+@@ -28,9 +28,8 @@ ice_sched_add_root_node(struct ice_port_info *pi,
+ 	if (!root)
+ 		return -ENOMEM;
  
-+#define FEC_REG_PORT(port) {	\
-+	FEC_CORR_LOW_REG_PORT##port,		\
-+	FEC_CORR_HIGH_REG_PORT##port,	\
-+	FEC_UNCORR_LOW_REG_PORT##port,	\
-+	FEC_UNCORR_HIGH_REG_PORT##port,	\
-+}
-+
-+static const u32 fec_reg[][ICE_FEC_MAX] = {
-+	FEC_REG_PORT(0),
-+	FEC_REG_PORT(1),
-+	FEC_REG_PORT(2),
-+	FEC_REG_PORT(3)
-+};
-+
-+/**
-+ * ice_aq_get_fec_stats - reads fec stats from phy
-+ * @hw: pointer to the HW struct
-+ * @pcs_quad: represents pcsquad of user input serdes
-+ * @pcs_port: represents the pcs port number part of above pcs quad
-+ * @fec_type: represents FEC stats type
-+ * @output: pointer to the caller-supplied buffer to return requested fec stats
-+ *
-+ * Return: non-zero status on error and 0 on success.
-+ */
-+int ice_aq_get_fec_stats(struct ice_hw *hw, u16 pcs_quad, u16 pcs_port,
-+			 enum ice_fec_stats_types fec_type, u32 *output)
-+{
-+	u16 flag = (ICE_AQ_FLAG_RD | ICE_AQ_FLAG_BUF | ICE_AQ_FLAG_SI);
-+	struct ice_sbq_msg_input msg = {};
-+	u32 receiver_id, reg_offset;
-+	int err;
-+
-+	if (pcs_port > 3)
-+		return -EINVAL;
-+
-+	reg_offset = fec_reg[pcs_port][fec_type];
-+
-+	if (pcs_quad == 0)
-+		receiver_id = FEC_RECEIVER_ID_PCS0;
-+	else if (pcs_quad == 1)
-+		receiver_id = FEC_RECEIVER_ID_PCS1;
-+	else
-+		return -EINVAL;
-+
-+	msg.msg_addr_low = lower_16_bits(reg_offset);
-+	msg.msg_addr_high = receiver_id;
-+	msg.opcode = ice_sbq_msg_rd;
-+	msg.dest_dev = rmn_0;
-+
-+	err = ice_sbq_rw_reg(hw, &msg, flag);
-+	if (err)
-+		return err;
-+
-+	*output = msg.data;
-+	return 0;
-+}
-+
- /**
-  * ice_cache_phy_user_req
-  * @pi: port information structure
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
-index a6bdde294888..5672e48ffa2a 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.h
-+++ b/drivers/net/ethernet/intel/ice/ice_common.h
-@@ -18,6 +18,27 @@
- #define ICE_SQ_SEND_DELAY_TIME_MS	10
- #define ICE_SQ_SEND_MAX_EXECUTE		3
- 
-+#define FEC_REG_SHIFT 2
-+#define FEC_RECV_ID_SHIFT 4
-+#define FEC_CORR_LOW_REG_PORT0 (0x02 << FEC_REG_SHIFT)
-+#define FEC_CORR_HIGH_REG_PORT0 (0x03 << FEC_REG_SHIFT)
-+#define FEC_UNCORR_LOW_REG_PORT0 (0x04 << FEC_REG_SHIFT)
-+#define FEC_UNCORR_HIGH_REG_PORT0 (0x05 << FEC_REG_SHIFT)
-+#define FEC_CORR_LOW_REG_PORT1 (0x42 << FEC_REG_SHIFT)
-+#define FEC_CORR_HIGH_REG_PORT1 (0x43 << FEC_REG_SHIFT)
-+#define FEC_UNCORR_LOW_REG_PORT1 (0x44 << FEC_REG_SHIFT)
-+#define FEC_UNCORR_HIGH_REG_PORT1 (0x45 << FEC_REG_SHIFT)
-+#define FEC_CORR_LOW_REG_PORT2 (0x4A << FEC_REG_SHIFT)
-+#define FEC_CORR_HIGH_REG_PORT2 (0x4B << FEC_REG_SHIFT)
-+#define FEC_UNCORR_LOW_REG_PORT2 (0x4C << FEC_REG_SHIFT)
-+#define FEC_UNCORR_HIGH_REG_PORT2 (0x4D << FEC_REG_SHIFT)
-+#define FEC_CORR_LOW_REG_PORT3 (0x52 << FEC_REG_SHIFT)
-+#define FEC_CORR_HIGH_REG_PORT3 (0x53 << FEC_REG_SHIFT)
-+#define FEC_UNCORR_LOW_REG_PORT3 (0x54 << FEC_REG_SHIFT)
-+#define FEC_UNCORR_HIGH_REG_PORT3 (0x55 << FEC_REG_SHIFT)
-+#define FEC_RECEIVER_ID_PCS0 (0x33 << FEC_RECV_ID_SHIFT)
-+#define FEC_RECEIVER_ID_PCS1 (0x34 << FEC_RECV_ID_SHIFT)
-+
- int ice_init_hw(struct ice_hw *hw);
- void ice_deinit_hw(struct ice_hw *hw);
- int ice_check_reset(struct ice_hw *hw);
-@@ -122,6 +143,9 @@ int
- ice_get_link_default_override(struct ice_link_default_override_tlv *ldo,
- 			      struct ice_port_info *pi);
- bool ice_is_phy_caps_an_enabled(struct ice_aqc_get_phy_caps_data *caps);
-+int
-+ice_aq_get_fec_stats(struct ice_hw *hw, u16 pcs_quad, u16 pcs_port,
-+		     enum ice_fec_stats_types fec_type, u32 *output);
- 
- enum ice_fc_mode ice_caps_to_fc_mode(u8 caps);
- enum ice_fec_mode ice_caps_to_fec_mode(u8 caps, u8 fec_options);
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index ec93807dc327..1d88dbac7287 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -466,6 +466,221 @@ static int ice_get_regs_len(struct net_device __always_unused *netdev)
- 	return sizeof(ice_regs_dump_list);
- }
- 
-+/**
-+ * ice_ethtool_get_maxspeed - Get the max speed for given lport
-+ * @hw: pointer to the HW struct
-+ * @lport: logical port for which max speed is requested
-+ * @max_speed: return max speed for input lport
-+ *
-+ * Return: 0 on success, negative on failure.
-+ */
-+static int ice_ethtool_get_maxspeed(struct ice_hw *hw, u8 lport, u8 *max_speed)
-+{
-+	struct ice_aqc_get_port_options_elem options[ICE_AQC_PORT_OPT_MAX] = {};
-+	bool active_valid = false, pending_valid = true;
-+	u8 option_count = ICE_AQC_PORT_OPT_MAX;
-+	u8 active_idx = 0, pending_idx = 0;
-+	int status;
-+
-+	status = ice_aq_get_port_options(hw, options, &option_count, lport,
-+					 true, &active_idx, &active_valid,
-+					 &pending_idx, &pending_valid);
-+	if (status)
-+		return -EIO;
-+	if (!active_valid)
-+		return -EINVAL;
-+
-+	*max_speed = options[active_idx].max_lane_speed & ICE_AQC_PORT_OPT_MAX_LANE_M;
-+	return 0;
-+}
-+
-+/**
-+ * ice_is_serdes_muxed - returns whether serdes is muxed in hardware
-+ * @hw: pointer to the HW struct
-+ *
-+ * Return: true when serdes is muxed, false when serdes is not muxed.
-+ */
-+static bool ice_is_serdes_muxed(struct ice_hw *hw)
-+{
-+	u32 reg_value = rd32(hw, GLGEN_SWITCH_MODE_CONFIG);
-+
-+	return FIELD_GET(GLGEN_SWITCH_MODE_CONFIG_25X4_QUAD_M, reg_value);
-+}
-+
-+static int ice_map_port_topology_for_sfp(struct ice_port_topology *port_topology,
-+					 u8 lport, bool is_muxed)
-+{
-+	switch (lport) {
-+	case 0:
-+		port_topology->pcs_quad_select = 0;
-+		port_topology->pcs_port = 0;
-+		port_topology->primary_serdes_lane = 0;
-+		break;
-+	case 1:
-+		port_topology->pcs_quad_select = 1;
-+		port_topology->pcs_port = 0;
-+		if (is_muxed)
-+			port_topology->primary_serdes_lane = 2;
-+		else
-+			port_topology->primary_serdes_lane = 4;
-+		break;
-+	case 2:
-+		port_topology->pcs_quad_select = 0;
-+		port_topology->pcs_port = 1;
-+		port_topology->primary_serdes_lane = 1;
-+		break;
-+	case 3:
-+		port_topology->pcs_quad_select = 1;
-+		port_topology->pcs_port = 1;
-+		if (is_muxed)
-+			port_topology->primary_serdes_lane = 3;
-+		else
-+			port_topology->primary_serdes_lane = 5;
-+		break;
-+	case 4:
-+		port_topology->pcs_quad_select = 0;
-+		port_topology->pcs_port = 2;
-+		port_topology->primary_serdes_lane = 2;
-+		break;
-+	case 5:
-+		port_topology->pcs_quad_select = 1;
-+		port_topology->pcs_port = 2;
-+		port_topology->primary_serdes_lane = 6;
-+		break;
-+	case 6:
-+		port_topology->pcs_quad_select = 0;
-+		port_topology->pcs_port = 3;
-+		port_topology->primary_serdes_lane = 3;
-+		break;
-+	case 7:
-+		port_topology->pcs_quad_select = 1;
-+		port_topology->pcs_port = 3;
-+		port_topology->primary_serdes_lane = 7;
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
-+static int ice_map_port_topology_for_qsfp(struct ice_port_topology *port_topology,
-+					  u8 lport, bool is_muxed)
-+{
-+	switch (lport) {
-+	case 0:
-+		port_topology->pcs_quad_select = 0;
-+		port_topology->pcs_port = 0;
-+		port_topology->primary_serdes_lane = 0;
-+		break;
-+	case 1:
-+		port_topology->pcs_quad_select = 1;
-+		port_topology->pcs_port = 0;
-+		if (is_muxed)
-+			port_topology->primary_serdes_lane = 2;
-+		else
-+			port_topology->primary_serdes_lane = 4;
-+		break;
-+	case 2:
-+		port_topology->pcs_quad_select = 0;
-+		port_topology->pcs_port = 1;
-+		port_topology->primary_serdes_lane = 1;
-+		break;
-+	case 3:
-+		port_topology->pcs_quad_select = 1;
-+		port_topology->pcs_port = 1;
-+		if (is_muxed)
-+			port_topology->primary_serdes_lane = 3;
-+		else
-+			port_topology->primary_serdes_lane = 5;
-+		break;
-+	case 4:
-+		port_topology->pcs_quad_select = 0;
-+		port_topology->pcs_port = 2;
-+		port_topology->primary_serdes_lane = 2;
-+		break;
-+	case 5:
-+		port_topology->pcs_quad_select = 1;
-+		port_topology->pcs_port = 2;
-+		port_topology->primary_serdes_lane = 6;
-+		break;
-+	case 6:
-+		port_topology->pcs_quad_select = 0;
-+		port_topology->pcs_port = 3;
-+		port_topology->primary_serdes_lane = 3;
-+		break;
-+	case 7:
-+		port_topology->pcs_quad_select = 1;
-+		port_topology->pcs_port = 3;
-+		port_topology->primary_serdes_lane = 7;
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_get_port_topology - returns physical topology like pcsquad, pcsport,
-+ *                         serdes number
-+ * @hw: pointer to the HW struct
-+ * @lport: logical port for which physical info requested
-+ * @port_topology: buffer to hold port topology
-+ *
-+ * Return: 0 on success, negative on failure.
-+ */
-+static int ice_get_port_topology(struct ice_hw *hw, u8 lport,
-+				 struct ice_port_topology *port_topology)
-+{
-+	struct ice_aqc_get_link_topo cmd = {};
-+	u16 node_handle = 0;
-+	u8 cage_type = 0;
-+	bool is_muxed;
-+	int err;
-+	u8 ctx;
-+
-+	ctx = ICE_AQC_LINK_TOPO_NODE_TYPE_CAGE << ICE_AQC_LINK_TOPO_NODE_TYPE_S;
-+	ctx |= ICE_AQC_LINK_TOPO_NODE_CTX_PORT << ICE_AQC_LINK_TOPO_NODE_CTX_S;
-+	cmd.addr.topo_params.node_type_ctx = ctx;
-+
-+	err = ice_aq_get_netlist_node(hw, &cmd, &cage_type, &node_handle);
-+	if (err)
-+		return -EINVAL;
-+
-+	is_muxed = ice_is_serdes_muxed(hw);
-+
-+	if (cage_type == 0x11 ||	/* SFP+ */
-+	    cage_type == 0x12) {	/* SFP28 */
-+		port_topology->serdes_lane_count = 1;
-+		err = ice_map_port_topology_for_sfp(port_topology, lport, is_muxed);
-+		if (err)
-+			return err;
-+	} else if (cage_type == 0x13 ||	/* QSFP */
-+		   cage_type == 0x14) {	/* QSFP28 */
-+		u8 max_speed = 0;
-+
-+		err = ice_ethtool_get_maxspeed(hw, lport, &max_speed);
-+		if (err)
-+			return err;
-+
-+		if (max_speed == ICE_AQC_PORT_OPT_MAX_LANE_100G)
-+			port_topology->serdes_lane_count = 4;
-+		else if (max_speed == ICE_AQC_PORT_OPT_MAX_LANE_50G)
-+			port_topology->serdes_lane_count = 2;
-+		else
-+			port_topology->serdes_lane_count = 1;
-+
-+		err = ice_map_port_topology_for_qsfp(port_topology, lport, is_muxed);
-+		if (err)
-+			return err;
-+	} else {
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
- static void
- ice_get_regs(struct net_device *netdev, struct ethtool_regs *regs, void *p)
- {
-@@ -4265,6 +4480,94 @@ ice_get_module_eeprom(struct net_device *netdev,
- 	return 0;
- }
- 
-+/**
-+ * ice_get_port_fec_stats - returns FEC correctable, uncorrectable stats per
-+ *                          pcsquad, pcsport
-+ * @hw: pointer to the HW struct
-+ * @pcs_quad: pcsquad for input port
-+ * @pcs_port: pcsport for input port
-+ * @fec_stats: buffer to hold FEC statistics for given port
-+ *
-+ * Return: 0 on success, negative on failure.
-+ */
-+static int ice_get_port_fec_stats(struct ice_hw *hw, u16 pcs_quad, u16 pcs_port,
-+				  struct ethtool_fec_stats *fec_stats)
-+{
-+	u32 fec_uncorr_low_val = 0, fec_uncorr_high_val = 0;
-+	u32 fec_corr_low_val = 0, fec_corr_high_val = 0;
-+	int err;
-+
-+	if (pcs_quad > 1 || pcs_port > 3)
-+		return -EINVAL;
-+
-+	err = ice_aq_get_fec_stats(hw, pcs_quad, pcs_port, ICE_FEC_CORR_LOW,
-+				   &fec_corr_low_val);
-+	if (err)
-+		return err;
-+
-+	err = ice_aq_get_fec_stats(hw, pcs_quad, pcs_port, ICE_FEC_CORR_HIGH,
-+				   &fec_corr_high_val);
-+	if (err)
-+		return err;
-+
-+	err = ice_aq_get_fec_stats(hw, pcs_quad, pcs_port,
-+				   ICE_FEC_UNCORR_LOW,
-+				   &fec_uncorr_low_val);
-+	if (err)
-+		return err;
-+
-+	err = ice_aq_get_fec_stats(hw, pcs_quad, pcs_port,
-+				   ICE_FEC_UNCORR_HIGH,
-+				   &fec_uncorr_high_val);
-+	if (err)
-+		return err;
-+
-+	fec_stats->uncorrectable_blocks.total = (fec_corr_high_val << 16) +
-+						 fec_corr_low_val;
-+	fec_stats->corrected_blocks.total = (fec_uncorr_high_val << 16) +
-+					     fec_uncorr_low_val;
-+	return 0;
-+}
-+
-+/**
-+ * ice_get_fec_stats - returns FEC correctable, uncorrectable stats per netdev
-+ * @netdev: network interface device structure
-+ * @fec_stats: buffer to hold FEC statistics for given port
-+ *
-+ */
-+static void ice_get_fec_stats(struct net_device *netdev,
-+			      struct ethtool_fec_stats *fec_stats)
-+{
-+	struct ice_netdev_priv *np = netdev_priv(netdev);
-+	struct ice_port_topology port_topology;
-+	struct ice_port_info *pi;
-+	struct ice_pf *pf;
-+	struct ice_hw *hw;
-+	int err;
-+
-+	pf = np->vsi->back;
-+	hw = &pf->hw;
-+	pi = np->vsi->port_info;
-+
-+	/* Serdes parameters are not supported if not the PF VSI */
-+	if (np->vsi->type != ICE_VSI_PF || !pi)
-+		return;
-+
-+	err = ice_get_port_topology(hw, pi->lport, &port_topology);
-+	if (err) {
-+		netdev_info(netdev, "Extended register dump failed Lport %d\n",
-+			    pi->lport);
-+		return;
-+	}
-+
-+	/* Get FEC correctable, uncorrectable counter */
-+	err = ice_get_port_fec_stats(hw, port_topology.pcs_quad_select,
-+				     port_topology.pcs_port, fec_stats);
-+	if (err)
-+		netdev_info(netdev, "FEC stats get failed Lport %d Err %d\n",
-+			    pi->lport, err);
-+}
-+
- static void ice_get_eth_mac_stats(struct net_device *netdev,
- 				  struct ethtool_eth_mac_stats *mac_stats)
- {
-@@ -4365,6 +4668,7 @@ static const struct ethtool_ops ice_ethtool_ops = {
- 	.cap_rss_sym_xor_supported = true,
- 	.get_link_ksettings	= ice_get_link_ksettings,
- 	.set_link_ksettings	= ice_set_link_ksettings,
-+	.get_fec_stats		= ice_get_fec_stats,
- 	.get_drvinfo		= ice_get_drvinfo,
- 	.get_regs_len		= ice_get_regs_len,
- 	.get_regs		= ice_get_regs,
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.h b/drivers/net/ethernet/intel/ice/ice_ethtool.h
-index b88e3da06f13..ffc8ad180e61 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.h
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.h
-@@ -9,6 +9,16 @@ struct ice_phy_type_to_ethtool {
- 	u8 link_mode;
- };
- 
-+/* Port topology from lport i.e.
-+ * serdes mapping, pcsquad, macport, cage etc...
-+ */
-+struct ice_port_topology {
-+	u16 pcs_port;
-+	u16 primary_serdes_lane;
-+	u16 serdes_lane_count;
-+	u16 pcs_quad_select;
-+};
-+
- /* Macro to make PHY type to Ethtool link mode table entry.
-  * The index is the PHY type.
-  */
-diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-index 21a00bbac96a..c330a436d11a 100644
---- a/drivers/net/ethernet/intel/ice/ice_type.h
-+++ b/drivers/net/ethernet/intel/ice/ice_type.h
-@@ -72,6 +72,14 @@ enum ice_aq_res_ids {
- 	ICE_GLOBAL_CFG_LOCK_RES_ID
- };
- 
-+enum ice_fec_stats_types {
-+	ICE_FEC_CORR_LOW,
-+	ICE_FEC_CORR_HIGH,
-+	ICE_FEC_UNCORR_LOW,
-+	ICE_FEC_UNCORR_HIGH,
-+	ICE_FEC_MAX
-+};
-+
- /* FW update timeout definitions are in milliseconds */
- #define ICE_NVM_TIMEOUT			180000
- #define ICE_CHANGE_LOCK_TIMEOUT		1000
+-	/* coverity[suspicious_sizeof] */
+ 	root->children = devm_kcalloc(ice_hw_to_dev(hw), hw->max_children[0],
+-				      sizeof(*root), GFP_KERNEL);
++				      sizeof(root), GFP_KERNEL);
+ 	if (!root->children) {
+ 		devm_kfree(ice_hw_to_dev(hw), root);
+ 		return -ENOMEM;
+@@ -186,10 +185,9 @@ ice_sched_add_node(struct ice_port_info *pi, u8 layer,
+ 	if (!node)
+ 		return -ENOMEM;
+ 	if (hw->max_children[layer]) {
+-		/* coverity[suspicious_sizeof] */
+ 		node->children = devm_kcalloc(ice_hw_to_dev(hw),
+ 					      hw->max_children[layer],
+-					      sizeof(*node), GFP_KERNEL);
++					      sizeof(node), GFP_KERNEL);
+ 		if (!node->children) {
+ 			devm_kfree(ice_hw_to_dev(hw), node);
+ 			return -ENOMEM;
 -- 
-2.44.0
+2.30.2
 
