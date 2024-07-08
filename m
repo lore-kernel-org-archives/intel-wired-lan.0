@@ -4,111 +4,128 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 40008C3DA49
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  8 Jul 2024 15:12:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 25507C3271E
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  8 Jul 2024 15:13:11 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 492B840AE0;
-	Mon,  8 Jul 2024 15:12:48 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id EA9DE40AC1;
+	Mon,  8 Jul 2024 15:13:10 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id FrA0FvWS1kb6; Mon,  8 Jul 2024 15:12:47 +0000 (UTC)
+ id Ucs1DHkGu69z; Mon,  8 Jul 2024 15:13:08 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 4AD2E40AE4
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org AAE1540AD8
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1720451567;
-	bh=SpZDXkmcSn4EIzA1VQS79soqTfzKGd09fJ6TArrGyqg=;
-	h=From:Date:To:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Reply-To:Cc:From;
-	b=VVkAStq7VnMDDEzsXBIF32k72DiEBF+60Pr0BxecRPqMLKqULaHYhIAp4zszG13Vc
-	 DZO0X6zNa3wWlIIzJKR4DkB9cg8JZltWUVWCgTGh5mV5uPCTx1jkutV6ckv8x/tg9t
-	 mjjSb6UDxnmrusVsIxGkELQ4neCbvMUe87OC2viCqeAxJn8qGbUmGmbTCCk/MF63kh
-	 fMWmSlbF7HFFa956IE2SWLNxO523VLZ9RQsO8LqlO2htIpsFA7kkCJuyxhq4BKOGWt
-	 /O6p5eUy+K0EyfG29DlRUccYcgBtGags2RiOA8ZY/uB9Kx6qb7xgQGQpguyxfBZ96L
-	 YRahOAWdEJaLg==
+	s=default; t=1720451588;
+	bh=jtkOdZLbSBcLhg6fQJiAqc1TCBWgvkocss3C5ek1odg=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=ZvLhBtIDEpV7a3YQCj62XX26UUz/EK28NxAIyNxHgsr6U00zT/6pIDYbzJu6qS49m
+	 Gmm5Z8nDW+ebnbrUBP+NYbpU2EHwa7yEQXjLtoHk31rZPxl68NiKJy+SL1xwmEQWgu
+	 zhc8udAFq0pHSKwAWUq9khnUhS5AldyKC8LL9Av6NK3VwJxjkaYEaSygKAak/PZiCl
+	 EuWu7nsQ6iQW48g4ZwdI8z1DHv+vFCAkGQOecLyv2r6QQONugNhegFFpjF2dLnz+lk
+	 nGuECHVS90GRW8s6kO1blwFGhMQYO4x0mgB0ungIU5QSNVfk69bLL8bcKxoCC5oaip
+	 jP19vX64knonw==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 4AD2E40AE4;
-	Mon,  8 Jul 2024 15:12:47 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 5E1A81BF239
- for <intel-wired-lan@lists.osuosl.org>; Mon,  8 Jul 2024 09:32:08 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id AAE1540AD8;
+	Mon,  8 Jul 2024 15:13:08 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id D3D961BF348
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  8 Jul 2024 14:37:22 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 47888404F9
- for <intel-wired-lan@lists.osuosl.org>; Mon,  8 Jul 2024 09:32:08 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id C031B811E6
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  8 Jul 2024 14:37:22 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id cxARIbFNKgTm for <intel-wired-lan@lists.osuosl.org>;
- Mon,  8 Jul 2024 09:32:06 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=139.178.84.217;
- helo=dfw.source.kernel.org;
- envelope-from=devnull+rodrigo.cadore.l-acoustics.com@kernel.org;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 7EFE940540
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 7EFE940540
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 7EFE940540
- for <intel-wired-lan@lists.osuosl.org>; Mon,  8 Jul 2024 09:32:06 +0000 (UTC)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by dfw.source.kernel.org (Postfix) with ESMTP id 35C6560B21;
- Mon,  8 Jul 2024 09:32:05 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id D8C8DC116B1;
- Mon,  8 Jul 2024 09:32:04 +0000 (UTC)
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org
- (localhost.localdomain [127.0.0.1])
- by smtp.lore.kernel.org (Postfix) with ESMTP id C094AC3271E;
- Mon,  8 Jul 2024 09:32:04 +0000 (UTC)
-From: Rodrigo Cataldo via B4 Relay
- <devnull+rodrigo.cadore.l-acoustics.com@kernel.org>
-Date: Mon, 08 Jul 2024 11:31:57 +0200
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id oC0HRNCMkNX5 for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  8 Jul 2024 14:37:21 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=40.92.89.31;
+ helo=eur05-db8-obe.outbound.protection.outlook.com;
+ envelope-from=email@millerthomas.de; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 1D53D811D5
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 1D53D811D5
+Received: from EUR05-DB8-obe.outbound.protection.outlook.com
+ (mail-db8eur05olkn2031.outbound.protection.outlook.com [40.92.89.31])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 1D53D811D5
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  8 Jul 2024 14:37:20 +0000 (UTC)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=nLBDO6KAK/pS+bNrIsXiLnCELQuMx9UgG3YfACYFfuE1DuRFblPuxAhunHpsjd3Dqy8A5LJI6JW3WR0BrhqLcmqUfbbMpLK5PLiGyCWjyCUN3B+5SN21+4/RX/KfK9U8HUe0RmN8aYp0ct9W/Qc1Zv60ZKZwF/oBReQ0gq91r/hzqgqUtPEjvsIK5FeLUlh0tLIQOlCRTBOQM7vWq3UfEj56YsZU4Id1RXUYzYuYFpHkj/ghmum7i4uk1ZMazYhqg3kJKyytq+5MhqgaT0Gaq2xAJrqDKh1PblPaRvxF6930Wz8pFPvfBEtWBHAFArsd/w0NXluqnPe/ooXasMnScw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=jtkOdZLbSBcLhg6fQJiAqc1TCBWgvkocss3C5ek1odg=;
+ b=JSTn3lcwE9BUITq0T+FPJ5zNKLiJBejnBWuZ1tfAgFj1tS3iqFehOwTlbuHFp5A6eIOtr4xlgry4WcscVRxibhdfcV7THfvCvHXkMmmQdYZdzJ9xyDPC4wH8jpBKuZY33wGtm7ub1UKrC1HOPhB2vs7l3CmN3p4NhnUDG+QBkS10WHuEfcGQW2Mj86Ct5SzSZDVCYJiAAfxha3wiBHKfNyD5P4gvbl9LPTU+tsH1wYzN8WiP2eeAdsnGfQh78NzRVTy15umx7B/Xmss5ihW49g3KJABnQ2MPvAf6gN7XXLCA5F2TYk5XrjrwO9xyS1BWd89iKIaO1GBD6UTXfsDQAg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
+ dkim=none; arc=none
+Received: from DB9P190MB1937.EURP190.PROD.OUTLOOK.COM (2603:10a6:10:394::19)
+ by PA6P190MB2056.EURP190.PROD.OUTLOOK.COM (2603:10a6:102:3c6::21) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7741.35; Mon, 8 Jul
+ 2024 14:37:17 +0000
+Received: from DB9P190MB1937.EURP190.PROD.OUTLOOK.COM
+ ([fe80::8b4c:1eaa:5ca7:a0ad]) by DB9P190MB1937.EURP190.PROD.OUTLOOK.COM
+ ([fe80::8b4c:1eaa:5ca7:a0ad%7]) with mapi id 15.20.7741.033; Mon, 8 Jul 2024
+ 14:37:17 +0000
+From: Thomas Miller <email@millerthomas.de>
+To: "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>
+Thread-Topic: Power management bug in I226-V Linux kernel driver
+Thread-Index: AQHa0URV1w4xQQ1KCUGEjIUCkdaS8w==
+Date: Mon, 8 Jul 2024 14:37:17 +0000
+Message-ID: <0FAFDAAF-DEAD-4419-A147-D752A35EA67B@millerthomas.de>
+Accept-Language: de-DE, en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-ms-exchange-messagesentrepresentingtype: 1
+x-tmn: [0JI/oD2XX5algCROVY59q6247WAh5+a5]
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: DB9P190MB1937:EE_|PA6P190MB2056:EE_
+x-ms-office365-filtering-correlation-id: 45cc4ba1-2022-45a0-2ae4-08dc9f5b7793
+x-microsoft-antispam: BCL:0;
+ ARA:14566002|8060799006|19110799003|9400799024|461199028|3412199025|4302099013|440099028|1602099012|102099032;
+x-microsoft-antispam-message-info: qFRTYmL0+7m1NyoK1lj3fNb3owwbGp7YKBlaXlWZv43MoUQOOhXRIPz0cRx7tzE5ejPr37s4YZd0N42LqWPUcqg72dLChQJJGZNgjc7s8v0cHEbq8d9w4QXA8Xb0CSAnWR8DAO26+ZpXo3uJuRMN/GfIPiwwPo8bdjHAxfNYXnQpTRV0NbUubLeLCwsg6Qd8bq/zbUaaPGLU+xDBCMAKnQPfSTBWQJ/yI5s07pfHh+sy1K9Qxb8DbfdWNdfq4Jk1Ukx8AOdubhtnIekv5Dqq6+ZKJGVd9pUwQXBo98skDR0v0A3Jnjy8at2eOhkA0d+EmZNtpiF7upUzw0DK77Jw6QUD0zV5CoI8IV34nH9/37+icmdeE0hM7S7DXUUfQ6RnYhJAP6x0ZQXR1zp8rr/lJG2dNCJOuIS78Bqay2MEPy2Pgo3/Tv5c3Ubf+warVrFL/o3nCMH4xZLsAPRN5BlAlLfGSJ/yljUOsymX+5vAnKaj/3RQl0fpWcpu3ttyH1mwO3zanmcHcXGQ8Om3YzH80xt7KMWQy/V32JgksbTjt1z6HgyfYdKoIg5iiVR8LGp2p+jLBu8E4d6WvOx2Dulmzkip98fNs3k+RttTgFeQYPDC6JKxeEzxp3lXdgDtXbHsrTV5++Ohlqf1ipGkwTrl5FGOZ+AzkIzR1niQUOFUN0oLYo3Bb6H4SmZpzJHDhbCHKJcmXllG8jvcBSJYMkJxbfluzeuGdxynAugxygMWnB0Vyw+9EfAdw/dMR/ayL1NjyE8frlFD0GwYNt7fzhrq2g==
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0: =?us-ascii?Q?fEIWBUdX1I797pxEu2jR9kH5sEO1/XRTeTWPbTrgxhKgt+B3JXjoJwzVs4k5?=
+ =?us-ascii?Q?9FhomPdWp8uuxXMde3fx1d8D4wzgLQQckilyUjCB5Sx1ahRYlHxNUIPE6qsA?=
+ =?us-ascii?Q?Lbjzc6qAsOXF0KhujxauzuNrBARhRFq9nRbW5kFDaT6ur38Vxq8AcaFzo+o8?=
+ =?us-ascii?Q?0s0179Gp3NJioB6mhjbWTW/LOGkO2ZJpdGi/Ep4Yjpu5W8dZ1Nd8SUgTXI+h?=
+ =?us-ascii?Q?vqCNPGQpaPgfcnCkuwp9xDVjDZ8KwzbM/TfnxmnDkeRNqozzLBgM8LvewXlJ?=
+ =?us-ascii?Q?78jtvtPv+8HI7FvamG+5zFCgmMj/679r9dCnJxSvdm/d/YNHoqTt26SYz26W?=
+ =?us-ascii?Q?WQQQJnbFLExlrOCYNP3XMCuMcCZQFAumcL/egWigqEDnVHrIiv93ZEoINfEE?=
+ =?us-ascii?Q?PyjFP5fkjxsHYKnlPU8rhskSig/QOLHkZUB6oAR9eFElAPp3FUoYPh+ZK0rM?=
+ =?us-ascii?Q?Li/dcJNeUuqXLpWNZTjBwXHJThJmUKaEFZ6VDgQ1cE70N9rACu7iLNogI3qd?=
+ =?us-ascii?Q?8B1xSfSqiNJXKJL1K44NICH8TwszxBMA8z0DwzinPoxcYlSC89VPNvApuwvr?=
+ =?us-ascii?Q?kZDNf1Y/YrZeGfFQB9lbmO0YKX++YyGlHc4AcKFke9ZnUhehgDW8xJrJDZEV?=
+ =?us-ascii?Q?Xd+6m9mENZNgPR05S7EjuhBKL3R3oqvdb8KM7LQpnUpf6sLU1P1XUhAPX0xp?=
+ =?us-ascii?Q?Eelc9Ux6cOrsQqDjgHKkHAF76Vyq+Xsbc4LCBApUi/GwV5Fp7lUb4LP88wER?=
+ =?us-ascii?Q?LuBZErH/4CTU6nLip98H6AXAViVSz04WdMQ1HCypsebK1E/t1G2GC4QBUOsf?=
+ =?us-ascii?Q?OljAlZrWnFqc7I5bZ2I6vxL/WNGaXAGBLhGc7cqGz+AtTG2D9C4Gpczm0+OH?=
+ =?us-ascii?Q?bG3Q30NXNbeqWzfeLa0ZLbya1LUGhWWhc6bRDtM5R6E0ZAOQqqegxsbVF3x+?=
+ =?us-ascii?Q?4ZaAZs/jX4xocZF3vOqwAIxN9lokcgMeQFQbzxP4A87AJwPqGQvgZ12nr0ID?=
+ =?us-ascii?Q?mZ1g467QPL+fM4W1JflNiC8SdSHqa8OKfBfXClTPiPENQsNCdZK1Fzj8w8wZ?=
+ =?us-ascii?Q?ARFcIQGA42OVObOtblIeCH7dlt9COVioUcf4/tvVsTj64vONhrgjaVDaJiCC?=
+ =?us-ascii?Q?7zXBqMKHTGOZ+NcutBr48INLsx6o3hH5WBbb0qWx0X83kmNolPjGjxPnnW6G?=
+ =?us-ascii?Q?EAWBsyVbh0R0N96P1BfIE1oHIFEiMHVF7rzybchyv0PH+Db1+/S83uZa/1I?=
+ =?us-ascii?Q?=3D?=
+Content-Type: multipart/alternative;
+ boundary="_000_0FAFDAAFDEAD4419A147D752A35EA67Bmillerthomasde_"
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20240708-igc-flush-ptm-request-before-timeout-6-10-v1-1-70e5ebec9efe@l-acoustics.com>
-X-B4-Tracking: v=1; b=H4sIAAyyi2YC/x3NSwqDMBRG4a3IHfdCDDal3UrpwMY/ekETm0cVx
- L03dPhNzjkoIQoSPZqDIr6SJPiK9tKQnXo/gmWoJq10p27qyjJadnNJE6954YhPQcr8hgsRnGV
- BKJkNt4qdgdL2bpwZOqq9NcLJ/n89SbaZPTK9zvMHM7PALoQAAAA=
-To: Jesse Brandeburg <jesse.brandeburg@intel.com>, 
- Tony Nguyen <anthony.l.nguyen@intel.com>, 
- "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
- Richard Cochran <richardcochran@gmail.com>, 
- Vinicius Costa Gomes <vinicius.gomes@intel.com>, 
- Kurt Kanzenbach <kurt.kanzenbach@linutronix.de>, 
- "Christopher S. Hall" <christopher.s.hall@intel.com>
-X-Mailer: b4 0.12.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=11903;
- i=rodrigo.cadore@l-acoustics.com; h=from:subject:message-id;
- bh=Wfg75g71XmXkv4d1mekMWpTpqpPeT5sIegVpLSTXqac=;
- b=owGbwMvMwCGWd67IourLsUDG02pJDGndm4SDe2rWaU5LS9nG91Q5ameo1u2GTUn/a/imP74VF
- 7DqSvuljlIWBjEOBlkxRRb933xOq8uUjDgSJ6+EmcPKBDKEgYtTACZSE8bwP1HI4VDd85nKhh//
- LTjbek16i3PDpzXdZ1ds8LjxaeNxkzKGf3Y7eF7fZmVQcktRZ51/WK306uHtpwpNlbwXhigFsT1
- cyAcA
-X-Developer-Key: i=rodrigo.cadore@l-acoustics.com; a=openpgp;
- fpr=E0F4E67DE69A235AC356157D2DDD1455748BC38F
-X-Endpoint-Received: by B4 Relay for rodrigo.cadore@l-acoustics.com/default
- with auth_id=109
-X-Original-From: Rodrigo Cataldo <rodrigo.cadore@l-acoustics.com>
-X-Mailman-Approved-At: Mon, 08 Jul 2024 15:12:42 +0000
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1720431124;
- bh=PSxQJUpdzgyKLJoY9ztDBUzNUgu33n/mFOB+EZ35Res=;
- h=From:Date:Subject:To:Cc:Reply-To:From;
- b=bxeDCgNEcAlRzBsyoNuXrC7t/SmAs9R3ksxeZnuu8YhJJLTUj2Bj887a1F1cNV359
- P/xZBsGCnGCLtTqROVcHH6A/5NjGp3L/cuPEj3zCIM8nf2ncp4bukEnLYSYxg8I6zB
- WB+++IFF6u9avgtM2FPv+VEPhTs7yMsZbpEY1kKRB6yjALSJTMochxEmZQji+ON4/5
- wDhhrbILuHjIrK0sgYIIOeEEHpaolBtYzZIGcKSnZBZFTDDudQHRkzRzmPaOzPoBIm
- sydRx6cwDKv+g/mAoFkE2kXCbpnOy1JH0/nrQ+mW/sPjZwnziwNwSNyXwxfMUYlR6R
- Vz7DeS3BLF6ig==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=bxeDCgNE
-Subject: [Intel-wired-lan] [PATCH iwl-net] igc: Ensure PTM request is
- completed before timeout has started
+X-OriginatorOrg: sct-15-20-7719-20-msonline-outlook-4ff97.templateTenant
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: DB9P190MB1937.EURP190.PROD.OUTLOOK.COM
+X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg: 00000000-0000-0000-0000-000000000000
+X-MS-Exchange-CrossTenant-Network-Message-Id: 45cc4ba1-2022-45a0-2ae4-08dc9f5b7793
+X-MS-Exchange-CrossTenant-originalarrivaltime: 08 Jul 2024 14:37:17.6338 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
+X-MS-Exchange-CrossTenant-rms-persistedconsumerorg: 00000000-0000-0000-0000-000000000000
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PA6P190MB2056
+X-Mailman-Approved-At: Mon, 08 Jul 2024 15:13:08 +0000
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dmarc=none (p=none dis=none)
+ header.from=millerthomas.de
+Subject: [Intel-wired-lan] Power management bug in I226-V Linux kernel driver
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -121,242 +138,96 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Reply-To: rodrigo.cadore@l-acoustics.com
-Cc: netdev@vger.kernel.org, Rodrigo Cataldo <rodrigo.cadore@l-acoustics.com>,
- intel-wired-lan@lists.osuosl.org, linux-kernel@vger.kernel.org
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Rodrigo Cataldo <rodrigo.cadore@l-acoustics.com>
+--_000_0FAFDAAFDEAD4419A147D752A35EA67Bmillerthomasde_
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-When a PTM is requested via wr32(IGC_PTM_STAT), the operation may only
-be completed by the next read operation (flush). Unfortunately, the next
-read operation in the PTM request loop happens after we have already
-started evaluating the response timeout.
-
-Thus, the following behavior has been observed::
-
-  phc2sys-1655  [010]   103.233752: funcgraph_entry:                    |  igc_ptp_getcrosststamp() {
-  phc2sys-1655  [010]   103.233754: funcgraph_entry:                    |    igc_phc_get_syncdevice_time() {
-  phc2sys-1655  [010]   103.233755: funcgraph_entry:                    |      igc_rd32() {
-  phc2sys-1655  [010]   103.233931: preempt_disable: caller=irq_enter_rcu+0x14 parent=irq_enter_rcu+0x14
-  phc2sys-1655  [010]   103.233932: local_timer_entry: vector=236
-  phc2sys-1655  [010]   103.233932: hrtimer_cancel: hrtimer=0xffff8edeef526118
-  phc2sys-1655  [010]   103.233933: hrtimer_expire_entry: hrtimer=0xffff8edeef526118 now=103200127876 function=tick_nohz_handler/0x0
-
-  ... tick handler ...
-
-  phc2sys-1655  [010]   103.233971: funcgraph_exit:       !  215.559 us |      }
-  phc2sys-1655  [010]   103.233972: funcgraph_entry:                    |      igc_rd32() {
-  phc2sys-1655  [010]   103.234135: funcgraph_exit:       !  164.370 us |      }
-  phc2sys-1655  [010]   103.234136: funcgraph_entry:         1.942 us   |      igc_rd32();
-  phc2sys-1655  [010]   103.234147: console:              igc 0000:03:00.0 enp3s0: Timeout reading IGC_PTM_STAT register
-
-Based on the (simplified) code::
-
-	ctrl = rd32(IGC_PTM_CTRL);
-        /* simplified: multiple writes here */
-	wr32(IGC_PTM_STAT, IGC_PTM_STAT_VALID);
-
-	err = readx_poll_timeout(rd32, IGC_PTM_STAT, stat,
-				 stat, IGC_PTM_STAT_SLEEP,
-				 IGC_PTM_STAT_TIMEOUT);
-	if (err < 0) {
-		netdev_err(adapter->netdev, "Timeout reading IGC_PTM_STAT register\n");
-		return err;
-	}
-
-Where readx_poll_timeout() starts the timeout evaluation before calling
-the rd32() parameter (rd32() is a macro for igc_rd32()).
-
-In the trace shown, the read operation of readx_poll_timeout() (second
-igc_rd32()) took so long that the timeout (IGC_PTM_STAT_VALID) has expired
-and no sleep has been performed.
-
-With this patch, a write flush is added (which is an additional
-igc_rd32() in practice) that can wait for the write before the timeout
-is evaluated::
-
-  phc2sys-1615  [010]    74.517954: funcgraph_entry:                    |  igc_ptp_getcrosststamp() {
-  phc2sys-1615  [010]    74.517956: funcgraph_entry:                    |    igc_phc_get_syncdevicetime() {
-  phc2sys-1615  [010]    74.517957: funcgraph_entry:                    |      igc_rd32() {
-  phc2sys-1615  [010]    74.518127: preempt_disable: caller=irq_enter_rcu+0x14 parent=irq_enter_rcu+0x14
-  phc2sys-1615  [010]    74.518128: local_timer_entry: vector=236
-  phc2sys-1615  [010]    74.518128: hrtimer_cancel: hrtimer=0xffff96466f526118
-  phc2sys-1615  [010]    74.518128: hrtimer_expire_entry: hrtimer=0xffff96466f526118 now=74484007229 function=tick_nohz_handler/0x0
-
-  ... tick handler ...
-
-  phc2sys-1615  [010]    74.518180: funcgraph_exit:       !  222.282 us |      }
-  phc2sys-1615  [010]    74.518181: funcgraph_entry:                    |      igc_rd32() {
-  phc2sys-1615  [010]    74.518349: funcgraph_exit:       !  168.160 us |      }
-  phc2sys-1615  [010]    74.518349: funcgraph_entry:         1.970 us   |      igc_rd32();
-  phc2sys-1615  [010]    74.518352: hrtimer_init: hrtimer=0xffffa6f9413a3940 clockid=CLOCK_MONOTONIC mode=0x0
-  phc2sys-1615  [010]    74.518352: preempt_disable: caller=_raw_spin_lock_irqsave+0x28 parent=hrtimer_start_range_ns+0x56
-  phc2sys-1615  [010]    74.518353: hrtimer_start: hrtimer=0xffffa6f9413a3940 function=hrtimer_wakeup/0x0 expires=74484232878 softexpires=74484231878
-
-  .. hrtimer setup and return ...
-
-  kworker/10:1-242   [010]    74.518382: sched_switch: kworker/10:1:242 [120] W ==> phc2sys:1615 [120]
-  phc2sys-1615  [010]    74.518383: preempt_enable: caller=schedule+0x36 parent=schedule+0x36
-  phc2sys-1615  [010]    74.518384: funcgraph_entry:      !  100.088 us |      igc_rd32();
-  phc2sys-1615  [010]    74.518484: funcgraph_entry:         1.958 us   |      igc_rd32();
-  phc2sys-1615  [010]    74.518488: funcgraph_entry:         2.019 us   |      igc_rd32();
-  phc2sys-1615  [010]    74.518490: funcgraph_entry:         1.956 us   |      igc_rd32();
-  phc2sys-1615  [010]    74.518492: funcgraph_entry:         1.980 us   |      igc_rd32();
-  phc2sys-1615  [010]    74.518494: funcgraph_exit:       !  539.386 us |    }
-
-Now the sleep is called as expected, and the operation succeeds.
-Therefore, regardless of how long it will take for the write to be
-completed, we will poll+sleep at least for the time specified in
-IGC_PTM_STAT_TIMEOUT.
-
-Fixes: a90ec8483732 ("igc: Add support for PTP getcrosststamp()")
-Signed-off-by: Rodrigo Cataldo <rodrigo.cadore@l-acoustics.com>
----
-I have been searching for the proper solution for this PTM issue for a long
-time. The issue was observed on a 13700 (Raptor Lake). We also use a 8500
-(Coffee Lake) that is much less susceptible for this issue, but still
-happens. Both are using I225-LM cards.
-
-For a 24 hours test, idle system, I have observed with 13700::
-
-	number of timeouts in 86400 seconds: 2509
-
-The same test on a 8500::
-
-        number of timeouts in 86400 seconds: 9
-
-Where one PTM request is sent per second. Test was done this script::
-
-  record_multiple_timeout_param()
-  {
-  	local taskset_cpu=$1
-  	local cur_limit=$((SECONDS + LIMIT_SECONDS ))
-  	local timeouts=0
-  
-  	while [ $SECONDS -lt $cur_limit ]
-  	do
-  		REL_TO=$((cur_limit - SECONDS))
-  
-  		timeout $REL_TO taskset $taskset_cpu \
-  			phc2sys -c $ITF_NAME -s CLOCK_REALTIME -O 37 -m 1>/dev/null
-  		if [ $? -eq 255 ]; then
-  			timeouts=$((timeouts + 1))
-  		fi
-  	done
-  	printf "\tnumber of timeouts in %s seconds: %d\n" $LIMIT_SECONDS $timeouts
-  }
-
-  record_multiple_timeout_param $NON_ISOLCPU_MASK
-
-Firmware version for the cards::
-
-  # lshw -class network -json | jq '.[0].product,.[0].configuration.firmware'
-  "Ethernet Controller I225-LM"
-  "1057:8754"
-
-  # lshw -class network -json | jq '.[2].product,.[2].configuration.firmware'
-  "Ethernet Controller I225-LM"
-  "1057:8754
-
-A couple of attempts were made that did not lead to solving the
-issue (disabling ASPM in kernel and boot, using periodic tick), and a couple
-of solutions that worked but that were subpar:
-
-1. The issue was not observed for a phc2sys(8) running on a fully
-   isolated nohz_full core. We do not have the luxury of dedicating a a
-   core for it.
-2. Bumping the IGC_PTM_STAT_TIMEOUT value. Other machines may need
-   another value though.
-3. Retry (multiple times) readx_poll_timeout() in case of failure. This may
-   significantly increase the function latency, because each
-   readx_poll_timeout() can take more than 100 us.
-4. Disabling preemption during the PTM request. Horrible.
-
-For the Coffee Lake machine, the issue tends to be avoided because the
-read does not take so long. Here is basically the same trace using the
-Cofee Lake machine::
-
-  phc2sys-1204  [002]  1778.220288: funcgraph_entry:                    |  igc_ptp_getcrosststamp() {
-  phc2sys-1204  [002]  1778.220290: funcgraph_entry:                    |    igc_phc_get_syncdevicetime() {
-  phc2sys-1204  [002]  1778.220291: funcgraph_entry:                    |      igc_rd32() {
-  phc2sys-1204  [002]  1778.220373: preempt_disable: caller=irq_enter_rcu+0x14 parent=irq_enter_rcu+0x14
-  phc2sys-1204  [002]  1778.220374: local_timer_entry: vector=236
-  phc2sys-1204  [002]  1778.220375: hrtimer_cancel: hrtimer=0xffff894027326118
-  phc2sys-1204  [002]  1778.220376: hrtimer_expire_entry: hrtimer=0xffff894027326118 now=1778228034802 function=tick_nohz_handler/0x0
-
-  ... tick handler ...
-
-  phc2sys-1204  [002]  1778.220411: funcgraph_exit:       !  119.843 us |      }
-  phc2sys-1204  [002]  1778.220412: funcgraph_entry:                    |      igc_rd32() {
-  phc2sys-1204  [002]  1778.220492: funcgraph_exit:       + 80.094 us   |      }
-  phc2sys-1204  [002]  1778.220493: funcgraph_entry:        2.951 us    |      igc_rd32();
-  phc2sys-1204  [002]  1778.220497: hrtimer_init: hrtimer=0xffffa504c0d83aa0 clockid=CLOCK_MONOTONIC mode=0x0
-  phc2sys-1204  [002]  1778.220498: preempt_disable: caller=_raw_spin_lock_irqsave+0x28 parent=hrtimer_start_range_ns+0x56
-  phc2sys-1204  [002]  1778.220499: hrtimer_start: hrtimer=0xffffa504c0d83aa0 function=hrtimer_wakeup/0x0 expires=1778228158866 softexpires=1778228157866
-
-  ... timer setup ....
-
-  phc2sys-1204  [002]  1778.220509: preempt_enable: caller=_raw_spin_unlock_irqrestore+0x2b parent=hrtimer_start_range_ns+0x12d
-  phc2sys-1204  [002]  1778.220511: funcgraph_entry:        7.338 us   |      igc_rd32();
-  phc2sys-1204  [002]  1778.220519: funcgraph_entry:        2.769 us   |      igc_rd32();
-  phc2sys-1204  [002]  1778.220522: funcgraph_entry:        2.798 us   |      igc_rd32();
-  phc2sys-1204  [002]  1778.220525: funcgraph_entry:        2.736 us   |      igc_rd32();
-  phc2sys-1204  [002]  1778.220529: funcgraph_entry:        2.750 us   |      igc_rd32();
-  phc2sys-1204  [002]  1778.220532: funcgraph_exit:       !  242.656 us |    }
-
-For both machines, I observed that the first igc_rd32() after an idle
-period (more than 10us) tends to take significantly more time. I assume
-this is a hardware power-saving technique, but I could not find any
-mention in the manuals. This is very easily observable with an idle
-system running phc2sys, since it will request only once every second.
-
-This is the typical trace of the operation::
-
-  phc2sys-1204  [002]  1749.209397: funcgraph_entry:                   |  igc_ptp_getcrosststamp() {
-  phc2sys-1204  [002]  1749.209398: funcgraph_entry:                   |    igc_phc_get_syncdevicetime() {
-  phc2sys-1204  [002]  1749.209400: funcgraph_entry:      + 81.491 us  |      igc_rd32();
-  phc2sys-1204  [002]  1749.209482: funcgraph_entry:        3.691 us   |      igc_rd32();
-  phc2sys-1204  [002]  1749.209487: funcgraph_entry:        2.942 us   |      igc_rd32();
-  phc2sys-1204  [002]  1749.209490: hrtimer_init: hrtimer=0xffffa504c0d83a00 clockid=CLOCK_MONOTONIC mode=0x0
-  phc2sys-1204  [002]  1749.209491: preempt_disable: caller=_raw_spin_lock_irqsave+0x28 parent=hrtimer_start_range_ns+0x56
-  ... timer setup and it goes on like before ...
-
-The preemption needs to happen for this issue, so that this power-saving
-mode is triggered, making the igc_rd32 'slow enough' so that all of the
-timeout is consumed before the card has time to answer.
-
-I believe flushing the write solves the issue definitely, since the
-write should be completed before the timeout has started. So that, even
-if the timeout is consumed by a slow read operation, the write has been
-received before and the card had time to process the request.
----
- drivers/net/ethernet/intel/igc/igc_ptp.c | 4 ++++
- 1 file changed, 4 insertions(+)
-
-diff --git a/drivers/net/ethernet/intel/igc/igc_ptp.c b/drivers/net/ethernet/intel/igc/igc_ptp.c
-index 1bb026232efc..d7269e4f1a21 100644
---- a/drivers/net/ethernet/intel/igc/igc_ptp.c
-+++ b/drivers/net/ethernet/intel/igc/igc_ptp.c
-@@ -1005,6 +1005,10 @@ static int igc_phc_get_syncdevicetime(ktime_t *device,
- 		 * VALID bit.
- 		 */
- 		wr32(IGC_PTM_STAT, IGC_PTM_STAT_VALID);
-+		/* Ensure the hardware receives the ptm request before the
-+		 * response timeout starts.
-+		 */
-+		wrfl();
- 
- 		err = readx_poll_timeout(rd32, IGC_PTM_STAT, stat,
- 					 stat, IGC_PTM_STAT_SLEEP,
-
----
-base-commit: 0005b2dc43f96b93fc5b0850d7ca3f7aeac9129c
-change-id: 20240705-igc-flush-ptm-request-before-timeout-6-10-f6e02c96f6d4
-
-Best regards,
--- 
-Rodrigo Cataldo <rodrigo.cadore@l-acoustics.com>
+Hello,
 
 
+
+I've noticed that there's a bug in the Ubuntu 24.04 Linux kernel driver in =
+for the I226-V ethernet controller. The device crashes, when a user tries t=
+o utilize power management capabilities of the hardware.
+
+The devs of popular power management tool powertop has also acknowledged th=
+is bug on Github<https://github.com/fenrus75/powertop/issues/143>. Same for=
+ the manufacture of the Odroid H4 devices.
+
+There's an open bug report<https://bugzilla.kernel.org/show_bug.cgi?id=3D21=
+8499> from February 2024 over on Bugzilla referring to the same issue, but =
+it has yet to be fixed.
+
+Best
+
+--_000_0FAFDAAFDEAD4419A147D752A35EA67Bmillerthomasde_
+Content-Type: text/html; charset="us-ascii"
+Content-ID: <76C55ED789276841BD290AFA49052530@EURP190.PROD.OUTLOOK.COM>
+Content-Transfer-Encoding: quoted-printable
+
+<html>
+<head>
+<meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Dus-ascii"=
+>
+</head>
+<body style=3D"overflow-wrap: break-word; -webkit-nbsp-mode: space; line-br=
+eak: after-white-space;">
+<p class=3D"sub_section_element_selectors" style=3D"font-size: 16px; box-si=
+zing: border-box; margin: 0px 0px 8px; caret-color: rgb(38, 38, 38); color:=
+ rgb(38, 38, 38); font-family: intel-clear;">
+<span class=3D"sub_section_element_selectors" style=3D"box-sizing: border-b=
+ox;">Hello,</span></p>
+<p class=3D"sub_section_element_selectors" style=3D"font-size: 16px; box-si=
+zing: border-box; margin: 0px 0px 8px; caret-color: rgb(38, 38, 38); color:=
+ rgb(38, 38, 38); font-family: intel-clear;">
+&nbsp;</p>
+<p class=3D"sub_section_element_selectors" style=3D"font-size: 16px; box-si=
+zing: border-box; margin: 0px 0px 8px; caret-color: rgb(38, 38, 38); color:=
+ rgb(38, 38, 38); font-family: intel-clear;">
+<span class=3D"sub_section_element_selectors" style=3D"box-sizing: border-b=
+ox;">I've noticed that there's a bug in the Ubuntu 24.04 Linux kernel drive=
+r in for the I226-V ethernet controller. The device crashes, when a user tr=
+ies to utilize power management capabilities
+ of the hardware.</span></p>
+<p class=3D"sub_section_element_selectors" style=3D"font-size: 16px; box-si=
+zing: border-box; margin: 0px 0px 8px; caret-color: rgb(38, 38, 38); color:=
+ rgb(38, 38, 38); font-family: intel-clear;">
+<span class=3D"sub_section_element_selectors" style=3D"box-sizing: border-b=
+ox;">The devs of popular power management tool powertop has also&nbsp;</spa=
+n><a href=3D"https://github.com/fenrus75/powertop/issues/143" target=3D"_se=
+lf" rel=3D"nofollow noopener noreferrer" class=3D"sub_section_element_selec=
+tors" style=3D"box-sizing: border-box; color: rgb(0, 104, 181); border-bott=
+om-width: 1px; border-bottom-style: dashed; border-bottom-color: rgb(0, 104=
+, 181); padding-bottom: 0px; text-decoration: none !important;"><span class=
+=3D"sub_section_element_selectors" style=3D"box-sizing: border-box;">acknow=
+ledged
+ this bug on Github</span></a><span class=3D"sub_section_element_selectors"=
+ style=3D"box-sizing: border-box;">. Same for the manufacture of the Odroid=
+ H4 devices.</span></p>
+<p class=3D"sub_section_element_selectors" style=3D"font-size: 16px; box-si=
+zing: border-box; margin: 0px 0px 8px; caret-color: rgb(38, 38, 38); color:=
+ rgb(38, 38, 38); font-family: intel-clear;">
+<span class=3D"sub_section_element_selectors" style=3D"box-sizing: border-b=
+ox;">There's an open&nbsp;</span><a href=3D"https://bugzilla.kernel.org/sho=
+w_bug.cgi?id=3D218499" target=3D"_self" rel=3D"nofollow noopener noreferrer=
+" class=3D"sub_section_element_selectors" style=3D"box-sizing: border-box; =
+color: rgb(0, 104, 181); border-bottom-width: 1px; border-bottom-style: das=
+hed; border-bottom-color: rgb(0, 104, 181); padding-bottom: 0px; text-decor=
+ation: none !important;"><span class=3D"sub_section_element_selectors" styl=
+e=3D"box-sizing: border-box;">bug
+ report</span></a><span class=3D"sub_section_element_selectors" style=3D"bo=
+x-sizing: border-box;">&nbsp;from February 2024 over on Bugzilla referring =
+to the same issue, but it has yet to be fixed.&nbsp;</span></p>
+<p class=3D"sub_section_element_selectors" style=3D"font-size: 16px; box-si=
+zing: border-box; margin: 0px 0px 8px; caret-color: rgb(38, 38, 38); color:=
+ rgb(38, 38, 38); font-family: intel-clear;">
+<br style=3D"box-sizing: border-box;">
+<span class=3D"sub_section_element_selectors" style=3D"box-sizing: border-b=
+ox;">Best</span></p>
+</body>
+</html>
+
+--_000_0FAFDAAFDEAD4419A147D752A35EA67Bmillerthomasde_--
