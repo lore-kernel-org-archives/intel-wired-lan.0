@@ -4,84 +4,93 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 85563C3271E
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  8 Jul 2024 13:55:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5A947C3271E
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  8 Jul 2024 14:16:08 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 3469C40A50;
-	Mon,  8 Jul 2024 13:55:37 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 17DCE40AB6;
+	Mon,  8 Jul 2024 14:16:08 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id RSJB0AAUnBol; Mon,  8 Jul 2024 13:55:36 +0000 (UTC)
+ id 83d9T5hoMook; Mon,  8 Jul 2024 14:16:07 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 53A8140396
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 2617A40A8E
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1720446936;
-	bh=lfL9pKqna9Hvw5zif8kfCtYL7191qcWg/aKdG9oibyU=;
-	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=ByXfYqecNlDRuku3Z/pjwXWHnjw9dPC+X4nr60Gi4JbSRtsnCt0g/h+o496vlxlqb
-	 kzPY8kB1JEL7Rx0beU8pJ/FgJ88WezfwoHkuEsfoGkz3M3sIsasa3Kwmrv4zK6rtUK
-	 wNHHbVfrgZcO2f4EJlopKtRCId3u2Xc4mvPvoBWYnE43nuJg0XHRCC4fLwkLP9XPQ0
-	 X+eg322MYQuohUxyHtH50xGkh1OgzQUKk8swsAPMB0NCyH3MR7K+7KQgp0i9ZrHxq7
-	 RO87o7mxAItarWZUGbsbtq/t77KRpOj4yQRs0btqP7UALG5eHvUlVntcgd5f4YbIP7
-	 6qlMlzg0tlQ2w==
+	s=default; t=1720448167;
+	bh=3zv08E7yJten6Q0XNjP3RGsLrLs0Dc2iO4b1G7d3mvA=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=WNK6snhqwH823N+QcIZSs3RcmEJ2uNcvtSgmu8HVrIM6AqDLAFCfnqcVGvBOScyOW
+	 fTokcNl/3Fl9ydCt1KcDM2lduud//5xF3B/w/jfYF4iE5QgUq/X3YP3Z+ruSOa/eY8
+	 CsegkhFV+fGzQVvfXvL/+b/mT1CVzDCZgsKKE5/K6KvqSAT46tn55tuDA/NfNV9KCL
+	 YAro1+v+UBGcjiu4LB6wPys75hlu5S2LejZbsk1m0ioRzhSs90JTfqOvPTx9hu0ncz
+	 D6lAMief/DgafpBKaYpEIEgnDY99JMX6xnkwpuF+0PLfCRKfUW2f3lksgUxpVTW2G4
+	 AmR1NoY+G8XDw==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 53A8140396;
-	Mon,  8 Jul 2024 13:55:36 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 2617A40A8E;
+	Mon,  8 Jul 2024 14:16:07 +0000 (UTC)
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 6AFC91BF484
- for <intel-wired-lan@lists.osuosl.org>; Mon,  8 Jul 2024 13:55:34 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 898D11BF42E
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  8 Jul 2024 14:16:05 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 5709740396
- for <intel-wired-lan@lists.osuosl.org>; Mon,  8 Jul 2024 13:55:34 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 732AE40A9E
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  8 Jul 2024 14:16:05 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id WgvQ0oTAQ94N for <intel-wired-lan@lists.osuosl.org>;
- Mon,  8 Jul 2024 13:55:33 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=139.178.84.217;
- helo=dfw.source.kernel.org; envelope-from=horms@kernel.org;
+ id 84EmoaMiMrn6 for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  8 Jul 2024 14:16:04 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.12;
+ helo=mgamail.intel.com; envelope-from=anil.samal@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 89E3940359
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 89E3940359
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 89E3940359
- for <intel-wired-lan@lists.osuosl.org>; Mon,  8 Jul 2024 13:55:33 +0000 (UTC)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by dfw.source.kernel.org (Postfix) with ESMTP id B6FB860BBB;
- Mon,  8 Jul 2024 13:55:32 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 921D9C116B1;
- Mon,  8 Jul 2024 13:55:31 +0000 (UTC)
-Date: Mon, 8 Jul 2024 14:55:29 +0100
-From: Simon Horman <horms@kernel.org>
-To: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
-Message-ID: <20240708135529.GW1481495@kernel.org>
-References: <20240704122655.39671-1-piotr.kwapulinski@intel.com>
- <20240704122655.39671-6-piotr.kwapulinski@intel.com>
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 2A8E040498
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 2A8E040498
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.12])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 2A8E040498
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  8 Jul 2024 14:16:03 +0000 (UTC)
+X-CSE-ConnectionGUID: OSJIg94dROylCZAsJIDJhA==
+X-CSE-MsgGUID: TgfegJlHRae+3c4T4huZUw==
+X-IronPort-AV: E=McAfee;i="6700,10204,11127"; a="29051628"
+X-IronPort-AV: E=Sophos;i="6.09,192,1716274800"; d="scan'208";a="29051628"
+Received: from orviesa006.jf.intel.com ([10.64.159.146])
+ by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 08 Jul 2024 07:16:03 -0700
+X-CSE-ConnectionGUID: qoPmqMDYQXezNsBdsV1zCw==
+X-CSE-MsgGUID: Pr8pk/5pRjinwgteqxOHEg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.09,192,1716274800"; d="scan'208";a="47946961"
+Received: from c3-1-server.sj.intel.com ([10.232.18.246])
+ by orviesa006-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 08 Jul 2024 07:16:03 -0700
+From: Anil Samal <anil.samal@intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Date: Mon,  8 Jul 2024 07:09:17 -0700
+Message-ID: <20240708141555.1327670-1-anil.samal@intel.com>
+X-Mailer: git-send-email 2.44.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240704122655.39671-6-piotr.kwapulinski@intel.com>
+Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1720446932;
- bh=os3BeGXRPspxFXn3m4faOMU69cBInTEvRSHgs+1ecoU=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=MIHpFdgQSiWMM0oTbm6Z9TYcbE3hTsm0MzdzBuMb1yH53OLsNpV0dO+TMk/xgVpdv
- H/DVwDAoVvUIlfxYSasXsF1vusoorJHGFeI3Uo4OwvAH3v9ESzYCmU6ldYq32HgQF9
- JDP5vm1TIdoZAhP+OyplorLBhO+gy7PJMzKfKgpow9O1nDFsMFhmQ8MESbHtHVlit1
- Bj4zmwNWcAEw8h+XGgLBl8CKalpK7ZNmc3z928kd339ZtvgrBEES7/vVMnjC+7ZoKv
- OyAT4xDhchiGGrg5v7anCOFra0KVKtNHZNULtfjDxutMoNnZrfKW6DWfi5+vto+iuW
- QsAyLgw1TiQLg==
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1720448164; x=1751984164;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=CCx1ly+cK03YqLmNWgVOtp7jCYEU8Jb5LkCU0N+JVVw=;
+ b=WYlzVwrH/zHh02VKN43+MKM8n9k6AtKkyon2vnBW+6UgzoQFs4jPL79A
+ HZgcQ+sm5bnIY0CnN1CmJT+dpDBfMmE00HpkNlV1HnyXNHHF0QOxDTk7P
+ aQYTm32wGP19Yz/PGSVucl6Sd/BPq1GjJlO6Y5xeO1GRgpBggj2mTwIo2
+ Vfy9gh3WXNG4O+eEoZoj5LumXIbQC0ji8yyjX7RjT91J3ebQ6QCxXSzec
+ TWlp3N4pvyxAFeluHa8zd/tG8q95Jonx0ixOFdy8ay4+o3Wf3UFMT6BGL
+ 6Pvbzm+v3ZbZN/Uyyn2QzVB+DbuD4i7GrHZlN9SAo1JuaM1RKee9ZvxbP
+ w==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none)
- header.from=kernel.org
+ header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=MIHpFdgQ
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next v8 5/7] ixgbe: Add ixgbe_x540
- multiple header inclusion protection
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=WYlzVwrH
+Subject: [Intel-wired-lan] [PATCH iwl-next v4 0/3] ice: Support to dump PHY
+ config, FEC
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,14 +103,95 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, intel-wired-lan@lists.osuosl.org
+Cc: netdev@vger.kernel.org, lukasz.czapnik@intel.com,
+ Anil Samal <anil.samal@intel.com>, leszek.pepiak@intel.com,
+ anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
+ jacob.e.keller@intel.com, kuba@kernel.org
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Thu, Jul 04, 2024 at 02:26:53PM +0200, Piotr Kwapulinski wrote:
-> Required to adopt x540 specific functions by E610 device.
-> 
-> Signed-off-by: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
+Implementation to dump PHY configuration and FEC statistics to
+facilitate link level debugging of customer issues. Implementation has
+two parts
 
-Reviewed-by: Simon Horman <horms@kernel.org>
+a.     Serdes equalization
+        # ethtool  -d eth0
+        Output:
+        Offset          Values
+        ------          ------
+        0x0000:         00 00 00 00 03 00 00 00 05 00 00 00 01 08 00 40
+        0x0010:         01 00 00 40 00 00 39 3c 01 00 00 00 00 00 00 00
+        0x0020:         00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+        ...
+        0x01f0:         01 00 00 00 ef be ad de 8f 00 00 00 00 00 00 00
+        0x0200:         00 00 00 00 ef be ad de 00 00 00 00 00 00 00 00
+        0x0210:         00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+        0x0220:         00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+        0x0230:         00 00 00 00 00 00 00 00 00 00 00 00 fa ff 00 00
+        0x0240:         06 00 00 00 03 00 00 00 00 00 00 00 00 00 00 00
+        0x0250:         0f b0 0f b0 00 00 00 00 00 00 00 00 00 00 00 00
+        0x0260:         00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+        0x0270:         00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+        0x0280:         00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+        0x0290:         00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+        0x02a0:         00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+        0x02b0:         00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+        0x02c0:         00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+        0x02d0:         00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+        0x02e0:         00 00 00 00 00 00 00 00 00 00 00 00
+Current implementation appends 176 bytes i.e. 44 bytes * 4 serdes lane.
+For port with 2 serdes lane, first 88 bytes are valid values and
+remaining 88 bytes are filled with zero. Similarly for port with 1
+serdes lane, first 44 bytes are valid and remaining 132 bytes are marked
+zero.
+
+Each set of serdes equalizer parameter (i.e. set of 44 bytes) follows
+below order
+    a. rx_equalization_pre2
+    b. rx_equalization_pre1
+    c. rx_equalization_post1
+    d. rx_equalization_bflf
+    e. rx_equalization_bfhf
+    f. rx_equalization_drate
+    g. tx_equalization_pre1
+    h. tx_equalization_pre3
+    i. tx_equalization_atten
+    j. tx_equalization_post1
+    k. tx_equalization_pre2
+Where each individual equalizer parameter is of 4 bytes. As ethtool
+prints values as individual bytes, for little endian machine these
+values will be in reverse byte order.
+
+b.    FEC block counts
+        # ethtool  -I --show-fec eth0
+        Output:
+         FEC parameters for eth0:
+        Supported/Configured FEC encodings: Auto RS BaseR
+        Active FEC encoding: RS
+        Statistics:
+        corrected_blocks: 0
+         uncorrectable_blocks: 0
+
+This series do following:
+Patch 1 - Implementation to support user provided flag for side band
+queue command.
+Patch 2 - Currently driver does not have a way to derive serdes lane
+number, pcs quad , pcs port from port number.So we introduced a
+mechanism to derive above info.
+          Ethtool interface extension to include FEC statistics counter.
+Patch 3 - Ethtool interface extension to include serdes equalizer
+output.
+v3 -> v4 : Minor review comment update.
+ 
+ .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  51 ++
+ drivers/net/ethernet/intel/ice/ice_common.c   |  99 +++-
+ drivers/net/ethernet/intel/ice/ice_common.h   |  28 +-
+ drivers/net/ethernet/intel/ice/ice_ethtool.c  | 442 +++++++++++++++++-
+ drivers/net/ethernet/intel/ice/ice_ethtool.h  |  29 ++
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.c   |  20 +-
+ drivers/net/ethernet/intel/ice/ice_type.h     |   8 +
+ 7 files changed, 662 insertions(+), 15 deletions(-)
+
+-- 
+2.44.0
 
