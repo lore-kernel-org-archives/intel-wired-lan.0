@@ -1,94 +1,95 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D0698C2BD09
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  9 Jul 2024 11:45:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F0F9CC2BD09
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  9 Jul 2024 12:36:46 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 8029B81A6A;
-	Tue,  9 Jul 2024 11:45:32 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 1F5C2411D0;
+	Tue,  9 Jul 2024 12:36:46 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id flCfRTktIsw2; Tue,  9 Jul 2024 11:45:30 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id vRPhkwauvkhW; Tue,  9 Jul 2024 12:36:45 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7B1D081A23
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 38E62410DE
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1720525530;
-	bh=jm3ODG3ZXhRnMAq9LfETPFFzkvRZPci9BvJaLbrhC+o=;
-	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=IFNgy5rv//gBeyaucvCAz4Kn/rqbHbbY6xHO416W2qc7a7LAe3AxTe/LJ+DLiUXTV
-	 cfagFQ7p35W+/qEQtxeUQd8jiY4VgytkuG2StD/CXlVk6yjdhbElI5QOe1194nI8Sx
-	 0FUI5ySYc2VywVSmqWQhY2wwXaK7W2bGUu79V1Geis9/EigEBBIXR76HmNiPqscXL7
-	 C0dEAOjObtClB4+OpcP1tqrOi89HrbpaCfaYAImcBsLYrkkWueLL6am/irG4fW1YjM
-	 ESobm+Rb4rhn7iIDb8kePWX6V6dEpsfgGqj+g63t8gn4dGTDeewRhMnMDdh+Lu1jIa
-	 uDLbA/1ybIuVQ==
+	s=default; t=1720528605;
+	bh=i/10i6kYCnWKwjhXItYeUiH30BY1oNejWUOCez9M8kw=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=HMzsmJeLghmKPjxpAE6Rw8XuNtPA1u4DPzgSgZvAmFZC1t+beeeX/AvR4YJ4SAkwT
+	 HMMRvGRpK+X/zs2oULNfUopQJuVyKlM4YbVrVutNW+O5XAIB1eojX2OS2DgLtZpfv5
+	 HzoX1peczDY/EzkIMOtYv5xx9IoTPUhITbqpDnJAo6wkn6qeKcEwALxrTvNhW3J8kf
+	 GD2ObtCqjB+Gmyhknfob7T+9/W8KkCY/xdWa7TdLbMeHTdcmRbJ6i8xvebWGpXSeU8
+	 p6c0jLjLCJdfsI3l/fMIrVXMYBF4eGjSXRKFfK1T2DGliOSn/FTqd0qHR/w1TzFIMR
+	 UtQsJEFSI2ZYA==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 7B1D081A23;
-	Tue,  9 Jul 2024 11:45:30 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id F24301BF59A
- for <intel-wired-lan@lists.osuosl.org>; Tue,  9 Jul 2024 11:45:28 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 38E62410DE;
+	Tue,  9 Jul 2024 12:36:45 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 774F01BF275
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  9 Jul 2024 12:36:43 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id DEB3860AFD
- for <intel-wired-lan@lists.osuosl.org>; Tue,  9 Jul 2024 11:45:28 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 6212D4012A
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  9 Jul 2024 12:36:43 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id j1sIAulAKESb for <intel-wired-lan@lists.osuosl.org>;
- Tue,  9 Jul 2024 11:45:27 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.10;
- helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 7684F60A65
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7684F60A65
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.10])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 7684F60A65
- for <intel-wired-lan@lists.osuosl.org>; Tue,  9 Jul 2024 11:45:27 +0000 (UTC)
-X-CSE-ConnectionGUID: K2AkzmmgR8WLEiKPy1Kh4Q==
-X-CSE-MsgGUID: GAj/vGG4S6+GvI4dSqZugw==
-X-IronPort-AV: E=McAfee;i="6700,10204,11127"; a="35209370"
-X-IronPort-AV: E=Sophos;i="6.09,194,1716274800"; d="scan'208";a="35209370"
-Received: from orviesa008.jf.intel.com ([10.64.159.148])
- by orvoesa102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 09 Jul 2024 04:45:26 -0700
-X-CSE-ConnectionGUID: 6sy9HhjcQl20TaXh+bEzJA==
-X-CSE-MsgGUID: D/60cqQ/QfyXehjOzrecZA==
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id Z8CH2kU7NA-u for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  9 Jul 2024 12:36:42 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.20;
+ helo=mgamail.intel.com; envelope-from=karol.kolacinski@intel.com;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 726DC400B5
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 726DC400B5
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.20])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 726DC400B5
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  9 Jul 2024 12:36:42 +0000 (UTC)
+X-CSE-ConnectionGUID: 9ombbdOeSDO0MRrlKQKG7Q==
+X-CSE-MsgGUID: DDjaktMWSvmksdUlCNaRFA==
+X-IronPort-AV: E=McAfee;i="6700,10204,11127"; a="17598156"
+X-IronPort-AV: E=Sophos;i="6.09,195,1716274800"; d="scan'208";a="17598156"
+Received: from orviesa010.jf.intel.com ([10.64.159.150])
+ by orvoesa112.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 09 Jul 2024 05:36:41 -0700
+X-CSE-ConnectionGUID: svmgPpBORcOAyNmkgJiTWg==
+X-CSE-MsgGUID: QPsGzXLARcGPEJ+yAhGLHg==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.09,194,1716274800"; d="scan'208";a="48553564"
-Received: from lkp-server01.sh.intel.com (HELO 68891e0c336b) ([10.239.97.150])
- by orviesa008.jf.intel.com with ESMTP; 09 Jul 2024 04:45:26 -0700
-Received: from kbuild by 68891e0c336b with local (Exim 4.96)
- (envelope-from <lkp@intel.com>) id 1sR9Hf-000WdB-04
- for intel-wired-lan@lists.osuosl.org; Tue, 09 Jul 2024 11:45:23 +0000
-Date: Tue, 09 Jul 2024 19:44:25 +0800
-From: kernel test robot <lkp@intel.com>
-To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Message-ID: <202407091923.M0Lpoq8x-lkp@intel.com>
-User-Agent: s-nail v14.9.24
+X-IronPort-AV: E=Sophos;i="6.09,195,1716274800"; d="scan'208";a="47776092"
+Received: from kkolacin-desk1.igk.intel.com ([10.102.102.132])
+ by orviesa010.jf.intel.com with ESMTP; 09 Jul 2024 05:36:40 -0700
+From: Karol Kolacinski <karol.kolacinski@intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Date: Tue,  9 Jul 2024 14:34:54 +0200
+Message-ID: <20240709123629.666151-6-karol.kolacinski@intel.com>
+X-Mailer: git-send-email 2.45.2
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1720525527; x=1752061527;
- h=date:from:to:subject:message-id;
- bh=iIDeV64rIIlfqaRJNjF4UbxErrDpUt5dGj0kO5LpKYk=;
- b=Ko9C68aQLtzfGfiMhJY/nOWunxr3+31iYAqerczL/Z8i5i1izxiuZHKH
- mZp//5znwz1ipWgohgXQfW0M3dSI6tMT9aOuabvYpkod0seJhBLYQiGGV
- e52AdunuVaPhK3Ozq6AxJsr18BxKvWgNa1Lvzul61PFOhxClbh6/lxktg
- 0sjNZil+lWQojCMr6iUf2qMhuXo3bzVX6xsG1mJi/XV2qRQULZ+fjv+O8
- RVd6oYxFtsye7ZRN7P0IdJ7OViY4n2ky6RnP+2XF9K1fa3EmmRrnvm6p9
- xf1IjmAlU8KmqtUjKQnynB+QXZzZryeRoblOV0P5nUH1s17LFB1TePut1
- g==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ t=1720528602; x=1752064602;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=XhSywQ0BcjcGguonn7oHKVbbArBG1xSAZzm3ujv8N4Y=;
+ b=gSh/HvF03dsK8DoCVb0v+/s/ikBXWSWnWZYuj2REh5SDtfPwRvEvPdOj
+ eJjO89x6eyAk0iZK5EQ7nWJspph1fqcFgTiSExfNAjUGTbsuY5GPF2734
+ bb4J2RKE1XcqBSVmp7tikbfDDBvguoi/MxqbGLlo3pe1bsiuMDh7eY/XN
+ WH2Op9nnDxP6Q5scbGqeWAwSHQSXS3TD016fJlwI29ns/Yd7ji5FhhNhJ
+ GIKaTzKVxfmFlWS1IutedASc7iI6AAMYY2fRaStZRWB3U3Y6xS8k1UhS0
+ VNeBbQUvBA8cOLH5ftZa6MskLY/5CcoT7PAygYKrMP1oOWkmhXpzfoshq
+ w==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=Ko9C68aQ
-Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
- 0a0291597afb4ed573416c3ccb743f43040af6db
+ header.s=Intel header.b=gSh/HvF0
+Subject: [Intel-wired-lan] [PATCH iwl-next 0/4] ice: Implement PTP support
+ for E830 devices
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,215 +102,41 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
+Cc: netdev@vger.kernel.org, Karol Kolacinski <karol.kolacinski@intel.com>,
+ anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
-branch HEAD: 0a0291597afb4ed573416c3ccb743f43040af6db  ice: Fix recipe read procedure
+Add specific functions and definitions for E830 devices to enable
+PTP support.
+Refactor processing of timestamping interrupt and cross timestamp
+to avoid code redundancy.
 
-elapsed time: 1188m
+Jacob Keller (1):
+  ice: combine cross timestamp functions for E82x and E830
 
-configs tested: 193
-configs skipped: 4
+Karol Kolacinski (2):
+  ice: Process TSYN IRQ in a separate function
+  ice: Add timestamp ready bitmap for E830 products
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Michal Michalik (1):
+  ice: Implement PTP support for E830 devices
 
-tested configs:
-alpha                            alldefconfig   gcc-13.2.0
-alpha                             allnoconfig   gcc-13.2.0
-alpha                            allyesconfig   gcc-13.2.0
-alpha                               defconfig   gcc-13.2.0
-arc                              allmodconfig   gcc-13.2.0
-arc                               allnoconfig   gcc-13.2.0
-arc                              allyesconfig   gcc-13.2.0
-arc                                 defconfig   gcc-13.2.0
-arc                   randconfig-001-20240709   gcc-13.2.0
-arc                   randconfig-002-20240709   gcc-13.2.0
-arc                           tb10x_defconfig   gcc-13.2.0
-arm                              allmodconfig   gcc-13.2.0
-arm                               allnoconfig   gcc-13.2.0
-arm                              allyesconfig   gcc-13.2.0
-arm                                 defconfig   gcc-13.2.0
-arm                      integrator_defconfig   gcc-13.2.0
-arm                          ixp4xx_defconfig   gcc-13.2.0
-arm                         nhk8815_defconfig   gcc-13.2.0
-arm                   randconfig-001-20240709   gcc-13.2.0
-arm                   randconfig-002-20240709   gcc-13.2.0
-arm                   randconfig-003-20240709   gcc-13.2.0
-arm                   randconfig-004-20240709   gcc-13.2.0
-arm64                            allmodconfig   clang-19
-arm64                            allmodconfig   gcc-13.2.0
-arm64                             allnoconfig   gcc-13.2.0
-arm64                               defconfig   gcc-13.2.0
-arm64                 randconfig-001-20240709   gcc-13.2.0
-arm64                 randconfig-002-20240709   gcc-13.2.0
-arm64                 randconfig-003-20240709   gcc-13.2.0
-arm64                 randconfig-004-20240709   gcc-13.2.0
-csky                              allnoconfig   gcc-13.2.0
-csky                                defconfig   gcc-13.2.0
-csky                  randconfig-001-20240709   gcc-13.2.0
-csky                  randconfig-002-20240709   gcc-13.2.0
-hexagon                          allmodconfig   clang-19
-hexagon                          allyesconfig   clang-19
-i386                             allmodconfig   clang-18
-i386                             allmodconfig   gcc-13
-i386                              allnoconfig   clang-18
-i386                              allnoconfig   gcc-13
-i386                             allyesconfig   clang-18
-i386                             allyesconfig   gcc-13
-i386         buildonly-randconfig-001-20240709   gcc-11
-i386         buildonly-randconfig-002-20240709   gcc-11
-i386         buildonly-randconfig-003-20240709   gcc-11
-i386         buildonly-randconfig-004-20240709   gcc-11
-i386         buildonly-randconfig-005-20240709   gcc-11
-i386         buildonly-randconfig-006-20240709   gcc-11
-i386                                defconfig   clang-18
-i386                  randconfig-001-20240709   gcc-11
-i386                  randconfig-002-20240709   gcc-11
-i386                  randconfig-003-20240709   gcc-11
-i386                  randconfig-004-20240709   gcc-11
-i386                  randconfig-005-20240709   gcc-11
-i386                  randconfig-006-20240709   gcc-11
-i386                  randconfig-011-20240709   gcc-11
-i386                  randconfig-012-20240709   gcc-11
-i386                  randconfig-013-20240709   gcc-11
-i386                  randconfig-014-20240709   gcc-11
-i386                  randconfig-015-20240709   gcc-11
-i386                  randconfig-016-20240709   gcc-11
-loongarch                        allmodconfig   gcc-13.2.0
-loongarch                         allnoconfig   gcc-13.2.0
-loongarch                           defconfig   gcc-13.2.0
-loongarch             randconfig-001-20240709   gcc-13.2.0
-loongarch             randconfig-002-20240709   gcc-13.2.0
-m68k                             allmodconfig   gcc-13.2.0
-m68k                              allnoconfig   gcc-13.2.0
-m68k                             allyesconfig   gcc-13.2.0
-m68k                       bvme6000_defconfig   gcc-13.2.0
-m68k                                defconfig   gcc-13.2.0
-microblaze                       allmodconfig   gcc-13.2.0
-microblaze                        allnoconfig   gcc-13.2.0
-microblaze                       allyesconfig   gcc-13.2.0
-microblaze                          defconfig   gcc-13.2.0
-mips                              allnoconfig   gcc-13.2.0
-mips                         cobalt_defconfig   gcc-13.2.0
-mips                           jazz_defconfig   gcc-13.2.0
-mips                      malta_kvm_defconfig   gcc-13.2.0
-mips                    maltaup_xpa_defconfig   gcc-13.2.0
-nios2                         3c120_defconfig   gcc-13.2.0
-nios2                             allnoconfig   gcc-13.2.0
-nios2                               defconfig   gcc-13.2.0
-nios2                 randconfig-001-20240709   gcc-13.2.0
-nios2                 randconfig-002-20240709   gcc-13.2.0
-openrisc                          allnoconfig   gcc-13.2.0
-openrisc                         allyesconfig   gcc-13.2.0
-openrisc                            defconfig   gcc-13.2.0
-openrisc                    or1ksim_defconfig   gcc-13.2.0
-parisc                           allmodconfig   gcc-13.2.0
-parisc                            allnoconfig   gcc-13.2.0
-parisc                           allyesconfig   gcc-13.2.0
-parisc                              defconfig   gcc-13.2.0
-parisc                randconfig-001-20240709   gcc-13.2.0
-parisc                randconfig-002-20240709   gcc-13.2.0
-parisc64                            defconfig   gcc-13.2.0
-powerpc                          allmodconfig   gcc-13.2.0
-powerpc                           allnoconfig   gcc-13.2.0
-powerpc                          allyesconfig   clang-19
-powerpc                          allyesconfig   gcc-13.2.0
-powerpc                   lite5200b_defconfig   gcc-13.2.0
-powerpc                      mgcoge_defconfig   gcc-13.2.0
-powerpc                    mvme5100_defconfig   gcc-13.2.0
-powerpc                      pcm030_defconfig   gcc-13.2.0
-powerpc                     powernv_defconfig   gcc-13.2.0
-powerpc                      ppc44x_defconfig   gcc-13.2.0
-powerpc                         ps3_defconfig   gcc-13.2.0
-powerpc               randconfig-001-20240709   gcc-13.2.0
-powerpc               randconfig-002-20240709   gcc-13.2.0
-powerpc               randconfig-003-20240709   gcc-13.2.0
-powerpc                     redwood_defconfig   gcc-13.2.0
-powerpc                      tqm8xx_defconfig   gcc-13.2.0
-powerpc64             randconfig-001-20240709   gcc-13.2.0
-powerpc64             randconfig-002-20240709   gcc-13.2.0
-powerpc64             randconfig-003-20240709   gcc-13.2.0
-riscv                            allmodconfig   clang-19
-riscv                            allmodconfig   gcc-13.2.0
-riscv                             allnoconfig   gcc-13.2.0
-riscv                            allyesconfig   clang-19
-riscv                            allyesconfig   gcc-13.2.0
-riscv                               defconfig   gcc-13.2.0
-riscv                 randconfig-001-20240709   gcc-13.2.0
-riscv                 randconfig-002-20240709   gcc-13.2.0
-s390                             allmodconfig   clang-19
-s390                              allnoconfig   clang-19
-s390                              allnoconfig   gcc-13.2.0
-s390                             allyesconfig   clang-19
-s390                             allyesconfig   gcc-13.2.0
-s390                                defconfig   gcc-13.2.0
-s390                  randconfig-001-20240709   gcc-13.2.0
-s390                  randconfig-002-20240709   gcc-13.2.0
-sh                               allmodconfig   gcc-13.2.0
-sh                                allnoconfig   gcc-13.2.0
-sh                               allyesconfig   gcc-13.2.0
-sh                                  defconfig   gcc-13.2.0
-sh                        dreamcast_defconfig   gcc-13.2.0
-sh                ecovec24-romimage_defconfig   gcc-13.2.0
-sh                        edosk7760_defconfig   gcc-13.2.0
-sh                            hp6xx_defconfig   gcc-13.2.0
-sh                    randconfig-001-20240709   gcc-13.2.0
-sh                    randconfig-002-20240709   gcc-13.2.0
-sh                          rsk7203_defconfig   gcc-13.2.0
-sh                          rsk7269_defconfig   gcc-13.2.0
-sh                           se7206_defconfig   gcc-13.2.0
-sh                           se7619_defconfig   gcc-13.2.0
-sh                             shx3_defconfig   gcc-13.2.0
-sparc                            allmodconfig   gcc-13.2.0
-sparc64                          alldefconfig   gcc-13.2.0
-sparc64                             defconfig   gcc-13.2.0
-sparc64               randconfig-001-20240709   gcc-13.2.0
-sparc64               randconfig-002-20240709   gcc-13.2.0
-um                               allmodconfig   gcc-13.2.0
-um                                allnoconfig   clang-17
-um                                allnoconfig   gcc-13.2.0
-um                               allyesconfig   gcc-13.2.0
-um                                  defconfig   gcc-13.2.0
-um                             i386_defconfig   gcc-13.2.0
-um                    randconfig-001-20240709   gcc-13.2.0
-um                    randconfig-002-20240709   gcc-13.2.0
-um                           x86_64_defconfig   gcc-13.2.0
-x86_64                            allnoconfig   clang-18
-x86_64                           allyesconfig   clang-18
-x86_64       buildonly-randconfig-001-20240709   gcc-11
-x86_64       buildonly-randconfig-002-20240709   gcc-11
-x86_64       buildonly-randconfig-003-20240709   gcc-11
-x86_64       buildonly-randconfig-004-20240709   gcc-11
-x86_64       buildonly-randconfig-005-20240709   gcc-11
-x86_64       buildonly-randconfig-006-20240709   gcc-11
-x86_64                              defconfig   clang-18
-x86_64                              defconfig   gcc-13
-x86_64                randconfig-001-20240709   gcc-11
-x86_64                randconfig-002-20240709   gcc-11
-x86_64                randconfig-003-20240709   gcc-11
-x86_64                randconfig-004-20240709   gcc-11
-x86_64                randconfig-005-20240709   gcc-11
-x86_64                randconfig-006-20240709   gcc-11
-x86_64                randconfig-011-20240709   gcc-11
-x86_64                randconfig-012-20240709   gcc-11
-x86_64                randconfig-013-20240709   gcc-11
-x86_64                randconfig-014-20240709   gcc-11
-x86_64                randconfig-015-20240709   gcc-11
-x86_64                randconfig-016-20240709   gcc-11
-x86_64                randconfig-071-20240709   gcc-11
-x86_64                randconfig-072-20240709   gcc-11
-x86_64                randconfig-073-20240709   gcc-11
-x86_64                randconfig-074-20240709   gcc-11
-x86_64                randconfig-075-20240709   gcc-11
-x86_64                randconfig-076-20240709   gcc-11
-x86_64                          rhel-8.3-rust   clang-18
-xtensa                            allnoconfig   gcc-13.2.0
-xtensa                randconfig-001-20240709   gcc-13.2.0
-xtensa                randconfig-002-20240709   gcc-13.2.0
-xtensa                    xip_kc705_defconfig   gcc-13.2.0
+ drivers/net/ethernet/intel/Kconfig            |  10 +-
+ drivers/net/ethernet/intel/ice/ice_common.c   |  11 +
+ drivers/net/ethernet/intel/ice/ice_common.h   |   1 +
+ .../net/ethernet/intel/ice/ice_hw_autogen.h   |  12 +
+ drivers/net/ethernet/intel/ice/ice_main.c     |  25 +-
+ drivers/net/ethernet/intel/ice/ice_osdep.h    |   3 +
+ drivers/net/ethernet/intel/ice/ice_ptp.c      | 354 ++++++++++++------
+ drivers/net/ethernet/intel/ice/ice_ptp.h      |   9 +-
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.c   | 197 +++++++++-
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.h   |  25 +-
+ drivers/net/ethernet/intel/ice/ice_type.h     |   1 +
+ 11 files changed, 493 insertions(+), 155 deletions(-)
 
+
+base-commit: 529314adcbceca0e0ec72b3ea94fe4a54ae61ca6
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+2.45.2
+
