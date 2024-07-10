@@ -4,95 +4,96 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 04799C3DA42
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 10 Jul 2024 20:40:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8462EC3DA42
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 10 Jul 2024 20:40:38 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id B800C83B29;
-	Wed, 10 Jul 2024 20:40:32 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 578AD83ED8;
+	Wed, 10 Jul 2024 20:40:38 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id qfb4yT-VmlnE; Wed, 10 Jul 2024 20:40:31 +0000 (UTC)
+ id feOS1g3LOHr0; Wed, 10 Jul 2024 20:40:36 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 97A6983EC1
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 69F1283ED9
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1720644031;
-	bh=uXWeI1Ix4k2tjl7Nrn/tQhO+lKenmSjirLKYevvrJbc=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=4q2CkJNLIBJCkwH12AHUnO0/GsvuHtqaoVmRj141ZqH3A0bgZAscDhj+AAMCvkaw0
-	 Hza8CiIViEB16SZ2X/whmOWLEskXOyZL3zo7h+XYb+z1t+Aw49g8bncXqNdXTwJEH0
-	 bllIxqlWxCFqDNlC5G74uUwSXMJIHVMgD/goy9sanbNlCkTO0Dt3s8jGDj3RaXcx8r
-	 FJiok6tOPh50xlyGmuSzXPSEA4Q8eqJXMYnkjGJT27E4gzekkKskxM2b+zfDd86OV3
-	 wYlsmKMfRoXccyBRAEX/cl6caezLO0ewUwKTa6B766mrGKVS391cxYKNlY6l9sdrWh
-	 KDqJv6GRHIifw==
+	s=default; t=1720644036;
+	bh=v7S5bZj6Smv4KMcC+zYe+SvsqhP6NdcPHD2LfAhAsFE=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=sSzB7ZToWOWX1WC3oEaDtEd1EJty2NsfYytNMHeoQfoDfvPUIGIc7eWoLvK9dEaJ8
+	 P2sxC6m6kYWoCL5YGlVNHD69U2RswJt4Niazn4qOxfl1S2F5cqAxcCtkcbA4hV3OAu
+	 gn3A10BNVZMUC9GrjT7f1I3BO1dHtt4cegHgT2RF8ZwucUNw3Gq0ocVT6Yozq5yACf
+	 Sh3Du26YH52IPs4Z4SZsDoE8KCOIzzKV5JRILh8RKsWcTgp0wt37ssSBoinXXnXJ5N
+	 v5wNRS1SqFD1O9yrcb6rczXBgn/0fryyHFg34oQNysDor3J8YVTak/alfk/8uTdqEl
+	 A0/XjE7WAFuoA==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 97A6983EC1;
-	Wed, 10 Jul 2024 20:40:31 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 69F1283ED9;
+	Wed, 10 Jul 2024 20:40:36 +0000 (UTC)
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id DF6E51BF573
- for <intel-wired-lan@lists.osuosl.org>; Wed, 10 Jul 2024 20:40:30 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 80BF31BF573
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 10 Jul 2024 20:40:34 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id D90B7607C1
- for <intel-wired-lan@lists.osuosl.org>; Wed, 10 Jul 2024 20:40:30 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 7B0AC60824
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 10 Jul 2024 20:40:34 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id jTs7zIHSpFsS for <intel-wired-lan@lists.osuosl.org>;
- Wed, 10 Jul 2024 20:40:29 +0000 (UTC)
+ id Ly3qux2kUzzy for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 10 Jul 2024 20:40:33 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.13;
  helo=mgamail.intel.com; envelope-from=ahmed.zaki@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 5ABB26079C
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 5ABB26079C
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 82D106079C
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 82D106079C
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.13])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 5ABB26079C
- for <intel-wired-lan@lists.osuosl.org>; Wed, 10 Jul 2024 20:40:28 +0000 (UTC)
-X-CSE-ConnectionGUID: WOsYOyBZRjOP1jdrXtp5yw==
-X-CSE-MsgGUID: QPBwzgKiS0KZxnA8whOUyw==
-X-IronPort-AV: E=McAfee;i="6700,10204,11129"; a="29153191"
-X-IronPort-AV: E=Sophos;i="6.09,198,1716274800"; d="scan'208";a="29153191"
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 82D106079C
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 10 Jul 2024 20:40:33 +0000 (UTC)
+X-CSE-ConnectionGUID: W8J/b4J1SySiaI62b/uKfw==
+X-CSE-MsgGUID: rr/tCTwuTnqQFqn1PEdhsg==
+X-IronPort-AV: E=McAfee;i="6700,10204,11129"; a="29153198"
+X-IronPort-AV: E=Sophos;i="6.09,198,1716274800"; d="scan'208";a="29153198"
 Received: from fmviesa008.fm.intel.com ([10.60.135.148])
  by orvoesa105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 10 Jul 2024 13:40:28 -0700
-X-CSE-ConnectionGUID: eUyphcNhRDyVvOnfq7k+pA==
-X-CSE-MsgGUID: KJ5eS+4fTDu13v8aN4s8xw==
+ 10 Jul 2024 13:40:33 -0700
+X-CSE-ConnectionGUID: xfSXFTPxQwK0YUzaNcmYsA==
+X-CSE-MsgGUID: kpJS8rkEQdOEQohL1HV5Bw==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.09,198,1716274800"; d="scan'208";a="48301022"
+X-IronPort-AV: E=Sophos;i="6.09,198,1716274800"; d="scan'208";a="48301048"
 Received: from klitkey1-mobl1.ger.corp.intel.com (HELO azaki-desk1.intel.com)
  ([10.245.246.184])
  by fmviesa008-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 10 Jul 2024 13:40:25 -0700
+ 10 Jul 2024 13:40:28 -0700
 From: Ahmed Zaki <ahmed.zaki@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Wed, 10 Jul 2024 14:40:02 -0600
-Message-ID: <20240710204015.124233-1-ahmed.zaki@intel.com>
+Date: Wed, 10 Jul 2024 14:40:03 -0600
+Message-ID: <20240710204015.124233-2-ahmed.zaki@intel.com>
 X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20240710204015.124233-1-ahmed.zaki@intel.com>
+References: <20240710204015.124233-1-ahmed.zaki@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1720644030; x=1752180030;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=9bph5gzLgIIBD2qhi3TPTyP9potYaqXrVxQccxz4HH0=;
- b=cWbSmCs43/4oltCeY5C/sTxPtRwUZCSQqY9QyZf5QIzgv4brRQLtaY6P
- faedqEjw2pDnJTm0z+J4I9ZvkApcMQ8tzsre1jCKkm7yESObqdpCHJanW
- A6RgZ/dWkj2IJaNWTooq0Xzkp17VHe5IDHliRU4/Cggk10BIaCyv34FNi
- y8/yrETlsOBdwBT58KsTbN2y2dTgbY5sNcfjgRFJPgdpI0prNlxLx3jRW
- ezJMhnMgDWlNqoJVlnHiaVuLXTOeAhmpDRiUULxxkhUTVBsqcpuh/iBDj
- ZPPhIOVMu/Z5vDKb8X9KkqRCaeFeYjnE+1Xed2LX8pdK9iLHeFq6BnEci
+ t=1720644034; x=1752180034;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=KXn99Ja/GQc0sh6ezDS5ANa9hvw8zKZqLe4hthd+CQo=;
+ b=m0jEA8a9IK/Q65IR+YJVDCiLcosM601/V84lxRXfp+599nhs33XUFSxI
+ je1Pt8tRSatPVNhQJljlgB/5+yGIoSlr6J/Gb177MSj1aqFIBci6hNYhg
+ wWlWVvIg+W5HmqV/A3Tf44YhKOPIsTz/zZ95dgkocChWycEU97iTmpmHR
+ sVnk02B65h2AyrdHqWUN3Q3zwfDtsCiHgz9r4KSW+cVIm/gVz+1nrhew+
+ aTGRE0RDOe9d1vKDc/aueNGxe/kDcYCmM3wYjp90AQfllHMkk2n15sUSV
+ jz+WPfgC1QTW9PVfOjrMxnpVc015BXgr0UNOKMy8eB5WSPhTsnDy5/GA4
  w==;
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=cWbSmCs4
-Subject: [Intel-wired-lan] [PATCH iwl-next v3 00/13] ice: iavf: add support
- for TC U32 filters on VFs
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=m0jEA8a9
+Subject: [Intel-wired-lan] [PATCH iwl-next v3 01/13] ice: add parser create
+ and destroy skeleton
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,101 +106,119 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, anthony.l.nguyen@intel.com,
- Ahmed Zaki <ahmed.zaki@intel.com>, horms@kernel.org
+Cc: Wojciech Drewek <wojciech.drewek@intel.com>, netdev@vger.kernel.org,
+ Ahmed Zaki <ahmed.zaki@intel.com>,
+ Marcin Szycik <marcin.szycik@linux.intel.com>, anthony.l.nguyen@intel.com,
+ horms@kernel.org, Junfeng Guo <junfeng.guo@intel.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The Intel® Ethernet 800 Series is designed with a pipeline that has
-an on-chip programmable capability called Dynamic Device Personalization
-(DDP). A DDP package is loaded by the driver during probe time. The DDP
-package programs functionality in both the parser and switching blocks in
-the pipeline, allowing dynamic support for new and existing protocols.
-Once the pipeline is configured, the driver can identify the protocol and
-apply any HW action in different stages, for example, direct packets to
-desired hardware queues (flow director), queue groups or drop.  
+From: Junfeng Guo <junfeng.guo@intel.com>
 
-Patches 1-8 introduce a DDP package parser API that enables different
-pipeline stages in the driver to learn the HW parser capabilities from 
-the DDP package that is downloaded to HW. The parser library takes raw
-packet patterns and masks (in binary) indicating the packet protocol fields
-to be matched and generates the final HW profiles that can be applied at
-the required stage. With this API, raw flow filtering for FDIR or RSS
-could be done on new protocols or headers without any driver or Kernel
-updates (only need to update the DDP package). These patches were submitted
-before [1] but were not accepted mainly due to lack of a user.
+Add new parser module which can parse a packet in binary and generate
+information like ptype, protocol/offset pairs and flags which can be later
+used to feed the FXP profile creation directly.
 
-Patches 9-11 extend the virtchnl support to allow the VF to request raw
-flow director filters. Upon receiving the raw FDIR filter request, the PF
-driver allocates and runs a parser lib instance and generates the hardware
-profile definitions required to program the FDIR stage. These were also
-submitted before [2].
+Add skeleton of the create and destroy APIs:
+ice_parser_create()
+ice_parser_destroy()
 
-Finally, patches 12 and 13 add TC U32 filter support to the iavf driver.
-Using the parser API, the ice driver runs the raw patterns sent by the
-user and then adds a new profile to the FDIR stage associated with the VF's
-VSI. Refer to examples in patch 13 commit message.
-
-[1]: Link: https://lore.kernel.org/netdev/20230904021455.3944605-1-junfeng.guo@intel.com/
-[2]: Link: https://lists.osuosl.org/pipermail/intel-wired-lan/Week-of-Mon-20230814/036333.html 
-
+Reviewed-by: Marcin Szycik <marcin.szycik@linux.intel.com>
+Reviewed-by: Wojciech Drewek <wojciech.drewek@intel.com>
+Signed-off-by: Qi Zhang <qi.z.zhang@intel.com>
+Signed-off-by: Junfeng Guo <junfeng.guo@intel.com>
+Co-developed-by: Ahmed Zaki <ahmed.zaki@intel.com>
+Signed-off-by: Ahmed Zaki <ahmed.zaki@intel.com>
 ---
-v3:
-  - Remove header inclusion re-order in ice_vf_lib.c (patch 11).
-  - Fix couple of errors reported by smatch:
-      - https://lore.kernel.org/all/202407070634.aTz9Naa1-lkp@intel.com/
-      - https://lore.kernel.org/all/202406100753.38qaQzo9-lkp@intel.com/
-  - Add "Return:" description in kernel-docs for all new functions.
-  - Use new macro ICE_MI_GBDM_GENMASK_ULL for better readability (patch 2)
-  - Remove unnecessary casts in ice_parser.c and ice_parser_rt.c. 
-
-v2:
-  - No changes, just cc netdev
-
-Ahmed Zaki (2):
-  iavf: refactor add/del FDIR filters
-  iavf: add support for offloading tc U32 cls filters
-
-Junfeng Guo (11):
-  ice: add parser create and destroy skeleton
-  ice: parse and init various DDP parser sections
-  ice: add debugging functions for the parser sections
-  ice: add parser internal helper functions
-  ice: add parser execution main loop
-  ice: support turning on/off the parser's double vlan mode
-  ice: add UDP tunnels support to the parser
-  ice: add API for parser profile initialization
-  virtchnl: support raw packet in protocol header
-  ice: add method to disable FDIR SWAP option
-  ice: enable FDIR filters from raw binary patterns for VFs
-
- drivers/net/ethernet/intel/iavf/iavf.h        |   30 +
- .../net/ethernet/intel/iavf/iavf_ethtool.c    |   59 +-
- drivers/net/ethernet/intel/iavf/iavf_fdir.c   |   89 +-
- drivers/net/ethernet/intel/iavf/iavf_fdir.h   |   13 +-
- drivers/net/ethernet/intel/iavf/iavf_main.c   |  148 +-
- .../net/ethernet/intel/iavf/iavf_virtchnl.c   |   25 +-
- drivers/net/ethernet/intel/ice/Makefile       |    2 +
- drivers/net/ethernet/intel/ice/ice_common.h   |    1 +
- drivers/net/ethernet/intel/ice/ice_ddp.c      |   10 +-
- drivers/net/ethernet/intel/ice/ice_ddp.h      |   13 +
- .../net/ethernet/intel/ice/ice_flex_pipe.c    |  100 +-
- .../net/ethernet/intel/ice/ice_flex_pipe.h    |    7 +-
- drivers/net/ethernet/intel/ice/ice_flow.c     |  108 +-
- drivers/net/ethernet/intel/ice/ice_flow.h     |    5 +
- drivers/net/ethernet/intel/ice/ice_parser.c   | 2440 +++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_parser.h   |  540 ++++
- .../net/ethernet/intel/ice/ice_parser_rt.c    |  862 ++++++
- drivers/net/ethernet/intel/ice/ice_type.h     |    1 +
- drivers/net/ethernet/intel/ice/ice_vf_lib.h   |    8 +
- drivers/net/ethernet/intel/ice/ice_virtchnl.c |    4 +
- .../ethernet/intel/ice/ice_virtchnl_fdir.c    |  404 ++-
- include/linux/avf/virtchnl.h                  |   13 +-
- 22 files changed, 4792 insertions(+), 90 deletions(-)
+ drivers/net/ethernet/intel/ice/Makefile     |  1 +
+ drivers/net/ethernet/intel/ice/ice_common.h |  1 +
+ drivers/net/ethernet/intel/ice/ice_parser.c | 32 +++++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_parser.h | 13 +++++++++
+ 4 files changed, 47 insertions(+)
  create mode 100644 drivers/net/ethernet/intel/ice/ice_parser.c
  create mode 100644 drivers/net/ethernet/intel/ice/ice_parser.h
- create mode 100644 drivers/net/ethernet/intel/ice/ice_parser_rt.c
 
+diff --git a/drivers/net/ethernet/intel/ice/Makefile b/drivers/net/ethernet/intel/ice/Makefile
+index 03500e28ac99..23fa3f7f36ef 100644
+--- a/drivers/net/ethernet/intel/ice/Makefile
++++ b/drivers/net/ethernet/intel/ice/Makefile
+@@ -28,6 +28,7 @@ ice-y := ice_main.o	\
+ 	 ice_vlan_mode.o \
+ 	 ice_flex_pipe.o \
+ 	 ice_flow.o	\
++	 ice_parser.o    \
+ 	 ice_idc.o	\
+ 	 devlink/devlink.o	\
+ 	 devlink/devlink_port.o \
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
+index 40dc735dc25c..e03475408a02 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.h
++++ b/drivers/net/ethernet/intel/ice/ice_common.h
+@@ -10,6 +10,7 @@
+ #include "ice_type.h"
+ #include "ice_nvm.h"
+ #include "ice_flex_pipe.h"
++#include "ice_parser.h"
+ #include <linux/avf/virtchnl.h>
+ #include "ice_switch.h"
+ #include "ice_fdir.h"
+diff --git a/drivers/net/ethernet/intel/ice/ice_parser.c b/drivers/net/ethernet/intel/ice/ice_parser.c
+new file mode 100644
+index 000000000000..6c50164efae0
+--- /dev/null
++++ b/drivers/net/ethernet/intel/ice/ice_parser.c
+@@ -0,0 +1,32 @@
++// SPDX-License-Identifier: GPL-2.0
++/* Copyright (C) 2024 Intel Corporation */
++
++#include "ice_common.h"
++
++/**
++ * ice_parser_create - create a parser instance
++ * @hw: pointer to the hardware structure
++ *
++ * Return: a pointer to the allocated parser instance or ERR_PTR
++ * in case of error.
++ */
++struct ice_parser *ice_parser_create(struct ice_hw *hw)
++{
++	struct ice_parser *p;
++
++	p = kzalloc(sizeof(*p), GFP_KERNEL);
++	if (!p)
++		return ERR_PTR(-ENOMEM);
++
++	p->hw = hw;
++	return p;
++}
++
++/**
++ * ice_parser_destroy - destroy a parser instance
++ * @psr: pointer to a parser instance
++ */
++void ice_parser_destroy(struct ice_parser *psr)
++{
++	kfree(psr);
++}
+diff --git a/drivers/net/ethernet/intel/ice/ice_parser.h b/drivers/net/ethernet/intel/ice/ice_parser.h
+new file mode 100644
+index 000000000000..09ed380eee32
+--- /dev/null
++++ b/drivers/net/ethernet/intel/ice/ice_parser.h
+@@ -0,0 +1,13 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/* Copyright (C) 2024 Intel Corporation */
++
++#ifndef _ICE_PARSER_H_
++#define _ICE_PARSER_H_
++
++struct ice_parser {
++	struct ice_hw *hw; /* pointer to the hardware structure */
++};
++
++struct ice_parser *ice_parser_create(struct ice_hw *hw);
++void ice_parser_destroy(struct ice_parser *psr);
++#endif /* _ICE_PARSER_H_ */
 -- 
 2.43.0
 
