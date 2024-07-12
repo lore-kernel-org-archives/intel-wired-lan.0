@@ -4,71 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CCB23C3DA4D
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 12 Jul 2024 09:45:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EEF34C2BD09
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 12 Jul 2024 09:45:04 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 87E4041445;
-	Fri, 12 Jul 2024 09:45:02 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id B1FCA41433;
+	Fri, 12 Jul 2024 09:45:04 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id D_ScLQTZ8cB7; Fri, 12 Jul 2024 09:45:01 +0000 (UTC)
+ id GmqrWgNEmM23; Fri, 12 Jul 2024 09:45:03 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 24BBC41449
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 738E241443
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1720777501;
-	bh=8Db8/5WlawP29b4oZ0f2K4zI1gi0FEJ9DXo8874PsSw=;
+	s=default; t=1720777502;
+	bh=NH5dYx3rLMDYPz2p7McuGRsfH0KZsgv/oNqnchuWTpU=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=25Kgzc2wQmOubIWWjKD/pEo3EOLtz0L4wAnfkAtQ33s3/acPTrKf59j4nwQjjLLcF
-	 K3fhic738Mf0+9hAVY3ekQAudum8pEGfRL43chtB1mGpwK03tHlTeHlxYKKYza23Qa
-	 mBZTQ+6qO4pM0OEHL7Q1AErxrMALGKqH2dgSDQ63PiLZ9HEND/V1nNkDC39zJg5Nup
-	 Q9n+IuoEHjUY5jkeZQ8SeLsGJyHZ3IPXRPWEXkdnMtKKluLeAX6JksCMCnLAs2zgFC
-	 60Kn0lvODlLxziGrYGmRK4t8+cEXupxm1tF6V1tZOmHiAonWUzga2wA/L7OLVJ+2t8
-	 MFSnf3gYAnYTA==
+	b=nQcJvq5mxrE8pURQMPK615Stuc17jxytEHsL1Qcw9s2Ell6FKPSbe8t/og0RENdzc
+	 UuWpi7G4nf9OxU6H+0nmBzrP7j+tsO5P0SQWA7J8Vjk/a3+6tSS/TxT1V0WJ0heG/W
+	 XuQC6sh4KRr4xrJxGEW1TUvrB9EUEPDyOqXMayJoM91FfP/93iiPUihXysdTfAkaIC
+	 aTHfVyVt0IE8qmsIlx2HhR8yKSAoZKBsKCtpV2oVo7tVbdexB/1Uhs/TQ+BeOd6M1N
+	 46FsKBM1GXhCSOSmSm0SK045ypTZIYzVG5hROTRL/Jal8FbNPobQn0YdLheQF68RDL
+	 vYBu2361eZBfA==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 24BBC41449;
-	Fri, 12 Jul 2024 09:45:01 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 738E241443;
+	Fri, 12 Jul 2024 09:45:02 +0000 (UTC)
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id D77CE1BF5A9
- for <intel-wired-lan@lists.osuosl.org>; Fri, 12 Jul 2024 09:44:57 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 3D28C1BF5A9
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 12 Jul 2024 09:44:58 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id C27F1412DB
- for <intel-wired-lan@lists.osuosl.org>; Fri, 12 Jul 2024 09:44:57 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 354F2412D7
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 12 Jul 2024 09:44:58 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 9kc9_rXIrF0u for <intel-wired-lan@lists.osuosl.org>;
- Fri, 12 Jul 2024 09:44:56 +0000 (UTC)
+ id 9XA80SteVB_s for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 12 Jul 2024 09:44:57 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.17;
  helo=mgamail.intel.com; envelope-from=mateusz.polchlopek@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 5D9C6412F1
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 5D9C6412F1
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org EA472412D8
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org EA472412D8
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.17])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 5D9C6412F1
+ by smtp2.osuosl.org (Postfix) with ESMTPS id EA472412D8
  for <intel-wired-lan@lists.osuosl.org>; Fri, 12 Jul 2024 09:44:56 +0000 (UTC)
-X-CSE-ConnectionGUID: tBUuFH7aQm692CGAp61+QA==
-X-CSE-MsgGUID: 3APRQ+AMTk2iExFCRqds2g==
-X-IronPort-AV: E=McAfee;i="6700,10204,11130"; a="18076978"
-X-IronPort-AV: E=Sophos;i="6.09,202,1716274800"; d="scan'208";a="18076978"
+X-CSE-ConnectionGUID: swyK3PhTQdeJLF0cIfHIkQ==
+X-CSE-MsgGUID: IHPwOvqnT2O5R3e5UBe8Pw==
+X-IronPort-AV: E=McAfee;i="6700,10204,11130"; a="18076989"
+X-IronPort-AV: E=Sophos;i="6.09,202,1716274800"; d="scan'208";a="18076989"
 Received: from orviesa007.jf.intel.com ([10.64.159.147])
  by fmvoesa111.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 12 Jul 2024 02:44:55 -0700
-X-CSE-ConnectionGUID: 5fZ/DPAWT960SFHytyJDIw==
-X-CSE-MsgGUID: kNVkbb8lSAyM3LyaS5fyEQ==
+ 12 Jul 2024 02:44:56 -0700
+X-CSE-ConnectionGUID: LmuiAUkbS7aoEVH0XucLFA==
+X-CSE-MsgGUID: kPDmDBWcTTKU/dUtYYaJXA==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.09,202,1716274800"; d="scan'208";a="49524312"
+X-IronPort-AV: E=Sophos;i="6.09,202,1716274800"; d="scan'208";a="49524316"
 Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by orviesa007.jf.intel.com with ESMTP; 12 Jul 2024 02:44:51 -0700
+ by orviesa007.jf.intel.com with ESMTP; 12 Jul 2024 02:44:52 -0700
 Received: from fedora.igk.intel.com (Metan_eth.igk.intel.com [10.123.220.124])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id 141AA135F0;
- Fri, 12 Jul 2024 10:44:49 +0100 (IST)
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id 23E6D27BAD;
+ Fri, 12 Jul 2024 10:44:51 +0100 (IST)
 From: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Fri, 12 Jul 2024 05:32:48 -0400
-Message-Id: <20240712093251.18683-4-mateusz.polchlopek@intel.com>
+Date: Fri, 12 Jul 2024 05:32:50 -0400
+Message-Id: <20240712093251.18683-6-mateusz.polchlopek@intel.com>
 X-Mailer: git-send-email 2.38.1
 In-Reply-To: <20240712093251.18683-1-mateusz.polchlopek@intel.com>
 References: <20240712093251.18683-1-mateusz.polchlopek@intel.com>
@@ -76,25 +76,25 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1720777496; x=1752313496;
+ t=1720777497; x=1752313497;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=UgwqlVMxtd6GMOFtqOkU+WNB7fX8kWAlm2XcJB1X+Ys=;
- b=keiVebz8wZJHW+8EjCqWtaO1yK9xpNe3fJH5K+TQ9r3GY4YFFUF79KyB
- Wwlg+Xf7DvA+VMVZ03zVnEuyIBJkb0uktlPZsxqZlpMwyjuv6HMe1o7NK
- FzptXGHZspmR2sDVqK0iF8VaNryRQ4vRuspilh3CFsMzqrQanuK15lcZc
- uBIM/ikxBofDjm9zrsnt+9kwaeBLb7HX9gLPqLoNo4OI5pbs0h84eFr/r
- gZbxf2y3dfGhVvQI8PXYC+7wQ3gqzif3G2dCVHfcRrGnrDIkOQhqQmGcG
- 10P/Y6eKTT6OKJ0nO+eSfB1WTmUghPAZwO2h8aFS3FrreQmN9mCmL6FMH
- A==;
+ bh=+lHsbgUBTOef+CHOLhnbRzp3ohdeiAvqSQiTssXQj+0=;
+ b=nrQA1MG1qCZN/Ac1YB/Nvk4nDKnUKnoHdyD80g1PN1cvnbp9F4rpValm
+ KHNX9x3lkqVNtCItMOnF2hKS2zVkcrdIKKH911bWu74GeDxXH4HV/Hxls
+ IF6mEDTBLzHnZnomT7f5sTz8cOLtD9/to1zNwQdfgXQlvpJAq3kxaknv1
+ YDHxPps8NCMzMAqJ+pW+zzG9iSvMSGRFbXizCo2E2Tv87zOJS2V/rbZoF
+ 1QQxZdlKZNsgYouurrRh95q9JOsQDAPd5Vd36Ab7j3iun0rJT1rNQh8uC
+ Agc/Zd+I7P6V1pjGu6BfCO67LcEGmz7EB/9eIMzRSNXelNddqLjIdgYqq
+ g==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=keiVebz8
-Subject: [Intel-wired-lan] [PATCH iwl-next v2 3/6] ice: add Tx hang devlink
- health reporter
+ header.a=rsa-sha256 header.s=Intel header.b=nrQA1MG1
+Subject: [Intel-wired-lan] [PATCH iwl-next v2 5/6] ice: Add MDD logging via
+ devlink health
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -108,342 +108,214 @@ List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Cc: willemb@google.com, Wojciech Drewek <wojciech.drewek@intel.com>,
- dwaipayanray1@gmail.com, Mateusz Polchlopek <mateusz.polchlopek@intel.com>,
+ Ben Shelton <benjamin.h.shelton@intel.com>, dwaipayanray1@gmail.com,
+ Mateusz Polchlopek <mateusz.polchlopek@intel.com>,
  linux-kernel@vger.kernel.org, Igor Bagnucki <igor.bagnucki@intel.com>,
- joe@perches.com, edumazet@google.com, netdev@vger.kernel.org,
- apw@canonical.com, lukas.bulwahn@gmail.com, akpm@linux-foundation.org,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>
+ joe@perches.com, edumazet@google.com, Simon Horman <horms@kernel.org>,
+ netdev@vger.kernel.org, apw@canonical.com, lukas.bulwahn@gmail.com,
+ akpm@linux-foundation.org, Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+From: Ben Shelton <benjamin.h.shelton@intel.com>
 
-Add Tx hang devlink health reporter, see struct ice_tx_hang_event to see
-what is reported.
+Add a devlink health reporter for MDD events. The 'dump' handler will
+return the information captured in each call to ice_handle_mdd_event().
+A device reset (CORER/PFR) will put the reporter back in healthy state.
 
-Subsequent commits will extend it by more info, for now it dumps
-descriptors with little metadata.
-
+Signed-off-by: Ben Shelton <benjamin.h.shelton@intel.com>
+Co-developed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Signed-off-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Reviewed-by: Igor Bagnucki <igor.bagnucki@intel.com>
 Reviewed-by: Wojciech Drewek <wojciech.drewek@intel.com>
+Reviewed-by: Simon Horman <horms@kernel.org>
 Signed-off-by: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
 ---
- drivers/net/ethernet/intel/ice/Makefile       |   1 +
- .../intel/ice/devlink/devlink_health.c        | 178 ++++++++++++++++++
- .../intel/ice/devlink/devlink_health.h        |  34 ++++
- drivers/net/ethernet/intel/ice/ice.h          |   2 +
- drivers/net/ethernet/intel/ice/ice_main.c     |  11 +-
- 5 files changed, 223 insertions(+), 3 deletions(-)
- create mode 100644 drivers/net/ethernet/intel/ice/devlink/devlink_health.c
- create mode 100644 drivers/net/ethernet/intel/ice/devlink/devlink_health.h
+ .../intel/ice/devlink/devlink_health.c        | 77 +++++++++++++++++++
+ .../intel/ice/devlink/devlink_health.h        | 11 +++
+ drivers/net/ethernet/intel/ice/ice_main.c     |  6 ++
+ 3 files changed, 94 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ice/Makefile b/drivers/net/ethernet/intel/ice/Makefile
-index 3307d551f431..f2baba82480c 100644
---- a/drivers/net/ethernet/intel/ice/Makefile
-+++ b/drivers/net/ethernet/intel/ice/Makefile
-@@ -33,6 +33,7 @@ ice-y := ice_main.o	\
- 	 ice_idc.o	\
- 	 devlink/devlink.o	\
- 	 devlink/devlink_port.o \
-+	 devlink/devlink_health.o \
- 	 ice_sf_eth.o	\
- 	 ice_sf_vsi_vlan_ops.o \
- 	 ice_ddp.o	\
 diff --git a/drivers/net/ethernet/intel/ice/devlink/devlink_health.c b/drivers/net/ethernet/intel/ice/devlink/devlink_health.c
-new file mode 100644
-index 000000000000..41f203cbdf6a
---- /dev/null
+index 2fbf6f08d0f6..f9edfabc9be8 100644
+--- a/drivers/net/ethernet/intel/ice/devlink/devlink_health.c
 +++ b/drivers/net/ethernet/intel/ice/devlink/devlink_health.c
-@@ -0,0 +1,178 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/* Copyright (c) 2024, Intel Corporation. */
+@@ -33,6 +33,79 @@ static void ice_devlink_health_report(struct devlink_health_reporter *reporter,
+ 	}
+ }
+ 
++struct ice_mdd_event {
++	enum ice_mdd_src src;
++	u16 vf_num;
++	u16 queue;
++	u8 pf_num;
++	u8 event;
++};
 +
-+#include "devlink_health.h"
-+#include "ice.h"
-+
-+#define ICE_DEVLINK_FMSG_PUT_FIELD(fmsg, obj, name) \
-+	devlink_fmsg_put(fmsg, #name, (obj)->name)
-+
-+/**
-+ * ice_devlink_health_report - boilerplate to call given @reporter
-+ *
-+ * @reporter: devlink health reporter to call, do nothing on NULL
-+ * @msg: message to pass up, "event name" is fine
-+ * @priv_ctx: typically some event struct
-+ */
-+static void ice_devlink_health_report(struct devlink_health_reporter *reporter,
-+				      const char *msg, void *priv_ctx)
++static const char *ice_mdd_src_to_str(enum ice_mdd_src src)
 +{
-+	int err;
-+
-+	if (!reporter)
-+		return;
-+
-+	err = devlink_health_report(reporter, msg, priv_ctx);
-+	if (err) {
-+		struct ice_pf *pf = devlink_health_reporter_priv(reporter);
-+
-+		dev_err(ice_pf_to_dev(pf),
-+			"failed to report %s via devlink health, err %d\n",
-+			msg, err);
++	switch (src) {
++	case ICE_MDD_SRC_TX_PQM:
++		return "tx_pqm";
++	case ICE_MDD_SRC_TX_TCLAN:
++		return "tx_tclan";
++	case ICE_MDD_SRC_TX_TDPU:
++		return "tx_tdpu";
++	case ICE_MDD_SRC_RX:
++		return "rx";
++	default:
++		return "invalid";
 +	}
 +}
 +
-+/**
-+ * ice_fmsg_put_ptr - put hex value of pointer into fmsg
-+ *
-+ * @fmsg: devlink fmsg under construction
-+ * @name: name to pass
-+ * @ptr: 64 bit value to print as hex and put into fmsg
-+ */
-+static void ice_fmsg_put_ptr(struct devlink_fmsg *fmsg, const char *name,
-+			     void *ptr)
++static int
++ice_mdd_reporter_dump(struct devlink_health_reporter *reporter,
++		      struct devlink_fmsg *fmsg, void *priv_ctx,
++		      struct netlink_ext_ack *extack)
 +{
-+	char buf[sizeof(ptr) * 3];
++	struct ice_mdd_event *mdd_event = priv_ctx;
++	const char *src;
 +
-+	sprintf(buf, "%p", ptr);
-+	devlink_fmsg_put(fmsg, name, buf);
-+}
++	if (!mdd_event)
++		return 0;
 +
-+struct ice_tx_hang_event {
-+	u32 head;
-+	u32 intr;
-+	u16 vsi_num;
-+	u16 queue;
-+	u16 next_to_clean;
-+	u16 next_to_use;
-+	struct ice_tx_ring *tx_ring;
-+};
-+
-+static int ice_tx_hang_reporter_dump(struct devlink_health_reporter *reporter,
-+				     struct devlink_fmsg *fmsg, void *priv_ctx,
-+				     struct netlink_ext_ack *extack)
-+{
-+	struct ice_tx_hang_event *event = priv_ctx;
++	src = ice_mdd_src_to_str(mdd_event->src);
 +
 +	devlink_fmsg_obj_nest_start(fmsg);
-+	ICE_DEVLINK_FMSG_PUT_FIELD(fmsg, event, head);
-+	ICE_DEVLINK_FMSG_PUT_FIELD(fmsg, event, intr);
-+	ICE_DEVLINK_FMSG_PUT_FIELD(fmsg, event, vsi_num);
-+	ICE_DEVLINK_FMSG_PUT_FIELD(fmsg, event, queue);
-+	ICE_DEVLINK_FMSG_PUT_FIELD(fmsg, event, next_to_clean);
-+	ICE_DEVLINK_FMSG_PUT_FIELD(fmsg, event, next_to_use);
-+	devlink_fmsg_put(fmsg, "irq-mapping", event->tx_ring->q_vector->name);
-+	ice_fmsg_put_ptr(fmsg, "desc-ptr", event->tx_ring->desc);
-+	ice_fmsg_put_ptr(fmsg, "dma-ptr", (void *)(long)event->tx_ring->dma);
-+	devlink_fmsg_binary_pair_put(fmsg, "desc", event->tx_ring->desc,
-+				     (event->tx_ring->count * sizeof(struct ice_tx_desc)));
++	devlink_fmsg_put(fmsg, "src", src);
++	ICE_DEVLINK_FMSG_PUT_FIELD(fmsg, mdd_event, pf_num);
++	ICE_DEVLINK_FMSG_PUT_FIELD(fmsg, mdd_event, vf_num);
++	ICE_DEVLINK_FMSG_PUT_FIELD(fmsg, mdd_event, event);
++	ICE_DEVLINK_FMSG_PUT_FIELD(fmsg, mdd_event, queue);
 +	devlink_fmsg_obj_nest_end(fmsg);
 +
 +	return 0;
 +}
 +
-+void ice_report_tx_hang(struct ice_pf *pf, struct ice_tx_ring *tx_ring,
-+			u16 vsi_num, u32 head, u32 intr)
++/**
++ * ice_devlink_report_mdd_event - Report an MDD event through devlink health
++ * @pf: the PF device structure
++ * @src: the HW block that was the source of this MDD event
++ * @pf_num: the pf_num on which the MDD event occurred
++ * @vf_num: the vf_num on which the MDD event occurred
++ * @event: the event type of the MDD event
++ * @queue: the queue on which the MDD event occurred
++ *
++ * Report an MDD event that has occurred on this PF.
++ */
++void ice_devlink_report_mdd_event(struct ice_pf *pf, enum ice_mdd_src src,
++				  u8 pf_num, u16 vf_num, u8 event, u16 queue)
 +{
-+	struct ice_tx_hang_event ev = {
-+		.head = head,
-+		.intr = intr,
-+		.vsi_num = vsi_num,
-+		.queue = tx_ring->q_index,
-+		.next_to_clean = tx_ring->next_to_clean,
-+		.next_to_use = tx_ring->next_to_use,
-+		.tx_ring = tx_ring,
++	struct ice_mdd_event ev = {
++		.src = src,
++		.pf_num = pf_num,
++		.vf_num = vf_num,
++		.event = event,
++		.queue = queue,
 +	};
 +
-+	ice_devlink_health_report(pf->health_reporters.tx_hang, "Tx hang", &ev);
++	ice_devlink_health_report(pf->health_reporters.mdd, "MDD event", &ev);
 +}
 +
-+static struct devlink_health_reporter *
-+ice_init_devlink_rep(struct ice_pf *pf,
-+		     const struct devlink_health_reporter_ops *ops)
-+{
-+	struct devlink *devlink = priv_to_devlink(pf);
-+	struct devlink_health_reporter *rep;
-+	const u64 graceful_period = 0;
-+
-+	rep = devl_health_reporter_create(devlink, ops, graceful_period, pf);
-+	if (IS_ERR(rep)) {
-+		struct device *dev = ice_pf_to_dev(pf);
-+
-+		dev_err(dev, "failed to create devlink %s health report er",
-+			ops->name);
-+		return NULL;
-+	}
-+	return rep;
-+}
-+
-+#define ICE_DEFINE_HEALTH_REPORTER_OPS(_name) \
-+	static const struct devlink_health_reporter_ops ice_ ## _name ## _reporter_ops = { \
-+	.name = #_name, \
-+	.dump = ice_ ## _name ## _reporter_dump, \
-+}
-+
-+ICE_DEFINE_HEALTH_REPORTER_OPS(tx_hang);
-+
-+/**
-+ * ice_health_init - allocate and init all ice devlink health reporters and
-+ * accompanied data
-+ *
-+ * @pf: PF struct
-+ */
-+void ice_health_init(struct ice_pf *pf)
-+{
-+	struct ice_health *reps = &pf->health_reporters;
-+
-+	reps->tx_hang = ice_init_devlink_rep(pf, &ice_tx_hang_reporter_ops);
-+}
-+
-+/**
-+ * ice_deinit_devl_reporter - destroy given devlink health reporter
-+ * @reporter: reporter to destroy
-+ */
-+static void ice_deinit_devl_reporter(struct devlink_health_reporter *reporter)
-+{
-+	if (reporter)
-+		devl_health_reporter_destroy(reporter);
-+}
-+
-+/**
-+ * ice_health_deinit - deallocate all ice devlink health reporters and
-+ * accompanied data
-+ *
-+ * @pf: PF struct
-+ */
-+void ice_health_deinit(struct ice_pf *pf)
-+{
-+	ice_deinit_devl_reporter(pf->health_reporters.tx_hang);
-+}
-+
-+static
-+void ice_health_assign_healthy_state(struct devlink_health_reporter *reporter)
-+{
-+	if (reporter)
-+		devlink_health_reporter_state_update(reporter,
-+						     DEVLINK_HEALTH_REPORTER_STATE_HEALTHY);
-+}
-+
-+/**
-+ * ice_health_clear - clear devlink health issues after a reset
-+ * @pf: the PF device structure
-+ *
-+ * Mark the PF in healthy state again after a reset has completed.
-+ */
-+void ice_health_clear(struct ice_pf *pf)
-+{
-+	ice_health_assign_healthy_state(pf->health_reporters.tx_hang);
-+}
+ static void ice_dump_ethtool_stats_to_fmsg(struct devlink_fmsg *fmsg,
+ 					   struct net_device *netdev)
+ {
+@@ -154,6 +227,7 @@ ice_init_devlink_rep(struct ice_pf *pf,
+ 	.dump = ice_ ## _name ## _reporter_dump, \
+ }
+ 
++ICE_DEFINE_HEALTH_REPORTER_OPS(mdd);
+ ICE_DEFINE_HEALTH_REPORTER_OPS(tx_hang);
+ 
+ /**
+@@ -166,6 +240,7 @@ void ice_health_init(struct ice_pf *pf)
+ {
+ 	struct ice_health *reps = &pf->health_reporters;
+ 
++	reps->mdd = ice_init_devlink_rep(pf, &ice_mdd_reporter_ops);
+ 	reps->tx_hang = ice_init_devlink_rep(pf, &ice_tx_hang_reporter_ops);
+ }
+ 
+@@ -187,6 +262,7 @@ static void ice_deinit_devl_reporter(struct devlink_health_reporter *reporter)
+  */
+ void ice_health_deinit(struct ice_pf *pf)
+ {
++	ice_deinit_devl_reporter(pf->health_reporters.mdd);
+ 	ice_deinit_devl_reporter(pf->health_reporters.tx_hang);
+ }
+ 
+@@ -206,5 +282,6 @@ void ice_health_assign_healthy_state(struct devlink_health_reporter *reporter)
+  */
+ void ice_health_clear(struct ice_pf *pf)
+ {
++	ice_health_assign_healthy_state(pf->health_reporters.mdd);
+ 	ice_health_assign_healthy_state(pf->health_reporters.tx_hang);
+ }
 diff --git a/drivers/net/ethernet/intel/ice/devlink/devlink_health.h b/drivers/net/ethernet/intel/ice/devlink/devlink_health.h
-new file mode 100644
-index 000000000000..984b8f9f56d4
---- /dev/null
+index 984b8f9f56d4..01abd3d8f31e 100644
+--- a/drivers/net/ethernet/intel/ice/devlink/devlink_health.h
 +++ b/drivers/net/ethernet/intel/ice/devlink/devlink_health.h
-@@ -0,0 +1,34 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/* Copyright (c) 2024, Intel Corporation. */
-+
-+#ifndef _DEVLINK_HEALTH_H_
-+#define _DEVLINK_HEALTH_H_
-+
-+#include <linux/types.h>
-+
-+/**
-+ * DOC: devlink_health.h
-+ *
-+ * This header file stores everything that is needed for broadly understood
-+ * devlink health mechanism for ice driver.
-+ */
-+
-+struct ice_pf;
-+struct ice_tx_ring;
-+
-+/**
-+ * struct ice_health - stores ice devlink health reporters and accompanied data
-+ * @tx_hang: devlink health reporter for tx_hang event
-+ */
-+struct ice_health {
-+	struct devlink_health_reporter *tx_hang;
+@@ -16,18 +16,29 @@
+ struct ice_pf;
+ struct ice_tx_ring;
+ 
++enum ice_mdd_src {
++	ICE_MDD_SRC_TX_PQM,
++	ICE_MDD_SRC_TX_TCLAN,
++	ICE_MDD_SRC_TX_TDPU,
++	ICE_MDD_SRC_RX,
 +};
 +
-+void ice_health_init(struct ice_pf *pf);
-+void ice_health_deinit(struct ice_pf *pf);
-+void ice_health_clear(struct ice_pf *pf);
-+
-+void ice_report_tx_hang(struct ice_pf *pf, struct ice_tx_ring *tx_ring,
-+			u16 vsi_num, u32 head, u32 intr);
-+
-+#endif /* _DEVLINK_HEALTH_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index 0046684004ff..d2f2ed2d4bfa 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -78,6 +78,7 @@
- #include "ice_irq.h"
- #include "ice_dpll.h"
- #include "ice_adapter.h"
-+#include "devlink/devlink_health.h"
- 
- #define ICE_BAR0		0
- #define ICE_REQ_DESC_MULTIPLE	32
-@@ -667,6 +668,7 @@ struct ice_pf {
- 	struct ice_agg_node vf_agg_node[ICE_MAX_VF_AGG_NODES];
- 	struct ice_dplls dplls;
- 	struct device *hwmon_dev;
-+	struct ice_health health_reporters;
+ /**
+  * struct ice_health - stores ice devlink health reporters and accompanied data
+  * @tx_hang: devlink health reporter for tx_hang event
++ * @mdd: devlink health reporter for MDD detection event
+  */
+ struct ice_health {
+ 	struct devlink_health_reporter *tx_hang;
++	struct devlink_health_reporter *mdd;
  };
  
- extern struct workqueue_struct *ice_lag_wq;
+ void ice_health_init(struct ice_pf *pf);
+ void ice_health_deinit(struct ice_pf *pf);
+ void ice_health_clear(struct ice_pf *pf);
+ 
++void ice_devlink_report_mdd_event(struct ice_pf *pf, enum ice_mdd_src src,
++				  u8 pf_num, u16 vf_num, u8 event, u16 queue);
+ void ice_report_tx_hang(struct ice_pf *pf, struct ice_tx_ring *tx_ring,
+ 			u16 vsi_num, u32 head, u32 intr);
+ 
 diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index e2990993b16f..1fae7d34f2e4 100644
+index 1fae7d34f2e4..a7c186fb902b 100644
 --- a/drivers/net/ethernet/intel/ice/ice_main.c
 +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -5052,6 +5052,7 @@ static int ice_init_devlink(struct ice_pf *pf)
- 		return err;
- 
- 	ice_devlink_init_regions(pf);
-+	ice_health_init(pf);
- 	ice_devlink_register(pf);
- 
- 	return 0;
-@@ -5060,6 +5061,7 @@ static int ice_init_devlink(struct ice_pf *pf)
- static void ice_deinit_devlink(struct ice_pf *pf)
- {
- 	ice_devlink_unregister(pf);
-+	ice_health_deinit(pf);
- 	ice_devlink_destroy_regions(pf);
- 	ice_devlink_unregister_params(pf);
- }
-@@ -7743,6 +7745,8 @@ static void ice_rebuild(struct ice_pf *pf, enum ice_reset_req reset_type)
- 	/* if we get here, reset flow is successful */
- 	clear_bit(ICE_RESET_FAILED, pf->state);
- 
-+	ice_health_clear(pf);
-+
- 	ice_plug_aux_dev(pf);
- 	if (ice_is_feature_supported(pf, ICE_F_SRIOV_LAG))
- 		ice_lag_rebuild(pf);
-@@ -8230,16 +8234,17 @@ void ice_tx_timeout(struct net_device *netdev, unsigned int txqueue)
- 
- 	if (tx_ring) {
- 		struct ice_hw *hw = &pf->hw;
--		u32 head, val = 0;
-+		u32 head, intr = 0;
- 
- 		head = FIELD_GET(QTX_COMM_HEAD_HEAD_M,
- 				 rd32(hw, QTX_COMM_HEAD(vsi->txq_map[txqueue])));
- 		/* Read interrupt register */
--		val = rd32(hw, GLINT_DYN_CTL(tx_ring->q_vector->reg_idx));
-+		intr = rd32(hw, GLINT_DYN_CTL(tx_ring->q_vector->reg_idx));
- 
- 		netdev_info(netdev, "tx_timeout: VSI_num: %d, Q %u, NTC: 0x%x, HW_HEAD: 0x%x, NTU: 0x%x, INT: 0x%x\n",
- 			    vsi->vsi_num, txqueue, tx_ring->next_to_clean,
--			    head, tx_ring->next_to_use, val);
-+			    head, tx_ring->next_to_use, intr);
-+		ice_report_tx_hang(pf, tx_ring, vsi->vsi_num, head, intr);
+@@ -1819,6 +1819,8 @@ static void ice_handle_mdd_event(struct ice_pf *pf)
+ 		if (netif_msg_tx_err(pf))
+ 			dev_info(dev, "Malicious Driver Detection event %d on TX queue %d PF# %d VF# %d\n",
+ 				 event, queue, pf_num, vf_num);
++		ice_devlink_report_mdd_event(pf, ICE_MDD_SRC_TX_PQM, pf_num,
++					     vf_num, event, queue);
+ 		wr32(hw, GL_MDET_TX_PQM, 0xffffffff);
  	}
  
- 	pf->tx_timeout_last_recovery = jiffies;
+@@ -1832,6 +1834,8 @@ static void ice_handle_mdd_event(struct ice_pf *pf)
+ 		if (netif_msg_tx_err(pf))
+ 			dev_info(dev, "Malicious Driver Detection event %d on TX queue %d PF# %d VF# %d\n",
+ 				 event, queue, pf_num, vf_num);
++		ice_devlink_report_mdd_event(pf, ICE_MDD_SRC_TX_TCLAN, pf_num,
++					     vf_num, event, queue);
+ 		wr32(hw, GL_MDET_TX_TCLAN_BY_MAC(hw), U32_MAX);
+ 	}
+ 
+@@ -1845,6 +1849,8 @@ static void ice_handle_mdd_event(struct ice_pf *pf)
+ 		if (netif_msg_rx_err(pf))
+ 			dev_info(dev, "Malicious Driver Detection event %d on RX queue %d PF# %d VF# %d\n",
+ 				 event, queue, pf_num, vf_num);
++		ice_devlink_report_mdd_event(pf, ICE_MDD_SRC_RX, pf_num,
++					     vf_num, event, queue);
+ 		wr32(hw, GL_MDET_RX, 0xffffffff);
+ 	}
+ 
 -- 
 2.38.1
 
