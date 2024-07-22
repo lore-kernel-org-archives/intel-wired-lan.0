@@ -4,75 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D23B8C3DA59
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 22 Jul 2024 14:35:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9A23CC3DA5D
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 22 Jul 2024 14:52:41 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 7A46A80B9C;
-	Mon, 22 Jul 2024 14:35:55 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 2564D810F6;
+	Mon, 22 Jul 2024 14:52:41 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id pLJqHCtfqkJV; Mon, 22 Jul 2024 14:35:55 +0000 (UTC)
+ id 2puIqBeWHFXH; Mon, 22 Jul 2024 14:52:39 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D831C80BA4
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4E2A1810F4
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1721658954;
-	bh=MnlbR2GcelTrxC43wmubED5vaPUSEQY5/YCrk5DAbp8=;
-	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
+	s=default; t=1721659959;
+	bh=uhgzMezHfDJIjdaCofSm00G2IjH8vu4TQTVZaSU1fkQ=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=KfsMGqzkOpFsbO1B2QBIgEvtPt8StVuhV+TUougZztbSXp36BTiuXHZbeBkJmbssG
-	 lwldzwxZSmnAyclLPg6AqEFYjkWij4ygVsZI9B2i5eq49aicDXspDP8pG9hkFpEqBF
-	 Viwcx7IguUI9n3UMJQ6i28h4NPg12elZ9IodxOmjbKXQTv/SYsb9tQ/34PfHJtOyW/
-	 VM4rw2xXSb8d4ujKRTrSNPoowVBeQNXN7+4HcBHkGdMj9hCGUVYzrNPpRTB3X8slhX
-	 euWiHeQ/VRvjq3LbULIidbfRQguhFTc7qL6qgz3hD/0JLhm5Ivwhf9BMe4viVZJKIk
-	 8TgDyTKX3t2XA==
+	b=PDpcZ2kBqDpPLWmr5ye1bltqGTbkwxqaUOpVCCLT8kvjfc8K0nDIBfRfzxHT17KnD
+	 uW7P67kcDAgofjRKmDlgGS0nQUoYeJwjk/u80BkhRSIQ9d66wJ3G5kf2OiPK6ELVWo
+	 VHmcOK9EPZEPpr/76wcUkAzRDp/IYg+OEVetJe438h0fY96aaNZEi56ftPoGUxI0Wr
+	 ezqvVsxdwxlDG0k741X9Vt+/YVo98QMnAg7d6Emg18IlWKgC3gYeA65fUhznSsy8eR
+	 ogwLgUd+I+O0ouWRnl3oV4OUb9vJbO6bdqlHk2oH9kiMqnxsPJsGfJXw1PC9Xm3RwV
+	 3YOyj0tmZ7jmQ==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id D831C80BA4;
-	Mon, 22 Jul 2024 14:35:54 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id E77841BF286
- for <intel-wired-lan@lists.osuosl.org>; Mon, 22 Jul 2024 14:35:52 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 4E2A1810F4;
+	Mon, 22 Jul 2024 14:52:39 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 3F9F21BF286
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 22 Jul 2024 14:52:38 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id D3B9440156
- for <intel-wired-lan@lists.osuosl.org>; Mon, 22 Jul 2024 14:35:52 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 2CC206059E
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 22 Jul 2024 14:52:38 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id cf8eiCWK8rOf for <intel-wired-lan@lists.osuosl.org>;
- Mon, 22 Jul 2024 14:35:51 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=141.14.17.11;
- helo=mx3.molgen.mpg.de; envelope-from=pmenzel@molgen.mpg.de;
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 8F-76BTWVXpV for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 22 Jul 2024 14:52:37 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=145.40.73.55;
+ helo=sin.source.kernel.org; envelope-from=horms@kernel.org;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 65D744011A
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 65D744011A
-Received: from mx3.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 65D744011A
- for <intel-wired-lan@lists.osuosl.org>; Mon, 22 Jul 2024 14:35:49 +0000 (UTC)
-Received: from [141.14.220.45] (g45.guest.molgen.mpg.de [141.14.220.45])
- (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested) (Authenticated sender: pmenzel)
- by mx.molgen.mpg.de (Postfix) with ESMTPSA id 5CAD961E5FE05;
- Mon, 22 Jul 2024 16:35:16 +0200 (CEST)
-Message-ID: <232df828-baa3-4c87-b5f3-c0dae9d98356@molgen.mpg.de>
-Date: Mon, 22 Jul 2024 16:35:15 +0200
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org EE1F8600B5
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org EE1F8600B5
+Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id EE1F8600B5
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 22 Jul 2024 14:52:36 +0000 (UTC)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+ by sin.source.kernel.org (Postfix) with ESMTP id D2646CE09AA;
+ Mon, 22 Jul 2024 14:52:32 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C5E44C116B1;
+ Mon, 22 Jul 2024 14:52:30 +0000 (UTC)
+Date: Mon, 22 Jul 2024 15:52:28 +0100
+From: Simon Horman <horms@kernel.org>
+To: Ahmed Zaki <ahmed.zaki@intel.com>
+Message-ID: <20240722145228.GF715661@kernel.org>
+References: <20240710204015.124233-1-ahmed.zaki@intel.com>
+ <20240710204015.124233-3-ahmed.zaki@intel.com>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-To: Dawid Osuchowski <dawid.osuchowski@linux.intel.com>
-References: <20240722122839.51342-1-dawid.osuchowski@linux.intel.com>
- <cb7758d3-3ba5-404d-b9e4-b22934d21e68@molgen.mpg.de>
- <0e5e0952-7792-4b9b-8264-8edd3c788fa8@linux.intel.com>
-Content-Language: en-US
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-In-Reply-To: <0e5e0952-7792-4b9b-8264-8edd3c788fa8@linux.intel.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dmarc=none (p=none dis=none)
- header.from=molgen.mpg.de
-Subject: Re: [Intel-wired-lan] [PATCH iwl-net] ice: Introduce
- netif_device_attach/detach into reset flow
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240710204015.124233-3-ahmed.zaki@intel.com>
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=kernel.org; s=k20201202; t=1721659952;
+ bh=X5vtgBbIFY94UZFzz5Z0wVbQf/UQJQkm65kZtdjyOn8=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=elys/iBl/kxiwKS/6b6wSQwH+fkjUizOgFjp0/UX1B620RuU4DmO3AkZK3YYqCvJl
+ BaIUraxvPLoehVdfrX4SGzfCxXLJDIvG3FDpu4aUfHA8y2IyLvZ/3IDtvOXDXMsNip
+ WGS9q3nQnv/m64T2KccMvaaM7cXSL06HimrVY+J2us9BjcNgYJaP+Oo9a3lQ+qsWcN
+ dgGSkAW1Fl/kJ290fcqDNb6PBqHAvTv77nI3nH8AF9QEapVREFk7rcXtqT8IlhByyJ
+ OuQYUmp7zBWl6CF48eP3J6TAznN+q5hMSunYpLw3tLVt9ebyTppfPDYnVc2i6VJvWN
+ 0u/QStuZk/quA==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=kernel.org
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=elys/iBl
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next v3 02/13] ice: parse and init
+ various DDP parser sections
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -85,57 +95,172 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, Alexander Lobakin <aleksander.lobakin@intel.com>,
- intel-wired-lan@lists.osuosl.org, Jakub Kicinski <kuba@kernel.org>
+Cc: netdev@vger.kernel.org, anthony.l.nguyen@intel.com,
+ Marcin Szycik <marcin.szycik@linux.intel.com>,
+ intel-wired-lan@lists.osuosl.org, Junfeng Guo <junfeng.guo@intel.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Dear Dawid,
-
-
-Thank you for your quick reply.
-
-
-Am 22.07.24 um 14:55 schrieb Dawid Osuchowski:
-> On 22.07.2024 14:37, Paul Menzel wrote:
-
->> Introduce … into
->>
->> sounds a little strange to me. Maybe:
->>
->>  > Attach to device in reset flow
->>
->> or just
->>
->>  > Add netif_device_attach/detach
->>
->>  > Serialize …
+On Wed, Jul 10, 2024 at 02:40:04PM -0600, Ahmed Zaki wrote:
+> From: Junfeng Guo <junfeng.guo@intel.com>
 > 
-> Maybe "Add netif_device_attach/detach" would be the best for this, as 
-> the attaching and detaching doesn't happen only during reset.
-
-I’d consider it too generic and would mention the place. But if it’s not 
-possible, then it’s not. Maybe:
-
-> Attach/detach device before starting/stopping queues
-
->> Am 22.07.24 um 14:28 schrieb Dawid Osuchowski:
->>> Ethtool callbacks can be executed while reset is in progress and try to
->>> access deleted resources, e.g. getting coalesce settings can result in a
->>> NULL pointer dereference seen below.
->>
->> What command did you execute?
+> Parse the following DDP sections:
+>  - ICE_SID_RXPARSER_IMEM into an array of struct ice_imem_item
+>  - ICE_SID_RXPARSER_METADATA_INIT into an array of struct ice_metainit_item
+>  - ICE_SID_RXPARSER_CAM or ICE_SID_RXPARSER_PG_SPILL into an array of
+>    struct ice_pg_cam_item
+>  - ICE_SID_RXPARSER_NOMATCH_CAM or ICE_SID_RXPARSER_NOMATCH_SPILL into an
+>    array of struct ice_pg_nm_cam_item
+>  - ICE_SID_RXPARSER_CAM into an array of ice_bst_tcam_item
+>  - ICE_SID_LBL_RXPARSER_TMEM into an array of ice_lbl_item
+>  - ICE_SID_RXPARSER_MARKER_PTYPE into an array of ice_ptype_mk_tcam_item
+>  - ICE_SID_RXPARSER_MARKER_GRP into an array of ice_mk_grp_item
+>  - ICE_SID_RXPARSER_PROTO_GRP into an array of ice_proto_grp_item
+>  - ICE_SID_RXPARSER_FLAG_REDIR into an array of ice_flg_rd_item
+>  - ICE_SID_XLT_KEY_BUILDER_SW, ICE_SID_XLT_KEY_BUILDER_ACL,
+>    ICE_SID_XLT_KEY_BUILDER_FD and ICE_SID_XLT_KEY_BUILDER_RSS into
+>    struct ice_xlt_kb
 > 
-> Once the driver is fully initialized:
-> # echo 1 > /sys/class/net/ens1f0np0/device/reset
-> and then once that is in progress, from another terminal:
-> # ethtool -c ens1f0np0
-> 
-> Would you like me to include those in the commit message as well?
+> Reviewed-by: Marcin Szycik <marcin.szycik@linux.intel.com>
+> Signed-off-by: Qi Zhang <qi.z.zhang@intel.com>
+> Signed-off-by: Junfeng Guo <junfeng.guo@intel.com>
+> Co-developed-by: Ahmed Zaki <ahmed.zaki@intel.com>
+> Signed-off-by: Ahmed Zaki <ahmed.zaki@intel.com>
 
-I’d find it helpful, but I am no maintainer.
+Hi Ahmed, Junfeng, all,
 
+Some minor feedback from my side.
 
-Kind regards,
+...
 
-Paul
+> diff --git a/drivers/net/ethernet/intel/ice/ice_parser.c b/drivers/net/ethernet/intel/ice/ice_parser.c
+
+...
+
+> +/**
+> + * ice_parser_create_table - create an item table from a section
+> + * @hw: pointer to the hardware structure
+> + * @sect_type: section type
+> + * @item_size: item size in byte
+> + * @length: number of items in the table to create
+> + * @parse_item: the function to parse the item
+> + * @no_offset: ignore header offset, calculate index from 0
+> + *
+> + * Return: a pointer to the allocated table or ERR_PTR.
+> + */
+> +static
+> +void *ice_parser_create_table(struct ice_hw *hw, u32 sect_type,
+> +			      u32 item_size, u32 length,
+> +			      void (*parse_item)(struct ice_hw *hw, u16 idx,
+> +						 void *item, void *data,
+> +						 int size),
+> +			      bool no_offset)
+> +{
+> +	struct ice_pkg_enum state = {};
+> +	struct ice_seg *seg = hw->seg;
+> +	void *table, *data, *item;
+> +	u16 idx = U16_MAX;
+> +
+> +	if (!seg)
+> +		return ERR_PTR(-EINVAL);
+> +
+> +	table = kzalloc(item_size * length, GFP_KERNEL);
+> +	if (!table)
+> +		return ERR_PTR(-ENOMEM);
+> +
+> +	do {
+> +		data = ice_pkg_enum_entry(seg, &state, sect_type, NULL,
+> +					  ice_parser_sect_item_get);
+> +		seg = NULL;
+> +		if (data) {
+> +			struct ice_pkg_sect_hdr *hdr =
+> +				(struct ice_pkg_sect_hdr *)state.sect;
+
+nit: As the type of state.sect is void * I don't think there is a
+     need to explicitly cast it to another type of pointer.
+
+			struct ice_pkg_sect_hdr *hdr = state.sect;
+
+> +
+> +			if (no_offset)
+> +				idx++;
+> +			else
+> +				idx = le16_to_cpu(hdr->offset) +
+> +					state.entry_idx;
+> +
+> +			item = (void *)((uintptr_t)table + idx * item_size);
+> +			parse_item(hw, idx, item, data, item_size);
+> +		}
+> +	} while (data);
+> +
+> +	return table;
+> +}
+
+...
+
+> +/**
+> + * ice_imem_parse_item - parse 384 bits of IMEM entry
+> + * @hw: pointer to the hardware structure
+> + * @idx: index of IMEM entry
+> + * @item: item of IMEM entry
+> + * @data: IMEM entry data to be parsed
+> + * @size: size of IMEM entry
+> + */
+> +static void ice_imem_parse_item(struct ice_hw *hw, u16 idx, void *item,
+> +				void *data, int __maybe_unused size)
+> +{
+> +	struct ice_imem_item *ii = item;
+> +	u8 *buf = (u8 *)data;
+
+Similarly, I don't think there is a need to explicitly cast here:
+
+	u8 *buf = data;
+
+> +
+> +	ii->idx = idx;
+> +
+> +	ice_imem_bm_init(&ii->b_m, *(u8 *)buf);
+> +	ice_imem_bkb_init(&ii->b_kb,
+> +			  *((u16 *)(&buf[ICE_IMEM_BKB_IDD])) >>
+> +			   ICE_IMEM_BKB_OFF);
+> +
+> +	ii->pg_prio = FIELD_GET(ICE_IMEM_PGP, *(u16 *)buf);
+> +
+> +	ice_imem_npkb_init(&ii->np_kb,
+> +			   *((u32 *)(&buf[ICE_IMEM_NPKB_IDD])) >>
+> +			    ICE_IMEM_NPKB_OFF);
+> +	ice_imem_pgkb_init(&ii->pg_kb,
+> +			   *((u64 *)(&buf[ICE_IMEM_PGKB_IDD])) >>
+> +			    ICE_IMEM_PGKB_OFF);
+> +
+> +	ice_imem_alu_init(&ii->alu0,
+> +			  &buf[ICE_IMEM_ALU0_IDD],
+> +			  ICE_IMEM_ALU0_OFF);
+> +	ice_imem_alu_init(&ii->alu1,
+> +			  &buf[ICE_IMEM_ALU1_IDD],
+> +			  ICE_IMEM_ALU1_OFF);
+> +	ice_imem_alu_init(&ii->alu2,
+> +			  &buf[ICE_IMEM_ALU2_IDD],
+> +			  ICE_IMEM_ALU2_OFF);
+> +}
+> +
+> +/**
+> + * ice_imem_table_get - create an imem table
+> + * @hw: pointer to the hardware structure
+> + *
+> + * Return: a pointer to the allocated IMEM table.
+> + */
+> +static struct ice_imem_item *ice_imem_table_get(struct ice_hw *hw)
+> +{
+> +	return (struct ice_imem_item *)
+> +		ice_parser_create_table(hw, ICE_SID_RXPARSER_IMEM,
+> +					sizeof(struct ice_imem_item),
+> +					ICE_IMEM_TABLE_SIZE,
+> +					ice_imem_parse_item, false);
+> +}
+
+Or here.
+And, likewise, for other similar calls to ice_parser_create_table().
+
+...
+
