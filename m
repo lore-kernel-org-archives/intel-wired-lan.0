@@ -4,84 +4,84 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9F8D1C3DA49
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 30 Jul 2024 10:28:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D47ADC3DA49
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 30 Jul 2024 10:29:14 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 5E5D18121E;
-	Tue, 30 Jul 2024 10:28:59 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 7F19B81140;
+	Tue, 30 Jul 2024 10:29:14 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id F1YWQ5c_Tnhi; Tue, 30 Jul 2024 10:28:58 +0000 (UTC)
+ id RanhK8LP2Q4J; Tue, 30 Jul 2024 10:29:13 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C6CA581155
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B60548119E
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1722335338;
-	bh=RVCC2r2VtkP6hMOglo1gbmjRZl1jeT5/KiemZakIbUM=;
+	s=default; t=1722335353;
+	bh=++NKuFnzoMxrYTiX7fY7j9+D7TdH4xEN+SPh7oadb0g=;
 	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=hNph4SV05Y0vZDiY49rL5bcidVImG+MXWlLaURlY00uyc9RhiwVBh7KKbldvDGhVE
-	 3MUebAuyuT8OvncVm8ZFlTWfmL17rpf++9kL0mhS3G48NAH9qo2yxsC27g0orVu0LK
-	 2HqO+i4a/zQKhnHMT/eZdcfdV2q2MjfxI/xCCQjlRVZOPp9IUyg7oDOlE5RvSPIJTJ
-	 z5b2+2sZR+7GBUE/J49i4BzwMlePU006OvkT6X7EbNH6YNWA6EhVf/zKSos3BlG129
-	 poP2NcWaOpkC6JSujf39/lxpbbciMZWRea7Ob0eHcyJCxirBtiu1Q0VnCZTXI9HuiX
-	 DPqDOVv3Wv/Ew==
+	b=vXDLt1NiamhsKlf5osCztNvmX4TEKOKIjTyKD6xw1MvJztGGgwdTSkAKgy9xx+Mak
+	 rOBfNOBSjLyINi4qg2fnp7l9/X8CrMsysJWazySa6oOCXVrzUD+Djrl+MEKiWgdhTD
+	 dDQXR9rG0Avcr90ctMYxkJop3hWutq0HV+4WN3Ih2qC6m3EeEfOpvOq6QaIW9BXLzL
+	 22jJ/K4o+7+WHdsRWEJNHapXLAk3Or63r9vtC7NXg+OzuVB6WSHbLcptU3bMSWJO1e
+	 q0+/EB4LB2L4NzP2eMycOd+exni+YCO+t1G7w/jMhyMkH/BSwxvLH7lB8sI67el1NS
+	 6lkIWKfIO0yaQ==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id C6CA581155;
-	Tue, 30 Jul 2024 10:28:58 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id B9B771BF5DA
- for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Jul 2024 10:28:57 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id B60548119E;
+	Tue, 30 Jul 2024 10:29:13 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 08A241BF5DA
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Jul 2024 10:29:13 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id B478C608B9
- for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Jul 2024 10:28:57 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 01F1381155
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Jul 2024 10:29:13 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Dl_C9QT373FC for <intel-wired-lan@lists.osuosl.org>;
- Tue, 30 Jul 2024 10:28:57 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=145.40.73.55;
- helo=sin.source.kernel.org; envelope-from=horms@kernel.org;
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id tIzhp-Ob2AgZ for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 30 Jul 2024 10:29:12 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=139.178.84.217;
+ helo=dfw.source.kernel.org; envelope-from=horms@kernel.org;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org C4F4B6059D
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C4F4B6059D
-Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
- by smtp3.osuosl.org (Postfix) with ESMTPS id C4F4B6059D
- for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Jul 2024 10:28:56 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 440AE81140
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 440AE81140
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 440AE81140
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Jul 2024 10:29:12 +0000 (UTC)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by sin.source.kernel.org (Postfix) with ESMTP id 66CA0CE0ED3;
- Tue, 30 Jul 2024 10:28:54 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D26D0C32782;
- Tue, 30 Jul 2024 10:28:51 +0000 (UTC)
-Date: Tue, 30 Jul 2024 11:28:49 +0100
+ by dfw.source.kernel.org (Postfix) with ESMTP id 8C51E61E27;
+ Tue, 30 Jul 2024 10:29:11 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 78A3EC32782;
+ Tue, 30 Jul 2024 10:29:09 +0000 (UTC)
+Date: Tue, 30 Jul 2024 11:29:07 +0100
 From: Simon Horman <horms@kernel.org>
 To: Ahmed Zaki <ahmed.zaki@intel.com>
-Message-ID: <20240730102849.GY97837@kernel.org>
+Message-ID: <20240730102907.GZ97837@kernel.org>
 References: <20240725220810.12748-1-ahmed.zaki@intel.com>
- <20240725220810.12748-13-ahmed.zaki@intel.com>
+ <20240725220810.12748-14-ahmed.zaki@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20240725220810.12748-13-ahmed.zaki@intel.com>
+In-Reply-To: <20240725220810.12748-14-ahmed.zaki@intel.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1722335333;
- bh=Yd+bFiBGSdyUAsFPoD3rjwVsN8k4aiUTyN/gHuNRwgE=;
+ d=kernel.org; s=k20201202; t=1722335351;
+ bh=+EXiI6Hi4bCwpc12uz2sKT7AB87QLqFQRMBMmdEGR+I=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=kwrMR20JHV3l9hUYKC6oOCVwzywWsF0UBP3B/hJQh8r73Wpi8P97Y/yPiP7rFLx6o
- 5Ss2j2FA+WyJ8/fge8RcebwW1eF/0+4Kgo1zTQlJDOqSYRLZgqXPcYBUqwqLHjQsBZ
- CoHtMfyrzma3GvQrB99VNkL9U/+8jKxGHD5NxQxLHSLeetrssXMvuendfKFogqIAXn
- gu+Krbrtxh4y5h0anNQuH66zsGFWxgqmHs8CdWi9MHxk6rG5iLhe1MXPD5PdsWmznD
- OLsROdameDBpIlWRK4Wm+U3YHrTnr5WzvMnvl6L5qQHLIF+L4uoJvmAYGa8d70O5HL
- Q4LNnyl+DX10w==
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ b=LsQfo002tyk4otb6TmwUkFBd/hQaIYNdPZ73pCpa//ZnAKeQf5TpZGDUBIfwcNtke
+ txt5rjnGoiDm0m+YWJoCXeTgu6d0MnyjQgCI4Wz3Pq2EHSuWOLC84DAtqBb72W2pMy
+ Pv6f5uafRXRxBkQ1mc1x8yv3xT5mcSa+j1CZ6pNy7bkWmqwqIHbutSaNybD3aTybNv
+ aHo7P6X0OcOKTiuNp8MIWs5ipznnVXaxbElubXDsHONRsWsdVqkXH6eNMy85dR8qy4
+ dJrDjwU3GDGI5R2+xACIK8WOspG6QP7jmEI6rFBEG1spx4CfSbsYTgmKnjdokqNBlE
+ OFZtAwB6ljg9g==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=kwrMR20J
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next v5 12/13] iavf: refactor
- add/del FDIR filters
+ header.a=rsa-sha256 header.s=k20201202 header.b=LsQfo002
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next v5 13/13] iavf: add support
+ for offloading tc U32 cls filters
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,18 +101,59 @@ Cc: netdev@vger.kernel.org, Rafal Romanowski <rafal.romanowski@intel.com>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Thu, Jul 25, 2024 at 04:08:08PM -0600, Ahmed Zaki wrote:
-> In preparation for a second type of FDIR filters that can be added by
-> tc-u32, move the add/del of the FDIR logic to be entirely contained in
-> iavf_fdir.c.
+On Thu, Jul 25, 2024 at 04:08:09PM -0600, Ahmed Zaki wrote:
+> Add support for offloading cls U32 filters. Only "skbedit queue_mapping"
+> and "drop" actions are supported. Also, only "ip" and "802_3" tc
+> protocols are allowed. The PF must advertise the VIRTCHNL_VF_OFFLOAD_TC_U32
+> capability flag.
 > 
-> The iavf_find_fdir_fltr_by_loc() is renamed to iavf_find_fdir_fltr()
-> to be more agnostic to the filter ID parameter (for now @loc, which is
-> relevant only to current FDIR filters added via ethtool).
+> Since the filters will be enabled via the FD stage at the PF, a new type
+> of FDIR filters is added and the existing list and state machine are used.
 > 
-> The FDIR filter deletion is moved from iavf_del_fdir_ethtool() in
-> ethtool.c to iavf_fdir_del_fltr(). While at it, fix a minor bug where
-> the "fltr" is accessed out of the fdir_fltr_lock spinlock protection.
+> The new filters can be used to configure flow directors based on raw
+> (binary) pattern in the rx packet.
+> 
+> Examples:
+> 
+> 0. # tc qdisc add dev enp175s0v0  ingress
+> 
+> 1. Redirect UDP from src IP 192.168.2.1 to queue 12:
+> 
+>     # tc filter add dev <dev> protocol ip ingress u32 \
+> 	match u32 0x45000000 0xff000000 at 0  \
+> 	match u32 0x00110000 0x00ff0000 at 8  \
+> 	match u32 0xC0A80201 0xffffffff at 12 \
+> 	match u32 0x00000000 0x00000000 at 24 \
+> 	action skbedit queue_mapping 12 skip_sw
+> 
+> 2. Drop all ICMP:
+> 
+>     # tc filter add dev <dev> protocol ip ingress u32 \
+> 	match u32 0x45000000 0xff000000 at 0  \
+> 	match u32 0x00010000 0x00ff0000 at 8  \
+> 	match u32 0x00000000 0x00000000 at 24 \
+> 	action drop skip_sw
+> 
+> 3. Redirect ICMP traffic from MAC 3c:fd:fe:a5:47:e0 to queue 7
+>    (note proto: 802_3):
+> 
+>    # tc filter add dev <dev> protocol 802_3 ingress u32 \
+> 	match u32 0x00003CFD 0x0000ffff at 4   \
+> 	match u32 0xFEA547E0 0xffffffff at 8   \
+> 	match u32 0x08004500 0xffffff00 at 12  \
+> 	match u32 0x00000001 0x000000ff at 20  \
+> 	match u32 0x0000 0x0000 at 40          \
+> 	action skbedit queue_mapping 7 skip_sw
+> 
+> Notes on matches:
+> 1 - All intermediate fields that are needed to parse the correct PTYPE
+>     must be provided (in e.g. 3: Ethernet Type 0x0800 in MAC, IP version
+>     and IP length: 0x45 and protocol: 0x01 (ICMP)).
+> 2 - The last match must provide an offset that guarantees all required
+>     headers are accounted for, even if the last header is not matched.
+>     For example, in #2, the last match is 4 bytes at offset 24 starting
+>     from IP header, so the total is 14 (MAC) + 24 + 4 = 42, which is the
+>     sum of MAC+IP+ICMP headers.
 > 
 > Reviewed-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
 > Reviewed-by: Marcin Szycik <marcin.szycik@linux.intel.com>
