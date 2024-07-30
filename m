@@ -4,84 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 95121C3DA61
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 30 Jul 2024 10:23:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E7AC4C3DA61
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 30 Jul 2024 10:23:32 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 5E27981241;
-	Tue, 30 Jul 2024 10:23:19 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id A3B738115D;
+	Tue, 30 Jul 2024 10:23:32 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id oZI48lQXqBM7; Tue, 30 Jul 2024 10:23:18 +0000 (UTC)
+ id IQxMzoT8I0eq; Tue, 30 Jul 2024 10:23:32 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org BBA9D8112A
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 083A181138
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1722334998;
-	bh=rCTS8FfwxCtjq7fleEMvvzjrFTwEDMC/78cHZMprZX8=;
+	s=default; t=1722335012;
+	bh=NjnpLSbGFiPff30vR0RPWgsn7beprcVCLuMkEixCNc8=;
 	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=9Wk2/c/UAX573FwgEK3YGeeVmqqViNFOWiTaRbQNhku6g6IhYyz5Dez9hLdL3k1o3
-	 6cjaYpjB/BrJHXOLoJikL3YZBjiZCv2j+WAOBCSHEXL5ZH2g7Vmb3vOCNDArLl9iXs
-	 k/2Na0rz7OA5HPZqBK4B7OyS4cWwJeS0GK28k2fTc3+RUOoEl5Q5DTJYKDxi9DHsIM
-	 givL6B31TsAry+RARg9K7DDYAUJ1z9506u9b7xzD1pZXWXlncFqKy3gqz8eNb/aRij
-	 ZEFG9DI4MwlwQ56ayVARxueFXMRnPa2AqBcR8OsXk54M8iZfA985CflRAodml46gG0
-	 AnnxLC7irLlJw==
+	b=EONbClEDy+LoVr5hQgyfWG325ARFsN0r0b/Qgvyao8m9D6jIwKEt2FmU1EFWZozr8
+	 aaSPAYnKeVFOIPTv1YeG0/1qQpLeM8nb0DFaL67IhbuCiTO/PiBMDUOuGGcNImkJ9h
+	 7NGDCdlFDmmubmWAknT0VBHZP5r9N/deuLpXpQctHqZYjwmSPtbONiEoj3nlfM5mgO
+	 +KtZmtTTEMIgJ/hHVNqPUWgqZpbo7GXvDrJJ3D+Di8XaVx6a8L1TZqzpq8YKye5/5a
+	 BvtKBdnybzkM/KkzlXKFO6sAHCIb7QWcZKRg4/cDn1MMr6PbNHxqd7Bf9gaLwlIMkB
+	 AIFpcr5nOkEgg==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id BBA9D8112A;
-	Tue, 30 Jul 2024 10:23:18 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id C27E11BF5DA
- for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Jul 2024 10:23:16 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 083A181138;
+	Tue, 30 Jul 2024 10:23:32 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 367C81BF5DA
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Jul 2024 10:23:30 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id ACD7540609
- for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Jul 2024 10:23:15 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 2F2A081138
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Jul 2024 10:23:30 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id k1mTmp41Ci2Z for <intel-wired-lan@lists.osuosl.org>;
- Tue, 30 Jul 2024 10:23:15 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=139.178.84.217;
- helo=dfw.source.kernel.org; envelope-from=horms@kernel.org;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 0739840612
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0739840612
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 0739840612
- for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Jul 2024 10:23:14 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id HSckGCk1Hxvp for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 30 Jul 2024 10:23:29 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org;
+ envelope-from=horms@kernel.org; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 94B5F8111F
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 94B5F8111F
+Received: from dfw.source.kernel.org (dfw.source.kernel.org
+ [IPv6:2604:1380:4641:c500::1])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 94B5F8111F
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Jul 2024 10:23:29 +0000 (UTC)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by dfw.source.kernel.org (Postfix) with ESMTP id 3744661DE7;
- Tue, 30 Jul 2024 10:23:14 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2C1FCC4AF0B;
- Tue, 30 Jul 2024 10:23:12 +0000 (UTC)
-Date: Tue, 30 Jul 2024 11:23:10 +0100
+ by dfw.source.kernel.org (Postfix) with ESMTP id B9E5861777;
+ Tue, 30 Jul 2024 10:23:28 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 90A49C32782;
+ Tue, 30 Jul 2024 10:23:26 +0000 (UTC)
+Date: Tue, 30 Jul 2024 11:23:24 +0100
 From: Simon Horman <horms@kernel.org>
 To: Ahmed Zaki <ahmed.zaki@intel.com>
-Message-ID: <20240730102310.GU97837@kernel.org>
+Message-ID: <20240730102324.GV97837@kernel.org>
 References: <20240725220810.12748-1-ahmed.zaki@intel.com>
- <20240725220810.12748-7-ahmed.zaki@intel.com>
+ <20240725220810.12748-9-ahmed.zaki@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20240725220810.12748-7-ahmed.zaki@intel.com>
+In-Reply-To: <20240725220810.12748-9-ahmed.zaki@intel.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1722334993;
- bh=pT4+ay8DDR3nEJS/rR28xaqLvwI5HQMmBzAJq6x0P/k=;
+ d=kernel.org; s=k20201202; t=1722335008;
+ bh=67OMBK5OtSZOYrk1GahfzAECnxtvjYjzquPXPhvYx9A=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=fktfH51WjzVxXOBHOw7WTdoaO8w/oJH8nQ309C+x2go71v6SfsR1Zsbq0VUuhZjEU
- JY2mqB/m5vXYtGG4mEC0+RL1GdTK6729SOJWF5uRd9oq+db92/rRY9Ptr46JjAcwEA
- E7cWI96cr7Z7Ncedg/LNa4eNkEMk5nSVD1MY3Z0fSHroq0FoZ6rbwA6pZ3Nm8jZ2VE
- V4uU6U/66uo7MTHJ/LxqzD9cOTCyMtzc47+XY2Cjs5B1aaD4uOozcs6UTlq26CPnwe
- nBpLTTjRKb+WRLvmyReoJmmaq+WeNDUVQco64elvflLsdYnB/f/stKhOP6f8K2il4S
- opZteaYHyGckg==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ b=NBw7NgVmfbyzy5zeYfkUEIHrmYKXj+cPWZDO3n8zT06utrQ679WotbNysX4ER7o1K
+ CB92qVxh+bd2xajwTHXBiqwpGmSgDLN04ASir7niP7SEoFII+L6gXxBxAbJ0275Je/
+ AKuA4WDKMKpxAWRHpZmrgnwXlsEn8m9X0qEPxgyIaOs22x/FLSKCkJBWxI+1mc0Tgd
+ 7V55sHcb2NiuOXJ5CZgQz4Hs5SSFNYVnCQsJMy49ETqRMlUKmWGufHzPH3CqC1pamu
+ CxavP4ikuGZyIGnf8wT7jKVByfknfMekW+3u1t3nECbbyVZLg8Z7VWLRKmmGYMmznR
+ 6hB85f7ZCkm+A==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=fktfH51W
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next v5 06/13] ice: support
- turning on/off the parser's double vlan mode
+ header.a=rsa-sha256 header.s=k20201202 header.b=NBw7NgVm
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next v5 08/13] ice: add API for
+ parser profile initialization
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,16 +103,16 @@ Cc: netdev@vger.kernel.org, hkelam@marvell.com,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Thu, Jul 25, 2024 at 04:08:02PM -0600, Ahmed Zaki wrote:
+On Thu, Jul 25, 2024 at 04:08:04PM -0600, Ahmed Zaki wrote:
 > From: Junfeng Guo <junfeng.guo@intel.com>
 > 
-> Add API ice_parser_dvm_set() to support turning on/off the parser's double
-> vlan mode.
+> Add API ice_parser_profile_init() to init a parser profile based on
+> a parser result and a mask buffer. The ice_parser_profile struct is used
+> by the low level FXP engine to create HW profile/field vectors.
 > 
 > Reviewed-by: Marcin Szycik <marcin.szycik@linux.intel.com>
 > Signed-off-by: Qi Zhang <qi.z.zhang@intel.com>
 > Signed-off-by: Junfeng Guo <junfeng.guo@intel.com>
-> Co-developed-by: Ahmed Zaki <ahmed.zaki@intel.com>
 > Signed-off-by: Ahmed Zaki <ahmed.zaki@intel.com>
 > Tested-by: Rafal Romanowski <rafal.romanowski@intel.com>
 
