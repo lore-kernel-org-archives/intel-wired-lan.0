@@ -4,72 +4,72 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 51831C49EA1
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 30 Jul 2024 09:28:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 17E6AC3DA49
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 30 Jul 2024 09:28:07 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 1A61060A43;
-	Tue, 30 Jul 2024 09:28:05 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id C0A6860A41;
+	Tue, 30 Jul 2024 09:28:06 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id y5HdaCKDr2Dg; Tue, 30 Jul 2024 09:28:04 +0000 (UTC)
+ id KXwCsTD3AC92; Tue, 30 Jul 2024 09:28:06 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org EFC0F60A41
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org BD98460A44
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1722331684;
-	bh=m0bxwUhHcEBUdH8QLWLJll47wcJJnedVHxmcypDr+FI=;
+	s=default; t=1722331685;
+	bh=MJIMvws130r1DLdjvnNOWFZVEW0OwLMAQ0IZiu/V4kM=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=7Hb0Vc2NJaCeStvN94E57FoY0HmWgGnuKau8m35eVRSnUJ4yQnI+L5sEJ8uFJn4Z6
-	 Q+9zpfT1UgvahRen0IFVoKUTCqizQ5VUKaAdvOO8GxsJLdrJHRTo3+RojiCyGyEuCW
-	 qVQ5XlT1tx42ltPoOJWMQG6FkPQ16wzhk+BUDEmeqWT/xO0qJ7+9AD2V5lMniqaT7W
-	 7/sb+UzdvKYl6J0bRipMKfRYpfYPXtx3wCXSc0XTXWG6ErvcvEjDmIhTg/t9D5rjBo
-	 XTvDvMK/dhA7rK4fCndvUkCeeOfsUz8SZ/Wd0DmgR1ozmxi5FxBBpa+s9kqocBfORM
-	 MOOSI6e3vT0Ag==
+	b=6eWEUNC1RRnmGAYswhzp5TyXxg7qbq91Xth3Huq1H6iprs8yVZGFsFMr+xXVrxPOV
+	 lcDMjOYt6opjLfzQT7Rbb2lhkQsl3PdoMq5C5/8mjQ/bRMPSvPsVTOHOdcPPueDl9/
+	 vaasnxRsYpcdvt9/jlP4wG+F8FoXtR8P2BVEHjWgXvNUzS4TGmIXsTP3a81fLm15O8
+	 bcv99Wedu9XhNj0ab8mNiyU80XuH2Nh6cQtURljXsGFeDFHG4VLlPdUvyXLEfmlUvG
+	 K7StsSeOiFf3OFn5AqhjrAPT/pnW9AhnUuLtl2aSz5w81CcOmjxlPuwOgdlEMKK0MC
+	 eYFKmDn6ZejqA==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id EFC0F60A41;
-	Tue, 30 Jul 2024 09:28:03 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id BD98460A44;
+	Tue, 30 Jul 2024 09:28:05 +0000 (UTC)
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 056501BF5A2
- for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Jul 2024 09:28:00 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id E65451BF5A2
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Jul 2024 09:28:01 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id E78C780FB2
- for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Jul 2024 09:27:59 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id D49F680FB4
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Jul 2024 09:28:01 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id IthAnri81SZP for <intel-wired-lan@lists.osuosl.org>;
- Tue, 30 Jul 2024 09:27:59 +0000 (UTC)
+ id 2jRDIAdsDzVf for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 30 Jul 2024 09:28:01 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.7;
  helo=mgamail.intel.com; envelope-from=mateusz.polchlopek@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org EA05280F81
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org EA05280F81
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 090CB80F81
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 090CB80F81
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.7])
- by smtp1.osuosl.org (Postfix) with ESMTPS id EA05280F81
- for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Jul 2024 09:27:58 +0000 (UTC)
-X-CSE-ConnectionGUID: AVDXrc+cSrKIQhNd4Ey0Bg==
-X-CSE-MsgGUID: AZxpKDC9TMOdWDzRQcwZlA==
-X-IronPort-AV: E=McAfee;i="6700,10204,11148"; a="45551313"
-X-IronPort-AV: E=Sophos;i="6.09,248,1716274800"; d="scan'208";a="45551313"
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 090CB80F81
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Jul 2024 09:28:00 +0000 (UTC)
+X-CSE-ConnectionGUID: /gMpfGR9ROeUS93YnqkRig==
+X-CSE-MsgGUID: +YHJY7jBQ1CfHzrzSblcMA==
+X-IronPort-AV: E=McAfee;i="6700,10204,11148"; a="45551318"
+X-IronPort-AV: E=Sophos;i="6.09,248,1716274800"; d="scan'208";a="45551318"
 Received: from orviesa002.jf.intel.com ([10.64.159.142])
  by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 30 Jul 2024 02:27:58 -0700
-X-CSE-ConnectionGUID: 2yzam/c2RHyYU8IRFPiitA==
-X-CSE-MsgGUID: WfjzeXM3QFKeEd6fFwDuVQ==
+ 30 Jul 2024 02:28:01 -0700
+X-CSE-ConnectionGUID: KqKYBOdOQimbHYc3jbKBcw==
+X-CSE-MsgGUID: gz+0KRzhRfabpnlaZFxfLQ==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.09,248,1716274800"; d="scan'208";a="84923185"
+X-IronPort-AV: E=Sophos;i="6.09,248,1716274800"; d="scan'208";a="84923195"
 Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by orviesa002.jf.intel.com with ESMTP; 30 Jul 2024 02:27:55 -0700
+ by orviesa002.jf.intel.com with ESMTP; 30 Jul 2024 02:27:57 -0700
 Received: from fedora.igk.intel.com (Metan_eth.igk.intel.com [10.123.220.124])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id A84F728198;
- Tue, 30 Jul 2024 10:27:53 +0100 (IST)
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id CA7BE28199;
+ Tue, 30 Jul 2024 10:27:56 +0100 (IST)
 From: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
 To: intel-wired-lan@lists.osuosl.org,
 	aleksander.lobakin@intel.com
-Date: Tue, 30 Jul 2024 05:15:01 -0400
-Message-Id: <20240730091509.18846-7-mateusz.polchlopek@intel.com>
+Date: Tue, 30 Jul 2024 05:15:03 -0400
+Message-Id: <20240730091509.18846-9-mateusz.polchlopek@intel.com>
 X-Mailer: git-send-email 2.38.1
 In-Reply-To: <20240730091509.18846-1-mateusz.polchlopek@intel.com>
 References: <20240730091509.18846-1-mateusz.polchlopek@intel.com>
@@ -77,25 +77,25 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1722331679; x=1753867679;
+ t=1722331681; x=1753867681;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=enWKnWpXSA5SPZ198IfPwnvqDdKtjyjxB/bGqFkQzSw=;
- b=jtMfRIzlBPtB8uRP+FoEZO8iCtWaEgKnLUCU/9nMoOhXvJ7Y+Y9xxJbd
- 1bVkhYu3uOZrHhVdU42XqT3g0a3Xh//6ojLbkmz3mMoYxUz2QAHqWFgvX
- bv8r/1MqWUIofhgZVvDsFhHAE1P8sWw16BdUj4rYFUE0dWKsjkGBEPr4W
- OCfODcViA4bD8jDxHVXpmouCnaGuX1dQIw2F+Xw9afTV0UzmQ3zlhyDvQ
- 2HX6o/fP0bqLimsjtcOPKvYrWu/iRP0WD4Q45zeVYGLh0X/LM6go5qzhD
- 0DJGU95lIc1YIUYTCmKk9gh5Wt8HUjQXE6V9Sdny88ik5GXR3zoW4uigr
- A==;
+ bh=cWFUuG4vdg91NTGjrTVz9TXqeBrTdOCGiqV8rJvViaw=;
+ b=BHlHv6iXYgMcAgIe2BV+3PYqc1Xh1Qhaak536XbBYeB608247dzsZpn3
+ qKKAd7oqR6nPt8Co8KxzRjsjS563LtfMScmw1Atipecx/G18hgbqSRm9v
+ W/7QkmrxoUrb0nmVQ2QUPE2FX/parjB9n/uZlbgKE9RyPnHbYPyn4cRC5
+ +JUUrSzhnw7q7G6o/uthqSAw9u5n3jIHAM+ks0EHeOEJqaA8dk5yIVp7Y
+ 2WUg3TTQLD+UzjUDM6izw+RZuBy3v2ZyaQzNMsLrRG7zvYk1pZIC/qCZZ
+ Q2475Gy0AwvQI5HU74xe5qWJQyqn2oGBrpck7IinufQeTxwaB/TZKqt7b
+ Q==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=jtMfRIzl
-Subject: [Intel-wired-lan] [PATCH iwl-next v8 06/14] iavf: add initial
- framework for registering PTP clock
+ header.a=rsa-sha256 header.s=Intel header.b=BHlHv6iX
+Subject: [Intel-wired-lan] [PATCH iwl-next v8 08/14] iavf: periodically
+ cache PHC time
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -108,241 +108,134 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Wojciech Drewek <wojciech.drewek@intel.com>, netdev@vger.kernel.org,
- Sai Krishna <saikrishnag@marvell.com>, Ahmed Zaki <ahmed.zaki@intel.com>,
- Simon Horman <horms@kernel.org>,
- Mateusz Polchlopek <mateusz.polchlopek@intel.com>,
- Jacob Keller <jacob.e.keller@intel.com>
+Cc: Jacob Keller <jacob.e.keller@intel.com>, netdev@vger.kernel.org,
+ Wojciech Drewek <wojciech.drewek@intel.com>, Simon Horman <horms@kernel.org>,
+ Mateusz Polchlopek <mateusz.polchlopek@intel.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 From: Jacob Keller <jacob.e.keller@intel.com>
 
-Add the iavf_ptp.c file and fill it in with a skeleton framework to
-allow registering the PTP clock device.
-Add implementation of helper functions to check if a PTP capability
-is supported and handle change in PTP capabilities.
-Enabling virtual clock would be possible, though it would probably
-perform poorly due to the lack of direct time access.
+The Rx timestamps reported by hardware may only have 32 bits of storage
+for nanosecond time. These timestamps cannot be directly reported to the
+Linux stack, as it expects 64bits of time.
+
+To handle this, the timestamps must be extended using an algorithm that
+calculates the corrected 64bit timestamp by comparison between the PHC
+time and the timestamp. This algorithm requires the PHC time to be
+captured within ~2 seconds of when the timestamp was captured.
+
+Instead of trying to read the PHC time in the Rx hotpath, the algorithm
+relies on a cached value that is periodically updated.
+
+Keep this cached time up to date by using the PTP .do_aux_work kthread
+function.
+
+The iavf_ptp_do_aux_work will reschedule itself about twice a second,
+and will check whether or not the cached PTP time needs to be updated.
+If so, it issues a VIRTCHNL_OP_1588_PTP_GET_TIME to request the time
+from the PF. The jitter and latency involved with this command aren't
+important, because the cached time just needs to be kept up to date
+within about ~2 seconds.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 Reviewed-by: Wojciech Drewek <wojciech.drewek@intel.com>
-Reviewed-by: Sai Krishna <saikrishnag@marvell.com>
 Reviewed-by: Simon Horman <horms@kernel.org>
-Co-developed-by: Ahmed Zaki <ahmed.zaki@intel.com>
-Signed-off-by: Ahmed Zaki <ahmed.zaki@intel.com>
 Co-developed-by: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
 Signed-off-by: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
 ---
- drivers/net/ethernet/intel/iavf/Makefile      |   1 +
- drivers/net/ethernet/intel/iavf/iavf_main.c   |   5 +
- drivers/net/ethernet/intel/iavf/iavf_ptp.c    | 126 ++++++++++++++++++
- drivers/net/ethernet/intel/iavf/iavf_ptp.h    |  10 ++
- .../net/ethernet/intel/iavf/iavf_virtchnl.c   |   2 +
- 5 files changed, 144 insertions(+)
- create mode 100644 drivers/net/ethernet/intel/iavf/iavf_ptp.c
+ drivers/net/ethernet/intel/iavf/iavf_ptp.c | 52 ++++++++++++++++++++++
+ drivers/net/ethernet/intel/iavf/iavf_ptp.h |  1 +
+ 2 files changed, 53 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/iavf/Makefile b/drivers/net/ethernet/intel/iavf/Makefile
-index 356ac9faa5bf..cff88cb49540 100644
---- a/drivers/net/ethernet/intel/iavf/Makefile
-+++ b/drivers/net/ethernet/intel/iavf/Makefile
-@@ -13,3 +13,4 @@ obj-$(CONFIG_IAVF) += iavf.o
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_ptp.c b/drivers/net/ethernet/intel/iavf/iavf_ptp.c
+index 46c4f8e11bdd..9eb3161575d5 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_ptp.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_ptp.c
+@@ -169,6 +169,55 @@ static int iavf_ptp_gettimex64(struct ptp_clock_info *ptp,
+ 	return iavf_read_phc_indirect(adapter, ts, sts);
+ }
  
- iavf-y := iavf_main.o iavf_ethtool.o iavf_virtchnl.o iavf_fdir.o \
- 	  iavf_adv_rss.o iavf_txrx.o iavf_common.o iavf_adminq.o
-+iavf-$(CONFIG_PTP_1588_CLOCK) += iavf_ptp.o
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index 11599d62d15a..3961c540c1c4 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -2847,6 +2847,9 @@ static void iavf_init_config_adapter(struct iavf_adapter *adapter)
- 		/* request initial VLAN offload settings */
- 		iavf_set_vlan_offload_features(adapter, 0, netdev->features);
- 
-+	/* Setup initial PTP configuration */
-+	iavf_ptp_init(adapter);
++/**
++ * iavf_ptp_cache_phc_time - Cache PHC time for performing timestamp extension
++ * @adapter: private adapter structure
++ *
++ * Periodically cache the PHC time in order to allow for timestamp extension.
++ * This is required because the Tx and Rx timestamps only contain 32bits of
++ * nanoseconds. Timestamp extension allows calculating the corrected 64bit
++ * timestamp. This algorithm relies on the cached time being within ~1 second
++ * of the timestamp.
++ */
++static void iavf_ptp_cache_phc_time(struct iavf_adapter *adapter)
++{
++	if (time_is_before_jiffies(adapter->ptp.cached_phc_updated + HZ)) {
++		/* The response from virtchnl will store the time into
++		 * cached_phc_time
++		 */
++		iavf_send_phc_read(adapter);
++	}
++}
 +
- 	iavf_schedule_finish_config(adapter);
- 	return;
++/**
++ * iavf_ptp_do_aux_work - Perform periodic work required for PTP support
++ * @ptp: PTP clock info structure
++ *
++ * Handler to take care of periodic work required for PTP operation. This
++ * includes the following tasks:
++ *
++ *   1) updating cached_phc_time
++ *
++ *      cached_phc_time is used by the Tx and Rx timestamp flows in order to
++ *      perform timestamp extension, by carefully comparing the timestamp
++ *      32bit nanosecond timestamps and determining the corrected 64bit
++ *      timestamp value to report to userspace. This algorithm only works if
++ *      the cached_phc_time is within ~1 second of the Tx or Rx timestamp
++ *      event. This task periodically reads the PHC time and stores it, to
++ *      ensure that timestamp extension operates correctly.
++ *
++ * Returns: time in jiffies until the periodic task should be re-scheduled.
++ */
++long iavf_ptp_do_aux_work(struct ptp_clock_info *ptp)
++{
++	struct iavf_adapter *adapter = clock_to_adapter(ptp);
++
++	iavf_ptp_cache_phc_time(adapter);
++
++	/* Check work about twice a second */
++	return msecs_to_jiffies(500);
++}
++
+ /**
+  * iavf_ptp_register_clock - Register a new PTP for userspace
+  * @adapter: private adapter structure
+@@ -189,6 +238,7 @@ static int iavf_ptp_register_clock(struct iavf_adapter *adapter)
+ 		 dev_name(dev));
+ 	ptp_info->owner = THIS_MODULE;
+ 	ptp_info->gettimex64 = iavf_ptp_gettimex64;
++	ptp_info->do_aux_work = iavf_ptp_do_aux_work;
  
-@@ -5474,6 +5477,8 @@ static void iavf_remove(struct pci_dev *pdev)
- 		msleep(50);
+ 	adapter->ptp.clock = ptp_clock_register(ptp_info, dev);
+ 	if (IS_ERR(adapter->ptp.clock))
+@@ -228,6 +278,8 @@ void iavf_ptp_init(struct iavf_adapter *adapter)
+ 		return;
  	}
  
-+	iavf_ptp_release(adapter);
++	ptp_schedule_worker(adapter->ptp.clock, 0);
 +
- 	iavf_misc_irq_disable(adapter);
- 	/* Shut down all the garbage mashers on the detention level */
- 	cancel_work_sync(&adapter->reset_task);
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_ptp.c b/drivers/net/ethernet/intel/iavf/iavf_ptp.c
-new file mode 100644
-index 000000000000..1344298481d4
---- /dev/null
-+++ b/drivers/net/ethernet/intel/iavf/iavf_ptp.c
-@@ -0,0 +1,126 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/* Copyright(c) 2024 Intel Corporation. */
-+
-+#include "iavf.h"
-+
-+/**
-+ * iavf_ptp_cap_supported - Check if a PTP capability is supported
-+ * @adapter: private adapter structure
-+ * @cap: the capability bitmask to check
-+ *
-+ * Return: true if every capability set in cap is also set in the enabled
-+ *         capabilities reported by the PF, false otherwise.
-+ */
-+bool iavf_ptp_cap_supported(struct iavf_adapter *adapter, u32 cap)
-+{
-+	if (!PTP_ALLOWED(adapter))
-+		return false;
-+
-+	/* Only return true if every bit in cap is set in hw_caps.caps */
-+	return (adapter->ptp.hw_caps.caps & cap) == cap;
-+}
-+
-+/**
-+ * iavf_ptp_register_clock - Register a new PTP for userspace
-+ * @adapter: private adapter structure
-+ *
-+ * Allocate and register a new PTP clock device if necessary.
-+ *
-+ * Return: 0 if success, error otherwise
-+ */
-+static int iavf_ptp_register_clock(struct iavf_adapter *adapter)
-+{
-+	struct ptp_clock_info *ptp_info = &adapter->ptp.info;
-+	struct device *dev = &adapter->pdev->dev;
-+
-+	memset(ptp_info, 0, sizeof(*ptp_info));
-+
-+	snprintf(ptp_info->name, sizeof(ptp_info->name) - 1, "%s-%s-clk",
-+		 dev_driver_string(dev),
-+		 dev_name(dev));
-+	ptp_info->owner = THIS_MODULE;
-+
-+	adapter->ptp.clock = ptp_clock_register(ptp_info, dev);
-+	if (IS_ERR(adapter->ptp.clock))
-+		return PTR_ERR(adapter->ptp.clock);
-+
-+	dev_info(&adapter->pdev->dev, "PTP clock %s registered\n",
-+		 adapter->ptp.info.name);
-+	return 0;
-+}
-+
-+/**
-+ * iavf_ptp_init - Initialize PTP support if capability was negotiated
-+ * @adapter: private adapter structure
-+ *
-+ * Initialize PTP functionality, based on the capabilities that the PF has
-+ * enabled for this VF.
-+ */
-+void iavf_ptp_init(struct iavf_adapter *adapter)
-+{
-+	struct device *dev = &adapter->pdev->dev;
-+	int err;
-+
-+	if (WARN_ON(adapter->ptp.initialized)) {
-+		dev_err(dev, "PTP functionality was already initialized!\n");
-+		return;
-+	}
-+
-+	if (!iavf_ptp_cap_supported(adapter, VIRTCHNL_1588_PTP_CAP_READ_PHC)) {
-+		dev_dbg(dev, "Device does not have PTP clock support\n");
-+		return;
-+	}
-+
-+	err = iavf_ptp_register_clock(adapter);
-+	if (err) {
-+		dev_warn(dev, "Failed to register PTP clock device (%d)\n",
-+			 err);
-+		return;
-+	}
-+
-+	adapter->ptp.initialized = true;
-+}
-+
-+/**
-+ * iavf_ptp_release - Disable PTP support
-+ * @adapter: private adapter structure
-+ *
-+ * Release all PTP resources that were previously initialized.
-+ */
-+void iavf_ptp_release(struct iavf_adapter *adapter)
-+{
-+	adapter->ptp.initialized = false;
-+
-+	if (!IS_ERR_OR_NULL(adapter->ptp.clock)) {
-+		dev_info(&adapter->pdev->dev, "removing PTP clock %s\n",
-+			 adapter->ptp.info.name);
-+		ptp_clock_unregister(adapter->ptp.clock);
-+		adapter->ptp.clock = NULL;
-+	}
-+}
-+
-+/**
-+ * iavf_ptp_process_caps - Handle change in PTP capabilities
-+ * @adapter: private adapter structure
-+ *
-+ * Handle any state changes necessary due to change in PTP capabilities, such
-+ * as after a device reset or change in configuration from the PF.
-+ */
-+void iavf_ptp_process_caps(struct iavf_adapter *adapter)
-+{
-+	struct device *dev = &adapter->pdev->dev;
-+
-+	dev_dbg(dev, "PTP capabilities changed at runtime\n");
-+
-+	/* Check if the device gained or lost necessary access to support the
-+	 * PTP hardware clock. If so, driver must respond appropriately by
-+	 * creating or destroying the PTP clock device.
-+	 */
-+	if (adapter->ptp.initialized &&
-+	    !iavf_ptp_cap_supported(adapter, VIRTCHNL_1588_PTP_CAP_READ_PHC))
-+		iavf_ptp_release(adapter);
-+	else if (!adapter->ptp.initialized &&
-+		 iavf_ptp_cap_supported(adapter,
-+					VIRTCHNL_1588_PTP_CAP_READ_PHC))
-+		iavf_ptp_init(adapter);
-+}
+ 	adapter->ptp.initialized = true;
+ }
+ 
 diff --git a/drivers/net/ethernet/intel/iavf/iavf_ptp.h b/drivers/net/ethernet/intel/iavf/iavf_ptp.h
-index aee4e2da0b9a..4939c219bd18 100644
+index 24081b01fb16..5f0efc5fbad1 100644
 --- a/drivers/net/ethernet/intel/iavf/iavf_ptp.h
 +++ b/drivers/net/ethernet/intel/iavf/iavf_ptp.h
-@@ -4,9 +4,19 @@
- #ifndef _IAVF_PTP_H_
- #define _IAVF_PTP_H_
+@@ -34,5 +34,6 @@ void iavf_ptp_release(struct iavf_adapter *adapter);
+ void iavf_ptp_process_caps(struct iavf_adapter *adapter);
+ bool iavf_ptp_cap_supported(struct iavf_adapter *adapter, u32 cap);
+ void iavf_virtchnl_send_ptp_cmd(struct iavf_adapter *adapter);
++long iavf_ptp_do_aux_work(struct ptp_clock_info *ptp);
  
-+#include <linux/ptp_clock_kernel.h>
-+
- /* fields used for PTP support */
- struct iavf_ptp {
- 	struct virtchnl_ptp_caps hw_caps;
-+	bool initialized;
-+	struct ptp_clock_info info;
-+	struct ptp_clock *clock;
- };
- 
-+void iavf_ptp_init(struct iavf_adapter *adapter);
-+void iavf_ptp_release(struct iavf_adapter *adapter);
-+void iavf_ptp_process_caps(struct iavf_adapter *adapter);
-+bool iavf_ptp_cap_supported(struct iavf_adapter *adapter, u32 cap);
-+
  #endif /* _IAVF_PTP_H_ */
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-index 0f338f337778..a75a9cf46591 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-@@ -2510,6 +2510,8 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
- 	case VIRTCHNL_OP_1588_PTP_GET_CAPS:
- 		memcpy(&adapter->ptp.hw_caps, msg,
- 		       min_t(u16, msglen, sizeof(adapter->ptp.hw_caps)));
-+		/* process any state change needed due to new capabilities */
-+		iavf_ptp_process_caps(adapter);
- 		break;
- 	case VIRTCHNL_OP_ENABLE_QUEUES:
- 		/* enable transmits */
 -- 
 2.38.1
 
