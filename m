@@ -4,108 +4,108 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C18FBC3DA64
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  1 Aug 2024 15:04:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DD4E9C3DA64
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  1 Aug 2024 15:22:42 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 65C914024E;
-	Thu,  1 Aug 2024 15:04:13 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 8572E4024E;
+	Thu,  1 Aug 2024 15:22:42 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id YecJrXfjfCxA; Thu,  1 Aug 2024 15:04:12 +0000 (UTC)
+ id sXkmbl3tfy2O; Thu,  1 Aug 2024 15:22:41 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 75B4640529
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 5485140EDC
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1722524652;
-	bh=6oyUrXiQ5KRnBrLzW15m3SL4jVMTbgLQ6TAxlm3G9Hc=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=kn25ZuE7DFFtiN1f3Ftk/hJ68DkXFrDuDWlj2wFdJFvTYwyYF7IiXVfh8dwO+EZhW
-	 yVF0e7Dn9c7e3arV8VdjaX0BcHKcZEE+sfQ8UhOIVRAZrYko2qtrwklpmVn8t3D7Ng
-	 iwozYebDUQGG1LWQ8umWmZY+p2FJ2j4YRlb1lGs1uN6fG0yT0eZhUkah0sor/5ZK32
-	 YdNybp4D1cAMjrg0AHVAKY5ZR5VqDR86Sp7c4OoM6KxL/e2kayk4AjU3br4/FqD6gd
-	 LCuNh9hpVRGNMmKkGXs5DiEwtLt0uejL788UCMhXejS1yITJEogAwljk5MbDbbW39t
-	 18ZLaGHwdOX6A==
+	s=default; t=1722525761;
+	bh=8Dx2Bv0d2od3Km7MjoXRYzhl1VfhP4WqwsY5gBZHcjc=;
+	h=References:In-Reply-To:From:Date:To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=aqIIJSML35FNSa/BaIlIAzPVEY/GsWqoBxm4a44Pw4nRKnsoM10o3Nca9IrQGux+L
+	 GvAvY2RH15jzBaUrPMLnQoCTOQz6SsJ8xmdNHHTiqz+PY7obwjl5u5KI1KpddjfN1N
+	 R8rh7e1QzlaqjdKefKy0R4qWAhVU/FFUgduJJVCgvitpeYI+bEXoWGpGiO0wVIdf9k
+	 Du255JdurK2odMKVXfpEWzYsMmrZNA4sDKdduxSlzH66/PQk+a2f+aN+opgWJyzp6Z
+	 S/vYcoGzqQiOZXH+sdNHsdj9AUnniouoCc19WFKiPy/wx9sTfM35QUYsgogE1q8omG
+	 NUHlCZlvXDF2w==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 75B4640529;
-	Thu,  1 Aug 2024 15:04:12 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id B5E671BF3C9
- for <intel-wired-lan@lists.osuosl.org>; Thu,  1 Aug 2024 13:47:40 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 5485140EDC;
+	Thu,  1 Aug 2024 15:22:41 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 32F951BF3D9
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  1 Aug 2024 15:22:40 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id AFA71606E7
- for <intel-wired-lan@lists.osuosl.org>; Thu,  1 Aug 2024 13:47:40 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 2C31940546
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  1 Aug 2024 15:22:40 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id LH_mbo5Rt7pk for <intel-wired-lan@lists.osuosl.org>;
- Thu,  1 Aug 2024 13:47:40 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id jFEd53_9Peq9 for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  1 Aug 2024 15:22:39 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2607:f8b0:4864:20::630; helo=mail-pl1-x630.google.com;
- envelope-from=yyyynoom@gmail.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 1EE81606E5
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 1EE81606E5
-Received: from mail-pl1-x630.google.com (mail-pl1-x630.google.com
- [IPv6:2607:f8b0:4864:20::630])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 1EE81606E5
- for <intel-wired-lan@lists.osuosl.org>; Thu,  1 Aug 2024 13:47:39 +0000 (UTC)
-Received: by mail-pl1-x630.google.com with SMTP id
- d9443c01a7336-1fc491f9b55so56293215ad.3
- for <intel-wired-lan@lists.osuosl.org>; Thu, 01 Aug 2024 06:47:39 -0700 (PDT)
+ client-ip=2a00:1450:4864:20::336; helo=mail-wm1-x336.google.com;
+ envelope-from=alexander.duyck@gmail.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org C185F403E3
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C185F403E3
+Received: from mail-wm1-x336.google.com (mail-wm1-x336.google.com
+ [IPv6:2a00:1450:4864:20::336])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id C185F403E3
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  1 Aug 2024 15:22:38 +0000 (UTC)
+Received: by mail-wm1-x336.google.com with SMTP id
+ 5b1f17b1804b1-428e0d184b4so6439335e9.2
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 01 Aug 2024 08:22:38 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20230601; t=1722520059; x=1723124859;
- h=content-transfer-encoding:mime-version:message-id:date:subject:cc
- :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
- :reply-to;
- bh=6oyUrXiQ5KRnBrLzW15m3SL4jVMTbgLQ6TAxlm3G9Hc=;
- b=iP8hOi2vwBOeJbmuA9Zgr7KUAMRadsaL8OCrR3sC6Spn7kIPXwIBSXd0kpWo+rka1Y
- fUfqbshdjzkn5rO8gkWZj0Jh3NPde2X61iZaYBoYXQW1rNelR/6xxrGA4UTbzyUVNfjd
- CEgj+6bruLyQHBF2t12s16pUmlpKUSMHfEwH/DFB659xfHqXOwpy33MBzaI2O1XcWKJF
- Ok4WmgbqXl7f83I4hj9VfluNZCjPunGi6FP4rQW0HNzM/w2RKdK+BRu/AiUW4oHvm8+9
- BN8dkV/pehqHoklhhZrWmP5noIOnx/krqQIFCpxqrXQShcfVxlSJXux/aWsGVsgA1mUL
- BLsQ==
+ d=1e100.net; s=20230601; t=1722525756; x=1723130556;
+ h=content-transfer-encoding:cc:to:subject:message-id:date:from
+ :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+ :subject:date:message-id:reply-to;
+ bh=8Dx2Bv0d2od3Km7MjoXRYzhl1VfhP4WqwsY5gBZHcjc=;
+ b=e/DF4bL7lMja5qKZ65lDPPlQGg3UlFpaBuKmQ+87+JJLUAuPGbWm+IyMLAyU8OK1iG
+ jMUUzpfRSCNOSHJbz3CG5h9FCE/EEwFLMeN0XB9SpBwtUQl9JQ26uzP4fnWeZwIv0/eF
+ Di0EfyWwBOn6OxVVwxxLZ2xCyfVd9Yx79DEnNzihfbmo4vM5E7tz+1si8KeTMWjeqyvC
+ I6+JXmMLpzxJas8JBv1kMmmgZq2l/mTfuo8Z7LAxFZIqvt8CnACQHUQr4oy1R84uqWpY
+ 8N37UbB8jMqCdtryoUXI3WBA9339+TKb/NMjHqLimobe4lYgqZPiXaYh+Rx5B7AWLBah
+ jS4g==
 X-Forwarded-Encrypted: i=1;
- AJvYcCW3GRkIC5KqhjkI0cMKQNSItAb9+gWux2to9fYRbxcgNwR0yyCD2KvYhvB17q5L44IpUPHCg7TWy/Cvid6MgbNDX62wx9fSRqP0wmwKgwh5/A==
-X-Gm-Message-State: AOJu0Yyc/otcuCtjT1X09xImN7Nl1zt1n+nw9EABFyHBmkwdTs1Glymc
- 4dItt0lNaPpdaQmJi55SJuJaNNiHF1evD5vnCranQ3zwI3LwERHy
-X-Google-Smtp-Source: AGHT+IFfeAhrEmDM6jOnfL5ofrZr5WaVDCLtKFEqLNQlj0uawfZtGGNywhT+ed6VYVqPvDXKX6TqSQ==
-X-Received: by 2002:a17:90a:8d18:b0:2c9:6278:27c9 with SMTP id
- 98e67ed59e1d1-2cff95405a9mr245888a91.38.1722520059292; 
- Thu, 01 Aug 2024 06:47:39 -0700 (PDT)
-Received: from mythos-cloud.. ([211.46.174.173])
- by smtp.gmail.com with ESMTPSA id
- 98e67ed59e1d1-2cfdc4aa0c2sm3302534a91.46.2024.08.01.06.47.37
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 01 Aug 2024 06:47:38 -0700 (PDT)
-From: Moon Yeounsu <yyyynoom@gmail.com>
-To: davem@davemloft.net, edumazet@google.com, kuba@kernel.org,
- pabeni@redhat.com
-Date: Thu,  1 Aug 2024 22:47:10 +0900
-Message-ID: <20240801134709.1737190-2-yyyynoom@gmail.com>
-X-Mailer: git-send-email 2.45.2
+ AJvYcCWEZlqdes/SeMM8ukE1FCKZhQ3wG0Q39rHfDyq73k5A8YxSgGtpQUy/3aWl+Scye17t/CjVKemfa/yAHlUQy9IiORjX+dvsGZfFScUlJh78mw==
+X-Gm-Message-State: AOJu0Yy/EAL+lGGIQqJkkmUFSrWMpURRC53uLyAlIWdmyqfgFnlyUSlG
+ lK0zJaZLVnml+AWBtNXS4XE973IDnvKzFnecRWu8S8srt2GFVd72454+Oz1g6Eir78ks267GmsV
+ VT/P/WyJN+bV4KgPAmN9hErpnGPY=
+X-Google-Smtp-Source: AGHT+IHJwpMJUuvVBDGd0+iVwndbV1UbEfs+MYBNb+0c/veShsqCR+fklPSjDi/gK00dEDB9UQYZf/nj06+15imHIwM=
+X-Received: by 2002:adf:f14d:0:b0:368:4bc0:9211 with SMTP id
+ ffacd0b85a97d-36bbc0f3459mr125871f8f.17.1722525756248; Thu, 01 Aug 2024
+ 08:22:36 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Mailman-Approved-At: Thu, 01 Aug 2024 15:04:10 +0000
+References: <20240731124505.2903877-1-linyunsheng@huawei.com>
+ <20240731124505.2903877-5-linyunsheng@huawei.com>
+ <CAKgT0UcqdeSJdjZ_FfwyCnT927TwOkE4zchHLOkrBEmhGzex9g@mail.gmail.com>
+ <22fda86c-d688-42e7-99e8-e2f8fcf1a5ba@huawei.com>
+In-Reply-To: <22fda86c-d688-42e7-99e8-e2f8fcf1a5ba@huawei.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Thu, 1 Aug 2024 08:21:59 -0700
+Message-ID: <CAKgT0UcuGj8wvC87=A+hkarRupfhjGM0BPzLUT2AJc8Ovg_TFg@mail.gmail.com>
+To: Yunsheng Lin <linyunsheng@huawei.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20230601; t=1722520059; x=1723124859; darn=lists.osuosl.org;
- h=content-transfer-encoding:mime-version:message-id:date:subject:cc
- :to:from:from:to:cc:subject:date:message-id:reply-to;
- bh=6oyUrXiQ5KRnBrLzW15m3SL4jVMTbgLQ6TAxlm3G9Hc=;
- b=PHeNNgAIFVYIetecq6YCgU+l8HAxyxapsNn8xvm52F80Xix2J9Y3caqIhuc+aaBEdw
- tgRV0on05tkG/zPQspVN5rI1wkcdpLpocYFUvBMxPWVfCB+oxCFC+Yjjj4hFFVqwQ7Kr
- W12nqndZO27ekLt+5g0u21adnVFfEScC6Ad9xgfrZey8Kvs3fCJ3x2GZI5kHOidmQ7O8
- 0AzBBIjR3Rwo1FlRUG+KndwYVrX0xS+z3QKJVhvS3FmNMzB8+QtFRsX2bllp8ATM20Au
- 5Rq73fotJFjRpnHfUFHekHTiXi6VzqPQwawHY68CUC288JDsSNTuoyMznCo3VsL9n40X
- uEkg==
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ d=gmail.com; s=20230601; t=1722525756; x=1723130556; darn=lists.osuosl.org;
+ h=content-transfer-encoding:cc:to:subject:message-id:date:from
+ :in-reply-to:references:mime-version:from:to:cc:subject:date
+ :message-id:reply-to;
+ bh=8Dx2Bv0d2od3Km7MjoXRYzhl1VfhP4WqwsY5gBZHcjc=;
+ b=U+0JvvH4JfDV9p1IBFMLvx5A0y0oLo6NSJjuPJsRYM1MZOeXUJP1NIZk9K4t/4lnzZ
+ 2zWxO7DDaE7+LuJNLNIOdKNLVNPLji2cCKBJSR8upJmtx9XBI0jQnW4UtTVH6knajT31
+ MXGIK8eJ7CIlYVzkvVOleCXSgh7YA6zRKhnAcnLpsd+IdE66Cp7ErD1V/UxzzcbTSfwL
+ 1vajFyTPL48wP9W5NO4+IfXueHx+8gt+F0lNGkf1etRMyGVTgqGWVm5UfMZY2ECJ+Non
+ e87+s/Au3etk2+rigzUIzsNdVwaRHdUXUDzbO96QrGREUUnVElzJWlwkBnHibH6Dfjk9
+ rJtQ==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=gmail.com
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20230601 header.b=PHeNNgAI
-Subject: [Intel-wired-lan] [PATCH] e1000e: use ip_hdrlen() instead of bit
- shift
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
+ header.a=rsa-sha256 header.s=20230601 header.b=U+0JvvH4
+Subject: Re: [Intel-wired-lan] [PATCH net-next v12 04/14] mm: page_frag: add
+ '_va' suffix to page_frag API
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -118,32 +118,86 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Moon Yeounsu <yyyynoom@gmail.com>, netdev@vger.kernel.org,
- intel-wired-lan@lists.osuosl.org, linux-kernel@vger.kernel.org
+Cc: Yonghong Song <yonghong.song@linux.dev>, kvm@vger.kernel.org,
+ "Michael S. Tsirkin" <mst@redhat.com>, Neil Brown <neilb@suse.de>,
+ Jason Wang <jasowang@redhat.com>, Alexei Starovoitov <ast@kernel.org>,
+ linux-nvme@lists.infradead.org, Dai Ngo <Dai.Ngo@oracle.com>,
+ David Howells <dhowells@redhat.com>, Matthias Brugger <matthias.bgg@gmail.com>,
+ Eric Dumazet <edumazet@google.com>, Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Subbaraya Sundeep <sbhatta@marvell.com>,
+ Marc Dionne <marc.dionne@auristor.com>, Christoph Hellwig <hch@lst.de>,
+ Anna Schumaker <anna@kernel.org>, Jeroen de Borst <jeroendb@google.com>,
+ Sagi Grimberg <sagi@grimberg.me>, Daniel Borkmann <daniel@iogearbox.net>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ John Fastabend <john.fastabend@gmail.com>, Andrii Nakryiko <andrii@kernel.org>,
+ linux-afs@lists.infradead.org,
+ =?UTF-8?Q?Eugenio_P=C3=A9rez?= <eperezma@redhat.com>,
+ Stanislav Fomichev <sdf@fomichev.me>, intel-wired-lan@lists.osuosl.org,
+ Olga Kornievskaia <kolga@netapp.com>, kuba@kernel.org, pabeni@redhat.com,
+ Lorenzo Bianconi <lorenzo@kernel.org>, Mark Lee <Mark-MC.Lee@mediatek.com>,
+ Sunil Goutham <sgoutham@marvell.com>, Chaitanya Kulkarni <kch@nvidia.com>,
+ Jesper Dangaard Brouer <hawk@kernel.org>, Sean Wang <sean.wang@mediatek.com>,
+ virtualization@lists.linux.dev, KP Singh <kpsingh@kernel.org>,
+ Tom Talpey <tom@talpey.com>, Shailend Chand <shailend@google.com>,
+ linux-mediatek@lists.infradead.org, linux-mm@kvack.org,
+ Keith Busch <kbusch@kernel.org>, bpf@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org,
+ AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
+ Jens Axboe <axboe@kernel.dk>, Hao Luo <haoluo@google.com>,
+ linux-nfs@vger.kernel.org, Song Liu <song@kernel.org>, netdev@vger.kernel.org,
+ Jeff Layton <jlayton@kernel.org>, linux-kernel@vger.kernel.org,
+ davem@davemloft.net, Eduard Zingerman <eddyz87@gmail.com>,
+ hariprasad <hkelam@marvell.com>, Chuck Lever <chuck.lever@oracle.com>,
+ Jiri Olsa <jolsa@kernel.org>, Praveen Kaligineedi <pkaligineedi@google.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Martin KaFai Lau <martin.lau@linux.dev>, Geetha sowjanya <gakula@marvell.com>,
+ Trond Myklebust <trondmy@kernel.org>, Felix Fietkau <nbd@nbd.name>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-There's no reason to use bit shift to find the UDP header.
-It's not intuitive and it reinvents well-defined functions.
+On Thu, Aug 1, 2024 at 6:01=E2=80=AFAM Yunsheng Lin <linyunsheng@huawei.com=
+> wrote:
+>
+> On 2024/8/1 2:13, Alexander Duyck wrote:
+> > On Wed, Jul 31, 2024 at 5:50=E2=80=AFAM Yunsheng Lin <linyunsheng@huawe=
+i.com> wrote:
+> >>
+> >> Currently the page_frag API is returning 'virtual address'
+> >> or 'va' when allocing and expecting 'virtual address' or
+> >> 'va' as input when freeing.
+> >>
+> >> As we are about to support new use cases that the caller
+> >> need to deal with 'struct page' or need to deal with both
+> >> 'va' and 'struct page'. In order to differentiate the API
+> >> handling between 'va' and 'struct page', add '_va' suffix
+> >> to the corresponding API mirroring the page_pool_alloc_va()
+> >> API of the page_pool. So that callers expecting to deal with
+> >> va, page or both va and page may call page_frag_alloc_va*,
+> >> page_frag_alloc_pg*, or page_frag_alloc* API accordingly.
+> >>
+> >> CC: Alexander Duyck <alexander.duyck@gmail.com>
+> >> Signed-off-by: Yunsheng Lin <linyunsheng@huawei.com>
+> >> Reviewed-by: Subbaraya Sundeep <sbhatta@marvell.com>
+> >
+> > I am naking this patch. It is a pointless rename that is just going to
+> > obfuscate the git history for these callers.
+>
+> I responded to your above similar comment in v2, and then responded more
+> detailedly in v11, both got not direct responding, it would be good to
+> have more concrete feedback here instead of abstract argument.
+>
+> https://lore.kernel.org/all/74e7259a-c462-e3c1-73ac-8e3f49fb80b8@huawei.c=
+om/
+> https://lore.kernel.org/all/11187fe4-9419-4341-97b5-6dad7583b5b6@huawei.c=
+om/
 
-Signed-off-by: Moon Yeounsu <yyyynoom@gmail.com>
----
- drivers/net/ethernet/intel/e1000e/netdev.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+I will make this much more understandable. This patch is one of the
+ones that will permanently block this set in my opinion. As such I
+will never ack this patch as I see no benefit to it. Arguing with me
+on this is moot as you aren't going to change my mind, and I don't
+have all day to argue back and forth with you on every single patch.
 
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index 360ee26557f7..07c4cf84bdf3 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -5731,7 +5731,7 @@ static int e1000_transfer_dhcp_info(struct e1000_adapter *adapter,
- 		if (ip->protocol != IPPROTO_UDP)
- 			return 0;
- 
--		udp = (struct udphdr *)((u8 *)ip + (ip->ihl << 2));
-+		udp = (struct udphdr *)((u8 *)ip + ip_hdrlen(skb));
- 		if (ntohs(udp->dest) != 67)
- 			return 0;
- 
--- 
-2.45.2
-
+As far as your API extension and naming maybe you should look like
+something like bio_vec and borrow the naming from that since that is
+essentially what you are passing back and forth is essentially that
+instead of a page frag which is normally a virtual address.
