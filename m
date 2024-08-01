@@ -4,82 +4,89 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A2724C52D54
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  1 Aug 2024 13:01:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0D969C3DA4A
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  1 Aug 2024 14:13:36 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 5EAB260618;
-	Thu,  1 Aug 2024 13:01:33 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id AA3F3605D1;
+	Thu,  1 Aug 2024 14:13:36 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id uJjV7CocC2bh; Thu,  1 Aug 2024 13:01:32 +0000 (UTC)
+ id L6XQIBBenIAP; Thu,  1 Aug 2024 14:13:36 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4248860640
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 0D3696063F
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1722517292;
-	bh=Fno7jynlRhR0MntB4PTcUruVkbDLRUwqhL/TfFy6/AQ=;
-	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
+	s=default; t=1722521616;
+	bh=AVMTm7VKcieAT1WFKCrLRQwPvyOmL+pnSuOHGhrytn4=;
+	h=Date:From:To:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=WY5I7GNOBKQuUwb1WT5VJs84SfLSjZyAGZaozhNbO0IMxTkRhMY4jJktUyGCn1V6O
-	 WbY7UeUUZCL0X0SdadtDPiEw2fAxAgf/qD0ZKW9IF0SnnMBHm5RkNpcq7Ppy5zUVbn
-	 4lLH9llFTOXZjxpbFmTYcmfU8fBkPay2ddGFeP2UhALw/wnEMUQLgKQijwhBQ+J0jG
-	 O9Gxuz9mYxbXrRaxS1nQVe3xXIbbOrIT1SzISegdOVLzWal9JbZeZspamuzxf/I8+Y
-	 +NLPCD/KmMgk/kt8PzmXIXnCEkH956sZlbya837EUszY10CrkTA2K/T9Z6qM5l55eJ
-	 Abl0Kn6t/470g==
+	b=rCCJ+/vIecohFihZ7LZrfkg/75YcEzfID6ZnB+q9TjnZ1Kb/A4IiIzP3mG5eOldSV
+	 bPla1k3VKn9Vr4ExhK70X+8L970FxevEwXKMXlvgVir0yb8d82VNNAhs7kWg11JIaD
+	 b10nK4HlPXj5iXTZ+0AM4rdYHps8vVdd24qewgALogj7soYwLkhG9yUZ9xwH64Vj/0
+	 nZSUCGQAPxNLW+uGd7QGrtj0UjV8Rh2+1sQtiYBwmXlaaI1PtZs9TkV8rPT266AcQV
+	 MAvei+8XaTf8DO+bbvhIgj4n2O5GpafqqgoZD/FgPhQxLChBZz3R0PlPgXrRWnJt1K
+	 QVXDyRWxRov6Q==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 4248860640;
-	Thu,  1 Aug 2024 13:01:32 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 686101BF479
- for <intel-wired-lan@lists.osuosl.org>; Thu,  1 Aug 2024 13:01:30 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 0D3696063F;
+	Thu,  1 Aug 2024 14:13:36 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 816301BF3E0
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  1 Aug 2024 14:13:34 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 552AD60640
- for <intel-wired-lan@lists.osuosl.org>; Thu,  1 Aug 2024 13:01:30 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 6DA7440294
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  1 Aug 2024 14:13:34 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 3JqjlXI9R_Rc for <intel-wired-lan@lists.osuosl.org>;
- Thu,  1 Aug 2024 13:01:29 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=45.249.212.187;
- helo=szxga01-in.huawei.com; envelope-from=linyunsheng@huawei.com;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 8EF2460618
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8EF2460618
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 8EF2460618
- for <intel-wired-lan@lists.osuosl.org>; Thu,  1 Aug 2024 13:01:27 +0000 (UTC)
-Received: from mail.maildlp.com (unknown [172.19.163.174])
- by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4WZTc54FXfzxW3F;
- Thu,  1 Aug 2024 21:01:09 +0800 (CST)
-Received: from dggpemf200006.china.huawei.com (unknown [7.185.36.61])
- by mail.maildlp.com (Postfix) with ESMTPS id 996A7140109;
- Thu,  1 Aug 2024 21:01:22 +0800 (CST)
-Received: from [10.67.120.129] (10.67.120.129) by
- dggpemf200006.china.huawei.com (7.185.36.61) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.11; Thu, 1 Aug 2024 21:01:22 +0800
-Message-ID: <22fda86c-d688-42e7-99e8-e2f8fcf1a5ba@huawei.com>
-Date: Thu, 1 Aug 2024 21:01:21 +0800
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id tDm5lTMfu2Wa for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  1 Aug 2024 14:13:33 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org;
+ envelope-from=kuba@kernel.org; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org AA7044011C
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org AA7044011C
+Received: from dfw.source.kernel.org (dfw.source.kernel.org
+ [IPv6:2604:1380:4641:c500::1])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id AA7044011C
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  1 Aug 2024 14:13:33 +0000 (UTC)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+ by dfw.source.kernel.org (Postfix) with ESMTP id E844D62502;
+ Thu,  1 Aug 2024 14:13:32 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4B2E6C32786;
+ Thu,  1 Aug 2024 14:13:32 +0000 (UTC)
+Date: Thu, 1 Aug 2024 07:13:31 -0700
+From: Jakub Kicinski <kuba@kernel.org>
+To: Wojciech Drewek <wojciech.drewek@intel.com>
+Message-ID: <20240801071331.086a0864@kernel.org>
+In-Reply-To: <616bd069-51a0-4b05-96af-2d419961e0e5@intel.com>
+References: <20240730105121.78985-1-wojciech.drewek@intel.com>
+ <20240730065835.191bd1de@kernel.org>
+ <c0213cae-5e63-4fd7-81e7-37803806bde4@intel.com>
+ <20240731164716.63f3b5b7@kernel.org>
+ <616bd069-51a0-4b05-96af-2d419961e0e5@intel.com>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-To: Alexander Duyck <alexander.duyck@gmail.com>
-References: <20240731124505.2903877-1-linyunsheng@huawei.com>
- <20240731124505.2903877-5-linyunsheng@huawei.com>
- <CAKgT0UcqdeSJdjZ_FfwyCnT927TwOkE4zchHLOkrBEmhGzex9g@mail.gmail.com>
-Content-Language: en-US
-From: Yunsheng Lin <linyunsheng@huawei.com>
-In-Reply-To: <CAKgT0UcqdeSJdjZ_FfwyCnT927TwOkE4zchHLOkrBEmhGzex9g@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-X-Originating-IP: [10.67.120.129]
-X-ClientProxiedBy: dggems703-chm.china.huawei.com (10.3.19.180) To
- dggpemf200006.china.huawei.com (7.185.36.61)
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dmarc=pass (p=quarantine dis=none)
- header.from=huawei.com
-Subject: Re: [Intel-wired-lan] [PATCH net-next v12 04/14] mm: page_frag: add
- '_va' suffix to page_frag API
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=kernel.org; s=k20201202; t=1722521612;
+ bh=Eq/aNHDxaOY+V8tE16TNUHJ1VjAhDc5Cbsz9tdj07LI=;
+ h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+ b=EFgG1SCivUy5ObYkMX4OJCtMA+1JmXglJyJodcsoZq2KDbr+TZfWPqOD0rCDu5gbu
+ KjrZkrUJtIdpPIyBpbnzi/HYbT2gFy14S28F2E/JMJpH34ZZLtIqB5+DyvBvxoHVC4
+ m90a9fk7qNH8gOJV0zU2ynsLuHELTJVd9dCtrxg5ZEIkxiVjMyKhSfxLRXPQViQfxT
+ tFk03E8lpWN3EckbB2KBeoxhYvr2ztpDwTXlVI+cleUFbEXohNjnaV9DTgxWaUH+w4
+ VfmM7bx6gwWeYa4E2D228l7PR3/GaIe7d6ufEU0/uEHUSR/y4P7P/NbxhRHzlwdQBX
+ 2IWD2MJtKsaqQ==
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=kernel.org
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=EFgG1SCi
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next] ice: Implement ethtool reset
+ support
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,117 +99,29 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Yonghong Song <yonghong.song@linux.dev>, kvm@vger.kernel.org,
- "Michael S. Tsirkin" <mst@redhat.com>, Neil Brown <neilb@suse.de>,
- Jason Wang <jasowang@redhat.com>, Alexei Starovoitov <ast@kernel.org>,
- linux-nvme@lists.infradead.org, Dai Ngo <Dai.Ngo@oracle.com>,
- David Howells <dhowells@redhat.com>, Matthias Brugger <matthias.bgg@gmail.com>,
- Eric Dumazet <edumazet@google.com>, Tony Nguyen <anthony.l.nguyen@intel.com>,
- Subbaraya Sundeep <sbhatta@marvell.com>,
- Marc Dionne <marc.dionne@auristor.com>, Christoph Hellwig <hch@lst.de>,
- Anna Schumaker <anna@kernel.org>, Jeroen de Borst <jeroendb@google.com>,
- Sagi Grimberg <sagi@grimberg.me>, Daniel Borkmann <daniel@iogearbox.net>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- John Fastabend <john.fastabend@gmail.com>, Andrii Nakryiko <andrii@kernel.org>,
- linux-afs@lists.infradead.org,
- =?UTF-8?Q?Eugenio_P=C3=A9rez?= <eperezma@redhat.com>,
- Stanislav Fomichev <sdf@fomichev.me>, intel-wired-lan@lists.osuosl.org,
- Olga Kornievskaia <kolga@netapp.com>, kuba@kernel.org, pabeni@redhat.com,
- Lorenzo Bianconi <lorenzo@kernel.org>, Mark Lee <Mark-MC.Lee@mediatek.com>,
- Sunil Goutham <sgoutham@marvell.com>, Chaitanya Kulkarni <kch@nvidia.com>,
- Jesper Dangaard Brouer <hawk@kernel.org>, Sean Wang <sean.wang@mediatek.com>,
- virtualization@lists.linux.dev, KP Singh <kpsingh@kernel.org>,
- Tom Talpey <tom@talpey.com>, Shailend Chand <shailend@google.com>,
- linux-mediatek@lists.infradead.org, linux-mm@kvack.org,
- Keith Busch <kbusch@kernel.org>, bpf@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org,
- AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
- Jens Axboe <axboe@kernel.dk>, Hao Luo <haoluo@google.com>,
- linux-nfs@vger.kernel.org, Song Liu <song@kernel.org>, netdev@vger.kernel.org,
- Jeff Layton <jlayton@kernel.org>, linux-kernel@vger.kernel.org,
- davem@davemloft.net, Eduard Zingerman <eddyz87@gmail.com>,
- hariprasad <hkelam@marvell.com>, Chuck Lever <chuck.lever@oracle.com>,
- Jiri Olsa <jolsa@kernel.org>, Praveen Kaligineedi <pkaligineedi@google.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Martin KaFai Lau <martin.lau@linux.dev>, Geetha sowjanya <gakula@marvell.com>,
- Trond Myklebust <trondmy@kernel.org>, Felix Fietkau <nbd@nbd.name>
+Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "edumazet@google.com" <edumazet@google.com>,
+ "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
+ "simon.horman@corigine.com" <simon.horman@corigine.com>, "Keller,
+ Jacob E" <jacob.e.keller@intel.com>, "Nguyen,
+ Anthony L" <anthony.l.nguyen@intel.com>,
+ "pabeni@redhat.com" <pabeni@redhat.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On 2024/8/1 2:13, Alexander Duyck wrote:
-> On Wed, Jul 31, 2024 at 5:50 AM Yunsheng Lin <linyunsheng@huawei.com> wrote:
->>
->> Currently the page_frag API is returning 'virtual address'
->> or 'va' when allocing and expecting 'virtual address' or
->> 'va' as input when freeing.
->>
->> As we are about to support new use cases that the caller
->> need to deal with 'struct page' or need to deal with both
->> 'va' and 'struct page'. In order to differentiate the API
->> handling between 'va' and 'struct page', add '_va' suffix
->> to the corresponding API mirroring the page_pool_alloc_va()
->> API of the page_pool. So that callers expecting to deal with
->> va, page or both va and page may call page_frag_alloc_va*,
->> page_frag_alloc_pg*, or page_frag_alloc* API accordingly.
->>
->> CC: Alexander Duyck <alexander.duyck@gmail.com>
->> Signed-off-by: Yunsheng Lin <linyunsheng@huawei.com>
->> Reviewed-by: Subbaraya Sundeep <sbhatta@marvell.com>
+On Thu, 1 Aug 2024 13:01:52 +0200 Wojciech Drewek wrote:
+> We've came up with below mapping:
 > 
-> I am naking this patch. It is a pointless rename that is just going to
-> obfuscate the git history for these callers.
-
-I responded to your above similar comment in v2, and then responded more
-detailedly in v11, both got not direct responding, it would be good to
-have more concrete feedback here instead of abstract argument.
-
-https://lore.kernel.org/all/74e7259a-c462-e3c1-73ac-8e3f49fb80b8@huawei.com/
-https://lore.kernel.org/all/11187fe4-9419-4341-97b5-6dad7583b5b6@huawei.com/
-
+> PF reset:
+> ethtool --reset eth0 irq dma filter offload
+> (we reset all those components but only for the given PF)
 > 
-> As I believe I said before I would prefer to see this work more like
-> the handling of __get_free_pages and __free_pages in terms of the use
+> CORE reset:
+> ethtool --reset eth0 irq-shared dma-shared filter-shared offload-shared ram-shared
+> (whole adapter is affected so we use shared versions + ram)
+> 
+> GLOBAL reset:
+> ethtool --reset eth0 irq-shared dma-shared filter-shared offload-shared mac-shared phy-shared ram-shared
+> (GLOBALR is CORER plus mac and phy components are also reinitialized)
 
-I am not even sure why are you bringing up  __get_free_pages() and
-__free_pages() here, as the declaration of them is something like below:
-
-unsigned long __get_free_pages(gfp_t gfp_mask, unsigned int order);
-void __free_pages(struct page *page, unsigned int order);
-
-And I add another related one for completeness here:
-extern void free_pages(unsigned long addr, unsigned int order);
-
-I am failing to see there is any pattern or rule for the above API
-naming. If there is some pattern for the above existing APIs, please
-describe them in detail so that we have common understanding.
-
-After the renaming, the declaration for both new and old APIs is
-below, please be more specific about what exactly is the confusion
-about them, what is the better naming for the below APIs in your
-mind:
-struct page *page_frag_alloc_pg(struct page_frag_cache *nc,
-                               unsigned int *offset, unsigned int fragsz,
-                               gfp_t gfp);
-void *page_frag_alloc_va(struct page_frag_cache *nc,
-                         unsigned int fragsz, gfp_t gfp_mask);
-struct page *page_frag_alloc(struct page_frag_cache *nc,
-                             unsigned int *offset,
-                             unsigned int fragsz,
-                             void **va, gfp_t gfp);
-
-> of pages versus pointers and/or longs. Pushing this API aside because
-> you want to reuse the name for something different isn't a valid
-> reason to rename an existing API and will just lead to confusion.
-
-Before this patchset, all the page_frag API renamed with a '_va' suffix
-in this patch are dealing with virtual address, it would be better to be
-more specific about what exactly is the confusion here by adding a explicit
-'va' suffix for them in this patch?
-
-I would argue that the renaming may avoid some confusion about whether
-page_frag_alloc() returning a 'struct page' or returning a virtual address
-instead of leading to confusion.
-
-Anyway, naming is always hard, any better naming is welcome. But don't deny
-any existing API renaming when we have not really started doing detailed
-comparison between different API naming options yet.
+SG!
