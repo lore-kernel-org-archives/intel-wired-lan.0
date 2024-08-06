@@ -4,68 +4,68 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6C2E6C3DA64
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  6 Aug 2024 13:13:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 91911C3DA64
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  6 Aug 2024 13:13:26 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 0287C40584;
-	Tue,  6 Aug 2024 13:13:15 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 19CD040A13;
+	Tue,  6 Aug 2024 13:13:26 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id oz1fmmAGH7PC; Tue,  6 Aug 2024 13:13:14 +0000 (UTC)
+ id iaRh2ueTBytz; Tue,  6 Aug 2024 13:13:24 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org E83874045B
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 5560E40A10
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1722949994;
-	bh=Nopj9uRDKUuSLlplWpL9smMIIKDnoAQas0Ql8lfVMA0=;
+	s=default; t=1722950004;
+	bh=27Lvw40kPCF+ldEizlysU2DI325ktvTFKBCoQlrzWDA=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=Q5H5M28AFP/6mCgUotFZH/qucJ6SrqUbZfuM44Q6Fr2jGjbKNzdriO+nSoSYVUcxi
-	 nKsabqsNcQkT0N7b5joRV5DNL90OhfBQUsHPsge0dyyMTzyHylP8FZ7VHqSMzpBdpv
-	 QxWf3I5q2OhMwPn+QRe6Pr1DcMLXuo66CN+/NuXcHYGkx8ypSoDmtep4ZI/EkQvR3J
-	 38xu2ZvWzyBq5c99ZBmtmaUa+eO2PsgRnBzwjZofqtEz2I7Jxm1JJf4iIgRFPUnQuh
-	 XorP+7BnYc8iV6X2UphKP7IDz/038oCWJZ1YUeW5weI8F5G4Rxb+L1oq2O1hc82nxP
-	 dROpHXPhk3Tew==
+	b=EhhMfcF434vOlw1FXBsksoqFnGfS2OyBIOnVKjktYHeqvq0+qOf58L9x1oTu1y6z2
+	 NguxB+f4HSIRFOKoitUgmso/exww/rVuctrC2H90lLjUZU1naSE5TJjrihrf2OOK+O
+	 oAZBjSLS4usu4/+TE5h3+ByvjAbmUd3JOj6ecv9AGI+sfe1ibn70Xht/rripK9vGXz
+	 xHt+fVowuaL+BAX5ZSKaqoM8P1k0MEE6VOclmsjmYh7UUndgIOjA3rJ4f3Dfu1clvI
+	 23/niTXu3TIFHaTvcocyryilJuB0IN+Cp/MdPZ3oJYD2hSXNJduMjegb2mE1bQ+mZ6
+	 CB9wqav20b3Ug==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id E83874045B;
-	Tue,  6 Aug 2024 13:13:13 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 5560E40A10;
+	Tue,  6 Aug 2024 13:13:24 +0000 (UTC)
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 7A22F1BF300
- for <intel-wired-lan@lists.osuosl.org>; Tue,  6 Aug 2024 13:13:11 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 4022E1BF300
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  6 Aug 2024 13:13:18 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 73584403B2
- for <intel-wired-lan@lists.osuosl.org>; Tue,  6 Aug 2024 13:13:11 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 3A83D403B2
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  6 Aug 2024 13:13:18 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id anK5wE4AMZ85 for <intel-wired-lan@lists.osuosl.org>;
- Tue,  6 Aug 2024 13:13:10 +0000 (UTC)
+ id BtP4l1RUlR4p for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  6 Aug 2024 13:13:17 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.17;
  helo=mgamail.intel.com; envelope-from=aleksander.lobakin@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 7B75D40201
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 7B75D40201
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 1696840201
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1696840201
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.17])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 7B75D40201
- for <intel-wired-lan@lists.osuosl.org>; Tue,  6 Aug 2024 13:13:10 +0000 (UTC)
-X-CSE-ConnectionGUID: X2jakLpbSreywFkEFcLw8A==
-X-CSE-MsgGUID: 1XQpDa8xRFqW/GFv/85wtA==
-X-IronPort-AV: E=McAfee;i="6700,10204,11156"; a="20842077"
-X-IronPort-AV: E=Sophos;i="6.09,267,1716274800"; d="scan'208";a="20842077"
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 1696840201
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  6 Aug 2024 13:13:17 +0000 (UTC)
+X-CSE-ConnectionGUID: VcCbONImRZW4Bd2OT9da7w==
+X-CSE-MsgGUID: zHE/e09yQQOjDxjYhu2iOw==
+X-IronPort-AV: E=McAfee;i="6700,10204,11156"; a="20842100"
+X-IronPort-AV: E=Sophos;i="6.09,267,1716274800"; d="scan'208";a="20842100"
 Received: from fmviesa009.fm.intel.com ([10.60.135.149])
  by fmvoesa111.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 06 Aug 2024 06:13:10 -0700
-X-CSE-ConnectionGUID: 16IgqtC6SOargJEsfZV4Eg==
-X-CSE-MsgGUID: f3BC7GwTS6q0dm8SundO3A==
+ 06 Aug 2024 06:13:16 -0700
+X-CSE-ConnectionGUID: taD1EY35RdabGiOk9I/FWQ==
+X-CSE-MsgGUID: 9l7+llSuTDSY/MharIfiBA==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.09,267,1716274800"; d="scan'208";a="56475796"
+X-IronPort-AV: E=Sophos;i="6.09,267,1716274800"; d="scan'208";a="56475804"
 Received: from newjersey.igk.intel.com ([10.102.20.203])
- by fmviesa009.fm.intel.com with ESMTP; 06 Aug 2024 06:13:07 -0700
+ by fmviesa009.fm.intel.com with ESMTP; 06 Aug 2024 06:13:14 -0700
 From: Alexander Lobakin <aleksander.lobakin@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Tue,  6 Aug 2024 15:12:32 +0200
-Message-ID: <20240806131240.800259-2-aleksander.lobakin@intel.com>
+Date: Tue,  6 Aug 2024 15:12:34 +0200
+Message-ID: <20240806131240.800259-4-aleksander.lobakin@intel.com>
 X-Mailer: git-send-email 2.45.2
 In-Reply-To: <20240806131240.800259-1-aleksander.lobakin@intel.com>
 References: <20240806131240.800259-1-aleksander.lobakin@intel.com>
@@ -73,25 +73,25 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1722949990; x=1754485990;
+ t=1722949997; x=1754485997;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=lfliiD9dtcEG344A0Se/HN7jBzJiQBOpagRt04D+Nvw=;
- b=fBmV2dGD6jsKBGAcqNc7NMUOS/mIGjcINWm71jjF/cH0mtXh0eShzedw
- pH7ERVCJelxbCOyKJ504/ezxt1Qk0jfB/sqzuyLTr6d6mUCkoFGwbS7Wj
- FZEA8Q6Pt/Bl6MNFOxiwngF2ypxAqaPb7eCbvaQHv2UJB/cMoDQz8fL5S
- /Bw/yfBnrMGF8sOTuxb7Ofqcr9V4Pg6tw0mv+KU8GvqtON3MiigViljvN
- sl5V9r7dkj4oFPL3FEvVPvgrCpUZgwHgMlBi9dNrwb8pTeapRmHq/Sd+q
- 2JZvYMoLZKcBQm9UTIpEDr/DsHraexxlnm3VZK0AptNFITi++h9VCw174
- Q==;
+ bh=3fzjogVxQcYKzr4bAR1EWwKcI7WFmK8d8Ts7V39KtYQ=;
+ b=inbGD830OE2EAdXAP8uVYqh4KWkoBmbnkgwe/L5TLEJhWL6GztTc8tUw
+ wnTvWn+0MAgk8PD57SMtepYvLnIeSq6jqd/GBWcZvXc1yKBUDRAEj97ba
+ sNoFiUuf427b0ZLWrMIngzrO8zrn8jOF/aiz51XbgMHsYSr/vJYkq5nHF
+ B5ZICUMF4vmxJuyKWC6gmmujPhP9jHzJdcs0LlwQMTsQl26bA7PwaRZuV
+ cWmSijL6iEvJbkzPJn0dN02+QvLMErNgiJqicGLZeyLEDp2xSBidK350j
+ Juf0TwdA3WxDv/oCJxHfLQO2H/W8+EcO7T7Ld0xgGAgmbI+viZ6LYC/E5
+ g==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=fBmV2dGD
-Subject: [Intel-wired-lan] [PATCH iwl-next 1/9] unroll: add generic loop
- unroll helpers
+ header.a=rsa-sha256 header.s=Intel header.b=inbGD830
+Subject: [Intel-wired-lan] [PATCH iwl-next 3/9] libie: add Tx buffer
+ completion helpers
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -104,8 +104,7 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: "Jose E . Marchesi" <jose.marchesi@oracle.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+Cc: Przemek Kitszel <przemyslaw.kitszel@intel.com>,
  Joshua Hay <joshua.a.hay@intel.com>, linux-kernel@vger.kernel.org,
  Alexander Lobakin <aleksander.lobakin@intel.com>,
  Eric Dumazet <edumazet@google.com>, Michal Kubiak <michal.kubiak@intel.com>,
@@ -116,90 +115,154 @@ Cc: "Jose E . Marchesi" <jose.marchesi@oracle.com>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-There are cases when we need to explicitly unroll loops. For example,
-cache operations, filling DMA descriptors on very high speeds etc.
-Add compiler-specific attribute macros to give the compiler a hint
-that we'd like to unroll a loop.
-Example usage:
+Software-side Tx buffers for storing DMA, frame size, skb pointers etc.
+are pretty much generic and every driver defines them the same way. The
+same can be said for software Tx completions -- same napi_consume_skb()s
+and all that...
+Add a couple simple wrappers for doing that to stop repeating the old
+tale at least within the Intel code. Drivers are free to use 'priv'
+member at the end of the structure.
 
- #define UNROLL_BATCH 8
-
-	unrolled_count(UNROLL_BATCH)
-	for (u32 i = 0; i < UNROLL_BATCH; i++)
-		op(priv, i);
-
-Note that sometimes the compilers won't unroll loops if they think this
-would have worse optimization and perf than without unrolling, and that
-unroll attributes are available only starting GCC 8. For older compiler
-versions, no hints/attributes will be applied.
-For better unrolling/parallelization, don't have any variables that
-interfere between iterations except for the iterator itself.
-
-Co-developed-by: Jose E. Marchesi <jose.marchesi@oracle.com> # pragmas
-Signed-off-by: Jose E. Marchesi <jose.marchesi@oracle.com>
 Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Signed-off-by: Alexander Lobakin <aleksander.lobakin@intel.com>
 ---
- include/linux/unroll.h | 50 ++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 50 insertions(+)
- create mode 100644 include/linux/unroll.h
+ include/net/libeth/tx.h | 127 ++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 127 insertions(+)
+ create mode 100644 include/net/libeth/tx.h
 
-diff --git a/include/linux/unroll.h b/include/linux/unroll.h
+diff --git a/include/net/libeth/tx.h b/include/net/libeth/tx.h
 new file mode 100644
-index 000000000000..e305d155faa6
+index 000000000000..facfeca96858
 --- /dev/null
-+++ b/include/linux/unroll.h
-@@ -0,0 +1,50 @@
++++ b/include/net/libeth/tx.h
+@@ -0,0 +1,127 @@
 +/* SPDX-License-Identifier: GPL-2.0-only */
 +/* Copyright (C) 2024 Intel Corporation */
 +
-+#ifndef _LINUX_UNROLL_H
-+#define _LINUX_UNROLL_H
++#ifndef __LIBETH_TX_H
++#define __LIBETH_TX_H
 +
-+#ifdef CONFIG_CC_IS_CLANG
-+#define __pick_unrolled(x, y)	_Pragma(#x)
-+#elif CONFIG_GCC_VERSION >= 80000
-+#define __pick_unrolled(x, y)	_Pragma(#y)
-+#else
-+#define __pick_unrolled(x, y)	/* not supported */
-+#endif
++#include <net/libeth/stats.h>
++
++/* Tx buffer completion */
 +
 +/**
-+ * unrolled - loop attributes to ask the compiler to unroll it
-+ *
-+ * Usage:
-+ *
-+ * #define BATCH 4
-+ *	unrolled_count(BATCH)
-+ *	for (u32 i = 0; i < BATCH; i++)
-+ *		// loop body without cross-iteration dependencies
-+ *
-+ * This is only a hint and the compiler is free to disable unrolling if it
-+ * thinks the count is suboptimal and may hurt performance and/or hugely
-+ * increase object code size.
-+ * Not having any cross-iteration dependencies (i.e. when iter x + 1 depends
-+ * on what iter x will do with variables) is not a strict requirement, but
-+ * provides best performance and object code size.
-+ * Available only on Clang and GCC 8.x onwards.
++ * enum libeth_sqe_type - type of &libeth_sqe to act on Tx completion
++ * @LIBETH_SQE_EMPTY: unused/empty, no action required
++ * @LIBETH_SQE_CTX: context descriptor with empty SQE, no action required
++ * @LIBETH_SQE_SLAB: kmalloc-allocated buffer, unmap and kfree()
++ * @LIBETH_SQE_FRAG: mapped skb frag, only unmap DMA
++ * @LIBETH_SQE_SKB: &sk_buff, unmap and napi_consume_skb(), update stats
 + */
++enum libeth_sqe_type {
++	LIBETH_SQE_EMPTY		= 0U,
++	LIBETH_SQE_CTX,
++	LIBETH_SQE_SLAB,
++	LIBETH_SQE_FRAG,
++	LIBETH_SQE_SKB,
++};
 +
-+/* Ask the compiler to pick an optimal unroll count, Clang only */
-+#define unrolled							    \
-+	__pick_unrolled(clang loop unroll(enable), /* nothing */)
++/**
++ * struct libeth_sqe - represents a Send Queue Element / Tx buffer
++ * @type: type of the buffer, see the enum above
++ * @rs_idx: index of the last buffer from the batch this one was sent in
++ * @raw: slab buffer to free via kfree()
++ * @skb: &sk_buff to consume
++ * @dma: DMA address to unmap
++ * @len: length of the mapped region to unmap
++ * @nr_frags: number of frags in the frame this buffer belongs to
++ * @packets: number of physical packets sent for this frame
++ * @bytes: number of physical bytes sent for this frame
++ * @priv: driver-private scratchpad
++ */
++struct libeth_sqe {
++	enum libeth_sqe_type		type:32;
++	u32				rs_idx;
 +
-+/* Unroll each @n iterations of a loop */
-+#define unrolled_count(n)						    \
-+	__pick_unrolled(clang loop unroll_count(n), GCC unroll n)
++	union {
++		void				*raw;
++		struct sk_buff			*skb;
++	};
 +
-+/* Unroll the whole loop */
-+#define unrolled_full							    \
-+	__pick_unrolled(clang loop unroll(full), GCC unroll 65534)
++	DEFINE_DMA_UNMAP_ADDR(dma);
++	DEFINE_DMA_UNMAP_LEN(len);
 +
-+/* Never unroll a loop */
-+#define unrolled_none							    \
-+	__pick_unrolled(clang loop unroll(disable), GCC unroll 1)
++	u32				nr_frags;
++	u32				packets;
++	u32				bytes;
 +
-+#endif /* _LINUX_UNROLL_H */
++	unsigned long			priv;
++} __aligned_largest;
++
++/**
++ * LIBETH_SQE_CHECK_PRIV - check the driver's private SQE data
++ * @p: type or name of the object the driver wants to fit into &libeth_sqe
++ *
++ * Make sure the driver's private data fits into libeth_sqe::priv. To be used
++ * right after its declaration.
++ */
++#define LIBETH_SQE_CHECK_PRIV(p)					  \
++	static_assert(sizeof(p) <= sizeof_field(struct libeth_sqe, priv))
++
++/**
++ * struct libeth_cq_pp - completion queue poll params
++ * @dev: &device to perform DMA unmapping
++ * @ss: onstack NAPI stats to fill
++ * @napi: whether it's called from the NAPI context
++ *
++ * libeth uses this structure to access objects needed for performing full
++ * Tx complete operation without passing lots of arguments and change the
++ * prototypes each time a new one is added.
++ */
++struct libeth_cq_pp {
++	struct device			*dev;
++	struct libeth_sq_napi_stats	*ss;
++
++	bool				napi;
++};
++
++/**
++ * libeth_tx_complete - perform Tx completion for one SQE
++ * @sqe: SQE to complete
++ * @cp: poll params
++ *
++ * Do Tx complete for all the types of buffers, incl. freeing, unmapping,
++ * updating the stats etc.
++ */
++static inline void libeth_tx_complete(struct libeth_sqe *sqe,
++				      const struct libeth_cq_pp *cp)
++{
++	switch (sqe->type) {
++	case LIBETH_SQE_EMPTY:
++		return;
++	case LIBETH_SQE_SKB:
++	case LIBETH_SQE_FRAG:
++	case LIBETH_SQE_SLAB:
++		dma_unmap_page(cp->dev, dma_unmap_addr(sqe, dma),
++			       dma_unmap_len(sqe, len), DMA_TO_DEVICE);
++		break;
++	default:
++		break;
++	}
++
++	switch (sqe->type) {
++	case LIBETH_SQE_SKB:
++		cp->ss->packets += sqe->packets;
++		cp->ss->bytes += sqe->bytes;
++
++		napi_consume_skb(sqe->skb, cp->napi);
++		break;
++	case LIBETH_SQE_SLAB:
++		kfree(sqe->raw);
++		break;
++	default:
++		break;
++	}
++
++	sqe->type = LIBETH_SQE_EMPTY;
++}
++
++#endif /* __LIBETH_TX_H */
 -- 
 2.45.2
 
