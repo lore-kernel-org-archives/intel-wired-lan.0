@@ -4,72 +4,72 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2E8FDC52D70
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  6 Aug 2024 20:46:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A98CFC52D76
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  6 Aug 2024 20:46:54 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 8EC3B404E7;
-	Tue,  6 Aug 2024 20:46:52 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 7C4CB404D9;
+	Tue,  6 Aug 2024 20:46:54 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Mfnk7_3l-6u0; Tue,  6 Aug 2024 20:46:51 +0000 (UTC)
+ id d13R-542PMhD; Tue,  6 Aug 2024 20:46:53 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2781040222
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C83A6404A3
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1722977209;
-	bh=VtZ843wBTKmEZH0vl3oRMSj715ZXtw+OeywZmKIGzWE=;
+	s=default; t=1722977213;
+	bh=kgN5Wt6jwvNvrVHIohtTJ+iRd5Es9eDfCciYffhfTkU=;
 	h=From:Date:References:In-Reply-To:To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=3f9moZOcF7cuZFsb+nrKhD5IU26vGtRXGRT7brVHZ3udSl5+EXb1MiJSlOXZRErgU
-	 v1nJ+xvzWRvUu3tQuCvM9DppPkkc1EVwqwO2WYpcemb11VOkOuOUEwD7NMjHNQWN0P
-	 SGujdwILGbjmF6vhZRzTTcSJ220fXhmAvDA4CHL5ZmVeGEZri9BfN2GOLcXi3ib5YZ
-	 salv0TLSNHEb/etA/C5AzHwqR9zVheuw7xduQQpEBCJdSq7LfTeL4PWx4aQrvPWU9+
-	 8iu7MhKdVMPwR1QY3IuN+rabLCk8Id86HZg1eOD0hfU3v6LXyiTAoo1wZRJNcdi/uE
-	 naLekeXhllopQ==
+	b=hq5givwl1iYKm5Z/+D4UnvXQv0a+JlbKgvsKrcCnfs2jTFDOywNW96PRV3x9hUmtP
+	 /lcbGZ/I54AwsvrnlCzCdDsgeP3D0XUNaEiNG8OlbH21Zvj+SZQdj6d/df5gEeYg+i
+	 YL5fsSl++LyvNlew25xorY3pM5JDcMiYvNQDWRWwxFZUP13bjDRNjEUjvR1JWwxmHm
+	 J33guJs/naBNAytIpHYWk2knKeKV1YXa8eThQUz9sCYsTGLwwMMRibjJ58lfuTQJq6
+	 quBTy23uoa31LHXbFcdys201AncUlfJkDZ3hdptIeBGRw4FJBPuOizyOlVT7qrc/Sz
+	 +t2qZkxTY1lxg==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 2781040222;
-	Tue,  6 Aug 2024 20:46:49 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 8C64C1BF33D
- for <intel-wired-lan@lists.osuosl.org>; Tue,  6 Aug 2024 20:46:43 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id C83A6404A3;
+	Tue,  6 Aug 2024 20:46:53 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 737881BF33D
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  6 Aug 2024 20:46:48 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 8AF8D40283
- for <intel-wired-lan@lists.osuosl.org>; Tue,  6 Aug 2024 20:46:42 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 5E31E404EF
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  6 Aug 2024 20:46:48 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id O7LA6jr9ew1S for <intel-wired-lan@lists.osuosl.org>;
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id bWiFbN-S1uVG for <intel-wired-lan@lists.osuosl.org>;
  Tue,  6 Aug 2024 20:46:40 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.20;
  helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 94F2C4010F
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 94F2C4010F
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org F0F6F40108
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org F0F6F40108
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.20])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 94F2C4010F
- for <intel-wired-lan@lists.osuosl.org>; Tue,  6 Aug 2024 20:46:40 +0000 (UTC)
-X-CSE-ConnectionGUID: nuz+THfRQxGf75yuwaSiyg==
-X-CSE-MsgGUID: pESA9mKhRNuS5IM+leJQew==
-X-IronPort-AV: E=McAfee;i="6700,10204,11156"; a="20835929"
-X-IronPort-AV: E=Sophos;i="6.09,268,1716274800"; d="scan'208";a="20835929"
+ by smtp4.osuosl.org (Postfix) with ESMTPS id F0F6F40108
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  6 Aug 2024 20:46:39 +0000 (UTC)
+X-CSE-ConnectionGUID: s3M4IcjbT56g90+1EZtN5Q==
+X-CSE-MsgGUID: jQwxc9CMSNOC/m9klFPrpQ==
+X-IronPort-AV: E=McAfee;i="6700,10204,11156"; a="20835919"
+X-IronPort-AV: E=Sophos;i="6.09,268,1716274800"; d="scan'208";a="20835919"
 Received: from fmviesa007.fm.intel.com ([10.60.135.147])
  by orvoesa112.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  06 Aug 2024 13:46:38 -0700
-X-CSE-ConnectionGUID: mrwWbO/CTfujrzOh2qb6Ww==
-X-CSE-MsgGUID: OMpCnJdDRXesFctyrZ8sgA==
+X-CSE-ConnectionGUID: uVAQTbjsRqymNckoo6jG4w==
+X-CSE-MsgGUID: eTWshRfpRjOta+pMZLr7Jg==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.09,268,1716274800"; d="scan'208";a="56331595"
+X-IronPort-AV: E=Sophos;i="6.09,268,1716274800"; d="scan'208";a="56331583"
 Received: from jekeller-desk.amr.corp.intel.com (HELO localhost.localdomain)
  ([10.166.241.1])
  by fmviesa007-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 06 Aug 2024 13:46:38 -0700
+ 06 Aug 2024 13:46:37 -0700
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Tue, 06 Aug 2024 13:46:27 -0700
+Date: Tue, 06 Aug 2024 13:46:23 -0700
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20240806-e810-live-migration-rd32-poll-timeout-v1-7-b5ada29ce703@intel.com>
+Message-Id: <20240806-e810-live-migration-rd32-poll-timeout-v1-3-b5ada29ce703@intel.com>
 References: <20240806-e810-live-migration-rd32-poll-timeout-v1-0-b5ada29ce703@intel.com>
 In-Reply-To: <20240806-e810-live-migration-rd32-poll-timeout-v1-0-b5ada29ce703@intel.com>
 To: Anthony Nguyen <anthony.l.nguyen@intel.com>, 
@@ -78,26 +78,26 @@ To: Anthony Nguyen <anthony.l.nguyen@intel.com>,
 X-Mailer: b4 0.13.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1722977201; x=1754513201;
+ t=1722977200; x=1754513200;
  h=from:date:subject:mime-version:content-transfer-encoding:
  message-id:references:in-reply-to:to:cc;
- bh=Yxiys/SX09VX8g2NtcH9vKUz5aA7EqLljg/GeKCEwko=;
- b=l75jFwMrhz35GiHUFSN5VRF5nds+rGoHwJYIQV/AELIjHRbawMy9KeJE
- r+WH7h5xUbgFmdXMRwyF1r0iNmsIcu7mbP0TJlQCzCrp65xEtjzZJg1UW
- q5CG7Cf9MpIxg7SHGv35cirYo2ffOsr4s+XoQhzl4uVhpHMovehzvZs5T
- D+FL3Ju7biOqzSAXrUSUGSTobx9jU/EFdXnoWNgtTteXtZPLS7p7WVSTR
- hEI6ABGbzC6kuz0hib5NIqeHR7CbfS9fjG8OBEuYiNet24osc0T1+YJ3Y
- jqwg4QMr2SmglduxGFPrsuBKE60ZXafZHdp9rxZ1e2UYVj51/N7GjBmho
- g==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ bh=fbHXV6FXemOClCoqyN/+Q1Zf5FPT/kguvpXYC77BHKI=;
+ b=lmeiPm41VHHUDyoDmdBd+AR+ReHimEc7v8iHsS2U06LDw9+o4yMDQqYc
+ N5/TxzWyUg+OHecUa+EjMXc78Hvo6iByOfag2ALBGEiGPiQrB6soKpEh0
+ 6pZLH441iXa32M9rR1+ZNz3RXbCmuTSBUgL5/MT0PhI6Xf28dd+NGWT5Q
+ INS8SSkiFNkSAZGr2qBa4+nu+J163FqTv6YLZtXLDjqwu6sNA7XnFQ84H
+ 2Mn/c716R8eenNzWJnciPWG6R2/+G+3nXIWkaGul1Jaf2aLRCGQkzverE
+ Pfcm4cnMzDfAxyYAA3khvZSyUuF2SLyqATdq8YTKqHMmzTsTmSQNBXzVJ
+ A==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=l75jFwMr
-Subject: [Intel-wired-lan] [PATCH iwl-next 7/7] ice: Report NVM version
- numbers on mismatch during load
+ header.s=Intel header.b=lmeiPm41
+Subject: [Intel-wired-lan] [PATCH iwl-next 3/7] ice: do not clutter debug
+ logs with unused data
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -117,57 +117,99 @@ Cc: Sergey Temerkhanov <sergey.temerkhanov@intel.com>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Sergey Temerkhanov <sergey.temerkhanov@intel.com>
+From: Bruce Allan <bruce.w.allan@intel.com>
 
-Report NVM version numbers (both detected and expected) when a mismatch b/w
-driver and firmware is detected. This provides more useful information
-about which NVM version the driver expects, rather than requiring manual
-code inspection.
+Currently, debug logs are unnecessarily cluttered with the contents of
+command data buffers even if the receiver of that command (i.e. FW or MBX)
+are not told to read the buffer.  Change to only log command data buffers
+when the RD flag (indicates receiver needs to read the buffer) is set.
+Continue to log response data buffer when the returned datalen is non-zero.
 
-Signed-off-by: Sergey Temerkhanov <sergey.temerkhanov@intel.com>
+Also, rename a local variable to reflect what is in the hardware
+specification and how it is used elsewhere in the code, use local variables
+instead of duplicating endian conversions unnecessarily and remove an
+unnecessary assignment.
+
+Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_controlq.c | 14 ++++++++++----
- 1 file changed, 10 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_adminq_cmd.h |  4 ++++
+ drivers/net/ethernet/intel/ice/ice_controlq.c   | 21 ++++++++++++---------
+ 2 files changed, 16 insertions(+), 9 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+index 66f02988d549..0be1a98d7cc1 100644
+--- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+@@ -2632,12 +2632,16 @@ struct ice_aq_desc {
+ /* FW defined boundary for a large buffer, 4k >= Large buffer > 512 bytes */
+ #define ICE_AQ_LG_BUF	512
+ 
++#define ICE_AQ_FLAG_DD_S	0
++#define ICE_AQ_FLAG_CMP_S	1
+ #define ICE_AQ_FLAG_ERR_S	2
+ #define ICE_AQ_FLAG_LB_S	9
+ #define ICE_AQ_FLAG_RD_S	10
+ #define ICE_AQ_FLAG_BUF_S	12
+ #define ICE_AQ_FLAG_SI_S	13
+ 
++#define ICE_AQ_FLAG_DD		BIT(ICE_AQ_FLAG_DD_S)  /* 0x1    */
++#define ICE_AQ_FLAG_CMP		BIT(ICE_AQ_FLAG_CMP_S) /* 0x2    */
+ #define ICE_AQ_FLAG_ERR		BIT(ICE_AQ_FLAG_ERR_S) /* 0x4    */
+ #define ICE_AQ_FLAG_LB		BIT(ICE_AQ_FLAG_LB_S)  /* 0x200  */
+ #define ICE_AQ_FLAG_RD		BIT(ICE_AQ_FLAG_RD_S)  /* 0x400  */
 diff --git a/drivers/net/ethernet/intel/ice/ice_controlq.c b/drivers/net/ethernet/intel/ice/ice_controlq.c
-index b5774035e6f9..e3959ad442a2 100644
+index b0b38825e300..ddf07b773313 100644
 --- a/drivers/net/ethernet/intel/ice/ice_controlq.c
 +++ b/drivers/net/ethernet/intel/ice/ice_controlq.c
-@@ -488,7 +488,7 @@ static int ice_shutdown_sq(struct ice_hw *hw, struct ice_ctl_q_info *cq)
+@@ -924,7 +924,7 @@ static void ice_debug_cq(struct ice_hw *hw, struct ice_ctl_q_info *cq,
+ 			 void *desc, void *buf, u16 buf_len, bool response)
+ {
+ 	struct ice_aq_desc *cq_desc = desc;
+-	u16 len;
++	u16 datalen, flags;
+ 
+ 	if (!IS_ENABLED(CONFIG_DYNAMIC_DEBUG) &&
+ 	    !((ICE_DBG_AQ_DESC | ICE_DBG_AQ_DESC_BUF) & hw->debug_mask))
+@@ -933,13 +933,13 @@ static void ice_debug_cq(struct ice_hw *hw, struct ice_ctl_q_info *cq,
+ 	if (!desc)
+ 		return;
+ 
+-	len = le16_to_cpu(cq_desc->datalen);
++	datalen = le16_to_cpu(cq_desc->datalen);
++	flags = le16_to_cpu(cq_desc->flags);
+ 
+ 	ice_debug(hw, ICE_DBG_AQ_DESC, "%s %s: opcode 0x%04X, flags 0x%04X, datalen 0x%04X, retval 0x%04X\n",
+ 		  ice_ctl_q_str(cq->qtype), response ? "Response" : "Command",
+-		  le16_to_cpu(cq_desc->opcode),
+-		  le16_to_cpu(cq_desc->flags),
+-		  le16_to_cpu(cq_desc->datalen), le16_to_cpu(cq_desc->retval));
++		  le16_to_cpu(cq_desc->opcode), flags, datalen,
++		  le16_to_cpu(cq_desc->retval));
+ 	ice_debug(hw, ICE_DBG_AQ_DESC, "\tcookie (h,l) 0x%08X 0x%08X\n",
+ 		  le32_to_cpu(cq_desc->cookie_high),
+ 		  le32_to_cpu(cq_desc->cookie_low));
+@@ -949,12 +949,15 @@ static void ice_debug_cq(struct ice_hw *hw, struct ice_ctl_q_info *cq,
+ 	ice_debug(hw, ICE_DBG_AQ_DESC, "\taddr (h,l)   0x%08X 0x%08X\n",
+ 		  le32_to_cpu(cq_desc->params.generic.addr_high),
+ 		  le32_to_cpu(cq_desc->params.generic.addr_low));
+-	if (buf && cq_desc->datalen != 0) {
++	/* Dump buffer iff 1) one exists and 2) is either a response indicated
++	 * by the DD and/or CMP flag set or a command with the RD flag set.
++	 */
++	if (buf && cq_desc->datalen &&
++	    (flags & (ICE_AQ_FLAG_DD | ICE_AQ_FLAG_CMP | ICE_AQ_FLAG_RD))) {
+ 		ice_debug(hw, ICE_DBG_AQ_DESC_BUF, "Buffer:\n");
+-		if (buf_len < len)
+-			len = buf_len;
+ 
+-		ice_debug_array(hw, ICE_DBG_AQ_DESC_BUF, 16, 1, buf, len);
++		ice_debug_array(hw, ICE_DBG_AQ_DESC_BUF, 16, 1, buf,
++				min_t(u16, buf_len, datalen));
+ 	}
  }
  
- /**
-- * ice_aq_ver_check - Check the reported AQ API version.
-+ * ice_aq_ver_check - Check the reported AQ API version
-  * @hw: pointer to the hardware structure
-  *
-  * Checks if the driver should load on a given AQ API version.
-@@ -508,14 +508,20 @@ static bool ice_aq_ver_check(struct ice_hw *hw)
- 	} else if (hw->api_maj_ver == exp_fw_api_ver_major) {
- 		if (hw->api_min_ver > (exp_fw_api_ver_minor + 2))
- 			dev_info(ice_hw_to_dev(hw),
--				 "The driver for the device detected a newer version of the NVM image than expected. Please install the most recent version of the network driver.\n");
-+				 "The driver for the device detected a newer version (%u.%u) of the NVM image than expected (%u.%u). Please install the most recent version of the network driver.\n",
-+				 hw->api_maj_ver, hw->api_min_ver,
-+				 exp_fw_api_ver_major, exp_fw_api_ver_minor);
- 		else if ((hw->api_min_ver + 2) < exp_fw_api_ver_minor)
- 			dev_info(ice_hw_to_dev(hw),
--				 "The driver for the device detected an older version of the NVM image than expected. Please update the NVM image.\n");
-+				 "The driver for the device detected an older version (%u.%u) of the NVM image than expected (%u.%u). Please update the NVM image.\n",
-+				 hw->api_maj_ver, hw->api_min_ver,
-+				 exp_fw_api_ver_major, exp_fw_api_ver_minor);
- 	} else {
- 		/* Major API version is older than expected, log a warning */
- 		dev_info(ice_hw_to_dev(hw),
--			 "The driver for the device detected an older version of the NVM image than expected. Please update the NVM image.\n");
-+			 "The driver for the device detected an older version (%u.%u) of the NVM image than expected (%u.%u). Please update the NVM image.\n",
-+			 hw->api_maj_ver, hw->api_min_ver,
-+			 exp_fw_api_ver_major, exp_fw_api_ver_minor);
- 	}
- 	return true;
- }
 
 -- 
 2.46.0.124.g2dc1a81c8933
