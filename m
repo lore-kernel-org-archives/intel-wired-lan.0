@@ -4,69 +4,69 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 46222C49EA1
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  7 Aug 2024 00:36:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 57723C52D6F
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  7 Aug 2024 00:36:59 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id DD2BC4053B;
-	Wed,  7 Aug 2024 00:36:56 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 07C004054E;
+	Wed,  7 Aug 2024 00:36:59 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id qDrHYfuwTmky; Wed,  7 Aug 2024 00:36:56 +0000 (UTC)
+ id kO0urrTt8U8r; Wed,  7 Aug 2024 00:36:57 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 06998403B2
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4DCE8404F5
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1722991016;
-	bh=TGPTm7K1uqC1v5r15/AFlaxuMm3+m96kxjdBLIRKjt8=;
+	s=default; t=1722991017;
+	bh=ZkaoFuitHvLoQYL8BD8XKhAraJnuQXBIl/mlceZiAdY=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=H2XxwU4zb1cx9l8z7TD/q3I1noNRUAJ44svvJo0RU4T/yzg3ZVRlwqpkFYQA8gbuJ
-	 BOYqj9x+egWJT+wrqHVhZYJHNAqGktqjB91jK8cpq/xYO8UBPAoUc35kk+CSoKeGAK
-	 Pp2YyCyMMxM/g/shkV3WwxPWg+uwxU0ADZbiXozqrAlpKizxTFMdfWDux5TIymtSbU
-	 XdZ61Mx61/HeeKZMVk5A3BvFPEEN0AT/v5j6Mp+nx5bi9kMcL70GKfCdf3YldOMhHt
-	 z6YEM8k2MTxVLSmOTQ6UdVNj4jSy+198Yc4g5Ur0QR1e5qAFXh5QAlahcTcyv2n9dE
-	 oPj8g6XRb5U+w==
+	b=b5R210OIA8FeMUwZPZUw+Y7YCp+AwGFKtLz3v9XyHgOiYu9g6r7+jVFKwAw8cCQZ5
+	 nRwqYZA7xezO3cRHw8Lt9dImEfuz7Fl0tmLZJ4jyOuEmZeZmIyfZR9wc81XcpQl09U
+	 Rb/R2Z3jTlNWn2Y/exdfopz+5LbhUVAFrHbDi8sWJ3DbDxtpsLn1l/j/ByBr3ukhv4
+	 xeFC1SzQwX9ZkBR4Ii013ApnSRAe2Jk2EZgdY3j8NW08RxdWv+rDwHAWC1DpBkRtg5
+	 +cXHBlboFQ4GF26+3Okh12rBlU8UCeJ2AFjdcvEtlqjsQLt5eANoeVKx+1QUQYMKcW
+	 N+Xf9LxSaQqIQ==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 06998403B2;
-	Wed,  7 Aug 2024 00:36:56 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 4DCE8404F5;
+	Wed,  7 Aug 2024 00:36:57 +0000 (UTC)
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 8D4271BF969
- for <intel-wired-lan@lists.osuosl.org>; Wed,  7 Aug 2024 00:36:54 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 571A81BF969
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  7 Aug 2024 00:36:56 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 7B064606C2
- for <intel-wired-lan@lists.osuosl.org>; Wed,  7 Aug 2024 00:36:54 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 451C4606C2
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  7 Aug 2024 00:36:56 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id PdaKiAIGiQEq for <intel-wired-lan@lists.osuosl.org>;
- Wed,  7 Aug 2024 00:36:54 +0000 (UTC)
+ id OLBqjemXC-vs for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  7 Aug 2024 00:36:55 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.11;
  helo=mgamail.intel.com; envelope-from=christopher.s.hall@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org B4DCB60668
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B4DCB60668
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org A32F060668
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A32F060668
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.11])
- by smtp3.osuosl.org (Postfix) with ESMTPS id B4DCB60668
- for <intel-wired-lan@lists.osuosl.org>; Wed,  7 Aug 2024 00:36:53 +0000 (UTC)
-X-CSE-ConnectionGUID: 9UC7D5nBT02K7LYGD/HpfA==
-X-CSE-MsgGUID: PJya+OWISQ2Ni8BAGh3Vhw==
-X-IronPort-AV: E=McAfee;i="6700,10204,11156"; a="31669751"
-X-IronPort-AV: E=Sophos;i="6.09,268,1716274800"; d="scan'208";a="31669751"
+ by smtp3.osuosl.org (Postfix) with ESMTPS id A32F060668
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  7 Aug 2024 00:36:55 +0000 (UTC)
+X-CSE-ConnectionGUID: nnNyJD+JStGwKewMGCvBsQ==
+X-CSE-MsgGUID: z0R6nJh4Q4CWapb2LX4p+A==
+X-IronPort-AV: E=McAfee;i="6700,10204,11156"; a="31669756"
+X-IronPort-AV: E=Sophos;i="6.09,268,1716274800"; d="scan'208";a="31669756"
 Received: from orviesa003.jf.intel.com ([10.64.159.143])
  by fmvoesa105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 06 Aug 2024 17:36:54 -0700
-X-CSE-ConnectionGUID: ufmNvA3cQD+TL9MvJz8adw==
-X-CSE-MsgGUID: 2tU1vrmWRxydCuKp3Ln+4g==
+ 06 Aug 2024 17:36:56 -0700
+X-CSE-ConnectionGUID: 60BPayseTmqA8079N55kOQ==
+X-CSE-MsgGUID: iUVYMvXvTxiTRTw+KfZA7g==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.09,268,1716274800"; d="scan'208";a="61497010"
+X-IronPort-AV: E=Sophos;i="6.09,268,1716274800"; d="scan'208";a="61497014"
 Received: from timelab-spr09.ch.intel.com (HELO timelab-spr09.sc.intel.com)
  ([143.182.136.138])
- by orviesa003.jf.intel.com with ESMTP; 06 Aug 2024 17:36:52 -0700
+ by orviesa003.jf.intel.com with ESMTP; 06 Aug 2024 17:36:54 -0700
 From: christopher.s.hall@intel.com
 To: intel-wired-lan@lists.osuosl.org
-Date: Tue,  6 Aug 2024 17:30:29 -0700
-Message-Id: <20240807003032.10300-3-christopher.s.hall@intel.com>
+Date: Tue,  6 Aug 2024 17:30:30 -0700
+Message-Id: <20240807003032.10300-4-christopher.s.hall@intel.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20240807003032.10300-1-christopher.s.hall@intel.com>
 References: <20240807003032.10300-1-christopher.s.hall@intel.com>
@@ -74,25 +74,25 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1722991014; x=1754527014;
+ t=1722991016; x=1754527016;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=8IGk7nHl0AUnnVWG/KooB+heOx9cbDf+RxJNRQCnw/Y=;
- b=oJGXCJVMRv9VypdWNHYjbTvNooauPPCMp185pAewnPkLLTQzDWc4CNir
- UxUTjq1BNRZN/e127EP7lwTiESrTtqWpRlXzPwpAF/XUDKoQsA52EH3hP
- H0VDDTwYlxnab8wrUQ2I6Z+QV4z4qPyOOSdRXvWqpxlVWp7GRUMb4Lfju
- EqhJmWT0myFBk78QQJj60BMUHQHhoQdGiaX8fVNZcoZHOaeg6c7vTJS4T
- gAJAnHux9vikYX77APBKQ9nHcg7i8W8m3sF89ZH1fwQabqkkBtOBtvCFV
- wCGzZRx9TtCdhx8Hlf2kTBQRlYg26Be25p0Lj+c70FJK3/e1d7eTP0XqB
- w==;
+ bh=YW8OJ6ncs4oJPqe5fuxKSZeeTTvjkAOWYEUbEfU4uus=;
+ b=Jp14x/pjsKgkblyT1v1awEnWy9jfrifuPXd1CP2aba7i6VjBIfcpExgv
+ YeF4poXVhOHaxTIgRqBLcIW7OvTRhjP+k5NUUm/AlmPdkwlEkABSNqTeR
+ 569ipKXAls+POPy9SnadwgUHHpSGLRjFY5VfVO3j42/66Ky3EsF3Y9sZx
+ slKEB/Z2xmlJPfrKHLac5fEy7GzrMJPRTrrny1u3fXw4ANZ/Db1+tvSQJ
+ nnggHK5sWN6ggKwfJUf5JU/0N9dikpWC8VG+TGurl40q/aAS/HKv8iXoP
+ PQoT7bl6qDvQbRJqp6Vg35G+6pbFsy+CIPsx2uBSsKn3szhigfKbcItNf
+ g==;
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=oJGXCJVM
-Subject: [Intel-wired-lan] [PATCH iwl-net v1 2/5] igc: Lengthen the hardware
- retry time to prevent timeouts
+ header.a=rsa-sha256 header.s=Intel header.b=Jp14x/pj
+Subject: [Intel-wired-lan] [PATCH iwl-net v1 3/5] igc: Move ktime snapshot
+ into PTM retry loop
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -113,43 +113,45 @@ Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 From: Christopher S M Hall <christopher.s.hall@intel.com>
 
-Lengthen the hardware retry timer to four microseconds.
+Move ktime_get_snapshot() into the loop. If a retry does occur, a more
+recent snapshot will result in a more accurate cross-timestamp.
 
-The i225/i226 hardware retries if it receives an inappropriate response
-from the upstream device. If the device retries too quickly, the root
-port does not respond.
-
-The issue can be reproduced with the following:
-
-$ sudo phc2sys -R 1000 -O 0 -i tsn0 -m
-
-Note: 1000 Hz (-R 1000) is unrealistically large, but provides a way to
-quickly reproduce the issue.
-
-PHC2SYS exits with:
-
-"ioctl PTP_OFFSET_PRECISE: Connection timed out" when the PTM transaction
-  fails
-
-Fixes: 6b8aa753a9f9 ("igc: Decrease PTM short interval from 10 us to 1 us")
+Fixes: a90ec8483732 ("igc: Add support for PTP getcrosststamp()")
 Signed-off-by: Christopher S M Hall <christopher.s.hall@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc_defines.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/intel/igc/igc_ptp.c | 18 +++++++++---------
+ 1 file changed, 9 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_defines.h b/drivers/net/ethernet/intel/igc/igc_defines.h
-index ec191d26c650..253327c23903 100644
---- a/drivers/net/ethernet/intel/igc/igc_defines.h
-+++ b/drivers/net/ethernet/intel/igc/igc_defines.h
-@@ -564,7 +564,7 @@
- #define IGC_PTM_CTRL_SHRT_CYC(usec)	(((usec) & 0x3f) << 2)
- #define IGC_PTM_CTRL_PTM_TO(usec)	(((usec) & 0xff) << 8)
+diff --git a/drivers/net/ethernet/intel/igc/igc_ptp.c b/drivers/net/ethernet/intel/igc/igc_ptp.c
+index 00cc80d8d164..fb885fcaa97c 100644
+--- a/drivers/net/ethernet/intel/igc/igc_ptp.c
++++ b/drivers/net/ethernet/intel/igc/igc_ptp.c
+@@ -1011,16 +1011,16 @@ static int igc_phc_get_syncdevicetime(ktime_t *device,
+ 	int err, count = 100;
+ 	ktime_t t1, t2_curr;
  
--#define IGC_PTM_SHORT_CYC_DEFAULT	1   /* Default short cycle interval */
-+#define IGC_PTM_SHORT_CYC_DEFAULT	4   /* Default short cycle interval */
- #define IGC_PTM_CYC_TIME_DEFAULT	5   /* Default PTM cycle time */
- #define IGC_PTM_TIMEOUT_DEFAULT		255 /* Default timeout for PTM errors */
+-	/* Get a snapshot of system clocks to use as historic value. */
+-	ktime_get_snapshot(&adapter->snapshot);
+-
++	/* Doing this in a loop because in the event of a
++	 * badly timed (ha!) system clock adjustment, we may
++	 * get PTM errors from the PCI root, but these errors
++	 * are transitory. Repeating the process returns valid
++	 * data eventually.
++	 */
+ 	do {
+-		/* Doing this in a loop because in the event of a
+-		 * badly timed (ha!) system clock adjustment, we may
+-		 * get PTM errors from the PCI root, but these errors
+-		 * are transitory. Repeating the process returns valid
+-		 * data eventually.
+-		 */
++		/* Get a snapshot of system clocks to use as historic value. */
++		ktime_get_snapshot(&adapter->snapshot);
++
+ 		igc_ptm_trigger(hw);
  
+ 		err = readx_poll_timeout(rd32, IGC_PTM_STAT, stat,
 -- 
 2.34.1
 
