@@ -4,68 +4,68 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 00FDFC52D6F
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  8 Aug 2024 12:58:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3DD6EC52D73
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  8 Aug 2024 12:58:44 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id BF28260AB9;
-	Thu,  8 Aug 2024 12:58:40 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 8A1E960AC3;
+	Thu,  8 Aug 2024 12:58:43 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id l57SGSsd0n3q; Thu,  8 Aug 2024 12:58:40 +0000 (UTC)
+ id fywVlmzBQlv4; Thu,  8 Aug 2024 12:58:42 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2A0AE60A99
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4084460AA7
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1723121920;
-	bh=3N1hX1ZSSv5giDBY0dPtdFEEbWOnTqQoOALBLjVcKNE=;
+	s=default; t=1723121922;
+	bh=qRNOK1TkLM2lmhn70Mgh+sKE0o1eHSALH3KoDhZTjOM=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=fMBXzmct+a44S5m8z5hWHonlhKrV58/v4Pp8HNvGmLiSumoONPOGH8juM3NsV3n6N
-	 qysYmMqPHoCXw9ZnnmVptTnIFED6doLh21Iwy+iXGDy614N37P5C765lbEbWyooXb3
-	 tBMrd6b4qv/uNVAboaw7qZNGzrjtKb03JjrY/VkKPI+eMmR7QJ+97X44wlAy0Cm+HH
-	 woNcKB+3aZkRJR4FKEFHgR5DZkgQ7zbapnOpCgvsRm7biJQa36tDox6mr+9eMdWtvC
-	 eUHABlFOxrKwV4O+IAd6TNzvyFO6Gqi3A7Zek/Rjsc5fsuuBpDDMZz+Zdh1aqKpqyz
-	 PRLrcULMLYppg==
+	b=AyDodCWyXWNJ9qeVk+QXau+1dp/5hWbG+szHSN2PV8LcFWAXyC8fmVT8Mpu+RcLxi
+	 /lQcO2x72TjM4fadKWJNyRWJPNnFqLNQvvfQ857W8mYRT52sdmNanL0Q7G58IRIbG2
+	 VXhCcxIoBHS4IM7FbOONhOs/t4fWIGpTGTN9Fw/ujASlZ+GIcznHImoJNvQyopW2zu
+	 LG0VDfmBJ9xyLJUnpckXo/GKZa++lnEBwCX73XadP+jyJ6k03jdsk9zduDmylcLNr8
+	 GRUZEzTFn/cCc04HRqku3x9qhaNNSVoG/KAD4pyL1iqmGGKdClf+KHBx48zcgmQ5AQ
+	 c+oQ6NP9vaGKA==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 2A0AE60A99;
-	Thu,  8 Aug 2024 12:58:40 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 067AC1BF2A6
- for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Aug 2024 12:58:38 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 4084460AA7;
+	Thu,  8 Aug 2024 12:58:42 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 629241BF2A6
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Aug 2024 12:58:39 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id E601E60AB9
- for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Aug 2024 12:58:37 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 5097781D02
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Aug 2024 12:58:39 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id acvrXKOw7i9x for <intel-wired-lan@lists.osuosl.org>;
- Thu,  8 Aug 2024 12:58:37 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id Pk4dZB6kqhLB for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  8 Aug 2024 12:58:38 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.15;
  helo=mgamail.intel.com; envelope-from=karol.kolacinski@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 4232760AA7
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4232760AA7
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 8B1BC81CD0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8B1BC81CD0
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.15])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 4232760AA7
- for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Aug 2024 12:58:37 +0000 (UTC)
-X-CSE-ConnectionGUID: 6lxPqYhQTfO2sfE1OzEyyw==
-X-CSE-MsgGUID: 8d2YvWUtTjaPpchvuDLcBQ==
-X-IronPort-AV: E=McAfee;i="6700,10204,11158"; a="21404760"
-X-IronPort-AV: E=Sophos;i="6.09,273,1716274800"; d="scan'208";a="21404760"
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 8B1BC81CD0
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Aug 2024 12:58:38 +0000 (UTC)
+X-CSE-ConnectionGUID: UWb9OpAFSwOyQB0OAR/xjg==
+X-CSE-MsgGUID: 6HlveniHRomV+b9CSH3Lpw==
+X-IronPort-AV: E=McAfee;i="6700,10204,11158"; a="21404764"
+X-IronPort-AV: E=Sophos;i="6.09,273,1716274800"; d="scan'208";a="21404764"
 Received: from fmviesa005.fm.intel.com ([10.60.135.145])
  by fmvoesa109.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 08 Aug 2024 05:58:34 -0700
-X-CSE-ConnectionGUID: JkNpYmUaQxeGjHH0aj+fMQ==
-X-CSE-MsgGUID: IgB/onBcT1WrGWZn/Gttkw==
+ 08 Aug 2024 05:58:38 -0700
+X-CSE-ConnectionGUID: V/2zeEJHRqWc0A5TDCWXWw==
+X-CSE-MsgGUID: d8UDlB8WR0eue47Wo/z7lg==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.09,273,1716274800"; d="scan'208";a="61595071"
+X-IronPort-AV: E=Sophos;i="6.09,273,1716274800"; d="scan'208";a="61595077"
 Received: from unknown (HELO kkolacin-desk1.igk.intel.com) ([10.217.160.108])
- by fmviesa005.fm.intel.com with ESMTP; 08 Aug 2024 05:58:33 -0700
+ by fmviesa005.fm.intel.com with ESMTP; 08 Aug 2024 05:58:36 -0700
 From: Karol Kolacinski <karol.kolacinski@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Thu,  8 Aug 2024 14:57:44 +0200
-Message-ID: <20240808125825.560093-10-karol.kolacinski@intel.com>
+Date: Thu,  8 Aug 2024 14:57:46 +0200
+Message-ID: <20240808125825.560093-12-karol.kolacinski@intel.com>
 X-Mailer: git-send-email 2.45.2
 In-Reply-To: <20240808125825.560093-8-karol.kolacinski@intel.com>
 References: <20240808125825.560093-8-karol.kolacinski@intel.com>
@@ -73,25 +73,25 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1723121917; x=1754657917;
+ t=1723121918; x=1754657918;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=+d8DdgduNTeedRsYArvK/lfw1KmycAiuex+juw2noZI=;
- b=edphm43TuZrGs+bJwk3Qf0Lgj8V8bLzOgHkRmkfx++T3l7BQnqgwBHE7
- zAnQHr+HBmgysDTzhX4pKROq3R7W2kPy2YsWq3JozFBXIelwsqF30Xg1X
- /cAcZ4Q16QyAyT1+XqnuOE720LIQ/v0Bbw3JWy0g9qsDB5HhNcCVj+B+s
- /ofG0wpdrNiGBoaHTwgIyVCcu/3uxAvdD+KvLZefQjZJ0Wtg9P8A+cXlF
- WJ+XwyMuds+qMJfDluASriYxJMYmyD6FzORhvkQgxIY0x6A/OSyHe4AxL
- /+gE40PaSSqb+mGp7Nc3cTPMyB87m4styFVEPOsc7IHAx8+MX+GTVhIBO
- A==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ bh=ij0d7abKp3YNc5DbAZJ8n+wjl71wZMsJBDLEc967wMM=;
+ b=NNCGIvVY3Ajv8k7DdfSfoGGXy/wy4sRmaxmryIx7AXYvt0c/5FeDX5/h
+ dpaySekL249qoaJ3JGKCrdaZT//Whk7hfKDNo8NRYHb7/BjXQQJSp4PHM
+ rGLZSTKxqwd186SOCQ8lMJ7O5wlX+FbDa2d9aDYWEiRJFSFnI+Yljvu0M
+ GCaSpqtTFyl4R0LGu/jCWkWcO369MOLFQwPb/1eoMaHmbZDKsRiYpgL5K
+ thY30Eheqp56nP1PPmJphFCTYT2frZNhFuzOqp8s9LzE/9wVo6ETFVBNR
+ rYggkQGHwsKjFqNDu/jXcIs6XTfR7HgMwC8OoUVN/IPEucrxABsXRJxSG
+ g==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=edphm43T
-Subject: [Intel-wired-lan] [PATCH v5 iwl-next 2/6] ice: Use FIELD_PREP for
- timestamp values
+ header.a=rsa-sha256 header.s=Intel header.b=NNCGIvVY
+Subject: [Intel-wired-lan] [PATCH v5 iwl-next 4/6] ice: Process TSYN IRQ in
+ a separate function
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -109,64 +109,141 @@ Cc: netdev@vger.kernel.org, Karol Kolacinski <karol.kolacinski@intel.com>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Instead of using shifts and casts, use FIELD_PREP after reading 40b
-timestamp values.
+Simplify TSYN IRQ processing by moving it to a separate function and
+having appropriate behavior per PHY model, instead of multiple
+conditions not related to HW, but to specific timestamping modes.
 
+Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_ptp_hw.c |  6 ++++--
- drivers/net/ethernet/intel/ice/ice_ptp_hw.h | 13 +++++--------
- 2 files changed, 9 insertions(+), 10 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_main.c | 18 +------
+ drivers/net/ethernet/intel/ice/ice_ptp.c  | 59 +++++++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_ptp.h  |  6 +++
+ 3 files changed, 67 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-index 00c6483dbffc..d1b87838986d 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-@@ -1520,7 +1520,8 @@ static int ice_read_ptp_tstamp_eth56g(struct ice_hw *hw, u8 port, u8 idx,
- 	 * lower 8 bits in the low register, and the upper 32 bits in the high
- 	 * register.
- 	 */
--	*tstamp = ((u64)hi) << TS_PHY_HIGH_S | ((u64)lo & TS_PHY_LOW_M);
-+	*tstamp = FIELD_PREP(PHY_40B_HIGH_M, hi) |
-+		  FIELD_PREP(PHY_40B_LOW_M, lo);
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index fd27c7995d60..72c193eb0cb6 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -3269,22 +3269,8 @@ static irqreturn_t ice_misc_intr(int __always_unused irq, void *data)
  
- 	return 0;
- }
-@@ -4952,7 +4953,8 @@ ice_read_phy_tstamp_e810(struct ice_hw *hw, u8 lport, u8 idx, u64 *tstamp)
- 	/* For E810 devices, the timestamp is reported with the lower 32 bits
- 	 * in the low register, and the upper 8 bits in the high register.
- 	 */
--	*tstamp = ((u64)hi) << TS_HIGH_S | ((u64)lo & TS_LOW_M);
-+	*tstamp = FIELD_PREP(PHY_EXT_40B_HIGH_M, hi) |
-+		  FIELD_PREP(PHY_EXT_40B_LOW_M, lo);
- 
- 	return 0;
- }
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
-index 8a28155b206f..df94230d820f 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
-@@ -673,15 +673,12 @@ static inline u64 ice_get_base_incval(struct ice_hw *hw)
- /* Source timer incval macros */
- #define INCVAL_HIGH_M			0xFF
- 
--/* Timestamp block macros */
-+/* PHY 40b registers macros */
-+#define PHY_EXT_40B_LOW_M		GENMASK(31, 0)
-+#define PHY_EXT_40B_HIGH_M		GENMASK_ULL(39, 32)
-+#define PHY_40B_LOW_M			GENMASK(7, 0)
-+#define PHY_40B_HIGH_M			GENMASK_ULL(39, 8)
- #define TS_VALID			BIT(0)
--#define TS_LOW_M			0xFFFFFFFF
--#define TS_HIGH_M			0xFF
--#define TS_HIGH_S			32
+ 	if (oicr & PFINT_OICR_TSYN_TX_M) {
+ 		ena_mask &= ~PFINT_OICR_TSYN_TX_M;
+-		if (ice_pf_state_is_nominal(pf) &&
+-		    pf->hw.dev_caps.ts_dev_info.ts_ll_int_read) {
+-			struct ice_ptp_tx *tx = &pf->ptp.port.tx;
+-			unsigned long flags;
+-			u8 idx;
 -
--#define TS_PHY_LOW_M			0xFF
--#define TS_PHY_HIGH_M			0xFFFFFFFF
--#define TS_PHY_HIGH_S			8
+-			spin_lock_irqsave(&tx->lock, flags);
+-			idx = find_next_bit_wrap(tx->in_use, tx->len,
+-						 tx->last_ll_ts_idx_read + 1);
+-			if (idx != tx->len)
+-				ice_ptp_req_tx_single_tstamp(tx, idx);
+-			spin_unlock_irqrestore(&tx->lock, flags);
+-		} else if (ice_ptp_pf_handles_tx_interrupt(pf)) {
+-			set_bit(ICE_MISC_THREAD_TX_TSTAMP, pf->misc_thread);
+-			ret = IRQ_WAKE_THREAD;
+-		}
++
++		ret = ice_ptp_ts_irq(pf);
+ 	}
  
- #define BYTES_PER_IDX_ADDR_L_U		8
- #define BYTES_PER_IDX_ADDR_L		4
+ 	if (oicr & PFINT_OICR_TSYN_EVNT_M) {
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
+index cf3b02d14b19..861f6224540a 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp.c
++++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
+@@ -2760,6 +2760,65 @@ enum ice_tx_tstamp_work ice_ptp_process_ts(struct ice_pf *pf)
+ 	}
+ }
+ 
++/**
++ * ice_ptp_ts_irq - Process the PTP Tx timestamps in IRQ context
++ * @pf: Board private structure
++ *
++ * Return: IRQ_WAKE_THREAD if Tx timestamp read has to be handled in the bottom
++ *         half of the interrupt and IRQ_HANDLED otherwise.
++ */
++irqreturn_t ice_ptp_ts_irq(struct ice_pf *pf)
++{
++	struct ice_hw *hw = &pf->hw;
++
++	switch (hw->mac_type) {
++	case ICE_MAC_E810:
++		/* E810 capable of low latency timestamping with interrupt can
++		 * request a single timestamp in the top half and wait for
++		 * a second LL TS interrupt from the FW when it's ready.
++		 */
++		if (hw->dev_caps.ts_dev_info.ts_ll_int_read) {
++			struct ice_ptp_tx *tx = &pf->ptp.port.tx;
++			u8 idx;
++
++			if (!ice_pf_state_is_nominal(pf))
++				return IRQ_HANDLED;
++
++			spin_lock(&tx->lock);
++			idx = find_next_bit_wrap(tx->in_use, tx->len,
++						 tx->last_ll_ts_idx_read + 1);
++			if (idx != tx->len)
++				ice_ptp_req_tx_single_tstamp(tx, idx);
++			spin_unlock(&tx->lock);
++
++			return IRQ_HANDLED;
++		}
++		fallthrough; /* non-LL_TS E810 */
++	case ICE_MAC_GENERIC:
++	case ICE_MAC_GENERIC_3K_E825:
++		/* All other devices process timestamps in the bottom half due
++		 * to sleeping or polling.
++		 */
++		if (!ice_ptp_pf_handles_tx_interrupt(pf))
++			return IRQ_HANDLED;
++
++		set_bit(ICE_MISC_THREAD_TX_TSTAMP, pf->misc_thread);
++		return IRQ_WAKE_THREAD;
++	case ICE_MAC_E830:
++		/* E830 can read timestamps in the top half using rd32() */
++		if (ice_ptp_process_ts(pf) == ICE_TX_TSTAMP_WORK_PENDING) {
++			/* Process outstanding Tx timestamps. If there
++			 * is more work, re-arm the interrupt to trigger again.
++			 */
++			wr32(hw, PFINT_OICR, PFINT_OICR_TSYN_TX_M);
++			ice_flush(hw);
++		}
++		return IRQ_HANDLED;
++	default:
++		return IRQ_HANDLED;
++	}
++}
++
+ /**
+  * ice_ptp_maybe_trigger_tx_interrupt - Trigger Tx timstamp interrupt
+  * @pf: Board private structure
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.h b/drivers/net/ethernet/intel/ice/ice_ptp.h
+index b8ab162a5538..5122b3a862fb 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp.h
++++ b/drivers/net/ethernet/intel/ice/ice_ptp.h
+@@ -322,6 +322,7 @@ s8 ice_ptp_request_ts(struct ice_ptp_tx *tx, struct sk_buff *skb);
+ void ice_ptp_req_tx_single_tstamp(struct ice_ptp_tx *tx, u8 idx);
+ void ice_ptp_complete_tx_single_tstamp(struct ice_ptp_tx *tx);
+ enum ice_tx_tstamp_work ice_ptp_process_ts(struct ice_pf *pf);
++irqreturn_t ice_ptp_ts_irq(struct ice_pf *pf);
+ 
+ u64 ice_ptp_get_rx_hwts(const union ice_32b_rx_flex_desc *rx_desc,
+ 			const struct ice_pkt_ctx *pkt_ctx);
+@@ -360,6 +361,11 @@ static inline bool ice_ptp_process_ts(struct ice_pf *pf)
+ 	return true;
+ }
+ 
++static inline irqreturn_t ice_ptp_ts_irq(struct ice_pf *pf)
++{
++	return IRQ_HANDLED;
++}
++
+ static inline u64
+ ice_ptp_get_rx_hwts(const union ice_32b_rx_flex_desc *rx_desc,
+ 		    const struct ice_pkt_ctx *pkt_ctx)
 -- 
 2.45.2
 
