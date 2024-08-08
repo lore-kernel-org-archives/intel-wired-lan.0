@@ -4,92 +4,94 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 49EA6C52D6F
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  8 Aug 2024 12:58:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 00FDFC52D6F
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  8 Aug 2024 12:58:40 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id E493260593;
-	Thu,  8 Aug 2024 12:58:34 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id BF28260AB9;
+	Thu,  8 Aug 2024 12:58:40 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 2o_-6iYd1CO8; Thu,  8 Aug 2024 12:58:34 +0000 (UTC)
+ id l57SGSsd0n3q; Thu,  8 Aug 2024 12:58:40 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4E02060A99
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2A0AE60A99
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1723121914;
-	bh=RtmWu35bYB4RHBkfx/Al3SyAipwMivGFmLSVqlA6EFI=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=OL12vlDBwUOLUxx4SPfT4DHCf0NudMS4EVxget8KGFWcpaCWtSxZD+pThHHuOGtOB
-	 5rv4bwoyOALNipee2F3iNc5dpKrFJ0Fldf9aIsHrRXbtK8GpeRAbyG3gjtdmbydzK0
-	 fIPbijBnlSVude3Y0+MbPaDkwqq5+nt9xO/Rc52hN+ASlF0oezz0KV9OkTDrYJwE0v
-	 yVq6+YxATihYdYa3W6G6TCaCGOyZpTab6OE6QknWQgTPpYEkvEAuDuWuL3UmAsEwmV
-	 spwtpflHvD/U+M//Bqr98MUrvPOwLJmSPxvTUE1XmMS/42dc086Xkn7iJ8VPqSiw2b
-	 CTj9UTRj5mxDQ==
+	s=default; t=1723121920;
+	bh=3N1hX1ZSSv5giDBY0dPtdFEEbWOnTqQoOALBLjVcKNE=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=fMBXzmct+a44S5m8z5hWHonlhKrV58/v4Pp8HNvGmLiSumoONPOGH8juM3NsV3n6N
+	 qysYmMqPHoCXw9ZnnmVptTnIFED6doLh21Iwy+iXGDy614N37P5C765lbEbWyooXb3
+	 tBMrd6b4qv/uNVAboaw7qZNGzrjtKb03JjrY/VkKPI+eMmR7QJ+97X44wlAy0Cm+HH
+	 woNcKB+3aZkRJR4FKEFHgR5DZkgQ7zbapnOpCgvsRm7biJQa36tDox6mr+9eMdWtvC
+	 eUHABlFOxrKwV4O+IAd6TNzvyFO6Gqi3A7Zek/Rjsc5fsuuBpDDMZz+Zdh1aqKpqyz
+	 PRLrcULMLYppg==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 4E02060A99;
-	Thu,  8 Aug 2024 12:58:34 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 2A0AE60A99;
+	Thu,  8 Aug 2024 12:58:40 +0000 (UTC)
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 16A051BF2A6
- for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Aug 2024 12:58:33 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 067AC1BF2A6
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Aug 2024 12:58:38 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 0374160A99
- for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Aug 2024 12:58:33 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id E601E60AB9
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Aug 2024 12:58:37 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id YpIEv7BP9HG4 for <intel-wired-lan@lists.osuosl.org>;
- Thu,  8 Aug 2024 12:58:32 +0000 (UTC)
+ id acvrXKOw7i9x for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  8 Aug 2024 12:58:37 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.15;
  helo=mgamail.intel.com; envelope-from=karol.kolacinski@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org DAE7160593
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org DAE7160593
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 4232760AA7
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4232760AA7
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.15])
- by smtp3.osuosl.org (Postfix) with ESMTPS id DAE7160593
- for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Aug 2024 12:58:31 +0000 (UTC)
-X-CSE-ConnectionGUID: 2QnZIzinSjOnK1Iw38GKXg==
-X-CSE-MsgGUID: PUUOBpCEQ56RfzZxJkTpXw==
-X-IronPort-AV: E=McAfee;i="6700,10204,11158"; a="21404749"
-X-IronPort-AV: E=Sophos;i="6.09,273,1716274800"; d="scan'208";a="21404749"
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 4232760AA7
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Aug 2024 12:58:37 +0000 (UTC)
+X-CSE-ConnectionGUID: 6lxPqYhQTfO2sfE1OzEyyw==
+X-CSE-MsgGUID: 8d2YvWUtTjaPpchvuDLcBQ==
+X-IronPort-AV: E=McAfee;i="6700,10204,11158"; a="21404760"
+X-IronPort-AV: E=Sophos;i="6.09,273,1716274800"; d="scan'208";a="21404760"
 Received: from fmviesa005.fm.intel.com ([10.60.135.145])
  by fmvoesa109.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 08 Aug 2024 05:58:31 -0700
-X-CSE-ConnectionGUID: jPBah51OSrKOZhXwXI/urA==
-X-CSE-MsgGUID: LTYM0w6qT66vnNMAQSHOlw==
+ 08 Aug 2024 05:58:34 -0700
+X-CSE-ConnectionGUID: JkNpYmUaQxeGjHH0aj+fMQ==
+X-CSE-MsgGUID: IgB/onBcT1WrGWZn/Gttkw==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.09,273,1716274800"; d="scan'208";a="61595064"
+X-IronPort-AV: E=Sophos;i="6.09,273,1716274800"; d="scan'208";a="61595071"
 Received: from unknown (HELO kkolacin-desk1.igk.intel.com) ([10.217.160.108])
- by fmviesa005.fm.intel.com with ESMTP; 08 Aug 2024 05:58:29 -0700
+ by fmviesa005.fm.intel.com with ESMTP; 08 Aug 2024 05:58:33 -0700
 From: Karol Kolacinski <karol.kolacinski@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Thu,  8 Aug 2024 14:57:42 +0200
-Message-ID: <20240808125825.560093-8-karol.kolacinski@intel.com>
+Date: Thu,  8 Aug 2024 14:57:44 +0200
+Message-ID: <20240808125825.560093-10-karol.kolacinski@intel.com>
 X-Mailer: git-send-email 2.45.2
+In-Reply-To: <20240808125825.560093-8-karol.kolacinski@intel.com>
+References: <20240808125825.560093-8-karol.kolacinski@intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1723121911; x=1754657911;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=o6k55yf1spn/c3CkBKCM6I8CSExYb7qwa4LrVRUuHQI=;
- b=i6kdFBBlSWE7joiejdmrkbpJxqAvZ10CSq+VWpsOQJihE7A3Y6/dpmM4
- 5PxOKEkOav8oX7HWC/6Q8YTUCQUw+NjbBSGW32TU3/s8QXNvBdgqAruay
- sAok/asX42c09xIaaeCJ3QyBVULrgkGh4pdoGHfZNbsXWmCZvP2n5HFNg
- lSgRchAxoOJesLx6lOCPejlzBIE8ukVGuqoO7ydfMJK7um36wla0LvTM5
- W7QLEaS5vwXgksX2/fFG2AiI6A2WAmvS56EjFu96Ytk9KUgo9OIkbpcQD
- blUbLCYJEsHs5/EfcHHbWbOHo+eYQ5D/WsBrk4PGxv3DiRtwP+2wbM8mB
+ t=1723121917; x=1754657917;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=+d8DdgduNTeedRsYArvK/lfw1KmycAiuex+juw2noZI=;
+ b=edphm43TuZrGs+bJwk3Qf0Lgj8V8bLzOgHkRmkfx++T3l7BQnqgwBHE7
+ zAnQHr+HBmgysDTzhX4pKROq3R7W2kPy2YsWq3JozFBXIelwsqF30Xg1X
+ /cAcZ4Q16QyAyT1+XqnuOE720LIQ/v0Bbw3JWy0g9qsDB5HhNcCVj+B+s
+ /ofG0wpdrNiGBoaHTwgIyVCcu/3uxAvdD+KvLZefQjZJ0Wtg9P8A+cXlF
+ WJ+XwyMuds+qMJfDluASriYxJMYmyD6FzORhvkQgxIY0x6A/OSyHe4AxL
+ /+gE40PaSSqb+mGp7Nc3cTPMyB87m4styFVEPOsc7IHAx8+MX+GTVhIBO
  A==;
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=i6kdFBBl
-Subject: [Intel-wired-lan] [PATCH v5 iwl-next 0/6] ice: Implement PTP
- support for E830 devices
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=edphm43T
+Subject: [Intel-wired-lan] [PATCH v5 iwl-next 2/6] ice: Use FIELD_PREP for
+ timestamp values
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -107,50 +109,64 @@ Cc: netdev@vger.kernel.org, Karol Kolacinski <karol.kolacinski@intel.com>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Add specific functions and definitions for E830 devices to enable
-PTP support.
-Refactor processing of timestamping interrupt and cross timestamp
-to avoid code redundancy.
+Instead of using shifts and casts, use FIELD_PREP after reading 40b
+timestamp values.
 
-Jacob Keller (1):
-  ice: combine cross timestamp functions for E82x and E830
+Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.c |  6 ++++--
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.h | 13 +++++--------
+ 2 files changed, 9 insertions(+), 10 deletions(-)
 
-Karol Kolacinski (4):
-  ice: Remove unncecessary ice_is_e8xx() functions
-  ice: Use FIELD_PREP for timestamp values
-  ice: Process TSYN IRQ in a separate function
-  ice: Add timestamp ready bitmap for E830 products
-
-Michal Michalik (1):
-  ice: Implement PTP support for E830 devices
-
- drivers/net/ethernet/intel/Kconfig            |   2 +-
- drivers/net/ethernet/intel/ice/ice_common.c   | 128 +----
- drivers/net/ethernet/intel/ice/ice_common.h   |  19 +-
- drivers/net/ethernet/intel/ice/ice_ddp.c      |   4 +-
- drivers/net/ethernet/intel/ice/ice_gnss.c     |  23 +-
- .../net/ethernet/intel/ice/ice_hw_autogen.h   |  12 +
- drivers/net/ethernet/intel/ice/ice_main.c     |  25 +-
- drivers/net/ethernet/intel/ice/ice_osdep.h    |   4 +
- drivers/net/ethernet/intel/ice/ice_ptp.c      | 469 ++++++++++++------
- drivers/net/ethernet/intel/ice/ice_ptp.h      |   9 +-
- drivers/net/ethernet/intel/ice/ice_ptp_hw.c   | 289 ++++++++---
- drivers/net/ethernet/intel/ice/ice_ptp_hw.h   |  41 +-
- drivers/net/ethernet/intel/ice/ice_type.h     |   9 -
- 13 files changed, 618 insertions(+), 416 deletions(-)
-
-V4 -> V5: Added 2 patches: "ice: Remove unncecessary ice_is_e8xx()
-          functions" and "ice: Use FIELD_PREP for timestamp values".
-          Edited return values "ice: Implement PTP support for E830
-          devices".
-V3 -> V4: Further kdoc fixes in "ice: Implement PTP support for
-          E830 devices"
-V2 -> V3: Rebased and fixed kdoc in "ice: Implement PTP support for
-          E830 devices"
-V1 -> V2: Fixed compilation issue in "ice: Implement PTP support for
-          E830 devices"
-
-base-commit: 58c0a87ea4b48467b6cc94835cc5d206a589d724
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
+index 00c6483dbffc..d1b87838986d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
++++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
+@@ -1520,7 +1520,8 @@ static int ice_read_ptp_tstamp_eth56g(struct ice_hw *hw, u8 port, u8 idx,
+ 	 * lower 8 bits in the low register, and the upper 32 bits in the high
+ 	 * register.
+ 	 */
+-	*tstamp = ((u64)hi) << TS_PHY_HIGH_S | ((u64)lo & TS_PHY_LOW_M);
++	*tstamp = FIELD_PREP(PHY_40B_HIGH_M, hi) |
++		  FIELD_PREP(PHY_40B_LOW_M, lo);
+ 
+ 	return 0;
+ }
+@@ -4952,7 +4953,8 @@ ice_read_phy_tstamp_e810(struct ice_hw *hw, u8 lport, u8 idx, u64 *tstamp)
+ 	/* For E810 devices, the timestamp is reported with the lower 32 bits
+ 	 * in the low register, and the upper 8 bits in the high register.
+ 	 */
+-	*tstamp = ((u64)hi) << TS_HIGH_S | ((u64)lo & TS_LOW_M);
++	*tstamp = FIELD_PREP(PHY_EXT_40B_HIGH_M, hi) |
++		  FIELD_PREP(PHY_EXT_40B_LOW_M, lo);
+ 
+ 	return 0;
+ }
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
+index 8a28155b206f..df94230d820f 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
++++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
+@@ -673,15 +673,12 @@ static inline u64 ice_get_base_incval(struct ice_hw *hw)
+ /* Source timer incval macros */
+ #define INCVAL_HIGH_M			0xFF
+ 
+-/* Timestamp block macros */
++/* PHY 40b registers macros */
++#define PHY_EXT_40B_LOW_M		GENMASK(31, 0)
++#define PHY_EXT_40B_HIGH_M		GENMASK_ULL(39, 32)
++#define PHY_40B_LOW_M			GENMASK(7, 0)
++#define PHY_40B_HIGH_M			GENMASK_ULL(39, 8)
+ #define TS_VALID			BIT(0)
+-#define TS_LOW_M			0xFFFFFFFF
+-#define TS_HIGH_M			0xFF
+-#define TS_HIGH_S			32
+-
+-#define TS_PHY_LOW_M			0xFF
+-#define TS_PHY_HIGH_M			0xFFFFFFFF
+-#define TS_PHY_HIGH_S			8
+ 
+ #define BYTES_PER_IDX_ADDR_L_U		8
+ #define BYTES_PER_IDX_ADDR_L		4
 -- 
 2.45.2
 
