@@ -4,92 +4,92 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D77B5C3DA4A
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  8 Aug 2024 11:22:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 41973C52D6F
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  8 Aug 2024 11:24:46 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 6B8156090A;
-	Thu,  8 Aug 2024 11:22:26 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 0437E6090A;
+	Thu,  8 Aug 2024 11:24:46 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id EDUPkJ5MCmi5; Thu,  8 Aug 2024 11:22:25 +0000 (UTC)
+ id A2iCYrThZ53a; Thu,  8 Aug 2024 11:24:45 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8D9BE60A40
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 59ED760A40
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1723116145;
-	bh=MhsRDNUkFOmypR6vf3cbzZXFpR5oGTyDhVgOLCmU1d8=;
+	s=default; t=1723116285;
+	bh=3J137hXaHLUP0UqIslpv4qHLbEO+ZrVB/3lo2QYLOUI=;
 	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=KFITdPY27ty7yrziUe+izKT7Ftfi7y7OoGsCpog0qCrw7og49Jo/4rJfZSaezhPhQ
-	 LSH8btYC5DZCibI1MMlE0+K8d+HCLtgItjeY2MThjWkmzJmg7TVCx/s9qklk/4fnZQ
-	 pGdnFvs96n5+S/0BV08SbgHTMKd4g+PLxykcWLc8LTlcOXz8mnZVA2fHZ63rLKysYe
-	 wu17uT5Bn9LQBbtoNOr+6JP/ji4qef5YIc3VKdQm9b0ogxVtV/vUC1uBS5l2Nvypfx
-	 1uRECwDPBo1AFte+/SiRiUkhExWnRnGz4v+0XZtCpTgwhn9WF6hwr+VUaA+z77DtMf
-	 1J2aZcmq29z4g==
+	b=Gt1bmKVqsqrODutsoY9ypY0vpbDNFXsryydkNisBuT0/H98hPpFGLRKlQzp1eazJ1
+	 +D/8UhfVD2ThqR1fjB7qKGz+z/ffau6qDk8vBafzXrygQNigogqHxs176f406BCEEH
+	 9arkyiLn0LGG6+RAyYtRf+wH5+Rv3iqA/GWitMshS4FR9E9ojn1iBSsmeYtUnxhcfd
+	 R7MHOXf3oADmcBK9yQ5DoP9PxDm2TpDItzpSV4EPCJt/KU3K3Ip+pmWU95xwWL9PHc
+	 tB4zeGhpTQ8lXdtMDfiIs68+dJcuUj81xSYUdiTuZSga3uhs7oNMjED+jwQcjiHeKx
+	 V+xKmPhCOeY6g==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 8D9BE60A40;
-	Thu,  8 Aug 2024 11:22:25 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id BDE8B1BF2AB
- for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Aug 2024 11:22:23 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 59ED760A40;
+	Thu,  8 Aug 2024 11:24:45 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 4A33A1BF2AB
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Aug 2024 11:24:44 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id AA1F860A40
- for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Aug 2024 11:22:23 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 43CA6408F3
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Aug 2024 11:24:44 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id eUGSKrNjloLY for <intel-wired-lan@lists.osuosl.org>;
- Thu,  8 Aug 2024 11:22:22 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.14;
- helo=mgamail.intel.com; envelope-from=aleksandr.loktionov@intel.com;
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 1BbdvLIxpp5c for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  8 Aug 2024 11:24:43 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.8;
+ helo=mgamail.intel.com; envelope-from=arkadiusz.kubalewski@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org BADA96090A
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org BADA96090A
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.14])
- by smtp3.osuosl.org (Postfix) with ESMTPS id BADA96090A
- for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Aug 2024 11:22:22 +0000 (UTC)
-X-CSE-ConnectionGUID: 1vpgvnqESmKMvj8ukGJyyw==
-X-CSE-MsgGUID: CU9L2QlNRo6ybBSHJ0QWvA==
-X-IronPort-AV: E=McAfee;i="6700,10204,11157"; a="25027264"
-X-IronPort-AV: E=Sophos;i="6.09,272,1716274800"; d="scan'208";a="25027264"
-Received: from orviesa009.jf.intel.com ([10.64.159.149])
- by orvoesa106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 08 Aug 2024 04:22:20 -0700
-X-CSE-ConnectionGUID: bQu+0RPOTACA7wsMTw5WmQ==
-X-CSE-MsgGUID: 9qC6DPDjTEesezrzH2pi9g==
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 7EAB24094D
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 7EAB24094D
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.8])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 7EAB24094D
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Aug 2024 11:24:42 +0000 (UTC)
+X-CSE-ConnectionGUID: zlrp+NkuRBabE2FPvIw23A==
+X-CSE-MsgGUID: Mu65j7BhTxGk8Exa68pLWA==
+X-IronPort-AV: E=McAfee;i="6700,10204,11157"; a="38741855"
+X-IronPort-AV: E=Sophos;i="6.09,272,1716274800"; d="scan'208";a="38741855"
+Received: from fmviesa005.fm.intel.com ([10.60.135.145])
+ by fmvoesa102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 08 Aug 2024 04:24:43 -0700
+X-CSE-ConnectionGUID: I76V1HI1Q3OWX6GvvAJODw==
+X-CSE-MsgGUID: 9Nb0zhylSnaniygqY41l2w==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.09,272,1716274800"; d="scan'208";a="57109927"
-Received: from unknown (HELO amlin-019-225.igk.intel.com) ([10.102.19.225])
- by orviesa009.jf.intel.com with ESMTP; 08 Aug 2024 04:22:19 -0700
-From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-To: intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com,
- aleksandr.loktionov@intel.com
-Date: Thu,  8 Aug 2024 13:22:17 +0200
-Message-Id: <20240808112217.3560733-1-aleksandr.loktionov@intel.com>
-X-Mailer: git-send-email 2.25.1
+X-IronPort-AV: E=Sophos;i="6.09,272,1716274800"; d="scan'208";a="61574899"
+Received: from amlin-018-114.igk.intel.com ([10.102.18.114])
+ by fmviesa005.fm.intel.com with ESMTP; 08 Aug 2024 04:24:39 -0700
+From: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
+To: netdev@vger.kernel.org
+Date: Thu,  8 Aug 2024 13:20:11 +0200
+Message-Id: <20240808112013.166621-1-arkadiusz.kubalewski@intel.com>
+X-Mailer: git-send-email 2.38.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1723116143; x=1754652143;
+ t=1723116284; x=1754652284;
  h=from:to:cc:subject:date:message-id:mime-version:
  content-transfer-encoding;
- bh=boMFstUhVQMsNW3xa4HAW4jtrge3LjkojImXyNp5wt4=;
- b=L8Fzsia3W/YBZK3Igig1JlBW6U2ICtzxEX+qLofQppKRAuHdG/2NhKyn
- nJmbfBS6dZZAnFWGRvk2DVPfG5xPWOuCL0EmI6VCuD4jEmdx+Vqvkb52s
- KFm3pfiR1EIgzeBCo1SusKUBUsdRRiMC5qKOchUuGSuzXy33BzuPj5iR7
- Za9YIsI59nZVKJvu5px5cjdKaCoBBId1VnfprX+Em03lGjl6iqtf47MS7
- 8UZYsf5td+aBvdG3zOiX+DYKOOxaTyq+oM8DCB4ctNR+rA6+YCOP6lFZQ
- zddz5sawG6fkpyRgBxWbcBJp1URtXjfupAEgqJGqppdZQlAz5V76i1H8N
- Q==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ bh=FKhwymwtQp+7MFj4s4zUBHDLdUOsp81sRosDZ+m3lZI=;
+ b=IWVlWqkkgzVT9lF+zmJYta9uzPDii+yUL8FncUfyh8Y+aW3nOSHjNoJ0
+ G4gZpJIJuAfRev+73NrfNAlbd8H14OlOpH6nFzVRAg2QvxJYU0DD6+N9/
+ abkpwrkInu2HescxGAF0urCSInfHP35wscVX55J7N8lLtyYn206uM85Bj
+ DlAazRSxwK4J+oRJAI3d65TKqa7cDzfTHkN6RAxHFegnrSHVsImKoGnQ8
+ M0RC4whZcHVL7vNdDPRTmF9UeY8pUQb1CpLrVmN7VVuJwwqwuC3HCqr05
+ ksiDyas5doG0HofeAeOleNQksCQ+S3Qj15jTkyH23OmQF6LeaCYB7tD5a
+ A==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=L8Fzsia3
-Subject: [Intel-wired-lan] [PATCH iwl-next v1] i40e: Add Energy Efficient
- Ethernet ability for X710 Base-T/KR/KX cards
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=IWVlWqkk
+Subject: [Intel-wired-lan] [PATCH net-next v1 0/2] Add Embedded SYNC feature
+ for a dpll's pin
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,206 +102,34 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org,
- Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
+Cc: jiri@resnulli.us, corbet@lwn.net, przemyslaw.kitszel@intel.com,
+ donald.hunter@gmail.com, linux-doc@vger.kernel.org,
+ linux-kernel@vger.kernel.org,
+ Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>, edumazet@google.com,
+ anthony.l.nguyen@intel.com, kuba@kernel.org, vadim.fedorenko@linux.dev,
+ pabeni@redhat.com, davem@davemloft.net, intel-wired-lan@lists.osuosl.org
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Add "EEE: Enabled/Disabled" to dmesg for supported X710 Base-T/KR/KX cards.
-According to the IEEE standard report the EEE ability and and the
-EEE Link Partner ability. Use the kernel's 'ethtool_keee' structure
-and report EEE link modes.
+Introduce and allow DPLL subsystem users to get/set capabilities of
+Embedded SYNC on a dpll's pin.
 
-Example:
-dmesg | grep 'NIC Link is'
-ethtool --show-eee <device>
+Signed-off-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
 
-Before:
-	NIC Link is Up, 10 Gbps Full Duplex, Flow Control: None
+Arkadiusz Kubalewski (2):
+  dpll: add Embedded SYNC feature for a pin
+  ice: add callbacks for Embedded SYNC enablement on dpll pins
 
-        Supported EEE link modes:  Not reported
-        Advertised EEE link modes:  Not reported
-        Link partner advertised EEE link modes:  Not reported
+ Documentation/driver-api/dpll.rst         |  21 ++
+ Documentation/netlink/specs/dpll.yaml     |  41 ++++
+ drivers/dpll/dpll_netlink.c               | 127 ++++++++++++
+ drivers/dpll/dpll_nl.c                    |   5 +-
+ drivers/net/ethernet/intel/ice/ice_dpll.c | 241 +++++++++++++++++++++-
+ drivers/net/ethernet/intel/ice/ice_dpll.h |   1 +
+ include/linux/dpll.h                      |  10 +
+ include/uapi/linux/dpll.h                 |  23 +++
+ 8 files changed, 464 insertions(+), 5 deletions(-)
 
-After:
-	NIC Link is Up, 10 Gbps Full Duplex, Flow Control: None, EEE: Enabled
-
-        Supported EEE link modes:  100baseT/Full
-                                   1000baseT/Full
-                                   10000baseT/Full
-        Advertised EEE link modes:  100baseT/Full
-                                    1000baseT/Full
-                                    10000baseT/Full
-        Link partner advertised EEE link modes:  100baseT/Full
-                                                 1000baseT/Full
-                                                 10000baseT/Full
-
-Reviewed-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
-Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e.h        |  1 +
- .../net/ethernet/intel/i40e/i40e_ethtool.c    | 37 ++++++++++++++++---
- drivers/net/ethernet/intel/i40e/i40e_main.c   | 25 +++++++++++--
- 3 files changed, 55 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index d546567..0f25a48 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -7,6 +7,7 @@
- #include <linux/pci.h>
- #include <linux/ptp_clock_kernel.h>
- #include <linux/types.h>
-+#include <linux/linkmode.h>
- #include <linux/avf/virtchnl.h>
- #include <linux/net/intel/i40e_client.h>
- #include <net/devlink.h>
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index 1d0d2e5..cd7509f 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -5641,50 +5641,77 @@ static int i40e_get_module_eeprom(struct net_device *netdev,
- 	return 0;
- }
- 
-+static void i40e_eee_capability_to_kedata_supported(__le16  eee_capability_,
-+						    unsigned long *supported)
-+{
-+	const int eee_capability = le16_to_cpu(eee_capability_);
-+	static const int lut[] = {
-+		ETHTOOL_LINK_MODE_100baseT_Full_BIT,
-+		ETHTOOL_LINK_MODE_1000baseT_Full_BIT,
-+		ETHTOOL_LINK_MODE_10000baseT_Full_BIT,
-+		ETHTOOL_LINK_MODE_1000baseKX_Full_BIT,
-+		ETHTOOL_LINK_MODE_10000baseKX4_Full_BIT,
-+		ETHTOOL_LINK_MODE_10000baseKR_Full_BIT,
-+		ETHTOOL_LINK_MODE_40000baseKR4_Full_BIT,
-+	};
-+
-+	linkmode_zero(supported);
-+	for (unsigned int i = ARRAY_SIZE(lut); i--; )
-+		if (eee_capability & (1 << (i + 1)))
-+			linkmode_set_bit(lut[i], supported);
-+}
-+
- static int i40e_get_eee(struct net_device *netdev, struct ethtool_keee *edata)
- {
- 	struct i40e_netdev_priv *np = netdev_priv(netdev);
- 	struct i40e_aq_get_phy_abilities_resp phy_cfg;
- 	struct i40e_vsi *vsi = np->vsi;
- 	struct i40e_pf *pf = vsi->back;
- 	struct i40e_hw *hw = &pf->hw;
--	int status = 0;
-+	int status;
- 
- 	/* Get initial PHY capabilities */
- 	status = i40e_aq_get_phy_capabilities(hw, false, true, &phy_cfg, NULL);
- 	if (status)
- 		return -EAGAIN;
- 
- 	/* Check whether NIC configuration is compatible with Energy Efficient
- 	 * Ethernet (EEE) mode.
- 	 */
- 	if (phy_cfg.eee_capability == 0)
- 		return -EOPNOTSUPP;
- 
-+	i40e_eee_capability_to_kedata_supported(phy_cfg.eee_capability, edata->supported);
-+	linkmode_copy(edata->lp_advertised, edata->supported);
-+
- 	/* Get current configuration */
- 	status = i40e_aq_get_phy_capabilities(hw, false, false, &phy_cfg, NULL);
- 	if (status)
- 		return -EAGAIN;
- 
-+	linkmode_zero(edata->advertised);
-+	if (phy_cfg.eee_capability)
-+		linkmode_copy(edata->advertised, edata->supported);
- 	edata->eee_enabled = !!phy_cfg.eee_capability;
- 	edata->tx_lpi_enabled = pf->stats.tx_lpi_status;
- 
- 	edata->eee_active = pf->stats.tx_lpi_status && pf->stats.rx_lpi_status;
- 
- 	return 0;
- }
- 
- static int i40e_is_eee_param_supported(struct net_device *netdev,
- 				       struct ethtool_keee *edata)
- {
- 	struct i40e_netdev_priv *np = netdev_priv(netdev);
- 	struct i40e_vsi *vsi = np->vsi;
- 	struct i40e_pf *pf = vsi->back;
- 	struct i40e_ethtool_not_used {
--		u32 value;
-+		int value;
- 		const char *name;
- 	} param[] = {
--		{edata->tx_lpi_timer, "tx-timer"},
-+		{!!(edata->advertised[0] & ~edata->supported[0]), "advertise"},
-+		{!!edata->tx_lpi_timer, "tx-timer"},
- 		{edata->tx_lpi_enabled != pf->stats.tx_lpi_status, "tx-lpi"}
- 	};
- 	int i;
-@@ -5710,7 +5737,7 @@ static int i40e_set_eee(struct net_device *netdev, struct ethtool_keee *edata)
- 	struct i40e_pf *pf = vsi->back;
- 	struct i40e_hw *hw = &pf->hw;
- 	__le16 eee_capability;
--	int status = 0;
-+	int status;
- 
- 	/* Deny parameters we don't support */
- 	if (i40e_is_eee_param_supported(netdev, edata))
-@@ -5754,7 +5781,7 @@ static int i40e_set_eee(struct net_device *netdev, struct ethtool_keee *edata)
- 		config.eeer |= cpu_to_le32(I40E_PRTPM_EEER_TX_LPI_EN_MASK);
- 	} else {
- 		config.eee_capability = 0;
--		config.eeer &= cpu_to_le32(~I40E_PRTPM_EEER_TX_LPI_EN_MASK);
-+		config.eeer &= ~cpu_to_le32(I40E_PRTPM_EEER_TX_LPI_EN_MASK);
- 	}
- 
- 	/* Apply modified PHY configuration */
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index cbcfada..55bbf0f 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -7263,6 +7263,22 @@ static int i40e_init_pf_dcb(struct i40e_pf *pf)
- 	return err;
- }
- #endif /* CONFIG_I40E_DCB */
-+static void i40e_print_link_message_eee(struct i40e_vsi *vsi, struct ethtool_keee *kedata,
-+			    const char *speed, const char *fc)
-+{
-+	if (vsi->netdev->ethtool_ops->get_eee)
-+		vsi->netdev->ethtool_ops->get_eee(vsi->netdev, kedata);
-+
-+	if (!linkmode_empty(kedata->supported))
-+		netdev_info(vsi->netdev,
-+			    "NIC Link is Up, %sbps Full Duplex, Flow Control: %s, EEE: %s\n",
-+			    speed, fc,
-+			    kedata->eee_enabled ? "Enabled" : "Disabled");
-+	else
-+		netdev_info(vsi->netdev,
-+			    "NIC Link is Up, %sbps Full Duplex, Flow Control: %s\n",
-+			    speed, fc);
-+}
- 
- /**
-  * i40e_print_link_message - print link up or down
-@@ -7395,9 +7411,12 @@ void i40e_print_link_message(struct i40e_vsi *vsi, bool isup)
- 			    "NIC Link is Up, %sbps Full Duplex, Requested FEC: %s, Negotiated FEC: %s, Autoneg: %s, Flow Control: %s\n",
- 			    speed, req_fec, fec, an, fc);
- 	} else {
--		netdev_info(vsi->netdev,
--			    "NIC Link is Up, %sbps Full Duplex, Flow Control: %s\n",
--			    speed, fc);
-+		struct ethtool_keee kedata;
-+
-+		linkmode_zero(kedata.supported);
-+		kedata.eee_enabled = false;
-+
-+		i40e_print_link_message_eee(vsi, &kedata, speed, fc);
- 	}
- 
- }
 -- 
-2.25.1
+2.38.1
 
