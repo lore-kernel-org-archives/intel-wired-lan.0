@@ -1,88 +1,87 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 25630C3DA7F
-	for <intel-wired-lan@archiver.kernel.org>; Sat, 10 Aug 2024 08:19:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 13474C3DA7F
+	for <intel-wired-lan@archiver.kernel.org>; Sat, 10 Aug 2024 09:10:26 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 96C8A400F8;
-	Sat, 10 Aug 2024 08:19:05 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ZoUNz062jav2; Sat, 10 Aug 2024 08:19:04 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 8BB984026F
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1723277944;
-	bh=je+jYswYrU/88VQkHLsiiGL0cA6JFauYSXkLURxWrm0=;
-	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=jDT1Lwlak1oTSJsJGgAEZ4kua2FgjZOKq7Z/dzA/iY64jjewZnoBaA6bE6oKBRErr
-	 iIt4tGGdPKAF2HfFvMfxraCO8bMICeP1U+kd2Nqq/YSLQFAVcU3xCClEt+Fvk1uWnP
-	 UThUztahZz2ckDlh4y24bgQM5TbSJkuTNen3V9g31+k3vaFi0/EoxKRrqbpUW7bjFA
-	 LUWSTOfJq9wmJfPi1ZjPt6fGnE9LL+vr7SWVpVyW7Twr4C0kZHEPMl3nVQOjBKKVxx
-	 DmdEyUcuBT8pVTyS2kyamcO+EqK9eKKio/OmkCSOjJFBusRKkXIVhoCerXbK4Nqz0z
-	 QhWJ2MaDMBg0A==
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 8BB984026F;
-	Sat, 10 Aug 2024 08:19:04 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id CA12F1BF3DB
- for <intel-wired-lan@lists.osuosl.org>; Sat, 10 Aug 2024 08:19:02 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id B28A540C0B
- for <intel-wired-lan@lists.osuosl.org>; Sat, 10 Aug 2024 08:19:02 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 8AB0D41481;
+	Sat, 10 Aug 2024 09:10:26 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 3tpWGK8mV-_0 for <intel-wired-lan@lists.osuosl.org>;
- Sat, 10 Aug 2024 08:19:01 +0000 (UTC)
+ id WwHp8_N68ApO; Sat, 10 Aug 2024 09:10:25 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 8E87941466
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1723281025;
+	bh=Ol5ANs+U/a0i2lbGU0JF63v7sVxvV2UVjcfqmERwff8=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=VokMly2eMo6zI50/Pf3z6MHPUnSa/07+6dUhniX699Nlad/q4EORsGwZ8rpROaZJG
+	 FbY+cKtyXNg4AcQxNcESudHv0WIEs5eRxk6GpgCR7iAvCVUYhYxU+b8/gr2if26vyZ
+	 p+COU+tyTzuifrw7EQyTYtXN8K+JMtiD1l79xFSlfSGTW5sklEt9a73gfNuNHomsyP
+	 wqg5fFDolmvHu9a4WAw9x72faz+kowiiQejYRB5N+XHLpueZj87Fkdo6Tj0l1GnETw
+	 S67kbNBJEWw31/NN34ryjpblZz7kFmJaCm5d9+KHsV4a98zgh8ukogHfzmENpY3LLm
+	 /3pLQeW/cPtVw==
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp4.osuosl.org (Postfix) with ESMTP id 8E87941466;
+	Sat, 10 Aug 2024 09:10:25 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id DB8AA1BF85D
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 10 Aug 2024 09:10:24 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp1.osuosl.org (Postfix) with ESMTP id D322580DB4
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 10 Aug 2024 09:10:24 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id qbA8L27B4SPv for <intel-wired-lan@lists.osuosl.org>;
+ Sat, 10 Aug 2024 09:10:24 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=145.40.73.55;
  helo=sin.source.kernel.org; envelope-from=horms@kernel.org;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 590FE409CF
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 590FE409CF
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org F27E380DA9
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org F27E380DA9
 Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 590FE409CF
- for <intel-wired-lan@lists.osuosl.org>; Sat, 10 Aug 2024 08:19:01 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTPS id F27E380DA9
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 10 Aug 2024 09:10:23 +0000 (UTC)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by sin.source.kernel.org (Postfix) with ESMTP id 21EB8CE1318;
- Sat, 10 Aug 2024 08:18:57 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2288EC32781;
- Sat, 10 Aug 2024 08:18:53 +0000 (UTC)
-Date: Sat, 10 Aug 2024 09:18:51 +0100
+ by sin.source.kernel.org (Postfix) with ESMTP id 4BFF8CE1736;
+ Sat, 10 Aug 2024 09:10:21 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 04231C32781;
+ Sat, 10 Aug 2024 09:10:17 +0000 (UTC)
+Date: Sat, 10 Aug 2024 10:10:15 +0100
 From: Simon Horman <horms@kernel.org>
-To: Karol Kolacinski <karol.kolacinski@intel.com>
-Message-ID: <20240810081851.GE1951@kernel.org>
-References: <20240808125825.560093-8-karol.kolacinski@intel.com>
- <20240808125825.560093-10-karol.kolacinski@intel.com>
+To: Gui-Dong Han <hanguidong02@outlook.com>
+Message-ID: <20240810091015.GF1951@kernel.org>
+References: <SY8P300MB0460412FE86859FF97DE6342C0BA2@SY8P300MB0460.AUSP300.PROD.OUTLOOK.COM>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20240808125825.560093-10-karol.kolacinski@intel.com>
+In-Reply-To: <SY8P300MB0460412FE86859FF97DE6342C0BA2@SY8P300MB0460.AUSP300.PROD.OUTLOOK.COM>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1723277935;
- bh=ulVYvznxTRZMqqILWZs03OP5L+uvnM9aJD2LtFQDyuY=;
+ d=kernel.org; s=k20201202; t=1723281020;
+ bh=WXVJCXwzW1I64R/W1MgTk/3ACJlurBYFgx0Z/peXnpg=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=sk80tMFdm9VLZR8AO2ikkMzgGUchySmfw28rQqPj3yrmog6HZ6ETQGV57BtKa74zl
- FmkrV6D1dZcb1GAuMac/vLbm1V8vJoCEZfOjuV3IpJIHNolq4XmaOci+ig0vP8XbHB
- qHvqDmutQ/iOUC5OUk6C+NvL+XBF+pSm2nV8582r7BYsKIAv285s9S1Bdt2hBdQlFV
- wqVMUoe7VPwX5e1g5qBvmiGFHSMKk7tDuwTrVUvT+hFKo0sDuXo5PAdPC6DReh9TZF
- Tp82wK1H+YNLnUgimhLaKbg7BLQG7xjRWPrcP+4zr7XqJJMcsPv3SM1VdbSboylFpF
- r4NMkcyFfZRjw==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ b=vG6OR5PyBUb0T2jL8vh9GqW3U7h4zQlB2AlJP6piU89z4nevU4SxV+ZrzvpXJV8c7
+ 0DdJYWt+8M0cEeCDsKaOrN5l5/hf9Zf8R+rmlly+rgAp7Ybvrp1zhwM81SIe7cJhTF
+ XmvIyJtSWAxHfCIOweNktdNQQKW2CI0s/D8ZZAez6IU+q7xfDjFp+LHG50EkxF0B/+
+ AiD39UOxZPHTxCXPOulIUPQatB8QE0usuAe5dZ3gx0NuCjrUASvmYj2ZtxKv/XdrHs
+ R9eFKfjGgFfW8WN1WKOTyNs0dd8Tsx51yEPvS3ovPpCDFNvnLO1kfVx06+j6dgSEpN
+ GsDyyXcTDNRog==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=sk80tMFd
-Subject: Re: [Intel-wired-lan] [PATCH v5 iwl-next 2/6] ice: Use FIELD_PREP
- for timestamp values
+ header.s=k20201202 header.b=vG6OR5Py
+Subject: Re: [Intel-wired-lan] [PATCH] ice: Fix improper handling of
+ refcount in ice_sriov_set_msix_vec_count()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,78 +94,69 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, anthony.l.nguyen@intel.com,
- intel-wired-lan@lists.osuosl.org, przemyslaw.kitszel@intel.com
+Cc: przemyslaw.kitszel@intel.com, linux-kernel@vger.kernel.org,
+ stable@vger.kernel.org, edumazet@google.com, netdev@vger.kernel.org,
+ anthony.l.nguyen@intel.com, intel-wired-lan@lists.osuosl.org,
+ baijiaju1990@gmail.com, kuba@kernel.org, pabeni@redhat.com,
+ davem@davemloft.net
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Thu, Aug 08, 2024 at 02:57:44PM +0200, Karol Kolacinski wrote:
-> Instead of using shifts and casts, use FIELD_PREP after reading 40b
-> timestamp values.
+On Fri, Aug 09, 2024 at 12:59:11PM +0800, Gui-Dong Han wrote:
+> This patch addresses an issue with improper reference count handling in the
+> ice_sriov_set_msix_vec_count() function. Specifically, the function calls
+> ice_get_vf_by_id(), which increments the reference count of the vf pointer.
+> If the subsequent call to ice_get_vf_vsi() fails, the function currently
+> returns an error without decrementing the reference count of the vf
+> pointer, leading to a reference count leak.
 > 
-> Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
+> The correct behavior, as implemented in this patch, is to decrement the
+> reference count using ice_put_vf(vf) before returning an error when vsi
+> is NULL.
+>  
+> This bug was identified by an experimental static analysis tool developed
+> by our team. The tool specializes in analyzing reference count operations
+> and identifying potential mismanagement of reference counts. In this case,
+> the tool flagged the missing decrement operation as a potential issue,
+> leading to this patch.
+> 
+> Fixes: 4035c72dc1ba ("ice: reconfig host after changing MSI-X on VF")
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Gui-Dong Han <hanguidong02@outlook.com>
+
+Thanks Gui-Dong Han,
+
+I agree with your analysis.
+However, I wonder if the same resource leak can occur
+in the unroll label, if the if clause results in a return.
+
+It is around line 1444 without your patch applied.
+
+	vf->first_vector_idx = ice_sriov_get_irqs(pf, vf->num_msix);
+	if (vf->first_vector_idx < 0)
+		return -EINVAL;
+
 > ---
->  drivers/net/ethernet/intel/ice/ice_ptp_hw.c |  6 ++++--
->  drivers/net/ethernet/intel/ice/ice_ptp_hw.h | 13 +++++--------
->  2 files changed, 9 insertions(+), 10 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_sriov.c | 4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
 > 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-> index 00c6483dbffc..d1b87838986d 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-> @@ -1520,7 +1520,8 @@ static int ice_read_ptp_tstamp_eth56g(struct ice_hw *hw, u8 port, u8 idx,
->  	 * lower 8 bits in the low register, and the upper 32 bits in the high
->  	 * register.
->  	 */
-> -	*tstamp = ((u64)hi) << TS_PHY_HIGH_S | ((u64)lo & TS_PHY_LOW_M);
-> +	*tstamp = FIELD_PREP(PHY_40B_HIGH_M, hi) |
-> +		  FIELD_PREP(PHY_40B_LOW_M, lo);
+> diff --git a/drivers/net/ethernet/intel/ice/ice_sriov.c b/drivers/net/ethernet/intel/ice/ice_sriov.c
+> index 55ef33208456..eb5030aba9a5 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_sriov.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_sriov.c
+> @@ -1096,8 +1096,10 @@ int ice_sriov_set_msix_vec_count(struct pci_dev *vf_dev, int msix_vec_count)
+>  		return -ENOENT;
 >  
->  	return 0;
->  }
-> @@ -4952,7 +4953,8 @@ ice_read_phy_tstamp_e810(struct ice_hw *hw, u8 lport, u8 idx, u64 *tstamp)
->  	/* For E810 devices, the timestamp is reported with the lower 32 bits
->  	 * in the low register, and the upper 8 bits in the high register.
->  	 */
-> -	*tstamp = ((u64)hi) << TS_HIGH_S | ((u64)lo & TS_LOW_M);
-> +	*tstamp = FIELD_PREP(PHY_EXT_40B_HIGH_M, hi) |
-> +		  FIELD_PREP(PHY_EXT_40B_LOW_M, lo);
+>  	vsi = ice_get_vf_vsi(vf);
+> -	if (!vsi)
+> +	if (!vsi) {
+> +		ice_put_vf(vf);
+>  		return -ENOENT;
+> +	}
 >  
->  	return 0;
->  }
-> diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
-> index 8a28155b206f..df94230d820f 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
-> +++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
-> @@ -673,15 +673,12 @@ static inline u64 ice_get_base_incval(struct ice_hw *hw)
->  /* Source timer incval macros */
->  #define INCVAL_HIGH_M			0xFF
->  
-> -/* Timestamp block macros */
-> +/* PHY 40b registers macros */
-> +#define PHY_EXT_40B_LOW_M		GENMASK(31, 0)
-> +#define PHY_EXT_40B_HIGH_M		GENMASK_ULL(39, 32)
-> +#define PHY_40B_LOW_M			GENMASK(7, 0)
-> +#define PHY_40B_HIGH_M			GENMASK_ULL(39, 8)
->  #define TS_VALID			BIT(0)
-> -#define TS_LOW_M			0xFFFFFFFF
-> -#define TS_HIGH_M			0xFF
-> -#define TS_HIGH_S			32
-> -
-> -#define TS_PHY_LOW_M			0xFF
-> -#define TS_PHY_HIGH_M			0xFFFFFFFF
-
-I think it it would be best to defer removing (at least)
-TS_PHY_LOW_M and TS_PHY_HIGH_M until the following patch,
-as they are still in use until then.
-
-As is, this patch results in build failures.
-
-> -#define TS_PHY_HIGH_S			8
->  
->  #define BYTES_PER_IDX_ADDR_L_U		8
->  #define BYTES_PER_IDX_ADDR_L		4
+>  	prev_msix = vf->num_msix;
+>  	prev_queues = vf->num_vf_qs;
 > -- 
-> 2.45.2
+> 2.25.1
 > 
 > 
