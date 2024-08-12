@@ -1,94 +1,135 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BBDC5C52D7C
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 12 Aug 2024 13:46:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6ADC0C3DA7F
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 12 Aug 2024 14:26:24 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 586C080F23;
-	Mon, 12 Aug 2024 13:46:28 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 16AC6408AC;
+	Mon, 12 Aug 2024 14:26:24 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id RFigfbzn5CNX; Mon, 12 Aug 2024 13:46:26 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id lL9uoQ4ic3_5; Mon, 12 Aug 2024 14:26:22 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org AAF4680F0D
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 5998A4043E
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1723470386;
-	bh=sCfz0oUg1wGHeunPXw5ZYa1399yZxgv9wSQ8uaE0v9c=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=YBhaOGqr0AZSXjIlPL3Nc/yArBJZfU4ll6Dl2ORq+nWHRhOM5vzC6Ray3PDPypeSR
-	 YAQeyfdQvpvyrGAVuCuQj2Ne+GKI6Rd/Ifute9mQAgOvCCAHruc9riNfGb8cjDF407
-	 IwVKnNCx3XWTE87pyjWFjwQWw3KNns+VAwW+Nk5XtnyfyhmqbXi1VY9AAQGOCkuQ29
-	 L1y1bOTVaac7TuPUXiXJHoFpJgLXVRgsJ+Q5uIRoaM5b9ehZWizw2AxmHUMUqoEELY
-	 7D5EL3lmKnud4kNPgRrKxwA+WYWNWCwMwjNPfhxVpEFWYNzX9UEXA/5COeafbfvIX5
-	 7/xnAqZI2Qb/w==
+	s=default; t=1723472782;
+	bh=uCDj2ND5nE8inw/UhtR4NteFMYiUan8kp+SXKAFbsaQ=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=AlixffAa0AF77P/VznLyizp0o4E4lbSXG74sgMmClZRNIK7NXLGenN4Iympjy/fqx
+	 3orMt+DGMXWcK9KO8sb6K+Ga8J8QZtbYgi1DwHDOuExIC2zNWpnQKgUMDQ1eV9E0Im
+	 kq0gfD2qTegnwIx5SHJ+qPxVjzy3C7byQtHNhELwVfxbGR6d3B1moW5GHegGze2nW7
+	 8copvDZDj6DIwPBXwlVyoYxRScxHX4AiLU15os+3N0O3zh+6OBrr9wPqhzOl6mi3qI
+	 JaoDiphkP9B48WqzMzRLnxZYuCA7HmiD69M9wd/8FCzmWJFBmGsp+B+cAat4dFNdPM
+	 hHAQ1F6JrZTPw==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id AAF4680F0D;
-	Mon, 12 Aug 2024 13:46:26 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 5998A4043E;
+	Mon, 12 Aug 2024 14:26:22 +0000 (UTC)
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 1054B1BF951
- for <intel-wired-lan@lists.osuosl.org>; Mon, 12 Aug 2024 13:46:25 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 010051BF20D
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 12 Aug 2024 14:26:20 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id F0CFB60771
- for <intel-wired-lan@lists.osuosl.org>; Mon, 12 Aug 2024 13:46:24 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id DDD61607DA
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 12 Aug 2024 14:26:20 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id HaLGdfDcdR_v for <intel-wired-lan@lists.osuosl.org>;
- Mon, 12 Aug 2024 13:46:24 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.19;
- helo=mgamail.intel.com; envelope-from=aleksander.lobakin@intel.com;
+ id xt-E1aJE1WGO for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 12 Aug 2024 14:26:20 +0000 (UTC)
+X-Greylist: delayed 374 seconds by postgrey-1.37 at util1.osuosl.org;
+ Mon, 12 Aug 2024 14:26:19 UTC
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org E69E5605A6
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E69E5605A6
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=103.168.172.138;
+ helo=flow3-smtp.messagingengine.com; envelope-from=greg@kroah.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org ED463605FA
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org ED463605FA
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.19])
- by smtp3.osuosl.org (Postfix) with ESMTPS id ED463605FA
- for <intel-wired-lan@lists.osuosl.org>; Mon, 12 Aug 2024 13:46:23 +0000 (UTC)
-X-CSE-ConnectionGUID: O02L05N/QRWvJE+tye//UA==
-X-CSE-MsgGUID: agiXmpvJSO671xUrddZehg==
-X-IronPort-AV: E=McAfee;i="6700,10204,11162"; a="21439217"
-X-IronPort-AV: E=Sophos;i="6.09,283,1716274800"; d="scan'208";a="21439217"
-Received: from fmviesa003.fm.intel.com ([10.60.135.143])
- by orvoesa111.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 12 Aug 2024 06:46:22 -0700
-X-CSE-ConnectionGUID: 8glDbEsrSvKWCJ8T2p/bRQ==
-X-CSE-MsgGUID: hWsnEHY6T0ShmeznxdUgsw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.09,283,1716274800"; d="scan'208";a="62404963"
-Received: from newjersey.igk.intel.com ([10.102.20.203])
- by fmviesa003.fm.intel.com with ESMTP; 12 Aug 2024 06:46:18 -0700
-From: Alexander Lobakin <aleksander.lobakin@intel.com>
-To: stable@vger.kernel.org
-Date: Mon, 12 Aug 2024 15:44:55 +0200
-Message-ID: <20240812134455.2298021-1-aleksander.lobakin@intel.com>
-X-Mailer: git-send-email 2.46.0
+Received: from flow3-smtp.messagingengine.com (flow3-smtp.messagingengine.com
+ [103.168.172.138])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id E69E5605A6
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 12 Aug 2024 14:26:19 +0000 (UTC)
+Received: from phl-compute-01.internal (phl-compute-01.nyi.internal
+ [10.202.2.41])
+ by mailflow.nyi.internal (Postfix) with ESMTP id A9969200DE8;
+ Mon, 12 Aug 2024 10:20:03 -0400 (EDT)
+Received: from phl-mailfrontend-01 ([10.202.2.162])
+ by phl-compute-01.internal (MEProxy); Mon, 12 Aug 2024 10:20:03 -0400
+X-ME-Sender: <xms:Exq6ZgCsslAOYbRYLyk4RFsaAA_5noMhx7QlvMfy9lP9IQ25BicfMQ>
+ <xme:Exq6ZihYkboEyO7RB17bKCXc-PCd42161nfETWrJP6i8aNPgUjuLZW4gzzfislGzz
+ PWhHiFgXBQKsg>
+X-ME-Received: <xmr:Exq6ZjnRVvHGeGII-0PWSXqBeaCWn2mSC6OPVh-An03T6IlwKYokAQ7YI7hQYfp5HExQxU65BTHV1WBjMErQfDRJQEkyLcIwXue_Wg>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeeftddruddttddgjeegucetufdoteggodetrfdotf
+ fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdggtfgfnhhsuhgsshgtrhhisggvpdfu
+ rfetoffkrfgpnffqhgenuceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnh
+ htshculddquddttddmnecujfgurhepfffhvfevuffkfhggtggujgesthdtredttddtvden
+ ucfhrhhomhepifhrvghgucfmjfcuoehgrhgvgheskhhrohgrhhdrtghomheqnecuggftrf
+ grthhtvghrnhepjeetueehteekuefhleehkeffffeiffeftedtieegkedviefggfefueff
+ kefgueffnecuffhomhgrihhnpehmshhgihgurdhlihhnkhenucevlhhushhtvghrufhiii
+ gvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpehgrhgvgheskhhrohgrhhdrtghomhdp
+ nhgspghrtghpthhtohepvdegpdhmohguvgepshhmthhpohhuthdprhgtphhtthhopegrlh
+ gvkhhsrghnuggvrhdrlhhosggrkhhinhesihhnthgvlhdrtghomhdprhgtphhtthhopehs
+ thgrsghlvgesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehmihgthhgrlh
+ drkhhusghirghksehinhhtvghlrdgtohhmpdhrtghpthhtohepphgrvhgrnhdrkhhumhgr
+ rhdrlhhinhhgrgesihhnthgvlhdrtghomhdprhgtphhtthhopehhohhrmhhssehkvghrnh
+ gvlhdrohhrghdprhgtphhtthhopehkrhhishhhnhgvihhlrdhkrdhsihhnghhhsehinhht
+ vghlrdgtohhmpdhrtghpthhtoheprghnthhhohhnhidrlhdrnhhguhihvghnsehinhhtvg
+ hlrdgtohhmpdhrtghpthhtohepkhhusggrsehkvghrnhgvlhdrohhrghdprhgtphhtthho
+ pehnvgigrdhsfidrnhgtihhsrdhoshguthdrihhtphdruhhpshhtrhgvrghmihhnghesih
+ hnthgvlhdrtghomh
+X-ME-Proxy: <xmx:Exq6Zmy3X1VnAW_1lPaiJxzKQ-UP_SiNDCExMkCxvjtafQVM-Qy8qw>
+ <xmx:Exq6ZlTlX1TOeDFFsO7iMjQYzkLxbH5blhS932bNWzcR7C63qMuzsg>
+ <xmx:Exq6Zha5NNeI5JszU0ddiZ7Bn4EaEDipsqK9z6bmGCyRTyUw-8Qx5w>
+ <xmx:Exq6ZuQjoiZOpsLnOrJtUKKcC-WEM0Y4MdPzuEJTiKai0QmqdSNnUw>
+ <xmx:Exq6ZhLc_69r2TVkE3UXEtNW4rS_XWSYOgbz5EkrZbJJQNQRneNUUaEP>
+Feedback-ID: i787e41f1:Fastmail
+Received: by mail.messagingengine.com (Postfix) with ESMTPA; Mon,
+ 12 Aug 2024 10:20:02 -0400 (EDT)
+Date: Mon, 12 Aug 2024 16:20:00 +0200
+From: Greg KH <greg@kroah.com>
+To: Alexander Lobakin <aleksander.lobakin@intel.com>
+Message-ID: <2024081251-eggshell-down-d665@gregkh>
+References: <20240812134455.2298021-1-aleksander.lobakin@intel.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1723470384; x=1755006384;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=RZbrLVmBjMhLipuy8GpOq0fJf7VHPNsfLcYAn3sksuw=;
- b=Smd5BzuwePkMKEJ4znZrIIIEOx/Ikp3aamz2dxPoAxWKnv5NfxP04HNx
- BP1DqFwG7YzT/UtLQwSB+bUr6o+rIAuY6QoPNTyg6mte+w9Oa/wQaktNw
- ScaV49qCCIF1d29WSH6huc5xeL73vsGm32gTEbfnwxx1jIhJvUonqKQEU
- tDen+yzwqn6MwdZHWLHW/f2GGIOJaJPuI3DrSwd2fBpSOvfP+VMEVZH0u
- sX9qCZUXFqojsZt6OpwgLryhdk589MFFYzsJcpDMd3w2M792xqtBLB7qC
- oQrS9EhFOwSUaQEY/BjnOu4cnEnqmpZHlYCbuRkb6wYdYO2dq5c/Liq0y
- g==;
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240812134455.2298021-1-aleksander.lobakin@intel.com>
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=kroah.com; h=cc
+ :cc:content-type:content-type:date:date:from:from:in-reply-to
+ :in-reply-to:message-id:mime-version:references:reply-to:subject
+ :subject:to:to; s=fm3; t=1723472403; x=1723479603; bh=uCDj2ND5nE
+ 8inw/UhtR4NteFMYiUan8kp+SXKAFbsaQ=; b=Jgbil5AKeanZIvWttmxLqpKCsG
+ cesbBek8ICenp01vbRpzfnsqvCEeqYZDrJFOGmG4pyUGj8ycXV278ntTSqpCYfj+
+ CT8mV9XiUNoZJXSI2E0gI5eWrDDMPq3amAq6JVPK99glkO718BJvjEtqdwLV8/d0
+ aXX0nAulrrgPlE1uWsdyJyXFrHieiEnRfE96SJRQhvhxUPcKbPyosTyJe6BnQniF
+ uBfkae4CprmvGdqvRNUslYuZzWV8KN0sSPuEJZOaOdLRUg8sX/Btn33nk1si8JWu
+ BwaqA9R1Rp8yYoK6gZOIv1rVHIY2N82u2NWrDBs+siwcqSxL9Yg7mh5gh67g==
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+ messagingengine.com; h=cc:cc:content-type:content-type:date:date
+ :feedback-id:feedback-id:from:from:in-reply-to:in-reply-to
+ :message-id:mime-version:references:reply-to:subject:subject:to
+ :to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
+ fm3; t=1723472403; x=1723479603; bh=uCDj2ND5nE8inw/UhtR4NteFMYiU
+ an8kp+SXKAFbsaQ=; b=YoVpxfTN+n/d3TpfgC2wVhmVD01+o/XbiBE+IjP5hfZU
+ LawS8HVlgD9HbX6Y0ZVfYbgMdSpuh6jqcuDIe2nArfz8tR+jM4q+oGkLdB6MaFHV
+ PaYFhq4TEN/Ge6nm+xerlm6USso7J/EdCiOB2kq9KpgAfI2O16tNEWjNbTqM0Gr6
+ ZNubXp7L65W9gsuDjWi9Ww32m2JiWP0MXmpdfMrwXfYjXaX6m2iXQRXqsVcLSXup
+ WbSkBzFWq8h0JtI2n9s2jnsutu8TDCTffV+yJEgMSJyUkG6wrs+8IU+4IWEmx1hK
+ JRlz2B773b4Hwub2EfGGht4DduJvUVHWsVS/KI9hcQ==
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
- header.from=intel.com
+ header.from=kroah.com
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key, unprotected) header.d=kroah.com header.i=@kroah.com
+ header.a=rsa-sha256 header.s=fm3 header.b=Jgbil5AK; 
  dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=Smd5Bzuw
-Subject: [Intel-wired-lan] [PATCH 6.10.y] idpf: fix memleak in vport
+ unprotected) header.d=messagingengine.com header.i=@messagingengine.com
+ header.a=rsa-sha256 header.s=fm3 header.b=YoVpxfTN
+Subject: Re: [Intel-wired-lan] [PATCH 6.10.y] idpf: fix memleak in vport
  interrupt configuration
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
@@ -103,7 +144,7 @@ List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Cc: Pavan Kumar Linga <pavan.kumar.linga@intel.com>, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, Alexander Lobakin <aleksander.lobakin@intel.com>,
+ linux-kernel@vger.kernel.org, stable@vger.kernel.org,
  Michal Kubiak <michal.kubiak@intel.com>,
  Tony Nguyen <anthony.l.nguyen@intel.com>, Simon Horman <horms@kernel.org>,
  nex.sw.ncis.osdt.itp.upstreaming@intel.com, Jakub Kicinski <kuba@kernel.org>,
@@ -111,93 +152,40 @@ Cc: Pavan Kumar Linga <pavan.kumar.linga@intel.com>, netdev@vger.kernel.org,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Michal Kubiak <michal.kubiak@intel.com>
+On Mon, Aug 12, 2024 at 03:44:55PM +0200, Alexander Lobakin wrote:
+> From: Michal Kubiak <michal.kubiak@intel.com>
+> 
+> commit 3cc88e8405b8d55e0ff035e31971aadd6baee2b6 upstream.
+> 
+> The initialization of vport interrupt consists of two functions:
+>  1) idpf_vport_intr_init() where a generic configuration is done
+>  2) idpf_vport_intr_req_irq() where the irq for each q_vector is
+>    requested.
+> 
+> The first function used to create a base name for each interrupt using
+> "kasprintf()" call. Unfortunately, although that call allocated memory
+> for a text buffer, that memory was never released.
+> 
+> Fix this by removing creating the interrupt base name in 1).
+> Instead, always create a full interrupt name in the function 2), because
+> there is no need to create a base name separately, considering that the
+> function 2) is never called out of idpf_vport_intr_init() context.
+> 
+> Fixes: d4d558718266 ("idpf: initialize interrupts and enable vport")
+> Cc: stable@vger.kernel.org # 6.7
+> Signed-off-by: Michal Kubiak <michal.kubiak@intel.com>
+> Reviewed-by: Pavan Kumar Linga <pavan.kumar.linga@intel.com>
+> Signed-off-by: Alexander Lobakin <aleksander.lobakin@intel.com>
+> Reviewed-by: Simon Horman <horms@kernel.org>
+> Tested-by: Krishneil Singh <krishneil.k.singh@intel.com>
+> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> Link: https://patch.msgid.link/20240806220923.3359860-3-anthony.l.nguyen@intel.com
+> Signed-off-by: Jakub Kicinski <kuba@kernel.org>
+> ---
+>  drivers/net/ethernet/intel/idpf/idpf_txrx.c | 19 ++++++++-----------
+>  1 file changed, 8 insertions(+), 11 deletions(-)
+> 
 
-commit 3cc88e8405b8d55e0ff035e31971aadd6baee2b6 upstream.
+Now queued up, thanks.
 
-The initialization of vport interrupt consists of two functions:
- 1) idpf_vport_intr_init() where a generic configuration is done
- 2) idpf_vport_intr_req_irq() where the irq for each q_vector is
-   requested.
-
-The first function used to create a base name for each interrupt using
-"kasprintf()" call. Unfortunately, although that call allocated memory
-for a text buffer, that memory was never released.
-
-Fix this by removing creating the interrupt base name in 1).
-Instead, always create a full interrupt name in the function 2), because
-there is no need to create a base name separately, considering that the
-function 2) is never called out of idpf_vport_intr_init() context.
-
-Fixes: d4d558718266 ("idpf: initialize interrupts and enable vport")
-Cc: stable@vger.kernel.org # 6.7
-Signed-off-by: Michal Kubiak <michal.kubiak@intel.com>
-Reviewed-by: Pavan Kumar Linga <pavan.kumar.linga@intel.com>
-Signed-off-by: Alexander Lobakin <aleksander.lobakin@intel.com>
-Reviewed-by: Simon Horman <horms@kernel.org>
-Tested-by: Krishneil Singh <krishneil.k.singh@intel.com>
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
-Link: https://patch.msgid.link/20240806220923.3359860-3-anthony.l.nguyen@intel.com
-Signed-off-by: Jakub Kicinski <kuba@kernel.org>
----
- drivers/net/ethernet/intel/idpf/idpf_txrx.c | 19 ++++++++-----------
- 1 file changed, 8 insertions(+), 11 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.c b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-index b023704bbbda..ed68c7baefa3 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-@@ -3636,13 +3636,15 @@ void idpf_vport_intr_update_itr_ena_irq(struct idpf_q_vector *q_vector)
- /**
-  * idpf_vport_intr_req_irq - get MSI-X vectors from the OS for the vport
-  * @vport: main vport structure
-- * @basename: name for the vector
-  */
--static int idpf_vport_intr_req_irq(struct idpf_vport *vport, char *basename)
-+static int idpf_vport_intr_req_irq(struct idpf_vport *vport)
- {
- 	struct idpf_adapter *adapter = vport->adapter;
-+	const char *drv_name, *if_name, *vec_name;
- 	int vector, err, irq_num, vidx;
--	const char *vec_name;
-+
-+	drv_name = dev_driver_string(&adapter->pdev->dev);
-+	if_name = netdev_name(vport->netdev);
- 
- 	for (vector = 0; vector < vport->num_q_vectors; vector++) {
- 		struct idpf_q_vector *q_vector = &vport->q_vectors[vector];
-@@ -3659,8 +3661,8 @@ static int idpf_vport_intr_req_irq(struct idpf_vport *vport, char *basename)
- 		else
- 			continue;
- 
--		q_vector->name = kasprintf(GFP_KERNEL, "%s-%s-%d",
--					   basename, vec_name, vidx);
-+		q_vector->name = kasprintf(GFP_KERNEL, "%s-%s-%s-%d", drv_name,
-+					   if_name, vec_name, vidx);
- 
- 		err = request_irq(irq_num, idpf_vport_intr_clean_queues, 0,
- 				  q_vector->name, q_vector);
-@@ -4170,7 +4172,6 @@ int idpf_vport_intr_alloc(struct idpf_vport *vport)
-  */
- int idpf_vport_intr_init(struct idpf_vport *vport)
- {
--	char *int_name;
- 	int err;
- 
- 	err = idpf_vport_intr_init_vec_idx(vport);
-@@ -4184,11 +4185,7 @@ int idpf_vport_intr_init(struct idpf_vport *vport)
- 	if (err)
- 		goto unroll_vectors_alloc;
- 
--	int_name = kasprintf(GFP_KERNEL, "%s-%s",
--			     dev_driver_string(&vport->adapter->pdev->dev),
--			     vport->netdev->name);
--
--	err = idpf_vport_intr_req_irq(vport, int_name);
-+	err = idpf_vport_intr_req_irq(vport);
- 	if (err)
- 		goto unroll_vectors_alloc;
- 
--- 
-2.46.0
-
+greg k-h
