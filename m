@@ -1,139 +1,153 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 43544C3DA4A
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 14 Aug 2024 11:27:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 89767C3DA4A
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 14 Aug 2024 12:12:18 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id E3DA6819FC;
-	Wed, 14 Aug 2024 11:27:38 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 34E6940BCB;
+	Wed, 14 Aug 2024 12:12:18 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id SCnFiuHr2dh3; Wed, 14 Aug 2024 11:27:37 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id yLcpjKLMPExU; Wed, 14 Aug 2024 12:12:17 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 049A381926
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 242C8404C1
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1723634857;
-	bh=oChSn+ddY3rawqfzReuNujffEuD1pwyybyXLWnykGyA=;
-	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Reply-To:Cc:From;
-	b=pYv/8GB9MqS9dbL5Ha9Zl/DyQpTUjpmV6EDXweWamnDAo/hYARE6DhGpEyeE6+2sv
-	 7n9MigBnRYU3mc1iQP5foaBfmbozQXFO0M1662H2zk6HSI3fYArwC9XCRgIhGjYdfW
-	 sHF++ZBN/YYOLRBr9pz6hbsYgGGKF/i/0/KF40VEzDqcw7PdMtzk2IvQFIHHlcT9Xt
-	 rZByhy8TZOJK69jxZcOTt+XGIjogxEBArFsAPST0RTa5CR8wkAMOYokV6avJfGX+HH
-	 MSeADBEmGfcbKKDyyzET4a1wZmI7j48Itmk1GgRTG95o7mfaxyMviD6dQR9P0jftoP
-	 ctcyEYB4StjQQ==
+	s=default; t=1723637537;
+	bh=PG9e6JitvYXoqzSTP8p6u30qXecQWEzNyRf8++iwfzg=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=5DerB9EVuW8ZR1kUsq8+hSwCT8QJjGDs/QyvJm0c+RylLE1sTD7eJTyiqv/wbWQWf
+	 ZRVZL8ZZmrx7diWEZj764JildyYbZzsTfUnX7HaayJaOpP3YWcMAcQt023/2e/Rb9B
+	 /JsCUWS+TfKeMBTm805qPMdp39c8mKYoeweoIWY4PccESuXy6UVim3AVDwT7i1JNBI
+	 AUW0o5DVBhLE2F8zAzLde4FG4biB5im5WS/cVxlbI8CFlTLAh/pJBewO2rvCv1pnX/
+	 zIoIDyQBmfi9hz8BU7N6Sjq8EK/YJ+wKcs6mmBgK8+qnrFijbURRsiPuEHbVpbdruA
+	 3rPptYNLIBFmw==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 049A381926;
-	Wed, 14 Aug 2024 11:27:37 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id A72D21BF616
- for <intel-wired-lan@lists.osuosl.org>; Wed, 14 Aug 2024 11:27:34 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 242C8404C1;
+	Wed, 14 Aug 2024 12:12:17 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 456781BF316
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 14 Aug 2024 12:12:15 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 91F5F818C0
- for <intel-wired-lan@lists.osuosl.org>; Wed, 14 Aug 2024 11:27:34 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 3092F40183
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 14 Aug 2024 12:12:15 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id KUwMrNrjUFOV for <intel-wired-lan@lists.osuosl.org>;
- Wed, 14 Aug 2024 11:27:33 +0000 (UTC)
-X-Greylist: delayed 2674 seconds by postgrey-1.37 at util1.osuosl.org;
- Wed, 14 Aug 2024 11:27:30 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org ACE2581886
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org ACE2581886
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=80.237.130.52;
- helo=wp530.webpack.hosteurope.de; envelope-from=regressions@leemhuis.info;
- receiver=<UNKNOWN> 
-Received: from wp530.webpack.hosteurope.de (wp530.webpack.hosteurope.de
- [80.237.130.52])
- by smtp1.osuosl.org (Postfix) with ESMTPS id ACE2581886
- for <intel-wired-lan@lists.osuosl.org>; Wed, 14 Aug 2024 11:27:30 +0000 (UTC)
-Received: from [2a02:8108:8980:2478:8cde:aa2c:f324:937e]; authenticated
- by wp530.webpack.hosteurope.de running ExIM with esmtpsa
- (TLS1.3:ECDHE_RSA_AES_128_GCM_SHA256:128)
- id 1seBSt-0000u4-Nb; Wed, 14 Aug 2024 12:42:51 +0200
-Message-ID: <acaa3e31-a6f4-4c45-b795-d12b0d2743da@leemhuis.info>
-Date: Wed, 14 Aug 2024 12:42:51 +0200
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id DMWjUaQlbnrA for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 14 Aug 2024 12:12:14 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2a00:1450:4864:20::329; helo=mail-wm1-x329.google.com;
+ envelope-from=jdamato@fastly.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org AC0724017A
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org AC0724017A
+Received: from mail-wm1-x329.google.com (mail-wm1-x329.google.com
+ [IPv6:2a00:1450:4864:20::329])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id AC0724017A
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 14 Aug 2024 12:12:13 +0000 (UTC)
+Received: by mail-wm1-x329.google.com with SMTP id
+ 5b1f17b1804b1-4280bbdad3dso48404805e9.0
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 14 Aug 2024 05:12:13 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20230601; t=1723637531; x=1724242331;
+ h=in-reply-to:content-disposition:mime-version:references
+ :mail-followup-to:message-id:subject:to:from:date:x-gm-message-state
+ :from:to:cc:subject:date:message-id:reply-to;
+ bh=PG9e6JitvYXoqzSTP8p6u30qXecQWEzNyRf8++iwfzg=;
+ b=lqnUADzy87PAlCPEq624108PrsR5E+9h4gDN4AosQ57S32WuoEz/d7HyBs+glTWKrl
+ 9ir0ov2GzPwcjeCImDG8SJ68f1WJJyD6lItTmj23SjXNiLr8xh9Fh/C0gCE3SEtKbM4a
+ YT1RIZ8mV1lZ807OJ1nEQHZEKNn6jCNUKuubeoFrTyxyljF29wlwsAbtKQCzV/mEhR6A
+ l5n0LhEVgDJzWzTy4GfVfRK5E4UxXIvPUzO9xfAxsicyKW6IKIFtPrkbnylWigeWv6/B
+ ITIxEd4b0psqXltQtyb0E/pL0/GBude5j0CdtVQIgSoWXRei1ic28LdpOUYFwglNJgjY
+ TvbA==
+X-Forwarded-Encrypted: i=1;
+ AJvYcCWltH/SqXzAc44PLotAFnZriuix/D0agUChNmJf1uXzpQQAyN9Ggo+1eNbOqoLmRnQnFcTYoJShVXso0swdmLHeMiEffT8B3WPB3KWsr5rXvA==
+X-Gm-Message-State: AOJu0YyScv/olI/pXZHXsiqA5suZcfK6kHP3kXn/kI3bQVHUQpzxc9pf
+ aWWbTrOL4gkRruu2NG1WEbnmqkkL4AwgtB1ldidrTl/mLhwA0pwdYZU6x87M3HU=
+X-Google-Smtp-Source: AGHT+IEXQhc1DRLmbpucvwdmK1QHHySaNdm9iIXPW0P1dXOgYRVT3R+EtoisglPADmrSMdzG+PAwVw==
+X-Received: by 2002:a05:600c:4710:b0:426:62c5:4741 with SMTP id
+ 5b1f17b1804b1-429dd22fe4dmr18421295e9.2.1723637531117; 
+ Wed, 14 Aug 2024 05:12:11 -0700 (PDT)
+Received: from LQ3V64L9R2.home ([80.208.222.2])
+ by smtp.gmail.com with ESMTPSA id
+ 5b1f17b1804b1-429ded1e3f7sm18267235e9.4.2024.08.14.05.12.09
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Wed, 14 Aug 2024 05:12:10 -0700 (PDT)
+Date: Wed, 14 Aug 2024 13:12:08 +0100
+From: Joe Damato <jdamato@fastly.com>
+To: Jakub Kicinski <kuba@kernel.org>, netdev@vger.kernel.org,
+ Daniel Borkmann <daniel@iogearbox.net>,
+ "David S. Miller" <davem@davemloft.net>,
+ Eric Dumazet <edumazet@google.com>,
+ Harshitha Ramamurthy <hramamurthy@google.com>,
+ "moderated list:INTEL ETHERNET DRIVERS" <intel-wired-lan@lists.osuosl.org>,
+ Jeroen de Borst <jeroendb@google.com>,
+ Jiri Pirko <jiri@resnulli.us>, Leon Romanovsky <leon@kernel.org>,
+ open list <linux-kernel@vger.kernel.org>,
+ "open list:MELLANOX MLX4 core VPI driver" <linux-rdma@vger.kernel.org>,
+ Lorenzo Bianconi <lorenzo@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+ Praveen Kaligineedi <pkaligineedi@google.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Saeed Mahameed <saeedm@nvidia.com>,
+ Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+ Shailend Chand <shailend@google.com>, Tariq Toukan <tariqt@nvidia.com>,
+ Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Willem de Bruijn <willemb@google.com>, Yishai Hadas <yishaih@nvidia.com>,
+ Ziwei Xiao <ziweixiao@google.com>
+Message-ID: <ZryfGDU9wHE0IrvZ@LQ3V64L9R2.home>
+Mail-Followup-To: Joe Damato <jdamato@fastly.com>,
+ Jakub Kicinski <kuba@kernel.org>, netdev@vger.kernel.org,
+ Daniel Borkmann <daniel@iogearbox.net>,
+ "David S. Miller" <davem@davemloft.net>,
+ Eric Dumazet <edumazet@google.com>,
+ Harshitha Ramamurthy <hramamurthy@google.com>,
+ "moderated list:INTEL ETHERNET DRIVERS" <intel-wired-lan@lists.osuosl.org>,
+ Jeroen de Borst <jeroendb@google.com>,
+ Jiri Pirko <jiri@resnulli.us>, Leon Romanovsky <leon@kernel.org>,
+ open list <linux-kernel@vger.kernel.org>,
+ "open list:MELLANOX MLX4 core VPI driver" <linux-rdma@vger.kernel.org>,
+ Lorenzo Bianconi <lorenzo@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>,
+ Praveen Kaligineedi <pkaligineedi@google.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Saeed Mahameed <saeedm@nvidia.com>,
+ Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+ Shailend Chand <shailend@google.com>,
+ Tariq Toukan <tariqt@nvidia.com>,
+ Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Willem de Bruijn <willemb@google.com>,
+ Yishai Hadas <yishaih@nvidia.com>,
+ Ziwei Xiao <ziweixiao@google.com>
+References: <20240812145633.52911-1-jdamato@fastly.com>
+ <20240813171710.599d3f01@kernel.org>
+ <ZrxZaHGDTO3ohHFH@LQ3V64L9R2.home>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-From: "Linux regression tracking (Thorsten Leemhuis)"
- <regressions@leemhuis.info>
-Content-Language: en-US, de-DE
-To: Tony Nguyen <anthony.l.nguyen@intel.com>,
- Sasha Neftin <sasha.neftin@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Autocrypt: addr=linux@leemhuis.info; keydata=
- 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 n7RI
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-bounce-key: webpack.hosteurope.de; regressions@leemhuis.info; 1723634850;
- aef2d79c; 
-X-HE-SMSGID: 1seBSt-0000u4-Nb
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt;
- c=relaxed/relaxed; 
- d=leemhuis.info; s=he214686; h=Content-Transfer-Encoding:Content-Type:
- Reply-To:Subject:Cc:To:From:MIME-Version:Date:Message-ID:From:Sender:Reply-To
- :Subject:Date:Message-ID:To:Cc:MIME-Version:Content-Type:
- Content-Transfer-Encoding:Content-ID:Content-Description:In-Reply-To:
- References; bh=oChSn+ddY3rawqfzReuNujffEuD1pwyybyXLWnykGyA=; t=1723634850;
- x=1724066850; b=1/kbgULAKW7s/mWJJkbvR7lF9Iw48M5tRUNWunD9AXzlQPketgmaEsiSvxRZc
- 5RoJkVhPWPzUIeMXGDz+uilYn0AYRl9fm/FM27WyMC9VjOsmC8g7GdVZlHlcTE4dMu1PAOXapn6AV
- zHvcDdGGcd6FwG/DhJ0hussNNJMtLPJpzzZ6UI+S4jGr7J9ztF9GpRGFqQ87zQe0xn76SA1WKaZMh
- jJjbWeOlLR5vGgWt+6HAuvFc1wxjq4VAejJS4pIhM56crSrcQT/eCatK3n4QV63l7lc+eWud6KBWV
- EPR/a/dHMgkXXD0mriGnVUnL37WLnCUibta/gQjnYtH8XqXLTg==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dmarc=none (p=none dis=none)
- header.from=leemhuis.info
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=leemhuis.info header.i=@leemhuis.info
- header.a=rsa-sha256 header.s=he214686 header.b=1/kbgULA
-Subject: [Intel-wired-lan] [regression] igc does not function anymore after
- second resume from standby
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ZrxZaHGDTO3ohHFH@LQ3V64L9R2.home>
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=fastly.com; s=google; t=1723637531; x=1724242331; darn=lists.osuosl.org;
+ h=in-reply-to:content-disposition:mime-version:references
+ :mail-followup-to:message-id:subject:to:from:date:from:to:cc:subject
+ :date:message-id:reply-to;
+ bh=PG9e6JitvYXoqzSTP8p6u30qXecQWEzNyRf8++iwfzg=;
+ b=Ac1fsv3Ft1Jjpe/M3/bLc60B213EhVNbf5uk8U7R1qbmFwdeE9OB7Ozxdbr616HMPg
+ OereBYn6uEU855JVrZPrbWUqhBV7neVnXci2b3mcqfWyZXhBDxUEidMP6fUH14rOjFB1
+ p3tvKCcGsawRfDUP8zgzI0ZuauolutLGWGDfw=
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dmarc=pass (p=reject dis=none)
+ header.from=fastly.com
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (1024-bit key,
+ unprotected) header.d=fastly.com header.i=@fastly.com header.a=rsa-sha256
+ header.s=google header.b=Ac1fsv3F
+Subject: Re: [Intel-wired-lan] [RFC net-next 0/6] Cleanup IRQ affinity
+ checks in several drivers
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -146,46 +160,69 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Reply-To: Linux regressions mailing list <regressions@lists.linux.dev>
-Cc: netdev <netdev@vger.kernel.org>,
- intel-wired-lan <intel-wired-lan@lists.osuosl.org>,
- Linux kernel regressions list <regressions@lists.linux.dev>,
- Martin <mwolf@adiumentum.com>, LKML <linux-kernel@vger.kernel.org>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-[Tony, Przemek: lore did not find any mail from Sasha in the past few
-weeks, so from here it looks like this might be something somebody else
-needs to handle.]
-
-Hi, Thorsten here, the Linux kernel's regression tracker.
-
-Sasha, I noticed a report about a regression in bugzilla.kernel.org that
-appears to be caused by this change of yours:
-6f31d6b643a32c ("igc: Refactor runtime power management flow") [v6.10-rc1]
-
-As many (most?) kernel developers don't keep an eye on the bug tracker,
-I decided to write this mail. To quote from
-https://bugzilla.kernel.org/show_bug.cgi?id=219143 :
-
->  Martin 2024-08-09 15:17:49 UTC
+On Wed, Aug 14, 2024 at 08:14:48AM +0100, Joe Damato wrote:
+> On Tue, Aug 13, 2024 at 05:17:10PM -0700, Jakub Kicinski wrote:
+> > On Mon, 12 Aug 2024 14:56:21 +0000 Joe Damato wrote:
+> > > Several drivers make a check in their napi poll functions to determine
+> > > if the CPU affinity of the IRQ has changed. If it has, the napi poll
+> > > function returns a value less than the budget to force polling mode to
+> > > be disabled, so that it can be rescheduled on the correct CPU next time
+> > > the softirq is raised.
+> > 
+> > Any reason not to use the irq number already stored in napi_struct ?
 > 
-> Starting with Kernel 6.10.x I experienced network connection
-> problems after resuming my system for the second time.
+> Thanks for taking a look.
 > 
-> My system contains two Intel I225-V (rev2 and rev3) cards.
+> IIUC, that's possible if i40e, iavf, and gve are updated to call
+> netif_napi_set_irq first, which I could certainly do.
 > 
-> I ran a bisection and got a hit: 6f31d6b643a32cc126cf86093fca1ea575948bf0
+> But as Stanislav points out, I would be adding a call to
+> irq_get_effective_affinity_mask in the hot path where one did not
+> exist before for 4 of 5 drivers.
 > 
-> rmmod igc ; modprobe igc remedies the issue till the next but one resume.
+> In that case, it might make more sense to introduce:
+> 
+>   bool napi_affinity_no_change(const struct cpumask *aff_mask)
+> 
+> instead and the drivers which have a cached mask can pass it in and
+> gve can be updated later to cache it.
+> 
+> Not sure how crucial avoiding the irq_get_effective_affinity_mask
+> call is; I would guess maybe some driver owners would object to
+> adding a new call in the hot path where one didn't exist before.
+> 
+> What do you think?
 
-See the ticket for more details. Martin, the reporter, is CCed.
+Actually... how about a slightly different approach, which caches
+the affinity mask in the core?
 
-Ciao, Thorsten (wearing his 'the Linux kernel's regression tracker' hat)
---
-Everything you wanna know about Linux kernel regression tracking:
-https://linux-regtracking.leemhuis.info/about/#tldr
-If I did something stupid, please tell me, as explained on that page.
+  0. Extend napi struct to have a struct cpumask * field
 
-#regzbot duplicate: https://bugzilla.kernel.org/show_bug.cgi?id=219143
-#regzbot from: Martin
+  1. extend netif_napi_set_irq to:
+    a. store the IRQ number in the napi struct (as you suggested)
+    b. call irq_get_effective_affinity_mask to store the mask in the
+       napi struct
+    c. set up generic affinity_notify.notify and
+       affinity_notify.release callbacks to update the in core mask
+       when it changes
+
+  2. add napi_affinity_no_change which now takes a napi_struct
+
+  3. cleanup all 5 drivers:
+    a. add calls to netif_napi_set_irq for all 5 (I think no RTNL
+       is needed, so I think this would be straight forward?)
+    b. remove all affinity_mask caching code in 4 of 5 drivers
+    c. update all 5 drivers to call napi_affinity_no_change in poll
+
+Then ... anyone who adds support for netif_napi_set_irq to their
+driver in the future gets automatic support in-core for
+caching/updating of the mask? And in the future netdev-genl could
+dump the mask since its in-core?
+
+I'll mess around with that locally to see how it looks, but let me
+know if that sounds like a better overall approach.
+
+- Joe
