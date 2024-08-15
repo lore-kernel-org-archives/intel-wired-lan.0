@@ -1,196 +1,94 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5BA44C3DA7F
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 15 Aug 2024 15:23:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 935CEC3DA7F
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 15 Aug 2024 18:39:26 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 069906066F;
-	Thu, 15 Aug 2024 15:23:31 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id V9UVQgff7PDG; Thu, 15 Aug 2024 15:23:30 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2F04260711
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1723735410;
-	bh=8g6ZkFxiDilMIdjET+eGxNP94BY4egpyIylll/I5g6o=;
-	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=6J+c3A9VUTwH4K5W+GGxB0oHmCP6doV9y8TuWpc6YM/RyJmTZaEKPvzFf5pqZwiYB
-	 jFjAx+6qIwAqfpxOxlioNHy7HuSRVFwWTPsKymDz/uprw8PFsMK0mganqz8lZhsu2b
-	 gkUXazHFUiFJOJdsUoSLmw3ZocKk6Gjkkfke66yrvFKKqCYum2ZV78ougNmKnq3MGv
-	 xCCv9O4802Xn+5aGqkBWjjKPq/0EGwkP2HKpXjZhG4FbnBFOXyjqNNChb5HaJSanfY
-	 e1alLZWvQRAzSVrx7ILv1ZVXhJB6gFbl/P21SjW8NvHbzkwgiKvbKMbEZGT2btv+OV
-	 4RxCcdFSRZBfw==
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 2F04260711;
-	Thu, 15 Aug 2024 15:23:30 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id DC0F51BF588
- for <intel-wired-lan@lists.osuosl.org>; Wed, 14 Aug 2024 16:04:17 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id C7C1540BC4
- for <intel-wired-lan@lists.osuosl.org>; Wed, 14 Aug 2024 16:04:17 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 424F2400B5;
+	Thu, 15 Aug 2024 18:39:26 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id b9I4l-57oaqc for <intel-wired-lan@lists.osuosl.org>;
- Wed, 14 Aug 2024 16:04:16 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=40.107.93.84;
- helo=nam10-dm6-obe.outbound.protection.outlook.com;
- envelope-from=shayd@nvidia.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 7209A400C5
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 7209A400C5
-Received: from NAM10-DM6-obe.outbound.protection.outlook.com
- (mail-dm6nam10on2084.outbound.protection.outlook.com [40.107.93.84])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 7209A400C5
- for <intel-wired-lan@lists.osuosl.org>; Wed, 14 Aug 2024 16:04:16 +0000 (UTC)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=IS6AHPOXPKstOXqSxCG07pYOZtndY5OsTtmI1yg4yQW8Ass6mTjxuLhe2T2TO+tbq462jI0favrpG8aiYp+suSMYMpfasSaNhQzHeY/tNm1LKJPMcb+J/XMDHM6IKF4oZ/02MQ+57yxZe0DiYsvtz1DmoOo70Rd8o7csExxv46Aj03xgVldqg9v5rD4eTc6ZXlX5kLECzFEc8vWMGy+4UXmictSSpW/IG5fzOXnV+3KK+ujZR3rfjaMt0WBtv83rDZQq3cpA9ZwJ7y+LWwNUQ2W5/kq3tuQBGbRv/R/Cg74QEVXiXpqalmI0437uDQD9nQq3sIT5NkEJiBwkELz2XA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=8g6ZkFxiDilMIdjET+eGxNP94BY4egpyIylll/I5g6o=;
- b=w4Z48CQdY6BSkvMxZbsj24tuYnKr93i0FnK8ISQkLisR/wwxkne9vQ9QyJ8mwm55/h8KKR5c+rUeUKhdNqW9avlth7/lXp2GmY78L9hZvPMqAsDWhGdLqCN91UBpBOI67a7QJqY9ryC2eRkdy3JMS/oIt4x/E4HW9Xl8fW7ptpbHX8fTVjoIl7i24EmD18z/Jboc5AHwMOMkfJ2tFJ8EfK2xw3aR1VsIJ5PupGQYpKARNiLqx6T12hf9V1FvrzKoIlHHk75i0/P38nfL7OaJudHAiMXmu/hcjRxop77oRBhcvzFO59u+qAMAzo7ZlRWOqB4icO9iJHv/PkTGLtt+1g==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 216.228.117.161) smtp.rcpttodomain=fastly.com smtp.mailfrom=nvidia.com;
- dmarc=pass (p=reject sp=reject pct=100) action=none header.from=nvidia.com;
- dkim=none (message not signed); arc=none (0)
-Received: from PH7PR02CA0023.namprd02.prod.outlook.com (2603:10b6:510:33d::30)
- by DM4PR12MB7621.namprd12.prod.outlook.com (2603:10b6:8:10a::19) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7849.22; Wed, 14 Aug
- 2024 16:04:13 +0000
-Received: from SN1PEPF0002BA4E.namprd03.prod.outlook.com
- (2603:10b6:510:33d:cafe::df) by PH7PR02CA0023.outlook.office365.com
- (2603:10b6:510:33d::30) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7849.23 via Frontend
- Transport; Wed, 14 Aug 2024 16:04:13 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 216.228.117.161)
- smtp.mailfrom=nvidia.com;
- dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=nvidia.com;
-Received-SPF: Pass (protection.outlook.com: domain of nvidia.com designates
- 216.228.117.161 as permitted sender) receiver=protection.outlook.com;
- client-ip=216.228.117.161; helo=mail.nvidia.com; pr=C
-Received: from mail.nvidia.com (216.228.117.161) by
- SN1PEPF0002BA4E.mail.protection.outlook.com (10.167.242.71) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.7828.19 via Frontend Transport; Wed, 14 Aug 2024 16:04:13 +0000
-Received: from rnnvmail201.nvidia.com (10.129.68.8) by mail.nvidia.com
- (10.129.200.67) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.4; Wed, 14 Aug
- 2024 09:03:52 -0700
-Received: from [172.27.60.82] (10.126.231.35) by rnnvmail201.nvidia.com
- (10.129.68.8) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.4; Wed, 14 Aug
- 2024 09:03:44 -0700
-Message-ID: <701eb84c-8d26-4945-8af3-55a70e05b09c@nvidia.com>
-Date: Wed, 14 Aug 2024 19:03:35 +0300
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-To: Joe Damato <jdamato@fastly.com>, Jakub Kicinski <kuba@kernel.org>,
- <netdev@vger.kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, "David S.
- Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, "Harshitha
- Ramamurthy" <hramamurthy@google.com>, "moderated list:INTEL ETHERNET DRIVERS"
- <intel-wired-lan@lists.osuosl.org>, Jeroen de Borst <jeroendb@google.com>,
- Jiri Pirko <jiri@resnulli.us>, Leon Romanovsky <leon@kernel.org>, open list
- <linux-kernel@vger.kernel.org>, "open list:MELLANOX MLX4 core VPI driver"
- <linux-rdma@vger.kernel.org>, Lorenzo Bianconi <lorenzo@kernel.org>, "Paolo
- Abeni" <pabeni@redhat.com>, Praveen Kaligineedi <pkaligineedi@google.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>, Saeed Mahameed
- <saeedm@nvidia.com>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
- Shailend Chand <shailend@google.com>, Tariq Toukan <tariqt@nvidia.com>, "Tony
- Nguyen" <anthony.l.nguyen@intel.com>, Willem de Bruijn <willemb@google.com>,
- Yishai Hadas <yishaih@nvidia.com>, Ziwei Xiao <ziweixiao@google.com>
-References: <20240812145633.52911-1-jdamato@fastly.com>
- <20240813171710.599d3f01@kernel.org> <ZrxZaHGDTO3ohHFH@LQ3V64L9R2.home>
- <ZryfGDU9wHE0IrvZ@LQ3V64L9R2.home> <20240814080915.005cb9ac@kernel.org>
- <ZrzLEZs01KVkvBjw@LQ3V64L9R2>
-Content-Language: en-US
-From: Shay Drori <shayd@nvidia.com>
-In-Reply-To: <ZrzLEZs01KVkvBjw@LQ3V64L9R2>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.126.231.35]
-X-ClientProxiedBy: rnnvmail202.nvidia.com (10.129.68.7) To
- rnnvmail201.nvidia.com (10.129.68.8)
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SN1PEPF0002BA4E:EE_|DM4PR12MB7621:EE_
-X-MS-Office365-Filtering-Correlation-Id: 91bf65d5-f81c-44a4-941b-08dcbc7abd8e
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
- ARA:13230040|376014|7416014|82310400026|1800799024|36860700013|921020; 
-X-Microsoft-Antispam-Message-Info: =?utf-8?B?cVp2aHYwOFpXZmVvZ2ZDQTRMQWNuYWQxUnlaTFk2a1dtenkzVjdVbG5OWEhL?=
- =?utf-8?B?NGVUWkRESGRLL2t0TXAyYVlyTnlrOXRVQi9vN1F3QVh1V3p1OERrL2FFM3Zm?=
- =?utf-8?B?R2VVd3piNXkrZHFqcC9YOGJndHcwTjVpaVhDRzNubEEvRTRQS3l0ejRzK1RW?=
- =?utf-8?B?aDlwdnAvVi81NjFqMG5SV3JicmhkWjFaQmVNbGZyQ3VMbWdrRFJXUWY5MTA4?=
- =?utf-8?B?UmNVT0NXcXNGMCtKQzVQaWJjZVp3THh0cndpU09DRlkxYXFhcVN1ZUJxRWtT?=
- =?utf-8?B?RUJmSXVwUVI0YUlTSjNBYVpEZ1dIbXJtNEpCWWZtSnk2b2VXd3Y1eTRuVXVF?=
- =?utf-8?B?djl2d0VYVVB3WjZ2NlltWFVEd0cyL0d1Qy8yRHA4ZUlOWDUzcEpLWGV6dzJl?=
- =?utf-8?B?Ukd4ZlVYODkxUnduQ1BiaXlxM1g4Y3drRjhxOWZtZlBPdDZaTEJIR3NjRThI?=
- =?utf-8?B?YkJERWFqZmx5MjM1TTVwRE5jcUpNVUdobU56Y25tWlp3dVpNL0pyU0J0U1cz?=
- =?utf-8?B?R2JtejdNUVQxRWkwOEtmUll6cjVPOXcyNHEvUTBQUzI0aDdkY0JEcHlzWkcv?=
- =?utf-8?B?enFtYjFGL3JBTGx4a2t6cko3cmFMMUVPamRsMlNZc2QvbldpTlZhRTFMYVVj?=
- =?utf-8?B?VWVoWlY1M0ZYZTlPYTdsMlNxbzBpMXFFQm5ORFdIcXl0NzNLa2tPMGNUMW1R?=
- =?utf-8?B?U1puVVhLOXo5QUNTNDIvQ0VneVNqekpNWW1qME1lWTRQT29seTZMU2ZWeGoy?=
- =?utf-8?B?NTRRL2Z1R0VFVEFhZ0FFZE9BODQ2OGZaaWdGRkhqRHNpSXF4Q3pJT2kwb1c1?=
- =?utf-8?B?dCtwVDVhL3RiWCtiZ25KeFVPVnRrNzQvS1hzbmFTK3RlK0wzWlcweFFTc1dt?=
- =?utf-8?B?L0tqcmVtMm9ITjFPRXZFTlp5azEyeUwyVll6enlEWVR6WnhkRHZhRmFYSWl1?=
- =?utf-8?B?Qk1FVm1kS1RJRnRmb2lkb3oyc2ZNNkUzWVgxWmU0dDJValNFd1lBdXVXRHZw?=
- =?utf-8?B?bnZCZUNacGNhWnlnREI0UEF4Y2JpVlY5Q3R4NlMyRFFOalgySC80ZjA4OGo2?=
- =?utf-8?B?cFRjODMxMzlnbFNsMXZ4Skszd2luOXhVdEUxOGJZQi9jYS9XWUVrU20vTnlW?=
- =?utf-8?B?bnFtQy9qTVRxcVg5R1hrL1NkL09GVWJEYU1nNktjczVtRmpIR0VOWGYra0li?=
- =?utf-8?B?OUpDZmZvOE52d3dsdjRPNGlFTWZTRDVqQW8wWWFEWHMrNDNiVkg4bXM1S2py?=
- =?utf-8?B?Q0pML2hnZ2UxRTlIdURrQ25JSWdCaWllcW1kekJyME9UWVBSRWRoRi9lVUh5?=
- =?utf-8?B?bWJCdmYzWG1VaUp4SHlYTzhHdGxxUlBiajdYYXF5dzlWOHhIZXdvTnRNYll2?=
- =?utf-8?B?QXRoUkR0VW9LVysvcE14d3hTaFJkem1HTTlYeEF3NW1UbnBoM3pKVWJVTG9B?=
- =?utf-8?B?RzE5N0ZTV1d3OE9wTUJiUEF1bUJnajg5UTE1SnJrT2tFMHBoZThicU5QL0pX?=
- =?utf-8?B?Q1FwTmVId1VlSFpuUVdRVHhlbEJnUWM0ODhsai80bzNhZk45TWVuNVpidW5a?=
- =?utf-8?B?ZmFVaE53K1pKbzZobTZJTmRpSk9MbzUxcktmZkxvSXhwbi8rV1g4aHR2NUZW?=
- =?utf-8?B?OGRpV0FPd09YWGo4QzBGSlB1VWdVUTFSKzlUbVJ1TFBSZm5TcDg0TEdEd2hO?=
- =?utf-8?B?amRIcjNQMnZQaXAzNWZVSjFJYUU0Ykx2S1J1TExoMk5IMStZQTNYdWQ2di9S?=
- =?utf-8?B?azdpbHJWZFN5RVpaTTk1UzFpMy9wTUdIcUg0ZElnMTRncERLYUw1SE5iTERU?=
- =?utf-8?B?OS9iT3ZseTZLMGVjd3pUejN3S3RObUhmU0ZmRFlidDB4cmIvM3IwTThMYjZz?=
- =?utf-8?B?dGRuaHRQSkZMM0Y4M2xVai9UaGo1VTljbGVWN2ovS3NGUzg3amRFcmk3a0Fq?=
- =?utf-8?B?cDBHcmhnem5TYXFuMnRHUm9QWEJRUkk4bU95akxiS0lqMDQxUmhjc01DSEZ6?=
- =?utf-8?B?K1p0QUJVUEFRPT0=?=
-X-Forefront-Antispam-Report: CIP:216.228.117.161; CTRY:US; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:mail.nvidia.com; PTR:dc6edge2.nvidia.com; CAT:NONE;
- SFS:(13230040)(376014)(7416014)(82310400026)(1800799024)(36860700013)(921020);
- DIR:OUT; SFP:1101; 
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 14 Aug 2024 16:04:13.0318 (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 91bf65d5-f81c-44a4-941b-08dcbc7abd8e
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=43083d15-7273-40c1-b7db-39efd9ccc17a; Ip=[216.228.117.161];
- Helo=[mail.nvidia.com]
-X-MS-Exchange-CrossTenant-AuthSource: SN1PEPF0002BA4E.namprd03.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM4PR12MB7621
-X-Mailman-Approved-At: Thu, 15 Aug 2024 15:23:29 +0000
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=Nvidia.com; s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=8g6ZkFxiDilMIdjET+eGxNP94BY4egpyIylll/I5g6o=;
- b=Z1DJhtt0AISHx4PLdw8PfrZAhnCKWqxrgkjXR3pSLLnNTxQMZvP0X+qr/149s4qlf3UC0D+Bjq2DDcdOpC+/5MFmEor1gl1u8sFj6JLKUGa2KNaZN/+KJWEu6Cam1dSdxK/ILJ6vtsBJ6qgYGQPFBuGKbarOqYHaxzNayZTAV9mg2W4yTayu6ZRw9n5KsVEgTSXc4/JddjZfqmqCeH+WAZdmUAinH3oLiYh3DEZj5Q2OAAi1uMFMt0FAkQY4WNrBmbLmWcyCzn5X6soPB0r4XKOm5yrzvWImyBWQz0U3tKfI0XthWc2LCp+aXVymYWbCfuMJi9FPfpy3ibpW/60aOg==
+ id lFU5WeDtvVlK; Thu, 15 Aug 2024 18:39:24 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B89FF408C5
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1723747164;
+	bh=opzy7msCJtCE/4vE8vVIunURF4/wBgDdjV5bHA37I20=;
+	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=zY1wEPoNVH1INEIdkyUdlnRmVvJ4qG+QpD3sScUyWk3Z3ZbCrrF6grUn89CsanxUH
+	 6MxqeWWzZRc1qC+iphlw5Xsnk3X/8UG55x/O9F9cRic+c2vfi2Zpy1hP6Bd4wjHlok
+	 4gHypyxUkaVwCKSOTZn+B4ksNZ41Qt9+MuR5pe2kbMAIg0IkaBxZ6AS+UtlomBzXcb
+	 XPEMe0Y3s5WWVa9z40wOue1y7NKOOK2WGXi+LLYoX4zyIWU/6A9SSBnFt1X94D4ZHo
+	 PSLLPT6zPdoSkiIwa+NpFDTc7KAAeIEc31kRQcOzIwfkYcASyO5X4BaE7HKFckcab/
+	 7zM7wvsPdO5bw==
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp2.osuosl.org (Postfix) with ESMTP id B89FF408C5;
+	Thu, 15 Aug 2024 18:39:24 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id CB4C81BF573
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 15 Aug 2024 18:39:22 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp2.osuosl.org (Postfix) with ESMTP id B7B5D408C5
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 15 Aug 2024 18:39:22 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id m_RcrlU7VWPM for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 15 Aug 2024 18:39:21 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.14;
+ helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 4A182400B5
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 4A182400B5
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.14])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 4A182400B5
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 15 Aug 2024 18:39:20 +0000 (UTC)
+X-CSE-ConnectionGUID: JWAASOr2QTilulhAWLejdA==
+X-CSE-MsgGUID: v1sEGxZzSDWNS5GnfGfIyg==
+X-IronPort-AV: E=McAfee;i="6700,10204,11165"; a="25823587"
+X-IronPort-AV: E=Sophos;i="6.10,149,1719903600"; d="scan'208";a="25823587"
+Received: from orviesa001.jf.intel.com ([10.64.159.141])
+ by orvoesa106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 15 Aug 2024 11:39:20 -0700
+X-CSE-ConnectionGUID: i2HAmqwCTlGrSESLhTjP6A==
+X-CSE-MsgGUID: 18uf4wqERxa+jgY14cjbDw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.10,149,1719903600"; d="scan'208";a="96960764"
+Received: from lkp-server01.sh.intel.com (HELO 9a732dc145d3) ([10.239.97.150])
+ by orviesa001.jf.intel.com with ESMTP; 15 Aug 2024 11:39:19 -0700
+Received: from kbuild by 9a732dc145d3 with local (Exim 4.96)
+ (envelope-from <lkp@intel.com>) id 1sefNU-0005Tm-1x
+ for intel-wired-lan@lists.osuosl.org; Thu, 15 Aug 2024 18:39:16 +0000
+Date: Fri, 16 Aug 2024 02:38:27 +0800
+From: kernel test robot <lkp@intel.com>
+To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+Message-ID: <202408160225.G0X3rGek-lkp@intel.com>
+User-Agent: s-nail v14.9.24
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1723747162; x=1755283162;
+ h=date:from:to:subject:message-id;
+ bh=F4hHzd4cFWZFjyaVkeEdV2iUw0JK8MDPuodiUErUbww=;
+ b=YCWOFmb73X0J761bTBu+Nk5c5O9yACaUlk+gJYuj9HlHdRUNLdsJwtG6
+ hfwVRUyhvBLI4AJrhOx/E43ExDixrY3eJiZ6RuMk4qIO0DhPA/AFy/8YV
+ PSkLwXKzMpjlw5QSpLQ4kzHvm1HWiI19xeoogZTRHN2tReicpf64UEf0B
+ aS+nDLaPvweBxoo1qY2wQsIJ3YrmreYwU6+Cbd2L77NSUT7pe+rqe/EZo
+ 1i3oJUgnTJ1g7bswDJbEVUI77ESiHH7kWYj6k05hebCnU63PrPhPiK+iF
+ inrGM33jr5o4AAX2ZJkBxmcxRUydm2Hn69e5ldjCw+wBj6ywJp6CRcCRq
+ w==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dmarc=pass (p=reject dis=none)
- header.from=nvidia.com
+ dmarc=pass (p=none dis=none)
+ header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key,
- unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256
- header.s=selector2 header.b=Z1DJhtt0
-Subject: Re: [Intel-wired-lan] [RFC net-next 0/6] Cleanup IRQ affinity
- checks in several drivers
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=YCWOFmb7
+Subject: [Intel-wired-lan] [tnguy-net-queue:200GbE] BUILD SUCCESS
+ fbb612d689c60a82fc2a3065ab8626858ebb7b3a
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -206,79 +104,157 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git 200GbE
+branch HEAD: fbb612d689c60a82fc2a3065ab8626858ebb7b3a  idpf: remove redundant 'req_vec_chunks' NULL check
 
+elapsed time: 1463m
 
-On 14/08/2024 18:19, Joe Damato wrote:
-> On Wed, Aug 14, 2024 at 08:09:15AM -0700, Jakub Kicinski wrote:
->> On Wed, 14 Aug 2024 13:12:08 +0100 Joe Damato wrote:
->>> Actually... how about a slightly different approach, which caches
->>> the affinity mask in the core?
->>
->> I was gonna say :)
->>
->>>    0. Extend napi struct to have a struct cpumask * field
->>>
->>>    1. extend netif_napi_set_irq to:
->>>      a. store the IRQ number in the napi struct (as you suggested)
->>>      b. call irq_get_effective_affinity_mask to store the mask in the
->>>         napi struct
->>>      c. set up generic affinity_notify.notify and
->>>         affinity_notify.release callbacks to update the in core mask
->>>         when it changes
->>
->> This part I'm not an export on.
+configs tested: 138
+configs skipped: 4
 
-several net drivers (mlx5, mlx4, ice, ena and more) are using a feature
-called ARFS (rmap)[1], and this feature is using the affinity notifier
-mechanism.
-Also, affinity notifier infra is supporting only a single notifier per
-IRQ.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Hence, your suggestion (1.c) will break the ARFS feature.
+tested configs:
+alpha                             allnoconfig   gcc-13.3.0
+alpha                            allyesconfig   gcc-13.3.0
+arc                              allmodconfig   gcc-13.2.0
+arc                               allnoconfig   gcc-13.2.0
+arc                              allyesconfig   gcc-13.2.0
+arc                   randconfig-001-20240815   gcc-13.2.0
+arc                   randconfig-002-20240815   gcc-13.2.0
+arm                              allmodconfig   gcc-14.1.0
+arm                               allnoconfig   clang-20
+arm                              allyesconfig   gcc-14.1.0
+arm                   randconfig-001-20240815   gcc-14.1.0
+arm                   randconfig-003-20240815   gcc-14.1.0
+arm                   randconfig-004-20240815   gcc-14.1.0
+arm64                            allmodconfig   clang-20
+arm64                             allnoconfig   gcc-14.1.0
+arm64                 randconfig-001-20240815   clang-16
+arm64                 randconfig-002-20240815   clang-17
+arm64                 randconfig-003-20240815   clang-20
+arm64                 randconfig-004-20240815   clang-20
+csky                              allnoconfig   gcc-14.1.0
+csky                  randconfig-001-20240815   gcc-14.1.0
+csky                  randconfig-002-20240815   gcc-14.1.0
+hexagon                          allmodconfig   clang-20
+hexagon                           allnoconfig   clang-20
+hexagon                          allyesconfig   clang-20
+hexagon               randconfig-001-20240815   clang-20
+hexagon               randconfig-002-20240815   clang-20
+i386                             allmodconfig   gcc-12
+i386                              allnoconfig   gcc-12
+i386                             allyesconfig   gcc-12
+i386         buildonly-randconfig-001-20240815   gcc-12
+i386         buildonly-randconfig-002-20240815   clang-18
+i386         buildonly-randconfig-003-20240815   clang-18
+i386         buildonly-randconfig-004-20240815   clang-18
+i386         buildonly-randconfig-005-20240815   clang-18
+i386         buildonly-randconfig-006-20240815   clang-18
+i386                                defconfig   clang-18
+i386                  randconfig-001-20240815   gcc-12
+i386                  randconfig-002-20240815   clang-18
+i386                  randconfig-003-20240815   clang-18
+i386                  randconfig-004-20240815   gcc-12
+i386                  randconfig-005-20240815   gcc-12
+i386                  randconfig-006-20240815   gcc-12
+i386                  randconfig-011-20240815   clang-18
+i386                  randconfig-012-20240815   clang-18
+i386                  randconfig-013-20240815   gcc-12
+i386                  randconfig-014-20240815   clang-18
+i386                  randconfig-015-20240815   clang-18
+i386                  randconfig-016-20240815   gcc-12
+loongarch                        allmodconfig   gcc-14.1.0
+loongarch                         allnoconfig   gcc-14.1.0
+loongarch             randconfig-001-20240815   gcc-14.1.0
+loongarch             randconfig-002-20240815   gcc-14.1.0
+m68k                             allmodconfig   gcc-14.1.0
+m68k                              allnoconfig   gcc-14.1.0
+m68k                             allyesconfig   gcc-14.1.0
+microblaze                       allmodconfig   gcc-14.1.0
+microblaze                        allnoconfig   gcc-14.1.0
+microblaze                       allyesconfig   gcc-14.1.0
+mips                              allnoconfig   gcc-14.1.0
+nios2                             allnoconfig   gcc-14.1.0
+nios2                 randconfig-001-20240815   gcc-14.1.0
+nios2                 randconfig-002-20240815   gcc-14.1.0
+openrisc                          allnoconfig   gcc-14.1.0
+openrisc                         allyesconfig   gcc-14.1.0
+openrisc                            defconfig   gcc-14.1.0
+parisc                            allnoconfig   gcc-14.1.0
+parisc                           allyesconfig   gcc-14.1.0
+parisc                              defconfig   gcc-14.1.0
+parisc                randconfig-001-20240815   gcc-14.1.0
+parisc                randconfig-002-20240815   gcc-14.1.0
+powerpc                          allmodconfig   gcc-14.1.0
+powerpc                           allnoconfig   gcc-14.1.0
+powerpc                          allyesconfig   clang-20
+powerpc               randconfig-001-20240815   gcc-14.1.0
+powerpc               randconfig-002-20240815   gcc-14.1.0
+powerpc64             randconfig-001-20240815   clang-20
+powerpc64             randconfig-002-20240815   gcc-14.1.0
+powerpc64             randconfig-003-20240815   gcc-14.1.0
+riscv                             allnoconfig   gcc-14.1.0
+riscv                               defconfig   clang-20
+riscv                 randconfig-001-20240815   gcc-14.1.0
+riscv                 randconfig-002-20240815   gcc-14.1.0
+s390                             allmodconfig   clang-20
+s390                              allnoconfig   clang-20
+s390                             allyesconfig   gcc-14.1.0
+s390                                defconfig   clang-20
+s390                  randconfig-001-20240815   clang-17
+s390                  randconfig-002-20240815   gcc-14.1.0
+sh                               allmodconfig   gcc-14.1.0
+sh                                allnoconfig   gcc-14.1.0
+sh                               allyesconfig   gcc-14.1.0
+sh                                  defconfig   gcc-14.1.0
+sh                    randconfig-001-20240815   gcc-14.1.0
+sh                    randconfig-002-20240815   gcc-14.1.0
+sparc                            allmodconfig   gcc-14.1.0
+sparc64                             defconfig   gcc-14.1.0
+sparc64               randconfig-001-20240815   gcc-14.1.0
+sparc64               randconfig-002-20240815   gcc-14.1.0
+um                               allmodconfig   clang-20
+um                                allnoconfig   clang-17
+um                               allyesconfig   gcc-12
+um                                  defconfig   clang-20
+um                             i386_defconfig   gcc-12
+um                    randconfig-001-20240815   clang-16
+um                    randconfig-002-20240815   gcc-12
+um                           x86_64_defconfig   clang-15
+x86_64                            allnoconfig   clang-18
+x86_64                           allyesconfig   clang-18
+x86_64       buildonly-randconfig-001-20240815   gcc-12
+x86_64       buildonly-randconfig-002-20240815   gcc-11
+x86_64       buildonly-randconfig-003-20240815   clang-18
+x86_64       buildonly-randconfig-004-20240815   gcc-12
+x86_64       buildonly-randconfig-005-20240815   gcc-12
+x86_64       buildonly-randconfig-006-20240815   gcc-12
+x86_64                              defconfig   gcc-11
+x86_64                randconfig-001-20240815   clang-18
+x86_64                randconfig-002-20240815   gcc-12
+x86_64                randconfig-003-20240815   clang-18
+x86_64                randconfig-004-20240815   gcc-12
+x86_64                randconfig-005-20240815   clang-18
+x86_64                randconfig-006-20240815   gcc-12
+x86_64                randconfig-011-20240815   clang-18
+x86_64                randconfig-012-20240815   gcc-12
+x86_64                randconfig-013-20240815   gcc-12
+x86_64                randconfig-014-20240815   gcc-12
+x86_64                randconfig-015-20240815   gcc-12
+x86_64                randconfig-016-20240815   clang-18
+x86_64                randconfig-071-20240815   clang-18
+x86_64                randconfig-072-20240815   gcc-12
+x86_64                randconfig-073-20240815   clang-18
+x86_64                randconfig-074-20240815   gcc-12
+x86_64                randconfig-075-20240815   clang-18
+x86_64                randconfig-076-20240815   gcc-12
+x86_64                          rhel-8.3-rust   clang-18
+xtensa                            allnoconfig   gcc-14.1.0
+xtensa                randconfig-001-20240815   gcc-14.1.0
+xtensa                randconfig-002-20240815   gcc-14.1.0
 
-[1] see irq_cpu_rmap_add()
-
->>
->>>    2. add napi_affinity_no_change which now takes a napi_struct
->>>
->>>    3. cleanup all 5 drivers:
->>>      a. add calls to netif_napi_set_irq for all 5 (I think no RTNL
->>>         is needed, so I think this would be straight forward?)
->>>      b. remove all affinity_mask caching code in 4 of 5 drivers
->>>      c. update all 5 drivers to call napi_affinity_no_change in poll
->>>
->>> Then ... anyone who adds support for netif_napi_set_irq to their
->>> driver in the future gets automatic support in-core for
->>> caching/updating of the mask? And in the future netdev-genl could
->>> dump the mask since its in-core?
->>>
->>> I'll mess around with that locally to see how it looks, but let me
->>> know if that sounds like a better overall approach.
-> 
-> I ended up going with the approach laid out above; moving the IRQ
-> affinity mask updating code into the core (which adds that ability
-> to gve/mlx4/mlx5... it seems mlx4/5 cached but didn't have notifiers
-> setup to update the cached copy?)
-
-
-maybe This is probably due to what I wrote above..
-
-
-> and adding calls to
-> netif_napi_set_irq in i40e/iavf and deleting their custom notifier
-> code.
-> 
-> It's almost ready for rfcv2; I think this approach is probably
-> better ?
-> 
->> Could we even handle this directly as part of __napi_poll(),
->> once the driver gives core all of the relevant pieces of information ?
-> 
-> I had been thinking the same thing, too, but it seems like at least
-> one driver (mlx5) counts the number of affinity changes to export as
-> a stat, so moving all of this to core would break that.
-> 
-> So, I may avoid attempting that for this series.
-> 
-> I'm still messing around with this but will send an rfcv2 in a bit.
-> 
+-- 
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
