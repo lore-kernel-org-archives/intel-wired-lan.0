@@ -4,108 +4,109 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9EB52C531DC
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 16 Aug 2024 09:24:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CE846C531DF
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 16 Aug 2024 09:24:19 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 5512560D65;
-	Fri, 16 Aug 2024 09:24:18 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 8DA7D60E0A;
+	Fri, 16 Aug 2024 09:24:19 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id vCu2LRurQmMm; Fri, 16 Aug 2024 09:24:17 +0000 (UTC)
+ id ScdYtIixsbHo; Fri, 16 Aug 2024 09:24:18 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 23AC160B23
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2ACBF60742
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1723800257;
-	bh=4RaBDnckgLsEADXQ5SmWoAlA9svRPFOwL49saaqXgkw=;
+	s=default; t=1723800258;
+	bh=7yG1ACRnHrh+YmajwvU3e4DURwq84JBWecStQNpiZO0=;
 	h=From:Date:References:In-Reply-To:To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=5RZNrnixEgN5ZMM3tRtbB2lpUAXPmPur+OB3g4FoPkGNYo6xNNu1bRfECZACfq6Lr
-	 Y+UHKpLXfAcpHRQM/f0/KuMtrkMmN1xeY+RVciHGVYcxU7vIBSby1vyNIAQ3QvZ5qN
-	 LuU/wUVp/nHdQ74EAlIdevHwRZU6ZVTV7XmvirMpiQTNfOwikvpE9hNrqVQ9z/ZdD1
-	 9K3G3ds1u02lzOwkQiOjjVLX//2THWSU3hDpmVVH53H7wHz5QhqcR32aAsix9DsPgr
-	 IebOFaP9IWQiamas8RbMdjkv15RBQehOyQWhOvS20Uqy+FqXzkO5QmYm0PLLaGTHgR
-	 rX9CcEftjaYcQ==
+	b=FJ6QVhO+2FmwT4O1tizPz8ksiPKgyJB4y11Qymqr2LzOfXbY5S3+ST/627RNZiVgv
+	 m0B6Wyk41NN+dkxqqS51sq9hUYWpfVC4Qci7KaIDfYauqBmke52PzAWGV/U6tUEcKN
+	 dpE8KTEV6wpZs3VRWxbooMDf/ssTerTy7TXTabD46uPtJ3ucBwMOzv8SV7IFp8UJfS
+	 IiBLjrrRYIUrvEU+iffyhjuNFF0PvqLEm7A/4YwQq2eVG76uQCBGsfmLzqpnVa+H61
+	 1CET7EUrViT+uJ7NNKYNiaT1Zh0dgaN0Y9H0LzXjQOMEiLYEhdJssmEUA7ayTRwnnQ
+	 RNO8yB82wJM/A==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 23AC160B23;
-	Fri, 16 Aug 2024 09:24:17 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 884931BF292
- for <intel-wired-lan@lists.osuosl.org>; Fri, 16 Aug 2024 09:24:11 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 2ACBF60742;
+	Fri, 16 Aug 2024 09:24:18 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 65B251BF292
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 16 Aug 2024 09:24:12 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 7203A40D77
- for <intel-wired-lan@lists.osuosl.org>; Fri, 16 Aug 2024 09:24:11 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 5D46760B23
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 16 Aug 2024 09:24:12 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id YpdUcnqtW_nx for <intel-wired-lan@lists.osuosl.org>;
- Fri, 16 Aug 2024 09:24:10 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=193.142.43.55;
- helo=galois.linutronix.de; envelope-from=kurt@linutronix.de;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org D8CDE40874
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D8CDE40874
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
- by smtp4.osuosl.org (Postfix) with ESMTPS id D8CDE40874
- for <intel-wired-lan@lists.osuosl.org>; Fri, 16 Aug 2024 09:24:09 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id YD_3B7_UggH0 for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 16 Aug 2024 09:24:11 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de;
+ envelope-from=kurt@linutronix.de; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 10410605AD
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 10410605AD
+Received: from galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2a0a:51c0:0:12e:550::1])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 10410605AD
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 16 Aug 2024 09:24:10 +0000 (UTC)
 From: Kurt Kanzenbach <kurt@linutronix.de>
-Date: Fri, 16 Aug 2024 11:24:03 +0200
+Date: Fri, 16 Aug 2024 11:24:05 +0200
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20240711-b4-igb_zero_copy-v6-4-4bfb68773b18@linutronix.de>
+Message-Id: <20240711-b4-igb_zero_copy-v6-6-4bfb68773b18@linutronix.de>
 References: <20240711-b4-igb_zero_copy-v6-0-4bfb68773b18@linutronix.de>
 In-Reply-To: <20240711-b4-igb_zero_copy-v6-0-4bfb68773b18@linutronix.de>
 To: Tony Nguyen <anthony.l.nguyen@intel.com>, 
  Przemek Kitszel <przemyslaw.kitszel@intel.com>
-X-Developer-Signature: v=1; a=openpgp-sha256; l=10214; i=kurt@linutronix.de;
- h=from:subject:message-id; bh=RKBGCq7JD2rG3Y9Ymi6uliDDlkk8sghR1sc8hDYXu1w=;
- b=owEBbQKS/ZANAwAKAcGT0fKqRnOCAcsmYgBmvxqy0i3lA7k2UlCI2iIs3y43SStz0NiVlN9/R
- F1H1tyOL/yJAjMEAAEKAB0WIQS8ub+yyMN909/bWZLBk9HyqkZzggUCZr8asgAKCRDBk9HyqkZz
- gpZmD/9x1W+FaTDDaCkxXg+q2smJuZVPJQKb4xVdzudULPB1uUeiDWD0EByoY3r4eAuGX1dy7py
- zMkH1NwSnNiCFuLzeK+VizI7lLk4PFfhFDV6WSGo4T3vVTn9oA3UWZrJuUciEXbflNkht77qjX2
- n5OT1FMOnNXliSXa3vvpfGOTwzH5YxVdYbO87zccH/dw5I9OeqLTNJmj3QBjSfmVFM7aw4TBJkB
- eOH1Fp8SzFaISTIUIDSIfq9f6cESfCgTCO/Xa9PwMTMo+xgw4cSZHaKfaBW9oNqNJj1og6NJdAq
- IJUl8QuEjf3dG54Xxb6EeGxq2AC8RZwR/Ejfuo1HPHn9w8qHOVFRneb8cFP0clTwmFYY2KJySMD
- YlmP2yI43/jEakG8oK0zh/+buf0ECh5wEbD41UTFjQ+9Egu9dZtiASvQhMSl7cVvPxM2zfnz7MP
- CO+d+vr75yu4eBHophJC8/wh3LlPTh+lOKdtrd3/kK8igC0FB/0U/AmjDSNVSc6EOSnASyDE1TY
- ZAUxsEA954Ar35n6tA21mEEykH6SQjHJrRkBzS+Q0YtJfJEjfGaz8wemXYSm30TeA0QRvumUPyo
- vcGrEl0wmcncSzBDhPVxfa86uKPT/5yBp4QAauXcJLdCB6xJF09dNU6/92gH1U5fUnh8wJrVABm
- 6/PQ9eXfTCxFmng==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=9478; i=kurt@linutronix.de;
+ h=from:subject:message-id; bh=PefxL3kNeXOYDdUS68qN4pno+ulpwpgKURF3sXGr9k8=;
+ b=owEBbQKS/ZANAwAKAcGT0fKqRnOCAcsmYgBmvxqzU7muPTaFHW2Pgk7wZGebNbY9HBNHH+Quv
+ K9mDzC43SyJAjMEAAEKAB0WIQS8ub+yyMN909/bWZLBk9HyqkZzggUCZr8aswAKCRDBk9HyqkZz
+ gjHpD/9+09Nuvt2YDrqFYYj7W5xYTx+eHuDfQPxI6K8sx+6gXsAF9a50SkEP0jOxwj8bN1r9lzz
+ Hb4XghlhK5sp5V3iRpAgrr+dXG166263lBWhSNpaC1JEilZeT9ctxkSfyHD/FPEBH9CzD3H4FW5
+ WUmxE+fBZx4rW7nkWoBry2tAVgTE2PnEDDA2XucX32HsNrR4qso9AL+DLeTjyx8rCX8ZezCYl28
+ CyJe1OGHbIEo9R2CSMTRWk8NhvSyvAU/UX4kfTEl8ByXgqh2CrIwHL3aXblaT5rZTnGF2550RiG
+ 43cWOP5+R3npgl2BlFDZotDqMk1yNhfQECUy1m7unS3dD+IK73QARB9A5Xshmkrnt1juBpdhIof
+ sdL5E7fUCcSlzlTZ0jXdFmhA3Umr/9qcKz/vKPZGbKZRYQMoz21BelcrgYgcsYpq3FaQePBiVMg
+ yGjjQgClcobR2oV8PTqwo1W3A+ydaKevMtQrt5j5EUjx/qucjA036To7ZBzbHMYwLJcoBJiUUhO
+ eAOnb1oeZuzJbaHPTFuipHa9NYIchKh0fYi66tJD6jRR0WhlGtEzt3YmHanIPAdPVxd9CHMMEn9
+ p00LLzcp3+6q5H6qENr5EVP/yKkvh4n4uLt2CI5A5N6zMgh329p48ab261dfF3FJU3EpLFPLcAN
+ ViIFr/jdfNS2rrg==
 X-Developer-Key: i=kurt@linutronix.de; a=openpgp;
  fpr=BCB9BFB2C8C37DD3DFDB5992C193D1F2AA467382
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=linutronix.de; s=2020; t=1723800247;
+ d=linutronix.de; s=2020; t=1723800249;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=4RaBDnckgLsEADXQ5SmWoAlA9svRPFOwL49saaqXgkw=;
- b=ldmwSP7laHsNK8fZ8Eb9KmgHBaF0JKP40CNNJ4lphatYBIDbfRSOhR+DMKM6QuC3p0/Okp
- USxSM1aqDNd2NkLQV2cJf1FAyVTxgOkiEQ3TRzMYbY8xjbcZoYDRLGT0EfdG0z/aimQLh4
- pjfz3DfliSTLejWslvvUlsfPzee2pmnEvxdXmClP8ANHLwcymAFqNL8NrK4pCHFzvmO14B
- eaGT+eLuUWLBR6MmbdGEwMXjmFtzwXKIbOfWSc0+4/o93f095sg8OWWiyTFVyZbwUEhPyo
- /giIBL293Pd4eb4Nq8Q3Rb+bdAptPrB7SOgplDx8HNtKBetYnVc0u+qrG16GoA==
+ bh=7yG1ACRnHrh+YmajwvU3e4DURwq84JBWecStQNpiZO0=;
+ b=HVWzGKccULbwPqp6Cs7IGtziZFaPA243AJgPE1u4aZ0r20cXJ/zB20TcauMqwxoMsp6ZVm
+ cxRMKnOqie9JU+RW1kVWMV/zKEFtVBGYzxBiH8q/HtayPWQXkLBhzumH0UB+9IVQULgqKP
+ lPCQoZfMCcfgo22Fp/rSoAgi8/5soAg+KkfLPCCgBeW1NW1hmWa8w9gVGLa0EUmtlouegP
+ JkUrvorZVjilsI+4vMZ0e39nxPjXJXEnD54KqSNERFZhXRE7MaOQ0LgUA7e5ydnUuMplMD
+ 4f5SfBl599GX0dYIwS5CIFjUrEtkk7ic5iSIzFw3mWpiWvvexd5uDc9/WShjiA==
 X-Mailman-Original-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
- d=linutronix.de; s=2020e; t=1723800247;
+ d=linutronix.de; s=2020e; t=1723800249;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=4RaBDnckgLsEADXQ5SmWoAlA9svRPFOwL49saaqXgkw=;
- b=NqyEh+AnRixwFos1pA6pmbaSxp466dPyPahBqt9mbt4QUBuV0/Las2pFm5hfI8XJ7xTGmn
- UwWI6EtnmXc3T2CA==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ bh=7yG1ACRnHrh+YmajwvU3e4DURwq84JBWecStQNpiZO0=;
+ b=US96cqC4CIODqTZ2mnakBwdJZiKIk4t+HQYnPjo7N/xkRmg59FKm+2gvfnIm6wJKu0/7Fm
+ Y7Dr87HFAhHdfkCw==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=linutronix.de
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key, unprotected) header.d=linutronix.de
- header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=ldmwSP7l; 
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de
+ header.a=rsa-sha256 header.s=2020 header.b=HVWzGKcc; 
  dkim=pass header.d=linutronix.de header.i=@linutronix.de
- header.a=ed25519-sha256 header.s=2020e header.b=NqyEh+An
-Subject: [Intel-wired-lan] [PATCH iwl-next v6 4/6] igb: Introduce XSK data
- structures and helpers
+ header.a=ed25519-sha256 header.s=2020e header.b=US96cqC4
+Subject: [Intel-wired-lan] [PATCH iwl-next v6 6/6] igb: Add AF_XDP zero-copy
+ Tx support
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -137,347 +138,271 @@ Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 From: Sriram Yagnaraman <sriram.yagnaraman@est.tech>
 
-Add the following ring flag:
-- IGB_RING_FLAG_TX_DISABLED (when xsk pool is being setup)
+Add support for AF_XDP zero-copy transmit path.
 
-Add a xdp_buff array for use with XSK receive batch API, and a pointer
-to xsk_pool in igb_adapter.
+A new TX buffer type IGB_TYPE_XSK is introduced to indicate that the Tx
+frame was allocated from the xsk buff pool, so igb_clean_tx_ring() and
+igb_clean_tx_irq() can clean the buffers correctly based on type.
 
-Add enable/disable functions for TX and RX rings.
-Add enable/disable functions for XSK pool.
-Add xsk wakeup function.
-
-None of the above functionality will be active until
-NETDEV_XDP_ACT_XSK_ZEROCOPY is advertised in netdev->xdp_features.
+igb_xmit_zc() performs the actual packet transmit when AF_XDP zero-copy is
+enabled. We share the TX ring between slow path, XDP and AF_XDP
+zero-copy, so we use the netdev queue lock to ensure mutual exclusion.
 
 Signed-off-by: Sriram Yagnaraman <sriram.yagnaraman@est.tech>
-[Kurt: Add READ/WRITE_ONCE(), synchronize_net(),
-       remove IGB_RING_FLAG_AF_XDP_ZC]
+[Kurt: Set olinfo_status in igb_xmit_zc() so that frames are transmitted,
+       Use READ_ONCE() for xsk_pool and check Tx disabled and carrier in
+       igb_xmit_zc()]
 Signed-off-by: Kurt Kanzenbach <kurt@linutronix.de>
 ---
- drivers/net/ethernet/intel/igb/Makefile   |   2 +-
- drivers/net/ethernet/intel/igb/igb.h      |  13 +-
- drivers/net/ethernet/intel/igb/igb_main.c |   9 ++
- drivers/net/ethernet/intel/igb/igb_xsk.c  | 207 ++++++++++++++++++++++++++++++
- 4 files changed, 229 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/igb/igb.h      |  2 +
+ drivers/net/ethernet/intel/igb/igb_main.c | 61 ++++++++++++++++++++++++++-----
+ drivers/net/ethernet/intel/igb/igb_xsk.c  | 59 ++++++++++++++++++++++++++++++
+ 3 files changed, 112 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igb/Makefile b/drivers/net/ethernet/intel/igb/Makefile
-index 463c0d26b9d4..6c1b702fd992 100644
---- a/drivers/net/ethernet/intel/igb/Makefile
-+++ b/drivers/net/ethernet/intel/igb/Makefile
-@@ -8,4 +8,4 @@ obj-$(CONFIG_IGB) += igb.o
- 
- igb-y := igb_main.o igb_ethtool.o e1000_82575.o \
- 	 e1000_mac.o e1000_nvm.o e1000_phy.o e1000_mbx.o \
--	 e1000_i210.o igb_ptp.o igb_hwmon.o
-+	 e1000_i210.o igb_ptp.o igb_hwmon.o igb_xsk.o
 diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
-index dbba193241b9..8db5b44b4576 100644
+index 348f32f4c11c..cd8b68eb2eea 100644
 --- a/drivers/net/ethernet/intel/igb/igb.h
 +++ b/drivers/net/ethernet/intel/igb/igb.h
-@@ -20,6 +20,7 @@
- #include <linux/mdio.h>
- 
- #include <net/xdp.h>
-+#include <net/xdp_sock_drv.h>
- 
- struct igb_adapter;
- 
-@@ -320,6 +321,7 @@ struct igb_ring {
- 	union {				/* array of buffer info structs */
- 		struct igb_tx_buffer *tx_buffer_info;
- 		struct igb_rx_buffer *rx_buffer_info;
-+		struct xdp_buff **rx_buffer_info_zc;
- 	};
- 	void *desc;			/* descriptor ring memory */
- 	unsigned long flags;		/* ring specific flags */
-@@ -357,6 +359,7 @@ struct igb_ring {
- 		};
- 	};
- 	struct xdp_rxq_info xdp_rxq;
-+	struct xsk_buff_pool *xsk_pool;
- } ____cacheline_internodealigned_in_smp;
- 
- struct igb_q_vector {
-@@ -384,7 +387,8 @@ enum e1000_ring_flags_t {
- 	IGB_RING_FLAG_RX_SCTP_CSUM,
- 	IGB_RING_FLAG_RX_LB_VLAN_BSWAP,
- 	IGB_RING_FLAG_TX_CTX_IDX,
--	IGB_RING_FLAG_TX_DETECT_HANG
-+	IGB_RING_FLAG_TX_DETECT_HANG,
-+	IGB_RING_FLAG_TX_DISABLED
+@@ -257,6 +257,7 @@ enum igb_tx_flags {
+ enum igb_tx_buf_type {
+ 	IGB_TYPE_SKB = 0,
+ 	IGB_TYPE_XDP,
++	IGB_TYPE_XSK
  };
  
- #define ring_uses_large_buffer(ring) \
-@@ -820,4 +824,11 @@ int igb_add_mac_steering_filter(struct igb_adapter *adapter,
- int igb_del_mac_steering_filter(struct igb_adapter *adapter,
- 				const u8 *addr, u8 queue, u8 flags);
+ /* wrapper around a pointer to a socket buffer,
+@@ -837,6 +838,7 @@ bool igb_alloc_rx_buffers_zc(struct igb_ring *rx_ring, u16 count);
+ void igb_clean_rx_ring_zc(struct igb_ring *rx_ring);
+ int igb_clean_rx_irq_zc(struct igb_q_vector *q_vector,
+ 			struct xsk_buff_pool *xsk_pool, const int budget);
++bool igb_xmit_zc(struct igb_ring *tx_ring);
+ int igb_xsk_wakeup(struct net_device *dev, u32 qid, u32 flags);
  
-+struct xsk_buff_pool *igb_xsk_pool(struct igb_adapter *adapter,
-+				   struct igb_ring *ring);
-+int igb_xsk_pool_setup(struct igb_adapter *adapter,
-+		       struct xsk_buff_pool *pool,
-+		       u16 qid);
-+int igb_xsk_wakeup(struct net_device *dev, u32 qid, u32 flags);
-+
  #endif /* _IGB_H_ */
 diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index db1598876424..9234c768a600 100644
+index 063ba0144dfd..c6d54b5a9688 100644
 --- a/drivers/net/ethernet/intel/igb/igb_main.c
 +++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -2904,9 +2904,14 @@ static int igb_xdp_setup(struct net_device *dev, struct netdev_bpf *bpf)
+@@ -2998,6 +2998,9 @@ static int igb_xdp_xmit(struct net_device *dev, int n,
+ 	if (unlikely(!tx_ring))
+ 		return -ENXIO;
  
- static int igb_xdp(struct net_device *dev, struct netdev_bpf *xdp)
- {
-+	struct igb_adapter *adapter = netdev_priv(dev);
++	if (unlikely(test_bit(IGB_RING_FLAG_TX_DISABLED, &tx_ring->flags)))
++		return -ENXIO;
 +
- 	switch (xdp->command) {
- 	case XDP_SETUP_PROG:
- 		return igb_xdp_setup(dev, xdp);
-+	case XDP_SETUP_XSK_POOL:
-+		return igb_xsk_pool_setup(adapter, xdp->xsk.pool,
-+					  xdp->xsk.queue_id);
- 	default:
- 		return -EINVAL;
+ 	nq = txring_txq(tx_ring);
+ 	__netif_tx_lock(nq, cpu);
+ 
+@@ -3345,7 +3348,8 @@ static int igb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	netdev->priv_flags |= IFF_SUPP_NOFCS;
+ 
+ 	netdev->priv_flags |= IFF_UNICAST_FLT;
+-	netdev->xdp_features = NETDEV_XDP_ACT_BASIC | NETDEV_XDP_ACT_REDIRECT;
++	netdev->xdp_features = NETDEV_XDP_ACT_BASIC | NETDEV_XDP_ACT_REDIRECT |
++			       NETDEV_XDP_ACT_XSK_ZEROCOPY;
+ 
+ 	/* MTU range: 68 - 9216 */
+ 	netdev->min_mtu = ETH_MIN_MTU;
+@@ -4918,15 +4922,20 @@ void igb_clean_tx_ring(struct igb_ring *tx_ring)
+ {
+ 	u16 i = tx_ring->next_to_clean;
+ 	struct igb_tx_buffer *tx_buffer = &tx_ring->tx_buffer_info[i];
++	u32 xsk_frames = 0;
+ 
+ 	while (i != tx_ring->next_to_use) {
+ 		union e1000_adv_tx_desc *eop_desc, *tx_desc;
+ 
+ 		/* Free all the Tx ring sk_buffs or xdp frames */
+-		if (tx_buffer->type == IGB_TYPE_SKB)
++		if (tx_buffer->type == IGB_TYPE_SKB) {
+ 			dev_kfree_skb_any(tx_buffer->skb);
+-		else
++		} else if (tx_buffer->type == IGB_TYPE_XDP) {
+ 			xdp_return_frame(tx_buffer->xdpf);
++		} else if (tx_buffer->type == IGB_TYPE_XSK) {
++			xsk_frames++;
++			goto skip_for_xsk;
++		}
+ 
+ 		/* unmap skb header data */
+ 		dma_unmap_single(tx_ring->dev,
+@@ -4957,6 +4966,7 @@ void igb_clean_tx_ring(struct igb_ring *tx_ring)
+ 					       DMA_TO_DEVICE);
+ 		}
+ 
++skip_for_xsk:
+ 		tx_buffer->next_to_watch = NULL;
+ 
+ 		/* move us one more past the eop_desc for start of next pkt */
+@@ -4971,6 +4981,9 @@ void igb_clean_tx_ring(struct igb_ring *tx_ring)
+ 	/* reset BQL for queue */
+ 	netdev_tx_reset_queue(txring_txq(tx_ring));
+ 
++	if (tx_ring->xsk_pool && xsk_frames)
++		xsk_tx_completed(tx_ring->xsk_pool, xsk_frames);
++
+ 	/* reset next_to_use and next_to_clean */
+ 	tx_ring->next_to_use = 0;
+ 	tx_ring->next_to_clean = 0;
+@@ -6504,6 +6517,9 @@ netdev_tx_t igb_xmit_frame_ring(struct sk_buff *skb,
+ 		return NETDEV_TX_BUSY;
  	}
-@@ -3035,6 +3040,7 @@ static const struct net_device_ops igb_netdev_ops = {
- 	.ndo_setup_tc		= igb_setup_tc,
- 	.ndo_bpf		= igb_xdp,
- 	.ndo_xdp_xmit		= igb_xdp_xmit,
-+	.ndo_xsk_wakeup         = igb_xsk_wakeup,
- };
+ 
++	if (unlikely(test_bit(IGB_RING_FLAG_TX_DISABLED, &tx_ring->flags)))
++		return NETDEV_TX_BUSY;
++
+ 	/* record the location of the first descriptor for this packet */
+ 	first = &tx_ring->tx_buffer_info[tx_ring->next_to_use];
+ 	first->type = IGB_TYPE_SKB;
+@@ -8268,13 +8284,18 @@ static int igb_poll(struct napi_struct *napi, int budget)
+  **/
+ static bool igb_clean_tx_irq(struct igb_q_vector *q_vector, int napi_budget)
+ {
+-	struct igb_adapter *adapter = q_vector->adapter;
+-	struct igb_ring *tx_ring = q_vector->tx.ring;
+-	struct igb_tx_buffer *tx_buffer;
+-	union e1000_adv_tx_desc *tx_desc;
+ 	unsigned int total_bytes = 0, total_packets = 0;
++	struct igb_adapter *adapter = q_vector->adapter;
+ 	unsigned int budget = q_vector->tx.work_limit;
++	struct igb_ring *tx_ring = q_vector->tx.ring;
+ 	unsigned int i = tx_ring->next_to_clean;
++	union e1000_adv_tx_desc *tx_desc;
++	struct igb_tx_buffer *tx_buffer;
++	struct xsk_buff_pool *xsk_pool;
++	int cpu = smp_processor_id();
++	bool xsk_xmit_done = true;
++	struct netdev_queue *nq;
++	u32 xsk_frames = 0;
+ 
+ 	if (test_bit(__IGB_DOWN, &adapter->state))
+ 		return true;
+@@ -8305,10 +8326,14 @@ static bool igb_clean_tx_irq(struct igb_q_vector *q_vector, int napi_budget)
+ 		total_packets += tx_buffer->gso_segs;
+ 
+ 		/* free the skb */
+-		if (tx_buffer->type == IGB_TYPE_SKB)
++		if (tx_buffer->type == IGB_TYPE_SKB) {
+ 			napi_consume_skb(tx_buffer->skb, napi_budget);
+-		else
++		} else if (tx_buffer->type == IGB_TYPE_XDP) {
+ 			xdp_return_frame(tx_buffer->xdpf);
++		} else if (tx_buffer->type == IGB_TYPE_XSK) {
++			xsk_frames++;
++			goto skip_for_xsk;
++		}
+ 
+ 		/* unmap skb header data */
+ 		dma_unmap_single(tx_ring->dev,
+@@ -8340,6 +8365,7 @@ static bool igb_clean_tx_irq(struct igb_q_vector *q_vector, int napi_budget)
+ 			}
+ 		}
+ 
++skip_for_xsk:
+ 		/* move us one more past the eop_desc for start of next pkt */
+ 		tx_buffer++;
+ 		tx_desc++;
+@@ -8368,6 +8394,21 @@ static bool igb_clean_tx_irq(struct igb_q_vector *q_vector, int napi_budget)
+ 	q_vector->tx.total_bytes += total_bytes;
+ 	q_vector->tx.total_packets += total_packets;
+ 
++	xsk_pool = READ_ONCE(tx_ring->xsk_pool);
++	if (xsk_pool) {
++		if (xsk_frames)
++			xsk_tx_completed(xsk_pool, xsk_frames);
++		if (xsk_uses_need_wakeup(xsk_pool))
++			xsk_set_tx_need_wakeup(xsk_pool);
++
++		nq = txring_txq(tx_ring);
++		__netif_tx_lock(nq, cpu);
++		/* Avoid transmit queue timeout since we share it with the slow path */
++		txq_trans_cond_update(nq);
++		xsk_xmit_done = igb_xmit_zc(tx_ring);
++		__netif_tx_unlock(nq);
++	}
++
+ 	if (test_bit(IGB_RING_FLAG_TX_DETECT_HANG, &tx_ring->flags)) {
+ 		struct e1000_hw *hw = &adapter->hw;
+ 
+@@ -8430,7 +8471,7 @@ static bool igb_clean_tx_irq(struct igb_q_vector *q_vector, int napi_budget)
+ 		}
+ 	}
+ 
+-	return !!budget;
++	return !!budget && xsk_xmit_done;
+ }
  
  /**
-@@ -4357,6 +4363,8 @@ void igb_configure_tx_ring(struct igb_adapter *adapter,
- 	u64 tdba = ring->dma;
- 	int reg_idx = ring->reg_idx;
- 
-+	WRITE_ONCE(ring->xsk_pool, igb_xsk_pool(adapter, ring));
-+
- 	wr32(E1000_TDLEN(reg_idx),
- 	     ring->count * sizeof(union e1000_adv_tx_desc));
- 	wr32(E1000_TDBAL(reg_idx),
-@@ -4752,6 +4760,7 @@ void igb_configure_rx_ring(struct igb_adapter *adapter,
- 	xdp_rxq_info_unreg_mem_model(&ring->xdp_rxq);
- 	WARN_ON(xdp_rxq_info_reg_mem_model(&ring->xdp_rxq,
- 					   MEM_TYPE_PAGE_SHARED, NULL));
-+	WRITE_ONCE(ring->xsk_pool, igb_xsk_pool(adapter, ring));
- 
- 	/* disable the queue */
- 	wr32(E1000_RXDCTL(reg_idx), 0);
 diff --git a/drivers/net/ethernet/intel/igb/igb_xsk.c b/drivers/net/ethernet/intel/igb/igb_xsk.c
-new file mode 100644
-index 000000000000..7b632be3e7e3
---- /dev/null
+index 2ae16ae99193..52602ef25321 100644
+--- a/drivers/net/ethernet/intel/igb/igb_xsk.c
 +++ b/drivers/net/ethernet/intel/igb/igb_xsk.c
-@@ -0,0 +1,207 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/* Copyright(c) 2018 Intel Corporation. */
-+
-+#include <linux/bpf_trace.h>
-+#include <net/xdp_sock_drv.h>
-+#include <net/xdp.h>
-+
-+#include "e1000_hw.h"
-+#include "igb.h"
-+
-+static int igb_realloc_rx_buffer_info(struct igb_ring *ring, bool pool_present)
+@@ -464,6 +464,65 @@ int igb_clean_rx_irq_zc(struct igb_q_vector *q_vector,
+ 	return failure ? budget : (int)total_packets;
+ }
+ 
++bool igb_xmit_zc(struct igb_ring *tx_ring)
 +{
-+	int size = pool_present ?
-+		sizeof(*ring->rx_buffer_info_zc) * ring->count :
-+		sizeof(*ring->rx_buffer_info) * ring->count;
-+	void *buff_info = vmalloc(size);
++	unsigned int budget = igb_desc_unused(tx_ring);
++	struct xsk_buff_pool *pool = tx_ring->xsk_pool;
++	u32 cmd_type, olinfo_status, nb_pkts, i = 0;
++	struct xdp_desc *descs = pool->tx_descs;
++	union e1000_adv_tx_desc *tx_desc = NULL;
++	struct igb_tx_buffer *tx_buffer_info;
++	unsigned int total_bytes = 0;
++	dma_addr_t dma;
 +
-+	if (!buff_info)
-+		return -ENOMEM;
++	if (!netif_carrier_ok(tx_ring->netdev))
++		return true;
 +
-+	if (pool_present) {
-+		vfree(ring->rx_buffer_info);
-+		ring->rx_buffer_info = NULL;
-+		ring->rx_buffer_info_zc = buff_info;
-+	} else {
-+		vfree(ring->rx_buffer_info_zc);
-+		ring->rx_buffer_info_zc = NULL;
-+		ring->rx_buffer_info = buff_info;
++	if (test_bit(IGB_RING_FLAG_TX_DISABLED, &tx_ring->flags))
++		return true;
++
++	nb_pkts = xsk_tx_peek_release_desc_batch(pool, budget);
++	if (!nb_pkts)
++		return true;
++
++	while (nb_pkts-- > 0) {
++		dma = xsk_buff_raw_get_dma(pool, descs[i].addr);
++		xsk_buff_raw_dma_sync_for_device(pool, dma, descs[i].len);
++
++		tx_buffer_info = &tx_ring->tx_buffer_info[tx_ring->next_to_use];
++		tx_buffer_info->bytecount = descs[i].len;
++		tx_buffer_info->type = IGB_TYPE_XSK;
++		tx_buffer_info->xdpf = NULL;
++		tx_buffer_info->gso_segs = 1;
++		tx_buffer_info->time_stamp = jiffies;
++
++		tx_desc = IGB_TX_DESC(tx_ring, tx_ring->next_to_use);
++		tx_desc->read.buffer_addr = cpu_to_le64(dma);
++
++		/* put descriptor type bits */
++		cmd_type = E1000_ADVTXD_DTYP_DATA | E1000_ADVTXD_DCMD_DEXT |
++			   E1000_ADVTXD_DCMD_IFCS;
++		olinfo_status = descs[i].len << E1000_ADVTXD_PAYLEN_SHIFT;
++
++		cmd_type |= descs[i].len | IGB_TXD_DCMD;
++		tx_desc->read.cmd_type_len = cpu_to_le32(cmd_type);
++		tx_desc->read.olinfo_status = cpu_to_le32(olinfo_status);
++
++		total_bytes += descs[i].len;
++
++		i++;
++		tx_ring->next_to_use++;
++		tx_buffer_info->next_to_watch = tx_desc;
++		if (tx_ring->next_to_use == tx_ring->count)
++			tx_ring->next_to_use = 0;
 +	}
 +
-+	return 0;
++	netdev_tx_sent_queue(txring_txq(tx_ring), total_bytes);
++	igb_xdp_ring_update_tail(tx_ring);
++
++	return nb_pkts < budget;
 +}
 +
-+static void igb_txrx_ring_disable(struct igb_adapter *adapter, u16 qid)
-+{
-+	struct igb_ring *tx_ring = adapter->tx_ring[qid];
-+	struct igb_ring *rx_ring = adapter->rx_ring[qid];
-+	struct e1000_hw *hw = &adapter->hw;
-+
-+	set_bit(IGB_RING_FLAG_TX_DISABLED, &tx_ring->flags);
-+
-+	wr32(E1000_TXDCTL(tx_ring->reg_idx), 0);
-+	wr32(E1000_RXDCTL(rx_ring->reg_idx), 0);
-+
-+	synchronize_net();
-+
-+	/* Rx/Tx share the same napi context. */
-+	napi_disable(&rx_ring->q_vector->napi);
-+
-+	igb_clean_tx_ring(tx_ring);
-+	igb_clean_rx_ring(rx_ring);
-+
-+	memset(&rx_ring->rx_stats, 0, sizeof(rx_ring->rx_stats));
-+	memset(&tx_ring->tx_stats, 0, sizeof(tx_ring->tx_stats));
-+}
-+
-+static void igb_txrx_ring_enable(struct igb_adapter *adapter, u16 qid)
-+{
-+	struct igb_ring *tx_ring = adapter->tx_ring[qid];
-+	struct igb_ring *rx_ring = adapter->rx_ring[qid];
-+
-+	igb_configure_tx_ring(adapter, tx_ring);
-+	igb_configure_rx_ring(adapter, rx_ring);
-+
-+	synchronize_net();
-+
-+	clear_bit(IGB_RING_FLAG_TX_DISABLED, &tx_ring->flags);
-+
-+	/* call igb_desc_unused which always leaves
-+	 * at least 1 descriptor unused to make sure
-+	 * next_to_use != next_to_clean
-+	 */
-+	igb_alloc_rx_buffers(rx_ring, igb_desc_unused(rx_ring));
-+
-+	/* Rx/Tx share the same napi context. */
-+	napi_enable(&rx_ring->q_vector->napi);
-+}
-+
-+struct xsk_buff_pool *igb_xsk_pool(struct igb_adapter *adapter,
-+				   struct igb_ring *ring)
-+{
-+	int qid = ring->queue_index;
-+	struct xsk_buff_pool *pool;
-+
-+	pool = xsk_get_pool_from_qid(adapter->netdev, qid);
-+
-+	if (!igb_xdp_is_enabled(adapter))
-+		return NULL;
-+
-+	return (pool && pool->dev) ? pool : NULL;
-+}
-+
-+static int igb_xsk_pool_enable(struct igb_adapter *adapter,
-+			       struct xsk_buff_pool *pool,
-+			       u16 qid)
-+{
-+	struct net_device *netdev = adapter->netdev;
-+	struct igb_ring *rx_ring;
-+	bool if_running;
-+	int err;
-+
-+	if (qid >= adapter->num_rx_queues)
-+		return -EINVAL;
-+
-+	if (qid >= netdev->real_num_rx_queues ||
-+	    qid >= netdev->real_num_tx_queues)
-+		return -EINVAL;
-+
-+	err = xsk_pool_dma_map(pool, &adapter->pdev->dev, IGB_RX_DMA_ATTR);
-+	if (err)
-+		return err;
-+
-+	rx_ring = adapter->rx_ring[qid];
-+	if_running = netif_running(adapter->netdev) && igb_xdp_is_enabled(adapter);
-+	if (if_running)
-+		igb_txrx_ring_disable(adapter, qid);
-+
-+	if (if_running) {
-+		err = igb_realloc_rx_buffer_info(rx_ring, true);
-+		if (!err) {
-+			igb_txrx_ring_enable(adapter, qid);
-+			/* Kick start the NAPI context so that receiving will start */
-+			err = igb_xsk_wakeup(adapter->netdev, qid, XDP_WAKEUP_RX);
-+		}
-+
-+		if (err) {
-+			xsk_pool_dma_unmap(pool, IGB_RX_DMA_ATTR);
-+			return err;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+static int igb_xsk_pool_disable(struct igb_adapter *adapter, u16 qid)
-+{
-+	struct xsk_buff_pool *pool;
-+	struct igb_ring *rx_ring;
-+	bool if_running;
-+	int err;
-+
-+	pool = xsk_get_pool_from_qid(adapter->netdev, qid);
-+	if (!pool)
-+		return -EINVAL;
-+
-+	rx_ring = adapter->rx_ring[qid];
-+	if_running = netif_running(adapter->netdev) && igb_xdp_is_enabled(adapter);
-+	if (if_running)
-+		igb_txrx_ring_disable(adapter, qid);
-+
-+	xsk_pool_dma_unmap(pool, IGB_RX_DMA_ATTR);
-+
-+	if (if_running) {
-+		err = igb_realloc_rx_buffer_info(rx_ring, false);
-+		if (err)
-+			return err;
-+
-+		igb_txrx_ring_enable(adapter, qid);
-+	}
-+
-+	return 0;
-+}
-+
-+int igb_xsk_pool_setup(struct igb_adapter *adapter,
-+		       struct xsk_buff_pool *pool,
-+		       u16 qid)
-+{
-+	return pool ? igb_xsk_pool_enable(adapter, pool, qid) :
-+		igb_xsk_pool_disable(adapter, qid);
-+}
-+
-+int igb_xsk_wakeup(struct net_device *dev, u32 qid, u32 flags)
-+{
-+	struct igb_adapter *adapter = netdev_priv(dev);
-+	struct e1000_hw *hw = &adapter->hw;
-+	struct igb_ring *ring;
-+	u32 eics = 0;
-+
-+	if (test_bit(__IGB_DOWN, &adapter->state))
-+		return -ENETDOWN;
-+
-+	if (!igb_xdp_is_enabled(adapter))
-+		return -EINVAL;
-+
-+	if (qid >= adapter->num_tx_queues)
-+		return -EINVAL;
-+
-+	ring = adapter->tx_ring[qid];
-+
-+	if (test_bit(IGB_RING_FLAG_TX_DISABLED, &ring->flags))
-+		return -ENETDOWN;
-+
-+	if (!READ_ONCE(ring->xsk_pool))
-+		return -EINVAL;
-+
-+	if (!napi_if_scheduled_mark_missed(&ring->q_vector->napi)) {
-+		/* Cause software interrupt */
-+		if (adapter->flags & IGB_FLAG_HAS_MSIX) {
-+			eics |= ring->q_vector->eims_value;
-+			wr32(E1000_EICS, eics);
-+		} else {
-+			wr32(E1000_ICS, E1000_ICS_RXDMT0);
-+		}
-+	}
-+
-+	return 0;
-+}
+ int igb_xsk_wakeup(struct net_device *dev, u32 qid, u32 flags)
+ {
+ 	struct igb_adapter *adapter = netdev_priv(dev);
 
 -- 
 2.39.2
