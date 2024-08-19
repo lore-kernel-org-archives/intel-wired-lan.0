@@ -4,92 +4,94 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2E866C3DA4A
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 19 Aug 2024 10:14:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BBA13C3DA4A
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 19 Aug 2024 10:14:30 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id C4A31404DC;
-	Mon, 19 Aug 2024 10:14:10 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 8D1D7404C5;
+	Mon, 19 Aug 2024 10:14:30 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id LYRJX6UKnGFd; Mon, 19 Aug 2024 10:14:08 +0000 (UTC)
+ id a3N0RGGosHp7; Mon, 19 Aug 2024 10:14:29 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 82EB3404D8
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 6E4D1404AA
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1724062448;
-	bh=6Wiq6/i5O96/kKbRN+H0lZGyU0CjIMjzWgWKnXCkHRo=;
+	s=default; t=1724062469;
+	bh=JpvdqqT5/q1zNJqa65+vT9j7pmwmJZPixpCPobD+4Ac=;
 	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=oQKv6RrGsw9VfcJK0zzq38Ec5aFW4hhdDCH5BaZk3A9ThE8kE4OT8j26/CdEkJ7Gq
-	 k2TyiO1yVhkwPuw7vQqeHQD2aTOIsFm4e6kmR+UNLIF5O/30jhZZHBBi6SSLnMtIPT
-	 sJNen2rfnx3z3YXFpUXC0pBhJotG/RD+7tFjdYsVvwxdaGpxnbkjmxSUA7HCW0786D
-	 v6OkHLuKi9r41il5kFXTtc9rPbeNEao0rtQ7xYiKZwyM5iVQ2GdBpWTPgIBdib7qCF
-	 TNdhA1SbNeOOUPpzerqX04D192WUdF8VjQHOv2MfgVs6V5aBZ6uD144Sj4Sk61Laxq
-	 5nYm2A/nA3nzw==
+	b=0CpIuYlAXkSvf0mGAVqxm12i4B/1TMg1/yNFNqwJVwlQcp9xRXAR9S+7BSH1nYs1/
+	 LE9m1zhpHJUZvMmz7+KO7UQstYx/+AdUoU+nKZadoLYymban2GQjzeSsVxB5SHSfVe
+	 6RAJ6vJ5gzrKZJr5VET23LaBgr3/GdVAVuTctKxe097Bj7QIHM2Ul26MFtEGdMHB6H
+	 Hy9ffSulkM5g8bb7GoPC8EYOyGtQ7gBHxwDE/RaJhBHQws103jP1T/08/nyM0+g2TX
+	 c7TZhbYonci7q8jxjxa5WWMz3FzN9UDbNg2g953D91nbdrBPx2d55la7MbUgkr/rAd
+	 FIXHYTpwpkOkQ==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 82EB3404D8;
-	Mon, 19 Aug 2024 10:14:08 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 6E4D1404AA;
+	Mon, 19 Aug 2024 10:14:29 +0000 (UTC)
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id C0DCF1BF39D
- for <intel-wired-lan@lists.osuosl.org>; Mon, 19 Aug 2024 10:14:06 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 293CB1BF39D
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 19 Aug 2024 10:14:28 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id AF50D60763
- for <intel-wired-lan@lists.osuosl.org>; Mon, 19 Aug 2024 10:14:06 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 2558C60763
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 19 Aug 2024 10:14:28 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id a5aT7F-yN59W for <intel-wired-lan@lists.osuosl.org>;
- Mon, 19 Aug 2024 10:14:06 +0000 (UTC)
-Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.16;
- helo=mgamail.intel.com; envelope-from=michal.swiatkowski@linux.intel.com;
+ id l5iTpHHc2xsQ for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 19 Aug 2024 10:14:27 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.18;
+ helo=mgamail.intel.com; envelope-from=larysa.zaremba@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org B0FC66072A
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B0FC66072A
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.16])
- by smtp3.osuosl.org (Postfix) with ESMTPS id B0FC66072A
- for <intel-wired-lan@lists.osuosl.org>; Mon, 19 Aug 2024 10:14:05 +0000 (UTC)
-X-CSE-ConnectionGUID: 9ABfhNpsRoSdiU6goxEipw==
-X-CSE-MsgGUID: VUspdMLxSOmbHhJqHLn53Q==
-X-IronPort-AV: E=McAfee;i="6700,10204,11168"; a="13090089"
-X-IronPort-AV: E=Sophos;i="6.10,158,1719903600"; d="scan'208";a="13090089"
-Received: from fmviesa001.fm.intel.com ([10.60.135.141])
- by fmvoesa110.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 19 Aug 2024 03:14:03 -0700
-X-CSE-ConnectionGUID: XDeJ29GoTMe+FR6D17qeLA==
-X-CSE-MsgGUID: +90gsaXuSDO8fi4+jvastw==
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 3E9846072A
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3E9846072A
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.18])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 3E9846072A
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 19 Aug 2024 10:14:26 +0000 (UTC)
+X-CSE-ConnectionGUID: 14pTeEQfT8yvOd8JTQbryg==
+X-CSE-MsgGUID: yEfZPoZTTZOC4ARRB/a/eg==
+X-IronPort-AV: E=McAfee;i="6700,10204,11168"; a="22443454"
+X-IronPort-AV: E=Sophos;i="6.10,158,1719903600"; d="scan'208";a="22443454"
+Received: from fmviesa004.fm.intel.com ([10.60.135.144])
+ by orvoesa110.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 19 Aug 2024 03:14:27 -0700
+X-CSE-ConnectionGUID: HoSDcKyeSpi9Ww5gdWiYMg==
+X-CSE-MsgGUID: trlfEET5Sq2x8vkfSmN16A==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.10,158,1719903600"; d="scan'208";a="91097032"
-Received: from gk3153-dr2-r750-36946.igk.intel.com ([10.102.20.192])
- by fmviesa001.fm.intel.com with ESMTP; 19 Aug 2024 03:14:02 -0700
-From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Date: Mon, 19 Aug 2024 12:14:01 +0200
-Message-ID: <20240819101401.67924-1-michal.swiatkowski@linux.intel.com>
-X-Mailer: git-send-email 2.42.0
+X-IronPort-AV: E=Sophos;i="6.10,158,1719903600"; d="scan'208";a="65000841"
+Received: from irvmail002.ir.intel.com ([10.43.11.120])
+ by fmviesa004.fm.intel.com with ESMTP; 19 Aug 2024 03:14:19 -0700
+Received: from lincoln.igk.intel.com (lincoln.igk.intel.com [10.102.21.235])
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id 6EC1E135E8;
+ Mon, 19 Aug 2024 11:14:17 +0100 (IST)
+From: Larysa Zaremba <larysa.zaremba@intel.com>
+To: intel-wired-lan@lists.osuosl.org, Tony Nguyen <anthony.l.nguyen@intel.com>
+Date: Mon, 19 Aug 2024 12:05:37 +0200
+Message-ID: <20240819100606.15383-1-larysa.zaremba@intel.com>
+X-Mailer: git-send-email 2.43.0
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1724062445; x=1755598445;
+ t=1724062468; x=1755598468;
  h=from:to:cc:subject:date:message-id:mime-version:
  content-transfer-encoding;
- bh=OdCIEHfgvFJ64xVjrEiuwnfedCAXa+QyPQoNYh8AiRI=;
- b=T7vC5d44hhl9323a/+FFmj8Pvcbjwk5rkfUiHyaigoiO/vS946xmUrhv
- g4ak4aJVds9v/4lmQaIzz4QzEFCA34KFxfuWZCg6ao7TRsVul2U8Gkss9
- RscadtQyhBSBaYXP4Y5iH+k3h06HSxrg9JICBFE0gBkV6qfoCCS7+IPW5
- b0mMnJJnW5jPOuDcKNB7PwUaeseMVVhIyZIYLrg6ZmuN/6SfgPGUMRNk5
- ycKi64rg3mNn5hhneuGbA/V1s750UUc84Aq1Ku6jrQuol8InblHZfgiCn
- RWQgIRuiMN5CnBsw2htlYyM/SVo9xojNtvb8+1Raw79YFQjnipXhE5ZN3
+ bh=s0zAxlyXNZ+O9S3b8lRDOQsTtc9BspZrt7J09VPJZ3k=;
+ b=d8cJroa8+lu89395gPJT2f2gDLcrE0jLdymBEGZeLrNv5mPFvG2phxD0
+ cwlNpfaCGE3eqDNAz6tUgTLfulQiIc8WF8XGGvF0ps/QTAG8Z3JwMD/Gw
+ jmPT5AXtw9wHnrzX1Hg67Vzf5G7vd4rcTwxSmHCZPVrUzx9sxWO6uanUP
+ UdpzOop15he+qHqGK3oEqShNrlUZHTEBEdFG621xZuqT1npFF73itKUFy
+ PCc1Cv/uZLz5cicOnb2g1RxqNkyqFSwhDHylnvyj8gWVprQP5dDrw46yc
+ JzTde81w7NtPMxXJJGehSjga0vJmr68X34NzXh/BbRGBuE5FmfAtxk6se
  w==;
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dmarc=none (p=none dis=none)
- header.from=linux.intel.com
+ dmarc=pass (p=none dis=none)
+ header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=T7vC5d44
-Subject: [Intel-wired-lan] [iwl-next v1] ice: set correct dst VSI in only
- LAN filters
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=d8cJroa8
+Subject: [Intel-wired-lan] [PATCH iwl-net v3 0/6] ice: fix synchronization
+ between .ndo_bpf() and reset
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,62 +104,61 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, wojciech.drewek@intel.com,
- przemyslaw.kitszel@intel.com
+Cc: Wojciech Drewek <wojciech.drewek@intel.com>,
+ Maciej Fijalkowski <maciej.fijalkowski@intel.com>,
+ Jesper Dangaard Brouer <hawk@kernel.org>,
+ Daniel Borkmann <daniel@iogearbox.net>,
+ Larysa Zaremba <larysa.zaremba@intel.com>, netdev@vger.kernel.org,
+ John Fastabend <john.fastabend@gmail.com>, Alexei Starovoitov <ast@kernel.org>,
+ linux-kernel@vger.kernel.org, Eric Dumazet <edumazet@google.com>,
+ Michal Kubiak <michal.kubiak@intel.com>,
+ Amritha Nambiar <amritha.nambiar@intel.com>,
+ Jacob Keller <jacob.e.keller@intel.com>, Jakub Kicinski <kuba@kernel.org>,
+ bpf@vger.kernel.org, Paolo Abeni <pabeni@redhat.com>,
+ "David S. Miller" <davem@davemloft.net>, magnus.karlsson@intel.com
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The filters set that will reproduce the problem:
-$ tc filter add dev $VF0_PR ingress protocol arp prio 0 flower \
-	skip_sw dst_mac ff:ff:ff:ff:ff:ff action mirred egress \
-	redirect dev $PF0
-$ tc filter add dev $VF0_PR ingress protocol arp prio 0 flower \
-	skip_sw dst_mac ff:ff:ff:ff:ff:ff src_mac 52:54:00:00:00:10 \
-	action mirred egress mirror dev $VF1_PR
+PF reset can be triggered asynchronously, by tx_timeout or by a user. With some
+unfortunate timings both ice_vsi_rebuild() and .ndo_bpf will try to access and
+modify XDP rings at the same time, causing system crash.
 
-Expected behaviour is to set all broadcast from VF0 to the LAN. If the
-src_mac match the value from filters, send packet to LAN and to VF1.
+The first patch factors out rtnl-locked code from VSI rebuild code to avoid
+deadlock. The following changes lock rebuild and .ndo_bpf() critical sections
+with an internal mutex as well and provide complementary fixes.
 
-In this case both LAN_EN and LB_EN flags in switch is set in case of
-packet matching both filters. As dst VSI for the only LAN enable bit is
-PF VSI, the packet is being seen on PF. To fix this change dst VSI to
-the source VSI. It will block receiving any packet even when LB_EN is
-set by switch, because local loopback is clear on VF VSI during normal
-operation.
+v2: https://lore.kernel.org/netdev/20240724164840.2536605-1-larysa.zaremba@intel.com/
+v2->v3:
+* deconfig VSI when coalesce allocation fails in ice_vsi_rebuild (patch 2/6)
+* rebase and resolve conflicts in patch 3 and 4
+* add tags from v2
 
-Side note: if the second filters action is redirect instead of mirror
-LAN_EN is clear, because switch is AND-ing LAN_EN from each matched
-filters and OR-ing LB_EN.
+v1: https://lore.kernel.org/netdev/20240610153716.31493-1-larysa.zaremba@intel.com/
+v1->v2:
+* use mutex for locking
+* redefine critical sections
+* account for short time between rebuild and VSI being open
+* add netif_queue_set_napi() patch, so ICE_RTNL_WAITS_FOR_RESET strategy can be
+  dropped, no more rtnl-locked code in ice_vsi_rebuild()
+* change the test case from waiting for tx_timeout to happen to actively firing
+  resets through sysfs, this adds more minor fixes on top
 
-Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Fixes: 73b483b79029 ("ice: Manage act flags for switchdev offloads")
-Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
----
- drivers/net/ethernet/intel/ice/ice_tc_lib.c | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+Larysa Zaremba (6):
+  ice: move netif_queue_set_napi to rtnl-protected sections
+  ice: protect XDP configuration with a mutex
+  ice: check for XDP rings instead of bpf program when unconfiguring
+  ice: check ICE_VSI_DOWN under rtnl_lock when preparing for reset
+  ice: remove ICE_CFG_BUSY locking from AF_XDP code
+  ice: do not bring the VSI up, if it was down before the XDP setup
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_tc_lib.c b/drivers/net/ethernet/intel/ice/ice_tc_lib.c
-index e6923f8121a9..ea39b999a0d0 100644
---- a/drivers/net/ethernet/intel/ice/ice_tc_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_tc_lib.c
-@@ -819,6 +819,17 @@ ice_eswitch_add_tc_fltr(struct ice_vsi *vsi, struct ice_tc_flower_fltr *fltr)
- 		rule_info.sw_act.flag |= ICE_FLTR_TX;
- 		rule_info.sw_act.src = vsi->idx;
- 		rule_info.flags_info.act = ICE_SINGLE_ACT_LAN_ENABLE;
-+		/* This is a specific case. The destination VSI index is
-+		 * overwritten by the source VSI index. This type of filter
-+		 * should allow the packet to go to the LAN, not to the
-+		 * VSI passed here. It should set LAN_EN bit only. However,
-+		 * the VSI must be a valid one. Setting source VSI index
-+		 * here is safe. Even if the result from switch is set LAN_EN
-+		 * and LB_EN (which normally will pass the packet to this VSI)
-+		 * packet won't be seen on the VSI, because local loopback is
-+		 * turned off.
-+		 */
-+		rule_info.sw_act.vsi_handle = vsi->idx;
- 	} else {
- 		/* VF to VF */
- 		rule_info.sw_act.flag |= ICE_FLTR_TX;
+ drivers/net/ethernet/intel/ice/ice.h      |   2 +
+ drivers/net/ethernet/intel/ice/ice_base.c |  11 +-
+ drivers/net/ethernet/intel/ice/ice_lib.c  | 179 ++++++++--------------
+ drivers/net/ethernet/intel/ice/ice_lib.h  |  10 +-
+ drivers/net/ethernet/intel/ice/ice_main.c |  47 ++++--
+ drivers/net/ethernet/intel/ice/ice_xsk.c  |  18 +--
+ 6 files changed, 106 insertions(+), 161 deletions(-)
+
 -- 
-2.42.0
+2.43.0
 
