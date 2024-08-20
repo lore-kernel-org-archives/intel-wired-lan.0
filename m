@@ -4,91 +4,112 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D6E6BC531DC
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 20 Aug 2024 15:24:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 88C41C3DA4A
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 20 Aug 2024 16:03:41 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 805DA40204;
-	Tue, 20 Aug 2024 15:24:48 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 3ABF0406AB;
+	Tue, 20 Aug 2024 16:03:41 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 4AikNn5plV60; Tue, 20 Aug 2024 15:24:46 +0000 (UTC)
+ id AgFGRIxzS-th; Tue, 20 Aug 2024 16:03:40 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D222A401CF
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org DD29E406B1
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1724167486;
-	bh=CtyGxJdNntc5cg+Njit2v2rd9MMwv9WqPIQ1G4GSga8=;
-	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=sMr4E2qnDMc5peMa1JOFnKKDvuZRsGkt9oTtmAbexMwqUEf2uFkCVSEm5wsLvBRHz
-	 HW582LCIeu1I5DfJ9Zs0kZzzCxhhdZFILxSHvF6/xvuk0z5zYvuGWEGp/j8pR8N9Pm
-	 5Y081eZZWkYutMe001h5sMmeH++eMNgD+++coRbQUrqYiXMJjJrP3YcEodsqlIYcf2
-	 lqkN7dm0fe23dPwffteHYADfC9sQRBpiltRrzbwA2Mc8l/Xes3GzmF8yzw2LQvJhGb
-	 6Z6Jfh9DUbetJw4a0AruZasLT5A5x/K0kdjT/YeAsEg1ldybmHWCrFu9JlcQSnglYe
-	 iDMtYBUrt91Ig==
+	s=default; t=1724169819;
+	bh=ACxpErlOvFQuBRokph/wthh0GeLIFddWl+sG+UC+KHk=;
+	h=References:In-Reply-To:From:Date:To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=FkBBG+e1jY0A+NYIye8EI7vNXbfrNJo2fUa9iw+kqUHBazQyb8DsrRJkO8HWvAJJp
+	 FSLkF3oLrHfUBjOTOkGpUVmKRb3V9RNTS++HToVIK6czfjWFAXzcOfJLwVEwl1Hf/m
+	 eeMvTu5C9iX3ASXP1eEEBiWsoE17nLE7OuQDu+Bk/hRauBSHhZuKYo72PHBRv8Y4jd
+	 ZzMtubrGzpD4BSGc8+Nqg0rcDAKDsFGnvOzsQ0hkUkFhLT0kU4HA8ZIwP28n83oJct
+	 NcaSm3FDLLJROVVTppdUWFbea/1MsfYFPGsnfDmegqT5fsvoxlhH2nLr2/uX35FG3G
+	 FLSk0P24g7GRg==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id D222A401CF;
-	Tue, 20 Aug 2024 15:24:46 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id DD29E406B1;
+	Tue, 20 Aug 2024 16:03:39 +0000 (UTC)
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 04C071BF345
- for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Aug 2024 15:24:46 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 3221A1BF328
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Aug 2024 16:03:39 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id E582F608E4
- for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Aug 2024 15:24:45 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 1EB4660A89
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Aug 2024 16:03:39 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id C507JWR0tkT8 for <intel-wired-lan@lists.osuosl.org>;
- Tue, 20 Aug 2024 15:24:44 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.21;
- helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 67F19606BD
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 67F19606BD
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.21])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 67F19606BD
- for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Aug 2024 15:24:43 +0000 (UTC)
-X-CSE-ConnectionGUID: bVwBOFndR/KAtLWtamWibQ==
-X-CSE-MsgGUID: 1eGTjR+8RJy1Ht0LzkFU9w==
-X-IronPort-AV: E=McAfee;i="6700,10204,11170"; a="22445218"
-X-IronPort-AV: E=Sophos;i="6.10,162,1719903600"; d="scan'208";a="22445218"
-Received: from fmviesa003.fm.intel.com ([10.60.135.143])
- by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 20 Aug 2024 08:24:43 -0700
-X-CSE-ConnectionGUID: pbUq+nyUS6i1dkroAP3kig==
-X-CSE-MsgGUID: RhhS4UnJQHmSB2EyZfxfgw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.10,162,1719903600"; d="scan'208";a="64971455"
-Received: from lkp-server01.sh.intel.com (HELO 9a732dc145d3) ([10.239.97.150])
- by fmviesa003.fm.intel.com with ESMTP; 20 Aug 2024 08:24:42 -0700
-Received: from kbuild by 9a732dc145d3 with local (Exim 4.96)
- (envelope-from <lkp@intel.com>) id 1sgQit-000AL2-2b
- for intel-wired-lan@lists.osuosl.org; Tue, 20 Aug 2024 15:24:39 +0000
-Date: Tue, 20 Aug 2024 23:24:09 +0800
-From: kernel test robot <lkp@intel.com>
-To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Message-ID: <202408202307.sf6eZuGD-lkp@intel.com>
-User-Agent: s-nail v14.9.24
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1724167484; x=1755703484;
- h=date:from:to:subject:message-id;
- bh=5vRn6aJFClhEA6HLv1qi1bCh6EE5l5zA8L3tox3zuP4=;
- b=DoEzHFxBRm1G3jZMkSnf7BzaH7DBO+Rx/uQx8uv+JerYv74YDC88QFVY
- SLVP3FuLDc/QaGlK4USmBDYQNAEN5eCUAas8tEu1hfTFFm5w44F+NVe8e
- CJQQl2gltWC38Dao45gwwmN3qeHBel5CdWh82QCCl57jeDJtKgqQsIdFp
- LUb/iKLaoyHudVPAxAL8emzQCZa2M26d2W2n3ljDtu06TMqcm+K/fiLTj
- eo6VdqJewLVyQ2xCx2oa+ZZ12W0kksYv1fyoPbXWwYamoPPXQtsiAsGEB
- pauN0gF1JZd8nmPnLbriRNv7jCOsRhNGRFZc80Sfq3DbSW1aI8s/p/DIk
- Q==;
+ id nk8swcB3aLFj for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 20 Aug 2024 16:03:38 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2a00:1450:4864:20::32f; helo=mail-wm1-x32f.google.com;
+ envelope-from=alexander.duyck@gmail.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org CB7B3606C5
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org CB7B3606C5
+Received: from mail-wm1-x32f.google.com (mail-wm1-x32f.google.com
+ [IPv6:2a00:1450:4864:20::32f])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id CB7B3606C5
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Aug 2024 16:03:37 +0000 (UTC)
+Received: by mail-wm1-x32f.google.com with SMTP id
+ 5b1f17b1804b1-42819654737so45025325e9.1
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Aug 2024 09:03:37 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20230601; t=1724169815; x=1724774615;
+ h=content-transfer-encoding:cc:to:subject:message-id:date:from
+ :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+ :subject:date:message-id:reply-to;
+ bh=ACxpErlOvFQuBRokph/wthh0GeLIFddWl+sG+UC+KHk=;
+ b=HkhGGD3LmcocJTglaTxukwpjC3AeS0aJu7L24VsAIem8mrEcUg7GzMTIDhooNseb5M
+ lkm1UhopxPv8S8PvZpDvK3ybC7J7NNfplAZlA8oCtp77RD+/dY52fx6AeT+PhacmGOCL
+ 9GIbW1dZ15LNCJFLq45YzqJ3pWTD2dchUh+ZJbEPbCHEHWU1YawBRwPTn5ZxclmPec+X
+ 2YCnlncznlfCvLiop0JJfmWnskyhWnK5WFR8LxIi3BAVRVetkZ/yy4bSnNNqgc2FW4j8
+ I+yFIokZaU9bN0/sIgI23TQAA5OPhR/TO5RniF16E5y7KMMv6yTdvC4ONWK8nk2BEaJx
+ X4vg==
+X-Forwarded-Encrypted: i=1;
+ AJvYcCWZWvhxwc8Z4QSwk1BWbrleyzl43VYbQNFqHoZLLQt2TskmWgUBVkieSRP82HKp6wW26C0n0+gnw1ZeByaWGFc=@lists.osuosl.org
+X-Gm-Message-State: AOJu0YysZJqj7SwPIGsYxgdQWv65JI0a82Vetfig9VmKxlE1D1f3+rh3
+ hn8FXlkxKBA+y+ojqMj3TUPHo76RLk6orhCI8/2G/4uLBeWblqmtGLmI1w/60URuNCN5Li7WxSj
+ x8pJRJ+JMJJtmt2lJGAAGvMcHAB8=
+X-Google-Smtp-Source: AGHT+IF4DoS60WZqDqVaq8Y/5SjjI7zscaIxzpj60ezQwLm3viTYLpGZpmD+jTekneRZUAoDJMoW7JwgYwWaXYZHKdQ=
+X-Received: by 2002:adf:f285:0:b0:371:888d:7aaa with SMTP id
+ ffacd0b85a97d-371946b1ae9mr9087932f8f.49.1724169814881; Tue, 20 Aug 2024
+ 09:03:34 -0700 (PDT)
+MIME-Version: 1.0
+References: <20240808123714.462740-1-linyunsheng@huawei.com>
+ <20240808123714.462740-5-linyunsheng@huawei.com>
+ <d1a23116d054e2ebb00067227f0cffecefe33e11.camel@gmail.com>
+ <676a2a15-d390-48a7-a8d7-6e491c89e200@huawei.com>
+ <CAKgT0Uct5ptfs9ZEoe-9u-fOVz4HLf+5MS-YidKV+xELCBHKNw@mail.gmail.com>
+ <3e069c81-a728-4d72-a5bb-3be00d182107@huawei.com>
+ <CAKgT0UcDDFeMqD_eRe1-2Og0GEEFyNP90E9SDxDjskdgtMe0Uw@mail.gmail.com>
+ <98ceade3-8d60-45bf-a419-ff3982a96101@huawei.com>
+In-Reply-To: <98ceade3-8d60-45bf-a419-ff3982a96101@huawei.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Tue, 20 Aug 2024 09:02:57 -0700
+Message-ID: <CAKgT0Uc+e3MUb4CK1i7H7F=y-fHTxiGF8zddBFiqFRdbd6ofLg@mail.gmail.com>
+To: Yunsheng Lin <linyunsheng@huawei.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=gmail.com; s=20230601; t=1724169815; x=1724774615; darn=lists.osuosl.org;
+ h=content-transfer-encoding:cc:to:subject:message-id:date:from
+ :in-reply-to:references:mime-version:from:to:cc:subject:date
+ :message-id:reply-to;
+ bh=ACxpErlOvFQuBRokph/wthh0GeLIFddWl+sG+UC+KHk=;
+ b=LH7Q0oqfhYwY85a7xqFp4Wa7lgewRASWYxMZ2oUyM90dbBo5g9v40JhwNvnu10PAGy
+ 6kz+e7qM7/hIgKUehddyq7M0nAOlbZeOaxm25HVonG1TIPoV9jcY1bqGy6q27RLDVZAf
+ SpETI95ZV0T1H2kVWo2ed5J7XpOYHRhZ66n+M2h3ezoj2+z8hGrjqwuvjO8YHxOPjV7V
+ pP2XM6qSRw+LqIEXCcfd1D9sQs4MIMa8Kpc7IqQmUmAJmljj1/K/N0gE0/FypTzK377H
+ B8bc0otL6XuWTISt8bAmxLXdHBCLgfEpUXee8CkRTASwxFtAf6/cKhs/+YXMK2xx6rq0
+ PMFA==
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
- header.from=intel.com
+ header.from=gmail.com
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=DoEzHFxB
-Subject: [Intel-wired-lan] [tnguy-net-queue:200GbE] BUILD SUCCESS
- 565d121b69980637f040eb4d84289869cdaabedf
+ dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
+ header.a=rsa-sha256 header.s=20230601 header.b=LH7Q0oqf
+Subject: Re: [Intel-wired-lan] [PATCH net-next v13 04/14] mm: page_frag: add
+ '_va' suffix to page_frag API
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,285 +122,188 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
+Cc: Yonghong Song <yonghong.song@linux.dev>, kvm@vger.kernel.org,
+ "Michael S. Tsirkin" <mst@redhat.com>, Neil Brown <neilb@suse.de>,
+ Jason Wang <jasowang@redhat.com>, Alexei Starovoitov <ast@kernel.org>,
+ linux-nvme@lists.infradead.org, Dai Ngo <Dai.Ngo@oracle.com>,
+ David Howells <dhowells@redhat.com>, Keith Busch <kbusch@kernel.org>,
+ Eric Dumazet <edumazet@google.com>, Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Subbaraya Sundeep <sbhatta@marvell.com>,
+ Marc Dionne <marc.dionne@auristor.com>, Shuah Khan <shuah@kernel.org>,
+ Christoph Hellwig <hch@lst.de>, Anna Schumaker <anna@kernel.org>,
+ Jeroen de Borst <jeroendb@google.com>, Sagi Grimberg <sagi@grimberg.me>,
+ Daniel Borkmann <daniel@iogearbox.net>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ John Fastabend <john.fastabend@gmail.com>, Andrii Nakryiko <andrii@kernel.org>,
+ linux-afs@lists.infradead.org,
+ =?UTF-8?Q?Eugenio_P=C3=A9rez?= <eperezma@redhat.com>,
+ Stanislav Fomichev <sdf@fomichev.me>, intel-wired-lan@lists.osuosl.org,
+ Olga Kornievskaia <kolga@netapp.com>, kuba@kernel.org, pabeni@redhat.com,
+ Lorenzo Bianconi <lorenzo@kernel.org>, Mark Lee <Mark-MC.Lee@mediatek.com>,
+ Sunil Goutham <sgoutham@marvell.com>, linux-kselftest@vger.kernel.org,
+ Chaitanya Kulkarni <kch@nvidia.com>, Jesper Dangaard Brouer <hawk@kernel.org>,
+ Sean Wang <sean.wang@mediatek.com>, virtualization@lists.linux.dev,
+ KP Singh <kpsingh@kernel.org>, Tom Talpey <tom@talpey.com>,
+ Shailend Chand <shailend@google.com>, linux-mediatek@lists.infradead.org,
+ linux-mm@kvack.org, Matthias Brugger <matthias.bgg@gmail.com>,
+ bpf@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
+ Jens Axboe <axboe@kernel.dk>, Hao Luo <haoluo@google.com>,
+ linux-nfs@vger.kernel.org, Song Liu <song@kernel.org>, netdev@vger.kernel.org,
+ Jeff Layton <jlayton@kernel.org>, linux-kernel@vger.kernel.org,
+ davem@davemloft.net, Eduard Zingerman <eddyz87@gmail.com>,
+ hariprasad <hkelam@marvell.com>, Chuck Lever <chuck.lever@oracle.com>,
+ Jiri Olsa <jolsa@kernel.org>, Praveen Kaligineedi <pkaligineedi@google.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Martin KaFai Lau <martin.lau@linux.dev>, Geetha sowjanya <gakula@marvell.com>,
+ Trond Myklebust <trondmy@kernel.org>, Felix Fietkau <nbd@nbd.name>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git 200GbE
-branch HEAD: 565d121b69980637f040eb4d84289869cdaabedf  tcp: prevent concurrent execution of tcp_sk_exit_batch
+On Tue, Aug 20, 2024 at 6:07=E2=80=AFAM Yunsheng Lin <linyunsheng@huawei.co=
+m> wrote:
+>
+> On 2024/8/19 23:54, Alexander Duyck wrote:
+>
+> ...
+>
+> >>>>
+> >>>> "There are three types of API as proposed in this patchset instead o=
+f
+> >>>> two types of API:
+> >>>> 1. page_frag_alloc_va() returns [va].
+> >>>> 2. page_frag_alloc_pg() returns [page, offset].
+> >>>> 3. page_frag_alloc() returns [va] & [page, offset].
+> >>>>
+> >>>> You seemed to miss that we need a third naming for the type 3 API.
+> >>>> Do you see type 3 API as a valid API? if yes, what naming are you
+> >>>> suggesting for it? if no, why it is not a valid API?"
+> >>>
+> >>> I didn't. I just don't see the point in pushing out the existing API
+> >>> to support that. In reality 2 and 3 are redundant. You probably only
+> >>> need 3. Like I mentioned earlier you can essentially just pass a
+> >>
+> >> If the caller just expect [page, offset], do you expect the caller als=
+o
+> >> type 3 API, which return both [va] and [page, offset]?
+> >>
+> >> I am not sure if I understand why you think 2 and 3 are redundant here=
+?
+> >> If you think 2 and 3 are redundant here, aren't 1 and 3 also redundant
+> >> as the similar agrument?
+> >
+> > The big difference is the need to return page and offset. Basically to
+> > support returning page and offset you need to pass at least one value
+> > as a pointer so you can store the return there.
+> >
+> > The reason why 3 is just a redundant form of 2 is that you will
+> > normally just be converting from a va to a page and offset so the va
+> > should already be easily accessible.
+>
+> I am assuming that by 'easily accessible', you meant the 'va' can be
+> calculated as below, right?
+>
+> va =3D encoded_page_address(encoded_va) +
+>                 (page_frag_cache_page_size(encoded_va) - remaining);
+>
+> I guess it is easily accessible, but it is not without some overhead
+> to calculate the 'va' here.
 
-elapsed time: 1371m
+It is just the encoded_page_address + offset that you have to
+calculate anyway. So the only bit you actually have to do is 2
+instructions, one to mask the encoded_va and then the addition of the
+offset that you provided to the page. As it stands those instruction
+can easily be slipped in while you are working on converting the va to
+a page.
 
-configs tested: 263
-configs skipped: 15
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+> >
+> >>> page_frag via pointer to the function. With that you could also look
+> >>> at just returning a virtual address as well if you insist on having
+> >>> something that returns all of the above. No point in having 2 and 3 b=
+e
+> >>> seperate functions.
+> >>
+> >> Let's be more specific about what are your suggestion here: which way
+> >> is the prefer way to return the virtual address. It seems there are tw=
+o
+> >> options:
+> >>
+> >> 1. Return the virtual address by function returning as below:
+> >> void *page_frag_alloc_bio(struct page_frag_cache *nc, struct bio_vec *=
+bio);
+> >>
+> >> 2. Return the virtual address by double pointer as below:
+> >> int page_frag_alloc_bio(struct page_frag_cache *nc, struct bio_vec *bi=
+o,
+> >>                         void **va);
+> >
+> > I was thinking more of option 1. Basically this is a superset of
+> > page_frag_alloc_va that is also returning the page and offset via a
+> > page frag. However instead of bio_vec I would be good with "struct
+> > page_frag *" being the value passed to the function to play the role
+> > of container. Basically the big difference between 1 and 2/3 if I am
+> > not mistaken is the fact that for 1 you pass the size, whereas with
+> > 2/3 you are peeling off the page frag from the larger page frag cache
+>
+> Let's be clear here: The callers just expecting [page, offset] also need
+> to call type 3 API, which return both [va] and [page, offset]? and it
+> is ok to ignore the overhead of calculating the 'va' for those kinds
+> of callers just because we don't want to do the renaming for a existing
+> API and can't come up with good naming for that?
+>
+> > after the fact via a commit type action.
+>
+> Just be clear here, there is no commit type action for some subtype of
+> type 2/3 API.
+>
+> For example, for type 2 API in this patchset, it has below subtypes:
+>
+> subtype 1: it does not need a commit type action, it just return
+>            [page, offset] instead of page_frag_alloc_va() returning [va],
+>            and it does not return the allocated fragsz back to the caller
+>            as page_frag_alloc_va() does not too:
+> struct page *page_frag_alloc_pg(struct page_frag_cache *nc,
+>                                 unsigned int *offset, unsigned int fragsz=
+,
+>                                 gfp_t gfp)
+>
+> subtype 2: it does need a commit type action, and @fragsz is returned to
+>            the caller and caller used that to commit how much fragsz to
+>            commit.
+> struct page *page_frag_alloc_pg_prepare(struct page_frag_cache *nc,
+>                                         unsigned int *offset,
+>                                         unsigned int *fragsz, gfp_t gfp)
+>
+> Do you see subtype 1 as valid API? If no, why?
 
-tested configs:
-alpha                             allnoconfig   gcc-13.3.0
-alpha                            allyesconfig   gcc-13.3.0
-alpha                               defconfig   gcc-13.2.0
-arc                              allmodconfig   gcc-13.2.0
-arc                               allnoconfig   gcc-13.2.0
-arc                              allyesconfig   gcc-13.2.0
-arc                                 defconfig   gcc-13.2.0
-arc                            hsdk_defconfig   gcc-13.2.0
-arc                   randconfig-001-20240820   gcc-13.2.0
-arc                   randconfig-002-20240820   gcc-13.2.0
-arc                        vdk_hs38_defconfig   gcc-13.2.0
-arm                              alldefconfig   gcc-13.2.0
-arm                              allmodconfig   gcc-13.2.0
-arm                              allmodconfig   gcc-14.1.0
-arm                               allnoconfig   clang-20
-arm                              allyesconfig   gcc-13.2.0
-arm                              allyesconfig   gcc-14.1.0
-arm                         assabet_defconfig   gcc-13.2.0
-arm                          collie_defconfig   gcc-14.1.0
-arm                                 defconfig   gcc-13.2.0
-arm                         mv78xx0_defconfig   gcc-14.1.0
-arm                             pxa_defconfig   gcc-13.2.0
-arm                   randconfig-001-20240820   clang-20
-arm                   randconfig-001-20240820   gcc-13.2.0
-arm                   randconfig-002-20240820   clang-20
-arm                   randconfig-002-20240820   gcc-13.2.0
-arm                   randconfig-003-20240820   clang-20
-arm                   randconfig-003-20240820   gcc-13.2.0
-arm                   randconfig-004-20240820   clang-20
-arm                   randconfig-004-20240820   gcc-13.2.0
-arm                           sama5_defconfig   gcc-13.2.0
-arm                         vf610m4_defconfig   gcc-13.2.0
-arm64                            allmodconfig   clang-20
-arm64                            allmodconfig   gcc-13.2.0
-arm64                             allnoconfig   gcc-14.1.0
-arm64                               defconfig   gcc-13.2.0
-arm64                 randconfig-001-20240820   clang-20
-arm64                 randconfig-001-20240820   gcc-13.2.0
-arm64                 randconfig-002-20240820   clang-20
-arm64                 randconfig-002-20240820   gcc-13.2.0
-arm64                 randconfig-003-20240820   gcc-13.2.0
-arm64                 randconfig-003-20240820   gcc-14.1.0
-arm64                 randconfig-004-20240820   clang-20
-arm64                 randconfig-004-20240820   gcc-13.2.0
-csky                              allnoconfig   gcc-14.1.0
-csky                                defconfig   gcc-13.2.0
-csky                  randconfig-001-20240820   gcc-13.2.0
-csky                  randconfig-001-20240820   gcc-14.1.0
-csky                  randconfig-002-20240820   gcc-13.2.0
-csky                  randconfig-002-20240820   gcc-14.1.0
-hexagon                          allmodconfig   clang-20
-hexagon                           allnoconfig   clang-20
-hexagon                          allyesconfig   clang-20
-hexagon               randconfig-001-20240820   clang-20
-hexagon               randconfig-002-20240820   clang-20
-i386                             allmodconfig   clang-18
-i386                             allmodconfig   gcc-12
-i386                              allnoconfig   clang-18
-i386                              allnoconfig   gcc-12
-i386                             allyesconfig   clang-18
-i386                             allyesconfig   gcc-12
-i386         buildonly-randconfig-001-20240820   clang-18
-i386         buildonly-randconfig-002-20240820   clang-18
-i386         buildonly-randconfig-003-20240820   clang-18
-i386         buildonly-randconfig-004-20240820   clang-18
-i386         buildonly-randconfig-004-20240820   gcc-12
-i386         buildonly-randconfig-005-20240820   clang-18
-i386         buildonly-randconfig-006-20240820   clang-18
-i386                                defconfig   clang-18
-i386                  randconfig-001-20240820   clang-18
-i386                  randconfig-002-20240820   clang-18
-i386                  randconfig-003-20240820   clang-18
-i386                  randconfig-004-20240820   clang-18
-i386                  randconfig-005-20240820   clang-18
-i386                  randconfig-006-20240820   clang-18
-i386                  randconfig-011-20240820   clang-18
-i386                  randconfig-011-20240820   gcc-11
-i386                  randconfig-012-20240820   clang-18
-i386                  randconfig-012-20240820   gcc-12
-i386                  randconfig-013-20240820   clang-18
-i386                  randconfig-013-20240820   gcc-12
-i386                  randconfig-014-20240820   clang-18
-i386                  randconfig-014-20240820   gcc-12
-i386                  randconfig-015-20240820   clang-18
-i386                  randconfig-015-20240820   gcc-12
-i386                  randconfig-016-20240820   clang-18
-loongarch                        allmodconfig   gcc-14.1.0
-loongarch                         allnoconfig   gcc-14.1.0
-loongarch                           defconfig   gcc-13.2.0
-loongarch                 loongson3_defconfig   gcc-14.1.0
-loongarch             randconfig-001-20240820   gcc-13.2.0
-loongarch             randconfig-001-20240820   gcc-14.1.0
-loongarch             randconfig-002-20240820   gcc-13.2.0
-loongarch             randconfig-002-20240820   gcc-14.1.0
-m68k                             allmodconfig   gcc-14.1.0
-m68k                              allnoconfig   gcc-14.1.0
-m68k                             allyesconfig   gcc-14.1.0
-m68k                                defconfig   gcc-13.2.0
-m68k                          hp300_defconfig   gcc-13.2.0
-m68k                       m5208evb_defconfig   gcc-13.2.0
-m68k                        m5272c3_defconfig   gcc-13.2.0
-m68k                       m5275evb_defconfig   gcc-14.1.0
-m68k                        m5307c3_defconfig   gcc-13.2.0
-m68k                          multi_defconfig   gcc-13.2.0
-microblaze                       allmodconfig   gcc-14.1.0
-microblaze                        allnoconfig   gcc-14.1.0
-microblaze                       allyesconfig   gcc-14.1.0
-microblaze                          defconfig   gcc-13.2.0
-mips                              allnoconfig   gcc-14.1.0
-mips                      bmips_stb_defconfig   gcc-13.2.0
-mips                  cavium_octeon_defconfig   gcc-13.2.0
-mips                           ci20_defconfig   gcc-13.2.0
-mips                  decstation_64_defconfig   gcc-13.2.0
-mips                      maltasmvp_defconfig   gcc-14.1.0
-mips                  maltasmvp_eva_defconfig   gcc-13.2.0
-mips                      pic32mzda_defconfig   gcc-14.1.0
-mips                       rbtx49xx_defconfig   gcc-14.1.0
-mips                          rm200_defconfig   gcc-14.1.0
-nios2                             allnoconfig   gcc-14.1.0
-nios2                               defconfig   gcc-13.2.0
-nios2                 randconfig-001-20240820   gcc-13.2.0
-nios2                 randconfig-001-20240820   gcc-14.1.0
-nios2                 randconfig-002-20240820   gcc-13.2.0
-nios2                 randconfig-002-20240820   gcc-14.1.0
-openrisc                          allnoconfig   gcc-14.1.0
-openrisc                         allyesconfig   gcc-14.1.0
-openrisc                            defconfig   gcc-14.1.0
-parisc                           allmodconfig   gcc-14.1.0
-parisc                            allnoconfig   gcc-14.1.0
-parisc                           allyesconfig   gcc-14.1.0
-parisc                              defconfig   gcc-14.1.0
-parisc                generic-64bit_defconfig   gcc-13.2.0
-parisc                randconfig-001-20240820   gcc-13.2.0
-parisc                randconfig-001-20240820   gcc-14.1.0
-parisc                randconfig-002-20240820   gcc-13.2.0
-parisc                randconfig-002-20240820   gcc-14.1.0
-parisc64                            defconfig   gcc-13.2.0
-powerpc                          allmodconfig   gcc-14.1.0
-powerpc                           allnoconfig   gcc-14.1.0
-powerpc                          allyesconfig   clang-20
-powerpc                          allyesconfig   gcc-14.1.0
-powerpc                      arches_defconfig   gcc-14.1.0
-powerpc                 canyonlands_defconfig   gcc-13.2.0
-powerpc                     ep8248e_defconfig   gcc-13.2.0
-powerpc                        icon_defconfig   gcc-14.1.0
-powerpc                       maple_defconfig   gcc-13.2.0
-powerpc                     mpc5200_defconfig   gcc-13.2.0
-powerpc                 mpc832x_rdb_defconfig   gcc-13.2.0
-powerpc                      ppc64e_defconfig   gcc-13.2.0
-powerpc                      ppc6xx_defconfig   gcc-13.2.0
-powerpc                      ppc6xx_defconfig   gcc-14.1.0
-powerpc                         ps3_defconfig   gcc-14.1.0
-powerpc               randconfig-001-20240820   gcc-14.1.0
-powerpc               randconfig-002-20240820   clang-20
-powerpc               randconfig-003-20240820   clang-20
-powerpc               randconfig-003-20240820   gcc-13.2.0
-powerpc                    socrates_defconfig   gcc-14.1.0
-powerpc                      tqm8xx_defconfig   gcc-13.2.0
-powerpc64             randconfig-001-20240820   gcc-13.2.0
-powerpc64             randconfig-001-20240820   gcc-14.1.0
-powerpc64             randconfig-002-20240820   clang-20
-powerpc64             randconfig-002-20240820   gcc-13.2.0
-powerpc64             randconfig-003-20240820   gcc-13.2.0
-powerpc64             randconfig-003-20240820   gcc-14.1.0
-riscv                            allmodconfig   clang-20
-riscv                            allmodconfig   gcc-14.1.0
-riscv                             allnoconfig   gcc-14.1.0
-riscv                            allyesconfig   clang-20
-riscv                            allyesconfig   gcc-14.1.0
-riscv                               defconfig   gcc-14.1.0
-riscv                 randconfig-001-20240820   clang-20
-riscv                 randconfig-001-20240820   gcc-13.2.0
-riscv                 randconfig-002-20240820   gcc-13.2.0
-riscv                 randconfig-002-20240820   gcc-14.1.0
-s390                             allmodconfig   clang-20
-s390                              allnoconfig   clang-20
-s390                              allnoconfig   gcc-14.1.0
-s390                             allyesconfig   clang-20
-s390                             allyesconfig   gcc-14.1.0
-s390                                defconfig   gcc-14.1.0
-s390                  randconfig-001-20240820   gcc-13.2.0
-s390                  randconfig-001-20240820   gcc-14.1.0
-s390                  randconfig-002-20240820   gcc-13.2.0
-s390                  randconfig-002-20240820   gcc-14.1.0
-sh                               allmodconfig   gcc-14.1.0
-sh                                allnoconfig   gcc-14.1.0
-sh                               allyesconfig   gcc-14.1.0
-sh                                  defconfig   gcc-14.1.0
-sh                             espt_defconfig   gcc-14.1.0
-sh                 kfr2r09-romimage_defconfig   gcc-13.2.0
-sh                          r7780mp_defconfig   gcc-13.2.0
-sh                    randconfig-001-20240820   gcc-13.2.0
-sh                    randconfig-001-20240820   gcc-14.1.0
-sh                    randconfig-002-20240820   gcc-13.2.0
-sh                    randconfig-002-20240820   gcc-14.1.0
-sh                           se7619_defconfig   gcc-13.2.0
-sh                           se7705_defconfig   gcc-13.2.0
-sh                           se7750_defconfig   gcc-13.2.0
-sh                             sh03_defconfig   gcc-14.1.0
-sh                   sh7724_generic_defconfig   gcc-13.2.0
-sparc                            allmodconfig   gcc-14.1.0
-sparc64                             defconfig   gcc-14.1.0
-sparc64               randconfig-001-20240820   gcc-13.2.0
-sparc64               randconfig-001-20240820   gcc-14.1.0
-sparc64               randconfig-002-20240820   gcc-13.2.0
-sparc64               randconfig-002-20240820   gcc-14.1.0
-um                               allmodconfig   clang-20
-um                               allmodconfig   gcc-13.3.0
-um                                allnoconfig   clang-17
-um                                allnoconfig   gcc-14.1.0
-um                               allyesconfig   gcc-12
-um                               allyesconfig   gcc-13.3.0
-um                                  defconfig   gcc-14.1.0
-um                             i386_defconfig   gcc-14.1.0
-um                    randconfig-001-20240820   gcc-12
-um                    randconfig-001-20240820   gcc-13.2.0
-um                    randconfig-002-20240820   clang-20
-um                    randconfig-002-20240820   gcc-13.2.0
-um                           x86_64_defconfig   gcc-14.1.0
-x86_64                            allnoconfig   clang-18
-x86_64                           allyesconfig   clang-18
-x86_64       buildonly-randconfig-001-20240820   clang-18
-x86_64       buildonly-randconfig-002-20240820   clang-18
-x86_64       buildonly-randconfig-002-20240820   gcc-11
-x86_64       buildonly-randconfig-003-20240820   clang-18
-x86_64       buildonly-randconfig-004-20240820   clang-18
-x86_64       buildonly-randconfig-005-20240820   clang-18
-x86_64       buildonly-randconfig-006-20240820   clang-18
-x86_64                              defconfig   clang-18
-x86_64                              defconfig   gcc-11
-x86_64                randconfig-001-20240820   clang-18
-x86_64                randconfig-001-20240820   gcc-12
-x86_64                randconfig-002-20240820   clang-18
-x86_64                randconfig-002-20240820   gcc-12
-x86_64                randconfig-003-20240820   clang-18
-x86_64                randconfig-004-20240820   clang-18
-x86_64                randconfig-004-20240820   gcc-12
-x86_64                randconfig-005-20240820   clang-18
-x86_64                randconfig-006-20240820   clang-18
-x86_64                randconfig-006-20240820   gcc-12
-x86_64                randconfig-011-20240820   clang-18
-x86_64                randconfig-012-20240820   clang-18
-x86_64                randconfig-012-20240820   gcc-12
-x86_64                randconfig-013-20240820   clang-18
-x86_64                randconfig-014-20240820   clang-18
-x86_64                randconfig-015-20240820   clang-18
-x86_64                randconfig-015-20240820   gcc-12
-x86_64                randconfig-016-20240820   clang-18
-x86_64                randconfig-071-20240820   clang-18
-x86_64                randconfig-071-20240820   gcc-12
-x86_64                randconfig-072-20240820   clang-18
-x86_64                randconfig-072-20240820   gcc-12
-x86_64                randconfig-073-20240820   clang-18
-x86_64                randconfig-073-20240820   gcc-12
-x86_64                randconfig-074-20240820   clang-18
-x86_64                randconfig-075-20240820   clang-18
-x86_64                randconfig-076-20240820   clang-18
-x86_64                          rhel-8.3-rust   clang-18
-xtensa                            allnoconfig   gcc-14.1.0
-xtensa                randconfig-001-20240820   gcc-13.2.0
-xtensa                randconfig-001-20240820   gcc-14.1.0
-xtensa                randconfig-002-20240820   gcc-13.2.0
-xtensa                randconfig-002-20240820   gcc-14.1.0
+Not really, it is just a wrapper for page_frag_alloc that is
+converting the virtual address to a page and offset. They are the same
+data and don't justify the need for two functions. It kind of explains
+one of the complaints I had about this code. Supposedly it was
+refactoring and combining several different callers into one, but what
+it is actually doing is fracturing the code path into 3 different
+variants based on little if any actual difference as it is doing
+unnecessary optimization.
 
--- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+> If yes, do you also expect the caller to use "struct page_frag *" as the
+> container? If yes, what is the caller expected to do with the size field =
+in
+> "struct page_frag *" from API perspective? Just ignore it?
+
+It should be populated. You passed a fragsz, so you should populate
+the output fragsz so you can get the truesize in the case of network
+packets. The removal of the page_frag from the other callers is making
+it much harder to review your code anyway. If we keep the page_frag
+there it should reduce the amount of change needed when you replace
+page_frag with the page_frag_cache.
+
+Honestly this is eating up too much of my time. As I said before this
+patch set is too big and it is trying to squeeze in more than it
+really should for a single patch set to be reviewable. Going forward
+please split up the patch set as I had suggested before and address my
+comments. Ideally you would have your first patch just be some
+refactor and cleanup to get the "offset" pointer moving in the
+direction you want. With that we can at least get half of this set
+digested before we start chewing into all this refactor for the
+replacement of page_frag with the page_frag_cache.
