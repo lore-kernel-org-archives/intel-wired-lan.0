@@ -4,95 +4,98 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A7DBCC52D7C
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 21 Aug 2024 12:18:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 549FFC5320E
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 21 Aug 2024 12:18:37 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 31A138133C;
-	Wed, 21 Aug 2024 12:18:35 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id A4BDE81347;
+	Wed, 21 Aug 2024 12:18:36 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id h86PO5WFogdT; Wed, 21 Aug 2024 12:18:34 +0000 (UTC)
+ id S-dSXJ82VY9N; Wed, 21 Aug 2024 12:18:35 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C44BC81348
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 837CA81340
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1724242713;
-	bh=qpq2geomS9mh9sQVHJHxo4niIFiBM6jKWgkZowvK3VA=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=6BdxbA1X3GlJ12ivLA/TN2Z4incLTYelNSXhluCxOb/Vu2q0LQh4borDOMhAJSSsV
-	 iV56/GKH/ZamuSf+yuDX1kI6Hx/2ZfQz0JQtb74qJRbfkgTAmbWKJTiIdvPvtSBAiC
-	 6uzVlHmYqwLJ5elYzeQnVxSTc/oZIJJ4ybqI0czs+v2qubpDINsd9T+K2jo5wCMO7K
-	 GkaabO/tsb009q0/eHWIU1q2AUXV37lCdhhypc0yivO5CAOxH2Anex6thjFlWVQdzf
-	 NLsUfkXW7/KLGu5X5FBc2Z9331VtotipunB55UiLGuHl0E/lxUT1moz5aymM/aqdZG
-	 0lUcIxv3WcF0A==
+	s=default; t=1724242715;
+	bh=JWb3oEvI1Uuu934A0a/463x6t8dp0BwIghlKqcBbWBo=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=yJEOTm57yfTITfgPC6p0OsmVVBQyMZKVF9zDCBWdX++U8ZZWSWV0xjGvv6xQuM/43
+	 5mN5xGZLWu9yhTxs/M7Owa+/jUjGUZjpqA+c2CUcJe82fBsjC+HERrCAaIKFy5jtoA
+	 FMvKvDui45Y4McyFmyty+zQs0pmIMDUaPANN+GJvWkyT3QqYc2heH4BUADrXmjKUpK
+	 Bk/QCehSyefoB4NSAW+mHY8qxdXUZPUpCfqvlUnllXzCJtsXTpMHQEB0v1Zc2t9CwU
+	 bxnjKLCCgBlXF/UDxIR+hbhDmkXQ1nyWZpx2NAmFn8QW5UDNA5cmHM5n2L5+wwqp4V
+	 mtY+nv9pE18AA==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id C44BC81348;
-	Wed, 21 Aug 2024 12:18:33 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 85CFC1BF97F
+	by smtp1.osuosl.org (Postfix) with ESMTP id 837CA81340;
+	Wed, 21 Aug 2024 12:18:35 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 99A8E1BF418
  for <intel-wired-lan@lists.osuosl.org>; Wed, 21 Aug 2024 12:18:32 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 6EC9781340
+ by smtp3.osuosl.org (Postfix) with ESMTP id 86A9C60A99
  for <intel-wired-lan@lists.osuosl.org>; Wed, 21 Aug 2024 12:18:32 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id QEaqCjF13vLC for <intel-wired-lan@lists.osuosl.org>;
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id Sv0JRQPzW0df for <intel-wired-lan@lists.osuosl.org>;
  Wed, 21 Aug 2024 12:18:31 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.10;
  helo=mgamail.intel.com; envelope-from=wojciech.drewek@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org C5E0281332
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C5E0281332
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 8D9C46065D
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8D9C46065D
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.10])
- by smtp1.osuosl.org (Postfix) with ESMTPS id C5E0281332
- for <intel-wired-lan@lists.osuosl.org>; Wed, 21 Aug 2024 12:18:30 +0000 (UTC)
-X-CSE-ConnectionGUID: z13daQxERwelAETYK5gIAw==
-X-CSE-MsgGUID: e5Jq5igySC2txKtpWIMO/g==
-X-IronPort-AV: E=McAfee;i="6700,10204,11171"; a="34017077"
-X-IronPort-AV: E=Sophos;i="6.10,164,1719903600"; d="scan'208";a="34017077"
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 8D9C46065D
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 21 Aug 2024 12:18:31 +0000 (UTC)
+X-CSE-ConnectionGUID: mhsXfAelSk+Kfi2feN/+lw==
+X-CSE-MsgGUID: IhfgscsmR4ydssZEl3UfRg==
+X-IronPort-AV: E=McAfee;i="6700,10204,11171"; a="34017080"
+X-IronPort-AV: E=Sophos;i="6.10,164,1719903600"; d="scan'208";a="34017080"
 Received: from fmviesa006.fm.intel.com ([10.60.135.146])
  by fmvoesa104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  21 Aug 2024 05:18:18 -0700
-X-CSE-ConnectionGUID: i0XSeIlQRZSAt3IdDoUPRQ==
-X-CSE-MsgGUID: YvHyOz8WRAiRoOq9X89BQA==
+X-CSE-ConnectionGUID: Q0jtz/h3ShawTlhSI7UOdw==
+X-CSE-MsgGUID: QuyQWHd1Qn28+G5h/chG3A==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.10,164,1719903600"; d="scan'208";a="60732472"
+X-IronPort-AV: E=Sophos;i="6.10,164,1719903600"; d="scan'208";a="60732478"
 Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by fmviesa006.fm.intel.com with ESMTP; 21 Aug 2024 05:18:14 -0700
+ by fmviesa006.fm.intel.com with ESMTP; 21 Aug 2024 05:18:15 -0700
 Received: from rozewie.igk.intel.com (rozewie.igk.intel.com [10.211.8.69])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id B548028789;
- Wed, 21 Aug 2024 13:18:12 +0100 (IST)
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id 6E5E72878D;
+ Wed, 21 Aug 2024 13:18:14 +0100 (IST)
 From: Wojciech Drewek <wojciech.drewek@intel.com>
 To: netdev@vger.kernel.org
-Date: Wed, 21 Aug 2024 14:15:25 +0200
-Message-Id: <20240821121539.374343-1-wojciech.drewek@intel.com>
+Date: Wed, 21 Aug 2024 14:15:28 +0200
+Message-Id: <20240821121539.374343-4-wojciech.drewek@intel.com>
 X-Mailer: git-send-email 2.40.1
+In-Reply-To: <20240821121539.374343-1-wojciech.drewek@intel.com>
+References: <20240821121539.374343-1-wojciech.drewek@intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1724242711; x=1755778711;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=OPnRBzvKZWyyz7eDVVY49Nhm3OL9Pr4f3e5BJJuLy9g=;
- b=Wlwrcg9Mga35/4VIBcVKBsoNob80UfzJi4xS7liedpvmtJjO77CUtyBK
- wWXAE+gTbBBJXXP2OwOKCBRyQDIzpR6ybSzz9BEm1+NO3mcZ1n0XnC75g
- T405/towaHvkk8NudVW/EdE7fDu1om4Hg4Km2n+r5QOUaMCLnHouyBGMr
- pN2x5LdLEkQYfYEJknUXRvtB45BXstXy4ciBocMwq0KlLo4GtCFypOcMV
- msGMHNXNhza89yP4ILxPLCALfbdFepvknV87NHIbcDDL/+TCBxKUom8jH
- RqDiYpByc1kJh10FtPT8gZI0jbgtDdcmZxDDmmxU1rJHVk1lPOM2HVFLv
+ t=1724242712; x=1755778712;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=eeWpNUEtHwl1UW83kq0zMpxHlsNCR4GJm/L6p6M5ojQ=;
+ b=kLVg5MPhIVer4IuP9XF28jpHeqmz5hUOBuPa7qvE9qqXTwA6VOPh791O
+ Pzb6CXm/TMIO1UpH6FlaqQRNKWBI7iskfvRJTDO5XqWqbibmc+1GzyEP8
+ 2yCH1AXlykvqC68+alQgg5XF5kFUeTuIvr2mxLgr+yOpCs3fCsyeVMg3P
+ D78CjxqJUm88UdZpv8gjm42FT1n0ediRYF68S5IeomFHUm3vgROyHUizj
+ U15TsYT285X4Fixj5pfyeZOc8cIxgn5uRe05MfsFuhnDLGBnFqA8Bh6Yw
+ R5G1mCY39MAlHfX+kS+buV848z/IH8cAmrv+IEgY8L/yhfA14SzuQZxIv
  Q==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=Wlwrcg9M
-Subject: [Intel-wired-lan] [PATCH iwl-next v10 00/14] Add support for Rx
- timestamping for both ice and iavf drivers
+ header.s=Intel header.b=kLVg5MPh
+Subject: [Intel-wired-lan] [PATCH iwl-next v10 03/14] virtchnl: add
+ enumeration for the rxdid format
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -110,144 +113,108 @@ Cc: alexandr.lobakin@intel.com, anthony.l.nguyen@intel.com,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Initially, during VF creation it registers the PTP clock in
-the system and negotiates with PF it's capabilities. In the
-meantime the PF enables the Flexible Descriptor for VF.
-Only this type of descriptor allows to receive Rx timestamps.
+From: Jacob Keller <jacob.e.keller@intel.com>
 
-Enabling virtual clock would be possible, though it would probably
-perform poorly due to the lack of direct time access.
+Support for allowing VF to negotiate the descriptor format requires that
+the VF specify which descriptor format to use when requesting Rx queues.
+The VF is supposed to request the set of supported formats via the new
+VIRTCHNL_OP_GET_SUPPORTED_RXDIDS, and then set one of the supported
+formats in the rxdid field of the virtchnl_rxq_info structure.
 
-Enable timestamping should be done using userspace tools, e.g.
-hwstamp_ctl -i $VF -r 14
+The virtchnl.h header does not provide an enumeration of the format
+values. The existing implementations in the PF directly use the values
+from the DDP package.
 
-In order to report the timestamps to userspace, the VF extends
-timestamp to 40b.
+Make the formats explicit by defining an enumeration of the RXDIDs.
+Provide an enumeration for the values as well as the bit positions as
+returned by the supported_rxdids data from the
+VIRTCHNL_OP_GET_SUPPORTED_RXDIDS.
 
-To support this feature the flexible descriptors and PTP part
-in iavf driver have been introduced.
-
-Side notes:
-Originally Mateusz Polchlopek was taking care of ths series,
-I'm replacing him since he's on holidays. Previously I was
-also involved in reviewing some of those patches, because
-of that some of them have both my Reviewed-by tag and my
-Signed-off tag.
-
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Reviewed-by: Wojciech Drewek <wojciech.drewek@intel.com>
+Reviewed-by: Rahul Rameshbabu <rrameshbabu@nvidia.com>
+Reviewed-by: Simon Horman <horms@kernel.org>
+Signed-off-by: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
+Signed-off-by: Wojciech Drewek <wojciech.drewek@intel.com>
 ---
-v10:
-- only cosmetic changes, make every patch compile, fixing
-  checkpatch issues
+ include/linux/avf/virtchnl.h | 50 +++++++++++++++++++++++++++++++++++-
+ 1 file changed, 49 insertions(+), 1 deletion(-)
 
-v9:
-- another big refactor of code, again the list is too long to describe each change. Only
-  patch1 and patch12 has not been changed AFAIR. Please take a look on v8 and changes
-  requests from Alexander L. (in short - fixed structs paddings, aligns, optimized rx hot
-  path, renamed few structs, added "const" keyword where applicable, added kdoc comments
-  to newly introduced structs and defines, removed unnecessary casts, simplified few
-  functions and few more).
-
-v8:
-- big refactor to make code more optimised (too many changes to list them here, please
-  take a look on v7 patch9 and comments from Alexander L) - patch 11. Because of that I
-  decided to remove all gathered RB tags.
-- changed newly introduced spinlock aq_cmd_lock to mutex type to avoid deadlock - patch 7
-- adjusted function iavf_is_descriptor_done() to extract fields from descriptor in a new
-  way - patch 12
-- changed (and removed unused) defines that describe specific fields and bits in
-  descriptor
-https://lore.kernel.org/netdev/20240730091509.18846-1-mateusz.polchlopek@intel.com/
-
-v7:
-- changed .ndo_eth_ioctl to .ndo_hwtstamp_get and .ndo_hwtstamp_set
-  (according to Kuba's suggestion) - patch 11
-https://lore.kernel.org/netdev/20240604131400.13655-1-mateusz.polchlopek@intel.com/
-
-v6:
-- reordered tags
-- added RB tags where applicable
-- removed redundant instructions in ifs - patch 4 and patch 5
-- changed teardown to LIFO, adapter->ptp.initialized = false
-  moved to the top of function - patch 6
-- changed cpu-endianess for testing - patch 9
-- aligned to libeth changes - patch 9
-https://lore.kernel.org/netdev/20240528112301.5374-1-mateusz.polchlopek@intel.com/
-
-v5:
-- fixed all new issues generated by this series in kernel-doc
-https://lore.kernel.org/netdev/20240418052500.50678-1-mateusz.polchlopek@intel.com/
-
-v4:
-- fixed duplicated argument in iavf_virtchnl.c reported by coccicheck
-https://lore.kernel.org/netdev/20240410121706.6223-1-mateusz.polchlopek@intel.com/
-
-v3:
-- added RB in commit 6
-- removed inline keyword in commit 9
-- fixed sparse issues in commit 9 and commit 10
-- used GENMASK_ULL when possible in commit 9
-https://lore.kernel.org/netdev/20240403131927.87021-1-mateusz.polchlopek@intel.com/
-
-v2:
-- fixed warning related to wrong specifier to dev_err_once in
-  commit 7
-- fixed warnings related to unused variables in commit 9
-https://lore.kernel.org/netdev/20240327132543.15923-1-mateusz.polchlopek@intel.com/
-
-v1:
-- initial series
-https://lore.kernel.org/netdev/20240326115116.10040-1-mateusz.polchlopek@intel.com/
-
-Jacob Keller (10):
-  virtchnl: add support for enabling PTP on iAVF
-  virtchnl: add enumeration for the rxdid format
-  iavf: add support for negotiating flexible RXDID format
-  iavf: negotiate PTP capabilities
-  iavf: add initial framework for registering PTP clock
-  iavf: add support for indirect access to PHC time
-  iavf: periodically cache PHC time
-  iavf: refactor iavf_clean_rx_irq to support legacy and flex
-    descriptors
-  iavf: handle set and get timestamps ops
-  iavf: add support for Rx timestamps to hotpath
-
-Mateusz Polchlopek (3):
-  libeth: move idpf_rx_csum_decoded and idpf_rx_extracted
-  iavf: define Rx descriptors as qwords
-  iavf: Implement checking DD desc field
-
-Simei Su (1):
-  ice: support Rx timestamp on flex descriptor
-
- drivers/net/ethernet/intel/iavf/Makefile      |   2 +
- drivers/net/ethernet/intel/iavf/iavf.h        |  35 +-
- drivers/net/ethernet/intel/iavf/iavf_main.c   | 228 ++++++++-
- drivers/net/ethernet/intel/iavf/iavf_ptp.c    | 479 ++++++++++++++++++
- drivers/net/ethernet/intel/iavf/iavf_ptp.h    |  26 +
- drivers/net/ethernet/intel/iavf/iavf_trace.h  |   6 +-
- drivers/net/ethernet/intel/iavf/iavf_txrx.c   | 425 ++++++++++++----
- drivers/net/ethernet/intel/iavf/iavf_txrx.h   |  22 +-
- drivers/net/ethernet/intel/iavf/iavf_type.h   | 275 +++++-----
- drivers/net/ethernet/intel/iavf/iavf_types.h  |  36 ++
- .../net/ethernet/intel/iavf/iavf_virtchnl.c   | 225 ++++++++
- drivers/net/ethernet/intel/ice/ice_base.c     |   3 -
- drivers/net/ethernet/intel/ice/ice_lib.c      |   5 +-
- drivers/net/ethernet/intel/ice/ice_ptp.c      |   4 +-
- drivers/net/ethernet/intel/ice/ice_ptp.h      |   8 +
- drivers/net/ethernet/intel/ice/ice_vf_lib.h   |   2 +
- drivers/net/ethernet/intel/ice/ice_virtchnl.c |  96 +++-
- drivers/net/ethernet/intel/ice/ice_virtchnl.h |   6 +
- .../intel/ice/ice_virtchnl_allowlist.c        |   7 +
- .../ethernet/intel/idpf/idpf_singleq_txrx.c   |  51 +-
- drivers/net/ethernet/intel/idpf/idpf_txrx.c   |  16 +-
- drivers/net/ethernet/intel/idpf/idpf_txrx.h   |  19 -
- include/linux/avf/virtchnl.h                  | 133 ++++-
- include/net/libeth/rx.h                       |  42 ++
- 24 files changed, 1815 insertions(+), 336 deletions(-)
- create mode 100644 drivers/net/ethernet/intel/iavf/iavf_ptp.c
- create mode 100644 drivers/net/ethernet/intel/iavf/iavf_ptp.h
- create mode 100644 drivers/net/ethernet/intel/iavf/iavf_types.h
-
+diff --git a/include/linux/avf/virtchnl.h b/include/linux/avf/virtchnl.h
+index 012ed2f5f9d0..2b8f915df012 100644
+--- a/include/linux/avf/virtchnl.h
++++ b/include/linux/avf/virtchnl.h
+@@ -304,6 +304,48 @@ struct virtchnl_txq_info {
+ 
+ VIRTCHNL_CHECK_STRUCT_LEN(24, virtchnl_txq_info);
+ 
++/* RX descriptor IDs (range from 0 to 63) */
++enum virtchnl_rx_desc_ids {
++	VIRTCHNL_RXDID_0_16B_BASE		= 0,
++	VIRTCHNL_RXDID_1_32B_BASE		= 1,
++	VIRTCHNL_RXDID_2_FLEX_SQ_NIC		= 2,
++	VIRTCHNL_RXDID_3_FLEX_SQ_SW		= 3,
++	VIRTCHNL_RXDID_4_FLEX_SQ_NIC_VEB	= 4,
++	VIRTCHNL_RXDID_5_FLEX_SQ_NIC_ACL	= 5,
++	VIRTCHNL_RXDID_6_FLEX_SQ_NIC_2		= 6,
++	VIRTCHNL_RXDID_7_HW_RSVD		= 7,
++	/* 8 through 15 are reserved */
++	VIRTCHNL_RXDID_16_COMMS_GENERIC		= 16,
++	VIRTCHNL_RXDID_17_COMMS_AUX_VLAN	= 17,
++	VIRTCHNL_RXDID_18_COMMS_AUX_IPV4	= 18,
++	VIRTCHNL_RXDID_19_COMMS_AUX_IPV6	= 19,
++	VIRTCHNL_RXDID_20_COMMS_AUX_FLOW	= 20,
++	VIRTCHNL_RXDID_21_COMMS_AUX_TCP		= 21,
++	/* 22 through 63 are reserved */
++};
++
++#define VIRTCHNL_RXDID_BIT(x)			BIT_ULL(VIRTCHNL_RXDID_##x)
++
++/* RX descriptor ID bitmasks */
++enum virtchnl_rx_desc_id_bitmasks {
++	VIRTCHNL_RXDID_0_16B_BASE_M		= VIRTCHNL_RXDID_BIT(0_16B_BASE),
++	VIRTCHNL_RXDID_1_32B_BASE_M		= VIRTCHNL_RXDID_BIT(1_32B_BASE),
++	VIRTCHNL_RXDID_2_FLEX_SQ_NIC_M		= VIRTCHNL_RXDID_BIT(2_FLEX_SQ_NIC),
++	VIRTCHNL_RXDID_3_FLEX_SQ_SW_M		= VIRTCHNL_RXDID_BIT(3_FLEX_SQ_SW),
++	VIRTCHNL_RXDID_4_FLEX_SQ_NIC_VEB_M	= VIRTCHNL_RXDID_BIT(4_FLEX_SQ_NIC_VEB),
++	VIRTCHNL_RXDID_5_FLEX_SQ_NIC_ACL_M	= VIRTCHNL_RXDID_BIT(5_FLEX_SQ_NIC_ACL),
++	VIRTCHNL_RXDID_6_FLEX_SQ_NIC_2_M	= VIRTCHNL_RXDID_BIT(6_FLEX_SQ_NIC_2),
++	VIRTCHNL_RXDID_7_HW_RSVD_M		= VIRTCHNL_RXDID_BIT(7_HW_RSVD),
++	/* 8 through 15 are reserved */
++	VIRTCHNL_RXDID_16_COMMS_GENERIC_M	= VIRTCHNL_RXDID_BIT(16_COMMS_GENERIC),
++	VIRTCHNL_RXDID_17_COMMS_AUX_VLAN_M	= VIRTCHNL_RXDID_BIT(17_COMMS_AUX_VLAN),
++	VIRTCHNL_RXDID_18_COMMS_AUX_IPV4_M	= VIRTCHNL_RXDID_BIT(18_COMMS_AUX_IPV4),
++	VIRTCHNL_RXDID_19_COMMS_AUX_IPV6_M	= VIRTCHNL_RXDID_BIT(19_COMMS_AUX_IPV6),
++	VIRTCHNL_RXDID_20_COMMS_AUX_FLOW_M	= VIRTCHNL_RXDID_BIT(20_COMMS_AUX_FLOW),
++	VIRTCHNL_RXDID_21_COMMS_AUX_TCP_M	= VIRTCHNL_RXDID_BIT(21_COMMS_AUX_TCP),
++	/* 22 through 63 are reserved */
++};
++
+ /* virtchnl_rxq_info_flags - definition of bits in the flags field of the
+  *			     virtchnl_rxq_info structure.
+  *
+@@ -338,7 +380,12 @@ struct virtchnl_rxq_info {
+ 	u32 databuffer_size;
+ 	u32 max_pkt_size;
+ 	u8 crc_disable;
+-	u8 rxdid;
++	/* see enum virtchnl_rx_desc_ids;
++	 * only used when VIRTCHNL_VF_OFFLOAD_RX_FLEX_DESC is supported. Note
++	 * that when the offload is not supported, the descriptor format aligns
++	 * with VIRTCHNL_RXDID_1_32B_BASE.
++	 */
++	enum virtchnl_rx_desc_ids rxdid:8;
+ 	enum virtchnl_rxq_info_flags flags:8; /* see virtchnl_rxq_info_flags */
+ 	u8 pad1;
+ 	u64 dma_ring_addr;
+@@ -1041,6 +1088,7 @@ struct virtchnl_filter {
+ VIRTCHNL_CHECK_STRUCT_LEN(272, virtchnl_filter);
+ 
+ struct virtchnl_supported_rxdids {
++	/* see enum virtchnl_rx_desc_id_bitmasks */
+ 	u64 supported_rxdids;
+ };
+ 
 -- 
 2.40.1
 
