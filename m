@@ -4,227 +4,227 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8A21FC52D7C
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 21 Aug 2024 13:53:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F27B8C52D6F
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 21 Aug 2024 14:06:19 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 430C54025D;
-	Wed, 21 Aug 2024 13:53:10 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 9E1BA400F3;
+	Wed, 21 Aug 2024 14:06:19 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Iatj0X7zRKXK; Wed, 21 Aug 2024 13:53:09 +0000 (UTC)
+ id UBIgCpnAuGri; Wed, 21 Aug 2024 14:06:18 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 262164033F
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 07CAD4031E
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1724248389;
-	bh=zehJBxIdwcE0pu6erl6ULhumrBMD0tIaExYfQjyJiCk=;
+	s=default; t=1724249178;
+	bh=h7C+HxQjv/dBCVVUdSUBp8TRBPT4tKGY6Y1hflvQv4k=;
 	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=pOrJscVWCzG/p9fUCCmVLUdw3Ase+Lg36YDc/btnSDuZRXWL39vkGhoret5/7NNUZ
-	 qNjIrNGAw+DMEtCgImKdbrwdpPh47vQTxLaXTzADZy0tZY2hE/wP6RspKFXUZRdCQe
-	 F2l4t1yFuVaNbIodHIudUX3RGa6C3qeVX2bxTIzGQ3TiZrDcXDBBquRp8uPePAUmBZ
-	 Q3Kqvn3pHuYCJSU84YRPCc/e173wx7SceoB2xCmqoRHd04K+H80/V2wxL8Pn9trlzB
-	 W17zsLZ8p0MjS2ERFZEWFYk+Q/n5XkV6QIhXBQ/g+qDRzWDKaKuJP7akAC0YpODWBi
-	 yOW4Aa5h9G8WA==
+	b=ilAIvoCg0CEpog36A4sQXjTEqZHQBhUhqCiVEkiTzt9lmWIUHml4/p2ieHOLIOnHN
+	 MdN1317E1293rahPmsob2lzBwDYnwG2plFXSfYbqOxP/ZjJ9Q1OEBKNnml0eMBiAbK
+	 stA+7pjenboAOniTrNPMZPrHLblxAWz2lzZxxyFz6fc9RePY9Zfpj2aa/MgIUJk0xp
+	 aOyjl0UJ9EIsJgFkvLeeYQY3q5bpxtbK2omCh5t2kgq2rh3CwHoJnMw5XrG8QViZNm
+	 JzFxEnc9cttX3tMaJTeVB52v27DS3AKm40d3gw9VlE9qQMt3U3tDQjvdC992nujJ5C
+	 blBzA1V711SZA==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 262164033F;
-	Wed, 21 Aug 2024 13:53:09 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 07CAD4031E;
+	Wed, 21 Aug 2024 14:06:18 +0000 (UTC)
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id B4AA71BF3C0
- for <intel-wired-lan@lists.osuosl.org>; Wed, 21 Aug 2024 13:53:06 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 6472F1BF3D0
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 21 Aug 2024 14:06:17 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 9FA726069C
- for <intel-wired-lan@lists.osuosl.org>; Wed, 21 Aug 2024 13:53:06 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 50F7E60633
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 21 Aug 2024 14:06:17 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id sunOjHnOhfLA for <intel-wired-lan@lists.osuosl.org>;
- Wed, 21 Aug 2024 13:53:05 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.12;
+ id 3Xn5L_lmikdy for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 21 Aug 2024 14:06:16 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.8;
  helo=mgamail.intel.com; envelope-from=aleksander.lobakin@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 8E5A26065A
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8E5A26065A
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.12])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 8E5A26065A
- for <intel-wired-lan@lists.osuosl.org>; Wed, 21 Aug 2024 13:53:05 +0000 (UTC)
-X-CSE-ConnectionGUID: r5mIgsP6RgmoeneSpOLB6g==
-X-CSE-MsgGUID: 01bLnxjtR4Osy8MnjHPDIw==
-X-IronPort-AV: E=McAfee;i="6700,10204,11171"; a="26476357"
-X-IronPort-AV: E=Sophos;i="6.10,164,1719903600"; d="scan'208";a="26476357"
-Received: from fmviesa005.fm.intel.com ([10.60.135.145])
- by fmvoesa106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 21 Aug 2024 06:53:04 -0700
-X-CSE-ConnectionGUID: jwCA67ykQd2kwZjCFMoxPw==
-X-CSE-MsgGUID: Mwm03WDLTwuQdlAZC7ZKcA==
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org D30FE60622
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org D30FE60622
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.8])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id D30FE60622
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 21 Aug 2024 14:06:15 +0000 (UTC)
+X-CSE-ConnectionGUID: vx5e89/iQYKEkG0bL+IdXQ==
+X-CSE-MsgGUID: +Y/Km86VToyGPd64F+yE/w==
+X-IronPort-AV: E=McAfee;i="6700,10204,11171"; a="40123190"
+X-IronPort-AV: E=Sophos;i="6.10,164,1719903600"; d="scan'208";a="40123190"
+Received: from fmviesa006.fm.intel.com ([10.60.135.146])
+ by fmvoesa102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 21 Aug 2024 07:06:15 -0700
+X-CSE-ConnectionGUID: jS/mH/K6QVKqF/W5X9qqgw==
+X-CSE-MsgGUID: 9i2DGrmtQPmRwJUBXYvVxg==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.10,164,1719903600"; d="scan'208";a="65447158"
-Received: from orsmsx601.amr.corp.intel.com ([10.22.229.14])
- by fmviesa005.fm.intel.com with ESMTP/TLS/AES256-GCM-SHA384;
- 21 Aug 2024 06:53:04 -0700
-Received: from orsmsx612.amr.corp.intel.com (10.22.229.25) by
- ORSMSX601.amr.corp.intel.com (10.22.229.14) with Microsoft SMTP Server
+X-IronPort-AV: E=Sophos;i="6.10,164,1719903600"; d="scan'208";a="60758145"
+Received: from orsmsx603.amr.corp.intel.com ([10.22.229.16])
+ by fmviesa006.fm.intel.com with ESMTP/TLS/AES256-GCM-SHA384;
+ 21 Aug 2024 07:06:14 -0700
+Received: from orsmsx611.amr.corp.intel.com (10.22.229.24) by
+ ORSMSX603.amr.corp.intel.com (10.22.229.16) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.39; Wed, 21 Aug 2024 06:53:03 -0700
+ 15.1.2507.39; Wed, 21 Aug 2024 07:06:13 -0700
 Received: from orsmsx610.amr.corp.intel.com (10.22.229.23) by
- ORSMSX612.amr.corp.intel.com (10.22.229.25) with Microsoft SMTP Server
+ ORSMSX611.amr.corp.intel.com (10.22.229.24) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.39; Wed, 21 Aug 2024 06:53:03 -0700
-Received: from ORSEDG602.ED.cps.intel.com (10.7.248.7) by
+ 15.1.2507.39; Wed, 21 Aug 2024 07:06:13 -0700
+Received: from orsedg603.ED.cps.intel.com (10.7.248.4) by
  orsmsx610.amr.corp.intel.com (10.22.229.23) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.39 via Frontend Transport; Wed, 21 Aug 2024 06:53:03 -0700
-Received: from NAM12-MW2-obe.outbound.protection.outlook.com (104.47.66.45) by
- edgegateway.intel.com (134.134.137.103) with Microsoft SMTP Server
+ 15.1.2507.39 via Frontend Transport; Wed, 21 Aug 2024 07:06:13 -0700
+Received: from NAM10-BN7-obe.outbound.protection.outlook.com (104.47.70.48) by
+ edgegateway.intel.com (134.134.137.100) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.1.2507.39; Wed, 21 Aug 2024 06:53:03 -0700
+ 15.1.2507.39; Wed, 21 Aug 2024 07:06:12 -0700
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=BARfcuoP9Pa3eIcPfC0+/FA4I/lPviCOSTJnsmthlI/fXq6tqZz9ioZM9y5i5uYpTdNJC7gTZRimVh9ampNbZ3oEXP9PKkMAo60XafZKU8VrgcNr5DKuKi/fqarOqRaztOn7CGjUxJJW7Vggt3bs1gvTt/TJWCAls5fyGpuyej9xve3oMJCZuVAYQQXsU6NHZN3xX1mE7o7ECbPN7gUfeiL3Kz/mPPZ4unNkZAOYJJT5egdS/NJTZZMfLRTlEZzG37/aNVQgYkd0HvkmU4wiI5gaYK8i2HrQY1+kqLpigds0laJu92ja+ybGC2BSUupKIJC30IixNbPJhUBIy0ZofA==
+ b=Xt7kJivGnJFjM1SlwsD1dh0z7IFGAXyXukHDLUIreUmS8nflgvuKLFrAByrCKosahbz7wsvufYgLQoFSHyhzjsro2w7LnhsQzz/e6YQ+fgm79PVSs/xEo4L3MbitusjLYHtOSLsGNeeidkaqUzvWUzGS8k9SjLauPkTukv77SupxiFx9tVdir6yC7Vve7DSshFrLGZ6emyUAm+5DPf50H08nM/dNpmc8qRkBIS5XFTDBQlyW+ZrVDlG4tZWCirOkZB44YqeDqCDPiKEB7D0RA0tp3CfKGPMd++VRobRLJvVqjkgt2AIar8ngR8sGrhD8n56FLb+mbC9VnCizLb7Tzw==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=zehJBxIdwcE0pu6erl6ULhumrBMD0tIaExYfQjyJiCk=;
- b=GLUi/MtfEa8f4LpdBpFAsVKdcw7wZej3HDGu/d6WGK8v+249V9K/UI0Q6pB0nPOmOrB/nknAmHaNitHnIGNYGOk68WnsxYqAxofy0VnUbLmQL+X8KAIbZmI78gexnhso632CeiVnSSpYa8SOYpo0voXNXwOyjRaWWjsUgPzMKAsSL8lks5yVwIsreEZw4eQvsfltnP/8NVoNG7/Qcp9gxQO7W0F+UBOr8kQOzP95mnUhHRGiGnABimuOZmCyUddDwQzW2QbOnyYbunz9dY7JwgzDv03aj7PSSKaSfqGsS8RNououu0bWlvtKt2b4mIlAIUo+ZFcJknX7bW6iwIiiRg==
+ bh=h7C+HxQjv/dBCVVUdSUBp8TRBPT4tKGY6Y1hflvQv4k=;
+ b=qDOh3/a5iXyiRnfBe7fiiiz8szFqM4XBxxhLyBgkQxsIdEy5vBEcNlhypU0LqjrdTSg5w4OFMpNOxZ1pocgRH8Q5/50ZespxKqG7DnJAFUJGH08Pb+OtXpahCY6hoBnZAg+gv/7ADK3lXMGwHRv7e3hamnbTDgn7mLqUxj8y/wVi72RQ9Ml+DfZZhh7OHRNNQEKBesDd/2QffVW/G5N7q6mrh1Dt1AMpDC5r/NObE2EoWVWKVsr+pU7ocisxQ2hBAq4b8H2jk5HNMB4z3BzRHO3wJgz88YgeD3tER3Yp6xck63lHr8tanmZyWzm7r5YhWraeedflE86tguPdvS9FGA==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
  dkim=pass header.d=intel.com; arc=none
 Received: from DS0PR11MB8718.namprd11.prod.outlook.com (2603:10b6:8:1b9::20)
- by MW6PR11MB8312.namprd11.prod.outlook.com (2603:10b6:303:242::10) with
+ by IA1PR11MB7811.namprd11.prod.outlook.com (2603:10b6:208:3f9::21) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7897.18; Wed, 21 Aug
- 2024 13:52:56 +0000
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7875.21; Wed, 21 Aug
+ 2024 14:06:09 +0000
 Received: from DS0PR11MB8718.namprd11.prod.outlook.com
  ([fe80::4b3b:9dbe:f68c:d808]) by DS0PR11MB8718.namprd11.prod.outlook.com
  ([fe80::4b3b:9dbe:f68c:d808%5]) with mapi id 15.20.7875.019; Wed, 21 Aug 2024
- 13:52:56 +0000
-Message-ID: <b8845a87-e27a-4834-b510-f9fde51a364c@intel.com>
-Date: Wed, 21 Aug 2024 15:52:51 +0200
+ 14:06:09 +0000
+Message-ID: <7e832ea6-2036-4112-9b63-20f4475e7f8d@intel.com>
+Date: Wed, 21 Aug 2024 16:06:04 +0200
 User-Agent: Mozilla Thunderbird
 To: Wojciech Drewek <wojciech.drewek@intel.com>
 References: <20240821121539.374343-1-wojciech.drewek@intel.com>
- <20240821121539.374343-5-wojciech.drewek@intel.com>
+ <20240821121539.374343-6-wojciech.drewek@intel.com>
 From: Alexander Lobakin <aleksander.lobakin@intel.com>
 Content-Language: en-US
-In-Reply-To: <20240821121539.374343-5-wojciech.drewek@intel.com>
+In-Reply-To: <20240821121539.374343-6-wojciech.drewek@intel.com>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: ZR0P278CA0048.CHEP278.PROD.OUTLOOK.COM
- (2603:10a6:910:1d::17) To DS0PR11MB8718.namprd11.prod.outlook.com
+X-ClientProxiedBy: ZR0P278CA0056.CHEP278.PROD.OUTLOOK.COM
+ (2603:10a6:910:21::7) To DS0PR11MB8718.namprd11.prod.outlook.com
  (2603:10b6:8:1b9::20)
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DS0PR11MB8718:EE_|MW6PR11MB8312:EE_
-X-MS-Office365-Filtering-Correlation-Id: fec7f91b-018f-412f-4ce6-08dcc1e88f4f
+X-MS-TrafficTypeDiagnostic: DS0PR11MB8718:EE_|IA1PR11MB7811:EE_
+X-MS-Office365-Filtering-Correlation-Id: 8f81efaa-5188-457c-bbc4-08dcc1ea6817
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam: BCL:0;ARA:13230040|1800799024|376014|366016;
-X-Microsoft-Antispam-Message-Info: =?utf-8?B?WnU5V1hFMEFCd2NEY01Kazh2MTNyVGJndTA5K24wVmp0elpiTko0em9Id3Jv?=
- =?utf-8?B?djM3aVFEM3UvN0xqcENCNVFucUxCOTJLTXdBc1lYdE9tbWl2c0Y1cy9vc3Qw?=
- =?utf-8?B?Sk9uNmtjWnZ6MkpqVTJkdmx0cHVhQXIwS25hWlRpZUxjTFFtQmN5Rndwam5R?=
- =?utf-8?B?Nk1HMGFYZUovODdURlJveGYyNEJBNUJ3MDFOeVVHUlgyZ0pXT0p3REtrLzJ3?=
- =?utf-8?B?ZVJWVkpVUytjajlKdTBIWHhBdUQrZHQ0c0tnM2FNL1RZT1RhWm9uWC9velpV?=
- =?utf-8?B?TmlPeC9QT0kzaDM1VkFURUVkTkNHMzBEOFdNbDlMbktTdGxqZ0h5VWhQSDhp?=
- =?utf-8?B?T040NCtEMTdhNXMwakpLblZxNi83TXd0cEl3bHo1Ritrb3RVdE1kVklJOEVa?=
- =?utf-8?B?YUZNT2hNSW5telhZampyc21LWlpyc2hBbnBzdW5hYlZ5bFdCYnludjcyOTBL?=
- =?utf-8?B?eG9MYTNvZEdvMmNCN2ZSZnFTbGtXRE1iaGNJN3dDQVB2SHpONVBRUjlUaDBF?=
- =?utf-8?B?WnpkSXFIcnRMbHV1U0pjVldNSFgvOExvY0ZLaU0zWlNjck9ON2EyTGhCRmMz?=
- =?utf-8?B?SVJLL2dBbUhOU253R0IwS3FzUFZVWVhhcnBMMG40ejEydkxQKzBFZG03NmIr?=
- =?utf-8?B?T0dqeXNqTlIrRzhkYW5hZjdxbHdSeENlVWo2L0RUUVhzdkFaSTlkdGZXMVhT?=
- =?utf-8?B?ZUtMaFdCekZuV0JNL0xHaWdvdUxGR3FSV3hNSWlHNEJuc2JFb1hxeHZDUlUw?=
- =?utf-8?B?MkVINTJSNnhOZEJ5TDZsWGNJakN2eFlPQjgyUmc2NU1HNHZQWFBnR1RzQjRh?=
- =?utf-8?B?cVhNVkg3Z0QyTy9sRFJLTzFjaFN1Ulp6WS9HOVJYY2U5cWlOK3N5NGVzeEx5?=
- =?utf-8?B?aUZHc0c0dzdlRkZCK01neWhtKzZGTGF2RTNrd1dlNVduU0Y5R0VKT2pJc2ts?=
- =?utf-8?B?N0h2U0h1L3lTOXFDVVZSaTJOeWhYdEF1N2lNQ216NE1HR1EzdDlyQW9aOHZG?=
- =?utf-8?B?WE9GTFVUb3lWQktlZ1V3ZHdlYmg5bTVzZWRiNlVOWmp2MWthcDFNWHBKQUhk?=
- =?utf-8?B?cE1rK3dJQVQ2a0M2eGFDVkFaS1BqRGROaUY2MVFWS2JxbkRQSGF3aC9DRDJS?=
- =?utf-8?B?ZzdTRVBWK2xsa2lBeG80TnpEc2FHY3MvdVNSMnRaaXFXRWpack5ZSWZRTkRu?=
- =?utf-8?B?WmYxWWJYNkh6QXZzUWtGUnArTFVNT0tKb0Y4QmFZZHl5MEx6TkRPaEF5dG12?=
- =?utf-8?B?aFRZZS8vWTVMSFpKN010RUhrWHZ4K0w5N05VVG4zNUU5MGRUTTlqNGF3TWJo?=
- =?utf-8?B?eDhTVnYxbUc4RGdtRlpkbUp6NTM0enBIQ2Z3UUVQRDJQVHFibjE2eExTT2pI?=
- =?utf-8?B?N0xXM1RsQ01zLzRELzlWV3cxbWMrbTJZdHpBV0VsVlZVQ0lNaXpReEIwNytF?=
- =?utf-8?B?eDNSWXo2VFJhUks3OE1WbWRLcStJZVp2ZkVLWUhvZ1BHRFZhREpia3dpZjlB?=
- =?utf-8?B?cEZaU1V5ZFNrK1BoREl5MjJQb21aVVl4NmU2cllBaUpPRDZBMzdpZnozbSsw?=
- =?utf-8?B?Q0hnZGdEcGN6YnRVdnBkWHNMR3o3ZUNNb3dYYWFwQ1N2dG0wWmFRejlGbjBN?=
- =?utf-8?B?aEdmTWk0emhMV0dhZDV1TkpZMUx4VDVYa3MwdWdiaVJOaHI3TU1mVC8rNjkw?=
- =?utf-8?B?aVc1YU4yb2xySHdUckIyWGR4YjF0QjB4YkhSTmM5MktQdnFiNEZoeDBNVGlE?=
- =?utf-8?B?Wk1ZaEhrckFNUTNaNUxRWXhkZWFZaEk4Rm5ETzNOaDBJYnRiaCtBY3c5UTg4?=
- =?utf-8?B?L05UTFlEM2RvZGFvbWRzUT09?=
+X-Microsoft-Antispam-Message-Info: =?utf-8?B?VFNoa0VZRmlndkkvQmUycEFxb3QyRjVlbis1L2ZBOC9ER211QkNUZGYwRDlV?=
+ =?utf-8?B?OCsyMmg0RkJDVStGZVdBRFdnSzl2YnFDaEViRldBZkdTQlJJNmhKMFJub1Fa?=
+ =?utf-8?B?NFNmb29YR3V6SmF2QWdFRnNlL0RzanAzc25MaElrK00zdjVralhRNTRRbVNk?=
+ =?utf-8?B?WmlOMjRJQ1JncUVzRzdCVm5QNExOK0tRMUMzcGFJcXdzK3NjQnRIM09ucUhJ?=
+ =?utf-8?B?Mk5hRTlwVmpXQk5VYnlucHBYSEVMU1FQeHhtaFF0YmhUMnptOUEweEp6Mjd3?=
+ =?utf-8?B?RUdicWZUajY5K0N3c0k5bGVFVTk3U1VIOWRxaGNlMmF5NTUzSWZ6dE8xd2Z4?=
+ =?utf-8?B?SVdTRUFENjNQYlV5SWd5K1RBcStWYVVIUGtON2xYTS9FK1JoVjBIcEZudk50?=
+ =?utf-8?B?d0tpSGsxZGFMZkZnUm02MmMzeEhNV3Q0WmVKKzBZSldRSmVEeWJ2SWFzKy9T?=
+ =?utf-8?B?b2xLS0diN0RFZFhwWlAwWlpQNE5aaDhFdUZjTmhVSmEvYVBVREU5MUR0QUNT?=
+ =?utf-8?B?NFJNVmZ0ZDdLV3kzeFhobElJWnBtNktWNjBGdjljSnNWUUVRbXdwYjlmN3BQ?=
+ =?utf-8?B?ck9nb1k3U24zTmNTK2FDWDR6QmlWaGxNUm8yV1E0aWc3ZWNHa20zd1VvQTA4?=
+ =?utf-8?B?WDljd3ltRHM3V0JsSGR0WFVTcEZ1WllLR1oxYldsVnYrdzNSMWRTc0M1S2tG?=
+ =?utf-8?B?T2FhQmtEb1ZWQ3RZQ1VMM0VESXMxRnc5VExRMU9YQTQzL3Q1NHp2UnhRZnZN?=
+ =?utf-8?B?L3lYUk1jSUkwUldIamNQNTdtSmYveGhsRUIyS1haY0E3RC9Md1hpMFFsL0wx?=
+ =?utf-8?B?OGR0cmdYUzI3cFNEUExneWc3azNWREhwbU92NTg5QkROZlBtM1ZFS3pHdHBj?=
+ =?utf-8?B?TjNORFlRM3dqZUl2MUtjUWhPZ004THdwT2t6YTFsOGExZ3lHTTRqaENxRzBX?=
+ =?utf-8?B?SWQwL1p1WUpLM3VPeEFudUgvTlU2cXdyN2c1aDhqaFY0VFpkemt6RGVvZEJD?=
+ =?utf-8?B?Z2xvQlRFMmVhSGJxYkNROFAxaGdwYmhOUnRkZXM5MzhiQUgwbTlLK2lIK2da?=
+ =?utf-8?B?MUwzaUlKVGpVYnhDemxuY0Q3Z3JKbGpSVlNBelRES05SOTE3emNFYWMrZ3Jk?=
+ =?utf-8?B?L3pPbTBkUkNPMDRFdE5XRjIwc3JzcFVBRTFBdjFkYng3Y0pSRkZHaEVvQ3ZD?=
+ =?utf-8?B?QWRJTGhhdVFxR1UrNFlRMnFvcENmTUwzV2o5U3ZDc2tzMEhEVWVFOGdva0h1?=
+ =?utf-8?B?YmhsRklXY1dOdDBqOHRlSkk5SzRqS1NuQnd5N1R0S0ZhbGdKejUxRlR5MzIz?=
+ =?utf-8?B?MEVha1dBN3FEK3JJRE9EekV1QXVIUVJDcHVQMUNmcUFuclhjSFlCRW9RQ3VT?=
+ =?utf-8?B?MnJUS0Rma3diMkFNOHhuSmV3NFpuQnk4L3htZCtDeU9pL1VHaUkzdjJ6dzEz?=
+ =?utf-8?B?UUtYbzVBakV1eDdNdnpvOTB2NDVtS1BJRDUxaC9qdVlnUWZZRTllY1JoSnpQ?=
+ =?utf-8?B?Tk56VThiMHlscEp3L0NJNlk2ZTI0YytZVEoxeEFvMkZtR1ZHcG9LSjdtdGZs?=
+ =?utf-8?B?T0pZUjhLeTc1MGZuYmE0RGdrU1l4c0FkK3NsV1BmdVY1aENkMU1NNXZ5Mm9X?=
+ =?utf-8?B?QkZ3TjEyVUF6WXBoVjlqT0Q3eHovcG56K2phMzV4anF2M0pjMFVNUlJZWnNR?=
+ =?utf-8?B?WkwvdlRQVnlMTUVTRXhnVnZsMVdsQ0V6NVlNclRqRDA4UHdCRzJPenlmZ2RV?=
+ =?utf-8?B?aWhOQ25xZ3BGVUZRYjQyd2hZWFB3dnBhaGVFaW96RXJOWFF2dmVvTjJlbkNq?=
+ =?utf-8?B?Mk5lb3g5Nkxsb3ZJQ3Jpdz09?=
 X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
  IPV:NLI; SFV:NSPM; H:DS0PR11MB8718.namprd11.prod.outlook.com; PTR:; CAT:NONE;
  SFS:(13230040)(1800799024)(376014)(366016); DIR:OUT; SFP:1101; 
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?YmUwYVRhOW1JMjEyb2tHdVdNdEZTQVg2T01tSjhuMGV3cUZPWkFKd01aa2ZQ?=
- =?utf-8?B?Zm9aN3BOUkFObS9LOG1hYTJ4aDY5K0hSclRiSFNNVndnODFWdXFIQVVKeVhS?=
- =?utf-8?B?c3ZjdGNhNWNaeWlQamJ2bkZmS3k3S1FmZVZ2ZUVVa1pxdlhqamk4ZEJXWXgx?=
- =?utf-8?B?bkxKNXhBa3BJR0RUaGhKUVFPZmJGTXlmUDlPL0tCYlRwUHdqN2U1M1lyd24z?=
- =?utf-8?B?aEFlMG5SVGc4VTdjNDBEYjlzTUEvbm5jMXAwVzRTVWtNcFN0VGdNNWtOZTFN?=
- =?utf-8?B?SVFNd2ZyWkd6dWpFOERralQrZDNSb1NZQURPNmhTbjhvVGhJa2dwYjFzY1Bk?=
- =?utf-8?B?NjZFbTc2SUxPSzc4OXpaeW9JT1U2K0RNdVFZamlwajQ5TUVlQ0V0dGtHSVpa?=
- =?utf-8?B?My9hR0VZRElTT3NVMEZaNlZUbnp4U1lmMHkweTFJUEUzQzRXV0l3aFlpalZS?=
- =?utf-8?B?TkluQkJ6N0F0V2QxaVVmZGIwU0lnc2hQcmhKMHUxdnZCQkNRbVd3WWhTejhs?=
- =?utf-8?B?eW9NRTVrMHg4d1BRMDIrWHd5a203ZkN6N1JwZzNXQWRvYkMyMk5LazhDQyt4?=
- =?utf-8?B?TWUwQk1tSnVrVVJTYmV4OVRCaFlJNDBDOVJHVzZneGtsQmRQVUdwR2ZkWE1V?=
- =?utf-8?B?dXFXcGcrRWZtTFg3NVk4OVZrbEk0SnZvVGpyWk1obFlzYUNTOHJpZEtUamZE?=
- =?utf-8?B?Y3RKbzl4MWJSZFFxemt5V1VUSW8rNmRpN0hTRVcwYXhXclV6Wkw3UDdTNHQv?=
- =?utf-8?B?WVNOandISjhqRkowZVdKZGNjYlRHc2hlckxENTdTMG1IbW0vMzVocjZQMXd0?=
- =?utf-8?B?eVNNSlFUMUJLdGd3L2V2WnFpUUVzQVo0SkFET3ptZVd4d0VLU0xTSjFZc0xk?=
- =?utf-8?B?R0ZIa21pUHVYM2pzQU13endyUzQ0YUtjQklSWDlRZk93bmFJTU9MYlhuMFJG?=
- =?utf-8?B?UnA2aUxIcEZEdFVYeTlBS0NaOWxXdEZaN1dkZ3YxVFBzeW5PTXplYUtZVktl?=
- =?utf-8?B?dEpnV3lxM29WbkdNUU5sV25jWmZuam81Z0M3WGFhWUk1Yi9HQnR5Vm5EVmEz?=
- =?utf-8?B?dTJQVGFmcFRlaFh4MDkyWlllOFkvdHUvOEJpWUdzeERWRWI4UURTcVFMY3Fw?=
- =?utf-8?B?eHJjd0p6aHVBYU5QRjhUakpKaitRdnlQTEZwQWxPMjRrdmZCUkJkYVhocWpR?=
- =?utf-8?B?dGk3UHI4ZE9ZUDljQk9hbU1RL09oUWRmUE9XM09sOEZZUjg3RUhyczk1MEY0?=
- =?utf-8?B?SEhTblMrWFpodTFKMG1kcjBJVU5vbE93RXZJYTVtNWhLYktTMHRJWUtvT1Fj?=
- =?utf-8?B?cm5DY3NUMWtheGVydU9mcVNReDBuK2w4bWlkV290eDdYNWowemgzakU3cFpQ?=
- =?utf-8?B?L1BWeDNKVUJ6M1lnQ09JT3NCNVJ6UkZZNHd0R0hyMHB3VC9jS3Q5MnZVY09p?=
- =?utf-8?B?U3orcVZDbldCSkY0WUp4UmxBWDRwM0pwRWJ3cjJvTWtNOGpLZ0N0d1JCck9o?=
- =?utf-8?B?aGorcEV1SE16eHFaeUNZVGRpQy9pclhqdnBGR0pFaFI2V2xpRXdaOThXaDA5?=
- =?utf-8?B?dDJZVTl1MnZOWHlJd2pSZ1hZV1g1UWRPb1k5U3NIdGwraFRuVngwYUR2M01Q?=
- =?utf-8?B?QXJ4eTBFRWVmb1o3OW44cStKSVlOcnB3KysvekhQSkMrQm9IbEdpS045UFoz?=
- =?utf-8?B?UTRITHRjUDJyZTBXNDVzdUpBa3JVcTdxM1dGN3llRGY2cS9uSWVka240blNl?=
- =?utf-8?B?Q25HbWM1SWhXUUlqdGZYUkZUQm5lSHl6bStraFhSRUZaQktjd3pPK0xPSklX?=
- =?utf-8?B?WmVTNmVNKzN0eVpVWCtGWHBsb05lcitLTTFrZmhtQ2drQ1NpMU8vTXhiQmZn?=
- =?utf-8?B?WXZzWHVka0E2ek50TFRjbnc2M0ZYcGI2Q2JITTZyQW9Ca2tUampoWHNIR2h1?=
- =?utf-8?B?QlZIdnB2ZDZTVlg0VmszZS9EZkh2cXNMSW14UU5wNmZkd2NkZGsvTlJtQ3hF?=
- =?utf-8?B?azRVZnBINXE3NE5Sc3VKU3lxNmJ4YlhrMHZUVHNNUmRsMTFuSU5yQ25BbDhz?=
- =?utf-8?B?eDN3QU1ZbUdSSWhxK0tndUJONkNFMkdpUEpCdmRUeXhHZFVQQVVkaXZNNEtH?=
- =?utf-8?B?dVJESDZoYXduMU84NkpxNU1reG5oaXJpcUZjbWN6dktXS3dncTRSMkNPdlNw?=
- =?utf-8?B?Wnc9PQ==?=
-X-MS-Exchange-CrossTenant-Network-Message-Id: fec7f91b-018f-412f-4ce6-08dcc1e88f4f
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?UVdxQ1ZxN3FGV1l5Z1k4T3lLS2RNQzRFcXRCY05maWVjU0ZVd2hXWUJzWXcw?=
+ =?utf-8?B?bFRkQlZEajFlZThFUmM4WFZYMDJDQmRTU0VMc2tXQW9LNm1KdWpvWWRaeThD?=
+ =?utf-8?B?Z2F3d1ArUHIvdUlYODVKdVlXZFFycXVuOU51NTFzckZaeVFrS0tFN3RWckV3?=
+ =?utf-8?B?VG9LeS9UNThockhYeGpleFJLbkFEVHlOem5WNWs5RkZXdHZ5K20rMjdBa3hB?=
+ =?utf-8?B?cEZsVUpmLzlnT2I2UHVZbGJXVUpHdEZVOE4wVXBpeGpWOUV5RUNkYmI4WEZ4?=
+ =?utf-8?B?VzJML2M4SjQzbXRXK1RJUnJyREtLa0tsdHZER1NaTUtDSnlhOENFUmNHRTBX?=
+ =?utf-8?B?YUptUWw4b08yUldEZWJpdm1mL1ZjWTVDUEpLWm1VSHZ0WSttWU5mU1dTYkRs?=
+ =?utf-8?B?VzBvSXFXNnIwYWg3YmhpYzhYRi83aG5kT3A0MnVPMFN4aXZXeDVHaUdtQ0Zj?=
+ =?utf-8?B?WUNqWExwa0xMQ1FveEFuSmw1b3NrbmlnOGpZQjd2TzE5K2pnWjZ4SzY4ZXZW?=
+ =?utf-8?B?TDNFc0l2Zk1lSjFzcGZra3Jzb1REczZ6anFZNkZlNGdiVjdnVTQzWkxqaVBy?=
+ =?utf-8?B?WWk2VU5RbitnZzV1TzA3b0tXY2RJZTU2R3JMZFpWam41SEpYZFBzd2pYUUQz?=
+ =?utf-8?B?Ylpia0pwMTdyOTd5RG5uL2VEK2VKVFJjbDFFU20xaWJ5OC82aC9iRUFmQnMw?=
+ =?utf-8?B?c2tpUGp4Qk1CcTJGMmtQeHRPRU41ZGlFWFl6YllpVlFLSWdBNUdoRGVONlBQ?=
+ =?utf-8?B?VTI3aytWblhDMitxZEtpTW5CV1NOYTl0eCtiQjEvZzhCd3RxMkU0aUUxeHhi?=
+ =?utf-8?B?Tm9HM1NidFd2eEZSR0NWZURVT2g4NklNckFQTS9WbEZZNlJIdDVhc1IvNzhP?=
+ =?utf-8?B?QUJmZHVVcnF1eUpDYU13S1R2VjArYnY1WHIxam1aNyt0SmlKRDRVZGlLWGFO?=
+ =?utf-8?B?N1dWVEhUczBjbDkvS1JITDhFWk9PSURYR25sRGxBOHlpcGhBKzgvRmgzNUU1?=
+ =?utf-8?B?US9mbWJBbkNDS1M5ek5qQ0xodE5UNCtJTmRCaXNjVCs5bEppY3c1NW1jcXJ6?=
+ =?utf-8?B?OUNLOEMyd2lnRlU3clphVitUZlZnYmROYlQ2T25SRFcxYkJ5VzFtV2Z3SGZu?=
+ =?utf-8?B?ampySWxXbitxL3o2Mk9vOHdyOGlZT2JsMjZOelNJU2o4bWQ0WHdSNTZHTkxw?=
+ =?utf-8?B?ZERJN2RXV3BCbTBJMUtNUmVRNzZmOXNHYjJKS002K09YT1M5VW42UUk3ZlJH?=
+ =?utf-8?B?S05nYnlOTDhtRUdKUU4wdmdiSWMwNHIyNUd4enVmcEVndjZYeVlpTWtpVkZK?=
+ =?utf-8?B?Z2dXZTlOMEJZVlR2MDkrNVRxUjRqQTg4S0s3ZDZnVnYxYXFRWTUzUklkWHFp?=
+ =?utf-8?B?SXdRSnhHNXlBeUN4NkZjTjhHTzdQSk45eWhTTko0K1JGQ0wxUWxrZWdiMkk3?=
+ =?utf-8?B?NHVKY3VFcGE1MFVFbGxxVUF6S2VXYXVEVldMQ043MWl4cGV4eEltQ3AvaWRS?=
+ =?utf-8?B?MUJBRzMyMXUyMnc4bGVJV1VSeHpLQTBOWTZKSjJ6bCtKdU92QzJ6MmlGVExq?=
+ =?utf-8?B?eU93NFZ1WWVXUHNHWkVjS1hEVGZOTXJQTTlOdTdZSVl3TFA5Q0gzV3VlUnBB?=
+ =?utf-8?B?WFlDZnJkWjVYNzBFZGtDSEpsTmIvanI2YnFTKzUyVjY0TGNZYStaSGQxWUw1?=
+ =?utf-8?B?TG1vSUZwMFQvQjBkQVhMeGcxTHNUT1Z0NWdxekJnWEs5UFZxVktLTktHWDVr?=
+ =?utf-8?B?bVY2LzRlbGNOcXMzSWlJMnlVbFphRG8ybkJjZjd0RXcwMGl6ZzZ3MWhxYW5H?=
+ =?utf-8?B?QkZUcEJhcklJU3JxM3QyVWE1OG5jZEV6Qm1xYkpmNmZuR0NFSXU0V2hsVFhV?=
+ =?utf-8?B?cllnQU9QNGhJZk8wajc3SFpIVFNvQjNEVkVLWEFzZTgyc2hLRk5YbTcxSW8w?=
+ =?utf-8?B?dEZ2TWQ1dmNYU3duUkFLb1UvdVc1RjFtZ3FxNjdMN3BBUExxRExFK1ZnN0x6?=
+ =?utf-8?B?SkwvbkpzdmpiZWRaRXlBWVQwV3BCRHRIVFZ2QjhXY2ZTamJJSXVBYzIwZkY0?=
+ =?utf-8?B?SnF5ZnV4NFZnMGl0alhOYkpwdjNhT25FYUlBRW1mSkwvR0VwV21TQ0Jod1dF?=
+ =?utf-8?B?SkpYQm1yaXJmQ2luZWp1MzljTDVBVUpkSTBrM3kwaThFMktDZkFLVXk1UFZr?=
+ =?utf-8?B?a2c9PQ==?=
+X-MS-Exchange-CrossTenant-Network-Message-Id: 8f81efaa-5188-457c-bbc4-08dcc1ea6817
 X-MS-Exchange-CrossTenant-AuthSource: DS0PR11MB8718.namprd11.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 21 Aug 2024 13:52:56.1630 (UTC)
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 21 Aug 2024 14:06:09.4557 (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 1Yc6WjvLHONhGx1UgqkdFKD2mVx5VYaPT9hCiQvg2AmtPvhes84W+83GR90j/dOKiY9RemXJvoq/cj0noM6um+UfhhsbWLxID6Ui5KA7TDA=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: MW6PR11MB8312
+X-MS-Exchange-CrossTenant-UserPrincipalName: LnOkgOPnyK7uR7SWPvDZu/k/YU04W/iorSaryIoh4yKFgY+EJ90e/0aIJt3sI5NJq9q0oJo3/q/4JAlW/ZsweNNUD9uLO4casKsdgKtd2rw=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA1PR11MB7811
 X-OriginatorOrg: intel.com
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1724248385; x=1755784385;
+ t=1724249176; x=1755785176;
  h=message-id:date:subject:to:cc:references:from:
  in-reply-to:content-transfer-encoding:mime-version;
- bh=lIGlIOGuuiO1Fiwv9M4BSm6GRd0fgSZxwcZsM9rNk2k=;
- b=NlQQJIL6qKhMHASLSPDf8afzoNSohYBxHS230eY8NMTeTSoQIYDULpMy
- ayETm75jqeOlCNRRS6Our47NLbF+5G5WD3y2/Jo6TCgO5bEjoH/dcSowe
- /LG47KBccVS+oVx7jQSMDf12/QGa3KxSYGI93TPdwy8eWm7+OhYFSWLSc
- Z+geytR8OtDivoZkf/XLpXdZFtJVUSwX5diEItJPYP+eU1ibyNNGFB2MP
- gQUWQoDSlU0xErDvPpvVaP0wF0oggEoMPfRff5fvq3Z3n4KqG7omDeOFO
- 9gH/QPuSJlSB5ypxe1fCO+ScmPYPqv2raRhoUYdf7rEFTzVYffDKI2lFZ
- w==;
+ bh=lAXQ8yp2m2iUAvuRmEzuHm4PpKk1ZGzypvwcXokMIec=;
+ b=f32b/2zwFFBR4F4/rJSVCiq2QjBWjy/MudksgQGS/aAgvD3Y5Qd9mGEC
+ gmVSn2Pk+Se/8CgCHmpTCsT7esQ0Wgs+PN6vQVctt/5MfrYKnG7UeHFuG
+ MHy7WAUlpiQoNERkwggWgRSFCy0q4nBMWYCEwGWIHGnbEhNjk9jBuGGII
+ qPYbB1V78I3xjaBSua1LHJDPOHcHFQ6T6AVKRETduDBzhblyr15zxkUTE
+ mjKrw+aXSpX0P4+WR56Oj1rpz51qRD00QbQxJQuM+DyHxPFcsY3esKmsz
+ 73lnVT5i73Z35vujnNZAZhkf6GtBJsHEZbz+NBZH7eVZTygPFCZ35Ll1z
+ A==;
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=NlQQJIL6
+ header.s=Intel header.b=f32b/2zw
 X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=intel.com;
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next v10 04/14] iavf: add support
- for negotiating flexible RXDID format
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next v10 05/14] iavf: negotiate
+ PTP capabilities
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -243,28 +243,15 @@ Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 From: Wojciech Drewek <wojciech.drewek@intel.com>
-Date: Wed, 21 Aug 2024 14:15:29 +0200
+Date: Wed, 21 Aug 2024 14:15:30 +0200
 
 > From: Jacob Keller <jacob.e.keller@intel.com>
 > 
-> Enable support for VIRTCHNL_VF_OFFLOAD_RX_FLEX_DESC, to enable the VF
-> driver the ability to determine what Rx descriptor formats are
-> available. This requires sending an additional message during
-> initialization and reset, the VIRTCHNL_OP_GET_SUPPORTED_RXDIDS. This
-> operation requests the supported Rx descriptor IDs available from the
-> PF.
-> 
-> This is treated the same way that VLAN V2 capabilities are handled. Add
-> a new set of extended capability flags, used to process send and receipt
-> of the VIRTCHNL_OP_GET_SUPPORTED_RXDIDS message.
-> 
-> This ensures we finish negotiating for the supported descriptor formats
-> prior to beginning configuration of receive queues.
-> 
-> This change stores the supported format bitmap into the iavf_adapter
-> structure. Additionally, if VIRTCHNL_VF_OFFLOAD_RX_FLEX_DESC is enabled
-> by the PF, we need to make sure that the Rx queue configuration
-> specifies the format.
+> Add a new extended capabilities negotiation to exchange information from
+> the PF about what PTP capabilities are supported by this VF. This
+> requires sending a VIRTCHNL_OP_1588_PTP_GET_CAPS message, and waiting
+> for the response from the PF. Handle this early on during the VF
+> initialization.
 > 
 > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 > Reviewed-by: Wojciech Drewek <wojciech.drewek@intel.com>
@@ -272,112 +259,208 @@ Date: Wed, 21 Aug 2024 14:15:29 +0200
 > Co-developed-by: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
 > Signed-off-by: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
 > Signed-off-by: Wojciech Drewek <wojciech.drewek@intel.com>
+> ---
+>  drivers/net/ethernet/intel/iavf/iavf.h        | 17 ++++-
+>  drivers/net/ethernet/intel/iavf/iavf_main.c   | 60 ++++++++++++++++
+>  drivers/net/ethernet/intel/iavf/iavf_ptp.h    |  9 +++
+>  drivers/net/ethernet/intel/iavf/iavf_types.h  | 36 ++++++++++
+>  .../net/ethernet/intel/iavf/iavf_virtchnl.c   | 72 +++++++++++++++++++
+>  5 files changed, 192 insertions(+), 2 deletions(-)
+>  create mode 100644 drivers/net/ethernet/intel/iavf/iavf_ptp.h
+>  create mode 100644 drivers/net/ethernet/intel/iavf/iavf_types.h
+> 
+> diff --git a/drivers/net/ethernet/intel/iavf/iavf.h b/drivers/net/ethernet/intel/iavf/iavf.h
+> index f1506b3d01ce..871431bed64a 100644
+> --- a/drivers/net/ethernet/intel/iavf/iavf.h
+> +++ b/drivers/net/ethernet/intel/iavf/iavf.h
+> @@ -40,6 +40,7 @@
+>  #include "iavf_txrx.h"
+>  #include "iavf_fdir.h"
+>  #include "iavf_adv_rss.h"
+> +#include "iavf_types.h"
+>  #include <linux/bitmap.h>
+>  
+>  #define DEFAULT_DEBUG_LEVEL_SHIFT 3
+> @@ -338,13 +339,16 @@ struct iavf_adapter {
+>  #define IAVF_FLAG_AQ_ENABLE_STAG_VLAN_INSERTION		BIT_ULL(37)
+>  #define IAVF_FLAG_AQ_DISABLE_STAG_VLAN_INSERTION	BIT_ULL(38)
+>  #define IAVF_FLAG_AQ_GET_SUPPORTED_RXDIDS		BIT_ULL(39)
+> +#define IAVF_FLAG_AQ_GET_PTP_CAPS			BIT_ULL(40)
+> +#define IAVF_FLAG_AQ_SEND_PTP_CMD			BIT_ULL(41)
+>  
+>  	/* AQ messages that must be sent after IAVF_FLAG_AQ_GET_CONFIG, in
+>  	 * order to negotiated extended capabilities.
+>  	 */
+>  #define IAVF_FLAG_AQ_EXTENDED_CAPS			\
+>  	(IAVF_FLAG_AQ_GET_OFFLOAD_VLAN_V2_CAPS |	\
+> -	 IAVF_FLAG_AQ_GET_SUPPORTED_RXDIDS)
+> +	 IAVF_FLAG_AQ_GET_SUPPORTED_RXDIDS |		\
+> +	 IAVF_FLAG_AQ_GET_PTP_CAPS)
+>  
+>  	/* flags for processing extended capability messages during
+>  	 * __IAVF_INIT_EXTENDED_CAPS. Each capability exchange requires
+> @@ -358,12 +362,16 @@ struct iavf_adapter {
+>  #define IAVF_EXTENDED_CAP_RECV_VLAN_V2			BIT_ULL(1)
+>  #define IAVF_EXTENDED_CAP_SEND_RXDID			BIT_ULL(2)
+>  #define IAVF_EXTENDED_CAP_RECV_RXDID			BIT_ULL(3)
+> +#define IAVF_EXTENDED_CAP_SEND_PTP			BIT_ULL(4)
+> +#define IAVF_EXTENDED_CAP_RECV_PTP			BIT_ULL(5)
+>  
+>  #define IAVF_EXTENDED_CAPS				\
+>  	(IAVF_EXTENDED_CAP_SEND_VLAN_V2 |		\
+>  	 IAVF_EXTENDED_CAP_RECV_VLAN_V2 |		\
+>  	 IAVF_EXTENDED_CAP_SEND_RXDID |			\
+> -	 IAVF_EXTENDED_CAP_RECV_RXDID)
+> +	 IAVF_EXTENDED_CAP_RECV_RXDID |			\
+> +	 IAVF_EXTENDED_CAP_SEND_PTP |			\
+> +	 IAVF_EXTENDED_CAP_RECV_PTP)
+>  
+>  	/* Lock to prevent possible clobbering of
+>  	 * current_netdev_promisc_flags
+> @@ -423,6 +431,8 @@ struct iavf_adapter {
+>  			     VIRTCHNL_VF_OFFLOAD_ADV_RSS_PF)
+>  #define IAVF_RXDID_ALLOWED(a) ((a)->vf_res->vf_cap_flags & \
+>  			       VIRTCHNL_VF_OFFLOAD_RX_FLEX_DESC)
+> +#define IAVF_PTP_ALLOWED(a) ((a)->vf_res->vf_cap_flags & \
+> +			      VIRTCHNL_VF_CAP_PTP)
+
+Bah, should've mentioned that where you introduce IAVF_RXDID_ALLOWED().
+I realize that the macros added previously are indented with spaces, but
+it's not sorta correct style for the kernel. Maybe you'd indent both new
+macros (RXDID and PTP) with tabs? You can also break the line different
+way if you want, like
+
+#define IAVF_PTP_ALLOWED(a)					\
+	((a)->vf_res->vf_cap_flags & VIRTCHNL_VF_CAP_PTP)
+
+Looks more clear than breaking it after the '&'.
+
+>  	struct virtchnl_vf_resource *vf_res; /* incl. all VSIs */
+>  	struct virtchnl_vsi_resource *vsi_res; /* our LAN VSI */
+>  	struct virtchnl_version_info pf_version;
+> @@ -430,6 +440,7 @@ struct iavf_adapter {
+>  		       ((_a)->pf_version.minor == 1))
+>  	struct virtchnl_vlan_caps vlan_v2_caps;
+>  	u64 supp_rxdids;
+> +	struct iavf_ptp ptp;
+>  	u16 msg_enable;
+>  	struct iavf_eth_stats current_stats;
+>  	struct iavf_vsi vsi;
 
 [...]
 
-> +/**
-> + * iavf_select_rx_desc_format - Select Rx descriptor format
-> + * @adapter: adapter private structure
-> + *
-> + * Select what Rx descriptor format based on availability and enabled
-> + * features.
-> + *
-> + * Return: the desired RXDID to select for a given Rx queue, as defined by
-> + *         enum virtchnl_rxdid_format.
-> + */
-> +static u8 iavf_select_rx_desc_format(const struct iavf_adapter *adapter)
-> +{
-> +	u64 rxdids = adapter->supp_rxdids;
+> diff --git a/drivers/net/ethernet/intel/iavf/iavf_ptp.h b/drivers/net/ethernet/intel/iavf/iavf_ptp.h
+> new file mode 100644
+> index 000000000000..65678e76c34f
+> --- /dev/null
+> +++ b/drivers/net/ethernet/intel/iavf/iavf_ptp.h
+> @@ -0,0 +1,9 @@
+> +/* SPDX-License-Identifier: GPL-2.0 */
+> +/* Copyright(c) 2024 Intel Corporation. */
 > +
-> +	/* If we did not negotiate VIRTCHNL_VF_OFFLOAD_RX_FLEX_DESC, we must
-> +	 * stick with the default value of the legacy 32 byte format.
-> +	 */
-> +	if (!IAVF_RXDID_ALLOWED(adapter))
-> +		return VIRTCHNL_RXDID_1_32B_BASE;
+> +#ifndef _IAVF_PTP_H_
+> +#define _IAVF_PTP_H_
 > +
-> +	/* Warn if the PF does not list support for the default legacy
-> +	 * descriptor format. This shouldn't happen, as this is the format
-> +	 * used if VIRTCHNL_VF_OFFLOAD_RX_FLEX_DESC is not supported. It is
-> +	 * likely caused by a bug in the PF implementation failing to indicate
-> +	 * support for the format.
-> +	 */
-> +	if (!(rxdids & VIRTCHNL_RXDID_1_32B_BASE_M))
-> +		dev_warn(&adapter->pdev->dev, "PF does not list support for default Rx descriptor format\n");
+> +#include "iavf_types.h"
+> +
+> +#endif /* _IAVF_PTP_H_ */
+> diff --git a/drivers/net/ethernet/intel/iavf/iavf_types.h b/drivers/net/ethernet/intel/iavf/iavf_types.h
+> new file mode 100644
+> index 000000000000..6b7029a1a5a7
+> --- /dev/null
+> +++ b/drivers/net/ethernet/intel/iavf/iavf_types.h
+> @@ -0,0 +1,36 @@
+> +/* SPDX-License-Identifier: GPL-2.0 */
+> +/* Copyright(c) 2024 Intel Corporation. */
+> +
+> +#ifndef _IAVF_TYPES_H_
+> +#define _IAVF_TYPES_H_
+> +
+> +#include "iavf_types.h"
+> +
+> +#include <linux/avf/virtchnl.h>
+> +#include <linux/ptp_clock_kernel.h>
 
-pci_warn() or netdev_warn() if netdev is available here, sorry if I
-didn't mention this earlier =\
+Oh well. I initially asked to introduce iavf_types.h to not bloat
+iavf.h, but now types.h includes big ptp_clock_kernel.h :z
+When I was reviewing PTP for idpf, I proposed to make this iavf_ptp in
+iavf_adapter a pointer and allocate it dynamically, so that iavf.h
+wouldn't need to include anything PTP-related at all. This way you
+wouldn't need iavf_types.h.
+What do you think?
 
 > +
-> +	return VIRTCHNL_RXDID_1_32B_BASE;
-> +}
+> +/* structure used to queue PTP commands for processing */
+> +struct iavf_ptp_aq_cmd {
+> +	struct list_head list;
+> +	enum virtchnl_ops v_opcode:16;
+> +	u16 msglen;
+> +	u8 msg[] __counted_by(msglen);
+> +};
 > +
->  /**
->   * iavf_configure_rx - Configure Receive Unit after Reset
->   * @adapter: board private structure
+> +/* fields used for PTP support */
+
+Redundant comment I'd say.
+
+> +struct iavf_ptp {
+> +	wait_queue_head_t phc_time_waitqueue;
+> +	struct virtchnl_ptp_caps hw_caps;
+> +	struct ptp_clock_info info;
+> +	struct ptp_clock *clock;
+> +	struct list_head aq_cmds;
+> +	u64 cached_phc_time;
+> +	unsigned long cached_phc_updated;
+> +	/* Lock protecting access to the AQ command list */
+> +	struct mutex aq_cmd_lock;
+> +	struct kernel_hwtstamp_config hwtstamp_config;
+> +	bool initialized:1;
+> +	bool phc_time_ready:1;
+> +};
+> +
+> +#endif /* _IAVF_TYPES_H_ */
 
 [...]
 
-> @@ -262,6 +276,37 @@ int iavf_get_vf_vlan_v2_caps(struct iavf_adapter *adapter)
->  	return err;
+> @@ -307,6 +343,38 @@ int iavf_get_vf_supported_rxdids(struct iavf_adapter *adapter)
+>  	return 0;
 >  }
 >  
-> +int iavf_get_vf_supported_rxdids(struct iavf_adapter *adapter)
+> +int iavf_get_vf_ptp_caps(struct iavf_adapter *adapter)
 > +{
+> +	struct virtchnl_ptp_caps caps = {};
 > +	struct iavf_hw *hw = &adapter->hw;
 > +	struct iavf_arq_event_info event;
-> +	u32 len = sizeof(u64);
 > +	enum virtchnl_ops op;
 > +	enum iavf_status err;
-> +	u8 rxdids;
 > +
-> +	event.msg_buf = &rxdids;
-> +	event.buf_len = len;
-
-This looks suspicious. @rxdids is u8, while @len is sizeof(u64), i.e 8
-bytes, not 1. Is this intended? Or maybe @rxdids should be u64 here as
-well, just like adapter->supported_rxdids?
-
+> +	event.msg_buf = (u8 *)&caps;
+> +	event.buf_len = sizeof(caps);
 > +
 > +	while (1) {
-
-@op can be declared right here.
-@err can be also declared right here if you address the comment below.
-
 > +		/* When the AQ is empty, iavf_clean_arq_element will return
 > +		 * nonzero and this loop will terminate.
 > +		 */
 > +		err = iavf_clean_arq_element(hw, &event, NULL);
 > +		if (err != IAVF_SUCCESS)
 > +			return err;
-> +		op = le32_to_cpu(event.desc.cookie_high);
-> +		if (op == VIRTCHNL_OP_GET_SUPPORTED_RXDIDS)
+> +		op = (enum virtchnl_ops)le32_to_cpu(event.desc.cookie_high);
 
-When one of the elements you want to compare is a compile-time constant,
-you will get more optimized code if you do
+This cast is not needed.
 
-		__le32 op;
-
-		op = event.desc.cookie_high;
-		if (op == cpu_to_le32(VIRTCHNL_OP_GET_SUPPORTED_RXDIDS))
-
-because then you won't need to byteswap a variable and constants get
-byteswapped at compilation time.
-
-But given that iavf runs on LE 99% of time and it's not hotpath, it's up
-to you whether to do it like that here or just leave as it is.
-
+> +		if (op == VIRTCHNL_OP_1588_PTP_GET_CAPS)
 > +			break;
+
+Same comments as to one of the previous patches -- you can declare @op
+inside the loop and also take into consideration that cpu_to_le32(const)
+is faster than le32_to_cpu(var) on BE.
+
 > +	}
 > +
 > +	err = le32_to_cpu(event.desc.cookie_low);
-> +	if (!err)
-
-	if (!event.desc.cookie_low)
-
-Because 0 == le32_to_cpu(0), it's always 0.
-So you don't need @err here and it can be declared inside the loop above.
-
-> +		adapter->supp_rxdids = rxdids;
+> +	if (err)
+> +		return err;
+> +
+> +	memcpy(&adapter->ptp.hw_caps, &caps, sizeof(caps));
 > +
 > +	return 0;
 > +}
@@ -385,60 +468,21 @@ So you don't need @err here and it can be declared inside the loop above.
 >  /**
 >   * iavf_configure_queues
 >   * @adapter: adapter structure
-> @@ -308,6 +353,8 @@ void iavf_configure_queues(struct iavf_adapter *adapter)
->  		vqpi->rxq.dma_ring_addr = adapter->rx_rings[i].dma;
->  		vqpi->rxq.max_pkt_size = max_frame;
->  		vqpi->rxq.databuffer_size = adapter->rx_rings[i].rx_buf_len;
-> +		if (IAVF_RXDID_ALLOWED(adapter))
-> +			vqpi->rxq.rxdid = adapter->rxdid;
->  		if (CRC_OFFLOAD_ALLOWED(adapter))
->  			vqpi->rxq.crc_disable = !!(adapter->netdev->features &
->  						   NETIF_F_RXFCS);
-> @@ -2372,6 +2419,10 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
->  			aq_required;
->  		}
+> @@ -2423,6 +2491,10 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
+>  		memcpy(&adapter->supp_rxdids, msg,
+>  		       min_t(u16, msglen, sizeof(adapter->supp_rxdids)));
 >  		break;
-> +	case VIRTCHNL_OP_GET_SUPPORTED_RXDIDS:
-> +		memcpy(&adapter->supp_rxdids, msg,
-> +		       min_t(u16, msglen, sizeof(adapter->supp_rxdids)));
+> +	case VIRTCHNL_OP_1588_PTP_GET_CAPS:
+> +		memcpy(&adapter->ptp.hw_caps, msg,
+> +		       min_t(u16, msglen, sizeof(adapter->ptp.hw_caps)));
 
-Why is this needed if you assign ->supp_rxdids in
-iavf_get_vf_supported_rxdids()? Or is this something different?
-
-I'd also say this memcpy() is not safe. ->supp_rxdids is u64. If somehow
-@msglen is less than 8 bytes, you'd probably get a corrupted u64 value.
-I think you should compare @msglen to sizeof(u64) and bail out if it's
-different. If it's the same, you should just do
-
-		adapter->supp_rxdids = *(u64 *)msg;
+Same as to one of the previous patches -- I'd avoid partial copying and
+check the msglen first to be the same as this sizeof().
 
 > +		break;
 >  	case VIRTCHNL_OP_ENABLE_QUEUES:
 >  		/* enable transmits */
 >  		iavf_irq_enable(adapter, true);
-> diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl.c b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-> index b60df6e9b3e7..3c2d6a504aa0 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-> @@ -2709,12 +2709,12 @@ static int ice_vc_set_rss_hena(struct ice_vf *vf, u8 *msg)
->  static int ice_vc_query_rxdid(struct ice_vf *vf)
->  {
->  	enum virtchnl_status_code v_ret = VIRTCHNL_STATUS_SUCCESS;
-> -	struct virtchnl_supported_rxdids *rxdid = NULL;
->  	struct ice_hw *hw = &vf->pf->hw;
->  	struct ice_pf *pf = vf->pf;
-> -	int len = 0;
-> -	int ret, i;
-> +	u32 len = sizeof(u64);
->  	u32 regval;
-> +	u64 rxdid;
-> +	int ret, i;
-
-RCT broke here =\
-
->  
->  	if (!test_bit(ICE_VF_STATE_ACTIVE, vf->vf_states)) {
->  		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
 
 Thanks,
 Olek
