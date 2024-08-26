@@ -4,113 +4,110 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5B7CBC5321D
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 26 Aug 2024 18:10:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6545EC54731
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 26 Aug 2024 18:10:50 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id E4281405FB;
-	Mon, 26 Aug 2024 18:10:46 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 23111405DF;
+	Mon, 26 Aug 2024 18:10:50 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id YLqXBzVEMHzY; Mon, 26 Aug 2024 18:10:46 +0000 (UTC)
+ id uT_LZwIASke8; Mon, 26 Aug 2024 18:10:49 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org CC4CC405E3
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 4D54D40520
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1724695845;
-	bh=XaxxGv7jFfJqyIYiIuAizJBdptFEUd7hS9a99HmhF8g=;
+	s=default; t=1724695849;
+	bh=+2F7nz3UMUAFR15Vkm7j1Cul/J99ot3Q3o9XowrrRt8=;
 	h=Date:In-Reply-To:References:From:To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=iCK8uwoa3hzUVAcScdXcJYXQu5tFEz01ovhZsSNShnn0PXWl91CRhoxdzH5EfoTem
-	 S8hGLilZAZvobQv4rb6oB/Zb+EQ6LcfBGdZBavcRhftGomWaBlOs0A1puY6bzqja0l
-	 R9H++nAmPu6Om748Xmd2cqDkySEpJqR3igLkjpv+zEaQ0Ed2j9DHLueIbc/6xjEYp/
-	 r27evT/HzzZB3/vF7nJfpBWGcp5ck6RmpIidsJZWv18Fr4Ujyld/VIITMM4RPftycO
-	 iqt4LrvdRcAv9Zl+tN+skLH8o5PmAMSWGQvm9u/w82ZQi3kXsG3wtWZdXjmWEDrgva
-	 yXmmOUQeETd3A==
+	b=xN8BDROidha0eRMGPRBTAwQnJ8HNSfM+DZvWxTOeKDpFMLbVzTQfErhbp4URx/eWl
+	 pUljb0r0Z0surmlQ0RDnzOKvHIiktHV/9+bnWqQjfTOa2NMZmg4AN80gnImZ/zRCBP
+	 ZlqaGSkMgcY67ZDGubGZ+cvcKMNU3JDJO4B6+vkgnspK6lQJ0JSObK8T90Stp6Edg6
+	 SQxCmdTuCh+DN7h7LQIW7awdQmefhDUtx4rnFa1ZcmHAmV9ek306GzQGGCESHvqCSj
+	 XL7r6LgXJxUdHCqpQBU7XxHRMCt7HB/TiqQgChs8BYNyVUKDDWwZ2n9hDyaBj+gNFt
+	 YLY0fib3M7Epw==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id CC4CC405E3;
-	Mon, 26 Aug 2024 18:10:45 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 4D54D40520;
+	Mon, 26 Aug 2024 18:10:49 +0000 (UTC)
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 052A41BF2AB
- for <intel-wired-lan@lists.osuosl.org>; Mon, 26 Aug 2024 18:10:43 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 828261BF2AB
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 26 Aug 2024 18:10:47 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id B5ADB40541
- for <intel-wired-lan@lists.osuosl.org>; Mon, 26 Aug 2024 18:10:42 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 6CEF640602
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 26 Aug 2024 18:10:47 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id X2_tuMLeVmRT for <intel-wired-lan@lists.osuosl.org>;
- Mon, 26 Aug 2024 18:10:42 +0000 (UTC)
+ id TqtkUExLePmZ for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 26 Aug 2024 18:10:46 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom;
  client-ip=2607:f8b0:4864:20::1149; helo=mail-yw1-x1149.google.com;
- envelope-from=3imxmzgokdxsd1efam9j8p7ff7c5.3fd9ek5c-n9i54-c1ec9jkj.fjlfjc.fi7@flex--manojvishy.bounces.google.com;
+ envelope-from=3jcxmzgokdyai6jkfreoduckkcha.8kiejpah-sena9-h6jheopo.koqkoh.knc@flex--manojvishy.bounces.google.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org AE8C9405C7
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org AE8C9405C7
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 6921E405F2
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 6921E405F2
 Received: from mail-yw1-x1149.google.com (mail-yw1-x1149.google.com
  [IPv6:2607:f8b0:4864:20::1149])
- by smtp2.osuosl.org (Postfix) with ESMTPS id AE8C9405C7
- for <intel-wired-lan@lists.osuosl.org>; Mon, 26 Aug 2024 18:10:41 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 6921E405F2
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 26 Aug 2024 18:10:46 +0000 (UTC)
 Received: by mail-yw1-x1149.google.com with SMTP id
- 00721157ae682-6b43e6b9c82so109655137b3.0
- for <intel-wired-lan@lists.osuosl.org>; Mon, 26 Aug 2024 11:10:41 -0700 (PDT)
+ 00721157ae682-6b46a237b48so97825947b3.1
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 26 Aug 2024 11:10:46 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20230601; t=1724695840; x=1725300640;
- h=content-transfer-encoding:cc:to:from:subject:message-id:references
- :mime-version:in-reply-to:date:x-gm-message-state:from:to:cc:subject
- :date:message-id:reply-to;
- bh=XaxxGv7jFfJqyIYiIuAizJBdptFEUd7hS9a99HmhF8g=;
- b=dTpytIrnJIWrL/+fg7/+P30cz3vrDuH5ULNSBGp1FK58wJs7E0xxKJnotHjYETQ/PX
- NMP/jpRs1VB0vFs2GEbnBkGLuW7I2AX5HlCjBiMIasn+t+ge9nbFiAsMIJAAkMAyRFwT
- BxZVtnJ3DMuOdVsFJToYo8FKED2ShyBsmH49176xHz2ykm4h/I6Ghoz4nx28wzn3+GvD
- jQKcXscHCnEUeldvHdkJ7PAtUNloc9/WBMGDeEgKPMaG2dM78nnR5xsNkCcTCbhGqvnY
- O0x1XRbd5q6Kd8cjHj2sMjlDe1UkqJK3MnUkQv1lc1kJFfew2cSOUALyDv9fWUQi8SXy
- n0cg==
+ d=1e100.net; s=20230601; t=1724695845; x=1725300645;
+ h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+ :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+ bh=+2F7nz3UMUAFR15Vkm7j1Cul/J99ot3Q3o9XowrrRt8=;
+ b=aPQ6hcalJpznwibt/W+m36ot2CNTjTmgdchwK6/ENVt+/MOINR4ZHyQ2oA99uYrV0S
+ 98ymnwl6YtdRfCJPNWhziSz14EKgClQ5PBWsm49yLCAtY7Na+s9zEIW45u2bWA6/miVa
+ OynY1QGzVhiJflhrUN9kcUK/DpWjeB+Xqm73IN4ek0z1scsMtxf9dAwwhT37iAgSakub
+ OlioMBrBW+Z7D2JQXjqUYMKbGF0QZctWZARHf99lSk5Mc3nr5nSJq0IgEmQHPoT2A6yH
+ HzGZpnI7QaBoaG4OOr3xFg33CWjQdQOFE3kXWP65xucq3KHRDKti5YlZCNvA4KSXtcZm
+ R25A==
 X-Forwarded-Encrypted: i=1;
- AJvYcCXvovDPHQYj0udKn9jfE8i/2CjybUooFq2LADzDhzx0Th6AmkOnWFSH0xrsACtiNBZJQ49ikyh4Tut5zPggY78=@lists.osuosl.org
-X-Gm-Message-State: AOJu0YzN2i4BmzXxt51x401BFWA5WreIRRX5HaxeJw5asM8k5Re1Wk2C
- 6qXtUBv6vz/3kEGSw6UKcz1iSdgTJ/HCbE5VJoiaV/awaCYSNbEXRAgya2Q4N3A905WyjuZT01i
- Ao9+wQMPXUOOX4h/0xg==
-X-Google-Smtp-Source: AGHT+IF8ZV8FsZbdR4VjcVdwhThUJ+yFCGwm3hwa2GL7dij+a+kUwRzolQFuh8av8q6i/+SntdPLY+t9PpMbMqR9
+ AJvYcCX+dKn75HcteO/zKY/i68ZXQIgumQbPyqhuqP/QN2G/3i8VYu26TLTO9R67xgePN0m66sbkY/eDLwBjE8QG71k=@lists.osuosl.org
+X-Gm-Message-State: AOJu0YxICOUDPFRqxkNNaf3ixmH2/3kRrveJGgPeH+hfooiN67fGPnWM
+ 5+NYbXETqSd8LDP/hPPC/I4rRTYYkjbjl7oFqSiN7SrGPCe471sv2I71GrPM98Dlxeq1wKuh6FU
+ mYMkMrK5YfkFE9sFUxw==
+X-Google-Smtp-Source: AGHT+IH1ALkhd6H0T9zDYc5JDKk/4XNxqMfJlwCfIvNtsnq/kvN4ZDenJppUZ+Y9eW49jxiGQRirEW+rHE7gLg3t
 X-Received: from manojvishy.c.googlers.com
  ([fda3:e722:ac3:cc00:20:ed76:c0a8:413f])
- (user=manojvishy job=sendgmr) by 2002:a05:690c:4a05:b0:6b0:57ec:c5f9 with
- SMTP id 00721157ae682-6c61eed1562mr4756357b3.0.1724695840610; Mon, 26 Aug
- 2024 11:10:40 -0700 (PDT)
-Date: Mon, 26 Aug 2024 18:10:30 +0000
+ (user=manojvishy job=sendgmr) by 2002:a05:690c:6e09:b0:6b2:7ff8:ca3 with SMTP
+ id 00721157ae682-6cfbaf3a1c9mr97067b3.4.1724695845308; Mon, 26 Aug 2024
+ 11:10:45 -0700 (PDT)
+Date: Mon, 26 Aug 2024 18:10:32 +0000
 In-Reply-To: <20240826181032.3042222-1-manojvishy@google.com>
 Mime-Version: 1.0
 References: <20240826181032.3042222-1-manojvishy@google.com>
 X-Mailer: git-send-email 2.46.0.295.g3b9ea8a38a-goog
-Message-ID: <20240826181032.3042222-3-manojvishy@google.com>
+Message-ID: <20240826181032.3042222-5-manojvishy@google.com>
 From: Manoj Vishwanathan <manojvishy@google.com>
 To: Tony Nguyen <anthony.l.nguyen@intel.com>, 
  Przemek Kitszel <przemyslaw.kitszel@intel.com>,
  "David S. Miller" <davem@davemloft.net>, 
  Eric Dumazet <edumazet@google.com>, intel-wired-lan@lists.osuosl.org
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=google.com; s=20230601; t=1724695840; x=1725300640; darn=lists.osuosl.org;
- h=content-transfer-encoding:cc:to:from:subject:message-id:references
- :mime-version:in-reply-to:date:from:to:cc:subject:date:message-id
- :reply-to;
- bh=XaxxGv7jFfJqyIYiIuAizJBdptFEUd7hS9a99HmhF8g=;
- b=BPaFoMU+P5TCbf8aYgq5xgpaDqUYDXNwdVPcTR2X0sQsMYX9no7vF/X+IvvRXVk0Pb
- iCdqwD8YaQES16Gr29q/f3DPnvc0m1iRqvKHWInaXGa5uVgx+llZIy5tayRitC2v9m0g
- JpTuzymZYGjFFIA+7kvu/yZAIfeFI9xXrrPlNSE59SYFuaGjwDxbv8XdsXbdcoC7Blkv
- 1NxkaD7DTMlc4L7IAFxIpfPiqHXNxEDxMauFVitvSuOu42TEXsmOcWfxCdTLbNR83isy
- Fd9LEQNt1DORv1C2pkMN7g0w3Y58qTrpm41uVTuc7/S/8ud+WqN54WjfTqPBCtd6LUbr
- SPag==
+ d=google.com; s=20230601; t=1724695845; x=1725300645; darn=lists.osuosl.org;
+ h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+ :date:from:to:cc:subject:date:message-id:reply-to;
+ bh=+2F7nz3UMUAFR15Vkm7j1Cul/J99ot3Q3o9XowrrRt8=;
+ b=4MLlEOCkNmu3IHFWX7E48oHHiCW+dix3CpSNyXfjcttjojQSuXtNxPy6k/VL5+CR7e
+ IhoETao7BynrMvl4A5+WcvcbY0HjwvufJ3/PLiZ2Nvmy4z7hb6exoX5yxS2xfUAh9xly
+ 45CAS14JqD59/MZtg3yv2Z8Z1RfL75FhMnM4wIcDBxHc43K3H9SEu1M3qh9jTZgVedLG
+ FsS5k/rJVV+5j+1SQX4N1z9+r0/VO3tHqCoIcSIH5owj+1ulxHxVBXYe63xcJdw3IEN4
+ zy7erYJzYarGaC4f6rJvdWt1FUJxqvn2WJboUFu6EXCk1GI11aOdvMT1nLV3nor4o0/Z
+ iR6Q==
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=reject dis=none)
  header.from=google.com
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256
- header.s=20230601 header.b=BPaFoMU+
-Subject: [Intel-wired-lan] [[PATCH v2 iwl-next] v2 2/4] idpf: Acquire the
- lock before accessing the xn->salt
+ header.s=20230601 header.b=4MLlEOCk
+Subject: [Intel-wired-lan] [[PATCH v2 iwl-next] v2 4/4] idpf: add more info
+ during virtchnl transaction time out
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -128,40 +125,47 @@ Cc: netdev@vger.kernel.org, Manoj Vishwanathan <manojvishy@google.com>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The transaction salt was being accessed before acquiring the
-idpf_vc_xn_lock when idpf has to forward the virtchnl reply.
+Add more information related to the transaction like cookie, vc_op,
+salt when transaction times out and include similar information
+when transaction salt does not match.
 
-Fixes: 34c21fa894a1a (=E2=80=9Cidpf: implement virtchnl transaction manager=
-=E2=80=9D)
+Info output for transaction timeout:
+-------------------
+(op:5015 cookie:45fe vc_op:5015 salt:45 timeout:60000ms)
+-------------------
+
 Signed-off-by: Manoj Vishwanathan <manojvishy@google.com>
 ---
- drivers/net/ethernet/intel/idpf/idpf_virtchnl.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/idpf/idpf_virtchnl.c | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c b/drivers/net/=
-ethernet/intel/idpf/idpf_virtchnl.c
-index 70986e12da28..30eec674d594 100644
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
+index 30eec674d594..d8294f31fdf9 100644
 --- a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
 +++ b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
-@@ -612,14 +612,15 @@ idpf_vc_xn_forward_reply(struct idpf_adapter *adapter=
-,
- 		return -EINVAL;
- 	}
- 	xn =3D &adapter->vcxn_mngr->ring[xn_idx];
-+	idpf_vc_xn_lock(xn);
- 	salt =3D FIELD_GET(IDPF_VC_XN_SALT_M, msg_info);
- 	if (xn->salt !=3D salt) {
- 		dev_err_ratelimited(&adapter->pdev->dev, "Transaction salt does not matc=
-h (%02x !=3D %02x)\n",
- 				    xn->salt, salt);
-+		idpf_vc_xn_unlock(xn);
- 		return -EINVAL;
- 	}
-=20
--	idpf_vc_xn_lock(xn);
- 	switch (xn->state) {
+@@ -517,8 +517,9 @@ static ssize_t idpf_vc_xn_exec(struct idpf_adapter *adapter,
+ 		retval = -ENXIO;
+ 		goto only_unlock;
  	case IDPF_VC_XN_WAITING:
- 		/* success */
---=20
+-		dev_notice_ratelimited(&adapter->pdev->dev, "Transaction timed-out (op %d, %dms)\n",
+-				       params->vc_op, params->timeout_ms);
++		dev_notice_ratelimited(&adapter->pdev->dev,
++				"Transaction timed-out (op:%d cookie:%04x vc_op:%d salt:%02x timeout:%dms)\n",
++				params->vc_op, cookie, xn->vc_op, xn->salt, params->timeout_ms);
+ 		retval = -ETIME;
+ 		break;
+ 	case IDPF_VC_XN_COMPLETED_SUCCESS:
+@@ -615,8 +616,8 @@ idpf_vc_xn_forward_reply(struct idpf_adapter *adapter,
+ 	idpf_vc_xn_lock(xn);
+ 	salt = FIELD_GET(IDPF_VC_XN_SALT_M, msg_info);
+ 	if (xn->salt != salt) {
+-		dev_err_ratelimited(&adapter->pdev->dev, "Transaction salt does not match (%02x != %02x)\n",
+-				    xn->salt, salt);
++		dev_err_ratelimited(&adapter->pdev->dev, "Transaction salt does not match (exp:%d@%02x(%d) != got:%d@%02x)\n",
++				xn->vc_op, xn->salt, xn->state, ctlq_msg->cookie.mbx.chnl_opcode, salt);
+ 		idpf_vc_xn_unlock(xn);
+ 		return -EINVAL;
+ 	}
+-- 
 2.46.0.295.g3b9ea8a38a-goog
 
