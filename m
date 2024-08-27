@@ -4,71 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 14590C54731
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 27 Aug 2024 21:53:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B3B7BC54735
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 27 Aug 2024 21:53:04 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id C420640693;
-	Tue, 27 Aug 2024 21:53:02 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 774B540689;
+	Tue, 27 Aug 2024 21:53:04 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id JoF_EuHmVz2S; Tue, 27 Aug 2024 21:53:01 +0000 (UTC)
+ id kd4VOE3hVxil; Tue, 27 Aug 2024 21:53:03 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9BD9740688
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C9A6640698
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1724795581;
-	bh=JS8Oiy+aWEVcAZZQB/POkAX3kGVQHtnxdJPC3vvAwOk=;
+	s=default; t=1724795582;
+	bh=tAxLSsYbpJWIi7yFTgquArjg0Gn/FxTJIitrET6sET8=;
 	h=From:Date:References:In-Reply-To:To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=r5/QccA/64npRUTIbUYhcIc6q96xQmLnZAIMod6A65kgpyQKQHWverLW+LI7TWCvG
-	 WkK4uDmgJs03+PdnF3lGgE6H5vfmg2WipDpkxpvTtx/KVTOo95p1bGJLH6hkDrqb3E
-	 AtyoWdwUWHeXyaf5gHPF+EQPkSYvVhxz63LfO3YPkTuICu5tjHgiKC15e9OF32QINB
-	 vCRZJjppG8e/NzgSi1yAXUaRMePb8elIZyqMNBGX0e54wgne1TQQu7g0O+izPsm+8f
-	 jLgcH22f48pG+60b7/+nLQckTz9NpVM/cQyD20O4nenxI0gytq+5qEQFt6d0bd8Kpu
-	 IAIGJgsRqHh3A==
+	b=JQhBsXxyuBuP81zQfb3LYr7J68KKpsRMaR5ICOudnCTsc/fKvT9uxWUro76j8rq++
+	 zhRBQU9wIXPqW/BnvnFgDIS3LXhjNacBHLrdyykKiUxBSyhdONTIJAxc67OH/Y1GGc
+	 3y72lIbYkVYksC4t+03ejCo2MqytvZDYIY1Fct2TpFq05YXcyP5N2MzIF0xg638FCS
+	 kdDO7KMv9KvFmt4Jw3lu2R4ET2mzLB9bGtXakf0inY+tInH/5GSMiPLbQkhYwox1cJ
+	 1HUIRo51NmoIA5Uu1qc16XNKmqbaiS/iVZBMw0ow+adp3Cbu3HrCwepbQGZgC8o2kz
+	 4NapO0ic9xV4Q==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 9BD9740688;
-	Tue, 27 Aug 2024 21:53:01 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 7129C1BF27E
+	by smtp4.osuosl.org (Postfix) with ESMTP id C9A6640698;
+	Tue, 27 Aug 2024 21:53:02 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id EF0781BF27E
  for <intel-wired-lan@lists.osuosl.org>; Tue, 27 Aug 2024 21:52:52 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id A55DE40A64
- for <intel-wired-lan@lists.osuosl.org>; Tue, 27 Aug 2024 21:52:51 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id F328481168
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 27 Aug 2024 21:52:50 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id rFrCgGkenxUU for <intel-wired-lan@lists.osuosl.org>;
- Tue, 27 Aug 2024 21:52:50 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id IjNnKg0WjNBw for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 27 Aug 2024 21:52:49 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.15;
  helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 80F2440A70
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 80F2440A70
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org B595E8112B
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B595E8112B
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.15])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 80F2440A70
- for <intel-wired-lan@lists.osuosl.org>; Tue, 27 Aug 2024 21:52:50 +0000 (UTC)
-X-CSE-ConnectionGUID: kXAd61I7QdyZ6CcBNutJkA==
-X-CSE-MsgGUID: MpnFVTbZQMaJwZTyykQ9VQ==
-X-IronPort-AV: E=McAfee;i="6700,10204,11177"; a="27068853"
-X-IronPort-AV: E=Sophos;i="6.10,181,1719903600"; d="scan'208";a="27068853"
+ by smtp1.osuosl.org (Postfix) with ESMTPS id B595E8112B
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 27 Aug 2024 21:52:49 +0000 (UTC)
+X-CSE-ConnectionGUID: 3GraaC4ZSFitO4pE+tgRxA==
+X-CSE-MsgGUID: pYzcW++5TZyyaS7h5CqhkQ==
+X-IronPort-AV: E=McAfee;i="6700,10204,11177"; a="27068833"
+X-IronPort-AV: E=Sophos;i="6.10,181,1719903600"; d="scan'208";a="27068833"
 Received: from fmviesa010.fm.intel.com ([10.60.135.150])
  by orvoesa107.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 27 Aug 2024 14:52:46 -0700
-X-CSE-ConnectionGUID: 4cA8EUACQt6PqP3+rmdbtg==
-X-CSE-MsgGUID: Z59/5KTkSPqO52QO0P/gkA==
+ 27 Aug 2024 14:52:45 -0700
+X-CSE-ConnectionGUID: lqFnlzDqQ7yRrp/R5dhrCA==
+X-CSE-MsgGUID: 5dYowZipSZuFbNJ7ziavsA==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.10,181,1719903600"; d="scan'208";a="63189514"
+X-IronPort-AV: E=Sophos;i="6.10,181,1719903600"; d="scan'208";a="63189502"
 Received: from jekeller-desk.jf.intel.com ([10.166.241.20])
  by fmviesa010-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  27 Aug 2024 14:52:45 -0700
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Tue, 27 Aug 2024 14:52:14 -0700
+Date: Tue, 27 Aug 2024 14:52:11 -0700
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20240827-e810-live-migration-jk-prep-ctx-functions-v1-11-0442e2e42d32@intel.com>
+Message-Id: <20240827-e810-live-migration-jk-prep-ctx-functions-v1-8-0442e2e42d32@intel.com>
 References: <20240827-e810-live-migration-jk-prep-ctx-functions-v1-0-0442e2e42d32@intel.com>
 In-Reply-To: <20240827-e810-live-migration-jk-prep-ctx-functions-v1-0-0442e2e42d32@intel.com>
 To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>, 
@@ -78,26 +78,25 @@ To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>,
 X-Mailer: b4 0.14.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1724795571; x=1756331571;
+ t=1724795570; x=1756331570;
  h=from:date:subject:mime-version:content-transfer-encoding:
  message-id:references:in-reply-to:to:cc;
- bh=V1acaurmabWgeKzUrbMQzlQQd8zEZyjCmvgy0RAkW9U=;
- b=Cn0p2bW1qRrJrXdXsijDsgQiqFQsvCFV/3dRtg8VKhygQCNKMmwkIsWB
- ZNRb4tYaYtNcdlct95BILUCMS95DTVrw5mB7Cr9NHxDnHE1lcx1gvb0ao
- dbZvt38B0cXD5n3c9ANA/7uqKxGyWavqLZW3pT2mIiLxKY4IUvmhnbUgd
- 61nRPy7DXc9QBU/CHZss+ckb/R7/65+FWdk9Rhkb7Nrbk4hGgfIlzFYmq
- it6zQXVbM1VPxtXnb1hk1ch2k3CZTF3EcQT8/7xLJo3k5Zh+7lX9/SlG+
- yzFn26hLlZKO4hjQ7CLbFHujZVMtgZgc6CnO0ZJdJth7hAWaDSrniWeLO
- g==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ bh=An9U9+LQbYKecW2Fkz6YDOf+MsE4rJ4Swe21fUxoRE8=;
+ b=Z2IA1PZrqHWRBVmjae/3V3iQiuCBsyyslpDM6y7Q40CmGb8cH6fIi7VB
+ O4qRwbXeVzwbCt5etRUZFtFvKQbGFB1/INEQt05oPD2Om5BpTDdFOGicU
+ KCacn8YhfeS0fcItxKKG6TY4UaK+862j/tmRp10ipMxLSxM7XY7MjEWg5
+ XjwF3YLLiZt5trlhtku4CSq43xmtc0BMmzaV7gfioLr3MNKtOVQnM55qx
+ tvdaXQhEPce5Vrk57y91XAG5DZ1/ZRP9bO2eRdMMg3GSkCvJoWf7LDDqs
+ qP/MUo+2Gm6E0hIUGEjCXRypKCkolDg1qwe588iS1Ekg1vA39Z4tk7kPv
+ A==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=Cn0p2bW1
-Subject: [Intel-wired-lan] [PATCH iwl-next 11/13] ice: reduce size of queue
- context fields
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=Z2IA1PZr
+Subject: [Intel-wired-lan] [PATCH iwl-next 08/13] lib: packing: fix
+ QUIRK_MSB_ON_THE_RIGHT behavior
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -114,124 +113,283 @@ Cc: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The ice_rlan_ctx and ice_tlan_ctx structures have some fields which are
-intentionally sized larger necessary relative to the packed sizes the data
-must fit into. This was done because the original ice_set_ctx() function
-and its helpers did not correctly handle packing when the packed bits
-straddled a byte. This is no longer the case with the use of the
-<linux/packing.h> implementation.
+The QUIRK_MSB_ON_THE_RIGHT quirk is intended to modify pack() and unpack()
+so that the most significant bit of each byte in the packed layout is on
+the right.
 
-Save some bytes in these structures by sizing the variables to the number
-of bytes the actual bitpacked fields fit into.
+The way the quirk is currently implemented is broken whenever the packing
+code packs or unpacks any value that is not exactly a full byte.
 
-There are a couple of gaps left in the structure, which is a result of the
-fields being in the order they appear in the packed bit layout, but where
-alignment forces some extra gaps. We could fix this, saving ~8 bytes from
-each structure. However, these structures are not used heavily, and the
-resulting savings is minimal:
+The broken behavior can occur when packing any values smaller than one
+byte, when packing any value that is not exactly a whole number of bytes,
+or when the packing is not aligned to a byte boundary.
 
-$ bloat-o-meter ice-before-reorder.ko ice-after-reorder.ko
-add/remove: 0/0 grow/shrink: 1/1 up/down: 26/-70 (-44)
-Function                                     old     new   delta
-ice_vsi_cfg_txq                             1873    1899     +26
-ice_setup_rx_ctx.constprop                  1529    1459     -70
-Total: Before=1459555, After=1459511, chg -0.00%
+This quirk is documented in the following way:
 
-Thus, the fields are left in the same order as the packed bit layout,
-despite the gaps this causes.
+  1. Normally (no quirks), we would do it like this:
 
+  ::
+
+    63 62 61 60 59 58 57 56 55 54 53 52 51 50 49 48 47 46 45 44 43 42 41 40 39 38 37 36 35 34 33 32
+    7                       6                       5                        4
+    31 30 29 28 27 26 25 24 23 22 21 20 19 18 17 16 15 14 13 12 11 10  9  8  7  6  5  4  3  2  1  0
+    3                       2                       1                        0
+
+  <snip>
+
+  2. If QUIRK_MSB_ON_THE_RIGHT is set, we do it like this:
+
+  ::
+
+    56 57 58 59 60 61 62 63 48 49 50 51 52 53 54 55 40 41 42 43 44 45 46 47 32 33 34 35 36 37 38 39
+    7                       6                        5                       4
+    24 25 26 27 28 29 30 31 16 17 18 19 20 21 22 23  8  9 10 11 12 13 14 15  0  1  2  3  4  5  6  7
+    3                       2                        1                       0
+
+  That is, QUIRK_MSB_ON_THE_RIGHT does not affect byte positioning, but
+  inverts bit offsets inside a byte.
+
+Essentially, the mapping for physical bit offsets should be reserved for a
+given byte within the payload. This reversal should be fixed to the bytes
+in the packing layout.
+
+The logic to implement this quirk is handled within the
+adjust_for_msb_right_quirk() function. This function does not work properly
+when dealing with the bytes that contain only a partial amount of data.
+
+In particular, consider trying to pack or unpack the range 53-44. We should
+always be mapping the bits from the logical ordering to their physical
+ordering in the same way, regardless of what sequence of bits we are
+unpacking.
+
+This, we should grab the following logical bits:
+
+  Logical: 55 54 53 52 51 50 49 48 47 45 44 43 42 41 40 39
+                  ^  ^  ^  ^  ^  ^  ^  ^  ^
+
+And pack them into the physical bits:
+
+   Physical: 48 49 50 51 52 53 54 55 40 41 42 43 44 45 46 47
+    Logical: 48 49 50 51 52 53                   44 45 46 47
+              ^  ^  ^  ^  ^  ^                    ^  ^  ^  ^
+
+The current logic in adjust_for_msb_right_quirk is broken. I believe it is
+intending to map according to the following:
+
+  Physical: 48 49 50 51 52 53 54 55 40 41 42 43 44 45 46 47
+   Logical:       48 49 50 51 52 53 44 45 46 47
+                   ^  ^  ^  ^  ^  ^  ^  ^  ^  ^
+
+That is, it tries to keep the bits at the start and end of a packing
+together. This is wrong, as it makes the packing change what bit is being
+mapped to what based on which bits you're currently packing or unpacking.
+
+Worse, the actual calculations within adjust_for_msb_right_quirk don't make
+sense.
+
+Consider the case when packing the last byte of an unaligned packing. It
+might have a start bit of 7 and an end bit of 5. This would have a width of
+3 bits. The new_start_bit will be calculated as the width - the box_end_bit
+- 1. This will underflow and produce a negative value, which will
+ultimate result in generating a new box_mask of all 0s.
+
+For any other values, the result of the calculations of the
+new_box_end_bit, new_box_start_bit, and the new box_mask will result in the
+exact same values for the box_end_bit, box_start_bit, and box_mask. This
+makes the calculations completely irrelevant.
+
+If box_end_bit is 0, and box_start_bit is 7, then the entire function of
+adjust_for_msb_right_quirk will boil down to just:
+
+    *to_write = bitrev8(*to_write)
+
+The other adjustments are attempting (incorrectly) to keep the bits in the
+same place but just reversed. This is not the right behavior even if
+implemented correctly, as it leaves the mapping dependent on the bit values
+being packed or unpacked.
+
+Remove adjust_for_msb_right_quirk() and just use bitrev8 to reverse the
+byte order when interacting with the packed data.
+
+In particular, for packing, we need to reverse both the box_mask and the
+physical value being packed. This is done after shifting the value by
+box_end_bit so that the reversed mapping is always aligned to the physical
+buffer byte boundary. The box_mask is reversed as we're about to use it to
+clear any stale bits in the physical buffer at this block.
+
+For unpacking, we need to reverse the contents of the physical buffer
+*before* masking with the box_mask. This is critical, as the box_mask is a
+logical mask of the bit layout before handling the QUIRK_MSB_ON_THE_RIGHT.
+
+Add several new tests which cover this behavior. These tests will fail
+without the fix and pass afterwards. Note that no current drivers make use
+of QUIRK_MSB_ON_THE_RIGHT. I suspect this is why there have been no reports
+of this inconsistency before.
+
+Fixes: 554aae35007e ("lib: Add support for generic packing operations")
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h | 32 ++++++++------------------
- 1 file changed, 10 insertions(+), 22 deletions(-)
+ lib/packing.c      | 39 +++++++++--------------------
+ lib/packing_test.c | 72 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 83 insertions(+), 28 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h b/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
-index 0e8ed8c226e6..4f68d2787d7d 100644
---- a/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
-+++ b/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
-@@ -377,23 +377,17 @@ enum ice_rx_flex_desc_status_error_1_bits {
- #define ICE_TX_DRBELL_Q_CTX_SIZE_DWORDS	5
- #define GLTCLAN_CQ_CNTX(i, CQ)		(GLTCLAN_CQ_CNTX0(CQ) + ((i) * 0x0800))
+diff --git a/lib/packing.c b/lib/packing.c
+index 500184530d07..9efe57d347c7 100644
+--- a/lib/packing.c
++++ b/lib/packing.c
+@@ -9,23 +9,6 @@
+ #include <linux/types.h>
+ #include <linux/bitrev.h>
  
--/* RLAN Rx queue context data
-- *
-- * The sizes of the variables may be larger than needed due to crossing byte
-- * boundaries. If we do not have the width of the variable set to the correct
-- * size then we could end up shifting bits off the top of the variable when the
-- * variable is at the top of a byte and crosses over into the next byte.
-- */
-+/* RLAN Rx queue context data */
- struct ice_rlan_ctx {
- 	u16 head;
--	u16 cpuid; /* bigger than needed, see above for reason */
-+	u8 cpuid;
- #define ICE_RLAN_BASE_S 7
- 	u64 base;
- 	u16 qlen;
- #define ICE_RLAN_CTX_DBUF_S 7
--	u16 dbuf; /* bigger than needed, see above for reason */
-+	u8 dbuf;
- #define ICE_RLAN_CTX_HBUF_S 6
--	u16 hbuf; /* bigger than needed, see above for reason */
-+	u8 hbuf;
- 	u8 dtype;
- 	u8 dsize;
- 	u8 crcstrip;
-@@ -401,12 +395,12 @@ struct ice_rlan_ctx {
- 	u8 hsplit_0;
- 	u8 hsplit_1;
- 	u8 showiv;
--	u32 rxmax; /* bigger than needed, see above for reason */
-+	u16 rxmax;
- 	u8 tphrdesc_ena;
- 	u8 tphwdesc_ena;
- 	u8 tphdata_ena;
- 	u8 tphhead_ena;
--	u16 lrxqthresh; /* bigger than needed, see above for reason */
-+	u8 lrxqthresh;
- 	u8 prefena;	/* NOTE: normally must be set to 1 at init */
+-static void adjust_for_msb_right_quirk(u64 *to_write, size_t *box_start_bit,
+-				       size_t *box_end_bit, u8 *box_mask)
+-{
+-	size_t box_bit_width = *box_start_bit - *box_end_bit + 1;
+-	size_t new_box_start_bit, new_box_end_bit;
+-
+-	*to_write >>= *box_end_bit;
+-	*to_write = bitrev8(*to_write) >> (8 - box_bit_width);
+-	*to_write <<= *box_end_bit;
+-
+-	new_box_end_bit   = box_bit_width - *box_start_bit - 1;
+-	new_box_start_bit = box_bit_width - *box_end_bit - 1;
+-	*box_mask = GENMASK_ULL(new_box_start_bit, new_box_end_bit);
+-	*box_start_bit = new_box_start_bit;
+-	*box_end_bit   = new_box_end_bit;
+-}
+-
+ /**
+  * calculate_box_addr - Determine physical location of byte in buffer
+  * @box: Index of byte within buffer seen as a logical big-endian big number
+@@ -170,13 +153,13 @@ int pack(void *pbuf, u64 uval, size_t startbit, size_t endbit, size_t pbuflen,
+ 		/* Write to pbuf, read from uval */
+ 		pval = uval & proj_mask;
+ 		pval >>= proj_end_bit;
+-		if (quirks & QUIRK_MSB_ON_THE_RIGHT)
+-			adjust_for_msb_right_quirk(&pval,
+-						   &box_start_bit,
+-						   &box_end_bit,
+-						   &box_mask);
+-
+ 		pval <<= box_end_bit;
++
++		if (quirks & QUIRK_MSB_ON_THE_RIGHT) {
++			pval = bitrev8(pval);
++			box_mask = bitrev8(box_mask);
++		}
++
+ 		((u8 *)pbuf)[box_addr] &= ~box_mask;
+ 		((u8 *)pbuf)[box_addr] |= pval;
+ 	}
+@@ -276,12 +259,12 @@ int unpack(const void *pbuf, u64 *uval, size_t startbit, size_t endbit,
+ 		box_addr = calculate_box_addr(box, pbuflen, quirks);
+ 
+ 		/* Read from pbuf, write to uval */
+-		pval = ((u8 *)pbuf)[box_addr] & box_mask;
++		pval = ((u8 *)pbuf)[box_addr];
++
+ 		if (quirks & QUIRK_MSB_ON_THE_RIGHT)
+-			adjust_for_msb_right_quirk(&pval,
+-						   &box_start_bit,
+-						   &box_end_bit,
+-						   &box_mask);
++			pval = bitrev8(pval);
++
++		pval &= box_mask;
+ 
+ 		pval >>= box_end_bit;
+ 		pval <<= proj_end_bit;
+diff --git a/lib/packing_test.c b/lib/packing_test.c
+index 6e68da980802..44062fb93d83 100644
+--- a/lib/packing_test.c
++++ b/lib/packing_test.c
+@@ -251,6 +251,42 @@ const struct packing_test_case cases[] = {
+ 		.end_bit = 43,
+ 		.quirks = QUIRK_LSW32_IS_FIRST | QUIRK_LITTLE_ENDIAN,
+ 	},
++	{
++		.desc = "msb right, 16 bytes, non-aligned",
++		PBUF(0x00, 0x00, 0x00, 0x91, 0x88, 0x59, 0x44, 0xd5,
++		     0xcc, 0x3d, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00),
++		.uval = 0x1122334455667788,
++		.start_bit = 106,
++		.end_bit = 43,
++		.quirks = QUIRK_MSB_ON_THE_RIGHT,
++	},
++	{
++		.desc = "msb right + lsw32 first, 16 bytes, non-aligned",
++		PBUF(0x00, 0x00, 0x00, 0x00, 0xcc, 0x3d, 0x02, 0x00,
++		     0x88, 0x59, 0x44, 0xd5, 0x00, 0x00, 0x00, 0x91),
++		.uval = 0x1122334455667788,
++		.start_bit = 106,
++		.end_bit = 43,
++		.quirks = QUIRK_MSB_ON_THE_RIGHT | QUIRK_LSW32_IS_FIRST,
++	},
++	{
++		.desc = "msb right + little endian words, 16 bytes, non-aligned",
++		PBUF(0x91, 0x00, 0x00, 0x00, 0xd5, 0x44, 0x59, 0x88,
++		     0x00, 0x02, 0x3d, 0xcc, 0x00, 0x00, 0x00, 0x00),
++		.uval = 0x1122334455667788,
++		.start_bit = 106,
++		.end_bit = 43,
++		.quirks = QUIRK_MSB_ON_THE_RIGHT | QUIRK_LITTLE_ENDIAN,
++	},
++	{
++		.desc = "msb right + lsw32 first + little endian words, 16 bytes, non-aligned",
++		PBUF(0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x3d, 0xcc,
++		     0xd5, 0x44, 0x59, 0x88, 0x91, 0x00, 0x00, 0x00),
++		.uval = 0x1122334455667788,
++		.start_bit = 106,
++		.end_bit = 43,
++		.quirks = QUIRK_MSB_ON_THE_RIGHT | QUIRK_LSW32_IS_FIRST | QUIRK_LITTLE_ENDIAN,
++	},
+ 	/* These tests pack and unpack a u64 with all bits set
+ 	 * (0xffffffffffffffff) at an odd starting bit (43) within an
+ 	 * otherwise zero array of 128 bits (16 bytes). They test all possible
+@@ -292,6 +328,42 @@ const struct packing_test_case cases[] = {
+ 		.end_bit = 43,
+ 		.quirks = QUIRK_LSW32_IS_FIRST | QUIRK_LITTLE_ENDIAN,
+ 	},
++	{
++		.desc = "msb right, 16 bytes, non-aligned, 0xff",
++		PBUF(0x00, 0x00, 0xe0, 0xff, 0xff, 0xff, 0xff, 0xff,
++		     0xff, 0xff, 0x1f, 0x00, 0x00, 0x00, 0x00, 0x00),
++		.uval = 0xffffffffffffffff,
++		.start_bit = 106,
++		.end_bit = 43,
++		.quirks = QUIRK_MSB_ON_THE_RIGHT,
++	},
++	{
++		.desc = "msb right + lsw32 first, 16 bytes, non-aligned, 0xff",
++		PBUF(0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0x1f, 0x00,
++		     0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0xe0, 0xff),
++		.uval = 0xffffffffffffffff,
++		.start_bit = 106,
++		.end_bit = 43,
++		.quirks = QUIRK_MSB_ON_THE_RIGHT | QUIRK_LSW32_IS_FIRST,
++	},
++	{
++		.desc = "msb right + little endian words, 16 bytes, non-aligned, 0xff",
++		PBUF(0xff, 0xe0, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff,
++		     0x00, 0x1f, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00),
++		.uval = 0xffffffffffffffff,
++		.start_bit = 106,
++		.end_bit = 43,
++		.quirks = QUIRK_MSB_ON_THE_RIGHT | QUIRK_LITTLE_ENDIAN,
++	},
++	{
++		.desc = "msb right + lsw32 first + little endian words, 16 bytes, non-aligned, 0xff",
++		PBUF(0x00, 0x00, 0x00, 0x00, 0x00, 0x1f, 0xff, 0xff,
++		     0xff, 0xff, 0xff, 0xff, 0xff, 0xe0, 0x00, 0x00),
++		.uval = 0xffffffffffffffff,
++		.start_bit = 106,
++		.end_bit = 43,
++		.quirks = QUIRK_MSB_ON_THE_RIGHT | QUIRK_LSW32_IS_FIRST | QUIRK_LITTLE_ENDIAN,
++	},
  };
  
-@@ -551,18 +545,12 @@ enum ice_tx_ctx_desc_eipt_offload {
- #define ICE_LAN_TXQ_MAX_QGRPS	127
- #define ICE_LAN_TXQ_MAX_QDIS	1023
- 
--/* Tx queue context data
-- *
-- * The sizes of the variables may be larger than needed due to crossing byte
-- * boundaries. If we do not have the width of the variable set to the correct
-- * size then we could end up shifting bits off the top of the variable when the
-- * variable is at the top of a byte and crosses over into the next byte.
-- */
-+/* Tx queue context data */
- struct ice_tlan_ctx {
- #define ICE_TLAN_CTX_BASE_S	7
- 	u64 base;		/* base is defined in 128-byte units */
- 	u8 port_num;
--	u16 cgd_num;		/* bigger than needed, see above for reason */
-+	u8 cgd_num;
- 	u8 pf_num;
- 	u16 vmvf_num;
- 	u8 vmvf_type;
-@@ -573,7 +561,7 @@ struct ice_tlan_ctx {
- 	u8 tsyn_ena;
- 	u8 internal_usage_flag;
- 	u8 alt_vlan;
--	u16 cpuid;		/* bigger than needed, see above for reason */
-+	u8 cpuid;
- 	u8 wb_mode;
- 	u8 tphrd_desc;
- 	u8 tphrd;
-@@ -582,7 +570,7 @@ struct ice_tlan_ctx {
- 	u16 qnum_in_func;
- 	u8 itr_notification_mode;
- 	u8 adjust_prof_id;
--	u32 qlen;		/* bigger than needed, see above for reason */
-+	u16 qlen;
- 	u8 quanta_prof_idx;
- 	u8 tso_ena;
- 	u16 tso_qnum;
+ KUNIT_ARRAY_PARAM_DESC(packing, cases, desc);
 
 -- 
 2.46.0.124.g2dc1a81c8933
