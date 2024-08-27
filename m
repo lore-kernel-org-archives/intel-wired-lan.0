@@ -4,71 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CFF77C54736
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 27 Aug 2024 21:53:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C190DC54735
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 27 Aug 2024 21:53:07 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 89FAE406AD;
-	Tue, 27 Aug 2024 21:53:06 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 7C0C0406C2;
+	Tue, 27 Aug 2024 21:53:07 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id tyHUE5xpnKjR; Tue, 27 Aug 2024 21:53:05 +0000 (UTC)
+ id 7rE3lG-cUk71; Tue, 27 Aug 2024 21:53:06 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3FE4E406B1
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org BBA134068D
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1724795585;
-	bh=KamurTW5IBkmqgEDIn1cXn8dFKK/+u71YM8pG/0q+uA=;
+	s=default; t=1724795586;
+	bh=3yXTBGfARulLLnTzWPWjl2ZGtQGVoWcl9QFB8lKIW4g=;
 	h=From:Date:References:In-Reply-To:To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=QOD/bddC0BcjG/esrvXPdCVOPd9nOTjcyFvA+y/6vxpKDDr86SD/k2/+hwuwH2qm7
-	 HeHtfiohGoXhvnBpzE9oDn6xq/YR4kQUc+DSOKhPUtoJ7TDFTq3oxUU2HTpWJp7r2b
-	 MJCLL9tIIJWcCwxvkbLwbanX8fx5SLkl5YPlWnr1EHrxr5wujXe2id6Fb0tFPVhTkP
-	 ioaFMAWOw8ZmUcJicURYhjK6VyMODiu3ic+TMuev+8U3pFXXJqstLnZuwgIRI6k2NR
-	 yKo32St7KebzNKtIbQp1jTZuzHyhAyPHMEmgRe2C/YbaOpasGStLYG9RQuAaMrFvq6
-	 P+YlhzrMjduyw==
+	b=XFPMWPKx1mWkb1ElaQCBiIV2YhzKM94N2JpyuIHFtzqVovYwkr+kHP/uwI5aBSquy
+	 MfwODRbmA/byYWDWwZlrsUehcZ8k87IMEddKVpTvFWtbN21F/lbdrxWCgLzIbPnmjk
+	 MNqPm6XSVhkjsECuj74wzhDmD2y2QVLt6j6MXAi1Ce4+20Fde7tWPtBwFTYyf7MoCG
+	 VoOVS3PaDfDl+utUoSGZUUFKkeVT1mIyRpbN9WQ4zcmv9vvyjES/0Os4HfI6nKwOGt
+	 3/8W5HrlVNRQGnoQ9spbKSeRpSdt77+MN8eeqsySYR4hZENuccg+tuK4pJbiH9XJvC
+	 9jW7wpnF9DaZQ==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 3FE4E406B1;
-	Tue, 27 Aug 2024 21:53:05 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 0EB9D1BF97C
- for <intel-wired-lan@lists.osuosl.org>; Tue, 27 Aug 2024 21:52:54 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id BBA134068D;
+	Tue, 27 Aug 2024 21:53:06 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 110F41BF27E
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 27 Aug 2024 21:52:55 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id D422540A70
+ by smtp1.osuosl.org (Postfix) with ESMTP id 8ADCE8114E
  for <intel-wired-lan@lists.osuosl.org>; Tue, 27 Aug 2024 21:52:51 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ryRe5s__OEBo for <intel-wired-lan@lists.osuosl.org>;
- Tue, 27 Aug 2024 21:52:50 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id z4G6stuhwQ8Z for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 27 Aug 2024 21:52:51 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.15;
  helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 7B39F40A87
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 7B39F40A87
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org BAE8281158
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org BAE8281158
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.15])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 7B39F40A87
+ by smtp1.osuosl.org (Postfix) with ESMTPS id BAE8281158
  for <intel-wired-lan@lists.osuosl.org>; Tue, 27 Aug 2024 21:52:50 +0000 (UTC)
-X-CSE-ConnectionGUID: Wwk3ZBG7QXq77gCP4mNlnw==
-X-CSE-MsgGUID: Q6iZUaYJQXaXiHBYpm2uDA==
-X-IronPort-AV: E=McAfee;i="6700,10204,11177"; a="27068846"
-X-IronPort-AV: E=Sophos;i="6.10,181,1719903600"; d="scan'208";a="27068846"
+X-CSE-ConnectionGUID: CZXVNtjbQV2/tO2zSb7sow==
+X-CSE-MsgGUID: TrcEAPJqRW64H08PqTkzzg==
+X-IronPort-AV: E=McAfee;i="6700,10204,11177"; a="27068838"
+X-IronPort-AV: E=Sophos;i="6.10,181,1719903600"; d="scan'208";a="27068838"
 Received: from fmviesa010.fm.intel.com ([10.60.135.150])
  by orvoesa107.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 27 Aug 2024 14:52:46 -0700
-X-CSE-ConnectionGUID: tFLK37kLR8mar5fcj6mo+g==
-X-CSE-MsgGUID: xfHE/bY3TMi5yN23VRRTMw==
+ 27 Aug 2024 14:52:45 -0700
+X-CSE-ConnectionGUID: eimqqPf1T+Scm62qkUr3Jg==
+X-CSE-MsgGUID: RytFG4q/RPibftfHYSclEw==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.10,181,1719903600"; d="scan'208";a="63189489"
+X-IronPort-AV: E=Sophos;i="6.10,181,1719903600"; d="scan'208";a="63189486"
 Received: from jekeller-desk.jf.intel.com ([10.166.241.20])
  by fmviesa010-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  27 Aug 2024 14:52:44 -0700
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Tue, 27 Aug 2024 14:52:07 -0700
+Date: Tue, 27 Aug 2024 14:52:06 -0700
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20240827-e810-live-migration-jk-prep-ctx-functions-v1-4-0442e2e42d32@intel.com>
+Message-Id: <20240827-e810-live-migration-jk-prep-ctx-functions-v1-3-0442e2e42d32@intel.com>
 References: <20240827-e810-live-migration-jk-prep-ctx-functions-v1-0-0442e2e42d32@intel.com>
 In-Reply-To: <20240827-e810-live-migration-jk-prep-ctx-functions-v1-0-0442e2e42d32@intel.com>
 To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>, 
@@ -81,23 +81,22 @@ X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  t=1724795571; x=1756331571;
  h=from:date:subject:mime-version:content-transfer-encoding:
  message-id:references:in-reply-to:to:cc;
- bh=p2472d7MxYwQ1WCLHGUjV3OTNs4V0Gtc+ugjwaDre8M=;
- b=DvTBeOT/51oAIEs3SBT7dU8P+WGWuC+B9QKmgRLPzXPhd72P/qQ7X3iW
- ZRRuJsSd0d2uieA++/xpZIGsHheCpg1snOkbVPii5QxmwDFKJ/S6NeOX1
- /7pinqUuPvwlzSfnJGKXLjhTfRxuXDOtI97kf0TuoxmuOavg/KS2M6IrF
- oJa/X5MPynq8cIvgtDG0CvWZp+mOHiSXxiVhEkRTAjUa/iytQjwXEMG0E
- jQENji/Al/m1CV456xgho0oi8lDShhJfZpewmtPLlF7fUuQjphkgYwkjF
- 7O2XpwyWyDrNESJ45uYdcOKMRWudI1oDl4Buklwfg9Ltif96/ZKX9o4Y5
- w==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ bh=fVvWWmc//evEZHcKzlFxreA95ao/xY72CyoACOvZbMI=;
+ b=UQnojb/Q56gwF/DZ4GgPdYoi2QN8jkVPUge3aG9sgskktTRtG2Kd5Vqz
+ Gwb6SIwT6lV1iCoEecwWrttRibiXQyKgmp5ZRScQ/j72YjL/sBw+adGF+
+ ONBc8WUwltbe9VnxRNN4wtr6laSbnEYs1D3P1ni46CzGlcMVY/WwIiK4y
+ tk2quqNmddNm6mNG1PycC8rHeUgyibjMpgCYpoDo24sdLDPqUy4kjLd9c
+ 1rbFqI4MEGXZ1qB46IfYpkirrp6KZbHhCEynyoN48/CMkFWHYP6fCMEo0
+ 7HQraPlWDNc3jF+5//ZgxyndJrGyW7cEtTy8DqzhKryxJltDvLR4WcRnD
+ g==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=DvTBeOT/
-Subject: [Intel-wired-lan] [PATCH iwl-next 04/13] lib: packing: add pack()
- and unpack() wrappers over packing()
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=UQnojb/Q
+Subject: [Intel-wired-lan] [PATCH iwl-next 03/13] lib: packing: remove
+ kernel-doc from header file
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -116,119 +115,55 @@ Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 From: Vladimir Oltean <vladimir.oltean@nxp.com>
 
-Geert Uytterhoeven described packing() as "really bad API" because of
-not being able to enforce const correctness. The same function is used
-both when "pbuf" is input and "uval" is output, as in the other way
-around.
+It is not necessary to have the kernel-doc duplicated both in the
+header and in the implementation. It is better to have it near the
+implementation of the function, since in C, a function can have N
+declarations, but only one definition.
 
-Create 2 wrapper functions where const correctness can be ensured.
-Do ugly type casts inside, to be able to reuse packing() as currently
-implemented - which will _not_ modify the input argument.
-
-Also, take the opportunity to change the type of startbit and endbit to
-size_t - an unsigned type - in these new function prototypes. When int,
-an extra check for negative values is necessary. Hopefully, when
-packing() goes away completely, that check can be dropped.
-
-My concern is that code which does rely on the conditional directionality
-of packing() is harder to refactor without blowing up in size. So it may
-take a while to completely eliminate packing(). But let's make alternatives
-available for those who do not need that.
-
-Link: https://lore.kernel.org/netdev/20210223112003.2223332-1-geert+renesas@glider.be/
 Signed-off-by: Vladimir Oltean <vladimir.oltean@nxp.com>
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 ---
- include/linux/packing.h |  6 ++++++
- lib/packing.c           | 54 +++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 60 insertions(+)
+ include/linux/packing.h | 26 --------------------------
+ 1 file changed, 26 deletions(-)
 
 diff --git a/include/linux/packing.h b/include/linux/packing.h
-index 69baefebcd02..ea25cb93cc70 100644
+index 8d6571feb95d..69baefebcd02 100644
 --- a/include/linux/packing.h
 +++ b/include/linux/packing.h
-@@ -20,4 +20,10 @@ enum packing_op {
+@@ -17,32 +17,6 @@ enum packing_op {
+ 	UNPACK,
+ };
+ 
+-/**
+- * packing - Convert numbers (currently u64) between a packed and an unpacked
+- *	     format. Unpacked means laid out in memory in the CPU's native
+- *	     understanding of integers, while packed means anything else that
+- *	     requires translation.
+- *
+- * @pbuf: Pointer to a buffer holding the packed value.
+- * @uval: Pointer to an u64 holding the unpacked value.
+- * @startbit: The index (in logical notation, compensated for quirks) where
+- *	      the packed value starts within pbuf. Must be larger than, or
+- *	      equal to, endbit.
+- * @endbit: The index (in logical notation, compensated for quirks) where
+- *	    the packed value ends within pbuf. Must be smaller than, or equal
+- *	    to, startbit.
+- * @op: If PACK, then uval will be treated as const pointer and copied (packed)
+- *	into pbuf, between startbit and endbit.
+- *	If UNPACK, then pbuf will be treated as const pointer and the logical
+- *	value between startbit and endbit will be copied (unpacked) to uval.
+- * @quirks: A bit mask of QUIRK_LITTLE_ENDIAN, QUIRK_LSW32_IS_FIRST and
+- *	    QUIRK_MSB_ON_THE_RIGHT.
+- *
+- * Return: 0 on success, EINVAL or ERANGE if called incorrectly. Assuming
+- *	   correct usage, return code may be discarded.
+- *	   If op is PACK, pbuf is modified.
+- *	   If op is UNPACK, uval is modified.
+- */
  int packing(void *pbuf, u64 *uval, int startbit, int endbit, size_t pbuflen,
  	    enum packing_op op, u8 quirks);
  
-+int pack(void *pbuf, const u64 *uval, size_t startbit, size_t endbit,
-+	 size_t pbuflen, u8 quirks);
-+
-+int unpack(const void *pbuf, u64 *uval, size_t startbit, size_t endbit,
-+	   size_t pbuflen, u8 quirks);
-+
- #endif
-diff --git a/lib/packing.c b/lib/packing.c
-index 435236a914fe..2922db8a528c 100644
---- a/lib/packing.c
-+++ b/lib/packing.c
-@@ -90,6 +90,8 @@ static int calculate_box_addr(int box, size_t len, u8 quirks)
-  * @quirks: A bit mask of QUIRK_LITTLE_ENDIAN, QUIRK_LSW32_IS_FIRST and
-  *	    QUIRK_MSB_ON_THE_RIGHT.
-  *
-+ * Note: this is deprecated, prefer to use pack() or unpack() in new code.
-+ *
-  * Return: 0 on success, EINVAL or ERANGE if called incorrectly. Assuming
-  *	   correct usage, return code may be discarded.
-  *	   If op is PACK, pbuf is modified.
-@@ -216,4 +218,56 @@ int packing(void *pbuf, u64 *uval, int startbit, int endbit, size_t pbuflen,
- }
- EXPORT_SYMBOL(packing);
- 
-+/**
-+ * pack - Pack u64 number into bitfield of buffer.
-+ *
-+ * @pbuf: Pointer to a buffer holding the packed value.
-+ * @uval: Pointer to an u64 holding the unpacked value.
-+ * @startbit: The index (in logical notation, compensated for quirks) where
-+ *	      the packed value starts within pbuf. Must be larger than, or
-+ *	      equal to, endbit.
-+ * @endbit: The index (in logical notation, compensated for quirks) where
-+ *	    the packed value ends within pbuf. Must be smaller than, or equal
-+ *	    to, startbit.
-+ * @pbuflen: The length in bytes of the packed buffer pointed to by @pbuf.
-+ * @quirks: A bit mask of QUIRK_LITTLE_ENDIAN, QUIRK_LSW32_IS_FIRST and
-+ *	    QUIRK_MSB_ON_THE_RIGHT.
-+ *
-+ * Return: 0 on success, EINVAL or ERANGE if called incorrectly. Assuming
-+ *	   correct usage, return code may be discarded. The @pbuf memory will
-+ *	   be modified on success.
-+ */
-+int pack(void *pbuf, const u64 *uval, size_t startbit, size_t endbit,
-+	 size_t pbuflen, u8 quirks)
-+{
-+	return packing(pbuf, (u64 *)uval, startbit, endbit, pbuflen, PACK, quirks);
-+}
-+EXPORT_SYMBOL(pack);
-+
-+/**
-+ * unpack - Unpack u64 number from packed buffer.
-+ *
-+ * @pbuf: Pointer to a buffer holding the packed value.
-+ * @uval: Pointer to an u64 holding the unpacked value.
-+ * @startbit: The index (in logical notation, compensated for quirks) where
-+ *	      the packed value starts within pbuf. Must be larger than, or
-+ *	      equal to, endbit.
-+ * @endbit: The index (in logical notation, compensated for quirks) where
-+ *	    the packed value ends within pbuf. Must be smaller than, or equal
-+ *	    to, startbit.
-+ * @pbuflen: The length in bytes of the packed buffer pointed to by @pbuf.
-+ * @quirks: A bit mask of QUIRK_LITTLE_ENDIAN, QUIRK_LSW32_IS_FIRST and
-+ *	    QUIRK_MSB_ON_THE_RIGHT.
-+ *
-+ * Return: 0 on success, EINVAL or ERANGE if called incorrectly. Assuming
-+ *	   correct usage, return code may be discarded. The @uval will be
-+ *	   modified on success.
-+ */
-+int unpack(const void *pbuf, u64 *uval, size_t startbit, size_t endbit,
-+	   size_t pbuflen, u8 quirks)
-+{
-+	return packing((void *)pbuf, uval, startbit, endbit, pbuflen, UNPACK, quirks);
-+}
-+EXPORT_SYMBOL(unpack);
-+
- MODULE_DESCRIPTION("Generic bitfield packing and unpacking");
 
 -- 
 2.46.0.124.g2dc1a81c8933
