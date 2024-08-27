@@ -4,90 +4,215 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BA4AFC54735
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 27 Aug 2024 21:53:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 94FF3C5473A
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 27 Aug 2024 22:23:57 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 5DE0C406DC;
-	Tue, 27 Aug 2024 21:53:14 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 4871740626;
+	Tue, 27 Aug 2024 22:23:57 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id pEro1xrlwvLj; Tue, 27 Aug 2024 21:53:11 +0000 (UTC)
+ id xb1O-wR_vofh; Tue, 27 Aug 2024 22:23:56 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C5B22406D2
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 39E26405F5
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1724795591;
-	bh=nLLcq9cJ+rUtVqKb236JtOu4v1huirZ58v6CbrDAhSA=;
-	h=From:Date:References:In-Reply-To:To:Subject:List-Id:
+	s=default; t=1724797436;
+	bh=Co0J9V8ay3NE9BxYxWtbogPyRjr/cIOwlhAEfv7qHe8=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=QpW4xUxps5duVBn/DxjwRGYPkuxhxJLZN4F7fnynjTsy9QakQEt6d1/p8T+axDROx
-	 zkvLzqRBqi0GdiLnNGSBZJcRxtMmORPVElEbVNO07mDGMsdfp7T6nBPbvA/ybv48Jh
-	 /Saq0o7IojJcn+2xsQ6PSmVrYxIykHB31QVoLrVOtY4FsG266Vi36cAzbua0+9Xpkq
-	 ZuCE7MQ0qXlKiYuho15F5AjgUVO4qmvKmdM8BebEYJMHU6qcRDjVDmt0yrZGOjs1dl
-	 YEa3QU4Fh6f4a3TYGF+exyWugQ/RPiJk2zBx7hI7qoobLNXekaSrzxw8hQqF85xct4
-	 A7nHY2RrSPH2g==
+	b=1kXooc4SoQgq+zY77FRqAXbDZ7cGAFR4WThQ9WEr4MxO6/ZSb2NiI/Ui2sRz1Gry8
+	 FP+DSTBx5etWNyd8gEwq0Zgx5KuoPYcaBp8RbjKiYdWR9TGda5Hxl5K9oX2SqH/IMO
+	 +h+C4JhV9X9af86k4ImBDX7zQmfh3l/Gy4arKptVfpIoyOpeOKHspekI2okWVzY9Kv
+	 VpEtbAW7xGROGps6ykCzJdmT4b1uRh8+uqyh1nKgyIBpl8FUujq9DlmcVk0Lsknxc8
+	 RZeyJHgkDg2JzyPnsO/brgsZGBOt1+huEzJESIJRn7Q3w3eR/u39rfdsyThMGZm8sS
+	 CX/iKl2CgjfWg==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id C5B22406D2;
-	Tue, 27 Aug 2024 21:53:11 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 39E26405F5;
+	Tue, 27 Aug 2024 22:23:56 +0000 (UTC)
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 3625C1BF27E
- for <intel-wired-lan@lists.osuosl.org>; Tue, 27 Aug 2024 21:52:57 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 0570E1BF284
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 27 Aug 2024 22:23:54 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id EFF9D40184
- for <intel-wired-lan@lists.osuosl.org>; Tue, 27 Aug 2024 21:52:52 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id E5C3A401AE
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 27 Aug 2024 22:23:53 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id a73NjYNTW7os for <intel-wired-lan@lists.osuosl.org>;
- Tue, 27 Aug 2024 21:52:51 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.15;
+ id jpPmomgXd1g2 for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 27 Aug 2024 22:23:53 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.20;
  helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 27B0340A7D
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 27B0340A7D
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.15])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 27B0340A7D
- for <intel-wired-lan@lists.osuosl.org>; Tue, 27 Aug 2024 21:52:51 +0000 (UTC)
-X-CSE-ConnectionGUID: jk7iaE9rQsG9hefKUxsSYQ==
-X-CSE-MsgGUID: e1QLCcdGSoiZ5owQo+Z1AQ==
-X-IronPort-AV: E=McAfee;i="6700,10204,11177"; a="27068852"
-X-IronPort-AV: E=Sophos;i="6.10,181,1719903600"; d="scan'208";a="27068852"
-Received: from fmviesa010.fm.intel.com ([10.60.135.150])
- by orvoesa107.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 27 Aug 2024 14:52:46 -0700
-X-CSE-ConnectionGUID: F9e9gY8ISCi3iRaCTu2Y8A==
-X-CSE-MsgGUID: BgEcqMwnQh2F+pNi/SQFlg==
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 9AFD940184
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 9AFD940184
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.20])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 9AFD940184
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 27 Aug 2024 22:23:52 +0000 (UTC)
+X-CSE-ConnectionGUID: pouqRADfStqywAdrCjbgRA==
+X-CSE-MsgGUID: kt2KyJ/6QWKpTNNOuZogwg==
+X-IronPort-AV: E=McAfee;i="6700,10204,11177"; a="23108529"
+X-IronPort-AV: E=Sophos;i="6.10,181,1719903600"; d="scan'208";a="23108529"
+Received: from orviesa007.jf.intel.com ([10.64.159.147])
+ by orvoesa112.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 27 Aug 2024 15:23:51 -0700
+X-CSE-ConnectionGUID: bUYgjz1OQKGO0C6vXW+TJA==
+X-CSE-MsgGUID: TgyjulqqTs28GrQo0EvH8A==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.10,181,1719903600"; d="scan'208";a="63189509"
-Received: from jekeller-desk.jf.intel.com ([10.166.241.20])
- by fmviesa010-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 27 Aug 2024 14:52:45 -0700
+X-IronPort-AV: E=Sophos;i="6.10,181,1719903600"; d="scan'208";a="63528893"
+Received: from fmsmsx601.amr.corp.intel.com ([10.18.126.81])
+ by orviesa007.jf.intel.com with ESMTP/TLS/AES256-GCM-SHA384;
+ 27 Aug 2024 15:23:51 -0700
+Received: from fmsmsx611.amr.corp.intel.com (10.18.126.91) by
+ fmsmsx601.amr.corp.intel.com (10.18.126.81) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.39; Tue, 27 Aug 2024 15:23:51 -0700
+Received: from fmsmsx610.amr.corp.intel.com (10.18.126.90) by
+ fmsmsx611.amr.corp.intel.com (10.18.126.91) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.39; Tue, 27 Aug 2024 15:23:50 -0700
+Received: from FMSEDG603.ED.cps.intel.com (10.1.192.133) by
+ fmsmsx610.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.39 via Frontend Transport; Tue, 27 Aug 2024 15:23:50 -0700
+Received: from NAM10-DM6-obe.outbound.protection.outlook.com (104.47.58.100)
+ by edgegateway.intel.com (192.55.55.68) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.1.2507.39; Tue, 27 Aug 2024 15:23:50 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=fGyMBUIjFPHYI8H8GlG2zjoTW4vRYKlpXiyFJXWyY0Er1hs5MkqPfLpJVSOdoiTtfYw87gnsmfq7xdXwFsDpO4pR68aUOeMTdXnzcq1M7jOrOVkFuTZfXsXNz4jE2h1JKXBo5u1QBLzwHwwZ11z3oRCT6P5UflTVnA7QEblFk/AKvIwiY1qfvxM84Pl9z/VIjGkodsa6Bpb+EU9eTLfsc7Mkfr04FlpgDPgViKqWIF4oocc0ZOzzzLXoH6quqxgMQhG8pTR/8ZnJPZStEKC7Bjqt9cBqt+Y4XbdgwMG2QlQmc3FqiRmxAePEWhbk3Uegsw+dR3+00ankm6pw4yd6Vw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=Co0J9V8ay3NE9BxYxWtbogPyRjr/cIOwlhAEfv7qHe8=;
+ b=EjuWcTN691QDloFvYZBjFvPIozXui5KyFKkpC+A5rK5tGewax85moTlJWpKsl/fqGetlLC3vl1qMU24bcX9fSD89aTOLyFtm/WE22FBoypoHP5ZiMcefZ5UDAdrMnvvnobAWgtlg+hRLo2q0m1lHbj2bY49kis6uPZ9zaYJqqzLcwNB2UVxrXt64HoisXRQaWgPdnntVm0dscacTti98BP/YUr5cD6tO3qkmpWlFPxcnEs6TMzvRtR2X+LwZxwvh5ueKhfcRUBGjUE9RsjI215PzdfT1bS4RkEIJjJ3DM3iEv0a9U2/OX+I8Fw9o/cgNqGbixUpEytKPbaI+ORL0CQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Received: from CO1PR11MB5089.namprd11.prod.outlook.com (2603:10b6:303:9b::16)
+ by CO1PR11MB5027.namprd11.prod.outlook.com (2603:10b6:303:9d::13)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7897.25; Tue, 27 Aug
+ 2024 22:23:48 +0000
+Received: from CO1PR11MB5089.namprd11.prod.outlook.com
+ ([fe80::7de8:e1b1:a3b:b8a8]) by CO1PR11MB5089.namprd11.prod.outlook.com
+ ([fe80::7de8:e1b1:a3b:b8a8%2]) with mapi id 15.20.7897.021; Tue, 27 Aug 2024
+ 22:23:48 +0000
+Message-ID: <efc5d9a4-7ba6-4d19-8fdb-56e38baf6d72@intel.com>
+Date: Tue, 27 Aug 2024 15:23:45 -0700
+User-Agent: Mozilla Thunderbird
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Tue, 27 Aug 2024 14:52:13 -0700
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20240827-e810-live-migration-jk-prep-ctx-functions-v1-10-0442e2e42d32@intel.com>
+To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>, Vladimir Oltean
+ <olteanv@gmail.com>, Anthony Nguyen <anthony.l.nguyen@intel.com>
 References: <20240827-e810-live-migration-jk-prep-ctx-functions-v1-0-0442e2e42d32@intel.com>
+Content-Language: en-US
 In-Reply-To: <20240827-e810-live-migration-jk-prep-ctx-functions-v1-0-0442e2e42d32@intel.com>
-To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>, 
- Vladimir Oltean <olteanv@gmail.com>, 
- Anthony Nguyen <anthony.l.nguyen@intel.com>, 
- "netdev netdev"@vger.kernel.org
-X-Mailer: b4 0.14.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: SJ0PR13CA0123.namprd13.prod.outlook.com
+ (2603:10b6:a03:2c6::8) To CO1PR11MB5089.namprd11.prod.outlook.com
+ (2603:10b6:303:9b::16)
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: CO1PR11MB5089:EE_|CO1PR11MB5027:EE_
+X-MS-Office365-Filtering-Correlation-Id: d307e1fb-a8c7-4aac-3fcc-08dcc6e6ec1b
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;ARA:13230040|366016|376014|1800799024;
+X-Microsoft-Antispam-Message-Info: =?utf-8?B?K1VpWGdjSStQbi8wcHRObG94eGkxWElDSHJUVGRlemFIZ2NGS1A5NkZQeU9N?=
+ =?utf-8?B?WFBjdWVBd2hqaFhkci9KSUN2V09LUzI2bzkwYklFV0FzSUNLTGdIQUFyOXpj?=
+ =?utf-8?B?YU5wbFhZVm5oRld5dSttR0ZHZmN1TW1PZlFQREhPRS9GMHdIazFVZGVnczl1?=
+ =?utf-8?B?T0NJV2xMYlZhUUZlNks2dHBBVDBFR0pzVXdibXpBbzBsc0JST0lkY2doajM2?=
+ =?utf-8?B?VVZTT2pUa3RkbFMyTFhwZXRwWFNPOXVmUmhKSHBnU29iaUFNRHRZTlp5L2Rn?=
+ =?utf-8?B?K1dmMnZjSUtmMm5ibEVEWnl5UUpIYzBMRVlrTDRqbWlIUGh5VVFidDdaV1NH?=
+ =?utf-8?B?dFV0MjZ6YzI5TmtFRm5BM1lCZHpTNXRDTnVjNW0rSjV2ckpQbUx5V0k5SkhG?=
+ =?utf-8?B?NGRFaWJmemo1MkJBOElxcGR1N0p2SkN4a3F1b0xmTUMwRm01U1Bub2tmTzND?=
+ =?utf-8?B?NU1jUjU4bzZIK3ZLWFYwQ3V1ZUNPVG5yZ0JNSlNtS2lSY1MwRlZZMEVQZ1My?=
+ =?utf-8?B?NHdEcThpeG9SYTZhUThNT2ZacGtrWHF1M1oySkt0T1FZVk1KS3YrTk0xOXBx?=
+ =?utf-8?B?dmVHR3pUR2JuVXpGc1VqWlpzWmU4ZCtBQTV2dVhTbWFGNm9weTZueEo4c0hz?=
+ =?utf-8?B?OVpadUhPbDB5cVE4cDhZdTZRMVkxUmZraWpJeUJ6UmU3YklLUzlpM0Y3a01D?=
+ =?utf-8?B?WEFlQmJkaDMwdzBYTXptbk1Cdi9rZXFOelpnZjU5N2tlYTIxeGJWcFVjYVNv?=
+ =?utf-8?B?eUI5Zm9wUzErT1E1L0wvbDBRc2NkTzhXRjFDa0szd3drQmsvWi9wTWhESE8z?=
+ =?utf-8?B?VFlsTlhkQjVJR3kvSEJ0SW52b0dYVzJEelY4SzQzYVczcjByQ0h0WU11cy9C?=
+ =?utf-8?B?a0Jib0ZJNUlUM0gvUGkzS1NERUpqeFdjKzZOSVdGdDVkT3F5UXJhM2dmNCsz?=
+ =?utf-8?B?Nkx6MVNzMU1xbVB0cUxyaWJnYldLQlBZa1BHYXlmbklSTXFwYmMrTFpJcjRK?=
+ =?utf-8?B?QUNDQWNqd0VZZVNXOEp3YWFMSUtFdG5XWkJpRDBtUy9udHJLWEI4VnNVTndo?=
+ =?utf-8?B?dVdzUStHbWJGTHg2Snc2OW4vS2h4WkQwZjBnYlBjNHpIdVg3MHkvT1A4elB2?=
+ =?utf-8?B?VXJqRFRUU04va28zQmFNUk51NFU0RXIrMjhBa3hGM0xyUHNBREJObVlJajZy?=
+ =?utf-8?B?SkpKbm5ZUkZqVDYwcXdFbzZvNnJZQURmN3lzWHdqbGVEN3ROMisvTFM5ODhy?=
+ =?utf-8?B?VHBKSWFwWURVbk5XWnhDUTZmWURmK2lwN0w1T1hFa2JJOHh6VWU2YTFjU0RD?=
+ =?utf-8?B?UExUY0tuT1kwL2NSMXN0ZlozbVZnYktBRzZ2ZCtlUlMzSGFCN0tvNy9BbWV2?=
+ =?utf-8?B?K0FRbUgwOVpreTdsbUdiZ2FuWHJrNFFiY3dGWFdleE5xR0hUWmxDQlJTQUpU?=
+ =?utf-8?B?YzhwRXlNcmxYWW5jaUxoSEgra3g5eUxzeHNwam9tV29Rd3lSTDdFUm85OFBy?=
+ =?utf-8?B?K1F2bGtzVXRhbkptbWJEU1RaZlQ0eXBBTkNjc1R4N0NNME1jL1BoZ1dOYWNv?=
+ =?utf-8?B?VEdNQVJQeWljRlVLUmZrUmI4M3k4MWUvZDAzR1l4ZUIxWTlSMnpQWXAyWEEv?=
+ =?utf-8?B?Vlh2cWJaSjRUeHlZZ2FHTCtraDIwRDZPYUpnVkNSczRBbXpxVE8yWjVrUFF4?=
+ =?utf-8?B?cHJhczdmbFpXQUQ2MVJ4WURHSEo3VjBMSUh6aDF1SEttaGlLWGhpSHpuYkt4?=
+ =?utf-8?B?UDlLSDBwVEIwd3dPRmNZaFdLTmUvaTVxWDhvb0pLR2lWSlBPbVpJc3ZHUC9E?=
+ =?utf-8?B?WlZBcWg3RWFDSEp5WWE0dz09?=
+X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:CO1PR11MB5089.namprd11.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(13230040)(366016)(376014)(1800799024); DIR:OUT; SFP:1101; 
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?am1zSWtzOUQzZlE5NGVlU2RNMERWS3JKVFd5SDJGNE5TWDVNOURSdE9TUHNT?=
+ =?utf-8?B?U0lJc2lvNVgyVnE2Mm1PcE9mcUJCR2JUZUtBcTFNMksrdXI4SGxNVWpSelIy?=
+ =?utf-8?B?L044MUVjOEI5Z1MweXBreDNrMkw0Ti9OVkRZUllSYXRmQWNKTC81Y3RkU1N5?=
+ =?utf-8?B?TzhhMnFpL0hXaGtxekYydmt4M0hpT3BpbFAzM1BYK3BvaWdTa3RtcXpSY1FK?=
+ =?utf-8?B?RmQ3ZlRIOFFQQ1RjejFsYWhNN3RKTkhmTEZrc3lTL3RDdmpwTU53VlFDMmg0?=
+ =?utf-8?B?MkU5UlFaNEtzZTBtUUdSbmVWbVFoN3ZIUHVrbW5xZ2ZlcExncENGczJuNk9y?=
+ =?utf-8?B?VWM1OUcyeEpDRnpMSGxrYzMrS2xzaFk1VkViTTVPdHhpbENrL2d2NEFUSW5D?=
+ =?utf-8?B?cGU5MDBMUElBZTYxUWE2NS92QWlTRmFVYXNOOUVyMXYwMUdtT0NxYzJRZHhD?=
+ =?utf-8?B?aXFLVGF4dHJXcjkvckwyNU5xY1ZLNlN3bkVpWUZTQjZEQjdSMEJ5bnVBMnp1?=
+ =?utf-8?B?T29PK2pMWFBuMWtnY0VTaHJUL3FURWNnOVIwdlErVTJFbHNoSmowQ2s0SWJ6?=
+ =?utf-8?B?dmw1d1ZtaXcxRWlVOWVXT0RtazlESVZvZWxQZ2Z1aCs2NkJNOCtzOW92aDRK?=
+ =?utf-8?B?Y0hCWERpWkt0L3BMMDEyRTBwaHErWlV2V0h4eUpydTA4cm96YkNxOGhYUEJX?=
+ =?utf-8?B?bk5CTjczMFZlWVVxbEQrWHFQeEV3L29EbjRldkk2OGY3cG9qL0pYSTYwcmJW?=
+ =?utf-8?B?bTUrUHh0enppQUYyeGdtSXBCNUFwU25WNzgvRHVmaUkvT2ZUTjg4Z2h4RFZX?=
+ =?utf-8?B?ZU1MOFBrbUk4aHJwazVoY3FlaVlsM3JVV2Z6WlhIT0lWVjBWQy9Rc3BWdzdF?=
+ =?utf-8?B?ZkdZWTliL3FXRzI2U1ZkdDN1dkVBblQ2MTlDeE1RTjBVRkxyWmpwQXJ5bUI2?=
+ =?utf-8?B?TXQ5N0lNeDhtS1ZUdFQ0cTVBNExuc3VBblRtbGVPV2hyalZlR1p3MmpDcFhP?=
+ =?utf-8?B?YlpnSkM3c0U2dFBwN2pqbHBVditaaWRjSlp3VndPTW16RGRGL2ExZ3V0eUwy?=
+ =?utf-8?B?WjNFWkZqeUxMOUxHSE5yem43bTI5UWI4QjlCZkxXdE0rbjQrbFF3WHJERER1?=
+ =?utf-8?B?eGlDTnZOT0wvRmZ0VHFweUVlNGdZQWVsWXI2OTZOZTBPVjU5Yk5mSkNxU3Z1?=
+ =?utf-8?B?RFVqUUxQY3hYNWk5SGN3Qy8zM2xheml6OUsxNm9pY0NFa242SUZxRjMrNVh2?=
+ =?utf-8?B?WTRtS0VhMlJJRXkwNzdGc0NPVk5tS3NKYWtoWDFvZUphcFc2WmRveWxSNGw5?=
+ =?utf-8?B?bHpYL0dyOWk4RXZFVTdTZm1pTUZYRm1PSWFaNzJrL2NNYkROZTA4QUNQay9W?=
+ =?utf-8?B?bmFMTjlBVzhkRjlhbzhlTU1RSTkxc1UxTFZSS1d6NlBjWExsY1lFNGUrdHVo?=
+ =?utf-8?B?dDEraytQYkpmT3RWWG80ckY2N0RlRk1INGNYcFBkTVpWYU5EOVFvZSttYlE1?=
+ =?utf-8?B?TExXWExjY3p6VW5YMHpSdS9sUXAzOVRmTDhOdzhDRTVZSUM0NjdkdDBVRDky?=
+ =?utf-8?B?SCtCTjU0b3VUTDlYMEdvck4vQnFYTmcrTnpJSzFQS1BLSVJLSFpHOGJBZFBs?=
+ =?utf-8?B?NFgza0VOMDNONi8yK0VReFlBZDNZd205UFRwSmlaY2pOUjVwMzN1VURtOTY1?=
+ =?utf-8?B?MG5YQk9TUlkzZ252dHFlVjBHZk9SdlVYb2xuYzVCTUFlaGhYVEFhS1ptSkRE?=
+ =?utf-8?B?ZUd3c3ZxM3BYMTU4eTVpTDQ0NWtUeGZrYWI5MllLM3ZRZjdGUDNhTEYwWDlL?=
+ =?utf-8?B?L2ppYXJCWDlYdEF5M0RBME1SWDA0cVZUcjMyRkVVYm1rcS94WFVjVlVoMGl6?=
+ =?utf-8?B?Y2g0Qy9GUklxenFPZWdXVnE1bmVTSXNUWTVoMUI1QzJ5MXFpYlNpTmVPMmhn?=
+ =?utf-8?B?bGxicThxUDEza0pLbC9QZkZsbTIwRHhGQmEvdFhYbm9IdTlGbVZBK3hpL0cx?=
+ =?utf-8?B?eWtFbjVjKzV2cTFCSEtJdkxMYlY1V3Y3Zmk4UTFtV0tLeXBubGlaSnlJdUx1?=
+ =?utf-8?B?bjZFOHNZY1hoODAwNkF4UW1OWE9naERUZ3hnL0VtUGxTaWhGWUM5Q3luR1FK?=
+ =?utf-8?B?bklVNDJNWFpSWS9hV2VkeDBvV0c1dldpSnpsT0JDL2hOQWIxMlJJSktaanJv?=
+ =?utf-8?B?Mmc9PQ==?=
+X-MS-Exchange-CrossTenant-Network-Message-Id: d307e1fb-a8c7-4aac-3fcc-08dcc6e6ec1b
+X-MS-Exchange-CrossTenant-AuthSource: CO1PR11MB5089.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 27 Aug 2024 22:23:48.6810 (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: mMV/R+xv6eJJrXI9seRqcWe/PUA5vmjpIxwKVAcUUMMnioEbEIKU5XnrMThLP11uXmb3Va0o0c/R9m0GArPJd7jxqVJxsddpqxE/Oeo4YJw=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: CO1PR11MB5027
+X-OriginatorOrg: intel.com
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1724795572; x=1756331572;
- h=from:date:subject:mime-version:content-transfer-encoding:
- message-id:references:in-reply-to:to:cc;
- bh=l7QkD+FUPja3RWxoITYr6vFS1/aY/myxAhFh3UngTWA=;
- b=ktdV4aJ1cKRXAhFLftq4u/IULiM1/Saz21+pKI/pe+AQq7+0sRIf1817
- LJanNfRXyfLhlcZV7iNu7ANWFoIOou3HW49L2qHL0XKUmDGRdi7S8fPvx
- EXvNdupGafjIFLIul4InbJ34HUDgHndLD4kXg6sX6wgLrlwHVFcRJ9Ijp
- ATgq0hJ/1OPwu+/nlCAVpS43Z5U9AaRE04I1Ho5eiS8dC8MERrzODn51t
- nLB21AgEPjjBUU96qTXY+yCkp+3+uNbn1xfIk3ojTsC1+/I4Qdrk76Ldl
- yl+FWRk6kyGYzyrWtZ8nMcWmM93ABsgxOCo0hXGQU8RF/EpwRlt2sxco2
+ t=1724797432; x=1756333432;
+ h=message-id:date:subject:from:to:cc:references:
+ in-reply-to:content-transfer-encoding:mime-version;
+ bh=Co0J9V8ay3NE9BxYxWtbogPyRjr/cIOwlhAEfv7qHe8=;
+ b=nChtOw9EDhM1uhCgYeBbpt3wD/vffCHjhqjDHR4JSuaDK/CNvAJP1+sy
+ P3j7GscCt0CChoB5hH/MIONEAICxNCfaTxWtpTNSeSs+VpZbp/lPQvhx3
+ 6zUFRtFPK8EmI6QYjoHY1c0Ol2uN6DXa9AbzexJYn3/ZNF+lSgvIDs2P2
+ iQyGPl5fH+87aDS6THLKtz6yGVz88gMqkT2wKjR0JP1gid6H0AwseJpwF
+ cEoj+YclafsxQcJhB2LJR6/a3MmKwoGLtDHr9aCznQjM6woehGZUFHvJ0
+ LINztHLNxc2i8QNf2cXi43LYulmOUxq1+tYpILmUdeuTTn+CRU0iPzYHM
  Q==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none)
@@ -95,9 +220,11 @@ X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=ktdV4aJ1
-Subject: [Intel-wired-lan] [PATCH iwl-next 10/13] ice: use <linux/packing.h>
- for Tx and Rx queue context data
+ header.s=Intel header.b=nChtOw9E
+X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next 00/13] ice: use
+ <linux/packing.h> for Tx and Rx queue context data
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -114,438 +241,24 @@ Cc: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The ice driver needs to write the Tx and Rx queue context when programming
-Tx and Rx queues. This is currently done using some bespoke custom logic
-via the ice_set_ctx() and its helper functions, along with bit position
-definitions in the ice_tlan_ctx_info and ice_rlan_ctx_info structures.
 
-This logic does work, but is problematic for several reasons:
 
-1) ice_set_ctx requires a helper function for each byte size being packed,
-   as it uses a separate function to pack u8, u16, u32, and u64 fields.
-   This requires 4 functions which contain near-duplicate logic with the
-   types changed out.
+On 8/27/2024 2:52 PM, Jacob Keller wrote:
+> The copy_rxq_ctx_to_hw() and ice_write_rxq_ctx() are updated to align with
+> modern kernel style guidelines. This includes removing an unnecessary NULL
+> check, updating the kdoc descriptions to align with the check-kdoc, and
+> making ice_copy_rxq_ctx_to_hw() void. This ensures the style for these
+> functions will match the style for the similar functions needed to enable
+> live migration in a future series.
 
-2) The logic in the ice_pack_ctx_word, ice_pack_ctx_dword, and
-   ice_pack_ctx_qword does not handle values which straddle alignment
-   boundaries very well. This requires that several fields in the
-   ice_tlan_ctx_info and ice_rlan_ctx_info be a size larger than their bit
-   size should require.
 
-3) Future support for live migration will require adding unpacking
-   functions to take the packed hardware context and unpack it into the
-   ice_rlan_ctx and ice_tlan_ctx structures. Implementing this would
-   require implementing ice_get_ctx, and its associated helper functions,
-   which essentially doubles the amount of code required.
+Ugh, I accidentally typo'd the netdev address. I'll wait to resend until
+tomorrow, but in the meantime..
 
-Since Linux 5.2, commit 554aae35007e ("lib: Add support for generic packing
-operations") has had a robust bit packing library function which can
-correctly pack or unpack data between the CPU-useful unpacked structures
-and bitpacked buffers used by hardware. This API was previously broken if
-the buffer size was not aligned to 4 bytes. However, this has recently been
-fixed.
+Przemek, I did add two additional patches I saw I had on my live
+migration branch to cleanup the Rx queue functions, which weren't part
+of the e1000 series. I would appreciate if you could review those as
+well before I resend.
 
-The major difference with <linux/packing.h> is that it expects the unpacked
-data will always be a u64. This is somewhat limiting, but can be worked
-around by using a local temporary u64.
-
-Replace the ice-specific ice_set_ctx() logic with a <linux/packing.h>
-based implementation, ice_ctx_pack(). It takes pointers to the relevant
-packed and unpacked storage, as well as the least significant bit and the
-width. A temporary local u64 value is used to interact with the pack() API.
-
-As with the other implementations, we handle the error codes from pack()
-with a pr_err and a call to dump_stack. These are unexpected as they should
-only happen due to programmer error.
-
-Note that I initially tried implementing this as functions which just
-repeatably called the ice_ctx_pack() function instead of using the
-ice_rlan_ctx_info and ice_tlan_ctx_info arrays. This does work, but it has
-a couple of downsides:
-
- 1) it wastes a significant amount of bytes in the text section, vs the
-    savings from removing the RO data of the arrays.
-
- 2) this cost is made worse after implementing an unpack function, as we
-    must duplicate the list of packings for the unpack function.
-
-It does have the slight upside of allowing integer type promotion when
-packing. However, the unpack() function still requires a pointer to the u64
-value, so a temporary variable would still be required when unpacking.
-
-Finally, I opted to use the pack() interface instead of the packing()
-interface since it ends up producing code I found easier to read overall.
-The unpack support will ultimately add a few extra bytes to implement
-separate ice_ctx_unpack(), and the __ice_unpack_queue_ctx(). However, I
-think the resulting code is still simpler and will avoid requiring the
-packing() to stick around forever. The overall cost is not high since we
-still store the actual packing tables as shared RO data.
-
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
----
- drivers/net/ethernet/intel/ice/ice_common.h |  13 +-
- drivers/net/ethernet/intel/ice/ice_base.c   |   3 +-
- drivers/net/ethernet/intel/ice/ice_common.c | 285 ++++++++--------------------
- 3 files changed, 96 insertions(+), 205 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
-index 27208a60cece..550fdd08e6aa 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.h
-+++ b/drivers/net/ethernet/intel/ice/ice_common.h
-@@ -5,6 +5,7 @@
- #define _ICE_COMMON_H_
- 
- #include <linux/bitfield.h>
-+#include <linux/packing.h>
- 
- #include "ice.h"
- #include "ice_type.h"
-@@ -93,8 +94,16 @@ bool ice_check_sq_alive(struct ice_hw *hw, struct ice_ctl_q_info *cq);
- int ice_aq_q_shutdown(struct ice_hw *hw, bool unloading);
- void ice_fill_dflt_direct_cmd_desc(struct ice_aq_desc *desc, u16 opcode);
- extern const struct ice_ctx_ele ice_tlan_ctx_info[];
--int ice_set_ctx(struct ice_hw *hw, u8 *src_ctx, u8 *dest_ctx,
--		const struct ice_ctx_ele *ce_info);
-+extern const struct ice_ctx_ele ice_rlan_ctx_info[];
-+
-+void __ice_pack_queue_ctx(const void *ctx, void *buf, size_t len,
-+			  const struct ice_ctx_ele *ctx_info);
-+
-+#define ice_pack_rxq_ctx(rlan_ctx, buf) \
-+	__ice_pack_queue_ctx((rlan_ctx), (buf), sizeof(buf), ice_rlan_ctx_info)
-+
-+#define ice_pack_txq_ctx(tlan_ctx, buf) \
-+	__ice_pack_queue_ctx((tlan_ctx), (buf), sizeof(buf), ice_tlan_ctx_info)
- 
- extern struct mutex ice_global_cfg_lock_sw;
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_base.c b/drivers/net/ethernet/intel/ice/ice_base.c
-index f448d3a84564..1881ce8105ca 100644
---- a/drivers/net/ethernet/intel/ice/ice_base.c
-+++ b/drivers/net/ethernet/intel/ice/ice_base.c
-@@ -907,8 +907,7 @@ ice_vsi_cfg_txq(struct ice_vsi *vsi, struct ice_tx_ring *ring,
- 	ice_setup_tx_ctx(ring, &tlan_ctx, pf_q);
- 	/* copy context contents into the qg_buf */
- 	qg_buf->txqs[0].txq_id = cpu_to_le16(pf_q);
--	ice_set_ctx(hw, (u8 *)&tlan_ctx, qg_buf->txqs[0].txq_ctx,
--		    ice_tlan_ctx_info);
-+	ice_pack_txq_ctx(&tlan_ctx, qg_buf->txqs[0].txq_ctx);
- 
- 	/* init queue specific tail reg. It is referred as
- 	 * transmit comm scheduler queue doorbell.
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index c4b24ba36b5e..09a94c20e16d 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -1387,8 +1387,89 @@ ice_copy_rxq_ctx_to_hw(struct ice_hw *hw, u8 *ice_rxq_ctx, u32 rxq_index)
- 	return 0;
- }
- 
-+/**
-+ * ice_ctx_pack - Pack Tx/Rx queue context data
-+ * @pbuf: pointer to the packed buffer
-+ * @pbuflen: size of the packed buffer
-+ * @val: pointer to storage for the unpacked data
-+ * @len: size of the unpacked data
-+ * @width: width of bits to pack
-+ * @lsb: least significant bit in the packed buffer
-+ *
-+ * Pack the given field of the Tx or Rx queue context into the hardware data
-+ * buffer. The packed contents are in full Little Endian ordering with the
-+ * least significant 4-byte block first.
-+ *
-+ * The only time that pack() should produce an error is due to invalid bit
-+ * offsets. Thus, errors are logged along with a stack dump.
-+ */
-+static void ice_ctx_pack(void *pbuf, size_t pbuflen, const void *val,
-+			 size_t len, size_t width, size_t lsb)
-+{
-+	size_t msb = lsb + width - 1;
-+	u64 uval;
-+	int err;
-+
-+	switch (len) {
-+	case sizeof(u8):
-+		uval = *((u8 *)val);
-+		break;
-+	case sizeof(u16):
-+		uval = *((u16 *)val);
-+		break;
-+	case sizeof(u32):
-+		uval = *((u32 *)val);
-+		break;
-+	case sizeof(u64):
-+		uval = *((u64 *)val);
-+		break;
-+	default:
-+		WARN_ONCE(1, "Unexpected size %zd when packing queue context",
-+			  len);
-+		return;
-+	}
-+
-+	err = pack(pbuf, uval, msb, lsb, pbuflen,
-+		   QUIRK_LITTLE_ENDIAN | QUIRK_LSW32_IS_FIRST);
-+	if (unlikely(err)) {
-+		if (err == -EINVAL) {
-+			pr_err("MSB (%zd) expected to be larger than LSB (%zd)\n",
-+			       msb, lsb);
-+		} else if (err == -ERANGE) {
-+			if ((msb - lsb + 1) > 64)
-+				pr_err("Field %zd-%zd too large for 64 bits!\n",
-+				       lsb, msb);
-+			else
-+				pr_err("Cannot store %llx inside field %zd-%zd (would truncate)\n",
-+				       uval, lsb, msb);
-+		}
-+		dump_stack();
-+	}
-+}
-+
-+/**
-+ * __ice_pack_queue_ctx - Pack Tx or Rx queue context
-+ * @ctx: Unpacked queue context structure
-+ * @buf: packed buffer storage
-+ * @len: size of the packed buffer
-+ * @ctx_info: array describing the packing layout
-+ */
-+void __ice_pack_queue_ctx(const void *ctx, void *buf, size_t len,
-+			  const struct ice_ctx_ele *ctx_info)
-+{
-+	for (int f = 0; ctx_info[f].width; f++) {
-+		const struct ice_ctx_ele *field_info = &ctx_info[f];
-+		const void *field;
-+
-+		field = (const void *)ctx + field_info->offset;
-+
-+		ice_ctx_pack(buf, len, field, field_info->size_of,
-+			     field_info->width, field_info->lsb);
-+	}
-+}
-+
- /* LAN Rx Queue Context */
--static const struct ice_ctx_ele ice_rlan_ctx_info[] = {
-+const struct ice_ctx_ele ice_rlan_ctx_info[] = {
- 	/* Field		Width	LSB */
- 	ICE_CTX_STORE(ice_rlan_ctx, head,		13,	0),
- 	ICE_CTX_STORE(ice_rlan_ctx, cpuid,		8,	13),
-@@ -1433,7 +1514,8 @@ int ice_write_rxq_ctx(struct ice_hw *hw, struct ice_rlan_ctx *rlan_ctx,
- 
- 	rlan_ctx->prefena = 1;
- 
--	ice_set_ctx(hw, (u8 *)rlan_ctx, ctx_buf, ice_rlan_ctx_info);
-+	ice_pack_rxq_ctx(rlan_ctx, ctx_buf);
-+
- 	return ice_copy_rxq_ctx_to_hw(hw, ctx_buf, rxq_index);
- }
- 
-@@ -4526,205 +4608,6 @@ ice_aq_add_rdma_qsets(struct ice_hw *hw, u8 num_qset_grps,
- 
- /* End of FW Admin Queue command wrappers */
- 
--/**
-- * ice_pack_ctx_byte - write a byte to a packed context structure
-- * @src_ctx: unpacked source context structure
-- * @dest_ctx: packed destination context data
-- * @ce_info: context element description
-- */
--static void ice_pack_ctx_byte(u8 *src_ctx, u8 *dest_ctx,
--			      const struct ice_ctx_ele *ce_info)
--{
--	u8 src_byte, dest_byte, mask;
--	u8 *from, *dest;
--	u16 shift_width;
--
--	/* copy from the next struct field */
--	from = src_ctx + ce_info->offset;
--
--	/* prepare the bits and mask */
--	shift_width = ce_info->lsb % 8;
--	mask = GENMASK(ce_info->width - 1 + shift_width, shift_width);
--
--	src_byte = *from;
--	src_byte <<= shift_width;
--	src_byte &= mask;
--
--	/* get the current bits from the target bit string */
--	dest = dest_ctx + (ce_info->lsb / 8);
--
--	memcpy(&dest_byte, dest, sizeof(dest_byte));
--
--	dest_byte &= ~mask;	/* get the bits not changing */
--	dest_byte |= src_byte;	/* add in the new bits */
--
--	/* put it all back */
--	memcpy(dest, &dest_byte, sizeof(dest_byte));
--}
--
--/**
-- * ice_pack_ctx_word - write a word to a packed context structure
-- * @src_ctx: unpacked source context structure
-- * @dest_ctx: packed destination context data
-- * @ce_info: context element description
-- */
--static void ice_pack_ctx_word(u8 *src_ctx, u8 *dest_ctx,
--			      const struct ice_ctx_ele *ce_info)
--{
--	u16 src_word, mask;
--	__le16 dest_word;
--	u8 *from, *dest;
--	u16 shift_width;
--
--	/* copy from the next struct field */
--	from = src_ctx + ce_info->offset;
--
--	/* prepare the bits and mask */
--	shift_width = ce_info->lsb % 8;
--	mask = GENMASK(ce_info->width - 1 + shift_width, shift_width);
--
--	/* don't swizzle the bits until after the mask because the mask bits
--	 * will be in a different bit position on big endian machines
--	 */
--	src_word = *(u16 *)from;
--	src_word <<= shift_width;
--	src_word &= mask;
--
--	/* get the current bits from the target bit string */
--	dest = dest_ctx + (ce_info->lsb / 8);
--
--	memcpy(&dest_word, dest, sizeof(dest_word));
--
--	dest_word &= ~(cpu_to_le16(mask));	/* get the bits not changing */
--	dest_word |= cpu_to_le16(src_word);	/* add in the new bits */
--
--	/* put it all back */
--	memcpy(dest, &dest_word, sizeof(dest_word));
--}
--
--/**
-- * ice_pack_ctx_dword - write a dword to a packed context structure
-- * @src_ctx: unpacked source context structure
-- * @dest_ctx: packed destination context data
-- * @ce_info: context element description
-- */
--static void ice_pack_ctx_dword(u8 *src_ctx, u8 *dest_ctx,
--			       const struct ice_ctx_ele *ce_info)
--{
--	u32 src_dword, mask;
--	__le32 dest_dword;
--	u8 *from, *dest;
--	u16 shift_width;
--
--	/* copy from the next struct field */
--	from = src_ctx + ce_info->offset;
--
--	/* prepare the bits and mask */
--	shift_width = ce_info->lsb % 8;
--	mask = GENMASK(ce_info->width - 1 + shift_width, shift_width);
--
--	/* don't swizzle the bits until after the mask because the mask bits
--	 * will be in a different bit position on big endian machines
--	 */
--	src_dword = *(u32 *)from;
--	src_dword <<= shift_width;
--	src_dword &= mask;
--
--	/* get the current bits from the target bit string */
--	dest = dest_ctx + (ce_info->lsb / 8);
--
--	memcpy(&dest_dword, dest, sizeof(dest_dword));
--
--	dest_dword &= ~(cpu_to_le32(mask));	/* get the bits not changing */
--	dest_dword |= cpu_to_le32(src_dword);	/* add in the new bits */
--
--	/* put it all back */
--	memcpy(dest, &dest_dword, sizeof(dest_dword));
--}
--
--/**
-- * ice_pack_ctx_qword - write a qword to a packed context structure
-- * @src_ctx: unpacked source context structure
-- * @dest_ctx: packed destination context data
-- * @ce_info: context element description
-- */
--static void ice_pack_ctx_qword(u8 *src_ctx, u8 *dest_ctx,
--			       const struct ice_ctx_ele *ce_info)
--{
--	u64 src_qword, mask;
--	__le64 dest_qword;
--	u8 *from, *dest;
--	u16 shift_width;
--
--	/* copy from the next struct field */
--	from = src_ctx + ce_info->offset;
--
--	/* prepare the bits and mask */
--	shift_width = ce_info->lsb % 8;
--	mask = GENMASK_ULL(ce_info->width - 1 + shift_width, shift_width);
--
--	/* don't swizzle the bits until after the mask because the mask bits
--	 * will be in a different bit position on big endian machines
--	 */
--	src_qword = *(u64 *)from;
--	src_qword <<= shift_width;
--	src_qword &= mask;
--
--	/* get the current bits from the target bit string */
--	dest = dest_ctx + (ce_info->lsb / 8);
--
--	memcpy(&dest_qword, dest, sizeof(dest_qword));
--
--	dest_qword &= ~(cpu_to_le64(mask));	/* get the bits not changing */
--	dest_qword |= cpu_to_le64(src_qword);	/* add in the new bits */
--
--	/* put it all back */
--	memcpy(dest, &dest_qword, sizeof(dest_qword));
--}
--
--/**
-- * ice_set_ctx - set context bits in packed structure
-- * @hw: pointer to the hardware structure
-- * @src_ctx:  pointer to a generic non-packed context structure
-- * @dest_ctx: pointer to memory for the packed structure
-- * @ce_info: List of Rx context elements
-- */
--int ice_set_ctx(struct ice_hw *hw, u8 *src_ctx, u8 *dest_ctx,
--		const struct ice_ctx_ele *ce_info)
--{
--	int f;
--
--	for (f = 0; ce_info[f].width; f++) {
--		/* We have to deal with each element of the FW response
--		 * using the correct size so that we are correct regardless
--		 * of the endianness of the machine.
--		 */
--		if (ce_info[f].width > (ce_info[f].size_of * BITS_PER_BYTE)) {
--			ice_debug(hw, ICE_DBG_QCTX, "Field %d width of %d bits larger than size of %d byte(s) ... skipping write\n",
--				  f, ce_info[f].width, ce_info[f].size_of);
--			continue;
--		}
--		switch (ce_info[f].size_of) {
--		case sizeof(u8):
--			ice_pack_ctx_byte(src_ctx, dest_ctx, &ce_info[f]);
--			break;
--		case sizeof(u16):
--			ice_pack_ctx_word(src_ctx, dest_ctx, &ce_info[f]);
--			break;
--		case sizeof(u32):
--			ice_pack_ctx_dword(src_ctx, dest_ctx, &ce_info[f]);
--			break;
--		case sizeof(u64):
--			ice_pack_ctx_qword(src_ctx, dest_ctx, &ce_info[f]);
--			break;
--		default:
--			return -EINVAL;
--		}
--	}
--
--	return 0;
--}
--
- /**
-  * ice_get_lan_q_ctx - get the LAN queue context for the given VSI and TC
-  * @hw: pointer to the HW struct
-
--- 
-2.46.0.124.g2dc1a81c8933
-
+Thanks,
+Jake
