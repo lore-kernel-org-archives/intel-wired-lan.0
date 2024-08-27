@@ -4,71 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B3B7BC54735
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 27 Aug 2024 21:53:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C1ECCC54731
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 27 Aug 2024 21:53:05 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 774B540689;
-	Tue, 27 Aug 2024 21:53:04 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 60B7C406B2;
+	Tue, 27 Aug 2024 21:53:05 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id kd4VOE3hVxil; Tue, 27 Aug 2024 21:53:03 +0000 (UTC)
+ id doduLEyF59or; Tue, 27 Aug 2024 21:53:04 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C9A6640698
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 01B3F40692
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1724795582;
-	bh=tAxLSsYbpJWIi7yFTgquArjg0Gn/FxTJIitrET6sET8=;
+	s=default; t=1724795584;
+	bh=1MpDeeuUBdJ4MsblNsdjyZq/DF3qOhhM1NpXd1AgG4k=;
 	h=From:Date:References:In-Reply-To:To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=JQhBsXxyuBuP81zQfb3LYr7J68KKpsRMaR5ICOudnCTsc/fKvT9uxWUro76j8rq++
-	 zhRBQU9wIXPqW/BnvnFgDIS3LXhjNacBHLrdyykKiUxBSyhdONTIJAxc67OH/Y1GGc
-	 3y72lIbYkVYksC4t+03ejCo2MqytvZDYIY1Fct2TpFq05YXcyP5N2MzIF0xg638FCS
-	 kdDO7KMv9KvFmt4Jw3lu2R4ET2mzLB9bGtXakf0inY+tInH/5GSMiPLbQkhYwox1cJ
-	 1HUIRo51NmoIA5Uu1qc16XNKmqbaiS/iVZBMw0ow+adp3Cbu3HrCwepbQGZgC8o2kz
-	 4NapO0ic9xV4Q==
+	b=aJdsHZhUXDkIU4MA0jlf7SL4R/majllx166VUuQHN1BvY50XRGCCeCXP150E0DP5i
+	 riGF+6+qw5w/l24etmgMIjAVZFzG627ygO8i7QzLxhtuza5ue+XqoC65J4Rzx7wdZV
+	 2K57lwH42oodk8jacTIyg30OnU/pxlS7FGziQajSL+P8UBvVZ3gA/LaIE9NpBdqqUW
+	 kVC+Fv1Lmhmqjzxgwr4OXKMoztI4oIeogpDD12A5xkNV2dO+qTieTbOKgISWjjZh+5
+	 BpIVSn330LiUFuTQ//KszywqAcjp0oh8xWy2UWxv8exnBIH2iQ36aEFtyG6Oit/l44
+	 Xn2YgpmQf5GaQ==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id C9A6640698;
-	Tue, 27 Aug 2024 21:53:02 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 01B3F40692;
+	Tue, 27 Aug 2024 21:53:03 +0000 (UTC)
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id EF0781BF27E
- for <intel-wired-lan@lists.osuosl.org>; Tue, 27 Aug 2024 21:52:52 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id F2D8E1BF27E
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 27 Aug 2024 21:52:53 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id F328481168
- for <intel-wired-lan@lists.osuosl.org>; Tue, 27 Aug 2024 21:52:50 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 382E68112B
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 27 Aug 2024 21:52:51 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id IjNnKg0WjNBw for <intel-wired-lan@lists.osuosl.org>;
- Tue, 27 Aug 2024 21:52:49 +0000 (UTC)
+ id 1jh5nygQFa19 for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 27 Aug 2024 21:52:50 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.15;
  helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org B595E8112B
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B595E8112B
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 0CA048114E
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 0CA048114E
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.15])
- by smtp1.osuosl.org (Postfix) with ESMTPS id B595E8112B
- for <intel-wired-lan@lists.osuosl.org>; Tue, 27 Aug 2024 21:52:49 +0000 (UTC)
-X-CSE-ConnectionGUID: 3GraaC4ZSFitO4pE+tgRxA==
-X-CSE-MsgGUID: pYzcW++5TZyyaS7h5CqhkQ==
-X-IronPort-AV: E=McAfee;i="6700,10204,11177"; a="27068833"
-X-IronPort-AV: E=Sophos;i="6.10,181,1719903600"; d="scan'208";a="27068833"
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 0CA048114E
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 27 Aug 2024 21:52:50 +0000 (UTC)
+X-CSE-ConnectionGUID: BEPixrHKQdKWM0kAKoEyWA==
+X-CSE-MsgGUID: nZaOLloDRqWq4hYo6TixUQ==
+X-IronPort-AV: E=McAfee;i="6700,10204,11177"; a="27068822"
+X-IronPort-AV: E=Sophos;i="6.10,181,1719903600"; d="scan'208";a="27068822"
 Received: from fmviesa010.fm.intel.com ([10.60.135.150])
  by orvoesa107.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  27 Aug 2024 14:52:45 -0700
-X-CSE-ConnectionGUID: lqFnlzDqQ7yRrp/R5dhrCA==
-X-CSE-MsgGUID: 5dYowZipSZuFbNJ7ziavsA==
+X-CSE-ConnectionGUID: +4pWv+mSTaSoVcrHZiJz+Q==
+X-CSE-MsgGUID: XqjflUFhQPKlPgWnnOq3jg==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.10,181,1719903600"; d="scan'208";a="63189502"
+X-IronPort-AV: E=Sophos;i="6.10,181,1719903600"; d="scan'208";a="63189496"
 Received: from jekeller-desk.jf.intel.com ([10.166.241.20])
  by fmviesa010-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 27 Aug 2024 14:52:45 -0700
+ 27 Aug 2024 14:52:44 -0700
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Tue, 27 Aug 2024 14:52:11 -0700
+Date: Tue, 27 Aug 2024 14:52:09 -0700
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20240827-e810-live-migration-jk-prep-ctx-functions-v1-8-0442e2e42d32@intel.com>
+Message-Id: <20240827-e810-live-migration-jk-prep-ctx-functions-v1-6-0442e2e42d32@intel.com>
 References: <20240827-e810-live-migration-jk-prep-ctx-functions-v1-0-0442e2e42d32@intel.com>
 In-Reply-To: <20240827-e810-live-migration-jk-prep-ctx-functions-v1-0-0442e2e42d32@intel.com>
 To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>, 
@@ -78,25 +78,25 @@ To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>,
 X-Mailer: b4 0.14.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1724795570; x=1756331570;
+ t=1724795571; x=1756331571;
  h=from:date:subject:mime-version:content-transfer-encoding:
  message-id:references:in-reply-to:to:cc;
- bh=An9U9+LQbYKecW2Fkz6YDOf+MsE4rJ4Swe21fUxoRE8=;
- b=Z2IA1PZrqHWRBVmjae/3V3iQiuCBsyyslpDM6y7Q40CmGb8cH6fIi7VB
- O4qRwbXeVzwbCt5etRUZFtFvKQbGFB1/INEQt05oPD2Om5BpTDdFOGicU
- KCacn8YhfeS0fcItxKKG6TY4UaK+862j/tmRp10ipMxLSxM7XY7MjEWg5
- XjwF3YLLiZt5trlhtku4CSq43xmtc0BMmzaV7gfioLr3MNKtOVQnM55qx
- tvdaXQhEPce5Vrk57y91XAG5DZ1/ZRP9bO2eRdMMg3GSkCvJoWf7LDDqs
- qP/MUo+2Gm6E0hIUGEjCXRypKCkolDg1qwe588iS1Ekg1vA39Z4tk7kPv
+ bh=77DNrZnhNI61R70Uim5rhtEqqMp2CaYBnFy65j9mg2E=;
+ b=j0kl4MwVw5biQnJwSxarPB3IPIr1qFAFf1m8jdlOVE8tbLZbJfHs5dNa
+ BT7JZkjfK352Jc11MJ8T/HSbVTvxFN5d7jBUKcuvbJ2QZ56QyNx8ffzOk
+ QssTrAAiXAlUnm11Q5LBjt9LKUjOyMz2jASVKSYk0Wnv3znitEVKCL+YD
+ UPQIT3MPMFFu8Uf3TuXio7YFNAgNfUBu61efnlYbYFPF2X+P+zhkq0CyO
+ ze7wJIPi/oCASlMrq1eFPOzIrYP06Gnbv7Hb11mTfnSPCDhoJ2w8w80Kn
+ OFFNfvEXGBQ5I4XvC6XVd/wxwqI0bKHruhROxrnMPZNjy6V/a4B9F3BgM
  A==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=Z2IA1PZr
-Subject: [Intel-wired-lan] [PATCH iwl-next 08/13] lib: packing: fix
- QUIRK_MSB_ON_THE_RIGHT behavior
+ header.a=rsa-sha256 header.s=Intel header.b=j0kl4MwV
+Subject: [Intel-wired-lan] [PATCH iwl-next 06/13] lib: packing: add KUnit
+ tests adapted from selftests
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -113,283 +113,336 @@ Cc: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The QUIRK_MSB_ON_THE_RIGHT quirk is intended to modify pack() and unpack()
-so that the most significant bit of each byte in the packed layout is on
-the right.
+Add 24 simple KUnit tests for the lib/packing.c pack() and unpack() APIs.
 
-The way the quirk is currently implemented is broken whenever the packing
-code packs or unpacks any value that is not exactly a full byte.
+The first 16 tests exercise all combinations of quirks with a simple magic
+number value on a 16-byte buffer. The remaining 8 tests cover
+non-multiple-of-4 buffer sizes.
 
-The broken behavior can occur when packing any values smaller than one
-byte, when packing any value that is not exactly a whole number of bytes,
-or when the packing is not aligned to a byte boundary.
+These tests were originally written by Vladimir as simple selftest
+functions. I adapted them to KUnit, refactoring them into a table driven
+approach. This will aid in adding additional tests in the future.
 
-This quirk is documented in the following way:
-
-  1. Normally (no quirks), we would do it like this:
-
-  ::
-
-    63 62 61 60 59 58 57 56 55 54 53 52 51 50 49 48 47 46 45 44 43 42 41 40 39 38 37 36 35 34 33 32
-    7                       6                       5                        4
-    31 30 29 28 27 26 25 24 23 22 21 20 19 18 17 16 15 14 13 12 11 10  9  8  7  6  5  4  3  2  1  0
-    3                       2                       1                        0
-
-  <snip>
-
-  2. If QUIRK_MSB_ON_THE_RIGHT is set, we do it like this:
-
-  ::
-
-    56 57 58 59 60 61 62 63 48 49 50 51 52 53 54 55 40 41 42 43 44 45 46 47 32 33 34 35 36 37 38 39
-    7                       6                        5                       4
-    24 25 26 27 28 29 30 31 16 17 18 19 20 21 22 23  8  9 10 11 12 13 14 15  0  1  2  3  4  5  6  7
-    3                       2                        1                       0
-
-  That is, QUIRK_MSB_ON_THE_RIGHT does not affect byte positioning, but
-  inverts bit offsets inside a byte.
-
-Essentially, the mapping for physical bit offsets should be reserved for a
-given byte within the payload. This reversal should be fixed to the bytes
-in the packing layout.
-
-The logic to implement this quirk is handled within the
-adjust_for_msb_right_quirk() function. This function does not work properly
-when dealing with the bytes that contain only a partial amount of data.
-
-In particular, consider trying to pack or unpack the range 53-44. We should
-always be mapping the bits from the logical ordering to their physical
-ordering in the same way, regardless of what sequence of bits we are
-unpacking.
-
-This, we should grab the following logical bits:
-
-  Logical: 55 54 53 52 51 50 49 48 47 45 44 43 42 41 40 39
-                  ^  ^  ^  ^  ^  ^  ^  ^  ^
-
-And pack them into the physical bits:
-
-   Physical: 48 49 50 51 52 53 54 55 40 41 42 43 44 45 46 47
-    Logical: 48 49 50 51 52 53                   44 45 46 47
-              ^  ^  ^  ^  ^  ^                    ^  ^  ^  ^
-
-The current logic in adjust_for_msb_right_quirk is broken. I believe it is
-intending to map according to the following:
-
-  Physical: 48 49 50 51 52 53 54 55 40 41 42 43 44 45 46 47
-   Logical:       48 49 50 51 52 53 44 45 46 47
-                   ^  ^  ^  ^  ^  ^  ^  ^  ^  ^
-
-That is, it tries to keep the bits at the start and end of a packing
-together. This is wrong, as it makes the packing change what bit is being
-mapped to what based on which bits you're currently packing or unpacking.
-
-Worse, the actual calculations within adjust_for_msb_right_quirk don't make
-sense.
-
-Consider the case when packing the last byte of an unaligned packing. It
-might have a start bit of 7 and an end bit of 5. This would have a width of
-3 bits. The new_start_bit will be calculated as the width - the box_end_bit
-- 1. This will underflow and produce a negative value, which will
-ultimate result in generating a new box_mask of all 0s.
-
-For any other values, the result of the calculations of the
-new_box_end_bit, new_box_start_bit, and the new box_mask will result in the
-exact same values for the box_end_bit, box_start_bit, and box_mask. This
-makes the calculations completely irrelevant.
-
-If box_end_bit is 0, and box_start_bit is 7, then the entire function of
-adjust_for_msb_right_quirk will boil down to just:
-
-    *to_write = bitrev8(*to_write)
-
-The other adjustments are attempting (incorrectly) to keep the bits in the
-same place but just reversed. This is not the right behavior even if
-implemented correctly, as it leaves the mapping dependent on the bit values
-being packed or unpacked.
-
-Remove adjust_for_msb_right_quirk() and just use bitrev8 to reverse the
-byte order when interacting with the packed data.
-
-In particular, for packing, we need to reverse both the box_mask and the
-physical value being packed. This is done after shifting the value by
-box_end_bit so that the reversed mapping is always aligned to the physical
-buffer byte boundary. The box_mask is reversed as we're about to use it to
-clear any stale bits in the physical buffer at this block.
-
-For unpacking, we need to reverse the contents of the physical buffer
-*before* masking with the box_mask. This is critical, as the box_mask is a
-logical mask of the bit layout before handling the QUIRK_MSB_ON_THE_RIGHT.
-
-Add several new tests which cover this behavior. These tests will fail
-without the fix and pass afterwards. Note that no current drivers make use
-of QUIRK_MSB_ON_THE_RIGHT. I suspect this is why there have been no reports
-of this inconsistency before.
-
-Fixes: 554aae35007e ("lib: Add support for generic packing operations")
+Co-developed-by: Vladimir Oltean <vladimir.oltean@nxp.com>
+Signed-off-by: Vladimir Oltean <vladimir.oltean@nxp.com>
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 ---
- lib/packing.c      | 39 +++++++++--------------------
- lib/packing_test.c | 72 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 83 insertions(+), 28 deletions(-)
+ lib/packing_test.c | 256 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ MAINTAINERS        |   1 +
+ lib/Kconfig        |  12 +++
+ lib/Makefile       |   1 +
+ 4 files changed, 270 insertions(+)
 
-diff --git a/lib/packing.c b/lib/packing.c
-index 500184530d07..9efe57d347c7 100644
---- a/lib/packing.c
-+++ b/lib/packing.c
-@@ -9,23 +9,6 @@
- #include <linux/types.h>
- #include <linux/bitrev.h>
- 
--static void adjust_for_msb_right_quirk(u64 *to_write, size_t *box_start_bit,
--				       size_t *box_end_bit, u8 *box_mask)
--{
--	size_t box_bit_width = *box_start_bit - *box_end_bit + 1;
--	size_t new_box_start_bit, new_box_end_bit;
--
--	*to_write >>= *box_end_bit;
--	*to_write = bitrev8(*to_write) >> (8 - box_bit_width);
--	*to_write <<= *box_end_bit;
--
--	new_box_end_bit   = box_bit_width - *box_start_bit - 1;
--	new_box_start_bit = box_bit_width - *box_end_bit - 1;
--	*box_mask = GENMASK_ULL(new_box_start_bit, new_box_end_bit);
--	*box_start_bit = new_box_start_bit;
--	*box_end_bit   = new_box_end_bit;
--}
--
- /**
-  * calculate_box_addr - Determine physical location of byte in buffer
-  * @box: Index of byte within buffer seen as a logical big-endian big number
-@@ -170,13 +153,13 @@ int pack(void *pbuf, u64 uval, size_t startbit, size_t endbit, size_t pbuflen,
- 		/* Write to pbuf, read from uval */
- 		pval = uval & proj_mask;
- 		pval >>= proj_end_bit;
--		if (quirks & QUIRK_MSB_ON_THE_RIGHT)
--			adjust_for_msb_right_quirk(&pval,
--						   &box_start_bit,
--						   &box_end_bit,
--						   &box_mask);
--
- 		pval <<= box_end_bit;
-+
-+		if (quirks & QUIRK_MSB_ON_THE_RIGHT) {
-+			pval = bitrev8(pval);
-+			box_mask = bitrev8(box_mask);
-+		}
-+
- 		((u8 *)pbuf)[box_addr] &= ~box_mask;
- 		((u8 *)pbuf)[box_addr] |= pval;
- 	}
-@@ -276,12 +259,12 @@ int unpack(const void *pbuf, u64 *uval, size_t startbit, size_t endbit,
- 		box_addr = calculate_box_addr(box, pbuflen, quirks);
- 
- 		/* Read from pbuf, write to uval */
--		pval = ((u8 *)pbuf)[box_addr] & box_mask;
-+		pval = ((u8 *)pbuf)[box_addr];
-+
- 		if (quirks & QUIRK_MSB_ON_THE_RIGHT)
--			adjust_for_msb_right_quirk(&pval,
--						   &box_start_bit,
--						   &box_end_bit,
--						   &box_mask);
-+			pval = bitrev8(pval);
-+
-+		pval &= box_mask;
- 
- 		pval >>= box_end_bit;
- 		pval <<= proj_end_bit;
 diff --git a/lib/packing_test.c b/lib/packing_test.c
-index 6e68da980802..44062fb93d83 100644
---- a/lib/packing_test.c
+new file mode 100644
+index 000000000000..52e039e2231b
+--- /dev/null
 +++ b/lib/packing_test.c
-@@ -251,6 +251,42 @@ const struct packing_test_case cases[] = {
- 		.end_bit = 43,
- 		.quirks = QUIRK_LSW32_IS_FIRST | QUIRK_LITTLE_ENDIAN,
- 	},
+@@ -0,0 +1,256 @@
++// SPDX-License-Identifier: GPL-2.0
++/* Copyright (c) 2024, Vladimir Oltean <olteanv@gmail.com>
++ * Copyright (c) 2024, Intel Corporation.
++ */
++#include <kunit/test.h>
++#include <linux/packing.h>
++
++struct packing_test_case {
++	const char *desc;
++	const u8 *pbuf;
++	size_t pbuf_size;
++	u64 uval;
++	size_t start_bit;
++	size_t end_bit;
++	u8 quirks;
++};
++
++#define NO_QUIRKS	0
++
++/**
++ * PBUF - Initialize .pbuf and .pbuf_size
++ * @array: elements of constant physical buffer
++ *
++ * Initializes the .pbuf and .pbuf_size fields of a struct packing_test_case
++ * with a constant array of the specified elements.
++ */
++#define PBUF(array...)					\
++	.pbuf = (const u8[]){ array },			\
++	.pbuf_size = sizeof((const u8 []){ array })
++
++const struct packing_test_case cases[] = {
++	/* These tests pack and unpack a magic 64-bit value
++	 * (0xcafedeadbeefcafe) at a fixed logical offset (32) within an
++	 * otherwise zero array of 128 bits (16 bytes). They test all possible
++	 * bit layouts of the 128 bit buffer.
++	 */
 +	{
-+		.desc = "msb right, 16 bytes, non-aligned",
-+		PBUF(0x00, 0x00, 0x00, 0x91, 0x88, 0x59, 0x44, 0xd5,
-+		     0xcc, 0x3d, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00),
-+		.uval = 0x1122334455667788,
-+		.start_bit = 106,
-+		.end_bit = 43,
++		.desc = "no quirks, 16 bytes",
++		PBUF(0x00, 0x00, 0x00, 0x00, 0xca, 0xfe, 0xde, 0xad,
++		     0xbe, 0xef, 0xca, 0xfe, 0x00, 0x00, 0x00, 0x00),
++		.uval = 0xcafedeadbeefcafe,
++		.start_bit = 95,
++		.end_bit = 32,
++		.quirks = NO_QUIRKS,
++	},
++	{
++		.desc = "lsw32 first, 16 bytes",
++		PBUF(0x00, 0x00, 0x00, 0x00, 0xbe, 0xef, 0xca, 0xfe,
++		     0xca, 0xfe, 0xde, 0xad, 0x00, 0x00, 0x00, 0x00),
++		.uval = 0xcafedeadbeefcafe,
++		.start_bit = 95,
++		.end_bit = 32,
++		.quirks = QUIRK_LSW32_IS_FIRST,
++	},
++	{
++		.desc = "little endian words, 16 bytes",
++		PBUF(0x00, 0x00, 0x00, 0x00, 0xad, 0xde, 0xfe, 0xca,
++		     0xfe, 0xca, 0xef, 0xbe, 0x00, 0x00, 0x00, 0x00),
++		.uval = 0xcafedeadbeefcafe,
++		.start_bit = 95,
++		.end_bit = 32,
++		.quirks = QUIRK_LITTLE_ENDIAN,
++	},
++	{
++		.desc = "lsw32 first + little endian words, 16 bytes",
++		PBUF(0x00, 0x00, 0x00, 0x00, 0xfe, 0xca, 0xef, 0xbe,
++		     0xad, 0xde, 0xfe, 0xca, 0x00, 0x00, 0x00, 0x00),
++		.uval = 0xcafedeadbeefcafe,
++		.start_bit = 95,
++		.end_bit = 32,
++		.quirks = QUIRK_LSW32_IS_FIRST | QUIRK_LITTLE_ENDIAN,
++	},
++	{
++		.desc = "msb right, 16 bytes",
++		PBUF(0x00, 0x00, 0x00, 0x00, 0x53, 0x7f, 0x7b, 0xb5,
++		     0x7d, 0xf7, 0x53, 0x7f, 0x00, 0x00, 0x00, 0x00),
++		.uval = 0xcafedeadbeefcafe,
++		.start_bit = 95,
++		.end_bit = 32,
 +		.quirks = QUIRK_MSB_ON_THE_RIGHT,
 +	},
 +	{
-+		.desc = "msb right + lsw32 first, 16 bytes, non-aligned",
-+		PBUF(0x00, 0x00, 0x00, 0x00, 0xcc, 0x3d, 0x02, 0x00,
-+		     0x88, 0x59, 0x44, 0xd5, 0x00, 0x00, 0x00, 0x91),
-+		.uval = 0x1122334455667788,
-+		.start_bit = 106,
-+		.end_bit = 43,
++		.desc = "msb right + lsw32 first, 16 bytes",
++		PBUF(0x00, 0x00, 0x00, 0x00, 0x7d, 0xf7, 0x53, 0x7f,
++		     0x53, 0x7f, 0x7b, 0xb5, 0x00, 0x00, 0x00, 0x00),
++		.uval = 0xcafedeadbeefcafe,
++		.start_bit = 95,
++		.end_bit = 32,
 +		.quirks = QUIRK_MSB_ON_THE_RIGHT | QUIRK_LSW32_IS_FIRST,
 +	},
 +	{
-+		.desc = "msb right + little endian words, 16 bytes, non-aligned",
-+		PBUF(0x91, 0x00, 0x00, 0x00, 0xd5, 0x44, 0x59, 0x88,
-+		     0x00, 0x02, 0x3d, 0xcc, 0x00, 0x00, 0x00, 0x00),
-+		.uval = 0x1122334455667788,
-+		.start_bit = 106,
-+		.end_bit = 43,
++		.desc = "msb right + little endian words, 16 bytes",
++		PBUF(0x00, 0x00, 0x00, 0x00, 0xb5, 0x7b, 0x7f, 0x53,
++		     0x7f, 0x53, 0xf7, 0x7d, 0x00, 0x00, 0x00, 0x00),
++		.uval = 0xcafedeadbeefcafe,
++		.start_bit = 95,
++		.end_bit = 32,
 +		.quirks = QUIRK_MSB_ON_THE_RIGHT | QUIRK_LITTLE_ENDIAN,
 +	},
 +	{
-+		.desc = "msb right + lsw32 first + little endian words, 16 bytes, non-aligned",
-+		PBUF(0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x3d, 0xcc,
-+		     0xd5, 0x44, 0x59, 0x88, 0x91, 0x00, 0x00, 0x00),
-+		.uval = 0x1122334455667788,
-+		.start_bit = 106,
-+		.end_bit = 43,
++		.desc = "msb right + lsw32 first + little endian words, 16 bytes",
++		PBUF(0x00, 0x00, 0x00, 0x00, 0x7f, 0x53, 0xf7, 0x7d,
++		     0xb5, 0x7b, 0x7f, 0x53, 0x00, 0x00, 0x00, 0x00),
++		.uval = 0xcafedeadbeefcafe,
++		.start_bit = 95,
++		.end_bit = 32,
 +		.quirks = QUIRK_MSB_ON_THE_RIGHT | QUIRK_LSW32_IS_FIRST | QUIRK_LITTLE_ENDIAN,
 +	},
- 	/* These tests pack and unpack a u64 with all bits set
- 	 * (0xffffffffffffffff) at an odd starting bit (43) within an
- 	 * otherwise zero array of 128 bits (16 bytes). They test all possible
-@@ -292,6 +328,42 @@ const struct packing_test_case cases[] = {
- 		.end_bit = 43,
- 		.quirks = QUIRK_LSW32_IS_FIRST | QUIRK_LITTLE_ENDIAN,
- 	},
++	/* These tests pack and unpack a magic 64-bit value
++	 * (0xcafedeadbeefcafe) at a fixed logical offset (32) within an
++	 * otherwise zero array of varying size from 18 bytes to 24 bytes.
++	 */
 +	{
-+		.desc = "msb right, 16 bytes, non-aligned, 0xff",
-+		PBUF(0x00, 0x00, 0xe0, 0xff, 0xff, 0xff, 0xff, 0xff,
-+		     0xff, 0xff, 0x1f, 0x00, 0x00, 0x00, 0x00, 0x00),
-+		.uval = 0xffffffffffffffff,
-+		.start_bit = 106,
-+		.end_bit = 43,
-+		.quirks = QUIRK_MSB_ON_THE_RIGHT,
++		.desc = "no quirks, 18 bytes",
++		PBUF(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xca, 0xfe,
++		     0xde, 0xad, 0xbe, 0xef, 0xca, 0xfe, 0x00, 0x00,
++		     0x00, 0x00),
++		.uval = 0xcafedeadbeefcafe,
++		.start_bit = 95,
++		.end_bit = 32,
++		.quirks = NO_QUIRKS,
 +	},
 +	{
-+		.desc = "msb right + lsw32 first, 16 bytes, non-aligned, 0xff",
-+		PBUF(0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0x1f, 0x00,
-+		     0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0xe0, 0xff),
-+		.uval = 0xffffffffffffffff,
-+		.start_bit = 106,
-+		.end_bit = 43,
-+		.quirks = QUIRK_MSB_ON_THE_RIGHT | QUIRK_LSW32_IS_FIRST,
++		.desc = "no quirks, 19 bytes",
++		PBUF(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xca,
++		     0xfe, 0xde, 0xad, 0xbe, 0xef, 0xca, 0xfe, 0x00,
++		     0x00, 0x00, 0x00),
++		.uval = 0xcafedeadbeefcafe,
++		.start_bit = 95,
++		.end_bit = 32,
++		.quirks = NO_QUIRKS,
 +	},
 +	{
-+		.desc = "msb right + little endian words, 16 bytes, non-aligned, 0xff",
-+		PBUF(0xff, 0xe0, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff,
-+		     0x00, 0x1f, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00),
-+		.uval = 0xffffffffffffffff,
-+		.start_bit = 106,
-+		.end_bit = 43,
-+		.quirks = QUIRK_MSB_ON_THE_RIGHT | QUIRK_LITTLE_ENDIAN,
++		.desc = "no quirks, 20 bytes",
++		PBUF(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++		     0xca, 0xfe, 0xde, 0xad, 0xbe, 0xef, 0xca, 0xfe,
++		     0x00, 0x00, 0x00, 0x00),
++		.uval = 0xcafedeadbeefcafe,
++		.start_bit = 95,
++		.end_bit = 32,
++		.quirks = NO_QUIRKS,
 +	},
 +	{
-+		.desc = "msb right + lsw32 first + little endian words, 16 bytes, non-aligned, 0xff",
-+		PBUF(0x00, 0x00, 0x00, 0x00, 0x00, 0x1f, 0xff, 0xff,
-+		     0xff, 0xff, 0xff, 0xff, 0xff, 0xe0, 0x00, 0x00),
-+		.uval = 0xffffffffffffffff,
-+		.start_bit = 106,
-+		.end_bit = 43,
-+		.quirks = QUIRK_MSB_ON_THE_RIGHT | QUIRK_LSW32_IS_FIRST | QUIRK_LITTLE_ENDIAN,
++		.desc = "no quirks, 22 bytes",
++		PBUF(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++		     0x00, 0x00, 0xca, 0xfe, 0xde, 0xad, 0xbe, 0xef,
++		     0xca, 0xfe, 0x00, 0x00, 0x00, 0x00),
++		.uval = 0xcafedeadbeefcafe,
++		.start_bit = 95,
++		.end_bit = 32,
++		.quirks = NO_QUIRKS,
 +	},
- };
++	{
++		.desc = "no quirks, 24 bytes",
++		PBUF(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++		     0x00, 0x00, 0x00, 0x00, 0xca, 0xfe, 0xde, 0xad,
++		     0xbe, 0xef, 0xca, 0xfe, 0x00, 0x00, 0x00, 0x00),
++		.uval = 0xcafedeadbeefcafe,
++		.start_bit = 95,
++		.end_bit = 32,
++		.quirks = NO_QUIRKS,
++	},
++	{
++		.desc = "lsw32 first + little endian words, 18 bytes",
++		PBUF(0x00, 0x00, 0x00, 0x00, 0xfe, 0xca, 0xef, 0xbe,
++		     0xad, 0xde, 0xfe, 0xca, 0x00, 0x00, 0x00, 0x00,
++		     0x00, 0x00),
++		.uval = 0xcafedeadbeefcafe,
++		.start_bit = 95,
++		.end_bit = 32,
++		.quirks = QUIRK_LSW32_IS_FIRST | QUIRK_LITTLE_ENDIAN,
++	},
++	{
++		.desc = "lsw32 first + little endian words, 19 bytes",
++		PBUF(0x00, 0x00, 0x00, 0x00, 0xfe, 0xca, 0xef, 0xbe,
++		     0xad, 0xde, 0xfe, 0xca, 0x00, 0x00, 0x00, 0x00,
++		     0x00, 0x00, 0x00),
++		.uval = 0xcafedeadbeefcafe,
++		.start_bit = 95,
++		.end_bit = 32,
++		.quirks = QUIRK_LSW32_IS_FIRST | QUIRK_LITTLE_ENDIAN,
++	},
++	{
++		.desc = "lsw32 first + little endian words, 20 bytes",
++		PBUF(0x00, 0x00, 0x00, 0x00, 0xfe, 0xca, 0xef, 0xbe,
++		     0xad, 0xde, 0xfe, 0xca, 0x00, 0x00, 0x00, 0x00,
++		     0x00, 0x00, 0x00, 0x00),
++		.uval = 0xcafedeadbeefcafe,
++		.start_bit = 95,
++		.end_bit = 32,
++		.quirks = QUIRK_LSW32_IS_FIRST | QUIRK_LITTLE_ENDIAN,
++	},
++	{
++		.desc = "lsw32 first + little endian words, 22 bytes",
++		PBUF(0x00, 0x00, 0x00, 0x00, 0xfe, 0xca, 0xef, 0xbe,
++		     0xad, 0xde, 0xfe, 0xca, 0x00, 0x00, 0x00, 0x00,
++		     0x00, 0x00, 0x00, 0x00, 0x00, 0x00),
++		.uval = 0xcafedeadbeefcafe,
++		.start_bit = 95,
++		.end_bit = 32,
++		.quirks = QUIRK_LSW32_IS_FIRST | QUIRK_LITTLE_ENDIAN,
++	},
++	{
++		.desc = "lsw32 first + little endian words, 24 bytes",
++		PBUF(0x00, 0x00, 0x00, 0x00, 0xfe, 0xca, 0xef, 0xbe,
++		     0xad, 0xde, 0xfe, 0xca, 0x00, 0x00, 0x00, 0x00,
++		     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00),
++		.uval = 0xcafedeadbeefcafe,
++		.start_bit = 95,
++		.end_bit = 32,
++		.quirks = QUIRK_LSW32_IS_FIRST | QUIRK_LITTLE_ENDIAN,
++	},
++};
++
++KUNIT_ARRAY_PARAM_DESC(packing, cases, desc);
++
++static void packing_test_pack(struct kunit *test)
++{
++	const struct packing_test_case *params = test->param_value;
++	u8 *pbuf;
++	int err;
++
++	pbuf = kunit_kzalloc(test, params->pbuf_size, GFP_KERNEL);
++
++	err = pack(pbuf, params->uval, params->start_bit, params->end_bit,
++		  params->pbuf_size, params->quirks);
++
++	KUNIT_EXPECT_EQ_MSG(test, err, 0, "pack() returned %pe\n", ERR_PTR(err));
++	KUNIT_EXPECT_MEMEQ(test, pbuf, params->pbuf, params->pbuf_size);
++}
++
++static void packing_test_unpack(struct kunit *test)
++{
++	const struct packing_test_case *params = test->param_value;
++	u64 uval;
++	int err;
++
++	err = unpack(params->pbuf, &uval, params->start_bit, params->end_bit,
++		     params->pbuf_size, params->quirks);
++	KUNIT_EXPECT_EQ_MSG(test, err, 0, "unpack() returned %pe\n", ERR_PTR(err));
++	KUNIT_EXPECT_EQ(test, uval, params->uval);
++}
++
++static struct kunit_case packing_test_cases[] = {
++	KUNIT_CASE_PARAM(packing_test_pack, packing_gen_params),
++	KUNIT_CASE_PARAM(packing_test_unpack, packing_gen_params),
++	{},
++};
++
++static struct kunit_suite packing_test_suite = {
++	.name = "packing",
++	.test_cases = packing_test_cases,
++};
++kunit_test_suite(packing_test_suite);
++
++MODULE_LICENSE("GPL");
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 30a9b9450e11..8daa3b7d307a 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -17235,6 +17235,7 @@ S:	Supported
+ F:	Documentation/core-api/packing.rst
+ F:	include/linux/packing.h
+ F:	lib/packing.c
++F:	lib/packing_test.c
  
- KUNIT_ARRAY_PARAM_DESC(packing, cases, desc);
+ PADATA PARALLEL EXECUTION MECHANISM
+ M:	Steffen Klassert <steffen.klassert@secunet.com>
+diff --git a/lib/Kconfig b/lib/Kconfig
+index b38849af6f13..50d85f38b569 100644
+--- a/lib/Kconfig
++++ b/lib/Kconfig
+@@ -40,6 +40,18 @@ config PACKING
+ 
+ 	  When in doubt, say N.
+ 
++config PACKING_KUNIT_TEST
++	tristate "KUnit tests for packing library" if !KUNIT_ALL_TESTS
++	depends on PACKING && KUNIT
++	default KUNIT_ALL_TESTS
++	help
++	  This builds KUnit tests for the packing library.
++
++	  For more information on KUnit and unit tests in general,
++	  please refer to the KUnit documentation in Documentation/dev-tools/kunit/.
++
++	  When in doubt, say N.
++
+ config BITREVERSE
+ 	tristate
+ 
+diff --git a/lib/Makefile b/lib/Makefile
+index 322bb127b4dc..69db48a89cf5 100644
+--- a/lib/Makefile
++++ b/lib/Makefile
+@@ -153,6 +153,7 @@ obj-$(CONFIG_DEBUG_OBJECTS) += debugobjects.o
+ obj-$(CONFIG_BITREVERSE) += bitrev.o
+ obj-$(CONFIG_LINEAR_RANGES) += linear_ranges.o
+ obj-$(CONFIG_PACKING)	+= packing.o
++obj-$(CONFIG_PACKING_KUNIT_TEST) += packing_test.o
+ obj-$(CONFIG_CRC_CCITT)	+= crc-ccitt.o
+ obj-$(CONFIG_CRC16)	+= crc16.o
+ obj-$(CONFIG_CRC_T10DIF)+= crc-t10dif.o
 
 -- 
 2.46.0.124.g2dc1a81c8933
