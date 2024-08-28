@@ -4,71 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1F20BC7113C
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 28 Aug 2024 20:57:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1E384C7113D
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 28 Aug 2024 20:57:53 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 95F6860E48;
-	Wed, 28 Aug 2024 20:57:50 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id E4C7E60E49;
+	Wed, 28 Aug 2024 20:57:52 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id BjdswbM0HPRZ; Wed, 28 Aug 2024 20:57:48 +0000 (UTC)
+ id fN_n6zke4pwy; Wed, 28 Aug 2024 20:57:50 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 0669360E02
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 564E960E19
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1724878668;
-	bh=nLLcq9cJ+rUtVqKb236JtOu4v1huirZ58v6CbrDAhSA=;
+	s=default; t=1724878670;
+	bh=0pFRsItO2bTveBfVrunmlU3Hp8Z0usjSLUArydwW+iw=;
 	h=From:Date:References:In-Reply-To:To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=yntcKgG2YernsTtPbNc+dDQ5mHgj9RCFTgShX1nnIASSEKtGUQLpkN54U8FTj2+zY
-	 gg7FupU6nabrSpckXOsRRK/QcWRC0YqbEyVue2+GCer5QoUhyrtbZ3JZxCNnzyfNb2
-	 d4sg6KNgbu4v+9MbjRgVkLffz+XwN+tAaBzjlgM1XVTkTXKXjIR5wzPt0S90zcdxHH
-	 qz+jPBe4iQzWwA8AsXQlBYxBO3aPo2A0Y2Hlx/XhSrZ1HhITpNwI6UP93nH5P8+93Y
-	 r9XSeZdbT2wR/4Rc/6wOJkuv6iCsb41i2OioU+pG0uysmWK4eknctvo6wiF9bI8gM8
-	 1FZ9+QZoo4xkg==
+	b=AnxaAgWjtx5pOHLRkE+1F9+Z6uwMlb2+UWcAPCLzlIAXQpUn7yWtxjPpFa7j2wX2z
+	 Ke5CuaMtBh4g3bzd7gqsULUylgGKqMrVhEYPhMOfFfxCFVpzzuFBI/Ca7lGQdQgEWu
+	 s32H/eKzU9KwCQdNXzoXKzjxmVMW0kguMYkqt5VLyXj0+E0L5o6aNQkn/Zdkf5P0d2
+	 u5YYv8jR86oU1H1+ERk5DLsqX1chbz8H1jGBQSCQD9PK+c1sXWN/L6k6fY5xJ3MnmR
+	 giDbP9EiLrk33pciGy5uQw/KEehnhghrjFFzdX44JBuE4bkLZNrGs/r5IBg4mj+Jcp
+	 J6DzmKVjFxplw==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 0669360E02;
-	Wed, 28 Aug 2024 20:57:48 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 0771B1BF980
- for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Aug 2024 20:57:38 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 564E960E19;
+	Wed, 28 Aug 2024 20:57:50 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 292F11BF409
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Aug 2024 20:57:39 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id C94B081521
+ by smtp3.osuosl.org (Postfix) with ESMTP id 3E60A60D5C
  for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Aug 2024 20:57:34 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id T1W7A-iICGbq for <intel-wired-lan@lists.osuosl.org>;
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id wSRrnubg9-B2 for <intel-wired-lan@lists.osuosl.org>;
  Wed, 28 Aug 2024 20:57:32 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.13;
  helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org E29A181551
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E29A181551
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org AF6D460D96
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org AF6D460D96
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.13])
- by smtp1.osuosl.org (Postfix) with ESMTPS id E29A181551
- for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Aug 2024 20:57:31 +0000 (UTC)
-X-CSE-ConnectionGUID: zL9NPzd5TmOhqkLkrCkCsA==
-X-CSE-MsgGUID: O//WLnaAR4qzu0g4NvkKtA==
-X-IronPort-AV: E=McAfee;i="6700,10204,11178"; a="34592614"
-X-IronPort-AV: E=Sophos;i="6.10,183,1719903600"; d="scan'208";a="34592614"
+ by smtp3.osuosl.org (Postfix) with ESMTPS id AF6D460D96
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Aug 2024 20:57:32 +0000 (UTC)
+X-CSE-ConnectionGUID: PD2e0ehtSqeQTTNIAyWiWQ==
+X-CSE-MsgGUID: EhyVm6FWS3Omnr8rz26kfw==
+X-IronPort-AV: E=McAfee;i="6700,10204,11178"; a="34592638"
+X-IronPort-AV: E=Sophos;i="6.10,183,1719903600"; d="scan'208";a="34592638"
 Received: from orviesa008.jf.intel.com ([10.64.159.148])
  by orvoesa105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  28 Aug 2024 13:57:31 -0700
-X-CSE-ConnectionGUID: E0grSi5JRC67e2OwoFR4Jg==
-X-CSE-MsgGUID: dZBQDbrXSQyWLpLT0B3y2g==
+X-CSE-ConnectionGUID: 1Abefo0TSA+iBk9YFBi1zA==
+X-CSE-MsgGUID: BEC6IF5JRvuLvNfvsNvJvg==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.10,183,1719903600"; d="scan'208";a="64049985"
+X-IronPort-AV: E=Sophos;i="6.10,183,1719903600"; d="scan'208";a="64049971"
 Received: from jekeller-desk.jf.intel.com ([10.166.241.20])
  by orviesa008-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  28 Aug 2024 13:57:29 -0700
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed, 28 Aug 2024 13:57:26 -0700
+Date: Wed, 28 Aug 2024 13:57:21 -0700
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20240828-e810-live-migration-jk-prep-ctx-functions-v2-10-558ab9e240f5@intel.com>
+Message-Id: <20240828-e810-live-migration-jk-prep-ctx-functions-v2-5-558ab9e240f5@intel.com>
 References: <20240828-e810-live-migration-jk-prep-ctx-functions-v2-0-558ab9e240f5@intel.com>
 In-Reply-To: <20240828-e810-live-migration-jk-prep-ctx-functions-v2-0-558ab9e240f5@intel.com>
 To: Vladimir Oltean <olteanv@gmail.com>, netdev <netdev@vger.kernel.org>, 
@@ -80,22 +80,22 @@ X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  t=1724878653; x=1756414653;
  h=from:date:subject:mime-version:content-transfer-encoding:
  message-id:references:in-reply-to:to:cc;
- bh=l7QkD+FUPja3RWxoITYr6vFS1/aY/myxAhFh3UngTWA=;
- b=CtjXMbZbUTjdL2vt2oPaIKm8qB9LtCgdVu7Bj3qP9KjDpeA9mgFJFAjQ
- 8dT5ZmnvkTpdzuIOZOjFpSmnDIH7K7BvrVYiuGW31rZjLkK+Nh2dr7U3a
- XRmxIaZZh4N+3FNGDWuf+y4hC0A8qK4mX4K3SnAdWbA3mU7TwFeIoHKdY
- y/3d4nDNu+8SVulyUtgcdRMZIIdJZ5bEPlOJl5E6jwWfOlAMoIW07vj7k
- v4ooBZ8oeVg2KKrpus9dVdgSQ8YEWx/CZvotdfqR1uy6/wNf0BqjhvVKI
- slkbOQWHo+HCfFqlKP5CiQQbqYWy+X09xV8T3LqAvRztlixe997idaV7S
+ bh=CSIC7wjXzvZOqpiIyQbbSlbLWWd9LJnyAAx1DY5uhm8=;
+ b=bz416Xb3/MxKoG5GHCAnvfLp6LgWwd6gxpFvJJoyj8B+0ECwJN0cqaHf
+ QKYNbfm8rDxdne1Acc7XVEJxyAcxYGSt3ts04oRtfjMBVz1cEsOWEec2G
+ jXKdi+lQdrAdZBI7IY8j2YGZPXTqd8B5aeB0HnwrttaHWiye2AR62LtPx
+ bpvjfuOq+T9yEA1YeGEMCkL5DznOALYZVU321/q6kWZFCJkMPZ0ydoHpG
+ 8Hv6SY1POCZpziHJAq9UCWmS2/ctM7gKSt+L76Sqype8x5Oc7d5XM9CdJ
+ I9ddreJh3+pqR7nc90+6TYXAj19/BpNBEWWVeEbKcOWJMdKGTkZJFsP2L
  g==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=CtjXMbZb
-Subject: [Intel-wired-lan] [PATCH iwl-next v2 10/13] ice: use
- <linux/packing.h> for Tx and Rx queue context data
+ header.a=rsa-sha256 header.s=Intel header.b=bz416Xb3
+Subject: [Intel-wired-lan] [PATCH iwl-next v2 05/13] lib: packing: duplicate
+ pack() and unpack() implementations
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -112,437 +112,375 @@ Cc: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The ice driver needs to write the Tx and Rx queue context when programming
-Tx and Rx queues. This is currently done using some bespoke custom logic
-via the ice_set_ctx() and its helper functions, along with bit position
-definitions in the ice_tlan_ctx_info and ice_rlan_ctx_info structures.
+From: Vladimir Oltean <vladimir.oltean@nxp.com>
 
-This logic does work, but is problematic for several reasons:
+packing() is now used in some hot paths, and it would be good to get rid
+of some ifs and buts that depend on "op", to speed things up a little bit.
 
-1) ice_set_ctx requires a helper function for each byte size being packed,
-   as it uses a separate function to pack u8, u16, u32, and u64 fields.
-   This requires 4 functions which contain near-duplicate logic with the
-   types changed out.
+With the main implementations now taking size_t endbit, we no longer
+have to check for negative values. Update the local integer variables to
+also be size_t to match.
 
-2) The logic in the ice_pack_ctx_word, ice_pack_ctx_dword, and
-   ice_pack_ctx_qword does not handle values which straddle alignment
-   boundaries very well. This requires that several fields in the
-   ice_tlan_ctx_info and ice_rlan_ctx_info be a size larger than their bit
-   size should require.
-
-3) Future support for live migration will require adding unpacking
-   functions to take the packed hardware context and unpack it into the
-   ice_rlan_ctx and ice_tlan_ctx structures. Implementing this would
-   require implementing ice_get_ctx, and its associated helper functions,
-   which essentially doubles the amount of code required.
-
-Since Linux 5.2, commit 554aae35007e ("lib: Add support for generic packing
-operations") has had a robust bit packing library function which can
-correctly pack or unpack data between the CPU-useful unpacked structures
-and bitpacked buffers used by hardware. This API was previously broken if
-the buffer size was not aligned to 4 bytes. However, this has recently been
-fixed.
-
-The major difference with <linux/packing.h> is that it expects the unpacked
-data will always be a u64. This is somewhat limiting, but can be worked
-around by using a local temporary u64.
-
-Replace the ice-specific ice_set_ctx() logic with a <linux/packing.h>
-based implementation, ice_ctx_pack(). It takes pointers to the relevant
-packed and unpacked storage, as well as the least significant bit and the
-width. A temporary local u64 value is used to interact with the pack() API.
-
-As with the other implementations, we handle the error codes from pack()
-with a pr_err and a call to dump_stack. These are unexpected as they should
-only happen due to programmer error.
-
-Note that I initially tried implementing this as functions which just
-repeatably called the ice_ctx_pack() function instead of using the
-ice_rlan_ctx_info and ice_tlan_ctx_info arrays. This does work, but it has
-a couple of downsides:
-
- 1) it wastes a significant amount of bytes in the text section, vs the
-    savings from removing the RO data of the arrays.
-
- 2) this cost is made worse after implementing an unpack function, as we
-    must duplicate the list of packings for the unpack function.
-
-It does have the slight upside of allowing integer type promotion when
-packing. However, the unpack() function still requires a pointer to the u64
-value, so a temporary variable would still be required when unpacking.
-
-Finally, I opted to use the pack() interface instead of the packing()
-interface since it ends up producing code I found easier to read overall.
-The unpack support will ultimately add a few extra bytes to implement
-separate ice_ctx_unpack(), and the __ice_unpack_queue_ctx(). However, I
-think the resulting code is still simpler and will avoid requiring the
-packing() to stick around forever. The overall cost is not high since we
-still store the actual packing tables as shared RO data.
-
+Signed-off-by: Vladimir Oltean <vladimir.oltean@nxp.com>
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_common.h |  13 +-
- drivers/net/ethernet/intel/ice/ice_base.c   |   3 +-
- drivers/net/ethernet/intel/ice/ice_common.c | 285 ++++++++--------------------
- 3 files changed, 96 insertions(+), 205 deletions(-)
+ include/linux/packing.h |   4 +-
+ lib/packing.c           | 243 ++++++++++++++++++++++++++++++------------------
+ 2 files changed, 154 insertions(+), 93 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
-index 27208a60cece..550fdd08e6aa 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.h
-+++ b/drivers/net/ethernet/intel/ice/ice_common.h
-@@ -5,6 +5,7 @@
- #define _ICE_COMMON_H_
+diff --git a/include/linux/packing.h b/include/linux/packing.h
+index ea25cb93cc70..5d36dcd06f60 100644
+--- a/include/linux/packing.h
++++ b/include/linux/packing.h
+@@ -20,8 +20,8 @@ enum packing_op {
+ int packing(void *pbuf, u64 *uval, int startbit, int endbit, size_t pbuflen,
+ 	    enum packing_op op, u8 quirks);
  
- #include <linux/bitfield.h>
-+#include <linux/packing.h>
+-int pack(void *pbuf, const u64 *uval, size_t startbit, size_t endbit,
+-	 size_t pbuflen, u8 quirks);
++int pack(void *pbuf, u64 uval, size_t startbit, size_t endbit, size_t pbuflen,
++	 u8 quirks);
  
- #include "ice.h"
- #include "ice_type.h"
-@@ -93,8 +94,16 @@ bool ice_check_sq_alive(struct ice_hw *hw, struct ice_ctl_q_info *cq);
- int ice_aq_q_shutdown(struct ice_hw *hw, bool unloading);
- void ice_fill_dflt_direct_cmd_desc(struct ice_aq_desc *desc, u16 opcode);
- extern const struct ice_ctx_ele ice_tlan_ctx_info[];
--int ice_set_ctx(struct ice_hw *hw, u8 *src_ctx, u8 *dest_ctx,
--		const struct ice_ctx_ele *ce_info);
-+extern const struct ice_ctx_ele ice_rlan_ctx_info[];
-+
-+void __ice_pack_queue_ctx(const void *ctx, void *buf, size_t len,
-+			  const struct ice_ctx_ele *ctx_info);
-+
-+#define ice_pack_rxq_ctx(rlan_ctx, buf) \
-+	__ice_pack_queue_ctx((rlan_ctx), (buf), sizeof(buf), ice_rlan_ctx_info)
-+
-+#define ice_pack_txq_ctx(tlan_ctx, buf) \
-+	__ice_pack_queue_ctx((tlan_ctx), (buf), sizeof(buf), ice_tlan_ctx_info)
+ int unpack(const void *pbuf, u64 *uval, size_t startbit, size_t endbit,
+ 	   size_t pbuflen, u8 quirks);
+diff --git a/lib/packing.c b/lib/packing.c
+index 2922db8a528c..500184530d07 100644
+--- a/lib/packing.c
++++ b/lib/packing.c
+@@ -9,11 +9,11 @@
+ #include <linux/types.h>
+ #include <linux/bitrev.h>
  
- extern struct mutex ice_global_cfg_lock_sw;
+-static void adjust_for_msb_right_quirk(u64 *to_write, int *box_start_bit,
+-				       int *box_end_bit, u8 *box_mask)
++static void adjust_for_msb_right_quirk(u64 *to_write, size_t *box_start_bit,
++				       size_t *box_end_bit, u8 *box_mask)
+ {
+-	int box_bit_width = *box_start_bit - *box_end_bit + 1;
+-	int new_box_start_bit, new_box_end_bit;
++	size_t box_bit_width = *box_start_bit - *box_end_bit + 1;
++	size_t new_box_start_bit, new_box_end_bit;
  
-diff --git a/drivers/net/ethernet/intel/ice/ice_base.c b/drivers/net/ethernet/intel/ice/ice_base.c
-index f448d3a84564..1881ce8105ca 100644
---- a/drivers/net/ethernet/intel/ice/ice_base.c
-+++ b/drivers/net/ethernet/intel/ice/ice_base.c
-@@ -907,8 +907,7 @@ ice_vsi_cfg_txq(struct ice_vsi *vsi, struct ice_tx_ring *ring,
- 	ice_setup_tx_ctx(ring, &tlan_ctx, pf_q);
- 	/* copy context contents into the qg_buf */
- 	qg_buf->txqs[0].txq_id = cpu_to_le16(pf_q);
--	ice_set_ctx(hw, (u8 *)&tlan_ctx, qg_buf->txqs[0].txq_ctx,
--		    ice_tlan_ctx_info);
-+	ice_pack_txq_ctx(&tlan_ctx, qg_buf->txqs[0].txq_ctx);
+ 	*to_write >>= *box_end_bit;
+ 	*to_write = bitrev8(*to_write) >> (8 - box_bit_width);
+@@ -48,7 +48,7 @@ static void adjust_for_msb_right_quirk(u64 *to_write, int *box_start_bit,
+  *
+  * Return: the physical offset into the buffer corresponding to the logical box.
+  */
+-static int calculate_box_addr(int box, size_t len, u8 quirks)
++static size_t calculate_box_addr(size_t box, size_t len, u8 quirks)
+ {
+ 	size_t offset_of_group, offset_in_group, this_group = box / 4;
+ 	size_t group_size;
+@@ -69,13 +69,10 @@ static int calculate_box_addr(int box, size_t len, u8 quirks)
+ }
  
- 	/* init queue specific tail reg. It is referred as
- 	 * transmit comm scheduler queue doorbell.
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index c4b24ba36b5e..09a94c20e16d 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -1387,8 +1387,89 @@ ice_copy_rxq_ctx_to_hw(struct ice_hw *hw, u8 *ice_rxq_ctx, u32 rxq_index)
+ /**
+- * packing - Convert numbers (currently u64) between a packed and an unpacked
+- *	     format. Unpacked means laid out in memory in the CPU's native
+- *	     understanding of integers, while packed means anything else that
+- *	     requires translation.
++ * pack - Pack u64 number into bitfield of buffer.
+  *
+  * @pbuf: Pointer to a buffer holding the packed value.
+- * @uval: Pointer to an u64 holding the unpacked value.
++ * @uval: CPU-readable unpacked value to pack.
+  * @startbit: The index (in logical notation, compensated for quirks) where
+  *	      the packed value starts within pbuf. Must be larger than, or
+  *	      equal to, endbit.
+@@ -83,58 +80,45 @@ static int calculate_box_addr(int box, size_t len, u8 quirks)
+  *	    the packed value ends within pbuf. Must be smaller than, or equal
+  *	    to, startbit.
+  * @pbuflen: The length in bytes of the packed buffer pointed to by @pbuf.
+- * @op: If PACK, then uval will be treated as const pointer and copied (packed)
+- *	into pbuf, between startbit and endbit.
+- *	If UNPACK, then pbuf will be treated as const pointer and the logical
+- *	value between startbit and endbit will be copied (unpacked) to uval.
+  * @quirks: A bit mask of QUIRK_LITTLE_ENDIAN, QUIRK_LSW32_IS_FIRST and
+  *	    QUIRK_MSB_ON_THE_RIGHT.
+  *
+- * Note: this is deprecated, prefer to use pack() or unpack() in new code.
+- *
+  * Return: 0 on success, EINVAL or ERANGE if called incorrectly. Assuming
+- *	   correct usage, return code may be discarded.
+- *	   If op is PACK, pbuf is modified.
+- *	   If op is UNPACK, uval is modified.
++ *	   correct usage, return code may be discarded. The @pbuf memory will
++ *	   be modified on success.
+  */
+-int packing(void *pbuf, u64 *uval, int startbit, int endbit, size_t pbuflen,
+-	    enum packing_op op, u8 quirks)
++int pack(void *pbuf, u64 uval, size_t startbit, size_t endbit, size_t pbuflen,
++	 u8 quirks)
+ {
+-	/* Number of bits for storing "uval"
+-	 * also width of the field to access in the pbuf
+-	 */
+-	u64 value_width;
+ 	/* Logical byte indices corresponding to the
+ 	 * start and end of the field.
+ 	 */
+ 	int plogical_first_u8, plogical_last_u8, box;
++	/* width of the field to access in the pbuf */
++	u64 value_width;
+ 
+ 	/* startbit is expected to be larger than endbit, and both are
+ 	 * expected to be within the logically addressable range of the buffer.
+ 	 */
+-	if (unlikely(startbit < endbit || startbit >= 8 * pbuflen || endbit < 0))
++	if (unlikely(startbit < endbit || startbit >= 8 * pbuflen))
+ 		/* Invalid function call */
+ 		return -EINVAL;
+ 
+ 	value_width = startbit - endbit + 1;
+-	if (value_width > 64)
++	if (unlikely(value_width > 64))
+ 		return -ERANGE;
+ 
+ 	/* Check if "uval" fits in "value_width" bits.
+ 	 * If value_width is 64, the check will fail, but any
+ 	 * 64-bit uval will surely fit.
+ 	 */
+-	if (op == PACK && value_width < 64 && (*uval >= (1ull << value_width)))
++	if (unlikely(value_width < 64 && uval >= (1ull << value_width)))
+ 		/* Cannot store "uval" inside "value_width" bits.
+ 		 * Truncating "uval" is most certainly not desirable,
+ 		 * so simply erroring out is appropriate.
+ 		 */
+ 		return -ERANGE;
+ 
+-	/* Initialize parameter */
+-	if (op == UNPACK)
+-		*uval = 0;
+-
+ 	/* Iterate through an idealistic view of the pbuf as an u64 with
+ 	 * no quirks, u8 by u8 (aligned at u8 boundaries), from high to low
+ 	 * logical bit significance. "box" denotes the current logical u8.
+@@ -144,11 +128,12 @@ int packing(void *pbuf, u64 *uval, int startbit, int endbit, size_t pbuflen,
+ 
+ 	for (box = plogical_first_u8; box >= plogical_last_u8; box--) {
+ 		/* Bit indices into the currently accessed 8-bit box */
+-		int box_start_bit, box_end_bit, box_addr;
++		size_t box_start_bit, box_end_bit, box_addr;
+ 		u8  box_mask;
+ 		/* Corresponding bits from the unpacked u64 parameter */
+-		int proj_start_bit, proj_end_bit;
++		size_t proj_start_bit, proj_end_bit;
+ 		u64 proj_mask;
++		u64 pval;
+ 
+ 		/* This u8 may need to be accessed in its entirety
+ 		 * (from bit 7 to bit 0), or not, depending on the
+@@ -182,66 +167,21 @@ int packing(void *pbuf, u64 *uval, int startbit, int endbit, size_t pbuflen,
+ 		 */
+ 		box_addr = calculate_box_addr(box, pbuflen, quirks);
+ 
+-		if (op == UNPACK) {
+-			u64 pval;
++		/* Write to pbuf, read from uval */
++		pval = uval & proj_mask;
++		pval >>= proj_end_bit;
++		if (quirks & QUIRK_MSB_ON_THE_RIGHT)
++			adjust_for_msb_right_quirk(&pval,
++						   &box_start_bit,
++						   &box_end_bit,
++						   &box_mask);
+ 
+-			/* Read from pbuf, write to uval */
+-			pval = ((u8 *)pbuf)[box_addr] & box_mask;
+-			if (quirks & QUIRK_MSB_ON_THE_RIGHT)
+-				adjust_for_msb_right_quirk(&pval,
+-							   &box_start_bit,
+-							   &box_end_bit,
+-							   &box_mask);
+-
+-			pval >>= box_end_bit;
+-			pval <<= proj_end_bit;
+-			*uval &= ~proj_mask;
+-			*uval |= pval;
+-		} else {
+-			u64 pval;
+-
+-			/* Write to pbuf, read from uval */
+-			pval = (*uval) & proj_mask;
+-			pval >>= proj_end_bit;
+-			if (quirks & QUIRK_MSB_ON_THE_RIGHT)
+-				adjust_for_msb_right_quirk(&pval,
+-							   &box_start_bit,
+-							   &box_end_bit,
+-							   &box_mask);
+-
+-			pval <<= box_end_bit;
+-			((u8 *)pbuf)[box_addr] &= ~box_mask;
+-			((u8 *)pbuf)[box_addr] |= pval;
+-		}
++		pval <<= box_end_bit;
++		((u8 *)pbuf)[box_addr] &= ~box_mask;
++		((u8 *)pbuf)[box_addr] |= pval;
+ 	}
  	return 0;
  }
- 
-+/**
-+ * ice_ctx_pack - Pack Tx/Rx queue context data
-+ * @pbuf: pointer to the packed buffer
-+ * @pbuflen: size of the packed buffer
-+ * @val: pointer to storage for the unpacked data
-+ * @len: size of the unpacked data
-+ * @width: width of bits to pack
-+ * @lsb: least significant bit in the packed buffer
-+ *
-+ * Pack the given field of the Tx or Rx queue context into the hardware data
-+ * buffer. The packed contents are in full Little Endian ordering with the
-+ * least significant 4-byte block first.
-+ *
-+ * The only time that pack() should produce an error is due to invalid bit
-+ * offsets. Thus, errors are logged along with a stack dump.
-+ */
-+static void ice_ctx_pack(void *pbuf, size_t pbuflen, const void *val,
-+			 size_t len, size_t width, size_t lsb)
-+{
-+	size_t msb = lsb + width - 1;
-+	u64 uval;
-+	int err;
-+
-+	switch (len) {
-+	case sizeof(u8):
-+		uval = *((u8 *)val);
-+		break;
-+	case sizeof(u16):
-+		uval = *((u16 *)val);
-+		break;
-+	case sizeof(u32):
-+		uval = *((u32 *)val);
-+		break;
-+	case sizeof(u64):
-+		uval = *((u64 *)val);
-+		break;
-+	default:
-+		WARN_ONCE(1, "Unexpected size %zd when packing queue context",
-+			  len);
-+		return;
-+	}
-+
-+	err = pack(pbuf, uval, msb, lsb, pbuflen,
-+		   QUIRK_LITTLE_ENDIAN | QUIRK_LSW32_IS_FIRST);
-+	if (unlikely(err)) {
-+		if (err == -EINVAL) {
-+			pr_err("MSB (%zd) expected to be larger than LSB (%zd)\n",
-+			       msb, lsb);
-+		} else if (err == -ERANGE) {
-+			if ((msb - lsb + 1) > 64)
-+				pr_err("Field %zd-%zd too large for 64 bits!\n",
-+				       lsb, msb);
-+			else
-+				pr_err("Cannot store %llx inside field %zd-%zd (would truncate)\n",
-+				       uval, lsb, msb);
-+		}
-+		dump_stack();
-+	}
-+}
-+
-+/**
-+ * __ice_pack_queue_ctx - Pack Tx or Rx queue context
-+ * @ctx: Unpacked queue context structure
-+ * @buf: packed buffer storage
-+ * @len: size of the packed buffer
-+ * @ctx_info: array describing the packing layout
-+ */
-+void __ice_pack_queue_ctx(const void *ctx, void *buf, size_t len,
-+			  const struct ice_ctx_ele *ctx_info)
-+{
-+	for (int f = 0; ctx_info[f].width; f++) {
-+		const struct ice_ctx_ele *field_info = &ctx_info[f];
-+		const void *field;
-+
-+		field = (const void *)ctx + field_info->offset;
-+
-+		ice_ctx_pack(buf, len, field, field_info->size_of,
-+			     field_info->width, field_info->lsb);
-+	}
-+}
-+
- /* LAN Rx Queue Context */
--static const struct ice_ctx_ele ice_rlan_ctx_info[] = {
-+const struct ice_ctx_ele ice_rlan_ctx_info[] = {
- 	/* Field		Width	LSB */
- 	ICE_CTX_STORE(ice_rlan_ctx, head,		13,	0),
- 	ICE_CTX_STORE(ice_rlan_ctx, cpuid,		8,	13),
-@@ -1433,7 +1514,8 @@ int ice_write_rxq_ctx(struct ice_hw *hw, struct ice_rlan_ctx *rlan_ctx,
- 
- 	rlan_ctx->prefena = 1;
- 
--	ice_set_ctx(hw, (u8 *)rlan_ctx, ctx_buf, ice_rlan_ctx_info);
-+	ice_pack_rxq_ctx(rlan_ctx, ctx_buf);
-+
- 	return ice_copy_rxq_ctx_to_hw(hw, ctx_buf, rxq_index);
- }
- 
-@@ -4526,205 +4608,6 @@ ice_aq_add_rdma_qsets(struct ice_hw *hw, u8 num_qset_grps,
- 
- /* End of FW Admin Queue command wrappers */
- 
--/**
-- * ice_pack_ctx_byte - write a byte to a packed context structure
-- * @src_ctx: unpacked source context structure
-- * @dest_ctx: packed destination context data
-- * @ce_info: context element description
-- */
--static void ice_pack_ctx_byte(u8 *src_ctx, u8 *dest_ctx,
--			      const struct ice_ctx_ele *ce_info)
--{
--	u8 src_byte, dest_byte, mask;
--	u8 *from, *dest;
--	u16 shift_width;
--
--	/* copy from the next struct field */
--	from = src_ctx + ce_info->offset;
--
--	/* prepare the bits and mask */
--	shift_width = ce_info->lsb % 8;
--	mask = GENMASK(ce_info->width - 1 + shift_width, shift_width);
--
--	src_byte = *from;
--	src_byte <<= shift_width;
--	src_byte &= mask;
--
--	/* get the current bits from the target bit string */
--	dest = dest_ctx + (ce_info->lsb / 8);
--
--	memcpy(&dest_byte, dest, sizeof(dest_byte));
--
--	dest_byte &= ~mask;	/* get the bits not changing */
--	dest_byte |= src_byte;	/* add in the new bits */
--
--	/* put it all back */
--	memcpy(dest, &dest_byte, sizeof(dest_byte));
--}
+-EXPORT_SYMBOL(packing);
 -
 -/**
-- * ice_pack_ctx_word - write a word to a packed context structure
-- * @src_ctx: unpacked source context structure
-- * @dest_ctx: packed destination context data
-- * @ce_info: context element description
+- * pack - Pack u64 number into bitfield of buffer.
+- *
+- * @pbuf: Pointer to a buffer holding the packed value.
+- * @uval: Pointer to an u64 holding the unpacked value.
+- * @startbit: The index (in logical notation, compensated for quirks) where
+- *	      the packed value starts within pbuf. Must be larger than, or
+- *	      equal to, endbit.
+- * @endbit: The index (in logical notation, compensated for quirks) where
+- *	    the packed value ends within pbuf. Must be smaller than, or equal
+- *	    to, startbit.
+- * @pbuflen: The length in bytes of the packed buffer pointed to by @pbuf.
+- * @quirks: A bit mask of QUIRK_LITTLE_ENDIAN, QUIRK_LSW32_IS_FIRST and
+- *	    QUIRK_MSB_ON_THE_RIGHT.
+- *
+- * Return: 0 on success, EINVAL or ERANGE if called incorrectly. Assuming
+- *	   correct usage, return code may be discarded. The @pbuf memory will
+- *	   be modified on success.
 - */
--static void ice_pack_ctx_word(u8 *src_ctx, u8 *dest_ctx,
--			      const struct ice_ctx_ele *ce_info)
+-int pack(void *pbuf, const u64 *uval, size_t startbit, size_t endbit,
+-	 size_t pbuflen, u8 quirks)
 -{
--	u16 src_word, mask;
--	__le16 dest_word;
--	u8 *from, *dest;
--	u16 shift_width;
--
--	/* copy from the next struct field */
--	from = src_ctx + ce_info->offset;
--
--	/* prepare the bits and mask */
--	shift_width = ce_info->lsb % 8;
--	mask = GENMASK(ce_info->width - 1 + shift_width, shift_width);
--
--	/* don't swizzle the bits until after the mask because the mask bits
--	 * will be in a different bit position on big endian machines
--	 */
--	src_word = *(u16 *)from;
--	src_word <<= shift_width;
--	src_word &= mask;
--
--	/* get the current bits from the target bit string */
--	dest = dest_ctx + (ce_info->lsb / 8);
--
--	memcpy(&dest_word, dest, sizeof(dest_word));
--
--	dest_word &= ~(cpu_to_le16(mask));	/* get the bits not changing */
--	dest_word |= cpu_to_le16(src_word);	/* add in the new bits */
--
--	/* put it all back */
--	memcpy(dest, &dest_word, sizeof(dest_word));
+-	return packing(pbuf, (u64 *)uval, startbit, endbit, pbuflen, PACK, quirks);
 -}
--
--/**
-- * ice_pack_ctx_dword - write a dword to a packed context structure
-- * @src_ctx: unpacked source context structure
-- * @dest_ctx: packed destination context data
-- * @ce_info: context element description
-- */
--static void ice_pack_ctx_dword(u8 *src_ctx, u8 *dest_ctx,
--			       const struct ice_ctx_ele *ce_info)
--{
--	u32 src_dword, mask;
--	__le32 dest_dword;
--	u8 *from, *dest;
--	u16 shift_width;
--
--	/* copy from the next struct field */
--	from = src_ctx + ce_info->offset;
--
--	/* prepare the bits and mask */
--	shift_width = ce_info->lsb % 8;
--	mask = GENMASK(ce_info->width - 1 + shift_width, shift_width);
--
--	/* don't swizzle the bits until after the mask because the mask bits
--	 * will be in a different bit position on big endian machines
--	 */
--	src_dword = *(u32 *)from;
--	src_dword <<= shift_width;
--	src_dword &= mask;
--
--	/* get the current bits from the target bit string */
--	dest = dest_ctx + (ce_info->lsb / 8);
--
--	memcpy(&dest_dword, dest, sizeof(dest_dword));
--
--	dest_dword &= ~(cpu_to_le32(mask));	/* get the bits not changing */
--	dest_dword |= cpu_to_le32(src_dword);	/* add in the new bits */
--
--	/* put it all back */
--	memcpy(dest, &dest_dword, sizeof(dest_dword));
--}
--
--/**
-- * ice_pack_ctx_qword - write a qword to a packed context structure
-- * @src_ctx: unpacked source context structure
-- * @dest_ctx: packed destination context data
-- * @ce_info: context element description
-- */
--static void ice_pack_ctx_qword(u8 *src_ctx, u8 *dest_ctx,
--			       const struct ice_ctx_ele *ce_info)
--{
--	u64 src_qword, mask;
--	__le64 dest_qword;
--	u8 *from, *dest;
--	u16 shift_width;
--
--	/* copy from the next struct field */
--	from = src_ctx + ce_info->offset;
--
--	/* prepare the bits and mask */
--	shift_width = ce_info->lsb % 8;
--	mask = GENMASK_ULL(ce_info->width - 1 + shift_width, shift_width);
--
--	/* don't swizzle the bits until after the mask because the mask bits
--	 * will be in a different bit position on big endian machines
--	 */
--	src_qword = *(u64 *)from;
--	src_qword <<= shift_width;
--	src_qword &= mask;
--
--	/* get the current bits from the target bit string */
--	dest = dest_ctx + (ce_info->lsb / 8);
--
--	memcpy(&dest_qword, dest, sizeof(dest_qword));
--
--	dest_qword &= ~(cpu_to_le64(mask));	/* get the bits not changing */
--	dest_qword |= cpu_to_le64(src_qword);	/* add in the new bits */
--
--	/* put it all back */
--	memcpy(dest, &dest_qword, sizeof(dest_qword));
--}
--
--/**
-- * ice_set_ctx - set context bits in packed structure
-- * @hw: pointer to the hardware structure
-- * @src_ctx:  pointer to a generic non-packed context structure
-- * @dest_ctx: pointer to memory for the packed structure
-- * @ce_info: List of Rx context elements
-- */
--int ice_set_ctx(struct ice_hw *hw, u8 *src_ctx, u8 *dest_ctx,
--		const struct ice_ctx_ele *ce_info)
--{
--	int f;
--
--	for (f = 0; ce_info[f].width; f++) {
--		/* We have to deal with each element of the FW response
--		 * using the correct size so that we are correct regardless
--		 * of the endianness of the machine.
--		 */
--		if (ce_info[f].width > (ce_info[f].size_of * BITS_PER_BYTE)) {
--			ice_debug(hw, ICE_DBG_QCTX, "Field %d width of %d bits larger than size of %d byte(s) ... skipping write\n",
--				  f, ce_info[f].width, ce_info[f].size_of);
--			continue;
--		}
--		switch (ce_info[f].size_of) {
--		case sizeof(u8):
--			ice_pack_ctx_byte(src_ctx, dest_ctx, &ce_info[f]);
--			break;
--		case sizeof(u16):
--			ice_pack_ctx_word(src_ctx, dest_ctx, &ce_info[f]);
--			break;
--		case sizeof(u32):
--			ice_pack_ctx_dword(src_ctx, dest_ctx, &ce_info[f]);
--			break;
--		case sizeof(u64):
--			ice_pack_ctx_qword(src_ctx, dest_ctx, &ce_info[f]);
--			break;
--		default:
--			return -EINVAL;
--		}
--	}
--
--	return 0;
--}
--
+ EXPORT_SYMBOL(pack);
+ 
  /**
-  * ice_get_lan_q_ctx - get the LAN queue context for the given VSI and TC
-  * @hw: pointer to the HW struct
+@@ -266,8 +206,129 @@ EXPORT_SYMBOL(pack);
+ int unpack(const void *pbuf, u64 *uval, size_t startbit, size_t endbit,
+ 	   size_t pbuflen, u8 quirks)
+ {
+-	return packing((void *)pbuf, uval, startbit, endbit, pbuflen, UNPACK, quirks);
++	/* Logical byte indices corresponding to the
++	 * start and end of the field.
++	 */
++	int plogical_first_u8, plogical_last_u8, box;
++	/* width of the field to access in the pbuf */
++	u64 value_width;
++
++	/* startbit is expected to be larger than endbit, and both are
++	 * expected to be within the logically addressable range of the buffer.
++	 */
++	if (unlikely(startbit < endbit || startbit >= 8 * pbuflen))
++		/* Invalid function call */
++		return -EINVAL;
++
++	value_width = startbit - endbit + 1;
++	if (unlikely(value_width > 64))
++		return -ERANGE;
++
++	/* Initialize parameter */
++	*uval = 0;
++
++	/* Iterate through an idealistic view of the pbuf as an u64 with
++	 * no quirks, u8 by u8 (aligned at u8 boundaries), from high to low
++	 * logical bit significance. "box" denotes the current logical u8.
++	 */
++	plogical_first_u8 = startbit / 8;
++	plogical_last_u8  = endbit / 8;
++
++	for (box = plogical_first_u8; box >= plogical_last_u8; box--) {
++		/* Bit indices into the currently accessed 8-bit box */
++		size_t box_start_bit, box_end_bit, box_addr;
++		u8  box_mask;
++		/* Corresponding bits from the unpacked u64 parameter */
++		size_t proj_start_bit, proj_end_bit;
++		u64 proj_mask;
++		u64 pval;
++
++		/* This u8 may need to be accessed in its entirety
++		 * (from bit 7 to bit 0), or not, depending on the
++		 * input arguments startbit and endbit.
++		 */
++		if (box == plogical_first_u8)
++			box_start_bit = startbit % 8;
++		else
++			box_start_bit = 7;
++		if (box == plogical_last_u8)
++			box_end_bit = endbit % 8;
++		else
++			box_end_bit = 0;
++
++		/* We have determined the box bit start and end.
++		 * Now we calculate where this (masked) u8 box would fit
++		 * in the unpacked (CPU-readable) u64 - the u8 box's
++		 * projection onto the unpacked u64. Though the
++		 * box is u8, the projection is u64 because it may fall
++		 * anywhere within the unpacked u64.
++		 */
++		proj_start_bit = ((box * 8) + box_start_bit) - endbit;
++		proj_end_bit   = ((box * 8) + box_end_bit) - endbit;
++		proj_mask = GENMASK_ULL(proj_start_bit, proj_end_bit);
++		box_mask  = GENMASK_ULL(box_start_bit, box_end_bit);
++
++		/* Determine the offset of the u8 box inside the pbuf,
++		 * adjusted for quirks. The adjusted box_addr will be used for
++		 * effective addressing inside the pbuf (so it's not
++		 * logical any longer).
++		 */
++		box_addr = calculate_box_addr(box, pbuflen, quirks);
++
++		/* Read from pbuf, write to uval */
++		pval = ((u8 *)pbuf)[box_addr] & box_mask;
++		if (quirks & QUIRK_MSB_ON_THE_RIGHT)
++			adjust_for_msb_right_quirk(&pval,
++						   &box_start_bit,
++						   &box_end_bit,
++						   &box_mask);
++
++		pval >>= box_end_bit;
++		pval <<= proj_end_bit;
++		*uval &= ~proj_mask;
++		*uval |= pval;
++	}
++	return 0;
+ }
+ EXPORT_SYMBOL(unpack);
+ 
++/**
++ * packing - Convert numbers (currently u64) between a packed and an unpacked
++ *	     format. Unpacked means laid out in memory in the CPU's native
++ *	     understanding of integers, while packed means anything else that
++ *	     requires translation.
++ *
++ * @pbuf: Pointer to a buffer holding the packed value.
++ * @uval: Pointer to an u64 holding the unpacked value.
++ * @startbit: The index (in logical notation, compensated for quirks) where
++ *	      the packed value starts within pbuf. Must be larger than, or
++ *	      equal to, endbit.
++ * @endbit: The index (in logical notation, compensated for quirks) where
++ *	    the packed value ends within pbuf. Must be smaller than, or equal
++ *	    to, startbit.
++ * @pbuflen: The length in bytes of the packed buffer pointed to by @pbuf.
++ * @op: If PACK, then uval will be treated as const pointer and copied (packed)
++ *	into pbuf, between startbit and endbit.
++ *	If UNPACK, then pbuf will be treated as const pointer and the logical
++ *	value between startbit and endbit will be copied (unpacked) to uval.
++ * @quirks: A bit mask of QUIRK_LITTLE_ENDIAN, QUIRK_LSW32_IS_FIRST and
++ *	    QUIRK_MSB_ON_THE_RIGHT.
++ *
++ * Note: this is deprecated, prefer to use pack() or unpack() in new code.
++ *
++ * Return: 0 on success, EINVAL or ERANGE if called incorrectly. Assuming
++ *	   correct usage, return code may be discarded.
++ *	   If op is PACK, pbuf is modified.
++ *	   If op is UNPACK, uval is modified.
++ */
++int packing(void *pbuf, u64 *uval, int startbit, int endbit, size_t pbuflen,
++	    enum packing_op op, u8 quirks)
++{
++	if (op == PACK)
++		return pack(pbuf, *uval, startbit, endbit, pbuflen, quirks);
++
++	return unpack(pbuf, uval, startbit, endbit, pbuflen, quirks);
++}
++EXPORT_SYMBOL(packing);
++
+ MODULE_DESCRIPTION("Generic bitfield packing and unpacking");
 
 -- 
 2.46.0.124.g2dc1a81c8933
