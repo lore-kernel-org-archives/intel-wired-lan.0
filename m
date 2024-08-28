@@ -4,71 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 380F5C7112F
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 28 Aug 2024 20:57:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4B495C71143
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 28 Aug 2024 20:57:44 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id D824560E14;
-	Wed, 28 Aug 2024 20:57:42 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id CE51860E16;
+	Wed, 28 Aug 2024 20:57:43 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ciFHcEg6Ejt6; Wed, 28 Aug 2024 20:57:42 +0000 (UTC)
+ id kgNcDbgzCRrp; Wed, 28 Aug 2024 20:57:43 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2723560E27
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3887460E19
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1724878662;
-	bh=3yXTBGfARulLLnTzWPWjl2ZGtQGVoWcl9QFB8lKIW4g=;
+	s=default; t=1724878663;
+	bh=u19/4neSXjdJK1gyIyJiBzEjcPc+qoiWty3+60AIEc0=;
 	h=From:Date:References:In-Reply-To:To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=B+ObZ+hZot/M/W6cQ8JBVVyR6CkDVQcdPnhPq7XDBXORErUvhq1VxVEC5MoTgF7vd
-	 2vL3b7iV/mKVU7M40CeXSaD97+SImlJ86FT77eRt2ny5gZNjrKUE1PvBFVM2cQ2+ba
-	 wn0wwOAaIL9dBtZjPrt9nqZDODykeypLj8SOtPKQp6g0gjJ2SAsnwrh+XPE8Am5h5G
-	 9kFVckb140rmVxfYQhqGLkBBApoQ6k2q8QJaIdDReZ4NxtKCYatlXemjrz/1+3IDY8
-	 Zui75mHC31yrDm5nPPcwe78zpDqjJwioVa3BFCLQvXr2l3LBNk0xxlJEwGMh4sYd3c
-	 jZhPrOy1k0kYw==
+	b=VuzRg7DWu2LuzzTG1sj3dCgpxtx9dJ1jZgOAzsjowUCukni8nd3SmheL56Y9I1AQr
+	 v88aL+Xp0hH07Ei9S6jI/Kph1rFQn8gO7z5fZJGl9jKdo34WitijyoClwmdqhBAlzr
+	 z8RII1S26vuKweEf6dpXbDU/lIlpndC8CJqnR6NODr8CHtma5UdVMUlgUSp08Q+Hjj
+	 48tf7w2mzL9/FESum7iOJgMjXR5agEDVT0bzEJAqq1P3a3LJQbUvBmNb3Tx4byPiCI
+	 cSjVo0w3ihswztdxW2109ORwLWFNo7oV40uw3CA5M+X4ZI74qNLbdSmqhIueBJ43Qy
+	 yUpS5a/szs03w==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 2723560E27;
-	Wed, 28 Aug 2024 20:57:42 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id E76341BF409
- for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Aug 2024 20:57:35 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 3887460E19;
+	Wed, 28 Aug 2024 20:57:43 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 3EE5D1BF409
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Aug 2024 20:57:36 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 492768151E
+ by smtp3.osuosl.org (Postfix) with ESMTP id 5134E60DEF
  for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Aug 2024 20:57:33 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id vhk_ez5eflLn for <intel-wired-lan@lists.osuosl.org>;
- Wed, 28 Aug 2024 20:57:32 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id ExWHcV6b4pVa for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 28 Aug 2024 20:57:31 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.13;
  helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 8C9AF81584
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8C9AF81584
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org A55D860B1E
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A55D860B1E
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.13])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 8C9AF81584
- for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Aug 2024 20:57:32 +0000 (UTC)
-X-CSE-ConnectionGUID: aTSIruh6QI+uQJfWgKEI6w==
-X-CSE-MsgGUID: IAMjXKxeTR6tDBWrYhavpg==
-X-IronPort-AV: E=McAfee;i="6700,10204,11178"; a="34592632"
-X-IronPort-AV: E=Sophos;i="6.10,183,1719903600"; d="scan'208";a="34592632"
+ by smtp3.osuosl.org (Postfix) with ESMTPS id A55D860B1E
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Aug 2024 20:57:31 +0000 (UTC)
+X-CSE-ConnectionGUID: jfbIuEAZQqSXWEHyQNdBOw==
+X-CSE-MsgGUID: D250VfntR2K1UFEM9IqD5w==
+X-IronPort-AV: E=McAfee;i="6700,10204,11178"; a="34592611"
+X-IronPort-AV: E=Sophos;i="6.10,183,1719903600"; d="scan'208";a="34592611"
 Received: from orviesa008.jf.intel.com ([10.64.159.148])
  by orvoesa105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  28 Aug 2024 13:57:31 -0700
-X-CSE-ConnectionGUID: 809NkwwUTcKZgKoOdBPiFQ==
-X-CSE-MsgGUID: oauytBeTSaG8/c40jUOHjQ==
+X-CSE-ConnectionGUID: d7/ATIAZTXW2LjZm7CWq1w==
+X-CSE-MsgGUID: yVuYwNKwS2KYeqVJfOMbug==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.10,183,1719903600"; d="scan'208";a="64049965"
+X-IronPort-AV: E=Sophos;i="6.10,183,1719903600"; d="scan'208";a="64049983"
 Received: from jekeller-desk.jf.intel.com ([10.166.241.20])
  by orviesa008-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  28 Aug 2024 13:57:29 -0700
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed, 28 Aug 2024 13:57:19 -0700
+Date: Wed, 28 Aug 2024 13:57:25 -0700
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20240828-e810-live-migration-jk-prep-ctx-functions-v2-3-558ab9e240f5@intel.com>
+Message-Id: <20240828-e810-live-migration-jk-prep-ctx-functions-v2-9-558ab9e240f5@intel.com>
 References: <20240828-e810-live-migration-jk-prep-ctx-functions-v2-0-558ab9e240f5@intel.com>
 In-Reply-To: <20240828-e810-live-migration-jk-prep-ctx-functions-v2-0-558ab9e240f5@intel.com>
 To: Vladimir Oltean <olteanv@gmail.com>, netdev <netdev@vger.kernel.org>, 
@@ -77,25 +77,25 @@ To: Vladimir Oltean <olteanv@gmail.com>, netdev <netdev@vger.kernel.org>,
 X-Mailer: b4 0.14.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1724878653; x=1756414653;
+ t=1724878652; x=1756414652;
  h=from:date:subject:mime-version:content-transfer-encoding:
  message-id:references:in-reply-to:to:cc;
- bh=fVvWWmc//evEZHcKzlFxreA95ao/xY72CyoACOvZbMI=;
- b=E1cSMDaxdx6jKnUGpMRCA4kM3VCH+Z2UWNq5N7VvLdyx2T7tQAMMcd+G
- Tdx+RFxWrZY9MOZ1sMymjSeFQCTdNQx71bmpNHZDrxjhV9anC2F14mbQt
- aWP+zKvSOLGNq37qiW6ZGa8bUqf2GTbvkb82oT9b2ytdh07+l5/LN1Jvq
- ojD4TxTYLJPtq+letokh4rjTQF3sB71S4HWc7JJt5QAFGcVDg6SaiRStV
- Ggw5ZHFZw9SYqKCiGazOYO7aOyyv5S707gHrfkIonvlfsuiSwiiC05/Hw
- DO/s4Di+O3XVlLTG2Y3d7kPM9m2Q0GwBD8u9Wxuincmk8lDQE/wg11/O5
- Q==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ bh=rvmC66yA+I0aGyEit1QKoFYvswf4szFpjtBzQkKHhd4=;
+ b=IBkxHGOc4iO3e5ClHYKX+AQTsmiv7898y4RydpV1K7WWMSzPGFsSb46g
+ lNOddmPxcsm1a0uxwl8cfnZX+JRexj2AzNUe/dtvjxk3/nzjs5PgfqG0M
+ oDlszR7xGi4jT1MGDH/rIdv0oc1IleA8GXeb5EzQD4VgDG5Pgrfgb+vW5
+ UZpO9it2cz5Ec2RFeG+m1oF8Tq1f9yij8huxA4asMTzGpuvH/mpCF02s9
+ G5GMTo26bFJjQPsPWq4XRd9rswB3SGy6lQfAnEivu0JXK9isXSQvp2KqA
+ Skrz1lJRx2O8k+ijZ3BeD+mwfIXrPgrX5pz/NBCDq86Nket4vIi97mxDL
+ g==;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=E1cSMDax
-Subject: [Intel-wired-lan] [PATCH iwl-next v2 03/13] lib: packing: remove
- kernel-doc from header file
+ header.a=rsa-sha256 header.s=Intel header.b=IBkxHGOc
+Subject: [Intel-wired-lan] [PATCH iwl-next v2 09/13] ice: remove int_q_state
+ from ice_tlan_ctx
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -112,56 +112,42 @@ Cc: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Vladimir Oltean <vladimir.oltean@nxp.com>
+The int_q_state field of the ice_tlan_ctx structure represents the internal
+queue state. However, we never actually need to assign this or read this
+during normal operation. In fact, trying to unpack it would not be possible
+as it is larger than a u64. Remove this field from the ice_tlan_ctx
+structure, and remove its packing field from the ice_tlan_ctx_info array.
 
-It is not necessary to have the kernel-doc duplicated both in the
-header and in the implementation. It is better to have it near the
-implementation of the function, since in C, a function can have N
-declarations, but only one definition.
-
-Signed-off-by: Vladimir Oltean <vladimir.oltean@nxp.com>
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 ---
- include/linux/packing.h | 26 --------------------------
- 1 file changed, 26 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h | 1 -
+ drivers/net/ethernet/intel/ice/ice_common.c    | 1 -
+ 2 files changed, 2 deletions(-)
 
-diff --git a/include/linux/packing.h b/include/linux/packing.h
-index 8d6571feb95d..69baefebcd02 100644
---- a/include/linux/packing.h
-+++ b/include/linux/packing.h
-@@ -17,32 +17,6 @@ enum packing_op {
- 	UNPACK,
+diff --git a/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h b/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
+index 611577ebc29d..0e8ed8c226e6 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
++++ b/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
+@@ -590,7 +590,6 @@ struct ice_tlan_ctx {
+ 	u8 drop_ena;
+ 	u8 cache_prof_idx;
+ 	u8 pkt_shaper_prof_idx;
+-	u8 int_q_state;	/* width not needed - internal - DO NOT WRITE!!! */
  };
  
--/**
-- * packing - Convert numbers (currently u64) between a packed and an unpacked
-- *	     format. Unpacked means laid out in memory in the CPU's native
-- *	     understanding of integers, while packed means anything else that
-- *	     requires translation.
-- *
-- * @pbuf: Pointer to a buffer holding the packed value.
-- * @uval: Pointer to an u64 holding the unpacked value.
-- * @startbit: The index (in logical notation, compensated for quirks) where
-- *	      the packed value starts within pbuf. Must be larger than, or
-- *	      equal to, endbit.
-- * @endbit: The index (in logical notation, compensated for quirks) where
-- *	    the packed value ends within pbuf. Must be smaller than, or equal
-- *	    to, startbit.
-- * @op: If PACK, then uval will be treated as const pointer and copied (packed)
-- *	into pbuf, between startbit and endbit.
-- *	If UNPACK, then pbuf will be treated as const pointer and the logical
-- *	value between startbit and endbit will be copied (unpacked) to uval.
-- * @quirks: A bit mask of QUIRK_LITTLE_ENDIAN, QUIRK_LSW32_IS_FIRST and
-- *	    QUIRK_MSB_ON_THE_RIGHT.
-- *
-- * Return: 0 on success, EINVAL or ERANGE if called incorrectly. Assuming
-- *	   correct usage, return code may be discarded.
-- *	   If op is PACK, pbuf is modified.
-- *	   If op is UNPACK, uval is modified.
-- */
- int packing(void *pbuf, u64 *uval, int startbit, int endbit, size_t pbuflen,
- 	    enum packing_op op, u8 quirks);
+ #endif /* _ICE_LAN_TX_RX_H_ */
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index 009716a12a26..c4b24ba36b5e 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -1467,7 +1467,6 @@ const struct ice_ctx_ele ice_tlan_ctx_info[] = {
+ 	ICE_CTX_STORE(ice_tlan_ctx, drop_ena,			1,	165),
+ 	ICE_CTX_STORE(ice_tlan_ctx, cache_prof_idx,		2,	166),
+ 	ICE_CTX_STORE(ice_tlan_ctx, pkt_shaper_prof_idx,	3,	168),
+-	ICE_CTX_STORE(ice_tlan_ctx, int_q_state,		122,	171),
+ 	{ 0 }
+ };
  
 
 -- 
