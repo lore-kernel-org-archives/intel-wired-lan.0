@@ -4,100 +4,98 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D8F28C71143
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 28 Aug 2024 20:57:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A5C48C7112F
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 28 Aug 2024 20:57:39 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 9AAC060E11;
-	Wed, 28 Aug 2024 20:57:38 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 6400860E0A;
+	Wed, 28 Aug 2024 20:57:39 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 7PU6XJKfOXs9; Wed, 28 Aug 2024 20:57:37 +0000 (UTC)
+ id kKaYjWH7SQqh; Wed, 28 Aug 2024 20:57:38 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7F57160B65
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org ACA7460B65
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1724878657;
-	bh=XC/m6dcXeJBTifRLnVKVnVBp8txQv1vzgYcZ3dfHVHk=;
-	h=From:Date:To:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=5Zhgb7wAu4XYQEIb0ogz/ca368tEUoMKb2FtBfp7L74yPwzjq6lNykywG2N7DO1l2
-	 zDKwmg29VXRyLJ3QKvmOq2O+awZcWRVycBUt8nM3tPVBtXJKBTHRvBpLpD0arj9n0r
-	 p5lGBEn+Xn0PG30A7DWCG01U4dFehfiUSwcp6dmiDrhSa2435pNTP7R/N/9/HX2Wqj
-	 H4cLnXQnMIuMxdUJltGXiiDOKPNHSaRcc2zth2IuCwGcf4i/ByFCf2TgOoHPqvKMqJ
-	 OCAVZWhkVJb5PfKdXOXSb9pUgjdLVa7aqG/Cz4c4Rj1bmFC5gfM+9icnwzCnCeQoBy
-	 t78larru21wwg==
+	s=default; t=1724878658;
+	bh=lEqRKt6DS1P2cqBDnRpOo6EDcFUivNmFQDsq6cKzsx0=;
+	h=From:Date:References:In-Reply-To:To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=ojYgKRO2i4JpZM27jznpXz6RsmlObwGNRbVwDxfm6fcntXf88EIdA/BXYUYjXhIuV
+	 k9sjRSSZQjw9gkKw3dpBAmrXFnqlnfzIhKmq9BPW8cWqnXq+WRZUGLrfDr0z1OanIY
+	 I52DPSAIiQCSNq/XUqnf4cF0rzrZp2L3J9sbCxsSVB/T85wfxoRjfXyZOEhNQ6ruaS
+	 PjkR2lXsChvRz2o4Ll3qs2eEboprWtfNFZkzRrjEr4HT3eWwcIFMlkYZPxZafvcDri
+	 vmVD4IROVPi4D1GQ8jSpY+zZZjREqL98pbJpOcinhT6kjC+isgQCvJJo8MXMBc3hDb
+	 kfm1aggFvebEA==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 7F57160B65;
-	Wed, 28 Aug 2024 20:57:37 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 5DA141BF409
- for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Aug 2024 20:57:33 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id ACA7460B65;
+	Wed, 28 Aug 2024 20:57:38 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 1B88C1BF409
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Aug 2024 20:57:34 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id C569281585
+ by smtp3.osuosl.org (Postfix) with ESMTP id F370260DED
  for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Aug 2024 20:57:32 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id OW9JMb__-X0x for <intel-wired-lan@lists.osuosl.org>;
- Wed, 28 Aug 2024 20:57:31 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id pMpW7wFBkvwG for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 28 Aug 2024 20:57:32 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.13;
  helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org C8FA981518
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C8FA981518
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 07DCD60B65
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 07DCD60B65
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.13])
- by smtp1.osuosl.org (Postfix) with ESMTPS id C8FA981518
- for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Aug 2024 20:57:30 +0000 (UTC)
-X-CSE-ConnectionGUID: OMl5ja2rR1OsCvsmWnOvpg==
-X-CSE-MsgGUID: hFlwXkAfSD2aPI6GLL7ecA==
-X-IronPort-AV: E=McAfee;i="6700,10204,11178"; a="34592598"
-X-IronPort-AV: E=Sophos;i="6.10,183,1719903600"; d="scan'208";a="34592598"
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 07DCD60B65
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Aug 2024 20:57:31 +0000 (UTC)
+X-CSE-ConnectionGUID: iMQZ8qPKSVyG3JRFljuwLQ==
+X-CSE-MsgGUID: 77pRLGbuS8WLjRudtGva+g==
+X-IronPort-AV: E=McAfee;i="6700,10204,11178"; a="34592621"
+X-IronPort-AV: E=Sophos;i="6.10,183,1719903600"; d="scan'208";a="34592621"
 Received: from orviesa008.jf.intel.com ([10.64.159.148])
  by orvoesa105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 28 Aug 2024 13:57:30 -0700
-X-CSE-ConnectionGUID: 3wihyRQBRj+jFbFawAN3gg==
-X-CSE-MsgGUID: t+VW1UmkRW+m1NH7FQsMiQ==
+ 28 Aug 2024 13:57:31 -0700
+X-CSE-ConnectionGUID: kcD8ZhpMQCS4GtkvBuSX1Q==
+X-CSE-MsgGUID: z8P0+UXzSv6jayJSVXJnFQ==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.10,183,1719903600"; d="scan'208";a="64049956"
+X-IronPort-AV: E=Sophos;i="6.10,183,1719903600"; d="scan'208";a="64049994"
 Received: from jekeller-desk.jf.intel.com ([10.166.241.20])
  by orviesa008-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  28 Aug 2024 13:57:29 -0700
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed, 28 Aug 2024 13:57:16 -0700
-Message-Id: <20240828-e810-live-migration-jk-prep-ctx-functions-v2-0-558ab9e240f5@intel.com>
+Date: Wed, 28 Aug 2024 13:57:29 -0700
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAC2Pz2YC/5WOTQ7CIBCFr2Jm7RgYiVVX3sO4sDDa0UobQKxpe
- nexnsDl+8n73giRg3CE/WKEwFmidL4IWi7ANmd/ZRRXNJAio7aakLdaYSuZ8SHXcE6lj7c79oF
- 7tGnAy9PbrxnRmY2rqdrVZDdQ9krlIsPMOoK8WvQ8JDiVpJGYuvCeT2Q95z8eVX/wskaFyhhiY
- kNuTQfxiduV7R5wmqbpA3LvYKLsAAAA
+Message-Id: <20240828-e810-live-migration-jk-prep-ctx-functions-v2-13-558ab9e240f5@intel.com>
+References: <20240828-e810-live-migration-jk-prep-ctx-functions-v2-0-558ab9e240f5@intel.com>
+In-Reply-To: <20240828-e810-live-migration-jk-prep-ctx-functions-v2-0-558ab9e240f5@intel.com>
 To: Vladimir Oltean <olteanv@gmail.com>, netdev <netdev@vger.kernel.org>, 
  Anthony Nguyen <anthony.l.nguyen@intel.com>, 
  Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
 X-Mailer: b4 0.14.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1724878651; x=1756414651;
- h=from:subject:date:message-id:mime-version:
- content-transfer-encoding:to:cc;
- bh=cySKZdMTLgmyhw3lp7daIkseQEt1zFRwj7CiVn4czkk=;
- b=gzYMH+YmwZX/gcrlKbM3a1fLFSTqiQKXibx5dpCcbpIS66xQ8mVkD9pg
- 68jFD10qADZpYugM4eM7WBq8ELtsSC6CdnQLNiyYopoJ6pqmSivWpdXZf
- tvab7/cEVwRwICBb/o8K2IF3Tahh0r5xGtr+CZSIzE2+cQHcZR4jb5TV7
- NPEr5X07AC/yopwHb+I8tV2RgEDp5A9S+7fCgK2/j/B1JGicPVDPHGMUe
- cY0xNcdwvwOrJcfTds4w520y9RDgZJ7af2+g0J8mTRdUZQ362Vusp6/Nr
- T4iGtzOMW8/EQctXSQV2KrH83l4r7NFOvCHOWHvvT2yG8/rIT+1SIbRzD
- Q==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ t=1724878653; x=1756414653;
+ h=from:date:subject:mime-version:content-transfer-encoding:
+ message-id:references:in-reply-to:to:cc;
+ bh=xufRkKg+iM6RsUdSlYQ0D3X5D5y0afXbEi6v8MIfOwg=;
+ b=g4WYo2zb33D27nLFTYZh3mksgloJ+3QGFydnC7QnXAS5VC+eaHTf5LoX
+ +zFoDtCoPl2c/0KkgOek+Jw9OhEdP6MjfTK7n83ikiX7JW0jV+We+zDlR
+ PmZGOcCLcB3ZBDmDfcLlrKy0l3XWOyf1HkKWEyz0HDS0kzmT4+XWgAsOH
+ VEYnrSHq0ghoKDnq+B2mAYK77DYyZB6QztBZWAg5BA13XH0eVUQlZ2NLs
+ zEcfnYUSkOeiwnrfdBHW/YDPQZBQPpgQ/C7bdzOeG4DHaYww7AHZEBaLM
+ qP9ymVw+20KFjnTVh5xyDUJ0tTJREu4LRmRSPSbL5ej7puFeyYH26flaI
+ w==;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=gzYMH+Ym
-Subject: [Intel-wired-lan] [PATCH iwl-next v2 00/13] ice: use
- <linux/packing.h> for Tx and Rx queue context data
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=g4WYo2zb
+Subject: [Intel-wired-lan] [PATCH iwl-next v2 13/13] ice: cleanup Rx queue
+ context programming functions
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -114,131 +112,132 @@ Cc: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-This series refactors the Tx and Rx queue context data packing in the ice
-driver to use the <linux/packing.h> API. This is intended to aid in the
-future implementation of unpacking context data for live migration. While
-it strictly does save a few bytes in the module according to bloat-o-meter,
-the savings is quite minimal (~200 bytes).
+The ice_copy_rxq_ctx_to_hw() and ice_write_rxq_ctx() functions perform some
+defensive checks which are typically frowned upon by kernel style
+guidelines.
 
-While initially implementing the logic, it was discovered that the packing
-code does not work properly if the provided buffer size is not a multiple
-of 4 bytes. This is also fixed by this series, along with some general
-improvements to the API including the addition of pack() and unpack().
+In particular, they perform NULL checks on buffers which are never expected
+to be NULL. Both functions are only called once and always have valid
+buffers pointing to stack memory. These checks only serve to hide potential
+programming error, as we will not produce the normal crash dump on a NULL
+access.
 
-First, several improvements and cleanups to the packing API are made:
+In addition, ice_copy_rxq_ctx_to_hw() cannot fail in another way, so could
+be made void.
 
-An additional sanity check is added to packing() to ensure that the
-bit indices do not point outside the bounds of the provided buffer.
+Future support for VF Live Migration will need to introduce an inverse
+function for reading Rx queue context from HW registers to unpack it, as
+well as functions to pack and unpack Tx queue context from HW.
 
-The packing() implementation is adjusted to work correctly when given
-an arbitrary buffer size.
+Rather than copying these style issues into the new functions, lets first
+cleanup the existing code.
 
-The duplicate kernel-doc for packing() is removed from the header
-file.
+For the ice_copy_rxq_ctx_to_hw() function:
 
-The packing API gaves the pack() and unpack() wrappers which simplify
-the use of packing, and enable better const correctness checking.
+ * Remove the NULL parameter check.
+ * Move the Rx queue index check out of this function.
+ * Convert the function to a void return.
+ * Use a simple int variable instead of a u8 for the for loop index.
+ * Use a local variable and array syntax to access the rxq_ctx.
+ * Update the function description to better align with kernel doc style.
 
-The pack() and unpack() implementations are separated and packing()
-becomes a simple wrapper that selects between the two operations. This is
-intended to improve the logic as several conditionals can be dropped.
+For the ice_write_rxq_ctx() function:
 
-A suite of KUnit tests for the packing API have been added, based on
-simple selftests originally developed by Vladimir.
+ * Use the more common '= {}' syntax for initializing the context buffer.
+ * Move the Rx queue index check into this function.
+ * Update the function description with a Returns: to align with kernel doc
+   style.
 
-Additional unit tests for the packing library are added.
+These changes align the existing write functions to current kernel
+style, and will align with the style of the new functions added when we
+implement live migration in a future series.
 
-A bug in the QUIRK_MSB_ON_THE_RIGHT of the packing API is fixed, along with
-additional unit tests covering this behavior.
-
-Following the improvements to the packing API, the ice driver is
-refactored:
-
-The int_q_state field is removed from the ice_tlan_ctx structure and
-packing definitions. This field is not used, and can't even be properly
-packed or unpacked as its size exceeds 8 bytes.
-
-The existing packing code based on ice_set_ctx() is ripped out and replaced
-with an implementation based on pack().
-
-The sizes of fields in ice_tlan_ctx and ice_rlan_ctx are updated to better
-reflect their actual size.
-
-The setting of the prefetch enable bit in the Rx context is moved into
-ice_setup_rx_ctx() where the rest of the Rx context is configured. This is
-less surprising than having the ice_write_rxq_ctx() always overwrite that
-field of the context.
-
-The copy_rxq_ctx_to_hw() and ice_write_rxq_ctx() are updated to align with
-modern kernel style guidelines. This includes removing an unnecessary NULL
-check, updating the kdoc descriptions to align with the check-kdoc, and
-making ice_copy_rxq_ctx_to_hw() void. This ensures the style for these
-functions will match the style for the similar functions needed to enable
-live migration in a future series.
-
-Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
-Changes in v2:
-- Fix netdev address
-- Drop unnecessary fixes tag in prefetch enable patch
-- Add a module description to the KUnit tests
-- Mark the test cases array in packing_test.c static
-- Prefer 'Return:' over 'Returns:' for kdoc
-- Link to v1: https://lore.kernel.org/r/20240827-e810-live-migration-jk-prep-ctx-functions-v1-0-0442e2e42d32@intel.com
+ drivers/net/ethernet/intel/ice/ice_common.c | 42 ++++++++++++-----------------
+ 1 file changed, 17 insertions(+), 25 deletions(-)
 
-I opted to include the packing changes in this series to Intel Wired LAN,
-because the changes are only required due to the new use with the ice
-driver. I also do not believe any existing driver uses
-QUIRK_MSB_ON_THE_RIGHT, so I don't think the fix for that quirk needs to go
-through net or stable either.
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index 67273e4af7ff..bf4f4b6195f9 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -1357,34 +1357,22 @@ int ice_reset(struct ice_hw *hw, enum ice_reset_req req)
+ }
+ 
+ /**
+- * ice_copy_rxq_ctx_to_hw
++ * ice_copy_rxq_ctx_to_hw - Copy packed Rx queue context to HW registers
+  * @hw: pointer to the hardware structure
+- * @ice_rxq_ctx: pointer to the rxq context
++ * @rxq_ctx: pointer to the packed Rx queue context
+  * @rxq_index: the index of the Rx queue
+- *
+- * Copies rxq context from dense structure to HW register space
+  */
+-static int
+-ice_copy_rxq_ctx_to_hw(struct ice_hw *hw, u8 *ice_rxq_ctx, u32 rxq_index)
++static void ice_copy_rxq_ctx_to_hw(struct ice_hw *hw, u8 *rxq_ctx,
++				   u32 rxq_index)
+ {
+-	u8 i;
+-
+-	if (!ice_rxq_ctx)
+-		return -EINVAL;
+-
+-	if (rxq_index > QRX_CTRL_MAX_INDEX)
+-		return -EINVAL;
+-
+ 	/* Copy each dword separately to HW */
+-	for (i = 0; i < ICE_RXQ_CTX_SIZE_DWORDS; i++) {
+-		wr32(hw, QRX_CONTEXT(i, rxq_index),
+-		     *((u32 *)(ice_rxq_ctx + (i * sizeof(u32)))));
++	for (int i = 0; i < ICE_RXQ_CTX_SIZE_DWORDS; i++) {
++		u32 ctx = ((u32 *)rxq_ctx)[i];
+ 
+-		ice_debug(hw, ICE_DBG_QCTX, "qrxdata[%d]: %08X\n", i,
+-			  *((u32 *)(ice_rxq_ctx + (i * sizeof(u32)))));
++		wr32(hw, QRX_CONTEXT(i, rxq_index), ctx);
++
++		ice_debug(hw, ICE_DBG_QCTX, "qrxdata[%d]: %08X\n", i, ctx);
+ 	}
+-
+-	return 0;
+ }
+ 
+ /**
+@@ -1497,23 +1485,27 @@ const struct ice_ctx_ele ice_rlan_ctx_info[] = {
+ /**
+  * ice_write_rxq_ctx - Write Rx Queue context to hardware
+  * @hw: pointer to the hardware structure
+- * @rlan_ctx: pointer to the rxq context
++ * @rlan_ctx: pointer to the packed Rx queue context
+  * @rxq_index: the index of the Rx queue
+  *
+  * Pack the sparse Rx Queue context into dense hardware format and write it
+  * into the HW register space.
++ *
++ * Return: 0 on success, or -EINVAL if the Rx queue index is invalid.
+  */
+ int ice_write_rxq_ctx(struct ice_hw *hw, struct ice_rlan_ctx *rlan_ctx,
+ 		      u32 rxq_index)
+ {
+-	u8 ctx_buf[ICE_RXQ_CTX_SZ] = { 0 };
++	u8 ctx_buf[ICE_RXQ_CTX_SZ] = {};
+ 
+-	if (!rlan_ctx)
++	if (rxq_index > QRX_CTRL_MAX_INDEX)
+ 		return -EINVAL;
+ 
+ 	ice_pack_rxq_ctx(rlan_ctx, ctx_buf);
+ 
+-	return ice_copy_rxq_ctx_to_hw(hw, ctx_buf, rxq_index);
++	ice_copy_rxq_ctx_to_hw(hw, ctx_buf, rxq_index);
++
++	return 0;
+ }
+ 
+ /* LAN Tx Queue Context */
 
-The packing library changes were discussed here:
-https://lore.kernel.org/netdev/a0338310-e66c-497c-bc1f-a597e50aa3ff@intel.com/
-
-In addition, several of the changes are taken from Vladimir's github:
-https://github.com/vladimiroltean/linux/tree/packing-selftests
-
-Strictly, the changes for pack() and unpack() are not required by ice, but
-Vladimir requested that we try to use the new API so that I am not adding
-another driver which needs updating in the future. In addition, pack() and
-unpack() enable const checking.
-
----
-Jacob Keller (8):
-      lib: packing: add KUnit tests adapted from selftests
-      lib: packing: add additional KUnit tests
-      lib: packing: fix QUIRK_MSB_ON_THE_RIGHT behavior
-      ice: remove int_q_state from ice_tlan_ctx
-      ice: use <linux/packing.h> for Tx and Rx queue context data
-      ice: reduce size of queue context fields
-      ice: move prefetch enable to ice_setup_rx_ctx
-      ice: cleanup Rx queue context programming functions
-
-Vladimir Oltean (5):
-      lib: packing: refuse operating on bit indices which exceed size of buffer
-      lib: packing: adjust definitions and implementation for arbitrary buffer lengths
-      lib: packing: remove kernel-doc from header file
-      lib: packing: add pack() and unpack() wrappers over packing()
-      lib: packing: duplicate pack() and unpack() implementations
-
- drivers/net/ethernet/intel/ice/ice_common.h    |  13 +-
- drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h |  33 +-
- include/linux/packing.h                        |  32 +-
- drivers/net/ethernet/intel/ice/ice_base.c      |   6 +-
- drivers/net/ethernet/intel/ice/ice_common.c    | 333 ++++++--------------
- lib/packing.c                                  | 304 ++++++++++++------
- lib/packing_test.c                             | 412 +++++++++++++++++++++++++
- Documentation/core-api/packing.rst             |  71 +++++
- MAINTAINERS                                    |   1 +
- lib/Kconfig                                    |  12 +
- lib/Makefile                                   |   1 +
- 11 files changed, 840 insertions(+), 378 deletions(-)
----
-base-commit: 2c163922de69983e6ccedeb5c00dec85b6a17283
-change-id: 20240812-e810-live-migration-jk-prep-ctx-functions-d46db279b2c6
-
-Best regards,
 -- 
-Jacob Keller <jacob.e.keller@intel.com>
+2.46.0.124.g2dc1a81c8933
 
