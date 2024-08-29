@@ -4,96 +4,122 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5345AC83F2D
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 29 Aug 2024 15:18:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9F96CC83F2F
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 29 Aug 2024 15:21:22 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 10B0F4047D;
-	Thu, 29 Aug 2024 15:18:42 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 6A6C240D0B;
+	Thu, 29 Aug 2024 15:21:22 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id EIY4DtmtU6zr; Thu, 29 Aug 2024 15:18:40 +0000 (UTC)
+ id hxRKa0KC2P3Q; Thu, 29 Aug 2024 15:21:21 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 97650403DD
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4DC694199B
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1724944720;
-	bh=JzzkizUa4nHfj10kWAwgQO0LePc12iVC8qxCeTH3rMI=;
+	s=default; t=1724944881;
+	bh=bXfbtMHqlMrIhOUvSAcFmfWQXM1V/TGEOrhr1h7LaiY=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=tBHDYduZc3YCSVOyxC/kQvsRrhss77zU96eWNCnJpfB4iEQXGOlUSBYZApfo8Lpfl
-	 leRu78R4UuzhQQGCDANauZTyPxDz/VJd8S8bZK7I/UaVu2+qW9pPQvao7EVLx2h5rn
-	 3TWqGs6pGbROJCQlx8b+dzpx8Mdj8ZBXBnEJGPiiYF3xZ+cd77TQfHQ2txV/bng8sz
-	 mAOR1fxlJfMnxeQiCLgOYJCU9HaiFrrHH+owk4AwHklFUDbIqO4Pt88bXSMHYnkT0t
-	 38DsJlhYefaetRxTI/DUN7Csuot4It0Vfy/eO/0L7QCAajKIxC9f5NUoGTweMPJHNM
-	 n78KGV4aNWjDg==
+	b=LQ+eWwY1/5UomZKYbDfPmvn7nMP0Dn0rre91lQ/aOG8nWQfoX/HF+4kQcdvYFfHuJ
+	 bSu/hy8G+/4TIHCLDoD1hbsUDNwcAUU3AtMCr6nKImVY+Bw3YX4y+FPG8UF8yAPb9s
+	 FDr519RAez43vivCL5tRIXvdFHQnxBKcHSEPgQZDCLfPHkTKE/9F/3XUDs1khSR/2R
+	 vhJYNiU992ML5pqBbcqNBNuhgECIhbcuXUx6QlrmSutpnjQKmKNarb0YPJbJMZ5o3T
+	 Py6c/So+M7xDU7C3Fs7794vkNQNIWgApNfWTLq+d22KCvDUxHBEuJKYU6QbiPrn4dr
+	 BrKlzDnjcynqA==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 97650403DD;
-	Thu, 29 Aug 2024 15:18:40 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 6FBC31BF27C
- for <intel-wired-lan@lists.osuosl.org>; Thu, 29 Aug 2024 15:18:39 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 4DC694199B;
+	Thu, 29 Aug 2024 15:21:21 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 5136D1BF422
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 29 Aug 2024 07:11:48 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 68F24419DB
- for <intel-wired-lan@lists.osuosl.org>; Thu, 29 Aug 2024 15:18:39 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 4ACD0610FC
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 29 Aug 2024 07:11:48 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id LwF3yL-71SZH for <intel-wired-lan@lists.osuosl.org>;
- Thu, 29 Aug 2024 15:18:38 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id uMVjACImIM6H for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 29 Aug 2024 07:11:47 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.133.124;
- helo=us-smtp-delivery-124.mimecast.com; envelope-from=pabeni@redhat.com;
+ helo=us-smtp-delivery-124.mimecast.com; envelope-from=pstanner@redhat.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 4EE6D419DA
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4EE6D419DA
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 64447610EC
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 64447610EC
 Received: from us-smtp-delivery-124.mimecast.com
  (us-smtp-delivery-124.mimecast.com [170.10.133.124])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 4EE6D419DA
- for <intel-wired-lan@lists.osuosl.org>; Thu, 29 Aug 2024 15:18:38 +0000 (UTC)
-Received: from mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com
- (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
- relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-142-u0cmjPC3NQqxFDhTMhYALQ-1; Thu,
- 29 Aug 2024 11:18:33 -0400
-X-MC-Unique: u0cmjPC3NQqxFDhTMhYALQ-1
-Received: from mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com
- (mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.4])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
- id 88BB31955BE6; Thu, 29 Aug 2024 15:18:31 +0000 (UTC)
-Received: from gerbillo.redhat.com (unknown [10.45.224.217])
- by mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP
- id 7BA7B300019C; Thu, 29 Aug 2024 15:18:26 +0000 (UTC)
-From: Paolo Abeni <pabeni@redhat.com>
-To: netdev@vger.kernel.org
-Date: Thu, 29 Aug 2024 17:17:05 +0200
-Message-ID: <e4840f910aed39ba43d54ca96088bb8fa5f6cc33.1724944117.git.pabeni@redhat.com>
-In-Reply-To: <cover.1724944116.git.pabeni@redhat.com>
-References: <cover.1724944116.git.pabeni@redhat.com>
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 64447610EC
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 29 Aug 2024 07:11:46 +0000 (UTC)
+Received: from mail-qk1-f200.google.com (mail-qk1-f200.google.com
+ [209.85.222.200]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-28-fy1HVVPsNyqog80nzI8G5w-1; Thu, 29 Aug 2024 03:11:44 -0400
+X-MC-Unique: fy1HVVPsNyqog80nzI8G5w-1
+Received: by mail-qk1-f200.google.com with SMTP id
+ af79cd13be357-7a802721b8aso51182385a.0
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 29 Aug 2024 00:11:44 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20230601; t=1724915504; x=1725520304;
+ h=mime-version:user-agent:content-transfer-encoding:references
+ :in-reply-to:date:cc:to:from:subject:message-id:x-gm-message-state
+ :from:to:cc:subject:date:message-id:reply-to;
+ bh=IERdO5g5CEBvrBbqqjsDxoJcZ6rwjYGIfGMBBak9C/s=;
+ b=LX4RgFJbkF6fSjAF7jQMbP1zBlFqLBkC/usxQ1K+c/oOXX3pXmFE7qDYyohiALGK6C
+ 2u8oHHT6XeZ5Uy+d2RCsIT7OeOYuPQfum3DoYumd7h7INba2TXdF5Aw/04gft7fR1YOK
+ fGTxvNPXnnDiEZS5staNmERvihttwTi1P0mhb1/hBcAiOxw0cHf0Y8n+StblILWuEXdf
+ AqKuKFAMQOktWCugiIT5cMzcPyNlAGHtFtKkUcK7TnyOeX1r0VMgHhPi3o4MX+67xN7b
+ gL1QTCWAH7bai7iAVaL2MJ6ZtSmHciXEft47SyXoxzETLYcFVw+BAmr804RSMcRln5Ko
+ C/PA==
+X-Forwarded-Encrypted: i=1;
+ AJvYcCUK2YGYFVRGS/WUtAiCOJ1mtgjcBDWgkfKPsEKdD8le4zIgCTa1NkSqdLxRcI+SFTM1ywVHkvQkbt/XFhkrmS0=@lists.osuosl.org
+X-Gm-Message-State: AOJu0Yz9OwnSjxeCycw7v4jprbj0p3cGXEKTVAgt+a9eywEmcNIyZbdt
+ UWlWdB7ENlfXNdk1zWjZmMwcKsVL4Xv/q9FyjdhWbD1SCZCT15ETyUowIaaHSQI2Gw8p/ImKj/K
+ p4cRXP7d0Pp/SR/j22iaPusEHjGaXuJjDfNHevHVl5G144M9NIN85G0jgMfTXSUB4704=
+X-Received: by 2002:a05:620a:288e:b0:7a1:d926:3181 with SMTP id
+ af79cd13be357-7a804266859mr191669885a.51.1724915503719; 
+ Thu, 29 Aug 2024 00:11:43 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IFBqBLDgkzLQDNzMe/LLC1jjqCsCmtJx8vCyo9afnn6nmO7oZqimWzjfITYxbMqzQhTdcJ12A==
+X-Received: by 2002:a05:620a:288e:b0:7a1:d926:3181 with SMTP id
+ af79cd13be357-7a804266859mr191668585a.51.1724915503304; 
+ Thu, 29 Aug 2024 00:11:43 -0700 (PDT)
+Received: from dhcp-64-16.muc.redhat.com (nat-pool-muc-t.redhat.com.
+ [149.14.88.26]) by smtp.gmail.com with ESMTPSA id
+ af79cd13be357-7a806bfc3edsm29188785a.8.2024.08.29.00.11.42
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 29 Aug 2024 00:11:42 -0700 (PDT)
+Message-ID: <839bc942bb6d8a3fc0cf9081b3f7d91fcbec790f.camel@redhat.com>
+From: Philipp Stanner <pstanner@redhat.com>
+To: Przemek Kitszel <przemyslaw.kitszel@intel.com>, 
+ intel-wired-lan@lists.osuosl.org, Tony Nguyen <anthony.l.nguyen@intel.com>
+Date: Thu, 29 Aug 2024 09:11:40 +0200
+In-Reply-To: <20240828130403.14145-2-przemyslaw.kitszel@intel.com>
+References: <20240828130403.14145-2-przemyslaw.kitszel@intel.com>
+User-Agent: Evolution 3.52.4 (3.52.4-1.fc40)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.4
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: redhat.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Mailman-Approved-At: Thu, 29 Aug 2024 15:21:20 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=redhat.com; 
- s=mimecast20190719; t=1724944717;
+ s=mimecast20190719; t=1724915505;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=JzzkizUa4nHfj10kWAwgQO0LePc12iVC8qxCeTH3rMI=;
- b=dD5M+UWzfHDCVhxTwZQlwGwtiR+tbwEL6lwUg9jJ60wPNeYWJhXSJTlrNSvMPc+TOtHnmM
- hJx2svaHDSumk3slZhsdA8nkgIenkjxe/dolEyJYSCm0xZejJUFNaLsDYoARs2ItoXMPrI
- hZKyyvYoObYn5GbS4SE1vumkojvFKko=
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ bh=bXfbtMHqlMrIhOUvSAcFmfWQXM1V/TGEOrhr1h7LaiY=;
+ b=R1Eiq/XVqnscXnFou3jHuWigGAvm4F+2R7nGYxjFzHY9bco2VvOyLFTC+1o76GbmyDeTP8
+ SDxVI55RttyxMyE+DRUxhq72e0H+u0RqeTOHll7uHxNbIQciJ9o24+yqMWBeEpC9xzrjDx
+ aDjm9Y2NZkDNUcz9OrlKpe5esh2PT9M=
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=redhat.com
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=dD5M+UWz
-Subject: [Intel-wired-lan] [PATCH v5 net-next 12/12] iavf: add support to
- exchange qos capabilities
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=R1Eiq/XV
+Subject: Re: [Intel-wired-lan] [PATCH iwl-net] ice: stop calling
+ pci_disable_device() as we use pcim
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,307 +132,124 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Jiri Pirko <jiri@resnulli.us>,
- Sridhar Samudrala <sridhar.samudrala@intel.com>,
- Donald Hunter <donald.hunter@gmail.com>,
- John Fastabend <john.fastabend@gmail.com>, Jamal Hadi Salim <jhs@mojatatu.com>,
- edumazet@google.com, Madhu Chittim <madhu.chittim@intel.com>,
- anthony.l.nguyen@intel.com, Simon Horman <horms@kernel.org>,
- przemyslaw.kitszel@intel.com, Jakub Kicinski <kuba@kernel.org>,
- intel-wired-lan@lists.osuosl.org, Sunil Kovvuri Goutham <sgoutham@marvell.com>
+Cc: himasekharx.reddy.pucha@intel.com,
+ Larysa Zaremba <larysa.zaremba@intel.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Sudheer Mogilappagari <sudheer.mogilappagari@intel.com>
+Hi,
 
-During driver initialization VF determines QOS capability is allowed
-by PF and receives QOS parameters. After which quanta size for queues
-is configured which is not configurable and is set to 1KB currently.
+On Wed, 2024-08-28 at 15:03 +0200, Przemek Kitszel wrote:
+> Our driver uses devres to manage resources, in particular we call
+> pcim_enable_device(), which recently has registered
+> pcim_disable_device()
+> as device remove action
 
-Signed-off-by: Sudheer Mogilappagari <sudheer.mogilappagari@intel.com>
----
- drivers/net/ethernet/intel/iavf/iavf.h        | 10 ++
- drivers/net/ethernet/intel/iavf/iavf_main.c   | 51 +++++++++-
- .../net/ethernet/intel/iavf/iavf_virtchnl.c   | 92 ++++++++++++++++++-
- 3 files changed, 150 insertions(+), 3 deletions(-)
+That's not the exact cause, actually.
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf.h b/drivers/net/ethernet/intel/iavf/iavf.h
-index a84bdbfbb0f7..75ac69670789 100644
---- a/drivers/net/ethernet/intel/iavf/iavf.h
-+++ b/drivers/net/ethernet/intel/iavf/iavf.h
-@@ -251,6 +251,9 @@ struct iavf_cloud_filter {
- #define IAVF_RESET_WAIT_DETECTED_COUNT 500
- #define IAVF_RESET_WAIT_COMPLETE_COUNT 2000
- 
-+#define IAVF_MAX_QOS_TC_NUM		8
-+#define IAVF_DEFAULT_QUANTA_SIZE	1024
-+
- /* board specific private data structure */
- struct iavf_adapter {
- 	struct workqueue_struct *wq;
-@@ -338,6 +341,8 @@ struct iavf_adapter {
- #define IAVF_FLAG_AQ_ENABLE_STAG_VLAN_INSERTION		BIT_ULL(37)
- #define IAVF_FLAG_AQ_DISABLE_STAG_VLAN_INSERTION	BIT_ULL(38)
- #define IAVF_FLAG_AQ_CONFIGURE_QUEUES_BW		BIT_ULL(39)
-+#define IAVF_FLAG_AQ_CFG_QUEUES_QUANTA_SIZE		BIT_ULL(40)
-+#define IAVF_FLAG_AQ_GET_QOS_CAPS			BIT_ULL(41)
- 
- 	/* flags for processing extended capability messages during
- 	 * __IAVF_INIT_EXTENDED_CAPS. Each capability exchange requires
-@@ -410,6 +415,8 @@ struct iavf_adapter {
- 			       VIRTCHNL_VF_OFFLOAD_FDIR_PF)
- #define ADV_RSS_SUPPORT(_a) ((_a)->vf_res->vf_cap_flags & \
- 			     VIRTCHNL_VF_OFFLOAD_ADV_RSS_PF)
-+#define QOS_ALLOWED(_a) ((_a)->vf_res->vf_cap_flags & \
-+			 VIRTCHNL_VF_OFFLOAD_QOS)
- 	struct virtchnl_vf_resource *vf_res; /* incl. all VSIs */
- 	struct virtchnl_vsi_resource *vsi_res; /* our LAN VSI */
- 	struct virtchnl_version_info pf_version;
-@@ -418,6 +425,7 @@ struct iavf_adapter {
- 	struct virtchnl_vlan_caps vlan_v2_caps;
- 	u16 msg_enable;
- 	struct iavf_eth_stats current_stats;
-+	struct virtchnl_qos_cap_list *qos_caps;
- 	struct iavf_vsi vsi;
- 	u32 aq_wait_count;
- 	/* RSS stuff */
-@@ -584,6 +592,8 @@ int iavf_config_rss(struct iavf_adapter *adapter);
- int iavf_lan_add_device(struct iavf_adapter *adapter);
- int iavf_lan_del_device(struct iavf_adapter *adapter);
- void iavf_cfg_queues_bw(struct iavf_adapter *adapter);
-+void iavf_cfg_queues_quanta_size(struct iavf_adapter *adapter);
-+void iavf_get_qos_caps(struct iavf_adapter *adapter);
- void iavf_enable_channels(struct iavf_adapter *adapter);
- void iavf_disable_channels(struct iavf_adapter *adapter);
- void iavf_add_cloud_filter(struct iavf_adapter *adapter);
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index 5046a1808687..42b3dbc0aa98 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -2090,6 +2090,16 @@ static int iavf_process_aq_command(struct iavf_adapter *adapter)
- 		return 0;
- 	}
- 
-+	if (adapter->aq_required & IAVF_FLAG_AQ_GET_QOS_CAPS) {
-+		iavf_get_qos_caps(adapter);
-+		return 0;
-+	}
-+
-+	if (adapter->aq_required & IAVF_FLAG_AQ_CFG_QUEUES_QUANTA_SIZE) {
-+		iavf_cfg_queues_quanta_size(adapter);
-+		return 0;
-+	}
-+
- 	if (adapter->aq_required & IAVF_FLAG_AQ_CONFIGURE_QUEUES) {
- 		iavf_configure_queues(adapter);
- 		return 0;
-@@ -2675,6 +2685,9 @@ static void iavf_init_config_adapter(struct iavf_adapter *adapter)
- 		/* request initial VLAN offload settings */
- 		iavf_set_vlan_offload_features(adapter, 0, netdev->features);
- 
-+	if (QOS_ALLOWED(adapter))
-+		adapter->aq_required |= IAVF_FLAG_AQ_GET_QOS_CAPS;
-+
- 	iavf_schedule_finish_config(adapter);
- 	return;
- 
-@@ -4946,6 +4959,31 @@ static int iavf_verify_handle(struct net_shaper_binding *binding,
- 	return 0;
+The ultimate call to pci_disable_device() (not pcim_) through callbacks
+set up by pcim_enable_device() has always been there. It's not me
+adding that which caused the warning. What caused it is that I removed
+the enabled-check from pcim_disable_device():
+
+f748a07a0b64:
+
+-static void pcim_release(struct device *gendev, void *res)
++static void pcim_disable_device(void *pdev_raw)
+ {
+-       struct pci_dev *dev =3D to_pci_dev(gendev);
+-
+-       if (pci_is_enabled(dev) && !dev->pinned)
+-               pci_disable_device(dev);
+-}
+-
+-static struct pci_devres *get_pci_dr(struct pci_dev *pdev)
+-{
+-       struct pci_devres *dr, *new_dr;
+-
+-       dr =3D devres_find(&pdev->dev, pcim_release, NULL, NULL);
+-       if (dr)
+-               return dr;
++       struct pci_dev *pdev =3D pdev_raw;
+=20
+-       new_dr =3D devres_alloc(pcim_release, sizeof(*new_dr),
+GFP_KERNEL);
+-       if (!new_dr)
+-               return NULL;
+-       return devres_get(&pdev->dev, new_dr, NULL, NULL);
++       if (!pdev->pinned)
++               pci_disable_device(pdev);
  }
- 
-+static int
-+iavf_verify_shaper_info(struct net_shaper_binding *binding,
-+			const struct net_shaper_handle *handle,
-+			const struct net_shaper_info *shaper,
-+			struct netlink_ext_ack *extack)
-+{
-+	struct iavf_adapter *adapter = netdev_priv(binding->netdev);
-+	u64 vf_max;
-+	int ret;
-+
-+	ret = iavf_verify_handle(binding, handle, extack);
-+	if (ret)
-+		return ret;
-+
-+	if (handle->scope == NET_SHAPER_SCOPE_QUEUE) {
-+		vf_max = adapter->qos_caps->cap[0].shaper.peak;
-+		if (vf_max && shaper->bw_max > vf_max) {
-+			NL_SET_ERR_MSG_FMT(extack, "Max rate (%llu) of queue %d can't exceed max TX rate of VF (%llu kbps)",
-+					   shaper->bw_max, handle->id,
-+					   vf_max);
-+		}
-+	}
-+	return 0;
-+}
-+
- static int
- iavf_shaper_set(struct net_shaper_binding *binding,
- 		const struct net_shaper_handle *handle,
-@@ -4956,7 +4994,7 @@ iavf_shaper_set(struct net_shaper_binding *binding,
- 	bool need_cfg_update = false;
- 	int ret = 0;
- 
--	ret = iavf_verify_handle(binding, handle, extack);
-+	ret = iavf_verify_shaper_info(binding, handle, shaper, extack);
- 	if (ret)
- 		return ret;
- 
-@@ -5195,7 +5233,7 @@ static int iavf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	struct net_device *netdev;
- 	struct iavf_adapter *adapter = NULL;
- 	struct iavf_hw *hw = NULL;
--	int err;
-+	int err, len;
- 
- 	err = pci_enable_device(pdev);
- 	if (err)
-@@ -5263,6 +5301,13 @@ static int iavf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	hw->bus.func = PCI_FUNC(pdev->devfn);
- 	hw->bus.bus_id = pdev->bus->number;
- 
-+	len = struct_size(adapter->qos_caps, cap, IAVF_MAX_QOS_TC_NUM);
-+	adapter->qos_caps = kzalloc(len, GFP_KERNEL);
-+	if (!adapter->qos_caps) {
-+		err = -ENOMEM;
-+		goto err_alloc_qos_cap;
-+	}
-+
- 	/* set up the locks for the AQ, do this only once in probe
- 	 * and destroy them only once in remove
- 	 */
-@@ -5301,6 +5346,8 @@ static int iavf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	/* Initialization goes on in the work. Do not add more of it below. */
- 	return 0;
- 
-+err_alloc_qos_cap:
-+	iounmap(hw->hw_addr);
- err_ioremap:
- 	destroy_workqueue(adapter->wq);
- err_alloc_wq:
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-index f719a6724774..665eb52f11b2 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-@@ -151,7 +151,8 @@ int iavf_send_vf_config_msg(struct iavf_adapter *adapter)
- 	       VIRTCHNL_VF_OFFLOAD_USO |
- 	       VIRTCHNL_VF_OFFLOAD_FDIR_PF |
- 	       VIRTCHNL_VF_OFFLOAD_ADV_RSS_PF |
--	       VIRTCHNL_VF_CAP_ADV_LINK_SPEED;
-+	       VIRTCHNL_VF_CAP_ADV_LINK_SPEED |
-+	       VIRTCHNL_VF_OFFLOAD_QOS;
- 
- 	adapter->current_op = VIRTCHNL_OP_GET_VF_RESOURCES;
- 	adapter->aq_required &= ~IAVF_FLAG_AQ_GET_CONFIG;
-@@ -1507,6 +1508,76 @@ iavf_set_adapter_link_speed_from_vpe(struct iavf_adapter *adapter,
- 		adapter->link_speed = vpe->event_data.link_event.link_speed;
- }
- 
-+/**
-+ * iavf_get_qos_caps - get qos caps support
-+ * @adapter: iavf adapter struct instance
-+ *
-+ * This function requests PF for Supported QoS Caps.
-+ */
-+void iavf_get_qos_caps(struct iavf_adapter *adapter)
-+{
-+	if (adapter->current_op != VIRTCHNL_OP_UNKNOWN) {
-+		/* bail because we already have a command pending */
-+		dev_err(&adapter->pdev->dev,
-+			"Cannot get qos caps, command %d pending\n",
-+			adapter->current_op);
-+		return;
-+	}
-+
-+	adapter->current_op = VIRTCHNL_OP_GET_QOS_CAPS;
-+	adapter->aq_required &= ~IAVF_FLAG_AQ_GET_QOS_CAPS;
-+	iavf_send_pf_msg(adapter, VIRTCHNL_OP_GET_QOS_CAPS, NULL, 0);
-+}
-+
-+/**
-+ * iavf_set_quanta_size - set quanta size of queue chunk
-+ * @adapter: iavf adapter struct instance
-+ * @quanta_size: quanta size in bytes
-+ * @queue_index: starting index of queue chunk
-+ * @num_queues: number of queues in the queue chunk
-+ *
-+ * This function requests PF to set quanta size of queue chunk
-+ * starting at queue_index.
-+ */
-+static void
-+iavf_set_quanta_size(struct iavf_adapter *adapter, u16 quanta_size,
-+		     u16 queue_index, u16 num_queues)
-+{
-+	struct virtchnl_quanta_cfg quanta_cfg;
-+
-+	if (adapter->current_op != VIRTCHNL_OP_UNKNOWN) {
-+		/* bail because we already have a command pending */
-+		dev_err(&adapter->pdev->dev,
-+			"Cannot set queue quanta size, command %d pending\n",
-+			adapter->current_op);
-+		return;
-+	}
-+
-+	adapter->current_op = VIRTCHNL_OP_CONFIG_QUANTA;
-+	quanta_cfg.quanta_size = quanta_size;
-+	quanta_cfg.queue_select.type = VIRTCHNL_QUEUE_TYPE_TX;
-+	quanta_cfg.queue_select.start_queue_id = queue_index;
-+	quanta_cfg.queue_select.num_queues = num_queues;
-+	adapter->aq_required &= ~IAVF_FLAG_AQ_CFG_QUEUES_QUANTA_SIZE;
-+	iavf_send_pf_msg(adapter, VIRTCHNL_OP_CONFIG_QUANTA,
-+			 (u8 *)&quanta_cfg, sizeof(quanta_cfg));
-+}
-+
-+/**
-+ * iavf_cfg_queues_quanta_size - configure quanta size of queues
-+ * @adapter: adapter structure
-+ *
-+ * Request that the PF configure quanta size of allocated queues.
-+ **/
-+void iavf_cfg_queues_quanta_size(struct iavf_adapter *adapter)
-+{
-+	int quanta_size = IAVF_DEFAULT_QUANTA_SIZE;
-+
-+	/* Set Queue Quanta Size to default */
-+	iavf_set_quanta_size(adapter, quanta_size, 0,
-+			     adapter->num_active_queues);
-+}
-+
- /**
-  * iavf_cfg_queues_bw - configure bandwidth of allocated queues
-  * @adapter: iavf adapter structure instance
-@@ -2281,6 +2352,14 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
- 					VIRTCHNL_RSS_ALG_TOEPLITZ_SYMMETRIC;
- 
- 			break;
-+		case VIRTCHNL_OP_GET_QOS_CAPS:
-+			dev_warn(&adapter->pdev->dev, "Failed to Get Qos CAPs, error %s\n",
-+				 iavf_stat_str(&adapter->hw, v_retval));
-+			break;
-+		case VIRTCHNL_OP_CONFIG_QUANTA:
-+			dev_warn(&adapter->pdev->dev, "Failed to Config Quanta, error %s\n",
-+				 iavf_stat_str(&adapter->hw, v_retval));
-+			break;
- 		case VIRTCHNL_OP_CONFIG_QUEUE_BW:
- 			dev_warn(&adapter->pdev->dev, "Failed to Config Queue BW, error %s\n",
- 				 iavf_stat_str(&adapter->hw, v_retval));
-@@ -2627,6 +2706,17 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
- 		if (!v_retval)
- 			iavf_netdev_features_vlan_strip_set(netdev, false);
- 		break;
-+	case VIRTCHNL_OP_GET_QOS_CAPS: {
-+		u16 len = struct_size(adapter->qos_caps, cap,
-+				      IAVF_MAX_QOS_TC_NUM);
-+
-+		memcpy(adapter->qos_caps, msg, min(msglen, len));
-+
-+		adapter->aq_required |= IAVF_FLAG_AQ_CFG_QUEUES_QUANTA_SIZE;
-+		}
-+		break;
-+	case VIRTCHNL_OP_CONFIG_QUANTA:
-+		break;
- 	case VIRTCHNL_OP_CONFIG_QUEUE_BW: {
- 		int i;
- 		/* shaper configuration is successful for all queues */
--- 
-2.45.2
+
+Theoretically, we could add=20
+if (pci_is_enabled(...
+
+back, but I think the far cleaner solution is to clean up the drivers
+as you do here if that warning occurs. Faults should not be caused by
+this, just warnings, if I read the code correctly. Please correct me if
+not.
+
+
+>  (see cited "Fixes" commit). Since that, unloading
+> the driver yields following warn+splat:
+>=20
+> [70633.628490] ice 0000:af:00.7: disabling already-disabled device
+> [70633.628512] WARNING: CPU: 52 PID: 33890 at drivers/pci/pci.c:2250
+> pci_disable_device+0xf4/0x100
+> ...
+> [70633.628744]=C2=A0 ? pci_disable_device+0xf4/0x100
+> [70633.628752]=C2=A0 release_nodes+0x4a/0x70
+> [70633.628759]=C2=A0 devres_release_all+0x8b/0xc0
+> [70633.628768]=C2=A0 device_unbind_cleanup+0xe/0x70
+> [70633.628774]=C2=A0 device_release_driver_internal+0x208/0x250
+> [70633.628781]=C2=A0 driver_detach+0x47/0x90
+> [70633.628786]=C2=A0 bus_remove_driver+0x80/0x100
+> [70633.628791]=C2=A0 pci_unregister_driver+0x2a/0xb0
+> [70633.628799]=C2=A0 ice_module_exit+0x11/0x3a [ice]
+>=20
+> Note that this is the only Intel ethernet driver that needs such fix.
+>=20
+> CC: Philipp Stanner <pstanner@redhat.com>
+> Fixes: f748a07a0b64 ("PCI: Remove legacy pcim_release()")
+> Reviewed-by: Larysa Zaremba <larysa.zaremba@intel.com>
+> Signed-off-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+
+Reviewed-by: Philipp Stanner <pstanner@redhat.com>
+
+with or without the above suggestion for the commit message.
+
+
+Thanks for solving this!
+
+Regards,
+P.
+
+> ---
+> =C2=A0drivers/net/ethernet/intel/ice/ice_main.c | 2 --
+> =C2=A01 file changed, 2 deletions(-)
+>=20
+> diff --git a/drivers/net/ethernet/intel/ice/ice_main.c
+> b/drivers/net/ethernet/intel/ice/ice_main.c
+> index 6f97ed471fe9..18e4950316f1 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_main.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_main.c
+> @@ -5350,7 +5350,6 @@ ice_probe(struct pci_dev *pdev, const struct
+> pci_device_id __always_unused *ent)
+> =C2=A0=09ice_deinit(pf);
+> =C2=A0err_init:
+> =C2=A0=09ice_adapter_put(pdev);
+> -=09pci_disable_device(pdev);
+> =C2=A0=09return err;
+> =C2=A0}
+> =C2=A0
+> @@ -5457,7 +5456,6 @@ static void ice_remove(struct pci_dev *pdev)
+> =C2=A0=09ice_set_wake(pf);
+> =C2=A0
+> =C2=A0=09ice_adapter_put(pdev);
+> -=09pci_disable_device(pdev);
+> =C2=A0}
+> =C2=A0
+> =C2=A0/**
+>=20
+> base-commit: 4186c8d9e6af57bab0687b299df10ebd47534a0a
 
