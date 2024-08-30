@@ -4,91 +4,88 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4C0CECA0FF5
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 30 Aug 2024 14:03:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5B880CA0FF7
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 30 Aug 2024 14:03:27 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 154CD844E4;
+	by smtp1.osuosl.org (Postfix) with ESMTP id 29924844CE;
 	Fri, 30 Aug 2024 14:03:26 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id sUvr_6sSayxd; Fri, 30 Aug 2024 14:03:24 +0000 (UTC)
+ id XNuFcTAS0nYs; Fri, 30 Aug 2024 14:03:25 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 17117844CE
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org EE1E281EB0
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1725026604;
-	bh=QrhCT7icu6NtnGgnTVANA9HRX8TTQ+yDYH4sT/SdKxU=;
-	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=kg8nO38Rp8dn6gSl6HQxnTN+M5pqtR5XZ1/HiPIRHYUkC2fMz+5tHNv1JI71JKbvg
-	 bG5CE04PrepP8eFOYdu/SVHHc9782TcNcx6BWu8x4G5rX85mdYO5MefhMr0B7GzokQ
-	 UmE19FNDlcO+7u3NpIZSUlHsKAtk62fF4a4qhZqkSonXtVec1Wi0/Wlx1F2GcRpCMi
-	 WCcEPE6eK9Dq5muQh/wiel9mD8SRWINChyun+MoDP+x3lnjtbPx7sbIFc8RMMba2eM
-	 d2QvklGboriBXzCqnhN/O39SqTX5yjPSLZGNGhkuBCB+Mu3oo9lPl2MWC9aRwtDlUe
-	 FqtRmJQ3urQKQ==
+	s=default; t=1725026605;
+	bh=kSSHatLyCMylznszf1VLOjKTVsfhKxIeTm3k28KJuXQ=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=NNFP6PxENBBjFknoDuub/ImdFH2f8QWOiUjX+AKFmVyg60oULe1aKh3EoFl36R2/q
+	 aUQMg3+DF2L2WdwTBHPcCXLzc0W8V1SuDTUpOCelx5U3dlhDaI9wO8WG48GXCmNtXI
+	 vhxjeY2+luSNvtpRq8XcrePX9Mp44U/EtV2rCQpft+64nOyYJmdc7D4uzzefXlyxFo
+	 LPPmXxxGkq1uKEmyIBplU1fG3NpkCHjuwnjTYuFFhSKEzXRk+jhF/YZjuo0H2BTYLd
+	 WbZDW2NJA9wz/jp3H2if8sHNcfeS6iI4L+IVsVZFlaUXvCP0UV9Z7C23P7pIYTHilK
+	 6espg1P4X2+MA==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 17117844CE;
+	by smtp1.osuosl.org (Postfix) with ESMTP id EE1E281EB0;
 	Fri, 30 Aug 2024 14:03:24 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id A42D01BF20F
- for <intel-wired-lan@lists.osuosl.org>; Thu, 29 Aug 2024 20:22:50 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id D86F01BF5B3
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Aug 2024 13:40:07 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 8FF3C61193
- for <intel-wired-lan@lists.osuosl.org>; Thu, 29 Aug 2024 20:22:50 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id A4EE24117F
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Aug 2024 13:40:04 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ynptA2x5w3YR for <intel-wired-lan@lists.osuosl.org>;
- Thu, 29 Aug 2024 20:22:50 +0000 (UTC)
-X-Greylist: delayed 3339 seconds by postgrey-1.37 at util1.osuosl.org;
- Thu, 29 Aug 2024 20:22:49 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org B56E561192
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B56E561192
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=81.19.149.133;
- helo=mx23lb.world4you.com; envelope-from=gerhard@engleder-embedded.com;
- receiver=<UNKNOWN> 
-Received: from mx23lb.world4you.com (mx23lb.world4you.com [81.19.149.133])
- by smtp3.osuosl.org (Postfix) with ESMTPS id B56E561192
- for <intel-wired-lan@lists.osuosl.org>; Thu, 29 Aug 2024 20:22:49 +0000 (UTC)
-Received: from [88.117.52.244] (helo=[10.0.0.160])
- by mx23lb.world4you.com with esmtpsa (TLS1.2) tls
- TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 (Exim 4.96.2)
- (envelope-from <gerhard@engleder-embedded.com>) id 1sjknM-0003tY-0W;
- Thu, 29 Aug 2024 21:27:00 +0200
-Message-ID: <23021c75-3dcb-404c-bf79-cef583f4600a@engleder-embedded.com>
-Date: Thu, 29 Aug 2024 21:26:58 +0200
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id C7P8GMJk533i for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 30 Aug 2024 13:40:03 +0000 (UTC)
+X-Greylist: delayed 377 seconds by postgrey-1.37 at util1.osuosl.org;
+ Fri, 30 Aug 2024 13:40:02 UTC
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org D3B1B4118E
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org D3B1B4118E
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=159.226.251.84;
+ helo=cstnet.cn; envelope-from=make24@iscas.ac.cn; receiver=<UNKNOWN> 
+Received: from cstnet.cn (smtp84.cstnet.cn [159.226.251.84])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id D3B1B4118E
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Aug 2024 13:40:02 +0000 (UTC)
+Received: from icess-ProLiant-DL380-Gen10.. (unknown [183.174.60.14])
+ by APP-05 (Coremail) with SMTP id zQCowABXPjksytFmcK18Cw--.19684S2;
+ Fri, 30 Aug 2024 21:33:34 +0800 (CST)
+From: Ma Ke <make24@iscas.ac.cn>
+To: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
+ davem@davemloft.net, edumazet@google.com, kuba@kernel.org,
+ pabeni@redhat.com, shiraz.saleem@intel.com, david.m.ertman@intel.com
+Date: Fri, 30 Aug 2024 21:33:24 +0800
+Message-Id: <20240830133325.3439293-1-make24@iscas.ac.cn>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Content-Language: en-US
-To: Dan Carpenter <dan.carpenter@linaro.org>,
- Sasha Neftin <sasha.neftin@intel.com>
-References: <64a982d3-a2f5-4ef7-ad75-61f6bb1fae24@stanley.mountain>
-From: Gerhard Engleder <gerhard@engleder-embedded.com>
-In-Reply-To: <64a982d3-a2f5-4ef7-ad75-61f6bb1fae24@stanley.mountain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AV-Do-Run: Yes
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID: zQCowABXPjksytFmcK18Cw--.19684S2
+X-Coremail-Antispam: 1UD129KBjvdXoW7JF4rAFyrtryDKry3GryUKFg_yoWfZrX_u3
+ W2vryfXr4DGFyFya15Ar47Za40kFyDtas5GFyIqa43tw45Wry3uas7Wr1rJ3y5GryqyFyU
+ Cas7tryxA3yDKjkaLaAFLSUrUUUUjb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
+ 9fnUUIcSsGvfJTRUUUbfAFF20E14v26r4j6ryUM7CY07I20VC2zVCF04k26cxKx2IYs7xG
+ 6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48ve4kI8w
+ A2z4x0Y4vE2Ix0cI8IcVAFwI0_Gr0_Xr1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI0_Gr0_
+ Cr1l84ACjcxK6I8E87Iv67AKxVWxJr0_GcWl84ACjcxK6I8E87Iv6xkF7I0E14v26rxl6s
+ 0DM2vYz4IE04k24VAvwVAKI4IrM2AIxVAIcxkEcVAq07x20xvEncxIr21l5I8CrVACY4xI
+ 64kE6c02F40Ex7xfMcIj6xIIjxv20xvE14v26r1j6r18McIj6I8E87Iv67AKxVWUJVW8Jw
+ Am72CE4IkC6x0Yz7v_Jr0_Gr1lF7xvr2IYc2Ij64vIr41lF7I21c0EjII2zVCS5cI20VAG
+ YxC7M4IIrI8v6xkF7I0E8cxan2IY04v7MxkF7I0En4kS14v26r1q6r43MxAIw28IcxkI7V
+ AKI48JMxC20s026xCaFVCjc4AY6r1j6r4UMI8I3I0E5I8CrVAFwI0_Jr0_Jr4lx2IqxVCj
+ r7xvwVAFwI0_JrI_JrWlx4CE17CEb7AF67AKxVWUtVW8ZwCIc40Y0x0EwIxGrwCI42IY6x
+ IIjxv20xvE14v26r1j6r1xMIIF0xvE2Ix0cI8IcVCY1x0267AKxVW8JVWxJwCI42IY6xAI
+ w20EY4v20xvaj40_Jr0_JF4lIxAIcVC2z280aVAFwI0_Jr0_Gr1lIxAIcVC2z280aVCY1x
+ 0267AKxVW8JVW8JrUvcSsGvfC2KfnxnUUI43ZEXa7VUbQVy7UUUUU==
+X-Originating-IP: [183.174.60.14]
+X-CM-SenderInfo: ppdnvj2u6l2u1dvotugofq/
 X-Mailman-Approved-At: Fri, 30 Aug 2024 14:03:23 +0000
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt;
- c=relaxed/relaxed; 
- d=engleder-embedded.com; s=dkim11; h=Content-Transfer-Encoding:Content-Type:
- In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:Message-ID:Sender
- :Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
- Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
- List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=QrhCT7icu6NtnGgnTVANA9HRX8TTQ+yDYH4sT/SdKxU=; b=iyxOwQftMHbfTt+tYbSYAAPFku
- 2tb2UF+TYVS8rBE271UdtFJqGwpG7izlnirE4eAcAO/mMt1XlbJB8Cv/WyOQudLdYSRh4YnacYQu4
- +yLncnJJNQqUTGubW1X5tS7gYoDTKbCBFk0ogTLH27FnCJ01toySVYoLd9Ry+nYENcwU=;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=engleder-embedded.com
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (1024-bit key,
- unprotected) header.d=engleder-embedded.com header.i=@engleder-embedded.com
- header.a=rsa-sha256 header.s=dkim11 header.b=iyxOwQft
-Subject: Re: [Intel-wired-lan] [PATCH net] igc: Unlock on error in
- igc_io_resume()
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dmarc=none (p=none dis=none)
+ header.from=iscas.ac.cn
+Subject: [Intel-wired-lan] [PATCH] ice: Fix possible double free in error
+ handling path
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,35 +98,36 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
- Eric Dumazet <edumazet@google.com>, netdev@vger.kernel.org,
- Tony Nguyen <anthony.l.nguyen@intel.com>, intel-wired-lan@lists.osuosl.org,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- "David S. Miller" <davem@davemloft.net>
+Cc: netdev@vger.kernel.org, stable@vger.kernel.org,
+ intel-wired-lan@lists.osuosl.org, linux-kernel@vger.kernel.org,
+ Ma Ke <make24@iscas.ac.cn>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On 29.08.24 21:22, Dan Carpenter wrote:
-> Call rtnl_unlock() on this error path, before returning.
-> 
-> Fixes: bc23aa949aeb ("igc: Add pcie error handler support")
-> Signed-off-by: Dan Carpenter <dan.carpenter@linaro.org>
-> ---
->   drivers/net/ethernet/intel/igc/igc_main.c | 1 +
->   1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-> index dfd6c00b4205..0a095cdea4fb 100644
-> --- a/drivers/net/ethernet/intel/igc/igc_main.c
-> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-> @@ -7413,6 +7413,7 @@ static void igc_io_resume(struct pci_dev *pdev)
->   	rtnl_lock();
->   	if (netif_running(netdev)) {
->   		if (igc_open(netdev)) {
-> +			rtnl_unlock();
->   			netdev_err(netdev, "igc_open failed after reset\n");
->   			return;
->   		}
+When auxiliary_device_add() returns error and then calls
+auxiliary_device_uninit(), callback function adev_release
+calls kfree(iadev). We shouldn't call kfree(iadev) again
+in the error handling path. Set 'iadev' to NULL.
 
-Reviewed-by: Gerhard Engleder <gerhard@engleder-embedded.com>
+Cc: stable@vger.kernel.org
+Fixes: f9f5301e7e2d ("ice: Register auxiliary device to provide RDMA")
+Signed-off-by: Ma Ke <make24@iscas.ac.cn>
+---
+ drivers/net/ethernet/intel/ice/ice_idc.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_idc.c b/drivers/net/ethernet/intel/ice/ice_idc.c
+index 145b27f2a4ce..5db05f54a80c 100644
+--- a/drivers/net/ethernet/intel/ice/ice_idc.c
++++ b/drivers/net/ethernet/intel/ice/ice_idc.c
+@@ -330,6 +330,7 @@ int ice_plug_aux_dev(struct ice_pf *pf)
+ 		return ret;
+ 	}
+ 
++	iadev = NULL;
+ 	ret = auxiliary_device_add(adev);
+ 	if (ret) {
+ 		auxiliary_device_uninit(adev);
+-- 
+2.25.1
+
