@@ -4,85 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 007D5CA0ED1
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 30 Aug 2024 01:43:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id ECED9CA0ED1
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 30 Aug 2024 02:09:18 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 99C6642391;
-	Fri, 30 Aug 2024 01:43:54 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 8A9D642393;
+	Fri, 30 Aug 2024 02:09:18 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 1eMGNAZdy-a5; Fri, 30 Aug 2024 01:43:53 +0000 (UTC)
+ id D3JZ4jI-lpNe; Fri, 30 Aug 2024 02:09:17 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 11FF341E40
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2112E419AB
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1724982233;
-	bh=cAtkhfogSeJdB/plxeyMMXLBhhh+Gu6MVfLUdkIKGtA=;
+	s=default; t=1724983757;
+	bh=S2z6MrZBFFgSMPNZBlvaynlX1UcpQHuhLVNcKaNsjlw=;
 	h=Date:From:To:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=mDYi9RnIFifAtC7ZenghHzDvf+dNdAdaGAd13Buk0hav49+GltDIl6Xb1mYE7dd/g
-	 JgKzxlDS2jxnrVRhEHSR7iDPBdOmtpbGGNav7CYV44bXueCwgn706cD9Fc9ACyfOXW
-	 7xGrEoRBb6/cfHtrt7vG60oNUtkwEyeS46SfED/58itQeQ+tgjsCRlNIiM/iD4Thtf
-	 Ev5TBksAd4Vjr5kiBOOTD3DcMKJoWfCFEXLl0hcHHxbo8mxeBFU3Ttzny94hJ3kr3I
-	 CO4VLjF33eggraom+zauGM6+g2xRYAnyH28ZGmqdoKjhFUNrqs0p/FqsiL3TRUdSsS
-	 jiW2iQ9TncVvw==
+	b=gc0vh2ttlFzeKUdhbw0EgUyglh5C4IBpW+0dl749Z9AQOubYqZRtGdTrs97YldFHW
+	 dXNafCr52vRABON8M4LyJm5jZQ667lNmqa+4tiIuLZge0lE2xCp4qIH/mIlEE31YFF
+	 ZL9RcsXwv33BpwufAhxnHsJLjcccvgrJc+3e5Ccxxe32qsmCONLAuFvuy2J/I/z+SQ
+	 wt+5j2WaJpF4tQmWqOgoHF8C3H1mHh1goNov7OyuHWcgETN1gY1CSk1XDQGcroou7V
+	 hNcvBskI5m99vp8TGYubGafgjUznAdHpgP8tgerKVo+Hy9ZnAGTMlKJF8USI3XmKh/
+	 yPYU3Wa66ZDvQ==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 11FF341E40;
-	Fri, 30 Aug 2024 01:43:53 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 2112E419AB;
+	Fri, 30 Aug 2024 02:09:17 +0000 (UTC)
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id C182D1BF59A
- for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Aug 2024 01:43:51 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 1BC4C1BF344
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Aug 2024 02:09:16 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id AC7C281E4C
- for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Aug 2024 01:43:51 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 08ACB81F0C
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Aug 2024 02:09:16 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 6vOP6iVSSCJL for <intel-wired-lan@lists.osuosl.org>;
- Fri, 30 Aug 2024 01:43:50 +0000 (UTC)
+ id vR4SWufmwlhr for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 30 Aug 2024 02:09:15 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom;
  client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org;
  envelope-from=kuba@kernel.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 753D581E4B
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 753D581E4B
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 3BC9181E6C
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 3BC9181E6C
 Received: from nyc.source.kernel.org (nyc.source.kernel.org
  [IPv6:2604:1380:45d1:ec00::3])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 753D581E4B
- for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Aug 2024 01:43:50 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 3BC9181E6C
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Aug 2024 02:09:15 +0000 (UTC)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by nyc.source.kernel.org (Postfix) with ESMTP id 47D1EA43CDB;
- Fri, 30 Aug 2024 01:43:42 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4D1FAC4CEC3;
- Fri, 30 Aug 2024 01:43:48 +0000 (UTC)
-Date: Thu, 29 Aug 2024 18:43:47 -0700
+ by nyc.source.kernel.org (Postfix) with ESMTP id 37386A43569;
+ Fri, 30 Aug 2024 02:09:07 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 45D31C4CEC1;
+ Fri, 30 Aug 2024 02:09:13 +0000 (UTC)
+Date: Thu, 29 Aug 2024 19:09:12 -0700
 From: Jakub Kicinski <kuba@kernel.org>
 To: Paolo Abeni <pabeni@redhat.com>
-Message-ID: <20240829184347.3a9a7910@kernel.org>
-In-Reply-To: <fcf4c258f606837cac72bb26cd751bb619e9ff87.1724944117.git.pabeni@redhat.com>
+Message-ID: <20240829190912.6f9055d2@kernel.org>
+In-Reply-To: <8b95089a48ebe8ae26a8904b62a39639688e3ce2.1724944117.git.pabeni@redhat.com>
 References: <cover.1724944116.git.pabeni@redhat.com>
- <fcf4c258f606837cac72bb26cd751bb619e9ff87.1724944117.git.pabeni@redhat.com>
+ <8b95089a48ebe8ae26a8904b62a39639688e3ce2.1724944117.git.pabeni@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1724982228;
- bh=SFPig2ookyAhjzfhfbcqktZTQfLe4eeQ8rr/FvIUCUw=;
+ d=kernel.org; s=k20201202; t=1724983753;
+ bh=vMuoZjZX4HDxSuFFUFm/l7wtZeJQMXbYBRk31JMt+wQ=;
  h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=DyVL5gFGwr+W7vQ3gXbQ/L1XHCbWfcID3jRUa9wPZU1nDo/HJw9FQ9lAYJSzSWPMq
- ie7p2ZFXuDAmoHUKU2RzlLiA+u5iN7By4r/eYxpyrjNGId3xECnLHfANpznczZ8kAi
- kuN9M6RZCPVcrPNqvqNirRP+B/GunGv6XsArPBefw4FWC2QOlWU4ByG9i493GzeeaQ
- cOsB+rgxogpt3/igd/pa3SNWC/ymoQYjjT1ciyFgyOD+vi2QEfgSpWV/KpX+GUM5BW
- 1q67nbmBcYUMtMqlWyBYVC/pPaMRh4rg4kaqfvCoycKuQWYyJpjoM+opbQpZrFL/Dl
- pQxGO8E0YcDvQ==
+ b=NkKKqUJw1jC08CDorDQxDShoOqOPLaVQoDdmXqIzlDkaxbkICDSBve6pyw31RcYJp
+ gkM7o5aBbmk5xMGFT4YkIVTVoMdf9CCp381MQtx4w7bXGJvBxC3eWIVeXWY+G/x/SA
+ cv2/f4hNXlhvJ3lK/LEw8B2lXO/m5/6O8SnM5ZhVN1CC04eaJt1nHg2DMFhqgMCmAb
+ MNAglBHzIoW7Qa9NpoOwQadiUOShH94gEmU4SwVikYYXHY1fOnR+Qwdm5oitcR7GYn
+ jAVDpINAN2tSOxK/atoDALJ3VYQ2gVpCNGWgEsJqfYbtzLk6PsxKLWllnV7n0YuFGx
+ kMmf71zxUe6GA==
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=DyVL5gFG
-Subject: Re: [Intel-wired-lan] [PATCH v5 net-next 03/12] net-shapers:
- implement NL set and delete operations
+ header.a=rsa-sha256 header.s=k20201202 header.b=NkKKqUJw
+Subject: Re: [Intel-wired-lan] [PATCH v5 net-next 11/12] iavf: Add
+ net_shaper_ops support
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,361 +105,45 @@ Cc: Jiri Pirko <jiri@resnulli.us>, netdev@vger.kernel.org,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Thu, 29 Aug 2024 17:16:56 +0200 Paolo Abeni wrote:
-> ithe next patch and will be implemented later in the series.
-
-s/ithe/the/
-
-> diff --git a/net/shaper/shaper.c b/net/shaper/shaper.c
-> index 2ed80df25765..a58bdd2ec013 100644
-> --- a/net/shaper/shaper.c
-> +++ b/net/shaper/shaper.c
-> @@ -23,6 +23,10 @@
->  
->  struct net_shaper_data {
->  	struct xarray shapers;
-> +
-> +	/* Serialize write ops and protects node_ids updates. */
-
-By write ops you mean all driver ops but @capabilities?
-Maybe let's say all driver ops and avoid confusion?
-
-> +	struct mutex lock;
-> +	struct idr node_ids;
-
-Do we need an IDR? can we not allocate the IDs using the xarray,
-starting at the offset of first NODE? Since type is on top bits?
-
->  };
->  
->  struct net_shaper_nl_ctx {
-> @@ -47,6 +51,27 @@ net_shaper_binding_data(struct net_shaper_binding *binding)
->  	return NULL;
->  }
->  
-> +static struct net_shaper_data *
-> +net_shaper_binding_set_data(struct net_shaper_binding *binding,
-> +			    struct net_shaper_data *data)
+On Thu, 29 Aug 2024 17:17:04 +0200 Paolo Abeni wrote:
+> +static int iavf_verify_handle(struct net_shaper_binding *binding,
+> +			      const struct net_shaper_handle *handle,
+> +			      struct netlink_ext_ack *extack)
 > +{
-> +	if (binding->type == NET_SHAPER_BINDING_TYPE_NETDEV)
-> +		return cmpxchg(&binding->netdev->net_shaper_data, NULL, data);
+> +	struct iavf_adapter *adapter = netdev_priv(binding->netdev);
+> +	enum net_shaper_scope scope = handle->scope;
+> +	int qid = handle->id;
+> +
+> +	if (scope != NET_SHAPER_SCOPE_QUEUE) {
 
-Hmm. Do we need this because the lock is inside the struct we're
-allocating? I've been wondering if we shouldn't move this lock
-directly into net_device and combine it with the RSS lock.
-Create a "per-netdev" lock, instead of having multiple disparate
-mutexes which are hard to allocate?
+should be checked by the core. add "mask of supported scopes" to caps
 
-> +	/* No devlink implementation yet.*/
-> +	return NULL;
-> +}
-> +
-> +static const struct net_shaper_ops *
-> +net_shaper_binding_ops(struct net_shaper_binding *binding)
-> +{
-> +	if (binding->type == NET_SHAPER_BINDING_TYPE_NETDEV)
-> +		return binding->netdev->netdev_ops->net_shaper_ops;
-> +
-> +	/* No devlink implementation yet.*/
-> +	return NULL;
-> +}
-> +
->  static int net_shaper_fill_binding(struct sk_buff *msg,
->  				   const struct net_shaper_binding *binding,
->  				   u32 type)
-> @@ -178,6 +203,26 @@ static void net_shaper_index_to_handle(u32 index,
->  	handle->id = FIELD_GET(NET_SHAPER_ID_MASK, index);
->  }
->  
-> +static void net_shaper_default_parent(const struct net_shaper_handle *handle,
-> +				      struct net_shaper_handle *parent)
-> +{
-> +	switch (handle->scope) {
-> +	case NET_SHAPER_SCOPE_UNSPEC:
-> +	case NET_SHAPER_SCOPE_NETDEV:
-> +	case __NET_SHAPER_SCOPE_MAX:
-> +		parent->scope = NET_SHAPER_SCOPE_UNSPEC;
-> +		break;
-> +
-> +	case NET_SHAPER_SCOPE_QUEUE:
-> +	case NET_SHAPER_SCOPE_NODE:
-> +		parent->scope = NET_SHAPER_SCOPE_NETDEV;
-> +		break;
-> +	}
-> +	parent->id = 0;
-> +}
-> +
-> +#define NET_SHAPER_CACHE_NOT_VALID XA_MARK_0
-> +
->  /* Lookup the given shaper inside the cache. */
->  static struct net_shaper_info *
->  net_shaper_cache_lookup(struct net_shaper_binding *binding,
-> @@ -186,7 +231,132 @@ net_shaper_cache_lookup(struct net_shaper_binding *binding,
->  	struct net_shaper_data *data = net_shaper_binding_data(binding);
->  	u32 index = net_shaper_handle_to_index(handle);
->  
-> -	return data ? xa_load(&data->shapers, index) : NULL;
-> +	if (!data || xa_get_mark(&data->shapers, index,
-> +				 NET_SHAPER_CACHE_NOT_VALID))
-> +		return NULL;
-> +
-> +	return xa_load(&data->shapers, index);
-> +}
-> +
-> +/* Allocate on demand the per device shaper's cache. */
-> +static struct net_shaper_data *
-> +net_shaper_cache_init(struct net_shaper_binding *binding,
-> +		      struct netlink_ext_ack *extack)
-> +{
-> +	struct net_shaper_data *new, *data = net_shaper_binding_data(binding);
-> +
-
-Please don't call functions in variable init if you have to check
-what they returned later.
-
-> +	if (!data) {
-
-invert the condition and return early?
-
-> +		new = kmalloc(sizeof(*data), GFP_KERNEL);
-> +		if (!new) {
-> +			NL_SET_ERR_MSG(extack, "Can't allocate memory for shaper data");
-
-no error messages needed for GFP_KERNEL OOM (pls fix everywhere)
-
-> +			return NULL;
-> +		}
-> +
-> +		mutex_init(&new->lock);
-> +		xa_init(&new->shapers);
-> +		idr_init(&new->node_ids);
-> +
-> +		/* No lock acquired yet, we can race with other operations. */
-> +		data = net_shaper_binding_set_data(binding, new);
-> +		if (!data)
-> +			data = new;
-> +		else
-> +			kfree(new);
-> +	}
-> +	return data;
-> +}
-> +
-> +/* Prepare the cache to actually insert the given shaper, doing
-> + * in advance the needed allocations.
-> + */
-> +static int net_shaper_cache_pre_insert(struct net_shaper_binding *binding,
-> +				       struct net_shaper_handle *handle,
-> +				       struct netlink_ext_ack *extack)
-> +{
-> +	struct net_shaper_data *data = net_shaper_binding_data(binding);
-> +	struct net_shaper_info *prev, *cur;
-> +	bool id_allocated = false;
-> +	int ret, id, index;
-> +
-> +	if (!data)
-> +		return -ENOMEM;
-> +
-> +	index = net_shaper_handle_to_index(handle);
-> +	cur = xa_load(&data->shapers, index);
-> +	if (cur)
-> +		return 0;
-> +
-> +	/* Allocated a new id, if needed. */
-> +	if (handle->scope == NET_SHAPER_SCOPE_NODE &&
-> +	    handle->id == NET_SHAPER_ID_UNSPEC) {
-> +		id = idr_alloc(&data->node_ids, NULL,
-> +			       0, NET_SHAPER_ID_UNSPEC, GFP_ATOMIC);
-
-How did we enter ATOMIC context?
-
-> +
-> +		if (id < 0) {
-> +			NL_SET_ERR_MSG(extack, "Can't allocate new id for NODE shaper");
-> +			return id;
-> +		}
-> +
-> +		handle->id = id;
-> +		index = net_shaper_handle_to_index(handle);
-> +		id_allocated = true;
-> +	}
-> +
-> +	cur = kmalloc(sizeof(*cur), GFP_KERNEL | __GFP_ZERO);
-
-kzalloc() ?
-
-> +	if (!cur) {
-> +		NL_SET_ERR_MSG(extack, "Can't allocate memory for cached shaper");
-> +		ret = -ENOMEM;
-> +		goto free_id;
-> +	}
-> +
-> +	/* Mark 'tentative' shaper inside the cache. */
-> +	xa_lock(&data->shapers);
-> +	prev = __xa_store(&data->shapers, index, cur, GFP_KERNEL);
-> +	__xa_set_mark(&data->shapers, index, NET_SHAPER_CACHE_NOT_VALID);
-
-Maybe worth calling out if it's level to xa_set_mark on a non-inserted
-handle?
-
-> +	xa_unlock(&data->shapers);
-> +	if (xa_err(prev)) {
-> +		NL_SET_ERR_MSG(extack, "Can't insert shaper into cache");
-> +		kfree(cur);
-> +		ret = xa_err(prev);
-> +		goto free_id;
-> +	}
-> +	return 0;
-> +
-> +free_id:
-> +	if (id_allocated)
-> +		idr_remove(&data->node_ids, handle->id);
-> +	return ret;
-> +}
-> +
-> +/* Commit the tentative insert with the actual values.
-> + * Must be called only after a successful net_shaper_pre_insert().
-> + */
-> +static void net_shaper_cache_commit(struct net_shaper_binding *binding,
-> +				    int nr_shapers,
-> +				    const struct net_shaper_handle *handle,
-> +				    const struct net_shaper_info *shapers)
-> +{
-> +	struct net_shaper_data *data = net_shaper_binding_data(binding);
-> +	struct net_shaper_info *cur;
-> +	int index;
-> +	int i;
-> +
-> +	xa_lock(&data->shapers);
-> +	for (i = 0; i < nr_shapers; ++i) {
-> +		index = net_shaper_handle_to_index(&handle[i]);
-> +
-> +		cur = xa_load(&data->shapers, index);
-> +		if (WARN_ON_ONCE(!cur))
-> +			continue;
-> +
-> +		/* Successful update: drop the tentative mark
-> +		 * and update the cache.
-> +		 */
-> +		__xa_clear_mark(&data->shapers, index,
-> +				NET_SHAPER_CACHE_NOT_VALID);
-> +		*cur = shapers[i];
-> +	}
-> +	xa_unlock(&data->shapers);
->  }
->  
->  static int net_shaper_parse_handle(const struct nlattr *attr,
-> @@ -227,6 +397,85 @@ static int net_shaper_parse_handle(const struct nlattr *attr,
->  	return 0;
->  }
->  
-> +static int net_shaper_parse_info(struct net_shaper_binding *binding,
-> +				 struct nlattr **tb,
-> +				 const struct genl_info *info,
-> +				 struct net_shaper_handle *handle,
-> +				 struct net_shaper_info *shaper,
-> +				 bool *cached)
-> +{
-> +	struct net_shaper_info *old;
-> +	int ret;
-> +
-> +	/* The shaper handle is the only mandatory attribute. */
-> +	if (NL_REQ_ATTR_CHECK(info->extack, NULL, tb, NET_SHAPER_A_HANDLE))
-> +		return -EINVAL;
-> +
-> +	ret = net_shaper_parse_handle(tb[NET_SHAPER_A_HANDLE], info, handle);
-> +	if (ret)
-> +		return ret;
-> +
-> +	if (handle->scope == NET_SHAPER_SCOPE_UNSPEC) {
-> +		NL_SET_BAD_ATTR(info->extack,
-> +				info->attrs[NET_SHAPER_A_HANDLE]);
-> +		return -EINVAL;
-> +	}
-> +
-> +	/* Fetch existing data, if any, so that user provide info will
-> +	 * incrementally update the existing shaper configuration.
-> +	 */
-> +	old = net_shaper_cache_lookup(binding, handle);
-> +	if (old)
-> +		*shaper = *old;
-> +	*cached = !!old;
-> +
-> +	if (tb[NET_SHAPER_A_METRIC])
-> +		shaper->metric = nla_get_u32(tb[NET_SHAPER_A_METRIC]);
-> +
-> +	if (tb[NET_SHAPER_A_BW_MIN])
-> +		shaper->bw_min = nla_get_uint(tb[NET_SHAPER_A_BW_MIN]);
-> +
-> +	if (tb[NET_SHAPER_A_BW_MAX])
-> +		shaper->bw_max = nla_get_uint(tb[NET_SHAPER_A_BW_MAX]);
-> +
-> +	if (tb[NET_SHAPER_A_BURST])
-> +		shaper->burst = nla_get_uint(tb[NET_SHAPER_A_BURST]);
-> +
-> +	if (tb[NET_SHAPER_A_PRIORITY])
-> +		shaper->priority = nla_get_u32(tb[NET_SHAPER_A_PRIORITY]);
-> +
-> +	if (tb[NET_SHAPER_A_WEIGHT])
-> +		shaper->weight = nla_get_u32(tb[NET_SHAPER_A_WEIGHT]);
-> +	return 0;
-> +}
-> +
-> +/* Fetch the cached shaper info and update them with the user-provided
-> + * attributes.
-> + */
-> +static int net_shaper_parse_info_nest(struct net_shaper_binding *binding,
-> +				      const struct nlattr *attr,
-> +				      const struct genl_info *info,
-> +				      struct net_shaper_handle *handle,
-> +				      struct net_shaper_info *shaper)
-> +{
-> +	struct nlattr *tb[NET_SHAPER_A_WEIGHT + 1];
-> +	bool cached;
-> +	int ret;
-> +
-> +	ret = nla_parse_nested(tb, NET_SHAPER_A_WEIGHT, attr,
-> +			       net_shaper_info_nl_policy, info->extack);
-> +	if (ret < 0)
-> +		return ret;
-> +
-> +	ret = net_shaper_parse_info(binding, tb, info, handle, shaper, &cached);
-> +	if (ret < 0)
-> +		return ret;
-> +
-> +	if (!cached)
-> +		net_shaper_default_parent(handle, &shaper->parent);
-> +	return 0;
-> +}
-> +
->  static int net_shaper_generic_pre(struct genl_info *info, int type)
->  {
->  	struct net_shaper_nl_ctx *ctx;
-> @@ -358,14 +607,153 @@ int net_shaper_nl_get_dumpit(struct sk_buff *skb,
->  	return 0;
->  }
->  
-> +/* Update the H/W and on success update the local cache, too. */
-> +static int net_shaper_set(struct net_shaper_binding *binding,
-> +			  const struct net_shaper_handle *h,
-> +			  const struct net_shaper_info *shaper,
-> +			  struct netlink_ext_ack *extack)
-> +{
-> +	struct net_shaper_data *data = net_shaper_cache_init(binding, extack);
-> +	const struct net_shaper_ops *ops = net_shaper_binding_ops(binding);
-> +	struct net_shaper_handle handle = *h;
-> +	int ret;
-> +
-> +	if (!data)
-> +		return -ENOMEM;
-> +
-> +	/* Should never happen: binding lookup validates the ops presence */
-> +	if (WARN_ON_ONCE(!ops))
+> +		NL_SET_ERR_MSG_FMT(extack, "Invalid shaper handle, unsupported scope %d",
+> +				   scope);
 > +		return -EOPNOTSUPP;
+> +	}
 > +
-> +	mutex_lock(&data->lock);
-> +	if (handle.scope == NET_SHAPER_SCOPE_NODE &&
-> +	    net_shaper_cache_lookup(binding, &handle)) {
-> +		ret = -ENOENT;
+> +	if (qid >= adapter->num_active_queues) {
 
-EEXIST ? Presumably this is temporary as described in the commit
-message?
+should be checked by the core..
+we prolly want to trim the queue shapers on channel reconfig, 
+then, too? :(
+
+> +		NL_SET_ERR_MSG_FMT(extack, "Invalid shaper handle, queued id %d max %d",
+> +				   qid, adapter->num_active_queues);
+> +		return -EINVAL;
+> +	}
+> +	return 0;
+> +}
+
+> +static int iavf_shaper_group(struct net_shaper_binding *binding,
+> +			     int leaves_count,
+> +			     const struct net_shaper_handle *leaves_handles,
+> +			     const struct net_shaper_info *leaves,
+> +			     const struct net_shaper_handle *root_handle,
+> +			     const struct net_shaper_info *root,
+> +			     struct netlink_ext_ack *extack)
+> +{
+> +	return -EOPNOTSUPP;
+
+Core should check if op is defined.
