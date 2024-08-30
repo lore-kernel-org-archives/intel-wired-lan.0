@@ -4,88 +4,123 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5B880CA0FF7
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 30 Aug 2024 14:03:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A9177CA1005
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 30 Aug 2024 15:43:20 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 29924844CE;
-	Fri, 30 Aug 2024 14:03:26 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 50DD181BC5;
+	Fri, 30 Aug 2024 15:43:20 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id XNuFcTAS0nYs; Fri, 30 Aug 2024 14:03:25 +0000 (UTC)
+ id w1ZgKQjFdjpG; Fri, 30 Aug 2024 15:43:18 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org EE1E281EB0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 751CD81B83
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1725026605;
-	bh=kSSHatLyCMylznszf1VLOjKTVsfhKxIeTm3k28KJuXQ=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=NNFP6PxENBBjFknoDuub/ImdFH2f8QWOiUjX+AKFmVyg60oULe1aKh3EoFl36R2/q
-	 aUQMg3+DF2L2WdwTBHPcCXLzc0W8V1SuDTUpOCelx5U3dlhDaI9wO8WG48GXCmNtXI
-	 vhxjeY2+luSNvtpRq8XcrePX9Mp44U/EtV2rCQpft+64nOyYJmdc7D4uzzefXlyxFo
-	 LPPmXxxGkq1uKEmyIBplU1fG3NpkCHjuwnjTYuFFhSKEzXRk+jhF/YZjuo0H2BTYLd
-	 WbZDW2NJA9wz/jp3H2if8sHNcfeS6iI4L+IVsVZFlaUXvCP0UV9Z7C23P7pIYTHilK
-	 6espg1P4X2+MA==
+	s=default; t=1725032598;
+	bh=+c2Mcv6lNyf39r9YFvIvhdBG3KouOjQubtsFSPnlX9I=;
+	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=gMlB7uN3stxr2kHjWHkcVKD01S1AyE+hDglV91AyNLw8f+uy1D05p9q3GFpEaw4T9
+	 KOrpyCCpRn3I0ZwCX7zuyn7vxRwRrRhpH3Gr9JYf/fVn82lLtsngw/nk7SjJ4b3k23
+	 tYcajzen+E8aLJ04N7yJInHw5D9b8elbE2+KZ4Je+KO4vPOXoJq7j99X6w/jqzAQsN
+	 w2fYBqWJKZYo90Q88GW3DXT5GgZ9M1qzciKwK0Kl1i0cqfnLf8fAYJwmLfWy7vzPPk
+	 XFPiMlvMTNaCwSufJWHORhBs+SaW/MoWFSvuWbHaKBY0zMnUYEM0VO7ktV/QMjKApi
+	 HAepWwJFcO4ZQ==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id EE1E281EB0;
-	Fri, 30 Aug 2024 14:03:24 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id D86F01BF5B3
- for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Aug 2024 13:40:07 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 751CD81B83;
+	Fri, 30 Aug 2024 15:43:18 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id E58451BF2B3
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Aug 2024 15:43:16 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id A4EE24117F
- for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Aug 2024 13:40:04 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id D0F2F41887
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Aug 2024 15:43:16 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id C7P8GMJk533i for <intel-wired-lan@lists.osuosl.org>;
- Fri, 30 Aug 2024 13:40:03 +0000 (UTC)
-X-Greylist: delayed 377 seconds by postgrey-1.37 at util1.osuosl.org;
- Fri, 30 Aug 2024 13:40:02 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org D3B1B4118E
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org D3B1B4118E
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=159.226.251.84;
- helo=cstnet.cn; envelope-from=make24@iscas.ac.cn; receiver=<UNKNOWN> 
-Received: from cstnet.cn (smtp84.cstnet.cn [159.226.251.84])
- by smtp2.osuosl.org (Postfix) with ESMTPS id D3B1B4118E
- for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Aug 2024 13:40:02 +0000 (UTC)
-Received: from icess-ProLiant-DL380-Gen10.. (unknown [183.174.60.14])
- by APP-05 (Coremail) with SMTP id zQCowABXPjksytFmcK18Cw--.19684S2;
- Fri, 30 Aug 2024 21:33:34 +0800 (CST)
-From: Ma Ke <make24@iscas.ac.cn>
-To: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
- davem@davemloft.net, edumazet@google.com, kuba@kernel.org,
- pabeni@redhat.com, shiraz.saleem@intel.com, david.m.ertman@intel.com
-Date: Fri, 30 Aug 2024 21:33:24 +0800
-Message-Id: <20240830133325.3439293-1-make24@iscas.ac.cn>
-X-Mailer: git-send-email 2.25.1
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 74bHdIWbTuye for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 30 Aug 2024 15:43:15 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.133.124;
+ helo=us-smtp-delivery-124.mimecast.com; envelope-from=pabeni@redhat.com;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 941FA41866
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 941FA41866
+Received: from us-smtp-delivery-124.mimecast.com
+ (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 941FA41866
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Aug 2024 15:43:15 +0000 (UTC)
+Received: from mail-wm1-f70.google.com (mail-wm1-f70.google.com
+ [209.85.128.70]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-264-HhVE29TKM6OBH7k60ZJI5g-1; Fri, 30 Aug 2024 11:43:13 -0400
+X-MC-Unique: HhVE29TKM6OBH7k60ZJI5g-1
+Received: by mail-wm1-f70.google.com with SMTP id
+ 5b1f17b1804b1-42bbd062ac1so6365965e9.0
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Aug 2024 08:43:13 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20230601; t=1725032592; x=1725637392;
+ h=content-transfer-encoding:in-reply-to:from:content-language
+ :references:cc:to:subject:user-agent:mime-version:date:message-id
+ :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+ bh=+c2Mcv6lNyf39r9YFvIvhdBG3KouOjQubtsFSPnlX9I=;
+ b=LYrQCsx3F6c1uZSOXP2WJHEdEj0hEJlwkdhJFiYFYJIPcpUF01ACr6bgRzPLKI2D0J
+ WFny4zUOSqqKbgtVmnZ80COv2YJJMOa89SoGxSN6D0JklByXtQL85zIjv+uImPlG5VQO
+ 2yj6ON46zEP85Si06rv3FhXrioxqz6ujwz94hucvJTgbIiDwDCBHR1CXv/M+9SgPg9Vh
+ ccL5pRrJojQbi/CoWHBK91lt8na9g0mZsfpAI9T2eD5OUsJio/tQSDx6vJdPpW7AKS4+
+ 6/VuA5Qatu7aiDGn7xyDP0cGHjKf4dVErqmnukTrg+mC/FncghwtddJf7GPGqBwxB+z0
+ QEdw==
+X-Forwarded-Encrypted: i=1;
+ AJvYcCWw8X+pXSVvH1qQtlXwDsQI9knNdor/zVVCqA2A3eUZXs2OaSrofoGg9x/tKfEPjLJib70W171kmg+wF2kV1V8=@lists.osuosl.org
+X-Gm-Message-State: AOJu0YwJOOTX4XwIpPVbh2A54qDe31LOFHRPQ7EMNkvwdsqhE1QWCwHG
+ DHEqbEhAa37WAqnmuQzPxUdC/5AcAKKFU8+Tai21ijm4hREEop1VGg2aiz9QxYV49scV13Tb0no
+ wYzTEDn5a5n4MiZoKwgV6ZmhjGLvDK8EStFEhyfqiBrOXotLzYHzlidik4UgxODOkV7M=
+X-Received: by 2002:a05:600c:3b19:b0:426:6667:5c42 with SMTP id
+ 5b1f17b1804b1-42bd731edeamr589355e9.4.1725032591779; 
+ Fri, 30 Aug 2024 08:43:11 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IH+5b3yeLAvMuXMTi/7WNTy+1AtXMKxxPKQ5h/HYeL0n+nIYvZSBg8CKZsoUSTOx3PZMD4tlQ==
+X-Received: by 2002:a05:600c:3b19:b0:426:6667:5c42 with SMTP id
+ 5b1f17b1804b1-42bd731edeamr589165e9.4.1725032591257; 
+ Fri, 30 Aug 2024 08:43:11 -0700 (PDT)
+Received: from ?IPV6:2a0d:3344:1b53:e610::f71? ([2a0d:3344:1b53:e610::f71])
+ by smtp.gmail.com with ESMTPSA id
+ ffacd0b85a97d-3749ef812b2sm4387973f8f.75.2024.08.30.08.43.09
+ (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+ Fri, 30 Aug 2024 08:43:10 -0700 (PDT)
+Message-ID: <58730142-2064-46cb-bc84-0060ea73c4a0@redhat.com>
+Date: Fri, 30 Aug 2024 17:43:08 +0200
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+To: Jakub Kicinski <kuba@kernel.org>, Jiri Pirko <jiri@resnulli.us>
+References: <cover.1724944116.git.pabeni@redhat.com>
+ <53077d35a1183d5c1110076a07d73940bb2a55f3.1724944117.git.pabeni@redhat.com>
+ <20240829182019.105962f6@kernel.org>
+From: Paolo Abeni <pabeni@redhat.com>
+In-Reply-To: <20240829182019.105962f6@kernel.org>
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: redhat.com
+Content-Language: en-US
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID: zQCowABXPjksytFmcK18Cw--.19684S2
-X-Coremail-Antispam: 1UD129KBjvdXoW7JF4rAFyrtryDKry3GryUKFg_yoWfZrX_u3
- W2vryfXr4DGFyFya15Ar47Za40kFyDtas5GFyIqa43tw45Wry3uas7Wr1rJ3y5GryqyFyU
- Cas7tryxA3yDKjkaLaAFLSUrUUUUjb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
- 9fnUUIcSsGvfJTRUUUbfAFF20E14v26r4j6ryUM7CY07I20VC2zVCF04k26cxKx2IYs7xG
- 6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48ve4kI8w
- A2z4x0Y4vE2Ix0cI8IcVAFwI0_Gr0_Xr1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI0_Gr0_
- Cr1l84ACjcxK6I8E87Iv67AKxVWxJr0_GcWl84ACjcxK6I8E87Iv6xkF7I0E14v26rxl6s
- 0DM2vYz4IE04k24VAvwVAKI4IrM2AIxVAIcxkEcVAq07x20xvEncxIr21l5I8CrVACY4xI
- 64kE6c02F40Ex7xfMcIj6xIIjxv20xvE14v26r1j6r18McIj6I8E87Iv67AKxVWUJVW8Jw
- Am72CE4IkC6x0Yz7v_Jr0_Gr1lF7xvr2IYc2Ij64vIr41lF7I21c0EjII2zVCS5cI20VAG
- YxC7M4IIrI8v6xkF7I0E8cxan2IY04v7MxkF7I0En4kS14v26r1q6r43MxAIw28IcxkI7V
- AKI48JMxC20s026xCaFVCjc4AY6r1j6r4UMI8I3I0E5I8CrVAFwI0_Jr0_Jr4lx2IqxVCj
- r7xvwVAFwI0_JrI_JrWlx4CE17CEb7AF67AKxVWUtVW8ZwCIc40Y0x0EwIxGrwCI42IY6x
- IIjxv20xvE14v26r1j6r1xMIIF0xvE2Ix0cI8IcVCY1x0267AKxVW8JVWxJwCI42IY6xAI
- w20EY4v20xvaj40_Jr0_JF4lIxAIcVC2z280aVAFwI0_Jr0_Gr1lIxAIcVC2z280aVCY1x
- 0267AKxVW8JVW8JrUvcSsGvfC2KfnxnUUI43ZEXa7VUbQVy7UUUUU==
-X-Originating-IP: [183.174.60.14]
-X-CM-SenderInfo: ppdnvj2u6l2u1dvotugofq/
-X-Mailman-Approved-At: Fri, 30 Aug 2024 14:03:23 +0000
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dmarc=none (p=none dis=none)
- header.from=iscas.ac.cn
-Subject: [Intel-wired-lan] [PATCH] ice: Fix possible double free in error
- handling path
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=redhat.com; 
+ s=mimecast20190719; t=1725032594;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=+c2Mcv6lNyf39r9YFvIvhdBG3KouOjQubtsFSPnlX9I=;
+ b=YG0tGCU9w+QuoW78yufO7mXVozcYC/zKl8H5v23ogjBq2nCg0WY92YQmPbOWDks+tLSi7b
+ e3eMigsrdjgfj9/xsqSGuYd60Eedy0W+yeaY4iRTrPbFS4mUjCXlAOYYQMh4YvQ3JHRbg1
+ jdp3xk6xd9I/bNaUEsGZHE7Cb5eQ0Dg=
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=redhat.com
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=YG0tGCU9
+Subject: Re: [Intel-wired-lan] [PATCH v5 net-next 02/12] net-shapers:
+ implement NL get operation
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,36 +133,86 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, stable@vger.kernel.org,
- intel-wired-lan@lists.osuosl.org, linux-kernel@vger.kernel.org,
- Ma Ke <make24@iscas.ac.cn>
+Cc: Donald Hunter <donald.hunter@gmail.com>, netdev@vger.kernel.org,
+ John Fastabend <john.fastabend@gmail.com>, Jamal Hadi Salim <jhs@mojatatu.com>,
+ edumazet@google.com, Madhu Chittim <madhu.chittim@intel.com>,
+ anthony.l.nguyen@intel.com, Simon Horman <horms@kernel.org>,
+ Sridhar Samudrala <sridhar.samudrala@intel.com>,
+ intel-wired-lan@lists.osuosl.org, przemyslaw.kitszel@intel.com,
+ Sunil Kovvuri Goutham <sgoutham@marvell.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-When auxiliary_device_add() returns error and then calls
-auxiliary_device_uninit(), callback function adev_release
-calls kfree(iadev). We shouldn't call kfree(iadev) again
-in the error handling path. Set 'iadev' to NULL.
+Hi,
 
-Cc: stable@vger.kernel.org
-Fixes: f9f5301e7e2d ("ice: Register auxiliary device to provide RDMA")
-Signed-off-by: Ma Ke <make24@iscas.ac.cn>
----
- drivers/net/ethernet/intel/ice/ice_idc.c | 1 +
- 1 file changed, 1 insertion(+)
+Please allow me to put a few high level questions together, to both 
+underline them as most critical, and keep the thread focused.
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_idc.c b/drivers/net/ethernet/intel/ice/ice_idc.c
-index 145b27f2a4ce..5db05f54a80c 100644
---- a/drivers/net/ethernet/intel/ice/ice_idc.c
-+++ b/drivers/net/ethernet/intel/ice/ice_idc.c
-@@ -330,6 +330,7 @@ int ice_plug_aux_dev(struct ice_pf *pf)
- 		return ret;
- 	}
- 
-+	iadev = NULL;
- 	ret = auxiliary_device_add(adev);
- 	if (ret) {
- 		auxiliary_device_uninit(adev);
--- 
-2.25.1
+On 8/30/24 03:20, Jakub Kicinski wrote:
+ > This 'binding' has the same meaning as 'binding' in TCP ZC? :(
+
+I hope we can agree that good naming is difficult. I thought we agreed 
+on such naming in the past week’s discussion. The term 'binding' is 
+already used in the networking stack in many places to identify 
+different things (i.e. device tree, socket, netfilter.. ). The name 
+prefix avoids any ambiguity and I think this a good name, but if you 
+have any better suggestions, this change should be trivial.
+
+[about per device shaper lock]
+ > I've been wondering if we shouldn't move this lock
+ > directly into net_device and combine it with the RSS lock.
+ > Create a "per-netdev" lock, instead of having multiple disparate
+ > mutexes which are hard to allocate?
+
+The above looks like a quite unrelated refactor and one I think it will 
+not be worthy. The complexity of locking code in this series is very 
+limited, and self-encapsulated. Different locks for different things 
+increases scalability. Possibly we will not see much contention on the 
+same device, but some years ago we did not think there would be much 
+contention on RTNL...
+
+Additionally, if we use a per _network device_ lock, future expansion of 
+the core to support devlink objects will be more difficult.
+
+[about separate handle from shaper_info arguments]
+ > Wouldn't it be convenient to store the handle in the "info"
+ > object? AFAIU the handle is forever for an info, so no risk of it
+ > being out of sync…
+
+Was that way a couple of iterations ago. Jiri explicitly asked for the 
+separation, I asked for confirmation and nobody objected.
+
+Which if the 2 options is acceptable from both of you?
+
+[about queue limit and channel reconf]
+ > we probably want to trim the queue shapers on channel reconfig,
+ > then, too? :(
+
+what about exposing to the drivers an helper alike:
+
+	net_shaper_notify_delete(binding, handle);
+
+that tells the core the shaper at the given handle just went away in the 
+H/W? The driver will call it in the queue deletion helper, and such 
+helper could be later on used more generically, i.e. for vf/devlink port 
+deletion.
+
+[about capabilities support]
+ > It's not just for introspection, it's also for the core to do
+ > error checking.
+
+Actually, in the previous discussions it was never mentioned to use 
+capabilities to fully centralize the error checking.
+
+This really looks like another feature, and can easily be added in a 
+second time (say, a follow-up series), with no functionality loss.
+
+I (or anybody else) can’t keep adding new features at every iteration. 
+At some point we need to draw a line, and we should agree that the scope 
+of this activity has already expanded a lot in the past year. I would 
+like to draw such a line here.
+
+Thanks,
+
+Paolo
 
