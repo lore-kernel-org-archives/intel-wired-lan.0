@@ -4,78 +4,103 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 07E4CCD342A
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  3 Sep 2024 15:02:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5122ECD343D
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  3 Sep 2024 15:02:30 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 914C6607B2;
-	Tue,  3 Sep 2024 15:02:28 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 287C16073A;
+	Tue,  3 Sep 2024 15:02:29 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id nhlEWDmNSowU; Tue,  3 Sep 2024 15:02:27 +0000 (UTC)
+ id Bi-7bPycOtEE; Tue,  3 Sep 2024 15:02:28 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 72610606A9
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7B42D6074E
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1725375747;
-	bh=pDGjPAsvGhFBZy+JgYt1ubN/rCEHAsdnswlCu3ZNTv4=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=n4P84g4Ly0AOBQLb9YX1XtVy/X3u0IvQxCenknrvfILCeIDPa+HBb0KrafdMzkz0L
-	 eA1jAEFIpFQYcl5D5OxN79OmIWcbVrCNiwdcniYqiq9wtWb6/dtpBWdxxTBhMBTE9i
-	 mtxDB9YonQZy5Wft5fiJIjIeTxQus/h86ix1HxX9v3wKF/TGT61v5EIrh32MZ4CjT/
-	 WvA+30lOK0eU2Am4s/0l3gB+EAAfVHxzK33ChTDd+lzlL9XUYTHHGnqzSYPGc69gob
-	 HdfOlYK93Uc/jpUEYvI3fauoKWD+EQldHLA0/zj2HFnswFvgyXrQdd5gnb8owg4hY7
-	 ekzt81Itsehhg==
+	s=default; t=1725375748;
+	bh=D3pK/xIDd4gN73xR2IAKuIfQBHRY4tf7Zw38vyUW1ow=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=8T8IBb4FbVPuH7IMDQKFXJWzgcXD58DXyP0tG/Z+YRdsrd8awgyFx/rz+6OslZToh
+	 DYgUcen9tIQC03SFjHFwauQdE/hq106dGd5hX+8IyUFRwsHoHqDthwt1TXWgF/qvwg
+	 xSjI7EGRwAIg8hjpIC+3fQt88TlfN96b5VdtRWMm9LXVBrat6A9R+hRNSA68CSndl8
+	 Xtlm6bRqshnpbuO4JfQx90Wrf9TOkj8eOdTVbTe3QZnw0PyWDhQBnU1jIfoiQGXf3y
+	 yGSsCK0Xy6zJTR47H5JkVbMKwR+kEfiXB6r8KvfAorN4a6paKIVL4EmJB42UQ2OM8M
+	 xWiCPGiIjyACQ==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 72610606A9;
-	Tue,  3 Sep 2024 15:02:27 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 59CD91BF414
- for <intel-wired-lan@lists.osuosl.org>; Mon,  2 Sep 2024 13:24:08 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 7B42D6074E;
+	Tue,  3 Sep 2024 15:02:28 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 24CD31BF263
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  3 Sep 2024 10:47:02 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 46489404C2
- for <intel-wired-lan@lists.osuosl.org>; Mon,  2 Sep 2024 13:24:08 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 10D736065C
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  3 Sep 2024 10:47:02 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id qdzhF0oJJvcc for <intel-wired-lan@lists.osuosl.org>;
- Mon,  2 Sep 2024 13:24:07 +0000 (UTC)
-X-Greylist: delayed 1097 seconds by postgrey-1.37 at util1.osuosl.org;
- Mon, 02 Sep 2024 13:24:05 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 7F75A403CC
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 7F75A403CC
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=45.249.212.189;
- helo=szxga03-in.huawei.com; envelope-from=lihongbo22@huawei.com;
- receiver=<UNKNOWN> 
-Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [45.249.212.189])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 7F75A403CC
- for <intel-wired-lan@lists.osuosl.org>; Mon,  2 Sep 2024 13:24:05 +0000 (UTC)
-Received: from mail.maildlp.com (unknown [172.19.88.194])
- by szxga03-in.huawei.com (SkyGuard) with ESMTP id 4Wy84v5BNVz69Ms;
- Mon,  2 Sep 2024 21:00:47 +0800 (CST)
-Received: from dggpeml500022.china.huawei.com (unknown [7.185.36.66])
- by mail.maildlp.com (Postfix) with ESMTPS id 2755B1402DE;
- Mon,  2 Sep 2024 21:05:43 +0800 (CST)
-Received: from huawei.com (10.90.53.73) by dggpeml500022.china.huawei.com
- (7.185.36.66) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.1.2507.39; Mon, 2 Sep
- 2024 21:05:42 +0800
-From: Hongbo Li <lihongbo22@huawei.com>
-To: <anthony.l.nguyen@intel.com>
-Date: Mon, 2 Sep 2024 21:14:07 +0800
-Message-ID: <20240902131407.3087903-1-lihongbo22@huawei.com>
-X-Mailer: git-send-email 2.34.1
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id fkRdw2lyYxGv for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  3 Sep 2024 10:47:01 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=99.78.197.219;
+ helo=smtp-fw-80008.amazon.com;
+ envelope-from=prvs=9695ab786=takamitz@amazon.co.jp; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 4B73F60658
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4B73F60658
+Received: from smtp-fw-80008.amazon.com (smtp-fw-80008.amazon.com
+ [99.78.197.219])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 4B73F60658
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  3 Sep 2024 10:47:01 +0000 (UTC)
+X-IronPort-AV: E=Sophos;i="6.10,198,1719878400"; d="scan'208";a="121943980"
+Received: from pdx4-co-svc-p1-lb2-vlan3.amazon.com (HELO
+ smtpout.prod.us-west-2.prod.farcaster.email.amazon.dev) ([10.25.36.214])
+ by smtp-border-fw-80008.pdx80.corp.amazon.com with
+ ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Sep 2024 10:46:54 +0000
+Received: from EX19MTAUWA002.ant.amazon.com [10.0.7.35:14951]
+ by smtpin.naws.us-west-2.prod.farcaster.email.amazon.dev [10.0.6.188:2525]
+ with esmtp (Farcaster)
+ id 3b7296b2-e8e6-4804-8ef1-7ed099bb915d; Tue, 3 Sep 2024 10:46:54 +0000 (UTC)
+X-Farcaster-Flow-ID: 3b7296b2-e8e6-4804-8ef1-7ed099bb915d
+Received: from EX19D005ANA004.ant.amazon.com (10.37.240.178) by
+ EX19MTAUWA002.ant.amazon.com (10.250.64.202) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA) id 15.2.1258.34;
+ Tue, 3 Sep 2024 10:46:54 +0000
+Received: from 682f678c4465.ant.amazon.com.com (10.118.248.122) by
+ EX19D005ANA004.ant.amazon.com (10.37.240.178) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA) id 15.2.1258.35;
+ Tue, 3 Sep 2024 10:46:50 +0000
+From: Takamitsu Iwai <takamitz@amazon.co.jp>
+To: <andrew@lunn.ch>
+Date: Tue, 3 Sep 2024 19:46:42 +0900
+Message-ID: <20240903104642.75303-1-takamitz@amazon.co.jp>
+X-Mailer: git-send-email 2.39.3 (Apple Git-145)
+In-Reply-To: <87af1b9e-21c3-4c22-861a-b917b5cd82c2@lunn.ch>
+References: <87af1b9e-21c3-4c22-861a-b917b5cd82c2@lunn.ch>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
-X-Originating-IP: [10.90.53.73]
-X-ClientProxiedBy: dggems701-chm.china.huawei.com (10.3.19.178) To
- dggpeml500022.china.huawei.com (7.185.36.66)
+X-Originating-IP: [10.118.248.122]
+X-ClientProxiedBy: EX19D045UWA003.ant.amazon.com (10.13.139.46) To
+ EX19D005ANA004.ant.amazon.com (10.37.240.178)
 X-Mailman-Approved-At: Tue, 03 Sep 2024 15:02:25 +0000
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=amazon.co.jp; i=@amazon.co.jp; q=dns/txt;
+ s=amazon201209; t=1725360421; x=1756896421;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=D3pK/xIDd4gN73xR2IAKuIfQBHRY4tf7Zw38vyUW1ow=;
+ b=Mg2L1W60bslHWa++oWxJZ1j2b3AP7OB6mfrCyKzWW2H45DG+ScRdyA+6
+ Ortt5Ur/gLw2pxZbfdTtARU1DxPJZWWoSlgztVvxiltrVTOCQowDNv2pS
+ IdNRXjtZEfdrXbzlpXHT1He9QlXOZo+zO4cGnfNL/M40ozHmjDaMaAdQ9
+ s=;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
- header.from=huawei.com
-Subject: [Intel-wired-lan] [PATCH net-next] ice: Make use of assign_bit() API
+ header.from=amazon.co.jp
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (1024-bit key,
+ unprotected) header.d=amazon.co.jp header.i=@amazon.co.jp header.a=rsa-sha256
+ header.s=amazon201209 header.b=Mg2L1W60
+Subject: Re: [Intel-wired-lan] [PATCH v1 net-next] e1000e: Remove duplicated
+ writel() in e1000_configure_tx/rx()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,41 +113,20 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: przemyslaw.kitszel@intel.com, edumazet@google.com,
- intel-wired-lan@lists.osuosl.org, lihongbo22@huawei.com,
- netdev@vger.kernel.org, kuba@kernel.org, pabeni@redhat.com,
- davem@davemloft.net
+Cc: netdev@vger.kernel.org, przemyslaw.kitszel@intel.com, edumazet@google.com,
+ intel-wired-lan@lists.osuosl.org, takamitz@amazon.co.jp, kuba@kernel.org,
+ anthony.l.nguyen@intel.com, pabeni@redhat.com, davem@davemloft.net
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-We have for some time the assign_bit() API to replace open coded
+> Did the same sequence of read/writes happen before 0845d45e900c? Or
+> did 0845d45e900c add additional writes, not just move them around?
 
-    if (foo)
-            set_bit(n, bar);
-    else
-            clear_bit(n, bar);
+The sequence of read/writes happened before 0845d45e900c because the similar
+writel() exists in ew32() above the writel() moved by 0845d45e900c.
 
-Use this API to clean the code. No functional change intended.
-
-Signed-off-by: Hongbo Li <lihongbo22@huawei.com>
----
- drivers/net/ethernet/intel/ice/ice_main.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 46d3c5a34d6a..e3ad91b3ba77 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -6522,8 +6522,7 @@ ice_set_features(struct net_device *netdev, netdev_features_t features)
- 	if (changed & NETIF_F_HW_TC) {
- 		bool ena = !!(features & NETIF_F_HW_TC);
- 
--		ena ? set_bit(ICE_FLAG_CLS_FLOWER, pf->flags) :
--		      clear_bit(ICE_FLAG_CLS_FLOWER, pf->flags);
-+		assign_bit(ICE_FLAG_CLS_FLOWER, pf->flags, ena);
- 	}
- 
- 	if (changed & NETIF_F_LOOPBACK)
--- 
-2.34.1
+The commit 0845d45e900c moved writel() in e1000_clean_tx/rx_ring() to
+e1000_configure_tx/rx() to avoid null pointer dereference. But since the same
+writel() exists in e1000_configure_tx/rx(), we just needed to remove writel()
+from e1000_clean_rx/tx_ring().
 
