@@ -4,138 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 37F62CD343E
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  3 Sep 2024 15:02:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 80EB8CD342A
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  3 Sep 2024 15:25:36 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 6768560773;
-	Tue,  3 Sep 2024 15:02:31 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 20030606B8;
+	Tue,  3 Sep 2024 15:25:36 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id tKVGrIjGZPZJ; Tue,  3 Sep 2024 15:02:30 +0000 (UTC)
+ id kvT9ULJRPcbC; Tue,  3 Sep 2024 15:25:34 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 90E18607F3
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 30293606A7
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1725375750;
-	bh=rzPmrfnypnTcXSOUzQP80L8x6QBskS0bYOPokj0QcqA=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=olVD8uf21h3RsDaCLWeS2ojTxqHHelEC2VbpKPnDOjgf56/0F7azlrdIeNlh1jN7N
-	 DRzCVVEbxKVN5Del7/375/i8KYSgmm1IN0KzfhReB2fg72kgxLZht7t37Q1kSKw74a
-	 gkCV0Bt5rMaHXtkKsZtlGKloNlvkM9aAxrHVQIsPrxfGujlHrkOM7ydOkTb/C8dnrp
-	 Je6oBU9Nh1j+55I0jdw1uWBBkg/nPK/DIxbYoNu2QPFne9bwY3ImLM7qzQFKJOfXXW
-	 X++3Ym2+YBkoreRi395mwSRrR/+0K8/YUyhbhcYtaRZ5+BCSqbTV1tYwb86o0egSwb
-	 FFUket/4eAItA==
+	s=default; t=1725377134;
+	bh=DJrjaR0M4usQIzh5Ahg8OcW6L47OSxbuA+KWaNU8rh0=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=XDpy0psuAKxLoNoIGUhZoTVwq+Av/SoZ0W7UxoOU9H1BAvhvRQltTbKppbEiDAyYM
+	 7BByx09lNDP/xQ2tZ20TTSwfEIB9ErR7sR40JAopWNpLSzUM+rWLSnaf9UifqNm7EW
+	 GMGUZ4RpT7vdXdR6XrfCGOwe1+TLldBvIEPwVXROCPU+dFwThUTquxhwDNsPqoQSPM
+	 N8QzkR8A71Klgkf2Jd21vtFGVjByC4K9JNCf/jpXgQBEEyW/LucX7Cjf2JiCcyh5YW
+	 5jYChgoTZUmC9GwhWZetz3Q4hbF95PyP/AS421qUGUAaS9m3yBMClDbBX5Kb3D7nBh
+	 uA7fyNK1bJK0w==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 90E18607F3;
-	Tue,  3 Sep 2024 15:02:30 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 843BC1BF589
- for <intel-wired-lan@lists.osuosl.org>; Tue,  3 Sep 2024 12:08:15 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 30293606A7;
+	Tue,  3 Sep 2024 15:25:34 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 9C7ED1BF3FB
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  3 Sep 2024 15:25:32 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 6E86980FA3
- for <intel-wired-lan@lists.osuosl.org>; Tue,  3 Sep 2024 12:08:15 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 88F2C40194
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  3 Sep 2024 15:25:32 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id T1JxwLzLXf5j for <intel-wired-lan@lists.osuosl.org>;
- Tue,  3 Sep 2024 12:08:14 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=40.92.63.61;
- helo=aus01-me3-obe.outbound.protection.outlook.com;
- envelope-from=hanguidong02@outlook.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 7C81580F86
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7C81580F86
-Received: from AUS01-ME3-obe.outbound.protection.outlook.com
- (mail-me3aus01olkn2061.outbound.protection.outlook.com [40.92.63.61])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 7C81580F86
- for <intel-wired-lan@lists.osuosl.org>; Tue,  3 Sep 2024 12:08:14 +0000 (UTC)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=g6jLgNJ4iWM6VAkZ17TsYhcaHZeTCD68mSGjhV0xWBq+DY10RHjIdMkYn53aCFwxFgvi46+N2qc4ZbtaIcNoKs82S36Lul6cvsuitOfoQDKOzUFHtAJRsfthUd+WXpIcNvfIvgj3836/qClnjokORq7Vz0ZotngK/PCYJb7v0a1MXG+/N0VoJ8dg5y3iQ2KbAUFui9LBhXCMWrVei9jHF1siHCqr4Bdm0fcR8ynJyBbgmhcq5V64nf6UwDl1fWiICKddGkwD4iX8F6iVkwAKNRWstAfAHIKxWcxYsF14zUYO2LrWy4t7sFs0ITUYWSwvOdhR+cwzZzNef/hCbY0kpQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=rzPmrfnypnTcXSOUzQP80L8x6QBskS0bYOPokj0QcqA=;
- b=d2CNLUMnnCu+FoQSIk9gmoTGzqzFBUlAxLa6aaBmtjpPRhT5lYVRV8g1HNXPGlc41zZqNISqFYAU+8Bs+5NtX1j3dSLPt+seg+PT/fQ74hw1Wnu8m8UlNvoYEgr3po3h90g3NCjXzeduNfnyL8SVhb25wbSFYUPEwR+2XBiqrIIPuVPCMYCI6uvzcV7mSAR4zPEK0Htut0DUmn69Zcxkvhj4UC5UyuaDQNFn91BCxTFZafWr3Khgn5xh+KjP/roCrmsgwI7lYWABh8sfy1OXxHH6LfFQGvxJ+oL+Cnxdxxdp0B5koNL8MB5vd8O4XS73/H8t2mu+OcPNllE9CeE2Bw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
- dkim=none; arc=none
-Received: from SY8P300MB0460.AUSP300.PROD.OUTLOOK.COM (2603:10c6:10:297::10)
- by ME0P300MB0716.AUSP300.PROD.OUTLOOK.COM (2603:10c6:220:22c::9) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7918.27; Tue, 3 Sep
- 2024 12:08:06 +0000
-Received: from SY8P300MB0460.AUSP300.PROD.OUTLOOK.COM
- ([fe80::14bc:d68f:122:f4f2]) by SY8P300MB0460.AUSP300.PROD.OUTLOOK.COM
- ([fe80::14bc:d68f:122:f4f2%4]) with mapi id 15.20.7918.024; Tue, 3 Sep 2024
- 12:08:06 +0000
-From: Gui-Dong Han <hanguidong02@outlook.com>
-To: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
- davem@davemloft.net, edumazet@google.com, kuba@kernel.org,
- pabeni@redhat.com
-Date: Tue,  3 Sep 2024 11:59:43 +0000
-Message-ID: <SY8P300MB0460D0263B2105307C444520C0932@SY8P300MB0460.AUSP300.PROD.OUTLOOK.COM>
-X-Mailer: git-send-email 2.25.1
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-TMN: [/Or3ZIGSRQMGYPg027de5+660G9Qy58PF6tDioTmqRs=]
-X-ClientProxiedBy: SG2PR06CA0203.apcprd06.prod.outlook.com (2603:1096:4:1::35)
- To SY8P300MB0460.AUSP300.PROD.OUTLOOK.COM
- (2603:10c6:10:297::10)
-X-Microsoft-Original-Message-ID: <20240903115943.8422-1-hanguidong02@outlook.com>
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 9w2UZ6Y5nWHA for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  3 Sep 2024 15:25:31 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org;
+ envelope-from=horms@kernel.org; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 5AF4440147
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 5AF4440147
+Received: from dfw.source.kernel.org (dfw.source.kernel.org
+ [IPv6:2604:1380:4641:c500::1])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 5AF4440147
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  3 Sep 2024 15:25:31 +0000 (UTC)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+ by dfw.source.kernel.org (Postfix) with ESMTP id D17925C59F1;
+ Tue,  3 Sep 2024 15:25:26 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2D193C4CEC4;
+ Tue,  3 Sep 2024 15:25:26 +0000 (UTC)
+Date: Tue, 3 Sep 2024 16:25:24 +0100
+From: Simon Horman <horms@kernel.org>
+To: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+Message-ID: <20240903152524.GC4792@kernel.org>
+References: <20240902-igc-ss-puts-v1-1-c66a73b532c7@kernel.org>
+ <88384607-4fcf-4ab1-8edf-9258df0bbf3c@embeddedor.com>
 MIME-Version: 1.0
-X-MS-Exchange-MessageSentRepresentingType: 1
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SY8P300MB0460:EE_|ME0P300MB0716:EE_
-X-MS-Office365-Filtering-Correlation-Id: 46464ae1-4501-4a36-4cef-08dccc111172
-X-Microsoft-Antispam: BCL:0;
- ARA:14566002|19110799003|5072599009|461199028|8060799006|15080799006|3412199025|440099028|1710799026;
-X-Microsoft-Antispam-Message-Info: IXMScY3PZE1T2+UpKP3SetFbyDG7kA+TflI3OLqMHLcmYDB47AInJo8IthheYfltCDrquj7+dD03xY7faqpltut4zA1G4yjq27Wb18Euf2KZTPAGGLgaLjCb3v5r/UpmjmDAHHxfzbhhXaA5/k5twRZVt8iuEns5hyPhUqEcPXZ5OGth4PH5EYsEGtdNxxqIpnqMrn+2jfbfhbp83w0+K8BZswXAtmLZn9Pt/Vn/kRrpyuph+KxidaSOvp1+1YqzDBUGNxHTg7dmd2ghPekZ74hVYv0KVZ8kB+xkABFZUaxyslVsf8D2fLBMrSa4kEBdAGeN4DI9HzooRbv+QRx6siDRVqW7IRM+bhGet2nOhwEZIC6jKNj/yFbgU5KYkgDWIx/sEH/2vifwmpmh7GgTHZivI+4UR9DQufnXsrjAu9zdL1DfK4oP6Ux2cDLlDDV2Jm3NsBnXs4rZ8bl37lcxcpe+MZiSZC/Mnoek6W6N2tT7h7AtFdG3BnSgc26uq8R/GT8+cptZWg4pj0YC3pGtYV0iLC8Uh4p0xW7dOuN6i3JzXiXNmERYpeHXh765ExO4WWuUv2O9CG1fgyxgEq6nqGWtZ6Vb3vivJrfcf4pYdBEHWN3OF1/grC3TITVydreeKwLwoRz5+AvaEOTtPRUE4av8P7hgfhAs3btxkfLUPM9bUvv5lRHFjnPSv6YMk3NcvkSwAoSvcyfeiAjmzZFvx3lvLV8UIbjZqqTgoUTptL8=
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?9WWwcWEsahlxARVjlTOGXA6uDPE6GlRfRy6OoRz15mhc37ms1hvH+ZdRDR+u?=
- =?us-ascii?Q?cRC+8FweK45auvaSdJH2GgZPOLd6Kxsx15fDljwIs42swnOZcrNve/iSKe3a?=
- =?us-ascii?Q?FKHb16ZJVZZpy/TxGKW1SZgpI8UIK01Jt/wA7jXVxgQUdLB2buiCEnpejF4d?=
- =?us-ascii?Q?4VpbJeRZiV78HQm8FeuQ1s46DKytZwabydxptfR9yOHVgWC/6tMcv/WYpJRS?=
- =?us-ascii?Q?BzDrHgZeEhA/eJq1GJc5nELDl3Qw5bDb90WPoGe5q4JFZmMMdbVKVTdfJU92?=
- =?us-ascii?Q?rdHSolNkaXuuKHzNTJiefViUJOz85S395jpYzrGu6y+AhGAShjlEdYe+wBXl?=
- =?us-ascii?Q?iVSj0LhplQc6mWGxRUbzJhe7ZAmwlwPHvRPQ+eXYw8e4Q9VsUU5DI2swHzdE?=
- =?us-ascii?Q?DXXGpSvAjm98u1hS2PJXA9zNrwIgNYEbXZChePXNk2WzpoYxLFXAqOzHmxnJ?=
- =?us-ascii?Q?sce/7bKtCzt79NL6vO7HPMd5GxqDLjZT2KF/B3tnwaQIVEBxgXXVys5O3OOQ?=
- =?us-ascii?Q?n/tI2QrbwJn/EhUVZgsVzvJ9ndZjEsT1U3QKegzDur9B+izBAX1ccMV0PEtv?=
- =?us-ascii?Q?2oZSGi2BYbV+2ghm7XHj7hKGrAeB3mT/PAR14wMmlakkMnyERYFCnhGRgOug?=
- =?us-ascii?Q?y8a/0TpXbrh055+9Q1wwb3iUu77q8FYKrjwiJw49GthHuIuT1gv81VnFdJrm?=
- =?us-ascii?Q?K0F5F+3ecFxZZ18Ovxf5wAet3q1C7olhSFrFRmrZ6RWJox1fTffnlHBFlGsf?=
- =?us-ascii?Q?afFszeZI/Ecq46F9zFIpTqs3jn1AafOPzPrkCV5lHBjUR5bunpzdMyki9/GZ?=
- =?us-ascii?Q?gz34vfaZ0ri8wYIqmg6TO48kmkXY4bPiprrahaPyiXW1qapNqy2nlyv0bqO4?=
- =?us-ascii?Q?X4BlkqnbL+JO8srS45T9hKOUCG8lODoxQacYngY8cVdq/lofVwb0+/CKyz8p?=
- =?us-ascii?Q?vjZa0Qx3Co+wPcIeGfyzgvEfIFCOjQRKOVBjzd747bbJh1HCcdqi8cGstJuO?=
- =?us-ascii?Q?jj9KsVEqwiYOjKFquZeVWLdaIwIIZtfEeqxvCYzGkRjY6VOzRe/1PRUxRGGx?=
- =?us-ascii?Q?MTb6C83pPyr25hZQe8N9zdRXxgBfdtBRgS1VBbIPrRzIrnZDQIoL+My8LY1X?=
- =?us-ascii?Q?WB91soKdJ/eQo4KcJbksppB58bIQHajc2Z8qMSZWwRIQSeQCdMDbYzfZkyrr?=
- =?us-ascii?Q?WmrueBBPLcd2+bVLjaARC8u/KKOqceQcSDYRap+fSHfp9rj4i1jjgjf28d/O?=
- =?us-ascii?Q?QbE704EEsfhymYIPzclR?=
-X-OriginatorOrg: outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 46464ae1-4501-4a36-4cef-08dccc111172
-X-MS-Exchange-CrossTenant-AuthSource: SY8P300MB0460.AUSP300.PROD.OUTLOOK.COM
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 03 Sep 2024 12:08:06.0582 (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
-X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg: 00000000-0000-0000-0000-000000000000
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: ME0P300MB0716
-X-Mailman-Approved-At: Tue, 03 Sep 2024 15:02:25 +0000
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=outlook.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=rzPmrfnypnTcXSOUzQP80L8x6QBskS0bYOPokj0QcqA=;
- b=af7CVuViHBVqd2mfj+NtWxICtHJDd/40wV+LmNJHrxhNUVYTYqytr6OMEAjQcQOC7CQC2g28GeIECessouzsmGiLmAEFiqHsONbCFQgwONpzQS8ZkNXe/cG7CIGngtfnSN2lM7MBu60S2B6s+YVtFgITGwEUYHxHD0zBVnbUu4tvQu4WsmoTcHI2cRkqD4hzkZRs7wDeHeeFkPOVZOqfWFS2PszknkTYSTH+YyxrVmO+PqjI+HSgX5tzrEzpewsc7sSG7casgJXaWNGF6kB+q4MlVmiLDLMF8DFkOzcEAcTChL1x4Xy61p4LiCRa/6ypmzu070SfkCWg414bVjjeNQ==
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=outlook.com
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <88384607-4fcf-4ab1-8edf-9258df0bbf3c@embeddedor.com>
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=kernel.org; s=k20201202; t=1725377130;
+ bh=NzTUmUqb1pcIqhYJTsD/7reom8G6ax17uBj3IOYVPCI=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=ZeaettQkOkHlYywmGqrgRmeCu5Hlh4aCuJLM9CPgIdPSLxLsW41+FsMRMltGu5pWE
+ Ut3sRsMu9hi/VHGzoG6EBLUvSPdoiY/zQeii2rpiPDuNDfHf/jysRh6fQqJj6pxrqs
+ dgUj27QwgA1tH3SHkIXI1Xq9QSYg05RhQ/3UwlDq/CHBuX6wLLN84+kSfgBfmAo1ZN
+ 4D3uQFqvo1abKTtKsgqCgLGfaBsmi8MZvlpGi1ll038LpaRUtPiVU9uqqGV4dPUr9L
+ 8N20lY4pGykKF0Z+SwfBDyYerAH4uJ7FdC45KnDtsgs2CEQCqYhQnCuvZlETiHb/sO
+ GnQcHSdgb3tkA==
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dmarc=pass (p=quarantine dis=none)
+ header.from=kernel.org
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key,
- unprotected) header.d=outlook.com header.i=@outlook.com header.a=rsa-sha256
- header.s=selector1 header.b=af7CVuVi
-Subject: [Intel-wired-lan] [PATCH v2] ice: Fix improper handling of refcount
- in ice_sriov_set_msix_vec_count()
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=ZeaettQk
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next] ice: Consistently use
+ ethtool_puts() to copy strings
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -148,78 +96,107 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- stable@vger.kernel.org, Gui-Dong Han <hanguidong02@outlook.com>,
- baijiaju1990@gmail.com, intel-wired-lan@lists.osuosl.org
+Cc: Justin Stitt <justinstitt@google.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>, llvm@lists.linux.dev,
+ Nick Desaulniers <ndesaulniers@google.com>,
+ Nathan Chancellor <nathan@kernel.org>, Jakub Kicinski <kuba@kernel.org>,
+ Eric Dumazet <edumazet@google.com>, Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Bill Wendling <morbo@google.com>, netdev@vger.kernel.org,
+ intel-wired-lan@lists.osuosl.org, Paolo Abeni <pabeni@redhat.com>,
+ "David S. Miller" <davem@davemloft.net>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-This patch addresses an issue with improper reference count handling in the
-ice_sriov_set_msix_vec_count() function.
+On Mon, Sep 02, 2024 at 01:55:41PM -0600, Gustavo A. R. Silva wrote:
+> 
+> 
+> On 02/09/24 06:46, Simon Horman wrote:
+> > ethtool_puts() is the preferred method for copying ethtool strings.
+> > And ethtool_puts() is already used to copy ethtool strings in
+> > igc_ethtool_get_strings(). With this patch igc_ethtool_get_strings()
+> > uses it for all such cases.
+> > 
+> > In general, the compiler can't use fortification to verify that the
+> > destination buffer isn't over-run when the destination is the first
+> > element of an array, and more than one element of the array is to be
+> > written by memcpy().
+> > 
+> > For the ETH_SS_PRIV_FLAGS the problem doesn't manifest as there is only
+> > one element in the igc_priv_flags_strings array.
+> > 
+> > In the ETH_SS_TEST case, there is more than one element of
+> > igc_gstrings_test, and from the compiler's perspective, that element is
+> > overrun. In practice it does not overrun the overall size of the array,
+> > but it is nice to use tooling to help us where possible. In this case
+> > the problem is flagged as follows.
+> > 
+> > Flagged by clang-18 as:
+> > 
+> > In file included from drivers/net/ethernet/intel/igc/igc_ethtool.c:5:
+> > In file included from ./include/linux/if_vlan.h:10:
+> > In file included from ./include/linux/netdevice.h:24:
+> > In file included from ./include/linux/timer.h:6:
+> > In file included from ./include/linux/ktime.h:25:
+> > In file included from ./include/linux/jiffies.h:10:
+> > In file included from ./include/linux/time.h:60:
+> > In file included from ./include/linux/time32.h:13:
+> > In file included from ./include/linux/timex.h:67:
+> > In file included from ./arch/x86/include/asm/timex.h:5:
+> > In file included from ./arch/x86/include/asm/processor.h:19:
+> > In file included from ./arch/x86/include/asm/cpuid.h:62:
+> > In file included from ./arch/x86/include/asm/paravirt.h:21:
+> > In file included from ./include/linux/cpumask.h:12:
+> > In file included from ./include/linux/bitmap.h:13:
+> > In file included from ./include/linux/string.h:374:
+> > .../fortify-string.h:580:4: warning: call to '__read_overflow2_field' declared with 'warning' attribute: detected read beyond size of field (2nd parameter); maybe use struct_group()? [-Wattribute-warning]
+> > 
+> > And Smatch as:
+> > 
+> > .../igc_ethtool.c:771 igc_ethtool_get_strings() error: __builtin_memcpy() '*igc_gstrings_test' too small (32 vs 160)
+> > 
+> > Curiously, not flagged by gcc-14.
+> > 
+> > Compile tested only.
+> > 
+> > Signed-off-by: Simon Horman <horms@kernel.org>
+> > ---
+> >   drivers/net/ethernet/intel/igc/igc_ethtool.c | 8 ++++----
+> >   1 file changed, 4 insertions(+), 4 deletions(-)
+> > 
+> > diff --git a/drivers/net/ethernet/intel/igc/igc_ethtool.c b/drivers/net/ethernet/intel/igc/igc_ethtool.c
+> > index 457b5d7f1610..ccace77c6c2d 100644
+> > --- a/drivers/net/ethernet/intel/igc/igc_ethtool.c
+> > +++ b/drivers/net/ethernet/intel/igc/igc_ethtool.c
+> > @@ -768,8 +768,8 @@ static void igc_ethtool_get_strings(struct net_device *netdev, u32 stringset,
+> >   	switch (stringset) {
+> >   	case ETH_SS_TEST:
+> > -		memcpy(data, *igc_gstrings_test,
+> > -		       IGC_TEST_LEN * ETH_GSTRING_LEN);
+> 
+> I think this problem should be solved if we use the array's address,
+> which in this case is `igc_gstrings_test`, instead of the address of
+> the first row. So, the above should look as follows:
+> 
+> memcpy(data, igc_gstrings_test, IGC_TEST_LEN * ETH_GSTRING_LEN);
 
-First, the function calls ice_get_vf_by_id(), which increments the
-reference count of the vf pointer. If the subsequent call to
-ice_get_vf_vsi() fails, the function currently returns an error without
-decrementing the reference count of the vf pointer, leading to a reference
-count leak. The correct behavior, as implemented in this patch, is to
-decrement the reference count using ice_put_vf(vf) before returning an
-error when vsi is NULL.
+Thanks for the advice.
+FWIIW, I do like the consistency of using ethtool_puts().
+But, OTOH, your suggestion is much simpler.
+I will send an updated the patch accordingly.
 
-Second, the function calls ice_sriov_get_irqs(), which sets
-vf->first_vector_idx. If this call returns a negative value, indicating an
-error, the function returns an error without decrementing the reference
-count of the vf pointer, resulting in another reference count leak. The
-patch addresses this by adding a call to ice_put_vf(vf) before returning
-an error when vf->first_vector_idx < 0. 
+> 
+> > +		for (i = 0; i < IGC_TEST_LEN; i++)
+> > +			ethtool_puts(&p, igc_gstrings_test[i]);
+> >   		break;
+> >   	case ETH_SS_STATS:
+> >   		for (i = 0; i < IGC_GLOBAL_STATS_LEN; i++)
+> > @@ -791,8 +791,8 @@ static void igc_ethtool_get_strings(struct net_device *netdev, u32 stringset,
+> >   		/* BUG_ON(p - data != IGC_STATS_LEN * ETH_GSTRING_LEN); */
+> >   		break;
+> >   	case ETH_SS_PRIV_FLAGS:
+> > -		memcpy(data, igc_priv_flags_strings,
+> > -		       IGC_PRIV_FLAGS_STR_LEN * ETH_GSTRING_LEN);
+> 
+> In this case, the code is effectively reading from the array's address.
 
-This bug was identified by an experimental static analysis tool developed
-by our team. The tool specializes in analyzing reference count operations
-and identifying potential mismanagement of reference counts. In this case,
-the tool flagged the missing decrement operation as a potential issue,
-leading to this patch.
-
-Fixes: 4035c72dc1ba ("ice: reconfig host after changing MSI-X on VF")
-Fixes: 4d38cb44bd32 ("ice: manage VFs MSI-X using resource tracking")
-Cc: stable@vger.kernel.org
-Signed-off-by: Gui-Dong Han <hanguidong02@outlook.com>
----
-v2:
-* In this patch v2, an additional resource leak was addressed when
-vf->first_vector_idx < 0. The issue is now fixed by adding ice_put_vf(vf)
-before returning an error.
-  Thanks to Simon Horman for identifying this additional leak scenario.
----
- drivers/net/ethernet/intel/ice/ice_sriov.c | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_sriov.c b/drivers/net/ethernet/intel/ice/ice_sriov.c
-index 55ef33208456..fbf18ac97875 100644
---- a/drivers/net/ethernet/intel/ice/ice_sriov.c
-+++ b/drivers/net/ethernet/intel/ice/ice_sriov.c
-@@ -1096,8 +1096,10 @@ int ice_sriov_set_msix_vec_count(struct pci_dev *vf_dev, int msix_vec_count)
- 		return -ENOENT;
- 
- 	vsi = ice_get_vf_vsi(vf);
--	if (!vsi)
-+	if (!vsi) {
-+		ice_put_vf(vf);
- 		return -ENOENT;
-+	}
- 
- 	prev_msix = vf->num_msix;
- 	prev_queues = vf->num_vf_qs;
-@@ -1142,8 +1144,10 @@ int ice_sriov_set_msix_vec_count(struct pci_dev *vf_dev, int msix_vec_count)
- 	vf->num_msix = prev_msix;
- 	vf->num_vf_qs = prev_queues;
- 	vf->first_vector_idx = ice_sriov_get_irqs(pf, vf->num_msix);
--	if (vf->first_vector_idx < 0)
-+	if (vf->first_vector_idx < 0) {
-+		ice_put_vf(vf);
- 		return -EINVAL;
-+	}
- 
- 	if (needs_rebuild) {
- 		ice_vf_reconfig_vsi(vf);
--- 
-2.25.1
-
+True. In light of your other suggestion I'll drop this hung.
