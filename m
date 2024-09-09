@@ -4,97 +4,99 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CF03BECE581
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  9 Sep 2024 23:05:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 57ECEECE58C
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  9 Sep 2024 23:07:58 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 917DB60838;
-	Mon,  9 Sep 2024 23:05:59 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 1D8CE60829;
+	Mon,  9 Sep 2024 23:07:58 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id SFBwyD3eFxPM; Mon,  9 Sep 2024 23:05:58 +0000 (UTC)
+ id l33kvoXebd4p; Mon,  9 Sep 2024 23:07:57 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 991986082A
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3AA046082A
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1725923158;
-	bh=+sFZ+qBxwDz4jUetySxGAK628g2HBcE4WYa5g8fnYcM=;
-	h=From:Date:References:In-Reply-To:To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=sfpBXgNTd7ely1YD8XCeKvOUzyGVP68dVoFsbwT/buvzzxVw+ArDHS+P3W4Xb6oaB
-	 l8oW3/VKHgOAqKaRg54FDacqX2E2Ibt97pjwppngYc5ebV9K+uI/cxuPiUhGeU417v
-	 YaAEaE5ZHgCZFxj3nEZ10v1f7h5FVJGuFf5g+gZO+jhLg7w6NQ+Hr3Oo5CCyVGapKX
-	 vb7A7DtV42F5Wfxp3FqDISm/oM7o6Q+LaDLUhVbPTcjU7sqGTRA4FwVpeTGLUw3N4U
-	 7+EpgxBdBindNAFYrAUYYl+Usohpx3F5FZKjRDwGuJu6SiBJ8x94xHktOVvwt504co
-	 wnYgLvQQLPoWQ==
+	s=default; t=1725923277;
+	bh=aYAyMfLl/WUrDLg4a8DaG06/0qHg3UpC2Vl5hbZIRbk=;
+	h=From:Date:To:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=tnYTdR8UILGaN7LLblLEemFZQZ4bBFNbBhqt9BLOalfEgK8z2lx5FZnGTrZNahgtF
+	 +145VRHg8uahktWtwg/LLqV83Om2PrfXCQxxlRAUxpXU1DxPOIsMACa+Ske9QdjOFs
+	 uyzczIBeo5XbI1FltUoms9bO8TNCJqnHoOm5XuWNu4by1BLtwWSoD73QBEJErpHhJm
+	 7doDy3TYEjIbt4K3JtUCsiKwRQgrYBD5S9C9/Snvg4k8GYcARvYmQhdu49ebEoSAHZ
+	 2mIdC4L3/3S+MAUvq2QGJ8Ccx3Ys63Lgj+NWGa1hRgPTfEc/Qn7JKl0RyXBuSBi9xZ
+	 uV1ZbtfwZkDhg==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 991986082A;
-	Mon,  9 Sep 2024 23:05:58 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id D8E5A1BF300
- for <intel-wired-lan@lists.osuosl.org>; Mon,  9 Sep 2024 23:05:55 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 3AA046082A;
+	Mon,  9 Sep 2024 23:07:57 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id DEDEA1BF300
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  9 Sep 2024 23:07:55 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id D1D6C80E56
- for <intel-wired-lan@lists.osuosl.org>; Mon,  9 Sep 2024 23:05:54 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id CA0B16082B
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  9 Sep 2024 23:07:55 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id VXCPL4iuezXY for <intel-wired-lan@lists.osuosl.org>;
- Mon,  9 Sep 2024 23:05:54 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.9;
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id em8L8jAobxvB for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  9 Sep 2024 23:07:55 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.16;
  helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org BDDDF80EB4
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org BDDDF80EB4
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.9])
- by smtp1.osuosl.org (Postfix) with ESMTPS id BDDDF80EB4
- for <intel-wired-lan@lists.osuosl.org>; Mon,  9 Sep 2024 23:05:53 +0000 (UTC)
-X-CSE-ConnectionGUID: 7d5VvCmjQ4K6dhreLJr/3g==
-X-CSE-MsgGUID: I7c5lEmFS8CVcD+G2AKrEg==
-X-IronPort-AV: E=McAfee;i="6700,10204,11190"; a="35312318"
-X-IronPort-AV: E=Sophos;i="6.10,215,1719903600"; d="scan'208";a="35312318"
-Received: from orviesa007.jf.intel.com ([10.64.159.147])
- by fmvoesa103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 09 Sep 2024 16:05:52 -0700
-X-CSE-ConnectionGUID: SnGbX418SNeEHyN3YCiQ4Q==
-X-CSE-MsgGUID: In14mvkETB6IIjf6VLQvLw==
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org BF6D860824
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org BF6D860824
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.16])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id BF6D860824
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  9 Sep 2024 23:07:54 +0000 (UTC)
+X-CSE-ConnectionGUID: GybAOTq1TFGILXAHOJZujQ==
+X-CSE-MsgGUID: rnQeBH+nQpOp7Ot1rHrEVg==
+X-IronPort-AV: E=McAfee;i="6700,10204,11190"; a="13448221"
+X-IronPort-AV: E=Sophos;i="6.10,215,1719903600"; d="scan'208";a="13448221"
+Received: from fmviesa003.fm.intel.com ([10.60.135.143])
+ by fmvoesa110.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 09 Sep 2024 16:07:55 -0700
+X-CSE-ConnectionGUID: 836AJHWrRwGkaJVLHwodSg==
+X-CSE-MsgGUID: p3wVobsTTPCsYivRXW/mDQ==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.10,215,1719903600"; d="scan'208";a="67358477"
+X-IronPort-AV: E=Sophos;i="6.10,215,1719903600"; d="scan'208";a="70940069"
 Received: from jekeller-desk.jf.intel.com ([10.166.241.20])
- by orviesa007-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 09 Sep 2024 16:05:52 -0700
+ by fmviesa003-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 09 Sep 2024 16:07:54 -0700
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Mon, 09 Sep 2024 16:05:43 -0700
+Date: Mon, 09 Sep 2024 16:07:43 -0700
+Message-Id: <20240909-e810-live-migration-jk-per-queue-max-frame-rx-buf-len-v1-0-f955205bc78f@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20240909-e810-live-migration-jk-vf-rxdid-cleanup-v1-1-e53a024980fd@intel.com>
-References: <20240909-e810-live-migration-jk-vf-rxdid-cleanup-v1-0-e53a024980fd@intel.com>
-In-Reply-To: <20240909-e810-live-migration-jk-vf-rxdid-cleanup-v1-0-e53a024980fd@intel.com>
-To: Anthony Nguyen <anthony.l.nguyen@intel.com>, 
- Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+X-B4-Tracking: v=1; b=H4sIAL9/32YC/6WOTQ6CMBCFr2Jm7ZgWSQBX3sOwKHSA0VJwgIoh3
+ N2GK7h8P3nf22AiYZrgdtpAKPDEg49Cn09Qd8a3hGyjhkQlqcqTAinXCh0Hwp5bMXPs4/OFIwm
+ +F1qibVZsxPSEsmK1NOjIo1VZrc210spmELdHoYbXg/sA/jj0tM5QxqTjaR7kexwK+sj/ZAeNC
+ otK27ROlMkLc2c/k7vUQw/lvu8/HSrnSQQBAAA=
+To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>, 
+ Anthony Nguyen <anthony.l.nguyen@intel.com>
 X-Mailer: b4 0.14.1
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1725923154; x=1757459154;
- h=from:date:subject:mime-version:content-transfer-encoding:
- message-id:references:in-reply-to:to:cc;
- bh=IOjMAu0l+QKgBVKEdHP0sZ3PKEQr+v+H7oewEub0TPA=;
- b=NUuzk0LHhC8SK2sZ7biKf5qfFTS4QUoZGunnSgbMKghN/mIKWku7cmmm
- pvca1ZjF+YQDnWjAtXm0aL+yNPhY5j1Q0SKkWDV5qLrcl4eJ1sRBi3sGK
- vLTxDpWYRDlLA74Y7tlO8H2yy1aUXz04sAuZITLR7rFvflkUBPpzpryd3
- FKr2nO4p400iW/pGZ0uwesdQOSx4MJkvJZ2nZiu6lQ08hqPVPJ0wlkI7L
- uH5BBWjqUKiwbcM2Wicbpl5YXNapB0/nBKP7g43J8jiDZ7aHkBSkNU5Gr
- zZGGCMN+MMwigwtDEcZwobtuKPBisGKPf26a3NeLtI0QVz72y2ckh8jSY
- A==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ t=1725923275; x=1757459275;
+ h=from:subject:date:message-id:mime-version:
+ content-transfer-encoding:to:cc;
+ bh=VgAXP5zJbU+kjVnhnW7wmCq7L79zL/IE3NNPEpYScUk=;
+ b=nCH5s7OBB7bgkOfqVrxbUHlOvDk8LnJFL+eB2BB8MukH7vGV3dx9zmJJ
+ EAAS/D57/qFDIw6FPBD99dnifcqOj7dsUgGkJEwu6xdPryKMDcRfEmHT+
+ Th43Jf+z9Rwop4p6ozAQ2QC1xvDBovISleCccdPoxqBeU4XFw/Lih/YSp
+ 6hQt+BFa+W1L02JJrR05sTy76F5goz8gxG+7D6lylUDbMHrkiTVfujLqh
+ +bbYvFIG/gTBqsb09QyS4rYhDnttNLAaMk5AlXEudi7wKJzPooJB8Mb+q
+ jzsoFoajkknFOXpC55PtTthbRVO7+UUtMuVzdF53qe2V9cFQPEnRkWvpN
+ w==;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=NUuzk0LH
-Subject: [Intel-wired-lan] [PATCH iwl-next 1/2] ice: initialize
- pf->supported_rxdids immediately after loading DDP
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=nCH5s7OB
+Subject: [Intel-wired-lan] [PATCH iwl-next 0/2] ice: store max frame and
+ rx_buf_len only in ice_rx_ring
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -112,132 +114,48 @@ Cc: Jacob Keller <jacob.e.keller@intel.com>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The pf->supported_rxdids field is used to populate the list of valid RXDIDs
-that a VF may use when negotiating VIRTCHNL_VF_OFFLOAD_RX_FLEX_DESC.
+While working on ice VF Live Migration support, I noticed some oddities
+with how the vsi->max_frame and vsi->rx_buf_len fields are used.
+Technically, both the hardware and virtchnl interface allow a VF to set
+per-queue maximum frame size and buffer lengths. The existing code does
+this in a surprising and non-intuitive way by setting the VSI variables for
+each VF queue in between programming the queues during bring-up.
 
-The set of supported RXDIDs is dependent on the DDP, and can be read from
-the GLXFLXP_RXDID_FLAGS register. The PF needs to send this list to the
-VF upon receiving the VIRTCHNL_OP_GET_SUPPORTED_RXDIDs. It also needs to
-use this list to validate the requested descriptor ID from the VF when
-programming the Rx queues.
+I ran into this when accidentally assuming that the max_frame variable was
+constant for a given VF VSI, and not per-queue.
 
-A future update to support VF live migration will also want to validate
-that the target VF can support the same descriptor ID when migrating.
+Instead of keeping the per-VSI values, replace them with per-ring values.
+We already have rx_buf_len for the hotpath, so we can just add max_frame.
+Better yet, the structure has gaps, so we're not wasting any additional
+space.
 
-Currently, pf->supported_rxdids is initialized inside the
-ice_vc_query_rxdid() function. This means that it is only ever initialized
-if at least one VF actually tries to negotiate
-VIRTCHNL_VF_OFFLOAD_RX_FLEX_DESC. It is also unnecessarily re-initialized
-every time the VF loads and requests the descriptor list. This worked
-before because the PF only checks pf->suppported_rxdids when programming
-the Rx queue if the VF actually negotiates the
-VIRTCHNL_VF_OFFLOAD_RX_FLEX_DESC feature.
+This refactor simplifies the logic for programming the VF and removes the
+surprise of overwriting the ring->rx_buf_len with the vsi->rx_buf_len when
+programming.
 
-This will be problematic for VF live migration. We need the list of
-supported Rx descriptor IDs when migrating. It is possible that no VF on
-the target PF has ever actually issued a VIRTCHNL_OP_GET_SUPPORTED_RXDIDs.
-
-Refactor the driver to initialize pf->supported_rxdids during driver
-initialization after the DDP is loaded. This is simpler, avoids unnecessary
-duplicate work, and avoids issues with the live migration process.
+While implementing this change, I also noticed that the ring accessed when
+programming the Rx rings was sometimes indexed via the q_idx and sometimes
+indexed by the 'i' iterator over the queue pair array. Nothing validated
+that these two values are equivalent. It makes sense to only interact with
+the ring via the q_idx so that we are consistent in the event that these
+values differ.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_main.c     | 31 +++++++++++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_virtchnl.c | 20 ++---------------
- 2 files changed, 33 insertions(+), 18 deletions(-)
+Jacob Keller (2):
+      ice: consistently use q_idx in ice_vc_cfg_qs_msg()
+      ice: store max_frame and rx_buf_len only in ice_rx_ring
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index c7db88b517da..f7a9f62ca828 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -4577,6 +4577,34 @@ ice_init_tx_topology(struct ice_hw *hw, const struct firmware *firmware)
- 	return 0;
- }
- 
-+/**
-+ * ice_init_supported_rxdids - Initialize supported Rx descriptor IDs
-+ * @hw: pointer to the hardware structure
-+ * @pf: pointer to pf structure
-+ *
-+ * The pf->supported_rxdids bitmap is used to indicate to VFs which descriptor
-+ * formats the PF hardware supports. The exact list of supported RXDIDs
-+ * depends on the loaded DDP package. The IDs can be determined by reading the
-+ * GLFLXP_RXDID_FLAGS register after the DDP package is loaded.
-+ *
-+ * Note that the legacy 32-byte RXDID 0 is always supported but is not listed
-+ * in the DDP package. The 16-byte legacy descriptor is never supported by
-+ * VFs.
-+ */
-+static void ice_init_supported_rxdids(struct ice_hw *hw, struct ice_pf *pf)
-+{
-+	pf->supported_rxdids = BIT(ICE_RXDID_LEGACY_1);
-+
-+	for (int i = ICE_RXDID_FLEX_NIC; i < ICE_FLEX_DESC_RXDID_MAX_NUM; i++) {
-+		u32 regval;
-+
-+		regval = rd32(hw, GLFLXP_RXDID_FLAGS(i, 0));
-+		if ((regval >> GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_S)
-+			& GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_M)
-+			pf->supported_rxdids |= BIT(i);
-+	}
-+}
-+
- /**
-  * ice_init_ddp_config - DDP related configuration
-  * @hw: pointer to the hardware structure
-@@ -4611,6 +4639,9 @@ static int ice_init_ddp_config(struct ice_hw *hw, struct ice_pf *pf)
- 	ice_load_pkg(firmware, pf);
- 	release_firmware(firmware);
- 
-+	/* Initialize the supported Rx descriptor IDs after loading DDP */
-+	ice_init_supported_rxdids(hw, pf);
-+
- 	return 0;
- }
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl.c b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-index 59f62306b9cb..5f3166877830 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-@@ -2701,11 +2701,9 @@ static int ice_vc_query_rxdid(struct ice_vf *vf)
- {
- 	enum virtchnl_status_code v_ret = VIRTCHNL_STATUS_SUCCESS;
- 	struct virtchnl_supported_rxdids *rxdid = NULL;
--	struct ice_hw *hw = &vf->pf->hw;
- 	struct ice_pf *pf = vf->pf;
- 	int len = 0;
--	int ret, i;
--	u32 regval;
-+	int ret;
- 
- 	if (!test_bit(ICE_VF_STATE_ACTIVE, vf->vf_states)) {
- 		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
-@@ -2725,21 +2723,7 @@ static int ice_vc_query_rxdid(struct ice_vf *vf)
- 		goto err;
- 	}
- 
--	/* RXDIDs supported by DDP package can be read from the register
--	 * to get the supported RXDID bitmap. But the legacy 32byte RXDID
--	 * is not listed in DDP package, add it in the bitmap manually.
--	 * Legacy 16byte descriptor is not supported.
--	 */
--	rxdid->supported_rxdids |= BIT(ICE_RXDID_LEGACY_1);
--
--	for (i = ICE_RXDID_FLEX_NIC; i < ICE_FLEX_DESC_RXDID_MAX_NUM; i++) {
--		regval = rd32(hw, GLFLXP_RXDID_FLAGS(i, 0));
--		if ((regval >> GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_S)
--			& GLFLXP_RXDID_FLAGS_FLEXIFLAG_4N_M)
--			rxdid->supported_rxdids |= BIT(i);
--	}
--
--	pf->supported_rxdids = rxdid->supported_rxdids;
-+	rxdid->supported_rxdids = pf->supported_rxdids;
- 
- err:
- 	ret = ice_vc_send_msg_to_vf(vf, VIRTCHNL_OP_GET_SUPPORTED_RXDIDS,
+ drivers/net/ethernet/intel/ice/ice.h          |  3 ---
+ drivers/net/ethernet/intel/ice/ice_txrx.h     |  3 ++-
+ drivers/net/ethernet/intel/ice/ice_base.c     | 34 ++++++++++++++-------------
+ drivers/net/ethernet/intel/ice/ice_virtchnl.c | 26 ++++++++++----------
+ 4 files changed, 32 insertions(+), 34 deletions(-)
+---
+base-commit: bfba7bc8b7c2c100b76edb3a646fdce256392129
+change-id: 20240829-e810-live-migration-jk-per-queue-max-frame-rx-buf-len-d07c1a3b10d7
 
+Best regards,
 -- 
-2.46.0.124.g2dc1a81c8933
+Jacob Keller <jacob.e.keller@intel.com>
 
