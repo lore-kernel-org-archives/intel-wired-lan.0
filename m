@@ -4,91 +4,124 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 63589CF395C
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 19 Sep 2024 15:07:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 08801CF395B
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 19 Sep 2024 15:07:56 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id DF1B742892;
-	Thu, 19 Sep 2024 15:07:03 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id ABA0C42719;
+	Thu, 19 Sep 2024 15:07:56 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id I3WPLbbgJN2U; Thu, 19 Sep 2024 15:07:02 +0000 (UTC)
+ id ESldAWbQxnVP; Thu, 19 Sep 2024 15:07:55 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 32B7642840
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org AA76E4271B
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1726758422;
-	bh=Eg0aw/JsSDa801QveFhK5iGJwVmtnC/bbMMJdc1DKK4=;
+	s=default; t=1726758475;
+	bh=JEDklkIuM4g74LbRiLWac77J7RDe0/5AVecDahYHHj8=;
 	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=HwL8nMJPRMCeQ1fhJlnB8O2Cgr5DSLLVPZQFJttP7/EECTl5DH0W7RkNZTOAPwKj7
-	 8dXbgtQFEPsQqorJd2mh7oqZkyeaptWbGrO0AW6Q22p89qKlHktNDhXOgq82xg+KKh
-	 mFr8+WSS4/U4Lb075xAm+vjNu/1yPJt3nQrzMTAxBINU4mS3iEt0wSnVd3zC2gcpln
-	 5iQUnVLE3l/XNanT1RpuFue41KZ/+pipE4mBrNQh7PQxwpch1YmPobHgq9xOQELPSb
-	 BRLlmQ+ylntHPjAnki931K49GtRlArDD21jE31Slt7azMlVVHNUqNE/x8DQKEsKJpM
-	 rA/gXzcJ9zvsQ==
+	b=KWu58AZyyxZR0zDOEUTEge0M4p47AAN+jrxxEbGaGeLK7X8vKIONc8PsL+XRU0nLm
+	 5XbeK/bzJBqBrntlSKXlQ9sEBIymYpkAi/sJXDkQngFCJNDpavGdaQVlgK7kCmr808
+	 N3J+6pAkUUbUYmspSjrD1B4L5rnYE29wB9ZI0JxeWw07YvNXp7GAzMLquE04NNhKMr
+	 ABdiw429ViTUz7UX8gNCO3YIFN+aWa4uQyx96n7N4+tK3yYgu89Imkfw/dOa3hq5+C
+	 pWR/trO1y/8gbfzJNcWePxjst5k8nG1tTheUAIV9zBpsCwuUoO4VfaTncOMYzXxbu7
+	 zRb87P/afoQrw==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 32B7642840;
-	Thu, 19 Sep 2024 15:07:02 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id BBB291BF4DA
- for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Sep 2024 09:42:52 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id AA76E4271B;
+	Thu, 19 Sep 2024 15:07:55 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 3A03D1BF46D
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Sep 2024 15:07:54 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id A68DB60667
- for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Sep 2024 09:42:52 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 2864F849F6
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Sep 2024 15:07:54 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id XjgOyhTRnWFz for <intel-wired-lan@lists.osuosl.org>;
- Thu, 19 Sep 2024 09:42:52 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org;
- envelope-from=hawk@kernel.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 039176065D
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 039176065D
-Received: from dfw.source.kernel.org (dfw.source.kernel.org
- [IPv6:2604:1380:4641:c500::1])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 039176065D
- for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Sep 2024 09:42:51 +0000 (UTC)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by dfw.source.kernel.org (Postfix) with ESMTP id BDBC35C57F2;
- Thu, 19 Sep 2024 09:42:46 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DBC7FC4CEC4;
- Thu, 19 Sep 2024 09:42:42 +0000 (UTC)
-Message-ID: <894a3c2c-22f9-45b9-a82b-de7320066b42@kernel.org>
-Date: Thu, 19 Sep 2024 11:42:40 +0200
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id tXXoH6Uw8UOb for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 19 Sep 2024 15:07:53 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.133.124;
+ helo=us-smtp-delivery-124.mimecast.com; envelope-from=pabeni@redhat.com;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 5B9958473C
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 5B9958473C
+Received: from us-smtp-delivery-124.mimecast.com
+ (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 5B9958473C
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Sep 2024 15:07:53 +0000 (UTC)
+Received: from mail-lf1-f70.google.com (mail-lf1-f70.google.com
+ [209.85.167.70]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-96-cU7cvxcrPXeTL1Hm8I--gg-1; Thu, 19 Sep 2024 11:07:50 -0400
+X-MC-Unique: cU7cvxcrPXeTL1Hm8I--gg-1
+Received: by mail-lf1-f70.google.com with SMTP id
+ 2adb3069b0e04-5365fdec97fso1000578e87.1
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Sep 2024 08:07:50 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20230601; t=1726758468; x=1727363268;
+ h=content-transfer-encoding:in-reply-to:from:content-language
+ :references:cc:to:subject:user-agent:mime-version:date:message-id
+ :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+ bh=JEDklkIuM4g74LbRiLWac77J7RDe0/5AVecDahYHHj8=;
+ b=PoCVUTX9K7HpCpfbXzVBxN8hA5tiwbQmoXWtYsBgtgtxY403MRAbgujxu7huBDv1LL
+ bEyvg7OIp7Pl42nQaD9KKOUbYP/ajEpkrXWt5ILqAJIa4Fk1KHkVoKa81ncAvjref2YZ
+ IkM84FOG2S1G6+sG1p+JK0OYpWf+BXeAdMeebY5xNP6t/qZio0taENvrTM4axQ1JZZkB
+ N4QmBLsUQGBtSniBTwjAXqwM41zy2YajRXw18SDwIclWukWRktBAxQQXuWS4v9HoMJJ9
+ T1hHBJzLm+YvKTDkqkC0Ffv5h2IwOjqQjBDOxgVaWN3YWa09sD0YVlmKIuod8maBAZ+X
+ QUpg==
+X-Forwarded-Encrypted: i=1;
+ AJvYcCWNCmS33GFgX28ty/OKRGuIz3Ee5K+Lp2HJsFfort0ETyZYqIneWkC+A8LbaCmGA7A59COvSG4ONzTZcUChGsY=@lists.osuosl.org
+X-Gm-Message-State: AOJu0Yzbx+uMI3xN/D2Q6URw3PwNOBY1DLNl1VudEzDfGJJkqdwcT8UD
+ 6mui1cYZ7d4TqG5x6R0YfErFL4nK90J/LOyuQJJaZ7QQQn8AVOsgnv/pTplgvNMmT2bAMsalz/d
+ N5S0scBCtf296KnXButlCQBNiP1yOkSlqo/Kgnk6mCGiJ5I1YqNsXgEaGAhtqAXGWYlk=
+X-Received: by 2002:a05:6512:1325:b0:533:42ae:c985 with SMTP id
+ 2adb3069b0e04-53678fbf06dmr14588693e87.25.1726758468502; 
+ Thu, 19 Sep 2024 08:07:48 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IFXcMkkrCh8HDpINz1LdCe2tcnd2OREnJby19CPHPVqYGFBcAVw89mmXmpvN21zuCRaOdAyCA==
+X-Received: by 2002:a05:6512:1325:b0:533:42ae:c985 with SMTP id
+ 2adb3069b0e04-53678fbf06dmr14588655e87.25.1726758467969; 
+ Thu, 19 Sep 2024 08:07:47 -0700 (PDT)
+Received: from [192.168.88.100] (146-241-67-136.dyn.eolo.it. [146.241.67.136])
+ by smtp.gmail.com with ESMTPSA id
+ 5b1f17b1804b1-42e75458230sm24108085e9.38.2024.09.19.08.07.45
+ (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+ Thu, 19 Sep 2024 08:07:47 -0700 (PDT)
+Message-ID: <18971a87-4b52-4ce6-a36c-2d92738d7bfa@redhat.com>
+Date: Thu, 19 Sep 2024 17:07:44 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-To: Ilias Apalodimas <ilias.apalodimas@linaro.org>,
- Yunsheng Lin <linyunsheng@huawei.com>
-References: <20240918111826.863596-1-linyunsheng@huawei.com>
- <20240918111826.863596-3-linyunsheng@huawei.com>
- <CAC_iWjK=G7Oo5=pN2QunhasgDC6NyC1L+96jigX7u9ad+PbYng@mail.gmail.com>
+To: Jakub Kicinski <kuba@kernel.org>
+References: <cover.1725919039.git.pabeni@redhat.com>
+ <6c6b03fca7cc58658d47e0f3da68bbbcda4ae1ec.1725919039.git.pabeni@redhat.com>
+ <20240910150337.6c397227@kernel.org>
+From: Paolo Abeni <pabeni@redhat.com>
+In-Reply-To: <20240910150337.6c397227@kernel.org>
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: redhat.com
 Content-Language: en-US
-From: Jesper Dangaard Brouer <hawk@kernel.org>
-In-Reply-To: <CAC_iWjK=G7Oo5=pN2QunhasgDC6NyC1L+96jigX7u9ad+PbYng@mail.gmail.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Mailman-Approved-At: Thu, 19 Sep 2024 15:07:00 +0000
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1726738970;
- bh=4mBPJ1/8ZHYMdSjeFFRdSDpez+20eaW5Qpk0ZxpyplE=;
- h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
- b=WNvFUZlIeZCdtFKQ6JJfXg22qRTupBYLgnu8Znpgj7u9GzB9cb+oCuqkGaUUFXqZg
- u3FLl6T6Dc6z14wmNEhM9sxXlKK/hnTLT7l41VAHBzniRkxJuoPGhWwQEozIgpKcqn
- e0kS1YGW5Ob7pUpRgtI7MbGmwk2xVRYMaz+rj6ubfII71lcBL9BipnzLBPVQDxC0s+
- 6tii01Hw8+gMcMOU9sr4JhVfid9pQ8djWVDTMMnYh2tWVR7phPjsbZwqdPYB+N9hdB
- cnocJ45KkOqJzUN/IKhO7vvYPYCr6HhVzm91jSPJ6/m++FZ0VQT1lV4F/UgLqGCLlU
- /zO3c8TS5wTbA==
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dmarc=pass (p=quarantine dis=none)
- header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=WNvFUZlI
-Subject: Re: [Intel-wired-lan] [PATCH net 2/2] page_pool: fix IOMMU crash
- when driver has already unbound
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=redhat.com; 
+ s=mimecast20190719; t=1726758471;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=JEDklkIuM4g74LbRiLWac77J7RDe0/5AVecDahYHHj8=;
+ b=bKU3398hyNz8br3Eahy9UfMc82sbnMtgJcM6eqlQZ2UDnSh8XBFgneGDMEcdSHD5jV+abx
+ 972mOC+zNpB4eXqBm+u78uc2iN7m6FzRfGlyE0o7tG1KCWh/1f8nrhYQ5TuW2nrot4QFgp
+ NP0erGv6/XrB1lPGz9NAQMXUcwDBJv8=
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=redhat.com
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (1024-bit key,
+ unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
+ header.s=mimecast20190719 header.b=bKU3398h
+Subject: Re: [Intel-wired-lan] [PATCH v7 net-next 14/15] iavf: Add
+ net_shaper_ops support
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,53 +134,38 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: imx@lists.linux.dev, Alexei Starovoitov <ast@kernel.org>,
- Alexander Duyck <alexander.duyck@gmail.com>, linux-mm@kvack.org,
- Eric Dumazet <edumazet@google.com>, Tony Nguyen <anthony.l.nguyen@intel.com>,
- Shenwei Wang <shenwei.wang@nxp.com>, Ryder Lee <ryder.lee@mediatek.com>,
- Leon Romanovsky <leon@kernel.org>, linux-rdma@vger.kernel.org,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- John Fastabend <john.fastabend@gmail.com>, IOMMU <iommu@lists.linux.dev>,
- liuyonglong@huawei.com, Clark Wang <xiaoning.wang@nxp.com>,
- zhangkun09@huawei.com, fanghaiqing@huawei.com, pabeni@redhat.com,
- Lorenzo Bianconi <lorenzo@kernel.org>, Kalle Valo <kvalo@kernel.org>,
- Sean Wang <sean.wang@mediatek.com>, Wei Fang <wei.fang@nxp.com>,
- kuba@kernel.org, Matthias Brugger <matthias.bgg@gmail.com>,
- intel-wired-lan@lists.osuosl.org, bpf@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org,
- AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
- Daniel Borkmann <daniel@iogearbox.net>, Robin Murphy <robin.murphy@arm.com>,
- linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
- Tariq Toukan <tariqt@nvidia.com>,
- Alexander Lobakin <aleksander.lobakin@intel.com>, netdev@vger.kernel.org,
- linux-mediatek@lists.infradead.org, Andrew Morton <akpm@linux-foundation.org>,
- Shayne Chen <shayne.chen@mediatek.com>, Saeed Mahameed <saeedm@nvidia.com>,
- davem@davemloft.net, Felix Fietkau <nbd@nbd.name>
+Cc: Jiri Pirko <jiri@resnulli.us>, netdev@vger.kernel.org,
+ John Fastabend <john.fastabend@gmail.com>, Jamal Hadi Salim <jhs@mojatatu.com>,
+ edumazet@google.com, Madhu Chittim <madhu.chittim@intel.com>,
+ anthony.l.nguyen@intel.com, Simon Horman <horms@kernel.org>,
+ Sridhar Samudrala <sridhar.samudrala@intel.com>,
+ Donald Hunter <donald.hunter@gmail.com>, intel-wired-lan@lists.osuosl.org,
+ przemyslaw.kitszel@intel.com, Sunil Kovvuri Goutham <sgoutham@marvell.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 
-On 18/09/2024 19.06, Ilias Apalodimas wrote:
->> In order not to do the dma unmmapping after driver has already
->> unbound and stall the unloading of the networking driver, add
->> the pool->items array to record all the pages including the ones
->> which are handed over to network stack, so the page_pool can
->> do the dma unmmapping for those pages when page_pool_destroy()
->> is called.
->
-> So, I was thinking of a very similar idea. But what do you mean by
-> "all"? The pages that are still in caches (slow or fast) of the pool
-> will be unmapped during page_pool_destroy().
 
-I really dislike this idea of having to keep track of all outstanding pages.
+On 9/11/24 00:03, Jakub Kicinski wrote:
+> On Tue, 10 Sep 2024 00:10:08 +0200 Paolo Abeni wrote:
+>> +	if (adapter->netdev->reg_state == NETREG_REGISTERED) {
+>> +		mutex_lock(&adapter->netdev->lock);
+>> +		devlock = true;
+>> +	}
+> 
+> This leads to a false positive in cocci.
+> 
+> Any concerns about moving the mutex_init() / _destroy() into
+> alloc_netdev_mqs() / free_netdev()?  I guess one could argue
+> that narrower scope of the lock being valid may help catching
+> errors, but I think we'll instead end up with more checks like
+> the above sprinkled around than bugs caught?
 
-I liked Jakub's idea of keeping the netdev around for longer.
+I considered moving the locking initialization and shutdown, but I kept 
+there for symmetry with the rss_lock. I'll move the init/destroy in the 
+next revision.
 
-This is all related to destroying the struct device that have points to
-the DMA engine, right?
+Thanks,
 
-Why don't we add an API that allow netdev to "give" struct device to
-page_pool.  And then the page_poll will take over when we can safely
-free the stuct device?
+Paolo
 
---Jesper
