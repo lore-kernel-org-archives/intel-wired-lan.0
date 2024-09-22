@@ -1,91 +1,120 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1BB6BCF9C68
-	for <intel-wired-lan@archiver.kernel.org>; Sat, 21 Sep 2024 21:37:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E307ECF9C68
+	for <intel-wired-lan@archiver.kernel.org>; Sun, 22 Sep 2024 09:08:30 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id CDFE16067E;
-	Sat, 21 Sep 2024 21:37:07 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 00yw1Vwoz9yr; Sat, 21 Sep 2024 21:37:06 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C7CE4605FD
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1726954626;
-	bh=lsAVVMXBKcU2p17etQiow5lg6LE3Y2PDSMDNuUA+QYA=;
-	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=ebyuqohtU/xCzGwQKAmXv8b42vPRbCN20oNCj0+cD7iFefqTmryX7qTf/URm0BsyE
-	 ic2s4k4ZAepX8qQfTrZGoddsLAyslXgNxNfW1v9zBid9tGCK68hmL/clsvGtU96NAJ
-	 /TkFEVoctXTBvwCK3HlCf224eaxRRsbMfGyQJYEeXKjKShqrI1ss26l8cKOj57sd3y
-	 idcrWlkNH4dTaoAtihzyLKnw3LI6ixMppYr+vk221EtQIhcFJSQ2d7OcAb31tyv/6y
-	 xhaolHafdQHF4e9OI6RvTgci6bTR0MdtEg9GSegvp2EkHQ8FEC/KMSSqemVJrzU+0t
-	 xAfeFOuIcqrsw==
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id C7CE4605FD;
-	Sat, 21 Sep 2024 21:37:06 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 125E61BF5AE
- for <intel-wired-lan@lists.osuosl.org>; Sat, 21 Sep 2024 21:37:05 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id F1711406EB
- for <intel-wired-lan@lists.osuosl.org>; Sat, 21 Sep 2024 21:37:04 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 8BD4740635;
+	Sun, 22 Sep 2024 09:08:30 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id byKKSwV5-6ML for <intel-wired-lan@lists.osuosl.org>;
- Sat, 21 Sep 2024 21:37:03 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org;
- envelope-from=hawk@kernel.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 916A9406E9
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 916A9406E9
-Received: from nyc.source.kernel.org (nyc.source.kernel.org
- [IPv6:2604:1380:45d1:ec00::3])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 916A9406E9
- for <intel-wired-lan@lists.osuosl.org>; Sat, 21 Sep 2024 21:37:03 +0000 (UTC)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by nyc.source.kernel.org (Postfix) with ESMTP id A2223A4006E;
- Sat, 21 Sep 2024 21:36:53 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6BBDBC4CEC2;
- Sat, 21 Sep 2024 21:36:56 +0000 (UTC)
-Message-ID: <09657be6-b5e2-4b5a-96b6-d34174aadd0a@kernel.org>
-Date: Sat, 21 Sep 2024 23:36:54 +0200
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-To: Alexander Lobakin <aleksander.lobakin@intel.com>,
- Lorenzo Bianconi <lorenzo@kernel.org>,
- =?UTF-8?Q?Toke_H=C3=B8iland-J=C3=B8rgensen?= <toke@kernel.org>
+ id WHVfiZMKCOj7; Sun, 22 Sep 2024 09:08:29 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 891F54063B
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1726996109;
+	bh=1VHLsfNfIqLcFZ23vrbINoBQfbbGCd6neqC+brlrwbA=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=TLPlNlW5mzttgKaDEZ4Foeavc59MzPP9yndIon/+toA2yaIahc6wwEFZukYBAPvza
+	 +WI0H7L6ybPJ3xpoKmdbt4UuMhfKjRleh5R+9+YCUjyU2xlrkwxJmu4UMKgQLq2iFy
+	 TcqhaUBx4SUM1yyL4ySkFnrtgL+b1gHIJwhsy7k4nVLulCRew7F6AQQu2oT12DnvNb
+	 KN9qyrATKMzaLrhrR9evaLdZq/IwZb2v46zkMk6+HRxMOC4FUlkY8B+n0HXiPf7r8j
+	 B+75tPApTuXM/4+OuDB1zDulGfb4xNL4kgvXWtQ3w+xxBQ79RjAYVqAOTTgkMpfF+3
+	 2moRAsHenwgJA==
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp4.osuosl.org (Postfix) with ESMTP id 891F54063B;
+	Sun, 22 Sep 2024 09:08:29 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id CB8DB1BF4D6
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 22 Sep 2024 09:08:27 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp2.osuosl.org (Postfix) with ESMTP id C5F66400CF
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 22 Sep 2024 09:08:27 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id jX1bVWlB5qBc for <intel-wired-lan@lists.osuosl.org>;
+ Sun, 22 Sep 2024 09:08:26 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.133.124;
+ helo=us-smtp-delivery-124.mimecast.com;
+ envelope-from=lorenzo.bianconi@redhat.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org A6C9E40022
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org A6C9E40022
+Received: from us-smtp-delivery-124.mimecast.com
+ (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id A6C9E40022
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 22 Sep 2024 09:08:25 +0000 (UTC)
+Received: from mail-wm1-f70.google.com (mail-wm1-f70.google.com
+ [209.85.128.70]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-684-90prjLEVMoWvvRgzaM0siA-1; Sun, 22 Sep 2024 05:08:22 -0400
+X-MC-Unique: 90prjLEVMoWvvRgzaM0siA-1
+Received: by mail-wm1-f70.google.com with SMTP id
+ 5b1f17b1804b1-42cb6f3c476so26496415e9.0
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 22 Sep 2024 02:08:22 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20230601; t=1726996101; x=1727600901;
+ h=in-reply-to:content-disposition:mime-version:references:message-id
+ :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+ :message-id:reply-to;
+ bh=1VHLsfNfIqLcFZ23vrbINoBQfbbGCd6neqC+brlrwbA=;
+ b=aCaCC86mStybN0eNf4IMgxmmBt2NjAA9tLSVETBLabQCQt7LA8cA3gKT8m1YfdRoYF
+ atckU5R31uUG34mmTk+f/hS6ckKjdRoEsg0ct3orTI6jTDUqAvIyoHE6Mr7M8O8fRC1F
+ sWe2/I70W7cC9y/jVbwk/BEBoV3Ev5h3gvnAnak3x+s/vmEY+ipY3tWGbDiJUm/c1OR3
+ RecdRyMFedONoACd+F49kHpnd5FWNDSQ5YNVKNoEojF63HWyryctLr9PrUek9u6TeopF
+ 9TKu9TNC7/EtHDUJycfr+25kM/91d22lruOPZFeRDSMEPFEY2wRb61Vy0xpA3TGITKzt
+ tM7A==
+X-Forwarded-Encrypted: i=1;
+ AJvYcCUu3W30iM2/rEzqjoJdAiH2IUYB0HSl3r6K/C1VGDix3XZW+SCjLghWihgjzo5ogCIgPXWnX7ADmm1SzivWhXM=@lists.osuosl.org
+X-Gm-Message-State: AOJu0YxZdS3fo0/lpanJa5YYEoOxHgi3wQHaAOlVEW4D7mx7DVFv7dlS
+ pSA/GTfAECzRtWMarAQ4Ayxovd22gNfzaEogavJL6CWy84F1W4K4SNPzQwzNjCGNchle+XQn52J
+ nhgsSghb/3A78O6ZiXWQWb2E4L1x/W/cewOMWFWrv+Q3R3ZWJoLGrkIubekfc1qs6Kp4=
+X-Received: by 2002:a05:6000:1375:b0:374:b675:6213 with SMTP id
+ ffacd0b85a97d-37a4235a0d5mr4342826f8f.45.1726996100959; 
+ Sun, 22 Sep 2024 02:08:20 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IFJ792wGCd1MWhimTqAIbkaAYTvIoSbeWFq1FnVJvLvLdsklUapLCXxGhVVkH7LlMYgJ6lmNA==
+X-Received: by 2002:a05:6000:1375:b0:374:b675:6213 with SMTP id
+ ffacd0b85a97d-37a4235a0d5mr4342805f8f.45.1726996100388; 
+ Sun, 22 Sep 2024 02:08:20 -0700 (PDT)
+Received: from localhost (net-93-146-37-148.cust.vodafonedsl.it.
+ [93.146.37.148]) by smtp.gmail.com with ESMTPSA id
+ ffacd0b85a97d-378e73e80c5sm21507653f8f.39.2024.09.22.02.08.19
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Sun, 22 Sep 2024 02:08:19 -0700 (PDT)
+Date: Sun, 22 Sep 2024 11:08:18 +0200
+From: Lorenzo Bianconi <lorenzo.bianconi@redhat.com>
+To: Alexander Lobakin <aleksander.lobakin@intel.com>
+Message-ID: <Zu_eghZAEoYBkThM@lore-desk>
 References: <cover.1726935917.git.lorenzo@kernel.org>
  <1f53cd74-6c1e-4a1c-838b-4acc8c5e22c1@intel.com>
-Content-Language: en-US
-From: Jesper Dangaard Brouer <hawk@kernel.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+ protocol="application/pgp-signature"; boundary="pFkQmBWfCOwm/HFL"
+Content-Disposition: inline
 In-Reply-To: <1f53cd74-6c1e-4a1c-838b-4acc8c5e22c1@intel.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1726954621;
- bh=Cz/rB1tfpIcjVKvJ0kABbjer56WE7Iki57K7hUdDn94=;
- h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
- b=Q6bE5Ggwl5v3ct+ug5zFyt/0bzFy5s1cFkfCfT3WROGt/FJcwaBFONP2PxVDLvegm
- tTdQyN/Fl4adzefPlGHX0gba5NGCzEiCqty+bSAWuW7R6z45HwJGscHsrZT6Mf9+SC
- TtYCwozu0Bs4PcjFQnrCadbOUyz8VsXOVRvaqNlnDFrpv9LnFPmtAZ1umWrJQUpKam
- gVoCxKZ/1kw5CV+b4WlWlmqua60oY4mGlHTPh+iyzD/KM4f17pPzVhV1CbGJysjAVM
- EuaVu0ydjIVomSR3Zgj454AFffuqbqKXQwpdQ1VFQOsS4KzQ4m1qYMUqSDL2M9oZFo
- /Y6wFjLp+HIog==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dmarc=pass (p=quarantine dis=none)
- header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=Q6bE5Ggw
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=redhat.com; 
+ s=mimecast20190719; t=1726996104;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ in-reply-to:in-reply-to:references:references;
+ bh=1VHLsfNfIqLcFZ23vrbINoBQfbbGCd6neqC+brlrwbA=;
+ b=YQ63Xc7ApFF5C3M21YDdmseUSmUM8BgfPq4E2fkltpqyvOBLrIXR7DsYVbhIeB3RKIi1rb
+ Cy0bfQssmasWVT5lV3eF6z+Rh/Om0wtQ5n2txsd9j425QNqMptjwHyORtsG4LGYjW+8rre
+ Ib5yO9Zv1u1phPK/PusW+A0MLws8vek=
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=redhat.com
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (1024-bit key,
+ unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
+ header.s=mimecast20190719 header.b=YQ63Xc7A
 Subject: Re: [Intel-wired-lan] [RFC bpf-next 0/4] Add XDP rx hw hints
  support performing XDP_REDIRECT
 X-BeenThere: intel-wired-lan@osuosl.org
@@ -100,95 +129,111 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: toke@toke.dk, mst@redhat.com, jasowang@redhat.com,
- alexandre.torgue@foss.st.com, edumazet@google.com, anthony.l.nguyen@intel.com,
- sdf@google.com, daniel@iogearbox.net, kernel-team <kernel-team@cloudflare.com>,
- przemyslaw.kitszel@intel.com, john.fastabend@gmail.com,
+Cc: toke@toke.dk, mst@redhat.com, jasowang@redhat.com, ast@kernel.org,
+ edumazet@google.com, anthony.l.nguyen@intel.com, daniel@iogearbox.net,
+ przemyslaw.kitszel@intel.com, john.fastabend@gmail.com, sdf@fomichev.me,
  intel-wired-lan@lists.osuosl.org, kuba@kernel.org, pabeni@redhat.com,
- Yan Zhai <yan@cloudflare.com>, ast@kernel.org, netdev@vger.kernel.org,
- tariqt@nvidia.com, mcoquelin.stm32@gmail.com, bpf@vger.kernel.org,
- saeedm@nvidia.com, davem@davemloft.net
+ Lorenzo Bianconi <lorenzo@kernel.org>, hawk@kernel.org,
+ alexandre.torgue@foss.st.com,
+ Toke =?iso-8859-1?Q?H=F8iland-J=F8rgensen?= <toke@kernel.org>,
+ netdev@vger.kernel.org, tariqt@nvidia.com, mcoquelin.stm32@gmail.com,
+ bpf@vger.kernel.org, saeedm@nvidia.com, davem@davemloft.net
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 
+--pFkQmBWfCOwm/HFL
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On 21/09/2024 22.17, Alexander Lobakin wrote:
 > From: Lorenzo Bianconi <lorenzo@kernel.org>
 > Date: Sat, 21 Sep 2024 18:52:56 +0200
-> 
->> This series introduces the xdp_rx_meta struct in the xdp_buff/xdp_frame
-> 
+>=20
+> > This series introduces the xdp_rx_meta struct in the xdp_buff/xdp_frame
+>=20
 > &xdp_buff is on the stack.
 > &xdp_frame consumes headroom.
-> 
+
+ack, right.
+
+>=20
 > IOW they're size-sensitive and putting metadata directly there might
 > play bad; if not now, then later.
-> 
+
+I was thinking to use a TLV approach for it (so a variable struct), but then
+I decided to implement the simplest solution for the moment since, using TL=
+V,
+we would need to add parsing logic and waste at least 2B for each meta info
+to store the type and length. Moreover, with XDP we have 256B available for
+headeroom and for xdp_frame we would use the same cacheline of the current
+implementation:
+
+struct xdp_frame {
+	void *                     data;                 /*     0     8 */
+	u16                        len;                  /*     8     2 */
+	u16                        headroom;             /*    10     2 */
+	u32                        metasize;             /*    12     4 */
+	struct xdp_mem_info        mem;                  /*    16     8 */
+	struct net_device *        dev_rx;               /*    24     8 */
+	u32                        frame_sz;             /*    32     4 */
+	u32                        flags;                /*    36     4 */
+	struct xdp_rx_meta         rx_meta;              /*    40    12 */
+
+	/* size: 56, cachelines: 1, members: 9 */
+	/* padding: 4 */
+	/* last cacheline: 56 bytes */
+};
+
+Anyway I do not have a strong opinion about it and I am fine to covert the
+current implementation to a TLV one if we agree on it.
+
+>=20
 > Our idea (me + Toke) was as follows:
-> 
+>=20
 > - new BPF kfunc to build generic meta. If called, the driver builds a
->    generic meta with hash, csum etc., in the data_meta area.
+>   generic meta with hash, csum etc., in the data_meta area.
+>   Yes, this also consumes headroom, but only when the corresponding func
+>   is called. Introducing new fields like you're doing will consume it
+>   unconditionally;
 
-I do agree that it should be the XDP prog (via a new BPF kfunc) that
-decide if xdp_frame should be updated to contain a generic meta struct.
-*BUT* I think we should use the xdp_frame area, and not the
-xdp->data_meta area.
-
-A details is that I think this kfunc should write data directly into
-xdp_frame area, even then we are only operating on the xdp_buff, as we
-do have access to the area xdp_frame will be created in.
-
-
-When using data_meta area, then netstack encap/decap needs to move the
-data_meta area (extra cycles).  The xdp_frame area (live in top) don't
-have this issue.
-
-It is easier to allow xdp_frame area to survive longer together with the
-SKB. Today we "release" this xdp_frame area to be used by SKB for extra
-headroom (see xdp_scrub_frame).  I can imagine that we can move SKB
-fields to this area, and reduce the size of the SKB alloc. (This then
-becomes the mini-SKB we discussed a couple of years ago).
-
-
->    Yes, this also consumes headroom, but only when the corresponding func
->    is called. Introducing new fields like you're doing will consume it
->    unconditionally;
-
-We agree on the kfunc call marks area as consumed/in-use.  We can extend
-xdp_frame statically like Lorenzo does (with struct xdp_rx_meta), but
-xdp_frame->flags can be used for marking this area as used or not.
-
+ack, I am currently reusing the kfuncs added by Stanislav but I agree it is
+better to add a new one to store the rx hw hints info, I will work on it.
 
 > - when &xdp_frame gets converted to sk_buff, the function checks whether
->    data_meta contains a generic structure filled with hints.
-> 
-
-Agree, but take data from xdp_frame->xdp_rx_meta.
-
-When XDP returns XDP_PASS, then I also want to see this data applied to
-the SKB. In patchset[1] Yan called this xdp_frame_fixup_skb_offloading()
-and xdp_buff_fixup_skb_offloading(). (Perhaps "fixup" isn't the right
-term, "apply" is perhaps better).  Having this generic-name allow us to
-extend with newer offloads, and eventually move members out of SKB.
-
-We called it "fixup", because our use-case is that our XDP load-balancer
-(Unimog) XDP_TX bounce packets with in GRE header encap, and on the
-receiving NIC (due to encap) we lost the HW hash/csum, which we want to
-transfer from the original NIC, decap in XDP and apply the original HW
-hash/csum via this "fixup" call.
-
---Jesper
-
-[1] https://lore.kernel.org/all/cover.1718919473.git.yan@cloudflare.com/
-
+>   data_meta contains a generic structure filled with hints.
+>=20
 > We also thought about &skb_shared_info, but it's also size-sensitive as
 > it consumes tailroom.
-> 
->> one as a container to store the already supported xdp rx hw hints (rx_hash
->> and rx_vlan, rx_timestamp will be stored in skb_shared_info area) when the
->> eBPF program running on the nic performs XDP_REDIRECT. Doing so, we are able
->> to set the skb metadata converting the xdp_buff/xdp_frame to a skb.
-> 
+
+for rx_timestamp we can reuse the field available in the skb_shared_info.
+
+Regards,
+Lorenzo
+
+>=20
+> > one as a container to store the already supported xdp rx hw hints (rx_h=
+ash
+> > and rx_vlan, rx_timestamp will be stored in skb_shared_info area) when =
+the
+> > eBPF program running on the nic performs XDP_REDIRECT. Doing so, we are=
+ able
+> > to set the skb metadata converting the xdp_buff/xdp_frame to a skb.
+>=20
 > Thanks,
 > Olek
+>=20
+
+--pFkQmBWfCOwm/HFL
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYKAB0WIQTquNwa3Txd3rGGn7Y6cBh0uS2trAUCZu/eggAKCRA6cBh0uS2t
+rIdLAP0R/dGPCXgseg1Iy65MrQgRuHzAgV36/bG2Weac6f4WwQEA8KXcwzorG0oU
+nZx4Agc2TmA8ZFiQyO3aR9f63sZWrAA=
+=hB8l
+-----END PGP SIGNATURE-----
+
+--pFkQmBWfCOwm/HFL--
+
