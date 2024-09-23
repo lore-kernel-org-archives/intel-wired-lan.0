@@ -4,81 +4,110 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 84018CF9C6F
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 24 Sep 2024 15:24:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D78A3CF9C6B
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 24 Sep 2024 15:24:17 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 2659D60B1D;
-	Tue, 24 Sep 2024 15:24:05 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 9846E60AED;
+	Tue, 24 Sep 2024 15:24:17 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id OSdGAJSqGXZp; Tue, 24 Sep 2024 15:24:03 +0000 (UTC)
+ id AM1Yjq45w03r; Tue, 24 Sep 2024 15:24:15 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7A4B5606CB
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 5D22C60AD9
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1727191443;
-	bh=gbsc/S+S7HQhPPj508Ku1haGxcV7bbpJJEqEmIjfO0A=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=ZPOi7rBSaq1kq0kMFLmHZqf92QtMj9bHNSRroHjClKmJuWoXessu/yXJ7MckLoeVy
-	 n6PRxI+R9946IVmBxtl3yrcytnRDLsFySdI4BgZjhDUOxAR3xlQ5MVikdcZQ+xLtjr
-	 4VA9kQPRXxnSsxRWIDtgGtktIj1ga9+2dJbQSobboT9EOGglGYJd6RVW32g+j6ogZr
-	 kXUIdLsbbikLIfvgZya/r236fmnZy/hvNTr32+TSfiaP/vrVfKo7B5EOiZkNV7FXlo
-	 MZOW38k8tAXXdWK2AfRR7LMCqufEKpXvZWfNlDWU2mpGiiAha8wt0jSyPoZKYIUyGJ
-	 hkWU03b05iLEw==
+	s=default; t=1727191455;
+	bh=8eV4Vklmlj8bqBkSf+z2gjD9tas8DcH2sV0AiX6LOJs=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=J7wlSa8unbJftmsp8YKt4AMX53JvB3RdrNiMY38JueIND7IybdE1Uf/Rg2uI6V+TP
+	 0MlvR9/udSd9hERdBcBF2xwNK9W3GKdzbJgMuBaXOw2an73gvTil8KGS7osUwBpink
+	 E3vhMn6DevboNynVIdXDHWpYlwYwvaTjVXPTIm++TOTsn6gn+AvIpXwctYsIDtXq1K
+	 9pCWUecm0rCmTMGBw6bY1bCbbJHKtujqcicy2Yy4Ddv55QuACSRD/OBM0EFYu5WqNz
+	 AzzmknPCiLnkmkuvwbJLF5xySF8AI2eEIQLfucM5aHEJgIaeF1co0x2+JFvNvpG078
+	 0nZNRidg5MBDA==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 7A4B5606CB;
-	Tue, 24 Sep 2024 15:24:03 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 69A331BF385
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Sep 2024 06:47:14 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 5D22C60AD9;
+	Tue, 24 Sep 2024 15:24:15 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 599711BF3B8
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Sep 2024 21:22:31 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 534D8403E2
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Sep 2024 06:47:14 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 47DB381D47
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Sep 2024 21:22:31 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id qfAxfSoyKqG7 for <intel-wired-lan@lists.osuosl.org>;
- Tue, 24 Sep 2024 06:47:13 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=185.176.79.56;
- helo=frasgout.his.huawei.com; envelope-from=gur.stavi@huawei.com;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 83B3440359
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 83B3440359
-Received: from frasgout.his.huawei.com (frasgout.his.huawei.com
- [185.176.79.56])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 83B3440359
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Sep 2024 06:47:11 +0000 (UTC)
-Received: from mail.maildlp.com (unknown [172.18.186.231])
- by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4XCVl40H3fz6J6DN;
- Tue, 24 Sep 2024 14:46:40 +0800 (CST)
-Received: from frapeml500005.china.huawei.com (unknown [7.182.85.13])
- by mail.maildlp.com (Postfix) with ESMTPS id EE8BB140B63;
- Tue, 24 Sep 2024 14:47:07 +0800 (CST)
-Received: from china (10.200.201.82) by frapeml500005.china.huawei.com
- (7.182.85.13) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.1.2507.39; Tue, 24 Sep
- 2024 08:46:45 +0200
-From: Gur Stavi <gur.stavi@huawei.com>
-To: <linyunsheng@huawei.com>
-Date: Tue, 24 Sep 2024 09:45:59 +0300
-Message-ID: <20240924064559.1681488-1-gur.stavi@huawei.com>
-X-Mailer: git-send-email 2.45.2
-In-Reply-To: <2fb8d278-62e0-4a81-a537-8f601f61e81d@huawei.com>
-References: <2fb8d278-62e0-4a81-a537-8f601f61e81d@huawei.com>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.200.201.82]
-X-ClientProxiedBy: dggems706-chm.china.huawei.com (10.3.19.183) To
- frapeml500005.china.huawei.com (7.182.85.13)
-X-Mailman-Approved-At: Tue, 24 Sep 2024 15:24:02 +0000
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dmarc=pass (p=quarantine dis=none)
- header.from=huawei.com
-Subject: Re: [Intel-wired-lan] [PATCH net 2/2] page_pool: fix IOMMU crash
- when driver has already unbound
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id YjbUu3_Leril for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 23 Sep 2024 21:22:30 +0000 (UTC)
+Received-SPF: Permerror (mailfrom) identity=mailfrom;
+ client-ip=2607:f8b0:4864:20::429; helo=mail-pf1-x429.google.com;
+ envelope-from=mkhalfella@purestorage.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org F1A8B81D11
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org F1A8B81D11
+Received: from mail-pf1-x429.google.com (mail-pf1-x429.google.com
+ [IPv6:2607:f8b0:4864:20::429])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id F1A8B81D11
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Sep 2024 21:22:28 +0000 (UTC)
+Received: by mail-pf1-x429.google.com with SMTP id
+ d2e1a72fcca58-718e9c8bd83so4015929b3a.1
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Sep 2024 14:22:28 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20230601; t=1727126548; x=1727731348;
+ h=message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+ :subject:date:message-id:reply-to;
+ bh=8eV4Vklmlj8bqBkSf+z2gjD9tas8DcH2sV0AiX6LOJs=;
+ b=l0BfeiznM46pTmEHjzi7jRI7Hw22nuSVk2qm7Ec+L4rOpZqGsbF/z5bJ0plCsCIBr7
+ ZhuhZCt9XSjZcGzKMj8kgiP8eks07D5KN3a/0UZPYUqVj057ErdvjfJRzU1vYAnDKGQw
+ wGLqqUQyPOpsWs52h58H9CXWaZkNcXyzvNxP9flQS5kxDo00GSF9Xi4PCAMoeawLMjed
+ qJ+sv2v9A3Q1Ay+ZqoYGPhMty6JAYmLBPPQgaeUF2uIRBZ5jDdQ+ZJvUyBAGlo4Lfjj2
+ mtV+DOKg6MSR10dqw93apBpQCxTlpQsVTQEGd1BZsGp3nOEHU+v3FGD3HtGmxKfiFuwv
+ AUNw==
+X-Gm-Message-State: AOJu0Yy6iUUJFHB5LjXMR6/E3t3FrWa1Ns2h0n6m1XdfFxYAmS56DLwf
+ /3HnqoJQFEChj8Gn9dmRysdbTexxh23IpP+3m7eA6/EkTT25eiNKGzWZCz/gilk=
+X-Google-Smtp-Source: AGHT+IHyxfMvPUsr9LZzOLYIagUPDr6zEE6tUUXhw4z3fyt80Nvtp1XMDHbKB4CNrD3CfGDt7Umkbw==
+X-Received: by 2002:a05:6a21:1346:b0:1d2:e8f6:7f3 with SMTP id
+ adf61e73a8af0-1d343c5645amr1626287637.11.1727126547871; 
+ Mon, 23 Sep 2024 14:22:27 -0700 (PDT)
+Received: from dev-mkhalfella2.dev.purestorage.com ([208.88.159.129])
+ by smtp.googlemail.com with ESMTPSA id
+ d2e1a72fcca58-71afc847924sm66047b3a.58.2024.09.23.14.22.26
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Mon, 23 Sep 2024 14:22:27 -0700 (PDT)
+From: Mohamed Khalfella <mkhalfella@purestorage.com>
+To: Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ "David S. Miller" <davem@davemloft.net>,
+ Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>, Yuanyuan Zhong <yzhong@purestorage.com>,
+ Jeff Garzik <jgarzik@redhat.com>, Auke Kok <auke-jan.h.kok@intel.com>,
+ Mohamed Khalfella <mkhalfella@purestorage.com>,
+ Simon Horman <horms@kernel.org>, Ying Hsu <yinghsu@chromium.org>
+Date: Mon, 23 Sep 2024 15:22:12 -0600
+Message-Id: <20240923212218.116979-1-mkhalfella@purestorage.com>
+X-Mailer: git-send-email 2.17.1
+X-Mailman-Approved-At: Tue, 24 Sep 2024 15:24:12 +0000
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=purestorage.com; s=google2022; t=1727126548; x=1727731348;
+ darn=lists.osuosl.org; 
+ h=message-id:date:subject:cc:to:from:from:to:cc:subject:date
+ :message-id:reply-to;
+ bh=8eV4Vklmlj8bqBkSf+z2gjD9tas8DcH2sV0AiX6LOJs=;
+ b=EtDliOgIwWxxfYJDwA8JtxEhM0Toh6uTe4oSLtJ+KKTgW89OA/7rA886ELp2YcgGzZ
+ 171u10T+jKYnOW3xGHWRXNW5NJJPtzXgJMwI6KIjLtsCA9/wDImJXn0k+mV7Ujus+tWc
+ c75oGfG8dqlbQktiFAGiJlePVc8eg6kGkRlkdFnFZv7c8XT+9HECsfuoIj6HlwHLRaF6
+ d+OIvyWfsTmHSgYb1kPOUJa8v2GD/wUfCC8KyZLTeisj/XbgEQobU5Nij50A6T3ZH3OP
+ 0QeLulXEbNtG4BjqF3QT443oMEym0vETcF60Hun9SEHdyScoGBxKR1Pi+NuWVG403yG4
+ fYzQ==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dmarc=pass (p=reject dis=none)
+ header.from=purestorage.com
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=purestorage.com header.i=@purestorage.com
+ header.a=rsa-sha256 header.s=google2022 header.b=EtDliOgI
+Subject: [Intel-wired-lan] [PATCH] igb: Do not bring the device up after
+ non-fatal error
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,78 +120,91 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: imx@lists.linux.dev, ast@kernel.org, alexander.duyck@gmail.com,
- linux-mm@kvack.org, edumazet@google.com, anthony.l.nguyen@intel.com,
- shenwei.wang@nxp.com, xiaoning.wang@nxp.com, wei.fang@nxp.com,
- ryder.lee@mediatek.com, daniel@iogearbox.net, linux-rdma@vger.kernel.org,
- przemyslaw.kitszel@intel.com, john.fastabend@gmail.com, iommu@lists.linux.dev,
- liuyonglong@huawei.com, intel-wired-lan@lists.osuosl.org,
- zhangkun09@huawei.com, kuba@kernel.org, pabeni@redhat.com, lorenzo@kernel.org,
- hawk@kernel.org, kvalo@kernel.org, sean.wang@mediatek.com,
- linux-mediatek@lists.infradead.org, fanghaiqing@huawei.com,
- matthias.bgg@gmail.com, bpf@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, angelogioacchino.delregno@collabora.com,
- leon@kernel.org, netdev@vger.kernel.org, ilias.apalodimas@linaro.org,
- linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
- tariqt@nvidia.com, aleksander.lobakin@intel.com, saeedm@nvidia.com,
- akpm@linux-foundation.org, shayne.chen@mediatek.com, robin.murphy@arm.com,
- davem@davemloft.net, nbd@nbd.name
+Cc: netdev@vger.kernel.org, intel-wired-lan@lists.osuosl.org,
+ linux-kernel@vger.kernel.org
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
->>>> With all the caching in the network stack, some pages may be
->>>> held in the network stack without returning to the page_pool
->>>> soon enough, and with VF disable causing the driver unbound,
->>>> the page_pool does not stop the driver from doing it's
->>>> unbounding work, instead page_pool uses workqueue to check
->>>> if there is some pages coming back from the network stack
->>>> periodically, if there is any, it will do the dma unmmapping
->>>> related cleanup work.
->>>>
->>>> As mentioned in [1], attempting DMA unmaps after the driver
->>>> has already unbound may leak resources or at worst corrupt
->>>> memory. Fundamentally, the page pool code cannot allow DMA
->>>> mappings to outlive the driver they belong to.
->>>>
->>>> Currently it seems there are at least two cases that the page
->>>> is not released fast enough causing dma unmmapping done after
->>>> driver has already unbound:
->>>> 1. ipv4 packet defragmentation timeout: this seems to cause
->>>>    delay up to 30 secs:
->>>>
->>>> 2. skb_defer_free_flush(): this may cause infinite delay if
->>>>    there is no triggering for net_rx_action().
->>>>
->>>> In order not to do the dma unmmapping after driver has already
->>>> unbound and stall the unloading of the networking driver, add
->>>> the pool->items array to record all the pages including the ones
->>>> which are handed over to network stack, so the page_pool can
->>>> do the dma unmmapping for those pages when page_pool_destroy()
->>>> is called.
->>>
->>> So, I was thinking of a very similar idea. But what do you mean by
->>> "all"? The pages that are still in caches (slow or fast) of the pool
->>> will be unmapped during page_pool_destroy().
->>
->> Yes, it includes the one in pool->alloc and pool->ring.
->
-> It worths mentioning that there is a semantics changing here:
-> Before this patch, there can be almost unlimited inflight pages used by
-> driver and network stack, as page_pool doesn't really track those pages.
-> After this patch, as we use a fixed-size pool->items array to track the
-> inflight pages, the inflight pages is limited by the pool->items, currently
-> the size of pool->items array is calculated as below in this patch:
->
-> +#define PAGE_POOL_MIN_ITEM_CNT	512
-> +	unsigned int item_cnt = (params->pool_size ? : 1024) +
-> +				PP_ALLOC_CACHE_SIZE + PAGE_POOL_MIN_ITEM_CNT;
->
-> Personally I would consider it is an advantage to limit how many pages which
-> are used by the driver and network stack, the problem seems to how to decide
-> the limited number of page used by network stack so that performance is not
-> impacted.
+Commit 004d25060c78 ("igb: Fix igb_down hung on surprise removal")
+changed igb_io_error_detected() to ignore non-fatal pcie errors in order
+to avoid hung task that can happen when igb_down() is called multiple
+times. This caused an issue when processing transient non-fatal errors.
+igb_io_resume(), which is called after igb_io_error_detected(), assumes
+that device is brought down by igb_io_error_detected() if the interface
+is up. This resulted in panic with stacktrace below.
 
-In theory, with respect to the specific problem at hand, you only have
-a limit on the number of mapped pages inflight. Once you reach this
-limit you can unmap these old pages, forget about them and remember
-new ones.
+[ T3256] igb 0000:09:00.0 haeth0: igb: haeth0 NIC Link is Down
+[  T292] pcieport 0000:00:1c.5: AER: Uncorrected (Non-Fatal) error received: 0000:09:00.0
+[  T292] igb 0000:09:00.0: PCIe Bus Error: severity=Uncorrected (Non-Fatal), type=Transaction Layer, (Requester ID)
+[  T292] igb 0000:09:00.0:   device [8086:1537] error status/mask=00004000/00000000
+[  T292] igb 0000:09:00.0:    [14] CmpltTO [  200.105524,009][  T292] igb 0000:09:00.0: AER:   TLP Header: 00000000 00000000 00000000 00000000
+[  T292] pcieport 0000:00:1c.5: AER: broadcast error_detected message
+[  T292] igb 0000:09:00.0: Non-correctable non-fatal error reported.
+[  T292] pcieport 0000:00:1c.5: AER: broadcast mmio_enabled message
+[  T292] pcieport 0000:00:1c.5: AER: broadcast resume message
+[  T292] ------------[ cut here ]------------
+[  T292] kernel BUG at net/core/dev.c:6539!
+[  T292] invalid opcode: 0000 [#1] PREEMPT SMP
+[  T292] RIP: 0010:napi_enable+0x37/0x40
+[  T292] Call Trace:
+[  T292]  <TASK>
+[  T292]  ? die+0x33/0x90
+[  T292]  ? do_trap+0xdc/0x110
+[  T292]  ? napi_enable+0x37/0x40
+[  T292]  ? do_error_trap+0x70/0xb0
+[  T292]  ? napi_enable+0x37/0x40
+[  T292]  ? napi_enable+0x37/0x40
+[  T292]  ? exc_invalid_op+0x4e/0x70
+[  T292]  ? napi_enable+0x37/0x40
+[  T292]  ? asm_exc_invalid_op+0x16/0x20
+[  T292]  ? napi_enable+0x37/0x40
+[  T292]  igb_up+0x41/0x150
+[  T292]  igb_io_resume+0x25/0x70
+[  T292]  report_resume+0x54/0x70
+[  T292]  ? report_frozen_detected+0x20/0x20
+[  T292]  pci_walk_bus+0x6c/0x90
+[  T292]  ? aer_print_port_info+0xa0/0xa0
+[  T292]  pcie_do_recovery+0x22f/0x380
+[  T292]  aer_process_err_devices+0x110/0x160
+[  T292]  aer_isr+0x1c1/0x1e0
+[  T292]  ? disable_irq_nosync+0x10/0x10
+[  T292]  irq_thread_fn+0x1a/0x60
+[  T292]  irq_thread+0xe3/0x1a0
+[  T292]  ? irq_set_affinity_notifier+0x120/0x120
+[  T292]  ? irq_affinity_notify+0x100/0x100
+[  T292]  kthread+0xe2/0x110
+[  T292]  ? kthread_complete_and_exit+0x20/0x20
+[  T292]  ret_from_fork+0x2d/0x50
+[  T292]  ? kthread_complete_and_exit+0x20/0x20
+[  T292]  ret_from_fork_asm+0x11/0x20
+[  T292]  </TASK>
+
+To fix this issue igb_io_resume() checks if the interface is running and
+the device is not down this means igb_io_error_detected() did not bring
+the device down and there is no need to bring it up.
+
+Signed-off-by: Mohamed Khalfella <mkhalfella@purestorage.com>
+Reviewed-by: Yuanyuan Zhong<yzhong@purestorage.com>
+Fixes: 004d25060c78 ("igb: Fix igb_down hung on surprise removal")
+---
+ drivers/net/ethernet/intel/igb/igb_main.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index 1ef4cb871452..8c6bc3db9a3d 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -9651,6 +9651,10 @@ static void igb_io_resume(struct pci_dev *pdev)
+ 	struct igb_adapter *adapter = netdev_priv(netdev);
+ 
+ 	if (netif_running(netdev)) {
++		if (!test_bit(__IGB_DOWN, &adapter->state)) {
++			dev_info(&pdev->dev, "Resuming from non-fatal error, do nothing.\n");
++			return;
++		}
+ 		if (igb_up(adapter)) {
+ 			dev_err(&pdev->dev, "igb_up failed after reset\n");
+ 			return;
+-- 
+2.45.2
+
