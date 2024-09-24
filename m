@@ -1,123 +1,84 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2B450CF9C6B
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 24 Sep 2024 11:21:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 84018CF9C6F
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 24 Sep 2024 15:24:05 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id C94DC80D1C;
-	Tue, 24 Sep 2024 11:21:53 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 2659D60B1D;
+	Tue, 24 Sep 2024 15:24:05 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id IXslbKZZJl8U; Tue, 24 Sep 2024 11:21:52 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id OSdGAJSqGXZp; Tue, 24 Sep 2024 15:24:03 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org EB49A80D12
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7A4B5606CB
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1727176912;
-	bh=SMqzVhG5SdaonHmaAq6rRj2N1TQoLv9pnExCxLW4ek4=;
-	h=References:In-Reply-To:From:Date:To:Subject:List-Id:
+	s=default; t=1727191443;
+	bh=gbsc/S+S7HQhPPj508Ku1haGxcV7bbpJJEqEmIjfO0A=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=hzx0v2orKNv5rQCK51wADkN3fF7dn6eNS6WoZAROsm8xqDw1OPOQElho+QLBz44Ni
-	 Sa7Qn8trMhzUiPMBMY80Jj1zOoUxCDW04o5x7WIT49fAy+N8yriIGRoiKUri2cIkIC
-	 7ioisEIcNTxDEw5xhseThG8+JGERLc4UoE9LyAMh9xX78ze7eWo+Cj08yWdRd7Vvvs
-	 KbOuRgGqYIgds3lKruVl9T3Jw1nz5he0YRV4Dq6vBKK1BhtZkiWiHMyQjGlZ83vNvZ
-	 nFpEjK18FHkGtGq3ZjW9SNFOkhGONWMv0yZMIQcsDo6H9YQ+TbMupjbvXV2XvZjmq2
-	 oraR0Z7HobfDw==
+	b=ZPOi7rBSaq1kq0kMFLmHZqf92QtMj9bHNSRroHjClKmJuWoXessu/yXJ7MckLoeVy
+	 n6PRxI+R9946IVmBxtl3yrcytnRDLsFySdI4BgZjhDUOxAR3xlQ5MVikdcZQ+xLtjr
+	 4VA9kQPRXxnSsxRWIDtgGtktIj1ga9+2dJbQSobboT9EOGglGYJd6RVW32g+j6ogZr
+	 kXUIdLsbbikLIfvgZya/r236fmnZy/hvNTr32+TSfiaP/vrVfKo7B5EOiZkNV7FXlo
+	 MZOW38k8tAXXdWK2AfRR7LMCqufEKpXvZWfNlDWU2mpGiiAha8wt0jSyPoZKYIUyGJ
+	 hkWU03b05iLEw==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id EB49A80D12;
-	Tue, 24 Sep 2024 11:21:51 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 7A86D1BF37C
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Sep 2024 11:21:50 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 7A4B5606CB;
+	Tue, 24 Sep 2024 15:24:03 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 69A331BF385
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Sep 2024 06:47:14 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 67A9641878
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Sep 2024 11:21:50 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 534D8403E2
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Sep 2024 06:47:14 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id X9YdGUksE7uV for <intel-wired-lan@lists.osuosl.org>;
- Tue, 24 Sep 2024 11:21:49 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.133.124;
- helo=us-smtp-delivery-124.mimecast.com; envelope-from=wcosta@redhat.com;
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id qfAxfSoyKqG7 for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 24 Sep 2024 06:47:13 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=185.176.79.56;
+ helo=frasgout.his.huawei.com; envelope-from=gur.stavi@huawei.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 797B541871
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 797B541871
-Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.133.124])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 797B541871
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Sep 2024 11:21:48 +0000 (UTC)
-Received: from mail-lf1-f71.google.com (mail-lf1-f71.google.com
- [209.85.167.71]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-68-qQecRv7tNiqx-1t-wWcwJQ-1; Tue, 24 Sep 2024 07:21:43 -0400
-X-MC-Unique: qQecRv7tNiqx-1t-wWcwJQ-1
-Received: by mail-lf1-f71.google.com with SMTP id
- 2adb3069b0e04-53567ffae5fso4102711e87.3
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Sep 2024 04:21:43 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20230601; t=1727176902; x=1727781702;
- h=content-transfer-encoding:cc:to:subject:message-id:date:from
- :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
- :subject:date:message-id:reply-to;
- bh=SMqzVhG5SdaonHmaAq6rRj2N1TQoLv9pnExCxLW4ek4=;
- b=H233ZdUtMmowWTnE0G9Q58OghK3NE8KOggq4rfuAfLXaK8y8jIrzTMj8/VL8Kf+elH
- EyNXE9bXgEc1Ko32Lf+3pm2RQAOdO6WlDIQbgDbMJaGrOONkf6r/I0HuS2wCLFrtABLy
- jGPYPt7CWu7GKB0loscDCeHrszeHOhWPTFrYcgMMs6nBQp9wQZG2nBtsbX6mhK9YCrIK
- X5Ul5H3eBd9SIWzUx1KhtDGfX2asl7nFj7fBPjvgbJXquCG3O9zFD46uyLAKRBzlr6cb
- uKNA2wFXqHGYfz0VxgIO10bOx2I9PqzuA2cSCcGxGXVhj7gjR34RbG9HeHcSgSqVDKhc
- r3Bw==
-X-Forwarded-Encrypted: i=1;
- AJvYcCXJQ4J2+jfkugzDD50uOoAnHLMO1I8u26hJ20DqMx0uYZ4TJf/cd8WEYL1WdeIAOGqsx98/VLP0h5E/BMXRkW4=@lists.osuosl.org
-X-Gm-Message-State: AOJu0YzNqpg13kGGDdaEnznWBCHdBOhr7CaFdask6EyaFPPrOG9wJHnA
- 0ZHXG4m47nvGpoM0e0ifqH2F2/+2F43EnhLNnIXXXVn5g1IRQHxZ6RMQQp9nHl/iYlR8N6e38R7
- yia/ZmaAm1kFEhYabmV+liGQLpUOUR0EuvBkejL/Tvn/rwrAlF38+amxaz2Ll5yjlQt9OgnOP5v
- vsvZAhPWuXqhci0cpUo7oFTxKL0A5pyfNeZpbz9kuhdA==
-X-Received: by 2002:a05:6512:281c:b0:533:44a3:21b9 with SMTP id
- 2adb3069b0e04-536acf6abdemr7539255e87.1.1727176902194; 
- Tue, 24 Sep 2024 04:21:42 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IFCJLTsjiLCDndre4ai+QsmabLg00scLxW4mqpYCR/Nr6z9gFp7Mfekj01pgzF+20w2ueRN1Yg+hqwbsOwhBrI=
-X-Received: by 2002:a05:6512:281c:b0:533:44a3:21b9 with SMTP id
- 2adb3069b0e04-536acf6abdemr7539227e87.1.1727176901734; Tue, 24 Sep 2024
- 04:21:41 -0700 (PDT)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 83B3440359
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 83B3440359
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com
+ [185.176.79.56])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 83B3440359
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Sep 2024 06:47:11 +0000 (UTC)
+Received: from mail.maildlp.com (unknown [172.18.186.231])
+ by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4XCVl40H3fz6J6DN;
+ Tue, 24 Sep 2024 14:46:40 +0800 (CST)
+Received: from frapeml500005.china.huawei.com (unknown [7.182.85.13])
+ by mail.maildlp.com (Postfix) with ESMTPS id EE8BB140B63;
+ Tue, 24 Sep 2024 14:47:07 +0800 (CST)
+Received: from china (10.200.201.82) by frapeml500005.china.huawei.com
+ (7.182.85.13) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.1.2507.39; Tue, 24 Sep
+ 2024 08:46:45 +0200
+From: Gur Stavi <gur.stavi@huawei.com>
+To: <linyunsheng@huawei.com>
+Date: Tue, 24 Sep 2024 09:45:59 +0300
+Message-ID: <20240924064559.1681488-1-gur.stavi@huawei.com>
+X-Mailer: git-send-email 2.45.2
+In-Reply-To: <2fb8d278-62e0-4a81-a537-8f601f61e81d@huawei.com>
+References: <2fb8d278-62e0-4a81-a537-8f601f61e81d@huawei.com>
 MIME-Version: 1.0
-References: <20240920185918.616302-1-wander@redhat.com>
- <20240920185918.616302-3-wander@redhat.com>
- <7e2c75bf-3ec5-4202-8b69-04fce763e948@molgen.mpg.de>
- <02076f9d-1158-4f3e-85cc-83ee4d41091e@intel.com>
- <CAAq0SUkeVkiit383065nhfCibn-CG701uvaM6UHpWu9RaZE83g@mail.gmail.com>
- <8702d2c1-faf0-44bb-93e9-e905f077b6c0@intel.com>
-In-Reply-To: <8702d2c1-faf0-44bb-93e9-e905f077b6c0@intel.com>
-From: Wander Lairson Costa <wander@redhat.com>
-Date: Tue, 24 Sep 2024 08:21:29 -0300
-Message-ID: <CAAq0SU=n0Qym5EmpimHb=6ayEeURYpHgoYxX8ZxuFbXziKHprw@mail.gmail.com>
-To: Tony Nguyen <anthony.l.nguyen@intel.com>
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: redhat.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=redhat.com; 
- s=mimecast20190719; t=1727176907;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=SMqzVhG5SdaonHmaAq6rRj2N1TQoLv9pnExCxLW4ek4=;
- b=Tu53hUhjgHdb29jDoMFO2CcFisM0gWfSZChhWIHL2XknJSsskmWUqiFptZw4g5/Mdz4ZSb
- s1rMU7rxDOe1H0vfmjOxiXRL3rNB9/n36bzCVosQ/smTEp6DhOOJciqZ9nVBXRtyjppc+M
- vOrulHz4oxfdZEELO88HwFL0vWZP3Fo=
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=redhat.com
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (1024-bit key,
- unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=Tu53hUhj
-Subject: Re: [Intel-wired-lan] [PATCH 2/2] igbvf: remove unused spinlock
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.200.201.82]
+X-ClientProxiedBy: dggems706-chm.china.huawei.com (10.3.19.183) To
+ frapeml500005.china.huawei.com (7.182.85.13)
+X-Mailman-Approved-At: Tue, 24 Sep 2024 15:24:02 +0000
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dmarc=pass (p=quarantine dis=none)
+ header.from=huawei.com
+Subject: Re: [Intel-wired-lan] [PATCH net 2/2] page_pool: fix IOMMU crash
+ when driver has already unbound
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -130,71 +91,78 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Paul Menzel <pmenzel@molgen.mpg.de>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>, linux-kernel@vger.kernel.org,
- Eric Dumazet <edumazet@google.com>, intel-wired-lan@lists.osuosl.org,
- netdev@vger.kernel.org, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, "David S. Miller" <davem@davemloft.net>
+Cc: imx@lists.linux.dev, ast@kernel.org, alexander.duyck@gmail.com,
+ linux-mm@kvack.org, edumazet@google.com, anthony.l.nguyen@intel.com,
+ shenwei.wang@nxp.com, xiaoning.wang@nxp.com, wei.fang@nxp.com,
+ ryder.lee@mediatek.com, daniel@iogearbox.net, linux-rdma@vger.kernel.org,
+ przemyslaw.kitszel@intel.com, john.fastabend@gmail.com, iommu@lists.linux.dev,
+ liuyonglong@huawei.com, intel-wired-lan@lists.osuosl.org,
+ zhangkun09@huawei.com, kuba@kernel.org, pabeni@redhat.com, lorenzo@kernel.org,
+ hawk@kernel.org, kvalo@kernel.org, sean.wang@mediatek.com,
+ linux-mediatek@lists.infradead.org, fanghaiqing@huawei.com,
+ matthias.bgg@gmail.com, bpf@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, angelogioacchino.delregno@collabora.com,
+ leon@kernel.org, netdev@vger.kernel.org, ilias.apalodimas@linaro.org,
+ linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
+ tariqt@nvidia.com, aleksander.lobakin@intel.com, saeedm@nvidia.com,
+ akpm@linux-foundation.org, shayne.chen@mediatek.com, robin.murphy@arm.com,
+ davem@davemloft.net, nbd@nbd.name
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Mon, Sep 23, 2024 at 3:44=E2=80=AFPM Tony Nguyen <anthony.l.nguyen@intel=
-.com> wrote:
+>>>> With all the caching in the network stack, some pages may be
+>>>> held in the network stack without returning to the page_pool
+>>>> soon enough, and with VF disable causing the driver unbound,
+>>>> the page_pool does not stop the driver from doing it's
+>>>> unbounding work, instead page_pool uses workqueue to check
+>>>> if there is some pages coming back from the network stack
+>>>> periodically, if there is any, it will do the dma unmmapping
+>>>> related cleanup work.
+>>>>
+>>>> As mentioned in [1], attempting DMA unmaps after the driver
+>>>> has already unbound may leak resources or at worst corrupt
+>>>> memory. Fundamentally, the page pool code cannot allow DMA
+>>>> mappings to outlive the driver they belong to.
+>>>>
+>>>> Currently it seems there are at least two cases that the page
+>>>> is not released fast enough causing dma unmmapping done after
+>>>> driver has already unbound:
+>>>> 1. ipv4 packet defragmentation timeout: this seems to cause
+>>>>    delay up to 30 secs:
+>>>>
+>>>> 2. skb_defer_free_flush(): this may cause infinite delay if
+>>>>    there is no triggering for net_rx_action().
+>>>>
+>>>> In order not to do the dma unmmapping after driver has already
+>>>> unbound and stall the unloading of the networking driver, add
+>>>> the pool->items array to record all the pages including the ones
+>>>> which are handed over to network stack, so the page_pool can
+>>>> do the dma unmmapping for those pages when page_pool_destroy()
+>>>> is called.
+>>>
+>>> So, I was thinking of a very similar idea. But what do you mean by
+>>> "all"? The pages that are still in caches (slow or fast) of the pool
+>>> will be unmapped during page_pool_destroy().
+>>
+>> Yes, it includes the one in pool->alloc and pool->ring.
 >
+> It worths mentioning that there is a semantics changing here:
+> Before this patch, there can be almost unlimited inflight pages used by
+> driver and network stack, as page_pool doesn't really track those pages.
+> After this patch, as we use a fixed-size pool->items array to track the
+> inflight pages, the inflight pages is limited by the pool->items, currently
+> the size of pool->items array is calculated as below in this patch:
 >
+> +#define PAGE_POOL_MIN_ITEM_CNT	512
+> +	unsigned int item_cnt = (params->pool_size ? : 1024) +
+> +				PP_ALLOC_CACHE_SIZE + PAGE_POOL_MIN_ITEM_CNT;
 >
-> On 9/23/2024 9:46 AM, Wander Lairson Costa wrote:
-> > On Mon, Sep 23, 2024 at 6:04=E2=80=AFAM Przemek Kitszel
-> > <przemyslaw.kitszel@intel.com> wrote:
-> >>
-> >> On 9/21/24 14:52, Paul Menzel wrote:
-> >>> Dear Wander,
-> >>>
-> >>>
-> >>> Thank you for your patch.
-> >>>
-> >>> Am 20.09.24 um 20:59 schrieb Wander Lairson Costa:
-> >>>> tx_queue_lock and stats_lock are declared and initialized, but never
-> >>>> used. Remove them.
-> >>>>
-> >>>> Signed-off-by: Wander Lairson Costa <wander@redhat.com>
-> >>>
-> >>> It=E2=80=99d be great if you added a Fixes: tag.
-> >>
-> >> Alternatively you could split this series into two, and send this patc=
-h
-> >> to iwl-next tree, without the fixes tag. For me this patch is just
-> >> a cleanup, not a fix.
-> >>
-> >>>
-> >>
-> >
-> > Should I send a new version of the patches separately?
->
-> The patches apply to the respective trees when split out so I can take
-> these without a re-send. Patch 1 will need a Fixes: for it though...
->
-> I'm seeing it as: 9d5c824399de ("igb: PCI-Express 82575 Gigabit Ethernet
-> driver")?
->
+> Personally I would consider it is an advantage to limit how many pages which
+> are used by the driver and network stack, the problem seems to how to decide
+> the limited number of page used by network stack so that performance is not
+> impacted.
 
-Can you add the tag when you apply the patch or should I add it?
-
-> Thanks,
-> Tony
->
-> >> [...]
-> >>
-> >>>
-> >>> With that addressed:
-> >>>
-> >>> Reviewed-by: Paul Menzel <pmenzel@molgen.mpg.de>
-> >>>
-> >>>
-> >>> Kind regards,
-> >>>
-> >>> Paul
-> >>
-> >
->
-
+In theory, with respect to the specific problem at hand, you only have
+a limit on the number of mapped pages inflight. Once you reach this
+limit you can unmap these old pages, forget about them and remember
+new ones.
