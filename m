@@ -1,116 +1,105 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2CE2ECF9C6F
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 24 Sep 2024 15:24:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 04C9BCF9C6B
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 24 Sep 2024 17:13:08 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id CCB61606CB;
-	Tue, 24 Sep 2024 15:24:17 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id A992B847A8;
+	Tue, 24 Sep 2024 17:13:08 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Pp9qJUrR9kAr; Tue, 24 Sep 2024 15:24:17 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id KLZhWIU7dXPZ; Tue, 24 Sep 2024 17:13:06 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 5F11D60B2E
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 5DA4C8479D
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1727191456;
-	bh=CxBI093a9aSk/5D0mfkUxCMUyakEBiULYIO2uu3ziqo=;
-	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=QBn6D++soxzCnHnpBHHTRCuipGiVqcENHfZXNv+OiAu7m5zBlPPHgogQSwuU6vU2v
-	 gWHgBvI0PTI/FpboUcve2JbxNOZAq/69kYFRYjBxxLJpGRd8w1ooNJzGex4d90WB2j
-	 x2fDQkjQw4om9ce/AZY60IYK543yNlzqMxydAItgWEXPx9L0E9gTxK6vEsgKnrXc00
-	 JlRxPKJ5o2CGiS2d8fkhG7QWQ0SE+QrLv+SqaB00radlyxsYZY5oW29Ne/QuRJdHvS
-	 CS6w/BgGFY416mfYSzAERBx4IPMNQHjV1ucRDhDCSCf4HimExfiW5mYkYJyDmvoqeM
-	 v/EC60nWGkI3A==
+	s=default; t=1727197986;
+	bh=OgauavqCA16lUVlBFiSeR76SwRx14LMrHfxUhoIWJ3Y=;
+	h=From:Date:To:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=rPBeMTprp2JYK4Hs9jloHOLTKkDidQbSenAYWimcoh7wHjtybUNJuUq8p+9MbqjES
+	 RjtyvntRNF7/gPTKwy0wdKL0KyGciMG656gx+QuQshSxeQCtdC1vef6B43bmkqMHVD
+	 oOMVMSfzEFUXpTKRA/QHPTE4Lpx17Z8A9MTh2JKM9AB0OgAsEBfJPil/G6QiSDnxud
+	 ixyQM4CcxNG1j94UzAQ6PuhCG9A9UBuXcfTMWvebAUfCJAyDjVrvSqlo4wcdR9SvIM
+	 Doxg2tuseslZewLXQ8Men3YGJKiFhQxC/Z/h3vwclQOcUuwzK7AeAEe/0eEs01JDOM
+	 gFJarSXfFUKaw==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 5F11D60B2E;
-	Tue, 24 Sep 2024 15:24:16 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 9587D1BF309
- for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Sep 2024 23:23:55 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 5DA4C8479D;
+	Tue, 24 Sep 2024 17:13:06 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 7E18F1BF2A4
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Sep 2024 16:13:08 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 82793412F5
- for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Sep 2024 23:23:55 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 78668402E5
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Sep 2024 16:13:08 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 6ckgeRNxJP9K for <intel-wired-lan@lists.osuosl.org>;
- Mon, 23 Sep 2024 23:23:54 +0000 (UTC)
-Received-SPF: Permerror (mailfrom) identity=mailfrom;
- client-ip=2607:f8b0:4864:20::62d; helo=mail-pl1-x62d.google.com;
- envelope-from=mkhalfella@purestorage.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 426E9412A4
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 426E9412A4
-Received: from mail-pl1-x62d.google.com (mail-pl1-x62d.google.com
- [IPv6:2607:f8b0:4864:20::62d])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 426E9412A4
- for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Sep 2024 23:23:52 +0000 (UTC)
-Received: by mail-pl1-x62d.google.com with SMTP id
- d9443c01a7336-206e614953aso47061675ad.1
- for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Sep 2024 16:23:52 -0700 (PDT)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 5a0eco0RNKIt for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 24 Sep 2024 16:13:07 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2a00:1450:4864:20::232; helo=mail-lj1-x232.google.com;
+ envelope-from=reveliofuzzing@gmail.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org D45F640125
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org D45F640125
+Received: from mail-lj1-x232.google.com (mail-lj1-x232.google.com
+ [IPv6:2a00:1450:4864:20::232])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id D45F640125
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Sep 2024 16:13:06 +0000 (UTC)
+Received: by mail-lj1-x232.google.com with SMTP id
+ 38308e7fff4ca-2f75de9a503so53850951fa.0
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Sep 2024 09:13:06 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20230601; t=1727133832; x=1727738632;
- h=in-reply-to:content-disposition:mime-version:references:message-id
- :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
- :message-id:reply-to;
- bh=CxBI093a9aSk/5D0mfkUxCMUyakEBiULYIO2uu3ziqo=;
- b=CPC5X7/gkjNisetNBODuZwMJxJNsm9GuL8x2f4/Ta0ldaKsOt3ty7lFacYxHWjy1Og
- 2B4BuHcD5bssN6epMPuvXedZEYZrObtNmCj5MIIsVicswSt9WdCbOsCteBjwlMDNWzSb
- ZPp8+Tp0Ijb3d0j7+I/3bt4pcGDoTL9/7a1UNNAGepPG770ui6AZ64mL3292Y1QgNkwu
- N5wqeXQduNS3AEGO7U6skoPP3oxwADh5n9aC4xD3Sc5mztnMq/Jc9zDyC+pSrvfaqOQE
- zUWleALrI0IQ23u3Wd4IBGaZhA3oYhXqkcR+B4EsErd7hnJxXDokeD9F480eIgCBF6YE
- Ws1A==
+ d=1e100.net; s=20230601; t=1727194384; x=1727799184;
+ h=to:subject:message-id:date:from:mime-version:x-gm-message-state
+ :from:to:cc:subject:date:message-id:reply-to;
+ bh=OgauavqCA16lUVlBFiSeR76SwRx14LMrHfxUhoIWJ3Y=;
+ b=j2pd1i5cD8ivG0KazBDfUWnA3VQS+n+m3mdkODm4lDPs2luDj+rWD6btmmu1ynzDvP
+ UibJ7f4avKpG6sZPcNtHNSwhNoKmQbOUf+wB8vIN3omo6deAvujRqg8r6I37KfYgXQiJ
+ CaCAW6vOdo0zWhO2nT3O/wa5RakfYdTQevCpvM94SQVnUmh9+CwTtpG7B+rm1Z6qQA4p
+ L5XjSTRvzv8hhWatjKxTiiUUYk0h/AH3rEojETH3oVsmAAnN3HzZ9hp8O2Vb7+FIfFKb
+ 9vVLgFOtbX1QRZ/wuVzcmy2tjZdm5JNJUN3ijWjfvdI+WRpHXbitqMxDV4zmbtMwBGZC
+ BmmA==
 X-Forwarded-Encrypted: i=1;
- AJvYcCV7HTxFypsG/8fg0isTt5Prd6/9ivN8ntv8V9awMhwOwrEnIRWVjZpqhOCO8/lAPSeamH8ElL8N+kvuwTGZTok=@lists.osuosl.org
-X-Gm-Message-State: AOJu0YwDiAyMQvZGLnht4Tfk+qUdI+7D1aOGiNIer7zbrD8bpKHwZ8P9
- m+OkbM/f8LeF4v2bjthykSbRbPCBIQ05ZQYXLtuTgcReFAInDDIN5jqTbxauD5D73gjkPtt5Jtw
- n3yk=
-X-Google-Smtp-Source: AGHT+IHq2YU/Xc8NCHkA+s4BXEcmCGU4qgTn8nMgXddFujLsE47Qx4kZ/JFI5d6x9CTQvQRAlTki0A==
-X-Received: by 2002:a17:902:d2c1:b0:1fc:4940:d3ad with SMTP id
- d9443c01a7336-208d856abcfmr184409775ad.59.1727133832010; 
- Mon, 23 Sep 2024 16:23:52 -0700 (PDT)
-Received: from medusa.lab.kspace.sh ([208.88.152.253])
- by smtp.googlemail.com with ESMTPSA id
- d9443c01a7336-20af17e0332sm852765ad.163.2024.09.23.16.23.51
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 23 Sep 2024 16:23:51 -0700 (PDT)
-Date: Mon, 23 Sep 2024 16:23:50 -0700
-From: Mohamed Khalfella <mkhalfella@purestorage.com>
-To: Jacob Keller <jacob.e.keller@intel.com>
-Message-ID: <ZvH4hp0DJRoWj-gD@apollo.purestorage.com>
-References: <20240923212218.116979-1-mkhalfella@purestorage.com>
- <2c272599-6b25-4c93-86fa-ecfd8df024c1@intel.com>
+ AJvYcCXK+Np+JIsK8S0IZx97kFSL5ikFOurK7v3PEVWsjKfCu70pREOj7wX4TXFBTvuahzNgKrxH3En7aVvf9YqdOcY=@lists.osuosl.org
+X-Gm-Message-State: AOJu0YwRHhZLgruG7n2cuVX+wB2yOYfMc7HrAuHgIsZ0rx1bIO1dWY3J
+ 3kaviwsnT/WF8dac8brGSTtk8AzJ4wzq0l0FGJx++qMF8O7N/JY/Lj2dfXzZq1PvscBxNV3WeMR
+ hSDPZhZ7m8IyrQFLZ3FCy28K3p/Q=
+X-Google-Smtp-Source: AGHT+IFFFrcmaaxFIwdp71KQhdtVVkaDC1vDnP5bp3dNfsehZa7Pu+ejqeyZtgAnR9bjwiwZ1GdK4mmMEV+z3dwhtpU=
+X-Received: by 2002:a05:6512:15a2:b0:52f:cc06:c483 with SMTP id
+ 2adb3069b0e04-536ac2e778amr8681852e87.24.1727194383830; Tue, 24 Sep 2024
+ 09:13:03 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2c272599-6b25-4c93-86fa-ecfd8df024c1@intel.com>
-X-Mailman-Approved-At: Tue, 24 Sep 2024 15:24:12 +0000
+From: reveliofuzzing <reveliofuzzing@gmail.com>
+Date: Tue, 24 Sep 2024 12:12:53 -0400
+Message-ID: <CA+-ZZ_hgYZJTJiVV1xONi0t2suBEKa_Tp2qhnj5Man0qV=siaA@mail.gmail.com>
+To: jesse.brandeburg@intel.com, anthony.l.nguyen@intel.com, 
+ davem@davemloft.net, edumazet@google.com, kuba@kernel.org, pabeni@redhat.com, 
+ intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+X-Mailman-Approved-At: Tue, 24 Sep 2024 17:13:04 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=purestorage.com; s=google2022; t=1727133832; x=1727738632;
- darn=lists.osuosl.org; 
- h=in-reply-to:content-disposition:mime-version:references:message-id
- :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
- bh=CxBI093a9aSk/5D0mfkUxCMUyakEBiULYIO2uu3ziqo=;
- b=FmekusP9EXwjGCDNpOu6kuoJTq2gDp6lXNiCoZfMqof70XY9UqPJQR1XWg7chyE4yw
- JhRpj1ibyJtcr4XLylqE9A6g+aWEgkEWVB2y3t7G9Mt/enaFJjZ8aZscgIOI8K4fuBRY
- 5biDwckaBk2Y0W8ayG3a/o8TcV0OJzjR2VK3B8YRy339iKkD//OzCdNvqmuh5YMQyc+m
- 364/HqcwV91f+ZqUupHJiYJHlfhry1MqlVQeuNMO7ms66qOCU6LtsPo1t06rH2yHlRsB
- 77S0BLPIWS1VnVG8EDLdWWGa+wGRzuvGyjMNsvR8WCLXGSpiO2t02g9y6NH4TXtmxejN
- RL9A==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dmarc=pass (p=reject dis=none)
- header.from=purestorage.com
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=purestorage.com header.i=@purestorage.com
- header.a=rsa-sha256 header.s=google2022 header.b=FmekusP9
-Subject: Re: [Intel-wired-lan] [PATCH] igb: Do not bring the device up after
- non-fatal error
+ d=gmail.com; s=20230601; t=1727194384; x=1727799184; darn=lists.osuosl.org;
+ h=to:subject:message-id:date:from:mime-version:from:to:cc:subject
+ :date:message-id:reply-to;
+ bh=OgauavqCA16lUVlBFiSeR76SwRx14LMrHfxUhoIWJ3Y=;
+ b=BTm/6qGOIE7Sxzuk6TPzV5ICQXFSsvHycsmeNYSppxw6oWRwHRRNS4S7v+QwD3SmPK
+ JRngPDTFFcA2My9ZFPdQ6vudFtANiUYGD9tGyylMeux9sGU852lPcesFkB/wwNg9Cwhv
+ +6j0S82kHO2Rl1f6souGP6REM7sGIX5W5MgxKWt+lqFhxIZ+wJ3OlqFy6F7QceX2jGjt
+ Lv+7kvHFQUB9jgc8NjihrYIIdZFqJMWS9BZYRfMLG2Oa7YPZcjQGAzq7BhADG6P1jfHD
+ edxP4PuKYij24y7QExDE+6rC9dfiLiGH/EwJOW1DbMbmqPMDXIp0YrDlHGNyj1H+by9f
+ Y0OA==
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=gmail.com
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
+ header.a=rsa-sha256 header.s=20230601 header.b=BTm/6qGO
+Subject: [Intel-wired-lan] Report "BUG: unable to handle kernel NULL pointer
+ dereference in e1000_clean_rx_irq"
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -123,102 +112,145 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Auke Kok <auke-jan.h.kok@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Ying Hsu <yinghsu@chromium.org>, linux-kernel@vger.kernel.org,
- Jeff Garzik <jgarzik@redhat.com>, Yuanyuan Zhong <yzhong@purestorage.com>,
- Eric Dumazet <edumazet@google.com>, netdev@vger.kernel.org,
- Tony Nguyen <anthony.l.nguyen@intel.com>, Simon Horman <horms@kernel.org>,
- intel-wired-lan@lists.osuosl.org, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, "David S. Miller" <davem@davemloft.net>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On 2024-09-23 16:11:14 -0700, Jacob Keller wrote:
-> 
-> 
-> On 9/23/2024 2:22 PM, Mohamed Khalfella wrote:
-> > Commit 004d25060c78 ("igb: Fix igb_down hung on surprise removal")
-> > changed igb_io_error_detected() to ignore non-fatal pcie errors in order
-> > to avoid hung task that can happen when igb_down() is called multiple
-> > times. This caused an issue when processing transient non-fatal errors.
-> > igb_io_resume(), which is called after igb_io_error_detected(), assumes
-> > that device is brought down by igb_io_error_detected() if the interface
-> > is up. This resulted in panic with stacktrace below.
-> > 
-> > [ T3256] igb 0000:09:00.0 haeth0: igb: haeth0 NIC Link is Down
-> > [  T292] pcieport 0000:00:1c.5: AER: Uncorrected (Non-Fatal) error received: 0000:09:00.0
-> > [  T292] igb 0000:09:00.0: PCIe Bus Error: severity=Uncorrected (Non-Fatal), type=Transaction Layer, (Requester ID)
-> > [  T292] igb 0000:09:00.0:   device [8086:1537] error status/mask=00004000/00000000
-> > [  T292] igb 0000:09:00.0:    [14] CmpltTO [  200.105524,009][  T292] igb 0000:09:00.0: AER:   TLP Header: 00000000 00000000 00000000 00000000
-> > [  T292] pcieport 0000:00:1c.5: AER: broadcast error_detected message
-> > [  T292] igb 0000:09:00.0: Non-correctable non-fatal error reported.
-> > [  T292] pcieport 0000:00:1c.5: AER: broadcast mmio_enabled message
-> > [  T292] pcieport 0000:00:1c.5: AER: broadcast resume message
-> > [  T292] ------------[ cut here ]------------
-> > [  T292] kernel BUG at net/core/dev.c:6539!
-> > [  T292] invalid opcode: 0000 [#1] PREEMPT SMP
-> > [  T292] RIP: 0010:napi_enable+0x37/0x40
-> > [  T292] Call Trace:
-> > [  T292]  <TASK>
-> > [  T292]  ? die+0x33/0x90
-> > [  T292]  ? do_trap+0xdc/0x110
-> > [  T292]  ? napi_enable+0x37/0x40
-> > [  T292]  ? do_error_trap+0x70/0xb0
-> > [  T292]  ? napi_enable+0x37/0x40
-> > [  T292]  ? napi_enable+0x37/0x40
-> > [  T292]  ? exc_invalid_op+0x4e/0x70
-> > [  T292]  ? napi_enable+0x37/0x40
-> > [  T292]  ? asm_exc_invalid_op+0x16/0x20
-> > [  T292]  ? napi_enable+0x37/0x40
-> > [  T292]  igb_up+0x41/0x150
-> > [  T292]  igb_io_resume+0x25/0x70
-> > [  T292]  report_resume+0x54/0x70
-> > [  T292]  ? report_frozen_detected+0x20/0x20
-> > [  T292]  pci_walk_bus+0x6c/0x90
-> > [  T292]  ? aer_print_port_info+0xa0/0xa0
-> > [  T292]  pcie_do_recovery+0x22f/0x380
-> > [  T292]  aer_process_err_devices+0x110/0x160
-> > [  T292]  aer_isr+0x1c1/0x1e0
-> > [  T292]  ? disable_irq_nosync+0x10/0x10
-> > [  T292]  irq_thread_fn+0x1a/0x60
-> > [  T292]  irq_thread+0xe3/0x1a0
-> > [  T292]  ? irq_set_affinity_notifier+0x120/0x120
-> > [  T292]  ? irq_affinity_notify+0x100/0x100
-> > [  T292]  kthread+0xe2/0x110
-> > [  T292]  ? kthread_complete_and_exit+0x20/0x20
-> > [  T292]  ret_from_fork+0x2d/0x50
-> > [  T292]  ? kthread_complete_and_exit+0x20/0x20
-> > [  T292]  ret_from_fork_asm+0x11/0x20
-> > [  T292]  </TASK>
-> > 
-> > To fix this issue igb_io_resume() checks if the interface is running and
-> > the device is not down this means igb_io_error_detected() did not bring
-> > the device down and there is no need to bring it up.
-> > 
-> > Signed-off-by: Mohamed Khalfella <mkhalfella@purestorage.com>
-> > Reviewed-by: Yuanyuan Zhong<yzhong@purestorage.com>
-> > Fixes: 004d25060c78 ("igb: Fix igb_down hung on surprise removal")
-> > ---
-> >  drivers/net/ethernet/intel/igb/igb_main.c | 4 ++++
-> >  1 file changed, 4 insertions(+)
-> > 
-> > diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-> > index 1ef4cb871452..8c6bc3db9a3d 100644
-> > --- a/drivers/net/ethernet/intel/igb/igb_main.c
-> > +++ b/drivers/net/ethernet/intel/igb/igb_main.c
-> > @@ -9651,6 +9651,10 @@ static void igb_io_resume(struct pci_dev *pdev)
-> >  	struct igb_adapter *adapter = netdev_priv(netdev);
-> >  
-> >  	if (netif_running(netdev)) {
-> > +		if (!test_bit(__IGB_DOWN, &adapter->state)) {
-> > +			dev_info(&pdev->dev, "Resuming from non-fatal error, do nothing.\n");
-> > +			return;
-> 
-> I'm not sure this needs to be a dev_info.
+Hello,
 
-I am okay with changing it to dev_warn() to match 004d25060c78 ("igb:
-Fix igb_down hung on surprise removal"). Is that okay?
+We found the following crash when fuzzing^1 the Linux kernel 6.10 and
+we are able
+to reproduce it. To our knowledge, this crash has not been observed by SyzBot so
+we would like to report it for your reference.
 
-> 
-> Reviewed-by: Jacob Keller <jacob.e.keller@intel.com>
+- Crash
+BUG: kernel NULL pointer dereference, address: 000000000000006a
+#PF: supervisor read access in kernel mode
+#PF: error_code(0x0000) - not-present page
+PGD 800000000859a067 P4D 800000000859a067 PUD 9526067 PMD 0
+Oops: Oops: 0000 [#1] PREEMPT SMP KASAN PTI
+CPU: 0 PID: 0 Comm: swapper/0 Not tainted 6.10.0 #2
+Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS
+1.13.0-1ubuntu1.1 04/01/2014
+RIP: 0010:memcpy_orig+0x64/0x140 linux-6.10/arch/x86/lib/memcpy_64.S:94
+Code: 57 10 4c 89 5f 18 48 8d 7f 20 73 d4 83 c2 20 eb 4c 48 01 d6 48
+01 d7 48 83 ea 20 66 66 2e 0f 1f 84 00 00 00 00 00 48 83 ea 20 <4c> 8b
+46 f8 4c 8b 4e f0 4c 8b 56 e8 4c 8b 5e e0 48 8d 76 e0 4c 89
+RSP: 0018:ffff88806d209bb8 EFLAGS: 00010202
+RAX: ffff888024a13c40 RBX: ffff888007898000 RCX: 1ffff11000f5ad7f
+RDX: 0000000000000032 RSI: 0000000000000072 RDI: ffff888024a13cb2
+RBP: ffff888007ad6b40 R08: 0000000000000001 R09: ffffed10049427dd
+R10: ffffed10049427dc R11: ffff888024a13ee3 R12: 0000000000000072
+R13: 0000000000000072 R14: ffff8880098d4920 R15: dffffc0000000000
+FS:  0000000000000000(0000) GS:ffff88806d200000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 000000000000006a CR3: 000000000cf9a004 CR4: 0000000000170ef0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
+Call Trace:
+ <IRQ>
+ skb_put_data linux-6.10/include/linux/skbuff.h:2689 [inline]
+ e1000_copybreak
+linux-6.10/drivers/net/ethernet/intel/e1000/e1000_main.c:4333 [inline]
+ e1000_clean_rx_irq+0x715/0x1020
+linux-6.10/drivers/net/ethernet/intel/e1000/e1000_main.c:4378
+ e1000_clean+0x831/0x22c0
+linux-6.10/drivers/net/ethernet/intel/e1000/e1000_main.c:3801
+ __napi_poll+0xa7/0x590 linux-6.10/net/core/dev.c:6722
+ napi_poll linux-6.10/net/core/dev.c:6791 [inline]
+ net_rx_action+0x877/0xc30 linux-6.10/net/core/dev.c:6907
+ handle_softirqs+0x162/0x520 linux-6.10/kernel/softirq.c:554
+ __do_softirq linux-6.10/kernel/softirq.c:588 [inline]
+ invoke_softirq linux-6.10/kernel/softirq.c:428 [inline]
+ __irq_exit_rcu linux-6.10/kernel/softirq.c:637 [inline]
+ irq_exit_rcu+0x7f/0xb0 linux-6.10/kernel/softirq.c:649
+ common_interrupt+0x98/0xb0 linux-6.10/arch/x86/kernel/irq.c:278
+ </IRQ>
+ <TASK>
+ asm_common_interrupt+0x26/0x40 linux-6.10/arch/x86/include/asm/idtentry.h:693
+RIP: 0010:native_irq_disable
+linux-6.10/arch/x86/include/asm/irqflags.h:37 [inline]
+RIP: 0010:arch_local_irq_disable
+linux-6.10/arch/x86/include/asm/irqflags.h:72 [inline]
+RIP: 0010:default_idle+0x1e/0x30 linux-6.10/arch/x86/kernel/process.c:743
+Code: 90 90 90 90 90 90 90 90 90 90 90 90 f3 0f 1e fa 0f 1f 44 00 00
+66 90 0f 1f 44 00 00 0f 00 2d 79 d9 3f 00 0f 1f 44 00 00 fb f4 <fa> c3
+cc cc cc cc 66 66 2e 0f 1f 84 00 00 00 00 00 90 90 90 90 90
+RSP: 0018:ffffffff84e07e18 EFLAGS: 00000242
+RAX: ffff88806d200000 RBX: 0000000000000000 RCX: ffffffff83e26864
+RDX: 0000000000000001 RSI: 0000000000000004 RDI: 00000000000446e4
+RBP: dffffc0000000000 R08: 0000000000000001 R09: ffffed100da46a99
+R10: ffffed100da46a98 R11: ffff88806d2354c3 R12: ffffffff856175d0
+R13: 1ffffffff09c0fc8 R14: 0000000000000000 R15: 0000000000000000
+ default_idle_call+0x38/0x60 linux-6.10/kernel/sched/idle.c:117
+ cpuidle_idle_call linux-6.10/kernel/sched/idle.c:191 [inline]
+ do_idle+0x2e8/0x3a0 linux-6.10/kernel/sched/idle.c:332
+ cpu_startup_entry+0x4f/0x60 linux-6.10/kernel/sched/idle.c:430
+ rest_init+0x116/0x140 linux-6.10/init/main.c:747
+ start_kernel+0x355/0x450 linux-6.10/init/main.c:1103
+ x86_64_start_reservations+0x18/0x30 linux-6.10/arch/x86/kernel/head64.c:507
+ x86_64_start_kernel+0x92/0xa0 linux-6.10/arch/x86/kernel/head64.c:488
+ common_startup_64+0x12c/0x138
+ </TASK>
+Modules linked in:
+CR2: 000000000000006a
+---[ end trace 0000000000000000 ]---
+RIP: 0010:memcpy_orig+0x64/0x140 linux-6.10/arch/x86/lib/memcpy_64.S:94
+Code: 57 10 4c 89 5f 18 48 8d 7f 20 73 d4 83 c2 20 eb 4c 48 01 d6 48
+01 d7 48 83 ea 20 66 66 2e 0f 1f 84 00 00 00 00 00 48 83 ea 20 <4c> 8b
+46 f8 4c 8b 4e f0 4c 8b 56 e8 4c 8b 5e e0 48 8d 76 e0 4c 89
+RSP: 0018:ffff88806d209bb8 EFLAGS: 00010202
+RAX: ffff888024a13c40 RBX: ffff888007898000 RCX: 1ffff11000f5ad7f
+RDX: 0000000000000032 RSI: 0000000000000072 RDI: ffff888024a13cb2
+RBP: ffff888007ad6b40 R08: 0000000000000001 R09: ffffed10049427dd
+R10: ffffed10049427dc R11: ffff888024a13ee3 R12: 0000000000000072
+R13: 0000000000000072 R14: ffff8880098d4920 R15: dffffc0000000000
+FS:  0000000000000000(0000) GS:ffff88806d200000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 000000000000006a CR3: 000000000cf9a004 CR4: 0000000000170ef0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
+----------------
+Code disassembly (best guess):
+   0: 57                    push   %rdi
+   1: 10 4c 89 5f          adc    %cl,0x5f(%rcx,%rcx,4)
+   5: 18 48 8d              sbb    %cl,-0x73(%rax)
+   8: 7f 20                jg     0x2a
+   a: 73 d4                jae    0xffffffe0
+   c: 83 c2 20              add    $0x20,%edx
+   f: eb 4c                jmp    0x5d
+  11: 48 01 d6              add    %rdx,%rsi
+  14: 48 01 d7              add    %rdx,%rdi
+  17: 48 83 ea 20          sub    $0x20,%rdx
+  1b: 66 66 2e 0f 1f 84 00 data16 nopw %cs:0x0(%rax,%rax,1)
+  22: 00 00 00 00
+  26: 48 83 ea 20          sub    $0x20,%rdx
+* 2a: 4c 8b 46 f8          mov    -0x8(%rsi),%r8 <-- trapping instruction
+  2e: 4c 8b 4e f0          mov    -0x10(%rsi),%r9
+  32: 4c 8b 56 e8          mov    -0x18(%rsi),%r10
+  36: 4c 8b 5e e0          mov    -0x20(%rsi),%r11
+  3a: 48 8d 76 e0          lea    -0x20(%rsi),%rsi
+  3e: 4c                    rex.WR
+  3f: 89                    .byte 0x89
+
+
+- reproducer
+syz_genetlink_get_family_id$mptcp(0x0, 0xffffffffffffffff)
+r0 = syz_open_dev$usbmon(&(0x7f00000004c0), 0x0, 0x0)
+mmap(&(0x7f0000fff000/0x1000)=nil, 0x1000, 0x0, 0x12, r0, 0x0)
+socket$nl_generic(0x10, 0x3, 0x10)
+r1 = openat$null(0xffffffffffffff9c, &(0x7f0000001180), 0x0, 0x0)
+r2 = openat$urandom(0xffffffffffffff9c, &(0x7f0000000040), 0x0, 0x0)
+read(r2, &(0x7f0000000000), 0x2000)
+shutdown(0xffffffffffffffff, 0x0)
+mknodat$null(r1, &(0x7f0000000080)='./file0\x00', 0x0, 0x103)
+r3 = syz_open_dev$sg(&(0x7f0000000040), 0x0, 0x0)
+ioctl$SCSI_IOCTL_SEND_COMMAND(r3, 0x1,
+&(0x7f0000000000)=ANY=[@ANYBLOB="000000001d00000085", @ANYRES8=r3])
+
+
+- kernel config
+https://drive.google.com/file/d/1LMJgfJPhTu78Cd2DfmDaRitF6cdxxcey/view?usp=sharing
+
+
+[^1] We used a customized Syzkaller but did not change the guest kernel or the
+hypervisor.
