@@ -1,125 +1,128 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1503CCCF9E9
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 26 Sep 2024 10:54:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 59A35CF58C8
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 26 Sep 2024 12:41:30 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id B53E5423E8;
-	Thu, 26 Sep 2024 10:54:51 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 0925A405DE;
+	Thu, 26 Sep 2024 12:41:30 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 56zfUzF7TSXR; Thu, 26 Sep 2024 10:54:50 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id tn5xf0vOORmu; Thu, 26 Sep 2024 12:41:28 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2399541E3D
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 74FFE4022E
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1727348090;
-	bh=nMAah5V6Hs369gZJo6DRHJeeBm1IDseuQxhG1iZY8ro=;
+	s=default; t=1727354488;
+	bh=9vGu/7XIAebVTov8oBsR13LtffX2oAzbgLz63jVt/GU=;
 	h=From:To:In-Reply-To:References:Date:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=X1DFcbwipiAq65/LUtBADLD0a4orNjAtlvzHIQSLF8ndx3zFJHQHnI/JaGvexl3ie
-	 8LchRfSStjoY0IDvwZ7RkiPatM2TeHkWipyekwogrn7wW11/BP/D994WdpnZ7joF6M
-	 dj84OHhHln/GsxTejA7NjgiLm3tgNjhOTTLZEaddIgK+8cFDqW+a8zc7Ebvfkd/U0A
-	 z289id2fxWiIBv+g0mJXwUpwHYc3LXdj+n1ybAN2fqGhakEWNGXhkAzKkUZ8JpBhrt
-	 sYirEyRo61iSaNmow2Y19n692vIfQiqc+mJfYNZAUgfAQp/WTo5wMiGtz52+SIDdIv
-	 0Havlhgoqv8cA==
+	b=Ly7j4dIM0kRzjwdgzLFthOGjOBnx2Jlfj1kxG+DbAKxi9SiQtME/kMnarCPmCZy75
+	 8aLfcyjvxR4QN++KstAOv0Vsz+pCp2QCub4bjp45NkWznNsBa64hqXL3eEqkrSh63v
+	 0Ct4qCuq0bImIVY6UUsam6+G+PAJYI/n2EO5nmJ77wqBPucDLY/sq9v618RoTXWguE
+	 l1UbhM6PlfUCbACouJ0Hj305wmS74QeDXed0dV3D4AiKiywwAQTHPbA4sTwWbRQaDq
+	 2xj8CzkjUPX9xk/E1Irc6OAMif0aTAYcX/jntczj5wL1pl5ORv0KKd+c99pHG1yJev
+	 /qWMIFRNVG8LA==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 2399541E3D;
-	Thu, 26 Sep 2024 10:54:50 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id B5C881BF35D
- for <intel-wired-lan@lists.osuosl.org>; Thu, 26 Sep 2024 10:54:48 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 74FFE4022E;
+	Thu, 26 Sep 2024 12:41:28 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id C84E21BF3EF
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 26 Sep 2024 12:41:26 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id A3CE98455F
- for <intel-wired-lan@lists.osuosl.org>; Thu, 26 Sep 2024 10:54:48 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id B4DB560701
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 26 Sep 2024 12:41:26 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 1H0IqlLFtWZH for <intel-wired-lan@lists.osuosl.org>;
- Thu, 26 Sep 2024 10:54:48 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.133.124;
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id QSt1q63T6hDN for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 26 Sep 2024 12:41:25 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.129.124;
  helo=us-smtp-delivery-124.mimecast.com; envelope-from=toke@redhat.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org AC06B8455A
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org AC06B8455A
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 5238C606D0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 5238C606D0
 Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.133.124])
- by smtp1.osuosl.org (Postfix) with ESMTPS id AC06B8455A
- for <intel-wired-lan@lists.osuosl.org>; Thu, 26 Sep 2024 10:54:47 +0000 (UTC)
-Received: from mail-lf1-f69.google.com (mail-lf1-f69.google.com
- [209.85.167.69]) by relay.mimecast.com with ESMTP with STARTTLS
+ (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 5238C606D0
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 26 Sep 2024 12:41:24 +0000 (UTC)
+Received: from mail-ej1-f70.google.com (mail-ej1-f70.google.com
+ [209.85.218.70]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-128-ZNelMSPQMdmmkp8CH5sm3g-1; Thu, 26 Sep 2024 06:54:45 -0400
-X-MC-Unique: ZNelMSPQMdmmkp8CH5sm3g-1
-Received: by mail-lf1-f69.google.com with SMTP id
- 2adb3069b0e04-5365b801741so910902e87.2
- for <intel-wired-lan@lists.osuosl.org>; Thu, 26 Sep 2024 03:54:44 -0700 (PDT)
+ us-mta-553--kUiZDqmMxCNnc3LrubOTA-1; Thu, 26 Sep 2024 08:41:20 -0400
+X-MC-Unique: -kUiZDqmMxCNnc3LrubOTA-1
+Received: by mail-ej1-f70.google.com with SMTP id
+ a640c23a62f3a-a93bac20fccso47127366b.1
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 26 Sep 2024 05:41:20 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20230601; t=1727348083; x=1727952883;
- h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
- :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
- bh=nMAah5V6Hs369gZJo6DRHJeeBm1IDseuQxhG1iZY8ro=;
- b=Edei3k+7Ud3s7wepyYgAQBfYh/5C5n3t/TOsjcMt0gT+Wuuc8mi1tPcLaXsAB1mtuK
- u+wa9Bewhd+C3VM2WlDeNJOUAaR1o290WPTF6Vz7uVbXIYgKt5IzuIa+eYzcVapUsfbP
- tMoV5ZaRclq/oqk/1FkLrTSCZSsHaZyzsaOOmGIiLOjntoS5GZy0MrxN1RR/i27AZH2v
- hTaROxZYwq167dpKcVwNqVyqFwEtMJ4tOYhvVsKkT21qw0onVxsTl0wb1B/manQCACTq
- TQmWOa1K0qTaOjKT2yMyuq4o+M1BDxhlfvoYEv5dkkoYtjqaXrRB8++hkrvuO41Hy7Xz
- 0p1w==
+ d=1e100.net; s=20230601; t=1727354479; x=1727959279;
+ h=content-transfer-encoding:mime-version:message-id:date:references
+ :in-reply-to:subject:cc:to:from:x-gm-message-state:from:to:cc
+ :subject:date:message-id:reply-to;
+ bh=vMJHYB8zqZmlZP20Oy49Gu05ZzldjET+scQ2w87XeYU=;
+ b=ON+W+rvsXGOvyFR+i7urlckfIUqCb2JFSrUaMgg34c7fKbBHkugmyMQ+MEL+AOEFE7
+ 1Zv8qpgg/0TqwI4Kl7cd6osbwdx1y7ChjWsjQiwoRQqDm1QOzusEy9klP0JxJ5AbUYQv
+ S3DD/IeQ4RmAp8BdV48hnMH0qeGPb3jknrX5jQOaZuphXo6vyoRnm8W5DNuRwoOIubti
+ oghACVMISo7XNJFu2ZH+TokGdXOoeQ3wBddWHtXB4J900m0+UIaO6cHFTDfx/LL5JR/d
+ SH6XrqiOyT94QAXYBgd6uECxwADLEBuo+KgKnTNrOIXroRxa1l6PT3o37S55otnrZiFX
+ pT2w==
 X-Forwarded-Encrypted: i=1;
- AJvYcCUe1d0q/sZJtGDVqmPPlgLLJM6SKcekVcM2pi/+umXuvJUFyoGPIj73uQKTDgm350fG31KmVRuwIkN1rfUhbrY=@lists.osuosl.org
-X-Gm-Message-State: AOJu0YxlzTuK5gAzbYaU4AmC8rtKJGdAigw85NJuPXKx45B2qZrIJuYh
- kTXUreCcEkNSf05ULK1tyNW+LOiuCrH5oA0Hy3UbriulT2S2T16F5APwEPocfoquhpV4FvFb7wb
- sU4RNx46rODXlAshLiaD3RD0HagwAdbjm+nB979Gwfi45rIUh0FU1Mn00Wu6F4/pL1Ws=
-X-Received: by 2002:a05:6512:12c3:b0:536:7362:5912 with SMTP id
- 2adb3069b0e04-53877530ceemr5556742e87.30.1727348083438; 
- Thu, 26 Sep 2024 03:54:43 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IFPs6D/lrxvYcK40WRUY7e6VMRqpb6o1HwhSdRJSeV7mA2JYuu9QVeRQM49+yc5lijfGXDHEQ==
-X-Received: by 2002:a05:6512:12c3:b0:536:7362:5912 with SMTP id
- 2adb3069b0e04-53877530ceemr5556685e87.30.1727348082765; 
- Thu, 26 Sep 2024 03:54:42 -0700 (PDT)
-Received: from alrua-x1.borgediget.toke.dk ([2a0c:4d80:42:443::2])
+ AJvYcCVgH6vGXOdJJvl2EOqM22zXqiAckOZLBYfRm7OWgs35ccZEqc434XbGoez87jEAwBGh+qZb2xhoriat7+RbUQY=@lists.osuosl.org
+X-Gm-Message-State: AOJu0YwERwXv3lBrK+tIlq/tpHuH7OlcbfUjE/0pUAqWK5ZTpCQV0vko
+ cONrOfL9JMLOJWp49yz7reyqDZxRZe9DPwMYaZE8OEHvnCpe6uwFtkVRAXYK/6cTHiqTLp4iEDt
+ lOalWuPEjpgKaMkpmor1Drfa6Jyj4/jT4yPOS9YHj4y2u0UeChU/r/3gsDvL/Tq4nWLQ=
+X-Received: by 2002:a17:907:7d9e:b0:a8a:754a:e1c1 with SMTP id
+ a640c23a62f3a-a93b15d4060mr279767666b.8.1727354478955; 
+ Thu, 26 Sep 2024 05:41:18 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IFXJToynjae9rfSJhSBosAnZMFK/etnC+GhLgUSb8nc/h9oslSz0rwl720S6aFtTRC+xBUrFA==
+X-Received: by 2002:a17:907:7d9e:b0:a8a:754a:e1c1 with SMTP id
+ a640c23a62f3a-a93b15d4060mr279763966b.8.1727354478469; 
+ Thu, 26 Sep 2024 05:41:18 -0700 (PDT)
+Received: from alrua-x1.borgediget.toke.dk ([45.145.92.2])
  by smtp.gmail.com with ESMTPSA id
- a640c23a62f3a-a93a5b82fbasm192615366b.103.2024.09.26.03.54.41
+ a640c23a62f3a-a9392f34976sm340030166b.45.2024.09.26.05.41.17
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 26 Sep 2024 03:54:41 -0700 (PDT)
+ Thu, 26 Sep 2024 05:41:17 -0700 (PDT)
 Received: by alrua-x1.borgediget.toke.dk (Postfix, from userid 1000)
- id E1DD0157FC51; Thu, 26 Sep 2024 12:54:40 +0200 (CEST)
+ id A6C8D157FC7C; Thu, 26 Sep 2024 14:41:16 +0200 (CEST)
 From: Toke =?utf-8?Q?H=C3=B8iland-J=C3=B8rgensen?= <toke@redhat.com>
-To: Lorenzo Bianconi <lorenzo.bianconi@redhat.com>
-In-Reply-To: <ZvA6hIl6XWJ4UEJW@lore-desk>
+To: Arthur Fabre <afabre@cloudflare.com>
+In-Reply-To: <CAOn4ftshf3pyAst27C2haaSj4eR2n34_pcwWBc5o3zHBkwRb3g@mail.gmail.com>
 References: <cover.1726935917.git.lorenzo@kernel.org>
  <1f53cd74-6c1e-4a1c-838b-4acc8c5e22c1@intel.com>
  <09657be6-b5e2-4b5a-96b6-d34174aadd0a@kernel.org>
  <Zu_gvkXe4RYjJXtq@lore-desk> <87ldzkndqk.fsf@toke.dk>
- <ZvA6hIl6XWJ4UEJW@lore-desk>
+ <CAOn4ftshf3pyAst27C2haaSj4eR2n34_pcwWBc5o3zHBkwRb3g@mail.gmail.com>
 X-Clacks-Overhead: GNU Terry Pratchett
-Date: Thu, 26 Sep 2024 12:54:40 +0200
-Message-ID: <874j62u1lb.fsf@toke.dk>
+Date: Thu, 26 Sep 2024 14:41:16 +0200
+Message-ID: <87wmiysi37.fsf@toke.dk>
 MIME-Version: 1.0
 X-Mimecast-Spam-Score: 0
 X-Mimecast-Originator: redhat.com
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=redhat.com; 
- s=mimecast20190719; t=1727348086;
+ s=mimecast20190719; t=1727354483;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=nMAah5V6Hs369gZJo6DRHJeeBm1IDseuQxhG1iZY8ro=;
- b=b1d66e2x+yPex92dqM6cdyh7uzyIOt7e0y6WeU9MdqTunmI36kjHcUk8bvDnkZfLr60Bce
- oAG2+R0y21Hy2eJeXkreECQUWnPw4KbtjxIeyUE0xMhTLiftasuTFEiQWCSxerzmLfI/3k
- TZjt8yx4Psnz5fjHn+movE6VPftq+tU=
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ bh=9vGu/7XIAebVTov8oBsR13LtffX2oAzbgLz63jVt/GU=;
+ b=Jlog2BCGbBTcO55ol2BIgGVHsAsFYXgqhUfxwSbai2X7YjBwSe261VkjmcczhfwaLqqx53
+ WynQl3f9+l1rifFbC/hVaFznn6HSP+uoC6+LHSr2PqYF4S2F8DLInNehQX5jkMSc3JUwFP
+ hTj3iNkmZLzamVUJXX3K1CZ2h4f1PhA=
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=redhat.com
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (1024-bit key,
  unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=b1d66e2x
+ header.s=mimecast20190719 header.b=Jlog2BCG
 Subject: Re: [Intel-wired-lan] [RFC bpf-next 0/4] Add XDP rx hw hints
  support performing XDP_REDIRECT
 X-BeenThere: intel-wired-lan@osuosl.org
@@ -141,15 +144,157 @@ Cc: mst@redhat.com, jasowang@redhat.com, ast@kernel.org, edumazet@google.com,
  john.fastabend@gmail.com, sdf@fomichev.me, intel-wired-lan@lists.osuosl.org,
  kuba@kernel.org, pabeni@redhat.com, Lorenzo Bianconi <lorenzo@kernel.org>,
  Jesper Dangaard Brouer <hawk@kernel.org>, alexandre.torgue@foss.st.com,
- Arthur Fabre <afabre@cloudflare.com>, netdev@vger.kernel.org,
- tariqt@nvidia.com, Alexander Lobakin <aleksander.lobakin@intel.com>,
- mcoquelin.stm32@gmail.com, bpf@vger.kernel.org, saeedm@nvidia.com,
- davem@davemloft.net
+ netdev@vger.kernel.org, tariqt@nvidia.com,
+ Alexander Lobakin <aleksander.lobakin@intel.com>, mcoquelin.stm32@gmail.com,
+ bpf@vger.kernel.org, saeedm@nvidia.com, davem@davemloft.net
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Lorenzo Bianconi <lorenzo.bianconi@redhat.com> writes:
+Arthur Fabre <afabre@cloudflare.com> writes:
 
+> On Sun, Sep 22, 2024 at 1:12=E2=80=AFPM Toke H=C3=B8iland-J=C3=B8rgensen =
+<toke@redhat.com> wrote:
+>> FYI, we also had a discussion related to this at LPC on Friday, in this
+>> session: https://lpc.events/event/18/contributions/1935/
+>>
+>> The context here was that Arthur and Jakub want to also support extended
+>> rich metadata all the way through the SKB path, and are looking at the
+>> same area used for XDP metadata to store it. So there's a need to manage
+>> both the kernel's own usage of that area, and userspace/BPF usage of it.
+>>
+>> I'll try to summarise some of the points of that discussion (all
+>> interpretations are my own, of course):
+>>
+>> - We want something that can be carried with a frame all the way from
+>>   the XDP layer, through all SKB layers and to userspace (to replace the
+>>   use of skb->mark for this purpose).
+>>
+>> - We want different applications running on the system (of which the
+>>   kernel itself if one, cf this discussion) to be able to share this
+>>   field, without having to have an out of band registry (like a Github
+>>   repository where applications can agree on which bits to use). Which
+>>   probably means that the kernel needs to be in the loop somehow to
+>>   explicitly allocate space in the metadata area and track offsets.
+>>
+>> - Having an explicit API to access this from userspace, without having
+>>   to go through BPF (i.e., a socket- or CMSG-based API) would be useful.
+>>
+>
+> Thanks for looping us in, and the great summary Toke!
+
+You're welcome :)
+
+>> The TLV format was one of the suggestions in Arthur and Jakub's talk,
+>> but AFAICT, there was not a lot of enthusiasm about this in the room
+>> (myself included), because of the parsing overhead and complexity. I
+>> believe the alternative that was seen as most favourable was a map
+>> lookup-style API, where applications can request a metadata area of
+>> arbitrary size and get an ID assigned that they can then use to set/get
+>> values in the data path.
+>>
+>> So, sketching this out, this could be realised by something like:
+>>
+>> /* could be called from BPF, or through netlink or sysfs; may fail, if
+>>  * there is no more space
+>>  */
+>> int metadata_id =3D register_packet_metadata_field(sizeof(struct my_meta=
+));
+>>
+>> The ID is just an opaque identifier that can then be passed to
+>> getter/setter functions (for both SKB and XDP), like:
+>>
+>> ret =3D bpf_set_packet_metadata_field(pkt, metadata_id,
+>>                                     &my_meta_value, sizeof(my_meta_value=
+))
+>>
+>> ret =3D bpf_get_packet_metadata_field(pkt, metadata_id,
+>>                                     &my_meta_value, sizeof(my_meta_value=
+))
+>>
+>>
+>> On the kernel side, the implementation would track registered fields in
+>> a global structure somewhere, say:
+>>
+>> struct pkt_metadata_entry {
+>>   int id;
+>>   u8 sz;
+>>   u8 offset;
+>>   u8 bit;
+>> };
+>>
+>> struct pkt_metadata_registry { /* allocated as a system-wide global */
+>>   u8 num_entries;
+>>   u8 total_size;
+>>   struct pkt_metadata_entry entries[MAX_ENTRIES];
+>> };
+>>
+>> struct xdp_rx_meta { /* at then end of xdp_frame */
+>>   u8 sz; /* set to pkt_metadata_registry->total_size on alloc */
+>>   u8 fields_set; /* bitmap of fields that have been set, see below */
+>>   u8 data[];
+>> };
+>>
+>> int register_packet_metadata_field(u8 size) {
+>>   struct pkt_metadata_registry *reg =3D get_global_registry();
+>>   struct pkt_metadata_entry *entry;
+>>
+>>   if (size + reg->total_size > MAX_METADATA_SIZE)
+>>     return -ENOSPC;
+>>
+>>   entry =3D &reg->entries[reg->num_entries++];
+>>   entry->id =3D assign_id();
+>>   entry->sz =3D size;
+>>   entry->offset =3D reg->total_size;
+>>   entry->bit =3D reg->num_entries - 1;
+>>   reg->total_size +=3D size;
+>>
+>>   return entry->id;
+>> }
+>>
+>> int bpf_set_packet_metadata_field(struct xdp_frame *frm, int id, void
+>>                                   *value, size_t sz)
+>> {
+>>   struct pkt_metadata_entry *entry =3D get_metadata_entry_by_id(id);
+>>
+>>   if (!entry)
+>>     return -ENOENT;
+>>
+>>   if (entry->sz !=3D sz)
+>>     return -EINVAL; /* user error */
+>>
+>>   if (frm->rx_meta.sz < entry->offset + sz)
+>>     return -EFAULT; /* entry allocated after xdp_frame was initialised *=
+/
+>>
+>>   memcpy(&frm->rx_meta.data + entry->offset, value, sz);
+>>   frm->rx_meta.fields_set |=3D BIT(entry->bit);
+>>
+>>   return 0;
+>> }
+>>
+>> int bpf_get_packet_metadata_field(struct xdp_frame *frm, int id, void
+>>                                   *value, size_t sz)
+>> {
+>>   struct pkt_metadata_entry *entry =3D get_metadata_entry_by_id(id);
+>>
+>>   if (!entry)
+>>     return -ENOENT;
+>>
+>>   if (entry->sz !=3D sz)
+>>     return -EINVAL;
+>>
+>> if (frm->rx_meta.sz < entry->offset + sz)
+>>     return -EFAULT; /* entry allocated after xdp_frame was initialised *=
+/
+>>
+>>   if (!(frm->rx_meta.fields_set & BIT(entry->bit)))
+>>     return -ENOENT;
+>>
+>>   memcpy(value, &frm->rx_meta.data + entry->offset, sz);
+>>
+>>   return 0;
+>> }
+>>
 >> I'm hinting at some complications here (with the EFAULT return) that
 >> needs to be resolved: there is no guarantee that a given packet will be
 >> in sync with the current status of the registered metadata, so we need
@@ -157,61 +302,54 @@ Lorenzo Bianconi <lorenzo.bianconi@redhat.com> writes:
 >> this also means dealing with holes and/or reshuffling the metadata
 >> layout to reuse the released space (incidentally, this is the one place
 >> where a TLV format would have advantages).
+>>
+>> The nice thing about an API like this, though, is that it's extensible,
+>> and the kernel itself can be just another consumer of it for the
+>> metadata fields Lorenzo is adding in this series. I.e., we could just
+>> pre-define some IDs for metadata vlan, timestamp etc, and use the same
+>> functions as above from within the kernel to set and get those values;
+>> using the registry, there could even be an option to turn those off if
+>> an application wants more space for its own usage. Or, alternatively, we
+>> could keep the kernel-internal IDs hardcoded and always allocated, and
+>> just use the getter/setter functions as the BPF API for accessing them.
 >
-> I like this approach but it seems to me more suitable for 'sw' metadata
-> (this is main Arthur and Jakub use case iiuc) where the userspace would
-> enable/disable these functionalities system-wide.
-> Regarding device hw metadata (e.g. checksum offload) I can see some issues
-> since on a system we can have multiple NICs with different capabilities.
-> If we consider current codebase, stmmac driver supports only rx timestamp,
-> while mlx5 supports all of them. In a theoretical system with these two
-> NICs, since pkt_metadata_registry is global system-wide, we will end-up
-> with quite a lot of holes for the stmmac, right? (I am not sure if this
-> case is relevant or not). In other words, we will end-up with a fixed
-> struct for device rx hw metadata (like xdp_rx_meta). So I am wondering
-> if we really need all this complexity for xdp rx hw metadata?
+> That's exactly what I'm thinking of too, a simple API like:
+>
+> get(u8 key, u8 len, void *val);
+> set(u8 key, u8 len, void *val);
+>
+> With "well-known" keys like METADATA_ID_HW_HASH for hardware metadata.
+>
+> If a NIC doesn't support a certain well-known metadata, the key
+> wouldn't be set, and get() would return ENOENT.
+>
+> I think this also lets us avoid having to "register" keys or bits of
+> metadata with the kernel.
+> We'd reserve some number of keys for hardware metadata.
 
-Well, the "holes" will be there anyway (in your static struct approach).
-They would just correspond to parts of the "struct xdp_rx_meta" being
-unset.
+Right, but how do you allocate space/offset for each key without an
+explicit allocation step? You'd basically have to encode the list of IDs
+in the metadata area itself, which implies a TLV format that you have to
+walk on every access? The registry idea in my example above was
+basically to avoid that...
 
-What the "userspace can turn off the fields system wide" would
-accomplish is to *avoid* the holes if you know that you will never need
-them. E.g., say a system administrator know that they have no networks
-that use (offloaded) VLANs. They could then disable the vlan offload
-field system-wide, and thus reclaim the four bytes taken up by the
-"vlan" member of struct xdp_rx_meta, freeing that up for use by
-application metadata.
+> The remaining keys would be up to users. They'd have to allocate keys
+> to services, and configure services to use those keys.
+> This is similar to the way listening on a certain port works: only one
+> service can use port 80 or 443, and that can typically beconfigured in
+> a service's config file.
 
-However, it may well be that the complexity of allowing fields to be
-turned off is not worth the gains. At least as long as there are only
-the couple of HW metadata fields that we have currently. Having the
-flexibility to change our minds later would be good, though, which is
-mostly a matter of making the API exposed to BPF and/or userspace
-flexible enough to allow us to move things around in memory in the
-future. Which was basically my thought with the API I sketched out in
-the previous email. I.e., you could go:
+Right, well, port numbers *do* actually have an out of band service
+registry (IANA), which I thought was what we wanted to avoid? ;)
 
-ret = bpf_get_packet_metadata_field(pkt, METADATA_ID_HW_HASH,
-                                    &my_hash_vlaue, sizeof(u32))
+> This side-steps the whole question of how to change the registered
+> metadata for in-flight packets, and how to deal with different NICs
+> with different hardware metadata.
+>
+> I think I've figured out a suitable encoding format, hopefully we'll
+> have an RFC soon!
 
-
-...and the METADATA_ID_HW_HASH would be a constant defined by the
-kernel, for which the bpf_get_packet_metadata_field() kfunc just has a
-hardcoded lookup into struct xdp_rx_meta. And then, if we decide to move
-the field in the future, we just change the kfunc implementation, with
-no impact to the BPF programs calling it.
-
-> Maybe we can start with a simple approach for xdp rx hw metadata
-> putting the struct in xdp_frame as suggested by Jesper and covering
-> the most common use-cases. We can then integrate this approach with
-> Arthur/Jakub's solution without introducing any backward compatibility
-> issue since these field are not visible to userspace.
-
-Yes, this is basically the gist of my suggestion (as I hopefully managed
-to clarify above): Expose the fields via an API that is flexible enough
-that we can move things around should the need arise, *and* which can
-co-exist with the user-defined application metadata.
+Alright, cool!
 
 -Toke
 
