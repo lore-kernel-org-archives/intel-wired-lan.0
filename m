@@ -4,82 +4,107 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 623E3CEBF8C
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 27 Sep 2024 09:49:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C8C6BCEBF8A
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 27 Sep 2024 09:59:36 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 0613B424C7;
-	Fri, 27 Sep 2024 09:49:53 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 81F40424E1;
+	Fri, 27 Sep 2024 09:59:36 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 5B_XwOMswF6B; Fri, 27 Sep 2024 09:49:51 +0000 (UTC)
+ id PX2kkIUSFGUv; Fri, 27 Sep 2024 09:59:35 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C909D424CC
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 5DAE8424DA
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1727430591;
-	bh=7AYI6NCmdRDuABQX7HORneVc3Wnz4MDmFG9L55U74f8=;
-	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
+	s=default; t=1727431175;
+	bh=/wFHvQrnJe6+I0Hk404NsRdbI8eFHq8tb62kLJdsI/o=;
+	h=References:In-Reply-To:From:Date:To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=CH9HPdRQt0QktmSfiqnLGkC48eckqlG6NgZiLNgwpneN37zZu/3xzh7HfEE1OHAkC
-	 g9Y0PMr1InTE7ofP6S+Z4Luihavh2oi9K6ychlCcZ9mgbnKf5OK3eWcc8rVMFlJ+KM
-	 rnX5Doz9IohAApBrox5iieWD2ub5wxlTiLylxxcAwuRsTC8h+yrxVz92C9VioItF/e
-	 yU/quOMObrewwwsDtML5dgR+5VLL6aUX1SYhr3iggCSJ6jtMQzNxoSb3LWVcQoVILN
-	 BwugemqyAvbYo/sLFutMVysoc6SnhguIjhDz7n+TEpPjtcoW/Xdd5MOCb3bQl4CBpK
-	 oMW7KGSNhh3tg==
+	b=1GxeKET7/D6c8bfhNpjdiNjWWi44WFBJMD1QrixYlW+SUtaqU9lbnGSQyJE4jBuR1
+	 zy+6EzEoyva05YQLSjnITdu5bOBZXKx/xGYs7Nh71jmUZ8IRMHabGWnNjiasa1RJft
+	 uuxd77mBVAAn57c6jPppdIt3icMXWaaJrmmbcAzgecnL2JFeKISacE78nJ20MHJe3I
+	 gT1kVx/bK4MtxOhlxFjka+6TQEQRLc843CthZUDXWwUM3zsD2LNo2pKraLHIwJNrL2
+	 uobG7ctGMdWqC3H9V2uOA8iXvtq9Kk7C1aGFgcKx8e1Xmz5axS2AcRmtuS8gI0KJX7
+	 P6Wqv5C13jDCA==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id C909D424CC;
-	Fri, 27 Sep 2024 09:49:51 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 2F6101BF980
- for <intel-wired-lan@lists.osuosl.org>; Fri, 27 Sep 2024 09:49:50 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 5DAE8424DA;
+	Fri, 27 Sep 2024 09:59:35 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id E27011BF21A
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 27 Sep 2024 09:59:33 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 1C41941C18
- for <intel-wired-lan@lists.osuosl.org>; Fri, 27 Sep 2024 09:49:50 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id CF87D847C3
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 27 Sep 2024 09:59:33 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 91DSD8d9v9Mn for <intel-wired-lan@lists.osuosl.org>;
- Fri, 27 Sep 2024 09:49:48 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=45.249.212.191;
- helo=szxga05-in.huawei.com; envelope-from=linyunsheng@huawei.com;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org CA8AB41BFB
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org CA8AB41BFB
-Received: from szxga05-in.huawei.com (szxga05-in.huawei.com [45.249.212.191])
- by smtp2.osuosl.org (Postfix) with ESMTPS id CA8AB41BFB
- for <intel-wired-lan@lists.osuosl.org>; Fri, 27 Sep 2024 09:49:46 +0000 (UTC)
-Received: from mail.maildlp.com (unknown [172.19.88.163])
- by szxga05-in.huawei.com (SkyGuard) with ESMTP id 4XFQZN2v7qz1HKJ6;
- Fri, 27 Sep 2024 17:45:48 +0800 (CST)
-Received: from dggpemf200006.china.huawei.com (unknown [7.185.36.61])
- by mail.maildlp.com (Postfix) with ESMTPS id 0AC2018002B;
- Fri, 27 Sep 2024 17:49:41 +0800 (CST)
-Received: from [10.67.120.129] (10.67.120.129) by
- dggpemf200006.china.huawei.com (7.185.36.61) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.11; Fri, 27 Sep 2024 17:49:40 +0800
-Message-ID: <0ef315df-e8e9-41e8-9ba8-dcb69492c616@huawei.com>
-Date: Fri, 27 Sep 2024 17:49:40 +0800
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id vS7zA7Vp_sgn for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 27 Sep 2024 09:59:33 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2607:f8b0:4864:20::531; helo=mail-pg1-x531.google.com;
+ envelope-from=ilias.apalodimas@linaro.org; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org AA5E8847C0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org AA5E8847C0
+Received: from mail-pg1-x531.google.com (mail-pg1-x531.google.com
+ [IPv6:2607:f8b0:4864:20::531])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id AA5E8847C0
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 27 Sep 2024 09:59:32 +0000 (UTC)
+Received: by mail-pg1-x531.google.com with SMTP id
+ 41be03b00d2f7-7d916b6a73aso1276270a12.1
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 27 Sep 2024 02:59:32 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20230601; t=1727431172; x=1728035972;
+ h=cc:to:subject:message-id:date:from:in-reply-to:references
+ :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+ :reply-to;
+ bh=/wFHvQrnJe6+I0Hk404NsRdbI8eFHq8tb62kLJdsI/o=;
+ b=Hcjw9i/bERbOvUlviBOw/Qt6NxRniZSw/rwSUNoK6BL8oQfO7n6TgUKWat8+BlOnbV
+ /NC+I9eEFBicbpjEVBJU5GQAqx5ag6r9AQRyTlXitDaMtr6THzXYKwK4HvPQMFIpWxf2
+ 6abCbfoKBBqhNoqoDjML8Dim6HHZ4oBq6G0sbefnAjE1Wc7bMS37B3QBpIRWj26Tl1eg
+ Ro/V//7gPkPWqmnXsGmYTBWBweTh9QoICtAkeFWC5cimRkDTlAo33zqCAEPqvj1CItSU
+ s1ayfKEdVevkS3tzxewStF903MRtouJFDoj/DkwWGLcWpjAP/lpDwzFZsMWnSTsIuL11
+ onRw==
+X-Forwarded-Encrypted: i=1;
+ AJvYcCWItqVVnmdiuJNMxy3OASCFPqaWXUA7yp7HdYFYCfmIYFJW0ya2sLuSNhDA8riW4m4SnHEjuLqEEfm8i6t0fns=@lists.osuosl.org
+X-Gm-Message-State: AOJu0YwNLHC+KDX5o0wXrWIUL5lVJqm5IkNWA3r4eeKCf10id8wzBttn
+ BOXjQ8VMQsQx5o+3aIxFQfU+ej7sYc0dDouzOPSbRcetu/S7p+b4tKLPioplB6Tx98aw2iw4NCW
+ UJVNQTpu+GCZ42SgjFWuVM0w23ZgzO5jegHS5FQ==
+X-Google-Smtp-Source: AGHT+IFPw7TdHI7xAVBejSYDuXRNyLLxKTG1ESrzw48y3A/pOuf25zX23NWOfeE/8MxH7DAW+JoIMvACw7ATICsO3w0=
+X-Received: by 2002:a05:6a20:6f03:b0:1cf:23cb:b927 with SMTP id
+ adf61e73a8af0-1d4fa7a6f8emr3754825637.34.1727431171797; Fri, 27 Sep 2024
+ 02:59:31 -0700 (PDT)
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-To: Ilias Apalodimas <ilias.apalodimas@linaro.org>
 References: <20240925075707.3970187-1-linyunsheng@huawei.com>
  <20240925075707.3970187-3-linyunsheng@huawei.com>
  <CAHS8izOxugzWJDTc-4CWqaKABTj=J4OHs=Lcb=SE9r8gX0J+yg@mail.gmail.com>
  <842c8cc6-f716-437a-bc98-70bc26d6fd38@huawei.com>
  <CAC_iWjLgNOtsbhqrhvvEz2C3S668qB8KatL_W+tPHMSkDrNS=w@mail.gmail.com>
-Content-Language: en-US
-From: Yunsheng Lin <linyunsheng@huawei.com>
-In-Reply-To: <CAC_iWjLgNOtsbhqrhvvEz2C3S668qB8KatL_W+tPHMSkDrNS=w@mail.gmail.com>
+ <0ef315df-e8e9-41e8-9ba8-dcb69492c616@huawei.com>
+In-Reply-To: <0ef315df-e8e9-41e8-9ba8-dcb69492c616@huawei.com>
+From: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+Date: Fri, 27 Sep 2024 12:58:55 +0300
+Message-ID: <CAC_iWjKeajwn3otjdEekE6VDLHGEvqmnQRwpN5R3yHj8UpEiDw@mail.gmail.com>
+To: Yunsheng Lin <linyunsheng@huawei.com>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.67.120.129]
-X-ClientProxiedBy: dggems701-chm.china.huawei.com (10.3.19.178) To
- dggpemf200006.china.huawei.com (7.185.36.61)
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dmarc=pass (p=quarantine dis=none)
- header.from=huawei.com
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=linaro.org; s=google; t=1727431172; x=1728035972; darn=lists.osuosl.org;
+ h=cc:to:subject:message-id:date:from:in-reply-to:references
+ :mime-version:from:to:cc:subject:date:message-id:reply-to;
+ bh=/wFHvQrnJe6+I0Hk404NsRdbI8eFHq8tb62kLJdsI/o=;
+ b=Db7pEPA/AXa35rfGFHa/a+5Ftr8QuO+MLB+LcKsotLayZFsiVfwCIZQYzZkBeHQ3Db
+ F9Ot7f/i5D46oyzUPD6X9e5QzTCem+DrALG+Wi++BWVpmZiJDNrpRFuDvsze32I47uUz
+ RUch79RmG1QzxB+1pA/oDEKv6coX0WZ/7raD+Ae+xY2bIz2l/LlV61hkUwRmKyIJS6cc
+ r0sHf6NlN9kp+QAPQDCDSISxCIDcu2Z3q4zhmaETdJlwF35nx+Tu63Ri5hzvrsIbd4ZW
+ lrCl5vnrb0nlQWw+MqV7j15oyoCFrLcwXBEdJRajzqxAODEMfVTRJDg8TQ+MHj4EJ+a8
+ HmJA==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=linaro.org
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256
+ header.s=google header.b=Db7pEPA/
 Subject: Re: [Intel-wired-lan] [PATCH net v2 2/2] page_pool: fix IOMMU crash
  when driver has already unbound
 X-BeenThere: intel-wired-lan@osuosl.org
@@ -120,46 +145,58 @@ Cc: imx@lists.linux.dev, Alexei Starovoitov <ast@kernel.org>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On 2024/9/27 17:21, Ilias Apalodimas wrote:
-> Hi Yunsheng
-> 
-> On Fri, 27 Sept 2024 at 06:58, Yunsheng Lin <linyunsheng@huawei.com> wrote:
->>
->> On 2024/9/27 2:15, Mina Almasry wrote:
->>>
->>>> In order not to do the dma unmmapping after driver has already
->>>> unbound and stall the unloading of the networking driver, add
->>>> the pool->items array to record all the pages including the ones
->>>> which are handed over to network stack, so the page_pool can
->>>> do the dma unmmapping for those pages when page_pool_destroy()
->>>> is called.
->>>
->>> One thing I could not understand from looking at the code: if the
->>> items array is in the struct page_pool, why do you need to modify the
->>> page_pool entry in the struct page and in the struct net_iov? I think
->>> the code could be made much simpler if you can remove these changes,
->>> and you wouldn't need to modify the public api of the page_pool.
->>
->> As mentioned in [1]:
->> "There is no space in 'struct page' to track the inflight pages, so
->> 'pp' in 'struct page' is renamed to 'pp_item' to enable the tracking
->> of inflight page"
-> 
-> I have the same feeling as Mina here. First of all, we do have an
-> unsigned long in struct page we use for padding IIRC. More
+On Fri, 27 Sept 2024 at 12:50, Yunsheng Lin <linyunsheng@huawei.com> wrote:
+>
+> On 2024/9/27 17:21, Ilias Apalodimas wrote:
+> > Hi Yunsheng
+> >
+> > On Fri, 27 Sept 2024 at 06:58, Yunsheng Lin <linyunsheng@huawei.com> wrote:
+> >>
+> >> On 2024/9/27 2:15, Mina Almasry wrote:
+> >>>
+> >>>> In order not to do the dma unmmapping after driver has already
+> >>>> unbound and stall the unloading of the networking driver, add
+> >>>> the pool->items array to record all the pages including the ones
+> >>>> which are handed over to network stack, so the page_pool can
+> >>>> do the dma unmmapping for those pages when page_pool_destroy()
+> >>>> is called.
+> >>>
+> >>> One thing I could not understand from looking at the code: if the
+> >>> items array is in the struct page_pool, why do you need to modify the
+> >>> page_pool entry in the struct page and in the struct net_iov? I think
+> >>> the code could be made much simpler if you can remove these changes,
+> >>> and you wouldn't need to modify the public api of the page_pool.
+> >>
+> >> As mentioned in [1]:
+> >> "There is no space in 'struct page' to track the inflight pages, so
+> >> 'pp' in 'struct page' is renamed to 'pp_item' to enable the tracking
+> >> of inflight page"
+> >
+> > I have the same feeling as Mina here. First of all, we do have an
+> > unsigned long in struct page we use for padding IIRC. More
+>
+> I am assuming you are referring to '_pp_mapping_pad' in 'struct page',
+> unfortunately the field might be used when a page is mmap'ed to user
+> space as my understanding.
+>
 
-I am assuming you are referring to '_pp_mapping_pad' in 'struct page',
-unfortunately the field might be used when a page is mmap'ed to user
-space as my understanding.
+Ah good point, I just grepped for it and didn't look at the surrounding unions.
 
-https://elixir.bootlin.com/linux/v6.7-rc8/source/include/linux/mm_types.h#L126
+> https://elixir.bootlin.com/linux/v6.7-rc8/source/include/linux/mm_types.h#L126
+>
+> > importantly, though, why does struct page need to know about this?
+> > Can't we have the same information in page pool?
+> > When the driver allocates pages it does via page_pool_dev_alloc_XXXXX
+> > or something similar. Cant we do what you suggest here ? IOW when we
+> > allocate a page we put it in a list, and when that page returns to
+> > page_pool (and it's mapped) we remove it.
+>
+> Yes, that is the basic idea, but the important part is how to do that
+> with less performance impact.
 
-> importantly, though, why does struct page need to know about this?
-> Can't we have the same information in page pool?
-> When the driver allocates pages it does via page_pool_dev_alloc_XXXXX
-> or something similar. Cant we do what you suggest here ? IOW when we
-> allocate a page we put it in a list, and when that page returns to
-> page_pool (and it's mapped) we remove it.
+Yes, but do you think that keeping that list of allocated pages in
+struct page_pool will end up being more costly somehow compared to
+struct page?
 
-Yes, that is the basic idea, but the important part is how to do that
-with less performance impact.
+Thanks
+/Ilias
