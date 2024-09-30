@@ -4,72 +4,72 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 24EBFCE834B
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 30 Sep 2024 13:56:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 11268CE8347
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 30 Sep 2024 13:56:13 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id D2A44402C5;
-	Mon, 30 Sep 2024 13:56:07 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id AD88540251;
+	Mon, 30 Sep 2024 13:56:13 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id x1nouuydT5WT; Mon, 30 Sep 2024 13:56:06 +0000 (UTC)
+ id O24dVzJOkz7y; Mon, 30 Sep 2024 13:56:12 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D734C40253
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 518D8402A6
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1727704565;
-	bh=v1zYhA5+lUt2ESKvUSFkpmaNowzr2C9xVeAhSllXDH4=;
+	s=default; t=1727704572;
+	bh=gzVm2QSLfAk3txGJtWe4FOOgSpR69+PNSUSq/237k5Q=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=KvJfbPvExvBJHuV19hg/nm6efHpxLSNNTc0PsYYDvI0BRVUjeqQMrf6B+iuweMa46
-	 d8Egw4tcL6rqwmgCk+zHqfA9SdZCiQ4QtOZPOoTOi5bxw6KfOrZtEKXJtWzSmJ/UPZ
-	 aRGvrR/AHaj9TdGcPF5S7mb7HgL2C95zD3Fs43725xAjXygHQYkx158Nnnkh+q8eBe
-	 X4U9yVd6MJbnqXJ0T07nX89998XS5vYb76TH4YHf+NxGuSmUaH4dbNMx8vUIwekA+W
-	 WtoUfUiCbcJfj6o3O5JLLgwHazqeLrJt0QtqeUIQZyaJIWPRCPc1u1CgAIgs46K9L0
-	 0q/6X5QX+SnPw==
+	b=ebIGTRG6Icif83FLGAwyV3jEx7977PlD1/oyaisv6CunrKyhwmgl91vz/iHfh0+nH
+	 0hb22XAM+0HAeSPLNlIqM7kgEkUGptPH8M31ZY2wo/cLQdKSDgPtA5FJkCXpRzK3o9
+	 JsGF08c+dMj2sgyuUpQbozSZDWpVOPIwr7tBydRQbYIWcR/EFdUCysckgC+f7bGb7r
+	 P9sBq7UkOn0ysxHYAUnRgBzcvkuq5hJv2lGbMUx/uI4gC+coiUMbvhHQNCnCn/zAXw
+	 LzNws5Bk5giNyeScWH565DoSdoDH4padb+SHcR/VUfWVA+eUPxMnIVjv5cQEAV9K+T
+	 NptiJXSixPv2A==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id D734C40253;
-	Mon, 30 Sep 2024 13:56:05 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 518D8402A6;
+	Mon, 30 Sep 2024 13:56:12 +0000 (UTC)
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 5677C1BF300
- for <intel-wired-lan@lists.osuosl.org>; Mon, 30 Sep 2024 13:56:04 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 1782D1BF300
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 30 Sep 2024 13:56:11 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 7593440265
- for <intel-wired-lan@lists.osuosl.org>; Mon, 30 Sep 2024 13:56:03 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 8F34F402A6
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 30 Sep 2024 13:56:10 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id aifqHXXGOzdi for <intel-wired-lan@lists.osuosl.org>;
- Mon, 30 Sep 2024 13:56:01 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.133.124;
+ id xVXUJC18TX7I for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 30 Sep 2024 13:56:09 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.129.124;
  helo=us-smtp-delivery-124.mimecast.com; envelope-from=pabeni@redhat.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 6FB4B40250
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 6FB4B40250
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org F2E3E402C2
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org F2E3E402C2
 Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.133.124])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 6FB4B40250
- for <intel-wired-lan@lists.osuosl.org>; Mon, 30 Sep 2024 13:56:01 +0000 (UTC)
-Received: from mx-prod-mc-03.mail-002.prod.us-west-2.aws.redhat.com
+ (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id F2E3E402C2
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 30 Sep 2024 13:56:08 +0000 (UTC)
+Received: from mx-prod-mc-04.mail-002.prod.us-west-2.aws.redhat.com
  (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
  relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-614-t1SMLWZ-PVueUVV-1NV63A-1; Mon,
- 30 Sep 2024 09:55:54 -0400
-X-MC-Unique: t1SMLWZ-PVueUVV-1NV63A-1
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-7-Yf33aR4MNquU4nT1THaZ1g-1; Mon,
+ 30 Sep 2024 09:56:02 -0400
+X-MC-Unique: Yf33aR4MNquU4nT1THaZ1g-1
 Received: from mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com (unknown
  [10.30.177.12])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by mx-prod-mc-03.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
- id 0AF861977035; Mon, 30 Sep 2024 13:55:49 +0000 (UTC)
+ by mx-prod-mc-04.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
+ id F0C01193587B; Mon, 30 Sep 2024 13:55:59 +0000 (UTC)
 Received: from gerbillo.redhat.com (unknown [10.45.224.210])
  by mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP
- id 5005019541A0; Mon, 30 Sep 2024 13:55:44 +0000 (UTC)
+ id 1CBC91954B0F; Mon, 30 Sep 2024 13:55:54 +0000 (UTC)
 From: Paolo Abeni <pabeni@redhat.com>
 To: netdev@vger.kernel.org
-Date: Mon, 30 Sep 2024 15:54:00 +0200
-Message-ID: <bcdc322adc25194b5f7bdb28fed9c0d0efb47974.1727704215.git.pabeni@redhat.com>
+Date: Mon, 30 Sep 2024 15:54:02 +0200
+Message-ID: <1008b856cb76397bd1ab7a4a52aa39bffbfbbcfd.1727704215.git.pabeni@redhat.com>
 In-Reply-To: <cover.1727704215.git.pabeni@redhat.com>
 References: <cover.1727704215.git.pabeni@redhat.com>
 MIME-Version: 1.0
@@ -77,23 +77,23 @@ Content-Transfer-Encoding: 8bit
 X-Scanned-By: MIMEDefang 3.0 on 10.30.177.12
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=redhat.com; 
- s=mimecast20190719; t=1727704560;
+ s=mimecast20190719; t=1727704567;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=v1zYhA5+lUt2ESKvUSFkpmaNowzr2C9xVeAhSllXDH4=;
- b=dMxqK82XbgQQoziLezy5FIIgzH+Zo2Q2NZXD0AoJjlVJoHOnclvDKWTSaMsvf6m3aO73sK
- E/nXZ8fuClUXTU4JEwK3tvJ3cVl+VYAnn9nChIucRoURtH+froHDJpw62Y8D9h8Jn6P9Mc
- 7hDgBV1jgxhabBsS6WT1xjpDsp5sgto=
+ bh=gzVm2QSLfAk3txGJtWe4FOOgSpR69+PNSUSq/237k5Q=;
+ b=T6IsZKNfkTo7XpUjQg4kKnH11DBZj4O9pvn8tSD53TNmzt/8pd2Yp80S8LofisgqkNSIWm
+ yFWLA+KEELrgGSjZMC7K1aH9nInY1p9LJiExojR2GDmSvC5p0fATitxGQNvRvrl7Hr7f/z
+ WyPj9FguY9lqL8/klR31BDSsbZcwgP8=
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=redhat.com
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=dMxqK82X
-Subject: [Intel-wired-lan] [PATCH v8 net-next 13/15] ice: Support VF queue
- rate limit and quanta size configuration
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=T6IsZKNf
+Subject: [Intel-wired-lan] [PATCH v8 net-next 15/15] iavf: add support to
+ exchange qos capabilities
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -118,591 +118,311 @@ Cc: Jiri Pirko <jiri@resnulli.us>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Wenjun Wu <wenjun1.wu@intel.com>
+From: Sudheer Mogilappagari <sudheer.mogilappagari@intel.com>
 
-Add support to configure VF queue rate limit and quanta size.
+During driver initialization VF determines QOS capability is allowed
+by PF and receives QOS parameters. After which quanta size for queues
+is configured which is not configurable and is set to 1KB currently.
 
-For quanta size configuration, the quanta profiles are divided evenly
-by PF numbers. For each port, the first quanta profile is reserved for
-default. When VF is asked to set queue quanta size, PF will search for
-an available profile, change the fields and assigned this profile to the
-queue.
-
-Signed-off-by: Wenjun Wu <wenjun1.wu@intel.com>
+Signed-off-by: Sudheer Mogilappagari <sudheer.mogilappagari@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice.h          |   2 +
- drivers/net/ethernet/intel/ice/ice_base.c     |   2 +
- drivers/net/ethernet/intel/ice/ice_common.c   |  21 ++
- .../net/ethernet/intel/ice/ice_hw_autogen.h   |   8 +
- drivers/net/ethernet/intel/ice/ice_txrx.h     |   1 +
- drivers/net/ethernet/intel/ice/ice_type.h     |   1 +
- drivers/net/ethernet/intel/ice/ice_vf_lib.h   |   8 +
- drivers/net/ethernet/intel/ice/ice_virtchnl.c | 335 ++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_virtchnl.h |  11 +
- .../intel/ice/ice_virtchnl_allowlist.c        |   6 +
- 10 files changed, 395 insertions(+)
+v5 -> v6:
+ - error out on bad rate
+---
+ drivers/net/ethernet/intel/iavf/iavf.h        | 10 ++
+ drivers/net/ethernet/intel/iavf/iavf_main.c   | 51 +++++++++-
+ .../net/ethernet/intel/iavf/iavf_virtchnl.c   | 92 ++++++++++++++++++-
+ 3 files changed, 150 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index d6f80da30dec..b5fabf75a949 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -669,6 +669,8 @@ struct ice_pf {
- 	struct ice_agg_node vf_agg_node[ICE_MAX_VF_AGG_NODES];
- 	struct ice_dplls dplls;
- 	struct device *hwmon_dev;
-+
-+	u8 num_quanta_prof_used;
- };
+diff --git a/drivers/net/ethernet/intel/iavf/iavf.h b/drivers/net/ethernet/intel/iavf/iavf.h
+index a84bdbfbb0f7..75ac69670789 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf.h
++++ b/drivers/net/ethernet/intel/iavf/iavf.h
+@@ -251,6 +251,9 @@ struct iavf_cloud_filter {
+ #define IAVF_RESET_WAIT_DETECTED_COUNT 500
+ #define IAVF_RESET_WAIT_COMPLETE_COUNT 2000
  
- extern struct workqueue_struct *ice_lag_wq;
-diff --git a/drivers/net/ethernet/intel/ice/ice_base.c b/drivers/net/ethernet/intel/ice/ice_base.c
-index 4a9a6899fc45..892935e78e5b 100644
---- a/drivers/net/ethernet/intel/ice/ice_base.c
-+++ b/drivers/net/ethernet/intel/ice/ice_base.c
-@@ -347,6 +347,8 @@ ice_setup_tx_ctx(struct ice_tx_ring *ring, struct ice_tlan_ctx *tlan_ctx, u16 pf
- 		break;
++#define IAVF_MAX_QOS_TC_NUM		8
++#define IAVF_DEFAULT_QUANTA_SIZE	1024
++
+ /* board specific private data structure */
+ struct iavf_adapter {
+ 	struct workqueue_struct *wq;
+@@ -338,6 +341,8 @@ struct iavf_adapter {
+ #define IAVF_FLAG_AQ_ENABLE_STAG_VLAN_INSERTION		BIT_ULL(37)
+ #define IAVF_FLAG_AQ_DISABLE_STAG_VLAN_INSERTION	BIT_ULL(38)
+ #define IAVF_FLAG_AQ_CONFIGURE_QUEUES_BW		BIT_ULL(39)
++#define IAVF_FLAG_AQ_CFG_QUEUES_QUANTA_SIZE		BIT_ULL(40)
++#define IAVF_FLAG_AQ_GET_QOS_CAPS			BIT_ULL(41)
+ 
+ 	/* flags for processing extended capability messages during
+ 	 * __IAVF_INIT_EXTENDED_CAPS. Each capability exchange requires
+@@ -410,6 +415,8 @@ struct iavf_adapter {
+ 			       VIRTCHNL_VF_OFFLOAD_FDIR_PF)
+ #define ADV_RSS_SUPPORT(_a) ((_a)->vf_res->vf_cap_flags & \
+ 			     VIRTCHNL_VF_OFFLOAD_ADV_RSS_PF)
++#define QOS_ALLOWED(_a) ((_a)->vf_res->vf_cap_flags & \
++			 VIRTCHNL_VF_OFFLOAD_QOS)
+ 	struct virtchnl_vf_resource *vf_res; /* incl. all VSIs */
+ 	struct virtchnl_vsi_resource *vsi_res; /* our LAN VSI */
+ 	struct virtchnl_version_info pf_version;
+@@ -418,6 +425,7 @@ struct iavf_adapter {
+ 	struct virtchnl_vlan_caps vlan_v2_caps;
+ 	u16 msg_enable;
+ 	struct iavf_eth_stats current_stats;
++	struct virtchnl_qos_cap_list *qos_caps;
+ 	struct iavf_vsi vsi;
+ 	u32 aq_wait_count;
+ 	/* RSS stuff */
+@@ -584,6 +592,8 @@ int iavf_config_rss(struct iavf_adapter *adapter);
+ int iavf_lan_add_device(struct iavf_adapter *adapter);
+ int iavf_lan_del_device(struct iavf_adapter *adapter);
+ void iavf_cfg_queues_bw(struct iavf_adapter *adapter);
++void iavf_cfg_queues_quanta_size(struct iavf_adapter *adapter);
++void iavf_get_qos_caps(struct iavf_adapter *adapter);
+ void iavf_enable_channels(struct iavf_adapter *adapter);
+ void iavf_disable_channels(struct iavf_adapter *adapter);
+ void iavf_add_cloud_filter(struct iavf_adapter *adapter);
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
+index 7764d8ce7f4e..12ef160425aa 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_main.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
+@@ -2094,6 +2094,16 @@ static int iavf_process_aq_command(struct iavf_adapter *adapter)
+ 		return 0;
  	}
  
-+	tlan_ctx->quanta_prof_idx = ring->quanta_prof_id;
++	if (adapter->aq_required & IAVF_FLAG_AQ_GET_QOS_CAPS) {
++		iavf_get_qos_caps(adapter);
++		return 0;
++	}
 +
- 	tlan_ctx->tso_ena = ICE_TX_LEGACY;
- 	tlan_ctx->tso_qnum = pf_q;
++	if (adapter->aq_required & IAVF_FLAG_AQ_CFG_QUEUES_QUANTA_SIZE) {
++		iavf_cfg_queues_quanta_size(adapter);
++		return 0;
++	}
++
+ 	if (adapter->aq_required & IAVF_FLAG_AQ_CONFIGURE_QUEUES) {
+ 		iavf_configure_queues(adapter);
+ 		return 0;
+@@ -2679,6 +2689,9 @@ static void iavf_init_config_adapter(struct iavf_adapter *adapter)
+ 		/* request initial VLAN offload settings */
+ 		iavf_set_vlan_offload_features(adapter, 0, netdev->features);
  
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index 009716a12a26..b22e71dc59d4 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -2436,6 +2436,25 @@ ice_parse_func_caps(struct ice_hw *hw, struct ice_hw_func_caps *func_p,
- 	ice_recalc_port_limited_caps(hw, &func_p->common_cap);
++	if (QOS_ALLOWED(adapter))
++		adapter->aq_required |= IAVF_FLAG_AQ_GET_QOS_CAPS;
++
+ 	iavf_schedule_finish_config(adapter);
+ 	return;
+ 
+@@ -4935,6 +4948,26 @@ static netdev_features_t iavf_fix_features(struct net_device *netdev,
+ 	return iavf_fix_strip_features(adapter, features);
  }
  
-+/**
-+ * ice_func_id_to_logical_id - map from function id to logical pf id
-+ * @active_function_bitmap: active function bitmap
-+ * @pf_id: function number of device
-+ *
-+ * Return: logical PF ID.
-+ */
-+static int ice_func_id_to_logical_id(u32 active_function_bitmap, u8 pf_id)
++static int
++iavf_verify_shaper(struct net_shaper_binding *binding,
++		   const struct net_shaper *shaper,
++		   struct netlink_ext_ack *extack)
 +{
-+	u8 logical_id = 0;
-+	u8 i;
++	struct iavf_adapter *adapter = netdev_priv(binding->netdev);
++	u64 vf_max;
 +
-+	for (i = 0; i < pf_id; i++)
-+		if (active_function_bitmap & BIT(i))
-+			logical_id++;
-+
-+	return logical_id;
-+}
-+
- /**
-  * ice_parse_valid_functions_cap - Parse ICE_AQC_CAPS_VALID_FUNCTIONS caps
-  * @hw: pointer to the HW struct
-@@ -2453,6 +2472,8 @@ ice_parse_valid_functions_cap(struct ice_hw *hw, struct ice_hw_dev_caps *dev_p,
- 	dev_p->num_funcs = hweight32(number);
- 	ice_debug(hw, ICE_DBG_INIT, "dev caps: num_funcs = %d\n",
- 		  dev_p->num_funcs);
-+
-+	hw->logical_pf_id = ice_func_id_to_logical_id(number, hw->pf_id);
- }
- 
- /**
-diff --git a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-index 91cbae1eec89..af9302f0e376 100644
---- a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-+++ b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-@@ -6,6 +6,14 @@
- #ifndef _ICE_HW_AUTOGEN_H_
- #define _ICE_HW_AUTOGEN_H_
- 
-+#define GLCOMM_QUANTA_PROF(_i)			(0x002D2D68 + ((_i) * 4))
-+#define GLCOMM_QUANTA_PROF_MAX_INDEX		15
-+#define GLCOMM_QUANTA_PROF_QUANTA_SIZE_S	0
-+#define GLCOMM_QUANTA_PROF_QUANTA_SIZE_M	ICE_M(0x3FFF, 0)
-+#define GLCOMM_QUANTA_PROF_MAX_CMD_S		16
-+#define GLCOMM_QUANTA_PROF_MAX_CMD_M		ICE_M(0xFF, 16)
-+#define GLCOMM_QUANTA_PROF_MAX_DESC_S		24
-+#define GLCOMM_QUANTA_PROF_MAX_DESC_M		ICE_M(0x3F, 24)
- #define QTX_COMM_DBELL(_DBQM)			(0x002C0000 + ((_DBQM) * 4))
- #define QTX_COMM_HEAD(_DBQM)			(0x000E0000 + ((_DBQM) * 4))
- #define QTX_COMM_HEAD_HEAD_S			0
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.h b/drivers/net/ethernet/intel/ice/ice_txrx.h
-index feba314a3fe4..ea2fae9035b5 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.h
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.h
-@@ -406,6 +406,7 @@ struct ice_tx_ring {
- #define ICE_TX_FLAGS_RING_VLAN_L2TAG2	BIT(2)
- 	u8 flags;
- 	u8 dcb_tc;			/* Traffic class of ring */
-+	u16 quanta_prof_id;
- } ____cacheline_internodealigned_in_smp;
- 
- static inline bool ice_ring_uses_build_skb(struct ice_rx_ring *ring)
-diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-index 45768796691f..adb168860711 100644
---- a/drivers/net/ethernet/intel/ice/ice_type.h
-+++ b/drivers/net/ethernet/intel/ice/ice_type.h
-@@ -905,6 +905,7 @@ struct ice_hw {
- 	u8 revision_id;
- 
- 	u8 pf_id;		/* device profile info */
-+	u8 logical_pf_id;
- 
- 	u16 max_burst_size;	/* driver sets this value */
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_vf_lib.h b/drivers/net/ethernet/intel/ice/ice_vf_lib.h
-index be4266899690..4261fe1c2bcd 100644
---- a/drivers/net/ethernet/intel/ice/ice_vf_lib.h
-+++ b/drivers/net/ethernet/intel/ice/ice_vf_lib.h
-@@ -59,6 +59,13 @@ struct ice_fdir_prof_info {
- 	u64 fdir_active_cnt;
- };
- 
-+struct ice_vf_qs_bw {
-+	u32 committed;
-+	u32 peak;
-+	u16 queue_id;
-+	u8 tc;
-+};
-+
- /* VF operations */
- struct ice_vf_ops {
- 	enum ice_disq_rst_src reset_type;
-@@ -140,6 +147,7 @@ struct ice_vf {
- 	struct devlink_port devlink_port;
- 
- 	u16 num_msix;			/* num of MSI-X configured on this VF */
-+	struct ice_vf_qs_bw qs_bw[ICE_MAX_RSS_QS_PER_VF];
- };
- 
- /* Flags for controlling behavior of ice_reset_vf */
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl.c b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-index 59f62306b9cb..96543f69f5de 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-@@ -495,6 +495,9 @@ static int ice_vc_get_vf_res_msg(struct ice_vf *vf, u8 *msg)
- 	if (vf->driver_caps & VIRTCHNL_VF_OFFLOAD_USO)
- 		vfres->vf_cap_flags |= VIRTCHNL_VF_OFFLOAD_USO;
- 
-+	if (vf->driver_caps & VIRTCHNL_VF_OFFLOAD_QOS)
-+		vfres->vf_cap_flags |= VIRTCHNL_VF_OFFLOAD_QOS;
-+
- 	vfres->num_vsis = 1;
- 	/* Tx and Rx queue are equal for VF */
- 	vfres->num_queue_pairs = vsi->num_txq;
-@@ -1034,6 +1037,191 @@ static int ice_vc_config_rss_hfunc(struct ice_vf *vf, u8 *msg)
- 				     NULL, 0);
- }
- 
-+/**
-+ * ice_vc_get_qos_caps - Get current QoS caps from PF
-+ * @vf: pointer to the VF info
-+ *
-+ * Get VF's QoS capabilities, such as TC number, arbiter and
-+ * bandwidth from PF.
-+ *
-+ * Return: 0 on success or negative error value.
-+ */
-+static int ice_vc_get_qos_caps(struct ice_vf *vf)
-+{
-+	enum virtchnl_status_code v_ret = VIRTCHNL_STATUS_SUCCESS;
-+	struct virtchnl_qos_cap_list *cap_list = NULL;
-+	u8 tc_prio[ICE_MAX_TRAFFIC_CLASS] = { 0 };
-+	struct virtchnl_qos_cap_elem *cfg = NULL;
-+	struct ice_vsi_ctx *vsi_ctx;
-+	struct ice_pf *pf = vf->pf;
-+	struct ice_port_info *pi;
-+	struct ice_vsi *vsi;
-+	u8 numtc, tc;
-+	u16 len = 0;
-+	int ret, i;
-+
-+	if (!test_bit(ICE_VF_STATE_ACTIVE, vf->vf_states)) {
-+		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
-+		goto err;
-+	}
-+
-+	vsi = ice_get_vf_vsi(vf);
-+	if (!vsi) {
-+		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
-+		goto err;
-+	}
-+
-+	pi = pf->hw.port_info;
-+	numtc = vsi->tc_cfg.numtc;
-+
-+	vsi_ctx = ice_get_vsi_ctx(pi->hw, vf->lan_vsi_idx);
-+	if (!vsi_ctx) {
-+		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
-+		goto err;
-+	}
-+
-+	len = struct_size(cap_list, cap, numtc);
-+	cap_list = kzalloc(len, GFP_KERNEL);
-+	if (!cap_list) {
-+		v_ret = VIRTCHNL_STATUS_ERR_NO_MEMORY;
-+		len = 0;
-+		goto err;
-+	}
-+
-+	cap_list->vsi_id = vsi->vsi_num;
-+	cap_list->num_elem = numtc;
-+
-+	/* Store the UP2TC configuration from DCB to a user priority bitmap
-+	 * of each TC. Each element of prio_of_tc represents one TC. Each
-+	 * bitmap indicates the user priorities belong to this TC.
-+	 */
-+	for (i = 0; i < ICE_MAX_USER_PRIORITY; i++) {
-+		tc = pi->qos_cfg.local_dcbx_cfg.etscfg.prio_table[i];
-+		tc_prio[tc] |= BIT(i);
-+	}
-+
-+	for (i = 0; i < numtc; i++) {
-+		cfg = &cap_list->cap[i];
-+		cfg->tc_num = i;
-+		cfg->tc_prio = tc_prio[i];
-+		cfg->arbiter = pi->qos_cfg.local_dcbx_cfg.etscfg.tsatable[i];
-+		cfg->weight = VIRTCHNL_STRICT_WEIGHT;
-+		cfg->type = VIRTCHNL_BW_SHAPER;
-+		cfg->shaper.committed = vsi_ctx->sched.bw_t_info[i].cir_bw.bw;
-+		cfg->shaper.peak = vsi_ctx->sched.bw_t_info[i].eir_bw.bw;
-+	}
-+
-+err:
-+	ret = ice_vc_send_msg_to_vf(vf, VIRTCHNL_OP_GET_QOS_CAPS, v_ret,
-+				    (u8 *)cap_list, len);
-+	kfree(cap_list);
-+	return ret;
-+}
-+
-+/**
-+ * ice_vf_cfg_qs_bw - Configure per queue bandwidth
-+ * @vf: pointer to the VF info
-+ * @num_queues: number of queues to be configured
-+ *
-+ * Configure per queue bandwidth.
-+ *
-+ * Return: 0 on success or negative error value.
-+ */
-+static int ice_vf_cfg_qs_bw(struct ice_vf *vf, u16 num_queues)
-+{
-+	struct ice_hw *hw = &vf->pf->hw;
-+	struct ice_vsi *vsi;
-+	int ret;
-+	u16 i;
-+
-+	vsi = ice_get_vf_vsi(vf);
-+	if (!vsi)
-+		return -EINVAL;
-+
-+	for (i = 0; i < num_queues; i++) {
-+		u32 p_rate, min_rate;
-+		u8 tc;
-+
-+		p_rate = vf->qs_bw[i].peak;
-+		min_rate = vf->qs_bw[i].committed;
-+		tc = vf->qs_bw[i].tc;
-+		if (p_rate)
-+			ret = ice_cfg_q_bw_lmt(hw->port_info, vsi->idx, tc,
-+					       vf->qs_bw[i].queue_id,
-+					       ICE_MAX_BW, p_rate);
-+		else
-+			ret = ice_cfg_q_bw_dflt_lmt(hw->port_info, vsi->idx, tc,
-+						    vf->qs_bw[i].queue_id,
-+						    ICE_MAX_BW);
-+		if (ret)
-+			return ret;
-+
-+		if (min_rate)
-+			ret = ice_cfg_q_bw_lmt(hw->port_info, vsi->idx, tc,
-+					       vf->qs_bw[i].queue_id,
-+					       ICE_MIN_BW, min_rate);
-+		else
-+			ret = ice_cfg_q_bw_dflt_lmt(hw->port_info, vsi->idx, tc,
-+						    vf->qs_bw[i].queue_id,
-+						    ICE_MIN_BW);
-+
-+		if (ret)
-+			return ret;
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_vf_cfg_q_quanta_profile - Configure quanta profile
-+ * @vf: pointer to the VF info
-+ * @quanta_prof_idx: pointer to the quanta profile index
-+ * @quanta_size: quanta size to be set
-+ *
-+ * This function chooses available quanta profile and configures the register.
-+ * The quanta profile is evenly divided by the number of device ports, and then
-+ * available to the specific PF and VFs. The first profile for each PF is a
-+ * reserved default profile. Only quanta size of the rest unused profile can be
-+ * modified.
-+ *
-+ * Return: 0 on success or negative error value.
-+ */
-+static int ice_vf_cfg_q_quanta_profile(struct ice_vf *vf, u16 quanta_size,
-+				       u16 *quanta_prof_idx)
-+{
-+	const u16 n_desc = calc_quanta_desc(quanta_size);
-+	struct ice_hw *hw = &vf->pf->hw;
-+	const u16 n_cmd = 2 * n_desc;
-+	struct ice_pf *pf = vf->pf;
-+	u16 per_pf, begin_id;
-+	u8 n_used;
-+	u32 reg;
-+
-+	begin_id = (GLCOMM_QUANTA_PROF_MAX_INDEX + 1) / hw->dev_caps.num_funcs *
-+		   hw->logical_pf_id;
-+
-+	if (quanta_size == ICE_DFLT_QUANTA) {
-+		*quanta_prof_idx = begin_id;
-+	} else {
-+		per_pf = (GLCOMM_QUANTA_PROF_MAX_INDEX + 1) /
-+			 hw->dev_caps.num_funcs;
-+		n_used = pf->num_quanta_prof_used;
-+		if (n_used < per_pf) {
-+			*quanta_prof_idx = begin_id + 1 + n_used;
-+			pf->num_quanta_prof_used++;
-+		} else {
++	if (shaper->handle.scope == NET_SHAPER_SCOPE_QUEUE) {
++		vf_max = adapter->qos_caps->cap[0].shaper.peak;
++		if (vf_max && shaper->bw_max > vf_max) {
++			NL_SET_ERR_MSG_FMT(extack, "Max rate (%llu) of queue %d can't exceed max TX rate of VF (%llu kbps)",
++					   shaper->bw_max, shaper->handle.id,
++					   vf_max);
 +			return -EINVAL;
 +		}
 +	}
-+
-+	reg = FIELD_PREP(GLCOMM_QUANTA_PROF_QUANTA_SIZE_M, quanta_size) |
-+	      FIELD_PREP(GLCOMM_QUANTA_PROF_MAX_CMD_M, n_cmd) |
-+	      FIELD_PREP(GLCOMM_QUANTA_PROF_MAX_DESC_M, n_desc);
-+	wr32(hw, GLCOMM_QUANTA_PROF(*quanta_prof_idx), reg);
-+
 +	return 0;
 +}
 +
- /**
-  * ice_vc_cfg_promiscuous_mode_msg
-  * @vf: pointer to the VF info
-@@ -1635,6 +1823,141 @@ static int ice_vc_cfg_irq_map_msg(struct ice_vf *vf, u8 *msg)
- 				     NULL, 0);
+ static int
+ iavf_shaper_set(struct net_shaper_binding *binding,
+ 		const struct net_shaper *shaper,
+@@ -4943,11 +4976,16 @@ iavf_shaper_set(struct net_shaper_binding *binding,
+ 	struct iavf_adapter *adapter = netdev_priv(binding->netdev);
+ 	const struct net_shaper_handle *handle = &shaper->handle;
+ 	struct iavf_ring *tx_ring;
++	int ret = 0;
+ 
+ 	mutex_lock(&adapter->crit_lock);
+ 	if (handle->id >= adapter->num_active_queues)
+ 		goto unlock;
+ 
++	ret = iavf_verify_shaper(binding, shaper, extack);
++	if (ret)
++		goto unlock;
++
+ 	tx_ring = &adapter->tx_rings[handle->id];
+ 
+ 	tx_ring->q_shaper.bw_min = div_u64(shaper->bw_min, 1000);
+@@ -4958,7 +4996,7 @@ iavf_shaper_set(struct net_shaper_binding *binding,
+ 
+ unlock:
+ 	mutex_unlock(&adapter->crit_lock);
+-	return 0;
++	return ret;
+ }
+ 
+ static int iavf_shaper_del(struct net_shaper_binding *binding,
+@@ -5164,7 +5202,7 @@ static int iavf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	struct net_device *netdev;
+ 	struct iavf_adapter *adapter = NULL;
+ 	struct iavf_hw *hw = NULL;
+-	int err;
++	int err, len;
+ 
+ 	err = pci_enable_device(pdev);
+ 	if (err)
+@@ -5232,6 +5270,13 @@ static int iavf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	hw->bus.func = PCI_FUNC(pdev->devfn);
+ 	hw->bus.bus_id = pdev->bus->number;
+ 
++	len = struct_size(adapter->qos_caps, cap, IAVF_MAX_QOS_TC_NUM);
++	adapter->qos_caps = kzalloc(len, GFP_KERNEL);
++	if (!adapter->qos_caps) {
++		err = -ENOMEM;
++		goto err_alloc_qos_cap;
++	}
++
+ 	/* set up the locks for the AQ, do this only once in probe
+ 	 * and destroy them only once in remove
+ 	 */
+@@ -5270,6 +5315,8 @@ static int iavf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	/* Initialization goes on in the work. Do not add more of it below. */
+ 	return 0;
+ 
++err_alloc_qos_cap:
++	iounmap(hw->hw_addr);
+ err_ioremap:
+ 	destroy_workqueue(adapter->wq);
+ err_alloc_wq:
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+index 64ddd0e66c0d..15d388b431c5 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+@@ -151,7 +151,8 @@ int iavf_send_vf_config_msg(struct iavf_adapter *adapter)
+ 	       VIRTCHNL_VF_OFFLOAD_USO |
+ 	       VIRTCHNL_VF_OFFLOAD_FDIR_PF |
+ 	       VIRTCHNL_VF_OFFLOAD_ADV_RSS_PF |
+-	       VIRTCHNL_VF_CAP_ADV_LINK_SPEED;
++	       VIRTCHNL_VF_CAP_ADV_LINK_SPEED |
++	       VIRTCHNL_VF_OFFLOAD_QOS;
+ 
+ 	adapter->current_op = VIRTCHNL_OP_GET_VF_RESOURCES;
+ 	adapter->aq_required &= ~IAVF_FLAG_AQ_GET_CONFIG;
+@@ -1507,6 +1508,76 @@ iavf_set_adapter_link_speed_from_vpe(struct iavf_adapter *adapter,
+ 		adapter->link_speed = vpe->event_data.link_event.link_speed;
  }
  
 +/**
-+ * ice_vc_cfg_q_bw - Configure per queue bandwidth
-+ * @vf: pointer to the VF info
-+ * @msg: pointer to the msg buffer which holds the command descriptor
++ * iavf_get_qos_caps - get qos caps support
++ * @adapter: iavf adapter struct instance
 + *
-+ * Configure VF queues bandwidth.
-+ *
-+ * Return: 0 on success or negative error value.
++ * This function requests PF for Supported QoS Caps.
 + */
-+static int ice_vc_cfg_q_bw(struct ice_vf *vf, u8 *msg)
++void iavf_get_qos_caps(struct iavf_adapter *adapter)
 +{
-+	enum virtchnl_status_code v_ret = VIRTCHNL_STATUS_SUCCESS;
-+	struct virtchnl_queues_bw_cfg *qbw =
-+		(struct virtchnl_queues_bw_cfg *)msg;
-+	struct ice_vsi *vsi;
-+	u16 i;
-+
-+	if (!test_bit(ICE_VF_STATE_ACTIVE, vf->vf_states) ||
-+	    !ice_vc_isvalid_vsi_id(vf, qbw->vsi_id)) {
-+		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
-+		goto err;
++	if (adapter->current_op != VIRTCHNL_OP_UNKNOWN) {
++		/* bail because we already have a command pending */
++		dev_err(&adapter->pdev->dev,
++			"Cannot get qos caps, command %d pending\n",
++			adapter->current_op);
++		return;
 +	}
 +
-+	vsi = ice_get_vf_vsi(vf);
-+	if (!vsi) {
-+		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
-+		goto err;
-+	}
-+
-+	if (qbw->num_queues > ICE_MAX_RSS_QS_PER_VF ||
-+	    qbw->num_queues > min_t(u16, vsi->alloc_txq, vsi->alloc_rxq)) {
-+		dev_err(ice_pf_to_dev(vf->pf), "VF-%d trying to configure more than allocated number of queues: %d\n",
-+			vf->vf_id, min_t(u16, vsi->alloc_txq, vsi->alloc_rxq));
-+		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
-+		goto err;
-+	}
-+
-+	for (i = 0; i < qbw->num_queues; i++) {
-+		if (qbw->cfg[i].shaper.peak != 0 && vf->max_tx_rate != 0 &&
-+		    qbw->cfg[i].shaper.peak > vf->max_tx_rate)
-+			dev_warn(ice_pf_to_dev(vf->pf), "The maximum queue %d rate limit configuration may not take effect because the maximum TX rate for VF-%d is %d\n",
-+				 qbw->cfg[i].queue_id, vf->vf_id,
-+				 vf->max_tx_rate);
-+		if (qbw->cfg[i].shaper.committed != 0 && vf->min_tx_rate != 0 &&
-+		    qbw->cfg[i].shaper.committed < vf->min_tx_rate)
-+			dev_warn(ice_pf_to_dev(vf->pf), "The minimum queue %d rate limit configuration may not take effect because the minimum TX rate for VF-%d is %d\n",
-+				 qbw->cfg[i].queue_id, vf->vf_id,
-+				 vf->max_tx_rate);
-+	}
-+
-+	for (i = 0; i < qbw->num_queues; i++) {
-+		vf->qs_bw[i].queue_id = qbw->cfg[i].queue_id;
-+		vf->qs_bw[i].peak = qbw->cfg[i].shaper.peak;
-+		vf->qs_bw[i].committed = qbw->cfg[i].shaper.committed;
-+		vf->qs_bw[i].tc = qbw->cfg[i].tc;
-+	}
-+
-+	if (ice_vf_cfg_qs_bw(vf, qbw->num_queues))
-+		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
-+
-+err:
-+	/* send the response to the VF */
-+	return ice_vc_send_msg_to_vf(vf, VIRTCHNL_OP_CONFIG_QUEUE_BW,
-+				    v_ret, NULL, 0);
++	adapter->current_op = VIRTCHNL_OP_GET_QOS_CAPS;
++	adapter->aq_required &= ~IAVF_FLAG_AQ_GET_QOS_CAPS;
++	iavf_send_pf_msg(adapter, VIRTCHNL_OP_GET_QOS_CAPS, NULL, 0);
 +}
 +
 +/**
-+ * ice_vc_cfg_q_quanta - Configure per queue quanta
-+ * @vf: pointer to the VF info
-+ * @msg: pointer to the msg buffer which holds the command descriptor
++ * iavf_set_quanta_size - set quanta size of queue chunk
++ * @adapter: iavf adapter struct instance
++ * @quanta_size: quanta size in bytes
++ * @queue_index: starting index of queue chunk
++ * @num_queues: number of queues in the queue chunk
 + *
-+ * Configure VF queues quanta.
-+ *
-+ * Return: 0 on success or negative error value.
++ * This function requests PF to set quanta size of queue chunk
++ * starting at queue_index.
 + */
-+static int ice_vc_cfg_q_quanta(struct ice_vf *vf, u8 *msg)
++static void
++iavf_set_quanta_size(struct iavf_adapter *adapter, u16 quanta_size,
++		     u16 queue_index, u16 num_queues)
 +{
-+	enum virtchnl_status_code v_ret = VIRTCHNL_STATUS_SUCCESS;
-+	u16 quanta_prof_id, quanta_size, start_qid, end_qid, i;
-+	struct virtchnl_quanta_cfg *qquanta =
-+		(struct virtchnl_quanta_cfg *)msg;
-+	struct ice_vsi *vsi;
-+	int ret;
++	struct virtchnl_quanta_cfg quanta_cfg;
 +
-+	if (!test_bit(ICE_VF_STATE_ACTIVE, vf->vf_states)) {
-+		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
-+		goto err;
++	if (adapter->current_op != VIRTCHNL_OP_UNKNOWN) {
++		/* bail because we already have a command pending */
++		dev_err(&adapter->pdev->dev,
++			"Cannot set queue quanta size, command %d pending\n",
++			adapter->current_op);
++		return;
 +	}
 +
-+	vsi = ice_get_vf_vsi(vf);
-+	if (!vsi) {
-+		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
-+		goto err;
-+	}
++	adapter->current_op = VIRTCHNL_OP_CONFIG_QUANTA;
++	quanta_cfg.quanta_size = quanta_size;
++	quanta_cfg.queue_select.type = VIRTCHNL_QUEUE_TYPE_TX;
++	quanta_cfg.queue_select.start_queue_id = queue_index;
++	quanta_cfg.queue_select.num_queues = num_queues;
++	adapter->aq_required &= ~IAVF_FLAG_AQ_CFG_QUEUES_QUANTA_SIZE;
++	iavf_send_pf_msg(adapter, VIRTCHNL_OP_CONFIG_QUANTA,
++			 (u8 *)&quanta_cfg, sizeof(quanta_cfg));
++}
 +
-+	end_qid = qquanta->queue_select.start_queue_id +
-+		  qquanta->queue_select.num_queues;
-+	if (end_qid > ICE_MAX_RSS_QS_PER_VF ||
-+	    end_qid > min_t(u16, vsi->alloc_txq, vsi->alloc_rxq)) {
-+		dev_err(ice_pf_to_dev(vf->pf), "VF-%d trying to configure more than allocated number of queues: %d\n",
-+			vf->vf_id, min_t(u16, vsi->alloc_txq, vsi->alloc_rxq));
-+		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
-+		goto err;
-+	}
++/**
++ * iavf_cfg_queues_quanta_size - configure quanta size of queues
++ * @adapter: adapter structure
++ *
++ * Request that the PF configure quanta size of allocated queues.
++ **/
++void iavf_cfg_queues_quanta_size(struct iavf_adapter *adapter)
++{
++	int quanta_size = IAVF_DEFAULT_QUANTA_SIZE;
 +
-+	quanta_size = qquanta->quanta_size;
-+	if (quanta_size > ICE_MAX_QUANTA_SIZE ||
-+	    quanta_size < ICE_MIN_QUANTA_SIZE) {
-+		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
-+		goto err;
-+	}
-+
-+	if (quanta_size % 64) {
-+		dev_err(ice_pf_to_dev(vf->pf), "quanta size should be the product of 64\n");
-+		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
-+		goto err;
-+	}
-+
-+	ret = ice_vf_cfg_q_quanta_profile(vf, quanta_size,
-+					  &quanta_prof_id);
-+	if (ret) {
-+		v_ret = VIRTCHNL_STATUS_ERR_NOT_SUPPORTED;
-+		goto err;
-+	}
-+
-+	start_qid = qquanta->queue_select.start_queue_id;
-+	for (i = start_qid; i < end_qid; i++)
-+		vsi->tx_rings[i]->quanta_prof_id = quanta_prof_id;
-+
-+err:
-+	/* send the response to the VF */
-+	return ice_vc_send_msg_to_vf(vf, VIRTCHNL_OP_CONFIG_QUANTA,
-+				     v_ret, NULL, 0);
++	/* Set Queue Quanta Size to default */
++	iavf_set_quanta_size(adapter, quanta_size, 0,
++			     adapter->num_active_queues);
 +}
 +
  /**
-  * ice_vc_cfg_qs_msg
-  * @vf: pointer to the VF info
-@@ -3821,6 +4144,9 @@ static const struct ice_virtchnl_ops ice_virtchnl_dflt_ops = {
- 	.dis_vlan_stripping_v2_msg = ice_vc_dis_vlan_stripping_v2_msg,
- 	.ena_vlan_insertion_v2_msg = ice_vc_ena_vlan_insertion_v2_msg,
- 	.dis_vlan_insertion_v2_msg = ice_vc_dis_vlan_insertion_v2_msg,
-+	.get_qos_caps = ice_vc_get_qos_caps,
-+	.cfg_q_bw = ice_vc_cfg_q_bw,
-+	.cfg_q_quanta = ice_vc_cfg_q_quanta,
- };
+  * iavf_cfg_queues_bw - configure bandwidth of allocated queues
+  * @adapter: iavf adapter structure instance
+@@ -2281,6 +2352,14 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
+ 					VIRTCHNL_RSS_ALG_TOEPLITZ_SYMMETRIC;
  
- /**
-@@ -4177,6 +4503,15 @@ void ice_vc_process_vf_msg(struct ice_pf *pf, struct ice_rq_event_info *event,
- 	case VIRTCHNL_OP_DISABLE_VLAN_INSERTION_V2:
- 		err = ops->dis_vlan_insertion_v2_msg(vf, msg);
+ 			break;
++		case VIRTCHNL_OP_GET_QOS_CAPS:
++			dev_warn(&adapter->pdev->dev, "Failed to Get Qos CAPs, error %s\n",
++				 iavf_stat_str(&adapter->hw, v_retval));
++			break;
++		case VIRTCHNL_OP_CONFIG_QUANTA:
++			dev_warn(&adapter->pdev->dev, "Failed to Config Quanta, error %s\n",
++				 iavf_stat_str(&adapter->hw, v_retval));
++			break;
+ 		case VIRTCHNL_OP_CONFIG_QUEUE_BW:
+ 			dev_warn(&adapter->pdev->dev, "Failed to Config Queue BW, error %s\n",
+ 				 iavf_stat_str(&adapter->hw, v_retval));
+@@ -2627,6 +2706,17 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
+ 		if (!v_retval)
+ 			iavf_netdev_features_vlan_strip_set(netdev, false);
  		break;
-+	case VIRTCHNL_OP_GET_QOS_CAPS:
-+		err = ops->get_qos_caps(vf);
-+		break;
-+	case VIRTCHNL_OP_CONFIG_QUEUE_BW:
-+		err = ops->cfg_q_bw(vf, msg);
++	case VIRTCHNL_OP_GET_QOS_CAPS: {
++		u16 len = struct_size(adapter->qos_caps, cap,
++				      IAVF_MAX_QOS_TC_NUM);
++
++		memcpy(adapter->qos_caps, msg, min(msglen, len));
++
++		adapter->aq_required |= IAVF_FLAG_AQ_CFG_QUEUES_QUANTA_SIZE;
++		}
 +		break;
 +	case VIRTCHNL_OP_CONFIG_QUANTA:
-+		err = ops->cfg_q_quanta(vf, msg);
 +		break;
- 	case VIRTCHNL_OP_UNKNOWN:
- 	default:
- 		dev_err(dev, "Unsupported opcode %d from VF %d\n", v_opcode,
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl.h b/drivers/net/ethernet/intel/ice/ice_virtchnl.h
-index 3a4115869153..0c629aef9baf 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl.h
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl.h
-@@ -13,6 +13,13 @@
- /* Restrict number of MAC Addr and VLAN that non-trusted VF can programmed */
- #define ICE_MAX_VLAN_PER_VF		8
- 
-+#define ICE_DFLT_QUANTA 1024
-+#define ICE_MAX_QUANTA_SIZE 4096
-+#define ICE_MIN_QUANTA_SIZE 256
-+
-+#define calc_quanta_desc(x)	\
-+	max_t(u16, 12, min_t(u16, 63, (((x) + 66) / 132) * 2 + 4))
-+
- /* MAC filters: 1 is reserved for the VF's default/perm_addr/LAA MAC, 1 for
-  * broadcast, and 16 for additional unicast/multicast filters
-  */
-@@ -61,6 +68,10 @@ struct ice_virtchnl_ops {
- 	int (*dis_vlan_stripping_v2_msg)(struct ice_vf *vf, u8 *msg);
- 	int (*ena_vlan_insertion_v2_msg)(struct ice_vf *vf, u8 *msg);
- 	int (*dis_vlan_insertion_v2_msg)(struct ice_vf *vf, u8 *msg);
-+	int (*get_qos_caps)(struct ice_vf *vf);
-+	int (*cfg_q_tc_map)(struct ice_vf *vf, u8 *msg);
-+	int (*cfg_q_bw)(struct ice_vf *vf, u8 *msg);
-+	int (*cfg_q_quanta)(struct ice_vf *vf, u8 *msg);
- };
- 
- #ifdef CONFIG_PCI_IOV
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_allowlist.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_allowlist.c
-index d796dbd2a440..c105a82ee136 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_allowlist.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_allowlist.c
-@@ -84,6 +84,11 @@ static const u32 fdir_pf_allowlist_opcodes[] = {
- 	VIRTCHNL_OP_ADD_FDIR_FILTER, VIRTCHNL_OP_DEL_FDIR_FILTER,
- };
- 
-+static const u32 tc_allowlist_opcodes[] = {
-+	VIRTCHNL_OP_GET_QOS_CAPS, VIRTCHNL_OP_CONFIG_QUEUE_BW,
-+	VIRTCHNL_OP_CONFIG_QUANTA,
-+};
-+
- struct allowlist_opcode_info {
- 	const u32 *opcodes;
- 	size_t size;
-@@ -104,6 +109,7 @@ static const struct allowlist_opcode_info allowlist_opcodes[] = {
- 	ALLOW_ITEM(VIRTCHNL_VF_OFFLOAD_ADV_RSS_PF, adv_rss_pf_allowlist_opcodes),
- 	ALLOW_ITEM(VIRTCHNL_VF_OFFLOAD_FDIR_PF, fdir_pf_allowlist_opcodes),
- 	ALLOW_ITEM(VIRTCHNL_VF_OFFLOAD_VLAN_V2, vlan_v2_allowlist_opcodes),
-+	ALLOW_ITEM(VIRTCHNL_VF_OFFLOAD_QOS, tc_allowlist_opcodes),
- };
- 
- /**
+ 	case VIRTCHNL_OP_CONFIG_QUEUE_BW: {
+ 		int i;
+ 		/* shaper configuration is successful for all queues */
 -- 
 2.45.2
 
