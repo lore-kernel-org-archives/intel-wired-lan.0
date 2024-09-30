@@ -4,72 +4,72 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 58001CE8347
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 30 Sep 2024 13:55:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4AB05CE834A
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 30 Sep 2024 13:55:54 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 28BA04026F;
-	Mon, 30 Sep 2024 13:55:40 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 123AC402C2;
+	Mon, 30 Sep 2024 13:55:54 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id YfrfrpmUgCvK; Mon, 30 Sep 2024 13:55:38 +0000 (UTC)
+ id 7CerF03D49LD; Mon, 30 Sep 2024 13:55:53 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 373254027D
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org BE3E7402B1
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1727704538;
-	bh=NC4nmJbiEhnOnENe7dLHsytQMAjEFH1I/WVX2y0l2vY=;
+	s=default; t=1727704553;
+	bh=Cx0qAntOjDXvUoPhdK6OH+djyDvpAlNINxQF+OH7kGs=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=J/FS5vPFfVV/h13blclIYyEl8SgWm3AltC9odIca7/BhIaMFHjkvEwkQOQif+GMFX
-	 AeqedhHraHq09O7TiHA9GbZCLubZ7odYzZ2CdZdjndXXfRY96lfRoRJRaTPaGAx20E
-	 PoRFM+WAQw1p55oD5CPzcwt7I9CMMR2mTq3dGNwat8PxP2/5mMcT4SAyRkfuqVMwU6
-	 3ezzPb7r4vvJb9+ed9eTIlBpWAnF6845P54xIsR0G4kDt8wfq1rnrQf7oKh6R3wJOH
-	 SRvLMr9tygdwvsTUWFTGswa8KnCIwDDYDFLeKGNuOU+fHh7txH1E1oTZLwqB455TL2
-	 4hpHtSsPA7/iQ==
+	b=hSY11eLJkbIl3Oz3DQzFc2H9qS0jqGO2R9TD4i5LWcYqRX2FjlMWYkGXvBoVTpEPY
+	 gvvJGqR8orb/I0gUIm82NmJvA8xI4BTCYlMkhE8LEbuwrgfMELgC2jAiYyqVNfB3Qw
+	 gqim8Tn1Udh0mxd+HlOG3rnBsp88zRo5MNCuq92IbB4mH1UtCHAL5p5SIOQYNX95Zt
+	 VLWCI/qskCLyvw9fgCharTvUfom3sKPniuDU1eosqOeL/YIsEvdhOPQz0nMKNuvhpY
+	 X5OX9UzUKulXeM6b7W3j++5jEQXw9AORqgQk9lB9dOTCccOlyCXKQx9CbSd0nyfH2x
+	 6KXZket9E7/NA==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 373254027D;
-	Mon, 30 Sep 2024 13:55:38 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 5C6C61BF300
- for <intel-wired-lan@lists.osuosl.org>; Mon, 30 Sep 2024 13:55:37 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id BE3E7402B1;
+	Mon, 30 Sep 2024 13:55:52 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 829431BF955
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 30 Sep 2024 13:55:49 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 4AB3840144
- for <intel-wired-lan@lists.osuosl.org>; Mon, 30 Sep 2024 13:55:37 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 7015140251
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 30 Sep 2024 13:55:49 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id XazXdtTQ2pbY for <intel-wired-lan@lists.osuosl.org>;
- Mon, 30 Sep 2024 13:55:36 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id C6gEls_P4uHz for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 30 Sep 2024 13:55:48 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.129.124;
  helo=us-smtp-delivery-124.mimecast.com; envelope-from=pabeni@redhat.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 0F85B40118
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 0F85B40118
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 3FC5D40250
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3FC5D40250
 Received: from us-smtp-delivery-124.mimecast.com
  (us-smtp-delivery-124.mimecast.com [170.10.129.124])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 0F85B40118
- for <intel-wired-lan@lists.osuosl.org>; Mon, 30 Sep 2024 13:55:35 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 3FC5D40250
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 30 Sep 2024 13:55:48 +0000 (UTC)
 Received: from mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com
  (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
  relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-263-okVxKxniPWiylw2Nqt4Y_w-1; Mon,
- 30 Sep 2024 09:55:33 -0400
-X-MC-Unique: okVxKxniPWiylw2Nqt4Y_w-1
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-453-jhXMvCjNPyqZT85sHnHLPg-1; Mon,
+ 30 Sep 2024 09:55:45 -0400
+X-MC-Unique: jhXMvCjNPyqZT85sHnHLPg-1
 Received: from mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com (unknown
  [10.30.177.12])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
  by mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
- id 041A3195C270; Mon, 30 Sep 2024 13:55:31 +0000 (UTC)
+ id C684C193EF57; Mon, 30 Sep 2024 13:55:43 +0000 (UTC)
 Received: from gerbillo.redhat.com (unknown [10.45.224.210])
  by mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP
- id 12A811954B0F; Mon, 30 Sep 2024 13:55:25 +0000 (UTC)
+ id C4F321954B0F; Mon, 30 Sep 2024 13:55:37 +0000 (UTC)
 From: Paolo Abeni <pabeni@redhat.com>
 To: netdev@vger.kernel.org
-Date: Mon, 30 Sep 2024 15:53:57 +0200
-Message-ID: <1727cd97cd6173ffec9d4282ec80312c96f64762.1727704215.git.pabeni@redhat.com>
+Date: Mon, 30 Sep 2024 15:53:59 +0200
+Message-ID: <258473ba41f500dd74935dc63df90124f4426de9.1727704215.git.pabeni@redhat.com>
 In-Reply-To: <cover.1727704215.git.pabeni@redhat.com>
 References: <cover.1727704215.git.pabeni@redhat.com>
 MIME-Version: 1.0
@@ -77,23 +77,23 @@ Content-Transfer-Encoding: 8bit
 X-Scanned-By: MIMEDefang 3.0 on 10.30.177.12
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=redhat.com; 
- s=mimecast20190719; t=1727704535;
+ s=mimecast20190719; t=1727704547;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=NC4nmJbiEhnOnENe7dLHsytQMAjEFH1I/WVX2y0l2vY=;
- b=GCwEKwZTIpweatlJiBipD/zobTsuIMO+CmF4T0V8p3AWVYiosqArAaUG+EsutV7RrCnWvb
- pqlqNb8CiawAV+VJMSx+9X1G9LFXmyQV0T/SPGJyisTjtvsaPlwwlyJjIDrZ1jHxnE/o/H
- 6+3ZQMUpZQgoOiSVlvsEAf5eogODLQs=
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ bh=Cx0qAntOjDXvUoPhdK6OH+djyDvpAlNINxQF+OH7kGs=;
+ b=f+Wj+9afON1b/cJV3ecXD0P673VJpZpz0XNVxa/odT7AmYp5UoYP00Z1MYuzgeHQLQ4Xvl
+ t29fdowdmV6+88QBefci9p+PoIKpy4dUtwundPNCPveyB2P6dUx6SJabK/iI/SImpK9a4C
+ h1MGa07eIt0ssGn2dehXYBxU4ubltN0=
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=redhat.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=GCwEKwZT
-Subject: [Intel-wired-lan] [PATCH v8 net-next 10/15] net-shapers: implement
- cap validation in the core
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=f+Wj+9af
+Subject: [Intel-wired-lan] [PATCH v8 net-next 12/15] virtchnl: support queue
+ rate limit and quanta size configuration
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -118,165 +118,189 @@ Cc: Jiri Pirko <jiri@resnulli.us>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Use the device capabilities to reject invalid attribute values before
-pushing them to the H/W.
+From: Wenjun Wu <wenjun1.wu@intel.com>
 
-Note that validating the metric explicitly avoids NL_SET_BAD_ATTR()
-usage, to provide unambiguous error messages to the user.
+This patch adds new virtchnl opcodes and structures for rate limit
+and quanta size configuration, which include:
+1. VIRTCHNL_OP_CONFIG_QUEUE_BW, to configure max bandwidth for each
+VF per queue.
+2. VIRTCHNL_OP_CONFIG_QUANTA, to configure quanta size per queue.
+3. VIRTCHNL_OP_GET_QOS_CAPS, VF queries current QoS configuration, such
+as enabled TCs, arbiter type, up2tc and bandwidth of VSI node. The
+configuration is previously set by DCB and PF, and now is the potential
+QoS capability of VF. VF can take it as reference to configure queue TC
+mapping.
 
-Validating the nesting requires the knowledge of the new parent for
-the given shaper; as such is a chicken-egg problem: to validate the
-leaf nesting we need to know the node scope, to validate the node
-nesting we need to know the leafs parent scope.
-
-To break the circular dependency, place the leafs nesting validation
-after the parsing.
-
-Suggested-by: Jakub Kicinski <kuba@kernel.org>
-Reviewed-by: Jakub Kicinski <kuba@kernel.org>
-Signed-off-by: Paolo Abeni <pabeni@redhat.com>
+Signed-off-by: Wenjun Wu <wenjun1.wu@intel.com>
 ---
-v6 -> v7:
-  - validate the queue id vs real_num_tx_queues
-  - some mangling upon rebase, as 'node' is now always not NULL
-    in net_shaper_parse_leaf()
----
- net/shaper/shaper.c | 101 ++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 101 insertions(+)
+ include/linux/avf/virtchnl.h | 119 +++++++++++++++++++++++++++++++++++
+ 1 file changed, 119 insertions(+)
 
-diff --git a/net/shaper/shaper.c b/net/shaper/shaper.c
-index f9399984165a..15463062fe7b 100644
---- a/net/shaper/shaper.c
-+++ b/net/shaper/shaper.c
-@@ -439,6 +439,74 @@ static int net_shaper_parse_handle(const struct nlattr *attr,
- 	return 0;
- }
+diff --git a/include/linux/avf/virtchnl.h b/include/linux/avf/virtchnl.h
+index f41395264dca..223e433c39fe 100644
+--- a/include/linux/avf/virtchnl.h
++++ b/include/linux/avf/virtchnl.h
+@@ -89,6 +89,9 @@ enum virtchnl_rx_hsplit {
+ 	VIRTCHNL_RX_HSPLIT_SPLIT_SCTP    = 8,
+ };
  
-+static int net_shaper_validate_caps(struct net_shaper_binding *binding,
-+				    struct nlattr **tb,
-+				    const struct genl_info *info,
-+				    struct net_shaper *shaper)
-+{
-+	const struct net_shaper_ops *ops = net_shaper_ops(binding);
-+	struct nlattr *bad = NULL;
-+	unsigned long caps = 0;
++enum virtchnl_bw_limit_type {
++	VIRTCHNL_BW_SHAPER = 0,
++};
+ /* END GENERIC DEFINES */
+ 
+ /* Opcodes for VF-PF communication. These are placed in the v_opcode field
+@@ -151,6 +154,11 @@ enum virtchnl_ops {
+ 	VIRTCHNL_OP_DISABLE_VLAN_STRIPPING_V2 = 55,
+ 	VIRTCHNL_OP_ENABLE_VLAN_INSERTION_V2 = 56,
+ 	VIRTCHNL_OP_DISABLE_VLAN_INSERTION_V2 = 57,
++	/* opcode 57 - 65 are reserved */
++	VIRTCHNL_OP_GET_QOS_CAPS = 66,
++	/* opcode 68 through 111 are reserved */
++	VIRTCHNL_OP_CONFIG_QUEUE_BW = 112,
++	VIRTCHNL_OP_CONFIG_QUANTA = 113,
+ 	VIRTCHNL_OP_MAX,
+ };
+ 
+@@ -261,6 +269,7 @@ VIRTCHNL_CHECK_STRUCT_LEN(16, virtchnl_vsi_resource);
+ #define VIRTCHNL_VF_OFFLOAD_RX_FLEX_DESC	BIT(26)
+ #define VIRTCHNL_VF_OFFLOAD_ADV_RSS_PF		BIT(27)
+ #define VIRTCHNL_VF_OFFLOAD_FDIR_PF		BIT(28)
++#define VIRTCHNL_VF_OFFLOAD_QOS			BIT(29)
+ 
+ #define VF_BASE_MODE_OFFLOADS (VIRTCHNL_VF_OFFLOAD_L2 | \
+ 			       VIRTCHNL_VF_OFFLOAD_VLAN | \
+@@ -1416,6 +1425,85 @@ struct virtchnl_fdir_del {
+ 
+ VIRTCHNL_CHECK_STRUCT_LEN(12, virtchnl_fdir_del);
+ 
++struct virtchnl_shaper_bw {
++	/* Unit is Kbps */
++	u32 committed;
++	u32 peak;
++};
 +
-+	ops->capabilities(binding, shaper->handle.scope, &caps);
++VIRTCHNL_CHECK_STRUCT_LEN(8, virtchnl_shaper_bw);
 +
-+	if (tb[NET_SHAPER_A_PRIORITY] &&
-+	    !(caps & BIT(NET_SHAPER_A_CAPS_SUPPORT_PRIORITY)))
-+		bad = tb[NET_SHAPER_A_PRIORITY];
-+	if (tb[NET_SHAPER_A_WEIGHT] &&
-+	    !(caps & BIT(NET_SHAPER_A_CAPS_SUPPORT_WEIGHT)))
-+		bad = tb[NET_SHAPER_A_WEIGHT];
-+	if (tb[NET_SHAPER_A_BW_MIN] &&
-+	    !(caps & BIT(NET_SHAPER_A_CAPS_SUPPORT_BW_MIN)))
-+		bad = tb[NET_SHAPER_A_BW_MIN];
-+	if (tb[NET_SHAPER_A_BW_MAX] &&
-+	    !(caps & BIT(NET_SHAPER_A_CAPS_SUPPORT_BW_MAX)))
-+		bad = tb[NET_SHAPER_A_BW_MAX];
-+	if (tb[NET_SHAPER_A_BURST] &&
-+	    !(caps & BIT(NET_SHAPER_A_CAPS_SUPPORT_BURST)))
-+		bad = tb[NET_SHAPER_A_BURST];
++/* VIRTCHNL_OP_GET_QOS_CAPS
++ * VF sends this message to get its QoS Caps, such as
++ * TC number, Arbiter and Bandwidth.
++ */
++struct virtchnl_qos_cap_elem {
++	u8 tc_num;
++	u8 tc_prio;
++#define VIRTCHNL_ABITER_STRICT      0
++#define VIRTCHNL_ABITER_ETS         2
++	u8 arbiter;
++#define VIRTCHNL_STRICT_WEIGHT      1
++	u8 weight;
++	enum virtchnl_bw_limit_type type;
++	union {
++		struct virtchnl_shaper_bw shaper;
++		u8 pad2[32];
++	};
++};
 +
-+	if (!caps)
-+		bad = tb[NET_SHAPER_A_HANDLE];
++VIRTCHNL_CHECK_STRUCT_LEN(40, virtchnl_qos_cap_elem);
 +
-+	if (bad) {
-+		NL_SET_BAD_ATTR(info->extack, bad);
-+		return -EOPNOTSUPP;
-+	}
++struct virtchnl_qos_cap_list {
++	u16 vsi_id;
++	u16 num_elem;
++	struct virtchnl_qos_cap_elem cap[];
++};
 +
-+	if (shaper->handle.scope == NET_SHAPER_SCOPE_QUEUE &&
-+	    binding->type == NET_SHAPER_BINDING_TYPE_NETDEV &&
-+	    shaper->handle.id >= binding->netdev->real_num_tx_queues) {
-+		NL_SET_ERR_MSG_FMT(info->extack,
-+				   "Not existing queue id %d max %d",
-+				   shaper->handle.id,
-+				   binding->netdev->real_num_tx_queues);
-+		return -ENOENT;
-+	}
++VIRTCHNL_CHECK_STRUCT_LEN(4, virtchnl_qos_cap_list);
++#define virtchnl_qos_cap_list_LEGACY_SIZEOF	44
 +
-+	/* The metric is really used only if there is *any* rate-related
-+	 * setting, either in current attributes set or in pre-existing
-+	 * values.
-+	 */
-+	if (shaper->burst || shaper->bw_min || shaper->bw_max) {
-+		u32 metric_cap = NET_SHAPER_A_CAPS_SUPPORT_METRIC_BPS +
-+				 shaper->metric;
++/* VIRTCHNL_OP_CONFIG_QUEUE_BW */
++struct virtchnl_queue_bw {
++	u16 queue_id;
++	u8 tc;
++	u8 pad;
++	struct virtchnl_shaper_bw shaper;
++};
 +
-+		/* The metric test can fail even when the user did not
-+		 * specify the METRIC attribute. Pointing to rate related
-+		 * attribute will be confusing, as the attribute itself
-+		 * could be indeed supported, with a different metric.
-+		 * Be more specific.
-+		 */
-+		if (!(caps & BIT(metric_cap))) {
-+			NL_SET_ERR_MSG_FMT(info->extack, "Bad metric %d",
-+					   shaper->metric);
-+			return -EOPNOTSUPP;
++VIRTCHNL_CHECK_STRUCT_LEN(12, virtchnl_queue_bw);
++
++struct virtchnl_queues_bw_cfg {
++	u16 vsi_id;
++	u16 num_queues;
++	struct virtchnl_queue_bw cfg[];
++};
++
++VIRTCHNL_CHECK_STRUCT_LEN(4, virtchnl_queues_bw_cfg);
++#define virtchnl_queues_bw_cfg_LEGACY_SIZEOF	16
++
++enum virtchnl_queue_type {
++	VIRTCHNL_QUEUE_TYPE_TX			= 0,
++	VIRTCHNL_QUEUE_TYPE_RX			= 1,
++};
++
++/* structure to specify a chunk of contiguous queues */
++struct virtchnl_queue_chunk {
++	/* see enum virtchnl_queue_type */
++	s32 type;
++	u16 start_queue_id;
++	u16 num_queues;
++};
++
++VIRTCHNL_CHECK_STRUCT_LEN(8, virtchnl_queue_chunk);
++
++struct virtchnl_quanta_cfg {
++	u16 quanta_size;
++	struct virtchnl_queue_chunk queue_select;
++};
++
++VIRTCHNL_CHECK_STRUCT_LEN(12, virtchnl_quanta_cfg);
++
+ #define __vss_byone(p, member, count, old)				      \
+ 	(struct_size(p, member, count) + (old - 1 - struct_size(p, member, 0)))
+ 
+@@ -1438,6 +1526,8 @@ VIRTCHNL_CHECK_STRUCT_LEN(12, virtchnl_fdir_del);
+ 		 __vss(virtchnl_vlan_filter_list_v2, __vss_byelem, p, m, c),  \
+ 		 __vss(virtchnl_tc_info, __vss_byelem, p, m, c),	      \
+ 		 __vss(virtchnl_rdma_qvlist_info, __vss_byelem, p, m, c),     \
++		 __vss(virtchnl_qos_cap_list, __vss_byelem, p, m, c),	      \
++		 __vss(virtchnl_queues_bw_cfg, __vss_byelem, p, m, c),	      \
+ 		 __vss(virtchnl_rss_key, __vss_byone, p, m, c),		      \
+ 		 __vss(virtchnl_rss_lut, __vss_byone, p, m, c))
+ 
+@@ -1637,6 +1727,35 @@ virtchnl_vc_validate_vf_msg(struct virtchnl_version_info *ver, u32 v_opcode,
+ 	case VIRTCHNL_OP_DISABLE_VLAN_INSERTION_V2:
+ 		valid_len = sizeof(struct virtchnl_vlan_setting);
+ 		break;
++	case VIRTCHNL_OP_GET_QOS_CAPS:
++		break;
++	case VIRTCHNL_OP_CONFIG_QUEUE_BW:
++		valid_len = virtchnl_queues_bw_cfg_LEGACY_SIZEOF;
++		if (msglen >= valid_len) {
++			struct virtchnl_queues_bw_cfg *q_bw =
++				(struct virtchnl_queues_bw_cfg *)msg;
++
++			valid_len = virtchnl_struct_size(q_bw, cfg,
++							 q_bw->num_queues);
++			if (q_bw->num_queues == 0) {
++				err_msg_format = true;
++				break;
++			}
 +		}
-+	}
-+	return 0;
-+}
++		break;
++	case VIRTCHNL_OP_CONFIG_QUANTA:
++		valid_len = sizeof(struct virtchnl_quanta_cfg);
++		if (msglen >= valid_len) {
++			struct virtchnl_quanta_cfg *q_quanta =
++				(struct virtchnl_quanta_cfg *)msg;
 +
- static int net_shaper_parse_info(struct net_shaper_binding *binding,
- 				 struct nlattr **tb,
- 				 const struct genl_info *info,
-@@ -487,6 +555,28 @@ static int net_shaper_parse_info(struct net_shaper_binding *binding,
- 
- 	if (tb[NET_SHAPER_A_WEIGHT])
- 		shaper->weight = nla_get_u32(tb[NET_SHAPER_A_WEIGHT]);
-+
-+	ret = net_shaper_validate_caps(binding, tb, info, shaper);
-+	if (ret < 0)
-+		return ret;
-+
-+	return 0;
-+}
-+
-+static int net_shaper_validate_nesting(struct net_shaper_binding *binding,
-+				       const struct net_shaper *shaper,
-+				       struct netlink_ext_ack *extack)
-+{
-+	const struct net_shaper_ops *ops = net_shaper_ops(binding);
-+	unsigned long caps = 0;
-+
-+	ops->capabilities(binding, shaper->handle.scope, &caps);
-+	if (!(caps & BIT(NET_SHAPER_A_CAPS_SUPPORT_NESTING))) {
-+		NL_SET_ERR_MSG_FMT(extack,
-+				   "Nesting not supported for scope %d",
-+				   shaper->handle.scope);
-+		return -EOPNOTSUPP;
-+	}
- 	return 0;
- }
- 
-@@ -517,6 +607,13 @@ static int net_shaper_parse_leaf(struct net_shaper_binding *binding,
- 		return -EINVAL;
- 	}
- 
-+	if (node->handle.scope == NET_SHAPER_SCOPE_NODE) {
-+		ret = net_shaper_validate_nesting(binding, shaper,
-+						  info->extack);
-+		if (ret < 0)
-+			return ret;
-+	}
-+
- 	if (!exists)
- 		net_shaper_default_parent(&shaper->handle, &shaper->parent);
- 	return 0;
-@@ -858,6 +955,10 @@ static int __net_shaper_group(struct net_shaper_binding *binding,
- 					   node->parent.scope, node->parent.id);
- 			return -ENOENT;
- 		}
-+
-+		ret = net_shaper_validate_nesting(binding, node, extack);
-+		if (ret < 0)
-+			return ret;
- 	}
- 
- 	if (update_node) {
++			if (q_quanta->quanta_size == 0 ||
++			    q_quanta->queue_select.num_queues == 0) {
++				err_msg_format = true;
++				break;
++			}
++		}
++		break;
+ 	/* These are always errors coming from the VF. */
+ 	case VIRTCHNL_OP_EVENT:
+ 	case VIRTCHNL_OP_UNKNOWN:
 -- 
 2.45.2
 
