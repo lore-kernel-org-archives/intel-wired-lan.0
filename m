@@ -4,68 +4,68 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 14563CF6497
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 30 Sep 2024 12:16:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 47046CF649C
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 30 Sep 2024 12:16:25 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id DBCFC60668;
-	Mon, 30 Sep 2024 12:16:21 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 0344660699;
+	Mon, 30 Sep 2024 12:16:25 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id SVZOxIUbKVTH; Mon, 30 Sep 2024 12:16:20 +0000 (UTC)
+ id 4aw7N8_-ivG7; Mon, 30 Sep 2024 12:16:24 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E16D660659
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 904E360688
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1727698579;
-	bh=M1/v8eX4XNeSuMOFYegrZJj42DM1BW6TmgLV52Z51og=;
+	s=default; t=1727698583;
+	bh=ZBQvvu9BAcUAYA7IX2QhXnmCDtcaUE3c8kLeogYZzyo=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=LM4Kr+xy4DI6vxGgZ1BX2LPl8koS+IPH/DtFIfq0sNHnDypU9UXNLH8+bquZ5VxQv
-	 MqVixJw0KMTFLmhNQjLX1vAyxNBMwR2rZiXRrtQ2WB3BjRK2qv0ZB5MdEYf3i6w3VW
-	 Yb9wzIapW8d/SQ5XJQJtFeCX3xNUMohkLhfW2VeqkZu0Dp4rY90bdPv1HN2Xonn4RU
-	 MOmz9dCSlKK7IXbbnTqnJNo3Qh+7o1UUNGSQp0EEhQDQsLZW3PZ1nk5fNrkBwB6BXk
-	 ydMYVFRnzkI9cr6y/v6gbCaqBvn9iOXvT6QN6cAW2/ZRnuEF6MllwSzt/Kos92hn9w
-	 3ybU2nAiCIGXA==
+	b=mItm2+aS9sC37BU9moA8tMvwghp6ZGeXA//Di45CaIuS78x4tOdqWAaWfNJzaZCnD
+	 ksto2bKE9fmXfnhyZP33VR8WagwGQZK8VjvewMBpL3FAI8I6zLhwFnCOFEeJfOioDC
+	 jh2EpEW4MQlU2uAU3i1QuRxepve/AnTibVhaCurRCzOFPuvBj0+xchgdCwVG8Z1Rhm
+	 FGjvZurO0LOu13ZMmCoSpQBAPKqrkJ3iFP1s6i7FVrwyOxjxgOVHD0tRpRJMKhE0DD
+	 LIAh2+4eJdzJbLwptZpL1n+uxhK0RtxH22lgtYRwpnsYQlX4tvsW9xDq+QhYLLGxi+
+	 IoUClsVdrOeWg==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id E16D660659;
-	Mon, 30 Sep 2024 12:16:19 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 904E360688;
+	Mon, 30 Sep 2024 12:16:23 +0000 (UTC)
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id ABCF91BF31E
- for <intel-wired-lan@lists.osuosl.org>; Mon, 30 Sep 2024 12:16:17 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 24E641BF31E
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 30 Sep 2024 12:16:21 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id A816640231
- for <intel-wired-lan@lists.osuosl.org>; Mon, 30 Sep 2024 12:16:17 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 135D3401E2
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 30 Sep 2024 12:16:21 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id EF4lQwdPCYF3 for <intel-wired-lan@lists.osuosl.org>;
- Mon, 30 Sep 2024 12:16:16 +0000 (UTC)
+ id NPHNACOVOcsd for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 30 Sep 2024 12:16:20 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.17;
  helo=mgamail.intel.com; envelope-from=karol.kolacinski@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 42491401E2
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 42491401E2
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org D941240231
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D941240231
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.17])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 42491401E2
- for <intel-wired-lan@lists.osuosl.org>; Mon, 30 Sep 2024 12:16:16 +0000 (UTC)
-X-CSE-ConnectionGUID: qk5fG6RyRsiSMMgYraYQoQ==
-X-CSE-MsgGUID: gAbllS95QSyAM/BC0q4+lQ==
-X-IronPort-AV: E=McAfee;i="6700,10204,11210"; a="26666764"
-X-IronPort-AV: E=Sophos;i="6.11,165,1725346800"; d="scan'208";a="26666764"
+ by smtp4.osuosl.org (Postfix) with ESMTPS id D941240231
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 30 Sep 2024 12:16:19 +0000 (UTC)
+X-CSE-ConnectionGUID: MvSlBFrFQ2qTBtAl56h69w==
+X-CSE-MsgGUID: AS43pGLYRDqI5ZDzKH4eAw==
+X-IronPort-AV: E=McAfee;i="6700,10204,11210"; a="26666775"
+X-IronPort-AV: E=Sophos;i="6.11,165,1725346800"; d="scan'208";a="26666775"
 Received: from fmviesa010.fm.intel.com ([10.60.135.150])
  by fmvoesa111.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 30 Sep 2024 05:16:16 -0700
-X-CSE-ConnectionGUID: eZDHtLegQM65lVCgh1g0iA==
-X-CSE-MsgGUID: 0HVOYDBcS1WjT4h05CxoNQ==
+ 30 Sep 2024 05:16:20 -0700
+X-CSE-ConnectionGUID: cNHF/FSNScO3vzixhXkOgA==
+X-CSE-MsgGUID: NyKDsY0rTwOFvl8o38D2PQ==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.11,165,1725346800"; d="scan'208";a="73592742"
+X-IronPort-AV: E=Sophos;i="6.11,165,1725346800"; d="scan'208";a="73592783"
 Received: from kkolacin-desk1.igk.intel.com ([10.217.160.108])
- by fmviesa010.fm.intel.com with ESMTP; 30 Sep 2024 05:16:15 -0700
+ by fmviesa010.fm.intel.com with ESMTP; 30 Sep 2024 05:16:18 -0700
 From: Karol Kolacinski <karol.kolacinski@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Mon, 30 Sep 2024 14:12:38 +0200
-Message-ID: <20240930121610.679430-10-karol.kolacinski@intel.com>
+Date: Mon, 30 Sep 2024 14:12:40 +0200
+Message-ID: <20240930121610.679430-12-karol.kolacinski@intel.com>
 X-Mailer: git-send-email 2.46.1
 In-Reply-To: <20240930121610.679430-9-karol.kolacinski@intel.com>
 References: <20240930121610.679430-9-karol.kolacinski@intel.com>
@@ -73,25 +73,25 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1727698576; x=1759234576;
+ t=1727698580; x=1759234580;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=g5fv4aO5rUrPavj2uszZFSA4ZN3qh41z4eV/c/KdBG4=;
- b=M08i2V+vEk3DLWOQ2BIb68tGGOLuxI3Fq5LY24zAsJA84xEEfSx43VT6
- LO4x/vg1k6Md1i5Vi4QPtEwd9PLgW9FvQmZOxS+ep1MRpiT3Zw8R05/N+
- pLAdE0b23dBBpkk8cUJKXUkefg/544aFz74R06x6TTGp0Wiz9LYYFf4dK
- +nGdBrX2EroYcMZofWmeWPOK1Emwv7OCDNINfVnaEuiZPH077xrJKGelZ
- tyL+HvSaYV3agpX/Kj1Zvm2DvO+VfP8OAMSk93R9B3VqP38ytBIRUuoav
- f3FaXtFXJysPagnxlsVsvsZH4FbVm+atjxRDYpiFvvmjW3elJWcarvdHE
+ bh=z5uNvCrGh1IL7UzBF5A15vw4jAhThlhneEsFgScSbAA=;
+ b=PHrcMiZN7i8Q6Tyu7MO8g5AMToZYSYNlbxPaa6mOEi3YNCuhf0Y/1LZd
+ HeP9nn3ivBXGRNVzDVT5/IQ052EIUPmgF/d2BmAZNMYteqKZIoQlxyM0E
+ JVnGbq3aW5Oj95gZp/TpcwY4LLcJXAS4gbwohsrcSf4Pw8uLZ0/gSeX30
+ pdIjYN/BrjNennzgPeKM/6zFYZhSrjJtM6NfNF7cTOFxS70VEzbaqDcAj
+ Wo1qIo17rdP5AoiGZbOWXqCpWRgZpVGEQGi/6uicN1tojkIbJDQc+q1KT
+ CHSh3wHgcchN8KYzaO0YD2AScN3gnpk/UbFRTdrZ7uvmU6TERyd9q/ah+
  g==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=M08i2V+v
-Subject: [Intel-wired-lan] [PATCH v12 iwl-next 1/7] ice: Don't check device
- type when checking GNSS presence
+ header.a=rsa-sha256 header.s=Intel header.b=PHrcMiZN
+Subject: [Intel-wired-lan] [PATCH v12 iwl-next 3/7] ice: Use FIELD_PREP for
+ timestamp values
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,350 +105,82 @@ List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Cc: netdev@vger.kernel.org, Karol Kolacinski <karol.kolacinski@intel.com>,
- anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com
+ anthony.l.nguyen@intel.com, Simon Horman <horms@kernel.org>,
+ przemyslaw.kitszel@intel.com
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Don't check if the device type is E810T as non-E810T devices can support
-GNSS too and PCA9575 check is enough to determine if GNSS is present or
-not.
+Instead of using shifts and casts, use FIELD_PREP after reading 40b
+timestamp values.
 
-Rename ice_gnss_is_gps_present() to ice_gnss_is_module_present()
-because GNSS module supports multiple GNSS providers, not only GPS.
-
-Move functions related to PCA9575 from ice_ptp_hw.c to ice_common.c
-to be able to access them when PTP is disabled in the kernel, but GNSS
-is enabled.
-
-Remove logical AND with ICE_AQC_LINK_TOPO_NODE_TYPE_M in
-ice_get_pca9575_handle(), which has no effect, and reorder device type
-checks to check the device_id first, then set other variables.
-
+Reviewed-by: Simon Horman <horms@kernel.org>
 Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_common.c | 90 ++++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_common.h |  2 +
- drivers/net/ethernet/intel/ice/ice_gnss.c   | 29 +++----
- drivers/net/ethernet/intel/ice/ice_gnss.h   |  4 +-
- drivers/net/ethernet/intel/ice/ice_lib.c    |  2 +-
- drivers/net/ethernet/intel/ice/ice_ptp_hw.c | 93 ---------------------
- drivers/net/ethernet/intel/ice/ice_ptp_hw.h |  1 -
- 7 files changed, 105 insertions(+), 116 deletions(-)
+V5 -> V6: Replaced removed macros with the new ones
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index 009716a12a26..71a75d27affd 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -5819,6 +5819,96 @@ ice_aq_write_i2c(struct ice_hw *hw, struct ice_aqc_link_topo_addr topo_addr,
- 	return ice_aq_send_cmd(hw, &desc, NULL, 0, cd);
- }
- 
-+/**
-+ * ice_get_pca9575_handle - find and return the PCA9575 controller
-+ * @hw: pointer to the hw struct
-+ * @pca9575_handle: GPIO controller's handle
-+ *
-+ * Find and return the GPIO controller's handle in the netlist.
-+ * When found - the value will be cached in the hw structure and following calls
-+ * will return cached value.
-+ *
-+ * Return: 0 on success, -ENXIO when there's no PCA9575 present.
-+ */
-+int ice_get_pca9575_handle(struct ice_hw *hw, u16 *pca9575_handle)
-+{
-+	struct ice_aqc_get_link_topo *cmd;
-+	struct ice_aq_desc desc;
-+	int err;
-+	u8 idx;
-+
-+	/* If handle was read previously return cached value */
-+	if (hw->io_expander_handle) {
-+		*pca9575_handle = hw->io_expander_handle;
-+		return 0;
-+	}
-+
-+#define SW_PCA9575_SFP_TOPO_IDX		2
-+#define SW_PCA9575_QSFP_TOPO_IDX	1
-+
-+	/* Check if the SW IO expander controlling SMA exists in the netlist. */
-+	if (hw->device_id == ICE_DEV_ID_E810C_SFP)
-+		idx = SW_PCA9575_SFP_TOPO_IDX;
-+	else if (hw->device_id == ICE_DEV_ID_E810C_QSFP)
-+		idx = SW_PCA9575_QSFP_TOPO_IDX;
-+	else
-+		return -ENXIO;
-+
-+	/* If handle was not detected read it from the netlist */
-+	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_get_link_topo);
-+	cmd = &desc.params.get_link_topo;
-+	cmd->addr.topo_params.node_type_ctx =
-+		ICE_AQC_LINK_TOPO_NODE_TYPE_GPIO_CTRL;
-+	cmd->addr.topo_params.index = idx;
-+
-+	err = ice_aq_send_cmd(hw, &desc, NULL, 0, NULL);
-+	if (err)
-+		return -ENXIO;
-+
-+	/* Verify if we found the right IO expander type */
-+	if (desc.params.get_link_topo.node_part_num !=
-+	    ICE_AQC_GET_LINK_TOPO_NODE_NR_PCA9575)
-+		return -ENXIO;
-+
-+	/* If present save the handle and return it */
-+	hw->io_expander_handle =
-+		le16_to_cpu(desc.params.get_link_topo.addr.handle);
-+	*pca9575_handle = hw->io_expander_handle;
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_read_pca9575_reg - read the register from the PCA9575 controller
-+ * @hw: pointer to the hw struct
-+ * @offset: GPIO controller register offset
-+ * @data: pointer to data to be read from the GPIO controller
-+ *
-+ * Return: 0 on success, negative error code otherwise.
-+ */
-+int ice_read_pca9575_reg(struct ice_hw *hw, u8 offset, u8 *data)
-+{
-+	struct ice_aqc_link_topo_addr link_topo;
-+	__le16 addr;
-+	u16 handle;
-+	int err;
-+
-+	memset(&link_topo, 0, sizeof(link_topo));
-+
-+	err = ice_get_pca9575_handle(hw, &handle);
-+	if (err)
-+		return err;
-+
-+	link_topo.handle = cpu_to_le16(handle);
-+	link_topo.topo_params.node_type_ctx =
-+		FIELD_PREP(ICE_AQC_LINK_TOPO_NODE_CTX_M,
-+			   ICE_AQC_LINK_TOPO_NODE_CTX_PROVIDED);
-+
-+	addr = cpu_to_le16((u16)offset);
-+
-+	return ice_aq_read_i2c(hw, link_topo, 0, addr, 1, data, NULL);
-+}
-+
- /**
-  * ice_aq_set_gpio
-  * @hw: pointer to the hw struct
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
-index 27208a60cece..b8ec795854ec 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.h
-+++ b/drivers/net/ethernet/intel/ice/ice_common.h
-@@ -305,5 +305,7 @@ int
- ice_aq_write_i2c(struct ice_hw *hw, struct ice_aqc_link_topo_addr topo_addr,
- 		 u16 bus_addr, __le16 addr, u8 params, const u8 *data,
- 		 struct ice_sq_cd *cd);
-+int ice_get_pca9575_handle(struct ice_hw *hw, u16 *pca9575_handle);
-+int ice_read_pca9575_reg(struct ice_hw *hw, u8 offset, u8 *data);
- bool ice_fw_supports_report_dflt_cfg(struct ice_hw *hw);
- #endif /* _ICE_COMMON_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice_gnss.c b/drivers/net/ethernet/intel/ice/ice_gnss.c
-index f02e8ca55375..66390eeb2343 100644
---- a/drivers/net/ethernet/intel/ice/ice_gnss.c
-+++ b/drivers/net/ethernet/intel/ice/ice_gnss.c
-@@ -381,32 +381,23 @@ void ice_gnss_exit(struct ice_pf *pf)
- }
- 
- /**
-- * ice_gnss_is_gps_present - Check if GPS HW is present
-+ * ice_gnss_is_module_present - Check if GPS HW is present
-  * @hw: pointer to HW struct
-+ *
-+ * Return: true when GNSS is present, false otherwise.
-  */
--bool ice_gnss_is_gps_present(struct ice_hw *hw)
-+bool ice_gnss_is_module_present(struct ice_hw *hw)
- {
--	if (!hw->func_caps.ts_func_info.src_tmr_owned)
--		return false;
-+	int err;
-+	u8 data;
- 
--	if (!ice_is_gps_in_netlist(hw))
-+	if (!hw->func_caps.ts_func_info.src_tmr_owned ||
-+	    !ice_is_gps_in_netlist(hw))
- 		return false;
- 
--#if IS_ENABLED(CONFIG_PTP_1588_CLOCK)
--	if (ice_is_e810t(hw)) {
--		int err;
--		u8 data;
--
--		err = ice_read_pca9575_reg(hw, ICE_PCA9575_P0_IN, &data);
--		if (err || !!(data & ICE_P0_GNSS_PRSNT_N))
--			return false;
--	} else {
--		return false;
--	}
--#else
--	if (!ice_is_e810t(hw))
-+	err = ice_read_pca9575_reg(hw, ICE_PCA9575_P0_IN, &data);
-+	if (err || !!(data & ICE_P0_GNSS_PRSNT_N))
- 		return false;
--#endif /* IS_ENABLED(CONFIG_PTP_1588_CLOCK) */
- 
- 	return true;
- }
-diff --git a/drivers/net/ethernet/intel/ice/ice_gnss.h b/drivers/net/ethernet/intel/ice/ice_gnss.h
-index 75e567ad7059..15daf603ed7b 100644
---- a/drivers/net/ethernet/intel/ice/ice_gnss.h
-+++ b/drivers/net/ethernet/intel/ice/ice_gnss.h
-@@ -37,11 +37,11 @@ struct gnss_serial {
- #if IS_ENABLED(CONFIG_GNSS)
- void ice_gnss_init(struct ice_pf *pf);
- void ice_gnss_exit(struct ice_pf *pf);
--bool ice_gnss_is_gps_present(struct ice_hw *hw);
-+bool ice_gnss_is_module_present(struct ice_hw *hw);
- #else
- static inline void ice_gnss_init(struct ice_pf *pf) { }
- static inline void ice_gnss_exit(struct ice_pf *pf) { }
--static inline bool ice_gnss_is_gps_present(struct ice_hw *hw)
-+static inline bool ice_gnss_is_module_present(struct ice_hw *hw)
- {
- 	return false;
- }
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 78f2d124601c..01220e21cc81 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -3882,7 +3882,7 @@ void ice_init_feature_support(struct ice_pf *pf)
- 			ice_set_feature_support(pf, ICE_F_CGU);
- 		if (ice_is_clock_mux_in_netlist(&pf->hw))
- 			ice_set_feature_support(pf, ICE_F_SMA_CTRL);
--		if (ice_gnss_is_gps_present(&pf->hw))
-+		if (ice_gnss_is_module_present(&pf->hw))
- 			ice_set_feature_support(pf, ICE_F_GNSS);
- 		break;
- 	default:
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.c |  9 ++++++---
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.h | 13 +++++--------
+ 2 files changed, 11 insertions(+), 11 deletions(-)
+
 diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-index da88c6ccfaeb..04286e872b24 100644
+index 0fc4092fd261..65a66225797e 100644
 --- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
 +++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-@@ -5179,68 +5179,6 @@ ice_get_phy_tx_tstamp_ready_e810(struct ice_hw *hw, u8 port, u64 *tstamp_ready)
-  * to access the extended GPIOs available.
-  */
+@@ -1520,7 +1520,8 @@ static int ice_read_ptp_tstamp_eth56g(struct ice_hw *hw, u8 port, u8 idx,
+ 	 * lower 8 bits in the low register, and the upper 32 bits in the high
+ 	 * register.
+ 	 */
+-	*tstamp = ((u64)hi) << TS_PHY_HIGH_S | ((u64)lo & TS_PHY_LOW_M);
++	*tstamp = FIELD_PREP(PHY_40B_HIGH_M, hi) |
++		  FIELD_PREP(PHY_40B_LOW_M, lo);
  
--/**
-- * ice_get_pca9575_handle
-- * @hw: pointer to the hw struct
-- * @pca9575_handle: GPIO controller's handle
-- *
-- * Find and return the GPIO controller's handle in the netlist.
-- * When found - the value will be cached in the hw structure and following calls
-- * will return cached value
-- */
--static int
--ice_get_pca9575_handle(struct ice_hw *hw, u16 *pca9575_handle)
--{
--	struct ice_aqc_get_link_topo *cmd;
--	struct ice_aq_desc desc;
--	int status;
--	u8 idx;
--
--	/* If handle was read previously return cached value */
--	if (hw->io_expander_handle) {
--		*pca9575_handle = hw->io_expander_handle;
--		return 0;
--	}
--
--	/* If handle was not detected read it from the netlist */
--	cmd = &desc.params.get_link_topo;
--	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_get_link_topo);
--
--	/* Set node type to GPIO controller */
--	cmd->addr.topo_params.node_type_ctx =
--		(ICE_AQC_LINK_TOPO_NODE_TYPE_M &
--		 ICE_AQC_LINK_TOPO_NODE_TYPE_GPIO_CTRL);
--
--#define SW_PCA9575_SFP_TOPO_IDX		2
--#define SW_PCA9575_QSFP_TOPO_IDX	1
--
--	/* Check if the SW IO expander controlling SMA exists in the netlist. */
--	if (hw->device_id == ICE_DEV_ID_E810C_SFP)
--		idx = SW_PCA9575_SFP_TOPO_IDX;
--	else if (hw->device_id == ICE_DEV_ID_E810C_QSFP)
--		idx = SW_PCA9575_QSFP_TOPO_IDX;
--	else
--		return -EOPNOTSUPP;
--
--	cmd->addr.topo_params.index = idx;
--
--	status = ice_aq_send_cmd(hw, &desc, NULL, 0, NULL);
--	if (status)
--		return -EOPNOTSUPP;
--
--	/* Verify if we found the right IO expander type */
--	if (desc.params.get_link_topo.node_part_num !=
--		ICE_AQC_GET_LINK_TOPO_NODE_NR_PCA9575)
--		return -EOPNOTSUPP;
--
--	/* If present save the handle and return it */
--	hw->io_expander_handle =
--		le16_to_cpu(desc.params.get_link_topo.addr.handle);
--	*pca9575_handle = hw->io_expander_handle;
--
--	return 0;
--}
--
- /**
-  * ice_read_sma_ctrl
-  * @hw: pointer to the hw struct
-@@ -5305,37 +5243,6 @@ int ice_write_sma_ctrl(struct ice_hw *hw, u8 data)
- 	return status;
+ 	return 0;
  }
+@@ -3199,7 +3200,8 @@ ice_read_phy_tstamp_e82x(struct ice_hw *hw, u8 quad, u8 idx, u64 *tstamp)
+ 	 * lower 8 bits in the low register, and the upper 32 bits in the high
+ 	 * register.
+ 	 */
+-	*tstamp = FIELD_PREP(TS_PHY_HIGH_M, hi) | FIELD_PREP(TS_PHY_LOW_M, lo);
++	*tstamp = FIELD_PREP(PHY_40B_HIGH_M, hi) |
++		  FIELD_PREP(PHY_40B_LOW_M, lo);
  
--/**
-- * ice_read_pca9575_reg
-- * @hw: pointer to the hw struct
-- * @offset: GPIO controller register offset
-- * @data: pointer to data to be read from the GPIO controller
-- *
-- * Read the register from the GPIO controller
-- */
--int ice_read_pca9575_reg(struct ice_hw *hw, u8 offset, u8 *data)
--{
--	struct ice_aqc_link_topo_addr link_topo;
--	__le16 addr;
--	u16 handle;
--	int err;
--
--	memset(&link_topo, 0, sizeof(link_topo));
--
--	err = ice_get_pca9575_handle(hw, &handle);
--	if (err)
--		return err;
--
--	link_topo.handle = cpu_to_le16(handle);
--	link_topo.topo_params.node_type_ctx =
--		FIELD_PREP(ICE_AQC_LINK_TOPO_NODE_CTX_M,
--			   ICE_AQC_LINK_TOPO_NODE_CTX_PROVIDED);
--
--	addr = cpu_to_le16((u16)offset);
--
--	return ice_aq_read_i2c(hw, link_topo, 0, addr, 1, data, NULL);
--}
--
- /**
-  * ice_ptp_read_sdp_ac - read SDP available connections section from NVM
-  * @hw: pointer to the HW struct
+ 	return 0;
+ }
+@@ -4952,7 +4954,8 @@ ice_read_phy_tstamp_e810(struct ice_hw *hw, u8 lport, u8 idx, u64 *tstamp)
+ 	/* For E810 devices, the timestamp is reported with the lower 32 bits
+ 	 * in the low register, and the upper 8 bits in the high register.
+ 	 */
+-	*tstamp = ((u64)hi) << TS_HIGH_S | ((u64)lo & TS_LOW_M);
++	*tstamp = FIELD_PREP(PHY_EXT_40B_HIGH_M, hi) |
++		  FIELD_PREP(PHY_EXT_40B_LOW_M, lo);
+ 
+ 	return 0;
+ }
 diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
-index 656daff3447e..ca1ef49db4bc 100644
+index 62bd8dafe19c..6328c0bbddd6 100644
 --- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
 +++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
-@@ -404,7 +404,6 @@ int ice_phy_cfg_intr_e82x(struct ice_hw *hw, u8 quad, bool ena, u8 threshold);
- /* E810 family functions */
- int ice_read_sma_ctrl(struct ice_hw *hw, u8 *data);
- int ice_write_sma_ctrl(struct ice_hw *hw, u8 data);
--int ice_read_pca9575_reg(struct ice_hw *hw, u8 offset, u8 *data);
- int ice_ptp_read_sdp_ac(struct ice_hw *hw, __le16 *entries, uint *num_entries);
- enum dpll_pin_type ice_cgu_get_pin_type(struct ice_hw *hw, u8 pin, bool input);
- struct dpll_pin_frequency *
+@@ -674,15 +674,12 @@ static inline bool ice_is_dual(struct ice_hw *hw)
+ /* Source timer incval macros */
+ #define INCVAL_HIGH_M			0xFF
+ 
+-/* Timestamp block macros */
++/* PHY 40b registers macros */
++#define PHY_EXT_40B_LOW_M		GENMASK(31, 0)
++#define PHY_EXT_40B_HIGH_M		GENMASK_ULL(39, 32)
++#define PHY_40B_LOW_M			GENMASK(7, 0)
++#define PHY_40B_HIGH_M			GENMASK_ULL(39, 8)
+ #define TS_VALID			BIT(0)
+-#define TS_LOW_M			0xFFFFFFFF
+-#define TS_HIGH_M			0xFF
+-#define TS_HIGH_S			32
+-
+-#define TS_PHY_LOW_M			0xFF
+-#define TS_PHY_HIGH_M			0xFFFFFFFF
+-#define TS_PHY_HIGH_S			8
+ 
+ #define BYTES_PER_IDX_ADDR_L_U		8
+ #define BYTES_PER_IDX_ADDR_L		4
 -- 
 2.46.1
 
