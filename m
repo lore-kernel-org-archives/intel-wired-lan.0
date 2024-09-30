@@ -4,94 +4,222 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DE9E1CF649C
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 30 Sep 2024 12:10:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A46FFCF6499
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 30 Sep 2024 12:14:35 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id B359160670;
-	Mon, 30 Sep 2024 12:10:49 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 580F16066A;
+	Mon, 30 Sep 2024 12:14:35 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id nUxzOFfS3cNG; Mon, 30 Sep 2024 12:10:47 +0000 (UTC)
+ id oMIkfwLPseQc; Mon, 30 Sep 2024 12:14:34 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 5442F6066A
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A454F60659
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1727698247;
-	bh=nPqqAt/cqRWRvYeehEkgz2j5sIP+80I+L4C2FMzz3iQ=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1727698474;
+	bh=6s8Jg4PYHzWQnQVBvK5U/2QiDUJN8ud+GWWe8wgit+I=;
+	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=L9BVXd+dTnlrVocpdY7q47JgwWYsnaEFgKNhRTWYpjACR84u4meK8d68zCOdWbYLl
-	 8ft/FgzKSbrkt5NzE6vocrTIV4bTrkzn6rXcCUSW8FRau46A1cH52xQpoxtsInr35q
-	 WHgG4ryIYcCyfhap4ftF+6u1q/hi6r5Adjt2RZ0qgWLu5s7WnVcn94L7bumocIFbff
-	 mqJGm0N0ktX/rjNLtm4IE1l7wvwRBkDO4/V5MarooIq7fNVAGIVFXb0BE+6kMRAW14
-	 /Ge+VGzpMaTMr61bfUOQq8jjNKmXfL/u2PU4duImLL1ZcddCsQ+xOUmthhXin/3GQ9
-	 kGg3znopRnNDg==
+	 From;
+	b=uATgHw5aVVCt2Y7oJuCybV4mp5FQMqFNMUb0ujjha2skW8AG0FeQS69iFd1g83qbx
+	 a5XLOd0j03LmNP/AJi1Y5HWVyX8SL2uiAJ+akwb9SJB3AeGNaKgRT6THSOwMClyU4C
+	 NC/7Zscx6TMz5nCUl+FCA22Go/NMEY3uttn+RT1DxohGR0wBEZgFuYkXOaxpO6RO1N
+	 QEm7rQJIHHCZSP8v0S2IMd22Vb3MQi3LF4DQHHR3m7PaTWdGsAvjQ2D1e5jMmfijtR
+	 N5mcjZvu1fMbAkjHJZ8mABzTSo5oCPu7Bqg6UchAt7xQAN/2Cz99k8tKk9Bfj5WEDT
+	 tO5MiltNgIcEQ==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 5442F6066A;
-	Mon, 30 Sep 2024 12:10:47 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 6B44A1BF31E
- for <intel-wired-lan@lists.osuosl.org>; Mon, 30 Sep 2024 12:10:44 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id A454F60659;
+	Mon, 30 Sep 2024 12:14:34 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id E08401BF31E
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 30 Sep 2024 12:14:32 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 5960D4028E
- for <intel-wired-lan@lists.osuosl.org>; Mon, 30 Sep 2024 12:10:44 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id CE09D80F30
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 30 Sep 2024 12:14:32 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Hglqmma2egZd for <intel-wired-lan@lists.osuosl.org>;
- Mon, 30 Sep 2024 12:10:43 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.21;
- helo=mgamail.intel.com; envelope-from=karol.kolacinski@intel.com;
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id l_a8B4yfw97m for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 30 Sep 2024 12:14:32 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.9;
+ helo=mgamail.intel.com; envelope-from=morx.bar.gabay@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org B5B42402E2
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B5B42402E2
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.21])
- by smtp2.osuosl.org (Postfix) with ESMTPS id B5B42402E2
- for <intel-wired-lan@lists.osuosl.org>; Mon, 30 Sep 2024 12:10:42 +0000 (UTC)
-X-CSE-ConnectionGUID: 5vF+u64ESUCh7uKlp3OJ9g==
-X-CSE-MsgGUID: 6cglJZTSRaiE2jY4qj5Tbg==
-X-IronPort-AV: E=McAfee;i="6700,10204,11210"; a="26736098"
-X-IronPort-AV: E=Sophos;i="6.11,165,1725346800"; d="scan'208";a="26736098"
-Received: from orviesa005.jf.intel.com ([10.64.159.145])
- by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 30 Sep 2024 05:10:43 -0700
-X-CSE-ConnectionGUID: gP3T805/SMW+q7XsPlGIEg==
-X-CSE-MsgGUID: JNchkILfQcmCwO0bBd2zvA==
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 146B080EA4
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 146B080EA4
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.9])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 146B080EA4
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 30 Sep 2024 12:14:31 +0000 (UTC)
+X-CSE-ConnectionGUID: 6Q5jSvQMQ3arceIefn4dDg==
+X-CSE-MsgGUID: nEb/FLppT1+1DoQkWciUpw==
+X-IronPort-AV: E=McAfee;i="6700,10204,11210"; a="37456409"
+X-IronPort-AV: E=Sophos;i="6.11,165,1725346800"; d="scan'208";a="37456409"
+Received: from fmviesa008.fm.intel.com ([10.60.135.148])
+ by fmvoesa103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 30 Sep 2024 05:14:31 -0700
+X-CSE-ConnectionGUID: rJfIBFBVRaK8u5c8B9jLkw==
+X-CSE-MsgGUID: kwuqPvgGSTOMUMGend9nuA==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.11,165,1725346800"; d="scan'208";a="78037030"
-Received: from kkolacin-desk1.igk.intel.com ([10.217.160.108])
- by orviesa005.jf.intel.com with ESMTP; 30 Sep 2024 05:10:41 -0700
-From: Karol Kolacinski <karol.kolacinski@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Date: Mon, 30 Sep 2024 14:08:43 +0200
-Message-ID: <20240930121022.671217-6-karol.kolacinski@intel.com>
-X-Mailer: git-send-email 2.46.1
-In-Reply-To: <20240930121022.671217-1-karol.kolacinski@intel.com>
-References: <20240930121022.671217-1-karol.kolacinski@intel.com>
+X-IronPort-AV: E=Sophos;i="6.11,165,1725346800"; d="scan'208";a="73405206"
+Received: from orsmsx603.amr.corp.intel.com ([10.22.229.16])
+ by fmviesa008.fm.intel.com with ESMTP/TLS/AES256-GCM-SHA384;
+ 30 Sep 2024 05:14:31 -0700
+Received: from orsmsx611.amr.corp.intel.com (10.22.229.24) by
+ ORSMSX603.amr.corp.intel.com (10.22.229.16) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.39; Mon, 30 Sep 2024 05:14:30 -0700
+Received: from orsedg603.ED.cps.intel.com (10.7.248.4) by
+ orsmsx611.amr.corp.intel.com (10.22.229.24) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.39 via Frontend Transport; Mon, 30 Sep 2024 05:14:30 -0700
+Received: from NAM11-CO1-obe.outbound.protection.outlook.com (104.47.56.173)
+ by edgegateway.intel.com (134.134.137.100) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.1.2507.39; Mon, 30 Sep 2024 05:14:30 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=TB1HuirTDDgkHu1y08/zx77ZOabY+huo69Lr4Q0JLiGw/77ZnKFGlJ1uxjP7Tl8QmL4svf3fR6pcouNnllOu0cdUpBk5FUzFD7JUvEh1p6bOCRDzecY7HYLhHJu0nkR6F+kaRo9FJPfHpkHFSWgcbfZvNZyaNN8neg+zIa2hufnHJ9aD/zzDZxD6DJDjkN9MuZUohrj625Jctt4ei8lxrcLnQJ0hncnlvxhGghe4kIMOf58Zd4fH/jiKOyi0/P+g8yKyt/fADJbpkFTi6FoGXMMem1nQA23t83D6Ty8BHh+g38ctqT7U3h+mzB543e3kyZAMWalQm4xLwe6h5Mv2Mg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=6s8Jg4PYHzWQnQVBvK5U/2QiDUJN8ud+GWWe8wgit+I=;
+ b=pbux70m3JacVwY+IeBO8JVrD1iwfPo7wDLTm4bGwP322fCudkLFOM0EJrI7HscrUPihBhvEnRmj+hesAB1nMwYxLZQ8cRpQtvMBJOzuI8fzwqJA8CTeYcHfao1bCM5foJKqNNhCh2hFfjvNXaAKzgUArCAbUA38yc03m4ELK9q5yKlVZOyP/mhBXQju9H5ZjvVvJ04im6//u2Pnoh9aP3wS2TFYqHL7XzZLG5cc6CiAbZB0ivEER2ry4q52NPsjol9gZYS02B87DIY2jaPRKWobnwtVLrCpWBmwGCT+b7nW2Tq6tUwEFfcILgjSqHUBENZBD8ob3zCpy7R2U4ohZJw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Received: from CY5PR11MB6307.namprd11.prod.outlook.com (2603:10b6:930:21::20)
+ by IA0PR11MB7404.namprd11.prod.outlook.com (2603:10b6:208:430::9)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8005.25; Mon, 30 Sep
+ 2024 12:14:26 +0000
+Received: from CY5PR11MB6307.namprd11.prod.outlook.com
+ ([fe80::1fa2:d2f9:5904:2a14]) by CY5PR11MB6307.namprd11.prod.outlook.com
+ ([fe80::1fa2:d2f9:5904:2a14%6]) with mapi id 15.20.8005.024; Mon, 30 Sep 2024
+ 12:14:26 +0000
+Message-ID: <2a52e295-3e88-4727-ab67-a145c8f5e455@intel.com>
+Date: Mon, 30 Sep 2024 15:14:21 +0300
+User-Agent: Mozilla Thunderbird
+To: Vitaly Lifshits <vitaly.lifshits@intel.com>,
+ <intel-wired-lan@lists.osuosl.org>
+References: <20240908064917.3941680-1-vitaly.lifshits@intel.com>
+Content-Language: en-US
+From: Mor Bar-Gabay <morx.bar.gabay@intel.com>
+In-Reply-To: <20240908064917.3941680-1-vitaly.lifshits@intel.com>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: TL2P290CA0025.ISRP290.PROD.OUTLOOK.COM
+ (2603:1096:950:3::20) To CY5PR11MB6307.namprd11.prod.outlook.com
+ (2603:10b6:930:21::20)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: CY5PR11MB6307:EE_|IA0PR11MB7404:EE_
+X-MS-Office365-Filtering-Correlation-Id: 5bf89082-f393-45f0-29e9-08dce1496d57
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;ARA:13230040|376014|366016|1800799024;
+X-Microsoft-Antispam-Message-Info: =?utf-8?B?L1JmV0dlcDdVb0l1cVJZM2tMTnRoMnJMQXFyRmhFdkxqWmZtWEkyRWlpOC9M?=
+ =?utf-8?B?U1BqZmFCa0U4bzduY3JBU0tIdmp6VStWZ1ZCQnhGOFU0cUM0TmV1TldEbGtp?=
+ =?utf-8?B?TWc2KzMzbExOcEpyd2xub3NNZmRlSWR6S1NQT1BhVWpnVjB3UmZRbThEMWJy?=
+ =?utf-8?B?cmVqYUR0NzhYZmtkQ1ozejA1MzNFUmVucHpidk1nRFozNXA5WUZSNXVpSWZ3?=
+ =?utf-8?B?ZENIWktsVWxxdXdMNE94YnhKMGZHWER6V3p3TUc3SW1yUDA5Tmowdmp5SzRz?=
+ =?utf-8?B?K2VzaWJwb2tLUGhEejNtZ3NWbml4aWFoejF1OHR2RzduK0oyVW5ibUJIdERo?=
+ =?utf-8?B?MTJnZDNDTEU0MGU0czRTQVBNL1pCc0xoa1hpOHFhemhrNkZqcFU5R0E4cEZq?=
+ =?utf-8?B?RmhxUVJkQ2NQYlRoWDdEbTNjbzl5YnlWYUY2MktzRGxzM3R2bFYxQW1Delhu?=
+ =?utf-8?B?d1BPRnVESW5qY1F1QmZNak5vNlA1TzZmOXR2YWxoUWE5Tm11aFJMS3Nsbkhs?=
+ =?utf-8?B?VnpCbDRySy9iMWRLeVNTNDVCWDFGUnBzdnpJb05tYmNQSnpUUUJjQmFtMWpq?=
+ =?utf-8?B?cXVYSlFkRVVwUmt2MUZ3QlI2TDd6V3hnVjRLRFZQazRmL0NJTHBxRnlNLytu?=
+ =?utf-8?B?NDNVS2Z1MXRzeU5GVmVndVhQa0QvNGdQOUN5T0s4M0FBeUo4emx1RjRwb2Z2?=
+ =?utf-8?B?UUMzdWxvMkxkOXVpei9ncHM0RnBqSXRWV0ZzTXozVmZnQVNieHdGYzFGc3cz?=
+ =?utf-8?B?MmFNRVZ5YmpLOEpaUjhQZld5WHdUY3VVSWFNMkR2cVhLRVo5akxGVjVhWVRp?=
+ =?utf-8?B?clMyM3dTL2J4QjZZUUk4SklXNVZDUmJOV3lrMWlqYzdnS0xWU2VuYkN0ZjRq?=
+ =?utf-8?B?bW1WNERyQzc1OUFXbzV5WUFVRDRQRUpiMm8rdHVXQUFmWEZhMlBIaC9aTzhF?=
+ =?utf-8?B?bHpSUTF5RENDMUh1MFZ3bXFpQW1LUWd6SHZZMnNGZDR5MVNVNHdlbTNBT21E?=
+ =?utf-8?B?L1JZVi8zdkxYUnlxUUZBSXZINXp0WERGSlBoTmVhYkJXdXpSb1ZKck9rK3lz?=
+ =?utf-8?B?dytwUm9yUkRMUW8rclp0a3gveXN3ZVQ4UnhHbS9IL0tnblZRUU9GTngwOWZ6?=
+ =?utf-8?B?eWtNUEZ0SEs0V0lBR3E0czYrZTZLUU03cjF6RElvU0p2dVUwdklkYU5FRmNW?=
+ =?utf-8?B?TkdQaGtCUHZKRDZFSXhhL1ZXeWtoWjNRd0RCbzVpZVZhUGdoQTBVeDhQdnhG?=
+ =?utf-8?B?NFBWR2IxZWhycDZ5ZWhPdTJGREN6Rko0U2RYMnhLMHJKUWpEZFcvNThiZ0Nm?=
+ =?utf-8?B?VUx0NkxTMis3UXhxc0gxUEdpOTRka09NUFA0UVdxNmFtc2sxaUtsVi9NMzNW?=
+ =?utf-8?B?SUkwZXhEVVI2cVRnZnJydTg3YjRGUEZ6eGJTZnVHLzJqdytpUDd5NXZ6ak41?=
+ =?utf-8?B?aTdkS0FxTGlQcnEwVXh4OXRTVnpoRnBuRkQ4S0RaQ2pSMjBZNnlCa2x6SEgw?=
+ =?utf-8?B?YXRVK1BGb1V5Q0JmUFpQM0RJdTlPQ1lQQlNYY0xGdk92Nk11d25MWW9lRlZy?=
+ =?utf-8?B?bGkrbUt3SFp4QVBQbVNOYkIyZ1U0VDJ0bVpnVE9EUGFOdUxmc2hIT1dMSzZa?=
+ =?utf-8?B?dFFjL0Y0Wms1bXZNTWl3LzRhcHdra1ZUTkJSd2c2YmhOVDNMRXV0VE95QmhW?=
+ =?utf-8?B?OFlyWEVkZk42SFRrZmJkWm5xbHJjcW11aGlycW1oNE1KWTRTMTZkRUpHY1p4?=
+ =?utf-8?B?bWJ1WTJKN2x5aXZUN1JUcGtQYzF5TEVVaG54ckZYMm5BQm1ScXpxUUF3ZWRq?=
+ =?utf-8?B?RHRXalQzYWhHd3dCWnIwZz09?=
+X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:CY5PR11MB6307.namprd11.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(13230040)(376014)(366016)(1800799024); DIR:OUT; SFP:1101; 
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?bFNJUDZGQ3krbm9OU1owR2M4U1Y5Lzd6UzZBTDlKOGFMWitMWE4vWTh4Z0N0?=
+ =?utf-8?B?YkxsSHFLUXFVTEJlRlVwRkY4WTNhUHk2aUpROCtwUk1SNEU2S0RITWcvRFZH?=
+ =?utf-8?B?MlY1UUlUbFpMekJlU1FjRXJZSXlVY2dEM2pBK0VTQWp3UGdKRDFOelI1cmdn?=
+ =?utf-8?B?c2NFZnNyOGlSM25DcXZpMHo2VlFSWXdIZisvSVhVS1lKVVczaXhCUHlINXF4?=
+ =?utf-8?B?TXNpWS8zNEwzZE5rUnhXOU9qdVNaZnJ2WlNWUVh1T1N1bS8wOTE4UFJUVHJq?=
+ =?utf-8?B?Zm5hNnljR2lTWGhRblpOMXk3OHdWNmVjMUVJcTFjbWdxWEdrcGpyQmpyakhF?=
+ =?utf-8?B?NktpQzJ3NTlQa2NyTmpicDdua3dXT2JyY0crVE9ENjB0d2VNZFZtWkszbjdu?=
+ =?utf-8?B?VXZUbTJKbTVVNnZnMGZpbmhTa1ZVakJ0b2J2U1ZNZlRqUDBOU0MxUkRxMXNP?=
+ =?utf-8?B?blU3dm1rVnhUdk5tUVczSEhhNFl6UG5ydk55Ry9nckZ0MGpWeEVXUnpVcVJE?=
+ =?utf-8?B?T1ptZlZ6cE9BWFpWVWR2Y255YTVOV1lHcmdiczR1ek9yRGtFa3hGNHdhWC9x?=
+ =?utf-8?B?Y3BTbWVSZVpqaTdUb3JvNDRsN0Zua0ltdWliTU1wQzJxVk5DUDRPK1hjSG5Q?=
+ =?utf-8?B?RlRvQVNEd3dZZS92SUNrKzRvWFdFa0FFZ044QWp3aFZUV3JpZUhxM3FyejY3?=
+ =?utf-8?B?TzN0eEYwbmFOczIvWk9aR0hnVWF6ZUNTOTdXNy9ZS1Z0WHN3bU5ZcnF1aWVM?=
+ =?utf-8?B?OWE5WWo1Q25DSmJPZDg0UTZBaU5GeFhJbEJiUUpVYWptWDFuY2VNR1ZlV2d1?=
+ =?utf-8?B?NzNjTjJ4TDFDdGp4RmcxQzUzVTJEbGc1UlMycE94dkJLT1IyTEdrMGtQRGxn?=
+ =?utf-8?B?bC96TW5EU01iZnJPRlo3MG9DWVQxbWpCb2JHT2I5Z2Qva04yY1ljc2QxVnpQ?=
+ =?utf-8?B?dXdiTTlDK3gwMFVtY2V2Vk9lK0M0RitOSTc0MTJFQ3FIUVMyME5WRHQwdmdn?=
+ =?utf-8?B?eE1ERTNTNnlaYWJsYmtXTi9iRG1aamNzZFRoZTNodUJrYnpLNVFnYXJZN01O?=
+ =?utf-8?B?b0hmNVlYUDlSclcyTjRHLzdXSjIvaTM0N0orZGdOMUxseHZWTVJUMWV2MGdE?=
+ =?utf-8?B?dm50UEJoVnRVWFFBbFk2RExsYnFRbHdoMUd2Qmg2SExCM3FPMTNNUEE3S0JI?=
+ =?utf-8?B?d08rcjhxMmlkMHRCaFpaN0ZTNlJhV09rdC9CaWRyNkZXVW9pN1lDOWlvd1VS?=
+ =?utf-8?B?a25USUVtbWVSUzI5Y09oZk5LZGdBM1hrQVRPSVR3YVFOV2xlTmMwYnJ6anNS?=
+ =?utf-8?B?cFVFSm5DWEdqd1hySTh6em94YmplaXU4a092aENzaGZoUlUvdUFJRWZ6VlpT?=
+ =?utf-8?B?bW1SUktmZzBvS2p4Q2RlY0k4aDRUUnBndk85SG8xQlh2K2VPWHlNc2ltci81?=
+ =?utf-8?B?Ky9kVmFiNGJEVDBOY3M5QWNRZFpmQkQvM2I2YlQrZEVaZVJvNEVQQ2dRVTFD?=
+ =?utf-8?B?WE5WOGgxekZzR3dSNVQ1RVBCUmdxdWJHdnhmVVJTb2xCUFNXT3pvSHNuNXRG?=
+ =?utf-8?B?RTk5SG5ONExtMkxsWHdvVXJNSjIyTkoyS3BWN3Ztcm9lRmlJU1JFOURRTjVz?=
+ =?utf-8?B?YytJc0hBYkF1Q0JqNktLNEppSWhRS2RvbnY5SnRJSXVDeXJscEJIaEErekFt?=
+ =?utf-8?B?NlExTGVFdTZQbVNLb0hkbXdXN0JqQzRtcUExWXNNTHVzSTQxYk1zV2ZWOGxY?=
+ =?utf-8?B?dldqYTZCMDVNdXJxVEU0Sk43RlYxSk52aFRsdmpDYmJkRE80YnVzVVg2eks3?=
+ =?utf-8?B?YnpBTHE1aU9Da21ONXB2Y2FpeUN3QjdHQXZRUXVsWkRFVUZZZ1gzdHBYQ09J?=
+ =?utf-8?B?VEwyRnA2NVRWbFVpV05MenJVbzVoenhPNGRHUGFBRFFKWXU2UWg5b3Yyc3Bz?=
+ =?utf-8?B?MUZmWVZuWnZDRzZtck0weHBGQjkxQnI2WFplN3h4dFJHQnd1b29CWW9QRjYr?=
+ =?utf-8?B?WWdMMlpkRHdnZklRV0dRMlFJRUl1QXg0cE1RLytLczZZbW1yNDA2bHZrYkxt?=
+ =?utf-8?B?bWRBOVpCUSsvTWliZE9RMDBJbGd0KytibzVnU2dZOFlXRHhDQmhlWlZ1WEhO?=
+ =?utf-8?B?UkVjcFBNM055UXllU0hhN281aHUyV3BIeDZETmJyMktPUU9qSUxXZlY4clVo?=
+ =?utf-8?B?dGc9PQ==?=
+X-MS-Exchange-CrossTenant-Network-Message-Id: 5bf89082-f393-45f0-29e9-08dce1496d57
+X-MS-Exchange-CrossTenant-AuthSource: CY5PR11MB6307.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 30 Sep 2024 12:14:26.6018 (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: Vo62bIsIdaVHJJtyqYan3Tv2byvLwFNWw0kKMdxcs3WzixCTIdLPr0gEGlLtgG8kWjt+1vxF0p4MTyGCqxbPPeKFMbYl/fmXZl9i2PSrScs=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA0PR11MB7404
+X-OriginatorOrg: intel.com
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1727698243; x=1759234243;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=ZJV8Tlz9StKSoK6ZtN2Dg+AWqHr48ypwb2sSLfvlL9I=;
- b=Qkw4eEoP53GlID01q2Uer3llsqxd2rdIqdl5Bj1PUM+DPykIN4TOIKzI
- syPkNKfcvB9TJJ3FE8LQ8HRawRkTuSuOxkB3d4xk0c0y3BCpsVUNpJ/i7
- +a7Jx4MHTgdZbucqleAa8/+kb2R5JrBqGxbu/7RhyewLABiOhk57rSmqA
- 2fb0nFCE+zF0dytpzkNBJzDxL7ZenNMuvHQONquHwqiXwF62KlLBUJ81l
- z6kJ308pgbdsBK2MnDrGbi8nVtyrw781FT4XZ7sd2CWCOQMEQSNONWpWh
- qn23cws0Lcmqb5vZEJklSvq0e76SEDypIqppTXS1HPadg0aGl1Q/AmA3Y
- Q==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ t=1727698472; x=1759234472;
+ h=message-id:date:subject:to:references:from:in-reply-to:
+ content-transfer-encoding:mime-version;
+ bh=i6YGCaJwkaIsDmruubec/u6f19FTlkfx6D3c7s50fss=;
+ b=Q8YUnM0DWnd891QiGxuvPXLCFTRY9SMRSGqhsWAzGQHrUbRfoO9/fzLZ
+ bPn8ty/iQiFBJPpywS2SSBCuAgWEoGjy5+0CLMcCWLlnqcb+yJVP9ZCLM
+ OL2rYso7bQuqxFcYaPT89qEeyS1q+YXsu1roMpVMT0jOG6JR0dSwx1TVy
+ 5AKtK40EZvId06KhRPq711jAQYZFYeMdAlOheks6XfYmDG20tj0v+bRlc
+ DLjmLpPGr6Qat2ePFyprGtwLVOldid9INPgQUqA+b5Jb8PbkMGzIsr9Wu
+ EWLcBFnLTPkyF4iDgCfMnsvr5qdL9zgqcua0Wn8e2cVe0enBwHP4hSluX
+ g==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=Qkw4eEoP
-Subject: [Intel-wired-lan] [PATCH iwl-net 5/5] ice: Add correct PHY lane
- assignment
+ header.a=rsa-sha256 header.s=Intel header.b=Q8YUnM0D
+X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Subject: Re: [Intel-wired-lan] [PATCH iwl-net v3 1/1] e1000e: change I219
+ (19) devices to ADP
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -104,270 +232,27 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, Karol Kolacinski <karol.kolacinski@intel.com>,
- Arkadiusz Kubalewski <Arkadiusz.kubalewski@intel.com>,
- anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Driver always naively assumes, that for PTP purposes, PHY lane to
-configure is corresponding to PF ID.
-
-This is not true for some port configurations, e.g.:
-- 2x50G per quad, where lanes used are 0 and 2 on each quad, but PF IDs
-  are 0 and 1
-- 100G per quad on 2 quads, where lanes used are 0 and 4, but PF IDs are
-  0 and 1
-
-Use correct PHY lane assignment by getting and parsing port options.
-This is read from the NVM by the FW and provided to the driver with
-the indication of active port split.
-
-Remove ice_is_muxed_topo(), which is no longer needed.
-
-Fixes: 4409ea1726cb ("ice: Adjust PTP init for 2x50G E825C devices")
-Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Reviewed-by: Arkadiusz Kubalewski <Arkadiusz.kubalewski@intel.com>
-Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
----
- drivers/net/ethernet/intel/ice/ice_common.c | 40 +++++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_common.h |  1 +
- drivers/net/ethernet/intel/ice/ice_main.c   |  6 ++--
- drivers/net/ethernet/intel/ice/ice_ptp.c    | 23 +++++-------
- drivers/net/ethernet/intel/ice/ice_ptp.h    |  4 +--
- drivers/net/ethernet/intel/ice/ice_ptp_hw.c | 22 ------------
- drivers/net/ethernet/intel/ice/ice_type.h   |  1 -
- 7 files changed, 55 insertions(+), 42 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index 0eb7f828ed3a..618259f8abdc 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -4065,6 +4065,46 @@ ice_aq_set_port_option(struct ice_hw *hw, u8 lport, u8 lport_valid,
- 	return ice_aq_send_cmd(hw, &desc, NULL, 0, NULL);
- }
- 
-+/**
-+ * ice_get_phy_lane_number - Get PHY lane number for current adapter
-+ * @hw: pointer to the hw struct
-+ *
-+ * Return: PHY lane number on success, negative error code otherwise.
-+ */
-+int ice_get_phy_lane_number(struct ice_hw *hw)
-+{
-+	struct ice_aqc_get_port_options_elem *options __free(kfree);
-+	unsigned int lport = 0;
-+	unsigned int lane;
-+	int err;
-+
-+	options = kcalloc(ICE_AQC_PORT_OPT_MAX, sizeof(*options), GFP_KERNEL);
-+	if (!options)
-+		return -ENOMEM;
-+
-+	for (lane = 0; lane < ICE_MAX_PORT_PER_PCI_DEV; lane++) {
-+		u8 options_count = ICE_AQC_PORT_OPT_MAX;
-+		bool active_valid, pending_valid;
-+		u8 active_idx, pending_idx;
-+
-+		err = ice_aq_get_port_options(hw, options, &options_count, lane,
-+					      true, &active_idx, &active_valid,
-+					      &pending_idx, &pending_valid);
-+		if (err)
-+			return err;
-+
-+		if (!active_valid)
-+			continue;
-+
-+		if (hw->pf_id == lport)
-+			return lane;
-+		lport++;
-+	}
-+
-+	/* PHY lane not found */
-+	return -ENXIO;
-+}
-+
- /**
-  * ice_aq_sff_eeprom
-  * @hw: pointer to the HW struct
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
-index 27208a60cece..fe6f88cfd948 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.h
-+++ b/drivers/net/ethernet/intel/ice/ice_common.h
-@@ -193,6 +193,7 @@ ice_aq_get_port_options(struct ice_hw *hw,
- int
- ice_aq_set_port_option(struct ice_hw *hw, u8 lport, u8 lport_valid,
- 		       u8 new_option);
-+int ice_get_phy_lane_number(struct ice_hw *hw);
- int
- ice_aq_sff_eeprom(struct ice_hw *hw, u16 lport, u8 bus_addr,
- 		  u16 mem_addr, u8 page, u8 set_page, u8 *data, u8 length,
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 09d1a4eb5716..8863137e767e 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -1162,7 +1162,7 @@ ice_link_event(struct ice_pf *pf, struct ice_port_info *pi, bool link_up,
- 	if (link_up == old_link && link_speed == old_link_speed)
- 		return 0;
- 
--	ice_ptp_link_change(pf, pf->hw.pf_id, link_up);
-+	ice_ptp_link_change(pf, link_up);
- 
- 	if (ice_is_dcb_active(pf)) {
- 		if (test_bit(ICE_FLAG_DCB_ENA, pf->flags))
-@@ -6760,7 +6760,7 @@ static int ice_up_complete(struct ice_vsi *vsi)
- 		ice_print_link_msg(vsi, true);
- 		netif_tx_start_all_queues(vsi->netdev);
- 		netif_carrier_on(vsi->netdev);
--		ice_ptp_link_change(pf, pf->hw.pf_id, true);
-+		ice_ptp_link_change(pf, true);
- 	}
- 
- 	/* Perform an initial read of the statistics registers now to
-@@ -7230,7 +7230,7 @@ int ice_down(struct ice_vsi *vsi)
- 
- 	if (vsi->netdev) {
- 		vlan_err = ice_vsi_del_vlan_zero(vsi);
--		ice_ptp_link_change(vsi->back, vsi->back->hw.pf_id, false);
-+		ice_ptp_link_change(vsi->back, false);
- 		netif_carrier_off(vsi->netdev);
- 		netif_tx_disable(vsi->netdev);
- 	}
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
-index 956d5e21e261..2eef72bf654a 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-@@ -1454,10 +1454,9 @@ ice_ptp_port_phy_restart(struct ice_ptp_port *ptp_port)
- /**
-  * ice_ptp_link_change - Reconfigure PTP after link status change
-  * @pf: Board private structure
-- * @port: Port for which the PHY start is set
-  * @linkup: Link is up or down
-  */
--void ice_ptp_link_change(struct ice_pf *pf, u8 port, bool linkup)
-+void ice_ptp_link_change(struct ice_pf *pf, bool linkup)
- {
- 	struct ice_ptp_port *ptp_port;
- 	struct ice_hw *hw = &pf->hw;
-@@ -1465,14 +1464,7 @@ void ice_ptp_link_change(struct ice_pf *pf, u8 port, bool linkup)
- 	if (pf->ptp.state != ICE_PTP_READY)
- 		return;
- 
--	if (WARN_ON_ONCE(port >= hw->ptp.num_lports))
--		return;
--
- 	ptp_port = &pf->ptp.port;
--	if (ice_is_e825c(hw) && hw->ptp.is_2x50g_muxed_topo)
--		port *= 2;
--	if (WARN_ON_ONCE(ptp_port->port_num != port))
--		return;
- 
- 	/* Update cached link status for this port immediately */
- 	ptp_port->link_up = linkup;
-@@ -3339,10 +3331,17 @@ void ice_ptp_init(struct ice_pf *pf)
- {
- 	struct ice_ptp *ptp = &pf->ptp;
- 	struct ice_hw *hw = &pf->hw;
--	int err;
-+	int lane_num, err;
- 
- 	ptp->state = ICE_PTP_INITIALIZING;
- 
-+	lane_num = ice_get_phy_lane_number(hw);
-+	if (lane_num < 0) {
-+		err = lane_num;
-+		goto err;
-+	}
-+
-+	ptp->port.port_num = (u8)lane_num;
- 	ice_ptp_init_hw(hw);
- 
- 	ice_ptp_init_tx_interrupt_mode(pf);
-@@ -3356,10 +3355,6 @@ void ice_ptp_init(struct ice_pf *pf)
- 			goto err;
- 	}
- 
--	ptp->port.port_num = hw->pf_id;
--	if (ice_is_e825c(hw) && hw->ptp.is_2x50g_muxed_topo)
--		ptp->port.port_num = hw->pf_id * 2;
--
- 	err = ice_ptp_init_port(pf, &ptp->port);
- 	if (err)
- 		goto err;
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.h b/drivers/net/ethernet/intel/ice/ice_ptp.h
-index 3a61ea09f406..bc2992cac20f 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp.h
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp.h
-@@ -330,7 +330,7 @@ void ice_ptp_prepare_for_reset(struct ice_pf *pf,
- 			       enum ice_reset_req reset_type);
- void ice_ptp_init(struct ice_pf *pf);
- void ice_ptp_release(struct ice_pf *pf);
--void ice_ptp_link_change(struct ice_pf *pf, u8 port, bool linkup);
-+void ice_ptp_link_change(struct ice_pf *pf, bool linkup);
- #else /* IS_ENABLED(CONFIG_PTP_1588_CLOCK) */
- static inline int ice_ptp_set_ts_config(struct ice_pf *pf, struct ifreq *ifr)
- {
-@@ -378,7 +378,7 @@ static inline void ice_ptp_prepare_for_reset(struct ice_pf *pf,
- }
- static inline void ice_ptp_init(struct ice_pf *pf) { }
- static inline void ice_ptp_release(struct ice_pf *pf) { }
--static inline void ice_ptp_link_change(struct ice_pf *pf, u8 port, bool linkup)
-+static inline void ice_ptp_link_change(struct ice_pf *pf, bool linkup)
- {
- }
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-index 4979633cab98..3fb26d8dbcc8 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-@@ -2674,26 +2674,6 @@ static int ice_get_phy_tx_tstamp_ready_eth56g(struct ice_hw *hw, u8 port,
- 	return 0;
- }
- 
--/**
-- * ice_is_muxed_topo - detect breakout 2x50G topology for E825C
-- * @hw: pointer to the HW struct
-- *
-- * Return: true if it's 2x50 breakout topology, false otherwise
-- */
--static bool ice_is_muxed_topo(struct ice_hw *hw)
--{
--	u8 link_topo;
--	bool mux;
--	u32 val;
--
--	val = rd32(hw, GLGEN_SWITCH_MODE_CONFIG);
--	mux = FIELD_GET(GLGEN_SWITCH_MODE_CONFIG_25X4_QUAD_M, val);
--	val = rd32(hw, GLGEN_MAC_LINK_TOPO);
--	link_topo = FIELD_GET(GLGEN_MAC_LINK_TOPO_LINK_TOPO_M, val);
--
--	return (mux && link_topo == ICE_LINK_TOPO_UP_TO_2_LINKS);
--}
--
- /**
-  * ice_ptp_init_phy_e825 - initialize PHY parameters
-  * @hw: pointer to the HW struct
-@@ -2717,8 +2697,6 @@ static void ice_ptp_init_phy_e825(struct ice_hw *hw)
- 	err = ice_read_phy_eth56g(hw, hw->pf_id, PHY_REG_REVISION, &phy_rev);
- 	if (err || phy_rev != PHY_REVISION_ETH56G)
- 		ptp->phy_model = ICE_PHY_UNSUP;
--
--	ptp->is_2x50g_muxed_topo = ice_is_muxed_topo(hw);
- }
- 
- /* E822 family functions
-diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-index 479227bdff75..609f31e0dfde 100644
---- a/drivers/net/ethernet/intel/ice/ice_type.h
-+++ b/drivers/net/ethernet/intel/ice/ice_type.h
-@@ -880,7 +880,6 @@ struct ice_ptp_hw {
- 	union ice_phy_params phy;
- 	u8 num_lports;
- 	u8 ports_per_phy;
--	bool is_2x50g_muxed_topo;
- };
- 
- /* Port hardware description */
--- 
-2.46.1
-
+On 08/09/2024 9:49, Vitaly Lifshits wrote:
+> Sporadic issues, such as PHY access loss, have been observed on I219 (19)
+> devices. It was found that these devices have hardware more closely
+> related to ADP than MTP and the issues were caused by taking MTP-specific
+> flows.
+> 
+> Change the MAC and board types of these devices from MTP to ADP to
+> correctly reflect the LAN hardware, and flows, of these devices.
+> 
+> Fixes: db2d737d63c5 ("e1000e: Separate MTP board type from ADP")
+> Signed-off-by: Vitaly Lifshits <vitaly.lifshits@intel.com>
+> ---
+> v3: add an example to affected flows
+> v2: elaborate on the meanings of this change
+> v1: initial version
+> ---
+>   drivers/net/ethernet/intel/e1000e/hw.h     | 4 ++--
+>   drivers/net/ethernet/intel/e1000e/netdev.c | 4 ++--
+>   2 files changed, 4 insertions(+), 4 deletions(-)
+> 
+Tested-by: Mor Bar-Gabay <morx.bar.gabay@intel.com>
