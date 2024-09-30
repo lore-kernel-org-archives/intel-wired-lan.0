@@ -4,68 +4,68 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 743ADCF6497
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 30 Sep 2024 12:04:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C27B8CF6499
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 30 Sep 2024 12:04:29 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 2E7486066F;
-	Mon, 30 Sep 2024 12:04:27 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 6826D606A8;
+	Mon, 30 Sep 2024 12:04:29 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id it8Ke_IgkUAu; Mon, 30 Sep 2024 12:04:25 +0000 (UTC)
+ id WIb9lwwv73-S; Mon, 30 Sep 2024 12:04:28 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org CECC86067C
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 976CB606CA
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1727697865;
-	bh=ixAiNGKIenoCWfr3z9I4jhwVrb8mcRBXY1b4N2H7RRo=;
+	s=default; t=1727697868;
+	bh=DwVe2afRN/OOWqNiDF0A0A9ebFk81QLK4uAYa/z30Fw=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=zol5nGZTSzCwrkPQKiuknGWxEUm3WPYIwKhQXaG0or0IpStgDKnFlYr8c+ORlvAk3
-	 75GfPR6EGgXSVXyqvR1k8/bpQRP6OkrMrqSPXQ46ruXY6+1MsXdc9vbHxhtAiaSzpB
-	 BWLqW3+eozhb5EFHQwEKrR/knaztMtK3u5lFFl9tTAS9YE5MPZvYl0Xt4Jn2eCVsLD
-	 TdiXVqR10x0CTL04eshoHTXgh++VnVi5k/W4lBscRED+d/2KZ9/r9X9OC0mYn5Q6Qp
-	 +4uVFY+InmN+g035BOCqudGhBFUDLp4T/cjBAIPv5n6WCz1rv7v4C2dtMiRfnXPPno
-	 wuu9A5i32sgYw==
+	b=wWFNDk5TjwvRF1jXCaYpVtfkDZwtGHyGySozX6QxF8K7MmYeU+XLJvTIdm40M91Qh
+	 3AnysofvXo2630quATT9lUZKMxLSzNFdPIi3pJiSQp9HlwXvDnWm7jwXjSZGtdW4Nx
+	 lJZqHkSkJVKAZJ0rTJePqfu76M0LFb3NYDRB3M8XSG0KZGBCwgxcRI1tZTtTmxQX5o
+	 5RXZo7+nXIRTJLc4BZq8iMHnfKenpWrUOUmhvIvP0wO7EWFBv4+/HwCLnHvyK1F3np
+	 okj13g6OwiSMr39waU4QUjnAKQjYWz1SOB9mSIeMSZ40Lqs12gfb8Vpu8doufnKPh5
+	 hgTUU5yWZgw4g==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id CECC86067C;
-	Mon, 30 Sep 2024 12:04:24 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 976CB606CA;
+	Mon, 30 Sep 2024 12:04:28 +0000 (UTC)
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id A47131BF31E
- for <intel-wired-lan@lists.osuosl.org>; Mon, 30 Sep 2024 12:04:22 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id B30C21BF31E
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 30 Sep 2024 12:04:24 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id A8FE080F7F
- for <intel-wired-lan@lists.osuosl.org>; Mon, 30 Sep 2024 12:04:20 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 9233980F3C
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 30 Sep 2024 12:04:21 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ZomvQz6Wg6_I for <intel-wired-lan@lists.osuosl.org>;
- Mon, 30 Sep 2024 12:04:19 +0000 (UTC)
+ id MMWGEwNsNzho for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 30 Sep 2024 12:04:20 +0000 (UTC)
 Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.13;
  helo=mgamail.intel.com; envelope-from=michal.swiatkowski@linux.intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org B525880F35
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B525880F35
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 4D86880F0F
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4D86880F0F
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.13])
- by smtp1.osuosl.org (Postfix) with ESMTPS id B525880F35
- for <intel-wired-lan@lists.osuosl.org>; Mon, 30 Sep 2024 12:04:19 +0000 (UTC)
-X-CSE-ConnectionGUID: Pl0PmDSPQ/a6NUC/WJJLCw==
-X-CSE-MsgGUID: RYTZ02+UQimopV4R/WdPXg==
-X-IronPort-AV: E=McAfee;i="6700,10204,11210"; a="29665560"
-X-IronPort-AV: E=Sophos;i="6.11,165,1725346800"; d="scan'208";a="29665560"
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 4D86880F0F
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 30 Sep 2024 12:04:20 +0000 (UTC)
+X-CSE-ConnectionGUID: fISWxn+4RGu9dqQGzTfRJg==
+X-CSE-MsgGUID: uQKa/1/PSb64G3E9OjpPsQ==
+X-IronPort-AV: E=McAfee;i="6700,10204,11210"; a="29665573"
+X-IronPort-AV: E=Sophos;i="6.11,165,1725346800"; d="scan'208";a="29665573"
 Received: from fmviesa003.fm.intel.com ([10.60.135.143])
  by fmvoesa107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 30 Sep 2024 05:04:14 -0700
-X-CSE-ConnectionGUID: sGSSoHv9QOuZwJp7Ix7iNg==
-X-CSE-MsgGUID: 129enlcwTTGMtgFFoR8Vbw==
+ 30 Sep 2024 05:04:20 -0700
+X-CSE-ConnectionGUID: dcqN7gxuQ1mncOR+GF3tWg==
+X-CSE-MsgGUID: IYq685GCT0mm3Q/c6GUSzw==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.11,165,1725346800"; d="scan'208";a="77363493"
+X-IronPort-AV: E=Sophos;i="6.11,165,1725346800"; d="scan'208";a="77363519"
 Received: from gk3153-dr2-r750-36946.igk.intel.com ([10.102.20.192])
- by fmviesa003.fm.intel.com with ESMTP; 30 Sep 2024 05:04:11 -0700
+ by fmviesa003.fm.intel.com with ESMTP; 30 Sep 2024 05:04:17 -0700
 From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Mon, 30 Sep 2024 14:03:57 +0200
-Message-ID: <20240930120402.3468-4-michal.swiatkowski@linux.intel.com>
+Date: Mon, 30 Sep 2024 14:03:59 +0200
+Message-ID: <20240930120402.3468-6-michal.swiatkowski@linux.intel.com>
 X-Mailer: git-send-email 2.42.0
 In-Reply-To: <20240930120402.3468-1-michal.swiatkowski@linux.intel.com>
 References: <20240930120402.3468-1-michal.swiatkowski@linux.intel.com>
@@ -76,22 +76,22 @@ X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  t=1727697860; x=1759233860;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=rzEoD7Py+R6as42Om9mrATt42yQ6/ockjDyO49svrCQ=;
- b=hADE94C5wwaK3vK6GHvHjkjQPoAyP3zyhggdsNI0y8993sftEmcUxOV/
- 1zXPmHn8fwrcb6zFPpc3LCFi7G+9Tx3YoWudXMQa0bbCCYlE4L5+fXjrt
- JLJhbuiYRRGWNB1sUYwpwmF8Ih9ylRmfGuztaKKXNQvBBI4sFAsSpvq8a
- x4XQcdTBgx0aSCM7DWnXrkbRJpeyjhu+GL8jTPt5F7Mmp+9AXuiO+S7Zs
- D8HKKefx8xIxV2IDevYrM/PR6lPHaDVuJoj4+86aYURTh+EKIhFBe3mdq
- 71Llr6+w3wVYeuDax3yj7cdO1CX+UjGQH47phIW+xrVurjx2fnktve7fb
- Q==;
+ bh=fFRdLH1r9RtZMg2le43g6EXxLM8StAN53tR1DQCQ/7g=;
+ b=XRhhP+xQhkrr5N0mM6R9/+bdJXZXUBdp14bgm+eec1ErAg3y/bNqaTtd
+ aDNfHT/r0z7zKJ/HZmOUWwGdfHHROP3NqlpmzFdC1cUCFSbbohIa5X2VA
+ kFGkK+ETIOvZEAZwj0+BHhFpmYsEHz3ANYfmATfwBwwH7pJXX+ekixAPC
+ j/5z01CwU9EviTAAH0RNHbIX5BLk5bMpy/BTPvvya7wjJJlknn4rUYZRQ
+ QidCH233u90BeQLZ6/F5sSOLSar+zR9N2mrd8aSYMyq0JGKZYkLQ2GAgS
+ GfRauu4AYOKiFXCNn1JJP7O2F5CyZ1IHEp68Pf8wgDYfkr/Y/5PLjUpjQ
+ A==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=none (p=none dis=none)
  header.from=linux.intel.com
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=hADE94C5
-Subject: [Intel-wired-lan] [iwl-next v4 3/8] ice: get rid of num_lan_msix
- field
+ header.a=rsa-sha256 header.s=Intel header.b=XRhhP+xQ
+Subject: [Intel-wired-lan] [iwl-next v4 5/8] ice: treat dyn_allowed only as
+ suggestion
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -112,184 +112,123 @@ Cc: wojciech.drewek@intel.com, marcin.szycik@intel.com, netdev@vger.kernel.org,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Remove the field to allow having more queues than MSI-X on VSI. As
-default the number will be the same, but if there won't be more MSI-X
-available VSI can run with at least one MSI-X.
+It can be needed to have some MSI-X allocated as static and rest as
+dynamic. For example on PF VSI. We want to always have minimum one MSI-X
+on it, because of that it is allocated as a static one, rest can be
+dynamic if it is supported.
+
+Change the ice_get_irq_res() to allow using static entries if they are
+free even if caller wants dynamic one.
+
+Adjust limit values to the new approach. Min and max in limit means the
+values that are valid, so decrease max and num_static by one.
+
+Set vsi::irq_dyn_alloc if dynamic allocation is supported.
 
 Reviewed-by: Wojciech Drewek <wojciech.drewek@intel.com>
 Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice.h         |  1 -
- drivers/net/ethernet/intel/ice/ice_base.c    | 10 +++-----
- drivers/net/ethernet/intel/ice/ice_ethtool.c |  8 +++---
- drivers/net/ethernet/intel/ice/ice_irq.c     | 11 +++------
- drivers/net/ethernet/intel/ice/ice_lib.c     | 26 +++++++++++---------
- 5 files changed, 27 insertions(+), 29 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_irq.c | 25 ++++++++++++------------
+ drivers/net/ethernet/intel/ice/ice_lib.c |  2 ++
+ 2 files changed, 15 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index cf824d041d5a..1e23aec2634f 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -622,7 +622,6 @@ struct ice_pf {
- 	u16 max_pf_txqs;	/* Total Tx queues PF wide */
- 	u16 max_pf_rxqs;	/* Total Rx queues PF wide */
- 	struct ice_pf_msix msix;
--	u16 num_lan_msix;	/* Total MSIX vectors for base driver */
- 	u16 num_lan_tx;		/* num LAN Tx queues setup */
- 	u16 num_lan_rx;		/* num LAN Rx queues setup */
- 	u16 next_vsi;		/* Next free slot in pf->vsi[] - 0-based! */
-diff --git a/drivers/net/ethernet/intel/ice/ice_base.c b/drivers/net/ethernet/intel/ice/ice_base.c
-index 98c3764fed39..35a8721cb110 100644
---- a/drivers/net/ethernet/intel/ice/ice_base.c
-+++ b/drivers/net/ethernet/intel/ice/ice_base.c
-@@ -795,13 +795,11 @@ int ice_vsi_alloc_q_vectors(struct ice_vsi *vsi)
- 	return 0;
- 
- err_out:
--	while (v_idx--)
--		ice_free_q_vector(vsi, v_idx);
- 
--	dev_err(dev, "Failed to allocate %d q_vector for VSI %d, ret=%d\n",
--		vsi->num_q_vectors, vsi->vsi_num, err);
--	vsi->num_q_vectors = 0;
--	return err;
-+	dev_info(dev, "Failed to allocate %d q_vectors for VSI %d, new value %d",
-+		 vsi->num_q_vectors, vsi->vsi_num, v_idx);
-+	vsi->num_q_vectors = v_idx;
-+	return v_idx ? 0 : err;
- }
- 
- /**
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index 85a3b2326e7b..e5c56ec8bbda 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -3811,8 +3811,8 @@ ice_get_ts_info(struct net_device *dev, struct kernel_ethtool_ts_info *info)
-  */
- static int ice_get_max_txq(struct ice_pf *pf)
- {
--	return min3(pf->num_lan_msix, (u16)num_online_cpus(),
--		    (u16)pf->hw.func_caps.common_cap.num_txq);
-+	return min_t(u16, num_online_cpus(),
-+		     pf->hw.func_caps.common_cap.num_txq);
- }
- 
- /**
-@@ -3821,8 +3821,8 @@ static int ice_get_max_txq(struct ice_pf *pf)
-  */
- static int ice_get_max_rxq(struct ice_pf *pf)
- {
--	return min3(pf->num_lan_msix, (u16)num_online_cpus(),
--		    (u16)pf->hw.func_caps.common_cap.num_rxq);
-+	return min_t(u16, num_online_cpus(),
-+		     pf->hw.func_caps.common_cap.num_rxq);
- }
- 
- /**
 diff --git a/drivers/net/ethernet/intel/ice/ice_irq.c b/drivers/net/ethernet/intel/ice/ice_irq.c
-index 3d89d5303cd1..f1d5e43251ad 100644
+index f1d5e43251ad..85840f3ad5c0 100644
 --- a/drivers/net/ethernet/intel/ice/ice_irq.c
 +++ b/drivers/net/ethernet/intel/ice/ice_irq.c
-@@ -101,7 +101,7 @@ void ice_clear_interrupt_scheme(struct ice_pf *pf)
- int ice_init_interrupt_scheme(struct ice_pf *pf)
+@@ -45,7 +45,7 @@ static void ice_free_irq_res(struct ice_pf *pf, u16 index)
+ /**
+  * ice_get_irq_res - get an interrupt resource
+  * @pf: board private structure
+- * @dyn_only: force entry to be dynamically allocated
++ * @dyn_allowed: allow entry to be dynamically allocated
+  *
+  * Allocate new irq entry in the free slot of the tracker. Since xarray
+  * is used, always allocate new entry at the lowest possible index. Set
+@@ -53,11 +53,12 @@ static void ice_free_irq_res(struct ice_pf *pf, u16 index)
+  *
+  * Returns allocated irq entry or NULL on failure.
+  */
+-static struct ice_irq_entry *ice_get_irq_res(struct ice_pf *pf, bool dyn_only)
++static struct ice_irq_entry *ice_get_irq_res(struct ice_pf *pf,
++					     bool dyn_allowed)
  {
- 	int total_vectors = pf->hw.func_caps.common_cap.num_msix_vectors;
--	int vectors, max_vectors;
-+	int vectors;
+-	struct xa_limit limit = { .max = pf->irq_tracker.num_entries,
++	struct xa_limit limit = { .max = pf->irq_tracker.num_entries - 1,
+ 				  .min = 0 };
+-	unsigned int num_static = pf->irq_tracker.num_static;
++	unsigned int num_static = pf->irq_tracker.num_static - 1;
+ 	struct ice_irq_entry *entry;
+ 	unsigned int index;
+ 	int ret;
+@@ -66,9 +67,9 @@ static struct ice_irq_entry *ice_get_irq_res(struct ice_pf *pf, bool dyn_only)
+ 	if (!entry)
+ 		return NULL;
  
- 	/* load default PF MSI-X range */
- 	if (!pf->msix.min)
-@@ -110,20 +110,17 @@ int ice_init_interrupt_scheme(struct ice_pf *pf)
- 	if (!pf->msix.max)
- 		pf->msix.max = total_vectors / 2;
+-	/* skip preallocated entries if the caller says so */
+-	if (dyn_only)
+-		limit.min = num_static;
++	/* only already allocated if the caller says so */
++	if (!dyn_allowed)
++		limit.max = num_static;
  
--	if (pci_msix_can_alloc_dyn(pf->pdev)) {
-+	if (pci_msix_can_alloc_dyn(pf->pdev))
- 		vectors = pf->msix.min;
--		max_vectors = total_vectors;
--	} else {
-+	else
- 		vectors = pf->msix.max;
--		max_vectors = vectors;
--	}
+ 	ret = xa_alloc(&pf->irq_tracker.entries, &index, entry, limit,
+ 		       GFP_KERNEL);
+@@ -78,7 +79,7 @@ static struct ice_irq_entry *ice_get_irq_res(struct ice_pf *pf, bool dyn_only)
+ 		entry = NULL;
+ 	} else {
+ 		entry->index = index;
+-		entry->dynamic = index >= num_static;
++		entry->dynamic = index > num_static;
+ 	}
  
- 	vectors = pci_alloc_irq_vectors(pf->pdev, pf->msix.min, vectors,
- 					PCI_IRQ_MSIX);
- 	if (vectors < pf->msix.min)
- 		return -ENOMEM;
+ 	return entry;
+@@ -128,7 +129,7 @@ int ice_init_interrupt_scheme(struct ice_pf *pf)
+ /**
+  * ice_alloc_irq - Allocate new interrupt vector
+  * @pf: board private structure
+- * @dyn_only: force dynamic allocation of the interrupt
++ * @dyn_allowed: allow dynamic allocation of the interrupt
+  *
+  * Allocate new interrupt vector for a given owner id.
+  * return struct msi_map with interrupt details and track
+@@ -141,20 +142,20 @@ int ice_init_interrupt_scheme(struct ice_pf *pf)
+  * interrupt will be allocated with pci_msix_alloc_irq_at.
+  *
+  * Some callers may only support dynamically allocated interrupts.
+- * This is indicated with dyn_only flag.
++ * This is indicated with dyn_allowed flag.
+  *
+  * On failure, return map with negative .index. The caller
+  * is expected to check returned map index.
+  *
+  */
+-struct msi_map ice_alloc_irq(struct ice_pf *pf, bool dyn_only)
++struct msi_map ice_alloc_irq(struct ice_pf *pf, bool dyn_allowed)
+ {
+ 	int sriov_base_vector = pf->sriov_base_vector;
+ 	struct msi_map map = { .index = -ENOENT };
+ 	struct device *dev = ice_pf_to_dev(pf);
+ 	struct ice_irq_entry *entry;
  
--	ice_init_irq_tracker(pf, max_vectors, vectors);
-+	ice_init_irq_tracker(pf, pf->msix.max, vectors);
+-	entry = ice_get_irq_res(pf, dyn_only);
++	entry = ice_get_irq_res(pf, dyn_allowed);
+ 	if (!entry)
+ 		return map;
  
- 	return 0;
- }
 diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index d4e74f96a8ad..26cfb4b67972 100644
+index 26cfb4b67972..99af78daa5e2 100644
 --- a/drivers/net/ethernet/intel/ice/ice_lib.c
 +++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -157,6 +157,16 @@ static void ice_vsi_set_num_desc(struct ice_vsi *vsi)
+@@ -572,6 +572,8 @@ ice_vsi_alloc_def(struct ice_vsi *vsi, struct ice_channel *ch)
+ 			return -ENOMEM;
  	}
- }
  
-+static u16 ice_get_rxq_count(struct ice_pf *pf)
-+{
-+	return min_t(u16, ice_get_avail_rxq_count(pf), num_online_cpus());
-+}
++	vsi->irq_dyn_alloc = pci_msix_can_alloc_dyn(vsi->back->pdev);
 +
-+static u16 ice_get_txq_count(struct ice_pf *pf)
-+{
-+	return min_t(u16, ice_get_avail_txq_count(pf), num_online_cpus());
-+}
-+
- /**
-  * ice_vsi_set_num_qs - Set number of queues, descriptors and vectors for a VSI
-  * @vsi: the VSI being configured
-@@ -178,9 +188,7 @@ static void ice_vsi_set_num_qs(struct ice_vsi *vsi)
- 			vsi->alloc_txq = vsi->req_txq;
- 			vsi->num_txq = vsi->req_txq;
- 		} else {
--			vsi->alloc_txq = min3(pf->num_lan_msix,
--					      ice_get_avail_txq_count(pf),
--					      (u16)num_online_cpus());
-+			vsi->alloc_txq = ice_get_txq_count(pf);
- 		}
- 
- 		pf->num_lan_tx = vsi->alloc_txq;
-@@ -193,17 +201,14 @@ static void ice_vsi_set_num_qs(struct ice_vsi *vsi)
- 				vsi->alloc_rxq = vsi->req_rxq;
- 				vsi->num_rxq = vsi->req_rxq;
- 			} else {
--				vsi->alloc_rxq = min3(pf->num_lan_msix,
--						      ice_get_avail_rxq_count(pf),
--						      (u16)num_online_cpus());
-+				vsi->alloc_rxq = ice_get_rxq_count(pf);
- 			}
- 		}
- 
- 		pf->num_lan_rx = vsi->alloc_rxq;
- 
--		vsi->num_q_vectors = min_t(int, pf->num_lan_msix,
--					   max_t(int, vsi->alloc_rxq,
--						 vsi->alloc_txq));
-+		vsi->num_q_vectors = max_t(int, vsi->alloc_rxq,
-+					   vsi->alloc_txq);
- 		break;
+ 	switch (vsi->type) {
+ 	case ICE_VSI_PF:
  	case ICE_VSI_SF:
- 		vsi->alloc_txq = 1;
-@@ -1173,12 +1178,11 @@ static void ice_set_rss_vsi_ctx(struct ice_vsi_ctx *ctxt, struct ice_vsi *vsi)
- static void
- ice_chnl_vsi_setup_q_map(struct ice_vsi *vsi, struct ice_vsi_ctx *ctxt)
- {
--	struct ice_pf *pf = vsi->back;
- 	u16 qcount, qmap;
- 	u8 offset = 0;
- 	int pow;
- 
--	qcount = min_t(int, vsi->num_rxq, pf->num_lan_msix);
-+	qcount = vsi->num_rxq;
- 
- 	pow = order_base_2(qcount);
- 	qmap = FIELD_PREP(ICE_AQ_VSI_TC_Q_OFFSET_M, offset);
 -- 
 2.42.0
 
