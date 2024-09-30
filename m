@@ -4,68 +4,68 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7671FCF649C
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 30 Sep 2024 12:04:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4079BCF64A0
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 30 Sep 2024 12:04:31 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 43FCA6068A;
+	by smtp3.osuosl.org (Postfix) with ESMTP id 5B370606BD;
 	Mon, 30 Sep 2024 12:04:30 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 9_pw0TUuhm5n; Mon, 30 Sep 2024 12:04:26 +0000 (UTC)
+ id PA6FS_ub241N; Mon, 30 Sep 2024 12:04:29 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8D40F606BD
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8B4D96068F
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1727697866;
-	bh=cwH7kuPgb5pfz8XjFRYstZj6p+9qvy8dk/TF+doqFXk=;
+	s=default; t=1727697869;
+	bh=eizZwucflGQGeVlYdkPUiOocATMdxPkJ19VpCZJWXks=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=o31Y+eo9XJ1Ulb7sU1sMw8I/dBQBIQlNqBgA5+MgKU4L7fNWKm9SkMnTvtWPN1u+q
-	 kPi3gjM6W0HCgaHg3ChtJvkY/OPcgRVEDQcSV5rxpHg82FTpAmKkDAfrvaZfjDF28e
-	 /pEkix5eyrSxkJ51kyGWUV0TsiKEk/IIzyfbH+Nrn2lulGgGJy4B5q3V+a0EedQRuv
-	 36McFfqx+yoErZEMcNj3xB3ScTu0ofUFpM7LlEIgTu6CLxRUksEZLtJ9i2ZVYMPNJP
-	 rEvSHG2uWN8Y7ffadAyevvRUw5rUKS7Z1XD+tHWava1vq0YER27WboS32GOsSCtXqf
-	 MlWgjpyjVB86Q==
+	b=fNeS5Kx2Mdq68I+5YOO6xJNodaJqTjFZ36rZjYNrIJs7TcjJvYpRf/46v+bIKbL1S
+	 CmhBHdw+TYrewvL9h3QOdiFbwFDdXnhXYlPGFNMNsloWbROknCl2nhaabdAWaBhDkz
+	 6yL/jjIEBtW/aE+36CV6YmXlhzb1iR7bnGzVWPr7UrDHddFh4If7mN66yNflmFNaq0
+	 7LoBzPw/L+iNCipLUz2e//LpiMgtixYhe0SoBfjOcXadF1GUuYr8dvzQHwVG7b0Y27
+	 76vmMFcubiymgSw2FKGlfFTa42lvDnZOc4viXVee57YqzwPSnVry+Y+mIPeIze/1qq
+	 nyjY8ibRheB5Q==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 8D40F606BD;
-	Mon, 30 Sep 2024 12:04:26 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 8B4D96068F;
+	Mon, 30 Sep 2024 12:04:29 +0000 (UTC)
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 3CE6D1BF31E
- for <intel-wired-lan@lists.osuosl.org>; Mon, 30 Sep 2024 12:04:23 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id B6A0B1BF31E
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 30 Sep 2024 12:04:25 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 0C79C80F35
- for <intel-wired-lan@lists.osuosl.org>; Mon, 30 Sep 2024 12:04:21 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id AE62380F35
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 30 Sep 2024 12:04:23 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id xuoL-FoLIprx for <intel-wired-lan@lists.osuosl.org>;
- Mon, 30 Sep 2024 12:04:20 +0000 (UTC)
+ id lXPFulmYzkcM for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 30 Sep 2024 12:04:23 +0000 (UTC)
 Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.13;
  helo=mgamail.intel.com; envelope-from=michal.swiatkowski@linux.intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 08A9B80F5E
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 08A9B80F5E
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org E435C80F0F
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E435C80F0F
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.13])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 08A9B80F5E
- for <intel-wired-lan@lists.osuosl.org>; Mon, 30 Sep 2024 12:04:20 +0000 (UTC)
-X-CSE-ConnectionGUID: lufA/dfCSrypuM2omAkWhA==
-X-CSE-MsgGUID: zukMlH1KTACMVWMOpZw/zA==
-X-IronPort-AV: E=McAfee;i="6700,10204,11210"; a="29665568"
-X-IronPort-AV: E=Sophos;i="6.11,165,1725346800"; d="scan'208";a="29665568"
+ by smtp1.osuosl.org (Postfix) with ESMTPS id E435C80F0F
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 30 Sep 2024 12:04:22 +0000 (UTC)
+X-CSE-ConnectionGUID: Div9YztfRKOYHbzFZQx3Yg==
+X-CSE-MsgGUID: U57koEq+QM+raJ3UB64ChQ==
+X-IronPort-AV: E=McAfee;i="6700,10204,11210"; a="29665577"
+X-IronPort-AV: E=Sophos;i="6.11,165,1725346800"; d="scan'208";a="29665577"
 Received: from fmviesa003.fm.intel.com ([10.60.135.143])
  by fmvoesa107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 30 Sep 2024 05:04:17 -0700
-X-CSE-ConnectionGUID: fw8EL2grQk+DgCNM4JIzTQ==
-X-CSE-MsgGUID: CEXMtvKeQFiQrRlhJj6JFA==
+ 30 Sep 2024 05:04:23 -0700
+X-CSE-ConnectionGUID: hbRpf7TySIm/wmqYzZdYrQ==
+X-CSE-MsgGUID: SKpHPQQSSoGeQVROt1L19Q==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.11,165,1725346800"; d="scan'208";a="77363507"
+X-IronPort-AV: E=Sophos;i="6.11,165,1725346800"; d="scan'208";a="77363528"
 Received: from gk3153-dr2-r750-36946.igk.intel.com ([10.102.20.192])
- by fmviesa003.fm.intel.com with ESMTP; 30 Sep 2024 05:04:14 -0700
+ by fmviesa003.fm.intel.com with ESMTP; 30 Sep 2024 05:04:20 -0700
 From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Mon, 30 Sep 2024 14:03:58 +0200
-Message-ID: <20240930120402.3468-5-michal.swiatkowski@linux.intel.com>
+Date: Mon, 30 Sep 2024 14:04:00 +0200
+Message-ID: <20240930120402.3468-7-michal.swiatkowski@linux.intel.com>
 X-Mailer: git-send-email 2.42.0
 In-Reply-To: <20240930120402.3468-1-michal.swiatkowski@linux.intel.com>
 References: <20240930120402.3468-1-michal.swiatkowski@linux.intel.com>
@@ -73,25 +73,24 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1727697860; x=1759233860;
+ t=1727697863; x=1759233863;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=07IvMTfCqb08ZvZG/OaP9zt9LElkQ2IvQNElpYKTWd8=;
- b=BEPJKlaXP6yN8rJ9xvjrEJYtYwrnyfPL7yhSx8KOJyJFsfXmin67oD5g
- ThGJFkXSYYocuPKUknIVVpBcBSijbnnMj8O+qha2DXegv+d1YKqy6PFab
- UCWzmrRv+EDwEiSxGhFGsJ6ZAQu9Rd7E8bcKCJNyucN+QfG5PtspQjwxK
- t6x2IusKrReIMAz6I7L/0gOyYlfHFaRfVB5J2Da52D/IrJkBc17xuvbS8
- yGvw16vueJQ6rRRuCSwp4L2anlorH9lax0KvQJv4bybYrFUPenPqyiev0
- Q/XC2nVfTmPENbSInad+Axcp5M1IB2F0hOOp2sPWbOgtWwF14FWfBmuyZ
- A==;
+ bh=jUNfHA5UbzXJN6pEmK68qcgsFUz8UL3Epa3l8zpf55E=;
+ b=GtSKunaLHSknSZqKZ1Wn0loZMX6z3Krxyy1kSWNomzQTMEYvd+u4jqWI
+ baEVo/4qdwOjqQLtLtVGErdqPK2ZjDwM0d/ctE+UsksHbR3BCJKoiyaLa
+ dBGXbmkG4MMQofa/G2VM3CX9jYS+QI73Tx59rui5DzQo0+BC81WTVZ/EI
+ lbFS4hB6m81+qflk3cjxLO89FXVob125VI1ae194Vn7eJbgKOiubauRKd
+ 7zlwq4ysGQniORaxCTbk0wEMwstrtCfQSB+oqdkEizF9Y70BQCaIfWSFN
+ pS9eLF82JhrCal2sALDq4TItEk+zwxwpWtOhRCTuFmx9D2gtbPapcWSHc
+ w==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=none (p=none dis=none)
  header.from=linux.intel.com
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=BEPJKlaX
-Subject: [Intel-wired-lan] [iwl-next v4 4/8] ice,
- irdma: move interrupts code to irdma
+ header.a=rsa-sha256 header.s=Intel header.b=GtSKunaL
+Subject: [Intel-wired-lan] [iwl-next v4 6/8] ice: enable_rdma devlink param
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -112,271 +111,83 @@ Cc: wojciech.drewek@intel.com, marcin.szycik@intel.com, netdev@vger.kernel.org,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Move responsibility of MSI-X requesting for RDMA feature from ice driver
-to irdma driver. It is done to allow simple fallback when there is not
-enough MSI-X available.
+Implement enable_rdma devlink parameter to allow user to turn RDMA
+feature on and off.
 
-Change amount of MSI-X used for control from 4 to 1, as it isn't needed
-to have more than one MSI-X for this purpose.
+It is useful when there is no enough interrupts and user doesn't need
+RDMA feature.
 
+Reviewed-by: Jan Sokolowski <jan.sokolowski@intel.com>
+Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 ---
- drivers/infiniband/hw/irdma/hw.c         |  2 -
- drivers/infiniband/hw/irdma/main.c       | 46 ++++++++++++++++-
- drivers/infiniband/hw/irdma/main.h       |  3 ++
- drivers/net/ethernet/intel/ice/ice.h     |  2 -
- drivers/net/ethernet/intel/ice/ice_idc.c | 64 ++++++------------------
- include/linux/net/intel/iidc.h           |  2 +
- 6 files changed, 63 insertions(+), 56 deletions(-)
+ .../net/ethernet/intel/ice/devlink/devlink.c  | 19 +++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_lib.c      |  8 +++++++-
+ 2 files changed, 26 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/infiniband/hw/irdma/hw.c b/drivers/infiniband/hw/irdma/hw.c
-index ad50b77282f8..69ce1862eabe 100644
---- a/drivers/infiniband/hw/irdma/hw.c
-+++ b/drivers/infiniband/hw/irdma/hw.c
-@@ -498,8 +498,6 @@ static int irdma_save_msix_info(struct irdma_pci_f *rf)
- 	iw_qvlist->num_vectors = rf->msix_count;
- 	if (rf->msix_count <= num_online_cpus())
- 		rf->msix_shared = true;
--	else if (rf->msix_count > num_online_cpus() + 1)
--		rf->msix_count = num_online_cpus() + 1;
- 
- 	pmsix = rf->msix_entries;
- 	for (i = 0, ceq_idx = 0; i < rf->msix_count; i++, iw_qvinfo++) {
-diff --git a/drivers/infiniband/hw/irdma/main.c b/drivers/infiniband/hw/irdma/main.c
-index 3f13200ff71b..1ee8969595d3 100644
---- a/drivers/infiniband/hw/irdma/main.c
-+++ b/drivers/infiniband/hw/irdma/main.c
-@@ -206,6 +206,43 @@ static void irdma_lan_unregister_qset(struct irdma_sc_vsi *vsi,
- 		ibdev_dbg(&iwdev->ibdev, "WS: LAN free_res for rdma qset failed.\n");
+diff --git a/drivers/net/ethernet/intel/ice/devlink/devlink.c b/drivers/net/ethernet/intel/ice/devlink/devlink.c
+index 55538cbcf0b0..ae1e2d705704 100644
+--- a/drivers/net/ethernet/intel/ice/devlink/devlink.c
++++ b/drivers/net/ethernet/intel/ice/devlink/devlink.c
+@@ -1544,6 +1544,19 @@ ice_devlink_msix_min_pf_validate(struct devlink *devlink, u32 id,
+ 	return 0;
  }
  
-+static int irdma_init_interrupts(struct irdma_pci_f *rf, struct ice_pf *pf)
++static int ice_devlink_enable_rdma_validate(struct devlink *devlink, u32 id,
++					    union devlink_param_value val,
++					    struct netlink_ext_ack *extack)
 +{
-+	int i;
++	struct ice_pf *pf = devlink_priv(devlink);
++	bool new_state = val.vbool;
 +
-+	rf->msix_count = num_online_cpus() + IRDMA_NUM_AEQ_MSIX;
-+	rf->msix_entries = kcalloc(rf->msix_count, sizeof(*rf->msix_entries),
-+				   GFP_KERNEL);
-+	if (!rf->msix_entries)
-+		return -ENOMEM;
-+
-+	for (i = 0; i < rf->msix_count; i++)
-+		if (ice_alloc_rdma_qvector(pf, &rf->msix_entries[i]))
-+			break;
-+
-+	if (i < IRDMA_MIN_MSIX) {
-+		for (; i > 0; i--)
-+			ice_free_rdma_qvector(pf, &rf->msix_entries[i]);
-+
-+		kfree(rf->msix_entries);
-+		return -ENOMEM;
-+	}
-+
-+	rf->msix_count = i;
++	if (new_state && !test_bit(ICE_FLAG_RDMA_ENA, pf->flags))
++		return -EOPNOTSUPP;
 +
 +	return 0;
 +}
 +
-+static void irdma_deinit_interrupts(struct irdma_pci_f *rf, struct ice_pf *pf)
-+{
-+	int i;
-+
-+	for (i = 0; i < rf->msix_count; i++)
-+		ice_free_rdma_qvector(pf, &rf->msix_entries[i]);
-+
-+	kfree(rf->msix_entries);
-+}
-+
- static void irdma_remove(struct auxiliary_device *aux_dev)
- {
- 	struct iidc_auxiliary_dev *iidc_adev = container_of(aux_dev,
-@@ -216,6 +253,7 @@ static void irdma_remove(struct auxiliary_device *aux_dev)
+ enum ice_param_id {
+ 	ICE_DEVLINK_PARAM_ID_BASE = DEVLINK_PARAM_GENERIC_ID_MAX,
+ 	ICE_DEVLINK_PARAM_ID_TX_SCHED_LAYERS,
+@@ -1559,6 +1572,8 @@ static const struct devlink_param ice_dvl_rdma_params[] = {
+ 			      ice_devlink_enable_iw_get,
+ 			      ice_devlink_enable_iw_set,
+ 			      ice_devlink_enable_iw_validate),
++	DEVLINK_PARAM_GENERIC(ENABLE_RDMA, BIT(DEVLINK_PARAM_CMODE_DRIVERINIT),
++			      NULL, NULL, ice_devlink_enable_rdma_validate),
+ };
  
- 	irdma_ib_unregister_device(iwdev);
- 	ice_rdma_update_vsi_filter(pf, iwdev->vsi_num, false);
-+	irdma_deinit_interrupts(iwdev->rf, pf);
+ static const struct devlink_param ice_dvl_msix_params[] = {
+@@ -1699,6 +1714,10 @@ int ice_devlink_register_params(struct ice_pf *pf)
+ 	devl_param_driverinit_value_set(devlink,
+ 					DEVLINK_PARAM_GENERIC_ID_MSIX_VEC_PER_PF_MIN,
+ 					value);
++	value.vbool = test_bit(ICE_FLAG_RDMA_ENA, pf->flags);
++	devl_param_driverinit_value_set(devlink,
++					DEVLINK_PARAM_GENERIC_ID_ENABLE_RDMA,
++					value);
  
- 	pr_debug("INIT: Gen2 PF[%d] device remove success\n", PCI_FUNC(pf->pdev->devfn));
- }
-@@ -230,9 +268,7 @@ static void irdma_fill_device_info(struct irdma_device *iwdev, struct ice_pf *pf
- 	rf->gen_ops.unregister_qset = irdma_lan_unregister_qset;
- 	rf->hw.hw_addr = pf->hw.hw_addr;
- 	rf->pcidev = pf->pdev;
--	rf->msix_count =  pf->num_rdma_msix;
- 	rf->pf_id = pf->hw.pf_id;
--	rf->msix_entries = &pf->msix_entries[pf->rdma_base_vector];
- 	rf->default_vsi.vsi_idx = vsi->vsi_num;
- 	rf->protocol_used = pf->rdma_mode & IIDC_RDMA_PROTOCOL_ROCEV2 ?
- 			    IRDMA_ROCE_PROTOCOL_ONLY : IRDMA_IWARP_PROTOCOL_ONLY;
-@@ -281,6 +317,10 @@ static int irdma_probe(struct auxiliary_device *aux_dev, const struct auxiliary_
- 	irdma_fill_device_info(iwdev, pf, vsi);
- 	rf = iwdev->rf;
- 
-+	err = irdma_init_interrupts(rf, pf);
-+	if (err)
-+		goto err_init_interrupts;
-+
- 	err = irdma_ctrl_init_hw(rf);
- 	if (err)
- 		goto err_ctrl_init;
-@@ -311,6 +351,8 @@ static int irdma_probe(struct auxiliary_device *aux_dev, const struct auxiliary_
- err_rt_init:
- 	irdma_ctrl_deinit_hw(rf);
- err_ctrl_init:
-+	irdma_deinit_interrupts(rf, pf);
-+err_init_interrupts:
- 	kfree(iwdev->rf);
- 	ib_dealloc_device(&iwdev->ibdev);
- 
-diff --git a/drivers/infiniband/hw/irdma/main.h b/drivers/infiniband/hw/irdma/main.h
-index 9f0ed6e84471..ef9a9b79d711 100644
---- a/drivers/infiniband/hw/irdma/main.h
-+++ b/drivers/infiniband/hw/irdma/main.h
-@@ -117,6 +117,9 @@ extern struct auxiliary_driver i40iw_auxiliary_drv;
- 
- #define IRDMA_IRQ_NAME_STR_LEN (64)
- 
-+#define IRDMA_NUM_AEQ_MSIX	1
-+#define IRDMA_MIN_MSIX		2
-+
- enum init_completion_state {
- 	INVALID_STATE = 0,
- 	INITIAL_STATE,
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index 1e23aec2634f..7aa1c2e4732b 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -98,8 +98,6 @@
- #define ICE_MIN_MSIX		(ICE_MIN_LAN_TXRX_MSIX + ICE_MIN_LAN_OICR_MSIX)
- #define ICE_MAX_MSIX		256
- #define ICE_FDIR_MSIX		2
--#define ICE_RDMA_NUM_AEQ_MSIX	4
--#define ICE_MIN_RDMA_MSIX	2
- #define ICE_ESWITCH_MSIX	1
- #define ICE_NO_VSI		0xffff
- #define ICE_VSI_MAP_CONTIG	0
-diff --git a/drivers/net/ethernet/intel/ice/ice_idc.c b/drivers/net/ethernet/intel/ice/ice_idc.c
-index 145b27f2a4ce..bab3e81cad5d 100644
---- a/drivers/net/ethernet/intel/ice/ice_idc.c
-+++ b/drivers/net/ethernet/intel/ice/ice_idc.c
-@@ -228,61 +228,34 @@ void ice_get_qos_params(struct ice_pf *pf, struct iidc_qos_params *qos)
- }
- EXPORT_SYMBOL_GPL(ice_get_qos_params);
- 
--/**
-- * ice_alloc_rdma_qvectors - Allocate vector resources for RDMA driver
-- * @pf: board private structure to initialize
-- */
--static int ice_alloc_rdma_qvectors(struct ice_pf *pf)
-+int ice_alloc_rdma_qvector(struct ice_pf *pf, struct msix_entry *entry)
- {
--	if (ice_is_rdma_ena(pf)) {
--		int i;
--
--		pf->msix_entries = kcalloc(pf->num_rdma_msix,
--					   sizeof(*pf->msix_entries),
--						  GFP_KERNEL);
--		if (!pf->msix_entries)
--			return -ENOMEM;
-+	struct msi_map map = ice_alloc_irq(pf, true);
- 
--		/* RDMA is the only user of pf->msix_entries array */
--		pf->rdma_base_vector = 0;
--
--		for (i = 0; i < pf->num_rdma_msix; i++) {
--			struct msix_entry *entry = &pf->msix_entries[i];
--			struct msi_map map;
-+	if (map.index < 0)
-+		return -ENOMEM;
- 
--			map = ice_alloc_irq(pf, false);
--			if (map.index < 0)
--				break;
-+	entry->entry = map.index;
-+	entry->vector = map.virq;
- 
--			entry->entry = map.index;
--			entry->vector = map.virq;
--		}
--	}
  	return 0;
  }
-+EXPORT_SYMBOL_GPL(ice_alloc_rdma_qvector);
- 
- /**
-  * ice_free_rdma_qvector - free vector resources reserved for RDMA driver
-  * @pf: board private structure to initialize
-+ * @entry: MSI-X entry to be removed
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index 99af78daa5e2..2d0e44152480 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -834,7 +834,13 @@ bool ice_is_safe_mode(struct ice_pf *pf)
   */
--static void ice_free_rdma_qvector(struct ice_pf *pf)
-+void ice_free_rdma_qvector(struct ice_pf *pf, struct msix_entry *entry)
+ bool ice_is_rdma_ena(struct ice_pf *pf)
  {
--	int i;
--
--	if (!pf->msix_entries)
--		return;
--
--	for (i = 0; i < pf->num_rdma_msix; i++) {
--		struct msi_map map;
-+	struct msi_map map;
- 
--		map.index = pf->msix_entries[i].entry;
--		map.virq = pf->msix_entries[i].vector;
--		ice_free_irq(pf, map);
--	}
--
--	kfree(pf->msix_entries);
--	pf->msix_entries = NULL;
-+	map.index = entry->entry;
-+	map.virq = entry->vector;
-+	ice_free_irq(pf, map);
+-	return test_bit(ICE_FLAG_RDMA_ENA, pf->flags);
++	union devlink_param_value value;
++	int err;
++
++	err = devl_param_driverinit_value_get(priv_to_devlink(pf),
++					      DEVLINK_PARAM_GENERIC_ID_ENABLE_RDMA,
++					      &value);
++	return err ? test_bit(ICE_FLAG_RDMA_ENA, pf->flags) : value.vbool;
  }
-+EXPORT_SYMBOL_GPL(ice_free_rdma_qvector);
  
  /**
-  * ice_adev_release - function to be mapped to AUX dev's release op
-@@ -382,12 +355,6 @@ int ice_init_rdma(struct ice_pf *pf)
- 		return -ENOMEM;
- 	}
- 
--	/* Reserve vector resources */
--	ret = ice_alloc_rdma_qvectors(pf);
--	if (ret < 0) {
--		dev_err(dev, "failed to reserve vectors for RDMA\n");
--		goto err_reserve_rdma_qvector;
--	}
- 	pf->rdma_mode |= IIDC_RDMA_PROTOCOL_ROCEV2;
- 	ret = ice_plug_aux_dev(pf);
- 	if (ret)
-@@ -395,8 +362,6 @@ int ice_init_rdma(struct ice_pf *pf)
- 	return 0;
- 
- err_plug_aux_dev:
--	ice_free_rdma_qvector(pf);
--err_reserve_rdma_qvector:
- 	pf->adev = NULL;
- 	xa_erase(&ice_aux_id, pf->aux_idx);
- 	return ret;
-@@ -412,6 +377,5 @@ void ice_deinit_rdma(struct ice_pf *pf)
- 		return;
- 
- 	ice_unplug_aux_dev(pf);
--	ice_free_rdma_qvector(pf);
- 	xa_erase(&ice_aux_id, pf->aux_idx);
- }
-diff --git a/include/linux/net/intel/iidc.h b/include/linux/net/intel/iidc.h
-index 1c1332e4df26..13274c3def66 100644
---- a/include/linux/net/intel/iidc.h
-+++ b/include/linux/net/intel/iidc.h
-@@ -78,6 +78,8 @@ int ice_del_rdma_qset(struct ice_pf *pf, struct iidc_rdma_qset_params *qset);
- int ice_rdma_request_reset(struct ice_pf *pf, enum iidc_reset_type reset_type);
- int ice_rdma_update_vsi_filter(struct ice_pf *pf, u16 vsi_id, bool enable);
- void ice_get_qos_params(struct ice_pf *pf, struct iidc_qos_params *qos);
-+int ice_alloc_rdma_qvector(struct ice_pf *pf, struct msix_entry *entry);
-+void ice_free_rdma_qvector(struct ice_pf *pf, struct msix_entry *entry);
- 
- /* Structure representing auxiliary driver tailored information about the core
-  * PCI dev, each auxiliary driver using the IIDC interface will have an
 -- 
 2.42.0
 
