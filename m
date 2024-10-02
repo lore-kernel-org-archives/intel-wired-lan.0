@@ -4,116 +4,114 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E8B41CF6D2D
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  2 Oct 2024 15:11:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 76235CF6D3B
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  2 Oct 2024 17:02:38 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id A813F40606;
-	Wed,  2 Oct 2024 15:11:26 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 1F62E4103E;
+	Wed,  2 Oct 2024 17:02:38 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ZZDDZdFa1Xxu; Wed,  2 Oct 2024 15:11:25 +0000 (UTC)
+ id vxK8cu51xcrK; Wed,  2 Oct 2024 17:02:37 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org A144F4102C
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org DE53A4105C
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1727881885;
-	bh=94naYpv079to4aDULVCz9OCsch+/fu1zXqCOaX8AqZQ=;
-	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
+	s=default; t=1727888556;
+	bh=j3CAetgPIchZCXGcR59D8f6NwNxq3FYMeL7IhO3SN+4=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=ZuQru4Lk9L/uoTqZ1IfTeZJ9Tw/1lhz0Kz275pWgk5SpMNjtz5i9lXhwTw0br0b5D
-	 5hr/EzrGMCCDgWtA7mBc0B8xjFLc3QaPeGb0EAqJqHO9eD5Hd5+ztkPk1zMcPiGojp
-	 rN5Rc/28kBUVfoodaM8eivrfosqDRFAsCd+Gvs1ZkTAYB/24QQXxgEbCIWvrIexgGh
-	 I3YSNWT85svxW5o/I+61E0JuPqRqO9p9qca0gVWocOHwDk8wB1kECywdup/objuohy
-	 bUg6JKQKU4ZqmcyTbZigjJvDnlLMngNJd3P2bsYITPkzvuuHPcsg+sjK7iHEBnJ6u8
-	 yaBO+6ciHZH9A==
+	b=JKObTrAprSINB9FhfAOMwbqMhcAWIHXoGarXv47Q/yvWjGO1ZsM14LN2Nf+JCKtRS
+	 yXxecDo5MnpQHEupGQESerkwHf5Ho/GjGkjaREsToEidgsyY0iuVLzNSw5JYiId+Qk
+	 ciwaKKLm0pDgCnEppWE47VBLfNMXhSQihD3Ks7bWRqVlXcLO+vfnocku+xfLgJh9Ky
+	 vInVZ34esIxpjtmbwpSYt+UDmJRujobY00u7CIJGvbUx3VGsHdqWioD/yzrkTVJLkP
+	 KtR6h4qwEMyY8GVukut5NDYaJwdDr7t74oY0Ec0Zgixvxvwj5PUHGtrkdfdo4A1OQF
+	 m0rJGBbUE12ZQ==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id A144F4102C;
-	Wed,  2 Oct 2024 15:11:25 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id C040E1BF2C8
- for <intel-wired-lan@lists.osuosl.org>; Wed,  2 Oct 2024 02:34:48 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id DE53A4105C;
+	Wed,  2 Oct 2024 17:02:36 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 824591BF422
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  2 Oct 2024 17:02:35 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id BB7AA6077E
- for <intel-wired-lan@lists.osuosl.org>; Wed,  2 Oct 2024 02:34:48 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 6F1D1401F7
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  2 Oct 2024 17:02:35 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Z6o8nyC-DRI5 for <intel-wired-lan@lists.osuosl.org>;
- Wed,  2 Oct 2024 02:34:48 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id q2iKj0Qx5_3c for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  2 Oct 2024 17:02:34 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2607:f8b0:4864:20::643; helo=mail-pl1-x643.google.com;
- envelope-from=yunshenglin0825@gmail.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org F3CB260739
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org F3CB260739
-Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com
- [IPv6:2607:f8b0:4864:20::643])
- by smtp3.osuosl.org (Postfix) with ESMTPS id F3CB260739
- for <intel-wired-lan@lists.osuosl.org>; Wed,  2 Oct 2024 02:34:47 +0000 (UTC)
-Received: by mail-pl1-x643.google.com with SMTP id
- d9443c01a7336-20ba9f3824fso13768915ad.0
- for <intel-wired-lan@lists.osuosl.org>; Tue, 01 Oct 2024 19:34:47 -0700 (PDT)
+ client-ip=2607:f8b0:4864:20::431; helo=mail-pf1-x431.google.com;
+ envelope-from=stfomichev@gmail.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 4E303401B8
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4E303401B8
+Received: from mail-pf1-x431.google.com (mail-pf1-x431.google.com
+ [IPv6:2607:f8b0:4864:20::431])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 4E303401B8
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  2 Oct 2024 17:02:33 +0000 (UTC)
+Received: by mail-pf1-x431.google.com with SMTP id
+ d2e1a72fcca58-717934728adso60771b3a.2
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 02 Oct 2024 10:02:33 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20230601; t=1727836487; x=1728441287;
- h=content-transfer-encoding:in-reply-to:from:content-language
- :references:cc:to:subject:user-agent:mime-version:date:message-id
+ d=1e100.net; s=20230601; t=1727888553; x=1728493353;
+ h=in-reply-to:content-transfer-encoding:content-disposition
+ :mime-version:references:message-id:subject:cc:to:from:date
  :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
- bh=94naYpv079to4aDULVCz9OCsch+/fu1zXqCOaX8AqZQ=;
- b=dhMyGVWpM5NzruokV/wsfwbOtAg2qF1oncMhg0TZNrHO3Z8/l8tYpSF1ejL+7tmiRJ
- C3BHYqL54VBXxiApWHEmCTuKus9JlM8/7pRtyT9xOmCiPKBMnF2gAuEZH2noeqeWaPDT
- 7qc3nGHgbNeCK6vC4xteO+M97+qgQo4K5KPuv32Jhg9hn/CCXkXKsJ/qAc7navrwzkeg
- bC6LXY7q+WYdnlif/+cLlYZD+Up92MSKC0fB60b/P3UGiznJKCaHtDQ4JGWRPoo+zide
- CHBaFi62y9K6MKqdx0N6zPGX7flw2I1klfdiF7QzrRi3lLI/HyDR/tp+nrwLfUu/pkAo
- wJhw==
+ bh=j3CAetgPIchZCXGcR59D8f6NwNxq3FYMeL7IhO3SN+4=;
+ b=uIMcFS1EGa9hHrktx0ZLPGxh+Ko9xZOiFtMGqi6nHnn+aLEMZO54FYq9ZVLU9R32o4
+ 0WvTGS+mOKPvew3EnJA7rPyYu/7yxK+gDyntYwHN+5tq7L9iyngVDOwWWAF3UBtLHfCu
+ ml0AnTuhekwkiaJZFG2cpQexRZZYf8PxH2kc+SYp4pXsIvMjxuLaCARiWpKStZVgTRa2
+ 1bQpdK8TqbHYj0ZP6NTJTWD44UrW+k3xuz3UPV72my9O9TnL74CvhZCZdsvdijI/bLCA
+ 0X5UBeg0+xuA/ByVGXlEk1mlWf472+vfbVjcPg4W8LG/jDRJQSGE93OxP4anlnGR4tMn
+ ZGxQ==
 X-Forwarded-Encrypted: i=1;
- AJvYcCWo3bgWtRTIb2UyseLkJHJdHkR6B+20XzicCA14JLRZewFgljTuh1ELAxj0bx/eNAcTnHvHx1vj5m94Rr7DkbI=@lists.osuosl.org
-X-Gm-Message-State: AOJu0Yz4lJXo1djiMENvHMIj7d9wivtanF5iXzMDMTp8ysijhcgXZ3Ev
- kUmWbO4uO3Vhp+GXy5BojwNUTI/Y7SJGEGFpv1DyOQ5MP3sKGQqP
-X-Google-Smtp-Source: AGHT+IF9UFJBsbcmQi++iX6HKeBG+ku6eNZRFQc3F4zkIg3OMASXuELxeSEfBVyfvWUc3NyPSynvqg==
-X-Received: by 2002:a17:902:e844:b0:20b:b132:4df9 with SMTP id
- d9443c01a7336-20bc5a01fa5mr17029495ad.34.1727836487138; 
- Tue, 01 Oct 2024 19:34:47 -0700 (PDT)
-Received: from ?IPV6:2409:8a55:301b:e120:50d1:daaf:4d8b:70e8?
- ([2409:8a55:301b:e120:50d1:daaf:4d8b:70e8])
+ AJvYcCVDwWfiyMz+wWv1IEso1DxGHYD21/2OiCi1py8VLUYxTW+wip2QJBrZYDWfSJQO2j4y6tLNCplqR1JZ7t/sZ4k=@lists.osuosl.org
+X-Gm-Message-State: AOJu0Yx5pJQlMordueEuuCmSLNlnFp9tEhY9HttYlj6wOugspMMHpzeF
+ TxB2Ydv+jhgMLZ31bJfAkY3j4w9IhMP3jVLRicU3McN5UYrIuHI=
+X-Google-Smtp-Source: AGHT+IGp5S9qADB+5Pu5rzmzU8tU0hkVADw7MBH03DAjOoup+W+fr8dADId0yHouk9LY1IerDa/fzA==
+X-Received: by 2002:a05:6a00:807:b0:705:a13b:e740 with SMTP id
+ d2e1a72fcca58-71dc5d6a157mr5638461b3a.19.1727888552645; 
+ Wed, 02 Oct 2024 10:02:32 -0700 (PDT)
+Received: from localhost ([2601:646:9e00:f56e:123b:cea3:439a:b3e3])
  by smtp.gmail.com with ESMTPSA id
- d9443c01a7336-20b5b167128sm58750135ad.283.2024.10.01.19.34.39
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Tue, 01 Oct 2024 19:34:46 -0700 (PDT)
-Message-ID: <33f23809-abec-4d39-ab80-839dc525a2e6@gmail.com>
-Date: Wed, 2 Oct 2024 10:34:34 +0800
+ d2e1a72fcca58-71b26498b51sm10383673b3a.14.2024.10.02.10.02.31
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Wed, 02 Oct 2024 10:02:32 -0700 (PDT)
+Date: Wed, 2 Oct 2024 10:02:31 -0700
+From: Stanislav Fomichev <stfomichev@gmail.com>
+To: Toke =?utf-8?Q?H=C3=B8iland-J=C3=B8rgensen?= <toke@redhat.com>
+Message-ID: <Zv18pxsiTGTZSTyO@mini-arch>
+References: <87wmiysi37.fsf@toke.dk> <D4GBY7CHJNJ6.3O18I5W1FTPKR@bobby>
+ <87ldzds8bp.fsf@toke.dk> <D4H5CAN4O95E.3KF8LAH75FYD4@bobby>
+ <ZvbKDT-2xqx2unrx@lore-rh-laptop> <871q11s91e.fsf@toke.dk>
+ <ZvqQOpqnK9hBmXNn@lore-desk> <D4KJ7DUXJQC5.2UFST9L3CUOH7@bobby>
+ <ZvwNQqN4gez1Ksfn@lore-desk> <87zfnnq2hs.fsf@toke.dk>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-To: Paolo Abeni <pabeni@redhat.com>, Yunsheng Lin <linyunsheng@huawei.com>,
- davem@davemloft.net, kuba@kernel.org
-References: <20240925075707.3970187-1-linyunsheng@huawei.com>
- <20240925075707.3970187-3-linyunsheng@huawei.com>
- <4968c2ec-5584-4a98-9782-143605117315@redhat.com>
-Content-Language: en-US
-From: Yunsheng Lin <yunshenglin0825@gmail.com>
-In-Reply-To: <4968c2ec-5584-4a98-9782-143605117315@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-Mailman-Approved-At: Wed, 02 Oct 2024 15:11:23 +0000
+In-Reply-To: <87zfnnq2hs.fsf@toke.dk>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20230601; t=1727836487; x=1728441287; darn=lists.osuosl.org;
- h=content-transfer-encoding:in-reply-to:from:content-language
- :references:cc:to:subject:user-agent:mime-version:date:message-id
- :from:to:cc:subject:date:message-id:reply-to;
- bh=94naYpv079to4aDULVCz9OCsch+/fu1zXqCOaX8AqZQ=;
- b=Oru3o6gIvfqSX4liGQ81QU2TpgpoE+khB6RB6FFQz81sv1WXjPeDmOn2yeOrt1+Nv/
- bNuVULD68FHZMMrsMZlJVxFWRo7pU35D4h68bBT3VmN0Zy0wG52KBlrKTWdDIJ8a+FsT
- BtoFLzQSHXf2bj8+N7f8gl53rl4EpCIeOMmJwsS7s2ZoJWorv+fhUF4SgT2/cZehkUms
- LR4q/GTUiypERO397qLR9JXekTJk+8W2n208+KPHhzLdP+Bmg3PEFmP+bfgX5sVuPfQr
- 6DtT+3qx7PaWTrOzt53yzqUYlFyoSTY6BLF4XNOYB4nL4Ce6jzLStgHy+mvAEJ3rC6/Z
- m4vA==
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ d=gmail.com; s=20230601; t=1727888553; x=1728493353; darn=lists.osuosl.org;
+ h=in-reply-to:content-transfer-encoding:content-disposition
+ :mime-version:references:message-id:subject:cc:to:from:date:from:to
+ :cc:subject:date:message-id:reply-to;
+ bh=j3CAetgPIchZCXGcR59D8f6NwNxq3FYMeL7IhO3SN+4=;
+ b=ku6RoYYNGHX0ekx9eQH8ALiEGyTH5bx9WQw58cNWONU3e9nJ2PNJM2yGheyjpI51zs
+ 9tpx/9q0ZACOgv4fe44N1giiMaaoSd3RxrOkId3XHP6CUV7b582/5/5Sh9V6jh/Y3J4g
+ fFcd3bsuEckp0BEEXSD7BILyHKXU+l7SgqUBJnQYsef7CKvsyvilhfdzTUDRY3gJKe2d
+ FZvsS2+RWi4n2PmQ5LRT2P2bSjwZv2yY68O+0AAU+6BFMpUFgx3CfyKkKZtGjl09OjAO
+ BeiYK72mwJVrxpb5v+1srZf8uaHGPMzFfxTbheZO4Q2l5Nc0GOoQguGghfRoiseQDMVb
+ hpsQ==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=gmail.com
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
- header.a=rsa-sha256 header.s=20230601 header.b=Oru3o6gI
-Subject: Re: [Intel-wired-lan] [PATCH net v2 2/2] page_pool: fix IOMMU crash
- when driver has already unbound
+ header.a=rsa-sha256 header.s=20230601 header.b=ku6RoYYN
+Subject: Re: [Intel-wired-lan] [RFC bpf-next 0/4] Add XDP rx hw hints
+ support performing XDP_REDIRECT
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -126,92 +124,108 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: imx@lists.linux.dev, Alexei Starovoitov <ast@kernel.org>,
- Alexander Duyck <alexander.duyck@gmail.com>, linux-mm@kvack.org,
- Eric Dumazet <edumazet@google.com>, Tony Nguyen <anthony.l.nguyen@intel.com>,
- Shenwei Wang <shenwei.wang@nxp.com>, Ryder Lee <ryder.lee@mediatek.com>,
- Daniel Borkmann <daniel@iogearbox.net>, linux-rdma@vger.kernel.org,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- John Fastabend <john.fastabend@gmail.com>, IOMMU <iommu@lists.linux.dev>,
- liuyonglong@huawei.com, Clark Wang <xiaoning.wang@nxp.com>,
- zhangkun09@huawei.com, fanghaiqing@huawei.com,
- Lorenzo Bianconi <lorenzo@kernel.org>,
- Jesper Dangaard Brouer <hawk@kernel.org>, Kalle Valo <kvalo@kernel.org>,
- Sean Wang <sean.wang@mediatek.com>, Wei Fang <wei.fang@nxp.com>,
- Matthias Brugger <matthias.bgg@gmail.com>, intel-wired-lan@lists.osuosl.org,
- bpf@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
- Leon Romanovsky <leon@kernel.org>, Saeed Mahameed <saeedm@nvidia.com>,
- Ilias Apalodimas <ilias.apalodimas@linaro.org>, linux-wireless@vger.kernel.org,
- linux-kernel@vger.kernel.org, Tariq Toukan <tariqt@nvidia.com>,
- Alexander Lobakin <aleksander.lobakin@intel.com>, netdev@vger.kernel.org,
- linux-mediatek@lists.infradead.org, Andrew Morton <akpm@linux-foundation.org>,
- Shayne Chen <shayne.chen@mediatek.com>, Robin Murphy <robin.murphy@arm.com>,
- Felix Fietkau <nbd@nbd.name>
+Cc: mst@redhat.com, jasowang@redhat.com, ast@kernel.org, edumazet@google.com,
+ anthony.l.nguyen@intel.com, Yan Zhai <yan@cloudflare.com>,
+ Jakub Sitnicki <jakub@cloudflare.com>, daniel@iogearbox.net,
+ kernel-team <kernel-team@cloudflare.com>, przemyslaw.kitszel@intel.com,
+ john.fastabend@gmail.com, sdf@fomichev.me, intel-wired-lan@lists.osuosl.org,
+ kuba@kernel.org, pabeni@redhat.com, Lorenzo Bianconi <lorenzo@kernel.org>,
+ Jesper Dangaard Brouer <hawk@kernel.org>, alexandre.torgue@foss.st.com,
+ Arthur Fabre <afabre@cloudflare.com>, netdev@vger.kernel.org,
+ tariqt@nvidia.com, Alexander Lobakin <aleksander.lobakin@intel.com>,
+ mcoquelin.stm32@gmail.com, bpf@vger.kernel.org, saeedm@nvidia.com,
+ davem@davemloft.net
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On 10/1/2024 9:32 PM, Paolo Abeni wrote:
-> On 9/25/24 09:57, Yunsheng Lin wrote:
->> Networking driver with page_pool support may hand over page
->> still with dma mapping to network stack and try to reuse that
->> page after network stack is done with it and passes it back
->> to page_pool to avoid the penalty of dma mapping/unmapping.
->> With all the caching in the network stack, some pages may be
->> held in the network stack without returning to the page_pool
->> soon enough, and with VF disable causing the driver unbound,
->> the page_pool does not stop the driver from doing it's
->> unbounding work, instead page_pool uses workqueue to check
->> if there is some pages coming back from the network stack
->> periodically, if there is any, it will do the dma unmmapping
->> related cleanup work.
->>
->> As mentioned in [1], attempting DMA unmaps after the driver
->> has already unbound may leak resources or at worst corrupt
->> memory. Fundamentally, the page pool code cannot allow DMA
->> mappings to outlive the driver they belong to.
->>
->> Currently it seems there are at least two cases that the page
->> is not released fast enough causing dma unmmapping done after
->> driver has already unbound:
->> 1. ipv4 packet defragmentation timeout: this seems to cause
->>     delay up to 30 secs.
->> 2. skb_defer_free_flush(): this may cause infinite delay if
->>     there is no triggering for net_rx_action().
->>
->> In order not to do the dma unmmapping after driver has already
->> unbound and stall the unloading of the networking driver, add
->> the pool->items array to record all the pages including the ones
->> which are handed over to network stack, so the page_pool can
->> do the dma unmmapping for those pages when page_pool_destroy()
->> is called. As the pool->items need to be large enough to avoid
->> performance degradation, add a 'item_full' stat to indicate the
->> allocation failure due to unavailability of pool->items.
+On 10/01, Toke Høiland-Jørgensen wrote:
+> Lorenzo Bianconi <lorenzo@kernel.org> writes:
 > 
-> This looks really invasive, with room for potentially large performance 
-> regressions or worse. At very least it does not look suitable for net.
-
-I am open to targetting this to net-next, it can be backported when some
-testing is done through one or two kernel versions and there is still
-some interest to backport it too.
-
-Or if there is some non-invasive way to fix this.
-
+> >> On Mon Sep 30, 2024 at 1:49 PM CEST, Lorenzo Bianconi wrote:
+> >> > > Lorenzo Bianconi <lorenzo@kernel.org> writes:
+> >> > > 
+> >> > > >> > We could combine such a registration API with your header format, so
+> >> > > >> > that the registration just becomes a way of allocating one of the keys
+> >> > > >> > from 0-63 (and the registry just becomes a global copy of the header).
+> >> > > >> > This would basically amount to moving the "service config file" into the
+> >> > > >> > kernel, since that seems to be the only common denominator we can rely
+> >> > > >> > on between BPF applications (as all attempts to write a common daemon
+> >> > > >> > for BPF management have shown).
+> >> > > >> 
+> >> > > >> That sounds reasonable. And I guess we'd have set() check the global
+> >> > > >> registry to enforce that the key has been registered beforehand?
+> >> > > >> 
+> >> > > >> >
+> >> > > >> > -Toke
+> >> > > >> 
+> >> > > >> Thanks for all the feedback!
+> >> > > >
+> >> > > > I like this 'fast' KV approach but I guess we should really evaluate its
+> >> > > > impact on performances (especially for xdp) since, based on the kfunc calls
+> >> > > > order in the ebpf program, we can have one or multiple memmove/memcpy for
+> >> > > > each packet, right?
+> >> > > 
+> >> > > Yes, with Arthur's scheme, performance will be ordering dependent. Using
+> >> > > a global registry for offsets would sidestep this, but have the
+> >> > > synchronisation issues we discussed up-thread. So on balance, I think
+> >> > > the memmove() suggestion will probably lead to the least pain.
+> >> > > 
+> >> > > For the HW metadata we could sidestep this by always having a fixed
+> >> > > struct for it (but using the same set/get() API with reserved keys). The
+> >> > > only drawback of doing that is that we statically reserve a bit of
+> >> > > space, but I'm not sure that is such a big issue in practice (at least
+> >> > > not until this becomes to popular that the space starts to be contended;
+> >> > > but surely 256 bytes ought to be enough for everybody, right? :)).
+> >> >
+> >> > I am fine with the proposed approach, but I think we need to verify what is the
+> >> > impact on performances (in the worst case??)
+> >> 
+> >> If drivers are responsible for populating the hardware metadata before
+> >> XDP, we could make sure drivers set the fields in order to avoid any
+> >> memove() (and maybe even provide a helper to ensure this?).
+> >
+> > nope, since the current APIs introduced by Stanislav are consuming NIC
+> > metadata in kfuncs (mainly for af_xdp) and, according to my understanding,
+> > we want to add a kfunc to store the info for each NIC metadata (e.g rx-hash,
+> > timestamping, ..) into the packet (this is what Toke is proposing, right?).
+> > In this case kfunc calling order makes a difference.
+> > We can think even to add single kfunc to store all the info for all the NIC
+> > metadata (maybe via a helping struct) but it seems not scalable to me and we
+> > are losing kfunc versatility.
 > 
-> Is the problem only tied to VFs drivers? It's a pity all the page_pool 
-> users will have to pay a bill for it...
-
-I am afraid it is not only tied to VFs drivers, as:
-attempting DMA unmaps after the driver has already unbound may leak
-resources or at worst corrupt memory.
-
-Unloading PFs driver might cause the above problems too, I guess the
-probability of crashing is low for the PF as PF can not be disable
-unless it can be hot-unplug'ed, but the probability of leaking resources
-behind the dma mapping might be similar.
-
+> Yes, I agree we should have separate kfuncs for each metadata field.
+> Which means it makes a lot of sense to just use the same setter API that
+> we use for the user-registered metadata fields, but using reserved keys.
+> So something like:
 > 
-> /P
+> #define BPF_METADATA_HW_HASH      BIT(60)
+> #define BPF_METADATA_HW_TIMESTAMP BIT(61)
+> #define BPF_METADATA_HW_VLAN      BIT(62)
+> #define BPF_METADATA_RESERVED (0xffff << 48)
+> 
+> bpf_packet_metadata_set(pkt, BPF_METADATA_HW_HASH, hash_value);
 > 
 > 
+> As for the internal representation, we can just have the kfunc do
+> something like:
+> 
+> int bpf_packet_metadata_set(field_id, value) {
+>   switch(field_id) {
+>     case BPF_METADATA_HW_HASH:
+>       pkt->xdp_hw_meta.hash = value;
+>       break;
+>     [...]
+>     default:
+>       /* do the key packing thing */
+>   }
+> }
+> 
+> 
+> that way the order of setting the HW fields doesn't matter, only the
+> user-defined metadata.
 
+Can you expand on why we need the flexibility of picking the metadata fields
+here? Presumably we are talking about the use-cases where the XDP program
+is doing redirect/pass and it doesn't really know who's the final
+consumer is (might be another xdp program or might be the xdp->skb
+kernel case), so the only sensible option here seems to be store everything?
