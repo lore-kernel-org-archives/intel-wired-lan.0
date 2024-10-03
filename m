@@ -4,100 +4,100 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 36449CF8555
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  3 Oct 2024 03:14:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1DD67CF8558
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  3 Oct 2024 03:16:16 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id D1904401D8;
-	Thu,  3 Oct 2024 03:14:01 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id CAD27401D8;
+	Thu,  3 Oct 2024 03:16:15 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id MvgkZODjbw_5; Thu,  3 Oct 2024 03:14:00 +0000 (UTC)
+ id 4c5Xm3RzxCZv; Thu,  3 Oct 2024 03:16:14 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B27264023A
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 878F34023A
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1727925240;
-	bh=6Q/V/FYeYBqbDmFh06aqi2rG5Bx4oRN6BWp1UP6ZkqQ=;
+	s=default; t=1727925374;
+	bh=eq9WxDK1T8EdZdhUMj/jjodnV5y7BrJQC++7NR2qhyw=;
 	h=References:In-Reply-To:From:Date:To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=Xh7hQttTO3OB27zYqaodkNc+ynRGzB/u+HT5v935uzSw3mf1WEQOiCbgXIXScLjxd
-	 IIiF6BUMsmKzmV0cK6JXG3dBzcPsTK9BDHae1AtOJppRpTR5oPQMw7OyfDHljMIKjH
-	 8ijkVXvqS/JogNHhm+IowpSY7eE4DP6gHj6bDfGghATC9hujiw1Q0TXGLz8NMgEAPu
-	 531SEnh7N9aROYUxTp/MHWoJNo607LHwp3Fcc0TFYafSRDg0Vr7GtrUB68FZDrdpV2
-	 QAkq5Orf5YfBu5Z662+VrjbW5W/ytKIhRQXvCHIV6o6/WgBfpjX7SdmA3n58ZzrqC9
-	 UZGv1lwFLf8dQ==
+	b=h8tQhLfmb45Jq7MWXu1Z/4S9T1G3u4o1u5TfUomYJJgiALbWAnYaZSoNIvfLUuGxw
+	 bye+aZIFqNm5I+LeWUpiHs0nwbTh4CiTdV5odaF8WmAmyp00PoCOBHRZShSppzZR3j
+	 tZs/HRQM5IEvj6lhlw38p6szgq0QekxSYCfh0LlaUH+jeqYMHfDxrwpYvuzWSb6QZX
+	 EL0xTlwjPk9jI/skS+udsM1Zo1jgyeExqqWIiOM3nTCysQ2UmnldXOfP5Gw2eO+uLA
+	 NeZAJFbbFp3aBjMfBAaq0um+kjqQ5+0piewQYyzjNr/Gb50MlmggRwH3uba/maf91b
+	 dtmdl2vNENy+w==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id B27264023A;
-	Thu,  3 Oct 2024 03:14:00 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 878F34023A;
+	Thu,  3 Oct 2024 03:16:14 +0000 (UTC)
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id C65651BF28D
- for <intel-wired-lan@lists.osuosl.org>; Thu,  3 Oct 2024 03:13:58 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id C21111BF28D
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  3 Oct 2024 03:16:12 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id BFC7D401D8
- for <intel-wired-lan@lists.osuosl.org>; Thu,  3 Oct 2024 03:13:58 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id AFBA24023A
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  3 Oct 2024 03:16:12 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id nBLq1sXefi66 for <intel-wired-lan@lists.osuosl.org>;
- Thu,  3 Oct 2024 03:13:57 +0000 (UTC)
+ id 8DRmQc3GIuWZ for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  3 Oct 2024 03:16:11 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom;
  client-ip=2a00:1450:4864:20::132; helo=mail-lf1-x132.google.com;
  envelope-from=kalesh-anakkur.purayil@broadcom.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 449F24036E
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 449F24036E
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 37AD6401D8
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 37AD6401D8
 Received: from mail-lf1-x132.google.com (mail-lf1-x132.google.com
  [IPv6:2a00:1450:4864:20::132])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 449F24036E
- for <intel-wired-lan@lists.osuosl.org>; Thu,  3 Oct 2024 03:13:56 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 37AD6401D8
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  3 Oct 2024 03:16:11 +0000 (UTC)
 Received: by mail-lf1-x132.google.com with SMTP id
- 2adb3069b0e04-5398e33155fso513425e87.3
- for <intel-wired-lan@lists.osuosl.org>; Wed, 02 Oct 2024 20:13:56 -0700 (PDT)
+ 2adb3069b0e04-539908f238fso475603e87.2
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 02 Oct 2024 20:16:10 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20230601; t=1727925235; x=1728530035;
+ d=1e100.net; s=20230601; t=1727925369; x=1728530169;
  h=cc:to:subject:message-id:date:from:in-reply-to:references
  :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
  :reply-to;
- bh=6Q/V/FYeYBqbDmFh06aqi2rG5Bx4oRN6BWp1UP6ZkqQ=;
- b=ubcGMW838X4Id1Iyk4px/yOdyyz+fioNDKpZzEy/WCcj+xmbeWEJVGM7VMW+0L/sco
- a1Ko+DD3ylnqRQ3M+3Rh/5kQyXdYct9hRnNmWwmuzmGUSdpfM10ENfA3VdELt/4othMG
- Wc25eT2jv3w9gq/G4mVIkIOqPK1i7450h4N5KUb58Whhs5oJI6SQUEvOpRy2a7XipJc4
- xL8d5cm2wrEaPdowd7HWSMx7+qKnW+4jhn/fPklAT4c9cAvPo/xufxPfZBpn/SQA7C21
- Pwnbyqshc6o6wFVMYOrM287iM3kWX9u3IHLmokBrJMAKlyKmLmzGhvx2Fmi3KD1+zxsx
- Labg==
-X-Gm-Message-State: AOJu0YyT/sjy5qPv2m17qfLUmj9MaAsN028dq3giIW5ua5rhTKdbGerz
- l8Or2z5+q6CFNoYEKxsNTwwsZNkQNZdvc5Rvg2/s9qPbX/CoLPW04/kpjC5iElEmhdjBu+Laahy
- 9ixORrsv8mfwd0IOmRwBG+SEae+/graia8Zsh
-X-Google-Smtp-Source: AGHT+IFsDIEa6b1kpLCtg+SjFxqKgeTDehldgZSoZoD/3l3UxDUajBUqRQ+tEZSCotBSJhKoQWkbcYzZDvFD+YQvuUI=
-X-Received: by 2002:a05:6512:694:b0:539:8d46:4746 with SMTP id
- 2adb3069b0e04-539a07aa3b0mr2590601e87.60.1727925234751; Wed, 02 Oct 2024
- 20:13:54 -0700 (PDT)
+ bh=eq9WxDK1T8EdZdhUMj/jjodnV5y7BrJQC++7NR2qhyw=;
+ b=bo8POpHq1Mg3uVk8KTqu/7IjnXbf+OkMgk8EI7EW9KbyiPBumCxctH8tj4YIZDkodx
+ 2kLau1tL2t63E0e6Fcc3tRn5Y8ubBVQX7upmkV1xXGmCoSV5sCdV94DQYx4j4IIpDbNg
+ zGXJAqEKPPGJe9v7sKb7w0u1YeFHHDPOG92DZUY5mbZZLvaakYKbyhy53mVcLfswWU8O
+ iHzuzSCD7uBe2msqBGhIRgx+OSIIPCWxGJLSOpzRN+DM8vR7f6ss4TKDCFOJu/1RhazN
+ TRjuL6G6RkXXI+Sm7XCz/HR7uSWGlqBttmzVO/LQNfBhaAdfFhJ4q4D+vAiHxLRW1Lff
+ Y2RA==
+X-Gm-Message-State: AOJu0Yxk+lZduYrcKinCDkJtMOJS7RsQcuQQ4uTjO3glwP2Md2lBLX/U
+ pBUz6gG2rgTleCXBBJFN59CylWGH0IHwWaUTjKDpXBwa+EyhLg0Cu04Nu/ktCzEsxZdpbmniJjh
+ Cq/FPxiEUQhX5sYHrTzGOLjVM83Isxp9Vp0ED
+X-Google-Smtp-Source: AGHT+IGNw0inkUzPNBHGJgwWYa9d40t9oWi6kFAsAZhocToJlEg27ljTUD8AkJ5cAgGZtbMJHel9BeFFINp8PDVTNhw=
+X-Received: by 2002:a05:6512:1189:b0:536:54fd:275b with SMTP id
+ 2adb3069b0e04-539a07a8ccdmr2927468e87.54.1727925368853; Wed, 02 Oct 2024
+ 20:16:08 -0700 (PDT)
 MIME-Version: 1.0
 References: <20241002115304.15127-6-przemyslaw.kitszel@intel.com>
- <20241002115304.15127-8-przemyslaw.kitszel@intel.com>
-In-Reply-To: <20241002115304.15127-8-przemyslaw.kitszel@intel.com>
+ <20241002115304.15127-10-przemyslaw.kitszel@intel.com>
+In-Reply-To: <20241002115304.15127-10-przemyslaw.kitszel@intel.com>
 From: Kalesh Anakkur Purayil <kalesh-anakkur.purayil@broadcom.com>
-Date: Thu, 3 Oct 2024 08:43:42 +0530
-Message-ID: <CAH-L+nOAu_FCu9HpmaDWnhE+wy2wpc6Q9izBSgv0x_Huco__cQ@mail.gmail.com>
+Date: Thu, 3 Oct 2024 08:45:56 +0530
+Message-ID: <CAH-L+nN2b8ubs5UFZUiVttc-a4+JgnWK2Qenej2v0VWB_1Hv4w@mail.gmail.com>
 To: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Content-Type: multipart/signed; protocol="application/pkcs7-signature";
- micalg=sha-256; boundary="000000000000d6cb05062389f184"
+ micalg=sha-256; boundary="000000000000d5d225062389f929"
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=broadcom.com; s=google; t=1727925235; x=1728530035; darn=lists.osuosl.org;
+ d=broadcom.com; s=google; t=1727925369; x=1728530169; darn=lists.osuosl.org;
  h=cc:to:subject:message-id:date:from:in-reply-to:references
  :mime-version:from:to:cc:subject:date:message-id:reply-to;
- bh=6Q/V/FYeYBqbDmFh06aqi2rG5Bx4oRN6BWp1UP6ZkqQ=;
- b=cDbortTrIUl/NqO3Fv5mmLlv4KIGmT/oCQT9mih8V8ux236S7ikxmpCQHmsAaPXkFk
- sdp1ygrKY0v/NPAxkfgZvr45qexT/aeWAMBekZOyHb+Q9BpId4cytBrVpQ/duCit/9Ho
- f7pL5czTynbZ+90pNgcB1+vY2tst2SX5Yt3aY=
+ bh=eq9WxDK1T8EdZdhUMj/jjodnV5y7BrJQC++7NR2qhyw=;
+ b=SLg9Zivkl/RN3wDUbT4G99+sGrNaMfm524WvsXo0ZChCwJM1NaAa7IbFL0yF8iUfGu
+ z/9NjBrDJa4rVhFqDBCE2pIX4KJCB2KxAxQpfQ9oaZqtQ9yRoqt/mJLrPnVNOYsWuBOy
+ 5cd4Ombv2fZs4rA/WSvBaU4B5IaIrbvdRWc5g=
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=broadcom.com
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (1024-bit key) header.d=broadcom.com header.i=@broadcom.com
- header.a=rsa-sha256 header.s=google header.b=cDbortTr
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next 2/4] ice: split ice_init_hw()
- out from ice_init_dev()
+ header.a=rsa-sha256 header.s=google header.b=SLg9Zivk
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next 4/4] ice: ice_probe: init
+ ice_adapter after HW init
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -116,21 +116,16 @@ Cc: Tony Nguyen <anthony.l.nguyen@intel.com>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
---000000000000d6cb05062389f184
+--000000000000d5d225062389f929
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
 On Wed, Oct 2, 2024 at 5:23=E2=80=AFPM Przemek Kitszel
 <przemyslaw.kitszel@intel.com> wrote:
 >
-> Split ice_init_hw() call out from ice_init_dev(). Such move enables
-> pulling the former to be even earlier on call path, what would enable
-> moving ice_adapter init to be between the two (in subsequent commit).
-> Such move enables ice_adapter to know about number of PFs.
->
-> Do the same for ice_deinit_hw(), so the init and deinit calls could
-> be easily mirrored.
-> Next commit will rename unrelated goto labels to unroll prefix.
+> Move ice_adapter initialization to be after HW init, so it could use HW
+> capabilities, like number of PFs. This is needed for devlink-resource
+> based RSS LUT size management for PF/VF (not in this series).
 >
 > Reviewed-by: Marcin Szycik <marcin.szycik@linux.intel.com>
 > Signed-off-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
@@ -143,7 +138,7 @@ Reviewed-by: Kalesh AP <kalesh-anakkur.purayil@broadcom.com>
 Regards,
 Kalesh A P
 
---000000000000d6cb05062389f184
+--000000000000d5d225062389f929
 Content-Type: application/pkcs7-signature; name="smime.p7s"
 Content-Transfer-Encoding: base64
 Content-Disposition: attachment; filename="smime.p7s"
@@ -215,13 +210,13 @@ a30CvRuhokNO6Jzh7ZFtjKVMzYas3oo6HXgA+slRszMu4pc+fRPO41FHjeDM76e6P5OnthhnD+NY
 x6xokUN65DN1bn2MkeNs0nQpizDqd0QxggJtMIICaQIBATBrMFsxCzAJBgNVBAYTAkJFMRkwFwYD
 VQQKExBHbG9iYWxTaWduIG52LXNhMTEwLwYDVQQDEyhHbG9iYWxTaWduIEdDQyBSMyBQZXJzb25h
 bFNpZ24gMiBDQSAyMDIwAgw3wUUJsDUiPdpordMwDQYJYIZIAWUDBAIBBQCggdQwLwYJKoZIhvcN
-AQkEMSIEIFw6UdsE6xjfdYsXsi4HGGk10beNr1vKmC2X52bxfNb1MBgGCSqGSIb3DQEJAzELBgkq
-hkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTI0MTAwMzAzMTM1NVowaQYJKoZIhvcNAQkPMVwwWjAL
+AQkEMSIEIMZNQldWPN5HeHxvDSyZMbhSjXSuXuDB8l2G76Vc3oe/MBgGCSqGSIb3DQEJAzELBgkq
+hkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTI0MTAwMzAzMTYwOVowaQYJKoZIhvcNAQkPMVwwWjAL
 BglghkgBZQMEASowCwYJYIZIAWUDBAEWMAsGCWCGSAFlAwQBAjAKBggqhkiG9w0DBzALBgkqhkiG
-9w0BAQowCwYJKoZIhvcNAQEHMAsGCWCGSAFlAwQCATANBgkqhkiG9w0BAQEFAASCAQA6S/GPxKcU
-KIZ1PCCOrXx83wvjO1YOOhK9WPisdzlZrZYazoVLkJsiVsBZ1uW1S642pOvi+iCRtf9BP4N8XpBf
-JTXIfnSYL1oJBci9Yp1EB2RtN5fzvY6CZTq8qqKsO2qY1SkJSFEjyWyOQ3EtXW1+ImC4lMbvYeyj
-phTuyDk1zDjimglri3g2JsWnZH+kHBg35YbqRYnJpB03klBOeXsvwnXIQqazUfp5+pKBpylTjw6I
-vRgM1IcexvGndE/tN1pC+HQGWUZqNn6VlaYt901TKBARWkk3BplAiKsqtgDU1MDRAWRjOEk+Wq0b
-QOxUKWK+YeSkeaplS61b1mhIgAIp
---000000000000d6cb05062389f184--
+9w0BAQowCwYJKoZIhvcNAQEHMAsGCWCGSAFlAwQCATANBgkqhkiG9w0BAQEFAASCAQBdFUdhK2jO
+i8frwslki2qGkqHuyP/ESG0J/GygtJ5AoAE9HDU9Wf/HKb0vwi+u9cUjDL64CMEWifG1/YTDlJQH
+h7KpqZ/xvhPSFhEj3Zun6hZUNnur8N91SLH56OznmW544QwH1iE6fKMfNepWliLehioS20Y2VwrO
+D8hI86e75pqQb/1VQvlKvjOBfbceJ/1FvjN3RCKBONFuI1QTs4/G4ZH0Qiiwyd7v5yJLDeSPQmAj
+qfuxlXRpPYwGaA0ZAIGfTD3YnP0kDs57kjXKT6zwrSeYBvHKvTMpdO8f2VJON4Vx5RpB8PQDVIW1
+RUoDzDuVExxf4I3esAPpMW3lhLu3
+--000000000000d5d225062389f929--
