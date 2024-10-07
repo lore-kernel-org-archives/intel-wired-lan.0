@@ -4,86 +4,108 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DA7E7CFB440
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  7 Oct 2024 10:29:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9A3D6CFB43F
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  7 Oct 2024 12:31:38 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 781A5405E1;
-	Mon,  7 Oct 2024 10:29:40 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 4EE584091E;
+	Mon,  7 Oct 2024 12:31:38 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id vQtnDL9mjPv2; Mon,  7 Oct 2024 10:29:38 +0000 (UTC)
+ id K8SgQuKkpcqe; Mon,  7 Oct 2024 12:31:36 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 7D40940578
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 0DCD040647
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1728296978;
-	bh=pMRWAsaLaqbJ1r2Kkm1LasrPoIyE2GOQXu1m+HPSAmQ=;
-	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
+	s=default; t=1728304296;
+	bh=ghMwZtaMDneSHodyZdYQuHFHRR3/IaH3buOGb+HJs9Q=;
+	h=From:Date:References:In-Reply-To:To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=1Ev4V+s5uSdJs4ypRGNrQn8nTbI4HXuOyaDTTcmRfil/mJZOIzFfxrXQIuAwUJpVa
-	 iEzVv7eX5CCNf8EL6WALGk9KM+BgXgoY/nGWqK0m9Oq8dXikmkJkdlcIl+teGsVy/A
-	 wBDtbkIm+E9mKtMDkuXRGgINIXrWFeH6dHCzTI7cwPvdWAtrcuSsPgw3gfqedZUg7S
-	 GMvMRRr4FBP/lWQyFa12z++dQQCH5R568vtt5A+U6nKCgYTlXlyTHBCSdEtCrRxwrQ
-	 YknU1+FOe/E23VO1n8dGQoqko+a5USZbrJ66LMq5JHGrq9cIMj46QJEj/LxtlthT9/
-	 RqeLucOGlw0kw==
+	b=30obnpfdRvhYsbNclneIWVVjwZMgoXr+Z8wJlwo9s6dTKQdu3nr+6+A0FVkNIoBxm
+	 cPORP9+Zx/a6pgxj9i1+LNIct+C4m08gst/1g07QSMHJ9IqCkKQQtk1O2UtyYC3Uqb
+	 VPhHQIBRYOdAOLko8GXwa+B7xXOo30pOULUZCvMjEowFSGYwX1tuHZmO25jopsNSB5
+	 SWvWPIwf+f405YCI/8P+Glhc4jxPOlFKvqA1aC6Z09XKOG8tnO+8EJAJ3ARRNnGVXs
+	 WCVIo0oh8fGGfSaQ1EHooWaFZqt9meC9KBWsJfitz03xPUIegmCeUNFYW444qfE0VU
+	 vcOK+QBVmSntA==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 7D40940578;
-	Mon,  7 Oct 2024 10:29:38 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 97B191BF2AB
- for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Oct 2024 10:29:36 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 0DCD040647;
+	Mon,  7 Oct 2024 12:31:36 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id A1B4B1BF46D
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Oct 2024 12:31:34 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 85027401F4
- for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Oct 2024 10:29:36 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 9CDCC805A8
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Oct 2024 12:31:34 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id eq_W4OcNDDD8 for <intel-wired-lan@lists.osuosl.org>;
- Mon,  7 Oct 2024 10:29:35 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=139.178.84.217;
- helo=dfw.source.kernel.org; envelope-from=frederic@kernel.org;
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id mRyb7lC6W5Jq for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  7 Oct 2024 12:31:34 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=193.142.43.55;
+ helo=galois.linutronix.de; envelope-from=kurt@linutronix.de;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 95D45401E2
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 95D45401E2
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 95D45401E2
- for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Oct 2024 10:29:35 +0000 (UTC)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by dfw.source.kernel.org (Postfix) with ESMTP id A34E35C5D52;
- Mon,  7 Oct 2024 10:29:29 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 42664C4CEC6;
- Mon,  7 Oct 2024 10:29:33 +0000 (UTC)
-Date: Mon, 7 Oct 2024 12:29:30 +0200
-From: Frederic Weisbecker <frederic@kernel.org>
-To: Tony Nguyen <anthony.l.nguyen@intel.com>
-Message-ID: <ZwO4CrZ_c92ZUseg@localhost.localdomain>
-References: <20240922222420.18009-1-frederic@kernel.org>
- <db2c96f3-c35d-42ee-a4e6-5233ccbac7bb@intel.com>
- <3ad7ab07-d91f-a3fe-4d0f-5305ae05e65a@intel.com>
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org AB2848056D
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org AB2848056D
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id AB2848056D
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Oct 2024 12:31:33 +0000 (UTC)
+From: Kurt Kanzenbach <kurt@linutronix.de>
+Date: Mon, 07 Oct 2024 14:31:24 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <3ad7ab07-d91f-a3fe-4d0f-5305ae05e65a@intel.com>
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1728296973;
- bh=j+9Acn5g80rnuNquoPdyftVcOMofnW6vI9n0nIM4bY8=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=m0gNPDHi/svdjRjAwplMy1YjZlWPTqXJnGwvRTzKeJ03qwmSl0UEAP27fbuZngDEh
- q6boMSRpZYmJAj7YJjrMCsndpdNAbHUKArNV9cdbQ3ojPZKkEQKklXn6X5xmi+bfwx
- zOq+ADmnKHyU/2iRp2u3d0ZVCXjHFfW4n1JMBNdabBvVeo0xlielBgtSSmHVwzSHXE
- d67/2nJ5bmiPqxx8MlaS7SrPPvdjtnFhKikYtmMZ2WoO22UoddQDf0EIIvyT8EKXjk
- Wjdls6d4Kx6cLtjq7ahHVHcWHnUTKPMM58LELY2h9cY2Sng+2uILTYPX5+G8zBokuG
- IKLTn6vR6Jrpg==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dmarc=pass (p=quarantine dis=none)
- header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=m0gNPDHi
-Subject: Re: [Intel-wired-lan] [PATCH] ice: Unbind the workqueue
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20241007-b4-igb_zero_copy-v7-2-23556668adc6@linutronix.de>
+References: <20241007-b4-igb_zero_copy-v7-0-23556668adc6@linutronix.de>
+In-Reply-To: <20241007-b4-igb_zero_copy-v7-0-23556668adc6@linutronix.de>
+To: Tony Nguyen <anthony.l.nguyen@intel.com>, 
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2664; i=kurt@linutronix.de;
+ h=from:subject:message-id; bh=P27UEKCtJR0md9g63pfwA7XxMrHb2hJUetl3/hadzuo=;
+ b=owEBbQKS/ZANAwAKAcGT0fKqRnOCAcsmYgBnA9SfmHq3fUFvj2DJBb7Cm4eF0/fp1NJWb1Rzb
+ ONZ7URKo22JAjMEAAEKAB0WIQS8ub+yyMN909/bWZLBk9HyqkZzggUCZwPUnwAKCRDBk9HyqkZz
+ gtrAEACZTpqev+q5mvlBTkzNaDmFgvNAJQwLDpIDG2AILQVY7oUBD75SFAuik7VyLp9fFj+GJpt
+ Qtne7tFkReZUSNZuNI5Ol3qD2q08xAuzf0EgmdCHnuLinpN80Zg7DQMkbN5ezoqRI97mLnwL/8l
+ bkhmhgHpQasC71pBVoWtIqtD+n53ApOHvSIGCRX8snz0qLfuHpdE5XYQjizA6PGSkZcqFjnxK8b
+ K2XFlceviRouhRYhaZBYsMWoEFXMgBoMssNzPRMB+Y+vLzAwPDMPDpPn185wJuFPX6bW1L5mG1L
+ MUYTemfEwrSXZ6l/fWZu/SEUNBhkwhI9MAG6bKFgeL5D1Z8NfGlHLcruUl/kKUMPeaS/Ube0dJF
+ B/ciwh6jkl0xow2nW4yhWDWsGR/a0HdXPqEoAOctTtSXlYKORY8eFFqOqoJShgp8zceU5FHG+dP
+ 0TO80NPT1ufSP8vBEaIA1W/r6BpPuQ/8VgDNKluIzgtdGsYh52+oaKIWmJtvRpoUPAXKe8Wfe7c
+ 1MqOPiKhVXKNRKhwGJ48nL/Osvox6X33YzeN4NcOJT8UXQ/sxH5ez1tlOTNEA6lnrBLzutvTMxO
+ Mjk7PnqA0J0wB5x3vTA+LnJs/LYKqi+m1cC7HclZiOLPnygDzkRC+vsIQLMUyc31tFEh+3jjncR
+ X1nOEjkPLnQsQWQ==
+X-Developer-Key: i=kurt@linutronix.de; a=openpgp;
+ fpr=BCB9BFB2C8C37DD3DFDB5992C193D1F2AA467382
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=linutronix.de; s=2020; t=1728304291;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=ghMwZtaMDneSHodyZdYQuHFHRR3/IaH3buOGb+HJs9Q=;
+ b=LPy1SnLs3WgToFhpzG8K4YpdJpBAtSgvVMgWL1NXq5SDFQJvhYswB4js2Ys8b0d7pLjrxv
+ VmNVqMncZDhxEFC7s1/ANgqb+EwkxM4NdGvok1sgOn+dR0JRNyb9cgZGRr/do3AKTDh8ZT
+ FzVg0Db5BliibhqvTlaXn80TI7RXlR+55CDPwNCbyJx4rUUzQHROfM7LB0Dwbv/yvYvwTp
+ LE5MbvrQwE0At+y6cvwk+0RXSSVX199TPpoogDFFfVDo8swjl5qqITxLYBruFuNm1NKdTP
+ ITkQdOY1d0eTC57y09M64zCWwB7KR1pYQQKJBR/5142fJpXViREsK87PQ7iaUA==
+X-Mailman-Original-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
+ d=linutronix.de; s=2020e; t=1728304291;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=ghMwZtaMDneSHodyZdYQuHFHRR3/IaH3buOGb+HJs9Q=;
+ b=Im5AlMQCz+eVAAQ4yDhC+nUhUPqEfXd/gXR4QNQL+1qUkDMfvnP72iKZDbJVhqNaYUm8wL
+ L6Mw9ka5Ow7JDLBw==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=linutronix.de
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key, unprotected) header.d=linutronix.de
+ header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=LPy1SnLs; 
+ dkim=pass header.d=linutronix.de header.i=@linutronix.de
+ header.a=ed25519-sha256 header.s=2020e header.b=Im5AlMQC
+Subject: [Intel-wired-lan] [PATCH iwl-next v7 2/5] igb: Introduce
+ igb_xdp_is_enabled()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,56 +118,87 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
- LKML <linux-kernel@vger.kernel.org>, Larysa Zaremba <larysa.zaremba@intel.com>
+Cc: Maciej Fijalkowski <maciej.fijalkowski@intel.com>,
+ Jesper Dangaard Brouer <hawk@kernel.org>,
+ Daniel Borkmann <daniel@iogearbox.net>,
+ Sriram Yagnaraman <sriram.yagnaraman@ericsson.com>,
+ Richard Cochran <richardcochran@gmail.com>,
+ Kurt Kanzenbach <kurt@linutronix.de>,
+ John Fastabend <john.fastabend@gmail.com>, Alexei Starovoitov <ast@kernel.org>,
+ Benjamin Steinke <benjamin.steinke@woks-audio.com>,
+ Eric Dumazet <edumazet@google.com>,
+ Sriram Yagnaraman <sriram.yagnaraman@est.tech>,
+ intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
+ Jakub Kicinski <kuba@kernel.org>, bpf@vger.kernel.org,
+ Paolo Abeni <pabeni@redhat.com>, "David S. Miller" <davem@davemloft.net>,
+ Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Le Mon, Sep 23, 2024 at 11:28:20AM -0700, Tony Nguyen a écrit :
-> 
-> 
-> On 9/23/2024 1:57 AM, Przemek Kitszel wrote:
-> > On 9/23/24 00:24, Frederic Weisbecker wrote:
-> > > The ice workqueue doesn't seem to rely on any CPU locality and should
-> > > therefore be able to run on any CPU. In practice this is already
-> > > happening through the unbound ice_service_timer that may fire anywhere
-> > > and queue the workqueue accordingly to any CPU.
-> > > 
-> > > Make this official so that the ice workqueue is only ever queued to
-> > > housekeeping CPUs on nohz_full.
-> > > 
-> > > Signed-off-by: Frederic Weisbecker <frederic@kernel.org>
-> > > ---
-> > >   drivers/net/ethernet/intel/ice/ice_main.c | 2 +-
-> > >   1 file changed, 1 insertion(+), 1 deletion(-)
-> > > 
-> > > diff --git a/drivers/net/ethernet/intel/ice/ice_main.c
-> > > b/drivers/net/ethernet/intel/ice/ice_main.c
-> > > index ea780d468579..70990f42ac05 100644
-> > > --- a/drivers/net/ethernet/intel/ice/ice_main.c
-> > > +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-> > > @@ -5924,7 +5924,7 @@ static int __init ice_module_init(void)
-> > >       ice_adv_lnk_speed_maps_init();
-> > > -    ice_wq = alloc_workqueue("%s", 0, 0, KBUILD_MODNAME);
-> > > +    ice_wq = alloc_workqueue("%s", WQ_UNBOUND, 0, KBUILD_MODNAME);
-> > >       if (!ice_wq) {
-> > >           pr_err("Failed to create workqueue\n");
-> > >           return status;
-> > 
-> > Thank you for the patch, it would make sense for our iwl-next tree,
-> > with such assumption:
-> > Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
-> > 
-> > @Tony, do you want it resent with target tree in the subject?
-> 
-> No, I can apply this as-is but please remember to designate a tree for
-> future patches.
+From: Sriram Yagnaraman <sriram.yagnaraman@est.tech>
 
-Sorry I didn't know about any tree. I can't even find where iwl-next is
-hosted.
+Introduce igb_xdp_is_enabled() to check if an XDP program is assigned to
+the device. Use that wherever xdp_prog is read and evaluated.
 
-Thanks.
+Signed-off-by: Sriram Yagnaraman <sriram.yagnaraman@est.tech>
+[Kurt: Split patches and use READ_ONCE()]
+Signed-off-by: Kurt Kanzenbach <kurt@linutronix.de>
+Acked-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+---
+ drivers/net/ethernet/intel/igb/igb.h      | 5 +++++
+ drivers/net/ethernet/intel/igb/igb_main.c | 8 +++++---
+ 2 files changed, 10 insertions(+), 3 deletions(-)
 
-> Thanks,
-> Tony
+diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
+index 1bfe703e73d9..6e2b61ecff68 100644
+--- a/drivers/net/ethernet/intel/igb/igb.h
++++ b/drivers/net/ethernet/intel/igb/igb.h
+@@ -826,6 +826,11 @@ static inline struct igb_ring *igb_xdp_tx_queue_mapping(struct igb_adapter *adap
+ 	return adapter->tx_ring[r_idx];
+ }
+ 
++static inline bool igb_xdp_is_enabled(struct igb_adapter *adapter)
++{
++	return !!READ_ONCE(adapter->xdp_prog);
++}
++
+ int igb_add_filter(struct igb_adapter *adapter,
+ 		   struct igb_nfc_filter *input);
+ int igb_erase_filter(struct igb_adapter *adapter,
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index 71addc0eac96..34a3f172d86c 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -2926,7 +2926,8 @@ int igb_xdp_xmit_back(struct igb_adapter *adapter, struct xdp_buff *xdp)
+ 	/* During program transitions its possible adapter->xdp_prog is assigned
+ 	 * but ring has not been configured yet. In this case simply abort xmit.
+ 	 */
+-	tx_ring = adapter->xdp_prog ? igb_xdp_tx_queue_mapping(adapter) : NULL;
++	tx_ring = igb_xdp_is_enabled(adapter) ?
++		igb_xdp_tx_queue_mapping(adapter) : NULL;
+ 	if (unlikely(!tx_ring))
+ 		return IGB_XDP_CONSUMED;
+ 
+@@ -2959,7 +2960,8 @@ static int igb_xdp_xmit(struct net_device *dev, int n,
+ 	/* During program transitions its possible adapter->xdp_prog is assigned
+ 	 * but ring has not been configured yet. In this case simply abort xmit.
+ 	 */
+-	tx_ring = adapter->xdp_prog ? igb_xdp_tx_queue_mapping(adapter) : NULL;
++	tx_ring = igb_xdp_is_enabled(adapter) ?
++		igb_xdp_tx_queue_mapping(adapter) : NULL;
+ 	if (unlikely(!tx_ring))
+ 		return -ENXIO;
+ 
+@@ -6593,7 +6595,7 @@ static int igb_change_mtu(struct net_device *netdev, int new_mtu)
+ 	struct igb_adapter *adapter = netdev_priv(netdev);
+ 	int max_frame = new_mtu + IGB_ETH_PKT_HDR_PAD;
+ 
+-	if (adapter->xdp_prog) {
++	if (igb_xdp_is_enabled(adapter)) {
+ 		int i;
+ 
+ 		for (i = 0; i < adapter->num_rx_queues; i++) {
+
+-- 
+2.39.5
+
