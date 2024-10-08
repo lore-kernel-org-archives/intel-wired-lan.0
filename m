@@ -4,85 +4,83 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DF966CF042B
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  8 Oct 2024 23:50:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F3FC7CF042D
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  8 Oct 2024 23:51:44 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 9503B405F5;
-	Tue,  8 Oct 2024 23:50:35 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id B243540359;
+	Tue,  8 Oct 2024 23:51:44 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id nk-rr2cahY2H; Tue,  8 Oct 2024 23:50:34 +0000 (UTC)
+ id R_w2nJn9QaD6; Tue,  8 Oct 2024 23:51:43 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 592AA405E8
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B6E18405E8
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1728431434;
-	bh=0Jw+NMobWQEYMn9koalMCu9bxwr7TzxQ/pNnQTNpDao=;
+	s=default; t=1728431503;
+	bh=BpzDN2dRqO5uAQwEsbpIR1rgAYCd0qLxuHHTS/ha6uo=;
 	h=Date:From:To:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=9wmUQHyL5wBy8R1yNlsVrpg/UGd3kcGGmLeP30konBt4jdhfivMYlvLiZBon+ZMKP
-	 vQI3QaFqL6OxoNYi3AAB8/liPh/lmYHmNw8X88XQ/nmJP5cuWLyingFsmQbQoKDyOQ
-	 NYQQfhtJuxax2mepS6QW7KP4Gn785NPTbrzG2ywnVZhmTnMGDONbS9mF2MsKuj7Fbe
-	 /9ZdvYzwBVp/O3wWrYZIXeTsrzA1KCMEujUbXO90ASrdGARh4dRugcI987q2mm4bUy
-	 govbA277yWfsf9VpFfjj7/UMqVTp01+x03sxHQNRM2P4LK/PPf3gqQo0C2sbJfr+R0
-	 0iX0Ar5ZG8W3w==
+	b=PWAzdFnXb5fPOzOHME+VVjHBVaOo3MSN7wtX5JFZ9K7rYX50rjJNwASl+Jnb6IudI
+	 SAxq9v4zksT8DlCEKWma1AHYv62sPL5S2fcsj2VqkxOJPStMO3K3Fqr39/jOFyrv1Y
+	 H/UC7lR1+H90A1VS8y8sV/W5DbnPWwcQ1/mOVubPxmyWddMLeCM7kFCWceudnlPQ/5
+	 5Vc7/7jiyuGgSS7LKCFP7merbWMuhc6QvzqGgABAYzOwMYJMoIJMEBnIWkKkjgsP4E
+	 9ASIEKt3dHemRSfKVPUjroVY8Rel1nNsQucW7XHZt2gMXKYxmrCrkZhYmdjdcpL5S8
+	 DPQ5/B8MI5KAA==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 592AA405E8;
-	Tue,  8 Oct 2024 23:50:34 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 4B9691BF5AE
- for <intel-wired-lan@lists.osuosl.org>; Tue,  8 Oct 2024 23:50:33 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id B6E18405E8;
+	Tue,  8 Oct 2024 23:51:43 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 261881BF5AE
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  8 Oct 2024 23:51:42 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 37C9A607EB
- for <intel-wired-lan@lists.osuosl.org>; Tue,  8 Oct 2024 23:50:33 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 1477E8117C
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  8 Oct 2024 23:51:42 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id l9oNADA8mBnc for <intel-wired-lan@lists.osuosl.org>;
- Tue,  8 Oct 2024 23:50:32 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org;
- envelope-from=kuba@kernel.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 828B66059B
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 828B66059B
-Received: from dfw.source.kernel.org (dfw.source.kernel.org
- [IPv6:2604:1380:4641:c500::1])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 828B66059B
- for <intel-wired-lan@lists.osuosl.org>; Tue,  8 Oct 2024 23:50:32 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id eT_tlZjuhxCT for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  8 Oct 2024 23:51:41 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=147.75.193.91;
+ helo=nyc.source.kernel.org; envelope-from=kuba@kernel.org; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 7462E81170
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7462E81170
+Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 7462E81170
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  8 Oct 2024 23:51:41 +0000 (UTC)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by dfw.source.kernel.org (Postfix) with ESMTP id 782255C575B;
- Tue,  8 Oct 2024 23:50:27 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C50AEC4CEC7;
- Tue,  8 Oct 2024 23:50:30 +0000 (UTC)
-Date: Tue, 8 Oct 2024 16:50:29 -0700
+ by nyc.source.kernel.org (Postfix) with ESMTP id B3098A43791;
+ Tue,  8 Oct 2024 23:51:31 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4E82BC4CEC7;
+ Tue,  8 Oct 2024 23:51:39 +0000 (UTC)
+Date: Tue, 8 Oct 2024 16:51:38 -0700
 From: Jakub Kicinski <kuba@kernel.org>
 To: Paolo Abeni <pabeni@redhat.com>
-Message-ID: <20241008165029.49b373f8@kernel.org>
-In-Reply-To: <10ea3faabfd916e955be09a49ba729835e54a73d.1727704215.git.pabeni@redhat.com>
+Message-ID: <20241008165138.366827ce@kernel.org>
+In-Reply-To: <094ea42117070aaacff25145b23feadef53dbfbc.1727704215.git.pabeni@redhat.com>
 References: <cover.1727704215.git.pabeni@redhat.com>
- <10ea3faabfd916e955be09a49ba729835e54a73d.1727704215.git.pabeni@redhat.com>
+ <094ea42117070aaacff25145b23feadef53dbfbc.1727704215.git.pabeni@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1728431431;
- bh=Kwpsba+zGI4pWzNF+c6mzhO6pqfbgMbCn60fKlZE3b8=;
+ d=kernel.org; s=k20201202; t=1728431500;
+ bh=vz8YZ24Hag6SvOb63hVxuoxPQOMzO7N8ox5d8Qw3hOo=;
  h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=OJb+tbkVhQRc/ZUxo3gUVwXVOtYl37cQv3daY1HFz1Agv1znwBJCw1DgaiGIfxTO+
- +/tROs545gn2hczHHEpnNo7evRex++scpeeRlR6GYDbZmbaU49rjL/KTI7pmmHw2Ow
- 8ilmBvVR3mVx2YFtvZUD/flQ3NkcA5Q97fxilVrXEp4A/Uetd51phhjp6WLSiJCgMx
- GuzUjjZ/lx7hAuIEvClKI4ocOwSHr2D8L0h/5GonPHr3IXOqmjWWtX+ZdlaeVWI7KS
- AXpEyBXZZv9Jcs30dYotZGXXkuTZq147XpJTV9jfaWUDQEGDMBXNnK8NqPlWIf1Yj6
- RJDNh5amtJvtw==
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ b=OUWgqEFyFPd4zNHJ3Ey4YW/Gcfd+7UUQiXvjtbD1jq4+H7NqK2nK/Cz5qF/2HWZCP
+ CR5rwyZdn6e2kIhcmVPLvfL7BD12TINLEv3oPsbTEr4uqIaCUgMwkkXSpD23sRWU7m
+ YHwHcEMO1VfQ8iAM966MIoIZDXq7wJfLqZS3OvEGt9XqOfcSnSHSJ5Y368UVepzzgl
+ di5yvF/9FtCKFkAMIoUea+5mfWX2XrK6m06t/WTv19LIcIpJFiItyja6yM1JUiz5vI
+ 7yMfzuL4tsNVIUTs39BUv03iZHSJ9PMspcyLa1lIPOwD1W61KhV3bT69tG+fXwZvYM
+ a0V1/I9H0Pb3g==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=OJb+tbkV
-Subject: Re: [Intel-wired-lan] [PATCH v8 net-next 08/15] netlink: spec: add
- shaper introspection support
+ header.a=rsa-sha256 header.s=k20201202 header.b=OUWgqEFy
+Subject: Re: [Intel-wired-lan] [PATCH v8 net-next 07/15] net-shapers:
+ implement shaper cleanup on queue deletion
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,9 +104,9 @@ Cc: Jiri Pirko <jiri@resnulli.us>, netdev@vger.kernel.org,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Mon, 30 Sep 2024 15:53:55 +0200 Paolo Abeni wrote:
-> Allow the user-space to fine-grain query the shaping features
-> supported by the NIC on each domain.
+On Mon, 30 Sep 2024 15:53:54 +0200 Paolo Abeni wrote:
+> hook into netif_set_real_num_tx_queues() to cleanup any shaper
+> configured on top of the to-be-destroyed TX queues.
 > 
 > Signed-off-by: Paolo Abeni <pabeni@redhat.com>
 
