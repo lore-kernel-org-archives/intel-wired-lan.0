@@ -4,72 +4,72 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7C407CED628
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  9 Oct 2024 08:12:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 21C7ACED62A
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  9 Oct 2024 08:12:39 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 4DBA3401AD;
-	Wed,  9 Oct 2024 08:12:28 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id CAD9C40B3C;
+	Wed,  9 Oct 2024 08:12:38 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 1nMPgK0HCWlt; Wed,  9 Oct 2024 08:12:27 +0000 (UTC)
+ id vlubibJDQCZY; Wed,  9 Oct 2024 08:12:37 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 0BA1040B49
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org F318A40B96
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1728461547;
-	bh=3eaBXKdBf567zArxEJrZFp+3zckfSZ9Zm1KSUoZIVI8=;
+	s=default; t=1728461557;
+	bh=Oaual2GCrHO36kW2W31YlDOLNCY77G+tohU9zv4j3yI=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=nkHBJf+hoFlrEmnc5tPZ4avdQ4lVRlP3Bsq0LsolKphZeuUGgeApLmtOslALYN6xh
-	 HDFGQ1TTBTyM6EHn+LqF8t61gakrU0mdSOldN4o1k7MhCRnyhC0SJ7vYwCDWhNMioX
-	 2b17hcBTtjuWoWsw1uktMB3hAOR38T/0ptUJ2kfjzji0jQ3mevOipHe9LUoX6hJ3ep
-	 lA75NhxXqh6NzVDFdL+n9BSyqwlLOCv+FF5/1rE6hfJ3deIrYaMQGubSNZSrAl9v3W
-	 cs8cNTHJIGw0edfgnF7079/CynbQT1BsZ/H0NkmFVkpLe4KnWX/Bf/RVQ8thm4QHVd
-	 hAaID+QOQ++oQ==
+	b=6jyCVu+eAYW3/rkyW0a5L1KQfbbyToC2sQu9UjDG3stuaaKxvfF9Yx4I7EfTzhvNp
+	 HRErar+WJND8KCShPLg+5gRnXq2rgMwdyBXq2y8sJu7NSKT/s+ezOwCKJ3E14ae4m/
+	 Zp0p7SQg9VfpRI0dC6jC1r4cQPov0U5JKhhsW5A1y9pHwADDt7OYdXL2inMTRMeAWh
+	 lfPeQsNwTARSDjG9Rk/bt9TnYQn8tz3lAngIwcKAY0ZEGYO8R5DXaA69pePgTEX+ma
+	 W6vHeyTLHNtkICcppJX9PWyUpS0FqZ+3qoadNZ/AVL6JfQuKKjnORiEUuRlIhlM57f
+	 0sEjlgvnxDw7Q==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 0BA1040B49;
-	Wed,  9 Oct 2024 08:12:27 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 228E61BF406
- for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Oct 2024 08:12:24 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id F318A40B96;
+	Wed,  9 Oct 2024 08:12:36 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 24B451BF406
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Oct 2024 08:12:35 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 107BE40B49
- for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Oct 2024 08:12:24 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 1220F401E2
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Oct 2024 08:12:35 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id didB-dL2mZQK for <intel-wired-lan@lists.osuosl.org>;
- Wed,  9 Oct 2024 08:12:23 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.129.124;
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id eh07grz_TUjA for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  9 Oct 2024 08:12:33 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.133.124;
  helo=us-smtp-delivery-124.mimecast.com; envelope-from=pabeni@redhat.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org D510740B47
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org D510740B47
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 69F1440634
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 69F1440634
 Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.129.124])
- by smtp2.osuosl.org (Postfix) with ESMTPS id D510740B47
- for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Oct 2024 08:12:22 +0000 (UTC)
-Received: from mx-prod-mc-01.mail-002.prod.us-west-2.aws.redhat.com
+ (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 69F1440634
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Oct 2024 08:12:33 +0000 (UTC)
+Received: from mx-prod-mc-03.mail-002.prod.us-west-2.aws.redhat.com
  (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
  relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-681-1BEGuxUcPCWpEBwtntoS3g-1; Wed,
- 09 Oct 2024 04:12:16 -0400
-X-MC-Unique: 1BEGuxUcPCWpEBwtntoS3g-1
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-526-NxYQUIxLN8GWu8RF4k1B8A-1; Wed,
+ 09 Oct 2024 04:12:26 -0400
+X-MC-Unique: NxYQUIxLN8GWu8RF4k1B8A-1
 Received: from mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com
  (mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.12])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by mx-prod-mc-01.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
- id 5F1F51943CE0; Wed,  9 Oct 2024 08:11:29 +0000 (UTC)
+ by mx-prod-mc-03.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
+ id 5FD88196CE4D; Wed,  9 Oct 2024 08:11:41 +0000 (UTC)
 Received: from gerbillo.redhat.com (unknown [10.45.225.249])
  by mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP
- id 9883019560A3; Wed,  9 Oct 2024 08:11:23 +0000 (UTC)
+ id E599D19560AE; Wed,  9 Oct 2024 08:11:35 +0000 (UTC)
 From: Paolo Abeni <pabeni@redhat.com>
 To: netdev@vger.kernel.org
-Date: Wed,  9 Oct 2024 10:09:58 +0200
-Message-ID: <839002f7bd6f63b985a060a51b079f6e6dbbe237.1728460186.git.pabeni@redhat.com>
+Date: Wed,  9 Oct 2024 10:10:00 +0200
+Message-ID: <5a882cb51998c4c2c3d21fed521498eba1c8f079.1728460186.git.pabeni@redhat.com>
 In-Reply-To: <cover.1728460186.git.pabeni@redhat.com>
 References: <cover.1728460186.git.pabeni@redhat.com>
 MIME-Version: 1.0
@@ -77,23 +77,23 @@ Content-Transfer-Encoding: 8bit
 X-Scanned-By: MIMEDefang 3.0 on 10.30.177.12
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=redhat.com; 
- s=mimecast20190719; t=1728461541;
+ s=mimecast20190719; t=1728461552;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=3eaBXKdBf567zArxEJrZFp+3zckfSZ9Zm1KSUoZIVI8=;
- b=i1ACb0h8cXmidZUhw+SHBF/QhqsW4o7kgGdQaUWg3n0q8DhzFe0B7GRLJm+lPqJjsrvg8j
- bW4aXH54G3SBv0xOhc0io+bown1CFcn6Xnh5sL+MeDvPUeubL3K8Mt+cflO7tV1KGBI1NY
- Yb8+SAAB7M747Q1fEpqKuARH6oNLAq0=
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ bh=Oaual2GCrHO36kW2W31YlDOLNCY77G+tohU9zv4j3yI=;
+ b=IUHXFeHW/RW8T6+brRjsAjIt849DzUrY/JZjBaSDPz0c84zmhL0hdh/4lML4TuRzbW3HEi
+ 9nMdNiX9ymWyIVJUpaWruLmJ9SzrT+OqJMXs1y2oRKscwvN78g5afWtBWZe3zqN3na0fIp
+ 2yTbAc7b+NhogkQ0/P021vVjzCrobIk=
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=redhat.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=i1ACb0h8
-Subject: [Intel-wired-lan] [PATCH v9 net-next 12/15] virtchnl: support queue
- rate limit and quanta size configuration
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=IUHXFeHW
+Subject: [Intel-wired-lan] [PATCH v9 net-next 14/15] iavf: Add
+ net_shaper_ops support
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -118,194 +118,400 @@ Cc: Jiri Pirko <jiri@resnulli.us>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Wenjun Wu <wenjun1.wu@intel.com>
+From: Sudheer Mogilappagari <sudheer.mogilappagari@intel.com>
 
-This patch adds new virtchnl opcodes and structures for rate limit
-and quanta size configuration, which include:
-1. VIRTCHNL_OP_CONFIG_QUEUE_BW, to configure max bandwidth for each
-VF per queue.
-2. VIRTCHNL_OP_CONFIG_QUANTA, to configure quanta size per queue.
-3. VIRTCHNL_OP_GET_QOS_CAPS, VF queries current QoS configuration, such
-as enabled TCs, arbiter type, up2tc and bandwidth of VSI node. The
-configuration is previously set by DCB and PF, and now is the potential
-QoS capability of VF. VF can take it as reference to configure queue TC
-mapping.
+Implement net_shaper_ops support for IAVF. This enables configuration
+of rate limiting on per queue basis. Customer intends to enforce
+bandwidth limit on Tx traffic steered to the queue by configuring
+rate limits on the queue.
+
+To set rate limiting for a queue, update shaper object of given queues
+in driver and send VIRTCHNL_OP_CONFIG_QUEUE_BW to PF to update HW
+configuration.
+
+Deleting shaper configured for queue is nothing but configuring shaper
+with bw_max 0. The PF restores the default rate limiting config
+when bw_max is zero.
 
 Reviewed-by: Jiri Pirko <jiri@nvidia.com>
-Signed-off-by: Wenjun Wu <wenjun1.wu@intel.com>
+Signed-off-by: Sudheer Mogilappagari <sudheer.mogilappagari@intel.com>
 Signed-off-by: Paolo Abeni <pabeni@redhat.com>
 ---
 v8 -> v9:
  - fixed SoB chain
----
- include/linux/avf/virtchnl.h | 119 +++++++++++++++++++++++++++++++++++
- 1 file changed, 119 insertions(+)
 
-diff --git a/include/linux/avf/virtchnl.h b/include/linux/avf/virtchnl.h
-index f41395264dca..223e433c39fe 100644
---- a/include/linux/avf/virtchnl.h
-+++ b/include/linux/avf/virtchnl.h
-@@ -89,6 +89,9 @@ enum virtchnl_rx_hsplit {
- 	VIRTCHNL_RX_HSPLIT_SPLIT_SCTP    = 8,
- };
+v7 -> v8:
+ - always acquire dev->lock unconditionally in iavf_finish_config()
+
+v6 -> v7:
+ - acquire dev->lock around channel manipulation
+ - acquire crit_lock in shaper callback
+ - handle gracefully 'old queues' id
+
+v5 -> v6:
+ - adapted to new API
+ - dropped scope-related checks (moved into the core)
+
+v4 -> v5:
+ - fix kdoc
+---
+ drivers/net/ethernet/intel/Kconfig            |   1 +
+ drivers/net/ethernet/intel/iavf/iavf.h        |   3 +
+ drivers/net/ethernet/intel/iavf/iavf_main.c   | 112 +++++++++++++++++-
+ drivers/net/ethernet/intel/iavf/iavf_txrx.h   |   2 +
+ .../net/ethernet/intel/iavf/iavf_virtchnl.c   |  65 ++++++++++
+ 5 files changed, 182 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
+index 0375c7448a57..20bc40eec487 100644
+--- a/drivers/net/ethernet/intel/Kconfig
++++ b/drivers/net/ethernet/intel/Kconfig
+@@ -258,6 +258,7 @@ config I40E_DCB
+ config IAVF
+ 	tristate
+ 	select LIBIE
++	select NET_SHAPER
  
-+enum virtchnl_bw_limit_type {
-+	VIRTCHNL_BW_SHAPER = 0,
-+};
- /* END GENERIC DEFINES */
+ config I40EVF
+ 	tristate "Intel(R) Ethernet Adaptive Virtual Function support"
+diff --git a/drivers/net/ethernet/intel/iavf/iavf.h b/drivers/net/ethernet/intel/iavf/iavf.h
+index 48cd1d06761c..a84bdbfbb0f7 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf.h
++++ b/drivers/net/ethernet/intel/iavf/iavf.h
+@@ -34,6 +34,7 @@
+ #include <net/tc_act/tc_gact.h>
+ #include <net/tc_act/tc_mirred.h>
+ #include <net/tc_act/tc_skbedit.h>
++#include <net/net_shaper.h>
  
- /* Opcodes for VF-PF communication. These are placed in the v_opcode field
-@@ -151,6 +154,11 @@ enum virtchnl_ops {
- 	VIRTCHNL_OP_DISABLE_VLAN_STRIPPING_V2 = 55,
- 	VIRTCHNL_OP_ENABLE_VLAN_INSERTION_V2 = 56,
- 	VIRTCHNL_OP_DISABLE_VLAN_INSERTION_V2 = 57,
-+	/* opcode 57 - 65 are reserved */
-+	VIRTCHNL_OP_GET_QOS_CAPS = 66,
-+	/* opcode 68 through 111 are reserved */
-+	VIRTCHNL_OP_CONFIG_QUEUE_BW = 112,
-+	VIRTCHNL_OP_CONFIG_QUANTA = 113,
- 	VIRTCHNL_OP_MAX,
- };
+ #include "iavf_type.h"
+ #include <linux/avf/virtchnl.h>
+@@ -336,6 +337,7 @@ struct iavf_adapter {
+ #define IAVF_FLAG_AQ_DISABLE_CTAG_VLAN_INSERTION	BIT_ULL(36)
+ #define IAVF_FLAG_AQ_ENABLE_STAG_VLAN_INSERTION		BIT_ULL(37)
+ #define IAVF_FLAG_AQ_DISABLE_STAG_VLAN_INSERTION	BIT_ULL(38)
++#define IAVF_FLAG_AQ_CONFIGURE_QUEUES_BW		BIT_ULL(39)
  
-@@ -261,6 +269,7 @@ VIRTCHNL_CHECK_STRUCT_LEN(16, virtchnl_vsi_resource);
- #define VIRTCHNL_VF_OFFLOAD_RX_FLEX_DESC	BIT(26)
- #define VIRTCHNL_VF_OFFLOAD_ADV_RSS_PF		BIT(27)
- #define VIRTCHNL_VF_OFFLOAD_FDIR_PF		BIT(28)
-+#define VIRTCHNL_VF_OFFLOAD_QOS			BIT(29)
+ 	/* flags for processing extended capability messages during
+ 	 * __IAVF_INIT_EXTENDED_CAPS. Each capability exchange requires
+@@ -581,6 +583,7 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
+ int iavf_config_rss(struct iavf_adapter *adapter);
+ int iavf_lan_add_device(struct iavf_adapter *adapter);
+ int iavf_lan_del_device(struct iavf_adapter *adapter);
++void iavf_cfg_queues_bw(struct iavf_adapter *adapter);
+ void iavf_enable_channels(struct iavf_adapter *adapter);
+ void iavf_disable_channels(struct iavf_adapter *adapter);
+ void iavf_add_cloud_filter(struct iavf_adapter *adapter);
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
+index f782402cd789..7764d8ce7f4e 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_main.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
+@@ -1972,8 +1972,11 @@ static void iavf_finish_config(struct work_struct *work)
  
- #define VF_BASE_MODE_OFFLOADS (VIRTCHNL_VF_OFFLOAD_L2 | \
- 			       VIRTCHNL_VF_OFFLOAD_VLAN | \
-@@ -1416,6 +1425,85 @@ struct virtchnl_fdir_del {
+ 	adapter = container_of(work, struct iavf_adapter, finish_config);
  
- VIRTCHNL_CHECK_STRUCT_LEN(12, virtchnl_fdir_del);
+-	/* Always take RTNL first to prevent circular lock dependency */
++	/* Always take RTNL first to prevent circular lock dependency;
++	 * The dev->lock is needed to update the queue number
++	 */
+ 	rtnl_lock();
++	mutex_lock(&adapter->netdev->lock);
+ 	mutex_lock(&adapter->crit_lock);
  
-+struct virtchnl_shaper_bw {
-+	/* Unit is Kbps */
-+	u32 committed;
-+	u32 peak;
+ 	if ((adapter->flags & IAVF_FLAG_SETUP_NETDEV_FEATURES) &&
+@@ -2017,6 +2020,7 @@ static void iavf_finish_config(struct work_struct *work)
+ 
+ out:
+ 	mutex_unlock(&adapter->crit_lock);
++	mutex_unlock(&adapter->netdev->lock);
+ 	rtnl_unlock();
+ }
+ 
+@@ -2085,6 +2089,11 @@ static int iavf_process_aq_command(struct iavf_adapter *adapter)
+ 		return 0;
+ 	}
+ 
++	if (adapter->aq_required & IAVF_FLAG_AQ_CONFIGURE_QUEUES_BW) {
++		iavf_cfg_queues_bw(adapter);
++		return 0;
++	}
++
+ 	if (adapter->aq_required & IAVF_FLAG_AQ_CONFIGURE_QUEUES) {
+ 		iavf_configure_queues(adapter);
+ 		return 0;
+@@ -2918,6 +2927,30 @@ static void iavf_disable_vf(struct iavf_adapter *adapter)
+ 	dev_info(&adapter->pdev->dev, "Reset task did not complete, VF disabled\n");
+ }
+ 
++/**
++ * iavf_reconfig_qs_bw - Call-back task to handle hardware reset
++ * @adapter: board private structure
++ *
++ * After a reset, the shaper parameters of queues need to be replayed again.
++ * Since the net_shaper object inside TX rings persists across reset,
++ * set the update flag for all queues so that the virtchnl message is triggered
++ * for all queues.
++ **/
++static void iavf_reconfig_qs_bw(struct iavf_adapter *adapter)
++{
++	int i, num = 0;
++
++	for (i = 0; i < adapter->num_active_queues; i++)
++		if (adapter->tx_rings[i].q_shaper.bw_min ||
++		    adapter->tx_rings[i].q_shaper.bw_max) {
++			adapter->tx_rings[i].q_shaper_update = true;
++			num++;
++		}
++
++	if (num)
++		adapter->aq_required |= IAVF_FLAG_AQ_CONFIGURE_QUEUES_BW;
++}
++
+ /**
+  * iavf_reset_task - Call-back task to handle hardware reset
+  * @work: pointer to work_struct
+@@ -2944,10 +2977,12 @@ static void iavf_reset_task(struct work_struct *work)
+ 	/* When device is being removed it doesn't make sense to run the reset
+ 	 * task, just return in such a case.
+ 	 */
++	mutex_lock(&netdev->lock);
+ 	if (!mutex_trylock(&adapter->crit_lock)) {
+ 		if (adapter->state != __IAVF_REMOVE)
+ 			queue_work(adapter->wq, &adapter->reset_task);
+ 
++		mutex_unlock(&netdev->lock);
+ 		return;
+ 	}
+ 
+@@ -2995,6 +3030,7 @@ static void iavf_reset_task(struct work_struct *work)
+ 			reg_val);
+ 		iavf_disable_vf(adapter);
+ 		mutex_unlock(&adapter->crit_lock);
++		mutex_unlock(&netdev->lock);
+ 		return; /* Do not attempt to reinit. It's dead, Jim. */
+ 	}
+ 
+@@ -3124,6 +3160,8 @@ static void iavf_reset_task(struct work_struct *work)
+ 		iavf_up_complete(adapter);
+ 
+ 		iavf_irq_enable(adapter, true);
++
++		iavf_reconfig_qs_bw(adapter);
+ 	} else {
+ 		iavf_change_state(adapter, __IAVF_DOWN);
+ 		wake_up(&adapter->down_waitqueue);
+@@ -3133,6 +3171,7 @@ static void iavf_reset_task(struct work_struct *work)
+ 
+ 	wake_up(&adapter->reset_waitqueue);
+ 	mutex_unlock(&adapter->crit_lock);
++	mutex_unlock(&netdev->lock);
+ 
+ 	return;
+ reset_err:
+@@ -3143,6 +3182,7 @@ static void iavf_reset_task(struct work_struct *work)
+ 	iavf_disable_vf(adapter);
+ 
+ 	mutex_unlock(&adapter->crit_lock);
++	mutex_unlock(&netdev->lock);
+ 	dev_err(&adapter->pdev->dev, "failed to allocate resources during reinit\n");
+ }
+ 
+@@ -3614,8 +3654,10 @@ static int __iavf_setup_tc(struct net_device *netdev, void *type_data)
+ 	if (test_bit(__IAVF_IN_REMOVE_TASK, &adapter->crit_section))
+ 		return 0;
+ 
++	mutex_lock(&netdev->lock);
+ 	netif_set_real_num_rx_queues(netdev, total_qps);
+ 	netif_set_real_num_tx_queues(netdev, total_qps);
++	mutex_unlock(&netdev->lock);
+ 
+ 	return ret;
+ }
+@@ -4893,6 +4935,73 @@ static netdev_features_t iavf_fix_features(struct net_device *netdev,
+ 	return iavf_fix_strip_features(adapter, features);
+ }
+ 
++static int
++iavf_shaper_set(struct net_shaper_binding *binding,
++		const struct net_shaper *shaper,
++		struct netlink_ext_ack *extack)
++{
++	struct iavf_adapter *adapter = netdev_priv(binding->netdev);
++	const struct net_shaper_handle *handle = &shaper->handle;
++	struct iavf_ring *tx_ring;
++
++	mutex_lock(&adapter->crit_lock);
++	if (handle->id >= adapter->num_active_queues)
++		goto unlock;
++
++	tx_ring = &adapter->tx_rings[handle->id];
++
++	tx_ring->q_shaper.bw_min = div_u64(shaper->bw_min, 1000);
++	tx_ring->q_shaper.bw_max = div_u64(shaper->bw_max, 1000);
++	tx_ring->q_shaper_update = true;
++
++	adapter->aq_required |= IAVF_FLAG_AQ_CONFIGURE_QUEUES_BW;
++
++unlock:
++	mutex_unlock(&adapter->crit_lock);
++	return 0;
++}
++
++static int iavf_shaper_del(struct net_shaper_binding *binding,
++			   const struct net_shaper_handle *handle,
++			   struct netlink_ext_ack *extack)
++{
++	struct iavf_adapter *adapter = netdev_priv(binding->netdev);
++	struct iavf_ring *tx_ring;
++
++	mutex_lock(&adapter->crit_lock);
++	if (handle->id >= adapter->num_active_queues)
++		goto unlock;
++
++	tx_ring = &adapter->tx_rings[handle->id];
++	tx_ring->q_shaper.bw_min = 0;
++	tx_ring->q_shaper.bw_max = 0;
++	tx_ring->q_shaper_update = true;
++
++	adapter->aq_required |= IAVF_FLAG_AQ_CONFIGURE_QUEUES_BW;
++
++unlock:
++	mutex_unlock(&adapter->crit_lock);
++	return 0;
++}
++
++static void iavf_shaper_cap(struct net_shaper_binding *binding,
++			    enum net_shaper_scope scope,
++			    unsigned long *flags)
++{
++	if (scope != NET_SHAPER_SCOPE_QUEUE)
++		return;
++
++	*flags = BIT(NET_SHAPER_A_CAPS_SUPPORT_BW_MIN) |
++		 BIT(NET_SHAPER_A_CAPS_SUPPORT_BW_MAX) |
++		 BIT(NET_SHAPER_A_CAPS_SUPPORT_METRIC_BPS);
++}
++
++static const struct net_shaper_ops iavf_shaper_ops = {
++	.set = iavf_shaper_set,
++	.delete = iavf_shaper_del,
++	.capabilities = iavf_shaper_cap,
 +};
 +
-+VIRTCHNL_CHECK_STRUCT_LEN(8, virtchnl_shaper_bw);
-+
-+/* VIRTCHNL_OP_GET_QOS_CAPS
-+ * VF sends this message to get its QoS Caps, such as
-+ * TC number, Arbiter and Bandwidth.
+ static const struct net_device_ops iavf_netdev_ops = {
+ 	.ndo_open		= iavf_open,
+ 	.ndo_stop		= iavf_close,
+@@ -4908,6 +5017,7 @@ static const struct net_device_ops iavf_netdev_ops = {
+ 	.ndo_fix_features	= iavf_fix_features,
+ 	.ndo_set_features	= iavf_set_features,
+ 	.ndo_setup_tc		= iavf_setup_tc,
++	.net_shaper_ops		= &iavf_shaper_ops,
+ };
+ 
+ /**
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_txrx.h b/drivers/net/ethernet/intel/iavf/iavf_txrx.h
+index d7b5587aeb8e..f97c702c0802 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_txrx.h
++++ b/drivers/net/ethernet/intel/iavf/iavf_txrx.h
+@@ -296,6 +296,8 @@ struct iavf_ring {
+ 					 */
+ 
+ 	u32 rx_buf_len;
++	struct net_shaper q_shaper;
++	bool q_shaper_update;
+ } ____cacheline_internodealigned_in_smp;
+ 
+ #define IAVF_ITR_ADAPTIVE_MIN_INC	0x0002
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+index 7e810b65380c..64ddd0e66c0d 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+@@ -1507,6 +1507,60 @@ iavf_set_adapter_link_speed_from_vpe(struct iavf_adapter *adapter,
+ 		adapter->link_speed = vpe->event_data.link_event.link_speed;
+ }
+ 
++/**
++ * iavf_cfg_queues_bw - configure bandwidth of allocated queues
++ * @adapter: iavf adapter structure instance
++ *
++ * This function requests PF to configure queue bandwidth of allocated queues
 + */
-+struct virtchnl_qos_cap_elem {
-+	u8 tc_num;
-+	u8 tc_prio;
-+#define VIRTCHNL_ABITER_STRICT      0
-+#define VIRTCHNL_ABITER_ETS         2
-+	u8 arbiter;
-+#define VIRTCHNL_STRICT_WEIGHT      1
-+	u8 weight;
-+	enum virtchnl_bw_limit_type type;
-+	union {
-+		struct virtchnl_shaper_bw shaper;
-+		u8 pad2[32];
-+	};
-+};
++void iavf_cfg_queues_bw(struct iavf_adapter *adapter)
++{
++	struct virtchnl_queues_bw_cfg *qs_bw_cfg;
++	struct net_shaper *q_shaper;
++	int qs_to_update = 0;
++	int i, inx = 0;
++	size_t len;
 +
-+VIRTCHNL_CHECK_STRUCT_LEN(40, virtchnl_qos_cap_elem);
++	if (adapter->current_op != VIRTCHNL_OP_UNKNOWN) {
++		/* bail because we already have a command pending */
++		dev_err(&adapter->pdev->dev,
++			"Cannot set tc queue bw, command %d pending\n",
++			adapter->current_op);
++		return;
++	}
 +
-+struct virtchnl_qos_cap_list {
-+	u16 vsi_id;
-+	u16 num_elem;
-+	struct virtchnl_qos_cap_elem cap[];
-+};
++	for (i = 0; i < adapter->num_active_queues; i++) {
++		if (adapter->tx_rings[i].q_shaper_update)
++			qs_to_update++;
++	}
++	len = struct_size(qs_bw_cfg, cfg, qs_to_update);
++	qs_bw_cfg = kzalloc(len, GFP_KERNEL);
++	if (!qs_bw_cfg)
++		return;
 +
-+VIRTCHNL_CHECK_STRUCT_LEN(4, virtchnl_qos_cap_list);
-+#define virtchnl_qos_cap_list_LEGACY_SIZEOF	44
++	qs_bw_cfg->vsi_id = adapter->vsi.id;
++	qs_bw_cfg->num_queues = qs_to_update;
 +
-+/* VIRTCHNL_OP_CONFIG_QUEUE_BW */
-+struct virtchnl_queue_bw {
-+	u16 queue_id;
-+	u8 tc;
-+	u8 pad;
-+	struct virtchnl_shaper_bw shaper;
-+};
++	for (i = 0; i < adapter->num_active_queues; i++) {
++		struct iavf_ring *tx_ring = &adapter->tx_rings[i];
 +
-+VIRTCHNL_CHECK_STRUCT_LEN(12, virtchnl_queue_bw);
++		q_shaper = &tx_ring->q_shaper;
++		if (tx_ring->q_shaper_update) {
++			qs_bw_cfg->cfg[inx].queue_id = i;
++			qs_bw_cfg->cfg[inx].shaper.peak = q_shaper->bw_max;
++			qs_bw_cfg->cfg[inx].shaper.committed = q_shaper->bw_min;
++			qs_bw_cfg->cfg[inx].tc = 0;
++			inx++;
++		}
++	}
 +
-+struct virtchnl_queues_bw_cfg {
-+	u16 vsi_id;
-+	u16 num_queues;
-+	struct virtchnl_queue_bw cfg[];
-+};
++	adapter->current_op = VIRTCHNL_OP_CONFIG_QUEUE_BW;
++	adapter->aq_required &= ~IAVF_FLAG_AQ_CONFIGURE_QUEUES_BW;
++	iavf_send_pf_msg(adapter, VIRTCHNL_OP_CONFIG_QUEUE_BW,
++			 (u8 *)qs_bw_cfg, len);
++	kfree(qs_bw_cfg);
++}
 +
-+VIRTCHNL_CHECK_STRUCT_LEN(4, virtchnl_queues_bw_cfg);
-+#define virtchnl_queues_bw_cfg_LEGACY_SIZEOF	16
-+
-+enum virtchnl_queue_type {
-+	VIRTCHNL_QUEUE_TYPE_TX			= 0,
-+	VIRTCHNL_QUEUE_TYPE_RX			= 1,
-+};
-+
-+/* structure to specify a chunk of contiguous queues */
-+struct virtchnl_queue_chunk {
-+	/* see enum virtchnl_queue_type */
-+	s32 type;
-+	u16 start_queue_id;
-+	u16 num_queues;
-+};
-+
-+VIRTCHNL_CHECK_STRUCT_LEN(8, virtchnl_queue_chunk);
-+
-+struct virtchnl_quanta_cfg {
-+	u16 quanta_size;
-+	struct virtchnl_queue_chunk queue_select;
-+};
-+
-+VIRTCHNL_CHECK_STRUCT_LEN(12, virtchnl_quanta_cfg);
-+
- #define __vss_byone(p, member, count, old)				      \
- 	(struct_size(p, member, count) + (old - 1 - struct_size(p, member, 0)))
+ /**
+  * iavf_enable_channels
+  * @adapter: adapter structure
+@@ -2227,6 +2281,10 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
+ 					VIRTCHNL_RSS_ALG_TOEPLITZ_SYMMETRIC;
  
-@@ -1438,6 +1526,8 @@ VIRTCHNL_CHECK_STRUCT_LEN(12, virtchnl_fdir_del);
- 		 __vss(virtchnl_vlan_filter_list_v2, __vss_byelem, p, m, c),  \
- 		 __vss(virtchnl_tc_info, __vss_byelem, p, m, c),	      \
- 		 __vss(virtchnl_rdma_qvlist_info, __vss_byelem, p, m, c),     \
-+		 __vss(virtchnl_qos_cap_list, __vss_byelem, p, m, c),	      \
-+		 __vss(virtchnl_queues_bw_cfg, __vss_byelem, p, m, c),	      \
- 		 __vss(virtchnl_rss_key, __vss_byone, p, m, c),		      \
- 		 __vss(virtchnl_rss_lut, __vss_byone, p, m, c))
- 
-@@ -1637,6 +1727,35 @@ virtchnl_vc_validate_vf_msg(struct virtchnl_version_info *ver, u32 v_opcode,
- 	case VIRTCHNL_OP_DISABLE_VLAN_INSERTION_V2:
- 		valid_len = sizeof(struct virtchnl_vlan_setting);
+ 			break;
++		case VIRTCHNL_OP_CONFIG_QUEUE_BW:
++			dev_warn(&adapter->pdev->dev, "Failed to Config Queue BW, error %s\n",
++				 iavf_stat_str(&adapter->hw, v_retval));
++			break;
+ 		default:
+ 			dev_err(&adapter->pdev->dev, "PF returned error %d (%s) to our request %d\n",
+ 				v_retval, iavf_stat_str(&adapter->hw, v_retval),
+@@ -2569,6 +2627,13 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
+ 		if (!v_retval)
+ 			iavf_netdev_features_vlan_strip_set(netdev, false);
  		break;
-+	case VIRTCHNL_OP_GET_QOS_CAPS:
++	case VIRTCHNL_OP_CONFIG_QUEUE_BW: {
++		int i;
++		/* shaper configuration is successful for all queues */
++		for (i = 0; i < adapter->num_active_queues; i++)
++			adapter->tx_rings[i].q_shaper_update = false;
++	}
 +		break;
-+	case VIRTCHNL_OP_CONFIG_QUEUE_BW:
-+		valid_len = virtchnl_queues_bw_cfg_LEGACY_SIZEOF;
-+		if (msglen >= valid_len) {
-+			struct virtchnl_queues_bw_cfg *q_bw =
-+				(struct virtchnl_queues_bw_cfg *)msg;
-+
-+			valid_len = virtchnl_struct_size(q_bw, cfg,
-+							 q_bw->num_queues);
-+			if (q_bw->num_queues == 0) {
-+				err_msg_format = true;
-+				break;
-+			}
-+		}
-+		break;
-+	case VIRTCHNL_OP_CONFIG_QUANTA:
-+		valid_len = sizeof(struct virtchnl_quanta_cfg);
-+		if (msglen >= valid_len) {
-+			struct virtchnl_quanta_cfg *q_quanta =
-+				(struct virtchnl_quanta_cfg *)msg;
-+
-+			if (q_quanta->quanta_size == 0 ||
-+			    q_quanta->queue_select.num_queues == 0) {
-+				err_msg_format = true;
-+				break;
-+			}
-+		}
-+		break;
- 	/* These are always errors coming from the VF. */
- 	case VIRTCHNL_OP_EVENT:
- 	case VIRTCHNL_OP_UNKNOWN:
+ 	default:
+ 		if (adapter->current_op && (v_opcode != adapter->current_op))
+ 			dev_warn(&adapter->pdev->dev, "Expected response %d from PF, received %d\n",
 -- 
 2.45.2
 
