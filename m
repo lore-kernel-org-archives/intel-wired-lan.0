@@ -4,95 +4,90 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DDEE3CEDD97
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  9 Oct 2024 14:02:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 92A51CEDD9C
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  9 Oct 2024 14:14:01 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id ADD2E40761;
-	Wed,  9 Oct 2024 14:02:42 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 2357B406ED;
+	Wed,  9 Oct 2024 14:14:01 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id EuOWyIMzMM4y; Wed,  9 Oct 2024 14:02:41 +0000 (UTC)
+ id OheqhnclMKHq; Wed,  9 Oct 2024 14:13:59 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B32E240773
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org CBFB940359
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1728482561;
-	bh=1KAYJqZOPzzmCrSWe2UPevuA7JRqIAIDPgwbzwdSHyQ=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=LZYL834AY+a7mVOvh9KJqj6pv53dONYonaKcK3nrhE01+9sUM6v3VLFjPp3eFVMvw
-	 aTl0fmhchIKna+mZlvueOGRG2EBk+xqCvZzJr7r7nED2rq4GEbHyEV3MSDw5A3dIhW
-	 jhAae0Pq4T7yqrmwF0Vc7VOVijw10UWzWLSYYRy6hK5nQL9dIaxuskcnSntAFNprmM
-	 pRZEQyzpx9qZ0glGC2SE4TbFIwADeaE8QeD62IK/yHqtUbNqM0oUT+555np0/DnTbB
-	 +dLzNKRyHDc4Lg7Hv0DaLNio+T0PUg3d4bOb8Qsg1WDYvbcY33t25JNsCrmWGSJC/s
-	 3a99G4KfP+i3Q==
+	s=default; t=1728483239;
+	bh=XqqXVZdIejRDX0gG8Fdk7/wqfbe3AT5RXtzWPzEdNKw=;
+	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=xtIw6auqOMH67sBxaROKeyhVA1IVWAT45Omvdluxc/kyVktD5W57Qq4w4qz9XQcbD
+	 wLylzZsIrqr1ADJASzpKAZXb+kWUDepafA0AdHaSJ1edrZjVjwvR2azUZC7xpsN062
+	 jTpHXk1VuBTSHRp7nK332Iylxe3mWCmHbCZKidx1TQCDPwweJJl0HA7ub2ppjVQsMr
+	 T9sr1OYoIrUFoiCYZx5/Y9TUBT9WPyu49CbKWD3pu8DkednVOkjPD0STo84qQUCCVR
+	 L/d4Tuc1hdMNhWWUJHZTKotUWKlf6vnnGeFvMljATeMlwJU50wvB/K6JeVG84/PXJw
+	 MI4Xm6LW0Cs3w==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id B32E240773;
-	Wed,  9 Oct 2024 14:02:41 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id CBFB940359;
+	Wed,  9 Oct 2024 14:13:59 +0000 (UTC)
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 4593A1BF215
- for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Oct 2024 14:02:39 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 6EFF01BF420
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Oct 2024 14:13:59 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 1E68E40092
- for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Oct 2024 14:02:39 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 694C440240
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Oct 2024 14:13:59 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id HdvMSLWgMAmt for <intel-wired-lan@lists.osuosl.org>;
- Wed,  9 Oct 2024 14:02:37 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.15;
- helo=mgamail.intel.com; envelope-from=karol.kolacinski@intel.com;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 8A3A240768
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 8A3A240768
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.15])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 8A3A240768
- for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Oct 2024 14:02:37 +0000 (UTC)
-X-CSE-ConnectionGUID: eJAeDmNMTq+G0ZwSVa1WUw==
-X-CSE-MsgGUID: uCjMtYciSCSdZ837fRxCTA==
-X-IronPort-AV: E=McAfee;i="6700,10204,11220"; a="31483956"
-X-IronPort-AV: E=Sophos;i="6.11,189,1725346800"; d="scan'208";a="31483956"
-Received: from orviesa009.jf.intel.com ([10.64.159.149])
- by orvoesa107.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 09 Oct 2024 07:02:37 -0700
-X-CSE-ConnectionGUID: uo5oXEVjT+CBiPz4BiMSbw==
-X-CSE-MsgGUID: A8/fOvR7RAaPDor1MkbLOA==
+ id 0-sbFe46Ir0L for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  9 Oct 2024 14:13:58 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.13;
+ helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 27B3E40194
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 27B3E40194
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.13])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 27B3E40194
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Oct 2024 14:13:58 +0000 (UTC)
+X-CSE-ConnectionGUID: YymEE7x/Sd6j0G3TsZPRFg==
+X-CSE-MsgGUID: 6boacJfkSXSxCxE8lPSomA==
+X-IronPort-AV: E=McAfee;i="6700,10204,11220"; a="30662765"
+X-IronPort-AV: E=Sophos;i="6.11,190,1725346800"; d="scan'208";a="30662765"
+Received: from fmviesa010.fm.intel.com ([10.60.135.150])
+ by fmvoesa107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 09 Oct 2024 07:13:57 -0700
+X-CSE-ConnectionGUID: SO+Lwy+CRu2rHFYBirogkQ==
+X-CSE-MsgGUID: dNtkJ7IqRvC+97Ebai70sA==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.11,189,1725346800"; d="scan'208";a="76210801"
-Received: from kkolacin-desk1.ger.corp.intel.com (HELO
- kkolacin-desk1.igk.intel.com) ([10.217.160.108])
- by orviesa009.jf.intel.com with ESMTP; 09 Oct 2024 07:02:36 -0700
-From: Karol Kolacinski <karol.kolacinski@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Date: Wed,  9 Oct 2024 15:59:29 +0200
-Message-ID: <20241009140223.1918687-5-karol.kolacinski@intel.com>
-X-Mailer: git-send-email 2.46.2
-In-Reply-To: <20241009140223.1918687-1-karol.kolacinski@intel.com>
-References: <20241009140223.1918687-1-karol.kolacinski@intel.com>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+X-IronPort-AV: E=Sophos;i="6.11,190,1725346800"; d="scan'208";a="76584774"
+Received: from lkp-server01.sh.intel.com (HELO a48cf1aa22e8) ([10.239.97.150])
+ by fmviesa010.fm.intel.com with ESMTP; 09 Oct 2024 07:13:57 -0700
+Received: from kbuild by a48cf1aa22e8 with local (Exim 4.96)
+ (envelope-from <lkp@intel.com>) id 1syXRq-0009Jw-38
+ for intel-wired-lan@lists.osuosl.org; Wed, 09 Oct 2024 14:13:54 +0000
+Date: Wed, 09 Oct 2024 22:13:12 +0800
+From: kernel test robot <lkp@intel.com>
+To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+Message-ID: <202410092205.08rDGi6C-lkp@intel.com>
+User-Agent: s-nail v14.9.24
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1728482557; x=1760018557;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=SUNS12LxCmi7sveNB4uhbH0YlvCG4988FTlhm1QDktg=;
- b=QftU6V6X/XY8eYZ5MfB9KupJbb8QSR3c9nnRZPmT+lhIHixTNHg4yWNQ
- R7IRScikVcShUuvOl0v3FZevDTC9k4hCItXyMxikfSVATUXTJ2mW1ARfU
- nTQV923lxrZKTM2bioxorP015Oy+Jj21cS9BMDlwWdEu2A7nI2vio0kw2
- XMsMfennEMH7pdF52rVHBtTdX3KwAyQJrwd5eu1f/ca2yfAa4WDrZIl/r
- QGbwv317h0K3bEP0pR+4ctMTdiU+geO1XYMIg9L6K2jCDiEfoN5xPERCA
- 7x32LNRmoV5sWRm09OgwKeflqrErv4dKNDNVQp7P8z0R36WB1ZY2dVd6h
- g==;
+ t=1728483238; x=1760019238;
+ h=date:from:to:subject:message-id;
+ bh=hFTFbDOqFzSQFu3gTleoEMJ15l2j1uW6CmI2VskaBpw=;
+ b=K7nLFlXm3n6UE4VovehXRQ7WcZz4XRSF8VeGxny2329SkQY+82dlDHV/
+ fsFa/z2MbOrCBUVoDXyqO3wmdeSWNrqpBCwh7HPBm+3taBKnLwbNC/gC2
+ PNWEGvpqVXZGL4PwNXRfVvYSPbg1BSo//V+LgXCgFpjulpZPCv5hFxXB0
+ m3y/R8H67BZtIEf5HPTu2Wk5cgdGc39a2mnKx3CkatiNbSMrRc4Bzi523
+ N7ZslkntEybbRgACrjqhtYB0DrLS6/mhwqw2vCCMdQPnPoOdD4Py0tgK/
+ AIFJr+2OGkpiMpkRauZzgIDyoUpUiX8aDkSyRQOQeWkWZwg6Pc4tfdpjn
+ w==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=QftU6V6X
-Subject: [Intel-wired-lan] [PATCH v2 iwl-next 4/4] ice: Add correct PHY lane
- assignment
+ header.a=rsa-sha256 header.s=Intel header.b=K7nLFlXm
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ af8cac359cecaab37a171039fc82cfd1f7aca501
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,270 +100,162 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, Karol Kolacinski <karol.kolacinski@intel.com>,
- Arkadiusz Kubalewski <Arkadiusz.kubalewski@intel.com>,
- anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Driver always naively assumes, that for PTP purposes, PHY lane to
-configure is corresponding to PF ID.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
+branch HEAD: af8cac359cecaab37a171039fc82cfd1f7aca501  e1000e: Remove Meteor Lake SMBUS workarounds
 
-This is not true for some port configurations, e.g.:
-- 2x50G per quad, where lanes used are 0 and 2 on each quad, but PF IDs
-  are 0 and 1
-- 100G per quad on 2 quads, where lanes used are 0 and 4, but PF IDs are
-  0 and 1
+elapsed time: 1023m
 
-Use correct PHY lane assignment by getting and parsing port options.
-This is read from the NVM by the FW and provided to the driver with
-the indication of active port split.
+configs tested: 140
+configs skipped: 3
 
-Remove ice_is_muxed_topo(), which is no longer needed.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Fixes: 4409ea1726cb ("ice: Adjust PTP init for 2x50G E825C devices")
-Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Reviewed-by: Arkadiusz Kubalewski <Arkadiusz.kubalewski@intel.com>
-Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
----
- drivers/net/ethernet/intel/ice/ice_common.c | 40 +++++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_common.h |  1 +
- drivers/net/ethernet/intel/ice/ice_main.c   |  6 ++--
- drivers/net/ethernet/intel/ice/ice_ptp.c    | 23 +++++-------
- drivers/net/ethernet/intel/ice/ice_ptp.h    |  4 +--
- drivers/net/ethernet/intel/ice/ice_ptp_hw.c | 22 ------------
- drivers/net/ethernet/intel/ice/ice_type.h   |  1 -
- 7 files changed, 55 insertions(+), 42 deletions(-)
+tested configs:
+alpha                             allnoconfig    gcc-14.1.0
+alpha                            allyesconfig    clang-20
+alpha                               defconfig    gcc-14.1.0
+arc                              allmodconfig    clang-20
+arc                               allnoconfig    gcc-14.1.0
+arc                              allyesconfig    clang-20
+arc                                 defconfig    gcc-14.1.0
+arc                     haps_hs_smp_defconfig    gcc-14.1.0
+arm                              allmodconfig    clang-20
+arm                               allnoconfig    gcc-14.1.0
+arm                              allyesconfig    clang-20
+arm                                 defconfig    gcc-14.1.0
+arm                          exynos_defconfig    gcc-14.1.0
+arm                          gemini_defconfig    gcc-14.1.0
+arm                        multi_v7_defconfig    gcc-14.1.0
+arm                           sama5_defconfig    gcc-14.1.0
+arm64                            allmodconfig    clang-20
+arm64                             allnoconfig    gcc-14.1.0
+arm64                               defconfig    gcc-14.1.0
+csky                              allnoconfig    gcc-14.1.0
+csky                                defconfig    gcc-14.1.0
+hexagon                          allmodconfig    clang-20
+hexagon                           allnoconfig    gcc-14.1.0
+hexagon                          allyesconfig    clang-20
+hexagon                             defconfig    gcc-14.1.0
+i386                             allmodconfig    clang-18
+i386                              allnoconfig    clang-18
+i386                             allyesconfig    clang-18
+i386        buildonly-randconfig-001-20241009    clang-18
+i386        buildonly-randconfig-002-20241009    clang-18
+i386        buildonly-randconfig-003-20241009    clang-18
+i386        buildonly-randconfig-004-20241009    clang-18
+i386        buildonly-randconfig-005-20241009    clang-18
+i386        buildonly-randconfig-006-20241009    clang-18
+i386                                defconfig    clang-18
+i386                  randconfig-001-20241009    clang-18
+i386                  randconfig-002-20241009    clang-18
+i386                  randconfig-003-20241009    clang-18
+i386                  randconfig-004-20241009    clang-18
+i386                  randconfig-005-20241009    clang-18
+i386                  randconfig-006-20241009    clang-18
+i386                  randconfig-011-20241009    clang-18
+i386                  randconfig-012-20241009    clang-18
+i386                  randconfig-013-20241009    clang-18
+i386                  randconfig-014-20241009    clang-18
+i386                  randconfig-015-20241009    clang-18
+i386                  randconfig-016-20241009    clang-18
+loongarch                        allmodconfig    gcc-14.1.0
+loongarch                         allnoconfig    gcc-14.1.0
+loongarch                           defconfig    gcc-14.1.0
+m68k                             allmodconfig    gcc-14.1.0
+m68k                              allnoconfig    gcc-14.1.0
+m68k                             allyesconfig    gcc-14.1.0
+m68k                                defconfig    gcc-14.1.0
+m68k                       m5275evb_defconfig    gcc-14.1.0
+m68k                            mac_defconfig    gcc-14.1.0
+microblaze                       allmodconfig    gcc-14.1.0
+microblaze                        allnoconfig    gcc-14.1.0
+microblaze                       allyesconfig    gcc-14.1.0
+microblaze                          defconfig    gcc-14.1.0
+microblaze                      mmu_defconfig    gcc-14.1.0
+mips                              allnoconfig    gcc-14.1.0
+mips                      bmips_stb_defconfig    gcc-14.1.0
+mips                           ci20_defconfig    gcc-14.1.0
+mips                     loongson1b_defconfig    gcc-14.1.0
+mips                      malta_kvm_defconfig    gcc-14.1.0
+mips                           rs90_defconfig    gcc-14.1.0
+mips                           xway_defconfig    gcc-14.1.0
+nios2                             allnoconfig    gcc-14.1.0
+nios2                               defconfig    gcc-14.1.0
+openrisc                          allnoconfig    clang-20
+openrisc                          allnoconfig    gcc-14.1.0
+openrisc                         allyesconfig    gcc-14.1.0
+openrisc                            defconfig    gcc-12
+openrisc                 simple_smp_defconfig    gcc-14.1.0
+parisc                           allmodconfig    gcc-14.1.0
+parisc                            allnoconfig    clang-20
+parisc                            allnoconfig    gcc-14.1.0
+parisc                           allyesconfig    gcc-14.1.0
+parisc                              defconfig    gcc-12
+parisc64                            defconfig    gcc-14.1.0
+powerpc                          allmodconfig    gcc-14.1.0
+powerpc                           allnoconfig    clang-20
+powerpc                           allnoconfig    gcc-14.1.0
+powerpc                          allyesconfig    gcc-14.1.0
+powerpc                     rainier_defconfig    gcc-14.1.0
+riscv                            allmodconfig    gcc-14.1.0
+riscv                             allnoconfig    clang-20
+riscv                             allnoconfig    gcc-14.1.0
+riscv                            allyesconfig    gcc-14.1.0
+riscv                               defconfig    gcc-12
+s390                             allmodconfig    gcc-14.1.0
+s390                              allnoconfig    clang-20
+s390                             allyesconfig    gcc-14.1.0
+s390                                defconfig    gcc-12
+sh                               allmodconfig    gcc-14.1.0
+sh                                allnoconfig    gcc-14.1.0
+sh                               allyesconfig    gcc-14.1.0
+sh                                  defconfig    gcc-12
+sparc                            allmodconfig    gcc-14.1.0
+sparc64                             defconfig    gcc-12
+um                               allmodconfig    clang-20
+um                                allnoconfig    clang-17
+um                                allnoconfig    clang-20
+um                               allyesconfig    clang-20
+um                                  defconfig    gcc-12
+um                             i386_defconfig    gcc-12
+um                           x86_64_defconfig    gcc-12
+x86_64                           alldefconfig    gcc-14.1.0
+x86_64                            allnoconfig    clang-18
+x86_64                           allyesconfig    clang-18
+x86_64      buildonly-randconfig-001-20241009    clang-18
+x86_64      buildonly-randconfig-002-20241009    clang-18
+x86_64      buildonly-randconfig-003-20241009    clang-18
+x86_64      buildonly-randconfig-004-20241009    clang-18
+x86_64      buildonly-randconfig-005-20241009    clang-18
+x86_64      buildonly-randconfig-006-20241009    clang-18
+x86_64                              defconfig    clang-18
+x86_64                                  kexec    gcc-12
+x86_64                randconfig-001-20241009    clang-18
+x86_64                randconfig-002-20241009    clang-18
+x86_64                randconfig-003-20241009    clang-18
+x86_64                randconfig-004-20241009    clang-18
+x86_64                randconfig-005-20241009    clang-18
+x86_64                randconfig-006-20241009    clang-18
+x86_64                randconfig-011-20241009    clang-18
+x86_64                randconfig-012-20241009    clang-18
+x86_64                randconfig-013-20241009    clang-18
+x86_64                randconfig-014-20241009    clang-18
+x86_64                randconfig-015-20241009    clang-18
+x86_64                randconfig-016-20241009    clang-18
+x86_64                randconfig-071-20241009    clang-18
+x86_64                randconfig-072-20241009    clang-18
+x86_64                randconfig-073-20241009    clang-18
+x86_64                randconfig-074-20241009    clang-18
+x86_64                randconfig-075-20241009    clang-18
+x86_64                randconfig-076-20241009    clang-18
+x86_64                               rhel-8.3    gcc-12
+x86_64                          rhel-8.3-rust    clang-18
+xtensa                            allnoconfig    gcc-14.1.0
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index 0eb7f828ed3a..618259f8abdc 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -4065,6 +4065,46 @@ ice_aq_set_port_option(struct ice_hw *hw, u8 lport, u8 lport_valid,
- 	return ice_aq_send_cmd(hw, &desc, NULL, 0, NULL);
- }
- 
-+/**
-+ * ice_get_phy_lane_number - Get PHY lane number for current adapter
-+ * @hw: pointer to the hw struct
-+ *
-+ * Return: PHY lane number on success, negative error code otherwise.
-+ */
-+int ice_get_phy_lane_number(struct ice_hw *hw)
-+{
-+	struct ice_aqc_get_port_options_elem *options __free(kfree);
-+	unsigned int lport = 0;
-+	unsigned int lane;
-+	int err;
-+
-+	options = kcalloc(ICE_AQC_PORT_OPT_MAX, sizeof(*options), GFP_KERNEL);
-+	if (!options)
-+		return -ENOMEM;
-+
-+	for (lane = 0; lane < ICE_MAX_PORT_PER_PCI_DEV; lane++) {
-+		u8 options_count = ICE_AQC_PORT_OPT_MAX;
-+		bool active_valid, pending_valid;
-+		u8 active_idx, pending_idx;
-+
-+		err = ice_aq_get_port_options(hw, options, &options_count, lane,
-+					      true, &active_idx, &active_valid,
-+					      &pending_idx, &pending_valid);
-+		if (err)
-+			return err;
-+
-+		if (!active_valid)
-+			continue;
-+
-+		if (hw->pf_id == lport)
-+			return lane;
-+		lport++;
-+	}
-+
-+	/* PHY lane not found */
-+	return -ENXIO;
-+}
-+
- /**
-  * ice_aq_sff_eeprom
-  * @hw: pointer to the HW struct
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
-index 27208a60cece..fe6f88cfd948 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.h
-+++ b/drivers/net/ethernet/intel/ice/ice_common.h
-@@ -193,6 +193,7 @@ ice_aq_get_port_options(struct ice_hw *hw,
- int
- ice_aq_set_port_option(struct ice_hw *hw, u8 lport, u8 lport_valid,
- 		       u8 new_option);
-+int ice_get_phy_lane_number(struct ice_hw *hw);
- int
- ice_aq_sff_eeprom(struct ice_hw *hw, u16 lport, u8 bus_addr,
- 		  u16 mem_addr, u8 page, u8 set_page, u8 *data, u8 length,
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index b1e7727b8677..72ef1b15b100 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -1144,7 +1144,7 @@ ice_link_event(struct ice_pf *pf, struct ice_port_info *pi, bool link_up,
- 	if (link_up == old_link && link_speed == old_link_speed)
- 		return 0;
- 
--	ice_ptp_link_change(pf, pf->hw.pf_id, link_up);
-+	ice_ptp_link_change(pf, link_up);
- 
- 	if (ice_is_dcb_active(pf)) {
- 		if (test_bit(ICE_FLAG_DCB_ENA, pf->flags))
-@@ -6742,7 +6742,7 @@ static int ice_up_complete(struct ice_vsi *vsi)
- 		ice_print_link_msg(vsi, true);
- 		netif_tx_start_all_queues(vsi->netdev);
- 		netif_carrier_on(vsi->netdev);
--		ice_ptp_link_change(pf, pf->hw.pf_id, true);
-+		ice_ptp_link_change(pf, true);
- 	}
- 
- 	/* Perform an initial read of the statistics registers now to
-@@ -7212,7 +7212,7 @@ int ice_down(struct ice_vsi *vsi)
- 
- 	if (vsi->netdev) {
- 		vlan_err = ice_vsi_del_vlan_zero(vsi);
--		ice_ptp_link_change(vsi->back, vsi->back->hw.pf_id, false);
-+		ice_ptp_link_change(vsi->back, false);
- 		netif_carrier_off(vsi->netdev);
- 		netif_tx_disable(vsi->netdev);
- 	}
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
-index ef2e858f49bb..da7b57684d32 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-@@ -1454,10 +1454,9 @@ ice_ptp_port_phy_restart(struct ice_ptp_port *ptp_port)
- /**
-  * ice_ptp_link_change - Reconfigure PTP after link status change
-  * @pf: Board private structure
-- * @port: Port for which the PHY start is set
-  * @linkup: Link is up or down
-  */
--void ice_ptp_link_change(struct ice_pf *pf, u8 port, bool linkup)
-+void ice_ptp_link_change(struct ice_pf *pf, bool linkup)
- {
- 	struct ice_ptp_port *ptp_port;
- 	struct ice_hw *hw = &pf->hw;
-@@ -1465,14 +1464,7 @@ void ice_ptp_link_change(struct ice_pf *pf, u8 port, bool linkup)
- 	if (pf->ptp.state != ICE_PTP_READY)
- 		return;
- 
--	if (WARN_ON_ONCE(port >= hw->ptp.num_lports))
--		return;
--
- 	ptp_port = &pf->ptp.port;
--	if (ice_is_e825c(hw) && hw->ptp.is_2x50g_muxed_topo)
--		port *= 2;
--	if (WARN_ON_ONCE(ptp_port->port_num != port))
--		return;
- 
- 	/* Update cached link status for this port immediately */
- 	ptp_port->link_up = linkup;
-@@ -3339,10 +3331,17 @@ void ice_ptp_init(struct ice_pf *pf)
- {
- 	struct ice_ptp *ptp = &pf->ptp;
- 	struct ice_hw *hw = &pf->hw;
--	int err;
-+	int lane_num, err;
- 
- 	ptp->state = ICE_PTP_INITIALIZING;
- 
-+	lane_num = ice_get_phy_lane_number(hw);
-+	if (lane_num < 0) {
-+		err = lane_num;
-+		goto err;
-+	}
-+
-+	ptp->port.port_num = (u8)lane_num;
- 	ice_ptp_init_hw(hw);
- 
- 	ice_ptp_init_tx_interrupt_mode(pf);
-@@ -3356,10 +3355,6 @@ void ice_ptp_init(struct ice_pf *pf)
- 			goto err;
- 	}
- 
--	ptp->port.port_num = hw->pf_id;
--	if (ice_is_e825c(hw) && hw->ptp.is_2x50g_muxed_topo)
--		ptp->port.port_num = hw->pf_id * 2;
--
- 	err = ice_ptp_init_port(pf, &ptp->port);
- 	if (err)
- 		goto err;
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.h b/drivers/net/ethernet/intel/ice/ice_ptp.h
-index 2db2257a0fb2..44a05c8d2113 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp.h
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp.h
-@@ -331,7 +331,7 @@ void ice_ptp_prepare_for_reset(struct ice_pf *pf,
- 			       enum ice_reset_req reset_type);
- void ice_ptp_init(struct ice_pf *pf);
- void ice_ptp_release(struct ice_pf *pf);
--void ice_ptp_link_change(struct ice_pf *pf, u8 port, bool linkup);
-+void ice_ptp_link_change(struct ice_pf *pf, bool linkup);
- #else /* IS_ENABLED(CONFIG_PTP_1588_CLOCK) */
- static inline int ice_ptp_set_ts_config(struct ice_pf *pf, struct ifreq *ifr)
- {
-@@ -379,7 +379,7 @@ static inline void ice_ptp_prepare_for_reset(struct ice_pf *pf,
- }
- static inline void ice_ptp_init(struct ice_pf *pf) { }
- static inline void ice_ptp_release(struct ice_pf *pf) { }
--static inline void ice_ptp_link_change(struct ice_pf *pf, u8 port, bool linkup)
-+static inline void ice_ptp_link_change(struct ice_pf *pf, bool linkup)
- {
- }
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-index 2c02e28f3b86..86da0525d281 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-@@ -2695,26 +2695,6 @@ static int ice_get_phy_tx_tstamp_ready_eth56g(struct ice_hw *hw, u8 port,
- 	return 0;
- }
- 
--/**
-- * ice_is_muxed_topo - detect breakout 2x50G topology for E825C
-- * @hw: pointer to the HW struct
-- *
-- * Return: true if it's 2x50 breakout topology, false otherwise
-- */
--static bool ice_is_muxed_topo(struct ice_hw *hw)
--{
--	u8 link_topo;
--	bool mux;
--	u32 val;
--
--	val = rd32(hw, GLGEN_SWITCH_MODE_CONFIG);
--	mux = FIELD_GET(GLGEN_SWITCH_MODE_CONFIG_25X4_QUAD_M, val);
--	val = rd32(hw, GLGEN_MAC_LINK_TOPO);
--	link_topo = FIELD_GET(GLGEN_MAC_LINK_TOPO_LINK_TOPO_M, val);
--
--	return (mux && link_topo == ICE_LINK_TOPO_UP_TO_2_LINKS);
--}
--
- /**
-  * ice_ptp_init_phy_e825 - initialize PHY parameters
-  * @hw: pointer to the HW struct
-@@ -2739,8 +2719,6 @@ static void ice_ptp_init_phy_e825(struct ice_hw *hw)
- 	err = ice_read_phy_eth56g(hw, hw->pf_id, PHY_REG_REVISION, &phy_rev);
- 	if (err || phy_rev != PHY_REVISION_ETH56G)
- 		ptp->phy_model = ICE_PHY_UNSUP;
--
--	ptp->is_2x50g_muxed_topo = ice_is_muxed_topo(hw);
- }
- 
- /* E822 family functions
-diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-index 479227bdff75..609f31e0dfde 100644
---- a/drivers/net/ethernet/intel/ice/ice_type.h
-+++ b/drivers/net/ethernet/intel/ice/ice_type.h
-@@ -880,7 +880,6 @@ struct ice_ptp_hw {
- 	union ice_phy_params phy;
- 	u8 num_lports;
- 	u8 ports_per_phy;
--	bool is_2x50g_muxed_topo;
- };
- 
- /* Port hardware description */
--- 
-2.46.2
-
+--
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
