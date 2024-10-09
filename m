@@ -1,86 +1,87 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F3FC7CF042D
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  8 Oct 2024 23:51:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 87C1DCF042B
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  9 Oct 2024 00:14:12 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id B243540359;
-	Tue,  8 Oct 2024 23:51:44 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id R_w2nJn9QaD6; Tue,  8 Oct 2024 23:51:43 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B6E18405E8
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1728431503;
-	bh=BpzDN2dRqO5uAQwEsbpIR1rgAYCd0qLxuHHTS/ha6uo=;
-	h=Date:From:To:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=PWAzdFnXb5fPOzOHME+VVjHBVaOo3MSN7wtX5JFZ9K7rYX50rjJNwASl+Jnb6IudI
-	 SAxq9v4zksT8DlCEKWma1AHYv62sPL5S2fcsj2VqkxOJPStMO3K3Fqr39/jOFyrv1Y
-	 H/UC7lR1+H90A1VS8y8sV/W5DbnPWwcQ1/mOVubPxmyWddMLeCM7kFCWceudnlPQ/5
-	 5Vc7/7jiyuGgSS7LKCFP7merbWMuhc6QvzqGgABAYzOwMYJMoIJMEBnIWkKkjgsP4E
-	 9ASIEKt3dHemRSfKVPUjroVY8Rel1nNsQucW7XHZt2gMXKYxmrCrkZhYmdjdcpL5S8
-	 DPQ5/B8MI5KAA==
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id B6E18405E8;
-	Tue,  8 Oct 2024 23:51:43 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 261881BF5AE
- for <intel-wired-lan@lists.osuosl.org>; Tue,  8 Oct 2024 23:51:42 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 1477E8117C
- for <intel-wired-lan@lists.osuosl.org>; Tue,  8 Oct 2024 23:51:42 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 2260181196;
+	Wed,  9 Oct 2024 00:14:12 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id eT_tlZjuhxCT for <intel-wired-lan@lists.osuosl.org>;
- Tue,  8 Oct 2024 23:51:41 +0000 (UTC)
+ id 19P3_QuroEJE; Wed,  9 Oct 2024 00:14:11 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 65ED881197
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1728432851;
+	bh=Twh0CAL7l58wLDNeygKwtnTU/6uRMqH2dV0D4xJVuCw=;
+	h=Date:From:To:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=3oRaQnxxBbtS4xAKY8MwVjusgDQK1K2e+GNkG+UYAulyEH8wgdDHivQ7Hlc5ulm7u
+	 Hv9dqUg/DD3Fw80V+oF+QZF7Lwa3UHPovOX+DoD/4eMzyopEUZ0Z6oqIeUNAHsyT1G
+	 0dCwFQDakV1sKZrpye6uhrNNZisdmj+JfZoU4hxwvN5aB0wUisQDsOHrbEsyL6AXr6
+	 RRBTRM15zCBEaM5cri3xPhes6wkOrwXK8Gve0DmoEJyC236bh7O28hXFNRlmmltZ2Z
+	 9JgA4ugac4FOfg7Xv1N1V1JryZ/Wil8scaRPQIVW1DhFpfoLyEZ8+3D1je7bSI5yXB
+	 a+SEZp/bx9Fzw==
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp1.osuosl.org (Postfix) with ESMTP id 65ED881197;
+	Wed,  9 Oct 2024 00:14:11 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id D27281BF47F
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Oct 2024 00:14:09 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp4.osuosl.org (Postfix) with ESMTP id BB1AF405EF
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Oct 2024 00:14:09 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id D7JUiz8DqkSK for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  9 Oct 2024 00:14:09 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=147.75.193.91;
  helo=nyc.source.kernel.org; envelope-from=kuba@kernel.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 7462E81170
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7462E81170
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org D305A405ED
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D305A405ED
 Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 7462E81170
- for <intel-wired-lan@lists.osuosl.org>; Tue,  8 Oct 2024 23:51:41 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTPS id D305A405ED
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Oct 2024 00:14:08 +0000 (UTC)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by nyc.source.kernel.org (Postfix) with ESMTP id B3098A43791;
- Tue,  8 Oct 2024 23:51:31 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4E82BC4CEC7;
- Tue,  8 Oct 2024 23:51:39 +0000 (UTC)
-Date: Tue, 8 Oct 2024 16:51:38 -0700
+ by nyc.source.kernel.org (Postfix) with ESMTP id 866EBA43876;
+ Wed,  9 Oct 2024 00:13:58 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 30D8DC4CED4;
+ Wed,  9 Oct 2024 00:14:06 +0000 (UTC)
+Date: Tue, 8 Oct 2024 17:14:05 -0700
 From: Jakub Kicinski <kuba@kernel.org>
 To: Paolo Abeni <pabeni@redhat.com>
-Message-ID: <20241008165138.366827ce@kernel.org>
-In-Reply-To: <094ea42117070aaacff25145b23feadef53dbfbc.1727704215.git.pabeni@redhat.com>
+Message-ID: <20241008171405.42e8890e@kernel.org>
+In-Reply-To: <72241d8f846c67b7201f0293956ef6db6bbbf176.1727704215.git.pabeni@redhat.com>
 References: <cover.1727704215.git.pabeni@redhat.com>
- <094ea42117070aaacff25145b23feadef53dbfbc.1727704215.git.pabeni@redhat.com>
+ <72241d8f846c67b7201f0293956ef6db6bbbf176.1727704215.git.pabeni@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1728431500;
- bh=vz8YZ24Hag6SvOb63hVxuoxPQOMzO7N8ox5d8Qw3hOo=;
+ d=kernel.org; s=k20201202; t=1728432846;
+ bh=vCkuvxHqKBdleT2a8rkQv03dvvsEFnflHm/7wJjAlKg=;
  h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=OUWgqEFyFPd4zNHJ3Ey4YW/Gcfd+7UUQiXvjtbD1jq4+H7NqK2nK/Cz5qF/2HWZCP
- CR5rwyZdn6e2kIhcmVPLvfL7BD12TINLEv3oPsbTEr4uqIaCUgMwkkXSpD23sRWU7m
- YHwHcEMO1VfQ8iAM966MIoIZDXq7wJfLqZS3OvEGt9XqOfcSnSHSJ5Y368UVepzzgl
- di5yvF/9FtCKFkAMIoUea+5mfWX2XrK6m06t/WTv19LIcIpJFiItyja6yM1JUiz5vI
- 7yMfzuL4tsNVIUTs39BUv03iZHSJ9PMspcyLa1lIPOwD1W61KhV3bT69tG+fXwZvYM
- a0V1/I9H0Pb3g==
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ b=gb+RpNKX9gwa3wLmraNzkHZmQCjeLhk/iz4c4dssyTKlfdgr297c6M29zH/NkEz/G
+ LC4gM0wM3clnCwWHl95ESLVIulyDN2X7IXRo6iLUc+I4ix9Ginh+S9a1rdrbMJ3vEf
+ 1ogDcACRkf4vjM3+VErNTO5M6AOOTqWrHbMSqz48rPftK6CkbDTCE7uR3BNKTqpPe6
+ LAdVf2t14ADIVaSm/rsC0KogBG0SSqIfuUIpgk3V4UiZQMYU41ueM6HIXPZoWbeNSS
+ hA8YRzO+KoUHgW0aIu8EVZ/p/FJAXeH+Ptow6Spw0owhIO77KpolFkQilnZNPu0QB9
+ ufgfHYy5E+wrw==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=OUWgqEFy
-Subject: Re: [Intel-wired-lan] [PATCH v8 net-next 07/15] net-shapers:
- implement shaper cleanup on queue deletion
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=gb+RpNKX
+Subject: Re: [Intel-wired-lan] [PATCH v8 net-next 02/15] netlink: spec: add
+ shaper YAML spec
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -104,10 +105,44 @@ Cc: Jiri Pirko <jiri@resnulli.us>, netdev@vger.kernel.org,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Mon, 30 Sep 2024 15:53:54 +0200 Paolo Abeni wrote:
-> hook into netif_set_real_num_tx_queues() to cleanup any shaper
-> configured on top of the to-be-destroyed TX queues.
-> 
-> Signed-off-by: Paolo Abeni <pabeni@redhat.com>
+On Mon, 30 Sep 2024 15:53:49 +0200 Paolo Abeni wrote:
+> +      name: group
+> +      doc: |
+> +        Create or update a scheduling group, attaching the specified
+> +        @leaves shapers under the specified node identified by @handle,
+> +        creating the latter, if needed.
 
-Reviewed-by: Jakub Kicinski <kuba@kernel.org>
+This line is unnecessary? The first line already says "create or update"
+so no need to say again that the node will be created?
+
+> +        The @leaves shapers scope must be @queue and the node shaper
+> +        scope must be either @node or @netdev.
+> +        When the node shaper has @node scope, if the @handle @id is not
+> +        specified, a new shaper of such scope is created, otherwise the
+> +        specified node must already exist.
+
+> +        The @parent handle for the node shaper is optional in most cases.
+> +        For newly created node scope shaper, the node parent is set by
+> +        default to the parent linked to the @leaves before the @group
+> +        operation. If, prior to the grouping operation, the @leaves
+> +        have different parents, the node shaper @parent must be explicitly
+> +        set.
+
+How about:
+
+	The @parent handle for a new node shaper defaults to the parent
+	of all the leaves, provided all the leaves share the same parent.
+	Otherwise @parent handle must be specified.
+
+> +        The user can optionally provide shaping attributes for the node
+> +        shaper.
+> +        The operation is atomic, on failure no change is applied to
+> +        the device shaping configuration, otherwise the @node shaper
+> +        full identifier, comprising @binding and @handle, is provided
+> +        as the reply.
+
+We should also mention that if the node already exists the group
+operation will _add_ leaves to it, rather than recreating it with
+the provided set of leaves. Right? My intuition was that the node
+will get the specified set of leaves and the other leaves get deleted.
+The current behavior is fine, but needs to be documented.
