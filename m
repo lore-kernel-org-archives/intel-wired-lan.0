@@ -4,72 +4,72 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 27954CED628
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  9 Oct 2024 08:12:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2F4AFCED62A
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  9 Oct 2024 08:12:05 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id CCC1E40B3A;
-	Wed,  9 Oct 2024 08:12:01 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id F3ACF4027F;
+	Wed,  9 Oct 2024 08:12:04 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Qp648QoblCUW; Wed,  9 Oct 2024 08:12:00 +0000 (UTC)
+ id 6W2TUJQtCNO5; Wed,  9 Oct 2024 08:12:03 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 728D140B38
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B799040B81
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1728461520;
-	bh=IhDuH2YkKco9gmJfZvgGV6IJ1LqQvF+qLfUjrtQJySs=;
+	s=default; t=1728461523;
+	bh=Eui556oY87SbUJSjkwki1SLeRle62IC4AC++NE4LUXs=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=0y2+1Eq320HuUqy9xm1aWAtPUWPS6XhOpQuElZwb+BnmurHSlLHe+dvllXZnh4bBT
-	 ALOcGOhdm9AhY+3jgck46ThIzgiR0gNlhoPCPQ8MuMxM3krjTi6eQietyz2DjepebL
-	 RXOXmc5geQ0gP+Psmb4mp4A+QvhQIR74rjFYKojq+njiyGx3uUspgR5u+BeUll1z/B
-	 sQD2d7TrCLKUdOOvuHQRuzo0/FS27jWWFsaVilaM1+hURheIXdZMTIWKW6edl+lig7
-	 SXbHowEg83g9ef2iJSo7Vol3ebldFsaiUIw9boupIwD8WQrVHeuJFCM0UiajpC97bn
-	 PvOsyFFXgViEA==
+	b=jmQbRoCqzMNHhWuZ0J2DC2rtqPNy0nj8d7u55lrvBKjncqg2pAwg0PibdWoh9mAVZ
+	 W3hw3+TxicbdhtUcAh1VUWOIOZk55pmBKGFDfM/9o6ZBSY0X0K2Szjgxze4hMgOabw
+	 4f9Imf3a3W2QSfTQISpb/YWlJZGLB/rHxcpWwQTr7prNj2GHGOIWCp8Crk5rXXunNI
+	 rpAoJL2spafTLJbFARSpbYI0XIZcAXdHCgRJAIdLNEFYl8USUEtwZupZR1AkVbVfiK
+	 VX09uT6g8kRfRiklBsGSNR59oZj/ePEEH0IVonv6VXvL/71zoOZcxaHkf2eNMkSA4b
+	 5HkDmI6TV5S3Q==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 728D140B38;
-	Wed,  9 Oct 2024 08:12:00 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 9B4B51BF406
- for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Oct 2024 08:11:58 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id B799040B81;
+	Wed,  9 Oct 2024 08:12:03 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 6A02A1BF406
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Oct 2024 08:12:02 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id C6635401E2
- for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Oct 2024 08:11:57 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 5801360897
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Oct 2024 08:12:02 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id vTssXHdqwnCN for <intel-wired-lan@lists.osuosl.org>;
- Wed,  9 Oct 2024 08:11:56 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.133.124;
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id uEELB4LEYQ4R for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  9 Oct 2024 08:12:01 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.129.124;
  helo=us-smtp-delivery-124.mimecast.com; envelope-from=pabeni@redhat.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 0E31B40639
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0E31B40639
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 81FA260863
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 81FA260863
 Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.133.124])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 0E31B40639
- for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Oct 2024 08:11:55 +0000 (UTC)
+ (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 81FA260863
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Oct 2024 08:12:01 +0000 (UTC)
 Received: from mx-prod-mc-02.mail-002.prod.us-west-2.aws.redhat.com
  (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
  relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-492-J_--y-Y5OSS58D-JcdVwqQ-1; Wed,
- 09 Oct 2024 04:11:48 -0400
-X-MC-Unique: J_--y-Y5OSS58D-JcdVwqQ-1
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-433-EfZXg6wnMXuELczmjNYNOA-1; Wed,
+ 09 Oct 2024 04:11:54 -0400
+X-MC-Unique: EfZXg6wnMXuELczmjNYNOA-1
 Received: from mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com
  (mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.12])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
  by mx-prod-mc-02.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
- id BC5511970ADC; Wed,  9 Oct 2024 08:10:44 +0000 (UTC)
+ id D195D1934D76; Wed,  9 Oct 2024 08:10:56 +0000 (UTC)
 Received: from gerbillo.redhat.com (unknown [10.45.225.249])
  by mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP
- id 005D719560A2; Wed,  9 Oct 2024 08:10:38 +0000 (UTC)
+ id 917E219560A2; Wed,  9 Oct 2024 08:10:51 +0000 (UTC)
 From: Paolo Abeni <pabeni@redhat.com>
 To: netdev@vger.kernel.org
-Date: Wed,  9 Oct 2024 10:09:51 +0200
-Message-ID: <8a721274fde18b872d1e3a61aaa916bb7b7996d3.1728460186.git.pabeni@redhat.com>
+Date: Wed,  9 Oct 2024 10:09:53 +0200
+Message-ID: <6da4ee03cae2b2a757d7b59e88baf09cc94c5ef1.1728460186.git.pabeni@redhat.com>
 In-Reply-To: <cover.1728460186.git.pabeni@redhat.com>
 References: <cover.1728460186.git.pabeni@redhat.com>
 MIME-Version: 1.0
@@ -77,23 +77,23 @@ Content-Transfer-Encoding: 8bit
 X-Scanned-By: MIMEDefang 3.0 on 10.30.177.12
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=redhat.com; 
- s=mimecast20190719; t=1728461514;
+ s=mimecast20190719; t=1728461519;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=IhDuH2YkKco9gmJfZvgGV6IJ1LqQvF+qLfUjrtQJySs=;
- b=UXfl+O/OvdYihBrU3pLHhYbiIVuTWO+uq8pK3a7TkKMDy9LPhq1wIPdcIEBKU+TJ58uVNB
- hPJMpEl2ExXQ0ZtXOjNms8qnt6kse9HfvkFeMG1Sx4/knTqNXR9CRLg/NY5mfu5tI44BUG
- k5/mg/9mThVq0XJqnJ1IGR0VrSKINrE=
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ bh=Eui556oY87SbUJSjkwki1SLeRle62IC4AC++NE4LUXs=;
+ b=A4KEZT9Js8Bv5Oynt8HebkK6HqmOvhJprPGuzTsP4VOkErceFZx2Z6YbDxTT4PEBnAHkHA
+ pO9+0vJVq4l/l8NrV2lmCqdSEWAG4TxAX7Rvv80auPnYqd4T6CdWE7rVsjuNuIsrj1gApn
+ af7kp756HLt/12DhN8jB1vb8PowOcsk=
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=redhat.com
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=UXfl+O/O
-Subject: [Intel-wired-lan] [PATCH v9 net-next 05/15] net-shapers: implement
- NL group operation
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=A4KEZT9J
+Subject: [Intel-wired-lan] [PATCH v9 net-next 07/15] net-shapers: implement
+ shaper cleanup on queue deletion
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -118,435 +118,113 @@ Cc: Jiri Pirko <jiri@resnulli.us>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Allow grouping multiple leaves shaper under the given root.
-The node and the leaves shapers are created, if needed, otherwise
-the existing shapers are re-linked as requested.
-
-Try hard to pre-allocated the needed resources, to avoid non
-trivial H/W configuration rollbacks in case of any failure.
+hook into netif_set_real_num_tx_queues() to cleanup any shaper
+configured on top of the to-be-destroyed TX queues.
 
 Reviewed-by: Jiri Pirko <jiri@nvidia.com>
+Reviewed-by: Jakub Kicinski <kuba@kernel.org>
 Signed-off-by: Paolo Abeni <pabeni@redhat.com>
 ---
-v7 -> v8:
- - always init 'node' in group_do_it()
-
 v6 -> v7:
- - moved the parsing under the shaper lock, dropping the
-   net_shaper_group() helper.
- - rename net_shaper_parse_info_nest to net_shaper_parse_leaf()
- - updated node parsing to cope with not nested attrs
- - fix leaf accounting when updating existing nodes
-
-v5 -> v6:
- - pre-allocate msg in net_shaper_nl_group_doit()
- - factor out handle_cmp() and parent_from_leaves() helpers
- - driver group() implementation is optional
- - move the 0 leaves check earlier
- - net_shaper_cache_rollback ->net_shaper_rollback
- - report the failure on reply generation error (no rollback)
- - several net_shaper_group_send_reply() fixup
-
-v4 -> v5:
- - replace net_device* with binding* in most helpers
- - factor out net_shaper_fill_binding() helper for re-use in later patch
- - move most sanity check at parse time and use NL_SET_BAD_ATTR
- - reused net_shaper_fill_handle() in net_shaper_group_send_reply()
-   instead of open-coding it.
-
-v3 -> v4:
- - cleanup left-over scope node shaper after re-link, as needed
- - add locking
- - separate arguments for shaper handle
-
-RFC v2 -> RFC v3:
- - dev_put() -> netdev_put()
+ - don't touch the H/W for the queue shaper, the driver
+   is supposed to reset clean it up.
+ - it's up to the net shaper enabled caller to acquire the
+   dev lock
 ---
- net/shaper/shaper.c | 350 ++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 350 insertions(+)
+ net/core/dev.c      |  2 ++
+ net/core/dev.h      |  4 ++++
+ net/shaper/shaper.c | 48 +++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 54 insertions(+)
 
+diff --git a/net/core/dev.c b/net/core/dev.c
+index 6e727c49a6f7..b590eefce3b4 100644
+--- a/net/core/dev.c
++++ b/net/core/dev.c
+@@ -2949,6 +2949,8 @@ int netif_set_real_num_tx_queues(struct net_device *dev, unsigned int txq)
+ 		if (dev->num_tc)
+ 			netif_setup_tc(dev, txq);
+ 
++		net_shaper_set_real_num_tx_queues(dev, txq);
++
+ 		dev_qdisc_change_real_num_tx(dev, txq);
+ 
+ 		dev->real_num_tx_queues = txq;
+diff --git a/net/core/dev.h b/net/core/dev.h
+index 13c558874af3..d3ea92949ff3 100644
+--- a/net/core/dev.h
++++ b/net/core/dev.h
+@@ -37,8 +37,12 @@ void dev_addr_check(struct net_device *dev);
+ 
+ #if IS_ENABLED(CONFIG_NET_SHAPER)
+ void net_shaper_flush_netdev(struct net_device *dev);
++void net_shaper_set_real_num_tx_queues(struct net_device *dev,
++				       unsigned int txq);
+ #else
+ static inline void net_shaper_flush_netdev(struct net_device *dev) {}
++static inline void net_shaper_set_real_num_tx_queues(struct net_device *dev,
++						     unsigned int txq) {}
+ #endif
+ 
+ /* sysctls not referred to from outside net/core/ */
 diff --git a/net/shaper/shaper.c b/net/shaper/shaper.c
-index 5946f140f3d0..c23ac611850d 100644
+index ddd1999b3f27..85ad172833fc 100644
 --- a/net/shaper/shaper.c
 +++ b/net/shaper/shaper.c
-@@ -75,6 +75,24 @@ net_shaper_ops(struct net_shaper_binding *binding)
- 	return NULL;
+@@ -1157,6 +1157,54 @@ void net_shaper_flush_netdev(struct net_device *dev)
+ 	net_shaper_flush(&binding);
  }
  
-+/* Count the number of [multi] attributes of the given type. */
-+static int net_shaper_list_len(struct genl_info *info, int type)
++void net_shaper_set_real_num_tx_queues(struct net_device *dev,
++				       unsigned int txq)
 +{
-+	struct nlattr *attr;
-+	int rem, cnt = 0;
-+
-+	nla_for_each_attr_type(attr, type, genlmsg_data(info->genlhdr),
-+			       genlmsg_len(info->genlhdr), rem)
-+		cnt++;
-+	return cnt;
-+}
-+
-+static int net_shaper_handle_size(void)
-+{
-+	return nla_total_size(nla_total_size(sizeof(u32)) +
-+			      nla_total_size(sizeof(u32)));
-+}
-+
- static int net_shaper_fill_binding(struct sk_buff *msg,
- 				   const struct net_shaper_binding *binding,
- 				   u32 type)
-@@ -472,6 +490,74 @@ static int net_shaper_parse_info(struct net_shaper_binding *binding,
- 	return 0;
- }
- 
-+/* Fetch the existing leaf and update it with the user-provided
-+ * attributes.
-+ */
-+static int net_shaper_parse_leaf(struct net_shaper_binding *binding,
-+				 const struct nlattr *attr,
-+				 const struct genl_info *info,
-+				 const struct net_shaper *node,
-+				 struct net_shaper *shaper)
-+{
-+	struct nlattr *tb[NET_SHAPER_A_WEIGHT + 1];
-+	bool exists;
-+	int ret;
-+
-+	ret = nla_parse_nested(tb, NET_SHAPER_A_WEIGHT, attr,
-+			       net_shaper_leaf_info_nl_policy, info->extack);
-+	if (ret < 0)
-+		return ret;
-+
-+	ret = net_shaper_parse_info(binding, tb, info, shaper, &exists);
-+	if (ret < 0)
-+		return ret;
-+
-+	if (shaper->handle.scope != NET_SHAPER_SCOPE_QUEUE) {
-+		NL_SET_BAD_ATTR(info->extack, tb[NET_SHAPER_A_HANDLE]);
-+		return -EINVAL;
-+	}
-+
-+	if (!exists)
-+		net_shaper_default_parent(&shaper->handle, &shaper->parent);
-+	return 0;
-+}
-+
-+/* Alike net_parse_shaper_info(), but additionally allow the user specifying
-+ * the shaper's parent handle.
-+ */
-+static int net_shaper_parse_node(struct net_shaper_binding *binding,
-+				 struct nlattr **tb,
-+				 const struct genl_info *info,
-+				 struct net_shaper *shaper)
-+{
-+	bool exists;
-+	int ret;
-+
-+	ret = net_shaper_parse_info(binding, tb, info, shaper, &exists);
-+	if (ret)
-+		return ret;
-+
-+	if (shaper->handle.scope != NET_SHAPER_SCOPE_NODE &&
-+	    shaper->handle.scope != NET_SHAPER_SCOPE_NETDEV) {
-+		NL_SET_BAD_ATTR(info->extack, tb[NET_SHAPER_A_HANDLE]);
-+		return -EINVAL;
-+	}
-+
-+	if (tb[NET_SHAPER_A_PARENT]) {
-+		ret = net_shaper_parse_handle(tb[NET_SHAPER_A_PARENT], info,
-+					      &shaper->parent);
-+		if (ret)
-+			return ret;
-+
-+		if (shaper->parent.scope != NET_SHAPER_SCOPE_NODE &&
-+		    shaper->parent.scope != NET_SHAPER_SCOPE_NETDEV) {
-+			NL_SET_BAD_ATTR(info->extack, tb[NET_SHAPER_A_PARENT]);
-+			return -EINVAL;
-+		}
-+	}
-+	return 0;
-+}
-+
- static int net_shaper_generic_pre(struct genl_info *info, int type)
- {
- 	struct net_shaper_nl_ctx *ctx = (struct net_shaper_nl_ctx *)info->ctx;
-@@ -670,6 +756,123 @@ static int __net_shaper_delete(struct net_shaper_binding *binding,
- 	return 0;
- }
- 
-+static int net_shaper_handle_cmp(const struct net_shaper_handle *a,
-+				 const struct net_shaper_handle *b)
-+{
-+	/* Must avoid holes in struct net_shaper_handle. */
-+	BUILD_BUG_ON(sizeof(*a) != 8);
-+
-+	return memcmp(a, b, sizeof(*a));
-+}
-+
-+static int net_shaper_parent_from_leaves(int leaves_count,
-+					 const struct net_shaper *leaves,
-+					 struct net_shaper *node,
-+					 struct netlink_ext_ack *extack)
-+{
-+	struct net_shaper_handle parent = leaves[0].parent;
++	struct net_shaper_hierarchy *hierarchy;
++	struct net_shaper_binding binding;
 +	int i;
 +
-+	for (i = 1; i < leaves_count; ++i) {
-+		if (net_shaper_handle_cmp(&leaves[i].parent, &parent)) {
-+			NL_SET_ERR_MSG_FMT(extack, "All the leaves shapers must have the same old parent");
-+			return -EINVAL;
-+		}
-+	}
++	binding.type = NET_SHAPER_BINDING_TYPE_NETDEV;
++	binding.netdev = dev;
++	hierarchy = net_shaper_hierarchy(&binding);
++	if (!hierarchy)
++		return;
 +
-+	node->parent = parent;
-+	return 0;
-+}
-+
-+static int __net_shaper_group(struct net_shaper_binding *binding,
-+			      int leaves_count, struct net_shaper *leaves,
-+			      struct net_shaper *node,
-+			      struct netlink_ext_ack *extack)
-+{
-+	const struct net_shaper_ops *ops = net_shaper_ops(binding);
-+	struct net_shaper_handle leaf_handle;
-+	struct net_shaper *parent = NULL;
-+	bool new_node = false;
-+	int i, ret;
-+
-+	if (node->handle.scope == NET_SHAPER_SCOPE_NODE) {
-+		new_node = node->handle.id == NET_SHAPER_ID_UNSPEC;
-+
-+		if (!new_node && !net_shaper_lookup(binding, &node->handle)) {
-+			/* The related attribute is not available when
-+			 * reaching here from the delete() op.
-+			 */
-+			NL_SET_ERR_MSG_FMT(extack, "Node shaper %d:%d does not exists",
-+					   node->handle.scope, node->handle.id);
-+			return -ENOENT;
-+		}
-+
-+		/* When unspecified, the node parent scope is inherited from
-+		 * the leaves.
-+		 */
-+		if (node->parent.scope == NET_SHAPER_SCOPE_UNSPEC) {
-+			ret = net_shaper_parent_from_leaves(leaves_count,
-+							    leaves, node,
-+							    extack);
-+			if (ret)
-+				return ret;
-+		}
-+
-+	} else {
-+		net_shaper_default_parent(&node->handle, &node->parent);
-+	}
-+
-+	if (node->parent.scope == NET_SHAPER_SCOPE_NODE) {
-+		parent = net_shaper_lookup(binding, &node->parent);
-+		if (!parent) {
-+			NL_SET_ERR_MSG_FMT(extack, "Node parent shaper %d:%d does not exists",
-+					   node->parent.scope, node->parent.id);
-+			return -ENOENT;
-+		}
-+	}
-+
-+	/* For newly created node scope shaper, the following will update
-+	 * the handle, due to id allocation.
++	/* Only drivers implementing shapers support ensure
++	 * the lock is acquired in advance.
 +	 */
-+	ret = net_shaper_pre_insert(binding, &node->handle, extack);
-+	if (ret)
-+		return ret;
++	lockdep_assert_held(&dev->lock);
 +
-+	for (i = 0; i < leaves_count; ++i) {
-+		leaf_handle = leaves[i].handle;
++	/* Take action only when decreasing the tx queue number. */
++	for (i = txq; i < dev->real_num_tx_queues; ++i) {
++		struct net_shaper_handle handle, parent_handle;
++		struct net_shaper *shaper;
++		u32 index;
 +
-+		ret = net_shaper_pre_insert(binding, &leaf_handle, extack);
-+		if (ret)
-+			goto rollback;
-+
-+		if (!net_shaper_handle_cmp(&leaves[i].parent, &node->handle))
++		handle.scope = NET_SHAPER_SCOPE_QUEUE;
++		handle.id = i;
++		shaper = net_shaper_lookup(&binding, &handle);
++		if (!shaper)
 +			continue;
 +
-+		/* The leaves shapers will be nested to the node, update the
-+		 * linking accordingly.
++		/* Don't touch the H/W for the queue shaper, the drivers already
++		 * deleted the queue and related resources.
 +		 */
-+		leaves[i].parent = node->handle;
-+		node->leaves++;
-+	}
++		parent_handle = shaper->parent;
++		index = net_shaper_handle_to_index(&handle);
++		xa_erase(&hierarchy->shapers, index);
++		kfree_rcu(shaper, rcu);
 +
-+	ret = ops->group(binding, leaves_count, leaves, node, extack);
-+	if (ret < 0)
-+		goto rollback;
-+
-+	/* The node's parent gains a new leaf only when the node itself
-+	 * is created by this group operation
-+	 */
-+	if (new_node && parent)
-+		parent->leaves++;
-+	net_shaper_commit(binding, 1, node);
-+	net_shaper_commit(binding, leaves_count, leaves);
-+	return 0;
-+
-+rollback:
-+	net_shaper_rollback(binding);
-+	return ret;
-+}
-+
- int net_shaper_nl_delete_doit(struct sk_buff *skb, struct genl_info *info)
- {
- 	struct net_shaper_hierarchy *hierarchy;
-@@ -714,6 +917,153 @@ int net_shaper_nl_delete_doit(struct sk_buff *skb, struct genl_info *info)
- 	return ret;
- }
- 
-+static int net_shaper_group_send_reply(struct net_shaper_binding *binding,
-+				       const struct net_shaper_handle *handle,
-+				       struct genl_info *info,
-+				       struct sk_buff *msg)
-+{
-+	void *hdr;
-+
-+	hdr = genlmsg_iput(msg, info);
-+	if (!hdr)
-+		goto free_msg;
-+
-+	if (net_shaper_fill_binding(msg, binding, NET_SHAPER_A_IFINDEX) ||
-+	    net_shaper_fill_handle(msg, handle, NET_SHAPER_A_HANDLE))
-+		goto free_msg;
-+
-+	genlmsg_end(msg, hdr);
-+
-+	return genlmsg_reply(msg, info);
-+
-+free_msg:
-+	/* Should never happen as msg is pre-allocated with enough space. */
-+	WARN_ONCE(true, "calculated message payload length (%d)",
-+		  net_shaper_handle_size());
-+	nlmsg_free(msg);
-+	return -EMSGSIZE;
-+}
-+
-+int net_shaper_nl_group_doit(struct sk_buff *skb, struct genl_info *info)
-+{
-+	struct net_shaper **old_nodes, *leaves, node = {};
-+	struct net_shaper_hierarchy *hierarchy;
-+	struct net_shaper_binding *binding;
-+	int i, ret, rem, leaves_count;
-+	int old_nodes_count = 0;
-+	struct sk_buff *msg;
-+	struct nlattr *attr;
-+
-+	if (GENL_REQ_ATTR_CHECK(info, NET_SHAPER_A_LEAVES))
-+		return -EINVAL;
-+
-+	binding = net_shaper_binding_from_ctx(info->ctx);
-+
-+	/* The group operation is optional. */
-+	if (!net_shaper_ops(binding)->group)
-+		return -EOPNOTSUPP;
-+
-+	net_shaper_lock(binding);
-+	leaves_count = net_shaper_list_len(info, NET_SHAPER_A_LEAVES);
-+	if (!leaves_count) {
-+		NL_SET_BAD_ATTR(info->extack,
-+				info->attrs[NET_SHAPER_A_LEAVES]);
-+		ret = -EINVAL;
-+		goto unlock;
-+	}
-+
-+	leaves = kcalloc(leaves_count, sizeof(struct net_shaper) +
-+			 sizeof(struct net_shaper *), GFP_KERNEL);
-+	if (!leaves) {
-+		ret = -ENOMEM;
-+		goto unlock;
-+	}
-+	old_nodes = (void *)&leaves[leaves_count];
-+
-+	ret = net_shaper_parse_node(binding, info->attrs, info, &node);
-+	if (ret)
-+		goto free_leaves;
-+
-+	i = 0;
-+	nla_for_each_attr_type(attr, NET_SHAPER_A_LEAVES,
-+			       genlmsg_data(info->genlhdr),
-+			       genlmsg_len(info->genlhdr), rem) {
-+		if (WARN_ON_ONCE(i >= leaves_count))
-+			goto free_leaves;
-+
-+		ret = net_shaper_parse_leaf(binding, attr, info,
-+					    &node, &leaves[i]);
-+		if (ret)
-+			goto free_leaves;
-+		i++;
-+	}
-+
-+	/* Prepare the msg reply in advance, to avoid device operation
-+	 * rollback on allocation failure.
-+	 */
-+	msg = genlmsg_new(net_shaper_handle_size(), GFP_KERNEL);
-+	if (!msg)
-+		goto free_leaves;
-+
-+	hierarchy = net_shaper_hierarchy_setup(binding);
-+	if (!hierarchy) {
-+		ret = -ENOMEM;
-+		goto free_msg;
-+	}
-+
-+	/* Record the node shapers that this group() operation can make
-+	 * childless for later cleanup.
-+	 */
-+	for (i = 0; i < leaves_count; i++) {
-+		if (leaves[i].parent.scope == NET_SHAPER_SCOPE_NODE &&
-+		    net_shaper_handle_cmp(&leaves[i].parent, &node.handle)) {
-+			struct net_shaper *tmp;
-+
-+			tmp = net_shaper_lookup(binding, &leaves[i].parent);
-+			if (!tmp)
-+				continue;
-+
-+			old_nodes[old_nodes_count++] = tmp;
-+		}
-+	}
-+
-+	ret = __net_shaper_group(binding, leaves_count, leaves, &node,
-+				 info->extack);
-+	if (ret)
-+		goto free_msg;
-+
-+	/* Check if we need to delete any node left alone by the new leaves
-+	 * linkage.
-+	 */
-+	for (i = 0; i < old_nodes_count; ++i) {
-+		struct net_shaper *tmp = old_nodes[i];
-+
-+		if (--tmp->leaves > 0)
++		/* The recursion on parent does the full job. */
++		if (parent_handle.scope != NET_SHAPER_SCOPE_NODE)
 +			continue;
 +
-+		/* Errors here are not fatal: the grouping operation is
-+		 * completed, and user-space can still explicitly clean-up
-+		 * left-over nodes.
-+		 */
-+		__net_shaper_delete(binding, tmp, info->extack);
++		shaper = net_shaper_lookup(&binding, &parent_handle);
++		if (shaper && !--shaper->leaves)
++			__net_shaper_delete(&binding, shaper, NULL);
 +	}
-+
-+	ret = net_shaper_group_send_reply(binding, &node.handle, info, msg);
-+	if (ret)
-+		GENL_SET_ERR_MSG_FMT(info, "Can't send reply");
-+
-+free_leaves:
-+	kfree(leaves);
-+
-+unlock:
-+	net_shaper_unlock(binding);
-+	return ret;
-+
-+free_msg:
-+	kfree_skb(msg);
-+	goto free_leaves;
 +}
 +
- static void net_shaper_flush(struct net_shaper_binding *binding)
+ static int __init shaper_init(void)
  {
- 	struct net_shaper_hierarchy *hierarchy = net_shaper_hierarchy(binding);
+ 	return genl_register_family(&net_shaper_nl_family);
 -- 
 2.45.2
 
