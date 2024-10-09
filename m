@@ -4,100 +4,92 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 060A1CEDD97
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  9 Oct 2024 14:01:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F35A9CEDD97
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  9 Oct 2024 14:02:34 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 9841140766;
-	Wed,  9 Oct 2024 14:01:41 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 12F0B400EA;
+	Wed,  9 Oct 2024 14:02:34 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 8iBrbTCdE3XR; Wed,  9 Oct 2024 14:01:40 +0000 (UTC)
+ id U14QTWI-DFK3; Wed,  9 Oct 2024 14:02:33 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 981FF40760
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1A15640530
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1728482500;
-	bh=e68bG0Kn9BbTQqpSk2F2T9TZANf37aHg+wPsgf0uW7Y=;
-	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=uMTgHd4UklXDLE2UtLt5hO2EVBmMAr8xpKQkHg9Q+6IetoMqsItadTOoALe05VOUa
-	 6oJDXPqowKdosH9A6NomRh6ELUkGmMCGLagMoobJXKIsZ0Gb20JP8drefHBsPWXRjD
-	 sYG4qvtNUbkAFrPRpqPVnXtg7I84MUQ2Y/EytSnL9PjxV4ZiXTd7sXrm3mdx3HLbhq
-	 HphLdnm7QQSFyaTLVfXyqgBJDnfgdY4WqtwmmcGIZBY1UG37aEsg2euBDDaX1BK3Ug
-	 v7nTjh1i4MsUmxUczVJa04/BDlkI/hWpAuCwOeudbrDsH6AvZyA6aIk36EkTZfpi8J
-	 gtyj6rydTyXeg==
+	s=default; t=1728482553;
+	bh=jlghxX1GlWM++eQvycd4uguG/vRH/YXjmAf7UcbGGz4=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=QrQytu9eH3VGhJu43tFhobMLQuqlzGiWz8punmIc7Pe4Ed+2Az3bHWiWzZXww7Z58
+	 uJlzoYlHSch/F+vrMaNiH04r6gqW/9AKRYCOaJ1Y1L0qs/4IqcPs1BIHGFZXJ5fvu1
+	 vkvV5xZltuTBdKOeeyIZoSIbcOaoTx/Ky2WVbPC7z1OVRD33HhTqjGBJBNx7rr4NO/
+	 gtheHzn84c/xBNANADXI4gE5SzTt6R1FvpPAu6eBQMUzjEook81u6Rd0tr+2wMkcaS
+	 jyq0mMqV6RXBRXTJen17O6/exM1uoJvXBzi4XA1Yek53aI69Uao6TCQ3sboPjav05a
+	 moohT/GZ6qUiA==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 981FF40760;
-	Wed,  9 Oct 2024 14:01:40 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 21EDD1BF215
- for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Oct 2024 14:01:39 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 1A15640530;
+	Wed,  9 Oct 2024 14:02:33 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id C98661BF215
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Oct 2024 14:02:31 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 1D1A3608BB
- for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Oct 2024 14:01:39 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id C3C224049A
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Oct 2024 14:02:31 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id rKigXWwCWO5q for <intel-wired-lan@lists.osuosl.org>;
- Wed,  9 Oct 2024 14:01:38 +0000 (UTC)
-Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.12;
- helo=mgamail.intel.com; envelope-from=marcin.szycik@linux.intel.com;
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id gZGoq_CdxW07 for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  9 Oct 2024 14:02:31 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.15;
+ helo=mgamail.intel.com; envelope-from=karol.kolacinski@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 378BE60627
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 378BE60627
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.12])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 378BE60627
- for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Oct 2024 14:01:38 +0000 (UTC)
-X-CSE-ConnectionGUID: BJo9YEQyRBCMFSCQIP60QQ==
-X-CSE-MsgGUID: BYxA+qofShezVdkigFO0pA==
-X-IronPort-AV: E=McAfee;i="6700,10204,11220"; a="31678206"
-X-IronPort-AV: E=Sophos;i="6.11,189,1725346800"; d="scan'208";a="31678206"
-Received: from orviesa004.jf.intel.com ([10.64.159.144])
- by fmvoesa106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 09 Oct 2024 07:01:38 -0700
-X-CSE-ConnectionGUID: OUkyTY60Tp+7rz+utcNmuQ==
-X-CSE-MsgGUID: uEZbFkRFSy6pIODMto7p/w==
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 97AED40092
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 97AED40092
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.15])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 97AED40092
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Oct 2024 14:02:30 +0000 (UTC)
+X-CSE-ConnectionGUID: abEVeMEKRRmQABAIc6eb1A==
+X-CSE-MsgGUID: VkLj5yp/RUWrwlxVIkqKIA==
+X-IronPort-AV: E=McAfee;i="6700,10204,11220"; a="31483924"
+X-IronPort-AV: E=Sophos;i="6.11,189,1725346800"; d="scan'208";a="31483924"
+Received: from orviesa009.jf.intel.com ([10.64.159.149])
+ by orvoesa107.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 09 Oct 2024 07:02:29 -0700
+X-CSE-ConnectionGUID: jVTH4o7HRrOoknzvWGf9MA==
+X-CSE-MsgGUID: iTDfwJNATV699zloEh/pBw==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.11,189,1725346800"; d="scan'208";a="81281274"
-Received: from mszycik-mobl1.ger.corp.intel.com (HELO [10.245.120.122])
- ([10.245.120.122])
- by orviesa004-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 09 Oct 2024 07:01:36 -0700
-Message-ID: <4bd4eca1-91d7-4ffb-92d9-ad708d83248c@linux.intel.com>
-Date: Wed, 9 Oct 2024 16:01:30 +0200
+X-IronPort-AV: E=Sophos;i="6.11,189,1725346800"; d="scan'208";a="76210718"
+Received: from kkolacin-desk1.ger.corp.intel.com (HELO
+ kkolacin-desk1.igk.intel.com) ([10.217.160.108])
+ by orviesa009.jf.intel.com with ESMTP; 09 Oct 2024 07:02:28 -0700
+From: Karol Kolacinski <karol.kolacinski@intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Date: Wed,  9 Oct 2024 15:59:25 +0200
+Message-ID: <20241009140223.1918687-1-karol.kolacinski@intel.com>
+X-Mailer: git-send-email 2.46.2
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-To: Paul Menzel <pmenzel@molgen.mpg.de>
-References: <20241009124912.9774-2-marcin.szycik@linux.intel.com>
- <3a5591f9-a8fe-4557-b6c4-ea393dd28913@molgen.mpg.de>
-Content-Language: en-US
-From: Marcin Szycik <marcin.szycik@linux.intel.com>
-In-Reply-To: <3a5591f9-a8fe-4557-b6c4-ea393dd28913@molgen.mpg.de>
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1728482498; x=1760018498;
- h=message-id:date:mime-version:subject:to:cc:references:
- from:in-reply-to:content-transfer-encoding;
- bh=xuA9fUHFtoQblXYKldwTdTtapCWeMBROK2X3/1kWnbE=;
- b=CZPrXMov16YvebH/DknVyR/cOFu6rQPDR4kbJMdaDzQsVqbTIUPygFJP
- hV/amEwsMTgtqiA25rA//nqTobxpyF3Pj79T4JKWUadF5tBdxlIIZPZrK
- AgKdG1K9lGCwJaatwA45vaDrGRj15MDgeIBtZpdhirv3ImV/M/VR1Amvg
- D47fz11XqZuwbj+IDFgHNXL7H2oqqJ2dMHeN9zb95VuZsgqzhg+++Ysr6
- ci0Ogo40Age1vm5pw2W7TXCw/OjNu+lO6QFG9sAxx311GMaLJahneOUc/
- 075w8xb/1xKLAyHe2dtBiBlhFCbpcp47qBsaDjW37R5kWSlInQjRHDeSA
- w==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dmarc=none (p=none dis=none)
- header.from=linux.intel.com
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ t=1728482550; x=1760018550;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=aFp+U0p8vHdTdyh3f5RRGyUMZSbdRdCviTrmYy4UqZo=;
+ b=Kdqz2JFAV6L80RbpIfcra2ay5DPEjKBzq61oLAvfmv+K0gGV5IdM3yot
+ xQBGkQqRqPpjGUa6TvA4npQfFiam5P8IGNBBa0pTCo0jN082TVocj6n9K
+ zSOLLcpV+h+HgTIfaf8K749ddfObMY7U4e0o2s8GWEepw1LLCTE8oRGoG
+ A+KLJNXaBIKILDlOGB6cNVgQGBp9zHgn5fkyVAhslCPLURlfJwGgGC9VB
+ ZdvUG1P3PIVj44wwjw6VK8Ww8fEu965gh6aWNrdlaKVFrrJfy89IK3q1q
+ dpM/UmMElq0mnNb+J/Yn/4k/WsIi5H2FrOslwnHvvTtsNm4dKlU71wctV
+ g==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=intel.com
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=CZPrXMov
-Subject: Re: [Intel-wired-lan] [PATCH iwl-net] ice: Fix use after free
- during unload with ports in bridge
+ header.s=Intel header.b=Kdqz2JFA
+Subject: [Intel-wired-lan] [PATCH v2 iwl-next 0/4] Fix E825 initialization
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -110,103 +102,49 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, intel-wired-lan@lists.osuosl.org,
- Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+Cc: netdev@vger.kernel.org, Karol Kolacinski <karol.kolacinski@intel.com>,
+ anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
+E825 products have incorrect initialization procedure, which may lead to
+initialization failures and register values.
+
+Fix E825 products initialization by adding correct sync delay, checking the
+PHY
+revision only for current PHY and adding proper destination device when
+reading
+port/quad.
+
+In addition, E825 uses PF ID for indexing per PF registers and as a primary
+PHY
+lane number, which is incorrect.
 
 
-On 09.10.2024 15:12, Paul Menzel wrote:
-> Dear Marcin,
-> 
-> 
-> Thank you for the patch, and the reproducer and detailed commit message.
-> 
-> Am 09.10.24 um 14:49 schrieb Marcin Szycik:
->> Unloading the ice driver while switchdev port representors are added to
->> a bridge can lead to kernel panic. Reproducer:
->>
->>    modprobe ice
->>
->>    devlink dev eswitch set $PF1_PCI mode switchdev
->>
->>    ip link add $BR type bridge
->>    ip link set $BR up
->>
->>    echo 2 > /sys/class/net/$PF1/device/sriov_numvfs
->>    sleep 2
->>
->>    ip link set $PF1 master $BR
->>    ip link set $VF1_PR master $BR
->>    ip link set $VF2_PR master $BR
->>    ip link set $PF1 up
->>    ip link set $VF1_PR up
->>    ip link set $VF2_PR up
->>    ip link set $VF1 up
->>
->>    rmmod irdma ice
-> 
-> For people hitting the issue, an excerpt from the panic would also be nice, so it can be found more easily.
+Karol Kolacinski (4):
+  ice: Fix E825 initialization
+  ice: Fix quad registers read on E825
+  ice: Fix ETH56G FC-FEC Rx offset value
+  ice: Add correct PHY lane assignment
 
-Will add in v2, thanks.
-Marcin
+ drivers/net/ethernet/intel/ice/ice_common.c   |  42 ++-
+ drivers/net/ethernet/intel/ice/ice_common.h   |   1 +
+ drivers/net/ethernet/intel/ice/ice_main.c     |   6 +-
+ drivers/net/ethernet/intel/ice/ice_ptp.c      |  23 +-
+ drivers/net/ethernet/intel/ice/ice_ptp.h      |   4 +-
+ .../net/ethernet/intel/ice/ice_ptp_consts.h   |  77 +----
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.c   | 285 +++++++++---------
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.h   |  40 ++-
+ drivers/net/ethernet/intel/ice/ice_sbq_cmd.h  |   7 +-
+ drivers/net/ethernet/intel/ice/ice_type.h     |   2 -
+ 10 files changed, 243 insertions(+), 244 deletions(-)
 
->> When unloading the driver, ice_eswitch_detach() is eventually called as
->> part of VF freeing. First, it removes a port representor from xarray,
->> then unregister_netdev() is called (via repr->ops.rem()), finally
->> representor is deallocated. The problem comes from the bridge doing its
->> own deinit at the same time. unregister_netdev() triggers a notifier
->> chain, resulting in ice_eswitch_br_port_deinit() being called. It should
->> set repr->br_port = NULL, but this does not happen since repr has
->> already been removed from xarray and is not found. Regardless, it
->> finishes up deallocating br_port. At this point, repr is still not freed
->> and an fdb event can happen, in which ice_eswitch_br_fdb_event_work()
->> takes repr->br_port and tries to use it, which causes a panic (use after
->> free).
->>
->> Note that this only happens with 2 or more port representors added to
->> the bridge, since with only one representor port, the bridge deinit is
->> slightly different (ice_eswitch_br_port_deinit() is called via
->> ice_eswitch_br_ports_flush(), not ice_eswitch_br_port_unlink()).
->>
->> A workaround is available: brctl setageing $BR 0, which stops the bridge
->> from adding fdb entries altogether.
->>
->> Change the order of operations in ice_eswitch_detach(): move the call to
->> unregister_netdev() before removing repr from xarray. This way
->> repr->br_port will be correctly set to NULL in
->> ice_eswitch_br_port_deinit(), preventing a panic.
->>
->> Fixes: fff292b47ac1 ("ice: add VF representors one by one")
->> Reviewed-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
->> Signed-off-by: Marcin Szycik <marcin.szycik@linux.intel.com>
->> ---
->>   drivers/net/ethernet/intel/ice/ice_eswitch.c | 3 ++-
->>   1 file changed, 2 insertions(+), 1 deletion(-)
->>
->> diff --git a/drivers/net/ethernet/intel/ice/ice_eswitch.c b/drivers/net/ethernet/intel/ice/ice_eswitch.c
->> index c0b3e70a7ea3..fb527434b58b 100644
->> --- a/drivers/net/ethernet/intel/ice/ice_eswitch.c
->> +++ b/drivers/net/ethernet/intel/ice/ice_eswitch.c
->> @@ -552,13 +552,14 @@ int ice_eswitch_attach_sf(struct ice_pf *pf, struct ice_dynamic_port *sf)
->>   static void ice_eswitch_detach(struct ice_pf *pf, struct ice_repr *repr)
->>   {
->>       ice_eswitch_stop_reprs(pf);
->> +    repr->ops.rem(repr);
->> +
->>       xa_erase(&pf->eswitch.reprs, repr->id);
->>         if (xa_empty(&pf->eswitch.reprs))
->>           ice_eswitch_disable_switchdev(pf);
->>         ice_eswitch_release_repr(pf, repr);
->> -    repr->ops.rem(repr);
->>       ice_repr_destroy(repr);
->>         if (xa_empty(&pf->eswitch.reprs)) {
-> 
-> Reviewed-by: Paul Menzel <pmenzel@molgen.mpg.de>
-> 
-> 
-> Kind regards,
-> 
-> Paul
+V1 -> V2: Removed net-next hunks from "ice: Fix E825 initialization",
+          whole "ice: Remove unnecessary offset calculation for PF
+          scoped registers" patch and fixed kdoc in "ice: Fix quad
+          registers read on E825"
+
+base-commit: af8cac359cecaab37a171039fc82cfd1f7aca501
+-- 
+2.46.2
 
