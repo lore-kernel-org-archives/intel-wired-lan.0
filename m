@@ -4,69 +4,69 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 926F8CF11F9
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 10 Oct 2024 14:23:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 01293CF11F8
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 10 Oct 2024 14:23:23 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 2F62A60B59;
-	Thu, 10 Oct 2024 14:23:21 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id B92B160B4A;
+	Thu, 10 Oct 2024 14:23:23 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id nG2VNmCTmQWy; Thu, 10 Oct 2024 14:23:19 +0000 (UTC)
+ id Mwc9FhqfN_ED; Thu, 10 Oct 2024 14:23:22 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 6262760B0F
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B324A60B33
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1728570199;
-	bh=WhsOBUxok0mzNhs/oqQwg8BIUT7VYoT+HB9q7YZHYEM=;
+	s=default; t=1728570202;
+	bh=4WkBGY9FX31knDnzx2yB8eOB0w7zZx1uYLzV+MQb8Fg=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=zTNH2yoU9UWA61MnJ9qrQWSXffclZTM3VP3kQ5yBG7iqd2p6jb0ysI7z4IDpmkNCi
-	 i0lY+5hUl2gtVS+s0jbDI+cfFUggHxMDw4sJGf7FBu3BD1Yf4j27P4bqcbeBqbeCIe
-	 vM4xduPb11GrXP7Ypo5zGZPodR/GIhg3q1gBkN1WfVE/uLf1YjBPjgKOEJs379yJp+
-	 0f2CTCpAP+PJvr2MGQqonreF1fvNhaVbHY08GoBGlRGKRLkkRHM45iNM957Cf/AT9m
-	 C1GRWIMARSsMXwayT1J1b5ZOsal7xc4dmsJyNGMvnTz27BFTQ3lbGA+XA9VLc6DBfM
-	 Df4H8kUonbvhw==
+	b=YyMY0fbsqnSCowc7tiJb4ywmCfdYV3GS7F1o94NrZetxmI5+m2/2O6OAdfQT+lr0S
+	 SE6Bn2BJrgdGnplaob50RYvJxkzpD+6FyrR0wAjpb9hK5Nb0MKsdeK7o8iSsCvGGwG
+	 QAea9ppaFHDeAZbaY2d/M3PG7nE+IxoCHclltGQPemHtepA9IMY26wmoqVWn/yN24U
+	 a7Xw0R5GpfQx8E0+rImk3csTc6GKNoQhOdaMYmOs4khZEsL/w2kyLljHN75hzIy5Xg
+	 3NXP5H48qmg9p8glLkrhDojHed8+aLpaFHEl0a0Do35LrdWHx8bSBOXj+9ky2+6H3d
+	 gGHj3VQLqjPfQ==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 6262760B0F;
-	Thu, 10 Oct 2024 14:23:19 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id B324A60B33;
+	Thu, 10 Oct 2024 14:23:22 +0000 (UTC)
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 30A211BF4E3
- for <intel-wired-lan@lists.osuosl.org>; Thu, 10 Oct 2024 14:23:16 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 2104E1BF4E3
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 10 Oct 2024 14:23:19 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 1F03960B0F
- for <intel-wired-lan@lists.osuosl.org>; Thu, 10 Oct 2024 14:23:16 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 0D1F360B43
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 10 Oct 2024 14:23:19 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 9bU1TSSLdkiN for <intel-wired-lan@lists.osuosl.org>;
- Thu, 10 Oct 2024 14:23:14 +0000 (UTC)
+ id HS4g1CiflxZO for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 10 Oct 2024 14:23:18 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.12;
  helo=mgamail.intel.com; envelope-from=karol.kolacinski@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 8649D605FE
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8649D605FE
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 0C60E605FE
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 0C60E605FE
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.12])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 8649D605FE
- for <intel-wired-lan@lists.osuosl.org>; Thu, 10 Oct 2024 14:23:14 +0000 (UTC)
-X-CSE-ConnectionGUID: ufPMWXHLTkSH9PB/VQa17g==
-X-CSE-MsgGUID: U0DYcRAiSE+aQFeXpsfXyg==
-X-IronPort-AV: E=McAfee;i="6700,10204,11220"; a="39321107"
-X-IronPort-AV: E=Sophos;i="6.11,193,1725346800"; d="scan'208";a="39321107"
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 0C60E605FE
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 10 Oct 2024 14:23:18 +0000 (UTC)
+X-CSE-ConnectionGUID: xVl4pmQYTa2kDhgERzE1CQ==
+X-CSE-MsgGUID: LKV7oUEGS5STXxStzCntiA==
+X-IronPort-AV: E=McAfee;i="6700,10204,11220"; a="39321126"
+X-IronPort-AV: E=Sophos;i="6.11,193,1725346800"; d="scan'208";a="39321126"
 Received: from fmviesa002.fm.intel.com ([10.60.135.142])
  by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 10 Oct 2024 07:23:14 -0700
-X-CSE-ConnectionGUID: 6EYVjBVBRNyehQTbXzP2Ag==
-X-CSE-MsgGUID: oG8FMYOKSBmurHKxu2vElw==
+ 10 Oct 2024 07:23:18 -0700
+X-CSE-ConnectionGUID: 3q15CtqgQXK64fz0yD432A==
+X-CSE-MsgGUID: oBOwofYjQX+fZkG9aD3zjA==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.11,193,1725346800"; d="scan'208";a="99937512"
+X-IronPort-AV: E=Sophos;i="6.11,193,1725346800"; d="scan'208";a="99937519"
 Received: from kkolacin-desk1.ger.corp.intel.com (HELO
  kkolacin-desk1.igk.intel.com) ([10.217.160.108])
- by fmviesa002.fm.intel.com with ESMTP; 10 Oct 2024 07:23:12 -0700
+ by fmviesa002.fm.intel.com with ESMTP; 10 Oct 2024 07:23:16 -0700
 From: Karol Kolacinski <karol.kolacinski@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Thu, 10 Oct 2024 16:21:15 +0200
-Message-ID: <20241010142254.2047150-3-karol.kolacinski@intel.com>
+Date: Thu, 10 Oct 2024 16:21:17 +0200
+Message-ID: <20241010142254.2047150-5-karol.kolacinski@intel.com>
 X-Mailer: git-send-email 2.46.2
 In-Reply-To: <20241010142254.2047150-1-karol.kolacinski@intel.com>
 References: <20241010142254.2047150-1-karol.kolacinski@intel.com>
@@ -74,25 +74,25 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1728570195; x=1760106195;
+ t=1728570198; x=1760106198;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=9l69zs3evx8EnxXdtwifuNUbxU28tfYHbYAfljm3sCc=;
- b=lBtKV0tLFOv84a5CxnxlVZCsMuvjIVaHx8wFNWAPO5NxXe5y6JOuc0/R
- UChJ5wwhMu1N2O11AgQqtedaDAK60I6UQcH7C0Gjvtm+gJfTwg6A4p036
- 2l6II5GEBXWIE7/7csKVH1ydLQmR7AIOwaWDQ2cDEy0KH6MQkFZQ4M+cZ
- QNNxtXhylkTC7oqusNqwFwLTGHwoXagvC8r/uWTh2Je2btINi28cz+lwg
- jTrjdfwQhIhq2vtNcRhh/Cg62oXrHSpPTlYAC0l6eLEZYnt68ygv/nWmZ
- t9ESKbX5go2yVUwiG1XBzCtjgt0Iz9OMhGLjU6P95sb39il4HwAP99nIC
- w==;
+ bh=9Z7FpbGnvaPZCxnqbIbuabtLp1NKcskB0CrLb1ZzBbY=;
+ b=V4Mwn73nMC0E1bQA6By2R9QjdY5tVm1PiibdpiZLE9H4pJ1Gip+t1tUx
+ IK7bVO6XnrZUQculmNSowN9LNLjMQ2II6/v9kN3kdHv3EGSkq2Kx72hK/
+ 1Ne0giqwjw0gj73dt83VYTYrLNjvpq2EzR+xY0ABi+BxSzf9MAmxGceha
+ yghSY4v3WLUtoWSTR7UFknAHaVWTZtCMg1eIbrp7y3ikVmun+uQAOSOh8
+ gftnlnoQ0l1KSBtc/jLxZmVTEz5YOKmtvDB14PYM8brUDsEB3j2fZ+wJi
+ pVMThUvhHkeMaIKG/euWCJwSTWct+mecDAIfAseqY7y0Q1Ns/81eo8f0t
+ A==;
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=lBtKV0tL
-Subject: [Intel-wired-lan] [PATCH v2 iwl-net 2/4] ice: Fix quad registers
- read on E825
+ header.a=rsa-sha256 header.s=Intel header.b=V4Mwn73n
+Subject: [Intel-wired-lan] [PATCH v2 iwl-net 4/4] ice: Add correct PHY lane
+ assignment
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,710 +106,269 @@ List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Cc: netdev@vger.kernel.org, Karol Kolacinski <karol.kolacinski@intel.com>,
- Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>,
+ Arkadiusz Kubalewski <Arkadiusz.kubalewski@intel.com>,
  anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Quad registers are read/written incorrectly. E825 devices always use
-quad 0 address and differentiate between the PHYs by changing SBQ
-destination device (phy_0 or phy_0_peer).
+Driver always naively assumes, that for PTP purposes, PHY lane to
+configure is corresponding to PF ID.
 
-Add helpers for reading/writing PTP registers shared per quad and use
-correct quad address and SBQ destination device based on port.
+This is not true for some port configurations, e.g.:
+- 2x50G per quad, where lanes used are 0 and 2 on each quad, but PF IDs
+  are 0 and 1
+- 100G per quad on 2 quads, where lanes used are 0 and 4, but PF IDs are
+  0 and 1
 
-Rename rmn_0 to phy_0 and remove rmn_1 and rmn_2 as E82X HW does not
-support it. Rename eth56g_phy_1 to phy_0_peer.
+Use correct PHY lane assignment by getting and parsing port options.
+This is read from the NVM by the FW and provided to the driver with
+the indication of active port split.
 
-Fixes: 7cab44f1c35f ("ice: Introduce ETH56G PHY model for E825C products")
-Reviewed-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
+Remove ice_is_muxed_topo(), which is no longer needed.
+
+Fixes: 4409ea1726cb ("ice: Adjust PTP init for 2x50G E825C devices")
+Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Reviewed-by: Arkadiusz Kubalewski <Arkadiusz.kubalewski@intel.com>
 Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
 ---
-V1 -> V2: Fixed kdoc issues
-
- drivers/net/ethernet/intel/ice/ice_common.c   |   2 +-
- .../net/ethernet/intel/ice/ice_ptp_consts.h   |  75 ++----
- drivers/net/ethernet/intel/ice/ice_ptp_hw.c   | 237 +++++++++++-------
- drivers/net/ethernet/intel/ice/ice_ptp_hw.h   |  37 ++-
- drivers/net/ethernet/intel/ice/ice_sbq_cmd.h  |   7 +-
- drivers/net/ethernet/intel/ice/ice_type.h     |   1 -
- 6 files changed, 177 insertions(+), 182 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_common.c | 40 +++++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_common.h |  1 +
+ drivers/net/ethernet/intel/ice/ice_main.c   |  6 ++--
+ drivers/net/ethernet/intel/ice/ice_ptp.c    | 23 +++++-------
+ drivers/net/ethernet/intel/ice/ice_ptp.h    |  4 +--
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.c | 22 ------------
+ drivers/net/ethernet/intel/ice/ice_type.h   |  1 -
+ 7 files changed, 55 insertions(+), 42 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index 009716a12a26..0eb7f828ed3a 100644
+index 0eb7f828ed3a..618259f8abdc 100644
 --- a/drivers/net/ethernet/intel/ice/ice_common.c
 +++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -3454,7 +3454,7 @@ int ice_aq_get_fec_stats(struct ice_hw *hw, u16 pcs_quad, u16 pcs_port,
- 	msg.msg_addr_low = lower_16_bits(reg_offset);
- 	msg.msg_addr_high = receiver_id;
- 	msg.opcode = ice_sbq_msg_rd;
--	msg.dest_dev = rmn_0;
-+	msg.dest_dev = phy_0;
- 
- 	err = ice_sbq_rw_reg(hw, &msg, flag);
- 	if (err)
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_consts.h b/drivers/net/ethernet/intel/ice/ice_ptp_consts.h
-index e6980b94a6c1..e63f2a36eabf 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp_consts.h
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp_consts.h
-@@ -10,70 +10,25 @@
- /* Constants defined for the PTP 1588 clock hardware. */
- 
- const struct ice_phy_reg_info_eth56g eth56g_phy_res[NUM_ETH56G_PHY_RES] = {
--	/* ETH56G_PHY_REG_PTP */
--	{
--		/* base_addr */
--		{
--			0x092000,
--			0x126000,
--			0x1BA000,
--			0x24E000,
--			0x2E2000,
--		},
--		/* step */
--		0x98,
-+	[ETH56G_PHY_REG_PTP] = {
-+		.base_addr = 0x092000,
-+		.step = 0x98,
- 	},
--	/* ETH56G_PHY_MEM_PTP */
--	{
--		/* base_addr */
--		{
--			0x093000,
--			0x127000,
--			0x1BB000,
--			0x24F000,
--			0x2E3000,
--		},
--		/* step */
--		0x200,
-+	[ETH56G_PHY_MEM_PTP] = {
-+		.base_addr = 0x093000,
-+		.step = 0x200,
- 	},
--	/* ETH56G_PHY_REG_XPCS */
--	{
--		/* base_addr */
--		{
--			0x000000,
--			0x009400,
--			0x128000,
--			0x1BC000,
--			0x250000,
--		},
--		/* step */
--		0x21000,
-+	[ETH56G_PHY_REG_XPCS] = {
-+		.base_addr = 0x000000,
-+		.step = 0x21000,
- 	},
--	/* ETH56G_PHY_REG_MAC */
--	{
--		/* base_addr */
--		{
--			0x085000,
--			0x119000,
--			0x1AD000,
--			0x241000,
--			0x2D5000,
--		},
--		/* step */
--		0x1000,
-+	[ETH56G_PHY_REG_MAC] = {
-+		.base_addr = 0x085000,
-+		.step = 0x1000,
- 	},
--	/* ETH56G_PHY_REG_GPCS */
--	{
--		/* base_addr */
--		{
--			0x084000,
--			0x118000,
--			0x1AC000,
--			0x240000,
--			0x2D4000,
--		},
--		/* step */
--		0x400,
-+	[ETH56G_PHY_REG_GPCS] = {
-+		.base_addr = 0x084000,
-+		.step = 0x400,
- 	},
- };
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-index d9a3c7de0342..f28d0357c88f 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-@@ -879,31 +879,46 @@ static void ice_ptp_exec_tmr_cmd(struct ice_hw *hw)
-  * The following functions operate on devices with the ETH 56G PHY.
-  */
+@@ -4065,6 +4065,46 @@ ice_aq_set_port_option(struct ice_hw *hw, u8 lport, u8 lport_valid,
+ 	return ice_aq_send_cmd(hw, &desc, NULL, 0, NULL);
+ }
  
 +/**
-+ * ice_ptp_get_dest_dev_e825 - get destination PHY for given port number
-+ * @hw: pointer to the HW struct
-+ * @port: destination port
++ * ice_get_phy_lane_number - Get PHY lane number for current adapter
++ * @hw: pointer to the hw struct
 + *
-+ * Return: destination sideband queue PHY device.
++ * Return: PHY lane number on success, negative error code otherwise.
 + */
-+static enum ice_sbq_msg_dev ice_ptp_get_dest_dev_e825(struct ice_hw *hw,
-+						      u8 port)
++int ice_get_phy_lane_number(struct ice_hw *hw)
 +{
-+	/* On a single complex E825, PHY 0 is always destination device phy_0
-+	 * and PHY 1 is phy_0_peer.
-+	 */
-+	if (port >= hw->ptp.ports_per_phy)
-+		return phy_0_peer;
-+	else
-+		return phy_0;
++	struct ice_aqc_get_port_options_elem *options __free(kfree);
++	unsigned int lport = 0;
++	unsigned int lane;
++	int err;
++
++	options = kcalloc(ICE_AQC_PORT_OPT_MAX, sizeof(*options), GFP_KERNEL);
++	if (!options)
++		return -ENOMEM;
++
++	for (lane = 0; lane < ICE_MAX_PORT_PER_PCI_DEV; lane++) {
++		u8 options_count = ICE_AQC_PORT_OPT_MAX;
++		bool active_valid, pending_valid;
++		u8 active_idx, pending_idx;
++
++		err = ice_aq_get_port_options(hw, options, &options_count, lane,
++					      true, &active_idx, &active_valid,
++					      &pending_idx, &pending_valid);
++		if (err)
++			return err;
++
++		if (!active_valid)
++			continue;
++
++		if (hw->pf_id == lport)
++			return lane;
++		lport++;
++	}
++
++	/* PHY lane not found */
++	return -ENXIO;
 +}
 +
  /**
-  * ice_write_phy_eth56g - Write a PHY port register
+  * ice_aq_sff_eeprom
   * @hw: pointer to the HW struct
-- * @phy_idx: PHY index
-+ * @port: destination port
-  * @addr: PHY register address
-  * @val: Value to write
-  *
-- * Return: 0 on success, other error codes when failed to write to PHY
-+ * Return: 0 on success, other error codes when failed to write to PHY.
-  */
--static int ice_write_phy_eth56g(struct ice_hw *hw, u8 phy_idx, u32 addr,
--				u32 val)
-+static int ice_write_phy_eth56g(struct ice_hw *hw, u8 port, u32 addr, u32 val)
- {
--	struct ice_sbq_msg_input phy_msg;
-+	struct ice_sbq_msg_input msg = {
-+		.dest_dev = ice_ptp_get_dest_dev_e825(hw, port),
-+		.opcode = ice_sbq_msg_wr,
-+		.msg_addr_low = lower_32_bits(addr),
-+		.msg_addr_high = upper_32_bits(addr),
-+		.data = val
-+	};
- 	int err;
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
+index 27208a60cece..fe6f88cfd948 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.h
++++ b/drivers/net/ethernet/intel/ice/ice_common.h
+@@ -193,6 +193,7 @@ ice_aq_get_port_options(struct ice_hw *hw,
+ int
+ ice_aq_set_port_option(struct ice_hw *hw, u8 lport, u8 lport_valid,
+ 		       u8 new_option);
++int ice_get_phy_lane_number(struct ice_hw *hw);
+ int
+ ice_aq_sff_eeprom(struct ice_hw *hw, u16 lport, u8 bus_addr,
+ 		  u16 mem_addr, u8 page, u8 set_page, u8 *data, u8 length,
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index b1e7727b8677..72ef1b15b100 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -1144,7 +1144,7 @@ ice_link_event(struct ice_pf *pf, struct ice_port_info *pi, bool link_up,
+ 	if (link_up == old_link && link_speed == old_link_speed)
+ 		return 0;
  
--	phy_msg.opcode = ice_sbq_msg_wr;
--
--	phy_msg.msg_addr_low = lower_16_bits(addr);
--	phy_msg.msg_addr_high = upper_16_bits(addr);
--
--	phy_msg.data = val;
--	phy_msg.dest_dev = hw->ptp.phy.eth56g.phy_addr[phy_idx];
--
--	err = ice_sbq_rw_reg(hw, &phy_msg, ICE_AQ_FLAG_RD);
--
-+	err = ice_sbq_rw_reg(hw, &msg, ICE_AQ_FLAG_RD);
- 	if (err)
- 		ice_debug(hw, ICE_DBG_PTP, "PTP failed to send msg to phy %d\n",
- 			  err);
-@@ -914,41 +929,36 @@ static int ice_write_phy_eth56g(struct ice_hw *hw, u8 phy_idx, u32 addr,
+-	ice_ptp_link_change(pf, pf->hw.pf_id, link_up);
++	ice_ptp_link_change(pf, link_up);
+ 
+ 	if (ice_is_dcb_active(pf)) {
+ 		if (test_bit(ICE_FLAG_DCB_ENA, pf->flags))
+@@ -6742,7 +6742,7 @@ static int ice_up_complete(struct ice_vsi *vsi)
+ 		ice_print_link_msg(vsi, true);
+ 		netif_tx_start_all_queues(vsi->netdev);
+ 		netif_carrier_on(vsi->netdev);
+-		ice_ptp_link_change(pf, pf->hw.pf_id, true);
++		ice_ptp_link_change(pf, true);
+ 	}
+ 
+ 	/* Perform an initial read of the statistics registers now to
+@@ -7212,7 +7212,7 @@ int ice_down(struct ice_vsi *vsi)
+ 
+ 	if (vsi->netdev) {
+ 		vlan_err = ice_vsi_del_vlan_zero(vsi);
+-		ice_ptp_link_change(vsi->back, vsi->back->hw.pf_id, false);
++		ice_ptp_link_change(vsi->back, false);
+ 		netif_carrier_off(vsi->netdev);
+ 		netif_tx_disable(vsi->netdev);
+ 	}
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
+index ef2e858f49bb..da7b57684d32 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp.c
++++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
+@@ -1454,10 +1454,9 @@ ice_ptp_port_phy_restart(struct ice_ptp_port *ptp_port)
  /**
-  * ice_read_phy_eth56g - Read a PHY port register
-  * @hw: pointer to the HW struct
-- * @phy_idx: PHY index
-+ * @port: destination port
-  * @addr: PHY register address
-  * @val: Value to write
-  *
-- * Return: 0 on success, other error codes when failed to read from PHY
-+ * Return: 0 on success, other error codes when failed to read from PHY.
+  * ice_ptp_link_change - Reconfigure PTP after link status change
+  * @pf: Board private structure
+- * @port: Port for which the PHY start is set
+  * @linkup: Link is up or down
   */
--static int ice_read_phy_eth56g(struct ice_hw *hw, u8 phy_idx, u32 addr,
--			       u32 *val)
-+static int ice_read_phy_eth56g(struct ice_hw *hw, u8 port, u32 addr, u32 *val)
+-void ice_ptp_link_change(struct ice_pf *pf, u8 port, bool linkup)
++void ice_ptp_link_change(struct ice_pf *pf, bool linkup)
  {
--	struct ice_sbq_msg_input phy_msg;
-+	struct ice_sbq_msg_input msg = {
-+		.dest_dev = ice_ptp_get_dest_dev_e825(hw, port),
-+		.opcode = ice_sbq_msg_rd,
-+		.msg_addr_low = lower_32_bits(addr),
-+		.msg_addr_high = upper_32_bits(addr)
-+	};
- 	int err;
+ 	struct ice_ptp_port *ptp_port;
+ 	struct ice_hw *hw = &pf->hw;
+@@ -1465,14 +1464,7 @@ void ice_ptp_link_change(struct ice_pf *pf, u8 port, bool linkup)
+ 	if (pf->ptp.state != ICE_PTP_READY)
+ 		return;
  
--	phy_msg.opcode = ice_sbq_msg_rd;
+-	if (WARN_ON_ONCE(port >= hw->ptp.num_lports))
+-		return;
 -
--	phy_msg.msg_addr_low = lower_16_bits(addr);
--	phy_msg.msg_addr_high = upper_16_bits(addr);
--
--	phy_msg.data = 0;
--	phy_msg.dest_dev = hw->ptp.phy.eth56g.phy_addr[phy_idx];
--
--	err = ice_sbq_rw_reg(hw, &phy_msg, ICE_AQ_FLAG_RD);
--	if (err) {
-+	err = ice_sbq_rw_reg(hw, &msg, ICE_AQ_FLAG_RD);
-+	if (err)
- 		ice_debug(hw, ICE_DBG_PTP, "PTP failed to send msg to phy %d\n",
- 			  err);
--		return err;
--	}
--
--	*val = phy_msg.data;
-+	else
-+		*val = msg.data;
+ 	ptp_port = &pf->ptp.port;
+-	if (ice_is_e825c(hw) && hw->ptp.is_2x50g_muxed_topo)
+-		port *= 2;
+-	if (WARN_ON_ONCE(ptp_port->port_num != port))
+-		return;
  
--	return 0;
-+	return err;
+ 	/* Update cached link status for this port immediately */
+ 	ptp_port->link_up = linkup;
+@@ -3339,10 +3331,17 @@ void ice_ptp_init(struct ice_pf *pf)
+ {
+ 	struct ice_ptp *ptp = &pf->ptp;
+ 	struct ice_hw *hw = &pf->hw;
+-	int err;
++	int lane_num, err;
+ 
+ 	ptp->state = ICE_PTP_INITIALIZING;
+ 
++	lane_num = ice_get_phy_lane_number(hw);
++	if (lane_num < 0) {
++		err = lane_num;
++		goto err;
++	}
++
++	ptp->port.port_num = (u8)lane_num;
+ 	ice_ptp_init_hw(hw);
+ 
+ 	ice_ptp_init_tx_interrupt_mode(pf);
+@@ -3356,10 +3355,6 @@ void ice_ptp_init(struct ice_pf *pf)
+ 			goto err;
+ 	}
+ 
+-	ptp->port.port_num = hw->pf_id;
+-	if (ice_is_e825c(hw) && hw->ptp.is_2x50g_muxed_topo)
+-		ptp->port.port_num = hw->pf_id * 2;
+-
+ 	err = ice_ptp_init_port(pf, &ptp->port);
+ 	if (err)
+ 		goto err;
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.h b/drivers/net/ethernet/intel/ice/ice_ptp.h
+index 2db2257a0fb2..44a05c8d2113 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp.h
++++ b/drivers/net/ethernet/intel/ice/ice_ptp.h
+@@ -331,7 +331,7 @@ void ice_ptp_prepare_for_reset(struct ice_pf *pf,
+ 			       enum ice_reset_req reset_type);
+ void ice_ptp_init(struct ice_pf *pf);
+ void ice_ptp_release(struct ice_pf *pf);
+-void ice_ptp_link_change(struct ice_pf *pf, u8 port, bool linkup);
++void ice_ptp_link_change(struct ice_pf *pf, bool linkup);
+ #else /* IS_ENABLED(CONFIG_PTP_1588_CLOCK) */
+ static inline int ice_ptp_set_ts_config(struct ice_pf *pf, struct ifreq *ifr)
+ {
+@@ -379,7 +379,7 @@ static inline void ice_ptp_prepare_for_reset(struct ice_pf *pf,
+ }
+ static inline void ice_ptp_init(struct ice_pf *pf) { }
+ static inline void ice_ptp_release(struct ice_pf *pf) { }
+-static inline void ice_ptp_link_change(struct ice_pf *pf, u8 port, bool linkup)
++static inline void ice_ptp_link_change(struct ice_pf *pf, bool linkup)
+ {
  }
  
- /**
-- * ice_phy_res_address_eth56g - Calculate a PHY port register address
-- * @port: Port number to be written
-+ * ice_phy_res_addr_eth56g - Calculate a PHY port register address
-+ * @hw: pointer to the HW struct
-+ * @lane: Lane number to be written
-  * @res_type: resource type (register/memory)
-  * @offset: Offset from PHY port register base
-  * @addr: The result address
-@@ -957,17 +967,18 @@ static int ice_read_phy_eth56g(struct ice_hw *hw, u8 phy_idx, u32 addr,
-  * * %0      - success
-  * * %EINVAL - invalid port number or resource type
-  */
--static int ice_phy_res_address_eth56g(u8 port, enum eth56g_res_type res_type,
--				      u32 offset, u32 *addr)
-+static int ice_phy_res_addr_eth56g(struct ice_hw *hw, u8 lane,
-+				   enum eth56g_res_type res_type, u32 offset,
-+				   u32 *addr)
- {
--	u8 lane = port % ICE_PORTS_PER_QUAD;
--	u8 phy = ICE_GET_QUAD_NUM(port);
--
- 	if (res_type >= NUM_ETH56G_PHY_RES)
- 		return -EINVAL;
- 
--	*addr = eth56g_phy_res[res_type].base[phy] +
-+	/* Lanes 4..7 are in fact 0..3 on a second PHY */
-+	lane %= hw->ptp.ports_per_phy;
-+	*addr = eth56g_phy_res[res_type].base_addr +
- 		lane * eth56g_phy_res[res_type].step + offset;
-+
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
+index f28d0357c88f..3737727231b1 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
++++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
+@@ -2699,26 +2699,6 @@ static int ice_get_phy_tx_tstamp_ready_eth56g(struct ice_hw *hw, u8 port,
  	return 0;
  }
  
-@@ -987,19 +998,17 @@ static int ice_phy_res_address_eth56g(u8 port, enum eth56g_res_type res_type,
- static int ice_write_port_eth56g(struct ice_hw *hw, u8 port, u32 offset,
- 				 u32 val, enum eth56g_res_type res_type)
- {
--	u8 phy_port = port % hw->ptp.ports_per_phy;
--	u8 phy_idx = port / hw->ptp.ports_per_phy;
- 	u32 addr;
- 	int err;
- 
- 	if (port >= hw->ptp.num_lports)
- 		return -EINVAL;
- 
--	err = ice_phy_res_address_eth56g(phy_port, res_type, offset, &addr);
-+	err = ice_phy_res_addr_eth56g(hw, port, res_type, offset, &addr);
- 	if (err)
- 		return err;
- 
--	return ice_write_phy_eth56g(hw, phy_idx, addr, val);
-+	return ice_write_phy_eth56g(hw, port, addr, val);
- }
- 
- /**
-@@ -1018,19 +1027,17 @@ static int ice_write_port_eth56g(struct ice_hw *hw, u8 port, u32 offset,
- static int ice_read_port_eth56g(struct ice_hw *hw, u8 port, u32 offset,
- 				u32 *val, enum eth56g_res_type res_type)
- {
--	u8 phy_port = port % hw->ptp.ports_per_phy;
--	u8 phy_idx = port / hw->ptp.ports_per_phy;
- 	u32 addr;
- 	int err;
- 
- 	if (port >= hw->ptp.num_lports)
- 		return -EINVAL;
- 
--	err = ice_phy_res_address_eth56g(phy_port, res_type, offset, &addr);
-+	err = ice_phy_res_addr_eth56g(hw, port, res_type, offset, &addr);
- 	if (err)
- 		return err;
- 
--	return ice_read_phy_eth56g(hw, phy_idx, addr, val);
-+	return ice_read_phy_eth56g(hw, port, addr, val);
- }
- 
- /**
-@@ -1179,6 +1186,56 @@ static int ice_write_port_mem_eth56g(struct ice_hw *hw, u8 port, u16 offset,
- 	return ice_write_port_eth56g(hw, port, offset, val, ETH56G_PHY_MEM_PTP);
- }
- 
-+/**
-+ * ice_write_quad_ptp_reg_eth56g - Write a PHY quad register
-+ * @hw: pointer to the HW struct
-+ * @offset: PHY register offset
-+ * @port: Port number
-+ * @val: Value to write
-+ *
-+ * Return:
-+ * * %0     - success
-+ * * %EIO  - invalid port number or resource type
-+ * * %other - failed to write to PHY
-+ */
-+static int ice_write_quad_ptp_reg_eth56g(struct ice_hw *hw, u8 port,
-+					 u32 offset, u32 val)
-+{
-+	u32 addr;
-+
-+	if (port >= hw->ptp.num_lports)
-+		return -EIO;
-+
-+	addr = eth56g_phy_res[ETH56G_PHY_REG_PTP].base_addr + offset;
-+
-+	return ice_write_phy_eth56g(hw, port, addr, val);
-+}
-+
-+/**
-+ * ice_read_quad_ptp_reg_eth56g - Read a PHY quad register
-+ * @hw: pointer to the HW struct
-+ * @offset: PHY register offset
-+ * @port: Port number
-+ * @val: Value to read
-+ *
-+ * Return:
-+ * * %0     - success
-+ * * %EIO  - invalid port number or resource type
-+ * * %other - failed to read from PHY
-+ */
-+static int ice_read_quad_ptp_reg_eth56g(struct ice_hw *hw, u8 port,
-+					u32 offset, u32 *val)
-+{
-+	u32 addr;
-+
-+	if (port >= hw->ptp.num_lports)
-+		return -EIO;
-+
-+	addr = eth56g_phy_res[ETH56G_PHY_REG_PTP].base_addr + offset;
-+
-+	return ice_read_phy_eth56g(hw, port, addr, val);
-+}
-+
- /**
-  * ice_is_64b_phy_reg_eth56g - Check if this is a 64bit PHY register
-  * @low_addr: the low address to check
-@@ -1897,7 +1954,6 @@ ice_phy_get_speed_eth56g(struct ice_link_status *li)
-  */
- static int ice_phy_cfg_parpcs_eth56g(struct ice_hw *hw, u8 port)
- {
--	u8 port_blk = port & ~(ICE_PORTS_PER_QUAD - 1);
- 	u32 val;
- 	int err;
- 
-@@ -1912,8 +1968,8 @@ static int ice_phy_cfg_parpcs_eth56g(struct ice_hw *hw, u8 port)
- 	switch (ice_phy_get_speed_eth56g(&hw->port_info->phy.link_info)) {
- 	case ICE_ETH56G_LNK_SPD_1G:
- 	case ICE_ETH56G_LNK_SPD_2_5G:
--		err = ice_read_ptp_reg_eth56g(hw, port_blk,
--					      PHY_GPCS_CONFIG_REG0, &val);
-+		err = ice_read_quad_ptp_reg_eth56g(hw, port,
-+						   PHY_GPCS_CONFIG_REG0, &val);
- 		if (err) {
- 			ice_debug(hw, ICE_DBG_PTP, "Failed to read PHY_GPCS_CONFIG_REG0, status: %d",
- 				  err);
-@@ -1924,8 +1980,8 @@ static int ice_phy_cfg_parpcs_eth56g(struct ice_hw *hw, u8 port)
- 		val |= FIELD_PREP(PHY_GPCS_CONFIG_REG0_TX_THR_M,
- 				  ICE_ETH56G_NOMINAL_TX_THRESH);
- 
--		err = ice_write_ptp_reg_eth56g(hw, port_blk,
--					       PHY_GPCS_CONFIG_REG0, val);
-+		err = ice_write_quad_ptp_reg_eth56g(hw, port,
-+						    PHY_GPCS_CONFIG_REG0, val);
- 		if (err) {
- 			ice_debug(hw, ICE_DBG_PTP, "Failed to write PHY_GPCS_CONFIG_REG0, status: %d",
- 				  err);
-@@ -1966,50 +2022,48 @@ static int ice_phy_cfg_parpcs_eth56g(struct ice_hw *hw, u8 port)
-  */
- int ice_phy_cfg_ptp_1step_eth56g(struct ice_hw *hw, u8 port)
- {
--	u8 port_blk = port & ~(ICE_PORTS_PER_QUAD - 1);
--	u8 blk_port = port & (ICE_PORTS_PER_QUAD - 1);
-+	u8 quad_lane = port % ICE_PORTS_PER_QUAD;
-+	u32 addr, val, peer_delay;
- 	bool enable, sfd_ena;
--	u32 val, peer_delay;
- 	int err;
- 
- 	enable = hw->ptp.phy.eth56g.onestep_ena;
- 	peer_delay = hw->ptp.phy.eth56g.peer_delay;
- 	sfd_ena = hw->ptp.phy.eth56g.sfd_ena;
- 
--	/* PHY_PTP_1STEP_CONFIG */
--	err = ice_read_ptp_reg_eth56g(hw, port_blk, PHY_PTP_1STEP_CONFIG, &val);
-+	addr = PHY_PTP_1STEP_CONFIG;
-+	err = ice_read_quad_ptp_reg_eth56g(hw, port, addr, &val);
- 	if (err)
- 		return err;
- 
- 	if (enable)
--		val |= blk_port;
-+		val |= BIT(quad_lane);
- 	else
--		val &= ~blk_port;
-+		val &= ~BIT(quad_lane);
- 
--	val &= ~(PHY_PTP_1STEP_T1S_UP64_M | PHY_PTP_1STEP_T1S_DELTA_M);
-+	val &= ~PHY_PTP_1STEP_T1S_UP64_M;
-+	val &= ~PHY_PTP_1STEP_T1S_DELTA_M;
- 
--	err = ice_write_ptp_reg_eth56g(hw, port_blk, PHY_PTP_1STEP_CONFIG, val);
-+	err = ice_write_quad_ptp_reg_eth56g(hw, port, addr, val);
- 	if (err)
- 		return err;
- 
--	/* PHY_PTP_1STEP_PEER_DELAY */
-+	addr = PHY_PTP_1STEP_PEER_DELAY(quad_lane);
- 	val = FIELD_PREP(PHY_PTP_1STEP_PD_DELAY_M, peer_delay);
- 	if (peer_delay)
- 		val |= PHY_PTP_1STEP_PD_ADD_PD_M;
- 	val |= PHY_PTP_1STEP_PD_DLY_V_M;
--	err = ice_write_ptp_reg_eth56g(hw, port_blk,
--				       PHY_PTP_1STEP_PEER_DELAY(blk_port), val);
-+	err = ice_write_quad_ptp_reg_eth56g(hw, port, addr, val);
- 	if (err)
- 		return err;
- 
- 	val &= ~PHY_PTP_1STEP_PD_DLY_V_M;
--	err = ice_write_ptp_reg_eth56g(hw, port_blk,
--				       PHY_PTP_1STEP_PEER_DELAY(blk_port), val);
-+	err = ice_write_quad_ptp_reg_eth56g(hw, port, addr, val);
- 	if (err)
- 		return err;
- 
--	/* PHY_MAC_XIF_MODE */
--	err = ice_read_mac_reg_eth56g(hw, port, PHY_MAC_XIF_MODE, &val);
-+	addr = PHY_MAC_XIF_MODE;
-+	err = ice_read_mac_reg_eth56g(hw, port, addr, &val);
- 	if (err)
- 		return err;
- 
-@@ -2029,7 +2083,7 @@ int ice_phy_cfg_ptp_1step_eth56g(struct ice_hw *hw, u8 port)
- 	       FIELD_PREP(PHY_MAC_XIF_TS_BIN_MODE_M, enable) |
- 	       FIELD_PREP(PHY_MAC_XIF_TS_SFD_ENA_M, sfd_ena);
- 
--	return ice_write_mac_reg_eth56g(hw, port, PHY_MAC_XIF_MODE, val);
-+	return ice_write_mac_reg_eth56g(hw, port, addr, val);
- }
- 
- /**
-@@ -2071,21 +2125,22 @@ static u32 ice_ptp_calc_bitslip_eth56g(struct ice_hw *hw, u8 port, u32 bs,
- 				       bool fc, bool rs,
- 				       enum ice_eth56g_link_spd spd)
- {
--	u8 port_offset = port & (ICE_PORTS_PER_QUAD - 1);
--	u8 port_blk = port & ~(ICE_PORTS_PER_QUAD - 1);
- 	u32 bitslip;
- 	int err;
- 
- 	if (!bs || rs)
- 		return 0;
- 
--	if (spd == ICE_ETH56G_LNK_SPD_1G || spd == ICE_ETH56G_LNK_SPD_2_5G)
-+	if (spd == ICE_ETH56G_LNK_SPD_1G || spd == ICE_ETH56G_LNK_SPD_2_5G) {
- 		err = ice_read_gpcs_reg_eth56g(hw, port, PHY_GPCS_BITSLIP,
- 					       &bitslip);
--	else
--		err = ice_read_ptp_reg_eth56g(hw, port_blk,
--					      PHY_REG_SD_BIT_SLIP(port_offset),
--					      &bitslip);
-+	} else {
-+		u8 quad_lane = port % ICE_PORTS_PER_QUAD;
-+		u32 addr;
-+
-+		addr = PHY_REG_SD_BIT_SLIP(quad_lane);
-+		err = ice_read_quad_ptp_reg_eth56g(hw, port, addr, &bitslip);
-+	}
- 	if (err)
- 		return 0;
- 
-@@ -2554,9 +2609,9 @@ static void ice_sb_access_ena_eth56g(struct ice_hw *hw, bool enable)
- 	u32 val = rd32(hw, PF_SB_REM_DEV_CTL);
- 
- 	if (enable)
--		val |= BIT(eth56g_phy_0) | BIT(cgu) | BIT(eth56g_phy_1);
-+		val |= BIT(phy_0) | BIT(cgu) | BIT(phy_0_peer);
- 	else
--		val &= ~(BIT(eth56g_phy_0) | BIT(cgu) | BIT(eth56g_phy_1));
-+		val &= ~(BIT(phy_0) | BIT(cgu) | BIT(phy_0_peer));
- 
- 	wr32(hw, PF_SB_REM_DEV_CTL, val);
- }
-@@ -2680,8 +2735,6 @@ static void ice_ptp_init_phy_e825(struct ice_hw *hw)
- 	params->onestep_ena = false;
- 	params->peer_delay = 0;
- 	params->sfd_ena = false;
--	params->phy_addr[0] = eth56g_phy_0;
--	params->phy_addr[1] = eth56g_phy_1;
- 	params->num_phys = 2;
- 	ptp->ports_per_phy = 4;
- 	ptp->num_lports = params->num_phys * ptp->ports_per_phy;
-@@ -2710,10 +2763,9 @@ static void ice_fill_phy_msg_e82x(struct ice_hw *hw,
- 				  struct ice_sbq_msg_input *msg, u8 port,
- 				  u16 offset)
- {
--	int phy_port, phy, quadtype;
-+	int phy_port, quadtype;
- 
- 	phy_port = port % hw->ptp.ports_per_phy;
--	phy = port / hw->ptp.ports_per_phy;
- 	quadtype = ICE_GET_QUAD_NUM(port) %
- 		   ICE_GET_QUAD_NUM(hw->ptp.ports_per_phy);
- 
-@@ -2725,12 +2777,7 @@ static void ice_fill_phy_msg_e82x(struct ice_hw *hw,
- 		msg->msg_addr_high = P_Q1_H(P_4_BASE + offset, phy_port);
- 	}
- 
--	if (phy == 0)
--		msg->dest_dev = rmn_0;
--	else if (phy == 1)
--		msg->dest_dev = rmn_1;
--	else
--		msg->dest_dev = rmn_2;
-+	msg->dest_dev = phy_0;
- }
- 
- /**
-@@ -3053,7 +3100,7 @@ static int ice_fill_quad_msg_e82x(struct ice_hw *hw,
- 	if (quad >= ICE_GET_QUAD_NUM(hw->ptp.num_lports))
- 		return -EINVAL;
- 
--	msg->dest_dev = rmn_0;
-+	msg->dest_dev = phy_0;
- 
- 	if (!(quad % ICE_GET_QUAD_NUM(hw->ptp.ports_per_phy)))
- 		addr = Q_0_BASE + offset;
-@@ -4772,7 +4819,7 @@ static int ice_read_phy_reg_e810(struct ice_hw *hw, u32 addr, u32 *val)
- 	msg.msg_addr_low = lower_16_bits(addr);
- 	msg.msg_addr_high = upper_16_bits(addr);
- 	msg.opcode = ice_sbq_msg_rd;
--	msg.dest_dev = rmn_0;
-+	msg.dest_dev = phy_0;
- 
- 	err = ice_sbq_rw_reg(hw, &msg, ICE_AQ_FLAG_RD);
- 	if (err) {
-@@ -4802,7 +4849,7 @@ static int ice_write_phy_reg_e810(struct ice_hw *hw, u32 addr, u32 val)
- 	msg.msg_addr_low = lower_16_bits(addr);
- 	msg.msg_addr_high = upper_16_bits(addr);
- 	msg.opcode = ice_sbq_msg_wr;
--	msg.dest_dev = rmn_0;
-+	msg.dest_dev = phy_0;
- 	msg.data = val;
- 
- 	err = ice_sbq_rw_reg(hw, &msg, ICE_AQ_FLAG_RD);
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
-index 35141198f261..d913ed00c730 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
-@@ -65,14 +65,14 @@ enum ice_eth56g_link_spd {
- 
- /**
-  * struct ice_phy_reg_info_eth56g - ETH56G PHY register parameters
-- * @base: base address for each PHY block
-+ * @base_addr: base address for each PHY block
-  * @step: step between PHY lanes
-  *
-  * Characteristic information for the various PHY register parameters in the
-  * ETH56G devices
-  */
- struct ice_phy_reg_info_eth56g {
--	u32 base[NUM_ETH56G_PHY_RES];
-+	u32 base_addr;
- 	u32 step;
- };
- 
-@@ -773,37 +773,20 @@ static inline u64 ice_get_base_incval(struct ice_hw *hw)
- #define PHY_MAC_XIF_TS_SFD_ENA_M	ICE_M(0x1, 20)
- #define PHY_MAC_XIF_GMII_TS_SEL_M	ICE_M(0x1, 21)
- 
--/* GPCS config register */
--#define PHY_GPCS_CONFIG_REG0		0x268
--#define PHY_GPCS_CONFIG_REG0_TX_THR_M	ICE_M(0xF, 24)
--#define PHY_GPCS_BITSLIP		0x5C
+-/**
+- * ice_is_muxed_topo - detect breakout 2x50G topology for E825C
+- * @hw: pointer to the HW struct
+- *
+- * Return: true if it's 2x50 breakout topology, false otherwise
+- */
+-static bool ice_is_muxed_topo(struct ice_hw *hw)
+-{
+-	u8 link_topo;
+-	bool mux;
+-	u32 val;
 -
- #define PHY_TS_INT_CONFIG_THRESHOLD_M	ICE_M(0x3F, 0)
- #define PHY_TS_INT_CONFIG_ENA_M		BIT(6)
- 
--/* 1-step PTP config */
--#define PHY_PTP_1STEP_CONFIG		0x270
--#define PHY_PTP_1STEP_T1S_UP64_M	ICE_M(0xF, 4)
--#define PHY_PTP_1STEP_T1S_DELTA_M	ICE_M(0xF, 8)
--#define PHY_PTP_1STEP_PEER_DELAY(_port)	(0x274 + 4 * (_port))
--#define PHY_PTP_1STEP_PD_ADD_PD_M	ICE_M(0x1, 0)
--#define PHY_PTP_1STEP_PD_DELAY_M	ICE_M(0x3fffffff, 1)
--#define PHY_PTP_1STEP_PD_DLY_V_M	ICE_M(0x1, 31)
+-	val = rd32(hw, GLGEN_SWITCH_MODE_CONFIG);
+-	mux = FIELD_GET(GLGEN_SWITCH_MODE_CONFIG_25X4_QUAD_M, val);
+-	val = rd32(hw, GLGEN_MAC_LINK_TOPO);
+-	link_topo = FIELD_GET(GLGEN_MAC_LINK_TOPO_LINK_TOPO_M, val);
 -
- /* Macros to derive offsets for TimeStampLow and TimeStampHigh */
- #define PHY_TSTAMP_L(x) (((x) * 8) + 0)
- #define PHY_TSTAMP_U(x) (((x) * 8) + 4)
- 
--#define PHY_REG_REVISION		0x85000
+-	return (mux && link_topo == ICE_LINK_TOPO_UP_TO_2_LINKS);
+-}
 -
- #define PHY_REG_DESKEW_0		0x94
- #define PHY_REG_DESKEW_0_RLEVEL		GENMASK(6, 0)
- #define PHY_REG_DESKEW_0_RLEVEL_FRAC	GENMASK(9, 7)
- #define PHY_REG_DESKEW_0_RLEVEL_FRAC_W	3
- #define PHY_REG_DESKEW_0_VALID		GENMASK(10, 10)
+ /**
+  * ice_ptp_init_phy_e825 - initialize PHY parameters
+  * @hw: pointer to the HW struct
+@@ -2743,8 +2723,6 @@ static void ice_ptp_init_phy_e825(struct ice_hw *hw)
+ 	err = ice_read_phy_eth56g(hw, hw->pf_id, PHY_REG_REVISION, &phy_rev);
+ 	if (err || phy_rev != PHY_REVISION_ETH56G)
+ 		ptp->phy_model = ICE_PHY_UNSUP;
+-
+-	ptp->is_2x50g_muxed_topo = ice_is_muxed_topo(hw);
+ }
  
--#define PHY_REG_GPCS_BITSLIP		0x5C
--#define PHY_REG_SD_BIT_SLIP(_port_offset)	(0x29C + 4 * (_port_offset))
-+#define PHY_REG_REVISION		0x85000
- #define PHY_REVISION_ETH56G		0x10200
- #define PHY_VENDOR_TXLANE_THRESH	0x2000C
- 
-@@ -822,7 +805,21 @@ static inline u64 ice_get_base_incval(struct ice_hw *hw)
- #define PHY_MAC_BLOCKTIME		0x50
- #define PHY_MAC_MARKERTIME		0x54
- #define PHY_MAC_TX_OFFSET		0x58
-+#define PHY_GPCS_BITSLIP		0x5C
- 
- #define PHY_PTP_INT_STATUS		0x7FD140
- 
-+/* ETH56G registers shared per quad */
-+/* GPCS config register */
-+#define PHY_GPCS_CONFIG_REG0		0x268
-+#define PHY_GPCS_CONFIG_REG0_TX_THR_M	GENMASK(27, 24)
-+/* 1-step PTP config */
-+#define PHY_PTP_1STEP_CONFIG		0x270
-+#define PHY_PTP_1STEP_T1S_UP64_M	GENMASK(7, 4)
-+#define PHY_PTP_1STEP_T1S_DELTA_M	GENMASK(11, 8)
-+#define PHY_PTP_1STEP_PEER_DELAY(_quad_lane)	(0x274 + 4 * (_quad_lane))
-+#define PHY_PTP_1STEP_PD_ADD_PD_M	BIT(0)
-+#define PHY_PTP_1STEP_PD_DELAY_M	GENMASK(30, 1)
-+#define PHY_PTP_1STEP_PD_DLY_V_M	BIT(31)
-+#define PHY_REG_SD_BIT_SLIP(_quad_lane)	(0x29C + 4 * (_quad_lane))
- #endif /* _ICE_PTP_HW_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice_sbq_cmd.h b/drivers/net/ethernet/intel/ice/ice_sbq_cmd.h
-index 3b0054faf70c..f362607ece35 100644
---- a/drivers/net/ethernet/intel/ice/ice_sbq_cmd.h
-+++ b/drivers/net/ethernet/intel/ice/ice_sbq_cmd.h
-@@ -47,12 +47,9 @@ struct ice_sbq_evt_desc {
- };
- 
- enum ice_sbq_msg_dev {
--	eth56g_phy_0	= 0x02,
--	rmn_0		= 0x02,
--	rmn_1		= 0x03,
--	rmn_2		= 0x04,
-+	phy_0		= 0x02,
- 	cgu		= 0x06,
--	eth56g_phy_1	= 0x0D,
-+	phy_0_peer	= 0x0D,
- };
- 
- enum ice_sbq_msg_opcode {
+ /* E822 family functions
 diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-index 45768796691f..479227bdff75 100644
+index 479227bdff75..609f31e0dfde 100644
 --- a/drivers/net/ethernet/intel/ice/ice_type.h
 +++ b/drivers/net/ethernet/intel/ice/ice_type.h
-@@ -850,7 +850,6 @@ struct ice_mbx_data {
+@@ -880,7 +880,6 @@ struct ice_ptp_hw {
+ 	union ice_phy_params phy;
+ 	u8 num_lports;
+ 	u8 ports_per_phy;
+-	bool is_2x50g_muxed_topo;
+ };
  
- struct ice_eth56g_params {
- 	u8 num_phys;
--	u8 phy_addr[2];
- 	bool onestep_ena;
- 	bool sfd_ena;
- 	u32 peer_delay;
+ /* Port hardware description */
 -- 
 2.46.2
 
