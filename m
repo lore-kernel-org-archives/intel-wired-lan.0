@@ -4,109 +4,109 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A9F96CFD308
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 11 Oct 2024 09:01:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 65A53CFD302
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 11 Oct 2024 09:01:21 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 3DE10415AF;
-	Fri, 11 Oct 2024 09:01:20 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 2DE5F415C0;
+	Fri, 11 Oct 2024 09:01:21 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id dCNQl8dv-Wi9; Fri, 11 Oct 2024 09:01:19 +0000 (UTC)
+ id pPMHqcuKaggw; Fri, 11 Oct 2024 09:01:20 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.34; helo=ash.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 2F275415B4
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 7A7F7415B1
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1728637279;
-	bh=J5c9Dqq0SnHXxdpQbse0l3LR2qIrtWblfzrhDH1purg=;
+	s=default; t=1728637280;
+	bh=YH+J2MPtO/wj9yAkFfnF7WQuIFDEVmwmmrLzdRgJhfU=;
 	h=From:Date:References:In-Reply-To:To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=rbatZVJV6f3bZd2ipDWaYwKNIid6fIXqLOwSyy/49JspP7zOz1Q5wa+wZ9/jEvVs2
-	 ZJFgrz71yH92ktyHzVuHmyk0jQ0Ze5BJor2GZuB2nv4we5qlrz8iGdtdq1pd9hqQVO
-	 oPrjcyjfcPk0cuTzHeAx7BEGMHhcpaAwzEnMZ05X5K41kOXVINOX3Zl44KXZeDbppY
-	 1QlVjq/1NkWA/qsnshziMCMW4FOPFDcyiNKqv74PDwsqlu70q6grWyTehmFIzDPZEI
-	 jQtUrGijr6HJUFhuNJuLTIUjqulyJAtga2k9mznw36Al8QZcaCO85kmwk8eqXpLYA4
-	 tgMfsZ3uV9rwA==
+	b=XsBb1GYhvLJEAoZAamFGgT4cSVm+tqySA0cWqp+dnJGibMKb0Re5/7T8++W0KJryK
+	 6dZV3WmROZUL1j9o2cyksfHO4vHQQjeQwqnT25LpryvDkJ7crUYYo97gYRGg+vUkke
+	 LRUMePDfOLW3Ef5O09LxYLE5Mu+8unBKN95f2meEoobJVwN+9nS2Qu281CwLcwfTQ6
+	 GUBkZPIroFLuo2t6pCt4Id9d8OQN/4Uy+sCJKVlGTVfrmiy4jKrqsgypD4R6GkTubk
+	 K9lPKc6F3utJempde2Mxw3NqwRRk+H3uvWicoYoY+Ev8U/zdBOnozYwlVM4kay9K5H
+	 gzRGVpMMBLjVQ==
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 2F275415B4;
-	Fri, 11 Oct 2024 09:01:19 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id CAED71BF3A1
- for <intel-wired-lan@lists.osuosl.org>; Fri, 11 Oct 2024 09:01:14 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 7A7F7415B1;
+	Fri, 11 Oct 2024 09:01:20 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 2A2291BF3A1
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 11 Oct 2024 09:01:15 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id B9463610C4
- for <intel-wired-lan@lists.osuosl.org>; Fri, 11 Oct 2024 09:01:14 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id D6E0B415A1
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 11 Oct 2024 09:01:13 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id F3Fxbr_f4TwE for <intel-wired-lan@lists.osuosl.org>;
- Fri, 11 Oct 2024 09:01:14 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id A8jgCP364_cZ for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 11 Oct 2024 09:01:13 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom;
  client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de;
  envelope-from=kurt@linutronix.de; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org AB727610BA
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org AB727610BA
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 9CC94415A2
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 9CC94415A2
 Received: from galois.linutronix.de (Galois.linutronix.de
  [IPv6:2a0a:51c0:0:12e:550::1])
- by smtp3.osuosl.org (Postfix) with ESMTPS id AB727610BA
- for <intel-wired-lan@lists.osuosl.org>; Fri, 11 Oct 2024 09:01:13 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 9CC94415A2
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 11 Oct 2024 09:01:12 +0000 (UTC)
 From: Kurt Kanzenbach <kurt@linutronix.de>
-Date: Fri, 11 Oct 2024 11:01:02 +0200
+Date: Fri, 11 Oct 2024 11:01:00 +0200
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20241011-b4-igb_zero_copy-v8-4-83862f726a9e@linutronix.de>
+Message-Id: <20241011-b4-igb_zero_copy-v8-2-83862f726a9e@linutronix.de>
 References: <20241011-b4-igb_zero_copy-v8-0-83862f726a9e@linutronix.de>
 In-Reply-To: <20241011-b4-igb_zero_copy-v8-0-83862f726a9e@linutronix.de>
 To: Tony Nguyen <anthony.l.nguyen@intel.com>, 
  Przemek Kitszel <przemyslaw.kitszel@intel.com>
-X-Developer-Signature: v=1; a=openpgp-sha256; l=3889; i=kurt@linutronix.de;
- h=from:subject:message-id; bh=RxSqs8NhiCYm+wD9waRwQ/hZJZEj5uRwsmB4iDu6ApA=;
- b=owEBbQKS/ZANAwAKAcGT0fKqRnOCAcsmYgBnCOlTqSmw3OePjAE9hCRD2mHxyW7+ltzSzvuKP
- rZ/6WyYY5SJAjMEAAEKAB0WIQS8ub+yyMN909/bWZLBk9HyqkZzggUCZwjpUwAKCRDBk9HyqkZz
- gmnkD/0fQgyFnD06Li6sJKjVRhZrPpeuGVsgAbpjD+vsCoDOpvKwH7sq7iiELw7xm89NL1fK0eI
- ru+tHymK8bKzjZhx45kLwndvDQJPYA3JVJ5iSER/MjAPZBtmyqOOXGb93b+L4I2bOu+z61oxqiA
- W4DxoE5wMeYwhbxVWmMlH6+iSIrhKD4ZtCFpvtCeG95WQ+ZtlCDlSqgz5kGreNwzx2QRKPtueCr
- krwZeek2WCPu4dNfijRXMhm8vzU1RAleFZXZEqM156/IfEjmx+7yBMVa80ouvsAmP5TtBloLqlq
- rGAEnFriEGFR2c5SRCVPMZiXX2MbfofTlq/1oRqqeedbjQX9pNDm6QAB4VzLMd/aWFwoDJno9nz
- wZa16bw4ZTpcy8LuITr/McL8aLtQ1kQaS5JTqL6DYYJloQmm7K5v4pC0AWBEi1QvuH5Ejt8GXBe
- 6VGGDa6/QWGlTbn5p0QrK5y1iqU0qjdeuNAomp2Lnh3KaKqiuoWgMo3bflx3DCz9FhA0GsCmw35
- s7PB9tWWRTHNxnfakrCIA5ZWl82mxKt+IJa0oZDgV/W2MBAbbO8ozROUauJn4bs4UtrbfjbsNVs
- qNqn7y4ixwed+pFDCKA/JZohQOFoa1npd5+qqiFRgqRZiGAIDaisDU4aiY1w2N5OefuC8On/YHx
- 2tfIwwwQNoBp7Ow==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2664; i=kurt@linutronix.de;
+ h=from:subject:message-id; bh=GFWHUeNYEWqXkX9ltUkdA/+XAecRGzYcafx3KgM4JRg=;
+ b=owEBbQKS/ZANAwAKAcGT0fKqRnOCAcsmYgBnCOlSxONXEPtIMvuO76ImbomRU2Vai5eJW2pka
+ kldZQFhhlqJAjMEAAEKAB0WIQS8ub+yyMN909/bWZLBk9HyqkZzggUCZwjpUgAKCRDBk9HyqkZz
+ giNcD/4iH7SPuTFnahKrXLzU1qNRICyadFJRn3IZBBcgFDNPPXG4G03f+GXicds3W1U+MhLh4Kl
+ wdoGyCANDwANu7qU3Qt7SZTzJTd3yEC3qPsJRQtj2sc5/SudTtCNYx+DtWjIkQnjnALwIwN60Sv
+ QnCcfFxIEhGdHjUHbm8r6f2fGntcOwgJ6IZ4cLiJDUWlv/LADh3bWYa1RD1qQMHsqrcjzg/hvCC
+ xYFN/kNCC7fSBOcrr4rmsJmihp4eARNqG3I4tT12Ez8dPBVuMp3ZYJcqXN8V9qpLMr19edzmNuq
+ mm06dvAWuX/4W9GtYPYPuF9qIdU4IA9aAV57Doua3Jc5P3MT6KOdaDYoHtwcYeHC19VPKQNo7or
+ jhrKwF57Mdw8KXmqRHB9g+AtmFL5Xh/RMegvU21dw5YV6Yma8+ePQjiselFTKVfjbVjbuAuyilp
+ tvhd/oDHaA3WiQfMj9MnvX4qqPigGuftnFl+CchZMUn2CdwlsnYhqCF/2IOmi0BL4hIwOAMitar
+ 3Mwrjh8+66RgP+UzEwWo2q/Os99xtLhpqt1nXZ9XLXJH+w8G7+9dIzBRyyZ8KoYa73cHsTE7U/Y
+ kZzJCYQ0hRUNIOVxE7P2y2rALXgA+w5MQa4uxgtb5ITjErTqj84KIx0HKvKdr0GAQOG57nDccMy
+ CGvW6lAHwSS2I5w==
 X-Developer-Key: i=kurt@linutronix.de; a=openpgp;
  fpr=BCB9BFB2C8C37DD3DFDB5992C193D1F2AA467382
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=linutronix.de; s=2020; t=1728637271;
+ d=linutronix.de; s=2020; t=1728637270;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=J5c9Dqq0SnHXxdpQbse0l3LR2qIrtWblfzrhDH1purg=;
- b=xmI8egAAOqsFSjIqNWLxrlw9rItVF5I6GTvRCmqb7F5JtTVEtjzDFauiIOm2McIVnTWKDU
- Mbv/K1QsgLoQGEjJ7XihWA/ecoZ1dsV13+7SjHjmyuvfBqHlSXXIRu8T+ulmP82oMrKHMP
- dxTXrkMUevduumCGF/1pYRXZovBrAym+a90VLbALkwAzQ4iDZxYjJr+IZ1ShANAo5nvNib
- eoG4lx6GPsB5nvjJbc4sI4Hqv4sH0IPZW5LYZHNMo5Vo7wPY0dWr00fQuUXsl4yN4+UWtr
- 3a0DqgBVY8Maf9tYtCpPDH6j3hROT5nIUb0x5uEcOIhIBnTEKbgHMF/0WvKfSg==
+ bh=YH+J2MPtO/wj9yAkFfnF7WQuIFDEVmwmmrLzdRgJhfU=;
+ b=zcgQRmz3yjeDRWU+v26Pgu524arqcCovd6mjbvOEwFlQK8XHu8Kw/s0CotHaTnCiRhLC0y
+ Ge0tZAvDN/Kh+xVV3tl0b9YXOLgHpy95dXJVqPyfCEgHxx0E4Gnm+7A3Sqrm0r6+wOMw1k
+ N7mk9SyMcfmev8+D8+aMq3nsvdEFKDoLjwr1kp+seIJbT1AB2WNtUQ1MCKHrhkGi0vGzWb
+ qNQK7ZMoAAXTjbL17ZMwP4BgTSq8rl6hIpZ8uZ7cVNMQdqozqAGWkhnve+xbJHa2GIJo/X
+ fKKrLytPFvxR8l8reFYQ3qZcamriAWYUSLr9CfHfpqFwqEIadGwPAQrLrUbBCw==
 X-Mailman-Original-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
- d=linutronix.de; s=2020e; t=1728637271;
+ d=linutronix.de; s=2020e; t=1728637270;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=J5c9Dqq0SnHXxdpQbse0l3LR2qIrtWblfzrhDH1purg=;
- b=2q6fvdvXtufkhlqawip3Xt2+JpTPCH8dqQn8800lPRktyJbJCDq5WQeC6P/B+tpe9cfS2E
- yKclC/TEDPQ22tAw==
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ bh=YH+J2MPtO/wj9yAkFfnF7WQuIFDEVmwmmrLzdRgJhfU=;
+ b=kr2BFcOVAv7lWZ8lWhEbe6mOsdsX8hoVOn5aDDHkD4OwyWo+P82Oes9J2oGPxudXyK9tV1
+ 8Hf4NQmMecMcSHCw==
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=linutronix.de
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key, unprotected) header.d=linutronix.de
- header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=xmI8egAA; 
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de
+ header.a=rsa-sha256 header.s=2020 header.b=zcgQRmz3; 
  dkim=pass header.d=linutronix.de header.i=@linutronix.de
- header.a=ed25519-sha256 header.s=2020e header.b=2q6fvdvX
-Subject: [Intel-wired-lan] [PATCH iwl-next v8 4/6] igb: Add XDP finalize and
- stats update functions
+ header.a=ed25519-sha256 header.s=2020e header.b=kr2BFcOV
+Subject: [Intel-wired-lan] [PATCH iwl-next v8 2/6] igb: Introduce
+ igb_xdp_is_enabled()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -127,117 +127,78 @@ Cc: Maciej Fijalkowski <maciej.fijalkowski@intel.com>,
  Kurt Kanzenbach <kurt@linutronix.de>,
  John Fastabend <john.fastabend@gmail.com>, Alexei Starovoitov <ast@kernel.org>,
  Benjamin Steinke <benjamin.steinke@woks-audio.com>,
- Eric Dumazet <edumazet@google.com>, intel-wired-lan@lists.osuosl.org,
- netdev@vger.kernel.org, Jakub Kicinski <kuba@kernel.org>, bpf@vger.kernel.org,
+ Eric Dumazet <edumazet@google.com>,
+ Sriram Yagnaraman <sriram.yagnaraman@est.tech>,
+ intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
+ Jakub Kicinski <kuba@kernel.org>, bpf@vger.kernel.org,
  Paolo Abeni <pabeni@redhat.com>, "David S. Miller" <davem@davemloft.net>,
  Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Move XDP finalize and Rx statistics update into separate functions. This
-way, they can be reused by the XDP and XDP/ZC code later.
+From: Sriram Yagnaraman <sriram.yagnaraman@est.tech>
 
+Introduce igb_xdp_is_enabled() to check if an XDP program is assigned to
+the device. Use that wherever xdp_prog is read and evaluated.
+
+Signed-off-by: Sriram Yagnaraman <sriram.yagnaraman@est.tech>
+[Kurt: Split patches and use READ_ONCE()]
 Signed-off-by: Kurt Kanzenbach <kurt@linutronix.de>
+Acked-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 ---
- drivers/net/ethernet/intel/igb/igb.h      |  3 ++
- drivers/net/ethernet/intel/igb/igb_main.c | 54 ++++++++++++++++++++-----------
- 2 files changed, 38 insertions(+), 19 deletions(-)
+ drivers/net/ethernet/intel/igb/igb.h      | 5 +++++
+ drivers/net/ethernet/intel/igb/igb_main.c | 8 +++++---
+ 2 files changed, 10 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
-index c30d6f9708f8..1e65b41a48d8 100644
+index 1bfe703e73d9..6e2b61ecff68 100644
 --- a/drivers/net/ethernet/intel/igb/igb.h
 +++ b/drivers/net/ethernet/intel/igb/igb.h
-@@ -740,6 +740,9 @@ void igb_clean_tx_ring(struct igb_ring *tx_ring);
- void igb_clean_rx_ring(struct igb_ring *rx_ring);
- void igb_configure_tx_ring(struct igb_adapter *, struct igb_ring *);
- void igb_configure_rx_ring(struct igb_adapter *, struct igb_ring *);
-+void igb_finalize_xdp(struct igb_adapter *adapter, unsigned int status);
-+void igb_update_rx_stats(struct igb_q_vector *q_vector, unsigned int packets,
-+			 unsigned int bytes);
- void igb_setup_tctl(struct igb_adapter *);
- void igb_setup_rctl(struct igb_adapter *);
- void igb_setup_srrctl(struct igb_adapter *, struct igb_ring *);
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 341b83e39019..4d3aed6cd848 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -8852,6 +8852,38 @@ static void igb_put_rx_buffer(struct igb_ring *rx_ring,
- 	rx_buffer->page = NULL;
+@@ -826,6 +826,11 @@ static inline struct igb_ring *igb_xdp_tx_queue_mapping(struct igb_adapter *adap
+ 	return adapter->tx_ring[r_idx];
  }
  
-+void igb_finalize_xdp(struct igb_adapter *adapter, unsigned int status)
++static inline bool igb_xdp_is_enabled(struct igb_adapter *adapter)
 +{
-+	int cpu = smp_processor_id();
-+	struct netdev_queue *nq;
-+
-+	if (status & IGB_XDP_REDIR)
-+		xdp_do_flush();
-+
-+	if (status & IGB_XDP_TX) {
-+		struct igb_ring *tx_ring = igb_xdp_tx_queue_mapping(adapter);
-+
-+		nq = txring_txq(tx_ring);
-+		__netif_tx_lock(nq, cpu);
-+		igb_xdp_ring_update_tail(tx_ring);
-+		__netif_tx_unlock(nq);
-+	}
++	return !!READ_ONCE(adapter->xdp_prog);
 +}
 +
-+void igb_update_rx_stats(struct igb_q_vector *q_vector, unsigned int packets,
-+			 unsigned int bytes)
-+{
-+	struct igb_ring *ring = q_vector->rx.ring;
-+
-+	u64_stats_update_begin(&ring->rx_syncp);
-+	ring->rx_stats.packets += packets;
-+	ring->rx_stats.bytes += bytes;
-+	u64_stats_update_end(&ring->rx_syncp);
-+
-+	q_vector->rx.total_packets += packets;
-+	q_vector->rx.total_bytes += bytes;
-+}
-+
- static int igb_clean_rx_irq(struct igb_q_vector *q_vector, const int budget)
- {
- 	unsigned int total_bytes = 0, total_packets = 0;
-@@ -8859,9 +8891,7 @@ static int igb_clean_rx_irq(struct igb_q_vector *q_vector, const int budget)
- 	struct igb_ring *rx_ring = q_vector->rx.ring;
- 	u16 cleaned_count = igb_desc_unused(rx_ring);
- 	struct sk_buff *skb = rx_ring->skb;
--	int cpu = smp_processor_id();
- 	unsigned int xdp_xmit = 0;
--	struct netdev_queue *nq;
- 	struct xdp_buff xdp;
- 	u32 frame_sz = 0;
- 	int rx_buf_pgcnt;
-@@ -8983,24 +9013,10 @@ static int igb_clean_rx_irq(struct igb_q_vector *q_vector, const int budget)
- 	/* place incomplete frames back on ring for completion */
- 	rx_ring->skb = skb;
+ int igb_add_filter(struct igb_adapter *adapter,
+ 		   struct igb_nfc_filter *input);
+ int igb_erase_filter(struct igb_adapter *adapter,
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index 5a44867bcb26..fc30966282c5 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -2926,7 +2926,8 @@ int igb_xdp_xmit_back(struct igb_adapter *adapter, struct xdp_buff *xdp)
+ 	/* During program transitions its possible adapter->xdp_prog is assigned
+ 	 * but ring has not been configured yet. In this case simply abort xmit.
+ 	 */
+-	tx_ring = adapter->xdp_prog ? igb_xdp_tx_queue_mapping(adapter) : NULL;
++	tx_ring = igb_xdp_is_enabled(adapter) ?
++		igb_xdp_tx_queue_mapping(adapter) : NULL;
+ 	if (unlikely(!tx_ring))
+ 		return IGB_XDP_CONSUMED;
  
--	if (xdp_xmit & IGB_XDP_REDIR)
--		xdp_do_flush();
--
--	if (xdp_xmit & IGB_XDP_TX) {
--		struct igb_ring *tx_ring = igb_xdp_tx_queue_mapping(adapter);
--
--		nq = txring_txq(tx_ring);
--		__netif_tx_lock(nq, cpu);
--		igb_xdp_ring_update_tail(tx_ring);
--		__netif_tx_unlock(nq);
--	}
-+	if (xdp_xmit)
-+		igb_finalize_xdp(adapter, xdp_xmit);
+@@ -2959,7 +2960,8 @@ static int igb_xdp_xmit(struct net_device *dev, int n,
+ 	/* During program transitions its possible adapter->xdp_prog is assigned
+ 	 * but ring has not been configured yet. In this case simply abort xmit.
+ 	 */
+-	tx_ring = adapter->xdp_prog ? igb_xdp_tx_queue_mapping(adapter) : NULL;
++	tx_ring = igb_xdp_is_enabled(adapter) ?
++		igb_xdp_tx_queue_mapping(adapter) : NULL;
+ 	if (unlikely(!tx_ring))
+ 		return -ENXIO;
  
--	u64_stats_update_begin(&rx_ring->rx_syncp);
--	rx_ring->rx_stats.packets += total_packets;
--	rx_ring->rx_stats.bytes += total_bytes;
--	u64_stats_update_end(&rx_ring->rx_syncp);
--	q_vector->rx.total_packets += total_packets;
--	q_vector->rx.total_bytes += total_bytes;
-+	igb_update_rx_stats(q_vector, total_packets, total_bytes);
+@@ -6593,7 +6595,7 @@ static int igb_change_mtu(struct net_device *netdev, int new_mtu)
+ 	struct igb_adapter *adapter = netdev_priv(netdev);
+ 	int max_frame = new_mtu + IGB_ETH_PKT_HDR_PAD;
  
- 	if (cleaned_count)
- 		igb_alloc_rx_buffers(rx_ring, cleaned_count);
+-	if (adapter->xdp_prog) {
++	if (igb_xdp_is_enabled(adapter)) {
+ 		int i;
+ 
+ 		for (i = 0; i < adapter->num_rx_queues; i++) {
 
 -- 
 2.39.5
