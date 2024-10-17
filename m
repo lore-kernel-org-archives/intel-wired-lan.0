@@ -4,95 +4,97 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A07BCD37487
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 17 Oct 2024 13:15:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0CDF3D37487
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 17 Oct 2024 13:17:04 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 57EB280E75;
-	Thu, 17 Oct 2024 13:15:57 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id D22DF80E75;
+	Thu, 17 Oct 2024 13:17:03 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id j54pumQ1BWFs; Thu, 17 Oct 2024 13:15:53 +0000 (UTC)
+ id BNAWMunnRBMg; Thu, 17 Oct 2024 13:17:00 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8ED1581252
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E014A81252
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1729170953;
-	bh=7EL0QJWqUVJ14PPgp28uU9Yl6iEryDIF9BFdB8/1hME=;
+	s=default; t=1729171019;
+	bh=5iWbF2ALZDGK4mEVAUCL5Vhx68vEZcFgoQoZ1Ghutb8=;
 	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:From;
-	b=fzJTTUNfYoG6Vvih423Bl1aXaL/Yr6YTjunxZouNXfm9TXXhiQFugzU+LCnjn6aK3
-	 AQc73q1jxKmvN3aUrseH0iT+/Tssqj5poGvRb9K6daPVRyMUOPPIrFFslXNSdPeDtc
-	 s2j/HE1/+WuJCI9Pt/g5DvAnc3NCggC6x/0vqNV+SgHtag95UVKETos8dbGW0Je2lj
-	 V0uMBlPMfF8MgkG5849gbfvFZ09goKjSHp53XXbyHh1p525oNPHbaOmI/dR6eXdGFL
-	 z5xnxiKpW9JwXOKa7UgbBko1SOsii+SzujKwDr4OEjNyrK2oOO1UHHcxR8S2nkyusW
-	 cOnn6KkcQEXTg==
+	b=IA6tgy0yAdMpL3vSq0QZAWZPZLW7TWRuzHoVEGA4U9tXARHXQ1ztw0yzSbHxUBikW
+	 EkYqzquiVgBCasNl6TF39EwPuYFhgKQkcUHxV39yt2+1pGDa5O7U8ual0xJBVF+1MY
+	 +TFL6vuDH1zrwiODrAXY+HqMtHag3QhUobF+eylvNjAkoTv0LNjZ5FE+4pHy4sP37f
+	 j7IRvnPVKC5AJCOqGj83QHpfBtDozaYam+viOegHwBKO0lyog3YbBMVciiXmfSDfYN
+	 z90W5kDbUH1XzQco8dZSv9Z19xcKmXfk7Hwqpn8Etij5MljA8QJM+NN19ANUhY3sqb
+	 zsEpHU9D41grA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 8ED1581252;
-	Thu, 17 Oct 2024 13:15:53 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id 153862316
- for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Oct 2024 13:15:52 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id E014A81252;
+	Thu, 17 Oct 2024 13:16:59 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 02E862316
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Oct 2024 13:16:58 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id DB087402CC
- for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Oct 2024 13:15:51 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id D7C55605FA
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Oct 2024 13:16:57 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id CA15tVt-dT01 for <intel-wired-lan@lists.osuosl.org>;
- Thu, 17 Oct 2024 13:15:47 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.7;
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id TIOAzGp3rGyl for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 17 Oct 2024 13:16:53 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.21;
  helo=mgamail.intel.com; envelope-from=piotr.kwapulinski@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 40B9240672
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 40B9240672
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.7])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 40B9240672
- for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Oct 2024 13:15:46 +0000 (UTC)
-X-CSE-ConnectionGUID: Il14VkFhSXm73rxXOuzdag==
-X-CSE-MsgGUID: S12Y0CCaRbOCpNs+cLgo3w==
-X-IronPort-AV: E=McAfee;i="6700,10204,11227"; a="54068258"
-X-IronPort-AV: E=Sophos;i="6.11,210,1725346800"; d="scan'208";a="54068258"
-Received: from fmviesa003.fm.intel.com ([10.60.135.143])
- by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 17 Oct 2024 06:15:47 -0700
-X-CSE-ConnectionGUID: E+ShnjFfRFa3pz7umIcTTg==
-X-CSE-MsgGUID: eR21KDJ6RBqsuvaZNmoHaw==
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org A94A1605D4
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A94A1605D4
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.21])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id A94A1605D4
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Oct 2024 13:16:53 +0000 (UTC)
+X-CSE-ConnectionGUID: tYrGp0H7SdO98tcYK8qvgg==
+X-CSE-MsgGUID: bTJyLPqdRsuXVV0mYcs95A==
+X-IronPort-AV: E=McAfee;i="6700,10204,11222"; a="28607899"
+X-IronPort-AV: E=Sophos;i="6.11,199,1725346800"; d="scan'208";a="28607899"
+Received: from fmviesa004.fm.intel.com ([10.60.135.144])
+ by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 17 Oct 2024 06:16:53 -0700
+X-CSE-ConnectionGUID: Af1d6G19SuO/4SUJBJjTLA==
+X-CSE-MsgGUID: ZgUqYChbTOSHm5mM+0Cn+w==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.11,210,1725346800"; d="scan'208";a="82505226"
+X-IronPort-AV: E=Sophos;i="6.11,210,1725346800"; d="scan'208";a="83189557"
 Received: from pkwapuli-mobl1.ger.corp.intel.com (HELO
  vbox-pkwap.ger.corp.intel.com) ([10.246.19.66])
- by fmviesa003.fm.intel.com with ESMTP; 17 Oct 2024 06:15:45 -0700
+ by fmviesa004.fm.intel.com with ESMTP; 17 Oct 2024 06:16:51 -0700
 From: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Cc: netdev@vger.kernel.org,
-	Piotr Kwapulinski <piotr.kwapulinski@intel.com>
-Date: Thu, 17 Oct 2024 15:15:01 +0200
-Message-ID: <20241017131501.4229-1-piotr.kwapulinski@intel.com>
+Cc: netdev@vger.kernel.org, bhelgaas@google.com, linux-pci@vger.kernel.org,
+ linux-kernel@vger.kernel.org,
+ Piotr Kwapulinski <piotr.kwapulinski@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Date: Thu, 17 Oct 2024 15:16:47 +0200
+Message-ID: <20241017131647.4255-1-piotr.kwapulinski@intel.com>
 X-Mailer: git-send-email 2.43.5
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1729170947; x=1760706947;
+ t=1729171014; x=1760707014;
  h=from:to:cc:subject:date:message-id:mime-version:
  content-transfer-encoding;
- bh=YB7+HFcGK8k46+CVdTngS7vscQZUut1NpWXvPpsWZ78=;
- b=XzIu5e0tG4fKhaOqCbg4+dfCY2Dk2Uex1IHMa5AqW0qsnNEetMBzpYY4
- /d3IYXVaTGpqEqySolBu2Z5iSBxIDpVL/8a1PZuZjS39pRHk+74Cqkf3D
- jii6Xm3n5zPiaFxmBqYYZaiwMznRry6KgLSv7qTGJgXHqGrw58eQ+rczl
- idzuX6WWTmiHFrYWizuLaZhpKoCQUzPaJLI0LVvrnqfHQ7uAX+V8UiKz5
- Ns9UOOUBd3qTt63wLViiUsHcz1spQt0ROYV8J4XfNXEGz1yOQECSJgY5X
- AF6DZ0U7UECnzsUsOilVP1yjjjOqhjW9CrQmkQ8QKtNYHxr0Gom9R6rpq
+ bh=Qmc9et5egLokLVZtqGU9Qa5U3lkdY/PRXCZKtUwOPg4=;
+ b=VAVah3m/4Yl7i6LaHAmHqOOu7OxqZVuYmK42+duiPsSm5yZ1NBURPw+Q
+ 73W/p4BGDNNbJNrmcG/LgCIhcJxpVXprKdAYuW1RXb3recpK6jvuN52Jl
+ FHdkcLA8aXOlysMqoLHT448vLb0fJJqK8T59mKDYcGmFD/3L7TgStJ/Zo
+ u2WqySlKlir+pItEtKRptB2IDgYp+R2AGvhgWEtbEdig0/VxK4Xgl+qMv
+ aq2zWM5F1dAYRCoCOI1+On0i2j5onqlyZKgtyEtZ6AinqLTTqNLITn5p/
+ dzfw2kubKe/eQsAu71hwyaGNSAbSRbvxvkLjCvoRRRbnZj3iPkims/BaX
  w==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=XzIu5e0t
-Subject: [Intel-wired-lan] [PATCH iwl-next 0/2] ixgbevf: Add support for
- Intel(R) E610 device
+ header.s=Intel header.b=VAVah3m/
+Subject: [Intel-wired-lan] [PATCH iwl-next 1/2] PCI: Add PCI_VDEVICE_SUB
+ helper macro
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -108,25 +110,43 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Add support for Intel(R) E610 Series of network devices. The E610 is
-based on X550 but adds firmware managed link, enhanced security
-capabilities and support for updated server manageability.
+PCI_VDEVICE_SUB generates the pci_device_id struct layout for
+the specific PCI device/subdevice. The subvendor field is set
+to PCI_ANY_ID. Private data may follow the output.
 
-Piotr Kwapulinski (2):
-  PCI: Add PCI_VDEVICE_SUB helper macro
-  ixgbevf: Add support for Intel(R) E610 device
+Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Signed-off-by: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
+---
+ include/linux/pci.h | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
 
- drivers/net/ethernet/intel/ixgbevf/defines.h      |  5 ++++-
- drivers/net/ethernet/intel/ixgbevf/ixgbevf.h      |  6 +++++-
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 12 ++++++++++--
- drivers/net/ethernet/intel/ixgbevf/vf.c           | 12 +++++++++++-
- drivers/net/ethernet/intel/ixgbevf/vf.h           |  4 +++-
- include/linux/pci.h                               | 14 ++++++++++++++
- 6 files changed, 47 insertions(+), 6 deletions(-)
+This patch is a part of the series from netdev.
 
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index 573b4c4..2b6b2c8 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -1050,6 +1050,20 @@ struct pci_driver {
+ 	.vendor = PCI_VENDOR_ID_##vend, .device = (dev), \
+ 	.subvendor = PCI_ANY_ID, .subdevice = PCI_ANY_ID, 0, 0
+ 
++/**
++ * PCI_VDEVICE_SUB - describe a specific PCI device/subdevice in a short form
++ * @vend: the vendor name
++ * @dev: the 16 bit PCI Device ID
++ * @subdev: the 16 bit PCI Subdevice ID
++ *
++ * Generate the pci_device_id struct layout for the specific PCI
++ * device/subdevice. The subvendor field is set to PCI_ANY_ID. Private data
++ * may follow the output.
++ */
++#define PCI_VDEVICE_SUB(vend, dev, subdev) \
++	.vendor = PCI_VENDOR_ID_##vend, .device = (dev), \
++	.subvendor = PCI_ANY_ID, .subdevice = subdev, 0, 0
++
+ /**
+  * PCI_DEVICE_DATA - macro used to describe a specific PCI device in very short form
+  * @vend: the vendor name (without PCI_VENDOR_ID_ prefix)
 -- 
-  E610 ixgbe support:
-  https://patchwork.ozlabs.org/project/intel-wired-lan/list/?series=426452
-
 2.43.0
 
