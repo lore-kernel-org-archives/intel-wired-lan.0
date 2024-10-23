@@ -1,74 +1,74 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 66C04D2E00C
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 23 Oct 2024 02:40:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7982CD2E00B
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 23 Oct 2024 02:40:02 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 146DC607E1;
-	Wed, 23 Oct 2024 02:40:03 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 431D34056F;
+	Wed, 23 Oct 2024 02:40:02 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id KyKZvkOhPAJE; Wed, 23 Oct 2024 02:40:02 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id W98ePRlTBf7A; Wed, 23 Oct 2024 02:40:01 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 6714D607F0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 57B024057B
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1729651202;
-	bh=ZkaoFuitHvLoQYL8BD8XKhAraJnuQXBIl/mlceZiAdY=;
+	s=default; t=1729651201;
+	bh=+119Yu3FZjKqDHaNUSvCFY/zkfsDy65cH5ymx7eePRI=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=ku0npKUCJiZ/tvhQ0mkPcHYo3Hiy10bAiRxqgH0Nu7gE8dQp8NYWB+qufHYIS21sG
-	 5xJyOhZbrEAwNNjyMc+t4zGQPnnXvofF3tDHKOC5QsecbQrIuqDbsDn6S4U3YhAJ3A
-	 cgdStrhWk8bJHEG/qT+kPvPUb01MWROtbUsZHsnELale4qcbXNAKUT8N9IjC4L/GE7
-	 b5i23LLVNJYRsJyL5kQ54C6cO59ToFa6oB+JspRkCELkgI8NS92IN/QPTZxsXdZLgf
-	 CXazyHclOFLVJc84nouSPwG5wK86Y+vGXqtsIblr6S8rh4PaIc0HK5JIaFl3OjG62x
-	 9MBjXPybZJKpw==
+	b=MXphCIiew27DxuZ3k5cJopMDMe8L0fK7saS//sekpWERpgQX/yl1jl1ZtlzmsIqWj
+	 JH5SWF1i/FKupQdeKK+3AkhZlzxE7ZVXPHpPm1KnEjtYFdWnw2a7FBcbIFw6BX2On1
+	 AA+74ekU9VJxv6wTjsWifFkHC3Zkiby5cQ+80j9Rhbd11OUGqFfpY+ST9SE0QO9hJ7
+	 uFKrygp1NvdNfr7257VFHMBMBH5H/tWLtGvYmpeOL0/u61xI+GD6NvFOVATNzoQz7R
+	 MAkjHvcUcgt6xcTaC+rzrum3TxTd3IXAVHy0IO83yR+aYMrUgXr3TCeDd4xYMpmBvL
+	 0m9IsmLm7CHPw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 6714D607F0;
-	Wed, 23 Oct 2024 02:40:02 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id 63E384C2A
- for <intel-wired-lan@lists.osuosl.org>; Wed, 23 Oct 2024 02:39:57 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 57B024057B;
+	Wed, 23 Oct 2024 02:40:01 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 5DEBC59BA
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 23 Oct 2024 02:39:56 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 4EDD9405F1
+ by smtp1.osuosl.org (Postfix) with ESMTP id 4035280F41
  for <intel-wired-lan@lists.osuosl.org>; Wed, 23 Oct 2024 02:39:56 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id nni2JMXlQnFW for <intel-wired-lan@lists.osuosl.org>;
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id UTlt1srqwWWg for <intel-wired-lan@lists.osuosl.org>;
  Wed, 23 Oct 2024 02:39:55 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.15;
  helo=mgamail.intel.com; envelope-from=christopher.s.hall@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 49ED640613
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 49ED640613
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 67BA280F43
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 67BA280F43
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.15])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 49ED640613
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 67BA280F43
  for <intel-wired-lan@lists.osuosl.org>; Wed, 23 Oct 2024 02:39:55 +0000 (UTC)
-X-CSE-ConnectionGUID: 16lHOuOCRZ28b0ULa+r2jQ==
-X-CSE-MsgGUID: E4yJH8t4RvaduEBEKLU/Ag==
-X-IronPort-AV: E=McAfee;i="6700,10204,11222"; a="32918044"
-X-IronPort-AV: E=Sophos;i="6.11,199,1725346800"; d="scan'208";a="32918044"
+X-CSE-ConnectionGUID: rb/tmrEJSTSpF5sw9i+WOg==
+X-CSE-MsgGUID: EiPMVoTiSianBD0keKDXlw==
+X-IronPort-AV: E=McAfee;i="6700,10204,11222"; a="32918048"
+X-IronPort-AV: E=Sophos;i="6.11,199,1725346800"; d="scan'208";a="32918048"
 Received: from fmviesa010.fm.intel.com ([10.60.135.150])
  by orvoesa107.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 22 Oct 2024 19:39:54 -0700
-X-CSE-ConnectionGUID: iPrtyChSRcmLX7EU6P0mZA==
-X-CSE-MsgGUID: UaHbyb1PSDeyGn7gyWiWww==
+ 22 Oct 2024 19:39:55 -0700
+X-CSE-ConnectionGUID: v24BRyP1T7ymzKN/4Lzeag==
+X-CSE-MsgGUID: axdojXz8SaObmq+J6tzNtw==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.11,223,1725346800"; d="scan'208";a="80396828"
+X-IronPort-AV: E=Sophos;i="6.11,223,1725346800"; d="scan'208";a="80396834"
 Received: from timelab-spr11.ch.intel.com ([143.182.136.151])
- by fmviesa010.fm.intel.com with ESMTP; 22 Oct 2024 19:39:53 -0700
+ by fmviesa010.fm.intel.com with ESMTP; 22 Oct 2024 19:39:54 -0700
 From: Chris H <christopher.s.hall@intel.com>
 To: intel-wired-lan@lists.osuosl.org
 Cc: david.zage@intel.com, vinicius.gomes@intel.com, netdev@vger.kernel.org,
  rodrigo.cadore@l-acoustics.com, vinschen@redhat.com,
  Christopher S M Hall <christopher.s.hall@intel.com>
-Date: Wed, 23 Oct 2024 02:30:39 +0000
-Message-Id: <20241023023040.111429-4-christopher.s.hall@intel.com>
+Date: Wed, 23 Oct 2024 02:30:40 +0000
+Message-Id: <20241023023040.111429-5-christopher.s.hall@intel.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20241023023040.111429-1-christopher.s.hall@intel.com>
 References: <20241023023040.111429-1-christopher.s.hall@intel.com>
@@ -79,22 +79,23 @@ X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  t=1729651196; x=1761187196;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=YW8OJ6ncs4oJPqe5fuxKSZeeTTvjkAOWYEUbEfU4uus=;
- b=IDLOkCZeQOnnamarD/njjFLv9CJ3NYjYiFBTildGRJtrn30L1Xe4ivgt
- NXHFjiNrzc3N3bKAU8OkzTrRWVA/Fl1RCHdc5CFHSc6N5Or7dhgBnA8bk
- BS29p27SvsoD/Dtg6mUkiUipZ4P4eSajUhVfywjn9ea2mh43akwa1sdLJ
- c53+ldRcTClUYFzqCRIwjcgk8PDGZyK9dNTmitL4/++8SB8FED7eGlBTa
- 8aFB2wP5vGVV1LHsVNNFl76R2tQhJEBh2imKZoZK80qavoxXX/jODwOA0
- uzcNiK3Ov4o4X2PJFzN98ZSRX4tf/G/jF6ZloMtburRLZ+16v6zy8ZFQZ
- A==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ bh=fI2PP8aO+nTDU/nnhz7qcI6i6PH/omY2nZpMN6FK/9o=;
+ b=NYAPMqMzOSr1xbsO2pKhS12RCYN4+i2Dqv4Z/D3ktre+FkXc7Vm99UEI
+ YtFu5yaKZ5nAU/KofRCpjxv2MAYQXQaOiQq5ldbc6cX2EJKAcHE3JrXoQ
+ Sy9bz5wd4o7Hl0CneKm5kF1+bgzBE4lOM06/dZ2T+i3z6uizMZDmUWoEK
+ mZZtvfgFweW8cJAa6C7wi3HT/iUE1q3OkelxlJ/VPD1zcu9Ogs+WUqU2V
+ qGYyPQcaCsY/Q6qKyaaeCmOUSQsbzEtIRk4oUUjZyD9L2hjti72nO/8hp
+ vXo0/3cQ4rI0bkz2qkwutpUW/xafz+rmZgSTPzrFxDcFHdeLIC0R/LPTo
+ g==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=IDLOkCZe
-Subject: [Intel-wired-lan] [PATCH iwl-net v2 3/4] igc: Move ktime snapshot
- into PTM retry loop
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=NYAPMqMz
+Subject: [Intel-wired-lan] [PATCH iwl-net v2 4/4] igc: Add lock preventing
+ multiple simultaneous PTM transactions
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -112,45 +113,72 @@ Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 From: Christopher S M Hall <christopher.s.hall@intel.com>
 
-Move ktime_get_snapshot() into the loop. If a retry does occur, a more
-recent snapshot will result in a more accurate cross-timestamp.
+Add a mutex around the PTM transaction to prevent multiple transactors
+
+Multiple processes try to initiate a PTM transaction, one or all may
+fail. This can be reproduced by running two instances of the
+following:
+
+$ sudo phc2sys -O 0 -i tsn0 -m
+
+PHC2SYS exits with:
+
+"ioctl PTP_OFFSET_PRECISE: Connection timed out" when the PTM transaction
+ fails
+
+Note: Normally two instance of PHC2SYS will not run, but one process
+ should not break another.
 
 Fixes: a90ec8483732 ("igc: Add support for PTP getcrosststamp()")
 Signed-off-by: Christopher S M Hall <christopher.s.hall@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc_ptp.c | 18 +++++++++---------
- 1 file changed, 9 insertions(+), 9 deletions(-)
+ drivers/net/ethernet/intel/igc/igc.h     |  1 +
+ drivers/net/ethernet/intel/igc/igc_ptp.c | 12 ++++++++++--
+ 2 files changed, 11 insertions(+), 2 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
+index eac0f966e0e4..323db1e2be38 100644
+--- a/drivers/net/ethernet/intel/igc/igc.h
++++ b/drivers/net/ethernet/intel/igc/igc.h
+@@ -319,6 +319,7 @@ struct igc_adapter {
+ 	struct timespec64 prev_ptp_time; /* Pre-reset PTP clock */
+ 	ktime_t ptp_reset_start; /* Reset time in clock mono */
+ 	struct system_time_snapshot snapshot;
++	struct mutex ptm_lock; /* Only allow one PTM transaction at a time */
+ 
+ 	char fw_version[32];
+ 
 diff --git a/drivers/net/ethernet/intel/igc/igc_ptp.c b/drivers/net/ethernet/intel/igc/igc_ptp.c
-index 00cc80d8d164..fb885fcaa97c 100644
+index fb885fcaa97c..4e1379b7d2ee 100644
 --- a/drivers/net/ethernet/intel/igc/igc_ptp.c
 +++ b/drivers/net/ethernet/intel/igc/igc_ptp.c
-@@ -1011,16 +1011,16 @@ static int igc_phc_get_syncdevicetime(ktime_t *device,
- 	int err, count = 100;
- 	ktime_t t1, t2_curr;
+@@ -1068,9 +1068,16 @@ static int igc_ptp_getcrosststamp(struct ptp_clock_info *ptp,
+ {
+ 	struct igc_adapter *adapter = container_of(ptp, struct igc_adapter,
+ 						   ptp_caps);
++	int ret;
  
--	/* Get a snapshot of system clocks to use as historic value. */
--	ktime_get_snapshot(&adapter->snapshot);
--
-+	/* Doing this in a loop because in the event of a
-+	 * badly timed (ha!) system clock adjustment, we may
-+	 * get PTM errors from the PCI root, but these errors
-+	 * are transitory. Repeating the process returns valid
-+	 * data eventually.
-+	 */
- 	do {
--		/* Doing this in a loop because in the event of a
--		 * badly timed (ha!) system clock adjustment, we may
--		 * get PTM errors from the PCI root, but these errors
--		 * are transitory. Repeating the process returns valid
--		 * data eventually.
--		 */
-+		/* Get a snapshot of system clocks to use as historic value. */
-+		ktime_get_snapshot(&adapter->snapshot);
+-	return get_device_system_crosststamp(igc_phc_get_syncdevicetime,
+-					     adapter, &adapter->snapshot, cts);
++	/* This blocks until any in progress PTM transactions complete */
++	mutex_lock(&adapter->ptm_lock);
 +
- 		igc_ptm_trigger(hw);
++	ret = get_device_system_crosststamp(igc_phc_get_syncdevicetime,
++					    adapter, &adapter->snapshot, cts);
++	mutex_unlock(&adapter->ptm_lock);
++
++	return ret;
+ }
  
- 		err = readx_poll_timeout(rd32, IGC_PTM_STAT, stat,
+ static int igc_ptp_getcyclesx64(struct ptp_clock_info *ptp,
+@@ -1169,6 +1176,7 @@ void igc_ptp_init(struct igc_adapter *adapter)
+ 	spin_lock_init(&adapter->ptp_tx_lock);
+ 	spin_lock_init(&adapter->free_timer_lock);
+ 	spin_lock_init(&adapter->tmreg_lock);
++	mutex_init(&adapter->ptm_lock);
+ 
+ 	adapter->tstamp_config.rx_filter = HWTSTAMP_FILTER_NONE;
+ 	adapter->tstamp_config.tx_type = HWTSTAMP_TX_OFF;
 -- 
 2.34.1
 
