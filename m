@@ -1,82 +1,82 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5CC10D149F3
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 25 Oct 2024 21:02:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6A4A2D149F2
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 25 Oct 2024 21:02:03 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 011E581F22;
-	Fri, 25 Oct 2024 21:02:02 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id G0JxW8BaRutE; Fri, 25 Oct 2024 21:02:00 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 84B9981F13
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1729890120;
-	bh=n0M5qg+opbMnajsYEiFgs7dkzouioWHNOMwmoWUb8C8=;
-	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=grgpO8cT/rqJ73COWlOr7FMCFQlbh2CyUca0P7IRKOa93HtrJ3VJOMSkvvoBmK6YT
-	 6GqPOTuKJ/uNOWj+iO8mH04jHe45MYSH4xSoQ0U6JRxkejuq4yKzio4avmsn0SCBCQ
-	 1jRqtGgdYJVFLdrZXDIXabjr9/CKhguuF2PCjl51tmpA94nkUhBwRBqPDJmKuKzVlp
-	 S9k/ieKd/l0o7vzArQoG31uR7UHq1ID4xXMbHUBdOW59pvEd+lmWLJuJTbz5dcAHwL
-	 NdP7Em2ocK9HesU5jWhWybNGu3WyJ18utcW8YA7e+38cmKaZmY8up7GFRqMWuAGJ9O
-	 Z2hSEBkUd1xhA==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 84B9981F13;
-	Fri, 25 Oct 2024 21:02:00 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id 327234960
- for <intel-wired-lan@lists.osuosl.org>; Thu, 24 Oct 2024 19:56:52 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 13C8E40B87
- for <intel-wired-lan@lists.osuosl.org>; Thu, 24 Oct 2024 19:56:52 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 378EB40740;
+	Fri, 25 Oct 2024 21:02:03 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id WaowprSkcwOy for <intel-wired-lan@lists.osuosl.org>;
- Thu, 24 Oct 2024 19:56:50 +0000 (UTC)
+ id xlB7etsfKDVM; Fri, 25 Oct 2024 21:02:01 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 6F5334074B
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1729890121;
+	bh=1wc/QZe1hiCCq5FlwaTTiitAUZHpvboWKLlfnwXki6s=;
+	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=DpPmCiOkgTCC7k8e5WBqpM6GRGy4Jded+vVOKmpo/YoU1cwTAdFLpSZ2HYBJk3B3E
+	 fms/llw/mpD6JdL5tdPk0fw/mbVwAweO+J3LsKimmdH5RrdhNg2Zae/v29Bw1yQC26
+	 FH/yYWGyfDbHwUAGhXtHaOmAXNJ9q9wMx28ZCYzTX1dJlJZsNVLWixf0qoX+L+bBGe
+	 bvAaKEW/EP9yaoSf/qfiEF3W3TYZo4t28J9NnnOd0jqQwWuIkxwZWwyg3kZI7JR5d9
+	 +holpwEwH1SXDafNuqDdRVQgsGcbarv4jZ9R6JZFGLhhNTlDYpFOIc5yBZt8wJNih1
+	 Ddqyfusylyapg==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp4.osuosl.org (Postfix) with ESMTP id 6F5334074B;
+	Fri, 25 Oct 2024 21:02:01 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 9991E5C1E
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 25 Oct 2024 20:17:18 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp3.osuosl.org (Postfix) with ESMTP id 7B28560627
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 25 Oct 2024 20:17:18 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id U_luPX0ghxLO for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 25 Oct 2024 20:17:17 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2607:f8b0:4864:20::52f; helo=mail-pg1-x52f.google.com;
+ client-ip=2607:f8b0:4864:20::42b; helo=mail-pf1-x42b.google.com;
  envelope-from=rosenp@gmail.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 433E640B9F
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 433E640B9F
-Received: from mail-pg1-x52f.google.com (mail-pg1-x52f.google.com
- [IPv6:2607:f8b0:4864:20::52f])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 433E640B9F
- for <intel-wired-lan@lists.osuosl.org>; Thu, 24 Oct 2024 19:56:50 +0000 (UTC)
-Received: by mail-pg1-x52f.google.com with SMTP id
- 41be03b00d2f7-7db238d07b3so877726a12.2
- for <intel-wired-lan@lists.osuosl.org>; Thu, 24 Oct 2024 12:56:50 -0700 (PDT)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 2ED0C600CB
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2ED0C600CB
+Received: from mail-pf1-x42b.google.com (mail-pf1-x42b.google.com
+ [IPv6:2607:f8b0:4864:20::42b])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 2ED0C600CB
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 25 Oct 2024 20:17:16 +0000 (UTC)
+Received: by mail-pf1-x42b.google.com with SMTP id
+ d2e1a72fcca58-71f5208217dso1599514b3a.2
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 25 Oct 2024 13:17:16 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20230601; t=1729799809; x=1730404609;
+ d=1e100.net; s=20230601; t=1729887436; x=1730492236;
  h=content-transfer-encoding:mime-version:message-id:date:subject:cc
  :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
  :reply-to;
- bh=n0M5qg+opbMnajsYEiFgs7dkzouioWHNOMwmoWUb8C8=;
- b=YE93afzRSm0rZbLMwy8q2vUsepKJ9Gv+M/bSxFAtNZCozTEzlzU0fUu/evnYiB905L
- 7+XCEMAjR8AnrRw9uOdovSUTRtb1uPdlQgUgS4+v+HjW005uMA/w5Iyd/KuRikYC+3lD
- L4BzTKJFp11bzAL1LgpB89N87so1LN+tbkDPoB0PpexOQZI8CXFse2ECWwoJjT6NjpYF
- 0FolOIupsPooppU6SpgPM1qUeiRYXzrHfZYD2MWl+i7ZoElJRg7AjGErZuu5YCaGZFAT
- FRrANXJgvqghzDq/5/9Rx85vm0CZQpHaZz+XW6BUFgbvZjW3E06C6qy578rGrtrbeZCp
- jCZg==
+ bh=1wc/QZe1hiCCq5FlwaTTiitAUZHpvboWKLlfnwXki6s=;
+ b=SMPsY9xpzlSrzSkDgOa2bygrZqFAz68D4YFiGI444/jyJju2YdtOKFDnjNh2iFvw/q
+ ACDvQoU9hev58TjcsfdN2kinMeGliOHX5WEucSSva0IP79vUobCynkcUd6lrJD6b/hyj
+ BeA+GxFOzthougbPj/gEh5uBZQQhluvSjZx+HKaFdKVCcvHPfhzmmCyK8fxoSMrSmWwZ
+ lOaj8e6Ep3OXvqAEOxh9cAg51Xe+5jXwij6/EQpTf03Ur7WEgdpWRcPz2GAmscyXM5bT
+ G9LrDhLVlZFm058FD0cuo9YJop0ucp0KUcQZUAYPaV70niiykMe4y0dmdbqPviybH8g6
+ BHQg==
 X-Forwarded-Encrypted: i=1;
- AJvYcCWujNgYuH1jnqtOdTx7Vwgm6nHrDJy+Hp/jmwpiM7BtRKcBrVSL26eGXwkV2O/LA4aDHZcJRWPrxRE+YjstOgE=@lists.osuosl.org
-X-Gm-Message-State: AOJu0YyL+5tWlfdGtEHZomfTtoOjEDp8a+r5HUREHvF+cbq+6Jj88/tt
- 8ojqCCqtaWp0sw8L/EEggAc1jUdZXAmFnjJoA4Ys9Fe710Ut8VsS
-X-Google-Smtp-Source: AGHT+IHdZCwLUfzW3pSUTEPCLeUJMGfDJgXFJED02bnL4dznZxTGoq56+zS5WaDb1pVoSATrJgcwpg==
-X-Received: by 2002:a05:6a20:b418:b0:1d2:e888:fcd1 with SMTP id
- adf61e73a8af0-1d989cc9341mr3458237637.33.1729799809359; 
- Thu, 24 Oct 2024 12:56:49 -0700 (PDT)
+ AJvYcCVF6s4PUK3Rclpb1SFHHFSOIkvhcfzbJsWUcVOY3w8oYQcfJUBKtvxWDd/6h0jUHZ66nkHksN9zQvJprUZ/GE0=@lists.osuosl.org
+X-Gm-Message-State: AOJu0YyZ+6EcyEGjXQ4y6WYtwHde+kq1wsBkqy9WatWD0Hm3vb3XLWl0
+ YkyJpToAfJGBDGPNMhKFdfwWfqlFqSGuVX9oLSL988PiWWd3YfX3
+X-Google-Smtp-Source: AGHT+IFy/XpPK5XHbCp3ZcMUxcmsqjAA3atraI3Q40V3KVXnSL7m4jzYB5iT5tJHNZvoUDUcDGUpZw==
+X-Received: by 2002:a05:6a00:2e08:b0:71e:6f63:f076 with SMTP id
+ d2e1a72fcca58-72062f4e5c7mr902990b3a.5.1729887436038; 
+ Fri, 25 Oct 2024 13:17:16 -0700 (PDT)
 Received: from ryzen.lan ([2601:644:8200:dab8::a86])
  by smtp.gmail.com with ESMTPSA id
- d2e1a72fcca58-71ec13ea1f3sm8601300b3a.147.2024.10.24.12.56.47
+ d2e1a72fcca58-72057a3c228sm1478335b3a.187.2024.10.25.13.17.14
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 24 Oct 2024 12:56:49 -0700 (PDT)
+ Fri, 25 Oct 2024 13:17:15 -0700 (PDT)
 From: Rosen Penev <rosenp@gmail.com>
 To: netdev@vger.kernel.org
 Cc: Tony Nguyen <anthony.l.nguyen@intel.com>,
@@ -92,31 +92,32 @@ Cc: Tony Nguyen <anthony.l.nguyen@intel.com>,
  linux-kernel@vger.kernel.org (open list),
  bpf@vger.kernel.org (open list:XDP (eXpress Data
  Path):Keyword:(?:\b|_)xdp(?:\b|_))
-Date: Thu, 24 Oct 2024 12:56:47 -0700
-Message-ID: <20241024195647.176614-1-rosenp@gmail.com>
+Date: Fri, 25 Oct 2024 13:17:13 -0700
+Message-ID: <20241025201713.286074-1-rosenp@gmail.com>
 X-Mailer: git-send-email 2.47.0
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Approved-At: Fri, 25 Oct 2024 21:01:54 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20230601; t=1729799809; x=1730404609; darn=lists.osuosl.org;
+ d=gmail.com; s=20230601; t=1729887436; x=1730492236; darn=lists.osuosl.org;
  h=content-transfer-encoding:mime-version:message-id:date:subject:cc
  :to:from:from:to:cc:subject:date:message-id:reply-to;
- bh=n0M5qg+opbMnajsYEiFgs7dkzouioWHNOMwmoWUb8C8=;
- b=g+iBpUzozLF44LxoWbKe1JXlOBWi39Ip3wrLrlbebtAvxGtC+CPUWm9A4yE+oWZROE
- CU33iqHrXp7NEoABtJpy0mnGHhi11gZr8FSkgsVNpwkYxUHpMuavncJg0YFFmkhj7ODD
- sYwJtnZNtd2NG6JM80J4nx/lV/HrpNxewFzEFIAwiYdS7Grp7SsVAZUgAjk/akWz4cdB
- X5WCmhTGOqSSGV0zIRfOpyyl/2nSiEFTU3Nk1PYEbYlMDd7H/drFz5sKJsVkMH8spqH1
- sHhEMv4uXO9rANXS4sPJ1pvDYVqGji3KZcoHVickjIrN0nZpUMSK6zRAxW8BBPxAKwXK
- tcWw==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ bh=1wc/QZe1hiCCq5FlwaTTiitAUZHpvboWKLlfnwXki6s=;
+ b=ccjr2sY7krAdHTK0QomAlt5n5oxReP1UVxiI5ynw8ij74EBOA8/ss2+7fmMrBsr/IO
+ rY7Jx/p/lDkCglznSb/uMqZW2M0pqib6Et+BMddur6PMx/RILM0UBw4KZ4wH8jF70gqA
+ 9EhOfzCSe4tLBD8rB2DCz8tYdEY/PJDPr9Zgk5Y3MS9IBqkRPl0ijUxejOCCcuWMNoAC
+ pGiJkT8EHdRmknJUUVDtHvW9LWFLiQBwDDfyLgK7vb81L8pdEz/SfoZ8w9OFShNZ+YeP
+ t89HENaTn6UEd3dv8TDDnYmXKd+P7giM563jwL5Aj6InafgFpAUE0JqeCTF3zvlNk09A
+ m9xA==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=gmail.com
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
- header.a=rsa-sha256 header.s=20230601 header.b=g+iBpUzo
-Subject: [Intel-wired-lan] [PATCH net-next] net: intel: use ethtool string
- helpers
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20230601 header.b=ccjr2sY7
+Subject: [Intel-wired-lan] [PATCHv2 net-next iwl-next] net: intel: use
+ ethtool string helpers
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -138,17 +139,18 @@ Avoids manually incrementing the pointer. Cleans up the code quite well.
 
 Signed-off-by: Rosen Penev <rosenp@gmail.com>
 ---
+ v2: add iwl-next tag. use inline int in for loops.
  .../net/ethernet/intel/e1000/e1000_ethtool.c  | 10 ++---
  drivers/net/ethernet/intel/e1000e/ethtool.c   | 14 +++----
- .../net/ethernet/intel/fm10k/fm10k_ethtool.c  | 12 +++---
- .../net/ethernet/intel/i40e/i40e_ethtool.c    |  8 ++--
+ .../net/ethernet/intel/fm10k/fm10k_ethtool.c  | 10 ++---
+ .../net/ethernet/intel/i40e/i40e_ethtool.c    |  6 +--
  drivers/net/ethernet/intel/ice/ice_ethtool.c  | 37 +++++++++++--------
  drivers/net/ethernet/intel/igb/igb_ethtool.c  | 35 ++++++++++--------
  drivers/net/ethernet/intel/igbvf/ethtool.c    | 10 ++---
  drivers/net/ethernet/intel/igc/igc_ethtool.c  | 36 +++++++++---------
  .../net/ethernet/intel/ixgbe/ixgbe_ethtool.c  | 32 ++++++++--------
  drivers/net/ethernet/intel/ixgbevf/ethtool.c  | 36 +++++++-----------
- 10 files changed, 119 insertions(+), 111 deletions(-)
+ 10 files changed, 115 insertions(+), 111 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/e1000/e1000_ethtool.c b/drivers/net/ethernet/intel/e1000/e1000_ethtool.c
 index d06d29c6c037..33222fadb3b9 100644
@@ -214,7 +216,7 @@ index 9364bc2b4eb1..ab590b69c14f 100644
  	}
  }
 diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
-index 1bc5b6c0b897..b86fb1be78df 100644
+index 1bc5b6c0b897..fb03bb30154a 100644
 --- a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
 +++ b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
 @@ -122,7 +122,7 @@ static const char fm10k_gstrings_test[][ETH_GSTRING_LEN] = {
@@ -226,17 +228,13 @@ index 1bc5b6c0b897..b86fb1be78df 100644
  
  enum fm10k_self_test_types {
  	FM10K_TEST_MBX,
-@@ -180,17 +180,19 @@ static void fm10k_get_stat_strings(struct net_device *dev, u8 *data)
- static void fm10k_get_strings(struct net_device *dev,
- 			      u32 stringset, u8 *data)
+@@ -182,15 +182,15 @@ static void fm10k_get_strings(struct net_device *dev,
  {
-+	int i;
-+
  	switch (stringset) {
  	case ETH_SS_TEST:
 -		memcpy(data, fm10k_gstrings_test,
 -		       FM10K_TEST_LEN * ETH_GSTRING_LEN);
-+		for (i = 0; i < FM10K_TEST_LEN; i++)
++		for (int i = 0; i < FM10K_TEST_LEN; i++)
 +			ethtool_puts(&data, fm10k_gstrings_test[i]);
  		break;
  	case ETH_SS_STATS:
@@ -245,13 +243,13 @@ index 1bc5b6c0b897..b86fb1be78df 100644
  	case ETH_SS_PRIV_FLAGS:
 -		memcpy(data, fm10k_prv_flags,
 -		       FM10K_PRV_FLAG_LEN * ETH_GSTRING_LEN);
-+		for (i = 0; i < FM10K_PRV_FLAG_LEN; i++)
++		for (int i = 0; i < FM10K_PRV_FLAG_LEN; i++)
 +			ethtool_puts(&data, fm10k_prv_flags[i]);
  		break;
  	}
  }
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index f2506511bbff..ee63ef7ae393 100644
+index f2506511bbff..90fc0c29fbd6 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
 @@ -426,7 +426,7 @@ static const char i40e_gstrings_test[][ETH_GSTRING_LEN] = {
@@ -263,17 +261,13 @@ index f2506511bbff..ee63ef7ae393 100644
  
  struct i40e_priv_flags {
  	char flag_string[ETH_GSTRING_LEN];
-@@ -2529,10 +2529,12 @@ static void i40e_get_priv_flag_strings(struct net_device *netdev, u8 *data)
- static void i40e_get_strings(struct net_device *netdev, u32 stringset,
- 			     u8 *data)
+@@ -2531,8 +2531,8 @@ static void i40e_get_strings(struct net_device *netdev, u32 stringset,
  {
-+	int i;
-+
  	switch (stringset) {
  	case ETH_SS_TEST:
 -		memcpy(data, i40e_gstrings_test,
 -		       I40E_TEST_LEN * ETH_GSTRING_LEN);
-+		for (i = 0; i < I40E_TEST_LEN; i++)
++		for (int i = 0; i < I40E_TEST_LEN; i++)
 +			ethtool_puts(&data, i40e_gstrings_test[i]);
  		break;
  	case ETH_SS_STATS:
