@@ -1,88 +1,88 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2C5CBD0C604
-	for <intel-wired-lan@archiver.kernel.org>; Sat, 26 Oct 2024 15:37:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id ACC97D0C604
+	for <intel-wired-lan@archiver.kernel.org>; Sat, 26 Oct 2024 15:38:07 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id DCC8B605DB;
-	Sat, 26 Oct 2024 15:37:53 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id TqUL0U-wJgt9; Sat, 26 Oct 2024 15:37:52 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org D1989605DD
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1729957071;
-	bh=SdbQ0xbfbEzjwTQExWjTC0vstleoygaRbUr3K6VyXqM=;
-	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=bsktnaF43U7zAmT5uPIsgJ+x4Cfj0jbxG+wNT6HqC6crwde3AofWZWoRLrI27tw+5
-	 m7Ft8xRPRmTCzAMs49VEoFIzZo4RU5c82seozWomaTqR7TmtvPKPG4gxo1y6xeFSQr
-	 Zyy1PdZohAUO6K+8nK47sl+JAxxrEgRbpkKG6KMaU4KRQBu/prBCUxMvnBIdW/8GnQ
-	 PmIuXMX1WpUMs+O1FR8SJOt2JSn0c1QKMUMRuv5ZQewUw3ZzxaHp/DEBnRw7zpbuNr
-	 d3QHrJXm1b2f1nySDe2qLvbg8uuWToxD/caTMcED3HigY6UmOH2lv0lTcs4mYaWZ0i
-	 MmTPO+EsOOnqQ==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id D1989605DD;
-	Sat, 26 Oct 2024 15:37:51 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id B495C5C1E
- for <intel-wired-lan@lists.osuosl.org>; Sat, 26 Oct 2024 15:37:50 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 95AB781238
- for <intel-wired-lan@lists.osuosl.org>; Sat, 26 Oct 2024 15:37:50 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 75A1E812F6;
+	Sat, 26 Oct 2024 15:38:07 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id SL8L1nB9yoMU for <intel-wired-lan@lists.osuosl.org>;
- Sat, 26 Oct 2024 15:37:50 +0000 (UTC)
+ id edet6ZGCO-Me; Sat, 26 Oct 2024 15:38:07 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org AA966812C3
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1729957086;
+	bh=Vxn+LZ4pnA2ForOyFeBAWcXhqjDmr8BMWQeDzXfeQDI=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=VboJJ/bMwXkDoadXX3LxkYOkXvvUXsnE3Py+Fo5K/fikfANci7HG5w9kqBWRr4IzV
+	 8EkTTtGTmJKm4YfjneCt6wE+WVGs4PhL6u7KOWsiwYLU8F9A0REFkn8WY6xyuk8iI8
+	 NP0/vvBaQV+wnHD2OEvMzWZ8qPF2BDf1y02KjnMVWyHivyF1vHLXjcf8x4bekPza6N
+	 diyub3vfRZvoW68z14OU3eg0cDTbD98wZ3ZnhS9VXHBa+sNRR6lwPDh1EMRdwqXVDy
+	 Ruze9a2oWEzQbaL1EQPblOJYSOX2otdnB5sDqHfy4QFHWiGz5q1jLenYmDaHZiJiXs
+	 GlFRRFzice28A==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp1.osuosl.org (Postfix) with ESMTP id AA966812C3;
+	Sat, 26 Oct 2024 15:38:06 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 125F85C1E
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 26 Oct 2024 15:38:05 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp3.osuosl.org (Postfix) with ESMTP id E2CE06062C
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 26 Oct 2024 15:38:04 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id UKbghJpaO46g for <intel-wired-lan@lists.osuosl.org>;
+ Sat, 26 Oct 2024 15:38:04 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=147.75.193.91;
  helo=nyc.source.kernel.org; envelope-from=horms@kernel.org;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org EAF1180DCF
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org EAF1180DCF
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 21A21605D8
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 21A21605D8
 Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
- by smtp1.osuosl.org (Postfix) with ESMTPS id EAF1180DCF
- for <intel-wired-lan@lists.osuosl.org>; Sat, 26 Oct 2024 15:37:49 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 21A21605D8
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 26 Oct 2024 15:38:04 +0000 (UTC)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by nyc.source.kernel.org (Postfix) with ESMTP id 25BCBA401E6;
- Sat, 26 Oct 2024 15:35:52 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1AB03C4CEE5;
- Sat, 26 Oct 2024 15:37:43 +0000 (UTC)
-Date: Sat, 26 Oct 2024 16:37:41 +0100
+ by nyc.source.kernel.org (Postfix) with ESMTP id 9C494A401E6;
+ Sat, 26 Oct 2024 15:36:06 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A0F5BC4CEC6;
+ Sat, 26 Oct 2024 15:37:58 +0000 (UTC)
+Date: Sat, 26 Oct 2024 16:37:56 +0100
 From: Simon Horman <horms@kernel.org>
 To: Yue Haibing <yuehaibing@huawei.com>
-Message-ID: <20241026153741.GL1507976@kernel.org>
+Message-ID: <20241026153756.GM1507976@kernel.org>
 References: <20241026041249.1267664-1-yuehaibing@huawei.com>
- <20241026041249.1267664-3-yuehaibing@huawei.com>
+ <20241026041249.1267664-4-yuehaibing@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20241026041249.1267664-3-yuehaibing@huawei.com>
+In-Reply-To: <20241026041249.1267664-4-yuehaibing@huawei.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1729957068;
- bh=J/pySOqdQbC0PUYIJrkvno4pdFRrrM8O/AMC9oqFvOc=;
+ d=kernel.org; s=k20201202; t=1729957082;
+ bh=kfIY95pLBR/QjZ2VU50kuWXzRCaY64hreBQnX/RCywY=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=lK9W7vPAwGUPtwc42qru4fapuGmElf2Mfl5Az5wkZZocNeNFVhic7Ix/GUJ3xrqtr
- Gokwrg/cN5sNA/HrVGBGvS/okrGF4DPdrmGVRE+zTtB4gHfUEjSTXa8fAG6fQlQZEI
- 3mFdyBwznc2kenqyjrMxwyAi2ZIG0y4tNWt76BElluIZZ+LGovHmbMf6D67b+4W2FA
- 3r+PFPGRe5AB3UaWZC+583UqarYFbXT1b3RpM+x7gGuOhXd6sRfXRJyyqHu1/7+0+V
- mtGReDo288JQDQlQ+7y+u2DOVvnH5ORL370Bs5jSdieuNyY4YdXPQsMh+hJExq8Nrs
- u3NNeoxEARuDA==
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ b=l4loFfCDaJRcni7y7zwoZH4ivEXGqEwmWul+6KClw86Um9/PtqHtjzImuR2iSnhlb
+ fpoR853BTYJ41Zl7T27EFEPbLnxt9FZPZ3twhiawjpJuFArX/2cvUZc/LShQ9iqu/q
+ xnqvpJ5f2kD6rFdemk02bAIr9/64ZMF2uag27ubVXiRyayXIqQHm4AKL9Ll1xPHZ6e
+ gzVBspRiUh3XuSjSALbdkxPqxLWN8t63pGvWw8c3HWfYSkydCEEYCnNW2MLh/2YpXi
+ rBn8GyDJ9luZIKLh9vVJ5VInoGuh7AaQgCk6gvBner2zmcisABzvatxnkOFSwZShBq
+ vl8TLYj56+P+g==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=lK9W7vPA
-Subject: Re: [Intel-wired-lan] [PATCH v4 net-next 2/4] igb: Fix passing 0 to
- ERR_PTR in igb_run_xdp()
+ header.s=k20201202 header.b=l4loFfCD
+Subject: Re: [Intel-wired-lan] [PATCH v4 net-next 3/4] ixgbe: Fix passing 0
+ to ERR_PTR in ixgbe_run_xdp()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -106,15 +106,15 @@ Cc: alexander.h.duyck@intel.com, andre.guedes@intel.com,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Sat, Oct 26, 2024 at 12:12:47PM +0800, Yue Haibing wrote:
-> igb_run_xdp() converts customed xdp action to a negative error code
+On Sat, Oct 26, 2024 at 12:12:48PM +0800, Yue Haibing wrote:
+> ixgbe_run_xdp() converts customed xdp action to a negative error code
 > with the sk_buff pointer type which be checked with IS_ERR in
-> igb_clean_rx_irq(). Remove this error pointer handing instead use plain
-> int return value.
+> ixgbe_clean_rx_irq(). Remove this error pointer handing instead use
+> plain int return value.
 > 
-> Fixes: 9cbc948b5a20 ("igb: add XDP support")
-> Reviewed-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+> Fixes: 924708081629 ("ixgbe: add XDP support for pass and drop actions")
 > Reviewed-by: Jacob Keller <jacob.e.keller@intel.com>
+> Reviewed-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 > Signed-off-by: Yue Haibing <yuehaibing@huawei.com>
 
 Reviewed-by: Simon Horman <horms@kernel.org>
