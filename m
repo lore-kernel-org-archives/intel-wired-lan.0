@@ -1,103 +1,105 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 47B45E6F06F
-	for <intel-wired-lan@archiver.kernel.org>; Fri,  1 Nov 2024 15:30:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 705F2E6F06E
+	for <intel-wired-lan@archiver.kernel.org>; Fri,  1 Nov 2024 15:30:48 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 1B25481EDE;
-	Fri,  1 Nov 2024 15:30:49 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 2061160626;
+	Fri,  1 Nov 2024 15:30:48 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id jV6ceqm8wBte; Fri,  1 Nov 2024 15:30:48 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id iTl6jCxEg_ja; Fri,  1 Nov 2024 15:30:47 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 5E30F81826
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8327B606B8
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1730475048;
-	bh=ecc7x6z5tBSynVvbhNaEuzIQivszgPRWP9c+1MOAWAs=;
+	s=default; t=1730475047;
+	bh=W9ptO2AWHJvDBqBcplJ9x7hVH9AqEur0XDGEUTb8INw=;
 	h=From:To:CC:Date:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=LwPvPltgV6SNY3LwWRlJ8XRsPAjEIUZEgcF7vvhvYHHQ95BqAY5PW2dqBdh1GuPyt
-	 AY9XP0zFdH20jhSeDyqVCny2bzp1OlVa5jHQL5khOVpdIrd33tjeia17rc+PQqOFxy
-	 pJ3D0izUMN2gXgg3Rm8ie9J0G1pw3mu+25aHAX5w9YfYzjohV73pQcBjxxuzoc5LGj
-	 CnC+3pUjnXCXRur1IziyvMyvguyCwSBRz6n/PuV3lyZJ+zdarN6uojmrGOxP6NoiJS
-	 tXnVXPG10E2nxmFF+6v8Hf8T93T97xiOcVHDHluz8vxqI15gTmAJSMZYChGbjy5gPS
-	 HkQaAyVeMblAQ==
+	b=xxRikEba6P456pe5b1a+zXev4MPFvAMsVrtgjR6WUw8mr14FA1eCk0674sRcGef/s
+	 GIiaJB59gB+Z+ks+yDGQoj9d8o84ju9sngzF7+HihtJ7dru8p3LnhQq8RqB5p3rYII
+	 HkcFWY2aCcGlnfjEwc9xJoMb+UjK46HnGXjSw3dd14MdI1REzXrsSX8hB4tqtZySj/
+	 XiOpai22iBvpm6LQ31xhFXE/p5Jz2kb25guKuKsIxz8IT7p+xGFgc870eP2rgVeOQ9
+	 LLG9O7UdB9LUX1PqGPWdOG0/8mNgCKXZrlOGINDfApuR5P5fhO6qiTtw4fjoYwZx3S
+	 oML237conzasA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 5E30F81826;
-	Fri,  1 Nov 2024 15:30:48 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id 473C9494E
- for <intel-wired-lan@lists.osuosl.org>; Thu, 31 Oct 2024 18:28:41 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 8327B606B8;
+	Fri,  1 Nov 2024 15:30:47 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 8C1E05E50
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 31 Oct 2024 18:22:44 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 42CD3817AB
- for <intel-wired-lan@lists.osuosl.org>; Thu, 31 Oct 2024 18:28:41 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 6D20C4018E
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 31 Oct 2024 18:22:44 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id phsQna8I8QYf for <intel-wired-lan@lists.osuosl.org>;
- Thu, 31 Oct 2024 18:28:40 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=52.95.48.154;
- helo=smtp-fw-6001.amazon.com; envelope-from=prvs=027303c81=akiyano@amazon.com;
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id b7muI01oG7a4 for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 31 Oct 2024 18:22:43 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=207.171.188.206;
+ helo=smtp-fw-9106.amazon.com; envelope-from=prvs=027303c81=akiyano@amazon.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 4A907817A8
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4A907817A8
-Received: from smtp-fw-6001.amazon.com (smtp-fw-6001.amazon.com [52.95.48.154])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 4A907817A8
- for <intel-wired-lan@lists.osuosl.org>; Thu, 31 Oct 2024 18:28:39 +0000 (UTC)
-X-IronPort-AV: E=Sophos;i="6.11,247,1725321600"; d="scan'208";a="436222997"
-Thread-Topic: [resend PATCH 2/2] dim: pass dim_sample to net_dim() by reference
-Received: from iad12-co-svc-p1-lb1-vlan2.amazon.com (HELO
- smtpout.prod.us-west-2.prod.farcaster.email.amazon.dev) ([10.43.8.2])
- by smtp-border-fw-6001.iad6.amazon.com with
- ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 31 Oct 2024 18:28:34 +0000
-Received: from EX19MTAEUC002.ant.amazon.com [10.0.10.100:34386]
- by smtpin.naws.eu-west-1.prod.farcaster.email.amazon.dev [10.0.16.73:2525]
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 709F440E19
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 709F440E19
+Received: from smtp-fw-9106.amazon.com (smtp-fw-9106.amazon.com
+ [207.171.188.206])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 709F440E19
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 31 Oct 2024 18:22:43 +0000 (UTC)
+X-IronPort-AV: E=Sophos;i="6.11,247,1725321600"; d="scan'208";a="771897177"
+Thread-Topic: [resend PATCH 1/2] dim: make dim_calc_stats() inputs const
+ pointers
+Received: from pdx4-co-svc-p1-lb2-vlan2.amazon.com (HELO
+ smtpout.prod.us-east-1.prod.farcaster.email.amazon.dev) ([10.25.36.210])
+ by smtp-border-fw-9106.sea19.amazon.com with
+ ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 31 Oct 2024 18:22:33 +0000
+Received: from EX19MTAEUA002.ant.amazon.com [10.0.10.100:61073]
+ by smtpin.naws.eu-west-1.prod.farcaster.email.amazon.dev [10.0.2.199:2525]
  with esmtp (Farcaster)
- id 86134643-d973-4b41-85cd-ca98a4e48a9d; Thu, 31 Oct 2024 18:28:32 +0000 (UTC)
-X-Farcaster-Flow-ID: 86134643-d973-4b41-85cd-ca98a4e48a9d
-Received: from EX19D005EUA004.ant.amazon.com (10.252.50.241) by
- EX19MTAEUC002.ant.amazon.com (10.252.51.181) with Microsoft SMTP Server
+ id 5b69f371-b19a-4292-b4a0-5c7f596b7e5d; Thu, 31 Oct 2024 18:22:32 +0000 (UTC)
+X-Farcaster-Flow-ID: 5b69f371-b19a-4292-b4a0-5c7f596b7e5d
+Received: from EX19D005EUA001.ant.amazon.com (10.252.50.159) by
+ EX19MTAEUA002.ant.amazon.com (10.252.50.126) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA) id 15.2.1258.34;
- Thu, 31 Oct 2024 18:28:32 +0000
+ Thu, 31 Oct 2024 18:22:31 +0000
 Received: from EX19D022EUA002.ant.amazon.com (10.252.50.201) by
- EX19D005EUA004.ant.amazon.com (10.252.50.241) with Microsoft SMTP Server
+ EX19D005EUA001.ant.amazon.com (10.252.50.159) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA) id 15.2.1258.35;
- Thu, 31 Oct 2024 18:28:31 +0000
+ Thu, 31 Oct 2024 18:22:31 +0000
 Received: from EX19D022EUA002.ant.amazon.com ([fe80::7f87:7d63:def0:157d]) by
  EX19D022EUA002.ant.amazon.com ([fe80::7f87:7d63:def0:157d%3]) with
- mapi id 15.02.1258.034; Thu, 31 Oct 2024 18:28:31 +0000
+ mapi id 15.02.1258.034; Thu, 31 Oct 2024 18:22:31 +0000
 From: "Kiyanovski, Arthur" <akiyano@amazon.com>
-To: Caleb Sander Mateos <csander@purestorage.com>, Andrew Lunn
- <andrew+netdev@lunn.ch>, AngeloGioacchino Del Regno
- <angelogioacchino.delregno@collabora.com>, Brett Creeley
- <brett.creeley@amd.com>, Broadcom internal kernel review list
+To: Florian Fainelli <florian.fainelli@broadcom.com>, Caleb Sander Mateos
+ <csander@purestorage.com>, Andrew Lunn <andrew+netdev@lunn.ch>,
+ AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, "Brett
+ Creeley" <brett.creeley@amd.com>, Broadcom internal kernel review list
  <bcm-kernel-feedback-list@broadcom.com>, Christophe Leroy
  <christophe.leroy@csgroup.eu>, Claudiu Manoil <claudiu.manoil@nxp.com>,
  "Arinzon, David" <darinzon@amazon.com>, "David S. Miller"
  <davem@davemloft.net>, Doug Berger <opendmb@gmail.com>, Eric Dumazet
- <edumazet@google.com>, =?iso-8859-1?Q?Eugenio_P=E9rez?=
- <eperezma@redhat.com>, Felix Fietkau <nbd@nbd.name>, Florian Fainelli
- <florian.fainelli@broadcom.com>, Geetha sowjanya <gakula@marvell.com>,
- hariprasad <hkelam@marvell.com>, Jakub Kicinski <kuba@kernel.org>, Jason Wang
- <jasowang@redhat.com>, Jonathan Corbet <corbet@lwn.net>, Leon Romanovsky
- <leon@kernel.org>, Lorenzo Bianconi <lorenzo@kernel.org>, Louis Peens
- <louis.peens@corigine.com>, Mark Lee <Mark-MC.Lee@mediatek.com>, "Matthias
- Brugger" <matthias.bgg@gmail.com>, Michael Chan <michael.chan@broadcom.com>,
- "Michael S. Tsirkin" <mst@redhat.com>, "Dagan, Noam" <ndagan@amazon.com>,
- Paolo Abeni <pabeni@redhat.com>, Przemek Kitszel
- <przemyslaw.kitszel@intel.com>, Roy Pledge <Roy.Pledge@nxp.com>, "Bshara,
- Saeed" <saeedb@amazon.com>, Saeed Mahameed <saeedm@nvidia.com>, Sean Wang
- <sean.wang@mediatek.com>, Shannon Nelson <shannon.nelson@amd.com>, "Agroskin, 
- Shay" <shayagr@amazon.com>, Simon Horman <horms@kernel.org>, "Subbaraya
- Sundeep" <sbhatta@marvell.com>, Sunil Goutham <sgoutham@marvell.com>, "Tal
- Gilboa" <talgi@nvidia.com>, Tariq Toukan <tariqt@nvidia.com>, Tony Nguyen
- <anthony.l.nguyen@intel.com>, Vladimir Oltean <vladimir.oltean@nxp.com>, Xuan
- Zhuo <xuanzhuo@linux.alibaba.com>
+ <edumazet@google.com>, =?utf-8?B?RXVnZW5pbyBQw6lyZXo=?=
+ <eperezma@redhat.com>, Felix Fietkau <nbd@nbd.name>, Geetha sowjanya
+ <gakula@marvell.com>, hariprasad <hkelam@marvell.com>, Jakub Kicinski
+ <kuba@kernel.org>, Jason Wang <jasowang@redhat.com>, Jonathan Corbet
+ <corbet@lwn.net>, Leon Romanovsky <leon@kernel.org>, Lorenzo Bianconi
+ <lorenzo@kernel.org>, Louis Peens <louis.peens@corigine.com>, Mark Lee
+ <Mark-MC.Lee@mediatek.com>, Matthias Brugger <matthias.bgg@gmail.com>,
+ Michael Chan <michael.chan@broadcom.com>, "Michael S. Tsirkin"
+ <mst@redhat.com>, "Dagan, Noam" <ndagan@amazon.com>, Paolo Abeni
+ <pabeni@redhat.com>, Przemek Kitszel <przemyslaw.kitszel@intel.com>, "Roy
+ Pledge" <Roy.Pledge@nxp.com>, "Bshara, Saeed" <saeedb@amazon.com>, "Saeed
+ Mahameed" <saeedm@nvidia.com>, Sean Wang <sean.wang@mediatek.com>, "Shannon
+ Nelson" <shannon.nelson@amd.com>, "Agroskin, Shay" <shayagr@amazon.com>,
+ Simon Horman <horms@kernel.org>, Subbaraya Sundeep <sbhatta@marvell.com>,
+ Sunil Goutham <sgoutham@marvell.com>, Tal Gilboa <talgi@nvidia.com>, "Tariq
+ Toukan" <tariqt@nvidia.com>, Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Vladimir Oltean <vladimir.oltean@nxp.com>, Xuan Zhuo
+ <xuanzhuo@linux.alibaba.com>
 CC: "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
  "linux-arm-kernel@lists.infradead.org"
  <linux-arm-kernel@lists.infradead.org>, "linux-doc@vger.kernel.org"
@@ -109,41 +111,41 @@ CC: "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
  <netdev@vger.kernel.org>, "oss-drivers@corigine.com"
  <oss-drivers@corigine.com>, "virtualization@lists.linux.dev"
  <virtualization@lists.linux.dev>
-Thread-Index: AQHbKytOj0WWkTVG4E2tmTmQTyqqDrKhLiag
-Date: Thu, 31 Oct 2024 18:28:19 +0000
-Deferred-Delivery: Thu, 31 Oct 2024 18:27:59 +0000
-Message-ID: <7f494c4ae5a041fbafa4059e85431857@amazon.com>
+Thread-Index: AQHbKys/FLYzAvitdkSVBoM6s5J6lrKhGqwAgAARw2A=
+Date: Thu, 31 Oct 2024 18:22:15 +0000
+Deferred-Delivery: Thu, 31 Oct 2024 18:21:26 +0000
+Message-ID: <7bf7d713339e4854bfcb80c866aa55fe@amazon.com>
 References: <20241031002326.3426181-1-csander@purestorage.com>
- <20241031002326.3426181-2-csander@purestorage.com>
-In-Reply-To: <20241031002326.3426181-2-csander@purestorage.com>
+ <d9c01354-853c-459b-9da4-3c1d77102749@broadcom.com>
+In-Reply-To: <d9c01354-853c-459b-9da4-3c1d77102749@broadcom.com>
 Accept-Language: en-US
 Content-Language: en-US
 X-MS-Has-Attach: 
 X-MS-TNEF-Correlator: 
 x-originating-ip: [10.106.101.5]
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
 X-Mailman-Approved-At: Fri, 01 Nov 2024 15:30:43 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=amazon.com; i=@amazon.com; q=dns/txt; s=amazon201209;
- t=1730399321; x=1761935321;
+ t=1730398963; x=1761934963;
  h=from:to:cc:date:message-id:references:in-reply-to:
  content-transfer-encoding:mime-version:subject;
- bh=ecc7x6z5tBSynVvbhNaEuzIQivszgPRWP9c+1MOAWAs=;
- b=LZEhQejfVNlFmMtdT//BgXQDB1kQTE0GlvpcvQAfClzq0TyzNuszLcz9
- Y0EvlyVa+GuzF8e4MRK2RnBr7I6j3IslJu9hQY0G8I32k7Ys30J69lsJ6
- VEXMP0/kYarbfV+UoJTz0r6hR+BBFViI950VBs1blc4kDP8yLN3ibitCw
- c=;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ bh=W9ptO2AWHJvDBqBcplJ9x7hVH9AqEur0XDGEUTb8INw=;
+ b=MB+JSeOzCQxKvAEf02S6awjA1Gbmh0Wgxkb3wyddJVLQcyDycp8lVTIa
+ 4j77XVRpQQAAc1OIm18g006dUj53q+P6XMXxjKpbz2R/puag2D3pwYjQ1
+ mgj+3I0KcKWCaEBkYN6rFIiEPJ63bvo52QtulM3c6+7y1fDC6URUVD/Tf
+ s=;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=amazon.com
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (1024-bit key,
  unprotected) header.d=amazon.com header.i=@amazon.com header.a=rsa-sha256
- header.s=amazon201209 header.b=LZEhQejf
-Subject: Re: [Intel-wired-lan] [resend PATCH 2/2] dim: pass dim_sample to
- net_dim() by reference
+ header.s=amazon201209 header.b=MB+JSeOz
+Subject: Re: [Intel-wired-lan] [resend PATCH 1/2] dim: make dim_calc_stats()
+ inputs const pointers
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -159,55 +161,9 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-> -----Original Message-----
-> From: Caleb Sander Mateos <csander@purestorage.com>
-> Sent: Wednesday, October 30, 2024 5:23 PM
->=20
-> net_dim() is currently passed a struct dim_sample argument by value.
-> struct dim_sample is 24 bytes. Since this is greater 16 bytes, x86-64 pas=
-ses it
-> on the stack. All callers have already initialized dim_sample on the stac=
-k, so
-> passing it by value requires pushing a duplicated copy to the stack. Eith=
-er
-> witing to the stack and immediately reading it, or perhaps dereferencing
-> addresses relative to the stack pointer in a chain of push instructions, =
-seems
-> to perform quite poorly.
->=20
-> In a heavy TCP workload, mlx5e_handle_rx_dim() consumes 3% of CPU time,
-> 94% of which is attributed to the first push instruction to copy dim_samp=
-le on
-> the stack for the call to net_dim():
-> // Call ktime_get()
->   0.26 |4ead2:   call   4ead7 <mlx5e_handle_rx_dim+0x47>
-> // Pass the address of struct dim in %rdi
->        |4ead7:   lea    0x3d0(%rbx),%rdi
-> // Set dim_sample.pkt_ctr
->        |4eade:   mov    %r13d,0x8(%rsp)
-> // Set dim_sample.byte_ctr
->        |4eae3:   mov    %r12d,0xc(%rsp)
-> // Set dim_sample.event_ctr
->   0.15 |4eae8:   mov    %bp,0x10(%rsp)
-> // Duplicate dim_sample on the stack
->  94.16 |4eaed:   push   0x10(%rsp)
->   2.79 |4eaf1:   push   0x10(%rsp)
->   0.07 |4eaf5:   push   %rax
-> // Call net_dim()
->   0.21 |4eaf6:   call   4eafb <mlx5e_handle_rx_dim+0x6b>
->=20
-> To allow the caller to reuse the struct dim_sample already on the stack, =
-pass
-> the struct dim_sample by reference to net_dim().
->=20
-> Signed-off-by: Caleb Sander Mateos <csander@purestorage.com>
-> ---
-
-Thank you for this patch.
-
-For the ENA part:
-
-Reviewed-by: Arthur Kiyanovski <akiyano@amazon.com>
-
-Thanks,
-Arthur
+T24gMTAvMzAvMjQgMTc6MjMsIENhbGViIFNhbmRlciBNYXRlb3Mgd3JvdGU6DQo+IE1ha2UgdGhl
+IHN0YXJ0IGFuZCBlbmQgYXJndW1lbnRzIHRvIGRpbV9jYWxjX3N0YXRzKCkgY29uc3QgcG9pbnRl
+cnMgdG8gDQo+IGNsYXJpZnkgdGhhdCB0aGUgZnVuY3Rpb24gZG9lcyBub3QgbW9kaWZ5IHRoZWly
+IHZhbHVlcy4NCj4NCj4gU2lnbmVkLW9mZi1ieTogQ2FsZWIgU2FuZGVyIE1hdGVvcyA8Y3NhbmRl
+ckBwdXJlc3RvcmFnZS5jb20+DQoNClJldmlld2VkLWJ5OiBBcnRodXIgS2l5YW5vdnNraSA8YWtp
+eWFub0BhbWF6b24uY29tPg0KDQpUaGFua3MsDQpBcnRodXINCg==
