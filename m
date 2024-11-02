@@ -4,87 +4,89 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D791CE677FF
-	for <intel-wired-lan@archiver.kernel.org>; Sat,  2 Nov 2024 14:38:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9AE85E67801
+	for <intel-wired-lan@archiver.kernel.org>; Sat,  2 Nov 2024 15:10:42 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 78E90614F7;
-	Sat,  2 Nov 2024 14:38:28 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 331B360639;
+	Sat,  2 Nov 2024 15:10:42 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ysEBGRWkwAvr; Sat,  2 Nov 2024 14:38:26 +0000 (UTC)
+ id 5-Z43Kiv5NBQ; Sat,  2 Nov 2024 15:10:41 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org D1D42614EF
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8A7EB60857
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1730558306;
-	bh=zUVr3RaTW1/6+H+Bzn86+8cBXg3VrQ4PPLbG/nDMbXA=;
+	s=default; t=1730560241;
+	bh=C2d7saqPvm8uuREUBszHzZgcVT1oS3UeMXMZ2CfR0Ss=;
 	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=1rjHUjszoI/pXZI9XnPYpMEnqsPFzM6veGrs84GP4PCDehF5Vve/Kk/EIjmEbPInc
-	 +af/Yf0UVuJ8O2CpPGVMpNH1LEAwvR58jGtwX18X/8jfvQYQ3X1TVJ5P1FurLVS189
-	 cUthvh+tf7fwT5IcGvYlVaRCwfn+vjfRc4UEmxe9L9eXlL23bytxjor4/qdfxo/FII
-	 0tnMtUo2lAgdxu5dRumfKA+YI0IZVHUJ9oQOucXNhee1NTg17YrVLNwo68rOp/bfHB
-	 NUGQQxOEjAXtz9oDT5UfsTayGMCAcatXNA0VgsdTAnC0T/TtM3X8sDy4oh9gjglAiA
-	 YsjhzUGu2YbdQ==
+	b=5e24/GbNVv0Waq3EWI9w9eZCn52ODBf3oLhSQ1KpCnGI81QiglIfKqmi1Bc4P1tz0
+	 GhPuE0OKXRfWR9fiUtZnV4JJCKm7jxxPuQC+mn9OqP3Ke2KeRDhRfmYVv2rcJFZnOz
+	 3cwoV+dNUbZbe9Kd/I+yQzAPBtpwbN0YzU+5GhAPRnhUapZGUfgcH0yUi5FIbAD3MO
+	 TYTw3/Q5kXU3QEIpmbthCf4oU3hHzauukc5fR3oAED32PSSI4S14OPtfWfEE6D48kl
+	 i3Dl5oJjpW4MJfLdqsyLR5DBstgGkfOnUD4G5Ceo49ZFIoN/waWCnm48mCxzLP4lKU
+	 Tarqf+DQTviMg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id D1D42614EF;
-	Sat,  2 Nov 2024 14:38:26 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 8A7EB60857;
+	Sat,  2 Nov 2024 15:10:41 +0000 (UTC)
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id 87AA7979
- for <intel-wired-lan@lists.osuosl.org>; Sat,  2 Nov 2024 14:38:25 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id CB8AA27E1
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  2 Nov 2024 15:10:39 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 76787820E5
- for <intel-wired-lan@lists.osuosl.org>; Sat,  2 Nov 2024 14:38:25 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id BA5588134F
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  2 Nov 2024 15:10:39 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id V8d4T1X3_P7l for <intel-wired-lan@lists.osuosl.org>;
- Sat,  2 Nov 2024 14:38:25 +0000 (UTC)
+ id Cym_cbWcGtqB for <intel-wired-lan@lists.osuosl.org>;
+ Sat,  2 Nov 2024 15:10:39 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom;
  client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org;
  envelope-from=horms@kernel.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org C8224820D1
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C8224820D1
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 168A982053
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 168A982053
 Received: from dfw.source.kernel.org (dfw.source.kernel.org
  [IPv6:2604:1380:4641:c500::1])
- by smtp1.osuosl.org (Postfix) with ESMTPS id C8224820D1
- for <intel-wired-lan@lists.osuosl.org>; Sat,  2 Nov 2024 14:38:24 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 168A982053
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  2 Nov 2024 15:10:38 +0000 (UTC)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by dfw.source.kernel.org (Postfix) with ESMTP id EDE355C0F6C;
- Sat,  2 Nov 2024 14:37:38 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id ABF18C4CEC3;
- Sat,  2 Nov 2024 14:38:21 +0000 (UTC)
-Date: Sat, 2 Nov 2024 14:38:18 +0000
+ by dfw.source.kernel.org (Postfix) with ESMTP id 7E33E5C435C;
+ Sat,  2 Nov 2024 15:09:53 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4B2D1C4CEC3;
+ Sat,  2 Nov 2024 15:10:36 +0000 (UTC)
+Date: Sat, 2 Nov 2024 15:10:33 +0000
 From: Simon Horman <horms@kernel.org>
-To: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
-Cc: intel-wired-lan@lists.osuosl.org, david.m.ertman@intel.com,
- netdev@vger.kernel.org, Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Message-ID: <20241102143818.GM1838431@kernel.org>
-References: <20241028165922.7188-1-mateusz.polchlopek@intel.com>
+To: Grzegorz Nitka <grzegorz.nitka@intel.com>
+Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
+ anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
+ Karol Kolacinski <karol.kolacinski@intel.com>,
+ Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
+Message-ID: <20241102151033.GP1838431@kernel.org>
+References: <20241028204543.606371-1-grzegorz.nitka@intel.com>
+ <20241028204543.606371-3-grzegorz.nitka@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20241028165922.7188-1-mateusz.polchlopek@intel.com>
+In-Reply-To: <20241028204543.606371-3-grzegorz.nitka@intel.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1730558303;
- bh=+N+p9T5iVSPg9AVXsMwjJAI3S/vgv/iNp2VTOBZkfdw=;
+ d=kernel.org; s=k20201202; t=1730560238;
+ bh=BRzbZbvrsonkgSCIr2qVQooEeByYk+usY3bS4Qx8zQw=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=RtI2VunKTSYj7mLSSq4wP/VDU7Sc8KNK9EzVrMeMqqQsiitcFGJpAhyVxVfCZiNh+
- DbS2eKYCc/3PxwylDoDR/ZYFQHTnO2EwK1l16icDEd2lyBmpf1dtTulbDxnUp00CTr
- H/7h9Gz5EnZ71DR1oD0tz6JAS5VtlI7s1AYpUZb5QLI6t2ogChLF5zKZ2hSgZNi/nE
- Xbt9npfTeCSEkfkuQ8QkzzQ8tpK4gvRA51AkxBdlLah7LecAHqSrlWXwTd0w9sZ+i+
- G7/3qrCNcstaGc/8e7NDSufO8LiYYRi6V2IwNmtVVO30JH4qQJ038qnECNBPRDJy2f
- kstrBSFjPH00A==
+ b=K6+oBM5cE0qJwqVV0nahfYdSTaZElo0JurFanzJjXGeFn5ccVxPrTrPrxlU90cYrF
+ 30camoDKYiuGPLnhULPXCGPlcUgeB+gEoFaEh6pI0EKBRbpl420m/TFqSn9MF2DIrv
+ a3GnbH+ZySPAqktmDDRhM2UNtJtDsH+QYCw94XsHlsHcB5lxD0aAAqKcuhtG3Y8UpK
+ lsBCpXCKXzqzBdFUYMeGDcI+PHIjEKHl4kLve7P7Mh/SK3Q5ZZ7lLU7S/UyPUfVHGb
+ SksoXeH+/MI1wAq7750kDgUyuU1rlsjS5DTCWRLojEr2Q46U+HeQaTh/SOR43PzxIH
+ Fmz9jW3BnK8qQ==
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=RtI2VunK
-Subject: Re: [Intel-wired-lan] [PATCH iwl-net] ice: change q_index variable
- type to s16 to store -1 value
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20201202 header.b=K6+oBM5c
+Subject: Re: [Intel-wired-lan] [PATCH v3 iwl-net 2/4] ice: Fix quad
+ registers read on E825
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -100,40 +102,38 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Mon, Oct 28, 2024 at 12:59:22PM -0400, Mateusz Polchlopek wrote:
-> Fix Flow Director not allowing to re-map traffic to 0th queue when action
-> is configured to drop (and vice versa).
+On Mon, Oct 28, 2024 at 09:45:41PM +0100, Grzegorz Nitka wrote:
+> From: Karol Kolacinski <karol.kolacinski@intel.com>
 > 
-> The current implementation of ethtool callback in the ice driver forbids
-> change Flow Director action from 0 to -1 and from -1 to 0 with an error,
-> e.g:
+> Quad registers are read/written incorrectly. E825 devices always use
+> quad 0 address and differentiate between the PHYs by changing SBQ
+> destination device (phy_0 or phy_0_peer).
 > 
->  # ethtool -U eth2 flow-type tcp4 src-ip 1.1.1.1 loc 1 action 0
->  # ethtool -U eth2 flow-type tcp4 src-ip 1.1.1.1 loc 1 action -1
->  rmgr: Cannot insert RX class rule: Invalid argument
+> Add helpers for reading/writing PTP registers shared per quad and use
+> correct quad address and SBQ destination device based on port.
 > 
-> We set the value of `u16 q_index = 0` at the beginning of the function
-> ice_set_fdir_input_set(). In case of "drop traffic" action (which is
-> equal to -1 in ethtool) we store the 0 value. Later, when want to change
-> traffic rule to redirect to queue with index 0 it returns an error
-> caused by duplicate found.
+> Rename rmn_0 to phy_0 and remove rmn_1 and rmn_2 as E82X HW does not
+> support it. Rename eth56g_phy_1 to phy_0_peer.
 > 
-> Fix this behaviour by change of the type of field `q_index` from u16 to s16
-> in `struct ice_fdir_fltr`. This allows to store -1 in the field in case
-> of "drop traffic" action. What is more, change the variable type in the
-> function ice_set_fdir_input_set() and assign at the beginning the new
-> `#define ICE_FDIR_NO_QUEUE_IDX` which is -1. Later, if the action is set
-> to another value (point specific queue index) the variable value is
-> overwritten in the function.
+> Fixes: 7cab44f1c35f ("ice: Introduce ETH56G PHY model for E825C products")
+> Reviewed-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
+> Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
+> ---
+> V2 -> V3: Replaced lower/upper_32_bits calls with lower/upper_16_bits
+> V1 -> V2: Fixed kdoc issues
 > 
-> Fixes: cac2a27cd9ab ("ice: Support IPv4 Flow Director filters")
-> Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
-> Signed-off-by: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
+>  drivers/net/ethernet/intel/ice/ice_common.c   |   2 +-
+>  .../net/ethernet/intel/ice/ice_ptp_consts.h   |  75 ++----
+>  drivers/net/ethernet/intel/ice/ice_ptp_hw.c   | 237 +++++++++++-------
+>  drivers/net/ethernet/intel/ice/ice_ptp_hw.h   |  37 ++-
+>  drivers/net/ethernet/intel/ice/ice_sbq_cmd.h  |   7 +-
+>  drivers/net/ethernet/intel/ice/ice_type.h     |   1 -
+>  6 files changed, 177 insertions(+), 182 deletions(-)
 
-This looks good, although I am interested to know what the maximum value
-for q_index is. And, considering unsigned values are used elsewhere, if
-using 0xffff within this driver was considered instead of -1.
+This patch seems to mix bug fixes and cleanup.
+Which leads to a rather large patch - larger than is desirable for stable IMHO.
 
-That notwithstanding,
+Could we consider a more minimal fix for iwl-net.
+And then follow-up with clean-ups for iwl?
 
-Reviewed-by: Simon Horman <horms@kernel.org>
+...
