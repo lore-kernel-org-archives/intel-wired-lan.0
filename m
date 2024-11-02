@@ -4,99 +4,77 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 61151E6F094
-	for <intel-wired-lan@archiver.kernel.org>; Fri,  1 Nov 2024 23:06:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 09045E677EC
+	for <intel-wired-lan@archiver.kernel.org>; Sat,  2 Nov 2024 06:54:08 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 33F1840735;
-	Fri,  1 Nov 2024 23:06:01 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 7F7FB40DBB;
+	Sat,  2 Nov 2024 06:54:08 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id LrI9c8nSgUPV; Fri,  1 Nov 2024 23:05:58 +0000 (UTC)
+ id xewe4uTiDoHC; Sat,  2 Nov 2024 06:54:07 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9CE7F4042E
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 5B999410D5
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1730502358;
-	bh=SB6dkC3y3YYiTkF0+CxcBK0Ai0Ub5hghJqcEwKdljMs=;
-	h=From:Date:References:In-Reply-To:To:Cc:Subject:List-Id:
+	s=default; t=1730530447;
+	bh=tbHHu1F2Z76KbBx7HyGk4i8jHpTi9hemBRlpZPp/PG0=;
+	h=Date:To:Cc:References:From:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=5I5BTBwdNsbsm99C862jbDYQuRmoac8PikuOGF/9Af6diP4kD6AHw4DS+/VhjFxjl
-	 n/t7v2N2zQQWRJwBV2CPeIw97HlhnyhC9jcd7MDy3Yf8cpKpDqy38Bd01W5XTpnYH+
-	 lQAM6SxfQkEAGvs6cIct+GaXpsYpsAN6I5f3gP1MOJSHpqtLwXbhnKJhGrrRyYsuRl
-	 cJnbstqCvabprnkL/LdP3BQIAtPNUVyxpL5ZxxdRexwVV/QDUgzUtcEhfY9EXvEL9e
-	 NvLuilpkcWhieC0xeDBD76iP3WAfgaBEkS/oMrbUibBel3o04SJlyKlqe0cUGgqDWx
-	 iby+xy1iaavUQ==
+	b=ixpgzbYc2c2GyI8Of2TgWHh1i06+SyE7fmFp+t8+voZcCdY8JkAlbMStSV6oTopi5
+	 CORcoFBPmW38FGr/4atVp/ACSELBsyNFP6n7wdAnrXiWN1CNYYWaMfbD8ZDCRtyXgK
+	 NpGQMD7s5KISgdE45qSbwgbCr6hJouLMHm49SiPhMwLxHia4W721v5lmDCYpfYtFlq
+	 /Jmwc6yG51e2G+QvJYzo2m6TL7xHodzilsIDAH5SKDREUbvuqQvRyW//Vel0xcveDb
+	 FKWcjwpZFVsN/Uhi7f21wQaAKliAQWVesyHPwOCalzxld2FZUkxe3JsW9OSeKaF1Ig
+	 0tOjXLynrNeFw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 9CE7F4042E;
-	Fri,  1 Nov 2024 23:05:58 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 0B51B979
- for <intel-wired-lan@lists.osuosl.org>; Fri,  1 Nov 2024 23:05:56 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 5B999410D5;
+	Sat,  2 Nov 2024 06:54:07 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 58948979
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  2 Nov 2024 06:54:05 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 092D44053E
- for <intel-wired-lan@lists.osuosl.org>; Fri,  1 Nov 2024 23:05:54 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 3885A410D2
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  2 Nov 2024 06:54:05 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id g4Dok8V4oDvg for <intel-wired-lan@lists.osuosl.org>;
- Fri,  1 Nov 2024 23:05:53 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.16;
- helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 57hLx2iVQytp for <intel-wired-lan@lists.osuosl.org>;
+ Sat,  2 Nov 2024 06:54:03 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=141.14.17.11;
+ helo=mx3.molgen.mpg.de; envelope-from=pmenzel@molgen.mpg.de;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 050A04055A
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 050A04055A
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.16])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 050A04055A
- for <intel-wired-lan@lists.osuosl.org>; Fri,  1 Nov 2024 23:05:52 +0000 (UTC)
-X-CSE-ConnectionGUID: oMd0L0RCSHK+KHoDDTvd6Q==
-X-CSE-MsgGUID: dVbSYo1ZTgqH3jYe5Snjsg==
-X-IronPort-AV: E=McAfee;i="6700,10204,11222"; a="30437323"
-X-IronPort-AV: E=Sophos;i="6.11,199,1725346800"; d="scan'208";a="30437323"
-Received: from fmviesa007.fm.intel.com ([10.60.135.147])
- by orvoesa108.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 01 Nov 2024 16:05:52 -0700
-X-CSE-ConnectionGUID: NxmmhCRMSm+YADgzlE+QeA==
-X-CSE-MsgGUID: w0Z8d65tTaW3xybzBkLJaA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.11,251,1725346800"; d="scan'208";a="82775612"
-Received: from jekeller-desk.jf.intel.com ([10.166.241.20])
- by fmviesa007-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 01 Nov 2024 16:05:51 -0700
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Fri, 01 Nov 2024 16:05:43 -0700
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 050D4410C3
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 050D4410C3
+Received: from mx3.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 050D4410C3
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  2 Nov 2024 06:54:01 +0000 (UTC)
+Received: from [192.168.0.2] (ip5f5af2cf.dynamic.kabel-deutschland.de
+ [95.90.242.207])
+ (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested) (Authenticated sender: pmenzel)
+ by mx.molgen.mpg.de (Postfix) with ESMTPSA id 844B461E5FE05;
+ Sat, 02 Nov 2024 07:53:44 +0100 (CET)
+Message-ID: <4458eca8-f0e8-485f-9b7d-d5d17105d090@molgen.mpg.de>
+Date: Sat, 2 Nov 2024 07:53:43 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20241101-jk-ixgbevf-mailbox-v1-5-fixes-v1-2-f556dc9a66ed@intel.com>
-References: <20241101-jk-ixgbevf-mailbox-v1-5-fixes-v1-0-f556dc9a66ed@intel.com>
-In-Reply-To: <20241101-jk-ixgbevf-mailbox-v1-5-fixes-v1-0-f556dc9a66ed@intel.com>
-To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Cc: Jacob Keller <jacob.e.keller@intel.com>, 
- Yifei Liu <yifei.l.liu@oracle.com>, 
+User-Agent: Mozilla Thunderbird
+To: Jacob Keller <jacob.e.keller@intel.com>
+Cc: intel-wired-lan@lists.osuosl.org, Yifei Liu <yifei.l.liu@oracle.com>,
  Przemek Kitszel <przemyslaw.kitszel@intel.com>
-X-Mailer: b4 0.14.1
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1730502354; x=1762038354;
- h=from:date:subject:mime-version:content-transfer-encoding:
- message-id:references:in-reply-to:to:cc;
- bh=mVw+KsW0hywb9Rq2lLo9Zmd/Dbs3ib/I/HAbsz3bj4c=;
- b=memkcWk8jrZGchacm7rJ6ebUG2MrOTLY1UEasBRXQC2u3chPh4y3995n
- nwPWF7TWF7NVCV+zKAewKft5JpHREdGf8h/8KF+zxgr4ijO+1LWuHnp6t
- Je0Q0j8i8LCMns/hqiP4jq6GWqYoW9FJ+zVaqpVuVYeTU0SR+hTdudpsE
- vjD04TMU6Wi5SSqz8YQzyVsMysHWYgpmPuQfAcl17R3jHlpqbUgj5ZRW1
- aGRVsg4W5sQk3yWcq/Np21XXa++d2aLA2i8W2ttmB6D8X9NNMYWVkAlTB
- K1Wux/qGYHD/fPWNxBMaqdHQxvpeX5fZKvazIlvHPRINQ9W3e96PvZxwo
- g==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=memkcWk8
-Subject: [Intel-wired-lan] [PATCH iwl-net 2/2] ixgbe: downgrade logging of
- unsupported VF API version to debug
+References: <20241101-jk-ixgbevf-mailbox-v1-5-fixes-v1-0-f556dc9a66ed@intel.com>
+ <20241101-jk-ixgbevf-mailbox-v1-5-fixes-v1-2-f556dc9a66ed@intel.com>
+Content-Language: en-US
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+In-Reply-To: <20241101-jk-ixgbevf-mailbox-v1-5-fixes-v1-2-f556dc9a66ed@intel.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dmarc=none (p=none dis=none)
+ header.from=molgen.mpg.de
+Subject: Re: [Intel-wired-lan] [PATCH iwl-net 2/2] ixgbe: downgrade logging
+ of unsupported VF API version to debug
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -112,63 +90,80 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The ixgbe PF driver logs an info message when a VF attempts to negotiate an
-API version which it does not support:
+Dear Jacob,
 
-  VF 0 requested invalid api version 6
 
-The ixgbevf driver attempts to load with mailbox API v1.5, which is
-required for best compatibility with other hosts such as the ESX VMWare PF.
+Thank you for the patch.
 
-The Linux PF only supports API v1.4, and does not currently have support
-for the v1.5 API.
+Am 02.11.24 um 00:05 schrieb Jacob Keller:
+> The ixgbe PF driver logs an info message when a VF attempts to negotiate an
+> API version which it does not support:
+> 
+>    VF 0 requested invalid api version 6
+> 
+> The ixgbevf driver attempts to load with mailbox API v1.5, which is
+> required for best compatibility with other hosts such as the ESX VMWare PF.
+> 
+> The Linux PF only supports API v1.4, and does not currently have support
+> for the v1.5 API.
+> 
+> The logged message can confuse users, as the v1.5 API is valid, but just
+> happens to not currently be supported by the Linux PF.
+> 
+> Downgrade the info message to a debug message, and fix the language to
+> use 'unsupported' instead of 'invalid' to improve message clarity.
+> 
+> Long term, we should investigate whether the improvements in the v1.5 API
+> make sense for the Linux PF, and if so implement them properly. This may
+> require yet another API version to resolve issues with negotiating IPSEC
+> offload support.
 
-The logged message can confuse users, as the v1.5 API is valid, but just
-happens to not currently be supported by the Linux PF.
+It’d be great if you described the exact test setup for how to reproduce it.
 
-Downgrade the info message to a debug message, and fix the language to
-use 'unsupported' instead of 'invalid' to improve message clarity.
+> Reported-by: Yifei Liu <yifei.l.liu@oracle.com>
 
-Long term, we should investigate whether the improvements in the v1.5 API
-make sense for the Linux PF, and if so implement them properly. This may
-require yet another API version to resolve issues with negotiating IPSEC
-offload support.
+Do you have an Link: for this report?
 
-Reported-by: Yifei Liu <yifei.l.liu@oracle.com>
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_common.h | 2 ++
- drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c  | 2 +-
- 2 files changed, 3 insertions(+), 1 deletion(-)
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+> ---
+>   drivers/net/ethernet/intel/ixgbe/ixgbe_common.h | 2 ++
+>   drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c  | 2 +-
+>   2 files changed, 3 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.h
+> index 6493abf189de..6639069ad528 100644
+> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.h
+> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.h
+> @@ -194,6 +194,8 @@ u32 ixgbe_read_reg(struct ixgbe_hw *hw, u32 reg);
+>   	dev_err(&adapter->pdev->dev, format, ## arg)
+>   #define e_dev_notice(format, arg...) \
+>   	dev_notice(&adapter->pdev->dev, format, ## arg)
+> +#define e_dbg(msglvl, format, arg...) \
+> +	netif_dbg(adapter, msglvl, adapter->netdev, format, ## arg)
+>   #define e_info(msglvl, format, arg...) \
+>   	netif_info(adapter, msglvl, adapter->netdev, format, ## arg)
+>   #define e_err(msglvl, format, arg...) \
+> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
+> index e71715f5da22..20415c1238ef 100644
+> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
+> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
+> @@ -1047,7 +1047,7 @@ static int ixgbe_negotiate_vf_api(struct ixgbe_adapter *adapter,
+>   		break;
+>   	}
+>   
+> -	e_info(drv, "VF %d requested invalid api version %u\n", vf, api);
+> +	e_dbg(drv, "VF %d requested unsupported api version %u\n", vf, api);
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.h
-index 6493abf189de..6639069ad528 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.h
-@@ -194,6 +194,8 @@ u32 ixgbe_read_reg(struct ixgbe_hw *hw, u32 reg);
- 	dev_err(&adapter->pdev->dev, format, ## arg)
- #define e_dev_notice(format, arg...) \
- 	dev_notice(&adapter->pdev->dev, format, ## arg)
-+#define e_dbg(msglvl, format, arg...) \
-+	netif_dbg(adapter, msglvl, adapter->netdev, format, ## arg)
- #define e_info(msglvl, format, arg...) \
- 	netif_info(adapter, msglvl, adapter->netdev, format, ## arg)
- #define e_err(msglvl, format, arg...) \
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-index e71715f5da22..20415c1238ef 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-@@ -1047,7 +1047,7 @@ static int ixgbe_negotiate_vf_api(struct ixgbe_adapter *adapter,
- 		break;
- 	}
- 
--	e_info(drv, "VF %d requested invalid api version %u\n", vf, api);
-+	e_dbg(drv, "VF %d requested unsupported api version %u\n", vf, api);
- 
- 	return -1;
- }
+Is there a way to translate `api` to the API version scheme used in the 
+commit message? So, 1.5 instead of 6? Maybe also add, that only the v1.4 
+API is supported?
 
--- 
-2.47.0.265.g4ca455297942
+>   
+>   	return -1;
+>   }
 
+
+Kind regards,
+
+Paul
