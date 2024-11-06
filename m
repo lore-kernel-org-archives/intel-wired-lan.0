@@ -4,67 +4,67 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3FC00D3E798
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  6 Nov 2024 09:24:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BFC89D3E798
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  6 Nov 2024 09:24:41 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id CC2EF608A1;
-	Wed,  6 Nov 2024 09:24:38 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 790BB60844;
+	Wed,  6 Nov 2024 09:24:41 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ovzLWSyL7A0b; Wed,  6 Nov 2024 09:24:38 +0000 (UTC)
+ id RnclZDNB4d1O; Wed,  6 Nov 2024 09:24:40 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E065C608B8
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C63B9608B9
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1730885077;
-	bh=Qnw8b/ulzmoyRZde07QU84kb7JydDZf9LI/zix4jh+o=;
+	s=default; t=1730885080;
+	bh=Il7fDe9T0KK9AUb4YbF7jHlP7QfNkNVDGd3adoicP2A=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=xKbbVBLfronbZhP318ueUw887EdyJ1rHI6OJNDIXMoK0YwcILdWmKWJ00XhdHodDg
-	 URInuS0qN7FefSWzG1ze5LQBFhmW2kYtfBC1nM3NgQFubdnwobPPsEGfHHv5HHGNj3
-	 4rSd2pTK6Ty7skM65DhzvInfiH10nG6cvduAeA2ZPZWaKuJWIY0CUWr70hO6fvYOba
-	 wCjuKH9rjOTvDfNlYD/HR1ktm+FlhvRbgE21hGbNQ7K0PDJnI0G+dbbb6niM0+V0K6
-	 uNZsRDfDPTOPp/UqoGdqRePV37WB2Aq1dbBOr+ghkWqWRyCV8JWf42oXl4/9wHIeRC
-	 ron+5zFyyiGmQ==
+	b=0ORAJUDZl0tH/NQZ1UBwWSNYWV30q9XRTi5s3gusltH0n+RTJDUer/PFAPMKQqqRr
+	 a/l0SB9LuCaeEEz3VewoYw3lwwOOo3SRfsgPXN6eX2uSz6cJFKDIvdQdVUvAGOSVMl
+	 G3IlT5N0Ev94skRd8QcCdvXQPp+XXuakkqYaNNIWzap32VJP8+jX0D50BABPmzq17L
+	 9x4nEfyHFbb0E0UBIQdNrWmDPQO4Vy8C06+4579j2xKDwvNrsWvxAswBTUUTTx82/l
+	 6fLA5Rd2QRkgMKBVgWxaJZnUzclQA9h8nH9eSEZjsqrQ8Sx6SnpsZT3Zf8vFByoSYv
+	 zGiwTihyEIZEQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id E065C608B8;
-	Wed,  6 Nov 2024 09:24:37 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id C63B9608B9;
+	Wed,  6 Nov 2024 09:24:40 +0000 (UTC)
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id 0F3E83B
- for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Nov 2024 09:24:36 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id 176CD3B
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Nov 2024 09:24:37 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 64453605EB
- for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Nov 2024 09:24:35 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 3FDD5605EB
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Nov 2024 09:24:36 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id qZs5iC5eNc9n for <intel-wired-lan@lists.osuosl.org>;
- Wed,  6 Nov 2024 09:24:34 +0000 (UTC)
+ id bRipPRxYS4X2 for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  6 Nov 2024 09:24:35 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.15;
  helo=mgamail.intel.com; envelope-from=konrad.knitter@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org A5C3460612
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A5C3460612
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 80202607DC
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 80202607DC
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.15])
- by smtp3.osuosl.org (Postfix) with ESMTPS id A5C3460612
- for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Nov 2024 09:24:34 +0000 (UTC)
-X-CSE-ConnectionGUID: 0mNc/K+2TQCUpbX2QOhLmg==
-X-CSE-MsgGUID: ijXNyKnzSFqsaBTMEcRC2w==
-X-IronPort-AV: E=McAfee;i="6700,10204,11222"; a="34368397"
-X-IronPort-AV: E=Sophos;i="6.11,199,1725346800"; d="scan'208";a="34368397"
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 80202607DC
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Nov 2024 09:24:35 +0000 (UTC)
+X-CSE-ConnectionGUID: 7UiZba9LRoC8FCfU2BgCpA==
+X-CSE-MsgGUID: 26p42im1QeWB12oIseTVhA==
+X-IronPort-AV: E=McAfee;i="6700,10204,11222"; a="34368405"
+X-IronPort-AV: E=Sophos;i="6.11,199,1725346800"; d="scan'208";a="34368405"
 Received: from fmviesa001.fm.intel.com ([10.60.135.141])
  by orvoesa107.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 06 Nov 2024 01:24:34 -0800
-X-CSE-ConnectionGUID: 1ViBVHDaTkm430X0JbgsGw==
-X-CSE-MsgGUID: OAlCwL+QTiGN/1Sor3lA3A==
+ 06 Nov 2024 01:24:35 -0800
+X-CSE-ConnectionGUID: t8nhEareSpmhJjTFVSTmGw==
+X-CSE-MsgGUID: 7hbvPhtcQmyYso6I20nXUg==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.11,262,1725346800"; d="scan'208";a="115221982"
+X-IronPort-AV: E=Sophos;i="6.11,262,1725346800"; d="scan'208";a="115221990"
 Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by fmviesa001.fm.intel.com with ESMTP; 06 Nov 2024 01:24:13 -0800
+ by fmviesa001.fm.intel.com with ESMTP; 06 Nov 2024 01:24:14 -0800
 Received: from kord.igk.intel.com (kord.igk.intel.com [10.123.220.9])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id C87DA2877D;
- Wed,  6 Nov 2024 09:24:10 +0000 (GMT)
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id 38CA42877E;
+ Wed,  6 Nov 2024 09:24:12 +0000 (GMT)
 From: Konrad Knitter <konrad.knitter@intel.com>
 To: intel-wired-lan@lists.osuosl.org
 Cc: jacob.e.keller@intel.com, netdev@vger.kernel.org, jiri@resnulli.us,
@@ -72,10 +72,9 @@ Cc: jacob.e.keller@intel.com, netdev@vger.kernel.org, jiri@resnulli.us,
  pabeni@redhat.com, linux-kernel@vger.kernel.org,
  anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
  Konrad Knitter <konrad.knitter@intel.com>,
- Marcin Szycik <marcin.szycik@linux.intel.com>,
  Pucha Himasekhar Reddy <himasekharx.reddy.pucha@intel.com>
-Date: Wed,  6 Nov 2024 10:36:41 +0100
-Message-Id: <20241106093643.106476-2-konrad.knitter@intel.com>
+Date: Wed,  6 Nov 2024 10:36:42 +0100
+Message-Id: <20241106093643.106476-3-konrad.knitter@intel.com>
 X-Mailer: git-send-email 2.38.1
 In-Reply-To: <20241106093643.106476-1-konrad.knitter@intel.com>
 References: <20241106093643.106476-1-konrad.knitter@intel.com>
@@ -83,25 +82,24 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1730885075; x=1762421075;
+ t=1730885076; x=1762421076;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=ibB34upNPaMe3UDhelcOR3ajnDBu48bMZyShEq/38q0=;
- b=MxIeFxGMSNhwflfMS/MkOTaBSxx2Z1LihUa7zZkogURfNMBaE+QplLhC
- 3uW2MaMYqBkGhu9Ie4NN4Oh+IUKuN0mqlBzK0ZrS1MmCRjqh0Nr/jEdTw
- mls0C94V4s240/zUctxFT6Bhcs/2Hpd+o6SxeZh0t0U0Wop5mjxFBqpd3
- wK2lOMeYLgRiSAZ/tjh17D71ymZKLoeHRm1dLWVVx6PI/fNGYXbymu4h3
- se7wxOKvrvW4n0vKOayc1d0rdJ3YLRHMPq6X++xnEt6+wT7tOxb2x+oLg
- +p/+WpFa4APiieGG7b5L3b8iVmCG33OFV82ubUuWoHQu5nqUkr5esnU4x
- g==;
+ bh=aj3QpbQ3vAeAf4pan0gySW1WB6gm994teoTQgAanVdA=;
+ b=SlvQciJZEjfQ3bX7WYSWZCt5dX7nOXTJutt1r8sxIQmgD0WblsOLfLJV
+ Xc3XC05PJFl+o3aHQVegBNph22Fgz9mhvkmn0zuAJ8NQ4xOOqkaJRzz02
+ qYjSb1Q/RG5+rcPVm3otggFhTgueoAE26amJKPPj6hsS76aNVbRRWsxuf
+ VYZm6LVrX2oAuMkAtzqw7FS6WLy5S8bJ2E1ToeG/pRho5h1IYh1LD7SsV
+ kPhbY631C3Sb8mhMjf3vH/lAYxhRYrpJ0M1+iFoKDaKK4gY8kislSSaQ8
+ KxpgGB8PsVrU3yOC/jZLjPU0Am9ElJgC+pSvnB+t4aREla/tM4GkeIDda
+ Q==;
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=MxIeFxGM
-Subject: [Intel-wired-lan] [PATCH iwl-next v2 1/3] pldmfw: enable selected
- component update
+ header.a=rsa-sha256 header.s=Intel header.b=SlvQciJZ
+Subject: [Intel-wired-lan] [PATCH iwl-next v2 2/3] devlink: add devl guard
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -117,69 +115,36 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-This patch enables to update a selected component from PLDM image
-containing multiple components.
+Add devl guard for scoped_guard().
 
 Example usage:
 
-struct pldmfw;
-data.mode = PLDMFW_UPDATE_MODE_SINGLE_COMPONENT;
-data.compontent_identifier = DRIVER_FW_MGMT_COMPONENT_ID;
+scoped_guard(devl, priv_to_devlink(pf)) {
+	err = init_devlink(pf);
+	if (err)
+		return err;
+}
 
-Reviewed-by: Jacob Keller <jacob.e.keller@intel.com>
-Reviewed-by: Marcin Szycik <marcin.szycik@linux.intel.com>
-Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Co-developed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Signed-off-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Signed-off-by: Konrad Knitter <konrad.knitter@intel.com>
 Tested-by: Pucha Himasekhar Reddy <himasekharx.reddy.pucha@intel.com> (A Contingent worker at Intel)
 ---
- include/linux/pldmfw.h | 8 ++++++++
- lib/pldmfw/pldmfw.c    | 8 ++++++++
- 2 files changed, 16 insertions(+)
+ include/net/devlink.h | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/include/linux/pldmfw.h b/include/linux/pldmfw.h
-index 0fc831338226..f5047983004f 100644
---- a/include/linux/pldmfw.h
-+++ b/include/linux/pldmfw.h
-@@ -125,9 +125,17 @@ struct pldmfw_ops;
-  * a pointer to their own data, used to implement the device specific
-  * operations.
-  */
-+
-+enum pldmfw_update_mode {
-+	PLDMFW_UPDATE_MODE_FULL,
-+	PLDMFW_UPDATE_MODE_SINGLE_COMPONENT,
-+};
-+
- struct pldmfw {
- 	const struct pldmfw_ops *ops;
- 	struct device *dev;
-+	u16 component_identifier;
-+	enum pldmfw_update_mode mode;
- };
+diff --git a/include/net/devlink.h b/include/net/devlink.h
+index 7f5b36554778..6fa46ed3345f 100644
+--- a/include/net/devlink.h
++++ b/include/net/devlink.h
+@@ -1534,6 +1534,7 @@ int devl_trylock(struct devlink *devlink);
+ void devl_unlock(struct devlink *devlink);
+ void devl_assert_locked(struct devlink *devlink);
+ bool devl_lock_is_held(struct devlink *devlink);
++DEFINE_GUARD(devl, struct devlink *, devl_lock(_T), devl_unlock(_T));
  
- bool pldmfw_op_pci_match_record(struct pldmfw *context, struct pldmfw_record *record);
-diff --git a/lib/pldmfw/pldmfw.c b/lib/pldmfw/pldmfw.c
-index 6e1581b9a616..6264e2013f25 100644
---- a/lib/pldmfw/pldmfw.c
-+++ b/lib/pldmfw/pldmfw.c
-@@ -481,9 +481,17 @@ static int pldm_parse_components(struct pldmfw_priv *data)
- 		component->component_data = data->fw->data + offset;
- 		component->component_size = size;
+ struct ib_device;
  
-+		if (data->context->mode == PLDMFW_UPDATE_MODE_SINGLE_COMPONENT &&
-+		    data->context->component_identifier != component->identifier)
-+			continue;
-+
- 		list_add_tail(&component->entry, &data->components);
- 	}
- 
-+	if (data->context->mode == PLDMFW_UPDATE_MODE_SINGLE_COMPONENT &&
-+	    list_empty(&data->components))
-+		return -ENOENT;
-+
- 	header_crc_ptr = data->fw->data + data->offset;
- 
- 	err = pldm_move_fw_offset(data, sizeof(data->header_crc));
 -- 
 2.38.1
 
