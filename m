@@ -4,70 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 618E0D59F69
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  6 Nov 2024 18:58:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7996ED59F6A
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  6 Nov 2024 18:58:58 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 95C6D6090A;
-	Wed,  6 Nov 2024 18:58:56 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 42D7560A49;
+	Wed,  6 Nov 2024 18:58:58 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id zmVbi0Le8tF6; Wed,  6 Nov 2024 18:58:54 +0000 (UTC)
+ id 0p7NjbGWdUP2; Wed,  6 Nov 2024 18:58:57 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 64C97608D1
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 79E4B60A46
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1730919534;
-	bh=ssImHwbC7zp4CSTGYQ3B1o2RJxl8VB9zptYKfJ90+LM=;
+	s=default; t=1730919537;
+	bh=GPHp2jeL3Sa1Vk7+apOFmD5jgxoWfDS7PJ0jmYA8sxg=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=vJEdDjV8KMX5CZknD6cweNWOyb4aDi/Noj1msjP3Notn/p08I999a3VGPkmvNzHxa
-	 pFmcX1A8op5nE9fD7HzH6iD/TyouUPA+ab4p/DkpmSHjkVyXhdk+QxSro7FXj8/t82
-	 ELkIpxeMsLlCFu9pFdOyVOm2D6A7ieWcDDMtQb+9gp7U+gxgwgTQrt8c432zHDbXJQ
-	 6aIdvHOfNHLAJZucoSVzq6Rk5lWvG6kqM7xpPJrqaepEkkz4AIcYdcpcZTH1PiWgQz
-	 VKY5LZMTr1OU5qPvspf7nez9+aoWPWPCoN6NE+9uPNCaW6A3AzSohYJ5UZKIP+upnQ
-	 beu7F+3OerPoQ==
+	b=QWGWit2NNOndwHKmyxgl1KArKgPqxPlglgSMBTdygF5YoPWx/AbyVgjAYlU+mcc4Q
+	 ErAI1XIAO9KN9CxfxseXIsbJcXUhqs5HVkdjaUT+KWDI+SJaUeBDChS5OyQW6HpTXm
+	 3NSLSqEzfYZjraTxecbWzOReMI2u+0Pq7Z4TgV/Hl0o4nOyXwCx2ZTnxqXzGmCESiw
+	 3cc0iZ/emFq6aUmI+fZEBJ+IbRq0oHx0Rz0I7RNLMg+PHNxXMr4Ojdsx4W1vwZTJgU
+	 55CYXDTtddJ2R0KdEsanXqvpRjMCuPy/3OuB+Cwy9wOzQQaP5hXuQnZEZstjMXVFZQ
+	 Crh+zOfOpaOnw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 64C97608D1;
-	Wed,  6 Nov 2024 18:58:54 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 79E4B60A46;
+	Wed,  6 Nov 2024 18:58:57 +0000 (UTC)
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id 2332A3B
- for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Nov 2024 18:58:53 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id 9E1D83B
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Nov 2024 18:58:54 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id F08C540450
- for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Nov 2024 18:58:52 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 7BD8940128
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Nov 2024 18:58:53 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id W5CeJ0wKAEZC for <intel-wired-lan@lists.osuosl.org>;
+ id Wamhk0ttdedt for <intel-wired-lan@lists.osuosl.org>;
  Wed,  6 Nov 2024 18:58:52 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.14;
  helo=mgamail.intel.com; envelope-from=christopher.s.hall@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 1647D400D8
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 1647D400D8
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 5B0044045B
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 5B0044045B
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.14])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 1647D400D8
- for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Nov 2024 18:58:51 +0000 (UTC)
-X-CSE-ConnectionGUID: sNnD/WUgQ42D1r1miTPJJw==
-X-CSE-MsgGUID: gN2MqbnxRJCiFO2OQE52LQ==
-X-IronPort-AV: E=McAfee;i="6700,10204,11248"; a="30959473"
-X-IronPort-AV: E=Sophos;i="6.11,263,1725346800"; d="scan'208";a="30959473"
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 5B0044045B
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Nov 2024 18:58:52 +0000 (UTC)
+X-CSE-ConnectionGUID: EQ+WHGUXQI+d6gHUL234IA==
+X-CSE-MsgGUID: k1zwKvY9S6yqOxqnrgF4AQ==
+X-IronPort-AV: E=McAfee;i="6700,10204,11248"; a="30959486"
+X-IronPort-AV: E=Sophos;i="6.11,263,1725346800"; d="scan'208";a="30959486"
 Received: from orviesa004.jf.intel.com ([10.64.159.144])
  by fmvoesa108.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 06 Nov 2024 10:58:51 -0800
-X-CSE-ConnectionGUID: Wt116T5XSFmacTxaz98PaQ==
-X-CSE-MsgGUID: kiB6UEE4S4ecp80eDo+RnA==
+ 06 Nov 2024 10:58:52 -0800
+X-CSE-ConnectionGUID: clNr92t9TmaCBl+JWltSiw==
+X-CSE-MsgGUID: ITsS1WUlQ0i0Ncor/HuHYA==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.11,263,1725346800"; d="scan'208";a="89813797"
+X-IronPort-AV: E=Sophos;i="6.11,263,1725346800"; d="scan'208";a="89813801"
 Received: from timelab-spr11.ch.intel.com ([143.182.136.151])
- by orviesa004.jf.intel.com with ESMTP; 06 Nov 2024 10:56:41 -0800
+ by orviesa004.jf.intel.com with ESMTP; 06 Nov 2024 10:56:42 -0800
 From: Christopher S M Hall <christopher.s.hall@intel.com>
 To: intel-wired-lan@lists.osuosl.org
 Cc: david.zage@intel.com, vinicius.gomes@intel.com, netdev@vger.kernel.org,
  rodrigo.cadore@l-acoustics.com, vinschen@redhat.com
-Date: Wed,  6 Nov 2024 18:47:20 +0000
-Message-Id: <20241106184722.17230-5-christopher.s.hall@intel.com>
+Date: Wed,  6 Nov 2024 18:47:22 +0000
+Message-Id: <20241106184722.17230-7-christopher.s.hall@intel.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20241106184722.17230-1-christopher.s.hall@intel.com>
 References: <20241106184722.17230-1-christopher.s.hall@intel.com>
@@ -78,13 +78,13 @@ X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  t=1730919532; x=1762455532;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=QOTNwCbXC0dEBBEghJ97he0ts6uyFWd6JAr1mw42WaI=;
- b=OEW0wQEraUJMjX4kWMJjC3XPCE53BHxfDlNk43QzONyb52J+iMmOVfKF
- Yn7HnfU+qZOcyvwwbkOmJFVyfjP+tcuSVwwgmjaYuDIqiCwAjiat5glEv
- 5g1TIHsECGb86bARDaemYmAZDx/cX+a6KNT6eyTf40bdC/j/bZVRPJxA6
- jBQohJA1CeSj7OZBKTUC1/M2E8AvRRoXU+L6T/YMQoMG4kNNagHsyEja3
- ZNtyrhv93M9gp6YyJVn95yUgWwOdAFaYoA/oM2Rz9Emc9O5bYZvVhqWZi
- 1xHRBM6HMexd0CVKQ5V4P7uYOD7NPpZKaqCVHEVHg9nYDHNnDRBrG7Aqp
+ bh=bt7XG36pg3234h1RpdS9ZPjF7IWhCP4yi40vlCJTGls=;
+ b=aH4VutBOHcgvdc70j2bQSfrKdKy6uOIa9Ph+JdWMjbWOkEk6OxzOivj8
+ J33vAPSRNIaPpT0vBlwth6HuCPmeOno05yO6JF/7zUMI4xczNZLzDnN/t
+ iiNHebgdfB7BRz6R4JfhW3S7d8E/ULasgYugs6wKp6W9PhNyaBjBb0MCb
+ KqPVryRERku9Ej2KPSKViwKChO94e/ItaiSvQ1RahNcmxwMg9BorUQLNB
+ o9WD4yLjlps/zat7v5Cwgi8V2GZZZm3v1sjpmWWVdeFhQsfwmjrgSt2xA
+ mmphHauCkAeszCVZykQVN2PDgm434A87Slnh0eCmSRR1NHmx8RYhD+Z30
  g==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none)
@@ -92,9 +92,9 @@ X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=OEW0wQEr
-Subject: [Intel-wired-lan] [PATCH iwl-net v3 4/6] igc: Handle the
- IGC_PTP_ENABLED flag correctly
+ header.s=Intel header.b=aH4VutBO
+Subject: [Intel-wired-lan] [PATCH iwl-net v3 6/6] igc: Add lock preventing
+ multiple simultaneous PTM transactions
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -110,43 +110,133 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-All functions in igc_ptp.c called from igc_main.c should check the
-IGC_PTP_ENABLED flag. Adding check for this flag to stop and reset
-functions.
+Add a mutex around the PTM transaction to prevent multiple transactors
 
-Fixes: 5f2958052c58 ("igc: Add basic skeleton for PTP")
+Multiple processes try to initiate a PTM transaction, one or all may
+fail. This can be reproduced by running two instances of the
+following:
+
+$ sudo phc2sys -O 0 -i tsn0 -m
+
+PHC2SYS exits with:
+
+"ioctl PTP_OFFSET_PRECISE: Connection timed out" when the PTM transaction
+ fails
+
+Note: Normally two instance of PHC2SYS will not run, but one process
+ should not break another.
+
+Fixes: a90ec8483732 ("igc: Add support for PTP getcrosststamp()")
 Signed-off-by: Christopher S M Hall <christopher.s.hall@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc_ptp.c | 7 +++++++
- 1 file changed, 7 insertions(+)
+ drivers/net/ethernet/intel/igc/igc.h     |  1 +
+ drivers/net/ethernet/intel/igc/igc_ptp.c | 20 ++++++++++++++++++--
+ 2 files changed, 19 insertions(+), 2 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
+index eac0f966e0e4..323db1e2be38 100644
+--- a/drivers/net/ethernet/intel/igc/igc.h
++++ b/drivers/net/ethernet/intel/igc/igc.h
+@@ -319,6 +319,7 @@ struct igc_adapter {
+ 	struct timespec64 prev_ptp_time; /* Pre-reset PTP clock */
+ 	ktime_t ptp_reset_start; /* Reset time in clock mono */
+ 	struct system_time_snapshot snapshot;
++	struct mutex ptm_lock; /* Only allow one PTM transaction at a time */
+ 
+ 	char fw_version[32];
+ 
 diff --git a/drivers/net/ethernet/intel/igc/igc_ptp.c b/drivers/net/ethernet/intel/igc/igc_ptp.c
-index 516abe7405de..343205bffc35 100644
+index 343205bffc35..612ed26a29c5 100644
 --- a/drivers/net/ethernet/intel/igc/igc_ptp.c
 +++ b/drivers/net/ethernet/intel/igc/igc_ptp.c
-@@ -1244,8 +1244,12 @@ void igc_ptp_suspend(struct igc_adapter *adapter)
-  **/
- void igc_ptp_stop(struct igc_adapter *adapter)
+@@ -974,6 +974,7 @@ static void igc_ptm_log_error(struct igc_adapter *adapter, u32 ptm_stat)
+ 	}
+ }
+ 
++/* The PTM lock: adapter->ptm_lock must be held when calling igc_ptm_trigger() */
+ static void igc_ptm_trigger(struct igc_hw *hw)
  {
-+	if (!(adapter->ptp_flags & IGC_PTP_ENABLED))
-+		return;
-+
- 	igc_ptp_suspend(adapter);
+ 	u32 ctrl;
+@@ -990,6 +991,7 @@ static void igc_ptm_trigger(struct igc_hw *hw)
+ 	wrfl();
+ }
  
-+	adapter->ptp_flags &= ~IGC_PTP_ENABLED;
- 	if (adapter->ptp_clock) {
- 		ptp_clock_unregister(adapter->ptp_clock);
++/* The PTM lock: adapter->ptm_lock must be held when calling igc_ptm_reset() */
+ static void igc_ptm_reset(struct igc_hw *hw)
+ {
+ 	u32 ctrl;
+@@ -1068,9 +1070,16 @@ static int igc_ptp_getcrosststamp(struct ptp_clock_info *ptp,
+ {
+ 	struct igc_adapter *adapter = container_of(ptp, struct igc_adapter,
+ 						   ptp_caps);
++	int ret;
+ 
+-	return get_device_system_crosststamp(igc_phc_get_syncdevicetime,
+-					     adapter, &adapter->snapshot, cts);
++	/* This blocks until any in progress PTM transactions complete */
++	mutex_lock(&adapter->ptm_lock);
++
++	ret = get_device_system_crosststamp(igc_phc_get_syncdevicetime,
++					    adapter, &adapter->snapshot, cts);
++	mutex_unlock(&adapter->ptm_lock);
++
++	return ret;
+ }
+ 
+ static int igc_ptp_getcyclesx64(struct ptp_clock_info *ptp,
+@@ -1169,6 +1178,7 @@ void igc_ptp_init(struct igc_adapter *adapter)
+ 	spin_lock_init(&adapter->ptp_tx_lock);
+ 	spin_lock_init(&adapter->free_timer_lock);
+ 	spin_lock_init(&adapter->tmreg_lock);
++	mutex_init(&adapter->ptm_lock);
+ 
+ 	adapter->tstamp_config.rx_filter = HWTSTAMP_FILTER_NONE;
+ 	adapter->tstamp_config.tx_type = HWTSTAMP_TX_OFF;
+@@ -1181,6 +1191,7 @@ void igc_ptp_init(struct igc_adapter *adapter)
+ 	if (IS_ERR(adapter->ptp_clock)) {
+ 		adapter->ptp_clock = NULL;
+ 		netdev_err(netdev, "ptp_clock_register failed\n");
++		mutex_destroy(&adapter->ptm_lock);
+ 	} else if (adapter->ptp_clock) {
+ 		netdev_info(netdev, "PHC added\n");
+ 		adapter->ptp_flags |= IGC_PTP_ENABLED;
+@@ -1210,10 +1221,12 @@ static void igc_ptm_stop(struct igc_adapter *adapter)
+ 	struct igc_hw *hw = &adapter->hw;
+ 	u32 ctrl;
+ 
++	mutex_lock(&adapter->ptm_lock);
+ 	ctrl = rd32(IGC_PTM_CTRL);
+ 	ctrl &= ~IGC_PTM_CTRL_EN;
+ 
+ 	wr32(IGC_PTM_CTRL, ctrl);
++	mutex_unlock(&adapter->ptm_lock);
+ }
+ 
+ /**
+@@ -1255,6 +1268,7 @@ void igc_ptp_stop(struct igc_adapter *adapter)
  		netdev_info(adapter->netdev, "PHC removed\n");
-@@ -1266,6 +1270,9 @@ void igc_ptp_reset(struct igc_adapter *adapter)
- 	unsigned long flags;
- 	u32 timadj;
+ 		adapter->ptp_flags &= ~IGC_PTP_ENABLED;
+ 	}
++	mutex_destroy(&adapter->ptm_lock);
+ }
  
-+	if (!(adapter->ptp_flags & IGC_PTP_ENABLED))
-+		return;
-+
- 	/* reset the tstamp_config */
- 	igc_ptp_set_timestamp_mode(adapter, &adapter->tstamp_config);
+ /**
+@@ -1294,6 +1308,7 @@ void igc_ptp_reset(struct igc_adapter *adapter)
+ 		if (!igc_is_crosststamp_supported(adapter))
+ 			break;
  
++		mutex_lock(&adapter->ptm_lock);
+ 		wr32(IGC_PCIE_DIG_DELAY, IGC_PCIE_DIG_DELAY_DEFAULT);
+ 		wr32(IGC_PCIE_PHY_DELAY, IGC_PCIE_PHY_DELAY_DEFAULT);
+ 
+@@ -1317,6 +1332,7 @@ void igc_ptp_reset(struct igc_adapter *adapter)
+ 			netdev_err(adapter->netdev, "Timeout reading IGC_PTM_STAT register\n");
+ 
+ 		igc_ptm_reset(hw);
++		mutex_unlock(&adapter->ptm_lock);
+ 		break;
+ 	default:
+ 		/* No work to do. */
 -- 
 2.34.1
 
