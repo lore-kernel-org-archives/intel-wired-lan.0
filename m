@@ -4,73 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A58EFD59F68
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  6 Nov 2024 18:58:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 618E0D59F69
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  6 Nov 2024 18:58:57 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 46F996072E;
+	by smtp3.osuosl.org (Postfix) with ESMTP id 95C6D6090A;
 	Wed,  6 Nov 2024 18:58:56 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id iASCfotA2iLd; Wed,  6 Nov 2024 18:58:55 +0000 (UTC)
+ id zmVbi0Le8tF6; Wed,  6 Nov 2024 18:58:54 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 5057D60732
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 64C97608D1
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1730919535;
-	bh=TtDQzYUockgxbecpECgt+bjE6o7BUyBU0t+Iw/5D9h0=;
+	s=default; t=1730919534;
+	bh=ssImHwbC7zp4CSTGYQ3B1o2RJxl8VB9zptYKfJ90+LM=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=npRc25Tu6PQ0TEUJbzBZA3d2QDg08XXTVLbHT19+mBYqPy2ao8dcb7AQ2hLDa06aN
-	 KfZYc8E1ffsMj0uQtQqZ/dNrqRoo1clsthrcAyo03fhV3f10jbbrMLh6HVkHQbime6
-	 //1baERCKRss+0Uz80hQ2EW3j06/FFJRKLUHiTDHzTR7L11JzFmbvWObeYFkhzbMUE
-	 moewztAgdv4oBKNu4Ocyt3npkRuVTghHpvIlhejhRcg2FBKLxmSbT/v6jd+a4mdqzO
-	 c8YLSjQflFHL6CoBYhOPs9+TQ8Q7bF8J9+niBeoWJw+P+5GMpSRzBylxZUF8zYQLII
-	 MfL25kHZsR19Q==
+	b=vJEdDjV8KMX5CZknD6cweNWOyb4aDi/Noj1msjP3Notn/p08I999a3VGPkmvNzHxa
+	 pFmcX1A8op5nE9fD7HzH6iD/TyouUPA+ab4p/DkpmSHjkVyXhdk+QxSro7FXj8/t82
+	 ELkIpxeMsLlCFu9pFdOyVOm2D6A7ieWcDDMtQb+9gp7U+gxgwgTQrt8c432zHDbXJQ
+	 6aIdvHOfNHLAJZucoSVzq6Rk5lWvG6kqM7xpPJrqaepEkkz4AIcYdcpcZTH1PiWgQz
+	 VKY5LZMTr1OU5qPvspf7nez9+aoWPWPCoN6NE+9uPNCaW6A3AzSohYJ5UZKIP+upnQ
+	 beu7F+3OerPoQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 5057D60732;
-	Wed,  6 Nov 2024 18:58:55 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 4112227F1
+	by smtp3.osuosl.org (Postfix) with ESMTP id 64C97608D1;
+	Wed,  6 Nov 2024 18:58:54 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 2332A3B
  for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Nov 2024 18:58:53 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 59FC260747
+ by smtp2.osuosl.org (Postfix) with ESMTP id F08C540450
  for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Nov 2024 18:58:52 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id giYJtSg6zpod for <intel-wired-lan@lists.osuosl.org>;
- Wed,  6 Nov 2024 18:58:51 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id W5CeJ0wKAEZC for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  6 Nov 2024 18:58:52 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.14;
  helo=mgamail.intel.com; envelope-from=christopher.s.hall@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 6177860732
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 6177860732
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 1647D400D8
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 1647D400D8
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.14])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 6177860732
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 1647D400D8
  for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Nov 2024 18:58:51 +0000 (UTC)
-X-CSE-ConnectionGUID: K/bCox0dT/i80EST5m/y6Q==
-X-CSE-MsgGUID: ionzyLb7T6ylZJsngHQU0Q==
-X-IronPort-AV: E=McAfee;i="6700,10204,11248"; a="30959462"
-X-IronPort-AV: E=Sophos;i="6.11,263,1725346800"; d="scan'208";a="30959462"
+X-CSE-ConnectionGUID: sNnD/WUgQ42D1r1miTPJJw==
+X-CSE-MsgGUID: gN2MqbnxRJCiFO2OQE52LQ==
+X-IronPort-AV: E=McAfee;i="6700,10204,11248"; a="30959473"
+X-IronPort-AV: E=Sophos;i="6.11,263,1725346800"; d="scan'208";a="30959473"
 Received: from orviesa004.jf.intel.com ([10.64.159.144])
  by fmvoesa108.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 06 Nov 2024 10:58:50 -0800
-X-CSE-ConnectionGUID: DpTZbD/STjWSZBTG9XBUTA==
-X-CSE-MsgGUID: qAptyY6BREqCWIYLP13feA==
+ 06 Nov 2024 10:58:51 -0800
+X-CSE-ConnectionGUID: Wt116T5XSFmacTxaz98PaQ==
+X-CSE-MsgGUID: kiB6UEE4S4ecp80eDo+RnA==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.11,263,1725346800"; d="scan'208";a="89813790"
+X-IronPort-AV: E=Sophos;i="6.11,263,1725346800"; d="scan'208";a="89813797"
 Received: from timelab-spr11.ch.intel.com ([143.182.136.151])
- by orviesa004.jf.intel.com with ESMTP; 06 Nov 2024 10:56:39 -0800
+ by orviesa004.jf.intel.com with ESMTP; 06 Nov 2024 10:56:41 -0800
 From: Christopher S M Hall <christopher.s.hall@intel.com>
 To: intel-wired-lan@lists.osuosl.org
 Cc: david.zage@intel.com, vinicius.gomes@intel.com, netdev@vger.kernel.org,
- rodrigo.cadore@l-acoustics.com, vinschen@redhat.com,
- Michal Swiatkowski <michal.swiatkowski@linux.intel.com>,
- Mor Bar-Gabay <morx.bar.gabay@intel.com>,
- Avigail Dahan <avigailx.dahan@intel.com>
-Date: Wed,  6 Nov 2024 18:47:17 +0000
-Message-Id: <20241106184722.17230-2-christopher.s.hall@intel.com>
+ rodrigo.cadore@l-acoustics.com, vinschen@redhat.com
+Date: Wed,  6 Nov 2024 18:47:20 +0000
+Message-Id: <20241106184722.17230-5-christopher.s.hall@intel.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20241106184722.17230-1-christopher.s.hall@intel.com>
 References: <20241106184722.17230-1-christopher.s.hall@intel.com>
@@ -78,26 +75,26 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1730919531; x=1762455531;
+ t=1730919532; x=1762455532;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=INK4rzX+ifNzPtwqxjtgntQ3Qurtmz7AEunuf4qJjOk=;
- b=OBzetBgN1kiCDTMhLuN8+t++EPT2A9giwzQM4duLx75eSETYaL7cXFIv
- dGAI3IpgJYPSQ1h+PbWA9ofKglFYSSL5/zsYJ3yFHXe3RX/c9hJcPss3o
- Se3vbeWECVbepBJR4zckdhz4QIuehg2LG84CHcHuECv66iYNPCpxiEfBd
- FBV3snLSd19GQE++PHpbTX3rADk5erc4Kjv+HEmgo/EaAQe30pcvj6d0I
- 8UB9nWBg10KDZAICxxWtIFF5rgTfgVpfu07eiNyhI+ntDBJucrGx1urvJ
- nDZFvw2v4YBS1RX2U0/AhQQkcidkJLEjICZKCzHV/7hcy5TQX6vHhPcRp
- A==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ bh=QOTNwCbXC0dEBBEghJ97he0ts6uyFWd6JAr1mw42WaI=;
+ b=OEW0wQEraUJMjX4kWMJjC3XPCE53BHxfDlNk43QzONyb52J+iMmOVfKF
+ Yn7HnfU+qZOcyvwwbkOmJFVyfjP+tcuSVwwgmjaYuDIqiCwAjiat5glEv
+ 5g1TIHsECGb86bARDaemYmAZDx/cX+a6KNT6eyTf40bdC/j/bZVRPJxA6
+ jBQohJA1CeSj7OZBKTUC1/M2E8AvRRoXU+L6T/YMQoMG4kNNagHsyEja3
+ ZNtyrhv93M9gp6YyJVn95yUgWwOdAFaYoA/oM2Rz9Emc9O5bYZvVhqWZi
+ 1xHRBM6HMexd0CVKQ5V4P7uYOD7NPpZKaqCVHEVHg9nYDHNnDRBrG7Aqp
+ g==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=OBzetBgN
-Subject: [Intel-wired-lan] [PATCH iwl-net v3 1/6] igc: Ensure the PTM cycle
- is reliably triggered
+ header.s=Intel header.b=OEW0wQEr
+Subject: [Intel-wired-lan] [PATCH iwl-net v3 4/6] igc: Handle the
+ IGC_PTP_ENABLED flag correctly
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -113,168 +110,43 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Writing to clear the PTM status 'valid' bit while the PTM cycle is
-triggered results in unreliable PTM operation. To fix this, clear the
-PTM 'trigger' and status after each PTM transaction.
+All functions in igc_ptp.c called from igc_main.c should check the
+IGC_PTP_ENABLED flag. Adding check for this flag to stop and reset
+functions.
 
-The issue can be reproduced with the following:
-
-$ sudo phc2sys -R 1000 -O 0 -i tsn0 -m
-
-Note: 1000 Hz (-R 1000) is unrealistically large, but provides a way to
-quickly reproduce the issue.
-
-PHC2SYS exits with:
-
-"ioctl PTP_OFFSET_PRECISE: Connection timed out" when the PTM transaction
-  fails
-
-Fixes: a90ec8483732 ("igc: Add support for PTP getcrosststamp()")
-Reviewed-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
-Tested-by: Mor Bar-Gabay <morx.bar.gabay@intel.com>
-Tested-by: Avigail Dahan <avigailx.dahan@intel.com>
+Fixes: 5f2958052c58 ("igc: Add basic skeleton for PTP")
 Signed-off-by: Christopher S M Hall <christopher.s.hall@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc_defines.h |  1 +
- drivers/net/ethernet/intel/igc/igc_ptp.c     | 70 ++++++++++++--------
- 2 files changed, 42 insertions(+), 29 deletions(-)
+ drivers/net/ethernet/intel/igc/igc_ptp.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_defines.h b/drivers/net/ethernet/intel/igc/igc_defines.h
-index 8e449904aa7d..2ff292f5f63b 100644
---- a/drivers/net/ethernet/intel/igc/igc_defines.h
-+++ b/drivers/net/ethernet/intel/igc/igc_defines.h
-@@ -593,6 +593,7 @@
- #define IGC_PTM_STAT_T4M1_OVFL		BIT(3) /* T4 minus T1 overflow */
- #define IGC_PTM_STAT_ADJUST_1ST		BIT(4) /* 1588 timer adjusted during 1st PTM cycle */
- #define IGC_PTM_STAT_ADJUST_CYC		BIT(5) /* 1588 timer adjusted during non-1st PTM cycle */
-+#define IGC_PTM_STAT_ALL		GENMASK(5, 0) /* Used to clear all status */
- 
- /* PCIe PTM Cycle Control */
- #define IGC_PTM_CYCLE_CTRL_CYC_TIME(msec)	((msec) & 0x3ff) /* PTM Cycle Time (msec) */
 diff --git a/drivers/net/ethernet/intel/igc/igc_ptp.c b/drivers/net/ethernet/intel/igc/igc_ptp.c
-index 946edbad4302..c640e346342b 100644
+index 516abe7405de..343205bffc35 100644
 --- a/drivers/net/ethernet/intel/igc/igc_ptp.c
 +++ b/drivers/net/ethernet/intel/igc/igc_ptp.c
-@@ -974,13 +974,40 @@ static void igc_ptm_log_error(struct igc_adapter *adapter, u32 ptm_stat)
- 	}
- }
- 
-+static void igc_ptm_trigger(struct igc_hw *hw)
-+{
-+	u32 ctrl;
-+
-+	/* To "manually" start the PTM cycle we need to set the
-+	 * trigger (TRIG) bit
-+	 */
-+	ctrl = rd32(IGC_PTM_CTRL);
-+	ctrl |= IGC_PTM_CTRL_TRIG;
-+	wr32(IGC_PTM_CTRL, ctrl);
-+	/* Perform flush after write to CTRL register otherwise
-+	 * transaction may not start
-+	 */
-+	wrfl();
-+}
-+
-+static void igc_ptm_reset(struct igc_hw *hw)
-+{
-+	u32 ctrl;
-+
-+	ctrl = rd32(IGC_PTM_CTRL);
-+	ctrl &= ~IGC_PTM_CTRL_TRIG;
-+	wr32(IGC_PTM_CTRL, ctrl);
-+	/* Write to clear all status */
-+	wr32(IGC_PTM_STAT, IGC_PTM_STAT_ALL);
-+}
-+
- static int igc_phc_get_syncdevicetime(ktime_t *device,
- 				      struct system_counterval_t *system,
- 				      void *ctx)
+@@ -1244,8 +1244,12 @@ void igc_ptp_suspend(struct igc_adapter *adapter)
+  **/
+ void igc_ptp_stop(struct igc_adapter *adapter)
  {
--	u32 stat, t2_curr_h, t2_curr_l, ctrl;
- 	struct igc_adapter *adapter = ctx;
- 	struct igc_hw *hw = &adapter->hw;
-+	u32 stat, t2_curr_h, t2_curr_l;
- 	int err, count = 100;
- 	ktime_t t1, t2_curr;
- 
-@@ -994,25 +1021,13 @@ static int igc_phc_get_syncdevicetime(ktime_t *device,
- 		 * are transitory. Repeating the process returns valid
- 		 * data eventually.
- 		 */
--
--		/* To "manually" start the PTM cycle we need to clear and
--		 * then set again the TRIG bit.
--		 */
--		ctrl = rd32(IGC_PTM_CTRL);
--		ctrl &= ~IGC_PTM_CTRL_TRIG;
--		wr32(IGC_PTM_CTRL, ctrl);
--		ctrl |= IGC_PTM_CTRL_TRIG;
--		wr32(IGC_PTM_CTRL, ctrl);
--
--		/* The cycle only starts "for real" when software notifies
--		 * that it has read the registers, this is done by setting
--		 * VALID bit.
--		 */
--		wr32(IGC_PTM_STAT, IGC_PTM_STAT_VALID);
-+		igc_ptm_trigger(hw);
- 
- 		err = readx_poll_timeout(rd32, IGC_PTM_STAT, stat,
- 					 stat, IGC_PTM_STAT_SLEEP,
- 					 IGC_PTM_STAT_TIMEOUT);
-+		igc_ptm_reset(hw);
++	if (!(adapter->ptp_flags & IGC_PTP_ENABLED))
++		return;
 +
- 		if (err < 0) {
- 			netdev_err(adapter->netdev, "Timeout reading IGC_PTM_STAT register\n");
- 			return err;
-@@ -1021,15 +1036,7 @@ static int igc_phc_get_syncdevicetime(ktime_t *device,
- 		if ((stat & IGC_PTM_STAT_VALID) == IGC_PTM_STAT_VALID)
- 			break;
+ 	igc_ptp_suspend(adapter);
  
--		if (stat & ~IGC_PTM_STAT_VALID) {
--			/* An error occurred, log it. */
--			igc_ptm_log_error(adapter, stat);
--			/* The STAT register is write-1-to-clear (W1C),
--			 * so write the previous error status to clear it.
--			 */
--			wr32(IGC_PTM_STAT, stat);
--			continue;
--		}
-+		igc_ptm_log_error(adapter, stat);
- 	} while (--count);
- 
- 	if (!count) {
-@@ -1255,7 +1262,7 @@ void igc_ptp_stop(struct igc_adapter *adapter)
- void igc_ptp_reset(struct igc_adapter *adapter)
- {
- 	struct igc_hw *hw = &adapter->hw;
--	u32 cycle_ctrl, ctrl;
-+	u32 cycle_ctrl, ctrl, stat;
++	adapter->ptp_flags &= ~IGC_PTP_ENABLED;
+ 	if (adapter->ptp_clock) {
+ 		ptp_clock_unregister(adapter->ptp_clock);
+ 		netdev_info(adapter->netdev, "PHC removed\n");
+@@ -1266,6 +1270,9 @@ void igc_ptp_reset(struct igc_adapter *adapter)
  	unsigned long flags;
  	u32 timadj;
  
-@@ -1290,14 +1297,19 @@ void igc_ptp_reset(struct igc_adapter *adapter)
- 		ctrl = IGC_PTM_CTRL_EN |
- 			IGC_PTM_CTRL_START_NOW |
- 			IGC_PTM_CTRL_SHRT_CYC(IGC_PTM_SHORT_CYC_DEFAULT) |
--			IGC_PTM_CTRL_PTM_TO(IGC_PTM_TIMEOUT_DEFAULT) |
--			IGC_PTM_CTRL_TRIG;
-+			IGC_PTM_CTRL_PTM_TO(IGC_PTM_TIMEOUT_DEFAULT);
- 
- 		wr32(IGC_PTM_CTRL, ctrl);
- 
- 		/* Force the first cycle to run. */
--		wr32(IGC_PTM_STAT, IGC_PTM_STAT_VALID);
-+		igc_ptm_trigger(hw);
++	if (!(adapter->ptp_flags & IGC_PTP_ENABLED))
++		return;
 +
-+		if (readx_poll_timeout_atomic(rd32, IGC_PTM_STAT, stat,
-+					      stat, IGC_PTM_STAT_SLEEP,
-+					      IGC_PTM_STAT_TIMEOUT))
-+			netdev_err(adapter->netdev, "Timeout reading IGC_PTM_STAT register\n");
+ 	/* reset the tstamp_config */
+ 	igc_ptp_set_timestamp_mode(adapter, &adapter->tstamp_config);
  
-+		igc_ptm_reset(hw);
- 		break;
- 	default:
- 		/* No work to do. */
 -- 
 2.34.1
 
