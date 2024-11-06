@@ -1,77 +1,78 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E7BA5D44D53
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  6 Nov 2024 11:38:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 100A2D44D51
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  6 Nov 2024 11:38:12 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id AC369608DD;
-	Wed,  6 Nov 2024 11:38:10 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id B753181221;
+	Wed,  6 Nov 2024 11:38:11 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 4xCD2zW7pPA5; Wed,  6 Nov 2024 11:38:08 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 3kpJ6HiRhiG5; Wed,  6 Nov 2024 11:38:10 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 33782608C8
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 81E8D8121E
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1730893088;
-	bh=m33237potjQ/32J//UAYSkqW3Bq7dWLgJ5qTfHB7m1c=;
+	s=default; t=1730893090;
+	bh=ReGzJ7Qa/7KI83xQJeuvXU9xE4/dSqOSWms4iBF2A6A=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=4SW/s0bd2/n5UruPdAkGNtuAdKDvE4Nh6nZWDkGvnmT+C6cUD1/SOExCj1iYPZy6l
-	 bLCs+8trHNCLTwmXJRXXRRQ1bq4tHZeRY312WNFC3jtd35aVb0+ikHXn66Y3s8D6nm
-	 U4cH0CUxbKVeug/O19AVghuxS0bgT9069WuoX4305+cQUMHMkviIeL3UGMdy/4qPqp
-	 A5v0a9tv1s/PhUMtDawDcEOj82EbFTD9azc361lcTGDRpLGbxqxZhZMJNkXVO4GT7m
-	 92x02/mn7oN6c7N/no4afalSI+SM9dYIcGrK7k4OWUfPkahdHgXnRZos/s3Y5pI29G
-	 vaohIp+Fiq7lQ==
+	b=oj1FjDNgc4xDci/fw6cAKtst2ZQRIaFKcjOoRMUgQOsQPl5QLv/0ghcp9e+hnAglu
+	 XybyavB3LH7C54mLki1f9lVmNMO0SkHb75nJ9JL65yim/E+w8gUg2dK+FxZRWTlB4p
+	 rFz9u9LotQnRRaO1+/AaaJG8Ad7i1ghJdPZxfKXuOYdwAIF4ZlsnAJnBqUD0JAb31E
+	 vZ1jmmzR4XW3bbIYQs4xGDuBHih4ZMHTVCNg99Eg8xBNoKG2vAb1Rh7qDrK4+pQabK
+	 INmjr/oznM8T4IGb2RwNYBty+Y75iVTktgmLqXXL+KMxyggrxSTLZ6WVW/bmfbLgTg
+	 qNaaWF3palg2w==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 33782608C8;
-	Wed,  6 Nov 2024 11:38:08 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 81E8D8121E;
+	Wed,  6 Nov 2024 11:38:10 +0000 (UTC)
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id 0EFE727D1
- for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Nov 2024 11:38:00 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id 1786A3B
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Nov 2024 11:38:02 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id E2891402E5
- for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Nov 2024 11:37:59 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 0F2B5403C8
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Nov 2024 11:38:01 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id LWko2Ih-XGDq for <intel-wired-lan@lists.osuosl.org>;
+ id mwqK-dK-ZtEb for <intel-wired-lan@lists.osuosl.org>;
  Wed,  6 Nov 2024 11:37:58 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.20;
  helo=mgamail.intel.com; envelope-from=mateusz.polchlopek@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 2C82140329
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 2C82140329
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 9254340278
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 9254340278
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.20])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 2C82140329
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 9254340278
  for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Nov 2024 11:37:58 +0000 (UTC)
-X-CSE-ConnectionGUID: Ld2q2qLNTvmSJYg70DxDdg==
-X-CSE-MsgGUID: No0CRXUHRCinsXeme5Gr9Q==
-X-IronPort-AV: E=McAfee;i="6700,10204,11222"; a="30455527"
-X-IronPort-AV: E=Sophos;i="6.11,199,1725346800"; d="scan'208";a="30455527"
+X-CSE-ConnectionGUID: f/dzc3xTRAu9KkZOwo3lrw==
+X-CSE-MsgGUID: T1DXxVP3SESXqOm3hP8YkQ==
+X-IronPort-AV: E=McAfee;i="6700,10204,11222"; a="30455531"
+X-IronPort-AV: E=Sophos;i="6.11,199,1725346800"; d="scan'208";a="30455531"
 Received: from orviesa001.jf.intel.com ([10.64.159.141])
  by orvoesa112.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  06 Nov 2024 03:37:57 -0800
-X-CSE-ConnectionGUID: qBaH+10ERPW+GFI+NeoN2Q==
-X-CSE-MsgGUID: bcK2xRpzSfWflYZLGBm+kQ==
+X-CSE-ConnectionGUID: mrTBur+nQCWwDXKJFCD8aA==
+X-CSE-MsgGUID: I3v25XRQSkWT7K6gdY3gVQ==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.11,262,1725346800"; d="scan'208";a="122020160"
+X-IronPort-AV: E=Sophos;i="6.11,262,1725346800"; d="scan'208";a="122020162"
 Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by orviesa001.jf.intel.com with ESMTP; 06 Nov 2024 03:37:53 -0800
+ by orviesa001.jf.intel.com with ESMTP; 06 Nov 2024 03:37:55 -0800
 Received: from fedora.igk.intel.com (Metan_eth.igk.intel.com [10.123.220.124])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id F2DEB2FC5A;
- Wed,  6 Nov 2024 11:37:52 +0000 (GMT)
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id 64F242FC41;
+ Wed,  6 Nov 2024 11:37:54 +0000 (GMT)
 From: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
 To: intel-wired-lan@lists.osuosl.org
 Cc: netdev@vger.kernel.org, Mateusz Polchlopek <mateusz.polchlopek@intel.com>,
- Alexander Lobakin <aleksander.lobakin@intel.com>,
+ Wojciech Drewek <wojciech.drewek@intel.com>,
+ Rahul Rameshbabu <rrameshbabu@nvidia.com>, Simon Horman <horms@kernel.org>,
  Rafal Romanowski <rafal.romanowski@intel.com>
-Date: Wed,  6 Nov 2024 12:37:27 -0500
-Message-Id: <20241106173731.4272-11-mateusz.polchlopek@intel.com>
+Date: Wed,  6 Nov 2024 12:37:29 -0500
+Message-Id: <20241106173731.4272-13-mateusz.polchlopek@intel.com>
 X-Mailer: git-send-email 2.38.1
 In-Reply-To: <20241106173731.4272-1-mateusz.polchlopek@intel.com>
 References: <20241106173731.4272-1-mateusz.polchlopek@intel.com>
@@ -82,22 +83,22 @@ X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  t=1730893078; x=1762429078;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=/Dq4wSwR4/JfDOD0bf2N60xYIbif85Z2DqSUN+ARtZg=;
- b=QvHpEVZ6Z8mVoZOMovwXRLf6MmZzVnCstNHFTtZJKWt214YhX2GMgCdT
- 2vBk171HR4GqSNLkpmHME9zLMwZG0UJ2SRDp8cyk0A+6AmUEBs94wHLdX
- wj1ohQsrXN2bjGOuJ9fkoR6o0d8uIXQ2PVo3iQEUPlHEmIEpgJTZoTMMI
- 9fS42Q6IuPMm+ywxB62kjt/sxU2rJy+v5KquyGFlQ45mUw6HzohOo4Vea
- AUMAZgml3EIaSq9VAu+RAzzghAh8dXKtAUgmnl8hOLtuVmocSQQj0md+q
- D+QHyAq+GsPOUwy4rez1iE3RoKvTTYDLcvUHl4Mtuat/Q1WbKSWiLOZY2
- A==;
+ bh=ztrWwR6guZAPWdxMTUFxLER/SjYkJNBYZ4m35vm44FQ=;
+ b=dBmwFSYRXbF8a0s8O2XjD0H4skRIvosfuEdRX6ok/cNYU+fT05AJb+9Y
+ i9cb/l3tgizY63aT0VnRd5ZrV11/fS9IEAhmGHL1WmwZOuiKGiusgO8fk
+ dsaRjvA0f1hVlsPJmGdxPoJ6Qht2mcJYlAc00idJtvYgamSx2D88kNnO4
+ 3HTHhqz9W6bvlcN8Y+jMAnrdPC8ANVgvRqyLGIyC3fLnl5ifBdPEXtKaB
+ F/AXA6OVBm0DfsTSSEPCgTiM4sTKGIlwUK5ssvVafAMA6RVkZNHA5gQe7
+ iMNrFYCJ1O4wvmrH7R13Q5QwPL7a43exq+rk2+f0dzLMqdpprg1iSdzQt
+ g==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=QvHpEVZ6
-Subject: [Intel-wired-lan] [PATCH iwl-next v13 10/14] iavf: define Rx
- descriptors as qwords
+ header.a=rsa-sha256 header.s=Intel header.b=dBmwFSYR
+Subject: [Intel-wired-lan] [PATCH iwl-next v13 12/14] iavf: Implement
+ checking DD desc field
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -113,401 +114,193 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The union iavf_32byte_rx_desc consists of two unnamed structs defined
-inside. One of them represents legacy 32 byte descriptor and second the
-16 byte descriptor (extended to 32 byte). Each of them consists of
-bunch of unions, structs and __le fields that represent specific fields
-in descriptor.
+Rx timestamping introduced in PF driver caused the need of refactoring
+the VF driver mechanism to check packet fields.
 
-This commit changes the representation of iavf_32byte_rx_desc union
-to store four __le64 fields (qw0, qw1, qw2, qw3) that represent
-quad-words. Those quad-words will be then accessed by calling
-leXY_get_bits macros in upcoming commits.
+The function to check errors in descriptor has been removed and from
+now only previously set struct fields are being checked. The field DD
+(descriptor done) needs to be checked at the very beginning, before
+extracting other fields.
 
-Suggested-by: Alexander Lobakin <aleksander.lobakin@intel.com>
+Reviewed-by: Wojciech Drewek <wojciech.drewek@intel.com>
+Reviewed-by: Rahul Rameshbabu <rrameshbabu@nvidia.com>
+Reviewed-by: Simon Horman <horms@kernel.org>
 Tested-by: Rafal Romanowski <rafal.romanowski@intel.com>
 Signed-off-by: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
 ---
- drivers/net/ethernet/intel/iavf/iavf.h       |   2 +-
- drivers/net/ethernet/intel/iavf/iavf_trace.h |   6 +-
- drivers/net/ethernet/intel/iavf/iavf_txrx.c  |  56 ++++-----
- drivers/net/ethernet/intel/iavf/iavf_txrx.h  |   7 +-
- drivers/net/ethernet/intel/iavf/iavf_type.h  | 117 +++++++------------
- 5 files changed, 77 insertions(+), 111 deletions(-)
+ drivers/net/ethernet/intel/iavf/iavf_txrx.c | 54 ++++++++++++++++-----
+ drivers/net/ethernet/intel/iavf/iavf_txrx.h | 16 ------
+ drivers/net/ethernet/intel/iavf/iavf_type.h |  2 +
+ 3 files changed, 43 insertions(+), 29 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf.h b/drivers/net/ethernet/intel/iavf/iavf.h
-index b6e52992e270..9de3e0ba3731 100644
---- a/drivers/net/ethernet/intel/iavf/iavf.h
-+++ b/drivers/net/ethernet/intel/iavf/iavf.h
-@@ -83,7 +83,7 @@ struct iavf_vsi {
- 
- #define MAXIMUM_ETHERNET_VLAN_SIZE (VLAN_ETH_FRAME_LEN + ETH_FCS_LEN)
- 
--#define IAVF_RX_DESC(R, i) (&(((union iavf_32byte_rx_desc *)((R)->desc))[i]))
-+#define IAVF_RX_DESC(R, i) (&(((struct iavf_rx_desc *)((R)->desc))[i]))
- #define IAVF_TX_DESC(R, i) (&(((struct iavf_tx_desc *)((R)->desc))[i]))
- #define IAVF_TX_CTXTDESC(R, i) \
- 	(&(((struct iavf_tx_context_desc *)((R)->desc))[i]))
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_trace.h b/drivers/net/ethernet/intel/iavf/iavf_trace.h
-index 62212011c807..c5e4d1823886 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_trace.h
-+++ b/drivers/net/ethernet/intel/iavf/iavf_trace.h
-@@ -112,7 +112,7 @@ DECLARE_EVENT_CLASS(
- 	iavf_rx_template,
- 
- 	TP_PROTO(struct iavf_ring *ring,
--		 union iavf_32byte_rx_desc *desc,
-+		 struct iavf_rx_desc *desc,
- 		 struct sk_buff *skb),
- 
- 	TP_ARGS(ring, desc, skb),
-@@ -140,7 +140,7 @@ DECLARE_EVENT_CLASS(
- DEFINE_EVENT(
- 	iavf_rx_template, iavf_clean_rx_irq,
- 	TP_PROTO(struct iavf_ring *ring,
--		 union iavf_32byte_rx_desc *desc,
-+		 struct iavf_rx_desc *desc,
- 		 struct sk_buff *skb),
- 
- 	TP_ARGS(ring, desc, skb));
-@@ -148,7 +148,7 @@ DEFINE_EVENT(
- DEFINE_EVENT(
- 	iavf_rx_template, iavf_clean_rx_irq_rx,
- 	TP_PROTO(struct iavf_ring *ring,
--		 union iavf_32byte_rx_desc *desc,
-+		 struct iavf_rx_desc *desc,
- 		 struct sk_buff *skb),
- 
- 	TP_ARGS(ring, desc, skb));
 diff --git a/drivers/net/ethernet/intel/iavf/iavf_txrx.c b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
-index 26b424fd6718..46745ebc9c1f 100644
+index 89b71509e521..283997b8a777 100644
 --- a/drivers/net/ethernet/intel/iavf/iavf_txrx.c
 +++ b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
-@@ -766,7 +766,7 @@ int iavf_setup_rx_descriptors(struct iavf_ring *rx_ring)
- 	u64_stats_init(&rx_ring->syncp);
+@@ -9,6 +9,25 @@
+ #include "iavf_trace.h"
+ #include "iavf_prototype.h"
  
- 	/* Round up to nearest 4K */
--	rx_ring->size = rx_ring->count * sizeof(union iavf_32byte_rx_desc);
-+	rx_ring->size = rx_ring->count * sizeof(struct iavf_rx_desc);
- 	rx_ring->size = ALIGN(rx_ring->size, 4096);
- 	rx_ring->desc = dma_alloc_coherent(fq.pp->p.dev, rx_ring->size,
- 					   &rx_ring->dma, GFP_KERNEL);
-@@ -845,7 +845,7 @@ bool iavf_alloc_rx_buffers(struct iavf_ring *rx_ring, u16 cleaned_count)
- 		.count		= rx_ring->count,
- 	};
- 	u16 ntu = rx_ring->next_to_use;
--	union iavf_rx_desc *rx_desc;
-+	struct iavf_rx_desc *rx_desc;
- 
- 	/* do nothing if no valid netdev defined */
- 	if (!rx_ring->netdev || !cleaned_count)
-@@ -863,7 +863,7 @@ bool iavf_alloc_rx_buffers(struct iavf_ring *rx_ring, u16 cleaned_count)
- 		/* Refresh the desc even if buffer_addrs didn't change
- 		 * because each write-back erases this info.
- 		 */
--		rx_desc->read.pkt_addr = cpu_to_le64(addr);
-+		rx_desc->qw0 = cpu_to_le64(addr);
- 
- 		rx_desc++;
- 		ntu++;
-@@ -873,7 +873,7 @@ bool iavf_alloc_rx_buffers(struct iavf_ring *rx_ring, u16 cleaned_count)
- 		}
- 
- 		/* clear the status bits for the next_to_use descriptor */
--		rx_desc->wb.qword1.status_error_len = 0;
-+		rx_desc->qw1 = 0;
- 
- 		cleaned_count--;
- 	} while (cleaned_count);
-@@ -901,19 +901,18 @@ bool iavf_alloc_rx_buffers(struct iavf_ring *rx_ring, u16 cleaned_count)
-  * @skb: skb currently being received and modified
-  * @rx_desc: the receive descriptor
-  **/
--static void iavf_rx_checksum(struct iavf_vsi *vsi,
--			     struct sk_buff *skb,
--			     union iavf_rx_desc *rx_desc)
-+static void iavf_rx_checksum(struct iavf_vsi *vsi, struct sk_buff *skb,
-+			     struct iavf_rx_desc *rx_desc)
++/**
++ * iavf_is_descriptor_done - tests DD bit in Rx descriptor
++ * @qw1: quad word 1 from descriptor to get Descriptor Done field from
++ * @flex: is the descriptor flex or legacy
++ *
++ * This function tests the descriptor done bit in specified descriptor. Because
++ * there are two types of descriptors (legacy and flex) the parameter rx_ring
++ * is used to distinguish.
++ *
++ * Return: true or false based on the state of DD bit in Rx descriptor.
++ */
++static bool iavf_is_descriptor_done(u64 qw1, bool flex)
++{
++	if (flex)
++		return FIELD_GET(IAVF_RXD_FLEX_DD_M, qw1);
++	else
++		return FIELD_GET(IAVF_RXD_LEGACY_DD_M, qw1);
++}
++
+ static __le64 build_ctob(u32 td_cmd, u32 td_offset, unsigned int size,
+ 			 u32 td_tag)
  {
- 	struct libeth_rx_pt decoded;
- 	u32 rx_error, rx_status;
- 	bool ipv4, ipv6;
--	u8 ptype;
- 	u64 qword;
-+	u32 ptype;
- 
- 	skb->ip_summed = CHECKSUM_NONE;
- 
--	qword = le64_to_cpu(rx_desc->wb.qword1.status_error_len);
-+	qword = le64_to_cpu(rx_desc->qw1);
- 	ptype = FIELD_GET(IAVF_RXD_QW1_PTYPE_MASK, qword);
- 
- 	decoded = libie_rx_pt_parse(ptype);
-@@ -967,7 +966,7 @@ static void iavf_rx_checksum(struct iavf_vsi *vsi,
-  * @rx_ptype: Rx packet type
+@@ -1063,6 +1082,7 @@ static void iavf_flex_rx_hash(const struct iavf_ring *ring, __le64 qw1,
+  * @rx_desc: pointer to the EOP Rx descriptor
+  * @skb: pointer to current skb being populated
+  * @ptype: the packet type decoded by hardware
++ * @flex: is the descriptor flex or legacy
+  *
+  * This function checks the ring, descriptor, and packet information in
+  * order to populate the hash, checksum, VLAN, protocol, and
+@@ -1070,7 +1090,8 @@ static void iavf_flex_rx_hash(const struct iavf_ring *ring, __le64 qw1,
   **/
- static void iavf_rx_hash(struct iavf_ring *ring,
--			 union iavf_rx_desc *rx_desc,
-+			 struct iavf_rx_desc *rx_desc,
- 			 struct sk_buff *skb,
- 			 u8 rx_ptype)
+ static void iavf_process_skb_fields(const struct iavf_ring *rx_ring,
+ 				    const struct iavf_rx_desc *rx_desc,
+-				    struct sk_buff *skb, u32 ptype)
++				    struct sk_buff *skb, u32 ptype,
++				    bool flex)
  {
-@@ -981,8 +980,8 @@ static void iavf_rx_hash(struct iavf_ring *ring,
- 	if (!libeth_rx_pt_has_hash(ring->netdev, decoded))
- 		return;
+ 	struct libeth_rx_csum csum_bits;
+ 	struct libeth_rx_pt decoded_pt;
+@@ -1079,14 +1100,14 @@ static void iavf_process_skb_fields(const struct iavf_ring *rx_ring,
  
--	if ((rx_desc->wb.qword1.status_error_len & rss_mask) == rss_mask) {
--		hash = le32_to_cpu(rx_desc->wb.qword0.hi_dword.rss);
-+	if ((rx_desc->qw1 & rss_mask) == rss_mask) {
-+		hash = le64_get_bits(rx_desc->qw0, IAVF_RXD_LEGACY_RSS_M);
- 		libeth_rx_pt_set_hash(skb, hash, decoded);
+ 	decoded_pt = libie_rx_pt_parse(ptype);
+ 
+-	if (rx_ring->rxdid == VIRTCHNL_RXDID_1_32B_BASE) {
+-		iavf_legacy_rx_hash(rx_ring, qw0, qw1, skb, decoded_pt);
+-		csum_bits = iavf_legacy_rx_csum(rx_ring->vsi, le64_to_cpu(qw1),
+-						decoded_pt);
+-	} else {
++	if (flex) {
+ 		iavf_flex_rx_hash(rx_ring, qw1, skb, decoded_pt);
+ 		csum_bits = iavf_flex_rx_csum(rx_ring->vsi, le64_to_cpu(qw1),
+ 					      decoded_pt);
++	} else {
++		iavf_legacy_rx_hash(rx_ring, qw0, qw1, skb, decoded_pt);
++		csum_bits = iavf_legacy_rx_csum(rx_ring->vsi, le64_to_cpu(qw1),
++						decoded_pt);
  	}
- }
-@@ -1000,7 +999,7 @@ static void iavf_rx_hash(struct iavf_ring *ring,
-  **/
- static void
- iavf_process_skb_fields(struct iavf_ring *rx_ring,
--			union iavf_rx_desc *rx_desc, struct sk_buff *skb,
-+			struct iavf_rx_desc *rx_desc, struct sk_buff *skb,
- 			u8 rx_ptype)
- {
- 	iavf_rx_hash(rx_ring, rx_desc, skb, rx_ptype);
-@@ -1101,7 +1100,7 @@ static struct sk_buff *iavf_build_skb(const struct libeth_fqe *rx_buffer,
-  * that this is in fact a non-EOP buffer.
-  **/
- static bool iavf_is_non_eop(struct iavf_ring *rx_ring,
--			    union iavf_rx_desc *rx_desc,
-+			    struct iavf_rx_desc *rx_desc,
- 			    struct sk_buff *skb)
- {
- 	u32 ntc = rx_ring->next_to_clean + 1;
-@@ -1143,11 +1142,12 @@ static int iavf_clean_rx_irq(struct iavf_ring *rx_ring, int budget)
+ 	iavf_rx_csum(rx_ring->vsi, skb, decoded_pt, csum_bits);
  
- 	while (likely(total_rx_packets < (unsigned int)budget)) {
+@@ -1296,12 +1317,13 @@ iavf_extract_flex_rx_fields(const struct iavf_ring *rx_ring,
+ 
+ static struct libeth_rqe_info
+ iavf_extract_rx_fields(const struct iavf_ring *rx_ring,
+-		       const struct iavf_rx_desc *rx_desc)
++		       const struct iavf_rx_desc *rx_desc,
++		       bool flex)
+ {
+-	if (rx_ring->rxdid == VIRTCHNL_RXDID_1_32B_BASE)
+-		return iavf_extract_legacy_rx_fields(rx_ring, rx_desc);
+-	else
++	if (flex)
+ 		return iavf_extract_flex_rx_fields(rx_ring, rx_desc);
++	else
++		return iavf_extract_legacy_rx_fields(rx_ring, rx_desc);
+ }
+ 
+ /**
+@@ -1318,6 +1340,7 @@ iavf_extract_rx_fields(const struct iavf_ring *rx_ring,
+  **/
+ static int iavf_clean_rx_irq(struct iavf_ring *rx_ring, int budget)
+ {
++	bool flex = rx_ring->rxdid == VIRTCHNL_RXDID_2_FLEX_SQ_NIC;
+ 	unsigned int total_rx_bytes = 0, total_rx_packets = 0;
+ 	struct sk_buff *skb = rx_ring->skb;
+ 	u16 cleaned_count = IAVF_DESC_UNUSED(rx_ring);
+@@ -1327,6 +1350,7 @@ static int iavf_clean_rx_irq(struct iavf_ring *rx_ring, int budget)
+ 		struct libeth_rqe_info fields;
  		struct libeth_fqe *rx_buffer;
--		union iavf_rx_desc *rx_desc;
-+		struct iavf_rx_desc *rx_desc;
-+		u16 ext_status = 0;
- 		unsigned int size;
- 		u16 vlan_tag = 0;
- 		u8 rx_ptype;
--		u64 qword;
+ 		struct iavf_rx_desc *rx_desc;
 +		u64 qw1;
  
  		/* return some buffers to hardware, one at a time is too slow */
  		if (cleaned_count >= IAVF_RX_BUFFER_WRITE) {
-@@ -1163,7 +1163,7 @@ static int iavf_clean_rx_irq(struct iavf_ring *rx_ring, int budget)
- 		 * which is always zero because packet split isn't used, if the
- 		 * hardware wrote DD then the length will be non-zero
+@@ -1343,10 +1367,14 @@ static int iavf_clean_rx_irq(struct iavf_ring *rx_ring, int budget)
  		 */
--		qword = le64_to_cpu(rx_desc->wb.qword1.status_error_len);
-+		qw1 = le64_to_cpu(rx_desc->qw1);
+ 		dma_rmb();
  
- 		/* This memory barrier is needed to keep us from reading
- 		 * any other fields out of the rx_desc until we have
-@@ -1174,7 +1174,7 @@ static int iavf_clean_rx_irq(struct iavf_ring *rx_ring, int budget)
- 		if (!iavf_test_staterr(rx_desc, IAVF_RXD_DD))
+-		if (!iavf_test_staterr(rx_desc, IAVF_RXD_FLEX_DD_M))
++		qw1 = le64_to_cpu(rx_desc->qw1);
++		/* If DD field (descriptor done) is unset then other fields are
++		 * not valid
++		 */
++		if (!iavf_is_descriptor_done(qw1, flex))
  			break;
  
--		size = FIELD_GET(IAVF_RXD_QW1_LENGTH_PBUF_MASK, qword);
-+		size = FIELD_GET(IAVF_RXD_QW1_LENGTH_PBUF_MASK, qw1);
+-		fields = iavf_extract_rx_fields(rx_ring, rx_desc);
++		fields = iavf_extract_rx_fields(rx_ring, rx_desc, flex);
  
  		iavf_trace(clean_rx_irq, rx_ring, rx_desc, skb);
  
-@@ -1219,19 +1219,23 @@ static int iavf_clean_rx_irq(struct iavf_ring *rx_ring, int budget)
- 		/* probably a little skewed due to removing CRC */
+@@ -1391,7 +1419,7 @@ static int iavf_clean_rx_irq(struct iavf_ring *rx_ring, int budget)
  		total_rx_bytes += skb->len;
  
--		qword = le64_to_cpu(rx_desc->wb.qword1.status_error_len);
--		rx_ptype = FIELD_GET(IAVF_RXD_QW1_PTYPE_MASK, qword);
-+		rx_ptype = FIELD_GET(IAVF_RXD_QW1_PTYPE_MASK, qw1);
- 
  		/* populate checksum, VLAN, and protocol */
- 		iavf_process_skb_fields(rx_ring, rx_desc, skb, rx_ptype);
- 
--		if (qword & BIT(IAVF_RX_DESC_STATUS_L2TAG1P_SHIFT) &&
-+		if (qw1 & BIT(IAVF_RX_DESC_STATUS_L2TAG1P_SHIFT) &&
- 		    rx_ring->flags & IAVF_TXRX_FLAGS_VLAN_TAG_LOC_L2TAG1)
--			vlan_tag = le16_to_cpu(rx_desc->wb.qword0.lo_dword.l2tag1);
--		if (rx_desc->wb.qword2.ext_status &
--		    cpu_to_le16(BIT(IAVF_RX_DESC_EXT_STATUS_L2TAG2P_SHIFT)) &&
--		    rx_ring->flags & IAVF_RXR_FLAGS_VLAN_TAG_LOC_L2TAG2_2)
--			vlan_tag = le16_to_cpu(rx_desc->wb.qword2.l2tag2_2);
-+			vlan_tag = le64_get_bits(rx_desc->qw0,
-+						 IAVF_RXD_LEGACY_L2TAG1_M);
-+
-+		ext_status = le64_get_bits(rx_desc->qw2,
-+					   IAVF_RXD_LEGACY_EXT_STATUS_M);
-+
-+		if ((ext_status & IAVF_RX_DESC_EXT_STATUS_L2TAG2P_M) &&
-+		    (rx_ring->flags & IAVF_RXR_FLAGS_VLAN_TAG_LOC_L2TAG2_2))
-+			vlan_tag = le64_get_bits(rx_desc->qw2,
-+						 IAVF_RXD_LEGACY_L2TAG2_2_M);
+-		iavf_process_skb_fields(rx_ring, rx_desc, skb, fields.ptype);
++		iavf_process_skb_fields(rx_ring, rx_desc, skb, fields.ptype, flex);
  
  		iavf_trace(clean_rx_irq_rx, rx_ring, rx_desc, skb);
- 		iavf_receive_skb(rx_ring, skb, vlan_tag);
+ 		iavf_receive_skb(rx_ring, skb, fields.vlan);
 diff --git a/drivers/net/ethernet/intel/iavf/iavf_txrx.h b/drivers/net/ethernet/intel/iavf/iavf_txrx.h
-index c38b4ec2eaea..3a1a39ee3615 100644
+index 3a1a39ee3615..dff5c8cd27ab 100644
 --- a/drivers/net/ethernet/intel/iavf/iavf_txrx.h
 +++ b/drivers/net/ethernet/intel/iavf/iavf_txrx.h
-@@ -80,8 +80,6 @@ enum iavf_dyn_idx_t {
+@@ -80,22 +80,6 @@ enum iavf_dyn_idx_t {
  	BIT_ULL(IAVF_FILTER_PCTYPE_NONF_UNICAST_IPV6_UDP) | \
  	BIT_ULL(IAVF_FILTER_PCTYPE_NONF_MULTICAST_IPV6_UDP))
  
--#define iavf_rx_desc iavf_32byte_rx_desc
+-/**
+- * iavf_test_staterr - tests bits in Rx descriptor status and error fields
+- * @rx_desc: pointer to receive descriptor (in le64 format)
+- * @stat_err_bits: value to mask
+- *
+- * This function does some fast chicanery in order to return the
+- * value of the mask which is really only used for boolean tests.
+- * The status_error_len doesn't need to be shifted because it begins
+- * at offset zero.
+- */
+-static inline bool iavf_test_staterr(struct iavf_rx_desc *rx_desc,
+-				     const u64 stat_err_bits)
+-{
+-	return !!(rx_desc->qw1 & cpu_to_le64(stat_err_bits));
+-}
 -
- /**
-  * iavf_test_staterr - tests bits in Rx descriptor status and error fields
-  * @rx_desc: pointer to receive descriptor (in le64 format)
-@@ -92,11 +90,10 @@ enum iavf_dyn_idx_t {
-  * The status_error_len doesn't need to be shifted because it begins
-  * at offset zero.
-  */
--static inline bool iavf_test_staterr(union iavf_rx_desc *rx_desc,
-+static inline bool iavf_test_staterr(struct iavf_rx_desc *rx_desc,
- 				     const u64 stat_err_bits)
- {
--	return !!(rx_desc->wb.qword1.status_error_len &
--		  cpu_to_le64(stat_err_bits));
-+	return !!(rx_desc->qw1 & cpu_to_le64(stat_err_bits));
- }
- 
  /* How many Rx Buffers do we bundle into one write to the hardware ? */
+ #define IAVF_RX_INCREMENT(r, i) \
+ 	do {					\
 diff --git a/drivers/net/ethernet/intel/iavf/iavf_type.h b/drivers/net/ethernet/intel/iavf/iavf_type.h
-index f6b09e57abce..e000971e3c01 100644
+index 3dc0907bf70d..e62a8a0067ea 100644
 --- a/drivers/net/ethernet/intel/iavf/iavf_type.h
 +++ b/drivers/net/ethernet/intel/iavf/iavf_type.h
-@@ -178,82 +178,45 @@ struct iavf_hw {
- 	char err_str[16];
- };
+@@ -212,6 +212,8 @@ struct iavf_rx_desc {
+ #define IAVF_RXD_FLEX_PKT_LEN_M			GENMASK_ULL(45, 32)
  
--/* RX Descriptors */
--union iavf_16byte_rx_desc {
--	struct {
--		__le64 pkt_addr; /* Packet buffer address */
--		__le64 hdr_addr; /* Header buffer address */
--	} read;
--	struct {
--		struct {
--			struct {
--				union {
--					__le16 mirroring_status;
--					__le16 fcoe_ctx_id;
--				} mirr_fcoe;
--				__le16 l2tag1;
--			} lo_dword;
--			union {
--				__le32 rss; /* RSS Hash */
--				__le32 fd_id; /* Flow director filter id */
--				__le32 fcoe_param; /* FCoE DDP Context id */
--			} hi_dword;
--		} qword0;
--		struct {
--			/* ext status/error/pktype/length */
--			__le64 status_error_len;
--		} qword1;
--	} wb;  /* writeback */
--};
--
--union iavf_32byte_rx_desc {
--	struct {
--		__le64  pkt_addr; /* Packet buffer address */
--		__le64  hdr_addr; /* Header buffer address */
--			/* bit 0 of hdr_buffer_addr is DD bit */
--		__le64  rsvd1;
--		__le64  rsvd2;
--	} read;
--	struct {
--		struct {
--			struct {
--				union {
--					__le16 mirroring_status;
--					__le16 fcoe_ctx_id;
--				} mirr_fcoe;
--				__le16 l2tag1;
--			} lo_dword;
--			union {
--				__le32 rss; /* RSS Hash */
--				__le32 fcoe_param; /* FCoE DDP Context id */
--				/* Flow director filter id in case of
--				 * Programming status desc WB
--				 */
--				__le32 fd_id;
--			} hi_dword;
--		} qword0;
--		struct {
--			/* status/error/pktype/length */
--			__le64 status_error_len;
--		} qword1;
--		struct {
--			__le16 ext_status; /* extended status */
--			__le16 rsvd;
--			__le16 l2tag2_1;
--			__le16 l2tag2_2;
--		} qword2;
--		struct {
--			union {
--				__le32 flex_bytes_lo;
--				__le32 pe_status;
--			} lo_dword;
--			union {
--				__le32 flex_bytes_hi;
--				__le32 fd_id;
--			} hi_dword;
--		} qword3;
--	} wb;  /* writeback */
--};
-+/**
-+ * struct iavf_rx_desc - Receive descriptor (both legacy and flexible)
-+ * @qw0: quad word 0 fields:
-+ *	 Legacy: Descriptor Type; Mirror ID; L2TAG1P (S-TAG); Filter Status
-+ *	 Flex: Descriptor Type; Mirror ID; UMBCAST; Packet Type; Flexible Flags
-+ *	       Section 0; Packet Length; Header Length; Split Header Flag;
-+ *	       Flexible Flags section 1 / Extended Status
-+ * @qw1: quad word 1 fields:
-+ *	 Legacy: Status Field; Error Field; Packet Type; Packet Length (packet,
-+ *		 header, Split Header Flag)
-+ *	 Flex: Status / Error 0 Field; L2TAG1P (S-TAG); Flexible Metadata
-+ *	       Container #0; Flexible Metadata Container #1
-+ * @qw2: quad word 2 fields:
-+ *	 Legacy: Extended Status; 1st L2TAG2P (C-TAG); 2nd L2TAG2P (C-TAG)
-+ *	 Flex: Status / Error 1 Field; Flexible Flags section 2; Timestamp Low;
-+ *	       1st L2TAG2 (C-TAG); 2nd L2TAG2 (C-TAG)
-+ * @qw3: quad word 3 fields:
-+ *	 Legacy: FD Filter ID / Flexible Bytes
-+ *	 Flex: Flexible Metadata Container #2; Flexible Metadata Container #3;
-+ *	       Flexible Metadata Container #4 / Timestamp High 0; Flexible
-+ *	       Metadata Container #5 / Timestamp High 1;
-+ */
-+struct iavf_rx_desc {
-+	aligned_le64 qw0;
-+/* The hash signature (RSS) */
-+#define IAVF_RXD_LEGACY_RSS_M			GENMASK_ULL(63, 32)
-+/* Stripped C-TAG VLAN from the receive packet */
-+#define IAVF_RXD_LEGACY_L2TAG1_M		GENMASK_ULL(33, 16)
-+
-+	aligned_le64 qw1;
-+	aligned_le64 qw2;
-+/* Stripped S-TAG VLAN from the receive packet */
-+#define IAVF_RXD_LEGACY_L2TAG2_2_M		GENMASK_ULL(63, 48)
-+/* Extended status bits */
-+#define IAVF_RXD_LEGACY_EXT_STATUS_M		GENMASK_ULL(11, 0)
-+
-+	aligned_le64 qw3;
-+} __aligned(4 * sizeof(__le64));
-+static_assert(sizeof(struct iavf_rx_desc) == 32);
- 
- enum iavf_rx_desc_status_bits {
- 	/* Note: These are predefined bit offsets */
-@@ -347,6 +310,8 @@ enum iavf_rx_desc_ext_status_bits {
- 	IAVF_RX_DESC_EXT_STATUS_PELONGB_SHIFT	= 11,
- };
- 
-+#define IAVF_RX_DESC_EXT_STATUS_L2TAG2P_M	BIT(IAVF_RX_DESC_EXT_STATUS_L2TAG2P_SHIFT)
-+
- enum iavf_rx_desc_pe_status_bits {
- 	/* Note: These are predefined bit offsets */
- 	IAVF_RX_DESC_PE_STATUS_QPID_SHIFT	= 0, /* 18 BITS */
+ 	aligned_le64 qw1;
++/* Descriptor done indication flag. */
++#define IAVF_RXD_LEGACY_DD_M			BIT(0)
+ /* End of packet. Set to 1 if this descriptor is the last one of the packet */
+ #define IAVF_RXD_LEGACY_EOP_M			BIT(1)
+ /* L2 TAG 1 presence indication */
 -- 
 2.38.1
 
