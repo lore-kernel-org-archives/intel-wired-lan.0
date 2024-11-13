@@ -1,118 +1,101 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A3056D462D0
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 13 Nov 2024 16:21:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A7388D462D7
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 13 Nov 2024 16:21:21 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 487DF840AB;
-	Wed, 13 Nov 2024 16:21:19 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 64434406A1;
+	Wed, 13 Nov 2024 16:21:21 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id KY8maxgW67o9; Wed, 13 Nov 2024 16:21:18 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id ie9-Bi3StO-m; Wed, 13 Nov 2024 16:21:20 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B0926840AD
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 7D29340696
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1731514878;
-	bh=RUk+2MyJ3Nk7p96EL5x2+4zXYUEBWNJcqoIkZyN24sI=;
+	s=default; t=1731514880;
+	bh=l0CwNMGZ2Ozksj4kPvGEoo+S1SblXk97cQ53+JHz77w=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=2bKnDyBCtofuA+JngogdHEX+49wvbAzwE7en+qIpuJaS+CqspFtwP5ezisQuKJWSs
-	 8VaEFNsR3QzF8KaE2grTZZsg+ogGp7imn+ReBZjOzu0cS4oZOOMsKUXdCQj6rUvnwE
-	 NQlS3L2QegHGkb3Q76blJTO5ORbZqciPKAAsYLkxsx2weHU2Gqlvk/fYZxCAEQf7nK
-	 JiWs899avsKOuk1lNSABURAm7/vV4whKvcQ+e76GH0OvLu1owKJjE27Imq/JCPmX9s
-	 P/JkO3CjJFoOa+0PsXfn3C0C+ea+o6KEZWKWee0J+/ruF5hyGnYhWR6kWxcNCrIwci
-	 YDUbmk29+kwlg==
+	b=nVam1J7SjZGqeFy78OzY9JDK9Aoyp279T7pEMSeu6LOC28m7FGEQx3ngkQYgOkRy/
+	 +dnUyUNOw0BaldI1XP+ZHLamyINr4cpYiqlsHQgt4LIXb/nYwZ+1PZ6QZJh7u9J2qD
+	 xIID/Vsy1w9yLDFArvdUFLUZdXjM2nyKPa2YTFYvdMPyc7Q9W1MaUDalwBGnT32APz
+	 UgISX57AmiVksqW3aI4KQ09ydwRUeHCg4FkDjzW4hhPqaGMO4G+Ky1aBAMNVrrPhit
+	 tMW8yAXQt50RweQSHg3sSHocKiIUgdUutWHuRKy7ALRE2C5PEqh4PckxS2OImHAqvE
+	 u47ZKMIRcNOSw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id B0926840AD;
-	Wed, 13 Nov 2024 16:21:18 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id 61BE0D8F
- for <intel-wired-lan@lists.osuosl.org>; Sat,  9 Nov 2024 23:27:02 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 7D29340696;
+	Wed, 13 Nov 2024 16:21:20 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 41419E11
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 13 Nov 2024 15:48:24 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 4C30E404D1
- for <intel-wired-lan@lists.osuosl.org>; Sat,  9 Nov 2024 23:27:02 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 2F14D400B7
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 13 Nov 2024 15:48:24 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ySIa3l5fdRS4 for <intel-wired-lan@lists.osuosl.org>;
- Sat,  9 Nov 2024 23:27:01 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2a00:1450:4864:20::12d; helo=mail-lf1-x12d.google.com;
- envelope-from=tore@amundsen.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 311F740498
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 311F740498
-Received: from mail-lf1-x12d.google.com (mail-lf1-x12d.google.com
- [IPv6:2a00:1450:4864:20::12d])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 311F740498
- for <intel-wired-lan@lists.osuosl.org>; Sat,  9 Nov 2024 23:27:01 +0000 (UTC)
-Received: by mail-lf1-x12d.google.com with SMTP id
- 2adb3069b0e04-539e4b7409fso3940406e87.0
- for <intel-wired-lan@lists.osuosl.org>; Sat, 09 Nov 2024 15:27:01 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20230601; t=1731194819; x=1731799619;
- h=content-transfer-encoding:mime-version:references:in-reply-to
- :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
- :subject:date:message-id:reply-to;
- bh=RUk+2MyJ3Nk7p96EL5x2+4zXYUEBWNJcqoIkZyN24sI=;
- b=af3N1h8TjFUku/iVH6nBuP+AZc5O4egKOWf1DwKsjD3CXAI02hLEPRKk8BjSvmGgm3
- qOjvFzwBjnSEeQyR+tcVjWWZSbaIOmk2sAUxHZ0OQwoy096iEcCHimR4X6QT6qPzAAHh
- J0OMuY1x4ZUC4TW4upu9vfDKl26HOSUqEaBVfKM62fI7MqRwtPhM8qgmDqAPO1eXObjC
- GyiOeGaN89ZnrNHbAsBZIf6v53kyiiaCT2InA7MUcSoG7JIEwEYBEpr59j2HhS+9EM/p
- e4r5u/rT185NhiPnxC/K2jPBDhX4t/x5KuCm4Xln+VU5EhB44S11GTx7NT61oZNsizqt
- mv9Q==
-X-Forwarded-Encrypted: i=1;
- AJvYcCVauG+TQwiRUtBk56CjjKCqzd2GbNG1A2xQAB94drPxZ4e8ui5hrGfX23fIz8PEsZfOmd4QQ2R4U1D1X9WXiPA=@lists.osuosl.org
-X-Gm-Message-State: AOJu0YwDj+EWPlEeAGZ37cEuiOPTt4ooxlW3Lo7lWJpKRLDNm/eI+93T
- oSKe/rppQ2KM/TPXQhy+eATE793TO6bjL886RpYuaew81Yk1r2VoHexZSWJJcV4=
-X-Google-Smtp-Source: AGHT+IHu/CrOy1O8GUG/8a81IKfSyDxkXkDYyogMsyOSYajC01dxEovmO1L/UlKct/mw+O2nvMWy1g==
-X-Received: by 2002:a05:6512:3d14:b0:539:edc9:7400 with SMTP id
- 2adb3069b0e04-53d85f13a72mr2843906e87.20.1731194818581; 
- Sat, 09 Nov 2024 15:26:58 -0800 (PST)
-Received: from localhost.localdomain (77-95-74-246.bb.cust.hknett.no.
- [77.95.74.246]) by smtp.gmail.com with ESMTPSA id
- 2adb3069b0e04-53d826aeb8fsm1057142e87.239.2024.11.09.15.26.57
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Sat, 09 Nov 2024 15:26:58 -0800 (PST)
-From: Tore Amundsen <tore@amundsen.org>
-To: netdev@vger.kernel.org
-Cc: Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Andrew Lunn <andrew+netdev@lunn.ch>,
- "David S . Miller" <davem@davemloft.net>,
- Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, intel-wired-lan@lists.osuosl.org,
- linux-kernel@vger.kernel.org, Tore Amundsen <tore@amundsen.org>
-Date: Sat,  9 Nov 2024 23:25:57 +0000
-Message-ID: <20241109232557.189035-2-tore@amundsen.org>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20241109232557.189035-1-tore@amundsen.org>
-References: <20241109232557.189035-1-tore@amundsen.org>
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id xlzhMXPNsCgX for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 13 Nov 2024 15:48:23 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.8;
+ helo=mgamail.intel.com; envelope-from=milena.olech@intel.com;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org CA2ED401F8
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org CA2ED401F8
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.8])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id CA2ED401F8
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 13 Nov 2024 15:48:22 +0000 (UTC)
+X-CSE-ConnectionGUID: LMHOO4vyRliXiiypH/Vrag==
+X-CSE-MsgGUID: tCtHUpXmSqK4h+CnDAyTOw==
+X-IronPort-AV: E=McAfee;i="6700,10204,11254"; a="48918971"
+X-IronPort-AV: E=Sophos;i="6.12,151,1728975600"; d="scan'208";a="48918971"
+Received: from orviesa005.jf.intel.com ([10.64.159.145])
+ by fmvoesa102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 13 Nov 2024 07:48:21 -0800
+X-CSE-ConnectionGUID: 2CE3asVjQ2W/2HGZ+legpQ==
+X-CSE-MsgGUID: OaTiv/vkQq2rE+/Q1D9EPg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.12,151,1728975600"; d="scan'208";a="92869230"
+Received: from unknown (HELO localhost.igk.intel.com) ([10.102.22.54])
+ by orviesa005.jf.intel.com with ESMTP; 13 Nov 2024 07:48:19 -0800
+From: Milena Olech <milena.olech@intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Cc: netdev@vger.kernel.org, anthony.l.nguyen@intel.com,
+ przemyslaw.kitszel@intel.com, Milena Olech <milena.olech@intel.com>,
+ Alexander Lobakin <aleksander.lobakin@intel.com>
+Date: Wed, 13 Nov 2024 16:46:09 +0100
+Message-Id: <20241113154616.2493297-2-milena.olech@intel.com>
+X-Mailer: git-send-email 2.31.1
+In-Reply-To: <20241113154616.2493297-1-milena.olech@intel.com>
+References: <20241113154616.2493297-1-milena.olech@intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Approved-At: Wed, 13 Nov 2024 16:21:16 +0000
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=amundsen.org; s=google; t=1731194819; x=1731799619; darn=lists.osuosl.org;
- h=content-transfer-encoding:mime-version:references:in-reply-to
- :message-id:date:subject:cc:to:from:from:to:cc:subject:date
- :message-id:reply-to;
- bh=RUk+2MyJ3Nk7p96EL5x2+4zXYUEBWNJcqoIkZyN24sI=;
- b=OAt5Q170ifNUJRjISe617xtO/vUJQHi+ydGqv5ui2QBTiWSWLSl/eaw3E/A5nyDqo0
- FqXhBep3J2rhYmsknsshiXO8B/v8mT2ntfd+yLy/uVEUVCKfQ+GWClm8phadWxWejtIE
- 6guIujVXy24miikma3S/0AML+7CTY+SLiUFVY=
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1731512902; x=1763048902;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=0sXYjxrH7EqTdL+4wa63JB1Wb9vP2O4I1IBhrP4kHZQ=;
+ b=apxQuNO+r6I65v0gUfKBIkqZu67z93k0eOEzf8dlvx0p3sSH0+lzcDyF
+ fWD4UOnO1dan2HclzRG8iirzaw9oSRT13x/EV3aZE2rKO6tqCPY/B2YNH
+ YUUaJ4WqrKSo5JkUwUyyGbUnHfBjpoMSXC1s/sWag5U/V/1bJ+dvuhnAd
+ tSclnpBiBtE/tvz7pAIFW30yAC59sFG3vWAWyGRllZvViEgeMfYAsj8J3
+ 5VN8ZHPoKwanfATz2SATRtPrgvTJC3cJ1FvULYQXicQA/wmt98VWYSRVw
+ kfuZ6c1lkMYK0JIv5ZPSWZtaF6HqBbISAw2RozX6M2gpmrvyDr1LcqLdv
+ Q==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
- header.from=amundsen.org
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (1024-bit key,
- unprotected) header.d=amundsen.org header.i=@amundsen.org header.a=rsa-sha256
- header.s=google header.b=OAt5Q170
-Subject: [Intel-wired-lan] [PATCH 1/1] ixgbe: Correct BASE-BX10 compliance
- code
+ header.from=intel.com
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=apxQuNO+
+Subject: [Intel-wired-lan] [PATCH iwl-net 01/10] idpf: initial PTP support
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -128,31 +111,255 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-SFF-8472 (section 5.4 Transceiver Compliance Codes) defines bit 6 as
-BASE-BX10. Bit 6 means a value of 0x40 (decimal 64).
+PTP feature is supported if the VIRTCHNL2_CAP_PTP is negotiated during the
+capabilities recognition. Initial PTP support includes PTP initialization
+and registration of the clock.
 
-The current value in the source code is 0x64, which appears to be a
-mix-up of hex and decimal values. A value of 0x64 (binary 01100100)
-incorrectly sets bit 2 (1000BASE-CX) and bit 5 (100BASE-FX) as well.
-
-Signed-off-by: Tore Amundsen <tore@amundsen.org>
+Reviewed-by: Alexander Lobakin <aleksander.lobakin@intel.com>
+Signed-off-by: Milena Olech <milena.olech@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/intel/idpf/Kconfig       |  1 +
+ drivers/net/ethernet/intel/idpf/Makefile      |  1 +
+ drivers/net/ethernet/intel/idpf/idpf.h        |  3 +
+ drivers/net/ethernet/intel/idpf/idpf_main.c   |  4 +
+ drivers/net/ethernet/intel/idpf/idpf_ptp.c    | 89 +++++++++++++++++++
+ drivers/net/ethernet/intel/idpf/idpf_ptp.h    | 32 +++++++
+ .../net/ethernet/intel/idpf/idpf_virtchnl.c   |  9 +-
+ 7 files changed, 138 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/net/ethernet/intel/idpf/idpf_ptp.c
+ create mode 100644 drivers/net/ethernet/intel/idpf/idpf_ptp.h
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h
-index 14aa2ca51f70..81179c60af4e 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h
-@@ -40,7 +40,7 @@
- #define IXGBE_SFF_1GBASESX_CAPABLE		0x1
- #define IXGBE_SFF_1GBASELX_CAPABLE		0x2
- #define IXGBE_SFF_1GBASET_CAPABLE		0x8
--#define IXGBE_SFF_BASEBX10_CAPABLE		0x64
-+#define IXGBE_SFF_BASEBX10_CAPABLE		0x40
- #define IXGBE_SFF_10GBASESR_CAPABLE		0x10
- #define IXGBE_SFF_10GBASELR_CAPABLE		0x20
- #define IXGBE_SFF_SOFT_RS_SELECT_MASK		0x8
+diff --git a/drivers/net/ethernet/intel/idpf/Kconfig b/drivers/net/ethernet/intel/idpf/Kconfig
+index 1addd663acad..2c359a8551c7 100644
+--- a/drivers/net/ethernet/intel/idpf/Kconfig
++++ b/drivers/net/ethernet/intel/idpf/Kconfig
+@@ -4,6 +4,7 @@
+ config IDPF
+ 	tristate "Intel(R) Infrastructure Data Path Function Support"
+ 	depends on PCI_MSI
++	depends on PTP_1588_CLOCK_OPTIONAL
+ 	select DIMLIB
+ 	select LIBETH
+ 	help
+diff --git a/drivers/net/ethernet/intel/idpf/Makefile b/drivers/net/ethernet/intel/idpf/Makefile
+index 2ce01a0b5898..1f38a9d7125c 100644
+--- a/drivers/net/ethernet/intel/idpf/Makefile
++++ b/drivers/net/ethernet/intel/idpf/Makefile
+@@ -17,3 +17,4 @@ idpf-y := \
+ 	idpf_vf_dev.o
+ 
+ idpf-$(CONFIG_IDPF_SINGLEQ)	+= idpf_singleq_txrx.o
++idpf-$(CONFIG_PTP_1588_CLOCK)	+= idpf_ptp.o
+diff --git a/drivers/net/ethernet/intel/idpf/idpf.h b/drivers/net/ethernet/intel/idpf/idpf.h
+index 66544faab710..2e8b14dd9d96 100644
+--- a/drivers/net/ethernet/intel/idpf/idpf.h
++++ b/drivers/net/ethernet/intel/idpf/idpf.h
+@@ -530,6 +530,7 @@ struct idpf_vc_xn_manager;
+  * @vector_lock: Lock to protect vector distribution
+  * @queue_lock: Lock to protect queue distribution
+  * @vc_buf_lock: Lock to protect virtchnl buffer
++ * @ptp: Storage for PTP-related data
+  */
+ struct idpf_adapter {
+ 	struct pci_dev *pdev;
+@@ -587,6 +588,8 @@ struct idpf_adapter {
+ 	struct mutex vector_lock;
+ 	struct mutex queue_lock;
+ 	struct mutex vc_buf_lock;
++
++	struct idpf_ptp *ptp;
+ };
+ 
+ /**
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_main.c b/drivers/net/ethernet/intel/idpf/idpf_main.c
+index db476b3314c8..22d9e2646444 100644
+--- a/drivers/net/ethernet/intel/idpf/idpf_main.c
++++ b/drivers/net/ethernet/intel/idpf/idpf_main.c
+@@ -163,6 +163,10 @@ static int idpf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 		goto err_free;
+ 	}
+ 
++	err = pci_enable_ptm(pdev, NULL);
++	if (err)
++		pci_dbg(pdev, "PCIe PTM is not supported by PCIe bus/controller\n");
++
+ 	/* set up for high or low dma */
+ 	err = dma_set_mask_and_coherent(dev, DMA_BIT_MASK(64));
+ 	if (err) {
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_ptp.c b/drivers/net/ethernet/intel/idpf/idpf_ptp.c
+new file mode 100644
+index 000000000000..1ac6367f5989
+--- /dev/null
++++ b/drivers/net/ethernet/intel/idpf/idpf_ptp.c
+@@ -0,0 +1,89 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/* Copyright (C) 2024 Intel Corporation */
++
++#include "idpf.h"
++#include "idpf_ptp.h"
++
++/**
++ * idpf_ptp_create_clock - Create PTP clock device for userspace
++ * @adapter: Driver specific private structure
++ *
++ * This function creates a new PTP clock device.
++ *
++ * Return: 0 on success, -errno otherwise.
++ */
++static int idpf_ptp_create_clock(const struct idpf_adapter *adapter)
++{
++	struct ptp_clock *clock;
++
++	/* Attempt to register the clock before enabling the hardware. */
++	clock = ptp_clock_register(&adapter->ptp->info,
++				   &adapter->pdev->dev);
++	if (IS_ERR(clock)) {
++		pci_err(adapter->pdev, "PTP clock creation failed: %pe\n", clock);
++		return PTR_ERR(clock);
++	}
++
++	adapter->ptp->clock = clock;
++
++	return 0;
++}
++
++/**
++ * idpf_ptp_init - Initialize PTP hardware clock support
++ * @adapter: Driver specific private structure
++ *
++ * Set up the device for interacting with the PTP hardware clock for all
++ * functions. Function will allocate and register a ptp_clock with the
++ * PTP_1588_CLOCK infrastructure.
++ *
++ * Return: 0 on success, -errno otherwise.
++ */
++int idpf_ptp_init(struct idpf_adapter *adapter)
++{
++	int err;
++
++	if (!idpf_is_cap_ena(adapter, IDPF_OTHER_CAPS, VIRTCHNL2_CAP_PTP)) {
++		pci_dbg(adapter->pdev, "PTP capability is not detected\n");
++		return -EOPNOTSUPP;
++	}
++
++	adapter->ptp = kzalloc(sizeof(*adapter->ptp), GFP_KERNEL);
++	if (!adapter->ptp)
++		return -ENOMEM;
++
++	/* add a back pointer to adapter */
++	adapter->ptp->adapter = adapter;
++
++	err = idpf_ptp_create_clock(adapter);
++	if (err)
++		goto free_ptp;
++
++	pci_dbg(adapter->pdev, "PTP init successful\n");
++
++	return 0;
++
++free_ptp:
++	kfree(adapter->ptp);
++	adapter->ptp = NULL;
++
++	return err;
++}
++
++/**
++ * idpf_ptp_release - Clear PTP hardware clock support
++ * @adapter: Driver specific private structure
++ */
++void idpf_ptp_release(struct idpf_adapter *adapter)
++{
++	struct idpf_ptp *ptp = adapter->ptp;
++
++	if (!ptp)
++		return;
++
++	if (ptp->clock)
++		ptp_clock_unregister(ptp->clock);
++
++	kfree(ptp);
++	adapter->ptp = NULL;
++}
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_ptp.h b/drivers/net/ethernet/intel/idpf/idpf_ptp.h
+new file mode 100644
+index 000000000000..cb19988ca60f
+--- /dev/null
++++ b/drivers/net/ethernet/intel/idpf/idpf_ptp.h
+@@ -0,0 +1,32 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/* Copyright (C) 2024 Intel Corporation */
++
++#ifndef _IDPF_PTP_H
++#define _IDPF_PTP_H
++
++#include <linux/ptp_clock_kernel.h>
++
++/**
++ * struct idpf_ptp - PTP parameters
++ * @info: structure defining PTP hardware capabilities
++ * @clock: pointer to registered PTP clock device
++ * @adapter: back pointer to the adapter
++ */
++struct idpf_ptp {
++	struct ptp_clock_info info;
++	struct ptp_clock *clock;
++	struct idpf_adapter *adapter;
++};
++
++#if IS_ENABLED(CONFIG_PTP_1588_CLOCK)
++int idpf_ptp_init(struct idpf_adapter *adapter);
++void idpf_ptp_release(struct idpf_adapter *adapter);
++#else /* CONFIG_PTP_1588_CLOCK */
++static inline int idpf_ptp_init(struct idpf_adapter *adpater)
++{
++	return 0;
++}
++
++static inline void idpf_ptp_release(struct idpf_adapter *adpater) { }
++#endif /* CONFIG_PTP_1588_CLOCK */
++#endif /* _IDPF_PTP_H */
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
+index d46c95f91b0d..c73c38511ea3 100644
+--- a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
++++ b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
+@@ -5,6 +5,7 @@
+ 
+ #include "idpf.h"
+ #include "idpf_virtchnl.h"
++#include "idpf_ptp.h"
+ 
+ #define IDPF_VC_XN_MIN_TIMEOUT_MSEC	2000
+ #define IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC	(60 * 1000)
+@@ -896,7 +897,8 @@ static int idpf_send_get_caps_msg(struct idpf_adapter *adapter)
+ 			    VIRTCHNL2_CAP_MACFILTER		|
+ 			    VIRTCHNL2_CAP_SPLITQ_QSCHED		|
+ 			    VIRTCHNL2_CAP_PROMISC		|
+-			    VIRTCHNL2_CAP_LOOPBACK);
++			    VIRTCHNL2_CAP_LOOPBACK		|
++			    VIRTCHNL2_CAP_PTP);
+ 
+ 	xn_params.vc_op = VIRTCHNL2_OP_GET_CAPS;
+ 	xn_params.send_buf.iov_base = &caps;
+@@ -3025,6 +3027,10 @@ int idpf_vc_core_init(struct idpf_adapter *adapter)
+ 		goto err_intr_req;
+ 	}
+ 
++	err = idpf_ptp_init(adapter);
++	if (err)
++		pci_err(adapter->pdev, "PTP init failed, err=%pe\n", ERR_PTR(err));
++
+ 	idpf_init_avail_queues(adapter);
+ 
+ 	/* Skew the delay for init tasks for each function based on fn number
+@@ -3080,6 +3086,7 @@ void idpf_vc_core_deinit(struct idpf_adapter *adapter)
+ 	if (!test_bit(IDPF_VC_CORE_INIT, adapter->flags))
+ 		return;
+ 
++	idpf_ptp_release(adapter);
+ 	idpf_deinit_task(adapter);
+ 	idpf_intr_rel(adapter);
+ 	idpf_vc_xn_shutdown(adapter->vcxn_mngr);
 -- 
-2.43.0
+2.31.1
 
