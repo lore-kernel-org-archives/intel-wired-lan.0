@@ -1,99 +1,91 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 37DBDD6DDF3
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 15 Nov 2024 12:26:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 18032D6DDF7
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 15 Nov 2024 12:38:28 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id D8E884094F;
-	Fri, 15 Nov 2024 12:26:32 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 32CF960875;
+	Fri, 15 Nov 2024 12:38:27 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id f5fi7u3bpb5U; Fri, 15 Nov 2024 12:38:25 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 95B3560836
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1731674305;
+	bh=S7qgfrRLINtmDz7DwpEPIMAyVu4yHld0Yj99jSXZo6c=;
+	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=2hO5aNrq3UwyxRGOHbd/hRQf3kln0x9KS66d8W+6Sn1T/rSgktD6XX3iQAiKmlZFO
+	 P2BJsuTz+Z4dGgTpHua1Xob7hUwzCNBdiKEEG+NB51i+M9D3zmhnmbeXpYOyPdNYVU
+	 zpDGncbxpbwHmHybXKiZMbeJ9tZnSclHjCudM7hyJW2xKzuY5IRhkBKtDu13HX0pyQ
+	 oIL9HAnXzHmciuqKCPQmdeGwnwB0kRNco69Vg8sBqDRlliEF3D8tIHmer0p69rhLOR
+	 yTYFT8XzpB/+c7YgJmKLZpk49eUsMY0lOn8+H3OJPvWV8DZshVsT5YaVj89E2nkong
+	 QG+hECemnbtpg==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp3.osuosl.org (Postfix) with ESMTP id 95B3560836;
+	Fri, 15 Nov 2024 12:38:25 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 7BEDE27EB
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 15 Nov 2024 12:38:24 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp4.osuosl.org (Postfix) with ESMTP id 5C06D40188
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 15 Nov 2024 12:38:24 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 1DazaAmHENXP; Fri, 15 Nov 2024 12:26:32 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D8AC2402C3
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1731673591;
-	bh=X2Rqv6EIS1Cc3h9tzW8ao+zu7jAnqVSPhjA4nkO4Kgs=;
-	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=xZ18GZfPUVpxF7cn1IGaSVegD4DaKsNHcfYNsM0hVlpxR2v0I8ZO+4lMmp7eB9QH7
-	 FYwW4i92sbWz3lYpSAlM4j9zidQto3tL3rrF8LVqIrsdA1OOVSSs4M9jPnB+F/0f+j
-	 hBxG3z+z59Zy+4/FfO83LmlPz5I2lW7rsK3WPrP4UmKn0j4Lhd7/VCKQ+hG7YkKewW
-	 VIBbIIHecLd6v906hLot9vGwN2IkRhH1MYTznkNTPn5QVHDFi4UTD5kNg9PnRmVtmB
-	 EVBcDjvS839vl3W1x7Ab5O+QZVoBzoq4JUgXXWv6YcU/N8rBz/z9Qyx73TduuL9lp4
-	 uxJpORoZ5SKgQ==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id D8AC2402C3;
-	Fri, 15 Nov 2024 12:26:31 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id 370281EB8
- for <intel-wired-lan@lists.osuosl.org>; Fri, 15 Nov 2024 12:26:30 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 19369847AD
- for <intel-wired-lan@lists.osuosl.org>; Fri, 15 Nov 2024 12:26:30 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id XbEp2AnYteje for <intel-wired-lan@lists.osuosl.org>;
- Fri, 15 Nov 2024 12:26:29 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.12;
- helo=mgamail.intel.com; envelope-from=przemyslaw.korba@intel.com;
+ id 8TrGKsJmHX02 for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 15 Nov 2024 12:38:23 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=139.178.84.217;
+ helo=dfw.source.kernel.org; envelope-from=horms@kernel.org;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 1B13681425
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 1B13681425
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.12])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 1B13681425
- for <intel-wired-lan@lists.osuosl.org>; Fri, 15 Nov 2024 12:26:28 +0000 (UTC)
-X-CSE-ConnectionGUID: esFX0ECwSCqAi1IbNnAXFg==
-X-CSE-MsgGUID: qWM8JHUYTDiCQf37WhxP5Q==
-X-IronPort-AV: E=McAfee;i="6700,10204,11256"; a="43076931"
-X-IronPort-AV: E=Sophos;i="6.12,156,1728975600"; d="scan'208";a="43076931"
-Received: from orviesa001.jf.intel.com ([10.64.159.141])
- by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 15 Nov 2024 04:26:28 -0800
-X-CSE-ConnectionGUID: iIGnaJcMSlyc7ry0/P1nMQ==
-X-CSE-MsgGUID: MgDbaiHxQKKxEGqi7G930g==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.12,156,1728975600"; d="scan'208";a="126089718"
-Received: from pae-dbg-r750-02-263.igk.intel.com ([172.28.191.215])
- by orviesa001.jf.intel.com with ESMTP; 15 Nov 2024 04:26:26 -0800
-From: Przemyslaw Korba <przemyslaw.korba@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Cc: netdev@vger.kernel.org, anthony.l.nguyen@intel.com,
- przemyslaw.kitszel@intel.com,
- Przemyslaw Korba <przemyslaw.korba@intel.com>,
- Simon Horman <horms@kernel.org>
-Date: Fri, 15 Nov 2024 13:25:37 +0100
-Message-Id: <20241115122536.117595-1-przemyslaw.korba@intel.com>
-X-Mailer: git-send-email 2.31.1
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 7E0A540177
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 7E0A540177
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 7E0A540177
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 15 Nov 2024 12:38:23 +0000 (UTC)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+ by dfw.source.kernel.org (Postfix) with ESMTP id 265615C569D;
+ Fri, 15 Nov 2024 12:37:38 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BF5E4C4CECF;
+ Fri, 15 Nov 2024 12:38:20 +0000 (UTC)
+Date: Fri, 15 Nov 2024 12:38:18 +0000
+From: Simon Horman <horms@kernel.org>
+To: Milena Olech <milena.olech@intel.com>
+Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
+ anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
+ Alexander Lobakin <aleksander.lobakin@intel.com>
+Message-ID: <20241115123818.GM1062410@kernel.org>
+References: <20241113154616.2493297-1-milena.olech@intel.com>
+ <20241113154616.2493297-2-milena.olech@intel.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20241113154616.2493297-2-milena.olech@intel.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1731673589; x=1763209589;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=yTSI2j1PiELG/RhwT3m9w4NRuiU6Qe0f3dTyG5sC/7E=;
- b=L+WZAjzr32YbA1Qz71NhHKVh0xLPdyNokuFBHgNbmBoIRs8MQDHJ1Sjw
- prleRR0yQS0TOJKl8VpViqjGdivL775kvismlWAGa/kLY7hZBmjbf98hR
- PgyrzmVuG2oKVnzlezqQLk1dGY9YQX/xO9GnHwb0KNhe9j+EMd2oHUAcU
- Ydk/ByV8+M9c6UcbZSbzF2Mu7c6duRnTS9NypIjn0dqRtIIAzFVYvM303
- SSx/AR/u6I1A+tbMDdQ4w0HHHe6wd4n+hVKjvnwHPQipaMa9W7yeSUiCB
- bcdGRyEVF71+RhySty3udOCh2R86HeU2hushUu0qOYnJrT+eC6HnAluVF
- g==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ d=kernel.org; s=k20201202; t=1731674302;
+ bh=wF9ZmkatT4npVqnDubQ5KfN4GgDfZfCVqUvTI3bcGlI=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=hQ9uF404Rb8Fe30AtvBpJe7uvw0z8coYGXcY38WXEKq0/eGiOARc953oLR3/8efZJ
+ XcI/BNaKhMSuK8FMO1zJXlzny7p9QSyQAe97b4DESuAiPamlBqQ5adnKwPu5TSBeAm
+ 3VrDJbyPDzdS8k1GQZ57TfUJPaBTals0e5xIRX2xVFDlfq+8yM9xE5TZ4IlAly4myV
+ l6Kc7xA3l8s0o3NeFwSRKkCgR3ZrXile4sA0cC6qUNqrKJQshdZk2pK6BKChtbJ2ot
+ O1DpRzvuATqR4BqaLZ8NIwa6xom+fLLy6hmlH0fEQD1VlETF21FNCMYbXi+cCSFB+r
+ BD7l9G3fBrH2A==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dmarc=pass (p=quarantine dis=none)
+ header.from=kernel.org
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=L+WZAjzr
-Subject: [Intel-wired-lan] [PATCH iwl-net v2] ice: fix PHY timestamp
- extraction for ETH56G
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=hQ9uF404
+Subject: Re: [Intel-wired-lan] [PATCH iwl-net 01/10] idpf: initial PTP
+ support
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -109,56 +101,59 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Fix incorrect PHY timestamp extraction for ETH56G.
-It's better to use FIELD_PREP() than manual shift.
+On Wed, Nov 13, 2024 at 04:46:09PM +0100, Milena Olech wrote:
+> PTP feature is supported if the VIRTCHNL2_CAP_PTP is negotiated during the
+> capabilities recognition. Initial PTP support includes PTP initialization
+> and registration of the clock.
+> 
+> Reviewed-by: Alexander Lobakin <aleksander.lobakin@intel.com>
+> Signed-off-by: Milena Olech <milena.olech@intel.com>
 
-Fixes: 7cab44f1c35f ("ice: Introduce ETH56G PHY model for E825C products")
-Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Reviewed-by: Simon Horman <horms@kernel.org>
-Signed-off-by: Przemyslaw Korba <przemyslaw.korba@intel.com>
----
-Changelog
-v2:
-remove legal footer
-v1:
-https://lore.kernel.org/intel-wired-lan/20241107113257.466286-1-przemyslaw.korba@intel.com
----
- drivers/net/ethernet/intel/ice/ice_ptp_hw.c | 3 ++-
- drivers/net/ethernet/intel/ice/ice_ptp_hw.h | 5 ++---
- 2 files changed, 4 insertions(+), 4 deletions(-)
+...
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-index 75c68b0325e7..3d45e4ed90b6 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-@@ -1553,7 +1553,8 @@ static int ice_read_ptp_tstamp_eth56g(struct ice_hw *hw, u8 port, u8 idx,
- 	 * lower 8 bits in the low register, and the upper 32 bits in the high
- 	 * register.
- 	 */
--	*tstamp = ((u64)hi) << TS_PHY_HIGH_S | ((u64)lo & TS_PHY_LOW_M);
-+	*tstamp = FIELD_PREP(TS_PHY_HIGH_M, hi) |
-+		  FIELD_PREP(TS_PHY_LOW_M, lo);
- 
- 	return 0;
- }
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
-index 6cedc1a906af..4c8b84571344 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
-@@ -663,9 +663,8 @@ static inline u64 ice_get_base_incval(struct ice_hw *hw)
- #define TS_HIGH_M			0xFF
- #define TS_HIGH_S			32
- 
--#define TS_PHY_LOW_M			0xFF
--#define TS_PHY_HIGH_M			0xFFFFFFFF
--#define TS_PHY_HIGH_S			8
-+#define TS_PHY_LOW_M			GENMASK(7, 0)
-+#define TS_PHY_HIGH_M			GENMASK_ULL(39, 8)
- 
- #define BYTES_PER_IDX_ADDR_L_U		8
- #define BYTES_PER_IDX_ADDR_L		4
+> diff --git a/drivers/net/ethernet/intel/idpf/idpf_ptp.h b/drivers/net/ethernet/intel/idpf/idpf_ptp.h
+> new file mode 100644
+> index 000000000000..cb19988ca60f
+> --- /dev/null
+> +++ b/drivers/net/ethernet/intel/idpf/idpf_ptp.h
+> @@ -0,0 +1,32 @@
+> +/* SPDX-License-Identifier: GPL-2.0-only */
+> +/* Copyright (C) 2024 Intel Corporation */
+> +
+> +#ifndef _IDPF_PTP_H
+> +#define _IDPF_PTP_H
+> +
+> +#include <linux/ptp_clock_kernel.h>
+> +
+> +/**
+> + * struct idpf_ptp - PTP parameters
+> + * @info: structure defining PTP hardware capabilities
+> + * @clock: pointer to registered PTP clock device
+> + * @adapter: back pointer to the adapter
+> + */
+> +struct idpf_ptp {
+> +	struct ptp_clock_info info;
+> +	struct ptp_clock *clock;
+> +	struct idpf_adapter *adapter;
+> +};
+> +
+> +#if IS_ENABLED(CONFIG_PTP_1588_CLOCK)
+> +int idpf_ptp_init(struct idpf_adapter *adapter);
+> +void idpf_ptp_release(struct idpf_adapter *adapter);
+> +#else /* CONFIG_PTP_1588_CLOCK */
+> +static inline int idpf_ptp_init(struct idpf_adapter *adpater)
 
-base-commit: 182ff3dabe8f127049c09660346cad492bcc0ceb
--- 
-2.31.1
+nit: adapter
 
+> +{
+> +	return 0;
+> +}
+> +
+> +static inline void idpf_ptp_release(struct idpf_adapter *adpater) { }
+
+Ditto
+
+> +#endif /* CONFIG_PTP_1588_CLOCK */
+> +#endif /* _IDPF_PTP_H */
+
+...
