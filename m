@@ -1,122 +1,88 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 93685D10F58
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 18 Nov 2024 15:53:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 405EBD44009
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 18 Nov 2024 16:19:24 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 5077A47661;
-	Mon, 18 Nov 2024 15:53:32 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id DD52484C7B;
+	Mon, 18 Nov 2024 16:19:23 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id tukuzwktsSbt; Mon, 18 Nov 2024 15:53:31 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id Uk5TgfyY_xwV; Mon, 18 Nov 2024 16:19:23 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 6DECF42ED1
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D4A7284B09
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1731945211;
-	bh=M/HD3lzDxW/S30+fMzUpHxo+jEkPmHoNwk80gvA5gJc=;
-	h=Date:From:To:Cc:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=tu+tHP3U7UCYLePNVj7ZHfo0LE/2VS7RTRs3fpiELzuqrKvikVFaLzqH6+lDy2tN4
-	 HCaQNE3C3K92T8klK6j5U1XkIb2SYC5CS85QxM+g97ZmMTYKskIQJqxAIAE8tTlRwg
-	 FnSoJiektVpgXGecQ2IPDpkwiLqM3oD6o6Hw8h/CawgmNvTpNZny5fzz1MbrNRBHHY
-	 hGscimBSa/qvpwWAE244Z3DN3v8t3b0EFRbPtDBQB5iIr2w/d3G9+f2cSL6u0IJxBx
-	 NV2uRYBh3Iuxq0Rt9Ysi1grKF6IpA7I6fuVqoklL2TUd50zcH+Tbb7UJe9V0m1EaL7
-	 2OPrOcUQTopAQ==
+	s=default; t=1731946762;
+	bh=MOwl+3RRY6hxipxxoc7tx76VBhuRwRCiipNgIx+NOyw=;
+	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=fsQxw2d1tmjIPzmYfueZceNuiqzJ5zx/CLKGE62XexDWTntrVt+4T7u1BpHNCjSvD
+	 ag84/uMRyb6W4PAT/5wysqnH0sxRC9PRzsYuYVPR7LC4PIuTTzH6+8AaaDQ1+CWsGN
+	 /WlGXBGO3Y0X6qDe1yLM08u6EdKC2SMudt3wJ2sPqiFqeyo29yj/ianktqsx4zFMkK
+	 O6/hpEkQa+H8HRdp4nN8lniM3EmarDDfHcxC14GrURPxS4LngsIVAW+q2TgyDmjgRc
+	 QRU8VJaMLnLpLsrqBmiiKWw2CDZHFDitmjUxY14kCImzh5nZi8xqFk57NwSVfmEsgj
+	 +ESZhRAqasqfA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 6DECF42ED1;
-	Mon, 18 Nov 2024 15:53:31 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 8AFC5DB2
- for <intel-wired-lan@lists.osuosl.org>; Mon, 18 Nov 2024 15:53:30 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id D4A7284B09;
+	Mon, 18 Nov 2024 16:19:22 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 057091EB8
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 16 Nov 2024 15:41:40 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 6B59C4013F
- for <intel-wired-lan@lists.osuosl.org>; Mon, 18 Nov 2024 15:53:30 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id E81D880AC3
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 16 Nov 2024 15:41:39 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id VNQZuuTv8IA4 for <intel-wired-lan@lists.osuosl.org>;
- Mon, 18 Nov 2024 15:53:29 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2607:f8b0:4864:20::c33; helo=mail-oo1-xc33.google.com;
- envelope-from=willemdebruijn.kernel@gmail.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 73C1740925
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 73C1740925
-Received: from mail-oo1-xc33.google.com (mail-oo1-xc33.google.com
- [IPv6:2607:f8b0:4864:20::c33])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 73C1740925
- for <intel-wired-lan@lists.osuosl.org>; Mon, 18 Nov 2024 15:53:29 +0000 (UTC)
-Received: by mail-oo1-xc33.google.com with SMTP id
- 006d021491bc7-5ebc9bda8c8so769434eaf.0
- for <intel-wired-lan@lists.osuosl.org>; Mon, 18 Nov 2024 07:53:29 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20230601; t=1731945208; x=1732550008;
- h=content-transfer-encoding:mime-version:subject:references
- :in-reply-to:message-id:cc:to:from:date:x-gm-message-state:from:to
- :cc:subject:date:message-id:reply-to;
- bh=M/HD3lzDxW/S30+fMzUpHxo+jEkPmHoNwk80gvA5gJc=;
- b=nP5SFyeSNCWQwA1/KlyAlyW3SmIJj+uq/Mp9Z6yUTb5uIu1Gfdp/8KEx9VCb/KT/J4
- Ofn3oSW3EDepGyqNHEzQPeJPPm5ab9LelGctg/VyfLZ/pyMACQdDNrjbapBQibDnnRHD
- Q3NXKatq2csa0gHPEaIztbc5qbkQVtDIacDSwcwlFrMlazBNXiSneewRUu/ZqPh46rmu
- hsN3zQkSGyB4/9bzTUkzmhp6bpzExvNt7jEeCkgFRX1Z308RQwPYYGGDrHZBTpXxwjMU
- 9bUu91U/BcePkGJEBF1aTWU7F/uzv8Xvy2LuPhZsz/2dzUXDhgE8lQ6rYHbVJ9zhNUoX
- jfsQ==
-X-Forwarded-Encrypted: i=1;
- AJvYcCUdQ0zIp1FrRyqRIBmQyLfrB6hwWnfgck7/o1wf+zoia4Vk1ZPLc0Lgz/0mTDrD7VWpYUrrA7+lDsBt0h4OXYs=@lists.osuosl.org
-X-Gm-Message-State: AOJu0YwfYWbWfme4zC7hkYwfpR/Ba/bwCmaapuImLDimbH+wzP0hN22v
- 0aBiNjmG2zFCl/imJUFTtQyfsWkAhC45tLHYhkYOSrqgxZjRtOiz
-X-Google-Smtp-Source: AGHT+IGBblPeWVmYqY0+g3oeZh+7/MykEkGilBfqBjewhDhKjWpH9CS4DcH3IQmBWMMODCnI3pZJkA==
-X-Received: by 2002:a05:6359:7602:b0:1c3:73ff:511e with SMTP id
- e5c5f4694b2df-1c6cd15959dmr461468955d.21.1731945208205; 
- Mon, 18 Nov 2024 07:53:28 -0800 (PST)
-Received: from localhost (250.4.48.34.bc.googleusercontent.com. [34.48.4.250])
- by smtp.gmail.com with ESMTPSA id
- 6a1803df08f44-6d40dd1fe49sm37443956d6.79.2024.11.18.07.53.27
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 18 Nov 2024 07:53:27 -0800 (PST)
-Date: Mon, 18 Nov 2024 10:53:27 -0500
-From: Willem de Bruijn <willemdebruijn.kernel@gmail.com>
-To: "Olech, Milena" <milena.olech@intel.com>, 
- Willem de Bruijn <willemdebruijn.kernel@gmail.com>, 
- "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>
-Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>, 
- "Nguyen, Anthony L" <anthony.l.nguyen@intel.com>, 
- "Kitszel, Przemyslaw" <przemyslaw.kitszel@intel.com>, 
- "Lobakin, Aleksander" <aleksander.lobakin@intel.com>
-Message-ID: <673b62f785bf3_1d65242948d@willemb.c.googlers.com.notmuch>
-In-Reply-To: <PH7PR11MB5885EAC3A3687F97267F072E8E272@PH7PR11MB5885.namprd11.prod.outlook.com>
-References: <20241113154616.2493297-1-milena.olech@intel.com>
- <20241113154616.2493297-10-milena.olech@intel.com>
- <67366352c2c5b_3379ce29475@willemb.c.googlers.com.notmuch>
- <PH7PR11MB5885EAC3A3687F97267F072E8E272@PH7PR11MB5885.namprd11.prod.outlook.com>
-Mime-Version: 1.0
-Content-Type: text/plain;
- charset=utf-8
-Content-Transfer-Encoding: 7bit
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20230601; t=1731945208; x=1732550008; darn=lists.osuosl.org;
- h=content-transfer-encoding:mime-version:subject:references
- :in-reply-to:message-id:cc:to:from:date:from:to:cc:subject:date
- :message-id:reply-to;
- bh=M/HD3lzDxW/S30+fMzUpHxo+jEkPmHoNwk80gvA5gJc=;
- b=PBP2F2D6ULJx+hJzsERB7M2enEU9psBkczIXcLuWI88vtgUj5pYUJye7LY87/ZqczO
- L3tJzpV6R87xRT3xs6S6oZhxpnOn2klTKJdCOlxNLxBAsh4SqSVlWHZ8fHk0oFmH+a4K
- VuFdTTpnTnzC/cnlJ3REdrmWjazYP3lwyKI7CU45bvkIorKpWtipTa/Ch4A0LDwdmpPv
- NaDO0utoaCILXiRhQXRfGb6eqztqUQKpZvtLYPT9/5bERLMO5w+xNyQ3iygiLidC0QV7
- UxVVuwk6P3rMidqlCI9B8qqX1y8EJMK/MWpfe+ZAfV7HJsMDM1JpZK9t7Jbh4koc1nez
- DHCw==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id si0XnPn5k17H for <intel-wired-lan@lists.osuosl.org>;
+ Sat, 16 Nov 2024 15:41:39 +0000 (UTC)
+X-Greylist: delayed 1012 seconds by postgrey-1.37 at util1.osuosl.org;
+ Sat, 16 Nov 2024 15:41:38 UTC
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org D171880C50
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D171880C50
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=2a00:1098:5b::1;
+ helo=mx.treblig.org; envelope-from=linux@treblig.org; receiver=<UNKNOWN> 
+Received: from mx.treblig.org (mx.treblig.org [IPv6:2a00:1098:5b::1])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id D171880C50
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 16 Nov 2024 15:41:38 +0000 (UTC)
+Received: from localhost ([127.0.0.1] helo=dalek.home.treblig.org)
+ by mx.treblig.org with esmtp (Exim 4.96)
+ (envelope-from <linux@treblig.org>) id 1tCKf4-000ISC-1X;
+ Sat, 16 Nov 2024 15:24:34 +0000
+From: linux@treblig.org
+To: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
+ andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
+ kuba@kernel.org, pabeni@redhat.com, netdev@vger.kernel.org
+Cc: intel-wired-lan@lists.osuosl.org, linux-kernel@vger.kernel.org,
+ "Dr. David Alan Gilbert" <linux@treblig.org>
+Date: Sat, 16 Nov 2024 15:24:33 +0000
+Message-ID: <20241116152433.96262-1-linux@treblig.org>
+X-Mailer: git-send-email 2.47.0
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-Mailman-Approved-At: Mon, 18 Nov 2024 16:19:21 +0000
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt;
+ c=relaxed/relaxed; d=treblig.org
+ ; s=bytemarkmx; h=MIME-Version:Message-ID:Date:Subject:From:Content-Type:From
+ :Subject; bh=MOwl+3RRY6hxipxxoc7tx76VBhuRwRCiipNgIx+NOyw=; b=jQklbqBFpGHK1wDK
+ vjkNxGjl6RAxQS9DO47Bsw2jtozWJttx6ZB4jIWFlJpRpK2hNZYeXEoBPiHntqEqgMk9qr2S/wkHf
+ KFXGqkrQlvZZQb1C5b2aVG7h281MAvIwN4fJLGZ/XMB8chosS6aQ1TEYKVGY0kgkd9/ptY8Ltux5i
+ 31krpcPcsyNjVqGoyQK2ZAMS/Sx4xTEOmrKbY3KkScxEkXyJd4Q7IaUr8onugrJJxkhE7NoGStCVZ
+ gnlOo56gLspSWEXJqxFtkgS1G2k3KYAmuIZ5zGjEdPLB1is79sYeK4RQY/0ITaMb3Gq3vcpRtpysx
+ bH+o5fdUxvaPTEFXuA==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
- header.from=gmail.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
- header.a=rsa-sha256 header.s=20230601 header.b=PBP2F2D6
-Subject: Re: [Intel-wired-lan] [PATCH iwl-net 09/10] idpf: add support for
- Rx timestamping
+ header.from=treblig.org
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=treblig.org header.i=@treblig.org header.a=rsa-sha256
+ header.s=bytemarkmx header.b=jQklbqBF
+Subject: [Intel-wired-lan] [PATCH net-next] intel/fm10k: Remove unused
+ fm10k_iov_msg_mac_vlan_pf
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -132,43 +98,164 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Olech, Milena wrote:
-> On 11/14/2024 9:54 PM, Willem de Bruijn wrote:
-> 
-> > Milena Olech wrote:
-> > > Add Rx timestamp function when the Rx timestamp value is read directly 
-> > > from the Rx descriptor. Add supported Rx timestamp modes.
-> > > 
-> > > Reviewed-by: Alexander Lobakin <aleksander.lobakin@intel.com>
-> > > Signed-off-by: Milena Olech <milena.olech@intel.com>
-> > > ---
-> > >  drivers/net/ethernet/intel/idpf/idpf_ptp.c  | 74 
-> > > ++++++++++++++++++++-  drivers/net/ethernet/intel/idpf/idpf_txrx.c | 
-> > > 30 +++++++++  drivers/net/ethernet/intel/idpf/idpf_txrx.h |  7 +-
-> > >  3 files changed, 109 insertions(+), 2 deletions(-)
-> > > 
-> > > diff --git a/drivers/net/ethernet/intel/idpf/idpf_ptp.c 
-> > > b/drivers/net/ethernet/intel/idpf/idpf_ptp.c
-> > > index f34642d10768..f9f7613f2a6d 100644
-> > > --- a/drivers/net/ethernet/intel/idpf/idpf_ptp.c
-> > > +++ b/drivers/net/ethernet/intel/idpf/idpf_ptp.c
-> > > @@ -317,12 +317,41 @@ static int idpf_ptp_gettimex64(struct ptp_clock_info *info,
-> > >  	return 0;
-> > >  }
-> > >
-> > > +/**
-> > > + * idpf_ptp_update_phctime_rxq_grp - Update the cached PHC time for a given Rx
-> > > + *				     queue group.
-> > 
-> > Why does each receive group have a separate cached value?
-> > They're all caches of the same device clock.
-> 
-> That's correct - they all caches values of the same PHC, however I would
-> like to have an effective method to access this value in hotpath where
-> I'm extending the Rx timestamp value to 64 bit.
-> 
-> For the same reason I cached Tx timestamp caps in
-> idpf_vport_init_fast_path_txqs.
+From: "Dr. David Alan Gilbert" <linux@treblig.org>
 
-Oh to avoid reading a cold cacheline in the hot path. Okay, that makes
-sense. Please make a note of this in the commit message.
+fm10k_iov_msg_mac_vlan_pf() has been unused since 2017's
+commit 1f5c27e52857 ("fm10k: use the MAC/VLAN queue for VF<->PF MAC/VLAN
+requests")
+
+Remove it.
+
+Signed-off-by: Dr. David Alan Gilbert <linux@treblig.org>
+---
+ drivers/net/ethernet/intel/fm10k/fm10k_pf.c | 120 --------------------
+ drivers/net/ethernet/intel/fm10k/fm10k_pf.h |   2 -
+ 2 files changed, 122 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
+index 98861cc6df7c..b9dd7b719832 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
+@@ -1179,126 +1179,6 @@ s32 fm10k_iov_select_vid(struct fm10k_vf_info *vf_info, u16 vid)
+ 		return vid;
+ }
+ 
+-/**
+- *  fm10k_iov_msg_mac_vlan_pf - Message handler for MAC/VLAN request from VF
+- *  @hw: Pointer to hardware structure
+- *  @results: Pointer array to message, results[0] is pointer to message
+- *  @mbx: Pointer to mailbox information structure
+- *
+- *  This function is a default handler for MAC/VLAN requests from the VF.
+- *  The assumption is that in this case it is acceptable to just directly
+- *  hand off the message from the VF to the underlying shared code.
+- **/
+-s32 fm10k_iov_msg_mac_vlan_pf(struct fm10k_hw *hw, u32 **results,
+-			      struct fm10k_mbx_info *mbx)
+-{
+-	struct fm10k_vf_info *vf_info = (struct fm10k_vf_info *)mbx;
+-	u8 mac[ETH_ALEN];
+-	u32 *result;
+-	int err = 0;
+-	bool set;
+-	u16 vlan;
+-	u32 vid;
+-
+-	/* we shouldn't be updating rules on a disabled interface */
+-	if (!FM10K_VF_FLAG_ENABLED(vf_info))
+-		err = FM10K_ERR_PARAM;
+-
+-	if (!err && !!results[FM10K_MAC_VLAN_MSG_VLAN]) {
+-		result = results[FM10K_MAC_VLAN_MSG_VLAN];
+-
+-		/* record VLAN id requested */
+-		err = fm10k_tlv_attr_get_u32(result, &vid);
+-		if (err)
+-			return err;
+-
+-		set = !(vid & FM10K_VLAN_CLEAR);
+-		vid &= ~FM10K_VLAN_CLEAR;
+-
+-		/* if the length field has been set, this is a multi-bit
+-		 * update request. For multi-bit requests, simply disallow
+-		 * them when the pf_vid has been set. In this case, the PF
+-		 * should have already cleared the VLAN_TABLE, and if we
+-		 * allowed them, it could allow a rogue VF to receive traffic
+-		 * on a VLAN it was not assigned. In the single-bit case, we
+-		 * need to modify requests for VLAN 0 to use the default PF or
+-		 * SW vid when assigned.
+-		 */
+-
+-		if (vid >> 16) {
+-			/* prevent multi-bit requests when PF has
+-			 * administratively set the VLAN for this VF
+-			 */
+-			if (vf_info->pf_vid)
+-				return FM10K_ERR_PARAM;
+-		} else {
+-			err = fm10k_iov_select_vid(vf_info, (u16)vid);
+-			if (err < 0)
+-				return err;
+-
+-			vid = err;
+-		}
+-
+-		/* update VSI info for VF in regards to VLAN table */
+-		err = hw->mac.ops.update_vlan(hw, vid, vf_info->vsi, set);
+-	}
+-
+-	if (!err && !!results[FM10K_MAC_VLAN_MSG_MAC]) {
+-		result = results[FM10K_MAC_VLAN_MSG_MAC];
+-
+-		/* record unicast MAC address requested */
+-		err = fm10k_tlv_attr_get_mac_vlan(result, mac, &vlan);
+-		if (err)
+-			return err;
+-
+-		/* block attempts to set MAC for a locked device */
+-		if (is_valid_ether_addr(vf_info->mac) &&
+-		    !ether_addr_equal(mac, vf_info->mac))
+-			return FM10K_ERR_PARAM;
+-
+-		set = !(vlan & FM10K_VLAN_CLEAR);
+-		vlan &= ~FM10K_VLAN_CLEAR;
+-
+-		err = fm10k_iov_select_vid(vf_info, vlan);
+-		if (err < 0)
+-			return err;
+-
+-		vlan = (u16)err;
+-
+-		/* notify switch of request for new unicast address */
+-		err = hw->mac.ops.update_uc_addr(hw, vf_info->glort,
+-						 mac, vlan, set, 0);
+-	}
+-
+-	if (!err && !!results[FM10K_MAC_VLAN_MSG_MULTICAST]) {
+-		result = results[FM10K_MAC_VLAN_MSG_MULTICAST];
+-
+-		/* record multicast MAC address requested */
+-		err = fm10k_tlv_attr_get_mac_vlan(result, mac, &vlan);
+-		if (err)
+-			return err;
+-
+-		/* verify that the VF is allowed to request multicast */
+-		if (!(vf_info->vf_flags & FM10K_VF_FLAG_MULTI_ENABLED))
+-			return FM10K_ERR_PARAM;
+-
+-		set = !(vlan & FM10K_VLAN_CLEAR);
+-		vlan &= ~FM10K_VLAN_CLEAR;
+-
+-		err = fm10k_iov_select_vid(vf_info, vlan);
+-		if (err < 0)
+-			return err;
+-
+-		vlan = (u16)err;
+-
+-		/* notify switch of request for new multicast address */
+-		err = hw->mac.ops.update_mc_addr(hw, vf_info->glort,
+-						 mac, vlan, set);
+-	}
+-
+-	return err;
+-}
+-
+ /**
+  *  fm10k_iov_supported_xcast_mode_pf - Determine best match for xcast mode
+  *  @vf_info: VF info structure containing capability flags
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pf.h b/drivers/net/ethernet/intel/fm10k/fm10k_pf.h
+index 8e814df709d2..ad3696893cb1 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_pf.h
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_pf.h
+@@ -99,8 +99,6 @@ extern const struct fm10k_tlv_attr fm10k_err_msg_attr[];
+ 
+ s32 fm10k_iov_select_vid(struct fm10k_vf_info *vf_info, u16 vid);
+ s32 fm10k_iov_msg_msix_pf(struct fm10k_hw *, u32 **, struct fm10k_mbx_info *);
+-s32 fm10k_iov_msg_mac_vlan_pf(struct fm10k_hw *, u32 **,
+-			      struct fm10k_mbx_info *);
+ s32 fm10k_iov_msg_lport_state_pf(struct fm10k_hw *, u32 **,
+ 				 struct fm10k_mbx_info *);
+ 
+-- 
+2.47.0
+
