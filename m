@@ -4,85 +4,111 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 405EBD44009
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 18 Nov 2024 16:19:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E430AD49207
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 18 Nov 2024 16:19:25 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id DD52484C7B;
-	Mon, 18 Nov 2024 16:19:23 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 96DF884B32;
+	Mon, 18 Nov 2024 16:19:25 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Uk5TgfyY_xwV; Mon, 18 Nov 2024 16:19:23 +0000 (UTC)
+ id RNv9n50keScu; Mon, 18 Nov 2024 16:19:24 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D4A7284B09
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C9CFC84AED
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1731946762;
-	bh=MOwl+3RRY6hxipxxoc7tx76VBhuRwRCiipNgIx+NOyw=;
-	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=fsQxw2d1tmjIPzmYfueZceNuiqzJ5zx/CLKGE62XexDWTntrVt+4T7u1BpHNCjSvD
-	 ag84/uMRyb6W4PAT/5wysqnH0sxRC9PRzsYuYVPR7LC4PIuTTzH6+8AaaDQ1+CWsGN
-	 /WlGXBGO3Y0X6qDe1yLM08u6EdKC2SMudt3wJ2sPqiFqeyo29yj/ianktqsx4zFMkK
-	 O6/hpEkQa+H8HRdp4nN8lniM3EmarDDfHcxC14GrURPxS4LngsIVAW+q2TgyDmjgRc
-	 QRU8VJaMLnLpLsrqBmiiKWw2CDZHFDitmjUxY14kCImzh5nZi8xqFk57NwSVfmEsgj
-	 +ESZhRAqasqfA==
+	s=default; t=1731946763;
+	bh=tp2Q+8b3zGUBih3afpuzhAn88G4uKrpXKwQ9ivMWqHM=;
+	h=From:To:Cc:In-Reply-To:References:Date:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=61zVROzmGzurNEw7BYCRzQGnaJ0Is2qU5by3SHX7CEJ6oTyNUdqRX+yLUuhpIu1/V
+	 59gXOvD5sRM3rf01jrT0FMCI29fvUAWJFd/aS9NV+fmLtJbI8UGVB5UR53mFJv1loF
+	 iwyJp8fvWi/Z7+6JKFx8YGcmLE+og+daesav/NMUdAhjcL8edvhcSkGFut0CTLIpUz
+	 V4GwpWSj5KJVJnL8HeZxr3l4ZwzCyCMakz/gIte5movggzAxPq7G9zauGX3uzDyTV1
+	 OKSbBCzYsF4yGbwa7GXAdlMIRrzTs0cSrAdTvGcxtosXI0mCHkzEhDUxEdbsWeOi8w
+	 uMIw4NaSTT1TQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id D4A7284B09;
-	Mon, 18 Nov 2024 16:19:22 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id 057091EB8
- for <intel-wired-lan@lists.osuosl.org>; Sat, 16 Nov 2024 15:41:40 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id C9CFC84AED;
+	Mon, 18 Nov 2024 16:19:23 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 083B0B14
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 17 Nov 2024 12:31:51 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id E81D880AC3
- for <intel-wired-lan@lists.osuosl.org>; Sat, 16 Nov 2024 15:41:39 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 040346073B
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 17 Nov 2024 12:31:51 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id si0XnPn5k17H for <intel-wired-lan@lists.osuosl.org>;
- Sat, 16 Nov 2024 15:41:39 +0000 (UTC)
-X-Greylist: delayed 1012 seconds by postgrey-1.37 at util1.osuosl.org;
- Sat, 16 Nov 2024 15:41:38 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org D171880C50
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D171880C50
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=2a00:1098:5b::1;
- helo=mx.treblig.org; envelope-from=linux@treblig.org; receiver=<UNKNOWN> 
-Received: from mx.treblig.org (mx.treblig.org [IPv6:2a00:1098:5b::1])
- by smtp1.osuosl.org (Postfix) with ESMTPS id D171880C50
- for <intel-wired-lan@lists.osuosl.org>; Sat, 16 Nov 2024 15:41:38 +0000 (UTC)
-Received: from localhost ([127.0.0.1] helo=dalek.home.treblig.org)
- by mx.treblig.org with esmtp (Exim 4.96)
- (envelope-from <linux@treblig.org>) id 1tCKf4-000ISC-1X;
- Sat, 16 Nov 2024 15:24:34 +0000
-From: linux@treblig.org
-To: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
- andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
- kuba@kernel.org, pabeni@redhat.com, netdev@vger.kernel.org
-Cc: intel-wired-lan@lists.osuosl.org, linux-kernel@vger.kernel.org,
- "Dr. David Alan Gilbert" <linux@treblig.org>
-Date: Sat, 16 Nov 2024 15:24:33 +0000
-Message-ID: <20241116152433.96262-1-linux@treblig.org>
-X-Mailer: git-send-email 2.47.0
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id bJOjL0gZ0YFd for <intel-wired-lan@lists.osuosl.org>;
+ Sun, 17 Nov 2024 12:31:50 +0000 (UTC)
+X-Greylist: delayed 383 seconds by postgrey-1.37 at util1.osuosl.org;
+ Sun, 17 Nov 2024 12:31:49 UTC
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org E90D360729
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E90D360729
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2404:9400:2221:ea00::3; helo=mail.ozlabs.org;
+ envelope-from=michael@ellerman.id.au; receiver=<UNKNOWN> 
+Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id E90D360729
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 17 Nov 2024 12:31:49 +0000 (UTC)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+ (Client did not present a certificate)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4Xrqhp5Zp2z4xf5;
+ Sun, 17 Nov 2024 23:25:14 +1100 (AEDT)
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+To: linux-gpio@vger.kernel.org, Julia Lawall <Julia.Lawall@inria.fr>
+Cc: kernel-janitors@vger.kernel.org, audit@vger.kernel.org,
+ linux-mtd@lists.infradead.org, Zhihao Cheng <chengzhihao1@huawei.com>,
+ "Rafael J. Wysocki" <rafael@kernel.org>, linux-arm-msm@vger.kernel.org,
+ linux-pci@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-usb@vger.kernel.org, linux-mm@kvack.org, maple-tree@lists.infradead.org,
+ alsa-devel@alsa-project.org, Sanyog Kale <sanyog.r.kale@intel.com>,
+ Pierre-Louis Bossart <pierre-louis.bossart@linux.dev>, dccp@vger.kernel.org,
+ linux-fsdevel@vger.kernel.org, Jan Kara <jack@suse.cz>,
+ drbd-dev@lists.linbit.com, linux-sound@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org,
+ nvdimm@lists.linux.dev, linux-leds@vger.kernel.org,
+ Nicholas Piggin <npiggin@gmail.com>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Naveen N Rao <naveen@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, tipc-discussion@lists.sourceforge.
+ net, Robin Murphy <robin.murphy@arm.com>, iommu@lists.linux.dev,
+ Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ linux-trace-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>,
+ Olga Kornievskaia <okorniev@redhat.com>, Dai Ngo <Dai.Ngo@oracle.com>,
+ Tom Talpey <tom@talpey.com>, linux-nfs@vger.kernel.org,
+ amd-gfx@lists.freedesktop.org, linux-wireless@vger.kernel.org,
+ intel-wired-lan@lists.osuosl.org
+In-Reply-To: <20240930112121.95324-1-Julia.Lawall@inria.fr>
+References: <20240930112121.95324-1-Julia.Lawall@inria.fr>
+Message-Id: <173184539760.890800.14513086226459117952.b4-ty@ellerman.id.au>
+Date: Sun, 17 Nov 2024 23:09:57 +1100
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 X-Mailman-Approved-At: Mon, 18 Nov 2024 16:19:21 +0000
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt;
- c=relaxed/relaxed; d=treblig.org
- ; s=bytemarkmx; h=MIME-Version:Message-ID:Date:Subject:From:Content-Type:From
- :Subject; bh=MOwl+3RRY6hxipxxoc7tx76VBhuRwRCiipNgIx+NOyw=; b=jQklbqBFpGHK1wDK
- vjkNxGjl6RAxQS9DO47Bsw2jtozWJttx6ZB4jIWFlJpRpK2hNZYeXEoBPiHntqEqgMk9qr2S/wkHf
- KFXGqkrQlvZZQb1C5b2aVG7h281MAvIwN4fJLGZ/XMB8chosS6aQ1TEYKVGY0kgkd9/ptY8Ltux5i
- 31krpcPcsyNjVqGoyQK2ZAMS/Sx4xTEOmrKbY3KkScxEkXyJd4Q7IaUr8onugrJJxkhE7NoGStCVZ
- gnlOo56gLspSWEXJqxFtkgS1G2k3KYAmuIZ5zGjEdPLB1is79sYeK4RQY/0ITaMb3Gq3vcpRtpysx
- bH+o5fdUxvaPTEFXuA==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=treblig.org
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=treblig.org header.i=@treblig.org header.a=rsa-sha256
- header.s=bytemarkmx header.b=jQklbqBF
-Subject: [Intel-wired-lan] [PATCH net-next] intel/fm10k: Remove unused
- fm10k_iov_msg_mac_vlan_pf
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=ellerman.id.au; s=201909; t=1731846322;
+ bh=tp2Q+8b3zGUBih3afpuzhAn88G4uKrpXKwQ9ivMWqHM=;
+ h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
+ b=mTU1+u6copmZDAjfqnXWv+2ujIPjQ3JtoGu9so550WGMXDTKHgPRUtKWL5WTQKacA
+ ukYIXyZnvXaIaM7phYyg2ffevuNcZwkVM+fGzA0yJe4hA6ivVJfsyMN2k5es56Dca2
+ xnyEpYxwi2vRkSTSXt4SDnE54vHeCtrhpgtS0p+MhXC1a/iPqUZ6noNUE4xD/tX6x3
+ 9xyLmagErBzssEeKDZj2zkr4owFCFT2YctuTq6qJ9KGCJplX90TRwhVHol5EujIAFV
+ JLHuHIFQhKPYuj26daIFU9Gqj0sP+YYyQFfmqJ5wJevMLVh4tXn5ub20TQGEUboHP9
+ 4WeeB6bi4EbDw==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=fail reason="signature verification failed" (2048-bit key)
+ header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256
+ header.s=201909 header.b=mTU1+u6c
+Subject: Re: [Intel-wired-lan] (subset) [PATCH 00/35] Reorganize kerneldoc
+ parameter names
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -98,164 +124,22 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: "Dr. David Alan Gilbert" <linux@treblig.org>
+On Mon, 30 Sep 2024 13:20:46 +0200, Julia Lawall wrote:
+> Reorganize kerneldoc parameter names to match the parameter
+> order in the function header.
+> 
+> The misordered cases were identified using the following
+> Coccinelle semantic patch:
+> 
+> // <smpl>
+> @initialize:ocaml@
+> @@
+> 
+> [...]
 
-fm10k_iov_msg_mac_vlan_pf() has been unused since 2017's
-commit 1f5c27e52857 ("fm10k: use the MAC/VLAN queue for VF<->PF MAC/VLAN
-requests")
+Applied to powerpc/next.
 
-Remove it.
+[11/35] powerpc/ps3: Reorganize kerneldoc parameter names
+        https://git.kernel.org/powerpc/c/276e036e5844116e563fa90f676c625bb742cc57
 
-Signed-off-by: Dr. David Alan Gilbert <linux@treblig.org>
----
- drivers/net/ethernet/intel/fm10k/fm10k_pf.c | 120 --------------------
- drivers/net/ethernet/intel/fm10k/fm10k_pf.h |   2 -
- 2 files changed, 122 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-index 98861cc6df7c..b9dd7b719832 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-@@ -1179,126 +1179,6 @@ s32 fm10k_iov_select_vid(struct fm10k_vf_info *vf_info, u16 vid)
- 		return vid;
- }
- 
--/**
-- *  fm10k_iov_msg_mac_vlan_pf - Message handler for MAC/VLAN request from VF
-- *  @hw: Pointer to hardware structure
-- *  @results: Pointer array to message, results[0] is pointer to message
-- *  @mbx: Pointer to mailbox information structure
-- *
-- *  This function is a default handler for MAC/VLAN requests from the VF.
-- *  The assumption is that in this case it is acceptable to just directly
-- *  hand off the message from the VF to the underlying shared code.
-- **/
--s32 fm10k_iov_msg_mac_vlan_pf(struct fm10k_hw *hw, u32 **results,
--			      struct fm10k_mbx_info *mbx)
--{
--	struct fm10k_vf_info *vf_info = (struct fm10k_vf_info *)mbx;
--	u8 mac[ETH_ALEN];
--	u32 *result;
--	int err = 0;
--	bool set;
--	u16 vlan;
--	u32 vid;
--
--	/* we shouldn't be updating rules on a disabled interface */
--	if (!FM10K_VF_FLAG_ENABLED(vf_info))
--		err = FM10K_ERR_PARAM;
--
--	if (!err && !!results[FM10K_MAC_VLAN_MSG_VLAN]) {
--		result = results[FM10K_MAC_VLAN_MSG_VLAN];
--
--		/* record VLAN id requested */
--		err = fm10k_tlv_attr_get_u32(result, &vid);
--		if (err)
--			return err;
--
--		set = !(vid & FM10K_VLAN_CLEAR);
--		vid &= ~FM10K_VLAN_CLEAR;
--
--		/* if the length field has been set, this is a multi-bit
--		 * update request. For multi-bit requests, simply disallow
--		 * them when the pf_vid has been set. In this case, the PF
--		 * should have already cleared the VLAN_TABLE, and if we
--		 * allowed them, it could allow a rogue VF to receive traffic
--		 * on a VLAN it was not assigned. In the single-bit case, we
--		 * need to modify requests for VLAN 0 to use the default PF or
--		 * SW vid when assigned.
--		 */
--
--		if (vid >> 16) {
--			/* prevent multi-bit requests when PF has
--			 * administratively set the VLAN for this VF
--			 */
--			if (vf_info->pf_vid)
--				return FM10K_ERR_PARAM;
--		} else {
--			err = fm10k_iov_select_vid(vf_info, (u16)vid);
--			if (err < 0)
--				return err;
--
--			vid = err;
--		}
--
--		/* update VSI info for VF in regards to VLAN table */
--		err = hw->mac.ops.update_vlan(hw, vid, vf_info->vsi, set);
--	}
--
--	if (!err && !!results[FM10K_MAC_VLAN_MSG_MAC]) {
--		result = results[FM10K_MAC_VLAN_MSG_MAC];
--
--		/* record unicast MAC address requested */
--		err = fm10k_tlv_attr_get_mac_vlan(result, mac, &vlan);
--		if (err)
--			return err;
--
--		/* block attempts to set MAC for a locked device */
--		if (is_valid_ether_addr(vf_info->mac) &&
--		    !ether_addr_equal(mac, vf_info->mac))
--			return FM10K_ERR_PARAM;
--
--		set = !(vlan & FM10K_VLAN_CLEAR);
--		vlan &= ~FM10K_VLAN_CLEAR;
--
--		err = fm10k_iov_select_vid(vf_info, vlan);
--		if (err < 0)
--			return err;
--
--		vlan = (u16)err;
--
--		/* notify switch of request for new unicast address */
--		err = hw->mac.ops.update_uc_addr(hw, vf_info->glort,
--						 mac, vlan, set, 0);
--	}
--
--	if (!err && !!results[FM10K_MAC_VLAN_MSG_MULTICAST]) {
--		result = results[FM10K_MAC_VLAN_MSG_MULTICAST];
--
--		/* record multicast MAC address requested */
--		err = fm10k_tlv_attr_get_mac_vlan(result, mac, &vlan);
--		if (err)
--			return err;
--
--		/* verify that the VF is allowed to request multicast */
--		if (!(vf_info->vf_flags & FM10K_VF_FLAG_MULTI_ENABLED))
--			return FM10K_ERR_PARAM;
--
--		set = !(vlan & FM10K_VLAN_CLEAR);
--		vlan &= ~FM10K_VLAN_CLEAR;
--
--		err = fm10k_iov_select_vid(vf_info, vlan);
--		if (err < 0)
--			return err;
--
--		vlan = (u16)err;
--
--		/* notify switch of request for new multicast address */
--		err = hw->mac.ops.update_mc_addr(hw, vf_info->glort,
--						 mac, vlan, set);
--	}
--
--	return err;
--}
--
- /**
-  *  fm10k_iov_supported_xcast_mode_pf - Determine best match for xcast mode
-  *  @vf_info: VF info structure containing capability flags
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pf.h b/drivers/net/ethernet/intel/fm10k/fm10k_pf.h
-index 8e814df709d2..ad3696893cb1 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_pf.h
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_pf.h
-@@ -99,8 +99,6 @@ extern const struct fm10k_tlv_attr fm10k_err_msg_attr[];
- 
- s32 fm10k_iov_select_vid(struct fm10k_vf_info *vf_info, u16 vid);
- s32 fm10k_iov_msg_msix_pf(struct fm10k_hw *, u32 **, struct fm10k_mbx_info *);
--s32 fm10k_iov_msg_mac_vlan_pf(struct fm10k_hw *, u32 **,
--			      struct fm10k_mbx_info *);
- s32 fm10k_iov_msg_lport_state_pf(struct fm10k_hw *, u32 **,
- 				 struct fm10k_mbx_info *);
- 
--- 
-2.47.0
-
+cheers
