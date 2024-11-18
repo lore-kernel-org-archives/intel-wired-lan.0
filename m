@@ -1,114 +1,95 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E430AD49207
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 18 Nov 2024 16:19:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EED04D4400A
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 18 Nov 2024 16:19:26 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 96DF884B32;
+	by smtp4.osuosl.org (Postfix) with ESMTP id A3C4A42F59;
+	Mon, 18 Nov 2024 16:19:26 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id gaaONKszKitM; Mon, 18 Nov 2024 16:19:25 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0E33D42FD3
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1731946765;
+	bh=/a9kIL9Fe5oBYm4P3Imhxgji5kdM4wV5QzGKEXGXG8k=;
+	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=JK73MoJERodhYsBpQhovzv3TrxSC5y/4sycJe1MxFPNh5oahtrRX2cuREq14s8Hah
+	 9iEm0MlTqFXxvdFXuLCabEccQqxC9vzEHRycUo6yZGv9jIJCDj/bBlo8GmiZvjQszj
+	 0+SO4FJ4kl+Mc8K06a4K0ocX6BWIFsmNqMPJOvBucLdnDtMljO1oyG/nFRh+RV+zVS
+	 g/pDt1PcwfXQ090eNJ3+RqgwwI0k28y3JV+etNrUsGEdhYSMUuTZEubCckKn12ac4q
+	 3xctEajZS6LzA/hsVsvGF4tru/DMWoLEQev6TMF8Rt0DRixGbN9FKzkvJ076xuxchM
+	 smFOT8ciA1d9A==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp4.osuosl.org (Postfix) with ESMTP id 0E33D42FD3;
 	Mon, 18 Nov 2024 16:19:25 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 009B9B14
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 18 Nov 2024 12:42:07 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp1.osuosl.org (Postfix) with ESMTP id 5E1DF84DCB
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 18 Nov 2024 12:42:04 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id RNv9n50keScu; Mon, 18 Nov 2024 16:19:24 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C9CFC84AED
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1731946763;
-	bh=tp2Q+8b3zGUBih3afpuzhAn88G4uKrpXKwQ9ivMWqHM=;
-	h=From:To:Cc:In-Reply-To:References:Date:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=61zVROzmGzurNEw7BYCRzQGnaJ0Is2qU5by3SHX7CEJ6oTyNUdqRX+yLUuhpIu1/V
-	 59gXOvD5sRM3rf01jrT0FMCI29fvUAWJFd/aS9NV+fmLtJbI8UGVB5UR53mFJv1loF
-	 iwyJp8fvWi/Z7+6JKFx8YGcmLE+og+daesav/NMUdAhjcL8edvhcSkGFut0CTLIpUz
-	 V4GwpWSj5KJVJnL8HeZxr3l4ZwzCyCMakz/gIte5movggzAxPq7G9zauGX3uzDyTV1
-	 OKSbBCzYsF4yGbwa7GXAdlMIRrzTs0cSrAdTvGcxtosXI0mCHkzEhDUxEdbsWeOi8w
-	 uMIw4NaSTT1TQ==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id C9CFC84AED;
-	Mon, 18 Nov 2024 16:19:23 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 083B0B14
- for <intel-wired-lan@lists.osuosl.org>; Sun, 17 Nov 2024 12:31:51 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 040346073B
- for <intel-wired-lan@lists.osuosl.org>; Sun, 17 Nov 2024 12:31:51 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id bJOjL0gZ0YFd for <intel-wired-lan@lists.osuosl.org>;
- Sun, 17 Nov 2024 12:31:50 +0000 (UTC)
-X-Greylist: delayed 383 seconds by postgrey-1.37 at util1.osuosl.org;
- Sun, 17 Nov 2024 12:31:49 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org E90D360729
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E90D360729
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2404:9400:2221:ea00::3; helo=mail.ozlabs.org;
- envelope-from=michael@ellerman.id.au; receiver=<UNKNOWN> 
-Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
- by smtp3.osuosl.org (Postfix) with ESMTPS id E90D360729
- for <intel-wired-lan@lists.osuosl.org>; Sun, 17 Nov 2024 12:31:49 +0000 (UTC)
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
- (Client did not present a certificate)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4Xrqhp5Zp2z4xf5;
- Sun, 17 Nov 2024 23:25:14 +1100 (AEDT)
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linux-gpio@vger.kernel.org, Julia Lawall <Julia.Lawall@inria.fr>
-Cc: kernel-janitors@vger.kernel.org, audit@vger.kernel.org,
- linux-mtd@lists.infradead.org, Zhihao Cheng <chengzhihao1@huawei.com>,
- "Rafael J. Wysocki" <rafael@kernel.org>, linux-arm-msm@vger.kernel.org,
- linux-pci@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-usb@vger.kernel.org, linux-mm@kvack.org, maple-tree@lists.infradead.org,
- alsa-devel@alsa-project.org, Sanyog Kale <sanyog.r.kale@intel.com>,
- Pierre-Louis Bossart <pierre-louis.bossart@linux.dev>, dccp@vger.kernel.org,
- linux-fsdevel@vger.kernel.org, Jan Kara <jack@suse.cz>,
- drbd-dev@lists.linbit.com, linux-sound@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org,
- nvdimm@lists.linux.dev, linux-leds@vger.kernel.org,
- Nicholas Piggin <npiggin@gmail.com>,
- Christophe Leroy <christophe.leroy@csgroup.eu>,
- Naveen N Rao <naveen@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, tipc-discussion@lists.sourceforge.
- net, Robin Murphy <robin.murphy@arm.com>, iommu@lists.linux.dev,
- Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
- linux-trace-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>,
- Olga Kornievskaia <okorniev@redhat.com>, Dai Ngo <Dai.Ngo@oracle.com>,
- Tom Talpey <tom@talpey.com>, linux-nfs@vger.kernel.org,
- amd-gfx@lists.freedesktop.org, linux-wireless@vger.kernel.org,
- intel-wired-lan@lists.osuosl.org
-In-Reply-To: <20240930112121.95324-1-Julia.Lawall@inria.fr>
-References: <20240930112121.95324-1-Julia.Lawall@inria.fr>
-Message-Id: <173184539760.890800.14513086226459117952.b4-ty@ellerman.id.au>
-Date: Sun, 17 Nov 2024 23:09:57 +1100
+ id APe78C8cvy04 for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 18 Nov 2024 12:42:03 +0000 (UTC)
+X-Greylist: delayed 1099 seconds by postgrey-1.37 at util1.osuosl.org;
+ Mon, 18 Nov 2024 12:42:03 UTC
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 4283D84DA6
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4283D84DA6
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=2a00:1098:5b::1;
+ helo=mx.treblig.org; envelope-from=dg@treblig.org; receiver=<UNKNOWN> 
+Received: from mx.treblig.org (mx.treblig.org [IPv6:2a00:1098:5b::1])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 4283D84DA6
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 18 Nov 2024 12:42:02 +0000 (UTC)
+Received: from dg by mx.treblig.org with local (Exim 4.96)
+ (envelope-from <dg@treblig.org>) id 1tD0mz-000UEW-0d;
+ Mon, 18 Nov 2024 12:23:33 +0000
+Date: Mon, 18 Nov 2024 12:23:33 +0000
+From: "Dr. David Alan Gilbert" <linux@treblig.org>
+To: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Cc: anthony.l.nguyen@intel.com, andrew+netdev@lunn.ch, davem@davemloft.net,
+ edumazet@google.com, kuba@kernel.org, pabeni@redhat.com,
+ intel-wired-lan@lists.osuosl.org, linux-kernel@vger.kernel.org,
+ netdev@vger.kernel.org
+Message-ID: <ZzsxxXpzA5PByiIx@gallifrey>
+References: <20241116152433.96262-1-linux@treblig.org>
+ <e8c5b0ad-19aa-44b1-9b08-3929990e81c1@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <e8c5b0ad-19aa-44b1-9b08-3929990e81c1@intel.com>
+X-Chocolate: 70 percent or better cocoa solids preferably
+X-Operating-System: Linux/6.1.0-21-amd64 (x86_64)
+X-Uptime: 12:23:01 up 193 days, 23:37,  1 user,  load average: 0.00, 0.00, 0.00
+User-Agent: Mutt/2.2.12 (2023-09-09)
 X-Mailman-Approved-At: Mon, 18 Nov 2024 16:19:21 +0000
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=ellerman.id.au; s=201909; t=1731846322;
- bh=tp2Q+8b3zGUBih3afpuzhAn88G4uKrpXKwQ9ivMWqHM=;
- h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
- b=mTU1+u6copmZDAjfqnXWv+2ujIPjQ3JtoGu9so550WGMXDTKHgPRUtKWL5WTQKacA
- ukYIXyZnvXaIaM7phYyg2ffevuNcZwkVM+fGzA0yJe4hA6ivVJfsyMN2k5es56Dca2
- xnyEpYxwi2vRkSTSXt4SDnE54vHeCtrhpgtS0p+MhXC1a/iPqUZ6noNUE4xD/tX6x3
- 9xyLmagErBzssEeKDZj2zkr4owFCFT2YctuTq6qJ9KGCJplX90TRwhVHol5EujIAFV
- JLHuHIFQhKPYuj26daIFU9Gqj0sP+YYyQFfmqJ5wJevMLVh4tXn5ub20TQGEUboHP9
- 4WeeB6bi4EbDw==
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=fail reason="signature verification failed" (2048-bit key)
- header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256
- header.s=201909 header.b=mTU1+u6c
-Subject: Re: [Intel-wired-lan] (subset) [PATCH 00/35] Reorganize kerneldoc
- parameter names
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt;
+ c=relaxed/relaxed; d=treblig.org
+ ; s=bytemarkmx; h=Content-Type:MIME-Version:Message-ID:Subject:From:Date:From
+ :Subject; bh=/a9kIL9Fe5oBYm4P3Imhxgji5kdM4wV5QzGKEXGXG8k=; b=VG3sfCYIhDsLz9F0
+ qKQHGiPsafPr+sDUmCBBWFB9IKENrr9iUAqLFPAdBSbZbXQoFZUiT/thQFNOZVVJ5bNCOawVrczax
+ pPzkWH82XQTS6PARQenKkds1wjql5w5Qr3u1UEQz5JNWmrwobIz4kY7gp1eA+TIjEnQASQ1xtN1OG
+ Q/He996AobiD2g17efoWJ6I61zHfs7vbGn4wsvv8oix6nVdu50tjH++g5DO+r7ZhNntKZh04sRJZy
+ 1MBLYMjbxpUSDzGlERFDFuCAQmBtqf9ePy7FcwZXOFCJoCCas8I5uscglm/25m505iA749QweNw8C
+ zwM9KzBHNuCdU4D5qw==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=treblig.org
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=treblig.org header.i=@treblig.org header.a=rsa-sha256
+ header.s=bytemarkmx header.b=VG3sfCYI
+Subject: Re: [Intel-wired-lan] [PATCH net-next] intel/fm10k: Remove unused
+ fm10k_iov_msg_mac_vlan_pf
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -124,22 +105,34 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Mon, 30 Sep 2024 13:20:46 +0200, Julia Lawall wrote:
-> Reorganize kerneldoc parameter names to match the parameter
-> order in the function header.
+* Przemek Kitszel (przemyslaw.kitszel@intel.com) wrote:
+> On 11/16/24 16:24, linux@treblig.org wrote:
+> > From: "Dr. David Alan Gilbert" <linux@treblig.org>
+> > 
+> > fm10k_iov_msg_mac_vlan_pf() has been unused since 2017's
+> > commit 1f5c27e52857 ("fm10k: use the MAC/VLAN queue for VF<->PF MAC/VLAN
+> > requests")
+> > 
+> > Remove it.
+> > 
+> > Signed-off-by: Dr. David Alan Gilbert <linux@treblig.org>
 > 
-> The misordered cases were identified using the following
-> Coccinelle semantic patch:
-> 
-> // <smpl>
-> @initialize:ocaml@
-> @@
-> 
-> [...]
+> makes sense, and all constants in the removed code seem to be used
+> elsewhere, so:
+> Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 
-Applied to powerpc/next.
+Thanks
 
-[11/35] powerpc/ps3: Reorganize kerneldoc parameter names
-        https://git.kernel.org/powerpc/c/276e036e5844116e563fa90f676c625bb742cc57
+> for you future Intel-Ethernet-only changes it would be better to
+> target as [iwl-next] or [iwl-net],
+> no need to repost just fro that
 
-cheers
+Ah OK; so are you going to pick this one up via iwl?
+
+Dave
+
+-- 
+ -----Open up your eyes, open up your mind, open up your code -------   
+/ Dr. David Alan Gilbert    |       Running GNU/Linux       | Happy  \ 
+\        dave @ treblig.org |                               | In Hex /
+ \ _________________________|_____ http://www.treblig.org   |_______/
