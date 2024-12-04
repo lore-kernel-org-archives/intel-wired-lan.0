@@ -1,102 +1,227 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 70CFDE77170
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  4 Dec 2024 20:30:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 99301E7716F
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  4 Dec 2024 21:38:38 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 3637581450;
-	Wed,  4 Dec 2024 20:30:24 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 525DC401C2;
+	Wed,  4 Dec 2024 21:38:38 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id fJc72hpsXauO; Wed,  4 Dec 2024 21:38:35 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9A752402B1
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1733348315;
+	bh=yVW1rJFjFQW6mIWXgjdc30fMFWVSdcQiuOl+A2tj9d0=;
+	h=Date:To:CC:References:From:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=NnUXdvgMY3aXHHuDnXYY4tiWaeliTDatqxMYkdS1rt/Rh9Uz3EAjYZ6iNOqjqvgql
+	 1sIUkkjU0+jwV5B1oYEchfL+4aOGjDU2Q5QkdK6HFv0PmNoZs53rkrm00qm5XOtc0x
+	 6L83uUo0rfjsag3ZhfhtXWa8kzxyup4yCe5lMUkoYN0Jc4/Xk1SwzKVVm72wZ7e1Ih
+	 mEaPoaND62Gru5g8VmV6a/BR5Qs6wwpEqND3yEAGAkI2fRjyL9+sM2WXFMdL5WWtnb
+	 OQnnUHpVJ/tLNs94langibecWZ9jCZyaSpl1Je0mltl7U7mhCCJn2ZvPCD18YQNghQ
+	 EzPeGyzW8HA/g==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp4.osuosl.org (Postfix) with ESMTP id 9A752402B1;
+	Wed,  4 Dec 2024 21:38:35 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 162281DD9
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  4 Dec 2024 21:38:34 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp1.osuosl.org (Postfix) with ESMTP id EBC3280B62
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  4 Dec 2024 21:38:33 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id EDtBXXvQ0WwI; Wed,  4 Dec 2024 20:30:23 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 406AA81453
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1733344223;
-	bh=k3pMwpvw7CcXegHjVDkGEUz7yUVCIz72+VrvA+OO4ms=;
-	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=6Jq1avFHGazmjWXAGbj7jl6uTYjvuhJMKLwem/wVjJiDDroby9AL3Z6X/Avv5P0Yj
-	 OTbb60/qfQGHXZ9be6ou7qio3uCwBTI22WBHqJy6y0PRDljfsK/RyzswP6O9YQh7Ot
-	 BUYHMWa0/Ub59jFzZPlj7i3O0MByqB85rq2fpgYMj646ohFWrA8MBBlH5w6SzcDV3W
-	 5cpPbdza68PtEOXBEhvcp9pTmZfXz3zJhJPtirIvS74jlulKt0eX0Pd1X80cKNXyOV
-	 4NqHL1+kSYgk6RohkhoOdJUPJOTxLwAZAxXjQ/AY+O2VOVUunmMAxO9hSQAG4xzCZ8
-	 yot6a95+l8QhQ==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 406AA81453;
-	Wed,  4 Dec 2024 20:30:23 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 5123D1DD1
- for <intel-wired-lan@lists.osuosl.org>; Wed,  4 Dec 2024 20:30:22 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 3E20360744
- for <intel-wired-lan@lists.osuosl.org>; Wed,  4 Dec 2024 20:30:22 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 2QE-wwXzQ3NI for <intel-wired-lan@lists.osuosl.org>;
- Wed,  4 Dec 2024 20:30:21 +0000 (UTC)
+ id GjWS4DPwv4Sd for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  4 Dec 2024 21:38:33 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.17;
- helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 097BA606E8
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 097BA606E8
+ helo=mgamail.intel.com; envelope-from=przemyslaw.kitszel@intel.com;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org CA0B080BB1
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org CA0B080BB1
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.17])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 097BA606E8
- for <intel-wired-lan@lists.osuosl.org>; Wed,  4 Dec 2024 20:30:20 +0000 (UTC)
-X-CSE-ConnectionGUID: UtBmEXsERriVinvEttvrIQ==
-X-CSE-MsgGUID: oHEs5oSvRHSfi84VdR+EWQ==
-X-IronPort-AV: E=McAfee;i="6700,10204,11276"; a="33550824"
-X-IronPort-AV: E=Sophos;i="6.12,208,1728975600"; d="scan'208";a="33550824"
-Received: from orviesa006.jf.intel.com ([10.64.159.146])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id CA0B080BB1
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  4 Dec 2024 21:38:32 +0000 (UTC)
+X-CSE-ConnectionGUID: IjCulvPaT06E/CqnftELpA==
+X-CSE-MsgGUID: XqUaGZNBSFSowS6g6eeBoA==
+X-IronPort-AV: E=McAfee;i="6700,10204,11276"; a="33556309"
+X-IronPort-AV: E=Sophos;i="6.12,208,1728975600"; d="scan'208";a="33556309"
+Received: from fmviesa006.fm.intel.com ([10.60.135.146])
  by fmvoesa111.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 04 Dec 2024 12:30:20 -0800
-X-CSE-ConnectionGUID: IrFc6JW0RjSOHUrx4Mgv3w==
-X-CSE-MsgGUID: adn2N2IWTPuik/VHoASs1Q==
+ 04 Dec 2024 13:38:32 -0800
+X-CSE-ConnectionGUID: 4a7u0cEeQqyKsOwmCJ3/eQ==
+X-CSE-MsgGUID: oIjQf6+GTc64PfEzZL3NLg==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.12,208,1728975600"; d="scan'208";a="93951250"
-Received: from lkp-server02.sh.intel.com (HELO 1f5a171d57e2) ([10.239.97.151])
- by orviesa006.jf.intel.com with ESMTP; 04 Dec 2024 12:30:19 -0800
-Received: from kbuild by 1f5a171d57e2 with local (Exim 4.96)
- (envelope-from <lkp@intel.com>) id 1tIw0m-0003Sf-0y;
- Wed, 04 Dec 2024 20:30:16 +0000
-Date: Thu, 5 Dec 2024 04:29:39 +0800
-From: kernel test robot <lkp@intel.com>
-To: Piotr Kwapulinski <piotr.kwapulinski@intel.com>,
- intel-wired-lan@lists.osuosl.org
-Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
- netdev@vger.kernel.org, Piotr Kwapulinski <piotr.kwapulinski@intel.com>,
- Stefan Wegrzyn <stefan.wegrzyn@intel.com>
-Message-ID: <202412050450.s26ZxK1U-lkp@intel.com>
-References: <20241204143112.29411-6-piotr.kwapulinski@intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+X-IronPort-AV: E=Sophos;i="6.12,208,1728975600"; d="scan'208";a="93566317"
+Received: from fmsmsx602.amr.corp.intel.com ([10.18.126.82])
+ by fmviesa006.fm.intel.com with ESMTP/TLS/AES256-GCM-SHA384;
+ 04 Dec 2024 13:38:32 -0800
+Received: from fmsmsx603.amr.corp.intel.com (10.18.126.83) by
+ fmsmsx602.amr.corp.intel.com (10.18.126.82) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.39; Wed, 4 Dec 2024 13:38:31 -0800
+Received: from fmsedg602.ED.cps.intel.com (10.1.192.136) by
+ fmsmsx603.amr.corp.intel.com (10.18.126.83) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.39 via Frontend Transport; Wed, 4 Dec 2024 13:38:31 -0800
+Received: from NAM11-DM6-obe.outbound.protection.outlook.com (104.47.57.177)
+ by edgegateway.intel.com (192.55.55.71) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.1.2507.39; Wed, 4 Dec 2024 13:38:31 -0800
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=GTaObYGLdtTfkpBOo6daepI/Do7Kms74vbmAEgOjhs3kA32SzhaIKBJAkPuHmnsmdv3Ge0e62CoObt45WW3dmVzMq3GLO1D4lpC8QPRzPbH4+b/aOIKg+0N2tA+uHlhyDEkM4abHmlRYGF6mdjtVkpX1gTclypmVRTYZekv+rz8MjiaT95FCtHnBUrs/x9z3+D9kzUXnIM2xo5tgkxU/+3vrLQUESaIB2RurJUvDKkhAcIlePGddgqderlOw8ysFz9zcTmFCzrHS2CXuXtThbPT3GtctJFODp3jnTr3155ef3uQl1FUpNuivtYot7SACzYdvC2hQsI094iZoewxI0w==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=yVW1rJFjFQW6mIWXgjdc30fMFWVSdcQiuOl+A2tj9d0=;
+ b=yOUB7p03RE5ZAGz571wJmrry69l0HO3hafGvWkg23i+uKyDWTgyGdnF/T8JPAAUFnp3f3/eoqvcCXBPwrkffohe4eQUllDIjKn/kCeImL7TLuUlyYWhA/KjlcsbC1CZ+0ZdUcS7phn6UVJm5FCOh+H81PfZbVyXP+N88et9d6zsdaS45R2DeCXO+cEgppmmp0ewSa/J83grY3Gv9Vw/pP/o3GkI1Tc1yV+L7qWJYq+uuIXoNmwTeIb8pcWbnffRp8XFtu98pNBR53jaj0LT7mNshX2dPnlwfe7jt8X5g5dAxIdXYOvW0StsiAQwFjTt/BZxoQySYCEmG8KCAHAYFgw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Received: from MN6PR11MB8102.namprd11.prod.outlook.com (2603:10b6:208:46d::9)
+ by SN7PR11MB7509.namprd11.prod.outlook.com (2603:10b6:806:346::9)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8207.13; Wed, 4 Dec
+ 2024 21:38:23 +0000
+Received: from MN6PR11MB8102.namprd11.prod.outlook.com
+ ([fe80::15b2:ee05:2ae7:cfd6]) by MN6PR11MB8102.namprd11.prod.outlook.com
+ ([fe80::15b2:ee05:2ae7:cfd6%4]) with mapi id 15.20.8230.010; Wed, 4 Dec 2024
+ 21:38:23 +0000
+Message-ID: <41bd4ca9-2882-4203-8c68-71f5a0d7e20b@intel.com>
+Date: Wed, 4 Dec 2024 22:38:19 +0100
+User-Agent: Mozilla Thunderbird
+To: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
+CC: <netdev@vger.kernel.org>, Stefan Wegrzyn <stefan.wegrzyn@intel.com>,
+ <intel-wired-lan@lists.osuosl.org>, Jedrzej Jagielski
+ <jedrzej.jagielski@intel.com>
+References: <20241204143112.29411-1-piotr.kwapulinski@intel.com>
+ <20241204143112.29411-6-piotr.kwapulinski@intel.com>
+From: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Content-Language: en-US
 In-Reply-To: <20241204143112.29411-6-piotr.kwapulinski@intel.com>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: WA1P291CA0007.POLP291.PROD.OUTLOOK.COM
+ (2603:10a6:1d0:19::11) To MN6PR11MB8102.namprd11.prod.outlook.com
+ (2603:10b6:208:46d::9)
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: MN6PR11MB8102:EE_|SN7PR11MB7509:EE_
+X-MS-Office365-Filtering-Correlation-Id: 28224f04-2663-4e58-ffcc-08dd14abfa9f
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;ARA:13230040|366016|1800799024|376014;
+X-Microsoft-Antispam-Message-Info: =?utf-8?B?THpYenRTQ0N5NmJxaVM1dWxVV3RyUGx5dHFWL1hSQWhvSk1GMDV3Y2tFUnNP?=
+ =?utf-8?B?UnRlMUVWRnl3eHA3TUhFODFRT2Y0Q0Z3djZTUGxCS1FFUU5vMUM3U20xUEVR?=
+ =?utf-8?B?WVl5NW5BblRnTlhkSXdDb3A0VlBLV2YrdGtmb3VIK01yTHg0ZmRGaENKMWZn?=
+ =?utf-8?B?cVZiaDZlNjlXNmlRK0puc1BpUUZkUWRYU2VNSW9MTytrSW9ta1Q3TUwvbFd5?=
+ =?utf-8?B?V0k1RVd0OHdmV1BCa2d6eStFQ1NBcEV3djlONVJXUnZicCttOXRUakRkR01L?=
+ =?utf-8?B?cG52SnJlWXIwRUFUMFJ6Vk9POXk4WlQ0MzBDTlJEbGcrN1BFVWVvcGppREVF?=
+ =?utf-8?B?T1FndVhMeWZZWVNMeDQraVJTMlhKbXhXUkRHL3N0OXVsc3N1Z0lFMWV3d0Jv?=
+ =?utf-8?B?cUgvWlRaYmMzVisyR0JDeUFFNXlTVlBHUHNIc0dreUd2WGNrU055S21ZMkNZ?=
+ =?utf-8?B?QTVhb0JPeHBwKzdEaTIrSW9BaitvcVF5dEFVVTFERXZqYnE1V0ZjTVpCZmlC?=
+ =?utf-8?B?bGVzTlZIRkVsamMxcHdTRFRXNXhxNHdsSkRVRjBodnpiSWxaT3piejZJTDB1?=
+ =?utf-8?B?ZjdMRktOYnc2aU5kQytNOFlZTGg2a3ZQSWZnSlhmdWE5a2JOU2FkaXRlU2pQ?=
+ =?utf-8?B?K1ljM05ha001U2taWEhEWE5ONURCc2hkWFh4NnlDOWNUK3l6Y3ZCdDlpSDVJ?=
+ =?utf-8?B?WTZGTVpjQlp2MXRXbE81bElPb3hyMjVNTmNTT1ZKUWk5MEFrbnNFNVl6SWpU?=
+ =?utf-8?B?T2ZHWWJxdkR6eXVTa0pTUHQ4bDhPVHFFeU9POURUd0lPdy9CM0hMK1NWN2pS?=
+ =?utf-8?B?Wkp0V0NneTU1U1lYQWhFVG4rK0V4RUthcCt4MUhDTU01ZUtxQ2IwN1BSVStI?=
+ =?utf-8?B?c1dwaW1ZVXZKOC9aUXZHRnNVbTBoUlVOZi9BTTNQZStzN3dJaTFLVXIxTmpq?=
+ =?utf-8?B?T1NDZGVEMDhja3UrSXFTNklxT0Jmek5aLzh2eXBXV1NvUHJZVG5pZGlGckk5?=
+ =?utf-8?B?UFJ3V2oyMFR0RlgyMDhFY2MwREQ3dXlpRkpNZlhDMVlrQU5vdzBPakEyeHYy?=
+ =?utf-8?B?TE5vSFhRV3Q0dGhJSGlBVldZSEtJNHFOUmhHL0J1Mmp3T1Z4aVpHSUM0NGpy?=
+ =?utf-8?B?VUVrVHhkcWhoRmNHcUFSTWYxaWROM0g2QVRKZVU4RGR0NXNHbnZjK04xYzl1?=
+ =?utf-8?B?TkswYUpYSUt3NTR1S3MxVlBGcFc5YXNlTjd1aDVzRW90TG1na0FUWE9lOUJU?=
+ =?utf-8?B?eUo5a0x2Y0hZOXVFWU9jZ2dlbmVvRFFBd2dydVN1NGpBQVNKWmFXSkRtZWpG?=
+ =?utf-8?B?WHhDQmRrZE51cEdlS2JnNzBxeDFsRUpkWllzcUMwMmJ0cGJKalVOZTFYRmI2?=
+ =?utf-8?B?M1RIcFpHTFVxWW5SR3pFSFI4THllSnZhL0xJT1BSMm0vaURqMGw1dGJXSGZw?=
+ =?utf-8?B?Z1BtOXkveDFTeUduQ04rRDFMVWFVQkQxaGNDbUVTSlR0bGRnQWIzOXVueEZK?=
+ =?utf-8?B?OWtsdzg3RHVzb0IybWJhV21HT2RlQXUyWndCdkU4RVpJWFRsMWxzYmJXaG9X?=
+ =?utf-8?B?K2M1SUJYSTdmTlgvVnNmSlN1bkNydEF3OUhoYVhOVUpPOUpqUW1QczF4ZC9N?=
+ =?utf-8?B?VVRuZlRyNVdKTzFCTy9TcDFyUlZlbXBGUm1EdkNRZXFNeDZPVUN5WUx4b1h2?=
+ =?utf-8?B?MXIxeGQzaFJPT21OUS9DQ0pyVHJUSWVZemRrK1k5NzIzZUNHUVU3MGZzbUNv?=
+ =?utf-8?B?YU1telEyWFJLZVdkR2lwWEg4dDBhZFlGcmZqZzhQUWhIS3VuR1oyRWYyamNr?=
+ =?utf-8?B?ZlZLZ3U0UlllY3hoR1RFZz09?=
+X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:MN6PR11MB8102.namprd11.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(13230040)(366016)(1800799024)(376014); DIR:OUT; SFP:1101; 
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?bFAyaXBIVHJXY1RNWm5BZmQzZUlabVFQcGRIT0VRdUI0NUlseFhScEVWbHBJ?=
+ =?utf-8?B?UnFJRVVadGw0ZGR2aVU2cEpHbnE4RHNPWXFlSHUwWUR1MGxiK3lpRjdMVmZQ?=
+ =?utf-8?B?dENsbjFKbElhMDl6cVhORmNoak1RMytJQVVDZ1BwWFFHdG5Mem9oclFFY2x2?=
+ =?utf-8?B?b08xOWtnZ3VkcHBaMFhOQ0E1amZRaCtsZ3hVQzc0QjAvNGZmeXdhODZRSjVT?=
+ =?utf-8?B?VmhQdWdJZVVjUEZYZVRuVzNKWGV4RGlaME5tRFNXTVdyd0ltZWd1RDhKVS9Y?=
+ =?utf-8?B?czBkYmw2ZjJLSXY5RWNVa3hIRHBMUFN1a2ttSDhlOVBVcXdDREFjOTFGRFgv?=
+ =?utf-8?B?UlVuNUViTWRsYStvekxTQWcyRjFUSnVDQjJ1MDBTYmY3bTlsUjRDM2o3OXgy?=
+ =?utf-8?B?NUlBV3lYekpOUDhkSU11WmxQdHFFbmRaaWkrVG5kem5qRGxackEzYnRwQm4r?=
+ =?utf-8?B?UFVySGtDeUIxTEw3ZERTSG41NStLK1lta1p2aGRnbFpVOTNkMnUxaS90MlVi?=
+ =?utf-8?B?SHRnVW9rOUY2a01GOWN6VnRnb0hWeXVUSE5MTVJST1oyaWVsV2dnVUE3aDJq?=
+ =?utf-8?B?YjdhVjREblZYMEpQMXF6STdYZmJJWFNZSTRhc0g2SVRmOHJxMXI5YU5hOEh5?=
+ =?utf-8?B?ZjZocjVvOHlBRUhqRE9rdGdwb0NmK05VdmxwcE5BbTRkMXZYZzVja29sUW0r?=
+ =?utf-8?B?bWZtNDh3VFZUcG9QTVpSQ3NvZS9BSk84Sk92dlZVNFJiSlNMcG10aWRqV05l?=
+ =?utf-8?B?T2tlb3Y4TGVPbkFqWGxMWVBML3gxbnlJVVpucUUwTVVHVjUwRCtMZ3JoSzBv?=
+ =?utf-8?B?NkFwZVUwempuMDAxVSs5NzFuQTU4b1Qyc1lvaEFiUlBOY2dHaERJVnZkZkxP?=
+ =?utf-8?B?Q2hiZzNyQm1VUWtZYnVqdWlaeHJaZElpWWUyS2xEVXBHUlF0WlY2dkpqTS9k?=
+ =?utf-8?B?Wk16SENHNUtaelpSYmVRRXRKdjhBQUpWQTlDV3BoY3pOb01nQTZyUVR6bThE?=
+ =?utf-8?B?ZGwyNmllR3dpNUMvMzNsV0JZbkprQTlPTkRzak1uTXhiazB4MmF0eFBDMkk2?=
+ =?utf-8?B?NWJ4dFdpM3V2VUtYeXNEaGRYcmZXSTI5dlpBZGxqUlNwUGI5N1BNdm9FNTNO?=
+ =?utf-8?B?N3lZM016L3dFTUFNWUJKR2FMMzJkMDZ1NzR6OW5nU1BGdHFUZ0t0ZDhLbU9m?=
+ =?utf-8?B?ZDlmYm9vMTliSjNjR2lHTFhVdXg3M3JlUFJJckl0c21mU3p3dmM1QWxNSXhy?=
+ =?utf-8?B?b2dLeDFtN29hcEx4T2NEby9FZzduKzZ4ZCtZd3VtZldmcFVHOUVmbFhjaFBr?=
+ =?utf-8?B?bXNSS2g0bkRaNzNDK0FrMkl3azdScitFNDQyMFV0TERrNi9iNGlxMkppbDk2?=
+ =?utf-8?B?ZFlEZjZ4RFJkVnU3YjZzNkZ4WExkdXJpQS9DZW0yM2o2bXRtYnlxMVRWMWo4?=
+ =?utf-8?B?blVzM2xTeVgrajFGUElVcUFKZkF4MlRwRW5JOEpWTU5xYlNwcVpxOG5FZUFS?=
+ =?utf-8?B?UVEvSlV1dVpPcWhRbUJWbUZlVlR1NEc1b1hZTEhlcVV5RW9FTWNvZkEvcDZw?=
+ =?utf-8?B?TEh3aFNXNE9WQk12RVkxc0RlR1g3bEZsRHdRUWxhNE9TWGFyMFM5UzAwZCty?=
+ =?utf-8?B?ZU9Oa2Y3YWY2TDlvR1BKZWRvSW90Sk5VdnlZa1JhYk9UOEE4QXF0bC9maDls?=
+ =?utf-8?B?aGdESW1GeTBZZzlYclJ1QkMraVZkaVVIRkhNR1NpZGFTTC9zR21sRm05UWtt?=
+ =?utf-8?B?OVB0UFQ5K2srUVRCS2lZU2RCNzMzM3dCZkZZZ2l1RXNRU1hyVDROeFVVRzRm?=
+ =?utf-8?B?S08yRTJpdHhhNEwxY1JaRk5uV2dTK2FTTmk5eS9DVVRHOUlXckpDMGEzMEFw?=
+ =?utf-8?B?MG10VlE3TEJyc3hFQ3FveHpPUlQyYnNmSGNqbVlwRzRDYjg5b0s0M0haWElU?=
+ =?utf-8?B?WlVvQUxvaGRxeDR5UGlZaVd3alBhaG40aER4YXRreUhnTHNrVm9IL1F6NS9B?=
+ =?utf-8?B?YkVyeGozOXkrQmpPSlkwTmRUMlNPdmZodVdrSFVmNnA1NksvZDRjOGxNbnJj?=
+ =?utf-8?B?ajdUZ2V4eHVjd0xlU1ZpcDdIeGVJbDF4MCtVS3lncFBBalZwSlY3bkxMY3JN?=
+ =?utf-8?B?clpyaTZnWGxnMXNENzBPUEZ1RDJwUzJKaG5kRCtXNk14UmFzclYzamNYaXVH?=
+ =?utf-8?B?U3c9PQ==?=
+X-MS-Exchange-CrossTenant-Network-Message-Id: 28224f04-2663-4e58-ffcc-08dd14abfa9f
+X-MS-Exchange-CrossTenant-AuthSource: MN6PR11MB8102.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 04 Dec 2024 21:38:23.5532 (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: CslIJ5VhXfRuAC3fXkQSq73LFDEMg9cDHBbNFM10MqIgLZcHGhNIbUPlt9ehYulR+MacqJ60NlHgkbnYYCzW6xVDwI5rWd/lNIjHUIDiv9M=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SN7PR11MB7509
+X-OriginatorOrg: intel.com
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1733344221; x=1764880221;
- h=date:from:to:cc:subject:message-id:references:
- mime-version:in-reply-to;
- bh=Hqvk2t+BsLSphs4WfQUre5lwOKVlFGQ6Nxe5CPShoMA=;
- b=edR/VtorAppUYXUjNZKimwwk2llKVkqs/UMAPgHI89Bfn0IrgZvslYAw
- 4HAO0z1j1GfabFuaX3uplF9WqV2AdRNoZaBKXHo3aP3lWK6Aub2moatN4
- 8rYRQOBLRLssUFbqklWS+2RYhcJncWIvi+P/nxKlwmQ5zQnhhDvd2Rjrh
- pAgEQZcH3wi6qFFJsykwGxYvddLOM960o3iMHLsVkFgdXoD+we4IesrO6
- 0norQC+9AUtpowWqLh2NlcW8UH8bF3xDutZuebjse9ZnRvuHzoGfmnrGd
- Lnxq5uDHH4d+cKBVfqubKZUyLtz3RKiA8cuqs5BlLX9iuTkFEYVCqo6HV
- Q==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ t=1733348312; x=1764884312;
+ h=message-id:date:subject:to:cc:references:from:
+ in-reply-to:content-transfer-encoding:mime-version;
+ bh=nVXE/9nJehrcwIkKX0I4FbUpnlpuxoFxqhYthIJGKUs=;
+ b=MZk++iT9Ztb13LyFxuoLjhgfBa+TXyGshcZB1gP9S+nGj4GL1cRnL8Z6
+ IXRrzTmlC/R1CtXb5M8xtW+z4mP8F9fs1IQKjlyObczXwxkrp7bLfRIrR
+ yUIfZiG1Mom2L4aBEhC+VpLzAp7PIB0qoTr50h8/vt8R+F7VTwwGs7Wk+
+ /67fvouad72EPnPUzxQ4ZLv1lXFU/rV+MYwrPt/HWRDSDZnOvsFqLU0nD
+ unYIM0wO3w732pAAv8Glr4TqSUISEWOW0Hx4X2h+g1ciJ+liSvSVBU8Fg
+ fJ46rY0RXBiI9FuCgXDoGc45HErqSkeJkb+m9wOp1+nCcxvJZazixGASZ
+ g==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=edR/Vtor
+ header.s=Intel header.b=MZk++iT9
+X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
 Subject: Re: [Intel-wired-lan] [PATCH iwl-next v11 5/8] ixgbe: Add support
  for EEPROM dump in E610 device
 X-BeenThere: intel-wired-lan@osuosl.org
@@ -114,66 +239,208 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Hi Piotr,
+On 12/4/24 15:31, Piotr Kwapulinski wrote:
+> Add low level support for EEPROM dump for the specified network device.
+> 
+> Co-developed-by: Stefan Wegrzyn <stefan.wegrzyn@intel.com>
+> Signed-off-by: Stefan Wegrzyn <stefan.wegrzyn@intel.com>
+> Signed-off-by: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
+> ---
+>   drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c | 93 +++++++++++++++++++
+>   drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h |  5 +
+>   .../ethernet/intel/ixgbe/ixgbe_type_e610.h    |  8 ++
+>   3 files changed, 106 insertions(+)
 
-kernel test robot noticed the following build warnings:
+just nitpicks, so:
+Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 
-[auto build test WARNING on tnguy-next-queue/dev-queue]
+> 
+> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c
+> index 0542b4b..503a047 100644
+> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c
+> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c
+> @@ -2070,6 +2070,38 @@ int ixgbe_enter_lplu_e610(struct ixgbe_hw *hw)
+>   	return ixgbe_aci_set_phy_cfg(hw, &phy_cfg);
+>   }
+>   
+> +/**
+> + * ixgbe_init_eeprom_params_E610 - Initialize EEPROM params
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Piotr-Kwapulinski/ixgbe-Add-support-for-E610-FW-Admin-Command-Interface/20241204-223603
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
-patch link:    https://lore.kernel.org/r/20241204143112.29411-6-piotr.kwapulinski%40intel.com
-patch subject: [Intel-wired-lan] [PATCH iwl-next v11 5/8] ixgbe: Add support for EEPROM dump in E610 device
-config: i386-buildonly-randconfig-003 (https://download.01.org/0day-ci/archive/20241205/202412050450.s26ZxK1U-lkp@intel.com/config)
-compiler: clang version 19.1.3 (https://github.com/llvm/llvm-project ab51eccf88f5321e7c60591c5546b254b6afab99)
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20241205/202412050450.s26ZxK1U-lkp@intel.com/reproduce)
+as bot set (also for our internal version of the patch), this should be
+"e610"
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202412050450.s26ZxK1U-lkp@intel.com/
+> + * @hw: pointer to hardware structure
+> + *
+> + * Initialize the EEPROM parameters ixgbe_eeprom_info within the ixgbe_hw
+> + * struct in order to set up EEPROM access.
+> + *
+> + * Return: the operation exit code
 
-All warnings (new ones prefixed by >>):
+missing dot (.) at the end
 
->> drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c:2083: warning: expecting prototype for ixgbe_init_eeprom_params_E610(). Prototype was for ixgbe_init_eeprom_params_e610() instead
+> + */
+> +int ixgbe_init_eeprom_params_e610(struct ixgbe_hw *hw)
+> +{
+> +	struct ixgbe_eeprom_info *eeprom = &hw->eeprom;
+> +	u32 gens_stat;
+> +	u8 sr_size;
+> +
+> +	if (eeprom->type != ixgbe_eeprom_uninitialized)
+> +		return 0;
+> +
+> +	eeprom->type = ixgbe_flash;
+> +
+> +	gens_stat = IXGBE_READ_REG(hw, GLNVM_GENS);
+> +	sr_size = FIELD_GET(GLNVM_GENS_SR_SIZE_M, gens_stat);
+> +
+> +	/* Switching to words (sr_size contains power of 2). */
+> +	eeprom->word_size = BIT(sr_size) * IXGBE_SR_WORDS_IN_1KB;
+> +
+> +	hw_dbg(hw, "Eeprom params: type = %d, size = %d\n", eeprom->type,
+> +	       eeprom->word_size);
+> +
+> +	return 0;
+> +}
+> +
+>   /**
+>    * ixgbe_aci_get_netlist_node - get a node handle
+>    * @hw: pointer to the hw struct
+> @@ -2316,6 +2348,34 @@ int ixgbe_read_flat_nvm(struct ixgbe_hw  *hw, u32 offset, u32 *length,
+>   	return err;
+>   }
+>   
+> +/**
+> + * ixgbe_read_sr_buf_aci - Read Shadow RAM buffer via ACI
+> + * @hw: pointer to the HW structure
+> + * @offset: offset of the Shadow RAM words to read (0x000000 - 0x001FFF)
+> + * @words: (in) number of words to read; (out) number of words actually read
+> + * @data: words read from the Shadow RAM
+> + *
+> + * Read 16 bit words (data buf) from the Shadow RAM. Acquire/release the NVM
+> + * ownership.
+> + *
+> + * Return: the operation exit code
 
+ditto dot
 
-vim +2083 drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c
+> + */
+> +int ixgbe_read_sr_buf_aci(struct ixgbe_hw *hw, u16 offset, u16 *words,
+> +			  u16 *data)
+> +{
+> +	u32 bytes = *words * 2, i;
 
-  2072	
-  2073	/**
-  2074	 * ixgbe_init_eeprom_params_E610 - Initialize EEPROM params
-  2075	 * @hw: pointer to hardware structure
-  2076	 *
-  2077	 * Initialize the EEPROM parameters ixgbe_eeprom_info within the ixgbe_hw
-  2078	 * struct in order to set up EEPROM access.
-  2079	 *
-  2080	 * Return: the operation exit code
-  2081	 */
-  2082	int ixgbe_init_eeprom_params_e610(struct ixgbe_hw *hw)
-> 2083	{
-  2084		struct ixgbe_eeprom_info *eeprom = &hw->eeprom;
-  2085		u32 gens_stat;
-  2086		u8 sr_size;
-  2087	
-  2088		if (eeprom->type != ixgbe_eeprom_uninitialized)
-  2089			return 0;
-  2090	
-  2091		eeprom->type = ixgbe_flash;
-  2092	
-  2093		gens_stat = IXGBE_READ_REG(hw, GLNVM_GENS);
-  2094		sr_size = FIELD_GET(GLNVM_GENS_SR_SIZE_M, gens_stat);
-  2095	
-  2096		/* Switching to words (sr_size contains power of 2). */
-  2097		eeprom->word_size = BIT(sr_size) * IXGBE_SR_WORDS_IN_1KB;
-  2098	
-  2099		hw_dbg(hw, "Eeprom params: type = %d, size = %d\n", eeprom->type,
-  2100		       eeprom->word_size);
-  2101	
-  2102		return 0;
-  2103	}
-  2104	
+I would declare @i in the for loop below
 
--- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+> +	int err;
+> +
+> +	err = ixgbe_read_flat_nvm(hw, offset * 2, &bytes, (u8 *)data, true);
+
+shouldn't we exit early here?
+
+> +
+> +	*words = bytes / 2;
+> +
+> +	for (i = 0; i < *words; i++)
+> +		data[i] = le16_to_cpu(((__le16 *)data)[i]);
+> +
+> +	return err;
+> +}
+> +
+>   /**
+>    * ixgbe_read_ee_aci_e610 - Read EEPROM word using the admin command.
+>    * @hw: pointer to hardware structure
+> @@ -2349,6 +2409,39 @@ int ixgbe_read_ee_aci_e610(struct ixgbe_hw *hw, u16 offset, u16 *data)
+>   	return err;
+>   }
+>   
+> +/**
+> + * ixgbe_read_ee_aci_buffer_e610 - Read EEPROM words via ACI
+> + * @hw: pointer to hardware structure
+> + * @offset: offset of words in the EEPROM to read
+> + * @words: number of words to read
+> + * @data: words to read from the EEPROM
+> + *
+> + * Read 16 bit words from the EEPROM via the ACI. Initialize the EEPROM params
+> + * prior to the read. Acquire/release the NVM ownership.
+> + *
+> + * Return: the operation exit code
+
+ditto dot
+
+> + */
+> +int ixgbe_read_ee_aci_buffer_e610(struct ixgbe_hw *hw, u16 offset,
+> +				  u16 words, u16 *data)
+> +{
+> +	int err;
+> +
+> +	if (hw->eeprom.type == ixgbe_eeprom_uninitialized) {
+> +		err = hw->eeprom.ops.init_params(hw);
+> +		if (err)
+> +			return err;
+> +	}
+> +
+> +	err = ixgbe_acquire_nvm(hw, IXGBE_RES_READ);
+> +	if (err)
+> +		return err;
+> +
+> +	err = ixgbe_read_sr_buf_aci(hw, offset, &words, data);
+> +	ixgbe_release_nvm(hw);
+> +
+> +	return err;
+> +}
+> +
+>   /**
+>    * ixgbe_validate_eeprom_checksum_e610 - Validate EEPROM checksum
+>    * @hw: pointer to hardware structure
+> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h
+> index 412ddd1..9cfcfee 100644
+> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h
+> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h
+> @@ -56,6 +56,7 @@ int ixgbe_identify_module_e610(struct ixgbe_hw *hw);
+>   int ixgbe_setup_phy_link_e610(struct ixgbe_hw *hw);
+>   int ixgbe_set_phy_power_e610(struct ixgbe_hw *hw, bool on);
+>   int ixgbe_enter_lplu_e610(struct ixgbe_hw *hw);
+> +int ixgbe_init_eeprom_params_e610(struct ixgbe_hw *hw);
+>   int ixgbe_aci_get_netlist_node(struct ixgbe_hw *hw,
+>   			       struct ixgbe_aci_cmd_get_link_topo *cmd,
+>   			       u8 *node_part_number, u16 *node_handle);
+> @@ -69,7 +70,11 @@ int ixgbe_nvm_validate_checksum(struct ixgbe_hw *hw);
+>   int ixgbe_read_sr_word_aci(struct ixgbe_hw  *hw, u16 offset, u16 *data);
+>   int ixgbe_read_flat_nvm(struct ixgbe_hw  *hw, u32 offset, u32 *length,
+>   			u8 *data, bool read_shadow_ram);
+> +int ixgbe_read_sr_buf_aci(struct ixgbe_hw *hw, u16 offset, u16 *words,
+> +			  u16 *data);
+>   int ixgbe_read_ee_aci_e610(struct ixgbe_hw *hw, u16 offset, u16 *data);
+> +int ixgbe_read_ee_aci_buffer_e610(struct ixgbe_hw *hw, u16 offset,
+> +				  u16 words, u16 *data);
+>   int ixgbe_validate_eeprom_checksum_e610(struct ixgbe_hw *hw, u16 *checksum_val);
+>   
+>   #endif /* _IXGBE_E610_H_ */
+> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type_e610.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type_e610.h
+> index ecc3fc8..9dba8b5 100644
+> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type_e610.h
+> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type_e610.h
+> @@ -12,11 +12,19 @@
+>   /* Checksum and Shadow RAM pointers */
+>   #define E610_SR_SW_CHECKSUM_WORD		0x3F
+>   
+> +/* Shadow RAM related */
+> +#define IXGBE_SR_WORDS_IN_1KB	512
+> +
+>   /* Firmware Status Register (GL_FWSTS) */
+>   #define GL_FWSTS		0x00083048 /* Reset Source: POR */
+>   #define GL_FWSTS_EP_PF0		BIT(24)
+>   #define GL_FWSTS_EP_PF1		BIT(25)
+>   
+> +/* Global NVM General Status Register */
+> +#define GLNVM_GENS		0x000B6100 /* Reset Source: POR */
+> +#define GLNVM_GENS_SR_SIZE_S	5
+
+unused define, please remove
+
+> +#define GLNVM_GENS_SR_SIZE_M	GENMASK(7, 5)
+> +
+>   /* Flash Access Register */
+>   #define IXGBE_GLNVM_FLA			0x000B6108 /* Reset Source: POR */
+>   #define IXGBE_GLNVM_FLA_LOCKED_S	6
+
