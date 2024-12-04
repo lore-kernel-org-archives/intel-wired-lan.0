@@ -4,96 +4,75 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AFACCE7716B
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  4 Dec 2024 15:02:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 64A69E7716B
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  4 Dec 2024 15:05:28 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 63EAE81E69;
-	Wed,  4 Dec 2024 15:02:54 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 2DC928425B;
+	Wed,  4 Dec 2024 15:05:28 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id itJWpmD71urj; Wed,  4 Dec 2024 15:02:53 +0000 (UTC)
+ id vz_BVNQPP7x0; Wed,  4 Dec 2024 15:05:27 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B703481F00
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9139184274
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1733324573;
-	bh=0HX6LKRWCWF8pigsy66Miyj5J4is6eKt7vzE2LW/iWc=;
-	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=hRw7xtoPXYlwk72JhwhIXEbXogF4dh2Kb7YJZPOs8CvwCaGOpGj4YfBpuOrkocIT1
-	 VT7DbYf/q7qkL18reHiLwvksgt9xKzWzNf/C/1Tf5Lyk2iqo9MOrmxxMtg6J4fFBwn
-	 ONLSuTcR7XgLClp741o5gurqWc3RX7GU73sHHbU7uRnOWq8hgGIZxFt6S/aT5t/LNl
-	 YWmK8RANkJnYwbRX3obyGeFA5U4FBviEjGMaixEvfTp9xCBrAebYpM/Mfy1U+CHb13
-	 p3M6yg1FgY3ofRjBcHO/06taNYGoWCcIxPlbwcbyaHiB6j9OjHW5cyRewlHCNdqycl
-	 SAvFuzfigdOPQ==
+	s=default; t=1733324727;
+	bh=5ZnMxaX4w+stg8SRWigJq/WdwL6dy6vnjpszAEsKOJY=;
+	h=Date:To:Cc:References:From:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=UFCnI+LuKN6UcDKhH3p6JrpqVcc2C316Zykmb8JYUOMxWSBVDG0FgOWvANPTgaZ2K
+	 2ITAH5B8V/h5F2Ei7Bn7t/zzF2UtwpsOE7wlYSLqCUdvyPSlMgnhH+JUfnGT9b6wrt
+	 1aIRNDlYxKJv/Csa8+cHBDEW78AGmA+NxqCo7ZGXMPP7mh8CO4sJrdaRi5NC/z5WDB
+	 6fnXsUUk5NvBfg4bRqOuy01FhULbz4vQ8752nO6cT3WPNFKzSnA73zymPDq+JzaKW1
+	 xna90PZRG7lOwEiNoXViya6DDvpHYuhtdv8K4/7Ef6Jjj2WgNWIBLGQGmYl9YsygRV
+	 MvS6aJxadDWvQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id B703481F00;
-	Wed,  4 Dec 2024 15:02:53 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id CA8A01DC8
- for <intel-wired-lan@lists.osuosl.org>; Wed,  4 Dec 2024 15:02:51 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 9139184274;
+	Wed,  4 Dec 2024 15:05:27 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 56B691DC8
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  4 Dec 2024 15:05:26 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id B7DD660743
- for <intel-wired-lan@lists.osuosl.org>; Wed,  4 Dec 2024 15:02:51 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 4468984274
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  4 Dec 2024 15:05:26 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id YLfsd1annEqs for <intel-wired-lan@lists.osuosl.org>;
- Wed,  4 Dec 2024 15:02:51 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.18;
- helo=mgamail.intel.com; envelope-from=mateusz.polchlopek@intel.com;
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id r2fOKmjMLmIS for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  4 Dec 2024 15:05:25 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=141.14.17.11;
+ helo=mx3.molgen.mpg.de; envelope-from=pmenzel@molgen.mpg.de;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org E7BB26075E
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E7BB26075E
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.18])
- by smtp3.osuosl.org (Postfix) with ESMTPS id E7BB26075E
- for <intel-wired-lan@lists.osuosl.org>; Wed,  4 Dec 2024 15:02:49 +0000 (UTC)
-X-CSE-ConnectionGUID: JTKyiTFMSc+x/lZv15fBSQ==
-X-CSE-MsgGUID: q9wSpzqfR1KmYvPmwZvVAw==
-X-IronPort-AV: E=McAfee;i="6700,10204,11276"; a="33744988"
-X-IronPort-AV: E=Sophos;i="6.12,207,1728975600"; d="scan'208";a="33744988"
-Received: from fmviesa002.fm.intel.com ([10.60.135.142])
- by orvoesa110.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 04 Dec 2024 07:02:49 -0800
-X-CSE-ConnectionGUID: 49Oq1a6dQ4SC7Fuo0L+eSw==
-X-CSE-MsgGUID: Xh+pDiX4RuClpW/yC/3wwA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.12,207,1728975600"; d="scan'208";a="117037570"
-Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by fmviesa002.fm.intel.com with ESMTP; 04 Dec 2024 07:02:40 -0800
-Received: from fedora.igk.intel.com (Metan_eth.igk.intel.com [10.123.220.124])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id 96D8E32C80;
- Wed,  4 Dec 2024 15:02:39 +0000 (GMT)
-From: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Cc: netdev@vger.kernel.org, Mateusz Polchlopek <mateusz.polchlopek@intel.com>,
- Marcin Szycik <marcin.szycik@linux.intel.com>
-Date: Wed,  4 Dec 2024 16:02:24 +0100
-Message-Id: <20241204150224.346606-1-mateusz.polchlopek@intel.com>
-X-Mailer: git-send-email 2.38.1
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 977568425B
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 977568425B
+Received: from mx3.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 977568425B
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  4 Dec 2024 15:05:24 +0000 (UTC)
+Received: from [192.168.0.2] (ip5f5af1e1.dynamic.kabel-deutschland.de
+ [95.90.241.225])
+ (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested) (Authenticated sender: pmenzel)
+ by mx.molgen.mpg.de (Postfix) with ESMTPSA id 34F6F61E64778;
+ Wed, 04 Dec 2024 16:05:05 +0100 (CET)
+Message-ID: <f684e517-19c5-4dd9-9de6-34aefe289552@molgen.mpg.de>
+Date: Wed, 4 Dec 2024 16:05:04 +0100
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+To: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
+Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
+ Marcin Szycik <marcin.szycik@linux.intel.com>
+References: <20241204150224.346606-1-mateusz.polchlopek@intel.com>
+Content-Language: en-US
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+In-Reply-To: <20241204150224.346606-1-mateusz.polchlopek@intel.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1733324571; x=1764860571;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=En4Y/eXJHek4wbV9HkyLZxuRmozrYukh92bXSpkWI1Q=;
- b=BP4zo2L42HFTYBaYH0Rbv3sgkWRA5DPTOJQj+rCTFslyFac9pi4EF9gd
- aneIpQfUttBOQuyzOR9xquSUthsMwqG8kvO2kTGd0vR8umPOCLHC5PqUq
- zShFvGv4dIB/jGfQnhsKjpXFVhBqKKvGIO/XwX3NiBEk196LV4Uo3/yUE
- 6daESfVVwKubopOpKGQx+Tef8X1fsMSvhgBZXvENqKHVH4FvJ0o8yk0KL
- gwdC4X2817vTXhbYwDuSdxkw1ACTJTyzB9oTQprQt+1xrRtxfsVdzRx9N
- HZjIsAOd1SZhkUYNVhXVmLYC6lL+JHfkp0BCSyXJjJAr6pbBsqdWzG5vt
- Q==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=BP4zo2L4
-Subject: [Intel-wired-lan] [PATCH iwl-net v1] ice: move static_assert to
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dmarc=none (p=none dis=none)
+ header.from=molgen.mpg.de
+Subject: Re: [Intel-wired-lan] [PATCH iwl-net v1] ice: move static_assert to
  declaration section
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
@@ -110,41 +89,55 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-static_assert() needs to be placed in the declaration section,
-so move it there in ice_cfg_tx_topo() function.
+Dear Mateusz,
 
-Current code causes following warnings on some gcc versions:
-error: ISO C90 forbids mixed declarations and code
-[-Werror=declaration-after-statement]
 
-Fixes: c188afdc3611 ("ice: fix memleak in ice_init_tx_topology()")
-Reviewed-by: Marcin Szycik <marcin.szycik@linux.intel.com>
-Signed-off-by: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
----
- drivers/net/ethernet/intel/ice/ice_ddp.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+Thank you for the patch.
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ddp.c b/drivers/net/ethernet/intel/ice/ice_ddp.c
-index 69d5b1a28491..e885f84520ba 100644
---- a/drivers/net/ethernet/intel/ice/ice_ddp.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ddp.c
-@@ -2388,6 +2388,8 @@ int ice_cfg_tx_topo(struct ice_hw *hw, const void *buf, u32 len)
- 	int status;
- 	u8 flags;
- 
-+	static_assert(ICE_PKG_BUF_SIZE == ICE_AQ_MAX_BUF_LEN);
-+
- 	if (!buf || !len)
- 		return -EINVAL;
- 
-@@ -2482,7 +2484,6 @@ int ice_cfg_tx_topo(struct ice_hw *hw, const void *buf, u32 len)
- 	}
- 
- 	/* Get the new topology buffer, reuse current topo copy mem */
--	static_assert(ICE_PKG_BUF_SIZE == ICE_AQ_MAX_BUF_LEN);
- 	new_topo = topo;
- 	memcpy(new_topo, (u8 *)section + offset, size);
- 
--- 
-2.38.1
+Am 04.12.24 um 16:02 schrieb Mateusz Polchlopek:
+> static_assert() needs to be placed in the declaration section,
+> so move it there in ice_cfg_tx_topo() function.
+> 
+> Current code causes following warnings on some gcc versions:
 
+Please list the versions you know of.
+
+> error: ISO C90 forbids mixed declarations and code
+> [-Werror=declaration-after-statement]
+
+The above could be in one line, as it’s pasted.
+
+> Fixes: c188afdc3611 ("ice: fix memleak in ice_init_tx_topology()")
+> Reviewed-by: Marcin Szycik <marcin.szycik@linux.intel.com>
+> Signed-off-by: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
+> ---
+>   drivers/net/ethernet/intel/ice/ice_ddp.c | 3 ++-
+>   1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/ice/ice_ddp.c b/drivers/net/ethernet/intel/ice/ice_ddp.c
+> index 69d5b1a28491..e885f84520ba 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_ddp.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_ddp.c
+> @@ -2388,6 +2388,8 @@ int ice_cfg_tx_topo(struct ice_hw *hw, const void *buf, u32 len)
+>   	int status;
+>   	u8 flags;
+>   
+> +	static_assert(ICE_PKG_BUF_SIZE == ICE_AQ_MAX_BUF_LEN);
+> +
+>   	if (!buf || !len)
+>   		return -EINVAL;
+>   
+> @@ -2482,7 +2484,6 @@ int ice_cfg_tx_topo(struct ice_hw *hw, const void *buf, u32 len)
+>   	}
+>   
+>   	/* Get the new topology buffer, reuse current topo copy mem */
+> -	static_assert(ICE_PKG_BUF_SIZE == ICE_AQ_MAX_BUF_LEN);
+>   	new_topo = topo;
+>   	memcpy(new_topo, (u8 *)section + offset, size);
+
+The diff looks good.
+
+
+Kind regards,
+
+Paul
