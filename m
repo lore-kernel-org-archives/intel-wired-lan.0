@@ -1,98 +1,108 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C8F7BE7716D
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  4 Dec 2024 22:58:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B62B9E7716D
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  5 Dec 2024 00:38:14 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 6B16981E9E;
-	Wed,  4 Dec 2024 22:58:50 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 3E26B4076C;
+	Thu,  5 Dec 2024 00:38:14 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id iKHze83xUv12; Wed,  4 Dec 2024 22:58:49 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id Ctis1pcTmB_b; Thu,  5 Dec 2024 00:38:13 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7E5B4845FC
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E107B40796
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1733353129;
-	bh=GirAyz2Vc6AyIWO7DCGREizNgX08C+P2Yh6QCGAaJaw=;
-	h=Date:To:Cc:References:From:In-Reply-To:Subject:List-Id:
+	s=default; t=1733359092;
+	bh=5uAFtQOQ4wI+u493i9WWzuDC+rdqkXpVIozUQpa72R8=;
+	h=From:To:Cc:In-Reply-To:References:Date:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=h8NCQ/yHurq0lwKIyBEuIE6tk5OlBIVECVGVg76htA7qJzsuurwdRc4L9Fg5La9DN
-	 v4pNcAlPsV+vk5PcCtKaxYKBxaj0jy5wXViUi1rNzK9n4vawNUWU6kBluinl2Q9tVB
-	 tnHkMQB5nCl5/cuGvKOv7kuBxNZ6qbGs19ZNWCerXSLAS75fR/vz+TRjKTW9Qe6h0h
-	 DdEGX+i9eA6l0ICJ1WXbDDRqUaFz4RP6WqgjZNlCymeGpyjRxiZADXk7wogpGkivk0
-	 SG4zc8z4vIFExGIDwepzGcyxovf7jfxIO+oFHlji6dGiJ09p47KTPjRGhhL6F5NuQM
-	 vh+EOG86nNQUg==
+	b=eZjxHUglV0MDETnRXMWkb544QylCfWkY3OQVnGwN7mjmYyYA23Nse2ur88TaAh7Pf
+	 2ZHGpFdumRhwuNJ5UzQ/lmAF74/RE6O5EV/y9yuQn2jtN+qFN2XYw7DS8W+xNmMV4b
+	 g2DvH2XeVtov5AsQU+JC8xlmcnoOApZRCsawD6SlYjeQeDGauXygWvRklwfo1rwL/k
+	 94GVLn2+DFlPPwoEsGAQfOo3Uow4/djjqIRhJFakA9JxEVvKsgVjU2Wl5+KsMnPtp3
+	 0lxPPznOvtgLRdDRy1lhAbSXaKLA/jnbap9i32XtMuereM0qzdBowN0qcisk7NJBVd
+	 OZjs1lZB3vHrA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 7E5B4845FC;
-	Wed,  4 Dec 2024 22:58:49 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id 593B61DD1
- for <intel-wired-lan@lists.osuosl.org>; Wed,  4 Dec 2024 22:58:47 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id E107B40796;
+	Thu,  5 Dec 2024 00:38:12 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id E49A5AE8
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Dec 2024 00:38:11 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 46FFF60895
- for <intel-wired-lan@lists.osuosl.org>; Wed,  4 Dec 2024 22:58:47 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id D031B4076C
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Dec 2024 00:38:11 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id z_AW8llCZA2e for <intel-wired-lan@lists.osuosl.org>;
- Wed,  4 Dec 2024 22:58:46 +0000 (UTC)
-X-Greylist: delayed 9406 seconds by postgrey-1.37 at util1.osuosl.org;
- Wed, 04 Dec 2024 22:58:46 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 35C2260A50
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 35C2260A50
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=81.19.149.126;
- helo=mx16lb.world4you.com; envelope-from=gerhard@engleder-embedded.com;
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id shCrb3iK2nd2 for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  5 Dec 2024 00:38:10 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.21;
+ helo=mgamail.intel.com; envelope-from=vinicius.gomes@intel.com;
  receiver=<UNKNOWN> 
-Received: from mx16lb.world4you.com (mx16lb.world4you.com [81.19.149.126])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 35C2260A50
- for <intel-wired-lan@lists.osuosl.org>; Wed,  4 Dec 2024 22:58:46 +0000 (UTC)
-Received: from [88.117.62.55] (helo=[10.0.0.160])
- by mx16lb.world4you.com with esmtpsa (TLS1.2) tls
- TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 (Exim 4.97.1)
- (envelope-from <gerhard@engleder-embedded.com>)
- id 1tIvsb-000000008U2-1ODm; Wed, 04 Dec 2024 21:21:50 +0100
-Message-ID: <06edcab8-280d-4397-8df2-58a35eb094ec@engleder-embedded.com>
-Date: Wed, 4 Dec 2024 21:21:49 +0100
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 8630640796
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 8630640796
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.21])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 8630640796
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Dec 2024 00:38:10 +0000 (UTC)
+X-CSE-ConnectionGUID: IZg0uf4aQiurH5CQacYyJg==
+X-CSE-MsgGUID: PxeHS0O0SKCJJ/Am06WrPw==
+X-IronPort-AV: E=McAfee;i="6700,10204,11276"; a="33566521"
+X-IronPort-AV: E=Sophos;i="6.12,208,1728975600"; d="scan'208";a="33566521"
+Received: from orviesa004.jf.intel.com ([10.64.159.144])
+ by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 04 Dec 2024 16:38:09 -0800
+X-CSE-ConnectionGUID: bgfxqTM4QCGuyUxOLRDMHw==
+X-CSE-MsgGUID: caqkOxw8TQ2sQqysq2/IHQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.12,208,1728975600"; d="scan'208";a="99003015"
+Received: from dgramcko-desk.amr.corp.intel.com (HELO vcostago-mobl3)
+ ([10.124.223.250])
+ by orviesa004-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 04 Dec 2024 16:38:08 -0800
+From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+To: Song Yoong Siang <yoong.siang.song@intel.com>, Alexei Starovoitov
+ <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, "David S .
+ Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>, Jesper
+ Dangaard Brouer <hawk@kernel.org>, John Fastabend
+ <john.fastabend@gmail.com>, Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>, Andrew Lunn
+ <andrew+netdev@lunn.ch>, Eric Dumazet <edumazet@google.com>, Paolo Abeni
+ <pabeni@redhat.com>, Richard Cochran <richardcochran@gmail.com>
+Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, bpf@vger.kernel.org
+In-Reply-To: <20241204120233.3148482-1-yoong.siang.song@intel.com>
+References: <20241204120233.3148482-1-yoong.siang.song@intel.com>
+Date: Wed, 04 Dec 2024 16:38:07 -0800
+Message-ID: <87wmgfvua8.fsf@intel.com>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-To: Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Cc: anthony.l.nguyen@intel.com, andrew+netdev@lunn.ch,
- netdev@vger.kernel.org, davem@davemloft.net, kuba@kernel.org,
- edumazet@google.com, pabeni@redhat.com, Gerhard Engleder <eg@keba.com>,
- Vitaly Lifshits <vitaly.lifshits@intel.com>,
- "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>
-References: <20241203202814.56140-1-gerhard@engleder-embedded.com>
- <ef87bd20-6fda-4839-8cff-4ab10bf500a7@intel.com>
-Content-Language: en-US
-From: Gerhard Engleder <gerhard@engleder-embedded.com>
-In-Reply-To: <ef87bd20-6fda-4839-8cff-4ab10bf500a7@intel.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-AV-Do-Run: Yes
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt;
- c=relaxed/relaxed; 
- d=engleder-embedded.com; s=dkim11; h=Content-Transfer-Encoding:Content-Type:
- In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:Message-ID:Sender
- :Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
- Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
- List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=GirAyz2Vc6AyIWO7DCGREizNgX08C+P2Yh6QCGAaJaw=; b=fuT6POE0pV8AZkqh/tVR5YynqL
- ybsdQqZJkfj7yzQWM6Hb+vxiIHHM9chdE+auV+4txYxCGITqr4hBNupqwXlvbbKx+auJjGlMucEzg
- XZ3MRbMQAicd1V+mSnOBnkaVL7Mk54ygvfhPW5oJV2vNtBlwzLVE8z6kP4aaYq+/mDUk=;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+Content-Type: text/plain
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1733359091; x=1764895091;
+ h=from:to:cc:subject:in-reply-to:references:date:
+ message-id:mime-version;
+ bh=10K0kt3qulMGZi30OdMQv6XXrGRmT0E1cUH//lIKnVY=;
+ b=KROQWjd6hgWmwG1Y35m1HUVMwgVQR88DUhbZv3u4EPLiWiMTrFcB8GNj
+ 52KfhOJRJHNdOoNqmpSXKu6s5xul8Ye6wO4sAPXT8eK2MmKoAMrHZLc7S
+ ML5w6ryyhvrx0FM7eYTC+/STdH0Om7xm8k1xfXuuY6NQuyQ9pBH4naijA
+ 7N9x5WkV3N/qS7YsjGbf3Uzf8yIeedxjYIO7xkwNOyWZx3xk7pNs1GByr
+ X6IvONHO99jwwgEihFcOUCiE/hNw3UDdeFsXntZ2Omc3gMqmfQ+rOEJOr
+ ZBQAWY8GZH01gIzt8a8LM+DEGdSotfLyINO9S1R8kyhmNyJYxA+QvHrOo
+ g==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
- header.from=engleder-embedded.com
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (1024-bit key,
- unprotected) header.d=engleder-embedded.com header.i=@engleder-embedded.com
- header.a=rsa-sha256 header.s=dkim11 header.b=fuT6POE0
-Subject: Re: [Intel-wired-lan] [PATCH net-next] e1000e: Fix real-time
- violations on link up
+ header.from=intel.com
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=KROQWjd6
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next 1/1] igc: Improve
+ XDP_SETUP_PROG process
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -108,66 +118,225 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On 04.12.24 11:10, Przemek Kitszel wrote:
-> On 12/3/24 21:28, Gerhard Engleder wrote:
->> From: Gerhard Engleder <eg@keba.com>
->>
->> From: Gerhard Engleder <eg@keba.com>
-> 
-> duplicated From: line
+Song Yoong Siang <yoong.siang.song@intel.com> writes:
 
-Nervous fingers, sorry, will be fixed.
+> Improve XDP_SETUP_PROG process by avoiding unnecessary link down/up event
+> and hardware device reset.
+>
 
->>
->> Link down and up triggers update of MTA table. This update executes many
->> PCIe writes and a final flush. Thus, PCIe will be blocked until all 
->> writes
->> are flushed. As a result, DMA transfers of other targets suffer from 
->> delay
->> in the range of 50us. This results in timing violations on real-time
->> systems during link down and up of e1000e.
->>
->> A flush after a low enough number of PCIe writes eliminates the delay
->> but also increases the time needed for MTA table update. The following
->> measurements were done on i3-2310E with e1000e for 128 MTA table entries:
->>
->> Single flush after all writes: 106us
->> Flush after every write:       429us
->> Flush after every 2nd write:   266us
->> Flush after every 4th write:   180us
->> Flush after every 8th write:   141us
->> Flush after every 16th write:  121us
->>
->> A flush after every 8th write delays the link up by 35us and the
->> negative impact to DMA transfers of other targets is still tolerable.
->>
->> Execute a flush after every 8th write. This prevents overloading the
->> interconnect with posted writes. As this also increases the time spent 
->> for
->> MTA table update considerable this change is limited to PREEMPT_RT.
-> 
-> hmm, why to limit this to PREEMPT_RT, the change sounds resonable also
-> for the standard kernel, at last for me
-> (perhaps with every 16th write instead)
+Some examples of problems that these hardware resets are causing would
+be good.
 
-As Andrew argumented similar, I will remove the PREEMPT_RT dependency
-with the next version. This is not the hot path, so the additional delay
-of <<1ms for boot and interface up is negligible.
+> Signed-off-by: Song Yoong Siang <yoong.siang.song@intel.com>
+> ---
 
-> with that said, I'm fine with this patch as is too
-> 
->>
->> Signed-off-by: Gerhard Engleder <eg@keba.com>
-> 
-> would be good to add link to your RFC
-> https://lore.kernel.org/netdev/f8fe665a-5e6c-4f95-b47a-2f3281aa0e6c@lunn.ch/T/
-> 
-> and also CC Vitaly who participated there (done),
-> same for IWL mailing list (also CCd), and use iwl-next tag for your
-> future contributions to intel ethernet
+The duplication of code doesn't look that good. Initialization is
+tricky, it seems to make it easy to update one place and forget to
+update the other.
 
-Will be done.
+A couple of ideas:
+ - separate the code into functions that can be used from the "usual"
+ igc_open()/igc_close() flow;
+ - it seems that igc_close()/igc_open() are too big a hammer for
+ installing a new XDP program: what do we really need? (my mental model
+ is: 1. stop new traffic from going into any queue; 2. wait for any
+ packets "in progress"; 3. install the program; 4. resume operations;
+ what else?)
 
-Thank you for the review!
+>  drivers/net/ethernet/intel/igc/igc.h      |   2 +
+>  drivers/net/ethernet/intel/igc/igc_main.c | 138 ++++++++++++++++++++++
+>  drivers/net/ethernet/intel/igc/igc_xdp.c  |   4 +-
+>  3 files changed, 142 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
+> index eac0f966e0e4..b1e46fcaae1a 100644
+> --- a/drivers/net/ethernet/intel/igc/igc.h
+> +++ b/drivers/net/ethernet/intel/igc/igc.h
+> @@ -341,6 +341,8 @@ void igc_up(struct igc_adapter *adapter);
+>  void igc_down(struct igc_adapter *adapter);
+>  int igc_open(struct net_device *netdev);
+>  int igc_close(struct net_device *netdev);
+> +void igc_xdp_open(struct net_device *netdev);
+> +void igc_xdp_close(struct net_device *netdev);
+>  int igc_setup_tx_resources(struct igc_ring *ring);
+>  int igc_setup_rx_resources(struct igc_ring *ring);
+>  void igc_free_tx_resources(struct igc_ring *ring);
+> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+> index 27872bdea9bd..098529a80b88 100644
+> --- a/drivers/net/ethernet/intel/igc/igc_main.c
+> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
+> @@ -6145,6 +6145,144 @@ int igc_close(struct net_device *netdev)
+>  	return 0;
+>  }
+>  
+> +void igc_xdp_open(struct net_device *netdev)
+> +{
+> +	struct igc_adapter *adapter = netdev_priv(netdev);
+> +	struct pci_dev *pdev = adapter->pdev;
+> +	struct igc_hw *hw = &adapter->hw;
+> +	int err = 0;
+> +	int i = 0;
+> +
+> +	/* disallow open during test */
+> +	if (test_bit(__IGC_TESTING, &adapter->state))
+> +		return;
+> +
+> +	pm_runtime_get_sync(&pdev->dev);
+> +
+> +	igc_ptp_reset(adapter);
+> +
+> +	/* allocate transmit descriptors */
+> +	err = igc_setup_all_tx_resources(adapter);
+> +	if (err)
+> +		goto err_setup_tx;
+> +
+> +	/* allocate receive descriptors */
+> +	err = igc_setup_all_rx_resources(adapter);
+> +	if (err)
+> +		goto err_setup_rx;
+> +
+> +	igc_setup_tctl(adapter);
+> +	igc_setup_rctl(adapter);
+> +	igc_configure_tx(adapter);
+> +	igc_configure_rx(adapter);
+> +	igc_rx_fifo_flush_base(&adapter->hw);
+> +
+> +	/* call igc_desc_unused which always leaves
+> +	 * at least 1 descriptor unused to make sure
+> +	 * next_to_use != next_to_clean
+> +	 */
+> +	for (i = 0; i < adapter->num_rx_queues; i++) {
+> +		struct igc_ring *ring = adapter->rx_ring[i];
+> +
+> +		if (ring->xsk_pool)
+> +			igc_alloc_rx_buffers_zc(ring, igc_desc_unused(ring));
+> +		else
+> +			igc_alloc_rx_buffers(ring, igc_desc_unused(ring));
+> +	}
+> +
+> +	err = igc_request_irq(adapter);
+> +	if (err)
+> +		goto err_req_irq;
+> +
+> +	clear_bit(__IGC_DOWN, &adapter->state);
+> +
+> +	for (i = 0; i < adapter->num_q_vectors; i++)
+> +		napi_enable(&adapter->q_vector[i]->napi);
+> +
+> +	/* Clear any pending interrupts. */
+> +	rd32(IGC_ICR);
+> +	igc_irq_enable(adapter);
+> +
+> +	pm_runtime_put(&pdev->dev);
+> +
+> +	netif_tx_start_all_queues(netdev);
+> +	netif_carrier_on(netdev);
+> +
+> +	return;
+> +
+> +err_req_irq:
+> +	igc_release_hw_control(adapter);
+> +	igc_power_down_phy_copper_base(&adapter->hw);
+> +	igc_free_all_rx_resources(adapter);
+> +err_setup_rx:
+> +	igc_free_all_tx_resources(adapter);
+> +err_setup_tx:
+> +	igc_reset(adapter);
+> +	pm_runtime_put(&pdev->dev);
+> +}
+> +
+> +void igc_xdp_close(struct net_device *netdev)
+> +{
+> +	struct igc_adapter *adapter = netdev_priv(netdev);
+> +	struct pci_dev *pdev = adapter->pdev;
+> +	struct igc_hw *hw = &adapter->hw;
+> +	u32 tctl, rctl;
+> +	int i = 0;
+> +
+> +	WARN_ON(test_bit(__IGC_RESETTING, &adapter->state));
+> +
+> +	pm_runtime_get_sync(&pdev->dev);
+> +
+> +	set_bit(__IGC_DOWN, &adapter->state);
+> +
+> +	igc_ptp_suspend(adapter);
+> +
+> +	if (pci_device_is_present(pdev)) {
+> +		/* disable receives in the hardware */
+> +		rctl = rd32(IGC_RCTL);
+> +		wr32(IGC_RCTL, rctl & ~IGC_RCTL_EN);
+> +		/* flush and sleep below */
+> +	}
+> +	/* set trans_start so we don't get spurious watchdogs during reset */
+> +	netif_trans_update(netdev);
+> +
+> +	netif_carrier_off(netdev);
+> +	netif_tx_stop_all_queues(netdev);
+> +
+> +	if (pci_device_is_present(pdev)) {
+> +		/* disable transmits in the hardware */
+> +		tctl = rd32(IGC_TCTL);
+> +		tctl &= ~IGC_TCTL_EN;
+> +		wr32(IGC_TCTL, tctl);
+> +		/* flush both disables and wait for them to finish */
+> +		wrfl();
+> +		usleep_range(10000, 20000);
+> +
+> +		igc_irq_disable(adapter);
+> +	}
+> +
+> +	for (i = 0; i < adapter->num_q_vectors; i++) {
+> +		if (adapter->q_vector[i]) {
+> +			napi_synchronize(&adapter->q_vector[i]->napi);
+> +			napi_disable(&adapter->q_vector[i]->napi);
+> +		}
+> +	}
+> +
+> +	del_timer_sync(&adapter->watchdog_timer);
+> +	del_timer_sync(&adapter->phy_info_timer);
+> +
+> +	igc_disable_all_tx_rings_hw(adapter);
+> +	igc_clean_all_tx_rings(adapter);
+> +	igc_clean_all_rx_rings(adapter);
+> +
+> +	igc_free_irq(adapter);
+> +
+> +	igc_free_all_tx_resources(adapter);
+> +	igc_free_all_rx_resources(adapter);
+> +
+> +	pm_runtime_put_sync(&pdev->dev);
+> +}
+> +
+>  /**
+>   * igc_ioctl - Access the hwtstamp interface
+>   * @netdev: network interface device structure
+> diff --git a/drivers/net/ethernet/intel/igc/igc_xdp.c b/drivers/net/ethernet/intel/igc/igc_xdp.c
+> index 869815f48ac1..f1d6ab56ab54 100644
+> --- a/drivers/net/ethernet/intel/igc/igc_xdp.c
+> +++ b/drivers/net/ethernet/intel/igc/igc_xdp.c
+> @@ -25,7 +25,7 @@ int igc_xdp_set_prog(struct igc_adapter *adapter, struct bpf_prog *prog,
+>  
+>  	need_update = !!adapter->xdp_prog != !!prog;
+>  	if (if_running && need_update)
+> -		igc_close(dev);
+> +		igc_xdp_close(dev);
+>  
+>  	old_prog = xchg(&adapter->xdp_prog, prog);
+>  	if (old_prog)
+> @@ -37,7 +37,7 @@ int igc_xdp_set_prog(struct igc_adapter *adapter, struct bpf_prog *prog,
+>  		xdp_features_clear_redirect_target(dev);
+>  
+>  	if (if_running && need_update)
+> -		igc_open(dev);
+> +		igc_xdp_open(dev);
+>  
+>  	return 0;
+>  }
+> -- 
+> 2.34.1
+>
+>
 
-Gerhard
+Cheers,
+-- 
+Vinicius
