@@ -4,73 +4,74 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 241CAE77171
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  5 Dec 2024 08:45:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 42A03E77171
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  5 Dec 2024 08:46:04 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id D4B7584710;
-	Thu,  5 Dec 2024 08:45:58 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id BAEFB84709;
+	Thu,  5 Dec 2024 08:46:03 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id dpo_3KKcQyh6; Thu,  5 Dec 2024 08:45:56 +0000 (UTC)
+ id OURMZx1riPhw; Thu,  5 Dec 2024 08:46:02 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 38CD684706
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 857B984714
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1733388356;
-	bh=+y6iv4aeC1PY3Dd5j/mspLfywpR86f8ghKdrwH33hC8=;
+	s=default; t=1733388362;
+	bh=+JGPF7OBaO1tTQLtnFGW8mUo6WgY2YgshtSU4TLOb/w=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=KyEDKmGugWV6e6RTRy6Lh8zkAMadxWbFe/9ECHIcgQK1kvXLwL7k9rEauut3Faxzo
-	 ++F0yEJ0P5bySSeT1zmPhTY/LtbbnnZ7bJkbG4borkLzyu1XyOtsIGLECuQEZ0ZR38
-	 nCejqvz+M42R+AxPLNoyWq5RpesGtToNL3TGwUdkIqepMOmmNbffnlVQPRzqQOV6lm
-	 77K1/GW4gAI95fDR7N6Q5WUMqBXyGcl6bcUPPl1gJA/J2v2Ne8sCfqmclp5O+TedlZ
-	 0budKqsuNtLVq+v44cr2hRv8uIhNUR7s8C4BCrlUD40GKhIdLwoeT0LYWLIXmiYSMe
-	 jHJ5BUeLCYKwQ==
+	b=XQpRijaR+xmaABpLHwJHXTNdUFVi4+FUTNJn43pQcxAJktjF8HOeq03BFbH4U6FMZ
+	 GtPYFdH4sNrkLPFcG5Y9P64H87GqQWaqhWkGSzncaZRQp5odc/UzYzU+iTnjctVoUL
+	 7uNEaSnWlL7xjbBhzsA9YGM0aQCcruW9XaGlhgTLbOnXbwGwPA1sPdWiPRARsS4kDL
+	 B1udcvfwTeVS8WYanGl6PrNiP5bp84Nebiw/DyMTPOYseNvvMKNFeyck7ehOA0vod2
+	 /7RPhTSQnRsUmc7Ut0elrhwVSRCTZCWucjyxiisP8jZwYgdUVErY8nCf6DzVX8xJFU
+	 UB0U3Jp77rZXg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 38CD684706;
-	Thu,  5 Dec 2024 08:45:56 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 857B984714;
+	Thu,  5 Dec 2024 08:46:02 +0000 (UTC)
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id 10D3C1DD1
- for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Dec 2024 08:45:54 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id 7AB8B1DD1
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Dec 2024 08:46:01 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id F2B6241561
- for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Dec 2024 08:45:53 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 51ABF4156F
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Dec 2024 08:46:01 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id lSRyDpi9bhNy for <intel-wired-lan@lists.osuosl.org>;
- Thu,  5 Dec 2024 08:45:52 +0000 (UTC)
+ id G6Te3echGwGx for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  5 Dec 2024 08:45:59 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.12;
  helo=mgamail.intel.com; envelope-from=piotr.kwapulinski@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 1A50C4155E
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1A50C4155E
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org B91E141568
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B91E141568
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.12])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 1A50C4155E
- for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Dec 2024 08:45:52 +0000 (UTC)
-X-CSE-ConnectionGUID: FT8kh+TDTUSe4eFHZgGS2g==
-X-CSE-MsgGUID: XJ3vLmP9QqqGPqpCvWkvBQ==
-X-IronPort-AV: E=McAfee;i="6700,10204,11276"; a="37623240"
-X-IronPort-AV: E=Sophos;i="6.12,209,1728975600"; d="scan'208";a="37623240"
+ by smtp4.osuosl.org (Postfix) with ESMTPS id B91E141568
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Dec 2024 08:45:59 +0000 (UTC)
+X-CSE-ConnectionGUID: ru9SXNreTlK5a46FS/s1vQ==
+X-CSE-MsgGUID: 7sexdj/kQKWkmnF4rRrjXA==
+X-IronPort-AV: E=McAfee;i="6700,10204,11276"; a="37623268"
+X-IronPort-AV: E=Sophos;i="6.12,209,1728975600"; d="scan'208";a="37623268"
 Received: from orviesa008.jf.intel.com ([10.64.159.148])
  by fmvoesa106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 05 Dec 2024 00:45:52 -0800
-X-CSE-ConnectionGUID: i6NrgkqBQ5Sqv3VTxC+VkQ==
-X-CSE-MsgGUID: meB5D+obSraBs8bn4Rxr1g==
+ 05 Dec 2024 00:45:59 -0800
+X-CSE-ConnectionGUID: mGH8eXSQT9itpf2J8WKfwA==
+X-CSE-MsgGUID: vmsqz2H3R5aOK1gD+7UsUQ==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.12,209,1728975600"; d="scan'208";a="94864127"
+X-IronPort-AV: E=Sophos;i="6.12,209,1728975600"; d="scan'208";a="94864156"
 Received: from pkwapuli-mobl1.ger.corp.intel.com (HELO
  vbox-pkwap.ger.corp.intel.com) ([10.246.2.76])
- by orviesa008.jf.intel.com with ESMTP; 05 Dec 2024 00:45:49 -0800
+ by orviesa008.jf.intel.com with ESMTP; 05 Dec 2024 00:45:55 -0800
 From: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
 To: intel-wired-lan@lists.osuosl.org
 Cc: netdev@vger.kernel.org, Piotr Kwapulinski <piotr.kwapulinski@intel.com>,
  Stefan Wegrzyn <stefan.wegrzyn@intel.com>,
  Jedrzej Jagielski <jedrzej.jagielski@intel.com>,
- Jan Sokolowski <jan.sokolowski@intel.com>, Simon Horman <horms@kernel.org>
-Date: Thu,  5 Dec 2024 09:44:44 +0100
-Message-ID: <20241205084450.4651-3-piotr.kwapulinski@intel.com>
+ Michal Swiatkowski <michal.swiatkowski@linux.intel.com>,
+ Simon Horman <horms@kernel.org>
+Date: Thu,  5 Dec 2024 09:44:46 +0100
+Message-ID: <20241205084450.4651-5-piotr.kwapulinski@intel.com>
 X-Mailer: git-send-email 2.43.5
 In-Reply-To: <20241205084450.4651-1-piotr.kwapulinski@intel.com>
 References: <20241205084450.4651-1-piotr.kwapulinski@intel.com>
@@ -78,25 +79,25 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1733388352; x=1764924352;
+ t=1733388360; x=1764924360;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=KFDDl9W3efhcSfINVE30FUm3Pdlo340EYstsRlm1U8w=;
- b=iHfzJg/SjEL8mVVmJVIo6ff6ybrJIbugLN6lnYyL7fRJwVFiMOYdnmxA
- dY2LkhHK1GnKr26EvTXdBME069+g/EpvY0KpgueI8t7GNGvtF6V/bs5Un
- WIveyNMRCS5w8aZ0gLaYG5dac0OjBsgpeP8WSxohDsVblxpExTVXlAsWq
- NbfR50qXFzC1PqjtrL3X2kJvkaaqjkhySgr3XtpyxF6RjmLVncwDxGxqS
- /SCRLQkb9+dgXpG3s7d1RYVVs4VNG1teeYKceLP/t1rU6uls6tIvTNYkI
- XZNrSOpXKEkWXd/1Toq1AIpv3xBBiBV4trPzkC09SZx31UxRM4LyrH8Hh
- A==;
+ bh=sQ6Z2k8ZTh3SXcZYXjTntib3M5oZgJmZSCzafWYkf2k=;
+ b=EyZzeJNqEkfuo417r/9FANnDfdW5vzCZaDNDS+lYzOCGulaRqMW0n4vz
+ fKP7XCVl9+BPDLxj0U1AV5MLJMeCkFEOugIx0rwPVY2+3hhNc1xfM86jV
+ 86soAalTA4S4zXRZX6/8BGUy0GCcnYqEBlEuWkIeY0jRbuDQ61VVN3xay
+ UK/kBS86Njj1rglqI6r6VKnUWzJWFpdvPAiaWUXTR21BQhkMjo7fiNZnM
+ RjlBx1U/xfF89A+3p9svu2IaEJOnzyIvA8HYSjuSnV1WwjJuCVisBbb18
+ 9wEZKW0yKa0XVQc6mUiCEPpsuC7li7PorVATgelRvHiXMgvtf9hGbqSeB
+ g==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=iHfzJg/S
-Subject: [Intel-wired-lan] [PATCH iwl-next v12 2/8] ixgbe: Add support for
- E610 device capabilities detection
+ header.a=rsa-sha256 header.s=Intel header.b=EyZzeJNq
+Subject: [Intel-wired-lan] [PATCH iwl-next v12 4/8] ixgbe: Add support for
+ NVM handling in E610 device
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -112,610 +113,346 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Add low level support for E610 device capabilities detection. The
-capabilities are discovered via the Admin Command Interface. Discover the
-following capabilities:
-- function caps: vmdq, dcb, rss, rx/tx qs, msix, nvm, orom, reset
-- device caps: vsi, fdir, 1588
-- phy caps
+Add low level support for accessing NVM in E610 device. NVM operations are
+handled via the Admin Command Interface. Add the following NVM specific
+operations:
+- acquire, release, read
+- validate checksum
+- read shadow ram
 
 Co-developed-by: Stefan Wegrzyn <stefan.wegrzyn@intel.com>
 Signed-off-by: Stefan Wegrzyn <stefan.wegrzyn@intel.com>
 Co-developed-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
 Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
-Reviewed-by: Jan Sokolowski <jan.sokolowski@intel.com>
+Reviewed-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 Reviewed-by: Simon Horman <horms@kernel.org>
 Signed-off-by: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c | 529 ++++++++++++++++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c | 291 ++++++++++++++++++
  drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h |  12 +
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   7 +
- 3 files changed, 548 insertions(+)
+ 2 files changed, 303 insertions(+)
 
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c
-index e1bab11..1e4e8d2 100644
+index 1c50005..0542b4b 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c
-@@ -494,3 +494,532 @@ void ixgbe_release_res(struct ixgbe_hw *hw, enum ixgbe_aci_res_ids res)
- 		total_delay++;
- 	}
+@@ -2102,3 +2102,294 @@ int ixgbe_aci_get_netlist_node(struct ixgbe_hw *hw,
+ 
+ 	return 0;
  }
 +
 +/**
-+ * ixgbe_parse_e610_caps - Parse common device/function capabilities
-+ * @hw: pointer to the HW struct
-+ * @caps: pointer to common capabilities structure
-+ * @elem: the capability element to parse
-+ * @prefix: message prefix for tracing capabilities
-+ *
-+ * Given a capability element, extract relevant details into the common
-+ * capability structure.
-+ *
-+ * Return: true if the capability matches one of the common capability ids,
-+ * false otherwise.
-+ */
-+static bool ixgbe_parse_e610_caps(struct ixgbe_hw *hw,
-+				  struct ixgbe_hw_caps *caps,
-+				  struct ixgbe_aci_cmd_list_caps_elem *elem,
-+				  const char *prefix)
-+{
-+	u32 logical_id = le32_to_cpu(elem->logical_id);
-+	u32 phys_id = le32_to_cpu(elem->phys_id);
-+	u32 number = le32_to_cpu(elem->number);
-+	u16 cap = le16_to_cpu(elem->cap);
-+
-+	switch (cap) {
-+	case IXGBE_ACI_CAPS_VALID_FUNCTIONS:
-+		caps->valid_functions = number;
-+		break;
-+	case IXGBE_ACI_CAPS_SRIOV:
-+		caps->sr_iov_1_1 = (number == 1);
-+		break;
-+	case IXGBE_ACI_CAPS_VMDQ:
-+		caps->vmdq = (number == 1);
-+		break;
-+	case IXGBE_ACI_CAPS_DCB:
-+		caps->dcb = (number == 1);
-+		caps->active_tc_bitmap = logical_id;
-+		caps->maxtc = phys_id;
-+		break;
-+	case IXGBE_ACI_CAPS_RSS:
-+		caps->rss_table_size = number;
-+		caps->rss_table_entry_width = logical_id;
-+		break;
-+	case IXGBE_ACI_CAPS_RXQS:
-+		caps->num_rxq = number;
-+		caps->rxq_first_id = phys_id;
-+		break;
-+	case IXGBE_ACI_CAPS_TXQS:
-+		caps->num_txq = number;
-+		caps->txq_first_id = phys_id;
-+		break;
-+	case IXGBE_ACI_CAPS_MSIX:
-+		caps->num_msix_vectors = number;
-+		caps->msix_vector_first_id = phys_id;
-+		break;
-+	case IXGBE_ACI_CAPS_NVM_VER:
-+		break;
-+	case IXGBE_ACI_CAPS_MAX_MTU:
-+		caps->max_mtu = number;
-+		break;
-+	case IXGBE_ACI_CAPS_PCIE_RESET_AVOIDANCE:
-+		caps->pcie_reset_avoidance = (number > 0);
-+		break;
-+	case IXGBE_ACI_CAPS_POST_UPDATE_RESET_RESTRICT:
-+		caps->reset_restrict_support = (number == 1);
-+		break;
-+	case IXGBE_ACI_CAPS_EXT_TOPO_DEV_IMG0:
-+	case IXGBE_ACI_CAPS_EXT_TOPO_DEV_IMG1:
-+	case IXGBE_ACI_CAPS_EXT_TOPO_DEV_IMG2:
-+	case IXGBE_ACI_CAPS_EXT_TOPO_DEV_IMG3:
-+	{
-+		u8 index = cap - IXGBE_ACI_CAPS_EXT_TOPO_DEV_IMG0;
-+
-+		caps->ext_topo_dev_img_ver_high[index] = number;
-+		caps->ext_topo_dev_img_ver_low[index] = logical_id;
-+		caps->ext_topo_dev_img_part_num[index] =
-+			FIELD_GET(IXGBE_EXT_TOPO_DEV_IMG_PART_NUM_M, phys_id);
-+		caps->ext_topo_dev_img_load_en[index] =
-+			(phys_id & IXGBE_EXT_TOPO_DEV_IMG_LOAD_EN) != 0;
-+		caps->ext_topo_dev_img_prog_en[index] =
-+			(phys_id & IXGBE_EXT_TOPO_DEV_IMG_PROG_EN) != 0;
-+		break;
-+	}
-+	default:
-+		/* Not one of the recognized common capabilities */
-+		return false;
-+	}
-+
-+	return true;
-+}
-+
-+/**
-+ * ixgbe_parse_valid_functions_cap - Parse IXGBE_ACI_CAPS_VALID_FUNCTIONS caps
-+ * @hw: pointer to the HW struct
-+ * @dev_p: pointer to device capabilities structure
-+ * @cap: capability element to parse
-+ *
-+ * Parse IXGBE_ACI_CAPS_VALID_FUNCTIONS for device capabilities.
-+ */
-+static void
-+ixgbe_parse_valid_functions_cap(struct ixgbe_hw *hw,
-+				struct ixgbe_hw_dev_caps *dev_p,
-+				struct ixgbe_aci_cmd_list_caps_elem *cap)
-+{
-+	dev_p->num_funcs = hweight32(le32_to_cpu(cap->number));
-+}
-+
-+/**
-+ * ixgbe_parse_vf_dev_caps - Parse IXGBE_ACI_CAPS_VF device caps
-+ * @hw: pointer to the HW struct
-+ * @dev_p: pointer to device capabilities structure
-+ * @cap: capability element to parse
-+ *
-+ * Parse IXGBE_ACI_CAPS_VF for device capabilities.
-+ */
-+static void ixgbe_parse_vf_dev_caps(struct ixgbe_hw *hw,
-+				    struct ixgbe_hw_dev_caps *dev_p,
-+				    struct ixgbe_aci_cmd_list_caps_elem *cap)
-+{
-+	dev_p->num_vfs_exposed = le32_to_cpu(cap->number);
-+}
-+
-+/**
-+ * ixgbe_parse_vsi_dev_caps - Parse IXGBE_ACI_CAPS_VSI device caps
-+ * @hw: pointer to the HW struct
-+ * @dev_p: pointer to device capabilities structure
-+ * @cap: capability element to parse
-+ *
-+ * Parse IXGBE_ACI_CAPS_VSI for device capabilities.
-+ */
-+static void ixgbe_parse_vsi_dev_caps(struct ixgbe_hw *hw,
-+				     struct ixgbe_hw_dev_caps *dev_p,
-+				     struct ixgbe_aci_cmd_list_caps_elem *cap)
-+{
-+	dev_p->num_vsi_allocd_to_host = le32_to_cpu(cap->number);
-+}
-+
-+/**
-+ * ixgbe_parse_fdir_dev_caps - Parse IXGBE_ACI_CAPS_FD device caps
-+ * @hw: pointer to the HW struct
-+ * @dev_p: pointer to device capabilities structure
-+ * @cap: capability element to parse
-+ *
-+ * Parse IXGBE_ACI_CAPS_FD for device capabilities.
-+ */
-+static void ixgbe_parse_fdir_dev_caps(struct ixgbe_hw *hw,
-+				      struct ixgbe_hw_dev_caps *dev_p,
-+				      struct ixgbe_aci_cmd_list_caps_elem *cap)
-+{
-+	dev_p->num_flow_director_fltr = le32_to_cpu(cap->number);
-+}
-+
-+/**
-+ * ixgbe_parse_dev_caps - Parse device capabilities
-+ * @hw: pointer to the HW struct
-+ * @dev_p: pointer to device capabilities structure
-+ * @buf: buffer containing the device capability records
-+ * @cap_count: the number of capabilities
-+ *
-+ * Helper device to parse device (0x000B) capabilities list. For
-+ * capabilities shared between device and function, this relies on
-+ * ixgbe_parse_e610_caps.
-+ *
-+ * Loop through the list of provided capabilities and extract the relevant
-+ * data into the device capabilities structured.
-+ */
-+static void ixgbe_parse_dev_caps(struct ixgbe_hw *hw,
-+				 struct ixgbe_hw_dev_caps *dev_p,
-+				 void *buf, u32 cap_count)
-+{
-+	struct ixgbe_aci_cmd_list_caps_elem *cap_resp;
-+	u32 i;
-+
-+	cap_resp = (struct ixgbe_aci_cmd_list_caps_elem *)buf;
-+
-+	memset(dev_p, 0, sizeof(*dev_p));
-+
-+	for (i = 0; i < cap_count; i++) {
-+		u16 cap = le16_to_cpu(cap_resp[i].cap);
-+
-+		ixgbe_parse_e610_caps(hw, &dev_p->common_cap, &cap_resp[i],
-+				      "dev caps");
-+
-+		switch (cap) {
-+		case IXGBE_ACI_CAPS_VALID_FUNCTIONS:
-+			ixgbe_parse_valid_functions_cap(hw, dev_p,
-+							&cap_resp[i]);
-+			break;
-+		case IXGBE_ACI_CAPS_VF:
-+			ixgbe_parse_vf_dev_caps(hw, dev_p, &cap_resp[i]);
-+			break;
-+		case IXGBE_ACI_CAPS_VSI:
-+			ixgbe_parse_vsi_dev_caps(hw, dev_p, &cap_resp[i]);
-+			break;
-+		case  IXGBE_ACI_CAPS_FD:
-+			ixgbe_parse_fdir_dev_caps(hw, dev_p, &cap_resp[i]);
-+			break;
-+		default:
-+			/* Don't list common capabilities as unknown */
-+			break;
-+		}
-+	}
-+}
-+
-+/**
-+ * ixgbe_parse_vf_func_caps - Parse IXGBE_ACI_CAPS_VF function caps
-+ * @hw: pointer to the HW struct
-+ * @func_p: pointer to function capabilities structure
-+ * @cap: pointer to the capability element to parse
-+ *
-+ * Extract function capabilities for IXGBE_ACI_CAPS_VF.
-+ */
-+static void ixgbe_parse_vf_func_caps(struct ixgbe_hw *hw,
-+				     struct ixgbe_hw_func_caps *func_p,
-+				     struct ixgbe_aci_cmd_list_caps_elem *cap)
-+{
-+	func_p->num_allocd_vfs = le32_to_cpu(cap->number);
-+	func_p->vf_base_id = le32_to_cpu(cap->logical_id);
-+}
-+
-+/**
-+ * ixgbe_get_num_per_func - determine number of resources per PF
++ * ixgbe_acquire_nvm - Generic request for acquiring the NVM ownership
 + * @hw: pointer to the HW structure
-+ * @max: value to be evenly split between each PF
++ * @access: NVM access type (read or write)
 + *
-+ * Determine the number of valid functions by going through the bitmap returned
-+ * from parsing capabilities and use this to calculate the number of resources
-+ * per PF based on the max value passed in.
-+ *
-+ * Return: the number of resources per PF or 0, if no PH are available.
-+ */
-+static u32 ixgbe_get_num_per_func(struct ixgbe_hw *hw, u32 max)
-+{
-+#define IXGBE_CAPS_VALID_FUNCS_M	GENMASK(7, 0)
-+	u8 funcs = hweight8(hw->dev_caps.common_cap.valid_functions &
-+			    IXGBE_CAPS_VALID_FUNCS_M);
-+
-+	return funcs ? (max / funcs) : 0;
-+}
-+
-+/**
-+ * ixgbe_parse_vsi_func_caps - Parse IXGBE_ACI_CAPS_VSI function caps
-+ * @hw: pointer to the HW struct
-+ * @func_p: pointer to function capabilities structure
-+ * @cap: pointer to the capability element to parse
-+ *
-+ * Extract function capabilities for IXGBE_ACI_CAPS_VSI.
-+ */
-+static void ixgbe_parse_vsi_func_caps(struct ixgbe_hw *hw,
-+				      struct ixgbe_hw_func_caps *func_p,
-+				      struct ixgbe_aci_cmd_list_caps_elem *cap)
-+{
-+	func_p->guar_num_vsi = ixgbe_get_num_per_func(hw, IXGBE_MAX_VSI);
-+}
-+
-+/**
-+ * ixgbe_parse_func_caps - Parse function capabilities
-+ * @hw: pointer to the HW struct
-+ * @func_p: pointer to function capabilities structure
-+ * @buf: buffer containing the function capability records
-+ * @cap_count: the number of capabilities
-+ *
-+ * Helper function to parse function (0x000A) capabilities list. For
-+ * capabilities shared between device and function, this relies on
-+ * ixgbe_parse_e610_caps.
-+ *
-+ * Loop through the list of provided capabilities and extract the relevant
-+ * data into the function capabilities structured.
-+ */
-+static void ixgbe_parse_func_caps(struct ixgbe_hw *hw,
-+				  struct ixgbe_hw_func_caps *func_p,
-+				  void *buf, u32 cap_count)
-+{
-+	struct ixgbe_aci_cmd_list_caps_elem *cap_resp;
-+	u32 i;
-+
-+	cap_resp = (struct ixgbe_aci_cmd_list_caps_elem *)buf;
-+
-+	memset(func_p, 0, sizeof(*func_p));
-+
-+	for (i = 0; i < cap_count; i++) {
-+		u16 cap = le16_to_cpu(cap_resp[i].cap);
-+
-+		ixgbe_parse_e610_caps(hw, &func_p->common_cap,
-+				      &cap_resp[i], "func caps");
-+
-+		switch (cap) {
-+		case IXGBE_ACI_CAPS_VF:
-+			ixgbe_parse_vf_func_caps(hw, func_p, &cap_resp[i]);
-+			break;
-+		case IXGBE_ACI_CAPS_VSI:
-+			ixgbe_parse_vsi_func_caps(hw, func_p, &cap_resp[i]);
-+			break;
-+		default:
-+			/* Don't list common capabilities as unknown */
-+			break;
-+		}
-+	}
-+}
-+
-+/**
-+ * ixgbe_aci_list_caps - query function/device capabilities
-+ * @hw: pointer to the HW struct
-+ * @buf: a buffer to hold the capabilities
-+ * @buf_size: size of the buffer
-+ * @cap_count: if not NULL, set to the number of capabilities reported
-+ * @opc: capabilities type to discover, device or function
-+ *
-+ * Get the function (0x000A) or device (0x000B) capabilities description from
-+ * firmware and store it in the buffer.
-+ *
-+ * If the cap_count pointer is not NULL, then it is set to the number of
-+ * capabilities firmware will report. Note that if the buffer size is too
-+ * small, it is possible the command will return -ENOMEM. The
-+ * cap_count will still be updated in this case. It is recommended that the
-+ * buffer size be set to IXGBE_ACI_MAX_BUFFER_SIZE (the largest possible
-+ * buffer that firmware could return) to avoid this.
-+ *
-+ * Return: the exit code of the operation.
-+ * Exit code of -ENOMEM means the buffer size is too small.
-+ */
-+int ixgbe_aci_list_caps(struct ixgbe_hw *hw, void *buf, u16 buf_size,
-+			u32 *cap_count, enum ixgbe_aci_opc opc)
-+{
-+	struct ixgbe_aci_cmd_list_caps *cmd;
-+	struct ixgbe_aci_desc desc;
-+	int err;
-+
-+	cmd = &desc.params.get_cap;
-+
-+	if (opc != ixgbe_aci_opc_list_func_caps &&
-+	    opc != ixgbe_aci_opc_list_dev_caps)
-+		return -EINVAL;
-+
-+	ixgbe_fill_dflt_direct_cmd_desc(&desc, opc);
-+	err = ixgbe_aci_send_cmd(hw, &desc, buf, buf_size);
-+
-+	if (cap_count)
-+		*cap_count = le32_to_cpu(cmd->count);
-+
-+	return err;
-+}
-+
-+/**
-+ * ixgbe_discover_dev_caps - Read and extract device capabilities
-+ * @hw: pointer to the hardware structure
-+ * @dev_caps: pointer to device capabilities structure
-+ *
-+ * Read the device capabilities and extract them into the dev_caps structure
-+ * for later use.
++ * Request NVM ownership.
 + *
 + * Return: the exit code of the operation.
 + */
-+int ixgbe_discover_dev_caps(struct ixgbe_hw *hw,
-+			    struct ixgbe_hw_dev_caps *dev_caps)
++int ixgbe_acquire_nvm(struct ixgbe_hw *hw,
++		      enum ixgbe_aci_res_access_type access)
 +{
-+	u8 *cbuf __free(kfree);
-+	u32 cap_count;
-+	int err;
++	u32 fla;
 +
-+	cbuf = kzalloc(IXGBE_ACI_MAX_BUFFER_SIZE, GFP_KERNEL);
-+	if (!cbuf)
-+		return -ENOMEM;
-+	/* Although the driver doesn't know the number of capabilities the
-+	 * device will return, we can simply send a 4KB buffer, the maximum
-+	 * possible size that firmware can return.
-+	 */
-+	cap_count = IXGBE_ACI_MAX_BUFFER_SIZE /
-+		    sizeof(struct ixgbe_aci_cmd_list_caps_elem);
++	/* Skip if we are in blank NVM programming mode */
++	fla = IXGBE_READ_REG(hw, IXGBE_GLNVM_FLA);
++	if ((fla & IXGBE_GLNVM_FLA_LOCKED_M) == 0)
++		return 0;
 +
-+	err = ixgbe_aci_list_caps(hw, cbuf, IXGBE_ACI_MAX_BUFFER_SIZE,
-+				  &cap_count,
-+				  ixgbe_aci_opc_list_dev_caps);
-+	if (err)
-+		return err;
-+
-+	ixgbe_parse_dev_caps(hw, dev_caps, cbuf, cap_count);
-+
-+	return 0;
++	return ixgbe_acquire_res(hw, IXGBE_NVM_RES_ID, access,
++				 IXGBE_NVM_TIMEOUT);
 +}
 +
 +/**
-+ * ixgbe_discover_func_caps - Read and extract function capabilities
-+ * @hw: pointer to the hardware structure
-+ * @func_caps: pointer to function capabilities structure
++ * ixgbe_release_nvm - Generic request for releasing the NVM ownership
++ * @hw: pointer to the HW structure
 + *
-+ * Read the function capabilities and extract them into the func_caps structure
-+ * for later use.
-+ *
-+ * Return: the exit code of the operation.
++ * Release NVM ownership.
 + */
-+int ixgbe_discover_func_caps(struct ixgbe_hw *hw,
-+			     struct ixgbe_hw_func_caps *func_caps)
++void ixgbe_release_nvm(struct ixgbe_hw *hw)
 +{
-+	u8 *cbuf __free(kfree);
-+	u32 cap_count;
-+	int err;
++	u32 fla;
 +
-+	cbuf = kzalloc(IXGBE_ACI_MAX_BUFFER_SIZE, GFP_KERNEL);
-+	if (!cbuf)
-+		return -ENOMEM;
-+
-+	/* Although the driver doesn't know the number of capabilities the
-+	 * device will return, we can simply send a 4KB buffer, the maximum
-+	 * possible size that firmware can return.
-+	 */
-+	cap_count = IXGBE_ACI_MAX_BUFFER_SIZE /
-+		    sizeof(struct ixgbe_aci_cmd_list_caps_elem);
-+
-+	err = ixgbe_aci_list_caps(hw, cbuf, IXGBE_ACI_MAX_BUFFER_SIZE,
-+				  &cap_count,
-+				  ixgbe_aci_opc_list_func_caps);
-+	if (err)
-+		return err;
-+
-+	ixgbe_parse_func_caps(hw, func_caps, cbuf, cap_count);
-+
-+	return 0;
-+}
-+
-+/**
-+ * ixgbe_get_caps - get info about the HW
-+ * @hw: pointer to the hardware structure
-+ *
-+ * Retrieve both device and function capabilities.
-+ *
-+ * Return: the exit code of the operation.
-+ */
-+int ixgbe_get_caps(struct ixgbe_hw *hw)
-+{
-+	int err;
-+
-+	err = ixgbe_discover_dev_caps(hw, &hw->dev_caps);
-+	if (err)
-+		return err;
-+
-+	return ixgbe_discover_func_caps(hw, &hw->func_caps);
-+}
-+
-+/**
-+ * ixgbe_aci_disable_rxen - disable RX
-+ * @hw: pointer to the HW struct
-+ *
-+ * Request a safe disable of Receive Enable using ACI command (0x000C).
-+ *
-+ * Return: the exit code of the operation.
-+ */
-+int ixgbe_aci_disable_rxen(struct ixgbe_hw *hw)
-+{
-+	struct ixgbe_aci_cmd_disable_rxen *cmd;
-+	struct ixgbe_aci_desc desc;
-+
-+	cmd = &desc.params.disable_rxen;
-+
-+	ixgbe_fill_dflt_direct_cmd_desc(&desc, ixgbe_aci_opc_disable_rxen);
-+
-+	cmd->lport_num = hw->bus.func;
-+
-+	return ixgbe_aci_send_cmd(hw, &desc, NULL, 0);
-+}
-+
-+/**
-+ * ixgbe_aci_get_phy_caps - returns PHY capabilities
-+ * @hw: pointer to the HW struct
-+ * @qual_mods: report qualified modules
-+ * @report_mode: report mode capabilities
-+ * @pcaps: structure for PHY capabilities to be filled
-+ *
-+ * Returns the various PHY capabilities supported on the Port
-+ * using ACI command (0x0600).
-+ *
-+ * Return: the exit code of the operation.
-+ */
-+int ixgbe_aci_get_phy_caps(struct ixgbe_hw *hw, bool qual_mods, u8 report_mode,
-+			   struct ixgbe_aci_cmd_get_phy_caps_data *pcaps)
-+{
-+	struct ixgbe_aci_cmd_get_phy_caps *cmd;
-+	u16 pcaps_size = sizeof(*pcaps);
-+	struct ixgbe_aci_desc desc;
-+	int err;
-+
-+	cmd = &desc.params.get_phy;
-+
-+	if (!pcaps || (report_mode & ~IXGBE_ACI_REPORT_MODE_M))
-+		return -EINVAL;
-+
-+	ixgbe_fill_dflt_direct_cmd_desc(&desc, ixgbe_aci_opc_get_phy_caps);
-+
-+	if (qual_mods)
-+		cmd->param0 |= cpu_to_le16(IXGBE_ACI_GET_PHY_RQM);
-+
-+	cmd->param0 |= cpu_to_le16(report_mode);
-+	err = ixgbe_aci_send_cmd(hw, &desc, pcaps, pcaps_size);
-+
-+	if (!err && report_mode == IXGBE_ACI_REPORT_TOPO_CAP_MEDIA) {
-+		hw->phy.phy_type_low = le64_to_cpu(pcaps->phy_type_low);
-+		hw->phy.phy_type_high = le64_to_cpu(pcaps->phy_type_high);
-+		memcpy(hw->link.link_info.module_type, &pcaps->module_type,
-+		       sizeof(hw->link.link_info.module_type));
-+	}
-+
-+	return err;
-+}
-+
-+/**
-+ * ixgbe_copy_phy_caps_to_cfg - Copy PHY ability data to configuration data
-+ * @caps: PHY ability structure to copy data from
-+ * @cfg: PHY configuration structure to copy data to
-+ *
-+ * Helper function to copy data from PHY capabilities data structure
-+ * to PHY configuration data structure
-+ */
-+void ixgbe_copy_phy_caps_to_cfg(struct ixgbe_aci_cmd_get_phy_caps_data *caps,
-+				struct ixgbe_aci_cmd_set_phy_cfg_data *cfg)
-+{
-+	if (!caps || !cfg)
++	/* Skip if we are in blank NVM programming mode */
++	fla = IXGBE_READ_REG(hw, IXGBE_GLNVM_FLA);
++	if ((fla & IXGBE_GLNVM_FLA_LOCKED_M) == 0)
 +		return;
 +
-+	memset(cfg, 0, sizeof(*cfg));
-+	cfg->phy_type_low = caps->phy_type_low;
-+	cfg->phy_type_high = caps->phy_type_high;
-+	cfg->caps = caps->caps;
-+	cfg->low_power_ctrl_an = caps->low_power_ctrl_an;
-+	cfg->eee_cap = caps->eee_cap;
-+	cfg->eeer_value = caps->eeer_value;
-+	cfg->link_fec_opt = caps->link_fec_options;
-+	cfg->module_compliance_enforcement =
-+		caps->module_compliance_enforcement;
++	ixgbe_release_res(hw, IXGBE_NVM_RES_ID);
 +}
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h
-index 18b831b..5c5a676 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h
-@@ -15,5 +15,17 @@ void ixgbe_fill_dflt_direct_cmd_desc(struct ixgbe_aci_desc *desc, u16 opcode);
- int ixgbe_acquire_res(struct ixgbe_hw *hw, enum ixgbe_aci_res_ids res,
- 		      enum ixgbe_aci_res_access_type access, u32 timeout);
- void ixgbe_release_res(struct ixgbe_hw *hw, enum ixgbe_aci_res_ids res);
-+int ixgbe_aci_list_caps(struct ixgbe_hw *hw, void *buf, u16 buf_size,
-+			u32 *cap_count, enum ixgbe_aci_opc opc);
-+int ixgbe_discover_dev_caps(struct ixgbe_hw *hw,
-+			    struct ixgbe_hw_dev_caps *dev_caps);
-+int ixgbe_discover_func_caps(struct ixgbe_hw *hw,
-+			     struct ixgbe_hw_func_caps *func_caps);
-+int ixgbe_get_caps(struct ixgbe_hw *hw);
-+int ixgbe_aci_disable_rxen(struct ixgbe_hw *hw);
-+int ixgbe_aci_get_phy_caps(struct ixgbe_hw *hw, bool qual_mods, u8 report_mode,
-+			   struct ixgbe_aci_cmd_get_phy_caps_data *pcaps);
-+void ixgbe_copy_phy_caps_to_cfg(struct ixgbe_aci_cmd_get_phy_caps_data *caps,
-+				struct ixgbe_aci_cmd_set_phy_cfg_data *cfg);
- 
- #endif /* _IXGBE_E610_H_ */
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 371285a..0992775 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -42,6 +42,7 @@
- 
- #include "ixgbe.h"
- #include "ixgbe_common.h"
-+#include "ixgbe_e610.h"
- #include "ixgbe_dcb_82599.h"
- #include "ixgbe_mbx.h"
- #include "ixgbe_phy.h"
-@@ -10928,6 +10929,12 @@ static int ixgbe_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	if (err)
- 		goto err_sw_init;
- 
-+	if (adapter->hw.mac.type == ixgbe_mac_e610) {
-+		err = ixgbe_get_caps(&adapter->hw);
-+		if (err)
-+			dev_err(&pdev->dev, "ixgbe_get_caps failed %d\n", err);
++
++/**
++ * ixgbe_aci_read_nvm - read NVM
++ * @hw: pointer to the HW struct
++ * @module_typeid: module pointer location in words from the NVM beginning
++ * @offset: byte offset from the module beginning
++ * @length: length of the section to be read (in bytes from the offset)
++ * @data: command buffer (size [bytes] = length)
++ * @last_command: tells if this is the last command in a series
++ * @read_shadow_ram: tell if this is a shadow RAM read
++ *
++ * Read the NVM using ACI command (0x0701).
++ *
++ * Return: the exit code of the operation.
++ */
++int ixgbe_aci_read_nvm(struct ixgbe_hw *hw, u16 module_typeid, u32 offset,
++		       u16 length, void *data, bool last_command,
++		       bool read_shadow_ram)
++{
++	struct ixgbe_aci_cmd_nvm *cmd;
++	struct ixgbe_aci_desc desc;
++
++	if (offset > IXGBE_ACI_NVM_MAX_OFFSET)
++		return -EINVAL;
++
++	cmd = &desc.params.nvm;
++
++	ixgbe_fill_dflt_direct_cmd_desc(&desc, ixgbe_aci_opc_nvm_read);
++
++	if (!read_shadow_ram && module_typeid == IXGBE_ACI_NVM_START_POINT)
++		cmd->cmd_flags |= IXGBE_ACI_NVM_FLASH_ONLY;
++
++	/* If this is the last command in a series, set the proper flag. */
++	if (last_command)
++		cmd->cmd_flags |= IXGBE_ACI_NVM_LAST_CMD;
++	cmd->module_typeid = cpu_to_le16(module_typeid);
++	cmd->offset_low = cpu_to_le16(offset & 0xFFFF);
++	cmd->offset_high = (offset >> 16) & 0xFF;
++	cmd->length = cpu_to_le16(length);
++
++	return ixgbe_aci_send_cmd(hw, &desc, data, length);
++}
++
++/**
++ * ixgbe_nvm_validate_checksum - validate checksum
++ * @hw: pointer to the HW struct
++ *
++ * Verify NVM PFA checksum validity using ACI command (0x0706).
++ * If the checksum verification failed, IXGBE_ERR_NVM_CHECKSUM is returned.
++ * The function acquires and then releases the NVM ownership.
++ *
++ * Return: the exit code of the operation.
++ */
++int ixgbe_nvm_validate_checksum(struct ixgbe_hw *hw)
++{
++	struct ixgbe_aci_cmd_nvm_checksum *cmd;
++	struct ixgbe_aci_desc desc;
++	int err;
++
++	err = ixgbe_acquire_nvm(hw, IXGBE_RES_READ);
++	if (err)
++		return err;
++
++	cmd = &desc.params.nvm_checksum;
++
++	ixgbe_fill_dflt_direct_cmd_desc(&desc, ixgbe_aci_opc_nvm_checksum);
++	cmd->flags = IXGBE_ACI_NVM_CHECKSUM_VERIFY;
++
++	err = ixgbe_aci_send_cmd(hw, &desc, NULL, 0);
++
++	ixgbe_release_nvm(hw);
++
++	if (!err && cmd->checksum !=
++		cpu_to_le16(IXGBE_ACI_NVM_CHECKSUM_CORRECT)) {
++		struct ixgbe_adapter *adapter = container_of(hw, struct ixgbe_adapter,
++							     hw);
++
++		err = -EIO;
++		netdev_err(adapter->netdev, "Invalid Shadow Ram checksum");
 +	}
 +
- 	if (adapter->hw.mac.type == ixgbe_mac_82599EB)
- 		adapter->flags2 |= IXGBE_FLAG2_AUTO_DISABLE_VF;
++	return err;
++}
++
++/**
++ * ixgbe_read_sr_word_aci - Reads Shadow RAM via ACI
++ * @hw: pointer to the HW structure
++ * @offset: offset of the Shadow RAM word to read (0x000000 - 0x001FFF)
++ * @data: word read from the Shadow RAM
++ *
++ * Reads one 16 bit word from the Shadow RAM using ixgbe_read_flat_nvm.
++ *
++ * Return: the exit code of the operation.
++ */
++int ixgbe_read_sr_word_aci(struct ixgbe_hw  *hw, u16 offset, u16 *data)
++{
++	u32 bytes = sizeof(u16);
++	u16 data_local;
++	int err;
++
++	err = ixgbe_read_flat_nvm(hw, offset * sizeof(u16), &bytes,
++				  (u8 *)&data_local, true);
++	if (err)
++		return err;
++
++	*data = data_local;
++	return 0;
++}
++
++/**
++ * ixgbe_read_flat_nvm - Read portion of NVM by flat offset
++ * @hw: pointer to the HW struct
++ * @offset: offset from beginning of NVM
++ * @length: (in) number of bytes to read; (out) number of bytes actually read
++ * @data: buffer to return data in (sized to fit the specified length)
++ * @read_shadow_ram: if true, read from shadow RAM instead of NVM
++ *
++ * Reads a portion of the NVM, as a flat memory space. This function correctly
++ * breaks read requests across Shadow RAM sectors, prevents Shadow RAM size
++ * from being exceeded in case of Shadow RAM read requests and ensures that no
++ * single read request exceeds the maximum 4KB read for a single admin command.
++ *
++ * Returns an error code on failure. Note that the data pointer may be
++ * partially updated if some reads succeed before a failure.
++ *
++ * Return: the exit code of the operation.
++ */
++int ixgbe_read_flat_nvm(struct ixgbe_hw  *hw, u32 offset, u32 *length,
++			u8 *data, bool read_shadow_ram)
++{
++	u32 inlen = *length;
++	u32 bytes_read = 0;
++	bool last_cmd;
++	int err;
++
++	/* Verify the length of the read if this is for the Shadow RAM */
++	if (read_shadow_ram && ((offset + inlen) >
++				(hw->eeprom.word_size * 2u)))
++		return -EINVAL;
++
++	do {
++		u32 read_size, sector_offset;
++
++		/* ixgbe_aci_read_nvm cannot read more than 4KB at a time.
++		 * Additionally, a read from the Shadow RAM may not cross over
++		 * a sector boundary. Conveniently, the sector size is also 4KB.
++		 */
++		sector_offset = offset % IXGBE_ACI_MAX_BUFFER_SIZE;
++		read_size = min_t(u32,
++				  IXGBE_ACI_MAX_BUFFER_SIZE - sector_offset,
++				  inlen - bytes_read);
++
++		last_cmd = !(bytes_read + read_size < inlen);
++
++		/* ixgbe_aci_read_nvm takes the length as a u16. Our read_size
++		 * is calculated using a u32, but the IXGBE_ACI_MAX_BUFFER_SIZE
++		 * maximum size guarantees that it will fit within the 2 bytes.
++		 */
++		err = ixgbe_aci_read_nvm(hw, IXGBE_ACI_NVM_START_POINT,
++					 offset, (u16)read_size,
++					 data + bytes_read, last_cmd,
++					 read_shadow_ram);
++		if (err)
++			break;
++
++		bytes_read += read_size;
++		offset += read_size;
++	} while (!last_cmd);
++
++	*length = bytes_read;
++	return err;
++}
++
++/**
++ * ixgbe_read_ee_aci_e610 - Read EEPROM word using the admin command.
++ * @hw: pointer to hardware structure
++ * @offset: offset of  word in the EEPROM to read
++ * @data: word read from the EEPROM
++ *
++ * Reads a 16 bit word from the EEPROM using the ACI.
++ * If the EEPROM params are not initialized, the function
++ * initialize them before proceeding with reading.
++ * The function acquires and then releases the NVM ownership.
++ *
++ * Return: the exit code of the operation.
++ */
++int ixgbe_read_ee_aci_e610(struct ixgbe_hw *hw, u16 offset, u16 *data)
++{
++	int err;
++
++	if (hw->eeprom.type == ixgbe_eeprom_uninitialized) {
++		err = hw->eeprom.ops.init_params(hw);
++		if (err)
++			return err;
++	}
++
++	err = ixgbe_acquire_nvm(hw, IXGBE_RES_READ);
++	if (err)
++		return err;
++
++	err = ixgbe_read_sr_word_aci(hw, offset, data);
++	ixgbe_release_nvm(hw);
++
++	return err;
++}
++
++/**
++ * ixgbe_validate_eeprom_checksum_e610 - Validate EEPROM checksum
++ * @hw: pointer to hardware structure
++ * @checksum_val: calculated checksum
++ *
++ * Performs checksum calculation and validates the EEPROM checksum. If the
++ * caller does not need checksum_val, the value can be NULL.
++ * If the EEPROM params are not initialized, the function
++ * initialize them before proceeding.
++ * The function acquires and then releases the NVM ownership.
++ *
++ * Return: the exit code of the operation.
++ */
++int ixgbe_validate_eeprom_checksum_e610(struct ixgbe_hw *hw, u16 *checksum_val)
++{
++	int err;
++
++	if (hw->eeprom.type == ixgbe_eeprom_uninitialized) {
++		err = hw->eeprom.ops.init_params(hw);
++		if (err)
++			return err;
++	}
++
++	err = ixgbe_nvm_validate_checksum(hw);
++	if (err)
++		return err;
++
++	if (checksum_val) {
++		u16 tmp_checksum;
++
++		err = ixgbe_acquire_nvm(hw, IXGBE_RES_READ);
++		if (err)
++			return err;
++
++		err = ixgbe_read_sr_word_aci(hw, E610_SR_SW_CHECKSUM_WORD,
++					     &tmp_checksum);
++		ixgbe_release_nvm(hw);
++
++		if (!err)
++			*checksum_val = tmp_checksum;
++	}
++
++	return err;
++}
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h
+index 4a4f969..412ddd1 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h
+@@ -59,5 +59,17 @@ int ixgbe_enter_lplu_e610(struct ixgbe_hw *hw);
+ int ixgbe_aci_get_netlist_node(struct ixgbe_hw *hw,
+ 			       struct ixgbe_aci_cmd_get_link_topo *cmd,
+ 			       u8 *node_part_number, u16 *node_handle);
++int ixgbe_acquire_nvm(struct ixgbe_hw *hw,
++		      enum ixgbe_aci_res_access_type access);
++void ixgbe_release_nvm(struct ixgbe_hw *hw);
++int ixgbe_aci_read_nvm(struct ixgbe_hw *hw, u16 module_typeid, u32 offset,
++		       u16 length, void *data, bool last_command,
++		       bool read_shadow_ram);
++int ixgbe_nvm_validate_checksum(struct ixgbe_hw *hw);
++int ixgbe_read_sr_word_aci(struct ixgbe_hw  *hw, u16 offset, u16 *data);
++int ixgbe_read_flat_nvm(struct ixgbe_hw  *hw, u32 offset, u32 *length,
++			u8 *data, bool read_shadow_ram);
++int ixgbe_read_ee_aci_e610(struct ixgbe_hw *hw, u16 offset, u16 *data);
++int ixgbe_validate_eeprom_checksum_e610(struct ixgbe_hw *hw, u16 *checksum_val);
  
+ #endif /* _IXGBE_E610_H_ */
 -- 
 2.43.0
 
