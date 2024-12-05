@@ -1,74 +1,75 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CD675E77171
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  5 Dec 2024 08:46:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A6789E7716C
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  5 Dec 2024 08:46:15 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 9AC8A8471A;
-	Thu,  5 Dec 2024 08:46:14 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 6DC644156A;
+	Thu,  5 Dec 2024 08:46:15 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id qv2xuVxORnY3; Thu,  5 Dec 2024 08:46:14 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id NvgDfIdZ-6hR; Thu,  5 Dec 2024 08:46:13 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org EB71C84718
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D83964156D
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1733388374;
-	bh=eBxmNrn7qAv5ToAovediHtKgz05NHE4wpm5tzf5Mg+M=;
+	s=default; t=1733388372;
+	bh=nOIgwoxfELMtMiPUExAgAEbIE/r/aLy5CW3URXgehlY=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=WrXFlKIl62zQoB+bZ6m9ptSNQGQa4xkMJxh9X6alrWIicKAE6GDouBZPPfaiwnVjF
-	 OYBT0bhrOjeH3q6rEuDBhuD8fxQYHdz2Lusg1uOp16J2dpXRxbBKffZAqolE9oZwb1
-	 dvXp/2osRuHLFlUDBF5wDAaZOHdq47UfRQnRVsuE3FaqD0Zvv3zAVCpytYiaWpSGiM
-	 ESYpoY+0lYNjLWX44Ik/zHUsMLflYyCVMX3mZx0KsWOJ5SLR76n/c5ns6CB7/WhgGZ
-	 w2jR4WvRMV23XC8uU1+y0FiEL+XlFYFZcoV8mtVGYAF5MgVK02IdJ5t7ADVuL8lzHu
-	 aXj700lcieEvA==
+	b=USkJ3C4oD9BgujIx/EQ7CS1gp/IPQ5Hx4DVFIx55VGIxHHX0IcO2s4r/YlgEw1lXn
+	 9dje5WZdnChNFZFpMMDQH/Cajd8uKwooEL6q/QSj5g04+JdoplD9xNKr7/WPkaPJl2
+	 qALNWkDRfbXWtUpNrvKhp1+aX4ZoygRID0dBTfJeM25cNZeRkOm0ttQSFnSpIlA0Mq
+	 ZXer1896Ob0ktWTVnI4sKSJ8TrygYqfRrx86E7HcrBtjYu6j4V36EOFoylpBtzR+gj
+	 jBb4geXl/5QI2wSOnSAs1BozjajCZ021Q1nMHS6XkNHD1mYnNnI8XUwvE6NrePXR4I
+	 3jVKGSST6pZ0w==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id EB71C84718;
-	Thu,  5 Dec 2024 08:46:13 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id 65733AE8
- for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Dec 2024 08:46:11 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id D83964156D;
+	Thu,  5 Dec 2024 08:46:12 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id B0DAEAE8
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Dec 2024 08:46:10 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id B4F7D84709
+ by smtp1.osuosl.org (Postfix) with ESMTP id 9220E84718
  for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Dec 2024 08:46:10 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id I2mCNU3xK_Y3 for <intel-wired-lan@lists.osuosl.org>;
- Thu,  5 Dec 2024 08:46:10 +0000 (UTC)
+ id 4pDgtrK1Ehtj for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  5 Dec 2024 08:46:09 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.12;
  helo=mgamail.intel.com; envelope-from=piotr.kwapulinski@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 1829C84706
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 1829C84706
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 9E10784709
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9E10784709
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.12])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 1829C84706
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 9E10784709
  for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Dec 2024 08:46:09 +0000 (UTC)
-X-CSE-ConnectionGUID: bVx/wbpdQ5qwJVa+PxBsxA==
-X-CSE-MsgGUID: XqWdlUJKSBiCEcsK7J72mQ==
-X-IronPort-AV: E=McAfee;i="6700,10204,11276"; a="37623286"
-X-IronPort-AV: E=Sophos;i="6.12,209,1728975600"; d="scan'208";a="37623286"
+X-CSE-ConnectionGUID: 8mPWwY1nQJaM4W0zyomUtg==
+X-CSE-MsgGUID: D4Un/UzVT8WUPtK5zTo+kA==
+X-IronPort-AV: E=McAfee;i="6700,10204,11276"; a="37623276"
+X-IronPort-AV: E=Sophos;i="6.12,209,1728975600"; d="scan'208";a="37623276"
 Received: from orviesa008.jf.intel.com ([10.64.159.148])
  by fmvoesa106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 05 Dec 2024 00:46:02 -0800
-X-CSE-ConnectionGUID: kZ2i5K9jTia22h77mcnd8A==
-X-CSE-MsgGUID: bcDKNca3QAWn+BJAQPWlNQ==
+ 05 Dec 2024 00:46:00 -0800
+X-CSE-ConnectionGUID: pwIcOZ30SZOZdW/Eum6AAg==
+X-CSE-MsgGUID: exkBRT45SUaSrbj0vJ2rxQ==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.12,209,1728975600"; d="scan'208";a="94864192"
+X-IronPort-AV: E=Sophos;i="6.12,209,1728975600"; d="scan'208";a="94864176"
 Received: from pkwapuli-mobl1.ger.corp.intel.com (HELO
  vbox-pkwap.ger.corp.intel.com) ([10.246.2.76])
- by orviesa008.jf.intel.com with ESMTP; 05 Dec 2024 00:46:00 -0800
+ by orviesa008.jf.intel.com with ESMTP; 05 Dec 2024 00:45:58 -0800
 From: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
 To: intel-wired-lan@lists.osuosl.org
 Cc: netdev@vger.kernel.org, Piotr Kwapulinski <piotr.kwapulinski@intel.com>,
- Simon Horman <horms@kernel.org>
-Date: Thu,  5 Dec 2024 09:44:48 +0100
-Message-ID: <20241205084450.4651-7-piotr.kwapulinski@intel.com>
+ Stefan Wegrzyn <stefan.wegrzyn@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Date: Thu,  5 Dec 2024 09:44:47 +0100
+Message-ID: <20241205084450.4651-6-piotr.kwapulinski@intel.com>
 X-Mailer: git-send-email 2.43.5
 In-Reply-To: <20241205084450.4651-1-piotr.kwapulinski@intel.com>
 References: <20241205084450.4651-1-piotr.kwapulinski@intel.com>
@@ -79,22 +80,23 @@ X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  t=1733388370; x=1764924370;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=3bDeFwvAxQpwhTqS+naTgeHPWQZXlwaQCZQSnPeKaw4=;
- b=gJhdoMSGH2+Az9RlICybuH9UXfyb0x7NAh+gMvtB0rOcgAM07eEFuzGB
- vqpvRSeHkHSDfVuHX9Ju/AcPDPTVdOFJSq1wDctdcjZq34Grh5rygIGj2
- bH5+9hx+fen3qVt2ZDx5Qua6p8vjC2UdeFpycrkSPz7GjCC/M9WNpTS0Z
- XLcm/jWWPxp+aY8+tKKeFDxpQizuaa7YQBRQzx8c3VWMiQSLa/BMPPbIZ
- DTyAYxh82sMOQ5O3eKj53du64nXXBhMX/b1N1wVeyY4N8Bh2oG+OnNX0w
- 04aRsj8rgC82NR3/NUn5d7XlgBzjWw9KYf04w7neXT5X8CWA4f3OHDvlM
- Q==;
+ bh=nYyyWK5VO64NBKDhvje1N5/dct7wMkEN/0xxm13GV+Q=;
+ b=gmA1ghPJolHnjmbW8diXhpV6q0qkF2+f/E3XnmdAW0O9zr+JKQh7fhHl
+ U+wlWib4206fu9pAfCcGsZ3VMiycYWL7XBatsn7wrUZqOBcVUcg/AwDDe
+ EVW5xZlYQCfRfDWAb3WooVHr+Ygi7HwxCmo84K8U3IfC6z3DHZfKKoA2C
+ aAgSx2yYtIDEWmVdHgFE/Ixc+jRQrk5Gm50qB6j2gORwKBo1sJKVPla0+
+ KP0shtE0EEjpU0y44WEZdAve8Zd8ckKaYwhtdOWcGOuWwuWp4OHMmzmMP
+ /2+Tum+XS69jqg12bLrVqP/ueLqo9i+Fv75GOfwTX7B5RlmaniuT944nS
+ A==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=gJhdoMSG
-Subject: [Intel-wired-lan] [PATCH iwl-next v12 6/8] ixgbe: Add ixgbe_x540
- multiple header inclusion protection
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=gmA1ghPJ
+Subject: [Intel-wired-lan] [PATCH iwl-next v12 5/8] ixgbe: Add support for
+ EEPROM dump in E610 device
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -110,34 +112,185 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Required to adopt x540 specific functions by E610 device.
+Add low level support for EEPROM dump for the specified network device.
 
+Co-developed-by: Stefan Wegrzyn <stefan.wegrzyn@intel.com>
+Signed-off-by: Stefan Wegrzyn <stefan.wegrzyn@intel.com>
+Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Signed-off-by: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
-Reviewed-by: Simon Horman <horms@kernel.org>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_x540.h | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c | 95 +++++++++++++++++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h |  5 +
+ .../ethernet/intel/ixgbe/ixgbe_type_e610.h    |  7 ++
+ 3 files changed, 107 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.h
-index b69a680..6ed360c 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.h
-@@ -1,5 +1,8 @@
- /* SPDX-License-Identifier: GPL-2.0 */
--/* Copyright(c) 1999 - 2018 Intel Corporation. */
-+/* Copyright(c) 1999 - 2024 Intel Corporation. */
-+
-+#ifndef _IXGBE_X540_H_
-+#define _IXGBE_X540_H_
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c
+index 0542b4b..c729253 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c
+@@ -2070,6 +2070,38 @@ int ixgbe_enter_lplu_e610(struct ixgbe_hw *hw)
+ 	return ixgbe_aci_set_phy_cfg(hw, &phy_cfg);
+ }
  
- #include "ixgbe_type.h"
- 
-@@ -17,3 +20,5 @@ int ixgbe_acquire_swfw_sync_X540(struct ixgbe_hw *hw, u32 mask);
- void ixgbe_release_swfw_sync_X540(struct ixgbe_hw *hw, u32 mask);
- void ixgbe_init_swfw_sync_X540(struct ixgbe_hw *hw);
- int ixgbe_init_eeprom_params_X540(struct ixgbe_hw *hw);
++/**
++ * ixgbe_init_eeprom_params_e610 - Initialize EEPROM params
++ * @hw: pointer to hardware structure
++ *
++ * Initialize the EEPROM parameters ixgbe_eeprom_info within the ixgbe_hw
++ * struct in order to set up EEPROM access.
++ *
++ * Return: the operation exit code.
++ */
++int ixgbe_init_eeprom_params_e610(struct ixgbe_hw *hw)
++{
++	struct ixgbe_eeprom_info *eeprom = &hw->eeprom;
++	u32 gens_stat;
++	u8 sr_size;
 +
-+#endif /* _IXGBE_X540_H_ */
++	if (eeprom->type != ixgbe_eeprom_uninitialized)
++		return 0;
++
++	eeprom->type = ixgbe_flash;
++
++	gens_stat = IXGBE_READ_REG(hw, GLNVM_GENS);
++	sr_size = FIELD_GET(GLNVM_GENS_SR_SIZE_M, gens_stat);
++
++	/* Switching to words (sr_size contains power of 2). */
++	eeprom->word_size = BIT(sr_size) * IXGBE_SR_WORDS_IN_1KB;
++
++	hw_dbg(hw, "Eeprom params: type = %d, size = %d\n", eeprom->type,
++	       eeprom->word_size);
++
++	return 0;
++}
++
+ /**
+  * ixgbe_aci_get_netlist_node - get a node handle
+  * @hw: pointer to the hw struct
+@@ -2316,6 +2348,36 @@ int ixgbe_read_flat_nvm(struct ixgbe_hw  *hw, u32 offset, u32 *length,
+ 	return err;
+ }
+ 
++/**
++ * ixgbe_read_sr_buf_aci - Read Shadow RAM buffer via ACI
++ * @hw: pointer to the HW structure
++ * @offset: offset of the Shadow RAM words to read (0x000000 - 0x001FFF)
++ * @words: (in) number of words to read; (out) number of words actually read
++ * @data: words read from the Shadow RAM
++ *
++ * Read 16 bit words (data buf) from the Shadow RAM. Acquire/release the NVM
++ * ownership.
++ *
++ * Return: the operation exit code.
++ */
++int ixgbe_read_sr_buf_aci(struct ixgbe_hw *hw, u16 offset, u16 *words,
++			  u16 *data)
++{
++	u32 bytes = *words * 2;
++	int err;
++
++	err = ixgbe_read_flat_nvm(hw, offset * 2, &bytes, (u8 *)data, true);
++	if (err)
++		return err;
++
++	*words = bytes / 2;
++
++	for (int i = 0; i < *words; i++)
++		data[i] = le16_to_cpu(((__le16 *)data)[i]);
++
++	return 0;
++}
++
+ /**
+  * ixgbe_read_ee_aci_e610 - Read EEPROM word using the admin command.
+  * @hw: pointer to hardware structure
+@@ -2349,6 +2411,39 @@ int ixgbe_read_ee_aci_e610(struct ixgbe_hw *hw, u16 offset, u16 *data)
+ 	return err;
+ }
+ 
++/**
++ * ixgbe_read_ee_aci_buffer_e610 - Read EEPROM words via ACI
++ * @hw: pointer to hardware structure
++ * @offset: offset of words in the EEPROM to read
++ * @words: number of words to read
++ * @data: words to read from the EEPROM
++ *
++ * Read 16 bit words from the EEPROM via the ACI. Initialize the EEPROM params
++ * prior to the read. Acquire/release the NVM ownership.
++ *
++ * Return: the operation exit code.
++ */
++int ixgbe_read_ee_aci_buffer_e610(struct ixgbe_hw *hw, u16 offset,
++				  u16 words, u16 *data)
++{
++	int err;
++
++	if (hw->eeprom.type == ixgbe_eeprom_uninitialized) {
++		err = hw->eeprom.ops.init_params(hw);
++		if (err)
++			return err;
++	}
++
++	err = ixgbe_acquire_nvm(hw, IXGBE_RES_READ);
++	if (err)
++		return err;
++
++	err = ixgbe_read_sr_buf_aci(hw, offset, &words, data);
++	ixgbe_release_nvm(hw);
++
++	return err;
++}
++
+ /**
+  * ixgbe_validate_eeprom_checksum_e610 - Validate EEPROM checksum
+  * @hw: pointer to hardware structure
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h
+index 412ddd1..9cfcfee 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h
+@@ -56,6 +56,7 @@ int ixgbe_identify_module_e610(struct ixgbe_hw *hw);
+ int ixgbe_setup_phy_link_e610(struct ixgbe_hw *hw);
+ int ixgbe_set_phy_power_e610(struct ixgbe_hw *hw, bool on);
+ int ixgbe_enter_lplu_e610(struct ixgbe_hw *hw);
++int ixgbe_init_eeprom_params_e610(struct ixgbe_hw *hw);
+ int ixgbe_aci_get_netlist_node(struct ixgbe_hw *hw,
+ 			       struct ixgbe_aci_cmd_get_link_topo *cmd,
+ 			       u8 *node_part_number, u16 *node_handle);
+@@ -69,7 +70,11 @@ int ixgbe_nvm_validate_checksum(struct ixgbe_hw *hw);
+ int ixgbe_read_sr_word_aci(struct ixgbe_hw  *hw, u16 offset, u16 *data);
+ int ixgbe_read_flat_nvm(struct ixgbe_hw  *hw, u32 offset, u32 *length,
+ 			u8 *data, bool read_shadow_ram);
++int ixgbe_read_sr_buf_aci(struct ixgbe_hw *hw, u16 offset, u16 *words,
++			  u16 *data);
+ int ixgbe_read_ee_aci_e610(struct ixgbe_hw *hw, u16 offset, u16 *data);
++int ixgbe_read_ee_aci_buffer_e610(struct ixgbe_hw *hw, u16 offset,
++				  u16 words, u16 *data);
+ int ixgbe_validate_eeprom_checksum_e610(struct ixgbe_hw *hw, u16 *checksum_val);
+ 
+ #endif /* _IXGBE_E610_H_ */
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type_e610.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type_e610.h
+index ecc3fc8..8d06ade 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type_e610.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type_e610.h
+@@ -12,11 +12,18 @@
+ /* Checksum and Shadow RAM pointers */
+ #define E610_SR_SW_CHECKSUM_WORD		0x3F
+ 
++/* Shadow RAM related */
++#define IXGBE_SR_WORDS_IN_1KB	512
++
+ /* Firmware Status Register (GL_FWSTS) */
+ #define GL_FWSTS		0x00083048 /* Reset Source: POR */
+ #define GL_FWSTS_EP_PF0		BIT(24)
+ #define GL_FWSTS_EP_PF1		BIT(25)
+ 
++/* Global NVM General Status Register */
++#define GLNVM_GENS		0x000B6100 /* Reset Source: POR */
++#define GLNVM_GENS_SR_SIZE_M	GENMASK(7, 5)
++
+ /* Flash Access Register */
+ #define IXGBE_GLNVM_FLA			0x000B6108 /* Reset Source: POR */
+ #define IXGBE_GLNVM_FLA_LOCKED_S	6
 -- 
 2.43.0
 
