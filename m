@@ -1,98 +1,105 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EE5A6E7717F
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 10 Dec 2024 08:25:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BF7D7E77181
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 10 Dec 2024 08:25:08 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id A37A6607D2;
-	Tue, 10 Dec 2024 08:25:07 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 692DD80E4C;
+	Tue, 10 Dec 2024 08:25:08 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id sxTjsJK1pwP4; Tue, 10 Dec 2024 08:25:05 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id hlPi0WKaQpw4; Tue, 10 Dec 2024 08:25:07 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 9A5BE607E2
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org A3C9B80E52
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1733819105;
-	bh=0f7FZi0EjGD5i1zHnu3B0PnZYqgAbAlOH7ZY2Ur7SwU=;
-	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=Iygb+QSAg3YzhQtPuRO3d0D0oHLAgCcgDkyDUqe9cu0rxqIwRqALMuPtn/SnYj9bS
-	 U34ulMocjybKtwrPa2gskFgpALxGX3KhDyoff5+eeyq02bbkmy2BCOxPJCsZP+b45c
-	 LspzSgkRnV3mO84dljQbS7aO49Qgbzcd2CI6avVoSCunJ6cklSEqABkea8MkxYKquI
-	 06RMQ3HBz1+RTVTr0Hv2RdwXFA/Qs1gv/8Ey361uBS/L2cIoUUsZ8uwv+50kKraGuG
-	 ts0jwkXn9fGTlzeSZfsC6FnIHwOEFv97GeVsyDP6AMmCBSvtVpCJRoSi4+6QWFEEOA
-	 m1D05/7b/ILBg==
+	s=default; t=1733819107;
+	bh=8jWgk0UyFZG/igoaCJZqCN7Ufx5LkT9IUjlxSFkip1U=;
+	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=4/JZCYtRPEwGaX/0MGWSz34i3ywPvhxQZ8T9EO7R5O6DtEeULjNVspA9/WSXWuI/w
+	 vTeljQ8TqWp0omTWDzc1EwX7NqJBAW7xPSmRwsIRNV/WHFHXygu9/vmdCM3W+R90Y0
+	 2Pb05mGZ8JRLQ4umA1RuDSfcPalIt5cD70fa42vVQ2CMuF5TjarVhprQDbWVmtpRZB
+	 oFFoQJxoXtLIY5HR+Rj/P3oWUaxY7d6ipzNwpgt0nyndvpyJGwzIL52joK+qQyVvoH
+	 471EZ9dQUPh0DvXjfSjumeldVXPlDVHOzL5iCMToRJId7+OSjShlepVbG+D8cjptyp
+	 i/zO2LqNnAY9Q==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 9A5BE607E2;
-	Tue, 10 Dec 2024 08:25:05 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id 695066F
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Dec 2024 08:25:04 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id A3C9B80E52;
+	Tue, 10 Dec 2024 08:25:07 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id C79F06F
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Dec 2024 08:25:06 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 6406E4058B
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Dec 2024 08:25:04 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id B1D50409E5
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Dec 2024 08:25:06 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id zcvY3aD4ysvY for <intel-wired-lan@lists.osuosl.org>;
- Tue, 10 Dec 2024 08:25:03 +0000 (UTC)
+ id jrSNhiiRfpAp for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 10 Dec 2024 08:25:05 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.14;
  helo=mgamail.intel.com; envelope-from=anton.nadezhdin@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 56F6040136
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 56F6040136
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 7E9D84026F
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 7E9D84026F
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.14])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 56F6040136
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Dec 2024 08:25:02 +0000 (UTC)
-X-CSE-ConnectionGUID: SlWrbCG6QHGHr+U/0c0OqA==
-X-CSE-MsgGUID: x7+6kGoyQkS0pBVEVTQWIQ==
-X-IronPort-AV: E=McAfee;i="6700,10204,11281"; a="34398238"
-X-IronPort-AV: E=Sophos;i="6.12,221,1728975600"; d="scan'208";a="34398238"
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 7E9D84026F
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Dec 2024 08:25:05 +0000 (UTC)
+X-CSE-ConnectionGUID: qZhN6pdvQxyuF/eYTLOm3Q==
+X-CSE-MsgGUID: oynowA6NQmGt4d6xKdnhmw==
+X-IronPort-AV: E=McAfee;i="6700,10204,11281"; a="34398248"
+X-IronPort-AV: E=Sophos;i="6.12,221,1728975600"; d="scan'208";a="34398248"
 Received: from fmviesa003.fm.intel.com ([10.60.135.143])
  by fmvoesa108.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 10 Dec 2024 00:25:02 -0800
-X-CSE-ConnectionGUID: GikukbA1R5iupS4uLBVLPQ==
-X-CSE-MsgGUID: IOBTeSDPTTq0EF2vbHtSdg==
+ 10 Dec 2024 00:25:05 -0800
+X-CSE-ConnectionGUID: S30gZiSFSpKmR/MbmzzCGA==
+X-CSE-MsgGUID: KgcDhNh6RxuCnRSwMdEJyg==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.12,221,1728975600"; d="scan'208";a="99398098"
+X-IronPort-AV: E=Sophos;i="6.12,221,1728975600"; d="scan'208";a="99398124"
 Received: from host61.igk.intel.com ([10.123.220.61])
- by fmviesa003.fm.intel.com with ESMTP; 10 Dec 2024 00:25:01 -0800
+ by fmviesa003.fm.intel.com with ESMTP; 10 Dec 2024 00:25:03 -0800
 From: Anton Nadezhdin <anton.nadezhdin@intel.com>
 To: intel-wired-lan@lists.osuosl.org
 Cc: netdev@vger.kernel.org, anthony.l.nguyen@intel.com,
  przemyslaw.kitszel@intel.com, richardcochran@gmail.com,
+ Jacob Keller <jacob.e.keller@intel.com>,
+ Karol Kolacinski <karol.kolacinski@intel.com>,
+ Milena Olech <milena.olech@intel.com>,
  Anton Nadezhdin <anton.nadezhdin@intel.com>
-Date: Tue, 10 Dec 2024 09:22:04 -0500
-Message-ID: <20241210142333.320515-1-anton.nadezhdin@intel.com>
+Date: Tue, 10 Dec 2024 09:22:05 -0500
+Message-ID: <20241210142333.320515-2-anton.nadezhdin@intel.com>
 X-Mailer: git-send-email 2.42.0
+In-Reply-To: <20241210142333.320515-1-anton.nadezhdin@intel.com>
+References: <20241210142333.320515-1-anton.nadezhdin@intel.com>
 MIME-Version: 1.0
+Organization: Intel Technology Poland sp. z o.o. - ul. Slowackiego 173,
+ 80-298 Gdansk - KRS 101882 - NIP 957-07-52-316
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1733819103; x=1765355103;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=KQfHFQ/ZYKUlItWNvsZBVoWc70S6XVSP9gazTBBIOPc=;
- b=CBxkp7lOepiBS/4BoTkoegjD8/HkgTU8kiNV+4NbF+T6Q5mRdynLzFx/
- ed/MFEKJvo0LHstJgKrb8QR7Ju3g4MyWDT1+Uru/aj2mCJF7FqB4GBGlp
- Ked3gjJV5JeygNmOTlJnJcO4JMMvvi6DCD1xrzMtXRj+CYQFgZr+qHIu3
- FkxnPpp7e4IaSCxyTM337D0dY2mymifr/FFqsMH5JKpVg/09Nu/lJCkqr
- KCh+mTWLrdUQ//KwEyQdUddj2fFdlPkgd9vfb8mjrNQ/H1fzd56JgSdHK
- znbMcEkMhYyNstPMWPth42Rx6YzoFQ5uaFfaa2cW5kdYCLJL3PRbz6TV+
- Q==;
+ t=1733819105; x=1765355105;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=CsOORzpO5qqrdJO0lESD8zYo+adGSn0s38/lXILKGjE=;
+ b=F2U3vp2nIYNZ6XLZlEz+DIhjbD57/jJdIlgZ6Z4pA18ARQgQLB31Iid2
+ wlNQytdKKAcQDs0VIXW/MzlaEUWk0qA9DQU7l/POtrtN+k4Cdi/2vaD7T
+ Vtp5kTW8cZL55dVsIQ1IiiNY5S+Zd3a/tQI6FkykW4PSsYf1PTbXEhfRH
+ yawpfw0ZwLIhTrHvtqH8f2mrs1EP4dQdUwJvwAbqSQcNsBXbtWFoWfqA5
+ WeoJBHzEN4bZisd0JMhBbZnBG+Q1PW8K/cQz0/AetdjL0MlK4gMUeor0V
+ 67PXXU6CADTgjo4lH5pzP3O7rimkrNM2+3nfRiGUgMUZ5JDX/aVeF/xYx
+ g==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=CBxkp7lO
-Subject: [Intel-wired-lan] [PATCH iwl-next v2 0/5] ice: implement low
- latency PHY timer updates
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=F2U3vp2n
+Subject: [Intel-wired-lan] [PATCH iwl-next v2 1/5] ice: use
+ rd32_poll_timeout_atomic in ice_read_phy_tstamp_ll_e810
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -108,72 +115,108 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Programming the PHY registers in preparation for an increment value change
-or a timer adjustment on E810 requires issuing Admin Queue commands for
-each PHY register. It has been found that the firmware Admin Queue
-processing occasionally has delays of tens or rarely up to hundreds of
-milliseconds. This delay cascades to failures in the PTP applications which
-depend on these updates being low latency.
+From: Jacob Keller <jacob.e.keller@intel.com>
 
-Consider a standard PTP profile with a sync rate of 16 times per second.
-This means there is ~62 milliseconds between sync messages. A complete
-cycle of the PTP algorithm
+The ice_read_phy_tstamp_ll_e810 function repeatedly reads the PF_SB_ATQBAL
+register until the TS_LL_READ_TS bit is cleared. This is a perfect
+candidate for using rd32_poll_timeout. However, the default implementation
+uses a sleep-based wait.
 
-1) Sync message (with Tx timestamp) from source
-2) Follow-up message from source
-3) Delay request (with Tx timestamp) from sink
-4) Delay response (with Rx timestamp of request) from source
-5) measure instantaneous clock offset
-6) request time adjustment via CLOCK_ADJTIME systemcall
+Add a new rd32_poll_timeout_atomic macro which is based on the non-sleeping
+read_poll_timeout_atomic implementation. Use this to replace the loop
+reading in the ice_read_phy_tstamp_ll_e810 function.
 
-The Tx timestamps have a default maximum timeout of 10 milliseconds. If we
-assume that the maximum possible time is used, this leaves us with ~42
-milliseconds of processing time for a complete cycle.
+This will also be used in the future when low latency PHY timer updates are
+supported.
 
-The CLOCK_ADJTIME system call is synchronous and will block until the
-driver completes its timer adjustment or frequency change.
+Co-developed-by: Karol Kolacinski <karol.kolacinski@intel.com>
+Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Reviewed-by: Milena Olech <milena.olech@intel.com>
+Signed-off-by: Anton Nadezhdin <anton.nadezhdin@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_osdep.h  |  3 +++
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.c | 30 +++++++++------------
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.h |  2 +-
+ 3 files changed, 17 insertions(+), 18 deletions(-)
 
-If the writes to prepare the PHY timers get hit by a latency spike of 50
-milliseconds, then the PTP application will be delayed past the point where
-the next cycle should start. Packets from the next cycle may have already
-arrived and are waiting on the socket.
-
-In particular, LinuxPTP ptp4l may start complaining about missing an
-announce message from the source, triggering a fault. In addition, the
-clockcheck logic it uses may trigger. This clockcheck failure occurs
-because the timestamp captured by hardware is compared against a reading of
-CLOCK_MONOTONIC. It is assumed that the time when the Rx timestamp is
-captured and the read from CLOCK_MONOTONIC are relatively close together.
-This is not the case if there is a significant delay to processing the Rx
-packet.
-
-Newer firmware supports programming the PHY registers over a low latency
-interface which bypasses the Admin Queue. Instead, software writes to the
-REG_LL_PROXY_H and REG_LL_PROXY_L registers. Firmware reads these registers and
-then programs the PHY timers.
-
-Implement functions to use this interface when available to program the PHY
-timers instead of using the Admin Queue. This avoids the Admin Queue
-latency and ensures that adjustments happen within acceptable latency
-bounds.
-
-Jacob Keller (5):
-  ice: use rd32_poll_timeout_atomic in ice_read_phy_tstamp_ll_e810
-  ice: rename TS_LL_READ* macros to REG_LL_PROXY_H_*
-  ice: add lock to protect low latency interface
-  ice: check low latency PHY timer update firmware capability
-  ice: implement low latency PHY timer updates
-
- drivers/net/ethernet/intel/ice/ice_common.c |   3 +
- drivers/net/ethernet/intel/ice/ice_osdep.h  |   3 +
- drivers/net/ethernet/intel/ice/ice_ptp.c    |  48 ++++--
- drivers/net/ethernet/intel/ice/ice_ptp_hw.c | 155 +++++++++++++++++---
- drivers/net/ethernet/intel/ice/ice_ptp_hw.h |  17 ++-
- drivers/net/ethernet/intel/ice/ice_type.h   |  12 ++
- 6 files changed, 204 insertions(+), 34 deletions(-)
-
-
-base-commit: 4376b34cf49c2f38e761beacd173d1dc15a255fd
+diff --git a/drivers/net/ethernet/intel/ice/ice_osdep.h b/drivers/net/ethernet/intel/ice/ice_osdep.h
+index b9f383494b3f..9bb343de80a9 100644
+--- a/drivers/net/ethernet/intel/ice/ice_osdep.h
++++ b/drivers/net/ethernet/intel/ice/ice_osdep.h
+@@ -26,6 +26,9 @@
+ 
+ #define rd32_poll_timeout(a, addr, val, cond, delay_us, timeout_us) \
+ 	read_poll_timeout(rd32, val, cond, delay_us, timeout_us, false, a, addr)
++#define rd32_poll_timeout_atomic(a, addr, val, cond, delay_us, timeout_us) \
++	read_poll_timeout_atomic(rd32, val, cond, delay_us, timeout_us, false, \
++				 a, addr)
+ 
+ #define ice_flush(a)		rd32((a), GLGEN_STAT)
+ #define ICE_M(m, s)		((m ## U) << (s))
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
+index e55aeab0975c..8e11a97601fe 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
++++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
+@@ -4868,32 +4868,28 @@ static int
+ ice_read_phy_tstamp_ll_e810(struct ice_hw *hw, u8 idx, u8 *hi, u32 *lo)
+ {
+ 	u32 val;
+-	u8 i;
++	int err;
+ 
+ 	/* Write TS index to read to the PF register so the FW can read it */
+ 	val = FIELD_PREP(TS_LL_READ_TS_IDX, idx) | TS_LL_READ_TS;
+ 	wr32(hw, PF_SB_ATQBAL, val);
+ 
+ 	/* Read the register repeatedly until the FW provides us the TS */
+-	for (i = TS_LL_READ_RETRIES; i > 0; i--) {
+-		val = rd32(hw, PF_SB_ATQBAL);
+-
+-		/* When the bit is cleared, the TS is ready in the register */
+-		if (!(FIELD_GET(TS_LL_READ_TS, val))) {
+-			/* High 8 bit value of the TS is on the bits 16:23 */
+-			*hi = FIELD_GET(TS_LL_READ_TS_HIGH, val);
++	err = rd32_poll_timeout_atomic(hw, PF_SB_ATQBAL, val,
++				       !FIELD_GET(TS_LL_READ_TS, val),
++				       10, TS_LL_READ_TIMEOUT);
++	if (err) {
++		ice_debug(hw, ICE_DBG_PTP, "Failed to read PTP timestamp using low latency read\n");
++		return err;
++	}
+ 
+-			/* Read the low 32 bit value and set the TS valid bit */
+-			*lo = rd32(hw, PF_SB_ATQBAH) | TS_VALID;
+-			return 0;
+-		}
++	/* High 8 bit value of the TS is on the bits 16:23 */
++	*hi = FIELD_GET(TS_LL_READ_TS_HIGH, val);
+ 
+-		udelay(10);
+-	}
++	/* Read the low 32 bit value and set the TS valid bit */
++	*lo = rd32(hw, PF_SB_ATQBAH) | TS_VALID;
+ 
+-	/* FW failed to provide the TS in time */
+-	ice_debug(hw, ICE_DBG_PTP, "Failed to read PTP timestamp using low latency read\n");
+-	return -EINVAL;
++	return 0;
+ }
+ 
+ /**
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
+index 5c11d8a69fd3..4c059e2f4d96 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
++++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
+@@ -694,7 +694,7 @@ static inline bool ice_is_dual(struct ice_hw *hw)
+ #define BYTES_PER_IDX_ADDR_L		4
+ 
+ /* Tx timestamp low latency read definitions */
+-#define TS_LL_READ_RETRIES		200
++#define TS_LL_READ_TIMEOUT		2000
+ #define TS_LL_READ_TS_HIGH		GENMASK(23, 16)
+ #define TS_LL_READ_TS_IDX		GENMASK(29, 24)
+ #define TS_LL_READ_TS_INTR		BIT(30)
 -- 
 2.42.0
 
