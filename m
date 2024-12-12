@@ -1,72 +1,72 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DCC9EE77180
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 12 Dec 2024 15:34:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C84E0E7717F
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 12 Dec 2024 15:35:01 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 858FB613D4;
-	Thu, 12 Dec 2024 15:34:54 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 77D1D8453F;
+	Thu, 12 Dec 2024 15:35:01 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 6x4e8Fq27RzU; Thu, 12 Dec 2024 15:34:54 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id o8byAtMGRU1h; Thu, 12 Dec 2024 15:35:00 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E4BD0613DE
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D1A4084541
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1734017694;
-	bh=34N7kwn/zaU+vQFweCsw3RqHwt99xwUtzQvb6O57PsE=;
+	s=default; t=1734017700;
+	bh=mgRpHTP53KJoPgmSVqas3EAYkmn+eljsiKnfwFmp98Y=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=xowHjmMkvpxOCMCy4U7IWRkjLpLgLz/6HcfAntvM71OnA9CKbWr+dT3G1UJ52LUgE
-	 TFLIqLaD4wutSCwsrV8VJjwrnwrMuZuqW0jvwk2q+rpA5O5DO6nddaQJ8repMsqNaW
-	 pmu/N9WUZpYcRLqw4JkzzamfNX7DudbluLcI7owv2fmIZEKDKtALSj08qtpF6TQOTs
-	 zbSSerzjCgfqgoCQBsIA+XR+YAkvZwg3R1KJkkMwjKzEpodKfp4HDDk2XEdhDy3xo0
-	 s2AgnS4MhSVI0I4nOXANfiSvDjPbQxMQcleoPHK4XYh0/4b3cODLom4MJmoDMOu7Sb
-	 Lc6D7BxHCnjdQ==
+	b=xu9habogZvMMpQ3kJm75wT715JbWwYlJo88dBKgvr5Lv8U/vvFgr2E/pGp/4ptRBP
+	 Ng0fPS8DaAxeDvnmLSGM+O7x33Yu+Lb+9bO1M5VNtjHv/ocpR12/AyAXwPi265qSX8
+	 V9UxzvvCb8v4Oa5PHh6o1Sa1kjHSLPzhsLYCAdHEUfZ8P5my1vO9wuHs58xQ+DvMAw
+	 ibkWkLakWzdVaJR7XaiaeFN7Vc3EDqQoVkH4VJHXV0rdfXF13e8UzTM7hRZjhgK0QO
+	 etIlOYF1X0eHBiYFeBn5w+LlRnuxVkyL40hnZyiyF+9vN7EJY/ZX0zSlkyWf8XxJLv
+	 SoNW/ytUEfr2Q==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id E4BD0613DE;
-	Thu, 12 Dec 2024 15:34:53 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 16080113C
- for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Dec 2024 15:34:52 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id D1A4084541;
+	Thu, 12 Dec 2024 15:35:00 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id E1074113C
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Dec 2024 15:34:58 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id EB4A4405A7
- for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Dec 2024 15:34:51 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id DCC838453E
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Dec 2024 15:34:58 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Zq5dfuoOqjca for <intel-wired-lan@lists.osuosl.org>;
- Thu, 12 Dec 2024 15:34:51 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id lE-a0_o3N4p6 for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 12 Dec 2024 15:34:58 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.129.124;
  helo=us-smtp-delivery-124.mimecast.com; envelope-from=mschmidt@redhat.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 18090402E6
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 18090402E6
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 1B18C8453F
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 1B18C8453F
 Received: from us-smtp-delivery-124.mimecast.com
  (us-smtp-delivery-124.mimecast.com [170.10.129.124])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 18090402E6
- for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Dec 2024 15:34:50 +0000 (UTC)
-Received: from mx-prod-mc-03.mail-002.prod.us-west-2.aws.redhat.com
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 1B18C8453F
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Dec 2024 15:34:57 +0000 (UTC)
+Received: from mx-prod-mc-01.mail-002.prod.us-west-2.aws.redhat.com
  (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
  relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-311-k1jKMSBDNtKyQVKutMRq2g-1; Thu,
- 12 Dec 2024 10:34:46 -0500
-X-MC-Unique: k1jKMSBDNtKyQVKutMRq2g-1
-X-Mimecast-MFC-AGG-ID: k1jKMSBDNtKyQVKutMRq2g
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-79-wnFhZv6mNTinhUTJ6RY-Jw-1; Thu,
+ 12 Dec 2024 10:34:52 -0500
+X-MC-Unique: wnFhZv6mNTinhUTJ6RY-Jw-1
+X-Mimecast-MFC-AGG-ID: wnFhZv6mNTinhUTJ6RY-Jw
 Received: from mx-prod-int-04.mail-002.prod.us-west-2.aws.redhat.com
  (mx-prod-int-04.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.40])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by mx-prod-mc-03.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
- id 77D8319560B1; Thu, 12 Dec 2024 15:34:45 +0000 (UTC)
+ by mx-prod-mc-01.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
+ id 6E91A1955D45; Thu, 12 Dec 2024 15:34:51 +0000 (UTC)
 Received: from rhel-developer-toolbox-2.redhat.com (unknown [10.45.224.236])
  by mx-prod-int-04.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP
- id 5CD92195605A; Thu, 12 Dec 2024 15:34:42 +0000 (UTC)
+ id 23C02195606C; Thu, 12 Dec 2024 15:34:48 +0000 (UTC)
 From: Michal Schmidt <mschmidt@redhat.com>
 To: intel-wired-lan@lists.osuosl.org
 Cc: netdev@vger.kernel.org,
@@ -74,8 +74,8 @@ Cc: netdev@vger.kernel.org,
  Karol Kolacinski <karol.kolacinski@intel.com>,
  Przemek Kitszel <przemyslaw.kitszel@intel.com>,
  Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Thu, 12 Dec 2024 16:34:15 +0100
-Message-ID: <20241212153417.165919-2-mschmidt@redhat.com>
+Date: Thu, 12 Dec 2024 16:34:17 +0100
+Message-ID: <20241212153417.165919-4-mschmidt@redhat.com>
 In-Reply-To: <20241212153417.165919-1-mschmidt@redhat.com>
 References: <20241212153417.165919-1-mschmidt@redhat.com>
 MIME-Version: 1.0
@@ -83,23 +83,23 @@ Content-Transfer-Encoding: 8bit
 X-Scanned-By: MIMEDefang 3.0 on 10.30.177.40
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=redhat.com; 
- s=mimecast20190719; t=1734017690;
+ s=mimecast20190719; t=1734017697;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=34N7kwn/zaU+vQFweCsw3RqHwt99xwUtzQvb6O57PsE=;
- b=V+T6O6r9D2UP9axU4TduY1yYisA9A7VuM7Y84lKQ8Ffo1SCLm6ZzygywNiCNZixIVEueG1
- 0v4hnMBm5Ox2aZKXVbMA7sK6dw9DHV58bEH5Oaym9iWQ2aSVSEFt+3jiA+iXXEz6fb61Rq
- SW052sBHqK5+xZJrLm3la29Gcxs67DA=
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ bh=mgRpHTP53KJoPgmSVqas3EAYkmn+eljsiKnfwFmp98Y=;
+ b=CfTQiBsCamrKTUyRldnjNlUX+/GyJaVNAkaOe2My5gwiJ9lmbP75xsusO3C9RCZEpG5ish
+ fpEW7Ei81MeDrlfJMd5KRlAKiQr53vXUKCbgAvC+LvvfdTA7xEI2xurLYZfBssx4UfSqPp
+ zr6pEA/K8HZFHgNvNb3+cLcKkymo1qY=
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=redhat.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=V+T6O6r9
-Subject: [Intel-wired-lan] [PATCH iwl-next 1/3] ice: downgrade warning about
- gnss_insert_raw to debug level
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=CfTQiBsC
+Subject: [Intel-wired-lan] [PATCH iwl-next 3/3] ice: remove special delay
+ after processing a GNSS read batch
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -115,34 +115,53 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-gnss_insert_raw() will reject the GNSS data the ice driver produces
-whenever userspace has the gnss device open, but is not reading it fast
-enough for whatever reason.
+I do not see a reason to have a special longer delay (100 ms) after
+passing read GNSS data to userspace.
 
-Do not spam kernel logs just because userspace misbehaves.
+Just use the regular GNSS polling interval (20 ms).
 
 Signed-off-by: Michal Schmidt <mschmidt@redhat.com>
 ---
- drivers/net/ethernet/intel/ice/ice_gnss.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_gnss.c | 5 ++---
+ drivers/net/ethernet/intel/ice/ice_gnss.h | 1 -
+ 2 files changed, 2 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_gnss.c b/drivers/net/ethernet/intel/ice/ice_gnss.c
-index 66390eeb2343..9b1f970f4825 100644
+index 7922311d2545..83a2f0d4091e 100644
 --- a/drivers/net/ethernet/intel/ice/ice_gnss.c
 +++ b/drivers/net/ethernet/intel/ice/ice_gnss.c
-@@ -146,9 +146,9 @@ static void ice_gnss_read(struct kthread_work *work)
+@@ -85,7 +85,6 @@ static void ice_gnss_read(struct kthread_work *work)
+ {
+ 	struct gnss_serial *gnss = container_of(work, struct gnss_serial,
+ 						read_work.work);
+-	unsigned long delay = ICE_GNSS_POLL_DATA_DELAY_TIME;
+ 	unsigned int i, bytes_read, data_len, count;
+ 	struct ice_aqc_link_topo_addr link_topo;
+ 	char buf[ICE_MAX_I2C_DATA_SIZE];
+@@ -140,9 +139,9 @@ static void ice_gnss_read(struct kthread_work *work)
+ 				count, bytes_read);
+ 	}
  
- 	count = gnss_insert_raw(pf->gnss_dev, buf, i);
- 	if (count != i)
--		dev_warn(ice_pf_to_dev(pf),
--			 "gnss_insert_raw ret=%d size=%d\n",
--			 count, i);
-+		dev_dbg(ice_pf_to_dev(pf),
-+			"gnss_insert_raw ret=%d size=%d\n",
-+			count, i);
- 	delay = ICE_GNSS_TIMER_DELAY_TIME;
- free_buf:
- 	free_page((unsigned long)buf);
+-	delay = ICE_GNSS_TIMER_DELAY_TIME;
+ requeue:
+-	kthread_queue_delayed_work(gnss->kworker, &gnss->read_work, delay);
++	kthread_queue_delayed_work(gnss->kworker, &gnss->read_work,
++				   ICE_GNSS_POLL_DATA_DELAY_TIME);
+ 	if (err)
+ 		dev_dbg(ice_pf_to_dev(pf), "GNSS failed to read err=%d\n", err);
+ }
+diff --git a/drivers/net/ethernet/intel/ice/ice_gnss.h b/drivers/net/ethernet/intel/ice/ice_gnss.h
+index e0e939f1b102..fa52727cd3d7 100644
+--- a/drivers/net/ethernet/intel/ice/ice_gnss.h
++++ b/drivers/net/ethernet/intel/ice/ice_gnss.h
+@@ -6,7 +6,6 @@
+ 
+ #define ICE_E810T_GNSS_I2C_BUS		0x2
+ #define ICE_GNSS_POLL_DATA_DELAY_TIME	(HZ / 50) /* poll every 20 ms */
+-#define ICE_GNSS_TIMER_DELAY_TIME	(HZ / 10) /* 0.1 second per message */
+ #define ICE_GNSS_TTY_WRITE_BUF		250
+ /* ICE_MAX_I2C_DATA_SIZE is FIELD_MAX(ICE_AQC_I2C_DATA_SIZE_M).
+  * However, FIELD_MAX() does not evaluate to an integer constant expression,
 -- 
 2.47.1
 
