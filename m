@@ -1,105 +1,98 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 20F28E77187
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 18 Dec 2024 16:59:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4A04EE77187
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 18 Dec 2024 17:03:23 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id A9141417C2;
-	Wed, 18 Dec 2024 16:59:57 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id cNOASVC1G0tA; Wed, 18 Dec 2024 16:59:56 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 60353417E6
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1734541196;
-	bh=pCruMqu6RLiRm2jpmcBigqFtICmtveoz/TFh3jk85Gw=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=Z8/88ZwhL43TDyd+PjNX8Nrcpp/AYyO0TIo4qymLAhjA+Zf5sLxKjpp0YtvXtARtt
-	 monnmnkXEEhHHMGtAdkBU3e8q4l1qOzF0b8UllgB7belDZ5LYV+yJUJdrJxIMrPbJ7
-	 v+TACDVTiKA4fJtUxhkFm4yPSPATrtd83lpOpwpAY8CFFIzRRtwpLiu/yC85jt5NMB
-	 wc05z53+iZas5gIWKh24Kq9Pr4iji6fDGrkPhP4t1O7r9PxXq7JO1kW3ZRKSYzrxNg
-	 qE8yon/p5APrqxeDiRu3w+3O+zSi8bRopPjqXX9nYGzhFx07wKH3hfsrOXSo97UGH9
-	 v8WoTfdGwe2cw==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 60353417E6;
-	Wed, 18 Dec 2024 16:59:56 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id 72A71CE
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Dec 2024 16:59:54 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 6C53A6149B
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Dec 2024 16:59:54 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 195EB6146B;
+	Wed, 18 Dec 2024 17:03:23 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id HofZdh3j5Nef for <intel-wired-lan@lists.osuosl.org>;
- Wed, 18 Dec 2024 16:59:53 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.12;
- helo=mgamail.intel.com; envelope-from=ahmed.zaki@intel.com;
+ id ICnmvTFlVXh7; Wed, 18 Dec 2024 17:03:20 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org AE642615F2
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1734541400;
+	bh=jeZbraZy296AF9a/hH+nTZsAdsAG6JJgSyvl3aX7deQ=;
+	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=ccdioQNMcCdXlztsEDMiWLzBN8peBSujxeJiMYQcCyt8YHNZORJ7gWvjL521CtI5h
+	 Lz9zp+RiC5UQsYZINtOGHQJRrNMdssdMzBSqvFYgJAgtEIX0qymMnOPSkJI8U47N1n
+	 EdOBPgG7HlstPS1TIpRv7bPG+Br4/P8dVVi2EAMyMI0z7WDoRZYQi3yaMa626Qo4Zo
+	 8QhN23sxsrKLj8cft7BRr23EZnCh+tyRWJ0zxadvAG3QvJF5wQbrPrVqVzwjtqNbiq
+	 gzbjdavrd6cTIuiUDOfqO3/chn6qt6H0P4GPlDcnxq9ZzykprTKeyLdhRoil9RmNmX
+	 XO3WlHPpXv1eg==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp3.osuosl.org (Postfix) with ESMTP id AE642615F2;
+	Wed, 18 Dec 2024 17:03:20 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 3FFCBCE
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Dec 2024 17:03:19 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp3.osuosl.org (Postfix) with ESMTP id 21BEA6140D
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Dec 2024 17:03:19 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 79WTXJeiD7_S for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 18 Dec 2024 17:03:17 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.15;
+ helo=mgamail.intel.com; envelope-from=paul.greenwalt@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 515D36146B
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 515D36146B
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.12])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 515D36146B
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Dec 2024 16:59:53 +0000 (UTC)
-X-CSE-ConnectionGUID: 0C+QvPzjROCv2NzqJWG54g==
-X-CSE-MsgGUID: wh8JzHg4RCmDoDRHE/0UDg==
-X-IronPort-AV: E=McAfee;i="6700,10204,11290"; a="46415681"
-X-IronPort-AV: E=Sophos;i="6.12,245,1728975600"; d="scan'208";a="46415681"
-Received: from fmviesa005.fm.intel.com ([10.60.135.145])
- by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 18 Dec 2024 08:59:52 -0800
-X-CSE-ConnectionGUID: gw6bJWe8Rrqp7Tn3b+roSw==
-X-CSE-MsgGUID: A/OwIEffTxi0uRWwu5sgbg==
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org A86A96146B
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A86A96146B
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.15])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id A86A96146B
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Dec 2024 17:03:17 +0000 (UTC)
+X-CSE-ConnectionGUID: MBVKeRIzTruIU5au+h2RUQ==
+X-CSE-MsgGUID: 3I9+Xp6uR8yu+VlPpEPgOg==
+X-IronPort-AV: E=McAfee;i="6700,10204,11290"; a="35184362"
+X-IronPort-AV: E=Sophos;i="6.12,245,1728975600"; d="scan'208";a="35184362"
+Received: from fmviesa008.fm.intel.com ([10.60.135.148])
+ by fmvoesa109.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 18 Dec 2024 09:03:11 -0800
+X-CSE-ConnectionGUID: pFI8njKNRCSMd/sZdFQOuA==
+X-CSE-MsgGUID: p4X/2kNTT3qddWPqxloEsw==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.12,224,1728975600"; d="scan'208";a="102532129"
-Received: from ldmartin-desk2.corp.intel.com (HELO azaki-desk1.intel.com)
- ([10.125.111.224])
- by fmviesa005-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 18 Dec 2024 08:59:46 -0800
-From: Ahmed Zaki <ahmed.zaki@intel.com>
-To: netdev@vger.kernel.org
-Cc: intel-wired-lan@lists.osuosl.org, andrew+netdev@lunn.ch,
- edumazet@google.com, kuba@kernel.org, pabeni@redhat.com,
- davem@davemloft.net, michael.chan@broadcom.com, tariqt@nvidia.com,
- anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
- jdamato@fastly.com, shayd@nvidia.com, akpm@linux-foundation.org,
- Ahmed Zaki <ahmed.zaki@intel.com>
-Date: Wed, 18 Dec 2024 09:58:43 -0700
-Message-ID: <20241218165843.744647-9-ahmed.zaki@intel.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20241218165843.744647-1-ahmed.zaki@intel.com>
-References: <20241218165843.744647-1-ahmed.zaki@intel.com>
+X-IronPort-AV: E=Sophos;i="6.12,245,1728975600"; d="scan'208";a="98154781"
+Received: from unknown (HELO fedora.jf.intel.com) ([10.166.5.147])
+ by fmviesa008.fm.intel.com with ESMTP; 18 Dec 2024 09:03:10 -0800
+From: Paul Greenwalt <paul.greenwalt@intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Cc: kuba@kernel.org, netdev@vger.kernel.org,
+ Paul Greenwalt <paul.greenwalt@intel.com>,
+ Alice Michael <alice.michael@intel.com>,
+ Eric Joyner <eric.joyner@intel.com>
+Date: Wed, 18 Dec 2024 04:11:45 -0500
+Message-ID: <20241218091145.240373-1-paul.greenwalt@intel.com>
+X-Mailer: git-send-email 2.45.0
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1734541193; x=1766077193;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=o32FlmOLhDk2frzKQACZCmNSQ7xsXevYinxlSiFJGE0=;
- b=RrrZO4qLyzabBoaQsvW3G7RbEJSA+9ZWckqAlgd3k5yQkv4BRMF++Bli
- x/8ZRxzzsSw2ZGAn4aplVSnlEx+5KmWGMc9yQYPgDPVTjezCiOejXraBu
- vkIxZEZBoxLYZZJW26g0gX3yqYdIouP2i5OE21Ewa+j/BYtOve6YD0hSo
- gYnUgH0W9ufVb16Zn11PWcQXujHgPNY9pYOCp6mI7e5ZSAX5KLXsY2wrU
- yb3qJ4iS8otli/NH5lZ3phVPQPy5zGIiKfNKlYHdUiOAgvafakJugB3at
- n1nN40E+GYw1K3o5TanBJmCtzV+fkzSVd+pyZU1g9uencub3e4Y2r2eOS
- g==;
+ t=1734541398; x=1766077398;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=YwPOY40LgGCD6jfywP775/m6uM4ihk8K4jKCQDY0srk=;
+ b=Ns3vn857CIrA8cWAQPNh3dcZb+RHaFO1kML3DxBgBsSnF2yTJ3kV1L4L
+ y0PCAWOEHLllTvxWgDf9kpg0R0kta0BmpCk5Vt89Kar7q68xt78oEWAh+
+ BH33DaCeGwMlYBcsYqwNHczN7TaPoDWeEMQVs3Esfl73wQOISDYrMKgN4
+ txIhIHMq8xnRLoQcVPPm2d+MSMR+TC8Jgr7j5Uzl9rmNwgNQ4DW6MOBY8
+ PY7ONLz690SJ7dvkiwP2BEw/JYzUurrGjKpadIjFdOqg2QCThVN5xANi7
+ aL2p+hPcCyPou8ahAvr8Q/FCT9EaBpyJkRpEWZF4u/rflp4y9OFjp4GmR
+ A==;
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=RrrZO4qL
-Subject: [Intel-wired-lan] [PATCH net-next v2 8/8] mlx4: use napi's irq
- affinity
+ header.a=rsa-sha256 header.s=Intel header.b=Ns3vn857
+Subject: [Intel-wired-lan] [PATCH iwl-next v6] ice: Add E830 checksum
+ offload support
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -115,274 +108,308 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Delete the driver CPU affinity info and use the core's napi config
-instead.
+E830 supports raw receive and generic transmit checksum offloads.
 
-Signed-off-by: Ahmed Zaki <ahmed.zaki@intel.com>
+Raw receive checksum support is provided by hardware calculating the
+checksum over the whole packet, regardless of type. The calculated
+checksum is provided to driver in the Rx flex descriptor. Then the driver
+assigns the checksum to skb->csum and sets skb->ip_summed to
+CHECKSUM_COMPLETE.
+
+Generic transmit checksum support is provided by hardware calculating the
+checksum given two offsets: the start offset to begin checksum calculation,
+and the offset to insert the calculated checksum in the packet. Support is
+advertised to the stack using NETIF_F_HW_CSUM feature.
+
+E830 has the following limitations when both generic transmit checksum
+offload and TCP Segmentation Offload (TSO) are enabled:
+
+1. Inner packet header modification is not supported. This restriction
+   includes the inability to alter TCP flags, such as the push flag. As a
+   result, this limitation can impact the receiver's ability to coalesce
+   packets, potentially degrading network throughput.
+2. The Maximum Segment Size (MSS) is limited to 1023 bytes, which prevents
+   support of Maximum Transmission Unit (MTU) greater than 1063 bytes.
+
+Therefore NETIF_F_HW_CSUM and NETIF_F_ALL_TSO features are mutually
+exclusive. NETIF_F_HW_CSUM hardware feature support is indicated but is not
+enabled by default. Instead, IP checksums and NETIF_F_ALL_TSO are the
+defaults. Enforcement of mutual exclusivity of NETIF_F_HW_CSUM and
+NETIF_F_ALL_TSO is done in ice_set_features(). Mutual exclusivity
+of IP checksums and NETIF_F_HW_CSUM is handled by netdev_fix_features().
+
+When NETIF_F_HW_CSUM is requested the provided skb->csum_start and
+skb->csum_offset are passed to hardware in the Tx context descriptor
+generic checksum (GCS) parameters. Hardware calculates the 1's complement
+from skb->csum_start to the end of the packet, and inserts the result in
+the packet at skb->csum_offset.
+
+Co-developed-by: Alice Michael <alice.michael@intel.com>
+Signed-off-by: Alice Michael <alice.michael@intel.com>
+Co-developed-by: Eric Joyner <eric.joyner@intel.com>
+Signed-off-by: Eric Joyner <eric.joyner@intel.com>
+Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
 ---
- drivers/net/ethernet/mellanox/mlx4/en_cq.c    |  8 ++--
- .../net/ethernet/mellanox/mlx4/en_netdev.c    | 33 +--------------
- drivers/net/ethernet/mellanox/mlx4/eq.c       | 22 ----------
- drivers/net/ethernet/mellanox/mlx4/main.c     | 42 ++-----------------
- drivers/net/ethernet/mellanox/mlx4/mlx4.h     |  1 -
- drivers/net/ethernet/mellanox/mlx4/mlx4_en.h  |  1 -
- 6 files changed, 10 insertions(+), 97 deletions(-)
+Changelog:
+v1->v2
+- Update commit message with additional details.
+- Add newlines, and add params around
+- Return early from ice_fix_features() to avoid extra indentation and
+  large if block.
+- Move and change some defines.
+- replace htons and le16_t_cpu with swap16.
+- Use FIELD_PREP where possible.
+- Removed checksum valid bit check STATUS1_L2TAG2P_S. This check is not
+  needed since there is no situation which will return an error.
+v2->v3
+- Minor fixes in commit message.
+- Removed unused register defines in ice_hw_autogen.h.
+- Moved GCS and TSO feature fix to helper function
+  ice_fix_features_gcs(), and updated logic.
+- Update to align naming with related flags.
+v3->v4
+- Move a check for GCS and TSO mutual exclusivity from
+  ice_fix_features() to ice_set_features().
+v4->v5
+- Remove lingering GCS and TSO mutual exclusivity comments and code in
+  ice_fix_features().
+- Remove unused variable ICE_TX_FLAGS_RING_GCS.
+- Remove Tested-by and Signed-off-by tag due to changes to patch.
+- Use ICE_TX_GCS_DESC_TYPE_M and ICE_TX_GCS_DESC_CSUM_PSH in
+  ice_tx_csum() to set the GCS decriptor field type.
+v5->v6
+- Fix build error.
+---
+ drivers/net/ethernet/intel/ice/ice.h          |  1 +
+ .../net/ethernet/intel/ice/ice_lan_tx_rx.h    |  9 +++++--
+ drivers/net/ethernet/intel/ice/ice_lib.c      |  8 +++++-
+ drivers/net/ethernet/intel/ice/ice_main.c     | 18 +++++++++++++
+ drivers/net/ethernet/intel/ice/ice_txrx.c     | 27 ++++++++++++++++++-
+ drivers/net/ethernet/intel/ice/ice_txrx.h     |  2 ++
+ drivers/net/ethernet/intel/ice/ice_txrx_lib.c | 26 ++++++++++++++++++
+ 7 files changed, 87 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/mellanox/mlx4/en_cq.c b/drivers/net/ethernet/mellanox/mlx4/en_cq.c
-index b8531283e3ac..46e28e0bfcd0 100644
---- a/drivers/net/ethernet/mellanox/mlx4/en_cq.c
-+++ b/drivers/net/ethernet/mellanox/mlx4/en_cq.c
-@@ -90,6 +90,7 @@ int mlx4_en_activate_cq(struct mlx4_en_priv *priv, struct mlx4_en_cq *cq,
- 			int cq_idx)
- {
- 	struct mlx4_en_dev *mdev = priv->mdev;
-+	struct napi_config *napi_config;
- 	int irq, err = 0;
- 	int timestamp_en = 0;
- 	bool assigned_eq = false;
-@@ -100,11 +101,12 @@ int mlx4_en_activate_cq(struct mlx4_en_priv *priv, struct mlx4_en_cq *cq,
- 	*cq->mcq.set_ci_db = 0;
- 	*cq->mcq.arm_db    = 0;
- 	memset(cq->buf, 0, cq->buf_size);
-+	napi_config = cq->napi.config;
+diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
+index 2f5d6f974185..0d2c80578633 100644
+--- a/drivers/net/ethernet/intel/ice/ice.h
++++ b/drivers/net/ethernet/intel/ice/ice.h
+@@ -203,6 +203,7 @@ enum ice_feature {
+ 	ICE_F_SMA_CTRL,
+ 	ICE_F_CGU,
+ 	ICE_F_GNSS,
++	ICE_F_GCS,
+ 	ICE_F_ROCE_LAG,
+ 	ICE_F_SRIOV_LAG,
+ 	ICE_F_MBX_LIMIT,
+diff --git a/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h b/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
+index 611577ebc29d..5b98222fe27f 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
++++ b/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
+@@ -229,7 +229,7 @@ struct ice_32b_rx_flex_desc_nic {
+ 	__le16 status_error1;
+ 	u8 flexi_flags2;
+ 	u8 ts_low;
+-	__le16 l2tag2_1st;
++	__le16 raw_csum;
+ 	__le16 l2tag2_2nd;
  
- 	if (cq->type == RX) {
- 		if (!mlx4_is_eq_vector_valid(mdev->dev, priv->port,
- 					     cq->vector)) {
--			cq->vector = cpumask_first(priv->rx_ring[cq->ring]->affinity_mask);
-+			cq->vector = cpumask_first(&napi_config->affinity_mask);
+ 	/* Qword 3 */
+@@ -500,10 +500,15 @@ enum ice_tx_desc_len_fields {
+ struct ice_tx_ctx_desc {
+ 	__le32 tunneling_params;
+ 	__le16 l2tag2;
+-	__le16 rsvd;
++	__le16 gcs;
+ 	__le64 qw1;
+ };
  
- 			err = mlx4_assign_eq(mdev->dev, priv->port,
- 					     &cq->vector);
-@@ -150,7 +152,7 @@ int mlx4_en_activate_cq(struct mlx4_en_priv *priv, struct mlx4_en_cq *cq,
- 	case TX:
- 		cq->mcq.comp = mlx4_en_tx_irq;
- 		netif_napi_add_tx(cq->dev, &cq->napi, mlx4_en_poll_tx_cq);
--		netif_napi_set_irq(&cq->napi, irq, 0);
-+		netif_napi_set_irq(&cq->napi, irq, NAPIF_IRQ_AFFINITY);
- 		napi_enable(&cq->napi);
- 		netif_queue_set_napi(cq->dev, cq_idx, NETDEV_QUEUE_TYPE_TX, &cq->napi);
- 		break;
-@@ -158,7 +160,7 @@ int mlx4_en_activate_cq(struct mlx4_en_priv *priv, struct mlx4_en_cq *cq,
- 		cq->mcq.comp = mlx4_en_rx_irq;
- 		netif_napi_add_config(cq->dev, &cq->napi, mlx4_en_poll_rx_cq,
- 				      cq_idx);
--		netif_napi_set_irq(&cq->napi, irq, 0);
-+		netif_napi_set_irq(&cq->napi, irq, NAPIF_IRQ_AFFINITY);
- 		napi_enable(&cq->napi);
- 		netif_queue_set_napi(cq->dev, cq_idx, NETDEV_QUEUE_TYPE_RX, &cq->napi);
- 		break;
-diff --git a/drivers/net/ethernet/mellanox/mlx4/en_netdev.c b/drivers/net/ethernet/mellanox/mlx4/en_netdev.c
-index 281b34af0bb4..e4c2532b5909 100644
---- a/drivers/net/ethernet/mellanox/mlx4/en_netdev.c
-+++ b/drivers/net/ethernet/mellanox/mlx4/en_netdev.c
-@@ -1596,24 +1596,6 @@ static void mlx4_en_linkstate_work(struct work_struct *work)
- 	mutex_unlock(&mdev->state_lock);
- }
- 
--static int mlx4_en_init_affinity_hint(struct mlx4_en_priv *priv, int ring_idx)
--{
--	struct mlx4_en_rx_ring *ring = priv->rx_ring[ring_idx];
--	int numa_node = priv->mdev->dev->numa_node;
--
--	if (!zalloc_cpumask_var(&ring->affinity_mask, GFP_KERNEL))
--		return -ENOMEM;
--
--	cpumask_set_cpu(cpumask_local_spread(ring_idx, numa_node),
--			ring->affinity_mask);
--	return 0;
--}
--
--static void mlx4_en_free_affinity_hint(struct mlx4_en_priv *priv, int ring_idx)
--{
--	free_cpumask_var(priv->rx_ring[ring_idx]->affinity_mask);
--}
--
- static void mlx4_en_init_recycle_ring(struct mlx4_en_priv *priv,
- 				      int tx_ring_idx)
- {
-@@ -1663,16 +1645,9 @@ int mlx4_en_start_port(struct net_device *dev)
- 	for (i = 0; i < priv->rx_ring_num; i++) {
- 		cq = priv->rx_cq[i];
- 
--		err = mlx4_en_init_affinity_hint(priv, i);
--		if (err) {
--			en_err(priv, "Failed preparing IRQ affinity hint\n");
--			goto cq_err;
--		}
--
- 		err = mlx4_en_activate_cq(priv, cq, i);
- 		if (err) {
- 			en_err(priv, "Failed activating Rx CQ\n");
--			mlx4_en_free_affinity_hint(priv, i);
- 			goto cq_err;
- 		}
- 
-@@ -1688,7 +1663,6 @@ int mlx4_en_start_port(struct net_device *dev)
- 		if (err) {
- 			en_err(priv, "Failed setting cq moderation parameters\n");
- 			mlx4_en_deactivate_cq(priv, cq);
--			mlx4_en_free_affinity_hint(priv, i);
- 			goto cq_err;
- 		}
- 		mlx4_en_arm_cq(priv, cq);
-@@ -1874,10 +1848,9 @@ int mlx4_en_start_port(struct net_device *dev)
- mac_err:
- 	mlx4_en_put_qp(priv);
- cq_err:
--	while (rx_index--) {
-+	while (rx_index--)
- 		mlx4_en_deactivate_cq(priv, priv->rx_cq[rx_index]);
--		mlx4_en_free_affinity_hint(priv, rx_index);
--	}
++#define ICE_TX_GCS_DESC_START_M		GENMASK(7, 0)
++#define ICE_TX_GCS_DESC_OFFSET_M	GENMASK(11, 8)
++#define ICE_TX_GCS_DESC_TYPE_M		GENMASK(14, 12)
++#define ICE_TX_GCS_DESC_CSUM_PSH	1
 +
- 	for (i = 0; i < priv->rx_ring_num; i++)
- 		mlx4_en_deactivate_rx_ring(priv, priv->rx_ring[i]);
+ #define ICE_TXD_CTX_QW1_CMD_S	4
+ #define ICE_TXD_CTX_QW1_CMD_M	(0x7FUL << ICE_TXD_CTX_QW1_CMD_S)
  
-@@ -2011,8 +1984,6 @@ void mlx4_en_stop_port(struct net_device *dev, int detach)
- 		napi_synchronize(&cq->napi);
- 		mlx4_en_deactivate_rx_ring(priv, priv->rx_ring[i]);
- 		mlx4_en_deactivate_cq(priv, cq);
--
--		mlx4_en_free_affinity_hint(priv, i);
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index e07fc8851e1d..23d4b0677b21 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -1420,6 +1420,10 @@ static int ice_vsi_alloc_rings(struct ice_vsi *vsi)
+ 		ring->dev = dev;
+ 		ring->count = vsi->num_rx_desc;
+ 		ring->cached_phctime = pf->ptp.cached_phc_time;
++
++		if (ice_is_feature_supported(pf, ICE_F_GCS))
++			ring->flags |= ICE_RX_FLAGS_RING_GCS;
++
+ 		WRITE_ONCE(vsi->rx_rings[i], ring);
  	}
+ 
+@@ -3883,8 +3887,10 @@ void ice_init_feature_support(struct ice_pf *pf)
+ 		break;
+ 	}
+ 
+-	if (pf->hw.mac_type == ICE_MAC_E830)
++	if (pf->hw.mac_type == ICE_MAC_E830) {
+ 		ice_set_feature_support(pf, ICE_F_MBX_LIMIT);
++		ice_set_feature_support(pf, ICE_F_GCS);
++	}
  }
  
-diff --git a/drivers/net/ethernet/mellanox/mlx4/eq.c b/drivers/net/ethernet/mellanox/mlx4/eq.c
-index d768a6a828c4..b005eb697c64 100644
---- a/drivers/net/ethernet/mellanox/mlx4/eq.c
-+++ b/drivers/net/ethernet/mellanox/mlx4/eq.c
-@@ -233,23 +233,6 @@ static void mlx4_slave_event(struct mlx4_dev *dev, int slave,
- 	slave_event(dev, slave, eqe);
- }
+ /**
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 89fa3d53d317..16677dca58a8 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -3666,6 +3666,12 @@ void ice_set_netdev_features(struct net_device *netdev)
+ 	 */
+ 	netdev->hw_features |= NETIF_F_RXFCS;
  
--#if defined(CONFIG_SMP)
--static void mlx4_set_eq_affinity_hint(struct mlx4_priv *priv, int vec)
--{
--	int hint_err;
--	struct mlx4_dev *dev = &priv->dev;
--	struct mlx4_eq *eq = &priv->eq_table.eq[vec];
--
--	if (!cpumask_available(eq->affinity_mask) ||
--	    cpumask_empty(eq->affinity_mask))
--		return;
--
--	hint_err = irq_update_affinity_hint(eq->irq, eq->affinity_mask);
--	if (hint_err)
--		mlx4_warn(dev, "irq_update_affinity_hint failed, err %d\n", hint_err);
--}
--#endif
--
- int mlx4_gen_pkey_eqe(struct mlx4_dev *dev, int slave, u8 port)
- {
- 	struct mlx4_eqe eqe;
-@@ -1123,8 +1106,6 @@ static void mlx4_free_irqs(struct mlx4_dev *dev)
- 
- 	for (i = 0; i < dev->caps.num_comp_vectors + 1; ++i)
- 		if (eq_table->eq[i].have_irq) {
--			free_cpumask_var(eq_table->eq[i].affinity_mask);
--			irq_update_affinity_hint(eq_table->eq[i].irq, NULL);
- 			free_irq(eq_table->eq[i].irq, eq_table->eq + i);
- 			eq_table->eq[i].have_irq = 0;
- 		}
-@@ -1516,9 +1497,6 @@ int mlx4_assign_eq(struct mlx4_dev *dev, u8 port, int *vector)
- 			clear_bit(*prequested_vector, priv->msix_ctl.pool_bm);
- 			*prequested_vector = -1;
- 		} else {
--#if defined(CONFIG_SMP)
--			mlx4_set_eq_affinity_hint(priv, *prequested_vector);
--#endif
- 			eq_set_ci(&priv->eq_table.eq[*prequested_vector], 1);
- 			priv->eq_table.eq[*prequested_vector].have_irq = 1;
- 		}
-diff --git a/drivers/net/ethernet/mellanox/mlx4/main.c b/drivers/net/ethernet/mellanox/mlx4/main.c
-index febeadfdd5a5..5f88c297332f 100644
---- a/drivers/net/ethernet/mellanox/mlx4/main.c
-+++ b/drivers/net/ethernet/mellanox/mlx4/main.c
-@@ -2923,36 +2923,6 @@ static int mlx4_setup_hca(struct mlx4_dev *dev)
- 	return err;
- }
- 
--static int mlx4_init_affinity_hint(struct mlx4_dev *dev, int port, int eqn)
--{
--	int requested_cpu = 0;
--	struct mlx4_priv *priv = mlx4_priv(dev);
--	struct mlx4_eq *eq;
--	int off = 0;
--	int i;
--
--	if (eqn > dev->caps.num_comp_vectors)
--		return -EINVAL;
--
--	for (i = 1; i < port; i++)
--		off += mlx4_get_eqs_per_port(dev, i);
--
--	requested_cpu = eqn - off - !!(eqn > MLX4_EQ_ASYNC);
--
--	/* Meaning EQs are shared, and this call comes from the second port */
--	if (requested_cpu < 0)
--		return 0;
--
--	eq = &priv->eq_table.eq[eqn];
--
--	if (!zalloc_cpumask_var(&eq->affinity_mask, GFP_KERNEL))
--		return -ENOMEM;
--
--	cpumask_set_cpu(requested_cpu, eq->affinity_mask);
--
--	return 0;
--}
--
- static void mlx4_enable_msi_x(struct mlx4_dev *dev)
- {
- 	struct mlx4_priv *priv = mlx4_priv(dev);
-@@ -2997,19 +2967,13 @@ static void mlx4_enable_msi_x(struct mlx4_dev *dev)
- 			priv->eq_table.eq[i].irq =
- 				entries[i + 1 - !!(i > MLX4_EQ_ASYNC)].vector;
- 
--			if (MLX4_IS_LEGACY_EQ_MODE(dev->caps)) {
-+			if (MLX4_IS_LEGACY_EQ_MODE(dev->caps))
- 				bitmap_fill(priv->eq_table.eq[i].actv_ports.ports,
- 					    dev->caps.num_ports);
--				/* We don't set affinity hint when there
--				 * aren't enough EQs
--				 */
--			} else {
-+			else
- 				set_bit(port,
- 					priv->eq_table.eq[i].actv_ports.ports);
--				if (mlx4_init_affinity_hint(dev, port + 1, i))
--					mlx4_warn(dev, "Couldn't init hint cpumask for EQ %d\n",
--						  i);
--			}
++	/* Mutual exclusivity for TSO and GCS is enforced by the set features
++	 * ndo callback.
++	 */
++	if (ice_is_feature_supported(pf, ICE_F_GCS))
++		netdev->hw_features |= NETIF_F_HW_CSUM;
 +
- 			/* We divide the Eqs evenly between the two ports.
- 			 * (dev->caps.num_comp_vectors / dev->caps.num_ports)
- 			 * refers to the number of Eqs per port
-diff --git a/drivers/net/ethernet/mellanox/mlx4/mlx4.h b/drivers/net/ethernet/mellanox/mlx4/mlx4.h
-index d7d856d1758a..66b1ebfd5816 100644
---- a/drivers/net/ethernet/mellanox/mlx4/mlx4.h
-+++ b/drivers/net/ethernet/mellanox/mlx4/mlx4.h
-@@ -403,7 +403,6 @@ struct mlx4_eq {
- 	struct mlx4_eq_tasklet	tasklet_ctx;
- 	struct mlx4_active_ports actv_ports;
- 	u32			ref_count;
--	cpumask_var_t		affinity_mask;
+ 	netif_set_tso_max_size(netdev, ICE_MAX_TSO_SIZE);
+ }
+ 
+@@ -6567,6 +6573,18 @@ ice_set_features(struct net_device *netdev, netdev_features_t features)
+ 	if (changed & NETIF_F_LOOPBACK)
+ 		ret = ice_set_loopback(vsi, !!(features & NETIF_F_LOOPBACK));
+ 
++	/* Due to E830 hardware limitations, TSO (NETIF_F_ALL_TSO) with GCS
++	 * (NETIF_F_HW_CSUM) is not supported.
++	 */
++	if (ice_is_feature_supported(pf, ICE_F_GCS) &&
++	    ((features & NETIF_F_HW_CSUM) && (features & NETIF_F_ALL_TSO))) {
++		if (netdev->features & NETIF_F_HW_CSUM)
++			dev_err(ice_pf_to_dev(pf), "To enable TSO, you must first disable HW checksum.\n");
++		else
++			dev_err(ice_pf_to_dev(pf), "To enable HW checksum, you must first disable TSO.\n");
++		return -EIO;
++	}
++
+ 	return ret;
+ }
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
+index 5d2d7736fd5f..f2b2d6bc0c43 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.c
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
+@@ -1753,6 +1753,7 @@ ice_tx_map(struct ice_tx_ring *tx_ring, struct ice_tx_buf *first,
+ static
+ int ice_tx_csum(struct ice_tx_buf *first, struct ice_tx_offload_params *off)
+ {
++	const struct ice_tx_ring *tx_ring = off->tx_ring;
+ 	u32 l4_len = 0, l3_len = 0, l2_len = 0;
+ 	struct sk_buff *skb = first->skb;
+ 	union {
+@@ -1902,6 +1903,30 @@ int ice_tx_csum(struct ice_tx_buf *first, struct ice_tx_offload_params *off)
+ 	l3_len = l4.hdr - ip.hdr;
+ 	offset |= (l3_len / 4) << ICE_TX_DESC_LEN_IPLEN_S;
+ 
++	if ((tx_ring->netdev->features & NETIF_F_HW_CSUM) &&
++	    !(first->tx_flags & ICE_TX_FLAGS_TSO) &&
++	    !skb_csum_is_sctp(skb)) {
++		/* Set GCS */
++		u16 csum_start = (skb->csum_start - skb->mac_header) / 2;
++		u16 csum_offset = skb->csum_offset / 2;
++		u16 gcs_params;
++
++		gcs_params = FIELD_PREP(ICE_TX_GCS_DESC_START_M, csum_start) |
++			     FIELD_PREP(ICE_TX_GCS_DESC_OFFSET_M, csum_offset) |
++			     FIELD_PREP(ICE_TX_GCS_DESC_TYPE_M,
++					ICE_TX_GCS_DESC_CSUM_PSH);
++
++		/* Unlike legacy HW checksums, GCS requires a context
++		 * descriptor.
++		 */
++		off->cd_qw1 |= ICE_TX_DESC_DTYPE_CTX;
++		off->cd_gcs_params = gcs_params;
++		/* Fill out CSO info in data descriptors */
++		off->td_offset |= offset;
++		off->td_cmd |= cmd;
++		return 1;
++	}
++
+ 	/* Enable L4 checksum offloads */
+ 	switch (l4_proto) {
+ 	case IPPROTO_TCP:
+@@ -2383,7 +2408,7 @@ ice_xmit_frame_ring(struct sk_buff *skb, struct ice_tx_ring *tx_ring)
+ 		/* setup context descriptor */
+ 		cdesc->tunneling_params = cpu_to_le32(offload.cd_tunnel_params);
+ 		cdesc->l2tag2 = cpu_to_le16(offload.cd_l2tag2);
+-		cdesc->rsvd = cpu_to_le16(0);
++		cdesc->gcs = cpu_to_le16(offload.cd_gcs_params);
+ 		cdesc->qw1 = cpu_to_le64(offload.cd_qw1);
+ 	}
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.h b/drivers/net/ethernet/intel/ice/ice_txrx.h
+index cb347c852ba9..5b0b54ac5c00 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.h
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.h
+@@ -193,6 +193,7 @@ struct ice_tx_offload_params {
+ 	u32 td_l2tag1;
+ 	u32 cd_tunnel_params;
+ 	u16 cd_l2tag2;
++	u16 cd_gcs_params;
+ 	u8 header_len;
  };
  
- struct mlx4_slave_eqe {
-diff --git a/drivers/net/ethernet/mellanox/mlx4/mlx4_en.h b/drivers/net/ethernet/mellanox/mlx4/mlx4_en.h
-index 28b70dcc652e..41594dd00636 100644
---- a/drivers/net/ethernet/mellanox/mlx4/mlx4_en.h
-+++ b/drivers/net/ethernet/mellanox/mlx4/mlx4_en.h
-@@ -357,7 +357,6 @@ struct mlx4_en_rx_ring {
- 	unsigned long dropped;
- 	unsigned long alloc_fail;
- 	int hwtstamp_rx_filter;
--	cpumask_var_t affinity_mask;
+@@ -367,6 +368,7 @@ struct ice_rx_ring {
+ #define ICE_RX_FLAGS_RING_BUILD_SKB	BIT(1)
+ #define ICE_RX_FLAGS_CRC_STRIP_DIS	BIT(2)
+ #define ICE_RX_FLAGS_MULTIDEV		BIT(3)
++#define ICE_RX_FLAGS_RING_GCS		BIT(4)
+ 	u8 flags;
+ 	/* CL5 - 5th cacheline starts here */
  	struct xdp_rxq_info xdp_rxq;
- };
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx_lib.c b/drivers/net/ethernet/intel/ice/ice_txrx_lib.c
+index 2719f0e20933..45cfaabc41cb 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_txrx_lib.c
+@@ -80,6 +80,23 @@ ice_rx_hash_to_skb(const struct ice_rx_ring *rx_ring,
+ 		libeth_rx_pt_set_hash(skb, hash, decoded);
+ }
  
++/**
++ * ice_rx_gcs - Set generic checksum in skb
++ * @skb: skb currently being received and modified
++ * @rx_desc: receive descriptor
++ */
++static void ice_rx_gcs(struct sk_buff *skb,
++		       const union ice_32b_rx_flex_desc *rx_desc)
++{
++	const struct ice_32b_rx_flex_desc_nic *desc;
++	u16 csum;
++
++	desc = (struct ice_32b_rx_flex_desc_nic *)rx_desc;
++	skb->ip_summed = CHECKSUM_COMPLETE;
++	csum = (__force u16)desc->raw_csum;
++	skb->csum = csum_unfold((__force __sum16)swab16(csum));
++}
++
+ /**
+  * ice_rx_csum - Indicate in skb if checksum is good
+  * @ring: the ring we care about
+@@ -107,6 +124,15 @@ ice_rx_csum(struct ice_rx_ring *ring, struct sk_buff *skb,
+ 	rx_status0 = le16_to_cpu(rx_desc->wb.status_error0);
+ 	rx_status1 = le16_to_cpu(rx_desc->wb.status_error1);
+ 
++	if ((ring->flags & ICE_RX_FLAGS_RING_GCS) &&
++	    rx_desc->wb.rxdid == ICE_RXDID_FLEX_NIC &&
++	    (decoded.inner_prot == LIBETH_RX_PT_INNER_TCP ||
++	     decoded.inner_prot == LIBETH_RX_PT_INNER_UDP ||
++	     decoded.inner_prot == LIBETH_RX_PT_INNER_ICMP)) {
++		ice_rx_gcs(skb, rx_desc);
++		return;
++	}
++
+ 	/* check if HW has decoded the packet and checksum */
+ 	if (!(rx_status0 & BIT(ICE_RX_FLEX_DESC_STATUS0_L3L4P_S)))
+ 		return;
 -- 
-2.43.0
+2.45.0
 
