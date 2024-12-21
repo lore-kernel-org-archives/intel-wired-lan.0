@@ -1,65 +1,65 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 68844E7718C
-	for <intel-wired-lan@archiver.kernel.org>; Sat, 21 Dec 2024 18:43:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 49A0FE7718E
+	for <intel-wired-lan@archiver.kernel.org>; Sat, 21 Dec 2024 18:43:21 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 0B5D04EEE6;
-	Sat, 21 Dec 2024 18:43:20 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 0D35A708F8;
+	Sat, 21 Dec 2024 18:43:21 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id SUllg7Im_HmM; Sat, 21 Dec 2024 18:43:19 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id vH9_Zx5qQxta; Sat, 21 Dec 2024 18:43:20 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1D92847179
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 5CA237093C
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1734806599;
-	bh=garTpmgVCRsiT24Y9HEp7HK8vg0zYHqQEomkjWoz8/w=;
+	s=default; t=1734806600;
+	bh=VIOsW7CThUdxqZazplbAYuS4wCenu5gwxB082K8tTE8=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=fYAF1VNBqoRX6eCfay8ElPUaPuybmxNANxjBa3WNkbfpYD2o0Nci5MMZrcSvFyCM6
-	 DR6qmop7y/cVkDVTFtKqcyJTlG7ZkE4FcqadXxvIeGsGb/PBM5lM86OBIfrxkXUumo
-	 4JNKKQCRBVbiiB9PJn5xiycwYB4Y237terdxqKaiHj0xKQDN91v6YEUcpQH6odaG4i
-	 6PTRYNtBlJkARuufStsk460y3Hnj6mY9WPvnVVNctvFNC8WWW8xKd7YZ1+uMHHWANV
-	 PObtvcZso6A8hUBo1JgbR8zSmdRbM3WgGQmgSDSlLXY5XphBhgGzVo90ykKSa7J7ng
-	 24j4i7FDf5BGw==
+	b=5MejNoAo/gcKJswPl5VZsc17ix+Hh1GsoqJpQ3JRqJLgTciuSk0bVF3oMXjYwPKp8
+	 jVXAYk+R6x0gH0ynh2QF3Pi8wcpQAyxp4VCE6WxUVpZZ9O/gW8DUN9p1YYrT5XNrBA
+	 PYITK3ofE/vBNlrSa6kVel4qnnqlLh9OPN2y9e5aC6WZZR2QROvup/hH57TfxCvwcf
+	 QaydXzHMqCrsH/GNLBruiiQ34ke+K2OQ3wY7leBur7t2A+nbkI/UOtsBxPXIMrmj3+
+	 X4sViTroUonqpmVKq75MirLxfyIJgEoV8ZCR7tfEYIGfysZxVxvuMlBkF6jEDL0zyh
+	 QhIFw88g8Mjzw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 1D92847179;
-	Sat, 21 Dec 2024 18:43:19 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id A6C0B93F
- for <intel-wired-lan@lists.osuosl.org>; Sat, 21 Dec 2024 18:43:00 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 5CA237093C;
+	Sat, 21 Dec 2024 18:43:20 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 1EA2E75A
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 21 Dec 2024 18:43:01 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 77C3940278
+ by smtp3.osuosl.org (Postfix) with ESMTP id B6B0C70911
  for <intel-wired-lan@lists.osuosl.org>; Sat, 21 Dec 2024 18:43:00 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 4fn_l_rbHF0v for <intel-wired-lan@lists.osuosl.org>;
- Sat, 21 Dec 2024 18:42:59 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id iKe32FUhwkHV for <intel-wired-lan@lists.osuosl.org>;
+ Sat, 21 Dec 2024 18:43:00 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=2a00:1098:5b::1;
  helo=mx.treblig.org; envelope-from=linux@treblig.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 56434405D2
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 56434405D2
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org F2B0A6F61C
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org F2B0A6F61C
 Received: from mx.treblig.org (mx.treblig.org [IPv6:2a00:1098:5b::1])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 56434405D2
+ by smtp3.osuosl.org (Postfix) with ESMTPS id F2B0A6F61C
  for <intel-wired-lan@lists.osuosl.org>; Sat, 21 Dec 2024 18:42:59 +0000 (UTC)
 Received: from localhost ([127.0.0.1] helo=dalek.home.treblig.org)
  by mx.treblig.org with esmtp (Exim 4.96)
- (envelope-from <linux@treblig.org>) id 1tP4RA-006hEJ-05;
- Sat, 21 Dec 2024 18:42:52 +0000
+ (envelope-from <linux@treblig.org>) id 1tP4RB-006hEJ-13;
+ Sat, 21 Dec 2024 18:42:53 +0000
 From: linux@treblig.org
 To: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
  andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
  kuba@kernel.org, pabeni@redhat.com, intel-wired-lan@lists.osuosl.org
 Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
  "Dr. David Alan Gilbert" <linux@treblig.org>
-Date: Sat, 21 Dec 2024 18:42:44 +0000
-Message-ID: <20241221184247.118752-7-linux@treblig.org>
+Date: Sat, 21 Dec 2024 18:42:46 +0000
+Message-ID: <20241221184247.118752-9-linux@treblig.org>
 X-Mailer: git-send-email 2.47.1
 In-Reply-To: <20241221184247.118752-1-linux@treblig.org>
 References: <20241221184247.118752-1-linux@treblig.org>
@@ -68,21 +68,20 @@ Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt;
  c=relaxed/relaxed; d=treblig.org
  ; s=bytemarkmx; h=MIME-Version:Message-ID:Date:Subject:From:Content-Type:From
- :Subject; bh=garTpmgVCRsiT24Y9HEp7HK8vg0zYHqQEomkjWoz8/w=; b=BjVUyv30k10NKb4V
- BD/soBvi+aNB0pLq2CxbwiFFVrt/qrxTsUAa8VQGWOMzNlR35rI4HL401F6bmmKHsHSXKWuj7ecar
- e6ve3xi17zgbPK0aTzDcOjlXfl1aGAWhGMEgqf45x8fhPt684jXbxgcUXsS8jUrbk2qEU9k3KpoR4
- 6raYUIWtyXRg0Q3lFkXO8RFoHi+OgXAd5vZSPZYLfW7QlxKri0TDHRLWtZU1FHnxrsFl95XLX3LTW
- 8ppX04UEx7WjddB+mLzkMCj+yPzPJMs5/NHgWKRbd4Mc92nwwrt0Uj+MparB5IsoslFPs/79VyWhp
- OIr/8FBpUiSVBBRH4g==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ :Subject; bh=VIOsW7CThUdxqZazplbAYuS4wCenu5gwxB082K8tTE8=; b=PF72OuVanmpzzvm/
+ 0lKPOaUeS6WYnijmVfYz5Y0R9TCaqZZKCMKqIOhIl8Ve28OVnVVaJ8Xc7lD0ohNvz5VnscsYkYWBN
+ CCm7Bi/9lapNMWf93RmyAfSMQkJkpJiOHeRxySSZRD0D68mqAwdFY2wbonpin13Mk+drtmQW/4MGL
+ wHwW/3zttm9pLvuEon5obfRXN0Hi2430XNK5dyvgyfQjbLIuv1X+xlNEKaEGxP5UoIw/DMbsEf6n+
+ sQEaP9qiAVsXbt+2jGBE6gLHna+cCSLQHhWyZjqe4YSVOg0opIiZrP1/UeA6JoWZJvzkiO+3QRPzp
+ CWMFLUCuVMNkkgZNfA==;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=treblig.org
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=treblig.org header.i=@treblig.org header.a=rsa-sha256
- header.s=bytemarkmx header.b=BjVUyv30
-Subject: [Intel-wired-lan] [RFC net-next 6/9] i40e: Remove unused
- i40e_del_filter
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key) header.d=treblig.org header.i=@treblig.org
+ header.a=rsa-sha256 header.s=bytemarkmx header.b=PF72OuVa
+Subject: [Intel-wired-lan] [RFC net-next 8/9] i40e: Remove unused
+ i40e_asq_send_command_v2
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -100,80 +99,60 @@ Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 From: "Dr. David Alan Gilbert" <linux@treblig.org>
 
-The last use of i40e_del_filter() was removed in 2016 by
-commit 9569a9a4547d ("i40e: when adding or removing MAC filters, correctly
-handle VLANs")
+i40e_asq_send_command_v2() was added in 2022 by
+commit 74073848b0d7 ("i40e: Add new versions of send ASQ command
+functions")
+but hasn't been used.
 
 Remove it.
 
-Fix up a comment that referenced it.
-
-Note: The __ version of this function is still used.
+(The _atomic_v2 version of the function is used, so leave it).
 
 Signed-off-by: Dr. David Alan Gilbert <linux@treblig.org>
 ---
- drivers/net/ethernet/intel/i40e/i40e.h      |  1 -
- drivers/net/ethernet/intel/i40e/i40e_main.c | 28 ++-------------------
- 2 files changed, 2 insertions(+), 27 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_adminq.c    | 10 ----------
+ drivers/net/ethernet/intel/i40e/i40e_prototype.h |  7 -------
+ 2 files changed, 17 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index 5d9738b746f4..399a5dbf3506 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -1196,7 +1196,6 @@ void i40e_set_ethtool_ops(struct net_device *netdev);
- struct i40e_mac_filter *i40e_add_filter(struct i40e_vsi *vsi,
- 					const u8 *macaddr, s16 vlan);
- void __i40e_del_filter(struct i40e_vsi *vsi, struct i40e_mac_filter *f);
--void i40e_del_filter(struct i40e_vsi *vsi, const u8 *macaddr, s16 vlan);
- int i40e_sync_vsi_filters(struct i40e_vsi *vsi);
- struct i40e_vsi *i40e_vsi_setup(struct i40e_pf *pf, u8 type,
- 				u16 uplink, u32 param1);
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 83ba1effe8ba..276dde0bc1d4 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -1666,9 +1666,8 @@ struct i40e_mac_filter *i40e_add_filter(struct i40e_vsi *vsi,
-  * @vsi: VSI to remove from
-  * @f: the filter to remove from the list
-  *
-- * This function should be called instead of i40e_del_filter only if you know
-- * the exact filter you will remove already, such as via i40e_find_filter or
-- * i40e_find_mac.
-+ * This function requires you've found * the exact filter you will remove
-+ * already, such as via i40e_find_filter or i40e_find_mac.
-  *
-  * NOTE: This function is expected to be called with mac_filter_hash_lock
-  * being held.
-@@ -1697,29 +1696,6 @@ void __i40e_del_filter(struct i40e_vsi *vsi, struct i40e_mac_filter *f)
- 	set_bit(__I40E_MACVLAN_SYNC_PENDING, vsi->back->state);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq.c b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
+index f73f5930fc58..175c1320c143 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_adminq.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
+@@ -1016,16 +1016,6 @@ i40e_asq_send_command_atomic_v2(struct i40e_hw *hw,
+ 	return status;
  }
  
--/**
-- * i40e_del_filter - Remove a MAC/VLAN filter from the VSI
-- * @vsi: the VSI to be searched
-- * @macaddr: the MAC address
-- * @vlan: the VLAN
-- *
-- * NOTE: This function is expected to be called with mac_filter_hash_lock
-- * being held.
-- * ANOTHER NOTE: This function MUST be called from within the context of
-- * the "safe" variants of any list iterators, e.g. list_for_each_entry_safe()
-- * instead of list_for_each_entry().
-- **/
--void i40e_del_filter(struct i40e_vsi *vsi, const u8 *macaddr, s16 vlan)
+-int
+-i40e_asq_send_command_v2(struct i40e_hw *hw, struct i40e_aq_desc *desc,
+-			 void *buff, /* can be NULL */ u16  buff_size,
+-			 struct i40e_asq_cmd_details *cmd_details,
+-			 enum i40e_admin_queue_err *aq_status)
 -{
--	struct i40e_mac_filter *f;
--
--	if (!vsi || !macaddr)
--		return;
--
--	f = i40e_find_filter(vsi, macaddr, vlan);
--	__i40e_del_filter(vsi, f);
+-	return i40e_asq_send_command_atomic_v2(hw, desc, buff, buff_size,
+-					       cmd_details, true, aq_status);
 -}
 -
  /**
-  * i40e_add_mac_filter - Add a MAC filter for all active VLANs
-  * @vsi: the VSI to be searched
+  *  i40e_fill_default_direct_cmd_desc - AQ descriptor helper function
+  *  @desc:     pointer to the temp descriptor (non DMA mem)
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_prototype.h b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
+index ccb8af472cd7..099bb8ab7d70 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_prototype.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
+@@ -27,13 +27,6 @@ i40e_asq_send_command(struct i40e_hw *hw, struct i40e_aq_desc *desc,
+ 		      void *buff, /* can be NULL */ u16  buff_size,
+ 		      struct i40e_asq_cmd_details *cmd_details);
+ int
+-i40e_asq_send_command_v2(struct i40e_hw *hw,
+-			 struct i40e_aq_desc *desc,
+-			 void *buff, /* can be NULL */
+-			 u16  buff_size,
+-			 struct i40e_asq_cmd_details *cmd_details,
+-			 enum i40e_admin_queue_err *aq_status);
+-int
+ i40e_asq_send_command_atomic(struct i40e_hw *hw, struct i40e_aq_desc *desc,
+ 			     void *buff, /* can be NULL */ u16  buff_size,
+ 			     struct i40e_asq_cmd_details *cmd_details,
 -- 
 2.47.1
 
