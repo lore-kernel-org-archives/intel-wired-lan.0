@@ -1,84 +1,88 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B9461E7718B
-	for <intel-wired-lan@archiver.kernel.org>; Sat, 21 Dec 2024 18:43:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 492D1E7718D
+	for <intel-wired-lan@archiver.kernel.org>; Sat, 21 Dec 2024 18:43:19 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 65078709FC;
+	by smtp1.osuosl.org (Postfix) with ESMTP id EA39584B83;
 	Sat, 21 Dec 2024 18:43:18 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 3jVk1Ri20oMq; Sat, 21 Dec 2024 18:43:17 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org EAE2184BBE
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1734806597;
+	bh=ESstb2gN9zjOHFqyaaQuZOnSt7MEsAnOTlexp0z34JA=;
+	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=qAUOVOfU9EuJgJI0MZ0F9eG0bApJbQpSu3BYLuNum/EnzPgYmEpdiq0MoaNxaoK4K
+	 XypRDTgE00AVqUXSKxPFwM8CXdheSHNrnThJ6lwYPqf7TUHVna700BSVCl2dyl+ocm
+	 yQrj0TWyynRkJzXKlLH20pfksMZlmVzb4wLFAauFGUo0lX6eb2zhaH8vYvKGlINNLG
+	 2oNXlQJOSw/EGe8vfIsye64+FzKEG4ymRI3MyB1Bem2HtFAfE3xprIqgzVkwmHMrTZ
+	 0DD46k1JNlbWIz9hghfq+szN6Dqu4zLCPUnjDPQM2dWNzsrDhHhNO/1m6cx/sMxtPN
+	 Z8V0H6h8/dlTA==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp1.osuosl.org (Postfix) with ESMTP id EAE2184BBE;
+	Sat, 21 Dec 2024 18:43:16 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 5EB3E75A
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 21 Dec 2024 18:43:00 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp3.osuosl.org (Postfix) with ESMTP id 3916170900
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 21 Dec 2024 18:43:00 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id HWSG4hPlBPZX; Sat, 21 Dec 2024 18:43:17 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B7B57707A5
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1734806597;
-	bh=0TFI9S9bap1xFhpx/5Ll76o0tMhdhRDlCPMt7aUPxYw=;
-	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=sRZ7IDubKsrzM567Cpss0PPMP7hD2LgaNIZ4SMnv66BoppcooLliSZDsWIKZ3+qPC
-	 YvTb2PlQYC1Xw80q02Kp3ZZdMF5lgPDfIzjKmxfCNJScza59qVJ+PYtsWN+6CM3CWt
-	 AWzs5TNShXu25uSUvP0pEbxxiX/NDKWvnSfQCJcg5blQw2e62ioWCsGHG2cdqYW5Bw
-	 84rpoke3vyZtHrCVyin2neUZwEuqHahiA7XYmIn+B+Q9ZCVtq0wyA5MgBLoo0lguHp
-	 KoDxCBypRXON7uV264LliiBDMiVeco1xgTAh+8UjwfQZX7m5Hm7qrBPJOX6418znTK
-	 9cgHA0wo10qUw==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id B7B57707A5;
-	Sat, 21 Dec 2024 18:43:17 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id A3559920
- for <intel-wired-lan@lists.osuosl.org>; Sat, 21 Dec 2024 18:43:00 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 65C67413C6
- for <intel-wired-lan@lists.osuosl.org>; Sat, 21 Dec 2024 18:43:00 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id oEqTjbvdnyFC for <intel-wired-lan@lists.osuosl.org>;
+ id V-haEllwJFCM for <intel-wired-lan@lists.osuosl.org>;
  Sat, 21 Dec 2024 18:42:59 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=2a00:1098:5b::1;
  helo=mx.treblig.org; envelope-from=linux@treblig.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 8CA05412EB
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 8CA05412EB
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 3E7BF707A5
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3E7BF707A5
 Received: from mx.treblig.org (mx.treblig.org [IPv6:2a00:1098:5b::1])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 8CA05412EB
- for <intel-wired-lan@lists.osuosl.org>; Sat, 21 Dec 2024 18:42:58 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 3E7BF707A5
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 21 Dec 2024 18:42:59 +0000 (UTC)
 Received: from localhost ([127.0.0.1] helo=dalek.home.treblig.org)
  by mx.treblig.org with esmtp (Exim 4.96)
- (envelope-from <linux@treblig.org>) id 1tP4R6-006hEJ-0K;
- Sat, 21 Dec 2024 18:42:48 +0000
+ (envelope-from <linux@treblig.org>) id 1tP4RA-006hEJ-28;
+ Sat, 21 Dec 2024 18:42:52 +0000
 From: linux@treblig.org
 To: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
  andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
  kuba@kernel.org, pabeni@redhat.com, intel-wired-lan@lists.osuosl.org
 Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
  "Dr. David Alan Gilbert" <linux@treblig.org>
-Date: Sat, 21 Dec 2024 18:42:38 +0000
-Message-ID: <20241221184247.118752-1-linux@treblig.org>
+Date: Sat, 21 Dec 2024 18:42:45 +0000
+Message-ID: <20241221184247.118752-8-linux@treblig.org>
 X-Mailer: git-send-email 2.47.1
+In-Reply-To: <20241221184247.118752-1-linux@treblig.org>
+References: <20241221184247.118752-1-linux@treblig.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt;
  c=relaxed/relaxed; d=treblig.org
  ; s=bytemarkmx; h=MIME-Version:Message-ID:Date:Subject:From:Content-Type:From
- :Subject; bh=0TFI9S9bap1xFhpx/5Ll76o0tMhdhRDlCPMt7aUPxYw=; b=s23080nKd4BH1FKR
- no/Rjc0i+ovnSwTtsYfI986t7HOJYJT5NpOL7CYjiRUqksfkvoD88nWR3RM09XPXqHxeBK/zPTXi0
- qKMPHhPT/HqNvPTVCLrXJQr1jeVXH2hQK44dLXyrxIwZRM1YkvzJ5dKcflz0RFKHvE1h5yVTsvIV8
- eC16Nn/tnA81jluUahnnQP5+SiK9wW9QnnqWd/bE2J3FaNxu57FpzZumqz7z21mZmZ8JZxJKy163M
- lovnK0t6ajpHgw+2DjV2s/+fO4cq30JIdj5G17yVTwSIHj26j6NjXw2yEBd41T04MKDlpi4+9wFv0
- JwtrMgjxGPceGgf3zw==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ :Subject; bh=ESstb2gN9zjOHFqyaaQuZOnSt7MEsAnOTlexp0z34JA=; b=c25Ih/utsWRi3DWA
+ 147FFrR5nBXdXpNodZvrzGOgfr3B7ytR0K2xWnQITyw1uin31c8G1YA0yd8A0Tv9EtPmQ0VFg/MQx
+ eo02FIb1NZLm9N2MNGeJgOSljpYORnypArSAwmx/M6LcGHhgylXizMJX4WeAdvuo4kSqAHMUjZHz5
+ Ms6dN5DqI6wpQAk/7iNFIlyiwiSyExZ2rB/Y+4SBQqCpGCXSomV4UXQl5Gt3GmpOEYOQTF/LsH8pA
+ rqsPkMtyK3R66GKHJTKDqPNDbMww/VWjm+MQ0PmKjrDRcwjuvtNhmraVtlsqAfUxEEmTXETnNezm3
+ cajLspVR3Dn/XLn2kA==;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=treblig.org
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=treblig.org header.i=@treblig.org header.a=rsa-sha256
- header.s=bytemarkmx header.b=s23080nK
-Subject: [Intel-wired-lan] [RFC net-next 0/9] i40e deadcoding
+ header.s=bytemarkmx header.b=c25Ih/ut
+Subject: [Intel-wired-lan] [RFC net-next 7/9] i40e: Remove unused
+ i40e_commit_partition_bw_setting
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -96,35 +100,124 @@ Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 From: "Dr. David Alan Gilbert" <linux@treblig.org>
 
-Hi,
-  This is a bunch of deadcoding of functions that
-are entirely uncalled in the i40e driver.
+i40e_commit_partition_bw_setting() was added in 2017 by
+commit 4fc8c6763957 ("i40e: genericize the partition bandwidth control")
+but hasn't been used.
 
-  Build tested only.
+Remove it.
 
 Signed-off-by: Dr. David Alan Gilbert <linux@treblig.org>
+---
+ drivers/net/ethernet/intel/i40e/i40e.h      |  1 -
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 83 ---------------------
+ 2 files changed, 84 deletions(-)
 
-
-Dr. David Alan Gilbert (9):
-  i40e: Deadcode i40e_aq_*
-  i40e: Remove unused i40e_blink_phy_link_led
-  i40e: Remove unused i40e_(read|write)_phy_register
-  i40e: Deadcode profile code
-  i40e: Remove unused i40e_get_cur_guaranteed_fd_count
-  i40e: Remove unused i40e_del_filter
-  i40e: Remove unused i40e_commit_partition_bw_setting
-  i40e: Remove unused i40e_asq_send_command_v2
-  i40e: Remove unused i40e_dcb_hw_get_num_tc
-
- drivers/net/ethernet/intel/i40e/i40e.h        |   3 -
- drivers/net/ethernet/intel/i40e/i40e_adminq.c |  10 -
- drivers/net/ethernet/intel/i40e/i40e_common.c | 458 ------------------
- drivers/net/ethernet/intel/i40e/i40e_dcb.c    |  13 -
- drivers/net/ethernet/intel/i40e/i40e_dcb.h    |   1 -
- drivers/net/ethernet/intel/i40e/i40e_main.c   | 124 +----
- .../net/ethernet/intel/i40e/i40e_prototype.h  |  40 --
- 7 files changed, 2 insertions(+), 647 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+index 399a5dbf3506..ce63a7cfe955 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -1311,7 +1311,6 @@ int i40e_update_adq_vsi_queues(struct i40e_vsi *vsi, int vsi_offset);
+ int i40e_is_vsi_uplink_mode_veb(struct i40e_vsi *vsi);
+ int i40e_get_partition_bw_setting(struct i40e_pf *pf);
+ int i40e_set_partition_bw_setting(struct i40e_pf *pf);
+-int i40e_commit_partition_bw_setting(struct i40e_pf *pf);
+ void i40e_print_link_message(struct i40e_vsi *vsi, bool isup);
+ 
+ void i40e_set_fec_in_flags(u8 fec_cfg, unsigned long *flags);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 276dde0bc1d4..8a333d0e2218 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -12576,89 +12576,6 @@ int i40e_set_partition_bw_setting(struct i40e_pf *pf)
+ 	return status;
+ }
+ 
+-/**
+- * i40e_commit_partition_bw_setting - Commit BW settings for this PF partition
+- * @pf: board private structure
+- **/
+-int i40e_commit_partition_bw_setting(struct i40e_pf *pf)
+-{
+-	/* Commit temporary BW setting to permanent NVM image */
+-	enum i40e_admin_queue_err last_aq_status;
+-	u16 nvm_word;
+-	int ret;
+-
+-	if (pf->hw.partition_id != 1) {
+-		dev_info(&pf->pdev->dev,
+-			 "Commit BW only works on partition 1! This is partition %d",
+-			 pf->hw.partition_id);
+-		ret = -EOPNOTSUPP;
+-		goto bw_commit_out;
+-	}
+-
+-	/* Acquire NVM for read access */
+-	ret = i40e_acquire_nvm(&pf->hw, I40E_RESOURCE_READ);
+-	last_aq_status = pf->hw.aq.asq_last_status;
+-	if (ret) {
+-		dev_info(&pf->pdev->dev,
+-			 "Cannot acquire NVM for read access, err %pe aq_err %s\n",
+-			 ERR_PTR(ret),
+-			 i40e_aq_str(&pf->hw, last_aq_status));
+-		goto bw_commit_out;
+-	}
+-
+-	/* Read word 0x10 of NVM - SW compatibility word 1 */
+-	ret = i40e_aq_read_nvm(&pf->hw,
+-			       I40E_SR_NVM_CONTROL_WORD,
+-			       0x10, sizeof(nvm_word), &nvm_word,
+-			       false, NULL);
+-	/* Save off last admin queue command status before releasing
+-	 * the NVM
+-	 */
+-	last_aq_status = pf->hw.aq.asq_last_status;
+-	i40e_release_nvm(&pf->hw);
+-	if (ret) {
+-		dev_info(&pf->pdev->dev, "NVM read error, err %pe aq_err %s\n",
+-			 ERR_PTR(ret),
+-			 i40e_aq_str(&pf->hw, last_aq_status));
+-		goto bw_commit_out;
+-	}
+-
+-	/* Wait a bit for NVM release to complete */
+-	msleep(50);
+-
+-	/* Acquire NVM for write access */
+-	ret = i40e_acquire_nvm(&pf->hw, I40E_RESOURCE_WRITE);
+-	last_aq_status = pf->hw.aq.asq_last_status;
+-	if (ret) {
+-		dev_info(&pf->pdev->dev,
+-			 "Cannot acquire NVM for write access, err %pe aq_err %s\n",
+-			 ERR_PTR(ret),
+-			 i40e_aq_str(&pf->hw, last_aq_status));
+-		goto bw_commit_out;
+-	}
+-	/* Write it back out unchanged to initiate update NVM,
+-	 * which will force a write of the shadow (alt) RAM to
+-	 * the NVM - thus storing the bandwidth values permanently.
+-	 */
+-	ret = i40e_aq_update_nvm(&pf->hw,
+-				 I40E_SR_NVM_CONTROL_WORD,
+-				 0x10, sizeof(nvm_word),
+-				 &nvm_word, true, 0, NULL);
+-	/* Save off last admin queue command status before releasing
+-	 * the NVM
+-	 */
+-	last_aq_status = pf->hw.aq.asq_last_status;
+-	i40e_release_nvm(&pf->hw);
+-	if (ret)
+-		dev_info(&pf->pdev->dev,
+-			 "BW settings NOT SAVED, err %pe aq_err %s\n",
+-			 ERR_PTR(ret),
+-			 i40e_aq_str(&pf->hw, last_aq_status));
+-bw_commit_out:
+-
+-	return ret;
+-}
+-
+ /**
+  * i40e_is_total_port_shutdown_enabled - read NVM and return value
+  * if total port shutdown feature is enabled for this PF
 -- 
 2.47.1
 
