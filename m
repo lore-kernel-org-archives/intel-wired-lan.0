@@ -1,65 +1,65 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A47B6E7718E
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 26 Dec 2024 16:52:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 36F99E77188
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 26 Dec 2024 16:52:53 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 479A180AF9;
-	Thu, 26 Dec 2024 16:52:45 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id F0CF8605DA;
+	Thu, 26 Dec 2024 16:52:52 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Z-OJ2xS6SwpR; Thu, 26 Dec 2024 16:52:44 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id pckING3T4x1b; Thu, 26 Dec 2024 16:52:52 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 95B8E80B3F
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 5D0696064D
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1735231964;
-	bh=pdsFoyjvN7jwIB/z6Mz4XwBi+s2/8ncP7Z2rx9wjM1I=;
+	s=default; t=1735231972;
+	bh=7AmYte8oTBIV4rhftXrsFRb4h3cQ6cpdyY2nNfyPAUo=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=KPJ74MykQ+w2g890WfGDybjW5QmyWWF1G+Wp6iK4Fk5g8CALzmRx8re7OjU3JVNmY
-	 pjwQi1SCjabme9MtgW2Ckryb/mYu0zXjz1wt978t+hY6AURSPft5lsTTBy837s13Lb
-	 +lrE1QOb3Lp3DOTAwiaowPj1UorxfnHrHLjPOrBOMIwS08adCNVs8yoDhj9zb4nH1j
-	 jsFkFcOHd2XdepaWDvpaZLo4dKuYjBNHv/1MQ7aKwHyyjeFDqsDeAnPnljXx5T6jbi
-	 5VmLsFg9sFd9aEM4nfin6R9TRHmOhJ2Pg5Aftl/3VCax+7ZPkL7JpMUFreejFL3Gor
-	 seqVTL0kHKxuw==
+	b=MP2b9MGMEKJ6RKCY10PKInZjOsP/tXJUMb3eeJJ4ta7t1E3YZX3miV/S7EHJmFtVr
+	 SLL70WP9YzhCiKlzfv7hWF4yzpqwbzDSHG8E8IVLZ/RbWMx507OsyjqcqBkIsmCzG7
+	 naZ0lnOZPpFf4asbNgQD4eFNtVQhfYvwucVzUiEeNB+JSfcyxM5NIudlmnHLZYiJN8
+	 W15HIr8/RSkpW2hTKzv+nSda/JFeZYzqGRgDTF7JNov/AGWbl18YBcpUR9cEqSjdvs
+	 n9BaqzUBXdt9ZzDKYkpCYWOglgAmwpRfLQCDV3hUi/pddsMq+SMm7yya2JJpuaeYji
+	 1Q41O3Y2Lb4kw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 95B8E80B3F;
-	Thu, 26 Dec 2024 16:52:44 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id 98063F15
- for <intel-wired-lan@lists.osuosl.org>; Thu, 26 Dec 2024 16:52:42 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 5D0696064D;
+	Thu, 26 Dec 2024 16:52:52 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id C9860757
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 26 Dec 2024 16:52:50 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 7925880ACD
- for <intel-wired-lan@lists.osuosl.org>; Thu, 26 Dec 2024 16:52:42 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id AB0056064D
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 26 Dec 2024 16:52:50 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 8mxLiRvMtv6N for <intel-wired-lan@lists.osuosl.org>;
- Thu, 26 Dec 2024 16:52:42 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id YkpkjXRyziBg for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 26 Dec 2024 16:52:50 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=2a00:1098:5b::1;
  helo=mx.treblig.org; envelope-from=linux@treblig.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org B458980A59
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B458980A59
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org E0626605DA
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E0626605DA
 Received: from mx.treblig.org (mx.treblig.org [IPv6:2a00:1098:5b::1])
- by smtp1.osuosl.org (Postfix) with ESMTPS id B458980A59
- for <intel-wired-lan@lists.osuosl.org>; Thu, 26 Dec 2024 16:52:41 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTPS id E0626605DA
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 26 Dec 2024 16:52:49 +0000 (UTC)
 Received: from localhost ([127.0.0.1] helo=dalek.home.treblig.org)
  by mx.treblig.org with esmtp (Exim 4.96)
- (envelope-from <linux@treblig.org>) id 1tQr5s-007IaP-37;
- Thu, 26 Dec 2024 16:52:17 +0000
+ (envelope-from <linux@treblig.org>) id 1tQr5u-007IaP-1M;
+ Thu, 26 Dec 2024 16:52:18 +0000
 From: linux@treblig.org
 To: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
  andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
  kuba@kernel.org, pabeni@redhat.com, intel-wired-lan@lists.osuosl.org
 Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
  "Dr. David Alan Gilbert" <linux@treblig.org>
-Date: Thu, 26 Dec 2024 16:52:13 +0000
-Message-ID: <20241226165215.105092-2-linux@treblig.org>
+Date: Thu, 26 Dec 2024 16:52:15 +0000
+Message-ID: <20241226165215.105092-4-linux@treblig.org>
 X-Mailer: git-send-email 2.47.1
 In-Reply-To: <20241226165215.105092-1-linux@treblig.org>
 References: <20241226165215.105092-1-linux@treblig.org>
@@ -68,20 +68,21 @@ Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt;
  c=relaxed/relaxed; d=treblig.org
  ; s=bytemarkmx; h=MIME-Version:Message-ID:Date:Subject:From:Content-Type:From
- :Subject; bh=pdsFoyjvN7jwIB/z6Mz4XwBi+s2/8ncP7Z2rx9wjM1I=; b=SzKyHP6r9yFoZfQj
- GObburqqgBg5LtQqlBjJefLXBMgrh3rtBd0IWjZUFyljWso6JxyCPa897IOZoIexayjLo7arfhKyF
- zozh/jPxxNnES6GvMrJfR5WbHz8W8e8KfSaUNnYBtaJGcUtOzYdtgWvTPUyxcQlQP+ky1xkDX2UIe
- R6Qy9LTwvjf96k8k1ldkBs8ZlPd8DEZo4a7pynVUA0iNmVPGRfDN74yEo0dtyPuqG0s2V5g2OsV54
- b5dst4qS/St0WdU9GjJq/PrcBrrJkla+lgVZnRCAV817Q7W77/ZJl8kEKdo4czM5VpmieQXMxT4vQ
- nY4MdThk8Bhc1urWtA==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ :Subject; bh=7AmYte8oTBIV4rhftXrsFRb4h3cQ6cpdyY2nNfyPAUo=; b=WXEOyl0fxXdhgbXP
+ SlSEZIGhcqhU98vojNJqoUO2SX68Jgx6zyaCNiCGarFacJysuHxtXRooWGDfvzGmrCn4h7P1QefC4
+ z1USatp7VaiZkVchLulP0KoGlLzO0u62j2kbHmiJGUt2PEbiaDwWnHg0P2b5fA0QqpajbP2wIFnes
+ xEq6AOCtC8BnF4pivVd+j6ch/0Jx2Ih5TLUTKPt54eNrqJIeeP+m27fMqURqwypwB6IZrHUxYA7Fb
+ n3DOibfxxFo92xKNuxW+mUrQRFg4NQXL9alBvsFIHiE/oxaLkjUC7buQB0XbOmc0nW5XBlbZch+o3
+ plsTbZlXiQPoR8rTWQ==;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=treblig.org
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=treblig.org header.i=@treblig.org
- header.a=rsa-sha256 header.s=bytemarkmx header.b=SzKyHP6r
-Subject: [Intel-wired-lan] [RFC net-next 1/3] igc: Remove unused
- igc_acquire/release_nvm
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=treblig.org header.i=@treblig.org header.a=rsa-sha256
+ header.s=bytemarkmx header.b=WXEOyl0f
+Subject: [Intel-wired-lan] [RFC net-next 3/3] igc: Remove unused
+ igc_read/write_pcie_cap_reg
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -99,95 +100,66 @@ Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 From: "Dr. David Alan Gilbert" <linux@treblig.org>
 
-igc_acquire_nvm() and igc_release_nvm() were added in 2018 as part of
-commit ab4056126813 ("igc: Add NVM support")
-
-but never used.
+The last uses of igc_read_pcie_cap_reg() and igc_write_pcie_cap_reg()
+were removed in 2019 by
+commit 16ecd8d9af26 ("igc: Remove the obsolete workaround")
 
 Remove them.
 
-The igc_1225.c has it's own specific implementations.
-
 Signed-off-by: Dr. David Alan Gilbert <linux@treblig.org>
 ---
- drivers/net/ethernet/intel/igc/igc_nvm.c | 50 ------------------------
- drivers/net/ethernet/intel/igc/igc_nvm.h |  2 -
- 2 files changed, 52 deletions(-)
+ drivers/net/ethernet/intel/igc/igc_hw.h   |  3 ---
+ drivers/net/ethernet/intel/igc/igc_main.c | 25 -----------------------
+ 2 files changed, 28 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_nvm.c b/drivers/net/ethernet/intel/igc/igc_nvm.c
-index 58f81aba0144..efd121c03967 100644
---- a/drivers/net/ethernet/intel/igc/igc_nvm.c
-+++ b/drivers/net/ethernet/intel/igc/igc_nvm.c
-@@ -35,56 +35,6 @@ static s32 igc_poll_eerd_eewr_done(struct igc_hw *hw, int ee_reg)
- 	return ret_val;
- }
+diff --git a/drivers/net/ethernet/intel/igc/igc_hw.h b/drivers/net/ethernet/intel/igc/igc_hw.h
+index 7ec7e395020b..be8a49a86d09 100644
+--- a/drivers/net/ethernet/intel/igc/igc_hw.h
++++ b/drivers/net/ethernet/intel/igc/igc_hw.h
+@@ -279,7 +279,4 @@ struct net_device *igc_get_hw_dev(struct igc_hw *hw);
+ #define hw_dbg(format, arg...) \
+ 	netdev_dbg(igc_get_hw_dev(hw), format, ##arg)
  
--/**
-- * igc_acquire_nvm - Generic request for access to EEPROM
-- * @hw: pointer to the HW structure
-- *
-- * Set the EEPROM access request bit and wait for EEPROM access grant bit.
-- * Return successful if access grant bit set, else clear the request for
-- * EEPROM access and return -IGC_ERR_NVM (-1).
-- */
--s32 igc_acquire_nvm(struct igc_hw *hw)
+-s32  igc_read_pcie_cap_reg(struct igc_hw *hw, u32 reg, u16 *value);
+-s32  igc_write_pcie_cap_reg(struct igc_hw *hw, u32 reg, u16 *value);
+-
+ #endif /* _IGC_HW_H_ */
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index 9c92673a7240..f58cd6940434 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -6779,31 +6779,6 @@ static const struct net_device_ops igc_netdev_ops = {
+ 	.ndo_get_tstamp		= igc_get_tstamp,
+ };
+ 
+-/* PCIe configuration access */
+-s32 igc_read_pcie_cap_reg(struct igc_hw *hw, u32 reg, u16 *value)
 -{
--	s32 timeout = IGC_NVM_GRANT_ATTEMPTS;
--	u32 eecd = rd32(IGC_EECD);
--	s32 ret_val = 0;
+-	struct igc_adapter *adapter = hw->back;
 -
--	wr32(IGC_EECD, eecd | IGC_EECD_REQ);
--	eecd = rd32(IGC_EECD);
+-	if (!pci_is_pcie(adapter->pdev))
+-		return -IGC_ERR_CONFIG;
 -
--	while (timeout) {
--		if (eecd & IGC_EECD_GNT)
--			break;
--		udelay(5);
--		eecd = rd32(IGC_EECD);
--		timeout--;
--	}
+-	pcie_capability_read_word(adapter->pdev, reg, value);
 -
--	if (!timeout) {
--		eecd &= ~IGC_EECD_REQ;
--		wr32(IGC_EECD, eecd);
--		hw_dbg("Could not acquire NVM grant\n");
--		ret_val = -IGC_ERR_NVM;
--	}
--
--	return ret_val;
+-	return IGC_SUCCESS;
 -}
 -
--/**
-- * igc_release_nvm - Release exclusive access to EEPROM
-- * @hw: pointer to the HW structure
-- *
-- * Stop any current commands to the EEPROM and clear the EEPROM request bit.
-- */
--void igc_release_nvm(struct igc_hw *hw)
+-s32 igc_write_pcie_cap_reg(struct igc_hw *hw, u32 reg, u16 *value)
 -{
--	u32 eecd;
+-	struct igc_adapter *adapter = hw->back;
 -
--	eecd = rd32(IGC_EECD);
--	eecd &= ~IGC_EECD_REQ;
--	wr32(IGC_EECD, eecd);
+-	if (!pci_is_pcie(adapter->pdev))
+-		return -IGC_ERR_CONFIG;
+-
+-	pcie_capability_write_word(adapter->pdev, reg, *value);
+-
+-	return IGC_SUCCESS;
 -}
 -
- /**
-  * igc_read_nvm_eerd - Reads EEPROM using EERD register
-  * @hw: pointer to the HW structure
-diff --git a/drivers/net/ethernet/intel/igc/igc_nvm.h b/drivers/net/ethernet/intel/igc/igc_nvm.h
-index f9fc2e9cfb03..ab78d0c64547 100644
---- a/drivers/net/ethernet/intel/igc/igc_nvm.h
-+++ b/drivers/net/ethernet/intel/igc/igc_nvm.h
-@@ -4,8 +4,6 @@
- #ifndef _IGC_NVM_H_
- #define _IGC_NVM_H_
- 
--s32 igc_acquire_nvm(struct igc_hw *hw);
--void igc_release_nvm(struct igc_hw *hw);
- s32 igc_read_mac_addr(struct igc_hw *hw);
- s32 igc_read_nvm_eerd(struct igc_hw *hw, u16 offset, u16 words, u16 *data);
- s32 igc_validate_nvm_checksum(struct igc_hw *hw);
+ u32 igc_rd32(struct igc_hw *hw, u32 reg)
+ {
+ 	struct igc_adapter *igc = container_of(hw, struct igc_adapter, hw);
 -- 
 2.47.1
 
