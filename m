@@ -1,57 +1,57 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CB6C1E7718B
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  2 Jan 2025 17:37:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7CC66E77194
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  2 Jan 2025 17:37:39 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 7A7E0403EF;
-	Thu,  2 Jan 2025 17:37:36 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 46441607A3;
+	Thu,  2 Jan 2025 17:37:39 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Kf_2FummgO4s; Thu,  2 Jan 2025 17:37:35 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 2nmDfVKbYgeM; Thu,  2 Jan 2025 17:37:38 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 8AD15403D5
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8C0BD607E5
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1735839455;
-	bh=M8kz3itQ/pGYcYkrFNStdI+yMsB12zXehoIKKmsZ498=;
+	s=default; t=1735839458;
+	bh=vpcbQJY6Oq4fkBAvvq9ChAzoM28r4d2DnCB/aDMi6d0=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=orLCwaUjB7DPM7FKyw0Q/B7zk5Wyss2juRk1hS++HB20abK2upq4YvR+4CpYpNWUP
-	 9DdlqcbAfvkLgI8FZSd+apcBrCK5FCfsMR4L6HXOjaitSiq80uqpprdZSiYEFE0kQy
-	 +CTVuURDJgMyicA2saIf4zy+S3lwslRByXr/NgIMpXuhl4HrLpd18ZZjqp9K0ddP8P
-	 DEWm2P8znmFRjsTIUtXidUwkxVvb7E5HDIdd8gtePOwPe4jUAePmfZ1oNpV3Msp2Pi
-	 VbK9u8fFPMBUQu+hqQiIjssCC77hlD6HhFYk4tNnal2/xQZk9ogVXT2DD72h+zvEpN
-	 O4Wmyalh8Bg8Q==
+	b=rXKMDkjZuukKmG5j2zaybwIwlglfdBu2LMnwOnMsd5Rbq3bT5vRHX4XP7tZzrmV4z
+	 pb5l4deUC8b8R0zxeKQj1d/5Atdi2q4Oz2XL7yZlVvR0IvMtWEFOt63/8krVMqSPcT
+	 EdrtyrCIaTI5nN9Y8FhM02+9Y/AO3LQ3jkjnwn8cZCqM1fT2SFKJ7JElP3CFhDsUYc
+	 KAvw8wfbTrlX8oiUWtB7IGpPyrhn/yXUNU8+7pv0puG0xwqx46Pc2YTMr8rHeZtAb5
+	 XY38auNcgVTpYo89PK1MJpuKzeKLDjz1XPjymEh9vH3g1Q+KcMGEFai9b9FsA+HQSW
+	 RBUtp0y/afHZg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 8AD15403D5;
-	Thu,  2 Jan 2025 17:37:35 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id B5323F27
- for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Jan 2025 17:37:33 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 8C0BD607E5;
+	Thu,  2 Jan 2025 17:37:38 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 2C2F9F29
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Jan 2025 17:37:34 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 9FC6A403ED
+ by smtp1.osuosl.org (Postfix) with ESMTP id 9310A80499
  for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Jan 2025 17:37:33 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id QLDN6dgAcReZ for <intel-wired-lan@lists.osuosl.org>;
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 9RZz7gn7gT5A for <intel-wired-lan@lists.osuosl.org>;
  Thu,  2 Jan 2025 17:37:33 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=2a00:1098:5b::1;
  helo=mx.treblig.org; envelope-from=linux@treblig.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 9F98E403A5
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9F98E403A5
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 7A7ED804F2
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7A7ED804F2
 Received: from mx.treblig.org (mx.treblig.org [IPv6:2a00:1098:5b::1])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 9F98E403A5
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 7A7ED804F2
  for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Jan 2025 17:37:32 +0000 (UTC)
 Received: from localhost ([127.0.0.1] helo=dalek.home.treblig.org)
  by mx.treblig.org with esmtp (Exim 4.96)
- (envelope-from <linux@treblig.org>) id 1tTP8N-007tod-0z;
- Thu, 02 Jan 2025 17:37:23 +0000
+ (envelope-from <linux@treblig.org>) id 1tTP8O-007tod-1a;
+ Thu, 02 Jan 2025 17:37:24 +0000
 From: linux@treblig.org
 To: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
  andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
@@ -59,8 +59,8 @@ To: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
 Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
  "Dr. David Alan Gilbert" <linux@treblig.org>,
  Kalesh AP <kalesh-anakkur.purayil@broadcom.com>
-Date: Thu,  2 Jan 2025 17:37:13 +0000
-Message-ID: <20250102173717.200359-6-linux@treblig.org>
+Date: Thu,  2 Jan 2025 17:37:15 +0000
+Message-ID: <20250102173717.200359-8-linux@treblig.org>
 X-Mailer: git-send-email 2.47.1
 In-Reply-To: <20250102173717.200359-1-linux@treblig.org>
 References: <20250102173717.200359-1-linux@treblig.org>
@@ -69,21 +69,21 @@ Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt;
  c=relaxed/relaxed; d=treblig.org
  ; s=bytemarkmx; h=MIME-Version:Message-ID:Date:Subject:From:Content-Type:From
- :Subject; bh=M8kz3itQ/pGYcYkrFNStdI+yMsB12zXehoIKKmsZ498=; b=OXJrWKwmGnIN+xG9
- Dr/IAGXt1mVLdyOJo1s5bHRgm5o3xeZ2W8fsVIiEtGt+azB5yunUj/ReNzhbz6nfrTrqIDJ90FFoI
- c2/3PrzMgEuq4dUTPqiFsUEYG1nv8s00PKHVJzix2UB+EJAk8aJm7ZgfwfCt5rSY8fo0/h04w1/j8
- PsK5kXYtAEk2r3Fr0CFEHHeYzCNs5bwOjgq/our+CXOGdvPnJm8Snd6+ZtTQU4aCCjiKwkVJds9Zf
- FrrZc8ZCLzltxlOseI20VVt2SP8Kwa1UCzRBh3UFK2mWpMi0exbphLy8bj4KZX1hIE5txiKO+B1k8
- GbOfAYrAZ7vHNCGeTg==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ :Subject; bh=vpcbQJY6Oq4fkBAvvq9ChAzoM28r4d2DnCB/aDMi6d0=; b=OSjf4fzzWukoFUkJ
+ LODNSKi4VA3VTUduaUi/8SVjDJDXcKeFJTpR1B7Iwwt8pSUbCiuo1FZ4GS2MlD3b0hc7iFsQ91zT9
+ bGXxIGTm8BBrKCAjdvlGpf8bdH/d5XrGxe7HeWR3JOp9QYOTUeARSEjergy5kWzodo+d6mBHBKMLQ
+ ochBjK8Dey5jo6B6rLYVenvf2+LoAj8XQtiThxcY9swEzL2wJopw/t1QN0mxKqKToibvYMY2x1HY0
+ QloDkzGJK7X3kJhuYWjxMO5hnZQfLdGdRpck/PS3jOzBZn11a8pxtBIeU78yDCehxrGxgLGASZM7w
+ vAS8FrSXcBqoqCDe1Q==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=treblig.org
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=treblig.org header.i=@treblig.org header.a=rsa-sha256
- header.s=bytemarkmx header.b=OXJrWKwm
-Subject: [Intel-wired-lan] [PATCH net-next 5/9] i40e: Remove unused
- i40e_get_cur_guaranteed_fd_count
+ header.s=bytemarkmx header.b=OSjf4fzz
+Subject: [Intel-wired-lan] [PATCH net-next 7/9] i40e: Remove unused
+ i40e_commit_partition_bw_setting
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -101,8 +101,9 @@ Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 From: "Dr. David Alan Gilbert" <linux@treblig.org>
 
-The last use of i40e_get_cur_guaranteed_fd_count() was removed in 2015 by
-commit 04294e38a451 ("i40e: FD filters flush policy changes")
+i40e_commit_partition_bw_setting() was added in 2017 by
+commit 4fc8c6763957 ("i40e: genericize the partition bandwidth control")
+but hasn't been used.
 
 Remove it.
 
@@ -110,45 +111,115 @@ Signed-off-by: Dr. David Alan Gilbert <linux@treblig.org>
 Reviewed-by: Kalesh AP <kalesh-anakkur.purayil@broadcom.com>
 ---
  drivers/net/ethernet/intel/i40e/i40e.h      |  1 -
- drivers/net/ethernet/intel/i40e/i40e_main.c | 13 -------------
- 2 files changed, 14 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 83 ---------------------
+ 2 files changed, 84 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index d4255c2706fa..5d9738b746f4 100644
+index 399a5dbf3506..ce63a7cfe955 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e.h
 +++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -1189,7 +1189,6 @@ int i40e_add_del_fdir(struct i40e_vsi *vsi,
- 		      struct i40e_fdir_filter *input, bool add);
- void i40e_fdir_check_and_reenable(struct i40e_pf *pf);
- u32 i40e_get_current_fd_count(struct i40e_pf *pf);
--u32 i40e_get_cur_guaranteed_fd_count(struct i40e_pf *pf);
- u32 i40e_get_current_atr_cnt(struct i40e_pf *pf);
- u32 i40e_get_global_fd_count(struct i40e_pf *pf);
- bool i40e_set_ntuple(struct i40e_pf *pf, netdev_features_t features);
+@@ -1311,7 +1311,6 @@ int i40e_update_adq_vsi_queues(struct i40e_vsi *vsi, int vsi_offset);
+ int i40e_is_vsi_uplink_mode_veb(struct i40e_vsi *vsi);
+ int i40e_get_partition_bw_setting(struct i40e_pf *pf);
+ int i40e_set_partition_bw_setting(struct i40e_pf *pf);
+-int i40e_commit_partition_bw_setting(struct i40e_pf *pf);
+ void i40e_print_link_message(struct i40e_vsi *vsi, bool isup);
+ 
+ void i40e_set_fec_in_flags(u8 fec_cfg, unsigned long *flags);
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 0e1d9e2fbf38..83ba1effe8ba 100644
+index 276dde0bc1d4..8a333d0e2218 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -9628,19 +9628,6 @@ static void i40e_handle_lan_overflow_event(struct i40e_pf *pf,
- 	i40e_reset_vf(vf, false);
+@@ -12576,89 +12576,6 @@ int i40e_set_partition_bw_setting(struct i40e_pf *pf)
+ 	return status;
  }
  
 -/**
-- * i40e_get_cur_guaranteed_fd_count - Get the consumed guaranteed FD filters
+- * i40e_commit_partition_bw_setting - Commit BW settings for this PF partition
 - * @pf: board private structure
 - **/
--u32 i40e_get_cur_guaranteed_fd_count(struct i40e_pf *pf)
+-int i40e_commit_partition_bw_setting(struct i40e_pf *pf)
 -{
--	u32 val, fcnt_prog;
+-	/* Commit temporary BW setting to permanent NVM image */
+-	enum i40e_admin_queue_err last_aq_status;
+-	u16 nvm_word;
+-	int ret;
 -
--	val = rd32(&pf->hw, I40E_PFQF_FDSTAT);
--	fcnt_prog = (val & I40E_PFQF_FDSTAT_GUARANT_CNT_MASK);
--	return fcnt_prog;
+-	if (pf->hw.partition_id != 1) {
+-		dev_info(&pf->pdev->dev,
+-			 "Commit BW only works on partition 1! This is partition %d",
+-			 pf->hw.partition_id);
+-		ret = -EOPNOTSUPP;
+-		goto bw_commit_out;
+-	}
+-
+-	/* Acquire NVM for read access */
+-	ret = i40e_acquire_nvm(&pf->hw, I40E_RESOURCE_READ);
+-	last_aq_status = pf->hw.aq.asq_last_status;
+-	if (ret) {
+-		dev_info(&pf->pdev->dev,
+-			 "Cannot acquire NVM for read access, err %pe aq_err %s\n",
+-			 ERR_PTR(ret),
+-			 i40e_aq_str(&pf->hw, last_aq_status));
+-		goto bw_commit_out;
+-	}
+-
+-	/* Read word 0x10 of NVM - SW compatibility word 1 */
+-	ret = i40e_aq_read_nvm(&pf->hw,
+-			       I40E_SR_NVM_CONTROL_WORD,
+-			       0x10, sizeof(nvm_word), &nvm_word,
+-			       false, NULL);
+-	/* Save off last admin queue command status before releasing
+-	 * the NVM
+-	 */
+-	last_aq_status = pf->hw.aq.asq_last_status;
+-	i40e_release_nvm(&pf->hw);
+-	if (ret) {
+-		dev_info(&pf->pdev->dev, "NVM read error, err %pe aq_err %s\n",
+-			 ERR_PTR(ret),
+-			 i40e_aq_str(&pf->hw, last_aq_status));
+-		goto bw_commit_out;
+-	}
+-
+-	/* Wait a bit for NVM release to complete */
+-	msleep(50);
+-
+-	/* Acquire NVM for write access */
+-	ret = i40e_acquire_nvm(&pf->hw, I40E_RESOURCE_WRITE);
+-	last_aq_status = pf->hw.aq.asq_last_status;
+-	if (ret) {
+-		dev_info(&pf->pdev->dev,
+-			 "Cannot acquire NVM for write access, err %pe aq_err %s\n",
+-			 ERR_PTR(ret),
+-			 i40e_aq_str(&pf->hw, last_aq_status));
+-		goto bw_commit_out;
+-	}
+-	/* Write it back out unchanged to initiate update NVM,
+-	 * which will force a write of the shadow (alt) RAM to
+-	 * the NVM - thus storing the bandwidth values permanently.
+-	 */
+-	ret = i40e_aq_update_nvm(&pf->hw,
+-				 I40E_SR_NVM_CONTROL_WORD,
+-				 0x10, sizeof(nvm_word),
+-				 &nvm_word, true, 0, NULL);
+-	/* Save off last admin queue command status before releasing
+-	 * the NVM
+-	 */
+-	last_aq_status = pf->hw.aq.asq_last_status;
+-	i40e_release_nvm(&pf->hw);
+-	if (ret)
+-		dev_info(&pf->pdev->dev,
+-			 "BW settings NOT SAVED, err %pe aq_err %s\n",
+-			 ERR_PTR(ret),
+-			 i40e_aq_str(&pf->hw, last_aq_status));
+-bw_commit_out:
+-
+-	return ret;
 -}
 -
  /**
-  * i40e_get_current_fd_count - Get total FD filters programmed for this PF
-  * @pf: board private structure
+  * i40e_is_total_port_shutdown_enabled - read NVM and return value
+  * if total port shutdown feature is enabled for this PF
 -- 
 2.47.1
 
