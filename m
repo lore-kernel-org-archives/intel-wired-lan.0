@@ -4,62 +4,63 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 80B5BE77197
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  2 Jan 2025 17:37:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5B118E7718B
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  2 Jan 2025 17:37:40 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 3787A405DA;
-	Thu,  2 Jan 2025 17:37:39 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 1D62D405D3;
+	Thu,  2 Jan 2025 17:37:40 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 1lDFSNd8EfEO; Thu,  2 Jan 2025 17:37:37 +0000 (UTC)
+ id CNfyCDJm0Zng; Thu,  2 Jan 2025 17:37:39 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 75AA440560
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 67C7D40422
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1735839457;
-	bh=garTpmgVCRsiT24Y9HEp7HK8vg0zYHqQEomkjWoz8/w=;
+	s=default; t=1735839459;
+	bh=x615MsWYT5rVAxhQdHYSvyCEahENSJGHVCkwtBCOTXQ=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=lpFYzvCJ3bmMDSpW7qysFAMvQ8czA/93kfjVBZTRzvnXm+Zs9JtoVUUNkjROyDrZt
-	 S78dnqmfL1ttSw7ZnEkHi+NLOWNBaCb7CKhpBEiI/3gYuHuMwlVRd0BsIdcvDh9j58
-	 iSVowmiodaKuk+1yA+rkt2g+kYjrtDErWr7icQgNYVeftaPWiqeV4G5zMZmtLAXYSp
-	 Z4MAr3Vl/sFMHsnm4XzfGefOYLynFP9F0U0u8zQZkWzRIxhYIUGOPz3Q74UHW6rtVH
-	 eptA10qYXhn5cFwNtglVNcimN8o7CV1T+qKwfKou+pm07WR2qrx9+h8x/qlszdPXFw
-	 Zaph56LTUfRCA==
+	b=mTJHM9Qyi8ScV1OMLrvBzleVTUhgl//HxoJPiu9W21m+8wHXuw3ON7h10ljefgkYv
+	 2O3OTdqKBk3N9KCYGrCWpCY0HJ6fPaYTIUxTq7b3X7yukvHfVj8tjGe302P8zY1S3J
+	 vUv4OEJa44Hy2F8xQm/REoNw6ym0pqTBUWEKZ6ZGKd1quCtBNUr9d8swAZcYG5Hs+a
+	 CaJrz5lEWs4156BC9nQXFsOhGF2z1whA9pl35nK2GAhZGckC5tpYwveH5wKKR6pa7x
+	 YCSsKpH9N7u+THWlNpTXnwGEYiz9P3GG9Yon7vwIfsEHtWnxlk50+r4nN6YKFX+XB4
+	 9szoV+DnOjT+A==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 75AA440560;
-	Thu,  2 Jan 2025 17:37:37 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 1F059F24
- for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Jan 2025 17:37:34 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 67C7D40422;
+	Thu,  2 Jan 2025 17:37:39 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 2FDBFF27
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Jan 2025 17:37:35 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id F3E8C40512
+ by smtp1.osuosl.org (Postfix) with ESMTP id C7A15804F2
  for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Jan 2025 17:37:33 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 1ZJFAW_5jryk for <intel-wired-lan@lists.osuosl.org>;
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id ykFS6lb32fQS for <intel-wired-lan@lists.osuosl.org>;
  Thu,  2 Jan 2025 17:37:33 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=2a00:1098:5b::1;
  helo=mx.treblig.org; envelope-from=linux@treblig.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org C66C14012B
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org C66C14012B
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 1807F804F6
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 1807F804F6
 Received: from mx.treblig.org (mx.treblig.org [IPv6:2a00:1098:5b::1])
- by smtp2.osuosl.org (Postfix) with ESMTPS id C66C14012B
- for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Jan 2025 17:37:32 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 1807F804F6
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Jan 2025 17:37:33 +0000 (UTC)
 Received: from localhost ([127.0.0.1] helo=dalek.home.treblig.org)
  by mx.treblig.org with esmtp (Exim 4.96)
- (envelope-from <linux@treblig.org>) id 1tTP8N-007tod-31;
- Thu, 02 Jan 2025 17:37:24 +0000
+ (envelope-from <linux@treblig.org>) id 1tTP8Q-007tod-0s;
+ Thu, 02 Jan 2025 17:37:26 +0000
 From: linux@treblig.org
 To: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
  andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
  kuba@kernel.org, pabeni@redhat.com, intel-wired-lan@lists.osuosl.org
 Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- "Dr. David Alan Gilbert" <linux@treblig.org>
-Date: Thu,  2 Jan 2025 17:37:14 +0000
-Message-ID: <20250102173717.200359-7-linux@treblig.org>
+ "Dr. David Alan Gilbert" <linux@treblig.org>,
+ Kalesh AP <kalesh-anakkur.purayil@broadcom.com>
+Date: Thu,  2 Jan 2025 17:37:17 +0000
+Message-ID: <20250102173717.200359-10-linux@treblig.org>
 X-Mailer: git-send-email 2.47.1
 In-Reply-To: <20250102173717.200359-1-linux@treblig.org>
 References: <20250102173717.200359-1-linux@treblig.org>
@@ -68,21 +69,20 @@ Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt;
  c=relaxed/relaxed; d=treblig.org
  ; s=bytemarkmx; h=MIME-Version:Message-ID:Date:Subject:From:Content-Type:From
- :Subject; bh=garTpmgVCRsiT24Y9HEp7HK8vg0zYHqQEomkjWoz8/w=; b=LJvD+N+cGlGEHL10
- dpF6XU9k2B6ugTVwkhcwdtvS+eVCYztU5plVhwTWat3NsshQRfahvkDMCtVqqL5ISr4FT5q1yw5YW
- KpdIt6KugsQMSHXQqn8HVEldeRJvoa5jcndNuSwXWw0vKdIibs3tO4Z+vHoX+gzkaN3r0FiB4oXuf
- sYb4u1K/1JxBSygbdKoE85zLD/ReyP7W5bQ2ImyB5lmR0uE2DP3rhYNshis5sbEeJt6SMg9ZrVGiP
- FzOJanMeAU8XlYa4ntJbT8LjkEtIr2f4vHxW80LY5e0m+4LkuuIR472eE/xN6WJ2t2W2LSPF6H5aw
- 3hS8jzbWb8o/DIdsxg==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ :Subject; bh=x615MsWYT5rVAxhQdHYSvyCEahENSJGHVCkwtBCOTXQ=; b=pI3yzMfoc3/Xy+X0
+ pwVR84LxUrBZzincoftsfsOd1Q3GFgsRXOKxRp1djNOsUS+8mX8m52xuiBSzPwhkfqYk37XnhqSGm
+ xs/lcqjVckGcpjOej8XQU994Y1/tlOA8Wy/0rK35M7zHE76f70LESr8qtgPZ6uhKB1g61BURp5YMW
+ iOV/AQsweLIEt4XbslW3zhgtq0Tec57QK3LoyIzlZPQnGMjz5/P9fYSxZshYM3rrX/Os00pHRpkJH
+ QGWk+BNbAqPb56n2rMmFOO2oD+wQKdg8dwVMBqhi/bA7HGuk6yRarpREMaYGPgV5W2PjXoYjVsOaN
+ /TAgvkVKzRe+D6Pj+w==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=treblig.org
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=treblig.org header.i=@treblig.org header.a=rsa-sha256
- header.s=bytemarkmx header.b=LJvD+N+c
-Subject: [Intel-wired-lan] [PATCH net-next 6/9] i40e: Remove unused
- i40e_del_filter
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key) header.d=treblig.org header.i=@treblig.org
+ header.a=rsa-sha256 header.s=bytemarkmx header.b=pI3yzMfo
+Subject: [Intel-wired-lan] [PATCH net-next 9/9] i40e: Remove unused
+ i40e_dcb_hw_get_num_tc
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -100,80 +100,55 @@ Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 From: "Dr. David Alan Gilbert" <linux@treblig.org>
 
-The last use of i40e_del_filter() was removed in 2016 by
-commit 9569a9a4547d ("i40e: when adding or removing MAC filters, correctly
-handle VLANs")
+The last useof i40e_dcb_hw_get_num_tc() was removed in 2022 by
+commit fe20371578ef ("Revert "i40e: Fix reset bw limit when DCB enabled
+with 1 TC"")
 
 Remove it.
 
-Fix up a comment that referenced it.
-
-Note: The __ version of this function is still used.
-
 Signed-off-by: Dr. David Alan Gilbert <linux@treblig.org>
+Reviewed-by: Kalesh AP <kalesh-anakkur.purayil@broadcom.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e.h      |  1 -
- drivers/net/ethernet/intel/i40e/i40e_main.c | 28 ++-------------------
- 2 files changed, 2 insertions(+), 27 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_dcb.c | 13 -------------
+ drivers/net/ethernet/intel/i40e/i40e_dcb.h |  1 -
+ 2 files changed, 14 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index 5d9738b746f4..399a5dbf3506 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -1196,7 +1196,6 @@ void i40e_set_ethtool_ops(struct net_device *netdev);
- struct i40e_mac_filter *i40e_add_filter(struct i40e_vsi *vsi,
- 					const u8 *macaddr, s16 vlan);
- void __i40e_del_filter(struct i40e_vsi *vsi, struct i40e_mac_filter *f);
--void i40e_del_filter(struct i40e_vsi *vsi, const u8 *macaddr, s16 vlan);
- int i40e_sync_vsi_filters(struct i40e_vsi *vsi);
- struct i40e_vsi *i40e_vsi_setup(struct i40e_pf *pf, u8 type,
- 				u16 uplink, u32 param1);
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 83ba1effe8ba..276dde0bc1d4 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -1666,9 +1666,8 @@ struct i40e_mac_filter *i40e_add_filter(struct i40e_vsi *vsi,
-  * @vsi: VSI to remove from
-  * @f: the filter to remove from the list
-  *
-- * This function should be called instead of i40e_del_filter only if you know
-- * the exact filter you will remove already, such as via i40e_find_filter or
-- * i40e_find_mac.
-+ * This function requires you've found * the exact filter you will remove
-+ * already, such as via i40e_find_filter or i40e_find_mac.
-  *
-  * NOTE: This function is expected to be called with mac_filter_hash_lock
-  * being held.
-@@ -1697,29 +1696,6 @@ void __i40e_del_filter(struct i40e_vsi *vsi, struct i40e_mac_filter *f)
- 	set_bit(__I40E_MACVLAN_SYNC_PENDING, vsi->back->state);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_dcb.c b/drivers/net/ethernet/intel/i40e/i40e_dcb.c
+index 8db1eb0c1768..352e957443fd 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_dcb.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_dcb.c
+@@ -1490,19 +1490,6 @@ void i40e_dcb_hw_set_num_tc(struct i40e_hw *hw, u8 num_tc)
+ 	wr32(hw, I40E_PRTDCB_GENC, reg);
  }
  
 -/**
-- * i40e_del_filter - Remove a MAC/VLAN filter from the VSI
-- * @vsi: the VSI to be searched
-- * @macaddr: the MAC address
-- * @vlan: the VLAN
+- * i40e_dcb_hw_get_num_tc
+- * @hw: pointer to the hw struct
 - *
-- * NOTE: This function is expected to be called with mac_filter_hash_lock
-- * being held.
-- * ANOTHER NOTE: This function MUST be called from within the context of
-- * the "safe" variants of any list iterators, e.g. list_for_each_entry_safe()
-- * instead of list_for_each_entry().
+- * Returns number of traffic classes configured in HW
 - **/
--void i40e_del_filter(struct i40e_vsi *vsi, const u8 *macaddr, s16 vlan)
+-u8 i40e_dcb_hw_get_num_tc(struct i40e_hw *hw)
 -{
--	struct i40e_mac_filter *f;
+-	u32 reg = rd32(hw, I40E_PRTDCB_GENC);
 -
--	if (!vsi || !macaddr)
--		return;
--
--	f = i40e_find_filter(vsi, macaddr, vlan);
--	__i40e_del_filter(vsi, f);
+-	return FIELD_GET(I40E_PRTDCB_GENC_NUMTC_MASK, reg);
 -}
 -
  /**
-  * i40e_add_mac_filter - Add a MAC filter for all active VLANs
-  * @vsi: the VSI to be searched
+  * i40e_dcb_hw_rx_ets_bw_config
+  * @hw: pointer to the hw struct
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_dcb.h b/drivers/net/ethernet/intel/i40e/i40e_dcb.h
+index d76497566e40..d5662c639c41 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_dcb.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_dcb.h
+@@ -253,7 +253,6 @@ void i40e_dcb_hw_rx_cmd_monitor_config(struct i40e_hw *hw,
+ void i40e_dcb_hw_pfc_config(struct i40e_hw *hw,
+ 			    u8 pfc_en, u8 *prio_tc);
+ void i40e_dcb_hw_set_num_tc(struct i40e_hw *hw, u8 num_tc);
+-u8 i40e_dcb_hw_get_num_tc(struct i40e_hw *hw);
+ void i40e_dcb_hw_rx_ets_bw_config(struct i40e_hw *hw, u8 *bw_share,
+ 				  u8 *mode, u8 *prio_type);
+ void i40e_dcb_hw_rx_up2tc_config(struct i40e_hw *hw, u8 *prio_tc);
 -- 
 2.47.1
 
