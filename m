@@ -4,85 +4,80 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8D1F0E77197
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  2 Jan 2025 17:37:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 44B15E77188
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  2 Jan 2025 17:37:48 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 5142540422;
-	Thu,  2 Jan 2025 17:37:43 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 0809A401EC;
+	Thu,  2 Jan 2025 17:37:48 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id LkHL_LevRO4d; Thu,  2 Jan 2025 17:37:42 +0000 (UTC)
+ id y-lnm8iQe7tU; Thu,  2 Jan 2025 17:37:47 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 74B42403F4
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2F1D540174
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1735839462;
-	bh=+ZGR+4M88sa0kRz7J9BRSdTXkaGsSrG9ro47bpM2uuI=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=KhiF9GW4X35n1SZy9M1OqhYj9LHepJCWqnL5PNCUQu7InSQBKQhL9ONFSGYtUnz8F
-	 rSbsfzWry0WfEz9fAsVRHUpdKZ6y1xfPabNHb04Odjge9ObFPJ1Cu67icgaOeVZkSb
-	 XZsy04du4WjUL+3Cs0GlfrwmiHQFFGmvfHBs1uWFSWDtotexSKoG6BmFlYG1epoXzM
-	 YHgjnnH0Tstm5hM3IHXXl3jf59ua1136j/YnM+MBY6lDdRpgMOLa//MTOQvIb9+1fA
-	 GJ6I/Xs2ndtwBEZ9DJbdaSYhJPF0xVDXiDB/HM5PhXwiKHE/Yx42gUzE9tmf0qOheV
-	 ds+xmAI1ZVlzQ==
+	s=default; t=1735839467;
+	bh=BLfWDy6Mh+x3ZLFoG1A6rUjcWBV6etcehzoDQyHhNU8=;
+	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=Hlr0XQZBhI/PpIfY2k0bEpjcB6eDR3XwJ7bPWglU6K+vyFYvj86D2lS3Vm7HIFlid
+	 nUhwqQz/31c1FRwDJsAZp/GiToAQ/jz7XJuIZfjecvtFqwnwlQPJnbyRqRayICffJz
+	 YqTWNZw+cgJ5Quuq3X2012NMR5p1tF9TVnoW41DX8427aedjv7eQ6tIeFmcJw0OZNm
+	 eP/SVgijZ/tW8Ven5gEGpBkuHe+FXB6TXfdCvhPt3GFT+KI6+0zCtxxpPK8tOvEKfI
+	 nlaiJVmkF9QeJVoshfG1Dzgy56K6p+AjAVHG2e12QgR4GRqezp0pmqAhsaPwB+BVp6
+	 uy9qC/97n8S2A==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 74B42403F4;
-	Thu,  2 Jan 2025 17:37:42 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id A9A6BF27
- for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Jan 2025 17:37:38 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 2F1D540174;
+	Thu,  2 Jan 2025 17:37:47 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id A244BF24
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Jan 2025 17:37:45 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 9359940504
- for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Jan 2025 17:37:38 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 83D2E804F2
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Jan 2025 17:37:45 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id YORn-hutIDWz for <intel-wired-lan@lists.osuosl.org>;
- Thu,  2 Jan 2025 17:37:37 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 0QUa0WeAFL17 for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  2 Jan 2025 17:37:45 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=2a00:1098:5b::1;
  helo=mx.treblig.org; envelope-from=linux@treblig.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 76BDB4056E
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 76BDB4056E
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org C76D680499
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C76D680499
 Received: from mx.treblig.org (mx.treblig.org [IPv6:2a00:1098:5b::1])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 76BDB4056E
- for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Jan 2025 17:37:37 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTPS id C76D680499
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Jan 2025 17:37:44 +0000 (UTC)
 Received: from localhost ([127.0.0.1] helo=dalek.home.treblig.org)
  by mx.treblig.org with esmtp (Exim 4.96)
- (envelope-from <linux@treblig.org>) id 1tTP8L-007tod-1o;
- Thu, 02 Jan 2025 17:37:21 +0000
+ (envelope-from <linux@treblig.org>) id 1tTP8K-007tod-0q;
+ Thu, 02 Jan 2025 17:37:20 +0000
 From: linux@treblig.org
 To: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
  andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
  kuba@kernel.org, pabeni@redhat.com, intel-wired-lan@lists.osuosl.org
 Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- "Dr. David Alan Gilbert" <linux@treblig.org>,
- Kalesh AP <kalesh-anakkur.purayil@broadcom.com>
-Date: Thu,  2 Jan 2025 17:37:10 +0000
-Message-ID: <20250102173717.200359-3-linux@treblig.org>
+ "Dr. David Alan Gilbert" <linux@treblig.org>
+Date: Thu,  2 Jan 2025 17:37:08 +0000
+Message-ID: <20250102173717.200359-1-linux@treblig.org>
 X-Mailer: git-send-email 2.47.1
-In-Reply-To: <20250102173717.200359-1-linux@treblig.org>
-References: <20250102173717.200359-1-linux@treblig.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt;
  c=relaxed/relaxed; d=treblig.org
  ; s=bytemarkmx; h=MIME-Version:Message-ID:Date:Subject:From:Content-Type:From
- :Subject; bh=+ZGR+4M88sa0kRz7J9BRSdTXkaGsSrG9ro47bpM2uuI=; b=kvfFMMIbDsLkjSyU
- iSQg4f6mLwlQ2MVHXEH6vhYJV4JN52B0alw/hAGltvTca2MxAlsM8kAycxOQH7JpEaOPhvgbYy2oa
- hTPIq2iHYe5FvzFCrwykMQhpWYDqNtoDh0oZLFHf1tr5DpD43iYXoq6FQ0twbNDlQ/SX9J+f+WmjE
- KH1AxkK9fRXcBUPSCySL8n0ytNYt4qKZR7jbEZzxR659o3AL23mGUx+6MRnTZ3M0q5Xj/z6+96+Oz
- J9O/kCUSp6Uoyge0715ocU/WMrFk+zFs/L6u+QSXZWaTQdy9tprAvbDSOdFWLIgmknm+SYpfPjedb
- WElM2T+3D5laECCZnA==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ :Subject; bh=BLfWDy6Mh+x3ZLFoG1A6rUjcWBV6etcehzoDQyHhNU8=; b=nDgK2uurZqxVHz5x
+ 3CvPflLhVQz+M1MFUzqJz2hn12t3tKV2YdnrK2RVnU/TbcoWSEJL7cgZpFBfCsFSq5yP21zWRh28l
+ QTxdRn4MktBgXY31aHcjS/dkm6fDupLD11wl/uHPU7Hp9NR/m7d8bG7e2b9kPDwXDLWpC4BZ7lT6A
+ Rf67JN/+MGNRc/jKYO46dTflT+REeLp2QZeVyzfjZYPoZWp2APOSSMam7SG/Cos911ZT27Up8TY5G
+ 0hibNenYnktmXpsmlhvXjSSs1C3n+POUiQ4yQyeLpERURUYmSVN/X9zYXiqA+96AgX0Tfmer7a00i
+ HpJAJZOFVbRvqWx1oQ==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=treblig.org
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=treblig.org header.i=@treblig.org
- header.a=rsa-sha256 header.s=bytemarkmx header.b=kvfFMMIb
-Subject: [Intel-wired-lan] [PATCH net-next 2/9] i40e: Remove unused
- i40e_blink_phy_link_led
+ header.a=rsa-sha256 header.s=bytemarkmx header.b=nDgK2uur
+Subject: [Intel-wired-lan] [PATCH net-next 0/9] i40e deadcoding
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -100,127 +95,35 @@ Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 From: "Dr. David Alan Gilbert" <linux@treblig.org>
 
-i40e_blink_phy_link_led() was added in 2016 by
-commit fd077cd3399b ("i40e: Add functions to blink led on 10GBaseT PHY")
+Hi,
+  This is a bunch of deadcoding of functions that
+are entirely uncalled in the i40e driver.
 
-but hasn't been used.
-
-Remove it.
+  Build tested only.
 
 Signed-off-by: Dr. David Alan Gilbert <linux@treblig.org>
-Reviewed-by: Kalesh AP <kalesh-anakkur.purayil@broadcom.com>
----
- drivers/net/ethernet/intel/i40e/i40e_common.c | 74 -------------------
- .../net/ethernet/intel/i40e/i40e_prototype.h  |  4 -
- 2 files changed, 78 deletions(-)
+(Resend now that netdev has woken up)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
-index 47e71f72d87b..ba780a949a47 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_common.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
-@@ -4428,80 +4428,6 @@ u8 i40e_get_phy_address(struct i40e_hw *hw, u8 dev_num)
- 	return (u8)(reg_val >> ((dev_num + 1) * 5)) & 0x1f;
- }
- 
--/**
-- * i40e_blink_phy_link_led
-- * @hw: pointer to the HW structure
-- * @time: time how long led will blinks in secs
-- * @interval: gap between LED on and off in msecs
-- *
-- * Blinks PHY link LED
-- **/
--int i40e_blink_phy_link_led(struct i40e_hw *hw,
--			    u32 time, u32 interval)
--{
--	u16 led_addr = I40E_PHY_LED_PROV_REG_1;
--	u16 gpio_led_port;
--	u8 phy_addr = 0;
--	int status = 0;
--	u16 led_ctl;
--	u8 port_num;
--	u16 led_reg;
--	u32 i;
--
--	i = rd32(hw, I40E_PFGEN_PORTNUM);
--	port_num = (u8)(i & I40E_PFGEN_PORTNUM_PORT_NUM_MASK);
--	phy_addr = i40e_get_phy_address(hw, port_num);
--
--	for (gpio_led_port = 0; gpio_led_port < 3; gpio_led_port++,
--	     led_addr++) {
--		status = i40e_read_phy_register_clause45(hw,
--							 I40E_PHY_COM_REG_PAGE,
--							 led_addr, phy_addr,
--							 &led_reg);
--		if (status)
--			goto phy_blinking_end;
--		led_ctl = led_reg;
--		if (led_reg & I40E_PHY_LED_LINK_MODE_MASK) {
--			led_reg = 0;
--			status = i40e_write_phy_register_clause45(hw,
--							 I40E_PHY_COM_REG_PAGE,
--							 led_addr, phy_addr,
--							 led_reg);
--			if (status)
--				goto phy_blinking_end;
--			break;
--		}
--	}
--
--	if (time > 0 && interval > 0) {
--		for (i = 0; i < time * 1000; i += interval) {
--			status = i40e_read_phy_register_clause45(hw,
--						I40E_PHY_COM_REG_PAGE,
--						led_addr, phy_addr, &led_reg);
--			if (status)
--				goto restore_config;
--			if (led_reg & I40E_PHY_LED_MANUAL_ON)
--				led_reg = 0;
--			else
--				led_reg = I40E_PHY_LED_MANUAL_ON;
--			status = i40e_write_phy_register_clause45(hw,
--						I40E_PHY_COM_REG_PAGE,
--						led_addr, phy_addr, led_reg);
--			if (status)
--				goto restore_config;
--			msleep(interval);
--		}
--	}
--
--restore_config:
--	status = i40e_write_phy_register_clause45(hw,
--						  I40E_PHY_COM_REG_PAGE,
--						  led_addr, phy_addr, led_ctl);
--
--phy_blinking_end:
--	return status;
--}
--
- /**
-  * i40e_led_get_reg - read LED register
-  * @hw: pointer to the HW structure
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_prototype.h b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
-index 29f6a903a30c..c0a4bd53501c 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_prototype.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
-@@ -72,8 +72,6 @@ int i40e_led_set_phy(struct i40e_hw *hw, bool on,
- 		     u16 led_addr, u32 mode);
- int i40e_led_get_phy(struct i40e_hw *hw, u16 *led_addr,
- 		     u16 *val);
--int i40e_blink_phy_link_led(struct i40e_hw *hw,
--			    u32 time, u32 interval);
- 
- /* admin send queue commands */
- 
-@@ -446,8 +444,6 @@ int i40e_read_phy_register(struct i40e_hw *hw, u8 page, u16 reg,
- int i40e_write_phy_register(struct i40e_hw *hw, u8 page, u16 reg,
- 			    u8 phy_addr, u16 value);
- u8 i40e_get_phy_address(struct i40e_hw *hw, u8 dev_num);
--int i40e_blink_phy_link_led(struct i40e_hw *hw,
--			    u32 time, u32 interval);
- int i40e_aq_write_ddp(struct i40e_hw *hw, void *buff,
- 		      u16 buff_size, u32 track_id,
- 		      u32 *error_offset, u32 *error_info,
+Dr. David Alan Gilbert (9):
+  i40e: Deadcode i40e_aq_*
+  i40e: Remove unused i40e_blink_phy_link_led
+  i40e: Remove unused i40e_(read|write)_phy_register
+  i40e: Deadcode profile code
+  i40e: Remove unused i40e_get_cur_guaranteed_fd_count
+  i40e: Remove unused i40e_del_filter
+  i40e: Remove unused i40e_commit_partition_bw_setting
+  i40e: Remove unused i40e_asq_send_command_v2
+  i40e: Remove unused i40e_dcb_hw_get_num_tc
+
+ drivers/net/ethernet/intel/i40e/i40e.h        |   3 -
+ drivers/net/ethernet/intel/i40e/i40e_adminq.c |  10 -
+ drivers/net/ethernet/intel/i40e/i40e_common.c | 458 ------------------
+ drivers/net/ethernet/intel/i40e/i40e_dcb.c    |  13 -
+ drivers/net/ethernet/intel/i40e/i40e_dcb.h    |   1 -
+ drivers/net/ethernet/intel/i40e/i40e_main.c   | 124 +----
+ .../net/ethernet/intel/i40e/i40e_prototype.h  |  40 --
+ 7 files changed, 2 insertions(+), 647 deletions(-)
+
 -- 
 2.47.1
 
