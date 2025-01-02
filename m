@@ -4,84 +4,81 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7F228E77188
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  2 Jan 2025 17:37:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6D722E77188
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  2 Jan 2025 17:40:15 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 3B19760623;
-	Thu,  2 Jan 2025 17:37:56 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 3C4A86078F;
+	Thu,  2 Jan 2025 17:40:15 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id LDK6cOpLp-bl; Thu,  2 Jan 2025 17:37:55 +0000 (UTC)
+ id XIiUrKDUqzVc; Thu,  2 Jan 2025 17:40:13 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 646FD60645
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org AF8AC6069E
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1735839475;
-	bh=7DIlELWgzNGvwf4ldWAU2dlgWl8Sx9HJfUGOtuYL0nc=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=DMhqRLKGiQNFKBBwlWMG5oFvnOtfobPklj9/nc4Li6XG6BnbZJx+F5YljlQF18EKj
-	 EiAcmoc3NwQ/inFFfVd9RGek/uALNoQ307CMDeDwIzOQZsF7eLCIbsyc2HQt2Bs3gh
-	 LlOdXUhPxpVETMy6CMCzKy1Ofd2JqAJ6xYClho6Lcftd+f80I/MIN6K4cQ6CBcTwse
-	 dRBfjYUE4qT+7LTB24+bHoWHg5Y8/gzp1BN+BeAqMLduOf2vrgkK1J1AkTB0M/2FDi
-	 fipVzbInGiQ1Zcq3rq/ohNzE1V/O+KqO+vw09QSNSSzTMKLjRIb+zD2D2ZZYGgYt/J
-	 YQVxCUUS15tvw==
+	s=default; t=1735839613;
+	bh=kNbPgneaX7GZilz8mvKDzcGBDi52SBp2xJS4zJPPs40=;
+	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=Go6Kvx9UOkVHi2wroz2gnmRmnO2C9esK4EEgb91T77adNVQbHMLbDuba3vQkFKxIT
+	 2NFV0IqmGPWmV9oYzt+NO288z1pKbDe3tK2NScSHFdY6a7ljE0rtSWhcUWKUXfllZU
+	 /35Tlpx3T+7oBrbgS2FFOBq1MybsgKxDg+FodwDm1dVCG2VNmarp877V5vLZe/Uk8p
+	 OAltMPDLjHyN/pLKVn0nhZe2YkTO7dCUoSG5XOv8YowEYxeBiRVGyZ1m7TP191NjwL
+	 kyKVckqKAKRA5huAJqSGARg9jN2seawFfAxTjoHgePTeRWq++gdwn3pXvcP9K5IrTm
+	 kVf0z8V4kGeGg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 646FD60645;
-	Thu,  2 Jan 2025 17:37:55 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id B3C5CF27
- for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Jan 2025 17:37:53 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id AF8AC6069E;
+	Thu,  2 Jan 2025 17:40:13 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 06B48F27
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Jan 2025 17:40:12 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 9471B40128
- for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Jan 2025 17:37:53 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id D84E140522
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Jan 2025 17:40:11 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 4L0CzOjxaKCK for <intel-wired-lan@lists.osuosl.org>;
- Thu,  2 Jan 2025 17:37:52 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id Uj9_nwb_5MJg for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  2 Jan 2025 17:40:11 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=2a00:1098:5b::1;
  helo=mx.treblig.org; envelope-from=linux@treblig.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 86FBF401C8
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 86FBF401C8
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org CEE1040527
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org CEE1040527
 Received: from mx.treblig.org (mx.treblig.org [IPv6:2a00:1098:5b::1])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 86FBF401C8
- for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Jan 2025 17:37:52 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTPS id CEE1040527
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Jan 2025 17:40:10 +0000 (UTC)
 Received: from localhost ([127.0.0.1] helo=dalek.home.treblig.org)
  by mx.treblig.org with esmtp (Exim 4.96)
- (envelope-from <linux@treblig.org>) id 1tTP8M-007tod-0P;
- Thu, 02 Jan 2025 17:37:22 +0000
+ (envelope-from <linux@treblig.org>) id 1tTPAx-007ty0-28;
+ Thu, 02 Jan 2025 17:40:03 +0000
 From: linux@treblig.org
 To: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
  andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
  kuba@kernel.org, pabeni@redhat.com, intel-wired-lan@lists.osuosl.org
 Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
  "Dr. David Alan Gilbert" <linux@treblig.org>
-Date: Thu,  2 Jan 2025 17:37:11 +0000
-Message-ID: <20250102173717.200359-4-linux@treblig.org>
+Date: Thu,  2 Jan 2025 17:40:02 +0000
+Message-ID: <20250102174002.200538-1-linux@treblig.org>
 X-Mailer: git-send-email 2.47.1
-In-Reply-To: <20250102173717.200359-1-linux@treblig.org>
-References: <20250102173717.200359-1-linux@treblig.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt;
  c=relaxed/relaxed; d=treblig.org
  ; s=bytemarkmx; h=MIME-Version:Message-ID:Date:Subject:From:Content-Type:From
- :Subject; bh=7DIlELWgzNGvwf4ldWAU2dlgWl8Sx9HJfUGOtuYL0nc=; b=G/wxJMXOnwSiyXLm
- /jhG9ErKR7SQM/1v/z4Sb9UOGec54mTBIhfqwXhb72NJw6WP4ZYli1i2O1yHtduJ884uXnF/lZYNK
- TnOGmPrqrQzRyn2WJquxVVjDNpWi0mMjCFy1QSpPxu/ICyHuGqRLHY6Uoe42XjmvymVmFW1odUmy6
- vIBaXVq6MhDP6LdDu8kVVC0aHAUpg+x3tGVNk2Qx9Bl6/veu8ADyCgZUXwrVCgSYkjfyzJ5tjCOcP
- XjchSFfYT4jSXvyJx4vk+7Cm1fYjpUFSvIyD/KstGUNDL4SGn+mo+p+FPeRLTHfPa8tWQMYMZomPl
- c4upQ6hKrIrbPv6UYw==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ :Subject; bh=kNbPgneaX7GZilz8mvKDzcGBDi52SBp2xJS4zJPPs40=; b=UGBNNMY5S2N65FfU
+ VuLFvGVF9UjUbk9MztliPzB4Wtoij4RwOQpPAByMJPyFrKngzigb9sFVmL1M3oSb7s/CzhOxgoCzz
+ BWMxHlK2W1xqbI2Bv2fz66oEXLLd3kGa1aRoVFP76Z6SVEw61ZNFAxMIiYxr4/w6FUdjWe2iup4jH
+ fMMYaGTk13QstT/IW3gBbK0so0Wz5H/ZcwG6bRFq7GQ309UF+p/NqFyV5cQdRRwrmRGCl5Bgahb57
+ 7cPX27akYtIeDNb13grTcSOcLfwLiF/qWNNaKcuThdZHDreKQjTImoSRp8seWdCN5mT1HPZURmDUK
+ dpEQbGrkwDt7PIQGzQ==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=treblig.org
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=treblig.org header.i=@treblig.org
- header.a=rsa-sha256 header.s=bytemarkmx header.b=G/wxJMXO
-Subject: [Intel-wired-lan] [PATCH net-next 3/9] i40e: Remove unused
- i40e_(read|write)_phy_register
+ header.a=rsa-sha256 header.s=bytemarkmx header.b=UGBNNMY5
+Subject: [Intel-wired-lan] [PATCH net-next] ixgbevf: Remove unused
+ ixgbevf_hv_mbx_ops
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -99,128 +96,53 @@ Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 From: "Dr. David Alan Gilbert" <linux@treblig.org>
 
-i40e_read_phy_register() and i40e_write_phy_register() were added in
-2016 by
-commit f62ba91458b5 ("i40e: Add functions which apply correct PHY access
-method for read and write operation")
+The const struct ixgbevf_hv_mbx_ops was added in 2016 as part of
+commit c6d45171d706 ("ixgbevf: Support Windows hosts (Hyper-V)")
 
-but haven't been used.
+but has remained unused.
 
-Remove them.
+The functions it references are still referenced elsewhere.
 
-(There are more specific _clause* variants of these functions
-that are still used.)
+Remove it.
 
 Signed-off-by: Dr. David Alan Gilbert <linux@treblig.org>
 ---
- drivers/net/ethernet/intel/i40e/i40e_common.c | 78 -------------------
- .../net/ethernet/intel/i40e/i40e_prototype.h  |  4 -
- 2 files changed, 82 deletions(-)
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf.h |  1 -
+ drivers/net/ethernet/intel/ixgbevf/mbx.c     | 12 ------------
+ 2 files changed, 13 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
-index ba780a949a47..6779e281a648 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_common.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
-@@ -4335,84 +4335,6 @@ int i40e_write_phy_register_clause45(struct i40e_hw *hw,
- 	return status;
- }
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
+index 130cb868774c..a43cb500274e 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
++++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
+@@ -439,7 +439,6 @@ extern const struct ixgbevf_info ixgbevf_82599_vf_hv_info;
+ extern const struct ixgbevf_info ixgbevf_X540_vf_hv_info;
+ extern const struct ixgbevf_info ixgbevf_X550_vf_hv_info;
+ extern const struct ixgbevf_info ixgbevf_X550EM_x_vf_hv_info;
+-extern const struct ixgbe_mbx_operations ixgbevf_hv_mbx_ops;
  
--/**
-- * i40e_write_phy_register
-- * @hw: pointer to the HW structure
-- * @page: registers page number
-- * @reg: register address in the page
-- * @phy_addr: PHY address on MDIO interface
-- * @value: PHY register value
-- *
-- * Writes value to specified PHY register
-- **/
--int i40e_write_phy_register(struct i40e_hw *hw,
--			    u8 page, u16 reg, u8 phy_addr, u16 value)
--{
--	int status;
+ /* needed by ethtool.c */
+ extern const char ixgbevf_driver_name[];
+diff --git a/drivers/net/ethernet/intel/ixgbevf/mbx.c b/drivers/net/ethernet/intel/ixgbevf/mbx.c
+index a55dd978f7ca..24d0237e7a99 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/mbx.c
++++ b/drivers/net/ethernet/intel/ixgbevf/mbx.c
+@@ -505,15 +505,3 @@ const struct ixgbe_mbx_operations ixgbevf_mbx_ops_legacy = {
+ 	.check_for_ack	= ixgbevf_check_for_ack_vf,
+ 	.check_for_rst	= ixgbevf_check_for_rst_vf,
+ };
 -
--	switch (hw->device_id) {
--	case I40E_DEV_ID_1G_BASE_T_X722:
--		status = i40e_write_phy_register_clause22(hw, reg, phy_addr,
--							  value);
--		break;
--	case I40E_DEV_ID_1G_BASE_T_BC:
--	case I40E_DEV_ID_5G_BASE_T_BC:
--	case I40E_DEV_ID_10G_BASE_T:
--	case I40E_DEV_ID_10G_BASE_T4:
--	case I40E_DEV_ID_10G_BASE_T_BC:
--	case I40E_DEV_ID_10G_BASE_T_X722:
--	case I40E_DEV_ID_25G_B:
--	case I40E_DEV_ID_25G_SFP28:
--		status = i40e_write_phy_register_clause45(hw, page, reg,
--							  phy_addr, value);
--		break;
--	default:
--		status = -EIO;
--		break;
--	}
--
--	return status;
--}
--
--/**
-- * i40e_read_phy_register
-- * @hw: pointer to the HW structure
-- * @page: registers page number
-- * @reg: register address in the page
-- * @phy_addr: PHY address on MDIO interface
-- * @value: PHY register value
-- *
-- * Reads specified PHY register value
-- **/
--int i40e_read_phy_register(struct i40e_hw *hw,
--			   u8 page, u16 reg, u8 phy_addr, u16 *value)
--{
--	int status;
--
--	switch (hw->device_id) {
--	case I40E_DEV_ID_1G_BASE_T_X722:
--		status = i40e_read_phy_register_clause22(hw, reg, phy_addr,
--							 value);
--		break;
--	case I40E_DEV_ID_1G_BASE_T_BC:
--	case I40E_DEV_ID_5G_BASE_T_BC:
--	case I40E_DEV_ID_10G_BASE_T:
--	case I40E_DEV_ID_10G_BASE_T4:
--	case I40E_DEV_ID_10G_BASE_T_BC:
--	case I40E_DEV_ID_10G_BASE_T_X722:
--	case I40E_DEV_ID_25G_B:
--	case I40E_DEV_ID_25G_SFP28:
--		status = i40e_read_phy_register_clause45(hw, page, reg,
--							 phy_addr, value);
--		break;
--	default:
--		status = -EIO;
--		break;
--	}
--
--	return status;
--}
--
- /**
-  * i40e_get_phy_address
-  * @hw: pointer to the HW structure
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_prototype.h b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
-index c0a4bd53501c..bfebe18c0041 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_prototype.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
-@@ -439,10 +439,6 @@ int i40e_read_phy_register_clause45(struct i40e_hw *hw,
- 				    u8 page, u16 reg, u8 phy_addr, u16 *value);
- int i40e_write_phy_register_clause45(struct i40e_hw *hw,
- 				     u8 page, u16 reg, u8 phy_addr, u16 value);
--int i40e_read_phy_register(struct i40e_hw *hw, u8 page, u16 reg,
--			   u8 phy_addr, u16 *value);
--int i40e_write_phy_register(struct i40e_hw *hw, u8 page, u16 reg,
--			    u8 phy_addr, u16 value);
- u8 i40e_get_phy_address(struct i40e_hw *hw, u8 dev_num);
- int i40e_aq_write_ddp(struct i40e_hw *hw, void *buff,
- 		      u16 buff_size, u32 track_id,
+-/* Mailbox operations when running on Hyper-V.
+- * On Hyper-V, PF/VF communication is not through the
+- * hardware mailbox; this communication is through
+- * a software mediated path.
+- * Most mail box operations are noop while running on
+- * Hyper-V.
+- */
+-const struct ixgbe_mbx_operations ixgbevf_hv_mbx_ops = {
+-	.init_params	= ixgbevf_init_mbx_params_vf,
+-	.check_for_rst	= ixgbevf_check_for_rst_vf,
+-};
 -- 
 2.47.1
 
