@@ -4,94 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4FB5BE7718B
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  2 Jan 2025 16:39:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A8D0CE77188
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  2 Jan 2025 17:37:35 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id EAC756077C;
-	Thu,  2 Jan 2025 16:39:20 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 580DD60623;
+	Thu,  2 Jan 2025 17:37:35 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id KpXrtWlTsgjo; Thu,  2 Jan 2025 16:39:20 +0000 (UTC)
+ id RGFAz8dx8mbO; Thu,  2 Jan 2025 17:37:34 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4BBAF60758
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A807860645
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1735835960;
-	bh=9g8PyF99klNIKBD2d1euNvk1LC5LNQ1Lnn6m+dnR3R4=;
-	h=Date:From:To:Cc:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1735839454;
+	bh=VIOsW7CThUdxqZazplbAYuS4wCenu5gwxB082K8tTE8=;
+	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=ipLEwu4gppHAxSX6orkzsli7NjdXeixaK/S3tD4T+RpAuJqUl3MUXNrDv2mO/cZ+x
-	 I1jSXn5tNBz3xClgZDH5fxzMM2sH2wVG3/862izQSyn2ncgHjJWoa4HGrkl4YIkkT9
-	 Ronr07Ulg9EggqT6GPhdXtDPtQAhRviphnJg+AxWz7QOkRf24r9IqEjuMCOWqDJZHo
-	 aQB3vdZ+A7Gjl3eQh3z3UoTDz4/6YuJwo9sj5EiipoEXGa57IV7XuzqF7nExTnqfpI
-	 syVbGaK8H1BhaIgXaCumoqZaQ+jybYu8XreJsjaqOu2I8EmD8GCAVrhS6MxRIeFskf
-	 uLd/tI0GbkgEw==
+	b=rOgpXIJJ8TeNp5WXPNn9J7VeL9+OYuA4IIxZ0w+KEb1Z4BvV2fxIhVfE3Q7LcYY+J
+	 C+ke5slsBLJqfkU3RdLtmb0uWPgdyh/4BY3R52IJcANJl+HVD7WHlt11o2vQm1i0UE
+	 UE/Wi7YDAroODRfk34cxuU6vUkrcwIVCy84X4TYuLnnmRYTXFD6PJe/iKVQfYY7HjE
+	 j3OZZcnH73HBGJKVlpk5iRDu8A7boA0UXIbkXgbNZxKQEMjT5vD2p2NiY0/m0LMMtC
+	 x5JI9TgfVai0XwJnFjNvb3REcg4xKRtcNjOETNfSr0sgIoJFHPuCxvfCUC5aIbOPsE
+	 VFybO3trPcrEQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 4BBAF60758;
-	Thu,  2 Jan 2025 16:39:20 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id 4F69DE0F
- for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Jan 2025 16:39:18 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id A807860645;
+	Thu,  2 Jan 2025 17:37:34 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 707F2F27
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Jan 2025 17:37:33 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 41F7B6074F
- for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Jan 2025 16:39:18 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 5CD9D80499
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Jan 2025 17:37:33 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id NyOF-d95y2J6 for <intel-wired-lan@lists.osuosl.org>;
- Thu,  2 Jan 2025 16:39:17 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=139.178.84.217;
- helo=dfw.source.kernel.org; envelope-from=kuba@kernel.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 8EF9660758
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8EF9660758
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 8EF9660758
- for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Jan 2025 16:39:17 +0000 (UTC)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by dfw.source.kernel.org (Postfix) with ESMTP id 1C60C5C6105;
- Thu,  2 Jan 2025 16:38:35 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CB695C4CED0;
- Thu,  2 Jan 2025 16:39:15 +0000 (UTC)
-Date: Thu, 2 Jan 2025 08:39:15 -0800
-From: Jakub Kicinski <kuba@kernel.org>
-To: Edward Cree <ecree.xilinx@gmail.com>
-Cc: Haifeng Xu <haifeng.xu@shopee.com>, Eric Dumazet <edumazet@google.com>,
- Tony Nguyen <anthony.l.nguyen@intel.com>, Przemek Kitszel
- <przemyslaw.kitszel@intel.com>, "David S. Miller" <davem@davemloft.net>,
- Paolo Abeni <pabeni@redhat.com>, linux-kernel@vger.kernel.org,
- netdev@vger.kernel.org, intel-wired-lan@lists.osuosl.org
-Message-ID: <20250102083915.6e5375a1@kernel.org>
-In-Reply-To: <87e945f6-2811-0ddb-1666-06accd126efb@gmail.com>
-References: <da83df12-d7e2-41fe-a303-290640e2a4a4@shopee.com>
- <CANn89iKVVS=ODm9jKnwG0d_FNUJ7zdYxeDYDyyOb74y3ELJLdA@mail.gmail.com>
- <c2c94aa3-c557-4a74-82fc-d88821522a8f@shopee.com>
- <CANn89iLZQOegmzpK5rX0p++utV=XaxY8S-+H+zdeHzT3iYjXWw@mail.gmail.com>
- <b9c88c0f-7909-43a3-8229-2b0ce7c68c10@shopee.com>
- <87e945f6-2811-0ddb-1666-06accd126efb@gmail.com>
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id amBtZhRH5HLO for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  2 Jan 2025 17:37:32 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=2a00:1098:5b::1;
+ helo=mx.treblig.org; envelope-from=linux@treblig.org; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 7E459804F3
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7E459804F3
+Received: from mx.treblig.org (mx.treblig.org [IPv6:2a00:1098:5b::1])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 7E459804F3
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Jan 2025 17:37:32 +0000 (UTC)
+Received: from localhost ([127.0.0.1] helo=dalek.home.treblig.org)
+ by mx.treblig.org with esmtp (Exim 4.96)
+ (envelope-from <linux@treblig.org>) id 1tTP8P-007tod-0F;
+ Thu, 02 Jan 2025 17:37:25 +0000
+From: linux@treblig.org
+To: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
+ andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
+ kuba@kernel.org, pabeni@redhat.com, intel-wired-lan@lists.osuosl.org
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ "Dr. David Alan Gilbert" <linux@treblig.org>
+Date: Thu,  2 Jan 2025 17:37:16 +0000
+Message-ID: <20250102173717.200359-9-linux@treblig.org>
+X-Mailer: git-send-email 2.47.1
+In-Reply-To: <20250102173717.200359-1-linux@treblig.org>
+References: <20250102173717.200359-1-linux@treblig.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1735835956;
- bh=jPFAeCo60VSV9qQBwJyjLnkLChMzPpcMojnaVDgF5bo=;
- h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=mPgqiowk1OW4WsKuS6FSbfUca+/aMwcVgL4mGSx4J4diTEKRVM/na8PIzOCZARtpa
- EwrXOHSvDO0HHO/cWJkUv8XyL44Mu+FE4TmI0CJ8XjMSJJRtz3b50B/rwFSwC+xRnq
- 3CQxyBcqgied41PFEWIZhHOlXpV553LDdsYMxWt2PhsqzERXpSQAx50jj7Dn/vs3rW
- wXivo60R0RqELBvIXsIfMvXYkk17jlpTpBKtvY4/PP3tdDvlKLJ2vcRL8gBEGD1KJc
- mhMtbOyg2m489tyNSpF7cjIXFWjsqicSmc4R9se6JApJRxDDlnIeDmlODxy4VQduZH
- Nz7Pf5vQF3eOw==
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dmarc=pass (p=quarantine dis=none)
- header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+Content-Transfer-Encoding: 8bit
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt;
+ c=relaxed/relaxed; d=treblig.org
+ ; s=bytemarkmx; h=MIME-Version:Message-ID:Date:Subject:From:Content-Type:From
+ :Subject; bh=VIOsW7CThUdxqZazplbAYuS4wCenu5gwxB082K8tTE8=; b=cjgLBWE+AQGwouVE
+ S5vDwc9ZaGxooRFqKMUjY4+++UEKig701HZLmcI8O0QBQP2TlKUi8bYtelzl7KlmcXWFHhVX2JBP0
+ 6oHlvI7kl0W2fti64GLzmrIxv8POg0xcbNaibJ967G8tuySRt45SaMGbzYoc7UbrD9XHrnMCyPD/n
+ hgdg/bxJ3qnE++npjxllU0FEG4YB5QjMLHR/nJJslEUx1GDViPuH+AbFA9s2B4OPuAf8YdybLk+L3
+ L3lvR39p44H/rH81uF2TenLyc8VRhif9ppBTzEB7glsxbo1Kqf2ClLCnmAFIU9XK0obcywgDbkNUc
+ UdIzLCC0hkgnVhjSsw==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=treblig.org
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=mPgqiowk
-Subject: Re: [Intel-wired-lan] 
- =?utf-8?b?W1F1ZXN0aW9uXSBpeGdiZe+8mk1lY2hhbmlz?=
- =?utf-8?q?m_of_RSS?=
+ unprotected) header.d=treblig.org header.i=@treblig.org header.a=rsa-sha256
+ header.s=bytemarkmx header.b=cjgLBWE+
+Subject: [Intel-wired-lan] [PATCH net-next 8/9] i40e: Remove unused
+ i40e_asq_send_command_v2
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -107,24 +98,62 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Thu, 2 Jan 2025 16:01:18 +0000 Edward Cree wrote:
-> On 02/01/2025 11:23, Haifeng Xu wrote:
-> > We want to make full use of cpu resources to receive packets. So
-> > we enable 63 rx queues. But we found the rate of interrupt growth
-> > on cpu 0~15 is faster than other cpus(almost twice).  
-> ...
-> > I am confused that why ixgbe NIC can dispatch the packets
-> > to the rx queues that not specified in RSS configuration.  
-> 
-> Hypothesis: it isn't doing so, RX is only happening on cpus (and
->  queues) 0-15, but the other CPUs are still sending traffic and
->  thus getting TX completion interrupts from their TX queues.
-> `ethtool -S` output has per-queue traffic stats which should
->  confirm this.
-> 
-> (But Eric is right that if you _want_ RX to use every CPU you
->  should just change the indirection table.)
+From: "Dr. David Alan Gilbert" <linux@treblig.org>
 
-IIRC Niantic had 4 bit entries in the RSS table or some such.
-It wasn't possible to RSS across more than 16 queues at a time.
-It's a great NIC but a bit dated at this point.
+i40e_asq_send_command_v2() was added in 2022 by
+commit 74073848b0d7 ("i40e: Add new versions of send ASQ command
+functions")
+but hasn't been used.
+
+Remove it.
+
+(The _atomic_v2 version of the function is used, so leave it).
+
+Signed-off-by: Dr. David Alan Gilbert <linux@treblig.org>
+---
+ drivers/net/ethernet/intel/i40e/i40e_adminq.c    | 10 ----------
+ drivers/net/ethernet/intel/i40e/i40e_prototype.h |  7 -------
+ 2 files changed, 17 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq.c b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
+index f73f5930fc58..175c1320c143 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_adminq.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
+@@ -1016,16 +1016,6 @@ i40e_asq_send_command_atomic_v2(struct i40e_hw *hw,
+ 	return status;
+ }
+ 
+-int
+-i40e_asq_send_command_v2(struct i40e_hw *hw, struct i40e_aq_desc *desc,
+-			 void *buff, /* can be NULL */ u16  buff_size,
+-			 struct i40e_asq_cmd_details *cmd_details,
+-			 enum i40e_admin_queue_err *aq_status)
+-{
+-	return i40e_asq_send_command_atomic_v2(hw, desc, buff, buff_size,
+-					       cmd_details, true, aq_status);
+-}
+-
+ /**
+  *  i40e_fill_default_direct_cmd_desc - AQ descriptor helper function
+  *  @desc:     pointer to the temp descriptor (non DMA mem)
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_prototype.h b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
+index ccb8af472cd7..099bb8ab7d70 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_prototype.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
+@@ -27,13 +27,6 @@ i40e_asq_send_command(struct i40e_hw *hw, struct i40e_aq_desc *desc,
+ 		      void *buff, /* can be NULL */ u16  buff_size,
+ 		      struct i40e_asq_cmd_details *cmd_details);
+ int
+-i40e_asq_send_command_v2(struct i40e_hw *hw,
+-			 struct i40e_aq_desc *desc,
+-			 void *buff, /* can be NULL */
+-			 u16  buff_size,
+-			 struct i40e_asq_cmd_details *cmd_details,
+-			 enum i40e_admin_queue_err *aq_status);
+-int
+ i40e_asq_send_command_atomic(struct i40e_hw *hw, struct i40e_aq_desc *desc,
+ 			     void *buff, /* can be NULL */ u16  buff_size,
+ 			     struct i40e_asq_cmd_details *cmd_details,
+-- 
+2.47.1
+
