@@ -4,63 +4,62 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5B118E7718B
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  2 Jan 2025 17:37:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E726BE77188
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  2 Jan 2025 17:37:42 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 1D62D405D3;
-	Thu,  2 Jan 2025 17:37:40 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 7D0A0405ED;
+	Thu,  2 Jan 2025 17:37:42 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id CNfyCDJm0Zng; Thu,  2 Jan 2025 17:37:39 +0000 (UTC)
+ id gYczawjrJnWb; Thu,  2 Jan 2025 17:37:41 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 67C7D40422
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 8B845403F9
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1735839459;
-	bh=x615MsWYT5rVAxhQdHYSvyCEahENSJGHVCkwtBCOTXQ=;
+	s=default; t=1735839461;
+	bh=AHVpFzSjHV15hL40UVEK2lfc9SE8GqU1vNkl27mvewE=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=mTJHM9Qyi8ScV1OMLrvBzleVTUhgl//HxoJPiu9W21m+8wHXuw3ON7h10ljefgkYv
-	 2O3OTdqKBk3N9KCYGrCWpCY0HJ6fPaYTIUxTq7b3X7yukvHfVj8tjGe302P8zY1S3J
-	 vUv4OEJa44Hy2F8xQm/REoNw6ym0pqTBUWEKZ6ZGKd1quCtBNUr9d8swAZcYG5Hs+a
-	 CaJrz5lEWs4156BC9nQXFsOhGF2z1whA9pl35nK2GAhZGckC5tpYwveH5wKKR6pa7x
-	 YCSsKpH9N7u+THWlNpTXnwGEYiz9P3GG9Yon7vwIfsEHtWnxlk50+r4nN6YKFX+XB4
-	 9szoV+DnOjT+A==
+	b=YUO3xcVDrAkdfB/DZNzZtzJLfqcrFBvVWBCVO3tlvC1P4GhA4A99u52km9fclaXV3
+	 fc965FlMqZB25p4Gf1XiRfqJMK6ZnXzXPBLmGvs4OSnkVrUnH9VdHhqjMTMoaRjvTq
+	 HilRbK3ZcRxVx1nrqVXPL+bOXcoO1vk5UkzEcOuWyYzEbuRe4P8TZ7+f+hy1GjEz9K
+	 BbXttQUbC2hfA2PhCeTU6i2XMeMyDAXoKkXi4Qd9yMxddih5R9tvQKoImllYRxLmd5
+	 gVea2mHZV2GG5InZwpCC7tMenn6scnrXRjkiW8/KqC6nWmKyLn6HlIfTRHYm92OjsU
+	 4sMZMBQO4c+fQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 67C7D40422;
-	Thu,  2 Jan 2025 17:37:39 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id 2FDBFF27
- for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Jan 2025 17:37:35 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 8B845403F9;
+	Thu,  2 Jan 2025 17:37:41 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 626B8F24
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Jan 2025 17:37:38 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id C7A15804F2
- for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Jan 2025 17:37:33 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 4F0F9607A3
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Jan 2025 17:37:38 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ykFS6lb32fQS for <intel-wired-lan@lists.osuosl.org>;
- Thu,  2 Jan 2025 17:37:33 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id EiSx5jk-gnkG for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  2 Jan 2025 17:37:37 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=2a00:1098:5b::1;
  helo=mx.treblig.org; envelope-from=linux@treblig.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 1807F804F6
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 1807F804F6
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 709C26078F
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 709C26078F
 Received: from mx.treblig.org (mx.treblig.org [IPv6:2a00:1098:5b::1])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 1807F804F6
- for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Jan 2025 17:37:33 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 709C26078F
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Jan 2025 17:37:37 +0000 (UTC)
 Received: from localhost ([127.0.0.1] helo=dalek.home.treblig.org)
  by mx.treblig.org with esmtp (Exim 4.96)
- (envelope-from <linux@treblig.org>) id 1tTP8Q-007tod-0s;
- Thu, 02 Jan 2025 17:37:26 +0000
+ (envelope-from <linux@treblig.org>) id 1tTP8M-007tod-2I;
+ Thu, 02 Jan 2025 17:37:22 +0000
 From: linux@treblig.org
 To: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
  andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
  kuba@kernel.org, pabeni@redhat.com, intel-wired-lan@lists.osuosl.org
 Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- "Dr. David Alan Gilbert" <linux@treblig.org>,
- Kalesh AP <kalesh-anakkur.purayil@broadcom.com>
-Date: Thu,  2 Jan 2025 17:37:17 +0000
-Message-ID: <20250102173717.200359-10-linux@treblig.org>
+ "Dr. David Alan Gilbert" <linux@treblig.org>
+Date: Thu,  2 Jan 2025 17:37:12 +0000
+Message-ID: <20250102173717.200359-5-linux@treblig.org>
 X-Mailer: git-send-email 2.47.1
 In-Reply-To: <20250102173717.200359-1-linux@treblig.org>
 References: <20250102173717.200359-1-linux@treblig.org>
@@ -69,20 +68,20 @@ Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt;
  c=relaxed/relaxed; d=treblig.org
  ; s=bytemarkmx; h=MIME-Version:Message-ID:Date:Subject:From:Content-Type:From
- :Subject; bh=x615MsWYT5rVAxhQdHYSvyCEahENSJGHVCkwtBCOTXQ=; b=pI3yzMfoc3/Xy+X0
- pwVR84LxUrBZzincoftsfsOd1Q3GFgsRXOKxRp1djNOsUS+8mX8m52xuiBSzPwhkfqYk37XnhqSGm
- xs/lcqjVckGcpjOej8XQU994Y1/tlOA8Wy/0rK35M7zHE76f70LESr8qtgPZ6uhKB1g61BURp5YMW
- iOV/AQsweLIEt4XbslW3zhgtq0Tec57QK3LoyIzlZPQnGMjz5/P9fYSxZshYM3rrX/Os00pHRpkJH
- QGWk+BNbAqPb56n2rMmFOO2oD+wQKdg8dwVMBqhi/bA7HGuk6yRarpREMaYGPgV5W2PjXoYjVsOaN
- /TAgvkVKzRe+D6Pj+w==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ :Subject; bh=AHVpFzSjHV15hL40UVEK2lfc9SE8GqU1vNkl27mvewE=; b=FhJT2JN/FtzReiV6
+ cBJEkAuerFCXxuN0L/SpkbPn+AMeTKlaZbawGVPtDPqPb/18SkogYgoSSKwu6zUh1t7RwYDsiNuGx
+ 981kp/Zyts96MQ+FzWDDCvPbYwzRDSuoRan/qrilyXMG0+1HFDUzHVqIx1HmwLBBbu1Oc6gfWJx7Y
+ Sk6CLk3dmzl5XchbOzVEkgTkvw8e2eL95G63SPItqMaX5yqSU6id/Bxm2QLnOe1FCwLTQ4uTIOx/D
+ CqnCORodMcLalYMqAn08JjGqtTnALVo44OIq8sRc+ilEwb6revwCvMl6A0wKpQjogGiVtM3dyU42X
+ 5SGb/9lfyn6Co1XKGg==;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=treblig.org
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=treblig.org header.i=@treblig.org
- header.a=rsa-sha256 header.s=bytemarkmx header.b=pI3yzMfo
-Subject: [Intel-wired-lan] [PATCH net-next 9/9] i40e: Remove unused
- i40e_dcb_hw_get_num_tc
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=treblig.org header.i=@treblig.org header.a=rsa-sha256
+ header.s=bytemarkmx header.b=FhJT2JN/
+Subject: [Intel-wired-lan] [PATCH net-next 4/9] i40e: Deadcode profile code
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -100,55 +99,137 @@ Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 From: "Dr. David Alan Gilbert" <linux@treblig.org>
 
-The last useof i40e_dcb_hw_get_num_tc() was removed in 2022 by
-commit fe20371578ef ("Revert "i40e: Fix reset bw limit when DCB enabled
-with 1 TC"")
+i40e_add_pinfo_to_list() was added in 2017 by
+commit 1d5c960c5ef5 ("i40e: new AQ commands")
 
-Remove it.
+i40e_find_section_in_profile() was added in 2019 by
+commit cdc594e00370 ("i40e: Implement DDP support in i40e driver")
+
+Neither have been used.
+
+Remove them.
 
 Signed-off-by: Dr. David Alan Gilbert <linux@treblig.org>
-Reviewed-by: Kalesh AP <kalesh-anakkur.purayil@broadcom.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_dcb.c | 13 -------------
- drivers/net/ethernet/intel/i40e/i40e_dcb.h |  1 -
- 2 files changed, 14 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_common.c | 72 -------------------
+ .../net/ethernet/intel/i40e/i40e_prototype.h  |  8 ---
+ 2 files changed, 80 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_dcb.c b/drivers/net/ethernet/intel/i40e/i40e_dcb.c
-index 8db1eb0c1768..352e957443fd 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_dcb.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_dcb.c
-@@ -1490,19 +1490,6 @@ void i40e_dcb_hw_set_num_tc(struct i40e_hw *hw, u8 num_tc)
- 	wr32(hw, I40E_PRTDCB_GENC, reg);
- }
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
+index 6779e281a648..370b4bddee44 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
+@@ -4882,39 +4882,6 @@ i40e_find_segment_in_package(u32 segment_type,
+ #define I40E_SECTION_HEADER(profile, offset)				\
+ 	(struct i40e_profile_section_header *)((u8 *)(profile) + (offset))
  
 -/**
-- * i40e_dcb_hw_get_num_tc
-- * @hw: pointer to the hw struct
+- * i40e_find_section_in_profile
+- * @section_type: the section type to search for (i.e., SECTION_TYPE_NOTE)
+- * @profile: pointer to the i40e segment header to be searched
 - *
-- * Returns number of traffic classes configured in HW
+- * This function searches i40e segment for a particular section type. On
+- * success it returns a pointer to the section header, otherwise it will
+- * return NULL.
 - **/
--u8 i40e_dcb_hw_get_num_tc(struct i40e_hw *hw)
+-struct i40e_profile_section_header *
+-i40e_find_section_in_profile(u32 section_type,
+-			     struct i40e_profile_segment *profile)
 -{
--	u32 reg = rd32(hw, I40E_PRTDCB_GENC);
+-	struct i40e_profile_section_header *sec;
+-	struct i40e_section_table *sec_tbl;
+-	u32 sec_off;
+-	u32 i;
 -
--	return FIELD_GET(I40E_PRTDCB_GENC_NUMTC_MASK, reg);
+-	if (profile->header.type != SEGMENT_TYPE_I40E)
+-		return NULL;
+-
+-	I40E_SECTION_TABLE(profile, sec_tbl);
+-
+-	for (i = 0; i < sec_tbl->section_count; i++) {
+-		sec_off = sec_tbl->section_offset[i];
+-		sec = I40E_SECTION_HEADER(profile, sec_off);
+-		if (sec->section.type == section_type)
+-			return sec;
+-	}
+-
+-	return NULL;
 -}
 -
  /**
-  * i40e_dcb_hw_rx_ets_bw_config
+  * i40e_ddp_exec_aq_section - Execute generic AQ for DDP
   * @hw: pointer to the hw struct
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_dcb.h b/drivers/net/ethernet/intel/i40e/i40e_dcb.h
-index d76497566e40..d5662c639c41 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_dcb.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_dcb.h
-@@ -253,7 +253,6 @@ void i40e_dcb_hw_rx_cmd_monitor_config(struct i40e_hw *hw,
- void i40e_dcb_hw_pfc_config(struct i40e_hw *hw,
- 			    u8 pfc_en, u8 *prio_tc);
- void i40e_dcb_hw_set_num_tc(struct i40e_hw *hw, u8 num_tc);
--u8 i40e_dcb_hw_get_num_tc(struct i40e_hw *hw);
- void i40e_dcb_hw_rx_ets_bw_config(struct i40e_hw *hw, u8 *bw_share,
- 				  u8 *mode, u8 *prio_type);
- void i40e_dcb_hw_rx_up2tc_config(struct i40e_hw *hw, u8 *prio_tc);
+@@ -5137,45 +5104,6 @@ i40e_rollback_profile(struct i40e_hw *hw, struct i40e_profile_segment *profile,
+ 	return status;
+ }
+ 
+-/**
+- * i40e_add_pinfo_to_list
+- * @hw: pointer to the hardware structure
+- * @profile: pointer to the profile segment of the package
+- * @profile_info_sec: buffer for information section
+- * @track_id: package tracking id
+- *
+- * Register a profile to the list of loaded profiles.
+- */
+-int
+-i40e_add_pinfo_to_list(struct i40e_hw *hw,
+-		       struct i40e_profile_segment *profile,
+-		       u8 *profile_info_sec, u32 track_id)
+-{
+-	struct i40e_profile_section_header *sec = NULL;
+-	struct i40e_profile_info *pinfo;
+-	u32 offset = 0, info = 0;
+-	int status = 0;
+-
+-	sec = (struct i40e_profile_section_header *)profile_info_sec;
+-	sec->tbl_size = 1;
+-	sec->data_end = sizeof(struct i40e_profile_section_header) +
+-			sizeof(struct i40e_profile_info);
+-	sec->section.type = SECTION_TYPE_INFO;
+-	sec->section.offset = sizeof(struct i40e_profile_section_header);
+-	sec->section.size = sizeof(struct i40e_profile_info);
+-	pinfo = (struct i40e_profile_info *)(profile_info_sec +
+-					     sec->section.offset);
+-	pinfo->track_id = track_id;
+-	pinfo->version = profile->version;
+-	pinfo->op = I40E_DDP_ADD_TRACKID;
+-	memcpy(pinfo->name, profile->name, I40E_DDP_NAME_SIZE);
+-
+-	status = i40e_aq_write_ddp(hw, (void *)sec, sec->data_end,
+-				   track_id, &offset, &info, NULL);
+-
+-	return status;
+-}
+-
+ /**
+  * i40e_aq_add_cloud_filters
+  * @hw: pointer to the hardware structure
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_prototype.h b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
+index bfebe18c0041..ccb8af472cd7 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_prototype.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
+@@ -452,20 +452,12 @@ int i40e_aq_get_ddp_list(struct i40e_hw *hw, void *buff,
+ struct i40e_generic_seg_header *
+ i40e_find_segment_in_package(u32 segment_type,
+ 			     struct i40e_package_header *pkg_header);
+-struct i40e_profile_section_header *
+-i40e_find_section_in_profile(u32 section_type,
+-			     struct i40e_profile_segment *profile);
+ int
+ i40e_write_profile(struct i40e_hw *hw, struct i40e_profile_segment *i40e_seg,
+ 		   u32 track_id);
+ int
+ i40e_rollback_profile(struct i40e_hw *hw, struct i40e_profile_segment *i40e_seg,
+ 		      u32 track_id);
+-int
+-i40e_add_pinfo_to_list(struct i40e_hw *hw,
+-		       struct i40e_profile_segment *profile,
+-		       u8 *profile_info_sec, u32 track_id);
+-
+ /* i40e_ddp */
+ int i40e_ddp_flash(struct net_device *netdev, struct ethtool_flash *flash);
+ 
 -- 
 2.47.1
 
