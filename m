@@ -1,106 +1,92 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 361CEE77188
-	for <intel-wired-lan@archiver.kernel.org>; Sat,  4 Jan 2025 13:04:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B8611E77188
+	for <intel-wired-lan@archiver.kernel.org>; Sat,  4 Jan 2025 16:15:38 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id D10EB40604;
-	Sat,  4 Jan 2025 13:04:41 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 542CC6067A;
+	Sat,  4 Jan 2025 16:15:38 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id Tk5ZujeH88QP; Sat,  4 Jan 2025 16:15:37 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B03856069F
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1736007337;
+	bh=RIhjJzkZeF31s0f3HvXjk2izopkF30SV7HRM9AtSDIo=;
+	h=Date:From:To:Cc:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=Q9rkWeEHa+zfGVgScwZmqWeBlseCtrKQ61BtzgMyHrKo7nyqBznDLqjz46mlks1Fa
+	 soxOa6U83q17OJ8pzzt8jBl1Nyc9kXcK6wNXdaFHqxEB4+5EDRCwdh4/+fjZJiOq4+
+	 wsq7Zg+TmocFWY8vDnHVWubvKLZAFkXoUX/V7We9ARtpXpFuP3Ovdh8+YuBrLLf2kG
+	 2XX1pddqm1dqjgJ5q8ZwnoM+ETaHp+Oyrwoz74Bs2iXZkOlMC7Rl/7VY2Wz69OLMZG
+	 PJH2rPYZDKTPu6Inj5lt8qiIgZ8QpDH0UVkngKnf2EheyJOHnK3w82pKpNqcRh4K2z
+	 HIcyzkSMNyvQg==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp3.osuosl.org (Postfix) with ESMTP id B03856069F;
+	Sat,  4 Jan 2025 16:15:37 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id AAC38E0F
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  4 Jan 2025 16:15:36 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp4.osuosl.org (Postfix) with ESMTP id 8614E405B0
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  4 Jan 2025 16:15:36 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 3G2_uRQG90tu; Sat,  4 Jan 2025 13:04:40 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B9C784060B
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1735995880;
-	bh=2JTTiUuLXmgV3SEghlQY0qK4DT6S9fZ9puU3jOrWUwg=;
-	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=p3iDTUWFMpgXCzs3NdzAE/nsenoc/mxYYENcFA7B5xjjOmbZJbqkT1u2Mi+zOLEpy
-	 mYWLlp0/P0qt9n9cC23nG2TTCqGOaxW9ylMaaiMSARgqVoy2hELiQGNH+UAp+iZDVW
-	 wtWFHCTpcvS9HsPSxwBOfx/0x0MQnMmnczO74Jmrnv3wtu/z2foOrHPWp5DIVWbkGq
-	 1kZeC8D+6zgWzJTBhfat9MYwVvYtT+r4r+9VOxMAAxSS5IHMawT3zvP+LDZvXHRIV6
-	 KYUpbqdl1esCeOqwvS5t4bQX9QLIJGjApT8ya3jcuKNHAo/2V72JxnyXwAGO/YQooI
-	 Vebat6mUpcjlQ==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id B9C784060B;
-	Sat,  4 Jan 2025 13:04:40 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id E567DE0F
- for <intel-wired-lan@lists.osuosl.org>; Sat,  4 Jan 2025 13:04:39 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id C6A1140154
- for <intel-wired-lan@lists.osuosl.org>; Sat,  4 Jan 2025 13:04:39 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Rv7TqlL-oktj for <intel-wired-lan@lists.osuosl.org>;
- Sat,  4 Jan 2025 13:04:38 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.7;
- helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 4535440114
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 4535440114
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.7])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 4535440114
- for <intel-wired-lan@lists.osuosl.org>; Sat,  4 Jan 2025 13:04:37 +0000 (UTC)
-X-CSE-ConnectionGUID: IM33xb1GRcSiVDHeFPoiBA==
-X-CSE-MsgGUID: EHTgpouhRvGHexS2iHUGhg==
-X-IronPort-AV: E=McAfee;i="6700,10204,11304"; a="61587797"
-X-IronPort-AV: E=Sophos;i="6.12,288,1728975600"; d="scan'208";a="61587797"
-Received: from fmviesa001.fm.intel.com ([10.60.135.141])
- by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 04 Jan 2025 05:04:37 -0800
-X-CSE-ConnectionGUID: kcBQ+cHERjiaWxsC721hng==
-X-CSE-MsgGUID: U+axFSXCRdi3vWtyWEs6Hg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.12,224,1728975600"; d="scan'208";a="132931847"
-Received: from lkp-server01.sh.intel.com (HELO d63d4d77d921) ([10.239.97.150])
- by fmviesa001.fm.intel.com with ESMTP; 04 Jan 2025 05:02:40 -0800
-Received: from kbuild by d63d4d77d921 with local (Exim 4.96)
- (envelope-from <lkp@intel.com>) id 1tU3na-000Av1-0X;
- Sat, 04 Jan 2025 13:02:38 +0000
-Date: Sat, 4 Jan 2025 21:02:23 +0800
-From: kernel test robot <lkp@intel.com>
-To: Ahmed Zaki <ahmed.zaki@intel.com>, netdev@vger.kernel.org
-Cc: oe-kbuild-all@lists.linux.dev, intel-wired-lan@lists.osuosl.org,
- andrew+netdev@lunn.ch, edumazet@google.com, kuba@kernel.org,
- pabeni@redhat.com, davem@davemloft.net, michael.chan@broadcom.com,
- tariqt@nvidia.com, anthony.l.nguyen@intel.com,
- przemyslaw.kitszel@intel.com, jdamato@fastly.com, shayd@nvidia.com,
- akpm@linux-foundation.org, Ahmed Zaki <ahmed.zaki@intel.com>
-Message-ID: <202501042032.NTXMscn3-lkp@intel.com>
-References: <20250104004314.208259-2-ahmed.zaki@intel.com>
+ id xReBTwTloBgJ for <intel-wired-lan@lists.osuosl.org>;
+ Sat,  4 Jan 2025 16:15:36 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org;
+ envelope-from=kuba@kernel.org; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org C0687402A1
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C0687402A1
+Received: from dfw.source.kernel.org (dfw.source.kernel.org
+ [IPv6:2604:1380:4641:c500::1])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id C0687402A1
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  4 Jan 2025 16:15:35 +0000 (UTC)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+ by dfw.source.kernel.org (Postfix) with ESMTP id C99B55C56FE;
+ Sat,  4 Jan 2025 16:14:52 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 340D9C4CED1;
+ Sat,  4 Jan 2025 16:15:33 +0000 (UTC)
+Date: Sat, 4 Jan 2025 08:15:32 -0800
+From: Jakub Kicinski <kuba@kernel.org>
+To: linux@treblig.org
+Cc: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
+ andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
+ pabeni@redhat.com, intel-wired-lan@lists.osuosl.org,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Message-ID: <20250104081532.3af26fa1@kernel.org>
+In-Reply-To: <20250102174002.200538-1-linux@treblig.org>
+References: <20250102174002.200538-1-linux@treblig.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250104004314.208259-2-ahmed.zaki@intel.com>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1735995878; x=1767531878;
- h=date:from:to:cc:subject:message-id:references:
- mime-version:in-reply-to;
- bh=JTpwKEeauwnLtZZ9wCrKCc+kFchiTHPNdQz9vvRAW94=;
- b=LltuZBSkJ0MnSsbYN6rtlWWttMVbMXtjjWzZ0+9ED+EFSDRYrXrugie0
- K28kwBokhfE7fUf5NPw+fJ2XXVjc34/lWHYQxOWmiLdAdomsrBOaaaLhA
- y2OwQm/5iXrFxRXqsWtpvhAqZEF+QWKQWMLyX1AHNumk/O+QM1/rbmJXS
- MRxvJY7gVhze3w/eLD0ZP9F+0yQD8w1Wh54DICrgwHXkcpRwPOSKQhsjQ
- A2dEuY2XPkFDGIvu5OmiUS5y+Iwz/FIOQ0KtJ09XnI9aXzmHupqcmP8lK
- Qzz6VfFa/+WaGixFm8V2GnZsMGcIJU5HeujFw/qIhJqywyRxFdzE9GVwP
- Q==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ d=kernel.org; s=k20201202; t=1736007333;
+ bh=CzC3HkeHDNX/3MpmOMssKaK78kMCsdyfZ4EaUShTQKk=;
+ h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+ b=COsDlN1ytbEp2sPX8XRvKVebAnnt+LyAebyzntUvIIp18MASGX5HUKi5FKR5P4IKo
+ AQG1+ZX7ttCSS4Iodc1iT1A0YNIbTNDzjL02P5r93/7QscSF9JE6uxabM76LdkPhPb
+ e4o4Da7IHt4GEPlmJVhnS7rClZDUTFFXvPgpk2STloCoN9HIpp3KfD4olxoELQQVWk
+ p1xn0E4oF/O39OCLNHY6WbcN2Qer93vj4VDlmIBhPlqDxZ+ezx38JYFYI6Qs6CjzRj
+ FBjyKC1xkVaZnQf1i7S15HKcbf9HjjX80t2X/8oZoVt4CRllcqRa6+o5q3G2zTQs+z
+ /agb1UtZ3CffA==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dmarc=pass (p=quarantine dis=none)
+ header.from=kernel.org
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=LltuZBSk
-Subject: Re: [Intel-wired-lan] [PATCH net-next v3 1/6] net: move ARFS rmap
- management to core
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=COsDlN1y
+Subject: Re: [Intel-wired-lan] [PATCH net-next] ixgbevf: Remove unused
+ ixgbevf_hv_mbx_ops
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -116,55 +102,18 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Hi Ahmed,
+On Thu,  2 Jan 2025 17:40:02 +0000 linux@treblig.org wrote:
+> From: "Dr. David Alan Gilbert" <linux@treblig.org>
+> 
+> The const struct ixgbevf_hv_mbx_ops was added in 2016 as part of
+> commit c6d45171d706 ("ixgbevf: Support Windows hosts (Hyper-V)")
+> 
+> but has remained unused.
+> 
+> The functions it references are still referenced elsewhere.
+> 
+> Remove it.
 
-kernel test robot noticed the following build errors:
-
-[auto build test ERROR on net-next/main]
-
-url:    https://github.com/intel-lab-lkp/linux/commits/Ahmed-Zaki/net-move-ARFS-rmap-management-to-core/20250104-084501
-base:   net-next/main
-patch link:    https://lore.kernel.org/r/20250104004314.208259-2-ahmed.zaki%40intel.com
-patch subject: [PATCH net-next v3 1/6] net: move ARFS rmap management to core
-config: arm-allyesconfig (https://download.01.org/0day-ci/archive/20250104/202501042032.NTXMscn3-lkp@intel.com/config)
-compiler: arm-linux-gnueabi-gcc (GCC) 14.2.0
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20250104/202501042032.NTXMscn3-lkp@intel.com/reproduce)
-
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202501042032.NTXMscn3-lkp@intel.com/
-
-All errors (new ones prefixed by >>):
-
-   drivers/net/ethernet/amazon/ena/ena_netdev.c: In function 'ena_init_rx_cpu_rmap':
->> drivers/net/ethernet/amazon/ena/ena_netdev.c:165:16: error: too few arguments to function 'netif_enable_cpu_rmap'
-     165 |         return netif_enable_cpu_rmap(adapter->netdev);
-         |                ^~~~~~~~~~~~~~~~~~~~~
-   In file included from include/net/inet_sock.h:19,
-                    from include/net/ip.h:29,
-                    from drivers/net/ethernet/amazon/ena/ena_netdev.c:16:
-   include/linux/netdevice.h:2769:5: note: declared here
-    2769 | int netif_enable_cpu_rmap(struct net_device *dev, unsigned int num_irqs);
-         |     ^~~~~~~~~~~~~~~~~~~~~
-   drivers/net/ethernet/amazon/ena/ena_netdev.c:169:1: warning: control reaches end of non-void function [-Wreturn-type]
-     169 | }
-         | ^
-
-
-vim +/netif_enable_cpu_rmap +165 drivers/net/ethernet/amazon/ena/ena_netdev.c
-
-   161	
-   162	static int ena_init_rx_cpu_rmap(struct ena_adapter *adapter)
-   163	{
-   164	#ifdef CONFIG_RFS_ACCEL
- > 165		return netif_enable_cpu_rmap(adapter->netdev);
-   166	#else
-   167		return 0;
-   168	#endif /* CONFIG_RFS_ACCEL */
-   169	}
-   170	
-
+This one doesn't apply, reportedly.
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+pw-bot: cr
