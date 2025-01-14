@@ -1,129 +1,125 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7DA54E77188
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 14 Jan 2025 15:28:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 65716E77188
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 14 Jan 2025 16:18:39 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 3293A8110A;
-	Tue, 14 Jan 2025 15:28:57 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 19F5960F81;
+	Tue, 14 Jan 2025 16:18:39 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id oGPl-ddkRsCz; Tue, 14 Jan 2025 15:28:56 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id VezRisorTx89; Tue, 14 Jan 2025 16:18:36 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4D5E981135
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org BCC9460EDA
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1736868536;
-	bh=MLjFpMO8OjWpHXUFxGZ9Iesfrum3tNeCO1+fJ3cniw0=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1736871516;
+	bh=viLJXrRON3LuId3kJGF63clQ3P8ymoENgh5ioS2JxAM=;
+	h=Date:To:Cc:References:From:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=wfhRAwbeqeMXPZABOcqYnuPMqScJsaofRNzQDenD9WeLev4UgB4taOGeTU9gCRfi5
-	 rnv+ZaZLLSbNH4Xk8oPZhK1NM0BqQmgV7+WA7mI3kBRBoDFz44nWGMiJilJiBC0yCq
-	 Pb3oyqmK7WkwRrIkJypQuhs6UI/f/IG4VSdYXLty7PxExCXWLinT76NTypWmzzd4Si
-	 Q2YR2miLoSvCrvgGjWEe+rTtV5Ybh85jdTP2RCSxmC2PcvA88/vMZ0wG5gPxvf8Rd+
-	 xjQSXeRA6IJsxCL8kFGmcV3zxiLhbz+bpShaRyT55elMFDuFU67+hL9slXQM0Kt8gf
-	 TlYoeY/OEhiXA==
+	b=HsaS/WRWkOTrIiSljsbjyVc17O8V5/4Cs5CpOmmYYxWTet/hPEBHSCyB7hkR7N8BL
+	 u1o3yRvYzS5EgjwRsmQ876TAn/QfajJOjFR5WOf53wRD+JUkQUtgeU3qSi9U8TulnM
+	 QghDKvW3Uovv5qVoeUPx2tG2rIlhdp2u4ldeNQLCcxYVx/CV7AZWm1KNMsp7p9+1w9
+	 z3yyKjcOu/KkkjbtuS+gUzpAn+YI/Od38mVV/s0zdic9pr5b0xzCV0TYwWOvOcvm2a
+	 2wgC7pLXXSHl5kSCrUytHFqbGVd0XpkUcr1prIZAmCNRsubxwRmqN6WqMyeOLxJK1s
+	 y3AXPTUUqPZEg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 4D5E981135;
-	Tue, 14 Jan 2025 15:28:56 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id C634894B
- for <intel-wired-lan@lists.osuosl.org>; Tue, 14 Jan 2025 15:28:54 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id BCC9460EDA;
+	Tue, 14 Jan 2025 16:18:36 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 0F8DA94B
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 14 Jan 2025 08:32:34 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id A758E81135
- for <intel-wired-lan@lists.osuosl.org>; Tue, 14 Jan 2025 15:28:54 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id E4419410AE
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 14 Jan 2025 08:32:33 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 8elmR7XNxqiM for <intel-wired-lan@lists.osuosl.org>;
- Tue, 14 Jan 2025 15:28:53 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.15;
- helo=mgamail.intel.com; envelope-from=yoong.siang.song@intel.com;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 8E1588122C
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8E1588122C
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.15])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 8E1588122C
- for <intel-wired-lan@lists.osuosl.org>; Tue, 14 Jan 2025 15:28:53 +0000 (UTC)
-X-CSE-ConnectionGUID: DEmK1DIkQTyB3E33ktMsTQ==
-X-CSE-MsgGUID: 0SAihuWmSFuJepoKXYwIMw==
-X-IronPort-AV: E=McAfee;i="6700,10204,11315"; a="37325425"
-X-IronPort-AV: E=Sophos;i="6.12,314,1728975600"; d="scan'208";a="37325425"
-Received: from orviesa001.jf.intel.com ([10.64.159.141])
- by fmvoesa109.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 14 Jan 2025 07:28:52 -0800
-X-CSE-ConnectionGUID: Z+YZJTMiS+6T+C5l8UqrXQ==
-X-CSE-MsgGUID: Obu5MGoBTCukqgaVBTU7yw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.12,224,1728975600"; d="scan'208";a="142117820"
-Received: from p12ill20yoongsia.png.intel.com ([10.88.227.38])
- by orviesa001.jf.intel.com with ESMTP; 14 Jan 2025 07:28:40 -0800
-From: Song Yoong Siang <yoong.siang.song@intel.com>
-To: "David S . Miller" <davem@davemloft.net>,
- Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, Simon Horman <horms@kernel.org>,
- Willem de Bruijn <willemb@google.com>,
- Florian Bezdeka <florian.bezdeka@siemens.com>,
- Donald Hunter <donald.hunter@gmail.com>, Jonathan Corbet <corbet@lwn.net>,
- Bjorn Topel <bjorn@kernel.org>,
- Magnus Karlsson <magnus.karlsson@intel.com>,
- Maciej Fijalkowski <maciej.fijalkowski@intel.com>,
- Jonathan Lemon <jonathan.lemon@gmail.com>,
- Andrew Lunn <andrew+netdev@lunn.ch>, Alexei Starovoitov <ast@kernel.org>,
- Daniel Borkmann <daniel@iogearbox.net>,
- Jesper Dangaard Brouer <hawk@kernel.org>,
- John Fastabend <john.fastabend@gmail.com>, Joe Damato <jdamato@fastly.com>,
- Stanislav Fomichev <sdf@fomichev.me>,
- Xuan Zhuo <xuanzhuo@linux.alibaba.com>,
- Mina Almasry <almasrymina@google.com>, Daniel Jurgens <danielj@nvidia.com>,
- Song Yoong Siang <yoong.siang.song@intel.com>,
- Andrii Nakryiko <andrii@kernel.org>, Eduard Zingerman <eddyz87@gmail.com>,
- Mykola Lysenko <mykolal@fb.com>, Martin KaFai Lau <martin.lau@linux.dev>,
- Song Liu <song@kernel.org>, Yonghong Song <yonghong.song@linux.dev>,
- KP Singh <kpsingh@kernel.org>, Hao Luo <haoluo@google.com>,
- Jiri Olsa <jolsa@kernel.org>, Shuah Khan <shuah@kernel.org>,
- Alexandre Torgue <alexandre.torgue@foss.st.com>,
- Jose Abreu <joabreu@synopsys.com>,
- Maxime Coquelin <mcoquelin.stm32@gmail.com>,
- Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-doc@vger.kernel.org, bpf@vger.kernel.org,
- linux-kselftest@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com,
- linux-arm-kernel@lists.infradead.org, intel-wired-lan@lists.osuosl.org,
- xdp-hints@xdp-project.net
-Date: Tue, 14 Jan 2025 23:27:18 +0800
-Message-Id: <20250114152718.120588-5-yoong.siang.song@intel.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20250114152718.120588-1-yoong.siang.song@intel.com>
-References: <20250114152718.120588-1-yoong.siang.song@intel.com>
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id T2gTOFcRllrR for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 14 Jan 2025 08:32:32 +0000 (UTC)
+Received-SPF: None (mailfrom) identity=mailfrom;
+ client-ip=2a00:1450:4864:20::529; helo=mail-ed1-x529.google.com;
+ envelope-from=daniel@sedlak.dev; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 2AC0740E1F
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2AC0740E1F
+Received: from mail-ed1-x529.google.com (mail-ed1-x529.google.com
+ [IPv6:2a00:1450:4864:20::529])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 2AC0740E1F
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 14 Jan 2025 08:32:30 +0000 (UTC)
+Received: by mail-ed1-x529.google.com with SMTP id
+ 4fb4d7f45d1cf-5d3d0205bd5so7926461a12.3
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 14 Jan 2025 00:32:30 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20230601; t=1736843548; x=1737448348;
+ h=content-transfer-encoding:in-reply-to:from:content-language
+ :references:cc:to:subject:user-agent:mime-version:date:message-id
+ :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+ bh=viLJXrRON3LuId3kJGF63clQ3P8ymoENgh5ioS2JxAM=;
+ b=G1vCNF2Kgpf6Syp8yCL9TfArg2o73pMtTCylkJl6V6hb1VVizyN00rR1ihz81hupVx
+ /jglKwQdGhXdQP1lQk98zB/wSdHmRw6y9wr6+jNFMoY5O7NBkBkY4p65Kcbe+OZInA3e
+ pfC6dsjo86NJVYJRmX7uxXb8LsarT+fxQm6MUV/cXBzsm2tPSjQ2H69TM8NTuL32A+ap
+ e5zmHeEvPajxflezvoVgM8v3oShRxvae11LlislmKIScm5of0uWeKXRo7WgnK1yolIPa
+ 34kU/pUrzWb6IKg90paLJ99wF9nDzX/eJs9RFiRRbYvS1jRjpML664+SxKFgJTWLWOJe
+ QpQw==
+X-Forwarded-Encrypted: i=1;
+ AJvYcCWk25K92GY3lEkPgxrzXBnlkLUgTjjZhLpmxnWFtEDe63PYJVy4L7STy/LWl7k0oERPiaMcOPwSP2QwkcIWeRI=@lists.osuosl.org
+X-Gm-Message-State: AOJu0YxDeOZt0e1j6MDFRnfSOayeh8z/u1/ZVdok0avAKfKQhEuDT74K
+ x6bH8PvspTqi/o/cdG3NkAxouo0Ck2cIwwgtGTtubQg/ZCPbyI2w20OprVCM/Mw=
+X-Gm-Gg: ASbGncvDs94VZ65x4McN0ShfNmT5nKdmLSf3kkGwJTM3Mv6TLy6sAUeZKjYTvuNVwOO
+ 21xXXXfV/TLMIgMflORG9x7QRXTdtLYx0KJgHG3GPzVsaevHgLNHCmBFTfoiSsW9So+2JXp+jaL
+ pKVJgW/ncUaE1dimVG+z1aAq7G/KRr2Z4iiZOczn8hyOmGoilDN8rppcL4eo8BeixH14wDKwPrJ
+ 0EJvdlTLHzpiB+dwX4EWdfqJ8q2ssewPemk/u48vsIR3bMMcAsWIR+AY4sU5wvy+Kc=
+X-Google-Smtp-Source: AGHT+IEoAu/bHC6PMPvHq2cBmT5tImWGnk5L4zFRS9n/NANKyF0/dMSpnJNaS5yxIlE07gPl4SJLNQ==
+X-Received: by 2002:a17:907:1b03:b0:aa6:86d1:c3fe with SMTP id
+ a640c23a62f3a-ab2ab6705b8mr2506074766b.4.1736843547977; 
+ Tue, 14 Jan 2025 00:32:27 -0800 (PST)
+Received: from [10.0.5.196] (remote.cdn77.com. [95.168.203.222])
+ by smtp.gmail.com with ESMTPSA id
+ a640c23a62f3a-ab2c95b299dsm597600166b.160.2025.01.14.00.32.27
+ (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+ Tue, 14 Jan 2025 00:32:27 -0800 (PST)
+Message-ID: <adf7c053-ffde-4df8-bc24-99740906410d@sedlak.dev>
+Date: Tue, 14 Jan 2025 09:32:26 +0100
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+To: Jakub Kicinski <kuba@kernel.org>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+ intel-wired-lan@lists.osuosl.org
+References: <ca5056ef-0a1a-477c-ac99-d266dea2ff5b@sedlak.dev>
+ <20250113131508.79c8511a@kernel.org>
+Content-Language: en-US
+From: Daniel Sedlak <daniel@sedlak.dev>
+In-Reply-To: <20250113131508.79c8511a@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1736868533; x=1768404533;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=oLOJQwjoOMagCDW7lcXuavWYJiJc/+lG4Bg7F22yM98=;
- b=NDJmNqG51WRRPleok6vEtLFIL26ejMXWbzrwak+P8VtYNXr8xFRHGZYB
- 2BnEwj5Cz0/+KmK6lSH4md4wS3kHQXJancRfo3avxaQN/UiJAATgqrVpa
- FYsgGZ8K5GDV9dFQX1T1B7XDr57hCH8zpz1od/8ZdbUMeWnMyikkTCJUr
- sUygzV78ekDlSjMmMREFxxTRjAxRkIFMX+rmjXDw837hWLJF1qGtgq//i
- 09cIOtK1mYEOgJH8Di7atU9CUkPqrBcIXf1ia52hO+5RDIHYKLMDcCGvy
- 00wNBsRdio7Syo+9bpRdFeXL5mO8LrMv9jRc/gpeeT1HzBCeArlXu0vxY
- w==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=NDJmNqG5
-Subject: [Intel-wired-lan] [PATCH bpf-next v5 4/4] igc: Add launch time
- support to XDP ZC
+X-Mailman-Approved-At: Tue, 14 Jan 2025 16:18:35 +0000
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=sedlak-dev.20230601.gappssmtp.com; s=20230601; t=1736843548; x=1737448348;
+ darn=lists.osuosl.org; 
+ h=content-transfer-encoding:in-reply-to:from:content-language
+ :references:cc:to:subject:user-agent:mime-version:date:message-id
+ :from:to:cc:subject:date:message-id:reply-to;
+ bh=viLJXrRON3LuId3kJGF63clQ3P8ymoENgh5ioS2JxAM=;
+ b=jeOlSx/DCoRuotOy/8jHXNLFg/2S5Wy3zIm0DQVsyX15W9jbNOkAS/eKLW7kXfLdx6
+ dLBtwcnb/kNjuQLdWb8xgEkkmO3Y+Q4g7ycI9S0MLdX/3llc5g2b+CgiGn9tZF5j7gFJ
+ cEYoOd2ufRJ27DOW1jVOMls21AAVWJKd72DSjhrzGI3kCqRqheDzPol28aZcPfWbFfRU
+ V5q4EfyoMCLHmNdvOznza/ZDERFmKqyA9KDceBSLVQZH84OtP/j7gMnFp2kX+wgNXIKd
+ vO3cHXR+YXyiY+iyPEPZNtDGFJgCXqsA5/wGdeA3CVuKvNiOx8gpAODx9ImthecADcDy
+ FOCw==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dmarc=none (p=none dis=none)
+ header.from=sedlak.dev
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=sedlak-dev.20230601.gappssmtp.com
+ header.i=@sedlak-dev.20230601.gappssmtp.com header.a=rsa-sha256
+ header.s=20230601 header.b=jeOlSx/D
+Subject: Re: [Intel-wired-lan] [Question] Generic way to retrieve IRQ number
+ of Tx/Rx queue
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -139,170 +135,50 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Enable Launch Time Control (LTC) support to XDP zero copy via XDP Tx
-metadata framework.
 
-This patch is tested with tools/testing/selftests/bpf/xdp_hw_metadata on
-Intel I225-LM Ethernet controller. Below are the test steps and result.
 
-Test Steps:
-1. At DUT, start xdp_hw_metadata selftest application:
-   $ sudo ./xdp_hw_metadata enp2s0 -l 1000000000 -L 1
+On 1/13/25 10:15 PM, Jakub Kicinski wrote:
+> On Fri, 10 Jan 2025 10:07:18 +0100 Daniel Sedlak wrote:
+>> Hello,
+>> I am writing an affinity scheduler in the userspace for network cards's
+>> Tx/Rx queues. Is there a generic way to retrieve all IRQ numbers for
+>> those queues for each interface?
+>>
+>> My goal is to get all Tx/Rx queues for a given interface, get the IRQ
+>> number of the individual queues, and set an affinity hint for each
+>> queue. I have tried to loop over /proc/interrupts to retrieve all queues
+>> for an interface in a hope that the last column would contain the
+>> interface name however this does not work since the naming is not
+>> unified across drivers. My second attempt was to retrieve all registered
+>> interrupts by network interface from
+>> /sys/class/net/{interface_name}/device/msi_irqs/, but this attempt was
+>> also without luck because some drivers request more IRQs than the number
+>> of queues (for example i40e driver).
+> 
+> We do have an API for that
+> https://docs.kernel.org/next/networking/netlink_spec/netdev.html#napi
+> but unfortunately the driver needs to support it, and i40e currently
+> doesn't:
 
-2. At Link Partner, send an UDP packet with VLAN priority 1 to port 9091 of
-   DUT.
+Thank you for the link, I somehow missed that part of netlink…
 
-When launch time is set to 1s in the future, the delta between launch time
-and transmit hardware timestamp is equal to 0.016us, as shown in result
-below:
-  0x562ff5dc8880: rx_desc[4]->addr=84110 addr=84110 comp_addr=84110 EoP
-  rx_hash: 0xE343384 with RSS type:0x1
-  HW RX-time:   1734578015467548904 (sec:1734578015.4675) delta to User RX-time sec:0.0002 (183.103 usec)
-  XDP RX-time:   1734578015467651698 (sec:1734578015.4677) delta to User RX-time sec:0.0001 (80.309 usec)
-  No rx_vlan_tci or rx_vlan_proto, err=-95
-  0x562ff5dc8880: ping-pong with csum=561c (want c7dd) csum_start=34 csum_offset=6
-  HW RX-time:   1734578015467548904 (sec:1734578015.4675) delta to HW Launch-time sec:1.0000 (1000000.000 usec)
-  0x562ff5dc8880: complete tx idx=4 addr=4018
-  HW Launch-time:   1734578016467548904 (sec:1734578016.4675) delta to HW TX-complete-time sec:0.0000 (0.016 usec)
-  HW TX-complete-time:   1734578016467548920 (sec:1734578016.4675) delta to User TX-complete-time sec:0.0000 (32.546 usec)
-  XDP RX-time:   1734578015467651698 (sec:1734578015.4677) delta to User TX-complete-time sec:0.9999 (999929.768 usec)
-  HW RX-time:   1734578015467548904 (sec:1734578015.4675) delta to HW TX-complete-time sec:1.0000 (1000000.016 usec)
-  0x562ff5dc8880: complete rx idx=132 addr=84110
+> $ git grep --files-with-matches  netif_napi_set_irq
+> drivers/net/ethernet/amazon/ena/ena_netdev.c
+> drivers/net/ethernet/broadcom/bnxt/bnxt.c
+> drivers/net/ethernet/broadcom/tg3.c
+> drivers/net/ethernet/google/gve/gve_utils.c
+> drivers/net/ethernet/intel/e1000/e1000_main.c
+> drivers/net/ethernet/intel/e1000e/netdev.c
+> drivers/net/ethernet/intel/ice/ice_lib.c
+> drivers/net/ethernet/intel/igc/igc_main.c
+> drivers/net/ethernet/mellanox/mlx4/en_cq.c
+> drivers/net/ethernet/mellanox/mlx5/core/en_main.c
+> drivers/net/ethernet/meta/fbnic/fbnic_txrx.c
+> 
+> Should be easy to add. Let me CC the Intel list in case they already
+> have a relevant change queued for i40e..
 
-Signed-off-by: Song Yoong Siang <yoong.siang.song@intel.com>
----
- drivers/net/ethernet/intel/igc/igc_main.c | 78 ++++++++++++++++-------
- 1 file changed, 56 insertions(+), 22 deletions(-)
+Thank you for directions, will check Intel's mailing list and poke 
+around with implementing that.
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 56a35d58e7a6..3c7015cb5cb5 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -1566,6 +1566,26 @@ static bool igc_request_tx_tstamp(struct igc_adapter *adapter, struct sk_buff *s
- 	return false;
- }
- 
-+static void igc_insert_empty_packet(struct igc_ring *tx_ring)
-+{
-+	struct igc_tx_buffer *empty_info;
-+	struct sk_buff *empty;
-+	void *data;
-+
-+	empty_info = &tx_ring->tx_buffer_info[tx_ring->next_to_use];
-+	empty = alloc_skb(IGC_EMPTY_FRAME_SIZE, GFP_ATOMIC);
-+	if (!empty)
-+		return;
-+
-+	data = skb_put(empty, IGC_EMPTY_FRAME_SIZE);
-+	memset(data, 0, IGC_EMPTY_FRAME_SIZE);
-+
-+	igc_tx_ctxtdesc(tx_ring, 0, false, 0, 0, 0);
-+
-+	if (igc_init_tx_empty_descriptor(tx_ring, empty, empty_info) < 0)
-+		dev_kfree_skb_any(empty);
-+}
-+
- static netdev_tx_t igc_xmit_frame_ring(struct sk_buff *skb,
- 				       struct igc_ring *tx_ring)
- {
-@@ -1603,26 +1623,8 @@ static netdev_tx_t igc_xmit_frame_ring(struct sk_buff *skb,
- 	skb->tstamp = ktime_set(0, 0);
- 	launch_time = igc_tx_launchtime(tx_ring, txtime, &first_flag, &insert_empty);
- 
--	if (insert_empty) {
--		struct igc_tx_buffer *empty_info;
--		struct sk_buff *empty;
--		void *data;
--
--		empty_info = &tx_ring->tx_buffer_info[tx_ring->next_to_use];
--		empty = alloc_skb(IGC_EMPTY_FRAME_SIZE, GFP_ATOMIC);
--		if (!empty)
--			goto done;
--
--		data = skb_put(empty, IGC_EMPTY_FRAME_SIZE);
--		memset(data, 0, IGC_EMPTY_FRAME_SIZE);
--
--		igc_tx_ctxtdesc(tx_ring, 0, false, 0, 0, 0);
--
--		if (igc_init_tx_empty_descriptor(tx_ring,
--						 empty,
--						 empty_info) < 0)
--			dev_kfree_skb_any(empty);
--	}
-+	if (insert_empty)
-+		igc_insert_empty_packet(tx_ring);
- 
- done:
- 	/* record the location of the first descriptor for this packet */
-@@ -2949,9 +2951,33 @@ static u64 igc_xsk_fill_timestamp(void *_priv)
- 	return *(u64 *)_priv;
- }
- 
-+static void igc_xsk_request_launch_time(u64 launch_time, void *_priv)
-+{
-+	struct igc_metadata_request *meta_req = _priv;
-+	struct igc_ring *tx_ring = meta_req->tx_ring;
-+	__le32 launch_time_offset;
-+	bool insert_empty = false;
-+	bool first_flag = false;
-+
-+	if (!tx_ring->launchtime_enable)
-+		return;
-+
-+	launch_time_offset = igc_tx_launchtime(tx_ring,
-+					       ns_to_ktime(launch_time),
-+					       &first_flag, &insert_empty);
-+	if (insert_empty) {
-+		igc_insert_empty_packet(tx_ring);
-+		meta_req->tx_buffer =
-+			&tx_ring->tx_buffer_info[tx_ring->next_to_use];
-+	}
-+
-+	igc_tx_ctxtdesc(tx_ring, launch_time_offset, first_flag, 0, 0, 0);
-+}
-+
- const struct xsk_tx_metadata_ops igc_xsk_tx_metadata_ops = {
- 	.tmo_request_timestamp		= igc_xsk_request_timestamp,
- 	.tmo_fill_timestamp		= igc_xsk_fill_timestamp,
-+	.tmo_request_launch_time	= igc_xsk_request_launch_time,
- };
- 
- static void igc_xdp_xmit_zc(struct igc_ring *ring)
-@@ -2974,7 +3000,7 @@ static void igc_xdp_xmit_zc(struct igc_ring *ring)
- 	ntu = ring->next_to_use;
- 	budget = igc_desc_unused(ring);
- 
--	while (xsk_tx_peek_desc(pool, &xdp_desc) && budget--) {
-+	while (xsk_tx_peek_desc(pool, &xdp_desc) && budget >= 4) {
- 		struct igc_metadata_request meta_req;
- 		struct xsk_tx_metadata *meta = NULL;
- 		struct igc_tx_buffer *bi;
-@@ -2998,6 +3024,12 @@ static void igc_xdp_xmit_zc(struct igc_ring *ring)
- 		xsk_tx_metadata_request(meta, &igc_xsk_tx_metadata_ops,
- 					&meta_req);
- 
-+		/* xsk_tx_metadata_request() may have updated next_to_use */
-+		ntu = ring->next_to_use;
-+
-+		/* xsk_tx_metadata_request() may have updated Tx buffer info */
-+		bi = meta_req.tx_buffer;
-+
- 		tx_desc = IGC_TX_DESC(ring, ntu);
- 		tx_desc->read.cmd_type_len = cpu_to_le32(meta_req.cmd_type);
- 		tx_desc->read.olinfo_status = cpu_to_le32(olinfo_status);
-@@ -3015,9 +3047,11 @@ static void igc_xdp_xmit_zc(struct igc_ring *ring)
- 		ntu++;
- 		if (ntu == ring->count)
- 			ntu = 0;
-+
-+		ring->next_to_use = ntu;
-+		budget = igc_desc_unused(ring);
- 	}
- 
--	ring->next_to_use = ntu;
- 	if (tx_desc) {
- 		igc_flush_tx_descriptors(ring);
- 		xsk_tx_release(pool);
--- 
-2.34.1
-
+Daniel
