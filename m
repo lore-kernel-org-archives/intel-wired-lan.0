@@ -4,132 +4,94 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A9C20C02182
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 22 Jan 2025 15:04:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2574AC02181
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 22 Jan 2025 15:11:07 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 5DBEF84CD7;
-	Wed, 22 Jan 2025 15:04:47 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id BEB7983F2F;
+	Wed, 22 Jan 2025 15:11:06 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id xvP4_Ax479mo; Wed, 22 Jan 2025 15:04:46 +0000 (UTC)
+ id Vl-oihYsLSxS; Wed, 22 Jan 2025 15:11:06 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 699E384932
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org DCEEB83F8D
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1737558286;
-	bh=Dfq5JbaIBJBcJhWJe6ysSgQnQUV0ctmKoe440SM085s=;
-	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
+	s=default; t=1737558665;
+	bh=yQv8jcFOXLiNGHnfoV4Qy3g39w1/zIETLx785Uad2ow=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=OXHMvRotgc4EVAH8jKoqmPmBmLWTB5xkf/R2qHHGBwGD/XVwdteurC8awvsQGiWvN
-	 4WMpKNqU7hhZ66QwUWMOleb6xa7hT4yMwizGjqgBR+L/HLPOdDbJ7pTTxXL5G0kxLK
-	 sr4fo/6+xtVYggCEyuJMjCHQFg5dinOrA+2oNfvMQXCXk35TUkoZ8WqU2NCIRfJ2wj
-	 dO+lop5TF3PlvMT3mTWw5W1/mXmyTsRS01jIISmDh/GRykKBS9OWZAhDrQPe6cSUlD
-	 OgSJ0YhrI/RFNbsGpxrSVN5Nnyh0/R382haAGrIPpiD49TPq025HG5b9cqUKCbaq+Z
-	 VO62jBcXvp4Yg==
+	 Cc:From;
+	b=5AX2v9aCiowXi+bTW9lCqT7CPO7pxpUISQ6PF1korGf9j0XjdPMAy/dt+rordPz2r
+	 GvVKj9wXZnjfI0jXuqjMWkoDeuneoYClgVqSOdzxErZNRRnXGlnIL6Z3QtMQ/YXgTx
+	 VPDoUixpgBu+ahBl9DELQS60/Jm3WKx83hjnh93WYzVoh1wqn7D2o3tTqvnpkIV9Xw
+	 xlzS+h5qqunPG/gBHnjaIk6vtls0+NO0sC1TttcPbtNDlud7P6HrMIuDtXQI76raz7
+	 NAZ3593w3oiM4CUOZC7kkvphf52FY9UY8Aif8NX9skyeIeSXRKZE4RYV1KD7vYUY6L
+	 sgJfUG9cv2avQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 699E384932;
-	Wed, 22 Jan 2025 15:04:46 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id E64B5959
- for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Jan 2025 15:04:44 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id DCEEB83F8D;
+	Wed, 22 Jan 2025 15:11:05 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id B2F4CD7
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Jan 2025 15:11:04 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id C6E95415A8
- for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Jan 2025 15:04:44 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 933A36076A
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Jan 2025 15:11:04 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id FMyTDnlylyqu for <intel-wired-lan@lists.osuosl.org>;
- Wed, 22 Jan 2025 15:04:43 +0000 (UTC)
-X-Greylist: delayed 423 seconds by postgrey-1.37 at util1.osuosl.org;
- Wed, 22 Jan 2025 15:04:42 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 08D4541588
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 08D4541588
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=2a02:e00:ffe7:c::2;
- helo=mail.valdk.tel; envelope-from=iam@valdikss.org.ru; receiver=<UNKNOWN> 
-Received: from mail.valdk.tel (mail.valdk.tel [IPv6:2a02:e00:ffe7:c::2])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 08D4541588
- for <intel-wired-lan@osuosl.org>; Wed, 22 Jan 2025 15:04:42 +0000 (UTC)
-Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon)
- with ESMTPSA id 999AE184E4A6; Wed, 22 Jan 2025 17:57:29 +0300 (MSK)
-Message-ID: <de3512b3-d3cd-4102-a047-71859a517fe9@valdikss.org.ru>
-Date: Wed, 22 Jan 2025 17:57:20 +0300
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id Sqf9uQlE0R5d for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 22 Jan 2025 15:11:01 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.18;
+ helo=mgamail.intel.com; envelope-from=maciej.fijalkowski@intel.com;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 4526A607BC
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4526A607BC
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.18])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 4526A607BC
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Jan 2025 15:11:01 +0000 (UTC)
+X-CSE-ConnectionGUID: 8yJpuxNCTbaK93C9esU2JA==
+X-CSE-MsgGUID: IU/yNpF2R9CP6uA8cY7MHQ==
+X-IronPort-AV: E=McAfee;i="6700,10204,11314"; a="38125825"
+X-IronPort-AV: E=Sophos;i="6.12,310,1728975600"; d="scan'208";a="38125825"
+Received: from orviesa007.jf.intel.com ([10.64.159.147])
+ by orvoesa110.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 22 Jan 2025 07:11:02 -0800
+X-CSE-ConnectionGUID: X1Fg2wykQECnGxUf6X178Q==
+X-CSE-MsgGUID: UFO5O03WQAWmlzM9qzE+CQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.12,224,1728975600"; d="scan'208";a="107611412"
+Received: from boxer.igk.intel.com ([10.102.20.173])
+ by orviesa007.jf.intel.com with ESMTP; 22 Jan 2025 07:10:58 -0800
+From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Date: Wed, 22 Jan 2025 16:10:44 +0100
+Message-Id: <20250122151046.574061-2-maciej.fijalkowski@intel.com>
+X-Mailer: git-send-email 2.38.1
+In-Reply-To: <20250122151046.574061-1-maciej.fijalkowski@intel.com>
+References: <20250122151046.574061-1-maciej.fijalkowski@intel.com>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-From: ValdikSS <iam@valdikss.org.ru>
-To: intel-wired-lan@osuosl.org
-Cc: vitaly.lifshits@intel.com
-References: <b946ccd3-3f7e-4c8b-ac07-0283be19e952@intel.com>
- <803760bf-04ff-4b23-8343-5e21f3ad9f63@valdikss.org.ru>
-Content-Language: ru, en-US
-Autocrypt: addr=iam@valdikss.org.ru; keydata=
- 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
- OEcVmRU/pw5/zoQyQg==
-In-Reply-To: <803760bf-04ff-4b23-8343-5e21f3ad9f63@valdikss.org.ru>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------W6IUCaldk7QRg0u5uRdUwMkx"
-X-Last-TLS-Session-Version: TLSv1.3
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=valdikss.org.ru; s=msrv; t=1737557853;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
- bh=Dfq5JbaIBJBcJhWJe6ysSgQnQUV0ctmKoe440SM085s=;
- b=RQZKOsPiWNBzswhlh5cz8Ebljrb7sZy/dt6sYs69z+VmwFKt/UR7G1mwarA788ICnhrTCR
- peYGvLusdqsK6L1OUd99z1b/Vd9X4FmyUD/vdncVu0+40e/ErQHYAdgdR2bs/p3cOIXl2A
- 08ImNePkMcpwlC/Ddg6JextRdKJVFtjT9SY8KXaC0n1XgOPOtckFuD2U5T+joakfhELftj
- 9t7fUQe12xz0I44Fq4TE1N958r6n1JdgVIZpTeOdiuTKd/yIQ0pc8eNfOYISvHWho3fugM
- blgnpvLK8IzpOC1MfGHpcO9ABlHCqh0ktrpOtOJoCgp0IGKA5oaDEK5Nqrf6cA==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dmarc=pass (p=reject dis=none)
- header.from=valdikss.org.ru
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=valdikss.org.ru header.i=@valdikss.org.ru
- header.a=rsa-sha256 header.s=msrv header.b=RQZKOsPi
-Subject: Re: [Intel-wired-lan] I226-V 1G limited to ~250Mbit with ASPM
- enabled
+Content-Transfer-Encoding: 8bit
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1737558662; x=1769094662;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=Hft2wVdYLUDYfDt0VKlys29U7YFxb6/3BG5AqbcCFiM=;
+ b=AwDSg3yn/PhxIjJaldUmAQyrKf1JGlNPGoH4lg7eyqYEnr7mGS8Ox4iW
+ IhESDeNmC0RsLrI3Ua+h2ipn0lFTmJUwMs9IFq+mfSDOWN0O0RGBgzIHl
+ PAZFfzHxsCNSjChSa83moaIdughrcBemRY+yii/WESob4BsmzPq+6qJ3J
+ jpMVidMAVMaPzUPayYQ3JXXCFvUqC8++Hbd2S54LiSCIzzN1B8JVioVmG
+ tOG8C6+tHYbspbQrID+n1EP9c/ItC5tJqC9PeBoCz38cA3KCdPVrtqIEG
+ cAjuleg88+aOIsal/UbO6FEJHvw3m5FuLYAELX4FIIEIqwFZJWRYN9uYP
+ g==;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=intel.com
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=AwDSg3yn
+Subject: [Intel-wired-lan] [PATCH v4 iwl-net 1/3] ice: put Rx buffers after
+ being done with current frame
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -142,96 +104,176 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
+Cc: Maciej Fijalkowski <maciej.fijalkowski@intel.com>, netdev@vger.kernel.org,
+ xudu@redhat.com, anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
+ jacob.e.keller@intel.com, jmaxwell@redhat.com, magnus.karlsson@intel.com
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------W6IUCaldk7QRg0u5uRdUwMkx
-Content-Type: multipart/mixed; boundary="------------0BzoAaNdS8i7DPKZUkbysSi8";
- protected-headers="v1"
-From: ValdikSS <iam@valdikss.org.ru>
-To: intel-wired-lan@osuosl.org
-Cc: vitaly.lifshits@intel.com
-Message-ID: <de3512b3-d3cd-4102-a047-71859a517fe9@valdikss.org.ru>
-Subject: Re: [Intel-wired-lan] I226-V 1G limited to ~250Mbit with ASPM enabled
-References: <b946ccd3-3f7e-4c8b-ac07-0283be19e952@intel.com>
- <803760bf-04ff-4b23-8343-5e21f3ad9f63@valdikss.org.ru>
-In-Reply-To: <803760bf-04ff-4b23-8343-5e21f3ad9f63@valdikss.org.ru>
+Introduce a new helper ice_put_rx_mbuf() that will go through gathered
+frags from current frame and will call ice_put_rx_buf() on them. Current
+logic that was supposed to simplify and optimize the driver where we go
+through a batch of all buffers processed in current NAPI instance turned
+out to be broken for jumbo frames and very heavy load that was coming
+from both multi-thread iperf and nginx/wrk pair between server and
+client. The delay introduced by approach that we are dropping is simply
+too big and we need to take the decision regarding page
+recycling/releasing as quick as we can.
 
---------------0BzoAaNdS8i7DPKZUkbysSi8
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+While at it, address an error path of ice_add_xdp_frag() - we were
+missing buffer putting from day 1 there.
 
-T24gMDkuMTIuMjAyNCAxMjoyMSBQTSwgVmFsZGlrU1Mgd3JvdGU6DQo+Pj4gQWZ0ZXIgKHBy
-ZXN1bWFibHkpIGxhdGVzdCBVRUZJIHYwMDMzIHVwZGF0ZSBmb3IgdGhlIE5VQywgbXkgbmV0
-d29yayANCj4+PiBpcyBsaW1pdGVkIHRvIH4yNTAgTWJpdC9zIGRvd25sb2FkIHVubGVzcyBJ
-IGRpc2FibGUgUENJRSBBU1BNIG9wdGlvbiANCj4+PiBpbiBVRUZJIHNldHRpbmdzLg0KPj4+
-IDU2OjAwLjAgRXRoZXJuZXQgY29udHJvbGxlciBbMDIwMF06IEludGVsIENvcnBvcmF0aW9u
-IEV0aGVybmV0IA0KPj4+IENvbnRyb2xsZXIgSTIyNi1WIFs4MDg2OjEyNWNdIChyZXYgMDQp
-DQo+Pg0KPj4gSGVsbG8sDQo+Pg0KPj4gSSBiZWxpZXZlIHRoYXQgdGhlIGlzc3VlIHlvdSBh
-cmUgZmFjaW5nIGlzIHJlbGF0ZWQgdG8gUENJRSBMMS4yIHN0YXRlIA0KPj4gZXhpdCBsYXRl
-bmN5LiBUbyBjb25maXJtIHRoaXMgcGxlYXNlIHRyeSB0byByZXByb2R1Y2UgaXQgYWZ0ZXIg
-bWFraW5nIA0KPj4gdGhlIGZvbGxvd2luZyBjaGFuZ2VzIGluIHRoZSBpZ2MgY29kZToNCj4+
-DQo+PiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9uZXQvZXRoZXJuZXQvaW50ZWwvaWdjL2lnY19p
-MjI1LmMgYi9kcml2ZXJzL25ldC8gDQo+PiBldGhlcm5ldC9pbnRlbC9pZ2MvaWdjX2kyMjUu
-Yw0KPj4gaW5kZXggMGRkNjE3MTlmMWVkLi4xYzBjM2Q2NjVhMGMgMTAwNjQ0DQo+PiAtLS0g
-YS9kcml2ZXJzL25ldC9ldGhlcm5ldC9pbnRlbC9pZ2MvaWdjX2kyMjUuYw0KPj4gKysrIGIv
-ZHJpdmVycy9uZXQvZXRoZXJuZXQvaW50ZWwvaWdjL2lnY19pMjI1LmMNCj4+IEBAIC02MTIs
-NiArNjEyLDEwIEBAIHMzMiBpZ2Nfc2V0X2x0cl9pMjI1KHN0cnVjdCBpZ2NfaHcgKmh3LCBi
-b29sIGxpbmspDQo+PiDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgICovDQo+
-PiDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoCBsdHJfbWluID0gKDEwMDAgKiBz
-aXplKSAvIHNwZWVkOw0KPj4gwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAgbHRy
-X21heCA9IGx0cl9taW4gKyB0d19zeXN0ZW07DQo+PiArwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoCBpZiAoc3BlZWQgPT0gU1BFRURfMTAwMCkgew0KPj4gK8KgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgIGx0cl9taW4gPSBsdHJfbWF4ID0gMTAw
-ICogMTAwMDsNCj4+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgIH0NCj4+ICsNCj4+
-IMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgIHNjYWxlX21pbiA9IChsdHJfbWlu
-IC8gMTAyNCkgPCAxMDI0ID8gDQo+PiBJR0NfTFRSTUlOVl9TQ0FMRV8xMDI0IDoNCj4+IMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-IElHQ19MVFJNSU5WX1NDQUxFXzMyNzY4Ow0KPj4gwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqAgc2NhbGVfbWF4ID0gKGx0cl9tYXggLyAxMDI0KSA8IDEwMjQgPyANCj4+IElH
-Q19MVFJNQVhWX1NDQUxFXzEwMjQgOg0KPiANCj4gVGhhdCBpbnN0YW50bHkgZml4ZWQgdGhl
-IGlzc3VlLCB0aGFua3MhDQo+IA0KPiBXaXRoIHRoZSBwYXRjaDoNCj4gDQo+ICQgY3VybCAt
-byAvZGV2L251bGwgaHR0cDovL3NwZWVkdGVzdC5zZWxlY3RlbC5ydS8xR0IgLTQNCj4gIMKg
-ICUgVG90YWzCoMKgwqAgJSBSZWNlaXZlZCAlIFhmZXJkwqAgQXZlcmFnZSBTcGVlZMKgwqAg
-VGltZcKgwqDCoCBUaW1lwqDCoMKgwqAgVGltZSANCj4gQ3VycmVudA0KPiAgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oCBEbG9hZMKgIFVwbG9hZMKgwqAgVG90YWzCoMKgIFNwZW50wqDCoMKgIExlZnQgDQo+IFNw
-ZWVkDQo+IDEwMCAxMDI0TcKgIDEwMCAxMDI0TcKgwqDCoCAwwqDCoMKgwqAgMMKgIDU1LjNN
-wqDCoMKgwqDCoCAwwqAgMDowMDoxOMKgIDA6MDA6MTggLS06LS06LS0gDQo+IDU5LjVNDQo+
-IA0KPiBXaXRob3V0IHRoZSBwYXRjaDoNCj4gDQo+ICQgY3VybCAtbyAvZGV2L251bGwgaHR0
-cDovL3NwZWVkdGVzdC5zZWxlY3RlbC5ydS8xR0IgLTQNCj4gIMKgICUgVG90YWzCoMKgwqAg
-JSBSZWNlaXZlZCAlIFhmZXJkwqAgQXZlcmFnZSBTcGVlZMKgwqAgVGltZcKgwqDCoCBUaW1l
-wqDCoMKgwqAgVGltZSANCj4gQ3VycmVudA0KPiAgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoCBEbG9hZMKgIFVwbG9h
-ZMKgwqAgVG90YWzCoMKgIFNwZW50wqDCoMKgIExlZnQgDQo+IFNwZWVkDQo+IDEwMCAxMDI0
-TcKgIDEwMCAxMDI0TcKgwqDCoCAwwqDCoMKgwqAgMMKgIDIxLjhNwqDCoMKgwqDCoCAwwqAg
-MDowMDo0NsKgIDA6MDA6NDYgLS06LS06LS0gDQo+IDIwLjFNDQoNClZpdGFseSwgdGhpcyBw
-YXRjaCBkb2Vzbid0IHNlZW0gdG8gYmUgc2VudCB0byB0aGUga2VybmVsLiBJcyB0aGlzIGZp
-eCANCmZpbmFsLCBvciB3YXMgaXQgaW50ZW5kZWQgb25seSBmb3IgdGhlIHRlc3Q/DQoNCg==
+As a nice side effect we get rid of annoying and repetitive three-liner:
 
+	xdp->data = NULL;
+	rx_ring->first_desc = ntc;
+	rx_ring->nr_frags = 0;
 
---------------0BzoAaNdS8i7DPKZUkbysSi8--
+by embedding it within introduced routine.
 
---------------W6IUCaldk7QRg0u5uRdUwMkx
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature.asc"
+Fixes: 1dc1a7e7f410 ("ice: Centrallize Rx buffer recycling")
+Reported-and-tested-by: Xu Du <xudu@redhat.com>
+Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Co-developed-by: Jacob Keller <jacob.e.keller@intel.com>
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_txrx.c | 79 ++++++++++++++---------
+ 1 file changed, 50 insertions(+), 29 deletions(-)
 
------BEGIN PGP SIGNATURE-----
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
+index 5d2d7736fd5f..e173d9c98988 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.c
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
+@@ -1103,6 +1103,49 @@ ice_put_rx_buf(struct ice_rx_ring *rx_ring, struct ice_rx_buf *rx_buf)
+ 	rx_buf->page = NULL;
+ }
+ 
++/**
++ * ice_put_rx_mbuf - ice_put_rx_buf() caller, for all frame frags
++ * @rx_ring: Rx ring with all the auxiliary data
++ * @xdp: XDP buffer carrying linear + frags part
++ * @xdp_xmit: XDP_TX/XDP_REDIRECT verdict storage
++ * @ntc: a current next_to_clean value to be stored at rx_ring
++ *
++ * Walk through gathered fragments and satisfy internal page
++ * recycle mechanism; we take here an action related to verdict
++ * returned by XDP program;
++ */
++static void ice_put_rx_mbuf(struct ice_rx_ring *rx_ring, struct xdp_buff *xdp,
++			    u32 *xdp_xmit, u32 ntc)
++{
++	u32 nr_frags = rx_ring->nr_frags + 1;
++	u32 idx = rx_ring->first_desc;
++	u32 cnt = rx_ring->count;
++	struct ice_rx_buf *buf;
++	int i;
++
++	for (i = 0; i < nr_frags; i++) {
++		buf = &rx_ring->rx_buf[idx];
++
++		if (buf->act & (ICE_XDP_TX | ICE_XDP_REDIR)) {
++			ice_rx_buf_adjust_pg_offset(buf, xdp->frame_sz);
++			*xdp_xmit |= buf->act;
++		} else if (buf->act & ICE_XDP_CONSUMED) {
++			buf->pagecnt_bias++;
++		} else if (buf->act == ICE_XDP_PASS) {
++			ice_rx_buf_adjust_pg_offset(buf, xdp->frame_sz);
++		}
++
++		ice_put_rx_buf(rx_ring, buf);
++
++		if (++idx == cnt)
++			idx = 0;
++	}
++
++	xdp->data = NULL;
++	rx_ring->first_desc = ntc;
++	rx_ring->nr_frags = 0;
++}
++
+ /**
+  * ice_clean_rx_irq - Clean completed descriptors from Rx ring - bounce buf
+  * @rx_ring: Rx descriptor ring to transact packets on
+@@ -1120,7 +1163,6 @@ int ice_clean_rx_irq(struct ice_rx_ring *rx_ring, int budget)
+ 	unsigned int total_rx_bytes = 0, total_rx_pkts = 0;
+ 	unsigned int offset = rx_ring->rx_offset;
+ 	struct xdp_buff *xdp = &rx_ring->xdp;
+-	u32 cached_ntc = rx_ring->first_desc;
+ 	struct ice_tx_ring *xdp_ring = NULL;
+ 	struct bpf_prog *xdp_prog = NULL;
+ 	u32 ntc = rx_ring->next_to_clean;
+@@ -1128,7 +1170,6 @@ int ice_clean_rx_irq(struct ice_rx_ring *rx_ring, int budget)
+ 	u32 xdp_xmit = 0;
+ 	u32 cached_ntu;
+ 	bool failure;
+-	u32 first;
+ 
+ 	xdp_prog = READ_ONCE(rx_ring->xdp_prog);
+ 	if (xdp_prog) {
+@@ -1190,6 +1231,7 @@ int ice_clean_rx_irq(struct ice_rx_ring *rx_ring, int budget)
+ 			xdp_prepare_buff(xdp, hard_start, offset, size, !!offset);
+ 			xdp_buff_clear_frags_flag(xdp);
+ 		} else if (ice_add_xdp_frag(rx_ring, xdp, rx_buf, size)) {
++			ice_put_rx_mbuf(rx_ring, xdp, NULL, ntc);
+ 			break;
+ 		}
+ 		if (++ntc == cnt)
+@@ -1205,9 +1247,8 @@ int ice_clean_rx_irq(struct ice_rx_ring *rx_ring, int budget)
+ 		total_rx_bytes += xdp_get_buff_len(xdp);
+ 		total_rx_pkts++;
+ 
+-		xdp->data = NULL;
+-		rx_ring->first_desc = ntc;
+-		rx_ring->nr_frags = 0;
++		ice_put_rx_mbuf(rx_ring, xdp, &xdp_xmit, ntc);
++
+ 		continue;
+ construct_skb:
+ 		if (likely(ice_ring_uses_build_skb(rx_ring)))
+@@ -1221,14 +1262,11 @@ int ice_clean_rx_irq(struct ice_rx_ring *rx_ring, int budget)
+ 			if (unlikely(xdp_buff_has_frags(xdp)))
+ 				ice_set_rx_bufs_act(xdp, rx_ring,
+ 						    ICE_XDP_CONSUMED);
+-			xdp->data = NULL;
+-			rx_ring->first_desc = ntc;
+-			rx_ring->nr_frags = 0;
+-			break;
+ 		}
+-		xdp->data = NULL;
+-		rx_ring->first_desc = ntc;
+-		rx_ring->nr_frags = 0;
++		ice_put_rx_mbuf(rx_ring, xdp, &xdp_xmit, ntc);
++
++		if (!skb)
++			break;
+ 
+ 		stat_err_bits = BIT(ICE_RX_FLEX_DESC_STATUS0_RXE_S);
+ 		if (unlikely(ice_test_staterr(rx_desc->wb.status_error0,
+@@ -1257,23 +1295,6 @@ int ice_clean_rx_irq(struct ice_rx_ring *rx_ring, int budget)
+ 		total_rx_pkts++;
+ 	}
+ 
+-	first = rx_ring->first_desc;
+-	while (cached_ntc != first) {
+-		struct ice_rx_buf *buf = &rx_ring->rx_buf[cached_ntc];
+-
+-		if (buf->act & (ICE_XDP_TX | ICE_XDP_REDIR)) {
+-			ice_rx_buf_adjust_pg_offset(buf, xdp->frame_sz);
+-			xdp_xmit |= buf->act;
+-		} else if (buf->act & ICE_XDP_CONSUMED) {
+-			buf->pagecnt_bias++;
+-		} else if (buf->act == ICE_XDP_PASS) {
+-			ice_rx_buf_adjust_pg_offset(buf, xdp->frame_sz);
+-		}
+-
+-		ice_put_rx_buf(rx_ring, buf);
+-		if (++cached_ntc >= cnt)
+-			cached_ntc = 0;
+-	}
+ 	rx_ring->next_to_clean = ntc;
+ 	/* return up to cleaned_count buffers to hardware */
+ 	failure = ice_alloc_rx_bufs(rx_ring, ICE_RX_DESC_UNUSED(rx_ring));
+-- 
+2.43.0
 
-wsF5BAABCAAjFiEEMiogvXcpmS32v71gXNcgLu+I93IFAmeRB1AFAwAAAAAACgkQXNcgLu+I93L+
-HQ/+IghoKusgffXIcugck8Y4oFOGbyDA3B8cubKLU6yp87UwvFVc/TMwkK8ixvsaJkfxSYXcXLff
-SRAqzZrt4a4aDznA0udPUKK4n1m6JhPDw7d0bjU4LJajy5KAA5lR6BsgRqD1WZShyaFaH8Vs404C
-DaMVIVU3DSHNKunUpHmslNZlVkEOQop4sfKuja9ZlUm+F19FkzZ1O8gJWPtbnOL8nn2ZbBoJ9fdx
-ucM3XX55FY/kSkBl6HeotcfsqkpBthb0F18atHHD8rEXYU4uNNpEXK1pH23O/VH+rw9i4xyqPD4a
-ORFN48AELfZ7LmSAtw1Wc2QMSqp7QrJcTF4S0ZMpdagi7sLf+Z0LX6gwVQ950p/qPuxLp+DJh5Ko
-xcbtMLEiZryMeb/we/2L+kWQ3Gr9yolpmy3f1QW1qK0tt/POKWlaMfB52Ta1yUYtqdvaq1sofoHL
-TKYZVsn0OdFYzvj5d4Xc4TVqvQnaDXok+3tz9X+QzejJ0QYXLlCMJPBiy9iPqO9dzRLm7EyzEtPo
-ZMptJF+1+LIwlEY3Bt+0mHxDhPpMtsAMp/mFnDTlyp7jqQdzNgffAcNKvHCXwGgDSWYGUpTnbtjU
-oFYQ6Ei0JNGDhJXIT4xsnaouvoF0PotyxXNHhfEdo1R8CLOU9FFQWdmveAsGgkNTzO2Q2gNsr185
-4GQ=
-=b+yM
------END PGP SIGNATURE-----
-
---------------W6IUCaldk7QRg0u5uRdUwMkx--
