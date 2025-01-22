@@ -4,91 +4,94 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D0295C02181
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 22 Jan 2025 15:11:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 87405C0218C
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 22 Jan 2025 15:11:11 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 9B74483F8B;
-	Wed, 22 Jan 2025 15:11:09 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 3BC61840CB;
+	Wed, 22 Jan 2025 15:11:11 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id tb_R5UITeuZZ; Wed, 22 Jan 2025 15:11:08 +0000 (UTC)
+ id 6v1kizePwbln; Wed, 22 Jan 2025 15:11:09 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org A15868412D
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B5DA28412D
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1737558668;
-	bh=U+4mQ965t7b9VvuMRY2Mb4RntpaHjgpXj6foZvDoK0g=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=wc8JZunRUogZnDr0zGZ6hDimsjtDvr67qg/iPqCpiWsmQxmQWCPC/gSDz5cVlRlb/
-	 RLCqqgzyRbRMEq0OuVBnbZYCwVcM+X8TjXrpvQWWWHpB7K+uGy+x+ac2I1A7Y6ko0P
-	 Ad6qMASSdN6gQdlbl68iLfCuEhPHnD5crk+Q6f67og3uqnWmBFoFP9bVjsc5jFK6IR
-	 5Lv3HreZfyK85cR8+keIGQgnYA33KuvkCqo9exeTOxxDTjTpctnCZ9dQFUqEPlPsk+
-	 5RWXrlq0nT3/8I0AA5G9UQlzun+9YO7zSN473yEpgbuzgusXe7l9XyBLerqvJ6VuqJ
-	 HFOHm9rowKuOA==
+	s=default; t=1737558669;
+	bh=5uGVBmCPd5/62HDI8pXk/yn6FEBDvmkBD4EiQ44HhQg=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=ajFlxbLPBqBrnwA8BOrWNvJMdAYBCXYIfc9g2I/xnHqu1cgn/joUB33V+gW52HZvS
+	 pfmZmJAEHwwNE4XxZ59bTOdJJm3Y18lQUHaQJ0WR9j/4G44bIlpH55W+fL32P0cNyW
+	 mnZfj7OCM1ncwL5c6FZADkVJ+I3Xzq2m1FDhplWaAp5pSVl8SXzdMjqAogb12xJMk8
+	 jBYRokdZ5oWdF9dlao6bOauJPfVqlR3Qn54OAX266aAUa3/syC6dCw2/LTEetYZ5YD
+	 4Gw+/L7ucSgdXR0q75A8yqseDU+Q5wZjfQLQQ2vfj6wqG+x3FwFDBnRjEDvCDU7GmK
+	 Cs7rI5q8Ou6Yg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id A15868412D;
-	Wed, 22 Jan 2025 15:11:08 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id B5DA28412D;
+	Wed, 22 Jan 2025 15:11:09 +0000 (UTC)
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id AA4AE959
- for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Jan 2025 15:11:05 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id 7163B959
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Jan 2025 15:11:06 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 88B3A6076A
- for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Jan 2025 15:11:05 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 6BDA260705
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Jan 2025 15:11:06 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 0MpxssCV4cFT for <intel-wired-lan@lists.osuosl.org>;
- Wed, 22 Jan 2025 15:10:59 +0000 (UTC)
+ id THNIfD2Nmu_y for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 22 Jan 2025 15:11:04 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.18;
  helo=mgamail.intel.com; envelope-from=maciej.fijalkowski@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 0FCD060705
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 0FCD060705
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 2AD96607D5
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2AD96607D5
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.18])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 0FCD060705
- for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Jan 2025 15:10:58 +0000 (UTC)
-X-CSE-ConnectionGUID: IDyeRqr+Q/CiV4S/6/QGXg==
-X-CSE-MsgGUID: E69DwyvgT0mNCTmmLY+tVw==
-X-IronPort-AV: E=McAfee;i="6700,10204,11314"; a="38125817"
-X-IronPort-AV: E=Sophos;i="6.12,310,1728975600"; d="scan'208";a="38125817"
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 2AD96607D5
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Jan 2025 15:11:04 +0000 (UTC)
+X-CSE-ConnectionGUID: 5vCohX83TCOYOtPmDNRmJw==
+X-CSE-MsgGUID: Mh8P6q8gQ+eFX9zbHfG39g==
+X-IronPort-AV: E=McAfee;i="6700,10204,11314"; a="38125832"
+X-IronPort-AV: E=Sophos;i="6.12,310,1728975600"; d="scan'208";a="38125832"
 Received: from orviesa007.jf.intel.com ([10.64.159.147])
  by orvoesa110.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 22 Jan 2025 07:10:59 -0800
-X-CSE-ConnectionGUID: 2QW4Be6PTsSKzegUDd54wQ==
-X-CSE-MsgGUID: jes2GMveQHaN5l5lmCzSEg==
+ 22 Jan 2025 07:11:04 -0800
+X-CSE-ConnectionGUID: Y222eOSmTD+Oy2JFwAYdxg==
+X-CSE-MsgGUID: tTl1uhCHRJmr1RwVOiqGUg==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.12,224,1728975600"; d="scan'208";a="107611403"
+X-IronPort-AV: E=Sophos;i="6.12,224,1728975600"; d="scan'208";a="107611427"
 Received: from boxer.igk.intel.com ([10.102.20.173])
- by orviesa007.jf.intel.com with ESMTP; 22 Jan 2025 07:10:55 -0800
+ by orviesa007.jf.intel.com with ESMTP; 22 Jan 2025 07:11:01 -0800
 From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Wed, 22 Jan 2025 16:10:43 +0100
-Message-Id: <20250122151046.574061-1-maciej.fijalkowski@intel.com>
+Date: Wed, 22 Jan 2025 16:10:45 +0100
+Message-Id: <20250122151046.574061-3-maciej.fijalkowski@intel.com>
 X-Mailer: git-send-email 2.38.1
+In-Reply-To: <20250122151046.574061-1-maciej.fijalkowski@intel.com>
+References: <20250122151046.574061-1-maciej.fijalkowski@intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1737558660; x=1769094660;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=cgESfqDKoMow7gsCRep2DOsCVA1Uhnu2Dn/HJfrFOdA=;
- b=B2AyoHzFDxugNqUlbBh0SWeNIhatA+HScSWfir/4TUXn7h11Bj9UXn+s
- 7QAmUsiEVCn3uMLDf1Tq8QnDCeddONNwEu+fFaOsnQ9GKeSms9hHKfc+y
- dIJJZRs65xkFB0nmVAa0EyBOPsF3sXwdPpb1zizJkUAA3NkRg9zqtjZJC
- RMWQmfTdlchvMrTaHONYYh8apNIZE75xc9i5bjgsQwszXdZy4TUeW5fEu
- 9qAHeqUvhzhMO0s2Grs8xHyBFh6es7iLRFM9NGUkDatrLrp7rmHKmzFlF
- H/Knn4ZXVJSmeky0XYYstylSPW8Q71EftCikbJ/3yXUXUcPhdwQHrA4hJ
+ t=1737558665; x=1769094665;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=ENO5IbcpGRyDyHaVNgdAPDZ/8iTgkWWIXs3GRXWR5cA=;
+ b=X3OVFARSWZrTgK8gJlpjnFXQnZr7G6ICimM4u7jeIlVN4Bs+/i9r9mAy
+ 6A3X+Niqqz5BjhFLXncX12D+q8wtzQfakxv+LH7t2M39/hkAjHXUui4P1
+ qehgdigXejqrSu2OK/Gnxgu5ommTWtREs2/aU8Ppmq9Lmtt1t3PACrrw7
+ OHEAfyO5sLGehIOnfFZHfUjRLWx3I2+k1fbrU15SKSO2h3JHAjBY1rnok
+ 7uiDzqrwYDJOjXgHQMI4rNlEhYNUsQIFGV9EC9zcj3MXP9wLwLEoaJq2z
+ zp3s2lZhtkLf+gBwanGGrqg/CfgLvvKU9ZVyfhYtqZ8iOkBIaFxnL4hCr
  Q==;
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=B2AyoHzF
-Subject: [Intel-wired-lan] [PATCH v4 iwl-net 0/3] ice: fix Rx data path for
- heavy 9k MTU traffic
+ header.a=rsa-sha256 header.s=Intel header.b=X3OVFARS
+Subject: [Intel-wired-lan] [PATCH v4 iwl-net 2/3] ice: gather page_count()'s
+ of each frag right before XDP prog call
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -107,89 +110,86 @@ Cc: Maciej Fijalkowski <maciej.fijalkowski@intel.com>, netdev@vger.kernel.org,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-v3->v4:
-* fix kdoc issues (Simon Horman)
-* fix typo in commit msg in patch 1 (Simon Horman)
+If we store the pgcnt on few fragments while being in the middle of
+gathering the whole frame and we stumbled upon DD bit not being set, we
+terminate the NAPI Rx processing loop and come back later on. Then on
+next NAPI execution we work on previously stored pgcnt.
 
-v2->v3:
-* s/intel/iwl in patch subjects (Jakub Kicinski)
+Imagine that second half of page was used actively by networking stack
+and by the time we came back, stack is not busy with this page anymore
+and decremented the refcnt. The page reuse algorithm in this case should
+be good to reuse the page but given the old refcnt it will not do so and
+attempt to release the page via page_frag_cache_drain() with
+pagecnt_bias used as an arg. This in turn will result in negative refcnt
+on struct page, which was initially observed by Xu Du.
 
-v1->v2:
-* pass ntc to ice_put_rx_mbuf() (pointed out by Petr Oros) in patch 1
-* add review tags from Przemek Kitszel (thanks!)
-* make sure patches compile and work ;)
+Therefore, move the page count storage from ice_get_rx_buf() to a place
+where we are sure that whole frame has been collected, but before
+calling XDP program as it internally can also change the page count of
+fragments belonging to xdp_buff.
 
+Fixes: ac0753391195 ("ice: Store page count inside ice_rx_buf")
+Reported-and-tested-by: Xu Du <xudu@redhat.com>
+Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Co-developed-by: Jacob Keller <jacob.e.keller@intel.com>
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_txrx.c | 27 ++++++++++++++++++++++-
+ 1 file changed, 26 insertions(+), 1 deletion(-)
 
-Hello in 2025,
-
-this patchset fixes a pretty nasty issue that was reported by RedHat
-folks which occured after ~30 minutes (this value varied, just trying
-here to state that it was not observed immediately but rather after a
-considerable longer amount of time) when ice driver was tortured with
-jumbo frames via mix of iperf traffic executed simultaneously with
-wrk/nginx on client/server sides (HTTP and TCP workloads basically).
-
-The reported splats were spanning across all the bad things that can
-happen to the state of page - refcount underflow, use-after-free, etc.
-One of these looked as follows:
-
-[ 2084.019891] BUG: Bad page state in process swapper/34  pfn:97fcd0
-[ 2084.025990] page:00000000a60ee772 refcount:-1 mapcount:0 mapping:0000000000000000 index:0x0 pfn:0x97fcd0
-[ 2084.035462] flags: 0x17ffffc0000000(node=0|zone=2|lastcpupid=0x1fffff)
-[ 2084.041990] raw: 0017ffffc0000000 dead000000000100 dead000000000122 0000000000000000
-[ 2084.049730] raw: 0000000000000000 0000000000000000 ffffffffffffffff 0000000000000000
-[ 2084.057468] page dumped because: nonzero _refcount
-[ 2084.062260] Modules linked in: bonding tls sunrpc intel_rapl_msr intel_rapl_common intel_uncore_frequency intel_uncore_frequency_common i10nm_edac nfit libnvdimm x86_pkg_temp_thermal intel_powerclamp coretemp kvm_intel kvm mgag200 irqd
-[ 2084.137829] CPU: 34 PID: 0 Comm: swapper/34 Kdump: loaded Not tainted 5.14.0-427.37.1.el9_4.x86_64 #1
-[ 2084.147039] Hardware name: Dell Inc. PowerEdge R750/0216NK, BIOS 1.13.2 12/19/2023
-[ 2084.154604] Call Trace:
-[ 2084.157058]  <IRQ>
-[ 2084.159080]  dump_stack_lvl+0x34/0x48
-[ 2084.162752]  bad_page.cold+0x63/0x94
-[ 2084.166333]  check_new_pages+0xb3/0xe0
-[ 2084.170083]  rmqueue_bulk+0x2d2/0x9e0
-[ 2084.173749]  ? ktime_get+0x35/0xa0
-[ 2084.177159]  rmqueue_pcplist+0x13b/0x210
-[ 2084.181081]  rmqueue+0x7d3/0xd40
-[ 2084.184316]  ? xas_load+0x9/0xa0
-[ 2084.187547]  ? xas_find+0x183/0x1d0
-[ 2084.191041]  ? xa_find_after+0xd0/0x130
-[ 2084.194879]  ? intel_iommu_iotlb_sync_map+0x89/0xe0
-[ 2084.199759]  get_page_from_freelist+0x11f/0x530
-[ 2084.204291]  __alloc_pages+0xf2/0x250
-[ 2084.207958]  ice_alloc_rx_bufs+0xcc/0x1c0 [ice]
-[ 2084.212543]  ice_clean_rx_irq+0x631/0xa20 [ice]
-[ 2084.217111]  ice_napi_poll+0xdf/0x2a0 [ice]
-[ 2084.221330]  __napi_poll+0x27/0x170
-[ 2084.224824]  net_rx_action+0x233/0x2f0
-[ 2084.228575]  __do_softirq+0xc7/0x2ac
-[ 2084.232155]  __irq_exit_rcu+0xa1/0xc0
-[ 2084.235821]  common_interrupt+0x80/0xa0
-[ 2084.239662]  </IRQ>
-[ 2084.241768]  <TASK>
-
-The fix is mostly about reverting what was done in commit 1dc1a7e7f410
-("ice: Centrallize Rx buffer recycling") followed by proper timing on
-page_count() storage and then removing the ice_rx_buf::act related logic
-(which was mostly introduced for purposes from cited commit).
-
-Special thanks to Xu Du for providing reproducer and Jacob Keller for
-initial extensive analysis.
-
-Thanks,
-Maciej
-
-
-Maciej Fijalkowski (3):
-  ice: put Rx buffers after being done with current frame
-  ice: gather page_count()'s of each frag right before XDP prog call
-  ice: stop storing XDP verdict within ice_rx_buf
-
- drivers/net/ethernet/intel/ice/ice_txrx.c     | 149 ++++++++++++------
- drivers/net/ethernet/intel/ice/ice_txrx.h     |   1 -
- drivers/net/ethernet/intel/ice/ice_txrx_lib.h |  43 -----
- 3 files changed, 102 insertions(+), 91 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
+index e173d9c98988..cf46bcf143b4 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.c
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
+@@ -924,7 +924,6 @@ ice_get_rx_buf(struct ice_rx_ring *rx_ring, const unsigned int size,
+ 	struct ice_rx_buf *rx_buf;
+ 
+ 	rx_buf = &rx_ring->rx_buf[ntc];
+-	rx_buf->pgcnt = page_count(rx_buf->page);
+ 	prefetchw(rx_buf->page);
+ 
+ 	if (!size)
+@@ -940,6 +939,31 @@ ice_get_rx_buf(struct ice_rx_ring *rx_ring, const unsigned int size,
+ 	return rx_buf;
+ }
+ 
++/**
++ * ice_get_pgcnts - grab page_count() for gathered fragments
++ * @rx_ring: Rx descriptor ring to store the page counts on
++ *
++ * This function is intended to be called right before running XDP
++ * program so that the page recycling mechanism will be able to take
++ * a correct decision regarding underlying pages; this is done in such
++ * way as XDP program can change the refcount of page
++ */
++static void ice_get_pgcnts(struct ice_rx_ring *rx_ring)
++{
++	u32 nr_frags = rx_ring->nr_frags + 1;
++	u32 idx = rx_ring->first_desc;
++	struct ice_rx_buf *rx_buf;
++	u32 cnt = rx_ring->count;
++
++	for (int i = 0; i < nr_frags; i++) {
++		rx_buf = &rx_ring->rx_buf[idx];
++		rx_buf->pgcnt = page_count(rx_buf->page);
++
++		if (++idx == cnt)
++			idx = 0;
++	}
++}
++
+ /**
+  * ice_build_skb - Build skb around an existing buffer
+  * @rx_ring: Rx descriptor ring to transact packets on
+@@ -1241,6 +1265,7 @@ int ice_clean_rx_irq(struct ice_rx_ring *rx_ring, int budget)
+ 		if (ice_is_non_eop(rx_ring, rx_desc))
+ 			continue;
+ 
++		ice_get_pgcnts(rx_ring);
+ 		ice_run_xdp(rx_ring, xdp, xdp_prog, xdp_ring, rx_buf, rx_desc);
+ 		if (rx_buf->act == ICE_XDP_PASS)
+ 			goto construct_skb;
 -- 
 2.43.0
 
