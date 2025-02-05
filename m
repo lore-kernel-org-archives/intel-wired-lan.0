@@ -1,223 +1,217 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8E19DC02197
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  5 Feb 2025 16:10:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 88BD8C02192
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  5 Feb 2025 17:12:46 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 50017610D9;
-	Wed,  5 Feb 2025 16:10:00 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id F29E280E52;
+	Wed,  5 Feb 2025 17:12:45 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id yp9xRJA-niTx; Wed,  5 Feb 2025 16:09:58 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id xgXhjEIHK6lX; Wed,  5 Feb 2025 17:12:44 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 03FEE605BA
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C37768143D
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1738771798;
-	bh=1tR8dnnCqQWL22nauXw/Zd9vdZwyLsESjcC15AEgOoE=;
-	h=From:To:CC:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=pCWrOH8IpNTXL3fcrD9rVRoeFcdznxXALToyilfeYeoP0IbyDxY6oGb+e3sBHXJSY
-	 p3z0XYHrxLQllEjcMzMjIIBy+YZ+uwScmOYLmo7btrMomseKcdf79243hsduBOsKyf
-	 1G22ohT6QF4Tn2xvNG+yF8fozVZI267efoJBZuoYQ2ZmZk/Cu6ADkq1TNxbHvwPb1i
-	 Hq5okpnnOdnIuUWkimFdX/IExvyj0RDqHu3aCLuy9LPPAxytbBujwr38PINwH0qy2w
-	 ddIOgbIKQ4TykXPH6GpUeB4Vtjxo9fOS9DvcRfUezDlybVV/kXlK2ycAK463A1uOYI
-	 8kzGhtrtuBK3Q==
+	s=default; t=1738775564;
+	bh=2sWMx+n+tlGpcSc3slDBfYGXnZktevEI5TWh98q2XLw=;
+	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=xMtNjYu0zTqq4FbeDuId2ZVIyMn7B02mUUoWW4vmFjDkW1bd/RiIzGX3nzQc7bTeB
+	 WhTejk/YceeAOW/qVAa2+Oc2BGYxJUlNMsS9RkX2NUC+i8ucTY/yf28lsjX5+qD0hO
+	 ZkPgZIvUdDloHxqY6ZCUnI+PMMqKKXZ4Ogo6J/nPEqyoYXtO3ar/P/W2vZsaqtXmGc
+	 Vsdz1DnMvF+as47xt+xCKfwyQkENdtiUmWu6EzAvG1ltSw/1Nhv9/2M68e7dZkqGxb
+	 nZwf3Ioc+BOGlWIKz3kRoNelrTHH49qBNdIprOb4gCHOjZC2GDb08IO24ukIZZ7HbF
+	 hJT/llxM/4meg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 03FEE605BA;
-	Wed,  5 Feb 2025 16:09:58 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id 24BF9185
- for <intel-wired-lan@lists.osuosl.org>; Wed,  5 Feb 2025 03:19:20 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id C37768143D;
+	Wed,  5 Feb 2025 17:12:44 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 3FE7E12F
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  5 Feb 2025 17:12:43 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 0939041333
- for <intel-wired-lan@lists.osuosl.org>; Wed,  5 Feb 2025 03:19:20 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 301DE8143D
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  5 Feb 2025 17:12:43 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id OmHYt6n94vio for <intel-wired-lan@lists.osuosl.org>;
- Wed,  5 Feb 2025 03:19:18 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.12;
- helo=mgamail.intel.com; envelope-from=qiuxu.zhuo@intel.com;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 9146440D87
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9146440D87
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.12])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 9146440D87
- for <intel-wired-lan@lists.osuosl.org>; Wed,  5 Feb 2025 03:19:18 +0000 (UTC)
-X-CSE-ConnectionGUID: rbbv/PtrRKaucPd/QhpjjA==
-X-CSE-MsgGUID: f2cOkLVzRUePEcGs3ko28g==
-X-IronPort-AV: E=McAfee;i="6700,10204,11336"; a="43198871"
-X-IronPort-AV: E=Sophos;i="6.13,260,1732608000"; d="scan'208";a="43198871"
-Received: from orviesa009.jf.intel.com ([10.64.159.149])
- by fmvoesa106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 04 Feb 2025 19:19:17 -0800
-X-CSE-ConnectionGUID: p9X/CJmLTsuthfJLP75d5g==
-X-CSE-MsgGUID: M+imfa43TSqNQhuqEU+72w==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.13,260,1732608000"; d="scan'208";a="110555386"
-Received: from orsmsx603.amr.corp.intel.com ([10.22.229.16])
- by orviesa009.jf.intel.com with ESMTP/TLS/AES256-GCM-SHA384;
- 04 Feb 2025 19:19:16 -0800
-Received: from orsmsx601.amr.corp.intel.com (10.22.229.14) by
- ORSMSX603.amr.corp.intel.com (10.22.229.16) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.44; Tue, 4 Feb 2025 19:19:15 -0800
-Received: from orsedg603.ED.cps.intel.com (10.7.248.4) by
- orsmsx601.amr.corp.intel.com (10.22.229.14) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.44 via Frontend Transport; Tue, 4 Feb 2025 19:19:15 -0800
-Received: from NAM11-DM6-obe.outbound.protection.outlook.com (104.47.57.171)
- by edgegateway.intel.com (134.134.137.100) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.1.2507.44; Tue, 4 Feb 2025 19:19:14 -0800
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id c2-ZF5vpNpjJ for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  5 Feb 2025 17:12:42 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=40.107.247.60;
+ helo=eur02-am0-obe.outbound.protection.outlook.com;
+ envelope-from=vladimir.oltean@nxp.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 8657880E52
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8657880E52
+Received: from EUR02-AM0-obe.outbound.protection.outlook.com
+ (mail-am0eur02on2060.outbound.protection.outlook.com [40.107.247.60])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 8657880E52
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  5 Feb 2025 17:12:41 +0000 (UTC)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=SqfyMAhAvwq+/2QUxVLzGMv90qdCOgEpYYjkOwKlsCZ0Eos7MVnMEodkZQqTBX5E+t5pnGYk99DgPa4cse6k96JBLeOyBsNHwfePUYZssr8+y5ahwTt+Lyw7fallQIcufy+Vjz7Qux6nJRfpdJoSS0RK0wjC1kDvmDMwbTHX2n3Rz00xJ+nmV7B3VRnCO+6ZFDocYSEyIRdI7HtCMrPMhzxRBYnOafxwcgZDiSNgAQTVJH2w2QPBMP5dfLPJb2b+sRo7aFFEe1FMt1qA4Jzlrt0Orgv50sIULBnIhcG8G1QLhTJutskOQNDEUI1U6v+kjoNlPasX3EthnCHhIl+rZA==
+ b=NVd03/ABm4TLUievTHPmdUWqL3hJ8GE4tpuKHYlVcU7/6hyAvc1/7dTlFb5hJ61EDHvC8DHqciVOv1fN85NaiueeYipbKz/X+A+8+uE5ALKE2vYlf0g5br6QETdccwr+TAR71YzJBA7GrvTW66/lpdjLcdZKFGbnhlGJHd/lw58DsfcJZjlLre1RRx7X1QU894HSWWvghoJUxfb1ZYXpSQqj+RH1hT6i+N4dPPjdqUxtAYttu9li8McM8ngl+BiZGYu7i6wyHp7uNhqox9VfkfQuoBqCbdw1QSUEGqWFVcLklQCbHCU1dHIQaAUQAwtF+/N/GppXtV/iVOZsg0L61g==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=1tR8dnnCqQWL22nauXw/Zd9vdZwyLsESjcC15AEgOoE=;
- b=It60aXKYQf8R8aIzcEp1JN6DfozCnrSI+7qhd9F0X1QLpCXaJRG7ZSYWkQ4J9TSZqnA13GA5GHkTCqLzOyj9JBdYaRwWZAMHqGvCek6xzgicQABoAgPw3pohq8WBach6rF6isFHYmcM/lrmaFCdeHWLRTEF9GluekdEoREAUirOf+VUrvD9lrucKarpqMILnSMvwFzn8TbTVC/6vEQE3hzMZlf+DRSC/2HVZGgt0g2Hs9yTlX1w5oJx5w3ENiq8AVph2bPpaLy1SLcqR5LuWqhNb4C9lB2HBVG39B9dArJTsJOMO/u4FG6iB9I279Tk09uZT2E+79Lxawm51OC4Azw==
+ bh=2sWMx+n+tlGpcSc3slDBfYGXnZktevEI5TWh98q2XLw=;
+ b=oaQwsqDJ+7hmbfxHoiVmQ8C/8KC98/ETiVMM/phLEs1SPoE1Qd7VjzHnmDnQ/9B310rzLPGBxMoOtvuxCg3rdb/bsk/2up0Dtl53gdjOVXNkIgW5X0xbP05XXwLhCNUPZJU56tW36nC0/eMKDK1bIXwAZ+RdMzYPyi3VwJVZ0W2AzAyB20VH8/kgN0pLIyhnQ8bHS2Z59vBfor9jBMliu1o2DAT8uYCJG057CnofnHyg3WAO6VI5gGJxoR0DiuKNHXwCZesEtu4pPxUsE/jtrDuqNct/YWA1FcDZBBV2p410Ta9y/pwIW7NXsR2en0V7zFzBbfJHHimQeN0KcwM5Fg==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
- dkim=pass header.d=intel.com; arc=none
-Received: from CY8PR11MB7134.namprd11.prod.outlook.com (2603:10b6:930:62::17)
- by PH7PR11MB5864.namprd11.prod.outlook.com (2603:10b6:510:136::18)
+ smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
+ header.d=nxp.com; arc=none
+Received: from AM8PR04MB7779.eurprd04.prod.outlook.com (2603:10a6:20b:24b::14)
+ by DU7PR04MB11164.eurprd04.prod.outlook.com (2603:10a6:10:5b3::8)
  with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8398.24; Wed, 5 Feb
- 2025 03:18:31 +0000
-Received: from CY8PR11MB7134.namprd11.prod.outlook.com
- ([fe80::cd87:9086:122c:be3d]) by CY8PR11MB7134.namprd11.prod.outlook.com
- ([fe80::cd87:9086:122c:be3d%4]) with mapi id 15.20.8398.025; Wed, 5 Feb 2025
- 03:18:31 +0000
-From: "Zhuo, Qiuxu" <qiuxu.zhuo@intel.com>
-To: "Nguyen, Anthony L" <anthony.l.nguyen@intel.com>, "Kitszel, Przemyslaw"
- <przemyslaw.kitszel@intel.com>, "andrew+netdev@lunn.ch"
- <andrew+netdev@lunn.ch>, "davem@davemloft.net" <davem@davemloft.net>,
- "edumazet@google.com" <edumazet@google.com>, "kuba@kernel.org"
- <kuba@kernel.org>, "pabeni@redhat.com" <pabeni@redhat.com>, "Knitter, Konrad"
- <konrad.knitter@intel.com>
-CC: "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Thread-Topic: Build error on
- "drivers/net/ethernet/intel/ice/devlink/health.c:35:3: error: initializer
- element is not constant"
-Thread-Index: Adt3fFdYOdEzc7CrQOSZHCldp7twkA==
-Date: Wed, 5 Feb 2025 03:18:30 +0000
-Message-ID: <CY8PR11MB7134BF7A46D71E50D25FA7A989F72@CY8PR11MB7134.namprd11.prod.outlook.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: CY8PR11MB7134:EE_|PH7PR11MB5864:EE_
-x-ms-office365-filtering-correlation-id: 482ee350-f1c0-4c5d-c0ae-08dd4593c43d
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam: BCL:0;
- ARA:13230040|1800799024|366016|376014|921020|38070700018; 
-x-microsoft-antispam-message-info: =?iso-8859-1?Q?F1xOlLsnDpUIesXNLG7AFhQmc1mCOIvREXthemh3PzgMPJXwj1BD4EwuoM?=
- =?iso-8859-1?Q?4X4tYlPSDxeQUQZO3LSAoni/JQrP96yVlYQO+lqImEpzPBnUoX5Ea+dJrL?=
- =?iso-8859-1?Q?jZp31q8qp8QcM2pPHMiiZ8DFxTO0EAmVtEFCgv5c84ETuGwNbxTnbxdZZ+?=
- =?iso-8859-1?Q?ssU+vqTPudnLm+6c6jjoShtezhdveCiisZO702F/c8UYn+8NgDaUv7RrGX?=
- =?iso-8859-1?Q?/Hvi304vGpkYS5LiITSM7QkxtHjRMKwU+QSdFBx0QgXfVWaaH2RuooDqKK?=
- =?iso-8859-1?Q?pkv8oml+F+CjGrGif583Bfd2jssWgSBLwqE1xnbsfnyZIDhI+kfDw/iAm7?=
- =?iso-8859-1?Q?Wwyr/ONl5coR+neaydHRwjrVNYUzTPdoAWHufUi0pPIQyWwlkWwMVfEXKZ?=
- =?iso-8859-1?Q?4O8ukIpKs1+Lc8XdkaZWkSQJ+vEgb49FwW01XjQi+J1iFObp6AZBS8gkuy?=
- =?iso-8859-1?Q?XJj4as8cAyy90tfHCyXRahnK8VvPMnAeKKyxI2cdgghx22RNRhU9TI61G2?=
- =?iso-8859-1?Q?UsNo7zP2S3w0GYNTkhqBJLCRXUJ4Ba1JxP+MDaWTkwQ+cESF26nsqXaKno?=
- =?iso-8859-1?Q?4ZpLoW4jDWpJsGDw+xnddd2T2vw8eBl7aDMFnCeCvpkDRIYYSXoeveQXJv?=
- =?iso-8859-1?Q?tLYI88joq/+zPh8lSsKk2X0Y09s8TPc0Ukcm+N98zFSzMa+Wjzbae1uygp?=
- =?iso-8859-1?Q?A68IR43RnO+vD6doJp5THsxUFJkf/dSp3eexOhScyfC5trc9u0sY35st+U?=
- =?iso-8859-1?Q?tqvD3F411Kr5+WYyVvJdGoWzrhLAnCLUsEL4PrHsA9oBAoz0u8VaK3q4xg?=
- =?iso-8859-1?Q?p4bL2SIvJtWt3a5ralyAl5PLgKFPjVJ1dUQ1LXXzvXl1/NaZHtFgmTlFJd?=
- =?iso-8859-1?Q?G4viAoYrrLmBO95BB5msvmmPAjtfEeC0AzEwCFT1qV5lqzjmuJ7yQVLJAh?=
- =?iso-8859-1?Q?rMiL3GuLVnEGOM5sgxC1AnLdTBvmjBBzlVmk7p3FjbKyQva8HLje77m1WN?=
- =?iso-8859-1?Q?Oob7zr6SVpyda+iN7td5ucs+KmPNkK8fsG0gzJoBVxextgjViJGgLHWjtR?=
- =?iso-8859-1?Q?txQTW2oZEr+/8AZYQPSxhpZ+Q9iW1KwD93FieG1QOQwT8rNzN67oQtKxHL?=
- =?iso-8859-1?Q?ryDhg7ioWyxm7exw4Fi2oI5Sta8KMZ64xerUk6+3te8QTYJLcYZ+jGh4Tb?=
- =?iso-8859-1?Q?swXzDJynzVE3xQOR3drk5Tt/6/RHm8hA6Fh8QnYTNfbXcba+KZRpC4UOI2?=
- =?iso-8859-1?Q?FO+/cYTa5eeiUd8JiZvnrG9fahykd2CvHbBTlseWIQQFsraiSfhnWMLmYe?=
- =?iso-8859-1?Q?jNfo703ZGW7xLNeR+ylohPQnN5beDlxbgztiLG4koRHGvcLwouUgDiyvmY?=
- =?iso-8859-1?Q?CVnnpgP47jdzqUtIf0McHPONUPPeshsZgJR9kIF8XRi1SetIG8x8li0Hby?=
- =?iso-8859-1?Q?YozCaJRvFthIrJhHwLAPqw2iHQFPhWE4OY2AqhG+cZ9yxfjADJySvbNDit?=
- =?iso-8859-1?Q?dzRfxbAZg8ANqCA1hlTRNhaRIUq4Bkf/EKFWQA08Wi0A=3D=3D?=
-x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:CY8PR11MB7134.namprd11.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230040)(1800799024)(366016)(376014)(921020)(38070700018); DIR:OUT;
- SFP:1101; 
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0: =?iso-8859-1?Q?EJg0W7h17TK/0j0RAXIPhc5HZZINFX4W0t60JA8qZMvVT15V7WtQZOJyvf?=
- =?iso-8859-1?Q?bx3ejOBNeoEp6aj1r81SUD1V99OXA0WxaBqU1Wo6R2MlOG722xC1LjBcoe?=
- =?iso-8859-1?Q?1MalQl6/hFgjmXWKyMbayUzCv9Wgr7nQyNIhxMeO0KzC4WTgTWlPsjCOU3?=
- =?iso-8859-1?Q?0VPsmd7zaKAahcF6Bw/m9eVrZRCyZ8OPp0TTMV5W9/7PsYH4HeKWJZR6pk?=
- =?iso-8859-1?Q?ctwEKkInUn6g+g5Q/3nec1kT3g3mxb9ZDuEUhqFL9K+Afsbu3ajlpt1OXT?=
- =?iso-8859-1?Q?3WmbPRe6YV5uzoJUCIAMpUkI38bu4qTHziIBRG+6VX2hVzhPSlr6SKfTNt?=
- =?iso-8859-1?Q?acr06GcYxRXCwbH8c11IE4zMl51vZJmFk3PkYTNmCTeX5k9qIBj9FcWqbI?=
- =?iso-8859-1?Q?+mxdfRHALOopY03M3yDp/+mvkpKI2VJXUUbHopkY1cbZ+FoZQXzuUfXOe3?=
- =?iso-8859-1?Q?qTGzXMWCsBg4XMaLXSycvlouUxly0PmUG3DPvrUJ/OS4oxdXlROo4xY5vE?=
- =?iso-8859-1?Q?VwFtigcKaBBMfv6F4zxrZQ92ABpqHmud7Tu9IpWzRJPEzQXCUBR6zO/ViS?=
- =?iso-8859-1?Q?6Ji9/PHX0Jl9M+sNbJxAUtxikg52YOq2MtnN4E07MFKh+5BmfuMeJ3o6LC?=
- =?iso-8859-1?Q?t79PCzR6kwfBqVpAwR4JeEfX3zdd7b/rt5CYVEmt9tO/ib+3LEBPd6i0m3?=
- =?iso-8859-1?Q?jB0GPrcWM+Et50MAtS390aiuGC1n1xoMDlxvMov5yzPZKo7sUFX6haxKxK?=
- =?iso-8859-1?Q?3twTxU7fgZhVmNi1KSadt79SorVsHb3zn+Xliv6vQRWNUPKwUh1GDplMjQ?=
- =?iso-8859-1?Q?3W7vgbFGynskDM3n29Q2VmqXUTmn78+VkXSpeiXjBLRUImP9IewPa71oxr?=
- =?iso-8859-1?Q?6a3yIJZgbTycIv7zAKaWJDUHaaTx4bPJijPQNQTvB2mQEHCTA6bNVgrU/F?=
- =?iso-8859-1?Q?8i3Ynl64oD4oK5H2c/VIjjz2CZam+JMHDoLAFa6FLVVbD46bPhyzabHRfM?=
- =?iso-8859-1?Q?A0ADt3YdyMa9kkjkvwWXejdIQsxQMaZbum1fGzvDxFCWFqzV0u/YWz4sHS?=
- =?iso-8859-1?Q?xPaEry7L11cy3MKQERnSs+wUtfQd08SwYjWaK90C9d1J9kHzbZufH92QJU?=
- =?iso-8859-1?Q?B/cE40MWXEv2djoD0tUTZjNcIm2Yp21pbsQKadFYLNg6MK2Q6ty+4zpLKF?=
- =?iso-8859-1?Q?ZxlGMOlH8Lif3IFWLkQoNywk4zkNeykyp5Wu+NYsGp5Y71VfIY+jp+Csi+?=
- =?iso-8859-1?Q?+ChA7hgAn59eic5zUvlD4n0oYjgYlWdIcTUWFo3xC324UkjXPpNR2w90uA?=
- =?iso-8859-1?Q?APnFFF0uBoLKEX+PuROewUD+S/DskzjOLz/U6yvRY/hpfAW9UW4Ugj0PTn?=
- =?iso-8859-1?Q?GEjqbk1akP+VD2nL3V2EqzdqswOcorkzfzi4I61g5Au204hAb4I4+YbX6U?=
- =?iso-8859-1?Q?lI5CaQU4/pIDg2+ermFt60u2BJ+LpfYueNTbxSDk5y+W5y8+3EyigKVJxL?=
- =?iso-8859-1?Q?EZZXUVsY7vSMVWiaUHUYA5KeRdSQrH5bltqtHotBpRTriCv5srPDN1YUkY?=
- =?iso-8859-1?Q?d5AXZF4UmgBALvvlLWVD/nwMwhfsgMPH5Gq0VixclBHc9kKm9tdpa5wWt5?=
- =?iso-8859-1?Q?1BEBbwaMX3kH+OyFTsawAAtEI197mzU4KX?=
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8398.21; Wed, 5 Feb
+ 2025 17:12:38 +0000
+Received: from AM8PR04MB7779.eurprd04.prod.outlook.com
+ ([fe80::7417:d17f:8d97:44d2]) by AM8PR04MB7779.eurprd04.prod.outlook.com
+ ([fe80::7417:d17f:8d97:44d2%6]) with mapi id 15.20.8422.010; Wed, 5 Feb 2025
+ 17:12:38 +0000
+Date: Wed, 5 Feb 2025 19:12:34 +0200
+From: Vladimir Oltean <vladimir.oltean@nxp.com>
+To: Faizal Rahim <faizal.abdul.rahim@linux.intel.com>
+Cc: Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Andrew Lunn <andrew+netdev@lunn.ch>,
+ "David S . Miller" <davem@davemloft.net>,
+ Eric Dumazet <edumazet@google.com>,
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+ Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+ Alexandre Torgue <alexandre.torgue@foss.st.com>,
+ Simon Horman <horms@kernel.org>, Russell King <linux@armlinux.org.uk>,
+ Alexei Starovoitov <ast@kernel.org>,
+ Daniel Borkmann <daniel@iogearbox.net>,
+ Jesper Dangaard Brouer <hawk@kernel.org>,
+ John Fastabend <john.fastabend@gmail.com>,
+ Russell King <rmk+kernel@armlinux.org.uk>,
+ Furong Xu <0x1207@gmail.com>, Serge Semin <fancer.lancer@gmail.com>,
+ Xiaolei Wang <xiaolei.wang@windriver.com>,
+ Suraj Jaiswal <quic_jsuraj@quicinc.com>,
+ Kory Maincent <kory.maincent@bootlin.com>, Petr Tesarik <petr@tesarici.cz>,
+ Choong Yong Liang <yong.liang.choong@linux.intel.com>,
+ Kunihiko Hayashi <hayashi.kunihiko@socionext.com>,
+ Vinicius Costa Gomes <vinicius.gomes@intel.com>,
+ intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com,
+ linux-arm-kernel@lists.infradead.org, bpf@vger.kernel.org
+Message-ID: <20250205171234.cuscjpzdyc34ofbn@skbuf>
+References: <20250205100524.1138523-1-faizal.abdul.rahim@linux.intel.com>
+ <20250205100524.1138523-6-faizal.abdul.rahim@linux.intel.com>
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20250205100524.1138523-6-faizal.abdul.rahim@linux.intel.com>
+X-ClientProxiedBy: VI1P194CA0058.EURP194.PROD.OUTLOOK.COM
+ (2603:10a6:803:3c::47) To AM8PR04MB7779.eurprd04.prod.outlook.com
+ (2603:10a6:20b:24b::14)
 MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: AM8PR04MB7779:EE_|DU7PR04MB11164:EE_
+X-MS-Office365-Filtering-Correlation-Id: 25f68d4a-ea2b-4605-17a2-08dd46084a5a
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;ARA:13230040|1800799024|366016|376014|7416014;
+X-Microsoft-Antispam-Message-Info: =?utf-8?B?amhBNk1OZnRlRUNrSzlsdHBKS2tocTdRaUxvb21tdnNzT3Z0elhUVjlUSjA5?=
+ =?utf-8?B?UUQxWjdESGZTTElsMndwQzlQYjdpSWFTa0hEbzdyZ0hIVzlwTzV5MjVXb3V3?=
+ =?utf-8?B?K3pUTnZLNVdrMFNaSEpMc2wraWFjSHNUODhiMmdoaEtRRW04SENuNEtaU1Zv?=
+ =?utf-8?B?eTlLK05kcFFiVkJ4bnN6T0hEQjhuclJWZDdndHFSNXJweUxhTGtrbFQ4Znpk?=
+ =?utf-8?B?Q2hkaDhqNEtrdWVpRndCejlJeFNwd2pWR3dVcWdtc3E0WVhnTThCdWk3ZCtu?=
+ =?utf-8?B?UWlYVlh3NVBYNVYxM25OVE1qeklpSVdpbmdncFdhVTRoWFhTaXVUblUrWE9U?=
+ =?utf-8?B?TjhGcS9MNnJYQmRZYTZmaWhaeDR1TGpRV0lkUjZab1ZhdHdpUVJaM2pFTWZY?=
+ =?utf-8?B?czEzMW9DWjJWT05lRWpRemQzaVNGVThQaWZpajlLRG1CdGoxYnpZNXp0Y29w?=
+ =?utf-8?B?MGE1Q1BsRlk2b0FxL2d5MkpPeW5yNHN1cVRQZjlCTlNWaUNVRmNueGZxbW9Q?=
+ =?utf-8?B?aUFlUGZINFhnNE1TRDJYcHliTkk5dzJTU1o4VC9PNUFTeG1YcmNzcFhheHla?=
+ =?utf-8?B?aVRsaFRsa2toK2lzcmVvYk9jYjZNQmlCdlM2ZlkzcGNvZ0NQZjR5VXdrK0Rn?=
+ =?utf-8?B?UTJERkhKVFNldmNscUs3aHhLcWp1K3ZRcFFsT1YwUEErL3pzd05OR09NUHpP?=
+ =?utf-8?B?QlpFVVZsVjFBS3VqOUZpbm01RVd2d0ZUTExjUmJyNnlMZHFRUWlmWDVSSU45?=
+ =?utf-8?B?TDVEZzhFUGwrT3dKOWJsdWttWFJjK1NrdTVYL3IyYkRQV3VzQStTQk5ObEND?=
+ =?utf-8?B?OTVucUkyVFF5MVNHRzZVUnhHa1JsQmlac0dPYU5yQk1nQ3BXYWtBVGV3ZmJ5?=
+ =?utf-8?B?RVUwR3BKdVBOYkxmdStjYUVPMzgrN0cybm5WYkVEU0o5T0loWUlWa240dG5S?=
+ =?utf-8?B?L3FJKzhpcE1UNjFPWE0wRzViSzFSQkJDWGl4WkwwclBCSFQ2bi9JOEZ0Umx1?=
+ =?utf-8?B?MC9BaXFGcXZvTTYwQnJ4Snh4L2w5eWwvSTdPSzRCZW1SQ25LWWtRVkY3anVK?=
+ =?utf-8?B?dmY4SHNxVW1CeGxrd2VqMVZpaUZ6MWh1dzhlVklrTzBzelZYUm54M2JVNTg3?=
+ =?utf-8?B?eHpRRlVzNDlLWEI5bXhkZk9OZURUREg2U3ZJYmZYbjBzTW9jRGVtQzQ5QUlL?=
+ =?utf-8?B?S05KeHhKc1poc2lYeW91allnR1ZZa2x6RVNqODhKWmNVbmk0dEU3b0FSQlgx?=
+ =?utf-8?B?YndpeWM2TXZGQXdKM09xdUg1N0xrNnRvYyt6ZzFMR0VhN0pVc1JoUjYrSUJP?=
+ =?utf-8?B?YUtRT3lHM2pTbEZWL2k3VmdVOHc4OVFkcmhQcUdISGRoY3gxd2NBb29yeDRE?=
+ =?utf-8?B?U3NFMEx0emlBNndaZ1RWZVd2NmZJdGdTeFpqZ0w2NExOYWZtd2lBVldYbjVI?=
+ =?utf-8?B?VkpEZ2ZrZVkwTVFWOXp4WkpXNkxaNDF3QVVHUXFtMTlZanZ0UDdKRmRkdmh3?=
+ =?utf-8?B?MUg0YkZNWGZCUDJ1ZW1SZFpuY20rMkV2MWlvNm9sSU9aR3dKRmRvU0dreVBR?=
+ =?utf-8?B?STJmTWpBWkdNQWptYUdXaktPa2pXbXQvMjcyQVpvc2Rnb2g4cHZBOXpEeWFu?=
+ =?utf-8?B?R1dibzVjUXJXYnBsVnZaT0s2Vk5KZUhQeWxrSEIrSDFQQittVnk2cS9CQVVu?=
+ =?utf-8?B?aGtCOU4zdndKdzBIRjJLWEZGTkl6NFdTNFI3TXFveGxRV2ZyWG5sQUVwbXVh?=
+ =?utf-8?B?U0tDaVR2SUxuZkRrdkErM2xmeDZrTlI0a3dnTEJNQkZVbVZublN2Wm9nSE1G?=
+ =?utf-8?B?Y1ROc2ltRlE0TGJ3b2FYQjVrRG11NnFqZXV6a2Q3bHJGUE5PbjJjUnYwMm93?=
+ =?utf-8?Q?B0lhBKFYsF5C/?=
+X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:AM8PR04MB7779.eurprd04.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(13230040)(1800799024)(366016)(376014)(7416014); DIR:OUT; SFP:1101; 
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?dkpOVGw1Ry9VdEtOOHlaUC9Xd1lDQmlQcUpDa0JvU0J4N0d6SHRVY045Rmdz?=
+ =?utf-8?B?UGVMV0cvQ24yY0NpczZrWnY5SzV4ekRpdHNxTWx5Q3kwN2pxSWFkRDV2NWk3?=
+ =?utf-8?B?RCsxNmoxRG5Vc1RVUWhWbW1CMTNqNUxZVWkwUkJVK1U1V2pWbnZuSXo3T0V3?=
+ =?utf-8?B?aWlYOVkzQnZzM0lNNS9udzZST0N2OTdkdGRQbnJoM2RqdlpFWm1ZNENKdzNn?=
+ =?utf-8?B?ZFltdnRTbWx3ZVltSlRqbDdjdzFEbDF6VkZqeVJCbjV5Tk5QUjZla21zOTBn?=
+ =?utf-8?B?UzNkR1FQVUJEVWgwcGU5bEY5ZWJ1UWlNUDVCSmdrT254UzNkLzN2R3g2Skpo?=
+ =?utf-8?B?RWVqTTJUNlNmclU0S0V1TjJPSjdJcVVEV0llTnhMdEFSektmb1JGb1ZwdHAy?=
+ =?utf-8?B?cklTR2pUbWdiaXFyYWpLQzU3c0tTYkNwbUNYaGVDS0phUFFMZzBQN2JaT2J6?=
+ =?utf-8?B?ZnNHSE9rSmpMc0wxeVVoemIvOFEwMllXa3hHZVR5ZWlxUzFYN1VXUHViRlFS?=
+ =?utf-8?B?SEQ4YnNQYnNpc0dqOHNZVlBoYkFrVzF2ZHRaOFdPWkY0U3hCbVVndWRKNkhC?=
+ =?utf-8?B?TjFLYlc2MjY5QU01ZnFDZHIwLzRaVmpObC9PejFoU0xMSnBhcUpTOE85MDA2?=
+ =?utf-8?B?WWsrNWRpdjNEbkgxcnFhK3dNUTZJRUFzOVFmTURaQTJFNGkyVXhGZklhRWRR?=
+ =?utf-8?B?UnF1RHdkTEpFaWdzSVFSeTdHUzJNajRaR2tkcDY4cVJZOW1EUkNYUUlIZjhC?=
+ =?utf-8?B?S3kxaFN0ZWJCUjVHd2NWbTFmTmpqVEVoRUJPL3IyVzBuRXk0VXFnQ1FiK2hM?=
+ =?utf-8?B?S0p0Nlc1cG42L0lKcHRlV3NpdkZDSUQ0TWNJdVBaNFNFa3dranQyelVNMTNa?=
+ =?utf-8?B?TGVaMWY0RnNrczVaRm5lVlVQSkpyd0ZJZ1phUHY3UnBxcUQ2dU14S3IzOUo2?=
+ =?utf-8?B?VWJCMC9oMERING9ad05lTkdhc0Z5MlFKSE5IODlqN0VCazQvd01GK3RiTjIx?=
+ =?utf-8?B?MUo4c0xhRVhVck9QSnYweENOS0JFYjlzVkZ5cmNyVUhkL2ZGMHByQXc0ci9k?=
+ =?utf-8?B?a2pZRGhHODhaSVZqSDJUUHVvNmkwU3g5VjMvcFZGaThicE1iSFhic0RyZlNn?=
+ =?utf-8?B?ZnJzenl6VW5sZStsbmJoU29RTU1lYm4rN2hwcVpYMDNheHlPL0ZHRksxOTFs?=
+ =?utf-8?B?a1VVWDlxM2dISG9yVXRRZEVWT2kvQmI0T1k5b3JOekczRmhSNzJTV1NxeU1p?=
+ =?utf-8?B?MWNOK1RHYm5NakxlaTVBUEhXRUphcTFhclc2bWJoaUN5eVo1Ty9nWDhBazU3?=
+ =?utf-8?B?SmMzbzJmVWpxWU00ZFJKK3k4ck9TSkcvdFFncERZZU1iblZWS0xnbXVkbmVw?=
+ =?utf-8?B?eWlTcjAxM0FHcG8rQldMcFN3c0p6UlF4SDBxLzdybkNjM3JQS3JCTHQ5UHlQ?=
+ =?utf-8?B?VWg4SkdvTUtEbHVqVnIxaEZrOHF4NW45MHlaaEs1N1RlSGhLL2s2aFFXOHdH?=
+ =?utf-8?B?TmtFeFVpeW1lanBBSklZUEJWR1A1M09LcVErdS9SWGtYN1FjenVvY05IZXdO?=
+ =?utf-8?B?UjhTUjVRamF6bnQveHRpVlBhKzU4TGl3TnFwL3NDWXhLQ2o2R2syY1dEMHRh?=
+ =?utf-8?B?T29QTmR3Y1NjQWF1eU1pVkpzd05EVHpJQ2N4WEF0eFFSYnBycnd2TzlZOXRC?=
+ =?utf-8?B?NUQ0YjhUL3kxdEFwRFlKK1ZwUkk0MVV4RUZWcXpTRmJ5TysyM2Era2QyQjJJ?=
+ =?utf-8?B?OGVORlRnR3B6c1lLbU9QeDYvL2Y4Y095N3ZSakhtQXdGL3JrSjZYNy9kY3R3?=
+ =?utf-8?B?RXl1ZkswTm9STlVnYkZwM1Y1VmdoVlFDVFdKbDNsZ0hJbytKL2RMS1VhK0hi?=
+ =?utf-8?B?bzZIclVMVGFHNno0N01rbFE3czNscmRGUzdjeUhjdS9HT3JZVmMzenJyN2pX?=
+ =?utf-8?B?OG96Z1FpOEV4U1FYS0lhaEMvRm0zNCtiaUxNUUZvR0RMYkh0UHZLVFBYNjBL?=
+ =?utf-8?B?blhHMzdYOTBWQmFBWUg5eTJQOEZEUDRTY1dISmxkcTBxOExTeVF6UzJ4Uk5v?=
+ =?utf-8?B?TUJqUGdmdnZ5N1NaSkR4clB0cDhVcXpITWEzTzFqTHhKMWgrUDdMRXdXcm8v?=
+ =?utf-8?B?bXk4U1ZzOTlIL3FqcjVHNnhFNStBc3NEV0dzalZub2QwZGw3dVFEZktCQzk1?=
+ =?utf-8?B?V2c9PQ==?=
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 25f68d4a-ea2b-4605-17a2-08dd46084a5a
+X-MS-Exchange-CrossTenant-AuthSource: AM8PR04MB7779.eurprd04.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: CY8PR11MB7134.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 482ee350-f1c0-4c5d-c0ae-08dd4593c43d
-X-MS-Exchange-CrossTenant-originalarrivaltime: 05 Feb 2025 03:18:31.1266 (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: Rxr28ryLRyaAuhyyxZShIEENpN4LJK6r6XneTqxXexxZ/H3tHjQIhwl7LXsZ8ODzM4pPuGE+Ez1zwOTOMEx24w==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH7PR11MB5864
-X-OriginatorOrg: intel.com
-X-Mailman-Approved-At: Wed, 05 Feb 2025 16:09:56 +0000
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1738725558; x=1770261558;
- h=from:to:cc:subject:date:message-id:
- content-transfer-encoding:mime-version;
- bh=zDZy29oIBpwv1WZgBYwMZ0hr8QAfxWaRWD8MSi0eJ8k=;
- b=FMWxmAg1+0Yqa58zswDKF4gqh0tTD39d9A+8AbDEJoYg1C7sIbR0fVje
- /JsjFrED1SNjz4hkL13jTvc4pUgQN9XDGTU3Js2xzUfQf1ZgCKJOanGmT
- mYJCTsw+Y3neJA8APX19oX3mgU8j8ad5rAH92UOSDy2nCt+5ZpO7bS8J4
- //Nmzpj87+uHGcR007msRSui1j048cU/5EcTONEcAbaEZQIMFJEna4gmD
- +TW16iv1yTLgL/3f0CYwLeFpn3HjA31QLhhBMQQ//MKIqFOxhgiTN+2cA
- bN3Etf4E9TklgMwcKSxCwUFWfwvwo66XRzI4p9VpoLWr7XuJJB7+QUhYh
- g==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 05 Feb 2025 17:12:38.0207 (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: fLC1MoZjEZmJGaATVBamBgjRzKcvZFni0uEkfjSkA7RpdfHG7dmvIVtts47DPAh/7gOdneqhNSzpZbZZSE9Sow==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DU7PR04MB11164
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=nxp.com; s=selector1; 
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=2sWMx+n+tlGpcSc3slDBfYGXnZktevEI5TWh98q2XLw=;
+ b=KvNlrLy8RwwxN1uKT7U4K6BZuoNC7gPBCXfplbKeIuxZROQC5cUwRQZ+ziPuR5WPw1hlRjPsJMk6uMmeRJ/SBP2lWKQk1KAU9vJ/I5KruIe95tPsvM44928uAFr/wlSw79swpjSHJrgu5bHKnqZhjSRUXCg+mSO5g+ioK+IhTdRd5eRkqDAepD2xeHbOlSRK6SoObzy/RGynkk1cVEIV8Bfgs1MojRJy0Yv6bO1B2yiWH8RKOMCQD+TKH0sgqroypXoA50/EKVkmfHKalUjYdpaU/DYm6KzJpMaRAIVVqtk8Ezm6+a27MASPjkyZgSvNNZSYhbmTL27AxdIYBgZO1w==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
- header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ header.from=nxp.com
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=FMWxmAg1
+ unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256
+ header.s=selector1 header.b=KvNlrLy8
 X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=intel.com;
-Subject: [Intel-wired-lan] Build error on
- "drivers/net/ethernet/intel/ice/devlink/health.c:35:3: error: initializer
- element is not constant"
+ header.d=none;dmarc=none action=none header.from=nxp.com;
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next v2 5/9] igc: Add support for
+ frame preemption verification
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -233,224 +227,365 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Hi,
+On Wed, Feb 05, 2025 at 05:05:20AM -0500, Faizal Rahim wrote:
+> This patch implements the "ethtool --set-mm" callback to trigger the
+> frame preemption verification handshake.
+> 
+> Uses the MAC Merge Software Verification (mmsv) mechanism in ethtool
+> to perform the verification handshake for igc.
+> The structure fpe.mmsv is set by mmsv in ethtool and should remain
+> read-only for the driver.
+> 
+> igc does not use two mmsv callbacks:
+> a) configure_tx()
+>    - igc lacks registers to configure FPE in the transmit direction.
 
-I got the=A0build error messages as below:
-My GCC is: gcc (Ubuntu 7.5.0-3ubuntu1~18.04) 7.5.0.
+Yes, maybe, but it's still important to handle this. It tells you when
+the preemptible traffic classes should be sent as preemptible on the wire
+(i.e. when the verification is either disabled, or it succeeded).
 
+There is a selftest called manual_failed_verification() which supposedly
+tests this exact condition: if verification fails, then packets sent to
+TC0 are supposed to bump the eMAC's TX counters, even though TC0 is
+configured as preemptible. Otherwise stated: even if the tc program says
+that a certain traffic class is preemptible, you don't want to actually
+send preemptible packets if you haven't verified the link partner can
+handle them, since it will likely drop them on RX otherwise.
 
-  CC [M]  drivers/net/ethernet/stmicro/stmmac/stmmac_mdio.o
-drivers/net/ethernet/intel/ice/devlink/health.c:35:3: error: initializer el=
-ement is not constant
-   ice_common_port_solutions, {ice_port_number_label}},
-   ^~~~~~~~~~~~~~~~~~~~~~~~~
-drivers/net/ethernet/intel/ice/devlink/health.c:35:3: note: (near initializ=
-ation for 'ice_health_status_lookup[0].solution')
-drivers/net/ethernet/intel/ice/devlink/health.c:35:31: error: initializer e=
-lement is not constant
-   ice_common_port_solutions, {ice_port_number_label}},
-                               ^~~~~~~~~~~~~~~~~~~~~
-drivers/net/ethernet/intel/ice/devlink/health.c:35:31: note: (near initiali=
-zation for 'ice_health_status_lookup[0].data_label[0]')
-drivers/net/ethernet/intel/ice/devlink/health.c:37:46: error: initializer e=
-lement is not constant
-   "Change or replace the module or cable.", {ice_port_number_label}},
-                                              ^~~~~~~~~~~~~~~~~~~~~
-drivers/net/ethernet/intel/ice/devlink/health.c:37:46: note: (near initiali=
-zation for 'ice_health_status_lookup[1].data_label[0]')
-drivers/net/ethernet/intel/ice/devlink/health.c:39:3: error: initializer el=
-ement is not constant
-   ice_common_port_solutions, {ice_port_number_label}},
-   ^~~~~~~~~~~~~~~~~~~~~~~~~
-drivers/net/ethernet/intel/ice/devlink/health.c:39:3: note: (near initializ=
-ation for 'ice_health_status_lookup[2].solution')
-drivers/net/ethernet/intel/ice/devlink/health.c:39:31: error: initializer e=
-lement is not constant
-   ice_common_port_solutions, {ice_port_number_label}},
-                               ^~~~~~~~~~~~~~~~~~~~~
-drivers/net/ethernet/intel/ice/devlink/health.c:39:31: note: (near initiali=
-zation for 'ice_health_status_lookup[2].data_label[0]')
-drivers/net/ethernet/intel/ice/devlink/health.c:43:4: error: initializer el=
-ement is not constant
-   {ice_port_number_label}},
-    ^~~~~~~~~~~~~~~~~~~~~
-drivers/net/ethernet/intel/ice/devlink/health.c:43:4: note: (near initializ=
-ation for 'ice_health_status_lookup[3].data_label[0]')
-drivers/net/ethernet/intel/ice/devlink/health.c:46:4: error: initializer el=
-ement is not constant
-   {ice_port_number_label}},
-    ^~~~~~~~~~~~~~~~~~~~~
-drivers/net/ethernet/intel/ice/devlink/health.c:46:4: note: (near initializ=
-ation for 'ice_health_status_lookup[4].data_label[0]')
-drivers/net/ethernet/intel/ice/devlink/health.c:49:4: error: initializer el=
-ement is not constant
-   {ice_port_number_label}},
-    ^~~~~~~~~~~~~~~~~~~~~
-drivers/net/ethernet/intel/ice/devlink/health.c:49:4: note: (near initializ=
-ation for 'ice_health_status_lookup[5].data_label[0]')
-drivers/net/ethernet/intel/ice/devlink/health.c:52:4: error: initializer el=
-ement is not constant
-   {ice_port_number_label}},
-    ^~~~~~~~~~~~~~~~~~~~~
-drivers/net/ethernet/intel/ice/devlink/health.c:52:4: note: (near initializ=
-ation for 'ice_health_status_lookup[6].data_label[0]')
-drivers/net/ethernet/intel/ice/devlink/health.c:54:3: error: initializer el=
-ement is not constant
-   ice_common_port_solutions, {ice_port_number_label}},
-   ^~~~~~~~~~~~~~~~~~~~~~~~~
-drivers/net/ethernet/intel/ice/devlink/health.c:54:3: note: (near initializ=
-ation for 'ice_health_status_lookup[7].solution')
-drivers/net/ethernet/intel/ice/devlink/health.c:54:31: error: initializer e=
-lement is not constant
-   ice_common_port_solutions, {ice_port_number_label}},
-                               ^~~~~~~~~~~~~~~~~~~~~
-drivers/net/ethernet/intel/ice/devlink/health.c:54:31: note: (near initiali=
-zation for 'ice_health_status_lookup[7].data_label[0]')
-drivers/net/ethernet/intel/ice/devlink/health.c:56:10: error: initializer e=
-lement is not constant
-   NULL, {ice_port_number_label}},
-          ^~~~~~~~~~~~~~~~~~~~~
-drivers/net/ethernet/intel/ice/devlink/health.c:56:10: note: (near initiali=
-zation for 'ice_health_status_lookup[8].data_label[0]')
-drivers/net/ethernet/intel/ice/devlink/health.c:58:3: error: initializer el=
-ement is not constant
-   ice_update_nvm_solution, {ice_port_number_label}},
-   ^~~~~~~~~~~~~~~~~~~~~~~
-drivers/net/ethernet/intel/ice/devlink/health.c:58:3: note: (near initializ=
-ation for 'ice_health_status_lookup[9].solution')
-drivers/net/ethernet/intel/ice/devlink/health.c:58:29: error: initializer e=
-lement is not constant
-   ice_update_nvm_solution, {ice_port_number_label}},
-                             ^~~~~~~~~~~~~~~~~~~~~
-drivers/net/ethernet/intel/ice/devlink/health.c:58:29: note: (near initiali=
-zation for 'ice_health_status_lookup[9].data_label[0]')
-drivers/net/ethernet/intel/ice/devlink/health.c:63:4: error: initializer el=
-ement is not constant
-   {ice_port_number_label}},
-    ^~~~~~~~~~~~~~~~~~~~~
-drivers/net/ethernet/intel/ice/devlink/health.c:63:4: note: (near initializ=
-ation for 'ice_health_status_lookup[11].data_label[0]')
-drivers/net/ethernet/intel/ice/devlink/health.c:67:4: error: initializer el=
-ement is not constant
-   {ice_port_number_label}},
-    ^~~~~~~~~~~~~~~~~~~~~
-drivers/net/ethernet/intel/ice/devlink/health.c:67:4: note: (near initializ=
-ation for 'ice_health_status_lookup[12].data_label[0]')
-drivers/net/ethernet/intel/ice/devlink/health.c:70:50: error: initializer e=
-lement is not constant
-   "Change the module to align to port option.", {ice_port_number_label}},
-                                                  ^~~~~~~~~~~~~~~~~~~~~
-drivers/net/ethernet/intel/ice/devlink/health.c:70:50: note: (near initiali=
-zation for 'ice_health_status_lookup[13].data_label[0]')
-drivers/net/ethernet/intel/ice/devlink/health.c:72:3: error: initializer el=
-ement is not constant
-   ice_update_nvm_solution, {ice_port_number_label}},
-   ^~~~~~~~~~~~~~~~~~~~~~~
-drivers/net/ethernet/intel/ice/devlink/health.c:72:3: note: (near initializ=
-ation for 'ice_health_status_lookup[14].solution')
-drivers/net/ethernet/intel/ice/devlink/health.c:72:29: error: initializer e=
-lement is not constant
-   ice_update_nvm_solution, {ice_port_number_label}},
-                             ^~~~~~~~~~~~~~~~~~~~~
-drivers/net/ethernet/intel/ice/devlink/health.c:72:29: note: (near initiali=
-zation for 'ice_health_status_lookup[14].data_label[0]')
-drivers/net/ethernet/intel/ice/devlink/health.c:74:3: error: initializer el=
-ement is not constant
-   ice_update_nvm_solution, {ice_port_number_label}},
-   ^~~~~~~~~~~~~~~~~~~~~~~
-drivers/net/ethernet/intel/ice/devlink/health.c:74:3: note: (near initializ=
-ation for 'ice_health_status_lookup[15].solution')
-drivers/net/ethernet/intel/ice/devlink/health.c:74:29: error: initializer e=
-lement is not constant
-   ice_update_nvm_solution, {ice_port_number_label}},
-                             ^~~~~~~~~~~~~~~~~~~~~
-drivers/net/ethernet/intel/ice/devlink/health.c:74:29: note: (near initiali=
-zation for 'ice_health_status_lookup[15].data_label[0]')
-drivers/net/ethernet/intel/ice/devlink/health.c:78:3: error: initializer el=
-ement is not constant
-   ice_update_nvm_solution, {ice_port_number_label}},
-   ^~~~~~~~~~~~~~~~~~~~~~~
-drivers/net/ethernet/intel/ice/devlink/health.c:78:3: note: (near initializ=
-ation for 'ice_health_status_lookup[17].solution')
-drivers/net/ethernet/intel/ice/devlink/health.c:78:29: error: initializer e=
-lement is not constant
-   ice_update_nvm_solution, {ice_port_number_label}},
-                             ^~~~~~~~~~~~~~~~~~~~~
-drivers/net/ethernet/intel/ice/devlink/health.c:78:29: note: (near initiali=
-zation for 'ice_health_status_lookup[17].data_label[0]')
-drivers/net/ethernet/intel/ice/devlink/health.c:80:3: error: initializer el=
-ement is not constant
-   ice_update_nvm_solution, {ice_port_number_label}},
-   ^~~~~~~~~~~~~~~~~~~~~~~
-drivers/net/ethernet/intel/ice/devlink/health.c:80:3: note: (near initializ=
-ation for 'ice_health_status_lookup[18].solution')
-drivers/net/ethernet/intel/ice/devlink/health.c:80:29: error: initializer e=
-lement is not constant
-   ice_update_nvm_solution, {ice_port_number_label}},
-                             ^~~~~~~~~~~~~~~~~~~~~
-drivers/net/ethernet/intel/ice/devlink/health.c:80:29: note: (near initiali=
-zation for 'ice_health_status_lookup[18].data_label[0]')
-drivers/net/ethernet/intel/ice/devlink/health.c:82:3: error: initializer el=
-ement is not constant
-   ice_update_nvm_solution, {ice_port_number_label}},
-   ^~~~~~~~~~~~~~~~~~~~~~~
-drivers/net/ethernet/intel/ice/devlink/health.c:82:3: note: (near initializ=
-ation for 'ice_health_status_lookup[19].solution')
-drivers/net/ethernet/intel/ice/devlink/health.c:82:29: error: initializer e=
-lement is not constant
-   ice_update_nvm_solution, {ice_port_number_label}},
-                             ^~~~~~~~~~~~~~~~~~~~~
-drivers/net/ethernet/intel/ice/devlink/health.c:82:29: note: (near initiali=
-zation for 'ice_health_status_lookup[19].data_label[0]')
-drivers/net/ethernet/intel/ice/devlink/health.c:85:3: error: initializer el=
-ement is not constant
-   ice_update_nvm_solution, {ice_port_number_label}},
-   ^~~~~~~~~~~~~~~~~~~~~~~
-drivers/net/ethernet/intel/ice/devlink/health.c:85:3: note: (near initializ=
-ation for 'ice_health_status_lookup[20].solution')
-drivers/net/ethernet/intel/ice/devlink/health.c:85:29: error: initializer e=
-lement is not constant
-   ice_update_nvm_solution, {ice_port_number_label}},
-                             ^~~~~~~~~~~~~~~~~~~~~
-drivers/net/ethernet/intel/ice/devlink/health.c:85:29: note: (near initiali=
-zation for 'ice_health_status_lookup[20].data_label[0]')
-drivers/net/ethernet/intel/ice/devlink/health.c:87:3: error: initializer el=
-ement is not constant
-   ice_update_nvm_solution, {"Extended Error"}},
-   ^~~~~~~~~~~~~~~~~~~~~~~
-drivers/net/ethernet/intel/ice/devlink/health.c:87:3: note: (near initializ=
-ation for 'ice_health_status_lookup[21].solution')
-drivers/net/ethernet/intel/ice/devlink/health.c:91:3: error: initializer el=
-ement is not constant
-   ice_update_nvm_solution},
-   ^~~~~~~~~~~~~~~~~~~~~~~
-drivers/net/ethernet/intel/ice/devlink/health.c:91:3: note: (near initializ=
-ation for 'ice_health_status_lookup[23].solution')
-drivers/net/ethernet/intel/ice/devlink/health.c:93:3: error: initializer el=
-ement is not constant
-   ice_update_nvm_solution},
-   ^~~~~~~~~~~~~~~~~~~~~~~
-drivers/net/ethernet/intel/ice/devlink/health.c:93:3: note: (near initializ=
-ation for 'ice_health_status_lookup[24].solution')
-drivers/net/ethernet/intel/ice/devlink/health.c:97:3: error: initializer el=
-ement is not constant
-   ice_update_nvm_solution},
-   ^~~~~~~~~~~~~~~~~~~~~~~
-drivers/net/ethernet/intel/ice/devlink/health.c:97:3: note: (near initializ=
-ation for 'ice_health_status_lookup[26].solution')
-drivers/net/ethernet/intel/ice/devlink/health.c:99:3: error: initializer el=
-ement is not constant
-   ice_update_nvm_solution, {"Expected PCI Device ID", "Expected Module ID"=
-}},
-   ^~~~~~~~~~~~~~~~~~~~~~~
-drivers/net/ethernet/intel/ice/devlink/health.c:99:3: note: (near initializ=
-ation for 'ice_health_status_lookup[27].solution')
-drivers/net/ethernet/intel/ice/devlink/health.c:103:4: error: initializer e=
-lement is not constant
-   {ice_port_number_label, "MIB ID"}},
-    ^~~~~~~~~~~~~~~~~~~~~
-drivers/net/ethernet/intel/ice/devlink/health.c:103:4: note: (near initiali=
-zation for 'ice_health_status_lookup[28].data_label[0]')
-  LD [M]  drivers/tty/ipwireless/ipwireless.o
-  CC [M]  drivers/staging/rtl8723bs/core/rtw_mlme.o
+The problem with that selftest is that it relies on the driver's ability
+to report split ethtool counters for eMAC/pMAC, rather than just aggregate.
+In lack of that, you need to know through some other mechanism whether
+the link partner received those packets as preemptible or express, and
+that's kind of hard to add to a selftest.
 
+> b) configure_pmac()
+>    - this callback dynamically controls pmac_enabled at runtime. For
+>      example, mmsv calls configure_pmac() and disables pmac_enabled when
+>      the link partner goes down, even if the user previously enabled it.
+>      The intention is to save power but it is not feasible in igc
+>      because it causes an endless adapter reset loop:
+> 
+> 	 1) Board A and Board B complete the verification handshake.
+>             Tx mode register for both boards are in TSN mode.
+> 	 2) Board B link goes down.
+> 
+>          On Board A:
+> 	 3) mmsv calls configure_pmac() with pmac_enabled = false.
+> 	 4) configure_pmac() in igc updates a new field based on
+>             pmac_enabled. Driver uses this field in igc_tsn_new_flags()
+>             to indicate that the user enabled/disabled FPE.
+> 	 5) configure_pmac() in igc calls igc_tsn_offload_apply() to check
+>             whether an adapter reset is needed. Calls existing logic in
+>             igc_tsn_will_tx_mode_change() and igc_tsn_new_flags().
+> 	 6) Since pmac_enabled is now disabled and no other TSN feature
+>             is active, igc_tsn_will_tx_mode_change() evaluates to true
+>             because Tx mode will switch from TSN to Legacy.
+> 	 7) Driver resets the adapter.
+> 	 8) Registers are set, and Tx mode switches to Legacy.
+> 	 9) When link partner is up, steps 3–8 repeat, but this time
+>             with pmac_enabled = true, reactivating TSN.
+>             igc_tsn_will_tx_mode_change() evaluates to true again,
+>             since Tx mode will switch from Legacy to TSN.
+> 	10) Driver resets the adapter.
+> 	11) Rest adapter completes, registers are set, and Tx mode
+> 	    switches to TSN.
+> 
+>         On Board B:
+> 	12) Adapter reset on Board A at step 10 causes it to detect its
+>             link partner as down.
+
+Is this using fiber/DAC, or twisted pair (RJ45 PHY)?
+
+> 	13) Repeats steps 3–8.
+> 	14) Once reset adapter on Board A is completed at step 11, it
+>             detects its link partner as up.
+> 	15) Repeats steps 9–11.
+> 
+>    - this cycle repeats indefinitely. To avoid this issue, IGC only uses
+>      mmsv.pmac_enabled to track whether FPE is enabled or disabled.
+
+Not that I couldn't eventually tolerate this workaround, but I figure
+it's worth asking anyway. Isn't there a way to do an adapter reset
+without losing link in the PHY (assuming it's the PHY that loses link)?
+Is that a consequence of software design that's not careful enough, or
+of hardware design? I assume the PHY is a discrete component. Avoiding
+the need to retrigger auto-negotiation saves a few seconds of waiting,
+so it's worth pursuing if it's possible at all.
+
+> Co-developed-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+> Co-developed-by: Choong Yong Liang <yong.liang.choong@linux.intel.com>
+> Signed-off-by: Choong Yong Liang <yong.liang.choong@linux.intel.com>
+> Signed-off-by: Faizal Rahim <faizal.abdul.rahim@linux.intel.com>
+> ---
+> diff --git a/drivers/net/ethernet/intel/igc/igc_ethtool.c b/drivers/net/ethernet/intel/igc/igc_ethtool.c
+> index 817838677817..41cb03816f92 100644
+> --- a/drivers/net/ethernet/intel/igc/igc_ethtool.c
+> +++ b/drivers/net/ethernet/intel/igc/igc_ethtool.c
+> @@ -1781,6 +1782,23 @@ static int igc_ethtool_set_eee(struct net_device *netdev,
+>  	return 0;
+>  }
+>  
+> +static int igc_ethtool_set_mm(struct net_device *netdev,
+> +			      struct ethtool_mm_cfg *cmd,
+> +			      struct netlink_ext_ack *extack)
+> +{
+> +	struct igc_adapter *adapter = netdev_priv(netdev);
+> +	struct fpe_t *fpe = &adapter->fpe;
+> +
+> +	ethtool_mmsv_set_mm(&fpe->mmsv, cmd);
+> +
+> +	if (fpe->mmsv.pmac_enabled)
+> +		static_branch_enable(&igc_fpe_enabled);
+> +	else
+> +		static_branch_disable(&igc_fpe_enabled);
+
+I don't think the API is correctly used here. If there are 2 igc cards
+in the system and one gets an ethtool call with pmac_enabled=false, it
+will break the static branch for the other card. You need to use
+static_branch_inc() and static_branch_dec(), and react only on changes
+(old fpe->mmsv.pmac_enabled ^ cmd->pmac_enabled).
+
+> +
+> +	return igc_tsn_offload_apply(adapter);
+> +}
+> +
+>  static int igc_ethtool_get_link_ksettings(struct net_device *netdev,
+>  					  struct ethtool_link_ksettings *cmd)
+>  {
+> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+> index 44e4f925491f..396410522e01 100644
+> --- a/drivers/net/ethernet/intel/igc/igc_main.c
+> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
+> @@ -2618,6 +2618,15 @@ static int igc_clean_rx_irq(struct igc_q_vector *q_vector, const int budget)
+>  			size -= IGC_TS_HDR_LEN;
+>  		}
+>  
+> +		if (static_branch_unlikely(&igc_fpe_enabled) &&
+> +		    igc_fpe_is_verify_or_response(rx_desc, size)) {
+
+FWIW, the igc_fpe_enabled static branch is kernel-wide and does not
+necessarily mean that FPE is enabled on _this_ NIC (that would still be
+adapter->fpe.mmsv.pmac_enabled).
+
+I don't think it's very safe to call ethtool_mmsv events when it doesn't
+expect them (pmac_enabled = false), at least from a maintainance perspective
+it would be easier not to do that.
+
+I'm just ballparking this, but I think igc_fpe_is_verify_or_response() is
+also just a bit more computationally expensive than just checking
+adapter->fpe.mmsv.pmac_enabled for the "normal" case where FPE isn't
+enabled, so it might make sense to add this as an extra check anyway.
+
+> +			igc_fpe_lp_event_status(rx_desc, &adapter->fpe.mmsv);
+> +			/* Advance the ring next-to-clean */
+> +			igc_is_non_eop(rx_ring, rx_desc);
+> +			cleaned_count++;
+> +			continue;
+> +		}
+> +
+>  		if (!skb) {
+>  			xdp_init_buff(&ctx.xdp, truesize, &rx_ring->xdp_rxq);
+>  			xdp_prepare_buff(&ctx.xdp, pktbuf - igc_rx_offset(rx_ring),
+> diff --git a/drivers/net/ethernet/intel/igc/igc_tsn.c b/drivers/net/ethernet/intel/igc/igc_tsn.c
+> index f0213cfce07d..52ff6f324d79 100644
+> --- a/drivers/net/ethernet/intel/igc/igc_tsn.c
+> +++ b/drivers/net/ethernet/intel/igc/igc_tsn.c
+> @@ -1,10 +1,153 @@
+>  // SPDX-License-Identifier: GPL-2.0
+>  /* Copyright (c)  2019 Intel Corporation */
+>  
+> +#include <linux/kernel.h>
+>  #include "igc.h"
+> +#include "igc_base.h"
+>  #include "igc_hw.h"
+>  #include "igc_tsn.h"
+>  
+> +DEFINE_STATIC_KEY_FALSE(igc_fpe_enabled);
+> +
+> +static int igc_fpe_init_smd_frame(struct igc_ring *ring,
+> +				  struct igc_tx_buffer *buffer,
+> +				  struct sk_buff *skb)
+> +{
+> +	dma_addr_t dma = dma_map_single(ring->dev, skb->data, skb->len,
+> +					DMA_TO_DEVICE);
+> +
+> +	if (dma_mapping_error(ring->dev, dma)) {
+> +		netdev_err_once(ring->netdev, "Failed to map DMA for TX\n");
+> +		return -ENOMEM;
+> +	}
+> +
+> +	buffer->skb = skb;
+> +	buffer->protocol = 0;
+> +	buffer->bytecount = skb->len;
+> +	buffer->gso_segs = 1;
+> +	buffer->time_stamp = jiffies;
+> +	dma_unmap_len_set(buffer, len, skb->len);
+> +	dma_unmap_addr_set(buffer, dma, dma);
+> +
+> +	return 0;
+> +}
+> +
+> +static int igc_fpe_init_tx_descriptor(struct igc_ring *ring,
+> +				      struct sk_buff *skb, int type)
+> +{
+> +	struct igc_tx_buffer *buffer;
+> +	union igc_adv_tx_desc *desc;
+> +	u32 cmd_type, olinfo_status;
+> +	int err;
+> +
+> +	if (!igc_desc_unused(ring))
+> +		return -EBUSY;
+> +
+> +	if (type != IGC_TXD_POPTS_SMD_V && type != IGC_TXD_POPTS_SMD_R)
+> +		return -EINVAL;
+
+It should really be sufficient to guarantee at compile time that the argument
+is valid (it never comes from user input, so it's not hard). Error handling
+for a condition that can't be triggered shouldn't exist, except for the
+very specific case of future proofing loosely coupled software components
+(what one would call "API", not the case here).
+
+I guess a concern is what happens when, for any reason, you add a new
+type of packet that you can transmit, and igc_fpe_init_tx_descriptor()
+isn't updated to handle it yet. If you make "int type" a proper enum
+type, the compiler will automatically warn when an enum value isn't
+handled in the "switch (type)" block, because there's no "default" case.
+I think that's actually better than finding this out at runtime, so I
+would recommend using an enum for stronger typing.
+
+Warning: it's still only a hint and thus not perfect, in that you
+could pass an out-of-range constant literal like "42" and the compiler
+wouldn't warn.
+
+> +
+> +	buffer = &ring->tx_buffer_info[ring->next_to_use];
+> +	err = igc_fpe_init_smd_frame(ring, buffer, skb);
+> +	if (err)
+> +		return err;
+> +
+> +	cmd_type = IGC_ADVTXD_DTYP_DATA | IGC_ADVTXD_DCMD_DEXT |
+> +		   IGC_ADVTXD_DCMD_IFCS | IGC_TXD_DCMD |
+> +		   buffer->bytecount;
+> +	olinfo_status = buffer->bytecount << IGC_ADVTXD_PAYLEN_SHIFT;
+
+Still some FIELD_PREP() conversions to do here?
+
+> +
+> +	switch (type) {
+> +	case IGC_TXD_POPTS_SMD_V:
+> +		olinfo_status |= (IGC_TXD_POPTS_SMD_V << IGC_TXD_POPTS_SMD_SHIFT);
+> +		break;
+> +	case IGC_TXD_POPTS_SMD_R:
+> +		olinfo_status |= (IGC_TXD_POPTS_SMD_R << IGC_TXD_POPTS_SMD_SHIFT);
+> +		break;
+> +	}
+
+What I just said above is a bit diluted by the fact that this doesn't
+have to be a switch/case block. It's just "olinfo_status |= type << IGC_TXD_POPTS_SMD_SHIFT"
+(also, parentheses are not necessary).
+
+As a mere suggestion, I would write this as:
+
+	switch (type) { // "type" being an enum
+	case IGC_TXD_POPTS_SMD_V:
+	case IGC_TXD_POPTS_SMD_R:
+		olinfo_status |= FIELD_PREP(IGC_TXD_POPTS_SMD_MASK, type);
+		break;
+	}
+
+> +
+> +	desc = IGC_TX_DESC(ring, ring->next_to_use);
+> +	desc->read.cmd_type_len = cpu_to_le32(cmd_type);
+> +	desc->read.olinfo_status = cpu_to_le32(olinfo_status);
+> +	desc->read.buffer_addr = cpu_to_le64(dma_unmap_addr(buffer, dma));
+> +
+> +	netdev_tx_sent_queue(txring_txq(ring), skb->len);
+> +
+> +	buffer->next_to_watch = desc;
+> +	ring->next_to_use = (ring->next_to_use + 1) % ring->count;
+> +
+> +	return 0;
+> +}
+> +
+> +bool igc_fpe_transmitted_smd_v(union igc_adv_tx_desc *tx_desc)
+> +{
+> +	u8 smd = FIELD_GET(IGC_TXD_POPTS_SMD_MASK, tx_desc->read.olinfo_status);
+> +
+> +	return smd == IGC_TXD_POPTS_SMD_V;
+> +}
+> +
+> +static int igc_fpe_xmit_smd_frame(struct igc_adapter *adapter, int type)
+> +{
+> +	int cpu = smp_processor_id();
+> +	struct netdev_queue *nq;
+> +	struct igc_ring *ring;
+> +	struct sk_buff *skb;
+> +	void *data;
+> +	int err;
+> +
+> +	if (!netif_running(adapter->netdev))
+> +		return -ENOTCONN;
+
+Have you seen a code path that would require protecting the transmission
+using this conditional?
+
+I get the feeling that this is defensive programming when we could give
+guarantees in other ways. But maybe there are some race conditions I'm
+not seeing.
+
+ethtool_mmsv_send_mpacket() is called from ethtool_mmsv_verify_timer()
+and from ethtool_mmsv_event_handle(event == ETHTOOL_MMSV_LP_SENT_VERIFY_MPACKET).
+
+When called from ethtool_mmsv_verify_timer(), it means the verify timer
+has been armed, which only happens if (netif_running(mmsv->dev)). After
+netif_running() becomes false (aka __LINK_STATE_START is cleared, aka in
+ndo_stop()), you have a chance to call ethtool_mmsv_stop(), which stops
+the verification timer. I see you're not doing that. Is there a reason?
+
+> +
+> +	ring = igc_get_tx_ring(adapter, cpu);
+> +	nq = txring_txq(ring);
+> +
+> +	skb = alloc_skb(SMD_FRAME_SIZE, GFP_KERNEL);
+> +	if (!skb)
+> +		return -ENOMEM;
+> +
+> +	data = skb_put(skb, SMD_FRAME_SIZE);
+> +	memset(data, 0, SMD_FRAME_SIZE);
+
+skb_put_zero()
+
+> +
+> +	__netif_tx_lock(nq, cpu);
+> +
+> +	err = igc_fpe_init_tx_descriptor(ring, skb, type);
+> +	igc_flush_tx_descriptors(ring);
+> +
+> +	__netif_tx_unlock(nq);
+> +
+> +	return err;
+> +}
+> +
+> +static void igc_fpe_send_mpacket(struct ethtool_mmsv *mmsv,
+> +				 enum ethtool_mpacket type)
+> +{
+> +	struct fpe_t *fpe = container_of(mmsv, struct fpe_t, mmsv);
+> +	struct igc_adapter *adapter;
+> +	int err;
+> +
+> +	adapter = container_of(fpe, struct igc_adapter, fpe);
+> +
+> +	if (type == ETHTOOL_MPACKET_VERIFY) {
+> +		err = igc_fpe_xmit_smd_frame(adapter, IGC_TXD_POPTS_SMD_V);
+> +		if (err)
+> +			netdev_err(adapter->netdev, "Error sending SMD-V\n");
+> +	} else if (type == ETHTOOL_MPACKET_RESPONSE) {
+> +		err = igc_fpe_xmit_smd_frame(adapter, IGC_TXD_POPTS_SMD_R);
+> +		if (err)
+> +			netdev_err(adapter->netdev, "Error sending SMD-R frame\n");
+
+Can you please rate limit these prints?
+
+> +	}
+> +}
