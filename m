@@ -1,77 +1,77 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DF7DFC02196
-	for <intel-wired-lan@archiver.kernel.org>; Fri,  7 Feb 2025 21:01:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 27469C0219C
+	for <intel-wired-lan@archiver.kernel.org>; Fri,  7 Feb 2025 21:01:33 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 9E25B7052C;
-	Fri,  7 Feb 2025 21:01:30 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id D56D984A54;
+	Fri,  7 Feb 2025 21:01:32 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 33QzmHWyx3_j; Fri,  7 Feb 2025 21:01:29 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id CPJU9WeagntY; Fri,  7 Feb 2025 21:01:31 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org EE82170503
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E46EA84A57
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1738962089;
-	bh=fjjuHMxiCiorJcFUplUp01LhKydDRGMJjU8dWyFShk0=;
+	s=default; t=1738962091;
+	bh=gEYsk50Odz9hKTIgXptPxjIwukahKeSQ4hPgauEwnh4=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=Sr3eiTtKqkOd6hBkvhQjwxB4aa2UTFMz8/5BRnWkQ71w0OGEr60IIfvblNfkIu3wa
-	 kgGjafGSLTILwvxYiPxrMuSors/h9HAWFPOLmDM0CTceeAHudt6MQY3BKPV1WMfAzv
-	 Cl8u4hgHuQ6ag93phn/lFPXImzmLkTHZlJ/+3dAwAb+EG8MNsIGBA9QRIpwdkJ3vv5
-	 2A/KmROHCLijAAYww/gLLtdWbDKVWoMcTvzy6VTUXlEy5RKKVcI3ijakshdLJezlsC
-	 MsO4E03vymfEHqADgS1TB36MGFLK0CDqBCbf+VniCITE7zj91j6RLxIelMonisWUsc
-	 AsxtvWSx1JOPQ==
+	b=bMXEa+mPZ+W60DzRtKP3Vsl1esx154QATSTg3yjxdpneCbIU8jOEsV8btcU1EFp/Y
+	 2S8BTLj7LLRA1tp4x/iLTdbKCb5FQHgw9+qiqY5vWcAhyqZSZD4Eq8dhj63SQ2aSOq
+	 /ZIk+Lq9pr1kTY63/v3UPqmpIZDO7p4PjHs9lM2P1K5XUWjO9MmUjBJ47P4G2rhZvy
+	 UUzK+PzOD0bnCUs+BgvIJ4xW/sVu+6aBkxCID0rMnmxB7vc8ehBv3WaJCdZnD5jA3Q
+	 3l2VQQ6VIQkGbSCcuUrHYy3qFtaTixCYqJCxz2B6KzRQPDy27nW4zDTh3uQSbMas0E
+	 yK913JPSukaBg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id EE82170503;
-	Fri,  7 Feb 2025 21:01:28 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id 8308B1B5
- for <intel-wired-lan@lists.osuosl.org>; Fri,  7 Feb 2025 19:50:29 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id E46EA84A57;
+	Fri,  7 Feb 2025 21:01:30 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 15A5AE4
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  7 Feb 2025 19:50:30 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 594C142CBD
- for <intel-wired-lan@lists.osuosl.org>; Fri,  7 Feb 2025 19:50:26 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 2ED6360AAE
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  7 Feb 2025 19:50:29 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id dit5dWEV2awa for <intel-wired-lan@lists.osuosl.org>;
- Fri,  7 Feb 2025 19:50:24 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 1M69FbqTTmPl for <intel-wired-lan@lists.osuosl.org>;
+ Fri,  7 Feb 2025 19:50:27 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.13;
  helo=mgamail.intel.com; envelope-from=tatyana.e.nikolova@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 8BACC42C6E
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 8BACC42C6E
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 8A8B5704DA
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8A8B5704DA
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.13])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 8BACC42C6E
- for <intel-wired-lan@lists.osuosl.org>; Fri,  7 Feb 2025 19:50:24 +0000 (UTC)
-X-CSE-ConnectionGUID: Af3CQTCJRPOkChUf0X56iA==
-X-CSE-MsgGUID: nxBSIgY8Q9G38CfwyhY4Qw==
-X-IronPort-AV: E=McAfee;i="6700,10204,11338"; a="42451755"
-X-IronPort-AV: E=Sophos;i="6.13,268,1732608000"; d="scan'208";a="42451755"
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 8A8B5704DA
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  7 Feb 2025 19:50:27 +0000 (UTC)
+X-CSE-ConnectionGUID: BAIOknKZSken44Kvlv6W+w==
+X-CSE-MsgGUID: 1LJUm+MrSlmYhh+2rrvhbQ==
+X-IronPort-AV: E=McAfee;i="6700,10204,11338"; a="42451795"
+X-IronPort-AV: E=Sophos;i="6.13,268,1732608000"; d="scan'208";a="42451795"
 Received: from fmviesa009.fm.intel.com ([10.60.135.149])
  by fmvoesa107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 07 Feb 2025 11:50:23 -0800
-X-CSE-ConnectionGUID: c42cEGG8Qg+KhgOt4EldfA==
-X-CSE-MsgGUID: 4ywN//N3QViNQdgl1dkHSg==
+ 07 Feb 2025 11:50:27 -0800
+X-CSE-ConnectionGUID: DgcOkasCSNK36rm7PwvXsg==
+X-CSE-MsgGUID: TQI9sSubRZ6TR4VJkcL8QQ==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.13,268,1732608000"; d="scan'208";a="112238120"
+X-IronPort-AV: E=Sophos;i="6.13,268,1732608000"; d="scan'208";a="112238170"
 Received: from tenikolo-mobl1.amr.corp.intel.com ([10.124.81.134])
  by fmviesa009-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 07 Feb 2025 11:50:22 -0800
+ 07 Feb 2025 11:50:26 -0800
 From: Tatyana Nikolova <tatyana.e.nikolova@intel.com>
 To: jgg@nvidia.com,
 	leon@kernel.org,
 	intel-wired-lan@lists.osuosl.org
 Cc: linux-rdma@vger.kernel.org, netdev@vger.kernel.org,
- Joshua Hay <joshua.a.hay@intel.com>,
+ Christopher Bednarz <christopher.n.bednarz@intel.com>,
  Tatyana Nikolova <tatyana.e.nikolova@intel.com>
-Date: Fri,  7 Feb 2025 13:49:10 -0600
-Message-Id: <20250207194931.1569-4-tatyana.e.nikolova@intel.com>
+Date: Fri,  7 Feb 2025 13:49:17 -0600
+Message-Id: <20250207194931.1569-11-tatyana.e.nikolova@intel.com>
 X-Mailer: git-send-email 2.28.0
 In-Reply-To: <20250207194931.1569-1-tatyana.e.nikolova@intel.com>
 References: <20250207194931.1569-1-tatyana.e.nikolova@intel.com>
@@ -80,25 +80,25 @@ Content-Transfer-Encoding: 8bit
 X-Mailman-Approved-At: Fri, 07 Feb 2025 21:01:16 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1738957824; x=1770493824;
+ t=1738957827; x=1770493827;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=cb0vzZ7fC41pZZFZHyPhCRGWOgykMiWQ+YNEL/xeIv8=;
- b=T66rc946b66zoNxZTbZSgXzyuAqO135UDChmrwSuFc1AIwJpqgOEDFbj
- M+t/QfdpVOU73oQatbDCZaULnfPPziXJGKCmMevNJDNJfuPvexv7+KmX9
- 8HOAozkbSdEmPThwYBKz75wWzc8SwvAcJjichc0+hgwsRzFYJheJh74dU
- sybCUdaoOZe5SEz78O38XOzZd3zLZv8eu2QmL36+Jy9YMv9KW/r0lBb8K
- CTmLleb6mNmhgdMVjU4aG23eeATZG70/FDwK36/EzfhqxptQ9kdO5yp4p
- X80NjSToKRJpP60vO3WJZAzGpo7UuYrN9S0Bex7VAYledjeCWLCTZx1oF
+ bh=vC0Jfvr/oayWS+858/BZ6C0bwP11mImhz9oKengJMRU=;
+ b=X81zv5gl55Va4GVUG8elcwmqmZLw0W0qHHT1WF07zJHmuOzI9jZ2pyKW
+ xb+t0QAeGBnsk7OB43ecefHWcYhBB7PqwRlWQSl5O6x3OTGvLQmciUwer
+ decsbTPx7QCsjdmGYtuQioc0W0mq4jMdQpHPz/tnLCFq2/VqAKzkGPIRn
+ E3I9LWKEpxxnQxApBMxYIMzXUhoS7GvrcY4v8qt4yM1UfwfVAqhLNodWB
+ +/bCpG0M8RrZwrPvJWNf+JAYCyRVZffIlr6+xKQ/Z3+JWNKx0sJhZLCWd
+ 2aqtbHb/mKQvKKM1EcRFDQNhfA6SCVPLqtq5BPBA1zREti92oCH6XtQ6P
  w==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=T66rc946
-Subject: [Intel-wired-lan] [iwl-next v3 03/24] idpf: implement core RDMA
- auxiliary dev create, init, and destroy
+ header.a=rsa-sha256 header.s=Intel header.b=X81zv5gl
+Subject: [Intel-wired-lan] [rdma v3 10/24] RDMA/irdma: Discover and set up
+ GEN3 hardware register layout
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -114,461 +114,632 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Joshua Hay <joshua.a.hay@intel.com>
+From: Christopher Bednarz <christopher.n.bednarz@intel.com>
 
-Add the initial idpf_idc.c file with the functions to kick off the IDC
-initialization, create and initialize a core RDMA auxiliary device, and
-destroy said device.
+Discover the hardware register layout for GEN3 devices through an RDMA
+virtual channel operation with the Control Plane (CP). Set up the
+corresponding hardware attributes specific to GEN3 devices.
 
-The RDMA core has a dependency on the vports being created by the
-control plane before it can be initialized. Therefore, once all the
-vports are up after a hard reset (either during driver load a function
-level reset), the core RDMA device info will be created. It is populated
-with the function type (as distinguished by the IDC initialization
-function pointer), the core idc_ops function points (just stubs for
-now), the reserved RDMA MSIX table, and various other info the core RDMA
-auxiliary driver will need. It is then plugged on to the bus.
-
-During a function level reset or driver unload, the device will be
-unplugged from the bus and destroyed.
-
-Signed-off-by: Joshua Hay <joshua.a.hay@intel.com>
+Signed-off-by: Christopher Bednarz <christopher.n.bednarz@intel.com>
 Signed-off-by: Tatyana Nikolova <tatyana.e.nikolova@intel.com>
 ---
 
-v3:
-- Used signed ret value from ida_alloc and only assign unsigned id
-  if no err
-- capitalize some abbreviations
-- add missing field descriptions
+v3: Decrease IG3RDMA_MAX_IRD/ORD_SIZE to 64 for smaller memory
+requirements.
 
- drivers/net/ethernet/intel/idpf/Makefile      |   1 +
- drivers/net/ethernet/intel/idpf/idpf.h        |  10 +
- drivers/net/ethernet/intel/idpf/idpf_dev.c    |  13 ++
- drivers/net/ethernet/intel/idpf/idpf_idc.c    | 220 ++++++++++++++++++
- drivers/net/ethernet/intel/idpf/idpf_lib.c    |   4 +
- drivers/net/ethernet/intel/idpf/idpf_vf_dev.c |  13 ++
- .../net/ethernet/intel/idpf/idpf_virtchnl.c   |  19 ++
- .../net/ethernet/intel/idpf/idpf_virtchnl.h   |   3 +
- 8 files changed, 283 insertions(+)
- create mode 100644 drivers/net/ethernet/intel/idpf/idpf_idc.c
+ drivers/infiniband/hw/irdma/Makefile     |   1 +
+ drivers/infiniband/hw/irdma/ctrl.c       |  31 ++--
+ drivers/infiniband/hw/irdma/defs.h       |  12 +-
+ drivers/infiniband/hw/irdma/i40iw_hw.c   |   2 +
+ drivers/infiniband/hw/irdma/i40iw_hw.h   |   2 +
+ drivers/infiniband/hw/irdma/icrdma_hw.c  |   3 +
+ drivers/infiniband/hw/irdma/icrdma_hw.h  |   5 +-
+ drivers/infiniband/hw/irdma/ig3rdma_hw.c |  65 +++++++++
+ drivers/infiniband/hw/irdma/ig3rdma_hw.h |  18 +++
+ drivers/infiniband/hw/irdma/irdma.h      |   5 +
+ drivers/infiniband/hw/irdma/virtchnl.c   | 178 +++++++++++++++++++++++
+ drivers/infiniband/hw/irdma/virtchnl.h   |  44 ++++++
+ 12 files changed, 351 insertions(+), 15 deletions(-)
+ create mode 100644 drivers/infiniband/hw/irdma/ig3rdma_hw.c
 
-diff --git a/drivers/net/ethernet/intel/idpf/Makefile b/drivers/net/ethernet/intel/idpf/Makefile
-index 2ce01a0b5898..bde9c893d8a1 100644
---- a/drivers/net/ethernet/intel/idpf/Makefile
-+++ b/drivers/net/ethernet/intel/idpf/Makefile
-@@ -10,6 +10,7 @@ idpf-y := \
- 	idpf_controlq_setup.o	\
- 	idpf_dev.o		\
- 	idpf_ethtool.o		\
-+	idpf_idc.o		\
- 	idpf_lib.o		\
- 	idpf_main.o		\
- 	idpf_txrx.o		\
-diff --git a/drivers/net/ethernet/intel/idpf/idpf.h b/drivers/net/ethernet/intel/idpf/idpf.h
-index 8ef7120e6717..64f731fe878c 100644
---- a/drivers/net/ethernet/intel/idpf/idpf.h
-+++ b/drivers/net/ethernet/intel/idpf/idpf.h
-@@ -17,6 +17,7 @@ struct idpf_vport_max_q;
- #include <linux/sctp.h>
- #include <linux/ethtool_netlink.h>
- #include <net/gro.h>
-+#include <linux/net/intel/idc_rdma.h>
+diff --git a/drivers/infiniband/hw/irdma/Makefile b/drivers/infiniband/hw/irdma/Makefile
+index 3aa63b913377..03ceb9e5475f 100644
+--- a/drivers/infiniband/hw/irdma/Makefile
++++ b/drivers/infiniband/hw/irdma/Makefile
+@@ -16,6 +16,7 @@ irdma-objs := cm.o        \
+ 	      ig3rdma_if.o\
+ 	      icrdma_if.o \
+               icrdma_hw.o \
++	      ig3rdma_hw.o\
+               main.o      \
+               pble.o      \
+               puda.o      \
+diff --git a/drivers/infiniband/hw/irdma/ctrl.c b/drivers/infiniband/hw/irdma/ctrl.c
+index 2375d8dc0b01..082aaa5fc3bc 100644
+--- a/drivers/infiniband/hw/irdma/ctrl.c
++++ b/drivers/infiniband/hw/irdma/ctrl.c
+@@ -5672,6 +5672,9 @@ static inline void irdma_sc_init_hw(struct irdma_sc_dev *dev)
+ 	case IRDMA_GEN_2:
+ 		icrdma_init_hw(dev);
+ 		break;
++	case IRDMA_GEN_3:
++		ig3rdma_init_hw(dev);
++		break;
+ 	}
+ }
  
- #include "virtchnl2.h"
- #include "idpf_txrx.h"
-@@ -202,9 +203,12 @@ struct idpf_reg_ops {
- /**
-  * struct idpf_dev_ops - Device specific operations
-  * @reg_ops: Register operations
-+ * @idc_init: IDC initialization
-  */
- struct idpf_dev_ops {
- 	struct idpf_reg_ops reg_ops;
+@@ -5742,18 +5745,26 @@ int irdma_sc_dev_init(enum irdma_vers ver, struct irdma_sc_dev *dev,
+ 
+ 	irdma_sc_init_hw(dev);
+ 
+-	if (irdma_wait_pe_ready(dev))
+-		return -ETIMEDOUT;
++	if (dev->privileged) {
++		if (irdma_wait_pe_ready(dev))
++			return -ETIMEDOUT;
+ 
+-	val = readl(dev->hw_regs[IRDMA_GLPCI_LBARCTRL]);
+-	db_size = (u8)FIELD_GET(IRDMA_GLPCI_LBARCTRL_PE_DB_SIZE, val);
+-	if (db_size != IRDMA_PE_DB_SIZE_4M && db_size != IRDMA_PE_DB_SIZE_8M) {
+-		ibdev_dbg(to_ibdev(dev),
+-			  "DEV: RDMA PE doorbell is not enabled in CSR val 0x%x db_size=%d\n",
+-			  val, db_size);
+-		return -ENODEV;
++		val = readl(dev->hw_regs[IRDMA_GLPCI_LBARCTRL]);
++		db_size = (u8)FIELD_GET(IRDMA_GLPCI_LBARCTRL_PE_DB_SIZE, val);
++		if (db_size != IRDMA_PE_DB_SIZE_4M &&
++		    db_size != IRDMA_PE_DB_SIZE_8M) {
++			ibdev_dbg(to_ibdev(dev),
++				  "DEV: RDMA PE doorbell is not enabled in CSR val 0x%x db_size=%d\n",
++				  val, db_size);
++			return -ENODEV;
++			}
++	} else {
++		ret_code = irdma_vchnl_req_get_reg_layout(dev);
++		if (ret_code)
++			ibdev_dbg(to_ibdev(dev),
++				  "DEV: Get Register layout failed ret = %d\n",
++				  ret_code);
+ 	}
+-	dev->db_addr = dev->hw->hw_addr + (uintptr_t)dev->hw_regs[IRDMA_DB_ADDR_OFFSET];
+ 
+ 	return ret_code;
+ }
+diff --git a/drivers/infiniband/hw/irdma/defs.h b/drivers/infiniband/hw/irdma/defs.h
+index 7d363088b5c3..425bcd17abe9 100644
+--- a/drivers/infiniband/hw/irdma/defs.h
++++ b/drivers/infiniband/hw/irdma/defs.h
+@@ -115,6 +115,7 @@ enum irdma_protocol_used {
+ #define IRDMA_FEATURE_BUF_SIZE		(8 * IRDMA_MAX_FEATURES)
+ 
+ #define ENABLE_LOC_MEM			63
++#define IRDMA_ATOMICS_ALLOWED_BIT	1
+ #define MAX_PBLE_PER_SD			0x40000
+ #define MAX_PBLE_SD_PER_FCN		0x400
+ #define MAX_MR_PER_SD			0x8000
+@@ -127,7 +128,7 @@ enum irdma_protocol_used {
+ #define IRDMA_QP_SW_MAX_RQ_QUANTA	32768
+ #define IRDMA_MAX_QP_WRS(max_quanta_per_wr) \
+ 	((IRDMA_QP_SW_MAX_WQ_QUANTA - IRDMA_SQ_RSVD) / (max_quanta_per_wr))
+-
++#define IRDMA_SRQ_MAX_QUANTA 262144
+ #define IRDMAQP_TERM_SEND_TERM_AND_FIN		0
+ #define IRDMAQP_TERM_SEND_TERM_ONLY		1
+ #define IRDMAQP_TERM_SEND_FIN_ONLY		2
+@@ -153,8 +154,13 @@ enum irdma_protocol_used {
+ #define IRDMA_SQ_RSVD	258
+ #define IRDMA_RQ_RSVD	1
+ 
+-#define IRDMA_FEATURE_RTS_AE			1ULL
+-#define IRDMA_FEATURE_CQ_RESIZE			2ULL
++#define IRDMA_FEATURE_RTS_AE			BIT_ULL(0)
++#define IRDMA_FEATURE_CQ_RESIZE			BIT_ULL(1)
++#define IRDMA_FEATURE_64_BYTE_CQE		BIT_ULL(5)
++#define IRDMA_FEATURE_ATOMIC_OPS		BIT_ULL(6)
++#define IRDMA_FEATURE_SRQ			BIT_ULL(7)
++#define IRDMA_FEATURE_CQE_TIMESTAMPING		BIT_ULL(8)
 +
-+	int (*idc_init)(struct idpf_adapter *adapter);
+ #define IRDMAQP_OP_RDMA_WRITE			0x00
+ #define IRDMAQP_OP_RDMA_READ			0x01
+ #define IRDMAQP_OP_RDMA_SEND			0x03
+diff --git a/drivers/infiniband/hw/irdma/i40iw_hw.c b/drivers/infiniband/hw/irdma/i40iw_hw.c
+index ce61a27cb1f6..60c1f2b1811d 100644
+--- a/drivers/infiniband/hw/irdma/i40iw_hw.c
++++ b/drivers/infiniband/hw/irdma/i40iw_hw.c
+@@ -85,6 +85,7 @@ static u64 i40iw_masks[IRDMA_MAX_MASKS] = {
+ 	I40E_CQPSQ_CQ_CEQID,
+ 	I40E_CQPSQ_CQ_CQID,
+ 	I40E_COMMIT_FPM_CQCNT,
++	I40E_CQPSQ_UPESD_HMCFNID,
+ };
+ 
+ static u64 i40iw_shifts[IRDMA_MAX_SHIFTS] = {
+@@ -94,6 +95,7 @@ static u64 i40iw_shifts[IRDMA_MAX_SHIFTS] = {
+ 	I40E_CQPSQ_CQ_CEQID_S,
+ 	I40E_CQPSQ_CQ_CQID_S,
+ 	I40E_COMMIT_FPM_CQCNT_S,
++	I40E_CQPSQ_UPESD_HMCFNID_S,
  };
  
  /**
-@@ -522,6 +526,7 @@ struct idpf_vc_xn_manager;
-  * @caps: Negotiated capabilities with device
-  * @vcxn_mngr: Virtchnl transaction manager
-  * @dev_ops: See idpf_dev_ops
-+ * @cdev_info: IDC core device info pointer
-  * @num_vfs: Number of allocated VFs through sysfs. PF does not directly talk
-  *	     to VFs but is used to initialize them
-  * @crc_enable: Enable CRC insertion offload
-@@ -580,6 +585,7 @@ struct idpf_adapter {
- 	struct idpf_vc_xn_manager *vcxn_mngr;
+diff --git a/drivers/infiniband/hw/irdma/i40iw_hw.h b/drivers/infiniband/hw/irdma/i40iw_hw.h
+index e1db84d8a62c..0095b327afcc 100644
+--- a/drivers/infiniband/hw/irdma/i40iw_hw.h
++++ b/drivers/infiniband/hw/irdma/i40iw_hw.h
+@@ -123,6 +123,8 @@
+ #define I40E_CQPSQ_CQ_CQID GENMASK_ULL(15, 0)
+ #define I40E_COMMIT_FPM_CQCNT_S 0
+ #define I40E_COMMIT_FPM_CQCNT GENMASK_ULL(17, 0)
++#define I40E_CQPSQ_UPESD_HMCFNID_S 0
++#define I40E_CQPSQ_UPESD_HMCFNID GENMASK_ULL(5, 0)
  
- 	struct idpf_dev_ops dev_ops;
-+	struct idc_rdma_core_dev_info *cdev_info;
- 	int num_vfs;
- 	bool crc_enable;
- 	bool req_tx_splitq;
-@@ -858,5 +864,9 @@ int idpf_sriov_configure(struct pci_dev *pdev, int num_vfs);
+ #define I40E_VSIQF_CTL(_VSI)             (0x0020D800 + ((_VSI) * 4))
  
- u8 idpf_vport_get_hsplit(const struct idpf_vport *vport);
- bool idpf_vport_set_hsplit(const struct idpf_vport *vport, u8 val);
-+int idpf_idc_init(struct idpf_adapter *adapter);
-+int idpf_idc_init_aux_core_dev(struct idpf_adapter *adapter,
-+			       enum idc_function_type ftype);
-+void idpf_idc_deinit_core_aux_device(struct idc_rdma_core_dev_info *cdev_info);
+diff --git a/drivers/infiniband/hw/irdma/icrdma_hw.c b/drivers/infiniband/hw/irdma/icrdma_hw.c
+index 941d3edffadb..32f26284a788 100644
+--- a/drivers/infiniband/hw/irdma/icrdma_hw.c
++++ b/drivers/infiniband/hw/irdma/icrdma_hw.c
+@@ -38,6 +38,7 @@ static u64 icrdma_masks[IRDMA_MAX_MASKS] = {
+ 	ICRDMA_CQPSQ_CQ_CEQID,
+ 	ICRDMA_CQPSQ_CQ_CQID,
+ 	ICRDMA_COMMIT_FPM_CQCNT,
++	ICRDMA_CQPSQ_UPESD_HMCFNID,
+ };
  
- #endif /* !_IDPF_H_ */
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_dev.c b/drivers/net/ethernet/intel/idpf/idpf_dev.c
-index 41e4bd49402a..351db7d5dace 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_dev.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_dev.c
-@@ -148,6 +148,17 @@ static void idpf_trigger_reset(struct idpf_adapter *adapter,
- 	       idpf_get_reg_addr(adapter, PFGEN_CTRL));
- }
+ static u64 icrdma_shifts[IRDMA_MAX_SHIFTS] = {
+@@ -47,6 +48,7 @@ static u64 icrdma_shifts[IRDMA_MAX_SHIFTS] = {
+ 	ICRDMA_CQPSQ_CQ_CEQID_S,
+ 	ICRDMA_CQPSQ_CQ_CQID_S,
+ 	ICRDMA_COMMIT_FPM_CQCNT_S,
++	ICRDMA_CQPSQ_UPESD_HMCFNID_S,
+ };
  
-+/**
-+ * idpf_idc_register - register for IDC callbacks
-+ * @adapter: Driver specific private structure
-+ *
-+ * Return: 0 on success or error code on failure.
-+ */
-+static int idpf_idc_register(struct idpf_adapter *adapter)
-+{
-+	return idpf_idc_init_aux_core_dev(adapter, IDC_FUNCTION_TYPE_PF);
-+}
-+
  /**
-  * idpf_reg_ops_init - Initialize register API function pointers
-  * @adapter: Driver specific private structure
-@@ -168,4 +179,6 @@ static void idpf_reg_ops_init(struct idpf_adapter *adapter)
- void idpf_dev_ops_init(struct idpf_adapter *adapter)
- {
- 	idpf_reg_ops_init(adapter);
-+
-+	adapter->dev_ops.idc_init = idpf_idc_register;
- }
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_idc.c b/drivers/net/ethernet/intel/idpf/idpf_idc.c
+@@ -194,6 +196,7 @@ void icrdma_init_hw(struct irdma_sc_dev *dev)
+ 	dev->hw_attrs.max_hw_ord = ICRDMA_MAX_ORD_SIZE;
+ 	dev->hw_attrs.max_stat_inst = ICRDMA_MAX_STATS_COUNT;
+ 	dev->hw_attrs.max_stat_idx = IRDMA_HW_STAT_INDEX_MAX_GEN_2;
++	dev->hw_attrs.max_hw_device_pages = ICRDMA_MAX_PUSH_PAGE_COUNT;
+ 
+ 	dev->hw_attrs.uk_attrs.min_hw_wq_size = ICRDMA_MIN_WQ_SIZE;
+ 	dev->hw_attrs.uk_attrs.max_hw_sq_chunk = IRDMA_MAX_QUANTA_PER_WR;
+diff --git a/drivers/infiniband/hw/irdma/icrdma_hw.h b/drivers/infiniband/hw/irdma/icrdma_hw.h
+index 697b9572b5c6..d97944ab45da 100644
+--- a/drivers/infiniband/hw/irdma/icrdma_hw.h
++++ b/drivers/infiniband/hw/irdma/icrdma_hw.h
+@@ -58,14 +58,15 @@
+ #define ICRDMA_CQPSQ_CQ_CQID GENMASK_ULL(18, 0)
+ #define ICRDMA_COMMIT_FPM_CQCNT_S 0
+ #define ICRDMA_COMMIT_FPM_CQCNT GENMASK_ULL(19, 0)
+-
++#define ICRDMA_CQPSQ_UPESD_HMCFNID_S 0
++#define ICRDMA_CQPSQ_UPESD_HMCFNID GENMASK_ULL(5, 0)
+ enum icrdma_device_caps_const {
+ 	ICRDMA_MAX_STATS_COUNT = 128,
+ 
+ 	ICRDMA_MAX_IRD_SIZE			= 127,
+ 	ICRDMA_MAX_ORD_SIZE			= 255,
+ 	ICRDMA_MIN_WQ_SIZE                      = 8 /* WQEs */,
+-
++	ICRDMA_MAX_PUSH_PAGE_COUNT		= 256,
+ };
+ 
+ void icrdma_init_hw(struct irdma_sc_dev *dev);
+diff --git a/drivers/infiniband/hw/irdma/ig3rdma_hw.c b/drivers/infiniband/hw/irdma/ig3rdma_hw.c
 new file mode 100644
-index 000000000000..4c7cf32d4863
+index 000000000000..83ef6af82a8f
 --- /dev/null
-+++ b/drivers/net/ethernet/intel/idpf/idpf_idc.c
-@@ -0,0 +1,220 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/* Copyright (C) 2022 Intel Corporation */
++++ b/drivers/infiniband/hw/irdma/ig3rdma_hw.c
+@@ -0,0 +1,65 @@
++// SPDX-License-Identifier: GPL-2.0 or Linux-OpenIB
++/* Copyright (c) 2018 - 2024 Intel Corporation */
++#include "osdep.h"
++#include "type.h"
++#include "protos.h"
++#include "ig3rdma_hw.h"
 +
-+#include "idpf.h"
-+#include "idpf_virtchnl.h"
-+
-+static DEFINE_IDA(idpf_idc_ida);
-+
-+#define IDPF_IDC_MAX_ADEV_NAME_LEN	15
-+
-+/**
-+ * idpf_idc_init - Called to initialize IDC
-+ * @adapter: driver private data structure
-+ *
-+ * Return: 0 on success or cap not enabled, error code on failure.
-+ */
-+int idpf_idc_init(struct idpf_adapter *adapter)
++void ig3rdma_init_hw(struct irdma_sc_dev *dev)
 +{
-+	int err;
++	dev->hw_attrs.uk_attrs.hw_rev = IRDMA_GEN_3;
++	dev->hw_attrs.uk_attrs.max_hw_wq_frags = IG3RDMA_MAX_WQ_FRAGMENT_COUNT;
++	dev->hw_attrs.uk_attrs.max_hw_read_sges = IG3RDMA_MAX_SGE_RD;
++	dev->hw_attrs.uk_attrs.max_hw_sq_chunk = IRDMA_MAX_QUANTA_PER_WR;
++	dev->hw_attrs.first_hw_vf_fpm_id = 0;
++	dev->hw_attrs.max_hw_vf_fpm_id = IG3_MAX_APFS + IG3_MAX_AVFS;
++	dev->hw_attrs.uk_attrs.feature_flags |= IRDMA_FEATURE_64_BYTE_CQE;
++	if (dev->feature_info[IRDMA_FTN_FLAGS] & IRDMA_ATOMICS_ALLOWED_BIT)
++		dev->hw_attrs.uk_attrs.feature_flags |=
++			IRDMA_FEATURE_ATOMIC_OPS;
++	dev->hw_attrs.uk_attrs.feature_flags |= IRDMA_FEATURE_CQE_TIMESTAMPING;
 +
-+	if (!idpf_is_rdma_cap_ena(adapter) ||
-+	    !adapter->dev_ops.idc_init)
-+		return 0;
-+
-+	err = adapter->dev_ops.idc_init(adapter);
-+	if (err)
-+		dev_err(&adapter->pdev->dev, "failed to initialize idc: %d\n",
-+			err);
-+
-+	return err;
++	dev->hw_attrs.uk_attrs.feature_flags |= IRDMA_FEATURE_SRQ;
++	dev->hw_attrs.uk_attrs.feature_flags |= IRDMA_FEATURE_RTS_AE |
++						IRDMA_FEATURE_CQ_RESIZE;
++	dev->hw_attrs.page_size_cap = SZ_4K | SZ_2M | SZ_1G;
++	dev->hw_attrs.max_hw_ird = IG3RDMA_MAX_IRD_SIZE;
++	dev->hw_attrs.max_hw_ord = IG3RDMA_MAX_ORD_SIZE;
++	dev->hw_attrs.uk_attrs.min_hw_wq_size = IG3RDMA_MIN_WQ_SIZE;
++	dev->hw_attrs.uk_attrs.max_hw_srq_quanta = IRDMA_SRQ_MAX_QUANTA;
++	dev->hw_attrs.uk_attrs.max_hw_inline = IG3RDMA_MAX_INLINE_DATA_SIZE;
++	dev->hw_attrs.max_hw_device_pages =
++		dev->is_pf ? IG3RDMA_MAX_PF_PUSH_PAGE_COUNT : IG3RDMA_MAX_VF_PUSH_PAGE_COUNT;
 +}
 +
-+/**
-+ * idpf_core_adev_release - function to be mapped to aux dev's release op
-+ * @dev: pointer to device to free
-+ */
-+static void idpf_core_adev_release(struct device *dev)
++static void __iomem *__ig3rdma_get_reg_addr(struct irdma_mmio_region *region, u64 reg_offset)
 +{
-+	struct idc_rdma_core_auxiliary_dev *iadev;
++	if (reg_offset >= region->offset &&
++	    reg_offset < (region->offset + region->len)) {
++		reg_offset -= region->offset;
 +
-+	iadev = container_of(dev, struct idc_rdma_core_auxiliary_dev, adev.dev);
-+	kfree(iadev);
-+	iadev = NULL;
-+}
-+
-+/* idpf_plug_core_aux_dev - allocate and register an Auxiliary device
-+ * @cdev_info: IDC core device info pointer
-+ *
-+ * Return: 0 on success or error code on failure.
-+ */
-+static int idpf_plug_core_aux_dev(struct idc_rdma_core_dev_info *cdev_info)
-+{
-+	struct idc_rdma_core_auxiliary_dev *iadev;
-+	char name[IDPF_IDC_MAX_ADEV_NAME_LEN];
-+	struct auxiliary_device *adev;
-+	int ret;
-+
-+	iadev = kzalloc(sizeof(*iadev), GFP_KERNEL);
-+	if (!iadev)
-+		return -ENOMEM;
-+
-+	adev = &iadev->adev;
-+	cdev_info->adev = adev;
-+	iadev->cdev_info = cdev_info;
-+
-+	ret = ida_alloc(&idpf_idc_ida, GFP_KERNEL);
-+	if (ret < 0) {
-+		pr_err("failed to allocate unique device ID for Auxiliary driver\n");
-+		goto err_ida_alloc;
++		return region->addr + reg_offset;
 +	}
-+	adev->id = ret;
-+	adev->dev.release = idpf_core_adev_release;
-+	adev->dev.parent = &cdev_info->pdev->dev;
-+	sprintf(name, "%04x.rdma.core", cdev_info->pdev->vendor);
-+	adev->name = name;
 +
-+	ret = auxiliary_device_init(adev);
-+	if (ret)
-+		goto err_aux_dev_init;
-+
-+	ret = auxiliary_device_add(adev);
-+	if (ret)
-+		goto err_aux_dev_add;
-+
-+	return 0;
-+
-+err_aux_dev_add:
-+	cdev_info->adev = NULL;
-+	auxiliary_device_uninit(adev);
-+err_aux_dev_init:
-+	ida_free(&idpf_idc_ida, adev->id);
-+err_ida_alloc:
-+	kfree(iadev);
-+
-+	return ret;
++	return NULL;
 +}
 +
-+/* idpf_unplug_aux_dev - unregister and free an Auxiliary device
-+ * @adev: auxiliary device struct
-+ */
-+static void idpf_unplug_aux_dev(struct auxiliary_device *adev)
++void __iomem *ig3rdma_get_reg_addr(struct irdma_hw *hw, u64 reg_offset)
 +{
-+	auxiliary_device_delete(adev);
-+	auxiliary_device_uninit(adev);
++	u8 __iomem *reg_addr;
++	int i;
 +
-+	ida_free(&idpf_idc_ida, adev->id);
++	reg_addr = __ig3rdma_get_reg_addr(&hw->rdma_reg, reg_offset);
++	if (reg_addr)
++		return reg_addr;
++
++	for (i = 0; i < hw->num_io_regions; i++) {
++		reg_addr = __ig3rdma_get_reg_addr(&hw->io_regs[i], reg_offset);
++		if (reg_addr)
++			return reg_addr;
++	}
++
++	WARN_ON_ONCE(1);
++
++	return NULL;
 +}
+diff --git a/drivers/infiniband/hw/irdma/ig3rdma_hw.h b/drivers/infiniband/hw/irdma/ig3rdma_hw.h
+index 4c3d186bbe81..629e252fc973 100644
+--- a/drivers/infiniband/hw/irdma/ig3rdma_hw.h
++++ b/drivers/infiniband/hw/irdma/ig3rdma_hw.h
+@@ -3,9 +3,27 @@
+ #ifndef IG3RDMA_HW_H
+ #define IG3RDMA_HW_H
+ 
++#define IG3_MAX_APFS 1
++#define IG3_MAX_AVFS 0
 +
-+/**
-+ * idpf_idc_vport_dev_ctrl - Called by an Auxiliary Driver
-+ * @cdev_info: IDC core device info pointer
-+ * @up: RDMA core driver status
-+ *
-+ * This callback function is accessed by an Auxiliary Driver to indicate
-+ * whether core driver is ready to support vport driver load or if vport
-+ * drivers need to be taken down.
-+ *
-+ * Return: 0 on success or error code on failure.
-+ */
-+static int
-+idpf_idc_vport_dev_ctrl(struct idc_rdma_core_dev_info *cdev_info,
-+			bool up)
-+{
-+	return -EOPNOTSUPP;
-+}
+ #define IG3_PF_RDMA_REGION_OFFSET 0xBC00000
+ #define IG3_PF_RDMA_REGION_LEN 0x401000
+ #define IG3_VF_RDMA_REGION_OFFSET 0x8C00
+ #define IG3_VF_RDMA_REGION_LEN 0x8400
+ 
++enum ig3rdma_device_caps_const {
++	IG3RDMA_MAX_WQ_FRAGMENT_COUNT		= 14,
++	IG3RDMA_MAX_SGE_RD			= 14,
 +
-+/**
-+ * idpf_idc_request_reset - Called by an Auxiliary Driver
-+ * @cdev_info: IDC core device info pointer
-+ * @reset_type: function, core or other
-+ *
-+ * This callback function is accessed by an Auxiliary Driver to request a reset
-+ * on the Auxiliary Device.
-+ *
-+ * Return: 0 on success or error code on failure.
-+ */
-+static int
-+idpf_idc_request_reset(struct idc_rdma_core_dev_info *cdev_info,
-+		       enum idc_rdma_reset_type __always_unused reset_type)
-+{
-+	return -EOPNOTSUPP;
-+}
++	IG3RDMA_MAX_STATS_COUNT			= 128,
 +
-+/* Implemented by the Auxiliary Device and called by the Auxiliary Driver */
-+static const struct idc_rdma_core_ops idc_ops = {
-+	.vport_dev_ctrl			= idpf_idc_vport_dev_ctrl,
-+	.request_reset                  = idpf_idc_request_reset,
-+	.vc_send_sync			= idpf_idc_rdma_vc_send_sync,
++	IG3RDMA_MAX_IRD_SIZE			= 64,
++	IG3RDMA_MAX_ORD_SIZE			= 64,
++	IG3RDMA_MIN_WQ_SIZE			= 16 /* WQEs */,
++	IG3RDMA_MAX_INLINE_DATA_SIZE		= 216,
++	IG3RDMA_MAX_PF_PUSH_PAGE_COUNT		= 8192,
++	IG3RDMA_MAX_VF_PUSH_PAGE_COUNT		= 16,
 +};
 +
++void __iomem *ig3rdma_get_reg_addr(struct irdma_hw *hw, u64 reg_offset);
+ #endif /* IG3RDMA_HW_H*/
+diff --git a/drivers/infiniband/hw/irdma/irdma.h b/drivers/infiniband/hw/irdma/irdma.h
+index df7f6124570c..7e3214904488 100644
+--- a/drivers/infiniband/hw/irdma/irdma.h
++++ b/drivers/infiniband/hw/irdma/irdma.h
+@@ -67,6 +67,7 @@ enum irdma_shifts {
+ 	IRDMA_CQPSQ_CQ_CEQID_S,
+ 	IRDMA_CQPSQ_CQ_CQID_S,
+ 	IRDMA_COMMIT_FPM_CQCNT_S,
++	IRDMA_CQPSQ_UPESD_HMCFNID_S,
+ 	IRDMA_MAX_SHIFTS,
+ };
+ 
+@@ -77,6 +78,7 @@ enum irdma_masks {
+ 	IRDMA_CQPSQ_CQ_CEQID_M,
+ 	IRDMA_CQPSQ_CQ_CQID_M,
+ 	IRDMA_COMMIT_FPM_CQCNT_M,
++	IRDMA_CQPSQ_UPESD_HMCFNID_M,
+ 	IRDMA_MAX_MASKS, /* Must be last entry */
+ };
+ 
+@@ -121,6 +123,7 @@ struct irdma_uk_attrs {
+ 	u32 max_hw_wq_quanta;
+ 	u32 min_hw_cq_size;
+ 	u32 max_hw_cq_size;
++	u32 max_hw_srq_quanta;
+ 	u16 max_hw_sq_chunk;
+ 	u16 min_hw_wq_size;
+ 	u8 hw_rev;
+@@ -156,4 +159,6 @@ struct irdma_hw_attrs {
+ 
+ void i40iw_init_hw(struct irdma_sc_dev *dev);
+ void icrdma_init_hw(struct irdma_sc_dev *dev);
++void ig3rdma_init_hw(struct irdma_sc_dev *dev);
++void __iomem *ig3rdma_get_reg_addr(struct irdma_hw *hw, u64 reg_offset);
+ #endif /* IRDMA_H*/
+diff --git a/drivers/infiniband/hw/irdma/virtchnl.c b/drivers/infiniband/hw/irdma/virtchnl.c
+index 88621fbbee44..f0ff3b29c329 100644
+--- a/drivers/infiniband/hw/irdma/virtchnl.c
++++ b/drivers/infiniband/hw/irdma/virtchnl.c
+@@ -9,6 +9,51 @@
+ #include "ws.h"
+ #include "i40iw_hw.h"
+ 
++struct vchnl_reg_map_elem {
++	u16 reg_id;
++	u16 reg_idx;
++	bool pg_rel;
++};
++
++struct vchnl_regfld_map_elem {
++	u16 regfld_id;
++	u16 regfld_idx;
++};
++
++static struct vchnl_reg_map_elem vchnl_reg_map[] = {
++	{IRDMA_VCHNL_REG_ID_CQPTAIL, IRDMA_CQPTAIL, false},
++	{IRDMA_VCHNL_REG_ID_CQPDB, IRDMA_CQPDB, false},
++	{IRDMA_VCHNL_REG_ID_CCQPSTATUS, IRDMA_CCQPSTATUS, false},
++	{IRDMA_VCHNL_REG_ID_CCQPHIGH, IRDMA_CCQPHIGH, false},
++	{IRDMA_VCHNL_REG_ID_CCQPLOW, IRDMA_CCQPLOW, false},
++	{IRDMA_VCHNL_REG_ID_CQARM, IRDMA_CQARM, false},
++	{IRDMA_VCHNL_REG_ID_CQACK, IRDMA_CQACK, false},
++	{IRDMA_VCHNL_REG_ID_AEQALLOC, IRDMA_AEQALLOC, false},
++	{IRDMA_VCHNL_REG_ID_CQPERRCODES, IRDMA_CQPERRCODES, false},
++	{IRDMA_VCHNL_REG_ID_WQEALLOC, IRDMA_WQEALLOC, false},
++	{IRDMA_VCHNL_REG_ID_DB_ADDR_OFFSET, IRDMA_DB_ADDR_OFFSET, false },
++	{IRDMA_VCHNL_REG_ID_DYN_CTL, IRDMA_GLINT_DYN_CTL, false },
++	{IRDMA_VCHNL_REG_INV_ID, IRDMA_VCHNL_REG_INV_ID, false }
++};
++
++static struct vchnl_regfld_map_elem vchnl_regfld_map[] = {
++	{IRDMA_VCHNL_REGFLD_ID_CCQPSTATUS_CQP_OP_ERR, IRDMA_CCQPSTATUS_CCQP_ERR_M},
++	{IRDMA_VCHNL_REGFLD_ID_CCQPSTATUS_CCQP_DONE, IRDMA_CCQPSTATUS_CCQP_DONE_M},
++	{IRDMA_VCHNL_REGFLD_ID_CQPSQ_STAG_PDID, IRDMA_CQPSQ_STAG_PDID_M},
++	{IRDMA_VCHNL_REGFLD_ID_CQPSQ_CQ_CEQID, IRDMA_CQPSQ_CQ_CEQID_M},
++	{IRDMA_VCHNL_REGFLD_ID_CQPSQ_CQ_CQID, IRDMA_CQPSQ_CQ_CQID_M},
++	{IRDMA_VCHNL_REGFLD_ID_COMMIT_FPM_CQCNT, IRDMA_COMMIT_FPM_CQCNT_M},
++	{IRDMA_VCHNL_REGFLD_ID_UPESD_HMCN_ID, IRDMA_CQPSQ_UPESD_HMCFNID_M},
++	{IRDMA_VCHNL_REGFLD_INV_ID, IRDMA_VCHNL_REGFLD_INV_ID}
++};
++
++#define IRDMA_VCHNL_REG_COUNT ARRAY_SIZE(vchnl_reg_map)
++#define IRDMA_VCHNL_REGFLD_COUNT ARRAY_SIZE(vchnl_regfld_map)
++#define IRDMA_VCHNL_REGFLD_BUF_SIZE \
++	(IRDMA_VCHNL_REG_COUNT * sizeof(struct irdma_vchnl_reg_info) + \
++	 IRDMA_VCHNL_REGFLD_COUNT * sizeof(struct irdma_vchnl_reg_field_info))
++#define IRDMA_REGMAP_RESP_BUF_SIZE (IRDMA_VCHNL_RESP_MIN_SIZE + IRDMA_VCHNL_REGFLD_BUF_SIZE)
++
+ /**
+  * irdma_sc_vchnl_init - Initialize dev virtchannel and get hw_rev
+  * @dev: dev structure to update
+@@ -62,6 +107,8 @@ static int irdma_vchnl_req_verify_resp(struct irdma_vchnl_req *vchnl_req,
+ 		if (resp_len < IRDMA_VCHNL_OP_GET_RDMA_CAPS_MIN_SIZE)
+ 			return -EBADMSG;
+ 		break;
++	case IRDMA_VCHNL_OP_GET_REG_LAYOUT:
++		break;
+ 	default:
+ 		return -EOPNOTSUPP;
+ 	}
+@@ -135,6 +182,137 @@ static int irdma_vchnl_req_send_sync(struct irdma_sc_dev *dev,
+ 	return ret;
+ }
+ 
 +/**
-+ * idpf_idc_init_msix_data - initialize MSIX data for the cdev_info structure
-+ * @adapter: driver private data structure
++ * irdma_vchnl_req_get_reg_layout - Get Register Layout
++ * @dev: RDMA device pointer
 + */
-+static void
-+idpf_idc_init_msix_data(struct idpf_adapter *adapter)
++int irdma_vchnl_req_get_reg_layout(struct irdma_sc_dev *dev)
 +{
-+	struct idc_rdma_core_dev_info *cdev_info;
++	u16 reg_idx, reg_id, tmp_reg_id, regfld_idx, regfld_id, tmp_regfld_id;
++	struct irdma_vchnl_reg_field_info *regfld_array = NULL;
++	u8 resp_buffer[IRDMA_REGMAP_RESP_BUF_SIZE] = {};
++	struct vchnl_regfld_map_elem *regfld_map_array;
++	struct irdma_vchnl_req_init_info info = {};
++	struct vchnl_reg_map_elem *reg_map_array;
++	struct irdma_vchnl_reg_info *reg_array;
++	u8 num_bits, shift_cnt;
++	u16 buf_len = 0;
++	u64 bitmask;
++	u32 rindex;
++	int ret;
 +
-+	if (!adapter->rdma_msix_entries)
-+		return;
++	if (!dev->vchnl_up)
++		return -EBUSY;
 +
-+	cdev_info = adapter->cdev_info;
++	info.op_code = IRDMA_VCHNL_OP_GET_REG_LAYOUT;
++	info.op_ver = IRDMA_VCHNL_OP_GET_REG_LAYOUT_V0;
++	info.resp_parm = resp_buffer;
++	info.resp_parm_len = sizeof(resp_buffer);
 +
-+	cdev_info->msix_entries = adapter->rdma_msix_entries;
-+	cdev_info->msix_count = adapter->num_rdma_msix_entries;
-+}
++	ret = irdma_vchnl_req_send_sync(dev, &info);
 +
-+/**
-+ * idpf_idc_init_aux_core_dev - initialize Auxiliary Device(s)
-+ * @adapter: driver private data structure
-+ * @ftype: PF or VF
-+ *
-+ * Return: 0 on success or error code on failure.
-+ */
-+int idpf_idc_init_aux_core_dev(struct idpf_adapter *adapter,
-+			       enum idc_function_type ftype)
-+{
-+	struct idc_rdma_core_dev_info *cdev_info;
-+	int err;
++	if (ret)
++		return ret;
 +
-+	adapter->cdev_info = kzalloc(sizeof(*cdev_info), GFP_KERNEL);
-+	if (!adapter->cdev_info)
++	/* parse the response buffer and update reg info*/
++	/* Parse registers till invalid */
++	/* Parse register fields till invalid */
++	reg_array = (struct irdma_vchnl_reg_info *)resp_buffer;
++	for (rindex = 0; rindex < IRDMA_VCHNL_REG_COUNT; rindex++) {
++		buf_len += sizeof(struct irdma_vchnl_reg_info);
++		if (buf_len >= sizeof(resp_buffer))
++			return -ENOMEM;
++
++		regfld_array =
++			(struct irdma_vchnl_reg_field_info *)&reg_array[rindex + 1];
++		reg_id = reg_array[rindex].reg_id;
++		if (reg_id == IRDMA_VCHNL_REG_INV_ID)
++			break;
++
++		reg_id &= ~IRDMA_VCHNL_REG_PAGE_REL;
++		if (reg_id >= IRDMA_VCHNL_REG_COUNT)
++			return -EINVAL;
++
++		/* search regmap for register index in hw_regs.*/
++		reg_map_array = vchnl_reg_map;
++		do {
++			tmp_reg_id = reg_map_array->reg_id;
++			if (tmp_reg_id == reg_id)
++				break;
++
++			reg_map_array++;
++		} while (tmp_reg_id != IRDMA_VCHNL_REG_INV_ID);
++		if (tmp_reg_id != reg_id)
++			continue;
++
++		reg_idx = reg_map_array->reg_idx;
++
++		/* Page relative, DB Offset do not need bar offset */
++		if (reg_idx == IRDMA_DB_ADDR_OFFSET ||
++		    (reg_array[rindex].reg_id & IRDMA_VCHNL_REG_PAGE_REL)) {
++			dev->hw_regs[reg_idx] =
++				(u32 __iomem *)(uintptr_t)reg_array[rindex].reg_offset;
++			continue;
++		}
++
++		/* Update the local HW struct */
++		dev->hw_regs[reg_idx] = ig3rdma_get_reg_addr(dev->hw,
++						reg_array[rindex].reg_offset);
++		if (!dev->hw_regs[reg_idx])
++			return -EINVAL;
++	}
++
++	if (!regfld_array)
 +		return -ENOMEM;
 +
-+	cdev_info = adapter->cdev_info;
-+	cdev_info->pdev = adapter->pdev;
-+	cdev_info->ops = &idc_ops;
-+	cdev_info->rdma_protocol = IDC_RDMA_PROTOCOL_ROCEV2;
-+	cdev_info->ftype = ftype;
++	/* set up doorbell variables using mapped DB page */
++	dev->wqe_alloc_db = dev->hw_regs[IRDMA_WQEALLOC];
++	dev->cq_arm_db = dev->hw_regs[IRDMA_CQARM];
++	dev->aeq_alloc_db = dev->hw_regs[IRDMA_AEQALLOC];
++	dev->cqp_db = dev->hw_regs[IRDMA_CQPDB];
++	dev->cq_ack_db = dev->hw_regs[IRDMA_CQACK];
 +
-+	idpf_idc_init_msix_data(adapter);
++	for (rindex = 0; rindex < IRDMA_VCHNL_REGFLD_COUNT; rindex++) {
++		buf_len += sizeof(struct irdma_vchnl_reg_field_info);
++		if ((buf_len - 1) > sizeof(resp_buffer))
++			break;
 +
-+	err = idpf_plug_core_aux_dev(cdev_info);
-+	if (err)
-+		goto err_plug_aux_dev;
++		if (regfld_array[rindex].fld_id == IRDMA_VCHNL_REGFLD_INV_ID)
++			break;
++
++		regfld_id = regfld_array[rindex].fld_id;
++		regfld_map_array = vchnl_regfld_map;
++		do {
++			tmp_regfld_id = regfld_map_array->regfld_id;
++			if (tmp_regfld_id == regfld_id)
++				break;
++
++			regfld_map_array++;
++		} while (tmp_regfld_id != IRDMA_VCHNL_REGFLD_INV_ID);
++
++		if (tmp_regfld_id != regfld_id)
++			continue;
++
++		regfld_idx = regfld_map_array->regfld_idx;
++
++		num_bits = regfld_array[rindex].fld_bits;
++		shift_cnt = regfld_array[rindex].fld_shift;
++		if ((num_bits + shift_cnt > 64) || !num_bits) {
++			ibdev_dbg(to_ibdev(dev),
++				  "ERR: Invalid field mask id %d bits %d shift %d",
++				  regfld_id, num_bits, shift_cnt);
++
++			continue;
++		}
++
++		bitmask = (1ULL << num_bits) - 1;
++		dev->hw_masks[regfld_idx] = bitmask << shift_cnt;
++		dev->hw_shifts[regfld_idx] = shift_cnt;
++	}
 +
 +	return 0;
-+
-+err_plug_aux_dev:
-+	kfree(cdev_info);
-+	adapter->cdev_info = NULL;
-+
-+	return err;
-+}
-+
-+/**
-+ * idpf_idc_deinit_core_aux_device - de-initialize Auxiliary Device(s)
-+ * @cdev_info: IDC core device info pointer
-+ */
-+void idpf_idc_deinit_core_aux_device(struct idc_rdma_core_dev_info *cdev_info)
-+{
-+	if (!cdev_info)
-+		return;
-+
-+	idpf_unplug_aux_dev(cdev_info->adev);
-+
-+	kfree(cdev_info->mapped_mem_regions);
-+	kfree(cdev_info);
-+}
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_lib.c b/drivers/net/ethernet/intel/idpf/idpf_lib.c
-index 1330be825cd0..813c073dc45f 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_lib.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_lib.c
-@@ -1848,6 +1848,10 @@ static int idpf_init_hard_reset(struct idpf_adapter *adapter)
- unlock_mutex:
- 	mutex_unlock(&adapter->vport_ctrl_lock);
- 
-+	/* Wait until all vports are created to init RDMA CORE AUX */
-+	if (!err)
-+		err = idpf_idc_init(adapter);
-+
- 	return err;
- }
- 
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_vf_dev.c b/drivers/net/ethernet/intel/idpf/idpf_vf_dev.c
-index aba828abcb17..9301e79127a9 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_vf_dev.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_vf_dev.c
-@@ -147,6 +147,17 @@ static void idpf_vf_trigger_reset(struct idpf_adapter *adapter,
- 		idpf_send_mb_msg(adapter, VIRTCHNL2_OP_RESET_VF, 0, NULL, 0);
- }
- 
-+/**
-+ * idpf_idc_vf_register - register for IDC callbacks
-+ * @adapter: Driver specific private structure
-+ *
-+ * Return: 0 on success or error code on failure.
-+ */
-+static int idpf_idc_vf_register(struct idpf_adapter *adapter)
-+{
-+	return idpf_idc_init_aux_core_dev(adapter, IDC_FUNCTION_TYPE_VF);
 +}
 +
  /**
-  * idpf_vf_reg_ops_init - Initialize register API function pointers
-  * @adapter: Driver specific private structure
-@@ -167,4 +178,6 @@ static void idpf_vf_reg_ops_init(struct idpf_adapter *adapter)
- void idpf_vf_dev_ops_init(struct idpf_adapter *adapter)
- {
- 	idpf_vf_reg_ops_init(adapter);
+  * irdma_vchnl_req_get_ver - Request Channel version
+  * @dev: RDMA device pointer
+diff --git a/drivers/infiniband/hw/irdma/virtchnl.h b/drivers/infiniband/hw/irdma/virtchnl.h
+index fb28fa09763b..20526c0b4285 100644
+--- a/drivers/infiniband/hw/irdma/virtchnl.h
++++ b/drivers/infiniband/hw/irdma/virtchnl.h
+@@ -14,13 +14,44 @@
+ #define IRDMA_VCHNL_OP_GET_HMC_FCN_V1 1
+ #define IRDMA_VCHNL_OP_GET_HMC_FCN_V2 2
+ #define IRDMA_VCHNL_OP_PUT_HMC_FCN_V0 0
++#define IRDMA_VCHNL_OP_GET_REG_LAYOUT_V0 0
+ #define IRDMA_VCHNL_OP_GET_RDMA_CAPS_V0 0
+ #define IRDMA_VCHNL_OP_GET_RDMA_CAPS_MIN_SIZE 1
+ 
++#define IRDMA_VCHNL_REG_ID_CQPTAIL 0
++#define IRDMA_VCHNL_REG_ID_CQPDB 1
++#define IRDMA_VCHNL_REG_ID_CCQPSTATUS 2
++#define IRDMA_VCHNL_REG_ID_CCQPHIGH 3
++#define IRDMA_VCHNL_REG_ID_CCQPLOW 4
++#define IRDMA_VCHNL_REG_ID_CQARM 5
++#define IRDMA_VCHNL_REG_ID_CQACK 6
++#define IRDMA_VCHNL_REG_ID_AEQALLOC 7
++#define IRDMA_VCHNL_REG_ID_CQPERRCODES 8
++#define IRDMA_VCHNL_REG_ID_WQEALLOC 9
++#define IRDMA_VCHNL_REG_ID_IPCONFIG0 10
++#define IRDMA_VCHNL_REG_ID_DB_ADDR_OFFSET 11
++#define IRDMA_VCHNL_REG_ID_DYN_CTL 12
++#define IRDMA_VCHNL_REG_ID_AEQITRMASK 13
++#define IRDMA_VCHNL_REG_ID_CEQITRMASK 14
++#define IRDMA_VCHNL_REG_INV_ID 0xFFFF
++#define IRDMA_VCHNL_REG_PAGE_REL 0x8000
 +
-+	adapter->dev_ops.idc_init = idpf_idc_vf_register;
- }
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
-index 3d2413b8684f..eaffda7a2673 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
-@@ -897,6 +897,7 @@ static int idpf_send_get_caps_msg(struct idpf_adapter *adapter)
- 
- 	caps.other_caps =
- 		cpu_to_le64(VIRTCHNL2_CAP_SRIOV			|
-+			    VIRTCHNL2_CAP_RDMA                  |
- 			    VIRTCHNL2_CAP_MACFILTER		|
- 			    VIRTCHNL2_CAP_SPLITQ_QSCHED		|
- 			    VIRTCHNL2_CAP_PROMISC		|
-@@ -3092,6 +3093,7 @@ void idpf_vc_core_deinit(struct idpf_adapter *adapter)
- 		idpf_vc_xn_shutdown(adapter->vcxn_mngr);
- 
- 	idpf_deinit_task(adapter);
-+	idpf_idc_deinit_core_aux_device(adapter->cdev_info);
- 	idpf_intr_rel(adapter);
- 
- 	if (remove_in_prog)
-@@ -3737,3 +3739,20 @@ int idpf_set_promiscuous(struct idpf_adapter *adapter,
- 
- 	return reply_sz < 0 ? reply_sz : 0;
- }
++#define IRDMA_VCHNL_REGFLD_ID_CCQPSTATUS_CQP_OP_ERR 2
++#define IRDMA_VCHNL_REGFLD_ID_CCQPSTATUS_CCQP_DONE 5
++#define IRDMA_VCHNL_REGFLD_ID_CQPSQ_STAG_PDID 6
++#define IRDMA_VCHNL_REGFLD_ID_CQPSQ_CQ_CEQID 7
++#define IRDMA_VCHNL_REGFLD_ID_CQPSQ_CQ_CQID 8
++#define IRDMA_VCHNL_REGFLD_ID_COMMIT_FPM_CQCNT 9
++#define IRDMA_VCHNL_REGFLD_ID_UPESD_HMCN_ID 10
++#define IRDMA_VCHNL_REGFLD_INV_ID 0xFFFF
 +
-+/**
-+ * idpf_idc_rdma_vc_send_sync - virtchnl send callback for IDC registered drivers
-+ * @cdev_info: IDC core device info pointer
-+ * @send_msg: message to send
-+ * @msg_size: size of message to send
-+ * @recv_msg: message to populate on reception of response
-+ * @recv_len: length of message copied into recv_msg or 0 on error
-+ *
-+ * Return: 0 on success or error code on failure.
-+ */
-+int idpf_idc_rdma_vc_send_sync(struct idc_rdma_core_dev_info *cdev_info,
-+			       u8 *send_msg, u16 msg_size,
-+			       u8 *recv_msg, u16 *recv_len)
-+{
-+	return -EOPNOTSUPP;
-+}
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.h b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.h
-index 83da5d8da56b..6163cfaeccae 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.h
-+++ b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.h
-@@ -66,5 +66,8 @@ int idpf_send_get_stats_msg(struct idpf_vport *vport);
- int idpf_send_set_sriov_vfs_msg(struct idpf_adapter *adapter, u16 num_vfs);
- int idpf_send_get_set_rss_key_msg(struct idpf_vport *vport, bool get);
- int idpf_send_get_set_rss_lut_msg(struct idpf_vport *vport, bool get);
-+int idpf_idc_rdma_vc_send_sync(struct idc_rdma_core_dev_info *cdev_info,
-+			       u8 *send_msg, u16 msg_size,
-+			       u8 *recv_msg, u16 *recv_len);
++#define IRDMA_VCHNL_RESP_MIN_SIZE (sizeof(struct irdma_vchnl_resp_buf))
++
+ enum irdma_vchnl_ops {
+ 	IRDMA_VCHNL_OP_GET_VER = 0,
+ 	IRDMA_VCHNL_OP_GET_HMC_FCN = 1,
+ 	IRDMA_VCHNL_OP_PUT_HMC_FCN = 2,
++	IRDMA_VCHNL_OP_GET_REG_LAYOUT = 11,
+ 	IRDMA_VCHNL_OP_GET_RDMA_CAPS = 13,
+ };
  
- #endif /* _IDPF_VIRTCHNL_H_ */
+@@ -65,6 +96,18 @@ struct irdma_vchnl_init_info {
+ 	bool is_pf;
+ };
+ 
++struct irdma_vchnl_reg_info {
++	u32 reg_offset;
++	u16 field_cnt;
++	u16 reg_id; /* High bit of reg_id: bar or page relative */
++};
++
++struct irdma_vchnl_reg_field_info {
++	u8 fld_shift;
++	u8 fld_bits;
++	u16 fld_id;
++};
++
+ struct irdma_vchnl_req {
+ 	struct irdma_vchnl_op_buf *vchnl_msg;
+ 	void *parm;
+@@ -93,4 +136,5 @@ int irdma_vchnl_req_put_hmc_fcn(struct irdma_sc_dev *dev);
+ int irdma_vchnl_req_get_caps(struct irdma_sc_dev *dev);
+ int irdma_vchnl_req_get_resp(struct irdma_sc_dev *dev,
+ 			     struct irdma_vchnl_req *vc_req);
++int irdma_vchnl_req_get_reg_layout(struct irdma_sc_dev *dev);
+ #endif /* IRDMA_VIRTCHNL_H */
 -- 
 2.37.3
 
