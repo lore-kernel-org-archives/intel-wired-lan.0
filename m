@@ -4,88 +4,89 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A02FCC02192
-	for <intel-wired-lan@archiver.kernel.org>; Fri,  7 Feb 2025 08:44:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D2F12C02196
+	for <intel-wired-lan@archiver.kernel.org>; Fri,  7 Feb 2025 10:03:39 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 485106082A;
-	Fri,  7 Feb 2025 08:44:25 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 7AF066088B;
+	Fri,  7 Feb 2025 10:03:39 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id h-giBVwQgDaT; Fri,  7 Feb 2025 08:44:24 +0000 (UTC)
+ id Po0NQZDKc8ol; Fri,  7 Feb 2025 10:03:39 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org BC40F60877
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E195360BA8
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1738917864;
-	bh=/YUQ/fILgc54btr/46zTjALdXn3Fvk+L2rzUrK8Xock=;
-	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=IimJG24b9jdU1DNDDyALwyxvajC4epdS69YLnRKfHEDkfx7f2y9Cqs1jEcJmbFkhM
-	 cPzFTUmhLrCof6NYfRASXPKA3uwek7ahCHht9E+FEJ3QVgjaldePJ5Vtm28I7ZDh1M
-	 Etl8x0R08qKsK0YFHlKNpVKSgXQM6OP+l5DnhLRCt8Cp6rRbxXlj4zuqVDSiBqh8A+
-	 38R7GtcQT1dZhGUaH8XnBjtocMzIzRpzebD8u7H+FAz73EtYhgeNKfBe6JY52idKSD
-	 AZdeGqrQiplvRYDAB7xW/K2KFGJdJ6nnY705EIMSOx7AoQ7k3zAur8/e4ZnFg17CPp
-	 7UvtLkJso/3Ag==
+	s=default; t=1738922618;
+	bh=t30PxOVbYMN0u0ipzMaMY+mMVQC61/RiDj+NNvCMU1I=;
+	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=Qn/eQZsWvJgQjH6yctCbm2nT6uw65w6wWChLcpfay8bGo9Yng0oSE9piyDYZBB3st
+	 BwpKSzmOdXESMG7Et6sIaE9iQPmAbtwF6yZGGa77vAYXd3hL+kDDATG96RuVMX/K3g
+	 wujL9yS1suzwuG4PfWABChYKQJtgKLKFmi4PXhMNDe/tUZFnJTf+pyVqr8CR0x9iym
+	 36jhhA3Ph1rUb9uHbcvikFIWAuWxVMMk7HsvSg6AJBnPMWQWwQv3QCjPII0nHFhCZL
+	 jslNTLcGk42ykjwrOWsw9m/A1Owf4fXxlbhOsjsoOpb4Araqj9Dk2t+R0aQxMzhDhF
+	 pq+ehVAQFZ3Jg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id BC40F60877;
-	Fri,  7 Feb 2025 08:44:24 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 2566BC0
- for <intel-wired-lan@lists.osuosl.org>; Fri,  7 Feb 2025 08:44:23 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id E195360BA8;
+	Fri,  7 Feb 2025 10:03:38 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 23B98E4
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  7 Feb 2025 10:03:37 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 098E340403
- for <intel-wired-lan@lists.osuosl.org>; Fri,  7 Feb 2025 08:44:23 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 12F208405A
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  7 Feb 2025 10:03:37 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id JiniELIF60_u for <intel-wired-lan@lists.osuosl.org>;
- Fri,  7 Feb 2025 08:44:22 +0000 (UTC)
-X-Greylist: delayed 335 seconds by postgrey-1.37 at util1.osuosl.org;
- Fri, 07 Feb 2025 08:44:22 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 1F7D0401D5
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 1F7D0401D5
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id lATeYmPbECsJ for <intel-wired-lan@lists.osuosl.org>;
+ Fri,  7 Feb 2025 10:03:36 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de;
- envelope-from=kurt@linutronix.de; receiver=<UNKNOWN> 
-Received: from galois.linutronix.de (Galois.linutronix.de
- [IPv6:2a0a:51c0:0:12e:550::1])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 1F7D0401D5
- for <intel-wired-lan@lists.osuosl.org>; Fri,  7 Feb 2025 08:44:22 +0000 (UTC)
-From: Kurt Kanzenbach <kurt@linutronix.de>
-To: Joe Damato <jdamato@fastly.com>
-Cc: Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Stanislav Fomichev
- <sdf@fomichev.me>, netdev@vger.kernel.org, intel-wired-lan@lists.osuosl.org
-Date: Fri, 07 Feb 2025 09:38:41 +0100
-Message-ID: <871pwa6tf2.fsf@kurt.kurt.home>
+ client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org;
+ envelope-from=horms@kernel.org; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 76C518403C
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 76C518403C
+Received: from dfw.source.kernel.org (dfw.source.kernel.org
+ [IPv6:2604:1380:4641:c500::1])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 76C518403C
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  7 Feb 2025 10:03:36 +0000 (UTC)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+ by dfw.source.kernel.org (Postfix) with ESMTP id 8D2FB5C4CE5;
+ Fri,  7 Feb 2025 10:02:55 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AD77CC4CED1;
+ Fri,  7 Feb 2025 10:03:33 +0000 (UTC)
+Date: Fri, 7 Feb 2025 10:03:31 +0000
+From: Simon Horman <horms@kernel.org>
+To: Grzegorz Nitka <grzegorz.nitka@intel.com>
+Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
+ anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
+ Karol Kolacinski <karol.kolacinski@intel.com>
+Message-ID: <20250207100331.GJ554665@kernel.org>
+References: <20250206083655.3005151-1-grzegorz.nitka@intel.com>
+ <20250206083655.3005151-2-grzegorz.nitka@intel.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
- micalg=pgp-sha512; protocol="application/pgp-signature"
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=linutronix.de; s=2020; t=1738917523;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type;
- bh=/YUQ/fILgc54btr/46zTjALdXn3Fvk+L2rzUrK8Xock=;
- b=DNG3E55oMumLP+OxTyPwucv7X27zS2lm28lD9JC5O3D1lSclgyqRTlD51/SYyB3QvhyeYa
- Axi2kibW0OazKV1yYwnzcdcZy9s8ZhnM+lDUKbAgWVsenaNsDH79mK+dp+UtgaQ2rtgUJx
- 5VR2Kwdo56S5B2YIzwqzmD0r+EC1Kn7glZ0UcVOKqq8rSpKzX5wCouOMqzJnBUAWD5tCP1
- aWTqa7ir/hqH2dK+/6PROG+QVyweAnEUWuB1iF/K9mstj+oCqMp56fmBfnAlzfVwhO95+3
- Vxn63ioKHkK3q0RiLmywW5E7nZx7rBcigbVMU47Wv0yEyeyTHWYYybFKLTCrtg==
-X-Mailman-Original-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
- d=linutronix.de; s=2020e; t=1738917523;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type;
- bh=/YUQ/fILgc54btr/46zTjALdXn3Fvk+L2rzUrK8Xock=;
- b=KZWqJSd90PgDReyirmGu+baYSzWqBPR4NT8ZJ9cY8gcXdRIvI7NAQ4M+khb7ohE0rzAiik
- F0PXrhhbHST/0oCg==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=linutronix.de
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key, unprotected) header.d=linutronix.de
- header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=DNG3E55o; 
- dkim=pass header.d=linutronix.de header.i=@linutronix.de
- header.a=ed25519-sha256 header.s=2020e header.b=KZWqJSd9
-Subject: [Intel-wired-lan] igb: XDP/ZC busy polling
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20250206083655.3005151-2-grzegorz.nitka@intel.com>
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=kernel.org; s=k20201202; t=1738922615;
+ bh=RGnkpRzNX1wHMm+X38Zfh1HcOja9meKUs+/O4gamjDo=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=gUXXEvG0IMm2aMA9Hl6/0W4n2R8covHwWbrNkeMh8T2AeSD0c68gbaAAB5Qvyy2nl
+ MEJu/J3kjGFUsvJFvxZEQ8MFc4YDwsPU03etjSED13gFWSx9giaq9qwxsyipXJngeS
+ S/WKB2wlBReiCosfG5K+InJ6Xd0nTl5Es+rGd6AC8lNIsmR7Y+MoAqP3jXt7ruU35U
+ JJO9lGQ25v64tpR7oRbnz/jjrUefVJAR1U++cAtbVjDKrGFLvhsnTdxSOrwMXdpgZo
+ 2nbqCcut25c8pqwQiWif47/uZ/dpcedO9FIIxjhFlfouYYgWitmQmfv+EcKulFDwoE
+ yS6b76NrYEXUw==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dmarc=pass (p=quarantine dis=none)
+ header.from=kernel.org
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=gUXXEvG0
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next v1 1/3] ice: Add sync delay
+ for E825C
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -101,41 +102,23 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
---=-=-=
-Content-Type: text/plain
+On Thu, Feb 06, 2025 at 09:36:53AM +0100, Grzegorz Nitka wrote:
+> From: Karol Kolacinski <karol.kolacinski@intel.com>
+> 
+> Implement setting GLTSYN_SYNC_DLAY for E825C products.
+> This is the execution delay compensation of SYNC command between
+> PHC and PHY.
+> Also, refactor the code by changing ice_ptp_init_phc_eth56g function
+> name to ice_ptp_init_phc_e825, to be consistent with the naming pattern
+> for other devices.
 
-Hello Joe,
+Adding support for GLTSYN_SYNC_DLAY and the refactor seem
+to be two distinct changes, albeit touching common code.
 
-I noticed that XDP/ZC busy polling does not work anymore in combination
-with igb driver. This seems to be related to commit 5ef44b3cb43b ("xsk:
-Bring back busy polling support") which relies on
-netif_queue_set_napi().
+I think it would be slightly better to split this into two patches.
 
-I see you implemented it for e1000, igc and so on. However, igb is
-missing. Do you have any plans to add the missing registration to igb?
-Just asking. Otherwise, I can send a patch for it.
+> Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+> Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
+> Signed-off-by: Grzegorz Nitka <grzegorz.nitka@intel.com>
 
-Thanks,
-Kurt
-
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQJHBAEBCgAxFiEEvLm/ssjDfdPf21mSwZPR8qpGc4IFAmelxpETHGt1cnRAbGlu
-dXRyb25peC5kZQAKCRDBk9HyqkZzgra+D/wKi0eOYmVv55JcJAPC3Xn+o/z6WMtq
-B85O33kxcbKLdI4Q+VGbULeMUdJAo0BTdUJJTgFgFwlWQnLiD0XvHT6iduhL02/s
-Qa/pT4tGU5B6+fV6etQIs793r8ezrgHZkiPslAI2wHJ/9uWhQilGXPhw5j5sB5Gj
-qdSttpOGRgzxeKm5BroSkNBQ1uRV52rqedGGs4TMLq69/IS3B20tyT4ocphBB0Ig
-rQhWN1q6n9OLO8kQcuSIgqPhVdT4HRy0y4T4iHzoXmC4K2ixru7WlSdVHwdSn14K
-LaM8lzvUS3V+7OxJ4J3gSmrQDQi/SQ49bRMTUcsFc0lXJ5VSfe95Vhh7vGZplbyV
-eEDUHZV1doqBhEHMWlLWhUj62bMHHYYlLqnk891tJ3HH7Vg6qDRq48+rvq3l+cDx
-ARq8LYMurFk4u/3E2trAawqSjvojD8OIFuMpCM4ODzkHqtoBCQAIBE1y0x2jDbTt
-qHufPcfNmxSZ7/RpS8VzOKghRNkt6zr8XTfTNqdEQypcLfjLc1toH/nY2LPccSZR
-qxwRKhplh1MP/l+5ra7OZKU4IzM/jWiD/dCGwKD8bthdmWqJfbOYSyyRoU7Ss0V9
-i7LvonC4XtnfycNivIpG6JtG1X6xOdqUrmNkXMvzQ4LoiV1qIWJ9rSS+yw4j9Lk3
-AJoIsz2u6/tIWA==
-=p631
------END PGP SIGNATURE-----
---=-=-=--
+...
