@@ -1,70 +1,70 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F18C9C02198
-	for <intel-wired-lan@archiver.kernel.org>; Sat,  8 Feb 2025 13:38:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CEF19C0219E
+	for <intel-wired-lan@archiver.kernel.org>; Sat,  8 Feb 2025 13:38:17 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id C087C4268A;
-	Sat,  8 Feb 2025 13:38:16 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 907738484B;
+	Sat,  8 Feb 2025 13:38:17 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id aTYNHDI5KWrV; Sat,  8 Feb 2025 13:38:14 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id tIGlv1G9p_NQ; Sat,  8 Feb 2025 13:38:17 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org A53B142660
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E37FC84855
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1739021894;
-	bh=toAmG31VMuKUV4NjiCgXo2DWdXUb8t3ACbB06rF6W0g=;
+	s=default; t=1739021896;
+	bh=y4KNtUUatJrDvXCNZCyB21KRlqrDGc+a6QWFKe9z1ic=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=72q05gZ5NvMhCUXii+vx9SwvSFsqH1EONzaJ4V9sfeh/q8VFVzbQm0z513vl/IUUY
-	 8xfDcUBqQshYn3TfqeRm9OwhZA1F+zBGMcSshjT043uGGEajAcPpYqu2GyeMV/0kr2
-	 pgZB7svlSyrIFyNy0xqSre9EyVltmznu5sygm/WYNT5ZbcnAhFiLSauXx/yjNU3VPt
-	 NtXIJzuAfDv6+alwTq2SAS0UTXVesXLTEzkNXVQkWLYnvlJWlPhRXtJHe96wOma7Ag
-	 Aq+mdfHojwpqhrbPC2j8/acy1of/oBpFQr0yGDRz2pEp3sYKdVBNtFCew8dGwFUYdn
-	 cKkKCoRvnteIA==
+	b=wlKYFTsrU3fym1b/8cAFEgTvMaMEOMk6kkn+bHmRq3koZGNKnj2l820iU5GEZsrDN
+	 XfQIx6ZA28uTp+SOIElbLb90USglDjYbjzi87ZnnSYXDPeCGqVKV2h5GeggQMA0mJt
+	 /llo1PSDqSC+6GrVjVrAEcyAgHR93u7kjXu0KFeAdkCh3G9JleVdKryoDCXo+b6x9l
+	 3QAIPc1CRCKKaTwXPX/0qSPhj/IERPh9K/qiP7IEiCzQzSQ6lCkiz2LoBpR5+8mrAs
+	 CVz+CzydmsbpUdIrOXo17wvkTEiBDuvLQcbjbQUoiIY3m58J0oHX4bBXkTW6M5ifF9
+	 yr3eh9jDUXG/w==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id A53B142660;
-	Sat,  8 Feb 2025 13:38:14 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id E37FC84855;
+	Sat,  8 Feb 2025 13:38:16 +0000 (UTC)
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id 4058D1B5
- for <intel-wired-lan@lists.osuosl.org>; Sat,  8 Feb 2025 13:38:13 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id 95D071B5
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  8 Feb 2025 13:38:15 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 2480A41957
- for <intel-wired-lan@lists.osuosl.org>; Sat,  8 Feb 2025 13:38:13 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 847F242774
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  8 Feb 2025 13:38:15 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id k8pJNZFee4fd for <intel-wired-lan@lists.osuosl.org>;
- Sat,  8 Feb 2025 13:38:12 +0000 (UTC)
+ id rKHTlRyFeC_D for <intel-wired-lan@lists.osuosl.org>;
+ Sat,  8 Feb 2025 13:38:14 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.10;
  helo=mgamail.intel.com; envelope-from=larysa.zaremba@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 045A44097E
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 045A44097E
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 9635D41A1F
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9635D41A1F
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.10])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 045A44097E
- for <intel-wired-lan@lists.osuosl.org>; Sat,  8 Feb 2025 13:38:11 +0000 (UTC)
-X-CSE-ConnectionGUID: S3GCrWyZQbykkLQBd7sQWg==
-X-CSE-MsgGUID: w229imulRKqQTz0G6w4NQw==
-X-IronPort-AV: E=McAfee;i="6700,10204,11314"; a="51084811"
-X-IronPort-AV: E=Sophos;i="6.12,310,1728975600"; d="scan'208";a="51084811"
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 9635D41A1F
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  8 Feb 2025 13:38:14 +0000 (UTC)
+X-CSE-ConnectionGUID: epTf9OBpQ3eWLJTd1ubaMw==
+X-CSE-MsgGUID: y8CcAgZyTjuALri2gPjmKw==
+X-IronPort-AV: E=McAfee;i="6700,10204,11314"; a="51084828"
+X-IronPort-AV: E=Sophos;i="6.12,310,1728975600"; d="scan'208";a="51084828"
 Received: from orviesa005.jf.intel.com ([10.64.159.145])
  by fmvoesa104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 08 Feb 2025 05:38:12 -0800
-X-CSE-ConnectionGUID: qLHonc4MTAGoCssMv8TTlQ==
-X-CSE-MsgGUID: ueq2JimORWui6D7UWQYMfw==
+ 08 Feb 2025 05:38:14 -0800
+X-CSE-ConnectionGUID: QZeZotDHRUWleoQxd74qAA==
+X-CSE-MsgGUID: kTyzdcQGS5OuN4zRiSpwTA==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.12,224,1728975600"; d="scan'208";a="116980867"
+X-IronPort-AV: E=Sophos;i="6.12,224,1728975600"; d="scan'208";a="116980876"
 Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by orviesa005.jf.intel.com with ESMTP; 08 Feb 2025 05:38:08 -0800
+ by orviesa005.jf.intel.com with ESMTP; 08 Feb 2025 05:38:11 -0800
 Received: from lincoln.igk.intel.com (lincoln.igk.intel.com [10.102.21.235])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id 0ACC132C9D;
- Sat,  8 Feb 2025 13:38:06 +0000 (GMT)
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id 6733832C91;
+ Sat,  8 Feb 2025 13:38:10 +0000 (GMT)
 From: Larysa Zaremba <larysa.zaremba@intel.com>
 To: Tony Nguyen <anthony.l.nguyen@intel.com>, intel-wired-lan@lists.osuosl.org
 Cc: Larysa Zaremba <larysa.zaremba@intel.com>,
@@ -76,8 +76,8 @@ Cc: Larysa Zaremba <larysa.zaremba@intel.com>,
  linux-kernel@vger.kernel.org,
  Michal Swiatkowski <michal.swiatkowski@linux.intel.com>,
  Mateusz Pacuszka <mateuszx.pacuszka@intel.com>
-Date: Sat,  8 Feb 2025 14:22:43 +0100
-Message-ID: <20250208132251.1989365-3-larysa.zaremba@intel.com>
+Date: Sat,  8 Feb 2025 14:22:45 +0100
+Message-ID: <20250208132251.1989365-5-larysa.zaremba@intel.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20250208132251.1989365-1-larysa.zaremba@intel.com>
 References: <20250208132251.1989365-1-larysa.zaremba@intel.com>
@@ -85,25 +85,25 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1739021892; x=1770557892;
+ t=1739021895; x=1770557895;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=Tyqcbr+1V9RgqiWlcoOzPxM25jq2nNT3yd6CF0utkp0=;
- b=djd1G8Q3ZupPj7qxcSGv+MTVj/Zqb8ZZZVB3y7dy0di4htJIKGjK3kww
- 7/Kz8i4DtcnCJnkMS7qxW7fkSxsgYfYTTGtaW5dgxmGHXU39ids9b43UT
- 7/FbwDgOzW3LTem8hgPuwphV4HM/mxNAvVpTYwRe+wNlCfRxwGNgh8p7j
- IR93kEYJdAM1I1MaiP2E+dzUDv3cCHuIDIq3yTcnpsolWaqBnooKsRY9o
- 20zn63sv9yymFTyy9WOYafOk7C50+gXU0xeJOYwzKyPGMYTHwt/lclwRA
- nAt7sJpNencn/GTyQFUMDncbyC/3I9Hx4dm/PJh6H10rPiEY4gWY4CiyG
+ bh=+gNRs1X2BAvlhEPkTgX809XWcuXH5nlbdN2f+T0v8jA=;
+ b=XqOXPKiNF9KbSkp55qAyabH5oQyR3lK+CMIPMcoJfTilWlkJGaEQA8sa
+ MUK5TASZ1stlCJdSAS7Mhqy86iUpzD/kk1pngetxGlIh2zkx+0Zwyozoo
+ CtfqG5j4KkHeHF2LTNpinkmC4Pmqp6ML7KgQO/CDFlfPrQTq53kk7x6zJ
+ fFA6rQwHtsEibWKYnVY2ug6KeDJVLSuzfqWbUm6Ky1im1eFby7D7U8bud
+ 6fzoI7x8ptu7AQpB+saogcknSVZVw5gJfj/z+pWQrcQofUrKaKriQOEb5
+ kG9hagl52WfAT8YxmeBqPXF8L8glYLIlcLKzXIjnhpRU2dtHMIRQLQszx
  w==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=djd1G8Q3
-Subject: [Intel-wired-lan] [PATCH iwl-next v3 2/6] ice: do not add
- LLDP-specific filter if not necessary
+ header.a=rsa-sha256 header.s=Intel header.b=XqOXPKiN
+Subject: [Intel-wired-lan] [PATCH iwl-next v3 4/6] ice: remove headers
+ argument from ice_tc_count_lkups
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -119,127 +119,69 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Commit 34295a3696fb ("ice: implement new LLDP filter command")
-introduced the ability to use LLDP-specific filter that directs all
-LLDP traffic to a single VSI. However, current goal is for all trusted VFs
-to be able to see LLDP neighbors, which is impossible to do with the
-special filter.
-
-Make using the generic filter the default choice and fall back to special
-one only if a generic filter cannot be added. That way setups with "NVMs
-where an already existent LLDP filter is blocking the creation of a filter
-to allow LLDP packets" will still be able to configure software Rx LLDP on
-PF only, while all other setups would be able to forward them to VFs too.
+Remove the headers argument from the ice_tc_count_lkups() function, because
+it is not used anywhere.
 
 Reviewed-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 Signed-off-by: Larysa Zaremba <larysa.zaremba@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice.h        |  1 +
- drivers/net/ethernet/intel/ice/ice_common.c | 10 +++++----
- drivers/net/ethernet/intel/ice/ice_common.h |  3 +--
- drivers/net/ethernet/intel/ice/ice_lib.c    | 23 ++++++++++++++-------
- 4 files changed, 24 insertions(+), 13 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_tc_lib.c | 11 +++--------
+ 1 file changed, 3 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index 7200d6042590..53b990e2e850 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -518,6 +518,7 @@ enum ice_pf_flags {
- 	ICE_FLAG_MTU_CHANGED,
- 	ICE_FLAG_GNSS,			/* GNSS successfully initialized */
- 	ICE_FLAG_DPLL,			/* SyncE/PTP dplls initialized */
-+	ICE_FLAG_LLDP_AQ_FLTR,
- 	ICE_PF_FLAGS_NBITS		/* must be last */
- };
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index aaa592ffd2d8..a1019ef11d9b 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -6010,15 +6010,17 @@ bool ice_fw_supports_lldp_fltr_ctrl(struct ice_hw *hw)
+diff --git a/drivers/net/ethernet/intel/ice/ice_tc_lib.c b/drivers/net/ethernet/intel/ice/ice_tc_lib.c
+index ea39b999a0d0..2acc9ea5b98b 100644
+--- a/drivers/net/ethernet/intel/ice/ice_tc_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_tc_lib.c
+@@ -12,14 +12,11 @@
  /**
-  * ice_lldp_fltr_add_remove - add or remove a LLDP Rx switch filter
-  * @hw: pointer to HW struct
-- * @vsi_num: absolute HW index for VSI
-+ * @vsi: VSI to add the filter to
-  * @add: boolean for if adding or removing a filter
+  * ice_tc_count_lkups - determine lookup count for switch filter
+  * @flags: TC-flower flags
+- * @headers: Pointer to TC flower filter header structure
+  * @fltr: Pointer to outer TC filter structure
+  *
+  * Determine lookup count based on TC flower input for switch filter.
   */
--int
--ice_lldp_fltr_add_remove(struct ice_hw *hw, u16 vsi_num, bool add)
-+int ice_lldp_fltr_add_remove(struct ice_hw *hw, struct ice_vsi *vsi, bool add)
+-static int
+-ice_tc_count_lkups(u32 flags, struct ice_tc_flower_lyr_2_4_hdrs *headers,
+-		   struct ice_tc_flower_fltr *fltr)
++static int ice_tc_count_lkups(u32 flags, struct ice_tc_flower_fltr *fltr)
  {
- 	struct ice_aqc_lldp_filter_ctrl *cmd;
- 	struct ice_aq_desc desc;
+ 	int lkups_cnt = 1; /* 0th lookup is metadata */
  
-+	if (vsi->type != ICE_VSI_PF || !ice_fw_supports_lldp_fltr_ctrl(hw))
-+		return -EOPNOTSUPP;
-+
- 	cmd = &desc.params.lldp_filter_ctrl;
- 
- 	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_lldp_filter_ctrl);
-@@ -6028,7 +6030,7 @@ ice_lldp_fltr_add_remove(struct ice_hw *hw, u16 vsi_num, bool add)
- 	else
- 		cmd->cmd_flags = ICE_AQC_LLDP_FILTER_ACTION_DELETE;
- 
--	cmd->vsi_num = cpu_to_le16(vsi_num);
-+	cmd->vsi_num = cpu_to_le16(vsi->vsi_num);
- 
- 	return ice_aq_send_cmd(hw, &desc, NULL, 0, NULL);
- }
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
-index 9b00aa0ddf10..64c530b39191 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.h
-+++ b/drivers/net/ethernet/intel/ice/ice_common.h
-@@ -290,8 +290,7 @@ int
- ice_aq_set_lldp_mib(struct ice_hw *hw, u8 mib_type, void *buf, u16 buf_size,
- 		    struct ice_sq_cd *cd);
- bool ice_fw_supports_lldp_fltr_ctrl(struct ice_hw *hw);
--int
--ice_lldp_fltr_add_remove(struct ice_hw *hw, u16 vsi_num, bool add);
-+int ice_lldp_fltr_add_remove(struct ice_hw *hw, struct ice_vsi *vsi, bool add);
- int ice_lldp_execute_pending_mib(struct ice_hw *hw);
- int
- ice_aq_read_i2c(struct ice_hw *hw, struct ice_aqc_link_topo_addr topo_addr,
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 96ad1d8be8dd..edab19a44707 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -2085,19 +2085,28 @@ void ice_cfg_sw_lldp(struct ice_vsi *vsi, bool tx, bool create)
- 		status = eth_fltr(vsi, ETH_P_LLDP, ICE_FLTR_TX,
- 				  ICE_DROP_PACKET);
- 	} else {
--		if (ice_fw_supports_lldp_fltr_ctrl(&pf->hw)) {
--			status = ice_lldp_fltr_add_remove(&pf->hw, vsi->vsi_num,
--							  create);
--		} else {
-+		if (!test_bit(ICE_FLAG_LLDP_AQ_FLTR, pf->flags)) {
- 			status = eth_fltr(vsi, ETH_P_LLDP, ICE_FLTR_RX,
- 					  ICE_FWD_TO_VSI);
-+			if (!status || !create)
-+				goto report;
-+
-+			dev_info(dev,
-+				 "Failed to add generic LLDP Rx filter on VSI %i error: %d, falling back to specialized AQ control\n",
-+				 vsi->vsi_num, status);
- 		}
-+
-+		status = ice_lldp_fltr_add_remove(&pf->hw, vsi, create);
-+		if (!status)
-+			set_bit(ICE_FLAG_LLDP_AQ_FLTR, pf->flags);
-+
+@@ -770,7 +767,6 @@ static int ice_eswitch_tc_parse_action(struct net_device *filter_dev,
+ static int
+ ice_eswitch_add_tc_fltr(struct ice_vsi *vsi, struct ice_tc_flower_fltr *fltr)
+ {
+-	struct ice_tc_flower_lyr_2_4_hdrs *headers = &fltr->outer_headers;
+ 	struct ice_adv_rule_info rule_info = { 0 };
+ 	struct ice_rule_query_data rule_added;
+ 	struct ice_hw *hw = &vsi->back->hw;
+@@ -785,7 +781,7 @@ ice_eswitch_add_tc_fltr(struct ice_vsi *vsi, struct ice_tc_flower_fltr *fltr)
+ 		return -EOPNOTSUPP;
  	}
  
-+report:
- 	if (status)
--		dev_dbg(dev, "Fail %s %s LLDP rule on VSI %i error: %d\n",
--			create ? "adding" : "removing", tx ? "TX" : "RX",
--			vsi->vsi_num, status);
-+		dev_warn(dev, "Failed to %s %s LLDP rule on VSI %i error: %d\n",
-+			 create ? "add" : "remove", tx ? "Tx" : "Rx",
-+			 vsi->vsi_num, status);
- }
+-	lkups_cnt = ice_tc_count_lkups(flags, headers, fltr);
++	lkups_cnt = ice_tc_count_lkups(flags, fltr);
+ 	list = kcalloc(lkups_cnt, sizeof(*list), GFP_ATOMIC);
+ 	if (!list)
+ 		return -ENOMEM;
+@@ -985,7 +981,6 @@ static int
+ ice_add_tc_flower_adv_fltr(struct ice_vsi *vsi,
+ 			   struct ice_tc_flower_fltr *tc_fltr)
+ {
+-	struct ice_tc_flower_lyr_2_4_hdrs *headers = &tc_fltr->outer_headers;
+ 	struct ice_adv_rule_info rule_info = {0};
+ 	struct ice_rule_query_data rule_added;
+ 	struct ice_adv_lkup_elem *list;
+@@ -1021,7 +1016,7 @@ ice_add_tc_flower_adv_fltr(struct ice_vsi *vsi,
+ 			return PTR_ERR(dest_vsi);
+ 	}
  
- /**
+-	lkups_cnt = ice_tc_count_lkups(flags, headers, tc_fltr);
++	lkups_cnt = ice_tc_count_lkups(flags, tc_fltr);
+ 	list = kcalloc(lkups_cnt, sizeof(*list), GFP_ATOMIC);
+ 	if (!list)
+ 		return -ENOMEM;
 -- 
 2.43.0
 
