@@ -1,94 +1,117 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1B520C0219D
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 10 Feb 2025 09:13:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3E393C02198
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 10 Feb 2025 09:19:47 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id AFAA2413EC;
-	Mon, 10 Feb 2025 09:13:38 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id DB03081EB2;
+	Mon, 10 Feb 2025 09:19:46 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 7zUG8HIzotOr; Mon, 10 Feb 2025 09:19:45 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 6BD3981EA4
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1739179185;
+	bh=UWLliSMAkm07uTsXCRIauclvo1uxcCFEJNaANaMWylk=;
+	h=From:Date:References:In-Reply-To:To:Cc:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=ly53bg4kA6309vkFQtmbics1KHa9GKro0gG2Dt1gP9e6m0MPMBFXunosc43AxOB3Y
+	 lyYZIaawH1/pxmFbQ5HzjlujTab3arN8vK9sPSNtA4Zrsf+78UlQJ1zok4JRNDCuKT
+	 arLjkzdfjldcNBwKvjcNkSejA8rvlh0DMmexQEZZjJppFAU7EhTmnBFvjJexob0C9F
+	 Qoma6ZZq5uVjK6v3P7nXKfzdd73gmgV7fr4gOZtmTJTGrYIyDEsKBtfizjLOJb0hZ+
+	 ZitVMG8wqdZhsPOsdo3KN3BQVZwEGlFkjjnH7NzPO+2AAcDzjtsUv1QvMoQUq8F6V2
+	 r4frAFHnzXfpw==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp1.osuosl.org (Postfix) with ESMTP id 6BD3981EA4;
+	Mon, 10 Feb 2025 09:19:45 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id C5583C2
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 10 Feb 2025 09:19:43 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp4.osuosl.org (Postfix) with ESMTP id A7D774125F
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 10 Feb 2025 09:19:43 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id xeld06MG91XZ; Mon, 10 Feb 2025 09:13:37 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B1917413FB
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1739178817;
-	bh=pAf4xxjMd3bido3OYSPc5jm1TyPEocE6gMB8ihRh6EI=;
-	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=a6Wq1DZS29B2LH1FqrMs5vdobrCaiZMancs2HV2hHbnS5B8cKkXLTFYc71hs0JE+f
-	 A7C3Jnvl5lLZJjS7id4i53vPShlg5gINUL2p101ZyW7h0LnNGQYNkHyRjf8w/s4syp
-	 pwNllip7ksYsMq2gqIH6jSzfdq6lZ8ZWKqqwbcsrBnLIk6ThZUweEAGIfaIytWibHn
-	 AJDpsy0SNJLwoMnSlxSwv/MMYnFQ2uxi7Eo+MwaS2PPD/pl6o6n2ygc5kQI5HZv0Py
-	 YaerGOtaNze4MZTC9HkJ7BZdrqhnnA8cwqyakhPIZucQ3fOVaxdx4ChNtigZekMpj9
-	 VZZXjoWulOOYA==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id B1917413FB;
-	Mon, 10 Feb 2025 09:13:37 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id 9A7F1C2
- for <intel-wired-lan@lists.osuosl.org>; Mon, 10 Feb 2025 09:13:36 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 7935340439
- for <intel-wired-lan@lists.osuosl.org>; Mon, 10 Feb 2025 09:13:36 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id KCzHlj2VjLAj for <intel-wired-lan@lists.osuosl.org>;
- Mon, 10 Feb 2025 09:13:35 +0000 (UTC)
+ id 2jEg_uwIxXjp for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 10 Feb 2025 09:19:42 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2001:41d0:1004:224b::b3; helo=out-179.mta0.migadu.com;
- envelope-from=vadim.fedorenko@linux.dev; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 3359840F73
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 3359840F73
-Received: from out-179.mta0.migadu.com (out-179.mta0.migadu.com
- [IPv6:2001:41d0:1004:224b::b3])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 3359840F73
- for <intel-wired-lan@lists.osuosl.org>; Mon, 10 Feb 2025 09:13:34 +0000 (UTC)
-Message-ID: <bfa55bd5-a5a1-4ef5-bb89-cb38eaec2cc0@linux.dev>
-Date: Mon, 10 Feb 2025 09:13:24 +0000
+ client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de;
+ envelope-from=kurt@linutronix.de; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 1FFBB4124D
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1FFBB4124D
+Received: from galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2a0a:51c0:0:12e:550::1])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 1FFBB4124D
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 10 Feb 2025 09:19:42 +0000 (UTC)
+From: Kurt Kanzenbach <kurt@linutronix.de>
+Date: Mon, 10 Feb 2025 10:19:37 +0100
 MIME-Version: 1.0
-To: Piotr Wejman <wejmanpm@gmail.com>,
- Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller"
- <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org
-References: <20250208154350.75316-1-wejmanpm@gmail.com>
-Content-Language: en-US
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and
- include these headers.
-From: Vadim Fedorenko <vadim.fedorenko@linux.dev>
-In-Reply-To: <20250208154350.75316-1-wejmanpm@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Migadu-Flow: FLOW_OUT
+Message-Id: <20250210-igb_irq-v1-3-bde078cdb9df@linutronix.de>
+References: <20250210-igb_irq-v1-0-bde078cdb9df@linutronix.de>
+In-Reply-To: <20250210-igb_irq-v1-0-bde078cdb9df@linutronix.de>
+To: Tony Nguyen <anthony.l.nguyen@intel.com>, 
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Cc: Andrew Lunn <andrew+netdev@lunn.ch>, 
+ "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
+ Sebastian Andrzej Siewior <bigeasy@linutronix.de>, 
+ Joe Damato <jdamato@fastly.com>, intel-wired-lan@lists.osuosl.org, 
+ netdev@vger.kernel.org, Kurt Kanzenbach <kurt@linutronix.de>
+X-Developer-Signature: v=1; a=openpgp-sha256; l=4735; i=kurt@linutronix.de;
+ h=from:subject:message-id; bh=cHDFtWtcVIJmeBQmyGr9ZowSzZ+BaH37t6BU0DGMi+U=;
+ b=owEBbQKS/ZANAwAKAcGT0fKqRnOCAcsmYgBnqcSpDkTg21WicGwPg1F/pt6F/EBmvQNsf/zRz
+ El80wL+j6WJAjMEAAEKAB0WIQS8ub+yyMN909/bWZLBk9HyqkZzggUCZ6nEqQAKCRDBk9HyqkZz
+ gtoAD/9D2QmWRwv9O+ByoWXz+a6xRuNMqcpThjRb+w0b7NGv0Q4R2qzVXX51i00+5a2uVmKY8Nl
+ Gb6mmA6XPweOnMzd18SFDjr3xrhdyU+H+UE8Fbg8R8I3t7nk8r5L1BaVtcTgwFsiyfkHnYX+Du/
+ vUrfSEJAN2DgCdfFWSLM2QhiB4I4uyOREgVKlVB7HiH91QFfUAn1gtP5pFGq4DfTueeDqiVB4ry
+ GDoIMGgnwvLvNHU6Z8+MPZmHGVb+jBdNodmfEAcDvyodhN+2FloToJZ0iLfrki9OzNxCCgsiK8N
+ iu/480zelJwkytUNuLED4KDQxz368NThE26k6bnL/BBuqXrNzC9Bgs7AG4Gt+sCc1mYQ6kVlIFT
+ Pvyt2f6jAKLIfN3cyLqMWZXppxBQLfomxRzlyNw9RXubUoLFFIiYiHCuKh5pp17NG/9PPv32pyP
+ FhVn1py+zdwVECznFaIkICpVp05Yqypx0FmoK5CxPpp/HN4kvaoyD5llyXZm+FE66i0v7HUTcTW
+ TDf5i6bgtMuZSyjt/6hA/dIbmO27rhIhToORBEdjFunEL0II8G1PFqi+a84kzNgPOEmB8/C4GE/
+ MXRwhid09VD7y+Oj6s2MOUtvi3cr8wbh65WzAsTV9jU4ZeCwe8VxSfl8F1jZrvwQkkARAa7Rbf+
+ tQYjTLBlgjzIshw==
+X-Developer-Key: i=kurt@linutronix.de; a=openpgp;
+ fpr=BCB9BFB2C8C37DD3DFDB5992C193D1F2AA467382
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=linux.dev; s=key1; t=1739178806;
+ d=linutronix.de; s=2020; t=1739179180;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:mime-version:mime-version:content-type:content-type:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=pAf4xxjMd3bido3OYSPc5jm1TyPEocE6gMB8ihRh6EI=;
- b=CceZQDOIpIJ8DujjXQhLHKVWH2biBmI5Huqn7vs2vKD0wInknLcSiw0ug8ybSVw31/wGSA
- pAg4L7EctJLJwQ+rbnRuARQfnE90KGoW3tgf12xeCsT5UvsVWtAqdVpo0wdgK4brGzauFv
- 1Yn1hubC91lNdczFV9oeCK6v96EmPYA=
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ bh=UWLliSMAkm07uTsXCRIauclvo1uxcCFEJNaANaMWylk=;
+ b=Nj7HLdYy2PF4Xx5N11DO2W8BKmfswh57eze41qg4UEllrKf5CgckbA0FhvOFKRtteV+tAR
+ WSi2Zf54pRjEtooWPfboUNclkLMe+koQFtKFs5djFevrhb1kOEjfU10D6rACe6e1gHRVTD
+ g2rtMtkKYwOT/tfY6/jbWlDl/c17/9o9y0yh9GBIGgBDl5C/GPwvPRUEDD1eSe0Dgw7Nu9
+ vJJxC8b3q5o6xTkGCXVlyI7xMiE/1iGZkCJ/hxbBlJIB6iQlpb1rkfmo3o+zKVIKIBZH1O
+ /EjY9spnkk2mjaC/kEDgJpRVCcs5GqAZ1YOVSjffEyYT33vHAVdTTttBUX8KCg==
+X-Mailman-Original-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
+ d=linutronix.de; s=2020e; t=1739179180;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=UWLliSMAkm07uTsXCRIauclvo1uxcCFEJNaANaMWylk=;
+ b=d8GORrcgBgdV4oJDBuQSd9QEZAGtIwICnAECYUpUgVCVGmkQTiN2OQHbwq7HAGgJ2zNMSj
+ i7BE+Jdv3kuEzDDQ==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
- header.from=linux.dev
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (1024-bit key,
- unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256
- header.s=key1 header.b=CceZQDOI
-Subject: Re: [Intel-wired-lan] [PATCH v2] net: e1000e: convert to
- ndo_hwtstamp_get() and ndo_hwtstamp_set()
+ header.from=linutronix.de
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key, unprotected) header.d=linutronix.de
+ header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=Nj7HLdYy; 
+ dkim=pass header.d=linutronix.de header.i=@linutronix.de
+ header.a=ed25519-sha256 header.s=2020e header.b=d8GORrcg
+Subject: [Intel-wired-lan] [PATCH 3/3] igb: Get rid of spurious interrupts
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -104,20 +127,124 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On 08/02/2025 15:43, Piotr Wejman wrote:
-> Update the driver to use the new hardware timestamping API added in commit
-> 66f7223039c0 ("net: add NDOs for configuring hardware timestamping").
-> Use Netlink extack for error reporting in e1000e_hwtstamp_set.
-> Align the indentation of net_device_ops.
-> 
-> Signed-off-by: Piotr Wejman <wejmanpm@gmail.com>
-> ---
-> Changes in v2:
->    - amend commit message
->    - use extack for error reporting
->    - rename e1000_mii_ioctl to e1000_ioctl
->    - Link to v1: https://lore.kernel.org/netdev/20250202170839.47375-1-piotrwejman90@gmail.com/
-> 
+When running the igc with XDP/ZC in busy polling mode with deferral of hard
+interrupts, interrupts still happen from time to time. That is caused by
+the igc task watchdog which triggers Rx interrupts periodically.
 
-Reviewed-by: Vadim Fedorenko <vadim.fedorenko@linux.dev>
+That mechanism has been introduced to overcome skb/memory allocation
+failures [1]. So the Rx clean functions stop processing the Rx ring in case
+of such failure. The task watchdog triggers Rx interrupts periodically in
+the hope that memory became available in the mean time.
+
+The current behavior is undesirable for real time applications, because the
+driver induced Rx interrupts trigger also the softirq processing. However,
+all real time packets should be processed by the application which uses the
+busy polling method.
+
+Therefore, only trigger the Rx interrupts in case of real allocation
+failures. Introduce a new flag for signaling that condition.
+
+Follow the same logic as in commit 8dcf2c212078 ("igc: Get rid of spurious
+interrupts").
+
+[1] - https://git.kernel.org/pub/scm/linux/kernel/git/tglx/history.git/commit/?id=3be507547e6177e5c808544bd6a2efa2c7f1d436
+
+Signed-off-by: Kurt Kanzenbach <kurt@linutronix.de>
+---
+ drivers/net/ethernet/intel/igb/igb.h      |  3 ++-
+ drivers/net/ethernet/intel/igb/igb_main.c | 29 +++++++++++++++++++++++++----
+ drivers/net/ethernet/intel/igb/igb_xsk.c  |  1 +
+ 3 files changed, 28 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
+index 79eca385a751bfdafdf384928b6cc1b350b22560..f34ead8243e9f0176a068299138c5c16f7faab2e 100644
+--- a/drivers/net/ethernet/intel/igb/igb.h
++++ b/drivers/net/ethernet/intel/igb/igb.h
+@@ -391,7 +391,8 @@ enum e1000_ring_flags_t {
+ 	IGB_RING_FLAG_RX_LB_VLAN_BSWAP,
+ 	IGB_RING_FLAG_TX_CTX_IDX,
+ 	IGB_RING_FLAG_TX_DETECT_HANG,
+-	IGB_RING_FLAG_TX_DISABLED
++	IGB_RING_FLAG_TX_DISABLED,
++	IGB_RING_FLAG_RX_ALLOC_FAILED,
+ };
+ 
+ #define ring_uses_large_buffer(ring) \
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index 8e964484f4c9854e4e3e0b4f3e8785fe93bd1207..96da3e2ddc9a67f799ee55d9621d98f80a6b449c 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -5754,11 +5754,29 @@ static void igb_watchdog_task(struct work_struct *work)
+ 	if (adapter->flags & IGB_FLAG_HAS_MSIX) {
+ 		u32 eics = 0;
+ 
+-		for (i = 0; i < adapter->num_q_vectors; i++)
+-			eics |= adapter->q_vector[i]->eims_value;
+-		wr32(E1000_EICS, eics);
++		for (i = 0; i < adapter->num_q_vectors; i++) {
++			struct igb_q_vector *q_vector = adapter->q_vector[i];
++			struct igb_ring *rx_ring;
++
++			if (!q_vector->rx.ring)
++				continue;
++
++			rx_ring = adapter->rx_ring[q_vector->rx.ring->queue_index];
++
++			if (test_bit(IGB_RING_FLAG_RX_ALLOC_FAILED, &rx_ring->flags)) {
++				eics |= q_vector->eims_value;
++				clear_bit(IGB_RING_FLAG_RX_ALLOC_FAILED, &rx_ring->flags);
++			}
++		}
++		if (eics)
++			wr32(E1000_EICS, eics);
+ 	} else {
+-		wr32(E1000_ICS, E1000_ICS_RXDMT0);
++		struct igb_ring *rx_ring = adapter->rx_ring[0];
++
++		if (test_bit(IGB_RING_FLAG_RX_ALLOC_FAILED, &rx_ring->flags)) {
++			clear_bit(IGB_RING_FLAG_RX_ALLOC_FAILED, &rx_ring->flags);
++			wr32(E1000_ICS, E1000_ICS_RXDMT0);
++		}
+ 	}
+ 
+ 	igb_spoof_check(adapter);
+@@ -9089,6 +9107,7 @@ static int igb_clean_rx_irq(struct igb_q_vector *q_vector, const int budget)
+ 		if (!xdp_res && !skb) {
+ 			rx_ring->rx_stats.alloc_failed++;
+ 			rx_buffer->pagecnt_bias++;
++			set_bit(IGB_RING_FLAG_RX_ALLOC_FAILED, &rx_ring->flags);
+ 			break;
+ 		}
+ 
+@@ -9148,6 +9167,7 @@ static bool igb_alloc_mapped_page(struct igb_ring *rx_ring,
+ 	page = dev_alloc_pages(igb_rx_pg_order(rx_ring));
+ 	if (unlikely(!page)) {
+ 		rx_ring->rx_stats.alloc_failed++;
++		set_bit(IGB_RING_FLAG_RX_ALLOC_FAILED, &rx_ring->flags);
+ 		return false;
+ 	}
+ 
+@@ -9164,6 +9184,7 @@ static bool igb_alloc_mapped_page(struct igb_ring *rx_ring,
+ 		__free_pages(page, igb_rx_pg_order(rx_ring));
+ 
+ 		rx_ring->rx_stats.alloc_failed++;
++		set_bit(IGB_RING_FLAG_RX_ALLOC_FAILED, &rx_ring->flags);
+ 		return false;
+ 	}
+ 
+diff --git a/drivers/net/ethernet/intel/igb/igb_xsk.c b/drivers/net/ethernet/intel/igb/igb_xsk.c
+index a5ad090dfe94b6afc8194fe39d28cdd51c7067b0..47344ee1ed7f29bd68055485702a87df3b8922e8 100644
+--- a/drivers/net/ethernet/intel/igb/igb_xsk.c
++++ b/drivers/net/ethernet/intel/igb/igb_xsk.c
+@@ -417,6 +417,7 @@ int igb_clean_rx_irq_zc(struct igb_q_vector *q_vector,
+ 		/* exit if we failed to retrieve a buffer */
+ 		if (!skb) {
+ 			rx_ring->rx_stats.alloc_failed++;
++			set_bit(IGB_RING_FLAG_RX_ALLOC_FAILED, &rx_ring->flags);
+ 			break;
+ 		}
+ 
+
+-- 
+2.39.5
 
