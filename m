@@ -1,76 +1,75 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 058BCC02198
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 12 Feb 2025 13:28:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4EE11C021AF
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 12 Feb 2025 13:28:28 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id A2F57426D5;
-	Wed, 12 Feb 2025 13:28:12 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 4ED7684021;
+	Wed, 12 Feb 2025 13:28:27 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Bd_uXQrzTu4K; Wed, 12 Feb 2025 13:28:10 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id CAAtToeUxVF8; Wed, 12 Feb 2025 13:28:26 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org F3FFD426B8
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 5364A84035
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1739366890;
-	bh=UVWncjLGWrn8aIBKawEvGlbQk1ME/EdTQBFTRnoKsIM=;
+	s=default; t=1739366906;
+	bh=yRmFezyhUeoRPengvyo+nTilsE/xLEOTyT8s5YWkhkw=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=ngL5wnoQKbV/EvQ1tTis80feXNwR7u0Rk6YiCT/Scw5g4RV2C1V3PfDkNPHTBfV+0
-	 MMbS1os1Sewik7WKvQCISkBE8itXE7IleuXbHI7ljJ86ldTLSGovmlMjn0+odP63Ly
-	 S7jETGp59KlgtOSWdWcKIeply4jL5JKau/WdrQOmW4ozR1GEZDBJVqVHh8BjHX5HLO
-	 G+S7xbqDgtJPlFWS4N2oag2gALkxXAbwy9qjl45Kv2e2Ws7NRbL7FYyMGMYvLqhLoy
-	 3BDkGCeEfJOr6JjuVDPm7S/PVBHwhRCwgcpbloH77PjviQecteTwc79IbZCbnYfXNc
-	 vSI6d13B/Tgaw==
+	b=zwfMsbgNmnGCbVAHv+vwUSPXp+Kgw+WTsg8ah9ch2xgviyTBW/1FA+HT8ieh4NJZ3
+	 prdLCi37n5wIPS68Ct6CwEN9sWUY9YO52y9HgpVdnhxAiBgINKvuBr2AeGrN+kyuUQ
+	 xCeO5qs9NceVwWFEv91mEcVbsShmdDZb2xyorrv/N/DBTUCkOg/pgifkf0Axikf3Zd
+	 jgmeeJkOR9qHrmdRZtJSFF4IsDAzE+ZIhQES4noPsEpFXYq2Lvt81BXZlpJDBn0adg
+	 SGrUDpMf1mewMbm0mT6X/VrTT05qhZmO4oTlUR0V0ue6zdSLtBnL/0VqiCm2Fefy8O
+	 TQdeF7tULys2A==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id F3FFD426B8;
-	Wed, 12 Feb 2025 13:28:09 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 5364A84035;
+	Wed, 12 Feb 2025 13:28:26 +0000 (UTC)
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 836ACC2
- for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Feb 2025 13:28:08 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id 979B3194
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Feb 2025 13:28:24 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 6833E60FAD
- for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Feb 2025 13:28:08 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 8D0A46067F
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Feb 2025 13:28:24 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id m2fd07XhjLkG for <intel-wired-lan@lists.osuosl.org>;
- Wed, 12 Feb 2025 13:28:07 +0000 (UTC)
+ id HEPAph8t54F5 for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 12 Feb 2025 13:28:23 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.9;
  helo=mgamail.intel.com; envelope-from=jedrzej.jagielski@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 5FE3760BBB
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 5FE3760BBB
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org BDB3460848
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org BDB3460848
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.9])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 5FE3760BBB
- for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Feb 2025 13:28:07 +0000 (UTC)
-X-CSE-ConnectionGUID: rkL291BSQsmUfjJxSpWe1Q==
-X-CSE-MsgGUID: fhyQlS9nT8K7E+EEe+Yj2g==
-X-IronPort-AV: E=McAfee;i="6700,10204,11342"; a="50665543"
-X-IronPort-AV: E=Sophos;i="6.13,280,1732608000"; d="scan'208";a="50665543"
+ by smtp3.osuosl.org (Postfix) with ESMTPS id BDB3460848
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Feb 2025 13:28:23 +0000 (UTC)
+X-CSE-ConnectionGUID: ZiuvEotARTGWhBReBcRFyA==
+X-CSE-MsgGUID: JU4Cz63gRTaSVGGHdXE7Ew==
+X-IronPort-AV: E=McAfee;i="6700,10204,11342"; a="50665575"
+X-IronPort-AV: E=Sophos;i="6.13,280,1732608000"; d="scan'208";a="50665575"
 Received: from orviesa004.jf.intel.com ([10.64.159.144])
  by fmvoesa103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 12 Feb 2025 05:28:07 -0800
-X-CSE-ConnectionGUID: MR8wYB5vR5aek/ILOiyS2g==
-X-CSE-MsgGUID: 4XbbqQtDQKiy1v92hrQBmw==
+ 12 Feb 2025 05:28:23 -0800
+X-CSE-ConnectionGUID: YqcgKpG1TsqsmH44ht3+WA==
+X-CSE-MsgGUID: ggU2/FAKT4m1nKpkLhepNw==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.13,280,1732608000"; d="scan'208";a="117830673"
+X-IronPort-AV: E=Sophos;i="6.13,280,1732608000"; d="scan'208";a="117830708"
 Received: from os-delivery.igk.intel.com ([10.102.18.218])
- by orviesa004.jf.intel.com with ESMTP; 12 Feb 2025 05:28:04 -0800
+ by orviesa004.jf.intel.com with ESMTP; 12 Feb 2025 05:28:21 -0800
 From: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
 To: intel-wired-lan@lists.osuosl.org
 Cc: anthony.l.nguyen@intel.com, netdev@vger.kernel.org, jiri@resnulli.us,
- horms@kernel.org, Slawomir Mrozowicz <slawomirx.mrozowicz@intel.com>,
+ horms@kernel.org, Jedrzej Jagielski <jedrzej.jagielski@intel.com>,
  Mateusz Polchlopek <mateusz.polchlopek@intel.com>,
- Piotr Kwapulinski <piotr.kwapulinski@intel.com>,
- Jedrzej Jagielski <jedrzej.jagielski@intel.com>
-Date: Wed, 12 Feb 2025 14:14:05 +0100
-Message-Id: <20250212131413.91787-7-jedrzej.jagielski@intel.com>
+ Piotr Kwapulinski <piotr.kwapulinski@intel.com>
+Date: Wed, 12 Feb 2025 14:14:11 +0100
+Message-Id: <20250212131413.91787-13-jedrzej.jagielski@intel.com>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <20250212131413.91787-1-jedrzej.jagielski@intel.com>
 References: <20250212131413.91787-1-jedrzej.jagielski@intel.com>
@@ -78,25 +77,25 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1739366887; x=1770902887;
+ t=1739366904; x=1770902904;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=B5Wl0asnVYwaiT18jKtPr8S6EHLVgSc7XerVfSTBbko=;
- b=Phw+UzKSR55BDQxaTJ1QjdhawQ+75SpYiJNaurHvMvrC2diwMyi9ZfNL
- BenbE21KNf8IXukwQP3ECsokcFBmWx5g7ZP2zCv8sMRqIAp/824iwb8+A
- 1B2NczsPn4Cl1Pq6isV8eUge5lLpP5wKqq4WAj782ZMW3SO3RxfNVLOUP
- 9uwvzm4ymWWKF3y5lsCHcbyyfl3TBE58KKXWw8QQukx6KHab6m8tz/EXc
- P7jIlPqJ3MabVqwXRqy4fYlqyCy7NBTRrWX79ZVWQAwwm0fGrydJk9KFr
- OcXjwMtu95y/09MTKIBJulYngFFIeBf7/I8Tb+Ls1nKGPilxzsbO9YwiD
- Q==;
+ bh=iOTHyVTsy5nZKxDg161IqK1gJpubBV8+ZlOwjcHZuiQ=;
+ b=Jt70IHGSBwSpG6dTg/EVH9XiAgGfBNxXVzzy01JCgOpI1UZaAYtgFxr1
+ EY2/Ii1vZPAxzy9bSi56ExyPaVtJeyUVL8bI3Zp/gvP4a15IXbPzI20e+
+ lVu8naIqSJrvLeqBd/EkhWmDTZO6yO0dvi5ajQgrsb8g6cIisVdatDhki
+ KMJZ/sxEhTZ+uGw9l5ENeU9EaBGwGp1HXjdcWk271FBiokKUHrm6s2wOF
+ lbsK60fjyZQXFbJb38KT3dUBK1AYfIx2gc6jfAv0jmPi4YGomPoDA/RBk
+ 8jq5BY3OtLMwuqGPc47KLHOR26LwE+0WFu5Uuh8bzCYIRZUpB1wY8BChP
+ A==;
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=Phw+UzKS
-Subject: [Intel-wired-lan] [PATCH iwl-next v3 06/14] ixgbe: read the netlist
- version information
+ header.a=rsa-sha256 header.s=Intel header.b=Jt70IHGS
+Subject: [Intel-wired-lan] [PATCH iwl-next v3 12/14] ixgbe: add FW API
+ version check
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -112,202 +111,123 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Slawomir Mrozowicz <slawomirx.mrozowicz@intel.com>
+Add E610 specific function checking whether the FW API version
+is compatible with the driver expectations.
 
-Add functions reading the netlist version info and use them
-as a part of the setting NVM info procedure.
+The major API version should be less than or equal to the expected
+API version. If not the driver won't be fully operational.
+
+Check the minor version, and if it is more than two versions lesser
+or greater than the expected version, print a message indicating
+that the NVM or driver should be updated respectively.
 
 Reviewed-by: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
-Signed-off-by: Slawomir Mrozowicz <slawomirx.mrozowicz@intel.com>
 Co-developed-by: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
 Signed-off-by: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
 Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c | 112 ++++++++++++++++++
- .../ethernet/intel/ixgbe/ixgbe_type_e610.h    |  33 ++++++
- 2 files changed, 145 insertions(+)
+ .../ethernet/intel/ixgbe/devlink/devlink.c    |  2 ++
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h      |  1 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 31 +++++++++++++++++++
+ .../ethernet/intel/ixgbe/ixgbe_type_e610.h    |  4 +++
+ 4 files changed, 38 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c
-index 236c804f03c6..e49e699fb141 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c
-@@ -2579,6 +2579,33 @@ static int ixgbe_read_nvm_module(struct ixgbe_hw *hw,
- 	return err;
- }
+diff --git a/drivers/net/ethernet/intel/ixgbe/devlink/devlink.c b/drivers/net/ethernet/intel/ixgbe/devlink/devlink.c
+index 3d15a5a0c580..2c54c6fa55a2 100644
+--- a/drivers/net/ethernet/intel/ixgbe/devlink/devlink.c
++++ b/drivers/net/ethernet/intel/ixgbe/devlink/devlink.c
+@@ -488,6 +488,8 @@ static int ixgbe_devlink_reload_empr_finish(struct devlink *devlink,
  
-+/**
-+ * ixgbe_read_netlist_module - Read data from the netlist module area
-+ * @hw: pointer to the HW structure
-+ * @bank: whether to read from the active or inactive module
-+ * @offset: offset into the netlist to read from
-+ * @data: storage for returned word value
-+ *
-+ * Read a word from the specified netlist bank.
-+ *
-+ * Return: the exit code of the operation.
-+ */
-+static int ixgbe_read_netlist_module(struct ixgbe_hw *hw,
-+				     enum ixgbe_bank_select bank,
-+				     u32 offset, u16 *data)
-+{
-+	__le16 data_local;
-+	int err;
+ 	*actions_performed = BIT(DEVLINK_RELOAD_ACTION_FW_ACTIVATE);
+ 
++	adapter->flags2 &= ~IXGBE_FLAG2_API_MISMATCH;
 +
-+	err = ixgbe_read_flash_module(hw, bank, IXGBE_E610_SR_NETLIST_BANK_PTR,
-+				      offset * sizeof(data_local),
-+				      (u8 *)&data_local, sizeof(data_local));
-+	if (!err)
-+		*data = le16_to_cpu(data_local);
-+
-+	return err;
-+}
-+
- /**
-  * ixgbe_read_orom_module - Read from the active Option ROM module
-  * @hw: pointer to the HW structure
-@@ -2884,6 +2911,86 @@ static int ixgbe_get_nvm_ver_info(struct ixgbe_hw *hw,
  	return 0;
  }
  
-+/**
-+ * ixgbe_get_netlist_info - Read the netlist version information
-+ * @hw: pointer to the HW struct
-+ * @bank: whether to read from the active or inactive flash bank
-+ * @netlist: pointer to netlist version info structure
-+ *
-+ * Get the netlist version information from the requested bank. Reads the Link
-+ * Topology section to find the Netlist ID block and extract the relevant
-+ * information into the netlist version structure.
-+ *
-+ * Return: the exit code of the operation.
-+ */
-+static int ixgbe_get_netlist_info(struct ixgbe_hw *hw,
-+				  enum ixgbe_bank_select bank,
-+				  struct ixgbe_netlist_info *netlist)
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+index 0dbb2e205557..59dceb96e76a 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+@@ -671,6 +671,7 @@ struct ixgbe_adapter {
+ #define IXGBE_FLAG2_PHY_FW_LOAD_FAILED		BIT(20)
+ #define IXGBE_FLAG2_NO_MEDIA			BIT(21)
+ #define IXGBE_FLAG2_MOD_POWER_UNSUPPORTED	BIT(22)
++#define IXGBE_FLAG2_API_MISMATCH		BIT(23)
+ 
+ 	/* Tx fast path data */
+ 	int num_tx_queues;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 4523f7d5a12e..0a4922e4e9cf 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -8361,6 +8361,31 @@ static void ixgbe_reset_subtask(struct ixgbe_adapter *adapter)
+ 	rtnl_unlock();
+ }
+ 
++static int ixgbe_check_fw_api_mismatch(struct ixgbe_adapter *adapter)
 +{
-+	u16 module_id, length, node_count, i;
-+	u16 *id_blk;
-+	int err;
++	struct ixgbe_hw *hw = &adapter->hw;
 +
-+	err = ixgbe_read_netlist_module(hw, bank, IXGBE_NETLIST_TYPE_OFFSET,
-+					&module_id);
-+	if (err)
-+		return err;
++	if (hw->mac.type != ixgbe_mac_e610)
++		return 0;
 +
-+	if (module_id != IXGBE_NETLIST_LINK_TOPO_MOD_ID)
-+		return -EIO;
++	if (hw->api_maj_ver > IXGBE_FW_API_VER_MAJOR) {
++		e_dev_err("The driver for the device stopped because the NVM image is newer than expected. You must install the most recent version of the network driver.\n");
 +
-+	err = ixgbe_read_netlist_module(hw, bank, IXGBE_LINK_TOPO_MODULE_LEN,
-+					&length);
-+	if (err)
-+		return err;
++		adapter->flags2 |= IXGBE_FLAG2_API_MISMATCH;
++		return -EOPNOTSUPP;
++	} else if (hw->api_maj_ver == IXGBE_FW_API_VER_MAJOR &&
++		   hw->api_min_ver > IXGBE_FW_API_VER_MINOR + IXGBE_FW_API_VER_DIFF_ALLOWED) {
++		e_dev_info("The driver for the device detected a newer version of the NVM image than expected. Please install the most recent version of the network driver.\n");
++		adapter->flags2 |= IXGBE_FLAG2_API_MISMATCH;
++	} else if (hw->api_maj_ver < IXGBE_FW_API_VER_MAJOR ||
++		   hw->api_min_ver < IXGBE_FW_API_VER_MINOR - IXGBE_FW_API_VER_DIFF_ALLOWED) {
++		e_dev_info("The driver for the device detected an older version of the NVM image than expected. Please update the NVM image.\n");
++		adapter->flags2 |= IXGBE_FLAG2_API_MISMATCH;
++	}
 +
-+	/* Sanity check that we have at least enough words to store the
-+	 * netlist ID block.
-+	 */
-+	if (length < IXGBE_NETLIST_ID_BLK_SIZE)
-+		return -EIO;
-+
-+	err = ixgbe_read_netlist_module(hw, bank, IXGBE_LINK_TOPO_NODE_COUNT,
-+					&node_count);
-+	if (err)
-+		return err;
-+
-+	node_count &= IXGBE_LINK_TOPO_NODE_COUNT_M;
-+
-+	id_blk = kcalloc(IXGBE_NETLIST_ID_BLK_SIZE, sizeof(*id_blk), GFP_KERNEL);
-+	if (!id_blk)
-+		return -ENOMEM;
-+
-+	/* Read out the entire Netlist ID Block at once. */
-+	err = ixgbe_read_flash_module(hw, bank, IXGBE_E610_SR_NETLIST_BANK_PTR,
-+				      IXGBE_NETLIST_ID_BLK_OFFSET(node_count) *
-+				      sizeof(*id_blk), (u8 *)id_blk,
-+				      IXGBE_NETLIST_ID_BLK_SIZE *
-+				      sizeof(*id_blk));
-+	if (err)
-+		goto free_id_blk;
-+
-+	for (i = 0; i < IXGBE_NETLIST_ID_BLK_SIZE; i++)
-+		id_blk[i] = le16_to_cpu(((__le16 *)id_blk)[i]);
-+
-+	netlist->major = id_blk[IXGBE_NETLIST_ID_BLK_MAJOR_VER_HIGH] << 16 |
-+			 id_blk[IXGBE_NETLIST_ID_BLK_MAJOR_VER_LOW];
-+	netlist->minor = id_blk[IXGBE_NETLIST_ID_BLK_MINOR_VER_HIGH] << 16 |
-+			 id_blk[IXGBE_NETLIST_ID_BLK_MINOR_VER_LOW];
-+	netlist->type = id_blk[IXGBE_NETLIST_ID_BLK_TYPE_HIGH] << 16 |
-+			id_blk[IXGBE_NETLIST_ID_BLK_TYPE_LOW];
-+	netlist->rev = id_blk[IXGBE_NETLIST_ID_BLK_REV_HIGH] << 16 |
-+		       id_blk[IXGBE_NETLIST_ID_BLK_REV_LOW];
-+	netlist->cust_ver = id_blk[IXGBE_NETLIST_ID_BLK_CUST_VER];
-+	/* Read the left most 4 bytes of SHA */
-+	netlist->hash = id_blk[IXGBE_NETLIST_ID_BLK_SHA_HASH_WORD(15)] << 16 |
-+			id_blk[IXGBE_NETLIST_ID_BLK_SHA_HASH_WORD(14)];
-+
-+free_id_blk:
-+	kfree(id_blk);
-+	return err;
++	return 0;
 +}
 +
  /**
-  * ixgbe_get_flash_data - get flash data
-  * @hw: pointer to the HW struct
-@@ -2936,6 +3043,11 @@ int ixgbe_get_flash_data(struct ixgbe_hw *hw)
+  * ixgbe_check_fw_error - Check firmware for errors
+  * @adapter: the adapter private structure
+@@ -8371,6 +8396,7 @@ static bool ixgbe_check_fw_error(struct ixgbe_adapter *adapter)
+ {
+ 	struct ixgbe_hw *hw = &adapter->hw;
+ 	u32 fwsm;
++	int err;
  
- 	err = ixgbe_get_orom_ver_info(hw, IXGBE_ACTIVE_FLASH_BANK,
- 				      &flash->orom);
-+	if (err)
-+		return err;
-+
-+	err = ixgbe_get_netlist_info(hw, IXGBE_ACTIVE_FLASH_BANK,
-+				     &flash->netlist);
+ 	/* read fwsm.ext_err_ind register and log errors */
+ 	fwsm = IXGBE_READ_REG(hw, IXGBE_FWSM(hw));
+@@ -8385,6 +8411,11 @@ static bool ixgbe_check_fw_error(struct ixgbe_adapter *adapter)
+ 		e_dev_err("Firmware recovery mode detected. Limiting functionality. Refer to the Intel(R) Ethernet Adapters and Devices User Guide for details on firmware recovery mode.\n");
+ 		return true;
+ 	}
++	if (!(adapter->flags2 & IXGBE_FLAG2_API_MISMATCH)) {
++		err = ixgbe_check_fw_api_mismatch(adapter);
++		if (err)
++			return true;
++	}
  
- 	return err;
+ 	return false;
  }
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type_e610.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type_e610.h
-index 9b04075edd4a..a1c963cf7127 100644
+index 93d854b8a92e..4d591019dd07 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type_e610.h
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type_e610.h
-@@ -45,6 +45,39 @@
- /* Shadow RAM related */
- #define IXGBE_SR_WORDS_IN_1KB	512
+@@ -112,6 +112,10 @@
+ #define IXGBE_PF_HICR_SV			BIT(2)
+ #define IXGBE_PF_HICR_EV			BIT(3)
  
-+/* The Netlist ID Block is located after all of the Link Topology nodes. */
-+#define IXGBE_NETLIST_ID_BLK_SIZE		0x30
-+#define IXGBE_NETLIST_ID_BLK_OFFSET(n)		IXGBE_NETLIST_LINK_TOPO_OFFSET(0x0004 + 2 * (n))
++#define IXGBE_FW_API_VER_MAJOR		0x01
++#define IXGBE_FW_API_VER_MINOR		0x07
++#define IXGBE_FW_API_VER_DIFF_ALLOWED	0x02
 +
-+/* netlist ID block field offsets (word offsets) */
-+#define IXGBE_NETLIST_ID_BLK_MAJOR_VER_LOW	0x02
-+#define IXGBE_NETLIST_ID_BLK_MAJOR_VER_HIGH	0x03
-+#define IXGBE_NETLIST_ID_BLK_MINOR_VER_LOW	0x04
-+#define IXGBE_NETLIST_ID_BLK_MINOR_VER_HIGH	0x05
-+#define IXGBE_NETLIST_ID_BLK_TYPE_LOW		0x06
-+#define IXGBE_NETLIST_ID_BLK_TYPE_HIGH		0x07
-+#define IXGBE_NETLIST_ID_BLK_REV_LOW		0x08
-+#define IXGBE_NETLIST_ID_BLK_REV_HIGH		0x09
-+#define IXGBE_NETLIST_ID_BLK_SHA_HASH_WORD(n)	(0x0A + (n))
-+#define IXGBE_NETLIST_ID_BLK_CUST_VER		0x2F
-+
-+/* The Link Topology Netlist section is stored as a series of words. It is
-+ * stored in the NVM as a TLV, with the first two words containing the type
-+ * and length.
-+ */
-+#define IXGBE_NETLIST_LINK_TOPO_MOD_ID		0x011B
-+#define IXGBE_NETLIST_TYPE_OFFSET		0x0000
-+#define IXGBE_NETLIST_LEN_OFFSET		0x0001
-+
-+/* The Link Topology section follows the TLV header. When reading the netlist
-+ * using ixgbe_read_netlist_module, we need to account for the 2-word TLV
-+ * header.
-+ */
-+#define IXGBE_NETLIST_LINK_TOPO_OFFSET(n)	((n) + 2)
-+#define IXGBE_LINK_TOPO_MODULE_LEN	IXGBE_NETLIST_LINK_TOPO_OFFSET(0x0000)
-+#define IXGBE_LINK_TOPO_NODE_COUNT	IXGBE_NETLIST_LINK_TOPO_OFFSET(0x0001)
-+#define IXGBE_LINK_TOPO_NODE_COUNT_M		GENMASK_ULL(9, 0)
-+
- /* Firmware Status Register (GL_FWSTS) */
- #define GL_FWSTS		0x00083048 /* Reset Source: POR */
- #define GL_FWSTS_EP_PF0		BIT(24)
+ #define IXGBE_ACI_DESC_SIZE		32
+ #define IXGBE_ACI_DESC_SIZE_IN_DWORDS	(IXGBE_ACI_DESC_SIZE / BYTES_PER_DWORD)
+ 
 -- 
 2.31.1
 
