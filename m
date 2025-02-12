@@ -4,74 +4,72 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D9FA6C021AD
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 12 Feb 2025 13:28:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id ED613C021A1
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 12 Feb 2025 13:28:29 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 892EA42748;
-	Wed, 12 Feb 2025 13:28:19 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 8FD09426C0;
+	Wed, 12 Feb 2025 13:28:29 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id imIzy1z_JMDw; Wed, 12 Feb 2025 13:28:17 +0000 (UTC)
+ id hzCakb4xD-F7; Wed, 12 Feb 2025 13:28:28 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org CD92142703
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 58C85426F5
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1739366897;
-	bh=mezNXsHYe6yo6JUpJZT/3nUhHImJt0xdGRcuqEQNYRI=;
+	s=default; t=1739366908;
+	bh=TpLqYM9uQlUCZF7bqeM6wpgTvC2eQAEX2R9r3mHWx7Q=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=kTl8AAFPX5CBZh4froZh+nIhKTqBqqdvIZm6zpc5D1BRDPGFEiP9CUZq6MqaarjYQ
-	 8ytcF4CU9CmlqYM9EjG0OBFMjKw4uspRBkurXyNh5z8lKj3KlaNr7ZIYcwdccZhEox
-	 0ocTAbvXGCiXfn2Qs2XPZQFZEM2BGhqsL83ixlmKjmLa2YNK37DzOidtvpqc378gu9
-	 nwQCfQNdU4jMw99DN/uFwqHtwqiR8wGY4E6Beg3QYnGx3HfosBfl0ZsJUk5goayPPC
-	 COAG7Faz6g/EBDWXm5NjyMZQKsbmG+uBt9EEGFD9lSyH5mcZYKLtePAdz4JtPlML8f
-	 1Arn6wk8TJikw==
+	b=SKyCoZu1w4pPUuyjNwhBk6J2RyACjMhknTflRxVVAYGO55oIm75XEvO0/krRcfmkw
+	 LVNm0Anm4kDwoEetoGXPYmQBBgnkeNfu23O8zu5l9dflgNKmljhuxIa4nD4Al4MxJ4
+	 xMtAN94AsMAVnMlOQIMhPwX5swNpX6BrZKFk6nailslIYjaKRwzbVDFHhvt9twsWtA
+	 UzbGM1yzfKyapjoAoqtcrS0XUI/bbxij85zHbqZbNbgOyoq8rtbsV+Bu9l+Ed9ryZB
+	 VPlY7PxyUNBOGuzocRZ0SE6ctgSFPfPi8wJl3UV5PSVqMgiMkvaa1YiuY+1/EnKZu9
+	 IGNj2sQOQ58GA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id CD92142703;
-	Wed, 12 Feb 2025 13:28:17 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id 4D776194
- for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Feb 2025 13:28:16 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 58C85426F5;
+	Wed, 12 Feb 2025 13:28:28 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 1A34B194
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Feb 2025 13:28:27 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 3CAB96067F
- for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Feb 2025 13:28:16 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 0A56F60848
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Feb 2025 13:28:27 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id EsGRDTdpGI6k for <intel-wired-lan@lists.osuosl.org>;
- Wed, 12 Feb 2025 13:28:15 +0000 (UTC)
+ id IXWBsn3rP6BR for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 12 Feb 2025 13:28:26 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.9;
  helo=mgamail.intel.com; envelope-from=jedrzej.jagielski@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 1BB79608D1
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 1BB79608D1
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org ECC596067F
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org ECC596067F
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.9])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 1BB79608D1
- for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Feb 2025 13:28:15 +0000 (UTC)
-X-CSE-ConnectionGUID: blXY/rGrTUmlRgJPf8YfYg==
-X-CSE-MsgGUID: eDvEmf/DTiqxe/SLwuwHRw==
-X-IronPort-AV: E=McAfee;i="6700,10204,11342"; a="50665559"
-X-IronPort-AV: E=Sophos;i="6.13,280,1732608000"; d="scan'208";a="50665559"
+ by smtp3.osuosl.org (Postfix) with ESMTPS id ECC596067F
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Feb 2025 13:28:25 +0000 (UTC)
+X-CSE-ConnectionGUID: v0d8QnbPS5+gvlgP8b25ZA==
+X-CSE-MsgGUID: RkL5lgrpTbCWbbBJH9CGzg==
+X-IronPort-AV: E=McAfee;i="6700,10204,11342"; a="50665580"
+X-IronPort-AV: E=Sophos;i="6.13,280,1732608000"; d="scan'208";a="50665580"
 Received: from orviesa004.jf.intel.com ([10.64.159.144])
  by fmvoesa103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 12 Feb 2025 05:28:15 -0800
-X-CSE-ConnectionGUID: q1wqhi5UQSqSH6IFBwfm4w==
-X-CSE-MsgGUID: IifII+ykQ7WWMMpTqT7PFQ==
+ 12 Feb 2025 05:28:26 -0800
+X-CSE-ConnectionGUID: BypjqlwgQCqVhOq40UHQVw==
+X-CSE-MsgGUID: 8+QE897+SnSVlRhWAZVH1Q==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.13,280,1732608000"; d="scan'208";a="117830684"
+X-IronPort-AV: E=Sophos;i="6.13,280,1732608000"; d="scan'208";a="117830715"
 Received: from os-delivery.igk.intel.com ([10.102.18.218])
- by orviesa004.jf.intel.com with ESMTP; 12 Feb 2025 05:28:12 -0800
+ by orviesa004.jf.intel.com with ESMTP; 12 Feb 2025 05:28:23 -0800
 From: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
 To: intel-wired-lan@lists.osuosl.org
 Cc: anthony.l.nguyen@intel.com, netdev@vger.kernel.org, jiri@resnulli.us,
  horms@kernel.org, Jedrzej Jagielski <jedrzej.jagielski@intel.com>,
  Mateusz Polchlopek <mateusz.polchlopek@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Slawomir Mrozowicz <slawomirx.mrozowicz@intel.com>,
- Piotr Kwapulinski <piotr.kwapulinski@intel.com>
-Date: Wed, 12 Feb 2025 14:14:08 +0100
-Message-Id: <20250212131413.91787-10-jedrzej.jagielski@intel.com>
+ Stefan Wegrzyn <stefan.wegrzyn@intel.com>
+Date: Wed, 12 Feb 2025 14:14:12 +0100
+Message-Id: <20250212131413.91787-14-jedrzej.jagielski@intel.com>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <20250212131413.91787-1-jedrzej.jagielski@intel.com>
 References: <20250212131413.91787-1-jedrzej.jagielski@intel.com>
@@ -79,25 +77,25 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1739366895; x=1770902895;
+ t=1739366906; x=1770902906;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=ZZx3DssJ33f9wVWm7LhgxX3tUwLr+yDMgvumxRhLQEU=;
- b=gwzUnl8J9UHohi35hckuAdLUEcldYCFxz1ZF9aMLHo+ETfS45VdVIGyJ
- XzfZYvWB2kCYZ8nw1IWbv6qplDix7teCy+efMAMgBmh1o/agKBD8MpZ8a
- QJNaoqIW2muJhnoUM4zDVF9ZKXkmVUDvC+HqP9FV3geW7jmYQGSLQXc12
- LjgrXwO1FdvbDC3TMGo8SUKgUvFsttLuCZiWNEgixmgVTyteGPYcGvx3X
- M6RipPv2rjt/99tvw0p0LUfPVPuiqaW/wC4GQGZjo3vzZ5EbajT9ZjBE/
- Z1UgyPMr3zecDh2x0/kccGO8oGGS/QFwssQmazCWvcFD2zk8rklPEEkk9
- A==;
+ bh=lQUtxd73iBFID5x2CBdaHf5d9H4HSZkBfKbx8McnX/8=;
+ b=XIySkaII9V64jtVg4KMqz/EGWrMHoue9DVcy2gjoCbcvl45Fsf8WZ0vt
+ zOTGY/e/meDgPG31JwAjzBPuyXBfd2Wbs7cpFq8rO/Gl4zigqTC8CCUGU
+ DTNDD5S/zYfKDfCzIYauHUW6vPK37rxZwuPhyiURqc2Ptfkvw3l1RAeYd
+ G5B0RYJNw0s8/g+dP5mENouk2RIg7fnvcWanNlMdYVvAHkKnA0UdQ1bWe
+ vH3SwoK1SzkjOzxxJBvzN4y7MI09PYBtDb/Oknbl0Z9Y3Y6u47rEERJK0
+ YraxgJLFdcT0AqgVgaj8/Pt6H7m0POktjYteI8Brds2sFa3ij9AJoMA7x
+ Q==;
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=gwzUnl8J
-Subject: [Intel-wired-lan] [PATCH iwl-next v3 09/14] ixgbe: extend .info_get
- with stored versions
+ header.a=rsa-sha256 header.s=Intel header.b=XIySkaII
+Subject: [Intel-wired-lan] [PATCH iwl-next v3 13/14] ixgbe: add E610
+ implementation of FW recovery mode
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -113,455 +111,244 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Add functions reading inactive versions from the inactive flash
-banks.
+Add E610 implementation of fw_recovery_mode MAC operation.
 
-Print stored NVM, OROM and netlist versions by devlink when there
-is an ongoing update for E610 devices.
+In case of E610 information about recovery mode is obtained
+from FW_MODES field in IXGBE_GL_MNG_FWSM register (0x000B6134).
+
+Introduce recovery specific probing flow and init only
+vital features.
+
+User should be able to perform NVM update using devlink
+once recovery mode is detected in order to load a healthy img.
 
 Reviewed-by: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
-Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Co-developed-by: Slawomir Mrozowicz <slawomirx.mrozowicz@intel.com>
-Signed-off-by: Slawomir Mrozowicz <slawomirx.mrozowicz@intel.com>
-Co-developed-by: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
-Signed-off-by: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
+Co-developed-by: Stefan Wegrzyn <stefan.wegrzyn@intel.com>
+Signed-off-by: Stefan Wegrzyn <stefan.wegrzyn@intel.com>
 Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
 ---
-v3: use devlink_info_version_*_put() function; squash functions dealing
-with running and stored versions into single ones
----
----
- .../ethernet/intel/ixgbe/devlink/devlink.c    | 196 ++++++++++++++++--
- drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c |  59 ++++++
- drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h |   3 +
- 3 files changed, 236 insertions(+), 22 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c | 17 ++++
+ .../ethernet/intel/ixgbe/ixgbe_fw_update.c    | 15 +++-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 88 +++++++++++++++++--
+ .../ethernet/intel/ixgbe/ixgbe_type_e610.h    |  3 +
+ 4 files changed, 113 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/devlink/devlink.c b/drivers/net/ethernet/intel/ixgbe/devlink/devlink.c
-index 5a0f609540ff..ceaf0586d773 100644
---- a/drivers/net/ethernet/intel/ixgbe/devlink/devlink.c
-+++ b/drivers/net/ethernet/intel/ixgbe/devlink/devlink.c
-@@ -6,6 +6,15 @@
- 
- struct ixgbe_info_ctx {
- 	char buf[128];
-+	struct ixgbe_orom_info pending_orom;
-+	struct ixgbe_nvm_info pending_nvm;
-+	struct ixgbe_netlist_info pending_netlist;
-+	struct ixgbe_hw_dev_caps dev_caps;
-+};
-+
-+enum ixgbe_devlink_version_type {
-+	IXGBE_DL_VERSION_RUNNING,
-+	IXGBE_DL_VERSION_STORED
- };
- 
- static void ixgbe_info_get_dsn(struct ixgbe_adapter *adapter,
-@@ -20,7 +29,8 @@ static void ixgbe_info_get_dsn(struct ixgbe_adapter *adapter,
- }
- 
- static void ixgbe_info_orom_ver(struct ixgbe_adapter *adapter,
--				struct ixgbe_info_ctx *ctx)
-+				struct ixgbe_info_ctx *ctx,
-+				enum ixgbe_devlink_version_type type)
- {
- 	struct ixgbe_hw *hw = &adapter->hw;
- 	struct ixgbe_nvm_version nvm_ver;
-@@ -28,7 +38,12 @@ static void ixgbe_info_orom_ver(struct ixgbe_adapter *adapter,
- 	ctx->buf[0] = '\0';
- 
- 	if (hw->mac.type == ixgbe_mac_e610) {
--		struct ixgbe_orom_info *orom = &adapter->hw.flash.orom;
-+		struct ixgbe_orom_info *orom;
-+
-+		if (type == IXGBE_DL_VERSION_RUNNING)
-+			orom = &adapter->hw.flash.orom;
-+		else if (type == IXGBE_DL_VERSION_STORED)
-+			orom = &ctx->pending_orom;
- 
- 		snprintf(ctx->buf, sizeof(ctx->buf), "%d.%d.%d",
- 			 orom->major, orom->build, orom->patch);
-@@ -51,14 +66,21 @@ static void ixgbe_info_orom_ver(struct ixgbe_adapter *adapter,
- }
- 
- static void ixgbe_info_eetrack(struct ixgbe_adapter *adapter,
--			       struct ixgbe_info_ctx *ctx)
-+			       struct ixgbe_info_ctx *ctx,
-+			       enum ixgbe_devlink_version_type type)
- {
- 	struct ixgbe_hw *hw = &adapter->hw;
- 	struct ixgbe_nvm_version nvm_ver;
- 
- 	if (hw->mac.type == ixgbe_mac_e610) {
--		snprintf(ctx->buf, sizeof(ctx->buf), "0x%08x",
--			 hw->flash.nvm.eetrack);
-+		u32 eetrack;
-+
-+		if (type == IXGBE_DL_VERSION_RUNNING)
-+			eetrack = hw->flash.nvm.eetrack;
-+		else if (type == IXGBE_DL_VERSION_STORED)
-+			eetrack = ctx->pending_nvm.eetrack;
-+
-+		snprintf(ctx->buf, sizeof(ctx->buf), "0x%08x", eetrack);
- 		return;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c
+index f25cf0e7582b..c263e4e08179 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c
+@@ -1810,6 +1810,22 @@ void ixgbe_disable_rx_e610(struct ixgbe_hw *hw)
  	}
- 
-@@ -92,33 +114,57 @@ static void ixgbe_info_fw_build(struct ixgbe_adapter *adapter,
  }
  
- static void ixgbe_info_fw_srev(struct ixgbe_adapter *adapter,
--			       struct ixgbe_info_ctx *ctx)
-+			       struct ixgbe_info_ctx *ctx,
-+			       enum ixgbe_devlink_version_type type)
- {
--	struct ixgbe_nvm_info *nvm = &adapter->hw.flash.nvm;
-+	struct ixgbe_nvm_info *nvm;
-+
-+	if (type == IXGBE_DL_VERSION_RUNNING)
-+		nvm = &adapter->hw.flash.nvm;
-+	else if (type == IXGBE_DL_VERSION_STORED)
-+		nvm = &ctx->pending_nvm;
- 
- 	snprintf(ctx->buf, sizeof(ctx->buf), "%u", nvm->srev);
- }
- 
- static void ixgbe_info_orom_srev(struct ixgbe_adapter *adapter,
--				 struct ixgbe_info_ctx *ctx)
-+				 struct ixgbe_info_ctx *ctx,
-+				 enum ixgbe_devlink_version_type type)
- {
--	struct ixgbe_orom_info *orom = &adapter->hw.flash.orom;
-+	struct ixgbe_orom_info *orom;
-+
-+	if (type == IXGBE_DL_VERSION_RUNNING)
-+		orom = &adapter->hw.flash.orom;
-+	else if (type == IXGBE_DL_VERSION_STORED)
-+		orom = &ctx->pending_orom;
- 
- 	snprintf(ctx->buf, sizeof(ctx->buf), "%u", orom->srev);
- }
- 
- static void ixgbe_info_nvm_ver(struct ixgbe_adapter *adapter,
--			       struct ixgbe_info_ctx *ctx)
-+			       struct ixgbe_info_ctx *ctx,
-+			       enum ixgbe_devlink_version_type type)
- {
--	struct ixgbe_nvm_info *nvm = &adapter->hw.flash.nvm;
-+	struct ixgbe_nvm_info *nvm;
-+
-+	if (type == IXGBE_DL_VERSION_RUNNING)
-+		nvm = &adapter->hw.flash.nvm;
-+	else if (type == IXGBE_DL_VERSION_STORED)
-+		nvm = &ctx->pending_nvm;
- 
- 	snprintf(ctx->buf, sizeof(ctx->buf), "%x.%02x", nvm->major, nvm->minor);
- }
- 
- static void ixgbe_info_netlist_ver(struct ixgbe_adapter *adapter,
--				   struct ixgbe_info_ctx *ctx)
-+				   struct ixgbe_info_ctx *ctx,
-+				   enum ixgbe_devlink_version_type type)
- {
--	struct ixgbe_netlist_info *netlist = &adapter->hw.flash.netlist;
-+	struct ixgbe_netlist_info *netlist;
-+
-+	if (type == IXGBE_DL_VERSION_RUNNING)
-+		netlist = &adapter->hw.flash.netlist;
-+	else if (type == IXGBE_DL_VERSION_STORED)
-+		netlist = &ctx->pending_netlist;
- 
- 	/* The netlist version fields are BCD formatted */
- 	snprintf(ctx->buf, sizeof(ctx->buf), "%x.%x.%x-%x.%x.%x",
-@@ -128,13 +174,54 @@ static void ixgbe_info_netlist_ver(struct ixgbe_adapter *adapter,
- }
- 
- static void ixgbe_info_netlist_build(struct ixgbe_adapter *adapter,
--				     struct ixgbe_info_ctx *ctx)
-+				     struct ixgbe_info_ctx *ctx,
-+				     enum ixgbe_devlink_version_type type)
- {
--	struct ixgbe_netlist_info *netlist = &adapter->hw.flash.netlist;
-+	struct ixgbe_netlist_info *netlist;
-+
-+	if (type == IXGBE_DL_VERSION_RUNNING)
-+		netlist = &adapter->hw.flash.netlist;
-+	else if (type == IXGBE_DL_VERSION_STORED)
-+		netlist = &ctx->pending_netlist;
- 
- 	snprintf(ctx->buf, sizeof(ctx->buf), "0x%08x", netlist->hash);
- }
- 
-+static int ixgbe_set_ctx_dev_caps(struct ixgbe_hw *hw,
-+				  struct ixgbe_info_ctx *ctx,
-+				  struct netlink_ext_ack *extack)
++/**
++ * ixgbe_fw_recovery_mode_e610 - Check FW NVM recovery mode
++ * @hw: pointer to hardware structure
++ *
++ * Check FW NVM recovery mode by reading the value of
++ * the dedicated register.
++ *
++ * Return: true if FW is in recovery mode, otherwise false.
++ */
++static bool ixgbe_fw_recovery_mode_e610(struct ixgbe_hw *hw)
 +{
-+	int err = ixgbe_discover_dev_caps(hw, &ctx->dev_caps);
++	u32 fwsm = IXGBE_READ_REG(hw, IXGBE_GL_MNG_FWSM);
 +
-+	if (err) {
-+		NL_SET_ERR_MSG_MOD(extack,
-+				   "Unable to discover device capabilities");
-+		return err;
-+	}
-+
-+	if (ctx->dev_caps.common_cap.nvm_update_pending_orom) {
-+		err = ixgbe_get_inactive_orom_ver(hw, &ctx->pending_orom);
-+		if (err)
-+			ctx->dev_caps.common_cap.nvm_update_pending_orom =
-+			false;
-+	}
-+
-+	if (ctx->dev_caps.common_cap.nvm_update_pending_nvm) {
-+		err = ixgbe_get_inactive_nvm_ver(hw, &ctx->pending_nvm);
-+		if (err)
-+			ctx->dev_caps.common_cap.nvm_update_pending_nvm = false;
-+	}
-+
-+	if (ctx->dev_caps.common_cap.nvm_update_pending_netlist) {
-+		err = ixgbe_get_inactive_netlist_ver(hw, &ctx->pending_netlist);
-+		if (err)
-+			ctx->dev_caps.common_cap.nvm_update_pending_netlist =
-+				false;
-+	}
-+
-+	return 0;
++	return !!(fwsm & IXGBE_GL_MNG_FWSM_RECOVERY_M);
 +}
 +
- static int ixgbe_devlink_info_get_E610(struct ixgbe_adapter *adapter,
- 				       struct devlink_info_req *req,
- 				       struct ixgbe_info_ctx *ctx)
-@@ -153,33 +240,90 @@ static int ixgbe_devlink_info_get_E610(struct ixgbe_adapter *adapter,
- 	if (err)
- 		return err;
+ /**
+  * ixgbe_init_phy_ops_e610 - PHY specific init
+  * @hw: pointer to hardware structure
+@@ -3872,6 +3888,7 @@ static const struct ixgbe_mac_operations mac_ops_e610 = {
+ 	.reset_hw			= ixgbe_reset_hw_e610,
+ 	.get_media_type			= ixgbe_get_media_type_e610,
+ 	.setup_link			= ixgbe_setup_link_e610,
++	.fw_recovery_mode		= ixgbe_fw_recovery_mode_e610,
+ 	.get_link_capabilities		= ixgbe_get_link_capabilities_e610,
+ 	.get_bus_info			= ixgbe_get_bus_info_generic,
+ 	.acquire_swfw_sync		= ixgbe_acquire_swfw_sync_X540,
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_fw_update.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_fw_update.c
+index 844e40c1d747..1a542a6cab1a 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_fw_update.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_fw_update.c
+@@ -73,6 +73,8 @@ static int ixgbe_check_component_response(struct ixgbe_adapter *adapter,
+ 					  u8 response, u8 code,
+ 					  struct netlink_ext_ack *extack)
+ {
++	struct ixgbe_hw *hw = &adapter->hw;
++
+ 	switch (response) {
+ 	case IXGBE_ACI_NVM_PASS_COMP_CAN_BE_UPDATED:
+ 		/* Firmware indicated this update is good to proceed. */
+@@ -84,6 +86,11 @@ static int ixgbe_check_component_response(struct ixgbe_adapter *adapter,
+ 	case IXGBE_ACI_NVM_PASS_COMP_CAN_NOT_BE_UPDATED:
+ 		NL_SET_ERR_MSG_MOD(extack, "Firmware has rejected updating.");
+ 		break;
++	case IXGBE_ACI_NVM_PASS_COMP_PARTIAL_CHECK:
++		if (hw->mac.ops.fw_recovery_mode &&
++		    hw->mac.ops.fw_recovery_mode(hw))
++			return 0;
++		break;
+ 	}
  
--	ixgbe_info_fw_srev(adapter, ctx);
-+	ixgbe_info_fw_srev(adapter, ctx, IXGBE_DL_VERSION_RUNNING);
- 	err = devlink_info_version_running_put(req, "fw.mgmt.srev", ctx->buf);
- 	if (err)
- 		return err;
+ 	switch (code) {
+@@ -654,7 +661,13 @@ int ixgbe_flash_pldm_image(struct devlink *devlink,
+ 		return -EOPNOTSUPP;
+ 	}
  
--	ixgbe_info_orom_srev(adapter, ctx);
-+	ixgbe_info_orom_srev(adapter, ctx, IXGBE_DL_VERSION_RUNNING);
- 	err = devlink_info_version_running_put(req, "fw.undi.srev", ctx->buf);
- 	if (err)
- 		return err;
- 
--	ixgbe_info_nvm_ver(adapter, ctx);
-+	ixgbe_info_nvm_ver(adapter, ctx, IXGBE_DL_VERSION_RUNNING);
- 	err = devlink_info_version_running_put(req, "fw.psid.api", ctx->buf);
- 	if (err)
- 		return err;
- 
--	ixgbe_info_netlist_ver(adapter, ctx);
-+	ixgbe_info_netlist_ver(adapter, ctx, IXGBE_DL_VERSION_RUNNING);
- 	err = devlink_info_version_running_put(req, "fw.netlist", ctx->buf);
- 	if (err)
- 		return err;
- 
--	ixgbe_info_netlist_build(adapter, ctx);
-+	ixgbe_info_netlist_build(adapter, ctx, IXGBE_DL_VERSION_RUNNING);
- 	err = devlink_info_version_running_put(req, "fw.netlist.build",
- 					       ctx->buf);
- 
- 	return err;
+-	if (!hw->dev_caps.common_cap.nvm_unified_update) {
++	/*
++	 * Cannot get caps in recovery mode, so lack of nvm_unified_update bit
++	 * cannot lead to error
++	 */
++	if (!hw->dev_caps.common_cap.nvm_unified_update &&
++	    (hw->mac.ops.fw_recovery_mode &&
++	     !hw->mac.ops.fw_recovery_mode(hw))) {
+ 		NL_SET_ERR_MSG_MOD(extack,
+ 				   "Current firmware does not support unified update");
+ 		return -EOPNOTSUPP;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 0a4922e4e9cf..265770ea32bd 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -8420,6 +8420,18 @@ static bool ixgbe_check_fw_error(struct ixgbe_adapter *adapter)
+ 	return false;
  }
  
-+static int
-+ixgbe_devlink_pending_info_get_E610(struct ixgbe_adapter *adapter,
-+				    struct devlink_info_req *req,
-+				    struct ixgbe_info_ctx *ctx)
++static void ixgbe_recovery_service_task(struct work_struct *work)
 +{
-+	int err = 0;
++	struct ixgbe_adapter *adapter = container_of(work,
++						     struct ixgbe_adapter,
++						     service_task);
 +
-+	if (!ctx->dev_caps.common_cap.nvm_update_pending_nvm)
-+		goto no_nvm;
++	ixgbe_handle_fw_event(adapter);
++	ixgbe_service_event_complete(adapter);
 +
-+	ixgbe_info_fw_srev(adapter, ctx, IXGBE_DL_VERSION_STORED);
-+	err = devlink_info_version_stored_put(req, "fw.mgmt.srev", ctx->buf);
++	mod_timer(&adapter->service_timer, jiffies + msecs_to_jiffies(100));
++}
++
+ /**
+  * ixgbe_service_task - manages and runs subtasks
+  * @work: pointer to work_struct containing our data
+@@ -11225,6 +11237,66 @@ static void ixgbe_set_fw_version(struct ixgbe_adapter *adapter)
+ 		 "0x%08x", nvm_ver.etk_id);
+ }
+ 
++/**
++ * ixgbe_recovery_probe - Handle FW recovery mode during probe
++ * @adapter: the adapter private structure
++ *
++ * Perform limited driver initialization when FW error is detected.
++ *
++ * Return: 0 on successful probe for E610, -EIO if recovery mode is detected
++ * for non-E610 adapter, error status code on any other case.
++ */
++static int ixgbe_recovery_probe(struct ixgbe_adapter *adapter)
++{
++	struct net_device *netdev = adapter->netdev;
++	struct pci_dev *pdev = adapter->pdev;
++	struct ixgbe_hw *hw = &adapter->hw;
++	bool disable_dev;
++	int err = -EIO;
++
++	if (hw->mac.type != ixgbe_mac_e610)
++		goto clean_up_probe;
++
++	ixgbe_get_hw_control(adapter);
++	mutex_init(&hw->aci.lock);
++	err = ixgbe_get_flash_data(&adapter->hw);
 +	if (err)
-+		return err;
++		goto shutdown_aci;
 +
-+	ixgbe_info_eetrack(adapter, ctx, IXGBE_DL_VERSION_STORED);
-+	err = devlink_info_version_stored_put(req,
-+				     DEVLINK_INFO_VERSION_GENERIC_FW_BUNDLE_ID,
-+				     ctx->buf);
-+	if (err)
-+		return err;
++	timer_setup(&adapter->service_timer, ixgbe_service_timer, 0);
++	INIT_WORK(&adapter->service_task, ixgbe_recovery_service_task);
++	set_bit(__IXGBE_SERVICE_INITED, &adapter->state);
++	clear_bit(__IXGBE_SERVICE_SCHED, &adapter->state);
 +
-+	ixgbe_info_nvm_ver(adapter, ctx, IXGBE_DL_VERSION_STORED);
-+	err = devlink_info_version_stored_put(req, "fw.psid.api", ctx->buf);
-+	if (err)
-+		return err;
++	if (hw->mac.ops.get_bus_info)
++		hw->mac.ops.get_bus_info(hw);
 +
-+no_nvm:
-+	if (!ctx->dev_caps.common_cap.nvm_update_pending_orom)
-+		goto no_orom;
++	pci_set_drvdata(pdev, adapter);
++	/*
++	 * We are creating devlink interface so NIC can be managed,
++	 * e.g. new NVM image loaded
++	 */
++	devl_lock(adapter->devlink);
++	ixgbe_devlink_register_port(adapter);
++	SET_NETDEV_DEVLINK_PORT(adapter->netdev,
++				&adapter->devlink_port);
++	devl_register(adapter->devlink);
++	devl_unlock(adapter->devlink);
 +
-+	ixgbe_info_orom_ver(adapter, ctx, IXGBE_DL_VERSION_STORED);
-+	err = devlink_info_version_stored_put(req,
-+				     DEVLINK_INFO_VERSION_GENERIC_FW_UNDI,
-+				     ctx->buf);
-+	if (err)
-+		return err;
-+
-+	ixgbe_info_orom_srev(adapter, ctx, IXGBE_DL_VERSION_STORED);
-+	err = devlink_info_version_stored_put(req, "fw.undi.srev", ctx->buf);
-+no_orom:
-+	if (err || !ctx->dev_caps.common_cap.nvm_update_pending_netlist)
-+		return err;
-+
-+	ixgbe_info_netlist_ver(adapter, ctx, IXGBE_DL_VERSION_STORED);
-+	err = devlink_info_version_stored_put(req, "fw.netlist", ctx->buf);
-+
-+	if (err)
-+		return err;
-+
-+	ixgbe_info_netlist_build(adapter, ctx, IXGBE_DL_VERSION_STORED);
-+	err = devlink_info_version_stored_put(req, "fw.netlist.build",
-+					      ctx->buf);
-+
++	return 0;
++shutdown_aci:
++	mutex_destroy(&adapter->hw.aci.lock);
++	ixgbe_release_hw_control(adapter);
++	devlink_free(adapter->devlink);
++clean_up_probe:
++	disable_dev = !test_and_set_bit(__IXGBE_DISABLED, &adapter->state);
++	free_netdev(netdev);
++	pci_release_mem_regions(pdev);
++	if (disable_dev)
++		pci_disable_device(pdev);
 +	return err;
 +}
 +
- static int ixgbe_devlink_info_get(struct devlink *devlink,
- 				  struct devlink_info_req *req,
- 				  struct netlink_ext_ack *extack)
-@@ -199,14 +343,14 @@ static int ixgbe_devlink_info_get(struct devlink *devlink,
+ /**
+  * ixgbe_probe - Device Initialization Routine
+  * @pdev: PCI device information struct
+@@ -11359,6 +11431,13 @@ static int ixgbe_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
  	if (err)
- 		goto free_ctx;
+ 		goto err_sw_init;
  
--	ixgbe_info_orom_ver(adapter, ctx);
-+	ixgbe_info_orom_ver(adapter, ctx, IXGBE_DL_VERSION_RUNNING);
- 	err = devlink_info_version_running_put(req,
- 					DEVLINK_INFO_VERSION_GENERIC_FW_UNDI,
- 					ctx->buf);
- 	if (err)
- 		goto free_ctx;
- 
--	ixgbe_info_eetrack(adapter, ctx);
-+	ixgbe_info_eetrack(adapter, ctx, IXGBE_DL_VERSION_RUNNING);
- 	err = devlink_info_version_running_put(req,
- 					DEVLINK_INFO_VERSION_GENERIC_FW_UNDI,
- 					ctx->buf);
-@@ -221,7 +365,15 @@ static int ixgbe_devlink_info_get(struct devlink *devlink,
- 	if (err || hw->mac.type != ixgbe_mac_e610)
- 		goto free_ctx;
- 
-+	err = ixgbe_set_ctx_dev_caps(hw, ctx, extack);
-+	if (err)
-+		goto free_ctx;
++	/* Make sure the SWFW semaphore is in a valid state */
++	if (hw->mac.ops.init_swfw_sync)
++		hw->mac.ops.init_swfw_sync(hw);
 +
- 	err = ixgbe_devlink_info_get_E610(adapter, req, ctx);
-+	if (err)
-+		goto free_ctx;
++	if (ixgbe_check_fw_error(adapter))
++		return ixgbe_recovery_probe(adapter);
 +
-+	err = ixgbe_devlink_pending_info_get_E610(adapter, req, ctx);
- free_ctx:
- 	kfree(ctx);
- 	return err;
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c
-index da20071eb938..b08590d05a1a 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c
-@@ -588,6 +588,15 @@ static bool ixgbe_parse_e610_caps(struct ixgbe_hw *hw,
+ 	if (adapter->hw.mac.type == ixgbe_mac_e610) {
+ 		err = ixgbe_get_caps(&adapter->hw);
+ 		if (err)
+@@ -11385,10 +11464,6 @@ static int ixgbe_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
  		break;
- 	case IXGBE_ACI_CAPS_NVM_VER:
- 		break;
-+	case IXGBE_ACI_CAPS_PENDING_NVM_VER:
-+		caps->nvm_update_pending_nvm = true;
-+		break;
-+	case IXGBE_ACI_CAPS_PENDING_OROM_VER:
-+		caps->nvm_update_pending_orom = true;
-+		break;
-+	case IXGBE_ACI_CAPS_PENDING_NET_VER:
-+		caps->nvm_update_pending_netlist = true;
-+		break;
- 	case IXGBE_ACI_CAPS_MAX_MTU:
- 		caps->max_mtu = number;
- 		break;
-@@ -2929,6 +2938,23 @@ static int ixgbe_get_orom_ver_info(struct ixgbe_hw *hw,
- 	return err;
- }
+ 	}
  
-+/**
-+ * ixgbe_get_inactive_orom_ver - Read Option ROM version from the inactive bank
-+ * @hw: pointer to the HW structure
-+ * @orom: storage for Option ROM version information
-+ *
-+ * Read the Option ROM version and security revision data for the inactive
-+ * section of flash. Used to access version data for a pending update that has
-+ * not yet been activated.
-+ *
-+ * Return: the exit code of the operation.
-+ */
-+int ixgbe_get_inactive_orom_ver(struct ixgbe_hw *hw,
-+				struct ixgbe_orom_info *orom)
-+{
-+	return ixgbe_get_orom_ver_info(hw, IXGBE_INACTIVE_FLASH_BANK, orom);
-+}
-+
- /**
-  * ixgbe_get_nvm_ver_info - Read NVM version information
-  * @hw: pointer to the HW struct
-@@ -2972,6 +2998,22 @@ static int ixgbe_get_nvm_ver_info(struct ixgbe_hw *hw,
- 	return 0;
- }
+-	/* Make sure the SWFW semaphore is in a valid state */
+-	if (hw->mac.ops.init_swfw_sync)
+-		hw->mac.ops.init_swfw_sync(hw);
+-
+ 	/* Make it possible the adapter to be woken up via WOL */
+ 	switch (adapter->hw.mac.type) {
+ 	case ixgbe_mac_82599EB:
+@@ -11541,11 +11616,6 @@ static int ixgbe_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	if (adapter->flags2 & IXGBE_FLAG2_RSC_ENABLED)
+ 		netdev->features |= NETIF_F_LRO;
  
-+/**
-+ * ixgbe_get_inactive_nvm_ver - Read Option ROM version from the inactive bank
-+ * @hw: pointer to the HW structure
-+ * @nvm: storage for Option ROM version information
-+ *
-+ * Read the NVM EETRACK ID, Map version, and security revision of the
-+ * inactive NVM bank. Used to access version data for a pending update that
-+ * has not yet been activated.
-+ *
-+ * Return: the exit code of the operation.
-+ */
-+int ixgbe_get_inactive_nvm_ver(struct ixgbe_hw *hw, struct ixgbe_nvm_info *nvm)
-+{
-+	return ixgbe_get_nvm_ver_info(hw, IXGBE_INACTIVE_FLASH_BANK, nvm);
-+}
-+
- /**
-  * ixgbe_get_netlist_info - Read the netlist version information
-  * @hw: pointer to the HW struct
-@@ -3052,6 +3094,23 @@ static int ixgbe_get_netlist_info(struct ixgbe_hw *hw,
- 	return err;
- }
+-	if (ixgbe_check_fw_error(adapter)) {
+-		err = -EIO;
+-		goto err_sw_init;
+-	}
+-
+ 	/* make sure the EEPROM is good */
+ 	if (hw->eeprom.ops.validate_checksum(hw, NULL) < 0) {
+ 		e_dev_err("The EEPROM Checksum Is Not Valid\n");
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type_e610.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type_e610.h
+index 4d591019dd07..1df5ac2e1fc5 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type_e610.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type_e610.h
+@@ -88,6 +88,9 @@
+ #define GLNVM_GENS		0x000B6100 /* Reset Source: POR */
+ #define GLNVM_GENS_SR_SIZE_M	GENMASK(7, 5)
  
-+/**
-+ * ixgbe_get_inactive_netlist_ver - Read netlist version from the inactive bank
-+ * @hw: pointer to the HW struct
-+ * @netlist: pointer to netlist version info structure
-+ *
-+ * Read the netlist version data from the inactive netlist bank. Used to
-+ * extract version data of a pending flash update in order to display the
-+ * version data.
-+ *
-+ * Return: the exit code of the operation.
-+ */
-+int ixgbe_get_inactive_netlist_ver(struct ixgbe_hw *hw,
-+				   struct ixgbe_netlist_info *netlist)
-+{
-+	return ixgbe_get_netlist_info(hw, IXGBE_INACTIVE_FLASH_BANK, netlist);
-+}
++#define IXGBE_GL_MNG_FWSM		0x000B6134 /* Reset Source: POR */
++#define IXGBE_GL_MNG_FWSM_RECOVERY_M	BIT(1)
 +
- /**
-  * ixgbe_get_flash_data - get flash data
-  * @hw: pointer to the HW struct
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h
-index 2c971a34200b..07c888d554d5 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h
-@@ -67,6 +67,9 @@ int ixgbe_aci_read_nvm(struct ixgbe_hw *hw, u16 module_typeid, u32 offset,
- 		       u16 length, void *data, bool last_command,
- 		       bool read_shadow_ram);
- int ixgbe_nvm_validate_checksum(struct ixgbe_hw *hw);
-+int ixgbe_get_inactive_orom_ver(struct ixgbe_hw *hw, struct ixgbe_orom_info *orom);
-+int ixgbe_get_inactive_nvm_ver(struct ixgbe_hw *hw, struct ixgbe_nvm_info *nvm);
-+int ixgbe_get_inactive_netlist_ver(struct ixgbe_hw *hw, struct ixgbe_netlist_info *netlist);
- int ixgbe_read_sr_word_aci(struct ixgbe_hw  *hw, u16 offset, u16 *data);
- int ixgbe_read_flat_nvm(struct ixgbe_hw  *hw, u32 offset, u32 *length,
- 			u8 *data, bool read_shadow_ram);
+ /* Flash Access Register */
+ #define IXGBE_GLNVM_FLA			0x000B6108 /* Reset Source: POR */
+ #define IXGBE_GLNVM_FLA_LOCKED_S	6
 -- 
 2.31.1
 
