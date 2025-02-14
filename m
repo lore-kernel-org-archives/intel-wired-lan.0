@@ -1,105 +1,105 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 321F2C021A0
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 13 Feb 2025 21:44:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 00B4BC021A0
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 14 Feb 2025 00:31:14 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id C9F446081C;
-	Thu, 13 Feb 2025 21:44:29 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 640654113B;
+	Fri, 14 Feb 2025 00:31:14 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id BVbJMoiOcL6k; Thu, 13 Feb 2025 21:44:28 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id SMQU1_GgaUgH; Fri, 14 Feb 2025 00:31:11 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B4D7E60831
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org BEC6640D99
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1739483068;
-	bh=95JGEcRzMrrseMD1y+XkQDOIUTtaSA3zbYGGZkRV+pY=;
+	s=default; t=1739493071;
+	bh=8lS7bbJ4nGPMEGHay9I3E1D49wykF7Fqhn1edNAVseY=;
 	h=From:Date:To:Cc:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:From;
-	b=S+rRWe3uNmXbAM/Pd5cworhqH8f8oqwAFIDaVqAxU7Y/qY+/4QEXO2Wx/oGYV/Jzb
-	 O+wB4yzvqHNJ5mrzgjYrvSp5HTpWr3/rpVtfBGYDQzj05Obinleg3GWFUA9dcyXvAO
-	 5DFA/mksbUnT0DzCCSLnJUMC4xoMN2I/cPklfTzVJwuw7NmbJ3W1ikbMTHtUeU1Lyw
-	 qta9qzMWwYkWzmNtr1GNi90tkL82Hw0W3SCm9ALEcx4XYC8HtrCudEYI60hbsefCdH
-	 Bn/o/CCrmkiY+YNg+3pLhRoDdtEBLP94DTLf7h1HqqPCviST90cNW5B3v28v7NCi22
-	 +a4jU5WHXCHow==
+	b=0wElYqvnwvdyw2ZsKEv2a/1LXGK+6BAALDBulNn2IccIS+TT/0c0cBwDlXPtuYCfe
+	 4nUsJDjD6mxOlsNHk+R5Qw21l0LzyxOJOzNL+ujUKfMfCeJJVfuE4BcGRZyzMqDdge
+	 Ppdzivo7Gdd7DfozIbV8ejEU49f9o0MEbaltSqf58smL/EoULYBgJD2QBxnliBaQgC
+	 cX3WnlVQ32UlRIGaWb8J2Sk1/J1CRi/XKGerzPXNdioZQR/AhweXHsBPqSVK5Ih8qo
+	 ValbbYR9aw6695ZxQUkTX4Bk18VWkwHo9KdCLYDPuRpl7p3R/miBrXU+PnZTzg8rDC
+	 j1G81+9Hwe2OQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id B4D7E60831;
-	Thu, 13 Feb 2025 21:44:28 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id 939D41C6
- for <intel-wired-lan@lists.osuosl.org>; Thu, 13 Feb 2025 21:44:27 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id BEC6640D99;
+	Fri, 14 Feb 2025 00:31:11 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 6FF9AC2
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 14 Feb 2025 00:31:10 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 833C260831
- for <intel-wired-lan@lists.osuosl.org>; Thu, 13 Feb 2025 21:44:27 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 529A283A0C
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 14 Feb 2025 00:31:10 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id oKJ7O-rNtXLA for <intel-wired-lan@lists.osuosl.org>;
- Thu, 13 Feb 2025 21:44:26 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.17;
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id K_H9AD9syo_D for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 14 Feb 2025 00:31:08 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.14;
  helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 0EC4F607C8
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 0EC4F607C8
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.17])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 0EC4F607C8
- for <intel-wired-lan@lists.osuosl.org>; Thu, 13 Feb 2025 21:44:25 +0000 (UTC)
-X-CSE-ConnectionGUID: Og0H4qmjQiOkMh9WYYFm/A==
-X-CSE-MsgGUID: 9JR0l1oYS9+upcnDz4f0tA==
-X-IronPort-AV: E=McAfee;i="6700,10204,11344"; a="40087987"
-X-IronPort-AV: E=Sophos;i="6.13,282,1732608000"; d="scan'208";a="40087987"
-Received: from fmviesa003.fm.intel.com ([10.60.135.143])
- by fmvoesa111.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 13 Feb 2025 13:44:25 -0800
-X-CSE-ConnectionGUID: TEcjWGiwTku+zEl8E8YvrA==
-X-CSE-MsgGUID: rY0Qu3htRt23jHlrwXOF0Q==
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org D78D78391F
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D78D78391F
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.14])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id D78D78391F
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 14 Feb 2025 00:31:07 +0000 (UTC)
+X-CSE-ConnectionGUID: 2smOej2UTniQfQOngic+qg==
+X-CSE-MsgGUID: a92QIuTbSR2zNKiIhQEyLg==
+X-IronPort-AV: E=McAfee;i="6700,10204,11344"; a="40486770"
+X-IronPort-AV: E=Sophos;i="6.13,284,1732608000"; d="scan'208";a="40486770"
+Received: from fmviesa010.fm.intel.com ([10.60.135.150])
+ by fmvoesa108.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 13 Feb 2025 16:31:07 -0800
+X-CSE-ConnectionGUID: Aame8dcxREScEMRz4vh7dQ==
+X-CSE-MsgGUID: pU/VDK9vQs2Y0ypZGqRLqw==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.12,224,1728975600"; d="scan'208";a="117394485"
+X-IronPort-AV: E=Sophos;i="6.13,284,1732608000"; d="scan'208";a="113824194"
 Received: from jekeller-desk.jf.intel.com ([10.166.241.15])
- by fmviesa003-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 13 Feb 2025 13:44:25 -0800
+ by fmviesa010-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 13 Feb 2025 16:31:07 -0800
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Thu, 13 Feb 2025 13:44:01 -0800
+Date: Thu, 13 Feb 2025 16:30:59 -0800
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250213-jk-iavf-abba-lock-crash-v1-1-d4850f6a0a0d@intel.com>
-X-B4-Tracking: v=1; b=H4sIAKBnrmcC/4WNTQ6CMBBGr0Jm7Zj+BBFX3sOwaMsgI9iallQN4
- e42XMDly8v3vhUSRaYEl2qFSJkTB19AHipwo/F3Qu4LgxKqFkpqfEzIJg9orDU4BzehiyaNqIU
- YrNXaUNtCWb8iDfzZyzfg94yeFuiKGDktIX73xyx3/TeeJUpszk3fuFOtepJX9gvNRxee0G3b9
- gO6Ws7yxwAAAA==
+Message-Id: <20250213-jk-iavf-abba-lock-crash-v2-1-033d7bf298f8@intel.com>
+X-B4-Tracking: v=1; b=H4sIAMKOrmcC/42Nyw6CMBBFf4V07Zg+5OXK/zAsSjuVEQTTkqoh/
+ LuVlTtdntycexYW0BMGdswW5jFSoGlMIHcZM50eLwhkEzPJZc6lUHDtgXR0oNtWwzCZHozXoQP
+ FuWtbpTTWNUv23aOj5/Z8ZvQYYMSZNWnoKMyTf23FKLb553kUIKCsSluaIpcWxYnGGYe9mW6f1
+ n++PVQ5d4Xmmtsvv1nX9Q2vLUQoBwEAAA==
 X-Change-ID: 20250213-jk-iavf-abba-lock-crash-300fbb33ae99
-To: Anthony Nguyen <anthony.l.nguyen@intel.com>, 
+To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>, 
  netdev <netdev@vger.kernel.org>, 
- Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+ Anthony Nguyen <anthony.l.nguyen@intel.com>
 Cc: Jacob Keller <jacob.e.keller@intel.com>, 
  Przemek Kitszel <przemyslaw.kitszel@intel.com>
 X-Mailer: b4 0.14.2
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1739483066; x=1771019066;
+ t=1739493068; x=1771029068;
  h=from:date:subject:mime-version:content-transfer-encoding:
  message-id:to:cc;
- bh=n5O7jPmxOkhG/rC7/DjZfZJxKvCosPVRIMy0l/YWZso=;
- b=b57Gk8H0WdZHumGEdkc5OSOYDUXwtklHZePrsLVpa7yfp0d5esvF5apw
- vrpH480bNvLG0OcJe7Ya28hpI5ECQ+F+ZNO5X5Gh6gJ7HZffTYSLCZbyC
- stq8INuZZuN1z3KQbt9cEdeBhf91WWxgwVcDhbfBPv2qzccmltPJg6YFN
- RYFfU2KiW3DxrokdiWPqtQwEzklNMY2N72YA9KPfqewAj+F6MSEi3UBe+
- bIsYffRh6DhDTDHzKNEFIFAbT6t5gn9UG7wFH95/tpu1p9UejjUFxdpbx
- NF0xW8Vf1j676noNdmRWdGX1M33RUH1kqsTCQ2zFYPDwSMJh+l1UAu0lw
+ bh=LdhfRMMMFoP5d+TjA1KNfYaAzjd0gw6NUfZeCVxznVo=;
+ b=GZVDSWZ3ZdeF8MTlZNEbHWloGLwhQRzsx5vyIfSQil0dshWJiMpf6o11
+ +5efBelE/mydPk3qBNvwR1UggoYpweVBxtwfWUo/AjAF4VshXjYM9af2r
+ vbRakb3ASjtgUFevFGqcZKWndEj+T3av/1vd2RjmrQW0rHkd3psjSbO3T
+ 7eH422S2A2VGCdBfCXzoEjEOMGOFrjaU0CM1p0NuScpG6XFCIaqXCIoPL
+ 5qr2rHurlUQz7XuUGMF8h7DJimTyJBGx9F4hRuZjKziAmrWPVSwNgUq7T
+ zWArBk1NQN6cCVdBIhqpU8YyBuLduwA/dFMH7CLml2XYGFaVruaAZY1Yo
  Q==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=b57Gk8H0
-Subject: [Intel-wired-lan] [PATCH iwl-net] iavf: fix circular lock
+ header.s=Intel header.b=GZVDSWZ3
+Subject: [Intel-wired-lan] [PATCH iwl-net v2] iavf: fix circular lock
  dependency with netdev_lock
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
@@ -233,9 +233,8 @@ Tested-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 ---
 Changes in v2:
-- EDITME: describe what is new in this series revision.
-- EDITME: use bulletpoints and terse descriptions.
-- Link to v1: https://lore.kernel.org/r/20250213-jk-iavf-abba-lock-crash-v1-1-787d7c652de1@intel.com
+- Add Intel Wired LAN for patchwork integration
+- Link to v1: https://lore.kernel.org/r/20250213-jk-iavf-abba-lock-crash-v1-1-d4850f6a0a0d@intel.com
 ---
  drivers/net/ethernet/intel/iavf/iavf_main.c | 12 ++++++++----
  1 file changed, 8 insertions(+), 4 deletions(-)
