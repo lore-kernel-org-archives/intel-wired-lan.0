@@ -4,121 +4,102 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A352BC021A4
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 14 Feb 2025 08:56:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 68CB6C02198
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 14 Feb 2025 09:08:56 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 48B044065C;
-	Fri, 14 Feb 2025 08:56:40 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 35623416B9;
+	Fri, 14 Feb 2025 09:08:56 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ldZijj5WiE_S; Fri, 14 Feb 2025 08:56:39 +0000 (UTC)
+ id EK2tFJkIfpRr; Fri, 14 Feb 2025 09:08:55 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 21F7040682
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 257EA416D5
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1739523399;
-	bh=k0/rnce+Rd2CzFJn7uWLGWjtLuFwcjvq8VkWuHMSEk0=;
-	h=From:To:Cc:In-Reply-To:References:Date:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=iwcZsldZRJ5w4SQRFjZYpcWNGuFFhyjZJKC90+ShSDFhafEdIi4fwrrgsSo+t/e4H
-	 w+UjQhZaRNuQccT59I5/6zmAhyT5cnfzlpGF3mjx2itSf2eeZb9iw0Qxm0Kqj58sQv
-	 udFIo+ocTty7DuppvXlftQEbeAy3eSM7PuATxekQFEkEKiDz+0kfqMdQFwiD7qc19v
-	 L/CcGA3eZAIwFdhkn+WF8LuHJ8qi/Az2dBfQtXDc2YPjik5kk6BOEAglW5TY0wA53u
-	 jJdT9klV6HkCxLMNFsFOJ+oxRamvPmv8IMquMkh1x/7xwxnaNVNiVhEf71ukZf5rLz
-	 ErgOeZbOFX6eA==
+	s=default; t=1739524135;
+	bh=u+n9Lg53dH44229lK4yC/ywsWJ/8+qFGYGlo52zaWFY=;
+	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=I5YuWaKmKRhN73bst9coUVpUr8RAtYMv4r8V+PaI1mK6Sw0fMNlwm+PyOpnbOoI5c
+	 oype/eeTEPoJ9MHIlh1Wec/OT0Nh/Pm+O5Dd7jcVEIX8qEwjJlptYOHJCqk6/vJzq5
+	 JN02PdDKcnLkbH+I93K1t5iCdOL90MFi00KDsWLMxfL8Zsm3cD+WhlMo/BLHYOe3+z
+	 LOlHW1xidCePpQbqtcesTE3YuDbOUizkWPMTumrQUDOT4GRQYwe8DSaDwu21yS1T+0
+	 AiMgEtdL5jP1B8YIt6672ilvVpfDW3lFgyLm+WtL6CQwDMMD0I/8NfgvPYuTvMD8YR
+	 THhzK3K8t8OaQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 21F7040682;
-	Fri, 14 Feb 2025 08:56:39 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id 4116FC2
- for <intel-wired-lan@lists.osuosl.org>; Fri, 14 Feb 2025 08:56:37 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 257EA416D5;
+	Fri, 14 Feb 2025 09:08:55 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id A8D231E3
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 14 Feb 2025 09:08:53 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 23FB340817
- for <intel-wired-lan@lists.osuosl.org>; Fri, 14 Feb 2025 08:56:37 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id A31956FC33
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 14 Feb 2025 09:08:53 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 52pQGDl-X2X5 for <intel-wired-lan@lists.osuosl.org>;
- Fri, 14 Feb 2025 08:56:36 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=193.142.43.55;
- helo=galois.linutronix.de; envelope-from=kurt@linutronix.de;
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id mUvLGctCsKJT for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 14 Feb 2025 09:08:53 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.7;
+ helo=mgamail.intel.com; envelope-from=larysa.zaremba@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org E00984065C
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E00984065C
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
- by smtp4.osuosl.org (Postfix) with ESMTPS id E00984065C
- for <intel-wired-lan@lists.osuosl.org>; Fri, 14 Feb 2025 08:56:35 +0000 (UTC)
-From: Kurt Kanzenbach <kurt@linutronix.de>
-To: "Abdul Rahim, Faizal" <faizal.abdul.rahim@linux.intel.com>, Vladimir
- Oltean <vladimir.oltean@nxp.com>
-Cc: Tony Nguyen <anthony.l.nguyen@intel.com>, Przemek Kitszel
- <przemyslaw.kitszel@intel.com>, Andrew Lunn <andrew+netdev@lunn.ch>,
- "David S . Miller" <davem@davemloft.net>, Eric Dumazet
- <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni
- <pabeni@redhat.com>, Maxime Coquelin <mcoquelin.stm32@gmail.com>,
- Alexandre Torgue <alexandre.torgue@foss.st.com>, Simon Horman
- <horms@kernel.org>, Russell King <linux@armlinux.org.uk>, Alexei
- Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>,
- Jesper Dangaard Brouer <hawk@kernel.org>, John Fastabend
- <john.fastabend@gmail.com>, Furong Xu <0x1207@gmail.com>, Russell King
- <rmk+kernel@armlinux.org.uk>, Serge Semin <fancer.lancer@gmail.com>,
- Xiaolei Wang <xiaolei.wang@windriver.com>, Suraj Jaiswal
- <quic_jsuraj@quicinc.com>, Kory Maincent <kory.maincent@bootlin.com>, Gal
- Pressman <gal@nvidia.com>, Jesper Nilsson <jesper.nilsson@axis.com>,
- Andrew Halaney <ahalaney@redhat.com>, Choong Yong Liang
- <yong.liang.choong@linux.intel.com>, Kunihiko Hayashi
- <hayashi.kunihiko@socionext.com>, Vinicius Costa Gomes
- <vinicius.gomes@intel.com>, intel-wired-lan@lists.osuosl.org,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-stm32@st-md-mailman.stormreply.com,
- linux-arm-kernel@lists.infradead.org, bpf@vger.kernel.org
-In-Reply-To: <b7740709-6b4a-4f44-b4d7-e265bb823aca@linux.intel.com>
-References: <20250210070207.2615418-1-faizal.abdul.rahim@linux.intel.com>
- <20250210070207.2615418-1-faizal.abdul.rahim@linux.intel.com>
- <20250212220121.ici3qll66pfoov62@skbuf>
- <b19357dc-590d-458c-9646-ee5993916044@linux.intel.com>
- <87cyfmnjdh.fsf@kurt.kurt.home>
- <5902cc28-a649-4ae9-a5ba-83aa265abaf8@linux.intel.com>
- <20250213130003.nxt2ev47a6ppqzrq@skbuf>
- <1c981aa1-e796-4c53-9853-3eae517f2f6d@linux.intel.com>
- <877c5undbg.fsf@kurt.kurt.home> <20250213184613.cqc2zhj2wkaf5hn7@skbuf>
- <87v7td3bi1.fsf@kurt.kurt.home>
- <b7740709-6b4a-4f44-b4d7-e265bb823aca@linux.intel.com>
-Date: Fri, 14 Feb 2025 09:56:29 +0100
-Message-ID: <874j0wrjk2.fsf@kurt.kurt.home>
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org C14686FACE
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C14686FACE
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.7])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id C14686FACE
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 14 Feb 2025 09:08:52 +0000 (UTC)
+X-CSE-ConnectionGUID: ZokM+AWiThSChwvew8x5Xg==
+X-CSE-MsgGUID: Su5M5VeFQ5WelXzZdabLsw==
+X-IronPort-AV: E=McAfee;i="6700,10204,11344"; a="65617695"
+X-IronPort-AV: E=Sophos;i="6.13,285,1732608000"; d="scan'208";a="65617695"
+Received: from orviesa009.jf.intel.com ([10.64.159.149])
+ by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 14 Feb 2025 01:08:52 -0800
+X-CSE-ConnectionGUID: ob2CyOKURkuqgQey6bTE+A==
+X-CSE-MsgGUID: l9XtpCizQ6iCBPA9lcT5XA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.13,285,1732608000"; d="scan'208";a="113145423"
+Received: from irvmail002.ir.intel.com ([10.43.11.120])
+ by orviesa009.jf.intel.com with ESMTP; 14 Feb 2025 01:08:49 -0800
+Received: from lincoln.igk.intel.com (lincoln.igk.intel.com [10.102.21.235])
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id 6789F37B80;
+ Fri, 14 Feb 2025 09:08:47 +0000 (GMT)
+From: Larysa Zaremba <larysa.zaremba@intel.com>
+To: Tony Nguyen <anthony.l.nguyen@intel.com>, intel-wired-lan@lists.osuosl.org
+Cc: Larysa Zaremba <larysa.zaremba@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Andrew Lunn <andrew+netdev@lunn.ch>,
+ "David S. Miller" <davem@davemloft.net>,
+ Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org,
+ Michal Swiatkowski <michal.swiatkowski@linux.intel.com>,
+ Mateusz Pacuszka <mateuszx.pacuszka@intel.com>
+Date: Fri, 14 Feb 2025 09:50:34 +0100
+Message-ID: <20250214085215.2846063-1-larysa.zaremba@intel.com>
+X-Mailer: git-send-email 2.43.0
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
- micalg=pgp-sha512; protocol="application/pgp-signature"
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=linutronix.de; s=2020; t=1739523392;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=k0/rnce+Rd2CzFJn7uWLGWjtLuFwcjvq8VkWuHMSEk0=;
- b=y10N4J9imkiBtiYErNuQfAugaMY9dHIlTa6jk8nKosC2v3SJXWJPHGe0xyePWHxt5jNQ6T
- L/ztRknGyeA7Ns0IJ6FPBweOlUPBYXdwQ22t13502qrl/DYm+97dI93sRuilT2WFHVC/EX
- er0YaIC3PVdb575p/Y3t+1pBXzT9ZJIp5kXqP5muSZ5gkhkgdbv92HWqI5qkQ4gl1QdOsu
- VAZKX5eFMzikPH2LlvgnyCY4Ir85tRH4gO7C7O9Q0qVCZxV/BChg8B08D0Xc0TyLLwbXF3
- UXNEo+jwiwNye1bUL3UQYINieP08qiLR9RH4GvRI8adb8RWPMDzevf+2L7L4AA==
-X-Mailman-Original-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
- d=linutronix.de; s=2020e; t=1739523392;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=k0/rnce+Rd2CzFJn7uWLGWjtLuFwcjvq8VkWuHMSEk0=;
- b=LDC6z2ymJ85I5KfU1stXIGjBN0B1fRLsUag1totGNYe1kesSKGeCfmxgBkcQVb3dce2pYR
- Xvz4tS+FkQBIsZDQ==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+Content-Transfer-Encoding: 8bit
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1739524133; x=1771060133;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=Eo5DuTvQ0qKs2Jp3vi/N35mfegrhtFBJq5aOGSjyD2I=;
+ b=ZE+Z5v5O6jYf5J3H/abx0p6pnhQoVSHc3wxN9M/D4Mmn0oUp5tzLLEuC
+ Mz7NfGvnhMedgKy7xY5l1HZ+ZYdQ/9k9hKG8d0j9jS/GJ8QRYNeaxpaaR
+ ViqX3xUxxQyN6RP1e9npinRq+vTIRuFV9IPfd1/HdBVagdTXKOXp0DRRy
+ ooos4cQyCqM3rJApCl9WQGh+w/I8yB9vUcrp9ToyP29i8ODglvWt+gTqn
+ N9ZsCxBazXJsvzHIeHYUwfC2E8ydA22ci8qjtDGV9BXw4Qq3004yKZkZX
+ kn3xRacPSL3MXYY6oKfXbo9Pz51MpdgbgfCXi+Rt95baYJN7IKgyWQ3+f
+ Q==;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
- header.from=linutronix.de
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key, unprotected) header.d=linutronix.de
- header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=y10N4J9i; 
- dkim=pass header.d=linutronix.de header.i=@linutronix.de
- header.a=ed25519-sha256 header.s=2020e header.b=LDC6z2ym
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next v4 0/9] igc: Add support for
- Frame Preemption feature in IGC
+ header.from=intel.com
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=ZE+Z5v5O
+Subject: [Intel-wired-lan] [PATCH iwl-next v4 0/6] ice: LLDP support for VFs
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -134,77 +115,90 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
---=-=-=
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Allow to:
+* receive LLDP packets on a VF in legacy mode
+* receive LLDP packets on a VF in switchdev mode
+* transmit LLDP from a VF in switchdev mode
 
-On Fri Feb 14 2025, Abdul Rahim, Faizal wrote:
-> On 14/2/2025 3:12 am, Kurt Kanzenbach wrote:
->> On Thu Feb 13 2025, Vladimir Oltean wrote:
->>> So, confusingly to me, it seems like one operating mode is fundamentally
->>> different from the other, and something will have to change if both will
->>> be made to behave the same. What will change? You say mqprio will behave
->>> like taprio, but I think if anything, mqprio is the one which does the
->>> right thing, in igc_tsn_tx_arb(), and taprio seems to use the default Tx
->>> arbitration scheme?
->>=20
->> Correct. taprio is using the default scheme. mqprio configures it to
->> what ever the user provided (in igc_tsn_tx_arb()).
->>=20
->>> I don't think I'm on the same page as you guys, because to me, it is
->>> just odd that the P traffic classes would be the first ones with
->>> mqprio, but the last ones with taprio.
->>=20
->> I think we are on the same page here. At the end both have to behave the
->> same. Either by using igc_tsn_tx_arb() for taprio too or only using the
->> default scheme for both (and thereby keeping broken_mqprio). Whatever
->> Faizal implements I'll match the behavior with mqprio.
->>=20
->
-> Hi Kurt & Vladimir,
->
-> After reading Vladimir's reply on tc, hw queue, and socket priority mappi=
-ng=20
-> for both taprio and mqprio, I agree they should follow the same priority=
-=20
-> scheme for consistency=E2=80=94both in code and command usage (i.e., tapr=
-io,=20
-> mqprio, and fpe in both configurations). Since igc_tsn_tx_arb() ensures a=
-=20
-> standard mapping of tc, socket priority, and hardware queue priority, I'l=
-l=20
-> enable taprio to use igc_tsn_tx_arb() in a separate patch submission.
+Many VSIs can receive LLDP packets, but only one VSI
+per port can transmit LLDP, therefore LLDP TX from VF
+requires adding an egress drop rule to the PF, this is
+implemented in these series too.
 
-There's one point to consider here: igc_tsn_tx_arb() changes the mapping
-between priorities and Tx queues. I have no idea how many people rely on
-the fact that queue 0 has always the highest priority. For example, it
-will change the Tx behavior for schedules which open multiple traffic
-classes at the same time. Users may notice.
+There are no patches that explicitly address LLDP RX in
+switchdev mode, because it just works after adding support
+in legacy mode.
 
-OTOH changing mqprio to the broken_mqprio model is easy, because AFAIK
-there's only one customer using this.
+Usage
 
-Thanks,
-Kurt
+To receive LLDP packets on VF in legacy mode:
+On host:
+ip link set dev <pf_ifname> vf <n> trust on
+On VM:
+service lldpd restart
 
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
+To receive LLDP packets on VF in switchdev mode (host config):
+tc qdisc add dev <pf_ifname> clsact
+tc filter add dev <pf_ifname> protocol lldp ingress \\
+   flower skip_sw action mirred egress mirror dev <repr_ifname>
 
------BEGIN PGP SIGNATURE-----
+To transmit LLDP packets from VF (host config):
+tc qdisc add dev <pf_ifname> clsact
+tc qdisc add dev <repr_ifname> clsact
+tc filter add dev <pf_ifname> egress protocol lldp \\
+   flower skip_sw action drop
+tc filter add dev <repr_ifname> ingress protocol lldp \\
+   flower skip_sw action mirred egress redirect dev <pf_ifname>
 
-iQJHBAEBCgAxFiEEvLm/ssjDfdPf21mSwZPR8qpGc4IFAmevBT0THGt1cnRAbGlu
-dXRyb25peC5kZQAKCRDBk9HyqkZzgsbpD/9AxFeEEq8XNrGj2pz6LdoAUuyEQfHj
-t+9vHsspGPBsJxkOhM3JG10feAFjH823FcdQIruXggTynYrEO8GZH+G5a1qa24dh
-6QAhDEi5ALUqVUD65fdIddO/wfEdDzSQj81bkkehRPqJ5V5bkaGGV9EJ6OYCEREE
-L0PJ7rmipFvhZkbZ/1AKmO6U2yB8qDh2lwfAAKCYStjQDn7XdKrDhZVHAgxVn7UJ
-rlxoaRVV9a419VYNs8lyeOkBrANThzcX4UPv8gs0ar6PtgDriPrVpeHa6wvFa+xl
-/s1b9FtCHwZGjhaQVlRSMYuSF4N4TqBW9aXsCW81hJb2wka+MV8PTtGntss/yv6k
-WU5dso/sCDXTD/4r4AQiS2p9w5exEIgNkcT55/0mnjiJNJ2Lzk+0ikrEC6LLnfZj
-0UME5TLxP09SOIa68d5wHzi4JRKr+NTwcEevieGsxS78sC1UYvMi2jWiUa6C9fdz
-TPU8/YpJ4Mw/8orXm/1Dkb5XKd3ef5/RF5uFG5Cu3vem7SJJJya8BrTqiUDesuy0
-n3Wgx2CUBZ/sl1qssCGu2HwOfU/EeWtc4Pxr7UE9WKPc+aeMmJMt0qONmPYln/iJ
-dPr18MvJNHlWM1NFmuAEV6ZJoo/LzvWEbvwNlJmKb8GodD4To4YEk5/iGWncaXkP
-noqBzMdqbY5wEw==
-=EOqX
------END PGP SIGNATURE-----
---=-=-=--
+For all abovementioned functionalities to work, private flag
+fw-lldp-agent must be off.
+
+v3->v4:
+* add "Return: " to the touched kernel-doc
+* reunite return type and declaration for ice_add_cls_flower()
+  and ice_del_cls_flower()
+
+v2->v3:
+* fix sparse warning caused by part of .sw_act members being initialized
+  inside the curly braces and others being initialized directly
+* reorder members inside the rinfo initializer according to struct
+  definition in ice_drop_vf_tx_lldp(), while fixing the warning above
+
+v1->v2:
+* get rid of sysfs control
+* require switchdev for VF LLDP Tx
+* in legacy mode, for VF LLDP Rx rely on configured MAC addresses
+
+Larysa Zaremba (4):
+  ice: do not add LLDP-specific filter if not necessary
+  ice: remove headers argument from ice_tc_count_lkups
+  ice: support egress drop rules on PF
+  ice: enable LLDP TX for VFs through tc
+
+Mateusz Pacuszka (2):
+  ice: fix check for existing switch rule
+  ice: receive LLDP on trusted VFs
+
+ drivers/net/ethernet/intel/ice/ice.h          |   1 +
+ drivers/net/ethernet/intel/ice/ice_common.c   |  14 +-
+ drivers/net/ethernet/intel/ice/ice_common.h   |   3 +-
+ drivers/net/ethernet/intel/ice/ice_dcb_lib.c  |   2 +-
+ drivers/net/ethernet/intel/ice/ice_eswitch.c  |   6 +
+ drivers/net/ethernet/intel/ice/ice_ethtool.c  |   2 +-
+ drivers/net/ethernet/intel/ice/ice_lib.c      |  71 ++++-
+ drivers/net/ethernet/intel/ice/ice_lib.h      |   3 +-
+ drivers/net/ethernet/intel/ice/ice_main.c     |  63 ++++-
+ drivers/net/ethernet/intel/ice/ice_repr.c     |  10 +-
+ drivers/net/ethernet/intel/ice/ice_sriov.c    |   4 +
+ drivers/net/ethernet/intel/ice/ice_switch.c   |   4 +-
+ drivers/net/ethernet/intel/ice/ice_tc_lib.c   | 258 +++++++++++++++---
+ drivers/net/ethernet/intel/ice/ice_tc_lib.h   |  11 +-
+ drivers/net/ethernet/intel/ice/ice_txrx.c     |  17 +-
+ drivers/net/ethernet/intel/ice/ice_vf_lib.c   |  26 ++
+ drivers/net/ethernet/intel/ice/ice_vf_lib.h   |  12 +
+ drivers/net/ethernet/intel/ice/ice_virtchnl.c |  53 +++-
+ 18 files changed, 480 insertions(+), 80 deletions(-)
+
+-- 
+2.43.0
+
