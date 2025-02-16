@@ -1,67 +1,66 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C63D8C021A4
-	for <intel-wired-lan@archiver.kernel.org>; Sun, 16 Feb 2025 07:44:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 294BAC021A4
+	for <intel-wired-lan@archiver.kernel.org>; Sun, 16 Feb 2025 09:34:45 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 8F339412FF;
-	Sun, 16 Feb 2025 07:44:14 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Im2xIcXEawGz; Sun, 16 Feb 2025 07:44:13 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 438E44130F
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1739691853;
-	bh=Qiz7qEKhJpzDjilhxl4NI1KREWAKj3vR3o5+uJr0F04=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=2XhQqakEBx+BAtukK0L1UNRFPr+FPNjb9fKjpMMiS6yPiiGJcLAY7BwT8PwTCw3sd
-	 aEBmf5DjWdW6ojX+mRbeMiD6zI18zCA6FPPYwbRW3qfaC1w4H9mK/KXhIhYdgpz9FJ
-	 0UiuiTjePi3paWzmRPM9ceRbuA+3vApK5W3We872t4xJys8FfI+XsAuR4VdwkBjGkY
-	 9riLCznnkEv9qmy4CUUBrSCDjyAdL3RCAoaTMkCVfMfaQSBrm7MYpzY88SZc9J6/fE
-	 joj+YW6HfESosqpgxDRteL7L69l2Z2aK1m/M2sBZ3M9eJnEOQi6LaF19ghwVYpLuph
-	 f7MXbkNSbwfOg==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 438E44130F;
-	Sun, 16 Feb 2025 07:44:13 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id 020C1DE
- for <intel-wired-lan@lists.osuosl.org>; Sun, 16 Feb 2025 07:44:12 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id F173583FF3
- for <intel-wired-lan@lists.osuosl.org>; Sun, 16 Feb 2025 07:44:11 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id C1A3981211;
+	Sun, 16 Feb 2025 09:34:44 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 6cGSGd6p8FG4 for <intel-wired-lan@lists.osuosl.org>;
- Sun, 16 Feb 2025 07:44:11 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.18;
+ id YTXZM3s6SdwO; Sun, 16 Feb 2025 09:34:43 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9990681205
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1739698483;
+	bh=t8D8Bvt4wmnptkbdw6rkTNpYVqCKoBzq8g8tmexcwF0=;
+	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=4TdDha5RlLO9leVk6MNyRine31hSsoBcL1u3EA9w3v+CPTyT/J54DTY1bkVzZVsXT
+	 KkfxT4Um3TyFHppf2OyX/jsyw3dYSux8OJuobJj3XKySwp+GfNvRfrVT5SmLbpFz4B
+	 Ju16eZpd5t/AOgPAMc1T7kGSnAjxUhL9q1HyoYZ+E1bWskULSaWo+ETnVY3FuTXvCC
+	 P995fTy4j6EwQIhiFKd/twTmU2dEzAz1oCm9PgvxL7zCoh8ZtpNwZFSFj2bd2sbmUE
+	 VOTeKiLSvYTy8EyJ7J3xmP5EQMnhHyEecSrMMZqKX1F5QMrmWegybw2EczIJ32cYHH
+	 eCPKkueSSnuzw==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp1.osuosl.org (Postfix) with ESMTP id 9990681205;
+	Sun, 16 Feb 2025 09:34:43 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id E00DEC8
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 16 Feb 2025 09:34:41 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp1.osuosl.org (Postfix) with ESMTP id C3A8E811B7
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 16 Feb 2025 09:34:41 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id cw7zqt_atuOi for <intel-wired-lan@lists.osuosl.org>;
+ Sun, 16 Feb 2025 09:34:40 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.12;
  helo=mgamail.intel.com; envelope-from=yoong.siang.song@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 1258D83A73
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 1258D83A73
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.18])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 1258D83A73
- for <intel-wired-lan@lists.osuosl.org>; Sun, 16 Feb 2025 07:44:10 +0000 (UTC)
-X-CSE-ConnectionGUID: Dw41HLTZSNSpA3KEJlUbbQ==
-X-CSE-MsgGUID: VLzl8JaVQmWMBWWyaMlOTQ==
-X-IronPort-AV: E=McAfee;i="6700,10204,11314"; a="40515479"
-X-IronPort-AV: E=Sophos;i="6.12,310,1728975600"; d="scan'208";a="40515479"
-Received: from fmviesa008.fm.intel.com ([10.60.135.148])
- by orvoesa110.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 15 Feb 2025 23:44:10 -0800
-X-CSE-ConnectionGUID: EmVvx4RrSQy/kdZdBEAWAw==
-X-CSE-MsgGUID: 79bstY3ERgaio+WDzjpSqw==
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 8AE3E81154
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8AE3E81154
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.12])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 8AE3E81154
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 16 Feb 2025 09:34:40 +0000 (UTC)
+X-CSE-ConnectionGUID: ozkBuWeISvuoe5ADBEZsFw==
+X-CSE-MsgGUID: cXP4DFeiR8aZ5bOozQMDHw==
+X-IronPort-AV: E=McAfee;i="6700,10204,11346"; a="51812179"
+X-IronPort-AV: E=Sophos;i="6.13,290,1732608000"; d="scan'208";a="51812179"
+Received: from fmviesa003.fm.intel.com ([10.60.135.143])
+ by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 16 Feb 2025 01:34:40 -0800
+X-CSE-ConnectionGUID: 8RBNvo8fQR2DNDKRevRB2A==
+X-CSE-MsgGUID: BZNN0FagQSKU2Pj5GU4wuA==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.13,290,1732608000"; d="scan'208";a="114028098"
+X-IronPort-AV: E=Sophos;i="6.12,224,1728975600"; d="scan'208";a="117998869"
 Received: from p12ill20yoongsia.png.intel.com ([10.88.227.38])
- by fmviesa008.fm.intel.com with ESMTP; 15 Feb 2025 23:43:57 -0800
+ by fmviesa003.fm.intel.com with ESMTP; 16 Feb 2025 01:34:28 -0800
 From: Song Yoong Siang <yoong.siang.song@intel.com>
 To: "David S . Miller" <davem@davemloft.net>,
  Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
@@ -99,34 +98,33 @@ Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
  linux-kselftest@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com,
  linux-arm-kernel@lists.infradead.org, intel-wired-lan@lists.osuosl.org,
  xdp-hints@xdp-project.net
-Date: Sun, 16 Feb 2025 15:43:02 +0800
-Message-Id: <20250216074302.956937-6-yoong.siang.song@intel.com>
+Date: Sun, 16 Feb 2025 17:34:25 +0800
+Message-Id: <20250216093430.957880-1-yoong.siang.song@intel.com>
 X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20250216074302.956937-1-yoong.siang.song@intel.com>
-References: <20250216074302.956937-1-yoong.siang.song@intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1739691851; x=1771227851;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=7QSiQ/PGeTRYR2BYQeKEXkxth7MQ0e1CJi58PXVL7KI=;
- b=Cp7DPnmRIJFQo0Y0jnfRAUHAxTemPMPAieuou9IjrMBLBdV3eAt+XRKr
- cfi73pNnUVxed7//5c/nXocIlJ7T4ly0kZVe5diQTK2rmPyOIxiqyte9Y
- OuaV5QCJY9csxOSTKqCie7yFVMoaDGpuGNfR1CigR3RfKVgVosVDPs15f
- UUVw8pisNaqQfhE3ToA5Ro8EMxW0G5Qjy3mF1PhHBuRTEHLXxdFLuFWEK
- 5nFK7JUGZqMNOcszdtDohDdWVc4s/9PZDObkcBXoZ6PfdPnurVbOZ0ajx
- db/FUKoI72HlFcE9prMwqjBHWujzU6ayyXE8wbJul1LKkA3tFloZ5/iov
- g==;
+ t=1739698481; x=1771234481;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=D402m6G4UxLYuZwdQdA/n45E6WUQZwIX9ttEZ+hG8tw=;
+ b=UQlRox+s79CvkMmKb9XSS83do0QGMAuJZzTQ1LxG/5W6xXt8m2RzdaVL
+ cH1m3xi+60z9MzcvPmWW3VaysF4NGzUcMue0RGoVJGXLn5+wEtS8ANSE/
+ FmvUHjw+ZR1ZEuInAzA0LQ6sYxhDi0clPeaP0TrITFcaaYtOKU/0XXgar
+ ENg1MkwqkDINpPcDUj+5dbzYrVSRth31oUTJhCxd8uuGxO70CdJOKgqFV
+ bcD4kxPvnOU7dIpDsRo7X/m7bjM7TzBjLVjGy2sDKbAN34bayoKq0LkCd
+ LqPy0YWbgYVukUmvbC8sI4G0WY8bGRUVNCX2vE+qeh1b3Zdsl4hSiXvHT
+ w==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=Cp7DPnmR
-Subject: [Intel-wired-lan] [PATCH bpf-next v11 5/5] igc: Add launch time
- support to XDP ZC
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=UQlRox+s
+Subject: [Intel-wired-lan] [PATCH bpf-next v12 0/5] xsk: TX metadata Launch
+ Time support
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -142,191 +140,136 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Enable Launch Time Control (LTC) support for XDP zero copy via XDP Tx
-metadata framework.
+This series expands the XDP TX metadata framework to allow user
+applications to pass per packet 64-bit launch time directly to the kernel
+driver, requesting launch time hardware offload support. The XDP TX
+metadata framework will not perform any clock conversion or packet
+reordering.
 
-This patch has been tested with tools/testing/selftests/bpf/xdp_hw_metadata
-on Intel I225-LM Ethernet controller. Below are the test steps and result.
+Please note that the role of Tx metadata is just to pass the launch time,
+not to enable the offload feature. Users will need to enable the launch
+time hardware offload feature of the device by using the respective
+command, such as the tc-etf command.
 
-Test 1: Send a single packet with the launch time set to 1 s in the future.
+Although some devices use the tc-etf command to enable their launch time
+hardware offload feature, xsk packets will not go through the etf qdisc.
+Therefore, in my opinion, the launch time should always be based on the PTP
+Hardware Clock (PHC). Thus, i did not include a clock ID to indicate the
+clock source.
 
-Test steps:
-1. On the DUT, start the xdp_hw_metadata selftest application:
-   $ sudo ./xdp_hw_metadata enp2s0 -l 1000000000 -L 1
+To simplify the test steps, I modified the xdp_hw_metadata bpf self-test
+tool in such a way that it will set the launch time based on the offset
+provided by the user and the value of the Receive Hardware Timestamp, which
+is against the PHC. This will eliminate the need to discipline System Clock
+with the PHC and then use clock_gettime() to get the time.
 
-2. On the Link Partner, send a UDP packet with VLAN priority 1 to port 9091
-   of the DUT.
+Please note that AF_XDP lacks a feedback mechanism to inform the
+application if the requested launch time is invalid. So, users are expected
+to familiar with the horizon of the launch time of the device they use and
+not request a launch time that is beyond the horizon. Otherwise, the driver
+might interpret the launch time incorrectly and react wrongly. For stmmac
+and igc, where modulo computation is used, a launch time larger than the
+horizon will cause the device to transmit the packet earlier that the
+requested launch time.
 
-Result:
-When the launch time is set to 1 s in the future, the delta between the
-launch time and the transmit hardware timestamp is 0.016 us, as shown in
-printout of the xdp_hw_metadata application below.
-  0x562ff5dc8880: rx_desc[4]->addr=84110 addr=84110 comp_addr=84110 EoP
-  rx_hash: 0xE343384 with RSS type:0x1
-  HW RX-time:   1734578015467548904 (sec:1734578015.4675)
-                delta to User RX-time sec:0.0002 (183.103 usec)
-  XDP RX-time:   1734578015467651698 (sec:1734578015.4677)
-                 delta to User RX-time sec:0.0001 (80.309 usec)
-  No rx_vlan_tci or rx_vlan_proto, err=-95
-  0x562ff5dc8880: ping-pong with csum=561c (want c7dd)
-                  csum_start=34 csum_offset=6
-  HW RX-time:   1734578015467548904 (sec:1734578015.4675)
-                delta to HW Launch-time sec:1.0000 (1000000.000 usec)
-  0x562ff5dc8880: complete tx idx=4 addr=4018
-  HW Launch-time:   1734578016467548904 (sec:1734578016.4675)
-                    delta to HW TX-complete-time sec:0.0000 (0.016 usec)
-  HW TX-complete-time:   1734578016467548920 (sec:1734578016.4675)
-                         delta to User TX-complete-time sec:0.0000
-                         (32.546 usec)
-  XDP RX-time:   1734578015467651698 (sec:1734578015.4677)
-                 delta to User TX-complete-time sec:0.9999
-                 (999929.768 usec)
-  HW RX-time:   1734578015467548904 (sec:1734578015.4675)
-                delta to HW TX-complete-time sec:1.0000 (1000000.016 usec)
-  0x562ff5dc8880: complete rx idx=132 addr=84110
+Although there is no feedback mechanism for the launch time request
+for now, user still can check whether the requested launch time is
+working or not, by requesting the Transmit Completion Hardware Timestamp.
 
-Test 2: Send 1000 packets with a 10 ms interval and the launch time set to
-        500 us in the future.
+v12:
+  - Fix the comment in include/uapi/linux/if_xdp.h to allign with what is
+    generated by ./tools/net/ynl/ynl-regen.sh to avoid dirty tree error in
+    the netdev/ynl checks.
 
-Test steps:
-1. On the DUT, start the xdp_hw_metadata selftest application:
-   $ sudo chrt -f 99 ./xdp_hw_metadata enp2s0 -l 500000 -L 1 > \
-     /dev/shm/result.log
+v11: https://lore.kernel.org/netdev/20250216074302.956937-1-yoong.siang.song@intel.com/
+  - regenerate netdev_xsk_flags based on latest netdev.yaml (Jakub)
 
-2. On the Link Partner, send 1000 UDP packets with a 10 ms interval and
-   VLAN priority 1 to port 9091 of the DUT.
+v10: https://lore.kernel.org/netdev/20250207021943.814768-1-yoong.siang.song@intel.com/
+  - use net_err_ratelimited(), instead of net_ratelimit() (Maciej)
+  - accumulate the amount of used descs in local variable and update the
+    igc_metadata_request::used_desc once (Maciej)
+  - Ensure reverse christmas tree rule (Maciej)
 
-Result:
-When the launch time is set to 500 us in the future, the average delta
-between the launch time and the transmit hardware timestamp is 0.016 us,
-as shown in the analysis of /dev/shm/result.log below. The XDP launch time
-works correctly in sending 1000 packets continuously.
-  Min delta: 0.005 us
-  Avr delta: 0.016 us
-  Max delta: 0.031 us
-  Total packets forwarded: 1000
+V9: https://lore.kernel.org/netdev/20250206060408.808325-1-yoong.siang.song@intel.com/
+  - Remove the igc_desc_unused() checking (Maciej)
+  - Ensure that skb allocation and DMA mapping work before proceeding to
+    fill in igc_tx_buffer info, context desc, and data desc (Maciej)
+  - Rate limit the error messages (Maciej)
+  - Update the comment to indicate that the 2 descriptors needed by the
+    empty frame are already taken into consideration (Maciej)
+  - Handle the case where the insertion of an empty frame fails and
+    explain the reason behind (Maciej)
+  - put self SOB tag as last tag (Maciej)
 
-Reviewed-by: Faizal Rahim <faizal.abdul.rahim@linux.intel.com>
-Reviewed-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-Signed-off-by: Song Yoong Siang <yoong.siang.song@intel.com>
----
- drivers/net/ethernet/intel/igc/igc.h      |  1 +
- drivers/net/ethernet/intel/igc/igc_main.c | 61 ++++++++++++++++++++++-
- 2 files changed, 60 insertions(+), 2 deletions(-)
+V8: https://lore.kernel.org/netdev/20250205024116.798862-1-yoong.siang.song@intel.com/
+  - check the number of used descriptor in xsk_tx_metadata_request()
+    by using used_desc of struct igc_metadata_request, and then decreases
+    the budget with it (Maciej)
+  - submit another bug fix patch to set the buffer type for empty frame (Maciej):
+    https://lore.kernel.org/netdev/20250205023603.798819-1-yoong.siang.song@intel.com/
 
-diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
-index b8111ad9a9a8..cd1d7b6c1782 100644
---- a/drivers/net/ethernet/intel/igc/igc.h
-+++ b/drivers/net/ethernet/intel/igc/igc.h
-@@ -579,6 +579,7 @@ struct igc_metadata_request {
- 	struct xsk_tx_metadata *meta;
- 	struct igc_ring *tx_ring;
- 	u32 cmd_type;
-+	u16 used_desc;
- };
- 
- struct igc_q_vector {
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 1bfa71545e37..3044392e8ded 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -2971,9 +2971,48 @@ static u64 igc_xsk_fill_timestamp(void *_priv)
- 	return *(u64 *)_priv;
- }
- 
-+static void igc_xsk_request_launch_time(u64 launch_time, void *_priv)
-+{
-+	struct igc_metadata_request *meta_req = _priv;
-+	struct igc_ring *tx_ring = meta_req->tx_ring;
-+	__le32 launch_time_offset;
-+	bool insert_empty = false;
-+	bool first_flag = false;
-+	u16 used_desc = 0;
-+
-+	if (!tx_ring->launchtime_enable)
-+		return;
-+
-+	launch_time_offset = igc_tx_launchtime(tx_ring,
-+					       ns_to_ktime(launch_time),
-+					       &first_flag, &insert_empty);
-+	if (insert_empty) {
-+		/* Disregard the launch time request if the required empty frame
-+		 * fails to be inserted.
-+		 */
-+		if (igc_insert_empty_frame(tx_ring))
-+			return;
-+
-+		meta_req->tx_buffer =
-+			&tx_ring->tx_buffer_info[tx_ring->next_to_use];
-+		/* Inserting an empty packet requires two descriptors:
-+		 * one data descriptor and one context descriptor.
-+		 */
-+		used_desc += 2;
-+	}
-+
-+	/* Use one context descriptor to specify launch time and first flag. */
-+	igc_tx_ctxtdesc(tx_ring, launch_time_offset, first_flag, 0, 0, 0);
-+	used_desc += 1;
-+
-+	/* Update the number of used descriptors in this request */
-+	meta_req->used_desc += used_desc;
-+}
-+
- const struct xsk_tx_metadata_ops igc_xsk_tx_metadata_ops = {
- 	.tmo_request_timestamp		= igc_xsk_request_timestamp,
- 	.tmo_fill_timestamp		= igc_xsk_fill_timestamp,
-+	.tmo_request_launch_time	= igc_xsk_request_launch_time,
- };
- 
- static void igc_xdp_xmit_zc(struct igc_ring *ring)
-@@ -2996,7 +3035,13 @@ static void igc_xdp_xmit_zc(struct igc_ring *ring)
- 	ntu = ring->next_to_use;
- 	budget = igc_desc_unused(ring);
- 
--	while (xsk_tx_peek_desc(pool, &xdp_desc) && budget--) {
-+	/* Packets with launch time require one data descriptor and one context
-+	 * descriptor. When the launch time falls into the next Qbv cycle, we
-+	 * may need to insert an empty packet, which requires two more
-+	 * descriptors. Therefore, to be safe, we always ensure we have at least
-+	 * 4 descriptors available.
-+	 */
-+	while (xsk_tx_peek_desc(pool, &xdp_desc) && budget >= 4) {
- 		struct igc_metadata_request meta_req;
- 		struct xsk_tx_metadata *meta = NULL;
- 		struct igc_tx_buffer *bi;
-@@ -3017,9 +3062,19 @@ static void igc_xdp_xmit_zc(struct igc_ring *ring)
- 		meta_req.tx_ring = ring;
- 		meta_req.tx_buffer = bi;
- 		meta_req.meta = meta;
-+		meta_req.used_desc = 0;
- 		xsk_tx_metadata_request(meta, &igc_xsk_tx_metadata_ops,
- 					&meta_req);
- 
-+		/* xsk_tx_metadata_request() may have updated next_to_use */
-+		ntu = ring->next_to_use;
-+
-+		/* xsk_tx_metadata_request() may have updated Tx buffer info */
-+		bi = meta_req.tx_buffer;
-+
-+		/* xsk_tx_metadata_request() may use a few descriptors */
-+		budget -= meta_req.used_desc;
-+
- 		tx_desc = IGC_TX_DESC(ring, ntu);
- 		tx_desc->read.cmd_type_len = cpu_to_le32(meta_req.cmd_type);
- 		tx_desc->read.olinfo_status = cpu_to_le32(olinfo_status);
-@@ -3037,9 +3092,11 @@ static void igc_xdp_xmit_zc(struct igc_ring *ring)
- 		ntu++;
- 		if (ntu == ring->count)
- 			ntu = 0;
-+
-+		ring->next_to_use = ntu;
-+		budget--;
- 	}
- 
--	ring->next_to_use = ntu;
- 	if (tx_desc) {
- 		igc_flush_tx_descriptors(ring);
- 		xsk_tx_release(pool);
+V7: https://lore.kernel.org/netdev/20250204004907.789330-1-yoong.siang.song@intel.com/
+  - split the refactoring code of igc empty packet insertion into a separate
+    commit (Faizal)
+  - add explanation on why the value "4" is used as igc transmit budget
+    (Faizal)
+  - perform a stress test by sending 1000 packets with 10ms interval and
+    launch time set to 500us in the future (Faizal & Yong Liang)
+
+V6: https://lore.kernel.org/netdev/20250116155350.555374-1-yoong.siang.song@intel.com/
+  - fix selftest build errors by using asprintf() and realloc(), instead of
+    managing the buffer sizes manually (Daniel, Stanislav)
+
+V5: https://lore.kernel.org/netdev/20250114152718.120588-1-yoong.siang.song@intel.com/
+  - change netdev feature name from tx-launch-time to tx-launch-time-fifo
+    to explicitly state the FIFO behaviour (Stanislav)
+  - improve the looping of xdp_hw_metadata app to wait for packet tx
+    completion to be more readable by using clock_gettime() (Stanislav)
+  - add launch time setup steps into xdp_hw_metadata app (Stanislav)
+
+V4: https://lore.kernel.org/netdev/20250106135506.9687-1-yoong.siang.song@intel.com/
+  - added XDP launch time support to the igc driver (Jesper & Florian)
+  - added per-driver launch time limitation on xsk-tx-metadata.rst (Jesper)
+  - added explanation on FIFO behavior on xsk-tx-metadata.rst (Jakub)
+  - added step to enable launch time in the commit message (Jesper & Willem)
+  - explicitly documented the type of launch_time and which clock source
+    it is against (Willem)
+
+V3: https://lore.kernel.org/netdev/20231203165129.1740512-1-yoong.siang.song@intel.com/
+  - renamed to use launch time (Jesper & Willem)
+  - changed the default launch time in xdp_hw_metadata apps from 1s to 0.1s
+    because some NICs do not support such a large future time.
+
+V2: https://lore.kernel.org/netdev/20231201062421.1074768-1-yoong.siang.song@intel.com/
+  - renamed to use Earliest TxTime First (Willem)
+  - renamed to use txtime (Willem)
+
+V1: https://lore.kernel.org/netdev/20231130162028.852006-1-yoong.siang.song@intel.com/
+
+Song Yoong Siang (5):
+  xsk: Add launch time hardware offload support to XDP Tx metadata
+  selftests/bpf: Add launch time request to xdp_hw_metadata
+  net: stmmac: Add launch time support to XDP ZC
+  igc: Refactor empty frame insertion for launch time support
+  igc: Add launch time support to XDP ZC
+
+ Documentation/netlink/specs/netdev.yaml       |   4 +
+ Documentation/networking/xsk-tx-metadata.rst  |  62 +++++++
+ drivers/net/ethernet/intel/igc/igc.h          |   1 +
+ drivers/net/ethernet/intel/igc/igc_main.c     | 143 +++++++++++----
+ drivers/net/ethernet/stmicro/stmmac/stmmac.h  |   2 +
+ .../net/ethernet/stmicro/stmmac/stmmac_main.c |  13 ++
+ include/net/xdp_sock.h                        |  10 ++
+ include/net/xdp_sock_drv.h                    |   1 +
+ include/uapi/linux/if_xdp.h                   |  10 ++
+ include/uapi/linux/netdev.h                   |   3 +
+ net/core/netdev-genl.c                        |   2 +
+ net/xdp/xsk.c                                 |   3 +
+ tools/include/uapi/linux/if_xdp.h             |  10 ++
+ tools/include/uapi/linux/netdev.h             |   3 +
+ tools/testing/selftests/bpf/xdp_hw_metadata.c | 168 +++++++++++++++++-
+ 15 files changed, 396 insertions(+), 39 deletions(-)
+
 -- 
 2.34.1
 
