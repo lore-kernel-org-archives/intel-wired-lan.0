@@ -1,60 +1,60 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5D171C0219E
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 17 Feb 2025 11:31:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1B726C021A1
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 17 Feb 2025 11:31:41 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 3055081F4D;
-	Mon, 17 Feb 2025 11:31:39 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id DE38A408EC;
+	Mon, 17 Feb 2025 11:31:40 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id EUWwc6336e8e; Mon, 17 Feb 2025 11:31:38 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id pJGgzyGm16TY; Mon, 17 Feb 2025 11:31:39 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 5680A81F5D
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org A276640748
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1739791898;
-	bh=yF5RDYaCzF53kAz3Wp6QOwEE2b6TMJ3qzTe/sJpAsgA=;
+	s=default; t=1739791899;
+	bh=NnIQsRCD/grX1S3QwLY6W0EqtBUu1o4T+F7Ge/iTeZU=;
 	h=From:Date:References:In-Reply-To:To:Cc:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=oq4ilMC5O17FRA8eF8qegwMzYHsPWfmQVt6UQsOeZpJk7Fp5vlLblGTIN6E1wz1TM
-	 OzjIC+io5nMiYZpDmDimg0y1059RfBP8NdvZvrWD+nwbGTuihchzhcHBK/sEveJYyT
-	 By684yktbuwzb5eSKg2ImU0tIZGCthUEOwoWK8yqQ9ZnHYbb+g1bCSS2OQVk9hVayz
-	 U0Go/voh8TIk8odyT2F9y/LsWewepfGH148/eZu8XJ97i8qPyZtbcp3HYiz5FVD0F3
-	 6mtJjvAjoYbPapJ9/nxQw7LvKa7BRubHo2uLPhXdcs+s+0p8dHCJuFc7dZDu+BGIz3
-	 +hIK40UeVinfA==
+	b=CQrtHNSXdtp4DHU5eVrOvjy3D4WvpVdNaiV4s/hU+Z2AIKfnirOkecRAjoT75RxdT
+	 3YQg0UvYLyALk/1MizLmQfmNaO8PupKMccPBFTUX3wafB/flSk/3Wz8Rm9Q7h7tTPj
+	 0/sUJyM9HdYyRYZMJLPtimPdPw0g61dZkIqNFbRHsf19XiSpO7WZvRNXI37XcjXmel
+	 tlnpwAfLbOtGojqm6Z1WwAxvUSS1RiZk/A1Om7VmQEq3SPzGD7cIh0vJZY7dI67ex2
+	 ZFZXfiaQppFaSMct028nsjruh3DCxOpd9GeyQKUxICdxmD9RX9rYpF3O2khyqQ7bjA
+	 4O147ySQ3qLEQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 5680A81F5D;
-	Mon, 17 Feb 2025 11:31:38 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id EFED1C8
- for <intel-wired-lan@lists.osuosl.org>; Mon, 17 Feb 2025 11:31:34 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id A276640748;
+	Mon, 17 Feb 2025 11:31:39 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 8DABDDE
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 17 Feb 2025 11:31:35 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id E09AF40116
- for <intel-wired-lan@lists.osuosl.org>; Mon, 17 Feb 2025 11:31:34 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 798C0400A8
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 17 Feb 2025 11:31:35 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id dtiC9_axNut6 for <intel-wired-lan@lists.osuosl.org>;
- Mon, 17 Feb 2025 11:31:33 +0000 (UTC)
+ id v-pzYkaYfFr8 for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 17 Feb 2025 11:31:34 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=193.142.43.55;
  helo=galois.linutronix.de; envelope-from=kurt@linutronix.de;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 52744400A8
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 52744400A8
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org F068F403AA
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org F068F403AA
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 52744400A8
+ by smtp2.osuosl.org (Postfix) with ESMTPS id F068F403AA
  for <intel-wired-lan@lists.osuosl.org>; Mon, 17 Feb 2025 11:31:33 +0000 (UTC)
 From: Kurt Kanzenbach <kurt@linutronix.de>
-Date: Mon, 17 Feb 2025 12:31:22 +0100
+Date: Mon, 17 Feb 2025 12:31:24 +0100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250217-igb_irq-v2-2-4cb502049ac2@linutronix.de>
+Message-Id: <20250217-igb_irq-v2-4-4cb502049ac2@linutronix.de>
 References: <20250217-igb_irq-v2-0-4cb502049ac2@linutronix.de>
 In-Reply-To: <20250217-igb_irq-v2-0-4cb502049ac2@linutronix.de>
 To: Tony Nguyen <anthony.l.nguyen@intel.com>, 
@@ -67,53 +67,53 @@ Cc: Andrew Lunn <andrew+netdev@lunn.ch>,
  Gerhard Engleder <gerhard@engleder-embedded.com>, 
  intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org, 
  Kurt Kanzenbach <kurt@linutronix.de>
-X-Developer-Signature: v=1; a=openpgp-sha256; l=6618; i=kurt@linutronix.de;
- h=from:subject:message-id; bh=QU29MF4XC+8uN+OhP0LP+yNMgx20VjDV5A87D7lxYXM=;
- b=owEBbQKS/ZANAwAKAcGT0fKqRnOCAcsmYgBnsx4PDTwMZ6GVdKmS0aNNUHScpirLApoWJiX9x
- aY+DtA/k3+JAjMEAAEKAB0WIQS8ub+yyMN909/bWZLBk9HyqkZzggUCZ7MeDwAKCRDBk9HyqkZz
- glVPD/9sasZSs6vZSG48uIpfqK6wyJ6gmRSdwYU15/dVZcFtULSIHHgTl7s+v9jeddl2995Hg8N
- qBoowyuj9g6a+p2QyRobqCQpKhtY7j70LwGE7/Miz7/f5RUIjl2UwRGluOkIPYj+iYFYmKIwzXc
- dSFodscj/XSXwPdNNO0s1Z0h+7P1s2vkxYHd5gikZ7jexk0/W+T5kuccXFKQUyaaglx8NqwH7z1
- tg9D54m71B+Bwz4FxXmub4896xORnBUmtGu98R0p+fDLW6EQyHIM66hN3SEyvzLI8Qbw8mnErGl
- 63uYcgnruDldowS1kZui8c9IFnQ9FhjlzQq+9jN7bpwP/mxCts018a3l/dzV7Crd33iNdRe55bX
- DG5/HM5lSY0dZKXfOra9vwOCieNM35EyUvrHbhxYu+P8dJ0egg1P0mg76BqePS3LDBQ2Ax2Gxrl
- Sre60gs7zJ+1PGtAJyXWrCE9P48Qdj/s+60IPfTLrdYvu6ATJ1HDrOM6pqZvJpXy158Pv0rL4Ua
- ERB3JtVQg02V0chudJUyNXQSe2fItYiIxssciZLEa+3EsHv6m8C+2AZr6zhrd5ln0X8Uqaw1ecD
- nnYbu94mB0BGnPVxtch6AMg37z2mI/zMIm+2wGONSHM3b2/9Q1Vzvx4q80uxq0vSqN0OIEH2wUQ
- quUOBlXBt97cHpQ==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=4781; i=kurt@linutronix.de;
+ h=from:subject:message-id; bh=xUo+bNs3yPOXLQ4lPhzno9lz0kcYuAN4Vp+LwT0fQVo=;
+ b=owEBbQKS/ZANAwAKAcGT0fKqRnOCAcsmYgBnsx4Qf1ejhIpc8yTt+iP/sxt6u/CRFVMJZuNnU
+ Q/r4YI9hSOJAjMEAAEKAB0WIQS8ub+yyMN909/bWZLBk9HyqkZzggUCZ7MeEAAKCRDBk9HyqkZz
+ gizAD/9z5pJRH/7A91yZJnrkPfUzj0n1YES2lk+59DgvyFdSmRTyuVRY1TTxl/qBgk/eWUiFRiR
+ eiElyo8/Bw+dWCRviFuy8B2tYjux2bqH/3X1whpszxzZ2UHERjjKJ8g/j/+38Z1akXYo5SzJ1Zf
+ k3r+oo7h7VjKnANzLjLTTGWwAKhdrerIVmJOLLWsMtNoWtwrEbyXoag+/00EXgT/hELDfiZNacF
+ pX6PJjziylUMhur4h/17xdvLs5fBSaG/o7YsuOoAN8elQd2mMfhJIqDJHYoCWZ2Va4lZrFM5u6D
+ 226uJ4ppx/tpHrnNSAFkjfUNfli91ALGdnRWirI0CeDJ0lonzMMBvXkHsNgufqlNeSu+oso2gim
+ 4r+ybLs91QRp1NH75I47Wd/DLiX0/hJOrzCvQfFJkChacJqGFJ5NX6n0rw0L1C4QrTmsNwfp23E
+ FGLBDZ3yhG1sWfWkWuP40QTZ+Ita1ZcFUXHmDV07ftCvw+KMNNXOYXk9MTQ24T2naBd7iolP68o
+ qtSy/ZVSej3Anftn2JwgXpR+jd7AKnNuIFDjAqIh7cZG7fVroC3a/GRy1nFp5sfjoobQ9cvLaxS
+ FoAskvWkp0AMb0l+Qa7y1ppjea+q/Ha/9EvwAF0/CciWFlOeLnmIiEG2qV230r2c/wRMCuuNaE4
+ ZxPCPXYn+W5xhCA==
 X-Developer-Key: i=kurt@linutronix.de; a=openpgp;
  fpr=BCB9BFB2C8C37DD3DFDB5992C193D1F2AA467382
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=linutronix.de; s=2020; t=1739791890;
+ d=linutronix.de; s=2020; t=1739791892;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=yF5RDYaCzF53kAz3Wp6QOwEE2b6TMJ3qzTe/sJpAsgA=;
- b=AurV8WNxYeYLAq4HGty4engjIYgfowmKap7UYxBKgtKCcuKtHsi6VBWkJxbvljJkVM5V1f
- YIwyslWCkzFkaRD3PdRkVkI0ViiAwLN0hlDp0GP+BISXVZMO4tx3eWl/0918Qi5GAR3d52
- Fn1rt1P3xnoMdtZU09WWZW6hKKW40aT70bV8EQ0r3Fn1KQIA0J+wBWr4Y7zUmO8Hb+hl9k
- KL6r4lrVq0uf9uZh61SJuaFMKxOWvUm6R6FZf+uCvBDd7hXkAr/2pJIYjnCJQok8XIWHYv
- JsI0PlvWVnkffn03ybGme3wp6AJZ+0thtCAy7N8/aEde9LO+V37UhEUN8ykiQw==
+ bh=NnIQsRCD/grX1S3QwLY6W0EqtBUu1o4T+F7Ge/iTeZU=;
+ b=Ne+ONELGdzqyxedfUoN7FFV9Yrn3rzpvP32yEF6flYF3RJqVQT9yrl9n26QFrZLdqKtlI8
+ z2NbalBHB0qejyOX9xqxh5uI81xFLHbHjj+IshdO/kjxerLfoqOobg1fjW04GZLTeY1DR4
+ /goIm8OWCdOeN88oOqmnBSMHxvAqX5v6sLQ1wsOW9AMzZ97XlkTb97swp/doB+Z6CLu0Zu
+ xD8o+NnsX3wkXzsmgrPvyLROysUrSJhTjvG6iU3zKeWT2GFCDlznZKUqIe3ZcNKkfeT3+p
+ aH1cuIpEZZH22tCFBp5msrwbNETo2C7t7nxduEZA//Xsxcy+n1xEXbAXCvANGQ==
 X-Mailman-Original-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
- d=linutronix.de; s=2020e; t=1739791890;
+ d=linutronix.de; s=2020e; t=1739791892;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=yF5RDYaCzF53kAz3Wp6QOwEE2b6TMJ3qzTe/sJpAsgA=;
- b=ypTCdvtxkIN2pNjTIGBP6+vgTanqyl0kKwav4kLsJeCBXzzgiJ/13MyBIvqdqEH1jgz/UG
- 5ZWRHzd38aLcqpCg==
+ bh=NnIQsRCD/grX1S3QwLY6W0EqtBUu1o4T+F7Ge/iTeZU=;
+ b=L2FN9Toi6+eds+jTFD8YCWu5snc3Wpj6+kJtBu/mxwfxPGhT4TU3b7RnVexPl9nw/UsCkn
+ IHioMUpGZN2PFwBg==
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=linutronix.de
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key, unprotected) header.d=linutronix.de
- header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=AurV8WNx; 
+ dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de
+ header.a=rsa-sha256 header.s=2020 header.b=Ne+ONELG; 
  dkim=pass header.d=linutronix.de header.i=@linutronix.de
- header.a=ed25519-sha256 header.s=2020e header.b=ypTCdvtx
-Subject: [Intel-wired-lan] [PATCH iwl-next v2 2/4] igb: Link queues to NAPI
- instances
+ header.a=ed25519-sha256 header.s=2020e header.b=L2FN9Toi
+Subject: [Intel-wired-lan] [PATCH iwl-next v2 4/4] igb: Get rid of spurious
+ interrupts
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -129,184 +129,124 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Link queues to NAPI instances via netdev-genl API. This is required to use
-XDP/ZC busy polling. See commit 5ef44b3cb43b ("xsk: Bring back busy polling
-support") for details.
+When running the igc with XDP/ZC in busy polling mode with deferral of hard
+interrupts, interrupts still happen from time to time. That is caused by
+the igb task watchdog which triggers Rx interrupts periodically.
 
-This also allows users to query the info with netlink:
+That mechanism has been introduced to overcome skb/memory allocation
+failures [1]. So the Rx clean functions stop processing the Rx ring in case
+of such failure. The task watchdog triggers Rx interrupts periodically in
+the hope that memory became available in the mean time.
 
-|$ ./tools/net/ynl/pyynl/cli.py --spec Documentation/netlink/specs/netdev.yaml \
-|                               --dump queue-get --json='{"ifindex": 2}'
-|[{'id': 0, 'ifindex': 2, 'napi-id': 8201, 'type': 'rx'},
-| {'id': 1, 'ifindex': 2, 'napi-id': 8202, 'type': 'rx'},
-| {'id': 2, 'ifindex': 2, 'napi-id': 8203, 'type': 'rx'},
-| {'id': 3, 'ifindex': 2, 'napi-id': 8204, 'type': 'rx'},
-| {'id': 0, 'ifindex': 2, 'napi-id': 8201, 'type': 'tx'},
-| {'id': 1, 'ifindex': 2, 'napi-id': 8202, 'type': 'tx'},
-| {'id': 2, 'ifindex': 2, 'napi-id': 8203, 'type': 'tx'},
-| {'id': 3, 'ifindex': 2, 'napi-id': 8204, 'type': 'tx'}]
+The current behavior is undesirable for real time applications, because the
+driver induced Rx interrupts trigger also the softirq processing. However,
+all real time packets should be processed by the application which uses the
+busy polling method.
 
-Add rtnl locking to PCI error handlers, because netif_queue_set_napi()
-requires the lock held.
+Therefore, only trigger the Rx interrupts in case of real allocation
+failures. Introduce a new flag for signaling that condition.
 
-While at __igb_open() use RCT coding style.
+Follow the same logic as in commit 8dcf2c212078 ("igc: Get rid of spurious
+interrupts").
 
+[1] - https://git.kernel.org/pub/scm/linux/kernel/git/tglx/history.git/commit/?id=3be507547e6177e5c808544bd6a2efa2c7f1d436
+
+Reviewed-by: Joe Damato <jdamato@fastly.com>
 Signed-off-by: Kurt Kanzenbach <kurt@linutronix.de>
 ---
- drivers/net/ethernet/intel/igb/igb.h      |  2 ++
- drivers/net/ethernet/intel/igb/igb_main.c | 43 +++++++++++++++++++++++++++----
- drivers/net/ethernet/intel/igb/igb_xsk.c  |  2 ++
- 3 files changed, 42 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/igb/igb.h      |  3 ++-
+ drivers/net/ethernet/intel/igb/igb_main.c | 29 +++++++++++++++++++++++++----
+ drivers/net/ethernet/intel/igb/igb_xsk.c  |  1 +
+ 3 files changed, 28 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
-index 02f340280d20a6f7e32bbd3dfcbb9c1c7b4c6662..79eca385a751bfdafdf384928b6cc1b350b22560 100644
+index 79eca385a751bfdafdf384928b6cc1b350b22560..f34ead8243e9f0176a068299138c5c16f7faab2e 100644
 --- a/drivers/net/ethernet/intel/igb/igb.h
 +++ b/drivers/net/ethernet/intel/igb/igb.h
-@@ -722,6 +722,8 @@ enum igb_boards {
+@@ -391,7 +391,8 @@ enum e1000_ring_flags_t {
+ 	IGB_RING_FLAG_RX_LB_VLAN_BSWAP,
+ 	IGB_RING_FLAG_TX_CTX_IDX,
+ 	IGB_RING_FLAG_TX_DETECT_HANG,
+-	IGB_RING_FLAG_TX_DISABLED
++	IGB_RING_FLAG_TX_DISABLED,
++	IGB_RING_FLAG_RX_ALLOC_FAILED,
+ };
  
- extern char igb_driver_name[];
- 
-+void igb_set_queue_napi(struct igb_adapter *adapter, int q_idx,
-+			struct napi_struct *napi);
- int igb_xmit_xdp_ring(struct igb_adapter *adapter,
- 		      struct igb_ring *ring,
- 		      struct xdp_frame *xdpf);
+ #define ring_uses_large_buffer(ring) \
 diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index d4128d19cc08f62f95682069bb5ed9b8bbbf10cb..6870803a42455aa1d31f39beb027cf282064388f 100644
+index 054376d648da883f35d1dee5f879487b8adfd540..25abe7d8ab400f63ca9b4e87c9b5f2c15316485a 100644
 --- a/drivers/net/ethernet/intel/igb/igb_main.c
 +++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -2099,6 +2099,22 @@ static void igb_check_swap_media(struct igb_adapter *adapter)
- 	wr32(E1000_CTRL_EXT, ctrl_ext);
- }
+@@ -5755,11 +5755,29 @@ static void igb_watchdog_task(struct work_struct *work)
+ 	if (adapter->flags & IGB_FLAG_HAS_MSIX) {
+ 		u32 eics = 0;
  
-+void igb_set_queue_napi(struct igb_adapter *adapter, int vector,
-+			struct napi_struct *napi)
-+{
-+	struct igb_q_vector *q_vector = adapter->q_vector[vector];
+-		for (i = 0; i < adapter->num_q_vectors; i++)
+-			eics |= adapter->q_vector[i]->eims_value;
+-		wr32(E1000_EICS, eics);
++		for (i = 0; i < adapter->num_q_vectors; i++) {
++			struct igb_q_vector *q_vector = adapter->q_vector[i];
++			struct igb_ring *rx_ring;
 +
-+	if (q_vector->rx.ring)
-+		netif_queue_set_napi(adapter->netdev,
-+				     q_vector->rx.ring->queue_index,
-+				     NETDEV_QUEUE_TYPE_RX, napi);
++			if (!q_vector->rx.ring)
++				continue;
 +
-+	if (q_vector->tx.ring)
-+		netif_queue_set_napi(adapter->netdev,
-+				     q_vector->tx.ring->queue_index,
-+				     NETDEV_QUEUE_TYPE_TX, napi);
-+}
++			rx_ring = adapter->rx_ring[q_vector->rx.ring->queue_index];
 +
- /**
-  *  igb_up - Open the interface and prepare it to handle traffic
-  *  @adapter: board private structure
-@@ -2106,6 +2122,7 @@ static void igb_check_swap_media(struct igb_adapter *adapter)
- int igb_up(struct igb_adapter *adapter)
- {
- 	struct e1000_hw *hw = &adapter->hw;
-+	struct napi_struct *napi;
- 	int i;
- 
- 	/* hardware has been reset, we need to reload some things */
-@@ -2113,8 +2130,11 @@ int igb_up(struct igb_adapter *adapter)
- 
- 	clear_bit(__IGB_DOWN, &adapter->state);
- 
--	for (i = 0; i < adapter->num_q_vectors; i++)
--		napi_enable(&(adapter->q_vector[i]->napi));
-+	for (i = 0; i < adapter->num_q_vectors; i++) {
-+		napi = &adapter->q_vector[i]->napi;
-+		napi_enable(napi);
-+		igb_set_queue_napi(adapter, i, napi);
-+	}
- 
- 	if (adapter->flags & IGB_FLAG_HAS_MSIX)
- 		igb_configure_msix(adapter);
-@@ -2184,6 +2204,7 @@ void igb_down(struct igb_adapter *adapter)
- 	for (i = 0; i < adapter->num_q_vectors; i++) {
- 		if (adapter->q_vector[i]) {
- 			napi_synchronize(&adapter->q_vector[i]->napi);
-+			igb_set_queue_napi(adapter, i, NULL);
- 			napi_disable(&adapter->q_vector[i]->napi);
- 		}
++			if (test_bit(IGB_RING_FLAG_RX_ALLOC_FAILED, &rx_ring->flags)) {
++				eics |= q_vector->eims_value;
++				clear_bit(IGB_RING_FLAG_RX_ALLOC_FAILED, &rx_ring->flags);
++			}
++		}
++		if (eics)
++			wr32(E1000_EICS, eics);
+ 	} else {
+-		wr32(E1000_ICS, E1000_ICS_RXDMT0);
++		struct igb_ring *rx_ring = adapter->rx_ring[0];
++
++		if (test_bit(IGB_RING_FLAG_RX_ALLOC_FAILED, &rx_ring->flags)) {
++			clear_bit(IGB_RING_FLAG_RX_ALLOC_FAILED, &rx_ring->flags);
++			wr32(E1000_ICS, E1000_ICS_RXDMT0);
++		}
  	}
-@@ -4116,8 +4137,9 @@ static int igb_sw_init(struct igb_adapter *adapter)
- static int __igb_open(struct net_device *netdev, bool resuming)
- {
- 	struct igb_adapter *adapter = netdev_priv(netdev);
--	struct e1000_hw *hw = &adapter->hw;
- 	struct pci_dev *pdev = adapter->pdev;
-+	struct e1000_hw *hw = &adapter->hw;
-+	struct napi_struct *napi;
- 	int err;
- 	int i;
  
-@@ -4169,8 +4191,11 @@ static int __igb_open(struct net_device *netdev, bool resuming)
- 	/* From here on the code is the same as igb_up() */
- 	clear_bit(__IGB_DOWN, &adapter->state);
- 
--	for (i = 0; i < adapter->num_q_vectors; i++)
--		napi_enable(&(adapter->q_vector[i]->napi));
-+	for (i = 0; i < adapter->num_q_vectors; i++) {
-+		napi = &adapter->q_vector[i]->napi;
-+		napi_enable(napi);
-+		igb_set_queue_napi(adapter, i, napi);
-+	}
- 
- 	/* Clear any pending interrupts. */
- 	rd32(E1000_TSICR);
-@@ -9677,8 +9702,11 @@ static pci_ers_result_t igb_io_error_detected(struct pci_dev *pdev,
- 	if (state == pci_channel_io_perm_failure)
- 		return PCI_ERS_RESULT_DISCONNECT;
- 
-+	rtnl_lock();
- 	if (netif_running(netdev))
- 		igb_down(adapter);
-+	rtnl_unlock();
-+
- 	pci_disable_device(pdev);
- 
- 	/* Request a slot reset. */
-@@ -9737,16 +9765,21 @@ static void igb_io_resume(struct pci_dev *pdev)
- 	struct net_device *netdev = pci_get_drvdata(pdev);
- 	struct igb_adapter *adapter = netdev_priv(netdev);
- 
-+	rtnl_lock();
- 	if (netif_running(netdev)) {
- 		if (!test_bit(__IGB_DOWN, &adapter->state)) {
- 			dev_dbg(&pdev->dev, "Resuming from non-fatal error, do nothing.\n");
-+			rtnl_unlock();
- 			return;
+ 	igb_spoof_check(adapter);
+@@ -9090,6 +9108,7 @@ static int igb_clean_rx_irq(struct igb_q_vector *q_vector, const int budget)
+ 		if (!xdp_res && !skb) {
+ 			rx_ring->rx_stats.alloc_failed++;
+ 			rx_buffer->pagecnt_bias++;
++			set_bit(IGB_RING_FLAG_RX_ALLOC_FAILED, &rx_ring->flags);
+ 			break;
  		}
-+
- 		if (igb_up(adapter)) {
- 			dev_err(&pdev->dev, "igb_up failed after reset\n");
-+			rtnl_unlock();
- 			return;
- 		}
+ 
+@@ -9149,6 +9168,7 @@ static bool igb_alloc_mapped_page(struct igb_ring *rx_ring,
+ 	page = dev_alloc_pages(igb_rx_pg_order(rx_ring));
+ 	if (unlikely(!page)) {
+ 		rx_ring->rx_stats.alloc_failed++;
++		set_bit(IGB_RING_FLAG_RX_ALLOC_FAILED, &rx_ring->flags);
+ 		return false;
  	}
-+	rtnl_unlock();
  
- 	netif_device_attach(netdev);
+@@ -9165,6 +9185,7 @@ static bool igb_alloc_mapped_page(struct igb_ring *rx_ring,
+ 		__free_pages(page, igb_rx_pg_order(rx_ring));
+ 
+ 		rx_ring->rx_stats.alloc_failed++;
++		set_bit(IGB_RING_FLAG_RX_ALLOC_FAILED, &rx_ring->flags);
+ 		return false;
+ 	}
  
 diff --git a/drivers/net/ethernet/intel/igb/igb_xsk.c b/drivers/net/ethernet/intel/igb/igb_xsk.c
-index 157d43787fa0b55a74714f69e9e7903b695fcf0a..a5ad090dfe94b6afc8194fe39d28cdd51c7067b0 100644
+index a5ad090dfe94b6afc8194fe39d28cdd51c7067b0..47344ee1ed7f29bd68055485702a87df3b8922e8 100644
 --- a/drivers/net/ethernet/intel/igb/igb_xsk.c
 +++ b/drivers/net/ethernet/intel/igb/igb_xsk.c
-@@ -45,6 +45,7 @@ static void igb_txrx_ring_disable(struct igb_adapter *adapter, u16 qid)
- 	synchronize_net();
+@@ -417,6 +417,7 @@ int igb_clean_rx_irq_zc(struct igb_q_vector *q_vector,
+ 		/* exit if we failed to retrieve a buffer */
+ 		if (!skb) {
+ 			rx_ring->rx_stats.alloc_failed++;
++			set_bit(IGB_RING_FLAG_RX_ALLOC_FAILED, &rx_ring->flags);
+ 			break;
+ 		}
  
- 	/* Rx/Tx share the same napi context. */
-+	igb_set_queue_napi(adapter, qid, NULL);
- 	napi_disable(&rx_ring->q_vector->napi);
- 
- 	igb_clean_tx_ring(tx_ring);
-@@ -78,6 +79,7 @@ static void igb_txrx_ring_enable(struct igb_adapter *adapter, u16 qid)
- 
- 	/* Rx/Tx share the same napi context. */
- 	napi_enable(&rx_ring->q_vector->napi);
-+	igb_set_queue_napi(adapter, qid, &rx_ring->q_vector->napi);
- }
- 
- struct xsk_buff_pool *igb_xsk_pool(struct igb_adapter *adapter,
 
 -- 
 2.39.5
