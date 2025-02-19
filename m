@@ -4,133 +4,104 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2DB7AC021B1
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 19 Feb 2025 18:31:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EDDAFC021AA
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 19 Feb 2025 18:32:03 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 5039A8403E;
-	Wed, 19 Feb 2025 18:29:49 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id EC3618476A;
+	Wed, 19 Feb 2025 18:30:32 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id NGVxLy9yyHEd; Wed, 19 Feb 2025 18:29:48 +0000 (UTC)
+ id gOLpfRi4Rbje; Wed, 19 Feb 2025 18:30:32 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 1178680B68
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 6DBDF84D89
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1739989766;
-	bh=BrMRw+Mc/8Jx430eNqd73IrlG76BWV0j9faRomGwI8o=;
-	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=wfPHoqI7pcicD3qii28XtMj+P7+kAEEBwK1DObEQQOmqIHbr4cxwblkllkXOnGFeT
-	 gT6/FY0KPC5E71n6hJ8DjEBjSetmCCHORBN8gMuzVL1S9wP8bR2L4KJotJyIuwettT
-	 mLi6bDF1soz2eJH7xdh65OXDcQ426z9PSaZc5h3Y/fQVPIsk3RPMAWuOe6bVVY/kjd
-	 hcw1kAbgWs612HsBnPapHg5bzLgVaw9fpI4/W9WTMGXLcaLYVtFGMJu2P9pwoZLE06
-	 9IXi2fyd8H/cNtEz7OxI6IZ9KNIgGAqOi3lNxH+sH26jmPYPahTk8VtXvLngx5D54U
-	 oPeB0zcwlnUFA==
+	s=default; t=1739989599;
+	bh=zS5lBfnZIbCBDY/vb1qXtAT5T5oykbh/YMOcv30/j0E=;
+	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=hIf/cBCEDDOJan8jM1/yHS8Oe6tP0hi7OseZ0JigzdcL09cyL5EDSPLyTSJXSyTOb
+	 mkovyLhUX+jRL/u4BWhfQf9x0tFF+4QAeAyvIaYILL3QpChkvMh2vrEjVdOQ5agw7e
+	 Rm7eoD0Jquj/euYIT/4OT6JK1GamOtW1c9KKGNE55wX2DYBwmTFhoGsz7yibL24nmn
+	 FJjzX9G9AAaUdFKyc2tzK9ouoW+GHDwAMY0O6Ax6WNcEVHPum5EC67OCLV7XUXswEc
+	 8wjJU4Z8mLt8/iVD77qBdBSrYTkrEnnpGhvAb0ms0Q0vOsu0NN/OARo9x9yp1h/OHs
+	 2QinfV3Xhzfrg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 1178680B68;
-	Wed, 19 Feb 2025 18:29:26 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id EBCDC940
- for <intel-wired-lan@lists.osuosl.org>; Wed, 19 Feb 2025 17:51:47 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 6DBDF84D89;
+	Wed, 19 Feb 2025 18:26:39 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 18510CF
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 19 Feb 2025 17:47:39 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id E59504134F
- for <intel-wired-lan@lists.osuosl.org>; Wed, 19 Feb 2025 17:51:47 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 228FE81F31
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 19 Feb 2025 17:47:19 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id rfhIWD-azcNA for <intel-wired-lan@lists.osuosl.org>;
- Wed, 19 Feb 2025 17:51:46 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2607:f8b0:4864:20::731; helo=mail-qk1-x731.google.com;
- envelope-from=jdamato@fastly.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 47E5641342
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 47E5641342
-Received: from mail-qk1-x731.google.com (mail-qk1-x731.google.com
- [IPv6:2607:f8b0:4864:20::731])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 47E5641342
- for <intel-wired-lan@lists.osuosl.org>; Wed, 19 Feb 2025 17:51:46 +0000 (UTC)
-Received: by mail-qk1-x731.google.com with SMTP id
- af79cd13be357-7c0b0ca6742so4138585a.0
- for <intel-wired-lan@lists.osuosl.org>; Wed, 19 Feb 2025 09:51:46 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20230601; t=1739987505; x=1740592305;
- h=in-reply-to:content-disposition:mime-version:references
- :mail-followup-to:message-id:subject:cc:to:from:date
- :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
- bh=BrMRw+Mc/8Jx430eNqd73IrlG76BWV0j9faRomGwI8o=;
- b=mWDHE7f4ttXSZDStt7QrLSuhH+cwBWub0OUU9h44kYXAG1iyQmx7TBt8OYidAj0vo5
- I5SUCCZ43QrdkXxJ2/1bxttiey93Cwrf5Kc4BPBCVOXt1XJG6btjlZ0xSy84FYaBaUVj
- tU0jl+nx5M5FjRVUY6DRTQobPJ2yEHyWjjtRbgdC0wdC7MQ3G+jozou97epVzlmZTmM7
- BrO/w/B+23wqrS5Tin8ejXvDXTzCkSWdp+w5DUcq5j5yXBQhge6Fjkb78/bJtxoJbnNS
- gE0dtudQfBBxEmSqV3VpU9fveODDbRbINw+NzdCDqR9IJT2Y8KChqtxpFdixddpehKTJ
- srnA==
-X-Forwarded-Encrypted: i=1;
- AJvYcCXUBccXIOvc1hldOLAk+rIcIaUnANBqtzh/1Ixd+1s00d+gMTIQbg/u5bqFKdOPOAGa287HglvCHqEPdeEZM4Q=@lists.osuosl.org
-X-Gm-Message-State: AOJu0YzmP5nBtZIVtUmxNT4jaPPqJbH740qVvyA7TXy3npG8dWZ+py9f
- 1JNlRBQSzYXjF9oXkG2L3FU21zK38g40xTcbKcLZTgfMdyAxn1z8mmiDOmbGavE=
-X-Gm-Gg: ASbGncsRxAbTaruvz37nm6nWJqPERycpfiRtgIdcIFRmQS4tslXEto/R0Ak6qVzJxbG
- DmxIJ0n+iLnJmxNsNA3uaGsm194DW07yE9pwN5tbguN+uW9fEZotmWCrRi782K2NDwejSONYUZo
- VxMO8qBK+S1Kr2Ygg5tztMKsyp6UDoAXo+0Madx8DTNGfBy/rSmL9rKaGkh3YN71TEQ+CU/RaLu
- NJJXSng+qp0fhXi3cFI24bMhDMDoXhAgYo3DvkFoIdj4RJoRXnQWgMTxBAHUFqR0HxIOIZq4kA5
- r9Qx63S2gXPBmecQXG63pLvvpxXZfPFdi4Y+13royMHqZdfZHEnk3A==
-X-Google-Smtp-Source: AGHT+IHApQu5GuOGRlxUUed1aJja9KJUXPqMCjqow4lDfmqrja11JuARF6fyOdqZ0NDKDqPkBA++Rw==
-X-Received: by 2002:a05:620a:414b:b0:7c0:b1aa:ba5a with SMTP id
- af79cd13be357-7c0b527404amr648255885a.33.1739987504799; 
- Wed, 19 Feb 2025 09:51:44 -0800 (PST)
-Received: from LQ3V64L9R2 (ool-44c5a22e.dyn.optonline.net. [68.197.162.46])
- by smtp.gmail.com with ESMTPSA id
- 6a1803df08f44-6e65d7a439esm77203766d6.67.2025.02.19.09.51.43
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 19 Feb 2025 09:51:44 -0800 (PST)
-Date: Wed, 19 Feb 2025 12:51:42 -0500
-From: Joe Damato <jdamato@fastly.com>
-To: Kurt Kanzenbach <kurt@linutronix.de>
-Cc: Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Andrew Lunn <andrew+netdev@lunn.ch>,
- "David S. Miller" <davem@davemloft.net>,
- Eric Dumazet <edumazet@google.com>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
- Gerhard Engleder <gerhard@engleder-embedded.com>,
- intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org
-Message-ID: <Z7YaLuho0hXL7Jb1@LQ3V64L9R2>
-Mail-Followup-To: Joe Damato <jdamato@fastly.com>,
- Kurt Kanzenbach <kurt@linutronix.de>,
- Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Andrew Lunn <andrew+netdev@lunn.ch>,
- "David S. Miller" <davem@davemloft.net>,
- Eric Dumazet <edumazet@google.com>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
- Gerhard Engleder <gerhard@engleder-embedded.com>,
- intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org
-References: <20250217-igb_irq-v2-0-4cb502049ac2@linutronix.de>
- <Z7T5G9ZQRBb4EtdG@LQ3V64L9R2> <Z7UDCSckkK7J30oP@LQ3V64L9R2>
- <87jz9mghfr.fsf@kurt.kurt.home>
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id RCAg5R78O6F3 for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 19 Feb 2025 17:47:18 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.11;
+ helo=mgamail.intel.com; envelope-from=przemyslaw.kitszel@intel.com;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 6AD99844AF
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 6AD99844AF
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.11])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 6AD99844AF
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 19 Feb 2025 17:46:12 +0000 (UTC)
+X-CSE-ConnectionGUID: KfK2fNigSgeF2cLnGbfm2g==
+X-CSE-MsgGUID: DcrJMQKaSr+uS269C7sInw==
+X-IronPort-AV: E=McAfee;i="6700,10204,11350"; a="50952991"
+X-IronPort-AV: E=Sophos;i="6.13,299,1732608000"; d="scan'208";a="50952991"
+Received: from fmviesa005.fm.intel.com ([10.60.135.145])
+ by orvoesa103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 19 Feb 2025 09:46:12 -0800
+X-CSE-ConnectionGUID: JfsQ4rI5SmOgRwqeVyN97g==
+X-CSE-MsgGUID: WUiLLwANSHyTznJPs8d55Q==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.12,224,1728975600"; d="scan'208";a="119427318"
+Received: from irvmail002.ir.intel.com ([10.43.11.120])
+ by fmviesa005.fm.intel.com with ESMTP; 19 Feb 2025 08:44:32 -0800
+Received: from pkitszel-desk.intel.com (unknown [10.245.246.109])
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id C85EE33E9A;
+ Wed, 19 Feb 2025 16:44:16 +0000 (GMT)
+From: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+To: intel-wired-lan@lists.osuosl.org, Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Jiri Pirko <jiri@resnulli.us>, Jakub Kicinski <kuba@kernel.org>,
+ Cosmin Ratiu <cratiu@nvidia.com>, Tariq Toukan <tariqt@nvidia.com>
+Cc: netdev@vger.kernel.org, Konrad Knitter <konrad.knitter@intel.com>,
+ Jacob Keller <jacob.e.keller@intel.com>, davem@davemloft.net,
+ Eric Dumazet <edumazet@google.com>, Paolo Abeni <pabeni@redhat.com>,
+ Andrew Lunn <andrew@lunn.ch>, linux-kernel@vger.kernel.org,
+ ITP Upstream <nxne.cnse.osdt.itp.upstreaming@intel.com>,
+ Carolina Jubran <cjubran@nvidia.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Date: Wed, 19 Feb 2025 17:32:53 +0100
+Message-ID: <20250219164410.35665-1-przemyslaw.kitszel@intel.com>
+X-Mailer: git-send-email 2.46.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87jz9mghfr.fsf@kurt.kurt.home>
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=fastly.com; s=google; t=1739987505; x=1740592305; darn=lists.osuosl.org;
- h=in-reply-to:content-disposition:mime-version:references
- :mail-followup-to:message-id:subject:cc:to:from:date:from:to:cc
- :subject:date:message-id:reply-to;
- bh=BrMRw+Mc/8Jx430eNqd73IrlG76BWV0j9faRomGwI8o=;
- b=VSZnVGLE8m1qt1Hoae46J6GzMiu6cnSI9NJSGjkH53EnTpBsJs9cJskXZyqlHvmCQ2
- JaSfGuOIYrWc3RvKTe/UuDnxqNEs4DrpDhRihRrDAdr/z+DDlVtgzzttWsJBgY+Prc+d
- R2oCMoWf+Q6IMv4/Id4HI4wmoTuPTPElhiTjE=
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dmarc=pass (p=reject dis=none)
- header.from=fastly.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (1024-bit key,
- unprotected) header.d=fastly.com header.i=@fastly.com header.a=rsa-sha256
- header.s=google header.b=VSZnVGLE
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next v2 0/4] igb: XDP/ZC follow up
+Content-Transfer-Encoding: 8bit
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1739987174; x=1771523174;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=OqS1vKlIpdTVaIkmp8i1OWbEscx84902VNdjPoE0Guk=;
+ b=dAbnnDd3otoD8FwNLtptNQPPQboY64TMtCTi93Er76QLqYwCyeCUEFdH
+ sn0USV2E3WCHuzFO3OMq8KVUWLUa6N+SFoUJamTNLRKiEXxoLGw/nXqQ/
+ O7MT5LMRUr+AZxAJttPHicJpbl3Id/hauu/4ljweBt9z4aSxAJHgUV/gA
+ /CNkImRk3Lu01ExeB0c4rizjd6l10dGF0/qAZdz8JkIp1Xm205gUFf0VB
+ 2axl+ZEXSWOkJEJKs4h0Z1UbBFKYq0FtS+zhLAHPWq2rC1Dw2swGVIebM
+ kv11SIBV+4Kz7CCSndSXBqFT2/gwVQ0sFeHGmONUMo0ayiFG0BB1rNXZB
+ g==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=intel.com
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=dAbnnDd3
+Subject: [Intel-wired-lan] [RFC net-next v2 0/2] devlink: whole-device,
+ resource .occ_set()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -146,101 +117,28 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Wed, Feb 19, 2025 at 03:03:36PM +0100, Kurt Kanzenbach wrote:
-> On Tue Feb 18 2025, Joe Damato wrote:
-> > On Tue, Feb 18, 2025 at 04:18:19PM -0500, Joe Damato wrote:
-> >> On Mon, Feb 17, 2025 at 12:31:20PM +0100, Kurt Kanzenbach wrote:
-> >> > This is a follow up for the igb XDP/ZC implementation. The first two 
-> >> > patches link the IRQs and queues to NAPI instances. This is required to 
-> >> > bring back the XDP/ZC busy polling support. The last patch removes 
-> >> > undesired IRQs (injected via igb watchdog) while busy polling with 
-> >> > napi_defer_hard_irqs and gro_flush_timeout set.
-> >> > 
-> >> > Signed-off-by: Kurt Kanzenbach <kurt@linutronix.de>
-> >> > ---
-> >> > Changes in v2:
-> >> > - Take RTNL lock in PCI error handlers (Joe)
-> >> > - Fix typo in commit message (Gerhard)
-> >> > - Use netif_napi_add_config() (Joe)
-> >> > - Link to v1: https://lore.kernel.org/r/20250210-igb_irq-v1-0-bde078cdb9df@linutronix.de
-> >> 
-> >> Thanks for sending a v2.
-> >> 
-> >> My comment from the previous series still stands, which simply that
-> >> I have no idea if the maintainers will accept changes using this API
-> >> or prefer to wait until Stanislav's work [1] is completed to remove
-> >> the RTNL requirement from this API altogether.
-> >
-> > Also, may be worth running the newly added XSK test with the NETIF
-> > env var set to the igb device? Assuming eth0 is your igb device:
-> >
-> >   NETIF=eth0 ./tools/testing/selftests/drivers/net/queues.py
-> >
-> > should output:
-> >
-> >   KTAP version 1
-> >   1..4
-> >   ok 1 queues.get_queues
-> >   ok 2 queues.addremove_queues
-> >   ok 3 queues.check_down
-> >   ok 4 queues.check_xdp
-> >   # Totals: pass:4 fail:0 xfail:0 xpass:0 skip:0 error:0
-> >
-> > Note the check_xdp line above.
-> >
-> 
-> Sure, why not. Seems to work.
 
-Thanks for testing it.
- 
-> |root@apl1:~/linux# uname -a
-> |Linux apl1 6.14.0-rc2+ #2 SMP PREEMPT_RT Wed Feb 19 14:41:23 CET 2025 x86_64 GNU/Linux
-> |root@apl1:~/linux# NETIF=enp2s0 ./tools/testing/selftests/drivers/net/queues.py
-> |KTAP version 1
-> |1..4
-> |ok 1 queues.get_queues
-> |ok 2 queues.addremove_queues
-> |ok 3 queues.check_down
-> |ok 4 queues.check_xdp
-> |# Totals: pass:4 fail:0 xfail:0 xpass:0 skip:0 error:0
-> 
-> Has this xsk netlink attribute been added fairly recently? The test
-> failed on my kernel from a few days ago (kernel from today works).
+I'm working on ice+iavf changes that utilize the two devlink patches
+of this RFC series. The two are related in that I will group them anyway
+for my actual submission.
 
-Yes, it was just merged, see the commit date here:
+Patch 1: add an option for drivers like ice (devlink instance per PF)
+	to add a whole-device devlink instance, that wraps them together.
 
-https://git.kernel.org/pub/scm/linux/kernel/git/netdev/net-next.git/commit/?id=788e52e2b66844301fe09f3372d46d8c62f6ebe4
+Patch 2: add resource occupation setter and a (better) mode of resource
+	control for users
 
-> I think there's room for improvement though:
-> 
-> |root@apl1:~/linux# NETIF=enp2s0 ./tools/testing/selftests/drivers/net/queues.py
-> |KTAP version 1
-> |1..4
-> |ok 1 queues.get_queues
-> |ok 2 queues.addremove_queues
-> |ok 3 queues.check_down
-> |# Exception| Traceback (most recent call last):
-> |# Exception|   File "/root/linux/tools/testing/selftests/net/lib/py/ksft.py", line 218, in ksft_run
-> |# Exception|     case(*args)
-> |# Exception|   File "/root/linux/./tools/testing/selftests/drivers/net/queues.py", line 53, in check_xdp
-> |# Exception|     ksft_eq(q['xsk'], {})
-> |# Exception|             ~^^^^^^^
-> |# Exception| KeyError: 'xsk'
-> |not ok 4 queues.check_xdp
-> |# Totals: pass:3 fail:1 xfail:0 xpass:0 skip:0 error:0
-> 
-> I'd assume this shouldn't be a Python exception, but rather say
-> something like "Expected xsk attribute, but none found. Fix the driver!" :)
-> 
-> While at it would you mind to add a newline to the xdp_helper usage
-> line (and fix the one typo)?
+Przemek Kitszel (2):
+  devlink: add whole device devlink instance
+  devlink: give user option to allocate resources
 
-Jakub currently has a series out to change the test a bit and
-improve it overall, see:
+ net/devlink/devl_internal.h | 14 +++---
+ net/devlink/core.c          | 58 ++++++++++++++++++-----
+ net/devlink/netlink.c       |  4 +-
+ net/devlink/port.c          |  4 +-
+ net/devlink/resource.c      | 94 +++++++++++++++++++++++++++++--------
+ 5 files changed, 132 insertions(+), 42 deletions(-)
 
-  https://lore.kernel.org/netdev/20250218195048.74692-1-kuba@kernel.org/
+-- 
+2.46.0
 
-It looks like your concerns (the typo, newline, and better error)
-may still remain. If so, I can submit a follow-up once his work has
-been merged to address your concerns - unless you'd like to do
-that?
