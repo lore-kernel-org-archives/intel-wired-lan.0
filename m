@@ -1,103 +1,109 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BA0E6C021AA
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 19 Feb 2025 17:29:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D910EC021B0
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 19 Feb 2025 18:30:59 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 605204F137;
-	Wed, 19 Feb 2025 17:21:17 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 9589F83FAF;
+	Wed, 19 Feb 2025 18:29:43 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id gxCXJ0SLqK-7; Wed, 19 Feb 2025 17:21:16 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id FQ8UzsHkrtyW; Wed, 19 Feb 2025 18:29:41 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org BB78E5657A
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9D20384C1B
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1739982506;
-	bh=6FOZ/bBzD4HMK7CgshYavLpWPqYx8vrkrfYDF9nQrEI=;
-	h=Date:To:Cc:From:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=6TLR691tZ18VIxclgT//xx8MWL0mOsiWAxLZsvNXVQRYGbwx+f1Lyew+K8oUST9kS
-	 9njQrhtRM9SWVekXzErz7JJ9XPUiat/Lwbg52WVXNheXBQrQY9CzC4ggwJZJheXtMZ
-	 Ih3NcEeaxMHQMJ2s075Hwxm19jNbcqwMvLLWO9irPIrGyFr2lfclO3pWxasfrd1aI1
-	 haXXCLcVW0hgxWG/yFC49O3rrxgq+7QMrdyF2r8o+PWBu+WE3aBntz/wBKK7NFD8NB
-	 uFemqU+Nhx+gjbKDRAlp5s3RQiEJy6jvF8tv95ypyJvch7tTqTxrEbypI2fz3O8IEl
-	 qWM5OpXUpw1VQ==
+	s=default; t=1739989588;
+	bh=WZJikuHpqhZOJYKYb5pjOJjk4T9IH1+qomNOC4xETjY=;
+	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=gfmfaM0vfK1L1ThGYKUUDYWQHOJeecoueOJoVfZGtFGmZdeYtQzNVeFaxD4X9dpm7
+	 PqSYqmnckWkvVMUNma/CFuDz3h5tmxyHuR3+ioGDT8ddMTGGEaHYsliVXNFRzqAiWt
+	 0PJEfRQhGrZPida85rwjmCtbE/jQUYV4l6jC8okvTGpqYdGpNZvLj7D0cUmplNjXsc
+	 dNRKyeOrZUHth/E+Xfcatq6LEyYH3FmF3OHwT2N33MN497uz4rttWrKzCAcmTvXET7
+	 i5A5yfyrNpw1nfFnb9/U1xKPnACgU2n+Zrz3jCzLiZQVhZGKFdt9Vl4oppcKFUq+86
+	 wxpx1MrfVx21A==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id BB78E5657A;
-	Wed, 19 Feb 2025 16:28:25 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id 11405127
- for <intel-wired-lan@lists.osuosl.org>; Wed, 19 Feb 2025 13:56:31 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 9D20384C1B;
+	Wed, 19 Feb 2025 18:26:28 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 19CC9940
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 19 Feb 2025 17:47:28 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 30BCC53D9B
- for <intel-wired-lan@lists.osuosl.org>; Wed, 19 Feb 2025 13:49:30 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 54E0780AFB
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 19 Feb 2025 17:47:16 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Mi7o3g9Fh7Tx for <intel-wired-lan@lists.osuosl.org>;
- Wed, 19 Feb 2025 13:49:28 +0000 (UTC)
-X-Greylist: delayed 4203 seconds by postgrey-1.37 at util1.osuosl.org;
- Wed, 19 Feb 2025 13:44:02 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 91E6453BD2
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 91E6453BD2
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=46.105.59.63;
- helo=4.mo575.mail-out.ovh.net; envelope-from=mateusz.kusiak@3mdeb.com;
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 2RksMh33ev5q for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 19 Feb 2025 17:47:15 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.11;
+ helo=mgamail.intel.com; envelope-from=przemyslaw.kitszel@intel.com;
  receiver=<UNKNOWN> 
-Received: from 4.mo575.mail-out.ovh.net (4.mo575.mail-out.ovh.net
- [46.105.59.63])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 91E6453BD2
- for <intel-wired-lan@osuosl.org>; Wed, 19 Feb 2025 13:44:02 +0000 (UTC)
-Received: from director8.ghost.mail-out.ovh.net (unknown [10.109.148.200])
- by mo575.mail-out.ovh.net (Postfix) with ESMTP id 4YyYh6560nz1rWH
- for <intel-wired-lan@osuosl.org>; Wed, 19 Feb 2025 11:14:46 +0000 (UTC)
-Received: from ghost-submission-5b5ff79f4f-tmzkz (unknown [10.110.113.129])
- by director8.ghost.mail-out.ovh.net (Postfix) with ESMTPS id 3CD3F1FEA4;
- Wed, 19 Feb 2025 11:14:46 +0000 (UTC)
-Received: from 3mdeb.com ([37.59.142.113])
- by ghost-submission-5b5ff79f4f-tmzkz with ESMTPSA
- id 6uZpOyW9tWdNuQAA35ccpw
- (envelope-from <mateusz.kusiak@3mdeb.com>); Wed, 19 Feb 2025 11:14:46 +0000
-X-OVh-ClientIp: 213.192.77.249
-Message-ID: <9238ba37-583e-4a65-be27-0473cd682bf1@3mdeb.com>
-Date: Wed, 19 Feb 2025 12:14:45 +0100
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 30A0F844D0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 30A0F844D0
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.11])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 30A0F844D0
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 19 Feb 2025 17:46:18 +0000 (UTC)
+X-CSE-ConnectionGUID: P1fk/s5PSz+KU/68U6Lo7A==
+X-CSE-MsgGUID: 1AEM0DhDTyKG4JaDG2VoKw==
+X-IronPort-AV: E=McAfee;i="6700,10204,11350"; a="50953012"
+X-IronPort-AV: E=Sophos;i="6.13,299,1732608000"; d="scan'208";a="50953012"
+Received: from fmviesa005.fm.intel.com ([10.60.135.145])
+ by orvoesa103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 19 Feb 2025 09:46:14 -0800
+X-CSE-ConnectionGUID: bQm2QqyNSUiunKFvJuH9ZQ==
+X-CSE-MsgGUID: VIGPr0GVSWuUJ9IY1w87TA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.12,224,1728975600"; d="scan'208";a="119427316"
+Received: from irvmail002.ir.intel.com ([10.43.11.120])
+ by fmviesa005.fm.intel.com with ESMTP; 19 Feb 2025 08:44:32 -0800
+Received: from pkitszel-desk.intel.com (unknown [10.245.246.109])
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id 4F7EC34301;
+ Wed, 19 Feb 2025 16:44:19 +0000 (GMT)
+From: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+To: intel-wired-lan@lists.osuosl.org, Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Jiri Pirko <jiri@resnulli.us>, Jakub Kicinski <kuba@kernel.org>,
+ Cosmin Ratiu <cratiu@nvidia.com>, Tariq Toukan <tariqt@nvidia.com>
+Cc: netdev@vger.kernel.org, Konrad Knitter <konrad.knitter@intel.com>,
+ Jacob Keller <jacob.e.keller@intel.com>, davem@davemloft.net,
+ Eric Dumazet <edumazet@google.com>, Paolo Abeni <pabeni@redhat.com>,
+ Andrew Lunn <andrew@lunn.ch>, linux-kernel@vger.kernel.org,
+ ITP Upstream <nxne.cnse.osdt.itp.upstreaming@intel.com>,
+ Carolina Jubran <cjubran@nvidia.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Date: Wed, 19 Feb 2025 17:32:54 +0100
+Message-ID: <20250219164410.35665-2-przemyslaw.kitszel@intel.com>
+X-Mailer: git-send-email 2.46.0
+In-Reply-To: <20250219164410.35665-1-przemyslaw.kitszel@intel.com>
+References: <20250219164410.35665-1-przemyslaw.kitszel@intel.com>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Content-Language: en-US
-To: intel-wired-lan@osuosl.org
-Cc: Maciej Pijanowski <maciej.pijanowski@3mdeb.com>
-From: Mateusz Kusiak <mateusz.kusiak@3mdeb.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Ovh-Tracer-Id: 13629581323767483176
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeefvddrtddtgdeigedtlecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefkffggfgfvvefhufgtgfesthejredttddvjeenucfhrhhomhepofgrthgvuhhsiicumfhushhirghkuceomhgrthgvuhhsiidrkhhushhirghkseefmhguvggsrdgtohhmqeenucggtffrrghtthgvrhhnpeeujedvfedugfeihfefffelleekgeejteetvdegffegtdfhtddtfefgudeggeetleenucffohhmrghinhepfehmuggvsgdrtghomhenucfkphepuddvjedrtddrtddruddpvddufedrudelvddrjeejrddvgeelpdefjedrheelrddugedvrdduudefnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepuddvjedrtddrtddruddpmhgrihhlfhhrohhmpehmrghtvghushiirdhkuhhsihgrkhesfehmuggvsgdrtghomhdpnhgspghrtghpthhtohepuddprhgtphhtthhopehinhhtvghlqdifihhrvgguqdhlrghnsehoshhuohhslhdrohhrghdpoffvtefjohhsthepmhhoheejhegmpdhmohguvgepshhmthhpohhuth
-X-Mailman-Approved-At: Wed, 19 Feb 2025 16:07:06 +0000
-X-Mailman-Original-DKIM-Signature: a=rsa-sha256;
- bh=6FOZ/bBzD4HMK7CgshYavLpWPqYx8vrkrfYDF9nQrEI=; 
- c=relaxed/relaxed; d=3mdeb.com; h=From; s=ovhmo3617313-selector1;
- t=1739963686; v=1;
- b=E3qi2N1CFECI0tmb82JMmbbvjvamEFsWhBLcyX3SoB9bpbujwTpGLqmLzGyGnFfENYwDEWGj
- /XNccv6p02fyJpiGrmx57+vHtx2WMvxzGrAwaxuYlPWjY9NvYJ7ni4h/mPj2r7xbRzF/y98Jefc
- gJSCpMYZptJLYwHHl3fckzESGm1ti0/cUT42h/HbuDO8qaaTsyYLGzjCKjX+vu7W8kWnTDCfCcv
- +TxEemjclqP7S9V+ZwsgmP8IsRc404Gp1K8v96PmMmtD+AYRSzAwJV2LXt70p4DFBNER3evyU+q
- 0A4xmC8smz0A4CadKGkuVNXDMIQgeGSkKpwYcKkfyLb7A==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dmarc=none (p=none dis=none)
- header.from=3mdeb.com
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=3mdeb.com header.i=@3mdeb.com header.a=rsa-sha256
- header.s=ovhmo3617313-selector1 header.b=E3qi2N1C
-X-Mailman-Original-Authentication-Results: garm.ovh; auth=pass
- (GARM-113S007a4f2172a-e0ca-4d12-a78f-ac16b1736025,
- 9BE4DDA8B12D978CBF4F9309178B95F18A4E447B) smtp.auth=mateusz.kusiak@3mdeb.com
-Subject: [Intel-wired-lan] igc: forcing speed configuration (no auto-neg) on
- I255
+Content-Transfer-Encoding: 8bit
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1739987178; x=1771523178;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=v0mV9d9F4bC7WQnGYcrOFt0VFmgb9KQ5yKqZlvACNA8=;
+ b=TwkYkZG/ppyBqGV3taEP9ggevpsrvSSMVZxn1ujq4r/wgI3JwbzEHDPy
+ CTAcuT0X5TRZMilRTbWG7VTW/nbpsvvQWZW3UZ8VdCyVjflx5rgRxKIpN
+ R7nTEOqHkGvqAKjCmrzwUtrGMFU3HPrBIX0Yzu8UaWcfIbL++UDrm1tCM
+ JNNEE6o4T0ZFwXZdsujnSvzpSw7IlIIMXFAjLLmq6kI2CH/FneaviFYGN
+ 6xJSLXoCIG4j4RIsK3DCVF4NuUkw+FMKlW8AdPQuP308cxwFjWt1u9lIf
+ 4OglwmAwp9M3GY8uN+E8BTz65Mn0oa6v7z3gvd/09eJ+xIagXRMEkT/m2
+ w==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=intel.com
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=TwkYkZG/
+Subject: [Intel-wired-lan] [RFC net-next v2 1/2] devlink: add whole device
+ devlink instance
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -113,18 +119,228 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Hi all,
-I've done research regarding igc driver and I225 ethernet controller. I 
-established that neither igc driver nor hardware (I255) support forced speed 
-configuration (disabling auto-negotiation to be exact). Could anybody please 
-confirm this?
-Is there a known, particular reason for it?
+Add a support for whole device devlink instance. Intented as a entity
+over all PF devices on given physical device.
 
-Thanks,
-Mateusz
+In case of ice driver we have multiple PF devices (with their devlink
+dev representation), that have separate drivers loaded. However those
+still do share lots of resources due to being the on same HW. Examples
+include PTP clock and RSS LUT. Historically such stuff was assigned to
+PF0, but that was both not clear and not working well. Now such stuff
+is moved to be covered into struct ice_adapter, there is just one instance
+of such per HW.
 
+This patch adds a devlink instance that corresponds to that ice_adapter,
+to allow arbitrage over resources (as RSS LUT) via it (further in the
+series (RFC NOTE: stripped out so far)).
+
+Thanks to Wojciech Drewek for very nice naming of the devlink instance:
+PF0:		pci/0000:00:18.0
+whole-dev:	pci/0000:00:18
+But I made this a param for now (driver is free to pass just "whole-dev").
+
+$ devlink dev # (Interesting part of output only)
+pci/0000:af:00:
+  nested_devlink:
+    pci/0000:af:00.0
+    pci/0000:af:00.1
+    pci/0000:af:00.2
+    pci/0000:af:00.3
+    pci/0000:af:00.4
+    pci/0000:af:00.5
+    pci/0000:af:00.6
+    pci/0000:af:00.7
+
+Signed-off-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+---
+ net/devlink/devl_internal.h | 14 +++++----
+ net/devlink/core.c          | 58 +++++++++++++++++++++++++++++--------
+ net/devlink/netlink.c       |  4 +--
+ net/devlink/port.c          |  4 +--
+ 4 files changed, 58 insertions(+), 22 deletions(-)
+
+diff --git a/net/devlink/devl_internal.h b/net/devlink/devl_internal.h
+index 14eaad9cfe35..073afe02ce2f 100644
+--- a/net/devlink/devl_internal.h
++++ b/net/devlink/devl_internal.h
+@@ -49,6 +49,8 @@ struct devlink {
+ 	struct xarray snapshot_ids;
+ 	struct devlink_dev_stats stats;
+ 	struct device *dev;
++	const char *dev_name;
++	const char *bus_name;
+ 	possible_net_t _net;
+ 	/* Serializes access to devlink instance specific objects such as
+ 	 * port, sb, dpipe, resource, params, region, traps and more.
+@@ -104,15 +106,15 @@ static inline bool devl_is_registered(struct devlink *devlink)
+ 
+ static inline void devl_dev_lock(struct devlink *devlink, bool dev_lock)
+ {
+-	if (dev_lock)
++	if (dev_lock && devlink->dev)
+ 		device_lock(devlink->dev);
+ 	devl_lock(devlink);
+ }
+ 
+ static inline void devl_dev_unlock(struct devlink *devlink, bool dev_lock)
+ {
+ 	devl_unlock(devlink);
+-	if (dev_lock)
++	if (dev_lock && devlink->dev)
+ 		device_unlock(devlink->dev);
+ }
+ 
+@@ -174,9 +176,9 @@ devlink_dump_state(struct netlink_callback *cb)
+ static inline int
+ devlink_nl_put_handle(struct sk_buff *msg, struct devlink *devlink)
+ {
+-	if (nla_put_string(msg, DEVLINK_ATTR_BUS_NAME, devlink->dev->bus->name))
++	if (nla_put_string(msg, DEVLINK_ATTR_BUS_NAME, devlink->bus_name))
+ 		return -EMSGSIZE;
+-	if (nla_put_string(msg, DEVLINK_ATTR_DEV_NAME, dev_name(devlink->dev)))
++	if (nla_put_string(msg, DEVLINK_ATTR_DEV_NAME, devlink->dev_name))
+ 		return -EMSGSIZE;
+ 	return 0;
+ }
+@@ -209,8 +211,8 @@ static inline void devlink_nl_obj_desc_init(struct devlink_obj_desc *desc,
+ 					    struct devlink *devlink)
+ {
+ 	memset(desc, 0, sizeof(*desc));
+-	desc->bus_name = devlink->dev->bus->name;
+-	desc->dev_name = dev_name(devlink->dev);
++	desc->bus_name = devlink->bus_name;
++	desc->dev_name = devlink->dev_name;
+ }
+ 
+ static inline void devlink_nl_obj_desc_port_set(struct devlink_obj_desc *desc,
+diff --git a/net/devlink/core.c b/net/devlink/core.c
+index f49cd83f1955..f4960074b845 100644
+--- a/net/devlink/core.c
++++ b/net/devlink/core.c
+@@ -397,26 +397,25 @@ void devlink_unregister(struct devlink *devlink)
+ EXPORT_SYMBOL_GPL(devlink_unregister);
+ 
+ /**
+- *	devlink_alloc_ns - Allocate new devlink instance resources
+- *	in specific namespace
++ *	devlink_alloc_wrapper - Allocate a new devlink instance resources
++ *	for a SW wrapper over multiple HW devlink instances
+  *
+  *	@ops: ops
+  *	@priv_size: size of user private data
+- *	@net: net namespace
+- *	@dev: parent device
++ *	@bus_name: user visible bus name
++ *	@dev_name: user visible device name
+  *
+- *	Allocate new devlink instance resources, including devlink index
+- *	and name.
++ *	Allocate new devlink instance resources, including devlink index.
+  */
+-struct devlink *devlink_alloc_ns(const struct devlink_ops *ops,
+-				 size_t priv_size, struct net *net,
+-				 struct device *dev)
++struct devlink *devlink_alloc_wrapper(const struct devlink_ops *ops,
++				      size_t priv_size, const char *bus_name,
++				      const char *dev_name)
+ {
+ 	struct devlink *devlink;
+ 	static u32 last_id;
+ 	int ret;
+ 
+-	WARN_ON(!ops || !dev);
++	WARN_ON(!ops);
+ 	if (!devlink_reload_actions_valid(ops))
+ 		return NULL;
+ 
+@@ -429,13 +428,14 @@ struct devlink *devlink_alloc_ns(const struct devlink_ops *ops,
+ 	if (ret < 0)
+ 		goto err_xa_alloc;
+ 
+-	devlink->dev = get_device(dev);
+ 	devlink->ops = ops;
++	devlink->bus_name = bus_name;
++	devlink->dev_name = dev_name;
+ 	xa_init_flags(&devlink->ports, XA_FLAGS_ALLOC);
+ 	xa_init_flags(&devlink->params, XA_FLAGS_ALLOC);
+ 	xa_init_flags(&devlink->snapshot_ids, XA_FLAGS_ALLOC);
+ 	xa_init_flags(&devlink->nested_rels, XA_FLAGS_ALLOC);
+-	write_pnet(&devlink->_net, net);
++	write_pnet(&devlink->_net, &init_net);
+ 	INIT_LIST_HEAD(&devlink->rate_list);
+ 	INIT_LIST_HEAD(&devlink->linecard_list);
+ 	INIT_LIST_HEAD(&devlink->sb_list);
+@@ -458,6 +458,40 @@ struct devlink *devlink_alloc_ns(const struct devlink_ops *ops,
+ 	kvfree(devlink);
+ 	return NULL;
+ }
++EXPORT_SYMBOL_GPL(devlink_alloc_wrapper);
++
++/**
++ *	devlink_alloc_ns - Allocate new devlink instance resources
++ *	in specific namespace
++ *
++ *	@ops: ops
++ *	@priv_size: size of user private data
++ *	@net: net namespace
++ *	@dev: parent device
++ *
++ *	Allocate new devlink instance resources, including devlink index
++ *	and name.
++ */
++struct devlink *devlink_alloc_ns(const struct devlink_ops *ops,
++				 size_t priv_size, struct net *net,
++				 struct device *dev)
++{
++	struct devlink *devlink;
++
++	if (WARN_ON(!dev))
++		return NULL;
++
++	dev = get_device(dev);
++	devlink = devlink_alloc_wrapper(ops, priv_size, dev->bus->name,
++					dev_name(dev));
++	if (!devlink) {
++		put_device(dev);
++		return NULL;
++	}
++	devlink->dev = dev;
++	write_pnet(&devlink->_net, net);
++	return devlink;
++}
+ EXPORT_SYMBOL_GPL(devlink_alloc_ns);
+ 
+ /**
+diff --git a/net/devlink/netlink.c b/net/devlink/netlink.c
+index 593605c1b1ef..3f73ced2d879 100644
+--- a/net/devlink/netlink.c
++++ b/net/devlink/netlink.c
+@@ -193,8 +193,8 @@ devlink_get_from_attrs_lock(struct net *net, struct nlattr **attrs,
+ 	devname = nla_data(attrs[DEVLINK_ATTR_DEV_NAME]);
+ 
+ 	devlinks_xa_for_each_registered_get(net, index, devlink) {
+-		if (strcmp(devlink->dev->bus->name, busname) == 0 &&
+-		    strcmp(dev_name(devlink->dev), devname) == 0) {
++		if (strcmp(devlink->bus_name, busname) == 0 &&
++		    strcmp(devlink->dev_name, devname) == 0) {
+ 			devl_dev_lock(devlink, dev_lock);
+ 			if (devl_is_registered(devlink))
+ 				return devlink;
+diff --git a/net/devlink/port.c b/net/devlink/port.c
+index 939081a0e615..508ecf34d41a 100644
+--- a/net/devlink/port.c
++++ b/net/devlink/port.c
+@@ -220,8 +220,8 @@ size_t devlink_nl_port_handle_size(struct devlink_port *devlink_port)
+ {
+ 	struct devlink *devlink = devlink_port->devlink;
+ 
+-	return nla_total_size(strlen(devlink->dev->bus->name) + 1) /* DEVLINK_ATTR_BUS_NAME */
+-	     + nla_total_size(strlen(dev_name(devlink->dev)) + 1) /* DEVLINK_ATTR_DEV_NAME */
++	return nla_total_size(strlen(devlink->bus_name) + 1) /* DEVLINK_ATTR_BUS_NAME */
++	     + nla_total_size(strlen(devlink->dev_name) + 1) /* DEVLINK_ATTR_DEV_NAME */
+ 	     + nla_total_size(4); /* DEVLINK_ATTR_PORT_INDEX */
+ }
+ 
 -- 
-Mateusz Kusiak
-Junior Embedded Systems Developer
-https://3mdeb.com | @3mdeb_com
+2.46.0
 
