@@ -4,104 +4,91 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F22E0C021B2
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 20 Feb 2025 23:15:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 809D1C021B2
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 21 Feb 2025 00:04:54 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id A83C660820;
-	Thu, 20 Feb 2025 23:15:45 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 1BA306076B;
+	Fri, 21 Feb 2025 00:04:54 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id IJHuZhWCN1q5; Thu, 20 Feb 2025 23:15:43 +0000 (UTC)
+ id 10sLB1MpclY6; Fri, 21 Feb 2025 00:04:50 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C6292607E8
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C6A6160767
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1740093343;
-	bh=9J0xPrGkJ40ps4OD9hCkun4ZTXYR5FKFwi42Qm8c68E=;
-	h=From:Date:To:Cc:Subject:List-Id:List-Unsubscribe:List-Archive:
+	s=default; t=1740096290;
+	bh=02UG6NiHl/xa+PDco2Qh8fPBNm0muRMhknrdPWpWT+o=;
+	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:From;
-	b=A+LdmkUpjidsPmOzCP0C0hAK+HfnHs/uDzjGN/ZnSyQuoVEsNiJ0zA+0QTtb1B0Xe
-	 06lO97zYOqgCtB01n37zBXFta2DxwWntvFIAKc8YuZUOLK0z0aqoHVC/wsQ3zXo1TO
-	 XT/RpxU5CzAcxnHv6mPfIdt+F50b/EhHaDVUv+3ZUBKbMtPl6GVBZreMn2rfZEcQ2Y
-	 yAXOswDvPgPkS7i4HkNs20J7ddSN9agOy6ZGeCxJgfyp24nQ7AtVGHisKh4sMqkEVN
-	 to/5Lpt6sCXG2MZ2ZaRl4yJV6VhEJpc+K59FTLMn6MjcTOldhVoeO36ygGcf+ocmyc
-	 1ACn8IWPYFKEA==
+	b=2sygYpm74lcgBH0ouSK5ciKdwo4Q0CJkhs935rESS0LWvodi8QPdbv5ub1EUwvDe1
+	 sr0kCzE7jA4IPLEKpBkA+FxG7hJCmONqDiRaVE5pPLLtAanW6/Zkgg56wZlqJu+Amx
+	 NsGFqqml3965GocRh+/gfPo3PRf/tCstqstA2oXu/M6F1s7CvEnH2BgeEy5VrZsWb5
+	 vCkF8LJ7GIcSk4DozwRnVaatE8sYWMyHt29YRLhYhrEu5rYx5/F88Mckqz3Nzocf2e
+	 36+vcd/QsXp/k1QAR41qrjTXaoqkUM8pSU0fcCInIAeYUHgBErKM0hkvFguZnGJ0ni
+	 x6THxn8U2AwLA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id C6292607E8;
-	Thu, 20 Feb 2025 23:15:43 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id 00272CF
- for <intel-wired-lan@lists.osuosl.org>; Thu, 20 Feb 2025 23:15:42 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id C6A6160767;
+	Fri, 21 Feb 2025 00:04:50 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 69A0D194
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Feb 2025 00:04:49 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id E3D9582AC8
- for <intel-wired-lan@lists.osuosl.org>; Thu, 20 Feb 2025 23:15:42 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 4C48240572
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Feb 2025 00:04:49 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id g8dxIgmb0IgA for <intel-wired-lan@lists.osuosl.org>;
- Thu, 20 Feb 2025 23:15:42 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.19;
- helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org DE6A3827DE
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org DE6A3827DE
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.19])
- by smtp1.osuosl.org (Postfix) with ESMTPS id DE6A3827DE
- for <intel-wired-lan@lists.osuosl.org>; Thu, 20 Feb 2025 23:15:41 +0000 (UTC)
-X-CSE-ConnectionGUID: BNgvdXqtQ7OAQ3em8ZkZdw==
-X-CSE-MsgGUID: mJBrlxzZTxSkPmDHH5ifaQ==
-X-IronPort-AV: E=McAfee;i="6700,10204,11351"; a="40085531"
-X-IronPort-AV: E=Sophos;i="6.13,302,1732608000"; d="scan'208";a="40085531"
-Received: from fmviesa004.fm.intel.com ([10.60.135.144])
- by fmvoesa113.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 20 Feb 2025 15:15:41 -0800
-X-CSE-ConnectionGUID: /c0sQfnlRbm3QgPZGJ8AZg==
-X-CSE-MsgGUID: DgwZGjsuQzS88LsfEB+oFA==
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id fdqmkzjGFhuk for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 21 Feb 2025 00:04:48 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.19;
+ helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org ED99E4026B
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org ED99E4026B
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.19])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id ED99E4026B
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Feb 2025 00:04:47 +0000 (UTC)
+X-CSE-ConnectionGUID: f5g3P71+Qpy7bNStbcwV3w==
+X-CSE-MsgGUID: MIHywEQCRAORdcLGYYnILg==
+X-IronPort-AV: E=McAfee;i="6700,10204,11351"; a="40760632"
+X-IronPort-AV: E=Sophos;i="6.13,303,1732608000"; d="scan'208";a="40760632"
+Received: from orviesa003.jf.intel.com ([10.64.159.143])
+ by orvoesa111.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 20 Feb 2025 16:04:47 -0800
+X-CSE-ConnectionGUID: HGi+AsruRG+GehAqXV/aVQ==
+X-CSE-MsgGUID: E471+x6NSce2iOdMfKXzBg==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.13,302,1732608000"; d="scan'208";a="120306173"
-Received: from jekeller-desk.jf.intel.com ([10.166.241.15])
- by fmviesa004-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 20 Feb 2025 15:15:41 -0800
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Thu, 20 Feb 2025 15:15:24 -0800
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20250220-jk-e830-ddp-loading-fix-v2-1-7c9663a442c1@intel.com>
-X-B4-Tracking: v=1; b=H4sIAIu3t2cC/4WNQQ6CMBBFr2Jm7ZhSIVRX3sOwKJ0BRrElLUEN4
- e42XMDl/y///RUSR+EE18MKkRdJEnwO+ngAN1jfMwrlDFrpSunC4OOJbM4KiSYcgyXxPXbywQt
- 31FLndK0s5PUUOde7+Q7yHtHzDE0Gg6Q5xO/+uBQ7/itfCiywrMkZNlTatrqJn3k8ufCCZtu2H
- 7kZeV3HAAAA
-X-Change-ID: 20250218-jk-e830-ddp-loading-fix-9efdbdfc270a
-To: Tony Nguyen <anthony.l.nguyen@intel.com>, 
- Przemek Kitszel <przemyslaw.kitszel@intel.com>, 
- Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
-Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org, 
- Paul Greenwalt <paul.greenwalt@intel.com>, 
- Jacob Keller <jacob.e.keller@intel.com>
-X-Mailer: b4 0.14.2
+X-IronPort-AV: E=Sophos;i="6.13,303,1732608000"; d="scan'208";a="120140460"
+Received: from lkp-server02.sh.intel.com (HELO 76cde6cc1f07) ([10.239.97.151])
+ by orviesa003.jf.intel.com with ESMTP; 20 Feb 2025 16:04:46 -0800
+Received: from kbuild by 76cde6cc1f07 with local (Exim 4.96)
+ (envelope-from <lkp@intel.com>) id 1tlGWz-0004ta-37
+ for intel-wired-lan@lists.osuosl.org; Fri, 21 Feb 2025 00:04:39 +0000
+Date: Fri, 21 Feb 2025 08:04:28 +0800
+From: kernel test robot <lkp@intel.com>
+To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+Message-ID: <202502210822.xvxhk0qt-lkp@intel.com>
+User-Agent: s-nail v14.9.24
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1740093342; x=1771629342;
- h=from:date:subject:mime-version:content-transfer-encoding:
- message-id:to:cc;
- bh=xiF91DRXq61q4vpXvNa8LutOEIEBtwUAL8JN8LXZTXk=;
- b=LBBc8wm7czwHNbj9jTuIICH42hkIvePYRL3Qal8SZj8Mjau2QFDqXXok
- dBgTSN+Th0RDS+KyC8Kh64MsqeROJOIUTqHHio2k6HAfkL8VCCB9We5L9
- CXBZvzmh+sBJxezJLnj3ooI7d0awXxefne1i2fWES4aXobWNbXIu9Z587
- Ith4Cs+4ILFyjmqteZqNbSO0oGK41p+rJ/ZGa9IWvJzH06c+DWikDW6gg
- et1+pK2zcwHCe+SJs0/oU2vS0nHsjl0pVCqF+FuH1uPVskkaj/WaMxcX9
- AQYtsY3EOPNJp65Ei6MvWLcSVun1fpLZJlihiWMT3OSLoWz4A2+E8W06C
- Q==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ t=1740096288; x=1771632288;
+ h=date:from:to:subject:message-id;
+ bh=JyQ9GQ9PbLUDliVhNyi28B3QuYrIJIBoB5PRS0aA1cg=;
+ b=VtrRfgPPC99TxAAqkEnNVngIFUYubDG7Z5ptf0phAMOpfO+4ErnL07pI
+ UJ92s+tCR8Wnu/EUuEugiLZbYdPCvofUFdyVy9S50X2+kTrA1uHESiU/+
+ znAQr3DYrMhWzMf0M7/RjCRVAD1uVILh43auLWNUC0I4OBdm9QiLTtLZE
+ 4A5smUYHeW2I1pY36iPoW++6Sv7Y6gga10LrhMVAnO18XeNpTty00H5SE
+ zeHCvWVtazYdZOe4e84DkwkxWySx/nOc5n/hDGmyuzmZJz9yxrv+GkazG
+ DGOum3eT+1vlvc1IjSHrCE1gWYgzN451jRQszWOrmRu/S8RevLMlkN2QG
+ g==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=LBBc8wm7
-Subject: [Intel-wired-lan] [PATCH iwl-net v2] ice: fix Get Tx Topology AQ
- command error on E830
+ header.s=Intel header.b=VtrRfgPP
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
+ 76e04786735e2864bec8666e116cb1ba7bc4f578
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -117,74 +104,93 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Paul Greenwalt <paul.greenwalt@intel.com>
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: 76e04786735e2864bec8666e116cb1ba7bc4f578  ice: add ice driver PTP pin documentation
 
-The Get Tx Topology AQ command (opcode 0x0418) has different read flag
-requriements depending on the hardware/firmware. For E810, E822, and E823
-firmware the read flag must be set, and for newer hardware (E825 and E830)
-it must not be set.
+elapsed time: 1454m
 
-This results in failure to configure Tx topology and the following warning
-message during probe:
+configs tested: 74
+configs skipped: 1
 
-  DDP package does not support Tx scheduling layers switching feature -
-  please update to the latest DDP package and try again
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-The current implementation only handles E825-C but not E830. It is
-confusing as we first check ice_is_e825c() and then set the flag in the set
-case. Finally, we check ice_is_e825c() again and set the flag for all other
-hardware in both the set and get case.
+tested configs:
+alpha                           allyesconfig    gcc-14.2.0
+arc                             allmodconfig    gcc-13.2.0
+arc                             allyesconfig    gcc-13.2.0
+arc                  randconfig-001-20250220    gcc-13.2.0
+arc                  randconfig-002-20250220    gcc-13.2.0
+arm                             allmodconfig    gcc-14.2.0
+arm                             allyesconfig    gcc-14.2.0
+arm                  randconfig-001-20250220    gcc-14.2.0
+arm                  randconfig-002-20250220    gcc-14.2.0
+arm                  randconfig-003-20250220    gcc-14.2.0
+arm                  randconfig-004-20250220    gcc-14.2.0
+arm64                           allmodconfig    clang-18
+arm64                randconfig-001-20250220    gcc-14.2.0
+arm64                randconfig-002-20250220    gcc-14.2.0
+arm64                randconfig-003-20250220    clang-21
+arm64                randconfig-004-20250220    gcc-14.2.0
+csky                 randconfig-001-20250220    gcc-14.2.0
+csky                 randconfig-002-20250220    gcc-14.2.0
+hexagon                         allmodconfig    clang-21
+hexagon                         allyesconfig    clang-18
+hexagon              randconfig-001-20250220    clang-21
+hexagon              randconfig-002-20250220    clang-21
+i386                            allmodconfig    gcc-12
+i386                             allnoconfig    gcc-12
+i386                            allyesconfig    gcc-12
+i386       buildonly-randconfig-001-20250220    gcc-12
+i386       buildonly-randconfig-002-20250220    gcc-12
+i386       buildonly-randconfig-003-20250220    gcc-12
+i386       buildonly-randconfig-004-20250220    clang-19
+i386       buildonly-randconfig-005-20250220    clang-19
+i386       buildonly-randconfig-006-20250220    clang-19
+i386                               defconfig    clang-19
+loongarch            randconfig-001-20250220    gcc-14.2.0
+loongarch            randconfig-002-20250220    gcc-14.2.0
+nios2                randconfig-001-20250220    gcc-14.2.0
+nios2                randconfig-002-20250220    gcc-14.2.0
+parisc               randconfig-001-20250220    gcc-14.2.0
+parisc               randconfig-002-20250220    gcc-14.2.0
+powerpc              randconfig-001-20250220    gcc-14.2.0
+powerpc              randconfig-002-20250220    clang-16
+powerpc              randconfig-003-20250220    clang-21
+powerpc64            randconfig-001-20250220    clang-16
+powerpc64            randconfig-002-20250220    clang-18
+powerpc64            randconfig-003-20250220    gcc-14.2.0
+riscv                randconfig-001-20250220    gcc-14.2.0
+riscv                randconfig-002-20250220    clang-21
+s390                            allmodconfig    clang-19
+s390                            allyesconfig    gcc-14.2.0
+s390                 randconfig-001-20250220    clang-19
+s390                 randconfig-002-20250220    gcc-14.2.0
+sh                              allmodconfig    gcc-14.2.0
+sh                              allyesconfig    gcc-14.2.0
+sh                   randconfig-001-20250220    gcc-14.2.0
+sh                   randconfig-002-20250220    gcc-14.2.0
+sparc                           allmodconfig    gcc-14.2.0
+sparc                randconfig-001-20250220    gcc-14.2.0
+sparc                randconfig-002-20250220    gcc-14.2.0
+sparc64              randconfig-001-20250220    gcc-14.2.0
+sparc64              randconfig-002-20250220    gcc-14.2.0
+um                              allmodconfig    clang-21
+um                              allyesconfig    gcc-12
+um                   randconfig-001-20250220    gcc-12
+um                   randconfig-002-20250220    gcc-12
+x86_64                           allnoconfig    clang-19
+x86_64                          allyesconfig    clang-19
+x86_64     buildonly-randconfig-001-20250220    gcc-12
+x86_64     buildonly-randconfig-002-20250220    gcc-12
+x86_64     buildonly-randconfig-003-20250220    gcc-12
+x86_64     buildonly-randconfig-004-20250220    gcc-12
+x86_64     buildonly-randconfig-005-20250220    gcc-12
+x86_64     buildonly-randconfig-006-20250220    gcc-12
+x86_64                             defconfig    gcc-11
+xtensa               randconfig-001-20250220    gcc-14.2.0
+xtensa               randconfig-002-20250220    gcc-14.2.0
 
-Instead, notice that we always need the read flag for set, but only need
-the read flag for get on E810, E822, and E823 firmware. Fix the logic to
-check the MAC type and set the read flag in get only on the older devices
-which require it.
-
-Fixes: ba1124f58afd ("ice: Add E830 device IDs, MAC type and registers")
-Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
----
-Changes in v2:
-- Update commit message to include the warning users see
-- Rework code to set the flag for E810 and E822 instead of to *not* set it
-  for E825-C and E830. We anticipate that future hardware and firmware
-  versions will behave like E830.
-- Link to v1: https://lore.kernel.org/r/20250218-jk-e830-ddp-loading-fix-v1-1-47dc8e8d4ab5@intel.com
----
- drivers/net/ethernet/intel/ice/ice_ddp.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_ddp.c b/drivers/net/ethernet/intel/ice/ice_ddp.c
-index 03988be03729b76e96188864896527060c8c4d5b..59323c019544fc1f75dcb8a5d31e0b0c82932fe1 100644
---- a/drivers/net/ethernet/intel/ice/ice_ddp.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ddp.c
-@@ -2345,15 +2345,15 @@ ice_get_set_tx_topo(struct ice_hw *hw, u8 *buf, u16 buf_size,
- 			cmd->set_flags |= ICE_AQC_TX_TOPO_FLAGS_SRC_RAM |
- 					  ICE_AQC_TX_TOPO_FLAGS_LOAD_NEW;
- 
--		if (ice_is_e825c(hw))
--			desc.flags |= cpu_to_le16(ICE_AQ_FLAG_RD);
-+		desc.flags |= cpu_to_le16(ICE_AQ_FLAG_RD);
- 	} else {
- 		ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_get_tx_topo);
- 		cmd->get_flags = ICE_AQC_TX_TOPO_GET_RAM;
--	}
- 
--	if (!ice_is_e825c(hw))
--		desc.flags |= cpu_to_le16(ICE_AQ_FLAG_RD);
-+		if (hw->mac_type == ICE_MAC_E810 ||
-+		    hw->mac_type == ICE_MAC_GENERIC)
-+			desc.flags |= cpu_to_le16(ICE_AQ_FLAG_RD);
-+	}
- 
- 	status = ice_aq_send_cmd(hw, &desc, buf, buf_size, cd);
- 	if (status)
-
----
-base-commit: 992ee3ed6e9fdd0be83a7daa5ff738e3cf86047f
-change-id: 20250218-jk-e830-ddp-loading-fix-9efdbdfc270a
-
-Best regards,
--- 
-Jacob Keller <jacob.e.keller@intel.com>
-
+--
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
