@@ -4,96 +4,137 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A55F3C021B3
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 21 Feb 2025 15:49:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BA125C021B3
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 21 Feb 2025 16:11:25 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 2B5CC40BBD;
-	Fri, 21 Feb 2025 15:49:27 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 69DB741271;
+	Fri, 21 Feb 2025 16:11:25 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id TR3xFetyonmG; Fri, 21 Feb 2025 15:49:26 +0000 (UTC)
+ id FdYALsTzU1VR; Fri, 21 Feb 2025 16:11:23 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 32D4C40773
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 6F68041260
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1740152966;
-	bh=vxFKzfl1qUror9TfkuJ+HDlQPH5Jj0C2oOhtDimdrcE=;
-	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=DuvV4t0MHlTJQVj1PoPaY+bjn7uXR/Vwt5jx1So8f4wP5KA72RuMW+mLXHzVAbb7D
-	 U281fBAcZ7ZXb2iIWvfa2jc4BxV5Phlh2Q4AZIWetXamijJsz3OftZp2Y8KnTBYJcD
-	 v0MvqbzicJJCDmUoyO9ghPrepZ8RCdEuIQm3uTL5zkEkYHIRGxGaKhMbTCtFpaUCES
-	 2YGjvefx+HoUfETMdiXkXfHb0Y7OGOVoQkUycynCIeAJTY/rRu//hEW4Hq5XB69FHm
-	 6p7sMuqBOnuIwnNQJLtmZv5Fx2O3FDujE2jsub22UG1vK4a9masDEuIruijzKAt/LV
-	 aYSf+xojZOz9A==
+	s=default; t=1740154283;
+	bh=Qp8DvYGUWgTHXAPWqbMBZV8Rl/qxPnTYUxFzmDOOo1U=;
+	h=Date:From:To:Cc:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=QhyjltAGElkjUg2f/KxsC43rFBzibrXUEGlWgRiVOLER0/j8h8l1wv5gcCGTmaONH
+	 j//3LsnaIenkV9p3hpMZdiIUI5GEU7IXBTJycvBELvJu9WJEcV5i4u2tnUI6iBpsAp
+	 gatbRVa9/S65kBGHTjUItQBjaULsun8w/c9jFHZ/8ipi0V7tHWtTbU4IHu/8erQXka
+	 mztDA8ESJVnQE7GWZz7zUADqPoWAULmXJ70u4262NMgpFBdUYGZROj8oTyuPN8eYnE
+	 HOVaKl6oBU4GID2vBdJh1Wr3GHv+hNLKOrY4KBK9KoTlNCxw2fMcS9RBsdRFCksW4K
+	 4c4CQ9/mrAs+w==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 32D4C40773;
-	Fri, 21 Feb 2025 15:49:26 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id 535E2D92
- for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Feb 2025 15:49:25 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 6F68041260;
+	Fri, 21 Feb 2025 16:11:23 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id F062F194
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Feb 2025 09:43:09 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 3A7DC40773
- for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Feb 2025 15:49:25 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id B477C83AF2
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Feb 2025 09:43:09 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id lbVPT0dy99Ue for <intel-wired-lan@lists.osuosl.org>;
- Fri, 21 Feb 2025 15:49:24 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.16;
- helo=mgamail.intel.com; envelope-from=piotr.kwapulinski@intel.com;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 4111D40759
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4111D40759
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.16])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 4111D40759
- for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Feb 2025 15:49:23 +0000 (UTC)
-X-CSE-ConnectionGUID: fD+XCtk3R2idCDWdVKezeg==
-X-CSE-MsgGUID: vi03Fx+fQsumv6cBak982Q==
-X-IronPort-AV: E=McAfee;i="6700,10204,11352"; a="28568989"
-X-IronPort-AV: E=Sophos;i="6.13,305,1732608000"; d="scan'208";a="28568989"
-Received: from fmviesa004.fm.intel.com ([10.60.135.144])
- by fmvoesa110.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 21 Feb 2025 07:49:23 -0800
-X-CSE-ConnectionGUID: HYrdzkobSkC8CkxPmeC3sg==
-X-CSE-MsgGUID: Z9anu8g5TTOG9gVQOHA3AA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.13,305,1732608000"; d="scan'208";a="120503049"
-Received: from pkwapuli-mobl1.ger.corp.intel.com (HELO
- vbox-pkwap.ger.corp.intel.com) ([10.245.119.85])
- by fmviesa004.fm.intel.com with ESMTP; 21 Feb 2025 07:49:21 -0800
-From: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Cc: netdev@vger.kernel.org, pmenzel@molgen.mpg.de, andrew@lunn.ch,
- Piotr Kwapulinski <piotr.kwapulinski@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Date: Fri, 21 Feb 2025 16:49:17 +0100
-Message-ID: <20250221154917.3710-1-piotr.kwapulinski@intel.com>
-X-Mailer: git-send-email 2.43.5
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 8YdemcwkGVEa for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 21 Feb 2025 09:43:08 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2607:f8b0:4864:20::102e; helo=mail-pj1-x102e.google.com;
+ envelope-from=0x1207@gmail.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 68CF583B5A
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 68CF583B5A
+Received: from mail-pj1-x102e.google.com (mail-pj1-x102e.google.com
+ [IPv6:2607:f8b0:4864:20::102e])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 68CF583B5A
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Feb 2025 09:43:08 +0000 (UTC)
+Received: by mail-pj1-x102e.google.com with SMTP id
+ 98e67ed59e1d1-2fbf77b2b64so3853419a91.2
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Feb 2025 01:43:08 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20230601; t=1740130987; x=1740735787;
+ h=content-transfer-encoding:mime-version:references:in-reply-to
+ :message-id:subject:cc:to:from:date:x-gm-message-state:from:to:cc
+ :subject:date:message-id:reply-to;
+ bh=Qp8DvYGUWgTHXAPWqbMBZV8Rl/qxPnTYUxFzmDOOo1U=;
+ b=J9szJIrvlPl1yvYG0hNweeqtNR2s0aV6Ip/4USfqVqKJI8D5CRVxvkakYdO62jOrlU
+ mn+RoqIKzvKhvvX8USspAzs/xA+Tu4v4SgC6LNAfA8WpeqyLmvx6KGmGVdnDyV5dql2W
+ 0Hf6kn6QSLRqIDXRsIfr4OEjJ4p4ecAA9Gq/dTZEWG0l9mdOj32ESkRq+4WmRijb+PLr
+ 5N2MecKs2n8YaVsR2sF60PuUxNHhzF2nVHF0ZU0e/ZPv/ArjvCEOGD1Yd2kp7svQzfXI
+ VpMqZ1MAMALJ+G3FWtUJP8uX/S7raSxHqdg7wAD9iV0713Y6x8UjvJCsp+aABCvUDQio
+ F5Qw==
+X-Forwarded-Encrypted: i=1;
+ AJvYcCUlp5wqFucJdEpmXPZUh40ajWtbAQJpWi+E86ptlFkIKFkw41kFf7zTalrgJq+eBKGh6+n8qEPw7KK2o3NYTkk=@lists.osuosl.org
+X-Gm-Message-State: AOJu0Yz6ItNQZiY8xDurGsGOQr8/Xy6xMOn8nK0qUeSWTvflCPU8BRAg
+ M1NtlBG7eJFB+zzetXC692uynjSRPtbgZwhM7CJTwX2Z3BT7udKW
+X-Gm-Gg: ASbGncsQyKa4K7A8z+Hxftfj2GSf8DnctAvruZGWBv8Afn28pz2eA6WLM1PtDO3oU8s
+ AqdhohSS5AgxI2FVLmNwzj7Y7xC0qYQ3cMTCTNRo2UmS2eMr2j+rhFQC0a2hukzaG1ql0zf82TY
+ 2IA+BA1OJVA+ykv05ELSXhAavHxllCC++BHHQIT+bUX/NVNXpHCUMdhxcVSpEObL8LCVsWv90Bb
+ BvTN6TPW6GBOd4hCjedI+53jbI2tdgtWWmPiV4lMuOrG4c1ahD+GrAN6GFg4Cb7k0L9gKS5Yt8c
+ HIALoAvEQJIJVDe7qTgWnJ0=
+X-Google-Smtp-Source: AGHT+IEFLkFCj2bQJ0yLXnoXnz387Bz22Ke8KnkO2x0EryQr6MWOx9pTmc0bN1V4MOkAKGnHvqQCJw==
+X-Received: by 2002:a17:90b:2e0d:b0:2fa:2124:8782 with SMTP id
+ 98e67ed59e1d1-2fce7b1f6afmr4454759a91.25.1740130987274; 
+ Fri, 21 Feb 2025 01:43:07 -0800 (PST)
+Received: from localhost ([129.146.253.192]) by smtp.gmail.com with ESMTPSA id
+ 98e67ed59e1d1-2fcb844c60asm3042021a91.0.2025.02.21.01.42.57
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Fri, 21 Feb 2025 01:43:07 -0800 (PST)
+Date: Fri, 21 Feb 2025 17:42:49 +0800
+From: Furong Xu <0x1207@gmail.com>
+To: Faizal Rahim <faizal.abdul.rahim@linux.intel.com>
+Cc: Tony Nguyen <anthony.l.nguyen@intel.com>, Przemek Kitszel
+ <przemyslaw.kitszel@intel.com>, Andrew Lunn <andrew+netdev@lunn.ch>, "David
+ S . Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Maxime
+ Coquelin <mcoquelin.stm32@gmail.com>, Alexandre Torgue
+ <alexandre.torgue@foss.st.com>, Simon Horman <horms@kernel.org>, Russell
+ King <linux@armlinux.org.uk>, Alexei Starovoitov <ast@kernel.org>, Daniel
+ Borkmann <daniel@iogearbox.net>, Jesper Dangaard Brouer <hawk@kernel.org>,
+ John Fastabend <john.fastabend@gmail.com>, Russell King
+ <rmk+kernel@armlinux.org.uk>, Vladimir Oltean <vladimir.oltean@nxp.com>,
+ Serge Semin <fancer.lancer@gmail.com>, Xiaolei Wang
+ <xiaolei.wang@windriver.com>, Suraj Jaiswal <quic_jsuraj@quicinc.com>, Kory
+ Maincent <kory.maincent@bootlin.com>, Gal Pressman <gal@nvidia.com>, Jesper
+ Nilsson <jesper.nilsson@axis.com>, Andrew Halaney <ahalaney@redhat.com>,
+ Choong Yong Liang <yong.liang.choong@linux.intel.com>, Kunihiko Hayashi
+ <hayashi.kunihiko@socionext.com>, Vinicius Costa Gomes
+ <vinicius.gomes@intel.com>, intel-wired-lan@lists.osuosl.org,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-stm32@st-md-mailman.stormreply.com,
+ linux-arm-kernel@lists.infradead.org, bpf@vger.kernel.org
+Message-ID: <20250221174249.000000cc@gmail.com>
+In-Reply-To: <20250220025349.3007793-2-faizal.abdul.rahim@linux.intel.com>
+References: <20250220025349.3007793-1-faizal.abdul.rahim@linux.intel.com>
+ <20250220025349.3007793-2-faizal.abdul.rahim@linux.intel.com>
+X-Mailer: Claws Mail 4.3.0 (GTK 3.24.42; x86_64-w64-mingw32)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1740152964; x=1771688964;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=Safi/ZaRImAt4ByykRE6KlGbcE2+yBZJn6XUR51YY70=;
- b=ddtQf4koXIUIOtSZldkDJBWVbG+grJQvsU8lA6t+BrI/+21YRAs1DaDG
- vWzcW7SPCwEzCxY2R3hRx+jwWyGRkU/MJsFTvhkFWTdwim+aGJ7tt/NHX
- vt80PyJogroA35p9gvUrxUK6PVI4VTQbT47P19LbEqtLg6L3YxjiyORB5
- 1r1aINMiqa/pDgNyOuJUqYB92iI+FMBhmWLtTsbtIbGISbivS7gYQQVCb
- P8R15ULMYtAukZWW9kC013T5l0vI+YJ8ssu7zADsA8w6FOS3xKraawF/4
- U0JnSgBe3Zfpj81m9jffFcaeAsaVIFcwxM88bph2g9EVd/HiRiCosLPhA
- A==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Mailman-Approved-At: Fri, 21 Feb 2025 16:11:22 +0000
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=gmail.com; s=20230601; t=1740130987; x=1740735787; darn=lists.osuosl.org;
+ h=content-transfer-encoding:mime-version:references:in-reply-to
+ :message-id:subject:cc:to:from:date:from:to:cc:subject:date
+ :message-id:reply-to;
+ bh=Qp8DvYGUWgTHXAPWqbMBZV8Rl/qxPnTYUxFzmDOOo1U=;
+ b=jo7Kau9+RkC6DPeI2+r5yv2ohWMTI2GD4CaC1WldQ3ETcg8Y8Sdp3LfQVSr/OSGExd
+ 6GMiFJLm7I/mg9SweGrqV5Xpm46cxTGYe3D8wGjplgQHDydmDpNrVEF+vQb4i19PUqF/
+ JpnwH/o+dRNmFCxAQR1R7EPt6mddK0AFk1e7R4wLvR/EPhtaeg98voM+Fafkb0AGfWoO
+ 2tVQzvYtIbTHgTjecYpE0A47FpgFju7GJglNgzsLCXcgZk1v9wjIr24noYPfDTMQdjbw
+ HBh+q8fqYAVj+D76pli2UZ4e6GZRciw8C9mRkd2nq7TNTePlrUathbWaiSCS4uOWHM1z
+ WdZQ==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
- header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ header.from=gmail.com
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=ddtQf4ko
-Subject: [Intel-wired-lan] [PATCH iwl-net v3] ixgbe: fix media type
- detection for E610 device
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20230601 header.b=jo7Kau9+
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next v5 1/9] net: ethtool: mm:
+ extract stmmac verification logic into common library
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -109,53 +150,161 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The commit 23c0e5a16bcc ("ixgbe: Add link management support for E610
-device") introduced incorrect media type detection for E610 device. It
-reproduces when advertised speed is modified after driver reload. Clear
-the previous outdated PHY type high value.
+On Wed, 19 Feb 2025 21:53:41 -0500, Faizal Rahim <faizal.abdul.rahim@linux.intel.com> wrote:
 
-Reproduction steps:
-modprobe ixgbe
-ethtool -s eth0 advertise 0x1000000000000
-modprobe -r ixgbe
-modprobe ixgbe
-ethtool -s eth0 advertise 0x1000000000000
-Result before the fix:
-netlink error: link settings update failed
-netlink error: Invalid argument
-Result after the fix:
-No output error
+> From: Vladimir Oltean <vladimir.oltean@nxp.com>
+> 
+> It appears that stmmac is not the only hardware which requires a
+> software-driven verification state machine for the MAC Merge layer.
+> 
+> While on the one hand it's good to encourage hardware implementations,
+> on the other hand it's quite difficult to tolerate multiple drivers
+> implementing independently fairly non-trivial logic.
+> 
+> Extract the hardware-independent logic from stmmac into library code and
+> put it in ethtool. Name the state structure "mmsv" for MAC Merge
+> Software Verification. Let this expose an operations structure for
+> executing the hardware stuff: sync hardware with the tx_active boolean
+> (result of verification process), enable/disable the pMAC, send mPackets,
+> notify library of external events (reception of mPackets), as well as
+> link state changes.
+> 
+> Note that it is assumed that the external events are received in hardirq
+> context. If they are not, it is probably a good idea to disable hardirqs
+> when calling ethtool_mmsv_event_handle(), because the library does not
+> do so.
+> 
+> Also, the MM software verification process has no business with the
+> tx_min_frag_size, that is all the driver's to handle.
+> 
+> Signed-off-by: Vladimir Oltean <vladimir.oltean@nxp.com>
+> Co-developed-by: Choong Yong Liang <yong.liang.choong@linux.intel.com>
+> Signed-off-by: Choong Yong Liang <yong.liang.choong@linux.intel.com>
+> Co-developed-by: Faizal Rahim <faizal.abdul.rahim@linux.intel.com>
+> Signed-off-by: Faizal Rahim <faizal.abdul.rahim@linux.intel.com>
+> Tested-by: Choong Yong Liang <yong.liang.choong@linux.intel.com>
+> ---
+>  drivers/net/ethernet/stmicro/stmmac/stmmac.h  |  16 +-
+>  .../ethernet/stmicro/stmmac/stmmac_ethtool.c  |  41 +---
+>  .../net/ethernet/stmicro/stmmac/stmmac_fpe.c  | 174 +++-----------
+>  .../net/ethernet/stmicro/stmmac/stmmac_fpe.h  |   5 -
+>  .../net/ethernet/stmicro/stmmac/stmmac_main.c |   8 +-
+>  include/linux/ethtool.h                       | 131 ++++++++++
+>  net/ethtool/mm.c                              | 225 +++++++++++++++++-
+>  7 files changed, 399 insertions(+), 201 deletions(-)
+> 
+[...]
+> +void ethtool_mmsv_link_state_handle(struct ethtool_mmsv *mmsv, bool up)
+> +{
+> +	unsigned long flags;
+> +
+> +	ethtool_mmsv_stop(mmsv);
+> +
+> +	spin_lock_irqsave(&mmsv->lock, flags);
+> +
+> +	if (up && mmsv->pmac_enabled) {
+> +		/* VERIFY process requires pMAC enabled when NIC comes up */
+> +		ethtool_mmsv_configure_pmac(mmsv, true);
+> +
+> +		/* New link => maybe new partner => new verification process */
+> +		ethtool_mmsv_apply(mmsv);
+> +	} else {
+> +		mmsv->status = ETHTOOL_MM_VERIFY_STATUS_INITIAL;
 
-Fixes: 23c0e5a16bcc ("ixgbe: Add link management support for E610 device")
-Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Reviewed-by: Paul Menzel <pmenzel@molgen.mpg.de>
-Signed-off-by: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
----
-v1 -> v2
-  More commit message details and reproduction steps added
-v2 -> v3
-  More details in reproduction steps added
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+Tested this patch on my side, everything works well, but the verify-status
+is a little weird:
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c
-index 683c668..0dfefd2 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c
-@@ -1453,9 +1453,11 @@ enum ixgbe_media_type ixgbe_get_media_type_e610(struct ixgbe_hw *hw)
- 			hw->link.link_info.phy_type_low = 0;
- 		} else {
- 			highest_bit = fls64(le64_to_cpu(pcaps.phy_type_low));
--			if (highest_bit)
-+			if (highest_bit) {
- 				hw->link.link_info.phy_type_low =
- 					BIT_ULL(highest_bit - 1);
-+				hw->link.link_info.phy_type_high = 0;
-+			}
- 		}
- 	}
- 
--- 
-2.43.0
+# kernel booted, check initial states:
+ethtool --include-statistics --json --show-mm eth1
+[ {
+        "ifname": "eth1",
+        "pmac-enabled": false,
+        "tx-enabled": false,
+        "tx-active": false,
+        "tx-min-frag-size": 60,
+        "rx-min-frag-size": 60,
+        "verify-enabled": false,
+        "verify-time": 128,
+        "max-verify-time": 128,
+        "verify-status": "INITIAL",
+        "statistics": {
+            "MACMergeFrameAssErrorCount": 0,
+            "MACMergeFrameSmdErrorCount": 0,
+            "MACMergeFrameAssOkCount": 0,
+            "MACMergeFragCountRx": 0,
+            "MACMergeFragCountTx": 0,
+            "MACMergeHoldCount": 0
+        }
+    } ]
+
+# Enable pMAC by: ethtool --set-mm eth1 pmac-enabled on
+ethtool --include-statistics --json --show-mm eth1
+[ {
+        "ifname": "eth1",
+        "pmac-enabled": true,
+        "tx-enabled": false,
+        "tx-active": false,
+        "tx-min-frag-size": 60,
+        "rx-min-frag-size": 60,
+        "verify-enabled": false,
+        "verify-time": 128,
+        "max-verify-time": 128,
+        "verify-status": "DISABLED",
+        "statistics": {
+            "MACMergeFrameAssErrorCount": 0,
+            "MACMergeFrameSmdErrorCount": 0,
+            "MACMergeFrameAssOkCount": 0,
+            "MACMergeFragCountRx": 0,
+            "MACMergeFragCountTx": 0,
+            "MACMergeHoldCount": 0
+        }
+    } ]
+
+# Disable pMAC by: ethtool --set-mm eth1 pmac-enabled off
+ethtool --include-statistics --json --show-mm eth1
+[ {
+        "ifname": "eth1",
+        "pmac-enabled": true,
+        "tx-enabled": false,
+        "tx-active": false,
+        "tx-min-frag-size": 60,
+        "rx-min-frag-size": 60,
+        "verify-enabled": false,
+        "verify-time": 128,
+        "max-verify-time": 128,
+        "verify-status": "DISABLED",
+        "statistics": {
+            "MACMergeFrameAssErrorCount": 0,
+            "MACMergeFrameSmdErrorCount": 0,
+            "MACMergeFrameAssOkCount": 0,
+            "MACMergeFragCountRx": 0,
+            "MACMergeFragCountTx": 0,
+            "MACMergeHoldCount": 0
+        }
+    } ]
+
+verify-status always normal on other cases.
+
+@Vladimir, maybe we shouldn't update mmsv->status in ethtool_mmsv_link_state_handle()?
+Or, update mmsv->status like below:
+mmsv->status = mmsv->pmac_enabled ?
+		ETHTOOL_MM_VERIFY_STATUS_INITIAL :
+		ETHTOOL_MM_VERIFY_STATUS_DISABLED;
+
+Anyway, this is too minor, so:
+
+Tested-by: Furong Xu <0x1207@gmail.com>
+
+
+> +		mmsv->verify_retries = ETHTOOL_MM_MAX_VERIFY_RETRIES;
+> +
+> +		/* No link or pMAC not enabled */
+> +		ethtool_mmsv_configure_pmac(mmsv, false);
+> +		ethtool_mmsv_configure_tx(mmsv, false);
+> +	}
+> +
+> +	spin_unlock_irqrestore(&mmsv->lock, flags);
+> +}
+> +EXPORT_SYMBOL_GPL(ethtool_mmsv_link_state_handle);
+
 
