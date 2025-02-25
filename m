@@ -4,94 +4,97 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D7FD7C021BB
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 25 Feb 2025 14:36:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 35612C021B2
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 25 Feb 2025 14:47:55 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 850C540D48;
-	Tue, 25 Feb 2025 14:36:09 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id CCBE340DC8;
+	Tue, 25 Feb 2025 14:47:54 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 0OitpOtHjM3D; Tue, 25 Feb 2025 14:36:08 +0000 (UTC)
+ id iynUKpiqChTV; Tue, 25 Feb 2025 14:47:54 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 6497340CDA
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E79FF40DBF
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1740494168;
-	bh=/DJMQVyYUlG2wstv/ghUI8bqMbPDKynVHDg3Fya5l/o=;
+	s=default; t=1740494874;
+	bh=WwiHsbk2hYwzNP3neuCyaDOiLdqO3t71bigBZs9cZb0=;
 	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:From;
-	b=XM50GNQDMFu7aInxV5X7uTTGab4L6SqXz7SqKVW0g/uEKV1684F07AMrpvezt5T5A
-	 uzVWI82Mc0VM6mfu5vtkUnFCNv8crm+3CM+d8zoOh22uzbuJeki22rdCyERU5miyVr
-	 VdmwdTQegfjLXqJ2wdoW6fy5rjdhlJ5Nvaq85oACFEUi9u8YOygDFTVWrR/LuNx/l7
-	 XAJXN5ekT4TTp2Y72pjRuqOMNNOLv/xnx8I3VJLYG2rKhiXbKJh2wDEWJn4JwbAubY
-	 139x1yxVlhA7N7kAGgRnNhOpVkBmM0TadvtAcm2Mwpk3OszEwwuIIKTwnjEOl3zzZZ
-	 6wSTbCkEYio1Q==
+	b=ynJTYQvYZGBEHcX6oDbV6pKeLPynUJ3nhytt5l1mf4VbhwW6LVvNfdkUv26YGG/NY
+	 2/W4Maz7AWJucjpnhIhuih0mgCMTEFBXbCkeEhej2fXx1S7WlUytSGFbdgm2SyyKxA
+	 AG7Ay9/EfN2LOlVLOeFdbs5jNd6ozcWy5690ULZavhF0Z93uH0u747ZI8fovXl40+9
+	 SB5S7nC8SHGFi+ghXaIpnhXD8iSRRiq7rkZVvYiXjXRevZ3fcfT/G3W+YHtjb1IJOH
+	 PNEJOIpJD2OdQJWvogjjE4mPUoP6pYs3zViimJFHpLGXGnYEU/EP5yM+trCeAKyJCJ
+	 SDF3mDwZetGFQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 6497340CDA;
-	Tue, 25 Feb 2025 14:36:08 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id 82C352292
- for <intel-wired-lan@lists.osuosl.org>; Tue, 25 Feb 2025 14:36:07 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id E79FF40DBF;
+	Tue, 25 Feb 2025 14:47:53 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 56B782019
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 25 Feb 2025 14:47:52 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 6711E40CDA
- for <intel-wired-lan@lists.osuosl.org>; Tue, 25 Feb 2025 14:36:07 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 5239360F00
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 25 Feb 2025 14:47:52 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id UDzgn7ZzHDgy for <intel-wired-lan@lists.osuosl.org>;
- Tue, 25 Feb 2025 14:36:06 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.11;
- helo=mgamail.intel.com; envelope-from=vitaly.lifshits@intel.com;
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id sCnaFv1varf5 for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 25 Feb 2025 14:47:51 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.10;
+ helo=mgamail.intel.com; envelope-from=jedrzej.jagielski@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 5A31340C11
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 5A31340C11
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.11])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 5A31340C11
- for <intel-wired-lan@lists.osuosl.org>; Tue, 25 Feb 2025 14:36:06 +0000 (UTC)
-X-CSE-ConnectionGUID: jt8MNxsoSCemByqFGc07wQ==
-X-CSE-MsgGUID: 8970D01sSa6Pzw0UgaTARA==
-X-IronPort-AV: E=McAfee;i="6700,10204,11356"; a="51932790"
-X-IronPort-AV: E=Sophos;i="6.13,314,1732608000"; d="scan'208";a="51932790"
-Received: from fmviesa003.fm.intel.com ([10.60.135.143])
- by fmvoesa105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 25 Feb 2025 06:36:06 -0800
-X-CSE-ConnectionGUID: DSZ7hP54Sr65H48fKd6QEw==
-X-CSE-MsgGUID: y2FhwMBtSr6izevkJMtF9A==
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 8563360EFD
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8563360EFD
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.10])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 8563360EFD
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 25 Feb 2025 14:47:51 +0000 (UTC)
+X-CSE-ConnectionGUID: BSUJkaLNTuGpWHSzEsiMWw==
+X-CSE-MsgGUID: +tm3u+QAT0ujEuQqpDeJzA==
+X-IronPort-AV: E=McAfee;i="6700,10204,11314"; a="52726743"
+X-IronPort-AV: E=Sophos;i="6.12,310,1728975600"; d="scan'208";a="52726743"
+Received: from fmviesa002.fm.intel.com ([10.60.135.142])
+ by fmvoesa104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 25 Feb 2025 06:47:51 -0800
+X-CSE-ConnectionGUID: PbCDNw04STqSU6KyEZRFHw==
+X-CSE-MsgGUID: FOeA6XzKTl6CfEDKDeK1Qg==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.12,224,1728975600"; d="scan'208";a="120513243"
-Received: from ccdlinuxdev11.iil.intel.com ([143.185.162.51])
- by fmviesa003.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 25 Feb 2025 06:36:04 -0800
-From: Vitaly Lifshits <vitaly.lifshits@intel.com>
+X-IronPort-AV: E=Sophos;i="6.13,314,1732608000"; d="scan'208";a="139649337"
+Received: from os-delivery.igk.intel.com ([10.102.18.218])
+ by fmviesa002.fm.intel.com with ESMTP; 25 Feb 2025 06:47:48 -0800
+From: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Cc: Vitaly Lifshits <vitaly.lifshits@intel.com>
-Date: Tue, 25 Feb 2025 16:36:01 +0200
-Message-Id: <20250225143601.1173539-1-vitaly.lifshits@intel.com>
-X-Mailer: git-send-email 2.34.1
+Cc: anthony.l.nguyen@intel.com, netdev@vger.kernel.org, andrew@lunn.ch,
+ pmenzel@molgen.mpg.de, horms@kernel.org,
+ Jedrzej Jagielski <jedrzej.jagielski@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Mateusz Polchlopek <mateusz.polchlopek@intel.com>
+Date: Tue, 25 Feb 2025 15:33:55 +0100
+Message-Id: <20250225143355.190469-1-jedrzej.jagielski@intel.com>
+X-Mailer: git-send-email 2.31.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1740494166; x=1772030166;
+ t=1740494872; x=1772030872;
  h=from:to:cc:subject:date:message-id:mime-version:
  content-transfer-encoding;
- bh=Hhz4WqWAjeaThaR2VMgPc34GnjANHYcYwz3FbvQy/R4=;
- b=WKdO+k0wdP0VRGpZ81ldlkFC704JzOT2C5MBTfTQgTvkMP8qcPm+N8sl
- 0jyyXEL2yA8mri/HCmjIDMGcjKitVfFdgi2BDZBKUGRud2paR3IklrZ4b
- E8zTGio/BOFNBLOCiXxBfOGrdWLatKHKyMb6Tn3r9s5tjI65st7W6GMsp
- +OEh1NDh7ymKAdB0+XiGURoFLOrRBeevkECF8vaqAxGnjbuU+vBHeD3sp
- XhcNFQ4eJX3geSp2KU+zsjaVygLP3mTMO3dQr1Pm8MqjSIr9y++jHDjp1
- cQz+WKOkiEa42VwdmZN0eTHmpqAbrqRH1BUo85JhipryLe2DdaImN3wyD
- g==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ bh=GOlnuZsMCeEkaF9DW/p74sS+cbCTA2hqkjHbsiAlfNw=;
+ b=mBVvFcIpHkOvwq1ogy9vC3W0MvTHvaQN+9XSpm5zOOQy01NY+K1eRL/1
+ eSOPxiD5vAilMV8LBbtIz34yTJuR3FAwKpOJeMkzpuZwVBMxxS8/Jec0M
+ /XUbZpOheMgOF4OhIVNKAJTm5EkYP2VaLln8qnME8U1ozvVZclhZOqde+
+ OecPBvHGAjSp/sKlFgvP7KuEghkmEpeW4Zlazeb2oYhFCVFQ7FCelmvAN
+ LVbdrjrBvnBdMhj5QXPkjPXorDUMA8fH52lPf4l+WhTj7FrSzoJcVLS43
+ Pk5GX/toHdsrVFVTcWPoD+93hCSY1qnrN+t3TnSvZDg50qk3D7uxUKB8n
+ Q==;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=WKdO+k0w
-Subject: [Intel-wired-lan] [PATCH iwl-net v2 1/1] e1000e: change k1
- configuration on MTP and later platforms
+ header.s=Intel header.b=mBVvFcIp
+Subject: [Intel-wired-lan] [PATCH iwl-next v5] ixgbe: add support for
+ thermal sensor event reception
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -107,153 +110,61 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Starting from Meteor Lake, the Kumeran interface between the integrated
-MAC and the I219 PHY works at a different frequency. This caused sporadic
-MDI errors when accessing the PHY, and in rare circumstances could lead
-to packet corruption.
+E610 NICs unlike the previous devices utilising ixgbe driver
+are notified in the case of overheating by the FW ACI event.
 
-To overcome this, the driver introduces minor changes to the Kumeran idle
-state (K1) parameters during device initialization. Hardware reset
-reverts this configuration, therefore it needs to be applied in a few
-places.
+In event of overheat when threshold is exceeded, FW suspends all
+traffic and sends overtemp event to the driver. Then driver
+logs appropriate message and disables the adapter instance.
+The card remains in that state until the platform is rebooted.
 
-Fixes: cc23f4f0b6b9 ("e1000e: Add support for Meteor Lake")
-Signed-off-by: Vitaly Lifshits <vitaly.lifshits@intel.com>
+This approach is a solution to the fact current version of the
+E610 FW doesn't support reading thermal sensor data by the
+SW. So give to user at least any info that overtemp event
+has occurred, without interface disappearing from the OS
+without any note.
+
+Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Reviewed-by: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
+Reviewed-by: Simon Horman <horms@kernel.org>
+Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
 ---
- drivers/net/ethernet/intel/e1000e/ich8lan.c | 78 +++++++++++++++++++--
- drivers/net/ethernet/intel/e1000e/ich8lan.h |  4 ++
- 2 files changed, 78 insertions(+), 4 deletions(-)
+v2,3,4 : commit msg tweaks
+v5: use ixgbe_down()
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c      | 4 ++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type_e610.h | 3 +++
+ 2 files changed, 7 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-index 2f9655cf5dd9..5af5cc9b63df 100644
---- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
-+++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-@@ -285,6 +285,46 @@ static void e1000_toggle_lanphypc_pch_lpt(struct e1000_hw *hw)
- 	}
- }
- 
-+/**
-+ * e1000_reconfigure_k1_exit_timeout - reconfigure K1 exit timeout to
-+ * align to MTP and later platform requirements.
-+ * @hw: pointer to the HW structure
-+ *
-+ * Assuming that PHY semaphore is taken prior to this function call.
-+ *
-+ * Return: 0 on success, negative on failure
-+ */
-+static s32 e1000_reconfigure_k1_exit_timeout(struct e1000_hw *hw)
-+{
-+	u16 phy_timeout;
-+	u32 fextnvm12;
-+	s32 ret_val;
-+
-+	if (hw->mac.type < e1000_pch_mtp)
-+		return 0;
-+
-+	/* Change Kumeran K1 power down state from P0s to P1 */
-+	fextnvm12 = er32(FEXTNVM12);
-+	fextnvm12 |= BIT(23);
-+	fextnvm12 &= ~BIT(22);
-+	ew32(FEXTNVM12, fextnvm12);
-+
-+	/* Wait for the interface the settle */
-+	msleep(1);
-+
-+	/* Change K1 exit timeout */
-+	ret_val = e1e_rphy_locked(hw, E1000_PHY_TIMEOUTS_REG,
-+				  &phy_timeout);
-+	if (ret_val)
-+		return ret_val;
-+
-+	phy_timeout &= ~E1000_PHY_TIMEOUTS_K1_EXIT_TO_MASK;
-+	phy_timeout |= 0xF00;
-+
-+	return e1e_wphy_locked(hw, E1000_PHY_TIMEOUTS_REG,
-+				  phy_timeout);
-+}
-+
- /**
-  *  e1000_init_phy_workarounds_pchlan - PHY initialization workarounds
-  *  @hw: pointer to the HW structure
-@@ -327,15 +367,23 @@ static s32 e1000_init_phy_workarounds_pchlan(struct e1000_hw *hw)
- 	 * LANPHYPC Value bit to force the interconnect to PCIe mode.
- 	 */
- 	switch (hw->mac.type) {
-+	case e1000_pch_mtp:
-+	case e1000_pch_lnp:
-+	case e1000_pch_ptp:
-+	case e1000_pch_nvp:
-+		/* At this point the PHY might be inaccessible so don't
-+		 * propagate the failure
-+		 */
-+		if (e1000_reconfigure_k1_exit_timeout(hw))
-+			break;
-+
-+		fallthrough;
- 	case e1000_pch_lpt:
- 	case e1000_pch_spt:
- 	case e1000_pch_cnp:
- 	case e1000_pch_tgp:
- 	case e1000_pch_adp:
--	case e1000_pch_mtp:
--	case e1000_pch_lnp:
--	case e1000_pch_ptp:
--	case e1000_pch_nvp:
-+
- 		if (e1000_phy_is_accessible_pchlan(hw))
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 7236f20c9a30..41809dd02aff 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -3185,6 +3185,10 @@ static void ixgbe_handle_fw_event(struct ixgbe_adapter *adapter)
+ 		case ixgbe_aci_opc_get_link_status:
+ 			ixgbe_handle_link_status_event(adapter, &event);
  			break;
++		case ixgbe_aci_opc_temp_tca_event:
++			e_crit(drv, "%s\n", ixgbe_overheat_msg);
++			ixgbe_down(adapter);
++			break;
+ 		default:
+ 			e_warn(hw, "unknown FW async event captured\n");
+ 			break;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type_e610.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type_e610.h
+index 8d06ade3c7cd..617e07878e4f 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type_e610.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type_e610.h
+@@ -171,6 +171,9 @@ enum ixgbe_aci_opc {
+ 	ixgbe_aci_opc_done_alt_write			= 0x0904,
+ 	ixgbe_aci_opc_clear_port_alt_write		= 0x0906,
  
-@@ -421,6 +469,16 @@ static s32 e1000_init_phy_workarounds_pchlan(struct e1000_hw *hw)
- 		ret_val = hw->phy.ops.check_reset_block(hw);
- 		if (ret_val)
- 			e_err("ME blocked access to PHY after reset\n");
++	/* TCA Events */
++	ixgbe_aci_opc_temp_tca_event                    = 0x0C94,
 +
-+		if (hw->mac.type >= e1000_pch_mtp) {
-+			ret_val = hw->phy.ops.acquire(hw);
-+			if (ret_val) {
-+				e_err("Failed to reconfigure K1 exit timeout\n");
-+				goto out;
-+			}
-+			ret_val = e1000_reconfigure_k1_exit_timeout(hw);
-+			hw->phy.ops.release(hw);
-+		}
- 	}
+ 	/* debug commands */
+ 	ixgbe_aci_opc_debug_dump_internals		= 0xFF08,
  
- out:
-@@ -4888,6 +4946,18 @@ static s32 e1000_init_hw_ich8lan(struct e1000_hw *hw)
- 	u16 i;
- 
- 	e1000_initialize_hw_bits_ich8lan(hw);
-+	if (hw->mac.type >= e1000_pch_mtp) {
-+		ret_val = hw->phy.ops.acquire(hw);
-+		if (ret_val)
-+			return ret_val;
-+
-+		ret_val = e1000_reconfigure_k1_exit_timeout(hw);
-+		if (ret_val) {
-+			e_dbg("Error failed to reconfigure K1 exit timeout\n");
-+			return ret_val;
-+		}
-+		hw->phy.ops.release(hw);
-+	}
- 
- 	/* Initialize identification LED */
- 	ret_val = mac->ops.id_led_init(hw);
-diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.h b/drivers/net/ethernet/intel/e1000e/ich8lan.h
-index 2504b11c3169..dffc63e89ee2 100644
---- a/drivers/net/ethernet/intel/e1000e/ich8lan.h
-+++ b/drivers/net/ethernet/intel/e1000e/ich8lan.h
-@@ -219,6 +219,10 @@
- #define I217_PLL_CLOCK_GATE_REG	PHY_REG(772, 28)
- #define I217_PLL_CLOCK_GATE_MASK	0x07FF
- 
-+/* PHY Timeouts */
-+#define E1000_PHY_TIMEOUTS_REG                   PHY_REG(770, 21)
-+#define E1000_PHY_TIMEOUTS_K1_EXIT_TO_MASK       0x0FC0
-+
- #define SW_FLAG_TIMEOUT		1000	/* SW Semaphore flag timeout in ms */
- 
- /* Inband Control */
 -- 
-2.34.1
+2.31.1
 
