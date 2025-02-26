@@ -1,133 +1,95 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 77779C18E7C
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 26 Feb 2025 15:25:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7C24BC021B8
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 26 Feb 2025 18:50:34 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 22CD780D64;
-	Wed, 26 Feb 2025 15:25:51 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 2FC6861045;
+	Wed, 26 Feb 2025 18:50:34 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Prefk72o2PKx; Wed, 26 Feb 2025 15:25:50 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id Viw7xk2TIE0Q; Wed, 26 Feb 2025 18:50:32 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7A3B480CB2
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2ECB860598
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1740583550;
-	bh=2cCFCorbQ79EPV2pbT8nLnau3UHQm0d9DNeVh1UKL6E=;
+	s=default; t=1740595832;
+	bh=NOy8MZswnCN9Z/sFkyFtvMhaELZGVtDWghtPctZZWBg=;
 	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=wweyXYMpF6s9rnkDGQFVALi0A3OHVDD6GsZQwP/s1cieomPzgzYgAOXy1Ex0G8UTT
-	 YXQPyJKf1fjt5/cCXbW/Z7iHfuddqCXNgeYTTk5D07kxn++7NI3qK16zb/NGsUDn7m
-	 /Cw1zJBVFonefVRWlk02eXNG7mz9w84JuRVmspmC05yKbCUhc8YAySX7DmP3qrI315
-	 h1+R4j1u7JNzqiCj9u+eaO0DRXlxOTGLhPBW+hwCEuzTd+3mJb5O/SvJdylGte+bvJ
-	 S8jL3MoBILyn3KLR07AGAqfaXFSY6YjzKeeeZ1j8vqgS7hHTUhh8p5sSqWYbPTNAK7
-	 XfL6om3GLA9CQ==
+	b=G92uDUcEdJOAjbq1ZLk5cu+sgwwNpaa9Hrt5ly3K9SHQtFtR5VO2rWMbYMfwdH5MU
+	 vKZhSDUr2bUkYXSP/xZVdrbs24FzfKcIZzg0iB7Sqwu6XBpd224vhZKOahuo0e1i1x
+	 nu1x3IN0xlYMJKAwMw0vDChopVFVXOKXil8vNjPMl2zKLMxFnW4R15pBxBnlonPxdJ
+	 +pfJJND/VERwNvA3RUGx7qU+1Ui4uPnyfbtAQcQiCyAkNCfzKzp6guZzG2VsEMXm/Y
+	 xw3TNl2rQUw0B4Pr8nC7eU9x0K5yFIKo9Pg1JAy2Tkamo8GVFAbA4SIwykzr7+PQAl
+	 9G+Y8LKWQANKg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 7A3B480CB2;
-	Wed, 26 Feb 2025 15:25:50 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id A34FA94F
- for <intel-wired-lan@lists.osuosl.org>; Wed, 26 Feb 2025 15:25:49 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 2ECB860598;
+	Wed, 26 Feb 2025 18:50:32 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 6D82D1ED4
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 26 Feb 2025 18:50:30 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 8731480CB2
- for <intel-wired-lan@lists.osuosl.org>; Wed, 26 Feb 2025 15:25:49 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 4DBE740D6C
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 26 Feb 2025 18:50:30 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id CMnoBYWEwmCx for <intel-wired-lan@lists.osuosl.org>;
- Wed, 26 Feb 2025 15:25:48 +0000 (UTC)
-Received-SPF: None (mailfrom) identity=mailfrom;
- client-ip=2a00:1450:4864:20::52c; helo=mail-ed1-x52c.google.com;
- envelope-from=jiri@resnulli.us; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 4CA9E80CA5
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4CA9E80CA5
-Received: from mail-ed1-x52c.google.com (mail-ed1-x52c.google.com
- [IPv6:2a00:1450:4864:20::52c])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 4CA9E80CA5
- for <intel-wired-lan@lists.osuosl.org>; Wed, 26 Feb 2025 15:25:46 +0000 (UTC)
-Received: by mail-ed1-x52c.google.com with SMTP id
- 4fb4d7f45d1cf-5e0516e7a77so10682617a12.1
- for <intel-wired-lan@lists.osuosl.org>; Wed, 26 Feb 2025 07:25:46 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20230601; t=1740583544; x=1741188344;
- h=in-reply-to:content-disposition:mime-version:references:message-id
- :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
- :message-id:reply-to;
- bh=2cCFCorbQ79EPV2pbT8nLnau3UHQm0d9DNeVh1UKL6E=;
- b=CyCUVPPwFm+UXTh4dz3jnu/8fRGSDWaDP5QhH435QqpjAvn0RvFVch2lFZdKsF6SWe
- cmRqdTFbhT3KIk4tGXNcdoZ89sRNAOxAzL5C0fJ+Xi2HnVkCPDUNYBPp0/vcyqE58rXi
- wEaNbx4OlLHZKov7efod5Z0eAjN2vuEpa10rDqNiTzSjHCEFbJ26w6tZfqDnp+5c4RV6
- RHM/g5VDH2dnDydU3HG24LcZtEdKcDVV3d7s8e8rUPyZylkiZQ5fOnWvTkzu1tiX4Ru5
- /VM4RSopYtWSFlpDU7eLInybjeYLNng6rMibiVMM7mGzQ7VHpYKPj3qaCkKI8E1LBDxZ
- lzpw==
-X-Gm-Message-State: AOJu0Yx8KQMZv46KZRsX1KCWAddjCZYNNWHrV1hNCy94yj//wig9AJPN
- NIagahKpdzrCuk0zfy8/Glkg5GT2GlJNXSI1Lr10taUVcjRhr54wO7vKVi3VqAQ=
-X-Gm-Gg: ASbGncveVMhbMYK6lCl4tEkiGGONRJWXmHpprDCn1+YyfBk1oOcHp9LfwinXMm8pJQj
- IgmBNBAoQ0U0LQMyPAmegO9xOIf9pe1UCiPE3St+yn2DhxaIZvYCfYrxJZFFPvcazw29M6/6gT5
- nYnEI68ZD0kykd4WCjeGKH/RCT/dyh9TmpwDDWZgFEl21UuTDuf2IAtPkVtdyTTthDPuIEbFaJl
- EHOTP7YDv9hEaX63lS747VU0mxYwoH8JXACp4QsllftlEGPcP8aFYZAXbkNngi3Gi/S+IVNdGkG
- T2cA0O7PBSbb4gdXkJkYoYq5qD5rX6dCK9ckgt48PLHRWBh3fgGX9g==
-X-Google-Smtp-Source: AGHT+IEAB0uZUjm/Wdvyv3vHgJUK+04TyiWeXLkLcV/pvCw1WVdLP+IcTgUanL5Fn+YUOt+NzbtPZQ==
-X-Received: by 2002:a05:6402:348d:b0:5dc:7823:e7e4 with SMTP id
- 4fb4d7f45d1cf-5e0b70f8732mr22414421a12.12.1740583544488; 
- Wed, 26 Feb 2025 07:25:44 -0800 (PST)
-Received: from jiri-mlt.client.nvidia.com ([140.209.217.212])
- by smtp.gmail.com with ESMTPSA id
- 4fb4d7f45d1cf-5e461f3e84bsm2970646a12.76.2025.02.26.07.25.42
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 26 Feb 2025 07:25:44 -0800 (PST)
-Date: Wed, 26 Feb 2025 16:25:41 +0100
-From: Jiri Pirko <jiri@resnulli.us>
-To: Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Cc: intel-wired-lan@lists.osuosl.org, 
- Tony Nguyen <anthony.l.nguyen@intel.com>, Jakub Kicinski <kuba@kernel.org>, 
- Cosmin Ratiu <cratiu@nvidia.com>, Tariq Toukan <tariqt@nvidia.com>,
- netdev@vger.kernel.org, Konrad Knitter <konrad.knitter@intel.com>,
- Jacob Keller <jacob.e.keller@intel.com>, davem@davemloft.net, 
- Eric Dumazet <edumazet@google.com>, Paolo Abeni <pabeni@redhat.com>,
- Andrew Lunn <andrew@lunn.ch>, linux-kernel@vger.kernel.org,
- ITP Upstream <nxne.cnse.osdt.itp.upstreaming@intel.com>, 
- Carolina Jubran <cjubran@nvidia.com>
-Message-ID: <rar5z5jtct4qbucpcr6i73zecl5mz2otdqq6uc5ygaukxzi4jb@4rugso6dgobh>
-References: <20250219164410.35665-1-przemyslaw.kitszel@intel.com>
- <20250219164410.35665-2-przemyslaw.kitszel@intel.com>
- <ybrtz77i3hbxdwau4k55xn5brsnrtyomg6u65eyqm4fh7nsnob@arqyloer2l5z>
- <87855c66-0ab4-4b40-81fa-b37149c17dca@intel.com>
- <zzyls3te4he2l5spf4wzfb53imuoemopwl774dzq5t5s22sg7l@37fk7fvgvnrr>
- <e027f9e5-ff3a-4bc1-8297-9400a4ff62a6@intel.com>
- <iiemy2zwko4iehuw6cgbipszcxonanjpumxzv4nbdvgvdgi5fx@jz3hkez3lygw>
- <31477321-c064-4f3d-b4c9-e858d98d5694@intel.com>
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id BLjNd5Abndyl for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 26 Feb 2025 18:50:29 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2600:3c04::f03c:95ff:fe5e:7468; helo=tor.source.kernel.org;
+ envelope-from=leon@kernel.org; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 35D0440C49
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 35D0440C49
+Received: from tor.source.kernel.org (tor.source.kernel.org
+ [IPv6:2600:3c04::f03c:95ff:fe5e:7468])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 35D0440C49
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 26 Feb 2025 18:50:28 +0000 (UTC)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+ by tor.source.kernel.org (Postfix) with ESMTP id B05C261503;
+ Wed, 26 Feb 2025 18:50:19 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CAB18C4CED6;
+ Wed, 26 Feb 2025 18:50:26 +0000 (UTC)
+Date: Wed, 26 Feb 2025 20:50:22 +0200
+From: Leon Romanovsky <leon@kernel.org>
+To: "Ertman, David M" <david.m.ertman@intel.com>
+Cc: "Nikolova, Tatyana E" <tatyana.e.nikolova@intel.com>,
+ "jgg@nvidia.com" <jgg@nvidia.com>,
+ "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
+ "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>
+Message-ID: <20250226185022.GM53094@unreal>
+References: <20250225050428.2166-1-tatyana.e.nikolova@intel.com>
+ <20250225050428.2166-2-tatyana.e.nikolova@intel.com>
+ <20250225075530.GD53094@unreal>
+ <IA1PR11MB61944C74491DECA111E84021DDC22@IA1PR11MB6194.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <31477321-c064-4f3d-b4c9-e858d98d5694@intel.com>
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=resnulli-us.20230601.gappssmtp.com; s=20230601; t=1740583544; x=1741188344;
- darn=lists.osuosl.org; 
- h=in-reply-to:content-disposition:mime-version:references:message-id
- :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
- bh=2cCFCorbQ79EPV2pbT8nLnau3UHQm0d9DNeVh1UKL6E=;
- b=pCXyZkRxFf6NE9tMlbGrQWwHvWVxURwrU3RYMcsVlCiyK1JEBeYz3V7pmzzsavaAZt
- 1Ueya5dZujnjw1j8cgqFI2u3pRmALoOGhPEM9uuUAItofH7aRh5CaMJ2aU6XO8pB2oWb
- nB6I+TGl+CNO02cYBvWwN9h779taQGUkAd0tpDy6gW/7yFybdzkdirigZ2e/zFFFmrtf
- 8gzv4+2Aum6tUq8fL4hFOzwRqkEODlian02XMNo7mOq30+Nx7gnZdgcqztD68Xyq2B07
- HpuVQN5PR8Huecm2lZYRJa60DG3iaUkNn6MoqQUq6kr4Jtizb0pk2Pu3jVmQuMMAAytT
- 9Zeg==
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dmarc=none (p=none dis=none)
- header.from=resnulli.us
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=resnulli-us.20230601.gappssmtp.com
- header.i=@resnulli-us.20230601.gappssmtp.com header.a=rsa-sha256
- header.s=20230601 header.b=pCXyZkRx
-Subject: Re: [Intel-wired-lan] [RFC net-next v2 1/2] devlink: add whole
- device devlink instance
+In-Reply-To: <IA1PR11MB61944C74491DECA111E84021DDC22@IA1PR11MB6194.namprd11.prod.outlook.com>
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=kernel.org; s=k20201202; t=1740595827;
+ bh=GAlBE1MxBLfuNJIdhoKlRlj8/U0KvapKDVttTpAWkto=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=O+4/s9LhDb3+Glvl+MPUJGDHbmTaCE5lHu8qIRVou/5uMi4gLs+UsT45p/eEplF13
+ X6+GbdS5V8QvUDsV1RYxM6s86Z7YRDs3bHSwEI9iMzoEAZxGs1F+fO/qoeo+Sy9+7e
+ ah3TfR5ac/wpSWNargdVhkYDiz+jljWsfwnoIe4VcaLJU2MVYTL2UCTlXKvzVuHQCf
+ 4+5sX7Kb3qe311nMoFcvPRYbmG/9eypEHJYoCIkEwtbVxPMy6/vXZmltChkJuei9Uu
+ Y1oStQ5jFCVLR4QsvoDvq9vj1QLyvljO07AT5MvdvcV+500o3dnfPEXtQk33vP0UZA
+ lxWmXMOf2I8YA==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dmarc=pass (p=quarantine dis=none)
+ header.from=kernel.org
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20201202 header.b=O+4/s9Lh
+Subject: Re: [Intel-wired-lan] [iwl-next v4 1/1] iidc/ice/irdma: Update IDC
+ to support multiple consumers
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -143,38 +105,122 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Wed, Feb 26, 2025 at 04:06:19PM +0100, przemyslaw.kitszel@intel.com wrote:
->On 2/26/25 15:48, Jiri Pirko wrote:
->> Tue, Feb 25, 2025 at 04:40:49PM +0100, przemyslaw.kitszel@intel.com wrote:
->> > On 2/25/25 15:35, Jiri Pirko wrote:
->> > > Tue, Feb 25, 2025 at 12:30:49PM +0100, przemyslaw.kitszel@intel.com wrote:
->> 
->> [...]
->> 
->> > > > output, for all PFs and VFs on given device:
->> > > > 
->> > > > pci/0000:af:00:
->> > > >    name rss size 8 unit entry size_min 0 size_max 24 size_gran 1
->> > > >      resources:
->> > > >        name lut_512 size 0 unit entry size_min 0 size_max 16 size_gran 1
->> > > >        name lut_2048 size 8 unit entry size_min 0 size_max 8 size_gran 1
->> > > > 
->> > > > What is contributing to the hardness, this is not just one for all ice
->> > > > PFs, but one per device, which we distinguish via pci BDF.
->> > > 
->> > > How?
->> > 
->> > code is in ice_adapter_index()
->> 
->> If you pass 2 pfs of the same device to a VM with random BDF, you get 2
->> ice_adapters, correct?
->
->Right now, yes
+On Wed, Feb 26, 2025 at 05:36:44PM +0000, Ertman, David M wrote:
+> > -----Original Message-----
+> > From: Leon Romanovsky <leon@kernel.org>
+> > Sent: Monday, February 24, 2025 11:56 PM
+> > To: Nikolova, Tatyana E <tatyana.e.nikolova@intel.com>
+> > Cc: jgg@nvidia.com; intel-wired-lan@lists.osuosl.org; linux-
+> > rdma@vger.kernel.org; netdev@vger.kernel.org; Ertman, David M
+> > <david.m.ertman@intel.com>
+> > Subject: Re: [iwl-next v4 1/1] iidc/ice/irdma: Update IDC to support multiple
+> > consumers
+> > 
+> > On Mon, Feb 24, 2025 at 11:04:28PM -0600, Tatyana Nikolova wrote:
+> > > From: Dave Ertman <david.m.ertman@intel.com>
+> > >
+> > > To support RDMA for E2000 product, the idpf driver will use the IDC
+> > > interface with the irdma auxiliary driver, thus becoming a second
+> > > consumer of it. This requires the IDC be updated to support multiple
+> > > consumers. The use of exported symbols no longer makes sense because it
+> > > will require all core drivers (ice/idpf) that can interface with irdma
+> > > auxiliary driver to be loaded even if hardware is not present for those
+> > > drivers.
+> > 
+> > In auxiliary bus world, the code drivers (ice/idpf) need to created
+> > auxiliary devices only if specific device present. That auxiliary device
+> > will trigger the load of specific module (irdma in our case).
+> > 
+> > EXPORT_SYMBOL won't trigger load of irdma driver, but the opposite is
+> > true, load of irdma will trigger load of ice/idpf drivers (depends on
+> > their exported symbol).
+> > 
+> > >
+> > > To address this, implement an ops struct that will be universal set of
+> > > naked function pointers that will be populated by each core driver for
+> > > the irdma auxiliary driver to call.
+> > 
+> > No, we worked very hard to make proper HW discovery and driver autoload,
+> > let's not return back. For now, it is no-go.
+> 
+> Hi Leon,
+> 
+> I am a little confused about what the problem here is.  The main issue I pull
+> from your response is: Removing exported symbols will stop ice/idpf from
+> autoloading when irdma loads.  Is this correct or did I miss your point?
 
-That is a bug.
+It is one of the main points.
 
->
->> 
->> [...]
->
->What I want is to keep two ice_adapters for two actual devices (SDNs)
+> 
+> But, if there is an ice or idpf supported device present in the system, the
+> appropriate driver will have already been loaded anyway (and gone through its
+> probe flow to create auxiliary devices).  If it is not loaded, then the system owner
+> has either unloaded it manually or blacklisted it.  This would not cause an issue
+> anyway, since irdma and ice/idpf can load in any order.
+
+There are two assumptions above, which both not true.
+1. Users never issue "modprobe irdma" command alone and always will call
+to whole chain "modprobe ice ..." before.
+2. You open-code module subsystem properly with reference counters,
+ownership and locks to protect from function pointers to be set/clear
+dynamically.
+
+> 
+> > 
+> > <...>
+> > 
+> > > +/* Following APIs are implemented by core PCI driver */
+> > > +struct idc_rdma_core_ops {
+> > > +	int (*vc_send_sync)(struct idc_rdma_core_dev_info *cdev_info, u8
+> > *msg,
+> > > +			    u16 len, u8 *recv_msg, u16 *recv_len);
+> > > +	int (*vc_queue_vec_map_unmap)(struct idc_rdma_core_dev_info
+> > *cdev_info,
+> > > +				      struct idc_rdma_qvlist_info *qvl_info,
+> > > +				      bool map);
+> > > +	/* vport_dev_ctrl is for RDMA CORE driver to indicate it is either
+> > ready
+> > > +	 * for individual vport aux devices, or it is leaving the state where it
+> > > +	 * can support vports and they need to be downed
+> > > +	 */
+> > > +	int (*vport_dev_ctrl)(struct idc_rdma_core_dev_info *cdev_info,
+> > > +			      bool up);
+> > > +	int (*request_reset)(struct idc_rdma_core_dev_info *cdev_info,
+> > > +			     enum idc_rdma_reset_type reset_type);
+> > > +};
+> > 
+> > Core driver can call to callbacks in irdma, like you already have for
+> > irdma_iidc_event_handler(), but all calls from irdma to core driver must
+> > be through exported symbols. It gives us race-free world in whole driver
+> > except one very specific place (irdma_iidc_event_handler).
+> 
+> I am confused here as well.  Calling a function through an exported symbol,
+> or calling the same function from a function pointer should not affect the
+> generation of a race condition, as the same function is being called.
+> What is inherently better about an exported symbol versus a function
+> pointer when considering race conditions?
+
+Exported symbol guarantees that function exists in core module. Module
+subsystem will ensure that core module is impossible to unload until all
+users are gone. Function pointer has no such guarantees.
+
+> 
+> Also, why is calling a function pointer from the irdma module ok, but calling
+> one from the core module not?
+
+Because we need to make sure that core module doesn't disappear while
+irdma executes its flow. The opposite is not true because core module
+controls irdma devices and aware than irdma module is loaded/unloaded.
+
+Thanks
+
+> 
+> Again - Thank you for the review, and if I completely missed your points, please let me know!
+> 
+> Thanks
+> DaveE
+> 
+> > 
+> > Thanks
+> 
+> 
