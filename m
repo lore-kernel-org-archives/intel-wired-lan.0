@@ -1,124 +1,143 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2E5F6C19F2E
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 27 Feb 2025 14:03:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B4836C19F2E
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 27 Feb 2025 15:11:22 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 009EC83B8F;
-	Thu, 27 Feb 2025 14:03:42 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 44D424127A;
+	Thu, 27 Feb 2025 15:11:22 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id gQdX36ettJ3b; Thu, 27 Feb 2025 14:03:40 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 7H7AO8JhnHlD; Thu, 27 Feb 2025 15:11:21 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org EB7A583F3F
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0EC5A40C39
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1740665020;
-	bh=BbAckGIr4ov9/p9+sgalQ78fYV7Q/jbVoBJFnMEdago=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1740669081;
+	bh=mBJu1LUBZD7huyP2Fqh3L6NWg2IhYufGL+1Vn+2FDk4=;
+	h=Date:From:To:Cc:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=Xjur9YsxaUYmOroB6zK8I50JwYfFfLuYikYeAeHgMjOM+l6TKAnDwP4PDK1YxQqjc
-	 pXgbRSM+VXIpbskceLcNSBPJYGMO45dq+1jFw1Fmur8LSRF4hZdd1eVd/OMuBkNLxD
-	 Z9VbcaGbhZsssrLXiBki2VFdfUZFroQQHjUedXMO0AOzvuJ3US+sOlHXiHHQpiPF5D
-	 OLhdJnvWNxqGYSUej7RawhHusBkcUNjhvPbabyHI84dHg3giVqpSl/H5WK0cCrUQJ6
-	 FqXHK0FhU13GmsOdJ+2/TuVqTM/verSb/3PERwBcqUI0E4Nry7l4h6bh/hwz7wLIEG
-	 v9LClkReBvm7Q==
+	b=FuUtTkBcPP9+OGVttM/W7s8bMMSnXyJDYOhhOUKXUk1Jd/uWm41A00P0IPb+XAB7e
+	 hoGHUkV9Y6pbP/r7EFaYmhhWwlfdFzQX26dAAZqK/xsjpTO6iKi/i48VmNxhRNhghf
+	 VAJqneZTgdzE972k79cIokn+XLPKjGyygpzHPsMNb3th0Lh+csqqK8IJ1+oiguskzt
+	 C1utrSQvjFzrx9TulED8shck/jKG5/Twp2oJXc1POygtQckxFgtt/IZBuzUNo97iy9
+	 qh1b5icCcpZRhvCrStMGGZ7RGse7queDUSnJ1qiiOHO/HOzXW1oy2W0wLMR4WTLnoB
+	 L+H2ZOsbgfVgg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id EB7A583F3F;
-	Thu, 27 Feb 2025 14:03:39 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id DBD7E69
- for <intel-wired-lan@lists.osuosl.org>; Thu, 27 Feb 2025 14:03:38 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 0EC5A40C39;
+	Thu, 27 Feb 2025 15:11:21 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 3B2B768
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 27 Feb 2025 15:11:20 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id AE531414D0
- for <intel-wired-lan@lists.osuosl.org>; Thu, 27 Feb 2025 14:03:38 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 348D5605A4
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 27 Feb 2025 15:11:20 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id myF6NI1o-XDm for <intel-wired-lan@lists.osuosl.org>;
- Thu, 27 Feb 2025 14:03:36 +0000 (UTC)
-Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.18;
- helo=mgamail.intel.com; envelope-from=faizal.abdul.rahim@linux.intel.com;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org D06AD413D2
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org D06AD413D2
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.18])
- by smtp2.osuosl.org (Postfix) with ESMTPS id D06AD413D2
- for <intel-wired-lan@lists.osuosl.org>; Thu, 27 Feb 2025 14:03:35 +0000 (UTC)
-X-CSE-ConnectionGUID: 6uMSWNYRRMqXK5zitvGShQ==
-X-CSE-MsgGUID: e6aIWzrFRuewjNcb/gzcmg==
-X-IronPort-AV: E=McAfee;i="6700,10204,11314"; a="41752504"
-X-IronPort-AV: E=Sophos;i="6.12,310,1728975600"; d="scan'208";a="41752504"
-Received: from fmviesa004.fm.intel.com ([10.60.135.144])
- by orvoesa110.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 27 Feb 2025 06:03:34 -0800
-X-CSE-ConnectionGUID: s24tQ372SEe0RYZoJGH60Q==
-X-CSE-MsgGUID: HC/3ZfJ9SQ6jWL6UwSpX1Q==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.13,319,1732608000"; d="scan'208";a="122149858"
-Received: from mohdfai2-ilbpg12-1.png.intel.com ([10.88.227.73])
- by fmviesa004.fm.intel.com with ESMTP; 27 Feb 2025 06:03:27 -0800
-From: Faizal Rahim <faizal.abdul.rahim@linux.intel.com>
-To: Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Andrew Lunn <andrew+netdev@lunn.ch>,
- "David S . Miller" <davem@davemloft.net>,
- Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>,
- Maxime Coquelin <mcoquelin.stm32@gmail.com>,
- Alexandre Torgue <alexandre.torgue@foss.st.com>,
- Simon Horman <horms@kernel.org>, Russell King <linux@armlinux.org.uk>,
- Alexei Starovoitov <ast@kernel.org>,
- Daniel Borkmann <daniel@iogearbox.net>,
- Jesper Dangaard Brouer <hawk@kernel.org>,
- John Fastabend <john.fastabend@gmail.com>, Furong Xu <0x1207@gmail.com>,
- Russell King <rmk+kernel@armlinux.org.uk>,
- Vladimir Oltean <vladimir.oltean@nxp.com>,
- Serge Semin <fancer.lancer@gmail.com>,
- Xiaolei Wang <xiaolei.wang@windriver.com>,
- Suraj Jaiswal <quic_jsuraj@quicinc.com>,
- Kory Maincent <kory.maincent@bootlin.com>, Gal Pressman <gal@nvidia.com>,
- Jesper Nilsson <jesper.nilsson@axis.com>,
- Andrew Halaney <ahalaney@redhat.com>,
- Choong Yong Liang <yong.liang.choong@linux.intel.com>,
- Faizal Rahim <faizal.abdul.rahim@linux.intel.com>,
- Kunihiko Hayashi <hayashi.kunihiko@socionext.com>,
- Vinicius Costa Gomes <vinicius.gomes@intel.com>,
- intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com,
- linux-arm-kernel@lists.infradead.org, bpf@vger.kernel.org
-Date: Thu, 27 Feb 2025 09:01:57 -0500
-Message-Id: <20250227140158.2129988-10-faizal.abdul.rahim@linux.intel.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20250227140158.2129988-1-faizal.abdul.rahim@linux.intel.com>
-References: <20250227140158.2129988-1-faizal.abdul.rahim@linux.intel.com>
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id iqaBty3l3amR for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 27 Feb 2025 15:11:19 +0000 (UTC)
+X-Greylist: delayed 314 seconds by postgrey-1.37 at util1.osuosl.org;
+ Thu, 27 Feb 2025 15:11:18 UTC
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org E0AAF6112E
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E0AAF6112E
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=103.168.172.155;
+ helo=fhigh-a4-smtp.messagingengine.com;
+ envelope-from=mpearson-lenovo@squebb.ca; receiver=<UNKNOWN> 
+Received: from fhigh-a4-smtp.messagingengine.com
+ (fhigh-a4-smtp.messagingengine.com [103.168.172.155])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id E0AAF6112E
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 27 Feb 2025 15:11:18 +0000 (UTC)
+Received: from phl-compute-04.internal (phl-compute-04.phl.internal
+ [10.202.2.44])
+ by mailfhigh.phl.internal (Postfix) with ESMTP id DF8E11140B90;
+ Thu, 27 Feb 2025 10:06:02 -0500 (EST)
+Received: from phl-imap-10 ([10.202.2.85])
+ by phl-compute-04.internal (MEProxy); Thu, 27 Feb 2025 10:06:02 -0500
+X-ME-Sender: <xms:Wn_AZx5xjrGS-Pyj_DdZ4huDDCN0ciJlj4rcJXU0UUDHxEPt52Ijrw>
+ <xme:Wn_AZ-455SZniSlolirpV4t1_Wy88EaC46caDzPl_DJOtaSTQ58YxwMdRoI1qp1K6
+ 5LtZ2GtouLf6nLSvDY>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeefvddrtddtgdekjeejjecutefuodetggdotefrod
+ ftvfcurfhrohhfihhlvgemucfhrghsthforghilhdpggftfghnshhusghstghrihgsvgdp
+ uffrtefokffrpgfnqfghnecuuegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivg
+ hnthhsucdlqddutddtmdenucfjughrpefoggffhffvvefkjghfufgtgfesthejredtredt
+ tdenucfhrhhomhepfdforghrkhcurfgvrghrshhonhdfuceomhhpvggrrhhsohhnqdhlvg
+ hnohhvohesshhquhgvsggsrdgtrgeqnecuggftrfgrthhtvghrnhephfeuvdehteeghedt
+ hedtveehuddvjeejgffgieejvdegkefhfeelheekhedvffehnecuvehluhhsthgvrhfuih
+ iivgeptdenucfrrghrrghmpehmrghilhhfrhhomhepmhhpvggrrhhsohhnqdhlvghnohhv
+ ohesshhquhgvsggsrdgtrgdpnhgspghrtghpthhtohepuddupdhmohguvgepshhmthhpoh
+ huthdprhgtphhtthhopegurghvvghmsegurghvvghmlhhofhhtrdhnvghtpdhrtghpthht
+ ohepvgguuhhmrgiivghtsehgohhoghhlvgdrtghomhdprhgtphhtthhopegrnhhthhhonh
+ ihrdhlrdhnghhuhigvnhesihhnthgvlhdrtghomhdprhgtphhtthhopehprhiivghmhihs
+ lhgrfidrkhhithhsiigvlhesihhnthgvlhdrtghomhdprhgtphhtthhopehkuhgsrgeskh
+ gvrhhnvghlrdhorhhgpdhrtghpthhtohepihhnthgvlhdqfihirhgvugdqlhgrnheslhhi
+ shhtshdrohhsuhhoshhlrdhorhhgpdhrtghpthhtoheprghnughrvgifodhnvghtuggvvh
+ eslhhunhhnrdgthhdprhgtphhtthhopegrnhgurhgvfieslhhunhhnrdgthhdprhgtphht
+ thhopehprggsvghnihesrhgvughhrghtrdgtohhm
+X-ME-Proxy: <xmx:Wn_AZ4fWbUQBZ8lV40EH9Gxs753wjQ1Xguvqbbg-2LHGtZW53_My4A>
+ <xmx:Wn_AZ6IN2ewPNHK4QfsbqiPc_DQuKCPFGBJy50WPtE96F-W2_S69uQ>
+ <xmx:Wn_AZ1IeRiRkBG7KrUGTBdzzstEMpDHnmqQ2R12fB4gd5gL354FpMw>
+ <xmx:Wn_AZzwxlwHNgv9SlJYs-9moKXo_z3nxzU8WgNmuVHVdA6e8ntQRkQ>
+ <xmx:Wn_AZyDpmM_1D89-dk9jtROtXpAUY-bH0vuomWAWb6YCMIgDk4fNRspZ>
+Feedback-ID: ibe194615:Fastmail
+Received: by mailuser.phl.internal (Postfix, from userid 501)
+ id 088FB3C0066; Thu, 27 Feb 2025 10:06:02 -0500 (EST)
+X-Mailer: MessagingEngine.com Webmail Interface
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1740665016; x=1772201016;
- h=from:to:subject:date:message-id:in-reply-to:references:
- mime-version:content-transfer-encoding;
- bh=xhzXchOUSV8qoEw0td6GaGAwIOTup1QP7sni5ZbXwDA=;
- b=LQFhm4J8+7HiG3hvQ73DIClYpGb6KSo9E6WR+6o/eSc1PtRjCq1O+ZWb
- FbtuqyYckVLMZerP1SSi7KzNyWqzhlQ6ZrxwbNzOLhEZcW77QE75MwCtC
- uYslvV7rv/CEKIJba4lfpYsY63u8Wpl5qgHdprcjLrJgscm4VG/Pb5nP7
- zhvWoheol+ScrgNMo2cBxRISQD5J97EzWfRnuxVE7BT5nLApYK3S4F3ld
- 0SCq7Zz7AAZZCDohHL0I6y7y219+jr+ysTataQqEA56FPucV2lQRlpiaE
- 4pVN/jM3k/ymHVQpwWZH1turPXYCOpYjOg9O+YMooEVqhFWcQnpp72tm8
- A==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+Date: Thu, 27 Feb 2025 10:05:41 -0500
+From: "Mark Pearson" <mpearson-lenovo@squebb.ca>
+To: "Andrew Lunn" <andrew@lunn.ch>
+Cc: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
+ andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
+ kuba@kernel.org, pabeni@redhat.com, intel-wired-lan@lists.osuosl.org,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Message-Id: <50d86329-98b1-4579-9cf1-d974cf7a748d@app.fastmail.com>
+In-Reply-To: <36ae9886-8696-4f8a-a1e4-b93a9bd47b2f@lunn.ch>
+References: <mpearson-lenovo@squebb.ca>
+ <20250226194422.1030419-1-mpearson-lenovo@squebb.ca>
+ <36ae9886-8696-4f8a-a1e4-b93a9bd47b2f@lunn.ch>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=squebb.ca; h=cc
+ :cc:content-transfer-encoding:content-type:content-type:date
+ :date:from:from:in-reply-to:in-reply-to:message-id:mime-version
+ :references:reply-to:subject:subject:to:to; s=fm2; t=1740668762;
+ x=1740755162; bh=mBJu1LUBZD7huyP2Fqh3L6NWg2IhYufGL+1Vn+2FDk4=; b=
+ UKh8opMsCwvAVZdE00m1mCO5tFu68JmUTlO0gTbA33y00UtodSnMMEt7WGwJ44O4
+ SR+kFARoU8QFWeg8YXSY2/x9udGOXve9NsZUN5MQmL/Wk+mCbho8Ssw2WeIYTgSQ
+ pAgcw4903ZTkDaI9883t8Isgp1YLIMQH4oRvRSG2lsnBs+K6a5Ur1A7ODJlnLeUK
+ I/ovzifLAo5Gq/0iKHBwPuSEh5Jv+TQmKGGTf4EG7kM6mWGHLDZxe/UeMohwlvoP
+ TrFEp6Jgk0aQWDg8mZP1vU+lQFg6y29KhZFYtr5xMXi/EMnx2xaASfwfw17wv6NT
+ xABk6kXkJzIjkFQcKNC5Jw==
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+ messagingengine.com; h=cc:cc:content-transfer-encoding
+ :content-type:content-type:date:date:feedback-id:feedback-id
+ :from:from:in-reply-to:in-reply-to:message-id:mime-version
+ :references:reply-to:subject:subject:to:to:x-me-proxy
+ :x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=1740668762; x=
+ 1740755162; bh=mBJu1LUBZD7huyP2Fqh3L6NWg2IhYufGL+1Vn+2FDk4=; b=I
+ KGJDuELaDLLWtOxASLb+GUKGdORsAJsgXY52yQP0rK4INpJaj2/uMjLp3daRJLgT
+ BM/JY+yKKYT9Bb72pRHzWT50f6Za06DrnIRrnYPkjUJfEWT5HTtFTdIW7n945EE6
+ xaz3RHkNZenXRy3XlWedPmjwQZX8tcVhxPdRsXQ1jOfcNxg+weq8lJkDFX7yRB/k
+ E096z1Cv6i3zHICJFIFJyuLYfR8UecxFczEOfG7OeMrAB5c/btvYM0QXEgklmzDR
+ rhs80k3bse5SuoodFrLS2aEkUSORA5YolqD0GZhl5B4C3DFNjOHFTYf95A2BpgAI
+ 96BvzMzf5pTxyJXnhFyXg==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=none (p=none dis=none)
- header.from=linux.intel.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=LQFhm4J8
-Subject: [Intel-wired-lan] [PATCH iwl-next v6 9/9] igc: Add support to get
- frame preemption statistics via ethtool
+ header.from=squebb.ca
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key, unprotected) header.d=squebb.ca header.i=@squebb.ca
+ header.a=rsa-sha256 header.s=fm2 header.b=UKh8opMs; 
+ dkim=pass (2048-bit key,
+ unprotected) header.d=messagingengine.com header.i=@messagingengine.com
+ header.a=rsa-sha256 header.s=fm1 header.b=IKGJDuEL
+Subject: Re: [Intel-wired-lan] [PATCH] e1000e: Link flap workaround option
+ for false IRP events
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -134,130 +153,93 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Implemented "ethtool --include-statistics --show-mm" callback for IGC.
+Hi Andrew,
 
-Tested preemption scenario to check preemption statistics:
-1) Trigger verification handshake on both boards:
-    $ sudo ethtool --set-mm enp1s0 pmac-enabled on
-    $ sudo ethtool --set-mm enp1s0 tx-enabled on
-    $ sudo ethtool --set-mm enp1s0 verify-enabled on
-2) Set preemptible or express queue in taprio for tx board:
-    $ sudo tc qdisc replace dev enp1s0 parent root handle 100 taprio \
-      num_tc 4 map 3 2 1 0 3 3 3 3 3 3 3 3 3 3 3 3 \
-      queues 1@0 1@1 1@2 1@3 base-time 0 sched-entry S F 100000 \
-      fp E E P P
-3) Send large size packets on preemptible queue
-4) Send small size packets on express queue to preempt packets in
-   preemptible queue
-5) Show preemption statistics on the receiving board:
-   $ ethtool --include-statistics --show-mm enp1s0
-     MAC Merge layer state for enp1s0:
-     pMAC enabled: on
-     TX enabled: on
-     TX active: on
-     TX minimum fragment size: 64
-     RX minimum fragment size: 60
-     Verify enabled: on
-     Verify time: 128
-     Max verify time: 128
-     Verification status: SUCCEEDED
-     Statistics:
-      MACMergeFrameAssErrorCount: 0
-      MACMergeFrameSmdErrorCount: 0
-      MACMergeFrameAssOkCount: 511
-      MACMergeFragCountRx: 764
-      MACMergeFragCountTx: 0
-      MACMergeHoldCount: 0
+On Wed, Feb 26, 2025, at 5:52 PM, Andrew Lunn wrote:
+> On Wed, Feb 26, 2025 at 02:44:12PM -0500, Mark Pearson wrote:
+>> Issue is seen on some Lenovo desktop workstations where there
+>> is a false IRP event which triggers a link flap.
+>> Condition is rare and only seen on networks where link speed
+>> may differ along the path between nodes (e.g 10M/100M)
+>> 
+>> Intel are not able to determine root cause but provided a
+>> workaround that does fix the issue. Tested extensively at Lenovo.
+>> 
+>> Adding a module option to enable this workaround for users
+>> who are impacted by this issue.
+>
+> Why is a module option needed? Does the workaround itself introduce
+> issues? Please describe those issues?
+>
+> In general, module options are not liked. So please include in the
+> commit message why a module option is the only option.
+> 
 
-Co-developed-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Signed-off-by: Faizal Rahim <faizal.abdul.rahim@linux.intel.com>
----
- drivers/net/ethernet/intel/igc/igc_ethtool.c | 36 ++++++++++++++++++++
- drivers/net/ethernet/intel/igc/igc_regs.h    | 16 +++++++++
- 2 files changed, 52 insertions(+)
+Understood. 
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_ethtool.c b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-index 7f0052e0d50c..97a1194399b1 100644
---- a/drivers/net/ethernet/intel/igc/igc_ethtool.c
-+++ b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-@@ -1819,6 +1819,41 @@ static int igc_ethtool_set_mm(struct net_device *netdev,
- 	return igc_tsn_offload_apply(adapter);
- }
- 
-+/**
-+ * igc_ethtool_get_frame_ass_error - Get the frame assembly error count.
-+ * @dev: Pointer to the net_device structure.
-+ * Return: The count of frame assembly errors.
-+ */
-+static u64 igc_ethtool_get_frame_ass_error(struct net_device *dev)
-+{
-+	struct igc_adapter *adapter = netdev_priv(dev);
-+	u32 ooo_smdc, ooo_frame_cnt, ooo_frag_cnt; /* Out of order statistics */
-+	struct igc_hw *hw = &adapter->hw;
-+	u32 miss_frame_frag_cnt;
-+	u32 reg_value;
-+
-+	reg_value = rd32(IGC_PRMEXPRCNT);
-+	ooo_smdc = FIELD_GET(IGC_PRMEXPRCNT_OOO_SMDC, reg_value);
-+	ooo_frame_cnt = FIELD_GET(IGC_PRMEXPRCNT_OOO_FRAME_CNT, reg_value);
-+	ooo_frag_cnt = FIELD_GET(IGC_PRMEXPRCNT_OOO_FRAG_CNT, reg_value);
-+	miss_frame_frag_cnt = FIELD_GET(IGC_PRMEXPRCNT_MISS_FRAME_FRAG_CNT,
-+					reg_value);
-+
-+	return ooo_smdc + ooo_frame_cnt + ooo_frag_cnt + miss_frame_frag_cnt;
-+}
-+
-+static void igc_ethtool_get_mm_stats(struct net_device *dev,
-+				     struct ethtool_mm_stats *stats)
-+{
-+	struct igc_adapter *adapter = netdev_priv(dev);
-+	struct igc_hw *hw = &adapter->hw;
-+
-+	stats->MACMergeFrameAssErrorCount = igc_ethtool_get_frame_ass_error(dev);
-+	stats->MACMergeFrameAssOkCount = rd32(IGC_PRMPTDRCNT);
-+	stats->MACMergeFragCountRx =  rd32(IGC_PRMEVNTRCNT);
-+	stats->MACMergeFragCountTx = rd32(IGC_PRMEVNTTCNT);
-+}
-+
- static int igc_ethtool_get_link_ksettings(struct net_device *netdev,
- 					  struct ethtool_link_ksettings *cmd)
- {
-@@ -2108,6 +2143,7 @@ static const struct ethtool_ops igc_ethtool_ops = {
- 	.get_channels		= igc_ethtool_get_channels,
- 	.get_mm			= igc_ethtool_get_mm,
- 	.set_mm			= igc_ethtool_set_mm,
-+	.get_mm_stats		= igc_ethtool_get_mm_stats,
- 	.set_channels		= igc_ethtool_set_channels,
- 	.get_priv_flags		= igc_ethtool_get_priv_flags,
- 	.set_priv_flags		= igc_ethtool_set_priv_flags,
-diff --git a/drivers/net/ethernet/intel/igc/igc_regs.h b/drivers/net/ethernet/intel/igc/igc_regs.h
-index 12ddc5793651..41dbfb07eb2f 100644
---- a/drivers/net/ethernet/intel/igc/igc_regs.h
-+++ b/drivers/net/ethernet/intel/igc/igc_regs.h
-@@ -222,6 +222,22 @@
- 
- #define IGC_FTQF(_n)	(0x059E0 + (4 * (_n)))  /* 5-tuple Queue Fltr */
- 
-+/* Time sync registers - preemption statistics */
-+#define IGC_PRMPTDRCNT		0x04284	/* Good RX Preempted Packets */
-+#define IGC_PRMEVNTTCNT		0x04298	/* TX Preemption event counter */
-+#define IGC_PRMEVNTRCNT		0x0429C	/* RX Preemption event counter */
-+
-+ /* Preemption Exception Counter */
-+#define IGC_PRMEXPRCNT					0x42A0
-+/* Received out of order packets with SMD-C */
-+#define IGC_PRMEXPRCNT_OOO_SMDC				0x000000FF
-+/* Received out of order packets with SMD-C and wrong Frame CNT */
-+#define IGC_PRMEXPRCNT_OOO_FRAME_CNT			0x0000FF00
-+/* Received out of order packets with SMD-C and wrong Frag CNT */
-+#define IGC_PRMEXPRCNT_OOO_FRAG_CNT			0x00FF0000
-+/* Received packets with SMD-S and wrong Frag CNT and Frame CNT */
-+#define IGC_PRMEXPRCNT_MISS_FRAME_FRAG_CNT		0xFF000000
-+
- /* Transmit Scheduling Registers */
- #define IGC_TQAVCTRL		0x3570
- #define IGC_TXQCTL(_n)		(0x3344 + 0x4 * (_n))
--- 
-2.34.1
+The reason for the module option is I'm playing it safe, as Intel couldn't determine root cause.
+The aim of the patch is to keep the effect to a minimum whilst allowing users who are impacted to turn on the workaround, if they are encountering the issue.
 
+Issue details:
+We have seen the issue when running high level traffic on a network involving at least two nodes and also having two different network speeds are need. For example:
+[Lenovo WS] <---1G link---> Network switch <---100M link--->[traffic source]
+The link flap can take a day or two to reproduce - it's rare.
+
+We worked for a long time with the Intel networking team to try and root cause the issue but unfortunately, despite being able to reproduce the issue in their lab, they decided to not pursue the investigation. They suggested the register read as a workaround and we confirmed it fixes the problem (setup ran for weeks without issue - we haven't seen any side issues). Unfortunately nobody can explain why the fix works.
+
+I don't think the workaround should be implemented as a general case without support from Intel. 
+I considered a DMI quirk, but without root cause I do worry about unknown side effects.
+There is also the possibility of the issue showing up on other platforms we don't know of yet - and I wanted a way to be able to easily enable it if needed (e.g be able to tell a customer - try enabling this and see if it fixes it).
+
+A module option seemed like a good compromise, but I'm happy to consider alternatives if there are any recommendations.
+
+>> Signed-off-by: Mark Pearson <mpearson-lenovo@squebb.ca>
+>> ---
+>>  drivers/net/ethernet/intel/e1000e/netdev.c | 19 +++++++++++++++++++
+>>  1 file changed, 19 insertions(+)
+>> 
+>> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+>> index 286155efcedf..06774fb4b2dd 100644
+>> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
+>> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+>> @@ -37,6 +37,10 @@ static int debug = -1;
+>>  module_param(debug, int, 0);
+>>  MODULE_PARM_DESC(debug, "Debug level (0=none,...,16=all)");
+>>  
+>> +static int false_irp_workaround;
+>> +module_param(false_irp_workaround, int, 0);
+>> +MODULE_PARM_DESC(false_irp_workaround, "Enable workaround for rare false IRP event causing link flap");
+>> +
+>>  static const struct e1000_info *e1000_info_tbl[] = {
+>>  	[board_82571]		= &e1000_82571_info,
+>>  	[board_82572]		= &e1000_82572_info,
+>> @@ -1757,6 +1761,21 @@ static irqreturn_t e1000_intr_msi(int __always_unused irq, void *data)
+>>  	/* read ICR disables interrupts using IAM */
+>>  	if (icr & E1000_ICR_LSC) {
+>>  		hw->mac.get_link_status = true;
+>> +
+>> +		/*
+>> +		 * False IRP workaround
+>> +		 * Issue seen on Lenovo P5 and P7 workstations where if there
+>> +		 * are different link speeds in the network a false IRP event
+>> +		 * is received, leading to a link flap.
+>> +		 * Intel unable to determine root cause. This read prevents
+>> +		 * the issue occurring
+>> +		 */
+>> +		if (false_irp_workaround) {
+>> +			u16 phy_data;
+>> +
+>> +			e1e_rphy(hw, PHY_REG(772, 26), &phy_data);
+>
+> Please add some #define for these magic numbers, so we have some idea
+> what PHY register you are actually reading. That in itself might help
+> explain how the workaround actually works.
+>
+
+I don't know what this register does I'm afraid - that's Intel knowledge and has not been shared.
+
+This approach, with magic numbers, is used all over the place in the driver and related modules, presumably contributed previously by Intel engineers. Can I push back on this request with a note that Intel would need to provide the register definitions for their components first.
+
+Thanks for the review. I'll give it a couple of days to see if any other feedback, and push a v2 with updated commit description.
+
+Mark
