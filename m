@@ -1,67 +1,67 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 35B42C282DE
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  5 Mar 2025 16:22:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2BE75C282DE
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  5 Mar 2025 16:22:40 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id E5C8281193;
-	Wed,  5 Mar 2025 16:22:25 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id FLHlx9cdDNyn; Wed,  5 Mar 2025 16:22:25 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2E7D8812AE
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1741191745;
-	bh=v1iuqUw8FUXO58RscoslB9J4LavOtj0ad1gJ6ottsJs=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=KDKZhQEaheK5ejPkePO5S1mTatYMICsp5/Lx9KbT7AQKwL6gP4QPQQNGiw5ZqsmrK
-	 WeED+QeYDYOICZI76veHPkSe36o+VIooaIOA65Z0iiuyekrcFRK0jbaQwN+j/4teON
-	 qBhR0gNZga1+zgcoatojVVl6wf8RyUokwjH9q//SUTHJ2JmT+isojATLC9p9oa+0HR
-	 Cc4E5Ac5vO8hVPEuuZ5gkK/6GWzCdc85G5RHG/oEzHLt+wgBiYAUDGuqd5Ogaiwuir
-	 ngNPYP3asF0OVdfjOEHLJzU6AMKCPzIKWPypaVSndeLHkAM/tujZTliNg8E6unqDB7
-	 0XCsb63Yzx9Uw==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 2E7D8812AE;
-	Wed,  5 Mar 2025 16:22:25 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id D94D1E2E
- for <intel-wired-lan@lists.osuosl.org>; Wed,  5 Mar 2025 16:22:23 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id C9C9360B09
- for <intel-wired-lan@lists.osuosl.org>; Wed,  5 Mar 2025 16:22:23 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id E7529608EB;
+	Wed,  5 Mar 2025 16:22:39 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 1d2HlJyT456E for <intel-wired-lan@lists.osuosl.org>;
- Wed,  5 Mar 2025 16:22:23 +0000 (UTC)
+ id mlk2nd_vHNmE; Wed,  5 Mar 2025 16:22:39 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4EC6960ACE
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1741191759;
+	bh=pcv1reJsdt8KdFkJuwEpTBsF1XUYryaVxMM7LR9sovI=;
+	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=ENKbV6HWu30WkGKkBQG3XiaYsp9Ee2t51Aku02zmlNImw0mokmiHwGQJqcbsrzLBf
+	 kugltH6aXyipNfxXozOCrmt/+AqApIyKpBjwt3Uyx0Abe1l5zS98T2RBstI3omakRe
+	 KTHVAE8ZL79sU8zi//82QVW5vI7Gg40/FIqFnxR5n2pSQqdZGhbCoiFY0zdSelJXh9
+	 ZYS8W/nIlaWbhMfN7tK4jz7wQgdzUhQrrIVT2d/8Oa6sHcBsMkooZRUhKYU9kqapeb
+	 NrzmUQIUqFh4d/6lOMK91HkSKHqOC2el3P5uQpyVsI2Pn0WiJIXmgE0tA3wJ0z6kh/
+	 DEPe01HePQrMg==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp3.osuosl.org (Postfix) with ESMTP id 4EC6960ACE;
+	Wed,  5 Mar 2025 16:22:39 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 9C80595F
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  5 Mar 2025 16:22:37 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp3.osuosl.org (Postfix) with ESMTP id 811BA608EB
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  5 Mar 2025 16:22:37 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id wxXKIBDlTW6z for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  5 Mar 2025 16:22:36 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.19;
  helo=mgamail.intel.com; envelope-from=aleksander.lobakin@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org E696E60ACE
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E696E60ACE
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org BD10F608D1
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org BD10F608D1
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.19])
- by smtp3.osuosl.org (Postfix) with ESMTPS id E696E60ACE
- for <intel-wired-lan@lists.osuosl.org>; Wed,  5 Mar 2025 16:22:22 +0000 (UTC)
-X-CSE-ConnectionGUID: bMFyq6t1T7m9kLZ9YOZzuw==
-X-CSE-MsgGUID: PnZY4DSuSRqKDOqFBe6giQ==
-X-IronPort-AV: E=McAfee;i="6700,10204,11363"; a="42026397"
-X-IronPort-AV: E=Sophos;i="6.14,223,1736841600"; d="scan'208";a="42026397"
+ by smtp3.osuosl.org (Postfix) with ESMTPS id BD10F608D1
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  5 Mar 2025 16:22:36 +0000 (UTC)
+X-CSE-ConnectionGUID: Z0t3jemoS/CAxphwRnTlTA==
+X-CSE-MsgGUID: UEginrbATeS74EePcRRF9g==
+X-IronPort-AV: E=McAfee;i="6700,10204,11363"; a="42026446"
+X-IronPort-AV: E=Sophos;i="6.14,223,1736841600"; d="scan'208";a="42026446"
 Received: from fmviesa004.fm.intel.com ([10.60.135.144])
  by orvoesa111.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 05 Mar 2025 08:22:23 -0800
-X-CSE-ConnectionGUID: 9YWP3TsNRMaFm3fGOnjwgQ==
-X-CSE-MsgGUID: pzYbN1IXRS+xTVJS5HcVAw==
+ 05 Mar 2025 08:22:36 -0800
+X-CSE-ConnectionGUID: 7K+xgifxSRGjYIWcxR2X3A==
+X-CSE-MsgGUID: TiQbwjE0TS6dB6LfIEbQUQ==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.14,223,1736841600"; d="scan'208";a="123832868"
+X-IronPort-AV: E=Sophos;i="6.14,223,1736841600"; d="scan'208";a="123832884"
 Received: from newjersey.igk.intel.com ([10.102.20.203])
- by fmviesa004.fm.intel.com with ESMTP; 05 Mar 2025 08:22:19 -0800
+ by fmviesa004.fm.intel.com with ESMTP; 05 Mar 2025 08:22:32 -0800
 From: Alexander Lobakin <aleksander.lobakin@intel.com>
 To: intel-wired-lan@lists.osuosl.org
 Cc: Alexander Lobakin <aleksander.lobakin@intel.com>,
@@ -77,8 +77,8 @@ Cc: Alexander Lobakin <aleksander.lobakin@intel.com>,
  Jesper Dangaard Brouer <hawk@kernel.org>,
  John Fastabend <john.fastabend@gmail.com>, Simon Horman <horms@kernel.org>,
  bpf@vger.kernel.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Date: Wed,  5 Mar 2025 17:21:18 +0100
-Message-ID: <20250305162132.1106080-3-aleksander.lobakin@intel.com>
+Date: Wed,  5 Mar 2025 17:21:21 +0100
+Message-ID: <20250305162132.1106080-6-aleksander.lobakin@intel.com>
 X-Mailer: git-send-email 2.48.1
 In-Reply-To: <20250305162132.1106080-1-aleksander.lobakin@intel.com>
 References: <20250305162132.1106080-1-aleksander.lobakin@intel.com>
@@ -86,25 +86,25 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1741191743; x=1772727743;
+ t=1741191757; x=1772727757;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=/hBCgYAkEILovg4W7URKdQVsXS+uVw6spVYXmoRQxek=;
- b=RTRMz2erIAbIk4v3Hum5zNzHNF/X2MUwn6lLJj/vg2sMEJZYoYzy7/c1
- 3WAFSHzuBWbkyPVBJCLcGz3ruFLfpuemjkc3P1+7AwKuULP8+x/Znw9ph
- lICLc4PakVSLdak1fQZsjSlx9aFOqnI70xUuFCewrRwNja4K93WpjD8Xg
- cvygfkr8qJLueXfWXpcG7CsPCiXZWWHXyU4VCaPg9yiezSSWuej40Ddwj
- t4HndoU1KKZyBze+LYpXfc6snHQmr5jM2M8DlM9o8MGwEHQ6yZlbjjEPe
- 2trLS6hVssHbUCdRUkhBY+SM+E4HW3mWBcWZKTxdPL+uS3yTiMCN876yy
+ bh=KISi81PW5uI6HavTQsyuz/rieJO5h1l02sGDkGz6rAw=;
+ b=iyw532AJsxpnRcCGTfk964MupDiRauo+xb3XCxgiE9+vesfm/0PSqaKa
+ Y74vQzZfdLBGplZ9QzvlrFnZqrY+2BjuQoeah0eOpxCCtOrBGw91zmyHk
+ TiTHXMc2FP/rKbMGxZGoRAfHtPzo4GWKLTKyNEf/EGbjEfppleH6dSPEk
+ lowuSkMUvAV5qmwTYE+bnVZx4RssfeBtWQrUkphAIZV3If9yqr+XplWre
+ MQBCMH9iO+lrGymSPf91NiRe3BsWOMbgADGma8JgKcNJ5IeJKuhfFfYP+
+ A9UbWSbk5mHc7HM9skl9MkHVqOoYsF846ldAVZv0132uSYbozw2/3PMIv
  A==;
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=RTRMz2er
-Subject: [Intel-wired-lan] [PATCH net-next 02/16] libeth: support native XDP
- and register memory model
+ header.a=rsa-sha256 header.s=Intel header.b=iyw532AJ
+Subject: [Intel-wired-lan] [PATCH net-next 05/16] idpf: fix Rx descriptor
+ ready check barrier in splitq
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -120,115 +120,46 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Expand libeth's Page Pool functionality by adding native XDP support.
-This means picking the appropriate headroom and DMA direction.
-Also, register all the created &page_pools as XDP memory models.
-A driver then can call xdp_rxq_info_attach_page_pool() when registering
-its RxQ info.
+No idea what the current barrier position was meant for. At that point,
+nothing is read from the descriptor, only the pointer to the actual one
+is fetched.
+The correct barrier usage here is after the generation check, so that
+only the first qword is read if the descriptor is not yet ready and we
+need to stop polling. Debatable on coherent DMA as the Rx descriptor
+size is <= cacheline size, but anyway, the current barrier position
+only makes the codegen worse.
 
+Fixes: 3a8845af66ed ("idpf: add RX splitq napi poll support")
 Signed-off-by: Alexander Lobakin <aleksander.lobakin@intel.com>
 ---
- include/net/libeth/rx.h                |  6 +++++-
- drivers/net/ethernet/intel/libeth/rx.c | 20 +++++++++++++++-----
- 2 files changed, 20 insertions(+), 6 deletions(-)
+ drivers/net/ethernet/intel/idpf/idpf_txrx.c | 8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
 
-diff --git a/include/net/libeth/rx.h b/include/net/libeth/rx.h
-index 7d5dc58984b1..5d991404845e 100644
---- a/include/net/libeth/rx.h
-+++ b/include/net/libeth/rx.h
-@@ -13,8 +13,10 @@
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.c b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
+index 6254806c2072..c15833928ea1 100644
+--- a/drivers/net/ethernet/intel/idpf/idpf_txrx.c
++++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
+@@ -3232,18 +3232,14 @@ static int idpf_rx_splitq_clean(struct idpf_rx_queue *rxq, int budget)
+ 		/* get the Rx desc from Rx queue based on 'next_to_clean' */
+ 		rx_desc = &rxq->rx[ntc].flex_adv_nic_3_wb;
  
- /* Space reserved in front of each frame */
- #define LIBETH_SKB_HEADROOM	(NET_SKB_PAD + NET_IP_ALIGN)
-+#define LIBETH_XDP_HEADROOM	(ALIGN(XDP_PACKET_HEADROOM, NET_SKB_PAD) + \
-+				 NET_IP_ALIGN)
- /* Maximum headroom for worst-case calculations */
--#define LIBETH_MAX_HEADROOM	LIBETH_SKB_HEADROOM
-+#define LIBETH_MAX_HEADROOM	LIBETH_XDP_HEADROOM
- /* Link layer / L2 overhead: Ethernet, 2 VLAN tags (C + S), FCS */
- #define LIBETH_RX_LL_LEN	(ETH_HLEN + 2 * VLAN_HLEN + ETH_FCS_LEN)
- /* Maximum supported L2-L4 header length */
-@@ -66,6 +68,7 @@ enum libeth_fqe_type {
-  * @count: number of descriptors/buffers the queue has
-  * @type: type of the buffers this queue has
-  * @hsplit: flag whether header split is enabled
-+ * @xdp: flag indicating whether XDP is enabled
-  * @buf_len: HW-writeable length per each buffer
-  * @nid: ID of the closest NUMA node with memory
-  */
-@@ -81,6 +84,7 @@ struct libeth_fq {
- 	/* Cold fields */
- 	enum libeth_fqe_type	type:2;
- 	bool			hsplit:1;
-+	bool			xdp:1;
+-		/* This memory barrier is needed to keep us from reading
+-		 * any other fields out of the rx_desc
+-		 */
+-		dma_rmb();
+-
+ 		/* if the descriptor isn't done, no work yet to do */
+ 		gen_id = le16_get_bits(rx_desc->pktlen_gen_bufq_id,
+ 				       VIRTCHNL2_RX_FLEX_DESC_ADV_GEN_M);
+-
+ 		if (idpf_queue_has(GEN_CHK, rxq) != gen_id)
+ 			break;
  
- 	u32			buf_len;
- 	int			nid;
-diff --git a/drivers/net/ethernet/intel/libeth/rx.c b/drivers/net/ethernet/intel/libeth/rx.c
-index aa5d878181f7..c0be9cb043a1 100644
---- a/drivers/net/ethernet/intel/libeth/rx.c
-+++ b/drivers/net/ethernet/intel/libeth/rx.c
-@@ -70,7 +70,7 @@ static u32 libeth_rx_hw_len_truesize(const struct page_pool_params *pp,
- static bool libeth_rx_page_pool_params(struct libeth_fq *fq,
- 				       struct page_pool_params *pp)
- {
--	pp->offset = LIBETH_SKB_HEADROOM;
-+	pp->offset = fq->xdp ? LIBETH_XDP_HEADROOM : LIBETH_SKB_HEADROOM;
- 	/* HW-writeable / syncable length per one page */
- 	pp->max_len = LIBETH_RX_PAGE_LEN(pp->offset);
- 
-@@ -157,11 +157,12 @@ int libeth_rx_fq_create(struct libeth_fq *fq, struct napi_struct *napi)
- 		.dev		= napi->dev->dev.parent,
- 		.netdev		= napi->dev,
- 		.napi		= napi,
--		.dma_dir	= DMA_FROM_DEVICE,
- 	};
- 	struct libeth_fqe *fqes;
- 	struct page_pool *pool;
--	bool ret;
-+	int ret;
++		dma_rmb();
 +
-+	pp.dma_dir = fq->xdp ? DMA_BIDIRECTIONAL : DMA_FROM_DEVICE;
- 
- 	if (!fq->hsplit)
- 		ret = libeth_rx_page_pool_params(fq, &pp);
-@@ -175,18 +176,26 @@ int libeth_rx_fq_create(struct libeth_fq *fq, struct napi_struct *napi)
- 		return PTR_ERR(pool);
- 
- 	fqes = kvcalloc_node(fq->count, sizeof(*fqes), GFP_KERNEL, fq->nid);
--	if (!fqes)
-+	if (!fqes) {
-+		ret = -ENOMEM;
- 		goto err_buf;
-+	}
-+
-+	ret = xdp_reg_page_pool(pool);
-+	if (ret)
-+		goto err_mem;
- 
- 	fq->fqes = fqes;
- 	fq->pp = pool;
- 
- 	return 0;
- 
-+err_mem:
-+	kvfree(fqes);
- err_buf:
- 	page_pool_destroy(pool);
- 
--	return -ENOMEM;
-+	return ret;
- }
- EXPORT_SYMBOL_GPL(libeth_rx_fq_create);
- 
-@@ -196,6 +205,7 @@ EXPORT_SYMBOL_GPL(libeth_rx_fq_create);
-  */
- void libeth_rx_fq_destroy(struct libeth_fq *fq)
- {
-+	xdp_unreg_page_pool(fq->pp);
- 	kvfree(fq->fqes);
- 	page_pool_destroy(fq->pp);
- }
+ 		rxdid = FIELD_GET(VIRTCHNL2_RX_FLEX_DESC_ADV_RXDID_M,
+ 				  rx_desc->rxdid_ucast);
+ 		if (rxdid != VIRTCHNL2_RXDID_2_FLEX_SPLITQ) {
 -- 
 2.48.1
 
