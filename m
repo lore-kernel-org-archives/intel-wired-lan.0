@@ -4,89 +4,98 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6CC5BC282E3
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  5 Mar 2025 11:18:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C1B9BC19F32
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  5 Mar 2025 11:18:52 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 36233819F3;
-	Wed,  5 Mar 2025 11:18:21 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 9305881A5F;
+	Wed,  5 Mar 2025 11:18:52 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id J619S3NzlfOc; Wed,  5 Mar 2025 11:18:20 +0000 (UTC)
+ id fcFd9RPoyzgD; Wed,  5 Mar 2025 11:18:50 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8EAA181A3E
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 593E081A3E
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1741173500;
-	bh=AdWVyIfxz0UQdMzRE4lO20zV95NynJXkpqJCFbGsuWU=;
-	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=m7dQYCntNq91+eiFEitzRnOLPObZRdLLTQ0Ux8MwzjDhXGvSxbx930iuXEnwOCd5z
-	 +15wxemRZszYUrf7cWupnQgVcggZlSuUZhzzefEC9hDsZLYoPBpFR4QdcqVDcFKxjd
-	 w7n4HC0DpsoLf85n/mZh4Tekut3/L0Hv6TgFDLd5pZiKHuuB9OvevibwslV0Eggo0r
-	 HgojhYX095sLlGAa0QaWo4CiZf6VaDM/5RrWS5yzFlQrqRHbNBGRIE/SwKshbV/ZsH
-	 Q6ffgqcORR0xX4s01vPgua6WYuicjYjFKxnmBZostoY7HVSeTGeiKEACjgnFZSIDNW
-	 FnJ2ItYDGHobQ==
+	s=default; t=1741173530;
+	bh=9nTF2idz03oDCETO4wg/vxsKxaZ+V8UfJLxb0IH7nT8=;
+	h=Date:From:To:Cc:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=2QmvgjgxTzOuh0KCSdymD5hW6YRYCEYwgEEJtEH/b34Zev8e3bMUcYifhYRA6wCUy
+	 mgas8i+4wAXTpz4EeMouKDAlA8bsNW5fwaheg1kH0Ea5sEsn93UGURDdQa0OcxeL0f
+	 +W6/9zc91b2bTVyEZIILhyQkS4rJbMYI1t96sJxbik5elE1aG6UYdCiuEbGUeLDNT6
+	 eAKt+DyCJPgkv/mip5HguyEvQPq7kHGczpXeW8/fXVUN7bxs7rojWaCd0Hp5UMeaVL
+	 kZhkAN8YtOxO0aZhjpxCRmySvyz/HQQUphRgYR6FnNHaOi7dMtcsb24ciosxHKzZ8k
+	 q/3k73FUjdvVw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 8EAA181A3E;
-	Wed,  5 Mar 2025 11:18:20 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 5F1EDE2E
- for <intel-wired-lan@lists.osuosl.org>; Wed,  5 Mar 2025 11:18:19 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 593E081A3E;
+	Wed,  5 Mar 2025 11:18:50 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 23E3FE2E
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  5 Mar 2025 11:18:49 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 4B6CF400F9
- for <intel-wired-lan@lists.osuosl.org>; Wed,  5 Mar 2025 11:18:19 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 0804D60720
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  5 Mar 2025 11:18:49 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Khjz0t0QZy_l for <intel-wired-lan@lists.osuosl.org>;
- Wed,  5 Mar 2025 11:18:18 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=139.178.84.217;
- helo=dfw.source.kernel.org; envelope-from=horms@kernel.org;
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id gs6Kbmw-QDM7 for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  5 Mar 2025 11:18:47 +0000 (UTC)
+X-Greylist: delayed 1142 seconds by postgrey-1.37 at util1.osuosl.org;
+ Wed, 05 Mar 2025 11:18:45 UTC
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 70AA16066E
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 70AA16066E
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=46.105.73.110;
+ helo=18.mo582.mail-out.ovh.net; envelope-from=mateusz.kusiak@3mdeb.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 735BC4055F
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 735BC4055F
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 735BC4055F
- for <intel-wired-lan@lists.osuosl.org>; Wed,  5 Mar 2025 11:18:18 +0000 (UTC)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by dfw.source.kernel.org (Postfix) with ESMTP id CFDDF5C6751;
- Wed,  5 Mar 2025 11:16:00 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3B52BC4CEE8;
- Wed,  5 Mar 2025 11:18:16 +0000 (UTC)
-Date: Wed, 5 Mar 2025 11:18:14 +0000
-From: Simon Horman <horms@kernel.org>
-To: Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Cc: Martyna Szapar-Mudlaw <martyna.szapar-mudlaw@linux.intel.com>,
- intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- Mateusz Polchlopek <mateusz.polchlopek@intel.com>
-Message-ID: <20250305111814.GN3666230@kernel.org>
-References: <20250225090847.513849-2-martyna.szapar-mudlaw@linux.intel.com>
- <20250225090847.513849-8-martyna.szapar-mudlaw@linux.intel.com>
- <20250228171753.GL1615191@kernel.org>
- <68c841b7-fb5b-4c52-bd55-b98c80ad8667@intel.com>
+Received: from 18.mo582.mail-out.ovh.net (18.mo582.mail-out.ovh.net
+ [46.105.73.110])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 70AA16066E
+ for <intel-wired-lan@osuosl.org>; Wed,  5 Mar 2025 11:18:45 +0000 (UTC)
+Received: from director2.ghost.mail-out.ovh.net (unknown [10.108.2.141])
+ by mo582.mail-out.ovh.net (Postfix) with ESMTP id 4Z78hF1Qz1z1Y6F
+ for <intel-wired-lan@osuosl.org>; Wed,  5 Mar 2025 10:59:40 +0000 (UTC)
+Received: from ghost-submission-5b5ff79f4f-v6rj2 (unknown [10.110.113.115])
+ by director2.ghost.mail-out.ovh.net (Postfix) with ESMTPS id 90D391FEB2;
+ Wed,  5 Mar 2025 10:59:40 +0000 (UTC)
+Received: from 3mdeb.com ([37.59.142.107])
+ by ghost-submission-5b5ff79f4f-v6rj2 with ESMTPSA
+ id dbAqEJwuyGdSPgAA3MBQLQ
+ (envelope-from <mateusz.kusiak@3mdeb.com>); Wed, 05 Mar 2025 10:59:40 +0000
+X-OVh-ClientIp: 213.192.77.249
+Message-ID: <e55a2f7e-484b-4f00-8840-5776ab0e7b1c@3mdeb.com>
+Date: Wed, 5 Mar 2025 11:59:39 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <68c841b7-fb5b-4c52-bd55-b98c80ad8667@intel.com>
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1741173497;
- bh=AMj0T5cjbneiIK87/JwlTZphSCgrwEa5xD0C7q8jdB8=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=uA7J1/yOxXvwwe6wJsQwf4Ewwx1aMg0LInGJab0UOxx8Skuod61OXmP+gpN97CUoR
- OirujzcP9sgTw25TCPe5sg5KaLr2MfRVBCZ/aBUXIOQF67l9AJRKUAR0/qezkLCZw5
- wsPfaPu8moX9RDk2HB0okM70dS3OKwxP5VBZgKet4hkKoKmpzmg2G8/7deAqIJV2Za
- ffQCp1ElcAZXl/iCUIpjRInkPfF3Zxs/wS6eipED8MWd/N1lK5sPGuYSGSMH4Vf0/q
- q4q1BHAd17QYALdfpd6H1vQhj9jHwb95YKojpzzhDw2T33MVaAdQ2TxIyDJdaGLxOR
- OU2KaVlV2961w==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dmarc=pass (p=quarantine dis=none)
- header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=uA7J1/yO
-Subject: Re: [Intel-wired-lan] [iwl-net v2 5/5] ice: fix using untrusted
- value of pkt_len in ice_vc_fdir_parse_raw()
+User-Agent: Mozilla Thunderbird
+Content-Language: en-US
+From: Mateusz Kusiak <mateusz.kusiak@3mdeb.com>
+To: intel-wired-lan@osuosl.org
+Cc: Maciej Pijanowski <maciej.pijanowski@3mdeb.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Ovh-Tracer-Id: 3358559425017973544
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeefvddrtddtgddutdegieegucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhepkfffgggfhffuvfevtgfgsehtkeertddtvdejnecuhfhrohhmpeforghtvghushiiucfmuhhsihgrkhcuoehmrghtvghushiirdhkuhhsihgrkhesfehmuggvsgdrtghomheqnecuggftrfgrthhtvghrnhepgfehgefftedtieeufeeuffduleelvdevleeuueefkeeuvdeiuddtuddvhfdvtdevnecuffhomhgrihhnpeefmhguvggsrdgtohhmnecukfhppeduvdejrddtrddtrddupddvudefrdduledvrdejjedrvdegledpfeejrdehledrudegvddruddtjeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduvdejrddtrddtrddupdhmrghilhhfrhhomhepmhgrthgvuhhsiidrkhhushhirghkseefmhguvggsrdgtohhmpdhnsggprhgtphhtthhopedupdhrtghpthhtohepihhnthgvlhdqfihirhgvugdqlhgrnhesohhsuhhoshhlrdhorhhgpdfovfetjfhoshhtpehmohehkedvmgdpmhhouggvpehsmhhtphhouhht
+X-Mailman-Original-DKIM-Signature: a=rsa-sha256;
+ bh=9nTF2idz03oDCETO4wg/vxsKxaZ+V8UfJLxb0IH7nT8=; 
+ c=relaxed/relaxed; d=3mdeb.com; h=From; s=ovhmo3617313-selector1;
+ t=1741172381; v=1;
+ b=Y3SRSdiRQCpldldEGZdqVn6NDHXo4VTX8LZqD1CZ7u5yjiRjGPyDwpNPqtSTJyenkeTnlDfj
+ L2Ede69xuKuoN08YaTJ5/lO4YqsA4SMKFUGFWaLTcW+KMgyQddWM7Yf61ykE5zq6WWLiff/wG7o
+ uy0z5fShWvrAa34/ZaqZH+rlR+moEChd3XVTLCQwpf+7okaV/Wm9d8SK837F/hDAYNMlvPrAEK4
+ 5Qz6fU8Onqy8sdcHOd2XJ1edIOKDtOlglMG7hG8dFpeinoFmQLCUD9N2Mn4FE10Mejon4DvPgaf
+ pAIS7K55b/RFpJe0mCFdECOKjS69dj1dMLB+sV4mqiz9Q==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dmarc=none (p=none dis=none)
+ header.from=3mdeb.com
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=3mdeb.com header.i=@3mdeb.com header.a=rsa-sha256
+ header.s=ovhmo3617313-selector1 header.b=Y3SRSdiR
+X-Mailman-Original-Authentication-Results: garm.ovh; auth=pass
+ (GARM-107S001b34b9ec9-6182-46db-99f0-3c06de99fb86,
+ 29030959DFAD01814B2CE9C49F757AC15632A5B7) smtp.auth=mateusz.kusiak@3mdeb.com
+Subject: [Intel-wired-lan] igc: high init to link up time on I255
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -102,54 +111,124 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Mon, Mar 03, 2025 at 11:00:35AM +0100, Przemek Kitszel wrote:
-> On 2/28/25 18:17, Simon Horman wrote:
-> > On Tue, Feb 25, 2025 at 10:08:49AM +0100, Martyna Szapar-Mudlaw wrote:
-> > > From: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
-> > > 
-> > > Fix using the untrusted value of proto->raw.pkt_len in function
-> > > ice_vc_fdir_parse_raw() by verifying if it does not exceed the
-> > > VIRTCHNL_MAX_SIZE_RAW_PACKET value.
-> > > 
-> > > Fixes: 99f419df8a5c ("ice: enable FDIR filters from raw binary patterns for VFs")
-> > > Signed-off-by: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
-> > > Signed-off-by: Martyna Szapar-Mudlaw <martyna.szapar-mudlaw@linux.intel.com>
-> > > ---
-> > >   .../ethernet/intel/ice/ice_virtchnl_fdir.c    | 25 +++++++++++++------
-> > >   1 file changed, 17 insertions(+), 8 deletions(-)
-> > > 
-> > > diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
-> > > index 14e3f0f89c78..6250629ee8f9 100644
-> > > --- a/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
-> > > +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
-> > > @@ -835,18 +835,27 @@ ice_vc_fdir_parse_raw(struct ice_vf *vf,
-> > >   	u8 *pkt_buf, *msk_buf __free(kfree);
-> > >   	struct ice_parser_result rslt;
-> > >   	struct ice_pf *pf = vf->pf;
-> > > +	u16 pkt_len, udp_port = 0;
-> > >   	struct ice_parser *psr;
-> > >   	int status = -ENOMEM;
-> > >   	struct ice_hw *hw;
-> > > -	u16 udp_port = 0;
-> > > -	pkt_buf = kzalloc(proto->raw.pkt_len, GFP_KERNEL);
-> > > -	msk_buf = kzalloc(proto->raw.pkt_len, GFP_KERNEL);
-> > > +	if (!proto->raw.pkt_len)
-> > > +		return -EINVAL;
-> > 
-> > Hi Martyna,
-> > 
-> > It seems to me that the use of __free() above will result in
-> > kfree(msk_buf) being called here. But msk_buf is not initialised at this
-> > point.
-> > 
-> > My suggest would be to drop the use of __free().
-> > But if not, I think that in order to be safe it would be best to do this
-> > (completely untested;
-> > 
-> > 	u8 *pkt_buf, *msk_buf __free(kfree) = NULL;
-> 
-> Oh yeah!, thank you Simon for catching that.
-> 
-> I would say "naked __free()" was harmful here.
+Hi all,
+I'm trying to figure out what's taking igc/I255 so long to establish link. I 
+enabled debug logs hoping I'd find something meaningful. Here they are (output 
+of "dmesg | grep igc"):
 
-Yes, quite.
+[    0.628173] calling  igc_init_module+0x0/0x3b @ 1
+[    0.628234] igc 0000:01:00.0: PCIe PTM not supported by PCIe bus/controller
+[    0.654818] igc 0000:01:00.0 (unnamed net_device) (uninitialized): Timeout is 
+expired after a phy reset
+[    0.655717] igc 0000:01:00.0 (unnamed net_device) (uninitialized): Masking 
+off all interrupts
+[    0.675821] igc 0000:01:00.0 (unnamed net_device) (uninitialized): Issuing a 
+global reset to MAC
+[    0.676061] igc 0000:01:00.0 (unnamed net_device) (uninitialized): PHC added
+[    0.676067] igc 0000:01:00.0 (unnamed net_device) (uninitialized): Masking 
+off all interrupts
+[    0.696170] igc 0000:01:00.0 (unnamed net_device) (uninitialized): Issuing a 
+global reset to MAC
+[    0.696175] igc 0000:01:00.0 (unnamed net_device) (uninitialized): 
+Programming MAC Address into RAR[0]
+[    0.696179] igc 0000:01:00.0 (unnamed net_device) (uninitialized): Clearing 
+RAR[1-15]
+[    0.696227] igc 0000:01:00.0 (unnamed net_device) (uninitialized): Zeroing 
+the MTA
+[    0.696252] igc 0000:01:00.0 (unnamed net_device) (uninitialized): Zeroing 
+the UTA
+[    0.696270] igc 0000:01:00.0 (unnamed net_device) (uninitialized): After 
+fix-ups FlowControl is now = 3
+[    0.696272] igc 0000:01:00.0 (unnamed net_device) (uninitialized): 
+Reconfiguring auto-neg advertisement params
+[    0.696808] igc 0000:01:00.0 (unnamed net_device) (uninitialized): 
+autoneg_advertised af
+[    0.696809] igc 0000:01:00.0 (unnamed net_device) (uninitialized): Advertise 
+10mb Half duplex
+[    0.696809] igc 0000:01:00.0 (unnamed net_device) (uninitialized): Advertise 
+10mb Full duplex
+[    0.696810] igc 0000:01:00.0 (unnamed net_device) (uninitialized): Advertise 
+100mb Half duplex
+[    0.696810] igc 0000:01:00.0 (unnamed net_device) (uninitialized): Advertise 
+100mb Full duplex
+[    0.696811] igc 0000:01:00.0 (unnamed net_device) (uninitialized): Advertise 
+1000mb Full duplex
+[    0.696811] igc 0000:01:00.0 (unnamed net_device) (uninitialized): Advertise 
+2500mb Full duplex
+[    0.696888] igc 0000:01:00.0 (unnamed net_device) (uninitialized): Auto-Neg 
+Advertising de1
+[    0.697348] igc 0000:01:00.0 (unnamed net_device) (uninitialized): Restarting 
+Auto-Neg
+[    0.699152] igc 0000:01:00.0 (unnamed net_device) (uninitialized): Unable to 
+establish link!!!
+[    0.699153] igc 0000:01:00.0 (unnamed net_device) (uninitialized): 
+Initializing the Flow Control address, type and timer regs
+[    0.701455] igc 0000:01:00.0: 4.000 Gb/s available PCIe bandwidth (5.0 GT/s 
+PCIe x1 link)
+[    0.701457] igc 0000:01:00.0 eth0: MAC: <REDACTED>
+[    0.701469] initcall igc_init_module+0x0/0x3b returned 0 after 71577 usecs
+[    1.094704] igc 0000:01:00.0 eth0: changing MTU from 1500 to 9000
+[    1.094720] igc 0000:01:00.0 eth0: Masking off all interrupts
+[    1.114868] igc 0000:01:00.0 eth0: Issuing a global reset to MAC
+[    1.114871] igc 0000:01:00.0 eth0: Programming MAC Address into RAR[0]
+[    1.114875] igc 0000:01:00.0 eth0: Clearing RAR[1-15]
+[    1.114923] igc 0000:01:00.0 eth0: Zeroing the MTA
+[    1.114948] igc 0000:01:00.0 eth0: Zeroing the UTA
+[    1.114967] igc 0000:01:00.0 eth0: After fix-ups FlowControl is now = 3
+[    1.114969] igc 0000:01:00.0 eth0: Reconfiguring auto-neg advertisement params
+[    1.115505] igc 0000:01:00.0 eth0: autoneg_advertised af
+[    1.115505] igc 0000:01:00.0 eth0: Advertise 10mb Half duplex
+[    1.115506] igc 0000:01:00.0 eth0: Advertise 10mb Full duplex
+[    1.115506] igc 0000:01:00.0 eth0: Advertise 100mb Half duplex
+[    1.115506] igc 0000:01:00.0 eth0: Advertise 100mb Full duplex
+[    1.115507] igc 0000:01:00.0 eth0: Advertise 1000mb Full duplex
+[    1.115508] igc 0000:01:00.0 eth0: Advertise 2500mb Full duplex
+[    1.115585] igc 0000:01:00.0 eth0: Auto-Neg Advertising de1
+[    1.116044] igc 0000:01:00.0 eth0: Restarting Auto-Neg
+[    1.117847] igc 0000:01:00.0 eth0: Unable to establish link!!!
+[    1.117847] igc 0000:01:00.0 eth0: Initializing the Flow Control address, 
+type and timer regs
+[    1.162956] igc 0000:01:00.0 eth0: Timeout is expired after a phy reset
+[    1.172645] igc 0000:01:00.0 eth0: After fix-ups FlowControl is now = 3
+[    1.172647] igc 0000:01:00.0 eth0: Reconfiguring auto-neg advertisement params
+[    1.173183] igc 0000:01:00.0 eth0: autoneg_advertised af
+[    1.173183] igc 0000:01:00.0 eth0: Advertise 10mb Half duplex
+[    1.173184] igc 0000:01:00.0 eth0: Advertise 10mb Full duplex
+[    1.173184] igc 0000:01:00.0 eth0: Advertise 100mb Half duplex
+[    1.173185] igc 0000:01:00.0 eth0: Advertise 100mb Full duplex
+[    1.173185] igc 0000:01:00.0 eth0: Advertise 1000mb Full duplex
+[    1.173185] igc 0000:01:00.0 eth0: Advertise 2500mb Full duplex
+[    1.173262] igc 0000:01:00.0 eth0: Auto-Neg Advertising de1
+[    1.173721] igc 0000:01:00.0 eth0: Restarting Auto-Neg
+[    1.175529] igc 0000:01:00.0 eth0: Unable to establish link!!!
+[    1.175529] igc 0000:01:00.0 eth0: Initializing the Flow Control address, 
+type and timer regs
+[    1.175616] igc 0000:01:00.0 eth0: Set default MAC address filter: address 
+<REDACTED>
+[    1.175685] igc 0000:01:00.0 eth0: MAC address filter set in HW: index 0
+[    3.747284] igc 0000:01:00.0 eth0: Flow Control = FULL.
+[    3.747287] igc 0000:01:00.0 eth0: 1000 Mbs,
+[    3.747288] igc 0000:01:00.0 eth0: Full Duplex
+[    3.747290] igc 0000:01:00.0 eth0: hw->fc.current_mode = 3
+[    3.747293] igc 0000:01:00.0 eth0: 1000 Mbs,
+[    3.747293] igc 0000:01:00.0 eth0: Full Duplex
+[    3.747301] igc 0000:01:00.0 eth0: 1000 Mbs,
+[    3.747301] igc 0000:01:00.0 eth0: Full Duplex
+[    3.747303] igc 0000:01:00.0 eth0: NIC Link is Up 1000 Mbps Full Duplex, Flow 
+Control: RX/TX
+
+Is it normal for auto-negotiation to fail multiple times at the beginning? Is it 
+some kind of setup procedure or is it out of the ordinary?
+
+Total time for initialization + link up is about ~3.2 seconds, I wonder if this 
+is normal and if it can be further reduced? I'm aiming for init to link up speed 
+only, interface speed does not matter to me.
+
+Thanks,
+Mateusz
+
+-- 
+Mateusz Kusiak
+Junior Embedded Systems Developer
+https://3mdeb.com | @3mdeb_com
+
