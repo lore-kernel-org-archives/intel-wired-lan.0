@@ -4,74 +4,72 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CA144C19F32
-	for <intel-wired-lan@archiver.kernel.org>; Fri,  7 Mar 2025 14:39:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3EB88C282DE
+	for <intel-wired-lan@archiver.kernel.org>; Fri,  7 Mar 2025 14:39:06 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 91CE161050;
-	Fri,  7 Mar 2025 14:39:01 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 0D51360F65;
+	Fri,  7 Mar 2025 14:39:06 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id gCPrdFcvJqy5; Fri,  7 Mar 2025 14:38:58 +0000 (UTC)
+ id uLkFJwivzsMD; Fri,  7 Mar 2025 14:39:05 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E38536104F
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org AB5F16106E
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1741358338;
-	bh=ccV1KDuuu92cVztfRo+9wpWu0S1LTEZCvVlWeyQZlSo=;
+	s=default; t=1741358344;
+	bh=U8XFdDACgb0E+28IC/cNzstscOSdAaiSGNgbZm9psCM=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=ZriFd6AeaSLnwc9Z9EqXgAdSXukWGkFq/JJNzSR/+V0LnZNVAEHR7YhGPQgLqiF3M
-	 d7XBslvmokJXtocBLkHAIE2PikPAF2XN7wwG1tGkW1wPhtYtkJv05LA1vG1/qBttzN
-	 xJQ8SmYYYs7hzrbl6ULBmGVqgsqhMaPsG/0iMyl1ziSHyWexwqYGf6I27U/zbwJop8
-	 qx2QhY6cl1bRjJsL9OjOgdoDeGgvIXT1sphqs0NlyQdiFQgxVT7IxGHdTXnsID3yAf
-	 BBCpmPPRsv8XM2SAeCf9q5APqIA3W7Nk/ThN/z9pNv76rPiN9MupEGaaIMGKxFq7sV
-	 6w2Re8EmSPfdg==
+	b=Sci8P8xOzENU3nuHmbKNkkyfYpdgKmN2fgkRzZD1cX398mO6QYxMefoyY9Qp7vMQ7
+	 HljISlvO8uOvMLVwR7eKxhu511UScx3k3LDI52GfWqO/ZiBbeMu/KEAgttewDhOOWP
+	 RcxRWTI4XmmeI1C9rxSjY3fLHDQpH1osCstIF9bx1YTsxzCfxZW4iw9+4Zb5J2n2mB
+	 ncyN06x6Lo+dTwrigPitlgYUR15Y5z31hOU/ol/uFzMel8lWlSqy4DifPQDVawo9K/
+	 9Nbu4IEiKPeLs3JFn1mOmN+ds/9JD6qRZrV6lPxuZRzPZHioIZZY4MsAphvZs+fTF+
+	 0BnQLojGPk/6A==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id E38536104F;
-	Fri,  7 Mar 2025 14:38:57 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id E0B35944
- for <intel-wired-lan@lists.osuosl.org>; Fri,  7 Mar 2025 14:38:56 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id AB5F16106E;
+	Fri,  7 Mar 2025 14:39:04 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 648341C9
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  7 Mar 2025 14:39:02 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id C3F38414EA
- for <intel-wired-lan@lists.osuosl.org>; Fri,  7 Mar 2025 14:38:56 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 5470A413E1
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  7 Mar 2025 14:39:02 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id BNDgWJOShfbQ for <intel-wired-lan@lists.osuosl.org>;
- Fri,  7 Mar 2025 14:38:54 +0000 (UTC)
+ id Av5IfQKdikFB for <intel-wired-lan@lists.osuosl.org>;
+ Fri,  7 Mar 2025 14:39:01 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.19;
  helo=mgamail.intel.com; envelope-from=jedrzej.jagielski@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 085944076C
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 085944076C
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 40D954076C
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 40D954076C
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.19])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 085944076C
- for <intel-wired-lan@lists.osuosl.org>; Fri,  7 Mar 2025 14:38:53 +0000 (UTC)
-X-CSE-ConnectionGUID: RMWudwnmQI2L+To0R4QYWA==
-X-CSE-MsgGUID: duzrIJzvR5a3/GI+oawgSQ==
-X-IronPort-AV: E=McAfee;i="6700,10204,11365"; a="42263368"
-X-IronPort-AV: E=Sophos;i="6.14,229,1736841600"; d="scan'208";a="42263368"
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 40D954076C
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  7 Mar 2025 14:39:01 +0000 (UTC)
+X-CSE-ConnectionGUID: eW4U05WGTnqhlQqmsb0kIQ==
+X-CSE-MsgGUID: 1wUT+FpFSoG8ww7juhHHkQ==
+X-IronPort-AV: E=McAfee;i="6700,10204,11365"; a="42263388"
+X-IronPort-AV: E=Sophos;i="6.14,229,1736841600"; d="scan'208";a="42263388"
 Received: from fmviesa002.fm.intel.com ([10.60.135.142])
  by orvoesa111.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 07 Mar 2025 06:38:54 -0800
-X-CSE-ConnectionGUID: O+LBNSK5Tn2drWdRS5DMow==
-X-CSE-MsgGUID: RzLt590IRlyXkov5B9XsXw==
+ 07 Mar 2025 06:39:02 -0800
+X-CSE-ConnectionGUID: KB6+2n/+QBaD+edvX7gvjw==
+X-CSE-MsgGUID: t5xFSZfCS2KFkUQNDbZa8w==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.14,229,1736841600"; d="scan'208";a="142570839"
+X-IronPort-AV: E=Sophos;i="6.14,229,1736841600"; d="scan'208";a="142570886"
 Received: from os-delivery.igk.intel.com ([10.102.18.218])
- by fmviesa002.fm.intel.com with ESMTP; 07 Mar 2025 06:38:50 -0800
+ by fmviesa002.fm.intel.com with ESMTP; 07 Mar 2025 06:38:59 -0800
 From: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
 To: intel-wired-lan@lists.osuosl.org
 Cc: anthony.l.nguyen@intel.com, netdev@vger.kernel.org, horms@kernel.org,
  jiri@nvidia.com, Jedrzej Jagielski <jedrzej.jagielski@intel.com>,
- Jacob Keller <jacob.e.keller@intel.com>, Bharath R <bharath.r@intel.com>,
- Slawomir Mrozowicz <slawomirx.mrozowicz@intel.com>,
- Piotr Kwapulinski <piotr.kwapulinski@intel.com>,
+ Mateusz Polchlopek <mateusz.polchlopek@intel.com>,
  Stefan Wegrzyn <stefan.wegrzyn@intel.com>
-Date: Fri,  7 Mar 2025 15:24:15 +0100
-Message-Id: <20250307142419.314402-12-jedrzej.jagielski@intel.com>
+Date: Fri,  7 Mar 2025 15:24:18 +0100
+Message-Id: <20250307142419.314402-15-jedrzej.jagielski@intel.com>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <20250307142419.314402-1-jedrzej.jagielski@intel.com>
 References: <20250307142419.314402-1-jedrzej.jagielski@intel.com>
@@ -79,25 +77,25 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1741358335; x=1772894335;
+ t=1741358342; x=1772894342;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=yoniK7FxGiv+OVRshDePNJMQgEosb9SBbOgvQxYg0OY=;
- b=XUkof1oDp+p5Syt7OiVaWJjzKQx7w9v4L8GWrbTtLggeD0/QivqwOKIk
- s8eoel7TFBBXw2E1AxySJQ4UwjZlX1KCwI0jOr+mREtARLOJy22/qCFJo
- krrAHE9x9PTIz4JqrvrahCeCYO4XcWggtwmpplEP9YbbB6jN5I9EkREkv
- fCzsPuZQVN1vbayP4yROD1AAjLjENruvl58zbrhcOitcLUVCeRwOHJ3vy
- 6zs5Q/Nrg3PwlQIxwnfRggvoLQ+r4nXDaWnzec8geU2m5Lp4g+VGMqA9b
- OsszoahiJT/hZQBuykOb2FanitSEaCrMAs4JEM6C1tDqtRftts3MOk+Kc
- Q==;
+ bh=MrOp5/5hsovneYwDrWbvivcHZSNtV25ZPnodbs8ClvI=;
+ b=Bv2B5gtehDgscPSy1Hook3WPROONcuIb3lNmsrk6E1emhah+Tt5gYQXm
+ y0bgV+S7X9a9nmr33SQYqikE11XrAMOWEfwogPsA75Geyjae9Jlmk8ZwV
+ /+YsGzxuzW4o4c5SQuEqTa3uueSkVNu8KD6nAqqo6zZqTtLQ4D2wgIg89
+ xJIH3xLgG/x3Cu1ttVfMxF8bAGH8Jc0MytiVGGel7jCplQXZ7msvFkgfN
+ HvIz+6sMZCiyNHrUnP+oTKyaLyekTpwg7HxaL4JElGF2N3kC81MmyDJe+
+ JonuJ/3GKm7BkBzayd+9pF7uIOlttX5EiSEcGGggMecl9oIG8Rr0m78Su
+ w==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=XUkof1oD
-Subject: [Intel-wired-lan] [PATCH iwl-next v6 11/15] ixgbe: add device flash
- update via devlink
+ header.a=rsa-sha256 header.s=Intel header.b=Bv2B5gte
+Subject: [Intel-wired-lan] [PATCH iwl-next v6 14/15] ixgbe: add E610
+ implementation of FW recovery mode
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -113,1174 +111,244 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Use the pldmfw library to implement device flash update for
-the Intel ixgbe networking device driver specifically for E610 devices.
-This support uses the devlink flash update interface.
+Add E610 implementation of fw_recovery_mode MAC operation.
 
-Using the pldmfw library, the provided firmware file will be scanned for
-the three major components, "fw.undi" for the Option ROM, "fw.mgmt" for
-the main NVM module containing the primary device firmware, and
-"fw.netlist" containing the netlist module.
+In case of E610 information about recovery mode is obtained
+from FW_MODES field in IXGBE_GL_MNG_FWSM register (0x000B6134).
 
-The flash is separated into two banks, the active bank containing the
-running firmware, and the inactive bank which we use for update. Each
-module is updated in a staged process. First, the inactive bank is
-erased, preparing the device for update. Second, the contents of the
-component are copied to the inactive portion of the flash. After all
-components are updated, the driver signals the device to switch the
-active bank during the next EMP reset.
+Introduce recovery specific probing flow and init only
+vital features.
 
-With this implementation, basic flash update for the E610 hardware is
-supported.
+User should be able to perform NVM update using devlink
+once recovery mode is detected in order to load a healthy img.
 
-Reviewed-by: Jacob Keller <jacob.e.keller@intel.com>
-Tested-by: Bharath R <bharath.r@intel.com>
-Co-developed-by: Slawomir Mrozowicz <slawomirx.mrozowicz@intel.com>
-Signed-off-by: Slawomir Mrozowicz <slawomirx.mrozowicz@intel.com>
-Co-developed-by: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
-Signed-off-by: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
+Reviewed-by: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
 Co-developed-by: Stefan Wegrzyn <stefan.wegrzyn@intel.com>
 Signed-off-by: Stefan Wegrzyn <stefan.wegrzyn@intel.com>
 Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
 ---
-v5: fix caps->nvm_unified_update assignment
----
- Documentation/networking/devlink/ixgbe.rst    |  24 +
- drivers/net/ethernet/intel/Kconfig            |   1 +
- drivers/net/ethernet/intel/ixgbe/Makefile     |   2 +-
- .../ethernet/intel/ixgbe/devlink/devlink.c    |   4 +
- drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c | 210 ++++++
- drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h |  11 +
- .../ethernet/intel/ixgbe/ixgbe_fw_update.c    | 668 ++++++++++++++++++
- .../ethernet/intel/ixgbe/ixgbe_fw_update.h    |  12 +
- .../ethernet/intel/ixgbe/ixgbe_type_e610.h    |  64 ++
- 9 files changed, 995 insertions(+), 1 deletion(-)
- create mode 100644 drivers/net/ethernet/intel/ixgbe/ixgbe_fw_update.c
- create mode 100644 drivers/net/ethernet/intel/ixgbe/ixgbe_fw_update.h
+ drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c | 17 ++++
+ .../ethernet/intel/ixgbe/ixgbe_fw_update.c    | 15 +++-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 88 +++++++++++++++++--
+ .../ethernet/intel/ixgbe/ixgbe_type_e610.h    |  3 +
+ 4 files changed, 113 insertions(+), 10 deletions(-)
 
-diff --git a/Documentation/networking/devlink/ixgbe.rst b/Documentation/networking/devlink/ixgbe.rst
-index a41073a62776..41aedf4b8017 100644
---- a/Documentation/networking/devlink/ixgbe.rst
-+++ b/Documentation/networking/devlink/ixgbe.rst
-@@ -64,3 +64,27 @@ The ``ixgbe`` driver reports the following versions
-       - running
-       - 0xee16ced7
-       - The first 4 bytes of the hash of the netlist module contents.
-+
-+Flash Update
-+============
-+The ``ixgbe`` driver implements support for flash update using the
-+``devlink-flash`` interface. It supports updating the device flash using a
-+combined flash image that contains the ``fw.mgmt``, ``fw.undi``, and
-+``fw.netlist`` components.
-+.. list-table:: List of supported overwrite modes
-+   :widths: 5 95
-+   * - Bits
-+     - Behavior
-+   * - ``DEVLINK_FLASH_OVERWRITE_SETTINGS``
-+     - Do not preserve settings stored in the flash components being
-+       updated. This includes overwriting the port configuration that
-+       determines the number of physical functions the device will
-+       initialize with.
-+   * - ``DEVLINK_FLASH_OVERWRITE_SETTINGS`` and ``DEVLINK_FLASH_OVERWRITE_IDENTIFIERS``
-+     - Do not preserve either settings or identifiers. Overwrite everything
-+       in the flash with the contents from the provided image, without
-+       performing any preservation. This includes overwriting device
-+       identifying fields such as the MAC address, Vital product Data (VPD) area,
-+       and device serial number. It is expected that this combination be used with an
-+       image customized for the specific device.
-+
-diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
-index 3366738c57c8..8fecb8a4e249 100644
---- a/drivers/net/ethernet/intel/Kconfig
-+++ b/drivers/net/ethernet/intel/Kconfig
-@@ -148,6 +148,7 @@ config IXGBE
- 	depends on PTP_1588_CLOCK_OPTIONAL
- 	select MDIO
- 	select NET_DEVLINK
-+	select PLDMFW
- 	select PHYLIB
- 	help
- 	  This driver supports Intel(R) 10GbE PCI Express family of
-diff --git a/drivers/net/ethernet/intel/ixgbe/Makefile b/drivers/net/ethernet/intel/ixgbe/Makefile
-index 11f37140c0a3..ce447540d146 100644
---- a/drivers/net/ethernet/intel/ixgbe/Makefile
-+++ b/drivers/net/ethernet/intel/ixgbe/Makefile
-@@ -10,7 +10,7 @@ obj-$(CONFIG_IXGBE) += ixgbe.o
- ixgbe-y := ixgbe_main.o ixgbe_common.o ixgbe_ethtool.o \
-            ixgbe_82599.o ixgbe_82598.o ixgbe_phy.o ixgbe_sriov.o \
-            ixgbe_mbx.o ixgbe_x540.o ixgbe_x550.o ixgbe_lib.o ixgbe_ptp.o \
--           ixgbe_xsk.o ixgbe_e610.o devlink/devlink.o
-+           ixgbe_xsk.o ixgbe_e610.o devlink/devlink.o ixgbe_fw_update.o
- 
- ixgbe-$(CONFIG_IXGBE_DCB) +=  ixgbe_dcb.o ixgbe_dcb_82598.o \
-                               ixgbe_dcb_82599.o ixgbe_dcb_nl.o
-diff --git a/drivers/net/ethernet/intel/ixgbe/devlink/devlink.c b/drivers/net/ethernet/intel/ixgbe/devlink/devlink.c
-index b8f21b5e3de0..2cc7137f1ac7 100644
---- a/drivers/net/ethernet/intel/ixgbe/devlink/devlink.c
-+++ b/drivers/net/ethernet/intel/ixgbe/devlink/devlink.c
-@@ -3,6 +3,7 @@
- 
- #include "ixgbe.h"
- #include "devlink.h"
-+#include "ixgbe_fw_update.h"
- 
- struct ixgbe_info_ctx {
- 	char buf[128];
-@@ -391,6 +392,9 @@ static int ixgbe_devlink_info_get(struct devlink *devlink,
- 
- static const struct devlink_ops ixgbe_devlink_ops = {
- 	.info_get = ixgbe_devlink_info_get,
-+	.supported_flash_update_params =
-+		DEVLINK_SUPPORT_FLASH_UPDATE_OVERWRITE_MASK,
-+	.flash_update = ixgbe_flash_pldm_image,
- };
- 
- /**
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c
-index 251ee73e08dc..7488387611c8 100644
+index 1d894dc9aa6c..d4a3943faa21 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c
-@@ -598,6 +598,11 @@ static bool ixgbe_parse_e610_caps(struct ixgbe_hw *hw,
- 	case IXGBE_ACI_CAPS_PENDING_NET_VER:
- 		caps->nvm_update_pending_netlist = true;
- 		break;
-+	case IXGBE_ACI_CAPS_NVM_MGMT:
-+		caps->nvm_unified_update =
-+			(number & IXGBE_NVM_MGMT_UNIFIED_UPD_SUPPORT) ?
-+			true : false;
-+		break;
- 	case IXGBE_ACI_CAPS_MAX_MTU:
- 		caps->max_mtu = number;
- 		break;
-@@ -2293,6 +2298,131 @@ int ixgbe_aci_read_nvm(struct ixgbe_hw *hw, u16 module_typeid, u32 offset,
- 	return ixgbe_aci_send_cmd(hw, &desc, data, length);
+@@ -1815,6 +1815,22 @@ void ixgbe_disable_rx_e610(struct ixgbe_hw *hw)
+ 	}
  }
  
 +/**
-+ * ixgbe_aci_erase_nvm - erase NVM sector
-+ * @hw: pointer to the HW struct
-+ * @module_typeid: module pointer location in words from the NVM beginning
++ * ixgbe_fw_recovery_mode_e610 - Check FW NVM recovery mode
++ * @hw: pointer to hardware structure
 + *
-+ * Erase the NVM sector using the ACI command (0x0702).
++ * Check FW NVM recovery mode by reading the value of
++ * the dedicated register.
 + *
-+ * Return: the exit code of the operation.
++ * Return: true if FW is in recovery mode, otherwise false.
 + */
-+int ixgbe_aci_erase_nvm(struct ixgbe_hw *hw, u16 module_typeid)
++static bool ixgbe_fw_recovery_mode_e610(struct ixgbe_hw *hw)
 +{
-+	struct ixgbe_aci_cmd_nvm *cmd;
-+	struct ixgbe_aci_desc desc;
-+	__le16 len;
-+	int err;
++	u32 fwsm = IXGBE_READ_REG(hw, IXGBE_GL_MNG_FWSM);
 +
-+	/* Read a length value from SR, so module_typeid is equal to 0,
-+	 * calculate offset where module size is placed from bytes to words
-+	 * set last command and read from SR values to true.
-+	 */
-+	err = ixgbe_aci_read_nvm(hw, 0, 2 * module_typeid + 2, 2, &len, true,
-+				 true);
-+	if (err)
-+		return err;
-+
-+	cmd = &desc.params.nvm;
-+
-+	ixgbe_fill_dflt_direct_cmd_desc(&desc, ixgbe_aci_opc_nvm_erase);
-+
-+	cmd->module_typeid = cpu_to_le16(module_typeid);
-+	cmd->length = len;
-+	cmd->offset_low = 0;
-+	cmd->offset_high = 0;
-+
-+	return ixgbe_aci_send_cmd(hw, &desc, NULL, 0);
-+}
-+
-+/**
-+ * ixgbe_aci_update_nvm - update NVM
-+ * @hw: pointer to the HW struct
-+ * @module_typeid: module pointer location in words from the NVM beginning
-+ * @offset: byte offset from the module beginning
-+ * @length: length of the section to be written (in bytes from the offset)
-+ * @data: command buffer (size [bytes] = length)
-+ * @last_command: tells if this is the last command in a series
-+ * @command_flags: command parameters
-+ *
-+ * Update the NVM using the ACI command (0x0703).
-+ *
-+ * Return: the exit code of the operation.
-+ */
-+int ixgbe_aci_update_nvm(struct ixgbe_hw *hw, u16 module_typeid,
-+			 u32 offset, u16 length, void *data,
-+			 bool last_command, u8 command_flags)
-+{
-+	struct ixgbe_aci_cmd_nvm *cmd;
-+	struct ixgbe_aci_desc desc;
-+
-+	cmd = &desc.params.nvm;
-+
-+	/* In offset the highest byte must be zeroed. */
-+	if (offset & 0xFF000000)
-+		return -EINVAL;
-+
-+	ixgbe_fill_dflt_direct_cmd_desc(&desc, ixgbe_aci_opc_nvm_write);
-+
-+	cmd->cmd_flags |= command_flags;
-+
-+	/* If this is the last command in a series, set the proper flag. */
-+	if (last_command)
-+		cmd->cmd_flags |= IXGBE_ACI_NVM_LAST_CMD;
-+	cmd->module_typeid = cpu_to_le16(module_typeid);
-+	cmd->offset_low = cpu_to_le16(offset & 0xFFFF);
-+	cmd->offset_high = FIELD_GET(IXGBE_ACI_NVM_OFFSET_HI_U_MASK, offset);
-+	cmd->length = cpu_to_le16(length);
-+
-+	desc.flags |= cpu_to_le16(IXGBE_ACI_FLAG_RD);
-+
-+	return ixgbe_aci_send_cmd(hw, &desc, data, length);
-+}
-+
-+/**
-+ * ixgbe_nvm_write_activate - NVM activate write
-+ * @hw: pointer to the HW struct
-+ * @cmd_flags: flags for write activate command
-+ * @response_flags: response indicators from firmware
-+ *
-+ * Update the control word with the required banks' validity bits
-+ * and dumps the Shadow RAM to flash using ACI command (0x0707).
-+ *
-+ * cmd_flags controls which banks to activate, the preservation level to use
-+ * when activating the NVM bank, and whether an EMP reset is required for
-+ * activation.
-+ *
-+ * Note that the 16bit cmd_flags value is split between two separate 1 byte
-+ * flag values in the descriptor.
-+ *
-+ * On successful return of the firmware command, the response_flags variable
-+ * is updated with the flags reported by firmware indicating certain status,
-+ * such as whether EMP reset is enabled.
-+ *
-+ * Return: the exit code of the operation.
-+ */
-+int ixgbe_nvm_write_activate(struct ixgbe_hw *hw, u16 cmd_flags,
-+			     u8 *response_flags)
-+{
-+	struct ixgbe_aci_cmd_nvm *cmd;
-+	struct ixgbe_aci_desc desc;
-+	s32 err;
-+
-+	cmd = &desc.params.nvm;
-+	ixgbe_fill_dflt_direct_cmd_desc(&desc,
-+					ixgbe_aci_opc_nvm_write_activate);
-+
-+	cmd->cmd_flags = (u8)(cmd_flags & 0xFF);
-+	cmd->offset_high = (u8)FIELD_GET(IXGBE_ACI_NVM_OFFSET_HI_A_MASK,
-+					 cmd_flags);
-+
-+	err = ixgbe_aci_send_cmd(hw, &desc, NULL, 0);
-+	if (!err && response_flags)
-+		*response_flags = cmd->cmd_flags;
-+
-+	return err;
++	return !!(fwsm & IXGBE_GL_MNG_FWSM_RECOVERY_M);
 +}
 +
  /**
-  * ixgbe_nvm_validate_checksum - validate checksum
-  * @hw: pointer to the HW struct
-@@ -3175,6 +3305,86 @@ int ixgbe_get_flash_data(struct ixgbe_hw *hw)
- 	return err;
- }
- 
-+/* ixgbe_nvm_set_pkg_data - NVM set package data
-+ * @hw: pointer to the HW struct
-+ * @del_pkg_data_flag: If is set then the current pkg_data store by FW
-+ *		       is deleted.
-+ *		       If bit is set to 1, then buffer should be size 0.
-+ * @data: pointer to buffer
-+ * @length: length of the buffer
-+ *
-+ * Set package data using ACI command (0x070A).
-+ * This command is equivalent to the reception of
-+ * a PLDM FW Update GetPackageData cmd. This command should be sent
-+ * as part of the NVM update as the first cmd in the flow.
-+ *
-+ * Return: the exit code of the operation.
-+ */
-+int ixgbe_nvm_set_pkg_data(struct ixgbe_hw *hw, bool del_pkg_data_flag,
-+			   u8 *data, u16 length)
-+{
-+	struct ixgbe_aci_cmd_nvm_pkg_data *cmd;
-+	struct ixgbe_aci_desc desc;
-+
-+	if (length != 0 && !data)
-+		return -EINVAL;
-+
-+	cmd = &desc.params.pkg_data;
-+
-+	ixgbe_fill_dflt_direct_cmd_desc(&desc, ixgbe_aci_opc_nvm_pkg_data);
-+	desc.flags |= cpu_to_le16(IXGBE_ACI_FLAG_RD);
-+
-+	if (del_pkg_data_flag)
-+		cmd->cmd_flags |= IXGBE_ACI_NVM_PKG_DELETE;
-+
-+	return ixgbe_aci_send_cmd(hw, &desc, data, length);
-+}
-+
-+/* ixgbe_nvm_pass_component_tbl - NVM pass component table
-+ * @hw: pointer to the HW struct
-+ * @data: pointer to buffer
-+ * @length: length of the buffer
-+ * @transfer_flag: parameter for determining stage of the update
-+ * @comp_response: a pointer to the response from the 0x070B ACI.
-+ * @comp_response_code: a pointer to the response code from the 0x070B ACI.
-+ *
-+ * Pass component table using ACI command (0x070B). This command is equivalent
-+ * to the reception of a PLDM FW Update PassComponentTable cmd.
-+ * This command should be sent once per component. It can be only sent after
-+ * Set Package Data cmd and before actual update. FW will assume these
-+ * commands are going to be sent until the TransferFlag is set to End or
-+ * StartAndEnd.
-+ *
-+ * Return: the exit code of the operation.
-+ */
-+int ixgbe_nvm_pass_component_tbl(struct ixgbe_hw *hw, u8 *data, u16 length,
-+				 u8 transfer_flag, u8 *comp_response,
-+				 u8 *comp_response_code)
-+{
-+	struct ixgbe_aci_cmd_nvm_pass_comp_tbl *cmd;
-+	struct ixgbe_aci_desc desc;
-+	int err;
-+
-+	if (!data || !comp_response || !comp_response_code)
-+		return -EINVAL;
-+
-+	cmd = &desc.params.pass_comp_tbl;
-+
-+	ixgbe_fill_dflt_direct_cmd_desc(&desc,
-+					ixgbe_aci_opc_nvm_pass_component_tbl);
-+	desc.flags |= cpu_to_le16(IXGBE_ACI_FLAG_RD);
-+
-+	cmd->transfer_flag = transfer_flag;
-+	err = ixgbe_aci_send_cmd(hw, &desc, data, length);
-+
-+	if (!err) {
-+		*comp_response = cmd->component_response;
-+		*comp_response_code = cmd->component_response_code;
-+	}
-+
-+	return err;
-+}
-+
- /**
-  * ixgbe_read_sr_word_aci - Reads Shadow RAM via ACI
-  * @hw: pointer to the HW structure
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h
-index 07c888d554d5..c24a41fe16a7 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.h
-@@ -81,5 +81,16 @@ int ixgbe_read_ee_aci_buffer_e610(struct ixgbe_hw *hw, u16 offset,
- int ixgbe_validate_eeprom_checksum_e610(struct ixgbe_hw *hw, u16 *checksum_val);
- int ixgbe_reset_hw_e610(struct ixgbe_hw *hw);
- int ixgbe_get_flash_data(struct ixgbe_hw *hw);
-+int ixgbe_nvm_set_pkg_data(struct ixgbe_hw *hw, bool del_pkg_data_flag,
-+			   u8 *data, u16 length);
-+int ixgbe_nvm_pass_component_tbl(struct ixgbe_hw *hw, u8 *data, u16 length,
-+				 u8 transfer_flag, u8 *comp_response,
-+				 u8 *comp_response_code);
-+int ixgbe_aci_erase_nvm(struct ixgbe_hw *hw, u16 module_typeid);
-+int ixgbe_aci_update_nvm(struct ixgbe_hw *hw, u16 module_typeid,
-+			 u32 offset, u16 length, void *data,
-+			 bool last_command, u8 command_flags);
-+int ixgbe_nvm_write_activate(struct ixgbe_hw *hw, u16 cmd_flags,
-+			     u8 *response_flags);
- 
- #endif /* _IXGBE_E610_H_ */
+  * ixgbe_init_phy_ops_e610 - PHY specific init
+  * @hw: pointer to hardware structure
+@@ -3880,6 +3896,7 @@ static const struct ixgbe_mac_operations mac_ops_e610 = {
+ 	.get_fw_ver                     = ixgbe_aci_get_fw_ver,
+ 	.get_media_type			= ixgbe_get_media_type_e610,
+ 	.setup_link			= ixgbe_setup_link_e610,
++	.fw_recovery_mode		= ixgbe_fw_recovery_mode_e610,
+ 	.get_link_capabilities		= ixgbe_get_link_capabilities_e610,
+ 	.get_bus_info			= ixgbe_get_bus_info_generic,
+ 	.acquire_swfw_sync		= ixgbe_acquire_swfw_sync_X540,
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_fw_update.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_fw_update.c
-new file mode 100644
-index 000000000000..1ff55dc8a6b7
---- /dev/null
+index 052d5b3fb371..c74f397cebb7 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_fw_update.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_fw_update.c
-@@ -0,0 +1,668 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/* Copyright(c) 2025 Intel Corporation. */
-+
-+#include <linux/crc32.h>
-+#include <linux/pldmfw.h>
-+#include <linux/uuid.h>
-+
-+#include "ixgbe.h"
-+#include "ixgbe_fw_update.h"
-+
-+struct ixgbe_fwu_priv {
-+	struct pldmfw context;
-+
-+	struct ixgbe_adapter *adapter;
-+	struct netlink_ext_ack *extack;
-+
-+	/* Track which NVM banks to activate at the end of the update */
-+	u8 activate_flags;
-+};
-+
-+/**
-+ * ixgbe_send_package_data - Send record package data to firmware
-+ * @context: PLDM fw update structure
-+ * @data: pointer to the package data
-+ * @length: length of the package data
-+ *
-+ * Send a copy of the package data associated with the PLDM record matching
-+ * this device to the firmware.
-+ *
-+ * Note that this function sends an AdminQ command that will fail unless the
-+ * NVM resource has been acquired.
-+ *
-+ * Return: zero on success, or a negative error code on failure.
-+ */
-+static int ixgbe_send_package_data(struct pldmfw *context,
-+				   const u8 *data, u16 length)
-+{
-+	struct ixgbe_fwu_priv *priv = container_of(context,
-+						   struct ixgbe_fwu_priv,
-+						   context);
-+	struct ixgbe_adapter *adapter = priv->adapter;
-+	struct ixgbe_hw *hw = &adapter->hw;
-+	u8 *package_data;
-+	int err;
-+
-+	package_data = kmemdup(data, length, GFP_KERNEL);
-+	if (!package_data)
-+		return -ENOMEM;
-+
-+	err = ixgbe_nvm_set_pkg_data(hw, false, package_data, length);
-+
-+	kfree(package_data);
-+
-+	return err;
-+}
-+
-+/**
-+ * ixgbe_check_component_response - Report firmware response to a component
-+ * @adapter: device private data structure
-+ * @response: indicates whether this component can be updated
-+ * @code: code indicating reason for response
-+ * @extack: netlink extended ACK structure
-+ *
-+ * Check whether firmware indicates if this component can be updated. Report
-+ * a suitable error message over the netlink extended ACK if the component
-+ * cannot be updated.
-+ *
-+ * Return: 0 if the component can be updated, or -ECANCELED if the
-+ * firmware indicates the component cannot be updated.
-+ */
-+static int ixgbe_check_component_response(struct ixgbe_adapter *adapter,
-+					  u8 response, u8 code,
-+					  struct netlink_ext_ack *extack)
-+{
-+	switch (response) {
-+	case IXGBE_ACI_NVM_PASS_COMP_CAN_BE_UPDATED:
-+		/* Firmware indicated this update is good to proceed. */
-+		return 0;
-+	case IXGBE_ACI_NVM_PASS_COMP_CAN_MAY_BE_UPDATEABLE:
-+		NL_SET_ERR_MSG_MOD(extack,
-+				   "Firmware recommends not updating, as it may result in a downgrade. Continuing anyways");
-+		return 0;
-+	case IXGBE_ACI_NVM_PASS_COMP_CAN_NOT_BE_UPDATED:
-+		NL_SET_ERR_MSG_MOD(extack, "Firmware has rejected updating.");
-+		break;
-+	}
-+
-+	switch (code) {
-+	case IXGBE_ACI_NVM_PASS_COMP_STAMP_IDENTICAL_CODE:
-+		NL_SET_ERR_MSG_MOD(extack,
-+				   "Component comparison stamp is identical to running image");
-+		break;
-+	case IXGBE_ACI_NVM_PASS_COMP_STAMP_LOWER:
-+		NL_SET_ERR_MSG_MOD(extack,
-+				   "Component comparison stamp is lower than running image");
-+		break;
-+	case IXGBE_ACI_NVM_PASS_COMP_INVALID_STAMP_CODE:
-+		NL_SET_ERR_MSG_MOD(extack,
-+				   "Component comparison stamp is invalid");
-+		break;
-+	case IXGBE_ACI_NVM_PASS_COMP_CONFLICT_CODE:
-+		NL_SET_ERR_MSG_MOD(extack,
-+				   "Component table conflict occurred");
-+		break;
-+	case IXGBE_ACI_NVM_PASS_COMP_PRE_REQ_NOT_MET_CODE:
-+		NL_SET_ERR_MSG_MOD(extack, "Component pre-requisites not met");
-+		break;
-+	case IXGBE_ACI_NVM_PASS_COMP_NOT_SUPPORTED_CODE:
-+		NL_SET_ERR_MSG_MOD(extack, "Component not supported");
-+		break;
-+	case IXGBE_ACI_NVM_PASS_COMP_CANNOT_DOWNGRADE_CODE:
-+		NL_SET_ERR_MSG_MOD(extack, "Component cannot be downgraded");
-+		break;
-+	case IXGBE_ACI_NVM_PASS_COMP_INCOMPLETE_IMAGE_CODE:
-+		NL_SET_ERR_MSG_MOD(extack, "Incomplete component image");
-+		break;
-+	case IXGBE_ACI_NVM_PASS_COMP_VER_STR_IDENTICAL_CODE:
-+		NL_SET_ERR_MSG_MOD(extack,
-+				   "Component version is identical to running image");
-+		break;
-+	case IXGBE_ACI_NVM_PASS_COMP_VER_STR_LOWER_CODE:
-+		NL_SET_ERR_MSG_MOD(extack,
-+				   "Component version is lower than the running image");
-+		break;
-+	default:
-+		NL_SET_ERR_MSG_MOD(extack,
-+				   "Received unexpected response code from firmware");
-+		break;
-+	}
-+
-+	return -ECANCELED;
-+}
-+
-+/**
-+ * ixgbe_send_component_table - Send PLDM component table to firmware
-+ * @context: PLDM fw update structure
-+ * @component: the component to process
-+ * @transfer_flag: relative transfer order of this component
-+ *
-+ * Read relevant data from the component and forward it to the device
-+ * firmware. Check the response to determine if the firmware indicates that
-+ * the update can proceed.
-+ *
-+ * This function sends ACI commands related to the NVM, and assumes that
-+ * the NVM resource has been acquired.
-+ *
-+ * Return: 0 on success, or a negative error code on failure.
-+ */
-+static int ixgbe_send_component_table(struct pldmfw *context,
-+				      struct pldmfw_component *component,
-+				      u8 transfer_flag)
-+{
-+	struct ixgbe_fwu_priv *priv = container_of(context,
-+						   struct ixgbe_fwu_priv,
-+						   context);
-+	struct ixgbe_adapter *adapter = priv->adapter;
-+	struct netlink_ext_ack *extack = priv->extack;
-+	struct ixgbe_aci_cmd_nvm_comp_tbl *comp_tbl;
-+	u8 comp_response, comp_response_code;
-+	struct ixgbe_hw *hw = &adapter->hw;
-+	size_t length;
-+	int err;
-+
-+	switch (component->identifier) {
-+	case NVM_COMP_ID_OROM:
-+	case NVM_COMP_ID_NVM:
-+	case NVM_COMP_ID_NETLIST:
-+		break;
-+	default:
-+		NL_SET_ERR_MSG_MOD(extack,
-+				   "Unable to update due to unknown firmware component");
-+		return -EOPNOTSUPP;
-+	}
-+
-+	length = struct_size(comp_tbl, cvs, component->version_len);
-+	comp_tbl = kzalloc(length, GFP_KERNEL);
-+	if (!comp_tbl)
-+		return -ENOMEM;
-+
-+	comp_tbl->comp_class = cpu_to_le16(component->classification);
-+	comp_tbl->comp_id = cpu_to_le16(component->identifier);
-+	comp_tbl->comp_class_idx = FWU_COMP_CLASS_IDX_NOT_USE;
-+	comp_tbl->comp_cmp_stamp = cpu_to_le32(component->comparison_stamp);
-+	comp_tbl->cvs_type = component->version_type;
-+	comp_tbl->cvs_len = component->version_len;
-+
-+	memcpy(comp_tbl->cvs, component->version_string,
-+	       component->version_len);
-+
-+	err = ixgbe_nvm_pass_component_tbl(hw, (u8 *)comp_tbl, length,
-+					   transfer_flag, &comp_response,
-+					   &comp_response_code);
-+
-+	kfree(comp_tbl);
-+
-+	if (err) {
-+		NL_SET_ERR_MSG_MOD(extack,
-+				   "Failed to transfer component table to firmware");
-+		return -EIO;
-+	}
-+
-+	return ixgbe_check_component_response(adapter,
-+					      comp_response,
-+					      comp_response_code, extack);
-+}
-+
-+/**
-+ * ixgbe_write_one_nvm_block - Write an NVM block and await completion response
-+ * @adapter: the PF data structure
-+ * @module: the module to write to
-+ * @offset: offset in bytes
-+ * @block_size: size of the block to write, up to 4k
-+ * @block: pointer to block of data to write
-+ * @last_cmd: whether this is the last command
-+ * @extack: netlink extended ACK structure
-+ *
-+ * Write a block of data to a flash module, and await for the completion
-+ * response message from firmware.
-+ *
-+ * Note this function assumes the caller has acquired the NVM resource.
-+ *
-+ * On successful return, reset level indicates the device reset required to
-+ * complete the update.
-+ *
-+ *   0 - IXGBE_ACI_NVM_POR_FLAG - A full power on is required
-+ *   1 - IXGBE_ACI_NVM_PERST_FLAG - A cold PCIe reset is required
-+ *   2 - IXGBE_ACI_NVM_EMPR_FLAG - An EMP reset is required
-+ *
-+ * Return: 0 on success, or a negative error code on failure.
-+ */
-+static int ixgbe_write_one_nvm_block(struct ixgbe_adapter *adapter,
-+				     u16 module, u32 offset,
-+				     u16 block_size, u8 *block, bool last_cmd,
-+				     struct netlink_ext_ack *extack)
-+{
+@@ -73,6 +73,8 @@ static int ixgbe_check_component_response(struct ixgbe_adapter *adapter,
+ 					  u8 response, u8 code,
+ 					  struct netlink_ext_ack *extack)
+ {
 +	struct ixgbe_hw *hw = &adapter->hw;
 +
-+	return ixgbe_aci_update_nvm(hw, module, offset, block_size, block,
-+				    last_cmd, 0);
-+}
-+
-+/**
-+ * ixgbe_write_nvm_module - Write data to an NVM module
-+ * @adapter: the PF driver structure
-+ * @module: the module id to program
-+ * @component: the name of the component being updated
-+ * @image: buffer of image data to write to the NVM
-+ * @length: length of the buffer
-+ * @extack: netlink extended ACK structure
-+ *
-+ * Loop over the data for a given NVM module and program it in 4 Kb
-+ * blocks. Notify devlink core of progress after each block is programmed.
-+ * Loops over a block of data and programs the NVM in 4k block chunks.
-+ *
-+ * Note this function assumes the caller has acquired the NVM resource.
-+ *
-+ * Return: 0 on success, or a negative error code on failure.
-+ */
-+static int ixgbe_write_nvm_module(struct ixgbe_adapter *adapter, u16 module,
-+				  const char *component, const u8 *image,
-+				  u32 length,
-+				  struct netlink_ext_ack *extack)
-+{
-+	struct devlink *devlink = adapter->devlink;
-+	u32 offset = 0;
-+	bool last_cmd;
-+	u8 *block;
-+	int err;
-+
-+	devlink_flash_update_status_notify(devlink, "Flashing",
-+					   component, 0, length);
-+
-+	block = kzalloc(IXGBE_ACI_MAX_BUFFER_SIZE, GFP_KERNEL);
-+	if (!block)
-+		return -ENOMEM;
-+
-+	do {
-+		u32 block_size;
-+
-+		block_size = min_t(u32, IXGBE_ACI_MAX_BUFFER_SIZE,
-+				   length - offset);
-+		last_cmd = !(offset + block_size < length);
-+
-+		memcpy(block, image + offset, block_size);
-+
-+		err = ixgbe_write_one_nvm_block(adapter, module, offset,
-+						block_size, block, last_cmd,
-+						extack);
-+		if (err)
-+			break;
-+
-+		offset += block_size;
-+
-+		devlink_flash_update_status_notify(devlink, "Flashing",
-+						   component, offset, length);
-+	} while (!last_cmd);
-+
-+	if (err)
-+		devlink_flash_update_status_notify(devlink, "Flashing failed",
-+						   component, length, length);
-+	else
-+		devlink_flash_update_status_notify(devlink, "Flashing done",
-+						   component, length, length);
-+
-+	kfree(block);
-+
-+	return err;
-+}
-+
-+/* Length in seconds to wait before timing out when erasing a flash module.
-+ * Yes, erasing really can take minutes to complete.
-+ */
-+#define IXGBE_FW_ERASE_TIMEOUT 300
-+
-+/**
-+ * ixgbe_erase_nvm_module - Erase an NVM module and await firmware completion
-+ * @adapter: the PF data structure
-+ * @module: the module to erase
-+ * @component: name of the component being updated
-+ * @extack: netlink extended ACK structure
-+ *
-+ * Erase the inactive NVM bank associated with this module, and await for
-+ * a completion response message from firmware.
-+ *
-+ * Note this function assumes the caller has acquired the NVM resource.
-+ *
-+ * Return: 0 on success, or a negative error code on failure.
-+ */
-+static int ixgbe_erase_nvm_module(struct ixgbe_adapter *adapter, u16 module,
-+				  const char *component,
-+				  struct netlink_ext_ack *extack)
-+{
-+	struct devlink *devlink = adapter->devlink;
-+	struct ixgbe_hw *hw = &adapter->hw;
-+	int err;
-+
-+	devlink_flash_update_timeout_notify(devlink, "Erasing", component,
-+					    IXGBE_FW_ERASE_TIMEOUT);
-+
-+	err = ixgbe_aci_erase_nvm(hw, module);
-+	if (err)
-+		devlink_flash_update_status_notify(devlink, "Erasing failed",
-+						   component, 0, 0);
-+	else
-+		devlink_flash_update_status_notify(devlink, "Erasing done",
-+						   component, 0, 0);
-+
-+	return err;
-+}
-+
-+/**
-+ * ixgbe_switch_flash_banks - Tell firmware to switch NVM banks
-+ * @adapter: Pointer to the PF data structure
-+ * @activate_flags: flags used for the activation command
-+ * @extack: netlink extended ACK structure
-+ *
-+ * Notify firmware to activate the newly written flash banks, and wait for the
-+ * firmware response.
-+ *
-+ * Return: 0 on success or an error code on failure.
-+ */
-+static int ixgbe_switch_flash_banks(struct ixgbe_adapter *adapter,
-+				    u8 activate_flags,
-+				    struct netlink_ext_ack *extack)
-+{
-+	struct ixgbe_hw *hw = &adapter->hw;
-+	u8 response_flags;
-+	int err;
-+
-+	err = ixgbe_nvm_write_activate(hw, activate_flags, &response_flags);
-+	if (err)
-+		NL_SET_ERR_MSG_MOD(extack,
-+				   "Failed to switch active flash banks");
-+
-+	return err;
-+}
-+
-+/**
-+ * ixgbe_flash_component - Flash a component of the NVM
-+ * @context: PLDM fw update structure
-+ * @component: the component table to program
-+ *
-+ * Program the flash contents for a given component. First, determine the
-+ * module id. Then, erase the secondary bank for this module. Finally, write
-+ * the contents of the component to the NVM.
-+ *
-+ * Note this function assumes the caller has acquired the NVM resource.
-+ *
-+ * Return: 0 on success, or a negative error code on failure.
-+ */
-+static int ixgbe_flash_component(struct pldmfw *context,
-+				 struct pldmfw_component *component)
-+{
-+	struct ixgbe_fwu_priv *priv = container_of(context,
-+						   struct ixgbe_fwu_priv,
-+						   context);
-+	struct netlink_ext_ack *extack = priv->extack;
-+	struct ixgbe_adapter *adapter = priv->adapter;
-+	const char *name;
-+	u16 module;
-+	int err;
-+	u8 flag;
-+
-+	switch (component->identifier) {
-+	case NVM_COMP_ID_OROM:
-+		module = IXGBE_E610_SR_1ST_OROM_BANK_PTR;
-+		flag = IXGBE_ACI_NVM_ACTIV_SEL_OROM;
-+		name = "fw.undi";
+ 	switch (response) {
+ 	case IXGBE_ACI_NVM_PASS_COMP_CAN_BE_UPDATED:
+ 		/* Firmware indicated this update is good to proceed. */
+@@ -84,6 +86,11 @@ static int ixgbe_check_component_response(struct ixgbe_adapter *adapter,
+ 	case IXGBE_ACI_NVM_PASS_COMP_CAN_NOT_BE_UPDATED:
+ 		NL_SET_ERR_MSG_MOD(extack, "Firmware has rejected updating.");
+ 		break;
++	case IXGBE_ACI_NVM_PASS_COMP_PARTIAL_CHECK:
++		if (hw->mac.ops.fw_recovery_mode &&
++		    hw->mac.ops.fw_recovery_mode(hw))
++			return 0;
 +		break;
-+	case NVM_COMP_ID_NVM:
-+		module = IXGBE_E610_SR_1ST_NVM_BANK_PTR;
-+		flag = IXGBE_ACI_NVM_ACTIV_SEL_NVM;
-+		name = "fw.mgmt";
-+		break;
-+	case NVM_COMP_ID_NETLIST:
-+		module = IXGBE_E610_SR_NETLIST_BANK_PTR;
-+		flag = IXGBE_ACI_NVM_ACTIV_SEL_NETLIST;
-+		name = "fw.netlist";
-+		break;
-+
-+	default:
-+		return -EOPNOTSUPP;
-+	}
-+
-+	/* Mark this component for activating at the end. */
-+	priv->activate_flags |= flag;
-+
-+	err = ixgbe_erase_nvm_module(adapter, module, name, extack);
-+	if (err)
-+		return err;
-+
-+	return ixgbe_write_nvm_module(adapter, module, name,
-+				      component->component_data,
-+				      component->component_size, extack);
-+}
-+
-+/**
-+ * ixgbe_finalize_update - Perform last steps to complete device update
-+ * @context: PLDM fw update structure
-+ *
-+ * Called as the last step of the update process. Complete the update by
-+ * telling the firmware to switch active banks, and perform a reset of
-+ * configured.
-+ *
-+ * Return: 0 on success, or an error code on failure.
-+ */
-+static int ixgbe_finalize_update(struct pldmfw *context)
-+{
-+	struct ixgbe_fwu_priv *priv = container_of(context,
-+						   struct ixgbe_fwu_priv,
-+						   context);
-+	struct ixgbe_adapter *adapter = priv->adapter;
-+	struct netlink_ext_ack *extack = priv->extack;
-+
-+	return ixgbe_switch_flash_banks(adapter, priv->activate_flags,
-+				       extack);
-+}
-+
-+static const struct pldmfw_ops ixgbe_fwu_ops_e610 = {
-+	.match_record = &pldmfw_op_pci_match_record,
-+	.send_package_data = &ixgbe_send_package_data,
-+	.send_component_table = &ixgbe_send_component_table,
-+	.flash_component = &ixgbe_flash_component,
-+	.finalize_update = &ixgbe_finalize_update,
-+};
-+
-+/**
-+ * ixgbe_get_pending_updates - Check if the component has a pending update
-+ * @adapter: the PF driver structure
-+ * @pending: on return, bitmap of updates pending
-+ * @extack: Netlink extended ACK
-+ *
-+ * Check if the device has any pending updates on any flash components.
-+ *
-+ * Return: 0 on success, or a negative error code on failure. Update
-+ * pending with the bitmap of pending updates.
-+ */
-+int ixgbe_get_pending_updates(struct ixgbe_adapter *adapter, u8 *pending,
-+			      struct netlink_ext_ack *extack)
-+{
-+	struct ixgbe_hw_dev_caps *dev_caps;
-+	struct ixgbe_hw *hw = &adapter->hw;
-+	int err;
-+
-+	dev_caps = kzalloc(sizeof(*dev_caps), GFP_KERNEL);
-+	if (!dev_caps)
-+		return -ENOMEM;
-+
-+	err = ixgbe_discover_dev_caps(hw, dev_caps);
-+	if (err) {
-+		NL_SET_ERR_MSG_MOD(extack,
-+				   "Unable to read device capabilities");
-+		kfree(dev_caps);
-+		return -EIO;
-+	}
-+
-+	*pending = 0;
-+
-+	if (dev_caps->common_cap.nvm_update_pending_nvm)
-+		*pending |= IXGBE_ACI_NVM_ACTIV_SEL_NVM;
-+
-+	if (dev_caps->common_cap.nvm_update_pending_orom)
-+		*pending |= IXGBE_ACI_NVM_ACTIV_SEL_OROM;
-+
-+	if (dev_caps->common_cap.nvm_update_pending_netlist)
-+		*pending |= IXGBE_ACI_NVM_ACTIV_SEL_NETLIST;
-+
-+	kfree(dev_caps);
-+
-+	return 0;
-+}
-+
-+/**
-+ * ixgbe_cancel_pending_update - Cancel any pending update for a component
-+ * @adapter: the PF driver structure
-+ * @component: if not NULL, the name of the component being updated
-+ * @extack: Netlink extended ACK structure
-+ *
-+ * Cancel any pending update for the specified component. If component is
-+ * NULL, all device updates will be canceled.
-+ *
-+ * Return: 0 on success, or a negative error code on failure.
-+ */
-+static int ixgbe_cancel_pending_update(struct ixgbe_adapter *adapter,
-+				       const char *component,
-+				       struct netlink_ext_ack *extack)
-+{
-+	struct devlink *devlink = adapter->devlink;
-+	struct ixgbe_hw *hw = &adapter->hw;
-+	u8 pending;
-+	int err;
-+
-+	err = ixgbe_get_pending_updates(adapter, &pending, extack);
-+	if (err)
-+		return err;
-+
-+	/* If the flash_update request is for a specific component, ignore all
-+	 * of the other components.
+ 	}
+ 
+ 	switch (code) {
+@@ -653,7 +660,13 @@ int ixgbe_flash_pldm_image(struct devlink *devlink,
+ 		return -EOPNOTSUPP;
+ 	}
+ 
+-	if (!hw->dev_caps.common_cap.nvm_unified_update) {
++	/*
++	 * Cannot get caps in recovery mode, so lack of nvm_unified_update bit
++	 * cannot lead to error
 +	 */
-+	if (component) {
-+		if (strcmp(component, "fw.mgmt") == 0)
-+			pending &= IXGBE_ACI_NVM_ACTIV_SEL_NVM;
-+		else if (strcmp(component, "fw.undi") == 0)
-+			pending &= IXGBE_ACI_NVM_ACTIV_SEL_OROM;
-+		else if (strcmp(component, "fw.netlist") == 0)
-+			pending &= IXGBE_ACI_NVM_ACTIV_SEL_NETLIST;
-+		else
-+			return -EINVAL;
-+	}
++	if (!hw->dev_caps.common_cap.nvm_unified_update &&
++	    (hw->mac.ops.fw_recovery_mode &&
++	     !hw->mac.ops.fw_recovery_mode(hw))) {
+ 		NL_SET_ERR_MSG_MOD(extack,
+ 				   "Current firmware does not support unified update");
+ 		return -EOPNOTSUPP;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 492e6b194f61..0667e4e85f10 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -8423,6 +8423,18 @@ static bool ixgbe_check_fw_error(struct ixgbe_adapter *adapter)
+ 	return false;
+ }
+ 
++static void ixgbe_recovery_service_task(struct work_struct *work)
++{
++	struct ixgbe_adapter *adapter = container_of(work,
++						     struct ixgbe_adapter,
++						     service_task);
 +
-+	/* There is no previous pending update, so this request may continue */
-+	if (!pending)
-+		return 0;
++	ixgbe_handle_fw_event(adapter);
++	ixgbe_service_event_complete(adapter);
 +
-+	/* In order to allow overwriting a previous pending update, notify
-+	 * firmware to cancel that update by issuing the appropriate command.
-+	 */
-+	devlink_flash_update_status_notify(devlink,
-+					   "Canceling previous pending update",
-+					   component, 0, 0);
-+
-+	err = ixgbe_acquire_nvm(hw, IXGBE_RES_WRITE);
-+	if (err) {
-+		NL_SET_ERR_MSG_MOD(extack,
-+				   "Failed to acquire device flash lock");
-+		return -EIO;
-+	}
-+
-+	pending |= IXGBE_ACI_NVM_REVERT_LAST_ACTIV;
-+	err = ixgbe_switch_flash_banks(adapter, pending, extack);
-+
-+	ixgbe_release_nvm(hw);
-+
-+	return err;
++	mod_timer(&adapter->service_timer, jiffies + msecs_to_jiffies(100));
 +}
 +
+ /**
+  * ixgbe_service_task - manages and runs subtasks
+  * @work: pointer to work_struct containing our data
+@@ -11228,6 +11240,66 @@ static void ixgbe_set_fw_version(struct ixgbe_adapter *adapter)
+ 		 "0x%08x", nvm_ver.etk_id);
+ }
+ 
 +/**
-+ * ixgbe_flash_pldm_image - Write a PLDM-formatted firmware image to the device
-+ * @devlink: pointer to devlink associated with the device to update
-+ * @params: devlink flash update parameters
-+ * @extack: netlink extended ACK structure
++ * ixgbe_recovery_probe - Handle FW recovery mode during probe
++ * @adapter: the adapter private structure
 + *
-+ * Parse the data for a given firmware file, verifying that it is a valid PLDM
-+ * formatted image that matches this device.
++ * Perform limited driver initialization when FW error is detected.
 + *
-+ * Extract the device record Package Data and Component Tables and send them
-+ * to the firmware. Extract and write the flash data for each of the three
-+ * main flash components, "fw.mgmt", "fw.undi", and "fw.netlist". Notify
-+ * firmware once the data is written to the inactive banks.
-+ *
-+ * Return: 0 on success or a negative error code on failure.
++ * Return: 0 on successful probe for E610, -EIO if recovery mode is detected
++ * for non-E610 adapter, error status code on any other case.
 + */
-+int ixgbe_flash_pldm_image(struct devlink *devlink,
-+			   struct devlink_flash_update_params *params,
-+			   struct netlink_ext_ack *extack)
++static int ixgbe_recovery_probe(struct ixgbe_adapter *adapter)
 +{
-+	struct ixgbe_adapter *adapter = devlink_priv(devlink);
-+	struct device *dev = &adapter->pdev->dev;
++	struct net_device *netdev = adapter->netdev;
++	struct pci_dev *pdev = adapter->pdev;
 +	struct ixgbe_hw *hw = &adapter->hw;
-+	struct ixgbe_fwu_priv priv;
-+	u8 preservation;
-+	int err;
++	bool disable_dev;
++	int err = -EIO;
 +
 +	if (hw->mac.type != ixgbe_mac_e610)
-+		return -EOPNOTSUPP;
++		goto clean_up_probe;
 +
-+	switch (params->overwrite_mask) {
-+	case 0:
-+		/* preserve all settings and identifiers */
-+		preservation = IXGBE_ACI_NVM_PRESERVE_ALL;
-+		break;
-+	case DEVLINK_FLASH_OVERWRITE_SETTINGS:
-+		/* Overwrite settings, but preserve vital information such as
-+		 * device identifiers.
-+		 */
-+		preservation = IXGBE_ACI_NVM_PRESERVE_SELECTED;
-+		break;
-+	case (DEVLINK_FLASH_OVERWRITE_SETTINGS |
-+	      DEVLINK_FLASH_OVERWRITE_IDENTIFIERS):
-+		/* overwrite both settings and identifiers, preserve nothing */
-+		preservation = IXGBE_ACI_NVM_NO_PRESERVATION;
-+		break;
-+	default:
-+		NL_SET_ERR_MSG_MOD(extack,
-+				   "Requested overwrite mask is not supported");
-+		return -EOPNOTSUPP;
-+	}
-+
-+	if (!hw->dev_caps.common_cap.nvm_unified_update) {
-+		NL_SET_ERR_MSG_MOD(extack,
-+				   "Current firmware does not support unified update");
-+		return -EOPNOTSUPP;
-+	}
-+
-+	memset(&priv, 0, sizeof(priv));
-+
-+	priv.context.ops = &ixgbe_fwu_ops_e610;
-+	priv.context.dev = dev;
-+	priv.extack = extack;
-+	priv.adapter = adapter;
-+	priv.activate_flags = preservation;
-+
-+	devlink_flash_update_status_notify(devlink,
-+					   "Preparing to flash", NULL, 0, 0);
-+
-+	err = ixgbe_cancel_pending_update(adapter, NULL, extack);
++	ixgbe_get_hw_control(adapter);
++	mutex_init(&hw->aci.lock);
++	err = ixgbe_get_flash_data(&adapter->hw);
 +	if (err)
-+		return err;
++		goto shutdown_aci;
 +
-+	err = ixgbe_acquire_nvm(hw, IXGBE_RES_WRITE);
-+	if (err) {
-+		NL_SET_ERR_MSG_MOD(extack,
-+				   "Failed to acquire device flash lock");
-+		return -EIO;
-+	}
++	timer_setup(&adapter->service_timer, ixgbe_service_timer, 0);
++	INIT_WORK(&adapter->service_task, ixgbe_recovery_service_task);
++	set_bit(__IXGBE_SERVICE_INITED, &adapter->state);
++	clear_bit(__IXGBE_SERVICE_SCHED, &adapter->state);
 +
-+	err = pldmfw_flash_image(&priv.context, params->fw);
-+	if (err == -ENOENT) {
-+		NL_SET_ERR_MSG_MOD(extack,
-+				   "Firmware image has no record matching this device");
-+	} else if (err) {
-+		NL_SET_ERR_MSG_MOD(extack, "Failed to flash PLDM image");
-+	}
++	if (hw->mac.ops.get_bus_info)
++		hw->mac.ops.get_bus_info(hw);
 +
-+	ixgbe_release_nvm(hw);
++	pci_set_drvdata(pdev, adapter);
++	/*
++	 * We are creating devlink interface so NIC can be managed,
++	 * e.g. new NVM image loaded
++	 */
++	devl_lock(adapter->devlink);
++	ixgbe_devlink_register_port(adapter);
++	SET_NETDEV_DEVLINK_PORT(adapter->netdev,
++				&adapter->devlink_port);
++	devl_register(adapter->devlink);
++	devl_unlock(adapter->devlink);
 +
++	return 0;
++shutdown_aci:
++	mutex_destroy(&adapter->hw.aci.lock);
++	ixgbe_release_hw_control(adapter);
++	devlink_free(adapter->devlink);
++clean_up_probe:
++	disable_dev = !test_and_set_bit(__IXGBE_DISABLED, &adapter->state);
++	free_netdev(netdev);
++	pci_release_mem_regions(pdev);
++	if (disable_dev)
++		pci_disable_device(pdev);
 +	return err;
 +}
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_fw_update.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_fw_update.h
-new file mode 100644
-index 000000000000..abdd708c93df
---- /dev/null
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_fw_update.h
-@@ -0,0 +1,12 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/* Copyright(c) 2025 Intel Corporation. */
-+
-+#ifndef _IXGBE_FW_UPDATE_H_
-+#define _IXGBE_FW_UPDATE_H_
-+
-+int ixgbe_flash_pldm_image(struct devlink *devlink,
-+			   struct devlink_flash_update_params *params,
-+			   struct netlink_ext_ack *extack);
-+int ixgbe_get_pending_updates(struct ixgbe_adapter *adapter, u8 *pending,
-+			      struct netlink_ext_ack *extack);
-+#endif
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type_e610.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type_e610.h
-index aa063d39091a..93d854b8a92e 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type_e610.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type_e610.h
-@@ -830,6 +830,8 @@ struct ixgbe_aci_cmd_nvm {
- #define IXGBE_ACI_NVM_MAX_OFFSET	0xFFFFFF
- 	__le16 offset_low;
- 	u8 offset_high; /* For Write Activate offset_high is used as flags2 */
-+#define IXGBE_ACI_NVM_OFFSET_HI_A_MASK  GENMASK(15, 8)
-+#define IXGBE_ACI_NVM_OFFSET_HI_U_MASK	GENMASK(23, 16)
- 	u8 cmd_flags;
- #define IXGBE_ACI_NVM_LAST_CMD		BIT(0)
- #define IXGBE_ACI_NVM_PCIR_REQ		BIT(0) /* Used by NVM Write reply */
-@@ -845,6 +847,9 @@ struct ixgbe_aci_cmd_nvm {
- #define IXGBE_ACI_NVM_PERST_FLAG	1
- #define IXGBE_ACI_NVM_EMPR_FLAG		2
- #define IXGBE_ACI_NVM_EMPR_ENA		BIT(0) /* Write Activate reply only */
-+#define IXGBE_ACI_NVM_NO_PRESERVATION	0x0
-+#define IXGBE_ACI_NVM_PRESERVE_SELECTED	0x6
-+
- 	/* For Write Activate, several flags are sent as part of a separate
- 	 * flags2 field using a separate byte. For simplicity of the software
- 	 * interface, we pass the flags as a 16 bit value so these flags are
-@@ -874,6 +879,63 @@ struct ixgbe_aci_cmd_nvm_checksum {
- 	u8 rsvd2[12];
- };
- 
-+/* Used for NVM Set Package Data command - 0x070A */
-+struct ixgbe_aci_cmd_nvm_pkg_data {
-+	u8 reserved[3];
-+	u8 cmd_flags;
-+#define IXGBE_ACI_NVM_PKG_DELETE	BIT(0) /* used for command call */
-+
-+	u32 reserved1;
-+	__le32 addr_high;
-+	__le32 addr_low;
-+};
-+
-+/* Used for Pass Component Table command - 0x070B */
-+struct ixgbe_aci_cmd_nvm_pass_comp_tbl {
-+	u8 component_response; /* Response only */
-+#define IXGBE_ACI_NVM_PASS_COMP_CAN_BE_UPDATED		0x0
-+#define IXGBE_ACI_NVM_PASS_COMP_CAN_MAY_BE_UPDATEABLE	0x1
-+#define IXGBE_ACI_NVM_PASS_COMP_CAN_NOT_BE_UPDATED	0x2
-+#define IXGBE_ACI_NVM_PASS_COMP_PARTIAL_CHECK		0x3
-+	u8 component_response_code; /* Response only */
-+#define IXGBE_ACI_NVM_PASS_COMP_CAN_BE_UPDATED_CODE	0x0
-+#define IXGBE_ACI_NVM_PASS_COMP_STAMP_IDENTICAL_CODE	0x1
-+#define IXGBE_ACI_NVM_PASS_COMP_STAMP_LOWER		0x2
-+#define IXGBE_ACI_NVM_PASS_COMP_INVALID_STAMP_CODE	0x3
-+#define IXGBE_ACI_NVM_PASS_COMP_CONFLICT_CODE		0x4
-+#define IXGBE_ACI_NVM_PASS_COMP_PRE_REQ_NOT_MET_CODE	0x5
-+#define IXGBE_ACI_NVM_PASS_COMP_NOT_SUPPORTED_CODE	0x6
-+#define IXGBE_ACI_NVM_PASS_COMP_CANNOT_DOWNGRADE_CODE	0x7
-+#define IXGBE_ACI_NVM_PASS_COMP_INCOMPLETE_IMAGE_CODE	0x8
-+#define IXGBE_ACI_NVM_PASS_COMP_VER_STR_IDENTICAL_CODE	0xA
-+#define IXGBE_ACI_NVM_PASS_COMP_VER_STR_LOWER_CODE	0xB
-+	u8 reserved;
-+	u8 transfer_flag;
-+	__le32 reserved1;
-+	__le32 addr_high;
-+	__le32 addr_low;
-+};
-+
-+struct ixgbe_aci_cmd_nvm_comp_tbl {
-+	__le16 comp_class;
-+#define NVM_COMP_CLASS_ALL_FW		0x000A
-+
-+	__le16 comp_id;
-+#define NVM_COMP_ID_OROM		0x5
-+#define NVM_COMP_ID_NVM			0x6
-+#define NVM_COMP_ID_NETLIST		0x8
-+
-+	u8 comp_class_idx;
-+#define FWU_COMP_CLASS_IDX_NOT_USE	0x0
-+
-+	__le32 comp_cmp_stamp;
-+	u8 cvs_type;
-+#define NVM_CVS_TYPE_ASCII		0x1
-+
-+	u8 cvs_len;
-+	u8 cvs[]; /* Component Version String */
-+} __packed;
 +
  /**
-  * struct ixgbe_aci_desc - Admin Command (AC) descriptor
-  * @flags: IXGBE_ACI_FLAG_* flags
-@@ -917,6 +979,8 @@ struct ixgbe_aci_desc {
- 		struct ixgbe_aci_cmd_sff_eeprom read_write_sff_param;
- 		struct ixgbe_aci_cmd_nvm nvm;
- 		struct ixgbe_aci_cmd_nvm_checksum nvm_checksum;
-+		struct ixgbe_aci_cmd_nvm_pkg_data pkg_data;
-+		struct ixgbe_aci_cmd_nvm_pass_comp_tbl pass_comp_tbl;
- 	} params;
- };
+  * ixgbe_probe - Device Initialization Routine
+  * @pdev: PCI device information struct
+@@ -11366,6 +11438,13 @@ static int ixgbe_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	if (err)
+ 		goto err_sw_init;
  
++	/* Make sure the SWFW semaphore is in a valid state */
++	if (hw->mac.ops.init_swfw_sync)
++		hw->mac.ops.init_swfw_sync(hw);
++
++	if (ixgbe_check_fw_error(adapter))
++		return ixgbe_recovery_probe(adapter);
++
+ 	if (adapter->hw.mac.type == ixgbe_mac_e610) {
+ 		err = ixgbe_get_caps(&adapter->hw);
+ 		if (err)
+@@ -11392,10 +11471,6 @@ static int ixgbe_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 		break;
+ 	}
+ 
+-	/* Make sure the SWFW semaphore is in a valid state */
+-	if (hw->mac.ops.init_swfw_sync)
+-		hw->mac.ops.init_swfw_sync(hw);
+-
+ 	/* Make it possible the adapter to be woken up via WOL */
+ 	switch (adapter->hw.mac.type) {
+ 	case ixgbe_mac_82599EB:
+@@ -11548,11 +11623,6 @@ static int ixgbe_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	if (adapter->flags2 & IXGBE_FLAG2_RSC_ENABLED)
+ 		netdev->features |= NETIF_F_LRO;
+ 
+-	if (ixgbe_check_fw_error(adapter)) {
+-		err = -EIO;
+-		goto err_sw_init;
+-	}
+-
+ 	/* make sure the EEPROM is good */
+ 	if (hw->eeprom.ops.validate_checksum(hw, NULL) < 0) {
+ 		e_dev_err("The EEPROM Checksum Is Not Valid\n");
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type_e610.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type_e610.h
+index 4d591019dd07..1df5ac2e1fc5 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type_e610.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type_e610.h
+@@ -88,6 +88,9 @@
+ #define GLNVM_GENS		0x000B6100 /* Reset Source: POR */
+ #define GLNVM_GENS_SR_SIZE_M	GENMASK(7, 5)
+ 
++#define IXGBE_GL_MNG_FWSM		0x000B6134 /* Reset Source: POR */
++#define IXGBE_GL_MNG_FWSM_RECOVERY_M	BIT(1)
++
+ /* Flash Access Register */
+ #define IXGBE_GLNVM_FLA			0x000B6108 /* Reset Source: POR */
+ #define IXGBE_GLNVM_FLA_LOCKED_S	6
 -- 
 2.31.1
 
