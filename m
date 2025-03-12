@@ -4,91 +4,103 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AB161C28B28
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 12 Mar 2025 14:55:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2F2BBC28B28
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 12 Mar 2025 15:22:56 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 4E819406D5;
-	Wed, 12 Mar 2025 14:55:42 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id CB4CD40B3D;
+	Wed, 12 Mar 2025 15:22:55 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id I1igQojM5T-U; Wed, 12 Mar 2025 14:55:40 +0000 (UTC)
+ id PYaDkFRP8qcM; Wed, 12 Mar 2025 15:22:54 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B4AF04089D
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 8EFA1408E4
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1741791340;
-	bh=0GtfrgMNDxKgKFHQbW0IGu0lIRI6e6+wrzAsNYY8nIw=;
-	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=CcY8uHEGFeX8rjZCCzB+0nPpRM335LAGrtbhOmQTvbk/Y0dn26jl7yasKirZ6CCmi
-	 Z4b26y5021VTtBsQvKvE6zd4eaOdpNJIyD9dXHPf2fK0d21Ors/FwUNPyWfpcbq36z
-	 IIGDQLNFi85FlaT4NJO6D+lgN86QjkzDOOzn5gVKf3UrqsHCRYSEp7fgFr/phyY4Y5
-	 f1a1oTws1rcTBs8iEft2JXetXF5O7ulShUtLrM+tXk4HkwDSveGb7D9Uzf70hbkOvL
-	 HIa3ICX0JiiKGZAkPfsCtjXDwWa0vmZbA2U+aY9ySRJTw+MdQlfAwEtkTVFiqHqpg8
-	 z3wkRQ02Qil9A==
+	s=default; t=1741792974;
+	bh=QwG6z8grGkJxE/FiYYDWxMFV+VNB7Xv16WuuoJFtwgQ=;
+	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=BPjCR+Ew/Q8zKGI9fOGfyRZXxE+74Q6S7z2JK9rGW2QZh6VAHFMM7m85HELxG5eJq
+	 Y0funCep6jPQfzblh7zWTeRhktimno2zQbz5q4vA/uDV9xPWu8LsejJyLWprp5bxz4
+	 v5didVpryJ4SIbtqL5iOSs0oeI/RIuGjMi9bgmeXzwlfUdbO262/0m88lkETEAsSZ1
+	 a+FDDPlEd5a0BgPAd7yIZwlbch3eN3Uhps/6jGWq+gdgxq6SFvodHhk9AlMLkrFS2k
+	 +3slrfMd+ftZyGLCxmP8QO+vN99h+ap8DjfEj8/vipU/49Gwd1kisCmfcqiGK05jyK
+	 aRcEdRsHLU0HA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id B4AF04089D;
-	Wed, 12 Mar 2025 14:55:40 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id ED69C943
- for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Mar 2025 14:55:39 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 8EFA1408E4;
+	Wed, 12 Mar 2025 15:22:54 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id D223A1DB
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Mar 2025 03:39:22 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id DCD7A4017A
- for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Mar 2025 14:55:39 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id B58738211B
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Mar 2025 03:39:22 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id DBTaGsmBKOgi for <intel-wired-lan@lists.osuosl.org>;
- Wed, 12 Mar 2025 14:55:39 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=147.75.193.91;
- helo=nyc.source.kernel.org; envelope-from=horms@kernel.org;
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 00QLft7LTRuT for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 12 Mar 2025 03:39:22 +0000 (UTC)
+X-Greylist: delayed 977 seconds by postgrey-1.37 at util1.osuosl.org;
+ Wed, 12 Mar 2025 03:39:20 UTC
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 2B799820F8
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2B799820F8
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=202.36.163.20;
+ helo=gate2.alliedtelesis.co.nz; envelope-from=hamishm@alliedtelesis.co.nz;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org F106140127
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org F106140127
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
- by smtp2.osuosl.org (Postfix) with ESMTPS id F106140127
- for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Mar 2025 14:55:38 +0000 (UTC)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by nyc.source.kernel.org (Postfix) with ESMTP id 6636CA428AB;
- Wed, 12 Mar 2025 14:50:07 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EF44BC4CEDD;
- Wed, 12 Mar 2025 14:55:33 +0000 (UTC)
-Date: Wed, 12 Mar 2025 15:55:30 +0100
-From: Simon Horman <horms@kernel.org>
-To: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
-Cc: intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com,
- netdev@vger.kernel.org, przemyslaw.kitszel@intel.com,
- Jacob Keller <jacob.e.keller@intel.com>, Bharath R <bharath.r@intel.com>,
- Slawomir Mrozowicz <slawomirx.mrozowicz@intel.com>,
- Piotr Kwapulinski <piotr.kwapulinski@intel.com>,
- Stefan Wegrzyn <stefan.wegrzyn@intel.com>
-Message-ID: <20250312145530.GU4159220@kernel.org>
-References: <20250312125843.347191-1-jedrzej.jagielski@intel.com>
- <20250312125843.347191-12-jedrzej.jagielski@intel.com>
+Received: from gate2.alliedtelesis.co.nz (gate2.alliedtelesis.co.nz
+ [202.36.163.20])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 2B799820F8
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Mar 2025 03:39:20 +0000 (UTC)
+Received: from svr-chch-seg1.atlnz.lc (mmarshal3.atlnz.lc [10.32.18.43])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+ (Client did not present a certificate)
+ by gate2.alliedtelesis.co.nz (Postfix) with ESMTPS id D99E02C03CA;
+ Wed, 12 Mar 2025 16:22:57 +1300 (NZDT)
+Received: from pat.atlnz.lc (Not Verified[10.32.16.33]) by
+ svr-chch-seg1.atlnz.lc with Trustwave SEG (v8, 2, 6, 11305)
+ id <B67d0fe110000>; Wed, 12 Mar 2025 16:22:57 +1300
+Received: from hamishm-dl.ws.atlnz.lc (hamishm-dl.ws.atlnz.lc [10.33.24.10])
+ by pat.atlnz.lc (Postfix) with ESMTP id AF99213EE4B;
+ Wed, 12 Mar 2025 16:22:57 +1300 (NZDT)
+Received: by hamishm-dl.ws.atlnz.lc (Postfix, from userid 1133)
+ id AC305240364; Wed, 12 Mar 2025 16:22:57 +1300 (NZDT)
+From: Hamish Martin <hamish.martin@alliedtelesis.co.nz>
+To: anthony.l.nguyen@intel.com,
+	przemyslaw.kitszel@intel.com
+Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
+ Hamish Martin <hamish.martin@alliedtelesis.co.nz>
+Date: Wed, 12 Mar 2025 16:22:50 +1300
+Message-ID: <20250312032251.2259794-1-hamish.martin@alliedtelesis.co.nz>
+X-Mailer: git-send-email 2.48.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250312125843.347191-12-jedrzej.jagielski@intel.com>
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1741791337;
- bh=ttMGOyKcGN5/IMeqSBa9LzkbTqTyW9zXdt/4cUmR9is=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=VUuz9RDzKpjeMsqTIxF2lcL0EUz6sRwHgaAeRazRJhNvzFwSdx4G793MIcCS5Icre
- EjShOgTkyt5qjyH6II+ojwLoHLvTq0hasMslgL/aPb+aNZZcafDGCOXP+mgDI7wYRb
- sYFzUfZZk/eKN3bxCrtscMyKI0+X8VmL2D9q0z19LA7EEMSgaFtojohI07YXF6rg3w
- EW/CKbs00/b9iZKfH4hvloxB1cockssjcydWolgVpr5y/uYWGyZNl0n0Xdztl8zw5d
- ot9jDtjJKroVZkqf2Pdq14bNb7R4mNWKpApcbKqOmUkguI08rw3n4mu8JbSWxW2mUS
- l9V2orF0q5S+w==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+Content-Transfer-Encoding: quoted-printable
+X-SEG-SpamProfiler-Analysis: v=2.4 cv=ccpxrWDM c=1 sm=1 tr=0 ts=67d0fe11
+ a=KLBiSEs5mFS1a/PbTCJxuA==:117 a=Vs1iUdzkB0EA:10 a=j5V92D-ZtT2g-DOZFCwA:9
+ a=3ZKOabzyN94A:10
+X-SEG-SpamProfiler-Score: 0
+x-atlnz-ls: pat
+X-Mailman-Approved-At: Wed, 12 Mar 2025 15:22:52 +0000
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=alliedtelesis.co.nz; 
+ s=mail181024; t=1741749777;
+ bh=QwG6z8grGkJxE/FiYYDWxMFV+VNB7Xv16WuuoJFtwgQ=;
+ h=From:To:Cc:Subject:Date:From;
+ b=vtv1aZn9ZOsel/Vubz0sfTWvZxafC+7G9HPmI67GYY2z5PH4JpB/dJlL0zHVjH00k
+ gMj4vkNFB0hZoGZULudaOUPfEYRFc9Nqaawwl0wv2GvBQGJfwZ2CfefLdnCzMXY6ly
+ NlO8Krq8emDT70+yCHPf+6MBD8nbkYTN220APQdYXOcbJIfjYoOZF3HjJCIwyf8ETz
+ buu40FRXn3n3Bl9phUPZ4b33bGuuzKvFvkNpbIQQNt2Oh7QIOFPujbM+KeO+Qxgtm2
+ u9AHnejr4UfaF0Nr8gKj5B0WYM+gxuKkLrhAC1h0WnHRgndp/K3Xv1FQWQlN4s0VrL
+ jQonORjqnbzjw==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
- header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ header.from=alliedtelesis.co.nz
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=VUuz9RDz
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next v7 11/15] ixgbe: add device
- flash update via devlink
+ unprotected) header.d=alliedtelesis.co.nz header.i=@alliedtelesis.co.nz
+ header.a=rsa-sha256 header.s=mail181024 header.b=vtv1aZn9
+Subject: [Intel-wired-lan] [PATCH net] igb: Prevent IPCFGN write resetting
+ autoneg advertisement register
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -104,50 +116,86 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Wed, Mar 12, 2025 at 01:58:39PM +0100, Jedrzej Jagielski wrote:
+An issue is observed on the i210 when autonegotiation advertisement is se=
+t
+to a specific subset of the supported speeds but the requested settings
+are not correctly set in the Copper Auto-Negotiation Advertisement Regist=
+er
+(Page 0, Register 4).
+Initially, the advertisement register is correctly set by the driver code
+(in igb_phy_setup_autoneg()) but this register's contents are modified as=
+ a
+result of a later write to the IPCNFG register in igb_set_eee_i350(). It =
+is
+unclear what the mechanism is for the write of the IPCNFG register to lea=
+d
+to the change in the autoneg advertisement register.
+The issue can be observed by, for example, restricting the advertised spe=
+ed
+to just 10MFull. The expected result would be that the link would come up
+at 10MFull, but actually the phy ends up advertising a full suite of spee=
+ds
+and the link will come up at 100MFull.
 
-...
+The problem is avoided by ensuring that the write to the IPCNFG register
+occurs before the write to the autoneg advertisement register.
 
-> diff --git a/Documentation/networking/devlink/ixgbe.rst b/Documentation/networking/devlink/ixgbe.rst
-> index a41073a62776..41aedf4b8017 100644
-> --- a/Documentation/networking/devlink/ixgbe.rst
-> +++ b/Documentation/networking/devlink/ixgbe.rst
-> @@ -64,3 +64,27 @@ The ``ixgbe`` driver reports the following versions
->        - running
->        - 0xee16ced7
->        - The first 4 bytes of the hash of the netlist module contents.
-> +
-> +Flash Update
-> +============
-> +The ``ixgbe`` driver implements support for flash update using the
-> +``devlink-flash`` interface. It supports updating the device flash using a
-> +combined flash image that contains the ``fw.mgmt``, ``fw.undi``, and
-> +``fw.netlist`` components.
-> +.. list-table:: List of supported overwrite modes
-> +   :widths: 5 95
+Signed-off-by: Hamish Martin <hamish.martin@alliedtelesis.co.nz>
+---
+ drivers/net/ethernet/intel/igb/igb_main.c | 32 ++++++++++++-----------
+ 1 file changed, 17 insertions(+), 15 deletions(-)
 
-Hi Jedrzej,
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethe=
+rnet/intel/igb/igb_main.c
+index d368b753a467..f0c5ffa8450d 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -2382,6 +2382,23 @@ void igb_reset(struct igb_adapter *adapter)
+ 	    (adapter->flags & IGB_FLAG_MAS_ENABLE)) {
+ 		igb_enable_mas(adapter);
+ 	}
++
++	/* Re-establish EEE setting */
++	if (hw->phy.media_type =3D=3D e1000_media_type_copper) {
++		switch (mac->type) {
++		case e1000_i350:
++		case e1000_i210:
++		case e1000_i211:
++			igb_set_eee_i350(hw, true, true);
++			break;
++		case e1000_i354:
++			igb_set_eee_i354(hw, true, true);
++			break;
++		default:
++			break;
++		}
++	}
++
+ 	if (hw->mac.ops.init_hw(hw))
+ 		dev_err(&pdev->dev, "Hardware Error\n");
+=20
+@@ -2412,21 +2429,6 @@ void igb_reset(struct igb_adapter *adapter)
+ 		}
+ 	}
+ #endif
+-	/* Re-establish EEE setting */
+-	if (hw->phy.media_type =3D=3D e1000_media_type_copper) {
+-		switch (mac->type) {
+-		case e1000_i350:
+-		case e1000_i210:
+-		case e1000_i211:
+-			igb_set_eee_i350(hw, true, true);
+-			break;
+-		case e1000_i354:
+-			igb_set_eee_i354(hw, true, true);
+-			break;
+-		default:
+-			break;
+-		}
+-	}
+ 	if (!netif_running(adapter->netdev))
+ 		igb_power_down_link(adapter);
+=20
+--=20
+2.48.1
 
-make htmldocs flags two warnings, which I believe can be resolved by
-adding a blank line here.
-
-  .../ixgbe.rst:75: ERROR: Unexpected indentation.
-  .../ixgbe.rst:76: WARNING: Field list ends without a blank line; unexpected unindent.
-
-> +   * - Bits
-> +     - Behavior
-> +   * - ``DEVLINK_FLASH_OVERWRITE_SETTINGS``
-> +     - Do not preserve settings stored in the flash components being
-> +       updated. This includes overwriting the port configuration that
-> +       determines the number of physical functions the device will
-> +       initialize with.
-> +   * - ``DEVLINK_FLASH_OVERWRITE_SETTINGS`` and ``DEVLINK_FLASH_OVERWRITE_IDENTIFIERS``
-> +     - Do not preserve either settings or identifiers. Overwrite everything
-> +       in the flash with the contents from the provided image, without
-> +       performing any preservation. This includes overwriting device
-> +       identifying fields such as the MAC address, Vital product Data (VPD) area,
-> +       and device serial number. It is expected that this combination be used with an
-> +       image customized for the specific device.
-> +
-
-...
