@@ -1,74 +1,74 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 37EE8C28B28
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0DB8AC2BA1B
 	for <intel-wired-lan@archiver.kernel.org>; Wed, 12 Mar 2025 22:16:13 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id D4E454133A;
-	Wed, 12 Mar 2025 22:16:12 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id DgcKenjfFvkI; Wed, 12 Mar 2025 22:16:12 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 080994133B
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1741817772;
-	bh=hfinatF5AaKjd5S06DgXCok1crYn+a7YqDybNCmTCyM=;
-	h=From:Date:References:In-Reply-To:To:Cc:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=VxpQd2lhSgEuamKrpHRq6a02K69iwKRJyWxMa+6BBmaQxG94xVamG/2SzryulAUCD
-	 K6Z0VPFu73ii+EQeYtUzZTW7w8p1uOYCB1iDsH9hBt+sDJAlT63gZSQ8/0EFWzeVof
-	 iT0SoAXfRrMca8b2+vEIYzr9PZaWax2ajTCtEgHHRjhlHRzaoeI5XslwGqKSnksP2K
-	 KGltqmZvdbIC2cmxIyv8r9AqeP4P+ZiQjZgM+1x5BpdlYnk9BRlOTKdf0JORM/Tmvn
-	 yRPt8Hz51i53ITDImYlaIOhQK1SmUT1+qJAwY4tUlKG0mLtxbUoQujkYgCQd8v9dYp
-	 W2tgPUYW2yV6A==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 080994133B;
-	Wed, 12 Mar 2025 22:16:12 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id E5B4B1E1
- for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Mar 2025 22:16:10 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id E044A60E44
- for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Mar 2025 22:16:10 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id A698160E35;
+	Wed, 12 Mar 2025 22:16:13 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id B1rOQAsiZgBU for <intel-wired-lan@lists.osuosl.org>;
+ id oQt-Ws9qBur5; Wed, 12 Mar 2025 22:16:13 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 19CDD60E44
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1741817773;
+	bh=BbhCt20Mu0LR7cEG2jxFJTBDTk1pjGncLVodsQSWJPs=;
+	h=From:Date:References:In-Reply-To:To:Cc:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=l/UgfGJcB1o3KXk9AwXqv3PcWS2L8YDT/V87D76l5zaYXzIkzA558HQQBplAEYS1t
+	 2pNbEppdc7BsKOX/JJse8pC8MS0fVvPHknoKwGPnf+qgBFkZpFa2Ar6BV5wRra/fn0
+	 DHWc7U0AkIvpIRrjYa7tC9K+7OhM0qmo2l1q7kryxpX34RZNbxjb8Di3Iwl6WzXPow
+	 dSl9CE9UUJknIGoGYm7siINRpmEHnBgKUDzSpIiI2EYlyxHS9jNRXkWeetIYfrEdFo
+	 oaK0wqW/ALM+oPdAHvEIxhDZQuHz+tA9L5K0LIDR403mjOJNaULWyXhikJKxte7CCU
+	 21XtxjhDcM4BA==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp3.osuosl.org (Postfix) with ESMTP id 19CDD60E44;
+	Wed, 12 Mar 2025 22:16:13 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 08DF12375
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Mar 2025 22:16:11 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp4.osuosl.org (Postfix) with ESMTP id E12894133B
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Mar 2025 22:16:10 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id bVLYdHuPUfQA for <intel-wired-lan@lists.osuosl.org>;
  Wed, 12 Mar 2025 22:16:09 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.10;
  helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 4AF0C60E48
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4AF0C60E48
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org ADF974133A
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org ADF974133A
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.10])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 4AF0C60E48
+ by smtp4.osuosl.org (Postfix) with ESMTPS id ADF974133A
  for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Mar 2025 22:16:09 +0000 (UTC)
-X-CSE-ConnectionGUID: RJ44kznASNKTofWVpUzJ+A==
-X-CSE-MsgGUID: RL9zaP6OSIKBzLbVe4LHPg==
-X-IronPort-AV: E=McAfee;i="6700,10204,11371"; a="54288406"
-X-IronPort-AV: E=Sophos;i="6.14,242,1736841600"; d="scan'208";a="54288406"
+X-CSE-ConnectionGUID: kbersb23QrCMDHzlOwtW6g==
+X-CSE-MsgGUID: hBxxhM/6R0OF+3E6pXXrOw==
+X-IronPort-AV: E=McAfee;i="6700,10204,11371"; a="54288429"
+X-IronPort-AV: E=Sophos;i="6.14,242,1736841600"; d="scan'208";a="54288429"
 Received: from orviesa005.jf.intel.com ([10.64.159.145])
  by fmvoesa104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 12 Mar 2025 15:16:07 -0700
-X-CSE-ConnectionGUID: Ucezg74kRGKlYbjB2GPKQQ==
-X-CSE-MsgGUID: TuONhjYaQf2evtu/9Ja0FA==
+ 12 Mar 2025 15:16:08 -0700
+X-CSE-ConnectionGUID: n41JY1lQQdaoPy2xR1G+TQ==
+X-CSE-MsgGUID: 7j8DIBiETSWs78ngq/acow==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.14,242,1736841600"; d="scan'208";a="125950245"
+X-IronPort-AV: E=Sophos;i="6.14,242,1736841600"; d="scan'208";a="125950251"
 Received: from jekeller-desk.jf.intel.com ([10.166.241.15])
  by orviesa005-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  12 Mar 2025 15:16:07 -0700
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed, 12 Mar 2025 15:15:52 -0700
+Date: Wed, 12 Mar 2025 15:15:54 -0700
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250312-jk-net-fixes-supported-extts-flags-v2-3-ea930ba82459@intel.com>
+Message-Id: <20250312-jk-net-fixes-supported-extts-flags-v2-5-ea930ba82459@intel.com>
 References: <20250312-jk-net-fixes-supported-extts-flags-v2-0-ea930ba82459@intel.com>
 In-Reply-To: <20250312-jk-net-fixes-supported-extts-flags-v2-0-ea930ba82459@intel.com>
 To: Tony Nguyen <anthony.l.nguyen@intel.com>, 
@@ -93,25 +93,25 @@ Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
 X-Mailer: b4 0.14.2
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1741817769; x=1773353769;
+ t=1741817770; x=1773353770;
  h=from:date:subject:mime-version:content-transfer-encoding:
  message-id:references:in-reply-to:to:cc;
- bh=VzLmmWyim0nHsZCIPWUYMGPDjbA4w3HmsLWEbB6sip0=;
- b=Bz42ezqWABAHRmNcSXSUTnVBRG27rlzVaYrKsRVNf+6f88rntqshN5eP
- 4MmsVUkNVOmpd9B6dhx7Qd363iQe2MIBVN9HWiRXl/TVHF4hNrHN4yExV
- ZsjtdNXuMC+5tSRa/e//z3iOamNSVlWizJeX92i5SxeZEqqQQEphlB8Ck
- nFCaf4eyIGHkxNlgeNUHOZWfAKCXpTrzMF+chTVvLr+t6Ac3IUlMlbZ82
- UZgJQFZOKwyrEIcEw4MtdbXgtNxJ44PbhKT1jo7h9wVHJDssgKGqG6sjm
- Xm7AbRd58rF7svh31UFE9NV8m69sDOa/DVwb65gvPiW10OqMEI9DuSplM
- g==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ bh=dZtHQmHw2E/TNV4LhtJkvHxvd1dLBtC07ImShwyJx1c=;
+ b=CklqUilD3pGPssGMlM2VQnZg8LdhaOvVKiRPP4jQNALarpEd4D1r8cOy
+ E0ppH0Ll21mMxmt2msr5n6d80oxOlW334dfWIQiP83y+ZEugx3XtF9O06
+ Sj75MTRjdkzJc3aRNeERawkgCQjOILKO8lSHrkZaROVQ3qTcH6fCkY4zj
+ XquZqn+LauHQ2mL4kOFtT3fs3+SMR228iw1MRlhTI9gZozAfUcGZ4izmV
+ uaf4CSFPDqVeLQQOFEgBYP+kKE/NLP6ZE3rP6+G/+XrfO7MNb9lyTaa0H
+ VR6Rfod7I3DWxWBymZO8zAONKbrQ0NrWp4iP/qnd76VMHwCynfy1Q0+cC
+ w==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=Bz42ezqW
-Subject: [Intel-wired-lan] [PATCH net v2 3/5] net: lan743x: reject
- unsupported external timestamp requests
+ header.a=rsa-sha256 header.s=Intel header.b=CklqUilD
+Subject: [Intel-wired-lan] [PATCH net v2 5/5] ptp: ocp: reject unsupported
+ periodic output flags
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -127,38 +127,35 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The lan743x_ptp_io_event_cap_en() function checks that the given request
-sets only one of PTP_RISING_EDGE or PTP_FALLING_EDGE, but not both.
+The ptp_ocp_signal_from_perout() function supports PTP_PEROUT_DUTY_CYCLE
+and PTP_PEROUT_PHASE. It does not support PTP_PEROUT_ONE_SHOT, but does not
+reject a request with such an unsupported flag.
 
-However, this driver does not check whether other flags (such as
-PTP_EXT_OFF) are set, nor whether any future unrecognized flags are set.
+Add the appropriate check to ensure that unsupported requests are rejected
+both for PTP_PEROUT_ONE_SHOT as well as any future flags.
 
-Fix this by adding the appropriate check to the lan743x_ptp_io_extts()
-function.
-
-Fixes: 60942c397af6 ("net: lan743x: Add support for PTP-IO Event Input External Timestamp (extts)")
+Fixes: 1aa66a3a135a ("ptp: ocp: Program the signal generators via PTP_CLK_REQ_PEROUT")
+Reviewed-by: Vadim Fedorenko <vadim.fedorenko@linux.dev>
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/microchip/lan743x_ptp.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+ drivers/ptp/ptp_ocp.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/drivers/net/ethernet/microchip/lan743x_ptp.c b/drivers/net/ethernet/microchip/lan743x_ptp.c
-index 4a777b449ecd03ac0d7576f8570f1a7794fb3d06..0be44dcb339387e9756f36f909f65c20870bc49b 100644
---- a/drivers/net/ethernet/microchip/lan743x_ptp.c
-+++ b/drivers/net/ethernet/microchip/lan743x_ptp.c
-@@ -942,6 +942,12 @@ static int lan743x_ptp_io_extts(struct lan743x_adapter *adapter, int on,
+diff --git a/drivers/ptp/ptp_ocp.c b/drivers/ptp/ptp_ocp.c
+index b651087f426f50a73229ca57634fc5d6912e0a87..4a87af0980d695a9ab1b23e2544f620759ccb892 100644
+--- a/drivers/ptp/ptp_ocp.c
++++ b/drivers/ptp/ptp_ocp.c
+@@ -2090,6 +2090,10 @@ ptp_ocp_signal_from_perout(struct ptp_ocp *bp, int gen,
+ {
+ 	struct ptp_ocp_signal s = { };
  
- 	extts = &ptp->extts[index];
- 
-+	if (extts_request->flags & ~(PTP_ENABLE_FEATURE |
-+				     PTP_RISING_EDGE |
-+				     PTP_FALLING_EDGE |
-+				     PTP_STRICT_FLAGS))
++	if (req->flags & ~(PTP_PEROUT_DUTY_CYCLE |
++			   PTP_PEROUT_PHASE))
 +		return -EOPNOTSUPP;
 +
- 	if (on) {
- 		extts_pin = ptp_find_pin(ptp->ptp_clock, PTP_PF_EXTTS, index);
- 		if (extts_pin < 0)
+ 	s.polarity = bp->signal[gen].polarity;
+ 	s.period = ktime_set(req->period.sec, req->period.nsec);
+ 	if (!s.period)
 
 -- 
 2.48.1.397.gec9d649cc640
