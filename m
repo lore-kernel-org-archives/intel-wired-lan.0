@@ -4,114 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AEC91C35FF1
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 12 Mar 2025 22:16:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3A9E5C28B2E
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 12 Mar 2025 22:25:44 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 76802832EA;
-	Wed, 12 Mar 2025 22:16:18 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 015A48236B;
+	Wed, 12 Mar 2025 22:25:44 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id W4whdH1OvD_P; Wed, 12 Mar 2025 22:16:17 +0000 (UTC)
+ id W6q4KfgSi4ui; Wed, 12 Mar 2025 22:25:42 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org BB9178330B
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 629788222B
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1741817777;
-	bh=+TOAZKX+mn2K+DevbvpEGiqatK01ewHd5r1yyopzenQ=;
-	h=From:Date:References:In-Reply-To:To:Cc:Subject:List-Id:
+	s=default; t=1741818342;
+	bh=rBuXBus5iFIGWKaTiHoIllR3Mb8mgIIt7od8i9FpuGI=;
+	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=xTj3407cNalu3SuKNNrJLE5baHFImP+HhxiF+HRyq4vAaHhvbV5zmAQhHBjOjz78h
-	 bI9+XZzjTPCUmKe/AtQH3oPbvsKemJ99kIEHNrAovB7b4QDLCDgPSXlw15LooTWZ5y
-	 sJd4sefLLQ+Bag807d6HUFdX+fwA4LcKzXN3KOZEa36bbbI4YmeXqZ5yeIlTltLs6t
-	 oLy8nZhgb2Objn3k4/Xz6rjooZPdFcFlJk/G6CwsAK8JeyXtUWHbbcIx/KnrzMN/bQ
-	 Be19F/ydjWUljrBCbIPIfttZPeE8VsnMjCadQzirkYEZi3yWXenDtJviQEPzwfljHZ
-	 qNEE2ll62qKmQ==
+	b=2dy0L+1xj4AP0G7ACojFDul1E+WCt/Rf6tCJ4aZfTVz/4whkUMdTG+rhNV8oIhl5S
+	 y8kq5zCa5RJfDUgHZy8Otqu/Xh4lMa7ALN1qMMPVzsF06o6xiL4mRfOfVYWCEqPP3T
+	 w5c2rWo8huTFt3BpY5X5oeG7Ab2Gc2hl26uJlzzksg/pHPKywkHm7A9OOXuI/CExI0
+	 ubdto1lOwByPBpb8MbtZJos3EoH2NF34U64PAQWbbn3Cp7MAKgLLop/tgDUeGL5WSB
+	 1F2+fNnm9m1TbSdUgF2SGcUvQgobJMHNze2cSNFMz6CQ2CYYSwa3rM9gZD7x4G5x5N
+	 T01zkZEFySXeQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id BB9178330B;
-	Wed, 12 Mar 2025 22:16:17 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 155DD128
- for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Mar 2025 22:16:14 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 629788222B;
+	Wed, 12 Mar 2025 22:25:42 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 8FF53128
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Mar 2025 22:25:40 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 646DB60E1D
- for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Mar 2025 22:16:12 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 7F4A041430
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Mar 2025 22:25:40 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id GHri0Q9cCpuG for <intel-wired-lan@lists.osuosl.org>;
- Wed, 12 Mar 2025 22:16:09 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.10;
- helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 05E6560E35
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 05E6560E35
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.10])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 05E6560E35
- for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Mar 2025 22:16:08 +0000 (UTC)
-X-CSE-ConnectionGUID: eGPCXLLvRZyJGmJUwpJQ4g==
-X-CSE-MsgGUID: MC0bwsyUT9aav0Nv2AQXyw==
-X-IronPort-AV: E=McAfee;i="6700,10204,11371"; a="54288373"
-X-IronPort-AV: E=Sophos;i="6.14,242,1736841600"; d="scan'208";a="54288373"
-Received: from orviesa005.jf.intel.com ([10.64.159.145])
- by fmvoesa104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 12 Mar 2025 15:16:07 -0700
-X-CSE-ConnectionGUID: 4HPccVGcS1W1/YOMvq4TvA==
-X-CSE-MsgGUID: zuJTnNl9QyOwsEw3Pr9dyg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.14,242,1736841600"; d="scan'208";a="125950239"
-Received: from jekeller-desk.jf.intel.com ([10.166.241.15])
- by orviesa005-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 12 Mar 2025 15:16:06 -0700
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed, 12 Mar 2025 15:15:50 -0700
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 2RZkxtTOUD6j for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 12 Mar 2025 22:25:39 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=156.67.10.101;
+ helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 552664142E
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 552664142E
+Received: from vps0.lunn.ch (vps0.lunn.ch [156.67.10.101])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 552664142E
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Mar 2025 22:25:39 +0000 (UTC)
+Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
+ (envelope-from <andrew@lunn.ch>)
+ id 1tsUW2-004noa-Bs; Wed, 12 Mar 2025 23:25:30 +0100
+Date: Wed, 12 Mar 2025 23:25:30 +0100
+From: Andrew Lunn <andrew@lunn.ch>
+To: Hamish Martin <Hamish.Martin@alliedtelesis.co.nz>
+Cc: "przemyslaw.kitszel@intel.com" <przemyslaw.kitszel@intel.com>,
+ "anthony.l.nguyen@intel.com" <anthony.l.nguyen@intel.com>,
+ "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>
+Message-ID: <0486c877-cbb4-411b-9bd6-9b10306c47a6@lunn.ch>
+References: <20250312032251.2259794-1-hamish.martin@alliedtelesis.co.nz>
+ <eae8e09c-f571-4016-b11d-88611a2b368f@lunn.ch>
+ <9455a623aaeb08999eec9202459d266f22432c00.camel@alliedtelesis.co.nz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20250312-jk-net-fixes-supported-extts-flags-v2-1-ea930ba82459@intel.com>
-References: <20250312-jk-net-fixes-supported-extts-flags-v2-0-ea930ba82459@intel.com>
-In-Reply-To: <20250312-jk-net-fixes-supported-extts-flags-v2-0-ea930ba82459@intel.com>
-To: Tony Nguyen <anthony.l.nguyen@intel.com>, 
- Przemek Kitszel <przemyslaw.kitszel@intel.com>, 
- Andrew Lunn <andrew+netdev@lunn.ch>, 
- "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
- Richard Cochran <richardcochran@gmail.com>, Ruud Bos <kernel.hbk@gmail.com>, 
- Paul Barker <paul.barker.ct@bp.renesas.com>, 
- =?utf-8?q?Niklas_S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>, 
- Bryan Whitehead <bryan.whitehead@microchip.com>, 
- UNGLinuxDriver@microchip.com, 
- Florian Fainelli <florian.fainelli@broadcom.com>, 
- Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, 
- Andrew Lunn <andrew@lunn.ch>, Heiner Kallweit <hkallweit1@gmail.com>, 
- Russell King <linux@armlinux.org.uk>, 
- Jonathan Lemon <jonathan.lemon@gmail.com>, Lasse Johnsen <l@ssejohnsen.me>, 
- Vadim Fedorenko <vadim.fedorenko@linux.dev>, 
- Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
-Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org, 
- linux-renesas-soc@vger.kernel.org, Jacob Keller <jacob.e.keller@intel.com>
-X-Mailer: b4 0.14.2
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1741817769; x=1773353769;
- h=from:date:subject:mime-version:content-transfer-encoding:
- message-id:references:in-reply-to:to:cc;
- bh=NdeYUySIiYtPzYwBwD5+tXrplkOPuaQwtpJ5FgKG8a4=;
- b=GcPfHATlHTgupq0fy/5WBJYQS1iFk7SdDhkUwQyR2ydnNkYVm3ob0A/3
- bUUzK6X++XQvjGJqdoY0gy0DWH2LQwjF1pQoFm+ThNi6yELelXdT9QOCI
- xqCfRppJxBm/hwn/1m0ojUZPJQj/oXcTjniLeJV6hfo4AdI6ICUrtklPq
- Dp40IJFBYL4KhSECGuQxwHaJP0zkToXp0UtUSyuHeJkyqHMWGDnw19QDp
- DjdDkgI4G8bGqUOGZRWZzATrVpW6F+ad0duyhV4kA5R58jCmcXKvYnXF7
- NZljCa5/+rSqjW/QTgNPwLegdZxhQhtukE91BKV3J3jeLDFrYyOOn/lgC
- A==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <9455a623aaeb08999eec9202459d266f22432c00.camel@alliedtelesis.co.nz>
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt;
+ c=relaxed/relaxed; d=lunn.ch; 
+ s=20171124; h=In-Reply-To:Content-Disposition:Content-Type:MIME-Version:
+ References:Message-ID:Subject:Cc:To:From:Date:From:Sender:Reply-To:Subject:
+ Date:Message-ID:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:
+ Content-ID:Content-Description:Content-Disposition:In-Reply-To:References;
+ bh=rBuXBus5iFIGWKaTiHoIllR3Mb8mgIIt7od8i9FpuGI=; b=f15VbVfmYohFagLD6N1ENLriN7
+ BCnq2HcMX86RPea0zDYsjyczMHzDCsgPfqgiQDuBuohrzF8+0Wo2wspeGj0gLTP1piaVAG2ANtjVX
+ Gk4VSqg6aqEyfsjoVyMi5lc2YGaYCORMaTtnS2eCxn08QhDmoj9e1U2dAcmCo8fUOYIc=;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
- header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=GcPfHATl
-Subject: [Intel-wired-lan] [PATCH net v2 1/5] igb: reject invalid external
- timestamp requests for 82580-based HW
+ header.from=lunn.ch
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (1024-bit key,
+ unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256
+ header.s=20171124 header.b=f15VbVfm
+Subject: Re: [Intel-wired-lan] [PATCH net] igb: Prevent IPCFGN write
+ resetting autoneg advertisement register
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -127,63 +99,78 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The igb_ptp_feature_enable_82580 function correctly checks that unknown
-flags are not passed to the function. However, it does not actually check
-PTP_RISING_EDGE or PTP_FALLING_EDGE when configuring the external timestamp
-function.
+> Hi Andrew,
+> 
+> Thanks for your feedback. I'll try and give more detail about what's
+> happening with a concrete example.
+> 
+> If we start with the device in a state where it is advertising:
+> 1000BaseT Full
+> 100baseT Full
+> 100baseT Half
+> 10baseT Full
+> 10baseT Half
+> I see the following settings in the autoneg related registers:
+> 0.4 = 0x0de1 (PHY_AUTONEG_ADV)
+> 0.9 = 0x0200 (PHY_1000T_CTRL)
+> 
+> EEE is disabled.
+> 
+> If I then adjust the advertisement to only advertise 1000BaseT Full and
+> 100baseT Full with:
+> # ethtool -s eth0 advertise 0x28
+> I see the following writes to the registers:
+> 1. In igb_phy_setup_autoneg() PHY_AUTONEG_ADV is written with 0x0101
+> (the correct value)
+> 2. Later in igb_phy_setup_autoneg() PHY_1000T_CTRL is written with
+> 0x0200 (correct)
+> 3. Autoneg gets restarted in igb_copper_link_autoneg() with PHY_CONTROL
+> (0.0) being written with 0x1340
+> (everything looks fine up until here)
+> 4. Now we reach igb_set_eee_i350(). Here we read in IPCNFG and it has
+> value 0xf. EEE is disabled so we hit the 'else' case and remove
+> E1000_IPCNFG_EEE_1G_AN and E1000_IPCNFG_EEE_100M_AN from the 'ipcnfg'
+> value. We then write this back as 0x3. At this point, if you re-read
+> PHY_AUTONEG_ADV you will see it's contents has been reset to 0x0de1.
 
-The data sheet for the 82580 product says:
+Thanks for the additional details. These should go into the commit
+message.
 
-  Upon a change in the input level of one of the SDP pins that was
-  configured to detect Time stamp events using the TSSDP register, a time
-  stamp of the system time is captured into one of the two auxiliary time
-  stamp registers (AUXSTMPL/H0 or AUXSTMPL/H1).
+> If you run the same example above but with EEE enabled (ethtool --set-
+> eee eth0 eee on; ethtool -s eth0 advertise 0x28) the issue is not seen.
+> In this case the contents of IPCNFG are written back unmodified as 0xf.
+> This seems important to avoid the bug.
 
-  For example to define timestamping of events in the AUXSTMPL0 and
-  AUXSTMPH0 registers, Software should:
+Yes, it does seem like the PHY is broken. 
 
-  1. Set the TSSDP.AUX0_SDP_SEL field to select the SDP pin that detects
-     the level change and set the TSSDP.AUX0_TS_SDP_EN bit to 1.
+> 
+> It seems that any case where EEE is disabled will lead to the
+> undesirable behaviour where the contents of PHY_AUTONEG_ADV is reset to
+> 0x0de1. The key trigger for this appears to be changes to either or
+> both of EEE_100M_AN and EEE_1G_AN in IPCNFG. The datasheet does note
+> that "Changing value of bit causes link drop and re-negotiation"
 
-  2. Set the TSAUXC.EN_TS0 bit to 1 to enable timestamping
+Which is what you would expect, since EEE is negotiated. But
+implicitly changing the link modes advertised is not what you would
+expect.
 
-The same paragraph is in the i350 and i354 data sheets.
+By the way, what PHY is this? I don't remember seeing any errata for
+Linux PHY drivers resembling this.
 
-The wording implies that the time stamps are captured at any level change.
-There does not appear to be any way to only timestamp one edge of the
-signal.
+> What's your opinion on that less invasive fix (i.e remove "ipcnfg &=
+> ~(E1000_IPCNFG_EEE_1G_AN | E1000_IPCNFG_EEE_100M_AN);" )? Is it
+> sufficient to rely on the EEER settings to control disabling EEE with
+> the IPCNFG register still set to advertise those modes?
 
-Reject requests which do not set both PTP_RISING_EDGE and PTP_FALLING_EDGE
-when operating under PTP_STRICT_FLAGS mode via PTP_EXTTS_REQUEST2.
+I actually think you need to do more testing. Assuming the PHY is not
+even more broken than we think, it should not matter if it advertises
+EEE mode for link modes which are not advertised. The link partner
+should ignore them. It would be good if you tested out various EEE
+combinations from both link partners sides.
 
-Fixes: 38970eac41db ("igb: support EXTTS on 82580/i354/i350")
-Reviewed-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
----
-Changes in v2:
-- Fix the 82580 check to allow disabling the pin without flags set.
----
- drivers/net/ethernet/intel/igb/igb_ptp.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+However, setting EEE advertisement and then always setting link mode
+advertisement does seem like a good workaround. It would however be
+good to get some sort of feedback from the PHY silicon vendor about
+this odd behaviour.
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_ptp.c b/drivers/net/ethernet/intel/igb/igb_ptp.c
-index f9457055612004c10f74379122063e8136fe7d76..f323e1c1989f1bfbbf1f04043c2c0f14ae8c716f 100644
---- a/drivers/net/ethernet/intel/igb/igb_ptp.c
-+++ b/drivers/net/ethernet/intel/igb/igb_ptp.c
-@@ -509,6 +509,12 @@ static int igb_ptp_feature_enable_82580(struct ptp_clock_info *ptp,
- 					PTP_STRICT_FLAGS))
- 			return -EOPNOTSUPP;
- 
-+		/* Both the rising and falling edge are timestamped */
-+		if (rq->extts.flags & PTP_STRICT_FLAGS &&
-+		    (rq->extts.flags & PTP_ENABLE_FEATURE) &&
-+		    (rq->extts.flags & PTP_EXTTS_EDGES) != PTP_EXTTS_EDGES)
-+			return -EOPNOTSUPP;
-+
- 		if (on) {
- 			pin = ptp_find_pin(igb->ptp_clock, PTP_PF_EXTTS,
- 					   rq->extts.index);
-
--- 
-2.48.1.397.gec9d649cc640
-
+	Andrew
