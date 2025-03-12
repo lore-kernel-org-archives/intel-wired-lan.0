@@ -1,78 +1,76 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 44221C28B28
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 12 Mar 2025 22:16:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2F2C9C2BA1B
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 12 Mar 2025 22:16:17 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id EBF3B832D9;
-	Wed, 12 Mar 2025 22:16:15 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id CB3E84133B;
+	Wed, 12 Mar 2025 22:16:16 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id FUqVYKpnifO9; Wed, 12 Mar 2025 22:16:15 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id XiQG5HahYN5g; Wed, 12 Mar 2025 22:16:16 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 041D6832E6
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E7B6B41341
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1741817775;
-	bh=2BXeGPttb/d0I/0p4PbOSmVsr131Jb5aTAmqhxFum34=;
-	h=From:Date:To:Cc:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=BXGEfAdB+GU/D2ChEm5ydRsmdparz6Y9xOEn2aIAW4v1AdaIHC3RfXIHsDctn9L62
-	 KeAXMjFnRbViHYmAOo08w2lpWs5jUFjh3ib9AXjF+ka554R4GgjKA6KSwi/+qG5ssC
-	 MZ7Gkd2k1O6QQoJtbH6YD4Mj/U6DZ5qZGrg61P5zdrIr5G4yHom7IGK9keadpxhuX9
-	 7sg8Kgd+v2DkyiKqBjRgHRMKMeaIRInCUcQ3/kJokYMBR8DyqQ6yIumXijE7xIx7Io
-	 fv7YTKt3/0YWOo623jYsEGvprPgKWw8t56U5cNwn2xe9uHx5W8SiOdh+SchA6m4t/s
-	 OqfDMX2t8ynVg==
+	s=default; t=1741817776;
+	bh=ckm+4PbXHnRHBRsiYZNomlJIicKSLbSgOJpSXXjrtIQ=;
+	h=From:Date:References:In-Reply-To:To:Cc:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=nOsHcz6toFlm4c257E4ucIlzLMqt+w3d8iAWVtX1EE0rQnxTzY6z8/BDyGUrPEjbF
+	 g2gCEb4uhEdwqoAjpWteJt/HgO9Grl8ZLS0YX8VhpOcHdxr+bgKfnsYPG3elLdjdgN
+	 i2EZNT4ZR5vHPxLA62cN4GBmp59454KmHJFWLlVTwyZUuR0TQiZXb2cLFOOW3S7hJl
+	 gh+E8IcuUzkRPArthayeGw3gWhMkGsfaCofipjvOgrwYFwieUbVhAuyDiWUK+1lT5a
+	 xCSaplLBjATqBaWS6CGiZ0iceCHtRDzDHeKIjuD0R0vUnZb4CA1icLgiOBk6cpvjej
+	 9/dFbD7FrhAVA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 041D6832E6;
+	by smtp4.osuosl.org (Postfix) with ESMTP id E7B6B41341;
 	Wed, 12 Mar 2025 22:16:15 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id 3CEDB128
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 934E21E1
  for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Mar 2025 22:16:12 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 20D9F60E44
+ by smtp4.osuosl.org (Postfix) with ESMTP id 79A7741340
  for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Mar 2025 22:16:12 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id xNolVgOckBSl for <intel-wired-lan@lists.osuosl.org>;
- Wed, 12 Mar 2025 22:16:08 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id XBq6ufLqVjo8 for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 12 Mar 2025 22:16:09 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.10;
  helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 83FE060E31
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 83FE060E31
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 5971741339
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 5971741339
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.10])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 83FE060E31
- for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Mar 2025 22:16:08 +0000 (UTC)
-X-CSE-ConnectionGUID: P1xhBRlHT4i2pjexUi+NKw==
-X-CSE-MsgGUID: MANpcAlHTPCdf37jmSPihw==
-X-IronPort-AV: E=McAfee;i="6700,10204,11371"; a="54288357"
-X-IronPort-AV: E=Sophos;i="6.14,242,1736841600"; d="scan'208";a="54288357"
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 5971741339
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Mar 2025 22:16:09 +0000 (UTC)
+X-CSE-ConnectionGUID: Fuot9ItTTQq6eZ2y8pz6hg==
+X-CSE-MsgGUID: ZJ5meHOlTb2DMHfkuQis+A==
+X-IronPort-AV: E=McAfee;i="6700,10204,11371"; a="54288388"
+X-IronPort-AV: E=Sophos;i="6.14,242,1736841600"; d="scan'208";a="54288388"
 Received: from orviesa005.jf.intel.com ([10.64.159.145])
  by fmvoesa104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  12 Mar 2025 15:16:07 -0700
-X-CSE-ConnectionGUID: 7ZptAuQLTnauwVB7uWUibw==
-X-CSE-MsgGUID: VsKtbhuZR+WBzzCjQvWRCA==
+X-CSE-ConnectionGUID: RPZqz1gqRd2fk2ZEEyOS1w==
+X-CSE-MsgGUID: hNR8Cw4qTzSxMi0CU6QKgg==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.14,242,1736841600"; d="scan'208";a="125950236"
+X-IronPort-AV: E=Sophos;i="6.14,242,1736841600"; d="scan'208";a="125950242"
 Received: from jekeller-desk.jf.intel.com ([10.166.241.15])
  by orviesa005-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 12 Mar 2025 15:16:06 -0700
+ 12 Mar 2025 15:16:07 -0700
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed, 12 Mar 2025 15:15:49 -0700
-Message-Id: <20250312-jk-net-fixes-supported-extts-flags-v2-0-ea930ba82459@intel.com>
+Date: Wed, 12 Mar 2025 15:15:51 -0700
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAJUH0mcC/5WNTQ6CMBCFr0Jm7ZhSqEFX3MOwQJjCKLakUwmGc
- HcbbuDy/X1vA6HAJHDLNgi0sLB3SehTBt3YuoGQ+6RBK21UkSt8vtBRRMsrCcpnnn2I1COtMQr
- aqR0EqSqLsq9IG6MhgeZARz1x7pDG0CRzZIk+fI/jJT+ifz6WHBVWprT2YWzRXi81u0jTufNva
- PZ9/wGZ3E3/2QAAAA==
-X-Change-ID: 20250310-jk-net-fixes-supported-extts-flags-e8434d8e2552
+Message-Id: <20250312-jk-net-fixes-supported-extts-flags-v2-2-ea930ba82459@intel.com>
+References: <20250312-jk-net-fixes-supported-extts-flags-v2-0-ea930ba82459@intel.com>
+In-Reply-To: <20250312-jk-net-fixes-supported-extts-flags-v2-0-ea930ba82459@intel.com>
 To: Tony Nguyen <anthony.l.nguyen@intel.com>, 
  Przemek Kitszel <przemyslaw.kitszel@intel.com>, 
  Andrew Lunn <andrew+netdev@lunn.ch>, 
@@ -95,26 +93,26 @@ Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
 X-Mailer: b4 0.14.2
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1741817769; x=1773353769;
- h=from:subject:date:message-id:mime-version:
- content-transfer-encoding:to:cc;
- bh=1KwTPESjoV4wGw74MHx2lBmKX2wLUahDheHKien59S8=;
- b=XbXt+1mYemAwinnOoF41Y5p8VmNi+GSRqPbX9PlIhxK4vBQXhPdtCROy
- UTFmOlSi7iQhq4Vst8h+QMQQcBqUwvglN9ORoj5jjD38oqafPXYKUOMX5
- PXzxE4JWPG624qV9+zLOVUqJovGfWrGprUjvmSRGF4AwLHJlbqJvT6Urp
- uSW3GKz23rDyt0HDHp9H6pZ5DEFBi6TO7hFHU2oCneHfuyQLPEzH2DDtC
- dghR7tYUNvdf5eCti+MndR8fhUFzJrdkL4gHx9gyOLXpfwL7C5F0lZ32c
- NI8IJcFoGjyDdwMvFR6LORuyQkJKOMN4SiBY1dDS764LSyYKtbpvGJBKH
+ t=1741817770; x=1773353770;
+ h=from:date:subject:mime-version:content-transfer-encoding:
+ message-id:references:in-reply-to:to:cc;
+ bh=uPzVgNJtr9kkTWtPDLiGgIWOsAJbSrZd8+u0qOMgpFE=;
+ b=X4m0JfJOqlLXOsMDE8rLogrUaKDM8R71fpHb5A3CPEsj2UrLeb21r/2d
+ X80cijbk7q1Tt21lJqt1F07uQyfpiYepyHFPCIr/6H0pLF1ejyhsfF0jF
+ W8pFJVcEJ22+93Q0YEYg562jWzm5ok1fEPREnrftQoanQbs28r0d3ZecO
+ hQjwYfb4z0GmLN12eX2WA8BVaRehKaohCsGy1gqIupKz8Tf/AoR1jIVzY
+ 5kJn/Vo0Ghkja6JCGuX8aTQo+qZWUy7lIvOkcWplEZS9m0x984Mg27vxC
+ JGTLLlVd5Roce6GuhByiG/9QZ4J71DDKU+B5JZCLpewpww5oL6y6GAgEe
  g==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=XbXt+1mY
-Subject: [Intel-wired-lan] [PATCH net v2 0/5] net: ptp: fix egregious
- supported flag checks
+ header.s=Intel header.b=X4m0JfJO
+Subject: [Intel-wired-lan] [PATCH net v2 2/5] renesas: reject
+ PTP_STRICT_FLAGS as unsupported
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -130,75 +128,48 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-In preparation for adding .supported_extts_flags and
-.supported_perout_flags to the ptp_clock_info structure, fix a couple of
-places where drivers get existing flag gets grossly incorrect.
+The ravb_ptp_extts() function checks the flags coming from the
+PTP_EXTTS_REQUEST ioctl, to ensure that future flags are not accepted on
+accident.
 
-The igb driver claims 82580 supports strictly validating PTP_RISING_EDGE
-and PTP_FALLING_EDGE, but doesn't actually check the flags. Fix the driver
-to require that the request match both edges, as this is implied by the
-datasheet description.
+This was updated to 'honor' the PTP_STRICT_FLAGS in commit 6138e687c7b6
+("ptp: Introduce strict checking of external time stamp options.").
+However, the driver does not *actually* validate the flags.
 
-The renesas driver also claims to support strict flag checking, but does
-not actually check the flags either. I do not have the data sheet for this
-device, so I do not know what edge it timestamps. For simplicity, just
-reject all requests with PTP_STRICT_FLAGS. This essentially prevents the
-PTP_EXTTS_REQUEST2 ioctl from working. Updating to correctly validate the
-flags will require someone who has the hardware to confirm the behavior.
+I originally fixed this driver to reject future flags in commit
+592025a03b34 ("renesas: reject unsupported external timestamp flags"). It
+is still unclear whether this hardware timestamps the rising, falling, or
+both edges of the input signal.
 
-The lan743x driver supports (and strictly validates) that the request is
-either PTP_RISING_EDGE or PTP_FALLING_EDGE but not both. However, it does
-not check the flags are one of the known valid flags. Thus, requests for
-PTP_EXT_OFF (and any future flag) will be accepted and misinterpreted. Add
-the appropriate check to reject unsupported PTP_EXT_OFF requests and future
-proof against new flags.
+Accepting requests with PTP_STRICT_FLAGS is a bug, as this could lead to
+users mistakenly assuming a request with PTP_RISING_EDGE actually
+timestamps the rising edge only.
 
-The broadcom PHY driver checks that PTP_PEROUT_PHASE is not set. This
-appears to be an attempt at rejecting unsupported flags. It is not robust
-against flag additions such as the PTP_PEROUT_ONE_SHOT, or anything added
-in the future. Fix this by instead checking against the negation of the
-supported PTP_PEROUT_DUTY_CYCLE instead.
+Reject requests with PTP_STRICT_FLAGS (and hence all PTP_EXTTS_REQUEST2
+requests) until someone with access to the datasheet or hardware knowledge
+can confirm the timestamping behavior and update this driver.
 
-The ptp_ocp driver supports PTP_PEROUT_PHASE and PTP_PEROUT_DUTY_CYCLE, but
-does not check unsupported flags. Add the appropriate check to ensure
-PTP_PEROUT_ONE_SHOT and any future flags are rejected as unsupported.
-
-These are changes compile-tested, but I do not have hardware to validate the
-behavior.
-
-There are a number of other drivers which enable periodic output or
-external timestamp requests, but which do not check flags at all. We could
-go through each of these drivers one-by-one and meticulously add a flag
-check. Instead, these drivers will be covered only by the upcoming
-.supported_extts_flags and .supported_perout_flags checks in a net-next
-series.
-
+Fixes: 6138e687c7b6 ("ptp: Introduce strict checking of external time stamp options.")
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
-Changes in v2:
-- Drop Raju Lakkaraju from Cc since his email appears to no longer deliver.
-- Fix the igb 82580 check to allow disabling the pin without flags set.
-- Link to v1: https://lore.kernel.org/r/20250310-jk-net-fixes-supported-extts-flags-v1-0-854ffb5f3a96@intel.com
+ drivers/net/ethernet/renesas/ravb_ptp.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
----
-Jacob Keller (5):
-      igb: reject invalid external timestamp requests for 82580-based HW
-      renesas: reject PTP_STRICT_FLAGS as unsupported
-      net: lan743x: reject unsupported external timestamp requests
-      broadcom: fix supported flag check in periodic output function
-      ptp: ocp: reject unsupported periodic output flags
+diff --git a/drivers/net/ethernet/renesas/ravb_ptp.c b/drivers/net/ethernet/renesas/ravb_ptp.c
+index 6e4ef7af27bf31ab2aad8e06a65e0ede6046e3c0..b4365906669f3bd40953813e263aeaafd2e1eb70 100644
+--- a/drivers/net/ethernet/renesas/ravb_ptp.c
++++ b/drivers/net/ethernet/renesas/ravb_ptp.c
+@@ -179,8 +179,7 @@ static int ravb_ptp_extts(struct ptp_clock_info *ptp,
+ 	/* Reject requests with unsupported flags */
+ 	if (req->flags & ~(PTP_ENABLE_FEATURE |
+ 			   PTP_RISING_EDGE |
+-			   PTP_FALLING_EDGE |
+-			   PTP_STRICT_FLAGS))
++			   PTP_FALLING_EDGE))
+ 		return -EOPNOTSUPP;
+ 
+ 	if (req->index)
 
- drivers/net/ethernet/intel/igb/igb_ptp.c     | 6 ++++++
- drivers/net/ethernet/microchip/lan743x_ptp.c | 6 ++++++
- drivers/net/ethernet/renesas/ravb_ptp.c      | 3 +--
- drivers/net/phy/bcm-phy-ptp.c                | 3 ++-
- drivers/ptp/ptp_ocp.c                        | 4 ++++
- 5 files changed, 19 insertions(+), 3 deletions(-)
----
-base-commit: 992ee3ed6e9fdd0be83a7daa5ff738e3cf86047f
-change-id: 20250310-jk-net-fixes-supported-extts-flags-e8434d8e2552
-
-Best regards,
 -- 
-Jacob Keller <jacob.e.keller@intel.com>
+2.48.1.397.gec9d649cc640
 
