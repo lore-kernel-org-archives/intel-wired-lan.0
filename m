@@ -1,93 +1,94 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 50E23C28B28
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 12 Mar 2025 18:14:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7E744C28B2E
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 12 Mar 2025 18:15:43 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 0E2CA80E46;
-	Wed, 12 Mar 2025 18:14:42 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id aFmL2VgAWmgR; Wed, 12 Mar 2025 18:14:40 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9617880E24
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1741803280;
-	bh=bN/LeVU0cvcUECGSyVZ+dcHzCgk1DlmAO8i2r4EjXfU=;
-	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=xw5HvyBiTbPZwuqqLVESBI6uKIvpJG1/0v1SJ8aPmwMILf/bX4QTWG6CTH+Vtemfs
-	 qCe6qCYX024AFQ7vOFUE6O40zUUfHmlpEItf+05p4aYC0WRqJ9SkhtJMaqRUY1nYQN
-	 fj8OdK0NyT1YeiCzBgWvfNmwNtMPV1i7MQxN9oipVMYbRbastsr6e1i1wCIseiQM1W
-	 6E11O6841wiftNKx1EDr3JZFMnfu0+fOm8C6GFmx4SBksnNf84LJZIfX1Wj1bXQWZh
-	 SpcNVGfySX3aO1cHkPdGkHggIz8pGeBkVO6MlHYGrxXRi7knP/jriWz/bk60+D6Ls+
-	 DQ0B7LhyaHHJw==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 9617880E24;
-	Wed, 12 Mar 2025 18:14:40 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id 44650128
- for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Mar 2025 18:14:39 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 282D54064C
- for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Mar 2025 18:14:39 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 41E0B41333;
+	Wed, 12 Mar 2025 18:15:43 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id OmDbxXl8Oh8H for <intel-wired-lan@lists.osuosl.org>;
- Wed, 12 Mar 2025 18:14:38 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.19;
+ id NHPvv4PKKqHP; Wed, 12 Mar 2025 18:15:42 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 05FEF41329
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1741803342;
+	bh=kMBWyijgZwMjN2eW3qtceL8jpuO2qlChYjj+IWd4G80=;
+	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=owrIuuPr80FGDR79a4BpOwH1W/bReFIc7RvMptu4sCjmAdbWo1MNk8/oVviNhSlc/
+	 fLfc6jTCKG1zB0xzgluz0n5WWbcP6uTOhLoSzCeyW1D+p71tkVk0l2Xx4Mdi2q8XVE
+	 NviyyLmivJLkOTsFIjKTMTzwlFlsN52maL87hbO4c9Z9aezxmBWT6hZv58wMABj9U5
+	 QqVmcD2moWXo+nB/gqVP0wxXZOqSGYEQyqT/YuxQo03w005jp1I5SPqc5G8uP1uETN
+	 U/zfm7OAVzsRx9TeiIv282mYGdbKJgo/ebaJpV2hnkvKhGw5l2jd1oydjKdSX5r8ce
+	 I38hlLS14aKBw==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp4.osuosl.org (Postfix) with ESMTP id 05FEF41329;
+	Wed, 12 Mar 2025 18:15:42 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id DBB8C128
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Mar 2025 18:15:39 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp2.osuosl.org (Postfix) with ESMTP id BC6BE40FF3
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Mar 2025 18:15:39 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id W--bg7HbKKbg for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 12 Mar 2025 18:15:38 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.20;
  helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org E2F0C4059A
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E2F0C4059A
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.19])
- by smtp4.osuosl.org (Postfix) with ESMTPS id E2F0C4059A
- for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Mar 2025 18:14:37 +0000 (UTC)
-X-CSE-ConnectionGUID: RoVSONWLSh2mSMjtA/YKOw==
-X-CSE-MsgGUID: ahLm15bsQoOjWiT22s2kRA==
-X-IronPort-AV: E=McAfee;i="6700,10204,11371"; a="42758710"
-X-IronPort-AV: E=Sophos;i="6.14,242,1736841600"; d="scan'208";a="42758710"
-Received: from fmviesa002.fm.intel.com ([10.60.135.142])
- by orvoesa111.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 12 Mar 2025 11:14:37 -0700
-X-CSE-ConnectionGUID: kDwRBynWQ/iHrvZK2ktOLg==
-X-CSE-MsgGUID: sX9tR8IYSXyZ8LiHNF1o4g==
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 8926141012
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 8926141012
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.20])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 8926141012
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Mar 2025 18:15:37 +0000 (UTC)
+X-CSE-ConnectionGUID: VvT0S66OTzeOmjWsiakAZg==
+X-CSE-MsgGUID: 3kW2EDsDSU2QSZZtvDn+AQ==
+X-IronPort-AV: E=McAfee;i="6700,10204,11371"; a="42625843"
+X-IronPort-AV: E=Sophos;i="6.14,242,1736841600"; d="scan'208";a="42625843"
+Received: from orviesa007.jf.intel.com ([10.64.159.147])
+ by orvoesa112.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 12 Mar 2025 11:15:38 -0700
+X-CSE-ConnectionGUID: kRroWc58QwKg9mSnIQdtpA==
+X-CSE-MsgGUID: Dl5nOCGZTy+pxEnX9psfTw==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.14,242,1736841600"; d="scan'208";a="143906827"
+X-IronPort-AV: E=Sophos;i="6.14,242,1736841600"; d="scan'208";a="121216823"
 Received: from lkp-server02.sh.intel.com (HELO a4747d147074) ([10.239.97.151])
- by fmviesa002.fm.intel.com with ESMTP; 12 Mar 2025 11:14:36 -0700
+ by orviesa007.jf.intel.com with ESMTP; 12 Mar 2025 11:15:36 -0700
 Received: from kbuild by a4747d147074 with local (Exim 4.96)
- (envelope-from <lkp@intel.com>) id 1tsQbC-0008nW-0r
- for intel-wired-lan@lists.osuosl.org; Wed, 12 Mar 2025 18:14:34 +0000
-Date: Thu, 13 Mar 2025 02:14:29 +0800
+ (envelope-from <lkp@intel.com>) id 1tsQcA-0008nj-1K
+ for intel-wired-lan@lists.osuosl.org; Wed, 12 Mar 2025 18:15:34 +0000
+Date: Thu, 13 Mar 2025 02:15:20 +0800
 From: kernel test robot <lkp@intel.com>
 To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Message-ID: <202503130223.WYVvPV6e-lkp@intel.com>
+Message-ID: <202503130214.P6K38D9f-lkp@intel.com>
 User-Agent: s-nail v14.9.24
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1741803278; x=1773339278;
+ t=1741803339; x=1773339339;
  h=date:from:to:subject:message-id;
- bh=9wNqn4j/mgAa/Nm/XTHQNFMhc2s/S7cZWUX+qNLXxs8=;
- b=Mb06pGxeriscmWhw+4tAaSnKnjay1gIBb1W20E7CGyttd6cCIYXoNHyX
- OxJ6Ve4iYOeOkJ6qolK3Tz8+g5JRLm3lPDqT88VdkydNM+w8/8sncwkX7
- sE8WEHfSZLCzg2XzwJ0e0kufFRdJsUdUF7EmCvRt3huLNoL8qorLG7cvV
- FUipKAeTyExxXb1Y/8j/v7QKzc/eRuYIt+hiyKgqPT6//xtYI1LHpeaD6
- DWuxQX1/h/i3crgzWWDVEjMZkqN+WYDAsHEmDEvwAcgZIktJqpksZ52RN
- OGr7A+BGkkzrUzNi5fk1a0pI7JT+LkMURckQnYTY/enx4d5YPpA0N1KqV
- Q==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ bh=KPTeDtCKadC+CXkFiSGD/8Urm4u/bq5zMB9Rq0zJx2I=;
+ b=IFlqgNfDYQrSCIiBzTQnUe3PDj6EPGgiltgwR9/WrD1hAJI6h5bYVBbb
+ 1u+iPbhVQ0YnXmD1WLhfvlJVN4Qn9a7YiqXIWeFurffxk6tVElpmjSE2z
+ R64iIvdkB35vlWuUxr6FXrSHzWp/jwhhexOJhyJ1vSPMBNqlbk9Ssivr5
+ Buyo5cb9C9DPMmn/1z7IbULAzDhISCyWfmaWvOipnfl156ZxaMlCMiDVb
+ Qu75sl9fBJHGMd15pXnNpVp7ls/8WfWn08Vg2KP9iwyF8GYvNdAzgxbMv
+ CX6vrg4Am3aKyMTuzkF2stAP0IxcBvk/G5gkdzxrTwrS2JoTmAu56erxO
+ w==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=Mb06pGxe
-Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
- 04dee4323e831cc6ff24d762c392bd8fdba9d612
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=IFlqgNfD
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ 934a297cc6ad7d794d701a96fe16567482818227
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -103,12 +104,12 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
-branch HEAD: 04dee4323e831cc6ff24d762c392bd8fdba9d612  ixgbe: Fix unreachable retry logic in combined and byte I2C write functions
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
+branch HEAD: 934a297cc6ad7d794d701a96fe16567482818227  ice: fix reservation of resources for RDMA when disabled
 
-elapsed time: 1458m
+elapsed time: 1459m
 
-configs tested: 87
+configs tested: 90
 configs skipped: 1
 
 The following configs have been built successfully.
@@ -139,7 +140,6 @@ hexagon               randconfig-001-20250312    clang-21
 hexagon               randconfig-002-20250312    clang-21
 i386                             allmodconfig    gcc-12
 i386                              allnoconfig    gcc-12
-i386                             allyesconfig    gcc-12
 i386        buildonly-randconfig-001-20250312    clang-19
 i386        buildonly-randconfig-002-20250312    clang-19
 i386        buildonly-randconfig-003-20250312    gcc-12
@@ -156,9 +156,13 @@ nios2                             allnoconfig    gcc-14.2.0
 nios2                 randconfig-001-20250312    gcc-14.2.0
 nios2                 randconfig-002-20250312    gcc-14.2.0
 openrisc                          allnoconfig    gcc-14.2.0
+openrisc                         allyesconfig    gcc-14.2.0
+parisc                           allmodconfig    gcc-14.2.0
 parisc                            allnoconfig    gcc-14.2.0
+parisc                           allyesconfig    gcc-14.2.0
 parisc                randconfig-001-20250312    gcc-14.2.0
 parisc                randconfig-002-20250312    gcc-14.2.0
+powerpc                          allmodconfig    gcc-14.2.0
 powerpc                           allnoconfig    gcc-14.2.0
 powerpc               randconfig-001-20250312    clang-21
 powerpc               randconfig-002-20250312    clang-21
