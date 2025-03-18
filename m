@@ -4,89 +4,93 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 31770C282EC
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 18 Mar 2025 05:44:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 80DD7C35FF8
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 18 Mar 2025 10:39:57 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id CB24240C6F;
-	Tue, 18 Mar 2025 05:44:39 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 24C82407E1;
+	Tue, 18 Mar 2025 10:39:57 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 7NDJgOOJ4YhI; Tue, 18 Mar 2025 05:44:38 +0000 (UTC)
+ id rohzQwFVA3pZ; Tue, 18 Mar 2025 10:39:56 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 862C040D0E
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 464AE4070C
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1742276678;
-	bh=wu467qPfyH3kGJlVMjZTSMd+botWafhgYWCKohTiF/A=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=Ks+Kr9QC3vjkDbb9yDqRzfY6sUpNYdHly27DWqrQbFEPnNIJ3Hc345K1YhH0jWT+k
-	 h0W9/PcOQEtsVinJlkuklHKRFdVuoPJ5a15Q9SfOGiZVMr7V7iw/g7VXyxmD3BJekl
-	 DJU8UuSwmWLZV1hisRADYxfpI6fqWv/XPNa5QgSiY6GOPSmYlXbZ4ZKwZ6qH2c9VVy
-	 I6sD1L5jBJKmVGqK3RtaWea7Jecd3aE6xfk4pxC859VMVmsE0EG1Otus2VvfxfsXol
-	 GbuxWgo3FoUFR99jM+UjhMuwxguN1v7QyG1PUEeJMAnjn7v9Tb2LEv/FruqFQhkY6d
-	 xhOSQ+ujX4Hqw==
+	s=default; t=1742294396;
+	bh=DG9FwWDdzCcDwdPAanNITZd6r7bnBIThE7IAa5oh1xw=;
+	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=E/QTCQ1J0bzw28XC8kK0fGJoVSfphpKUmJJfKqpa0MCqwu6oAkKHegFwGtgef+QbX
+	 0vmYiY1oYBT3+e4bLnEbbrDLWpWmN5raRy+rfrCqVHTrZQyfShftBOyi9+9d60uNE/
+	 u2FueOvHl9s3+cIS8W6pLtH8+/J2werLHku7xtLY/mlQcMjsfCteS/xL9SmO24+7SZ
+	 RFXw2fAfXY3Fl5r/HbM5PRpFQTXIGa3ZtF3sgfn1dtCjn+LHIiqc1H1xwWFy7a+YhX
+	 I0//nyo+QtKjmj9chuLomf8zrC9nAx7PC2g4CSYxkGvJkxdtgr/RcPInlqFFYdONqH
+	 SFI+/NuB5kBRA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 862C040D0E;
-	Tue, 18 Mar 2025 05:44:38 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id F02CBD5
- for <intel-wired-lan@lists.osuosl.org>; Tue, 18 Mar 2025 05:44:36 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 464AE4070C;
+	Tue, 18 Mar 2025 10:39:56 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 4889C950
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 18 Mar 2025 10:39:55 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id DF18E400FF
- for <intel-wired-lan@lists.osuosl.org>; Tue, 18 Mar 2025 05:44:36 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 2C84660B85
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 18 Mar 2025 10:39:55 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 81kxWlZbOIQ6 for <intel-wired-lan@lists.osuosl.org>;
- Tue, 18 Mar 2025 05:44:35 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.17;
- helo=mgamail.intel.com; envelope-from=emil.s.tantilov@intel.com;
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id RnogcPi9UC2O for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 18 Mar 2025 10:39:54 +0000 (UTC)
+Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.19;
+ helo=mgamail.intel.com; envelope-from=michal.swiatkowski@linux.intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 77B1D40A9C
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 77B1D40A9C
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.17])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 77B1D40A9C
- for <intel-wired-lan@lists.osuosl.org>; Tue, 18 Mar 2025 05:44:34 +0000 (UTC)
-X-CSE-ConnectionGUID: Ncnhem2BSYSQvR7DV8Bmiw==
-X-CSE-MsgGUID: Xpb1IJPmSIOq6/JTFJEnkA==
-X-IronPort-AV: E=McAfee;i="6700,10204,11376"; a="43281361"
-X-IronPort-AV: E=Sophos;i="6.14,256,1736841600"; d="scan'208";a="43281361"
-Received: from fmviesa008.fm.intel.com ([10.60.135.148])
- by fmvoesa111.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 17 Mar 2025 22:44:34 -0700
-X-CSE-ConnectionGUID: A6ecuG6OTUifUqxqisT1qA==
-X-CSE-MsgGUID: MCyqfzBzTq68hRyHhrCF9Q==
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org A4C0D6076B
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A4C0D6076B
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.19])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id A4C0D6076B
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 18 Mar 2025 10:39:53 +0000 (UTC)
+X-CSE-ConnectionGUID: MeLssLavS7uy8ZONJo0hjg==
+X-CSE-MsgGUID: AdMoyCzvTsG+udhvanKUXA==
+X-IronPort-AV: E=McAfee;i="6700,10204,11376"; a="43295033"
+X-IronPort-AV: E=Sophos;i="6.14,256,1736841600"; d="scan'208";a="43295033"
+Received: from fmviesa006.fm.intel.com ([10.60.135.146])
+ by orvoesa111.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 18 Mar 2025 03:39:53 -0700
+X-CSE-ConnectionGUID: j0MwY1m6QvSPiiQVsQkf/g==
+X-CSE-MsgGUID: wX3EbzFqQrqhPlKP/f5UVA==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.14,256,1736841600"; d="scan'208";a="122324625"
-Received: from estantil-desk.jf.intel.com ([10.166.241.24])
- by fmviesa008.fm.intel.com with ESMTP; 17 Mar 2025 22:44:33 -0700
-From: Emil Tantilov <emil.s.tantilov@intel.com>
+X-IronPort-AV: E=Sophos;i="6.14,256,1736841600"; d="scan'208";a="122047734"
+Received: from gk3153-dr2-r750-36946.igk.intel.com ([10.102.20.192])
+ by fmviesa006.fm.intel.com with ESMTP; 18 Mar 2025 03:39:52 -0700
+From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Mon, 17 Mar 2025 22:42:02 -0700
-Message-Id: <20250318054202.17405-1-emil.s.tantilov@intel.com>
-X-Mailer: git-send-email 2.17.2
+Cc: anthony.l.nguyen@intel.com
+Date: Tue, 18 Mar 2025 11:39:51 +0100
+Message-ID: <20250318103951.2601636-1-michal.swiatkowski@linux.intel.com>
+X-Mailer: git-send-email 2.42.0
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1742276676; x=1773812676;
- h=from:to:cc:subject:date:message-id;
- bh=1ZdTYdh9OBD8bz6WNb3r2HqcCV8AD+25uxF+8QeNH2c=;
- b=jx4P4jB1QiVKAdw5Grrg9kt7N/XcoUJ7hfxk/s972lbElw6RwaQclwGM
- efHeWCZR1zUTSJuoJe/slqcfj/iWA6rV5gIzNyrZWeorUza4v8AEhcVQb
- Tt6OgfWZkiFlISgZ9bj6mwmdho3Sqbr4K6cP3Cum3gaLWZkypImufgzoF
- ZGOlB8/ugAe04vvs5+/XOZyySPuQwhlGdfJAx1mFLU7LjJ8EXCf975t6R
- 47ioXm0JFzVTYeky+UDA01wGkFDFXuQa5BFwCCQvbGQ/SU8hOJ3QFxYeb
- ayYisW9jw8Y1hOu4PNCPOOxOBoEMscv5V9C2/DYuXFKfgV3yn3vhLkKrW
- w==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ t=1742294393; x=1773830393;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=v9loGqs5oqOSFLPJVsGTnWQYg5/NeYAjmDHJiRvYrFE=;
+ b=ZwZ1ktMoVmxqf/upnWq5HzKByTeKkxZiB+sLUPJWlT9Xs+gIHF/peazu
+ nuTp+4xiekXbivY2kttJ5jksP5M8VGDvROgDBt1bSUspcoQ+0H61mPgUi
+ eDySDF4ku1oURorLxPAe1zwV4qo3j8GvpFP1S6Pke7ErbhNd4r0K0nP+f
+ tPY1OiCBqSXe8Frt97AoeFQjPSuJDhqcIUgVPiokBrxO1QGskXwCj3+cj
+ q7gRkWlhxMc24dPfRUm8NbL19r6C0YvfJSGDBucliTMXXdeXdo8+BuyFx
+ 8M5mdjTDBYZA2NuXDXZuR307JxN5owa3nZOdWC8KD7qs34gew9K+V4pab
+ A==;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dmarc=none (p=none dis=none)
+ header.from=linux.intel.com
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=jx4P4jB1
-Subject: [Intel-wired-lan] [PATCH iwl-net v2] idpf: fix adapter NULL pointer
- dereference on reboot
+ header.s=Intel header.b=ZwZ1ktMo
+Subject: [Intel-wired-lan] [PATCH iwl-next v1] ixgbe: initialize bitmap for
+ storing MDD events
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -99,84 +103,37 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: willemb@google.com, pabeni@redhat.com, netdev@vger.kernel.org,
- yuma@redhat.com, Aleksandr.Loktionov@intel.com, edumazet@google.com,
- madhu.chittim@intel.com, anthony.l.nguyen@intel.com, horms@kernel.org,
- michal.swiatkowski@linux.intel.com, kuba@kernel.org, decot@google.com,
- davem@davemloft.net
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-With SRIOV enabled, idpf ends up calling into idpf_remove() twice.
-First via idpf_shutdown() and then again when idpf_remove() calls into
-sriov_disable(), because the VF devices use the idpf driver, hence the
-same remove routine. When that happens, it is possible for the adapter
-to be NULL from the first call to idpf_remove(), leading to a NULL
-pointer dereference.
+Uninitialized bitmap is sent to function which is only setting
+corresponding bits when MDD event occurs. Heaving random values in this
+bitmap leads to showing MDD events when there is no such events. Fix it
+by setting bitmap to all zeroes before calling handle_mdd() function.
 
-echo 1 > /sys/class/net/<netif>/device/sriov_numvfs
-reboot
-
-BUG: kernel NULL pointer dereference, address: 0000000000000020
-...
-RIP: 0010:idpf_remove+0x22/0x1f0 [idpf]
-...
-? idpf_remove+0x22/0x1f0 [idpf]
-? idpf_remove+0x1e4/0x1f0 [idpf]
-pci_device_remove+0x3f/0xb0
-device_release_driver_internal+0x19f/0x200
-pci_stop_bus_device+0x6d/0x90
-pci_stop_and_remove_bus_device+0x12/0x20
-pci_iov_remove_virtfn+0xbe/0x120
-sriov_disable+0x34/0xe0
-idpf_sriov_configure+0x58/0x140 [idpf]
-idpf_remove+0x1b9/0x1f0 [idpf]
-idpf_shutdown+0x12/0x30 [idpf]
-pci_device_shutdown+0x35/0x60
-device_shutdown+0x156/0x200
-...
-
-Replace the direct idpf_remove() call in idpf_shutdown() with
-idpf_vc_core_deinit() and idpf_deinit_dflt_mbx(), which perform
-the bulk of the cleanup, such as stopping the init task, freeing IRQs,
-destroying the vports and freeing the mailbox. This avoids the calls to
-sriov_disable() in addition to a small netdev cleanup, and destroying
-workqueues, which don't seem to be required on shutdown.
-
-Reported-by: Yuying Ma <yuma@redhat.com>
-Fixes: e850efed5e15 ("idpf: add module register and probe functionality")
-Reviewed-by: Madhu Chittim <madhu.chittim@intel.com>
-Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
+Fixes: 61cb1bcf7e2a ("ixgbe: check for MDD events")
+Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 ---
-Changelog:
-v2:
-- Updated the description to clarify the path leading up to the crash,
-  and the difference in the logic between remove and shutdown as result
-  of this change.
-
-v1:
-https://lore.kernel.org/intel-wired-lan/20250307003956.22018-1-emil.s.tantilov@intel.com/
+To be squashed with 61cb1bcf7e2a ("ixgbe: check for MDD events").
+The changes are only on dev-queue. There is a bug found by validation.
+Tony, if you prefer I can send whole series with this fix in. Up to you.
+Thanks
 ---
- drivers/net/ethernet/intel/idpf/idpf_main.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_main.c b/drivers/net/ethernet/intel/idpf/idpf_main.c
-index b6c515d14cbf..bec4a02c5373 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_main.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_main.c
-@@ -87,7 +87,11 @@ static void idpf_remove(struct pci_dev *pdev)
-  */
- static void idpf_shutdown(struct pci_dev *pdev)
- {
--	idpf_remove(pdev);
-+	struct idpf_adapter *adapter = pci_get_drvdata(pdev);
-+
-+	cancel_delayed_work_sync(&adapter->vc_event_task);
-+	idpf_vc_core_deinit(adapter);
-+	idpf_deinit_dflt_mbx(adapter);
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
+index 8a1fc7f06007..bd9a054d7d94 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
+@@ -1374,6 +1374,7 @@ bool ixgbe_check_mdd_event(struct ixgbe_adapter *adapter)
+ 		return false;
  
- 	if (system_state == SYSTEM_POWER_OFF)
- 		pci_set_power_state(pdev, PCI_D3hot);
+ 	/* Did we have a malicious event */
++	bitmap_zero(vf_bitmap, 64);
+ 	hw->mac.ops.handle_mdd(hw, vf_bitmap);
+ 
+ 	/* Log any blocked queues and release lock */
 -- 
-2.17.2
+2.42.0
 
