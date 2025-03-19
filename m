@@ -1,104 +1,96 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D5DDAC35FFF
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 19 Mar 2025 08:05:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8B481C35FFA
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 19 Mar 2025 10:19:51 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 80B076082E;
-	Wed, 19 Mar 2025 08:05:03 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 31B2D81346;
+	Wed, 19 Mar 2025 10:19:51 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ZohCvFSWjCZT; Wed, 19 Mar 2025 08:05:02 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id oRT9NFV5ZFDM; Wed, 19 Mar 2025 10:19:50 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B385760A5A
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8F90F8134E
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1742371502;
-	bh=NoHqB1e0J2a+eyddmHrSi/zln+4vTHhpsAkSDj6bkz0=;
-	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
+	s=default; t=1742379590;
+	bh=Hh3CFzpnRkrvrYwIsX7t2UZ7nGTfdesn+azK/Q0iP80=;
+	h=From:To:Cc:In-Reply-To:References:Date:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=PSF0ot7SoULqdvvNBNRt/cGks/jNy/5zA817AqRgFmKCK6nB2PXne7LzwdP4jzDWS
-	 918uNPu8zKCsvg14oXFmP8IGUcRm+M/BHWSfl1P7B/yOTf8YpkwGu3CXEPw3Z4ZHIc
-	 44AM/3CxFnxK5bnT5n9ok/wlHIkeEmscSPrHACv93qiy525pf0t/gf3L2MoYCxg7yQ
-	 ao4IFpCow4evrJ/iaJ9z6wroG5xvcFCuZQy+ohGLOQktdrZj3dw1E4EJ63Xw16MORD
-	 4xKOcxYo2Rk/1YSIdDT6A9ovyXMnSxGmHgA3RU2tq+B5ekDnhXbbGRc2M4z2fkkNO8
-	 WtslLM/tqPiBA==
+	b=7zEJECbR/H8KzgTezJj0Igf69hvQj8aXERc0THERlFtSfmESnt4Crm/Ca8srK9Yke
+	 PlTpasON/gS9M6fKE949u9bwnvXKCt5RDYmt2Tfmj0clYpjp2SSce+xFFWzAfQPEYr
+	 DA2aUonwIqTLgCnoxBpEjNJh1eArr+oHTlLVDk1Lqu4B3AdBtdbhD3i4l9ocSZLRTU
+	 JuEU5jH2eSXglRE1klcWq2yZZQRfAtE+CVfJ04bW/gXrJ/b2U3tziIq5J6Ja5KTjgi
+	 ME2NmjfvPwYOSypQX0LK5TpBLOV30KIs49O+DeYyAc98KkPqzHBouVF8XsiztkjcY4
+	 5jHc1KX/S13KA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id B385760A5A;
-	Wed, 19 Mar 2025 08:05:02 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id ED70BCD
- for <intel-wired-lan@lists.osuosl.org>; Wed, 19 Mar 2025 08:05:00 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 8F90F8134E;
+	Wed, 19 Mar 2025 10:19:50 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 511691A7
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 19 Mar 2025 10:19:49 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id CC6AC40283
- for <intel-wired-lan@lists.osuosl.org>; Wed, 19 Mar 2025 08:05:00 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 31CD34018A
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 19 Mar 2025 10:19:49 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id PUstNWKh9kPj for <intel-wired-lan@lists.osuosl.org>;
- Wed, 19 Mar 2025 08:05:00 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org;
- envelope-from=leon@kernel.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org CFF6740251
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org CFF6740251
-Received: from dfw.source.kernel.org (dfw.source.kernel.org
- [IPv6:2604:1380:4641:c500::1])
- by smtp2.osuosl.org (Postfix) with ESMTPS id CFF6740251
- for <intel-wired-lan@lists.osuosl.org>; Wed, 19 Mar 2025 08:04:59 +0000 (UTC)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by dfw.source.kernel.org (Postfix) with ESMTP id 8425E5C55D2;
- Wed, 19 Mar 2025 08:02:41 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 75431C4CEEA;
- Wed, 19 Mar 2025 08:04:57 +0000 (UTC)
-Date: Wed, 19 Mar 2025 10:04:53 +0200
-From: Leon Romanovsky <leon@kernel.org>
-To: "Samudrala, Sridhar" <sridhar.samudrala@intel.com>,
- Jason Gunthorpe <jgg@nvidia.com>
-Cc: "Ertman, David M" <david.m.ertman@intel.com>,
- Jakub Kicinski <kuba@kernel.org>,
- "Nikolova, Tatyana E" <tatyana.e.nikolova@intel.com>,
- "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
- "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>
-Message-ID: <20250319080453.GD1322339@unreal>
-References: <20250226185022.GM53094@unreal>
- <IA1PR11MB6194C8F265D13FE65EA006C2DDC22@IA1PR11MB6194.namprd11.prod.outlook.com>
- <20250302082623.GN53094@unreal>
- <07e75573-9fd0-4de1-ac44-1f6a5461a6b8@intel.com>
- <20250314181230.GP1322339@unreal>
- <8b4868dd-f615-4049-a885-f2f95a3e7a54@intel.com>
- <20250317115728.GT1322339@unreal>
- <dc96e73c-391a-4d54-84db-ece96939d45d@intel.com>
- <20250318172026.GA9311@nvidia.com>
- <2e29a3f3-1c74-461a-a7ae-efe6c429fa1f@intel.com>
+ id KMkaRg2F2hJ3 for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 19 Mar 2025 10:19:48 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=193.142.43.55;
+ helo=galois.linutronix.de; envelope-from=kurt@linutronix.de;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 1C5FC40109
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 1C5FC40109
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 1C5FC40109
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 19 Mar 2025 10:19:47 +0000 (UTC)
+From: Kurt Kanzenbach <kurt@linutronix.de>
+To: Rui Salvaterra <rsalvaterra@gmail.com>, anthony.l.nguyen@intel.com,
+ przemyslaw.kitszel@intel.com
+Cc: edumazet@google.com, kuba@kernel.org, intel-wired-lan@lists.osuosl.org,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org, Rui Salvaterra
+ <rsalvaterra@gmail.com>
+In-Reply-To: <20250313093615.8037-1-rsalvaterra@gmail.com>
+References: <20250313093615.8037-1-rsalvaterra@gmail.com>
+Date: Wed, 19 Mar 2025 11:19:41 +0100
+Message-ID: <87sen9qq4i.fsf@kurt.kurt.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2e29a3f3-1c74-461a-a7ae-efe6c429fa1f@intel.com>
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1742371498;
- bh=5c9Wsoq1MqSD3TR0ypeiF676vfndF7v+iU5L7FrV9Fw=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=A9bN8+Po8pf/YBZL3DmN75kiDB/zybI3lKt4MKgau/Jaw95AJ0MC0ZyPns5+jy04i
- 3xVLjpQrS4QHwzTdeTF7nrRX+O5/yU6dT+OrXk6jHf6U5QzjJi6C8DcjqjelKROV06
- VnzJfdNEKfvAqYjpKKnj0LtYxIkg6iv41m/Gj+GownLOdoO3QCkG8qPMwUYVzyNRn7
- 6eTrpLkAYq9D0FJI15Lj9g2K9Gx7SlYcB8zj0lQSyxjxKx7xjR8CLPOUo32FbGDrrr
- sDdiN7YFLrpYigm/nGvynKUDU82fNJf0JMv7167anBCguZx90ND2PniDOJ9/ExmjaM
- SGRqDtK4fNrpg==
+Content-Type: multipart/signed; boundary="=-=-=";
+ micalg=pgp-sha512; protocol="application/pgp-signature"
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=linutronix.de; s=2020; t=1742379583;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ in-reply-to:in-reply-to:references:references;
+ bh=Hh3CFzpnRkrvrYwIsX7t2UZ7nGTfdesn+azK/Q0iP80=;
+ b=FkhFvJf07CxvmLoYuAMhCx8uq+jrRxXM+E27yceHFUFho4yC84glrX8Eyxd/1Gr2oKJRFe
+ SFJ0e+ytQL+/9mAIIFQNLt0eKHop5sniH7t8KKbAHTo5EnaFVC84yInLMF7QKt2GarTeLI
+ KhyOuIB4boe7W7KIPCt4+hN9+srXJdgU3pNhlA9sCDzbPY7fbLDsgYLfkwbC/B28xlOBBO
+ m0JY/bjympXqVK94uJ2Va6hTB207fGQDZb8PGDQwnwMtf/rU3wFCz7EarLmDj9XEHISnlB
+ KoTZiBI4xiNXl4jhJWXiZAsJJZhL9K6htr0VS+XQiOZfVDYaNVe6veeeIIb8iw==
+X-Mailman-Original-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
+ d=linutronix.de; s=2020e; t=1742379583;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ in-reply-to:in-reply-to:references:references;
+ bh=Hh3CFzpnRkrvrYwIsX7t2UZ7nGTfdesn+azK/Q0iP80=;
+ b=JJNn6Lwp5ImN5DrNu9vn/EN5tY0mExwVy/nOITMZxlHwbMJ4jCPLph0JlRf2sZn7Hz3urm
+ nItPKYwBtMlb1dDQ==
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dmarc=pass (p=quarantine dis=none)
- header.from=kernel.org
+ dmarc=pass (p=none dis=none)
+ header.from=linutronix.de
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=A9bN8+Po
-Subject: Re: [Intel-wired-lan] [iwl-next v4 1/1] iidc/ice/irdma: Update IDC
- to support multiple consumers
+ dkim=pass (2048-bit key, unprotected) header.d=linutronix.de
+ header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=FkhFvJf0; 
+ dkim=pass header.d=linutronix.de header.i=@linutronix.de
+ header.a=ed25519-sha256 header.s=2020e header.b=JJNn6Lwp
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next] igc: enable HW vlan tag
+ insertion/stripping by default
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -114,53 +106,44 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Tue, Mar 18, 2025 at 12:45:48PM -0700, Samudrala, Sridhar wrote:
-> 
-> 
-> On 3/18/2025 10:20 AM, Jason Gunthorpe wrote:
-> > On Tue, Mar 18, 2025 at 10:01:36AM -0700, Samudrala, Sridhar wrote:
-> > 
-> > > Yes. Today irdma uses exported symbols from i40e and ice and loading irdma
-> > > results in both modules to be loaded even when only type of NIC is present
-> > > on a system. This series is trying to remove that dependency by using
-> > > callbacks.
-> > 
-> > If you really have two different core drivers that can provide the
-> > same API then I think you are stuck with function pointers :\
-> > 
-> > It is really weird though, why are their two core drivers that can
-> > provide the same API? Is this because intel keeps rewriting their
-> > driver stack every few years?
-> 
-> This is a known issue due to HW/FW interface changes across multiple
-> generations of the NICs forcing us to go with separate core drivers.
-> 
-> We are working with HW/FW teams to avoid this in future and going forward we
-> expect to have idpf/ixd as the 2 drivers (idpf providing the data path
-> functionality and ixd as the control/data/switchdev port-rep driver) for all
-> our future FNICs/IPUs.
-> 
-> Leon, Could you approve the callbacks approach considering that irdma needs
-> to support multiple intel nic core drivers. We would really appreciate it.
+--=-=-=
+Content-Type: text/plain
 
-I'm not approving or denying anything. I just expressed my view on the
-idea to reinvent wheel. It is not HW bug which prevents from you to use
-Intel HW, but some bad architecture decision. This decision leads to
-extra memory waste and nothing more.
+On Thu Mar 13 2025, Rui Salvaterra wrote:
+> This is enabled by default in other Intel drivers I've checked (e1000, e1000e,
+> iavf, igb and ice). Fixes an out-of-the-box performance issue when running
+> OpenWrt on typical mini-PCs with igc-supported Ethernet controllers and 802.1Q
+> VLAN configurations, as ethtool isn't part of the default packages and sane
+> defaults are expected.
+>
+> In my specific case, with an Intel N100-based machine with four I226-V Ethernet
+> controllers, my upload performance increased from under 30 Mb/s to the expected
+> ~1 Gb/s.
+>
+> Signed-off-by: Rui Salvaterra <rsalvaterra@gmail.com>
 
-If I remember correctly, the use of "i40e and ice" at the same time is an outcome
-of Intel's decision to keep (and rename) old driver which supported iWARP only
-to support both iWARP and RoCE.
+Great, thanks a lot.
 
-Even then, that architecture decision wasn't well received.
+Reviewed-by: Kurt Kanzenbach <kurt@linutronix.de>
 
-RDMA subsystem has another maintainer, who can and should have different
-opinions from me, you can try to convince him that function pointers is
-the right approach here. I think that it is not, extra waste of memory
-is a small price to pay for such architecture decision.
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
 
-Thanks
+-----BEGIN PGP SIGNATURE-----
 
-> 
-> -SridharW
-> 
+iQJHBAEBCgAxFiEEvLm/ssjDfdPf21mSwZPR8qpGc4IFAmfamj0THGt1cnRAbGlu
+dXRyb25peC5kZQAKCRDBk9HyqkZzguCbD/sFqhOTwB8d1HDdtnVFlTJ4+lXvCQrD
+8r3VMR2I8A3OLOxgYx+JJLuOYlRU4ETbHw6FmRexWICMmMgv3xfHsEHnGolUek8D
+e4sGPF/clFx74OnUi7X9g+22iW3lTFFd6x3N9g/384PP+NUWwvsGN2B3+l/cRTDB
+693NKeYHa9ZggsoBS6HvMy6HhDf+p1QwuNa3aRhTDqiyp3HcEdujSgVZ35j8aXYC
+8425Qs/CF/OeNwCXuD4xDqnI+3hIDSq3atRgTyhc9ThKIR2v5vgRAitqQHJUVx7K
+o10jiTBP6BwCTdM5JQRrbzXoEx+gdrk7fIP/p7dF6T/xmTrr8PuaA/EUnM/IYopj
+zHAuCwwcVesZUVkV3mUjD6NVDZ2JyhuUOVuE0vdtu3QA42lBjU5FVq6BacaAovK4
+lH8yEHyB9cnTZoT3qiJsI69oNcTo6pH3ysJvU44y/G3drTzaDe3pxI1VDLGV5jPH
+/8fMM8OZ9NO9/UHKC4hePLUmpEE867MmQUGbBdnK6Ck03aLX1Tb/7puUJ1vlNS8U
+y+j7h8YXqP0Lb+AvaH325ZTSXlluIxsAR8O+e9RARdgzd+cY/s77w7coYfsED6ST
+A7Ewyzc/Era0kHlN7z+hCgYEDqZgqB/b0Pr9axCkl+xFXVPXA8gVgFPfq2n+prO5
+ROj5ObBGWJ1EJg==
+=GTVq
+-----END PGP SIGNATURE-----
+--=-=-=--
