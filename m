@@ -1,96 +1,120 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8B481C35FFA
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 19 Mar 2025 10:19:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 48C15C35FFF
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 19 Mar 2025 10:26:53 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 31B2D81346;
-	Wed, 19 Mar 2025 10:19:51 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id EC634407A5;
+	Wed, 19 Mar 2025 10:26:52 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id oRT9NFV5ZFDM; Wed, 19 Mar 2025 10:19:50 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id FpmNsO8o1RAV; Wed, 19 Mar 2025 10:26:51 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8F90F8134E
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C408F407BB
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1742379590;
-	bh=Hh3CFzpnRkrvrYwIsX7t2UZ7nGTfdesn+azK/Q0iP80=;
-	h=From:To:Cc:In-Reply-To:References:Date:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=7zEJECbR/H8KzgTezJj0Igf69hvQj8aXERc0THERlFtSfmESnt4Crm/Ca8srK9Yke
-	 PlTpasON/gS9M6fKE949u9bwnvXKCt5RDYmt2Tfmj0clYpjp2SSce+xFFWzAfQPEYr
-	 DA2aUonwIqTLgCnoxBpEjNJh1eArr+oHTlLVDk1Lqu4B3AdBtdbhD3i4l9ocSZLRTU
-	 JuEU5jH2eSXglRE1klcWq2yZZQRfAtE+CVfJ04bW/gXrJ/b2U3tziIq5J6Ja5KTjgi
-	 ME2NmjfvPwYOSypQX0LK5TpBLOV30KIs49O+DeYyAc98KkPqzHBouVF8XsiztkjcY4
-	 5jHc1KX/S13KA==
+	s=default; t=1742380011;
+	bh=2A1JeoOMAoYrZ6soKOlYO6lqXRk+i4Kp3d88e7o1oJ0=;
+	h=From:Date:To:Cc:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=I6cn+jtlZmMfWCWUFMSguoILmoRNI7/MG8xFWc8uqvaNPBBnkyH7nnP3Uh2XrXAjG
+	 hEHTABghn6wBK/uB9/t7J5CX85iBAnk95FI+p8pL+HS9J+Jb739vsstvXvDlvHdRAW
+	 8RWF79JgESjUdNME3aYAxFW8X1QoNbPwG0PqJ4k9ZzS6X427dASuH7lM9n0kRNqvpd
+	 uYCjKs+K3TNE9du2Plv4+yBIC0QChuaMEtgMO9PnkgfA6ekWEHiOeUCKnwUpGkCKXc
+	 oWtKfDMxyhcar26iIgtpyG0hTAGSaJq5itcjIpzx0iCThIwYhbBHP4Jxm+d7/nRQyv
+	 U3izt2M4GUC8Q==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 8F90F8134E;
-	Wed, 19 Mar 2025 10:19:50 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 511691A7
- for <intel-wired-lan@lists.osuosl.org>; Wed, 19 Mar 2025 10:19:49 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id C408F407BB;
+	Wed, 19 Mar 2025 10:26:51 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 6D67FCD
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 19 Mar 2025 10:26:50 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 31CD34018A
- for <intel-wired-lan@lists.osuosl.org>; Wed, 19 Mar 2025 10:19:49 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 4FF05407C9
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 19 Mar 2025 10:26:50 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id KMkaRg2F2hJ3 for <intel-wired-lan@lists.osuosl.org>;
- Wed, 19 Mar 2025 10:19:48 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id ub70Tm5LsGS0 for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 19 Mar 2025 10:26:49 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=193.142.43.55;
  helo=galois.linutronix.de; envelope-from=kurt@linutronix.de;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 1C5FC40109
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 1C5FC40109
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 1D4F7407A5
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1D4F7407A5
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 1C5FC40109
- for <intel-wired-lan@lists.osuosl.org>; Wed, 19 Mar 2025 10:19:47 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 1D4F7407A5
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 19 Mar 2025 10:26:49 +0000 (UTC)
 From: Kurt Kanzenbach <kurt@linutronix.de>
-To: Rui Salvaterra <rsalvaterra@gmail.com>, anthony.l.nguyen@intel.com,
- przemyslaw.kitszel@intel.com
-Cc: edumazet@google.com, kuba@kernel.org, intel-wired-lan@lists.osuosl.org,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org, Rui Salvaterra
- <rsalvaterra@gmail.com>
-In-Reply-To: <20250313093615.8037-1-rsalvaterra@gmail.com>
-References: <20250313093615.8037-1-rsalvaterra@gmail.com>
-Date: Wed, 19 Mar 2025 11:19:41 +0100
-Message-ID: <87sen9qq4i.fsf@kurt.kurt.home>
+Date: Wed, 19 Mar 2025 11:26:38 +0100
+Message-Id: <20250319-igb_irq-v3-0-b9ee902143dd@linutronix.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
- micalg=pgp-sha512; protocol="application/pgp-signature"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAN6b2mcC/12OQQ6CMBBFr0JmbU2pRcSV9zDG0HaASUjRFiuGc
+ HdrTdS4/Pnz3p8ZPDpCD/tsBoeBPA02hs0qA93VtkVGJmYQXBRc8C2jVp3JXVlT1NJIg0rwEuL
+ 1xWFDUzIdge49sziNcIpNR34c3CNNhDz1b1vOP7aQM86UQV7utFGVaQ492dvoBkvT2mDyBPHLl
+ l9WRFZq9fpPVrUW/+yyLE+XNOC06AAAAA==
+X-Change-ID: 20250206-igb_irq-f5a4d4deb207
+To: Tony Nguyen <anthony.l.nguyen@intel.com>, 
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Cc: Andrew Lunn <andrew+netdev@lunn.ch>, 
+ "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
+ Sebastian Andrzej Siewior <bigeasy@linutronix.de>, 
+ Joe Damato <jdamato@fastly.com>, 
+ Gerhard Engleder <gerhard@engleder-embedded.com>, 
+ intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org, 
+ Kurt Kanzenbach <kurt@linutronix.de>, Rinitha S <sx.rinitha@intel.com>, 
+ Aleksandr Loktionov <aleksandr.loktionov@intel.com>, 
+ Sweta Kumari <sweta.kumari@intel.com>
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1888; i=kurt@linutronix.de;
+ h=from:subject:message-id; bh=BDUVO6GW7S6fdve/NnuJ4AEcsShUXzp/bOYEKxvDit8=;
+ b=owEBbQKS/ZANAwAKAcGT0fKqRnOCAcsmYgBn2pvk+9rkL8hFeSRk1pcp99I0CaUrOal5F1ih3
+ BlgV6X0a8OJAjMEAAEKAB0WIQS8ub+yyMN909/bWZLBk9HyqkZzggUCZ9qb5AAKCRDBk9HyqkZz
+ grmfD/9S7GUByiyPNqD+QUhBJH9BCvxb/Hf6cxOoYgAAeEh89be2DNEory3f1n5JMaqwIvpRMvn
+ 1IDfdAJPQDEAj9Z13PQj4myfeCtPCdN5U3J2WK2/a2HIQoNT14WuSzJUTuLVCUZkMloawcSuCFB
+ onh/sUok9W9J+UnBXdoeYczxK8c1zW8q13dvkXG8PFLfWP3cYmssYralkCFesaxOxqbM9PbcShd
+ o+MoneRziUKIBY2TeCm2bpfR/2kejttFdQGoM01TQE3crLxtrE6tYsosaiCgx1HY5QH01r4437T
+ JFnnBuUnTZVbO9lG+cjh/sM83AFTy4rL0rf/3ZngXPdN8vV1TJfFoeyRi3AY5mRb77TuGcdoTL2
+ uq3ClapzM9s9Q+fOaQrn4CEtrVjLmN22Nu/yZAYPPdh24/fMys1sagbPR+x95ulEPvSTLs7vzm2
+ Soyj7xTnBOF2P085lcdz6sOrvvNefQF3j+JvQv5aAQzq+Z5PzM4IFnQT1PARaxjNizYz95cwefV
+ A8iEQ2wIYlgrdBSb++7qXhRmvbiH7zZNorsnpx217mlcCXGQTwqgC7hhFcaD7KVKhSQsOymVtff
+ LtQLJ26gKeE1WGuHcB+DRYIPbPfoEEWXvMMLEbmd03DzNCo/zYodRFvuO6PJGLgI9NZ3a/cz57e
+ +ahhaI+YluvQw1w==
+X-Developer-Key: i=kurt@linutronix.de; a=openpgp;
+ fpr=BCB9BFB2C8C37DD3DFDB5992C193D1F2AA467382
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=linutronix.de; s=2020; t=1742379583;
+ d=linutronix.de; s=2020; t=1742380007;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=Hh3CFzpnRkrvrYwIsX7t2UZ7nGTfdesn+azK/Q0iP80=;
- b=FkhFvJf07CxvmLoYuAMhCx8uq+jrRxXM+E27yceHFUFho4yC84glrX8Eyxd/1Gr2oKJRFe
- SFJ0e+ytQL+/9mAIIFQNLt0eKHop5sniH7t8KKbAHTo5EnaFVC84yInLMF7QKt2GarTeLI
- KhyOuIB4boe7W7KIPCt4+hN9+srXJdgU3pNhlA9sCDzbPY7fbLDsgYLfkwbC/B28xlOBBO
- m0JY/bjympXqVK94uJ2Va6hTB207fGQDZb8PGDQwnwMtf/rU3wFCz7EarLmDj9XEHISnlB
- KoTZiBI4xiNXl4jhJWXiZAsJJZhL9K6htr0VS+XQiOZfVDYaNVe6veeeIIb8iw==
+ content-transfer-encoding:content-transfer-encoding;
+ bh=2A1JeoOMAoYrZ6soKOlYO6lqXRk+i4Kp3d88e7o1oJ0=;
+ b=iCTsjA7vnu4uWXKyJ3UbrKZjSCC0UUkCo1uqk2cw5rv8qI+E2QZL5e2fU/XYvxDHjTE+X8
+ pVHWoEL4ORz2QBi6m3W5hIOH6bXlMXsKf5XtvsOSQEigrB8kBiR6lkpV+W+ibe76vnSN32
+ nOebf4h0AoMe72LJ5aENqXXwTJpaC58XMw7pEU+FvjmzEHSOa673i+gJ9uIn1f7BM7I6G3
+ cg2J+GsNlpE+UCrJgQ4WJioYp/oQ3kMVvthwg2L3osq7bDYifUyhB87TRl3u5NRO33l6DM
+ iqSkAHP5tW8qBo3fkWJSF2P/oN2AKPeHd1LzYR1sL7tXCypYIhEmEHXKFVbE3g==
 X-Mailman-Original-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
- d=linutronix.de; s=2020e; t=1742379583;
+ d=linutronix.de; s=2020e; t=1742380007;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=Hh3CFzpnRkrvrYwIsX7t2UZ7nGTfdesn+azK/Q0iP80=;
- b=JJNn6Lwp5ImN5DrNu9vn/EN5tY0mExwVy/nOITMZxlHwbMJ4jCPLph0JlRf2sZn7Hz3urm
- nItPKYwBtMlb1dDQ==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ content-transfer-encoding:content-transfer-encoding;
+ bh=2A1JeoOMAoYrZ6soKOlYO6lqXRk+i4Kp3d88e7o1oJ0=;
+ b=m08hHwpveet5kl8+cqfCVKXefwtDyGgBCygy7gw6VfYwhgbjqCCcHAyMZr2J659VJkH727
+ 6wJWnxRAqjBObjDg==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=linutronix.de
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key, unprotected) header.d=linutronix.de
- header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=FkhFvJf0; 
+ header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=iCTsjA7v; 
  dkim=pass header.d=linutronix.de header.i=@linutronix.de
- header.a=ed25519-sha256 header.s=2020e header.b=JJNn6Lwp
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next] igc: enable HW vlan tag
- insertion/stripping by default
+ header.a=ed25519-sha256 header.s=2020e header.b=m08hHwpv
+Subject: [Intel-wired-lan] [PATCH iwl-next v3 0/4] igb: XDP/ZC follow up
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -106,44 +130,56 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
---=-=-=
-Content-Type: text/plain
+This is a follow up for the igb XDP/ZC implementation. The first three 
+patches link the IRQs and queues to NAPI instances. This is required to 
+bring back the XDP/ZC busy polling support. The last patch removes 
+undesired IRQs (injected via igb watchdog) while busy polling with 
+napi_defer_hard_irqs and gro_flush_timeout set.
 
-On Thu Mar 13 2025, Rui Salvaterra wrote:
-> This is enabled by default in other Intel drivers I've checked (e1000, e1000e,
-> iavf, igb and ice). Fixes an out-of-the-box performance issue when running
-> OpenWrt on typical mini-PCs with igc-supported Ethernet controllers and 802.1Q
-> VLAN configurations, as ethtool isn't part of the default packages and sane
-> defaults are expected.
->
-> In my specific case, with an Intel N100-based machine with four I226-V Ethernet
-> controllers, my upload performance increased from under 30 Mb/s to the expected
-> ~1 Gb/s.
->
-> Signed-off-by: Rui Salvaterra <rsalvaterra@gmail.com>
+I've dropped the tags for patch #2. Please, review and test again.
 
-Great, thanks a lot.
+Test output:
+|apl1:~/linux# uname -a
+|Linux apl1 6.14.0-rc6+ #1 SMP PREEMPT_RT Wed Mar 19 08:31:00 CET 2025 x86_64 GNU/Linux
+|apl1:~/linux# NETIF=enp2s0 ./tools/testing/selftests/drivers/net/queues.py
+|TAP version 13
+|1..4
+|ok 1 queues.get_queues
+|ok 2 queues.addremove_queues
+|ok 3 queues.check_down
+|ok 4 queues.check_xsk
+|# Totals: pass:4 fail:0 xfail:0 xpass:0 skip:0 error:0
 
-Reviewed-by: Kurt Kanzenbach <kurt@linutronix.de>
+Signed-off-by: Kurt Kanzenbach <kurt@linutronix.de>
+---
+Changes in v3:
+- Drop igb_set_queue_napi() in xsk code (Joe & Tony)
+- Add tags
+- Rebase to net-next
+- Link to v2: https://lore.kernel.org/r/20250217-igb_irq-v2-0-4cb502049ac2@linutronix.de
 
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
+Changes in v2:
+- Take RTNL lock in PCI error handlers (Joe)
+- Fix typo in commit message (Gerhard)
+- Use netif_napi_add_config() (Joe)
+- Link to v1: https://lore.kernel.org/r/20250210-igb_irq-v1-0-bde078cdb9df@linutronix.de
 
------BEGIN PGP SIGNATURE-----
+---
+Kurt Kanzenbach (4):
+      igb: Link IRQs to NAPI instances
+      igb: Link queues to NAPI instances
+      igb: Add support for persistent NAPI config
+      igb: Get rid of spurious interrupts
 
-iQJHBAEBCgAxFiEEvLm/ssjDfdPf21mSwZPR8qpGc4IFAmfamj0THGt1cnRAbGlu
-dXRyb25peC5kZQAKCRDBk9HyqkZzguCbD/sFqhOTwB8d1HDdtnVFlTJ4+lXvCQrD
-8r3VMR2I8A3OLOxgYx+JJLuOYlRU4ETbHw6FmRexWICMmMgv3xfHsEHnGolUek8D
-e4sGPF/clFx74OnUi7X9g+22iW3lTFFd6x3N9g/384PP+NUWwvsGN2B3+l/cRTDB
-693NKeYHa9ZggsoBS6HvMy6HhDf+p1QwuNa3aRhTDqiyp3HcEdujSgVZ35j8aXYC
-8425Qs/CF/OeNwCXuD4xDqnI+3hIDSq3atRgTyhc9ThKIR2v5vgRAitqQHJUVx7K
-o10jiTBP6BwCTdM5JQRrbzXoEx+gdrk7fIP/p7dF6T/xmTrr8PuaA/EUnM/IYopj
-zHAuCwwcVesZUVkV3mUjD6NVDZ2JyhuUOVuE0vdtu3QA42lBjU5FVq6BacaAovK4
-lH8yEHyB9cnTZoT3qiJsI69oNcTo6pH3ysJvU44y/G3drTzaDe3pxI1VDLGV5jPH
-/8fMM8OZ9NO9/UHKC4hePLUmpEE867MmQUGbBdnK6Ck03aLX1Tb/7puUJ1vlNS8U
-y+j7h8YXqP0Lb+AvaH325ZTSXlluIxsAR8O+e9RARdgzd+cY/s77w7coYfsED6ST
-A7Ewyzc/Era0kHlN7z+hCgYEDqZgqB/b0Pr9axCkl+xFXVPXA8gVgFPfq2n+prO5
-ROj5ObBGWJ1EJg==
-=GTVq
------END PGP SIGNATURE-----
---=-=-=--
+ drivers/net/ethernet/intel/igb/igb.h      |  5 +-
+ drivers/net/ethernet/intel/igb/igb_main.c | 78 +++++++++++++++++++++++++++----
+ drivers/net/ethernet/intel/igb/igb_xsk.c  |  1 +
+ 3 files changed, 73 insertions(+), 11 deletions(-)
+---
+base-commit: 23c9ff659140f97d44bf6fb59f89526a168f2b86
+change-id: 20250206-igb_irq-f5a4d4deb207
+
+Best regards,
+-- 
+Kurt Kanzenbach <kurt@linutronix.de>
+
