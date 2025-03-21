@@ -1,118 +1,100 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 32F63C36001
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 21 Mar 2025 13:53:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 43BC8C36000
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 21 Mar 2025 15:14:18 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id EC9A482D17;
-	Fri, 21 Mar 2025 13:53:03 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id D9E2C61AD9;
+	Fri, 21 Mar 2025 15:14:17 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id VQJzewRkERAj; Fri, 21 Mar 2025 15:14:16 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 55F566064E
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1742570056;
+	bh=c+ITrPeVVbQt9IO6ieuSmpcic6z2qVf9Qr4fc+B/OA8=;
+	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=Y6o9ZX5sl3vb8dPYYO2x/1eno1sK2gEtoAdVFV7j8jgYMj/v7c4ChxUp5bw+6KGHs
+	 Zx+DoGkLGCftUFGctTLTaPTEo9BNcMFlfp2jbNKhY/ToWzSIC8IYsHdTPeZHQOMiVz
+	 k5nW2rN7Vbf87CVQI7ygCSQi5DBcUdLNuV1gZSsLMf/2EC8vGqRjnMhsRJVKfLZQ6P
+	 aC6NziMWcEHaypbEXgAvuIoXyymcZxipyOwNaVyfZx7lr8KydSHWQAke8JXjxlLn9K
+	 q+T8Pk9wht90MDY8r6SScXw4M/ofSisv1obMNSHbCZLOphqKv6jMj5gMUBwDDDrP65
+	 SS261RiwuM4xw==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp3.osuosl.org (Postfix) with ESMTP id 55F566064E;
+	Fri, 21 Mar 2025 15:14:16 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 01A6312F
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Mar 2025 15:14:14 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp1.osuosl.org (Postfix) with ESMTP id DC4238413A
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Mar 2025 15:14:13 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id UzoHuigo7Hhg; Fri, 21 Mar 2025 13:53:02 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org ADF6683FBD
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1742565182;
-	bh=+TwLPL7+wu7qtFoyl7UjkKjJVR4f77AtlojDOBKhpHg=;
-	h=From:Date:References:In-Reply-To:To:Cc:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=XGkqbMlDrGFeYUhODwc4YRrUHk0OGxdlhGgbIsZ0z+fgen4gvChucxz0Rq1cxAu1L
-	 sivWSFDUp/plCzxC+p7UEH8wjtE7WL3nUtklWRRAcsqk6qX6MJO3Ltb9WSTK0Cxq35
-	 hKJfRO60N1i2EpzKLYgR+p72P1Kl87YQ8eMDaEDsa4j4Dhq6aQNZzuYHND1nsSa3xV
-	 usPR+lnl/aGluEsRS7yxI1Dub7Ivl8LfZl6ruhbmYrFtm8DV6IFwBDrfBcv7qptYBG
-	 ybp9gqjjaRCw26bPCXVrOvTVGKJ96/LNdQaH/TC8UAXA4ruNStxyg+EEkRv8MlO26j
-	 kVAjLASlfaK6A==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id ADF6683FBD;
-	Fri, 21 Mar 2025 13:53:02 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 511FD12F
- for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Mar 2025 13:53:01 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 433FF404EF
- for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Mar 2025 13:53:01 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id wcCkYq3NvbRf for <intel-wired-lan@lists.osuosl.org>;
- Fri, 21 Mar 2025 13:53:00 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=193.142.43.55;
- helo=galois.linutronix.de; envelope-from=kurt@linutronix.de;
+ id 7oIaCP6CBkJ0 for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 21 Mar 2025 15:14:13 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.14;
+ helo=mgamail.intel.com; envelope-from=michal.kubiak@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 537CA4011C
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 537CA4011C
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 537CA4011C
- for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Mar 2025 13:53:00 +0000 (UTC)
-From: Kurt Kanzenbach <kurt@linutronix.de>
-Date: Fri, 21 Mar 2025 14:52:38 +0100
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org E6BA780AD9
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E6BA780AD9
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.14])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id E6BA780AD9
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Mar 2025 15:14:12 +0000 (UTC)
+X-CSE-ConnectionGUID: EZNIkzq3TXSWQwGRZkjHrg==
+X-CSE-MsgGUID: xf9GmO9rT7Wu1P+Dg+irTQ==
+X-IronPort-AV: E=McAfee;i="6700,10204,11380"; a="44028838"
+X-IronPort-AV: E=Sophos;i="6.14,264,1736841600"; d="scan'208";a="44028838"
+Received: from fmviesa002.fm.intel.com ([10.60.135.142])
+ by fmvoesa108.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 21 Mar 2025 08:14:12 -0700
+X-CSE-ConnectionGUID: M/h8JtarQbKBApoGkZTCLQ==
+X-CSE-MsgGUID: lXNltst2QjCvMZjoAtc8BQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.14,264,1736841600"; d="scan'208";a="146646971"
+Received: from gk3153-pr4-x299-22869.igk.intel.com (HELO
+ localhost.igk.intel.com) ([10.102.21.130])
+ by fmviesa002-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 21 Mar 2025 08:14:10 -0700
+From: Michal Kubiak <michal.kubiak@intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Cc: maciej.fijalkowski@intel.com, netdev@vger.kernel.org,
+ przemyslaw.kitszel@intel.com, Michal Kubiak <michal.kubiak@intel.com>,
+ Michal Swiatkowski <michal.swiatkowski@intel.com>
+Date: Fri, 21 Mar 2025 16:13:57 +0100
+Message-Id: <20250321151357.28540-1-michal.kubiak@intel.com>
+X-Mailer: git-send-email 2.33.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20250321-igc_mqprio_tx_mode-v4-1-4571abb6714e@linutronix.de>
-References: <20250321-igc_mqprio_tx_mode-v4-0-4571abb6714e@linutronix.de>
-In-Reply-To: <20250321-igc_mqprio_tx_mode-v4-0-4571abb6714e@linutronix.de>
-To: Tony Nguyen <anthony.l.nguyen@intel.com>, 
- Przemek Kitszel <przemyslaw.kitszel@intel.com>, 
- Faizal Rahim <faizal.abdul.rahim@linux.intel.com>
-Cc: Andrew Lunn <andrew+netdev@lunn.ch>, 
- "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
- Sebastian Andrzej Siewior <bigeasy@linutronix.de>, 
- Simon Horman <horms@kernel.org>, intel-wired-lan@lists.osuosl.org, 
- netdev@vger.kernel.org, Kurt Kanzenbach <kurt@linutronix.de>
-X-Developer-Signature: v=1; a=openpgp-sha256; l=3188; i=kurt@linutronix.de;
- h=from:subject:message-id; bh=Mi0rryupyIg+Ek+caxe+dUWD65hl0wPxeJInFp2E39g=;
- b=owEBbQKS/ZANAwAKAcGT0fKqRnOCAcsmYgBn3W82Srb2yvsW2qVbZOXOh6fo+xxGhME4zlDjR
- 9XngiFbbNWJAjMEAAEKAB0WIQS8ub+yyMN909/bWZLBk9HyqkZzggUCZ91vNgAKCRDBk9HyqkZz
- ggu1D/9F4USsSAQ4W9TYb88+dOw+NcpCv9xfJqWTNn23HrfKg2eEDDp6KO05Akk9HdHYc1kNbVG
- pp6l8Q4klOpVZgrV9j2fjzsj9YtqSBP0o/IkqaiQNeg2QRVxFO/oGi9c/eQChlTgunhvCRS40jZ
- /Q2Z2+deBJfqBRko/isuSnpYgcc0Sa0MBwT2TuF62Yq7siUzJVm4ErnrCqIldw+61kTMmFEYiar
- YOa08EzJQdqStEllm89SWoHCOvVE9cWA19RdbwTKX1dBaiaajYnZu7BpZNleVXlF4sksI1+7k8s
- h6dRsa29AHuG7HGez6PUcvLz3T2ICojPmtTDHb6Q1OP3xg+v34/XUSFPlgJHi3vLx8pyDBTk7Xy
- z4nlGtv0FX40KR0JqGKAJsjntUr6PzDgzPFjysBD2j0wKZ6eG75XSkOOyjSFkwu2ods0PzBI9m5
- iXJwMN14Ng1s72Zw6Lwy5j4KQoFOnq58CqYHwE0RQdjrNZlZTpNx9g+BiP3r48eBePyPISeVVaT
- wgqgwv50S2JtX0OTJvJcWzQWYvnwaNf3/sBPrF/u7JU1l6HXfHtbzHYg3LGPY/jEqnOnWYFuqpE
- Myy4NwvGbRTSoYk0eOq6WFIcx6P2y+92Sta6UCFouw3TGKVeHWa65oYn3kuHE9+lMIX4QS8pWMd
- 3Wer0UIKri9qzBQ==
-X-Developer-Key: i=kurt@linutronix.de; a=openpgp;
- fpr=BCB9BFB2C8C37DD3DFDB5992C193D1F2AA467382
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=linutronix.de; s=2020; t=1742565176;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=+TwLPL7+wu7qtFoyl7UjkKjJVR4f77AtlojDOBKhpHg=;
- b=MVMYUaG7ovDtLDQVdBOkLxmQs6nw2NOg0Qt9xOnxOv4Jo97AomPHNAQJmM7mIpq5KOGHTv
- 1MEW+JfjV2Lw0cdzXFE6O0Br7K7BjlUTiu2EgWiuQWIDZnvuiTl+CSiEyEC6K2jDpY5QVn
- l8PpE3PuYUe54Hn6YaHM3MPG7T2bnUYGrqCCpAUavwhK5VOoStsFZRCt9XVKG795LhUt1C
- 9iOp6kakojG7+BhGS2t/zbw2LvLkDV+sisBGF4im+fY4kLwRFaqqLg7RR6jSnovjkQZ+6k
- dAE1nDulGluvr8N2O42d6Qg1ynfEdpOgAOciQteG6fBEdqG7+bwkbFyXm6/hkg==
-X-Mailman-Original-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
- d=linutronix.de; s=2020e; t=1742565176;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=+TwLPL7+wu7qtFoyl7UjkKjJVR4f77AtlojDOBKhpHg=;
- b=ytO7aKlWvkQoPeidzKNNyLIsmTUJk7Mqkd1UvmjQm35OAhUFl6j4IZ0w3ejsHvgsu5k3Ju
- PNrC3Ny3U8WT5uDQ==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+Content-Transfer-Encoding: 8bit
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1742570053; x=1774106053;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=Lp68kh7cSiXp8XiOx98wqfz59mQcCa1aTJcAHVClIjM=;
+ b=Mjak8bjxZRBnQjYqSyTY8CojwF5+kTaTnYZnqTpUSXZWZVQKmDOeZsft
+ ea8UJwmb1gKX6OpNdxbY6Ik5MtQELe2NzWRGjNgl3potzWkWshQMT58nk
+ 1xhFKbUMk+qx3SCxnKQAHIObnThCIjgBj+fwd8S4350aVdnVKZPX16b6t
+ 8zfxUTX65FhaXlfXZtbAC1eFNMdF/eanjx44fkiufJ9Er+6H5J9NmnMkW
+ XLyQR531JF5kaHB9+Q6nuvP160SzD/H5nY8eogB6BSp6uEUfz92lorpEa
+ xDlhXyjaaKyBr4KBGcOpvJwPnGTkhe8lPOmKz1QBnR3ZQfsYwGsGJPEXm
+ A==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
- header.from=linutronix.de
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key, unprotected) header.d=linutronix.de
- header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=MVMYUaG7; 
- dkim=pass header.d=linutronix.de header.i=@linutronix.de
- header.a=ed25519-sha256 header.s=2020e header.b=ytO7aKlW
-Subject: [Intel-wired-lan] [PATCH iwl-next v4 1/2] igc: Limit netdev_tc
- calls to MQPRIO
+ header.from=intel.com
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=Mjak8bjx
+Subject: [Intel-wired-lan] [PATCH iwl-next] ice: add a separate Rx handler
+ for flow director commands
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -128,97 +110,225 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Limit netdev_tc calls to MQPRIO. Currently these calls are made in
-igc_tsn_enable_offload() and igc_tsn_disable_offload() which are used by
-TAPRIO and ETF as well. However, these are only required for MQPRIO.
+The "ice" driver implementation uses the control VSI to handle
+the flow director configuration for PFs and VFs.
 
-Signed-off-by: Kurt Kanzenbach <kurt@linutronix.de>
+Unfortunately, although a separate VSI type was created to handle flow
+director queues, the Rx queue handler was shared between the flow
+director and a standard NAPI Rx handler.
+
+Such a design approach was not very flexible. First, it mixed hotpath
+and slowpath code, blocking their further optimization. It also created
+a huge overkill for the flow director command processing, which is
+descriptor-based only, so there is no need to allocate Rx data buffers.
+
+For the above reasons, implement a separate Rx handler for the control
+VSI. Also, remove from the NAPI handler the code dedicated to
+configuring the flow director rules on VFs.
+Do not allocate Rx data buffers to the flow director queues because
+their processing is descriptor-based only.
+Finally, allow Rx data queues to be allocated only for VSIs that have
+netdev assigned to them.
+
+This handler splitting approach is the first step in converting the
+driver to use the Page Pool (which can only be used for data queues).
+
+Test hints:
+  1. Create a VF for any PF managed by the ice driver.
+  2. In a loop, add and delete flow director rules for the VF, e.g.:
+
+       for i in {1..128}; do
+           q=$(( i % 16 ))
+           ethtool -N ens802f0v0 flow-type tcp4 dst-port "$i" action "$q"
+       done
+
+       for i in {0..127}; do
+           ethtool -N ens802f0v0 delete "$i"
+       done
+
+Suggested-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+Suggested-by: Michal Swiatkowski <michal.swiatkowski@intel.com>
+Acked-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+Signed-off-by: Michal Kubiak <michal.kubiak@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc_main.c | 18 +++++++++++++++++-
- drivers/net/ethernet/intel/igc/igc_tsn.c  | 20 --------------------
- 2 files changed, 17 insertions(+), 21 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_base.c |  5 +-
+ drivers/net/ethernet/intel/ice/ice_lib.c  |  3 +-
+ drivers/net/ethernet/intel/ice/ice_txrx.c | 85 +++++++++++++++++++----
+ drivers/net/ethernet/intel/ice/ice_txrx.h |  2 +
+ 4 files changed, 78 insertions(+), 17 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 472f009630c98e60c7166ceb8d05cb094f6c837b..240b6075197fb1e61077a736ddf8f9e67c1ed5cd 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -6679,13 +6679,14 @@ static int igc_tsn_enable_mqprio(struct igc_adapter *adapter,
- 				 struct tc_mqprio_qopt_offload *mqprio)
- {
- 	struct igc_hw *hw = &adapter->hw;
--	int i;
-+	int err, i;
- 
- 	if (hw->mac.type != igc_i225)
- 		return -EOPNOTSUPP;
- 
- 	if (!mqprio->qopt.num_tc) {
- 		adapter->strict_priority_enable = false;
-+		netdev_reset_tc(adapter->netdev);
- 		goto apply;
+diff --git a/drivers/net/ethernet/intel/ice/ice_base.c b/drivers/net/ethernet/intel/ice/ice_base.c
+index b94c56a82cc5..8bc333b794eb 100644
+--- a/drivers/net/ethernet/intel/ice/ice_base.c
++++ b/drivers/net/ethernet/intel/ice/ice_base.c
+@@ -717,7 +717,10 @@ static int ice_vsi_cfg_rxq(struct ice_rx_ring *ring)
+ 		return 0;
  	}
  
-@@ -6716,6 +6717,21 @@ static int igc_tsn_enable_mqprio(struct igc_adapter *adapter,
- 	igc_save_mqprio_params(adapter, mqprio->qopt.num_tc,
- 			       mqprio->qopt.offset);
+-	ice_alloc_rx_bufs(ring, num_bufs);
++	if (ring->vsi->type == ICE_VSI_CTRL)
++		ice_init_ctrl_rx_descs(ring, num_bufs);
++	else
++		ice_alloc_rx_bufs(ring, num_bufs);
  
-+	err = netdev_set_num_tc(adapter->netdev, adapter->num_tc);
-+	if (err)
-+		return err;
+ 	return 0;
+ }
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index 6392d27861e5..b857717441c3 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -497,8 +497,7 @@ static irqreturn_t ice_msix_clean_ctrl_vsi(int __always_unused irq, void *data)
+ 	if (!q_vector->tx.tx_ring)
+ 		return IRQ_HANDLED;
+ 
+-#define FDIR_RX_DESC_CLEAN_BUDGET 64
+-	ice_clean_rx_irq(q_vector->rx.rx_ring, FDIR_RX_DESC_CLEAN_BUDGET);
++	ice_clean_ctrl_rx_irq(q_vector->rx.rx_ring);
+ 	ice_clean_ctrl_tx_irq(q_vector->tx.tx_ring);
+ 
+ 	return IRQ_HANDLED;
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
+index 69cdbd2eda07..72980c504a92 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.c
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
+@@ -20,7 +20,6 @@
+ 
+ #define ICE_RX_HDR_SIZE		256
+ 
+-#define FDIR_DESC_RXDID 0x40
+ #define ICE_FDIR_CLEAN_DELAY 10
+ 
+ /**
+@@ -775,6 +774,37 @@ ice_alloc_mapped_page(struct ice_rx_ring *rx_ring, struct ice_rx_buf *bi)
+ 	return true;
+ }
+ 
++/**
++ * ice_init_ctrl_rx_descs - Initialize Rx descriptors for control vsi.
++ * @rx_ring: ring to init descriptors on
++ * @count: number of descriptors to initialize
++ */
++void ice_init_ctrl_rx_descs(struct ice_rx_ring *rx_ring, u32 count)
++{
++	union ice_32b_rx_flex_desc *rx_desc;
++	u32 ntu = rx_ring->next_to_use;
 +
-+	for (i = 0; i < adapter->num_tc; i++) {
-+		err = netdev_set_tc_queue(adapter->netdev, i, 1,
-+					  adapter->queue_per_tc[i]);
-+		if (err)
-+			return err;
++	if (!count)
++		return;
++
++	rx_desc = ICE_RX_DESC(rx_ring, ntu);
++
++	do {
++		rx_desc++;
++		ntu++;
++		if (unlikely(ntu == rx_ring->count)) {
++			rx_desc = ICE_RX_DESC(rx_ring, 0);
++			ntu = 0;
++		}
++
++		rx_desc->wb.status_error0 = 0;
++		count--;
++	} while (count);
++
++	if (rx_ring->next_to_use != ntu)
++		ice_release_rx_desc(rx_ring, ntu);
++}
++
+ /**
+  * ice_alloc_rx_bufs - Replace used receive buffers
+  * @rx_ring: ring to place buffers on
+@@ -795,8 +825,7 @@ bool ice_alloc_rx_bufs(struct ice_rx_ring *rx_ring, unsigned int cleaned_count)
+ 	struct ice_rx_buf *bi;
+ 
+ 	/* do nothing if no valid netdev defined */
+-	if ((!rx_ring->netdev && rx_ring->vsi->type != ICE_VSI_CTRL) ||
+-	    !cleaned_count)
++	if (!rx_ring->netdev || !cleaned_count)
+ 		return false;
+ 
+ 	/* get the Rx descriptor and buffer based on next_to_use */
+@@ -1252,6 +1281,45 @@ static void ice_put_rx_mbuf(struct ice_rx_ring *rx_ring, struct xdp_buff *xdp,
+ 	rx_ring->nr_frags = 0;
+ }
+ 
++/**
++ * ice_clean_ctrl_rx_irq - Clean descriptors from flow director Rx ring
++ * @rx_ring: Rx descriptor ring for ctrl_vsi to transact packets on
++ *
++ * This function cleans Rx descriptors from the ctrl_vsi Rx ring used
++ * to set flow director rules on VFs.
++ */
++void ice_clean_ctrl_rx_irq(struct ice_rx_ring *rx_ring)
++{
++	u32 ntc = rx_ring->next_to_clean;
++	unsigned int total_rx_pkts = 0;
++	u32 cnt = rx_ring->count;
++
++	while (likely(total_rx_pkts < ICE_DFLT_IRQ_WORK)) {
++		struct ice_vsi *ctrl_vsi = rx_ring->vsi;
++		union ice_32b_rx_flex_desc *rx_desc;
++		u16 stat_err_bits;
++
++		rx_desc = ICE_RX_DESC(rx_ring, ntc);
++
++		stat_err_bits = BIT(ICE_RX_FLEX_DESC_STATUS0_DD_S);
++		if (!ice_test_staterr(rx_desc->wb.status_error0, stat_err_bits))
++			break;
++
++		dma_rmb();
++
++		if (ctrl_vsi->vf)
++			ice_vc_fdir_irq_handler(ctrl_vsi, rx_desc);
++
++		if (++ntc == cnt)
++			ntc = 0;
++		total_rx_pkts++;
 +	}
 +
-+	/* In case the card is configured with less than four queues. */
-+	for (; i < IGC_MAX_TX_QUEUES; i++)
-+		adapter->queue_per_tc[i] = i;
++	rx_ring->first_desc = ntc;
++	rx_ring->next_to_clean = ntc;
++	ice_init_ctrl_rx_descs(rx_ring, ICE_RX_DESC_UNUSED(rx_ring));
++}
 +
- 	mqprio->qopt.hw = TC_MQPRIO_HW_OFFLOAD_TCS;
+ /**
+  * ice_clean_rx_irq - Clean completed descriptors from Rx ring - bounce buf
+  * @rx_ring: Rx descriptor ring to transact packets on
+@@ -1311,17 +1379,6 @@ int ice_clean_rx_irq(struct ice_rx_ring *rx_ring, int budget)
+ 		dma_rmb();
  
- apply:
-diff --git a/drivers/net/ethernet/intel/igc/igc_tsn.c b/drivers/net/ethernet/intel/igc/igc_tsn.c
-index 1e44374ca1ffbb86e9893266c590f318984ef574..67632356083708f82a099141a4b68ba10e06f952 100644
---- a/drivers/net/ethernet/intel/igc/igc_tsn.c
-+++ b/drivers/net/ethernet/intel/igc/igc_tsn.c
-@@ -157,9 +157,6 @@ static int igc_tsn_disable_offload(struct igc_adapter *adapter)
- 	wr32(IGC_QBVCYCLET_S, 0);
- 	wr32(IGC_QBVCYCLET, NSEC_PER_SEC);
- 
--	/* Reset mqprio TC configuration. */
--	netdev_reset_tc(adapter->netdev);
+ 		ice_trace(clean_rx_irq, rx_ring, rx_desc);
+-		if (rx_desc->wb.rxdid == FDIR_DESC_RXDID || !rx_ring->netdev) {
+-			struct ice_vsi *ctrl_vsi = rx_ring->vsi;
 -
- 	/* Restore the default Tx arbitration: Priority 0 has the highest
- 	 * priority and is assigned to queue 0 and so on and so forth.
- 	 */
-@@ -206,23 +203,6 @@ static int igc_tsn_enable_offload(struct igc_adapter *adapter)
- 		igc_tsn_set_retx_qbvfullthreshold(adapter);
- 
- 	if (adapter->strict_priority_enable) {
--		int err;
--
--		err = netdev_set_num_tc(adapter->netdev, adapter->num_tc);
--		if (err)
--			return err;
--
--		for (i = 0; i < adapter->num_tc; i++) {
--			err = netdev_set_tc_queue(adapter->netdev, i, 1,
--						  adapter->queue_per_tc[i]);
--			if (err)
--				return err;
+-			if (rx_desc->wb.rxdid == FDIR_DESC_RXDID &&
+-			    ctrl_vsi->vf)
+-				ice_vc_fdir_irq_handler(ctrl_vsi, rx_desc);
+-			if (++ntc == cnt)
+-				ntc = 0;
+-			rx_ring->first_desc = ntc;
+-			continue;
 -		}
--
--		/* In case the card is configured with less than four queues. */
--		for (; i < IGC_MAX_TX_QUEUES; i++)
--			adapter->queue_per_tc[i] = i;
--
- 		/* Configure queue priorities according to the user provided
- 		 * mapping.
- 		 */
-
+ 
+ 		size = le16_to_cpu(rx_desc->wb.pkt_len) &
+ 			ICE_RX_FLX_DESC_PKT_LEN_M;
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.h b/drivers/net/ethernet/intel/ice/ice_txrx.h
+index 4b63081629d0..041768df0b23 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.h
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.h
+@@ -492,6 +492,7 @@ static inline unsigned int ice_rx_pg_order(struct ice_rx_ring *ring)
+ 
+ union ice_32b_rx_flex_desc;
+ 
++void ice_init_ctrl_rx_descs(struct ice_rx_ring *rx_ring, u32 num_descs);
+ bool ice_alloc_rx_bufs(struct ice_rx_ring *rxr, unsigned int cleaned_count);
+ netdev_tx_t ice_start_xmit(struct sk_buff *skb, struct net_device *netdev);
+ u16
+@@ -512,4 +513,5 @@ ice_prgm_fdir_fltr(struct ice_vsi *vsi, struct ice_fltr_desc *fdir_desc,
+ 		   u8 *raw_packet);
+ int ice_clean_rx_irq(struct ice_rx_ring *rx_ring, int budget);
+ void ice_clean_ctrl_tx_irq(struct ice_tx_ring *tx_ring);
++void ice_clean_ctrl_rx_irq(struct ice_rx_ring *rx_ring);
+ #endif /* _ICE_TXRX_H_ */
 -- 
-2.39.5
+2.45.2
 
