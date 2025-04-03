@@ -1,110 +1,128 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E151BC3600C
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  3 Apr 2025 17:46:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CF30DC3601E
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  3 Apr 2025 18:16:09 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 8C3BD40811;
-	Thu,  3 Apr 2025 17:46:31 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 66C3B81F49;
+	Thu,  3 Apr 2025 18:16:09 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id xRNF_6M6Dyhg; Thu,  3 Apr 2025 17:46:30 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id XKAzB1cAE4G2; Thu,  3 Apr 2025 18:16:08 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org CB4B540856
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 296BD836C3
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1743702390;
-	bh=Q5gcc5IFZwT5cwfkK1LdyPdDF9nyGh/E1mfzORV+BT4=;
-	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
+	s=default; t=1743704168;
+	bh=FJlcXXP2FukqGEHv0z1cQI88EHr2Dv5R3LlDfDt2A4c=;
+	h=References:In-Reply-To:From:Date:To:Cc:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=J07qyZgwLAqK4ZF5IhAOrTof1EZQv9QUoB/Y77+tmV3ePXpGbhlvDsWiRK1FhWXJn
-	 WZFxl4aVtdUSWbBd/o1tm/8mC8mCfgmgnEM9yq1JyxaqQcj7d5lEHX+AKy4AjjfNJl
-	 hasEKQwH0ycfHqTVMbsSBUNOb90H8PFYebmQBIcV6rBXdsy1xk6aJzuL0un4qTrJV0
-	 o2ivbCtPqbRcW1VvceMe4KEIMyrcnrrVuj7AJMiToRBuGKGSBb0tVzjlTDb2t3pXF/
-	 zLPu/CRSul4UTUp1T8Z54tlFBL7UA01Xc8VJpHp3KBiD59hJcb4kwIsQlxMvc7cXH7
-	 YW73L1vsEW8og==
+	b=TZuenGNO3xL/6stLbsns4hicBWBs6xKMO5qkydrHVx47BZOwGfoAyDy0DRL6J/faF
+	 I9JMNWe4Z7SYGJubUpVSCrpn+JAr5CNkaZYjWcfrZmEMRMQEKz2+C1LcFCxBSsYB0Z
+	 u+hOxdaH4rldZ2aBjavV74+0cyq9sN6dV5HQF3OKaIpVkbYv6sohUNaZXpIPQZfpPR
+	 HV/ptTDXb9EwEi/u4FivWhajMaX0/3b6bo8d34zgvmbsN0h6tTsfMBadwJSIofR92q
+	 Z90MirQc6iCJKRNJhUKK37MjwOj61/kV7RVfILrcGjtXGvhCGKFDlM2r8Rqc5sFmis
+	 qSgfSsuJpf2XA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id CB4B540856;
-	Thu,  3 Apr 2025 17:46:30 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id 4EADE119
- for <intel-wired-lan@lists.osuosl.org>; Thu,  3 Apr 2025 17:46:29 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 296BD836C3;
+	Thu,  3 Apr 2025 18:16:08 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 24A24119
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  3 Apr 2025 18:16:07 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 35D5741B39
- for <intel-wired-lan@lists.osuosl.org>; Thu,  3 Apr 2025 17:46:29 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 06431411B3
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  3 Apr 2025 18:16:07 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id GEBYEfA1U-3w for <intel-wired-lan@lists.osuosl.org>;
- Thu,  3 Apr 2025 17:46:28 +0000 (UTC)
-Received-SPF: None (mailfrom) identity=mailfrom; client-ip=192.198.163.15;
- helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org C563C400C4
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org C563C400C4
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.15])
- by smtp2.osuosl.org (Postfix) with ESMTPS id C563C400C4
- for <intel-wired-lan@lists.osuosl.org>; Thu,  3 Apr 2025 17:46:27 +0000 (UTC)
-X-CSE-ConnectionGUID: JvdBrp0KSZKbmc9JjxP9VA==
-X-CSE-MsgGUID: AsNT57cMRhK5BMsWCUxhkw==
-X-IronPort-AV: E=McAfee;i="6700,10204,11393"; a="45247837"
-X-IronPort-AV: E=Sophos;i="6.15,184,1739865600"; d="scan'208";a="45247837"
-Received: from orviesa001.jf.intel.com ([10.64.159.141])
- by fmvoesa109.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 03 Apr 2025 10:46:27 -0700
-X-CSE-ConnectionGUID: XL8V0+HVRweSrPe2l+1fFA==
-X-CSE-MsgGUID: fYhD+ywtTVC4LwHnZlU8Zg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.15,184,1739865600"; d="scan'208";a="164309309"
-Received: from smile.fi.intel.com ([10.237.72.58])
- by orviesa001.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 03 Apr 2025 10:46:24 -0700
-Received: from andy by smile.fi.intel.com with local (Exim 4.98.2)
- (envelope-from <andriy.shevchenko@linux.intel.com>)
- id 1u0Odw-00000008ssY-2AYW; Thu, 03 Apr 2025 20:46:20 +0300
-Date: Thu, 3 Apr 2025 20:46:20 +0300
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To: Matthew Wilcox <willy@infradead.org>
-Cc: Kees Cook <kees@kernel.org>, Vlastimil Babka <vbabka@suse.cz>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- torvalds@linux-foundation.org, peterz@infradead.org,
- Jann Horn <jannh@google.com>, intel-wired-lan@lists.osuosl.org,
- netdev@vger.kernel.org, Harry Yoo <harry.yoo@oracle.com>,
- Christoph Lameter <cl@gentwo.org>
-Message-ID: <Z-7JbPeMlnpspKM_@smile.fi.intel.com>
-References: <20250401134408.37312-1-przemyslaw.kitszel@intel.com>
- <3f387b13-5482-46ed-9f52-4a9ed7001e67@suse.cz>
- <202504030955.5C4B7D82@keescook>
- <Z-7G6_jm4SKtSO7a@casper.infradead.org>
+ id Z-z8JSU6UGrj for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  3 Apr 2025 18:16:05 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2a00:1450:4864:20::636; helo=mail-ej1-x636.google.com;
+ envelope-from=torvalds@linuxfoundation.org; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 1DE9E40592
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 1DE9E40592
+Received: from mail-ej1-x636.google.com (mail-ej1-x636.google.com
+ [IPv6:2a00:1450:4864:20::636])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 1DE9E40592
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  3 Apr 2025 18:16:04 +0000 (UTC)
+Received: by mail-ej1-x636.google.com with SMTP id
+ a640c23a62f3a-ac2c663a3daso226566366b.2
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 03 Apr 2025 11:16:04 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20230601; t=1743704163; x=1744308963;
+ h=cc:to:subject:message-id:date:from:in-reply-to:references
+ :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+ :reply-to;
+ bh=FJlcXXP2FukqGEHv0z1cQI88EHr2Dv5R3LlDfDt2A4c=;
+ b=nsCVBdR4mFUpi97Z6F6Q54UHhpZCge5uzLMjZjxsyklU8m/0I2LwKo98IzS0sxj41q
+ QU3bWRSWdDHAFQOFpwdfMOdXt27tWRWV6JwdwVJh/q6Vz++4fA1u4+rKyFXMm4TSUEVe
+ YOuPbEyTe6EAl3kUpE+nFZ/aKsLHmJOF0JOm9UmdwQpho3qftX/1dSQHu8W2ac5/wuFl
+ f10E+I1lJbXviv29ssv15JfoIKasLOZFM4nBhi5sYdYizVdP98L0pWi7Pf8j59nFNy5H
+ Jj7/SP8Fd3cAtIP8jTqvsEKo3IECYIzrJS6LwDuStnKMxLbEDgAItofvSX+8TNVjOzLY
+ zoWA==
+X-Forwarded-Encrypted: i=1;
+ AJvYcCW5jfPDcs0m4lvn7bKmd+mqGR2/T2MJCGzQJCFuJ6WTAqmWWmXCQLCFgD4SyUxQGrTrygKqk+RvZRzj7l9hnL4=@lists.osuosl.org
+X-Gm-Message-State: AOJu0YwCYcmTt/PU3SWwvwe2vn494mSRlH3PUt76S6WAHM03HGy6elQ/
+ tf6fMYe8Gl8JV/pBXfe1tz5z7oOMTFsuuFRwVcq3y8/KUsWQS7ocSDarBFK69AkLUqW/+wlVegg
+ dTSU=
+X-Gm-Gg: ASbGncvxY682QraeVcaTPXJXcWHDnDhAZPYdUZf7YrpPlvQ2TUNAofptM9fpAItI68p
+ wTbbSY8NspoZHY5ckLXv2M3+pPijdRS16+AXY+AggVNT5v4bz7g31FZFrCAeDbLLgJ0KnUTFlnL
+ 3hwEOvQ4e60BovKN+/BCzvF09bqZZcyo96K4nXqULKz5fL9v29ASpFreQtW2E5WcfHjoMuhTirE
+ CRMOFCIizF/c2xP4QGIeCQYF15AfDo/sQgeaY8La1cH4v6z7/Ei6gOPqWP/Q2hBK377FI5SWYta
+ iTqv+SyxpivdyXYXKvVtDqyns6LxX2O6gGYpWtxD69OtQNuICkRSa+zoX7SsBjZj2PuWDl2t4tw
+ QSN33aQb8CioSJhd+/W8=
+X-Google-Smtp-Source: AGHT+IEfAXO24Q9RnuRExL1MrU+0Mn5craghi3V3toQ5rF1YL7PCTLWSHdrgA2YlLd1fbhrROz7Crg==
+X-Received: by 2002:a17:907:7211:b0:ac7:b621:762e with SMTP id
+ a640c23a62f3a-ac7d1854af2mr60659466b.4.1743704162667; 
+ Thu, 03 Apr 2025 11:16:02 -0700 (PDT)
+Received: from mail-ej1-f46.google.com (mail-ej1-f46.google.com.
+ [209.85.218.46]) by smtp.gmail.com with ESMTPSA id
+ a640c23a62f3a-ac7c018b26asm130891366b.146.2025.04.03.11.16.01
+ for <intel-wired-lan@lists.osuosl.org>
+ (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+ Thu, 03 Apr 2025 11:16:01 -0700 (PDT)
+Received: by mail-ej1-f46.google.com with SMTP id
+ a640c23a62f3a-ac339f53df9so211924166b.1
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 03 Apr 2025 11:16:01 -0700 (PDT)
+X-Forwarded-Encrypted: i=1;
+ AJvYcCXsEy/oQ90DGk7911YHt8Gds25UAMrbbWu7eoJSbICYo6/72c6xr+GJNI0rGBcUZqXfEcMlNyhatjlgrTG1Byk=@lists.osuosl.org
+X-Received: by 2002:a17:907:9728:b0:ac7:41c:748d with SMTP id
+ a640c23a62f3a-ac7d1b27f38mr53718566b.38.1743704161358; Thu, 03 Apr 2025
+ 11:16:01 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Z-7G6_jm4SKtSO7a@casper.infradead.org>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1743702388; x=1775238388;
- h=date:from:to:cc:subject:message-id:references:
- mime-version:in-reply-to;
- bh=CrVVJHvTACiAZiAbOqNpxsX5Sm/7YBaDo7amhX5eups=;
- b=ZGZmO3yGH5xYed/hHCi6XnPYnhJHt5z+mSXCMEJV8aWe2oaHofjeIygd
- KzOyLjJX49KZPBsX919wmk5TcbDHOHcyd09W7YlzlPg/PJKks3hLUvz0w
- oV5Me9Ut42XEc6qYMtZG7CR7zJ41q574hAJfeSPTRVTpfsGKwwXLqjtOL
- Cbjdija+y8AAHsCS8djEvP/JJKrCTSQpw3QwHSQcJ7nIBrA5iYtqh2TqX
- G74E37OG6T5JmJ1KF9uf1Uoz6+aSLzfSKwW7Hos0P77SZZAXl/v+/bIuO
- 2uq4jYutnA2VCo5nYqLhTvDT4Jv+crpYpuf9IotDMeVkk8K/7T7AC8Y53
- w==;
+References: <20250401134408.37312-1-przemyslaw.kitszel@intel.com>
+In-Reply-To: <20250401134408.37312-1-przemyslaw.kitszel@intel.com>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Thu, 3 Apr 2025 11:15:44 -0700
+X-Gmail-Original-Message-ID: <CAHk-=wjvh_LUpa=864joG2JJXs3+viO-kLzLidR2JLyMr4MNwA@mail.gmail.com>
+X-Gm-Features: AQ5f1Jqqq_S2O0OJpyEjcg88KSOkVuR9PdTbHkE7So44nAp-S1DtNbZhUbWjRJI
+Message-ID: <CAHk-=wjvh_LUpa=864joG2JJXs3+viO-kLzLidR2JLyMr4MNwA@mail.gmail.com>
+To: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, vbabka@suse.cz, 
+ peterz@infradead.org, andriy.shevchenko@linux.intel.com, 
+ intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=linux-foundation.org; s=google; t=1743704163; x=1744308963;
+ darn=lists.osuosl.org; 
+ h=cc:to:subject:message-id:date:from:in-reply-to:references
+ :mime-version:from:to:cc:subject:date:message-id:reply-to;
+ bh=FJlcXXP2FukqGEHv0z1cQI88EHr2Dv5R3LlDfDt2A4c=;
+ b=RuloVwWA4dbKuFi6PrhjB4VnA4uZqE6vOi7RMKlNIfgaJtcAQtAv6sZ1qHwGYTzYSI
+ I/RhxMFctIKhThadzItx3by3IGs4I3gnJit1qzpqzTJ/rsTdEYQRn374PYl/SUSUTQ96
+ hDPxOfkyO50Kwjuocm6sEjcfcaUCMn/1L4xIk=
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=none (p=none dis=none)
- header.from=linux.intel.com
+ header.from=linux-foundation.org
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=ZGZmO3yG
+ dkim=pass (1024-bit key,
+ unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org
+ header.a=rsa-sha256 header.s=google header.b=RuloVwWA
 Subject: Re: [Intel-wired-lan] [RFC] slab: introduce auto_kfree macro
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
@@ -121,48 +139,20 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Thu, Apr 03, 2025 at 06:35:39PM +0100, Matthew Wilcox wrote:
-> On Thu, Apr 03, 2025 at 09:59:41AM -0700, Kees Cook wrote:
-> > On Wed, Apr 02, 2025 at 12:44:50PM +0200, Vlastimil Babka wrote:
-> > > Cc Kees and others from his related efforts:
-> > > 
-> > > https://lore.kernel.org/all/20250321202620.work.175-kees@kernel.org/
-> > 
-> > I think, unfortunately, the consensus is that "invisible side-effects"
-> > are not going to be tolerated. After I finish with kmalloc_obj(), I'd
-> > like to take another run at this for basically providing something like:
-> > 
-> > static inline __must_check
-> > void *kfree(void *p) { __kfree(p); return NULL; }
-> > 
-> > And then switch all:
-> > 
-> > 	kfree(s->ptr);
-> > 
-> > to
-> > 
-> > 	s->ptr = kfree(s->ptr);
-> > 
-> > Where s->ptr isn't used again.
-> 
-> Umm ... kfree is now going to be __must_check?  That's a lot of churn.
-> 
-> I'd just go with making kfree() return NULL and leave off the
-> __must_check.  It doesn't need the __kfree() indirection either.
-> That lets individual functions opt into the new safety.
+On Tue, 1 Apr 2025 at 06:50, Przemek Kitszel
+<przemyslaw.kitszel@intel.com> wrote:
+>
+> With new auto_kfree, we simply will start with
+>         struct my_dev_foo *foo auto_kfree;
+> and be safe against future extensions.
 
-Maybe something like
+Honestly, I'd much rather just see any auto-freeing *always* assigning
+the value.
 
-void kfree_and_null(void **ptr)
-{
-	__kfree(*ptr);
-	*ptr = NULL;
-}
+We used to have a rule that declarations had to be at the top of a
+block, which made that not an option, but that rule went out the
+window exactly because you can't do that with the cleanup macros.
 
-?
+So just make the rule be that __free() without an assignment is simply a bug.
 
--- 
-With Best Regards,
-Andy Shevchenko
-
-
+               Linus
