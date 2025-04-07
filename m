@@ -4,90 +4,106 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0CB16C36010
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  7 Apr 2025 15:11:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2BE2EC369A3
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  7 Apr 2025 15:11:01 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id C99CF81112;
-	Mon,  7 Apr 2025 15:10:59 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 991E480D7B;
+	Mon,  7 Apr 2025 15:11:00 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id JDddKJxI0qFx; Mon,  7 Apr 2025 15:10:57 +0000 (UTC)
+ id 4PpeyFJQn3NX; Mon,  7 Apr 2025 15:10:59 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B0A35810CB
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org BC2C380EA4
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1744038657;
-	bh=vjO3TAnFOqalGZ8xSYfbpH7cqt+Bfn6P2ZGcPBU9VrA=;
-	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=x0FnAoj06tgUVjuwvsac3BppKcEOhXTAT+GPaclpGxlxGTD9TEZjqMB62ZVW4f7hj
-	 1/96QXgB+wxEBbq8cxbpSh+lVGrlhcFNSJyctJcc+CImtESOR/d1bQ8KN7WQe9lUXJ
-	 XsU2piT858z9soowglfk2gUHrEtRVGjFJlVQv6c5D+BX+BSjnmGM6uKgQ9bbMe++tZ
-	 I1skhnUQ1/XxuKcZG2e3Qn4tb26+URFYxMdgn11KyGGjl+U3P06vM3vMTliGJVmkWa
-	 ufQYX344/kcuu+N4fmdZBfh9TaJeZGELDUM1UaQYJ+QiD7h19Q6X8/FNf93mNKBehu
-	 zZ/QSsW59Pa+Q==
+	s=default; t=1744038659;
+	bh=+3Vrefcf/NQ+JQxSP5ld2ShyoQDx5GSabMC/kL9H49g=;
+	h=Date:From:To:Cc:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=9CvKdSOYPRQ/zPG6enW/i4iHQbffKqKYf0gBXcLNgAD25Xs8VlrFAjjYNu3l2dN62
+	 PjrH4SkkYoL8AeQfcSjMGHw9OilmZ5fdYS3sQXFBxhRwlodXJNxxPjD8DQseysum7a
+	 d0Cb9uQyfU/wAVTl9Age6V58TU8KVDbjHa93frNG5IQLVG0aYMvPluH14Htc92MpTg
+	 mn4M6aZxyHtlU3GlwE4lNPdC6xNzFatI6gNUGCJas8ehp31rF8kGekJdR/qHL6VGFM
+	 XYFjaBaxz7hMbX1BE5YzUX4ySqmUr6CCIRblRIMtC8Wsq91TJKh80wVXqp9/z1hqBd
+	 Lm3rE54oObPVw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id B0A35810CB;
-	Mon,  7 Apr 2025 15:10:57 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id 2AA691DE
- for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Apr 2025 06:30:47 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id BC2C380EA4;
+	Mon,  7 Apr 2025 15:10:59 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 5B0F3DA
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Apr 2025 13:46:21 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 03A2440712
- for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Apr 2025 06:30:47 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 4708840B85
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Apr 2025 13:46:21 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id qKmlBX7a9t-F for <intel-wired-lan@lists.osuosl.org>;
- Mon,  7 Apr 2025 06:30:46 +0000 (UTC)
-X-Greylist: delayed 583 seconds by postgrey-1.37 at util1.osuosl.org;
- Mon, 07 Apr 2025 06:30:45 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org F0824406FE
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org F0824406FE
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=199.247.17.104;
- helo=prime.voidband.net; envelope-from=oleksandr@natalenko.name;
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id IvMeFahY47Xc for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  7 Apr 2025 13:46:20 +0000 (UTC)
+X-Greylist: delayed 850 seconds by postgrey-1.37 at util1.osuosl.org;
+ Mon, 07 Apr 2025 13:46:20 UTC
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 3EB91403BE
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 3EB91403BE
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=2001:4b98:dc4:8::226;
+ helo=relay6-d.mail.gandi.net; envelope-from=kory.maincent@bootlin.com;
  receiver=<UNKNOWN> 
-Received: from prime.voidband.net (prime.voidband.net [199.247.17.104])
- by smtp4.osuosl.org (Postfix) with ESMTPS id F0824406FE
- for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Apr 2025 06:30:45 +0000 (UTC)
-Received: from spock.localnet (unknown [212.20.115.26])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange x25519 server-signature ECDSA (prime256v1) server-digest SHA256)
- (No client certificate requested)
- by prime.voidband.net (Postfix) with ESMTPSA id CB416635B040;
- Mon, 07 Apr 2025 08:20:58 +0200 (CEST)
-From: Oleksandr Natalenko <oleksandr@natalenko.name>
-To: linux-kernel@vger.kernel.org
-Cc: netdev@vger.kernel.org, intel-wired-lan@lists.osuosl.org,
- Paolo Abeni <pabeni@redhat.com>, Jakub Kicinski <kuba@kernel.org>,
- Eric Dumazet <edumazet@google.com>, "David S. Miller" <davem@davemloft.net>,
- Andrew Lunn <andrew+netdev@lunn.ch>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Tony Nguyen <anthony.l.nguyen@intel.com>,
- Peter Zijlstra <peterz@infradead.org>, Josh Poimboeuf <jpoimboe@kernel.org>
-Date: Mon, 07 Apr 2025 08:20:45 +0200
-Message-ID: <4970551.GXAFRqVoOG@natalenko.name>
+Received: from relay6-d.mail.gandi.net (relay6-d.mail.gandi.net
+ [IPv6:2001:4b98:dc4:8::226])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 3EB91403BE
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Apr 2025 13:46:19 +0000 (UTC)
+Received: by mail.gandi.net (Postfix) with ESMTPSA id F29B4442A3;
+ Mon,  7 Apr 2025 13:46:14 +0000 (UTC)
+Date: Mon, 7 Apr 2025 15:46:13 +0200
+From: Kory Maincent <kory.maincent@bootlin.com>
+To: Marek Pazdan <mpazdan@arista.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+ intel-wired-lan@lists.osuosl.org, Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>, Andrew Lunn
+ <andrew+netdev@lunn.ch>, "David S . Miller" <davem@davemloft.net>, Eric
+ Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, Paolo
+ Abeni <pabeni@redhat.com>, Simon Horman <horms@kernel.org>, Willem de
+ Bruijn <willemb@google.com>, Alexander Lobakin
+ <aleksander.lobakin@intel.com>, Mina Almasry <almasrymina@google.com>,
+ Edward Cree <ecree.xilinx@gmail.com>, Daniel Zahka
+ <daniel.zahka@gmail.com>, Jianbo Liu <jianbol@nvidia.com>, Gal Pressman
+ <gal@nvidia.com>
+Message-ID: <20250407154613.00e7afe2@kmaincent-XPS-13-7390>
+In-Reply-To: <20250407123714.21646-2-mpazdan@arista.com>
+References: <20250407123714.21646-1-mpazdan@arista.com>
+ <20250407123714.21646-2-mpazdan@arista.com>
+Organization: bootlin
+X-Mailer: Claws Mail 4.0.0 (GTK+ 3.24.33; x86_64-pc-linux-gnu)
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1916258.tdWV9SEqCh";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+X-GND-State: clean
+X-GND-Score: -100
+X-GND-Cause: gggruggvucftvghtrhhoucdtuddrgeefvddrtddtgddvtddtfeehucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuifetpfffkfdpucggtfgfnhhsuhgsshgtrhhisggvnecuuegrihhlohhuthemuceftddunecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpeffhffvvefukfgjfhhoofggtgfgsehtqhertdertdejnecuhfhrohhmpefmohhrhicuofgrihhntggvnhhtuceokhhorhihrdhmrghinhgtvghnthessghoohhtlhhinhdrtghomheqnecuggftrfgrthhtvghrnhepgfdutdefvedtudegvefgvedtgfdvhfdtueeltefffefffffhgfetkedvfeduieeinecuffhomhgrihhnpegsohhothhlihhnrdgtohhmnecukfhppeeltddrkeelrdduieefrdduvdejnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepledtrdekledrudeifedruddvjedphhgvlhhopehkmhgrihhntggvnhhtqdgirffuqddufedqjeefledtpdhmrghilhhfrhhomhepkhhorhihrdhmrghinhgtvghnthessghoohhtlhhinhdrtghomhdpnhgspghrtghpthhtohepvddtpdhrtghpthhtohepmhhprgiiuggrnhesrghrihhsthgrrdgtohhmpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepnhgvthguvghvsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepihhnthgvlhdqfihirhgvugdqlhgrnhesl
+ hhishhtshdrohhsuhhoshhlrdhorhhgpdhrtghpthhtoheprghnthhhohhnhidrlhdrnhhguhihvghnsehinhhtvghlrdgtohhmpdhrtghpthhtohepphhriigvmhihshhlrgifrdhkihhtshiivghlsehinhhtvghlrdgtohhmpdhrtghpthhtoheprghnughrvgifodhnvghtuggvvheslhhunhhnrdgthhdprhgtphhtthhopegurghvvghmsegurghvvghmlhhofhhtrdhnvght
+X-GND-Sasl: kory.maincent@bootlin.com
 X-Mailman-Approved-At: Mon, 07 Apr 2025 15:10:56 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=natalenko.name; 
- s=dkim-20170712; t=1744006859;
+ d=bootlin.com; s=gm1; t=1744033576;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type;
- bh=vjO3TAnFOqalGZ8xSYfbpH7cqt+Bfn6P2ZGcPBU9VrA=;
- b=T67kECPfT42QpBEFPxPp59Fv0xiLmj2hM27rMbf3PfIKcxYgnmWvIuC9rghujRZRFdM0Lg
- OXW+pL+q8oqvHeq1MxJ33fg7ygvcgVzndpV6ERoQYM+RUooRVmY8vFRu0DRzGp9UfDT57I
- jR5vQAtmHZab6o88WIQahsLsJEnageU=
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=+3Vrefcf/NQ+JQxSP5ld2ShyoQDx5GSabMC/kL9H49g=;
+ b=i+b9Qm4RpUC95spqhOdbohwP/qQCK6GvMnmHFO1cOgPcmWCoafh0BxHuEexLCgRmKA9t21
+ Yu0Q/18Zcal8laTx28aA/x05T1OZFL47PL/yj9rq7bnpcWWEtnj9G1kkj9yBSJzr62gg+R
+ CqqBDHtv70zvA743gHo+0lbyXnmwsvngB+SRboyDmmOUDOTa1qOAn8TsX8PvRVN45UHSIS
+ OV10edGh87/+0R4PG8VSijPOtljEhrcoXYKFnNy1YKHfSS8hrfnyfWxKC1kkakNxmjb1fL
+ 2l3O0Dy/J71nfvX4+R5Ng5kAJXgte8njuIIK8XerrQObme9frsaq55OOuFZYQg==
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=reject dis=none)
- header.from=natalenko.name
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (1024-bit key,
- unprotected) header.d=natalenko.name header.i=@natalenko.name
- header.a=rsa-sha256 header.s=dkim-20170712 header.b=T67kECPf
-Subject: [Intel-wired-lan] objtool warning in ice_free_prof_mask
+ header.from=bootlin.com
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256
+ header.s=gm1 header.b=i+b9Qm4R
+Subject: Re: [Intel-wired-lan] [PATCH 2/2] ice: add qsfp transceiver reset
+ and presence pin control
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -103,56 +119,34 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
---nextPart1916258.tdWV9SEqCh
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="utf-8"; protected-headers="v1"
-From: Oleksandr Natalenko <oleksandr@natalenko.name>
-To: linux-kernel@vger.kernel.org
-Subject: objtool warning in ice_free_prof_mask
-Date: Mon, 07 Apr 2025 08:20:45 +0200
-Message-ID: <4970551.GXAFRqVoOG@natalenko.name>
-MIME-Version: 1.0
+On Mon,  7 Apr 2025 12:35:38 +0000
+Marek Pazdan <mpazdan@arista.com> wrote:
 
-Hello.
+> Commit f3c1c896f5a8 ("ethtool: transceiver reset and presence pin control=
+")
+> adds ioctl API extension for get/set-phy-tunable so that transceiver
+> reset and presence pin control is enabled.
 
-With v6.15-rc1, CONFIG_OBJTOOL_WERROR=y and gcc 14.2.1 the following happens:
+I don't think pointing and explaining the first commit is relevant here.
 
-```
-drivers/net/ethernet/intel/ice/ice.o: error: objtool: ice_free_prof_mask.isra.0() falls through to next function ice_free_flow_profs.cold()
-drivers/net/ethernet/intel/ice/ice.o: error: objtool: ice_free_prof_mask.isra.0.cold() is missing an ELF size annotation
-```
+> This commit adds functionality to utilize the API in ice driver.
 
-If I mark ice_write_prof_mask_reg() as noinline, this warning disappears.
+Please do not use "This commit/patch/change", but imperative mood. See
+longer explanation here:
+https://elixir.bootlin.com/linux/v5.17.1/source/Documentation/process/submi=
+tting-patches.rst#L95
 
-Any idea what's going wrong?
+You could simply write:
+Add support for the newly introduced transceiver reset feature in the ice
+driver.
 
-Thank you.
+> According to E810 datasheet QSFP reset and presence pins are being
+> connected to SDP0 and SDP2 pins on controller host. Those pins can
+> be accessed using AQ commands for GPIO get/set.[O
 
--- 
-Oleksandr Natalenko, MSE
---nextPart1916258.tdWV9SEqCh
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Weird character at the end.
 
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCAAdFiEEZUOOw5ESFLHZZtOKil/iNcg8M0sFAmfzbr0ACgkQil/iNcg8
-M0vZkhAA1tXUFHurvbvtwTDQNNs1ru9REB1w9TKVmN62Dgv9US35rAtlFot4wulq
-43xzWuIcgR6OrHd9/39OZ9BJE2RVzOBIcBHYexgXCnX9BkH0A+y9LobJA8cMrLt+
-bp/TNhJqxbobWt+YPLAWgIujNANpeepexdN/oJoW857M1dj2QQmLLHkPdAGyOhTv
-jXPA+Ul+TJm4PN+u/q3WdWpUZHhXrWn5ICfyx+dzYqoYRpgQD84B/YMUasqA2R5d
-ClWK5PTQq80ynDVdVLh1KKb3gXBornnQumLcalZijIz/Mwc8ELLfjt9Xv2XNdS5n
-vlCw49IH2rvU+1zYhMx4DLkVh3n22pyL+Msp3UQt8klFlQ88ko8aK9Gh2Y5q+BLr
-oHMokSoj92aZKjznihYWdsBst/QpFOmGTMOEtD0cHtxobZVfQnfHfd/i4yLPHWwS
-ouogXxD5lx0Kx8SS4unDa4UtNP4ZQHcOmUt4l2EYeI0rnwus0NBDWGb7jdGgtuU7
-1IJcJ+zs9uCEELgLDuPV67Q+2WBhqebZlJZC48vgLV47AuZ+r2XQP8BDl2F0Bh6J
-cIDAiz07u3LBAaPByYdTQY0YZVr8z79MvNpGxKwNXt2LYE1yksOgpzmeUsYp+Mjb
-gGBSJckC6a4KwNCG/i2gaYB/65jUaBVypebWMEGnDvF4qSLhFDw=
-=UuCv
------END PGP SIGNATURE-----
-
---nextPart1916258.tdWV9SEqCh--
-
-
-
+--=20
+K=C3=B6ry Maincent, Bootlin
+Embedded Linux and kernel engineering
+https://bootlin.com
