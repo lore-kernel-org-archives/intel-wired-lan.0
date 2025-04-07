@@ -4,57 +4,58 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2BE2EC369A3
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  7 Apr 2025 15:11:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3259BC369A4
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  7 Apr 2025 15:11:02 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 991E480D7B;
-	Mon,  7 Apr 2025 15:11:00 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 2A6AB810CB;
+	Mon,  7 Apr 2025 15:11:01 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 4PpeyFJQn3NX; Mon,  7 Apr 2025 15:10:59 +0000 (UTC)
+ id Rh5NT8N8O8-H; Mon,  7 Apr 2025 15:10:59 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org BC2C380EA4
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 0732B8117D
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
 	s=default; t=1744038659;
-	bh=+3Vrefcf/NQ+JQxSP5ld2ShyoQDx5GSabMC/kL9H49g=;
+	bh=FgBkAfF7LRh3OjsY0EeWJNc7q8ieecweD7h2bVdhnwU=;
 	h=Date:From:To:Cc:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=9CvKdSOYPRQ/zPG6enW/i4iHQbffKqKYf0gBXcLNgAD25Xs8VlrFAjjYNu3l2dN62
-	 PjrH4SkkYoL8AeQfcSjMGHw9OilmZ5fdYS3sQXFBxhRwlodXJNxxPjD8DQseysum7a
-	 d0Cb9uQyfU/wAVTl9Age6V58TU8KVDbjHa93frNG5IQLVG0aYMvPluH14Htc92MpTg
-	 mn4M6aZxyHtlU3GlwE4lNPdC6xNzFatI6gNUGCJas8ehp31rF8kGekJdR/qHL6VGFM
-	 XYFjaBaxz7hMbX1BE5YzUX4ySqmUr6CCIRblRIMtC8Wsq91TJKh80wVXqp9/z1hqBd
-	 Lm3rE54oObPVw==
+	b=zwsnPyIgHTvlph0hDlV966VJ2t4TYRgRXnjFPtak8RdWJde5lIF0i/EcJb+Ez6kry
+	 NjycyRVZt8HQdoDeOFepBPFGOveYEj50odzQ9POf75QSPjDhBQrLSqtzDXX+aqO9zp
+	 EKc2wkGVOdzToVnk6eLwtZqQskLH2Pvpj6/k8OBavYSIo1GdOSuZ3ayj+w8i7xLbx1
+	 WznN6xAYiBykNzeBMZ9aN18c2q4FacRzetS87MlDO1YoDq9lGfwfPr3kK433tY1fxP
+	 dvER1lME4OIN8YJXEHUdjlbx03tyUltJwVrgznYMHc2EPurUcOUau4VIun63wXfhmq
+	 tuWS3M5bnZF0Q==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id BC2C380EA4;
+	by smtp1.osuosl.org (Postfix) with ESMTP id 0732B8117D;
 	Mon,  7 Apr 2025 15:10:59 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id 5B0F3DA
- for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Apr 2025 13:46:21 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id B3734DA
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Apr 2025 13:39:04 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 4708840B85
- for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Apr 2025 13:46:21 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 9CE7161057
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Apr 2025 13:39:04 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id IvMeFahY47Xc for <intel-wired-lan@lists.osuosl.org>;
- Mon,  7 Apr 2025 13:46:20 +0000 (UTC)
-X-Greylist: delayed 850 seconds by postgrey-1.37 at util1.osuosl.org;
- Mon, 07 Apr 2025 13:46:20 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 3EB91403BE
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 3EB91403BE
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=2001:4b98:dc4:8::226;
- helo=relay6-d.mail.gandi.net; envelope-from=kory.maincent@bootlin.com;
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id xvn8d-eg_GPU for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  7 Apr 2025 13:39:04 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=217.70.178.249;
+ helo=mslow3.mail.gandi.net; envelope-from=kory.maincent@bootlin.com;
  receiver=<UNKNOWN> 
-Received: from relay6-d.mail.gandi.net (relay6-d.mail.gandi.net
- [IPv6:2001:4b98:dc4:8::226])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 3EB91403BE
- for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Apr 2025 13:46:19 +0000 (UTC)
-Received: by mail.gandi.net (Postfix) with ESMTPSA id F29B4442A3;
- Mon,  7 Apr 2025 13:46:14 +0000 (UTC)
-Date: Mon, 7 Apr 2025 15:46:13 +0200
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 95EA861054
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 95EA861054
+Received: from mslow3.mail.gandi.net (mslow3.mail.gandi.net [217.70.178.249])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 95EA861054
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Apr 2025 13:39:03 +0000 (UTC)
+Received: from relay1-d.mail.gandi.net (relay1-d.mail.gandi.net
+ [IPv6:2001:4b98:dc4:8::221])
+ by mslow3.mail.gandi.net (Postfix) with ESMTP id 635A5583C42
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Apr 2025 13:32:11 +0000 (UTC)
+Received: by mail.gandi.net (Postfix) with ESMTPSA id E372D4431F;
+ Mon,  7 Apr 2025 13:32:04 +0000 (UTC)
+Date: Mon, 7 Apr 2025 15:32:03 +0200
 From: Kory Maincent <kory.maincent@bootlin.com>
 To: Marek Pazdan <mpazdan@arista.com>
 Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
@@ -68,10 +69,9 @@ Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
  Edward Cree <ecree.xilinx@gmail.com>, Daniel Zahka
  <daniel.zahka@gmail.com>, Jianbo Liu <jianbol@nvidia.com>, Gal Pressman
  <gal@nvidia.com>
-Message-ID: <20250407154613.00e7afe2@kmaincent-XPS-13-7390>
-In-Reply-To: <20250407123714.21646-2-mpazdan@arista.com>
+Message-ID: <20250407153203.0a3037d7@kmaincent-XPS-13-7390>
+In-Reply-To: <20250407123714.21646-1-mpazdan@arista.com>
 References: <20250407123714.21646-1-mpazdan@arista.com>
- <20250407123714.21646-2-mpazdan@arista.com>
 Organization: bootlin
 X-Mailer: Claws Mail 4.0.0 (GTK+ 3.24.33; x86_64-pc-linux-gnu)
 MIME-Version: 1.0
@@ -79,31 +79,31 @@ Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 X-GND-State: clean
 X-GND-Score: -100
-X-GND-Cause: gggruggvucftvghtrhhoucdtuddrgeefvddrtddtgddvtddtfeehucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuifetpfffkfdpucggtfgfnhhsuhgsshgtrhhisggvnecuuegrihhlohhuthemuceftddunecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpeffhffvvefukfgjfhhoofggtgfgsehtqhertdertdejnecuhfhrohhmpefmohhrhicuofgrihhntggvnhhtuceokhhorhihrdhmrghinhgtvghnthessghoohhtlhhinhdrtghomheqnecuggftrfgrthhtvghrnhepgfdutdefvedtudegvefgvedtgfdvhfdtueeltefffefffffhgfetkedvfeduieeinecuffhomhgrihhnpegsohhothhlihhnrdgtohhmnecukfhppeeltddrkeelrdduieefrdduvdejnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepledtrdekledrudeifedruddvjedphhgvlhhopehkmhgrihhntggvnhhtqdgirffuqddufedqjeefledtpdhmrghilhhfrhhomhepkhhorhihrdhmrghinhgtvghnthessghoohhtlhhinhdrtghomhdpnhgspghrtghpthhtohepvddtpdhrtghpthhtohepmhhprgiiuggrnhesrghrihhsthgrrdgtohhmpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepnhgvthguvghvsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepihhnthgvlhdqfihirhgvugdqlhgrnhesl
+X-GND-Cause: gggruggvucftvghtrhhoucdtuddrgeefvddrtddtgddvtddtfedvucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuifetpfffkfdpucggtfgfnhhsuhgsshgtrhhisggvnecuuegrihhlohhuthemuceftddunecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpeffhffvvefukfgjfhhoofggtgfgsehtqhertdertdejnecuhfhrohhmpefmohhrhicuofgrihhntggvnhhtuceokhhorhihrdhmrghinhgtvghnthessghoohhtlhhinhdrtghomheqnecuggftrfgrthhtvghrnhepgfdutdefvedtudegvefgvedtgfdvhfdtueeltefffefffffhgfetkedvfeduieeinecuffhomhgrihhnpegsohhothhlihhnrdgtohhmnecukfhppeeltddrkeelrdduieefrdduvdejnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepledtrdekledrudeifedruddvjedphhgvlhhopehkmhgrihhntggvnhhtqdgirffuqddufedqjeefledtpdhmrghilhhfrhhomhepkhhorhihrdhmrghinhgtvghnthessghoohhtlhhinhdrtghomhdpnhgspghrtghpthhtohepvddtpdhrtghpthhtohepmhhprgiiuggrnhesrghrihhsthgrrdgtohhmpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepnhgvthguvghvsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepihhnthgvlhdqfihirhgvugdqlhgrnhesl
  hhishhtshdrohhsuhhoshhlrdhorhhgpdhrtghpthhtoheprghnthhhohhnhidrlhdrnhhguhihvghnsehinhhtvghlrdgtohhmpdhrtghpthhtohepphhriigvmhihshhlrgifrdhkihhtshiivghlsehinhhtvghlrdgtohhmpdhrtghpthhtoheprghnughrvgifodhnvghtuggvvheslhhunhhnrdgthhdprhgtphhtthhopegurghvvghmsegurghvvghmlhhofhhtrdhnvght
 X-GND-Sasl: kory.maincent@bootlin.com
 X-Mailman-Approved-At: Mon, 07 Apr 2025 15:10:56 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=bootlin.com; s=gm1; t=1744033576;
+ d=bootlin.com; s=gm1; t=1744032726;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=+3Vrefcf/NQ+JQxSP5ld2ShyoQDx5GSabMC/kL9H49g=;
- b=i+b9Qm4RpUC95spqhOdbohwP/qQCK6GvMnmHFO1cOgPcmWCoafh0BxHuEexLCgRmKA9t21
- Yu0Q/18Zcal8laTx28aA/x05T1OZFL47PL/yj9rq7bnpcWWEtnj9G1kkj9yBSJzr62gg+R
- CqqBDHtv70zvA743gHo+0lbyXnmwsvngB+SRboyDmmOUDOTa1qOAn8TsX8PvRVN45UHSIS
- OV10edGh87/+0R4PG8VSijPOtljEhrcoXYKFnNy1YKHfSS8hrfnyfWxKC1kkakNxmjb1fL
- 2l3O0Dy/J71nfvX4+R5Ng5kAJXgte8njuIIK8XerrQObme9frsaq55OOuFZYQg==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ bh=FgBkAfF7LRh3OjsY0EeWJNc7q8ieecweD7h2bVdhnwU=;
+ b=pzDd6IgTeal0WpkpWTMQcRZZo0sGBgmuBkicvVFeXcclqzMuD5Bre5csabultSvIrWabAA
+ 4NnsU8sG7lv2IVtGJO+5Lrki7OWFbmwlg+mJUn5a+teZdvkzZMZY+fpWtN39NQxSr6TvoK
+ uWKdyRgv0FzDLExNQkJpuyH9HwEEyvGuz55mrWptmxrsS0/WVxt/4HSl8NGmIRHudi7leM
+ vnHx+N6Jgb7zQQHFtvuERN6irFV564ds4WLSYWxZ4luMsUiHU64P7JXj8XB4iFYhXQL6dZ
+ PXxWIKszN/4ZYtF5zbi776wpIW7oMq13jSf4rw9RU9BzCz3QQz49JFbxiwJ9HA==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=reject dis=none)
  header.from=bootlin.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256
- header.s=gm1 header.b=i+b9Qm4R
-Subject: Re: [Intel-wired-lan] [PATCH 2/2] ice: add qsfp transceiver reset
- and presence pin control
+ header.s=gm1 header.b=pzDd6IgT
+Subject: Re: [Intel-wired-lan] [PATCH 1/2] ethtool: transceiver reset and
+ presence pin control
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -119,33 +119,34 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Mon,  7 Apr 2025 12:35:38 +0000
+On Mon,  7 Apr 2025 12:35:37 +0000
 Marek Pazdan <mpazdan@arista.com> wrote:
 
-> Commit f3c1c896f5a8 ("ethtool: transceiver reset and presence pin control=
-")
-> adds ioctl API extension for get/set-phy-tunable so that transceiver
-> reset and presence pin control is enabled.
+> Signal Definition section (Other signals) of SFF-8636 Spec mentions that
+> additional signals like reset and module present may be implemented for
+> a specific hardware. There is currently no user space API for control of
+> those signals so user space management applications have no chance to
+> perform some diagnostic or configuration operations. This patch uses
+> get_phy_tunable/set_phy_tunable ioctl API to provide above control to
+> user space. Despite ethtool reset option seems to be more suitable for
+> transceiver module reset control, ethtool reset doesn't allow for reset
+> pin assertion and deassertion. Userspace API may require control over
+> when pin will be asserte and deasserted so we cannot trigger reset and
+> leave it to the driver when deassert should be perfromed.
 
-I don't think pointing and explaining the first commit is relevant here.
+nit: performed
 
-> This commit adds functionality to utilize the API in ice driver.
+ETHTOOL_PHY_G/STUNABLE IOCTLs are targeting the PHY of the NIC but IIUC in =
+your
+case you are targeting the reset of the QSFP module. Maybe phylink API is m=
+ore
+appropriate for this feature.
 
-Please do not use "This commit/patch/change", but imperative mood. See
-longer explanation here:
-https://elixir.bootlin.com/linux/v5.17.1/source/Documentation/process/submi=
-tting-patches.rst#L95
+You have to add net-next prefix in the subject like this [PATCH net-next 1/=
+2]
+when you add new support to net subsystem.
 
-You could simply write:
-Add support for the newly introduced transceiver reset feature in the ice
-driver.
-
-> According to E810 datasheet QSFP reset and presence pins are being
-> connected to SDP0 and SDP2 pins on controller host. Those pins can
-> be accessed using AQ commands for GPIO get/set.[O
-
-Weird character at the end.
-
+Regards,
 --=20
 K=C3=B6ry Maincent, Bootlin
 Embedded Linux and kernel engineering
