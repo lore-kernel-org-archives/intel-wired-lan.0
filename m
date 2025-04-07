@@ -1,91 +1,95 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5AAF2C3601E
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  7 Apr 2025 14:02:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D991DC36010
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  7 Apr 2025 15:09:35 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 03FF5406CF;
-	Mon,  7 Apr 2025 14:02:51 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 6A9E081911;
+	Mon,  7 Apr 2025 15:09:35 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id swlx8pspnHqp; Mon,  7 Apr 2025 14:02:50 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id uvDcy28YMp8Y; Mon,  7 Apr 2025 15:09:34 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 769AA4088B
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org CC43481A39
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1744034570;
-	bh=fdnGVLfRkD9zRtMLTLReBFHsSrnFe+4EithzXUJo3ew=;
+	s=default; t=1744038574;
+	bh=xENXFWwcnVbvWBHcO56xPU6V+nfp2ZKW6ElFaUctb6k=;
 	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=6/tR7fekUt84SXQaxC1glfttuHOPOKlZMnWQBk7AXKwkTCfdxVQFtj96Nacs5AL5N
-	 YMjpL8jIYDnv2Flq7cE4JYWyQGzSVxr4Zxmta4azvTrrLd2HP1RZfnTyjmeB0Cbxo+
-	 MCNBYcZ0NipC6+pSGOLL0yhdHPFXVQTr++vHrUppfKweHnn8wGgNHheyisrJ2Blt6j
-	 nWRLCKa1nYbX0kOARWgEYdJiRs5K63z3Hi35Ye8URDfzz1eiJ/LgFePyLsF/j2gbg0
-	 ES0YukWPqsYYGqPoxieDuIXAvVCSm6K+VT7Oh/V3Ub+Az+/Lnv0zk61yt/BKlX7pV6
-	 VP6jEgbJH3SAA==
+	b=33zj3i86ZfQIUwpwrCdB3wBehzJE875Gw1vDeFnzYgKu+SNM69/PSt4J2DcxnoCNj
+	 jKZzumeXU0UXL2k3s6Igt+Wt+PDiv2B3xqAOj5H2WxAAklpP/A3t+RIft1y1Z/uHZa
+	 yWeAlTOcEfGOP7Hw5k8MUXvwAaEuYivp7so591KhZUT8yx9EVrfJkF6bJCxMMMu1i9
+	 IFtPee2Wakep3UUuMeVEKZ3dY1SVNpcI97EeB2+sEh8tAVh9NnQ1lBMxoEuYw+a5KL
+	 U96vdr/KVmzVpIH4j9+COmLel1tiYMmjwo00rTQUk6nB0O1Fnm+7W5xhIEI2F/dAmu
+	 xpub1d3wAKRaQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 769AA4088B;
-	Mon,  7 Apr 2025 14:02:50 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id 9D31E1DE
- for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Apr 2025 14:02:48 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id CC43481A39;
+	Mon,  7 Apr 2025 15:09:34 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 9EB511F1
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Apr 2025 15:09:33 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 829A160BCB
- for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Apr 2025 14:02:48 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 901AD4051A
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Apr 2025 15:09:33 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id qf924Ai8PKDM for <intel-wired-lan@lists.osuosl.org>;
- Mon,  7 Apr 2025 14:02:48 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id U7F0NRsMezhh for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  7 Apr 2025 15:09:33 +0000 (UTC)
+X-Greylist: delayed 437 seconds by postgrey-1.37 at util1.osuosl.org;
+ Mon, 07 Apr 2025 15:09:32 UTC
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 0BB994035D
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0BB994035D
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org;
+ client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org;
  envelope-from=horms@kernel.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org D59BE60B16
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org D59BE60B16
-Received: from nyc.source.kernel.org (nyc.source.kernel.org
- [IPv6:2604:1380:45d1:ec00::3])
- by smtp3.osuosl.org (Postfix) with ESMTPS id D59BE60B16
- for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Apr 2025 14:02:47 +0000 (UTC)
+Received: from sea.source.kernel.org (sea.source.kernel.org
+ [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 0BB994035D
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Apr 2025 15:09:32 +0000 (UTC)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by nyc.source.kernel.org (Postfix) with ESMTP id C7A3CA48C47;
- Mon,  7 Apr 2025 13:57:17 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9351BC4CEDD;
- Mon,  7 Apr 2025 14:02:44 +0000 (UTC)
-Date: Mon, 7 Apr 2025 15:02:42 +0100
+ by sea.source.kernel.org (Postfix) with ESMTP id 839E74508C;
+ Mon,  7 Apr 2025 15:02:14 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C2F92C4CEDD;
+ Mon,  7 Apr 2025 15:02:12 +0000 (UTC)
+Date: Mon, 7 Apr 2025 16:02:10 +0100
 From: Simon Horman <horms@kernel.org>
-To: Xuanqiang Luo <xuanqiang.luo@linux.dev>
-Cc: przemyslaw.kitszel@intel.com, anthony.l.nguyen@intel.com,
- davem@davemloft.net, edumazet@google.com, netdev@vger.kernel.org,
- intel-wired-lan@lists.osuosl.org, Xuanqiang Luo <luoxuanqiang@kylinos.cn>
-Message-ID: <20250407140242.GK395307@horms.kernel.org>
-References: <20250325020149.2041648-1-xuanqiang.luo@linux.dev>
+To: Wentao Liang <vulab@iscas.ac.cn>
+Cc: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
+ andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
+ kuba@kernel.org, pabeni@redhat.com,
+ intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Message-ID: <20250407150210.GM395307@horms.kernel.org>
+References: <20250407034155.1396-1-vulab@iscas.ac.cn>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20250325020149.2041648-1-xuanqiang.luo@linux.dev>
+In-Reply-To: <20250407034155.1396-1-vulab@iscas.ac.cn>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1744034566;
- bh=fR7PBr6tXm57kWHmOH6/mTwC1BYD8urfsW/j3fAdi+8=;
+ d=kernel.org; s=k20201202; t=1744038135;
+ bh=2fqdQpwA72B3FR5XvEN+GgQO9JWALqdvy5MDvgJ70Cw=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=sktWr8vfZzwR4iCxq07Y3isgrQymVdA1eK1vTdZIH01p+zpcGhsWAlsZSdD5jTfWC
- r3BMISYilhgVeeSnQMhpE9ENTOKOR7cCRU04HRN1htlhrvAbdEVdpUu2TsG5PHgvAy
- BjKKzoIo2LR9men2Rmi4Vfdxe6MnjwX2pmGtO1871I2fhqymPGKEbnwvplma9RIK9n
- UzRo7DVEtEk8vvEqVOWswqzhd9sO/QGeheGfjFjO/4ij+mrj5yq5hSpMccZYTnMaLd
- hiT8AVXpXT8BLnA5FTd3C/1QorD/mTFFIqCFyzjEqbyzxquLSvBPxncsHWO2NIzZwm
- uzVo6vxjg9Fhw==
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ b=ZxXte7jtt0OpW5DQPwSxLqjmReRKN2y+5nU/2YQcssunNP0spna87hF1rSHe2cqjz
+ 0KKm/8JJl5xifCoaXTyae5Ftxtun7eMuIeLvJEKqNRhwXA07EDUFvaNU8wGPPMfoUy
+ SLHR9jbaP0go4V0m+bKQcF5Lr8J1H2QRILFhAKv8lMB4atxQrtky40gqWIz2o2D+mO
+ gAJUwNJPreDylstewL/sZsKi33yt0n3zzlt2kEB75DkyUQqGiWLUbQdqA5nrlR7v8E
+ flE+SQgRnkIxhjwghl3IQE5a3qhmi+muW76fcuj03rSQ4r9MpHKeGMgRGnvbmx7SCG
+ npHLHAChc9Rig==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=sktWr8vf
-Subject: Re: [Intel-wired-lan] [PATCH iwl-net v2] ice: Check VF VSI Pointer
- Value in ice_vc_add_fdir_fltr()
+ header.s=k20201202 header.b=ZxXte7jt
+Subject: Re: [Intel-wired-lan] [PATCH] e1000e: Add error handling for
+ e1e_rphy_locked()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -101,47 +105,62 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Tue, Mar 25, 2025 at 10:01:49AM +0800, Xuanqiang Luo wrote:
-> From: Xuanqiang Luo <luoxuanqiang@kylinos.cn>
+On Mon, Apr 07, 2025 at 11:41:54AM +0800, Wentao Liang wrote:
+> The e1000_suspend_workarounds_ich8lan() calls e1e_rphy_locked to disable
+> the SMB release, but does not check its return value. A proper
+> implementation can be found in e1000_resume_workarounds_pchlan() from
+> /source/drivers/net/ethernet/intel/e1000e/ich8lan.c.
 > 
-> As mentioned in the commit baeb705fd6a7 ("ice: always check VF VSI
-> pointer values"), we need to perform a null pointer check on the return
-> value of ice_get_vf_vsi() before using it.
+> Add an error check for e1e_rphy_locked(). Log the error message and jump
+> to 'release' label if the e1e_rphy_locked() fails.
 > 
-> v2: Add "iwl-net" to the subject and modify the name format.
-> 
-> Fixes: 6ebbe97a4881 ("ice: Add a per-VF limit on number of FDIR filters")
-> Signed-off-by: Xuanqiang Luo <luoxuanqiang@kylinos.cn>
-
-Reviewed-by: Simon Horman <horms@kernel.org>
-
+> Fixes: 2fbe4526e5aa ("e1000e: initial support for i217")
+> Cc: stable@vger.kernel.org # v3.5+
+> Signed-off-by: Wentao Liang <vulab@iscas.ac.cn>
 > ---
->  drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c | 6 ++++++
->  1 file changed, 6 insertions(+)
+>  drivers/net/ethernet/intel/e1000e/ich8lan.c | 6 +++++-
+>  1 file changed, 5 insertions(+), 1 deletion(-)
 > 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
-> index 14e3f0f89c78..53bad68e3f38 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
-> @@ -2092,6 +2092,12 @@ int ice_vc_add_fdir_fltr(struct ice_vf *vf, u8 *msg)
->  	dev = ice_pf_to_dev(pf);
->  	vf_vsi = ice_get_vf_vsi(vf);
+> diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+> index 2f9655cf5dd9..d16e3aa50809 100644
+> --- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
+> +++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+> @@ -5497,7 +5497,11 @@ void e1000_suspend_workarounds_ich8lan(struct e1000_hw *hw)
+>  			e1e_wphy_locked(hw, I217_SxCTRL, phy_reg);
 >  
+>  			/* Disable the SMB release on LCD reset. */
+> -			e1e_rphy_locked(hw, I217_MEMPWR, &phy_reg);
+> +			ret_val = e1e_rphy_locked(hw, I217_MEMPWR, &phy_reg);
+> +			if (ret_val) {
+> +				e_dbg("Fail to Disable the SMB release on LCD reset.");
+> +				goto release;
+> +			}
+>  			phy_reg &= ~I217_MEMPWR_DISABLE_SMB_RELEASE;
+>  			e1e_wphy_locked(hw, I217_MEMPWR, phy_reg);
+>  		}
 
-nit, but not need to repost because of this: it's seems nicer
-not to have not to have a blank line here. And instead, if one is
-really wanted, put it above the ice_get_vf_vsi() line.
+Hi,
 
-> +	if (!vf_vsi) {
-> +		dev_err(dev, "Can not get FDIR vf_vsi for VF %u\n", vf->vf_id);
-> +		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
-> +		goto err_exit;
-> +	}
-> +
->  #define ICE_VF_MAX_FDIR_FILTERS	128
->  	if (!ice_fdir_num_avail_fltr(&pf->hw, vf_vsi) ||
->  	    vf->fdir.fdir_fltr_cnt_total >= ICE_VF_MAX_FDIR_FILTERS) {
-> -- 
-> 2.27.0
-> 
-> 
+The next few lines of this function look like this:
+
+		/* Enable MTA to reset for Intel Rapid Start Technology
+		 * Support
+		 */
+		e1e_rphy_locked(hw, I217_CGFREG, &phy_reg);
+		phy_reg |= I217_CGFREG_ENABLE_MTA_RESET;
+		e1e_wphy_locked(hw, I217_CGFREG, phy_reg);
+
+And I think that to be consistent with e1000_resume_workarounds_pchlan()
+the return value of the above call to e1e_rphy_locked() should also be
+checked.
+
+However, I am not at all sure if the current absence of error checking is
+intended as part of the logic flow, or if these are oversights.
+
+Have you observed any run-time problems with this code?
+
+I would naively expect that the i217 is or was a widely used device.  And
+this code seems to have been around for a well over 10 years in it's
+current form. Which makes me thing we should tread carefully when changing
+it.
+
