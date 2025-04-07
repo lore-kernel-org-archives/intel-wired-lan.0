@@ -1,99 +1,93 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 23C09C3601E
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  7 Apr 2025 15:10:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0CB16C36010
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  7 Apr 2025 15:11:00 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id DE4946084D;
-	Mon,  7 Apr 2025 15:10:58 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id C99CF81112;
+	Mon,  7 Apr 2025 15:10:59 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id klojyYDnk5dG; Mon,  7 Apr 2025 15:10:58 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id JDddKJxI0qFx; Mon,  7 Apr 2025 15:10:57 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 61B2A60909
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B0A35810CB
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1744038658;
-	bh=vlHXXG98PgWKxGxcZYLCRP/TU5pgXiI5WxEWwcpmfhA=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=4hG+4Waq8uBa2/b7fn8yN3cIMRpGedSlAgr6sU+gR6/tYGCjflWtP4Yjlxbg9R1N0
-	 X0Fy1OvGDXUHgE6SF0MfLyErZ4BY87JKuBDbvBSm3LEHV3c6cNScUOPP6VFgj8/NIF
-	 DUXvfEWgKKz2kVFnzZJS6Yx2YYVa1C9xoFJKvdxCA6eNVk7tzGnylfuze8G36RlQIP
-	 pLyFuqc0Ir5nslZV/ifyw+Cyv2IpmRFAouYfks9AufezOWLOtFJEBHjoiJGh6UXRtG
-	 Sk5998IXDI9eb9EfPSL8gmfdwGXm9RXUcK+mJE1WiSM9QUztPTB0A/PZXt8fUvghtw
-	 9XpFs0Ly6idsA==
+	s=default; t=1744038657;
+	bh=vjO3TAnFOqalGZ8xSYfbpH7cqt+Bfn6P2ZGcPBU9VrA=;
+	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=x0FnAoj06tgUVjuwvsac3BppKcEOhXTAT+GPaclpGxlxGTD9TEZjqMB62ZVW4f7hj
+	 1/96QXgB+wxEBbq8cxbpSh+lVGrlhcFNSJyctJcc+CImtESOR/d1bQ8KN7WQe9lUXJ
+	 XsU2piT858z9soowglfk2gUHrEtRVGjFJlVQv6c5D+BX+BSjnmGM6uKgQ9bbMe++tZ
+	 I1skhnUQ1/XxuKcZG2e3Qn4tb26+URFYxMdgn11KyGGjl+U3P06vM3vMTliGJVmkWa
+	 ufQYX344/kcuu+N4fmdZBfh9TaJeZGELDUM1UaQYJ+QiD7h19Q6X8/FNf93mNKBehu
+	 zZ/QSsW59Pa+Q==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 61B2A60909;
-	Mon,  7 Apr 2025 15:10:58 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id 9D46F1DE
- for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Apr 2025 09:21:49 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id B0A35810CB;
+	Mon,  7 Apr 2025 15:10:57 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 2AA691DE
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Apr 2025 06:30:47 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 7BCD440603
- for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Apr 2025 09:21:49 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 03A2440712
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Apr 2025 06:30:47 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id VE84M6c6X5HN for <intel-wired-lan@lists.osuosl.org>;
- Mon,  7 Apr 2025 09:21:48 +0000 (UTC)
-X-Greylist: delayed 10842 seconds by postgrey-1.37 at util1.osuosl.org;
- Mon, 07 Apr 2025 09:21:47 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org EEC8E404DB
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org EEC8E404DB
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2a05:f480:1800:ee:5400:4ff:feab:5961; helo=prime.voidband.net;
- envelope-from=oleksandr@natalenko.name; receiver=<UNKNOWN> 
-Received: from prime.voidband.net (prime.voidband.net
- [IPv6:2a05:f480:1800:ee:5400:4ff:feab:5961])
- by smtp4.osuosl.org (Postfix) with ESMTPS id EEC8E404DB
- for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Apr 2025 09:21:46 +0000 (UTC)
+ id qKmlBX7a9t-F for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  7 Apr 2025 06:30:46 +0000 (UTC)
+X-Greylist: delayed 583 seconds by postgrey-1.37 at util1.osuosl.org;
+ Mon, 07 Apr 2025 06:30:45 UTC
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org F0824406FE
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org F0824406FE
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=199.247.17.104;
+ helo=prime.voidband.net; envelope-from=oleksandr@natalenko.name;
+ receiver=<UNKNOWN> 
+Received: from prime.voidband.net (prime.voidband.net [199.247.17.104])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id F0824406FE
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Apr 2025 06:30:45 +0000 (UTC)
 Received: from spock.localnet (unknown [212.20.115.26])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange x25519 server-signature ECDSA (prime256v1) server-digest SHA256)
  (No client certificate requested)
- by prime.voidband.net (Postfix) with ESMTPSA id A6A4E62DD1A0;
- Mon, 07 Apr 2025 11:21:42 +0200 (CEST)
+ by prime.voidband.net (Postfix) with ESMTPSA id CB416635B040;
+ Mon, 07 Apr 2025 08:20:58 +0200 (CEST)
 From: Oleksandr Natalenko <oleksandr@natalenko.name>
-To: linux-kernel@vger.kernel.org,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>
+To: linux-kernel@vger.kernel.org
 Cc: netdev@vger.kernel.org, intel-wired-lan@lists.osuosl.org,
  Paolo Abeni <pabeni@redhat.com>, Jakub Kicinski <kuba@kernel.org>,
  Eric Dumazet <edumazet@google.com>, "David S. Miller" <davem@davemloft.net>,
  Andrew Lunn <andrew+netdev@lunn.ch>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
  Tony Nguyen <anthony.l.nguyen@intel.com>,
  Peter Zijlstra <peterz@infradead.org>, Josh Poimboeuf <jpoimboe@kernel.org>
-Date: Mon, 07 Apr 2025 11:21:27 +0200
-Message-ID: <5874052.DvuYhMxLoT@natalenko.name>
-In-Reply-To: <fdb5d23c-8c39-4f73-a89d-32257dac389b@intel.com>
-References: <4970551.GXAFRqVoOG@natalenko.name>
- <fdb5d23c-8c39-4f73-a89d-32257dac389b@intel.com>
+Date: Mon, 07 Apr 2025 08:20:45 +0200
+Message-ID: <4970551.GXAFRqVoOG@natalenko.name>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart6142846.lOV4Wx5bFT";
+Content-Type: multipart/signed; boundary="nextPart1916258.tdWV9SEqCh";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
 X-Mailman-Approved-At: Mon, 07 Apr 2025 15:10:56 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=natalenko.name; 
- s=dkim-20170712; t=1744017702;
+ s=dkim-20170712; t=1744006859;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=vlHXXG98PgWKxGxcZYLCRP/TU5pgXiI5WxEWwcpmfhA=;
- b=HWQ80ZTxEG5UnyG7P9JMbkv47UEZourqaoZAbgle4OKb4AEfJSo1zomrOgB+0UCTrsI0El
- qRpXGKWbr4/a2sG6UBWwEhYeNIAd95Afh+HV9ILmJwr5i1G1BZTp51y1CFGmn5fxURmwji
- rSNpV3ltsvQ+xQWX+W7qrYb8rO01WRA=
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type;
+ bh=vjO3TAnFOqalGZ8xSYfbpH7cqt+Bfn6P2ZGcPBU9VrA=;
+ b=T67kECPfT42QpBEFPxPp59Fv0xiLmj2hM27rMbf3PfIKcxYgnmWvIuC9rghujRZRFdM0Lg
+ OXW+pL+q8oqvHeq1MxJ33fg7ygvcgVzndpV6ERoQYM+RUooRVmY8vFRu0DRzGp9UfDT57I
+ jR5vQAtmHZab6o88WIQahsLsJEnageU=
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=reject dis=none)
  header.from=natalenko.name
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (1024-bit key,
  unprotected) header.d=natalenko.name header.i=@natalenko.name
- header.a=rsa-sha256 header.s=dkim-20170712 header.b=HWQ80ZTx
-Subject: Re: [Intel-wired-lan] objtool warning in ice_free_prof_mask
+ header.a=rsa-sha256 header.s=dkim-20170712 header.b=T67kECPf
+Subject: [Intel-wired-lan] objtool warning in ice_free_prof_mask
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -109,79 +103,56 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
---nextPart6142846.lOV4Wx5bFT
-Content-Transfer-Encoding: quoted-printable
+--nextPart1916258.tdWV9SEqCh
+Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="utf-8"; protected-headers="v1"
 From: Oleksandr Natalenko <oleksandr@natalenko.name>
-Subject: Re: objtool warning in ice_free_prof_mask
-Date: Mon, 07 Apr 2025 11:21:27 +0200
-Message-ID: <5874052.DvuYhMxLoT@natalenko.name>
-In-Reply-To: <fdb5d23c-8c39-4f73-a89d-32257dac389b@intel.com>
+To: linux-kernel@vger.kernel.org
+Subject: objtool warning in ice_free_prof_mask
+Date: Mon, 07 Apr 2025 08:20:45 +0200
+Message-ID: <4970551.GXAFRqVoOG@natalenko.name>
 MIME-Version: 1.0
 
 Hello.
 
-On pond=C4=9Bl=C3=AD 7. dubna 2025 11:03:31, st=C5=99edoevropsk=C3=BD letn=
-=C3=AD =C4=8Das Przemek Kitszel wrote:
-> On 4/7/25 08:20, Oleksandr Natalenko wrote:
-> > Hello.
-> >=20
-> > With v6.15-rc1, CONFIG_OBJTOOL_WERROR=3Dy and gcc 14.2.1 the following =
-happens:
->=20
-> have you COMPILE_TEST'ed whole kernel and this is the only (new) error?
+With v6.15-rc1, CONFIG_OBJTOOL_WERROR=y and gcc 14.2.1 the following happens:
 
-It's not a new warning, I've observe it for several recent major kernel rel=
-eases already.
+```
+drivers/net/ethernet/intel/ice/ice.o: error: objtool: ice_free_prof_mask.isra.0() falls through to next function ice_free_flow_profs.cold()
+drivers/net/ethernet/intel/ice/ice.o: error: objtool: ice_free_prof_mask.isra.0.cold() is missing an ELF size annotation
+```
 
-I do not build with CONFIG_COMPILE_TEST.
+If I mark ice_write_prof_mask_reg() as noinline, this warning disappears.
 
-I've also realised I see this warning with -O3 only. I know this is unsuppo=
-rted, so feel free to ignore me, but I do -O3 builds for finding out possib=
-le loose ends in the code, and this is the only place where it breaks.
+Any idea what's going wrong?
 
-> > ```
-> > drivers/net/ethernet/intel/ice/ice.o: error: objtool: ice_free_prof_mas=
-k.isra.0() falls through to next function ice_free_flow_profs.cold()
-> > drivers/net/ethernet/intel/ice/ice.o: error: objtool: ice_free_prof_mas=
-k.isra.0.cold() is missing an ELF size annotation
-> > ```
-> >=20
-> > If I mark ice_write_prof_mask_reg() as noinline, this warning disappear=
-s.
-> >=20
-> > Any idea what's going wrong?
->=20
-> sorry, no idea
->=20
-> >=20
-> > Thank you.
+Thank you.
 
-=2D-=20
+-- 
 Oleksandr Natalenko, MSE
---nextPart6142846.lOV4Wx5bFT
+--nextPart1916258.tdWV9SEqCh
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCAAdFiEEZUOOw5ESFLHZZtOKil/iNcg8M0sFAmfzmRcACgkQil/iNcg8
-M0sq2hAAgv9gMejnpHVI+Cxnx+H+zNepzIt+NeOM1RI95cqJCAWkNIFl2msIJcy5
-fn5ycnUTeVCuIBFi2Rsjs3offXq3B7gARMBL5nE7qKphSjgGsg8Spo4ckSfH7kgJ
-74sgXuPHwNw5n0RaWcvuq75vojemqZ5AmO/YybDdJFXElLyPfy96fDx85DN/wmw0
-9jsbNW+e/p+xpOIMcJqsVrbRmWLtTDMEOYK1jCCq6LX4GHzVhtWIUT0xIZ/hdC8S
-5Sbrq6sLaH0WFfVum1ibwUmqD+pcN4zDsipSorobrkZ5oPG6J9oTmeQPFS+PoO/s
-M6pbP5shs+q+HDcxUTb6XaeVnj4IhFJMBmP5FPNRqhiacj9hWHcXUk7++2VxeANF
-cS8HF38eYZ3DWm89uec0gZR3TGwi5+bTGXfppsbGbrY0FwThbugSMkImCRKgJlGi
-lMLzAujx4S1hYo7vqoPIc7eN0ogPezI1zpY7zb7Nm5qK2X80qX+Ky5KC7piPU363
-vX8Trfl+gPIN7KgKvlafM+0pRjNklrtfGod/rWsHR86lshVzopB/g0HLE47kuXkQ
-0L2Ea4DYfODrXXPZBZZs258wH6IakUGDz9nXBNe52p6eGBSMqvAL/EQR+IZIGXo8
-OnAOqWELkQ30ZaE+FBKfdQhjyPO7IBfyh4TtmouGyTBOQoLWjug=
-=/Gz6
+iQIzBAABCAAdFiEEZUOOw5ESFLHZZtOKil/iNcg8M0sFAmfzbr0ACgkQil/iNcg8
+M0vZkhAA1tXUFHurvbvtwTDQNNs1ru9REB1w9TKVmN62Dgv9US35rAtlFot4wulq
+43xzWuIcgR6OrHd9/39OZ9BJE2RVzOBIcBHYexgXCnX9BkH0A+y9LobJA8cMrLt+
+bp/TNhJqxbobWt+YPLAWgIujNANpeepexdN/oJoW857M1dj2QQmLLHkPdAGyOhTv
+jXPA+Ul+TJm4PN+u/q3WdWpUZHhXrWn5ICfyx+dzYqoYRpgQD84B/YMUasqA2R5d
+ClWK5PTQq80ynDVdVLh1KKb3gXBornnQumLcalZijIz/Mwc8ELLfjt9Xv2XNdS5n
+vlCw49IH2rvU+1zYhMx4DLkVh3n22pyL+Msp3UQt8klFlQ88ko8aK9Gh2Y5q+BLr
+oHMokSoj92aZKjznihYWdsBst/QpFOmGTMOEtD0cHtxobZVfQnfHfd/i4yLPHWwS
+ouogXxD5lx0Kx8SS4unDa4UtNP4ZQHcOmUt4l2EYeI0rnwus0NBDWGb7jdGgtuU7
+1IJcJ+zs9uCEELgLDuPV67Q+2WBhqebZlJZC48vgLV47AuZ+r2XQP8BDl2F0Bh6J
+cIDAiz07u3LBAaPByYdTQY0YZVr8z79MvNpGxKwNXt2LYE1yksOgpzmeUsYp+Mjb
+gGBSJckC6a4KwNCG/i2gaYB/65jUaBVypebWMEGnDvF4qSLhFDw=
+=UuCv
 -----END PGP SIGNATURE-----
 
---nextPart6142846.lOV4Wx5bFT--
+--nextPart1916258.tdWV9SEqCh--
 
 
 
