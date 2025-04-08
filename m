@@ -1,87 +1,88 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 96047C36010
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  8 Apr 2025 02:16:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BD655C36010
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  8 Apr 2025 02:20:37 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 3B3C2404A8;
-	Tue,  8 Apr 2025 02:16:13 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 76F638169F;
+	Tue,  8 Apr 2025 02:20:37 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id DguQLDheKCLb; Tue,  8 Apr 2025 02:16:12 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id IY002EvV0c9t; Tue,  8 Apr 2025 02:20:37 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 6036B406E1
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E39E7811DC
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1744078572;
-	bh=lPjoLTdoallsCTo09suEBRnN2BCJJBA5YHjIc4x9f54=;
+	s=default; t=1744078836;
+	bh=mTadr6hlfyyWPFYhpnPzSUF00n3EJeBKU1nvkMa6B0k=;
 	h=Date:To:Cc:References:From:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=BlXSd8wG5ZTtziocYgP8eGV3qZnS70NOkxmhfY+pBZ0DgXLTw/KfyqcK7Spsjxm/K
-	 /BL+G5fLVSdQDjTPibS6MCS9/o9vNDhRc4pDcbdgCGpIJ/zdxF35W3yEssY74L3Y9S
-	 oMK+vBEhF3rQ9zN9dQFUQy7jxaLqp2Kvz+gDHwxVwSCeSIgpZTBpMRsVuIzogKKk4y
-	 3t9X6dSAQBXzHpaNn/0q+WRIjr0G+2NVUI3tBr7eahy810T8wbWcoT59tLYeliYr4g
-	 1w71XEO3ebU9ksSvQRJMk0lKulcbcGajNQCLEtiHDzwQh5UTNTdcgpu+kDZXD32Z6x
-	 pTmKSBqWUlUSw==
+	b=iktVeLfYXiZd1TjNEXeF4gP+FMENDC/zxmNGoMEG+TBu5qZz5Ttx7ja9KP/QhYFdE
+	 h5L/3QVjrVZ60y8kW3K3Om8O8tFO1DnflM30wvABAfyVRkzw0tuR8kZigVSu9sJABV
+	 omisu2g0iank6Attg0Hpm6HRBB13q0bLcC5iUTIyfZMyhjWjfXd5c3U62HOGiRlWEy
+	 PpUKw+T8oaOojKkWnT6jF+x9JHPqMkL221iMjQIISdHt3KiTQ7urIDBLsNDzq102Al
+	 B01YNrTZF3v/rMOZ5EqWP+d4skIs+nRkXeupKgdkSqlVbg3jk05xiy8kZA5Nov1+bN
+	 LIhku8lpKDdCg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 6036B406E1;
-	Tue,  8 Apr 2025 02:16:12 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id 6BDD71DE
- for <intel-wired-lan@lists.osuosl.org>; Tue,  8 Apr 2025 02:16:11 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id E39E7811DC;
+	Tue,  8 Apr 2025 02:20:36 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 9DF5A1DE
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  8 Apr 2025 02:20:35 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 4A50F406E1
- for <intel-wired-lan@lists.osuosl.org>; Tue,  8 Apr 2025 02:16:11 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 8F9AC404F9
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  8 Apr 2025 02:20:35 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id vwXyJxxzeSZK for <intel-wired-lan@lists.osuosl.org>;
- Tue,  8 Apr 2025 02:16:10 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=91.218.175.172;
- helo=out-172.mta0.migadu.com; envelope-from=xuanqiang.luo@linux.dev;
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id EQd5DFCA6I-a for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  8 Apr 2025 02:20:35 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=95.215.58.170;
+ helo=out-170.mta1.migadu.com; envelope-from=xuanqiang.luo@linux.dev;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 62C3B404A8
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 62C3B404A8
-Received: from out-172.mta0.migadu.com (out-172.mta0.migadu.com
- [91.218.175.172])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 62C3B404A8
- for <intel-wired-lan@lists.osuosl.org>; Tue,  8 Apr 2025 02:16:09 +0000 (UTC)
-Message-ID: <b209be10-2653-4a9e-bb9d-683fc9c0cf50@linux.dev>
-Date: Tue, 8 Apr 2025 10:15:13 +0800
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 90F8B40175
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 90F8B40175
+Received: from out-170.mta1.migadu.com (out-170.mta1.migadu.com
+ [95.215.58.170])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 90F8B40175
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  8 Apr 2025 02:20:34 +0000 (UTC)
+Message-ID: <6c463f96-18e7-4ee9-ba74-524772e008b4@linux.dev>
+Date: Tue, 8 Apr 2025 10:19:39 +0800
 MIME-Version: 1.0
-To: Przemek Kitszel <przemyslaw.kitszel@intel.com>, anthony.l.nguyen@intel.com
-Cc: davem@davemloft.net, edumazet@google.com, netdev@vger.kernel.org,
+To: Simon Horman <horms@kernel.org>
+Cc: przemyslaw.kitszel@intel.com, anthony.l.nguyen@intel.com,
+ davem@davemloft.net, edumazet@google.com, netdev@vger.kernel.org,
  intel-wired-lan@lists.osuosl.org, Xuanqiang Luo <luoxuanqiang@kylinos.cn>
 References: <20250325020149.2041648-1-xuanqiang.luo@linux.dev>
- <4a960ad6-6118-4db8-9511-a1e3bb5b66f3@intel.com>
+ <20250407140242.GK395307@horms.kernel.org>
 X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and
  include these headers.
 From: luoxuanqiang <xuanqiang.luo@linux.dev>
-In-Reply-To: <4a960ad6-6118-4db8-9511-a1e3bb5b66f3@intel.com>
+In-Reply-To: <20250407140242.GK395307@horms.kernel.org>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 X-Migadu-Flow: FLOW_OUT
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=linux.dev; s=key1; t=1744078566;
+ d=linux.dev; s=key1; t=1744078831;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=lPjoLTdoallsCTo09suEBRnN2BCJJBA5YHjIc4x9f54=;
- b=E1xlKyIcR69jh405rRGhisEKnGfRwzmSoeTe/aS8yt3OOGp3JLUINTh0nhqxVEtDDJyyFz
- Zs/dOfYr7S4QTnsgPHhq04WcOjmwtcvodR50TtN9Hq1mUnsoqSxXA90JXEcusWyYWotMZ7
- 9F6ZWcEFi4pnWpG5YWS9Z9+pLszonbQ=
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ bh=mTadr6hlfyyWPFYhpnPzSUF00n3EJeBKU1nvkMa6B0k=;
+ b=NFCY8Y1dz+KkzOURdbfKAdoFb/kvpmtBEKKkSOhVv/lWdHckn8yhFGmrio62gou0llqR8F
+ nNZD1lvurUHtiBwoPdFh/RlO6qSkOpkSk5gefPoSfRzaI+AeVRMMhHIT7oRWeoYo60qlDp
+ 8oNKKm8SHQ1AtqnSrzpKmESCeexcwSU=
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=linux.dev
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (1024-bit key,
  unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256
- header.s=key1 header.b=E1xlKyIc
+ header.s=key1 header.b=NFCY8Y1d
 Subject: Re: [Intel-wired-lan] [PATCH iwl-net v2] ice: Check VF VSI Pointer
  Value in ice_vc_add_fdir_fltr()
 X-BeenThere: intel-wired-lan@osuosl.org
@@ -100,8 +101,8 @@ Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 
-在 2025/3/27 18:22, Przemek Kitszel 写道:
-> On 3/25/25 03:01, Xuanqiang Luo wrote:
+在 2025/4/7 22:02, Simon Horman 写道:
+> On Tue, Mar 25, 2025 at 10:01:49AM +0800, Xuanqiang Luo wrote:
 >> From: Xuanqiang Luo <luoxuanqiang@kylinos.cn>
 >>
 >> As mentioned in the commit baeb705fd6a7 ("ice: always check VF VSI
@@ -110,36 +111,41 @@ Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 >>
 >> v2: Add "iwl-net" to the subject and modify the name format.
 >>
->> Fixes: 6ebbe97a4881 ("ice: Add a per-VF limit on number of FDIR 
->> filters")
+>> Fixes: 6ebbe97a4881 ("ice: Add a per-VF limit on number of FDIR filters")
 >> Signed-off-by: Xuanqiang Luo <luoxuanqiang@kylinos.cn>
+> Reviewed-by: Simon Horman <horms@kernel.org>
+>
 >> ---
->
-> Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
->
-> (technically the changelog (v2:...) should be placed here, with 
-> additional "---" line afterwards; no need to resubmit just for that)
->
-Thank you for your guidance. I'll keep this in mind. :) BRs! Xuanqiang
-
->> drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c | 6 ++++++
->>   1 file changed, 6 insertions(+)
+>>   drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c | 6 ++++++
+>>   1 file changed, 6 insertions(+)
 >>
->> diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c 
->> b/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
+>> diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
 >> index 14e3f0f89c78..53bad68e3f38 100644
 >> --- a/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
 >> +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
->> @@ -2092,6 +2092,12 @@ int ice_vc_add_fdir_fltr(struct ice_vf *vf, u8 
->> *msg)
->>       dev = ice_pf_to_dev(pf);
->>       vf_vsi = ice_get_vf_vsi(vf);
->>   +    if (!vf_vsi) {
->> +        dev_err(dev, "Can not get FDIR vf_vsi for VF %u\n", vf->vf_id);
->> +        v_ret = VIRTCHNL_STATUS_ERR_PARAM;
->> +        goto err_exit;
->> +    }
+>> @@ -2092,6 +2092,12 @@ int ice_vc_add_fdir_fltr(struct ice_vf *vf, u8 *msg)
+>>   	dev = ice_pf_to_dev(pf);
+>>   	vf_vsi = ice_get_vf_vsi(vf);
+>>   
+> nit, but not need to repost because of this: it's seems nicer
+> not to have not to have a blank line here. And instead, if one is
+> really wanted, put it above the ice_get_vf_vsi() line.
+>
+Thank you for the reminder. I will take this into consideration when
+submitting other patches next time. Since vf_vsi and its judgment logic
+are logically adjacent, it's better not to separate them with blank
+lines.
+
+>> +	if (!vf_vsi) {
+>> +		dev_err(dev, "Can not get FDIR vf_vsi for VF %u\n", vf->vf_id);
+>> +		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
+>> +		goto err_exit;
+>> +	}
 >> +
->>   #define ICE_VF_MAX_FDIR_FILTERS    128
->>       if (!ice_fdir_num_avail_fltr(&pf->hw, vf_vsi) ||
->>           vf->fdir.fdir_fltr_cnt_total >= ICE_VF_MAX_FDIR_FILTERS) {
+>>   #define ICE_VF_MAX_FDIR_FILTERS	128
+>>   	if (!ice_fdir_num_avail_fltr(&pf->hw, vf_vsi) ||
+>>   	    vf->fdir.fdir_fltr_cnt_total >= ICE_VF_MAX_FDIR_FILTERS) {
+>> -- 
+>> 2.27.0
+>>
+>>
