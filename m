@@ -1,106 +1,133 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9DE6CC369A1
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  9 Apr 2025 15:32:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AFD34C369A1
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  9 Apr 2025 15:47:26 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 745988377F;
-	Wed,  9 Apr 2025 15:32:18 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 685B040C02;
+	Wed,  9 Apr 2025 15:47:26 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 3Wq9RYXNHAga; Wed,  9 Apr 2025 15:47:25 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 89BCA40C0C
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1744213645;
+	bh=OQY75CxhJpKYQcuidz2M6w9c7v/GcVX/QelSDLhjFSo=;
+	h=Date:From:To:Cc:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=EYBxOeQFMY77iFbIV+k/X0qG+PpKCgWcdDjGSsGbtaNC2b59lncWFjK6MOoY/gXuh
+	 w6+k0pzkCWucwhysTBCpG11FigHRZb9mhxBhyW/676460NHTKdsu8S7rC7fOrQW7BK
+	 kUcMV3MCQVllExmCgBV9N6FinrPNiKSicwd48zrjYgvGz5bcfO/oFUSAsVO+6by6L0
+	 eFAxGOJ9U3ih+B4nbrf+JDP2eSq/Vasz1Gf8XyXV0k9W+jSsb30iV+mM73eeAKWECV
+	 8PoA06eaJB4sWZqATc2q7YRyHXUcefcSIDK1DVZOV/YvdPPFRQrTFg9SG6PEOo5LcF
+	 gj0ILBl0oh3Rg==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp4.osuosl.org (Postfix) with ESMTP id 89BCA40C0C;
+	Wed,  9 Apr 2025 15:47:25 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 677E5108
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Apr 2025 15:36:39 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp1.osuosl.org (Postfix) with ESMTP id 4FA678377F
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Apr 2025 15:36:39 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id yOBJwJp6AMoM; Wed,  9 Apr 2025 15:32:16 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 137F483863
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1744212736;
-	bh=WJc4nxkyiUdA6FQKrY7LJTpvBNnBPqHCXFrBYjz5OGU=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=wf0FXULgYi3uY+VNF/8wwLfLEB8aQwCFdBN/EeQ3xqgvOrxtM6AR2rvA+/XTtRJpX
-	 beILQaQKN8WJ9Nov+zBbAYGpfmSBYqNlQX9u5CGlgUlu8hEcoureC2CagApoaP+dcu
-	 liVf4HfHlBFO3hITSH3C/VHEnVfnDndl/7wmaS6tL4uKt6f8g4DM4Z9El0TqIIC3y2
-	 iWcFSj7omDUp6Ju3eHLWeO7QsS3y0LpU8ULmUz7MpVQKttPmNCiBN7ctZ8O+OUsJz9
-	 1rtNGNhvHdlIOBljYa3HGCB/cAoHOQjOUEH+jvslfubEQscybBN7g1I95dtin2BEl+
-	 nv9IWXuHiJWrA==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 137F483863;
-	Wed,  9 Apr 2025 15:32:16 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id BA80B108
- for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Apr 2025 15:32:14 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id AC196607EC
- for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Apr 2025 15:32:14 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id fWC8L5ErB2mo for <intel-wired-lan@lists.osuosl.org>;
- Wed,  9 Apr 2025 15:32:13 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.7;
- helo=mgamail.intel.com; envelope-from=arkadiusz.kubalewski@intel.com;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 99BF160E3E
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 99BF160E3E
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.7])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 99BF160E3E
- for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Apr 2025 15:32:13 +0000 (UTC)
-X-CSE-ConnectionGUID: /ce+vuPRTSGyVef4U2J1sQ==
-X-CSE-MsgGUID: TkNK/jctRXK2Imj0OaOp/g==
-X-IronPort-AV: E=McAfee;i="6700,10204,11399"; a="71072176"
-X-IronPort-AV: E=Sophos;i="6.15,200,1739865600"; d="scan'208";a="71072176"
-Received: from fmviesa002.fm.intel.com ([10.60.135.142])
- by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 09 Apr 2025 08:32:13 -0700
-X-CSE-ConnectionGUID: lnYz1OL2TAW3jpb4nD8ODg==
-X-CSE-MsgGUID: kr3rJMhfTnWkFON8Hck95Q==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.15,200,1739865600"; d="scan'208";a="151796169"
-Received: from amlin-018-114.igk.intel.com ([10.102.18.114])
- by fmviesa002.fm.intel.com with ESMTP; 09 Apr 2025 08:32:10 -0700
-From: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
-To: donald.hunter@gmail.com, kuba@kernel.org, davem@davemloft.net,
- edumazet@google.com, pabeni@redhat.com, horms@kernel.org,
- vadim.fedorenko@linux.dev, jiri@resnulli.us, anthony.l.nguyen@intel.com,
- przemyslaw.kitszel@intel.com, andrew+netdev@lunn.ch, saeedm@nvidia.com,
- leon@kernel.org, tariqt@nvidia.com, jonathan.lemon@gmail.com,
- richardcochran@gmail.com, aleksandr.loktionov@intel.com,
- milena.olech@intel.com
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- intel-wired-lan@lists.osuosl.org, linux-rdma@vger.kernel.org,
- Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
-Date: Wed,  9 Apr 2025 17:25:58 +0200
-Message-Id: <20250409152558.1007335-5-arkadiusz.kubalewski@intel.com>
-X-Mailer: git-send-email 2.38.1
-In-Reply-To: <20250409152558.1007335-1-arkadiusz.kubalewski@intel.com>
-References: <20250409152558.1007335-1-arkadiusz.kubalewski@intel.com>
+ id xhRRQK6QjFO6 for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  9 Apr 2025 15:36:38 +0000 (UTC)
+X-Greylist: delayed 1121 seconds by postgrey-1.37 at util1.osuosl.org;
+ Wed, 09 Apr 2025 15:36:37 UTC
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 989E88380E
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 989E88380E
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=85.10.215.232;
+ helo=dediextern.your-server.de;
+ envelope-from=marcus.wichelmann@hetzner-cloud.de; receiver=<UNKNOWN> 
+Received: from dediextern.your-server.de (dediextern.your-server.de
+ [85.10.215.232])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 989E88380E
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Apr 2025 15:36:37 +0000 (UTC)
+Received: from sslproxy01.your-server.de ([78.46.139.224])
+ by dediextern.your-server.de with esmtpsa (TLS1.3) tls TLS_AES_256_GCM_SHA384
+ (Exim 4.94.2) (envelope-from <marcus.wichelmann@hetzner-cloud.de>)
+ id 1u2XBX-000Dxr-88; Wed, 09 Apr 2025 17:17:51 +0200
+Received: from [2a0d:3344:1523:1f10:f118:b2d4:edbb:54af]
+ by sslproxy01.your-server.de with esmtpsa (TLS1.3) tls TLS_AES_256_GCM_SHA384
+ (Exim 4.96) (envelope-from <marcus.wichelmann@hetzner-cloud.de>)
+ id 1u2XBW-000HjF-34; Wed, 09 Apr 2025 17:17:50 +0200
+Message-ID: <d33f0ab4-4dc4-49cd-bbd0-055f58dd6758@hetzner-cloud.de>
+Date: Wed, 9 Apr 2025 17:17:49 +0200
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1744212734; x=1775748734;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=9XlxDCCWNzHqy6Tx0+umRGTuwPGXhEMUscaUIKjzwRw=;
- b=Pj3/43mgZOGoPRGdAQbPkmhm1dpSXPTHcZ7Hq1gYtBS4RP7u/ecgc6Dw
- DPFgw7747cLNeVwThVE6yLfPk2PYfRCgyRY/9ojn/pWI7HXSDIzhdStgd
- 7PWs2/7ZNAf0nHdx5ytsYU8A7dOO8VyD2kuklYVBli34+C5w6+PPQt1/4
- oeWZCx+DfG18oWn2sFgtS2d4zad9k72kzLogFJyhJWIdCOj2JraAOhbjz
- dSXKO3NbKZwwz4K7Bdq98MYzbeyFGnYDbfKNMCCuKZkRjwPjQ4Pii/+kx
- wN7uvY0B0OQt6OZxhjzR9HhqAYOUFOagvTCjGYBAlRfdTwL0yi5mxguPV
- w==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=Pj3/43mg
-Subject: [Intel-wired-lan] [PATCH net-next v1 4/4] ice: add phase offset
- monitor for all PPS dpll inputs
+User-Agent: Mozilla Thunderbird
+Content-Language: en-US
+From: Marcus Wichelmann <marcus.wichelmann@hetzner-cloud.de>
+Autocrypt: addr=marcus.wichelmann@hetzner-cloud.de; keydata=
+ xsFNBGJGrHIBEADXeHfBzzMvCfipCSW1oRhksIillcss321wYAvXrQ03a9VN2XJAzwDB/7Sa
+ N2Oqs6JJv4u5uOhaNp1Sx8JlhN6Oippc6MecXuQu5uOmN+DHmSLObKVQNC9I8PqEF2fq87zO
+ DCDViJ7VbYod/X9zUHQrGd35SB0PcDkXE5QaPX3dpz77mXFFWs/TvP6IvM6XVKZce3gitJ98
+ JO4pQ1gZniqaX4OSmgpHzHmaLCWZ2iU+Kn2M0KD1+/ozr/2bFhRkOwXSMYIdhmOXx96zjqFV
+ vIHa1vBguEt/Ax8+Pi7D83gdMCpyRCQ5AsKVyxVjVml0e/FcocrSb9j8hfrMFplv+Y43DIKu
+ kPVbE6pjHS+rqHf4vnxKBi8yQrfIpQqhgB/fgomBpIJAflu0Phj1nin/QIqKfQatoz5sRJb0
+ khSnRz8bxVM6Dr/T9i+7Y3suQGNXZQlxmRJmw4CYI/4zPVcjWkZyydq+wKqm39SOo4T512Nw
+ fuHmT6SV9DBD6WWevt2VYKMYSmAXLMcCp7I2EM7aYBEBvn5WbdqkamgZ36tISHBDhJl/k7pz
+ OlXOT+AOh12GCBiuPomnPkyyIGOf6wP/DW+vX6v5416MWiJaUmyH9h8UlhlehkWpEYqw1iCA
+ Wn6TcTXSILx+Nh5smWIel6scvxho84qSZplpCSzZGaidHZRytwARAQABzTZNYXJjdXMgV2lj
+ aGVsbWFubiA8bWFyY3VzLndpY2hlbG1hbm5AaGV0em5lci1jbG91ZC5kZT7CwZgEEwEIAEIW
+ IQQVqNeGYUnoSODnU2dJ0we/n6xHDgUCYkascgIbAwUJEswDAAULCQgHAgMiAgEGFQoJCAsC
+ BBYCAwECHgcCF4AACgkQSdMHv5+sRw4BNxAAlfufPZnHm+WKbvxcPVn6CJyexfuE7E2UkJQl
+ s/JXI+OGRhyqtguFGbQS6j7I06dJs/whj9fOhOBAHxFfMG2UkraqgAOlRUk/YjA98Wm9FvcQ
+ RGZe5DhAekI5Q9I9fBuhxdoAmhhKc/g7E5y/TcS1s2Cs6gnBR5lEKKVcIb0nFzB9bc+oMzfV
+ caStg+PejetxR/lMmcuBYi3s51laUQVCXV52bhnv0ROk0fdSwGwmoi2BDXljGBZl5i5n9wuQ
+ eHMp9hc5FoDF0PHNgr+1y9RsLRJ7sKGabDY6VRGp0MxQP0EDPNWlM5RwuErJThu+i9kU6D0e
+ HAPyJ6i4K7PsjGVE2ZcvOpzEr5e46bhIMKyfWzyMXwRVFuwE7erxvvNrSoM3SzbCUmgwC3P3
+ Wy30X7NS5xGOCa36p2AtqcY64ZwwoGKlNZX8wM0khaVjPttsynMlwpLcmOulqABwaUpdluUg
+ soqKCqyijBOXCeRSCZ/KAbA1FOvs3NnC9nVqeyCHtkKfuNDzqGY3uiAoD67EM/R9N4QM5w0X
+ HpxgyDk7EC1sCqdnd0N07BBQrnGZACOmz8pAQC2D2coje/nlnZm1xVK1tk18n6fkpYfR5Dnj
+ QvZYxO8MxP6wXamq2H5TRIzfLN1C2ddRsPv4wr9AqmbC9nIvfIQSvPMBx661kznCacANAP/O
+ wU0EYkascgEQAK15Hd7arsIkP7knH885NNcqmeNnhckmu0MoVd11KIO+SSCBXGFfGJ2/a/8M
+ y86SM4iL2774YYMWePscqtGNMPqa8Uk0NU76ojMbWG58gow2dLIyajXj20sQYd9RbNDiQqWp
+ RNmnp0o8K8lof3XgrqjwlSAJbo6JjgdZkun9ZQBQFDkeJtffIv6LFGap9UV7Y3OhU+4ZTWDM
+ XH76ne9u2ipTDu1pm9WeejgJIl6A7Z/7rRVpp6Qlq4Nm39C/ReNvXQIMT2l302wm0xaFQMfK
+ jAhXV/2/8VAAgDzlqxuRGdA8eGfWujAq68hWTP4FzRvk97L4cTu5Tq8WIBMpkjznRahyTzk8
+ 7oev+W5xBhGe03hfvog+pA9rsQIWF5R1meNZgtxR+GBj9bhHV+CUD6Fp+M0ffaevmI5Untyl
+ AqXYdwfuOORcD9wHxw+XX7T/Slxq/Z0CKhfYJ4YlHV2UnjIvEI7EhV2fPhE4WZf0uiFOWw8X
+ XcvPA8u0P1al3EbgeHMBhWLBjh8+Y3/pm0hSOZksKRdNR6PpCksa52ioD+8Z/giTIDuFDCHo
+ p4QMLrv05kA490cNAkwkI/yRjrKL3eGg26FCBh2tQKoUw2H5pJ0TW67/Mn2mXNXjen9hDhAG
+ 7gU40lS90ehhnpJxZC/73j2HjIxSiUkRpkCVKru2pPXx+zDzABEBAAHCwXwEGAEIACYWIQQV
+ qNeGYUnoSODnU2dJ0we/n6xHDgUCYkascgIbDAUJEswDAAAKCRBJ0we/n6xHDsmpD/9/4+pV
+ IsnYMClwfnDXNIU+x6VXTT/8HKiRiotIRFDIeI2skfWAaNgGBWU7iK7FkF/58ys8jKM3EykO
+ D5lvLbGfI/jrTcJVIm9bXX0F1pTiu3SyzOy7EdJur8Cp6CpCrkD+GwkWppNHP51u7da2zah9
+ CQx6E1NDGM0gSLlCJTciDi6doAkJ14aIX58O7dVeMqmabRAv6Ut45eWqOLvgjzBvdn1SArZm
+ 7AQtxT7KZCz1yYLUgA6TG39bhwkXjtcfT0J4967LuXTgyoKCc969TzmwAT+pX3luMmbXOBl3
+ mAkwjD782F9sP8D/9h8tQmTAKzi/ON+DXBHjjqGrb8+rCocx2mdWLenDK9sNNsvyLb9oKJoE
+ DdXuCrEQpa3U79RGc7wjXT9h/8VsXmA48LSxhRKn2uOmkf0nCr9W4YmrP+g0RGeCKo3yvFxS
+ +2r2hEb/H7ZTP5PWyJM8We/4ttx32S5ues5+qjlqGhWSzmCcPrwKviErSiBCr4PtcioTBZcW
+ VUssNEOhjUERfkdnHNeuNBWfiABIb1Yn7QC2BUmwOvN2DsqsChyfyuknCbiyQGjAmj8mvfi/
+ 18FxnhXRoPx3wr7PqGVWgTJD1pscTrbKnoI1jI1/pBCMun+q9v6E7JCgWY181WjxgKSnen0n
+ wySmewx3h/yfMh0aFxHhvLPxrO2IEQ==
+To: Tony Nguyen <anthony.l.nguyen@intel.com>, Jay Vosburgh
+ <jv@jvosburgh.net>, Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller"
+ <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+ Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>,
+ Jesper Dangaard Brouer <hawk@kernel.org>,
+ John Fastabend <john.fastabend@gmail.com>
+Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
+ bpf@vger.kernel.org, linux-kernel@vger.kernel.org, sdn@hetzner-cloud.de
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: marcus.wichelmann@hetzner-cloud.de
+X-Virus-Scanned: Clear (ClamAV 1.0.7/27603/Wed Apr  9 10:44:35 2025)
+X-Mailman-Approved-At: Wed, 09 Apr 2025 15:47:24 +0000
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dmarc=none (p=none dis=none)
+ header.from=hetzner-cloud.de
+Subject: [Intel-wired-lan] [BUG] ixgbe: Detected Tx Unit Hang (XDP)
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -116,481 +143,134 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Implement new admin command and helper function to handle/obtain CGU
-measurements for input pins, initialize PPS dpll capabilities using new
-command.
-Add callbacks to control dpll device feature:
-all-inputs-phase-offset-monitor.
-Allow enable/disable of all inputs monitoring for ice PPS dpll device.
-If feature is enabled provide users with measured phase offsets and
-notifications.
+Hi,
 
-Reviewed-by: Milena Olech <milena.olech@intel.com>
-Signed-off-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
----
- .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  20 ++
- drivers/net/ethernet/intel/ice/ice_common.c   |  26 +++
- drivers/net/ethernet/intel/ice/ice_common.h   |   3 +
- drivers/net/ethernet/intel/ice/ice_dpll.c     | 188 +++++++++++++++++-
- drivers/net/ethernet/intel/ice/ice_dpll.h     |   6 +
- drivers/net/ethernet/intel/ice/ice_main.c     |   4 +
- 6 files changed, 243 insertions(+), 4 deletions(-)
+in a setup where I use native XDP to redirect packets to a bonding interface
+that's backed by two ixgbe slaves, I noticed that the ixgbe driver constantly
+resets the NIC with the following kernel output:
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-index bdee499f991a..181bc2c3b4ad 100644
---- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-@@ -2272,6 +2272,22 @@ struct ice_aqc_get_pkg_info_resp {
- 	struct ice_aqc_get_pkg_info pkg_info[];
- };
- 
-+#define ICE_CGU_INPUT_PHASE_OFFSET_BYTES	6
-+
-+struct ice_cgu_input_measure {
-+	u8 phase_offset[ICE_CGU_INPUT_PHASE_OFFSET_BYTES];
-+	__le32 freq;
-+} __packed __aligned(sizeof(__le16));
-+
-+#define ICE_AQC_GET_CGU_IN_MEAS_DPLL_IDX_M	ICE_M(0xf, 0)
-+
-+/* Get CGU input measurements command response data structure (indirect 0x0C59) */
-+struct ice_aqc_get_cgu_input_measure {
-+	u8 dpll_idx_opt;
-+	u8 length;
-+	u8 rsvd[6];
-+};
-+
- #define ICE_AQC_GET_CGU_MAX_PHASE_ADJ	GENMASK(30, 0)
- 
- /* Get CGU abilities command response data structure (indirect 0x0C61) */
-@@ -2721,6 +2737,7 @@ struct ice_aq_desc {
- 		struct ice_aqc_add_get_update_free_vsi vsi_cmd;
- 		struct ice_aqc_add_update_free_vsi_resp add_update_free_vsi_res;
- 		struct ice_aqc_download_pkg download_pkg;
-+		struct ice_aqc_get_cgu_input_measure get_cgu_input_measure;
- 		struct ice_aqc_set_cgu_input_config set_cgu_input_config;
- 		struct ice_aqc_get_cgu_input_config get_cgu_input_config;
- 		struct ice_aqc_set_cgu_output_config set_cgu_output_config;
-@@ -2772,6 +2789,8 @@ enum ice_aq_err {
- 	ICE_AQ_RC_OK		= 0,  /* Success */
- 	ICE_AQ_RC_EPERM		= 1,  /* Operation not permitted */
- 	ICE_AQ_RC_ENOENT	= 2,  /* No such element */
-+	ICE_AQ_RC_ESRCH		= 3,  /* Bad opcode */
-+	ICE_AQ_RC_EAGAIN	= 8,  /* Try again */
- 	ICE_AQ_RC_ENOMEM	= 9,  /* Out of memory */
- 	ICE_AQ_RC_EBUSY		= 12, /* Device or resource busy */
- 	ICE_AQ_RC_EEXIST	= 13, /* Object already exists */
-@@ -2927,6 +2946,7 @@ enum ice_adminq_opc {
- 	ice_aqc_opc_get_pkg_info_list			= 0x0C43,
- 
- 	/* 1588/SyncE commands/events */
-+	ice_aqc_opc_get_cgu_input_measure		= 0x0C59,
- 	ice_aqc_opc_get_cgu_abilities			= 0x0C61,
- 	ice_aqc_opc_set_cgu_input_config		= 0x0C62,
- 	ice_aqc_opc_get_cgu_input_config		= 0x0C63,
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index 59df31c2c83f..f5d50b522e29 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -4966,6 +4966,32 @@ ice_dis_vsi_rdma_qset(struct ice_port_info *pi, u16 count, u32 *qset_teid,
- 	return status;
- }
- 
-+/**
-+ * ice_aq_get_cgu_input_pin_measure - get input pin signal measurements
-+ * @hw: pointer to the HW struct
-+ * @dpll_idx: index of dpll to be measured
-+ * @meas: array to be filled with results
-+ * @meas_num: max number of results array can hold
-+ *
-+ * Get CGU measurements (0x0C59) of phase and frequency offsets for input
-+ * pins on given dpll.
-+ *
-+ * Return: 0 on success or negative value on failure.
-+ */
-+int ice_aq_get_cgu_input_pin_measure(struct ice_hw *hw, u8 dpll_idx,
-+				     struct ice_cgu_input_measure *meas,
-+				     u16 meas_num)
-+{
-+	struct ice_aqc_get_cgu_input_measure *cmd;
-+	struct ice_aq_desc desc;
-+
-+	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_get_cgu_input_measure);
-+	cmd = &desc.params.get_cgu_input_measure;
-+	cmd->dpll_idx_opt = dpll_idx & ICE_AQC_GET_CGU_IN_MEAS_DPLL_IDX_M;
-+
-+	return ice_aq_send_cmd(hw, &desc, meas, meas_num * sizeof(*meas), NULL);
-+}
-+
- /**
-  * ice_aq_get_cgu_abilities - get cgu abilities
-  * @hw: pointer to the HW struct
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
-index 9b00aa0ddf10..63a741871555 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.h
-+++ b/drivers/net/ethernet/intel/ice/ice_common.h
-@@ -229,6 +229,9 @@ void ice_replay_post(struct ice_hw *hw);
- struct ice_q_ctx *
- ice_get_lan_q_ctx(struct ice_hw *hw, u16 vsi_handle, u8 tc, u16 q_handle);
- int ice_sbq_rw_reg(struct ice_hw *hw, struct ice_sbq_msg_input *in, u16 flag);
-+int ice_aq_get_cgu_input_pin_measure(struct ice_hw *hw, u8 dpll_idx,
-+				     struct ice_cgu_input_measure *meas,
-+				     u16 meas_num);
- int
- ice_aq_get_cgu_abilities(struct ice_hw *hw,
- 			 struct ice_aqc_get_cgu_abilities *abilities);
-diff --git a/drivers/net/ethernet/intel/ice/ice_dpll.c b/drivers/net/ethernet/intel/ice/ice_dpll.c
-index 614a813c7772..2986774ab58a 100644
---- a/drivers/net/ethernet/intel/ice/ice_dpll.c
-+++ b/drivers/net/ethernet/intel/ice/ice_dpll.c
-@@ -11,6 +11,8 @@
- #define ICE_DPLL_RCLK_NUM_PER_PF		1
- #define ICE_DPLL_PIN_ESYNC_PULSE_HIGH_PERCENT	25
- #define ICE_DPLL_PIN_GEN_RCLK_FREQ		1953125
-+#define ICE_DPLL_INPUT_REF_NUM			10
-+#define ICE_DPLL_PHASE_OFFSET_PERIOD		2
- 
- /**
-  * enum ice_dpll_pin_type - enumerate ice pin types:
-@@ -587,6 +589,63 @@ static int ice_dpll_mode_get(const struct dpll_device *dpll, void *dpll_priv,
- 	return 0;
- }
- 
-+/**
-+ * ice_dpll_features_set - set dpll's features
-+ * @dpll: registered dpll pointer
-+ * @dpll_priv: private data pointer passed on dpll registration
-+ * @features: mask of features to be set
-+ * @extack: error reporting
-+ *
-+ * Dpll subsystem callback. Enable/disable features of dpll.
-+ *
-+ * Context: Acquires and releases pf->dplls.lock
-+ * Return: 0 - success
-+ */
-+static int ice_dpll_features_set(const struct dpll_device *dpll,
-+				 void *dpll_priv, u32 features,
-+				 struct netlink_ext_ack *extack)
-+{
-+	struct ice_dpll *d = dpll_priv;
-+	struct ice_pf *pf = d->pf;
-+
-+	mutex_lock(&pf->dplls.lock);
-+	if (features & DPLL_FEATURES_ALL_INPUTS_PHASE_OFFSET_MONITOR)
-+		d->phase_offset_monitor_period = ICE_DPLL_PHASE_OFFSET_PERIOD;
-+	else
-+		d->phase_offset_monitor_period = 0;
-+	mutex_unlock(&pf->dplls.lock);
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_dpll_features_get - get dpll's features
-+ * @dpll: registered dpll pointer
-+ * @dpll_priv: private data pointer passed on dpll registration
-+ * @features: on success holds currently enabled features of dpll
-+ * @extack: error reporting
-+ *
-+ * Dpll subsystem callback. Provides currently enabled features of dpll.
-+ *
-+ * Context: Acquires and releases pf->dplls.lock
-+ * Return: 0 - success
-+ */
-+static int ice_dpll_features_get(const struct dpll_device *dpll,
-+				 void *dpll_priv, u32 *features,
-+				 struct netlink_ext_ack *extack)
-+{
-+	struct ice_dpll *d = dpll_priv;
-+	struct ice_pf *pf = d->pf;
-+
-+	mutex_lock(&pf->dplls.lock);
-+	*features = 0;
-+	if (d->phase_offset_monitor_period)
-+		*features |= DPLL_FEATURES_ALL_INPUTS_PHASE_OFFSET_MONITOR;
-+	mutex_unlock(&pf->dplls.lock);
-+
-+	return 0;
-+}
-+
- /**
-  * ice_dpll_pin_state_set - set pin's state on dpll
-  * @pin: pointer to a pin
-@@ -1093,12 +1152,15 @@ ice_dpll_phase_offset_get(const struct dpll_pin *pin, void *pin_priv,
- 			  const struct dpll_device *dpll, void *dpll_priv,
- 			  s64 *phase_offset, struct netlink_ext_ack *extack)
- {
-+	struct ice_dpll_pin *p = pin_priv;
- 	struct ice_dpll *d = dpll_priv;
- 	struct ice_pf *pf = d->pf;
- 
- 	mutex_lock(&pf->dplls.lock);
- 	if (d->active_input == pin)
- 		*phase_offset = d->phase_offset * ICE_DPLL_PHASE_OFFSET_FACTOR;
-+	else if (d->phase_offset_monitor_period)
-+		*phase_offset = p->phase_offset * ICE_DPLL_PHASE_OFFSET_FACTOR;
- 	else
- 		*phase_offset = 0;
- 	mutex_unlock(&pf->dplls.lock);
-@@ -1457,6 +1519,8 @@ static const struct dpll_pin_ops ice_dpll_output_ops = {
- static const struct dpll_device_ops ice_dpll_ops = {
- 	.lock_status_get = ice_dpll_lock_status_get,
- 	.mode_get = ice_dpll_mode_get,
-+	.features_set = ice_dpll_features_set,
-+	.features_get = ice_dpll_features_get,
- };
- 
- /**
-@@ -1503,6 +1567,110 @@ static void ice_dpll_notify_changes(struct ice_dpll *d)
- 	}
- }
- 
-+/**
-+ * ice_dpll_is_pps_phase_monitor - check if dpll capable of phase offset monitor
-+ * @pf: pf private structure
-+ *
-+ * Check if firmware is capable of supporting admin command to provide
-+ * phase offset monitoring on all the input pins on PPS dpll.
-+ *
-+ * Returns:
-+ * * true - PPS dpll phase offset monitoring is supported
-+ * * false - PPS dpll phase offset monitoring is not supported
-+ */
-+static bool ice_dpll_is_pps_phase_monitor(struct ice_pf *pf)
-+{
-+	struct ice_cgu_input_measure meas[ICE_DPLL_INPUT_REF_NUM];
-+	int ret = ice_aq_get_cgu_input_pin_measure(&pf->hw, DPLL_TYPE_PPS, meas,
-+						   ARRAY_SIZE(meas));
-+
-+	if (ret && pf->hw.adminq.sq_last_status == ICE_AQ_RC_ESRCH)
-+		return false;
-+
-+	return true;
-+}
-+
-+/**
-+ * ice_dpll_pins_notify_mask - notify dpll subsystem about bulk pin changes
-+ * @pins: array of ice_dpll_pin pointers registered within dpll subsystem
-+ * @pin_num: number of pins
-+ * @phase_offset_ntf_mask: bitmask of pin indexes to notify
-+ *
-+ * Iterate over array of pins and call dpll subsystem pin notify if
-+ * corresponding pin index within bitmask is set.
-+ *
-+ * Context: Must be called while pf->dplls.lock is released.
-+ */
-+static void ice_dpll_pins_notify_mask(struct ice_dpll_pin *pins,
-+				      u8 pin_num,
-+				      u32 phase_offset_ntf_mask)
-+{
-+	int i = 0;
-+
-+	for (i = 0; i < pin_num; i++)
-+		if (phase_offset_ntf_mask & (1 << i))
-+			dpll_pin_change_ntf(pins[i].pin);
-+}
-+
-+/**
-+ * ice_dpll_pps_update_phase_offsets - update phase offset measurements
-+ * @pf: pf private structure
-+ * @phase_offset_pins_updated: returns mask of updated input pin indexes
-+ *
-+ * Read phase offset measurements for PPS dpll device and store values in
-+ * input pins array. On success phase_offset_pins_updated - fills bitmask of
-+ * updated input pin indexes, pins shall be notified.
-+ *
-+ * Context: Shall be called with pf->dplls.lock being locked.
-+ * Returns:
-+ * * 0 - success or no data available
-+ * * negative - AQ failure
-+ */
-+static int ice_dpll_pps_update_phase_offsets(struct ice_pf *pf,
-+					     u32 *phase_offset_pins_updated)
-+{
-+	struct ice_cgu_input_measure meas[ICE_DPLL_INPUT_REF_NUM];
-+	struct ice_dpll_pin *p;
-+	s64 phase_offset, tmp;
-+	int i, j, ret;
-+
-+	*phase_offset_pins_updated = 0;
-+	ret = ice_aq_get_cgu_input_pin_measure(&pf->hw, DPLL_TYPE_PPS, meas,
-+					       ARRAY_SIZE(meas));
-+	if (ret && pf->hw.adminq.sq_last_status == ICE_AQ_RC_EAGAIN) {
-+		return 0;
-+	} else if (ret) {
-+		dev_err(ice_pf_to_dev(pf),
-+			"failed to get input pin measurements dpll=%d, ret=%d %s\n",
-+			DPLL_TYPE_PPS, ret,
-+			ice_aq_str(pf->hw.adminq.sq_last_status));
-+		return ret;
-+	}
-+	for (i = 0; i < pf->dplls.num_inputs; i++) {
-+		p = &pf->dplls.inputs[i];
-+		phase_offset = 0;
-+		for (j = 0; j < ICE_CGU_INPUT_PHASE_OFFSET_BYTES; j++) {
-+			tmp = meas[i].phase_offset[j];
-+#ifdef __LITTLE_ENDIAN
-+			phase_offset += tmp << 8 * j;
-+#else
-+			phase_offset += tmp << 8 *
-+				(ICE_CGU_INPUT_PHASE_OFFSET_BYTES - 1 - j);
-+#endif
-+		}
-+		phase_offset = sign_extend64(phase_offset, 47);
-+		if (p->phase_offset != phase_offset) {
-+			dev_dbg(ice_pf_to_dev(pf),
-+				"phase offset changed for pin:%d old:%llx, new:%llx\n",
-+				p->idx, p->phase_offset, phase_offset);
-+			p->phase_offset = phase_offset;
-+			*phase_offset_pins_updated |= (1 << i);
-+		}
-+	}
-+
-+	return 0;
-+}
-+
- /**
-  * ice_dpll_update_state - update dpll state
-  * @pf: pf private structure
-@@ -1589,14 +1757,19 @@ static void ice_dpll_periodic_work(struct kthread_work *work)
- 	struct ice_pf *pf = container_of(d, struct ice_pf, dplls);
- 	struct ice_dpll *de = &pf->dplls.eec;
- 	struct ice_dpll *dp = &pf->dplls.pps;
-+	u32 phase_offset_ntf = 0;
- 	int ret = 0;
- 
- 	if (ice_is_reset_in_progress(pf->state))
- 		goto resched;
- 	mutex_lock(&pf->dplls.lock);
-+	d->periodic_counter++;
- 	ret = ice_dpll_update_state(pf, de, false);
- 	if (!ret)
- 		ret = ice_dpll_update_state(pf, dp, false);
-+	if (!ret && dp->phase_offset_monitor_period &&
-+	    d->periodic_counter % dp->phase_offset_monitor_period == 0)
-+		ret = ice_dpll_pps_update_phase_offsets(pf, &phase_offset_ntf);
- 	if (ret) {
- 		d->cgu_state_acq_err_num++;
- 		/* stop rescheduling this worker */
-@@ -1611,6 +1784,9 @@ static void ice_dpll_periodic_work(struct kthread_work *work)
- 	mutex_unlock(&pf->dplls.lock);
- 	ice_dpll_notify_changes(de);
- 	ice_dpll_notify_changes(dp);
-+	if (phase_offset_ntf)
-+		ice_dpll_pins_notify_mask(d->inputs, d->num_inputs,
-+					  phase_offset_ntf);
- 
- resched:
- 	/* Run twice a second or reschedule if update failed */
-@@ -1987,6 +2163,7 @@ ice_dpll_deinit_dpll(struct ice_pf *pf, struct ice_dpll *d, bool cgu)
-  * @d: dpll to be initialized
-  * @cgu: if cgu is present and controlled by this NIC
-  * @type: type of dpll being initialized
-+ * @caps: bitmap of capabilities of dpll
-  *
-  * Allocate dpll instance for this board in dpll subsystem, if cgu is controlled
-  * by this NIC, register dpll with the callback ops.
-@@ -1997,7 +2174,7 @@ ice_dpll_deinit_dpll(struct ice_pf *pf, struct ice_dpll *d, bool cgu)
-  */
- static int
- ice_dpll_init_dpll(struct ice_pf *pf, struct ice_dpll *d, bool cgu,
--		   enum dpll_type type)
-+		   enum dpll_type type, u32 caps)
- {
- 	u64 clock_id = pf->dplls.clock_id;
- 	int ret;
-@@ -2012,7 +2189,8 @@ ice_dpll_init_dpll(struct ice_pf *pf, struct ice_dpll *d, bool cgu,
- 	d->pf = pf;
- 	if (cgu) {
- 		ice_dpll_update_state(pf, d, true);
--		ret = dpll_device_register(d->dpll, type, 0, &ice_dpll_ops, d);
-+		ret = dpll_device_register(d->dpll, type, caps, &ice_dpll_ops,
-+					   d);
- 		if (ret) {
- 			dpll_device_put(d->dpll);
- 			return ret;
-@@ -2426,10 +2604,12 @@ void ice_dpll_init(struct ice_pf *pf)
- 	err = ice_dpll_init_info(pf, cgu);
- 	if (err)
- 		goto err_exit;
--	err = ice_dpll_init_dpll(pf, &pf->dplls.eec, cgu, DPLL_TYPE_EEC);
-+	err = ice_dpll_init_dpll(pf, &pf->dplls.eec, cgu, DPLL_TYPE_EEC, 0);
- 	if (err)
- 		goto deinit_info;
--	err = ice_dpll_init_dpll(pf, &pf->dplls.pps, cgu, DPLL_TYPE_PPS);
-+	err = ice_dpll_init_dpll(pf, &pf->dplls.pps, cgu, DPLL_TYPE_PPS,
-+				 !ice_dpll_is_pps_phase_monitor(pf) ? 0 :
-+				 DPLL_FEATURES_ALL_INPUTS_PHASE_OFFSET_MONITOR);
- 	if (err)
- 		goto deinit_eec;
- 	err = ice_dpll_init_pins(pf, cgu);
-diff --git a/drivers/net/ethernet/intel/ice/ice_dpll.h b/drivers/net/ethernet/intel/ice/ice_dpll.h
-index c320f1bf7d6d..290babeef58f 100644
---- a/drivers/net/ethernet/intel/ice/ice_dpll.h
-+++ b/drivers/net/ethernet/intel/ice/ice_dpll.h
-@@ -19,6 +19,7 @@
-  * @prop: pin properties
-  * @freq: current frequency of a pin
-  * @phase_adjust: current phase adjust value
-+ * @phase_offset: monitored phase offset value
-  */
- struct ice_dpll_pin {
- 	struct dpll_pin *pin;
-@@ -31,6 +32,7 @@ struct ice_dpll_pin {
- 	struct dpll_pin_properties prop;
- 	u32 freq;
- 	s32 phase_adjust;
-+	s64 phase_offset;
- 	u8 status;
- };
- 
-@@ -47,6 +49,7 @@ struct ice_dpll_pin {
-  * @input_prio: priorities of each input
-  * @dpll_state: current dpll sync state
-  * @prev_dpll_state: last dpll sync state
-+ * @phase_offset_monitor_period: period for phase offset monitor read frequency
-  * @active_input: pointer to active input pin
-  * @prev_input: pointer to previous active input pin
-  */
-@@ -64,6 +67,7 @@ struct ice_dpll {
- 	enum dpll_lock_status dpll_state;
- 	enum dpll_lock_status prev_dpll_state;
- 	enum dpll_mode mode;
-+	u32 phase_offset_monitor_period;
- 	struct dpll_pin *active_input;
- 	struct dpll_pin *prev_input;
- };
-@@ -80,6 +84,7 @@ struct ice_dpll {
-  * @num_inputs: number of input pins available on dpll
-  * @num_outputs: number of output pins available on dpll
-  * @cgu_state_acq_err_num: number of errors returned during periodic work
-+ * @periodic_counter: counter of periodic work executions
-  * @base_rclk_idx: idx of first pin used for clock revocery pins
-  * @clock_id: clock_id of dplls
-  * @input_phase_adj_max: max phase adjust value for an input pins
-@@ -97,6 +102,7 @@ struct ice_dplls {
- 	u8 num_inputs;
- 	u8 num_outputs;
- 	int cgu_state_acq_err_num;
-+	u32 periodic_counter;
- 	u8 base_rclk_idx;
- 	u64 clock_id;
- 	s32 input_phase_adj_max;
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 049edeb60104..ff1db5cc94eb 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -7914,6 +7914,10 @@ const char *ice_aq_str(enum ice_aq_err aq_err)
- 		return "ICE_AQ_RC_EPERM";
- 	case ICE_AQ_RC_ENOENT:
- 		return "ICE_AQ_RC_ENOENT";
-+	case ICE_AQ_RC_ESRCH:
-+		return "ICE_AQ_RC_ESRCH";
-+	case ICE_AQ_RC_EAGAIN:
-+		return "ICE_AQ_RC_EAGAIN";
- 	case ICE_AQ_RC_ENOMEM:
- 		return "ICE_AQ_RC_ENOMEM";
- 	case ICE_AQ_RC_EBUSY:
--- 
-2.38.1
+  ixgbe 0000:01:00.1 ixgbe-x520-2: Detected Tx Unit Hang (XDP)
+    Tx Queue             <4>
+    TDH, TDT             <17e>, <17e>
+    next_to_use          <181>
+    next_to_clean        <17e>
+  tx_buffer_info[next_to_clean]
+    time_stamp           <0>
+    jiffies              <10025c380>
+  ixgbe 0000:01:00.1 ixgbe-x520-2: tx hang 19 detected on queue 4, resetting adapter
+  ixgbe 0000:01:00.1 ixgbe-x520-2: initiating reset due to tx timeout
+  ixgbe 0000:01:00.1 ixgbe-x520-2: Reset adapter
 
+This only occurs in combination with a bonding interface and XDP, so I don't
+know if this is an issue with ixgbe or the bonding driver.
+I first discovered this with Linux 6.8.0-57, but kernel 6.14.0 and 6.15.0-rc1
+show the same issue.
+
+
+I managed to reproduce this bug in a lab environment. Here are some details
+about my setup and the steps to reproduce the bug:
+
+NIC: Intel Corporation 82599ES 10-Gigabit SFI/SFP+ Network Connection (rev 01)
+
+CPU: Ampere(R) Altra(R) Processor Q80-30 CPU @ 3.0GHz
+     Also reproduced on:
+     - Intel(R) Xeon(R) Gold 5218 CPU @ 2.30GHz
+     - Intel(R) Xeon(R) CPU E5-2620 v4 @ 2.10GHz
+
+Kernel: 6.15.0-rc1 (built from mainline)
+
+  # ethtool -i ixgbe-x520-1
+  driver: ixgbe
+  version: 6.15.0-rc1
+  firmware-version: 0x00012b2c, 1.3429.0
+  expansion-rom-version: 
+  bus-info: 0000:01:00.0
+  supports-statistics: yes
+  supports-test: yes
+  supports-eeprom-access: yes
+  supports-register-dump: yes
+  supports-priv-flags: yes
+
+The two ports of the NIC (named "ixgbe-x520-1" and "ixgbe-x520-2") are directly
+connected with each other using a DAC cable. Both ports are configured to be
+slaves of a bonding with mode balance-rr.
+Neither the direct connection of  both ports nor the round-robin bonding mode
+are a requirement to reproduce the issue. This setup just allows it to be easier
+reproduced in an isolated environment. The issue is also visible with a regular
+802.3ad link aggregation with a switch on the other side.
+
+  # modprobe bonding
+  # ip link set dev ixgbe-x520-1 down
+  # ip link set dev ixgbe-x520-2 down
+  # ip link add bond0 type bond mode balance-rr
+  # ip link set dev ixgbe-x520-1 master bond0
+  # ip link set dev ixgbe-x520-2 master bond0
+  # ip link set dev ixgbe-x520-1 up
+  # ip link set dev ixgbe-x520-2 up
+  # ip link set dev bond0 up
+        
+  # cat /proc/net/bonding/bond0
+  Ethernet Channel Bonding Driver: v6.15.0-rc1
+
+  Bonding Mode: load balancing (round-robin)
+  MII Status: up
+  MII Polling Interval (ms): 0
+  Up Delay (ms): 0
+  Down Delay (ms): 0
+  Peer Notification Delay (ms): 0
+
+  Slave Interface: ixgbe-x520-1
+  MII Status: up
+  Speed: 10000 Mbps
+  Duplex: full
+  Link Failure Count: 0
+  Permanent HW addr: 6c:b3:11:08:5c:3c
+  Slave queue ID: 0
+
+  Slave Interface: ixgbe-x520-2
+  MII Status: up
+  Speed: 10000 Mbps
+  Duplex: full
+  Link Failure Count: 0
+  Permanent HW addr: 6c:b3:11:08:5c:3e
+  Slave queue ID: 0
+
+  # ethtool -l ixgbe-x520-1
+  Channel parameters for ixgbe-x520-1:
+  Pre-set maximums:
+  RX:             n/a
+  TX:             n/a
+  Other:          1
+  Combined:       63
+  Current hardware settings:
+  RX:             n/a
+  TX:             n/a
+  Other:          1
+  Combined:       63
+  (same for ixgbe-x520-2)
+
+In the following the xdp-tools from https://github.com/xdp-project/xdp-tools/
+are used.
+
+Enable XDP on the bonding and make sure all received packets will be dropped:
+  # xdp-tools/xdp-bench/xdp-bench drop -e -i 1 bond0
+
+Redirect a batch of packets to the bonding interface:
+  # xdp-tools/xdp-trafficgen/xdp-trafficgen udp --dst-mac <mac of bond0>
+    --src-port 5000 --dst-port 6000 --threads 16 --num-packets 1000000 bond0
+
+Shortly after that (3-4 seconds), one or more "Detected Tx Unit Hang" errors
+(see above) will show up in the kernel log.
+
+The high number of packets and thread count (--threads 16) is not required to
+trigger the issue but greatly improves the probability.
+
+
+Do you have any ideas what may be causing this issue or what I can do to
+diagnose this further?
+
+Please let me know when I should provide any more information.
+
+
+Thanks!
+Marcus
