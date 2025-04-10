@@ -1,75 +1,75 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 93648C369A6
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 10 Apr 2025 10:01:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C5467C3601E
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 10 Apr 2025 10:01:46 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 61B83607BD;
-	Thu, 10 Apr 2025 10:01:41 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 8C68E40C6B;
+	Thu, 10 Apr 2025 10:01:46 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 54FYJRrjkCJi; Thu, 10 Apr 2025 10:01:40 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id U5D8BBw0i0ZG; Thu, 10 Apr 2025 10:01:46 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B204460806
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org EC4FB40781
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1744279300;
-	bh=5h8O+oVCjdj3lSmmvc+0QohElKMYNFmkuBqIoR4n7u4=;
+	s=default; t=1744279306;
+	bh=GDFJFa/aHBVixRRVY6Z9osqWDfROXU6rmNHAMYm34o4=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=ng3sScmLOJgognjH3Go9HRBnWV4U5YjH6K4j8Bg1Bx3sz1mu3mbD4HpLfgPDRZwfj
-	 NkFmVOq2012NLWitWPXNmUnDpS9/Y/0TmFnS5op2sZnRk/cwYzOiItAOb5rhH8btY1
-	 sTRZNtQa1d67EJPaJ6tAoKrmIxYSjhAqqxdJY6bHeUTEOJc9+H8rhfbGoK5veW4vdJ
-	 6SDdvSrBX431J6UvNmqbPYVvYXaRJSCiDkVntZEh4+k6rXG6Tm1QOMy0Yj0C42cY5u
-	 TryXPTm1dhUyDoLx+EmNWqEtf/16dqGZojv1aMuciCrG9CQkZAZ0DeZFV0tjQP4sTE
-	 1n3ltunVlyOJw==
+	b=iN91u9rwGoCbgRW81Y/vhFbAyERdAmpjU/V8pMMwSbE0BKMfwKynY0VYCoARCQdcY
+	 rwCiaQzHhCCcE9FxHoYc4PKqn6qOvvg03zP6sIxRdA0VEzo1Kjk1LkVxp6aXN6DCsF
+	 NpbeZcfeAvEqL7Ll/AjLMb1aUOc15wnLDeX58fJQi1PviousBJgSud3t280kRyzyAT
+	 P6NWakELJiJnPMt+3odvkvP6YlHCk0r+7KIx/aBfxmrNAkG972oFDNg0qJgT32yfq1
+	 8B61+hvlgXXl9ck4zVzPOcdvrrsYMpKafK2/dgT6DX4BRYjWn8ddw7a09v2oCEg8tI
+	 +SEebtv9b1z5g==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id B204460806;
-	Thu, 10 Apr 2025 10:01:40 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id EC4FB40781;
+	Thu, 10 Apr 2025 10:01:45 +0000 (UTC)
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id A1D99108
- for <intel-wired-lan@lists.osuosl.org>; Thu, 10 Apr 2025 10:01:39 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id 79315108
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 10 Apr 2025 10:01:44 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 9F1474027C
- for <intel-wired-lan@lists.osuosl.org>; Thu, 10 Apr 2025 10:01:39 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 75B0A4064D
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 10 Apr 2025 10:01:44 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id F6lG8b-1S3U2 for <intel-wired-lan@lists.osuosl.org>;
- Thu, 10 Apr 2025 10:01:39 +0000 (UTC)
+ id IiWI721KWua1 for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 10 Apr 2025 10:01:43 +0000 (UTC)
 Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.10;
  helo=mgamail.intel.com; envelope-from=michal.swiatkowski@linux.intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org B0A594012E
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B0A594012E
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org BA42740C23
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org BA42740C23
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.10])
- by smtp2.osuosl.org (Postfix) with ESMTPS id B0A594012E
- for <intel-wired-lan@lists.osuosl.org>; Thu, 10 Apr 2025 10:01:38 +0000 (UTC)
-X-CSE-ConnectionGUID: cflzK9UdTX+qK/Ubtn6pjg==
-X-CSE-MsgGUID: k4LfoLTDTXWlB1FhFG/2Ig==
-X-IronPort-AV: E=McAfee;i="6700,10204,11399"; a="63183911"
-X-IronPort-AV: E=Sophos;i="6.15,202,1739865600"; d="scan'208";a="63183911"
+ by smtp2.osuosl.org (Postfix) with ESMTPS id BA42740C23
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 10 Apr 2025 10:01:43 +0000 (UTC)
+X-CSE-ConnectionGUID: Vo35GJeURtiYsA7zJ9f4xQ==
+X-CSE-MsgGUID: W+dIcC7ORU2mEWcMYQZMuw==
+X-IronPort-AV: E=McAfee;i="6700,10204,11399"; a="63183916"
+X-IronPort-AV: E=Sophos;i="6.15,202,1739865600"; d="scan'208";a="63183916"
 Received: from fmviesa001.fm.intel.com ([10.60.135.141])
  by orvoesa102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 10 Apr 2025 03:01:38 -0700
-X-CSE-ConnectionGUID: 6UGYSyQdTD69AeclcCjX6w==
-X-CSE-MsgGUID: pMuOyp1fTTa9U4tujiSrPg==
+ 10 Apr 2025 03:01:43 -0700
+X-CSE-ConnectionGUID: WWsw2xqpQN+d66fN0Tch4g==
+X-CSE-MsgGUID: HVfRDyItT+uOf3kO4uDuOg==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.15,202,1739865600"; d="scan'208";a="159819751"
+X-IronPort-AV: E=Sophos;i="6.15,202,1739865600"; d="scan'208";a="159819801"
 Received: from gk3153-dr2-r750-36946.igk.intel.com ([10.102.20.192])
- by fmviesa001.fm.intel.com with ESMTP; 10 Apr 2025 03:01:36 -0700
+ by fmviesa001.fm.intel.com with ESMTP; 10 Apr 2025 03:01:41 -0700
 From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 To: intel-wired-lan@lists.osuosl.org
 Cc: netdev@vger.kernel.org, aleksander.lobakin@intel.com,
  przemyslaw.kitszel@intel.com, piotr.kwapulinski@intel.com,
  aleksandr.loktionov@intel.com, jedrzej.jagielski@intel.com,
  larysa.zaremba@intel.com, anthony.l.nguyen@intel.com
-Date: Thu, 10 Apr 2025 12:01:18 +0200
-Message-ID: <20250410100121.2353754-6-michal.swiatkowski@linux.intel.com>
+Date: Thu, 10 Apr 2025 12:01:20 +0200
+Message-ID: <20250410100121.2353754-8-michal.swiatkowski@linux.intel.com>
 X-Mailer: git-send-email 2.42.0
 In-Reply-To: <20250410100121.2353754-1-michal.swiatkowski@linux.intel.com>
 References: <20250410100121.2353754-1-michal.swiatkowski@linux.intel.com>
@@ -77,25 +77,24 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1744279299; x=1775815299;
+ t=1744279303; x=1775815303;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=GNdUSs8oh/thvERmuTya+pDN15XjoQ+57AH97V3Yb+0=;
- b=M/VyHaeq7kD+RI5KTSd2KqsZKsnasRCD8/1WGqsjufIIGu/7Er4oCz0H
- zY1J95FQfufccIo9YT+ZmiGP1bImDtCCkRhPrjEx3aVFi1N6aX4G6XTGR
- +QaGbhgFuQRQoTXbLn0gfnoMUytTy5mXh0AENoxt4QofEvX8kxn8nTdso
- oXccH3TlIWrbW99B9B9XxJWqlsKNB6C+0cIvyHAXs4ez3LwgUHDmE7rw8
- 3GqAYi8STqByUdFPGSiS2fQvRaIVuP/56i739RrjbgvWg++f9YeaYVWhr
- exbqLr+UcN6FImYofRIGD1EQkzgMoum9Vazu8D0oOp91yYemBZVzk4lvh
- A==;
+ bh=jAg/40in19GYDbgk6D3oK2wpbqw+hw8XtWQ4vs/PfYY=;
+ b=U+ix+dtx/XFRHdvrV2oDllwmI8NKwtEhX/rkxcu5UIuozUv32/fZ4l1+
+ lTxlOI8ytsomNew6zD3iyN7mQHIY5ZBDUrRAOBD5VU7d1dCNkVHAnn7/u
+ ozI1AWq7kyT/vdDznOue60VoUEHz1Vh7lehXaWawDFIr7BxxoXhk+BNLt
+ lvdIxUrlFj/tGy+jZK3C87G3sYJzuPbvWSIp6F3+745v73An9loW1bbvC
+ RymhNeCvwhgWSWQXmyWn1FXOBAtQHfiGSxqPBiCpaufqRvP0ns+keXwS1
+ AaQ2k4Pb9U8bW4bF9fT9yB6kKPLVqbxyEvXO/OKJVo3uS9T+jX74dyc75
+ Q==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=none (p=none dis=none)
  header.from=linux.intel.com
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=M/VyHaeq
-Subject: [Intel-wired-lan] [iwl-next v2 5/8] libie: add adminq helper for
- converting err to str
+ header.a=rsa-sha256 header.s=Intel header.b=U+ix+dtx
+Subject: [Intel-wired-lan] [iwl-next v2 7/8] iavf: use libie_aq_str
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -111,120 +110,156 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Add a new module for common handling of Admin Queue related logic.
-Start by a helper for error to string conversion. This lives inside
-libie/, but is a separate module what follows our logic of splitting
-into topical modules, to avoid pulling in not needed stuff, and have
-better organization in general.
+There is no need to store the err string in hw->err_str. Simplify it and
+use common helper. hw->err_str is still used for other purpouse.
 
-Olek suggested how to better solve the error to string conversion.
+It should be marked that previously for unknown error the numeric value
+was passed as a string. Now the "LIBIE_AQ_RC_UNKNOWN" is used for such
+cases.
 
-It will be used in follow-up patches in ice, i40e and iavf.
+Add libie_aminq module in iavf Kconfig.
 
 Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Suggested-by: Alexander Lobakin <aleksander.lobakin@intel.com>
+Reviewed-by: Larysa Zaremba <larysa.zaremba@intel.com>
 Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 ---
- drivers/net/ethernet/intel/libie/Kconfig  |  6 +++
- drivers/net/ethernet/intel/libie/Makefile |  4 ++
- include/linux/net/intel/libie/adminq.h    |  2 +
- drivers/net/ethernet/intel/libie/adminq.c | 50 +++++++++++++++++++++++
- 4 files changed, 62 insertions(+)
- create mode 100644 drivers/net/ethernet/intel/libie/adminq.c
+ drivers/net/ethernet/intel/Kconfig            |  1 +
+ .../net/ethernet/intel/iavf/iavf_prototype.h  |  1 -
+ drivers/net/ethernet/intel/iavf/iavf_common.c | 52 -------------------
+ drivers/net/ethernet/intel/iavf/iavf_main.c   |  5 +-
+ .../net/ethernet/intel/iavf/iavf_virtchnl.c   |  2 +-
+ 5 files changed, 5 insertions(+), 56 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/libie/Kconfig b/drivers/net/ethernet/intel/libie/Kconfig
-index 33aff6bc8f81..e6072758e3d8 100644
---- a/drivers/net/ethernet/intel/libie/Kconfig
-+++ b/drivers/net/ethernet/intel/libie/Kconfig
-@@ -8,3 +8,9 @@ config LIBIE
- 	  libie (Intel Ethernet library) is a common library built on top of
- 	  libeth and containing vendor-specific routines shared between several
- 	  Intel Ethernet drivers.
-+
-+config LIBIE_ADMINQ
-+	tristate
-+	help
-+	  Helper functions used by Intel Ethernet drivers for administration
-+	  queue command interface (aka adminq).
-diff --git a/drivers/net/ethernet/intel/libie/Makefile b/drivers/net/ethernet/intel/libie/Makefile
-index ffd27fab916a..e98f00b865d3 100644
---- a/drivers/net/ethernet/intel/libie/Makefile
-+++ b/drivers/net/ethernet/intel/libie/Makefile
-@@ -4,3 +4,7 @@
- obj-$(CONFIG_LIBIE)	+= libie.o
+diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
+index d5de9bc8b1b6..29c03a9ce145 100644
+--- a/drivers/net/ethernet/intel/Kconfig
++++ b/drivers/net/ethernet/intel/Kconfig
+@@ -260,6 +260,7 @@ config I40E_DCB
+ config IAVF
+ 	tristate
+ 	select LIBIE
++	select LIBIE_ADMINQ
+ 	select NET_SHAPER
  
- libie-y			:= rx.o
-+
-+obj-$(CONFIG_LIBIE_ADMINQ) 	+= libie_adminq.o
-+
-+libie_adminq-y			:= adminq.o
-diff --git a/include/linux/net/intel/libie/adminq.h b/include/linux/net/intel/libie/adminq.h
-index f8b3194b0742..92ec15f308b2 100644
---- a/include/linux/net/intel/libie/adminq.h
-+++ b/include/linux/net/intel/libie/adminq.h
-@@ -301,4 +301,6 @@ static inline void *libie_aq_raw(struct libie_aq_desc *desc)
- 	return &desc->params.raw;
+ config I40EVF
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_prototype.h b/drivers/net/ethernet/intel/iavf/iavf_prototype.h
+index 34b5ed87a9aa..7f9f9dbf959a 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_prototype.h
++++ b/drivers/net/ethernet/intel/iavf/iavf_prototype.h
+@@ -34,7 +34,6 @@ void iavf_debug_aq(struct iavf_hw *hw, enum iavf_debug_mask mask,
+ 
+ bool iavf_check_asq_alive(struct iavf_hw *hw);
+ enum iavf_status iavf_aq_queue_shutdown(struct iavf_hw *hw, bool unloading);
+-const char *iavf_aq_str(struct iavf_hw *hw, enum libie_aq_err aq_err);
+ const char *iavf_stat_str(struct iavf_hw *hw, enum iavf_status stat_err);
+ 
+ enum iavf_status iavf_aq_set_rss_lut(struct iavf_hw *hw, u16 seid,
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_common.c b/drivers/net/ethernet/intel/iavf/iavf_common.c
+index cc71e48b5689..614a886bca99 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_common.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_common.c
+@@ -7,58 +7,6 @@
+ #include "iavf_adminq.h"
+ #include "iavf_prototype.h"
+ 
+-/**
+- * iavf_aq_str - convert AQ err code to a string
+- * @hw: pointer to the HW structure
+- * @aq_err: the AQ error code to convert
+- **/
+-const char *iavf_aq_str(struct iavf_hw *hw, enum libie_aq_err aq_err)
+-{
+-	switch (aq_err) {
+-	case LIBIE_AQ_RC_OK:
+-		return "OK";
+-	case LIBIE_AQ_RC_EPERM:
+-		return "LIBIE_AQ_RC_EPERM";
+-	case LIBIE_AQ_RC_ENOENT:
+-		return "LIBIE_AQ_RC_ENOENT";
+-	case LIBIE_AQ_RC_ESRCH:
+-		return "LIBIE_AQ_RC_ESRCH";
+-	case LIBIE_AQ_RC_EIO:
+-		return "LIBIE_AQ_RC_EIO";
+-	case LIBIE_AQ_RC_EAGAIN:
+-		return "LIBIE_AQ_RC_EAGAIN";
+-	case LIBIE_AQ_RC_ENOMEM:
+-		return "LIBIE_AQ_RC_ENOMEM";
+-	case LIBIE_AQ_RC_EACCES:
+-		return "LIBIE_AQ_RC_EACCES";
+-	case LIBIE_AQ_RC_EBUSY:
+-		return "LIBIE_AQ_RC_EBUSY";
+-	case LIBIE_AQ_RC_EEXIST:
+-		return "LIBIE_AQ_RC_EEXIST";
+-	case LIBIE_AQ_RC_EINVAL:
+-		return "LIBIE_AQ_RC_EINVAL";
+-	case LIBIE_AQ_RC_ENOSPC:
+-		return "LIBIE_AQ_RC_ENOSPC";
+-	case LIBIE_AQ_RC_ENOSYS:
+-		return "LIBIE_AQ_RC_ENOSYS";
+-	case LIBIE_AQ_RC_EMODE:
+-		return "LIBIE_AQ_RC_EMODE";
+-	case LIBIE_AQ_RC_ENOSEC:
+-		return "LIBIE_AQ_RC_ENOSEC";
+-	case LIBIE_AQ_RC_EBADSIG:
+-		return "LIBIE_AQ_RC_EBADSIG";
+-	case LIBIE_AQ_RC_ESVN:
+-		return "LIBIE_AQ_RC_ESVN";
+-	case LIBIE_AQ_RC_EBADMAN:
+-		return "LIBIE_AQ_RC_EBADMAN";
+-	case LIBIE_AQ_RC_EBADBUF:
+-		return "LIBIE_AQ_RC_EBADBUF";
+-	}
+-
+-	snprintf(hw->err_str, sizeof(hw->err_str), "%d", aq_err);
+-	return hw->err_str;
+-}
+-
+ /**
+  * iavf_stat_str - convert status err code to a string
+  * @hw: pointer to the HW structure
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
+index 2c0bb41809a4..1b4a9a921d6c 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_main.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
+@@ -50,6 +50,7 @@ MODULE_ALIAS("i40evf");
+ MODULE_DESCRIPTION("Intel(R) Ethernet Adaptive Virtual Function Network Driver");
+ MODULE_IMPORT_NS("LIBETH");
+ MODULE_IMPORT_NS("LIBIE");
++MODULE_IMPORT_NS("LIBIE_ADMINQ");
+ MODULE_LICENSE("GPL v2");
+ 
+ static const struct net_device_ops iavf_netdev_ops;
+@@ -1734,7 +1735,7 @@ static int iavf_config_rss_aq(struct iavf_adapter *adapter)
+ 	if (status) {
+ 		dev_err(&adapter->pdev->dev, "Cannot set RSS key, err %s aq_err %s\n",
+ 			iavf_stat_str(hw, status),
+-			iavf_aq_str(hw, hw->aq.asq_last_status));
++			libie_aq_str(hw->aq.asq_last_status));
+ 		return iavf_status_to_errno(status);
+ 
+ 	}
+@@ -1744,7 +1745,7 @@ static int iavf_config_rss_aq(struct iavf_adapter *adapter)
+ 	if (status) {
+ 		dev_err(&adapter->pdev->dev, "Cannot set RSS lut, err %s aq_err %s\n",
+ 			iavf_stat_str(hw, status),
+-			iavf_aq_str(hw, hw->aq.asq_last_status));
++			libie_aq_str(hw->aq.asq_last_status));
+ 		return iavf_status_to_errno(status);
+ 	}
+ 
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+index a6f0e5990be2..65340ba0b152 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+@@ -29,7 +29,7 @@ static int iavf_send_pf_msg(struct iavf_adapter *adapter,
+ 	if (status)
+ 		dev_dbg(&adapter->pdev->dev, "Unable to send opcode %d to PF, status %s, aq_err %s\n",
+ 			op, iavf_stat_str(hw, status),
+-			iavf_aq_str(hw, hw->aq.asq_last_status));
++			libie_aq_str(hw->aq.asq_last_status));
+ 	return iavf_status_to_errno(status);
  }
  
-+const char *libie_aq_str(enum libie_aq_err err);
-+
- #endif /* __LIBIE_ADMINQ_H */
-diff --git a/drivers/net/ethernet/intel/libie/adminq.c b/drivers/net/ethernet/intel/libie/adminq.c
-new file mode 100644
-index 000000000000..6c95619d1f2b
---- /dev/null
-+++ b/drivers/net/ethernet/intel/libie/adminq.c
-@@ -0,0 +1,50 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/* Copyright (C) 2025 Intel Corporation */
-+
-+#include <linux/module.h>
-+#include <linux/net/intel/libie/adminq.h>
-+
-+static const char * const libie_aq_str_arr[] = {
-+#define LIBIE_AQ_STR(x)					\
-+	[LIBIE_AQ_RC_##x]	= "LIBIE_AQ_RC" #x
-+	LIBIE_AQ_STR(OK),
-+	LIBIE_AQ_STR(EPERM),
-+	LIBIE_AQ_STR(ENOENT),
-+	LIBIE_AQ_STR(ESRCH),
-+	LIBIE_AQ_STR(EIO),
-+	LIBIE_AQ_STR(EAGAIN),
-+	LIBIE_AQ_STR(ENOMEM),
-+	LIBIE_AQ_STR(EACCES),
-+	LIBIE_AQ_STR(EBUSY),
-+	LIBIE_AQ_STR(EEXIST),
-+	LIBIE_AQ_STR(EINVAL),
-+	LIBIE_AQ_STR(ENOSPC),
-+	LIBIE_AQ_STR(ENOSYS),
-+	LIBIE_AQ_STR(EMODE),
-+	LIBIE_AQ_STR(ENOSEC),
-+	LIBIE_AQ_STR(EBADSIG),
-+	LIBIE_AQ_STR(ESVN),
-+	LIBIE_AQ_STR(EBADMAN),
-+	LIBIE_AQ_STR(EBADBUF),
-+#undef LIBIE_AQ_STR
-+	"LIBIE_AQ_RC_UNKNOWN",
-+};
-+
-+#define __LIBIE_AQ_STR_NUM (ARRAY_SIZE(libie_aq_str_arr) - 1)
-+
-+/**
-+ * libie_aq_str - get error string based on aq error
-+ * @err: admin queue error type
-+ */
-+const char *libie_aq_str(enum libie_aq_err err)
-+{
-+	if (err >= ARRAY_SIZE(libie_aq_str_arr) ||
-+	    !libie_aq_str_arr[err])
-+		err = __LIBIE_AQ_STR_NUM;
-+
-+	return libie_aq_str_arr[err];
-+}
-+EXPORT_SYMBOL_NS_GPL(libie_aq_str, "LIBIE_ADMINQ");
-+
-+MODULE_DESCRIPTION("Intel(R) Ethernet common library - adminq helpers");
-+MODULE_LICENSE("GPL");
 -- 
 2.42.0
 
