@@ -1,99 +1,106 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B3235C369B2
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 14 Apr 2025 13:02:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2EF6FC369B2
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 14 Apr 2025 13:04:04 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 7CFE54039D;
-	Mon, 14 Apr 2025 13:02:22 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id EEF5261274;
+	Mon, 14 Apr 2025 13:04:03 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id VWQx-LbsbAoU; Mon, 14 Apr 2025 13:02:22 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id OedCsMzYo1A1; Mon, 14 Apr 2025 13:04:03 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org EF77A40B89
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 71C7E61288
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1744635742;
-	bh=jAsDZjSYk7mmtAuycW8BHuFmaCbarFw71GkVoprP+bI=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1744635843;
+	bh=Rhj+3R4Kxv0RM2/3vj0BhWk0VFht+NLjUbhnfecyxkE=;
+	h=Date:To:Cc:References:From:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=Dw664d8a8VLMpwgkYN1ePdBfeyNQAleIAkEh62Tz+7Pmsv3LZPQzElNeP7eUw+tgV
-	 /6FOxm4rHdW49y6rK++rUCW43gmLBKlZv9TetDXVFQBB2fwSFY8yp9I3hh5tV2SE6M
-	 nUwWmg7u9QSnuj8WY8SVCFWms2fhPb/j9ZWM+bROk3j9qsgm2qQ9kv227+Jm1QQAGe
-	 UexkZVtxm/fclQli9hrSnEhdnX1CJN/ZVdYhrEhVRkHTrSFkVurhmaEVG9tComUF/0
-	 a31f9VluKzz9qSmCdmWBFuLYyo3zXTFXiji43NwmPH4cRFdGejxXFNJ9DBwA7CW/1e
-	 kSbTnoaGfgDaw==
+	b=F+f6PSkWwC0nXNJFuT4/7iWstl2c12bD5NzyAVPyIxGpnRemqthdfB7SbLBJG9+un
+	 Vt31kVcIYmiGfgUFr8xT0KgNefEwo6cKV4YWI4ACX63mTSuWd01NixVYVyet67NYiB
+	 89Tbv6qJLuTaD3uP5jXxmUArWpvtfh+zwux+koA85ry8+vZzh13CTyghtMOcPOpfZU
+	 wDSWa5oy6q/l9U9rdMHZmD1eBFSXfpRwxsa2tLOZCcIJvSqBy/wHpdVZdoB2sdwQjU
+	 bXwl9fWq0qr+NM/ipqLGpHuzAVgUqlgbJHBnDkAgsJ9lh2uwNrgyuzA/n4U9gNo27F
+	 l8tKoF+Gy0fzw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id EF77A40B89;
-	Mon, 14 Apr 2025 13:02:21 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id 1C4BBDE
- for <intel-wired-lan@lists.osuosl.org>; Mon, 14 Apr 2025 13:02:20 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 71C7E61288;
+	Mon, 14 Apr 2025 13:04:03 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 1AC87250
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 14 Apr 2025 13:04:02 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 184A540BE5
- for <intel-wired-lan@lists.osuosl.org>; Mon, 14 Apr 2025 13:02:20 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 0C71D40BCF
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 14 Apr 2025 13:04:02 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id o7Lc6KfkWsQr for <intel-wired-lan@lists.osuosl.org>;
- Mon, 14 Apr 2025 13:02:19 +0000 (UTC)
-Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.12;
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 8_jRd8Kqh_LM for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 14 Apr 2025 13:04:01 +0000 (UTC)
+Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.15;
  helo=mgamail.intel.com; envelope-from=martyna.szapar-mudlaw@linux.intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 76DE540B89
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 76DE540B89
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.12])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 76DE540B89
- for <intel-wired-lan@lists.osuosl.org>; Mon, 14 Apr 2025 13:02:19 +0000 (UTC)
-X-CSE-ConnectionGUID: ePfzW4G+QheaLl1Q1G63SA==
-X-CSE-MsgGUID: hE0gINnITa+vWrcWW1BFrg==
-X-IronPort-AV: E=McAfee;i="6700,10204,11402"; a="57469133"
-X-IronPort-AV: E=Sophos;i="6.15,212,1739865600"; d="scan'208";a="57469133"
-Received: from orviesa005.jf.intel.com ([10.64.159.145])
- by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 14 Apr 2025 06:01:33 -0700
-X-CSE-ConnectionGUID: pM6vjnfZTimu5us0Ooj86Q==
-X-CSE-MsgGUID: 6hviZSSKQg2aYustRr5MjA==
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 5397C402E6
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 5397C402E6
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.15])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 5397C402E6
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 14 Apr 2025 13:04:01 +0000 (UTC)
+X-CSE-ConnectionGUID: 7eVmX5oRQHm7j4FYO/oJPA==
+X-CSE-MsgGUID: kZy7oUB/QPmTkm8RFoyB6g==
+X-IronPort-AV: E=McAfee;i="6700,10204,11402"; a="49760435"
+X-IronPort-AV: E=Sophos;i="6.15,212,1739865600"; d="scan'208";a="49760435"
+Received: from fmviesa009.fm.intel.com ([10.60.135.149])
+ by orvoesa107.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 14 Apr 2025 06:04:01 -0700
+X-CSE-ConnectionGUID: pJHfrg0kQOytdkNNGeB8CQ==
+X-CSE-MsgGUID: 5FjZVOS3SE+mB+sCKf8g7w==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.15,212,1739865600"; d="scan'208";a="134967202"
-Received: from enterprise.igk.intel.com ([10.102.20.175])
- by orviesa005.jf.intel.com with ESMTP; 14 Apr 2025 06:01:32 -0700
-From: Martyna Szapar-Mudlaw <martyna.szapar-mudlaw@linux.intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Cc: netdev@vger.kernel.org,
- Martyna Szapar-Mudlaw <martyna.szapar-mudlaw@linux.intel.com>
-Date: Mon, 14 Apr 2025 15:00:09 +0200
-Message-ID: <20250414130007.366132-5-martyna.szapar-mudlaw@linux.intel.com>
-X-Mailer: git-send-email 2.47.0
-In-Reply-To: <20250414130007.366132-2-martyna.szapar-mudlaw@linux.intel.com>
-References: <20250414130007.366132-2-martyna.szapar-mudlaw@linux.intel.com>
+X-IronPort-AV: E=Sophos;i="6.15,212,1739865600"; d="scan'208";a="130669308"
+Received: from mszapar-mobl1.ger.corp.intel.com (HELO [10.245.98.242])
+ ([10.245.98.242])
+ by fmviesa009-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 14 Apr 2025 06:03:59 -0700
+Message-ID: <feb50784-4efc-4b2f-9c26-9c1b059fd9a8@linux.intel.com>
+Date: Mon, 14 Apr 2025 15:03:49 +0200
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+To: Ido Schimmel <idosch@idosch.org>
+Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
+ Michal Kubiak <michal.kubiak@intel.com>
+References: <20250409113622.161379-2-martyna.szapar-mudlaw@linux.intel.com>
+ <20250409113622.161379-4-martyna.szapar-mudlaw@linux.intel.com>
+ <Z_ZiwNUJy7xGeT8m@shredder>
+Content-Language: en-US
+From: "Szapar-Mudlaw, Martyna" <martyna.szapar-mudlaw@linux.intel.com>
+In-Reply-To: <Z_ZiwNUJy7xGeT8m@shredder>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1744635739; x=1776171739;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=W7Z5xn5IPV8gDmNqoXJBFdpf5pRGqNSmYd8MjnkwpK4=;
- b=YO2PweWxyb7thYmucNXYV/KAGoRJvStOhMS5XcRrMdLuuNv6gDN5xR0r
- tyNFcJ4vZJBXVhF0KT3rF6LO0fFus7YA8Y/C2qARoLbnF4kczJcb+B19S
- WG6aLfieG+S0OuhiRIBIjR/5mAZcce9ClDgXtf+pdrQquIg2HiERls8eG
- sQRsS2uaV0HcP9q2Qp8wpxyUGv5lplEY2e+w7+gTpbcvOJds396YTZkgg
- YLLCz+qhDf94g1UytMVXLgaSUwGuZD0xsInlR2ciw69BAegiR3x2WHKRh
- Y8UAsQAZfyvGv30Z3TKehxCYcx7oFalzMFZt6+zPpiqohAmtQUPDeUIBP
+ t=1744635842; x=1776171842;
+ h=message-id:date:mime-version:subject:to:cc:references:
+ from:in-reply-to:content-transfer-encoding;
+ bh=Zm1CgYtCNLvYuMxyg3rrAoJm/vpL/E3L6SClMlF+xmY=;
+ b=QbcNtLm6VgR4tGIF2HbAlzNI1SUqby2HhDvv3kRX9AIFjIdPUkeM7miU
+ U84ldEqHD/1JTFbXt4iXAQkqscGBOfKwf2P4vq8PWiKN4QY8QRvJ/yFp3
+ DaKzlK21IIv+EfQcqSYvJmiMS3MzY8OWK3CwHeQws6JsO1NvfI0waaTCu
+ vFQJG5uCnouQAnjAEY+sFZePR84r3LPAQhtmtonyoOaZR7Wio2EkTJMKd
+ jfoxqBZSGIZ+TS25809Y4YSksqC8c3stCuiOqNtUTmr8jcs05l0rYxV9N
+ V1kGBacy8wGpTvtA61bb1WGf26l8ZMZmUkiP+Xa6GF1/L4WDEySQQltbK
  Q==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=none (p=none dis=none)
  header.from=linux.intel.com
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=YO2PweWx
-Subject: [Intel-wired-lan] [PATCH iwl-next v2 1/2] ice: add link_down_events
- statistic
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=QbcNtLm6
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next 1/2] ice: add
+ link_down_events statistic
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -109,74 +116,24 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Introduce a link_down_events counter to the ice driver, incremented
-each time the link transitions from up to down.
-This counter can help diagnose issues related to link stability,
-such as port flapping or unexpected link drops.
 
-The value is exposed via ethtool's get_link_ext_stats() interface.
 
-Signed-off-by: Martyna Szapar-Mudlaw <martyna.szapar-mudlaw@linux.intel.com>
----
- drivers/net/ethernet/intel/ice/ice.h         |  1 +
- drivers/net/ethernet/intel/ice/ice_ethtool.c | 10 ++++++++++
- drivers/net/ethernet/intel/ice/ice_main.c    |  3 +++
- 3 files changed, 14 insertions(+)
+On 4/9/2025 2:06 PM, Ido Schimmel wrote:
+> On Wed, Apr 09, 2025 at 01:36:23PM +0200, Martyna Szapar-Mudlaw wrote:
+>> Introduce a new ethtool statistic to ice driver, `link_down_events`,
+>> to track the number of times the link transitions from up to down.
+>> This counter can help diagnose issues related to link stability,
+>> such as port flapping or unexpected link drops.
+>>
+>> The counter increments when a link-down event occurs and is exposed
+>> via ethtool stats as `link_down_events.nic`.
+> 
+> Are you aware of commit 9a0f830f8026 ("ethtool: linkstate: add a
+> statistic for PHY down events")?
+> 
+> Better to report this via the generic counter than a driver-specific
+> one.
+> 
 
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index 7200d6042590..6304104d1900 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -621,6 +621,7 @@ struct ice_pf {
- 	u16 globr_count;	/* Global reset count */
- 	u16 empr_count;		/* EMP reset count */
- 	u16 pfr_count;		/* PF reset count */
-+	u32 link_down_events;
- 
- 	u8 wol_ena : 1;		/* software state of WoL */
- 	u32 wakeup_reason;	/* last wakeup reason */
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index b0805704834d..5738f3069efa 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -836,6 +836,15 @@ static void ice_set_msglevel(struct net_device *netdev, u32 data)
- #endif /* !CONFIG_DYNAMIC_DEBUG */
- }
- 
-+static void ice_get_link_ext_stats(struct net_device *netdev,
-+				   struct ethtool_link_ext_stats *stats)
-+{
-+	struct ice_netdev_priv *np = netdev_priv(netdev);
-+	struct ice_pf *pf = np->vsi->back;
-+
-+	stats->link_down_events = pf->link_down_events;
-+}
-+
- static int ice_get_eeprom_len(struct net_device *netdev)
- {
- 	struct ice_netdev_priv *np = netdev_priv(netdev);
-@@ -4784,6 +4793,7 @@ static const struct ethtool_ops ice_ethtool_ops = {
- 	.set_msglevel		= ice_set_msglevel,
- 	.self_test		= ice_self_test,
- 	.get_link		= ethtool_op_get_link,
-+	.get_link_ext_stats	= ice_get_link_ext_stats,
- 	.get_eeprom_len		= ice_get_eeprom_len,
- 	.get_eeprom		= ice_get_eeprom,
- 	.get_coalesce		= ice_get_coalesce,
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index a03e1819e6d5..d68dd2a3f4a6 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -1144,6 +1144,9 @@ ice_link_event(struct ice_pf *pf, struct ice_port_info *pi, bool link_up,
- 	if (link_up == old_link && link_speed == old_link_speed)
- 		return 0;
- 
-+	if (!link_up && old_link)
-+		pf->link_down_events++;
-+
- 	ice_ptp_link_change(pf, link_up);
- 
- 	if (ice_is_dcb_active(pf)) {
--- 
-2.47.0
-
+Right, thank you for pointing this, I just submitted v2 where ethtool 
+get_link_ext_stats() interface is used.
