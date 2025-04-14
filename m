@@ -1,158 +1,122 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CC93FC369B2
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 14 Apr 2025 20:03:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C65F8C369B2
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 14 Apr 2025 21:26:51 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 76CAF80D14;
-	Mon, 14 Apr 2025 20:03:02 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id C1lyom4oL6_T; Mon, 14 Apr 2025 20:03:01 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C7DE080D35
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1744660981;
-	bh=OETJdvcRlTDOC3wxrm7MGgDibXakzm2Chi5+CwgMXn0=;
-	h=References:In-Reply-To:From:Date:To:Cc:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=JEhDS7UIfoBCyU9eXWfp8pLH7T7J/46WeNWM0IgT+SNn9bkSG/1DsAQGzHEzrc8UV
-	 3yfVNPEUwPH1WdyOEbb7P3q/uf/Ir/gtOyPC0uHT/L/9JMp9wCACfIjDkDCh6LldXp
-	 ovby8/EL85hbwbs9jnh2DuJnfm+kWTBTN+aMWoNcu+PtSA1UfBsovAfRlRa0rNjiJ1
-	 enzWUg7hwclbXXCJPVuoqdNs7recrSDtIPlOhgpPp9BX9uxeg4mJznXMylayEbPVca
-	 vZbJOFujhkSCUrxa6D0Lgtzvz4jmQKB8f3NTaKWcPEfRHL7ukh5TlwC9efLNT6smao
-	 Kq40/XJEK1pZA==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id C7DE080D35;
-	Mon, 14 Apr 2025 20:03:01 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 89378200
- for <intel-wired-lan@lists.osuosl.org>; Mon, 14 Apr 2025 19:50:16 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 6F01C60763
- for <intel-wired-lan@lists.osuosl.org>; Mon, 14 Apr 2025 19:50:16 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 60CE660880;
+	Mon, 14 Apr 2025 21:26:51 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id zjKQwq1Tok2V for <intel-wired-lan@lists.osuosl.org>;
- Mon, 14 Apr 2025 19:50:15 +0000 (UTC)
-X-Greylist: delayed 2737 seconds by postgrey-1.37 at util1.osuosl.org;
- Mon, 14 Apr 2025 19:50:15 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 6EA2360D79
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 6EA2360D79
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=205.220.180.131;
- helo=mx0b-0031df01.pphosted.com; envelope-from=loic.poulain@oss.qualcomm.com;
+ id eqtlbagMmYrO; Mon, 14 Apr 2025 21:26:50 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 1B18460697
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1744666010;
+	bh=W9teovFw9CqeFKogtnDSUICz3WpE7GNWDGjhBaVWDG4=;
+	h=From:Date:To:Cc:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=sPhGiUggEcMPlj1nJ6yM9RildQw974D2jdiWh+KixbQ94QrUl4v5wsjs3bRfLCuto
+	 Lf05NSebhW/WKEiHQcYx+SKpEn/oieDqsdVS8mxPQfjMIlJTweSQDp7bBk7fgemnqn
+	 8c1Vf9/NKheC9CiL7mWG3c22It5eVa8FC+kbECTJH937GGpB3XdxueGLJoavGpnqp8
+	 BdqEcUPctOqJ5NRlAMjfKpLG2uF84z4v9GyBI77NDEFBquiOorcKCDeWyyFssvut9W
+	 7RYpYLIJIb7D7+XBUjjpYAYYEe782ir4ejQAzJ5ofzrePPaIAcn0Esc6C36Qd/iUDh
+	 KmSZyGamDbI5A==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp3.osuosl.org (Postfix) with ESMTP id 1B18460697;
+	Mon, 14 Apr 2025 21:26:50 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 88A1DCF
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 14 Apr 2025 21:26:49 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp2.osuosl.org (Postfix) with ESMTP id 785F540BC5
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 14 Apr 2025 21:26:49 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id jikeNsEkvXQg for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 14 Apr 2025 21:26:48 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.17;
+ helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
  receiver=<UNKNOWN> 
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com
- [205.220.180.131])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 6EA2360D79
- for <intel-wired-lan@lists.osuosl.org>; Mon, 14 Apr 2025 19:50:15 +0000 (UTC)
-Received: from pps.filterd (m0279870.ppops.net [127.0.0.1])
- by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 53E99qIn011398
- for <intel-wired-lan@lists.osuosl.org>; Mon, 14 Apr 2025 19:04:37 GMT
-Received: from mail-qv1-f71.google.com (mail-qv1-f71.google.com
- [209.85.219.71])
- by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 45yg8wdhse-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128 verify=NOT)
- for <intel-wired-lan@lists.osuosl.org>; Mon, 14 Apr 2025 19:04:37 +0000 (GMT)
-Received: by mail-qv1-f71.google.com with SMTP id
- 6a1803df08f44-6e8fae3e448so90401526d6.2
- for <intel-wired-lan@lists.osuosl.org>; Mon, 14 Apr 2025 12:04:37 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20230601; t=1744657476; x=1745262276;
- h=content-transfer-encoding:cc:to:subject:message-id:date:from
- :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
- :subject:date:message-id:reply-to;
- bh=OETJdvcRlTDOC3wxrm7MGgDibXakzm2Chi5+CwgMXn0=;
- b=Pv6jsQxX7K7n8ii2XPkSMPSfkdmZjfChFq91HuaYD/m8P7QXRS5q6LbnFFSaUlGhRL
- A0ppNqdIDUf4k2VaRjs6pl76zs501EirGeGAMmKfac2gjYsSSPDHaISbzVwAaV+AseOb
- rbzAQqI/154jZPBbA/9q+3F6okC4bmmICUjdGFGYg3SZ5H6kNnMTkp+Rk+Q6xnVC45IG
- LgpigBGK8gTxwZi+sfvYgqtsxhKU5XC9SodR+BPYKTuoqjHm9vGb8GijodeqI80rvSqN
- Pnx7PfuRUzMn4dtjxiwZox4HlGfcbRFaCrVuKgZNBTCCSfy2VPUcFTv3TIdx99TWDkFG
- itsQ==
-X-Forwarded-Encrypted: i=1;
- AJvYcCVrcTVGc7o3c/UPrt0vGRcqNl8ib37dBpAzM2KL9b6Qx2u9oZzCr9iGhkUVIXHV6MvVhWgp42Dw+JKqe3N2bms=@lists.osuosl.org
-X-Gm-Message-State: AOJu0YwG9G3C324Sq4JyTxiXSnmsB930dSC9Da5znPCeb1EKZN3WxstD
- kkqN+Sn+BKtbKbO2VS9LbzzA9hnbs5hCaOroI4vJL9xBsQp9gxFSqBiM0Z5diAT82GiVIb8rWz5
- jrB/DnIRGItToea/h7Z8m3f/7quTjO0LBRoh2jCQBVyE6+yHuQRTN+18zSiFPR+b0bnHq5rADBI
- OwfM0UnKsl3L+dTeNpaVdoncPIjxuDFWNI/hQdTML5Fzo=
-X-Gm-Gg: ASbGncsuOd6KgffcS9ylkXQGyCCB83kICpABiSY1+yyEsoKM4VKzxbHDk0x84AzV3Qr
- n/ZTLk5U71iZ48UQzKR59ns20a5Wb+1GcDp+g5Mr6puAU891RR+CQA+fqOuUIRfhjk605voI=
-X-Received: by 2002:ad4:5aac:0:b0:6e8:f945:ec5 with SMTP id
- 6a1803df08f44-6f230d9f19dmr188265166d6.24.1744657476386; 
- Mon, 14 Apr 2025 12:04:36 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IGzelK//k2TwD46eVAuZhiJNjDOOOFl3EoM1T+XqSjz0DyaIMYpfLn3sF+Nm6yY82gIZ0h6m/EK/PQS4Vwle6I=
-X-Received: by 2002:ad4:5aac:0:b0:6e8:f945:ec5 with SMTP id
- 6a1803df08f44-6f230d9f19dmr188264526d6.24.1744657475883; Mon, 14 Apr 2025
- 12:04:35 -0700 (PDT)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 39C434035D
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 39C434035D
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.17])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 39C434035D
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 14 Apr 2025 21:26:47 +0000 (UTC)
+X-CSE-ConnectionGUID: nN5JL42OQmuUlAFivWBi0A==
+X-CSE-MsgGUID: mBLMkr0zR3K3NIhh/IAUbw==
+X-IronPort-AV: E=McAfee;i="6700,10204,11403"; a="46163862"
+X-IronPort-AV: E=Sophos;i="6.15,212,1739865600"; d="scan'208";a="46163862"
+Received: from orviesa008.jf.intel.com ([10.64.159.148])
+ by orvoesa109.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 14 Apr 2025 14:26:45 -0700
+X-CSE-ConnectionGUID: xcsM0XrkSEmbD1/whsfu2g==
+X-CSE-MsgGUID: 0s24PglrTX2QBP6rlUfdQg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.15,212,1739865600"; d="scan'208";a="130896307"
+Received: from jekeller-desk.jf.intel.com ([10.166.241.15])
+ by orviesa008-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 14 Apr 2025 14:26:46 -0700
+From: Jacob Keller <jacob.e.keller@intel.com>
+Date: Mon, 14 Apr 2025 14:26:29 -0700
+Message-Id: <20250414-jk-supported-perout-flags-v2-0-f6b17d15475c@intel.com>
 MIME-Version: 1.0
-References: <20250414-restricted-pointers-net-v1-0-12af0ce46cdd@linutronix.de>
- <20250414-restricted-pointers-net-v1-4-12af0ce46cdd@linutronix.de>
-In-Reply-To: <20250414-restricted-pointers-net-v1-4-12af0ce46cdd@linutronix.de>
-From: Loic Poulain <loic.poulain@oss.qualcomm.com>
-Date: Mon, 14 Apr 2025 21:04:25 +0200
-X-Gm-Features: ATxdqUFggdvW0Cci0Y7dRfrjAmK6JyGKc4MbfrCN7JALN63x-K56mHIpeth7yd4
-Message-ID: <CAFEp6-26mFztO-AfGrL0cScGFMR5Z3Sp1KOsUvH_FoJfK+8q2w@mail.gmail.com>
-To: =?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
-Cc: Jeff Johnson <jjohnson@kernel.org>, Loic Poulain <loic.poulain@linaro.org>,
- Brian Norris <briannorris@chromium.org>,
- Francesco Dolcini <francesco@dolcini.it>,
- Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Andrew Lunn <andrew+netdev@lunn.ch>,
- "David S. Miller" <davem@davemloft.net>,
- Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, Saeed Mahameed <saeedm@nvidia.com>,
- Leon Romanovsky <leon@kernel.org>, Tariq Toukan <tariqt@nvidia.com>,
- ath10k@lists.infradead.org, linux-kernel@vger.kernel.org,
- ath11k@lists.infradead.org, ath12k@lists.infradead.org,
- wcn36xx@lists.infradead.org, linux-wireless@vger.kernel.org,
- intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- linux-rdma@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Authority-Analysis: v=2.4 cv=E9TNpbdl c=1 sm=1 tr=0 ts=67fd5c45 cx=c_pps
- a=UgVkIMxJMSkC9lv97toC5g==:117 a=IkcTkHD0fZMA:10 a=XR8D0OoHHMoA:10
- a=EUspDBNiAAAA:8 a=ZS808JPYK9pMg9uJusAA:9 a=QEXdDO2ut3YA:10
- a=1HOtulTD9v-eNWfpl4qZ:22
-X-Proofpoint-ORIG-GUID: 3ZSpowigV-8OxoK4jG7wRlSo99TcxG0e
-X-Proofpoint-GUID: 3ZSpowigV-8OxoK4jG7wRlSo99TcxG0e
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1095,Hydra:6.0.680,FMLib:17.12.68.34
- definitions=2025-04-14_07,2025-04-10_01,2024-11-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 adultscore=0
- mlxscore=0 bulkscore=0 clxscore=1011 phishscore=0 lowpriorityscore=0
- suspectscore=0 mlxlogscore=965 spamscore=0 priorityscore=1501
- impostorscore=0 classifier=spam authscore=0 authtc=n/a authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.19.0-2502280000
- definitions=main-2504140138
-X-Mailman-Approved-At: Mon, 14 Apr 2025 20:03:01 +0000
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=qualcomm.com; h=
- cc:content-transfer-encoding:content-type:date:from:in-reply-to
- :message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
- OETJdvcRlTDOC3wxrm7MGgDibXakzm2Chi5+CwgMXn0=; b=iqhBsErWeoSHj9J/
- E045fLrifvanLVRlAnodQyBohn4gGtolujIB2SUUzOB1CPk7IVZSQYJLnzv/sIky
- T2iI/EjCTc12ZsEw3TC+51CCdKIZky4cIvuF0PxxWJ1QdEfyWQMEx5WISqWTozZR
- rM11Ayg53i2c/y79QoXyGCeXXJCYsmEuQEnjWeFN86mEyLl/iwqpWJJJcrfgGAR6
- qGCdp3F3nWKNtGwdcWxpsSuW2WJBas6WpIyhrCDp1YII3DT/ZEGP1MKE8ClU1gvI
- E2U7vHGHi4J8dcbvE3dPLT6pWrPt/zwGTj7+8T2WshytoyYsSToeth72Ba53alWO
- gvdZZQ==
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dmarc=none (p=none dis=none)
- header.from=oss.qualcomm.com
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAIV9/WcC/42NQQ6CMBBFr0Jm7ZjSogFX3MOwIHQKo9g2bSEYw
+ t1tOIHLl5f//g6RAlOER7FDoJUjO5tBXgoYpt6OhKwzgxTyJipR4+uNcfHehUQaPQW3JDRzP0a
+ slCwbPRCJRkHe+0CGt7P9BEsJLW0JumwmjsmF73m6lqf/o7+WKFBLU5PS5l4Z1bJNNF8H94HuO
+ I4ffFzFfcwAAAA=
+X-Change-ID: 20250408-jk-supported-perout-flags-43219dcee093
+To: Andrew Lunn <andrew@lunn.ch>, Vladimir Oltean <olteanv@gmail.com>, 
+ "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
+ Tony Nguyen <anthony.l.nguyen@intel.com>, 
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>, 
+ Saeed Mahameed <saeedm@nvidia.com>, Leon Romanovsky <leon@kernel.org>, 
+ Tariq Toukan <tariqt@nvidia.com>, 
+ Bryan Whitehead <bryan.whitehead@microchip.com>, 
+ UNGLinuxDriver@microchip.com, Horatiu Vultur <horatiu.vultur@microchip.com>, 
+ Paul Barker <paul.barker.ct@bp.renesas.com>, 
+ =?utf-8?q?Niklas_S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>, 
+ Richard Cochran <richardcochran@gmail.com>, 
+ Heiner Kallweit <hkallweit1@gmail.com>, 
+ Russell King <linux@armlinux.org.uk>, 
+ Andrei Botila <andrei.botila@oss.nxp.com>, 
+ Claudiu Manoil <claudiu.manoil@nxp.com>, 
+ Alexandre Belloni <alexandre.belloni@bootlin.com>, 
+ Vadim Fedorenko <vadim.fedorenko@linux.dev>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ intel-wired-lan@lists.osuosl.org, linux-rdma@vger.kernel.org, 
+ linux-renesas-soc@vger.kernel.org, Jacob Keller <jacob.e.keller@intel.com>
+X-Mailer: b4 0.14.2
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1744666008; x=1776202008;
+ h=from:subject:date:message-id:mime-version:
+ content-transfer-encoding:to:cc;
+ bh=AcuwE8JaJ3lT4gvBhoaVTGVJ/yEd3t9suqvwbBI4EbA=;
+ b=M4Xvc689jgsDIHmt+CXw/jgv0hbflzq3k0mg9wDrnwkzSp91ir6hbVu0
+ AaGRAZ/jKjaM4E6yOZnjFwM2tOKuS88Xuqw4IZJR7HJLtHKpSsddQzUKk
+ isDSIdwA/ELxCtUigvb4D/SiJQcEpAOBzDzmpE4cLeO22N8fbW6CfzAp2
+ Bm0lbSCDoNhzcVaAMl8j7tKrCRmck3PPq1CW7v7LFJm/4zJxJYIz6aE0o
+ JgFxzsi86yu7wX06mAbg/UwdkdjqjIK9/SFCTsAPMSb21uSWkP0o456ws
+ fIveEgfGoxHjJ1zWnqVxwU1qakZBULYWJRaOasosiMu2XH7sbtojEI+Ol
+ Q==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=intel.com
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key,
- unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256
- header.s=qcppdkim1 header.b=iqhBsErW
-Subject: Re: [Intel-wired-lan] [PATCH net-next 4/7] wifi: wcn36xx: Don't use
- %pK through printk
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=M4Xvc689
+Subject: [Intel-wired-lan] [PATCH net-next v2 0/2] net: ptp: driver opt-in
+ for supported PTP ioctl flags
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -168,51 +132,88 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Mon, Apr 14, 2025 at 10:27=E2=80=AFAM Thomas Wei=C3=9Fschuh
-<thomas.weissschuh@linutronix.de> wrote:
->
-> In the past %pK was preferable to %p as it would not leak raw pointer
-> values into the kernel log.
-> Since commit ad67b74d2469 ("printk: hash addresses printed with %p")
-> the regular %p has been improved to avoid this issue.
-> Furthermore, restricted pointers ("%pK") were never meant to be used
-> through printk(). They can still unintentionally leak raw pointers or
-> acquire sleeping looks in atomic contexts.
->
-> Switch to the regular pointer formatting which is safer and
-> easier to reason about.
-> There are still a few users of %pK left, but these use it through seq_fil=
-e,
-> for which its usage is safe.
->
-> Signed-off-by: Thomas Wei=C3=9Fschuh <thomas.weissschuh@linutronix.de>
+Both the PTP_EXTTS_REQUEST(2) and PTP_PEROUT_REQUEST(2) ioctls take flags
+from userspace to modify their behavior. Drivers are supposed to check
+these flags, rejecting requests for flags they do not support.
 
-Acked-by:  Loic Poulain <loic.poulain@oss.qualcomm.com>
+Many drivers today do not check these flags, despite many attempts to
+squash individual drivers as these mistakes are discovered. Additionally,
+any new flags added can require updating every driver if their validation
+checks are poorly implemented.
 
-> ---
->  drivers/net/wireless/ath/wcn36xx/testmode.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/drivers/net/wireless/ath/wcn36xx/testmode.c b/drivers/net/wi=
-reless/ath/wcn36xx/testmode.c
-> index e5142c052985ddf629b93d7b9687e6ba63a48e8b..d7a2a483cbc486308032709a9=
-9bba9a52ed0ff59 100644
-> --- a/drivers/net/wireless/ath/wcn36xx/testmode.c
-> +++ b/drivers/net/wireless/ath/wcn36xx/testmode.c
-> @@ -56,7 +56,7 @@ static int wcn36xx_tm_cmd_ptt(struct wcn36xx *wcn, stru=
-ct ieee80211_vif *vif,
->         msg =3D buf;
->
->         wcn36xx_dbg(WCN36XX_DBG_TESTMODE,
-> -                   "testmode cmd wmi msg_id 0x%04X msg_len %d buf %pK bu=
-f_len %d\n",
-> +                   "testmode cmd wmi msg_id 0x%04X msg_len %d buf %p buf=
-_len %d\n",
->                    msg->msg_id, msg->msg_body_length,
->                    buf, buf_len);
->
->
-> --
-> 2.49.0
->
->
+It is clear that driver authors will not reliably check for unsupported
+flags. The root of the issue is that drivers must essentially opt out of
+every flag, rather than opt in to the ones they support.
+
+Instead, lets introduce .supported_perout_flags and .supported_extts_flags
+to the ptp_clock_info structure. This is a pattern taken from several
+ethtool ioctls which enabled validation to move out of the drivers and into
+the shared ioctl handlers. This pattern has worked quite well and makes it
+much more difficult for drivers to accidentally accept flags they do not
+support.
+
+With this approach, drivers which do not set the supported fields will have
+the core automatically reject any request which has flags. Drivers must opt
+in to each flag they support by adding it to the list, with the sole
+exception being the PTP_ENABLE_FEATURE flag of the PTP_EXTTS_REQUEST ioctl
+since it is entirely handled by the ptp_chardev.c file.
+
+This change will ensure that all current and future drivers are safe for
+extension when we need to extend these ioctls.
+
+I opted to keep all the driver changes into one patch per ioctl type. The
+changes are relatively small and straight forward. Splitting it per-driver
+would make the series large, and also break flags between the introduction
+of the supported field and setting it in each driver.
+
+The non-Intel drivers are compile-tested only, and I would appreciate
+confirmation and testing from their respective maintainers. (It is also
+likely that I missed some of the driver authors especially for drivers
+which didn't make any checks at all and do not set either of the supported
+flags yet)
+
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+---
+Changes in v2:
+- Expand PTP_EXTTS_EDGES in all .supported_extts_flags assignment
+- Remove PTP_ENABLE_FEATURE from all .supported_extts_flags assignment
+- Add a .supported_extts_flags assignment to ravb driver, even tho it
+  doesn't currently support PTP_STRICT_FLAGS. The driver did previously
+  check these, so I think its better to add them even if its equivalent.
+- Added Vadim's Reviewed-by to patch 2/2
+- Link to v1: https://lore.kernel.org/r/20250408-jk-supported-perout-flags-v1-0-d2f8e3df64f3@intel.com
+
+---
+Jacob Keller (2):
+      net: ptp: introduce .supported_extts_flags to ptp_clock_info
+      net: ptp: introduce .supported_perout_flags to ptp_clock_info
+
+ include/linux/ptp_clock_kernel.h                   | 18 +++++++++++++++
+ drivers/net/dsa/mv88e6xxx/ptp.c                    | 11 ++++-----
+ drivers/net/dsa/sja1105/sja1105_ptp.c              | 14 +++---------
+ drivers/net/ethernet/intel/ice/ice_ptp.c           | 16 +++++--------
+ drivers/net/ethernet/intel/igb/igb_ptp.c           | 20 +++++------------
+ drivers/net/ethernet/intel/igc/igc_ptp.c           | 14 +++---------
+ .../net/ethernet/mellanox/mlx5/core/lib/clock.c    | 26 ++++++----------------
+ drivers/net/ethernet/microchip/lan743x_ptp.c       | 14 ++++--------
+ .../net/ethernet/microchip/lan966x/lan966x_ptp.c   | 14 ++++--------
+ drivers/net/ethernet/mscc/ocelot_ptp.c             |  5 -----
+ drivers/net/ethernet/mscc/ocelot_vsc7514.c         |  2 ++
+ drivers/net/ethernet/renesas/ravb_ptp.c            | 11 +--------
+ drivers/net/phy/dp83640.c                          | 13 +++--------
+ drivers/net/phy/micrel.c                           | 17 +++++---------
+ drivers/net/phy/microchip_rds_ptp.c                |  5 +----
+ drivers/net/phy/nxp-c45-tja11xx.c                  | 13 ++++-------
+ drivers/ptp/ptp_chardev.c                          | 16 ++++++++++++-
+ drivers/ptp/ptp_clockmatrix.c                      | 14 ++----------
+ drivers/ptp/ptp_fc3.c                              |  1 +
+ drivers/ptp/ptp_idt82p33.c                         | 15 +++----------
+ 20 files changed, 91 insertions(+), 168 deletions(-)
+---
+base-commit: b65999e7238e6f2a48dc77c8c2109c48318ff41b
+change-id: 20250408-jk-supported-perout-flags-43219dcee093
+
+Best regards,
+-- 
+Jacob Keller <jacob.e.keller@intel.com>
+
