@@ -1,99 +1,120 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 06B69C369A2
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 14 Apr 2025 14:21:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 67829C369A2
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 14 Apr 2025 15:20:31 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id B0E4640524;
-	Mon, 14 Apr 2025 14:21:08 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 18A7A6083C;
+	Mon, 14 Apr 2025 15:20:31 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id I__0h6iWXjvg; Mon, 14 Apr 2025 14:21:08 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id R9Ff3xOhyaQb; Mon, 14 Apr 2025 15:20:30 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E4F264069B
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 91C3760670
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1744640467;
-	bh=Gx49b71SlJ4tBbfJnUYpEAjs6QxmArSYk5uevCK8vuw=;
-	h=Date:From:To:Cc:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1744644030;
+	bh=+OyON1Yf1rr+8CzcSa4hkkYGRtID+dWFkGoiAoSKTwA=;
+	h=From:Date:References:In-Reply-To:To:Cc:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=WB0vJfJj2WoA5swD0ly23Rb35kD8BQAVe1ZH930UsAY6Pg7NT4slzP41OvKTu1tQE
-	 dMKrYLgcmiq20v96zYW0P2HIjTshwCTjzpjMk8JslH/glfe1X3sJzkPrX1sXTIgLfI
-	 ZKVBQYSzT6WrEqTPZLi6/Gov56IlVpj4aWTgxWW57m7lTmP0l/qPgPEEDSijgsTY9u
-	 yjVy+6LULKlqZv7JJ8qKJktOoYreVR4zCx1nKCtBhQzikFaGNaeHNZOjc3KaNeiCs5
-	 FsFKaZgslFx7N3Vh25EDqzDqmVwZ7jV7mFeAA3S7DFDM93XWmqbAhWGszZ1WfoIXzB
-	 QMljHYfoBQIeQ==
+	b=TxNt8ahauS275t4DUmgEdkgL/+ec9kRGAixa1ql3KaTSFL0s9sHqqRPdu5z7ptUSK
+	 tYbKFfWMzTKG3aqtAwC6dyZE9vzXa3CqtgaxA35EDvZWxamP5IIL5G+YAu4joSX7/X
+	 aB93f0erhK+MCcv8lp83eplYQdvqFqiKpJwfenixSdOM3ZZy08q280Q3GlfDwDqNxk
+	 e1heNuOtosCEWV2Zthx0aptzZIeSSn5aVKFVsWwBZtrSwT89mj3ig82BNG77dHqtRk
+	 pwaDP0ybsr9I/p/3Urp4MgUlti/7zH4xfkbZZ9qfGsjrJNwmQpFzbwklpbNO5pVtrY
+	 YctVpd8gQhKOw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id E4F264069B;
-	Mon, 14 Apr 2025 14:21:07 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 48DD8250
- for <intel-wired-lan@lists.osuosl.org>; Mon, 14 Apr 2025 14:21:06 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 91C3760670;
+	Mon, 14 Apr 2025 15:20:30 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with UTF8SMTP id 4F1AD250
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 14 Apr 2025 08:34:25 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 3AAE740126
- for <intel-wired-lan@lists.osuosl.org>; Mon, 14 Apr 2025 14:21:06 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with UTF8SMTP id 3FECB403B1
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 14 Apr 2025 08:34:25 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id kM4UXIO1cRLc for <intel-wired-lan@lists.osuosl.org>;
- Mon, 14 Apr 2025 14:21:02 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=217.70.178.249;
- helo=mslow3.mail.gandi.net; envelope-from=kory.maincent@bootlin.com;
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024)
+ with UTF8SMTP id ww65avqVosWk for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 14 Apr 2025 08:34:24 +0000 (UTC)
+X-Greylist: delayed 487 seconds by postgrey-1.37 at util1.osuosl.org;
+ Mon, 14 Apr 2025 08:34:24 UTC
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 95F5A403D6
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 95F5A403D6
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=193.142.43.55;
+ helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 3419440494
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 3419440494
-Received: from mslow3.mail.gandi.net (mslow3.mail.gandi.net [217.70.178.249])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 3419440494
- for <intel-wired-lan@lists.osuosl.org>; Mon, 14 Apr 2025 14:21:01 +0000 (UTC)
-Received: from relay4-d.mail.gandi.net (relay4-d.mail.gandi.net
- [217.70.183.196])
- by mslow3.mail.gandi.net (Postfix) with ESMTP id 107A0584B89
- for <intel-wired-lan@lists.osuosl.org>; Mon, 14 Apr 2025 13:43:37 +0000 (UTC)
-Received: by mail.gandi.net (Postfix) with ESMTPSA id 46B8F43B5F;
- Mon, 14 Apr 2025 13:43:31 +0000 (UTC)
-Date: Mon, 14 Apr 2025 15:43:30 +0200
-From: Kory Maincent <kory.maincent@bootlin.com>
-To: Martyna Szapar-Mudlaw <martyna.szapar-mudlaw@linux.intel.com>
-Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org
-Message-ID: <20250414154330.37509a17@kmaincent-XPS-13-7390>
-In-Reply-To: <20250414130007.366132-5-martyna.szapar-mudlaw@linux.intel.com>
-References: <20250414130007.366132-2-martyna.szapar-mudlaw@linux.intel.com>
- <20250414130007.366132-5-martyna.szapar-mudlaw@linux.intel.com>
-Organization: bootlin
-X-Mailer: Claws Mail 4.0.0 (GTK+ 3.24.33; x86_64-pc-linux-gnu)
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+ by smtp4.osuosl.org (Postfix) with UTF8SMTPS id 95F5A403D6
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 14 Apr 2025 08:34:24 +0000 (UTC)
+From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
+Date: Mon, 14 Apr 2025 10:26:08 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-GND-State: clean
-X-GND-Score: -100
-X-GND-Cause: gggruggvucftvghtrhhoucdtuddrgeefvddrtddtgddvvddtjeduucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuifetpfffkfdpucggtfgfnhhsuhgsshgtrhhisggvnecuuegrihhlohhuthemuceftddunecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpeffhffvvefukfgjfhhoofggtgfgsehtqhertdertdejnecuhfhrohhmpefmohhrhicuofgrihhntggvnhhtuceokhhorhihrdhmrghinhgtvghnthessghoohhtlhhinhdrtghomheqnecuggftrfgrthhtvghrnhepgfdutdefvedtudegvefgvedtgfdvhfdtueeltefffefffffhgfetkedvfeduieeinecuffhomhgrihhnpegsohhothhlihhnrdgtohhmnecukfhppeeltddrkeelrdduieefrdduvdejnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepledtrdekledrudeifedruddvjedphhgvlhhopehkmhgrihhntggvnhhtqdgirffuqddufedqjeefledtpdhmrghilhhfrhhomhepkhhorhihrdhmrghinhgtvghnthessghoohhtlhhinhdrtghomhdpnhgspghrtghpthhtohepgedprhgtphhtthhopehmrghrthihnhgrrdhsiigrphgrrhdqmhhuughlrgifsehlihhnuhigrdhinhhtvghlrdgtohhmpdhrtghpthhtohepihhnthgvlhdqfihirhgvugdqlhgrnheslhhishhtshdrohhsuhhoshhlrdhorhhgpdhrtghpthhtohepnhgvthguvghvsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrt
- ghpthhtohepkhhorhihrdhmrghinhgtvghnthessghoohhtlhhinhdrtghomh
-X-GND-Sasl: kory.maincent@bootlin.com
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Message-Id: <20250414-restricted-pointers-net-v1-7-12af0ce46cdd@linutronix.de>
+References: <20250414-restricted-pointers-net-v1-0-12af0ce46cdd@linutronix.de>
+In-Reply-To: <20250414-restricted-pointers-net-v1-0-12af0ce46cdd@linutronix.de>
+To: Jeff Johnson <jjohnson@kernel.org>, 
+ Loic Poulain <loic.poulain@linaro.org>, 
+ Brian Norris <briannorris@chromium.org>, 
+ Francesco Dolcini <francesco@dolcini.it>, 
+ Tony Nguyen <anthony.l.nguyen@intel.com>, 
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>, 
+ Andrew Lunn <andrew+netdev@lunn.ch>, 
+ "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
+ Saeed Mahameed <saeedm@nvidia.com>, Leon Romanovsky <leon@kernel.org>, 
+ Tariq Toukan <tariqt@nvidia.com>
+Cc: ath10k@lists.infradead.org, linux-kernel@vger.kernel.org, 
+ ath11k@lists.infradead.org, ath12k@lists.infradead.org, 
+ wcn36xx@lists.infradead.org, linux-wireless@vger.kernel.org, 
+ intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org, 
+ linux-rdma@vger.kernel.org, 
+ =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1744619172; l=1640;
+ i=thomas.weissschuh@linutronix.de; s=20240209; h=from:subject:message-id;
+ bh=WzJ/HmoEyIxMvJeEOlZ2czFzOQnDOjD3iHfVNkyBNQ4=;
+ b=Zuho2QqTEJS0pVHFp2MmyTiIbCDfOTyQV+4ybcxy4I85pU30LrHxUGib19TU2f1V/3c3/DFBC
+ e7ly/4/qAorA4GYLUQdHhuDpswxVWNrCo2fL5St4/wIo6zWsIBOTgfx
+X-Developer-Key: i=thomas.weissschuh@linutronix.de; a=ed25519;
+ pk=pfvxvpFUDJV2h2nY0FidLUml22uGLSjByFbM6aqQQws=
+X-Mailman-Approved-At: Mon, 14 Apr 2025 15:20:28 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=bootlin.com; s=gm1; t=1744638211;
+ d=linutronix.de; s=2020; t=1744619177;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=Gx49b71SlJ4tBbfJnUYpEAjs6QxmArSYk5uevCK8vuw=;
- b=AIH4hTUhIRTZbVGnIigQk3eHxcg+oZHK0qplYKh+ADe4hKMd420t2YfKcFzNX7SGPhdKv3
- YPe3GVrTWZ4M7rybjffWF+aUt42H6lLSN5Xm1/WhZZClbTYYn04hq0yQmt2OlNnbEZ5ulT
- KGQKnZ8PtCL9b2spZsQkw13W2YikfboebGYQ5z/jxvGczbFdX3+2djZohPzgOaB5Aa1yOJ
- ih1sf/IFJMy1246x62TV3JCAQd4oC3H/s1WOe/YdHVLeAEQj3+D+6cmXOl5eA4jZem+O+e
- hpxgCtQ5NT9tz71o4XYtFCWgqs4T5kwhx7edy8xxMwiBAGCb1i4NXSPjJeOX7Q==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dmarc=pass (p=reject dis=none)
- header.from=bootlin.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256
- header.s=gm1 header.b=AIH4hTUh
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next v2 1/2] ice: add
- link_down_events statistic
+ bh=+OyON1Yf1rr+8CzcSa4hkkYGRtID+dWFkGoiAoSKTwA=;
+ b=TIrUb6KaLTcpHArLnyDrZ1/XzY6utlfmyG99ojUWp1bMSzIHF1Vgi08/TVQvWG4iM+opbL
+ cWWo8YuQ2dBWBoxAayYDMVZlaw6Ioc86xZFPw3MD/rmV/AU9pxMCsjA3+1uR81ohZq6+Qa
+ kPP1Z+VG90nbHrkaymmkH78gr4q3g3rRDaoSHgaX1aD1/LbBlPUf1ZuHGcTQI0vfjfPb6j
+ ospQd6F5IkYTdO/VqmDmF2+V6Lnjo4B2Ga4yfmBs3b/EfvEMEgoz8I1fzPr6b5FZ1Lt53v
+ XI3GSuhhqbNqKW3qpT3asL9boRf5663GPlGNpqyxXpj1DUZRhDg1b+shCLaklQ==
+X-Mailman-Original-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
+ d=linutronix.de; s=2020e; t=1744619177;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=+OyON1Yf1rr+8CzcSa4hkkYGRtID+dWFkGoiAoSKTwA=;
+ b=b81luPP9nxBvVUYPxsolvoc8ilyKeEV88+u2tvl6LB2jk2uYlffGU4Xys4Y38dexezpnwV
+ 22324LRkDL8QYaBg==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=linutronix.de
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de
+ header.a=rsa-sha256 header.s=2020 header.b=TIrUb6Ka; 
+ dkim=pass header.d=linutronix.de header.i=@linutronix.de
+ header.a=ed25519-sha256 header.s=2020e header.b=b81luPP9
+Subject: [Intel-wired-lan] [PATCH net-next 7/7] net/mlx5: Don't use %pK
+ through tracepoints
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -109,23 +130,38 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Mon, 14 Apr 2025 15:00:09 +0200
-Martyna Szapar-Mudlaw <martyna.szapar-mudlaw@linux.intel.com> wrote:
+In the past %pK was preferable to %p as it would not leak raw pointer
+values into the kernel log.
+Since commit ad67b74d2469 ("printk: hash addresses printed with %p")
+the regular %p has been improved to avoid this issue.
+Furthermore, restricted pointers ("%pK") were never meant to be used
+through tracepoints. They can still unintentionally leak raw pointers or
+acquire sleeping looks in atomic contexts.
 
-> Introduce a link_down_events counter to the ice driver, incremented
-> each time the link transitions from up to down.
-> This counter can help diagnose issues related to link stability,
-> such as port flapping or unexpected link drops.
->=20
-> The value is exposed via ethtool's get_link_ext_stats() interface.
->=20
-> Signed-off-by: Martyna Szapar-Mudlaw <martyna.szapar-mudlaw@linux.intel.c=
-om>
+Switch to the regular pointer formatting which is safer and
+easier to reason about.
+There are still a few users of %pK left, but these use it through seq_file,
+for which its usage is safe.
 
-Reviewed-by: Kory Maincent <kory.maincent@bootlin.com>
+Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
+---
+ drivers/net/ethernet/mellanox/mlx5/core/sf/dev/diag/dev_tracepoint.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Thank you!
---=20
-K=C3=B6ry Maincent, Bootlin
-Embedded Linux and kernel engineering
-https://bootlin.com
+diff --git a/drivers/net/ethernet/mellanox/mlx5/core/sf/dev/diag/dev_tracepoint.h b/drivers/net/ethernet/mellanox/mlx5/core/sf/dev/diag/dev_tracepoint.h
+index 0537de86f9817dc80bd897688c539135b1ad37ac..9b0f44253f332aa602a84a1f6d7532a500dd4f55 100644
+--- a/drivers/net/ethernet/mellanox/mlx5/core/sf/dev/diag/dev_tracepoint.h
++++ b/drivers/net/ethernet/mellanox/mlx5/core/sf/dev/diag/dev_tracepoint.h
+@@ -28,7 +28,7 @@ DECLARE_EVENT_CLASS(mlx5_sf_dev_template,
+ 				   __entry->hw_fn_id = sfdev->fn_id;
+ 				   __entry->sfnum = sfdev->sfnum;
+ 		    ),
+-		    TP_printk("(%s) sfdev=%pK aux_id=%d hw_id=0x%x sfnum=%u\n",
++		    TP_printk("(%s) sfdev=%p aux_id=%d hw_id=0x%x sfnum=%u\n",
+ 			      __get_str(devname), __entry->sfdev,
+ 			      __entry->aux_id, __entry->hw_fn_id,
+ 			      __entry->sfnum)
+
+-- 
+2.49.0
+
