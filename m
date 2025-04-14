@@ -4,57 +4,58 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3896AC369B9
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 14 Apr 2025 15:20:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3637DC369BA
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 14 Apr 2025 15:20:37 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id C39E16065E;
-	Mon, 14 Apr 2025 15:20:35 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 4EEF06083C;
+	Mon, 14 Apr 2025 15:20:36 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id YB48YIL03hMC; Mon, 14 Apr 2025 15:20:35 +0000 (UTC)
+ id t5iooZCEWp4Q; Mon, 14 Apr 2025 15:20:34 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3AF2560D4C
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 843B760F06
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1744644035;
-	bh=Q/VnYhVD1SCgZYyfaXiiv1axKyoVwiXgocwEv4oE1Ko=;
+	s=default; t=1744644033;
+	bh=sJzaMCUEmfS88/pHV7S6utRVF0OcgJooEZ6khtDSVo8=;
 	h=From:Date:References:In-Reply-To:To:Cc:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=P6a824OFg3Mb6aWBO20tOxW+aLgZ6pSNaSOcMOtknp/YYWw3WlsCw88hnHXO8oezB
-	 VNT5BR+APijs9CxJawMsOQMCSRsTyFKjF0Ry8iv6DYO25a/x+UdPEXssXtJPmKMKH+
-	 +p38sOA3JfjwUa9g4y9pEDEm14EdmG3e5/T5YckU38LSCMlxpqu4iq2fzRSvg+BbS1
-	 0jMhA4DltJBH0+AZUbC6oqbbgqtHlIJFUHM3ES9hc3/FzqYQviYLD9Remb3BS2lom0
-	 f4t4Lywqz8RjC7pLQnp6uaoXFKQegxzOmo6hOVLciYSu198G3vpqbx3zeREOzZx/CU
-	 OXGgm3NLmrRPQ==
+	b=UEJo5j0BPSX4deR4gV2UDmI5WeR+kSJpeNxAfscHTobyD6zMGQSbxY++gBiVobYkI
+	 gLG3a2xG27JPvunrL+k9v5ZNqqh0MknT+clmdaIRfx7/VZWqV5H2s8IeC/0vgRh9fr
+	 1wFkHBFZJqIFpJUqzr4Uvii2sRHg8xQBdD8L4WfCh0G7WPczKWwDmM2r2cMdJKTNIi
+	 SN4bcT4fCE9trqkNlwXUr8CcAMNt7l6vvHddrHSKFT+Tw3mxa0Q2KE8+t23ylD6dzu
+	 syHfufBrclsPGDFE5fEX/H6U3frlMScQHTVfpjvPk7X+oEHqI606sBcX3iJc1hpNQo
+	 W8oaqmjM0ZD6w==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 3AF2560D4C;
-	Mon, 14 Apr 2025 15:20:35 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with UTF8SMTP id 854B4250
+	by smtp3.osuosl.org (Postfix) with ESMTP id 843B760F06;
+	Mon, 14 Apr 2025 15:20:33 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by lists1.osuosl.org (Postfix) with UTF8SMTP id 6615E250
  for <intel-wired-lan@lists.osuosl.org>; Mon, 14 Apr 2025 08:34:27 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with UTF8SMTP id 771854048E
+ by smtp2.osuosl.org (Postfix) with UTF8SMTP id 4C5FA4011D
  for <intel-wired-lan@lists.osuosl.org>; Mon, 14 Apr 2025 08:34:27 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024)
- with UTF8SMTP id Fbg7tU9dP01k for <intel-wired-lan@lists.osuosl.org>;
- Mon, 14 Apr 2025 08:34:27 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=193.142.43.55;
- helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org D21FC403B1
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D21FC403B1
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
- by smtp4.osuosl.org (Postfix) with UTF8SMTPS id D21FC403B1
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024)
+ with UTF8SMTP id dsplP3fauvcR for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 14 Apr 2025 08:34:26 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de;
+ envelope-from=t-8ch@linutronix.de; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 84EBF4094B
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 84EBF4094B
+Received: from galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2a0a:51c0:0:12e:550::1])
+ by smtp2.osuosl.org (Postfix) with UTF8SMTPS id 84EBF4094B
  for <intel-wired-lan@lists.osuosl.org>; Mon, 14 Apr 2025 08:34:26 +0000 (UTC)
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
-Date: Mon, 14 Apr 2025 10:26:05 +0200
+Date: Mon, 14 Apr 2025 10:26:03 +0200
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20250414-restricted-pointers-net-v1-4-12af0ce46cdd@linutronix.de>
+Message-Id: <20250414-restricted-pointers-net-v1-2-12af0ce46cdd@linutronix.de>
 References: <20250414-restricted-pointers-net-v1-0-12af0ce46cdd@linutronix.de>
 In-Reply-To: <20250414-restricted-pointers-net-v1-0-12af0ce46cdd@linutronix.de>
 To: Jeff Johnson <jjohnson@kernel.org>, 
@@ -74,44 +75,44 @@ Cc: ath10k@lists.infradead.org, linux-kernel@vger.kernel.org,
  intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org, 
  linux-rdma@vger.kernel.org, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1744619172; l=1466;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1744619172; l=1527;
  i=thomas.weissschuh@linutronix.de; s=20240209; h=from:subject:message-id;
- bh=61F6yS3SeLiDBJeFobz+nPKysOXCT5pH1Ry4x0mEWwk=;
- b=x/NwFZLAfuFMn6Tuwkaaozs8DHU3CODeWCFL2e9Z5eSwidQOwOcFXmSdTvN9+ChrWvdguO2cn
- UysC7tAl9ggC5QE/fMdSdsC5X2A9PqW1zeBD1+dBhqDiAkkT9kN1N/c
+ bh=wCL19/j4oZD9OXQEwiK4h5ZQlR+8JRFqjWaTwz3M1O0=;
+ b=Mll02AJLlxEAfIM3sBZFqErnG63AQHi+l+lIgSrBUXhRrD8igpMkDkzAgCyX/kNgfweVtnVzf
+ eq1XA46Yw0ZD7+inGUGlFx1MAdV8znRd+XlcYbJtcFA4dVo7Ec8CwHn
 X-Developer-Key: i=thomas.weissschuh@linutronix.de; a=ed25519;
  pk=pfvxvpFUDJV2h2nY0FidLUml22uGLSjByFbM6aqQQws=
 X-Mailman-Approved-At: Mon, 14 Apr 2025 15:20:28 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=linutronix.de; s=2020; t=1744619175;
+ d=linutronix.de; s=2020; t=1744619174;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=Q/VnYhVD1SCgZYyfaXiiv1axKyoVwiXgocwEv4oE1Ko=;
- b=oXHvZS2XoGF1OUDHETEpesHyXLq7OFuBkAoXwt+6oCKMZrrFFF7uAwyKIDqzJqoXyqoqMx
- YfMGx/Wq/+MNteZfIoJ/sv1izi7t6HJy44wVg2hqGx0ck5MT8UTT10/XExG98CKxAN//+G
- OusqYZlGizraLiAQZfjQ1cDm7BhQ2SwbOYT7Ir2X/9itY/sZWkuig3cgmYDSu9N5UAd2we
- 4DXfe2USWh11pvXMgy16WHeMjzegIHTAOIk2/I6NBfxU/jAKvND/ARkjDKzYATCwovn5na
- lAdIxHxyggXJgXvs29oqrL2p0PIPjlmvFObHVwm+/ndrprruazh3PRaU8SKhHA==
+ bh=sJzaMCUEmfS88/pHV7S6utRVF0OcgJooEZ6khtDSVo8=;
+ b=o1zujVLG2sQaTvMO6OACsI/499VzUxoEJUGqHj+qgv3E4KUgw4ysdGF3KRplnLfOHRVvHh
+ C8sMrwd65T7vZGfCJrREE+bUEk9LL2vMgS0X0+RuJbIQeppjCp8fGV/UwnIp45VWxKazpm
+ pPUUZ850J9Mwl2W2mFfVm4DBXwfC/tD/dqp1qpRBLw0A35yogM53wwW0qStrpoRhr/vxLu
+ kWaPzO4nQZn6I8DkAoQHZ4cRPwtJiEENp07/CeSdtns4W9KJPsrCtCUM3iEx6YXuDwiAir
+ 0PyhOOCI6wQTQJQxGFU6nSJUCkG9l5cY6q/N9EpiaJdVTZ1mnhZtHJj1EeXsvQ==
 X-Mailman-Original-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
- d=linutronix.de; s=2020e; t=1744619175;
+ d=linutronix.de; s=2020e; t=1744619174;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=Q/VnYhVD1SCgZYyfaXiiv1axKyoVwiXgocwEv4oE1Ko=;
- b=BW7eyc5nmNTm4BrUjTKiQcxtNBwCiX+GSkj3s651FAkykMV6ELiCFt5lY/bvAC3YEtdm8y
- c90pAWGVmstytfDg==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ bh=sJzaMCUEmfS88/pHV7S6utRVF0OcgJooEZ6khtDSVo8=;
+ b=2f0ZORhwJPNdlz9bEPHxT6ecUDp77xU2Mn7EJRnJRcfM4eIVe9A8P3Zm0rUrsQn+we0g90
+ o6gNm/VzeLWiueAA==
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=linutronix.de
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de
- header.a=rsa-sha256 header.s=2020 header.b=oXHvZS2X; 
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key, unprotected) header.d=linutronix.de
+ header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=o1zujVLG; 
  dkim=pass header.d=linutronix.de header.i=@linutronix.de
- header.a=ed25519-sha256 header.s=2020e header.b=BW7eyc5n
-Subject: [Intel-wired-lan] [PATCH net-next 4/7] wifi: wcn36xx: Don't use %pK
+ header.a=ed25519-sha256 header.s=2020e header.b=2f0ZORhw
+Subject: [Intel-wired-lan] [PATCH net-next 2/7] wifi: ath11k: Don't use %pK
  through printk
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
@@ -143,22 +144,22 @@ for which its usage is safe.
 
 Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
 ---
- drivers/net/wireless/ath/wcn36xx/testmode.c | 2 +-
+ drivers/net/wireless/ath/ath11k/testmode.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/wireless/ath/wcn36xx/testmode.c b/drivers/net/wireless/ath/wcn36xx/testmode.c
-index e5142c052985ddf629b93d7b9687e6ba63a48e8b..d7a2a483cbc486308032709a99bba9a52ed0ff59 100644
---- a/drivers/net/wireless/ath/wcn36xx/testmode.c
-+++ b/drivers/net/wireless/ath/wcn36xx/testmode.c
-@@ -56,7 +56,7 @@ static int wcn36xx_tm_cmd_ptt(struct wcn36xx *wcn, struct ieee80211_vif *vif,
- 	msg = buf;
+diff --git a/drivers/net/wireless/ath/ath11k/testmode.c b/drivers/net/wireless/ath/ath11k/testmode.c
+index 9be1cd742339c95ffa74c09bee924f4eff15134a..a9751ea2a0b73009bfb600d51c3978200ce99114 100644
+--- a/drivers/net/wireless/ath/ath11k/testmode.c
++++ b/drivers/net/wireless/ath/ath11k/testmode.c
+@@ -107,7 +107,7 @@ static int ath11k_tm_process_event(struct ath11k_base *ab, u32 cmd_id,
+ 	u32 pdev_id;
  
- 	wcn36xx_dbg(WCN36XX_DBG_TESTMODE,
--		    "testmode cmd wmi msg_id 0x%04X msg_len %d buf %pK buf_len %d\n",
-+		    "testmode cmd wmi msg_id 0x%04X msg_len %d buf %p buf_len %d\n",
- 		   msg->msg_id, msg->msg_body_length,
- 		   buf, buf_len);
- 
+ 	ath11k_dbg(ab, ATH11K_DBG_TESTMODE,
+-		   "event wmi cmd_id %d ftm event msg %pK datalen %d\n",
++		   "event wmi cmd_id %d ftm event msg %p datalen %d\n",
+ 		   cmd_id, ftm_msg, length);
+ 	ath11k_dbg_dump(ab, ATH11K_DBG_TESTMODE, NULL, "", ftm_msg, length);
+ 	pdev_id = DP_HW2SW_MACID(ftm_msg->seg_hdr.pdev_id);
 
 -- 
 2.49.0
