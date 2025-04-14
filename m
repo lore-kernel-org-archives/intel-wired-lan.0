@@ -1,102 +1,234 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 37BA2C369B2
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 14 Apr 2025 11:01:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B806FC369B2
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 14 Apr 2025 12:39:07 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id E660A40BD4;
-	Mon, 14 Apr 2025 11:01:03 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 4500A60BD4;
+	Mon, 14 Apr 2025 12:39:07 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id fxBoSWjbbzUi; Mon, 14 Apr 2025 11:01:03 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id jTjn4RNrVa8w; Mon, 14 Apr 2025 12:39:06 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0CE8640C94
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org ADDEF6079C
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1744628463;
-	bh=iPkFhR9PiMjlBXM9GF1T5KYmc15eAY74tBUk7u2/MRw=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1744634346;
+	bh=RmiYNnzif8Ye25V/tsKZ/8sZYPflcVrFlg2iKnmvy7A=;
+	h=To:CC:References:From:Date:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=VozRsT6qqHToUZFFmOQz+6ehR8yVNrqfeDUkJltwNigU6RcpqKZziuwAnYRp8ULmI
-	 n7ZKBbNi20pYYegxaK0nl1izeFFRnKYtjUCpJkHX+in/45IVVZ6AcS48QXfGmlZnfv
-	 UIEEER8p2kkyjpHKYzBeZppT4k2UQEqRivzgNZo1rWjiQdYw3ffm4FMs/9X7un9Z8s
-	 0qqWZUPMuBgTHCy/LLD/+ZUXG8V66SQ4foPxeq7frkaN1ldxPdgy9/eBQnLr9a0VAJ
-	 b0uHxDjRBQlxq8iVlsrQsPB9KIGARo1xBDxNISo34VQwSqEU7O4RrOgxThGTGCLNwV
-	 szXlA/7CLp/OQ==
+	b=UEdlqKtBlPdcbrautfpn4g8FU/nmyvvrUoSyLCJEgAAbQcSK/Lx1Nh7S9LkfqkHzY
+	 yModaTNXKOfYzHlc5aNSHtLlzL5asuaSXoHNuSqkQjoBSrZetf11Epeq8ndsKXx9CB
+	 I9nt7ovCpsyzmcvTZ0Edds9JGQwPLgW9eC2/Z4lRPNm0Y5aWZx5ukP+L01TPYai805
+	 CEuZnf01BkgulOFVOQjFeRY5bB7524xGUvxo3PDkfnjI4Bndfi0e/LtVg3VcxF+5EF
+	 50Lba/7537qwcLXBT/6YelieV1qfypg56KpxyUO7SoegvBzq1P7hKiiHvs+OFupxzo
+	 BvoOWD7sJaFEg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 0CE8640C94;
-	Mon, 14 Apr 2025 11:01:03 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id F0D76250
- for <intel-wired-lan@lists.osuosl.org>; Mon, 14 Apr 2025 11:01:01 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id ADDEF6079C;
+	Mon, 14 Apr 2025 12:39:06 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id DE7AC108
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 14 Apr 2025 12:39:05 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id E1DDE8169F
- for <intel-wired-lan@lists.osuosl.org>; Mon, 14 Apr 2025 11:01:01 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id C4CE441031
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 14 Apr 2025 12:39:05 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id EpUT6uZeM2XG for <intel-wired-lan@lists.osuosl.org>;
- Mon, 14 Apr 2025 11:01:01 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.9;
- helo=mgamail.intel.com; envelope-from=milena.olech@intel.com;
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id i0QFHWPdZ_xh for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 14 Apr 2025 12:39:05 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.10;
+ helo=mgamail.intel.com; envelope-from=vitaly.lifshits@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org D68F4808A7
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D68F4808A7
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.9])
- by smtp1.osuosl.org (Postfix) with ESMTPS id D68F4808A7
- for <intel-wired-lan@lists.osuosl.org>; Mon, 14 Apr 2025 11:01:00 +0000 (UTC)
-X-CSE-ConnectionGUID: jRJVTueDRzODxVdWl9DREA==
-X-CSE-MsgGUID: mGHlNRHBSWmuBkahOd9jLg==
-X-IronPort-AV: E=McAfee;i="6700,10204,11402"; a="68581897"
-X-IronPort-AV: E=Sophos;i="6.15,212,1739865600"; d="scan'208";a="68581897"
-Received: from orviesa002.jf.intel.com ([10.64.159.142])
- by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 14 Apr 2025 04:01:01 -0700
-X-CSE-ConnectionGUID: bwij2zXaTgKSLn7CA7DLBg==
-X-CSE-MsgGUID: CC1/FrlFRV29j02b5adu7g==
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 1D91741799
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 1D91741799
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.10])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 1D91741799
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 14 Apr 2025 12:39:04 +0000 (UTC)
+X-CSE-ConnectionGUID: WhKPUb2FTgu3Alc83D1Kgw==
+X-CSE-MsgGUID: qU68HujhQASDb18zf0pQfQ==
+X-IronPort-AV: E=McAfee;i="6700,10204,11402"; a="57488447"
+X-IronPort-AV: E=Sophos;i="6.15,212,1739865600"; d="scan'208";a="57488447"
+Received: from fmviesa009.fm.intel.com ([10.60.135.149])
+ by fmvoesa104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 14 Apr 2025 05:39:04 -0700
+X-CSE-ConnectionGUID: YG2NgpZySCOsyEgDMhrtTQ==
+X-CSE-MsgGUID: k2MWepAmST6eAwyhMWkd1A==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.15,212,1739865600"; d="scan'208";a="160741769"
-Received: from gklab-003-014.igk.intel.com ([10.211.116.96])
- by orviesa002.jf.intel.com with ESMTP; 14 Apr 2025 04:00:58 -0700
-From: Milena Olech <milena.olech@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Cc: netdev@vger.kernel.org, anthony.l.nguyen@intel.com,
- przemyslaw.kitszel@intel.com, Milena Olech <milena.olech@intel.com>,
- Jacob Keller <jacob.e.keller@intel.com>, YiFei Zhu <zhuyifei@google.com>,
- Mina Almasry <almasrymina@google.com>,
- Samuel Salin <Samuel.salin@intel.com>
-Date: Mon, 14 Apr 2025 12:45:30 +0200
-Message-ID: <20250414104658.14706-26-milena.olech@intel.com>
-X-Mailer: git-send-email 2.43.5
-In-Reply-To: <20250414104658.14706-1-milena.olech@intel.com>
-References: <20250414104658.14706-1-milena.olech@intel.com>
-MIME-Version: 1.0
+X-IronPort-AV: E=Sophos;i="6.15,212,1739865600"; d="scan'208";a="130664885"
+Received: from orsmsx902.amr.corp.intel.com ([10.22.229.24])
+ by fmviesa009.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 14 Apr 2025 05:39:04 -0700
+Received: from ORSMSX903.amr.corp.intel.com (10.22.229.25) by
+ ORSMSX902.amr.corp.intel.com (10.22.229.24) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1544.14; Mon, 14 Apr 2025 05:39:03 -0700
+Received: from orsedg603.ED.cps.intel.com (10.7.248.4) by
+ ORSMSX903.amr.corp.intel.com (10.22.229.25) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1544.14 via Frontend Transport; Mon, 14 Apr 2025 05:39:03 -0700
+Received: from NAM12-BN8-obe.outbound.protection.outlook.com (104.47.55.169)
+ by edgegateway.intel.com (134.134.137.100) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.1.2507.44; Mon, 14 Apr 2025 05:39:02 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=gT06v4PneI6e1XHaKnmRe5e+0FUIjD/sodHnwyIm1XLMxWIlpTz+FuhyozMeeaPGDCDZV4IMIza6kTwMI2r868Y/HYcCzkoZVVpcYToEDezoOgAXip+xEUbVBsViHAyYr106sG6DRg+lggGRxEFkgrxcAM07uC8kNDb4HB7V79mle1FbgZBRvt37MFX6qnn5oHZYSKpyiiacLja1x9RlFN711OfyITT8vyWinCK+uvp1pX5O8Nn9K3xdsC9zeR8Pp4cRmHojf/vf4JOZLB4TY1QSLEvNZJyOST4+kXGTk2l1GzqT5WWWs9ZYrU1g36j0/v2WNd3pXsQX/n/10SqiRQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=RmiYNnzif8Ye25V/tsKZ/8sZYPflcVrFlg2iKnmvy7A=;
+ b=FLoZj3Xe6vnhXkG9iFleoNhxxAEYyAYDEBkMheGS7W6HAwVY+0vvXlw5EllocjcpIsf+GJfPaOskx2GK+ys10jubZvz8zUnWNlx68e6io+aLjR7r0+pAsD1OILb+BoacMtGV51UJyI1Q7EUPXG1qqpMcAwnOWgVrCj1qBahaGhHCVBQCRZVVEpHKESNA4FyIBUSdok1v1Olv9xBTbd5DChJjTNEXEczzKfhcd5PHi0ohVjIYfOBRF1o9d6rgO9P84XxeVfkO/xdYfrQSKlUnQpIx10VXCTyD0y0mL3OvDS9ggjVdLAI5CMCFRgpcGbglhTOAfm44GVNcm1+VFXIB2w==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Received: from MW4PR11MB5934.namprd11.prod.outlook.com (2603:10b6:303:189::7)
+ by DM4PR11MB6214.namprd11.prod.outlook.com (2603:10b6:8:ac::7) with
+ Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.8632.32; Mon, 14 Apr 2025 12:38:45 +0000
+Received: from MW4PR11MB5934.namprd11.prod.outlook.com
+ ([fe80::96ae:ce0:2a38:7408]) by MW4PR11MB5934.namprd11.prod.outlook.com
+ ([fe80::96ae:ce0:2a38:7408%5]) with mapi id 15.20.8606.033; Mon, 14 Apr 2025
+ 12:38:45 +0000
+To: =?UTF-8?Q?Marek_Marczykowski-G=c3=b3recki?=
+ <marmarek@invisiblethingslab.com>, Jesse Brandeburg
+ <jesse.brandeburg@intel.com>, Tony Nguyen <anthony.l.nguyen@intel.com>,
+ <netdev@vger.kernel.org>, <intel-wired-lan@lists.osuosl.org>
+CC: <regressions@lists.linux.dev>, <stable@vger.kernel.org>, Sasha Levin
+ <sashal@kernel.org>
+References: <Z_z9EjcKtwHCQcZR@mail-itl>
+From: "Lifshits, Vitaly" <vitaly.lifshits@intel.com>
+Message-ID: <b1f5e997-033c-33ed-5e3b-6fe2632bf718@intel.com>
+Date: Mon, 14 Apr 2025 15:38:39 +0300
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
+ Thunderbird/78.7.1
+In-Reply-To: <Z_z9EjcKtwHCQcZR@mail-itl>
+Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Language: en-US
 Content-Transfer-Encoding: 8bit
+X-ClientProxiedBy: TL0P290CA0006.ISRP290.PROD.OUTLOOK.COM (2603:1096:950:5::9)
+ To MW4PR11MB5934.namprd11.prod.outlook.com
+ (2603:10b6:303:189::7)
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: MW4PR11MB5934:EE_|DM4PR11MB6214:EE_
+X-MS-Office365-Filtering-Correlation-Id: 1cd5f246-5551-44b5-17ce-08dd7b514bee
+X-LD-Processed: 46c98d88-e344-4ed4-8496-4ed7712e255d,ExtAddr
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;ARA:13230040|1800799024|366016|376014;
+X-Microsoft-Antispam-Message-Info: =?utf-8?B?cXBXT0x4UGlJU2R3TlV3dXNEcUZXRHMrbTZISzRRdXozVVZJOUUyUDRSRFZy?=
+ =?utf-8?B?RmlDM0NRT2w0V25ZKzRDT0tRK09lclpQQkNPSTExWlgyNDE4T2lreXNYY1NG?=
+ =?utf-8?B?Z1NTWkJMYnozM0cyZUdQVGpzcldSQytVUGl1YUt2M1JjQ0pYU2srQnZzNHJs?=
+ =?utf-8?B?Y0d5VTRudmR2VmE4RHdsSHhmaXl0VWdvRzBGVGNsQXlnalBkTGw5VDdDMUNo?=
+ =?utf-8?B?bmltUUY5N1ZaYlVSdTJ1Zm4wZWsrdWdNenRqdmFLUlZzTnJhVXZ1cTB0empI?=
+ =?utf-8?B?cjlJMzlXVVJ4Kzk3UG5yemM3RlNtSFNFdlBsbzhZVFgvWGkzMTMrejdWYTFK?=
+ =?utf-8?B?S0VkUGdYTHZsaFFJYzJLT1Q4UjlZbVdtZjBJc29tUVB4ZWJsZFlLNk9YYi9S?=
+ =?utf-8?B?YVo2RjNKbGJGN1kwM1ZsYXlvaWtmY2VEQml5R2ROU0dSeDBpK0xHbGV4eFpq?=
+ =?utf-8?B?dmdtcW9TaFlHN3ZuZTlpdzNnUTlPR0VUWDhIelRNbFJOU0JwU2NRcVl1RkU1?=
+ =?utf-8?B?UXRyZDJKUGJTSzVrZ2VNQUpNUk9VUTZQTWdIZHBFME9UMTl0Zmhpay9WdVJm?=
+ =?utf-8?B?NjRsMmY2N3RTeGsyYkFqK0YvRDYvRytkOW04ZGVhb2IyUFl0eTFhVHc5YmFj?=
+ =?utf-8?B?enFLMzlVS1o4cUpWUDJDRWN5b0xyaVIxWlhDbmU3dXdwS0g1TDAwbDRMT0VS?=
+ =?utf-8?B?ZWVHeUppQ3pHcjkyRDNQUmx4RzNYU2pLdjhJMjYxVDRUYWdrcXM5bVFSL3hZ?=
+ =?utf-8?B?THBwUk5sQThKZDBlSWhjQ283Wk1OVVVoYnFsbWg1dzRRS1hOdWliY09IVjNY?=
+ =?utf-8?B?MDhoZVRHYlRrTXdhZmJCMW9aMjAxRmVLYmhwRk9kb2E4amJudFZrR29SeER1?=
+ =?utf-8?B?am9ENkNCQUltTmU4VFN4REtURmdZM01DL3I1dXNkNm1BaVF1THY4WGZnV3hU?=
+ =?utf-8?B?OFBhMlArOXE4V21OYnViMFVZcUZjWlpSMGNILzhpMHVpcWl2QlZRNnhLaVFm?=
+ =?utf-8?B?N2lYZkk1Y1hscStJbGZhTlBmS1IvRVBQUVlIcmlNREF5Rit6NzBXQ1FBemNo?=
+ =?utf-8?B?UUUybTIyQkpnSFBuSnN4N3FueEZsK0lFN0NOMklKYUVJMjBFSS9FeFY4a3VD?=
+ =?utf-8?B?b2hSMGkweVBIcWNOVDJUOW9sS3FBZDFzaUR2dTh1TlpxT2N2YWhpRkIrY0RH?=
+ =?utf-8?B?bUNDWXgvRFZLZmVwTER1OEJ6N0wzeFRNdUlHNkhtejBieFR4SXlUQit0MHBx?=
+ =?utf-8?B?djhTNHlGK3I4STlVTzVWVjM2VmZKbThpa3B0Y1o5c0JkVHdPN2RpTGo5d2Vp?=
+ =?utf-8?B?d2hQMjhJbXkyclZjZVhTZXZDODVtOXlBN0gyUlFXUERSS2d2MFA1enlLNWhx?=
+ =?utf-8?B?SGFPMDZ2c2dWNnVuektMV2h4MVJrbTNBRnJ6SmhGbGIzazAyRlBoUGRpTm5w?=
+ =?utf-8?B?eXhFN2M2dVBUdldabmVhb1ZrNS9NT1BYckhydXUrN2lkR3dQenlCb285ZHJM?=
+ =?utf-8?B?eW5EZUhNZldSc2I5cXo0QnBtOENjdkswb05oZGVCTFEvcmJNdEh1aFlINlpB?=
+ =?utf-8?B?SzRlM0IxOTh5dUdXNEZ4YTdoc084Nkw4Y3h2dWphNWgzOXlQUWlSS3orZmRS?=
+ =?utf-8?B?RnRHSW93bUYwbzRqdmM3c3NiNG5GVjVyeGJmdktuSG1ySHduUkljZEpNWjhr?=
+ =?utf-8?B?dFRzTTlkV2Z6ZFRrTkh0cEc3QWdDa0FCWFVNVHpiUWVzYXJGY1ZiSkxRTEZ2?=
+ =?utf-8?B?dktxSEN5ejVnTTJoMk5JUTU3RFhLemZMdkp5enJyU3ZkQTlrN0hBa3Z6RVV6?=
+ =?utf-8?B?eWhsRERGZ25xc1E5SkJ3TmlIYTdMOUVlWjRtYUhyejJuOGwwSkJycDFKZHVy?=
+ =?utf-8?B?cEswbGMxdE9oQ1hybzV3TEhURGZYOWl6dUMzb29hOEp2N2VEZ3ZuRjFoaVMx?=
+ =?utf-8?Q?FYVq7IkKkVQ=3D?=
+X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:MW4PR11MB5934.namprd11.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(13230040)(1800799024)(366016)(376014); DIR:OUT; SFP:1101; 
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?OHU3VWg1QnBCdEhVQ09kZm4rQjZiVmM1blNyN1lsOTJaZWRLNEpyZlZPdVk0?=
+ =?utf-8?B?REExTldzdGRFQ09ZZVN4MU5NSzY5bE51VDQ3YnV4Q2ZSakxDekxCME5QVEJl?=
+ =?utf-8?B?UTdvd24vaGJnL1RETDRhWHc3TE9qZlpoeWZTdDZ3YXdwc3k3MVNZZDNzclI2?=
+ =?utf-8?B?c2FOR2oxdG1BbnVYVStPWlhTU3FJYUFpR3JtNGtXQVdPRDRRRFdEUTFaY2U0?=
+ =?utf-8?B?UUtWczRQR0VyaGFjcStLWEtkL1Bub2tiUjd2RGg0WEdKZk4zSVlHbzdVc2tZ?=
+ =?utf-8?B?UisrQ0lhRldLM28xNE92dGpkeHBMZ2pVNDA3S3lYK0xUUytYdlJyVWsycU9K?=
+ =?utf-8?B?OUVyNmRDcW9xS3pkY0VmdTZrWjZJVjFleG5wQmNqYkNqcUpMREZSVm5zZ2tV?=
+ =?utf-8?B?dS9vekpGek5VTFdnL05JMkJudzd1WWN2ZnhZd0tLMHFwVDVES0cyY0VaUDUz?=
+ =?utf-8?B?V295NC9vUXJ5SHcwaTBJQ2psU3JUNk5GYzA5WGRRTFd2YkY0cDFDK3pNYkJt?=
+ =?utf-8?B?UHRyeTZlVTFWT2NpUzNrK1BaRmhsRlBvK2o1RFZ2dEpRSitTanpucmZtNk9S?=
+ =?utf-8?B?RWlmLytXdlBvYnhadVVmOHFYVWRpYXQ4Slk1S21EYk5jelZaVjNVSzZIeGRH?=
+ =?utf-8?B?NTVjWjVxckprTWp0end3NCs0K3lsZzBrZlpybGlCSHBoN1RTczhJU1VZRTZl?=
+ =?utf-8?B?d1pRa1VHQVN6SVJvSVZnQjZTT3pRYVpKN0lyaThWMmRzR0o5TnphMW9JRWQ4?=
+ =?utf-8?B?QjNWTEJFSjVOSjJnS2ozckt0OS9yQUJKM3NObllMeWNiY0cwMEhGbTRSaTZX?=
+ =?utf-8?B?WFNnai9HbndyRDlWZUlxMkJ3c2I5cmhGbzJqdVVBMVdiRk5GYUVDUVQwYk8r?=
+ =?utf-8?B?aHB6OVpXQXROQWlWSnpRaUVCSEtCdnBzdUpIRmxrTnFkTDMrY28xc1RYTE41?=
+ =?utf-8?B?TVZIVHJiTzVmcERoNkF5aE5ZbC84dUtPdzlxVzl6TmpmemhnaS9FZjVISDR1?=
+ =?utf-8?B?cUVvV1JPMUd3NFJGUUtZV3Fock5VeVJRWTJQcG8zVVM2dmd4VEV5SXMramx6?=
+ =?utf-8?B?R0xTeEFnVXViNXNSbDQzdjF6RmNXcmJzUjkzRDk1MFM1SEY4K1VNQzlsNHV1?=
+ =?utf-8?B?ZXgwb3lPU0svWVB0bmZrcXRQd2xqbzJjWU1waEVHVHV6bDJoenpBdnQ4emtk?=
+ =?utf-8?B?bW5qalplTFovUGFEQWM5SXdaOXNqUEhkRjlkUWwra1FIeUJiNGNRUU0vVE1a?=
+ =?utf-8?B?ekJWbU5HUDBjcGhHcHRJajVNeGplSjVEWUwzV1BTUmpjUmh2bElLZDNSSDVS?=
+ =?utf-8?B?SzhvbTNTRjErcGxPSEgvb2FwQzN1cnBSdmM0RDdKbmJOMlpKRnpoK2ExWG5Q?=
+ =?utf-8?B?NkY0Q0tHRXZkOGM1LzhWRGRhRjNnLzRyZFVtdDZLTThEZUxZR2k1ZkVKUmcw?=
+ =?utf-8?B?VjJDSktXNmpHWkJ2aTMvTUxUNWpJQkpzMFNJWkZmVjdQZXpnbDdPZnpTMytS?=
+ =?utf-8?B?TmQzUlZJYmdqZFFsbXBqbVFjeHpGcTNoYXo0aldJZGF1Y3lVRldvS3VvQ0pJ?=
+ =?utf-8?B?NjZoYXphNldNTEZaNVRvRXp4a3JHOVFjOXlVWmNraGJDTW9GZTFKVFRRMUs4?=
+ =?utf-8?B?S25LU0l4RzhmMXBZeDBjclNtKzdEOEFJWmtEL3FDQ0o1T1k0MHptR2E2Q1Zk?=
+ =?utf-8?B?blF3RnJUeXd3cGpoWmpYYWpsYmxNbFZJckpGL2RhWkhKWW51RzJwdGlDbk5U?=
+ =?utf-8?B?UEVGRVpGYW5CNktBZ0ovNDQ5blpSZW13cmNVWFRwNGk2c0hKYW1MZlgyUGdJ?=
+ =?utf-8?B?cWNSV2I2Qm5FSTlUbDl1eG11VUVPaXVreHRScVUzTWFHaTM4RXdTdEliYi9O?=
+ =?utf-8?B?UXVSYXJuYWFMMlBsUDNWRURNYlMxM3JQN3VmQnVUbjdoRFVFZ2k0OU5yMXdN?=
+ =?utf-8?B?dnBPdWtUcXBEN2RBUS9yMUMwQ25hNkJPTzRCWWJCS05iV3AyUEVLL3NZSnAr?=
+ =?utf-8?B?TDFiMUMzcDFoVlQwWXYxMHA2ZEdDa3VBQitEQVkvZmx2Y1BJUGZaRXE1NFBj?=
+ =?utf-8?B?cWpkV3dqd25MbExCbzRhZS9kVFkvd25FRy9Ob29RUnZXWkhwNmM3dlJ6TW1X?=
+ =?utf-8?B?ODAyUStHb2JFWHRZUGtUbXlyd0hNUWVrTUhqclBRMjNuanlyVmVQQlNsdXJo?=
+ =?utf-8?B?V1E9PQ==?=
+X-MS-Exchange-CrossTenant-Network-Message-Id: 1cd5f246-5551-44b5-17ce-08dd7b514bee
+X-MS-Exchange-CrossTenant-AuthSource: MW4PR11MB5934.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 14 Apr 2025 12:38:45.4028 (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: iEgy+2KNISqJAcWOCd499PBJR1h6q7FM2P/zjqP6EuZEMUDoPlh8+xWGkG+MqPdQSHpt1GXklbqRYZ/WHlDxj8c4XP99432PTDh7o0si9OQ=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM4PR11MB6214
+X-OriginatorOrg: intel.com
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1744628461; x=1776164461;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=ciqU6NRzdmK5xHfHgKRN9YUW8TMMf4zvPwAseNMuZ5w=;
- b=UzM3SR0UVhUoG9Mp4Ds6agHNBmqUo43d/zYVQZ4NZsaQnLbFLZWnr6fV
- HOtYB/ykJLjakIQok0vEwCkxFZYDCPjWDVtpmZuWErqkEgnDtz7ZdwiCU
- LTqcDBqI6wwGBTJeO5IVEtJLuu35P/7GgiCXjN3fjnwSqyAfSZy59sF5F
- fQ8FlJ1u7U7DmFrFGGrCBTQdFbgvW1uGz65xa/vaPUxkivN5/BPCQC4pp
- y7RIjl2MU15rVJCPMYFxUUz/e3Ev972FiuhFNNBBKMfAeOgnLwukVlYie
- xEg17WlbrdcIPITFKDacOsWmYSd6EMwR0twqfzHMCf9D14viyzybaLnrU
- A==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ t=1744634345; x=1776170345;
+ h=subject:to:cc:references:from:message-id:date:
+ in-reply-to:content-transfer-encoding:mime-version;
+ bh=P2CJhZT/fzeKvbVCjF2kFK3zafLtAz1QcxeSa1882Gk=;
+ b=kY+IxQVOlt9UHxrb3tD9lTBrBQRm4KBlIRxFE8QzcNOs7BT8MBgL+mMU
+ oa7RYPcNy1P4VX/dykvInJ0+Js9bOPGAHgLLqUgukM4f1uOYfeEV0jl5u
+ FoVeLF2Aaem8WvDjW/MdKZjlJ7Y5X/3pXWNY/a9f2pZBqkwFHMO8imKHL
+ sCwRcSRgpnwUN+zG8Dj0zhpjdX0G/5glGtICcTwrJcUGpEIGvZiSqwkF1
+ cgw8twjrM5dTKD7MTdtYVSblESgiGqNfTtUi7NpsBNV5lQ2yJO1t9qas/
+ qo5OHEx6JiWlRo9wDn7Vpp4Gd6ZUZWTJgXJtcVmvSV8rrmHIBzR0VwSSD
+ Q==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=UzM3SR0U
-Subject: [Intel-wired-lan] [PATCH v11 iwl-next 11/11] idpf: add support for
- Rx timestamping
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=kY+IxQVO
+X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Subject: Re: [Intel-wired-lan] [REGRESSION] e1000e heavy packet loss on
+ Meteor Lake - 6.14.2
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -112,318 +244,38 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Add Rx timestamp function when the Rx timestamp value is read directly
-from the Rx descriptor. In order to extend the Rx timestamp value to 64
-bit in hot path, the PHC time is cached in the receive groups.
-Add supported Rx timestamp modes.
 
-Reviewed-by: Jacob Keller <jacob.e.keller@intel.com>
-Signed-off-by: Milena Olech <milena.olech@intel.com>
-Tested-by: YiFei Zhu <zhuyifei@google.com>
-Tested-by: Mina Almasry <almasrymina@google.com>
-Tested-by: Samuel Salin <Samuel.salin@intel.com>
----
-v8 -> v9: upscale Rx filters to HWTSTAMP_FILTER_ALL if Rx filter is
-different than HWTSTAMP_FILTER_NONE
-v7 -> v8: add a function to check if the Rx timestamp for a given vport
-is enabled
-v5 -> v6: add Rx filter
-v2 -> v3: add disable Rx timestamp
-v1 -> v2: extend commit message
 
- .../net/ethernet/intel/idpf/idpf_ethtool.c    |  1 +
- drivers/net/ethernet/intel/idpf/idpf_lib.c    |  6 +-
- drivers/net/ethernet/intel/idpf/idpf_ptp.c    | 86 ++++++++++++++++++-
- drivers/net/ethernet/intel/idpf/idpf_ptp.h    | 21 +++++
- drivers/net/ethernet/intel/idpf/idpf_txrx.c   | 30 +++++++
- drivers/net/ethernet/intel/idpf/idpf_txrx.h   |  7 +-
- 6 files changed, 147 insertions(+), 4 deletions(-)
+On 4/14/2025 3:18 PM, Marek Marczykowski-Górecki wrote:
+> Hi,
+> 
+> After updating to 6.14.2, the ethernet adapter is almost unusable, I get
+> over 30% packet loss.
+> Bisect says it's this commit:
+> 
+>      commit 85f6414167da39e0da30bf370f1ecda5a58c6f7b
+>      Author: Vitaly Lifshits <vitaly.lifshits@intel.com>
+>      Date:   Thu Mar 13 16:05:56 2025 +0200
+> 
+>          e1000e: change k1 configuration on MTP and later platforms
+> 
+> My system is Novacustom V540TU laptop with Intel Core Ultra 5 125H. And
+> the e1000e driver is running in a Xen HVM (with PCI passthrough).
+> Interestingly, I have also another one with Intel Core Ultra 7 155H
+> where the issue does not happen. I don't see what is different about
+> network adapter there, they look identical on lspci (but there are
+> differences about other devices)...
+> 
+> I see the commit above was already backported to other stable branches
+> too...
+> 
+> #regzbot introduced: 85f6414167da39e0da30bf370f1ecda5a58c6f7b
+> 
 
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_ethtool.c b/drivers/net/ethernet/intel/idpf/idpf_ethtool.c
-index ec4183a609c4..7a4793749bc5 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_ethtool.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_ethtool.c
-@@ -1333,6 +1333,7 @@ static void idpf_get_timestamp_filters(const struct idpf_vport *vport,
- 				SOF_TIMESTAMPING_RAW_HARDWARE;
- 
- 	info->tx_types = BIT(HWTSTAMP_TX_OFF);
-+	info->rx_filters = BIT(HWTSTAMP_FILTER_NONE) | BIT(HWTSTAMP_FILTER_ALL);
- 
- 	if (!vport->tx_tstamp_caps ||
- 	    vport->adapter->ptp->tx_tstamp_access == IDPF_PTP_NONE)
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_lib.c b/drivers/net/ethernet/intel/idpf/idpf_lib.c
-index bdead0e6ff47..e8d99d577f2b 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_lib.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_lib.c
-@@ -2353,7 +2353,8 @@ static int idpf_hwtstamp_set(struct net_device *netdev,
- 	idpf_vport_ctrl_lock(netdev);
- 	vport = idpf_netdev_to_vport(netdev);
- 
--	if (!idpf_ptp_is_vport_tx_tstamp_ena(vport)) {
-+	if (!idpf_ptp_is_vport_tx_tstamp_ena(vport) &&
-+	    !idpf_ptp_is_vport_rx_tstamp_ena(vport)) {
- 		idpf_vport_ctrl_unlock(netdev);
- 		return -EOPNOTSUPP;
- 	}
-@@ -2373,7 +2374,8 @@ static int idpf_hwtstamp_get(struct net_device *netdev,
- 	idpf_vport_ctrl_lock(netdev);
- 	vport = idpf_netdev_to_vport(netdev);
- 
--	if (!idpf_ptp_is_vport_tx_tstamp_ena(vport)) {
-+	if (!idpf_ptp_is_vport_tx_tstamp_ena(vport) &&
-+	    !idpf_ptp_is_vport_rx_tstamp_ena(vport)) {
- 		idpf_vport_ctrl_unlock(netdev);
- 		return 0;
- 	}
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_ptp.c b/drivers/net/ethernet/intel/idpf/idpf_ptp.c
-index 89884a0d1e9e..fc5b98d67c3f 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_ptp.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_ptp.c
-@@ -328,12 +328,41 @@ static int idpf_ptp_gettimex64(struct ptp_clock_info *info,
- 	return 0;
- }
- 
-+/**
-+ * idpf_ptp_update_phctime_rxq_grp - Update the cached PHC time for a given Rx
-+ *				     queue group.
-+ * @grp: receive queue group in which Rx timestamp is enabled
-+ * @split: Indicates whether the queue model is split or single queue
-+ * @systime: Cached system time
-+ */
-+static void
-+idpf_ptp_update_phctime_rxq_grp(const struct idpf_rxq_group *grp, bool split,
-+				u64 systime)
-+{
-+	struct idpf_rx_queue *rxq;
-+	u16 i;
-+
-+	if (!split) {
-+		for (i = 0; i < grp->singleq.num_rxq; i++) {
-+			rxq = grp->singleq.rxqs[i];
-+			if (rxq)
-+				WRITE_ONCE(rxq->cached_phc_time, systime);
-+		}
-+	} else {
-+		for (i = 0; i < grp->splitq.num_rxq_sets; i++) {
-+			rxq = &grp->splitq.rxq_sets[i]->rxq;
-+			if (rxq)
-+				WRITE_ONCE(rxq->cached_phc_time, systime);
-+		}
-+	}
-+}
-+
- /**
-  * idpf_ptp_update_cached_phctime - Update the cached PHC time values
-  * @adapter: Driver specific private structure
-  *
-  * This function updates the system time values which are cached in the adapter
-- * structure.
-+ * structure and the Rx queues.
-  *
-  * This function must be called periodically to ensure that the cached value
-  * is never more than 2 seconds old.
-@@ -356,6 +385,21 @@ static int idpf_ptp_update_cached_phctime(struct idpf_adapter *adapter)
- 	WRITE_ONCE(adapter->ptp->cached_phc_time, systime);
- 	WRITE_ONCE(adapter->ptp->cached_phc_jiffies, jiffies);
- 
-+	idpf_for_each_vport(adapter, vport) {
-+		bool split;
-+
-+		if (!vport || !vport->rxq_grps)
-+			continue;
-+
-+		split = idpf_is_queue_model_split(vport->rxq_model);
-+
-+		for (u16 i = 0; i < vport->num_rxq_grp; i++) {
-+			struct idpf_rxq_group *grp = &vport->rxq_grps[i];
-+
-+			idpf_ptp_update_phctime_rxq_grp(grp, split, systime);
-+		}
-+	}
-+
- 	return 0;
- }
- 
-@@ -629,6 +673,45 @@ int idpf_ptp_request_ts(struct idpf_tx_queue *tx_q, struct sk_buff *skb,
- 	return 0;
- }
- 
-+/**
-+ * idpf_ptp_set_rx_tstamp - Enable or disable Rx timestamping
-+ * @vport: Virtual port structure
-+ * @rx_filter: bool value for whether timestamps are enabled or disabled
-+ */
-+static void idpf_ptp_set_rx_tstamp(struct idpf_vport *vport, int rx_filter)
-+{
-+	bool enable = true, splitq;
-+
-+	vport->tstamp_config.rx_filter = rx_filter;
-+	splitq = idpf_is_queue_model_split(vport->rxq_model);
-+
-+	if (rx_filter == HWTSTAMP_FILTER_NONE)
-+		enable = false;
-+
-+	for (u16 i = 0; i < vport->num_rxq_grp; i++) {
-+		struct idpf_rxq_group *grp = &vport->rxq_grps[i];
-+		struct idpf_rx_queue *rx_queue;
-+		u16 j, num_rxq;
-+
-+		if (splitq)
-+			num_rxq = grp->splitq.num_rxq_sets;
-+		else
-+			num_rxq = grp->singleq.num_rxq;
-+
-+		for (j = 0; j < num_rxq; j++) {
-+			if (splitq)
-+				rx_queue = &grp->splitq.rxq_sets[j]->rxq;
-+			else
-+				rx_queue = grp->singleq.rxqs[j];
-+
-+			if (enable)
-+				idpf_queue_set(PTP, rx_queue);
-+			else
-+				idpf_queue_clear(PTP, rx_queue);
-+		}
-+	}
-+}
-+
- /**
-  * idpf_ptp_set_timestamp_mode - Setup driver for requested timestamp mode
-  * @vport: Virtual port structure
-@@ -651,6 +734,7 @@ int idpf_ptp_set_timestamp_mode(struct idpf_vport *vport,
- 	}
- 
- 	vport->tstamp_config.tx_type = config->tx_type;
-+	idpf_ptp_set_rx_tstamp(vport, config->rx_filter);
- 
- 	return 0;
- }
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_ptp.h b/drivers/net/ethernet/intel/idpf/idpf_ptp.h
-index 553c4645b047..e23d1c950250 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_ptp.h
-+++ b/drivers/net/ethernet/intel/idpf/idpf_ptp.h
-@@ -243,6 +243,27 @@ static inline bool idpf_ptp_is_vport_tx_tstamp_ena(struct idpf_vport *vport)
- 		return true;
- }
- 
-+/**
-+ * idpf_ptp_is_vport_rx_tstamp_ena - Verify the Rx timestamping enablement for
-+ *				     a given vport.
-+ * @vport: Virtual port structure
-+ *
-+ * Rx timestamp feature is enabled if the PTP clock for the adapter is created
-+ * and it is possible to read the value of the device clock. The second
-+ * assumption comes from the need to extend the Rx timestamp value to 64 bit
-+ * based on the current device clock time.
-+ *
-+ * Return: true if the Rx timestamping is enabled, false otherwise.
-+ */
-+static inline bool idpf_ptp_is_vport_rx_tstamp_ena(struct idpf_vport *vport)
-+{
-+	if (!vport->adapter->ptp ||
-+	    vport->adapter->ptp->get_dev_clk_time_access == IDPF_PTP_NONE)
-+		return false;
-+	else
-+		return true;
-+}
-+
- #if IS_ENABLED(CONFIG_PTP_1588_CLOCK)
- int idpf_ptp_init(struct idpf_adapter *adapter);
- void idpf_ptp_release(struct idpf_adapter *adapter);
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.c b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-index 042b190c39b3..127560bebded 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-@@ -3170,6 +3170,33 @@ static int idpf_rx_rsc(struct idpf_rx_queue *rxq, struct sk_buff *skb,
- 	return 0;
- }
- 
-+/**
-+ * idpf_rx_hwtstamp - check for an RX timestamp and pass up the stack
-+ * @rxq: pointer to the rx queue that receives the timestamp
-+ * @rx_desc: pointer to rx descriptor containing timestamp
-+ * @skb: skb to put timestamp in
-+ */
-+static void
-+idpf_rx_hwtstamp(const struct idpf_rx_queue *rxq,
-+		 const struct virtchnl2_rx_flex_desc_adv_nic_3 *rx_desc,
-+		 struct sk_buff *skb)
-+{
-+	u64 cached_time, ts_ns;
-+	u32 ts_high;
-+
-+	if (!(rx_desc->ts_low & VIRTCHNL2_RX_FLEX_TSTAMP_VALID))
-+		return;
-+
-+	cached_time = READ_ONCE(rxq->cached_phc_time);
-+
-+	ts_high = le32_to_cpu(rx_desc->ts_high);
-+	ts_ns = idpf_ptp_tstamp_extend_32b_to_64b(cached_time, ts_high);
-+
-+	*skb_hwtstamps(skb) = (struct skb_shared_hwtstamps) {
-+		.hwtstamp = ns_to_ktime(ts_ns),
-+	};
-+}
-+
- /**
-  * idpf_rx_process_skb_fields - Populate skb header fields from Rx descriptor
-  * @rxq: Rx descriptor ring packet is being transacted on
-@@ -3195,6 +3222,9 @@ idpf_rx_process_skb_fields(struct idpf_rx_queue *rxq, struct sk_buff *skb,
- 	/* process RSS/hash */
- 	idpf_rx_hash(rxq, skb, rx_desc, decoded);
- 
-+	if (idpf_queue_has(PTP, rxq))
-+		idpf_rx_hwtstamp(rxq, rx_desc, skb);
-+
- 	skb->protocol = eth_type_trans(skb, rxq->netdev);
- 	skb_record_rx_queue(skb, rxq->idx);
- 
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.h b/drivers/net/ethernet/intel/idpf/idpf_txrx.h
-index 9b7aa72e1f32..c779fe71df99 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_txrx.h
-+++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.h
-@@ -290,6 +290,8 @@ struct idpf_ptype_state {
-  * @__IDPF_Q_POLL_MODE: Enable poll mode
-  * @__IDPF_Q_CRC_EN: enable CRC offload in singleq mode
-  * @__IDPF_Q_HSPLIT_EN: enable header split on Rx (splitq)
-+ * @__IDPF_Q_PTP: indicates whether the Rx timestamping is enabled for the
-+ *		  queue
-  * @__IDPF_Q_FLAGS_NBITS: Must be last
-  */
- enum idpf_queue_flags_t {
-@@ -300,6 +302,7 @@ enum idpf_queue_flags_t {
- 	__IDPF_Q_POLL_MODE,
- 	__IDPF_Q_CRC_EN,
- 	__IDPF_Q_HSPLIT_EN,
-+	__IDPF_Q_PTP,
- 
- 	__IDPF_Q_FLAGS_NBITS,
- };
-@@ -496,6 +499,7 @@ struct idpf_txq_stash {
-  * @next_to_alloc: RX buffer to allocate at
-  * @skb: Pointer to the skb
-  * @truesize: data buffer truesize in singleq
-+ * @cached_phc_time: Cached PHC time for the Rx queue
-  * @stats_sync: See struct u64_stats_sync
-  * @q_stats: See union idpf_rx_queue_stats
-  * @q_id: Queue id
-@@ -543,6 +547,7 @@ struct idpf_rx_queue {
- 
- 	struct sk_buff *skb;
- 	u32 truesize;
-+	u64 cached_phc_time;
- 
- 	struct u64_stats_sync stats_sync;
- 	struct idpf_rx_queue_stats q_stats;
-@@ -562,7 +567,7 @@ struct idpf_rx_queue {
- 	__cacheline_group_end_aligned(cold);
- };
- libeth_cacheline_set_assert(struct idpf_rx_queue, 64,
--			    80 + sizeof(struct u64_stats_sync),
-+			    88 + sizeof(struct u64_stats_sync),
- 			    32);
- 
- /**
--- 
-2.43.5
+Thank you for this report.
 
+Do you see the high packet loss without the virtualization?
+Can you please share the lspci output?
+Does your switch/link partner support flow control? if it is 
+configurable can you try to enable it?
+Do you see any errors in dmesg related to the e1000e driver?
