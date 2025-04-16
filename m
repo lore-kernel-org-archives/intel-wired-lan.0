@@ -4,93 +4,97 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 758F4C369C7
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 16 Apr 2025 21:19:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 60E51C369CA
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 16 Apr 2025 21:19:05 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 2EF3460A55;
-	Wed, 16 Apr 2025 21:19:04 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 285FE61B0A;
+	Wed, 16 Apr 2025 21:19:05 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id tBo__brBxHmO; Wed, 16 Apr 2025 21:19:03 +0000 (UTC)
+ id BMgpi8aw3QqS; Wed, 16 Apr 2025 21:19:04 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A36C960E11
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 6544B6F5EA
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1744838343;
-	bh=K+6r7tZdqX9DkIL2tQkW0r0+KohxTusPJrTOayVFNzk=;
-	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=wqpz1QkpbPvk6my4PvATqvzUSWb4Url+mQ/iMhjKo6tIIZgu7CowgN1zNrbGoHJn1
-	 Cq44lMIfBwHtaJ9P4Xc7Ey0bu/IYBr9rD6f0nipbVbSSxCaZ/wKRXofJNBBk3NHfCX
-	 rKRqhb4o59Ed8myg50duboj+8y11iBF74Bice/jaL0gwtr+ymy94kaBRZ7qbjbrP8g
-	 M151vkaDVUuWKAwDMUqelVHXzYoBOaxKgwj2hy/9TYPqOtRPJtE7KcHgizVUxWE3ly
-	 BIHDgpItOM3GKK6ZlCZr9l2G2TOf0XikidZcKEHZzhJlD0JpUv2Qgyr0DUiwtwPcUp
-	 ejEUOf0732f5g==
+	s=default; t=1744838344;
+	bh=FYv3Yz6f2Lx4l8HMnmsPW+DYRYYIeLl2+4r+qFA60J0=;
+	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=cjAgWOfXzOOVHOaCVa/WrmCJaWavTKivJ3qK/O6F+SClSAc5fATLDe2PDNK6axDiG
+	 MECD0Z9brzyoR0PMkV0OOGJN+jc8udRm+0v7dI9ARYx+Ovo64bXaDVnYAhysT1dApP
+	 hhtLHzRVam8dVVDHiRUwAdlT2/SU7YnrT3khJfU2EvdzY+dqOo2YwAC2NxqsTc2C21
+	 HGzFf+75NYn8pDkIdLCNkHnGAXlgwNHafEyqmHbCnzUUaOJEDV2lv6bcarVCxDOPRv
+	 VvMYHA4q8nPImreALH9OEWDTFg3PUtTUQe0XKrXNyGZNPhyBWUPtwS43MPISg0T6z2
+	 OrJdBWRAPdM9A==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id A36C960E11;
-	Wed, 16 Apr 2025 21:19:03 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id 075C1159
+	by smtp3.osuosl.org (Postfix) with ESMTP id 6544B6F5EA;
+	Wed, 16 Apr 2025 21:19:04 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id DA04E11B
  for <intel-wired-lan@lists.osuosl.org>; Wed, 16 Apr 2025 21:19:02 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id E0FDC4141A
- for <intel-wired-lan@lists.osuosl.org>; Wed, 16 Apr 2025 21:19:01 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id BDB676F592
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 16 Apr 2025 21:19:02 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id TcbOc7F0A0eA for <intel-wired-lan@lists.osuosl.org>;
- Wed, 16 Apr 2025 21:19:01 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id O8DuwymhXJzH for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 16 Apr 2025 21:19:02 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.16;
  helo=mgamail.intel.com; envelope-from=pavan.kumar.linga@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 9E8124135F
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9E8124135F
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 1634F60D7F
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 1634F60D7F
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.16])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 9E8124135F
- for <intel-wired-lan@lists.osuosl.org>; Wed, 16 Apr 2025 21:19:00 +0000 (UTC)
-X-CSE-ConnectionGUID: uQS3hfvJTMaP/b2amzCiRA==
-X-CSE-MsgGUID: yKwUqAqQTdiK7GgxL+bvsg==
-X-IronPort-AV: E=McAfee;i="6700,10204,11405"; a="46496227"
-X-IronPort-AV: E=Sophos;i="6.15,217,1739865600"; d="scan'208";a="46496227"
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 1634F60D7F
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 16 Apr 2025 21:19:02 +0000 (UTC)
+X-CSE-ConnectionGUID: jRlWAJs+S7OgWijLZcU1GQ==
+X-CSE-MsgGUID: vkVx0slrSsamJT0IG9xuxA==
+X-IronPort-AV: E=McAfee;i="6700,10204,11405"; a="46496239"
+X-IronPort-AV: E=Sophos;i="6.15,217,1739865600"; d="scan'208";a="46496239"
 Received: from fmviesa008.fm.intel.com ([10.60.135.148])
  by orvoesa108.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 16 Apr 2025 14:19:00 -0700
-X-CSE-ConnectionGUID: meZ7QWaaQ3m0ofeDDIFNaA==
-X-CSE-MsgGUID: aNo9Fvq0R9mj1MKPXA0xcw==
+ 16 Apr 2025 14:19:01 -0700
+X-CSE-ConnectionGUID: CyX04dYKTE6pfXYV4iyKgw==
+X-CSE-MsgGUID: q/Xp4i7nQbK22U+TRcPT0g==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.15,217,1739865600"; d="scan'208";a="130909730"
+X-IronPort-AV: E=Sophos;i="6.15,217,1739865600"; d="scan'208";a="130909756"
 Received: from unknown (HELO localhost.jf.intel.com) ([10.166.80.55])
- by fmviesa008.fm.intel.com with ESMTP; 16 Apr 2025 14:19:00 -0700
+ by fmviesa008.fm.intel.com with ESMTP; 16 Apr 2025 14:19:01 -0700
 From: Pavan Kumar Linga <pavan.kumar.linga@intel.com>
 To: intel-wired-lan@lists.osuosl.org
 Cc: netdev@vger.kernel.org, milena.olech@intel.com, anton.nadezhdin@intel.com,
  Pavan Kumar Linga <pavan.kumar.linga@intel.com>
-Date: Wed, 16 Apr 2025 14:18:12 -0700
-Message-ID: <20250416211821.444076-1-pavan.kumar.linga@intel.com>
+Date: Wed, 16 Apr 2025 14:18:17 -0700
+Message-ID: <20250416211821.444076-6-pavan.kumar.linga@intel.com>
 X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20250416211821.444076-1-pavan.kumar.linga@intel.com>
+References: <20250416211821.444076-1-pavan.kumar.linga@intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1744838340; x=1776374340;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=crjEXK1GLqH9WsE4qeAoY0vFHzVz8ZvUou9JkfnD2hE=;
- b=BbgN37Yy6Om2wU6aW/GDqmcesaWA9B1hmASLvsLPNKaQwjBq/CXHzt0a
- 43VABEFfqSFLTa8sGmkDIpyLxWflTRf7cXGy3T4bOYMB+TdvzdOBS3P5I
- uJG0t0i/0j725ztft7bJSSJewGBMvLhRzAo8npYyYOtRluhqv7FniPqJ5
- 9WQjTXz9fUrhpBa3FY9Cc2z2OCA4Ws2QgwgVunVxM70acpfdms61gjVrC
- ebhEhGRh8kXPqSkVKjd6RtSO0HHCy1Am6CIixSAJoFIeSLqID3m/lWmxR
- ylSSQLZRVYGgM7/bZTUYvY6HeRykEOYbABQSf2gdvuCvk1B5UAUC6mJqu
+ t=1744838342; x=1776374342;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=0gxXFAuin1vwi+251UPyfz/JczORT+jQZxMwXsNW06Y=;
+ b=axGzyijqFMqCKiglNw7hIhhHjwFJKmfkJuObIANy7QKDE1BTHdhnZPXW
+ qBIHH+Sh5Pun18SW8h8ZeXt5LuOSU3TsjArMsr5blDbkkcKc9Q4iY55Jx
+ zRhknOk7oTxVSIFlMYdBzj3VfQFqFwX1e9iJRcNpxKIaFQDf4eJls3WM1
+ KyJqCvycaTkFf15/pzEFA9HxP57B2/lLOm+swAp4DW+9UxbtMmSagW0DI
+ fkTQNmZuu19dzVjqGklNEaS3drE/GQ8fmyEm7puDa73czKEPrv1ITP8HA
+ cJmphd2gRavT2+0KEJzTTBuRfHxkXmWIddsvENKJ7TnOoGnwY8VSI6+zc
  A==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=BbgN37Yy
-Subject: [Intel-wired-lan] [PATCH iwl-next 0/9] refactor IDPF resource access
+ header.s=Intel header.b=axGzyijq
+Subject: [Intel-wired-lan] [PATCH iwl-next 5/9] idpf: reshuffle idpf_vport
+ struct members to avoid holes
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -106,49 +110,84 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Queue and vector resources for a given vport, are stored in the
-idpf_vport structure. At the time of configuration, these
-resources are accessed using vport pointer. Meaning, all the
-config path functions are tied to the default queue and vector
-resources of the vport.
+The previous refactor of moving queue and vector resources
+out of the idpf_vport structure, created few holes. Reshuffle
+the existing members to avoid holes as much as possible.
 
-There are use cases which can make use of config path functions
-to configure queue and vector resources that are not tied to any
-vport. One such use case is PTP secondary mailbox creation
-(it would be in a followup series). To configure queue and interrupt
-resources for such cases, we can make use of the existing config
-infrastructure by passing the necessary queue and vector resources info.
+Reviewed-by: Anton Nadezhdin <anton.nadezhdin@intel.com>
+Signed-off-by: Pavan Kumar Linga <pavan.kumar.linga@intel.com>
+---
+ drivers/net/ethernet/intel/idpf/idpf.h | 27 +++++++++++++-------------
+ 1 file changed, 13 insertions(+), 14 deletions(-)
 
-To achieve this, group the existing queue and vector resources into
-default resource group and refactor the code to pass the resource
-pointer to the config path functions.
-
-This series also includes patches which generalizes the send virtchnl
-message APIs and mailbox API that are necessary for the implementation
-of PTP secondary mailbox.
-
-Pavan Kumar Linga (9):
-  idpf: introduce local idpf structure to store virtchnl queue chunks
-  idpf: use existing queue chunk info instead of preparing it
-  idpf: introduce idpf_q_vec_rsrc struct and move vector resources to it
-  idpf: move queue resources to idpf_q_vec_rsrc structure
-  idpf: reshuffle idpf_vport struct members to avoid holes
-  idpf: add rss_data field to RSS function parameters
-  idpf: generalize send virtchnl message API
-  idpf: avoid calling get_rx_ptypes for each vport
-  idpf: generalize mailbox API
-
- drivers/net/ethernet/intel/idpf/idpf.h        |  152 ++-
- drivers/net/ethernet/intel/idpf/idpf_dev.c    |   12 +-
- .../net/ethernet/intel/idpf/idpf_ethtool.c    |   87 +-
- drivers/net/ethernet/intel/idpf/idpf_lib.c    |  233 ++--
- drivers/net/ethernet/intel/idpf/idpf_txrx.c   |  639 +++++-----
- drivers/net/ethernet/intel/idpf/idpf_txrx.h   |   36 +-
- drivers/net/ethernet/intel/idpf/idpf_vf_dev.c |   15 +-
- .../net/ethernet/intel/idpf/idpf_virtchnl.c   | 1127 ++++++++---------
- .../net/ethernet/intel/idpf/idpf_virtchnl.h   |   77 +-
- 9 files changed, 1239 insertions(+), 1139 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/idpf/idpf.h b/drivers/net/ethernet/intel/idpf/idpf.h
+index 2bd1d35ee263..28d9c08420a3 100644
+--- a/drivers/net/ethernet/intel/idpf/idpf.h
++++ b/drivers/net/ethernet/intel/idpf/idpf.h
+@@ -303,50 +303,49 @@ struct idpf_q_vec_rsrc {
+ /**
+  * struct idpf_vport - Handle for netdevices and queue resources
+  * @dflt_qv_rsrc: contains default queue and vector resources
+- * @num_txq: Number of allocated TX queues
+- * @compln_clean_budget: Work budget for completion clean
+  * @txqs: Used only in hotpath to get to the right queue very fast
+- * @crc_enable: Enable CRC insertion offload
+- * @rx_ptype_lkup: Lookup table for ptypes on RX
+  * @adapter: back pointer to associated adapter
+  * @netdev: Associated net_device. Each vport should have one and only one
+  *	    associated netdev.
+  * @flags: See enum idpf_vport_flags
+- * @vport_type: Default SRIOV, SIOV, etc.
++ * @compln_clean_budget: Work budget for completion clean
+  * @vport_id: Device given vport identifier
++ * @vport_type: Default SRIOV, SIOV, etc.
+  * @idx: Software index in adapter vports struct
+- * @default_vport: Use this vport if one isn't specified
++ * @num_txq: Number of allocated TX queues
+  * @max_mtu: device given max possible MTU
+  * @default_mac_addr: device will give a default MAC to use
+  * @rx_itr_profile: RX profiles for Dynamic Interrupt Moderation
+  * @tx_itr_profile: TX profiles for Dynamic Interrupt Moderation
++ * @rx_ptype_lkup: Lookup table for ptypes on RX
+  * @port_stats: per port csum, header split, and other offload stats
++ * @default_vport: Use this vport if one isn't specified
++ * @crc_enable: Enable CRC insertion offload
+  * @link_up: True if link is up
+  * @sw_marker_wq: workqueue for marker packets
+  */
+ struct idpf_vport {
+ 	struct idpf_q_vec_rsrc dflt_qv_rsrc;
+-	u16 num_txq;
+-	u32 compln_clean_budget;
+ 	struct idpf_tx_queue **txqs;
+-	bool crc_enable;
+-
+-	struct libeth_rx_pt *rx_ptype_lkup;
+ 
+ 	struct idpf_adapter *adapter;
+ 	struct net_device *netdev;
+ 	DECLARE_BITMAP(flags, IDPF_VPORT_FLAGS_NBITS);
+-	u16 vport_type;
++	u32 compln_clean_budget;
+ 	u32 vport_id;
++	u16 vport_type;
+ 	u16 idx;
+-	bool default_vport;
+ 
++	u16 num_txq;
+ 	u16 max_mtu;
+ 	u8 default_mac_addr[ETH_ALEN];
+ 	u16 rx_itr_profile[IDPF_DIM_PROFILE_SLOTS];
+ 	u16 tx_itr_profile[IDPF_DIM_PROFILE_SLOTS];
+-	struct idpf_port_stats port_stats;
+ 
++	struct libeth_rx_pt *rx_ptype_lkup;
++	struct idpf_port_stats port_stats;
++	bool default_vport;
++	bool crc_enable;
+ 	bool link_up;
+ 
+ 	wait_queue_head_t sw_marker_wq;
 -- 
 2.43.0
 
