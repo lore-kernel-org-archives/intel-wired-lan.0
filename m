@@ -4,71 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8CA2BC369C7
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 16 Apr 2025 21:19:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6B5F4C369CA
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 16 Apr 2025 21:19:15 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 3C4F56F60C;
-	Wed, 16 Apr 2025 21:19:13 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 3CEC36F551;
+	Wed, 16 Apr 2025 21:19:15 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 4ap7Rfsk3KDI; Wed, 16 Apr 2025 21:19:12 +0000 (UTC)
+ id 32NX1Gb05SiA; Wed, 16 Apr 2025 21:19:11 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 32FE56F70E
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org AEF466F5EA
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1744838352;
-	bh=widxNlUzyg4OMjg2UIGRKLvqEoqGfhxgdIsJd3n/ED8=;
+	s=default; t=1744838351;
+	bh=nz7VBwpmK7oonrgIeMxkoSwEPs1qtQeY87PkTaduJr8=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=0Wh/FnxVXwVdaIJpmMh0SoNepJz87C3Zw61aTTiXN9QhIm0DfZ3WJHKC+NpLNtTxA
-	 5NtBqSfPcYRpQbolic067FvXu0M2afMgGp8VHh8rHQrDBocrul0iQymrYPFvG1SLui
-	 V5onM0YxD5tSi4kGEmF5rUd9wxFoB3mk7heRxitZhIKJaVI4Ufjd01eFzjYsn45E+1
-	 hfcQi1h3t2B7dQoCPH8cYn7tSmDtWVYAgiNz/oXY/AQK4qNLYn4YtAbSU6yubR63m1
-	 9l6/JFtTFy+9gtOJ8J3A8IWkSezfAUi5uN/G0JtqjMUBHbS9UX8AshyPcQGRIo/jYi
-	 Wu8TP42BlAMKQ==
+	b=Qt08DCWrSSsk/QimC8vg9C2Fn8BobKxfWlseeyPyO/OkyEgJMVGCPDJoSSiNpmIQq
+	 YfXBVoCGCoMtN6rMRAeQmRawPDSPgbao7CgQsUmPTco1fZVLaCzvdMUtjEC1a3Jd2w
+	 jtpVIiCFO6EdyxT+S4GmyObx24vXv8IqKbr/S434kEa8puDhPmdpO+HT/mZ9AQVV/j
+	 zrH9vywYtWf9ljpYQDpXPPTSuxgo6lENCp+JJOpUctIVquZkl5Aox2eHGQqf7rsZO0
+	 mchFDrVANc7f6KqR/vTIEHoH29K2Z7ES91INpDvZbWJhBxfZ9FjH6u9UG1c2gX/6tq
+	 gLTMxHPUpLy6Q==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 32FE56F70E;
-	Wed, 16 Apr 2025 21:19:12 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id 23703444
+	by smtp3.osuosl.org (Postfix) with ESMTP id AEF466F5EA;
+	Wed, 16 Apr 2025 21:19:10 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 1223F11B
  for <intel-wired-lan@lists.osuosl.org>; Wed, 16 Apr 2025 21:19:04 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 7522E60A55
- for <intel-wired-lan@lists.osuosl.org>; Wed, 16 Apr 2025 21:19:03 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 4BB75409F7
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 16 Apr 2025 21:19:02 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id m0xV7wh1nVsU for <intel-wired-lan@lists.osuosl.org>;
- Wed, 16 Apr 2025 21:19:02 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id YOfWmmg5j10R for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 16 Apr 2025 21:19:01 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.16;
  helo=mgamail.intel.com; envelope-from=pavan.kumar.linga@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 7605160E11
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7605160E11
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 68CA8412E0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 68CA8412E0
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.16])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 7605160E11
- for <intel-wired-lan@lists.osuosl.org>; Wed, 16 Apr 2025 21:19:02 +0000 (UTC)
-X-CSE-ConnectionGUID: 3mQaKq7cR8CVb0X5didhew==
-X-CSE-MsgGUID: g4GkZMBbT8avQjnMSkmpag==
-X-IronPort-AV: E=McAfee;i="6700,10204,11405"; a="46496247"
-X-IronPort-AV: E=Sophos;i="6.15,217,1739865600"; d="scan'208";a="46496247"
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 68CA8412E0
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 16 Apr 2025 21:19:01 +0000 (UTC)
+X-CSE-ConnectionGUID: SYapKlWkT8Ozvr9u7dIKbw==
+X-CSE-MsgGUID: cdYR2PjpRQeD94eY6sog6w==
+X-IronPort-AV: E=McAfee;i="6700,10204,11405"; a="46496231"
+X-IronPort-AV: E=Sophos;i="6.15,217,1739865600"; d="scan'208";a="46496231"
 Received: from fmviesa008.fm.intel.com ([10.60.135.148])
  by orvoesa108.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 16 Apr 2025 14:19:02 -0700
-X-CSE-ConnectionGUID: NztMp4vGRPKajLz5IQVUJg==
-X-CSE-MsgGUID: Q+PqOMPoTQmMLz/ImhQR5A==
+ 16 Apr 2025 14:19:00 -0700
+X-CSE-ConnectionGUID: XCY8QJplSt+WqAwK4CRM2Q==
+X-CSE-MsgGUID: t6boakpPR2SCHV0aqI7lVw==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.15,217,1739865600"; d="scan'208";a="130909770"
+X-IronPort-AV: E=Sophos;i="6.15,217,1739865600"; d="scan'208";a="130909739"
 Received: from unknown (HELO localhost.jf.intel.com) ([10.166.80.55])
- by fmviesa008.fm.intel.com with ESMTP; 16 Apr 2025 14:19:02 -0700
+ by fmviesa008.fm.intel.com with ESMTP; 16 Apr 2025 14:19:00 -0700
 From: Pavan Kumar Linga <pavan.kumar.linga@intel.com>
 To: intel-wired-lan@lists.osuosl.org
 Cc: netdev@vger.kernel.org, milena.olech@intel.com, anton.nadezhdin@intel.com,
- Pavan Kumar Linga <pavan.kumar.linga@intel.com>,
- Madhu Chittim <madhu.chittim@intel.com>
-Date: Wed, 16 Apr 2025 14:18:20 -0700
-Message-ID: <20250416211821.444076-9-pavan.kumar.linga@intel.com>
+ Pavan Kumar Linga <pavan.kumar.linga@intel.com>
+Date: Wed, 16 Apr 2025 14:18:14 -0700
+Message-ID: <20250416211821.444076-3-pavan.kumar.linga@intel.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20250416211821.444076-1-pavan.kumar.linga@intel.com>
 References: <20250416211821.444076-1-pavan.kumar.linga@intel.com>
@@ -76,25 +75,25 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1744838342; x=1776374342;
+ t=1744838341; x=1776374341;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=GcfN+Kbon7ZG/yJQb4ufDvJ71YhLmO9JA4ORRB6SSvo=;
- b=Qf+N7kil23JLziWkbRZxGFlL9qpGjK4jlLXky/C3fhaUigwkf8be9iuR
- TBXhpb7yNWJ5pdxc/Ds+kqW3K56q7nCpFxkz9cBorhaBkEm88JtgyRRsR
- zw5J7CpKDdRz5bhduMr4VCENN79vxQfTCbzUBi+yGhkM87xa1fjOHB/9N
- myvqy1HR87Qzkc5gMSZNHt1uFKcLeUoJFFVdqmX+EeeTyBrNWBUejPp9A
- +sRpAHcUhbgy7rCMlhOQXmFcMVe6K4D8s2C780gN2o8JrhM+NurMj9YRh
- yXEWG1gZw8mmu/lWIZFtlFE0wRod5f+zVUJa9Lrk2VoKrUvBheMtvAPp1
- g==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ bh=+A9Dv01LeL2+fUaquWm3WcRFQG7J6+3l5puOYXWK9zk=;
+ b=DiWw9sGsD83fCTopXqU0804jVHUXv3uCv/SZ2TEelugtv0fOlcBqJDSH
+ PaNs6m08A4s0CSkXXQF5JaMtl8cp7qx2uks8mc3TGGI0hkn31oTGtDUZJ
+ maJ8gQGRIbglR6iFaLGiGPF6MRI8D+4/kNg+q5kw42XguhxJkREei90yP
+ 3qnqE3lI+9zAmKO5p4bdRZNDtMe1ybDLGK0bmment6eDA4GBlEh4+nIYj
+ AHs8lp2oo+Y/Xu2Ub9iffss4aUnf2KNXn7TnCsU8MMO1qflKe2PIDqHUK
+ zcDNe5ys+JMr6SDgv+YPsFOxPug4dSKmbuUGZsBmK8C8lx9eNfbhkM/8h
+ A==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=Qf+N7kil
-Subject: [Intel-wired-lan] [PATCH iwl-next 8/9] idpf: avoid calling
- get_rx_ptypes for each vport
+ header.a=rsa-sha256 header.s=Intel header.b=DiWw9sGs
+Subject: [Intel-wired-lan] [PATCH iwl-next 2/9] idpf: use existing queue
+ chunk info instead of preparing it
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -110,529 +109,326 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-RX ptypes received from device control plane doesn't
-depend on vport info, but might vary based on the queue model.
-When the driver requests for ptypes, control plane fills both
-ptype_id_10 (used for splitq) and ptype_id_8 (used for singleq)
-fields of the virtchnl2_ptype response structure. This allows
-to call get_rx_ptypes once at the adapter level instead of
-each vport.
+Queue chunk info received from the device control plane
+is stored in the persistent data section. Necessary info from
+these chunks is parsed and stored in the queue structure.
+While sending the enable/disable queues virtchnl message,
+queue chunk info is prepared using the stored queue info.
+Instead of that, use the stored queue chunks directly which has
+info about all the queues that needs to be enabled/disabled.
 
-Parse and store the received ptypes of both splitq and singleq
-in a separate lookup table. Respective lookup table is used based
-on the queue model info. As part of the changes, pull the ptype
-protocol parsing code into a separate function.
-
-Reviewed-by: Madhu Chittim <madhu.chittim@intel.com>
+Reviewed-by: Anton Nadezhdin <anton.nadezhdin@intel.com>
 Signed-off-by: Pavan Kumar Linga <pavan.kumar.linga@intel.com>
 ---
- drivers/net/ethernet/intel/idpf/idpf.h        |   7 +-
- drivers/net/ethernet/intel/idpf/idpf_lib.c    |   9 -
- drivers/net/ethernet/intel/idpf/idpf_txrx.c   |   4 +-
- .../net/ethernet/intel/idpf/idpf_virtchnl.c   | 310 ++++++++++--------
- .../net/ethernet/intel/idpf/idpf_virtchnl.h   |   1 -
- 5 files changed, 174 insertions(+), 157 deletions(-)
+ drivers/net/ethernet/intel/idpf/idpf_lib.c    |   6 +-
+ .../net/ethernet/intel/idpf/idpf_virtchnl.c   | 188 +++++-------------
+ .../net/ethernet/intel/idpf/idpf_virtchnl.h   |   6 +-
+ 3 files changed, 52 insertions(+), 148 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/idpf/idpf.h b/drivers/net/ethernet/intel/idpf/idpf.h
-index 274e580d0d1d..003fb61c7128 100644
---- a/drivers/net/ethernet/intel/idpf/idpf.h
-+++ b/drivers/net/ethernet/intel/idpf/idpf.h
-@@ -318,7 +318,6 @@ struct idpf_q_vec_rsrc {
-  * @default_mac_addr: device will give a default MAC to use
-  * @rx_itr_profile: RX profiles for Dynamic Interrupt Moderation
-  * @tx_itr_profile: TX profiles for Dynamic Interrupt Moderation
-- * @rx_ptype_lkup: Lookup table for ptypes on RX
-  * @port_stats: per port csum, header split, and other offload stats
-  * @default_vport: Use this vport if one isn't specified
-  * @crc_enable: Enable CRC insertion offload
-@@ -343,7 +342,6 @@ struct idpf_vport {
- 	u16 rx_itr_profile[IDPF_DIM_PROFILE_SLOTS];
- 	u16 tx_itr_profile[IDPF_DIM_PROFILE_SLOTS];
- 
--	struct libeth_rx_pt *rx_ptype_lkup;
- 	struct idpf_port_stats port_stats;
- 	bool default_vport;
- 	bool crc_enable;
-@@ -547,6 +545,8 @@ struct idpf_vc_xn_manager;
-  * @vport_params_reqd: Vport params requested
-  * @vport_params_recvd: Vport params received
-  * @vport_ids: Array of device given vport identifiers
-+ * @singleq_pt_lkup: Lookup table for singleq RX ptypes
-+ * @splitq_pt_lkup: Lookup table for splitq RX ptypes
-  * @vport_config: Vport config parameters
-  * @max_vports: Maximum vports that can be allocated
-  * @num_alloc_vports: Current number of vports allocated
-@@ -602,6 +602,9 @@ struct idpf_adapter {
- 	struct virtchnl2_create_vport **vport_params_recvd;
- 	u32 *vport_ids;
- 
-+	struct libeth_rx_pt *singleq_pt_lkup;
-+	struct libeth_rx_pt *splitq_pt_lkup;
-+
- 	struct idpf_vport_config **vport_config;
- 	u16 max_vports;
- 	u16 num_alloc_vports;
 diff --git a/drivers/net/ethernet/intel/idpf/idpf_lib.c b/drivers/net/ethernet/intel/idpf/idpf_lib.c
-index d676b2eb567b..af0f036c561d 100644
+index 1536f6ce5ec7..b1a8ce0bc072 100644
 --- a/drivers/net/ethernet/intel/idpf/idpf_lib.c
 +++ b/drivers/net/ethernet/intel/idpf/idpf_lib.c
-@@ -900,9 +900,6 @@ static void idpf_decfg_netdev(struct idpf_vport *vport)
- 	struct idpf_adapter *adapter = vport->adapter;
- 	u16 idx = vport->idx;
+@@ -844,7 +844,7 @@ static void idpf_vport_stop(struct idpf_vport *vport)
+ 	chunks = &vport->adapter->vport_config[vport->idx]->qid_reg_info;
  
--	kfree(vport->rx_ptype_lkup);
--	vport->rx_ptype_lkup = NULL;
--
- 	if (test_and_clear_bit(IDPF_VPORT_REG_NETDEV,
- 			       adapter->vport_config[idx]->flags)) {
- 		unregister_netdev(vport->netdev);
-@@ -1512,10 +1509,6 @@ void idpf_init_task(struct work_struct *work)
- 	if (idpf_cfg_netdev(vport))
- 		goto cfg_netdev_err;
+ 	idpf_send_disable_vport_msg(vport);
+-	idpf_send_disable_queues_msg(vport);
++	idpf_send_disable_queues_msg(vport, chunks);
+ 	idpf_send_map_unmap_queue_vector_msg(vport, false);
+ 	/* Normally we ask for queues in create_vport, but if the number of
+ 	 * initially requested queues have changed, for example via ethtool
+@@ -1378,7 +1378,7 @@ static int idpf_vport_open(struct idpf_vport *vport)
+ 		goto intr_deinit;
+ 	}
  
--	err = idpf_send_get_rx_ptype_msg(vport);
--	if (err)
--		goto handle_err;
--
- 	/* Once state is put into DOWN, driver is ready for dev_open */
- 	np = netdev_priv(vport->netdev);
- 	np->state = __IDPF_VPORT_DOWN;
-@@ -1561,8 +1554,6 @@ void idpf_init_task(struct work_struct *work)
- 
- 	return;
- 
--handle_err:
--	idpf_decfg_netdev(vport);
- cfg_netdev_err:
- 	idpf_vport_rel(vport);
- 	adapter->vports[index] = NULL;
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.c b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-index 2dd614df97ce..a464be376284 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-@@ -1449,6 +1449,7 @@ static int idpf_rxq_group_alloc(struct idpf_vport *vport,
- 				struct idpf_q_vec_rsrc *rsrc,
- 				u16 num_rxq)
- {
-+	struct idpf_adapter *adapter = vport->adapter;
- 	int k, err = 0;
- 	bool hs;
- 
-@@ -1539,6 +1540,7 @@ static int idpf_rxq_group_alloc(struct idpf_vport *vport,
- 
- 			if (!idpf_is_queue_model_split(rsrc->rxq_model)) {
- 				q = rx_qgrp->singleq.rxqs[j];
-+				q->rx_ptype_lkup = adapter->singleq_pt_lkup;
- 				goto setup_rxq;
- 			}
- 			q = &rx_qgrp->splitq.rxq_sets[j]->rxq;
-@@ -1549,10 +1551,10 @@ static int idpf_rxq_group_alloc(struct idpf_vport *vport,
- 				      &rx_qgrp->splitq.bufq_sets[1].refillqs[j];
- 
- 			idpf_queue_assign(HSPLIT_EN, q, hs);
-+			q->rx_ptype_lkup = adapter->splitq_pt_lkup;
- 
- setup_rxq:
- 			q->desc_count = rsrc->rxq_desc_count;
--			q->rx_ptype_lkup = vport->rx_ptype_lkup;
- 			q->netdev = vport->netdev;
- 			q->bufq_sets = rx_qgrp->splitq.bufq_sets;
- 			q->idx = (i * num_rxq) + j;
+-	err = idpf_send_enable_queues_msg(vport);
++	err = idpf_send_enable_queues_msg(vport, chunks);
+ 	if (err) {
+ 		dev_err(&adapter->pdev->dev, "Failed to enable queues for vport %u: %d\n",
+ 			vport->vport_id, err);
+@@ -1419,7 +1419,7 @@ static int idpf_vport_open(struct idpf_vport *vport)
+ disable_vport:
+ 	idpf_send_disable_vport_msg(vport);
+ disable_queues:
+-	idpf_send_disable_queues_msg(vport);
++	idpf_send_disable_queues_msg(vport, chunks);
+ unmap_queue_vectors:
+ 	idpf_send_map_unmap_queue_vector_msg(vport, false);
+ intr_deinit:
 diff --git a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
-index d7775e517e98..c201fd08dcbf 100644
+index 6d18022c5aa1..ed19ba1d0919 100644
 --- a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
 +++ b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
-@@ -2486,36 +2486,143 @@ static void idpf_finalize_ptype_lookup(struct libeth_rx_pt *ptype)
- 	libeth_rx_pt_gen_hash_type(ptype);
+@@ -1000,6 +1000,24 @@ static void idpf_init_avail_queues(struct idpf_adapter *adapter)
+ 	avail_queues->avail_complq = le16_to_cpu(caps->max_tx_complq);
  }
  
 +/**
-+ * idpf_parse_protocol_ids - parse protocol IDs for a given packet type
-+ * @ptype: packet type to parse
-+ * @rx_pt: store the parsed packet type info into
++ * idpf_convert_reg_to_queue_chunks - copy queue chunk information to the right
++ * structure
++ * @dchunks: destination chunks to store data to
++ * @schunks: source chunks to copy data from
++ * @num_chunks: number of chunks to copy
 + */
-+static void idpf_parse_protocol_ids(struct virtchnl2_ptype *ptype,
-+				    struct libeth_rx_pt *rx_pt)
++static void idpf_convert_reg_to_queue_chunks(struct virtchnl2_queue_chunk *dchunks,
++					     struct idpf_queue_id_reg_chunk *schunks,
++					     u16 num_chunks)
 +{
-+	struct idpf_ptype_state pstate = {};
-+
-+	for (u32 j = 0; j < ptype->proto_id_count; j++) {
-+		u16 id = le16_to_cpu(ptype->proto_id[j]);
-+
-+		switch (id) {
-+		case VIRTCHNL2_PROTO_HDR_GRE:
-+			if (pstate.tunnel_state == IDPF_PTYPE_TUNNEL_IP) {
-+				rx_pt->tunnel_type =
-+					LIBETH_RX_PT_TUNNEL_IP_GRENAT;
-+				pstate.tunnel_state |=
-+					IDPF_PTYPE_TUNNEL_IP_GRENAT;
-+			}
-+			break;
-+		case VIRTCHNL2_PROTO_HDR_MAC:
-+			rx_pt->outer_ip = LIBETH_RX_PT_OUTER_L2;
-+			if (pstate.tunnel_state == IDPF_TUN_IP_GRE) {
-+				rx_pt->tunnel_type =
-+					LIBETH_RX_PT_TUNNEL_IP_GRENAT_MAC;
-+				pstate.tunnel_state |=
-+					IDPF_PTYPE_TUNNEL_IP_GRENAT_MAC;
-+			}
-+			break;
-+		case VIRTCHNL2_PROTO_HDR_IPV4:
-+			idpf_fill_ptype_lookup(rx_pt, &pstate, true, false);
-+			break;
-+		case VIRTCHNL2_PROTO_HDR_IPV6:
-+			idpf_fill_ptype_lookup(rx_pt, &pstate, false, false);
-+			break;
-+		case VIRTCHNL2_PROTO_HDR_IPV4_FRAG:
-+			idpf_fill_ptype_lookup(rx_pt, &pstate, true, true);
-+			break;
-+		case VIRTCHNL2_PROTO_HDR_IPV6_FRAG:
-+			idpf_fill_ptype_lookup(rx_pt, &pstate, false, true);
-+			break;
-+		case VIRTCHNL2_PROTO_HDR_UDP:
-+			rx_pt->inner_prot = LIBETH_RX_PT_INNER_UDP;
-+			break;
-+		case VIRTCHNL2_PROTO_HDR_TCP:
-+			rx_pt->inner_prot = LIBETH_RX_PT_INNER_TCP;
-+			break;
-+		case VIRTCHNL2_PROTO_HDR_SCTP:
-+			rx_pt->inner_prot = LIBETH_RX_PT_INNER_SCTP;
-+			break;
-+		case VIRTCHNL2_PROTO_HDR_ICMP:
-+			rx_pt->inner_prot = LIBETH_RX_PT_INNER_ICMP;
-+			break;
-+		case VIRTCHNL2_PROTO_HDR_PAY:
-+			rx_pt->payload_layer = LIBETH_RX_PT_PAYLOAD_L2;
-+			break;
-+		case VIRTCHNL2_PROTO_HDR_ICMPV6:
-+		case VIRTCHNL2_PROTO_HDR_IPV6_EH:
-+		case VIRTCHNL2_PROTO_HDR_PRE_MAC:
-+		case VIRTCHNL2_PROTO_HDR_POST_MAC:
-+		case VIRTCHNL2_PROTO_HDR_ETHERTYPE:
-+		case VIRTCHNL2_PROTO_HDR_SVLAN:
-+		case VIRTCHNL2_PROTO_HDR_CVLAN:
-+		case VIRTCHNL2_PROTO_HDR_MPLS:
-+		case VIRTCHNL2_PROTO_HDR_MMPLS:
-+		case VIRTCHNL2_PROTO_HDR_PTP:
-+		case VIRTCHNL2_PROTO_HDR_CTRL:
-+		case VIRTCHNL2_PROTO_HDR_LLDP:
-+		case VIRTCHNL2_PROTO_HDR_ARP:
-+		case VIRTCHNL2_PROTO_HDR_ECP:
-+		case VIRTCHNL2_PROTO_HDR_EAPOL:
-+		case VIRTCHNL2_PROTO_HDR_PPPOD:
-+		case VIRTCHNL2_PROTO_HDR_PPPOE:
-+		case VIRTCHNL2_PROTO_HDR_IGMP:
-+		case VIRTCHNL2_PROTO_HDR_AH:
-+		case VIRTCHNL2_PROTO_HDR_ESP:
-+		case VIRTCHNL2_PROTO_HDR_IKE:
-+		case VIRTCHNL2_PROTO_HDR_NATT_KEEP:
-+		case VIRTCHNL2_PROTO_HDR_L2TPV2:
-+		case VIRTCHNL2_PROTO_HDR_L2TPV2_CONTROL:
-+		case VIRTCHNL2_PROTO_HDR_L2TPV3:
-+		case VIRTCHNL2_PROTO_HDR_GTP:
-+		case VIRTCHNL2_PROTO_HDR_GTP_EH:
-+		case VIRTCHNL2_PROTO_HDR_GTPCV2:
-+		case VIRTCHNL2_PROTO_HDR_GTPC_TEID:
-+		case VIRTCHNL2_PROTO_HDR_GTPU:
-+		case VIRTCHNL2_PROTO_HDR_GTPU_UL:
-+		case VIRTCHNL2_PROTO_HDR_GTPU_DL:
-+		case VIRTCHNL2_PROTO_HDR_ECPRI:
-+		case VIRTCHNL2_PROTO_HDR_VRRP:
-+		case VIRTCHNL2_PROTO_HDR_OSPF:
-+		case VIRTCHNL2_PROTO_HDR_TUN:
-+		case VIRTCHNL2_PROTO_HDR_NVGRE:
-+		case VIRTCHNL2_PROTO_HDR_VXLAN:
-+		case VIRTCHNL2_PROTO_HDR_VXLAN_GPE:
-+		case VIRTCHNL2_PROTO_HDR_GENEVE:
-+		case VIRTCHNL2_PROTO_HDR_NSH:
-+		case VIRTCHNL2_PROTO_HDR_QUIC:
-+		case VIRTCHNL2_PROTO_HDR_PFCP:
-+		case VIRTCHNL2_PROTO_HDR_PFCP_NODE:
-+		case VIRTCHNL2_PROTO_HDR_PFCP_SESSION:
-+		case VIRTCHNL2_PROTO_HDR_RTP:
-+		case VIRTCHNL2_PROTO_HDR_NO_PROTO:
-+			break;
-+		default:
-+			break;
-+		}
++	for (u16 i = 0; i < num_chunks; i++) {
++		dchunks[i].type = cpu_to_le32(schunks[i].type);
++		dchunks[i].start_queue_id = cpu_to_le32(schunks[i].start_queue_id);
++		dchunks[i].num_queues = cpu_to_le32(schunks[i].num_queues);
 +	}
 +}
 +
  /**
-  * idpf_send_get_rx_ptype_msg - Send virtchnl for ptype info
-- * @vport: virtual port data structure
-+ * @adapter: driver specific private structure
+  * idpf_vport_init_queue_reg_chunks - initialize queue register chunks
+  * @vport_config: persistent vport structure to store the queue register info
+@@ -1727,116 +1745,20 @@ static int idpf_send_config_rx_queues_msg(struct idpf_vport *vport)
+  * idpf_send_ena_dis_queues_msg - Send virtchnl enable or disable
+  * queues message
+  * @vport: virtual port data structure
++ * @chunks: queue register info
+  * @ena: if true enable, false disable
   *
-  * Returns 0 on success, negative on failure.
+  * Send enable or disable queues virtchnl message. Returns 0 on success,
+  * negative on failure.
   */
--int idpf_send_get_rx_ptype_msg(struct idpf_vport *vport)
-+static int idpf_send_get_rx_ptype_msg(struct idpf_adapter *adapter)
+-static int idpf_send_ena_dis_queues_msg(struct idpf_vport *vport, bool ena)
++static int idpf_send_ena_dis_queues_msg(struct idpf_vport *vport,
++					struct idpf_queue_id_reg_info *chunks,
++					bool ena)
  {
- 	struct virtchnl2_get_ptype_info *get_ptype_info __free(kfree) = NULL;
- 	struct virtchnl2_get_ptype_info *ptype_info __free(kfree) = NULL;
--	struct libeth_rx_pt *ptype_lkup __free(kfree) = NULL;
--	int max_ptype, ptypes_recvd = 0, ptype_offset;
--	struct idpf_adapter *adapter = vport->adapter;
-+	struct libeth_rx_pt *singleq_pt_lkup __free(kfree) = NULL;
-+	struct libeth_rx_pt *splitq_pt_lkup __free(kfree) = NULL;
+ 	struct virtchnl2_del_ena_dis_queues *eq __free(kfree) = NULL;
+-	struct virtchnl2_queue_chunk *qc __free(kfree) = NULL;
+-	u32 num_msgs, num_chunks, num_txq, num_rxq, num_q;
  	struct idpf_vc_xn_params xn_params = {};
-+	int ptypes_recvd = 0, ptype_offset;
-+	u32 max_ptype = IDPF_RX_MAX_PTYPE;
- 	u16 next_ptype_id = 0;
+-	struct virtchnl2_queue_chunks *qcs;
+-	u32 config_sz, chunk_sz, buf_sz;
++	u32 num_chunks, buf_sz;
  	ssize_t reply_sz;
--	bool is_splitq;
--	int i, j, k;
+-	int i, j, k = 0;
 -
--	if (vport->rx_ptype_lkup)
--		return 0;
+-	num_txq = vport->num_txq + vport->num_complq;
+-	num_rxq = vport->num_rxq + vport->num_bufq;
+-	num_q = num_txq + num_rxq;
+-	buf_sz = sizeof(struct virtchnl2_queue_chunk) * num_q;
+-	qc = kzalloc(buf_sz, GFP_KERNEL);
+-	if (!qc)
+-		return -ENOMEM;
+-
+-	for (i = 0; i < vport->num_txq_grp; i++) {
+-		struct idpf_txq_group *tx_qgrp = &vport->txq_grps[i];
+-
+-		for (j = 0; j < tx_qgrp->num_txq; j++, k++) {
+-			qc[k].type = cpu_to_le32(VIRTCHNL2_QUEUE_TYPE_TX);
+-			qc[k].start_queue_id = cpu_to_le32(tx_qgrp->txqs[j]->q_id);
+-			qc[k].num_queues = cpu_to_le32(IDPF_NUMQ_PER_CHUNK);
+-		}
+-	}
+-	if (vport->num_txq != k)
+-		return -EINVAL;
+-
+-	if (!idpf_is_queue_model_split(vport->txq_model))
+-		goto setup_rx;
+-
+-	for (i = 0; i < vport->num_txq_grp; i++, k++) {
+-		struct idpf_txq_group *tx_qgrp = &vport->txq_grps[i];
+-
+-		qc[k].type = cpu_to_le32(VIRTCHNL2_QUEUE_TYPE_TX_COMPLETION);
+-		qc[k].start_queue_id = cpu_to_le32(tx_qgrp->complq->q_id);
+-		qc[k].num_queues = cpu_to_le32(IDPF_NUMQ_PER_CHUNK);
+-	}
+-	if (vport->num_complq != (k - vport->num_txq))
+-		return -EINVAL;
+-
+-setup_rx:
+-	for (i = 0; i < vport->num_rxq_grp; i++) {
+-		struct idpf_rxq_group *rx_qgrp = &vport->rxq_grps[i];
+-
+-		if (idpf_is_queue_model_split(vport->rxq_model))
+-			num_rxq = rx_qgrp->splitq.num_rxq_sets;
+-		else
+-			num_rxq = rx_qgrp->singleq.num_rxq;
+-
+-		for (j = 0; j < num_rxq; j++, k++) {
+-			if (idpf_is_queue_model_split(vport->rxq_model)) {
+-				qc[k].start_queue_id =
+-				cpu_to_le32(rx_qgrp->splitq.rxq_sets[j]->rxq.q_id);
+-				qc[k].type =
+-				cpu_to_le32(VIRTCHNL2_QUEUE_TYPE_RX);
+-			} else {
+-				qc[k].start_queue_id =
+-				cpu_to_le32(rx_qgrp->singleq.rxqs[j]->q_id);
+-				qc[k].type =
+-				cpu_to_le32(VIRTCHNL2_QUEUE_TYPE_RX);
+-			}
+-			qc[k].num_queues = cpu_to_le32(IDPF_NUMQ_PER_CHUNK);
+-		}
+-	}
+-	if (vport->num_rxq != k - (vport->num_txq + vport->num_complq))
+-		return -EINVAL;
+-
+-	if (!idpf_is_queue_model_split(vport->rxq_model))
+-		goto send_msg;
+-
+-	for (i = 0; i < vport->num_rxq_grp; i++) {
+-		struct idpf_rxq_group *rx_qgrp = &vport->rxq_grps[i];
+-
+-		for (j = 0; j < vport->num_bufqs_per_qgrp; j++, k++) {
+-			const struct idpf_buf_queue *q;
+-
+-			q = &rx_qgrp->splitq.bufq_sets[j].bufq;
+-			qc[k].type =
+-				cpu_to_le32(VIRTCHNL2_QUEUE_TYPE_RX_BUFFER);
+-			qc[k].start_queue_id = cpu_to_le32(q->q_id);
+-			qc[k].num_queues = cpu_to_le32(IDPF_NUMQ_PER_CHUNK);
+-		}
+-	}
+-	if (vport->num_bufq != k - (vport->num_txq +
+-				    vport->num_complq +
+-				    vport->num_rxq))
+-		return -EINVAL;
+-
+-send_msg:
+-	/* Chunk up the queue info into multiple messages */
+-	config_sz = sizeof(struct virtchnl2_del_ena_dis_queues);
+-	chunk_sz = sizeof(struct virtchnl2_queue_chunk);
+-
+-	num_chunks = min_t(u32, IDPF_NUM_CHUNKS_PER_MSG(config_sz, chunk_sz),
+-			   num_q);
+-	num_msgs = DIV_ROUND_UP(num_q, num_chunks);
+-
+-	buf_sz = struct_size(eq, chunks.chunks, num_chunks);
+-	eq = kzalloc(buf_sz, GFP_KERNEL);
+-	if (!eq)
+-		return -ENOMEM;
  
--	is_splitq = idpf_is_queue_model_split(vport->dflt_qv_rsrc.rxq_model);
--	if (is_splitq)
--		max_ptype = IDPF_RX_MAX_PTYPE;
--	else
--		max_ptype = IDPF_RX_MAX_BASE_PTYPE;
-+	singleq_pt_lkup = kcalloc(IDPF_RX_MAX_BASE_PTYPE,
-+				  sizeof(*singleq_pt_lkup), GFP_KERNEL);
-+	if (!singleq_pt_lkup)
+ 	if (ena) {
+ 		xn_params.vc_op = VIRTCHNL2_OP_ENABLE_QUEUES;
+@@ -1846,27 +1768,23 @@ static int idpf_send_ena_dis_queues_msg(struct idpf_vport *vport, bool ena)
+ 		xn_params.timeout_ms = IDPF_VC_XN_MIN_TIMEOUT_MSEC;
+ 	}
+ 
+-	for (i = 0, k = 0; i < num_msgs; i++) {
+-		memset(eq, 0, buf_sz);
+-		eq->vport_id = cpu_to_le32(vport->vport_id);
+-		eq->chunks.num_chunks = cpu_to_le16(num_chunks);
+-		qcs = &eq->chunks;
+-		memcpy(qcs->chunks, &qc[k], chunk_sz * num_chunks);
++	num_chunks = chunks->num_chunks;
++	buf_sz = struct_size(eq, chunks.chunks, num_chunks);
++	eq = kzalloc(buf_sz, GFP_KERNEL);
++	if (!eq)
 +		return -ENOMEM;
  
--	ptype_lkup = kcalloc(max_ptype, sizeof(*ptype_lkup), GFP_KERNEL);
--	if (!ptype_lkup)
-+	splitq_pt_lkup = kcalloc(max_ptype, sizeof(*splitq_pt_lkup), GFP_KERNEL);
-+	if (!splitq_pt_lkup)
- 		return -ENOMEM;
+-		xn_params.send_buf.iov_base = eq;
+-		xn_params.send_buf.iov_len = buf_sz;
+-		reply_sz = idpf_vc_xn_exec(vport->adapter, &xn_params);
+-		if (reply_sz < 0)
+-			return reply_sz;
++	eq->vport_id = cpu_to_le32(vport->vport_id);
++	eq->chunks.num_chunks = cpu_to_le16(num_chunks);
  
- 	get_ptype_info = kzalloc(sizeof(*get_ptype_info), GFP_KERNEL);
-@@ -2556,154 +2663,59 @@ int idpf_send_get_rx_ptype_msg(struct idpf_vport *vport)
+-		k += num_chunks;
+-		num_q -= num_chunks;
+-		num_chunks = min(num_chunks, num_q);
+-		/* Recalculate buffer size */
+-		buf_sz = struct_size(eq, chunks.chunks, num_chunks);
+-	}
++	idpf_convert_reg_to_queue_chunks(eq->chunks.chunks, chunks->queue_chunks,
++					 num_chunks);
  
- 		ptype_offset = IDPF_RX_PTYPE_HDR_SZ;
- 
--		for (i = 0; i < le16_to_cpu(ptype_info->num_ptypes); i++) {
--			struct idpf_ptype_state pstate = { };
-+		for (u16 i = 0; i < le16_to_cpu(ptype_info->num_ptypes); i++) {
-+			struct libeth_rx_pt rx_pt = {};
- 			struct virtchnl2_ptype *ptype;
--			u16 id;
-+			u16 pt_10, pt_8;
- 
- 			ptype = (struct virtchnl2_ptype *)
- 					((u8 *)ptype_info + ptype_offset);
- 
-+			pt_10 = le16_to_cpu(ptype->ptype_id_10);
-+			pt_8 = ptype->ptype_id_8;
+-	return 0;
++	xn_params.send_buf.iov_base = eq;
++	xn_params.send_buf.iov_len = buf_sz;
++	reply_sz = idpf_vc_xn_exec(vport->adapter, &xn_params);
 +
- 			ptype_offset += IDPF_GET_PTYPE_SIZE(ptype);
- 			if (ptype_offset > IDPF_CTLQ_MAX_BUF_LEN)
- 				return -EINVAL;
- 
- 			/* 0xFFFF indicates end of ptypes */
--			if (le16_to_cpu(ptype->ptype_id_10) ==
--							IDPF_INVALID_PTYPE_ID)
-+			if (pt_10 == IDPF_INVALID_PTYPE_ID)
- 				goto out;
- 
--			if (is_splitq)
--				k = le16_to_cpu(ptype->ptype_id_10);
--			else
--				k = ptype->ptype_id_8;
--
--			for (j = 0; j < ptype->proto_id_count; j++) {
--				id = le16_to_cpu(ptype->proto_id[j]);
--				switch (id) {
--				case VIRTCHNL2_PROTO_HDR_GRE:
--					if (pstate.tunnel_state ==
--							IDPF_PTYPE_TUNNEL_IP) {
--						ptype_lkup[k].tunnel_type =
--						LIBETH_RX_PT_TUNNEL_IP_GRENAT;
--						pstate.tunnel_state |=
--						IDPF_PTYPE_TUNNEL_IP_GRENAT;
--					}
--					break;
--				case VIRTCHNL2_PROTO_HDR_MAC:
--					ptype_lkup[k].outer_ip =
--						LIBETH_RX_PT_OUTER_L2;
--					if (pstate.tunnel_state ==
--							IDPF_TUN_IP_GRE) {
--						ptype_lkup[k].tunnel_type =
--						LIBETH_RX_PT_TUNNEL_IP_GRENAT_MAC;
--						pstate.tunnel_state |=
--						IDPF_PTYPE_TUNNEL_IP_GRENAT_MAC;
--					}
--					break;
--				case VIRTCHNL2_PROTO_HDR_IPV4:
--					idpf_fill_ptype_lookup(&ptype_lkup[k],
--							       &pstate, true,
--							       false);
--					break;
--				case VIRTCHNL2_PROTO_HDR_IPV6:
--					idpf_fill_ptype_lookup(&ptype_lkup[k],
--							       &pstate, false,
--							       false);
--					break;
--				case VIRTCHNL2_PROTO_HDR_IPV4_FRAG:
--					idpf_fill_ptype_lookup(&ptype_lkup[k],
--							       &pstate, true,
--							       true);
--					break;
--				case VIRTCHNL2_PROTO_HDR_IPV6_FRAG:
--					idpf_fill_ptype_lookup(&ptype_lkup[k],
--							       &pstate, false,
--							       true);
--					break;
--				case VIRTCHNL2_PROTO_HDR_UDP:
--					ptype_lkup[k].inner_prot =
--					LIBETH_RX_PT_INNER_UDP;
--					break;
--				case VIRTCHNL2_PROTO_HDR_TCP:
--					ptype_lkup[k].inner_prot =
--					LIBETH_RX_PT_INNER_TCP;
--					break;
--				case VIRTCHNL2_PROTO_HDR_SCTP:
--					ptype_lkup[k].inner_prot =
--					LIBETH_RX_PT_INNER_SCTP;
--					break;
--				case VIRTCHNL2_PROTO_HDR_ICMP:
--					ptype_lkup[k].inner_prot =
--					LIBETH_RX_PT_INNER_ICMP;
--					break;
--				case VIRTCHNL2_PROTO_HDR_PAY:
--					ptype_lkup[k].payload_layer =
--						LIBETH_RX_PT_PAYLOAD_L2;
--					break;
--				case VIRTCHNL2_PROTO_HDR_ICMPV6:
--				case VIRTCHNL2_PROTO_HDR_IPV6_EH:
--				case VIRTCHNL2_PROTO_HDR_PRE_MAC:
--				case VIRTCHNL2_PROTO_HDR_POST_MAC:
--				case VIRTCHNL2_PROTO_HDR_ETHERTYPE:
--				case VIRTCHNL2_PROTO_HDR_SVLAN:
--				case VIRTCHNL2_PROTO_HDR_CVLAN:
--				case VIRTCHNL2_PROTO_HDR_MPLS:
--				case VIRTCHNL2_PROTO_HDR_MMPLS:
--				case VIRTCHNL2_PROTO_HDR_PTP:
--				case VIRTCHNL2_PROTO_HDR_CTRL:
--				case VIRTCHNL2_PROTO_HDR_LLDP:
--				case VIRTCHNL2_PROTO_HDR_ARP:
--				case VIRTCHNL2_PROTO_HDR_ECP:
--				case VIRTCHNL2_PROTO_HDR_EAPOL:
--				case VIRTCHNL2_PROTO_HDR_PPPOD:
--				case VIRTCHNL2_PROTO_HDR_PPPOE:
--				case VIRTCHNL2_PROTO_HDR_IGMP:
--				case VIRTCHNL2_PROTO_HDR_AH:
--				case VIRTCHNL2_PROTO_HDR_ESP:
--				case VIRTCHNL2_PROTO_HDR_IKE:
--				case VIRTCHNL2_PROTO_HDR_NATT_KEEP:
--				case VIRTCHNL2_PROTO_HDR_L2TPV2:
--				case VIRTCHNL2_PROTO_HDR_L2TPV2_CONTROL:
--				case VIRTCHNL2_PROTO_HDR_L2TPV3:
--				case VIRTCHNL2_PROTO_HDR_GTP:
--				case VIRTCHNL2_PROTO_HDR_GTP_EH:
--				case VIRTCHNL2_PROTO_HDR_GTPCV2:
--				case VIRTCHNL2_PROTO_HDR_GTPC_TEID:
--				case VIRTCHNL2_PROTO_HDR_GTPU:
--				case VIRTCHNL2_PROTO_HDR_GTPU_UL:
--				case VIRTCHNL2_PROTO_HDR_GTPU_DL:
--				case VIRTCHNL2_PROTO_HDR_ECPRI:
--				case VIRTCHNL2_PROTO_HDR_VRRP:
--				case VIRTCHNL2_PROTO_HDR_OSPF:
--				case VIRTCHNL2_PROTO_HDR_TUN:
--				case VIRTCHNL2_PROTO_HDR_NVGRE:
--				case VIRTCHNL2_PROTO_HDR_VXLAN:
--				case VIRTCHNL2_PROTO_HDR_VXLAN_GPE:
--				case VIRTCHNL2_PROTO_HDR_GENEVE:
--				case VIRTCHNL2_PROTO_HDR_NSH:
--				case VIRTCHNL2_PROTO_HDR_QUIC:
--				case VIRTCHNL2_PROTO_HDR_PFCP:
--				case VIRTCHNL2_PROTO_HDR_PFCP_NODE:
--				case VIRTCHNL2_PROTO_HDR_PFCP_SESSION:
--				case VIRTCHNL2_PROTO_HDR_RTP:
--				case VIRTCHNL2_PROTO_HDR_NO_PROTO:
--					break;
--				default:
--					break;
--				}
--			}
-+			idpf_parse_protocol_ids(ptype, &rx_pt);
-+			idpf_finalize_ptype_lookup(&rx_pt);
- 
--			idpf_finalize_ptype_lookup(&ptype_lkup[k]);
-+			/* For a given protocol ID stack, the ptype value might
-+			 * vary between ptype_id_10 and ptype_id_8. So store
-+			 * them separately for splitq and singleq. Also skip
-+			 * the repeated ptypes in case of singleq.
-+			 */
-+			splitq_pt_lkup[pt_10] = rx_pt;
-+			if (!singleq_pt_lkup[pt_8].outer_ip)
-+				singleq_pt_lkup[pt_8] = rx_pt;
- 		}
- 	}
- 
- out:
--	vport->rx_ptype_lkup = no_free_ptr(ptype_lkup);
-+	adapter->splitq_pt_lkup = no_free_ptr(splitq_pt_lkup);
-+	adapter->singleq_pt_lkup = no_free_ptr(singleq_pt_lkup);
- 
- 	return 0;
++	return reply_sz < 0 ? reply_sz : 0;
  }
  
-+/**
-+ * idpf_rel_rx_pt_lkup - release RX ptype lookup table
-+ * @adapter: adapter pointer to get the lookup table
-+ */
-+static void idpf_rel_rx_pt_lkup(struct idpf_adapter *adapter)
-+{
-+	kfree(adapter->splitq_pt_lkup);
-+	adapter->splitq_pt_lkup = NULL;
-+
-+	kfree(adapter->singleq_pt_lkup);
-+	adapter->singleq_pt_lkup = NULL;
-+}
-+
  /**
-  * idpf_send_ena_dis_loopback_msg - Send virtchnl enable/disable loopback
-  *				    message
-@@ -2977,6 +2989,13 @@ int idpf_vc_core_init(struct idpf_adapter *adapter)
- 		goto err_intr_req;
- 	}
+@@ -1999,27 +1917,31 @@ int idpf_send_map_unmap_queue_vector_msg(struct idpf_vport *vport, bool map)
+ /**
+  * idpf_send_enable_queues_msg - send enable queues virtchnl message
+  * @vport: Virtual port private data structure
++ * @chunks: queue ids received over mailbox
+  *
+  * Will send enable queues virtchnl message.  Returns 0 on success, negative on
+  * failure.
+  */
+-int idpf_send_enable_queues_msg(struct idpf_vport *vport)
++int idpf_send_enable_queues_msg(struct idpf_vport *vport,
++				struct idpf_queue_id_reg_info *chunks)
+ {
+-	return idpf_send_ena_dis_queues_msg(vport, true);
++	return idpf_send_ena_dis_queues_msg(vport, chunks, true);
+ }
  
-+	err = idpf_send_get_rx_ptype_msg(adapter);
-+	if (err) {
-+		dev_err(&adapter->pdev->dev, "failed to get RX ptypes: %d\n",
-+			err);
-+		goto intr_rel;
-+	}
-+
- 	idpf_init_avail_queues(adapter);
+ /**
+  * idpf_send_disable_queues_msg - send disable queues virtchnl message
+  * @vport: Virtual port private data structure
++ * @chunks: queue ids received over mailbox
+  *
+  * Will send disable queues virtchnl message.  Returns 0 on success, negative
+  * on failure.
+  */
+-int idpf_send_disable_queues_msg(struct idpf_vport *vport)
++int idpf_send_disable_queues_msg(struct idpf_vport *vport,
++				 struct idpf_queue_id_reg_info *chunks)
+ {
+ 	int err, i;
  
- 	/* Skew the delay for init tasks for each function based on fn number
-@@ -2989,6 +3008,8 @@ int idpf_vc_core_init(struct idpf_adapter *adapter)
+-	err = idpf_send_ena_dis_queues_msg(vport, false);
++	err = idpf_send_ena_dis_queues_msg(vport, chunks, false);
+ 	if (err)
+ 		return err;
  
- 	return 0;
+@@ -2038,26 +1960,6 @@ int idpf_send_disable_queues_msg(struct idpf_vport *vport)
+ 	return idpf_wait_for_marker_event(vport);
+ }
  
-+intr_rel:
-+	idpf_intr_rel(adapter);
- err_intr_req:
- 	cancel_delayed_work_sync(&adapter->serv_task);
- 	cancel_delayed_work_sync(&adapter->mbx_task);
-@@ -3040,6 +3061,7 @@ void idpf_vc_core_deinit(struct idpf_adapter *adapter)
- 		idpf_vc_xn_shutdown(adapter->vcxn_mngr);
- 
- 	idpf_deinit_task(adapter);
-+	idpf_rel_rx_pt_lkup(adapter);
- 	idpf_intr_rel(adapter);
- 
- 	if (remove_in_prog)
+-/**
+- * idpf_convert_reg_to_queue_chunks - Copy queue chunk information to the right
+- * structure
+- * @dchunks: Destination chunks to store data to
+- * @schunks: Source chunks to copy data from
+- * @num_chunks: number of chunks to copy
+- */
+-static void idpf_convert_reg_to_queue_chunks(struct virtchnl2_queue_chunk *dchunks,
+-					     struct idpf_queue_id_reg_chunk *schunks,
+-					     u16 num_chunks)
+-{
+-	u16 i;
+-
+-	for (i = 0; i < num_chunks; i++) {
+-		dchunks[i].type = cpu_to_le32(schunks[i].type);
+-		dchunks[i].start_queue_id = cpu_to_le32(schunks[i].start_queue_id);
+-		dchunks[i].num_queues = cpu_to_le32(schunks[i].num_queues);
+-	}
+-}
+-
+ /**
+  * idpf_send_delete_queues_msg - send delete queues virtchnl message
+  * @vport: virtual port private data structure
 diff --git a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.h b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.h
-index 1158faeb5701..169b06800878 100644
+index 3aee08c1352d..30436e7492a8 100644
 --- a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.h
 +++ b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.h
-@@ -78,7 +78,6 @@ int idpf_set_promiscuous(struct idpf_adapter *adapter,
- 			 struct idpf_vport_user_config_data *config_data,
- 			 u32 vport_id);
- int idpf_check_supported_desc_ids(struct idpf_vport *vport);
--int idpf_send_get_rx_ptype_msg(struct idpf_vport *vport);
- int idpf_send_ena_dis_loopback_msg(struct idpf_adapter *adapter, u32 vport_id,
- 				   bool loopback_ena);
- int idpf_send_get_stats_msg(struct idpf_netdev_priv *np,
+@@ -44,8 +44,10 @@ int idpf_send_add_queues_msg(const struct idpf_vport *vport, u16 num_tx_q,
+ 			     u16 num_complq, u16 num_rx_q, u16 num_rx_bufq);
+ int idpf_send_delete_queues_msg(struct idpf_vport *vport,
+ 				struct idpf_queue_id_reg_info *chunks);
+-int idpf_send_enable_queues_msg(struct idpf_vport *vport);
+-int idpf_send_disable_queues_msg(struct idpf_vport *vport);
++int idpf_send_enable_queues_msg(struct idpf_vport *vport,
++				struct idpf_queue_id_reg_info *chunks);
++int idpf_send_disable_queues_msg(struct idpf_vport *vport,
++				 struct idpf_queue_id_reg_info *chunks);
+ int idpf_send_config_queues_msg(struct idpf_vport *vport);
+ 
+ int idpf_vport_alloc_vec_indexes(struct idpf_vport *vport);
 -- 
 2.43.0
 
