@@ -1,77 +1,77 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9E5A9C369BD
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 16 Apr 2025 02:16:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 82E4DC369B9
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 16 Apr 2025 02:16:18 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 2CB4F60B48;
-	Wed, 16 Apr 2025 02:16:16 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id meXSuyBGZpSU; Wed, 16 Apr 2025 02:16:15 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 978DE608D1
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1744769775;
-	bh=KtxkmrzNNrccQKjtuodEwzpakOgbPVStTZnCzGC/u3E=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=EOFmRhHEToHM7sPrP3XJfCCXTXZNi2WIl0Ko1eUUAF/zfUJhPf5HILRSHczC5mY/q
-	 yody3+nLWbjCtqeTg3BKLnxfcfS7rlYqDcbzbbU5Bk+L5INgNOitaE4vSVzWeRy8fo
-	 KJBJMGu8eff/QMBCwuUx6V0f3i37bQJWTPlu/B3+J8H9WvgACgMb6sjwZPJijM4oJT
-	 KvPyLzJwraqtuSXfGO0dcCtUMkqODCG1HYpLr+ztcdA09SEsWIUrqjDxmRbwgos4AW
-	 /CwAWWQPoqs2e7u5rPTtACiuWXQrESohfc0U2FfAiypM3zFLxzl0YeOLvHL/j0HpW2
-	 4KxOkViDy/uJA==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 978DE608D1;
-	Wed, 16 Apr 2025 02:16:15 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id 19EA6435
- for <intel-wired-lan@lists.osuosl.org>; Wed, 16 Apr 2025 02:16:14 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 972DE83EC8
- for <intel-wired-lan@lists.osuosl.org>; Wed, 16 Apr 2025 02:16:13 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 23E1E83ED7;
+	Wed, 16 Apr 2025 02:16:18 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 4dg05BjWYwXH for <intel-wired-lan@lists.osuosl.org>;
+ id Mjrjn3h8xMCX; Wed, 16 Apr 2025 02:16:17 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 6107F83BB5
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1744769777;
+	bh=RVTjPWuanuX9QPoDFpZw0Mx8GDNjeUct7TD9jWFrMzw=;
+	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=inKPLdrULOug1AI/R56FMKptjGS5D5J4/6HPQIaat29zFi3EGZ/r+CFALiJtzEniU
+	 udHXExwR57Vcxwb+n2H3GUlsFrIIllCtjY5tAH8DdU4iWPVb27KlALEUNlXNGCTIiW
+	 3P5f1MKyOmIVetebUWKV7P8yGJp8+B0bYLBXA46Ri0HUcnJL3k0wJ6eMjo2vczyk7r
+	 3XPhLHmuksrFE+EBS69jgCQ66DKL4zL8Wdhl3Ol5HasRg8fVHwU/fhbtjuM8XNEHaY
+	 TDmnXhmVxoj8gyiOVTlY1RUbRjvLVYw7cZobMgU42zbbF+GBq9qvJXe6Q9XMeMrpRW
+	 NhKnojASEal1w==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp1.osuosl.org (Postfix) with ESMTP id 6107F83BB5;
+	Wed, 16 Apr 2025 02:16:17 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 13538435
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 16 Apr 2025 02:16:15 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp1.osuosl.org (Postfix) with ESMTP id 2F41E83EC8
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 16 Apr 2025 02:16:14 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id X6faPOBu_7br for <intel-wired-lan@lists.osuosl.org>;
  Wed, 16 Apr 2025 02:16:13 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.12;
  helo=mgamail.intel.com; envelope-from=tatyana.e.nikolova@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org C4BA083B57
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C4BA083B57
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 745EB83EC5
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 745EB83EC5
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.12])
- by smtp1.osuosl.org (Postfix) with ESMTPS id C4BA083B57
- for <intel-wired-lan@lists.osuosl.org>; Wed, 16 Apr 2025 02:16:12 +0000 (UTC)
-X-CSE-ConnectionGUID: MynUpt5VT5Kyvfp8vtxIOw==
-X-CSE-MsgGUID: CW91M4yXTZuFouebfliMnQ==
-X-IronPort-AV: E=McAfee;i="6700,10204,11404"; a="50125556"
-X-IronPort-AV: E=Sophos;i="6.15,214,1739865600"; d="scan'208";a="50125556"
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 745EB83EC5
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 16 Apr 2025 02:16:13 +0000 (UTC)
+X-CSE-ConnectionGUID: 8/ISR0sIRYKN7mnQ02+pfw==
+X-CSE-MsgGUID: fiGvC0eBRWqFh/r70PI3zQ==
+X-IronPort-AV: E=McAfee;i="6700,10204,11404"; a="50125564"
+X-IronPort-AV: E=Sophos;i="6.15,214,1739865600"; d="scan'208";a="50125564"
 Received: from fmviesa008.fm.intel.com ([10.60.135.148])
  by fmvoesa106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 15 Apr 2025 19:16:12 -0700
-X-CSE-ConnectionGUID: 9eSx1RFYQ7WwEyFpYPCNnQ==
-X-CSE-MsgGUID: NQUPF83FT/K7KSTZ1San8Q==
+ 15 Apr 2025 19:16:13 -0700
+X-CSE-ConnectionGUID: ta8xRsepS8+ybMA18p2GKg==
+X-CSE-MsgGUID: Gz1cvMVzSwyfS92iPYvYQw==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.15,214,1739865600"; d="scan'208";a="130605790"
+X-IronPort-AV: E=Sophos;i="6.15,214,1739865600"; d="scan'208";a="130605797"
 Received: from bnkannan-mobl1.amr.corp.intel.com (HELO
  soc-PF51RAGT.clients.intel.com) ([10.246.114.218])
  by fmviesa008-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 15 Apr 2025 19:16:11 -0700
+ 15 Apr 2025 19:16:12 -0700
 From: Tatyana Nikolova <tatyana.e.nikolova@intel.com>
 To: jgg@nvidia.com,
 	leon@kernel.org,
 	intel-wired-lan@lists.osuosl.org
 Cc: linux-rdma@vger.kernel.org,
 	netdev@vger.kernel.org
-Date: Tue, 15 Apr 2025 21:15:45 -0500
-Message-ID: <20250416021549.606-2-tatyana.e.nikolova@intel.com>
+Date: Tue, 15 Apr 2025 21:15:47 -0500
+Message-ID: <20250416021549.606-4-tatyana.e.nikolova@intel.com>
 X-Mailer: git-send-email 2.45.1
 In-Reply-To: <20250416021549.606-1-tatyana.e.nikolova@intel.com>
 References: <20250416021549.606-1-tatyana.e.nikolova@intel.com>
@@ -82,22 +82,22 @@ X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  t=1744769773; x=1776305773;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=8BvrqoyWkuGLWTBq31HsE3fGTiSi0Tns1abueBYwNvM=;
- b=ltSuOloW+tMu1xC9WfIfqzL7Dhjo442CRSOZPkIMECqCQ5cAsfkI78rU
- Q8008w8HCzohWzj1FUddxd9vxHhJQZS5hjKmLx33okJ6lPWWHTqzmrir3
- KU2ZL1tUhkNrzvfgugNByk5HP/r6X7k5wXQ3abbCdvHdWWqI0v6iEOsah
- 1D7SfCq7QDIVXexldmVZhptCSCDFSsdSfJ8shwp9qcVeFweSYpPeOBEPS
- TWyYI10zzcJmQrKqtVD8j65Lux7mkFEcINOLvgChveYCMnpMieJ/I1cwX
- KzX3lP0LCewl+W4XfwaZ5oClKB6tIi+PyNxjSzUgPc89vwpkpXFAihtQI
+ bh=Eugl+iwPYiUbcjjg4YiJWs7t0iy+ISFbBlQ++IkUipA=;
+ b=TudAqUQHQjGxugo0YWB4TaMZ9HQCTeFesqv4G7ZQGP4OItHIn6upoG5M
+ K1q8gsef6AejiJ/0WbGD4Q+8OTvtTsc5SjhBrwNu5xz4d+3i2VFloiZQ6
+ aXzYTUf6eFZEVBV9uOzvRKBuDXMsXNa7b0D+iMvzxqExxmpkarf4qhscA
+ HYBWfyT2lSLsvxXKrfQP7LJhGFhFZeFtwfvKCZt9M3sq/M0eYOc53M4jW
+ Mb1NSXmv0Vpfqeq7p5guoRT+bRfttZD/X27h9go8IZ/+vP+dpH49gpEv1
+ E3TXCyqLzvuqHm/FHHVxk+O5VakmT8ec5LnH4Z5EFSlxqH2cEuaHVlou4
  Q==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=ltSuOloW
-Subject: [Intel-wired-lan] [iwl-next v5 1/5] iidc/ice/irdma: Rename IDC
- header file
+ header.a=rsa-sha256 header.s=Intel header.b=TudAqUQH
+Subject: [Intel-wired-lan] [iwl-next v5 3/5] iidc/ice/irdma: Break iidc.h
+ into two headers
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -115,125 +115,91 @@ Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 From: Dave Ertman <david.m.ertman@intel.com>
 
-To prepare for the IDC upgrade to support different CORE
-PCI drivers, rename header file from iidc.h to iidc_rdma.h
-since this files functionality is specifically for RDMA support.
+In preparation of supporting more than a single core PCI driver
+for RDMA, break the iidc_rdma.h header file into two more focused
+headers.
 
-Use net/dscp.h include in irdma osdep.h and DSCP_MAX type.h,
-instead of iidc header and define.
+Only the elements universal to all Intel drivers will remain in
+the generic iidc_rdma.h header. Move the ice specific information
+to an ice specific header file named iidc_rdma_ice.h.
 
 Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
 Signed-off-by: Tatyana Nikolova <tatyana.e.nikolova@intel.com>
 ---
- MAINTAINERS                                     | 2 +-
- drivers/infiniband/hw/irdma/main.h              | 2 +-
- drivers/infiniband/hw/irdma/osdep.h             | 2 +-
- drivers/infiniband/hw/irdma/type.h              | 4 ++--
- drivers/net/ethernet/intel/ice/ice_idc_int.h    | 2 +-
- include/linux/net/intel/{iidc.h => iidc_rdma.h} | 6 +++---
- 6 files changed, 9 insertions(+), 9 deletions(-)
- rename include/linux/net/intel/{iidc.h => iidc_rdma.h} (97%)
+ drivers/net/ethernet/intel/ice/ice_idc_int.h |  1 +
+ include/linux/net/intel/iidc_rdma.h          | 14 +-------------
+ include/linux/net/intel/iidc_rdma_ice.h      | 19 +++++++++++++++++++
+ 3 files changed, 21 insertions(+), 13 deletions(-)
+ create mode 100644 include/linux/net/intel/iidc_rdma_ice.h
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 96b827049501..136309587791 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -11890,7 +11890,7 @@ F:	Documentation/networking/device_drivers/ethernet/intel/
- F:	drivers/net/ethernet/intel/
- F:	drivers/net/ethernet/intel/*/
- F:	include/linux/avf/virtchnl.h
--F:	include/linux/net/intel/iidc.h
-+F:	include/linux/net/intel/*/
- 
- INTEL ETHERNET PROTOCOL DRIVER FOR RDMA
- M:	Mustafa Ismail <mustafa.ismail@intel.com>
-diff --git a/drivers/infiniband/hw/irdma/main.h b/drivers/infiniband/hw/irdma/main.h
-index bb0b6494ccb2..e8083b0c8cb2 100644
---- a/drivers/infiniband/hw/irdma/main.h
-+++ b/drivers/infiniband/hw/irdma/main.h
-@@ -29,7 +29,7 @@
- #include <linux/io-64-nonatomic-lo-hi.h>
- #endif
- #include <linux/auxiliary_bus.h>
--#include <linux/net/intel/iidc.h>
-+#include <linux/net/intel/iidc_rdma.h>
- #include <rdma/ib_smi.h>
- #include <rdma/ib_verbs.h>
- #include <rdma/ib_pack.h>
-diff --git a/drivers/infiniband/hw/irdma/osdep.h b/drivers/infiniband/hw/irdma/osdep.h
-index 4b4f78288d12..3f73ceacccb6 100644
---- a/drivers/infiniband/hw/irdma/osdep.h
-+++ b/drivers/infiniband/hw/irdma/osdep.h
-@@ -5,8 +5,8 @@
- 
- #include <linux/pci.h>
- #include <linux/bitfield.h>
--#include <linux/net/intel/iidc.h>
- #include <rdma/ib_verbs.h>
-+#include <net/dscp.h>
- 
- #define STATS_TIMER_DELAY	60000
- 
-diff --git a/drivers/infiniband/hw/irdma/type.h b/drivers/infiniband/hw/irdma/type.h
-index 59b34afa867b..527c6da2c1ac 100644
---- a/drivers/infiniband/hw/irdma/type.h
-+++ b/drivers/infiniband/hw/irdma/type.h
-@@ -567,7 +567,7 @@ struct irdma_sc_vsi {
- 	u8 qos_rel_bw;
- 	u8 qos_prio_type;
- 	u8 stats_idx;
--	u8 dscp_map[IIDC_MAX_DSCP_MAPPING];
-+	u8 dscp_map[DSCP_MAX];
- 	struct irdma_qos qos[IRDMA_MAX_USER_PRIORITY];
- 	u64 hw_stats_regs[IRDMA_HW_STAT_INDEX_MAX_GEN_1];
- 	bool dscp_mode:1;
-@@ -695,7 +695,7 @@ struct irdma_l2params {
- 	u16 qs_handle_list[IRDMA_MAX_USER_PRIORITY];
- 	u16 mtu;
- 	u8 up2tc[IRDMA_MAX_USER_PRIORITY];
--	u8 dscp_map[IIDC_MAX_DSCP_MAPPING];
-+	u8 dscp_map[DSCP_MAX];
- 	u8 num_tc;
- 	u8 vsi_rel_bw;
- 	u8 vsi_prio_type;
 diff --git a/drivers/net/ethernet/intel/ice/ice_idc_int.h b/drivers/net/ethernet/intel/ice/ice_idc_int.h
-index 4b0c86757df9..b0c504a6408e 100644
+index 03cd7d8d1aaa..17dbfcfb6a2a 100644
 --- a/drivers/net/ethernet/intel/ice/ice_idc_int.h
 +++ b/drivers/net/ethernet/intel/ice/ice_idc_int.h
-@@ -4,7 +4,7 @@
- #ifndef _ICE_IDC_INT_H_
+@@ -5,6 +5,7 @@
  #define _ICE_IDC_INT_H_
  
--#include <linux/net/intel/iidc.h>
-+#include <linux/net/intel/iidc_rdma.h>
+ #include <linux/net/intel/iidc_rdma.h>
++#include <linux/net/intel/iidc_rdma_ice.h>
  
  struct ice_pf;
  
-diff --git a/include/linux/net/intel/iidc.h b/include/linux/net/intel/iidc_rdma.h
-similarity index 97%
-rename from include/linux/net/intel/iidc.h
-rename to include/linux/net/intel/iidc_rdma.h
-index 13274c3def66..0cd75404e459 100644
---- a/include/linux/net/intel/iidc.h
+diff --git a/include/linux/net/intel/iidc_rdma.h b/include/linux/net/intel/iidc_rdma.h
+index 2b24a9912fa0..1e8136395154 100644
+--- a/include/linux/net/intel/iidc_rdma.h
 +++ b/include/linux/net/intel/iidc_rdma.h
-@@ -1,8 +1,8 @@
+@@ -1,5 +1,5 @@
  /* SPDX-License-Identifier: GPL-2.0 */
- /* Copyright (C) 2021, Intel Corporation. */
+-/* Copyright (C) 2021, Intel Corporation. */
++/* Copyright (C) 2021-2025, Intel Corporation. */
  
--#ifndef _IIDC_H_
--#define _IIDC_H_
-+#ifndef _IIDC_RDMA_H_
-+#define _IIDC_RDMA_H_
- 
- #include <linux/auxiliary_bus.h>
- #include <linux/dcbnl.h>
-@@ -106,4 +106,4 @@ struct iidc_auxiliary_drv {
- 	void (*event_handler)(struct ice_pf *pf, struct iidc_event *event);
+ #ifndef _IIDC_RDMA_H_
+ #define _IIDC_RDMA_H_
+@@ -71,18 +71,6 @@ struct iidc_rdma_event {
+ 	u32 reg;
  };
  
--#endif /* _IIDC_H_*/
-+#endif /* _IIDC_RDMA_H_*/
+-struct ice_pf;
+-
+-int ice_add_rdma_qset(struct ice_pf *pf, struct iidc_rdma_qset_params *qset);
+-int ice_del_rdma_qset(struct ice_pf *pf, struct iidc_rdma_qset_params *qset);
+-int ice_rdma_request_reset(struct ice_pf *pf,
+-			   enum iidc_rdma_reset_type reset_type);
+-int ice_rdma_update_vsi_filter(struct ice_pf *pf, u16 vsi_id, bool enable);
+-void ice_get_qos_params(struct ice_pf *pf,
+-			struct iidc_rdma_qos_params *qos);
+-int ice_alloc_rdma_qvector(struct ice_pf *pf, struct msix_entry *entry);
+-void ice_free_rdma_qvector(struct ice_pf *pf, struct msix_entry *entry);
+-
+ /* Structure representing auxiliary driver tailored information about the core
+  * PCI dev, each auxiliary driver using the IIDC interface will have an
+  * instance of this struct dedicated to it.
+diff --git a/include/linux/net/intel/iidc_rdma_ice.h b/include/linux/net/intel/iidc_rdma_ice.h
+new file mode 100644
+index 000000000000..78d10003d776
+--- /dev/null
++++ b/include/linux/net/intel/iidc_rdma_ice.h
+@@ -0,0 +1,19 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/* Copyright (C) 2021-2025, Intel Corporation. */
++
++#ifndef _IIDC_RDMA_ICE_H_
++#define _IIDC_RDMA_ICE_H_
++
++struct ice_pf;
++
++int ice_add_rdma_qset(struct ice_pf *pf, struct iidc_rdma_qset_params *qset);
++int ice_del_rdma_qset(struct ice_pf *pf, struct iidc_rdma_qset_params *qset);
++int ice_rdma_request_reset(struct ice_pf *pf,
++			   enum iidc_rdma_reset_type reset_type);
++int ice_rdma_update_vsi_filter(struct ice_pf *pf, u16 vsi_id, bool enable);
++void ice_get_qos_params(struct ice_pf *pf,
++			struct iidc_rdma_qos_params *qos);
++int ice_alloc_rdma_qvector(struct ice_pf *pf, struct msix_entry *entry);
++void ice_free_rdma_qvector(struct ice_pf *pf, struct msix_entry *entry);
++
++#endif /* _IIDC_RDMA_ICE_H_*/
 -- 
 2.37.3
 
