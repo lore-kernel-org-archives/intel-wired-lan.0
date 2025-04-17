@@ -1,64 +1,62 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 91C06C369B2
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 17 Apr 2025 13:24:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2E8DBC369C9
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 17 Apr 2025 13:24:36 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 4837A82BEB;
-	Thu, 17 Apr 2025 13:24:34 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id D0D996FCAD;
+	Thu, 17 Apr 2025 13:24:35 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 3rRC16fpilxq; Thu, 17 Apr 2025 13:24:32 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 38s0lHPmNxbJ; Thu, 17 Apr 2025 13:24:35 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B33EB81F41
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 51ABC6FCAA
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1744896272;
-	bh=t4LXHHM9pIIYS/FncXPzORV/LCy/Y/iy+i/1qQY0jvI=;
-	h=From:Date:To:Cc:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=90+3r6atPUpc7wBrrzhTk1gIcZ/vslSVU+N/d0/B85RvfLBHPNTRcHBhVYEBTKNDE
-	 blujXfJPtIyrG1yZRsbfdfwMYrTckeMifSx0ZirTwwl7ZPZKC0H/tXt4gEo4SDRo3W
-	 eKL08shE4SUZYxGlMwXvO3o0cHuqz43Y7jrhNh0Nxk1Ty02PT8nGLynxzPyvdHLcOc
-	 QKfq5RXOIj5YL+dOyoZNSWgXSppTfKMtoTvl5VKZpvoyPIs6IN9Yeo9K8Wwngb1tTL
-	 NakFBgolnya79P6nrTKJkMMTVUgNI562pEIyLF8HZ60jLMGCXa3Ww6nG6ABgpAK6mk
-	 7GzEeR3hF+JnQ==
+	s=default; t=1744896275;
+	bh=7qeA/MlLg5TVbU0397qorNcHIJah7W1zDQiEVoWGxtM=;
+	h=From:Date:References:In-Reply-To:To:Cc:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=4RGr+BZe2jPbopA7Ox6C9Rn5qfP9BWVVru1zuD7OIA9icDvM9Lf5z1wdGvkLJ9pY0
+	 ZYH1HSwmD0K6ZDhZoP/p16h8P67NGcBhnB3GcMEDWiSZMS2Ym7bdTkpoO5JBkoFgeq
+	 4fwsDhMumUZAmWeXTrMvxY7iP4pJ7/OL84gYiiPtJ5XC9OdyGRnrply85hGol5LyxA
+	 lqEQibre2VQQQIkB1jhD2Ifen2Puixf2JcSSATT2CHaVBSUz/voedR4hRemexZYrlN
+	 fqqFmkGH6bfkU6XulaOjsWUXznHPfocDj+vx+FGvU3cHQJzEMYZKd+dAX+ijDkPfx8
+	 BGdYAY+7fwYJw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id B33EB81F41;
-	Thu, 17 Apr 2025 13:24:32 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with UTF8SMTP id 9F4B81F3
- for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Apr 2025 13:24:31 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 51ABC6FCAA;
+	Thu, 17 Apr 2025 13:24:35 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with UTF8SMTP id 1A5B91F3
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Apr 2025 13:24:32 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with UTF8SMTP id 909476FCA9
+ by smtp3.osuosl.org (Postfix) with UTF8SMTP id B624D6FC63
  for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Apr 2025 13:24:31 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024)
- with UTF8SMTP id Ye5tbyeHknYN for <intel-wired-lan@lists.osuosl.org>;
- Thu, 17 Apr 2025 13:24:30 +0000 (UTC)
+ with UTF8SMTP id mDNlbGNCN0ZM for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 17 Apr 2025 13:24:31 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=193.142.43.55;
  helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org AC2226FCAA
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org AC2226FCAA
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 000986FCAB
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 000986FCAB
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
- by smtp3.osuosl.org (Postfix) with UTF8SMTPS id AC2226FCAA
+ by smtp3.osuosl.org (Postfix) with UTF8SMTPS id 000986FCAB
  for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Apr 2025 13:24:30 +0000 (UTC)
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
-Date: Thu, 17 Apr 2025 15:24:00 +0200
-Message-Id: <20250417-restricted-pointers-net-v2-0-94cf7ef8e6ae@linutronix.de>
+Date: Thu, 17 Apr 2025 15:24:02 +0200
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-X-B4-Tracking: v=1; b=H4sIAPAAAWgC/3WNwQrCMBBEf6Xs2UgSWxFP/of0ULJbuyCbsoklU
- vrvxnr2OLyZNyskUqYE12YFpYUTR6nBHxoI0yAPMow1g7e+s61tjVLKyiETmjmyZNJkhLIZLgE
- R7Yk6dFDXs9LIZTff4VsQKhn6SiZOOep7v1zczn9299++OGON88NoA7Xn+nR7sryyRuFyRIJ+2
- 7YPY+cLuMwAAAA=
-X-Change-ID: 20250404-restricted-pointers-net-a8cddd03e5d1
+Message-Id: <20250417-restricted-pointers-net-v2-2-94cf7ef8e6ae@linutronix.de>
+References: <20250417-restricted-pointers-net-v2-0-94cf7ef8e6ae@linutronix.de>
+In-Reply-To: <20250417-restricted-pointers-net-v2-0-94cf7ef8e6ae@linutronix.de>
 To: Tony Nguyen <anthony.l.nguyen@intel.com>, 
  Przemek Kitszel <przemyslaw.kitszel@intel.com>, 
  Andrew Lunn <andrew+netdev@lunn.ch>, 
@@ -70,42 +68,44 @@ Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
  linux-kernel@vger.kernel.org, linux-rdma@vger.kernel.org, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>, 
  Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1744896267; l=1475;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1744896267; l=1753;
  i=thomas.weissschuh@linutronix.de; s=20240209; h=from:subject:message-id;
- bh=q5DT2URR0iIEIgICy/7GxHM8nUG2+FDbrbiNStsY9Yw=;
- b=X08p2lFA0ynS1mcdfvjxdH+ZL1KjMvP/BrAphh8RvW1oCW8Oz+ExDLOL0sHQ77+OvLraMX/lt
- /ey18iOGONmDpGlQAtBTi6GVmbSjXx7x12s4a/rI1lTDInlhQJZgtP3
+ bh=1O27NFYPZ19IgzsREQln6IV5+vcG07b7Uu4J0pPD9hY=;
+ b=WC7ZK4Hrm/09jUGuveXUDEo+yg1Ik/GZ/ozPjzk7bqcG8rwjI0WtWwjvGegAgrwKQQVmE6mxP
+ tIYIHp8vJCrDD7rFXaoatFMXxgBKxvKuuCUaIpm9Kp86BgyBvjNtJS/
 X-Developer-Key: i=thomas.weissschuh@linutronix.de; a=ed25519;
  pk=pfvxvpFUDJV2h2nY0FidLUml22uGLSjByFbM6aqQQws=
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=linutronix.de; s=2020; t=1744896267;
+ d=linutronix.de; s=2020; t=1744896269;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding;
- bh=t4LXHHM9pIIYS/FncXPzORV/LCy/Y/iy+i/1qQY0jvI=;
- b=b+0jnMyAUqQACm6y8lBp500HM5X/piD+c2TyCr8RU0raEUfvsvhCDW1huz0/iphE1MqsAY
- f47CKOB7KZzzcFlkp3w6dI3RBWxEet4TtR3GjHzBxO3XzS0mORQ49fTnVfdG4jNLHuch3L
- nCcaRk/Zns+AlF6Z5hesBmF5HKPFgzr33oxys0tN3hic7trhrxlCH9ajbl/B9sPvHmFn90
- CA7qskUDkY2O9pH/+YT0NMYnUDRRQnXb9cSCAR549ihIr01fVQv12yiWWVH5HB6CIqlH4a
- rh6ptcoE7Ssn9aDpwOAR564KGolJ+8LQGn1tYCeBRgMY80C7w5AEwJ4JKrGusA==
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=7qeA/MlLg5TVbU0397qorNcHIJah7W1zDQiEVoWGxtM=;
+ b=g6QoP311AeS6Mx1cg5R8FbGlIPKlDyonmDm7HQC5di/uZqWa5NMemkurzPCsuK1ygx4gs7
+ 7xZlHAyAxpa2BjqzLAiXrdSpyG7K8cnfHF1v9R4tX+m7fbDkYqERgyhbCKNiWA98eFo9dA
+ rs9W1VEKHp4Rp92w+fGDOWgyCtuSS/Ovy8OJlNacqenWg2EM+sUjV65nMkzqf9v2sn0M+1
+ EhWA9GAV+sFd90YAbwpxcJ0S7faDeIgzAuDvKUB+uEoO2yavl8/Uzl/TWfdjdc1kcbRXKK
+ szOnXS7VLoPLgUbHla/WOiAMRQgpMQdZkaqbGZfMaq+Bs/bZbeCii9jktLQpow==
 X-Mailman-Original-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
- d=linutronix.de; s=2020e; t=1744896267;
+ d=linutronix.de; s=2020e; t=1744896269;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding;
- bh=t4LXHHM9pIIYS/FncXPzORV/LCy/Y/iy+i/1qQY0jvI=;
- b=4F18vwRCjEGRayESMci2JVont349Cxglgm3zyTPojVGjNtVCsE6iYqrTJUM5uGH3TRHztP
- rGTxYINxZOmOz6AA==
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=7qeA/MlLg5TVbU0397qorNcHIJah7W1zDQiEVoWGxtM=;
+ b=3PHqCejP2SQSvoddhTitFoMUXI2U5NWhD1r/og0rnq8ykl4l7StGnf+hPP9a0v4aH017Bl
+ g39UzVDsYL5H75Ag==
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=linutronix.de
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de
- header.a=rsa-sha256 header.s=2020 header.b=b+0jnMyA; 
+ header.a=rsa-sha256 header.s=2020 header.b=g6QoP311; 
  dkim=pass header.d=linutronix.de header.i=@linutronix.de
- header.a=ed25519-sha256 header.s=2020e header.b=4F18vwRC
-Subject: [Intel-wired-lan] [PATCH net-next v2 0/2] net: Don't use %pK
- through printk
+ header.a=ed25519-sha256 header.s=2020e header.b=3PHqCejP
+Subject: [Intel-wired-lan] [PATCH net-next v2 2/2] net/mlx5: Don't use %pK
+ through tracepoints
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -126,7 +126,7 @@ values into the kernel log.
 Since commit ad67b74d2469 ("printk: hash addresses printed with %p")
 the regular %p has been improved to avoid this issue.
 Furthermore, restricted pointers ("%pK") were never meant to be used
-through printk(). They can still unintentionally leak raw pointers or
+through tracepoints. They can still unintentionally leak raw pointers or
 acquire sleeping looks in atomic contexts.
 
 Switch to the regular pointer formatting which is safer and
@@ -135,25 +135,26 @@ There are still a few users of %pK left, but these use it through seq_file,
 for which its usage is safe.
 
 Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
+Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Reviewed-by: Tariq Toukan <tariqt@nvidia.com>
 ---
-Changes in v2:
-- Drop wifi/ath patches, they are submitted on their own now
-- Link to v1: https://lore.kernel.org/r/20250414-restricted-pointers-net-v1-0-12af0ce46cdd@linutronix.de
+ drivers/net/ethernet/mellanox/mlx5/core/sf/dev/diag/dev_tracepoint.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
----
-Thomas Weißschuh (2):
-      ice: Don't use %pK through printk or tracepoints
-      net/mlx5: Don't use %pK through tracepoints
+diff --git a/drivers/net/ethernet/mellanox/mlx5/core/sf/dev/diag/dev_tracepoint.h b/drivers/net/ethernet/mellanox/mlx5/core/sf/dev/diag/dev_tracepoint.h
+index 0537de86f9817dc80bd897688c539135b1ad37ac..9b0f44253f332aa602a84a1f6d7532a500dd4f55 100644
+--- a/drivers/net/ethernet/mellanox/mlx5/core/sf/dev/diag/dev_tracepoint.h
++++ b/drivers/net/ethernet/mellanox/mlx5/core/sf/dev/diag/dev_tracepoint.h
+@@ -28,7 +28,7 @@ DECLARE_EVENT_CLASS(mlx5_sf_dev_template,
+ 				   __entry->hw_fn_id = sfdev->fn_id;
+ 				   __entry->sfnum = sfdev->sfnum;
+ 		    ),
+-		    TP_printk("(%s) sfdev=%pK aux_id=%d hw_id=0x%x sfnum=%u\n",
++		    TP_printk("(%s) sfdev=%p aux_id=%d hw_id=0x%x sfnum=%u\n",
+ 			      __get_str(devname), __entry->sfdev,
+ 			      __entry->aux_id, __entry->hw_fn_id,
+ 			      __entry->sfnum)
 
- drivers/net/ethernet/intel/ice/ice_main.c                      |  2 +-
- drivers/net/ethernet/intel/ice/ice_trace.h                     | 10 +++++-----
- .../ethernet/mellanox/mlx5/core/sf/dev/diag/dev_tracepoint.h   |  2 +-
- 3 files changed, 7 insertions(+), 7 deletions(-)
----
-base-commit: cfb2e2c57aef75a414c0f18445c7441df5bc13be
-change-id: 20250404-restricted-pointers-net-a8cddd03e5d1
-
-Best regards,
 -- 
-Thomas Weißschuh <thomas.weissschuh@linutronix.de>
+2.49.0
 
