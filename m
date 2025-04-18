@@ -1,73 +1,73 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 36DBFC369D3
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 18 Apr 2025 20:49:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E19FBC369CB
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 18 Apr 2025 20:49:43 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id F11706070C;
-	Fri, 18 Apr 2025 20:49:44 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id A31C781E7A;
+	Fri, 18 Apr 2025 20:49:43 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id FK3hzhfEV_kb; Fri, 18 Apr 2025 20:49:44 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id mzhjfDABc5p8; Fri, 18 Apr 2025 20:49:42 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 221A860716
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B563581E7B
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1745009384;
-	bh=da6XZSYNJ7VjN7D13YRB91YFqLpNjgzvEupbaDiYrlo=;
+	s=default; t=1745009382;
+	bh=YGM6TqvApdqu6TfnBiFJG2ZLiIiAdAykSmqJFYzDvYo=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=h1B70uAlgL7I9yBsYEXaCNnJvE8GaBmZffi7dSG2gIYQhKc8B6fkP3BEJc2hrFlzY
-	 1xlPb6dPHdUWqHKfH106dBKtgGeeR7otw/F8kze1yE1KgdMyRTgdTh2I2IA5Fgr0+I
-	 Om5Ocm0UQ3PY8Y2BmZPVAeUKW4ct2Zuy1Xerkfc9hkMzi+JWT9Hk1DD3LXvBQCRkln
-	 l3qzRgkFuZC7zZOE3zsfP96yJ+8o8szcpaVz9w54h3hVX8F5crISvgZxfPVKfdU7OK
-	 PVFxsr04ZNImaoAJ/eI3MRvvO+PXrbl7/jIjkOG9bwveBE6kf+uPvYN+T1pvxQo+9z
-	 vKNJatLuvLlDw==
+	b=YJCEjx/Ue0IcPjsWCzR4J1O3ekxKVTVHUvT5VaAOhqPtle1s4fJ7Ekw+9ZRRfBa2a
+	 uDlXntqAwk9lphMykR4ph/nxRPEoSToOPGVkeqTSgQNIRhilIG2sXncQfBUd/0NeGD
+	 jGOP4dDOo9cjYA7gNx2drwxffE+HJCjcuDjsYMr9rNFtEWtHlCaVGXxD8XT56+v9zP
+	 gXVJKTaYOESt0hlbr4AYBE8doj5sfiOOhwzONGNZAP56A7Srf/0dWFTNAZaultojzS
+	 9OcuGV9LlWdIpF0BLsb6IKFnzKMEbGbWAVn7Oi/lHXY+UAV7cDEMrp46BXUI2TaQ2z
+	 P1sF4D+4RVMmw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 221A860716;
-	Fri, 18 Apr 2025 20:49:44 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id B563581E7B;
+	Fri, 18 Apr 2025 20:49:42 +0000 (UTC)
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id 218FF61
- for <intel-wired-lan@lists.osuosl.org>; Fri, 18 Apr 2025 20:49:40 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id 2CD4F69
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 18 Apr 2025 20:49:39 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id DAD5081E84
+ by smtp1.osuosl.org (Postfix) with ESMTP id 2790481E7A
  for <intel-wired-lan@lists.osuosl.org>; Fri, 18 Apr 2025 20:49:38 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 2EdJGKgXnvN6 for <intel-wired-lan@lists.osuosl.org>;
- Fri, 18 Apr 2025 20:49:38 +0000 (UTC)
+ id zcJ1QJq2a7u4 for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 18 Apr 2025 20:49:37 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.14;
  helo=mgamail.intel.com; envelope-from=pavan.kumar.linga@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org D6C8F81E7E
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D6C8F81E7E
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 2989381E74
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2989381E74
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.14])
- by smtp1.osuosl.org (Postfix) with ESMTPS id D6C8F81E7E
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 2989381E74
  for <intel-wired-lan@lists.osuosl.org>; Fri, 18 Apr 2025 20:49:37 +0000 (UTC)
-X-CSE-ConnectionGUID: Kq3AwqtBQ3ehKlvRUi4VRQ==
-X-CSE-MsgGUID: C74pcxanQqGmtEGyJY2Lzg==
-X-IronPort-AV: E=McAfee;i="6700,10204,11407"; a="46814315"
-X-IronPort-AV: E=Sophos;i="6.15,222,1739865600"; d="scan'208";a="46814315"
+X-CSE-ConnectionGUID: m5VYdlzXTtSpt13Ul6RaSw==
+X-CSE-MsgGUID: w/r1conwTqWxYazZpP5cEw==
+X-IronPort-AV: E=McAfee;i="6700,10204,11407"; a="46814309"
+X-IronPort-AV: E=Sophos;i="6.15,222,1739865600"; d="scan'208";a="46814309"
 Received: from orviesa001.jf.intel.com ([10.64.159.141])
  by fmvoesa108.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  18 Apr 2025 13:49:36 -0700
-X-CSE-ConnectionGUID: psI/+EH5QFKQPiTHLCf5AA==
-X-CSE-MsgGUID: WsSb++PxScikTSoVkrAHnA==
+X-CSE-ConnectionGUID: bRxpJ1brTsWVbUdeNQhzqg==
+X-CSE-MsgGUID: 6jlSGbLxT9WDVaOK4qoBbg==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.15,222,1739865600"; d="scan'208";a="168406319"
+X-IronPort-AV: E=Sophos;i="6.15,222,1739865600"; d="scan'208";a="168406307"
 Received: from unknown (HELO localhost.jf.intel.com) ([10.166.80.55])
  by orviesa001.jf.intel.com with ESMTP; 18 Apr 2025 13:49:36 -0700
 From: Pavan Kumar Linga <pavan.kumar.linga@intel.com>
 To: intel-wired-lan@lists.osuosl.org
 Cc: netdev@vger.kernel.org, milena.olech@intel.com, anton.nadezhdin@intel.com,
  Pavan Kumar Linga <pavan.kumar.linga@intel.com>
-Date: Fri, 18 Apr 2025 13:49:16 -0700
-Message-ID: <20250418204919.5875-7-pavan.kumar.linga@intel.com>
+Date: Fri, 18 Apr 2025 13:49:12 -0700
+Message-ID: <20250418204919.5875-3-pavan.kumar.linga@intel.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20250418204919.5875-1-pavan.kumar.linga@intel.com>
 References: <20250418204919.5875-1-pavan.kumar.linga@intel.com>
@@ -75,25 +75,25 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1745009378; x=1776545378;
+ t=1745009377; x=1776545377;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=2dG2MxT+PLeXXr+DM/73ya4gUhHAsGmNOBZW6wCbgRY=;
- b=HUf4kCTKbJWjZ0zWOa/M3TqNlrdG9bPUQTOZTX86HsoZT6kTXlxS5nKr
- yixs9l91YFbyUNzsYzXs2jWo7QCSZhlVXnt1XVzcslG84ILO2EEajnVQr
- WjzWYTCtaGYI+4P/LdOHIZVVOR89Z1unw+ewfhOGHehtDQKJDKAQ5Jvlk
- RbIS4t7yG9EA/UC/KGGoMQX43r6MMtn3y4QsqAdqFsFhJ7j0YxSdNxu6s
- kYL9VyeSsIPldDDjIcq8L9ombhwTbmqAt/v7yHN9xOiMjHoTzpkj7rNyv
- 4VOZ2SkGkBavfw75u3Aber7k9tSYhs121wMtrD3NwbT1JuGCbeeRGlBIY
- g==;
+ bh=aO59QbByx76Q2qWYQWKNp12vnonEBh5U65I23xTZjaY=;
+ b=I7dz62u9E3SGIQwnh/t3B5k/CX3D8KTeBgeLjaFLnNxQmWGGsp2Jtxh/
+ yZLjnwQfUge4YZplIUWBuCgUaNJovBU4IjULyI3Ph4s5BvaLtJnM7F4Ba
+ 6RT4sdLbVKo4bRZA+Y1pbJcaTLEpLfocmNTP7IucarjmTQWCPJvAlfBgQ
+ t0CB0VZ46s4JP+TB4ig+LZ5Bi0fYr/exg5EmUSYn3toNQHeWs+MvVap6Y
+ W5AMLb9X1j1TEfdJyTRyUD2Fw9QEjJKVL1qfE4sQ8qSPuo7QS2piN6sbN
+ IIsD60MBY9TFr3+6KOIuXcUL82sh0zUkI9PUQDw7LnbNIOgv0XEzRWgA5
+ w==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=HUf4kCTK
-Subject: [Intel-wired-lan] [PATCH iwl-next v2 6/9] idpf: add rss_data field
- to RSS function parameters
+ header.a=rsa-sha256 header.s=Intel header.b=I7dz62u9
+Subject: [Intel-wired-lan] [PATCH iwl-next v2 2/9] idpf: use existing queue
+ chunk info instead of preparing it
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -109,305 +109,326 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Retrieve rss_data field of vport just once and pass it to
-RSS related functions instead of retrieving it in each
-function.
-
-While at it, update s/rss/RSS in the RSS function doc comments.
+Queue chunk info received from the device control plane
+is stored in the persistent data section. Necessary info from
+these chunks is parsed and stored in the queue structure.
+While sending the enable/disable queues virtchnl message,
+queue chunk info is prepared using the stored queue info.
+Instead of that, use the stored queue chunks directly which has
+info about all the queues that needs to be enabled/disabled.
 
 Reviewed-by: Anton Nadezhdin <anton.nadezhdin@intel.com>
 Signed-off-by: Pavan Kumar Linga <pavan.kumar.linga@intel.com>
 ---
- drivers/net/ethernet/intel/idpf/idpf.h        |  1 +
- .../net/ethernet/intel/idpf/idpf_ethtool.c    |  2 +-
- drivers/net/ethernet/intel/idpf/idpf_lib.c    | 16 +++++----
- drivers/net/ethernet/intel/idpf/idpf_txrx.c   | 34 +++++++------------
- drivers/net/ethernet/intel/idpf/idpf_txrx.h   |  6 ++--
- .../net/ethernet/intel/idpf/idpf_virtchnl.c   | 24 ++++++-------
- .../net/ethernet/intel/idpf/idpf_virtchnl.h   |  8 +++--
- 7 files changed, 45 insertions(+), 46 deletions(-)
+ drivers/net/ethernet/intel/idpf/idpf_lib.c    |   6 +-
+ .../net/ethernet/intel/idpf/idpf_virtchnl.c   | 188 +++++-------------
+ .../net/ethernet/intel/idpf/idpf_virtchnl.h   |   6 +-
+ 3 files changed, 52 insertions(+), 148 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/idpf/idpf.h b/drivers/net/ethernet/intel/idpf/idpf.h
-index 39f4c7009a1a..5eb2f8eb6964 100644
---- a/drivers/net/ethernet/intel/idpf/idpf.h
-+++ b/drivers/net/ethernet/intel/idpf/idpf.h
-@@ -9,6 +9,7 @@ struct idpf_adapter;
- struct idpf_vport;
- struct idpf_vport_max_q;
- struct idpf_q_vec_rsrc;
-+struct idpf_rss_data;
- 
- #include <net/pkt_sched.h>
- #include <linux/aer.h>
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_ethtool.c b/drivers/net/ethernet/intel/idpf/idpf_ethtool.c
-index 4c7ffd34be5d..77113112dd11 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_ethtool.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_ethtool.c
-@@ -166,7 +166,7 @@ static int idpf_set_rxfh(struct net_device *netdev,
- 			rss_data->rss_lut[lut] = rxfh->indir[lut];
- 	}
- 
--	err = idpf_config_rss(vport);
-+	err = idpf_config_rss(vport, rss_data);
- 
- unlock_mutex:
- 	idpf_vport_ctrl_unlock(netdev);
 diff --git a/drivers/net/ethernet/intel/idpf/idpf_lib.c b/drivers/net/ethernet/intel/idpf/idpf_lib.c
-index 5ff5db7486b9..cc66127af2cb 100644
+index 822ca26661e1..c75c4c661aeb 100644
 --- a/drivers/net/ethernet/intel/idpf/idpf_lib.c
 +++ b/drivers/net/ethernet/intel/idpf/idpf_lib.c
-@@ -930,8 +930,8 @@ static void idpf_vport_rel(struct idpf_vport *vport)
- 	u16 idx = vport->idx;
+@@ -845,7 +845,7 @@ static void idpf_vport_stop(struct idpf_vport *vport)
+ 	chunks = &vport->adapter->vport_config[vport->idx]->qid_reg_info;
  
- 	vport_config = adapter->vport_config[vport->idx];
--	idpf_deinit_rss(vport);
- 	rss_data = &vport_config->user_config.rss_data;
-+	idpf_deinit_rss(rss_data);
- 	kfree(rss_data->rss_key);
- 	rss_data->rss_key = NULL;
+ 	idpf_send_disable_vport_msg(vport);
+-	idpf_send_disable_queues_msg(vport);
++	idpf_send_disable_queues_msg(vport, chunks);
+ 	idpf_send_map_unmap_queue_vector_msg(vport, false);
+ 	/* Normally we ask for queues in create_vport, but if the number of
+ 	 * initially requested queues have changed, for example via ethtool
+@@ -1379,7 +1379,7 @@ static int idpf_vport_open(struct idpf_vport *vport)
+ 		goto intr_deinit;
+ 	}
  
-@@ -1318,6 +1318,7 @@ static int idpf_vport_open(struct idpf_vport *vport)
- 	struct idpf_adapter *adapter = vport->adapter;
- 	struct idpf_vport_config *vport_config;
- 	struct idpf_queue_id_reg_info *chunks;
-+	struct idpf_rss_data *rss_data;
- 	int err;
- 
- 	if (np->state != __IDPF_VPORT_DOWN)
-@@ -1402,10 +1403,11 @@ static int idpf_vport_open(struct idpf_vport *vport)
- 
- 	idpf_restore_features(vport);
- 
--	if (vport_config->user_config.rss_data.rss_lut)
--		err = idpf_config_rss(vport);
-+	rss_data = &vport_config->user_config.rss_data;
-+	if (rss_data->rss_lut)
-+		err = idpf_config_rss(vport, rss_data);
- 	else
--		err = idpf_init_rss(vport);
-+		err = idpf_init_rss(vport, rss_data);
+-	err = idpf_send_enable_queues_msg(vport);
++	err = idpf_send_enable_queues_msg(vport, chunks);
  	if (err) {
- 		dev_err(&adapter->pdev->dev, "Failed to initialize RSS for vport %u: %d\n",
+ 		dev_err(&adapter->pdev->dev, "Failed to enable queues for vport %u: %d\n",
  			vport->vport_id, err);
-@@ -1422,7 +1424,7 @@ static int idpf_vport_open(struct idpf_vport *vport)
- 	return 0;
- 
- deinit_rss:
--	idpf_deinit_rss(vport);
-+	idpf_deinit_rss(rss_data);
+@@ -1420,7 +1420,7 @@ static int idpf_vport_open(struct idpf_vport *vport)
  disable_vport:
  	idpf_send_disable_vport_msg(vport);
  disable_queues:
-@@ -1898,7 +1900,7 @@ int idpf_initiate_soft_reset(struct idpf_vport *vport,
- 		idpf_vport_stop(vport);
+-	idpf_send_disable_queues_msg(vport);
++	idpf_send_disable_queues_msg(vport, chunks);
+ unmap_queue_vectors:
+ 	idpf_send_map_unmap_queue_vector_msg(vport, false);
+ intr_deinit:
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
+index a82697e8a6a8..92ac01a90a91 100644
+--- a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
++++ b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
+@@ -972,6 +972,24 @@ static void idpf_init_avail_queues(struct idpf_adapter *adapter)
+ 	avail_queues->avail_complq = le16_to_cpu(caps->max_tx_complq);
+ }
+ 
++/**
++ * idpf_convert_reg_to_queue_chunks - copy queue chunk information to the right
++ * structure
++ * @dchunks: destination chunks to store data to
++ * @schunks: source chunks to copy data from
++ * @num_chunks: number of chunks to copy
++ */
++static void idpf_convert_reg_to_queue_chunks(struct virtchnl2_queue_chunk *dchunks,
++					     struct idpf_queue_id_reg_chunk *schunks,
++					     u16 num_chunks)
++{
++	for (u16 i = 0; i < num_chunks; i++) {
++		dchunks[i].type = cpu_to_le32(schunks[i].type);
++		dchunks[i].start_queue_id = cpu_to_le32(schunks[i].start_queue_id);
++		dchunks[i].num_queues = cpu_to_le32(schunks[i].num_queues);
++	}
++}
++
+ /**
+  * idpf_vport_init_queue_reg_chunks - initialize queue register chunks
+  * @vport_config: persistent vport structure to store the queue register info
+@@ -1699,116 +1717,20 @@ static int idpf_send_config_rx_queues_msg(struct idpf_vport *vport)
+  * idpf_send_ena_dis_queues_msg - Send virtchnl enable or disable
+  * queues message
+  * @vport: virtual port data structure
++ * @chunks: queue register info
+  * @ena: if true enable, false disable
+  *
+  * Send enable or disable queues virtchnl message. Returns 0 on success,
+  * negative on failure.
+  */
+-static int idpf_send_ena_dis_queues_msg(struct idpf_vport *vport, bool ena)
++static int idpf_send_ena_dis_queues_msg(struct idpf_vport *vport,
++					struct idpf_queue_id_reg_info *chunks,
++					bool ena)
+ {
+ 	struct virtchnl2_del_ena_dis_queues *eq __free(kfree) = NULL;
+-	struct virtchnl2_queue_chunk *qc __free(kfree) = NULL;
+-	u32 num_msgs, num_chunks, num_txq, num_rxq, num_q;
+ 	struct idpf_vc_xn_params xn_params = {};
+-	struct virtchnl2_queue_chunks *qcs;
+-	u32 config_sz, chunk_sz, buf_sz;
++	u32 num_chunks, buf_sz;
+ 	ssize_t reply_sz;
+-	int i, j, k = 0;
+-
+-	num_txq = vport->num_txq + vport->num_complq;
+-	num_rxq = vport->num_rxq + vport->num_bufq;
+-	num_q = num_txq + num_rxq;
+-	buf_sz = sizeof(struct virtchnl2_queue_chunk) * num_q;
+-	qc = kzalloc(buf_sz, GFP_KERNEL);
+-	if (!qc)
+-		return -ENOMEM;
+-
+-	for (i = 0; i < vport->num_txq_grp; i++) {
+-		struct idpf_txq_group *tx_qgrp = &vport->txq_grps[i];
+-
+-		for (j = 0; j < tx_qgrp->num_txq; j++, k++) {
+-			qc[k].type = cpu_to_le32(VIRTCHNL2_QUEUE_TYPE_TX);
+-			qc[k].start_queue_id = cpu_to_le32(tx_qgrp->txqs[j]->q_id);
+-			qc[k].num_queues = cpu_to_le32(IDPF_NUMQ_PER_CHUNK);
+-		}
+-	}
+-	if (vport->num_txq != k)
+-		return -EINVAL;
+-
+-	if (!idpf_is_queue_model_split(vport->txq_model))
+-		goto setup_rx;
+-
+-	for (i = 0; i < vport->num_txq_grp; i++, k++) {
+-		struct idpf_txq_group *tx_qgrp = &vport->txq_grps[i];
+-
+-		qc[k].type = cpu_to_le32(VIRTCHNL2_QUEUE_TYPE_TX_COMPLETION);
+-		qc[k].start_queue_id = cpu_to_le32(tx_qgrp->complq->q_id);
+-		qc[k].num_queues = cpu_to_le32(IDPF_NUMQ_PER_CHUNK);
+-	}
+-	if (vport->num_complq != (k - vport->num_txq))
+-		return -EINVAL;
+-
+-setup_rx:
+-	for (i = 0; i < vport->num_rxq_grp; i++) {
+-		struct idpf_rxq_group *rx_qgrp = &vport->rxq_grps[i];
+-
+-		if (idpf_is_queue_model_split(vport->rxq_model))
+-			num_rxq = rx_qgrp->splitq.num_rxq_sets;
+-		else
+-			num_rxq = rx_qgrp->singleq.num_rxq;
+-
+-		for (j = 0; j < num_rxq; j++, k++) {
+-			if (idpf_is_queue_model_split(vport->rxq_model)) {
+-				qc[k].start_queue_id =
+-				cpu_to_le32(rx_qgrp->splitq.rxq_sets[j]->rxq.q_id);
+-				qc[k].type =
+-				cpu_to_le32(VIRTCHNL2_QUEUE_TYPE_RX);
+-			} else {
+-				qc[k].start_queue_id =
+-				cpu_to_le32(rx_qgrp->singleq.rxqs[j]->q_id);
+-				qc[k].type =
+-				cpu_to_le32(VIRTCHNL2_QUEUE_TYPE_RX);
+-			}
+-			qc[k].num_queues = cpu_to_le32(IDPF_NUMQ_PER_CHUNK);
+-		}
+-	}
+-	if (vport->num_rxq != k - (vport->num_txq + vport->num_complq))
+-		return -EINVAL;
+-
+-	if (!idpf_is_queue_model_split(vport->rxq_model))
+-		goto send_msg;
+-
+-	for (i = 0; i < vport->num_rxq_grp; i++) {
+-		struct idpf_rxq_group *rx_qgrp = &vport->rxq_grps[i];
+-
+-		for (j = 0; j < vport->num_bufqs_per_qgrp; j++, k++) {
+-			const struct idpf_buf_queue *q;
+-
+-			q = &rx_qgrp->splitq.bufq_sets[j].bufq;
+-			qc[k].type =
+-				cpu_to_le32(VIRTCHNL2_QUEUE_TYPE_RX_BUFFER);
+-			qc[k].start_queue_id = cpu_to_le32(q->q_id);
+-			qc[k].num_queues = cpu_to_le32(IDPF_NUMQ_PER_CHUNK);
+-		}
+-	}
+-	if (vport->num_bufq != k - (vport->num_txq +
+-				    vport->num_complq +
+-				    vport->num_rxq))
+-		return -EINVAL;
+-
+-send_msg:
+-	/* Chunk up the queue info into multiple messages */
+-	config_sz = sizeof(struct virtchnl2_del_ena_dis_queues);
+-	chunk_sz = sizeof(struct virtchnl2_queue_chunk);
+-
+-	num_chunks = min_t(u32, IDPF_NUM_CHUNKS_PER_MSG(config_sz, chunk_sz),
+-			   num_q);
+-	num_msgs = DIV_ROUND_UP(num_q, num_chunks);
+-
+-	buf_sz = struct_size(eq, chunks.chunks, num_chunks);
+-	eq = kzalloc(buf_sz, GFP_KERNEL);
+-	if (!eq)
+-		return -ENOMEM;
+ 
+ 	if (ena) {
+ 		xn_params.vc_op = VIRTCHNL2_OP_ENABLE_QUEUES;
+@@ -1818,27 +1740,23 @@ static int idpf_send_ena_dis_queues_msg(struct idpf_vport *vport, bool ena)
+ 		xn_params.timeout_ms = IDPF_VC_XN_MIN_TIMEOUT_MSEC;
  	}
  
--	idpf_deinit_rss(vport);
-+	idpf_deinit_rss(&vport_config->user_config.rss_data);
- 	/* We're passing in vport here because we need its wait_queue
- 	 * to send a message and it should be getting all the vport
- 	 * config data out of the adapter but we need to be careful not
-@@ -2095,7 +2097,7 @@ static int idpf_vport_manage_rss_lut(struct idpf_vport *vport)
- 		memset(rss_data->rss_lut, 0, lut_size);
- 	}
+-	for (i = 0, k = 0; i < num_msgs; i++) {
+-		memset(eq, 0, buf_sz);
+-		eq->vport_id = cpu_to_le32(vport->vport_id);
+-		eq->chunks.num_chunks = cpu_to_le16(num_chunks);
+-		qcs = &eq->chunks;
+-		memcpy(qcs->chunks, &qc[k], chunk_sz * num_chunks);
++	num_chunks = chunks->num_chunks;
++	buf_sz = struct_size(eq, chunks.chunks, num_chunks);
++	eq = kzalloc(buf_sz, GFP_KERNEL);
++	if (!eq)
++		return -ENOMEM;
  
--	return idpf_config_rss(vport);
-+	return idpf_config_rss(vport, rss_data);
+-		xn_params.send_buf.iov_base = eq;
+-		xn_params.send_buf.iov_len = buf_sz;
+-		reply_sz = idpf_vc_xn_exec(vport->adapter, &xn_params);
+-		if (reply_sz < 0)
+-			return reply_sz;
++	eq->vport_id = cpu_to_le32(vport->vport_id);
++	eq->chunks.num_chunks = cpu_to_le16(num_chunks);
+ 
+-		k += num_chunks;
+-		num_q -= num_chunks;
+-		num_chunks = min(num_chunks, num_q);
+-		/* Recalculate buffer size */
+-		buf_sz = struct_size(eq, chunks.chunks, num_chunks);
+-	}
++	idpf_convert_reg_to_queue_chunks(eq->chunks.chunks, chunks->queue_chunks,
++					 num_chunks);
+ 
+-	return 0;
++	xn_params.send_buf.iov_base = eq;
++	xn_params.send_buf.iov_len = buf_sz;
++	reply_sz = idpf_vc_xn_exec(vport->adapter, &xn_params);
++
++	return reply_sz < 0 ? reply_sz : 0;
  }
  
  /**
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.c b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-index 9413d7b304fa..263573b01b09 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-@@ -4483,33 +4483,32 @@ void idpf_vport_intr_ena(struct idpf_vport *vport, struct idpf_q_vec_rsrc *rsrc)
+@@ -1971,27 +1889,31 @@ int idpf_send_map_unmap_queue_vector_msg(struct idpf_vport *vport, bool map)
  /**
-  * idpf_config_rss - Send virtchnl messages to configure RSS
-  * @vport: virtual port
-+ * @rss_data: pointer to RSS key and lut info
+  * idpf_send_enable_queues_msg - send enable queues virtchnl message
+  * @vport: Virtual port private data structure
++ * @chunks: queue ids received over mailbox
   *
-  * Return 0 on success, negative on failure
+  * Will send enable queues virtchnl message.  Returns 0 on success, negative on
+  * failure.
   */
--int idpf_config_rss(struct idpf_vport *vport)
-+int idpf_config_rss(struct idpf_vport *vport, struct idpf_rss_data *rss_data)
+-int idpf_send_enable_queues_msg(struct idpf_vport *vport)
++int idpf_send_enable_queues_msg(struct idpf_vport *vport,
++				struct idpf_queue_id_reg_info *chunks)
  {
- 	int err;
+-	return idpf_send_ena_dis_queues_msg(vport, true);
++	return idpf_send_ena_dis_queues_msg(vport, chunks, true);
+ }
  
--	err = idpf_send_get_set_rss_key_msg(vport, false);
-+	err = idpf_send_get_set_rss_key_msg(vport, rss_data, false);
+ /**
+  * idpf_send_disable_queues_msg - send disable queues virtchnl message
+  * @vport: Virtual port private data structure
++ * @chunks: queue ids received over mailbox
+  *
+  * Will send disable queues virtchnl message.  Returns 0 on success, negative
+  * on failure.
+  */
+-int idpf_send_disable_queues_msg(struct idpf_vport *vport)
++int idpf_send_disable_queues_msg(struct idpf_vport *vport,
++				 struct idpf_queue_id_reg_info *chunks)
+ {
+ 	int err, i;
+ 
+-	err = idpf_send_ena_dis_queues_msg(vport, false);
++	err = idpf_send_ena_dis_queues_msg(vport, chunks, false);
  	if (err)
  		return err;
  
--	return idpf_send_get_set_rss_lut_msg(vport, false);
-+	return idpf_send_get_set_rss_lut_msg(vport, rss_data, false);
+@@ -2010,26 +1932,6 @@ int idpf_send_disable_queues_msg(struct idpf_vport *vport)
+ 	return idpf_wait_for_marker_event(vport);
  }
  
- /**
-  * idpf_fill_dflt_rss_lut - Fill the indirection table with the default values
-  * @vport: virtual port structure
-+ * @rss_data: pointer to RSS key and lut info
-  */
--static void idpf_fill_dflt_rss_lut(struct idpf_vport *vport)
-+static void idpf_fill_dflt_rss_lut(struct idpf_vport *vport,
-+				   struct idpf_rss_data *rss_data)
- {
- 	u16 num_active_rxq = vport->dflt_qv_rsrc.num_rxq;
--	struct idpf_adapter *adapter = vport->adapter;
--	struct idpf_rss_data *rss_data;
- 	int i;
- 
--	rss_data = &adapter->vport_config[vport->idx]->user_config.rss_data;
+-/**
+- * idpf_convert_reg_to_queue_chunks - Copy queue chunk information to the right
+- * structure
+- * @dchunks: Destination chunks to store data to
+- * @schunks: Source chunks to copy data from
+- * @num_chunks: number of chunks to copy
+- */
+-static void idpf_convert_reg_to_queue_chunks(struct virtchnl2_queue_chunk *dchunks,
+-					     struct idpf_queue_id_reg_chunk *schunks,
+-					     u16 num_chunks)
+-{
+-	u16 i;
 -
- 	for (i = 0; i < rss_data->rss_lut_size; i++) {
- 		rss_data->rss_lut[i] = i % num_active_rxq;
- 		rss_data->cached_lut[i] = rss_data->rss_lut[i];
-@@ -4519,17 +4518,14 @@ static void idpf_fill_dflt_rss_lut(struct idpf_vport *vport)
- /**
-  * idpf_init_rss - Allocate and initialize RSS resources
-  * @vport: virtual port
-+ * @rss_data: pointer to RSS key and lut info
-  *
-  * Return 0 on success, negative on failure
-  */
--int idpf_init_rss(struct idpf_vport *vport)
-+int idpf_init_rss(struct idpf_vport *vport, struct idpf_rss_data *rss_data)
- {
--	struct idpf_adapter *adapter = vport->adapter;
--	struct idpf_rss_data *rss_data;
- 	u32 lut_size;
- 
--	rss_data = &adapter->vport_config[vport->idx]->user_config.rss_data;
+-	for (i = 0; i < num_chunks; i++) {
+-		dchunks[i].type = cpu_to_le32(schunks[i].type);
+-		dchunks[i].start_queue_id = cpu_to_le32(schunks[i].start_queue_id);
+-		dchunks[i].num_queues = cpu_to_le32(schunks[i].num_queues);
+-	}
+-}
 -
- 	lut_size = rss_data->rss_lut_size * sizeof(u32);
- 	rss_data->rss_lut = kzalloc(lut_size, GFP_KERNEL);
- 	if (!rss_data->rss_lut)
-@@ -4544,21 +4540,17 @@ int idpf_init_rss(struct idpf_vport *vport)
- 	}
- 
- 	/* Fill the default RSS lut values */
--	idpf_fill_dflt_rss_lut(vport);
-+	idpf_fill_dflt_rss_lut(vport, rss_data);
- 
--	return idpf_config_rss(vport);
-+	return idpf_config_rss(vport, rss_data);
- }
- 
  /**
-  * idpf_deinit_rss - Release RSS resources
-- * @vport: virtual port
-+ * @rss_data: pointer to RSS key and lut info
-  */
--void idpf_deinit_rss(struct idpf_vport *vport)
-+void idpf_deinit_rss(struct idpf_rss_data *rss_data)
- {
--	struct idpf_adapter *adapter = vport->adapter;
--	struct idpf_rss_data *rss_data;
--
--	rss_data = &adapter->vport_config[vport->idx]->user_config.rss_data;
- 	kfree(rss_data->cached_lut);
- 	rss_data->cached_lut = NULL;
- 	kfree(rss_data->rss_lut);
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.h b/drivers/net/ethernet/intel/idpf/idpf_txrx.h
-index 60547aa77e62..b55e084fe95d 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_txrx.h
-+++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.h
-@@ -1034,9 +1034,9 @@ int idpf_vport_intr_init(struct idpf_vport *vport,
- 			 struct idpf_q_vec_rsrc *rsrc);
- void idpf_vport_intr_ena(struct idpf_vport *vport,
- 			 struct idpf_q_vec_rsrc *rsrc);
--int idpf_config_rss(struct idpf_vport *vport);
--int idpf_init_rss(struct idpf_vport *vport);
--void idpf_deinit_rss(struct idpf_vport *vport);
-+int idpf_config_rss(struct idpf_vport *vport, struct idpf_rss_data *rss_data);
-+int idpf_init_rss(struct idpf_vport *vport, struct idpf_rss_data *rss_data);
-+void idpf_deinit_rss(struct idpf_rss_data *rss_data);
- int idpf_rx_bufs_init_all(struct idpf_q_vec_rsrc *rsrc);
- void idpf_rx_add_frag(struct idpf_rx_buf *rx_buf, struct sk_buff *skb,
- 		      unsigned int size);
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
-index 6178338b018e..d72d6462b225 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
-@@ -2237,24 +2237,24 @@ int idpf_send_get_stats_msg(struct idpf_vport *vport)
- }
- 
- /**
-- * idpf_send_get_set_rss_lut_msg - Send virtchnl get or set rss lut message
-+ * idpf_send_get_set_rss_lut_msg - Send virtchnl get or set RSS lut message
-  * @vport: virtual port data structure
-- * @get: flag to set or get rss look up table
-+ * @rss_data: pointer to RSS key and lut info
-+ * @get: flag to set or get RSS look up table
-  *
-  * Returns 0 on success, negative on failure.
-  */
--int idpf_send_get_set_rss_lut_msg(struct idpf_vport *vport, bool get)
-+int idpf_send_get_set_rss_lut_msg(struct idpf_vport *vport,
-+				  struct idpf_rss_data *rss_data,
-+				  bool get)
- {
- 	struct virtchnl2_rss_lut *recv_rl __free(kfree) = NULL;
- 	struct virtchnl2_rss_lut *rl __free(kfree) = NULL;
- 	struct idpf_vc_xn_params xn_params = {};
--	struct idpf_rss_data *rss_data;
- 	int buf_size, lut_buf_size;
- 	ssize_t reply_sz;
- 	int i;
- 
--	rss_data =
--		&vport->adapter->vport_config[vport->idx]->user_config.rss_data;
- 	buf_size = struct_size(rl, lut, rss_data->rss_lut_size);
- 	rl = kzalloc(buf_size, GFP_KERNEL);
- 	if (!rl)
-@@ -2312,24 +2312,24 @@ int idpf_send_get_set_rss_lut_msg(struct idpf_vport *vport, bool get)
- }
- 
- /**
-- * idpf_send_get_set_rss_key_msg - Send virtchnl get or set rss key message
-+ * idpf_send_get_set_rss_key_msg - Send virtchnl get or set RSS key message
-  * @vport: virtual port data structure
-- * @get: flag to set or get rss look up table
-+ * @rss_data: pointer to RSS key and lut info
-+ * @get: flag to set or get RSS look up table
-  *
-  * Returns 0 on success, negative on failure
-  */
--int idpf_send_get_set_rss_key_msg(struct idpf_vport *vport, bool get)
-+int idpf_send_get_set_rss_key_msg(struct idpf_vport *vport,
-+				  struct idpf_rss_data *rss_data,
-+				  bool get)
- {
- 	struct virtchnl2_rss_key *recv_rk __free(kfree) = NULL;
- 	struct virtchnl2_rss_key *rk __free(kfree) = NULL;
- 	struct idpf_vc_xn_params xn_params = {};
--	struct idpf_rss_data *rss_data;
- 	ssize_t reply_sz;
- 	int i, buf_size;
- 	u16 key_size;
- 
--	rss_data =
--		&vport->adapter->vport_config[vport->idx]->user_config.rss_data;
- 	buf_size = struct_size(rk, key_flex, rss_data->rss_key_size);
- 	rk = kzalloc(buf_size, GFP_KERNEL);
- 	if (!rk)
+  * idpf_send_delete_queues_msg - send delete queues virtchnl message
+  * @vport: virtual port private data structure
 diff --git a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.h b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.h
-index 2dfb9c0f09f0..3579daeb6ec0 100644
+index 219966bc7a42..1623d974b725 100644
 --- a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.h
 +++ b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.h
-@@ -161,7 +161,11 @@ int idpf_send_get_rx_ptype_msg(struct idpf_vport *vport);
- int idpf_send_ena_dis_loopback_msg(struct idpf_vport *vport);
- int idpf_send_get_stats_msg(struct idpf_vport *vport);
- int idpf_send_set_sriov_vfs_msg(struct idpf_adapter *adapter, u16 num_vfs);
--int idpf_send_get_set_rss_key_msg(struct idpf_vport *vport, bool get);
--int idpf_send_get_set_rss_lut_msg(struct idpf_vport *vport, bool get);
-+int idpf_send_get_set_rss_key_msg(struct idpf_vport *vport,
-+				  struct idpf_rss_data *rss_data,
-+				  bool get);
-+int idpf_send_get_set_rss_lut_msg(struct idpf_vport *vport,
-+				  struct idpf_rss_data *rss_data,
-+				  bool get);
+@@ -128,8 +128,10 @@ int idpf_send_add_queues_msg(const struct idpf_vport *vport, u16 num_tx_q,
+ 			     u16 num_complq, u16 num_rx_q, u16 num_rx_bufq);
+ int idpf_send_delete_queues_msg(struct idpf_vport *vport,
+ 				struct idpf_queue_id_reg_info *chunks);
+-int idpf_send_enable_queues_msg(struct idpf_vport *vport);
+-int idpf_send_disable_queues_msg(struct idpf_vport *vport);
++int idpf_send_enable_queues_msg(struct idpf_vport *vport,
++				struct idpf_queue_id_reg_info *chunks);
++int idpf_send_disable_queues_msg(struct idpf_vport *vport,
++				 struct idpf_queue_id_reg_info *chunks);
+ int idpf_send_config_queues_msg(struct idpf_vport *vport);
  
- #endif /* _IDPF_VIRTCHNL_H_ */
+ int idpf_vport_alloc_vec_indexes(struct idpf_vport *vport);
 -- 
 2.43.0
 
