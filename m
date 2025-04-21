@@ -1,68 +1,66 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 478CCC369C2
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 21 Apr 2025 13:28:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 494ECC369AB
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 21 Apr 2025 13:31:14 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 0FF4380882;
-	Mon, 21 Apr 2025 13:28:21 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id E98084038A;
+	Mon, 21 Apr 2025 13:31:13 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id MoqwasGLhtGn; Mon, 21 Apr 2025 13:28:20 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id G3TxXUc-8m2f; Mon, 21 Apr 2025 13:31:13 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7E3C480D25
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 673F3402FF
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1745242100;
-	bh=0qVkw3Shy50bKVumUVEOY0hrPGUdQGC9Px7ESgUdwPI=;
+	s=default; t=1745242273;
+	bh=zVbdfyjXXUzkgsvwIg3jwWbyVaRbh5FQH6V+d4QgSvc=;
 	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=FlJf8rWGO+vFXoG7oAmOeAd6LMGInaw5xye04YIAOyflIOuJR2m34WWzFfCyoYj4e
-	 sbtdwy+PDxOsHfV0Z6eeJd3ymB3MxK5Kz27EFDbcqbOweZ6P0Xynw4l3i/NUm7mOmK
-	 IgEemOIsppJETOWwc+wl4OHJ5efG+vDrjKFGpx695hX5FuhN3/MMbtwhKMz7ABwFy1
-	 CfDYQpIbzigCWTv1QVSGvnHVQb9+f4JX4HVPsSrnyH0kHi8NapErvQyLSZmznBkfwg
-	 HAc1HQ6oIdi00VW2DWW609eirs7C1q+ZqTSFDd/jtcmiGwL7DM7ATQrrepFxYqQBjf
-	 PlDEfQ9eWFF3Q==
+	b=pFTn2hS15ss+BtEqEACYdLBKf8yG4W2Kc3lZJHsxmvFhvykJwp3DMt/pl2rrtTZIy
+	 nI8GdzvtWa5qy/9mtYXv/tPVJqkW/dFWmqyz6i0fs11N11Y/5QRk8Wobyfej75+k0v
+	 gpqILkJyKjvBxgWOnKxfPOT8QGQcU+pTlN5BHne9xF0ma/Q3fkBQs7wqHNDmDQyrRw
+	 P/kotVh5Fi6JzzSudqbtt3hb8JKJX51oI4jddLLquJoBlCZqx/TJEbPFpGrPhxeHN2
+	 1pQHROd3z3JjOlO20261xqInxx160c/uKGIT1dG2LVt/b7Ad69YP/4yAZgNI51fY7D
+	 cyHyfsupfMxgw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 7E3C480D25;
-	Mon, 21 Apr 2025 13:28:20 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 673F3402FF;
+	Mon, 21 Apr 2025 13:31:13 +0000 (UTC)
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 482B868
- for <intel-wired-lan@lists.osuosl.org>; Mon, 21 Apr 2025 13:28:19 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id 5ACEE1A0
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 21 Apr 2025 13:31:12 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 396136085F
- for <intel-wired-lan@lists.osuosl.org>; Mon, 21 Apr 2025 13:28:19 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 4C4176085F
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 21 Apr 2025 13:31:12 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id dFt3k4vPFUnI for <intel-wired-lan@lists.osuosl.org>;
- Mon, 21 Apr 2025 13:28:18 +0000 (UTC)
-X-Greylist: delayed 541 seconds by postgrey-1.37 at util1.osuosl.org;
- Mon, 21 Apr 2025 13:28:18 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 59466607D3
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 59466607D3
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=103.168.172.149;
- helo=fout-a6-smtp.messagingengine.com;
+ id M35ktSl9moRy for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 21 Apr 2025 13:31:11 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=103.168.172.153;
+ helo=fhigh-a2-smtp.messagingengine.com;
  envelope-from=marmarek@invisiblethingslab.com; receiver=<UNKNOWN> 
-Received: from fout-a6-smtp.messagingengine.com
- (fout-a6-smtp.messagingengine.com [103.168.172.149])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 59466607D3
- for <intel-wired-lan@lists.osuosl.org>; Mon, 21 Apr 2025 13:28:18 +0000 (UTC)
-Received: from phl-compute-01.internal (phl-compute-01.phl.internal
- [10.202.2.41])
- by mailfout.phl.internal (Postfix) with ESMTP id 2EF6913801E1;
- Mon, 21 Apr 2025 09:28:17 -0400 (EDT)
-Received: from phl-mailfrontend-01 ([10.202.2.162])
- by phl-compute-01.internal (MEProxy); Mon, 21 Apr 2025 09:28:17 -0400
-X-ME-Sender: <xms:8EcGaA0nCNkqsGCB3-A5JGrfK6zazK-dAkfTWJIRLWAu3jjK-P40xA>
- <xme:8EcGaLFqgEksz8DbdJkEi6aA3FY2cJnhB7OJKqWYLpFKyo7MjhnrVbrkKCwVLHWnH
- TmIG_Wa6lZeEQ>
-X-ME-Received: <xmr:8EcGaI7LFHxmY0cOnK-PUxsH7CZreptB7y_63gMfTC_VJoeNji9d2sUTKi7a3W2Ro1t9lMiUn2fOTRTfGQWm3ui5SNlrCe0Ljg>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeefvddrtddtgddvgedtleejucetufdoteggodetrf
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org A488260A76
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A488260A76
+Received: from fhigh-a2-smtp.messagingengine.com
+ (fhigh-a2-smtp.messagingengine.com [103.168.172.153])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id A488260A76
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 21 Apr 2025 13:31:11 +0000 (UTC)
+Received: from phl-compute-05.internal (phl-compute-05.phl.internal
+ [10.202.2.45])
+ by mailfhigh.phl.internal (Postfix) with ESMTP id 9CA681140247;
+ Mon, 21 Apr 2025 09:19:16 -0400 (EDT)
+Received: from phl-mailfrontend-02 ([10.202.2.163])
+ by phl-compute-05.internal (MEProxy); Mon, 21 Apr 2025 09:19:16 -0400
+X-ME-Sender: <xms:1EUGaAOBAhZkwXwzh3HU6Yb_nouafcl3par1ACCb-ylstV0RkebMqA>
+ <xme:1EUGaG-8s286vBiyLKywdyhTFoD9BxQ50tw0FjplTw2-0ja9PquDDJM_dA0XrPUW8
+ VkQFe2JUEalyg>
+X-ME-Received: <xmr:1EUGaHRNh_rI7INPcpx0an_JhVLQFa_I-NdJffOynRT9mEAbtF8FxPD5z6SklnV1EMr9p2ppL6iYwP7s2JZ9sg1teJxDHTWU9w>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeefvddrtddtgddvgedtleeiucetufdoteggodetrf
  dotffvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdggtfgfnhhsuhgsshgtrhhisggv
  pdfurfetoffkrfgpnffqhgenuceurghilhhouhhtmecufedttdenucesvcftvggtihhpih
  gvnhhtshculddquddttddmnecujfgurhepfffhvfevuffkfhggtggujgesghdtreertddt
@@ -80,15 +78,15 @@ X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeefvddrtddtgddvgedtleejucetufdote
  hsihhonhhssehlihhsthhsrdhlihhnuhigrdguvghvpdhrtghpthhtohepshhtrggslhgv
  sehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtohepshgrshhhrghlsehkvghrnh
  gvlhdrohhrgh
-X-ME-Proxy: <xmx:8EcGaJ2rh5PwY3x0_lr2Ab43gObWDK2UoFCwret-rkg08bf2I00Ksw>
- <xmx:8EcGaDHk8ks_ttZLUUMRGZarUIM1Fxox91PpBtZbUqb0m3_0ey5KOQ>
- <xmx:8EcGaC_LgeuqN_3HAJFOhwcf8x9DXFombyislo9_SfGgpb-tTGyFBQ>
- <xmx:8EcGaIlOwWa2FZYzEMxrYp0Z65b3x0Q0CLRI7jffDIZpQzAXIMmtZQ>
- <xmx:8UcGaM4lhdbQpb3Ng1Ox1ioxy2jfwtF3pm7lAz8N1PTTqoYOTWc-qptw>
+X-ME-Proxy: <xmx:1EUGaIueBX-ENHBjt7DTNYlMFF21tNKIdqI7ymi-0PO62W_vIt5P_Q>
+ <xmx:1EUGaIcnPRA2UWqw-XFvbNQ-TgSEH4rgzF54qPvD21XpHmxL_rlMow>
+ <xmx:1EUGaM26595kmVrL__Q2j41Nsl81BIIucpNDrV44cHhAhAdxlO0ybg>
+ <xmx:1EUGaM9IGIgVs5uo11bWgEEsScsDu3HKqbUE3HuLf8quWFa4RxY1mw>
+ <xmx:1EUGaORDDeFLL8wGE2OIlC6I4sQImaigSz6YR9KgFP2mgoFhIbLE106L>
 Feedback-ID: i1568416f:Fastmail
 Received: by mail.messagingengine.com (Postfix) with ESMTPA; Mon,
- 21 Apr 2025 09:28:15 -0400 (EDT)
-Date: Mon, 21 Apr 2025 15:28:13 +0200
+ 21 Apr 2025 09:19:14 -0400 (EDT)
+Date: Mon, 21 Apr 2025 15:19:12 +0200
 From: Marek =?utf-8?Q?Marczykowski-G=C3=B3recki?=
  <marmarek@invisiblethingslab.com>
 To: "Lifshits, Vitaly" <vitaly.lifshits@intel.com>
@@ -96,7 +94,7 @@ Cc: Jesse Brandeburg <jesse.brandeburg@intel.com>,
  Tony Nguyen <anthony.l.nguyen@intel.com>, netdev@vger.kernel.org,
  intel-wired-lan@lists.osuosl.org, regressions@lists.linux.dev,
  stable@vger.kernel.org, Sasha Levin <sashal@kernel.org>
-Message-ID: <aAZH7fpaGf7hvX6T@mail-itl>
+Message-ID: <aAZF0JUKCF0UvfF6@mail-itl>
 References: <Z_z9EjcKtwHCQcZR@mail-itl>
  <b1f5e997-033c-33ed-5e3b-6fe2632bf718@intel.com>
  <Z_0GYR8jR-5NWZ9K@mail-itl>
@@ -104,45 +102,44 @@ References: <Z_z9EjcKtwHCQcZR@mail-itl>
  <b5d72f51-3cd0-aeca-60af-41a20ad59cd5@intel.com>
  <Z_-l2q9ZhszFxiqA@mail-itl>
  <d37a7c9e-7b3f-afc2-b010-e9785f39a785@intel.com>
- <aAZF0JUKCF0UvfF6@mail-itl>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="905i3CbqCZm+HHvF"
+ protocol="application/pgp-signature"; boundary="FtZpEP7ZV9KwPWkb"
 Content-Disposition: inline
-In-Reply-To: <aAZF0JUKCF0UvfF6@mail-itl>
+In-Reply-To: <d37a7c9e-7b3f-afc2-b010-e9785f39a785@intel.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
  invisiblethingslab.com; h=cc:cc:content-type:content-type:date
  :date:from:from:in-reply-to:in-reply-to:message-id:mime-version
- :references:reply-to:subject:subject:to:to; s=fm2; t=1745242097;
- x=1745328497; bh=0qVkw3Shy50bKVumUVEOY0hrPGUdQGC9Px7ESgUdwPI=; b=
- BBCtm0r21NtdT/wx7sN6S5nvF196m6MHLg778hwYFYxru1XxmE9GRjwCR32vfYRQ
- rsBT6hwdRFwrDZILrlmO0o8/fLc1j1A+FG4rWW8mQBSrICcTmBUxbJpWa7Wh0zDf
- DCmbESiUWqvJHXBPryXEEU+GXKjX2obVEsjTU2xoAaK4yrl3RHus+Y86Lbcpdp63
- 1A46dnrM5RZAn+tWN3g0EWNvzpQy2d155f44gr2NVP7h/lxsIcpdF6BJvaAgXDHR
- oclUqTX5C+Mxwrh6zk4m1GHrlPbkmaTa94yUyLr1LQU1zaJwUR5t/FQ1OZBVLnv1
- 60HBXlgyIc7rraxGpEuTug==
+ :references:reply-to:subject:subject:to:to; s=fm2; t=1745241556;
+ x=1745327956; bh=zVbdfyjXXUzkgsvwIg3jwWbyVaRbh5FQH6V+d4QgSvc=; b=
+ MrbIe4s3pdaO7DysJAHQIpmTwPlQv69KKw52uSk0OzmgnV8RuwrGEXUEc7HyhNlV
+ 8ccAU/EWcSAf1tgIjuGNlqNGUCQSdirl2FJlK3utznREFFZ8xwepZDgePKjaKdPK
+ DEG3I+akFUaMepkP2xssYZh6gU+TDZhiMgMd4z18j+No4bK7qC5EGOtSR/PZcNlM
+ bxXfKLZeO36BjJ6XGVpAJ4lz6uAGDP1Vvb4Fv81/FiUgrdwiEOE2KDUS2O+TJgIz
+ 4ZuEd/ESo4JpDKZjfEp5splwh/dSkpP+zEMgFd+chqUbiMsvFx3a9golsyNCmpEx
+ zIC0PDUrhP/vIN1/I8O20w==
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
  messagingengine.com; h=cc:cc:content-type:content-type:date:date
  :feedback-id:feedback-id:from:from:in-reply-to:in-reply-to
  :message-id:mime-version:references:reply-to:subject:subject:to
  :to:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm2; t=
- 1745242097; x=1745328497; bh=0qVkw3Shy50bKVumUVEOY0hrPGUdQGC9Px7
- ESgUdwPI=; b=IsHkOrr1D9U44QgLYMugomS5SZH2D/6JiOmoUSK7JAslfQ3I9Fs
- cbfBjJjADNpu/ec/96xTVHwCtZ62/EUAiiM9aLA9vG/i3B3KVT/X6t9aD1TnfmSe
- EfxGqd+Q4dhXXbkNbpULorYiqNLrC2vdd2TX8K5acxE67hQKPsnkpvHMNff9P8IV
- iszTUGWzUjwlnhz5AaWZU9wwkqXk7o6u2XHpjdCtjrbrbR0pb3hp8pEdnBuBOcCG
- kyuocuHiLTX8yKsQhecLyVwVoUnr8w9v58wljoFmrvCRY0ZWdVJwVvaHQQgH4cSj
- YrnPLPLOgunEOLT5hl10AaT9mCYe0CeIXWg==
+ 1745241556; x=1745327956; bh=zVbdfyjXXUzkgsvwIg3jwWbyVaRbh5FQH6V
+ +d4QgSvc=; b=e9j+OPzzFw0c/WfO5vtzydbJNlOm1jp+0KzcfRpTpbM0EFzEy+0
+ nbucO3P6Lx4CCupQvtsat7JapPgtzP7cLlB3g7osJwx+GZHNGrJz+K9A46DKYvCl
+ DAbOxNVcK8WI7urCxh/tM9SLml9a5XS6TJ0oDN3fJnmHiPv8e8gi+f0eHtkbuP/z
+ NjQHQJplVrzdi7I7csrhQ8/L4zWGchXlqG4MRVSyaAum4EwiVZK3Ki/bR1EQAVre
+ u0jmPJgo0avxPanY+XBtayNiMU/SsrahDtFXqc59pnTReU95WRlCheHuoMtrvHkh
+ SnUDwo1yu1ZOAoqlDJQRMPkc0uhx1yqz8ow==
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=invisiblethingslab.com
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key, unprotected) header.d=invisiblethingslab.com
  header.i=@invisiblethingslab.com header.a=rsa-sha256 header.s=fm2
- header.b=BBCtm0r2; 
+ header.b=MrbIe4s3; 
  dkim=pass (2048-bit key,
  unprotected) header.d=messagingengine.com header.i=@messagingengine.com
- header.a=rsa-sha256 header.s=fm2 header.b=IsHkOrr1
+ header.a=rsa-sha256 header.s=fm2 header.b=e9j+OPzz
 Subject: Re: [Intel-wired-lan] [REGRESSION] e1000e heavy packet loss on
  Meteor Lake - 6.14.2
 X-BeenThere: intel-wired-lan@osuosl.org
@@ -161,11 +158,11 @@ Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 
---905i3CbqCZm+HHvF
+--FtZpEP7ZV9KwPWkb
 Content-Type: text/plain; protected-headers=v1; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
-Date: Mon, 21 Apr 2025 15:28:13 +0200
+Date: Mon, 21 Apr 2025 15:19:12 +0200
 From: Marek =?utf-8?Q?Marczykowski-G=C3=B3recki?= <marmarek@invisiblethingslab.com>
 To: "Lifshits, Vitaly" <vitaly.lifshits@intel.com>
 Cc: Jesse Brandeburg <jesse.brandeburg@intel.com>,
@@ -175,68 +172,59 @@ Cc: Jesse Brandeburg <jesse.brandeburg@intel.com>,
 Subject: Re: [Intel-wired-lan] [REGRESSION] e1000e heavy packet loss on
  Meteor Lake - 6.14.2
 
-On Mon, Apr 21, 2025 at 03:19:12PM +0200, Marek Marczykowski-G=C3=B3recki w=
-rote:
-> On Mon, Apr 21, 2025 at 03:44:02PM +0300, Lifshits, Vitaly wrote:
-> >=20
-> >=20
-> > On 4/16/2025 3:43 PM, Marek Marczykowski-G=C3=B3recki wrote:
-> > > On Wed, Apr 16, 2025 at 03:09:39PM +0300, Lifshits, Vitaly wrote:
-> > > > Can you please also share the output of ethtool -i? I would like to=
- know the
-> > > > NVM version that you have on your device.
-> > >=20
-> > > driver: e1000e
-> > > version: 6.14.1+
-> > > firmware-version: 1.1-4
-> > > expansion-rom-version:
-> > > bus-info: 0000:00:1f.6
-> > > supports-statistics: yes
-> > > supports-test: yes
-> > > supports-eeprom-access: yes
-> > > supports-register-dump: yes
-> > > supports-priv-flags: yes
-> > >=20
-> >=20
-> > Your firmware version is not the latest, can you check with the board
-> > manufacturer if there is a BIOS update to your system?
+On Mon, Apr 21, 2025 at 03:44:02PM +0300, Lifshits, Vitaly wrote:
 >=20
-> I can check, but still, it's a regression in the Linux driver - old
-> kernel did work perfectly well on this hw. Maybe new driver tries to use
-> some feature that is missing (or broken) in the old firmware?
-
-A little bit of context: I'm maintaining the kernel package for a Qubes
-OS distribution. While I can try to update firmware on my test system, I
-have no influence on what hardware users will use this kernel, and
-which firmware version they will use (and whether all the vendors
-provide newer firmware at all). I cannot ship a kernel that is known
-to break network on some devices.
-
-> > Also, you mentioned that on another system this issue doesn't reproduce=
-, do
-> > they have the same firmware version?
 >=20
-> The other one has also 1.1-4 firmware. And I re-checked, e1000e from
-> 6.14.2 works fine there.
+> On 4/16/2025 3:43 PM, Marek Marczykowski-G=C3=B3recki wrote:
+> > On Wed, Apr 16, 2025 at 03:09:39PM +0300, Lifshits, Vitaly wrote:
+> > > Can you please also share the output of ethtool -i? I would like to k=
+now the
+> > > NVM version that you have on your device.
+> >=20
+> > driver: e1000e
+> > version: 6.14.1+
+> > firmware-version: 1.1-4
+> > expansion-rom-version:
+> > bus-info: 0000:00:1f.6
+> > supports-statistics: yes
+> > supports-test: yes
+> > supports-eeprom-access: yes
+> > supports-register-dump: yes
+> > supports-priv-flags: yes
+> >=20
+>=20
+> Your firmware version is not the latest, can you check with the board
+> manufacturer if there is a BIOS update to your system?
+
+I can check, but still, it's a regression in the Linux driver - old
+kernel did work perfectly well on this hw. Maybe new driver tries to use
+some feature that is missing (or broken) in the old firmware?
+
+> Also, you mentioned that on another system this issue doesn't reproduce, =
+do
+> they have the same firmware version?
+
+The other one has also 1.1-4 firmware. And I re-checked, e1000e from
+6.14.2 works fine there.
 
 --=20
 Best Regards,
 Marek Marczykowski-G=C3=B3recki
 Invisible Things Lab
 
---905i3CbqCZm+HHvF
+--FtZpEP7ZV9KwPWkb
 Content-Type: application/pgp-signature; name=signature.asc
 
 -----BEGIN PGP SIGNATURE-----
 
-iQEzBAEBCAAdFiEEhrpukzGPukRmQqkK24/THMrX1ywFAmgGR+0ACgkQ24/THMrX
-1yxQZQf/YKyAaZ6uRKoItVe64l4tTEHFhwtsfm1XnV8YQ7kifFzR2nqj01vPZccG
-GB5o+uI2XY/q927n+QlEemEM+bAt66etky1bC5noOxyZeLbQdUj32e7gG5pb5Gh5
-XaUSK4DVQEL3NLzsfV2DQlEDOHaGOWie4Ya/83ic5TyXxbEcqLWRznvA699akDf4
-z9XXTLmDfJrdu1qneGDb6p5tzsqkHHdODr3jAtDh/q6GDBEGlJ2wxYz138RJKfVG
-i3R+n9n5UwcfQNK4wUg1NX2678f1oT3aLqABYCCvQGN/iscU8C4msM+yZYlZffQd
-S80FnW5zu4unYc34FjocJnc1Yp7ovA==
-=VB7y
+iQEzBAEBCAAdFiEEhrpukzGPukRmQqkK24/THMrX1ywFAmgGRdAACgkQ24/THMrX
+1yxLeAf8DvKL+foWSoIwDphGGhQZ3unGbl5ca72JDBQ6KcM6JxaNauYhY9mpzz+C
+ZESupbqixbb+HLmbIbEQLVlDyfxAW6x6y4sBV+8c3fy8678Z+c2PcHIgiX8YV0a1
+Ntrjn9GRZBWi2e6RmJSCHijHtRlfQsjDxSWiwT1WxjuNVROgsLOW9LXPZmXvasnp
+UDTqgIhH6jcNFhaQ/pQcoGyZ31vG6pVLeloePXDOlJ35Gb+4Cts6jTeqBxxyF0R8
+O1TMVSAYc3G6wlH7o1eSQ4pLeORMY0H8m/kf1dMOLj7osPorfDauk5KLXVm2WWJh
+VEKHuDwHUdeCHvG8BvsOAKR9tsuung==
+=gE/2
 -----END PGP SIGNATURE-----
 
---905i3CbqCZm+HHvF--
+--FtZpEP7ZV9KwPWkb--
