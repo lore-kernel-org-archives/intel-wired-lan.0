@@ -1,70 +1,69 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 311FFC369D7
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 24 Apr 2025 11:32:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E79E6C369AB
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 24 Apr 2025 11:32:57 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id D25C3820A2;
+	by smtp4.osuosl.org (Postfix) with ESMTP id ABE5F4194B;
 	Thu, 24 Apr 2025 11:32:57 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 15S240dRr3Le; Thu, 24 Apr 2025 11:32:57 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id PIs5ujQ035TN; Thu, 24 Apr 2025 11:32:55 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4386981F88
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D516341761
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1745494377;
-	bh=/kq0zw7c50LzfaXRMreSZilzvBH1sSaaE0F5QLyoUzs=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=5Ebdn6HCk2S5apxyz4JVedbkpz4M1FX9xtCrBC5Pz5+19AydjU0adi2EYd54L6iDq
-	 7Ai7XtHggL4iHG+FyHn07MJV0jZbqPWNYUFK4TZCk52vK8PB6Gd5YGLu+/UYAxucbr
-	 GYNfZ9csFlH/shlhuhxiT8WUDkp/X9XRpB4bLBFUrj91V3pldSC5c5iRoRJ71Umubp
-	 k5eY83waA5DscWpN3jmLtISiRLXGcEgckokU3NV1w9myXtSG7Q2b/pnJYSOjznTnxM
-	 dPzqMOUhYXT5yn9D+Gf5CEySo6yvdQoo9rNgxcDzRY72RlzAl21xuaHS/eM3J8aA/g
-	 D1y1DVB4WL8ow==
+	s=default; t=1745494374;
+	bh=VMIJ/Ju9z9PbpCzxMJSqOmpCDp7t5LzKiMyw+dsVMd0=;
+	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=xyRd6q9iG7gtSvw+y0ycuv7PTR1PctLWq+iQL81s6cU6aSrVcat/IwnTrcEKU6oQw
+	 FpWOruhEVQ8gpRdb4sCwWF9CehaASK+h2uaGV9FgTHpAloqWylY/j1bz5HIAhZ3/PA
+	 CXDhSrWPH6XggCMLe7z2giTLM0qTAzfXvUWXBcyi/Hzcjbnil/Bv/SG63oh46HSP/L
+	 fKWQTE3Jwflk97e30Rv3Dal01WKzZ+yLqEbZfhmOlYgPzbTPatiJGKcBen3qiKerzp
+	 /vzWsxHFzwze4ePHqWY28a2bzejQpi16PqJflCM5ShWd/xlrGa97qd6wJyEcaYxAmh
+	 Az6W/yMqVph/w==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 4386981F88;
-	Thu, 24 Apr 2025 11:32:57 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id ADD91EC
- for <intel-wired-lan@lists.osuosl.org>; Thu, 24 Apr 2025 11:32:56 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id D516341761;
+	Thu, 24 Apr 2025 11:32:54 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 35F1B28C
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 24 Apr 2025 11:32:53 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id EE3046F762
- for <intel-wired-lan@lists.osuosl.org>; Thu, 24 Apr 2025 11:32:55 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 26B336F6DE
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 24 Apr 2025 11:32:53 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 5ajcWWiQGadT for <intel-wired-lan@lists.osuosl.org>;
- Thu, 24 Apr 2025 11:32:55 +0000 (UTC)
+ id AtyP_LVbVVik for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 24 Apr 2025 11:32:52 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.11;
  helo=mgamail.intel.com; envelope-from=larysa.zaremba@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 566F56F751
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 566F56F751
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 421FE6F759
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 421FE6F759
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.11])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 566F56F751
- for <intel-wired-lan@lists.osuosl.org>; Thu, 24 Apr 2025 11:32:55 +0000 (UTC)
-X-CSE-ConnectionGUID: D7xEN0RaQxuRg79PFpA+gQ==
-X-CSE-MsgGUID: YipzKTTYSiqfPGvfdRXgGg==
-X-IronPort-AV: E=McAfee;i="6700,10204,11412"; a="57771174"
-X-IronPort-AV: E=Sophos;i="6.15,235,1739865600"; d="scan'208";a="57771174"
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 421FE6F759
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 24 Apr 2025 11:32:51 +0000 (UTC)
+X-CSE-ConnectionGUID: FtGxDd8aQ+S7tWzvgavpQA==
+X-CSE-MsgGUID: +f2PM6gAQgy8N9XxxkWTDQ==
+X-IronPort-AV: E=McAfee;i="6700,10204,11412"; a="57771146"
+X-IronPort-AV: E=Sophos;i="6.15,235,1739865600"; d="scan'208";a="57771146"
 Received: from fmviesa005.fm.intel.com ([10.60.135.145])
  by fmvoesa105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 24 Apr 2025 04:32:55 -0700
-X-CSE-ConnectionGUID: TgJixxFGTGSoqmMrtqn4mA==
-X-CSE-MsgGUID: 8NnDoD27TmOUG1K5gYmN1A==
+ 24 Apr 2025 04:32:51 -0700
+X-CSE-ConnectionGUID: JPMUmLKPRn+4S9U5ER2PNw==
+X-CSE-MsgGUID: Y3oAZrOUSzOaE2+/OsrqeQ==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.15,235,1739865600"; d="scan'208";a="137389356"
+X-IronPort-AV: E=Sophos;i="6.15,235,1739865600"; d="scan'208";a="137389329"
 Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by fmviesa005.fm.intel.com with ESMTP; 24 Apr 2025 04:32:49 -0700
+ by fmviesa005.fm.intel.com with ESMTP; 24 Apr 2025 04:32:45 -0700
 Received: from mglak.igk.intel.com (mglak.igk.intel.com [10.237.112.146])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id DDB3033EA3;
- Thu, 24 Apr 2025 12:32:46 +0100 (IST)
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id 2A3CE33E9B;
+ Thu, 24 Apr 2025 12:32:42 +0100 (IST)
 From: Larysa Zaremba <larysa.zaremba@intel.com>
 To: intel-wired-lan@lists.osuosl.org, Tony Nguyen <anthony.l.nguyen@intel.com>
 Cc: "David S. Miller" <davem@davemloft.net>,
@@ -91,34 +90,31 @@ Cc: "David S. Miller" <davem@davemloft.net>,
  Madhu Chittim <madhu.chittim@intel.com>, Josh Hay <joshua.a.hay@intel.com>,
  Milena Olech <milena.olech@intel.com>, pavan.kumar.linga@intel.com,
  "Singhai, Anjali" <anjali.singhai@intel.com>
-Date: Thu, 24 Apr 2025 13:32:25 +0200
-Message-ID: <20250424113241.10061-3-larysa.zaremba@intel.com>
+Date: Thu, 24 Apr 2025 13:32:23 +0200
+Message-ID: <20250424113241.10061-1-larysa.zaremba@intel.com>
 X-Mailer: git-send-email 2.47.0
-In-Reply-To: <20250424113241.10061-1-larysa.zaremba@intel.com>
-References: <20250424113241.10061-1-larysa.zaremba@intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1745494375; x=1777030375;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=+yw0+21GJfw/AyHHlGUOw6Yqnou/jCHKGvK5xx0JRxs=;
- b=hA70XkHhv9hIS+gS8RGou0uiBrU0LfqNSWhr3nKO3EyuAp2u4hIh1NJ+
- 7JdLvw0hAR+EffOFnDJ82joS+7VX8ATjnnd41Xe3JJpjUq1RR6q8k31x7
- 3lOT8TjZbcZTfDYz0dXyFJKnxzaK4OVyTfbZ7NjnmutGYWp2RSg87XVLc
- hMbd3n1mAZDrK62ae5hMF9kwjW1xuRmrB6pPb3U8yGDRyUKaldAz4rkCk
- kgsF0fKRewwU5BP7Hlzw+muNrTLuugtx6nEb4A1s24Np/UKI+5JI8iztP
- jf2HbfrckguKEaU68X71uxffVRLYjc0+hrji/JW9WjZo7U9H2fJBkaph5
- Q==;
+ t=1745494372; x=1777030372;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=JGwozXvGLUYRAhQYuo/5Es9lkizURDNr3Wu4FgAGM3A=;
+ b=Ub17vUfqn+pmoPLA+LQPqLP3hVVOf4ptsuRXCXQlZam/jWDOteArWY0F
+ xbTXiVvB/ddashyRRvmZmCBJno1eiuIh1f7nQyp15Dhd0FAKQVMimQgNw
+ mRORDIjllAEcEMWbcmysWO6qOHHaCTdKxqquip6Ad+rBa4xtknNoGV3Ot
+ I/vxNtmyxsDs2rz5kE9JCun9aAHP728L6O5RFLNNIG81r/+RCy9dWPtF/
+ DLZRuiX6e8Z3i5MS9olxuERMqdQL/LaqM/X5nWR7t5997uN46tHNSnwxM
+ yl6svLs1i0p4UI28uozKAF/6Az3a6CIisFEt8BDIzTtMI66KbKNXhc2Qn
+ w==;
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=hA70XkHh
-Subject: [Intel-wired-lan] [PATCH iwl-next v2 02/14] virtchnl: introduce
- control plane version fields
+ header.a=rsa-sha256 header.s=Intel header.b=Ub17vUfq
+Subject: [Intel-wired-lan] [PATCH iwl-next v2 00/14] Introduce iXD driver
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -134,42 +130,207 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Victor Raj <victor.raj@intel.com>
+This patch series adds the iXD driver, which supports the Intel(R)
+Control Plane PCI Function on Intel E2100 and later IPUs and FNICs.
+It facilitates a centralized control over multiple IDPF PFs/VFs/SFs
+exposed by the same card. The reason for the separation is to be able
+to offload the control plane to the host different from where the data
+plane is running.
 
-In the virtchnl header file, add the Control Plane software
-version fields.
+This is the first phase in the release of this driver where we implement the
+initialization of the core PCI driver. Subsequent phases will implement
+advanced features like usage of idpf ethernet aux device, link management,
+NVM update via devlink, switchdev port representors, data and exception path,
+flow rule programming, etc.
 
-Signed-off-by: Victor Raj <victor.raj@intel.com>
-Reviewed-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
-Signed-off-by: Larysa Zaremba <larysa.zaremba@intel.com>
----
- include/linux/intel/virtchnl2.h | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+The first phase entails the following aspects:
 
-diff --git a/include/linux/intel/virtchnl2.h b/include/linux/intel/virtchnl2.h
-index 11b8f6f05799..34f4c73d8325 100644
---- a/include/linux/intel/virtchnl2.h
-+++ b/include/linux/intel/virtchnl2.h
-@@ -477,7 +477,8 @@ VIRTCHNL2_CHECK_STRUCT_LEN(8, virtchnl2_version_info);
-  *			    sent per transmit packet without needing to be
-  *			    linearized.
-  * @pad: Padding.
-- * @reserved: Reserved.
-+ * @cp_ver_major: Control Plane major version number.
-+ * @cp_ver_minor: Control Plane minor version number.
-  * @device_type: See enum virtchl2_device_type.
-  * @min_sso_packet_len: Min packet length supported by device for single
-  *			segment offload.
-@@ -526,7 +527,8 @@ struct virtchnl2_get_capabilities {
- 	__le16 max_tx_hdr_size;
- 	u8 max_sg_bufs_per_tx_pkt;
- 	u8 pad[3];
--	u8 reserved[4];
-+	__le16 cp_ver_major;
-+	__le16 cp_ver_minor;
- 	__le32 device_type;
- 	u8 min_sso_packet_len;
- 	u8 max_hdr_buf_per_lso;
+1. Additional libie functionalities:
+Patches 1-6 introduces additional common library API for drivers to
+communicate with the control plane through mailbox communication.
+A control queue is a hardware interface which is used by the driver
+to interact with other subsystems (like firmware). The library APIs
+allow the driver to setup and configure the control queues to send and
+receive virtchnl messages. The library has an internal bookkeeping
+(XN API) mechanism to keep track of the send messages. It supports both
+synchronous as well as asynchronous way of handling the messages. The
+library also handles the timeout internally for synchronous messages
+using events. This reduces the driver's overhead in handling the timeout
+error cases.
+
+The current patch series supports only APIs that are needed for device
+initialization. These include APIs in the libie_pci module:
+* Allocating/freeing the DMA memory and mapping the MMIO regions for
+  BAR0, read/write APIs for drivers to access the MMIO memory
+
+and libie_cp module:
+* Control queue initialization and configuration
+* Transport initialization for bookkeeping
+* Blocking and asynchronous mailbox transactions
+
+Once the mailbox is initialized, the drivers can send and receive virtchnl
+messages to/from the control plane.
+
+The modules above are not supposed to be linked witn the main libie library,
+but do share the folder with it.
+
+2. idpf :
+Patches 7-10 refactor the idpf driver to use the libie APIs for control
+queue configuration, virtchnl transaction, device initialization and
+reset and adjust related code accordingly.
+
+3. ixd:
+Patches 11-14 add the ixd driver and implement multiple pieces of the
+initialization flow as follows:
+* Add the ability to load
+* A reset is issued to ensure a clean device state, followed by
+  initialization of the mailbox
+* Device capabilities:
+  As part of initialization, the driver has to determine what the device is
+  capable of (ex. max queues, vports, etc). This information is obtained from
+  the firmware and stored by the driver.
+* Enable initial support for the devlink interface
+
+v1->v2:
+* rename libeth_cp and libeth_pci to libie_cp and libie_pci respectively,
+  move them into an appropriate folder
+* rebase on top of recent PTP changes, this alters idpf refactor
+* update maintainers after moving headers
+* cast resource_size_t to unsigned long long when printing
+* add ixd devlink documentation into index
+* fix xn system kdoc problems
+* fix indentation in libeth_ctlq_xn_deinit()
+* fix extra kdoc member vcxn_mngr in idpf_adapter
+
+Amritha Nambiar (1):
+  ixd: add devlink support
+
+Larysa Zaremba (5):
+  idpf: make mbx_task queueing and cancelling more consistent
+  idpf: print a debug message and bail in case of non-event ctlq message
+  ixd: add basic driver framework for Intel(R) Control Plane Function
+  ixd: add reset checks and initialize the mailbox
+  ixd: add the core initialization
+
+Pavan Kumar Linga (3):
+  libeth: allow to create fill queues without NAPI
+  idpf: remove 'vport_params_reqd' field
+  idpf: refactor idpf to use libie controlq and Xn APIs
+
+Phani R Burra (3):
+  libie: add PCI device initialization helpers to libie
+  libie: add control queue support
+  libie: add bookkeeping support for control queue messages
+
+Victor Raj (2):
+  virtchnl: create 'include/linux/intel' and move necessary header files
+  virtchnl: introduce control plane version fields
+
+ .../device_drivers/ethernet/index.rst         |    1 +
+ .../device_drivers/ethernet/intel/ixd.rst     |   39 +
+ Documentation/networking/devlink/index.rst    |    1 +
+ Documentation/networking/devlink/ixd.rst      |   35 +
+ MAINTAINERS                                   |    6 +-
+ drivers/infiniband/hw/irdma/i40iw_if.c        |    2 +-
+ drivers/infiniband/hw/irdma/main.h            |    2 +-
+ drivers/infiniband/hw/irdma/osdep.h           |    2 +-
+ drivers/net/ethernet/intel/Kconfig            |    2 +
+ drivers/net/ethernet/intel/Makefile           |    1 +
+ drivers/net/ethernet/intel/i40e/i40e.h        |    4 +-
+ drivers/net/ethernet/intel/i40e/i40e_client.c |    2 +-
+ drivers/net/ethernet/intel/i40e/i40e_common.c |    2 +-
+ .../net/ethernet/intel/i40e/i40e_prototype.h  |    2 +-
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c   |    2 +-
+ .../ethernet/intel/i40e/i40e_virtchnl_pf.h    |    2 +-
+ drivers/net/ethernet/intel/iavf/iavf.h        |    2 +-
+ drivers/net/ethernet/intel/iavf/iavf_common.c |    2 +-
+ drivers/net/ethernet/intel/iavf/iavf_main.c   |    2 +-
+ .../net/ethernet/intel/iavf/iavf_prototype.h  |    2 +-
+ drivers/net/ethernet/intel/iavf/iavf_txrx.c   |    2 +-
+ drivers/net/ethernet/intel/iavf/iavf_types.h  |    4 +-
+ .../net/ethernet/intel/iavf/iavf_virtchnl.c   |    2 +-
+ drivers/net/ethernet/intel/ice/ice.h          |    2 +-
+ drivers/net/ethernet/intel/ice/ice_common.h   |    2 +-
+ drivers/net/ethernet/intel/ice/ice_idc_int.h  |    2 +-
+ drivers/net/ethernet/intel/ice/ice_txrx_lib.c |    2 +-
+ drivers/net/ethernet/intel/ice/ice_vf_lib.h   |    2 +-
+ drivers/net/ethernet/intel/ice/ice_virtchnl.h |    2 +-
+ drivers/net/ethernet/intel/idpf/Kconfig       |    1 +
+ drivers/net/ethernet/intel/idpf/Makefile      |    2 -
+ drivers/net/ethernet/intel/idpf/idpf.h        |   47 +-
+ .../net/ethernet/intel/idpf/idpf_controlq.c   |  624 ------
+ .../net/ethernet/intel/idpf/idpf_controlq.h   |  130 --
+ .../ethernet/intel/idpf/idpf_controlq_api.h   |  177 --
+ .../ethernet/intel/idpf/idpf_controlq_setup.c |  171 --
+ drivers/net/ethernet/intel/idpf/idpf_dev.c    |   91 +-
+ drivers/net/ethernet/intel/idpf/idpf_lib.c    |   60 +-
+ drivers/net/ethernet/intel/idpf/idpf_main.c   |   87 +-
+ drivers/net/ethernet/intel/idpf/idpf_mem.h    |   20 -
+ drivers/net/ethernet/intel/idpf/idpf_txrx.h   |    4 +-
+ drivers/net/ethernet/intel/idpf/idpf_vf_dev.c |   89 +-
+ .../net/ethernet/intel/idpf/idpf_virtchnl.c   | 1670 ++++++-----------
+ .../net/ethernet/intel/idpf/idpf_virtchnl.h   |   89 +-
+ .../ethernet/intel/idpf/idpf_virtchnl_ptp.c   |  303 ++-
+ drivers/net/ethernet/intel/ixd/Kconfig        |   15 +
+ drivers/net/ethernet/intel/ixd/Makefile       |   13 +
+ drivers/net/ethernet/intel/ixd/ixd.h          |   56 +
+ drivers/net/ethernet/intel/ixd/ixd_ctlq.c     |  148 ++
+ drivers/net/ethernet/intel/ixd/ixd_ctlq.h     |   33 +
+ drivers/net/ethernet/intel/ixd/ixd_dev.c      |   86 +
+ drivers/net/ethernet/intel/ixd/ixd_devlink.c  |  105 ++
+ drivers/net/ethernet/intel/ixd/ixd_devlink.h  |   44 +
+ drivers/net/ethernet/intel/ixd/ixd_lan_regs.h |   68 +
+ drivers/net/ethernet/intel/ixd/ixd_lib.c      |  166 ++
+ drivers/net/ethernet/intel/ixd/ixd_main.c     |  150 ++
+ drivers/net/ethernet/intel/ixd/ixd_virtchnl.c |  178 ++
+ drivers/net/ethernet/intel/ixd/ixd_virtchnl.h |   12 +
+ drivers/net/ethernet/intel/libeth/rx.c        |    9 +-
+ drivers/net/ethernet/intel/libie/Kconfig      |   14 +
+ drivers/net/ethernet/intel/libie/Makefile     |    8 +
+ drivers/net/ethernet/intel/libie/controlq.c   | 1186 ++++++++++++
+ drivers/net/ethernet/intel/libie/pci.c        |  184 ++
+ drivers/net/ethernet/intel/libie/rx.c         |    2 +-
+ include/linux/{net => }/intel/i40e_client.h   |    0
+ include/linux/{net => }/intel/iidc.h          |    0
+ include/linux/intel/libie/controlq.h          |  421 +++++
+ include/linux/intel/libie/pci.h               |   54 +
+ include/linux/{net => }/intel/libie/rx.h      |    0
+ include/linux/{avf => intel}/virtchnl.h       |    0
+ .../idpf => include/linux/intel}/virtchnl2.h  |    6 +-
+ .../linux/intel}/virtchnl2_lan_desc.h         |    0
+ include/net/libeth/rx.h                       |    4 +-
+ 73 files changed, 3976 insertions(+), 2684 deletions(-)
+ create mode 100644 Documentation/networking/device_drivers/ethernet/intel/ixd.rst
+ create mode 100644 Documentation/networking/devlink/ixd.rst
+ delete mode 100644 drivers/net/ethernet/intel/idpf/idpf_controlq.c
+ delete mode 100644 drivers/net/ethernet/intel/idpf/idpf_controlq.h
+ delete mode 100644 drivers/net/ethernet/intel/idpf/idpf_controlq_api.h
+ delete mode 100644 drivers/net/ethernet/intel/idpf/idpf_controlq_setup.c
+ delete mode 100644 drivers/net/ethernet/intel/idpf/idpf_mem.h
+ create mode 100644 drivers/net/ethernet/intel/ixd/Kconfig
+ create mode 100644 drivers/net/ethernet/intel/ixd/Makefile
+ create mode 100644 drivers/net/ethernet/intel/ixd/ixd.h
+ create mode 100644 drivers/net/ethernet/intel/ixd/ixd_ctlq.c
+ create mode 100644 drivers/net/ethernet/intel/ixd/ixd_ctlq.h
+ create mode 100644 drivers/net/ethernet/intel/ixd/ixd_dev.c
+ create mode 100644 drivers/net/ethernet/intel/ixd/ixd_devlink.c
+ create mode 100644 drivers/net/ethernet/intel/ixd/ixd_devlink.h
+ create mode 100644 drivers/net/ethernet/intel/ixd/ixd_lan_regs.h
+ create mode 100644 drivers/net/ethernet/intel/ixd/ixd_lib.c
+ create mode 100644 drivers/net/ethernet/intel/ixd/ixd_main.c
+ create mode 100644 drivers/net/ethernet/intel/ixd/ixd_virtchnl.c
+ create mode 100644 drivers/net/ethernet/intel/ixd/ixd_virtchnl.h
+ create mode 100644 drivers/net/ethernet/intel/libie/controlq.c
+ create mode 100644 drivers/net/ethernet/intel/libie/pci.c
+ rename include/linux/{net => }/intel/i40e_client.h (100%)
+ rename include/linux/{net => }/intel/iidc.h (100%)
+ create mode 100644 include/linux/intel/libie/controlq.h
+ create mode 100644 include/linux/intel/libie/pci.h
+ rename include/linux/{net => }/intel/libie/rx.h (100%)
+ rename include/linux/{avf => intel}/virtchnl.h (100%)
+ rename {drivers/net/ethernet/intel/idpf => include/linux/intel}/virtchnl2.h (99%)
+ rename {drivers/net/ethernet/intel/idpf => include/linux/intel}/virtchnl2_lan_desc.h (100%)
+
 -- 
 2.47.0
 
