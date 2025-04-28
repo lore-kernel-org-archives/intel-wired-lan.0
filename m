@@ -1,67 +1,67 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A1A8DC36005
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 28 Apr 2025 06:03:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B9E3EC369D3
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 28 Apr 2025 06:03:36 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 6F5F140BB8;
-	Mon, 28 Apr 2025 06:03:33 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id AXVSzkTtTVs1; Mon, 28 Apr 2025 06:03:32 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org F11BE40BB4
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1745820212;
-	bh=C0SZsIn0mAsod1nOFmJPvDp96l+iCOCJRnHVWwiUxrk=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=PFIkVFYYGNGBGm0BVsh/lycgbj24jTjPdkEx52e6BNb1aRU0NmrJU/FQvEvd1eFI4
-	 ZOE4ku7pdnun5WiULGlRfcvBiDYJ3eGZR3vEvRuLGlu9jsEtYIa3rcsfdzN9Ff4m1V
-	 Zernk+fJJ2klVtU+yv7MJtKkmZZ9ArOahP3uevxB3cUGmd44LmBPaTq/phjEjAcRBq
-	 GZNbPy4H13pLM6KmIcnDeLBZlYwwqHR8KXpptgeBKKj/2UuSgf6z5pyik2mDTYCcWs
-	 jLRxMsPUCGcYmGBo162RZv47fLiUPFvdgTaayC+vJH3CCOihZdRflHH/jlmq+9obN7
-	 X7IaKeVbxVvNg==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id F11BE40BB4;
-	Mon, 28 Apr 2025 06:03:31 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id BC55419E
- for <intel-wired-lan@lists.osuosl.org>; Mon, 28 Apr 2025 06:03:30 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id B839860B83
- for <intel-wired-lan@lists.osuosl.org>; Mon, 28 Apr 2025 06:03:30 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 74B7C60B83;
+	Mon, 28 Apr 2025 06:03:36 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id o37MRDmMwrlb for <intel-wired-lan@lists.osuosl.org>;
- Mon, 28 Apr 2025 06:03:30 +0000 (UTC)
+ id BNbF1MMHUK9r; Mon, 28 Apr 2025 06:03:36 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E05C760B88
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1745820215;
+	bh=f3ZCCt30xDDG/XtKIKwwVvcd/f9Ylrwn3N9catKxlmc=;
+	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=qwE48O9aaUMOZ6ucrd89pdTB5BkUXP+OHMQHyaEUlj30m7UYOqf0mBdcDINhJBSEs
+	 jDcBMTCVzcOlqIGW1mCd1zRydfs1QqMhsiLW40m1o7Xi54roelu5itSUtfTq5RX371
+	 NJ+rWX14stG9lHIppuPHze3pDk316D57YoUimRctsmWlM9KvFLdcvDAoa0Hzbgl9sR
+	 uL4DA+oP7kGwCp/Zgs0dNCCr7f0wPgV6tvaqV6a+If2JR3DJEjPW6+dLKn41AT7NBF
+	 0HfZWseZc+tCQNcwRixWJY04M3jmgkGSLzyUf90rlACW+76rHv+h81Xtv23kNXyCtd
+	 AqWWhnFubdcOg==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp3.osuosl.org (Postfix) with ESMTP id E05C760B88;
+	Mon, 28 Apr 2025 06:03:35 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 1AB87194
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 28 Apr 2025 06:03:34 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp3.osuosl.org (Postfix) with ESMTP id 006CF60B7C
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 28 Apr 2025 06:03:34 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id Fa9dyc0aI973 for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 28 Apr 2025 06:03:33 +0000 (UTC)
 Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.15;
  helo=mgamail.intel.com; envelope-from=faizal.abdul.rahim@linux.intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 1A48760B6D
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 1A48760B6D
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 6043660B79
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 6043660B79
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.15])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 1A48760B6D
- for <intel-wired-lan@lists.osuosl.org>; Mon, 28 Apr 2025 06:03:30 +0000 (UTC)
-X-CSE-ConnectionGUID: BjH0VAEFSnubaRS5FMUFFg==
-X-CSE-MsgGUID: xq0pcH5tS7a2INtqG3UyQA==
-X-IronPort-AV: E=McAfee;i="6700,10204,11416"; a="51064606"
-X-IronPort-AV: E=Sophos;i="6.15,245,1739865600"; d="scan'208";a="51064606"
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 6043660B79
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 28 Apr 2025 06:03:33 +0000 (UTC)
+X-CSE-ConnectionGUID: LpBQISjwRPS/RUCszjUq2Q==
+X-CSE-MsgGUID: tSq1xE3+RLS7ZmFOMP8fHQ==
+X-IronPort-AV: E=McAfee;i="6700,10204,11416"; a="51064617"
+X-IronPort-AV: E=Sophos;i="6.15,245,1739865600"; d="scan'208";a="51064617"
 Received: from orviesa006.jf.intel.com ([10.64.159.146])
  by orvoesa107.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 27 Apr 2025 23:03:30 -0700
-X-CSE-ConnectionGUID: r8L480b1Qx+M0KGADanF6A==
-X-CSE-MsgGUID: jQ1pQTfzS6mZjH6ajiiPyw==
+ 27 Apr 2025 23:03:34 -0700
+X-CSE-ConnectionGUID: MNq7LqucQVCwYbZseCh3PQ==
+X-CSE-MsgGUID: kKBHL5XaQna9TZ6tL/LZEQ==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.15,245,1739865600"; d="scan'208";a="133340742"
+X-IronPort-AV: E=Sophos;i="6.15,245,1739865600"; d="scan'208";a="133340764"
 Received: from mohdfai2-ilbpg12-1.png.intel.com ([10.88.227.73])
- by orviesa006.jf.intel.com with ESMTP; 27 Apr 2025 23:03:27 -0700
+ by orviesa006.jf.intel.com with ESMTP; 27 Apr 2025 23:03:31 -0700
 From: Faizal Rahim <faizal.abdul.rahim@linux.intel.com>
 To: Tony Nguyen <anthony.l.nguyen@intel.com>,
  Przemek Kitszel <przemyslaw.kitszel@intel.com>,
@@ -73,8 +73,8 @@ Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
  linux-kernel@vger.kernel.org,
  Faizal Rahim <faizal.abdul.rahim@linux.intel.com>,
  Chwee-Lin Choong <chwee.lin.choong@intel.com>
-Date: Mon, 28 Apr 2025 02:02:19 -0400
-Message-Id: <20250428060225.1306986-3-faizal.abdul.rahim@linux.intel.com>
+Date: Mon, 28 Apr 2025 02:02:20 -0400
+Message-Id: <20250428060225.1306986-4-faizal.abdul.rahim@linux.intel.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20250428060225.1306986-1-faizal.abdul.rahim@linux.intel.com>
 References: <20250428060225.1306986-1-faizal.abdul.rahim@linux.intel.com>
@@ -82,25 +82,25 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1745820211; x=1777356211;
+ t=1745820214; x=1777356214;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=utJgU/4E0lRF86nAOgNjxmBrTEjRQTmBI49DKxLnVb0=;
- b=GP/w9fnrOFpOFEAvgxy0yEvGMNp+qiQqvHnBzQvcPgR8onBxniv0V7So
- 8FsROgG4p8NfQoO1mCulj2n5fdrMrYGGsmIakxg2yag+bho3YTrhSjpWz
- M0GwhYsC+HLUCB5zC1EGtWeA4acFpLTjYw1r4vHOH9ciGchtj562yq+2i
- cJYUTGhJSwZCsP02ollY5qDrm9AHAzfngR2pY33nDAPPfATQULERu+1Ud
- 809B9Hg2GYgMyEc1asAcF4zb5d7WIJQ/0o/s+PVvrXBE46aZXxumY6Bsl
- zyEqpxxoy0ojoVbSuJqE7ciaD0cze+39CvZovxKfRu53SUDNU0BX3rMG1
+ bh=pS4q/Yjxbmtc0fCQ3ldogllC9oASKz4SUbDlI70Yroo=;
+ b=cHxiehA+NYkhg0le5XKv1mlbs6jWeCUVuuigvTUf414bHgmddecU6CAi
+ dDI5VqGRbOQyD1SHnBdeTKa0kJ1/EgkH9yv8Kfk8GXfQmSA7aoG7M7tHb
+ l7aQuGeDQuj0/P3V7CYIyUSwdjs2cR3hbhL01R5aljiyru1zoo3zQXF/l
+ edfS2F9b0pHQ1XifaDfs+kZcQnQgn5tbVsCWYksJjZUojy+RBiE+TN9Vu
+ 2focc2rp3MYsCdVHkMNxUNrjSPzk9EvL1FuXlQppm8nizOS3XBbHHetdU
+ n0ZIH24hcvIjAZt1hCEm0wMgtzK8eiTEEBzmayxxvntrDGMIy8ErE6r9x
  w==;
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=none (p=none dis=none)
  header.from=linux.intel.com
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=GP/w9fnr
-Subject: [Intel-wired-lan] [PATCH iwl-next v1 2/8] igc: add TXDCTL prefix to
- related macros
+ header.a=rsa-sha256 header.s=Intel header.b=cHxiehA+
+Subject: [Intel-wired-lan] [PATCH iwl-next v1 3/8] igc: refactor TXDCTL
+ macros to use FIELD_PREP and GEN_MASK
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -116,51 +116,66 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Rename macros to include the TXDCTL_ prefix for consistency and clarity.
-This aligns naming with the register they configure and improves code
-readability.
+Refactor TXDCTL macro handling to use FIELD_PREP and GENMASK macros.
+This prepares the code for adding a new TXDCTL priority field in an
+upcoming patch.
 
 Signed-off-by: Faizal Rahim <faizal.abdul.rahim@linux.intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc.h      | 6 +++---
- drivers/net/ethernet/intel/igc/igc_main.c | 6 +++---
- 2 files changed, 6 insertions(+), 6 deletions(-)
+ drivers/net/ethernet/intel/igc/igc.h      | 16 +++++++++++-----
+ drivers/net/ethernet/intel/igc/igc_main.c |  6 ++----
+ 2 files changed, 13 insertions(+), 9 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
-index e9d180eac015..bc37cc8deefb 100644
+index bc37cc8deefb..4e44304b0608 100644
 --- a/drivers/net/ethernet/intel/igc/igc.h
 +++ b/drivers/net/ethernet/intel/igc/igc.h
-@@ -487,10 +487,10 @@ static inline u32 igc_rss_type(const union igc_adv_rx_desc *rx_desc)
+@@ -487,16 +487,22 @@ static inline u32 igc_rss_type(const union igc_adv_rx_desc *rx_desc)
   */
  #define IGC_RX_PTHRESH			8
  #define IGC_RX_HTHRESH			8
--#define IGC_TX_PTHRESH			8
--#define IGC_TX_HTHRESH			1
-+#define IGC_TXDCTL_PTHRESH		8
-+#define IGC_TXDCTL_HTHRESH		1
+-#define IGC_TXDCTL_PTHRESH		8
+-#define IGC_TXDCTL_HTHRESH		1
  #define IGC_RX_WTHRESH			4
--#define IGC_TX_WTHRESH			16
-+#define IGC_TXDCTL_WTHRESH		16
+-#define IGC_TXDCTL_WTHRESH		16
  
++#define IGC_TXDCTL_PTHRESH_MASK		GENMASK(4, 0)
++#define IGC_TXDCTL_HTHRESH_MASK		GENMASK(12, 8)
++#define IGC_TXDCTL_WTHRESH_MASK		GENMASK(20, 16)
++#define IGC_TXDCTL_QUEUE_ENABLE_MASK	GENMASK(25, 25)
++#define IGC_TXDCTL_SWFLUSH_MASK		GENMASK(26, 26)
++
++#define IGC_TXDCTL_PTHRESH(x)		FIELD_PREP(IGC_TXDCTL_PTHRESH_MASK, (x))
++#define IGC_TXDCTL_HTHRESH(x)		FIELD_PREP(IGC_TXDCTL_HTHRESH_MASK, (x))
++#define IGC_TXDCTL_WTHRESH(x)		FIELD_PREP(IGC_TXDCTL_WTHRESH_MASK, (x))
  /* Additional Transmit Descriptor Control definitions */
  /* Ena specific Tx Queue */
+-#define IGC_TXDCTL_QUEUE_ENABLE	0x02000000
++#define IGC_TXDCTL_QUEUE_ENABLE		FIELD_PREP(IGC_TXDCTL_QUEUE_ENABLE_MASK, 1)
+ /* Transmit Software Flush */
+-#define IGC_TXDCTL_SWFLUSH	0x04000000
++#define IGC_TXDCTL_SWFLUSH		FIELD_PREP(IGC_TXDCTL_SWFLUSH_MASK, 1)
+ 
+ #define IGC_RX_DMA_ATTR \
+ 	(DMA_ATTR_SKIP_CPU_SYNC | DMA_ATTR_WEAK_ORDERING)
 diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 27575a1e1777..725c8f0b9f3d 100644
+index 725c8f0b9f3d..86716fabf6a9 100644
 --- a/drivers/net/ethernet/intel/igc/igc_main.c
 +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -749,9 +749,9 @@ static void igc_configure_tx_ring(struct igc_adapter *adapter,
+@@ -749,11 +749,9 @@ static void igc_configure_tx_ring(struct igc_adapter *adapter,
  	wr32(IGC_TDH(reg_idx), 0);
  	writel(0, ring->tail);
  
--	txdctl |= IGC_TX_PTHRESH;
--	txdctl |= IGC_TX_HTHRESH << 8;
--	txdctl |= IGC_TX_WTHRESH << 16;
-+	txdctl |= IGC_TXDCTL_PTHRESH;
-+	txdctl |= IGC_TXDCTL_HTHRESH << 8;
-+	txdctl |= IGC_TXDCTL_WTHRESH << 16;
+-	txdctl |= IGC_TXDCTL_PTHRESH;
+-	txdctl |= IGC_TXDCTL_HTHRESH << 8;
+-	txdctl |= IGC_TXDCTL_WTHRESH << 16;
++	txdctl |= IGC_TXDCTL_PTHRESH(8) | IGC_TXDCTL_HTHRESH(1) |
++		  IGC_TXDCTL_WTHRESH(16) | IGC_TXDCTL_QUEUE_ENABLE;
  
- 	txdctl |= IGC_TXDCTL_QUEUE_ENABLE;
+-	txdctl |= IGC_TXDCTL_QUEUE_ENABLE;
  	wr32(IGC_TXDCTL(reg_idx), txdctl);
+ }
+ 
 -- 
 2.34.1
 
