@@ -4,70 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 803D9C369D5
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 28 Apr 2025 17:36:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6D556C369DC
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 28 Apr 2025 17:36:22 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 2A1F58124D;
-	Mon, 28 Apr 2025 17:36:20 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 247EF8125B;
+	Mon, 28 Apr 2025 17:36:22 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Mc4xv1_DkJYh; Mon, 28 Apr 2025 17:36:19 +0000 (UTC)
+ id rc9bN0GbHEDV; Mon, 28 Apr 2025 17:36:20 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 24AA18121E
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D6CBD81260
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1745861779;
-	bh=YCdvlTpzLJpuwLHzPXkyPx8oMH/OliOebdtz6i8B0wM=;
+	s=default; t=1745861780;
+	bh=iTpo/xeG23Fco+5ZP9puhTxm2HtIkBjjPevFTrjp3hE=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=kyaGRRyKrw/AcUIuptO5w0Tvn+xUydJDoQU8GgJQQrvw/UKI3jzNexKIx+TKLeaTT
-	 n5Ei8OfcqO6wfvg8nwnXhG2jSZKr8K3KuBTmvHBwXxGFjo3575NGXpxTby88iWapWV
-	 5ZzeHpiid0iHxZPPRZ60XKJ4g/MTUSeu4VgrN70mdU3gnOmx0O8fWJz5iC1sE4cqfr
-	 Ptk8auwEjs4B4Q2OP5kdrhHelLhkqeTegqII2jh88XgU+hNhFb5/KWDILtsVC3i3Jw
-	 PBNccYGF/lglV0GQuGu3OjVlzFGH8ZodKKHNqHzWdCqkDnj9inOXPWsm/XK4JYJtYb
-	 dGWytl664fZtA==
+	b=w9FZ49MSPMBV6HW4hdzFY91B8z1v4f1AZM1p2Xg45FN7CYQIxqmtHve5fqutAJRPW
+	 94DoQrGe0keHhIUJ5+JpzhWV4Ha68pHYzEvmeysFnJDTQ11qO2UjmWR5uZSmrmUnIy
+	 UiLdiE8VA9EoLGtkrRQEfhntVW2ahxtIdtuQb71xYPwuqwMTeHIpbQjFXKn4jkDcEI
+	 ls4CUYG6qrJ5NIDJUvN1b9EneY92ywxfavDHQNvGGxB8C9PrVKg4hG7GhOoF2GARYj
+	 /MZ6+EOb9Ny2+wc1b6XyKi31iS+yO5BRmJxGOYKhbuql5q/PG6tvTQ5BQANU8WpAP8
+	 o20V51CjaJhvA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 24AA18121E;
-	Mon, 28 Apr 2025 17:36:19 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id D6CBD81260;
+	Mon, 28 Apr 2025 17:36:20 +0000 (UTC)
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 057FEC5
- for <intel-wired-lan@lists.osuosl.org>; Mon, 28 Apr 2025 17:36:16 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id 8B4DCC5
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 28 Apr 2025 17:36:17 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id DF44741005
- for <intel-wired-lan@lists.osuosl.org>; Mon, 28 Apr 2025 17:36:15 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 6F347409D9
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 28 Apr 2025 17:36:16 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id OC5auHMxd2pZ for <intel-wired-lan@lists.osuosl.org>;
+ id VPypUWX1M1V9 for <intel-wired-lan@lists.osuosl.org>;
  Mon, 28 Apr 2025 17:36:15 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.13;
  helo=mgamail.intel.com; envelope-from=pavan.kumar.linga@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 038BD409D9
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 038BD409D9
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 4D2B740FEC
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 4D2B740FEC
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.13])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 038BD409D9
- for <intel-wired-lan@lists.osuosl.org>; Mon, 28 Apr 2025 17:36:14 +0000 (UTC)
-X-CSE-ConnectionGUID: oluj+ipOQDm/IbvfGDtFCg==
-X-CSE-MsgGUID: rV4LHRoxTl+J6ka4cwHf2A==
-X-IronPort-AV: E=McAfee;i="6700,10204,11417"; a="58452166"
-X-IronPort-AV: E=Sophos;i="6.15,246,1739865600"; d="scan'208";a="58452166"
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 4D2B740FEC
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 28 Apr 2025 17:36:15 +0000 (UTC)
+X-CSE-ConnectionGUID: lyhkkfPcRMWjxUMT0siRWg==
+X-CSE-MsgGUID: 3plKetVARbimHdYflZWKAw==
+X-IronPort-AV: E=McAfee;i="6700,10204,11417"; a="58452170"
+X-IronPort-AV: E=Sophos;i="6.15,246,1739865600"; d="scan'208";a="58452170"
 Received: from fmviesa004.fm.intel.com ([10.60.135.144])
  by orvoesa105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 28 Apr 2025 10:36:14 -0700
-X-CSE-ConnectionGUID: EnM7DiVoQymmZQIJ5Ds97A==
-X-CSE-MsgGUID: 9QWqxBFmTiSWIU3AcVHofQ==
+ 28 Apr 2025 10:36:15 -0700
+X-CSE-ConnectionGUID: jhyYYSO+RgeqyFQGoHSefw==
+X-CSE-MsgGUID: NJP6LflFR+6xxrwUuig8/Q==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.15,246,1739865600"; d="scan'208";a="138679037"
+X-IronPort-AV: E=Sophos;i="6.15,246,1739865600"; d="scan'208";a="138679048"
 Received: from unknown (HELO localhost.jf.intel.com) ([10.166.80.55])
- by fmviesa004.fm.intel.com with ESMTP; 28 Apr 2025 10:36:13 -0700
+ by fmviesa004.fm.intel.com with ESMTP; 28 Apr 2025 10:36:14 -0700
 From: Pavan Kumar Linga <pavan.kumar.linga@intel.com>
 To: intel-wired-lan@lists.osuosl.org
 Cc: netdev@vger.kernel.org, milena.olech@intel.com, anton.nadezhdin@intel.com,
- Pavan Kumar Linga <pavan.kumar.linga@intel.com>
-Date: Mon, 28 Apr 2025 10:35:49 -0700
-Message-ID: <20250428173552.2884-7-pavan.kumar.linga@intel.com>
+ Pavan Kumar Linga <pavan.kumar.linga@intel.com>,
+ Madhu Chittim <madhu.chittim@intel.com>
+Date: Mon, 28 Apr 2025 10:35:51 -0700
+Message-ID: <20250428173552.2884-9-pavan.kumar.linga@intel.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20250428173552.2884-1-pavan.kumar.linga@intel.com>
 References: <20250428173552.2884-1-pavan.kumar.linga@intel.com>
@@ -78,22 +79,22 @@ X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  t=1745861775; x=1777397775;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=J4kO5CZhJB0D7LJE/x//GwZwhmotY3n/K7x2/i/bgBw=;
- b=nUZg0hQ7kx+wb6hxOE8sogI7D4VtUxSZH2A5Ddb6QbxHygICrdfUdp5r
- Xy5QBO/fWS/oehScCoFKHfouvmTOUPwMA3eRLla36zoTB+GknjOSFHufr
- 5TjEnk58jeAg5vBV3anxuSJ/65R2LRXVg53qJmaQ9nOFAlSzGA+bVV2Pf
- 23vka41H8wTRFU/nHurcCgo5D6vqQHVCQAs8BScMQ1TExBcci15I7UXm5
- 1YfOVd11M0oV44Mt/PUM45P0BSMWqc2lQuVyEzj0brIeHqEJuxqba17dH
- 6+0fYMnZbPofYSFDRyGPFKFHMLoplQgG+cC5dBstIc/l0hD0oU45LMfic
+ bh=NMoaQI9eV2wHQVNAbH87gw3/PDC3Ema03dMcv9PztXs=;
+ b=WtCWG/DGDUHnqmTXVcoLkWTP1qoSH1gBamjeMl31F+1EHFhcBCk61xBf
+ KFlWYjlYseBHmP3KduRjNVdtOLO1m1Wv6Frr8Dyo+bturPK0LdgdKZWMY
+ eD88whMc1CImDtkFsMS4axwLVPQGOFGvEoOdM19r+es/69XIE9ir/d3di
+ xAiBXY5MHIQcx8aDizm8xdTOqFSPS6jYtIqLiUUEn3h+FwvWSFGehvfS+
+ qrDSZoAmkZ9pvQzUCCG97DE13GIEEaI/HcZkcCF/b4qGc6PgsKskbUsYj
+ MQ4qOYYnSaO5Uqrnyujs1H8mkTe2mK8wc25EROKfdXajarCQdXa7nVboS
  Q==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=nUZg0hQ7
-Subject: [Intel-wired-lan] [PATCH iwl-next v3 6/9] idpf: add rss_data field
- to RSS function parameters
+ header.a=rsa-sha256 header.s=Intel header.b=WtCWG/DG
+Subject: [Intel-wired-lan] [PATCH iwl-next v3 8/9] idpf: avoid calling
+ get_rx_ptypes for each vport
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -109,305 +110,529 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Retrieve rss_data field of vport just once and pass it to
-RSS related functions instead of retrieving it in each
-function.
+RX ptypes received from device control plane doesn't
+depend on vport info, but might vary based on the queue model.
+When the driver requests for ptypes, control plane fills both
+ptype_id_10 (used for splitq) and ptype_id_8 (used for singleq)
+fields of the virtchnl2_ptype response structure. This allows
+to call get_rx_ptypes once at the adapter level instead of
+each vport.
 
-While at it, update s/rss/RSS in the RSS function doc comments.
+Parse and store the received ptypes of both splitq and singleq
+in a separate lookup table. Respective lookup table is used based
+on the queue model info. As part of the changes, pull the ptype
+protocol parsing code into a separate function.
 
-Reviewed-by: Anton Nadezhdin <anton.nadezhdin@intel.com>
+Reviewed-by: Madhu Chittim <madhu.chittim@intel.com>
 Signed-off-by: Pavan Kumar Linga <pavan.kumar.linga@intel.com>
 ---
- drivers/net/ethernet/intel/idpf/idpf.h        |  1 +
- .../net/ethernet/intel/idpf/idpf_ethtool.c    |  2 +-
- drivers/net/ethernet/intel/idpf/idpf_lib.c    | 16 +++++----
- drivers/net/ethernet/intel/idpf/idpf_txrx.c   | 34 +++++++------------
- drivers/net/ethernet/intel/idpf/idpf_txrx.h   |  6 ++--
- .../net/ethernet/intel/idpf/idpf_virtchnl.c   | 24 ++++++-------
- .../net/ethernet/intel/idpf/idpf_virtchnl.h   |  8 +++--
- 7 files changed, 45 insertions(+), 46 deletions(-)
+ drivers/net/ethernet/intel/idpf/idpf.h        |   7 +-
+ drivers/net/ethernet/intel/idpf/idpf_lib.c    |   9 -
+ drivers/net/ethernet/intel/idpf/idpf_txrx.c   |   4 +-
+ .../net/ethernet/intel/idpf/idpf_virtchnl.c   | 310 ++++++++++--------
+ .../net/ethernet/intel/idpf/idpf_virtchnl.h   |   1 -
+ 5 files changed, 174 insertions(+), 157 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/idpf/idpf.h b/drivers/net/ethernet/intel/idpf/idpf.h
-index e9f531c3b5ca..78eaaa0c3940 100644
+index 78eaaa0c3940..48d84feeaed8 100644
 --- a/drivers/net/ethernet/intel/idpf/idpf.h
 +++ b/drivers/net/ethernet/intel/idpf/idpf.h
-@@ -9,6 +9,7 @@ struct idpf_adapter;
- struct idpf_vport;
- struct idpf_vport_max_q;
- struct idpf_q_vec_rsrc;
-+struct idpf_rss_data;
+@@ -340,7 +340,6 @@ struct idpf_q_vec_rsrc {
+  * @default_mac_addr: device will give a default MAC to use
+  * @rx_itr_profile: RX profiles for Dynamic Interrupt Moderation
+  * @tx_itr_profile: TX profiles for Dynamic Interrupt Moderation
+- * @rx_ptype_lkup: Lookup table for ptypes on RX
+  * @port_stats: per port csum, header split, and other offload stats
+  * @default_vport: Use this vport if one isn't specified
+  * @crc_enable: Enable CRC insertion offload
+@@ -369,7 +368,6 @@ struct idpf_vport {
+ 	u16 rx_itr_profile[IDPF_DIM_PROFILE_SLOTS];
+ 	u16 tx_itr_profile[IDPF_DIM_PROFILE_SLOTS];
  
- #include <net/pkt_sched.h>
- #include <linux/aer.h>
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_ethtool.c b/drivers/net/ethernet/intel/idpf/idpf_ethtool.c
-index 607ec4462031..ba54c271b775 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_ethtool.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_ethtool.c
-@@ -453,7 +453,7 @@ static int idpf_set_rxfh(struct net_device *netdev,
- 			rss_data->rss_lut[lut] = rxfh->indir[lut];
- 	}
+-	struct libeth_rx_pt *rx_ptype_lkup;
+ 	struct idpf_port_stats port_stats;
+ 	bool default_vport;
+ 	bool crc_enable;
+@@ -589,6 +587,8 @@ struct idpf_vc_xn_manager;
+  * @vport_params_reqd: Vport params requested
+  * @vport_params_recvd: Vport params received
+  * @vport_ids: Array of device given vport identifiers
++ * @singleq_pt_lkup: Lookup table for singleq RX ptypes
++ * @splitq_pt_lkup: Lookup table for splitq RX ptypes
+  * @vport_config: Vport config parameters
+  * @max_vports: Maximum vports that can be allocated
+  * @num_alloc_vports: Current number of vports allocated
+@@ -645,6 +645,9 @@ struct idpf_adapter {
+ 	struct virtchnl2_create_vport **vport_params_recvd;
+ 	u32 *vport_ids;
  
--	err = idpf_config_rss(vport);
-+	err = idpf_config_rss(vport, rss_data);
- 
- unlock_mutex:
- 	idpf_vport_ctrl_unlock(netdev);
++	struct libeth_rx_pt *singleq_pt_lkup;
++	struct libeth_rx_pt *splitq_pt_lkup;
++
+ 	struct idpf_vport_config **vport_config;
+ 	u16 max_vports;
+ 	u16 num_alloc_vports;
 diff --git a/drivers/net/ethernet/intel/idpf/idpf_lib.c b/drivers/net/ethernet/intel/idpf/idpf_lib.c
-index 7d97990fd626..153174d3d51d 100644
+index 6f295abdc6c1..7dabf5ddbf16 100644
 --- a/drivers/net/ethernet/intel/idpf/idpf_lib.c
 +++ b/drivers/net/ethernet/intel/idpf/idpf_lib.c
-@@ -934,8 +934,8 @@ static void idpf_vport_rel(struct idpf_vport *vport)
+@@ -905,9 +905,6 @@ static void idpf_decfg_netdev(struct idpf_vport *vport)
+ 	struct idpf_adapter *adapter = vport->adapter;
  	u16 idx = vport->idx;
  
- 	vport_config = adapter->vport_config[vport->idx];
--	idpf_deinit_rss(vport);
- 	rss_data = &vport_config->user_config.rss_data;
-+	idpf_deinit_rss(rss_data);
- 	kfree(rss_data->rss_key);
- 	rss_data->rss_key = NULL;
+-	kfree(vport->rx_ptype_lkup);
+-	vport->rx_ptype_lkup = NULL;
+-
+ 	if (test_and_clear_bit(IDPF_VPORT_REG_NETDEV,
+ 			       adapter->vport_config[idx]->flags)) {
+ 		unregister_netdev(vport->netdev);
+@@ -1518,10 +1515,6 @@ void idpf_init_task(struct work_struct *work)
+ 	if (idpf_cfg_netdev(vport))
+ 		goto cfg_netdev_err;
  
-@@ -1322,6 +1322,7 @@ static int idpf_vport_open(struct idpf_vport *vport)
- 	struct idpf_adapter *adapter = vport->adapter;
- 	struct idpf_vport_config *vport_config;
- 	struct idpf_queue_id_reg_info *chunks;
-+	struct idpf_rss_data *rss_data;
- 	int err;
+-	err = idpf_send_get_rx_ptype_msg(vport);
+-	if (err)
+-		goto handle_err;
+-
+ 	/* Once state is put into DOWN, driver is ready for dev_open */
+ 	np = netdev_priv(vport->netdev);
+ 	np->state = __IDPF_VPORT_DOWN;
+@@ -1567,8 +1560,6 @@ void idpf_init_task(struct work_struct *work)
  
- 	if (np->state != __IDPF_VPORT_DOWN)
-@@ -1406,10 +1407,11 @@ static int idpf_vport_open(struct idpf_vport *vport)
+ 	return;
  
- 	idpf_restore_features(vport);
- 
--	if (vport_config->user_config.rss_data.rss_lut)
--		err = idpf_config_rss(vport);
-+	rss_data = &vport_config->user_config.rss_data;
-+	if (rss_data->rss_lut)
-+		err = idpf_config_rss(vport, rss_data);
- 	else
--		err = idpf_init_rss(vport);
-+		err = idpf_init_rss(vport, rss_data);
- 	if (err) {
- 		dev_err(&adapter->pdev->dev, "Failed to initialize RSS for vport %u: %d\n",
- 			vport->vport_id, err);
-@@ -1426,7 +1428,7 @@ static int idpf_vport_open(struct idpf_vport *vport)
- 	return 0;
- 
- deinit_rss:
--	idpf_deinit_rss(vport);
-+	idpf_deinit_rss(rss_data);
- disable_vport:
- 	idpf_send_disable_vport_msg(vport);
- disable_queues:
-@@ -1903,7 +1905,7 @@ int idpf_initiate_soft_reset(struct idpf_vport *vport,
- 		idpf_vport_stop(vport);
- 	}
- 
--	idpf_deinit_rss(vport);
-+	idpf_deinit_rss(&vport_config->user_config.rss_data);
- 	/* We're passing in vport here because we need its wait_queue
- 	 * to send a message and it should be getting all the vport
- 	 * config data out of the adapter but we need to be careful not
-@@ -2100,7 +2102,7 @@ static int idpf_vport_manage_rss_lut(struct idpf_vport *vport)
- 		memset(rss_data->rss_lut, 0, lut_size);
- 	}
- 
--	return idpf_config_rss(vport);
-+	return idpf_config_rss(vport, rss_data);
- }
- 
- /**
+-handle_err:
+-	idpf_decfg_netdev(vport);
+ cfg_netdev_err:
+ 	idpf_vport_rel(vport);
+ 	adapter->vports[index] = NULL;
 diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.c b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-index 954f2b42cf42..287426033ce4 100644
+index a074d2de3e99..7f5fa9854e40 100644
 --- a/drivers/net/ethernet/intel/idpf/idpf_txrx.c
 +++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-@@ -4488,33 +4488,32 @@ void idpf_vport_intr_ena(struct idpf_vport *vport, struct idpf_q_vec_rsrc *rsrc)
- /**
-  * idpf_config_rss - Send virtchnl messages to configure RSS
-  * @vport: virtual port
-+ * @rss_data: pointer to RSS key and lut info
-  *
-  * Return 0 on success, negative on failure
-  */
--int idpf_config_rss(struct idpf_vport *vport)
-+int idpf_config_rss(struct idpf_vport *vport, struct idpf_rss_data *rss_data)
+@@ -1458,6 +1458,7 @@ static int idpf_rxq_group_alloc(struct idpf_vport *vport,
+ 				struct idpf_q_vec_rsrc *rsrc,
+ 				u16 num_rxq)
  {
- 	int err;
++	struct idpf_adapter *adapter = vport->adapter;
+ 	int k, err = 0;
+ 	bool hs;
  
--	err = idpf_send_get_set_rss_key_msg(vport, false);
-+	err = idpf_send_get_set_rss_key_msg(vport, rss_data, false);
- 	if (err)
- 		return err;
+@@ -1548,6 +1549,7 @@ static int idpf_rxq_group_alloc(struct idpf_vport *vport,
  
--	return idpf_send_get_set_rss_lut_msg(vport, false);
-+	return idpf_send_get_set_rss_lut_msg(vport, rss_data, false);
- }
+ 			if (!idpf_is_queue_model_split(rsrc->rxq_model)) {
+ 				q = rx_qgrp->singleq.rxqs[j];
++				q->rx_ptype_lkup = adapter->singleq_pt_lkup;
+ 				goto setup_rxq;
+ 			}
+ 			q = &rx_qgrp->splitq.rxq_sets[j]->rxq;
+@@ -1558,10 +1560,10 @@ static int idpf_rxq_group_alloc(struct idpf_vport *vport,
+ 				      &rx_qgrp->splitq.bufq_sets[1].refillqs[j];
  
- /**
-  * idpf_fill_dflt_rss_lut - Fill the indirection table with the default values
-  * @vport: virtual port structure
-+ * @rss_data: pointer to RSS key and lut info
-  */
--static void idpf_fill_dflt_rss_lut(struct idpf_vport *vport)
-+static void idpf_fill_dflt_rss_lut(struct idpf_vport *vport,
-+				   struct idpf_rss_data *rss_data)
- {
- 	u16 num_active_rxq = vport->dflt_qv_rsrc.num_rxq;
--	struct idpf_adapter *adapter = vport->adapter;
--	struct idpf_rss_data *rss_data;
- 	int i;
+ 			idpf_queue_assign(HSPLIT_EN, q, hs);
++			q->rx_ptype_lkup = adapter->splitq_pt_lkup;
  
--	rss_data = &adapter->vport_config[vport->idx]->user_config.rss_data;
--
- 	for (i = 0; i < rss_data->rss_lut_size; i++) {
- 		rss_data->rss_lut[i] = i % num_active_rxq;
- 		rss_data->cached_lut[i] = rss_data->rss_lut[i];
-@@ -4524,17 +4523,14 @@ static void idpf_fill_dflt_rss_lut(struct idpf_vport *vport)
- /**
-  * idpf_init_rss - Allocate and initialize RSS resources
-  * @vport: virtual port
-+ * @rss_data: pointer to RSS key and lut info
-  *
-  * Return 0 on success, negative on failure
-  */
--int idpf_init_rss(struct idpf_vport *vport)
-+int idpf_init_rss(struct idpf_vport *vport, struct idpf_rss_data *rss_data)
- {
--	struct idpf_adapter *adapter = vport->adapter;
--	struct idpf_rss_data *rss_data;
- 	u32 lut_size;
- 
--	rss_data = &adapter->vport_config[vport->idx]->user_config.rss_data;
--
- 	lut_size = rss_data->rss_lut_size * sizeof(u32);
- 	rss_data->rss_lut = kzalloc(lut_size, GFP_KERNEL);
- 	if (!rss_data->rss_lut)
-@@ -4549,21 +4545,17 @@ int idpf_init_rss(struct idpf_vport *vport)
- 	}
- 
- 	/* Fill the default RSS lut values */
--	idpf_fill_dflt_rss_lut(vport);
-+	idpf_fill_dflt_rss_lut(vport, rss_data);
- 
--	return idpf_config_rss(vport);
-+	return idpf_config_rss(vport, rss_data);
- }
- 
- /**
-  * idpf_deinit_rss - Release RSS resources
-- * @vport: virtual port
-+ * @rss_data: pointer to RSS key and lut info
-  */
--void idpf_deinit_rss(struct idpf_vport *vport)
-+void idpf_deinit_rss(struct idpf_rss_data *rss_data)
- {
--	struct idpf_adapter *adapter = vport->adapter;
--	struct idpf_rss_data *rss_data;
--
--	rss_data = &adapter->vport_config[vport->idx]->user_config.rss_data;
- 	kfree(rss_data->cached_lut);
- 	rss_data->cached_lut = NULL;
- 	kfree(rss_data->rss_lut);
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.h b/drivers/net/ethernet/intel/idpf/idpf_txrx.h
-index 60547aa77e62..b55e084fe95d 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_txrx.h
-+++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.h
-@@ -1034,9 +1034,9 @@ int idpf_vport_intr_init(struct idpf_vport *vport,
- 			 struct idpf_q_vec_rsrc *rsrc);
- void idpf_vport_intr_ena(struct idpf_vport *vport,
- 			 struct idpf_q_vec_rsrc *rsrc);
--int idpf_config_rss(struct idpf_vport *vport);
--int idpf_init_rss(struct idpf_vport *vport);
--void idpf_deinit_rss(struct idpf_vport *vport);
-+int idpf_config_rss(struct idpf_vport *vport, struct idpf_rss_data *rss_data);
-+int idpf_init_rss(struct idpf_vport *vport, struct idpf_rss_data *rss_data);
-+void idpf_deinit_rss(struct idpf_rss_data *rss_data);
- int idpf_rx_bufs_init_all(struct idpf_q_vec_rsrc *rsrc);
- void idpf_rx_add_frag(struct idpf_rx_buf *rx_buf, struct sk_buff *skb,
- 		      unsigned int size);
+ setup_rxq:
+ 			q->desc_count = rsrc->rxq_desc_count;
+-			q->rx_ptype_lkup = vport->rx_ptype_lkup;
+ 			q->netdev = vport->netdev;
+ 			q->bufq_sets = rx_qgrp->splitq.bufq_sets;
+ 			q->idx = (i * num_rxq) + j;
 diff --git a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
-index a0af1df1f206..d165e0a451fb 100644
+index 4a949d034371..6863e53ae399 100644
 --- a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
 +++ b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
-@@ -2272,24 +2272,24 @@ int idpf_send_get_stats_msg(struct idpf_vport *vport)
+@@ -2493,36 +2493,143 @@ static void idpf_finalize_ptype_lookup(struct libeth_rx_pt *ptype)
+ 	libeth_rx_pt_gen_hash_type(ptype);
  }
  
++/**
++ * idpf_parse_protocol_ids - parse protocol IDs for a given packet type
++ * @ptype: packet type to parse
++ * @rx_pt: store the parsed packet type info into
++ */
++static void idpf_parse_protocol_ids(struct virtchnl2_ptype *ptype,
++				    struct libeth_rx_pt *rx_pt)
++{
++	struct idpf_ptype_state pstate = {};
++
++	for (u32 j = 0; j < ptype->proto_id_count; j++) {
++		u16 id = le16_to_cpu(ptype->proto_id[j]);
++
++		switch (id) {
++		case VIRTCHNL2_PROTO_HDR_GRE:
++			if (pstate.tunnel_state == IDPF_PTYPE_TUNNEL_IP) {
++				rx_pt->tunnel_type =
++					LIBETH_RX_PT_TUNNEL_IP_GRENAT;
++				pstate.tunnel_state |=
++					IDPF_PTYPE_TUNNEL_IP_GRENAT;
++			}
++			break;
++		case VIRTCHNL2_PROTO_HDR_MAC:
++			rx_pt->outer_ip = LIBETH_RX_PT_OUTER_L2;
++			if (pstate.tunnel_state == IDPF_TUN_IP_GRE) {
++				rx_pt->tunnel_type =
++					LIBETH_RX_PT_TUNNEL_IP_GRENAT_MAC;
++				pstate.tunnel_state |=
++					IDPF_PTYPE_TUNNEL_IP_GRENAT_MAC;
++			}
++			break;
++		case VIRTCHNL2_PROTO_HDR_IPV4:
++			idpf_fill_ptype_lookup(rx_pt, &pstate, true, false);
++			break;
++		case VIRTCHNL2_PROTO_HDR_IPV6:
++			idpf_fill_ptype_lookup(rx_pt, &pstate, false, false);
++			break;
++		case VIRTCHNL2_PROTO_HDR_IPV4_FRAG:
++			idpf_fill_ptype_lookup(rx_pt, &pstate, true, true);
++			break;
++		case VIRTCHNL2_PROTO_HDR_IPV6_FRAG:
++			idpf_fill_ptype_lookup(rx_pt, &pstate, false, true);
++			break;
++		case VIRTCHNL2_PROTO_HDR_UDP:
++			rx_pt->inner_prot = LIBETH_RX_PT_INNER_UDP;
++			break;
++		case VIRTCHNL2_PROTO_HDR_TCP:
++			rx_pt->inner_prot = LIBETH_RX_PT_INNER_TCP;
++			break;
++		case VIRTCHNL2_PROTO_HDR_SCTP:
++			rx_pt->inner_prot = LIBETH_RX_PT_INNER_SCTP;
++			break;
++		case VIRTCHNL2_PROTO_HDR_ICMP:
++			rx_pt->inner_prot = LIBETH_RX_PT_INNER_ICMP;
++			break;
++		case VIRTCHNL2_PROTO_HDR_PAY:
++			rx_pt->payload_layer = LIBETH_RX_PT_PAYLOAD_L2;
++			break;
++		case VIRTCHNL2_PROTO_HDR_ICMPV6:
++		case VIRTCHNL2_PROTO_HDR_IPV6_EH:
++		case VIRTCHNL2_PROTO_HDR_PRE_MAC:
++		case VIRTCHNL2_PROTO_HDR_POST_MAC:
++		case VIRTCHNL2_PROTO_HDR_ETHERTYPE:
++		case VIRTCHNL2_PROTO_HDR_SVLAN:
++		case VIRTCHNL2_PROTO_HDR_CVLAN:
++		case VIRTCHNL2_PROTO_HDR_MPLS:
++		case VIRTCHNL2_PROTO_HDR_MMPLS:
++		case VIRTCHNL2_PROTO_HDR_PTP:
++		case VIRTCHNL2_PROTO_HDR_CTRL:
++		case VIRTCHNL2_PROTO_HDR_LLDP:
++		case VIRTCHNL2_PROTO_HDR_ARP:
++		case VIRTCHNL2_PROTO_HDR_ECP:
++		case VIRTCHNL2_PROTO_HDR_EAPOL:
++		case VIRTCHNL2_PROTO_HDR_PPPOD:
++		case VIRTCHNL2_PROTO_HDR_PPPOE:
++		case VIRTCHNL2_PROTO_HDR_IGMP:
++		case VIRTCHNL2_PROTO_HDR_AH:
++		case VIRTCHNL2_PROTO_HDR_ESP:
++		case VIRTCHNL2_PROTO_HDR_IKE:
++		case VIRTCHNL2_PROTO_HDR_NATT_KEEP:
++		case VIRTCHNL2_PROTO_HDR_L2TPV2:
++		case VIRTCHNL2_PROTO_HDR_L2TPV2_CONTROL:
++		case VIRTCHNL2_PROTO_HDR_L2TPV3:
++		case VIRTCHNL2_PROTO_HDR_GTP:
++		case VIRTCHNL2_PROTO_HDR_GTP_EH:
++		case VIRTCHNL2_PROTO_HDR_GTPCV2:
++		case VIRTCHNL2_PROTO_HDR_GTPC_TEID:
++		case VIRTCHNL2_PROTO_HDR_GTPU:
++		case VIRTCHNL2_PROTO_HDR_GTPU_UL:
++		case VIRTCHNL2_PROTO_HDR_GTPU_DL:
++		case VIRTCHNL2_PROTO_HDR_ECPRI:
++		case VIRTCHNL2_PROTO_HDR_VRRP:
++		case VIRTCHNL2_PROTO_HDR_OSPF:
++		case VIRTCHNL2_PROTO_HDR_TUN:
++		case VIRTCHNL2_PROTO_HDR_NVGRE:
++		case VIRTCHNL2_PROTO_HDR_VXLAN:
++		case VIRTCHNL2_PROTO_HDR_VXLAN_GPE:
++		case VIRTCHNL2_PROTO_HDR_GENEVE:
++		case VIRTCHNL2_PROTO_HDR_NSH:
++		case VIRTCHNL2_PROTO_HDR_QUIC:
++		case VIRTCHNL2_PROTO_HDR_PFCP:
++		case VIRTCHNL2_PROTO_HDR_PFCP_NODE:
++		case VIRTCHNL2_PROTO_HDR_PFCP_SESSION:
++		case VIRTCHNL2_PROTO_HDR_RTP:
++		case VIRTCHNL2_PROTO_HDR_NO_PROTO:
++			break;
++		default:
++			break;
++		}
++	}
++}
++
  /**
-- * idpf_send_get_set_rss_lut_msg - Send virtchnl get or set rss lut message
-+ * idpf_send_get_set_rss_lut_msg - Send virtchnl get or set RSS lut message
-  * @vport: virtual port data structure
-- * @get: flag to set or get rss look up table
-+ * @rss_data: pointer to RSS key and lut info
-+ * @get: flag to set or get RSS look up table
+  * idpf_send_get_rx_ptype_msg - Send virtchnl for ptype info
+- * @vport: virtual port data structure
++ * @adapter: driver specific private structure
   *
   * Returns 0 on success, negative on failure.
   */
--int idpf_send_get_set_rss_lut_msg(struct idpf_vport *vport, bool get)
-+int idpf_send_get_set_rss_lut_msg(struct idpf_vport *vport,
-+				  struct idpf_rss_data *rss_data,
-+				  bool get)
+-int idpf_send_get_rx_ptype_msg(struct idpf_vport *vport)
++static int idpf_send_get_rx_ptype_msg(struct idpf_adapter *adapter)
  {
- 	struct virtchnl2_rss_lut *recv_rl __free(kfree) = NULL;
- 	struct virtchnl2_rss_lut *rl __free(kfree) = NULL;
+ 	struct virtchnl2_get_ptype_info *get_ptype_info __free(kfree) = NULL;
+ 	struct virtchnl2_get_ptype_info *ptype_info __free(kfree) = NULL;
+-	struct libeth_rx_pt *ptype_lkup __free(kfree) = NULL;
+-	int max_ptype, ptypes_recvd = 0, ptype_offset;
+-	struct idpf_adapter *adapter = vport->adapter;
++	struct libeth_rx_pt *singleq_pt_lkup __free(kfree) = NULL;
++	struct libeth_rx_pt *splitq_pt_lkup __free(kfree) = NULL;
  	struct idpf_vc_xn_params xn_params = {};
--	struct idpf_rss_data *rss_data;
- 	int buf_size, lut_buf_size;
++	int ptypes_recvd = 0, ptype_offset;
++	u32 max_ptype = IDPF_RX_MAX_PTYPE;
+ 	u16 next_ptype_id = 0;
  	ssize_t reply_sz;
- 	int i;
+-	bool is_splitq;
+-	int i, j, k;
+-
+-	if (vport->rx_ptype_lkup)
+-		return 0;
  
--	rss_data =
--		&vport->adapter->vport_config[vport->idx]->user_config.rss_data;
- 	buf_size = struct_size(rl, lut, rss_data->rss_lut_size);
- 	rl = kzalloc(buf_size, GFP_KERNEL);
- 	if (!rl)
-@@ -2347,24 +2347,24 @@ int idpf_send_get_set_rss_lut_msg(struct idpf_vport *vport, bool get)
+-	is_splitq = idpf_is_queue_model_split(vport->dflt_qv_rsrc.rxq_model);
+-	if (is_splitq)
+-		max_ptype = IDPF_RX_MAX_PTYPE;
+-	else
+-		max_ptype = IDPF_RX_MAX_BASE_PTYPE;
++	singleq_pt_lkup = kcalloc(IDPF_RX_MAX_BASE_PTYPE,
++				  sizeof(*singleq_pt_lkup), GFP_KERNEL);
++	if (!singleq_pt_lkup)
++		return -ENOMEM;
+ 
+-	ptype_lkup = kcalloc(max_ptype, sizeof(*ptype_lkup), GFP_KERNEL);
+-	if (!ptype_lkup)
++	splitq_pt_lkup = kcalloc(max_ptype, sizeof(*splitq_pt_lkup), GFP_KERNEL);
++	if (!splitq_pt_lkup)
+ 		return -ENOMEM;
+ 
+ 	get_ptype_info = kzalloc(sizeof(*get_ptype_info), GFP_KERNEL);
+@@ -2563,154 +2670,59 @@ int idpf_send_get_rx_ptype_msg(struct idpf_vport *vport)
+ 
+ 		ptype_offset = IDPF_RX_PTYPE_HDR_SZ;
+ 
+-		for (i = 0; i < le16_to_cpu(ptype_info->num_ptypes); i++) {
+-			struct idpf_ptype_state pstate = { };
++		for (u16 i = 0; i < le16_to_cpu(ptype_info->num_ptypes); i++) {
++			struct libeth_rx_pt rx_pt = {};
+ 			struct virtchnl2_ptype *ptype;
+-			u16 id;
++			u16 pt_10, pt_8;
+ 
+ 			ptype = (struct virtchnl2_ptype *)
+ 					((u8 *)ptype_info + ptype_offset);
+ 
++			pt_10 = le16_to_cpu(ptype->ptype_id_10);
++			pt_8 = ptype->ptype_id_8;
++
+ 			ptype_offset += IDPF_GET_PTYPE_SIZE(ptype);
+ 			if (ptype_offset > IDPF_CTLQ_MAX_BUF_LEN)
+ 				return -EINVAL;
+ 
+ 			/* 0xFFFF indicates end of ptypes */
+-			if (le16_to_cpu(ptype->ptype_id_10) ==
+-							IDPF_INVALID_PTYPE_ID)
++			if (pt_10 == IDPF_INVALID_PTYPE_ID)
+ 				goto out;
+ 
+-			if (is_splitq)
+-				k = le16_to_cpu(ptype->ptype_id_10);
+-			else
+-				k = ptype->ptype_id_8;
+-
+-			for (j = 0; j < ptype->proto_id_count; j++) {
+-				id = le16_to_cpu(ptype->proto_id[j]);
+-				switch (id) {
+-				case VIRTCHNL2_PROTO_HDR_GRE:
+-					if (pstate.tunnel_state ==
+-							IDPF_PTYPE_TUNNEL_IP) {
+-						ptype_lkup[k].tunnel_type =
+-						LIBETH_RX_PT_TUNNEL_IP_GRENAT;
+-						pstate.tunnel_state |=
+-						IDPF_PTYPE_TUNNEL_IP_GRENAT;
+-					}
+-					break;
+-				case VIRTCHNL2_PROTO_HDR_MAC:
+-					ptype_lkup[k].outer_ip =
+-						LIBETH_RX_PT_OUTER_L2;
+-					if (pstate.tunnel_state ==
+-							IDPF_TUN_IP_GRE) {
+-						ptype_lkup[k].tunnel_type =
+-						LIBETH_RX_PT_TUNNEL_IP_GRENAT_MAC;
+-						pstate.tunnel_state |=
+-						IDPF_PTYPE_TUNNEL_IP_GRENAT_MAC;
+-					}
+-					break;
+-				case VIRTCHNL2_PROTO_HDR_IPV4:
+-					idpf_fill_ptype_lookup(&ptype_lkup[k],
+-							       &pstate, true,
+-							       false);
+-					break;
+-				case VIRTCHNL2_PROTO_HDR_IPV6:
+-					idpf_fill_ptype_lookup(&ptype_lkup[k],
+-							       &pstate, false,
+-							       false);
+-					break;
+-				case VIRTCHNL2_PROTO_HDR_IPV4_FRAG:
+-					idpf_fill_ptype_lookup(&ptype_lkup[k],
+-							       &pstate, true,
+-							       true);
+-					break;
+-				case VIRTCHNL2_PROTO_HDR_IPV6_FRAG:
+-					idpf_fill_ptype_lookup(&ptype_lkup[k],
+-							       &pstate, false,
+-							       true);
+-					break;
+-				case VIRTCHNL2_PROTO_HDR_UDP:
+-					ptype_lkup[k].inner_prot =
+-					LIBETH_RX_PT_INNER_UDP;
+-					break;
+-				case VIRTCHNL2_PROTO_HDR_TCP:
+-					ptype_lkup[k].inner_prot =
+-					LIBETH_RX_PT_INNER_TCP;
+-					break;
+-				case VIRTCHNL2_PROTO_HDR_SCTP:
+-					ptype_lkup[k].inner_prot =
+-					LIBETH_RX_PT_INNER_SCTP;
+-					break;
+-				case VIRTCHNL2_PROTO_HDR_ICMP:
+-					ptype_lkup[k].inner_prot =
+-					LIBETH_RX_PT_INNER_ICMP;
+-					break;
+-				case VIRTCHNL2_PROTO_HDR_PAY:
+-					ptype_lkup[k].payload_layer =
+-						LIBETH_RX_PT_PAYLOAD_L2;
+-					break;
+-				case VIRTCHNL2_PROTO_HDR_ICMPV6:
+-				case VIRTCHNL2_PROTO_HDR_IPV6_EH:
+-				case VIRTCHNL2_PROTO_HDR_PRE_MAC:
+-				case VIRTCHNL2_PROTO_HDR_POST_MAC:
+-				case VIRTCHNL2_PROTO_HDR_ETHERTYPE:
+-				case VIRTCHNL2_PROTO_HDR_SVLAN:
+-				case VIRTCHNL2_PROTO_HDR_CVLAN:
+-				case VIRTCHNL2_PROTO_HDR_MPLS:
+-				case VIRTCHNL2_PROTO_HDR_MMPLS:
+-				case VIRTCHNL2_PROTO_HDR_PTP:
+-				case VIRTCHNL2_PROTO_HDR_CTRL:
+-				case VIRTCHNL2_PROTO_HDR_LLDP:
+-				case VIRTCHNL2_PROTO_HDR_ARP:
+-				case VIRTCHNL2_PROTO_HDR_ECP:
+-				case VIRTCHNL2_PROTO_HDR_EAPOL:
+-				case VIRTCHNL2_PROTO_HDR_PPPOD:
+-				case VIRTCHNL2_PROTO_HDR_PPPOE:
+-				case VIRTCHNL2_PROTO_HDR_IGMP:
+-				case VIRTCHNL2_PROTO_HDR_AH:
+-				case VIRTCHNL2_PROTO_HDR_ESP:
+-				case VIRTCHNL2_PROTO_HDR_IKE:
+-				case VIRTCHNL2_PROTO_HDR_NATT_KEEP:
+-				case VIRTCHNL2_PROTO_HDR_L2TPV2:
+-				case VIRTCHNL2_PROTO_HDR_L2TPV2_CONTROL:
+-				case VIRTCHNL2_PROTO_HDR_L2TPV3:
+-				case VIRTCHNL2_PROTO_HDR_GTP:
+-				case VIRTCHNL2_PROTO_HDR_GTP_EH:
+-				case VIRTCHNL2_PROTO_HDR_GTPCV2:
+-				case VIRTCHNL2_PROTO_HDR_GTPC_TEID:
+-				case VIRTCHNL2_PROTO_HDR_GTPU:
+-				case VIRTCHNL2_PROTO_HDR_GTPU_UL:
+-				case VIRTCHNL2_PROTO_HDR_GTPU_DL:
+-				case VIRTCHNL2_PROTO_HDR_ECPRI:
+-				case VIRTCHNL2_PROTO_HDR_VRRP:
+-				case VIRTCHNL2_PROTO_HDR_OSPF:
+-				case VIRTCHNL2_PROTO_HDR_TUN:
+-				case VIRTCHNL2_PROTO_HDR_NVGRE:
+-				case VIRTCHNL2_PROTO_HDR_VXLAN:
+-				case VIRTCHNL2_PROTO_HDR_VXLAN_GPE:
+-				case VIRTCHNL2_PROTO_HDR_GENEVE:
+-				case VIRTCHNL2_PROTO_HDR_NSH:
+-				case VIRTCHNL2_PROTO_HDR_QUIC:
+-				case VIRTCHNL2_PROTO_HDR_PFCP:
+-				case VIRTCHNL2_PROTO_HDR_PFCP_NODE:
+-				case VIRTCHNL2_PROTO_HDR_PFCP_SESSION:
+-				case VIRTCHNL2_PROTO_HDR_RTP:
+-				case VIRTCHNL2_PROTO_HDR_NO_PROTO:
+-					break;
+-				default:
+-					break;
+-				}
+-			}
++			idpf_parse_protocol_ids(ptype, &rx_pt);
++			idpf_finalize_ptype_lookup(&rx_pt);
+ 
+-			idpf_finalize_ptype_lookup(&ptype_lkup[k]);
++			/* For a given protocol ID stack, the ptype value might
++			 * vary between ptype_id_10 and ptype_id_8. So store
++			 * them separately for splitq and singleq. Also skip
++			 * the repeated ptypes in case of singleq.
++			 */
++			splitq_pt_lkup[pt_10] = rx_pt;
++			if (!singleq_pt_lkup[pt_8].outer_ip)
++				singleq_pt_lkup[pt_8] = rx_pt;
+ 		}
+ 	}
+ 
+ out:
+-	vport->rx_ptype_lkup = no_free_ptr(ptype_lkup);
++	adapter->splitq_pt_lkup = no_free_ptr(splitq_pt_lkup);
++	adapter->singleq_pt_lkup = no_free_ptr(singleq_pt_lkup);
+ 
+ 	return 0;
  }
  
++/**
++ * idpf_rel_rx_pt_lkup - release RX ptype lookup table
++ * @adapter: adapter pointer to get the lookup table
++ */
++static void idpf_rel_rx_pt_lkup(struct idpf_adapter *adapter)
++{
++	kfree(adapter->splitq_pt_lkup);
++	adapter->splitq_pt_lkup = NULL;
++
++	kfree(adapter->singleq_pt_lkup);
++	adapter->singleq_pt_lkup = NULL;
++}
++
  /**
-- * idpf_send_get_set_rss_key_msg - Send virtchnl get or set rss key message
-+ * idpf_send_get_set_rss_key_msg - Send virtchnl get or set RSS key message
-  * @vport: virtual port data structure
-- * @get: flag to set or get rss look up table
-+ * @rss_data: pointer to RSS key and lut info
-+ * @get: flag to set or get RSS look up table
-  *
-  * Returns 0 on success, negative on failure
-  */
--int idpf_send_get_set_rss_key_msg(struct idpf_vport *vport, bool get)
-+int idpf_send_get_set_rss_key_msg(struct idpf_vport *vport,
-+				  struct idpf_rss_data *rss_data,
-+				  bool get)
- {
- 	struct virtchnl2_rss_key *recv_rk __free(kfree) = NULL;
- 	struct virtchnl2_rss_key *rk __free(kfree) = NULL;
- 	struct idpf_vc_xn_params xn_params = {};
--	struct idpf_rss_data *rss_data;
- 	ssize_t reply_sz;
- 	int i, buf_size;
- 	u16 key_size;
+  * idpf_send_ena_dis_loopback_msg - Send virtchnl enable/disable loopback
+  *				    message
+@@ -2984,6 +2996,13 @@ int idpf_vc_core_init(struct idpf_adapter *adapter)
+ 		goto err_intr_req;
+ 	}
  
--	rss_data =
--		&vport->adapter->vport_config[vport->idx]->user_config.rss_data;
- 	buf_size = struct_size(rk, key_flex, rss_data->rss_key_size);
- 	rk = kzalloc(buf_size, GFP_KERNEL);
- 	if (!rk)
++	err = idpf_send_get_rx_ptype_msg(adapter);
++	if (err) {
++		dev_err(&adapter->pdev->dev, "failed to get RX ptypes: %d\n",
++			err);
++		goto intr_rel;
++	}
++
+ 	err = idpf_ptp_init(adapter);
+ 	if (err)
+ 		pci_err(adapter->pdev, "PTP init failed, err=%pe\n", ERR_PTR(err));
+@@ -3000,6 +3019,8 @@ int idpf_vc_core_init(struct idpf_adapter *adapter)
+ 
+ 	return 0;
+ 
++intr_rel:
++	idpf_intr_rel(adapter);
+ err_intr_req:
+ 	cancel_delayed_work_sync(&adapter->serv_task);
+ 	cancel_delayed_work_sync(&adapter->mbx_task);
+@@ -3052,6 +3073,7 @@ void idpf_vc_core_deinit(struct idpf_adapter *adapter)
+ 
+ 	idpf_ptp_release(adapter);
+ 	idpf_deinit_task(adapter);
++	idpf_rel_rx_pt_lkup(adapter);
+ 	idpf_intr_rel(adapter);
+ 
+ 	if (remove_in_prog)
 diff --git a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.h b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.h
-index ef64ca98b1e1..cfeefbc5174f 100644
+index 9df90ba83309..f29536eed707 100644
 --- a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.h
 +++ b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.h
-@@ -167,7 +167,11 @@ int idpf_send_get_rx_ptype_msg(struct idpf_vport *vport);
- int idpf_send_ena_dis_loopback_msg(struct idpf_vport *vport);
- int idpf_send_get_stats_msg(struct idpf_vport *vport);
- int idpf_send_set_sriov_vfs_msg(struct idpf_adapter *adapter, u16 num_vfs);
--int idpf_send_get_set_rss_key_msg(struct idpf_vport *vport, bool get);
--int idpf_send_get_set_rss_lut_msg(struct idpf_vport *vport, bool get);
-+int idpf_send_get_set_rss_key_msg(struct idpf_vport *vport,
-+				  struct idpf_rss_data *rss_data,
-+				  bool get);
-+int idpf_send_get_set_rss_lut_msg(struct idpf_vport *vport,
-+				  struct idpf_rss_data *rss_data,
-+				  bool get);
- 
- #endif /* _IDPF_VIRTCHNL_H_ */
+@@ -168,7 +168,6 @@ int idpf_set_promiscuous(struct idpf_adapter *adapter,
+ 			 struct idpf_vport_user_config_data *config_data,
+ 			 u32 vport_id);
+ int idpf_check_supported_desc_ids(struct idpf_vport *vport);
+-int idpf_send_get_rx_ptype_msg(struct idpf_vport *vport);
+ int idpf_send_ena_dis_loopback_msg(struct idpf_adapter *adapter, u32 vport_id,
+ 				   bool loopback_ena);
+ int idpf_send_get_stats_msg(struct idpf_netdev_priv *np,
 -- 
 2.43.0
 
