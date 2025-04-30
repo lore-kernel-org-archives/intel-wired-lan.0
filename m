@@ -1,74 +1,74 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8ADEBC369D9
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 03934C3ABAD
 	for <intel-wired-lan@archiver.kernel.org>; Wed, 30 Apr 2025 22:51:50 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 3D09F6061B;
+	by smtp4.osuosl.org (Postfix) with ESMTP id C3B134016E;
 	Wed, 30 Apr 2025 22:51:50 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id wSSh9MZxnxDX; Wed, 30 Apr 2025 22:51:49 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id mgVse5BdMTHF; Wed, 30 Apr 2025 22:51:50 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8FDED61007
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4BA3A403F5
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1746053509;
-	bh=f25f4OH4/fAOCdlFm+SmjxAFDOiJkxLvGt7Cp10TLZ8=;
+	s=default; t=1746053510;
+	bh=Cle2RNialme64WR92FS0AxNvRjVifKZkex+vrglJPTQ=;
 	h=From:Date:References:In-Reply-To:To:Cc:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=b5CkJ3orpURFSLybKfpNfJuVI2gxR5Eh/ICU7mr7yElQyO+UDq3GuJ/8nGzD+f9Q2
-	 3TlY/MBpdcqoVXMOZIX1zo79KMPVuw8GqxqCCa+i2jAWljbKlIquAjyKgu0eiIrc2w
-	 TkgjLETUZlX7505w/ruTTK4zcPUF/xTXzxbpzdWutarkB+sNXJZjyM/EFQYzZvWk2h
-	 C20KLhbouN8iHX+MnrswHBkEJYfTPXcM/4SdFRdLPqFTagMORBJm7bs5G5ANnfCJMD
-	 ku8uVBjBCVhb4/t8lGdbvdSQfofsh2y8KILple4d6BytFjMuJS5wJ6K0C5pTv/47Yx
-	 8QUQU7EMketlQ==
+	b=DW7jfwHkArX6MRol5QfegzXZ3buOiUQN9CoRzjkG61q3HoMUk3BOoTmfmfEm4uzJE
+	 RnJEdydD4RONvqK43/lHHTpfz772WaS1fWdy9looUFL/oZJrWBxIA73/QiLGjwZKS4
+	 6gc9EJEVoIbwPPFZ4hVDaD1KbZZsOSzXp+Gp9+z8WsaR50O+ySGC2UDQww3DEe+5mC
+	 eoCNyLJZBLuPivH+vyYVK1gMAX39pu5ey3FJJg/GZXUDwGnDzCJJsuyqgPhvyPzlW3
+	 dHIIjfAAurtnO+P+4UTLHPmKrnEcVaHMFFgTLmOy4lKXawUFCKkHzRG3tmxwAkU6Dp
+	 5WSXqOSXl9RWQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 8FDED61007;
-	Wed, 30 Apr 2025 22:51:49 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 4BA3A403F5;
+	Wed, 30 Apr 2025 22:51:50 +0000 (UTC)
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id 712A0E4
- for <intel-wired-lan@lists.osuosl.org>; Wed, 30 Apr 2025 22:51:44 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id 0A06F236
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 30 Apr 2025 22:51:45 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 5B88F40235
+ by smtp4.osuosl.org (Postfix) with ESMTP id 7682D4026F
  for <intel-wired-lan@lists.osuosl.org>; Wed, 30 Apr 2025 22:51:43 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id CcZH8wZp-4Py for <intel-wired-lan@lists.osuosl.org>;
- Wed, 30 Apr 2025 22:51:42 +0000 (UTC)
+ id LZFqn-u9YOOZ for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 30 Apr 2025 22:51:43 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.7;
  helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 0F0CA4026F
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0F0CA4026F
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org D881140334
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D881140334
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.7])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 0F0CA4026F
- for <intel-wired-lan@lists.osuosl.org>; Wed, 30 Apr 2025 22:51:41 +0000 (UTC)
-X-CSE-ConnectionGUID: h0hikFVAQFi0AMWJSjbMrg==
-X-CSE-MsgGUID: dqVM1fBkT9aKJ+Cd2kxZFQ==
-X-IronPort-AV: E=McAfee;i="6700,10204,11419"; a="73120892"
-X-IronPort-AV: E=Sophos;i="6.15,252,1739865600"; d="scan'208";a="73120892"
+ by smtp4.osuosl.org (Postfix) with ESMTPS id D881140334
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 30 Apr 2025 22:51:42 +0000 (UTC)
+X-CSE-ConnectionGUID: wiY3y8LGRaO2y+MdnXl8yA==
+X-CSE-MsgGUID: B3yKCx+iRlWNQOHQREvBTQ==
+X-IronPort-AV: E=McAfee;i="6700,10204,11419"; a="73120910"
+X-IronPort-AV: E=Sophos;i="6.15,252,1739865600"; d="scan'208";a="73120910"
 Received: from orviesa010.jf.intel.com ([10.64.159.150])
  by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  30 Apr 2025 15:51:41 -0700
-X-CSE-ConnectionGUID: NXPOzSGRTmC5KqT2K+3B9A==
-X-CSE-MsgGUID: RUSwuAhDRcSJGTRSaOb3Dg==
+X-CSE-ConnectionGUID: xlRfk/KZTIa537EGLTfHBA==
+X-CSE-MsgGUID: up09loImT3O5D1HtSDEfZg==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.15,252,1739865600"; d="scan'208";a="134145085"
+X-IronPort-AV: E=Sophos;i="6.15,252,1739865600"; d="scan'208";a="134145108"
 Received: from jekeller-desk.jf.intel.com ([10.166.241.15])
  by orviesa010-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  30 Apr 2025 15:51:40 -0700
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed, 30 Apr 2025 15:51:37 -0700
+Date: Wed, 30 Apr 2025 15:51:44 -0700
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250430-kk-tspll-improvements-alignment-v3-6-ab8472e86204@intel.com>
+Message-Id: <20250430-kk-tspll-improvements-alignment-v3-13-ab8472e86204@intel.com>
 References: <20250430-kk-tspll-improvements-alignment-v3-0-ab8472e86204@intel.com>
 In-Reply-To: <20250430-kk-tspll-improvements-alignment-v3-0-ab8472e86204@intel.com>
 To: Anthony Nguyen <anthony.l.nguyen@intel.com>, 
@@ -86,21 +86,22 @@ X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  t=1746053502; x=1777589502;
  h=from:date:subject:mime-version:content-transfer-encoding:
  message-id:references:in-reply-to:to:cc;
- bh=zlaO3QYSYwnZak08jUO77o8/ShIkdj6nb0W+ifcFRr4=;
- b=X9/Sus8pitcu2NJ9hDnM51SnR1Sara7tA2S51M4kmvaa6AkROuaYzpx+
- PobTn+u7T6ZvpZsNsejbBEbr7HvkLvbkFDVJRO4//D33tHkpbvrmxjsgs
- hy0DlDWg4S1O0PIoBodUV3+7Yg1uBhVtCQXs/s/EmG0jvXc1gyMFn6phT
- rouP1iBv5g5UR1OVdYIcMvhIAoBZ3VGO27FOxgvPFFmidI2F3eeAqqCIu
- SbzN9cYtdUdR9V6fNGUrRWqVcGuQjubBpy9TgoLh3N5dbj4bU5GgRaWD+
- CkmEBegG0PT1LPIbRSjONLsoc11sta+OOilFH96vt1djRDU1jTwhZJowf
- A==;
+ bh=m++wo7A9ad8MM4i6a8V8RzXDMWqd1AmBRiBAhiCSGfc=;
+ b=FrQ9l5EEHamLJGkj9fMGxlmQbL7ZwFdVmB6J2g3oMom1T47/bpIXktjc
+ /heBgRDxjfmLg0n+kZTvvJCcrshkv5zpBJF6ZJTEndPIgMe5oxeyK2b0G
+ q9QS1Ci4Y6JmZ2fk6eSO1CNNgGWqwGsTF3pNhi54cMwMERpLzUDTYh1uV
+ c53nrRzZLuy56G1eTfAAOuMooS/uY6PMueUaDVNJl8cFgTq5279bUfsSw
+ 1UC2+ueZE7sGXCzZ7jKDI6fg8Lxswx+9Gqul7lVKIV5vy2jXDpzflGfs4
+ +cYN0u334ZYN0plET4DI3GV7ubiouW5hdNh4E0h50ank9Liz2DGnifs7i
+ g==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=X9/Sus8p
-Subject: [Intel-wired-lan] [PATCH v3 06/15] ice: add TSPLL log config helper
+ header.a=rsa-sha256 header.s=Intel header.b=FrQ9l5EE
+Subject: [Intel-wired-lan] [PATCH v3 13/15] ice: fall back to TCXO on TSPLL
+ lock fail
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -118,108 +119,39 @@ Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 From: Karol Kolacinski <karol.kolacinski@intel.com>
 
-Add a helper function to print new/current TSPLL config. This helps
-avoid unnecessary casts from u8 to enums.
+TSPLL can fail when trying to lock to TIME_REF as a clock source, e.g.
+when the external clock source is not stable or connected to the board.
+To continue operation after failure, try to lock again to internal TCXO
+and inform user about this.
 
-Reviewed-by: Michal Kubiak <michal.kubiak@intel.com>
 Reviewed-by: Milena Olech <milena.olech@intel.com>
 Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_tspll.c | 54 +++++++++++++++++-------------
- 1 file changed, 30 insertions(+), 24 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_tspll.c | 14 +++++++++++++-
+ 1 file changed, 13 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_tspll.c b/drivers/net/ethernet/intel/ice/ice_tspll.c
-index 2c91dcd45df2e3c420e693442b4a58dd85be3ec5..a338cfb1044869f9c844bbd0d6d77987f275f945 100644
+index 93016bf92256e658e3d794ccf117eb7cd03af6f8..d5db0bdbb36402c7e45f49cf55e1dbe0cac10df2 100644
 --- a/drivers/net/ethernet/intel/ice/ice_tspll.c
 +++ b/drivers/net/ethernet/intel/ice/ice_tspll.c
-@@ -89,6 +89,26 @@ static const char *ice_tspll_clk_src_str(enum ice_clk_src clk_src)
- 	}
- }
- 
-+/**
-+ * ice_tspll_log_cfg - Log current/new TSPLL configuration
-+ * @hw: Pointer to the HW struct
-+ * @enable: CGU enabled/disabled
-+ * @clk_src: Current clock source
-+ * @tspll_freq: Current clock frequency
-+ * @lock: CGU lock status
-+ * @new_cfg: true if this is a new config
-+ */
-+static void ice_tspll_log_cfg(struct ice_hw *hw, bool enable, u8 clk_src,
-+			      u8 tspll_freq, bool lock, bool new_cfg)
-+{
-+	dev_dbg(ice_hw_to_dev(hw),
-+		"%s TSPLL configuration -- %s, src %s, freq %s, PLL %s\n",
-+		new_cfg ? "New" : "Current", enable ? "enabled" : "disabled",
-+		ice_tspll_clk_src_str((enum ice_clk_src)clk_src),
-+		ice_tspll_clk_freq_str((enum ice_tspll_freq)tspll_freq),
-+		lock ? "locked" : "unlocked");
-+}
+@@ -497,5 +497,17 @@ int ice_tspll_init(struct ice_hw *hw)
+ 	/* Configure the TSPLL using the parameters from the function
+ 	 * capabilities.
+ 	 */
+-	return ice_tspll_cfg(hw, tspll_freq, clk_src);
++	err = ice_tspll_cfg(hw, tspll_freq, clk_src);
++	if (err) {
++		dev_warn(ice_hw_to_dev(hw), "Failed to lock TSPLL to predefined frequency. Retrying with fallback frequency.\n");
 +
- /**
-  * ice_tspll_cfg_e82x - Configure the Clock Generation Unit TSPLL
-  * @hw: Pointer to the HW struct
-@@ -144,12 +164,9 @@ static int ice_tspll_cfg_e82x(struct ice_hw *hw, enum ice_tspll_freq clk_freq,
- 	if (err)
- 		return err;
- 
--	/* Log the current clock configuration */
--	ice_debug(hw, ICE_DBG_PTP, "Current TSPLL configuration -- %s, clk_src %s, clk_freq %s, PLL %s\n",
--		  dw24.ts_pll_enable ? "enabled" : "disabled",
--		  ice_tspll_clk_src_str(dw24.time_ref_sel),
--		  ice_tspll_clk_freq_str(dw9.time_ref_freq_sel),
--		  bwm_lf.plllock_true_lock_cri ? "locked" : "unlocked");
-+	ice_tspll_log_cfg(hw, dw24.ts_pll_enable, dw24.time_ref_sel,
-+			  dw9.time_ref_freq_sel, bwm_lf.plllock_true_lock_cri,
-+			  false);
- 
- 	/* Disable the PLL before changing the clock source or frequency */
- 	if (dw24.ts_pll_enable) {
-@@ -222,12 +239,8 @@ static int ice_tspll_cfg_e82x(struct ice_hw *hw, enum ice_tspll_freq clk_freq,
- 		return -EBUSY;
- 	}
- 
--	/* Log the current clock configuration */
--	ice_debug(hw, ICE_DBG_PTP, "New TSPLL configuration -- %s, clk_src %s, clk_freq %s, PLL %s\n",
--		  dw24.ts_pll_enable ? "enabled" : "disabled",
--		  ice_tspll_clk_src_str(dw24.time_ref_sel),
--		  ice_tspll_clk_freq_str(dw9.time_ref_freq_sel),
--		  bwm_lf.plllock_true_lock_cri ? "locked" : "unlocked");
-+	ice_tspll_log_cfg(hw, dw24.ts_pll_enable, clk_src, clk_freq, true,
-+			  true);
- 
- 	return 0;
- }
-@@ -316,12 +329,9 @@ static int ice_tspll_cfg_e825c(struct ice_hw *hw, enum ice_tspll_freq clk_freq,
- 	if (err)
- 		return err;
- 
--	/* Log the current clock configuration */
--	ice_debug(hw, ICE_DBG_PTP, "Current TSPLL configuration -- %s, clk_src %s, clk_freq %s, PLL %s\n",
--		  dw23.ts_pll_enable ? "enabled" : "disabled",
--		  ice_tspll_clk_src_str(dw23.time_ref_sel),
--		  ice_tspll_clk_freq_str(dw9.time_ref_freq_sel),
--		  ro_lock.plllock_true_lock_cri ? "locked" : "unlocked");
-+	ice_tspll_log_cfg(hw, dw23.ts_pll_enable, dw23.time_ref_sel,
-+			  dw9.time_ref_freq_sel,
-+			  ro_lock.plllock_true_lock_cri, false);
- 
- 	/* Disable the PLL before changing the clock source or frequency */
- 	if (dw23.ts_pll_enable) {
-@@ -414,12 +424,8 @@ static int ice_tspll_cfg_e825c(struct ice_hw *hw, enum ice_tspll_freq clk_freq,
- 		return -EBUSY;
- 	}
- 
--	/* Log the current clock configuration */
--	ice_debug(hw, ICE_DBG_PTP, "New TSPLL configuration -- %s, clk_src %s, clk_freq %s, PLL %s\n",
--		  dw23.ts_pll_enable ? "enabled" : "disabled",
--		  ice_tspll_clk_src_str(dw23.time_ref_sel),
--		  ice_tspll_clk_freq_str(dw9.time_ref_freq_sel),
--		  ro_lock.plllock_true_lock_cri ? "locked" : "unlocked");
-+	ice_tspll_log_cfg(hw, dw23.ts_pll_enable, clk_src, clk_freq, true,
-+			  true);
- 
- 	return 0;
++		/* Try to lock to internal TCXO as a fallback. */
++		tspll_freq = ice_tspll_default_freq(hw->mac_type);
++		clk_src = ICE_CLK_SRC_TCXO;
++		err = ice_tspll_cfg(hw, tspll_freq, clk_src);
++		if (err)
++			dev_warn(ice_hw_to_dev(hw), "Failed to lock TSPLL to fallback frequency.\n");
++	}
++
++	return err;
  }
 
 -- 
