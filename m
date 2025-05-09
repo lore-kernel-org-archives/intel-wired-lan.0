@@ -4,121 +4,212 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 10601C3ABBC
-	for <intel-wired-lan@archiver.kernel.org>; Fri,  9 May 2025 13:44:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 00A45C3ABC3
+	for <intel-wired-lan@archiver.kernel.org>; Fri,  9 May 2025 14:46:03 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id CF3E4811E4;
-	Fri,  9 May 2025 13:44:07 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 926C580E4D;
+	Fri,  9 May 2025 14:46:03 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 33EV7243btIx; Fri,  9 May 2025 13:44:06 +0000 (UTC)
+ id OdS1Gj8zRk24; Fri,  9 May 2025 14:46:03 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9809883D30
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org F2C1F80E7F
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1746798246;
-	bh=+0W02eUpJIuARqh/eFfjvXZoLtSOzcoIZtxl4IlFNNI=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1746801963;
+	bh=FVORdIedFzGXMTTMnbm1a3FZDf/UIkwBKwG2l+Emqr8=;
+	h=Date:From:To:CC:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=wMioZgG6fXJdziLnlkkooOpHi4ewD7pQp3skp/Tb6Duv8hfkh+KZ1V3ll8QltWKQ9
-	 s6EIhgyymsVap4/X1jxli67+XyHbxaoVd7FFhiip5EH2xaqSjk69DGNt3opnXslAZM
-	 3dIcgNEErQzgawk9P2Ez/1jOTLYpgfOHxXmAZnydJoVly9p87wb2BE0eDRes+FRU7e
-	 BMqmbJH4UsS9QwaKZebp9wES/gB0HVloVwT6QQauvGTWUtJd1ijlu218IpLeYJX3Ug
-	 1PDZBb3c4BT8bn3xvWXKP88kdz9lbTGnb0s1VCZ+NYC9TX3jTjVCPejZcmZYrwWhZK
-	 IGMJj2ElhHjqA==
+	b=eAVthespWohZyi0+U5geVDAi2s5zPuRb1O730wEQ6T6bkUrp17bsBvKZvR+0DOOFb
+	 Sliz0n6ypdSt3u3rRKWn19vAas4QgqASUcpX8XP0Y+UxYAZjYXxZFYvjW5/NgEMw5w
+	 dTAtG/CvYVM4dtvtrfYnQvxeqh4jXerc24rL9NHTD9Eq5XLioIYkuLdOnPhyYDlV+N
+	 1jJpSxe9FS1oPRbCF73MtllkH3maVFVya6qTvuBUvLbYacsVDSOy8rsHsgTBFXiek3
+	 O+kGjrdbM3jEeNH6sPJaFXCo8IX89IC7yX1l12OX4QdX0PppVJWeWXHulCa4BtT1qx
+	 O27MKCwofrLSg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 9809883D30;
-	Fri,  9 May 2025 13:44:06 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id 30F3FD95
- for <intel-wired-lan@lists.osuosl.org>; Fri,  9 May 2025 13:44:05 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id F2C1F80E7F;
+	Fri,  9 May 2025 14:46:02 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 757D115A
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  9 May 2025 14:46:01 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 1138F414B9
- for <intel-wired-lan@lists.osuosl.org>; Fri,  9 May 2025 13:44:04 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 6716A80E42
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  9 May 2025 14:46:01 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id EemWIbM4jN_U for <intel-wired-lan@lists.osuosl.org>;
- Fri,  9 May 2025 13:44:03 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.11;
- helo=mgamail.intel.com; envelope-from=larysa.zaremba@intel.com;
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id v15ddr6xLzQs for <intel-wired-lan@lists.osuosl.org>;
+ Fri,  9 May 2025 14:46:00 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.16;
+ helo=mgamail.intel.com; envelope-from=michal.kubiak@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 2DBFC405E6
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 2DBFC405E6
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.11])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 2DBFC405E6
- for <intel-wired-lan@lists.osuosl.org>; Fri,  9 May 2025 13:44:03 +0000 (UTC)
-X-CSE-ConnectionGUID: OSDNtR0wT+mBxcS7VTzlYA==
-X-CSE-MsgGUID: ZyR968AqQ9OpQckZmQyU7A==
-X-IronPort-AV: E=McAfee;i="6700,10204,11427"; a="59257413"
-X-IronPort-AV: E=Sophos;i="6.15,275,1739865600"; d="scan'208";a="59257413"
-Received: from orviesa007.jf.intel.com ([10.64.159.147])
- by fmvoesa105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 09 May 2025 06:44:02 -0700
-X-CSE-ConnectionGUID: 490qHHj1T+OFbppMXOmOUg==
-X-CSE-MsgGUID: E4Vl5xqmQPmUL3AE8HhWjQ==
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 8FB7C80E29
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8FB7C80E29
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.16])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 8FB7C80E29
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  9 May 2025 14:46:00 +0000 (UTC)
+X-CSE-ConnectionGUID: 3i5jLhBWRQODbwXV1AZPxA==
+X-CSE-MsgGUID: Rkyeez/ySfG3WIKCUo1+Pw==
+X-IronPort-AV: E=McAfee;i="6700,10204,11427"; a="48713437"
+X-IronPort-AV: E=Sophos;i="6.15,275,1739865600"; d="scan'208";a="48713437"
+Received: from orviesa005.jf.intel.com ([10.64.159.145])
+ by orvoesa108.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 09 May 2025 07:46:00 -0700
+X-CSE-ConnectionGUID: 2iE4eRggSkqlnDpoPZjleQ==
+X-CSE-MsgGUID: epRRLYfVS9mX+TOnU8wLXg==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.15,275,1739865600"; d="scan'208";a="137133597"
-Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by orviesa007.jf.intel.com with ESMTP; 09 May 2025 06:43:55 -0700
-Received: from mglak.igk.intel.com (mglak.igk.intel.com [10.237.112.146])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id 74B2B3430D;
- Fri,  9 May 2025 14:43:52 +0100 (IST)
-From: Larysa Zaremba <larysa.zaremba@intel.com>
-To: intel-wired-lan@lists.osuosl.org, Tony Nguyen <anthony.l.nguyen@intel.com>
-Cc: "David S. Miller" <davem@davemloft.net>,
- Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, Simon Horman <horms@kernel.org>,
- Jonathan Corbet <corbet@lwn.net>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Jiri Pirko <jiri@resnulli.us>,
- Tatyana Nikolova <tatyana.e.nikolova@intel.com>,
- Andrew Lunn <andrew+netdev@lunn.ch>,
- Alexander Lobakin <aleksander.lobakin@intel.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Maciej Fijalkowski <maciej.fijalkowski@intel.com>,
- Lee Trager <lee@trager.us>, Madhavan Srinivasan <maddy@linux.ibm.com>,
- Larysa Zaremba <larysa.zaremba@intel.com>,
- Sridhar Samudrala <sridhar.samudrala@intel.com>,
- Jacob Keller <jacob.e.keller@intel.com>,
- Michal Swiatkowski <michal.swiatkowski@linux.intel.com>,
- Mateusz Polchlopek <mateusz.polchlopek@intel.com>,
- Ahmed Zaki <ahmed.zaki@intel.com>, netdev@vger.kernel.org,
- linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
- "Karlsson, Magnus" <magnus.karlsson@intel.com>,
- Emil Tantilov <emil.s.tantilov@intel.com>,
- Madhu Chittim <madhu.chittim@intel.com>, Josh Hay <joshua.a.hay@intel.com>,
- Milena Olech <milena.olech@intel.com>, pavan.kumar.linga@intel.com,
- "Singhai, Anjali" <anjali.singhai@intel.com>
-Date: Fri,  9 May 2025 15:43:12 +0200
-Message-ID: <20250509134319.66631-16-larysa.zaremba@intel.com>
-X-Mailer: git-send-email 2.47.0
-In-Reply-To: <20250509134319.66631-1-larysa.zaremba@intel.com>
-References: <20250509134319.66631-1-larysa.zaremba@intel.com>
+X-IronPort-AV: E=Sophos;i="6.15,275,1739865600"; d="scan'208";a="141747609"
+Received: from orsmsx901.amr.corp.intel.com ([10.22.229.23])
+ by orviesa005.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 09 May 2025 07:46:00 -0700
+Received: from ORSMSX901.amr.corp.intel.com (10.22.229.23) by
+ ORSMSX901.amr.corp.intel.com (10.22.229.23) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1544.14; Fri, 9 May 2025 07:45:59 -0700
+Received: from orsedg603.ED.cps.intel.com (10.7.248.4) by
+ ORSMSX901.amr.corp.intel.com (10.22.229.23) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1544.14 via Frontend Transport; Fri, 9 May 2025 07:45:59 -0700
+Received: from NAM11-BN8-obe.outbound.protection.outlook.com (104.47.58.175)
+ by edgegateway.intel.com (134.134.137.100) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.1.2507.44; Fri, 9 May 2025 07:45:59 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=nOtk1h81nNJhpCxI/2XCC6R/IYwYMBNbMEdCiMH1pT0t3D/jN/0S4BSWM0AsV8qFrCrDp1thfSFGXGVM2KapjAajIBbpRdDxBctIK0WeNzgv66roQT0/z3NXYFD5GS3ElvPzDN92uEFiQ/YclSNuuE3lvgsdYaPi/E9u4PAx5z/TScLnbt/s/P5Y7KzKe6Xsu0wlVkagO/z58IfE9o5ZX85yfjJOiGus7biJZk137wIbYxO8E5v4x3Cc6oxUfi2hQQWb537dbsl82U6TS2dH4AUApwSH9QZjcSwdVr7E4ClLH3udFAb07alhhL/cXntsE0IcfCqTf9SE+t40lbQlZQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=FVORdIedFzGXMTTMnbm1a3FZDf/UIkwBKwG2l+Emqr8=;
+ b=v3viJyo4n6y7cUrxIRLSM03sJTJcrBjOwTUvB+Y3FSLgqsTxrVO+1WbxiVmxYDTiIQWXKIYWdiuAlH2LvfCjmIfpG4jJYz9xl9Jb+PATbIFUmdXQBNBZFZdfoESa3FqmsnuyrxHv84Nc+l+gJto0Vffu/6Aicq4qIgGrWNpbzQo/m77B8Ni+9KSbWgcBoxV0lyN2I9IsnmcTcbOG1KCkWNqyKXMSzZ0RMW7/csFEk1huZPXjG5BrhzP3m3Mi5JCU9gEHPy3M4Vaw4ch3EcvezDyC7VFiP2KEe6cs4RxNYBWM1MR3S8HEMD1RvET5pRvRdjOGTbREgKyppiLJ12ak4Q==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Received: from DS0PR11MB8665.namprd11.prod.outlook.com (2603:10b6:8:1b8::6) by
+ PH0PR11MB4774.namprd11.prod.outlook.com (2603:10b6:510:40::9) with
+ Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.8699.26; Fri, 9 May 2025 14:45:12 +0000
+Received: from DS0PR11MB8665.namprd11.prod.outlook.com
+ ([fe80::8e7e:4f8:f7e4:3955]) by DS0PR11MB8665.namprd11.prod.outlook.com
+ ([fe80::8e7e:4f8:f7e4:3955%5]) with mapi id 15.20.8699.026; Fri, 9 May 2025
+ 14:45:12 +0000
+Date: Fri, 9 May 2025 16:45:01 +0200
+From: Michal Kubiak <michal.kubiak@intel.com>
+To: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+CC: <maciej.fijalkowski@intel.com>, <aleksander.lobakin@intel.com>,
+ <dawid.osuchowski@linux.intel.com>, <jacob.e.keller@intel.com>,
+ <jbrandeburg@cloudflare.com>, <netdev@vger.kernel.org>,
+ <intel-wired-lan@lists.osuosl.org>
+Message-ID: <aB4U7TBtr75ouKzi@localhost.localdomain>
+References: <20250509094233.197245-1-michal.kubiak@intel.com>
+ <20250509094233.197245-4-michal.kubiak@intel.com>
+ <a214afa6-e9d7-4152-9b43-146cf7ce0076@intel.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <a214afa6-e9d7-4152-9b43-146cf7ce0076@intel.com>
+X-ClientProxiedBy: VE1PR03CA0022.eurprd03.prod.outlook.com
+ (2603:10a6:802:a0::34) To DS0PR11MB8665.namprd11.prod.outlook.com
+ (2603:10b6:8:1b8::6)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DS0PR11MB8665:EE_|PH0PR11MB4774:EE_
+X-MS-Office365-Filtering-Correlation-Id: 0295a853-f8b7-44e1-d3dc-08dd8f081a43
+X-LD-Processed: 46c98d88-e344-4ed4-8496-4ed7712e255d,ExtAddr
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;ARA:13230040|1800799024|376014|366016;
+X-Microsoft-Antispam-Message-Info: =?us-ascii?Q?CLeO0e3n3XiC5zp8ggaN4zzyZqlB+wZssMnKwnkdCzPXg4LU6w/e18ACLkuQ?=
+ =?us-ascii?Q?nDrEfc9fikUTUSIwKuWZwLQ+nfAJdRD26SlkPAxmy711lb/DeOspNnFTy4Mv?=
+ =?us-ascii?Q?i7vgk8sQyElx0c9qqWhaory7VYTU9G1Sfmy1mDe+XM4lCRTJo4QSHJZamUEY?=
+ =?us-ascii?Q?ZCMzpfALC9SbhzOOOlDNYWbQIn3wlECHOQRYucEnV3U+wPu9oZt4CDny+f6M?=
+ =?us-ascii?Q?gsuDRr6q8rZz7go7SlRXQ/ZGdNWUSnQePT0YTY/0ZelMeaQstO21k/rQjDAP?=
+ =?us-ascii?Q?uTEJsu1eIjm7dNOG9h7aGD+/Vu7ry7a32yzOF4WRrzTBO86jjqy5EHPtvMdS?=
+ =?us-ascii?Q?pMdfImOmmlDX48PYUJhalYbRiBD/8dfmTBEwxNZ5S0a1V4T0gbeA6H43NYnD?=
+ =?us-ascii?Q?wq7uAuqhh9nLCfme8RRzZZWLva1l2FIE9Z7e+NwZ40bg5gYjBHqJTwfVchi0?=
+ =?us-ascii?Q?/42qetPeZbJzNDpyswSI3wJpPXZGsHkqERapVgGTTb3Fg6ofzY1FbYwarhNa?=
+ =?us-ascii?Q?P8Ix+6pYwZ/QE+Hru9eRTZPv5uVzNZCWDWa6T9ycQJGm56m0Hz50uflvJmuX?=
+ =?us-ascii?Q?B1NO/hkUk0KNf1cxLmu1JzZJNsJhyQrdrcI+XX7Ir+jTlRHvdMSaDXN+KRqp?=
+ =?us-ascii?Q?MNJsyFc1WxtM5xgEs8o+ckcOuHb4XSlaDxY1Qa8Pi/i4qHQ1e7cfDNu9JWJi?=
+ =?us-ascii?Q?UuQt/wtKeBmg+fWBWLhAOayHRh4MU+m8DVriTphCW5VqraGnLZrBByfjVJzG?=
+ =?us-ascii?Q?Y2VhsDJVF/aP3PYSA1MGyoL6WX5SqU7xQv4meSbmc2rM/S785ctnXPlKYGTh?=
+ =?us-ascii?Q?DINbtN9HQmOMYFc0DA+lnMwVi/chtv6rOQ6D5kf6gf51jKfq5cBA1vNB8q7f?=
+ =?us-ascii?Q?TKAr1mR3SqkX32Es+ILsB/ZJKB8aGKQyz+hbxwobEHMIQlAtjYaF+vOP7vIK?=
+ =?us-ascii?Q?Ab970wVe9io447Qhy6/8MTt85x7u1l1e45PR/0eqeQw2o5AXRvEI83akvZEJ?=
+ =?us-ascii?Q?O9kezhnIK1T9jlJJNUTDeosnZG3ki7RdWkZALoOdlXwx/h3Y5o6wifZ099Ey?=
+ =?us-ascii?Q?7jsc3QszaTLsn3QN3H3hAY6sOOmZcfG+lcXrMUD/1az5j1uhlXRbxeVo94H+?=
+ =?us-ascii?Q?t2NmeDyFJHDSA3yAvuNGulOIIMeX32uLHcrxAO+sAs1Z5lGxsEYou0/m/gWk?=
+ =?us-ascii?Q?nGmWaz0d2pqSXN7y5Rbxe7IrtPVfvf5Ae1Wqsghx5I/1Ox2sK2dWD5dDrwpG?=
+ =?us-ascii?Q?eZ2BR6DqTkt4uKxcXhKgr7n0nd1VfinMr/Wg1xmMvq5pWt/A8Kb4LAQCYf8k?=
+ =?us-ascii?Q?k1xnx2nUFdI/1mImzO4hjeCQdjpGx/CwjtfWzKMPlnmZDSwevdNUsOVKE/2W?=
+ =?us-ascii?Q?tSutoFBX/62TG32VOxDo+DsQiDnLQvjX1Xw5z53e6C91eTO7D7BTJO6V0w8x?=
+ =?us-ascii?Q?YpqsrqmeomQ=3D?=
+X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:DS0PR11MB8665.namprd11.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(13230040)(1800799024)(376014)(366016); DIR:OUT; SFP:1101; 
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?+0ABj3FWAaWKqgMDli82fNodmBwn1eBAIH7pTaTgc5mV3sS0MqDe3jHCfpZH?=
+ =?us-ascii?Q?SmDWRxOcBXY5Rm5jwz26F9LuFlLHZWqsFf5tBrzR+B3lxuKwXSNWsChy0yUk?=
+ =?us-ascii?Q?F9TxfEeoYgGaQaOzK2tnmld20ho1kDFomzQGlZ4i26eFKtv/xyDuUu07WSWT?=
+ =?us-ascii?Q?Hd9aSKk/JqaI0+TgZnJXyCnO/cnOXqBbTt8ENf5kKp/VldK9lVzUEy70ldsl?=
+ =?us-ascii?Q?kNEaRu3NvSduu6Lj63EJ59RRXhFR5fxBtsl0G8cZIzgNPHpT1GdjNZGkk+BD?=
+ =?us-ascii?Q?9TFDPaYBs30ZkQUgBCkc9Q46JQOJcLZrzJwY5NSS+ZbkBjm6HGcEaxFGIw/p?=
+ =?us-ascii?Q?P7lWKaxOd43LOAG90rvEzCMYLUQHX2Lru2V0NsqyFhNNvQcn46LKoS4sZxrm?=
+ =?us-ascii?Q?T0PrcvARjdOdqgGniUqZFYtCCWfs4FUI1CmUeXrZgkJfn8IvU1Q20wtkWN8U?=
+ =?us-ascii?Q?p8h4FL/u6gjE+e14c+3ZFzkiYkeJaNtEGcIp33XT4i6EtFFgMPJbj1UYvhQl?=
+ =?us-ascii?Q?LwYv3C3r20irSlJJVDUs1UeLDfs2Mni15TM8sURaizUikQpLQeZ8GyTUkzlH?=
+ =?us-ascii?Q?p4Zu4GuY4xpbYYBSlCs2wWBxgXKUVrCdEqJ3q/C5zalhE7lotBzEjTxMzcNR?=
+ =?us-ascii?Q?YI5xS+9tIlrMGMNajm6nPbEtzgFKsAyKhInbNm0Xa1Iu9bpsG6SylqVNS5Zh?=
+ =?us-ascii?Q?5D24GkYAM2vJhfQ6w2t34z9zt2gdHX4S3A1i3yAy1c40NR5xIMOo/4akAz52?=
+ =?us-ascii?Q?7ugZOeQzSiGY5ULnfaLRqdunwXJXOedxj8OVHW2FbS39WfVbgqUGSElApBe9?=
+ =?us-ascii?Q?zf0XBmGNhKRE+BedBb72dA4PZrqL9GgY59ZvrJf+QrHb+kNgWz8YcZ0MljlK?=
+ =?us-ascii?Q?K0zapwpl/7CcIS5WBJKD+M3GtAxofoisAaJOH1SL4CWs81Z4xVAovXgOr7ee?=
+ =?us-ascii?Q?PwDMc5XOgCbKn4KRPwERZy8xoPfxVUtz2mD7CQrfFv79f2WQFCNLbvRo15PV?=
+ =?us-ascii?Q?VIyEBZ5FQe+jCg5pqRYV9QMSDAqfBBrYjC1S1j5/tvSQ3cmZ9R4aHfoxIjlA?=
+ =?us-ascii?Q?gSbwcjSdPIipJMEeqZdoaUsUUUolW2S86LdaZaoVTR8HOoPMfCy/X6QmylfN?=
+ =?us-ascii?Q?tEU3eBvP5y4LS7RgUgglLMZRplowvdZ2ef7kE+sfSKNzdZVqnjBFaKjSIR05?=
+ =?us-ascii?Q?9eGAGTJt9isoOpIlH7erqNWKU4p7bDlRAstbaSYbzkHEUu6EI5ZtbVDK4yGx?=
+ =?us-ascii?Q?j8FxCtFCjEgKkBisjvEAfAH4H8wnXWHv1FkX1QgQEJk8ApP8gegYlN4vG+ZZ?=
+ =?us-ascii?Q?F+knaHfNTMzx+k+3RLnOEquCU8BXKhoXEMhpaCjXJmegx/ARNadW/Cmr+Gl5?=
+ =?us-ascii?Q?Q6BUbTOkwQ/XmuL8+Ql7hmswYNhFj7xjGlqQsqTtZbRyyP+GsUGCTlTljr1K?=
+ =?us-ascii?Q?UL+sNxq9MRbyhyuJV7vC5PpmldxxNbUIW0WRbzLryDJt+0n0GrMSTfQDQaNk?=
+ =?us-ascii?Q?MsnTolU8XOM8q8sd/VWqxxeoqdqIYPMs22tQ738yqKMsJULO5TRIbT3Z8Huz?=
+ =?us-ascii?Q?XISvf/VOczu1wZhTHLtsmE6wEhi6fIHHwKWK9+9OCVqum0tkh8v+iiE7ybR0?=
+ =?us-ascii?Q?WQ=3D=3D?=
+X-MS-Exchange-CrossTenant-Network-Message-Id: 0295a853-f8b7-44e1-d3dc-08dd8f081a43
+X-MS-Exchange-CrossTenant-AuthSource: DS0PR11MB8665.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 09 May 2025 14:45:12.1162 (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 6MpUTt2uEvmp3i4H/9oVvJ8myPNuXm51VLd0nze3G4Aax6CnTeeX5OxnuayXHxLIuEuihjjmzrt5Os3G1rewIQ==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH0PR11MB4774
+X-OriginatorOrg: intel.com
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1746798243; x=1778334243;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=57pFULhsbulHXnWbMB8Z+24WO/qyN9Gxay/WlWTNaq4=;
- b=VkZ68fvZTqDK4ByiYnLOEW19iVvS7S+eSzn7LcqEKUmz6L8A67YBK2tM
- nqeMSlz/tbrJdzlZRIIRHSBq3I5hsFWPBn5IKNNGIrj1r3xGduMpoXfeo
- kTD8+Gzs5L80QxK0lsWTN0yyrjBIemmTmPV2hWLpWGU11PSUbYBTNxRU6
- ZZxT3bS2I6Y7A/hJJ4aY1GSpTu2gtM9NYU3x1wpDXo1SwHsBLd6zIxYZJ
- 0dPP7ym9E71xE5QDPFswZOE/ewExfqqEbnVPrGE+Tz0d5k4V2r1XQtrzI
- EbHWEeeNconZoWQwZWWiSX5+qH4z9QqPThJb+pzxz6MopwfLpx5x9Lmol
- A==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ t=1746801961; x=1778337961;
+ h=date:from:to:cc:subject:message-id:references:
+ in-reply-to:mime-version;
+ bh=ngarJa3lOcP4bpkXtOQzUpVblZeIODnXnYy5nG1c8ZI=;
+ b=QUxefT/ufQ9Re89TmYMwm3sMpgyEfBmuSis3mMARPf1pl8uoUYXe02ml
+ d9BqBILj8PtgN98aa4IZv+A9fIwq6Gn5Puo8N/IP/3FffzwCPkEQIbJJf
+ NE9RekXLj6idjX+4/X5XxokqNqcpjg5FXcW69KMayEZ8ThHiE2HEgDMua
+ dCMDNxLlE+Uclh2dTl67ThKvDjhG4J00ULDO2cSieB5nRENF8EjwShsNi
+ KmG0lTm5iHbSlUBvkp8ZiWKoA9n92CCDT2pe8Hlh9Af7LZtbgwpdw1v4u
+ 9pCQXgB2tIhWB0dIZDfFW6Cc6kwBwmv2lJRMgDOpbkZTXz/RsSo7zhgzv
+ g==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=VkZ68fvZ
-Subject: [Intel-wired-lan] [PATCH iwl-next v3 15/15] ixd: add devlink support
+ header.s=Intel header.b=QUxefT/u
+X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Subject: Re: [Intel-wired-lan] [PATCH iwl-net v2 3/3] ice: fix rebuilding
+ the Tx scheduler tree for large queue counts
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -134,343 +225,75 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Amritha Nambiar <amritha.nambiar@intel.com>
+On Fri, May 09, 2025 at 03:07:56PM +0200, Przemek Kitszel wrote:
+> 
+> > +ice_sched_rm_vsi_subtree(struct ice_port_info *pi,
+> > +			 struct ice_sched_node *vsi_node, u8 owner, u8 tc)
+> > +{
+> > +	u16 vsi_handle = vsi_node->vsi_handle;
+> > +	bool all_vsi_nodes_removed = true;
+> > +	int j = 0;
+> > +
+> > +	while (vsi_node) {
+> > +		struct ice_sched_node *next_vsi_node;
+> > +
+> > +		if (ice_sched_is_leaf_node_present(vsi_node)) {
+> > +			ice_debug(pi->hw, ICE_DBG_SCHED, "VSI has leaf nodes in TC %d\n", tc);
+> > +			return -EBUSY;
+> > +		}
+> > +		while (j < vsi_node->num_children) {
+> > +			if (vsi_node->children[j]->owner == owner) {
+> > +				ice_free_sched_node(pi, vsi_node->children[j]);
+> > +
+> > +				/* reset the counter again since the num
+> > +				 * children will be updated after node removal
+> > +				 */
+> > +				j = 0;
+> 
+> I know this code is a copy-pasta, but it looks that there is no need to
+> reset the counter (whole array isn't reshuffled), just don't increase it
+> 
+You are right. After analyzing the `ice_free_sched_node()` function, it seems
+we should just keep the value of `j`. After removing the child node, other
+children nodes will be shifted towards the beginning of the array.
 
-Enable initial support for the devlink interface with the ixd driver. The
-ixd hardware is a single function PCIe device. So, the PCIe adapter gets
-its own devlink instance to manage device-wide resources or configuration.
+> IOW, would be good to check if this line (and the semi-obvious and
+> half-wrong comment) could be removed.
 
-$ devlink dev show
-pci/0000:83:00.6
+I would prefer to change the code, since I'm touching it.
 
-$ devlink dev info pci/0000:83:00.6
-pci/0000:83:00.6:
-  driver ixd
-  serial_number 00-a0-c9-ff-ff-23-45-67
-  versions:
-      fixed:
-        device.type MEV
-      running:
-        cp 0.0
-        virtchnl 2.0
+> 
+> you could keep my RB tag, thank you again for the series!
+>
 
-Signed-off-by: Amritha Nambiar <amritha.nambiar@intel.com>
-Reviewed-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
-Reviewed-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Signed-off-by: Larysa Zaremba <larysa.zaremba@intel.com>
----
- Documentation/networking/devlink/index.rst   |   1 +
- Documentation/networking/devlink/ixd.rst     |  35 +++++++
- drivers/net/ethernet/intel/ixd/Kconfig       |   1 +
- drivers/net/ethernet/intel/ixd/Makefile      |   1 +
- drivers/net/ethernet/intel/ixd/ixd_devlink.c | 105 +++++++++++++++++++
- drivers/net/ethernet/intel/ixd/ixd_devlink.h |  44 ++++++++
- drivers/net/ethernet/intel/ixd/ixd_main.c    |  13 ++-
- 7 files changed, 197 insertions(+), 3 deletions(-)
- create mode 100644 Documentation/networking/devlink/ixd.rst
- create mode 100644 drivers/net/ethernet/intel/ixd/ixd_devlink.c
- create mode 100644 drivers/net/ethernet/intel/ixd/ixd_devlink.h
+Let's wait until early next week to gather more potential comments.
+Then I will address it in v3.
 
-diff --git a/Documentation/networking/devlink/index.rst b/Documentation/networking/devlink/index.rst
-index 8319f43b5933..ee9d89429fa2 100644
---- a/Documentation/networking/devlink/index.rst
-+++ b/Documentation/networking/devlink/index.rst
-@@ -85,6 +85,7 @@ parameters, info versions, and other features it supports.
-    ionic
-    ice
-    ixgbe
-+   ixd
-    mlx4
-    mlx5
-    mlxsw
-diff --git a/Documentation/networking/devlink/ixd.rst b/Documentation/networking/devlink/ixd.rst
-new file mode 100644
-index 000000000000..81b28ffb00f6
---- /dev/null
-+++ b/Documentation/networking/devlink/ixd.rst
-@@ -0,0 +1,35 @@
-+.. SPDX-License-Identifier: GPL-2.0
-+
-+===================
-+ixd devlink support
-+===================
-+
-+This document describes the devlink features implemented by the ``ixd``
-+device driver.
-+
-+Info versions
-+=============
-+
-+The ``ixd`` driver reports the following versions
-+
-+.. list-table:: devlink info versions implemented
-+    :widths: 5 5 5 90
-+
-+    * - Name
-+      - Type
-+      - Example
-+      - Description
-+    * - ``device.type``
-+      - fixed
-+      - MEV
-+      - The hardware type for this device
-+    * - ``cp``
-+      - running
-+      - 0.0
-+      - Version number (major.minor) of the Control Plane software
-+        running on the device.
-+    * - ``virtchnl``
-+      - running
-+      - 2.0
-+      - 2-digit version number (major.minor) of the communication channel
-+        (virtchnl) used by the device.
-diff --git a/drivers/net/ethernet/intel/ixd/Kconfig b/drivers/net/ethernet/intel/ixd/Kconfig
-index 24510c50070e..34181c59dcdc 100644
---- a/drivers/net/ethernet/intel/ixd/Kconfig
-+++ b/drivers/net/ethernet/intel/ixd/Kconfig
-@@ -7,6 +7,7 @@ config IXD
- 	select LIBETH
- 	select LIBIE_CP
- 	select LIBIE_PCI
-+	select NET_DEVLINK
- 	help
- 	  This driver supports Intel(R) Control Plane PCI Function
- 	  of Intel E2100 and later IPUs and FNICs.
-diff --git a/drivers/net/ethernet/intel/ixd/Makefile b/drivers/net/ethernet/intel/ixd/Makefile
-index 90abf231fb16..03760a2580b9 100644
---- a/drivers/net/ethernet/intel/ixd/Makefile
-+++ b/drivers/net/ethernet/intel/ixd/Makefile
-@@ -8,5 +8,6 @@ obj-$(CONFIG_IXD) += ixd.o
- ixd-y := ixd_main.o
- ixd-y += ixd_ctlq.o
- ixd-y += ixd_dev.o
-+ixd-y += ixd_devlink.o
- ixd-y += ixd_lib.o
- ixd-y += ixd_virtchnl.o
-diff --git a/drivers/net/ethernet/intel/ixd/ixd_devlink.c b/drivers/net/ethernet/intel/ixd/ixd_devlink.c
-new file mode 100644
-index 000000000000..6f60cfe4fab2
---- /dev/null
-+++ b/drivers/net/ethernet/intel/ixd/ixd_devlink.c
-@@ -0,0 +1,105 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/* Copyright (c) 2025, Intel Corporation. */
-+
-+#include "ixd.h"
-+#include "ixd_devlink.h"
-+
-+#define IXD_DEVLINK_INFO_LEN	128
-+
-+/**
-+ * ixd_fill_dsn - Get the serial number for the ixd device
-+ * @adapter: adapter to query
-+ * @buf: storage buffer for the info request
-+ */
-+static void ixd_fill_dsn(struct ixd_adapter *adapter, char *buf)
-+{
-+	u8 dsn[8];
-+
-+	/* Copy the DSN into an array in Big Endian format */
-+	put_unaligned_be64(pci_get_dsn(adapter->cp_ctx.mmio_info.pdev), dsn);
-+
-+	snprintf(buf, IXD_DEVLINK_INFO_LEN, "%8phD", dsn);
-+}
-+
-+/**
-+ * ixd_fill_device_name - Get the name of the underlying hardware
-+ * @adapter: adapter to query
-+ * @buf: storage buffer for the info request
-+ * @buf_size: size of the storage buffer
-+ */
-+static void ixd_fill_device_name(struct ixd_adapter *adapter, char *buf,
-+				 size_t buf_size)
-+{
-+	if (adapter->caps.device_type == VIRTCHNL2_MEV_DEVICE)
-+		snprintf(buf, buf_size, "%s", "MEV");
-+	else
-+		snprintf(buf, buf_size, "%s", "UNKNOWN");
-+}
-+
-+/**
-+ * ixd_devlink_info_get - .info_get devlink handler
-+ * @devlink: devlink instance structure
-+ * @req: the devlink info request
-+ * @extack: extended netdev ack structure
-+ *
-+ * Callback for the devlink .info_get operation. Reports information about the
-+ * device.
-+ *
-+ * Return: zero on success or an error code on failure.
-+ */
-+static int ixd_devlink_info_get(struct devlink *devlink,
-+				struct devlink_info_req *req,
-+				struct netlink_ext_ack *extack)
-+{
-+	struct ixd_adapter *adapter = devlink_priv(devlink);
-+	char buf[IXD_DEVLINK_INFO_LEN];
-+	int err;
-+
-+	ixd_fill_dsn(adapter, buf);
-+	err = devlink_info_serial_number_put(req, buf);
-+	if (err)
-+		return err;
-+
-+	ixd_fill_device_name(adapter, buf, IXD_DEVLINK_INFO_LEN);
-+	err = devlink_info_version_fixed_put(req, "device.type", buf);
-+	if (err)
-+		return err;
-+
-+	snprintf(buf, sizeof(buf), "%u.%u",
-+		 le16_to_cpu(adapter->caps.cp_ver_major),
-+		 le16_to_cpu(adapter->caps.cp_ver_minor));
-+
-+	err = devlink_info_version_running_put(req, "cp", buf);
-+	if (err)
-+		return err;
-+
-+	snprintf(buf, sizeof(buf), "%u.%u",
-+		 adapter->vc_ver.major, adapter->vc_ver.minor);
-+
-+	return devlink_info_version_running_put(req, "virtchnl", buf);
-+}
-+
-+static const struct devlink_ops ixd_devlink_ops = {
-+	.info_get = ixd_devlink_info_get,
-+};
-+
-+/**
-+ * ixd_adapter_alloc - Allocate devlink and return adapter pointer
-+ * @dev: the device to allocate for
-+ *
-+ * Allocate a devlink instance for this device and return the private area as
-+ * the adapter structure.
-+ *
-+ * Return: adapter structure on success, NULL on failure
-+ */
-+struct ixd_adapter *ixd_adapter_alloc(struct device *dev)
-+{
-+	struct devlink *devlink;
-+
-+	devlink = devlink_alloc(&ixd_devlink_ops, sizeof(struct ixd_adapter),
-+				dev);
-+	if (!devlink)
-+		return NULL;
-+
-+	return devlink_priv(devlink);
-+}
-diff --git a/drivers/net/ethernet/intel/ixd/ixd_devlink.h b/drivers/net/ethernet/intel/ixd/ixd_devlink.h
-new file mode 100644
-index 000000000000..c43ce0655de2
---- /dev/null
-+++ b/drivers/net/ethernet/intel/ixd/ixd_devlink.h
-@@ -0,0 +1,44 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/* Copyright (c) 2025, Intel Corporation. */
-+
-+#ifndef _IXD_DEVLINK_H_
-+#define _IXD_DEVLINK_H_
-+#include <net/devlink.h>
-+
-+struct ixd_adapter *ixd_adapter_alloc(struct device *dev);
-+
-+/**
-+ * ixd_devlink_free - teardown the devlink
-+ * @adapter: the adapter structure to free
-+ *
-+ */
-+static inline void ixd_devlink_free(struct ixd_adapter *adapter)
-+{
-+	struct devlink *devlink = priv_to_devlink(adapter);
-+
-+	devlink_free(devlink);
-+}
-+
-+/**
-+ * ixd_devlink_unregister - Unregister devlink resources for this adapter.
-+ * @adapter: the adapter structure to cleanup
-+ *
-+ * Releases resources used by devlink and cleans up associated memory.
-+ */
-+static inline void ixd_devlink_unregister(struct ixd_adapter *adapter)
-+{
-+	devlink_unregister(priv_to_devlink(adapter));
-+}
-+
-+/**
-+ * ixd_devlink_register - Register devlink interface for this adapter
-+ * @adapter: pointer to ixd adapter structure to be associated with devlink
-+ *
-+ * Register the devlink instance associated with this adapter
-+ */
-+static inline void ixd_devlink_register(struct ixd_adapter *adapter)
-+{
-+	devlink_register(priv_to_devlink(adapter));
-+}
-+
-+#endif /* _IXD_DEVLINK_H_ */
-diff --git a/drivers/net/ethernet/intel/ixd/ixd_main.c b/drivers/net/ethernet/intel/ixd/ixd_main.c
-index c6dd6b3f14bb..d58b49bb3953 100644
---- a/drivers/net/ethernet/intel/ixd/ixd_main.c
-+++ b/drivers/net/ethernet/intel/ixd/ixd_main.c
-@@ -4,6 +4,7 @@
- #include "ixd.h"
- #include "ixd_ctlq.h"
- #include "ixd_lan_regs.h"
-+#include "ixd_devlink.h"
- 
- MODULE_DESCRIPTION("Intel(R) Control Plane Function Device Driver");
- MODULE_IMPORT_NS("LIBIE_CP");
-@@ -21,12 +22,15 @@ static void ixd_remove(struct pci_dev *pdev)
- 	/* Do not mix removal with (re)initialization */
- 	cancel_delayed_work_sync(&adapter->init_task.init_work);
- 
-+	ixd_devlink_unregister(adapter);
-+
- 	/* Leave the device clean on exit */
- 	ixd_trigger_reset(adapter);
- 	ixd_deinit_dflt_mbx(adapter);
- 
- 	libie_pci_unmap_all_mmio_regions(&adapter->cp_ctx.mmio_info);
- 	libie_pci_deinit_dev(pdev);
-+	ixd_devlink_free(adapter);
- }
- 
- /**
-@@ -94,7 +98,7 @@ static int ixd_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	if (WARN_ON(ent->device != IXD_DEV_ID_CPF))
- 		return -EINVAL;
- 
--	adapter = devm_kzalloc(&pdev->dev, sizeof(*adapter), GFP_KERNEL);
-+	adapter = ixd_adapter_alloc(&pdev->dev);
- 	if (!adapter)
- 		return -ENOMEM;
- 
-@@ -103,7 +107,7 @@ static int ixd_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 
- 	err = libie_pci_init_dev(pdev);
- 	if (err)
--		return err;
-+		goto free_adapter;
- 
- 	pci_set_drvdata(pdev, adapter);
- 
-@@ -119,11 +123,14 @@ static int ixd_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	queue_delayed_work(system_unbound_wq, &adapter->init_task.init_work,
- 			   msecs_to_jiffies(500));
- 
-+	ixd_devlink_register(adapter);
-+
- 	return 0;
- 
- deinit_dev:
- 	libie_pci_deinit_dev(pdev);
--
-+free_adapter:
-+	ixd_devlink_free(adapter);
- 	return err;
- }
- 
--- 
-2.47.0
+This minor fix will not be directly related to the core of the series,
+so the v2 can still be used to test the workings of XDP on multi-core machines.
 
+Thanks,
+Michal
+
+> > +			} else {
+> > +				j++;
+> > +			}
+> > +		}
+> > +
+> > +		next_vsi_node = ice_sched_find_next_vsi_node(vsi_node);
+> > +
+> > +		/* remove the VSI if it has no children */
+> > +		if (!vsi_node->num_children)
+> > +			ice_free_sched_node(pi, vsi_node);
+> > +		else
+> > +			all_vsi_nodes_removed = false;
+> > +
+> > +		vsi_node = next_vsi_node;
+> > +	}
+> > +
+> > +	/* clean up aggregator related VSI info if any */
+> > +	if (all_vsi_nodes_removed)
+> > +		ice_sched_rm_agg_vsi_info(pi, vsi_handle);
+> > +
+> > +	return 0;
+> > +}
