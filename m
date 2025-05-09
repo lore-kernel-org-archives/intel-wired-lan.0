@@ -4,67 +4,67 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A9F2BC3ABBC
-	for <intel-wired-lan@archiver.kernel.org>; Fri,  9 May 2025 13:43:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CB1FDC3ABBC
+	for <intel-wired-lan@archiver.kernel.org>; Fri,  9 May 2025 13:43:42 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 6AB83811E4;
-	Fri,  9 May 2025 13:43:39 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 7D3E7810FA;
+	Fri,  9 May 2025 13:43:42 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id EdFaC6b5UDFM; Fri,  9 May 2025 13:43:38 +0000 (UTC)
+ id uQHZz1EkMQn2; Fri,  9 May 2025 13:43:41 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D399E811A4
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D0F82811A1
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1746798218;
-	bh=3jo41adgpEUPAIfSKTKGP0NiUCfvFxK9TBZdY4EYSJA=;
+	s=default; t=1746798221;
+	bh=RIjqB/tFkdl+P8XH8HMz9NVMFqIqtIuu9chomjuLBlI=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=5F/YJvEaCjjCxKLQrEaLcgPZErcjLPKnmk5FOxZ4lKrEErLt69CU2WLPtRQCIKFMb
-	 2u/bru9aas1nayCt+SnzIeHDHZ9gng8EV/tFfdnfYaAU7xcYWst/uUOsbtLbATN2de
-	 WsKj/lGOjuu6vXRUWC6ZAqXWuOoYovdc73iJRKq5eTaaDD2aaWHGO5bf56nvwSf71n
-	 3Xa6JTP2LHlIU6Tn2SB2AfUzwnFUbMMzlobBe3WE+Re9hrj4I7urQDkEgELFpzXE/K
-	 MsQgnsbtMBT7dEyruDEBw+AQEgUvoLlhc286VW6iasq0oHnlfecAR6fxSQbQ8yNcIG
-	 ajoB4HCDNkbrw==
+	b=DW5nB1sdQxXXUUIouRhzTCzE6y/9L+Fw0kSw35GkpgEo41A12TXHy23PhS9AoI93P
+	 mIq3EEAHDMycxSt8uyfn0lxkuD9NzUW/RFYCNri+9Vy3m5oBpj1Q7ogtUrj32kWcKc
+	 FGQss9pIM754ck3lGqjVi8zwbxQ8PPdzJus7gnCgPenpinM6811sq8+F+2Q98j+ho7
+	 1UH/XGFyDeQPFxADzGIiBPt+tMLKk2k+2GqW7jsZhRW1hhSYxfIJaCZSNtaClxuPuW
+	 Zdrl/OLRTtSAGFm806lLuXWc4CRipvkakY17p9mGbfEc74jmSBwoHWcQbuoOjrBDmP
+	 6v+9F0qsol70g==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id D399E811A4;
-	Fri,  9 May 2025 13:43:38 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id 1938915A
- for <intel-wired-lan@lists.osuosl.org>; Fri,  9 May 2025 13:43:37 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id D0F82811A1;
+	Fri,  9 May 2025 13:43:41 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 1E85615A
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  9 May 2025 13:43:40 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 0AA2C83CE5
- for <intel-wired-lan@lists.osuosl.org>; Fri,  9 May 2025 13:43:37 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id C4144811BC
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  9 May 2025 13:43:38 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Hy_gce292Sqy for <intel-wired-lan@lists.osuosl.org>;
- Fri,  9 May 2025 13:43:36 +0000 (UTC)
+ id 4xKMx_kbBE01 for <intel-wired-lan@lists.osuosl.org>;
+ Fri,  9 May 2025 13:43:38 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.21;
  helo=mgamail.intel.com; envelope-from=larysa.zaremba@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 5D94C811A4
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 5D94C811A4
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 302D4811A4
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 302D4811A4
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.21])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 5D94C811A4
- for <intel-wired-lan@lists.osuosl.org>; Fri,  9 May 2025 13:43:36 +0000 (UTC)
-X-CSE-ConnectionGUID: mpzThKeyTsu0ESeRDoXBMA==
-X-CSE-MsgGUID: wZfMV05JSEWe4AmQX6RfFA==
-X-IronPort-AV: E=McAfee;i="6700,10204,11427"; a="48532825"
-X-IronPort-AV: E=Sophos;i="6.15,275,1739865600"; d="scan'208";a="48532825"
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 302D4811A4
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  9 May 2025 13:43:38 +0000 (UTC)
+X-CSE-ConnectionGUID: FxFay2o+TIeIRgXCt1iFGg==
+X-CSE-MsgGUID: U0rn+3KYRv+9YMGNEcKA3A==
+X-IronPort-AV: E=McAfee;i="6700,10204,11427"; a="48532854"
+X-IronPort-AV: E=Sophos;i="6.15,275,1739865600"; d="scan'208";a="48532854"
 Received: from orviesa009.jf.intel.com ([10.64.159.149])
  by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 09 May 2025 06:43:35 -0700
-X-CSE-ConnectionGUID: sUe5JfiITH+aNQTwja8EzA==
-X-CSE-MsgGUID: O+CceTE/T7O93xlgu5M/VQ==
+ 09 May 2025 06:43:37 -0700
+X-CSE-ConnectionGUID: NMw366aTQO2xPbG8vtTnDg==
+X-CSE-MsgGUID: PsUfP4qYSKu4IV+7lcDWpw==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.15,275,1739865600"; d="scan'208";a="136323167"
+X-IronPort-AV: E=Sophos;i="6.15,275,1739865600"; d="scan'208";a="136323181"
 Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by orviesa009.jf.intel.com with ESMTP; 09 May 2025 06:43:26 -0700
+ by orviesa009.jf.intel.com with ESMTP; 09 May 2025 06:43:31 -0700
 Received: from mglak.igk.intel.com (mglak.igk.intel.com [10.237.112.146])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id 46F743430F;
- Fri,  9 May 2025 14:43:24 +0100 (IST)
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id 6EDC134312;
+ Fri,  9 May 2025 14:43:28 +0100 (IST)
 From: Larysa Zaremba <larysa.zaremba@intel.com>
 To: intel-wired-lan@lists.osuosl.org, Tony Nguyen <anthony.l.nguyen@intel.com>
 Cc: "David S. Miller" <davem@davemloft.net>,
@@ -91,8 +91,8 @@ Cc: "David S. Miller" <davem@davemloft.net>,
  Madhu Chittim <madhu.chittim@intel.com>, Josh Hay <joshua.a.hay@intel.com>,
  Milena Olech <milena.olech@intel.com>, pavan.kumar.linga@intel.com,
  "Singhai, Anjali" <anjali.singhai@intel.com>
-Date: Fri,  9 May 2025 15:42:59 +0200
-Message-ID: <20250509134319.66631-3-larysa.zaremba@intel.com>
+Date: Fri,  9 May 2025 15:43:01 +0200
+Message-ID: <20250509134319.66631-5-larysa.zaremba@intel.com>
 X-Mailer: git-send-email 2.47.0
 In-Reply-To: <20250509134319.66631-1-larysa.zaremba@intel.com>
 References: <20250509134319.66631-1-larysa.zaremba@intel.com>
@@ -100,25 +100,25 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1746798216; x=1778334216;
+ t=1746798218; x=1778334218;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=WKgsyOUGz1C6sRGSqDQP6WDZrgidJ/+9Ev7RtodCw7w=;
- b=imY5xyIY95qnbkveNCMjB1dLk5QWH2Hs95ypFVzgy5vnlC/aI9PUKSIQ
- xhPBJHdkEL/z+dohsnRH2ZSCLOpgGLnAp0/2O73796oFFObF679CELLGK
- baNK37DDAJE/3fyG7PQiuZf2Qn3aSGLiIc+vvocmdMxMDOylQ7eE1Q8sG
- EARf3ipk3AEIP/pxEEvYYZrvqu28DamdY10HrgrGyHxIsW7OoVKlEFaur
- Ih09wV2TA5YOMWLqNLKgFOL6ujp21M4FfZkEh/Me6q7Cz+Rj2lTtHEYu6
- qvHJIoTNhqKgcNwKZx2UFaknlLugyuJbxVEtyXR/pTqpTdapacS1eUwRi
- Q==;
+ bh=yayUarAX8X3tfzX0SpaAvhwTSPtyJvnXGGy5hl5BI4s=;
+ b=X/en6uLoKH0547ubXsWx0clTEZmuBbQ4DfOkJPFIkOy09VzXxiMXT/nB
+ a9RLpx0ATqVjWy2pZyQz/DZbZor1bj7jUNhheoKLDsdrJ/BFjrOfNPPMI
+ GJlok6zInRmXCClQxixnoQd4QS8MypSqnMbZ7jPcf3D3Bf2Ggf45laBoS
+ m1jukiB4iI8z9cIJcPP/HRuXkLPyXcGUY+NCxpb0c63kWLZbxUjKL8ldS
+ c4NrG9syzyF9okgcYA8RxrogMZT8Yu2Gl/K4E25UhVrL9CJ4W2gKIKwcn
+ YkP9XTtg+Aq/ZnrzLqzxOFRUSVn1Kl0gQEJ2IXcSRlVt8GI78e5ZX1Stf
+ g==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=imY5xyIY
-Subject: [Intel-wired-lan] [PATCH iwl-next v3 02/15] virtchnl: introduce
- control plane version fields
+ header.a=rsa-sha256 header.s=Intel header.b=X/en6uLo
+Subject: [Intel-wired-lan] [PATCH iwl-next v3 04/15] libeth: allow to create
+ fill queues without NAPI
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -134,41 +134,79 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Victor Raj <victor.raj@intel.com>
+From: Pavan Kumar Linga <pavan.kumar.linga@intel.com>
 
-In the virtchnl header file, add the Control Plane software version fields.
+Control queues can utilize libeth_rx fill queues, despite working outside
+of NAPI context. The only problem is standard fill queues requiring NAPI
+that provides them with the device pointer.
 
-Signed-off-by: Victor Raj <victor.raj@intel.com>
-Reviewed-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
+Introduce a way to provide the device directly without using NAPI.
+
+Suggested-by: Alexander Lobakin <aleksander.lobakin@intel.com>
+Reviewed-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+Signed-off-by: Pavan Kumar Linga <pavan.kumar.linga@intel.com>
 Signed-off-by: Larysa Zaremba <larysa.zaremba@intel.com>
 ---
- include/linux/intel/virtchnl2.h | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/libeth/rx.c | 9 +++++----
+ include/net/libeth/rx.h                | 4 +++-
+ 2 files changed, 8 insertions(+), 5 deletions(-)
 
-diff --git a/include/linux/intel/virtchnl2.h b/include/linux/intel/virtchnl2.h
-index af0f975060c9..c6db143371bb 100644
---- a/include/linux/intel/virtchnl2.h
-+++ b/include/linux/intel/virtchnl2.h
-@@ -502,7 +502,8 @@ VIRTCHNL2_CHECK_STRUCT_LEN(8, virtchnl2_version_info);
-  *			    sent per transmit packet without needing to be
-  *			    linearized.
-  * @pad: Padding.
-- * @reserved: Reserved.
-+ * @cp_ver_major: Control Plane major version number.
-+ * @cp_ver_minor: Control Plane minor version number.
-  * @device_type: See enum virtchl2_device_type.
-  * @min_sso_packet_len: Min packet length supported by device for single
-  *			segment offload.
-@@ -551,7 +552,8 @@ struct virtchnl2_get_capabilities {
- 	__le16 max_tx_hdr_size;
- 	u8 max_sg_bufs_per_tx_pkt;
- 	u8 pad[3];
--	u8 reserved[4];
-+	__le16 cp_ver_major;
-+	__le16 cp_ver_minor;
- 	__le32 device_type;
- 	u8 min_sso_packet_len;
- 	u8 max_hdr_buf_per_lso;
+diff --git a/drivers/net/ethernet/intel/libeth/rx.c b/drivers/net/ethernet/intel/libeth/rx.c
+index c0be9cb043a1..b077454c4100 100644
+--- a/drivers/net/ethernet/intel/libeth/rx.c
++++ b/drivers/net/ethernet/intel/libeth/rx.c
+@@ -143,19 +143,20 @@ static bool libeth_rx_page_pool_params_zc(struct libeth_fq *fq,
+ /**
+  * libeth_rx_fq_create - create a PP with the default libeth settings
+  * @fq: buffer queue struct to fill
+- * @napi: &napi_struct covering this PP (no usage outside its poll loops)
++ * @napi_dev: &napi_struct for NAPI (data) queues, &device for others
+  *
+  * Return: %0 on success, -%errno on failure.
+  */
+-int libeth_rx_fq_create(struct libeth_fq *fq, struct napi_struct *napi)
++int libeth_rx_fq_create(struct libeth_fq *fq, void *napi_dev)
+ {
++	struct napi_struct *napi = fq->no_napi ? NULL : napi_dev;
+ 	struct page_pool_params pp = {
+ 		.flags		= PP_FLAG_DMA_MAP | PP_FLAG_DMA_SYNC_DEV,
+ 		.order		= LIBETH_RX_PAGE_ORDER,
+ 		.pool_size	= fq->count,
+ 		.nid		= fq->nid,
+-		.dev		= napi->dev->dev.parent,
+-		.netdev		= napi->dev,
++		.dev		= napi ? napi->dev->dev.parent : napi_dev,
++		.netdev		= napi ? napi->dev : NULL,
+ 		.napi		= napi,
+ 	};
+ 	struct libeth_fqe *fqes;
+diff --git a/include/net/libeth/rx.h b/include/net/libeth/rx.h
+index 5d991404845e..0e736846c5e8 100644
+--- a/include/net/libeth/rx.h
++++ b/include/net/libeth/rx.h
+@@ -69,6 +69,7 @@ enum libeth_fqe_type {
+  * @type: type of the buffers this queue has
+  * @hsplit: flag whether header split is enabled
+  * @xdp: flag indicating whether XDP is enabled
++ * @no_napi: the queue is not a data queue and does not have NAPI
+  * @buf_len: HW-writeable length per each buffer
+  * @nid: ID of the closest NUMA node with memory
+  */
+@@ -85,12 +86,13 @@ struct libeth_fq {
+ 	enum libeth_fqe_type	type:2;
+ 	bool			hsplit:1;
+ 	bool			xdp:1;
++	bool			no_napi:1;
+ 
+ 	u32			buf_len;
+ 	int			nid;
+ };
+ 
+-int libeth_rx_fq_create(struct libeth_fq *fq, struct napi_struct *napi);
++int libeth_rx_fq_create(struct libeth_fq *fq, void *napi_dev);
+ void libeth_rx_fq_destroy(struct libeth_fq *fq);
+ 
+ /**
 -- 
 2.47.0
 
