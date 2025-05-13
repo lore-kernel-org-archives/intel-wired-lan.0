@@ -4,230 +4,129 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E2526C3ABC9
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 13 May 2025 22:27:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4B76FC3ABC3
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 13 May 2025 22:40:25 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 86B4960A3B;
-	Tue, 13 May 2025 22:27:26 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 0C3AC60A9F;
+	Tue, 13 May 2025 22:40:25 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id i7U3FGkpbdlg; Tue, 13 May 2025 22:27:25 +0000 (UTC)
+ id yOa1ZtJHB57D; Tue, 13 May 2025 22:40:24 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org BAAAC60A5A
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3CD3160AA8
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1747175245;
-	bh=B+llXsfRRD0D0T2VmDMnSgo6RS+0Iy4Lu4p3F7aGHt4=;
-	h=Date:To:CC:References:From:In-Reply-To:Subject:List-Id:
+	s=default; t=1747176024;
+	bh=RSXcNK9afbZfDS02iEQ039LRO1YK/rtmQ05CWBqOFLE=;
+	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=ftU/2CEexKENJpVG2MdIB2tuLrcf+qkhtqVf0CkxKJm6Zq7M7ElZqpOSpwNNWtOTq
-	 s8ykV4PVseHVdm2ikBqzjzb+wJMKF11Cjh6ldUr0QBXtyshv7ooIfYx6pXEQIiAJa8
-	 bVsDUuWU+pGZPa9zPE4howEdDDwCtUMdw9XQRngF1CWIt25ruTN+/0lDxRBbW2COak
-	 SB8MWwt50vc2J1/3//pTxbyADb5km7D1Fp8y7oAh5J5KnX+B+/l/jWX1X6RK/JDgHC
-	 mQEdAeLznlCw/gkQol9Gg4if37l3eTWv3B4+vQOY/7QQg4uQCK7SPmSIECRkXStLjm
-	 vZnCtXiikMweg==
+	b=ugoRjfGUKHuuT5AqrObQjwNs2sADqBUoJa1cwS8HaIg5kxdn2sbJn9aQ81lV2YS7S
+	 AM4xVeqMQdRcCkYr+NxI1RGk4xUouNxuoaiuvPGJpdHNDX2DiacvHzcnLqo/AwT7SK
+	 2iUlD/gjaQM2Rc82PJvapdcir6AvGc/eqHAmedUOHjy6YCN8N73WABN20U4dNjO9iO
+	 0pxpNyAQBct5ZgbBSsCfTRHtwvhmrG2Ico7thS4Uo7wlItgvzsUopEmgTcr/Mk6JbT
+	 2p0GlRmTUF4V2HrmZidVOseEokOV5FlYr44PuU1+XCIoXQyo599Z0ZSerLEoZm6G+/
+	 5UcWhvf+F8Q6A==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id BAAAC60A5A;
-	Tue, 13 May 2025 22:27:25 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id D8BE212A
- for <intel-wired-lan@lists.osuosl.org>; Tue, 13 May 2025 22:27:24 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 3CD3160AA8;
+	Tue, 13 May 2025 22:40:24 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id C0BDD153
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 13 May 2025 22:40:22 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id BE09D401AD
- for <intel-wired-lan@lists.osuosl.org>; Tue, 13 May 2025 22:27:24 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id B18CE60AAD
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 13 May 2025 22:40:22 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id IRGM6nWO_1qd for <intel-wired-lan@lists.osuosl.org>;
- Tue, 13 May 2025 22:27:23 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.14;
- helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 507F54014E
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 507F54014E
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.14])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 507F54014E
- for <intel-wired-lan@lists.osuosl.org>; Tue, 13 May 2025 22:27:20 +0000 (UTC)
-X-CSE-ConnectionGUID: EJjxz+e2TXSXK4icCHpZdw==
-X-CSE-MsgGUID: h+JmCnZXTRaDud5EgJI+cQ==
-X-IronPort-AV: E=McAfee;i="6700,10204,11432"; a="52858721"
-X-IronPort-AV: E=Sophos;i="6.15,286,1739865600"; d="scan'208";a="52858721"
-Received: from orviesa008.jf.intel.com ([10.64.159.148])
- by orvoesa106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 13 May 2025 15:27:20 -0700
-X-CSE-ConnectionGUID: Cse3jdAHT3OMJy9fetFF5w==
-X-CSE-MsgGUID: jme/sq9sRcq6Z2/jcr2SXw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.15,286,1739865600"; d="scan'208";a="138768703"
-Received: from orsmsx902.amr.corp.intel.com ([10.22.229.24])
- by orviesa008.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 13 May 2025 15:27:19 -0700
-Received: from ORSMSX901.amr.corp.intel.com (10.22.229.23) by
- ORSMSX902.amr.corp.intel.com (10.22.229.24) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.14; Tue, 13 May 2025 15:27:19 -0700
-Received: from orsedg603.ED.cps.intel.com (10.7.248.4) by
- ORSMSX901.amr.corp.intel.com (10.22.229.23) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.14 via Frontend Transport; Tue, 13 May 2025 15:27:19 -0700
-Received: from NAM11-BN8-obe.outbound.protection.outlook.com (104.47.58.168)
- by edgegateway.intel.com (134.134.137.100) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.1.2507.44; Tue, 13 May 2025 15:27:19 -0700
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=i5E/TTS2RnW0BiDWl4lZGiBlwbFvCelx3K6TsZoboMBw9bvxpG+mzJIHuPkXY1yPZCG/mAo0PRrr1frCriRXXl5vT4jB/25iFzjAyUrSGQbrHaMhF6EU3cXnwhgJO6nHRnVE7+4L8qaXhjZY+ulhTdnCAlx4pZePWRloVrr//rzNFZsW+QLA9Qj+2dP7uVvWu/Rn7UPgWWhRBtFgi1+f7I64gJcyLJqetW22OprGlOIRK7xZy3dmm/FP2Q887gNStL82uWZVBL/o7APQKdVsD+F4MVGVDNk9x8QmwSVHn3+UCGQSicG7QIOqfJ1z4smROBE1/Bn/h107fHDTF8e7iQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=B+llXsfRRD0D0T2VmDMnSgo6RS+0Iy4Lu4p3F7aGHt4=;
- b=FjM67ETjZrRPBjGNuEVpJ0g/ySQGUY39KGNxoLkZ9k95YNJ8oPInBBkonj1m4IxmXrxoP8yFIBxzoFnlXyzd0u/93QJXxxOQXMHfrlSFXZP0C5hm01LNfTPJsEkusDqkxFaCT8ZWQZDsVeA7e49OawN8SWqeRm5dLcDfRyREQkEnQpiPRaeVRh7ipUkzfYgtw+ssvAWFqkESHz4LryrUhEBZyDNVjxhhYTPEFl8s9VxvwKxpio9TZUlGI1mU9lteNg8TP0K/E1qeCcovUDJSBR3qJqg2AqHrF/UNq8qGmuYdDDeXEbuYBlk+ubxy7FR+CDgTN51xx8gxVchUivMANg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
- dkim=pass header.d=intel.com; arc=none
-Received: from CO1PR11MB5089.namprd11.prod.outlook.com (2603:10b6:303:9b::16)
- by PH7PR11MB7123.namprd11.prod.outlook.com (2603:10b6:510:20e::18)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8722.29; Tue, 13 May
- 2025 22:26:49 +0000
-Received: from CO1PR11MB5089.namprd11.prod.outlook.com
- ([fe80::7de8:e1b1:a3b:b8a8]) by CO1PR11MB5089.namprd11.prod.outlook.com
- ([fe80::7de8:e1b1:a3b:b8a8%5]) with mapi id 15.20.8722.027; Tue, 13 May 2025
- 22:26:49 +0000
-Message-ID: <8a8dfc47-c80e-45c7-b2ea-86b0d921b226@intel.com>
-Date: Tue, 13 May 2025 15:26:48 -0700
-User-Agent: Mozilla Thunderbird
-To: Vladimir Oltean <vladimir.oltean@nxp.com>,
- <intel-wired-lan@lists.osuosl.org>
-CC: <netdev@vger.kernel.org>, Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>, Vinicius Costa Gomes
- <vinicius.gomes@intel.com>, Vadim Fedorenko <vadim.fedorenko@linux.dev>,
- Richard Cochran <richardcochran@gmail.com>
-References: <20250513101132.328235-1-vladimir.oltean@nxp.com>
- <20250513101132.328235-2-vladimir.oltean@nxp.com>
-Content-Language: en-US
-From: Jacob Keller <jacob.e.keller@intel.com>
-In-Reply-To: <20250513101132.328235-2-vladimir.oltean@nxp.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: MW4PR04CA0032.namprd04.prod.outlook.com
- (2603:10b6:303:6a::7) To CO1PR11MB5089.namprd11.prod.outlook.com
- (2603:10b6:303:9b::16)
-MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: CO1PR11MB5089:EE_|PH7PR11MB7123:EE_
-X-MS-Office365-Filtering-Correlation-Id: 448e81e8-4398-4b11-e081-08dd926d40c7
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;ARA:13230040|366016|1800799024|376014|7053199007;
-X-Microsoft-Antispam-Message-Info: =?utf-8?B?K2ZobStqK0ZReXJsNDA0TWRGOENEbWJHRW1UYnRpeUZIOVNPZEM2bk45WmFo?=
- =?utf-8?B?YUw5S2dKYXhrWU9ZeW5oVEdJMDNqbGxURjRodC9kNXJZRm02TmFjMW5JOWZ1?=
- =?utf-8?B?RmxhaFh2b2JoVlhxcmhsSnVsenNUQ0ZuWFVmaE5CcTlZVXQxUmRMRldZOFhP?=
- =?utf-8?B?SUFKZS9tZkQ5Q0g2UEEyd1g0RkpFbncxZlNkN2laZWVMRGRoZmNBeS84WmdM?=
- =?utf-8?B?Q285a0wvVTlsOFExblh2MHYzcUVxbmp0VFBVcWJ5TmkzMmxpQ0cvcjlxbklw?=
- =?utf-8?B?WkNTczhpTDJ1QnJ5MFFqbVQ1aVBRUXFuZHk0bU0xeDIrTlpFeHp1UlRqOEdw?=
- =?utf-8?B?aUZMMkg2eTRBT2FMTkZVT0tsbFF1VWpRM2JlWDNzT3Z1WlZTaCtDYVFVWFV1?=
- =?utf-8?B?cWhQSEVFaHFiSThtOW9pQ2JUZHAzSlZaVVBCNm9xR1dXVnllZWpzbURnaUw0?=
- =?utf-8?B?TGJ1UkF2L1I3OGVHd0w3SytCSFJFUjgvUEh3b2RXMVdOMG5jUnZ4UjBxcExU?=
- =?utf-8?B?SEIzU1VVdnl2a1hFME1jZ2FIQnNvck5PWEQzVnFCZWVPZzdGSDliM0JyRk9m?=
- =?utf-8?B?R1RONk1tU3VWcExyREx3SFc5dG1WTlRNY1lZKzhLZ3ZVemFBYnBwTDBzUDR6?=
- =?utf-8?B?S0lkQXEwU2tQL05UZzdOdVhhK0p2eHp4L1U3ak1ScXlzMCs2NmFZaEhpbElJ?=
- =?utf-8?B?emw3VmxPWjZEbEFrWTBJS2FzTEk0QTJpRDBxd0EvelI2VDB2Qm1WOFE3WWlI?=
- =?utf-8?B?UzFmU1dHS2pBRzFlaC9DOGRBRi9PSUhKbWx4MmNYQkJDTWNlS2NHTy9Pd1Iw?=
- =?utf-8?B?VDJyOHRHSXlvaGhVdkFjbklsZC9sQUxGeUhhN0lLTytRUEtMU0p5RDlEbjFP?=
- =?utf-8?B?aHNmdDB3ekxoUi9ydDEySUV3YjJIS1liY0l2MENLQnA3VTMvU0U1MkZHSXhJ?=
- =?utf-8?B?UXBqSnlNaktlYUtiR3dMK3B2QzR6cVB6WlhkYmUyVXl1UUpjek1ia21OQUp5?=
- =?utf-8?B?SE11Tk1mb1AzRGxCUnAzQUdacXBwWjRIc1lOcWlKOWYrK2wzVnFRU3Jnc213?=
- =?utf-8?B?bE9vM2ZodHhvK2dGZCthWUk0S09yaG1IRzdOOVpVOXpyaUI4ci91MWtjVU55?=
- =?utf-8?B?QWVIb3U2QmxXeUFGeXVkNkw0Qjdoc0ZNYkIyQVlWZFQrcElka1BoNGFlbjBK?=
- =?utf-8?B?VmxpTWJITTU5Z2pXUm4rcE0vWGo3NGYxZXNrblYxcEtEOWt2ZHNoUW90eGFF?=
- =?utf-8?B?ZS9oK1U3ODZBQk5pUVR0bE54NHkzNHFhMjZIUGs5YlBNZllRZ29sNXpjWnpo?=
- =?utf-8?B?Ty9kUEFYaWhNUFV4Rm1YNUlUY1drcG1UQ0dIenpiYzFuMitPc1cxLzArazdF?=
- =?utf-8?B?Tm94bVAyUXY0M0tBSm9LTld4TStSM25MVmJ3NkFWVElYNW0xRGZPLzduYmJB?=
- =?utf-8?B?Mi9kaU5mTDdmQU1YekRRWklkTmdDNTl1aEljY3FLeUpVRUhQUVlwOW9nV0I4?=
- =?utf-8?B?SGNESDh5ZVRGRENRdlR0ZERoaUY2TXYvdmJ0VURGaHBqNXYweGw2YW16WHNO?=
- =?utf-8?B?elRCT3lSNjBNTkFJUW5wUjB4Z1dxVWFZVVR3QWdTb0lKandvVThiR3RXSGw4?=
- =?utf-8?B?UWY0MmlhVVZZQnJVSHVZdGtoMzlCb1ozNkMvVytLSUpVaHhiZVcxL0o5KzVy?=
- =?utf-8?B?aFNPMklsK1RaTDZ3R1Y0ZUsvcW85dkdDMUZDWEI0Ym9NU2RBRTVZaGU2d2Q5?=
- =?utf-8?B?dVlITnJRNTlCTy9PK1c4ZUlZVmFySlBvd2JkbE9sYzBCRGJRQUtUKzFBcXFS?=
- =?utf-8?B?UVcrVkVUVzZJaWtLVldIbW5RNDZndlFCckZnWVJGelExUnFxY0hBNG9OL1ZX?=
- =?utf-8?B?amlkbGdBbmJQZm5JTDZoRXZ1K3NraHk1VnU0eEJFL2xmNUU2blRWd0JybTlT?=
- =?utf-8?Q?k4dmyfaU1MI=3D?=
-X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:CO1PR11MB5089.namprd11.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230040)(366016)(1800799024)(376014)(7053199007); DIR:OUT; SFP:1101; 
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?c0ZBWm9wNkl4S1p6TEhmRjhXUVZSZVAxQWNrTkpoYit2aG45MktJbldobk44?=
- =?utf-8?B?YXBPT3o3YTQ1TmpQbnova25EL0hUNXlDbmt6WE5YbjN6NFpIM3NmazBlejh5?=
- =?utf-8?B?dGt1ME8rUkloZ0pqM2s1RG4rUFlvU1gyaElEY09JWDM3T3VDbnFPQjVJVW5M?=
- =?utf-8?B?S3dTRTlCRXN2S2E5ZlN5Q3A5Z2lBWTNpQldSMUE1WHQ2Z3B6TGg0Z2hqdzg0?=
- =?utf-8?B?ZytkUGZvSXY1bmlMK1NrK2UxYVQxSXJ3VGlLQTZ4SFBUdlNaVTN6VWY5NEhM?=
- =?utf-8?B?OGttNk1iZFJaKzRvNXNXSUF2S0YxdFVoU2l6S3FQcGh3UHdJK0tFVERCQkMv?=
- =?utf-8?B?MlUwZW4rMU5adlc3SWNqNnBlZGtTUlpSL3Z3ZmFKeU52VVo0SXJYT2xOQ2NN?=
- =?utf-8?B?aUM5ckIxODBYMUR3dklGWk1vcUR3SGtUMmdnN0x1NFZjd1hRZkMvV3NiMjFT?=
- =?utf-8?B?RXUydmFocTV2MEZGTjVNTVNNVVhKT2ZFYkRVMXB2MnlOQ3dYWW9HclNEZ3pQ?=
- =?utf-8?B?ZzE1V0NGQklaeW5RZE8yN2RWUWJubmhURW40NzdydUovMWlvbnVKZDJvOEhq?=
- =?utf-8?B?MVluWm8wbHJiVDFFSkY4KzVWUjJ0aVZvOC9tS3FmQ01xcUR2UThzSUFFd0Y4?=
- =?utf-8?B?Q293Wk9KS2IyQ0pLRlJMazBXRVFWcmJ2d2ZVZWJpdEdRWGFUQTA3djladWNa?=
- =?utf-8?B?TWhjMWljNUQ3STV1UHBlalgyRXk1OW5uUDFrdndoQ2x3cXBVLzlUMlhNL2RI?=
- =?utf-8?B?ZTBzTGptUnIxVS9hdlZxeVBydlZOZlEzcWt0dVFhQTVxMHVFL0RPR0k4ZCtX?=
- =?utf-8?B?L2JvUCt0TDd2NUgra1Q4bjRXcUZZRC83RFVZRzFsTzg4YzhwZGQ2N2F1cnJQ?=
- =?utf-8?B?OGJ2SWRscHJpbTZKMWR6WStGME1sWTMzcmE1NVZqYnM4VWVQRUFRZjN1NHlS?=
- =?utf-8?B?WDdvVTN0bTEvMDZNbE5EemNMSGV1eG5PMk5xQTV1ZDNwRlM5OUFQWkx0Vm5Y?=
- =?utf-8?B?VzlvWE5HTmc4L2JqaUlhUEE1dFlwbGJrVnlYaUVaT0dKYllCSWRwRXZESG0y?=
- =?utf-8?B?VVlFdU15NUNEM3IyTHlDUHQzaEcvT3UwL3NkdWxVcWRYSGdxb2FObkNzOEdG?=
- =?utf-8?B?dkZDN2VTYW9qZGJZMEtibVpLWWJ5VFdSdjJmWlNVUXF0M3gzWVRDWGRKSzhO?=
- =?utf-8?B?Q0JWUVZTR2diYktvODdoREE0UExWNzdISGd5MCtOWkpOOVBqdGh2TGRqVVBV?=
- =?utf-8?B?TXJrbkZiazRrVUNEWWV4ZUFicFpNcGJGVmttTWNkYnNpbFhtMzZqOHFsQk9N?=
- =?utf-8?B?KzVLY09NS2VnczhhL3JQMzZwVVhTWlNUNDZVekQvS2Y4emJDejNvRGs1NUtW?=
- =?utf-8?B?L2VoVkFkVHZFMk5FSUFRNUNncUt5djdiS1VvRkh1STNnbVU0T3Vxa2xxeEsz?=
- =?utf-8?B?c3BZQW9YcFA0NXBTWlF0eXBqTklFRDhWNlR5TTZOeUxlamtKQk1UdVR2QU54?=
- =?utf-8?B?UXQ3Z3kxa0J5bU9SaGF2a0E5Q28xdGU3WG9pMkRwZkZqc3g5aGJ0SnVxRXhn?=
- =?utf-8?B?M1dzNTlNUFkzMy84M2ZWU25MVDdWd1k2d0dzNVBGOWNXRXBxbWsyZHdIMHZq?=
- =?utf-8?B?bmc2d25pS3lpdktZYXJrb1F5L2VSUERiVUNPQUJPSGs0VlA1NWtVS0V1c1N3?=
- =?utf-8?B?VGl4VXlxQXVoYzJReEF2dWFldG4yOGlOb21lODVmWE42ZVJRcUtSeHZtNURT?=
- =?utf-8?B?c1h6RGR2MnF1SnJrTWZ1SkdzTWJXMWZGTDZ2aFhiRTFFTTUwdVVnblE4NVRB?=
- =?utf-8?B?K3k5OUlzUW1LYVZheHRkL01ROTRORUlJVEg1cmhmUFdrN3J6eEpGZ1BMZ2dm?=
- =?utf-8?B?N3hydVBCd3hOcStHM05wajdzLzlhdit1QSt5d0xBKy9OT3lUS0gwejFxNWEz?=
- =?utf-8?B?RkxubkRhc2VaMkZhRHAxL0h4M3BLcUVzYk8yUmN4cE41VS9CMTFkalFPQWxq?=
- =?utf-8?B?cStFM213K3JSbzlvNldRamZWditvTURIc0trSy85Ums4ZnJtU2NMTnI4NVNX?=
- =?utf-8?B?N0NiSUxkNEU2QnBEVm1pTklWQnNBWElubnAwNUxsMnZEcXVaNGtUd2VHL0xH?=
- =?utf-8?B?SWZyZnFLaVNHWkx6dS9hNXRpdENRTVRIeDN5RGhYM2R5Slh1aHAxUjBKMjV0?=
- =?utf-8?B?SFE9PQ==?=
-X-MS-Exchange-CrossTenant-Network-Message-Id: 448e81e8-4398-4b11-e081-08dd926d40c7
-X-MS-Exchange-CrossTenant-AuthSource: CO1PR11MB5089.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 13 May 2025 22:26:49.5052 (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: z9CWs7Rz1+zf2mUJS967dYBRdc+4ML1iSa+Kl0g91ATY8csmV4JJkvCH9wfHXx2iE/NgnLbjPy2HiJKissx1LRqY3R+uqOesDSrPyuX03vg=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH7PR11MB7123
-X-OriginatorOrg: intel.com
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1747175243; x=1778711243;
- h=message-id:date:subject:to:cc:references:from:
- in-reply-to:content-transfer-encoding:mime-version;
- bh=S54GflFet/4OZq3ljmHZgznW9exMfqnlH9/qQUn9eik=;
- b=IRxuFh9RKXLwto9pbnD8yIdUlWZRHud6RRWpd8grb3Xxf1Oa5FhwFR4u
- fLGlT2yvJHTQqSK8YKoPhhTSGSnI1l+snI/mEhIvcYSHkhfXtVfpHRBqw
- ZLD3tLlx5NX1zQ+S9R+Ajcg3GBeQCR5QBFVGrXDy1t7zpw3Ou5nMxCtv2
- xyeu6wA///cOXQ0+I8kcMp2x11FXD7i8xSofT/HutvoLtlCXt7bdzD1pn
- XibTekZOIEiJW1HK1wh/r5LiHQQ6SDvezSwwe1tm5tSqDLSP5tMcoQ7pd
- SXaND/KRx+BVx+ccxKbkHtBxAOm4zruWDbhq2Ak6mCtpOHBGtKZkDEoQH
- g==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 50eC91xLCPDl for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 13 May 2025 22:40:22 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2607:f8b0:4864:20::361; helo=mail-ot1-x361.google.com;
+ envelope-from=mpazdan@arista.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org C68E660A9F
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C68E660A9F
+Received: from mail-ot1-x361.google.com (mail-ot1-x361.google.com
+ [IPv6:2607:f8b0:4864:20::361])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id C68E660A9F
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 13 May 2025 22:40:21 +0000 (UTC)
+Received: by mail-ot1-x361.google.com with SMTP id
+ 46e09a7af769-72c14235af3so3843662a34.3
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 13 May 2025 15:40:21 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20230601; t=1747176020; x=1747780820;
+ h=content-transfer-encoding:references:in-reply-to:message-id:date
+ :subject:cc:to:from:dkim-signature:x-gm-message-state:from:to:cc
+ :subject:date:message-id:reply-to;
+ bh=RSXcNK9afbZfDS02iEQ039LRO1YK/rtmQ05CWBqOFLE=;
+ b=jdBxXaZBV2RLk2QnaB5DUZfEg3Wg1eAeJBzp7Xw+MzJP1yT/oKVC1mfXdeGSe48q0Q
+ YqMgeBYQT+GWEvkXE7k3I/Z1nigc+h7mj6LWle+6UwZOshLq7hXLalYfo7HtRf5EKBXu
+ tVRqCPuX3eiHxnjcjJ3fYvlarLzVlOTIyKan3xu0yMyxTE6AuPHO7IBl4b9kQSKxRm3a
+ Q0GAhO8NQVimLe9dhuZugRurndg4a8zcsC9S1LSR1T7ucJqyu+/pptqOO6AWlwM+I3dp
+ QNjDCFdPywYKZIROZ7wiu565NTiRaoOotqPvy77U1hP5c3LaMl8Fnss5B+yapn8dJMKy
+ S5oA==
+X-Forwarded-Encrypted: i=1;
+ AJvYcCVGKXs2HcTGwhiCi/ym/y+HshFSF+cYjwijS4FDo6cUsi3GD0Og1Y2h9XnVRpkkCjz7+yYgR1Rgj1Yxs3Q/TgA=@lists.osuosl.org
+X-Gm-Message-State: AOJu0Yz2E1/mkTmziihwg9CVKoe57hsSsfz7To2dkyUOXHu+nPFSiayp
+ KUryemdzb97+MafUrTpUpkXlZl8pzWyGRwQ3Aw7tkTVi1SCGZy5ccbzyEy1Gn6UfdUz4VN1ljXZ
+ GmkyXXa67RwZYgHGozBNZ1FeOGC5soA==
+X-Gm-Gg: ASbGncsI/TJCcoJN/9hvMd6uqJRWpOwT4YrASswltUfXflfDxZeeem3KiCsSkL+qijD
+ URJ7+nzhxbHn/pJ0FnP5wc/YeHevUDPmy1cO0XsUp4iK6d/fNGfEkvDDW93WuBuRIzg8QcgTbhV
+ O8Fhtr1RtGdFOWG3yp9iposLpLXuLe/4AyO2j3uCHhjPo5K4dWjykPeOXj858ZrtDD6HOrB3Yig
+ pRNRQxA2JovkLcXovBtW5AE2jW81hybFJoQBwtNXkFkDaFiX6DAVqKhFCiIYR3QPsyJ9feEwKrL
+ Xcgh5NbnBkbDwOq04S8Utwg=
+X-Google-Smtp-Source: AGHT+IFw4unP4TtYCivnsEjLNivZRwen5oTYduVSjB3bBq5EZtnvuAolbMdZu0cxcPIEN54gp8SoPF72SJFn
+X-Received: by 2002:a05:6830:6015:b0:72b:f997:19c4 with SMTP id
+ 46e09a7af769-734e1579a25mr728416a34.26.1747176020382; 
+ Tue, 13 May 2025 15:40:20 -0700 (PDT)
+Received: from smtp.aristanetworks.com ([74.123.28.25])
+ by smtp-relay.gmail.com with ESMTPS id
+ 46e09a7af769-732265b6624sm336246a34.11.2025.05.13.15.40.20
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Tue, 13 May 2025 15:40:20 -0700 (PDT)
+X-Relaying-Domain: arista.com
+Received: from mpazdan-home-zvfkk.localdomain
+ (mpazdan-home-zvfkk.sjc.aristanetworks.com [10.244.171.242])
+ by smtp.aristanetworks.com (Postfix) with ESMTP id 6CC5E10023F;
+ Tue, 13 May 2025 22:40:19 +0000 (UTC)
+Received: by mpazdan-home-zvfkk.localdomain (Postfix, from userid 91835)
+ id 67FC940B24; Tue, 13 May 2025 22:40:19 +0000 (UTC)
+X-SMTP-Authentication: Allow-List-permitted
+X-SMTP-Authentication: Allow-List-permitted
+From: Marek Pazdan <mpazdan@arista.com>
+To: andrew@lunn.ch
+Cc: aleksander.lobakin@intel.com, almasrymina@google.com,
+ andrew+netdev@lunn.ch, anthony.l.nguyen@intel.com, daniel.zahka@gmail.com,
+ davem@davemloft.net, ecree.xilinx@gmail.com, edumazet@google.com,
+ gal@nvidia.com, horms@kernel.org, intel-wired-lan@lists.osuosl.org,
+ jianbol@nvidia.com, kory.maincent@bootlin.com, kuba@kernel.org,
+ linux-kernel@vger.kernel.org, mpazdan@arista.com, netdev@vger.kernel.org,
+ pabeni@redhat.com, przemyslaw.kitszel@intel.com, willemb@google.com
+Date: Tue, 13 May 2025 22:40:01 +0000
+Message-ID: <20250513224017.202236-2-mpazdan@arista.com>
+In-Reply-To: <20250513224017.202236-1-mpazdan@arista.com>
+References: <6f127b5b-77c6-4bd4-8124-8eea6a12ca61@lunn.ch>
+ <20250513224017.202236-1-mpazdan@arista.com>
+Content-Transfer-Encoding: 8bit
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=arista.com; s=Arista-A; t=1747176019;
+ bh=RSXcNK9afbZfDS02iEQ039LRO1YK/rtmQ05CWBqOFLE=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=Y8nLf22JYSSZzUgIGcjeKAfu8JLFvmD7chCGdWHp0zh8t5XS8oQaRXDtROquAv3fy
+ nnIWd8zhH22TvPkDhOeygWMant5PK+UFtDAkDEefvAaqZfi5RPmdZtR2uE1yLJGxAU
+ dXuMVRMSPe6V1oAGCubGnm0pqVh7OGqJtd28RjUJPyPsl/CGzKqTXoOMQtg0LYhdWL
+ N/Gw9tEZNEYcqD/MsRD1ekaVEzrskDOtKYsISiZd2Lh5Si1FS44cCBkd8b1HEmmiyU
+ BZh2Q4v9+WjRFTLK4WgJiwu9u3NREdxMq2QzYkkIbEb5bGbHqnkLFB2Yf+U1zhm7v8
+ OHyBW9UaiEXTg==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dmarc=pass (p=reject dis=none)
+ header.from=arista.com
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=IRxuFh9R
-X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=intel.com;
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next 1/5] ice: convert to
- ndo_hwtstamp_get() and ndo_hwtstamp_set()
+ unprotected) header.d=arista.com header.i=@arista.com header.a=rsa-sha256
+ header.s=Arista-A header.b=Y8nLf22J
+Subject: [Intel-wired-lan] [PATCH net-next v2 2/2] ice: add qsfp transceiver
+ reset, interrupt and presence pin control
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -243,24 +142,240 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
+Add get/set implenentation for ethtool's module management signal
+API.
+Examples:
+ethtool --get-module-mgmt-signal eth16 type reset
+reset: low
 
+ethtool --get-module-mgmt-signal eth16 type int
+reset: low
 
-On 5/13/2025 3:11 AM, Vladimir Oltean wrote:
-> New timestamping API was introduced in commit 66f7223039c0 ("net: add
-> NDOs for configuring hardware timestamping") from kernel v6.6.
-> 
-> It is time to convert the Intel ice driver to the new API, so that
-> timestamping configuration can be removed from the ndo_eth_ioctl() path
-> completely.
-> 
-> Signed-off-by: Vladimir Oltean <vladimir.oltean@nxp.com>
-> Acked-by: Jacob Keller <jacob.e.keller@intel.com>
-> ---
-> Previously submitted as
-> https://patchwork.kernel.org/project/netdevbpf/patch/20250512160036.909434-1-vladimir.oltean@nxp.com/
-> 
-I had a minor conflict when applying to Tony's dev-queue, but it was
-trivial to fix. The series has been applied and marked for testing.
+ethtool --get-module-mgmt-signal eth16 type present
+reset: high
 
-Thanks,
-Jake
+sudo ethtool --set-module-mgmt-signal eth16 type reset value high
+ethtool --get-module-mgmt-signal eth16 type reset
+reset: high
+
+sudo ethtool --set-module-mgmt-signal eth16 type reset value low
+ethtool --get-module-mgmt-signal eth16 type reset
+reset: low
+
+Ice driver gets link event notification when module gets restarted.
+There is 'ice_handle_link_event' which handles the notification and
+updates link status information.
+
+Signed-off-by: Marek Pazdan <mpazdan@arista.com>
+---
+ drivers/net/ethernet/intel/ice/ice.h         |  6 ++
+ drivers/net/ethernet/intel/ice/ice_common.c  | 21 +++++
+ drivers/net/ethernet/intel/ice/ice_common.h  |  1 +
+ drivers/net/ethernet/intel/ice/ice_ethtool.c | 94 ++++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_main.c    |  1 +
+ drivers/net/ethernet/intel/ice/ice_type.h    |  2 +-
+ 6 files changed, 124 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
+index fd083647c14a..3b95a69140e8 100644
+--- a/drivers/net/ethernet/intel/ice/ice.h
++++ b/drivers/net/ethernet/intel/ice/ice.h
+@@ -195,6 +195,12 @@
+ 
+ #define ice_pf_src_tmr_owned(pf) ((pf)->hw.func_caps.ts_func_info.src_tmr_owned)
+ 
++enum ice_mgmt_pin {
++	ICE_MGMT_PIN_RESET = 0,
++	ICE_MGMT_PIN_INT,
++	ICE_MGMT_PIN_PRESENT
++};
++
+ enum ice_feature {
+ 	ICE_F_DSCP,
+ 	ICE_F_PHY_RCLK,
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index 59df31c2c83f..2d643a7cc90f 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -6096,3 +6096,24 @@ u32 ice_get_link_speed(u16 index)
+ 
+ 	return ice_aq_to_link_speed[index];
+ }
++
++/**
++ * ice_set_has_gpios - Sets availability of SDP GPIO pins.
++ * @hw: pointer to the HW structure
++ *
++ * This function sets availability of GPIO software defined pins
++ * (SDP) which are connected to transceiver slots and are used
++ * for transceiver control.
++ */
++bool ice_set_has_gpios(struct ice_hw *hw)
++{
++	if (hw->vendor_id != PCI_VENDOR_ID_INTEL)
++		return false;
++
++	switch (hw->device_id) {
++	case ICE_DEV_ID_E810C_QSFP:
++		return true;
++	default:
++		return false;
++	}
++}
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
+index 9b00aa0ddf10..b64629b1d60d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.h
++++ b/drivers/net/ethernet/intel/ice/ice_common.h
+@@ -304,4 +304,5 @@ ice_aq_write_i2c(struct ice_hw *hw, struct ice_aqc_link_topo_addr topo_addr,
+ int ice_get_pca9575_handle(struct ice_hw *hw, u16 *pca9575_handle);
+ int ice_read_pca9575_reg(struct ice_hw *hw, u8 offset, u8 *data);
+ bool ice_fw_supports_report_dflt_cfg(struct ice_hw *hw);
++bool ice_set_has_gpios(struct ice_hw *hw);
+ #endif /* _ICE_COMMON_H_ */
+diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+index 7c2dc347e4e5..bf6a803729d4 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
++++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+@@ -3848,6 +3848,96 @@ ice_get_channels(struct net_device *dev, struct ethtool_channels *ch)
+ 	ch->max_other = ch->other_count;
+ }
+ 
++/**
++ * ice_get_module_mgmt_signal - get module management signal status
++ * @dev: network interface device structure
++ * @params: ethtool module management signal params
++ * @extack: extended ACK from the Netlink message
++ *
++ * Returns -EIO if AQ command for GPIO get failed, otherwise
++ * returns 0 and current status of requested signal in params.
++ */
++static int
++ice_get_module_mgmt_signal(struct net_device *dev,
++			   struct ethtool_module_mgmt_params *params,
++			   struct netlink_ext_ack *extack)
++{
++	struct ice_netdev_priv *np = netdev_priv(dev);
++	struct ice_pf *pf = np->vsi->back;
++	struct ice_hw *hw = &pf->hw;
++	u16 gpio_handle = 0; /* SOC/on-chip GPIO */
++	bool value;
++	int ret = 0;
++
++	if (hw->has_module_mgmt_gpio) {
++		switch (params->type) {
++		case ETHTOOL_MODULE_MGMT_RESET:
++			ret = ice_aq_get_gpio(hw, gpio_handle,
++					      ICE_MGMT_PIN_RESET, &value, NULL);
++			break;
++		case ETHTOOL_MODULE_MGMT_INT:
++			ret = ice_aq_get_gpio(hw, gpio_handle,
++					      ICE_MGMT_PIN_INT, &value, NULL);
++			break;
++		case ETHTOOL_MODULE_MGMT_PRESENT:
++			ret = ice_aq_get_gpio(hw, gpio_handle,
++					      ICE_MGMT_PIN_PRESENT, &value, NULL);
++			break;
++		default:
++			dev_dbg(ice_pf_to_dev(pf), "Incorrect management signal requested: %d\n",
++				params->type);
++			return -EINVAL;
++		}
++	} else {
++		return -EOPNOTSUPP;
++	}
++
++	if (ret == 0) {
++		params->value = value ? ETHTOOL_MODULE_MGMT_SIGNAL_HIGH :
++			ETHTOOL_MODULE_MGMT_SIGNAL_LOW;
++	}
++	return ret;
++}
++
++/**
++ * ice_set_module_mgmt_signal - set module management signal config
++ * @dev: network interface device structure
++ * @params: ethtool module management signal params
++ * @extack: extended ACK from the Netlink message
++ *
++ * Returns -EIO if AQ command for GPIO set failed, otherwise
++ * returns 0.
++ */
++static int
++ice_set_module_mgmt_signal(struct net_device *dev,
++			   const struct ethtool_module_mgmt_params *params,
++			   struct netlink_ext_ack *extack)
++{
++	struct ice_netdev_priv *np = netdev_priv(dev);
++	struct ice_pf *pf = np->vsi->back;
++	struct ice_hw *hw = &pf->hw;
++	u16 gpio_handle = 0; /* SOC/on-chip GPIO */
++	bool value = params->value == ETHTOOL_MODULE_MGMT_SIGNAL_HIGH ? true : false;
++	int ret = 0;
++
++	if (hw->has_module_mgmt_gpio) {
++		switch (params->type) {
++		case ETHTOOL_MODULE_MGMT_RESET:
++			ret = ice_aq_set_gpio(hw, gpio_handle,
++					      ICE_MGMT_PIN_RESET, value, NULL);
++			break;
++		default:
++			dev_dbg(ice_pf_to_dev(pf), "Incorrect management signal requested: %d\n",
++				params->type);
++			return -EINVAL;
++		}
++	} else {
++		return -EOPNOTSUPP;
++	}
++
++	return ret;
++}
++
+ /**
+  * ice_get_valid_rss_size - return valid number of RSS queues
+  * @hw: pointer to the HW structure
+@@ -4815,6 +4905,8 @@ static const struct ethtool_ops ice_ethtool_ops = {
+ 	.set_fecparam		= ice_set_fecparam,
+ 	.get_module_info	= ice_get_module_info,
+ 	.get_module_eeprom	= ice_get_module_eeprom,
++	.get_module_mgmt_signal	= ice_get_module_mgmt_signal,
++	.set_module_mgmt_signal = ice_set_module_mgmt_signal,
+ };
+ 
+ static const struct ethtool_ops ice_ethtool_safe_mode_ops = {
+@@ -4837,6 +4929,8 @@ static const struct ethtool_ops ice_ethtool_safe_mode_ops = {
+ 	.set_ringparam		= ice_set_ringparam,
+ 	.nway_reset		= ice_nway_reset,
+ 	.get_channels		= ice_get_channels,
++	.get_module_mgmt_signal	= ice_get_module_mgmt_signal,
++	.set_module_mgmt_signal = ice_set_module_mgmt_signal,
+ };
+ 
+ /**
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index d390157b59fe..02b9809561e1 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -5294,6 +5294,7 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
+ 	hw->port_info = NULL;
+ 	hw->vendor_id = pdev->vendor;
+ 	hw->device_id = pdev->device;
++	hw->has_module_mgmt_gpio = ice_set_has_gpios(hw);
+ 	pci_read_config_byte(pdev, PCI_REVISION_ID, &hw->revision_id);
+ 	hw->subsystem_vendor_id = pdev->subsystem_vendor;
+ 	hw->subsystem_device_id = pdev->subsystem_device;
+diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
+index 0aab21113cc4..e88075ae4c8a 100644
+--- a/drivers/net/ethernet/intel/ice/ice_type.h
++++ b/drivers/net/ethernet/intel/ice/ice_type.h
+@@ -895,7 +895,7 @@ struct ice_hw {
+ 	u32 psm_clk_freq;
+ 	u64 debug_mask;		/* bitmap for debug mask */
+ 	enum ice_mac_type mac_type;
+-
++	bool has_module_mgmt_gpio;	/* has GPIO for module management */
+ 	u16 fd_ctr_base;	/* FD counter base index */
+ 
+ 	/* pci info */
+-- 
+2.45.2
+
