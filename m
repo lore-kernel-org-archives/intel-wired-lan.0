@@ -4,131 +4,123 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 16143C3ABCC
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 14 May 2025 15:02:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 121D0C3ABD8
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 14 May 2025 15:03:11 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id C407C60BBD;
-	Wed, 14 May 2025 15:02:38 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id B079860A7B;
+	Wed, 14 May 2025 15:03:11 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 2fDLFKZS90fM; Wed, 14 May 2025 15:02:38 +0000 (UTC)
+ id aff7iCAzUAMl; Wed, 14 May 2025 15:03:11 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 45A296084C
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2ADAE60AED
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1747234958;
-	bh=eJ6Gly97PUQf39g4PYqAseTk8kpWDYMCJC9Zl5UsN4o=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=kBohz/npFFTfFVxWEgBD1SrsY2tcIR1+hDyMNSOmbuqrZqNrZOZVeICNEVWj4yfYH
-	 2bN3DUeRFU4o64SzO1yMtpHWc+oUMD7h5KNUYrXNLJan7WbqUCLXeK6hf+jT8NzFp5
-	 HR9v6YmlhOIGDXox59YVjGiEM00FhLrMVProo8FxtI20AwdLxttsDzsSHoG2jrcbvK
-	 KRuOkP39hYyheXAilOmEyw+y+oTcgp4kKBbFXhUjNkxMdlRyJwkwDXHvcGfIBMcOUI
-	 QiNPdCoiy6jqL8DNkPI8JC95Pvhxy6wKqsnEXixh0om2oDp5tetjo/bkulzcy7zTI1
-	 GjzA/IEgzHbSw==
+	s=default; t=1747234991;
+	bh=U7Vp8QljWnGGv48HmwPUUHanbPqKrIRkEiUDXnzutDY=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=H8ouMQfSM8sx0JKA3DhkzpXoeiB6B7OuPDFYpCZRf5LTvhmiMlD+Yz7NYEQf0csHr
+	 4xlMvGRLfSBdFqnafdWWq1mUb+IR6et4FvJOsVXF/r4hjvJwg/audpCXDFL8qypaum
+	 +fXGJbSrOjXLNXaDh7K3bz7/zWHzLtuNzGEL0BySnh6ikk0zM/4pooq/YnnrcZ2LEI
+	 QPAnwE3C9wUCa/tPy+EJ37i3PiVctzdKinQ3HESFUedyFglQ3CUeOEeaB3lwRe/TlI
+	 w9d9wVxo5wx3DOuJIGtFaSFzAx4ulNWr75gCZ6zk9JTYHuMA12br2yAGotejUY3Kpb
+	 PAc9lS0aDeZ+Q==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 45A296084C;
-	Wed, 14 May 2025 15:02:38 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id 4F94C12A
- for <intel-wired-lan@lists.osuosl.org>; Wed, 14 May 2025 15:02:36 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 2ADAE60AED;
+	Wed, 14 May 2025 15:03:11 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 712C412A
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 14 May 2025 15:03:09 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 40BB4829DC
- for <intel-wired-lan@lists.osuosl.org>; Wed, 14 May 2025 15:02:36 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 6264782199
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 14 May 2025 15:03:09 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 74rNQyc7aVtd for <intel-wired-lan@lists.osuosl.org>;
- Wed, 14 May 2025 15:02:35 +0000 (UTC)
-X-Greylist: delayed 310 seconds by postgrey-1.37 at util1.osuosl.org;
- Wed, 14 May 2025 15:02:35 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 545038225C
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 545038225C
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=185.125.188.123;
- helo=smtp-relay-internal-1.canonical.com;
+ id ZsMYsabsTlLR for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 14 May 2025 15:03:08 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=185.125.188.122;
+ helo=smtp-relay-internal-0.canonical.com;
  envelope-from=robert.malz@canonical.com; receiver=<UNKNOWN> 
-Received: from smtp-relay-internal-1.canonical.com
- (smtp-relay-internal-1.canonical.com [185.125.188.123])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 545038225C
- for <intel-wired-lan@lists.osuosl.org>; Wed, 14 May 2025 15:02:35 +0000 (UTC)
-Received: from mail-wm1-f70.google.com (mail-wm1-f70.google.com
- [209.85.128.70])
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 8388D8218B
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8388D8218B
+Received: from smtp-relay-internal-0.canonical.com
+ (smtp-relay-internal-0.canonical.com [185.125.188.122])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 8388D8218B
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 14 May 2025 15:03:08 +0000 (UTC)
+Received: from mail-wm1-f71.google.com (mail-wm1-f71.google.com
+ [209.85.128.71])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by smtp-relay-internal-1.canonical.com (Postfix) with ESMTPS id E6EEF3F848
- for <intel-wired-lan@lists.osuosl.org>; Wed, 14 May 2025 14:57:23 +0000 (UTC)
-Received: by mail-wm1-f70.google.com with SMTP id
- 5b1f17b1804b1-43cf446681cso37318325e9.1
- for <intel-wired-lan@lists.osuosl.org>; Wed, 14 May 2025 07:57:23 -0700 (PDT)
+ by smtp-relay-internal-0.canonical.com (Postfix) with ESMTPS id 926FA3F12E
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 14 May 2025 14:57:22 +0000 (UTC)
+Received: by mail-wm1-f71.google.com with SMTP id
+ 5b1f17b1804b1-440a4e2bad7so5610505e9.0
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 14 May 2025 07:57:22 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20230601; t=1747234643; x=1747839443;
- h=content-transfer-encoding:mime-version:references:in-reply-to
- :message-id:date:subject:to:from:x-gm-message-state:from:to:cc
- :subject:date:message-id:reply-to;
- bh=eJ6Gly97PUQf39g4PYqAseTk8kpWDYMCJC9Zl5UsN4o=;
- b=iRF8lzfSeD2S65WbJ0a8Y9swNBO4MBNnXzML71C00dG92777sDKZdOuOgSwfLlFLNI
- zXzzRp0Zp0QhbF7TRh6DDpj3X2KFyS5EisMoHOQBBrpXkw2GYkuUNwcDUucgiqCElR3Q
- 0wXOfisnLJHrHkmrmZNDyIYJexmeeEJga6fLw/yH1yXDU8g6DxN6TtcaOivYXZaLvTPf
- Bx+Y85rpoSYRV6NAryAf9MPZsnDexhYdImsxoV4yASmXC2TlG/OAA4EhRobE7KGnOw5v
- vLRDU5HPqLRlxHoul2SjSMFN1yYMzPHJqgRlzWIKUpM/beKP+3KYxP0lkW57XykuIUyD
- QiFA==
+ d=1e100.net; s=20230601; t=1747234642; x=1747839442;
+ h=content-transfer-encoding:mime-version:message-id:date:subject:to
+ :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+ bh=U7Vp8QljWnGGv48HmwPUUHanbPqKrIRkEiUDXnzutDY=;
+ b=G+hWnTYYs99opECXxX2hCHTulfY5t+i7NVKwu6J5z1Fwg+tFkJg65Dv2Pfew40BIrl
+ cM2lSkISMTJYJ/go2sJoaqRYM/unC7IgXFnKmBR8qbAbtalP4wuGrP0KuFUIgx4TAohu
+ SMl1exV2IzQT3HreD4fBIifL/mkPiijoIhBWJ3mRwFChc+JlKWcYL2qR7x/W7oIf41fG
+ iMTwYueax/GdfcfbqrNxtMj/woTSKauPYqXqYU9BsVQeuSs+Qr6DoYKQlRVo1p1mKCJO
+ P1Zn7C7Ck22xjGqRaFHDYLaAvyL/VRL0Zt/Yu5IZgLS1v8ttbxMBaO5fMm81y0uVXq8U
+ cXfQ==
 X-Forwarded-Encrypted: i=1;
- AJvYcCWxnpikXtBrr113Af7JA2bnbPLc5MwPeXbPnYAesMmwzScstuscsexq08hgysqLFHbA9BN6D14NZbUGmwKPIUQ=@lists.osuosl.org
-X-Gm-Message-State: AOJu0YxO8WXCB1t3RV5PX5ttRVKL5mQVwTK0UM0PyPHK42HrUql7g+oB
- etFHXWj+YamWcS8A+6EvL8FaZIYYTxtLhFGzWtEaAdfSgr1LtVzPhWjE1sUOUN5ObuPQl/H80y/
- fybo3iSoLd3DBNStWEOI4BnoJa36m7/NJtuesOunIKnmTjQJ6NnZPogHtr7ChFA9UmcWjMFfNRs
- 7ENayU/Jc=
-X-Gm-Gg: ASbGncvhxps5GSgP7AZHr4cJ7O17pp3rHX8ker9cda/eVckJJY02aFn+8A7TYR1Glgh
- Mn9T9wpyFncatxWrNEBqFXhj5XaGj3W9AcqOsjrgO+p2TVh5fOHNeZ7wRSLC/y75xyexkGowJuz
- CwDnMjOgbf02rLaPxrc04ePlgHshu4/cNgH2SrEVIk7rZoZ3NTOUiVvUCZADI/MQkjJjCgxaIJ7
- ezbYPMs/vtyDvT4DedC5x6Czg9zcJ+lkiodbk2gm9TU6+LWNjXLFlZY+Wi7N6d15goKxO49ql3f
- rzv5WeQQJnFQdA==
-X-Received: by 2002:a05:600c:a40a:b0:442:f4a3:8c5c with SMTP id
- 5b1f17b1804b1-442f4a38df5mr29989615e9.10.1747234643451; 
- Wed, 14 May 2025 07:57:23 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IGSuB7tXsDIbAHlX6PMrLvGckFWYgd4dOo2H71kbxEJ7QeEIn4un94uLqKVeEVE2OesAMwOGg==
-X-Received: by 2002:a05:600c:a40a:b0:442:f4a3:8c5c with SMTP id
- 5b1f17b1804b1-442f4a38df5mr29989245e9.10.1747234643098; 
- Wed, 14 May 2025 07:57:23 -0700 (PDT)
-Received: from rmalz.. ([213.157.19.150]) by smtp.gmail.com with ESMTPSA id
- 5b1f17b1804b1-442f3369293sm34512765e9.6.2025.05.14.07.57.22
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ AJvYcCXKn3fZNQGs8Nn4giXrvBCty12so9V2v7qIzTyNHCwiA7TgMDuXwzKevqR+LQhPPJmDU1TtjjnDTzdWTrDELbc=@lists.osuosl.org
+X-Gm-Message-State: AOJu0YyCkBX1Oz74mPqhqgqe5F5rni8v5P+W13PJsgnNVEOwhgoFPA9m
+ H5xRYYa7I/zd3M/O//V8qktbppjQKyCVf4eDF1ICkYXLqqQohIVCkgrVQQWkeVQvUwhQBEcXZeD
+ 42xkSPl+6BAEn00gwZk1KERk0ZJp9YEDhtHVfTmLixWjzbqhcq2H9e9ICvr+Q3LCU1hxo5g01PJ
+ tsVp2CVII=
+X-Gm-Gg: ASbGncvcNyeikxncUkTVMlVCaNyPQRhbrVzqwOaHvN9Y7nYB7vo2in3vh2HNjYSO1DD
+ +T9//N4pZNVv51aRD7wwONTYGB4wuSHJurgUXb1kAycMbBMvg59O2teO84Q6pEyn2M1gCLgXF/H
+ AuePUDLdKNoXZMYCF/PL/Wndqu28b+QdAPQDGJaz+52+NL/tQ6T0r+r7lWKACh3yBN2GDN2jUan
+ Cqdxy8IV0++TvVDY2OTExI617+B+kqb1jMsRto7ChRxaGk8IAUUEl6woOcU6oceFBB4sEmhQgbO
+ soqzPlCwO+FmvQ==
+X-Received: by 2002:a05:600c:190a:b0:43b:ca8c:fca3 with SMTP id
+ 5b1f17b1804b1-442f1a819bfmr33365975e9.11.1747234642123; 
  Wed, 14 May 2025 07:57:22 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IE6CxowXUpdtASikfZ1ZZEQkSR1V6z1Cqw2+EJWQcHNLnMfwhuKxK8nw6AQE01cWIWj5PS4iA==
+X-Received: by 2002:a05:600c:190a:b0:43b:ca8c:fca3 with SMTP id
+ 5b1f17b1804b1-442f1a819bfmr33365755e9.11.1747234641755; 
+ Wed, 14 May 2025 07:57:21 -0700 (PDT)
+Received: from rmalz.. ([213.157.19.150]) by smtp.gmail.com with ESMTPSA id
+ 5b1f17b1804b1-442f3369293sm34512765e9.6.2025.05.14.07.57.21
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Wed, 14 May 2025 07:57:21 -0700 (PDT)
 From: Robert Malz <robert.malz@canonical.com>
 To: netdev@vger.kernel.org, intel-wired-lan@lists.osuosl.org,
  anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
  andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
  kuba@kernel.org, pabeni@redhat.com, sylwesterx.dziedziuch@intel.com,
  mateusz.palczewski@intel.com, jacob.e.keller@intel.com
-Date: Wed, 14 May 2025 16:57:20 +0200
-Message-Id: <20250514145720.91675-3-robert.malz@canonical.com>
+Date: Wed, 14 May 2025 16:57:18 +0200
+Message-Id: <20250514145720.91675-1-robert.malz@canonical.com>
 X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20250514145720.91675-1-robert.malz@canonical.com>
-References: <20250514145720.91675-1-robert.malz@canonical.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=canonical.com; s=20210705; t=1747234643;
- bh=eJ6Gly97PUQf39g4PYqAseTk8kpWDYMCJC9Zl5UsN4o=;
- h=From:To:Subject:Date:Message-Id:In-Reply-To:References:
- MIME-Version;
- b=D+YQSnP2mBJA6NBlKoZqPg8g6HMnNoyej+EmKu1p7MU9dGw3tCOcPvlLCxbVBNC3u
- aTBSyGzpycTgY/XM606FeCogIhzt27p5IaHpOVyp0G3Ucfnp2PEfaEU2VKZ3ccvDzO
- hXhwJr6SiTRGaTwiGYHiT7+vJC4/ztO2AGZnl3RFzJaLn+srwfOe29epJa61mpgpvF
- ETBlKs5oEgt6pShgsOyZ5SXtB61kE7nUSDxzCg+kjP1mF1eoshbCtMPinRwyT9sCkS
- GED3xAbGgRsu4RlDzKlTTw5OE6Hd2BVFVBQ514WUOiMOjYG42ubjI/d3mdO7XjJKW7
- e/9c9fziw7cHQ==
+ d=canonical.com; s=20210705; t=1747234642;
+ bh=U7Vp8QljWnGGv48HmwPUUHanbPqKrIRkEiUDXnzutDY=;
+ h=From:To:Subject:Date:Message-Id:MIME-Version;
+ b=I/hfARu8dyljsAYTsmItsLb+RgGi/1zLBvf+O+7abpHDSP8inDeeFzJMRiQU6asPc
+ nb8C6GvjlicMft967RP2QtQ2UoJ41xozZ9wLFeqis90dexfFWIA1ySvmQ6MjYKKpCy
+ 9HdbiLoUrwendewYLSOndX9x9YZbjlbxo//0YRLDtUdqAxJ7DR93/zMVfVpTT9XdPL
+ lDiHLuME8AaWcV7ebvAh2lamcxTpmOQz4Hf1Oq7RMj1ytQzty9QWJZ/9l6k2D0w3XG
+ IgZP1bwuG8zjGNi7CU45aieJaQG+C/4OSLiGCJ+BfrET9y9BItFmjcTXF7JlZxbO7y
+ jdj7SaQtMaEag==
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=canonical.com
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=canonical.com header.i=@canonical.com
- header.a=rsa-sha256 header.s=20210705 header.b=D+YQSnP2
-Subject: [Intel-wired-lan] [PATCH 2/2] i40e: retry VFLR handling if there is
- ongoing VF reset
+ dkim=pass (2048-bit key) header.d=canonical.com header.i=@canonical.com
+ header.a=rsa-sha256 header.s=20210705 header.b=I/hfARu8
+Subject: [Intel-wired-lan] [PATCH 0/2] improve i40e parallel VF reset
+ handling
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -144,46 +136,38 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-When a VFLR interrupt is received during a VF reset initiated from a
-different source, the VFLR may be not fully handled. This can
-leave the VF in an undefined state.
-To address this, set the I40E_VFLR_EVENT_PENDING bit again during VFLR
-handling if the reset is not yet complete. This ensures the driver
-will properly complete the VF reset in such scenarios.
+When the i40e driver receives VF reset requests from multiple sources,
+some requests may not be handled. For example, a VFLR interrupt might
+be ignored if it occurs while a VF is already resetting as part of an
+`ndo` request. In such scenarios, the VFLR is lost and, depending on
+timing, the VF may be left uninitialized. This can cause the VF driver
+to become stuck in an initialization loop until another VF reset is
+triggered.
 
-Fixes: 52424f974bc5 ("i40e: Fix VF hang when reset is triggered on another VF")
-Signed-off-by: Robert Malz <robert.malz@canonical.com>
----
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
+Currently, in i40e_vc_reset_vf, the driver attempts to reset the VF up
+to 20 times, logging an error if all attempts fail. This logic assumes
+that i40e_reset_vf returns false when another reset is already in
+progress. However, i40e_reset_vf currently always returns true, which
+causes overlapping resets to be silently ignored.
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index abd72ab36af7..6b13ac85016f 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -1546,8 +1546,8 @@ static void i40e_cleanup_reset_vf(struct i40e_vf *vf)
-  * @vf: pointer to the VF structure
-  * @flr: VFLR was issued or not
-  *
-- * Returns true if resets are disabled or was performed successfully,
-- * false if reset is already in progress.
-+ * Returns true if reset was performed successfully or if resets are
-+ * disabled. False if reset is already in progress.
-  **/
- bool i40e_reset_vf(struct i40e_vf *vf, bool flr)
- {
-@@ -4328,7 +4328,10 @@ int i40e_vc_process_vflr_event(struct i40e_pf *pf)
- 		reg = rd32(hw, I40E_GLGEN_VFLRSTAT(reg_idx));
- 		if (reg & BIT(bit_idx))
- 			/* i40e_reset_vf will clear the bit in GLGEN_VFLRSTAT */
--			i40e_reset_vf(vf, true);
-+			if (!i40e_reset_vf(vf, true)) {
-+				/* At least one VF did not finish resetting, retry next time */
-+				set_bit(__I40E_VFLR_EVENT_PENDING, pf->state);
-+			}
- 	}
- 
- 	return 0;
+The first patch updates i40e_reset_vf to return false if a reset is
+already in progress. This aligns with the retry logic used in
+i40e_vc_reset_vf.
+
+While the first patch addresses resets triggered via ndo operations,
+VFLR interrupts can also initiate VF resets. In that case, the driver
+directly calls i40e_reset_vf, and if the reset is skipped due to
+another one being in progress, the VF reest is not retried. The
+second patch addresses this by re-setting the I40E_VFLR_EVENT_PENDING
+bit, ensuring the VFLR is handled during the next service task execution.
+
+Robert Malz (2):
+  i40e: return false from i40e_reset_vf if reset is in progress
+  i40e: retry VFLR handling if there is ongoing VF reset
+
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
+
 -- 
 2.34.1
 
