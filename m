@@ -1,70 +1,70 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5CFD4C54754
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 16 May 2025 14:58:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 58BBDC3ABC9
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 16 May 2025 14:58:52 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 341986074D;
-	Fri, 16 May 2025 14:58:48 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 30D8E83CE1;
+	Fri, 16 May 2025 14:58:52 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 9nDZtBabVX22; Fri, 16 May 2025 14:58:47 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id tJXootJzw1ng; Fri, 16 May 2025 14:58:51 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 957F76114E
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 960FB83CCA
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1747407527;
-	bh=s23GV4JWa++Qz29kxbt+4ARsbWfrwKuZcj2tUTGPfbA=;
+	s=default; t=1747407531;
+	bh=vGtfJ4j7wBqGgmAzaD6uI45eO7CzSJh/ZIDcowR/xvQ=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=Ti7cUWUxUfy4gSrQHvx73iZmVPj/QNKZbAZhnFaTi3saBaKeRv9y6UiHbnDK7wjN/
-	 vCFl9TRwO28Hr3fLemsIqKnwXiLvmIT88TXfmcZSUoMsd129+xHm3zKFxAjXTm7/nA
-	 AIiBCNpiS9SlWKlURPiMPccP3ywS2RW+w1QllAPnr4BhSKrBW0ehsCIWIOe14AP8re
-	 1ye9DrtwbOORg58Tdq4ID5Q9cxB2d0+jkDpkxAR8yYJy2fjEA9qBYxxxw2cPZKBvS+
-	 VXBMUFeoePZh8NUFvfOkHI6nVMdgq/HiKiw4PsWCJEtBmq4Nw1/9kHOUJbrBGAUH4l
-	 DJEVTEAfJJdEQ==
+	b=4/v9ciBLAxyfq4YI93VSMOPUVi81UijwerGaT9czfMs/pd89FgujnjXMXWnldfZrT
+	 BvY5Bl/lrqTJatoQUk4QJt7uSz4VlcmNaEek36/jFhqXfmPh61mBp9IuXmmApkFbO1
+	 ObD7eb7wY5j9LKamEnqxRZQ+w9udxc7zpe4RuTo7z/dIBQDwnfd/f7Q/iS6p2SCz2g
+	 yae7/+liTNIk0u96FBsZBPOc66Y9vAPW1iknk05AXp5CRuo+n1Mt4pPXD8fnX55xD+
+	 U0uVTKM2WjUkHIz6mwCwuG8sDgCdGnHjeG2EJ+tH4YXxRXJMhSOVfRMPf4etBjXFxy
+	 o7aJh37LgtTmg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 957F76114E;
-	Fri, 16 May 2025 14:58:47 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id EBDA61AB
- for <intel-wired-lan@lists.osuosl.org>; Fri, 16 May 2025 14:58:45 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 960FB83CCA;
+	Fri, 16 May 2025 14:58:51 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 210AC185
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 16 May 2025 14:58:50 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id DD19D6074D
- for <intel-wired-lan@lists.osuosl.org>; Fri, 16 May 2025 14:58:45 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 12C83422E2
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 16 May 2025 14:58:50 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Ev0QhikqCcZD for <intel-wired-lan@lists.osuosl.org>;
- Fri, 16 May 2025 14:58:45 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.17;
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id YpnMoy5NxDbC for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 16 May 2025 14:58:49 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.13;
  helo=mgamail.intel.com; envelope-from=larysa.zaremba@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 445906114E
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 445906114E
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.17])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 445906114E
- for <intel-wired-lan@lists.osuosl.org>; Fri, 16 May 2025 14:58:45 +0000 (UTC)
-X-CSE-ConnectionGUID: P09j+3BQT0yjbBBvxja3WQ==
-X-CSE-MsgGUID: tv0M8TbnTEeUFASnYK9pPQ==
-X-IronPort-AV: E=McAfee;i="6700,10204,11435"; a="49308674"
-X-IronPort-AV: E=Sophos;i="6.15,294,1739865600"; d="scan'208";a="49308674"
-Received: from fmviesa003.fm.intel.com ([10.60.135.143])
- by fmvoesa111.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 16 May 2025 07:58:44 -0700
-X-CSE-ConnectionGUID: lVJ8m0bNQLiI5Cr7HTFzkw==
-X-CSE-MsgGUID: SAulFrTzQ4COHP3ZyvXcAA==
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 68EFC42302
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 68EFC42302
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.13])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 68EFC42302
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 16 May 2025 14:58:49 +0000 (UTC)
+X-CSE-ConnectionGUID: IF8njVBHQ/OYHsOBi57+BA==
+X-CSE-MsgGUID: IGpuw28iRnqo01wT1MVpPg==
+X-IronPort-AV: E=McAfee;i="6700,10204,11435"; a="60407569"
+X-IronPort-AV: E=Sophos;i="6.15,294,1739865600"; d="scan'208";a="60407569"
+Received: from orviesa007.jf.intel.com ([10.64.159.147])
+ by orvoesa105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 16 May 2025 07:58:48 -0700
+X-CSE-ConnectionGUID: /jCG6dFZSR+5466uPvg9Mg==
+X-CSE-MsgGUID: BOiSSllxSPq/ZTQ5qGKlVg==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.15,294,1739865600"; d="scan'208";a="142717998"
+X-IronPort-AV: E=Sophos;i="6.15,294,1739865600"; d="scan'208";a="139240128"
 Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by fmviesa003.fm.intel.com with ESMTP; 16 May 2025 07:58:38 -0700
+ by orviesa007.jf.intel.com with ESMTP; 16 May 2025 07:58:41 -0700
 Received: from mglak.igk.intel.com (mglak.igk.intel.com [10.237.112.146])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id 93CFD34324;
- Fri, 16 May 2025 15:58:36 +0100 (IST)
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id 97C7934325;
+ Fri, 16 May 2025 15:58:38 +0100 (IST)
 From: Larysa Zaremba <larysa.zaremba@intel.com>
 To: intel-wired-lan@lists.osuosl.org, Tony Nguyen <anthony.l.nguyen@intel.com>
 Cc: "David S. Miller" <davem@davemloft.net>,
@@ -92,8 +92,8 @@ Cc: "David S. Miller" <davem@davemloft.net>,
  Milena Olech <milena.olech@intel.com>, pavan.kumar.linga@intel.com,
  "Singhai, Anjali" <anjali.singhai@intel.com>,
  Michal Kubiak <michal.kubiak@intel.com>
-Date: Fri, 16 May 2025 16:58:07 +0200
-Message-ID: <20250516145814.5422-11-larysa.zaremba@intel.com>
+Date: Fri, 16 May 2025 16:58:08 +0200
+Message-ID: <20250516145814.5422-12-larysa.zaremba@intel.com>
 X-Mailer: git-send-email 2.47.0
 In-Reply-To: <20250516145814.5422-1-larysa.zaremba@intel.com>
 References: <20250516145814.5422-1-larysa.zaremba@intel.com>
@@ -101,25 +101,26 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1747407525; x=1778943525;
+ t=1747407530; x=1778943530;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=9dzZPt2McHNB+lAA+rspaOyYpS5uTSMQtry3RSu+rVo=;
- b=IaOQaJHJ0LMhimaI83zn9aQerI1thFKpSS+NgnlW8TE7fOurL0zdn9Hv
- 2xcL8AkEYlcaz2ZymEvoZ3657vXH+l0G7ej4py9BZIcScIqCC662Y923U
- TQ+bGDTTpUUblj2KDsWuLFE3YcOr4PnydEU3RlBv+1ng5iMfaGiX5wDp+
- pcjw3iFM8ckgdHSo6CS2A6OwW9XflXQQG5Gqek2gUE+QoniIlWqKwY41I
- toJmJ2CSRhcT82WDvydAKoIJwWvDx12v+6d9lWepdC8Pp6Ay/GCq7rv/m
- JfEj1V/had+9LxwEsMHAkt3sSBMpzAtiqDT1xI4SqcWf89NX1k3BIZuYv
- w==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ bh=e7/rff0nN+c5LP3hyZCSDYm6ySQB1kPcZXmcsnBqILQ=;
+ b=DE0s05ZTk+5xzxe+xzgjsYuyqiI+HN7B5ToFqwF+Gmsfy4roTXnr54GW
+ 90a4OTYB1wqsn0rfNMIyC7tLw/tPfJiP8z/f1rwcwQGwpHkis144bVGKl
+ Asn2qNEFtHN/vyf586n8ty9miT0uDHXcqNLy36165dNER3NJjIwmZHsw+
+ FRdHAJ6bw+qedvExrCh3tzeglVmXJbMcObYSTeNtjb0pgVw9wOSrnfSUf
+ vWDtlx3cnFUlA9c5/Zk6pY/yxVu3J5rNn4pjg359xG25T4qYOEAXtYR2N
+ 5h8WmoiPKVGzVOufhPRWN060DYsSqPQ2anQr+vdsE4X3WueF4H37ec5sS
+ g==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=IaOQaJHJ
-Subject: [Intel-wired-lan] [PATCH iwl-next v4 10/15] idpf: make mbx_task
- queueing and cancelling more consistent
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=DE0s05ZT
+Subject: [Intel-wired-lan] [PATCH iwl-next v4 11/15] idpf: print a debug
+ message and bail in case of non-event ctlq message
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -135,103 +136,41 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-As a consequence of refactoring idpf code to use libeth APIs,
-idpf_vc_xn_shutdown was merged with and replaced by idpf_deinit_dflt_mbx.
-This does not affect the Tx path, as it checked for a presence of an xn
-manager anyway. Rx processing is handled by the mbx_task that is not always
-cancelled before calling the new consolidated mailbox deinit function.
-Moreover, in the reset path idpf_intr_rel() reschedules it after the deinit
-is done. This leads to mbx_task referencing the freed mailbox and causing
-KASAN warnings.
+Unlike previous internal idpf ctlq implementation, idpf calls the default
+message handler for all received messages that do not have a matching xn
+transaction, not only for VIRTCHNL2_OP_EVENT. This leads to many error
+messages printing garbage, because the parsing expected a valid event
+message, but got e.g. a delayed response for a timed-out transaction.
 
-To remedy this, in the init path, do the first queueing of mbx_task in
-idpf_init_dflt_mbx(), in deinit and reset, always cancel the task in
-idpf_deinit_dflt_mbx() and in every flow first call idpf_mb_intr_rel_irq().
+The information about timed-out transactions and otherwise unhandleable
+messages can still be valuable for developers, so print the information
+with dynamic debug and exit the function, so the following functions can
+parse valid events in peace.
 
 Reviewed-by: Michal Kubiak <michal.kubiak@intel.com>
 Signed-off-by: Larysa Zaremba <larysa.zaremba@intel.com>
 ---
- drivers/net/ethernet/intel/idpf/idpf.h          | 1 +
- drivers/net/ethernet/intel/idpf/idpf_lib.c      | 9 ++++-----
- drivers/net/ethernet/intel/idpf/idpf_virtchnl.c | 6 +++++-
- 3 files changed, 10 insertions(+), 6 deletions(-)
+ drivers/net/ethernet/intel/idpf/idpf_virtchnl.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/idpf/idpf.h b/drivers/net/ethernet/intel/idpf/idpf.h
-index ff69d920d7d3..e84881307b99 100644
---- a/drivers/net/ethernet/intel/idpf/idpf.h
-+++ b/drivers/net/ethernet/intel/idpf/idpf.h
-@@ -880,6 +880,7 @@ void idpf_vc_event_task(struct work_struct *work);
- void idpf_dev_ops_init(struct idpf_adapter *adapter);
- void idpf_vf_dev_ops_init(struct idpf_adapter *adapter);
- int idpf_intr_req(struct idpf_adapter *adapter);
-+void idpf_mb_intr_rel_irq(struct idpf_adapter *adapter);
- void idpf_intr_rel(struct idpf_adapter *adapter);
- u16 idpf_get_max_tx_hdr_size(struct idpf_adapter *adapter);
- int idpf_initiate_soft_reset(struct idpf_vport *vport,
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_lib.c b/drivers/net/ethernet/intel/idpf/idpf_lib.c
-index 500bff1091d9..f8a025cecac5 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_lib.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_lib.c
-@@ -66,9 +66,11 @@ static void idpf_deinit_vector_stack(struct idpf_adapter *adapter)
-  * This will also disable interrupt mode and queue up mailbox task. Mailbox
-  * task will reschedule itself if not in interrupt mode.
-  */
--static void idpf_mb_intr_rel_irq(struct idpf_adapter *adapter)
-+void idpf_mb_intr_rel_irq(struct idpf_adapter *adapter)
- {
--	clear_bit(IDPF_MB_INTR_MODE, adapter->flags);
-+	if (!test_and_clear_bit(IDPF_MB_INTR_MODE, adapter->flags))
-+		return;
-+
- 	kfree(free_irq(adapter->msix_entries[0].vector, adapter));
- 	queue_delayed_work(adapter->mbx_wq, &adapter->mbx_task, 0);
- }
-@@ -1783,14 +1785,11 @@ static int idpf_init_hard_reset(struct idpf_adapter *adapter)
- 		goto unlock_mutex;
- 	}
- 
--	queue_delayed_work(adapter->mbx_wq, &adapter->mbx_task, 0);
--
- 	/* Initialize the state machine, also allocate memory and request
- 	 * resources
- 	 */
- 	err = idpf_vc_core_init(adapter);
- 	if (err) {
--		cancel_delayed_work_sync(&adapter->mbx_task);
- 		idpf_deinit_dflt_mbx(adapter);
- 		goto unlock_mutex;
- 	}
 diff --git a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
-index 021fac3850ad..31c7e1984f6c 100644
+index 31c7e1984f6c..d2bf5226b31d 100644
 --- a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
 +++ b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
-@@ -2357,6 +2357,8 @@ int idpf_init_dflt_mbx(struct idpf_adapter *adapter)
- 	adapter->xn_init_params.xnm = params.xnm;
- 	adapter->state = __IDPF_VER_CHECK;
+@@ -82,6 +82,13 @@ void idpf_recv_event_msg(struct libie_ctlq_ctx *ctx,
+ 	u32 event;
  
-+	queue_delayed_work(adapter->mbx_wq, &adapter->mbx_task, 0);
+ 	adapter = container_of(ctx, struct idpf_adapter, ctlq_ctx);
++	if (ctlq_msg->chnl_opcode != VIRTCHNL2_OP_EVENT) {
++		dev_dbg(&adapter->pdev->dev,
++			"Unhandled message with opcode %u from CP\n",
++			ctlq_msg->chnl_opcode);
++		goto free_rx_buf;
++	}
 +
- 	return 0;
- }
- 
-@@ -2366,6 +2368,9 @@ int idpf_init_dflt_mbx(struct idpf_adapter *adapter)
-  */
- void idpf_deinit_dflt_mbx(struct idpf_adapter *adapter)
- {
-+	idpf_mb_intr_rel_irq(adapter);
-+	cancel_delayed_work_sync(&adapter->mbx_task);
-+
- 	if (adapter->arq && adapter->asq) {
- 		idpf_mb_clean(adapter, adapter->asq);
- 		libie_ctlq_xn_deinit(adapter->xn_init_params.xnm,
-@@ -2605,7 +2610,6 @@ void idpf_vc_core_deinit(struct idpf_adapter *adapter)
- 		idpf_deinit_dflt_mbx(adapter);
- 
- 	cancel_delayed_work_sync(&adapter->serv_task);
--	cancel_delayed_work_sync(&adapter->mbx_task);
- 
- 	idpf_vport_params_buf_rel(adapter);
- 
+ 	if (payload_size < sizeof(*v2e)) {
+ 		dev_err_ratelimited(&adapter->pdev->dev, "Failed to receive valid payload for event msg (op %d len %d)\n",
+ 				    ctlq_msg->chnl_opcode,
 -- 
 2.47.0
 
