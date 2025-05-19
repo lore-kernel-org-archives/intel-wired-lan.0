@@ -4,64 +4,64 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2BDB5C54795
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 19 May 2025 15:15:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6C580C3ABDD
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 19 May 2025 15:15:42 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id E370740836;
-	Mon, 19 May 2025 15:15:39 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 373F7409CE;
+	Mon, 19 May 2025 15:15:42 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id DjYFQqvdPE27; Mon, 19 May 2025 15:15:39 +0000 (UTC)
+ id FWtpoWYaiRUE; Mon, 19 May 2025 15:15:41 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 505CC408C8
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org A370840B74
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1747667739;
-	bh=s4M1YOSre5iRLCdBjQo8ZXgWZd2JIg8A+6ujcWd9zpo=;
+	s=default; t=1747667741;
+	bh=sEoIhZMnUypWvy+Pha3VG8Z6A+thf7clm7Dy5JnoKD8=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=kAmp3E8n5M64QKezmGX7vE0QIeDwphTXXwy0KtMxitjm3ufmH7h1qRDi/4dOBQBvn
-	 c7WytF1WSHKRyVmrWAtcj9ZzC9N9v1Ag0TR7UusEJM2PLBru0Rspxh2w0UOCmeIguZ
-	 OB1pOMKV/QBr7sXhZO4No4nPd3NVH3deqZUKq5SxQl58DAbzTg9p49LjvtJWEgRJD4
-	 y3KOIafcHirWst9zmhecvG6Ruuce5me5mDOcRjszQVt2P1YfLPT5DASRxfcjEU7oJZ
-	 xg8CPHxh3o/1HN56NjQd1mkqbRjvflqU7yK7Mh7Dq5i5umYKeQYejb1zzu5xuqQkER
-	 AgYecBzYHM4YQ==
+	b=8dHxGyAhWBhM48cnAiS63+1v+mGKRdlYt2uhgoPZBkdISSdfCKmtEEGl/9HgHz5VW
+	 xKSlIFr8+KuLXuPOGER18Kws7646Ogx1muU5aBlZQuoFdquSQUYsUQkMI9AdLJKfk/
+	 spFfu2OcDFQce69sRRLe0e/T+WaOm0Shhh2UFNFYhZ98A/1BAqHPOGUKImQQG/kQrZ
+	 mXmeOwtQcouCsed5qxHAEld3h/BiX6a6icla7el0DCYoMB9M+pG8RCBq+VAVJvoaAQ
+	 Bm6XVtgiXIrJJhPj0yZsd6MYdZkTIhfvHDXPv/wbBLdRIfkA/8sout5/SxAEHwbeOX
+	 6vyKk3K85Xx7A==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 505CC408C8;
-	Mon, 19 May 2025 15:15:39 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id A370840B74;
+	Mon, 19 May 2025 15:15:41 +0000 (UTC)
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id 9CF03193
- for <intel-wired-lan@lists.osuosl.org>; Mon, 19 May 2025 07:20:54 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id 5B7C8193
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 19 May 2025 07:21:06 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 82FEF80DF0
- for <intel-wired-lan@lists.osuosl.org>; Mon, 19 May 2025 07:20:54 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 41E9B81DE6
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 19 May 2025 07:21:06 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id HxUPBYFll7Rh for <intel-wired-lan@lists.osuosl.org>;
- Mon, 19 May 2025 07:20:53 +0000 (UTC)
+ id x3VS6inixklG for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 19 May 2025 07:21:05 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.9;
  helo=mgamail.intel.com; envelope-from=faizal.abdul.rahim@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org A8D1D81DEA
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org A8D1D81DEA
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 922E281DEA
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 922E281DEA
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.9])
- by smtp1.osuosl.org (Postfix) with ESMTPS id A8D1D81DEA
- for <intel-wired-lan@lists.osuosl.org>; Mon, 19 May 2025 07:20:53 +0000 (UTC)
-X-CSE-ConnectionGUID: RyFmr06TSOKHa9XKAhxkJg==
-X-CSE-MsgGUID: mJe0VPpBSwqaZQKFqfcYLw==
-X-IronPort-AV: E=McAfee;i="6700,10204,11437"; a="72030743"
-X-IronPort-AV: E=Sophos;i="6.15,300,1739865600"; d="scan'208";a="72030743"
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 922E281DEA
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 19 May 2025 07:21:05 +0000 (UTC)
+X-CSE-ConnectionGUID: UQi5EKebR8aOe3h4SXjrig==
+X-CSE-MsgGUID: r1/OpnDwR+yB0GWMF1uxhQ==
+X-IronPort-AV: E=McAfee;i="6700,10204,11437"; a="72030783"
+X-IronPort-AV: E=Sophos;i="6.15,300,1739865600"; d="scan'208";a="72030783"
 Received: from orviesa007.jf.intel.com ([10.64.159.147])
  by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 19 May 2025 00:20:53 -0700
-X-CSE-ConnectionGUID: fOqtxuL1SYGUZDLmQJzPtQ==
-X-CSE-MsgGUID: kTl+MainQY61t8WzPKXsHA==
+ 19 May 2025 00:21:05 -0700
+X-CSE-ConnectionGUID: mmpoC57BR9uND73U9O8tew==
+X-CSE-MsgGUID: 2EcW9jtTSHC2bVPaerrckw==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.15,300,1739865600"; d="scan'208";a="139798836"
+X-IronPort-AV: E=Sophos;i="6.15,300,1739865600"; d="scan'208";a="139798887"
 Received: from mohdfai2-ilbpg12-1.png.intel.com ([10.88.227.73])
- by orviesa007.jf.intel.com with ESMTP; 19 May 2025 00:20:50 -0700
+ by orviesa007.jf.intel.com with ESMTP; 19 May 2025 00:21:02 -0700
 From: "Abdul Rahim, Faizal" <faizal.abdul.rahim@intel.com>
 To: Tony Nguyen <anthony.l.nguyen@intel.com>,
  Przemek Kitszel <przemyslaw.kitszel@intel.com>,
@@ -74,36 +74,35 @@ Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
  Faizal Rahim <faizal.abdul.rahim@linux.intel.com>,
  Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
  Chwee-Lin Choong <chwee.lin.choong@intel.com>
-Date: Mon, 19 May 2025 03:19:08 -0400
-Message-Id: <20250519071911.2748406-5-faizal.abdul.rahim@intel.com>
+Date: Mon, 19 May 2025 03:19:11 -0400
+Message-Id: <20250519071911.2748406-8-faizal.abdul.rahim@intel.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20250519071911.2748406-1-faizal.abdul.rahim@intel.com>
 References: <20250519071911.2748406-1-faizal.abdul.rahim@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
 X-Mailman-Approved-At: Mon, 19 May 2025 15:15:34 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1747639254; x=1779175254;
+ t=1747639265; x=1779175265;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=eNzloNIoEXB/yepq9/BmYUsrKVK9QvnC22RSQhugWgE=;
- b=S+pHH+eVWobmBUbuoxpN4tlIJFi5TjKtixHVRjb0mciUc2MPmS3hnlBB
- YWeN/UQ1ExwsJEVPRvhKG1Mv60iqlYtpKJsFYE+meqme5W+XCQuX561o9
- na30jU6x0Gx85oQHIPwTSGTRcXL402nUR8FdzPvsI5CmzNz7AFFzeGHmO
- n3ZofwHnwnW2tu5AF5o571y+u9PaBo3q9oZUns/fhF2gP+eVYRD8SO7tY
- ctAGlKfWgaSH1uIWsrZFc/MlINag8OHITXK+9EBdL7x8bbNJlWwNz2dzQ
- QtGStZ4GR+Badef7Qz50UDFs9A51d0XMiR1d+F/3CLHihR3G0TzE6oDFZ
- g==;
+ bh=PXzwswM7zeCQGH43r5Hb+tLm48f6r20TC+9wRh21xZc=;
+ b=ge61jM1LyRskNvvBIRJtdmsZbeZ71kusX+e9au89w2CNgek2jrys2sDG
+ 6ESpN+rx1dMnBhjLPKGXSnsZQITB14q5crn7bD26fAMkG8sh5F3Ajmc1G
+ kzuu8X5JuFIfkO6SPi+GejDqIwTNyhQwEXp69r1JZDlPneIQUK/kUPIKo
+ E0BchKyhHs5XK3M20PJYNq7icgE7IItrRtcG3jngIZzazT003dX5+3xco
+ RJa3sGJgrobMjdkXNfTaRxPudH77RtPhHodrDpau9Wj1Sii/oGdXyFpIu
+ 7uXEkFZYQ2GQ2E6sWz6ydji8ihUfwGo0sW07leUWaKXfMiYkzbUkQoo9i
+ A==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=S+pHH+eV
-Subject: [Intel-wired-lan] [PATCH iwl-next v3 4/7] igc: assign highest TX
- queue number as highest priority in mqprio
+ header.a=rsa-sha256 header.s=Intel header.b=ge61jM1L
+Subject: [Intel-wired-lan] [PATCH iwl-next v3 7/7] igc: add preemptible
+ queue support in mqprio
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -121,144 +120,90 @@ Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 From: Faizal Rahim <faizal.abdul.rahim@linux.intel.com>
 
-Previously, TX arbitration prioritized queues based on the TC they were
-mapped to. A queue mapped to TC 3 had higher priority than one mapped to
-TC 0.
+igc already supports enabling MAC Merge for FPE. This patch adds
+support for preemptible queues in mqprio.
 
-To improve code reuse for upcoming patches and align with typical NIC
-behavior, this patch updates the logic to prioritize higher queue numbers
-when mqprio is used. As a result, queue 0 becomes the lowest priority and
-queue 3 becomes the highest.
+Tested preemption with mqprio by:
+1. Enable FPE:
+   ethtool --set-mm enp1s0 pmac-enabled on tx-enabled on verify-enabled on
+2. Enable preemptible queue in mqprio:
+   mqprio num_tc 4 map 0 1 2 3 0 0 0 0 0 0 0 0 0 0 0 0 \
+   queues 1@0 1@1 1@2 1@3 \
+   fp P P P E
 
-This patch also introduces igc_tsn_is_tc_to_queue_priority_ordered() to
-preserve the original TC-based priority rule and reject configurations
-where a higher TC maps to a lower queue offset.
-
-Reviewed-by: Simon Horman <horms@kernel.org>
 Signed-off-by: Faizal Rahim <faizal.abdul.rahim@linux.intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc_main.c | 19 ++++++++++++
- drivers/net/ethernet/intel/igc/igc_tsn.c  | 35 ++++++++++++++---------
- 2 files changed, 41 insertions(+), 13 deletions(-)
+ drivers/net/ethernet/intel/igc/igc_main.c | 9 ++-------
+ drivers/net/ethernet/intel/igc/igc_tsn.c  | 9 +++++++++
+ drivers/net/ethernet/intel/igc/igc_tsn.h  | 1 +
+ 3 files changed, 12 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index f3a312c9413b..1033d64fc0e8 100644
+index eb68a352840a..509f95651f25 100644
 --- a/drivers/net/ethernet/intel/igc/igc_main.c
 +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -6724,6 +6724,19 @@ static void igc_save_mqprio_params(struct igc_adapter *adapter, u8 num_tc,
- 		adapter->queue_per_tc[i] = offset[i];
- }
+@@ -6764,6 +6764,7 @@ static int igc_tsn_enable_mqprio(struct igc_adapter *adapter,
  
-+static bool igc_tsn_is_tc_to_queue_priority_ordered(struct tc_mqprio_qopt_offload *mqprio)
-+{
-+	int i;
-+	int num_tc = mqprio->qopt.num_tc;
-+
-+	for (i = 1; i < num_tc; i++) {
-+		if (mqprio->qopt.offset[i - 1] > mqprio->qopt.offset[i])
-+			return false;
-+	}
-+
-+	return true;
-+}
-+
- static int igc_tsn_enable_mqprio(struct igc_adapter *adapter,
- 				 struct tc_mqprio_qopt_offload *mqprio)
- {
-@@ -6756,6 +6769,12 @@ static int igc_tsn_enable_mqprio(struct igc_adapter *adapter,
- 		}
+ 	if (!mqprio->qopt.num_tc) {
+ 		adapter->strict_priority_enable = false;
++		igc_fpe_clear_preempt_queue(adapter);
+ 		netdev_reset_tc(adapter->netdev);
+ 		goto apply;
+ 	}
+@@ -6791,13 +6792,6 @@ static int igc_tsn_enable_mqprio(struct igc_adapter *adapter,
+ 		return -EOPNOTSUPP;
  	}
  
-+	if (!igc_tsn_is_tc_to_queue_priority_ordered(mqprio)) {
-+		NL_SET_ERR_MSG_MOD(mqprio->extack,
-+				   "tc to queue mapping must preserve increasing priority (higher tc → higher queue)");
-+		return -EOPNOTSUPP;
-+	}
-+
- 	/* Preemption is not supported yet. */
- 	if (mqprio->preemptible_tcs) {
- 		NL_SET_ERR_MSG_MOD(mqprio->extack,
+-	/* Preemption is not supported yet. */
+-	if (mqprio->preemptible_tcs) {
+-		NL_SET_ERR_MSG_MOD(mqprio->extack,
+-				   "Preemption is not supported yet");
+-		return -EOPNOTSUPP;
+-	}
+-
+ 	igc_save_mqprio_params(adapter, mqprio->qopt.num_tc,
+ 			       mqprio->qopt.offset);
+ 
+@@ -6817,6 +6811,7 @@ static int igc_tsn_enable_mqprio(struct igc_adapter *adapter,
+ 		adapter->queue_per_tc[i] = i;
+ 
+ 	mqprio->qopt.hw = TC_MQPRIO_HW_OFFLOAD_TCS;
++	igc_fpe_save_preempt_queue(adapter, mqprio);
+ 
+ apply:
+ 	return igc_tsn_offload_apply(adapter);
 diff --git a/drivers/net/ethernet/intel/igc/igc_tsn.c b/drivers/net/ethernet/intel/igc/igc_tsn.c
-index f22cc4d4f459..78a4a9cf5f96 100644
+index 811856d66571..b23b9ca451a7 100644
 --- a/drivers/net/ethernet/intel/igc/igc_tsn.c
 +++ b/drivers/net/ethernet/intel/igc/igc_tsn.c
-@@ -13,6 +13,13 @@
- #define TX_MAX_FRAG_SIZE	(TX_MIN_FRAG_SIZE * \
- 				 (MAX_MULTPLIER_TX_MIN_FRAG + 1))
+@@ -160,6 +160,15 @@ void igc_fpe_init(struct igc_adapter *adapter)
+ 	ethtool_mmsv_init(&adapter->fpe.mmsv, adapter->netdev, &igc_mmsv_ops);
+ }
  
-+enum tx_queue {
-+	TX_QUEUE_0 = 0,
-+	TX_QUEUE_1,
-+	TX_QUEUE_2,
-+	TX_QUEUE_3,
-+};
++void igc_fpe_clear_preempt_queue(struct igc_adapter *adapter)
++{
++	for (int i = 0; i < adapter->num_tx_queues; i++) {
++		struct igc_ring *tx_ring = adapter->tx_ring[i];
 +
- DEFINE_STATIC_KEY_FALSE(igc_fpe_enabled);
- 
- static int igc_fpe_init_smd_frame(struct igc_ring *ring,
-@@ -238,7 +245,7 @@ bool igc_tsn_is_taprio_activated_by_user(struct igc_adapter *adapter)
- 		adapter->taprio_offload_enable;
- }
- 
--static void igc_tsn_tx_arb(struct igc_adapter *adapter, u16 *queue_per_tc)
-+static void igc_tsn_tx_arb(struct igc_adapter *adapter, bool reverse_prio)
- {
- 	struct igc_hw *hw = &adapter->hw;
- 	u32 txarb;
-@@ -250,10 +257,17 @@ static void igc_tsn_tx_arb(struct igc_adapter *adapter, u16 *queue_per_tc)
- 		   IGC_TXARB_TXQ_PRIO_2_MASK |
- 		   IGC_TXARB_TXQ_PRIO_3_MASK);
- 
--	txarb |= IGC_TXARB_TXQ_PRIO_0(queue_per_tc[3]);
--	txarb |= IGC_TXARB_TXQ_PRIO_1(queue_per_tc[2]);
--	txarb |= IGC_TXARB_TXQ_PRIO_2(queue_per_tc[1]);
--	txarb |= IGC_TXARB_TXQ_PRIO_3(queue_per_tc[0]);
-+	if (reverse_prio) {
-+		txarb |= IGC_TXARB_TXQ_PRIO_0(TX_QUEUE_3);
-+		txarb |= IGC_TXARB_TXQ_PRIO_1(TX_QUEUE_2);
-+		txarb |= IGC_TXARB_TXQ_PRIO_2(TX_QUEUE_1);
-+		txarb |= IGC_TXARB_TXQ_PRIO_3(TX_QUEUE_0);
-+	} else {
-+		txarb |= IGC_TXARB_TXQ_PRIO_0(TX_QUEUE_0);
-+		txarb |= IGC_TXARB_TXQ_PRIO_1(TX_QUEUE_1);
-+		txarb |= IGC_TXARB_TXQ_PRIO_2(TX_QUEUE_2);
-+		txarb |= IGC_TXARB_TXQ_PRIO_3(TX_QUEUE_3);
++		tx_ring->preemptible = false;
 +	}
- 
- 	wr32(IGC_TXARB, txarb);
- }
-@@ -286,7 +300,6 @@ static void igc_tsn_set_rxpbsize(struct igc_adapter *adapter,
-  */
- static int igc_tsn_disable_offload(struct igc_adapter *adapter)
++}
++
+ static u32 igc_fpe_map_preempt_tc_to_queue(const struct igc_adapter *adapter,
+ 					   unsigned long preemptible_tcs)
  {
--	u16 queue_per_tc[4] = { 3, 2, 1, 0 };
- 	struct igc_hw *hw = &adapter->hw;
- 	u32 tqavctrl;
- 	int i;
-@@ -319,7 +332,7 @@ static int igc_tsn_disable_offload(struct igc_adapter *adapter)
- 	/* Restore the default Tx arbitration: Priority 0 has the highest
- 	 * priority and is assigned to queue 0 and so on and so forth.
- 	 */
--	igc_tsn_tx_arb(adapter, queue_per_tc);
-+	igc_tsn_tx_arb(adapter, false);
+diff --git a/drivers/net/ethernet/intel/igc/igc_tsn.h b/drivers/net/ethernet/intel/igc/igc_tsn.h
+index f2e8bfef4871..a95b893459d7 100644
+--- a/drivers/net/ethernet/intel/igc/igc_tsn.h
++++ b/drivers/net/ethernet/intel/igc/igc_tsn.h
+@@ -17,6 +17,7 @@ enum igc_txd_popts_type {
+ DECLARE_STATIC_KEY_FALSE(igc_fpe_enabled);
  
- 	adapter->flags &= ~IGC_FLAG_TSN_QBV_ENABLED;
- 
-@@ -385,12 +398,8 @@ static int igc_tsn_enable_offload(struct igc_adapter *adapter)
- 	if (igc_is_device_id_i226(hw))
- 		igc_tsn_set_retx_qbvfullthreshold(adapter);
- 
--	if (adapter->strict_priority_enable) {
--		/* Configure queue priorities according to the user provided
--		 * mapping.
--		 */
--		igc_tsn_tx_arb(adapter, adapter->queue_per_tc);
--	}
-+	if (adapter->strict_priority_enable)
-+		igc_tsn_tx_arb(adapter, true);
- 
- 	for (i = 0; i < adapter->num_tx_queues; i++) {
- 		struct igc_ring *ring = adapter->tx_ring[i];
+ void igc_fpe_init(struct igc_adapter *adapter);
++void igc_fpe_clear_preempt_queue(struct igc_adapter *adapter);
+ void igc_fpe_save_preempt_queue(struct igc_adapter *adapter,
+ 				const struct tc_mqprio_qopt_offload *mqprio);
+ u32 igc_fpe_get_supported_frag_size(u32 frag_size);
 -- 
 2.34.1
 
