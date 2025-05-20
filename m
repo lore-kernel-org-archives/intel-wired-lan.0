@@ -1,76 +1,76 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1D742C5479B
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 20 May 2025 11:08:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DB08EC3ABDD
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 20 May 2025 11:08:45 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id C2B9681854;
-	Tue, 20 May 2025 11:08:43 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 9C21960742;
+	Tue, 20 May 2025 11:08:45 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id AmBXvgeoFFDY; Tue, 20 May 2025 11:08:41 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 4e7HFCuLrOCA; Tue, 20 May 2025 11:08:45 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D283880D55
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 0B78260757
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1747739321;
-	bh=2GrP/sTDei6LCnm5GexKfEfaa2n1RW15avKd9177g3A=;
+	s=default; t=1747739325;
+	bh=GAkeeOsFmE6KkC6xmDRDBWU863KehwlNxQN1ff6fgKI=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=k4e64B1WqOhtLHMwQlj8XLzaH+R8z0GVQQNMHxlr/ICcqnZw7yB9y00wwwA7RyR8n
-	 1jvsHe2tPlCtoiGaoyf/vxpzJ1awM/qOq19yk/E2uJqNUk4/KgSys75k6J2JtAJK00
-	 xd+1Q+DtTz9o9H0YJQsw/Rcp/1tU8r/msbsAIuivmlmPsIIQH5SRCONBWl7XdS6rhP
-	 jZU+wIdXRylrpRg2+7v/yTVMc3lPVnkubau/LQEiJqHeONztWx5zOJgAHwsxhbJcro
-	 OjahOL9H31SBMt5ftHagtzEzHzLl+NjHWPOu6BabxGx/AWsKLKd8lMf4vSz9PHz/vQ
-	 s/Ih/0zy4hxPA==
+	b=mHmVliOTfxPskymW3A8AGLzcnCgS6PPkF5zREoU8CI+UxVjrQ8IEcoZkUhGYdKmVg
+	 jB5it6IeMsZYBMAUn2774LSmx++eAltLGul2A9GV3WSiQVWfMRJ7r1YJD9BltLbTJA
+	 riNSjGiB/X8mdURZR4glWf2Qo3QLUQDSmuBF85cP328j9HkF3QnKcTH7Nh2Iag0gdA
+	 B6f5iS2ayikKuSG2LTIh4qq+XHdU/WhthZzx4RWkiAPf2F0mxHLNp7ilbsple/96GH
+	 aaIKhdTN75RJZ5YwDYMY3s2Fk9ESxCW5zM8cOC+eqSxZCdFbb8YjMT5H6OEOzi/FcM
+	 KiisLytpbdmQA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id D283880D55;
-	Tue, 20 May 2025 11:08:41 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id 79458193
- for <intel-wired-lan@lists.osuosl.org>; Tue, 20 May 2025 11:08:40 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 0B78260757;
+	Tue, 20 May 2025 11:08:45 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 9F6D2193
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 20 May 2025 11:08:43 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 36094404F6
- for <intel-wired-lan@lists.osuosl.org>; Tue, 20 May 2025 11:08:37 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 90E33404ED
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 20 May 2025 11:08:43 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id M_ir78KpHWvN for <intel-wired-lan@lists.osuosl.org>;
- Tue, 20 May 2025 11:08:36 +0000 (UTC)
+ id tVtwN0isUT9d for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 20 May 2025 11:08:43 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.7;
  helo=mgamail.intel.com; envelope-from=karol.kolacinski@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 42273404CE
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 42273404CE
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org E4BCC404CE
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E4BCC404CE
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.7])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 42273404CE
- for <intel-wired-lan@lists.osuosl.org>; Tue, 20 May 2025 11:08:36 +0000 (UTC)
-X-CSE-ConnectionGUID: cMZw6D8iRSG2T54QoivRoA==
-X-CSE-MsgGUID: TI0bWQ11TzSqptzZITAmBQ==
-X-IronPort-AV: E=McAfee;i="6700,10204,11438"; a="75069260"
-X-IronPort-AV: E=Sophos;i="6.15,302,1739865600"; d="scan'208";a="75069260"
+ by smtp4.osuosl.org (Postfix) with ESMTPS id E4BCC404CE
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 20 May 2025 11:08:42 +0000 (UTC)
+X-CSE-ConnectionGUID: tFRLzUiESMO6yJeAlR9KrA==
+X-CSE-MsgGUID: otvnvFdJTp285UQd/MhAvQ==
+X-IronPort-AV: E=McAfee;i="6700,10204,11438"; a="75069281"
+X-IronPort-AV: E=Sophos;i="6.15,302,1739865600"; d="scan'208";a="75069281"
 Received: from orviesa007.jf.intel.com ([10.64.159.147])
  by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 20 May 2025 04:08:36 -0700
-X-CSE-ConnectionGUID: sfgvh+3lS2aOjYjwnUow5Q==
-X-CSE-MsgGUID: a/CZZmw2SkevRYXAul+iaw==
+ 20 May 2025 04:08:42 -0700
+X-CSE-ConnectionGUID: fyxSlZ7JTK+9mnLOFg6NWw==
+X-CSE-MsgGUID: DSQu1RuRQpS7aZJ+X/io+Q==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.15,302,1739865600"; d="scan'208";a="140172958"
+X-IronPort-AV: E=Sophos;i="6.15,302,1739865600"; d="scan'208";a="140173076"
 Received: from kkolacin-desk1.ger.corp.intel.com (HELO
  kkolacin-desk1.igk.intel.com) ([10.217.160.155])
- by orviesa007.jf.intel.com with ESMTP; 20 May 2025 04:08:34 -0700
+ by orviesa007.jf.intel.com with ESMTP; 20 May 2025 04:08:41 -0700
 From: Karol Kolacinski <karol.kolacinski@intel.com>
 To: intel-wired-lan@lists.osuosl.org
 Cc: netdev@vger.kernel.org, anthony.l.nguyen@intel.com,
  przemyslaw.kitszel@intel.com, richardcochran@gmail.com,
  Karol Kolacinski <karol.kolacinski@intel.com>,
  Milena Olech <milena.olech@intel.com>
-Date: Tue, 20 May 2025 13:06:26 +0200
-Message-ID: <20250520110823.1937981-7-karol.kolacinski@intel.com>
+Date: Tue, 20 May 2025 13:06:29 +0200
+Message-ID: <20250520110823.1937981-10-karol.kolacinski@intel.com>
 X-Mailer: git-send-email 2.49.0
 In-Reply-To: <20250520110823.1937981-6-karol.kolacinski@intel.com>
 References: <20250520110823.1937981-6-karol.kolacinski@intel.com>
@@ -78,25 +78,25 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1747739316; x=1779275316;
+ t=1747739323; x=1779275323;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=SrsLS2LUnwUArdPMor6FhYvQ5NlT6KixTpedgiAYH+A=;
- b=LUYN8Mxw1GTnqfvl+nRhtakJuMSDuplhH7iiYmQ8G0rVBmmASWpHCzDw
- WE6lGOZNtSn0dmckyWC34VKX8bGraLkb5Pflt8+Yd8NI8oXOTQKZTLhDb
- VYoa/p0Y6gpiOTY1nZuxxSVwRvmUL70B8vKDZNJpY0Z7U6z+OJkR+0Hfq
- 33ui6WK6ojSF8qaE1Nj2ElxJ9OVrbJfebxBnNWEvxiKvTApdftM2t6YKG
- IqQBve4GSRwcpcK0NBmhb6QbW9aocctllyGVySsdtvY/gYCdAhDf6UIOQ
- 7P4gX/5iiGwHRANGM2+vKxZDZMigMNY5mBd8S9iBN0zq9kNTkx4jcJg/g
- w==;
+ bh=LpB/bL6N/QlssTjsWxnMEK+/tE3TscoCSAS/CeOtgWg=;
+ b=PbbEYLQXtzBkxv1SaVsXEgDNQqXPwI3GyebXV8hzaTdcqXURQUOsJvHP
+ lz65nZ2sBR31dho8sev7ZxsaHS4zH2ccrSIs1r7cOOrY9QdYxMF8U7M7n
+ 8USnanz/nxXU+BfqA0tkDwitB85EF/f8ldXW6Lx/vXEl8911t870jz9n8
+ 0wfVf9+SaZrJebemAui3tO9fphJcsZ1ZKeRv2kR0ZZi0Mlhq38MGPOAnG
+ AJ6twuUKxGGn51GVhB9CrVJ3QzKPByxrpLbof4vo8mZUVFEhSoMIV52cG
+ gWYje1FNKlZT3sE6JxWps4k014pfRPUHkjgbytnP86fNi3LmdLAM0yy7h
+ A==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=LUYN8Mxw
-Subject: [Intel-wired-lan] [PATCH iwl-next 1/4] ice: skip completion for
- sideband queue writes
+ header.a=rsa-sha256 header.s=Intel header.b=PbbEYLQX
+Subject: [Intel-wired-lan] [PATCH iwl-next 4/4] ice: read Tx timestamps in
+ the IRQ top half
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -112,278 +112,84 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Sideband queue (SBQ) is a HW queue with very short completion time. All
-SBQ writes were posted by default, which means that the driver did not
-have to wait for completion from the neighbor device, because there was
-none. This introduced unnecessary delays, where only those delays were
-"ensuring" that the command is "completed" and this was a potential race
-condition.
+With sideband queue using delays and spin locks, it is possible to
+read timestamps from the PHY in the top half of the interrupt.
 
-Add the possibility to perform non-posted writes where it's necessary to
-wait for completion, instead of relying on fake completion from the FW,
-where only the delays are guarding the writes.
+This removes bottom half scheduling delays and improves timestamping
+read times significantly, from >2 ms to <50 us.
 
-Flush the SBQ by reading address 0 from the PHY 0 before issuing SYNC
-command to ensure that writes to all PHYs were completed and skip SBQ
-message completion if it's posted.
-
-Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Reviewed-by: Milena Olech <milena.olech@intel.com>
 Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_common.c   | 13 ++--
- drivers/net/ethernet/intel/ice/ice_controlq.c |  4 ++
- drivers/net/ethernet/intel/ice/ice_controlq.h |  1 +
- drivers/net/ethernet/intel/ice/ice_ptp_hw.c   | 62 +++++++++++--------
- drivers/net/ethernet/intel/ice/ice_sbq_cmd.h  |  5 +-
- 5 files changed, 52 insertions(+), 33 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_ptp.c | 46 ++++++++++++------------
+ 1 file changed, 22 insertions(+), 24 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index 11a954e8dc62..53b9b5b54187 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -1523,6 +1523,7 @@ int ice_sbq_rw_reg(struct ice_hw *hw, struct ice_sbq_msg_input *in, u16 flags)
- {
- 	struct ice_sbq_cmd_desc desc = {0};
- 	struct ice_sbq_msg_req msg = {0};
-+	struct ice_sq_cd cd = {};
- 	u16 msg_len;
- 	int status;
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
+index b8e55931fc52..e1068489fde5 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp.c
++++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
+@@ -2694,39 +2694,37 @@ irqreturn_t ice_ptp_ts_irq(struct ice_pf *pf)
  
-@@ -1535,7 +1536,7 @@ int ice_sbq_rw_reg(struct ice_hw *hw, struct ice_sbq_msg_input *in, u16 flags)
- 	msg.msg_addr_low = cpu_to_le16(in->msg_addr_low);
- 	msg.msg_addr_high = cpu_to_le32(in->msg_addr_high);
- 
--	if (in->opcode)
-+	if (in->opcode == ice_sbq_msg_wr_p || in->opcode == ice_sbq_msg_wr_np)
- 		msg.data = cpu_to_le32(in->data);
- 	else
- 		/* data read comes back in completion, so shorten the struct by
-@@ -1543,10 +1544,12 @@ int ice_sbq_rw_reg(struct ice_hw *hw, struct ice_sbq_msg_input *in, u16 flags)
+ 	switch (hw->mac_type) {
+ 	case ICE_MAC_E810:
++	{
++		struct ice_ptp_tx *tx = &pf->ptp.port.tx;
++		u8 idx;
++
++		if (!ice_pf_state_is_nominal(pf))
++			return IRQ_HANDLED;
++
+ 		/* E810 capable of low latency timestamping with interrupt can
+ 		 * request a single timestamp in the top half and wait for
+ 		 * a second LL TS interrupt from the FW when it's ready.
  		 */
- 		msg_len -= sizeof(msg.data);
- 
-+	cd.postpone = in->opcode == ice_sbq_msg_wr_p;
-+
- 	desc.flags = cpu_to_le16(flags);
- 	desc.opcode = cpu_to_le16(ice_sbq_opc_neigh_dev_req);
- 	desc.param0.cmd_len = cpu_to_le16(msg_len);
--	status = ice_sbq_send_cmd(hw, &desc, &msg, msg_len, NULL);
-+	status = ice_sbq_send_cmd(hw, &desc, &msg, msg_len, &cd);
- 	if (!status && !in->opcode)
- 		in->data = le32_to_cpu
- 			(((struct ice_sbq_msg_cmpl *)&msg)->data);
-@@ -6260,7 +6263,7 @@ int ice_read_cgu_reg(struct ice_hw *hw, u32 addr, u32 *val)
- 	struct ice_sbq_msg_input cgu_msg = {
- 		.opcode = ice_sbq_msg_rd,
- 		.dest_dev = ice_sbq_dev_cgu,
--		.msg_addr_low = addr
-+		.msg_addr_low = addr,
- 	};
- 	int err;
- 
-@@ -6290,10 +6293,10 @@ int ice_read_cgu_reg(struct ice_hw *hw, u32 addr, u32 *val)
- int ice_write_cgu_reg(struct ice_hw *hw, u32 addr, u32 val)
- {
- 	struct ice_sbq_msg_input cgu_msg = {
--		.opcode = ice_sbq_msg_wr,
-+		.opcode = ice_sbq_msg_wr_np,
- 		.dest_dev = ice_sbq_dev_cgu,
- 		.msg_addr_low = addr,
--		.data = val
-+		.data = val,
- 	};
- 	int err;
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_controlq.c b/drivers/net/ethernet/intel/ice/ice_controlq.c
-index dcb837cadd18..5fb3a8441beb 100644
---- a/drivers/net/ethernet/intel/ice/ice_controlq.c
-+++ b/drivers/net/ethernet/intel/ice/ice_controlq.c
-@@ -1086,6 +1086,10 @@ ice_sq_send_cmd(struct ice_hw *hw, struct ice_ctl_q_info *cq,
- 	wr32(hw, cq->sq.tail, cq->sq.next_to_use);
- 	ice_flush(hw);
- 
-+	/* If the message is posted, don't wait for completion. */
-+	if (cd && cd->postpone)
-+		goto sq_send_command_error;
-+
- 	/* Wait for the command to complete. If it finishes within the
- 	 * timeout, copy the descriptor back to temp.
- 	 */
-diff --git a/drivers/net/ethernet/intel/ice/ice_controlq.h b/drivers/net/ethernet/intel/ice/ice_controlq.h
-index 788040dd662e..7c98d3a0314e 100644
---- a/drivers/net/ethernet/intel/ice/ice_controlq.h
-+++ b/drivers/net/ethernet/intel/ice/ice_controlq.h
-@@ -77,6 +77,7 @@ struct ice_ctl_q_ring {
- /* sq transaction details */
- struct ice_sq_cd {
- 	struct libie_aq_desc *wb_desc;
-+	u8 postpone : 1;
- };
- 
- /* rq event information */
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-index 523f95271f35..9a4ecf1249ee 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-@@ -352,6 +352,13 @@ void ice_ptp_src_cmd(struct ice_hw *hw, enum ice_ptp_tmr_cmd cmd)
- static void ice_ptp_exec_tmr_cmd(struct ice_hw *hw)
- {
- 	struct ice_pf *pf = container_of(hw, struct ice_pf, hw);
-+	struct ice_sbq_msg_input msg = {
-+		.dest_dev = ice_sbq_dev_phy_0,
-+		.opcode = ice_sbq_msg_rd,
-+	};
-+
-+	/* Flush SBQ by reading address 0 on PHY 0 */
-+	ice_sbq_rw_reg(hw, &msg, LIBIE_AQ_FLAG_RD);
- 
- 	if (!ice_is_primary(hw))
- 		hw = ice_get_primary_hw(pf);
-@@ -417,10 +424,10 @@ static int ice_write_phy_eth56g(struct ice_hw *hw, u8 port, u32 addr, u32 val)
- {
- 	struct ice_sbq_msg_input msg = {
- 		.dest_dev = ice_ptp_get_dest_dev_e825(hw, port),
--		.opcode = ice_sbq_msg_wr,
-+		.opcode = ice_sbq_msg_wr_p,
- 		.msg_addr_low = lower_16_bits(addr),
- 		.msg_addr_high = upper_16_bits(addr),
--		.data = val
-+		.data = val,
- 	};
- 	int err;
- 
-@@ -2342,11 +2349,12 @@ static bool ice_is_40b_phy_reg_e82x(u16 low_addr, u16 *high_addr)
- static int
- ice_read_phy_reg_e82x(struct ice_hw *hw, u8 port, u16 offset, u32 *val)
- {
--	struct ice_sbq_msg_input msg = {0};
-+	struct ice_sbq_msg_input msg = {
-+		.opcode = ice_sbq_msg_rd,
-+	};
- 	int err;
- 
- 	ice_fill_phy_msg_e82x(hw, &msg, port, offset);
--	msg.opcode = ice_sbq_msg_rd;
- 
- 	err = ice_sbq_rw_reg(hw, &msg, LIBIE_AQ_FLAG_RD);
- 	if (err) {
-@@ -2419,12 +2427,13 @@ ice_read_64b_phy_reg_e82x(struct ice_hw *hw, u8 port, u16 low_addr, u64 *val)
- static int
- ice_write_phy_reg_e82x(struct ice_hw *hw, u8 port, u16 offset, u32 val)
- {
--	struct ice_sbq_msg_input msg = {0};
-+	struct ice_sbq_msg_input msg = {
-+		.opcode = ice_sbq_msg_wr_p,
-+		.data = val,
-+	};
- 	int err;
- 
- 	ice_fill_phy_msg_e82x(hw, &msg, port, offset);
--	msg.opcode = ice_sbq_msg_wr;
--	msg.data = val;
- 
- 	err = ice_sbq_rw_reg(hw, &msg, LIBIE_AQ_FLAG_RD);
- 	if (err) {
-@@ -2578,15 +2587,15 @@ static int ice_fill_quad_msg_e82x(struct ice_hw *hw,
- int
- ice_read_quad_reg_e82x(struct ice_hw *hw, u8 quad, u16 offset, u32 *val)
- {
--	struct ice_sbq_msg_input msg = {0};
-+	struct ice_sbq_msg_input msg = {
-+		.opcode = ice_sbq_msg_rd,
-+	};
- 	int err;
- 
- 	err = ice_fill_quad_msg_e82x(hw, &msg, quad, offset);
- 	if (err)
- 		return err;
- 
--	msg.opcode = ice_sbq_msg_rd;
+-		if (hw->dev_caps.ts_dev_info.ts_ll_int_read) {
+-			struct ice_ptp_tx *tx = &pf->ptp.port.tx;
+-			u8 idx;
 -
- 	err = ice_sbq_rw_reg(hw, &msg, LIBIE_AQ_FLAG_RD);
- 	if (err) {
- 		ice_debug(hw, ICE_DBG_PTP, "Failed to send message to PHY, err %d\n",
-@@ -2612,16 +2621,16 @@ ice_read_quad_reg_e82x(struct ice_hw *hw, u8 quad, u16 offset, u32 *val)
- int
- ice_write_quad_reg_e82x(struct ice_hw *hw, u8 quad, u16 offset, u32 val)
- {
--	struct ice_sbq_msg_input msg = {0};
-+	struct ice_sbq_msg_input msg = {
-+		.opcode = ice_sbq_msg_wr_p,
-+		.data = val,
-+	};
- 	int err;
+-			if (!ice_pf_state_is_nominal(pf))
++		if (!hw->dev_caps.ts_dev_info.ts_ll_int_read) {
++			if (!ice_ptp_pf_handles_tx_interrupt(pf))
+ 				return IRQ_HANDLED;
  
- 	err = ice_fill_quad_msg_e82x(hw, &msg, quad, offset);
- 	if (err)
- 		return err;
- 
--	msg.opcode = ice_sbq_msg_wr;
--	msg.data = val;
+-			spin_lock(&tx->lock);
+-			idx = find_next_bit_wrap(tx->in_use, tx->len,
+-						 tx->last_ll_ts_idx_read + 1);
+-			if (idx != tx->len)
+-				ice_ptp_req_tx_single_tstamp(tx, idx);
+-			spin_unlock(&tx->lock);
 -
- 	err = ice_sbq_rw_reg(hw, &msg, LIBIE_AQ_FLAG_RD);
- 	if (err) {
- 		ice_debug(hw, ICE_DBG_PTP, "Failed to send message to PHY, err %d\n",
-@@ -4259,13 +4268,14 @@ static void ice_ptp_init_phy_e82x(struct ice_ptp_hw *ptp)
-  */
- static int ice_read_phy_reg_e810(struct ice_hw *hw, u32 addr, u32 *val)
- {
--	struct ice_sbq_msg_input msg = {0};
-+	struct ice_sbq_msg_input msg = {
-+		.dest_dev = ice_sbq_dev_phy_0,
-+		.opcode = ice_sbq_msg_rd,
-+		.msg_addr_low = lower_16_bits(addr),
-+		.msg_addr_high = upper_16_bits(addr),
-+	};
- 	int err;
+-			return IRQ_HANDLED;
++			set_bit(ICE_MISC_THREAD_TX_TSTAMP, pf->misc_thread);
++			return IRQ_WAKE_THREAD;
+ 		}
+-		fallthrough; /* non-LL_TS E810 */
+-	case ICE_MAC_GENERIC:
+-	case ICE_MAC_GENERIC_3K_E825:
+-		/* All other devices process timestamps in the bottom half due
+-		 * to sleeping or polling.
+-		 */
+-		if (!ice_ptp_pf_handles_tx_interrupt(pf))
+-			return IRQ_HANDLED;
  
--	msg.msg_addr_low = lower_16_bits(addr);
--	msg.msg_addr_high = upper_16_bits(addr);
--	msg.opcode = ice_sbq_msg_rd;
--	msg.dest_dev = ice_sbq_dev_phy_0;
- 
- 	err = ice_sbq_rw_reg(hw, &msg, LIBIE_AQ_FLAG_RD);
- 	if (err) {
-@@ -4289,15 +4299,15 @@ static int ice_read_phy_reg_e810(struct ice_hw *hw, u32 addr, u32 *val)
-  */
- static int ice_write_phy_reg_e810(struct ice_hw *hw, u32 addr, u32 val)
- {
--	struct ice_sbq_msg_input msg = {0};
-+	struct ice_sbq_msg_input msg = {
-+		.dest_dev = ice_sbq_dev_phy_0,
-+		.opcode = ice_sbq_msg_wr_p,
-+		.msg_addr_low = lower_16_bits(addr),
-+		.msg_addr_high = upper_16_bits(addr),
-+		.data = val,
-+	};
- 	int err;
- 
--	msg.msg_addr_low = lower_16_bits(addr);
--	msg.msg_addr_high = upper_16_bits(addr);
--	msg.opcode = ice_sbq_msg_wr;
--	msg.dest_dev = ice_sbq_dev_phy_0;
--	msg.data = val;
--
- 	err = ice_sbq_rw_reg(hw, &msg, LIBIE_AQ_FLAG_RD);
- 	if (err) {
- 		ice_debug(hw, ICE_DBG_PTP, "Failed to send message to PHY, err %d\n",
-diff --git a/drivers/net/ethernet/intel/ice/ice_sbq_cmd.h b/drivers/net/ethernet/intel/ice/ice_sbq_cmd.h
-index 183dd5457d6a..7960f888a655 100644
---- a/drivers/net/ethernet/intel/ice/ice_sbq_cmd.h
-+++ b/drivers/net/ethernet/intel/ice/ice_sbq_cmd.h
-@@ -53,8 +53,9 @@ enum ice_sbq_dev_id {
- };
- 
- enum ice_sbq_msg_opcode {
--	ice_sbq_msg_rd	= 0x00,
--	ice_sbq_msg_wr	= 0x01
-+	ice_sbq_msg_rd		= 0x00,
-+	ice_sbq_msg_wr_p	= 0x01,
-+	ice_sbq_msg_wr_np	= 0x02,
- };
- 
- #define ICE_SBQ_MSG_FLAGS	0x40
+-		set_bit(ICE_MISC_THREAD_TX_TSTAMP, pf->misc_thread);
+-		return IRQ_WAKE_THREAD;
++		spin_lock(&tx->lock);
++		idx = find_next_bit_wrap(tx->in_use, tx->len,
++					 tx->last_ll_ts_idx_read + 1);
++		if (idx != tx->len)
++			ice_ptp_req_tx_single_tstamp(tx, idx);
++		spin_unlock(&tx->lock);
++
++		return IRQ_HANDLED;
++	}
+ 	case ICE_MAC_E830:
+-		/* E830 can read timestamps in the top half using rd32() */
++	case ICE_MAC_GENERIC:
++	case ICE_MAC_GENERIC_3K_E825:
+ 		if (ice_ptp_process_ts(pf) == ICE_TX_TSTAMP_WORK_PENDING) {
+ 			/* Process outstanding Tx timestamps. If there
+ 			 * is more work, re-arm the interrupt to trigger again.
 -- 
 2.49.0
 
