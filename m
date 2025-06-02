@@ -4,101 +4,146 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A23C2C5AD49
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  2 Jun 2025 15:14:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8D7DFC5B555
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  2 Jun 2025 18:51:18 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 486DB40728;
-	Mon,  2 Jun 2025 15:14:52 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 3547E40779;
+	Mon,  2 Jun 2025 18:51:18 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Gp-XOWiB0C4D; Mon,  2 Jun 2025 15:14:51 +0000 (UTC)
+ id 0_9u_j66_KCC; Mon,  2 Jun 2025 18:51:17 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3159940664
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org A2272407A4
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1748877291;
-	bh=wgiR2SvdGPT0FctPuhZxP9Awtu48EU2gXh768x8Ho44=;
-	h=Date:To:From:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=Xx9ELf/ZpcR/M+O/b/jPnDCMEgz6m3lGfBl0SJBHUP8L6ESjQHY2/YVC6TF69dJdp
-	 ZqRvsmPl9RBTE3bQMdB9cZ4Dh1oneRwGyrWXurbigWc+PeMkkw6TKwiASgG/QeN98u
-	 jYVvVClCCzK6+lLk7uhhGx1gcWj0XWBauYe2M+kTr/DH9z9ErQgbWgLIMglQvlvn6B
-	 MYWjO5XiqrSIC0Qg4zRCp6QsDSYIuyYVz36ZQjbzj5i5xL/dUBDscyItsGfMSdYCQr
-	 F/7XJmiVAHJOoqlxFySyj0PaqUUl5I9keNAG/LJNBQglt4L45BTrV1ZwBuPEGh6fVn
-	 ztJSTu+OUPviA==
+	s=default; t=1748890277;
+	bh=B9nR3mXG/IvR4Y4wwhnqlP1ObVOVBHTQ+M/bA4GnImM=;
+	h=Date:To:Cc:References:From:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=kC++01QFcZKLmxoRuwg+IO+ylC2dapfPsOxu9KicoP8O7xxuORyoLt9TYZmuMB0GA
+	 KRxLue6S3VHqkBineXVSLOnKK4AkmSD2PcSZqzzsQSeocM6kmaZF7mhqIIaJy2N7hM
+	 /db68qtX+d4pSTQbaHSHakH6Ama+07ohfE29XHT6w6+VDeGAi1G/gPt8AtGFLGMZWk
+	 vux2NFFcR9TD/VHVmSeRiJ7E03zpeoC82u92QzdMkFWX4YyJvPG3ieEmIvEmr5obkI
+	 7Oaqd+Q+BHT/f+mVtHhAoqTsHays7NDKl2N8Q2+sUe+vj+9aC+0Ps5Ub7xm6BaI1xc
+	 R1PpLcFXINBKw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 3159940664;
-	Mon,  2 Jun 2025 15:14:51 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id 33CE7234
- for <intel-wired-lan@lists.osuosl.org>; Fri, 30 May 2025 21:07:35 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id A2272407A4;
+	Mon,  2 Jun 2025 18:51:17 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 8C329DA
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  2 Jun 2025 18:51:16 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 1A45441992
- for <intel-wired-lan@lists.osuosl.org>; Fri, 30 May 2025 21:07:35 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 6F43040DC7
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  2 Jun 2025 18:51:16 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id TX5O3IK3ql5p for <intel-wired-lan@lists.osuosl.org>;
- Fri, 30 May 2025 21:07:34 +0000 (UTC)
-X-Greylist: delayed 552 seconds by postgrey-1.37 at util1.osuosl.org;
- Fri, 30 May 2025 21:07:33 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 1E73E4198A
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1E73E4198A
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=69.59.18.99;
- helo=mail.as397444.net; envelope-from=aidsbfgwh@mattcorallo.com;
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 8oZmQ_gFkCqd for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  2 Jun 2025 18:51:15 +0000 (UTC)
+X-Greylist: delayed 419 seconds by postgrey-1.37 at util1.osuosl.org;
+ Mon, 02 Jun 2025 18:51:14 UTC
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 02D4840DBF
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 02D4840DBF
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=103.168.172.145;
+ helo=fout-a2-smtp.messagingengine.com; envelope-from=vlad@ursu.me;
  receiver=<UNKNOWN> 
-Received: from mail.as397444.net (mail.as397444.net [69.59.18.99])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 1E73E4198A
- for <intel-wired-lan@lists.osuosl.org>; Fri, 30 May 2025 21:07:33 +0000 (UTC)
-X-DKIM-Note: Keys used to sign are likely public at
-X-DKIM-Note: https://as397444.net/dkim/mattcorallo.com and
-X-DKIM-Note: https://as397444.net/dkim/clients.mail.as397444.net
-X-DKIM-Note: For more info, see https://as397444.net/dkim/
-Received: by mail.as397444.net with esmtpsa (TLS1.3) (Exim)
- (envelope-from <aidsbfgwh@mattcorallo.com>)
- id 1uL6nz-00Ght1-1x for intel-wired-lan@lists.osuosl.org;
- Fri, 30 May 2025 20:58:19 +0000
-Message-ID: <aab0b2cd-d880-4072-b620-3e9fc205df10@mattcorallo.com>
-Date: Fri, 30 May 2025 16:58:19 -0400
+Received: from fout-a2-smtp.messagingengine.com
+ (fout-a2-smtp.messagingengine.com [103.168.172.145])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 02D4840DBF
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  2 Jun 2025 18:51:14 +0000 (UTC)
+Received: from phl-compute-05.internal (phl-compute-05.phl.internal
+ [10.202.2.45])
+ by mailfout.phl.internal (Postfix) with ESMTP id 1686F138034F;
+ Mon,  2 Jun 2025 14:44:15 -0400 (EDT)
+Received: from phl-mailfrontend-02 ([10.202.2.163])
+ by phl-compute-05.internal (MEProxy); Mon, 02 Jun 2025 14:44:15 -0400
+X-ME-Sender: <xms:_vA9aNtR3QHZavZvIucruwHaFv9jWfkH4LjapkNrhDSn7qsGsLq7JA>
+ <xme:_vA9aGe4oEqtsqA_KTNpDv8pb1K10sXgM4c5WkK-nq4c6p13yrRoSiC5KJioa5Bwa
+ oS72iOfm9SFVRn7r0g>
+X-ME-Received: <xmr:_vA9aAxmb3RSi31JfWP_kJ4j2gSTlc69iPjD-sYcVFjD5g4lCc7t3iO5_MrRHFMhwNp_>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeeffedrtddtgdefkeegfeculddtuddrgeefvddrtd
+ dtmdcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfhrghsthforghilhdpggft
+ fghnshhusghstghrihgsvgdpuffrtefokffrpgfnqfghnecuuegrihhlohhuthemuceftd
+ dtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefkffggfgfuvfev
+ fhfhjggtgfesthekredttddvjeenucfhrhhomhepgghlrgguucgftffufgcuoehvlhgrug
+ esuhhrshhurdhmvgeqnecuggftrfgrthhtvghrnhepteehfedugeelleffgfduffevffdv
+ hfevteevleefteetjedtiedvudevheduheffnecuvehluhhsthgvrhfuihiivgeptdenuc
+ frrghrrghmpehmrghilhhfrhhomhepvhhlrggusehurhhsuhdrmhgvpdhnsggprhgtphht
+ thhopeduvddpmhhouggvpehsmhhtphhouhhtpdhrtghpthhtohepvhhithgrlhihrdhlih
+ hfshhhihhtshesihhnthgvlhdrtghomhdprhgtphhtthhopehjrggtvghksehjrggtvghk
+ khdrihhnfhhopdhrtghpthhtoheprghnthhhohhnhidrlhdrnhhguhihvghnsehinhhtvg
+ hlrdgtohhmpdhrtghpthhtohepphhriigvmhihshhlrgifrdhkihhtshiivghlsehinhht
+ vghlrdgtohhmpdhrtghpthhtoheprghnughrvgifodhnvghtuggvvheslhhunhhnrdgthh
+ dprhgtphhtthhopegurghvvghmsegurghvvghmlhhofhhtrdhnvghtpdhrtghpthhtohep
+ vgguuhhmrgiivghtsehgohhoghhlvgdrtghomhdprhgtphhtthhopehkuhgsrgeskhgvrh
+ hnvghlrdhorhhgpdhrtghpthhtohepphgrsggvnhhisehrvgguhhgrthdrtghomh
+X-ME-Proxy: <xmx:_vA9aEOnEGnOZRJJzxmQZ4CXXOutUrC9-wxaFsGFpVOO9ML--ZAxoA>
+ <xmx:_vA9aN8tZTqPUTpmSrJ-j7EI3RbgFf9ljkMgV4sfKimlgwN2TFfGbg>
+ <xmx:_vA9aEV-xfCeg0DM8jsAJiwMk8WMghS25XUdhHOwZtIXMAQDsqmXfQ>
+ <xmx:_vA9aOdSwqMkVd_CSnVgpBFlLiFgav3WmNCYIO7fN8VvuehsDo898Q>
+ <xmx:__A9aG99ww3Jd7rvJLvGpm586yAr-KGzcUr4rsXFewlPDK3FTamLsmMp>
+Feedback-ID: i9ff147ff:Fastmail
+Received: by mail.messagingengine.com (Postfix) with ESMTPA; Mon,
+ 2 Jun 2025 14:44:11 -0400 (EDT)
+Message-ID: <20f39efe-ba5b-44b2-bfe6-b4ca17d6b0c1@ursu.me>
+Date: Mon, 2 Jun 2025 21:44:06 +0300
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+To: "Lifshits, Vitaly" <vitaly.lifshits@intel.com>,
+ Jacek Kowalski <jacek@jacekk.info>, Tony Nguyen
+ <anthony.l.nguyen@intel.com>, Przemek Kitszel
+ <przemyslaw.kitszel@intel.com>, Andrew Lunn <andrew+netdev@lunn.ch>,
+ "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>
+Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+References: <5555d3bd-44f6-45c1-9413-c29fe28e79eb@jacekk.info>
+ <23bb365c-9d96-487f-84cc-2ca1235a97bb@ursu.me>
+ <03216908-6675-4487-a7e1-4a42d169c401@intel.com>
+ <47b2fe98-da85-4cef-9668-51c36ac66ce5@ursu.me>
+ <8adbc5a0-782d-4a07-93d7-c64ae0e3d805@intel.com>
 Content-Language: en-US
-To: "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>
-From: Matt Corallo <aidsbfgwh@mattcorallo.com>
+From: Vlad URSU <vlad@ursu.me>
+In-Reply-To: <8adbc5a0-782d-4a07-93d7-c64ae0e3d805@intel.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Mailman-Approved-At: Mon, 02 Jun 2025 15:14:49 +0000
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt;
- c=relaxed/relaxed; 
- d=mattcorallo.com; s=1748637663; h=Subject:From:To:From:Subject:To:Cc:Cc:
- Reply-To:In-Reply-To:References;
- bh=wgiR2SvdGPT0FctPuhZxP9Awtu48EU2gXh768x8Ho44=; b=DTHZ46p1kQGgmu9bMlITRMQAv7
- kTzlFk4JytAKS3W5sKYTUFmCUSEFDQXiXDnM0BVaFJodXB4njMeC6xId5eg/IW604Sc0KboUnJIJ/
- l/k58nigvjt6RWhdAqroa1l0F88Inr1+Z1ZJIKjkD2NBBV2qxjVS3cEYcb/0bVu5d55YwwLN/LCvO
- 2pny873nsV1KHSD13ItcSVzWFVedY8X4PqqKr3Jn5Psbo76dz4BlW4avpnj83E029syCYHMrG0T6B
- wbHhNijfuLafDb9Ykc2nCVHAIaNx6lcAhaoVd4LU184txQU4PFJKyoEVfFtLGc/jYLEHuKtghNsvA
- wfzDIkUQ==;
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt;
- c=relaxed/relaxed; 
- d=clients.mail.as397444.net; s=1748637665; h=Subject:From:To:From:Subject:To:
- Cc:Cc:Reply-To:In-Reply-To:References;
- bh=wgiR2SvdGPT0FctPuhZxP9Awtu48EU2gXh768x8Ho44=; b=kpzFH4Tvgpd0hq6MtizsHdln1T
- 1TF2Ho/CboJ0/OG5Ko0eScrxnv/GMMNUE/2SnYVG4YRQuvnUORhTM8tZm9o0wtb2AKuX1258xQ8/E
- S1gJLcJiecx64Ak0Oer97UsVLIUIcRLLh33x/QtYQwVzNZdeL+S1dU29Sp+wItp2O5AFuvBnoeAOg
- kWxQl+CxEiYXfV9RdYSdDtrqpX7MHszgq2GoWk4sKbRqOCE2WuX1FSedXySqquPatyZZXgW9yggCW
- 0nsxOIeEkkF9kI308ejq0vNp2yd/eWgLICaNAqMPhKJucjpAl/kWxhYqMQ7JnaByxlbVf1iMqnmFj
- o9pY5zTQ==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=mattcorallo.com
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key, unprotected) header.d=mattcorallo.com
- header.i=@mattcorallo.com header.a=rsa-sha256 header.s=1748637663
- header.b=DTHZ46p1; 
+Content-Transfer-Encoding: 8bit
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=ursu.me; h=cc:cc
+ :content-transfer-encoding:content-type:content-type:date:date
+ :from:from:in-reply-to:in-reply-to:message-id:mime-version
+ :references:reply-to:subject:subject:to:to; s=fm3; t=1748889855;
+ x=1748976255; bh=B9nR3mXG/IvR4Y4wwhnqlP1ObVOVBHTQ+M/bA4GnImM=; b=
+ yW7n0enEapi9VZE/EMHVzlcUeori2T2yv6ybZHvbjD5Xmhyr3O5Qk7SInVO5lSVH
+ ZxfHuSKdU+BogV6S2GBDVhbe2bldE+jceonm8eU6p3NStJqAQ1MAtMdszJRq7E/T
+ JCq9kmcRxPUVVSm8hJCRvBrEDfX+fg3XYg2rbgCWkbHqyD05jVlgRDqb4j0uSSPw
+ 6GQEgqHev4ricoTBlMVuzN9tP9QZvXlOsfbvOu8p/bEXKAO9w/qxMpsPPHwIN+j4
+ 3iZs6uYJb1mI4cUuFEjoHpqJQJrpMgBWoieyoX/nLXbrEdnOZOex2J3W6r2o1lS1
+ Ac1OvyvctnQdCw0BZuzlfw==
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+ messagingengine.com; h=cc:cc:content-transfer-encoding
+ :content-type:content-type:date:date:feedback-id:feedback-id
+ :from:from:in-reply-to:in-reply-to:message-id:mime-version
+ :references:reply-to:subject:subject:to:to:x-me-proxy
+ :x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=1748889855; x=
+ 1748976255; bh=B9nR3mXG/IvR4Y4wwhnqlP1ObVOVBHTQ+M/bA4GnImM=; b=L
+ 3YVRy6/dzihm5dVxHEIS1yY6MiPb5r5l0CFKdAnA+Ye58i1TNeBtYVm0thHiFoOF
+ lmMX9m4DlLwUW7m+dHxZdE7YmZlC5O5INO2gfYkr/GvD34LBb8Oic6bjsUeyW9WA
+ SW5h0ZN8KRAs14MDr1MeRXCCnc1uNIOYecore6XLoTB4MkIXydsCXz7cGzrjCw2Y
+ AOhBVuWDXPktnYJj6C/zGrswo48APjwWZJ9j3hB3K6w/ftcm3HZe4D3FngDycpG6
+ +cZLkglMNqxhBNMt94KLCNNOrj2yy7b3ltaMdYrT69IoD9T8oykFNRkLOz47pF5g
+ 56qXt4FchzeNpSvl8d3YQ==
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dmarc=none (p=none dis=none)
+ header.from=ursu.me
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key, unprotected) header.d=ursu.me header.i=@ursu.me
+ header.a=rsa-sha256 header.s=fm3 header.b=yW7n0enE; 
  dkim=pass (2048-bit key,
- unprotected) header.d=clients.mail.as397444.net
- header.i=@clients.mail.as397444.net header.a=rsa-sha256 header.s=1748637665
- header.b=kpzFH4Tv
-Subject: [Intel-wired-lan] [ixgbe] No link after 6.8 -> 6.12 upgrade
+ unprotected) header.d=messagingengine.com header.i=@messagingengine.com
+ header.a=rsa-sha256 header.s=fm1 header.b=L3YVRy6/
+Subject: Re: [Intel-wired-lan] [PATCH] e1000e: disregard NVM checksum on tgp
+ when valid checksum mask is not set
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -114,75 +159,36 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-After upgrading from 6.1 (Debian stable) to 6.12.22 (Debian trixie), I no longer get any link on a 
-dual-82599ES SFP+ link (without changing the SFP+ cables or the switch firmware on the other end). I 
-also have nearly-identical hardware that has had no problem with 6.8 (Proxmox/Ubuntu kernel line). 
-There aren't any errors([1]), but I get NO-CARRIER [2], but the SFP+ is detected [3]. I don't seem 
-to be the only one seeing similar issues with newer kernels in ixgbe, see [4] and [5].
+On 01.06.2025 13:19, Lifshits, Vitaly wrote:
+> 
+> 
+> On 5/15/2025 10:07 PM, Vlad URSU wrote:
+>> On 15.05.2025 07:39, Lifshits, Vitaly wrote:
+>>> Since the checksum word is 0xFFFF which is peculiar, can you dump the 
+>>> whole NVM and share with us?
+>>
+>> Sure, here's a dump of my NVM
+>>
+>> Offset        Values
+>> ------        ------
+>> 0x0000:        d0 8e 79 07 78 c8 01 08 ff ff 44 00 01 00 6c 00
+>> 0x0010:        ff ff ff ff c9 10 54 0a 28 10 f9 15 00 00 00 00
+>> 0x0020:        00 00 00 00 00 80 05 a7 30 30 00 16 00 00 00 0c
+>> 0x0030:        f3 08 00 0a 43 08 13 01 f9 15 ad ba f9 15 fa 15
+>> 0x0040:        ad ba f9 15 ad ba f9 15 00 00 80 80 00 4e 86 08
+> 
+> You're right — I see that the SW compatibility bit is set and the 
+> checksum appears to be incorrect.
+> 
+> Since the NVM is part of the system firmware and typically managed by 
+> the system manufacturer, I recommend checking whether a firmware update 
+> is available for your system as a first step.
+> 
+> If no update is available, perhaps we can consider ignoring the checksum 
+> on TGP systems if one of the following conditions is met:
+> 1. SW compatibility bit is not set (current Jacek's approach)
+> 2. The checksum word at offset 0x3F retains its factory default value of 
+> 0xFFFF.
 
-Please leave me CC'd, not subscribed to intel-wired-lan.
-
-Thanks
-Matt
-
-[1]
-
-[2270478.254450] ixgbe: Intel(R) 10 Gigabit PCI Express Network Driver
-[2270478.254453] ixgbe: Copyright (c) 1999-2016 Intel Corporation.
-[2270478.414084] ixgbe 0000:01:00.0: Multiqueue Enabled: Rx Queue count = 12, Tx Queue count = 12 
-XDP Queue count = 0
-[2270478.414383] ixgbe 0000:01:00.0: 32.000 Gb/s available PCIe bandwidth (5.0 GT/s PCIe x8 link)
-[2270478.414468] ixgbe 0000:01:00.0: MAC: 2, PHY: 14, SFP+: 3, PBA No: FFFFFF-0FF
-[2270478.414470] ixgbe 0000:01:00.0: 98:b7:85:01:c7:64
-[2270478.415358] ixgbe 0000:01:00.0: Intel(R) 10 Gigabit Network Connection
-[2270478.416690] ixgbe 0000:01:00.0 enp1s0f0: renamed from eth0
-[2270478.578144] ixgbe 0000:01:00.1: Multiqueue Enabled: Rx Queue count = 12, Tx Queue count = 12 
-XDP Queue count = 0
-[2270478.578438] ixgbe 0000:01:00.1: 32.000 Gb/s available PCIe bandwidth (5.0 GT/s PCIe x8 link)
-[2270478.578521] ixgbe 0000:01:00.1: MAC: 2, PHY: 14, SFP+: 4, PBA No: FFFFFF-0FF
-[2270478.578523] ixgbe 0000:01:00.1: 98:b7:85:01:c7:65
-[2270478.579428] ixgbe 0000:01:00.1: Intel(R) 10 Gigabit Network Connection
-[2270478.581936] ixgbe 0000:01:00.1 enp1s0f1: renamed from eth0
-[2270504.653197] ixgbe 0000:01:00.0: registered PHC device on enp1s0f0
-[2270504.762149] 8021q: adding VLAN 0 to HW filter on device enp1s0f0
-[2270504.833118] ixgbe 0000:01:00.0 enp1s0f0: detected SFP+: 3
-
-[2]
-
-ip link show enp1s0f0
-44: enp1s0f0: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc mq state DOWN mode DEFAULT group 
-default qlen 1000
-     link/ether 98:b7:85:01:c7:64 brd ff:ff:ff:ff:ff:ff
-     altname enx98b78501c764
-
-[3]
-
-ethtool -m enp1s0f0
-	Identifier                                : 0x03 (SFP)
-	Extended identifier                       : 0x04 (GBIC/SFP defined by 2-wire interface ID)
-	Connector                                 : 0x21 (Copper pigtail)
-	Transceiver codes                         : 0x00 0x00 0x00 0x00 0x00 0x04 0x00 0x00 0x00
-	Transceiver type                          : Passive Cable
-	Encoding                                  : 0x00 (unspecified)
-	BR Nominal                                : 10300MBd
-	Rate identifier                           : 0x00 (unspecified)
-	Length (SMF)                              : 0km
-	Length (OM2)                              : 0m
-	Length (OM1)                              : 0m
-	Length (Copper or Active cable)           : 1m
-	Length (OM3)                              : 0m
-	Passive Cu cmplnce.                       : 0x01 (SFF-8431 appendix E [SFF-8472 rev10.4 only])
-	Vendor name                               : OEM
-	Vendor OUI                                : 00:00:00
-	Vendor PN                                 : CAB-10GSFP-P1M
-	Vendor rev                                : 01
-	Option values                             : 0x00 0x00
-	BR margin max                             : 0%
-	BR margin min                             : 0%
-	Vendor SN                                 : S220101710852
-	Date code                                 : 22011000
-
-
-[4] https://www.reddit.com/r/debian/comments/1d6sytn/interface_state_down_with_cable_plugged_in/
-[5] 
-https://www.reddit.com/r/linuxquestions/comments/1d4tagr/intel_x553_sfp_link_dies_when_turned_up_works/
+I am already on the latest firmware. I have also tried downgrading to 
+earlier versions and they have the same problem.
