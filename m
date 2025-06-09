@@ -4,93 +4,97 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E32FAC5B552
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  9 Jun 2025 21:11:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8666EC61CE8
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  9 Jun 2025 21:11:13 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 8E08561533;
-	Mon,  9 Jun 2025 21:11:12 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 4B6EC61539;
+	Mon,  9 Jun 2025 21:11:13 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id zqHEFzNoOBPe; Mon,  9 Jun 2025 21:11:12 +0000 (UTC)
+ id yKe6Qz2Z09eu; Mon,  9 Jun 2025 21:11:12 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 0FB6961539
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B21AC61541
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
 	s=default; t=1749503472;
-	bh=U1EN+J8O+bYVXeqgWriXs2CS71JUc9AGwb7iTjfLBT0=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=AaXHBG3UyNC98ii/ibMM6zNbBBjw+RepxhesZey40N5N+XoGoEr8YJmF1HnDzmiEG
-	 WyVYHlkoRROuInABhzC+cd9j134kOxp9KZq0x42YUo6wypPFKcxa5Fc0LL75qUnPvo
-	 iJV8wQJ2gxT2vhfOV4BazRzzxyTMXmGt8s22F7RJ5ZQEWUry5qV73wvZKK13QWIOaC
-	 fCiNLMW/da6FeSqc+ASpg+86ms3+UUrv+vv1GsJWDZmBPq6HzYE1fmKCRRrv5f1vns
-	 mVvds23UQOEkW8cB0hLF2fSNrpOgjkpCyJt0/qx+j6JfEzkW/kGb/u0IogumC8BTxi
-	 ocgWYlWmBZPfw==
+	bh=C3nnJ6oQlD2ATaLqTA6oRPsA/tHUx1YHfphzrgtRO4Q=;
+	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=PjRJLrs7rDta/2CbcQLIqSR2j80bMdqIJcZSw6aj59rZS9HmrDLRWV14a7foLzgIp
+	 SyaCj5MOJa5aB7C8QwVeDCNkoccyOtTjW9oZD9wV2hqfoGWJPOH3OS/iA77plsFOjT
+	 36UG/QxwXf/Gylx2oYJSUYTnAQc5kUVnB8Y3w748j0sfDYKJXGbgCe29i4/wYc45eE
+	 G2iy59TllOehIY3g/sm2jeErkQ9OzwRJ0M6HOtfoRco7JWiHnqWjqsprfaoNeAX3MZ
+	 tjQIYuMBV/aBoT3E+thHMaKfmLFdH8h3M1MAII697+oW0peBMsg3XrxppD0OTGvbCQ
+	 0tW/sljMHTZ5w==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 0FB6961539;
+	by smtp3.osuosl.org (Postfix) with ESMTP id B21AC61541;
 	Mon,  9 Jun 2025 21:11:12 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id 3D5261A4
- for <intel-wired-lan@lists.osuosl.org>; Mon,  9 Jun 2025 21:11:10 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 19CDB1A4
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  9 Jun 2025 21:11:11 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 2F29F41DBC
- for <intel-wired-lan@lists.osuosl.org>; Mon,  9 Jun 2025 21:11:10 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 006236153C
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  9 Jun 2025 21:11:11 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id jboKRKIx-dzl for <intel-wired-lan@lists.osuosl.org>;
- Mon,  9 Jun 2025 21:11:09 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id tJRFLfIQsQkU for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  9 Jun 2025 21:11:10 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.19;
  helo=mgamail.intel.com; envelope-from=david.m.ertman@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 9A98441D97
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9A98441D97
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 590966151D
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 590966151D
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.19])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 9A98441D97
- for <intel-wired-lan@lists.osuosl.org>; Mon,  9 Jun 2025 21:11:09 +0000 (UTC)
-X-CSE-ConnectionGUID: ZNwRZ74xQAaD0kUvWOqWEQ==
-X-CSE-MsgGUID: rzRUjh5cToi/yArWKQdqmQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11459"; a="50703101"
-X-IronPort-AV: E=Sophos;i="6.16,223,1744095600"; d="scan'208";a="50703101"
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 590966151D
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  9 Jun 2025 21:11:10 +0000 (UTC)
+X-CSE-ConnectionGUID: K6dg2f/fTt63AKc6hpP2lA==
+X-CSE-MsgGUID: UUyaiua8TsmfCU734N/TmA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11459"; a="50703103"
+X-IronPort-AV: E=Sophos;i="6.16,223,1744095600"; d="scan'208";a="50703103"
 Received: from fmviesa007.fm.intel.com ([10.60.135.147])
  by fmvoesa113.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  09 Jun 2025 14:11:08 -0700
-X-CSE-ConnectionGUID: aMKgD319RhG2/P/dK5qgSw==
-X-CSE-MsgGUID: NJLe+N7WQOGoGVuqRMbHxQ==
+X-CSE-ConnectionGUID: fjyeOtxIR3GH6IIu4/q8UA==
+X-CSE-MsgGUID: BmkTU0DYTOmZE5oM4HEnjA==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.16,223,1744095600"; d="scan'208";a="146540431"
+X-IronPort-AV: E=Sophos;i="6.16,223,1744095600"; d="scan'208";a="146540437"
 Received: from dmert-mdev.jf.intel.com ([10.166.5.145])
  by fmviesa007-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  09 Jun 2025 14:11:08 -0700
 From: Dave Ertman <david.m.ertman@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Mon,  9 Jun 2025 15:11:32 +0200
-Message-ID: <20250609131141.758051-1-david.m.ertman@intel.com>
+Cc: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Date: Mon,  9 Jun 2025 15:11:34 +0200
+Message-ID: <20250609131141.758051-3-david.m.ertman@intel.com>
 X-Mailer: git-send-email 2.49.0
+In-Reply-To: <20250609131141.758051-1-david.m.ertman@intel.com>
+References: <20250609131141.758051-1-david.m.ertman@intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1749503469; x=1781039469;
- h=from:to:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=mG0bk79r4jm/kEgGHSOUArFcsv8Wz+gC4tBCPHM0nqw=;
- b=nA93YalRTrtEytpy7QEum5Bs72wGi9gydwV9fgfXhjZ5LdU//NL024Vc
- RqqY6GstcXBWd88axhl8ya0k5QVIF3m4Vc4DvoUNwzrf60rOMFkruf+jf
- 8EaeEIR+940o1/bzeQpsimYV0TVk2coy1NP2F/4bznxADc9JvT35C8BOG
- rYPfzWk1yEqK8j24n8P3t7Da6KFjC+/wAG/bF5bK1kyOHRKtmIK7OsAGE
- XvJ+4PThoPA0WS1Ue/dAEzg8DfhH107QpSFwZ23ZArffAmKdJavNIXWle
- EdTpXDhmsEfNXd6i/pDGqnztfG5dsniD26eXK39hpQAtE9SoAf1qKEGqS
+ t=1749503470; x=1781039470;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=z2es/tY4Vv86xArJxnQz8mDZrDjH7nKpNM4N584f5TE=;
+ b=Ezhb4P7nmtrHrZqRT9aijD58vzktHxjst3FNgPXYuSuCQ+HzzlQuDpwb
+ 9cgROu9nJNhizbBxeEAEvQdDwFgexbUL6uD5spWAsliqDUrua3fyoGOFj
+ RQ7oQuXApZbH3XXVAxNLndP/inOjP6lXBDbRnLhdf+q7VI+bzPu9P+Xd2
+ UzK0KIQHPEqZ1IHdJY2UdpE0D1uhU2vY/W7yD3yEHii4lfUDsE6aU9oMo
+ IBWMBPYWCYFLZc/cF+1IIXEsdg6cn6VBExck7AwCtr8XZNhfJM2pcdVKP
+ AjvuX32GWwBh4yLT9Ju6lBmdmCkX8VCv+W5t9ruJZUkPz7Z59eNqxCult
  A==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=nA93YalR
-Subject: [Intel-wired-lan] [PATCH iwl-next v3 0/8] ice: implement SRIOV VF
- Active-Active LAG
+ header.s=Intel header.b=Ezhb4P7n
+Subject: [Intel-wired-lan] [PATCH iwl-next v3 2/8] ice: replace u8 elements
+ with bool where
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -106,48 +110,54 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-This is a 8 patch series to implement support for SRIOV VFs over an
-active-active link aggregate
+appropriate
 
-Patch 1 cleans up void pointer casts
-Patch 2 utilizes bool over u8 when appropriate
-Patch 3 adds a driver prefix to a LAG define
-Patch 4 pre-move a function to reduce delta in implementation patch
-Patch 5 Cleanup variable initialization in declaration block
-Patch 6 Cleanup capability parsing for LAG feature
-Patch 7 Move duplicatde lag code into helper functions
-Patch 8 is the implementation of the new functionality
+In preparation for the new LAG functionality implementation, there are
+a couple of existing LAG elements of the capabilities struct that should
+be bool instead of u8.  Since we are adding a new element to this struct
+that should also be a bool, fix the existing LAG u8 in this patch and
+eliminate !! operators where possible.
 
-v3:
-- Change event processing order to keep state variables correct
-- add check for non-NULL event PF pointer when moving queues
-- reconfigure eswitch default netdev based on failover target
+Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_common.c | 4 ++--
+ drivers/net/ethernet/intel/ice/ice_type.h   | 5 +++--
+ 2 files changed, 5 insertions(+), 4 deletions(-)
 
-v2:
-- add fix for situation where VF reset is called outside of bonding
-  event
-
-Dave Ertman (8):
-  ice: Remove casts on void pointers in LAG code
-  ice: replace u8 elements with bool where
-  ice: Add driver specific prefix to LAG defines
-  ice: move LAG function in code to prepare for
-  ice: Cleanup variable initialization in LAG code
-  ice: cleanup capabilities evaluation
-  ice: breakout common LAG code into helpers
-  ice: Implement support for SRIOV VFs across Active/Active bonds
-
- drivers/net/ethernet/intel/ice/ice.h          |   1 +
- .../net/ethernet/intel/ice/ice_adminq_cmd.h   |   9 +-
- drivers/net/ethernet/intel/ice/ice_common.c   |  19 +-
- drivers/net/ethernet/intel/ice/ice_common.h   |   2 +-
- drivers/net/ethernet/intel/ice/ice_lag.c      | 972 ++++++++++++++----
- drivers/net/ethernet/intel/ice/ice_lag.h      |  23 +-
- drivers/net/ethernet/intel/ice/ice_type.h     |   6 +-
- drivers/net/ethernet/intel/ice/ice_vf_lib.c   |  19 +-
- drivers/net/ethernet/intel/ice/ice_virtchnl.c |  23 +-
- 9 files changed, 830 insertions(+), 244 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index f7fd0a2451de..29a02a0348b1 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -2219,10 +2219,10 @@ ice_parse_common_caps(struct ice_hw *hw, struct ice_hw_common_caps *caps,
+ 			  caps->reset_restrict_support);
+ 		break;
+ 	case ICE_AQC_CAPS_FW_LAG_SUPPORT:
+-		caps->roce_lag = !!(number & ICE_AQC_BIT_ROCEV2_LAG);
++		caps->roce_lag = number & ICE_AQC_BIT_ROCEV2_LAG;
+ 		ice_debug(hw, ICE_DBG_INIT, "%s: roce_lag = %u\n",
+ 			  prefix, caps->roce_lag);
+-		caps->sriov_lag = !!(number & ICE_AQC_BIT_SRIOV_LAG);
++		caps->sriov_lag = number & ICE_AQC_BIT_SRIOV_LAG;
+ 		ice_debug(hw, ICE_DBG_INIT, "%s: sriov_lag = %u\n",
+ 			  prefix, caps->sriov_lag);
+ 		break;
+diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
+index 3d68f465952d..e40ea754f91b 100644
+--- a/drivers/net/ethernet/intel/ice/ice_type.h
++++ b/drivers/net/ethernet/intel/ice/ice_type.h
+@@ -293,8 +293,9 @@ struct ice_hw_common_caps {
+ 	u8 dcb;
+ 	u8 ieee_1588;
+ 	u8 rdma;
+-	u8 roce_lag;
+-	u8 sriov_lag;
++
++	bool roce_lag;
++	bool sriov_lag;
+ 
+ 	bool nvm_update_pending_nvm;
+ 	bool nvm_update_pending_orom;
 -- 
 2.49.0
 
