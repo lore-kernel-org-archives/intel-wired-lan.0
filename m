@@ -4,99 +4,94 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8444BC677C4
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 11 Jun 2025 08:46:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9DEA8C61CE7
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 11 Jun 2025 12:53:03 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 580B440E4F;
-	Wed, 11 Jun 2025 08:46:20 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 5040F42038;
+	Wed, 11 Jun 2025 12:53:03 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ESSbZBIcBxdh; Wed, 11 Jun 2025 08:46:19 +0000 (UTC)
+ id bRnAp0lXc782; Wed, 11 Jun 2025 12:53:02 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C870940E61
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9C1E042096
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1749631579;
-	bh=WDvWFy8UbnpOLujqvC8g3GGB73WRCaef0B4gw5Rr4vc=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=JAu1JhJWP0pa8YzYnRky6OahWa26/DLBtV+F8B+A/kfzVspOXHs6WmZC+LlIcIZfc
-	 T+F123zk9XRLCRu/oBaF2qg5/KTyORIrKCDRgV+07pr4FiPvO7bGBMUWhLKbawFRd2
-	 b2jrNco7Uel50d/dTpA55E6mwe/ZdNWvUrpPCzueTEOd8VP04kEHE4FVwkLMisAODc
-	 ZZs3a0amJwq8oIRZ0OfvealfqVvwFWx4P+u4YdsTKIQ5zK25ydvlSBN//Q7wRqbaOo
-	 0s5KyVKqRLYaP1jpYMTld+Sm25TSKkF0jsChn0HZckWr+C3pf6cDmAilXMs/WuFFQz
-	 cGrpUIak19NXg==
+	s=default; t=1749646382;
+	bh=W+1qZnFIRYM45Zamdr2iPDX0osJGfhrsHr1ASxqz7CI=;
+	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=rjVuXVtdvxOeYMt+EMkYdjiYRGDvmAOuerrRuVRcXuUHh9tT/TMacxbceAda9uQPO
+	 a6yTn3MJQraN/VO1HC8mkr8891UmvsEkl/qPUygC7lDoVGwzzNsTOngoOZW5JKzxhf
+	 2yWgUn1Sz4ad7wJ2MvO92lp8wSLhrSeZFEQukW7g0q5DD0DXl4dqYuiaEHhwGFeDRN
+	 Paj2begkkhAIheGuIBmodjki5qJ1st0VjS5d5qFTNwIhQRQU5ROK1zkIsjZQgl9Nir
+	 a5SCRfEW5zPd+ZxVaqdQkwRwQWKn31I6rWImyguXm0FKPwS9FMh2NX06hAS9KjYZ62
+	 oczMQMEKtO3vw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id C870940E61;
-	Wed, 11 Jun 2025 08:46:19 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id 3F2611F2
- for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Jun 2025 08:46:18 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 9C1E042096;
+	Wed, 11 Jun 2025 12:53:02 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 9D599237
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Jun 2025 12:53:01 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 3138E403CA
- for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Jun 2025 08:46:18 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 8388F80D8A
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Jun 2025 12:53:01 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id z_zWrXCKopP9 for <intel-wired-lan@lists.osuosl.org>;
- Wed, 11 Jun 2025 08:46:17 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.11;
- helo=mgamail.intel.com; envelope-from=konrad.knitter@intel.com;
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id EZmcSdIoeK8B for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 11 Jun 2025 12:53:00 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.21;
+ helo=mgamail.intel.com; envelope-from=vitaly.lifshits@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 8C55C403BD
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 8C55C403BD
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.11])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 8C55C403BD
- for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Jun 2025 08:46:17 +0000 (UTC)
-X-CSE-ConnectionGUID: M+FZ70HbTWyjSKCBfEVh2g==
-X-CSE-MsgGUID: evXtk8edQGypIoM1IUN9zQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11460"; a="62046159"
-X-IronPort-AV: E=Sophos;i="6.16,227,1744095600"; d="scan'208";a="62046159"
-Received: from fmviesa004.fm.intel.com ([10.60.135.144])
- by orvoesa103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 11 Jun 2025 01:46:17 -0700
-X-CSE-ConnectionGUID: bTb/FLHOST6nd0bHeHumug==
-X-CSE-MsgGUID: 3sHeCa0ERRqjoandVdG6KQ==
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 7E39880DA0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7E39880DA0
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.21])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 7E39880DA0
+ for <intel-wired-lan@osuosl.org>; Wed, 11 Jun 2025 12:53:00 +0000 (UTC)
+X-CSE-ConnectionGUID: NcD3+ndWTzCEiDPlL9YJXA==
+X-CSE-MsgGUID: UmAFZ+L/Qdu8kW1dpRjWSA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11461"; a="51651603"
+X-IronPort-AV: E=Sophos;i="6.16,227,1744095600"; d="scan'208";a="51651603"
+Received: from orviesa003.jf.intel.com ([10.64.159.143])
+ by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 11 Jun 2025 05:52:59 -0700
+X-CSE-ConnectionGUID: ugtYyrTBQ3i8s022TCti7A==
+X-CSE-MsgGUID: 6zJ9qamiRcilvW58b1sgUw==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.16,227,1744095600"; d="scan'208";a="152298394"
-Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by fmviesa004.fm.intel.com with ESMTP; 11 Jun 2025 01:46:16 -0700
-Received: from kord.igk.intel.com (kord.igk.intel.com [10.123.220.9])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id 73C8B332AE;
- Wed, 11 Jun 2025 09:46:15 +0100 (IST)
-From: Konrad Knitter <konrad.knitter@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Cc: netdev@vger.kernel.org,
-	Konrad Knitter <konrad.knitter@intel.com>
-Date: Wed, 11 Jun 2025 11:01:22 +0200
-Message-Id: <20250611090122.4312-4-konrad.knitter@intel.com>
-X-Mailer: git-send-email 2.38.1
-In-Reply-To: <20250611090122.4312-1-konrad.knitter@intel.com>
-References: <20250611090122.4312-1-konrad.knitter@intel.com>
+X-IronPort-AV: E=Sophos;i="6.16,227,1744095600"; d="scan'208";a="151973507"
+Received: from ccdlinuxdev11.iil.intel.com ([143.185.162.51])
+ by orviesa003.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 11 Jun 2025 05:52:59 -0700
+From: Vitaly Lifshits <vitaly.lifshits@intel.com>
+To: intel-wired-lan@osuosl.org
+Cc: Vitaly Lifshits <vitaly.lifshits@intel.com>
+Date: Wed, 11 Jun 2025 15:52:54 +0300
+Message-Id: <20250611125254.3648822-1-vitaly.lifshits@intel.com>
+X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1749631578; x=1781167578;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=6x6QL82OphoxZIikvvYXWnq+2WXRIS75JJh3r94rvgE=;
- b=lkFXsMSpQ4MAwjN7S0NM73BmMdi+Mosni5++d7ccXyeiDeE3GI451A1+
- qYHQL4H8EpjKkp9yuNocNuVval4xR4egCAKsKH9jEaEZGCRUBmhd/R1RS
- TKIaHT5qNBxANhYxJrNZDAeElANC71h2ZnjbM+Cp1Xm0/iAPhRDtz0tko
- SfXlo8y74RDTXSUEL3dwDAgVxB2Ccayg5syLPferJJQBm4sJ58LSMiwmo
- mot9F9WsfQTftCbsrhw3yv0hMq6hlEhQS2WEtPL8w2Hoxm5UGRyUtyW9V
- QXtmvE5PJNfdOMhR1yuUOORGqEcwjfcZpZ7GNIC7TKXWIZR/NEjT+9ehB
- A==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ t=1749646380; x=1781182380;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=ZrENPsnFTQoZXfluWwt8R8ZSCrlmBRDZfrfRssD76AM=;
+ b=K1KPezUMOxaQzqxgHDvR2zLjWnIa3Kq9UsIljn/h05BfIXxF9jVzeurg
+ XqMqACSSOoqJ3KYxUxWkZFk3abSPY03vuctp/aJrmhyzH7Xm253BkpNVr
+ evzbFC9nculFSRUwQi4PjjqQbgYrawk6T5e93QfcJGPUB9PSXVWkIORe9
+ mEbHv7G6/Ekm7ue1tRY7b6qyNHsibOkQBbhBovmZu0/8CG/cATCPSMpYJ
+ Z0TNsk9E5jUVuwyeLtzr5L32DCuLsqVB9XZlcHXP84JGcEhoiIHWM4/Pb
+ NdCB9s6fM4cYQHK3K9ip3MFEaT5IHOgxytMGVvzadzDhzPpbIOHcWb8Yw
+ Q==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=lkFXsMSp
-Subject: [Intel-wired-lan] [PATCH iwl-next v1 3/3] ixgbe: add overwrite mask
- from factory settings
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=K1KPezUM
+Subject: [Intel-wired-lan] [PATCH iwl-net v2 1/1] igc: disable L1.2 PCI-E
+ link substate to avoid performance issue
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -112,47 +107,56 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Support for restoring settings and identifiers from factory settings
-instead of using those found in the image.
+I226 devices advertise support for the PCI-E link L1.2 substate. However,
+due to a hardware limitation, the exit latency from this low-power state
+is longer than the packet buffer can tolerate under high traffic
+conditions. This can lead to packet loss and degraded performance.
 
-Restoring data from factory settings requires restoring both settings
-and identifiers simultaneously. Other combinations are not supported.
+To mitigate this, disable the L1.2 substate. The increased power draw
+between L1.1 and L1.2 is insignificant.
 
-Signed-off-by: Konrad Knitter <konrad.knitter@intel.com>
+Link: https://lore.kernel.org/intel-wired-lan/15248b4f-3271-42dd-8e35-02bfc92b25e1@intel.com
+Signed-off-by: Vitaly Lifshits <vitaly.lifshits@intel.com>
+Fixes: 43546211738e ("igc: Add new device ID's")
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_fw_update.c | 6 ++++++
- drivers/net/ethernet/intel/ixgbe/ixgbe_type_e610.h | 1 +
- 2 files changed, 7 insertions(+)
+ drivers/net/ethernet/intel/igc/igc_main.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_fw_update.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_fw_update.c
-index e5479fc07a07..6b46da369934 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_fw_update.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_fw_update.c
-@@ -654,6 +654,12 @@ int ixgbe_flash_pldm_image(struct devlink *devlink,
- 		/* overwrite both settings and identifiers, preserve nothing */
- 		preservation = IXGBE_ACI_NVM_NO_PRESERVATION;
- 		break;
-+	case (DEVLINK_FLASH_OVERWRITE_SETTINGS |
-+	     DEVLINK_FLASH_OVERWRITE_IDENTIFIERS |
-+	     DEVLINK_FLASH_OVERWRITE_FROM_FACTORY_SETTINGS):
-+		/* overwrite both settings and identifiers, from factory settings */
-+		preservation = IXGBE_ACI_NVM_FACTORY_DEFAULT;
-+		break;
- 	default:
- 		NL_SET_ERR_MSG_MOD(extack,
- 				   "Requested overwrite mask is not supported");
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type_e610.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type_e610.h
-index d76334b8fbad..426bb2424620 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type_e610.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type_e610.h
-@@ -691,6 +691,7 @@ struct ixgbe_aci_cmd_nvm {
- #define IXGBE_ACI_NVM_LAST_CMD		BIT(0)
- #define IXGBE_ACI_NVM_PCIR_REQ		BIT(0) /* Used by NVM Write reply */
- #define IXGBE_ACI_NVM_PRESERVE_ALL	BIT(1)
-+#define IXGBE_ACI_NVM_FACTORY_DEFAULT	BIT(2)
- #define IXGBE_ACI_NVM_ACTIV_SEL_NVM	BIT(3) /* Write Activate/SR Dump only */
- #define IXGBE_ACI_NVM_ACTIV_SEL_OROM	BIT(4)
- #define IXGBE_ACI_NVM_ACTIV_SEL_NETLIST	BIT(5)
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index 27575a1e1777..3ada48b85bd9 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -7113,6 +7113,10 @@ static int igc_probe(struct pci_dev *pdev,
+ 	adapter->port_num = hw->bus.func;
+ 	adapter->msg_enable = netif_msg_init(debug, DEFAULT_MSG_ENABLE);
+ 
++	/* Disable ASPM L1.2 on I226 devices to avoid packet loss */
++	if (igc_is_device_id_i226(hw))
++		pci_disable_link_state(pdev, PCIE_LINK_STATE_L1_2);
++
+ 	err = pci_save_state(pdev);
+ 	if (err)
+ 		goto err_ioremap;
+@@ -7498,6 +7502,9 @@ static int __igc_resume(struct device *dev, bool rpm)
+ 	pci_enable_wake(pdev, PCI_D3hot, 0);
+ 	pci_enable_wake(pdev, PCI_D3cold, 0);
+ 
++	if (igc_is_device_id_i226(hw))
++		pci_disable_link_state(pdev, PCIE_LINK_STATE_L1_2);
++
+ 	if (igc_init_interrupt_scheme(adapter, true)) {
+ 		netdev_err(netdev, "Unable to allocate memory for queues\n");
+ 		return -ENOMEM;
+@@ -7623,6 +7630,9 @@ static pci_ers_result_t igc_io_slot_reset(struct pci_dev *pdev)
+ 		pci_enable_wake(pdev, PCI_D3hot, 0);
+ 		pci_enable_wake(pdev, PCI_D3cold, 0);
+ 
++		if (igc_is_device_id_i226(hw))
++			pci_disable_link_state_locked(pdev, PCIE_LINK_STATE_L1_2);
++
+ 		/* In case of PCI error, adapter loses its HW address
+ 		 * so we should re-assign it here.
+ 		 */
 -- 
-2.38.1
+2.34.1
 
