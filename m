@@ -1,67 +1,67 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EA599C71149
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 12 Jun 2025 17:49:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3F817C71136
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 12 Jun 2025 17:49:04 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id B983B61238;
-	Thu, 12 Jun 2025 17:49:01 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 17243408D7;
+	Thu, 12 Jun 2025 17:49:04 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 5SvYcGsbRouL; Thu, 12 Jun 2025 17:49:00 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id ajIywNOmcmSk; Thu, 12 Jun 2025 17:49:03 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C994B60DE3
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 456DE408CD
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1749750540;
-	bh=5WR9nz0xOsJWXDUgy9Fz5cs3NIIdzoC3ZZK0B5AM2xk=;
+	s=default; t=1749750543;
+	bh=PzYf4ga78vKxvpeGW88pgJbkmrryWjQoC6V9yp6l1Fo=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=imXp1RBhILABNQKXLCruLx3s711beWBRTZ/45p4ydSjXaveGIWkpHqRjvot92T1so
-	 i62NLaNxuI+B1tzRiyFvEmU4L88Dk/8tIepCiHENIpYPrUBpYt0oBVl6p6aM6WtC5O
-	 AyCtaZQLlrpvL8xc04BnePtO6tOeZisO3yBqTjt72n7zqeNX/IhG8OztxHyQ4teFiE
-	 HYs80HfkYA0DSeW3Y0TMziWHzQ1KXL5+YNaW4x5frknGj3lIJWZSer8VzIm4JI5WPX
-	 BECaxUNwoj2N3gWbZIFIFFs1W9ay1URKTzCJjcldt+QMpWX9mdvmZBhtuChRY/co4L
-	 SFp+rNNlfNo/g==
+	b=8iNdbYod4FKM4hL8qoGnLu+2qv2YCPCIf+Ixv1pk9Hg0MnFfWjpLDGteVcp9qiFZV
+	 WTE9ZPMoj41csYgBqBWDVq7JsohkiByUfEW2P0IT8AQfdMn58Hh2LryxgaZQzWPxZ4
+	 xPN2NuLtc4DGZnPsE5TKimTzuQ/oXF4oq8DNtGinmn2SmrwWw2mnBoUnP47JBdbKNl
+	 JdgafnrF2OKp5MmzPKwZhg+v3lx0WEtqYblz2p+HXwlctfQGB+Bk2y35O6J2Du7wsx
+	 mPRUq/szzyfC1K5ocu5/sZt8XPWlf5uuClJOYbFlvSDJaY2bttP97HGWCEiwmCJGCm
+	 gRKb4LUAKA9eg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id C994B60DE3;
-	Thu, 12 Jun 2025 17:49:00 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id B863E1BD
- for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Jun 2025 16:09:35 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 456DE408CD;
+	Thu, 12 Jun 2025 17:49:03 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 420A51BD
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Jun 2025 16:09:56 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 9E130821A4
- for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Jun 2025 16:09:35 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 3365481EA6
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Jun 2025 16:09:56 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id pmILJIPY5-xo for <intel-wired-lan@lists.osuosl.org>;
- Thu, 12 Jun 2025 16:09:35 +0000 (UTC)
+ id MAFZ7kTtYSgf for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 12 Jun 2025 16:09:55 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.14;
  helo=mgamail.intel.com; envelope-from=aleksander.lobakin@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org A9D5381EE7
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org A9D5381EE7
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 5BF1481E8E
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 5BF1481E8E
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.14])
- by smtp1.osuosl.org (Postfix) with ESMTPS id A9D5381EE7
- for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Jun 2025 16:09:34 +0000 (UTC)
-X-CSE-ConnectionGUID: AvyBbufDTmqgalm6Xo/ODA==
-X-CSE-MsgGUID: VFJoZvgnS1mgBFkl2Td37w==
-X-IronPort-AV: E=McAfee;i="6800,10657,11462"; a="55738836"
-X-IronPort-AV: E=Sophos;i="6.16,231,1744095600"; d="scan'208";a="55738836"
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 5BF1481E8E
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Jun 2025 16:09:55 +0000 (UTC)
+X-CSE-ConnectionGUID: jl4ZLVwVTjeSdqtDaYQ9eA==
+X-CSE-MsgGUID: nKDBojAfQOiAr5g2d3s4UQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11462"; a="55738921"
+X-IronPort-AV: E=Sophos;i="6.16,231,1744095600"; d="scan'208";a="55738921"
 Received: from orviesa008.jf.intel.com ([10.64.159.148])
  by orvoesa106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 12 Jun 2025 09:09:35 -0700
-X-CSE-ConnectionGUID: bvf8lUYDSN2lXvuBwFRl+w==
-X-CSE-MsgGUID: IeSPVj4QT2qKj4osacvXLw==
+ 12 Jun 2025 09:09:55 -0700
+X-CSE-ConnectionGUID: 5K7g7SUvRrmcrnTgMqSUGg==
+X-CSE-MsgGUID: fH+DRU8xQkGDAIS/JITcGg==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.16,231,1744095600"; d="scan'208";a="148468559"
+X-IronPort-AV: E=Sophos;i="6.16,231,1744095600"; d="scan'208";a="148468573"
 Received: from newjersey.igk.intel.com ([10.102.20.203])
- by orviesa008.jf.intel.com with ESMTP; 12 Jun 2025 09:09:30 -0700
+ by orviesa008.jf.intel.com with ESMTP; 12 Jun 2025 09:09:50 -0700
 From: Alexander Lobakin <aleksander.lobakin@intel.com>
 To: intel-wired-lan@lists.osuosl.org
 Cc: Alexander Lobakin <aleksander.lobakin@intel.com>,
@@ -77,10 +77,9 @@ Cc: Alexander Lobakin <aleksander.lobakin@intel.com>,
  Jesper Dangaard Brouer <hawk@kernel.org>,
  John Fastabend <john.fastabend@gmail.com>, Simon Horman <horms@kernel.org>,
  nex.sw.ncis.osdt.itp.upstreaming@intel.com, bpf@vger.kernel.org,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- Mina Almasry <almasrymina@google.com>
-Date: Thu, 12 Jun 2025 18:02:19 +0200
-Message-ID: <20250612160234.68682-3-aleksander.lobakin@intel.com>
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Date: Thu, 12 Jun 2025 18:02:23 +0200
+Message-ID: <20250612160234.68682-7-aleksander.lobakin@intel.com>
 X-Mailer: git-send-email 2.49.0
 In-Reply-To: <20250612160234.68682-1-aleksander.lobakin@intel.com>
 References: <20250612160234.68682-1-aleksander.lobakin@intel.com>
@@ -89,25 +88,25 @@ Content-Transfer-Encoding: 8bit
 X-Mailman-Approved-At: Thu, 12 Jun 2025 17:48:58 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1749744575; x=1781280575;
+ t=1749744596; x=1781280596;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=lBMx7xpwcElr6JTSgSj365LnMhXIBLIk3ALzeaeTHFs=;
- b=UgW0Kf3t49g8azJrb6vckzYrduohn9imKJbeYsTPqUChlOR/+RDutBW2
- +FZPMiq0QCatjgkrvncar28tNado1EfAt2mkWS1AXj6d53y1lDBX4GCxV
- p7deiPg36bZswMj36NVcIDxOllhHCrq+zp3AMAMzBZzc/UJ3CBNjOLMN9
- MPl96nTyyNr5pbLGo/GK3k2HSNX8yJOkkisbRkstnOunx+0nJWWuvEZTe
- F34AoQ5vrewbwnJH2+2Zd2wY5br9gJreNXwo7oroAE3J42zys+xn5zNmE
- oXxugmP6ZHtUabfY+s/n4fgVUdnNSjevtaan+ty4aYaTD0DKSi/9PKfDW
+ bh=IeTF3yT3CfVlFvKoYdrPUFgYM0MKJpsLCIdKZwScmRI=;
+ b=f6IJSjv3t/bfr7jpB3A/Z5j6H06JmXEO34Bls5DVVqhpEBFJ/E/UNg9s
+ 12OtGCW5T9+ykPG+Tk9UmWs0SD7H4lupd+Kz1kmXsvPb/1CvkKUozD1nC
+ XjGNET9zbE1hLe9x67DRoZYKUBubqYVLgiTCDlSELPdTg3j/BNCmrlP78
+ WMOLVykUYjoApLZYAs0Omnjqwtn6NdKXPm16BeHaLkfkvKRSakjWviOmV
+ lIQDrceNmA9iMBt55qqVfhFHUiQ054iKxzm6Wbsn0vpMl7gueyTxMpRaT
+ bDViNFBmXkeDq6xCQZYOnFZb6gcPW8XoHVPcgp91qP9aUtHmui1dcTISY
  A==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=UgW0Kf3t
-Subject: [Intel-wired-lan] [PATCH iwl-next v2 02/17] libeth: convert to
- netmem
+ header.a=rsa-sha256 header.s=Intel header.b=f6IJSjv3
+Subject: [Intel-wired-lan] [PATCH iwl-next v2 06/17] libeth: xdp: add XDPSQE
+ completion helpers
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -123,280 +122,338 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Back when the libeth Rx core was initially written, devmem was a draft
-and netmem_ref didn't exist in the mainline. Now that it's here, make
-libeth MP-agnostic before introducing any new code or any new library
-users.
-When it's known that the created PP/FQ is for header buffers, use faster
-"unsafe" underscored netmem <--> virt accessors as netmem_is_net_iov()
-is always false in that case, but consumes some cycles (bit test +
-true branch).
+Similarly to libeth_tx_complete(), add libeth_xdp_complete_tx() to
+handle XDP_TX and xmit buffers. Both use bulk return under the hood.
 
-Reviewed-by: Mina Almasry <almasrymina@google.com>
+Also add out of line libeth_tx_complete_any() which handles both
+regular and XDP frames (if libeth_xdp is loaded), for example,
+to call on queue destroy, where we don't need inlining but
+convenience.
+
 Signed-off-by: Alexander Lobakin <aleksander.lobakin@intel.com>
 ---
- include/net/libeth/rx.h                       | 22 ++++++------
- drivers/net/ethernet/intel/iavf/iavf_txrx.c   | 14 ++++----
- .../ethernet/intel/idpf/idpf_singleq_txrx.c   |  2 +-
- drivers/net/ethernet/intel/idpf/idpf_txrx.c   | 36 +++++++++++--------
- drivers/net/ethernet/intel/libeth/rx.c        |  8 ++---
- 5 files changed, 46 insertions(+), 36 deletions(-)
+ drivers/net/ethernet/intel/libeth/Makefile |  1 +
+ include/net/libeth/types.h                 | 21 ++++++-
+ drivers/net/ethernet/intel/libeth/priv.h   | 26 +++++++++
+ include/net/libeth/tx.h                    | 13 ++++-
+ include/net/libeth/xdp.h                   | 66 ++++++++++++++++++++++
+ drivers/net/ethernet/intel/libeth/tx.c     | 38 +++++++++++++
+ drivers/net/ethernet/intel/libeth/xdp.c    | 58 +++++++++++++++++++
+ 7 files changed, 221 insertions(+), 2 deletions(-)
+ create mode 100644 drivers/net/ethernet/intel/libeth/priv.h
+ create mode 100644 drivers/net/ethernet/intel/libeth/tx.c
 
-diff --git a/include/net/libeth/rx.h b/include/net/libeth/rx.h
-index ab05024be518..7d5dc58984b1 100644
---- a/include/net/libeth/rx.h
-+++ b/include/net/libeth/rx.h
+diff --git a/drivers/net/ethernet/intel/libeth/Makefile b/drivers/net/ethernet/intel/libeth/Makefile
+index 9ba78f463f2e..51669840ee06 100644
+--- a/drivers/net/ethernet/intel/libeth/Makefile
++++ b/drivers/net/ethernet/intel/libeth/Makefile
+@@ -4,6 +4,7 @@
+ obj-$(CONFIG_LIBETH)		+= libeth.o
+ 
+ libeth-y			:= rx.o
++libeth-y			+= tx.o
+ 
+ obj-$(CONFIG_LIBETH_XDP)	+= libeth_xdp.o
+ 
+diff --git a/include/net/libeth/types.h b/include/net/libeth/types.h
+index 603825e45133..ad7a5c1f119f 100644
+--- a/include/net/libeth/types.h
++++ b/include/net/libeth/types.h
 @@ -1,5 +1,5 @@
  /* SPDX-License-Identifier: GPL-2.0-only */
 -/* Copyright (C) 2024 Intel Corporation */
 +/* Copyright (C) 2024-2025 Intel Corporation */
  
- #ifndef __LIBETH_RX_H
- #define __LIBETH_RX_H
-@@ -31,7 +31,7 @@
+ #ifndef __LIBETH_TYPES_H
+ #define __LIBETH_TYPES_H
+@@ -22,4 +22,23 @@ struct libeth_sq_napi_stats {
+ 	};
+ };
  
++/**
++ * struct libeth_xdpsq_napi_stats - "hot" counters to update in XDP Tx
++ *				    completion loop
++ * @packets: completed frames counter
++ * @bytes: sum of bytes of completed frames above
++ * @fragments: sum of fragments of completed S/G frames
++ * @raw: alias to access all the fields as an array
++ */
++struct libeth_xdpsq_napi_stats {
++	union {
++		struct {
++							u32 packets;
++							u32 bytes;
++							u32 fragments;
++		};
++		DECLARE_FLEX_ARRAY(u32, raw);
++	};
++};
++
+ #endif /* __LIBETH_TYPES_H */
+diff --git a/drivers/net/ethernet/intel/libeth/priv.h b/drivers/net/ethernet/intel/libeth/priv.h
+new file mode 100644
+index 000000000000..1bd6e2d7a3e7
+--- /dev/null
++++ b/drivers/net/ethernet/intel/libeth/priv.h
+@@ -0,0 +1,26 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/* Copyright (C) 2025 Intel Corporation */
++
++#ifndef __LIBETH_PRIV_H
++#define __LIBETH_PRIV_H
++
++#include <linux/types.h>
++
++/* XDP */
++
++struct skb_shared_info;
++struct xdp_frame_bulk;
++
++struct libeth_xdp_ops {
++	void	(*bulk)(const struct skb_shared_info *sinfo,
++			struct xdp_frame_bulk *bq, bool frags);
++};
++
++void libeth_attach_xdp(const struct libeth_xdp_ops *ops);
++
++static inline void libeth_detach_xdp(void)
++{
++	libeth_attach_xdp(NULL);
++}
++
++#endif /* __LIBETH_PRIV_H */
+diff --git a/include/net/libeth/tx.h b/include/net/libeth/tx.h
+index e2b62a8b4c57..33b9bb22f6ac 100644
+--- a/include/net/libeth/tx.h
++++ b/include/net/libeth/tx.h
+@@ -84,7 +84,10 @@ struct libeth_sqe {
  /**
-  * struct libeth_fqe - structure representing an Rx buffer (fill queue element)
-- * @page: page holding the buffer
-+ * @netmem: network memory reference holding the buffer
-  * @offset: offset from the page start (to the headroom)
-  * @truesize: total space occupied by the buffer (w/ headroom and tailroom)
+  * struct libeth_cq_pp - completion queue poll params
+  * @dev: &device to perform DMA unmapping
++ * @bq: XDP frame bulk to combine return operations
+  * @ss: onstack NAPI stats to fill
++ * @xss: onstack XDPSQ NAPI stats to fill
++ * @xdp_tx: number of XDP frames processed
+  * @napi: whether it's called from the NAPI context
   *
-@@ -40,7 +40,7 @@
-  * former, @offset is always 0 and @truesize is always ```PAGE_SIZE```.
+  * libeth uses this structure to access objects needed for performing full
+@@ -93,7 +96,13 @@ struct libeth_sqe {
   */
- struct libeth_fqe {
--	struct page		*page;
-+	netmem_ref		netmem;
- 	u32			offset;
- 	u32			truesize;
- } __aligned_largest;
-@@ -102,15 +102,16 @@ static inline dma_addr_t libeth_rx_alloc(const struct libeth_fq_fp *fq, u32 i)
- 	struct libeth_fqe *buf = &fq->fqes[i];
+ struct libeth_cq_pp {
+ 	struct device			*dev;
+-	struct libeth_sq_napi_stats	*ss;
++	struct xdp_frame_bulk		*bq;
++
++	union {
++		struct libeth_sq_napi_stats	*ss;
++		struct libeth_xdpsq_napi_stats	*xss;
++	};
++	u32				xdp_tx;
  
- 	buf->truesize = fq->truesize;
--	buf->page = page_pool_dev_alloc(fq->pp, &buf->offset, &buf->truesize);
--	if (unlikely(!buf->page))
-+	buf->netmem = page_pool_dev_alloc_netmem(fq->pp, &buf->offset,
-+						 &buf->truesize);
-+	if (unlikely(!buf->netmem))
- 		return DMA_MAPPING_ERROR;
- 
--	return page_pool_get_dma_addr(buf->page) + buf->offset +
-+	return page_pool_get_dma_addr_netmem(buf->netmem) + buf->offset +
- 	       fq->pp->p.offset;
+ 	bool				napi;
+ };
+@@ -139,4 +148,6 @@ static inline void libeth_tx_complete(struct libeth_sqe *sqe,
+ 	sqe->type = LIBETH_SQE_EMPTY;
  }
  
--void libeth_rx_recycle_slow(struct page *page);
-+void libeth_rx_recycle_slow(netmem_ref netmem);
- 
- /**
-  * libeth_rx_sync_for_cpu - synchronize or recycle buffer post DMA
-@@ -126,18 +127,19 @@ void libeth_rx_recycle_slow(struct page *page);
- static inline bool libeth_rx_sync_for_cpu(const struct libeth_fqe *fqe,
- 					  u32 len)
- {
--	struct page *page = fqe->page;
-+	netmem_ref netmem = fqe->netmem;
- 
- 	/* Very rare, but possible case. The most common reason:
- 	 * the last fragment contained FCS only, which was then
- 	 * stripped by the HW.
- 	 */
- 	if (unlikely(!len)) {
--		libeth_rx_recycle_slow(page);
-+		libeth_rx_recycle_slow(netmem);
- 		return false;
- 	}
- 
--	page_pool_dma_sync_for_cpu(page->pp, page, fqe->offset, len);
-+	page_pool_dma_sync_netmem_for_cpu(netmem_get_pp(netmem), netmem,
-+					  fqe->offset, len);
- 
- 	return true;
- }
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_txrx.c b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
-index 23e786b9793d..aaf70c625655 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_txrx.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
-@@ -723,7 +723,7 @@ static void iavf_clean_rx_ring(struct iavf_ring *rx_ring)
- 	for (u32 i = rx_ring->next_to_clean; i != rx_ring->next_to_use; ) {
- 		const struct libeth_fqe *rx_fqes = &rx_ring->rx_fqes[i];
- 
--		page_pool_put_full_page(rx_ring->pp, rx_fqes->page, false);
-+		libeth_rx_recycle_slow(rx_fqes->netmem);
- 
- 		if (unlikely(++i == rx_ring->count))
- 			i = 0;
-@@ -1197,10 +1197,11 @@ static void iavf_add_rx_frag(struct sk_buff *skb,
- 			     const struct libeth_fqe *rx_buffer,
- 			     unsigned int size)
- {
--	u32 hr = rx_buffer->page->pp->p.offset;
-+	u32 hr = netmem_get_pp(rx_buffer->netmem)->p.offset;
- 
--	skb_add_rx_frag(skb, skb_shinfo(skb)->nr_frags, rx_buffer->page,
--			rx_buffer->offset + hr, size, rx_buffer->truesize);
-+	skb_add_rx_frag_netmem(skb, skb_shinfo(skb)->nr_frags,
-+			       rx_buffer->netmem, rx_buffer->offset + hr,
-+			       size, rx_buffer->truesize);
++void libeth_tx_complete_any(struct libeth_sqe *sqe, struct libeth_cq_pp *cp);
++
+ #endif /* __LIBETH_TX_H */
+diff --git a/include/net/libeth/xdp.h b/include/net/libeth/xdp.h
+index 839001d901b2..c47ecba56020 100644
+--- a/include/net/libeth/xdp.h
++++ b/include/net/libeth/xdp.h
+@@ -824,4 +824,70 @@ static inline void __libeth_xdp_return_buff(struct libeth_xdp_buff *xdp,
+ 	xdp->data = NULL;
  }
  
- /**
-@@ -1214,12 +1215,13 @@ static void iavf_add_rx_frag(struct sk_buff *skb,
- static struct sk_buff *iavf_build_skb(const struct libeth_fqe *rx_buffer,
- 				      unsigned int size)
- {
--	u32 hr = rx_buffer->page->pp->p.offset;
-+	struct page *buf_page = __netmem_to_page(rx_buffer->netmem);
-+	u32 hr = buf_page->pp->p.offset;
- 	struct sk_buff *skb;
- 	void *va;
++/* Tx buffer completion */
++
++void libeth_xdp_return_buff_bulk(const struct skb_shared_info *sinfo,
++				 struct xdp_frame_bulk *bq, bool frags);
++
++/**
++ * __libeth_xdp_complete_tx - complete sent XDPSQE
++ * @sqe: SQ element / Tx buffer to complete
++ * @cp: Tx polling/completion params
++ * @bulk: internal callback to bulk-free ``XDP_TX`` buffers
++ *
++ * Use the non-underscored version in drivers instead. This one is shared
++ * internally with libeth_tx_complete_any().
++ * Complete an XDPSQE of any type of XDP frame. This includes DMA unmapping
++ * when needed, buffer freeing, stats update, and SQE invalidation.
++ */
++static __always_inline void
++__libeth_xdp_complete_tx(struct libeth_sqe *sqe, struct libeth_cq_pp *cp,
++			 typeof(libeth_xdp_return_buff_bulk) bulk)
++{
++	enum libeth_sqe_type type = sqe->type;
++
++	switch (type) {
++	case LIBETH_SQE_EMPTY:
++		return;
++	case LIBETH_SQE_XDP_XMIT:
++	case LIBETH_SQE_XDP_XMIT_FRAG:
++		dma_unmap_page(cp->dev, dma_unmap_addr(sqe, dma),
++			       dma_unmap_len(sqe, len), DMA_TO_DEVICE);
++		break;
++	default:
++		break;
++	}
++
++	switch (type) {
++	case LIBETH_SQE_XDP_TX:
++		bulk(sqe->sinfo, cp->bq, sqe->nr_frags != 1);
++		break;
++	case LIBETH_SQE_XDP_XMIT:
++		xdp_return_frame_bulk(sqe->xdpf, cp->bq);
++		break;
++	default:
++		break;
++	}
++
++	switch (type) {
++	case LIBETH_SQE_XDP_TX:
++	case LIBETH_SQE_XDP_XMIT:
++		cp->xdp_tx -= sqe->nr_frags;
++
++		cp->xss->packets++;
++		cp->xss->bytes += sqe->bytes;
++		break;
++	default:
++		break;
++	}
++
++	sqe->type = LIBETH_SQE_EMPTY;
++}
++
++static inline void libeth_xdp_complete_tx(struct libeth_sqe *sqe,
++					  struct libeth_cq_pp *cp)
++{
++	__libeth_xdp_complete_tx(sqe, cp, libeth_xdp_return_buff_bulk);
++}
++
+ #endif /* __LIBETH_XDP_H */
+diff --git a/drivers/net/ethernet/intel/libeth/tx.c b/drivers/net/ethernet/intel/libeth/tx.c
+new file mode 100644
+index 000000000000..227c841ab16a
+--- /dev/null
++++ b/drivers/net/ethernet/intel/libeth/tx.c
+@@ -0,0 +1,38 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/* Copyright (C) 2025 Intel Corporation */
++
++#define DEFAULT_SYMBOL_NAMESPACE	"LIBETH"
++
++#include <net/libeth/xdp.h>
++
++#include "priv.h"
++
++/* Tx buffer completion */
++
++DEFINE_STATIC_CALL_NULL(bulk, libeth_xdp_return_buff_bulk);
++
++/**
++ * libeth_tx_complete_any - perform Tx completion for one SQE of any type
++ * @sqe: Tx buffer to complete
++ * @cp: polling params
++ *
++ * Can be used to complete both regular and XDP SQEs, for example when
++ * destroying queues.
++ * When libeth_xdp is not loaded, XDPSQEs won't be handled.
++ */
++void libeth_tx_complete_any(struct libeth_sqe *sqe, struct libeth_cq_pp *cp)
++{
++	if (sqe->type >= __LIBETH_SQE_XDP_START)
++		__libeth_xdp_complete_tx(sqe, cp, static_call(bulk));
++	else
++		libeth_tx_complete(sqe, cp);
++}
++EXPORT_SYMBOL_GPL(libeth_tx_complete_any);
++
++/* Module */
++
++void libeth_attach_xdp(const struct libeth_xdp_ops *ops)
++{
++	static_call_update(bulk, ops ? ops->bulk : NULL);
++}
++EXPORT_SYMBOL_GPL(libeth_attach_xdp);
+diff --git a/drivers/net/ethernet/intel/libeth/xdp.c b/drivers/net/ethernet/intel/libeth/xdp.c
+index c65ea5d2746a..c29a1a0dfc57 100644
+--- a/drivers/net/ethernet/intel/libeth/xdp.c
++++ b/drivers/net/ethernet/intel/libeth/xdp.c
+@@ -7,6 +7,8 @@
  
- 	/* prefetch first cache line of first page */
--	va = page_address(rx_buffer->page) + rx_buffer->offset;
-+	va = page_address(buf_page) + rx_buffer->offset;
- 	net_prefetch(va + hr);
+ #include <net/libeth/xdp.h>
  
- 	/* build an skb around the page buffer */
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_singleq_txrx.c b/drivers/net/ethernet/intel/idpf/idpf_singleq_txrx.c
-index 993c354aa27a..555879b1248d 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_singleq_txrx.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_singleq_txrx.c
-@@ -1006,7 +1006,7 @@ static int idpf_rx_singleq_clean(struct idpf_rx_queue *rx_q, int budget)
- 			break;
++#include "priv.h"
++
+ /* ``XDP_TX`` bulking */
  
- skip_data:
--		rx_buf->page = NULL;
-+		rx_buf->netmem = 0;
- 
- 		IDPF_SINGLEQ_BUMP_RING_IDX(rx_q, ntc);
- 		cleaned_count++;
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.c b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-index 5cf440e09d0a..cef9dfb877e8 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-@@ -383,12 +383,12 @@ static int idpf_tx_desc_alloc_all(struct idpf_vport *vport)
-  */
- static void idpf_rx_page_rel(struct libeth_fqe *rx_buf)
- {
--	if (unlikely(!rx_buf->page))
-+	if (unlikely(!rx_buf->netmem))
- 		return;
- 
--	page_pool_put_full_page(rx_buf->page->pp, rx_buf->page, false);
-+	libeth_rx_recycle_slow(rx_buf->netmem);
- 
--	rx_buf->page = NULL;
-+	rx_buf->netmem = 0;
- 	rx_buf->offset = 0;
+ static void __cold
+@@ -115,6 +117,62 @@ void __cold libeth_xdp_return_buff_slow(struct libeth_xdp_buff *xdp)
  }
+ EXPORT_SYMBOL_GPL(libeth_xdp_return_buff_slow);
  
-@@ -3240,10 +3240,10 @@ idpf_rx_process_skb_fields(struct idpf_rx_queue *rxq, struct sk_buff *skb,
- void idpf_rx_add_frag(struct idpf_rx_buf *rx_buf, struct sk_buff *skb,
- 		      unsigned int size)
- {
--	u32 hr = rx_buf->page->pp->p.offset;
-+	u32 hr = netmem_get_pp(rx_buf->netmem)->p.offset;
- 
--	skb_add_rx_frag(skb, skb_shinfo(skb)->nr_frags, rx_buf->page,
--			rx_buf->offset + hr, size, rx_buf->truesize);
-+	skb_add_rx_frag_netmem(skb, skb_shinfo(skb)->nr_frags, rx_buf->netmem,
-+			       rx_buf->offset + hr, size, rx_buf->truesize);
- }
- 
- /**
-@@ -3266,16 +3266,20 @@ static u32 idpf_rx_hsplit_wa(const struct libeth_fqe *hdr,
- 			     struct libeth_fqe *buf, u32 data_len)
- {
- 	u32 copy = data_len <= L1_CACHE_BYTES ? data_len : ETH_HLEN;
-+	struct page *hdr_page, *buf_page;
- 	const void *src;
- 	void *dst;
- 
--	if (!libeth_rx_sync_for_cpu(buf, copy))
-+	if (unlikely(netmem_is_net_iov(buf->netmem)) ||
-+	    !libeth_rx_sync_for_cpu(buf, copy))
- 		return 0;
- 
--	dst = page_address(hdr->page) + hdr->offset + hdr->page->pp->p.offset;
--	src = page_address(buf->page) + buf->offset + buf->page->pp->p.offset;
--	memcpy(dst, src, LARGEST_ALIGN(copy));
-+	hdr_page = __netmem_to_page(hdr->netmem);
-+	buf_page = __netmem_to_page(buf->netmem);
-+	dst = page_address(hdr_page) + hdr->offset + hdr_page->pp->p.offset;
-+	src = page_address(buf_page) + buf->offset + buf_page->pp->p.offset;
- 
-+	memcpy(dst, src, LARGEST_ALIGN(copy));
- 	buf->offset += copy;
- 
- 	return copy;
-@@ -3291,11 +3295,12 @@ static u32 idpf_rx_hsplit_wa(const struct libeth_fqe *hdr,
-  */
- struct sk_buff *idpf_rx_build_skb(const struct libeth_fqe *buf, u32 size)
- {
--	u32 hr = buf->page->pp->p.offset;
-+	struct page *buf_page = __netmem_to_page(buf->netmem);
-+	u32 hr = buf_page->pp->p.offset;
- 	struct sk_buff *skb;
- 	void *va;
- 
--	va = page_address(buf->page) + buf->offset;
-+	va = page_address(buf_page) + buf->offset;
- 	prefetch(va + hr);
- 
- 	skb = napi_build_skb(va, buf->truesize);
-@@ -3429,7 +3434,8 @@ static int idpf_rx_splitq_clean(struct idpf_rx_queue *rxq, int budget)
- 
- 		if (unlikely(!hdr_len && !skb)) {
- 			hdr_len = idpf_rx_hsplit_wa(hdr, rx_buf, pkt_len);
--			pkt_len -= hdr_len;
-+			/* If failed, drop both buffers by setting len to 0 */
-+			pkt_len -= hdr_len ? : pkt_len;
- 
- 			u64_stats_update_begin(&rxq->stats_sync);
- 			u64_stats_inc(&rxq->q_stats.hsplit_buf_ovf);
-@@ -3446,7 +3452,7 @@ static int idpf_rx_splitq_clean(struct idpf_rx_queue *rxq, int budget)
- 			u64_stats_update_end(&rxq->stats_sync);
- 		}
- 
--		hdr->page = NULL;
-+		hdr->netmem = 0;
- 
- payload:
- 		if (!libeth_rx_sync_for_cpu(rx_buf, pkt_len))
-@@ -3462,7 +3468,7 @@ static int idpf_rx_splitq_clean(struct idpf_rx_queue *rxq, int budget)
- 			break;
- 
- skip_data:
--		rx_buf->page = NULL;
-+		rx_buf->netmem = 0;
- 
- 		idpf_rx_post_buf_refill(refillq, buf_id);
- 		IDPF_RX_BUMP_NTC(rxq, ntc);
-diff --git a/drivers/net/ethernet/intel/libeth/rx.c b/drivers/net/ethernet/intel/libeth/rx.c
-index c2c53552c440..2afa6e33f160 100644
---- a/drivers/net/ethernet/intel/libeth/rx.c
-+++ b/drivers/net/ethernet/intel/libeth/rx.c
-@@ -204,14 +204,14 @@ void libeth_rx_fq_destroy(struct libeth_fq *fq)
- EXPORT_SYMBOL_GPL(libeth_rx_fq_destroy);
- 
- /**
-- * libeth_rx_recycle_slow - recycle a libeth page from the NAPI context
-- * @page: page to recycle
-+ * libeth_rx_recycle_slow - recycle libeth netmem
-+ * @netmem: network memory to recycle
-  *
-  * To be used on exceptions or rare cases not requiring fast inline recycling.
-  */
--void libeth_rx_recycle_slow(struct page *page)
-+void __cold libeth_rx_recycle_slow(netmem_ref netmem)
- {
--	page_pool_recycle_direct(page->pp, page);
-+	page_pool_put_full_netmem(netmem_get_pp(netmem), netmem, false);
- }
- EXPORT_SYMBOL_GPL(libeth_rx_recycle_slow);
- 
++/* Tx buffer completion */
++
++static void libeth_xdp_put_netmem_bulk(netmem_ref netmem,
++				       struct xdp_frame_bulk *bq)
++{
++	if (unlikely(bq->count == XDP_BULK_QUEUE_SIZE))
++		xdp_flush_frame_bulk(bq);
++
++	bq->q[bq->count++] = netmem;
++}
++
++/**
++ * libeth_xdp_return_buff_bulk - free &xdp_buff as part of a bulk
++ * @sinfo: shared info corresponding to the buffer
++ * @bq: XDP frame bulk to store the buffer
++ * @frags: whether the buffer has frags
++ *
++ * Same as xdp_return_frame_bulk(), but for &libeth_xdp_buff, speeds up Tx
++ * completion of ``XDP_TX`` buffers and allows to free them in same bulks
++ * with &xdp_frame buffers.
++ */
++void libeth_xdp_return_buff_bulk(const struct skb_shared_info *sinfo,
++				 struct xdp_frame_bulk *bq, bool frags)
++{
++	if (!frags)
++		goto head;
++
++	for (u32 i = 0; i < sinfo->nr_frags; i++)
++		libeth_xdp_put_netmem_bulk(skb_frag_netmem(&sinfo->frags[i]),
++					   bq);
++
++head:
++	libeth_xdp_put_netmem_bulk(virt_to_netmem(sinfo), bq);
++}
++EXPORT_SYMBOL_GPL(libeth_xdp_return_buff_bulk);
++
++/* Module */
++
++static const struct libeth_xdp_ops xdp_ops __initconst = {
++	.bulk	= libeth_xdp_return_buff_bulk,
++};
++
++static int __init libeth_xdp_module_init(void)
++{
++	libeth_attach_xdp(&xdp_ops);
++
++	return 0;
++}
++module_init(libeth_xdp_module_init);
++
++static void __exit libeth_xdp_module_exit(void)
++{
++	libeth_detach_xdp();
++}
++module_exit(libeth_xdp_module_exit);
++
+ MODULE_DESCRIPTION("Common Ethernet library - XDP infra");
+ MODULE_IMPORT_NS("LIBETH");
+ MODULE_LICENSE("GPL");
 -- 
 2.49.0
 
