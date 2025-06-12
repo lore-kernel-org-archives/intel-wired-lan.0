@@ -1,67 +1,67 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 27697C61CE8
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 12 Jun 2025 17:49:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2E008C71149
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 12 Jun 2025 17:49:10 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 7518B61403;
-	Thu, 12 Jun 2025 17:49:08 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 05EA0408F4;
+	Thu, 12 Jun 2025 17:49:10 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Z-2D-jfy-deY; Thu, 12 Jun 2025 17:49:06 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id eiY8Sx4xc2Gn; Thu, 12 Jun 2025 17:49:08 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 9FEBB613C0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D1656408F0
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1749750545;
-	bh=KniTeR+q9yESklD127SjTL29o3vYFUY/qAIA7BcPpUw=;
+	s=default; t=1749750548;
+	bh=3Dmcrmnb6Io4BrxcfzLjRQhQU00+LsuXRWQrezACuKo=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=WBplZyZ7KGtYB7Z38iltwUN9FFnqWSIKu+LHgSFJQ4/hp0vfawWtFryxrD5lwXXon
-	 Jb1G+pwt/EgZsOoBntf6NdPA//71mhC4RQ20ePvZ1i2kUsjgt8wzGetrdDEIByUN+t
-	 x4qKWXcmBdUIf/WbPTz6OiQIr2J1PVS8MWS5YH7tXt6nkyR3Dop9lOduhOskojf6/M
-	 dRTMCEv70N1q6NYDpLlZdy/ez5MbXOCG/IbmN7eWKUlcvKjuy2x1B42oEZ+6YEmD8w
-	 iBt5v2Z+9sQy/8OJtkWTFg6MQiCt6/DEizY6OU+uHrvsY8mCpuqLLt3gBH8LbM7O/N
-	 f0kASzdp91cHQ==
+	b=IywOpKvIHEBvzP43o1ZBEbnG4KVoM3jn6gjIRrtsi/pdceUv9namtj1FYwBrGuIG7
+	 yvcWEYxVzsK3x8CSkasLDtzxzCJfblWH8D5kaW16Cu91NIVZ1kTKJAYLX9MflXKe9T
+	 C9qOGFI8JQl3EVTdFUTKHdVBcGBhhHhrDdj7R5gfk23zUCLjEWWil2myimxgaEaRsY
+	 m/qneNT+nzZSpKE+eAm6nXoksqfVvP6aUNzw+rMRlJm58xlyWwYnufYyXcL/NGNm6t
+	 CNjZX+O9a7x/peJ9s7YRjOYUvYr/J1ZwC2Nom30LQPIPs+JCs2Uqox2bOuJq1a6Z09
+	 NdCXnmvJ8B+sA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 9FEBB613C0;
-	Thu, 12 Jun 2025 17:49:05 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id 208BD1E0
- for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Jun 2025 16:10:15 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id D1656408F0;
+	Thu, 12 Jun 2025 17:49:08 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id A7D151E0
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Jun 2025 16:10:39 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 1282C81EE7
- for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Jun 2025 16:10:15 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 8DC5D83434
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Jun 2025 16:10:39 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Vo2sxg18PdL7 for <intel-wired-lan@lists.osuosl.org>;
- Thu, 12 Jun 2025 16:10:14 +0000 (UTC)
+ id 0hHsYFUoxs0X for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 12 Jun 2025 16:10:38 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.14;
  helo=mgamail.intel.com; envelope-from=aleksander.lobakin@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 18334821A4
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 18334821A4
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 6BCB483410
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 6BCB483410
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.14])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 18334821A4
- for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Jun 2025 16:10:14 +0000 (UTC)
-X-CSE-ConnectionGUID: jUhWcmqaQCOoRTNO6l30hA==
-X-CSE-MsgGUID: EjGuR+1ISYqjlX5I+L1Y/g==
-X-IronPort-AV: E=McAfee;i="6800,10657,11462"; a="55739018"
-X-IronPort-AV: E=Sophos;i="6.16,231,1744095600"; d="scan'208";a="55739018"
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 6BCB483410
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Jun 2025 16:10:38 +0000 (UTC)
+X-CSE-ConnectionGUID: 7QnzUVqoRYyxbpquhpCRQg==
+X-CSE-MsgGUID: w/p4Xm4CQwCAeIsnNfi6Rw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11462"; a="55739157"
+X-IronPort-AV: E=Sophos;i="6.16,231,1744095600"; d="scan'208";a="55739157"
 Received: from orviesa008.jf.intel.com ([10.64.159.148])
  by orvoesa106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 12 Jun 2025 09:10:14 -0700
-X-CSE-ConnectionGUID: J7Oeth1DQ0Ce91nYxdrShA==
-X-CSE-MsgGUID: pFnFAt6dTrqlavEgIRLizw==
+ 12 Jun 2025 09:10:38 -0700
+X-CSE-ConnectionGUID: nqecnXxGTMqpXz2Udk9DxA==
+X-CSE-MsgGUID: vcDhSWaZSIWr2S0I+XSkuA==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.16,231,1744095600"; d="scan'208";a="148468599"
+X-IronPort-AV: E=Sophos;i="6.16,231,1744095600"; d="scan'208";a="148468650"
 Received: from newjersey.igk.intel.com ([10.102.20.203])
- by orviesa008.jf.intel.com with ESMTP; 12 Jun 2025 09:10:09 -0700
+ by orviesa008.jf.intel.com with ESMTP; 12 Jun 2025 09:10:34 -0700
 From: Alexander Lobakin <aleksander.lobakin@intel.com>
 To: intel-wired-lan@lists.osuosl.org
 Cc: Alexander Lobakin <aleksander.lobakin@intel.com>,
@@ -78,8 +78,8 @@ Cc: Alexander Lobakin <aleksander.lobakin@intel.com>,
  John Fastabend <john.fastabend@gmail.com>, Simon Horman <horms@kernel.org>,
  nex.sw.ncis.osdt.itp.upstreaming@intel.com, bpf@vger.kernel.org,
  netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Date: Thu, 12 Jun 2025 18:02:27 +0200
-Message-ID: <20250612160234.68682-11-aleksander.lobakin@intel.com>
+Date: Thu, 12 Jun 2025 18:02:32 +0200
+Message-ID: <20250612160234.68682-16-aleksander.lobakin@intel.com>
 X-Mailer: git-send-email 2.49.0
 In-Reply-To: <20250612160234.68682-1-aleksander.lobakin@intel.com>
 References: <20250612160234.68682-1-aleksander.lobakin@intel.com>
@@ -88,25 +88,25 @@ Content-Transfer-Encoding: 8bit
 X-Mailman-Approved-At: Thu, 12 Jun 2025 17:48:58 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1749744614; x=1781280614;
+ t=1749744639; x=1781280639;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=nP9uCVpAswOJgG9X/aRethiYqj2rinuhNJFTculHLcI=;
- b=fxxC9DRezhrgnHP/GHujCk1w0paNiQvErZjaPKkajT6X9/G+HpKa8HKI
- BJIKIyc1AyrLzKoOhN53jvaIAgfnveCMwZ5jJjgEmUP30jxWEUM21tfAA
- scwab3a0NWWImVvQSYNSOfdYVAx62KRy/YjS2TR9iMriOKF4EKzfrX5J5
- /iA9BXjL5SLpBms3DfqlCJEHCNWKCNcPfhV+emCCb5zPGoj5JKf2XOs59
- 4KGMMXYpINnEOyTNeCFzwBjMAwR/nG7EKLLEK27kHo/K0WRb6KjtMpkcc
- Nmg3D00OfNyPC7jIyD8K+x66XG+Pr7cnXT67E2TVsu4bFEAmZXrU++iV4
- Q==;
+ bh=eLbSz2OMIUzxcSPuFacIDDZmpGd4p+VadfMeFRs6GvM=;
+ b=lzlSluOIygOXBJ9HOostNlS22Xy+mtX1ERc30ARnp/wyvla5KXmkRZEk
+ G0NQx0Kn6uCynjCESG7OzUZkcCjW0Jn9KnO/QQG1XQGMMegU+CNa1CdEB
+ fIlRX6pL26vFDHXI1YCwp2nRcc50hdtsUPlP8SHVJq2+iSCfZlBxlPJj2
+ YYq6RhtcN+7VvS5XQRnzTZmvoSQa0ZJTOyQVdqF3zrRwLRInIrTqbXVX0
+ aWPMmZLx0LxfZF8u5bf2eHryhzUJRbdu48UzVRMRgjoI0GeejIzTAeUku
+ UTQYznhYFrn5pJPw873KILttu7CCtzsZJesKACLV0g/5tfYPsM7SbQ8hy
+ g==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=fxxC9DRe
-Subject: [Intel-wired-lan] [PATCH iwl-next v2 10/17] libeth: xdp: add XDP
- prog run and verdict result handling
+ header.a=rsa-sha256 header.s=Intel header.b=lzlSluOI
+Subject: [Intel-wired-lan] [PATCH iwl-next v2 15/17] libeth: xsk: add XSk Rx
+ processing support
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -122,338 +122,307 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Running a prog and handling the verdicts, up to napi_gro_receive()
-is also pretty generic code not really differing between vendors
-(except for Tx descriptor filling and Rx descriptor parsing).
+Add XSk counterparts for preparing XSk &libeth_xdp_buff (adding head and
+frags), running the program, and handling the verdict, inc. XDP_PASS.
+Shortcuts in comparison with regular Rx: frags and all verdicts except
+XDP_REDIRECT are under unlikely() and out of line; no checks for XDP
+program presence as it's always true for XSk.
 
-Define a couple inlines to do that. The inline callbacks a driver
-needs to pass is mentioned above: Tx descriptor filling for XDP_TX,
-populating skb with the descriptor data for XDP_PASS, finalizing
-XDPSQs after the polling loop for XDP_TX (kicking the HW to start
-sending).
-The populate callback passes only &libeth_xdp_buff assuming buff::desc
-pointer is enough, plus you can always get the corresponding Rx queue
-structure via container_of(buff::rxq). If not, a driver can extend
-the buff with more fields directly on the stack without touching
-libeth_xdp definitions.
-
+Suggested-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com> # optimizations
 Signed-off-by: Alexander Lobakin <aleksander.lobakin@intel.com>
 ---
- include/net/libeth/types.h              |  22 ++
- include/net/libeth/xdp.h                | 281 ++++++++++++++++++++++++
- drivers/net/ethernet/intel/libeth/xdp.c |  27 +++
- 3 files changed, 330 insertions(+)
+ drivers/net/ethernet/intel/libeth/priv.h |   3 +
+ include/net/libeth/xdp.h                 |  17 +-
+ include/net/libeth/xsk.h                 | 273 +++++++++++++++++++++++
+ drivers/net/ethernet/intel/libeth/xdp.c  |   6 +-
+ drivers/net/ethernet/intel/libeth/xsk.c  | 107 +++++++++
+ 5 files changed, 398 insertions(+), 8 deletions(-)
 
-diff --git a/include/net/libeth/types.h b/include/net/libeth/types.h
-index 7b27c1966d45..cf1d78a9dc38 100644
---- a/include/net/libeth/types.h
-+++ b/include/net/libeth/types.h
-@@ -6,6 +6,28 @@
+diff --git a/drivers/net/ethernet/intel/libeth/priv.h b/drivers/net/ethernet/intel/libeth/priv.h
+index 03e74382b2cb..9b811d31015c 100644
+--- a/drivers/net/ethernet/intel/libeth/priv.h
++++ b/drivers/net/ethernet/intel/libeth/priv.h
+@@ -8,6 +8,7 @@
  
- #include <linux/workqueue.h>
+ /* XDP */
  
-+/* Stats */
-+
-+/**
-+ * struct libeth_rq_napi_stats - "hot" counters to update in Rx polling loop
-+ * @packets: received frames counter
-+ * @bytes: sum of bytes of received frames above
-+ * @fragments: sum of fragments of received S/G frames
-+ * @hsplit: number of frames the device performed the header split for
-+ * @raw: alias to access all the fields as an array
-+ */
-+struct libeth_rq_napi_stats {
-+	union {
-+		struct {
-+							u32 packets;
-+							u32 bytes;
-+							u32 fragments;
-+							u32 hsplit;
-+		};
-+		DECLARE_FLEX_ARRAY(u32, raw);
-+	};
-+};
-+
- /**
-  * struct libeth_sq_napi_stats - "hot" counters to update in Tx completion loop
-  * @packets: completed frames counter
++enum xdp_action;
+ struct libeth_xdp_buff;
+ struct libeth_xdp_tx_frame;
+ struct skb_shared_info;
+@@ -17,6 +18,8 @@ extern const struct xsk_tx_metadata_ops libeth_xsktmo_slow;
+ 
+ void libeth_xsk_tx_return_bulk(const struct libeth_xdp_tx_frame *bq,
+ 			       u32 count);
++u32 libeth_xsk_prog_exception(struct libeth_xdp_buff *xdp, enum xdp_action act,
++			      int ret);
+ 
+ struct libeth_xdp_ops {
+ 	void	(*bulk)(const struct skb_shared_info *sinfo,
 diff --git a/include/net/libeth/xdp.h b/include/net/libeth/xdp.h
-index 780447cdabc1..db99bc690eb6 100644
+index c3655458047d..dba09a9168f1 100644
 --- a/include/net/libeth/xdp.h
 +++ b/include/net/libeth/xdp.h
-@@ -20,6 +20,7 @@ enum {
- 	LIBETH_XDP_DROP			= BIT(0),
- 	LIBETH_XDP_ABORTED		= BIT(1),
- 	LIBETH_XDP_TX			= BIT(2),
-+	LIBETH_XDP_REDIRECT		= BIT(3),
- };
+@@ -1122,18 +1122,19 @@ __libeth_xdp_xmit_do_bulk(struct libeth_xdp_tx_bulk *bq,
+  * Should be called on an onstack XDP Tx bulk before the NAPI polling loop.
+  * Initializes all the needed fields to run libeth_xdp functions. If @num == 0,
+  * assumes XDP is not enabled.
++ * Do not use for XSk, it has its own optimized helper.
+  */
+ #define libeth_xdp_tx_init_bulk(bq, prog, dev, xdpsqs, num)		      \
+ 	__libeth_xdp_tx_init_bulk(bq, prog, dev, xdpsqs, num, false,	      \
+ 				  __UNIQUE_ID(bq_), __UNIQUE_ID(nqs_))
  
- /*
-@@ -353,6 +354,7 @@ static_assert(offsetof(struct libeth_xdp_tx_frame, frag.len) ==
-  * @prog: corresponding active XDP program, %NULL for .ndo_xdp_xmit()
-  * @dev: &net_device which the frames are transmitted on
-  * @xdpsq: shortcut to the corresponding driver-specific XDPSQ structure
-+ * @act_mask: Rx only, mask of all the XDP prog verdicts for that NAPI session
-  * @count: current number of frames in @bulk
-  * @bulk: array of queued frames for bulk Tx
+-#define __libeth_xdp_tx_init_bulk(bq, pr, d, xdpsqs, num, ub, un) do {	      \
++#define __libeth_xdp_tx_init_bulk(bq, pr, d, xdpsqs, num, xsk, ub, un) do {   \
+ 	typeof(bq) ub = (bq);						      \
+ 	u32 un = (num);							      \
+ 									      \
+ 	rcu_read_lock();						      \
+ 									      \
+-	if (un) {							      \
++	if (un || (xsk)) {						      \
+ 		ub->prog = rcu_dereference(pr);				      \
+ 		ub->dev = (d);						      \
+ 		ub->xdpsq = (xdpsqs)[libeth_xdpsq_id(un)];		      \
+@@ -1159,6 +1160,7 @@ void __libeth_xdp_return_stash(struct libeth_xdp_buff_stash *stash);
   *
-@@ -366,6 +368,7 @@ struct libeth_xdp_tx_bulk {
- 	struct net_device		*dev;
- 	void				*xdpsq;
+  * Should be called before the main NAPI polling loop. Loads the content of
+  * the previously saved stash or initializes the buffer from scratch.
++ * Do not use for XSk.
+  */
+ static inline void
+ libeth_xdp_init_buff(struct libeth_xdp_buff *dst,
+@@ -1378,7 +1380,7 @@ __libeth_xdp_run_prog(struct libeth_xdp_buff *xdp,
+  * @flush_bulk: driver callback for flushing a bulk
+  *
+  * Internal inline abstraction to run XDP program and additionally handle
+- * ``XDP_TX`` verdict.
++ * ``XDP_TX`` verdict. Used by both XDP and XSk, hence @run and @queue.
+  * Do not use directly.
+  *
+  * Return: libeth_xdp prog verdict depending on the prog's verdict.
+@@ -1408,12 +1410,13 @@ __libeth_xdp_run_flush(struct libeth_xdp_buff *xdp,
+ }
  
-+	u32				act_mask;
- 	u32				count;
- 	struct libeth_xdp_tx_frame	bulk[LIBETH_XDP_TX_BULK];
- } __aligned(sizeof(struct libeth_xdp_tx_frame));
-@@ -999,6 +1002,40 @@ __libeth_xdp_xmit_do_bulk(struct libeth_xdp_tx_bulk *bq,
+ /**
+- * libeth_xdp_run_prog - run XDP program and handle all verdicts
++ * libeth_xdp_run_prog - run XDP program (non-XSk path) and handle all verdicts
+  * @xdp: XDP buffer to process
+  * @bq: XDP Tx bulk to queue ``XDP_TX`` buffers
+  * @fl: driver ``XDP_TX`` bulk flush callback
+  *
+- * Run the attached XDP program and handle all possible verdicts.
++ * Run the attached XDP program and handle all possible verdicts. XSk has its
++ * own version.
+  * Prefer using it via LIBETH_XDP_DEFINE_RUN{,_PASS,_PROG}().
+  *
+  * Return: true if the buffer should be passed up the stack, false if the poll
+@@ -1435,7 +1438,7 @@ __libeth_xdp_run_flush(struct libeth_xdp_buff *xdp,
+  * @run: driver wrapper to run XDP program
+  * @populate: driver callback to populate an skb with the HW descriptor data
+  *
+- * Inline abstraction that does the following:
++ * Inline abstraction that does the following (non-XSk path):
+  * 1) adds frame size and frag number (if needed) to the onstack stats;
+  * 2) fills the descriptor metadata to the onstack &libeth_xdp_buff
+  * 3) runs XDP program if present;
+@@ -1518,7 +1521,7 @@ static inline void libeth_xdp_prep_desc(struct libeth_xdp_buff *xdp,
+ 			      run, populate)
  
- /* Rx polling path */
+ /**
+- * libeth_xdp_finalize_rx - finalize XDPSQ after a NAPI polling loop
++ * libeth_xdp_finalize_rx - finalize XDPSQ after a NAPI polling loop (non-XSk)
+  * @bq: ``XDP_TX`` frame bulk
+  * @flush: driver callback to flush the bulk
+  * @finalize: driver callback to start sending the frames and run the timer
+diff --git a/include/net/libeth/xsk.h b/include/net/libeth/xsk.h
+index 16ca195981fe..f3f338e566fc 100644
+--- a/include/net/libeth/xsk.h
++++ b/include/net/libeth/xsk.h
+@@ -311,4 +311,277 @@ libeth_xsk_xmit_do_bulk(struct xsk_buff_pool *pool, void *xdpsq, u32 budget,
+ 	return n < budget;
+ }
  
++/* Rx polling path */
++
 +/**
-+ * libeth_xdp_tx_init_bulk - initialize an XDP Tx bulk for Rx NAPI poll
++ * libeth_xsk_tx_init_bulk - initialize XDP Tx bulk for an XSk Rx NAPI poll
 + * @bq: bulk to initialize
-+ * @prog: RCU pointer to the XDP program (can be %NULL)
++ * @prog: RCU pointer to the XDP program (never %NULL)
 + * @dev: target &net_device
 + * @xdpsqs: array of driver XDPSQ structs
 + * @num: number of active XDPSQs, the above array length
 + *
-+ * Should be called on an onstack XDP Tx bulk before the NAPI polling loop.
-+ * Initializes all the needed fields to run libeth_xdp functions. If @num == 0,
-+ * assumes XDP is not enabled.
++ * Should be called on an onstack XDP Tx bulk before the XSk NAPI polling loop.
++ * Initializes all the needed fields to run libeth_xdp functions.
++ * Never checks if @prog is %NULL or @num == 0 as XDP must always be enabled
++ * when hitting this path.
 + */
-+#define libeth_xdp_tx_init_bulk(bq, prog, dev, xdpsqs, num)		      \
-+	__libeth_xdp_tx_init_bulk(bq, prog, dev, xdpsqs, num, false,	      \
++#define libeth_xsk_tx_init_bulk(bq, prog, dev, xdpsqs, num)		     \
++	__libeth_xdp_tx_init_bulk(bq, prog, dev, xdpsqs, num, true,	     \
 +				  __UNIQUE_ID(bq_), __UNIQUE_ID(nqs_))
 +
-+#define __libeth_xdp_tx_init_bulk(bq, pr, d, xdpsqs, num, ub, un) do {	      \
-+	typeof(bq) ub = (bq);						      \
-+	u32 un = (num);							      \
-+									      \
-+	rcu_read_lock();						      \
-+									      \
-+	if (un) {							      \
-+		ub->prog = rcu_dereference(pr);				      \
-+		ub->dev = (d);						      \
-+		ub->xdpsq = (xdpsqs)[libeth_xdpsq_id(un)];		      \
-+	} else {							      \
-+		ub->prog = NULL;					      \
-+	}								      \
-+									      \
-+	ub->act_mask = 0;						      \
-+	ub->count = 0;							      \
-+} while (0)
++struct libeth_xdp_buff *libeth_xsk_buff_add_frag(struct libeth_xdp_buff *head,
++						 struct libeth_xdp_buff *xdp);
 +
- void libeth_xdp_load_stash(struct libeth_xdp_buff *dst,
- 			   const struct libeth_xdp_buff_stash *src);
- void libeth_xdp_save_stash(struct libeth_xdp_buff_stash *dst,
-@@ -1155,6 +1192,250 @@ static inline bool libeth_xdp_process_buff(struct libeth_xdp_buff *xdp,
- 	return true;
- }
- 
 +/**
-+ * libeth_xdp_buff_stats_frags - update onstack RQ stats with XDP frags info
-+ * @ss: onstack stats to update
-+ * @xdp: buffer to account
++ * libeth_xsk_process_buff - attach XSk Rx buffer to &libeth_xdp_buff
++ * @head: head XSk buffer to attach the XSk buffer to (or %NULL)
++ * @xdp: XSk buffer to process
++ * @len: received data length from the descriptor
 + *
-+ * Internal helper used by __libeth_xdp_run_pass(), do not call directly.
-+ * Adds buffer's frags count and total len to the onstack stats.
++ * If @head == %NULL, treats the XSk buffer as head and initializes
++ * the required fields. Otherwise, attaches the buffer as a frag.
++ * Already performs DMA sync-for-CPU and frame start prefetch
++ * (for head buffers only).
++ *
++ * Return: head XSk buffer on success or if the descriptor must be skipped
++ * (empty), %NULL if there is no space for a new frag.
 + */
-+static inline void
-+libeth_xdp_buff_stats_frags(struct libeth_rq_napi_stats *ss,
-+			    const struct libeth_xdp_buff *xdp)
++static inline struct libeth_xdp_buff *
++libeth_xsk_process_buff(struct libeth_xdp_buff *head,
++			struct libeth_xdp_buff *xdp, u32 len)
 +{
-+	const struct skb_shared_info *sinfo;
++	if (unlikely(!len)) {
++		libeth_xsk_buff_free_slow(xdp);
++		return head;
++	}
 +
-+	sinfo = xdp_get_shared_info_from_buff(&xdp->base);
-+	ss->bytes += sinfo->xdp_frags_size;
-+	ss->fragments += sinfo->nr_frags + 1;
++	xsk_buff_set_size(&xdp->base, len);
++	xsk_buff_dma_sync_for_cpu(&xdp->base);
++
++	if (head)
++		return libeth_xsk_buff_add_frag(head, xdp);
++
++	prefetch(xdp->data);
++
++	return xdp;
 +}
 +
-+u32 libeth_xdp_prog_exception(const struct libeth_xdp_tx_bulk *bq,
-+			      struct libeth_xdp_buff *xdp,
-+			      enum xdp_action act, int ret);
++void libeth_xsk_buff_stats_frags(struct libeth_rq_napi_stats *rs,
++				 const struct libeth_xdp_buff *xdp);
++
++u32 __libeth_xsk_run_prog_slow(struct libeth_xdp_buff *xdp,
++			       const struct libeth_xdp_tx_bulk *bq,
++			       enum xdp_action act, int ret);
 +
 +/**
-+ * __libeth_xdp_run_prog - run XDP program on an XDP buffer
-+ * @xdp: XDP buffer to run the prog on
++ * __libeth_xsk_run_prog - run XDP program on XSk buffer
++ * @xdp: XSk buffer to run the prog on
 + * @bq: buffer bulk for ``XDP_TX`` queueing
 + *
-+ * Internal inline abstraction to run XDP program. Handles ``XDP_DROP``
-+ * and ``XDP_REDIRECT`` only, the rest is processed levels up.
++ * Internal inline abstraction to run XDP program on XSk Rx path. Handles
++ * only the most common ``XDP_REDIRECT`` inline, the rest is processed
++ * externally.
 + * Reports an XDP prog exception on errors.
 + *
 + * Return: libeth_xdp prog verdict depending on the prog's verdict.
 + */
 +static __always_inline u32
-+__libeth_xdp_run_prog(struct libeth_xdp_buff *xdp,
++__libeth_xsk_run_prog(struct libeth_xdp_buff *xdp,
 +		      const struct libeth_xdp_tx_bulk *bq)
 +{
 +	enum xdp_action act;
++	int ret = 0;
 +
 +	act = bpf_prog_run_xdp(bq->prog, &xdp->base);
-+	if (unlikely(act < XDP_DROP || act > XDP_REDIRECT))
-+		goto out;
++	if (unlikely(act != XDP_REDIRECT))
++rest:
++		return __libeth_xsk_run_prog_slow(xdp, bq, act, ret);
 +
-+	switch (act) {
-+	case XDP_PASS:
-+		return LIBETH_XDP_PASS;
-+	case XDP_DROP:
-+		libeth_xdp_return_buff(xdp);
++	ret = xdp_do_redirect(bq->dev, &xdp->base, bq->prog);
++	if (unlikely(ret))
++		goto rest;
 +
-+		return LIBETH_XDP_DROP;
-+	case XDP_TX:
-+		return LIBETH_XDP_TX;
-+	case XDP_REDIRECT:
-+		if (unlikely(xdp_do_redirect(bq->dev, &xdp->base, bq->prog)))
-+			break;
-+
-+		xdp->data = NULL;
-+
-+		return LIBETH_XDP_REDIRECT;
-+	default:
-+		break;
-+	}
-+
-+out:
-+	return libeth_xdp_prog_exception(bq, xdp, act, 0);
++	return LIBETH_XDP_REDIRECT;
 +}
 +
 +/**
-+ * __libeth_xdp_run_flush - run XDP program and handle ``XDP_TX`` verdict
-+ * @xdp: XDP buffer to run the prog on
-+ * @bq: buffer bulk for ``XDP_TX`` queueing
-+ * @run: internal callback for running XDP program
-+ * @queue: internal callback for queuing ``XDP_TX`` frame
-+ * @flush_bulk: driver callback for flushing a bulk
-+ *
-+ * Internal inline abstraction to run XDP program and additionally handle
-+ * ``XDP_TX`` verdict.
-+ * Do not use directly.
-+ *
-+ * Return: libeth_xdp prog verdict depending on the prog's verdict.
-+ */
-+static __always_inline u32
-+__libeth_xdp_run_flush(struct libeth_xdp_buff *xdp,
-+		       struct libeth_xdp_tx_bulk *bq,
-+		       u32 (*run)(struct libeth_xdp_buff *xdp,
-+				  const struct libeth_xdp_tx_bulk *bq),
-+		       bool (*queue)(struct libeth_xdp_tx_bulk *bq,
-+				     struct libeth_xdp_buff *xdp,
-+				     bool (*flush_bulk)
-+					  (struct libeth_xdp_tx_bulk *bq,
-+					   u32 flags)),
-+		       bool (*flush_bulk)(struct libeth_xdp_tx_bulk *bq,
-+					  u32 flags))
-+{
-+	u32 act;
-+
-+	act = run(xdp, bq);
-+	if (act == LIBETH_XDP_TX && unlikely(!queue(bq, xdp, flush_bulk)))
-+		act = LIBETH_XDP_DROP;
-+
-+	bq->act_mask |= act;
-+
-+	return act;
-+}
-+
-+/**
-+ * libeth_xdp_run_prog - run XDP program and handle all verdicts
-+ * @xdp: XDP buffer to process
++ * libeth_xsk_run_prog - run XDP program on XSk path and handle all verdicts
++ * @xdp: XSk buffer to process
 + * @bq: XDP Tx bulk to queue ``XDP_TX`` buffers
 + * @fl: driver ``XDP_TX`` bulk flush callback
 + *
 + * Run the attached XDP program and handle all possible verdicts.
++ * Prefer using it via LIBETH_XSK_DEFINE_RUN{,_PASS,_PROG}().
 + *
-+ * Return: true if the buffer should be passed up the stack, false if the poll
-+ * should go to the next buffer.
++ * Return: libeth_xdp prog verdict depending on the prog's verdict.
 + */
-+#define libeth_xdp_run_prog(xdp, bq, fl)				      \
-+	(__libeth_xdp_run_flush(xdp, bq, __libeth_xdp_run_prog,		      \
-+				libeth_xdp_tx_queue_bulk,		      \
-+				fl) == LIBETH_XDP_PASS)
++#define libeth_xsk_run_prog(xdp, bq, fl)				     \
++	__libeth_xdp_run_flush(xdp, bq, __libeth_xsk_run_prog,		     \
++			       libeth_xsk_tx_queue_bulk, fl)
 +
 +/**
-+ * __libeth_xdp_run_pass - helper to run XDP program and handle the result
-+ * @xdp: XDP buffer to process
++ * __libeth_xsk_run_pass - helper to run XDP program and handle the result
++ * @xdp: XSk buffer to process
 + * @bq: XDP Tx bulk to queue ``XDP_TX`` frames
 + * @napi: NAPI to build an skb and pass it up the stack
 + * @rs: onstack libeth RQ stats
-+ * @md: metadata that should be filled to the XDP buffer
++ * @md: metadata that should be filled to the XSk buffer
 + * @prep: callback for filling the metadata
 + * @run: driver wrapper to run XDP program
 + * @populate: driver callback to populate an skb with the HW descriptor data
 + *
-+ * Inline abstraction that does the following:
-+ * 1) adds frame size and frag number (if needed) to the onstack stats;
-+ * 2) fills the descriptor metadata to the onstack &libeth_xdp_buff
-+ * 3) runs XDP program if present;
-+ * 4) handles all possible verdicts;
-+ * 5) on ``XDP_PASS`, builds an skb from the buffer;
-+ * 6) populates it with the descriptor metadata;
-+ * 7) passes it up the stack.
++ * Inline abstraction, XSk's counterpart of __libeth_xdp_run_pass(), see its
++ * doc for details.
 + *
-+ * In most cases, number 2 means just writing the pointer to the HW descriptor
-+ * to the XDP buffer. If so, please use LIBETH_XDP_DEFINE_RUN{,_PASS}()
-+ * wrappers to build a driver function.
++ * Return: false if the polling loop must be exited due to lack of free
++ * buffers, true otherwise.
 + */
-+static __always_inline void
-+__libeth_xdp_run_pass(struct libeth_xdp_buff *xdp,
++static __always_inline bool
++__libeth_xsk_run_pass(struct libeth_xdp_buff *xdp,
 +		      struct libeth_xdp_tx_bulk *bq, struct napi_struct *napi,
 +		      struct libeth_rq_napi_stats *rs, const void *md,
 +		      void (*prep)(struct libeth_xdp_buff *xdp,
 +				   const void *md),
-+		      bool (*run)(struct libeth_xdp_buff *xdp,
-+				  struct libeth_xdp_tx_bulk *bq),
++		      u32 (*run)(struct libeth_xdp_buff *xdp,
++				 struct libeth_xdp_tx_bulk *bq),
 +		      bool (*populate)(struct sk_buff *skb,
 +				       const struct libeth_xdp_buff *xdp,
 +				       struct libeth_rq_napi_stats *rs))
 +{
 +	struct sk_buff *skb;
++	u32 act;
 +
 +	rs->bytes += xdp->base.data_end - xdp->data;
 +	rs->packets++;
 +
-+	if (xdp_buff_has_frags(&xdp->base))
-+		libeth_xdp_buff_stats_frags(rs, xdp);
++	if (unlikely(xdp_buff_has_frags(&xdp->base)))
++		libeth_xsk_buff_stats_frags(rs, xdp);
 +
 +	if (prep && (!__builtin_constant_p(!!md) || md))
 +		prep(xdp, md);
 +
-+	if (!bq || !run || !bq->prog)
-+		goto build;
++	act = run(xdp, bq);
++	if (likely(act == LIBETH_XDP_REDIRECT))
++		return true;
 +
-+	if (!run(xdp, bq))
-+		return;
++	if (act != LIBETH_XDP_PASS)
++		return act != LIBETH_XDP_ABORTED;
 +
-+build:
-+	skb = xdp_build_skb_from_buff(&xdp->base);
++	skb = xdp_build_skb_from_zc(&xdp->base);
 +	if (unlikely(!skb)) {
-+		libeth_xdp_return_buff_slow(xdp);
-+		return;
++		libeth_xsk_buff_free_slow(xdp);
++		return true;
 +	}
-+
-+	xdp->data = NULL;
 +
 +	if (unlikely(!populate(skb, xdp, rs))) {
 +		napi_consume_skb(skb, true);
-+		return;
++		return true;
 +	}
 +
 +	napi_gro_receive(napi, skb);
-+}
 +
-+static inline void libeth_xdp_prep_desc(struct libeth_xdp_buff *xdp,
-+					const void *desc)
-+{
-+	xdp->desc = desc;
++	return true;
 +}
 +
 +/**
-+ * libeth_xdp_run_pass - helper to run XDP program and handle the result
-+ * @xdp: XDP buffer to process
++ * libeth_xsk_run_pass - helper to run XDP program and handle the result
++ * @xdp: XSk buffer to process
 + * @bq: XDP Tx bulk to queue ``XDP_TX`` frames
 + * @napi: NAPI to build an skb and pass it up the stack
-+ * @ss: onstack libeth RQ stats
++ * @rs: onstack libeth RQ stats
 + * @desc: pointer to the HW descriptor for that frame
 + * @run: driver wrapper to run XDP program
 + * @populate: driver callback to populate an skb with the HW descriptor data
@@ -461,12 +430,12 @@ index 780447cdabc1..db99bc690eb6 100644
 + * Wrapper around the underscored version when "fill the descriptor metadata"
 + * means just writing the pointer to the HW descriptor as @xdp->desc.
 + */
-+#define libeth_xdp_run_pass(xdp, bq, napi, ss, desc, run, populate)	      \
-+	__libeth_xdp_run_pass(xdp, bq, napi, ss, desc, libeth_xdp_prep_desc,  \
++#define libeth_xsk_run_pass(xdp, bq, napi, rs, desc, run, populate)	     \
++	__libeth_xsk_run_pass(xdp, bq, napi, rs, desc, libeth_xdp_prep_desc, \
 +			      run, populate)
 +
 +/**
-+ * libeth_xdp_finalize_rx - finalize XDPSQ after a NAPI polling loop
++ * libeth_xsk_finalize_rx - finalize XDPSQ after an XSk NAPI polling loop
 + * @bq: ``XDP_TX`` frame bulk
 + * @flush: driver callback to flush the bulk
 + * @finalize: driver callback to start sending the frames and run the timer
@@ -474,67 +443,220 @@ index 780447cdabc1..db99bc690eb6 100644
 + * Flush the bulk if there are frames left to send, kick the queue and flush
 + * the XDP maps.
 + */
-+#define libeth_xdp_finalize_rx(bq, flush, finalize)			      \
-+	__libeth_xdp_finalize_rx(bq, 0, flush, finalize)
++#define libeth_xsk_finalize_rx(bq, flush, finalize)			     \
++	__libeth_xdp_finalize_rx(bq, LIBETH_XDP_TX_XSK, flush, finalize)
 +
-+static __always_inline void
-+__libeth_xdp_finalize_rx(struct libeth_xdp_tx_bulk *bq, u32 flags,
-+			 bool (*flush_bulk)(struct libeth_xdp_tx_bulk *bq,
-+					    u32 flags),
-+			 void (*finalize)(void *xdpsq, bool sent, bool flush))
-+{
-+	if (bq->act_mask & LIBETH_XDP_TX) {
-+		if (bq->count)
-+			flush_bulk(bq, flags | LIBETH_XDP_TX_DROP);
-+		finalize(bq->xdpsq, true, true);
-+	}
-+	if (bq->act_mask & LIBETH_XDP_REDIRECT)
-+		xdp_do_flush();
++/*
++ * Helpers to reduce boilerplate code in drivers.
++ *
++ * Typical driver XSk Rx flow would be (excl. bulk and buff init, frag attach):
++ *
++ * LIBETH_XDP_DEFINE_START();
++ * LIBETH_XSK_DEFINE_FLUSH_TX(static driver_xsk_flush_tx, driver_xsk_tx_prep,
++ *			      driver_xdp_xmit);
++ * LIBETH_XSK_DEFINE_RUN(static driver_xsk_run, driver_xsk_run_prog,
++ *			 driver_xsk_flush_tx, driver_populate_skb);
++ * LIBETH_XSK_DEFINE_FINALIZE(static driver_xsk_finalize_rx,
++ *			      driver_xsk_flush_tx, driver_xdp_finalize_sq);
++ * LIBETH_XDP_DEFINE_END();
++ *
++ * This will build a set of 4 static functions. The compiler is free to decide
++ * whether to inline them.
++ * Then, in the NAPI polling function:
++ *
++ *	while (packets < budget) {
++ *		// ...
++ *		if (!driver_xsk_run(xdp, &bq, napi, &rs, desc))
++ *			break;
++ *	}
++ *	driver_xsk_finalize_rx(&bq);
++ */
 +
-+	rcu_read_unlock();
-+}
++/**
++ * LIBETH_XSK_DEFINE_FLUSH_TX - define a driver XSk ``XDP_TX`` flush function
++ * @name: name of the function to define
++ * @prep: driver callback to clean an XDPSQ
++ * @xmit: driver callback to write a HW Tx descriptor
++ */
++#define LIBETH_XSK_DEFINE_FLUSH_TX(name, prep, xmit)			     \
++	__LIBETH_XDP_DEFINE_FLUSH_TX(name, prep, xmit, xsk)
 +
- /* Tx buffer completion */
- 
- void libeth_xdp_return_buff_bulk(const struct skb_shared_info *sinfo,
++/**
++ * LIBETH_XSK_DEFINE_RUN_PROG - define a driver XDP program run function
++ * @name: name of the function to define
++ * @flush: driver callback to flush an XSk ``XDP_TX`` bulk
++ */
++#define LIBETH_XSK_DEFINE_RUN_PROG(name, flush)				     \
++	u32 __LIBETH_XDP_DEFINE_RUN_PROG(name, flush, xsk)
++
++/**
++ * LIBETH_XSK_DEFINE_RUN_PASS - define a driver buffer process + pass function
++ * @name: name of the function to define
++ * @run: driver callback to run XDP program (above)
++ * @populate: driver callback to fill an skb with HW descriptor info
++ */
++#define LIBETH_XSK_DEFINE_RUN_PASS(name, run, populate)			     \
++	bool __LIBETH_XDP_DEFINE_RUN_PASS(name, run, populate, xsk)
++
++/**
++ * LIBETH_XSK_DEFINE_RUN - define a driver buffer process, run + pass function
++ * @name: name of the function to define
++ * @run: name of the XDP prog run function to define
++ * @flush: driver callback to flush an XSk ``XDP_TX`` bulk
++ * @populate: driver callback to fill an skb with HW descriptor info
++ */
++#define LIBETH_XSK_DEFINE_RUN(name, run, flush, populate)		     \
++	__LIBETH_XDP_DEFINE_RUN(name, run, flush, populate, XSK)
++
++/**
++ * LIBETH_XSK_DEFINE_FINALIZE - define a driver XSk NAPI poll finalize function
++ * @name: name of the function to define
++ * @flush: driver callback to flush an XSk ``XDP_TX`` bulk
++ * @finalize: driver callback to finalize an XDPSQ and run the timer
++ */
++#define LIBETH_XSK_DEFINE_FINALIZE(name, flush, finalize)		     \
++	__LIBETH_XDP_DEFINE_FINALIZE(name, flush, finalize, xsk)
++
+ #endif /* __LIBETH_XSK_H */
 diff --git a/drivers/net/ethernet/intel/libeth/xdp.c b/drivers/net/ethernet/intel/libeth/xdp.c
-index d0669f1f02f3..1607579d65bb 100644
+index b5fb2ce92da8..d4ac027d9584 100644
 --- a/drivers/net/ethernet/intel/libeth/xdp.c
 +++ b/drivers/net/ethernet/intel/libeth/xdp.c
-@@ -277,6 +277,33 @@ bool libeth_xdp_buff_add_frag(struct libeth_xdp_buff *xdp,
- }
- EXPORT_SYMBOL_GPL(libeth_xdp_buff_add_frag);
+@@ -286,7 +286,8 @@ EXPORT_SYMBOL_GPL(libeth_xdp_buff_add_frag);
+  * @act: original XDP prog verdict
+  * @ret: error code if redirect failed
+  *
+- * External helper used by __libeth_xdp_run_prog(), do not call directly.
++ * External helper used by __libeth_xdp_run_prog() and
++ * __libeth_xsk_run_prog_slow(), do not call directly.
+  * Reports invalid @act, XDP exception trace event and frees the buffer.
+  *
+  * Return: libeth_xdp XDP prog verdict.
+@@ -300,6 +301,9 @@ u32 __cold libeth_xdp_prog_exception(const struct libeth_xdp_tx_bulk *bq,
  
+ 	libeth_trace_xdp_exception(bq->dev, bq->prog, act);
+ 
++	if (xdp->base.rxq->mem.type == MEM_TYPE_XSK_BUFF_POOL)
++		return libeth_xsk_prog_exception(xdp, act, ret);
++
+ 	libeth_xdp_return_buff_slow(xdp);
+ 
+ 	return LIBETH_XDP_DROP;
+diff --git a/drivers/net/ethernet/intel/libeth/xsk.c b/drivers/net/ethernet/intel/libeth/xsk.c
+index f09e1940183b..f8f4016d1b25 100644
+--- a/drivers/net/ethernet/intel/libeth/xsk.c
++++ b/drivers/net/ethernet/intel/libeth/xsk.c
+@@ -38,3 +38,110 @@ void libeth_xsk_buff_free_slow(struct libeth_xdp_buff *xdp)
+ 	xsk_buff_free(&xdp->base);
+ }
+ EXPORT_SYMBOL_GPL(libeth_xsk_buff_free_slow);
++
 +/**
-+ * libeth_xdp_prog_exception - handle XDP prog exceptions
-+ * @bq: XDP Tx bulk
-+ * @xdp: buffer to process
-+ * @act: original XDP prog verdict
-+ * @ret: error code if redirect failed
++ * libeth_xsk_buff_add_frag - add frag to XSk Rx buffer
++ * @head: head buffer
++ * @xdp: frag buffer
 + *
-+ * External helper used by __libeth_xdp_run_prog(), do not call directly.
-+ * Reports invalid @act, XDP exception trace event and frees the buffer.
++ * External helper used by libeth_xsk_process_buff(), do not call directly.
++ * Frees both main and frag buffers on error.
++ *
++ * Return: main buffer with attached frag on success, %NULL on error (no space
++ * for a new frag).
++ */
++struct libeth_xdp_buff *libeth_xsk_buff_add_frag(struct libeth_xdp_buff *head,
++						 struct libeth_xdp_buff *xdp)
++{
++	if (!xsk_buff_add_frag(&head->base, &xdp->base))
++		goto free;
++
++	return head;
++
++free:
++	libeth_xsk_buff_free_slow(xdp);
++	libeth_xsk_buff_free_slow(head);
++
++	return NULL;
++}
++EXPORT_SYMBOL_GPL(libeth_xsk_buff_add_frag);
++
++/**
++ * libeth_xsk_buff_stats_frags - update onstack RQ stats with XSk frags info
++ * @rs: onstack stats to update
++ * @xdp: buffer to account
++ *
++ * External helper used by __libeth_xsk_run_pass(), do not call directly.
++ * Adds buffer's frags count and total len to the onstack stats.
++ */
++void libeth_xsk_buff_stats_frags(struct libeth_rq_napi_stats *rs,
++				 const struct libeth_xdp_buff *xdp)
++{
++	libeth_xdp_buff_stats_frags(rs, xdp);
++}
++EXPORT_SYMBOL_GPL(libeth_xsk_buff_stats_frags);
++
++/**
++ * __libeth_xsk_run_prog_slow - process the non-``XDP_REDIRECT`` verdicts
++ * @xdp: buffer to process
++ * @bq: Tx bulk for queueing on ``XDP_TX``
++ * @act: verdict to process
++ * @ret: error code if ``XDP_REDIRECT`` failed
++ *
++ * External helper used by __libeth_xsk_run_prog(), do not call directly.
++ * ``XDP_REDIRECT`` is the most common and hottest verdict on XSk, thus
++ * it is processed inline. The rest goes here for out-of-line processing,
++ * together with redirect errors.
 + *
 + * Return: libeth_xdp XDP prog verdict.
 + */
-+u32 __cold libeth_xdp_prog_exception(const struct libeth_xdp_tx_bulk *bq,
-+				     struct libeth_xdp_buff *xdp,
++u32 __libeth_xsk_run_prog_slow(struct libeth_xdp_buff *xdp,
++			       const struct libeth_xdp_tx_bulk *bq,
++			       enum xdp_action act, int ret)
++{
++	switch (act) {
++	case XDP_DROP:
++		xsk_buff_free(&xdp->base);
++
++		return LIBETH_XDP_DROP;
++	case XDP_TX:
++		return LIBETH_XDP_TX;
++	case XDP_PASS:
++		return LIBETH_XDP_PASS;
++	default:
++		break;
++	}
++
++	return libeth_xdp_prog_exception(bq, xdp, act, ret);
++}
++EXPORT_SYMBOL_GPL(__libeth_xsk_run_prog_slow);
++
++/**
++ * libeth_xsk_prog_exception - handle XDP prog exceptions on XSk
++ * @xdp: buffer to process
++ * @act: verdict returned by the prog
++ * @ret: error code if ``XDP_REDIRECT`` failed
++ *
++ * Internal. Frees the buffer and, if the queue uses XSk wakeups, stop the
++ * current NAPI poll when there are no free buffers left.
++ *
++ * Return: libeth_xdp's XDP prog verdict.
++ */
++u32 __cold libeth_xsk_prog_exception(struct libeth_xdp_buff *xdp,
 +				     enum xdp_action act, int ret)
 +{
-+	if (act > XDP_REDIRECT)
-+		bpf_warn_invalid_xdp_action(bq->dev, bq->prog, act);
++	const struct xdp_buff_xsk *xsk;
++	u32 __ret = LIBETH_XDP_DROP;
 +
-+	libeth_trace_xdp_exception(bq->dev, bq->prog, act);
++	if (act != XDP_REDIRECT)
++		goto drop;
 +
-+	libeth_xdp_return_buff_slow(xdp);
++	xsk = container_of(&xdp->base, typeof(*xsk), xdp);
++	if (xsk_uses_need_wakeup(xsk->pool) && ret == -ENOBUFS)
++		__ret = LIBETH_XDP_ABORTED;
 +
-+	return LIBETH_XDP_DROP;
++drop:
++	libeth_xsk_buff_free_slow(xdp);
++
++	return __ret;
 +}
-+EXPORT_SYMBOL_GPL(libeth_xdp_prog_exception);
-+
- /* Tx buffer completion */
- 
- static void libeth_xdp_put_netmem_bulk(netmem_ref netmem,
 -- 
 2.49.0
 
