@@ -1,67 +1,67 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 37CD9C7114C
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C7B96C71150
 	for <intel-wired-lan@archiver.kernel.org>; Thu, 12 Jun 2025 17:49:07 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 7FDAD613CD;
-	Thu, 12 Jun 2025 17:49:06 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 9FC85408B4;
+	Thu, 12 Jun 2025 17:49:07 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id iZT63EoyQXR8; Thu, 12 Jun 2025 17:49:05 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id f_hLnrsplT1Y; Thu, 12 Jun 2025 17:49:07 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 79D17613E1
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E666B408E6
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1749750544;
-	bh=Un5TkhIT/Wz9HhAfS9h6X7WbqAP8z3vDGkdoB/8g3Cc=;
+	s=default; t=1749750546;
+	bh=i+nADniSMO4kOdl7JpuMFz22Oj8taSqxVQklFHqP7kA=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=mwzYk4CBLo8/c/uvFERXPZygQkzgXr9NTjhqm3XhIIt84HyRuHNByM6M3zu0tnqPH
-	 ioVkfp3uoOu8J5nBrsH7nCprS/FhOEGtIGnfRM4DZW8BWORUJ3/EhUmFgqdiGgPy5H
-	 XDg/gaUV2RrW+Wrg3Uj66DGAek9Li6StACma50aER+enTLTO+zr7QC80K0nbS1RWGX
-	 7N2MKpkwfcC3WlGPjAwMnGvcnKYztWNBaer8WM32WPsRTIjIPLYd8uU1nddWknL18P
-	 e2aZN7QEahDaXxQD6N0ROFpd7AVhYjx+FL/oSPC7FJb1gB/gmnmBwHfTx+mio1HEjd
-	 GTrWNA8ZrWr5w==
+	b=69cy08MTNb871G3vkEDdEu0YrB2Fo9cV9g03fTguqf1IXROrhbus1b22oFDpUmO6g
+	 NT5MaljwzcfXQdT/bYxsPbMJa8/HZqqbsVq15dCWwtIc6PVSNalXjW06UgljnJ/pRY
+	 DOBe/KKCvClwQg/DKOWmPLbLnOyLDgjUTlRRlv4jUwD0xeyUUedYufodcbc8LX5Rel
+	 KO9AnCMH5HxzPZ84ui2B0eoTKMnN43votbCnHV443zX8UeVEvinlUs3zMVmY8eGfbx
+	 crwr/ANS0ArdMfAi9u5aSMluJS0cC+h7HS+x6xP9S3iEeES4WmJmogEQl4DMuGY3vM
+	 xXIE5528T1IyA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 79D17613E1;
-	Thu, 12 Jun 2025 17:49:04 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id 281F61BD
- for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Jun 2025 16:10:05 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id E666B408E6;
+	Thu, 12 Jun 2025 17:49:06 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 7D5A11BD
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Jun 2025 16:10:24 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 1A1A5821FC
- for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Jun 2025 16:10:05 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 6F098821FC
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Jun 2025 16:10:24 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 8qNryyYjenU0 for <intel-wired-lan@lists.osuosl.org>;
- Thu, 12 Jun 2025 16:10:04 +0000 (UTC)
+ id yR0aOcNdhQbH for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 12 Jun 2025 16:10:23 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.14;
  helo=mgamail.intel.com; envelope-from=aleksander.lobakin@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 68331821A4
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 68331821A4
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org B0F4983403
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B0F4983403
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.14])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 68331821A4
- for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Jun 2025 16:10:04 +0000 (UTC)
-X-CSE-ConnectionGUID: QMLGHLtZQRymHGp/JoLV9Q==
-X-CSE-MsgGUID: bzpuFN/rS0G56bhQt+8nRQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11462"; a="55738965"
-X-IronPort-AV: E=Sophos;i="6.16,231,1744095600"; d="scan'208";a="55738965"
+ by smtp1.osuosl.org (Postfix) with ESMTPS id B0F4983403
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Jun 2025 16:10:23 +0000 (UTC)
+X-CSE-ConnectionGUID: 46lzbzpMSOeMxQ2xLrvD9A==
+X-CSE-MsgGUID: YzvX/w90R3u+fSNMNJXa5g==
+X-IronPort-AV: E=McAfee;i="6800,10657,11462"; a="55739069"
+X-IronPort-AV: E=Sophos;i="6.16,231,1744095600"; d="scan'208";a="55739069"
 Received: from orviesa008.jf.intel.com ([10.64.159.148])
  by orvoesa106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 12 Jun 2025 09:10:04 -0700
-X-CSE-ConnectionGUID: 9ol9yc4lQG+ORUoxU94H9g==
-X-CSE-MsgGUID: e0+72EwMSNmSzuoU3tcmig==
+ 12 Jun 2025 09:10:24 -0700
+X-CSE-ConnectionGUID: rkgdSCYuSHeE3cBoSuoogQ==
+X-CSE-MsgGUID: Du8hV7gzS+KQss3MfXVX6A==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.16,231,1744095600"; d="scan'208";a="148468585"
+X-IronPort-AV: E=Sophos;i="6.16,231,1744095600"; d="scan'208";a="148468611"
 Received: from newjersey.igk.intel.com ([10.102.20.203])
- by orviesa008.jf.intel.com with ESMTP; 12 Jun 2025 09:10:00 -0700
+ by orviesa008.jf.intel.com with ESMTP; 12 Jun 2025 09:10:19 -0700
 From: Alexander Lobakin <aleksander.lobakin@intel.com>
 To: intel-wired-lan@lists.osuosl.org
 Cc: Alexander Lobakin <aleksander.lobakin@intel.com>,
@@ -78,8 +78,8 @@ Cc: Alexander Lobakin <aleksander.lobakin@intel.com>,
  John Fastabend <john.fastabend@gmail.com>, Simon Horman <horms@kernel.org>,
  nex.sw.ncis.osdt.itp.upstreaming@intel.com, bpf@vger.kernel.org,
  netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Date: Thu, 12 Jun 2025 18:02:25 +0200
-Message-ID: <20250612160234.68682-9-aleksander.lobakin@intel.com>
+Date: Thu, 12 Jun 2025 18:02:29 +0200
+Message-ID: <20250612160234.68682-13-aleksander.lobakin@intel.com>
 X-Mailer: git-send-email 2.49.0
 In-Reply-To: <20250612160234.68682-1-aleksander.lobakin@intel.com>
 References: <20250612160234.68682-1-aleksander.lobakin@intel.com>
@@ -88,25 +88,25 @@ Content-Transfer-Encoding: 8bit
 X-Mailman-Approved-At: Thu, 12 Jun 2025 17:48:58 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1749744605; x=1781280605;
+ t=1749744624; x=1781280624;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=v1+nkxODlsKIr/NMccOdNVICiXIi9HZzBieMNXo1diQ=;
- b=gBk6QJzY08OcMk9QJeqhKciqxTP1NQ5QhsTcYfqp0QgGfWF5ymUvF0r/
- 8OqGXkT8AUFVou+9UGnWwCya7OH7bkev8jeRX/ogFVfTbEbpoiBa/Hj12
- 5epiEXlvG7yFwHV94xdJbno3eMIGtaM/egXz6dA5q6Y/YoKka/LbwLE5V
- F6pZw8egnAGBqvAWX1BlUuiKSi5n7MITTL4NFJ/w882vmZVFe9XtDBGXy
- PB9okDBvWwOIM73mFd5dNhK153UKbTqHJw3VlwQJU5VcrB30lHlqKH7B0
- 5wetIz65/2mHft+l9A7tvOGn/LK/zK3q72TyN+U5zNt02JSJt0buC+0/E
- w==;
+ bh=wPH1cvCqRw3ACcUVi06Ys8qB+6Dv7ccwPlYFXZBUpkY=;
+ b=fYZxkqxlLhndkxCPM1a04B/mShze3o09DUnT2YHDBCZS6Hw2KjeSWVih
+ 5s6q/vS8YDZVbjqBMzbLPioKuqakxpZn/PUDfmqe4gvRN3Vg+AAXvnpMC
+ oz8nk9MGjE/ahhdT1/Qg8859ZBXoOIN1hHYC0p2QLK+6ZlkmJzvm5yTrU
+ 8VXNd9Da/gXXBkFlTl1F6QiJ3hUkMdow6ZtkKK1HNMa/C6dPGTdMqMgDB
+ KflkTaMlzIh4uBrOydqcb9XVPbaC12NyiEVwo96o5/AMkfl+F+dybmcaT
+ 7/ekyyoemwuqLdEfuCq2x+vnLo9A/CggjlGqV/BFUum+ACMironKUcZIP
+ A==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=gBk6QJzY
-Subject: [Intel-wired-lan] [PATCH iwl-next v2 08/17] libeth: xdp: add XDPSQ
- cleanup timers
+ header.a=rsa-sha256 header.s=Intel header.b=fYZxkqxl
+Subject: [Intel-wired-lan] [PATCH iwl-next v2 12/17] libeth: xdp: add RSS
+ hash hint and XDP features setup helpers
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -122,165 +122,202 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-When XDP Tx queues are not interrupt-driven but use lazy cleaning,
-i.e. only when there are less than `threshold` free descriptors left,
-we also need cleanup timers to avoid &xdp_buff and &xdp_frame stall
-for too long, especially with Page Pool (it warns every about inflight
-pages every 60 second).
-Let's say we sent 256 frames and don't need to send more, but we clean
-only when the number of pending items >= 384. In that case, those 256
-will stall until 128 more are sent. For this, add simple helpers to
-run a timer which will clean the queue regardless, after 1 second of
-the last send.
-The timer is triggered when finalizing the queue. As long as there is
-regular active traffic, the timer doesn't fire.
+End the XDP section by adding helpers to setup XDP features, flipping
+.ndo_xdp_xmit() support at runtime (in case when it's not always on),
+and calculating the queue clean/refill threshold.
 
 Signed-off-by: Alexander Lobakin <aleksander.lobakin@intel.com>
 ---
- include/net/libeth/types.h              | 21 ++++++++-
- include/net/libeth/xdp.h                | 57 +++++++++++++++++++++++++
- drivers/net/ethernet/intel/libeth/xdp.c | 23 ++++++++++
- 3 files changed, 100 insertions(+), 1 deletion(-)
+ include/net/libeth/xdp.h                | 90 +++++++++++++++++++++++++
+ drivers/net/ethernet/intel/libeth/xdp.c | 69 +++++++++++++++++++
+ 2 files changed, 159 insertions(+)
 
-diff --git a/include/net/libeth/types.h b/include/net/libeth/types.h
-index abfccae1a346..4df703a9eb59 100644
---- a/include/net/libeth/types.h
-+++ b/include/net/libeth/types.h
-@@ -4,7 +4,7 @@
- #ifndef __LIBETH_TYPES_H
- #define __LIBETH_TYPES_H
- 
--#include <linux/spinlock.h>
-+#include <linux/workqueue.h>
- 
- /**
-  * struct libeth_sq_napi_stats - "hot" counters to update in Tx completion loop
-@@ -60,4 +60,23 @@ struct libeth_xdpsq_lock {
- 	bool				share;
- };
- 
-+/* XDPSQ clean-up timers */
-+
-+/**
-+ * struct libeth_xdpsq_timer - timer for cleaning up XDPSQs w/o interrupts
-+ * @xdpsq: queue this timer belongs to
-+ * @lock: lock for the queue
-+ * @dwork: work performing cleanups
-+ *
-+ * XDPSQs not using interrupts but lazy cleaning, i.e. only when there's no
-+ * space for sending the current queued frame/bulk, must fire up timers to
-+ * make sure there are no stale buffers to free.
-+ */
-+struct libeth_xdpsq_timer {
-+	void				*xdpsq;
-+	struct libeth_xdpsq_lock	*lock;
-+
-+	struct delayed_work		dwork;
-+};
-+
- #endif /* __LIBETH_TYPES_H */
 diff --git a/include/net/libeth/xdp.h b/include/net/libeth/xdp.h
-index 20977fdfd6c9..22bd038decb6 100644
+index 46a2ec3c3037..c36b2ca0d04c 100644
 --- a/include/net/libeth/xdp.h
 +++ b/include/net/libeth/xdp.h
-@@ -177,6 +177,63 @@ static inline void libeth_xdpsq_unlock(struct libeth_xdpsq_lock *lock)
- 		__libeth_xdpsq_unlock(lock);
+@@ -1631,6 +1631,51 @@ void name(struct libeth_xdp_tx_bulk *bq)				      \
+ 
+ #define LIBETH_XDP_DEFINE_END()		__diag_pop()
+ 
++/* XMO */
++
++/**
++ * libeth_xdp_buff_to_rq - get RQ pointer from an XDP buffer pointer
++ * @xdp: &libeth_xdp_buff corresponding to the queue
++ * @type: typeof() of the driver Rx queue structure
++ * @member: name of &xdp_rxq_info inside @type
++ *
++ * Often times, pointer to the RQ is needed when reading/filling metadata from
++ * HW descriptors. The helper can be used to quickly jump from an XDP buffer
++ * to the queue corresponding to its &xdp_rxq_info without introducing
++ * additional fields (&libeth_xdp_buff is precisely 1 cacheline long on x64).
++ */
++#define libeth_xdp_buff_to_rq(xdp, type, member)			      \
++	container_of_const((xdp)->base.rxq, type, member)
++
++/**
++ * libeth_xdpmo_rx_hash - convert &libeth_rx_pt to an XDP RSS hash metadata
++ * @hash: pointer to the variable to write the hash to
++ * @rss_type: pointer to the variable to write the hash type to
++ * @val: hash value from the HW descriptor
++ * @pt: libeth parsed packet type
++ *
++ * Handle zeroed/non-available hash and convert libeth parsed packet type to
++ * the corresponding XDP RSS hash type. To be called at the end of
++ * xdp_metadata_ops idpf_xdpmo::xmo_rx_hash() implementation.
++ * Note that if the driver doesn't use a constant packet type lookup table but
++ * generates it at runtime, it must call libeth_rx_pt_gen_hash_type(pt) to
++ * generate XDP RSS hash type for each packet type.
++ *
++ * Return: 0 on success, -ENODATA when the hash is not available.
++ */
++static inline int libeth_xdpmo_rx_hash(u32 *hash,
++				       enum xdp_rss_hash_type *rss_type,
++				       u32 val, struct libeth_rx_pt pt)
++{
++	if (unlikely(!val))
++		return -ENODATA;
++
++	*hash = val;
++	*rss_type = pt.hash_type;
++
++	return 0;
++}
++
+ /* Tx buffer completion */
+ 
+ void libeth_xdp_return_buff_bulk(const struct skb_shared_info *sinfo,
+@@ -1697,4 +1742,49 @@ static inline void libeth_xdp_complete_tx(struct libeth_sqe *sqe,
+ 	__libeth_xdp_complete_tx(sqe, cp, libeth_xdp_return_buff_bulk);
  }
  
-+/* XDPSQ clean-up timers */
++/* Misc */
 +
-+void libeth_xdpsq_init_timer(struct libeth_xdpsq_timer *timer, void *xdpsq,
-+			     struct libeth_xdpsq_lock *lock,
-+			     void (*poll)(struct work_struct *work));
++u32 libeth_xdp_queue_threshold(u32 count);
 +
-+/**
-+ * libeth_xdpsq_deinit_timer - deinitialize &libeth_xdpsq_timer
-+ * @timer: timer to deinitialize
-+ *
-+ * Flush and disable the underlying workqueue.
-+ */
-+static inline void libeth_xdpsq_deinit_timer(struct libeth_xdpsq_timer *timer)
-+{
-+	cancel_delayed_work_sync(&timer->dwork);
-+}
++void __libeth_xdp_set_features(struct net_device *dev,
++			       const struct xdp_metadata_ops *xmo);
++void libeth_xdp_set_redirect(struct net_device *dev, bool enable);
 +
 +/**
-+ * libeth_xdpsq_queue_timer - run &libeth_xdpsq_timer
-+ * @timer: timer to queue
++ * libeth_xdp_set_features - set XDP features for netdev
++ * @dev: &net_device to configure
++ * @...: optional params, see __libeth_xdp_set_features()
 + *
-+ * Should be called after the queue was filled and the transmission was run
-+ * to complete the pending buffers if no further sending will be done in a
-+ * second (-> lazy cleaning won't happen).
-+ * If the timer was already run, it will be requeued back to one second
-+ * timeout again.
++ * Set all the features libeth_xdp supports, including .ndo_xdp_xmit(). That
++ * said, it should be used only when XDPSQs are always available regardless
++ * of whether an XDP prog is attached to @dev.
 + */
-+static inline void libeth_xdpsq_queue_timer(struct libeth_xdpsq_timer *timer)
-+{
-+	mod_delayed_work_on(raw_smp_processor_id(), system_bh_highpri_wq,
-+			    &timer->dwork, HZ);
-+}
++#define libeth_xdp_set_features(dev, ...)				      \
++	CONCATENATE(__libeth_xdp_feat,					      \
++		    COUNT_ARGS(__VA_ARGS__))(dev, ##__VA_ARGS__)
++
++#define __libeth_xdp_feat0(dev)						      \
++	__libeth_xdp_set_features(dev, NULL)
++#define __libeth_xdp_feat1(dev, xmo)					      \
++	__libeth_xdp_set_features(dev, xmo)
 +
 +/**
-+ * libeth_xdpsq_run_timer - wrapper to run a queue clean-up on a timer event
-+ * @work: workqueue belonging to the corresponding timer
-+ * @poll: driver-specific completion queue poll function
++ * libeth_xdp_set_features_noredir - enable all libeth_xdp features w/o redir
++ * @dev: target &net_device
++ * @...: optional params, see __libeth_xdp_set_features()
 + *
-+ * Run the polling function on the locked queue and requeue the timer if
-+ * there's more work to do.
-+ * Designed to be used via LIBETH_XDP_DEFINE_TIMER() below.
++ * Enable everything except the .ndo_xdp_xmit() feature, use when XDPSQs are
++ * not available right after netdev registration.
 + */
-+static __always_inline void
-+libeth_xdpsq_run_timer(struct work_struct *work,
-+		       u32 (*poll)(void *xdpsq, u32 budget))
-+{
-+	struct libeth_xdpsq_timer *timer = container_of(work, typeof(*timer),
-+							dwork.work);
++#define libeth_xdp_set_features_noredir(dev, ...)			      \
++	__libeth_xdp_set_features_noredir(dev, __UNIQUE_ID(dev_),	      \
++					  ##__VA_ARGS__)
 +
-+	libeth_xdpsq_lock(timer->lock);
++#define __libeth_xdp_set_features_noredir(dev, ud, ...) do {		      \
++	struct net_device *ud = (dev);					      \
++									      \
++	libeth_xdp_set_features(ud, ##__VA_ARGS__);			      \
++	libeth_xdp_set_redirect(ud, false);				      \
++} while (0)
 +
-+	if (poll(timer->xdpsq, U32_MAX))
-+		libeth_xdpsq_queue_timer(timer);
-+
-+	libeth_xdpsq_unlock(timer->lock);
-+}
-+
- /* Common Tx bits */
- 
- /**
+ #endif /* __LIBETH_XDP_H */
 diff --git a/drivers/net/ethernet/intel/libeth/xdp.c b/drivers/net/ethernet/intel/libeth/xdp.c
-index 0f08dd405190..6f62603cf568 100644
+index 1607579d65bb..4eb0f3c6cdab 100644
 --- a/drivers/net/ethernet/intel/libeth/xdp.c
 +++ b/drivers/net/ethernet/intel/libeth/xdp.c
-@@ -56,6 +56,29 @@ __libeth_xdpsq_unlock(struct libeth_xdpsq_lock *lock)
+@@ -340,6 +340,75 @@ void libeth_xdp_return_buff_bulk(const struct skb_shared_info *sinfo,
  }
- EXPORT_SYMBOL_GPL(__libeth_xdpsq_unlock);
+ EXPORT_SYMBOL_GPL(libeth_xdp_return_buff_bulk);
  
-+/* XDPSQ clean-up timers */
++/* Misc */
 +
 +/**
-+ * libeth_xdpsq_init_timer - initialize an XDPSQ clean-up timer
-+ * @timer: timer to initialize
-+ * @xdpsq: queue this timer belongs to
-+ * @lock: corresponding XDPSQ lock
-+ * @poll: queue polling/completion function
++ * libeth_xdp_queue_threshold - calculate XDP queue clean/refill threshold
++ * @count: number of descriptors in the queue
 + *
-+ * XDPSQ clean-up timers must be set up before using at the queue configuration
-+ * time. Set the required pointers and the cleaning callback.
++ * The threshold is the limit at which RQs start to refill (when the number of
++ * empty buffers exceeds it) and SQs get cleaned up (when the number of free
++ * descriptors goes below it). To speed up hotpath processing, threshold is
++ * always pow-2, closest to 1/4 of the queue length.
++ * Don't call it on hotpath, calculate and cache the threshold during the
++ * queue initialization.
++ *
++ * Return: the calculated threshold.
 + */
-+void libeth_xdpsq_init_timer(struct libeth_xdpsq_timer *timer, void *xdpsq,
-+			     struct libeth_xdpsq_lock *lock,
-+			     void (*poll)(struct work_struct *work))
++u32 libeth_xdp_queue_threshold(u32 count)
 +{
-+	timer->xdpsq = xdpsq;
-+	timer->lock = lock;
++	u32 quarter, low, high;
 +
-+	INIT_DELAYED_WORK(&timer->dwork, poll);
++	if (likely(is_power_of_2(count)))
++		return count >> 2;
++
++	quarter = DIV_ROUND_CLOSEST(count, 4);
++	low = rounddown_pow_of_two(quarter);
++	high = roundup_pow_of_two(quarter);
++
++	return high - quarter <= quarter - low ? high : low;
 +}
-+EXPORT_SYMBOL_GPL(libeth_xdpsq_init_timer);
++EXPORT_SYMBOL_GPL(libeth_xdp_queue_threshold);
 +
- /* ``XDP_TX`` bulking */
++/**
++ * __libeth_xdp_set_features - set XDP features for netdev
++ * @dev: &net_device to configure
++ * @xmo: XDP metadata ops (Rx hints)
++ *
++ * Set all the features libeth_xdp supports. Only the first argument is
++ * necessary.
++ * Use the non-underscored versions in drivers instead.
++ */
++void __libeth_xdp_set_features(struct net_device *dev,
++			       const struct xdp_metadata_ops *xmo)
++{
++	xdp_set_features_flag(dev,
++			      NETDEV_XDP_ACT_BASIC |
++			      NETDEV_XDP_ACT_REDIRECT |
++			      NETDEV_XDP_ACT_NDO_XMIT |
++			      NETDEV_XDP_ACT_RX_SG |
++			      NETDEV_XDP_ACT_NDO_XMIT_SG);
++	dev->xdp_metadata_ops = xmo;
++}
++EXPORT_SYMBOL_GPL(__libeth_xdp_set_features);
++
++/**
++ * libeth_xdp_set_redirect - toggle the XDP redirect feature
++ * @dev: &net_device to configure
++ * @enable: whether XDP is enabled
++ *
++ * Use this when XDPSQs are not always available to dynamically enable
++ * and disable redirect feature.
++ */
++void libeth_xdp_set_redirect(struct net_device *dev, bool enable)
++{
++	if (enable)
++		xdp_features_set_redirect_target(dev, true);
++	else
++		xdp_features_clear_redirect_target(dev);
++}
++EXPORT_SYMBOL_GPL(libeth_xdp_set_redirect);
++
+ /* Module */
  
- static void __cold
+ static const struct libeth_xdp_ops xdp_ops __initconst = {
 -- 
 2.49.0
 
