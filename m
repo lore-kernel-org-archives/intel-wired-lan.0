@@ -4,55 +4,55 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 41AE8C7114C
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 13 Jun 2025 01:01:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 480CDC71150
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 13 Jun 2025 01:01:42 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 3D42081387;
-	Fri, 13 Jun 2025 01:01:40 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 8F9B0839E7;
+	Fri, 13 Jun 2025 01:01:41 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id aOPC69PfPyFG; Fri, 13 Jun 2025 01:01:39 +0000 (UTC)
+ id UHDVqgb4sobH; Fri, 13 Jun 2025 01:01:41 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org AECA981D21
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org EF04E8213D
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1749776499;
-	bh=Cd/Oe0aXwrMaFUGGocZ4naalSlehfknUBPrtf0Cabhg=;
+	s=default; t=1749776501;
+	bh=YHGGPqmczZnV3XPYx2wOfqjggN8JGFNM6KVsboot22U=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=5ZV869fhOaOqfD5pCm4quYlaAglI+AEKzqZnODm1Y+6tor29tUYjIpvPEx16t6bId
-	 H+Yj1VCKkmOtYFai35r4Kg73TvTzL/tZ8BTwQhTRnTF7ftNaXoSoPN+6nVVWf4qsw6
-	 s3Y0Lw6nQDHrcKn25UppyDmhcX2FDHboe8StPmpxgtcRP2HHHY1VntIfVZV015TFVB
-	 LlBb/vNxJg8R55V6X/QjDm3MPvl8Z8k+radQbeySTtRBMjMs2pOkxQH1RDvU+DbyG7
-	 WO6ix1s65ZIk3OyzkHexLPI0KeObxZtvSBxfr7wVNrX8OULkKOIBw0JPEeRyEXrJ9h
-	 h/F8r/DdZeH+g==
+	b=LIy2zjb2XbZGnxyQ/3wbbrUfn/cvx0Zok0tjijZwYSCgXNSSKZdhQMcO4Ni/9XrkY
+	 2Eicf80tumBT9MGwd6nfFICPvLJEvC/KRkIQgFV3bvqH2UwPApNMKnSj4/oDffc6GP
+	 9fYumOnGLgT7fh+ZXhSc5P5ii+WUCIYlQSRjk1xm4BewwpmDrPQfzF4Y5unn/v9iSO
+	 Qj99asEeoq6pJEv+jpMFNmuot0ykgNp5MUorcKmVk6FtOEImzR+iHhN+WQdATfa2tt
+	 bXZboHaAc5fG0VwQNR4EGr/6HUckkhMj39n19M4ZggjFluQmQHIagRnddrrABbvMZD
+	 6bvrzdjGArbMA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id AECA981D21;
-	Fri, 13 Jun 2025 01:01:39 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id 10A2B1BD
- for <intel-wired-lan@lists.osuosl.org>; Fri, 13 Jun 2025 01:01:38 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id EF04E8213D;
+	Fri, 13 Jun 2025 01:01:40 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 34BA41BD
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 13 Jun 2025 01:01:39 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id EB486406CD
- for <intel-wired-lan@lists.osuosl.org>; Fri, 13 Jun 2025 01:01:37 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 271BC817BA
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 13 Jun 2025 01:01:39 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 4hgAISHBDK33 for <intel-wired-lan@lists.osuosl.org>;
- Fri, 13 Jun 2025 01:01:37 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=139.178.84.217;
- helo=dfw.source.kernel.org; envelope-from=kuba@kernel.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 62696406B7
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 62696406B7
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 62696406B7
- for <intel-wired-lan@lists.osuosl.org>; Fri, 13 Jun 2025 01:01:37 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id c_YNXsFknxHn for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 13 Jun 2025 01:01:38 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
+ helo=tor.source.kernel.org; envelope-from=kuba@kernel.org; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 7540A8133A
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7540A8133A
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 7540A8133A
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 13 Jun 2025 01:01:38 +0000 (UTC)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by dfw.source.kernel.org (Postfix) with ESMTP id 566935C6A5A;
- Fri, 13 Jun 2025 00:59:19 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4EEF9C4CEF4;
- Fri, 13 Jun 2025 01:01:35 +0000 (UTC)
+ by tor.source.kernel.org (Postfix) with ESMTP id 4C074629DD;
+ Fri, 13 Jun 2025 01:01:37 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9528CC4CEEA;
+ Fri, 13 Jun 2025 01:01:36 +0000 (UTC)
 From: Jakub Kicinski <kuba@kernel.org>
 To: davem@davemloft.net
 Cc: netdev@vger.kernel.org, edumazet@google.com, pabeni@redhat.com,
@@ -60,31 +60,30 @@ Cc: netdev@vger.kernel.org, edumazet@google.com, pabeni@redhat.com,
  anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
  jacob.e.keller@intel.com, michal.swiatkowski@linux.intel.com,
  Jakub Kicinski <kuba@kernel.org>
-Date: Thu, 12 Jun 2025 18:01:06 -0700
-Message-ID: <20250613010111.3548291-3-kuba@kernel.org>
+Date: Thu, 12 Jun 2025 18:01:08 -0700
+Message-ID: <20250613010111.3548291-5-kuba@kernel.org>
 X-Mailer: git-send-email 2.49.0
 In-Reply-To: <20250613010111.3548291-1-kuba@kernel.org>
 References: <20250613010111.3548291-1-kuba@kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1749776495;
- bh=aXp64FVZ8vBC59bZdDKbUAFWuUawl6rAwfae83yygCo=;
+ d=kernel.org; s=k20201202; t=1749776497;
+ bh=4vTctUvLzZHjpEQ8qUyBMlR0X/R225oRCDjhoV808a4=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=sk5UkXX0JWyh+fdmw6aNtCdpnwUFGXbHKUPRCtfVTkuhvt2cVfUbm13zQuTokL0AY
- +HewobJ/679t7p4sOb89+yThXjjnoAN6YUK7TzuWWBWabqHqMxKA42wTCGfPkczfev
- Ij9H9/B1O87m3Kb2bdFl/QKzNcfQzr1wVY6xZW5J0tX2hRbmzrDhbPaOOqG9xthJe9
- DjyIvP5fr4mEufG5FPPzAEdcC8pwYaFIhRsajCT8HNjsNu4igdvs1I4p3CtnSTRZn5
- TBIxdZFvK8g/YWDuVRxmmLrScpMaMh6Fq3XpgI0yQ4PWGJ6gUrLIU1H1u+6clvheCM
- MEMtjE17x2gEQ==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ b=eZDbs6cMU1fob0ZdzcQA/ZeuGyNFLJeFyo6xt/6eRY9ekn0gCyan5w1zQjcJMDija
+ F5sBc63f+3X0B6GCtnVQ0y7KDdyIOqAdsguIVbX8C+NvllX2LQQheSnCX2wAep5P3Z
+ nLhyvuqIxDs4AU3ObbtrwAVTkrGfXSgSDgB2Og1YhjdQfViTlRLytmC7hUakQhVuSP
+ +ufNN1lgPKK3Jl16zes9ugwyTYfSKkrxDibXpVLVnClFGetKNl+FkjUadllA8bv6mm
+ z3xFOtuvD4aLGKz3ySp7Uw91ov7Biudhn9SdQejSTjpfqY0mtTOLeldkQV+09Bt8OI
+ sUez5a2ijDtgw==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=sk5UkXX0
-Subject: [Intel-wired-lan] [PATCH net-next 2/7] eth: igc: migrate to new
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20201202 header.b=eZDbs6cM
+Subject: [Intel-wired-lan] [PATCH net-next 4/7] eth: fm10k: migrate to new
  RXFH callbacks
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
@@ -103,71 +102,96 @@ Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 Migrate to new callbacks added by commit 9bb00786fc61 ("net: ethtool:
 add dedicated callbacks for getting and setting rxfh fields").
+.get callback moves out of the switch and set_rxnfc disappears
+as ETHTOOL_SRXFH as the only functionality.
 
 Signed-off-by: Jakub Kicinski <kuba@kernel.org>
 ---
- drivers/net/ethernet/intel/igc/igc_ethtool.c | 18 ++++++++++--------
- 1 file changed, 10 insertions(+), 8 deletions(-)
+ .../net/ethernet/intel/fm10k/fm10k_ethtool.c  | 34 ++++++-------------
+ 1 file changed, 10 insertions(+), 24 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_ethtool.c b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-index 3fc1eded9605..e6cac8d4b862 100644
---- a/drivers/net/ethernet/intel/igc/igc_ethtool.c
-+++ b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-@@ -1045,9 +1045,11 @@ static int igc_ethtool_get_nfc_rules(struct igc_adapter *adapter,
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
+index 1bc5b6c0b897..1954a04460d1 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
+@@ -691,9 +691,11 @@ static int fm10k_set_coalesce(struct net_device *dev,
  	return 0;
  }
  
--static int igc_ethtool_get_rss_hash_opts(struct igc_adapter *adapter,
--					 struct ethtool_rxnfc *cmd)
-+static int igc_ethtool_get_rxfh_fields(struct net_device *dev,
-+				       struct ethtool_rxfh_fields *cmd)
+-static int fm10k_get_rss_hash_opts(struct fm10k_intfc *interface,
+-				   struct ethtool_rxnfc *cmd)
++static int fm10k_get_rssh_fields(struct net_device *dev,
++				 struct ethtool_rxfh_fields *cmd)
  {
-+	struct igc_adapter *adapter = netdev_priv(dev);
++	struct fm10k_intfc *interface = netdev_priv(dev);
 +
  	cmd->data = 0;
  
- 	/* Report default options for RSS on igc */
-@@ -1103,8 +1105,6 @@ static int igc_ethtool_get_rxnfc(struct net_device *dev,
- 		return igc_ethtool_get_nfc_rule(adapter, cmd);
- 	case ETHTOOL_GRXCLSRLALL:
- 		return igc_ethtool_get_nfc_rules(adapter, cmd, rule_locs);
+ 	/* Report default options for RSS on fm10k */
+@@ -743,9 +745,6 @@ static int fm10k_get_rxnfc(struct net_device *dev, struct ethtool_rxnfc *cmd,
+ 		cmd->data = interface->num_rx_queues;
+ 		ret = 0;
+ 		break;
 -	case ETHTOOL_GRXFH:
--		return igc_ethtool_get_rss_hash_opts(adapter, cmd);
+-		ret = fm10k_get_rss_hash_opts(interface, cmd);
+-		break;
  	default:
- 		return -EOPNOTSUPP;
+ 		break;
  	}
-@@ -1112,9 +1112,11 @@ static int igc_ethtool_get_rxnfc(struct net_device *dev,
+@@ -753,9 +752,11 @@ static int fm10k_get_rxnfc(struct net_device *dev, struct ethtool_rxnfc *cmd,
+ 	return ret;
+ }
  
- #define UDP_RSS_FLAGS (IGC_FLAG_RSS_FIELD_IPV4_UDP | \
- 		       IGC_FLAG_RSS_FIELD_IPV6_UDP)
--static int igc_ethtool_set_rss_hash_opt(struct igc_adapter *adapter,
--					struct ethtool_rxnfc *nfc)
-+static int igc_ethtool_set_rxfh_fields(struct net_device *dev,
-+				       const struct ethtool_rxfh_fields *nfc,
-+				       struct netlink_ext_ack *extack)
+-static int fm10k_set_rss_hash_opt(struct fm10k_intfc *interface,
+-				  struct ethtool_rxnfc *nfc)
++static int fm10k_set_rssh_fields(struct net_device *dev,
++				 const struct ethtool_rxfh_fields *nfc,
++				 struct netlink_ext_ack *extack)
  {
-+	struct igc_adapter *adapter = netdev_priv(dev);
- 	u32 flags = adapter->flags;
++	struct fm10k_intfc *interface = netdev_priv(dev);
+ 	int rss_ipv4_udp = test_bit(FM10K_FLAG_RSS_FIELD_IPV4_UDP,
+ 				    interface->flags);
+ 	int rss_ipv6_udp = test_bit(FM10K_FLAG_RSS_FIELD_IPV6_UDP,
+@@ -871,22 +872,6 @@ static int fm10k_set_rss_hash_opt(struct fm10k_intfc *interface,
+ 	return 0;
+ }
  
- 	/* RSS does not support anything other than hashing
-@@ -1425,8 +1427,6 @@ static int igc_ethtool_set_rxnfc(struct net_device *dev,
- 	struct igc_adapter *adapter = netdev_priv(dev);
- 
- 	switch (cmd->cmd) {
+-static int fm10k_set_rxnfc(struct net_device *dev, struct ethtool_rxnfc *cmd)
+-{
+-	struct fm10k_intfc *interface = netdev_priv(dev);
+-	int ret = -EOPNOTSUPP;
+-
+-	switch (cmd->cmd) {
 -	case ETHTOOL_SRXFH:
--		return igc_ethtool_set_rss_hash_opt(adapter, cmd);
- 	case ETHTOOL_SRXCLSRLINS:
- 		return igc_ethtool_add_nfc_rule(adapter, cmd);
- 	case ETHTOOL_SRXCLSRLDEL:
-@@ -2144,6 +2144,8 @@ static const struct ethtool_ops igc_ethtool_ops = {
- 	.get_rxfh_indir_size	= igc_ethtool_get_rxfh_indir_size,
- 	.get_rxfh		= igc_ethtool_get_rxfh,
- 	.set_rxfh		= igc_ethtool_set_rxfh,
-+	.get_rxfh_fields	= igc_ethtool_get_rxfh_fields,
-+	.set_rxfh_fields	= igc_ethtool_set_rxfh_fields,
- 	.get_ts_info		= igc_ethtool_get_ts_info,
- 	.get_channels		= igc_ethtool_get_channels,
- 	.set_channels		= igc_ethtool_set_channels,
+-		ret = fm10k_set_rss_hash_opt(interface, cmd);
+-		break;
+-	default:
+-		break;
+-	}
+-
+-	return ret;
+-}
+-
+ static int fm10k_mbx_test(struct fm10k_intfc *interface, u64 *data)
+ {
+ 	struct fm10k_hw *hw = &interface->hw;
+@@ -1176,7 +1161,6 @@ static const struct ethtool_ops fm10k_ethtool_ops = {
+ 	.get_coalesce		= fm10k_get_coalesce,
+ 	.set_coalesce		= fm10k_set_coalesce,
+ 	.get_rxnfc		= fm10k_get_rxnfc,
+-	.set_rxnfc		= fm10k_set_rxnfc,
+ 	.get_regs               = fm10k_get_regs,
+ 	.get_regs_len           = fm10k_get_regs_len,
+ 	.self_test		= fm10k_self_test,
+@@ -1186,6 +1170,8 @@ static const struct ethtool_ops fm10k_ethtool_ops = {
+ 	.get_rxfh_key_size	= fm10k_get_rssrk_size,
+ 	.get_rxfh		= fm10k_get_rssh,
+ 	.set_rxfh		= fm10k_set_rssh,
++	.get_rxfh_fields	= fm10k_get_rssh_fields,
++	.set_rxfh_fields	= fm10k_set_rssh_fields,
+ 	.get_channels		= fm10k_get_channels,
+ 	.set_channels		= fm10k_set_channels,
+ 	.get_ts_info		= ethtool_op_get_ts_info,
 -- 
 2.49.0
 
