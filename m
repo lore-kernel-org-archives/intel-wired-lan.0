@@ -1,58 +1,60 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4F2C6C71135
-	for <intel-wired-lan@archiver.kernel.org>; Sat, 14 Jun 2025 18:09:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 61946C7115B
+	for <intel-wired-lan@archiver.kernel.org>; Sat, 14 Jun 2025 18:09:19 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 0DD8C81095;
-	Sat, 14 Jun 2025 18:09:18 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 2323560E7B;
+	Sat, 14 Jun 2025 18:09:19 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 1_8A42ERPFmC; Sat, 14 Jun 2025 18:09:17 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id mWCs9bcK6wXI; Sat, 14 Jun 2025 18:09:18 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 40ABA80EED
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8206C607B2
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1749924557;
-	bh=CDqJY15l37kQ+UWLf4Eab/+Z46xU/brlWCF/zFCMXXE=;
+	s=default; t=1749924558;
+	bh=hxiekqr0BsR+Vnh8xKzJZQGlBU0FixLmHLeWk4whf2o=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=2hu21uHZc/vjEcbdZoc0KIQC8QgtTmL0O8AYD2FDVgdcrlh4Gg91LFnmgbI7hESD1
-	 7xUOe7RW6H3U+aBCm2W9MAGyMUDWKLa1eIZL5vAOCP/N97426huODnoLysoMwYgCC7
-	 g+bJzP+SK/yCwkdl0pOFmXk+m/S14d65LOvC7p+TsOfEUbNda2kAl28vNjBQBJoig9
-	 k9ltC7lZV3/OsCGN6Iw4DD0iYKC+d6wnc+jh4fkQ9Y8c59ueug8N21dh1ptzgWP+qe
-	 Syf32vcHXXV+GjrYMqQjwDgS3mZ/lmWVuiWxr5QmFnWKQk0tIlRRo11FIPE2d6DM+0
-	 JN9WezHpiPOZA==
+	b=WYiH3w1geDVW4UjWsm1Ws6qIjphnsv3wQVz8RWDJJflDVg25hGXNzrADJr1a7KwNi
+	 o0uZp4h2aGQdgfcaVy42gD6gSoSvD87ew94na8iJ9sjrofiPXi7y57OwMZHpV8DuHO
+	 3lkDKk2JaYEHrguhNH8XSl7pdcQRsiWiOYr6RwJRIjbMc3nLPuh+W7GVR1aU+KTIyF
+	 hRTodx+74E2+x+YMX+w8DYsFonC3JTWpsutmjFtcvmqQKl2NuDiCfgwj4JAQcBRlnj
+	 5e46/ldmzjp/xWKedyQfnUVS2EI624l0hI6jhRledE6RO+WCdeTAXlosM6qMENgkKg
+	 hCcI/lvHMbwZA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 40ABA80EED;
-	Sat, 14 Jun 2025 18:09:17 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id 10AF6151
- for <intel-wired-lan@lists.osuosl.org>; Sat, 14 Jun 2025 18:09:15 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 8206C607B2;
+	Sat, 14 Jun 2025 18:09:18 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 2AF8F151
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 14 Jun 2025 18:09:16 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 0267D80EB0
- for <intel-wired-lan@lists.osuosl.org>; Sat, 14 Jun 2025 18:09:15 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 1D1E34033D
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 14 Jun 2025 18:09:16 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id g6_eVt5KNd2B for <intel-wired-lan@lists.osuosl.org>;
- Sat, 14 Jun 2025 18:09:14 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=139.178.84.217;
- helo=dfw.source.kernel.org; envelope-from=kuba@kernel.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 1B03F80E7B
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 1B03F80E7B
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 1B03F80E7B
- for <intel-wired-lan@lists.osuosl.org>; Sat, 14 Jun 2025 18:09:13 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id ySNbqE0C12bc for <intel-wired-lan@lists.osuosl.org>;
+ Sat, 14 Jun 2025 18:09:15 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org;
+ envelope-from=kuba@kernel.org; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 679F540AF7
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 679F540AF7
+Received: from dfw.source.kernel.org (dfw.source.kernel.org
+ [IPv6:2604:1380:4641:c500::1])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 679F540AF7
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 14 Jun 2025 18:09:15 +0000 (UTC)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by dfw.source.kernel.org (Postfix) with ESMTP id 77EC05C59AB;
- Sat, 14 Jun 2025 18:06:56 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 62592C4CEF4;
- Sat, 14 Jun 2025 18:09:12 +0000 (UTC)
+ by dfw.source.kernel.org (Postfix) with ESMTP id DE33B5C59A3;
+ Sat, 14 Jun 2025 18:06:57 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C48AFC4CEF0;
+ Sat, 14 Jun 2025 18:09:13 +0000 (UTC)
 From: Jakub Kicinski <kuba@kernel.org>
 To: davem@davemloft.net
 Cc: netdev@vger.kernel.org, edumazet@google.com, pabeni@redhat.com,
@@ -61,31 +63,31 @@ Cc: netdev@vger.kernel.org, edumazet@google.com, pabeni@redhat.com,
  jacob.e.keller@intel.com, michal.swiatkowski@linux.intel.com, joe@dama.to,
  Jakub Kicinski <kuba@kernel.org>,
  Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Date: Sat, 14 Jun 2025 11:09:03 -0700
-Message-ID: <20250614180907.4167714-4-kuba@kernel.org>
+Date: Sat, 14 Jun 2025 11:09:05 -0700
+Message-ID: <20250614180907.4167714-6-kuba@kernel.org>
 X-Mailer: git-send-email 2.49.0
 In-Reply-To: <20250614180907.4167714-1-kuba@kernel.org>
 References: <20250614180907.4167714-1-kuba@kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1749924552;
- bh=/3MNfq/1VKgqo7tF4QLu3IzV4Qis8K3i9KxsK9PbOyY=;
+ d=kernel.org; s=k20201202; t=1749924554;
+ bh=/l3F8PwOjdLxRnMQL7MyHKHPzGKl/abJTG+c3BGRhS0=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=U1pDVdliEMTxq78SueoRL+WGFDMeCjvUFVt1Iy84Cmc9C4nIlloo5x61XncGDbtas
- ToMQcDZAL+4i85qdjjvEeJexpBTAwZxzEHNcRrQI9kO4Ypvk64J0TLlZhgcaR56Hr3
- i+sOZd1MoIgKb7ARTkBXPC7boYQUd+t7DLrGPN2J9V1OAru5tDFmFfvkwepqC58RvA
- ss0Iet+GQwf2GlLNEBuKxgnPFux7uVYTU62tYnIgw4ce3ID/klBBKWBlsGaG25sVLN
- p2vkJamkM6ASVjy5qyC4buOO1gIsVd4B6veSK6rjxTbjc7AtE6LN2vyn6FgyyTfPDP
- V2txxeMzrL2gw==
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ b=cWk4QEm7lR1Y/P3TCY/HV5UdWJIxR8Vg6XFHnPOWezpL0YLEcMoHXudBp/qJy38i2
+ 53oTZqu/PgTx911YwjmPy10ilXWLuXbSLbLwdkl0DsROMHLnZtsIaabRjaEwQ9t6/l
+ TU8iGIryxecnLnBg5qM17R/3+3poaqXDROBAZ1APAsQuTu20PUrxQGsMuTOJ2ONpzE
+ PSEI8yksWBx0a5btYfzatlEWxqe8H08L1oNxGSDROdDZO1et0WlgE8dWHzpSkLnyFK
+ 3UcA8V+9oRy6bGNyoUZNhSBZ3eKLtKNO+KAeC4cTD8yIY2mc/RZQSsM/AFQC1SO5mV
+ P5qWhFwr+M7XQ==
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=U1pDVdli
-Subject: [Intel-wired-lan] [PATCH net-next v2 3/7] eth: ixgbe: migrate to
- new RXFH callbacks
+ header.a=rsa-sha256 header.s=k20201202 header.b=cWk4QEm7
+Subject: [Intel-wired-lan] [PATCH net-next v2 5/7] eth: i40e: migrate to new
+ RXFH callbacks
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -104,86 +106,105 @@ Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 Migrate to new callbacks added by commit 9bb00786fc61 ("net: ethtool:
 add dedicated callbacks for getting and setting rxfh fields").
 
+I'm deleting all the boilerplate kdoc from the affected functions.
+It is somewhere between pointless and incorrect, just a burden for
+people refactoring the code.
+
 Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 Signed-off-by: Jakub Kicinski <kuba@kernel.org>
 ---
-v2:
- - add callbacks to ixgbe_ethtool_ops
-v1: https://lore.kernel.org/20250613010111.3548291-4-kuba@kernel.org
----
- .../net/ethernet/intel/ixgbe/ixgbe_ethtool.c  | 22 ++++++++++---------
- 1 file changed, 12 insertions(+), 10 deletions(-)
+ .../net/ethernet/intel/i40e/i40e_ethtool.c    | 38 +++++++------------
+ 1 file changed, 14 insertions(+), 24 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-index 1dc1c6e611a4..25c3a09ad7f1 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-@@ -2753,9 +2753,11 @@ static int ixgbe_get_ethtool_fdir_all(struct ixgbe_adapter *adapter,
- 	return 0;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index c7f2d85eafcd..2ff17d50135c 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -3139,15 +3139,12 @@ static int i40e_set_per_queue_coalesce(struct net_device *netdev, u32 queue,
+ 	return __i40e_set_coalesce(netdev, ec, queue);
  }
  
--static int ixgbe_get_rss_hash_opts(struct ixgbe_adapter *adapter,
--				   struct ethtool_rxnfc *cmd)
-+static int ixgbe_get_rxfh_fields(struct net_device *dev,
-+				 struct ethtool_rxfh_fields *cmd)
+-/**
+- * i40e_get_rss_hash_opts - Get RSS hash Input Set for each flow type
+- * @pf: pointer to the physical function struct
+- * @cmd: ethtool rxnfc command
+- *
+- * Returns Success if the flow is supported, else Invalid Input.
+- **/
+-static int i40e_get_rss_hash_opts(struct i40e_pf *pf, struct ethtool_rxnfc *cmd)
++static int i40e_get_rxfh_fields(struct net_device *netdev,
++				struct ethtool_rxfh_fields *cmd)
  {
-+	struct ixgbe_adapter *adapter = ixgbe_from_netdev(dev);
-+
- 	cmd->data = 0;
- 
- 	/* Report default options for RSS on ixgbe */
-@@ -2825,9 +2827,6 @@ static int ixgbe_get_rxnfc(struct net_device *dev, struct ethtool_rxnfc *cmd,
- 	case ETHTOOL_GRXCLSRLALL:
- 		ret = ixgbe_get_ethtool_fdir_all(adapter, cmd, rule_locs);
++	struct i40e_netdev_priv *np = netdev_priv(netdev);
++	struct i40e_vsi *vsi = np->vsi;
++	struct i40e_pf *pf = vsi->back;
+ 	struct i40e_hw *hw = &pf->hw;
+ 	u8 flow_pctype = 0;
+ 	u64 i_set = 0;
+@@ -3545,9 +3542,6 @@ static int i40e_get_rxnfc(struct net_device *netdev, struct ethtool_rxnfc *cmd,
+ 		cmd->data = vsi->rss_size;
+ 		ret = 0;
  		break;
 -	case ETHTOOL_GRXFH:
--		ret = ixgbe_get_rss_hash_opts(adapter, cmd);
+-		ret = i40e_get_rss_hash_opts(pf, cmd);
 -		break;
- 	default:
- 		break;
- 	}
-@@ -3079,9 +3078,11 @@ static int ixgbe_del_ethtool_fdir_entry(struct ixgbe_adapter *adapter,
- 
- #define UDP_RSS_FLAGS (IXGBE_FLAG2_RSS_FIELD_IPV4_UDP | \
- 		       IXGBE_FLAG2_RSS_FIELD_IPV6_UDP)
--static int ixgbe_set_rss_hash_opt(struct ixgbe_adapter *adapter,
--				  struct ethtool_rxnfc *nfc)
-+static int ixgbe_set_rxfh_fields(struct net_device *dev,
-+				 const struct ethtool_rxfh_fields *nfc,
-+				 struct netlink_ext_ack *extack)
+ 	case ETHTOOL_GRXCLSRLCNT:
+ 		cmd->rule_cnt = pf->fdir_pf_active_filters;
+ 		/* report total rule count */
+@@ -3576,7 +3570,7 @@ static int i40e_get_rxnfc(struct net_device *netdev, struct ethtool_rxnfc *cmd,
+  * Returns value of bits to be set per user request
+  **/
+ static u64 i40e_get_rss_hash_bits(struct i40e_hw *hw,
+-				  struct ethtool_rxnfc *nfc,
++				  const struct ethtool_rxfh_fields *nfc,
+ 				  u64 i_setc)
  {
-+	struct ixgbe_adapter *adapter = ixgbe_from_netdev(dev);
- 	u32 flags2 = adapter->flags2;
+ 	u64 i_set = i_setc;
+@@ -3621,15 +3615,13 @@ static u64 i40e_get_rss_hash_bits(struct i40e_hw *hw,
+ }
  
- 	/*
-@@ -3204,9 +3205,6 @@ static int ixgbe_set_rxnfc(struct net_device *dev, struct ethtool_rxnfc *cmd)
- 	case ETHTOOL_SRXCLSRLDEL:
- 		ret = ixgbe_del_ethtool_fdir_entry(adapter, cmd);
- 		break;
+ #define FLOW_PCTYPES_SIZE 64
+-/**
+- * i40e_set_rss_hash_opt - Enable/Disable flow types for RSS hash
+- * @pf: pointer to the physical function struct
+- * @nfc: ethtool rxnfc command
+- *
+- * Returns Success if the flow input set is supported.
+- **/
+-static int i40e_set_rss_hash_opt(struct i40e_pf *pf, struct ethtool_rxnfc *nfc)
++static int i40e_set_rxfh_fields(struct net_device *netdev,
++				const struct ethtool_rxfh_fields *nfc,
++				struct netlink_ext_ack *extack)
+ {
++	struct i40e_netdev_priv *np = netdev_priv(netdev);
++	struct i40e_vsi *vsi = np->vsi;
++	struct i40e_pf *pf = vsi->back;
+ 	struct i40e_hw *hw = &pf->hw;
+ 	u64 hena = (u64)i40e_read_rx_ctl(hw, I40E_PFQF_HENA(0)) |
+ 		   ((u64)i40e_read_rx_ctl(hw, I40E_PFQF_HENA(1)) << 32);
+@@ -4964,13 +4956,9 @@ static int i40e_set_rxnfc(struct net_device *netdev, struct ethtool_rxnfc *cmd)
+ {
+ 	struct i40e_netdev_priv *np = netdev_priv(netdev);
+ 	struct i40e_vsi *vsi = np->vsi;
+-	struct i40e_pf *pf = vsi->back;
+ 	int ret = -EOPNOTSUPP;
+ 
+ 	switch (cmd->cmd) {
 -	case ETHTOOL_SRXFH:
--		ret = ixgbe_set_rss_hash_opt(adapter, cmd);
+-		ret = i40e_set_rss_hash_opt(pf, cmd);
 -		break;
- 	default:
+ 	case ETHTOOL_SRXCLSRLINS:
+ 		ret = i40e_add_fdir_ethtool(vsi, cmd);
  		break;
- 	}
-@@ -3751,6 +3749,8 @@ static const struct ethtool_ops ixgbe_ethtool_ops = {
- 	.get_rxfh_key_size	= ixgbe_get_rxfh_key_size,
- 	.get_rxfh		= ixgbe_get_rxfh,
- 	.set_rxfh		= ixgbe_set_rxfh,
-+	.get_rxfh_fields	= ixgbe_get_rxfh_fields,
-+	.set_rxfh_fields	= ixgbe_set_rxfh_fields,
- 	.get_eee		= ixgbe_get_eee,
- 	.set_eee		= ixgbe_set_eee,
- 	.get_channels		= ixgbe_get_channels,
-@@ -3797,6 +3797,8 @@ static const struct ethtool_ops ixgbe_ethtool_ops_e610 = {
- 	.get_rxfh_key_size	= ixgbe_get_rxfh_key_size,
- 	.get_rxfh		= ixgbe_get_rxfh,
- 	.set_rxfh		= ixgbe_set_rxfh,
-+	.get_rxfh_fields	= ixgbe_get_rxfh_fields,
-+	.set_rxfh_fields	= ixgbe_set_rxfh_fields,
- 	.get_eee		= ixgbe_get_eee,
- 	.set_eee		= ixgbe_set_eee,
- 	.get_channels		= ixgbe_get_channels,
+@@ -5846,6 +5834,8 @@ static const struct ethtool_ops i40e_ethtool_ops = {
+ 	.get_rxfh_indir_size	= i40e_get_rxfh_indir_size,
+ 	.get_rxfh		= i40e_get_rxfh,
+ 	.set_rxfh		= i40e_set_rxfh,
++	.get_rxfh_fields	= i40e_get_rxfh_fields,
++	.set_rxfh_fields	= i40e_set_rxfh_fields,
+ 	.get_channels		= i40e_get_channels,
+ 	.set_channels		= i40e_set_channels,
+ 	.get_module_info	= i40e_get_module_info,
 -- 
 2.49.0
 
