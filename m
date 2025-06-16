@@ -1,73 +1,75 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 42FFCC7115A
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BD46CC7115B
 	for <intel-wired-lan@archiver.kernel.org>; Mon, 16 Jun 2025 19:03:04 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 16E418087F;
+	by smtp3.osuosl.org (Postfix) with ESMTP id 921F860896;
 	Mon, 16 Jun 2025 19:03:04 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id eHtQLhDpvWTV; Mon, 16 Jun 2025 19:03:03 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id X24_n_ukyY5E; Mon, 16 Jun 2025 19:03:04 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7467780977
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 15AC060899
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1750100583;
-	bh=KgnaD+YDWz3wrWf8pTrsn5SKppk9JCl6ooUUvJRIPec=;
+	s=default; t=1750100584;
+	bh=FctS/yxvbEvyzJIZYET6k2Fs0G8a9MU2fsYlGgp4CE0=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=9S5eCbXha8sMRCvXcN3RToWJSt89x7S0UxEjXybLYX++i6wnWsskC1ZzFbzkGiwpq
-	 PEHExteY/8vV/JCnMa1z8TIg8qbv1gRjcXLTOnCee0floIhGCaysU816uYlg/94EVQ
-	 608tDeNE+HFlTzeFc+lgFUq1qNTNqDag/ZTeo9SHTUlVb1ZM4R7fW0GZbsiUw72mKd
-	 DrnucKWd+9nhlNVymZJHJEAGy2RlIGxwL7wyb5i0k30wy0MoDQSw6zTErm8e1F5/Oj
-	 L2bLoYAKyBoR/2GIrPk1rUOXzp90gNy4lij0UrVPLRZsjkQNJ6Dhm3/g1lU1ksKdG2
-	 VuXWSt1lAqEMQ==
+	b=UJasyW77P/Qt1rOqsjTHHjm5E7y3SUKsVktp8jsjnl/VTWXh0AnuK21uA4+YR0FYc
+	 RrlnOCJwYHXNp3JbjtP4/Es78/A4+ZsoqIMQiOQAcyIvGQTbmfsgDlXYJbwYe5di9V
+	 Dif0jixtGqGWDT0xA4v2QnqgC/YtTVAeyZX+WPzEqecCO3vfXfFHmno23blBC6QHrO
+	 l0jxCaOxkn7g+GDOOExZ27RbO/+BJ5SHnyMpeo04sfuUEAXdhXeVIno4POJ07yLxBZ
+	 tsRdVbkR82aXgBGWoGQI6BDNfduHE4WCz3k19cGa2gkKqhWMwf4KWU1PqL63O8BwP+
+	 yguve+z6r36Xg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 7467780977;
-	Mon, 16 Jun 2025 19:03:03 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 15AC060899;
+	Mon, 16 Jun 2025 19:03:04 +0000 (UTC)
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id 213E3CA9
- for <intel-wired-lan@lists.osuosl.org>; Mon, 16 Jun 2025 19:03:01 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id 1BAF8CA9
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 16 Jun 2025 19:03:02 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id A7DEC8087F
+ by smtp1.osuosl.org (Postfix) with ESMTP id D5D8980885
  for <intel-wired-lan@lists.osuosl.org>; Mon, 16 Jun 2025 19:02:58 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id IoHY5gSa5A_S for <intel-wired-lan@lists.osuosl.org>;
+ id tSOVPhPEY5Ul for <intel-wired-lan@lists.osuosl.org>;
  Mon, 16 Jun 2025 19:02:58 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.21;
  helo=mgamail.intel.com; envelope-from=david.m.ertman@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 16E0080885
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 16E0080885
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 4C01880890
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4C01880890
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.21])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 16E0080885
- for <intel-wired-lan@lists.osuosl.org>; Mon, 16 Jun 2025 19:02:57 +0000 (UTC)
-X-CSE-ConnectionGUID: D7Lr/2Q+RpCvBz7YAZxYqA==
-X-CSE-MsgGUID: Zpjuqqf6TIaAf+jhLI6m/g==
-X-IronPort-AV: E=McAfee;i="6800,10657,11465"; a="52122668"
-X-IronPort-AV: E=Sophos;i="6.16,241,1744095600"; d="scan'208";a="52122668"
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 4C01880890
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 16 Jun 2025 19:02:58 +0000 (UTC)
+X-CSE-ConnectionGUID: iHSepMTUQ+qVEBIo9HfotQ==
+X-CSE-MsgGUID: ZtSWNA5lS5K5rtQMNuMwOw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11465"; a="52122671"
+X-IronPort-AV: E=Sophos;i="6.16,241,1744095600"; d="scan'208";a="52122671"
 Received: from orviesa004.jf.intel.com ([10.64.159.144])
  by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  16 Jun 2025 12:02:56 -0700
-X-CSE-ConnectionGUID: YS6WotyyTRe3HJPxn0OCLg==
-X-CSE-MsgGUID: xB/1ACRySSOnLwm1y9upZw==
+X-CSE-ConnectionGUID: dltxETTpTUa0POuPLFSIXA==
+X-CSE-MsgGUID: pUBS7TVOR62v/xQ+bnS4Qg==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.16,241,1744095600"; d="scan'208";a="153513104"
+X-IronPort-AV: E=Sophos;i="6.16,241,1744095600"; d="scan'208";a="153513115"
 Received: from dmert-mdev.jf.intel.com ([10.166.5.145])
  by orviesa004-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  16 Jun 2025 12:02:56 -0700
 From: Dave Ertman <david.m.ertman@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Cc: Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Date: Mon, 16 Jun 2025 13:03:18 +0200
-Message-ID: <20250616110323.788970-4-david.m.ertman@intel.com>
+Cc: Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
+ Marcin Szycik <marcin.szycik@linux.intel.com>
+Date: Mon, 16 Jun 2025 13:03:21 +0200
+Message-ID: <20250616110323.788970-7-david.m.ertman@intel.com>
 X-Mailer: git-send-email 2.49.0
 In-Reply-To: <20250616110323.788970-1-david.m.ertman@intel.com>
 References: <20250616110323.788970-1-david.m.ertman@intel.com>
@@ -78,22 +80,22 @@ X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  t=1750100578; x=1781636578;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=6vC3dlSxBpWiWClb/Iae2lJ0QvAdxZgMygkJ75Z7Upk=;
- b=m9bQkLAFYj82reFRGxc2AHwCBS2HD8WwSEwvOn+byXzS/NPWG1QO9diG
- 60b8VaFSeW1TT+0UUayJos7y99UX4gwsTEEtNURL37vY93i8MCi1ApuDt
- z9OUzGWnfYjCuqlN81B1JI98FoYh59YBW5JTAmmaXlXdK0RxLU+vac1hC
- ySnJYGOnxXTVjmPMIBzpFaZrhE7E8l6gb1wpKCXvP5Daisw95ERCERr8r
- BKI3fXjV5rPommVelKFF/F9CHwuyTpDSD/x+l2p6GjIn1OLXR6+w1g7Z9
- 5KsQBERji4sIAhwMJUn1ITMjiT7zOhAOnMSsXAXmzK+VcXufflm08n4sf
+ bh=pUaF7g0w2flcNpuK+sDmgradhhiPbSLFfmueegRrNZI=;
+ b=NI4nO1g0C6AyCXU2zciPLGKaBf01TXn/FpXX8lKpJjUH29ZZaz2q9/iV
+ XxaH9k6c05QnAL7GQFMeBRXIsGB08n0QnBoX1nMzZF2Xlc2f4WRrQOkWB
+ +ptNmf/HK0ouZ9luLl/LI7OJDN4fMqP5FBBHplIZriegH1J/4MDpVhp6P
+ 3KzK15qHNqbOhsYbpSHaFfTZR0sRB5/De2loMM3JwGHDy1Aj6e6QyoKQ9
+ 6dWCXsidxAmkthjEUB9VbqxqCMiMPKYsSM/XnZXESZxkejHXxSXFQTFPD
+ +1yoJMtCdixn2BALatScBmD1CN3+nlFBT8Ol0Ydlc16N0BAa4aH5JyCHg
  A==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=m9bQkLAF
-Subject: [Intel-wired-lan] [PATCH iwl-next v4 3/8] [PATCH iwl-next v3 3/8]
- ice: Add driver specific prefix to LAG
+ header.a=rsa-sha256 header.s=Intel header.b=NI4nO1g0
+Subject: [Intel-wired-lan] [PATCH iwl-next v4 6/8] [PATCH iwl-next v3 6/8]
+ ice: cleanup capabilities evaluation
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -109,73 +111,37 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-defines
+When evaluating the capabilities field, the ICE_AQC_BIT_ROCEV2_LAG and
+ICE_AQC_BIT_SRIOV_LAG defines were both not using the BIT operator,
+instead simply setting a hex value that set the correct bits.  While
+not inaccurate, this method is misleading, and when it is expanded in
+the following implementation it becomes even more confusing.
 
-A define in the LAG code is missing a driver specific prefix.
-Add a prefix to the define.
-
-Also shorten a defines name and move to a more logical place.
+Switch to using the BIT() operator to clarify what is being checked.
 
 Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Reviewed-by: Marcin Szycik <marcin.szycik@linux.intel.com>
 Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_lag.c | 20 +++++++++-----------
- 1 file changed, 9 insertions(+), 11 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_adminq_cmd.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_lag.c b/drivers/net/ethernet/intel/ice/ice_lag.c
-index 5cb3e1a9657d..3d5918a270a4 100644
---- a/drivers/net/ethernet/intel/ice/ice_lag.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lag.c
-@@ -10,12 +10,14 @@
- #define ICE_LAG_RES_SHARED	BIT(14)
- #define ICE_LAG_RES_VALID	BIT(15)
+diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+index 2eaa4ab8e791..b3298063f1bd 100644
+--- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+@@ -133,8 +133,8 @@ struct ice_aqc_list_caps_elem {
+ #define ICE_AQC_CAPS_TX_SCHED_TOPO_COMP_MODE		0x0085
+ #define ICE_AQC_CAPS_NAC_TOPOLOGY			0x0087
+ #define ICE_AQC_CAPS_FW_LAG_SUPPORT			0x0092
+-#define ICE_AQC_BIT_ROCEV2_LAG				0x01
+-#define ICE_AQC_BIT_SRIOV_LAG				0x02
++#define ICE_AQC_BIT_ROCEV2_LAG				BIT(0)
++#define ICE_AQC_BIT_SRIOV_LAG				BIT(1)
  
--#define LACP_TRAIN_PKT_LEN		16
--static const u8 lacp_train_pkt[LACP_TRAIN_PKT_LEN] = { 0, 0, 0, 0, 0, 0,
--						       0, 0, 0, 0, 0, 0,
--						       0x88, 0x09, 0, 0 };
-+#define ICE_TRAIN_PKT_LEN		16
-+static const u8 lacp_train_pkt[ICE_TRAIN_PKT_LEN] = { 0, 0, 0, 0, 0, 0,
-+						      0, 0, 0, 0, 0, 0,
-+						      0x88, 0x09, 0, 0 };
- 
- #define ICE_RECIPE_LEN			64
-+#define ICE_LAG_SRIOV_CP_RECIPE		10
-+
- static const u8 ice_dflt_vsi_rcp[ICE_RECIPE_LEN] = {
- 	0x05, 0, 0, 0, 0x20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
- 	0x85, 0, 0x01, 0, 0, 0, 0xff, 0xff, 0x08, 0, 0, 0, 0, 0, 0, 0,
-@@ -766,9 +768,6 @@ void ice_lag_move_vf_nodes_cfg(struct ice_lag *lag, u8 src_prt, u8 dst_prt)
- 	ice_lag_destroy_netdev_list(lag, &ndlist);
- }
- 
--#define ICE_LAG_SRIOV_CP_RECIPE		10
--#define ICE_LAG_SRIOV_TRAIN_PKT_LEN	16
--
- /**
-  * ice_lag_cfg_cp_fltr - configure filter for control packets
-  * @lag: local interface's lag struct
-@@ -783,8 +782,7 @@ ice_lag_cfg_cp_fltr(struct ice_lag *lag, bool add)
- 
- 	vsi = lag->pf->vsi[0];
- 
--	buf_len = ICE_SW_RULE_RX_TX_HDR_SIZE(s_rule,
--					     ICE_LAG_SRIOV_TRAIN_PKT_LEN);
-+	buf_len = ICE_SW_RULE_RX_TX_HDR_SIZE(s_rule, ICE_TRAIN_PKT_LEN);
- 	s_rule = kzalloc(buf_len, GFP_KERNEL);
- 	if (!s_rule) {
- 		netdev_warn(lag->netdev, "-ENOMEM error configuring CP filter\n");
-@@ -799,8 +797,8 @@ ice_lag_cfg_cp_fltr(struct ice_lag *lag, bool add)
- 					  ICE_SINGLE_ACT_LAN_ENABLE |
- 					  ICE_SINGLE_ACT_VALID_BIT |
- 					  FIELD_PREP(ICE_SINGLE_ACT_VSI_ID_M, vsi->vsi_num));
--		s_rule->hdr_len = cpu_to_le16(ICE_LAG_SRIOV_TRAIN_PKT_LEN);
--		memcpy(s_rule->hdr_data, lacp_train_pkt, LACP_TRAIN_PKT_LEN);
-+		s_rule->hdr_len = cpu_to_le16(ICE_TRAIN_PKT_LEN);
-+		memcpy(s_rule->hdr_data, lacp_train_pkt, ICE_TRAIN_PKT_LEN);
- 		opc = ice_aqc_opc_add_sw_rules;
- 	} else {
- 		opc = ice_aqc_opc_remove_sw_rules;
+ 	u8 major_ver;
+ 	u8 minor_ver;
 -- 
 2.49.0
 
