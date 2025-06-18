@@ -1,74 +1,74 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 19B46C71157
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 18 Jun 2025 22:25:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 320CBC71157
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 18 Jun 2025 22:25:17 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id D0111409D7;
-	Wed, 18 Jun 2025 22:25:14 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 0A29F60BD7;
+	Wed, 18 Jun 2025 22:25:17 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 6GQ189HEAFah; Wed, 18 Jun 2025 22:25:14 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id F4j9B7YnkMTQ; Wed, 18 Jun 2025 22:25:14 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4152B40BD0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org D630D60BDC
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
 	s=default; t=1750285514;
-	bh=1NHYr8aGUptu0TzmzatOG0bb2JNF80ghiV4Z/5NbEAQ=;
+	bh=Jp+4e6u3GSi9wd7HY3IzxuXVT9OCdbbdYX+OjEXV6Rk=;
 	h=From:Date:References:In-Reply-To:To:Cc:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=b/wEJwfqyQ/aTAhnBynfCxbY9lyHRPVE1u5yc1hc+5x6q1rIMSZNEDO5Osf8IDVPy
-	 VBMu6JwTWjfrl6xoHee5xudD/gQehe9pFeC6Nxde/fn8+2KqX0KTXKTAjXRcKhLmZe
-	 OM1fdKEk8ltlLu+tEnzvrFQ9fIiGOK5Y2mMYXMJg3d9M22WeFfRuvk7y9PnmQJs7e+
-	 A9NBWXhannXuwTrWA8QPr7uJBg6yCHgf39fqGkGlO0tioDbCn8ak4O9b7e5NwH1ppc
-	 gv8crZIZImUEun1oV5C9K8ooVT8lABad1JWS8FM4nkx21ax/4kbvnaY+aFNcc+fJSz
-	 yh6UaHbt4jfjA==
+	b=M3aLQZvhwcGCV2XJY9roqRP8Wlw4BwPNk0EDK1rj1/RjeHb1Vd39vs0fPjS2bxyMR
+	 HAQDYQqjyGLEJvmd1T8LaplaQ+9NUh9UT7p3+wQ0lD6AubLJ13cRoozXHbu0ceSYal
+	 zwDeW/66UHyrFjgjLNYj3vdOGXgJfaSa6UIptcn/RdwI4/qXYziBpqj1aJngHf1SK0
+	 8AA2wq7Lal1HuVMyURhN3cmEZLkxXf4sOj7hZNzQ02tcLWIuBnBvFrttjbt4md5Kvc
+	 SvZ2s1vlnoKUDHK1kbYweAT6Km1xoillDmPGzwwwPTAf7005c5tPkZur4S3cIY9iqb
+	 5N0wKziD9VFRQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 4152B40BD0;
+	by smtp3.osuosl.org (Postfix) with ESMTP id D630D60BDC;
 	Wed, 18 Jun 2025 22:25:14 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id 25057151
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 36F9CD94
  for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Jun 2025 22:25:10 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 5F7EA40611
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Jun 2025 22:25:07 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 55923405BB
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Jun 2025 22:25:08 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id O0siOQve9RL3 for <intel-wired-lan@lists.osuosl.org>;
- Wed, 18 Jun 2025 22:25:07 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id UzhuME2FTpfI for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 18 Jun 2025 22:25:06 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.17;
  helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org DB82740776
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org DB82740776
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 7D52040119
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 7D52040119
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.17])
- by smtp4.osuosl.org (Postfix) with ESMTPS id DB82740776
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 7D52040119
  for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Jun 2025 22:25:06 +0000 (UTC)
-X-CSE-ConnectionGUID: /6xM6PH8Q+i0GddqtSnwDw==
-X-CSE-MsgGUID: Dq8fzEEWQUGwqG4tnEHkhg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11468"; a="52447747"
-X-IronPort-AV: E=Sophos;i="6.16,246,1744095600"; d="scan'208";a="52447747"
+X-CSE-ConnectionGUID: KjS8DFCCTqa/yjZyya402Q==
+X-CSE-MsgGUID: OAhcwOwrT6e2fbD60xRx+g==
+X-IronPort-AV: E=McAfee;i="6800,10657,11468"; a="52447740"
+X-IronPort-AV: E=Sophos;i="6.16,246,1744095600"; d="scan'208";a="52447740"
 Received: from orviesa010.jf.intel.com ([10.64.159.150])
  by fmvoesa111.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  18 Jun 2025 15:25:05 -0700
-X-CSE-ConnectionGUID: aWr4bGGJQZC/O/irigi/bg==
-X-CSE-MsgGUID: 6u20SeATScKTjJtyswVBuw==
+X-CSE-ConnectionGUID: tb6mo+cFTou2PY7hx9Q+JA==
+X-CSE-MsgGUID: OyrMPfc5RZuOcui2cuvQWQ==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.16,246,1744095600"; d="scan'208";a="149870021"
+X-IronPort-AV: E=Sophos;i="6.16,246,1744095600"; d="scan'208";a="149870007"
 Received: from jekeller-desk.jf.intel.com ([10.166.241.15])
  by orviesa010-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  18 Jun 2025 15:25:04 -0700
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed, 18 Jun 2025 15:24:41 -0700
+Date: Wed, 18 Jun 2025 15:24:37 -0700
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250618-e810-live-migration-jk-migration-prep-v1-6-72a37485453e@intel.com>
+Message-Id: <20250618-e810-live-migration-jk-migration-prep-v1-2-72a37485453e@intel.com>
 References: <20250618-e810-live-migration-jk-migration-prep-v1-0-72a37485453e@intel.com>
 In-Reply-To: <20250618-e810-live-migration-jk-migration-prep-v1-0-72a37485453e@intel.com>
 To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
@@ -79,25 +79,26 @@ Cc: Jacob Keller <jacob.e.keller@intel.com>, netdev@vger.kernel.org,
 X-Mailer: b4 0.14.2
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1750285507; x=1781821507;
+ t=1750285506; x=1781821506;
  h=from:date:subject:mime-version:content-transfer-encoding:
  message-id:references:in-reply-to:to:cc;
- bh=zUZHmZmw6lY/vlzhJ9yLe5OVqlfvZktLRz2vwpEcRl4=;
- b=IlIzCFiM1BEvou9eJPd6ZJvnUD2KuogmGMrPKIgzDonkjZthsCU/eTUL
- 09H9+tYcOTkQFN+oD3Nlx1vR/3pQh9abGSxjjmUPfvHa96ilFkAmThunM
- VGm5yoU/5B8W77zIOo/Dvae9rA8JvreqH0UA2eYEGcJGMxR8X1+VrMziz
- r8EjGGyKepMlklwnhhTnLl6bIWwTNiB9rOeafz1KPBJP+qZjX4LsHGsW8
- o0K0mawzRIA9L4d+fR7taLWEVQDIVr7D9G/cijmP8Bs3UTk9co8L9bjOd
- vVVwgGZA0vs0KWD9c3GDxrzxSRV/PB3e36cq+/yQiAR1iUV9OPRt36TZY
- A==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ bh=fdDJfM1F+lPpm83Fd+8XFPVC/+SRqq0bw3AA6B1F0PQ=;
+ b=EhaaaHVEDsmbalReUh4TA1l4K1vszz0SyWdY5XMTTFg4BQ4XDoM8FNmA
+ /ocBFEKYXL97K5SyslUQ6um0CrWddlNycDxoU3vRbxnb9bDha4A+Mvm4n
+ fmyeK9X5tDEwUECASCb/f+TV3WKLr9NJwZpzI1cXfAU+1Nbm5fJ0jNKuz
+ tj7d6X3J+dHbxN3w90/4EkjKpvpliKh8ZqhMwxnDCGTiDSbpmiuHI0L2W
+ jl69OdfW4FmOVJK7Q+qdMQqHHSE59lN2rXjDcuO56e+ly8KCUT/r+aK1W
+ d9/IyjIptnLTTHshjwTWvhAL+fM9fcIx7gK40xMG/3WJzMBc9cnJFP+6A
+ Q==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=IlIzCFiM
-Subject: [Intel-wired-lan] [PATCH iwl-next 6/8] ice: use pci_iov_vf_id() to
- get VF ID
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=EhaaaHVE
+Subject: [Intel-wired-lan] [PATCH iwl-next 2/8] ice: add functions to get
+ and set Tx queue context
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -113,45 +114,351 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The ice_sriov_set_msix_vec_count() obtains the VF device ID in a strange
-way by iterating over the possible VF IDs and calling
-pci_iov_virtfn_devfn to calculate the device and function combos and
-compare them to the pdev->devfn.
+The live migration driver will need to save and restore the Tx queue
+context state from the hardware registers. This state contains both static
+fields which do not change during Tx traffic as well as dynamic fields
+which may change during Tx traffic.
 
-This is unnecessary. The pci_iov_vf_id() helper already exists which does
-the reverse calculation of pci_iov_virtfn_devfn(), which is much simpler
-and avoids the loop construction. Use this instead.
+Unlike the Rx context, the Tx queue context is accessed indirectly from
+GLCOMM_QTX_CNTX_CTL and GLCOMM_QTX_CNTX_DATA registers. These registers are
+shared by multiple PFs on the same PCIe card. Multiple PFs cannot safely
+access the registers simultaneously, and there is no hardware semaphore or
+logic to control access. To handle this, introduce the txq_ctx_lock to the
+ice_adapter structure. This is similar to the ptp_gltsyn_time_lock. All PFs
+on the same adapter share this structure, and use it to serialize access to
+the registers to prevent error.
 
+Add a new functions to get and set the Tx queue context through the
+GLCOMM_QTX_CNTX_CTL interface. The hardware context values are stored in
+the registers using the same packed format as the Admin Queue buffer.
+
+The hardware buffer is 40 bytes wide, as it contains an additional 18 bytes
+of internal state not sent with the Admin Queue buffer. For this reason, a
+separate typedef and packing function must be used. We can share the same
+packed fields definitions because we never need to unpack the internal
+state. This is preferred, as it ensures the internal state is zero'd when
+writing into HW, and avoids issues with reading by u32 registers into a
+buffer of 22 bytes in length. Thanks to the typedefs, misuse of the API
+with the wrong size buffer can easily be caught at compile time.
+
+Note reading this data from hardware is essential because the current Tx
+queue context may be different from the context as initially programmed by
+the driver during VF initialization. When migrating a VF we must ensure the
+target VF has identical context as the source VF did.
+
+Co-developed-by: Yahui Cao <yahui.cao@intel.com>
+Signed-off-by: Yahui Cao <yahui.cao@intel.com>
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Reviewed-by: Madhu Chittim <madhu.chittim@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_sriov.c | 12 +++---------
- 1 file changed, 3 insertions(+), 9 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_adapter.h    |   2 +
+ drivers/net/ethernet/intel/ice/ice_adminq_cmd.h |  14 +-
+ drivers/net/ethernet/intel/ice/ice_common.h     |   4 +
+ drivers/net/ethernet/intel/ice/ice_hw_autogen.h |  12 ++
+ drivers/net/ethernet/intel/ice/ice_adapter.c    |   1 +
+ drivers/net/ethernet/intel/ice/ice_common.c     | 173 +++++++++++++++++++++++-
+ 6 files changed, 202 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_sriov.c b/drivers/net/ethernet/intel/ice/ice_sriov.c
-index 8d77c387357bbba27fbcec4bb2019274d2a2eb99..4c0955be2ad20c3902cf891a66f857585fcab98b 100644
---- a/drivers/net/ethernet/intel/ice/ice_sriov.c
-+++ b/drivers/net/ethernet/intel/ice/ice_sriov.c
-@@ -952,17 +952,11 @@ int ice_sriov_set_msix_vec_count(struct pci_dev *vf_dev, int msix_vec_count)
- 	if (msix_vec_count < ICE_MIN_INTR_PER_VF)
- 		return -EINVAL;
+diff --git a/drivers/net/ethernet/intel/ice/ice_adapter.h b/drivers/net/ethernet/intel/ice/ice_adapter.h
+index ac15c0d2bc1a47b17999999713bbbfcb96b7c5a7..1f31b407e125fe6ca7eee4663ea907878d612b0a 100644
+--- a/drivers/net/ethernet/intel/ice/ice_adapter.h
++++ b/drivers/net/ethernet/intel/ice/ice_adapter.h
+@@ -38,6 +38,8 @@ struct ice_adapter {
+ 	refcount_t refcount;
+ 	/* For access to the GLTSYN_TIME register */
+ 	spinlock_t ptp_gltsyn_time_lock;
++	/* For access to GLCOMM_QTX_CNTX_CTL register */
++	spinlock_t txq_ctx_lock;
  
--	/* Transition of PCI VF function number to function_id */
--	for (id = 0; id < pci_num_vf(pdev); id++) {
--		if (vf_dev->devfn == pci_iov_virtfn_devfn(pdev, id))
--			break;
--	}
--
--	if (id == pci_num_vf(pdev))
--		return -ENOENT;
-+	id = pci_iov_vf_id(vf_dev);
-+	if (id < 0)
-+		return id;
+ 	struct ice_pf *ctrl_pf;
+ 	struct ice_port_list ports;
+diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+index dc39f0d772297befad1d99bc4fd703c83cb98d78..859b555efa634562fd469f380f275c92f379d981 100644
+--- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+@@ -16,11 +16,23 @@
  
- 	vf = ice_get_vf_by_id(pf, id);
--
- 	if (!vf)
- 		return -ENOENT;
+ #define ICE_RXQ_CTX_SIZE_DWORDS		8
+ #define ICE_RXQ_CTX_SZ			(ICE_RXQ_CTX_SIZE_DWORDS * sizeof(u32))
+-#define ICE_TXQ_CTX_SZ			22
  
+ typedef struct __packed { u8 buf[ICE_RXQ_CTX_SZ]; } ice_rxq_ctx_buf_t;
++
++/* The Tx queue context is 40 bytes, and includes some internal state. The
++ * Admin Queue buffers don't include the internal state, so only include the
++ * first 22 bytes of the context.
++ */
++#define ICE_TXQ_CTX_SZ			22
++
+ typedef struct __packed { u8 buf[ICE_TXQ_CTX_SZ]; } ice_txq_ctx_buf_t;
+ 
++#define ICE_TXQ_CTX_FULL_SIZE_DWORDS	10
++#define ICE_TXQ_CTX_FULL_SZ \
++	(ICE_TXQ_CTX_FULL_SIZE_DWORDS * sizeof(u32))
++
++typedef struct __packed { u8 buf[ICE_TXQ_CTX_FULL_SZ]; } ice_txq_ctx_buf_full_t;
++
+ /* Queue Shutdown (direct 0x0003) */
+ struct ice_aqc_q_shutdown {
+ 	u8 driver_unloading;
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
+index 5f15bf83f06a8992f8b260c128df2c625f0bb9f1..0c8705687b99ebaedcad5dcba64432ea85bdbc5d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.h
++++ b/drivers/net/ethernet/intel/ice/ice_common.h
+@@ -120,6 +120,10 @@ int ice_write_rxq_ctx(struct ice_hw *hw, struct ice_rlan_ctx *rlan_ctx,
+ 		      u32 rxq_index);
+ int ice_read_rxq_ctx(struct ice_hw *hw, struct ice_rlan_ctx *rlan_ctx,
+ 		     u32 rxq_index);
++int ice_read_txq_ctx(struct ice_hw *hw, struct ice_tlan_ctx *tlan_ctx,
++		     u32 txq_index);
++int ice_write_txq_ctx(struct ice_hw *hw, struct ice_tlan_ctx *tlan_ctx,
++		      u32 txq_index);
+ 
+ int
+ ice_aq_get_rss_lut(struct ice_hw *hw, struct ice_aq_get_set_rss_lut_params *get_params);
+diff --git a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+index aa4bfbcf85d28e23678c4401dfd9375ce189f2d3..dd520aa4d1d6aa4b19c501e3b873f4f068301db9 100644
+--- a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
++++ b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+@@ -16,6 +16,7 @@
+ #define GLCOMM_QUANTA_PROF_MAX_DESC_M		ICE_M(0x3F, 24)
+ #define QTX_COMM_DBELL(_DBQM)			(0x002C0000 + ((_DBQM) * 4))
+ #define QTX_COMM_HEAD(_DBQM)			(0x000E0000 + ((_DBQM) * 4))
++#define QTX_COMM_HEAD_MAX_INDEX			16383
+ #define QTX_COMM_HEAD_HEAD_S			0
+ #define QTX_COMM_HEAD_HEAD_M			ICE_M(0x1FFF, 0)
+ #define PF_FW_ARQBAH				0x00080180
+@@ -272,6 +273,8 @@
+ #define VPINT_ALLOC_PCI_VALID_M			BIT(31)
+ #define VPINT_MBX_CTL(_VSI)			(0x0016A000 + ((_VSI) * 4))
+ #define VPINT_MBX_CTL_CAUSE_ENA_M		BIT(30)
++#define PFLAN_TX_QALLOC(_PF)			(0x001D2580 + ((_PF) * 4))
++#define PFLAN_TX_QALLOC_FIRSTQ_M		GENMASK(13, 0)
+ #define GLLAN_RCTL_0				0x002941F8
+ #define QRX_CONTEXT(_i, _QRX)			(0x00280000 + ((_i) * 8192 + (_QRX) * 4))
+ #define QRX_CTRL(_QRX)				(0x00120000 + ((_QRX) * 4))
+@@ -376,6 +379,15 @@
+ #define GLNVM_ULD_POR_DONE_1_M			BIT(8)
+ #define GLNVM_ULD_PCIER_DONE_2_M		BIT(9)
+ #define GLNVM_ULD_PE_DONE_M			BIT(10)
++#define GLCOMM_QTX_CNTX_CTL			0x002D2DC8
++#define GLCOMM_QTX_CNTX_CTL_QUEUE_ID_M		GENMASK(13, 0)
++#define GLCOMM_QTX_CNTX_CTL_CMD_M		GENMASK(18, 16)
++#define GLCOMM_QTX_CNTX_CTL_CMD_READ		0
++#define GLCOMM_QTX_CNTX_CTL_CMD_WRITE		1
++#define GLCOMM_QTX_CNTX_CTL_CMD_RESET		3
++#define GLCOMM_QTX_CNTX_CTL_CMD_WRITE_NO_DYN	4
++#define GLCOMM_QTX_CNTX_CTL_CMD_EXEC_M		BIT(19)
++#define GLCOMM_QTX_CNTX_DATA(_i)		(0x002D2D40 + ((_i) * 4))
+ #define GLPCI_CNF2				0x000BE004
+ #define GLPCI_CNF2_CACHELINE_SIZE_M		BIT(1)
+ #define PF_FUNC_RID				0x0009E880
+diff --git a/drivers/net/ethernet/intel/ice/ice_adapter.c b/drivers/net/ethernet/intel/ice/ice_adapter.c
+index 66e070095d1bbe822842d0923e5c44872b0af076..9e4adc43e474c960b8ee4849380a691a0e5ef848 100644
+--- a/drivers/net/ethernet/intel/ice/ice_adapter.c
++++ b/drivers/net/ethernet/intel/ice/ice_adapter.c
+@@ -32,6 +32,7 @@ static struct ice_adapter *ice_adapter_new(u64 dsn)
+ 
+ 	adapter->device_serial_number = dsn;
+ 	spin_lock_init(&adapter->ptp_gltsyn_time_lock);
++	spin_lock_init(&adapter->txq_ctx_lock);
+ 	refcount_set(&adapter->refcount, 1);
+ 
+ 	mutex_init(&adapter->ports.lock);
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index 2800ec4763688c0d194d29686b470e555a457c1c..95e40779b176c0b1e7c8d5f44a0d50b7f66fa0f8 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -1513,12 +1513,12 @@ static const struct packed_field_u8 ice_tlan_ctx_fields[] = {
+ };
+ 
+ /**
+- * ice_pack_txq_ctx - Pack Tx queue context into a HW buffer
++ * ice_pack_txq_ctx - Pack Tx queue context into Admin Queue buffer
+  * @ctx: the Tx queue context to pack
+- * @buf: the HW buffer to pack into
++ * @buf: the Admin Queue HW buffer to pack into
+  *
+  * Pack the Tx queue context from the CPU-friendly unpacked buffer into its
+- * bit-packed HW layout.
++ * bit-packed Admin Queue layout.
+  */
+ void ice_pack_txq_ctx(const struct ice_tlan_ctx *ctx, ice_txq_ctx_buf_t *buf)
+ {
+@@ -1526,6 +1526,173 @@ void ice_pack_txq_ctx(const struct ice_tlan_ctx *ctx, ice_txq_ctx_buf_t *buf)
+ 		    QUIRK_LITTLE_ENDIAN | QUIRK_LSW32_IS_FIRST);
+ }
+ 
++/**
++ * ice_pack_txq_ctx_full - Pack Tx queue context into a HW buffer
++ * @ctx: the Tx queue context to pack
++ * @buf: the HW buffer to pack into
++ *
++ * Pack the Tx queue context from the CPU-friendly unpacked buffer into its
++ * bit-packed HW layout, including the internal data portion.
++ */
++static void ice_pack_txq_ctx_full(const struct ice_tlan_ctx *ctx,
++				  ice_txq_ctx_buf_full_t *buf)
++{
++	pack_fields(buf, sizeof(*buf), ctx, ice_tlan_ctx_fields,
++		    QUIRK_LITTLE_ENDIAN | QUIRK_LSW32_IS_FIRST);
++}
++
++/**
++ * ice_unpack_txq_ctx_full - Unpack Tx queue context from a HW buffer
++ * @buf: the HW buffer to unpack from
++ * @ctx: the Tx queue context to unpack
++ *
++ * Unpack the Tx queue context from the HW buffer (including the full internal
++ * state) into the CPU-friendly structure.
++ */
++static void ice_unpack_txq_ctx_full(const ice_txq_ctx_buf_full_t *buf,
++				    struct ice_tlan_ctx *ctx)
++{
++	unpack_fields(buf, sizeof(*buf), ctx, ice_tlan_ctx_fields,
++		      QUIRK_LITTLE_ENDIAN | QUIRK_LSW32_IS_FIRST);
++}
++
++/**
++ * ice_copy_txq_ctx_from_hw - Copy Tx Queue context from HW registers
++ * @hw: pointer to the hardware structure
++ * @txq_ctx: pointer to the packed Tx queue context, including internal state
++ * @txq_index: the index of the Tx queue
++ *
++ * Copy Tx Queue context from HW register space to dense structure
++ */
++static void ice_copy_txq_ctx_from_hw(struct ice_hw *hw,
++				     ice_txq_ctx_buf_full_t *txq_ctx,
++				     u32 txq_index)
++{
++	struct ice_pf *pf = container_of(hw, struct ice_pf, hw);
++	u32 *ctx = (u32 *)txq_ctx;
++	u32 txq_base, reg;
++
++	/* Get Tx queue base within card space */
++	txq_base = rd32(hw, PFLAN_TX_QALLOC(hw->pf_id));
++	txq_base = FIELD_GET(PFLAN_TX_QALLOC_FIRSTQ_M, txq_base);
++
++	reg = FIELD_PREP(GLCOMM_QTX_CNTX_CTL_CMD_M,
++			 GLCOMM_QTX_CNTX_CTL_CMD_READ) |
++	      FIELD_PREP(GLCOMM_QTX_CNTX_CTL_QUEUE_ID_M,
++			 txq_base + txq_index) |
++	      GLCOMM_QTX_CNTX_CTL_CMD_EXEC_M;
++
++	/* Prevent other PFs on the same adapter from accessing the Tx queue
++	 * context interface concurrently.
++	 */
++	spin_lock(&pf->adapter->txq_ctx_lock);
++
++	wr32(hw, GLCOMM_QTX_CNTX_CTL, reg);
++	ice_flush(hw);
++
++	/* Copy each dword separately from HW */
++	for (int i = 0; i < ICE_TXQ_CTX_FULL_SIZE_DWORDS; i++, ctx++) {
++		*ctx = rd32(hw, GLCOMM_QTX_CNTX_DATA(i));
++
++		ice_debug(hw, ICE_DBG_QCTX, "qtxdata[%d]: %08X\n", i, *ctx);
++	}
++
++	spin_unlock(&pf->adapter->txq_ctx_lock);
++}
++
++/**
++ * ice_copy_txq_ctx_to_hw - Copy Tx Queue context into HW registers
++ * @hw: pointer to the hardware structure
++ * @txq_ctx: pointer to the packed Tx queue context, including internal state
++ * @txq_index: the index of the Tx queue
++ */
++static void ice_copy_txq_ctx_to_hw(struct ice_hw *hw,
++				   const ice_txq_ctx_buf_full_t *txq_ctx,
++				   u32 txq_index)
++{
++	struct ice_pf *pf = container_of(hw, struct ice_pf, hw);
++	u32 txq_base, reg;
++
++	/* Get Tx queue base within card space */
++	txq_base = rd32(hw, PFLAN_TX_QALLOC(hw->pf_id));
++	txq_base = FIELD_GET(PFLAN_TX_QALLOC_FIRSTQ_M, txq_base);
++
++	reg = FIELD_PREP(GLCOMM_QTX_CNTX_CTL_CMD_M,
++			 GLCOMM_QTX_CNTX_CTL_CMD_WRITE_NO_DYN) |
++	      FIELD_PREP(GLCOMM_QTX_CNTX_CTL_QUEUE_ID_M,
++			 txq_base + txq_index) |
++	      GLCOMM_QTX_CNTX_CTL_CMD_EXEC_M;
++
++	/* Prevent other PFs on the same adapter from accessing the Tx queue
++	 * context interface concurrently.
++	 */
++	spin_lock(&pf->adapter->txq_ctx_lock);
++
++	/* Copy each dword separately to HW */
++	for (int i = 0; i < ICE_TXQ_CTX_FULL_SIZE_DWORDS; i++) {
++		u32 ctx = ((const u32 *)txq_ctx)[i];
++
++		wr32(hw, GLCOMM_QTX_CNTX_DATA(i), ctx);
++
++		ice_debug(hw, ICE_DBG_QCTX, "qtxdata[%d]: %08X\n", i, ctx);
++	}
++
++	wr32(hw, GLCOMM_QTX_CNTX_CTL, reg);
++	ice_flush(hw);
++
++	spin_unlock(&pf->adapter->txq_ctx_lock);
++}
++
++/**
++ * ice_read_txq_ctx - Read Tx queue context from HW
++ * @hw: pointer to the hardware structure
++ * @tlan_ctx: pointer to the Tx queue context
++ * @txq_index: the index of the Tx queue
++ *
++ * Read the Tx queue context from the HW registers, then unpack it into the
++ * ice_tlan_ctx structure for use.
++ *
++ * Returns: 0 on success, or -EINVAL on an invalid Tx queue index.
++ */
++int ice_read_txq_ctx(struct ice_hw *hw, struct ice_tlan_ctx *tlan_ctx,
++		     u32 txq_index)
++{
++	ice_txq_ctx_buf_full_t buf = {};
++
++	if (txq_index > QTX_COMM_HEAD_MAX_INDEX)
++		return -EINVAL;
++
++	ice_copy_txq_ctx_from_hw(hw, &buf, txq_index);
++	ice_unpack_txq_ctx_full(&buf, tlan_ctx);
++
++	return 0;
++}
++
++/**
++ * ice_write_txq_ctx - Write Tx queue context to HW
++ * @hw: pointer to the hardware structure
++ * @tlan_ctx: pointer to the Tx queue context
++ * @txq_index: the index of the Tx queue
++ *
++ * Pack the Tx queue context into the dense HW layout, then write it into the
++ * HW registers.
++ *
++ * Returns: 0 on success, or -EINVAL on an invalid Tx queue index.
++ */
++int ice_write_txq_ctx(struct ice_hw *hw, struct ice_tlan_ctx *tlan_ctx,
++		      u32 txq_index)
++{
++	ice_txq_ctx_buf_full_t buf = {};
++
++	if (txq_index > QTX_COMM_HEAD_MAX_INDEX)
++		return -EINVAL;
++
++	ice_pack_txq_ctx_full(tlan_ctx, &buf);
++	ice_copy_txq_ctx_to_hw(hw, &buf, txq_index);
++
++	return 0;
++}
++
+ /* Sideband Queue command wrappers */
+ 
+ /**
 
 -- 
 2.48.1.397.gec9d649cc640
