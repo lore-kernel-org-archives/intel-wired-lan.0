@@ -1,74 +1,74 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 66BD3C71157
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F01F2C7115B
 	for <intel-wired-lan@archiver.kernel.org>; Wed, 18 Jun 2025 22:25:11 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 215D44095D;
+	by smtp3.osuosl.org (Postfix) with ESMTP id C2CDD60BC0;
 	Wed, 18 Jun 2025 22:25:11 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Y7gCW0KeOsu4; Wed, 18 Jun 2025 22:25:10 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id pAnDXypBbVhD; Wed, 18 Jun 2025 22:25:11 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 7D54740611
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 1F61360BA4
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1750285510;
-	bh=eNnYS7LbSO+xccGUbVT0bzQahEaiIbWQ1/tR1oZUJCw=;
+	s=default; t=1750285511;
+	bh=N+QvFEFDeDo28j9kfgMtRUNIopSWmSfc/ucm6Qj3kSY=;
 	h=From:Date:References:In-Reply-To:To:Cc:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=LlyieO39pcEtteBRRNiOxrQIN9MxhZOuuDZ8Qe4QfNacSy/F2U5jl4hFJpD0PNNJ1
-	 ycXsUjIisQ8cDqHpMQQ+lIsj2BdgVOZoDLMclwGIaSa+Drhj5OqYVe3ckQSsv1bM3f
-	 uJ9zhBXLi4fuSfZMDqlO6TZsU1VnpjWGfPjMjDkfjb7hvQSsHvFv0ep8lGVTSDj3pJ
-	 MXN/2qo12k0LwsIov1h7KrzyWm79DDdv9WepadplPYdc9zoxnVZFBBkW3vnceEUmq9
-	 0RU+lcklatcdRgMuJBlmWJF/LZgUCKV33P4qAKlQO/+l8fucuMhTydYFLzgFE+HYT/
-	 wDCK4YIwjX26g==
+	b=AfV3DoDVGfzGnH0++74BrPfSiiHAPZsFoymr9ErGTZIQ39pcbeYExCpf0fEbOCkqH
+	 wIHBtoqhom6QSonBJ4belV5iS8JNRgHHLkWmUb4NUkiApLfFuJkb6qN2j0KORgiHwU
+	 V9yOesBp/l7iiaac/eVYnY3mZC4TYDNzWHFVHiQCk42opfrH+hxi4WiZPm6HtyKbJ2
+	 ceYIYjxMHogWJG2dhwXgRjJRehrgaPEIioCq2T0nhisneOMrIFrQBie2oB3v4BliCq
+	 +apgEejL8FItGM7yF4Hhj0rFNzfUwpGvgfqCa/sUHu/p0gmLtU+S0yQj0mDzT/chz2
+	 qIj2SNXfDZnog==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 7D54740611;
-	Wed, 18 Jun 2025 22:25:10 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 85CD9151
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Jun 2025 22:25:07 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 1F61360BA4;
+	Wed, 18 Jun 2025 22:25:11 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 3A444E2
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Jun 2025 22:25:08 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 77ED2405B9
+ by smtp4.osuosl.org (Postfix) with ESMTP id 02B2740402
  for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Jun 2025 22:25:07 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id BtxETE8u7m3z for <intel-wired-lan@lists.osuosl.org>;
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id D05PX6tJIXil for <intel-wired-lan@lists.osuosl.org>;
  Wed, 18 Jun 2025 22:25:06 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.17;
  helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org AEC94405A1
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org AEC94405A1
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 498184041E
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 498184041E
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.17])
- by smtp2.osuosl.org (Postfix) with ESMTPS id AEC94405A1
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 498184041E
  for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Jun 2025 22:25:06 +0000 (UTC)
-X-CSE-ConnectionGUID: FYsVkMTNRLK3nSd2Y/gmpQ==
-X-CSE-MsgGUID: TgG3azY2S0eUkBHPFyfG3Q==
-X-IronPort-AV: E=McAfee;i="6800,10657,11468"; a="52447745"
-X-IronPort-AV: E=Sophos;i="6.16,246,1744095600"; d="scan'208";a="52447745"
+X-CSE-ConnectionGUID: ieJ2nQF9QGG79n6dBr+CIg==
+X-CSE-MsgGUID: SZZ9ErLmTjqntUFkGhWlNQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11468"; a="52447737"
+X-IronPort-AV: E=Sophos;i="6.16,246,1744095600"; d="scan'208";a="52447737"
 Received: from orviesa010.jf.intel.com ([10.64.159.150])
  by fmvoesa111.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  18 Jun 2025 15:25:05 -0700
-X-CSE-ConnectionGUID: GP+Y5Z6MRfmLSxiskrDuLw==
-X-CSE-MsgGUID: Pw6mJoodTmypC6mFV/OJMg==
+X-CSE-ConnectionGUID: 4KdJiOfmRMK584uutzn+6Q==
+X-CSE-MsgGUID: 6Ms/ebpQQoCwJqzJN/nhbw==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.16,246,1744095600"; d="scan'208";a="149870014"
+X-IronPort-AV: E=Sophos;i="6.16,246,1744095600"; d="scan'208";a="149870004"
 Received: from jekeller-desk.jf.intel.com ([10.166.241.15])
  by orviesa010-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  18 Jun 2025 15:25:04 -0700
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed, 18 Jun 2025 15:24:39 -0700
+Date: Wed, 18 Jun 2025 15:24:36 -0700
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250618-e810-live-migration-jk-migration-prep-v1-4-72a37485453e@intel.com>
+Message-Id: <20250618-e810-live-migration-jk-migration-prep-v1-1-72a37485453e@intel.com>
 References: <20250618-e810-live-migration-jk-migration-prep-v1-0-72a37485453e@intel.com>
 In-Reply-To: <20250618-e810-live-migration-jk-migration-prep-v1-0-72a37485453e@intel.com>
 To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
@@ -79,25 +79,25 @@ Cc: Jacob Keller <jacob.e.keller@intel.com>, netdev@vger.kernel.org,
 X-Mailer: b4 0.14.2
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1750285507; x=1781821507;
+ t=1750285506; x=1781821506;
  h=from:date:subject:mime-version:content-transfer-encoding:
  message-id:references:in-reply-to:to:cc;
- bh=01edmvdye+A2A3p3Nes/FGzi4ZU7AR2pXTGXrPAL64o=;
- b=HGTXrdDFT87xFF/kn96rFvaQqPAboZ74m/KF61ctMMOH8HXOrB/VQ8IF
- vivTE2HO2Gr9P6wlfHrDLpGENErkQtrQD47i7MGPZrBLj2BdkpdkAixb0
- C1hvzEiJ/b1/bubN3968E5KU7IBtUafFiFADu/a+ve836uAd0SjKKq3aL
- 8G610ExvoPD2TvuItWFGKuIg8cISLi9lFo3RU8rAyT/+vvgPsqU8Wg1rn
- 25XGAs6UGU+FWERbB9oWTNXoLmO05az6L4BQR/YuV5cPUM4p7MMGo9r+G
- G+mm1vzVAkAVC0uLX02p22/UwUIrxS87ABHZK3sB3pez1psPUQPgLUE0V
- w==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ bh=fdrkhdq6W8qDicqoFfmLZP4nTL8We3Md3i1yKTHvv50=;
+ b=Pv7mIVlX1VHOM4rXUhLuq++lih+c8iAsPHCTuyX36QYJRQpItFSJ3QJa
+ SVNCMvAkmiqb+1ilYJ4Dx7vLJZvYMHpzpsNBuIo9ZBUM4h+IuyA90EumY
+ ZQbPU3J3d+ptKDIl9jfsfIRTZ1tzyct5BQcew3MOOnlCut7RiNIOMvGXc
+ F/ZmGYrHF/S4WIm4U5nLHjqb3y44oRyEEILTmqtYwMaVpp+Bh1WcJbf1N
+ Jmk1Lee30D161TKVbNd/YAih3Ok2vG6p406k5LYE0MgB03ljgPq8pApyR
+ ygzRVTo0CmOQkXfJinPSFieVijRFkiR3Z78xEq98QD06wtPsAPz27q264
+ A==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=HGTXrdDF
-Subject: [Intel-wired-lan] [PATCH iwl-next 4/8] ice: move
- ice_vsi_update_l2tsel to ice_lib.c
+ header.a=rsa-sha256 header.s=Intel header.b=Pv7mIVlX
+Subject: [Intel-wired-lan] [PATCH iwl-next 1/8] ice: add support for reading
+ and unpacking Rx queue context
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -113,140 +113,132 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-A future change is going to need to call ice_vsi_update_l2tsel from a new
-context outside of ice_virtchnl.c
+In order to support live migration, the ice driver will need to read
+certain data from the Rx queue context. This is stored in the hardware in a
+packed format.
 
-Since this function deals with a generic VSI, move it into ice_lib.c to
-enable calling it from other places in the ice driver.
+Since we use <linux/packing.h> for the mapping between the packed hardware
+format and the unpacked structure, it is trivial to enable unpacking
+support via the unpack_fields() function.
+
+Add the ice_unpack_rxq_ctx() function based on the unpack_fields() API.
+Re-use the same field definitions from the packing implementation.
+
+Add ice_copy_rxq_ctx_from_hw() to copy the Rx queue context data from the
+hardware registers.
+
+Use these to implement ice_read_rxq_ctx() which will return the Rx queue
+context to the caller in its unpacked ice_rlan_ctx struct.
+
+This will enable the migration logic access to the relevant data about the
+Rx device queues. It can easily be copied to the target system as part of
+the migration payload, where it will be used to configure the Rx queues.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 Reviewed-by: Madhu Chittim <madhu.chittim@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_lib.h      |  8 +++++
- drivers/net/ethernet/intel/ice/ice_lib.c      | 35 ++++++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_virtchnl.c | 42 ---------------------------
- 3 files changed, 43 insertions(+), 42 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_common.h |  2 +
+ drivers/net/ethernet/intel/ice/ice_common.c | 60 +++++++++++++++++++++++++++++
+ 2 files changed, 62 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.h b/drivers/net/ethernet/intel/ice/ice_lib.h
-index 654516c5fc3ededf99d3aa9574a546177295a716..2cb1eb98b9dabc63c44aa20f04acb19040df56f9 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.h
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.h
-@@ -11,6 +11,13 @@
- #define ICE_VSI_FLAG_INIT	BIT(0)
- #define ICE_VSI_FLAG_NO_INIT	0
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
+index f5f132e5b5f945280b53b0eb35aef37c66e3f384..5f15bf83f06a8992f8b260c128df2c625f0bb9f1 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.h
++++ b/drivers/net/ethernet/intel/ice/ice_common.h
+@@ -118,6 +118,8 @@ void ice_set_safe_mode_caps(struct ice_hw *hw);
  
-+#define ICE_L2TSEL_QRX_CONTEXT_REG_IDX	3
-+#define ICE_L2TSEL_BIT_OFFSET		23
-+enum ice_l2tsel {
-+	ICE_L2TSEL_EXTRACT_FIRST_TAG_L2TAG2_2ND,
-+	ICE_L2TSEL_EXTRACT_FIRST_TAG_L2TAG1,
-+};
-+
- const char *ice_vsi_type_str(enum ice_vsi_type vsi_type);
+ int ice_write_rxq_ctx(struct ice_hw *hw, struct ice_rlan_ctx *rlan_ctx,
+ 		      u32 rxq_index);
++int ice_read_rxq_ctx(struct ice_hw *hw, struct ice_rlan_ctx *rlan_ctx,
++		     u32 rxq_index);
  
- bool ice_pf_state_is_nominal(struct ice_pf *pf);
-@@ -116,4 +123,5 @@ void ice_set_feature_support(struct ice_pf *pf, enum ice_feature f);
- void ice_clear_feature_support(struct ice_pf *pf, enum ice_feature f);
- void ice_init_feature_support(struct ice_pf *pf);
- bool ice_vsi_is_rx_queue_active(struct ice_vsi *vsi);
-+void ice_vsi_update_l2tsel(struct ice_vsi *vsi, enum ice_l2tsel l2tsel);
- #endif /* !_ICE_LIB_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 1ea9863a387be14b34a6705c44bc5b6361a808bc..d75836700889151d856157226eb2d3a8e50b1b34 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -4020,3 +4020,38 @@ ice_vsi_update_local_lb(struct ice_vsi *vsi, bool set)
- 	vsi->info = ctx.info;
- 	return 0;
+ int
+ ice_aq_get_rss_lut(struct ice_hw *hw, struct ice_aq_get_set_rss_lut_params *get_params);
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index a8b66f7e7f4e65f311daaeb39f1c673ec4cca7ca..2800ec4763688c0d194d29686b470e555a457c1c 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -1352,6 +1352,26 @@ static void ice_copy_rxq_ctx_to_hw(struct ice_hw *hw,
+ 	}
  }
-+
+ 
 +/**
-+ * ice_vsi_update_l2tsel - update l2tsel field for all Rx rings on this VSI
-+ * @vsi: VSI used to update l2tsel on
-+ * @l2tsel: l2tsel setting requested
-+ *
-+ * Use the l2tsel setting to update all of the Rx queue context bits for l2tsel.
-+ * This will modify which descriptor field the first offloaded VLAN will be
-+ * stripped into.
++ * ice_copy_rxq_ctx_from_hw - Copy packed Rx Queue context from HW registers
++ * @hw: pointer to the hardware structure
++ * @rxq_ctx: pointer to the packed Rx queue context
++ * @rxq_index: the index of the Rx queue
 + */
-+void ice_vsi_update_l2tsel(struct ice_vsi *vsi, enum ice_l2tsel l2tsel)
++static void ice_copy_rxq_ctx_from_hw(struct ice_hw *hw,
++				     ice_rxq_ctx_buf_t *rxq_ctx,
++				     u32 rxq_index)
 +{
-+	struct ice_hw *hw = &vsi->back->hw;
-+	u32 l2tsel_bit;
-+	int i;
++	u32 *ctx = (u32 *)rxq_ctx;
 +
-+	if (l2tsel == ICE_L2TSEL_EXTRACT_FIRST_TAG_L2TAG2_2ND)
-+		l2tsel_bit = 0;
-+	else
-+		l2tsel_bit = BIT(ICE_L2TSEL_BIT_OFFSET);
++	/* Copy each dword separately from HW */
++	for (int i = 0; i < ICE_RXQ_CTX_SIZE_DWORDS; i++, ctx++) {
++		*ctx = rd32(hw, QRX_CONTEXT(i, rxq_index));
 +
-+	for (i = 0; i < vsi->alloc_rxq; i++) {
-+		u16 pfq = vsi->rxq_map[i];
-+		u32 qrx_context_offset;
-+		u32 regval;
-+
-+		qrx_context_offset =
-+			QRX_CONTEXT(ICE_L2TSEL_QRX_CONTEXT_REG_IDX, pfq);
-+
-+		regval = rd32(hw, qrx_context_offset);
-+		regval &= ~BIT(ICE_L2TSEL_BIT_OFFSET);
-+		regval |= l2tsel_bit;
-+		wr32(hw, qrx_context_offset, regval);
++		ice_debug(hw, ICE_DBG_QCTX, "qrxdata[%d]: %08X\n", i, *ctx);
 +	}
 +}
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl.c b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-index 65eb6757a02143f3765716dedcd090dff2d84d2c..691ebb143e75863d25d6c0fbd1f0f330b363f919 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-@@ -3845,48 +3845,6 @@ ice_vc_ena_vlan_offload(struct ice_vsi *vsi,
++
+ #define ICE_CTX_STORE(struct_name, struct_field, width, lsb) \
+ 	PACKED_FIELD((lsb) + (width) - 1, (lsb), struct struct_name, struct_field)
+ 
+@@ -1395,6 +1415,21 @@ static void ice_pack_rxq_ctx(const struct ice_rlan_ctx *ctx,
+ 		    QUIRK_LITTLE_ENDIAN | QUIRK_LSW32_IS_FIRST);
+ }
+ 
++/**
++ * ice_unpack_rxq_ctx - Unpack Rx queue context from a HW buffer
++ * @buf: the HW buffer to unpack from
++ * @ctx: the Rx queue context to unpack
++ *
++ * Unpack the Rx queue context from the HW buffer into the CPU-friendly
++ * structure.
++ */
++static void ice_unpack_rxq_ctx(const ice_rxq_ctx_buf_t *buf,
++			       struct ice_rlan_ctx *ctx)
++{
++	unpack_fields(buf, sizeof(*buf), ctx, ice_rlan_ctx_fields,
++		      QUIRK_LITTLE_ENDIAN | QUIRK_LSW32_IS_FIRST);
++}
++
+ /**
+  * ice_write_rxq_ctx - Write Rx Queue context to hardware
+  * @hw: pointer to the hardware structure
+@@ -1420,6 +1455,31 @@ int ice_write_rxq_ctx(struct ice_hw *hw, struct ice_rlan_ctx *rlan_ctx,
  	return 0;
  }
  
--#define ICE_L2TSEL_QRX_CONTEXT_REG_IDX	3
--#define ICE_L2TSEL_BIT_OFFSET		23
--enum ice_l2tsel {
--	ICE_L2TSEL_EXTRACT_FIRST_TAG_L2TAG2_2ND,
--	ICE_L2TSEL_EXTRACT_FIRST_TAG_L2TAG1,
--};
--
--/**
-- * ice_vsi_update_l2tsel - update l2tsel field for all Rx rings on this VSI
-- * @vsi: VSI used to update l2tsel on
-- * @l2tsel: l2tsel setting requested
-- *
-- * Use the l2tsel setting to update all of the Rx queue context bits for l2tsel.
-- * This will modify which descriptor field the first offloaded VLAN will be
-- * stripped into.
-- */
--static void ice_vsi_update_l2tsel(struct ice_vsi *vsi, enum ice_l2tsel l2tsel)
--{
--	struct ice_hw *hw = &vsi->back->hw;
--	u32 l2tsel_bit;
--	int i;
--
--	if (l2tsel == ICE_L2TSEL_EXTRACT_FIRST_TAG_L2TAG2_2ND)
--		l2tsel_bit = 0;
--	else
--		l2tsel_bit = BIT(ICE_L2TSEL_BIT_OFFSET);
--
--	for (i = 0; i < vsi->alloc_rxq; i++) {
--		u16 pfq = vsi->rxq_map[i];
--		u32 qrx_context_offset;
--		u32 regval;
--
--		qrx_context_offset =
--			QRX_CONTEXT(ICE_L2TSEL_QRX_CONTEXT_REG_IDX, pfq);
--
--		regval = rd32(hw, qrx_context_offset);
--		regval &= ~BIT(ICE_L2TSEL_BIT_OFFSET);
--		regval |= l2tsel_bit;
--		wr32(hw, qrx_context_offset, regval);
--	}
--}
--
- /**
-  * ice_vc_ena_vlan_stripping_v2_msg
-  * @vf: VF the message was received from
++/**
++ * ice_read_rxq_ctx - Read Rx queue context from HW
++ * @hw: pointer to the hardware structure
++ * @rlan_ctx: pointer to the Rx queue context
++ * @rxq_index: the index of the Rx queue
++ *
++ * Read the Rx queue context from the hardware registers, and unpack it into
++ * the sparse Rx queue context structure.
++ *
++ * Returns: 0 on success, or -EINVAL if the Rx queue index is invalid.
++ */
++int ice_read_rxq_ctx(struct ice_hw *hw, struct ice_rlan_ctx *rlan_ctx,
++		     u32 rxq_index)
++{
++	ice_rxq_ctx_buf_t buf = {};
++
++	if (rxq_index > QRX_CTRL_MAX_INDEX)
++		return -EINVAL;
++
++	ice_copy_rxq_ctx_from_hw(hw, &buf, rxq_index);
++	ice_unpack_rxq_ctx(&buf, rlan_ctx);
++
++	return 0;
++}
++
+ /* LAN Tx Queue Context */
+ static const struct packed_field_u8 ice_tlan_ctx_fields[] = {
+ 				    /* Field			Width	LSB */
 
 -- 
 2.48.1.397.gec9d649cc640
