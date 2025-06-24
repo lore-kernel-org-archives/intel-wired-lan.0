@@ -1,103 +1,87 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 30A39C7EE30
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 24 Jun 2025 00:30:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BCF4EC7115B
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 24 Jun 2025 03:22:02 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 7E70882BF5;
-	Tue, 24 Jun 2025 00:30:16 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 719584084B;
+	Tue, 24 Jun 2025 03:22:02 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id mYcHO1wqIixK; Tue, 24 Jun 2025 00:30:16 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 1DPydaJ--I7B; Tue, 24 Jun 2025 03:22:02 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 0478082C8E
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org F20A14084C
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1750725016;
-	bh=XhmKtuH2a1esDtTMsgo9ljdTbwB+8xhGbUXzLIhT4Io=;
-	h=From:Date:References:In-Reply-To:To:Cc:Subject:List-Id:
+	s=default; t=1750735322;
+	bh=MsA08rbTxeFhJz/WzNmdbbmzaVE+0kJASkfsGnUl/UI=;
+	h=From:To:CC:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=tIBq0GXiI1pdxyGhf/yClBgiFMZx9hYzrVfb9GYKbEYA/3mGL25TnPCUB4OHH4Tzy
-	 SdyN/JgIuXTO4ZXo1D5UCLh3CF4x6e+Gt9gLeVDH+cV6mAz/Eo7KmYG0tDCnyxqgck
-	 8m1/S7KhkcPQy3eJ/DeujgTArRNMSC/SOQ4+ozS/+zGK8Y0hkQn6wTq1P2CSxo7vNK
-	 qgdmpQA3aqYTwpBZRZNH5IrEbIKOZ6mnIyN/8E77uJV+wy5gpLRQeSP73LGz0bESyc
-	 QfAfYYy+RMWUR8ggz2vV7oSlH6wej2qG59m0nndrwejdum3yGLXNkYokJqPYSFFmb5
-	 EUDKpOH2NW1Aw==
+	b=Mp2+uhvrOvEff0INynzxsC5/VKfGqaBCngHrvEBvOIl8Lyqg9Oh0v3q2kGy1T/5lc
+	 AO0X/qcg9vst8yTriwfVv5gAQDoSYVFz02SoU49hB8Or0b/AB7a5NR+XsL0LBy6om/
+	 av1al2OQnglRubpumj/rrxBnM0p4SZPYny5iNziuPfb7DYIOv3wJt2FE4C5xehjT0b
+	 jgjfzB1B8daLj+1rrrODk3kQbUYjEK6rU25B8ykdQzDIVgtAhq7kArkkgb92Pr2GXR
+	 RgvuuW8qlQokmHbjXMp71CURpqF69cFMTrsYv+pBic8F9DXMML90Ygohp9Xa+phfmN
+	 slNq0SzwpClDQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 0478082C8E;
-	Tue, 24 Jun 2025 00:30:16 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id F20A14084C;
+	Tue, 24 Jun 2025 03:22:01 +0000 (UTC)
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id 438F012C
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Jun 2025 00:30:12 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id 4A47C154
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Jun 2025 03:22:01 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 0B968610A9
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Jun 2025 00:30:09 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 3040960895
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Jun 2025 03:22:01 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id gb6ky1gFQltI for <intel-wired-lan@lists.osuosl.org>;
- Tue, 24 Jun 2025 00:30:08 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.19;
- helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
+ id bm-Lc1fKRzgi for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 24 Jun 2025 03:22:00 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=162.243.126.186;
+ helo=mail-vip.corpemail.net; envelope-from=chuguangqing@inspur.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 7B148610AC
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7B148610AC
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.19])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 7B148610AC
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Jun 2025 00:30:08 +0000 (UTC)
-X-CSE-ConnectionGUID: LlGb/2foTSGE1kqgKmGnoQ==
-X-CSE-MsgGUID: 2m25MsfkTLyRM5ed5W9COg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11473"; a="52067922"
-X-IronPort-AV: E=Sophos;i="6.16,260,1744095600"; d="scan'208";a="52067922"
-Received: from orviesa005.jf.intel.com ([10.64.159.145])
- by fmvoesa113.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 23 Jun 2025 17:30:07 -0700
-X-CSE-ConnectionGUID: ucq3/5DaQYKC2ivB8+EpMw==
-X-CSE-MsgGUID: KB1hCkS7TqCfrDvXElPSIA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.16,260,1744095600"; d="scan'208";a="157534051"
-Received: from jekeller-desk.jf.intel.com ([10.166.241.15])
- by orviesa005-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 23 Jun 2025 17:30:06 -0700
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Mon, 23 Jun 2025 17:30:02 -0700
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 7430B6077B
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7430B6077B
+Received: from mail-vip.corpemail.net (mail-vip.corpemail.net
+ [162.243.126.186])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 7430B6077B
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Jun 2025 03:21:59 +0000 (UTC)
+Received: from jtjnmail201612.home.langchao.com
+ by unicom145.biz-email.net ((D)) with ASMTP (SSL) id 202506241100305413;
+ Tue, 24 Jun 2025 11:00:30 +0800
+Received: from localhost.localdomain.com (10.94.6.249) by
+ jtjnmail201612.home.langchao.com (10.100.2.12) with Microsoft SMTP Server id
+ 15.1.2507.57; Tue, 24 Jun 2025 11:00:29 +0800
+From: chuguangqing <chuguangqing@inspur.com>
+To: Tony Nguyen <anthony.l.nguyen@intel.com>, Przemek Kitszel
+ <przemyslaw.kitszel@intel.com>, Andrew Lunn <andrew+netdev@lunn.ch>, "David
+ S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, Jakub
+ Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>
+CC: <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>,
+ <intel-wired-lan@lists.osuosl.org>
+Date: Tue, 24 Jun 2025 10:58:52 +0800
+Message-ID: <20250624025915.1692-1-chuguangqing@inspur.com>
+X-Mailer: git-send-email 2.43.5
+In-Reply-To: <3bf6df3b-affe-4f10-8b05-29f3393d19e0@intel.com>
+References: <3bf6df3b-affe-4f10-8b05-29f3393d19e0@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20250623-kk-tspll-improvements-alignment-v1-6-fe9a50620700@intel.com>
-References: <20250623-kk-tspll-improvements-alignment-v1-0-fe9a50620700@intel.com>
-In-Reply-To: <20250623-kk-tspll-improvements-alignment-v1-0-fe9a50620700@intel.com>
-To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Cc: Jacob Keller <jacob.e.keller@intel.com>, 
- Anthony Nguyen <anthony.l.nguyen@intel.com>, netdev@vger.kernel.org, 
- Karol Kolacinski <karol.kolacinski@intel.com>, 
- Milena Olech <milena.olech@intel.com>
-X-Mailer: b4 0.14.2
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1750725008; x=1782261008;
- h=from:date:subject:mime-version:content-transfer-encoding:
- message-id:references:in-reply-to:to:cc;
- bh=o4hj3F9sT37zdvuAQpgExiaMoeCQnU2Bj09aX+sXwAM=;
- b=f5Y445DV9jCcuzYJM1uF/QS98kAFnkHHUK8Bw2bN/GjWClRiVrTbCqzO
- k4x/hpLIttbMXiKkc6cLayIteZhCWQInR1GmukJjfzgxHlsn+ip3ZhXcn
- DA+mEiUFTXMMV/s1XNgW61BcJTtohzNcJVKmDn7t4UjukX2/hBIpLmAFC
- RUoVlrYRSJDzluKj646F6ZDcD21sxRb+PKWN0/xhAR4LIR3NjBn0S8uAB
- mJ0gEn2xa07l7+UehQr7ldj69oD3luLeAAG6tmyZq98VMU3+PRBOynFZV
- c68a50sVVZeKBDtQgYvK2zfAxTXD61EGlkcsIp5cAkJSA/LZpMoYsw2E9
- Q==;
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.94.6.249]
+tUid: 2025624110031415c3819e8b85ca5c6989f831ba4e68d
+X-Abuse-Reports-To: service@corp-email.com
+Abuse-Reports-To: service@corp-email.com
+X-Complaints-To: service@corp-email.com
+X-Report-Abuse-To: service@corp-email.com
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=f5Y445DV
-Subject: [Intel-wired-lan] [PATCH 6/8] ice: fall back to TCXO on TSPLL lock
- fail
+ dmarc=none (p=none dis=none)
+ header.from=inspur.com
+Subject: Re: [Intel-wired-lan] [PATCH 1/1] check the ioremap return value
+ first (supplementary CC)
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -113,43 +97,4 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Karol Kolacinski <karol.kolacinski@intel.com>
-
-TSPLL can fail when trying to lock to TIME_REF as a clock source, e.g.
-when the external clock source is not stable or connected to the board.
-To continue operation after failure, try to lock again to internal TCXO
-and inform user about this.
-
-Reviewed-by: Milena Olech <milena.olech@intel.com>
-Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
----
- drivers/net/ethernet/intel/ice/ice_tspll.c | 14 +++++++++++++-
- 1 file changed, 13 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_tspll.c b/drivers/net/ethernet/intel/ice/ice_tspll.c
-index abd9f4ff2f5563e35dd8e8fa551eb944d8f5802a..886a18b2e65fa03860f8907552f2a57b0717fdf7 100644
---- a/drivers/net/ethernet/intel/ice/ice_tspll.c
-+++ b/drivers/net/ethernet/intel/ice/ice_tspll.c
-@@ -605,5 +605,17 @@ int ice_tspll_init(struct ice_hw *hw)
- 	/* Configure the TSPLL using the parameters from the function
- 	 * capabilities.
- 	 */
--	return ice_tspll_cfg(hw, tspll_freq, clk_src);
-+	err = ice_tspll_cfg(hw, tspll_freq, clk_src);
-+	if (err) {
-+		dev_warn(ice_hw_to_dev(hw), "Failed to lock TSPLL to predefined frequency. Retrying with fallback frequency.\n");
-+
-+		/* Try to lock to internal TCXO as a fallback. */
-+		tspll_freq = ice_tspll_default_freq(hw->mac_type);
-+		clk_src = ICE_CLK_SRC_TCXO;
-+		err = ice_tspll_cfg(hw, tspll_freq, clk_src);
-+		if (err)
-+			dev_warn(ice_hw_to_dev(hw), "Failed to lock TSPLL to fallback frequency.\n");
-+	}
-+
-+	return err;
- }
-
--- 
-2.48.1.397.gec9d649cc640
-
+First of all, thank you for your reply. Yes, this patch doesn't change anything substantial. It's merely for demonstrating good programming practices, so you can decide whether to apply it or not.
