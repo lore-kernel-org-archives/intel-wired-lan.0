@@ -4,77 +4,78 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4E2DDC7EE30
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 24 Jun 2025 00:30:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 632E9C77B7C
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 24 Jun 2025 00:30:14 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 219A940692;
-	Tue, 24 Jun 2025 00:30:13 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 3BA5F40A11;
+	Tue, 24 Jun 2025 00:30:14 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id IK342c5QUc5q; Tue, 24 Jun 2025 00:30:12 +0000 (UTC)
+ id zvy4zYypjmnB; Tue, 24 Jun 2025 00:30:13 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 69F0E4072D
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org A2D7040AE7
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1750725012;
-	bh=pKEsXemV7f75bweiI6AA2IO3TfyWC1vlamJpI6fvXY0=;
+	s=default; t=1750725013;
+	bh=OUHr6a6pGhXCtSd86oT+ktvAI12VcmKcq3tag4ynbV4=;
 	h=From:Date:References:In-Reply-To:To:Cc:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=ajt/FOrsM3cR1mjFziuVgc5nitxplTKF5A+YqvQg0laGCdC4ySm0ubTZG6Qrtg4Sv
-	 f1I0sgwraT4Yj0hAVKMQUHC9fSHg9aN0WcsGpBDfIWFdHzbfk8rnhEPPfB/Ae8Tmxl
-	 IM2NXptvQfDaGhxH5dFc0/no0C0qKsT2ra39e9UGNXZcsvRUMJlqabSPXBZ8yLM455
-	 TMCePUYvMt6y0SKViRjC5TMoXpAoHs7ezSsu+//Cbm9Xt29N5bvGUwQOoXv9LceP9R
-	 GyZnomT1sxlnL+3sE3+ckxfhZ2/wwzIJyNerBaS2zUoXQkbYQsQvg+CAyPZyvAN7Ei
-	 LMHswyJ9eu9Lg==
+	b=Jny/4T6IpUqQcKaoDSpXsRJDRuhGDcQ/+xzdoF0TEts/70oYD5GwlWqlcFvn245LG
+	 /U9qjXsmoSuIbGl5fQI1lfmWhoRmw75N1Q/1l/wrf5ZsZ8OHyJ70nDF5La0/L6JXmF
+	 ZbZYsQhSk3MguOZ0FQV0BCVr/Pg00/Mxi+Nk1vz3AQUdoSQlpNDsnaEn77i9XtVnkI
+	 zh/aZI786omzs3zJYjzYGSKZTjFPze1h+JvqBEos/QBrExpUUSLTu5hUySZLIchso5
+	 c7gGJObupZCOKmGPIZRgktKQPKtS19EQzk/Ejd+jO+tLm/M546vWNBd6/HYNH+CS1Q
+	 bKXlt+4Esyu3A==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 69F0E4072D;
-	Tue, 24 Jun 2025 00:30:12 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id 19536154
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Jun 2025 00:30:09 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id A2D7040AE7;
+	Tue, 24 Jun 2025 00:30:13 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 1BEFA154
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Jun 2025 00:30:10 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id AB06D610AD
+ by smtp4.osuosl.org (Postfix) with ESMTP id DD7BC406DA
  for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Jun 2025 00:30:08 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 78q6eKpUKjI0 for <intel-wired-lan@lists.osuosl.org>;
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 3NxyEWPAX8El for <intel-wired-lan@lists.osuosl.org>;
  Tue, 24 Jun 2025 00:30:08 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.19;
  helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org F28A8610A8
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org F28A8610A8
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 447C640716
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 447C640716
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.19])
- by smtp3.osuosl.org (Postfix) with ESMTPS id F28A8610A8
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Jun 2025 00:30:07 +0000 (UTC)
-X-CSE-ConnectionGUID: xckhW76vSm6sTJEa30XOgA==
-X-CSE-MsgGUID: naBYQ5sQSwKPpyP39bK4Ag==
-X-IronPort-AV: E=McAfee;i="6800,10657,11473"; a="52067916"
-X-IronPort-AV: E=Sophos;i="6.16,260,1744095600"; d="scan'208";a="52067916"
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 447C640716
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Jun 2025 00:30:08 +0000 (UTC)
+X-CSE-ConnectionGUID: gt48xPRyR7O4j17UHJrtBA==
+X-CSE-MsgGUID: cBkW6kW9Q92rtmGJlRuvPA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11473"; a="52067923"
+X-IronPort-AV: E=Sophos;i="6.16,260,1744095600"; d="scan'208";a="52067923"
 Received: from orviesa005.jf.intel.com ([10.64.159.145])
  by fmvoesa113.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  23 Jun 2025 17:30:07 -0700
-X-CSE-ConnectionGUID: SYOJQsjRSyS5a38jjWQh/A==
-X-CSE-MsgGUID: lpe4s5D4RQ+QGMC8rQOyoA==
+X-CSE-ConnectionGUID: Sg+HOhDpSD+wK4fZvicsXQ==
+X-CSE-MsgGUID: TgUiy6uaQqm17GBpFwnBEg==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.16,260,1744095600"; d="scan'208";a="157534045"
+X-IronPort-AV: E=Sophos;i="6.16,260,1744095600"; d="scan'208";a="157534054"
 Received: from jekeller-desk.jf.intel.com ([10.166.241.15])
  by orviesa005-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  23 Jun 2025 17:30:06 -0700
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Mon, 23 Jun 2025 17:30:00 -0700
+Date: Mon, 23 Jun 2025 17:30:03 -0700
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250623-kk-tspll-improvements-alignment-v1-4-fe9a50620700@intel.com>
+Message-Id: <20250623-kk-tspll-improvements-alignment-v1-7-fe9a50620700@intel.com>
 References: <20250623-kk-tspll-improvements-alignment-v1-0-fe9a50620700@intel.com>
 In-Reply-To: <20250623-kk-tspll-improvements-alignment-v1-0-fe9a50620700@intel.com>
 To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
 Cc: Jacob Keller <jacob.e.keller@intel.com>, 
  Anthony Nguyen <anthony.l.nguyen@intel.com>, netdev@vger.kernel.org, 
  Karol Kolacinski <karol.kolacinski@intel.com>, 
+ Michal Kubiak <michal.kubiak@intel.com>, 
  Milena Olech <milena.olech@intel.com>
 X-Mailer: b4 0.14.2
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
@@ -82,21 +83,22 @@ X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  t=1750725008; x=1782261008;
  h=from:date:subject:mime-version:content-transfer-encoding:
  message-id:references:in-reply-to:to:cc;
- bh=Q2LTKXyU/2AHsmVL5L2k3vVmUySp3C68zPt1J8YYFf0=;
- b=He8id29AIOINu4ti8E5kPXvm0LUVBKKuqE/eXatNP7z05/dS0SNALmn2
- GqiQVS3LaNAuvsdkCQ/DW2BfPEwK9hBYNmvJFVRXPDVaOTicpMu0kbo1X
- UJXTO2P9sGXPW/q+ZOu+Dp0g6dVGT+OhrRCJiL39Gg+I/L2pmIlvVOFl4
- EsAU5pZEW18sHSCoOXq4I+R1t34SgMxTVJmxaYCf4vWnG1fioq5wQKcrm
- 2XT6GScWLA3nutF60aL1NwpF9s/yL16eqElFR+0gxDWW1rfyCB6pR3Gjm
- W5FuszM8E+VW5w8rzh5C6y7JXUNTjfJ1Bevj41og55usz1bQOSSyhuf1D
+ bh=aso3cJV5AAuMZ6LJisL+q0iwZeNSxQUYIgg2Nkf4nTc=;
+ b=UTCW3Mi2FwbsqoMkuCFSCrOpfG4ZvPUSDE8ew8mxKowK2UJrEVR3HCKO
+ BxhgThTx5iT/oLNzfiX3vfc8KXDAUeuckZLlfsK+/ZSlDgDGEuLFAu73e
+ t3DkVVTRyr5D5NSvIzm5YXBaWI10PLzfhvASCknq1i8LmyIPU3+Rv+rK8
+ PkqaDjtUGLt5RveRtwUZeHZwt+Im5+iaQScz6OHNUqkZ01q4yWjqmcg97
+ K6XGa3lPgiY25im8kOExRGP4sA+0WzRgbf880zefaeoh8TdR5+2QIH/Eo
+ t0b0iMzstVr4jE1MeZZT2AXdfwSmOKnVEJACngO/sNFWRpsAbvNd4PnAJ
  g==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=He8id29A
-Subject: [Intel-wired-lan] [PATCH 4/8] ice: add multiple TSPLL helpers
+ header.a=rsa-sha256 header.s=Intel header.b=UTCW3Mi2
+Subject: [Intel-wired-lan] [PATCH 7/8] ice: move TSPLL init calls to
+ ice_ptp.c
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -114,217 +116,117 @@ Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 From: Karol Kolacinski <karol.kolacinski@intel.com>
 
-Add helpers for checking TSPLL params, disabling sticky bits,
-configuring TSPLL and getting default clock frequency to simplify
-the code flows.
+Initialize TSPLL after initializing PHC in ice_ptp.c instead of calling
+for each product in PHC init in ice_ptp_hw.c.
 
+Reviewed-by: Michal Kubiak <michal.kubiak@intel.com>
 Reviewed-by: Milena Olech <milena.olech@intel.com>
 Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_tspll.c | 156 ++++++++++++++++++++---------
- 1 file changed, 108 insertions(+), 48 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_ptp.c    | 11 +++++++++++
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.c | 22 +---------------------
+ drivers/net/ethernet/intel/ice/ice_tspll.c  |  5 +++++
+ 3 files changed, 17 insertions(+), 21 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
+index b8cf8d64aaaa799e2b8a0cf1818d8818a4ce9d69..e7005d757477183ddbb344fff27bc18b44bf1eef 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp.c
++++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
+@@ -2892,6 +2892,10 @@ static int ice_ptp_rebuild_owner(struct ice_pf *pf)
+ 	if (err)
+ 		return err;
+ 
++	err = ice_tspll_init(hw);
++	if (err)
++		return err;
++
+ 	/* Acquire the global hardware lock */
+ 	if (!ice_ptp_lock(hw)) {
+ 		err = -EBUSY;
+@@ -3059,6 +3063,13 @@ static int ice_ptp_init_owner(struct ice_pf *pf)
+ 		return err;
+ 	}
+ 
++	err = ice_tspll_init(hw);
++	if (err) {
++		dev_err(ice_pf_to_dev(pf), "Failed to initialize CGU, status %d\n",
++			err);
++		return err;
++	}
++
+ 	/* Acquire the global hardware lock */
+ 	if (!ice_ptp_lock(hw)) {
+ 		err = -EBUSY;
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
+index 278231443546360ace79c2823ed94d7eaab7f8a0..e8e439fd64a4263ef354c10001b2a3efdf9b4dbf 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
++++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
+@@ -2115,20 +2115,6 @@ int ice_start_phy_timer_eth56g(struct ice_hw *hw, u8 port)
+ 	return 0;
+ }
+ 
+-/**
+- * ice_ptp_init_phc_e825 - Perform E825 specific PHC initialization
+- * @hw: pointer to HW struct
+- *
+- * Perform E825-specific PTP hardware clock initialization steps.
+- *
+- * Return: 0 on success, negative error code otherwise.
+- */
+-static int ice_ptp_init_phc_e825(struct ice_hw *hw)
+-{
+-	/* Initialize the Clock Generation Unit */
+-	return ice_tspll_init(hw);
+-}
+-
+ /**
+  * ice_ptp_read_tx_hwtstamp_status_eth56g - Get TX timestamp status
+  * @hw: pointer to the HW struct
+@@ -2788,7 +2774,6 @@ static int ice_ptp_set_vernier_wl(struct ice_hw *hw)
+  */
+ static int ice_ptp_init_phc_e82x(struct ice_hw *hw)
+ {
+-	int err;
+ 	u32 val;
+ 
+ 	/* Enable reading switch and PHY registers over the sideband queue */
+@@ -2798,11 +2783,6 @@ static int ice_ptp_init_phc_e82x(struct ice_hw *hw)
+ 	val |= (PF_SB_REM_DEV_CTL_SWITCH_READ | PF_SB_REM_DEV_CTL_PHY0);
+ 	wr32(hw, PF_SB_REM_DEV_CTL, val);
+ 
+-	/* Initialize the Clock Generation Unit */
+-	err = ice_tspll_init(hw);
+-	if (err)
+-		return err;
+-
+ 	/* Set window length for all the ports */
+ 	return ice_ptp_set_vernier_wl(hw);
+ }
+@@ -5584,7 +5564,7 @@ int ice_ptp_init_phc(struct ice_hw *hw)
+ 	case ICE_MAC_GENERIC:
+ 		return ice_ptp_init_phc_e82x(hw);
+ 	case ICE_MAC_GENERIC_3K_E825:
+-		return ice_ptp_init_phc_e825(hw);
++		return 0;
+ 	default:
+ 		return -EOPNOTSUPP;
+ 	}
 diff --git a/drivers/net/ethernet/intel/ice/ice_tspll.c b/drivers/net/ethernet/intel/ice/ice_tspll.c
-index 8e1f522c579b7e4d440424fd8af4c7b7e198d067..e7b44e703d7c0966414e119f861ee1ab165d9293 100644
+index 886a18b2e65fa03860f8907552f2a57b0717fdf7..66320a4ab86fde57738307ce9b4f7d9838e7db71 100644
 --- a/drivers/net/ethernet/intel/ice/ice_tspll.c
 +++ b/drivers/net/ethernet/intel/ice/ice_tspll.c
-@@ -71,6 +71,58 @@ static const char *ice_tspll_clk_freq_str(enum ice_tspll_freq clk_freq)
- 	}
- }
- 
-+/**
-+ * ice_tspll_default_freq - Return default frequency for a MAC type
-+ * @mac_type: MAC type
-+ *
-+ * Return: default TSPLL frequency for a correct MAC type, -ERANGE otherwise.
-+ */
-+static enum ice_tspll_freq ice_tspll_default_freq(enum ice_mac_type mac_type)
-+{
-+	switch (mac_type) {
-+	case ICE_MAC_GENERIC:
-+		return ICE_TSPLL_FREQ_25_000;
-+	case ICE_MAC_GENERIC_3K_E825:
-+		return ICE_TSPLL_FREQ_156_250;
-+	default:
-+		return -ERANGE;
-+	}
-+}
-+
-+/**
-+ * ice_tspll_check_params - Check if TSPLL params are correct
-+ * @hw: Pointer to the HW struct
-+ * @clk_freq: Clock frequency to program
-+ * @clk_src: Clock source to select (TIME_REF or TCXO)
-+ *
-+ * Return: true if TSPLL params are correct, false otherwise.
-+ */
-+static bool ice_tspll_check_params(struct ice_hw *hw,
-+				   enum ice_tspll_freq clk_freq,
-+				   enum ice_clk_src clk_src)
-+{
-+	if (clk_freq >= NUM_ICE_TSPLL_FREQ) {
-+		dev_warn(ice_hw_to_dev(hw), "Invalid TSPLL frequency %u\n",
-+			 clk_freq);
-+		return false;
-+	}
-+
-+	if (clk_src >= NUM_ICE_CLK_SRC) {
-+		dev_warn(ice_hw_to_dev(hw), "Invalid clock source %u\n",
-+			 clk_src);
-+		return false;
-+	}
-+
-+	if ((hw->mac_type == ICE_MAC_GENERIC_3K_E825 ||
-+	     clk_src == ICE_CLK_SRC_TCXO) &&
-+	    clk_freq != ice_tspll_default_freq(hw->mac_type)) {
-+		dev_warn(ice_hw_to_dev(hw), "Unsupported frequency for this clock source\n");
-+		return false;
-+	}
-+
-+	return true;
-+}
-+
- /**
-  * ice_tspll_clk_src_str - Convert time_ref_src to string
-  * @clk_src: Clock source
-@@ -130,24 +182,6 @@ static int ice_tspll_cfg_e82x(struct ice_hw *hw, enum ice_tspll_freq clk_freq,
- 	u32 val, r9, r24;
+@@ -592,6 +592,11 @@ int ice_tspll_init(struct ice_hw *hw)
+ 	enum ice_clk_src clk_src;
  	int err;
  
--	if (clk_freq >= NUM_ICE_TSPLL_FREQ) {
--		dev_warn(ice_hw_to_dev(hw), "Invalid TIME_REF frequency %u\n",
--			 clk_freq);
--		return -EINVAL;
--	}
--
--	if (clk_src >= NUM_ICE_CLK_SRC) {
--		dev_warn(ice_hw_to_dev(hw), "Invalid clock source %u\n",
--			 clk_src);
--		return -EINVAL;
--	}
--
--	if (clk_src == ICE_CLK_SRC_TCXO && clk_freq != ICE_TSPLL_FREQ_25_000) {
--		dev_warn(ice_hw_to_dev(hw),
--			 "TCXO only supports 25 MHz frequency\n");
--		return -EINVAL;
--	}
--
- 	err = ice_read_cgu_reg(hw, ICE_CGU_R9, &r9);
- 	if (err)
- 		return err;
-@@ -306,23 +340,6 @@ static int ice_tspll_cfg_e825c(struct ice_hw *hw, enum ice_tspll_freq clk_freq,
- 	u32 val, r9, r23;
- 	int err;
- 
--	if (clk_freq >= NUM_ICE_TSPLL_FREQ) {
--		dev_warn(ice_hw_to_dev(hw), "Invalid TIME_REF frequency %u\n",
--			 clk_freq);
--		return -EINVAL;
--	}
--
--	if (clk_src >= NUM_ICE_CLK_SRC) {
--		dev_warn(ice_hw_to_dev(hw), "Invalid clock source %u\n",
--			 clk_src);
--		return -EINVAL;
--	}
--
--	if (clk_freq != ICE_TSPLL_FREQ_156_250) {
--		dev_warn(ice_hw_to_dev(hw), "Adapter only supports 156.25 MHz frequency\n");
--		return -EINVAL;
--	}
--
- 	err = ice_read_cgu_reg(hw, ICE_CGU_R9, &r9);
- 	if (err)
- 		return err;
-@@ -508,6 +525,52 @@ int ice_tspll_cfg_pps_out_e825c(struct ice_hw *hw, bool enable)
- 	return ice_write_cgu_reg(hw, ICE_CGU_R9, val);
- }
- 
-+/**
-+ * ice_tspll_cfg - Configure the Clock Generation Unit TSPLL
-+ * @hw: Pointer to the HW struct
-+ * @clk_freq: Clock frequency to program
-+ * @clk_src: Clock source to select (TIME_REF, or TCXO)
-+ *
-+ * Configure the Clock Generation Unit with the desired clock frequency and
-+ * time reference, enabling the TSPLL which drives the PTP hardware clock.
-+ *
-+ * Return: 0 on success, -ERANGE on unsupported MAC type, other negative error
-+ *         codes when failed to configure CGU.
-+ */
-+static int ice_tspll_cfg(struct ice_hw *hw, enum ice_tspll_freq clk_freq,
-+			 enum ice_clk_src clk_src)
-+{
-+	switch (hw->mac_type) {
-+	case ICE_MAC_GENERIC:
-+		return ice_tspll_cfg_e82x(hw, clk_freq, clk_src);
-+	case ICE_MAC_GENERIC_3K_E825:
-+		return ice_tspll_cfg_e825c(hw, clk_freq, clk_src);
-+	default:
-+		return -ERANGE;
-+	}
-+}
++	/* Only E822, E823 and E825 products support TSPLL */
++	if (hw->mac_type != ICE_MAC_GENERIC &&
++	    hw->mac_type != ICE_MAC_GENERIC_3K_E825)
++		return 0;
 +
-+/**
-+ * ice_tspll_dis_sticky_bits - disable TSPLL sticky bits
-+ * @hw: Pointer to the HW struct
-+ *
-+ * Configure the Clock Generation Unit TSPLL sticky bits so they don't latch on
-+ * losing TSPLL lock, but always show current state.
-+ *
-+ * Return: 0 on success, -ERANGE on unsupported MAC type.
-+ */
-+static int ice_tspll_dis_sticky_bits(struct ice_hw *hw)
-+{
-+	switch (hw->mac_type) {
-+	case ICE_MAC_GENERIC:
-+		return ice_tspll_dis_sticky_bits_e82x(hw);
-+	case ICE_MAC_GENERIC_3K_E825:
-+		return ice_tspll_dis_sticky_bits_e825c(hw);
-+	default:
-+		return -ERANGE;
-+	}
-+}
-+
- /**
-  * ice_tspll_init - Initialize TSPLL with settings from firmware
-  * @hw: Pointer to the HW structure
-@@ -519,25 +582,22 @@ int ice_tspll_cfg_pps_out_e825c(struct ice_hw *hw, bool enable)
- int ice_tspll_init(struct ice_hw *hw)
- {
- 	struct ice_ts_func_info *ts_info = &hw->func_caps.ts_func_info;
-+	enum ice_tspll_freq tspll_freq;
-+	enum ice_clk_src clk_src;
- 	int err;
- 
--	/* Disable sticky lock detection so lock err reported is accurate. */
--	if (hw->mac_type == ICE_MAC_GENERIC_3K_E825)
--		err = ice_tspll_dis_sticky_bits_e825c(hw);
--	else
--		err = ice_tspll_dis_sticky_bits_e82x(hw);
-+	tspll_freq = (enum ice_tspll_freq)ts_info->time_ref;
-+	clk_src = (enum ice_clk_src)ts_info->clk_src;
-+	if (!ice_tspll_check_params(hw, tspll_freq, clk_src))
-+		return -EINVAL;
-+
-+	/* Disable sticky lock detection so lock status reported is accurate */
-+	err = ice_tspll_dis_sticky_bits(hw);
- 	if (err)
- 		return err;
- 
- 	/* Configure the TSPLL using the parameters from the function
- 	 * capabilities.
- 	 */
--	if (hw->mac_type == ICE_MAC_GENERIC_3K_E825)
--		err = ice_tspll_cfg_e825c(hw, ts_info->time_ref,
--					  (enum ice_clk_src)ts_info->clk_src);
--	else
--		err = ice_tspll_cfg_e82x(hw, ts_info->time_ref,
--					 (enum ice_clk_src)ts_info->clk_src);
--
--	return err;
-+	return ice_tspll_cfg(hw, tspll_freq, clk_src);
- }
+ 	tspll_freq = (enum ice_tspll_freq)ts_info->time_ref;
+ 	clk_src = (enum ice_clk_src)ts_info->clk_src;
+ 	if (!ice_tspll_check_params(hw, tspll_freq, clk_src))
 
 -- 
 2.48.1.397.gec9d649cc640
