@@ -1,73 +1,74 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BCF4EC7115B
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 24 Jun 2025 03:22:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 52978C77B7C
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 24 Jun 2025 03:22:08 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 719584084B;
-	Tue, 24 Jun 2025 03:22:02 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 1DPydaJ--I7B; Tue, 24 Jun 2025 03:22:02 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org F20A14084C
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1750735322;
-	bh=MsA08rbTxeFhJz/WzNmdbbmzaVE+0kJASkfsGnUl/UI=;
-	h=From:To:CC:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=Mp2+uhvrOvEff0INynzxsC5/VKfGqaBCngHrvEBvOIl8Lyqg9Oh0v3q2kGy1T/5lc
-	 AO0X/qcg9vst8yTriwfVv5gAQDoSYVFz02SoU49hB8Or0b/AB7a5NR+XsL0LBy6om/
-	 av1al2OQnglRubpumj/rrxBnM0p4SZPYny5iNziuPfb7DYIOv3wJt2FE4C5xehjT0b
-	 jgjfzB1B8daLj+1rrrODk3kQbUYjEK6rU25B8ykdQzDIVgtAhq7kArkkgb92Pr2GXR
-	 RgvuuW8qlQokmHbjXMp71CURpqF69cFMTrsYv+pBic8F9DXMML90Ygohp9Xa+phfmN
-	 slNq0SzwpClDQ==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id F20A14084C;
-	Tue, 24 Jun 2025 03:22:01 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id 4A47C154
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Jun 2025 03:22:01 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 3040960895
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Jun 2025 03:22:01 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 16F786077B;
+	Tue, 24 Jun 2025 03:22:08 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id bm-Lc1fKRzgi for <intel-wired-lan@lists.osuosl.org>;
- Tue, 24 Jun 2025 03:22:00 +0000 (UTC)
+ id fALzxJ7dOR11; Tue, 24 Jun 2025 03:22:07 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 9753860895
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1750735327;
+	bh=kzjGhNmhv1uGLHkWQfch6KAFBFsSDJoKTBbg6d7Rkps=;
+	h=From:To:CC:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=BSxc6CSpNQcEYdUdXE3tlVWMa9vSVdwOoZkOEs++PODtXksHLgy+XClbhmXlD9jlV
+	 oeZDH9NXQBTNtkFrBZ19h+M9+7obGy39YNxYGJgyY3COOFQiRQktbA3N4SBrJTSohi
+	 6k+R6Gi6XDuUAXjDGeP7x2mGECM1Xqqw/H4eGnfyRyr2g1oCEygSeR7Fuxr793Wxhb
+	 qr40NqQgaGIKFs5xf9hm8F/6CPtcd2wl4hb2vfQIh/EVtEs1TIPlZNl8TpghzHSrz9
+	 tOtWf7IJISO+9XARRyXL0qenVz/A2PZ+fo9RSVjvpzJD9ePBYQYCSlN7LZpH35GtOe
+	 lz/ount725hXA==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp3.osuosl.org (Postfix) with ESMTP id 9753860895;
+	Tue, 24 Jun 2025 03:22:07 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 68BB8154
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Jun 2025 03:22:05 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp3.osuosl.org (Postfix) with ESMTP id 6037F60AA9
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Jun 2025 03:22:02 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id ujlI5wV2yDsg for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 24 Jun 2025 03:22:02 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=162.243.126.186;
  helo=mail-vip.corpemail.net; envelope-from=chuguangqing@inspur.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 7430B6077B
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7430B6077B
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 7AFCC60895
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7AFCC60895
 Received: from mail-vip.corpemail.net (mail-vip.corpemail.net
  [162.243.126.186])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 7430B6077B
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Jun 2025 03:21:59 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 7AFCC60895
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Jun 2025 03:22:01 +0000 (UTC)
 Received: from jtjnmail201612.home.langchao.com
- by unicom145.biz-email.net ((D)) with ASMTP (SSL) id 202506241100305413;
- Tue, 24 Jun 2025 11:00:30 +0800
+ by unicom145.biz-email.net ((D)) with ASMTP (SSL) id 202506241100315435;
+ Tue, 24 Jun 2025 11:00:31 +0800
 Received: from localhost.localdomain.com (10.94.6.249) by
  jtjnmail201612.home.langchao.com (10.100.2.12) with Microsoft SMTP Server id
- 15.1.2507.57; Tue, 24 Jun 2025 11:00:29 +0800
+ 15.1.2507.57; Tue, 24 Jun 2025 11:00:30 +0800
 From: chuguangqing <chuguangqing@inspur.com>
 To: Tony Nguyen <anthony.l.nguyen@intel.com>, Przemek Kitszel
  <przemyslaw.kitszel@intel.com>, Andrew Lunn <andrew+netdev@lunn.ch>, "David
  S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, Jakub
  Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>
 CC: <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>,
- <intel-wired-lan@lists.osuosl.org>
-Date: Tue, 24 Jun 2025 10:58:52 +0800
-Message-ID: <20250624025915.1692-1-chuguangqing@inspur.com>
+ <intel-wired-lan@lists.osuosl.org>, chuguangqing <chuguangqing@inspur.com>
+Date: Tue, 24 Jun 2025 10:58:53 +0800
+Message-ID: <20250624025915.1692-2-chuguangqing@inspur.com>
 X-Mailer: git-send-email 2.43.5
-In-Reply-To: <3bf6df3b-affe-4f10-8b05-29f3393d19e0@intel.com>
+In-Reply-To: <20250624025915.1692-1-chuguangqing@inspur.com>
 References: <3bf6df3b-affe-4f10-8b05-29f3393d19e0@intel.com>
+ <20250624025915.1692-1-chuguangqing@inspur.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
@@ -80,8 +81,8 @@ X-Report-Abuse-To: service@corp-email.com
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=none (p=none dis=none)
  header.from=inspur.com
-Subject: Re: [Intel-wired-lan] [PATCH 1/1] check the ioremap return value
- first (supplementary CC)
+Subject: [Intel-wired-lan] [PATCH 0/1] check the ioremap return value first
+ (supplementary CC)
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -97,4 +98,14 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-First of all, thank you for your reply. Yes, this patch doesn't change anything substantial. It's merely for demonstrating good programming practices, so you can decide whether to apply it or not.
+Always check ioremap() return value  before use.
+
+chuguangqing (1):
+  ixgbe: check the ioremap return value first
+
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+-- 
+2.43.5
+
