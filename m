@@ -1,65 +1,65 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3B88CC7EE32
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 24 Jun 2025 14:27:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6F70DC7EE30
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 24 Jun 2025 14:27:35 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id C02CC60C26;
+	by smtp4.osuosl.org (Postfix) with ESMTP id 33BD340C16;
 	Tue, 24 Jun 2025 14:27:35 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 6QUorQsCnOFs; Tue, 24 Jun 2025 14:27:35 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id y93H1SNdEFFq; Tue, 24 Jun 2025 14:27:34 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 324EC60DF0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org A0F3C40C38
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1750775255;
-	bh=9DS9akJwWsLfvg3xtWIixrSnXK9PoZs9INX8gSMuq0I=;
+	s=default; t=1750775254;
+	bh=yPYeYirCS5Mp9OxOIIOUhEyGK115a/skYTriO47lI20=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=5EPL6rsmjPO0hVuKM2HtHMKGtiOU9NjkwdbpPQJ2+LDOuuZcj+C7Qcf9awoWiwJy/
-	 v/YJethFVoKS2yfHtcAnqlVRPZ1eMeBws2WR7GAC3lxXGK1+HlDkn+GtU2PjHlzOaD
-	 2Co59eo1chx9NbX/tbKTymprpXIZ67OVgHprGtsEtnJo7lvwvLJp8GyxNtNCNnMvlZ
-	 olQvYfEFbbh6btUfYbdl99637rS+aFZexacdaIbx//HvEG+LqP2+syTA5QvOcQXn6J
-	 eal47ua1iwGoI902hr7s9lvCbAsiy24LX46hmmaMRTFFW50c3yBj+ToBa8I2CqkeBU
-	 cBuIEPwmuYOMg==
+	b=Y6nR9QMMSaxRUF68dCVOcaN+zo4dbHkfQKqSbYiQvZNrLZfOr3cbHWerVuyRXKwe7
+	 4tIyMdStKH5iZupn+ys6fuI1k3AUq/GwoLvalKWlCoIL5ZO1Y6OgcD1YDYHXwfTFQq
+	 dzCEMSc3zxCHnnAP4AeQzS07IOKrYh9WSWUg5z1zijixkSij5SML8a0i5Ewtb6sedP
+	 f4PzVeA0G+fZttbtb7pxNvvFZYRaEdHCkyLr0ATAHsN8Vq2eCVGvvkUHNu4dOp9qNG
+	 C0pGcw0uofBWSP6UMiIOTl7H2Nuo/gs1n00xPy7eL+mImxyn+1ga1+c4xf60+YwU+R
+	 K8RKguOo4Q/SA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 324EC60DF0;
-	Tue, 24 Jun 2025 14:27:35 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id A0F3C40C38;
+	Tue, 24 Jun 2025 14:27:34 +0000 (UTC)
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 1C59A154
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Jun 2025 14:27:34 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id 4190B12C
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Jun 2025 14:27:33 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 760BA60C26
+ by smtp3.osuosl.org (Postfix) with ESMTP id 2829360C26
  for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Jun 2025 14:27:33 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id C4F0OCdaFNiG for <intel-wired-lan@lists.osuosl.org>;
- Tue, 24 Jun 2025 14:27:33 +0000 (UTC)
+ id 8vBCrz-k-Qsi for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 24 Jun 2025 14:27:32 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.10;
  helo=mgamail.intel.com; envelope-from=emil.s.tantilov@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org EB71860BEE
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org EB71860BEE
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 89B3460C28
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 89B3460C28
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.10])
- by smtp3.osuosl.org (Postfix) with ESMTPS id EB71860BEE
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 89B3460C28
  for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Jun 2025 14:27:32 +0000 (UTC)
-X-CSE-ConnectionGUID: F2Re9bZITwaoi+3i1z/F1A==
-X-CSE-MsgGUID: SIB7vhFfSkaYqoXCjlx0fA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11474"; a="70441040"
-X-IronPort-AV: E=Sophos;i="6.16,261,1744095600"; d="scan'208";a="70441040"
+X-CSE-ConnectionGUID: U1pNfjLwScugoJV+yUq1FQ==
+X-CSE-MsgGUID: Wj8CSvMRTMWMC+SqsxzMOQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11474"; a="70441033"
+X-IronPort-AV: E=Sophos;i="6.16,261,1744095600"; d="scan'208";a="70441033"
 Received: from fmviesa003.fm.intel.com ([10.60.135.143])
  by orvoesa102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 24 Jun 2025 07:27:32 -0700
-X-CSE-ConnectionGUID: NS39t5JmSteAzcSN/VsMGg==
-X-CSE-MsgGUID: 6ZcSDeVRRHuTjO8Ox5u3Jg==
+ 24 Jun 2025 07:27:31 -0700
+X-CSE-ConnectionGUID: rQUEmtzZR5GX+NxWfmHQvg==
+X-CSE-MsgGUID: ePFQhx5/RByH0snyFMXtlg==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.16,261,1744095600"; d="scan'208";a="155965570"
+X-IronPort-AV: E=Sophos;i="6.16,261,1744095600"; d="scan'208";a="155965567"
 Received: from estantil-desk.jf.intel.com ([10.166.241.24])
  by fmviesa003.fm.intel.com with ESMTP; 24 Jun 2025 07:27:31 -0700
 From: Emil Tantilov <emil.s.tantilov@intel.com>
@@ -69,8 +69,8 @@ Cc: netdev@vger.kernel.org, Aleksandr.Loktionov@intel.com,
  anthony.l.nguyen@intel.com, michal.swiatkowski@linux.intel.com,
  andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
  kuba@kernel.org, pabeni@redhat.com
-Date: Tue, 24 Jun 2025 07:26:41 -0700
-Message-Id: <20250624142641.7010-3-emil.s.tantilov@intel.com>
+Date: Tue, 24 Jun 2025 07:26:40 -0700
+Message-Id: <20250624142641.7010-2-emil.s.tantilov@intel.com>
 X-Mailer: git-send-email 2.17.2
 In-Reply-To: <20250624142641.7010-1-emil.s.tantilov@intel.com>
 References: <20250624142641.7010-1-emil.s.tantilov@intel.com>
@@ -79,22 +79,22 @@ X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  t=1750775253; x=1782311253;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references;
- bh=pMVZuMp81uJ7pEBtzL1PGYWRrDHY2p+u4Dzw0rMjW6c=;
- b=Hb5JRC++kvWQUwsUIE8MwaW28MA7WzvHtMxaH5lqxA+L/Uzbla6a9h1H
- wTkcxpG2dAZZeV5v8NnWG+zpOvxhNUJrrdr6Cc+5UG1NsufKBK3La+Zyz
- wj51LwEILCtkZeBYVK2wucS3zMZpWd0EMYfM7Pgs+ws1M122QrnGy0KjF
- JeB0ZOhA9qe7DXw+SFStBHcycOKyrrVN7+npF1F5eJozbhUb51tUXece4
- dr6ogeOfmWiI0bUMvEfVMzWTqJ/8tRN/c6JiEAzOkbbioIaR/I+iHFeCc
- qDKWeGKAZu7EyPd/evKKQURDg2F+qytFe8qbgGemfOPCIedaisza/wiuw
- g==;
+ bh=FPxmSS5suGCOzmue056ptlmwSoUwUYjdZafjsoTfq/8=;
+ b=bqm6wfXw9KA0TXtXtFDKQhrfExok1TiFBE0j6pclgAVSdvqep+9ACuw+
+ y3wi+NIupOGU/8reNsdMGMPAwXEwM3KPd/oXcujasPLPq81FLSBhVPnHU
+ G+daj9k5PwffvN7m9RpppM0P0CJXEYVu7xiPgc4Rur+VyQb3I33PWfdZb
+ sB44PdDxJgQ+P0PSdV2UfFnpfa2nGybgNBzM0Wb0fXC7GiMaci4nsWDnE
+ 6wSIJ3ED4eQ8v59wKG6QIqHqUbQgYOcPbc/vQjRrwEPf0t9m1eHOv+cij
+ a+aTIqHTnG1fh7EmUWQ+ALHNQePRUOToTth326u0HSaSu4KjgiGjG+x68
+ A==;
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=Hb5JRC++
-Subject: [Intel-wired-lan] [PATCH iwl-net 2/2] ice: fix possible leak in
- ice_plug_aux_dev() error path
+ header.a=rsa-sha256 header.s=Intel header.b=bqm6wfXw
+Subject: [Intel-wired-lan] [PATCH iwl-net 1/2] ice: fix NULL pointer
+ dereference in ice_unplug_aux_dev() on reset
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -110,56 +110,86 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Fix a memory leak in the error path where kfree(iadev) was not called
-following an error in auxiliary_device_add().
+Issuing a reset when the driver is loaded without RDMA support, will
+results in a crash as it attempts to remove RDMA's non-existent auxbus
+device:
+echo 1 > /sys/class/net/<if>/device/reset
 
-Fixes: f9f5301e7e2d ("ice: Register auxiliary device to provide RDMA")
+BUG: kernel NULL pointer dereference, address: 0000000000000008
+...
+RIP: 0010:ice_unplug_aux_dev+0x29/0x70 [ice]
+...
+Call Trace:
+<TASK>
+ice_prepare_for_reset+0x77/0x260 [ice]
+pci_dev_save_and_disable+0x2c/0x70
+pci_reset_function+0x88/0x130
+reset_store+0x5a/0xa0
+kernfs_fop_write_iter+0x15e/0x210
+vfs_write+0x273/0x520
+ksys_write+0x6b/0xe0
+do_syscall_64+0x79/0x3b0
+entry_SYSCALL_64_after_hwframe+0x76/0x7e
+
+ice_unplug_aux_dev() checks pf->cdev_info->adev for NULL pointer, but
+pf->cdev_info will also be NULL, leading to the deref in the trace above.
+
+Introduce a flag to be set when the creation of the auxbus device is
+successful, to avoid multiple NULL pointer checks in ice_unplug_aux_dev().
+
+Fixes: c24a65b6a27c7 ("iidc/ice/irdma: Update IDC to support multiple consumers")
 Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
 Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_idc.c | 19 +++++++++++--------
- 1 file changed, 11 insertions(+), 8 deletions(-)
+ drivers/net/ethernet/intel/ice/ice.h     |  1 +
+ drivers/net/ethernet/intel/ice/ice_idc.c | 10 ++++++----
+ 2 files changed, 7 insertions(+), 4 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
+index ddd0ad68185b..0ef11b7ab477 100644
+--- a/drivers/net/ethernet/intel/ice/ice.h
++++ b/drivers/net/ethernet/intel/ice/ice.h
+@@ -509,6 +509,7 @@ enum ice_pf_flags {
+ 	ICE_FLAG_LINK_LENIENT_MODE_ENA,
+ 	ICE_FLAG_PLUG_AUX_DEV,
+ 	ICE_FLAG_UNPLUG_AUX_DEV,
++	ICE_FLAG_AUX_DEV_CREATED,
+ 	ICE_FLAG_MTU_CHANGED,
+ 	ICE_FLAG_GNSS,			/* GNSS successfully initialized */
+ 	ICE_FLAG_DPLL,			/* SyncE/PTP dplls initialized */
 diff --git a/drivers/net/ethernet/intel/ice/ice_idc.c b/drivers/net/ethernet/intel/ice/ice_idc.c
-index 420d45c2558b..8c4a3dc22a7c 100644
+index 6ab53e430f91..420d45c2558b 100644
 --- a/drivers/net/ethernet/intel/ice/ice_idc.c
 +++ b/drivers/net/ethernet/intel/ice/ice_idc.c
-@@ -322,16 +322,12 @@ int ice_plug_aux_dev(struct ice_pf *pf)
- 		"roce" : "iwarp";
- 
- 	ret = auxiliary_device_init(adev);
--	if (ret) {
--		kfree(iadev);
--		return ret;
--	}
-+	if (ret)
-+		goto free_iadev;
- 
- 	ret = auxiliary_device_add(adev);
--	if (ret) {
--		auxiliary_device_uninit(adev);
--		return ret;
--	}
-+	if (ret)
-+		goto aux_dev_uninit;
- 
+@@ -336,6 +336,7 @@ int ice_plug_aux_dev(struct ice_pf *pf)
  	mutex_lock(&pf->adev_mutex);
  	cdev->adev = adev;
-@@ -339,6 +335,13 @@ int ice_plug_aux_dev(struct ice_pf *pf)
- 	set_bit(ICE_FLAG_AUX_DEV_CREATED, pf->flags);
+ 	mutex_unlock(&pf->adev_mutex);
++	set_bit(ICE_FLAG_AUX_DEV_CREATED, pf->flags);
  
  	return 0;
+ }
+@@ -347,15 +348,16 @@ void ice_unplug_aux_dev(struct ice_pf *pf)
+ {
+ 	struct auxiliary_device *adev;
+ 
++	if (!test_and_clear_bit(ICE_FLAG_AUX_DEV_CREATED, pf->flags))
++		return;
 +
-+aux_dev_uninit:
+ 	mutex_lock(&pf->adev_mutex);
+ 	adev = pf->cdev_info->adev;
+ 	pf->cdev_info->adev = NULL;
+ 	mutex_unlock(&pf->adev_mutex);
+ 
+-	if (adev) {
+-		auxiliary_device_delete(adev);
+-		auxiliary_device_uninit(adev);
+-	}
++	auxiliary_device_delete(adev);
 +	auxiliary_device_uninit(adev);
-+free_iadev:
-+	kfree(iadev);
-+
-+	return ret;
  }
  
- /* ice_unplug_aux_dev - unregister and free AUX device
+ /**
 -- 
 2.37.3
 
