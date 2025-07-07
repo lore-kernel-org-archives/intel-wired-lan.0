@@ -1,95 +1,98 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 99F14C8303C
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  7 Jul 2025 09:01:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 35A35C83F07
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  7 Jul 2025 09:14:57 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 553A3413DF;
-	Mon,  7 Jul 2025 09:01:16 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id E771060BA6;
+	Mon,  7 Jul 2025 09:14:56 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id M2ga9JzMtk1L; Mon,  7 Jul 2025 09:01:14 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id FK8SC-evjaAU; Mon,  7 Jul 2025 09:14:55 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 7EF1640EF5
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org D5FD260B48
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1751878874;
-	bh=e9SWFcb0msrjB6idocXhvC6mvsfdigDERKcSsgUav9E=;
-	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=yrp5BX4RqlkVL+HhMgSFF2L4vD5BuXoMpnu4bUbyR2nFLKvEVns7B5SwE2WpjjO9n
-	 aQESGnpSnKHfZ1gJACVVj3eDpHpgAUNDDbDX8rOSk+OdXpXia/9RdnTYtAzg33CJ9g
-	 c+WNvnG9pyLF0MkKamL2+HMy2h8ytwCVr6wTV3/DGX23B5e5Y4Jt2eKMV2iRPkNcvY
-	 6FovHWNDR0C+PANp64Kjuk2fVYIwI3mFzVBn3E+TRcIvYYQ4rW5pC1r+GIBnGHfBPH
-	 N0U1eYlLnbyQYcPmHkl7W2IDvkXCtZMcyjv/GVgnIsnMpHRSVnS9waaSGD7gwZBgOt
-	 OVcVW8zFRJ1nQ==
+	s=default; t=1751879695;
+	bh=6kkWP7HXYZCQSyhiGmcYYpFBNtAT3EXr6oZ+T8rb9zA=;
+	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=wfxnghik3XgIHU3wola35pPC6pB+njeeNUnO5DheIF3DdTQs4919/4VPmvuZWM/Hy
+	 TQEwljmQm5q9t+zdEWpz1Sahh/De4c4Ut07hN/8hfK6rO+3Cvcz9Rt/I26uHcFFfzI
+	 qMptnd84FWZl8uwSAXo9YK4hX6fHoVHnDedwS4o6vG1pEZx0wYMm4jDO4gkcp7aS3m
+	 ee9fQEFzIkMZoDrtrxKHIvthrEZULAjvKyyAi+6q3LfwbAQu/A7iiXoaYkizULsGsA
+	 +t6fw1gfyOQKi1pxVCl8QDfZX3wDYlSJ0hg6ya71dDxOrNt8+2oCdKr5j3FlrUTD4u
+	 LVrF6a7iyMBng==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 7EF1640EF5;
-	Mon,  7 Jul 2025 09:01:14 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id 90F9412E
- for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Jul 2025 09:01:13 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id D5FD260B48;
+	Mon,  7 Jul 2025 09:14:55 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id ED3531BF
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Jul 2025 09:14:54 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 7753A40C0E
- for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Jul 2025 09:01:13 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id D2E3A81E30
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Jul 2025 09:14:54 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id BzwfA1n-yMKn for <intel-wired-lan@lists.osuosl.org>;
- Mon,  7 Jul 2025 09:01:11 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org;
- envelope-from=horms@kernel.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 734BC4141F
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 734BC4141F
-Received: from tor.source.kernel.org (tor.source.kernel.org
- [IPv6:2600:3c04:e001:324:0:1991:8:25])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 734BC4141F
- for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Jul 2025 09:01:11 +0000 (UTC)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by tor.source.kernel.org (Postfix) with ESMTP id 962D861130;
- Mon,  7 Jul 2025 09:01:09 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B1A0AC4CEE3;
- Mon,  7 Jul 2025 09:01:06 +0000 (UTC)
-Date: Mon, 7 Jul 2025 10:01:04 +0100
-From: Simon Horman <horms@kernel.org>
-To: Haoxiang Li <haoxiang_li2024@163.com>
-Cc: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
- andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
- kuba@kernel.org, pabeni@redhat.com,
- intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, stable@vger.kernel.org,
- Michal Swiatkowski <michal.swiatkowski@linux.intel.com>,
- Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Message-ID: <20250707090104.GB89747@horms.kernel.org>
-References: <20250703095232.2539006-1-haoxiang_li2024@163.com>
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id OKKR-eWiirpu for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  7 Jul 2025 09:14:54 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.12;
+ helo=mgamail.intel.com; envelope-from=jedrzej.jagielski@intel.com;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 1B288819CC
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 1B288819CC
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.12])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 1B288819CC
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Jul 2025 09:14:53 +0000 (UTC)
+X-CSE-ConnectionGUID: JoqZqCLzQZyUZMwPxB/jpA==
+X-CSE-MsgGUID: J9E2+R2JTIuQVeK94rlH9A==
+X-IronPort-AV: E=McAfee;i="6800,10657,11486"; a="57897095"
+X-IronPort-AV: E=Sophos;i="6.16,293,1744095600"; d="scan'208";a="57897095"
+Received: from orviesa006.jf.intel.com ([10.64.159.146])
+ by fmvoesa106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 07 Jul 2025 02:14:54 -0700
+X-CSE-ConnectionGUID: D1hSd1KqSsyPbzd4ucoQSA==
+X-CSE-MsgGUID: oJwViJ0XTbuGe/IHjBdqnA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.16,293,1744095600"; d="scan'208";a="154578647"
+Received: from os-delivery.igk.intel.com ([10.102.18.218])
+ by orviesa006.jf.intel.com with ESMTP; 07 Jul 2025 02:14:51 -0700
+From: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Cc: anthony.l.nguyen@intel.com, netdev@vger.kernel.org, dhowells@redhat.com,
+ David.Kaplan@amd.com, jiri@resnulli.us, przemyslaw.kitszel@intel.com,
+ Jedrzej Jagielski <jedrzej.jagielski@intel.com>
+Date: Mon,  7 Jul 2025 10:58:36 +0200
+Message-Id: <20250707085837.1461086-1-jedrzej.jagielski@intel.com>
+X-Mailer: git-send-email 2.31.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250703095232.2539006-1-haoxiang_li2024@163.com>
+Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1751878869;
- bh=24gyF1taVTxprKDEd+rLNk+GtDDxWmbXhwmk849/WWI=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=cwuIO+MiSF26xvbooegOGFArbkFQbJeMsk1yK4RPMXoLyRDKVgFGsod9UHyUoiJlm
- mgweD/93f6A+xjoYBX8uTrg225ptbSCuzwSXViwV7ZWFrMnKFk/y9Hh0HOa2MdyL3T
- 0VAXkNAJIBLEjY6DmMRE7GS0ZUQsF8P8FuvVXFR0s7taBMmHxLD+mZtb/9CSULctf2
- C9XOsddfAPrDx5PObrvCF+DuVpUUn56lMyNT/XVx3MEYHT0Pk2aGzDwmDIdCR7/lc9
- 9jPaxE4TD4r5JkdOdwh9brdRrSv6CfnT1LCdLujxnJ2v92CeM5q1D2RfXjuiS9fljv
- w6gPVmTb0XxTQ==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dmarc=pass (p=quarantine dis=none)
- header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1751879694; x=1783415694;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=86jbnWjsFrfyIh+jJs4CKjLVgJRfSWiYlFK4OCBp3sk=;
+ b=eWbKy5/mNAjHuR2TlYWehQwXQZUy+CCGtuILVloh17S6+fb0Jw+R6uXX
+ MfapXKtr48ba+Zuk+TdzT8q+ML9o3FBK0Cx7+tuGfkxf4z3le7ni6C0E6
+ 8NRJ11IC+LVvvWt7DSAWx+1zill1dU5UsoNvAKJMh6GqlnsaW15aryerl
+ 214DlsJzr6n0X97tqrj8wQaxDl7TF/Kf9Y/sxhdD+1BPuuP5O7VUMvyQE
+ xEPQVvqvjCx7ycTOqRpDLoI+WB/V8wOxVTjF5LpE61p/rnxU7D3wDqCzv
+ gf20l3oFEjWK5tXB0rHRhpis6YUdTwduzzzy7MhePjFQnIvt0+fuiQkkT
+ w==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=intel.com
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=cwuIO+Mi
-Subject: Re: [Intel-wired-lan] [PATCH v2] ice: Fix a null pointer
- dereference in ice_copy_and_init_pkg()
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=eWbKy5/m
+Subject: [Intel-wired-lan] [PATCH iwl-net v2 1/2] devlink: allow driver to
+ freely name interfaces
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -105,18 +108,62 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Thu, Jul 03, 2025 at 05:52:32PM +0800, Haoxiang Li wrote:
-> Add check for the return value of devm_kmemdup()
-> to prevent potential null pointer dereference.
-> 
-> Fixes: c76488109616 ("ice: Implement Dynamic Device Personalization (DDP) download")
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Haoxiang Li <haoxiang_li2024@163.com>
-> Reviewed-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
-> Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-> ---
-> Changes in v2:
-> - modify the Fixes commit number. Thanks, Michal!
+Currently when adding devlink port it is prohibited to let
+a driver name an interface on its own. In some scenarios
+it would not be preferable to provide such limitation,
+eg some compatibility purposes.
 
-Reviewed-by: Simon Horman <horms@kernel.org>
+Add flag skip_phys_port_name_get to devlink_port_attrs struct
+which indicates if devlink should not alter name of interface.
+
+Suggested-by: Jiri Pirko <jiri@resnulli.us>
+Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
+---
+v2: add skip_phys_port_name_get flag to skip changing if name
+---
+ include/net/devlink.h | 7 ++++++-
+ net/devlink/port.c    | 3 +++
+ 2 files changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/include/net/devlink.h b/include/net/devlink.h
+index 0091f23a40f7..414ae25de897 100644
+--- a/include/net/devlink.h
++++ b/include/net/devlink.h
+@@ -78,6 +78,7 @@ struct devlink_port_pci_sf_attrs {
+  * @flavour: flavour of the port
+  * @split: indicates if this is split port
+  * @splittable: indicates if the port can be split.
++ * @skip_phys_port_name_get: if set devlink doesn't alter interface name
+  * @lanes: maximum number of lanes the port supports. 0 value is not passed to netlink.
+  * @switch_id: if the port is part of switch, this is buffer with ID, otherwise this is NULL
+  * @phys: physical port attributes
+@@ -87,7 +88,11 @@ struct devlink_port_pci_sf_attrs {
+  */
+ struct devlink_port_attrs {
+ 	u8 split:1,
+-	   splittable:1;
++	   splittable:1,
++	   skip_phys_port_name_get:1; /* This is for compatibility only,
++				       * newly added driver/port instance
++				       * should never set this.
++				       */
+ 	u32 lanes;
+ 	enum devlink_port_flavour flavour;
+ 	struct netdev_phys_item_id switch_id;
+diff --git a/net/devlink/port.c b/net/devlink/port.c
+index 939081a0e615..bf52c8a57992 100644
+--- a/net/devlink/port.c
++++ b/net/devlink/port.c
+@@ -1522,6 +1522,9 @@ static int __devlink_port_phys_port_name_get(struct devlink_port *devlink_port,
+ 	if (!devlink_port->attrs_set)
+ 		return -EOPNOTSUPP;
+ 
++	if (devlink_port->attrs.skip_phys_port_name_get)
++		return 0;
++
+ 	switch (attrs->flavour) {
+ 	case DEVLINK_PORT_FLAVOUR_PHYSICAL:
+ 		if (devlink_port->linecard)
+-- 
+2.31.1
 
