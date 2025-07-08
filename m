@@ -1,236 +1,103 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BAF61C83F09
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  8 Jul 2025 20:40:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DE7A1C83F14
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  8 Jul 2025 21:06:57 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 7DD8981CBA;
-	Tue,  8 Jul 2025 20:40:20 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 9E18B40B29;
+	Tue,  8 Jul 2025 21:06:57 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id dua-ENtGsFxJ; Tue,  8 Jul 2025 20:40:19 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id OtNE-WknZExt; Tue,  8 Jul 2025 21:06:56 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 180A58169A
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D9E1D40B5E
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1752007219;
-	bh=CwnvjVWLqcnBhg2xGlmctm+RS+Z2cGJF+N9FdhJztBg=;
-	h=From:To:CC:Date:References:In-Reply-To:Subject:List-Id:
+	s=default; t=1752008816;
+	bh=JwEfhWl1kZQcUiyYZIEz22K/60bJ15iz7Z4FoJx+w6c=;
+	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=wzqmh+Sz3RNdMW9ZNRUfAPtoz34/LwIYhYLaUgnmy7ZpHB9YkvZtTGP2BruwnvbhM
-	 zruAoMWrGiuzW3cqxaYyjdCmzTMJTIdLF+/n09CmGLEnNl/HN0P6m81lijfV3EVdj4
-	 WBmUXmWMeyNLhUWEjYWZ8zdwgRBN1AOHT2AgjH2xZlbslOxK+RcyilEc/qtJNzRdO1
-	 LnqhzR7UADld+lYqOA1wiWXnlRBptsg7T/XWiPR8WQRKaYHIvx3AY/GzjIQCyk9+8w
-	 a+Ia2yQN8e3GuTqNlDMAQM/5C05sd0MPK6Mxpxm9cZtBNzeWngcSvmwu9QZDHq0Tdf
-	 anHjdAeA4Tfkg==
+	b=eWKJiJU3+u9aLEfFhSxE6JOh0d2tL3sULJYC1u1znxJpqpHmE9v/kJvrwyeAHc8LW
+	 GcrSMPaDdueBwVYqMdD2WIoAZuSt7JvU73wnSk7PXmCiw4/pdIcP3hH+XTwiWyn5q+
+	 HJ3aI4FNFtL4c44B5gK1M676kY0NL/ZzidqB+Y1NI2qPDMv0XvTHbtS8d26+TZrmTB
+	 oQsyEaHQ3QXyBvsT/7N1HuEymgmTUdO1X/kS1souzF0HV0ht/L7QpZPj8Ell94xbD6
+	 wVr1eVdYOmtMzHX9jD9G1kwX+QPqqWGm3Hxal5FgnB+yfzFmcJeyE4ZY63/mVJsWMu
+	 Vp8IiQofrMOUw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 180A58169A;
-	Tue,  8 Jul 2025 20:40:19 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id 764A915F
- for <intel-wired-lan@lists.osuosl.org>; Tue,  8 Jul 2025 20:40:17 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id D9E1D40B5E;
+	Tue,  8 Jul 2025 21:06:56 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 3A4C11BF
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  8 Jul 2025 21:06:55 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 5C9D440187
- for <intel-wired-lan@lists.osuosl.org>; Tue,  8 Jul 2025 20:40:17 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 3703E40B51
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  8 Jul 2025 21:06:55 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ib90Q6nA5KBi for <intel-wired-lan@lists.osuosl.org>;
- Tue,  8 Jul 2025 20:40:15 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.13;
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id KAt1NhMidgAk for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  8 Jul 2025 21:06:54 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.18;
  helo=mgamail.intel.com; envelope-from=tatyana.e.nikolova@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org E6A8140116
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org E6A8140116
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.13])
- by smtp2.osuosl.org (Postfix) with ESMTPS id E6A8140116
- for <intel-wired-lan@lists.osuosl.org>; Tue,  8 Jul 2025 20:40:14 +0000 (UTC)
-X-CSE-ConnectionGUID: BZDRUpX2TyOsSKc12B/b5A==
-X-CSE-MsgGUID: 2D5U4U6YQMOjD6QxP01Rog==
-X-IronPort-AV: E=McAfee;i="6800,10657,11487"; a="56868667"
-X-IronPort-AV: E=Sophos;i="6.16,298,1744095600"; d="scan'208";a="56868667"
-Received: from fmviesa004.fm.intel.com ([10.60.135.144])
- by fmvoesa107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 08 Jul 2025 13:40:14 -0700
-X-CSE-ConnectionGUID: Hd5+fvZwTJqBtUXjz/Jpaw==
-X-CSE-MsgGUID: 1Izmnf3pSIiYfba+skNrtA==
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 3BA3440B29
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3BA3440B29
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.18])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 3BA3440B29
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  8 Jul 2025 21:06:54 +0000 (UTC)
+X-CSE-ConnectionGUID: reXWLQSISoy3URgmz6iVGw==
+X-CSE-MsgGUID: lJ1PjmS4S4SCVTvwJzexCg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11487"; a="54391713"
+X-IronPort-AV: E=Sophos;i="6.16,298,1744095600"; d="scan'208";a="54391713"
+Received: from fmviesa002.fm.intel.com ([10.60.135.142])
+ by orvoesa110.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 08 Jul 2025 14:06:53 -0700
+X-CSE-ConnectionGUID: ItPZb1H9SEynLapWkCc0ZQ==
+X-CSE-MsgGUID: TlINGZ5tSJ6Ww0+SnDkW9Q==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.16,298,1744095600"; d="scan'208";a="161146117"
-Received: from orsmsx903.amr.corp.intel.com ([10.22.229.25])
- by fmviesa004.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 08 Jul 2025 13:40:14 -0700
-Received: from ORSMSX903.amr.corp.intel.com (10.22.229.25) by
- ORSMSX903.amr.corp.intel.com (10.22.229.25) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.25; Tue, 8 Jul 2025 13:40:13 -0700
-Received: from ORSEDG901.ED.cps.intel.com (10.7.248.11) by
- ORSMSX903.amr.corp.intel.com (10.22.229.25) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.25 via Frontend Transport; Tue, 8 Jul 2025 13:40:13 -0700
-Received: from NAM11-CO1-obe.outbound.protection.outlook.com (40.107.220.64)
- by edgegateway.intel.com (134.134.137.111) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.25; Tue, 8 Jul 2025 13:40:13 -0700
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=VHdsoN0JQIViZZJziAy5FjOAh7VlZvpFW8C1sY8QxCYy0PEgSngjpMGVtPJ9Ej108MjwYdMwx8QFU1WHVsuWQBpr5eqP9jwa2LZQbdcZTR5738DcFCCAjEyuIEnlYsxxyWmP/Wxm3kF7t/dm1OqvWz8lgMzGVAhKhdRSRh5OcjgppwhkAAu1BTTwEuFqcXcU4zHNl+d7YnNCtALUOYQo8RwXbXAsY6DktnP0ZCiFieGpvZwW2AMzcxjz2nzbavaSqbL6QnI6uSO+YSQJlj0C+kaZ/4b8J161JZMlV9XBhfi8YVboaYlXsP6f4834y7RV8C5HTGqr0yL+1lhlU514/A==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=CwnvjVWLqcnBhg2xGlmctm+RS+Z2cGJF+N9FdhJztBg=;
- b=VR388gkUhWah21xgJ1Agqw1Sijn5j4cYtIqv1JjOdreYkeEa4PBD5gflRGVheG0t/hVF0xxB4dDjqINKxqUbQKd89gPSDncY8zV8GgMLL8g/SuwLtThXW8nIFEgx1q+Hoo4u3gGKEIOwnazyIoCV0LxmTMJoERBM2eiBUDww48q0pNUTUfS85dCkeWApexTWAirnwf+ziXJQMm9iKSowpmWC5YCpAPrF3vJaL9bMKXJhKYyVyeKtusjwIwAvOkI7PZKKRLAbMCHr8R78pUpbL6xR30aBSmVbJ1hkDUJOPS0+0E6tsoYuYgxzUTacT05I1mXIKzYmY0lC8AiMSKWycQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
- dkim=pass header.d=intel.com; arc=none
-Received: from IA1PR11MB7727.namprd11.prod.outlook.com (2603:10b6:208:3f1::17)
- by BY1PR11MB8055.namprd11.prod.outlook.com (2603:10b6:a03:530::18)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8901.23; Tue, 8 Jul
- 2025 20:40:09 +0000
-Received: from IA1PR11MB7727.namprd11.prod.outlook.com
- ([fe80::763d:a756:a0e4:2ff7]) by IA1PR11MB7727.namprd11.prod.outlook.com
- ([fe80::763d:a756:a0e4:2ff7%5]) with mapi id 15.20.8901.024; Tue, 8 Jul 2025
- 20:40:09 +0000
-From: "Nikolova, Tatyana E" <tatyana.e.nikolova@intel.com>
-To: Paul Menzel <pmenzel@molgen.mpg.de>
-CC: "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
- "jgg@nvidia.com" <jgg@nvidia.com>, "leon@kernel.org" <leon@kernel.org>,
- "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>, "kuba@kernel.org"
- <kuba@kernel.org>
-Thread-Topic: [Intel-wired-lan] [iwl-next v2 0/6] Add RDMA support for Intel
- IPU E2000 in idpf
-Thread-Index: AQHb2+V3yG1jJU/BzEyMWQbJRc/s6LQAr6sAgCgDGQA=
-Date: Tue, 8 Jul 2025 20:40:09 +0000
-Message-ID: <IA1PR11MB77275BF8E2885AC02204309CCB4EA@IA1PR11MB7727.namprd11.prod.outlook.com>
-References: <20250612220002.1120-1-tatyana.e.nikolova@intel.com>
- <1dbe36d4-c272-4af0-a83b-0ab7ff0464c3@molgen.mpg.de>
-In-Reply-To: <1dbe36d4-c272-4af0-a83b-0ab7ff0464c3@molgen.mpg.de>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: IA1PR11MB7727:EE_|BY1PR11MB8055:EE_
-x-ms-office365-filtering-correlation-id: 9fc7975b-7e7f-42ff-af7f-08ddbe5fa18e
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam: BCL:0; ARA:13230040|1800799024|366016|376014|38070700018;
-x-microsoft-antispam-message-info: =?utf-8?B?ZlRUTjhzRUR5Y1JaazUwMFRJelBxTmJZZEVkSXpBVitvWkZEYUNwaGIwM1NW?=
- =?utf-8?B?VWIwNVZ5UGFPbnRKblJYdW9EM3lIbW80SGg0WDVWaitwRFFzbkdSWk55Z1g2?=
- =?utf-8?B?Q2h2cm5ZL1E2YTdDYytwc1dEcFdvUi9jL004ZTA2SlppUXArUlpHL3BQeGF4?=
- =?utf-8?B?Z25LVVF0bTBseWNUQTJaT3cwbStvZEx0aXN6Z29Zdm9Ua1M1T3NrTG9VR21B?=
- =?utf-8?B?emx2ZWVYckp5ODl2dmh0Q0hOVWV0cm14MVJTLzdIcktaSjNPazVUdGRrS29V?=
- =?utf-8?B?Zmhad1FHNm5MWmw2aHRTSDZiYkpndHBEcGZHbEdqUTkvTTF3UnFUS0JRbHdG?=
- =?utf-8?B?ODgxS1BreUtTSlBBbm1PSm9DRENnSktZSXlOSUsyVDNEVHMrTHl3bzU2Nkx1?=
- =?utf-8?B?Q0czUXN6b3lRazZJcFVZM2dSMEZkQ29IeWM4UDVkYVErdmlzVzVQOGxabUhD?=
- =?utf-8?B?Wk5Ha3p0QVFHRHJUSkV6TWk5aW4yeXQrOG1mRTl1RnVkclY2TXlXZEFxNGhx?=
- =?utf-8?B?RTFzUVZ6bFBCNnhwQ1IxS0Z2VkRFanoyc3ZON2VITW1NWVBvL1JUUUwrWEo3?=
- =?utf-8?B?cUhQRzZqTzVEN2huNTNsUXZ0ZEVTaTZKYlVFSXRzYlVPWFJGYmhzd1FBTlVW?=
- =?utf-8?B?L05ud1RERUhMR3pEL3FvWUdqcHhvTDFDZGYyZUZSNUJHSENhVDNSTG5TL2V2?=
- =?utf-8?B?b1ZyOWJqdW9qN3B4TGxVbTY4R2U4QmlRcU9qQVgyNU10MHUwbkgwdkYvdlpI?=
- =?utf-8?B?dHpNY0V2VE0yMk9KeU5PS3ZNb2o0MUROR3lCbDN1eEdOdmtGRDZUcWk2clRB?=
- =?utf-8?B?RVlITGx5eHBWeHFtdVlXRDRHdlZPSHV4bHNZSkJSQzdWZk1Zdk9BU2NBanhs?=
- =?utf-8?B?SnpjNEZpaUIwSEkzcWxibjlORnRyeTJXOTRBUVMvVEhHWU01bWNtVUQ2Y1pR?=
- =?utf-8?B?bVZpRTdLbGtEWmloRWowL3lGcHQvbUhjMlp6VDhjb3lqeER0bGl0ejFwODMr?=
- =?utf-8?B?ekRvS2tMeXVqNCthR3g4d0hsMWZHQkNMVy84Tk5VOGdSZC9mV3dseFpGcFVR?=
- =?utf-8?B?a3VYSDltUW9IUEREWHJUdHF2a013QkNuRDNFb3h4bEFkZ3RIM2Y1WU81a3oz?=
- =?utf-8?B?M2UyN3ZSS0pPazJtd1hhY0g1WUYzWWdRNUsyY1hLT2k0bHZVOTJRU0JoSERy?=
- =?utf-8?B?WlJRMElKS3lJdFNqdE5PYTY5L2pydkVteW1XUk9OOWh3cjRTeTcrdC9VQU5y?=
- =?utf-8?B?T2YzdUNqdmdrZWJISkdJSlFUckhmdURTc0twb0VXSnFIdlpERHJsTnNpQzJq?=
- =?utf-8?B?NlYyWnBoSXZLMTlRTElQelhkalhxdnBkS0xib3FSaC9CZUdWT2lxbjlsNi9y?=
- =?utf-8?B?Q2lycDhvMFVGV1ZCazZZUTk3cCt6SVQxRVB3UEZFWUJReXU5cmdPM1hDTXFM?=
- =?utf-8?B?eGVWbjduV0xUYzBhUlVEMWk3eCs1MFZudkI1Y3Y0cmJPdlJ1NEJqa051Szk0?=
- =?utf-8?B?THVyR1FVdW1JU1E5KzVibWVQN0Q1akpiMGtvNExVQ2pMTDFhUnNOYlNGdWpr?=
- =?utf-8?B?cWZtVmtzVUNaMW1pNXpDNW9uTi9FbjNOcHZrSnFZNDZDblVueHZrMjJjZE9x?=
- =?utf-8?B?QlZVZ3ZuSnhuSGR3OXNPYzVNbGxXbnhLTDd6QytrR1UzWUM0aTJ0WEhUSjZB?=
- =?utf-8?B?M244WmdMMVE0aW9XUlFVSnlhYkhDblB3UjFhTy9lUHVuSVEzWm92VVFJVGpZ?=
- =?utf-8?B?SFRxVnBaT1djeHlSbmxMSW4xQ1lUakZ4QzBiR1RFT05VU0lrckJscGJwL25T?=
- =?utf-8?B?eklZY2Z4dHoyRUFWNWpZenBBSFJBdzU0ejBnWVpYbmJ3aVo3clBHd0dOM2h4?=
- =?utf-8?B?WElNRE5yaU9MU0RZVTR5WUVkakNmT1RMUndmdnJoYjJjejZqb010V1ZWTGsz?=
- =?utf-8?B?VERIR3pKOVNGZEZlV2UrWG9CbCtKQUtwRDMzR1g1UVFyR2RvTlhPKzM3b2pI?=
- =?utf-8?Q?oeP9a3Y9JTLKKNKDouYZULTIIcLexw=3D?=
-x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:IA1PR11MB7727.namprd11.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230040)(1800799024)(366016)(376014)(38070700018); DIR:OUT; SFP:1101; 
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0: =?utf-8?B?eW93WHB1d1Mxb09kc0NNR3UwVUxRY1ZrTHRHRWp6U2xkdlFBeFo1cDN4VnM1?=
- =?utf-8?B?NnJZeDV2TEVpS3pEcHFuUVdZTktaQXF2RkNMblMyNFNCYW1sTzNCOStmTTZj?=
- =?utf-8?B?emJEVUxNT0NXdUR5TFRJZm1mZTBmaWY0MmMvaTZ5TTZPbmZORXA3MkIxM01L?=
- =?utf-8?B?NzJRaWZ5Y3dOZnY2VUt3ZFluS2NSQ2p5ZUVtMHBKNUY1WnQ0UExRcllDbmt3?=
- =?utf-8?B?ZEZUa1VPVWg1YjdHMHRpYkRObThTdWlrdlhVVkN1N1U0Q000MFR1T3BXcFBn?=
- =?utf-8?B?WDh1djFubWsvR2JLeUVReko0N2ZFbTJBUlpCVVdlc1pqNHVSdEJrbE5xK21K?=
- =?utf-8?B?YzZkTGgyRVQwZitOMmdVZ0d3OXhOREFGZGgzWE1MQWcyRFZnYWF4eGw5K1U1?=
- =?utf-8?B?SXo2NUFNRFpnM0tIelZEM2xOWThHeVVETHZWOWltMkJyL2Q5VVJZVis5cDk2?=
- =?utf-8?B?NlhPMVZPd0hxcUNuVU9WNnZDRGVRdlM1NnFoVjdqTjBkdkJia244endvc1d6?=
- =?utf-8?B?WVBzaFByaVd3MElyK2lzZE9OMDVjTjZsVmJaUkU1K09MTjJod3l2ZlYzWDBz?=
- =?utf-8?B?R2k2TlZVZnFRRXAzKzcrZTlOd21SSEhnMGxkNkVJbzlYTnJEcmhtdEFxa3F2?=
- =?utf-8?B?Nlk0blFwb0RhK3ZtM1VZVmt2bnl5Y2pqZW11dm95dEVsSnhqYzlWdm5sc3VY?=
- =?utf-8?B?MkEyUGUycWxzbkN6bWVTclpkOGNacENKaXNsbGRuWGtjVXgxdHlrU3dMTCtC?=
- =?utf-8?B?Vktkditpc0owZkNKTlRIOEI0aWZsc2tYS2VNR2Fidld4QnVXRXk1dHlqdzFG?=
- =?utf-8?B?RXdrOWM1c1o2S3ZXUHdKMHhvQ2phamRvajhBOGVhWkZNZytwM2wvd2w5d296?=
- =?utf-8?B?L2s3ZWJxcWhLZFJCYTZFMkpFY0p6d1JiTkVKWk5iTWpUc1ZFS2VIQlF3c2hQ?=
- =?utf-8?B?bzFkRGpaRGc2eXpKOC9PV2Ewek5LV3c4dGVXWFZ2Wm1VQk9RKzJFNDRwTFBt?=
- =?utf-8?B?YXZJSlhlb1EvTzNDOHVKdW9TK0FQTnkvS0UzOEx0Rmx3RzhBb25BVFN6eWp1?=
- =?utf-8?B?Z3BwY2pLQ1lFbzgxc0p6TUxwNTNDWUNBSzNKSkN5TjVDL21YWlkrNVFNNnZO?=
- =?utf-8?B?T3NGTG80eGxvZ0ZVVlNsbFlISmwyOVV4RnpRNWZmMTVpNVFEL2J2aEtWeTFS?=
- =?utf-8?B?dkJRb294Q2RyQjBsWWhZa2h3c1ZwWDJvSVpWOHNaRXd6ZGFSUUloUURPV3pX?=
- =?utf-8?B?VWJJdWlLV0Uwb3l0ZVZhaTNkeSt6MmlDSzF6Vk5BcFFSYlNvb0Y5Qk5mKzlL?=
- =?utf-8?B?VU1QZVBtYmh5N0F6bXNNcEpiQ3FZT3YwZnpXYTdxc1pEbytYeTc2L1VvZkNk?=
- =?utf-8?B?cWx6K1g4aWFaQklaTUdsNG5tc1BnZWo1RmV4QW8yYmd4L3o1TDUySmJzZm81?=
- =?utf-8?B?U1N3SWNNTSttSGlnSmRzcC8xc3NsN0xwcHgrUlVraFZDMzlrVlJOamdGN1hS?=
- =?utf-8?B?UVEvS25aU2ZWWXh5Nnk5T3ZCbnNZakRlQm9CaFZWVXRBd2U4L1VZalJMNnZT?=
- =?utf-8?B?dmRLaG9ZdEV4SVpPRytZbnlWNmxMV1lFVDNoTXl0elBRbHFoTDFaaHRTZjJY?=
- =?utf-8?B?TnVOTFZnamRwZWFYZStCQ3VpSzFrSHd1L3l3VzVPREMvdGptTGRQbjlJcUVD?=
- =?utf-8?B?TzNhdWdBZWlyVWtybVUzeWd4V2dSS2FPS3BLZXNnZ2xOZUFubXdPZkpmY3Zy?=
- =?utf-8?B?a1JlU1NXQi85ODVHcG1NVUhTSE96aHBzY0NIVTdGbTJVS245dFJkRlp3MXIr?=
- =?utf-8?B?dUhZZU9SMDEyV1dtTU1aZ0VFd2Z4aXdYcXlSSEcvb0ptWUdUMFczU2w3TkQy?=
- =?utf-8?B?Mm9zbWk0cTE0b0V6VmczZU55ZjhjcER0bDU2NWNCVUN6K0dXU1ZCbEx0U292?=
- =?utf-8?B?TEd4cWh6UG5DR3BNRG44ZFhVdXZrZzZvRCtwL051Mndha0J4SlRhYlRsV3lJ?=
- =?utf-8?B?YzF6QzVxSWFxcjZGblhRNFVaVDY4MUVUeDFaUzdlcTNwMjhSbk5UekZPL09m?=
- =?utf-8?B?UGpLc21RNXNTeDJ0ZjJKbXp2ZVErQmNZTGJMS2o1WnhzZkVyYkIwMjJVZFNC?=
- =?utf-8?B?MTFsOTAyYWdDMlVEOURQeEMxLzFoQnhrVjM1cmpEWDAySVg1SU51ZXZmY2hh?=
- =?utf-8?B?VlE9PQ==?=
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+X-IronPort-AV: E=Sophos;i="6.16,298,1744095600"; d="scan'208";a="179276529"
+Received: from pthorat-mobl.amr.corp.intel.com (HELO
+ soc-PF51RAGT.clients.intel.com) ([10.246.116.180])
+ by fmviesa002-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 08 Jul 2025 14:06:53 -0700
+From: Tatyana Nikolova <tatyana.e.nikolova@intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Cc: jgg@nvidia.com, leon@kernel.org, linux-rdma@vger.kernel.org,
+ netdev@vger.kernel.org, kuba@kernel.org,
+ Joshua Hay <joshua.a.hay@intel.com>,
+ Tatyana Nikolova <tatyana.e.nikolova@intel.com>
+Date: Tue,  8 Jul 2025 16:05:49 -0500
+Message-ID: <20250708210554.1662-2-tatyana.e.nikolova@intel.com>
+X-Mailer: git-send-email 2.45.1
+In-Reply-To: <20250708210554.1662-1-tatyana.e.nikolova@intel.com>
+References: <20250708210554.1662-1-tatyana.e.nikolova@intel.com>
 MIME-Version: 1.0
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: IA1PR11MB7727.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 9fc7975b-7e7f-42ff-af7f-08ddbe5fa18e
-X-MS-Exchange-CrossTenant-originalarrivaltime: 08 Jul 2025 20:40:09.7930 (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: v3z9/ZXPVO+pq+/6lHotmJizgDSGhhZ6eJMmhT8s/XzZmy86nmVS0MPSVBkr+GRJPusvCtIRV01nhaJNKj5avTxyiJsHw3OJH9ExJmPnuD8=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BY1PR11MB8055
-X-OriginatorOrg: intel.com
+Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1752007215; x=1783543215;
- h=from:to:cc:subject:date:message-id:references:
- in-reply-to:content-transfer-encoding:mime-version;
- bh=CwnvjVWLqcnBhg2xGlmctm+RS+Z2cGJF+N9FdhJztBg=;
- b=VYAG+J8pTQy6srCAOGwBVHp80077cX+0yMivmwrEQyOovTEqLkqgQB7s
- x1n2NAncjzXTIBvlvLp65EzPFRaaAAUCX4Xo8kWMGaSL89atSY9IBgKd6
- UJKPUKVq9fIliBOAZIc88lfLH4Nd/msngi80rvndhWiJaC9r+dFgn/oD4
- 4QonN4oNnxJ+fa7U5tbKTUertg5NOJYNR0lW2sCSgcybl2YqCkUXj/MfA
- eRCqYKxm9Nrv4KX5CQZSclJyC9y9ZFn2nIVxYv+Ls7NW6E1wUm8qQSGXN
- yvRyf/RZE8tjBRoPkBl/bMY9YASmLFVuK8GacYNBqwOUCz2r7I+qDQBqc
- w==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ t=1752008814; x=1783544814;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=ZIohbx4+Qg//6L4z0hw6EW6o7QY/TzBWc2ryE1HFePY=;
+ b=gUfmCasdoHp44/Rt/3B8qtMSq1XOFcMgOPBapdEXvf9n7vVtZ9QDTwaF
+ WhqgIlG8iCQiLAhUO9JSu2ls3kXSxi2vmLXC/EZpOIxgPxMm3vpxDEzSL
+ lPPza6bgE/7hK2L6KNtfy4FUzzunyrdIspTkks/nVAoL4UNWiAvSSoQgY
+ H4QQ2nvkFgqIrfEizFgdfHAUka8EqWzra2pMk4xDX2S9RK/Drlapwumfo
+ 4dqQbwtp+9SQnxHQizNfDQXT4mXBg9gO9n7gsO81v7w6hv9NipG2E71UF
+ HYmmF6g0HsZSJhMnIEbEgmgN7mbb11wW/JPt3Z+784MNf68iQvlnXVJeo
+ A==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=VYAG+J8p
-X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=intel.com;
-Subject: Re: [Intel-wired-lan] [iwl-next v2 0/6] Add RDMA support for Intel
- IPU E2000 in idpf
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=gUfmCasd
+Subject: [Intel-wired-lan] [iwl-next v3 1/6] idpf: use reserved RDMA vectors
+ from control plane
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -246,84 +113,285 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogUGF1bCBNZW56ZWwgPHBt
-ZW56ZWxAbW9sZ2VuLm1wZy5kZT4NCj4gU2VudDogRnJpZGF5LCBKdW5lIDEzLCAyMDI1IDI6MjEg
-QU0NCj4gVG86IE5pa29sb3ZhLCBUYXR5YW5hIEUgPHRhdHlhbmEuZS5uaWtvbG92YUBpbnRlbC5j
-b20+DQo+IENjOiBpbnRlbC13aXJlZC1sYW5AbGlzdHMub3N1b3NsLm9yZzsgamdnQG52aWRpYS5j
-b207IGxlb25Aa2VybmVsLm9yZzsgbGludXgtDQo+IHJkbWFAdmdlci5rZXJuZWwub3JnOyBuZXRk
-ZXZAdmdlci5rZXJuZWwub3JnOyBrdWJhQGtlcm5lbC5vcmcNCj4gU3ViamVjdDogUmU6IFtJbnRl
-bC13aXJlZC1sYW5dIFtpd2wtbmV4dCB2MiAwLzZdIEFkZCBSRE1BIHN1cHBvcnQgZm9yIEludGVs
-IElQVQ0KPiBFMjAwMCBpbiBpZHBmDQo+IA0KPiBEZWFyIFRhdHlhbmEsDQo+IA0KPiANCj4gVGhh
-bmsgeW91IGZvciB0aGlzIHBhdGNoIHNlcmllcy4NClRoYW5rIHlvdSBmb3IgcmV2aWV3aW5nIGl0
-Lg0KDQo+IA0KPiANCj4gQW0gMTIuMDYuMjUgdW0gMjM6NTkgc2NocmllYiBUYXR5YW5hIE5pa29s
-b3ZhOg0KPiA+IFRoaXMgaWRwZiBwYXRjaCBzZXJpZXMgaXMgdGhlIHNlY29uZCBwYXJ0IG9mIHRo
-ZSBzdGFnZWQgc3VibWlzc2lvbiBmb3INCj4gPiBpbnRyb2R1Y2luZyBSRE1BIFJvQ0V2MiBzdXBw
-b3J0IGZvciB0aGUgSVBVIEUyMDAwIGxpbmUgb2YgcHJvZHVjdHMsDQo+ID4gcmVmZXJyZWQgdG8g
-YXMgR0VOMy4NCj4gPg0KPiA+IFRvIHN1cHBvcnQgUkRNQSBHRU4zIGRldmljZXMsIHRoZSBpZHBm
-IGRyaXZlciB1c2VzIGNvbW1vbiBkZWZpbml0aW9ucw0KPiA+IG9mIHRoZSBJSURDIGludGVyZmFj
-ZSBhbmQgaW1wbGVtZW50cyBzcGVjaWZpYyBkZXZpY2UgZnVuY3Rpb25hbGl0eSBpbg0KPiA+IGlp
-ZGNfcmRtYV9pZHBmLmguDQo+IA0KPiBUaGlzIGNvdWxkIGJlIHJlLWZsb3dlZCBmb3IgbG9uZ2Vy
-IGxpbmVzLg0KT2theS4NCg0KPiANCj4gPiBUaGUgSVBVIG1vZGVsIGNhbiBob3N0IG9uZSBvciBt
-b3JlIGxvZ2ljYWwgbmV0d29yayBlbmRwb2ludHMgY2FsbGVkDQo+ID4gdlBvcnRzIHBlciBQQ0kg
-ZnVuY3Rpb24gdGhhdCBhcmUgZmxleGlibHkgYXNzb2NpYXRlZCB3aXRoIGEgcGh5c2ljYWwNCj4g
-PiBwb3J0IG9yIGFuIGludGVybmFsIGNvbW11bmljYXRpb24gcG9ydC4NCj4gPg0KPiA+IE90aGVy
-IGZlYXR1cmVzIGFzIGl0IHBlcnRhaW5zIHRvIEdFTjMgZGV2aWNlcyBpbmNsdWRlOg0KPiA+ICog
-TU1JTyBsZWFybmluZw0KPiA+ICogUkRNQSBjYXBhYmlsaXR5IG5lZ290aWF0aW9uDQo+ID4gKiBS
-RE1BIHZlY3RvcnMgZGlzY292ZXJ5IGJldHdlZW4gaWRwZiBhbmQgY29udHJvbCBwbGFuZQ0KPiA+
-DQo+ID4gVGhlc2UgcGF0Y2hlcyBhcmUgc3BsaXQgZnJvbSB0aGUgc3VibWlzc2lvbiAiQWRkIFJE
-TUEgc3VwcG9ydCBmb3INCj4gPiBJbnRlbCBJUFUgRTIwMDAgKEdFTjMpIiBbMV0gYW5kIGFyZSBi
-YXNlZCBvbiA2LjE2LXJjMS4gQSBzaGFyZWQgcHVsbA0KPiA+IHJlcXVlc3QgZm9yIG5ldC1uZXh0
-IGFuZCByZG1hLW5leHQgd2lsbCBiZSBzZW50IGZvbGxvd2luZyByZXZpZXcuDQo+IA0KPiBTdGls
-bCBtZW50aW9uIHRoZSBkYXRhc2hlZXQ/DQpJbnRlbCBoYXMgbm90IHB1Ymxpc2hlZCB0aGUgRTIw
-MDAgZGF0YXNoZWV0IGF0IHRoaXMgdGltZS4NCg0KPiANCj4gQWxzbywgaXTigJlkIGJlIGdyZWF0
-IHRvIGhhdmUgYSBwYXJhZ3JhcGggb24gaG93IHRoaXMgd2FzIHRlc3RlZC4NCldpbGwgYWRkLg0K
-DQo+IA0KPiA+IENoYW5nZWxvZzoNCj4gPg0KPiA+IHYyOg0KPiA+ICogTWlub3IgaW1wcm92ZW1l
-bnRzIGxpa2UgdmFyaWFibGUgcmVuYW1lLCBsb2dnaW5nLCByZW1vdmUgYSByZWR1bmRhbnQNCj4g
-PiB2YXJpYWJsZSwgZXRjLg0KPiA+ICogQSBjb3VwbGUgb2YgY2Rldl9pbmZvIGZpeGVzIHRvIHBy
-b3Blcmx5IGZyZWUgaXQgaW4gZXJyb3IgcGF0aCBhbmQNCj4gPiBub3QgdG8gZGVyZWZlcmVuY2Ug
-aXQgYmVmb3JlIE5VTEwgY2hlY2suDQo+ID4NCj4gPiBDaGFuZ2VzIHNpbmNlIHNwbGl0ICh2MSkg
-YXQgWzRdOg0KPiA+ICogUmVwbGFjZSBjb3JlIGRldl9vcHMgd2l0aCBleHBvcnRlZCBzeW1ib2xz
-DQo+ID4gKiBBbGlnbiB3aXRoIG5ldyBoZWFkZXIgc3BsaXQgc2NoZW1lIChpaWRjX3JkbWEuaCBj
-b21tb24gaGVhZGVyIGFuZA0KPiA+IGlpZGNfcmRtYV9pZHBmLmggc3BlY2lmaWMgaGVhZGVyKQ0K
-PiA+ICogQWxpZ24gd2l0aCBuZXcgbmFtaW5nIHNjaGVtZSAoaWRjX3JkbWEgLT4gaWlkY19yZG1h
-KQ0KPiA+ICogVGhlIGlkcGYgcGF0Y2hlcyBhcmUgc3VibWl0dGVkIHNlcGFyYXRlbHkgZnJvbSB0
-aGUgaWNlIGFuZCBpcmRtYQ0KPiA+IGNoYW5nZXMuDQo+ID4NCj4gPiBBdCBbM106DQo+ID4gKiBS
-ZWR1Y2UgcmVxdWlyZWQgbWluaW11bSBSRE1BIHZlY3RvcnMgdG8gMg0KPiA+DQo+ID4gQXQgWzJd
-Og0KPiA+ICogUkRNQSB2ZWN0b3IgbnVtYmVyIGFkanVzdG1lbnQNCj4gPiAqIEZpeCB1bnBsdWdn
-aW5nIHZwb3J0IGF1eGlsaWFyeSBkZXZpY2UgdHdpY2UNCj4gPiAqIEdlbmVyYWwgY2xlYW51cCBh
-bmQgbWlub3IgaW1wcm92ZW1lbnRzDQo+ID4NCj4gPiBbMV0NCj4gPiBodHRwczovL2xvcmUua2Vy
-bmVsLm9yZy9hbGwvMjAyNDA3MjQyMzM5MTcuNzA0LTEtdGF0eWFuYS5lLm5pa29sb3ZhQGluDQo+
-ID4gdGVsLmNvbS8gWzJdDQo+ID4gaHR0cHM6Ly9sb3JlLmtlcm5lbC5vcmcvYWxsLzIwMjQwODI0
-MDMxOTI0LjQyMS0xLXRhdHlhbmEuZS5uaWtvbG92YUBpbg0KPiA+IHRlbC5jb20vIFszXQ0KPiA+
-IGh0dHBzOi8vbG9yZS5rZXJuZWwub3JnL2FsbC8yMDI1MDIwNzE5NDkzMS4xNTY5LTEtdGF0eWFu
-YS5lLm5pa29sb3ZhQGkNCj4gPiBudGVsLmNvbS8gWzRdDQo+ID4gaHR0cHM6Ly9sb3JlLmtlcm5l
-bC5vcmcvYWxsLzIwMjUwNTIzMTcwNDM1LjY2OC0xLXRhdHlhbmEuZS5uaWtvbG92YUBpbg0KPiA+
-IHRlbC5jb20vDQo+ID4NCj4gPiBKb3NodWEgSGF5ICg2KToNCj4gPiAgICBpZHBmOiB1c2UgcmVz
-ZXJ2ZWQgUkRNQSB2ZWN0b3JzIGZyb20gY29udHJvbCBwbGFuZQ0KPiA+ICAgIGlkcGY6IGltcGxl
-bWVudCBjb3JlIFJETUEgYXV4aWxpYXJ5IGRldiBjcmVhdGUsIGluaXQsIGFuZCBkZXN0cm95DQo+
-ID4gICAgaWRwZjogaW1wbGVtZW50IFJETUEgdnBvcnQgYXV4aWxpYXJ5IGRldiBjcmVhdGUsIGlu
-aXQsIGFuZCBkZXN0cm95DQo+ID4gICAgaWRwZjogaW1wbGVtZW50IHJlbWFpbmluZyBJREMgUkRN
-QSBjb3JlIGNhbGxiYWNrcyBhbmQgaGFuZGxlcnMNCj4gPiAgICBpZHBmOiBpbXBsZW1lbnQgSURD
-IHZwb3J0IGF1eCBkcml2ZXIgTVRVIGNoYW5nZSBoYW5kbGVyDQo+ID4gICAgaWRwZjogaW1wbGVt
-ZW50IGdldCBMQU4gTU1JTyBtZW1vcnkgcmVnaW9ucw0KPiA+DQo+ID4gICBkcml2ZXJzL25ldC9l
-dGhlcm5ldC9pbnRlbC9pZHBmL01ha2VmaWxlICAgICAgfCAgIDEgKw0KPiA+ICAgZHJpdmVycy9u
-ZXQvZXRoZXJuZXQvaW50ZWwvaWRwZi9pZHBmLmggICAgICAgIHwgMTE3ICsrKystDQo+ID4gICAu
-Li4vbmV0L2V0aGVybmV0L2ludGVsL2lkcGYvaWRwZl9jb250cm9scS5jICAgfCAgMTQgKy0NCj4g
-PiAgIC4uLi9uZXQvZXRoZXJuZXQvaW50ZWwvaWRwZi9pZHBmX2NvbnRyb2xxLmggICB8ICAxOSAr
-LQ0KPiA+ICAgZHJpdmVycy9uZXQvZXRoZXJuZXQvaW50ZWwvaWRwZi9pZHBmX2Rldi5jICAgIHwg
-IDQ5ICstDQo+ID4gICBkcml2ZXJzL25ldC9ldGhlcm5ldC9pbnRlbC9pZHBmL2lkcGZfaWRjLmMg
-ICAgfCA0OTcgKysrKysrKysrKysrKysrKysrDQo+ID4gICBkcml2ZXJzL25ldC9ldGhlcm5ldC9p
-bnRlbC9pZHBmL2lkcGZfbGliLmMgICAgfCAxMDIgKysrLQ0KPiA+ICAgZHJpdmVycy9uZXQvZXRo
-ZXJuZXQvaW50ZWwvaWRwZi9pZHBmX21haW4uYyAgIHwgIDMyICstDQo+ID4gICBkcml2ZXJzL25l
-dC9ldGhlcm5ldC9pbnRlbC9pZHBmL2lkcGZfbWVtLmggICAgfCAgIDggKy0NCj4gPiAgIGRyaXZl
-cnMvbmV0L2V0aGVybmV0L2ludGVsL2lkcGYvaWRwZl90eHJ4LmggICB8ICAgMSArDQo+ID4gICBk
-cml2ZXJzL25ldC9ldGhlcm5ldC9pbnRlbC9pZHBmL2lkcGZfdmZfZGV2LmMgfCAgNDUgKy0NCj4g
-PiAgIC4uLi9uZXQvZXRoZXJuZXQvaW50ZWwvaWRwZi9pZHBmX3ZpcnRjaG5sLmMgICB8IDE5MCAr
-KysrKystDQo+ID4gICAuLi4vbmV0L2V0aGVybmV0L2ludGVsL2lkcGYvaWRwZl92aXJ0Y2hubC5o
-ICAgfCAgIDMgKw0KPiA+ICAgZHJpdmVycy9uZXQvZXRoZXJuZXQvaW50ZWwvaWRwZi92aXJ0Y2hu
-bDIuaCAgIHwgIDQyICstDQo+ID4gICBpbmNsdWRlL2xpbnV4L25ldC9pbnRlbC9paWRjX3JkbWFf
-aWRwZi5oICAgICAgfCAgNTUgKysNCj4gPiAgIDE1IGZpbGVzIGNoYW5nZWQsIDExMDIgaW5zZXJ0
-aW9ucygrKSwgNzMgZGVsZXRpb25zKC0pDQo+ID4gICBjcmVhdGUgbW9kZSAxMDA2NDQgZHJpdmVy
-cy9uZXQvZXRoZXJuZXQvaW50ZWwvaWRwZi9pZHBmX2lkYy5jDQo+ID4gICBjcmVhdGUgbW9kZSAx
-MDA2NDQgaW5jbHVkZS9saW51eC9uZXQvaW50ZWwvaWlkY19yZG1hX2lkcGYuaA0KPiANCj4gDQo+
-IEtpbmQgcmVnYXJkcywNCj4gDQo+IFBhdWwNCg==
+From: Joshua Hay <joshua.a.hay@intel.com>
+
+Fetch the number of reserved RDMA vectors from the control plane.
+Adjust the number of reserved LAN vectors if necessary. Adjust the
+minimum number of vectors the OS should reserve to include RDMA; and
+fail if the OS cannot reserve enough vectors for the minimum number of
+LAN and RDMA vectors required. Create a separate msix table for the
+reserved RDMA vectors, which will just get handed off to the RDMA core
+device to do with what it will.
+
+Reviewed-by: Madhu Chittim <madhu.chittim@intel
+Signed-off-by: Joshua Hay <joshua.a.hay@intel.com>
+Signed-off-by: Tatyana Nikolova <tatyana.e.nikolova@intel.com>
+---
+
+v2:
+- s/v_actual/actual_vecs
+- Log requested, available, and minimum vectors in warning msg
+- Remove unnecessary newline from rdma_msix_entries kcalloc
+- Don't use redundant iterator for msix_entries
+
+ drivers/net/ethernet/intel/idpf/idpf.h      | 28 ++++++-
+ drivers/net/ethernet/intel/idpf/idpf_lib.c  | 83 ++++++++++++++++-----
+ drivers/net/ethernet/intel/idpf/idpf_txrx.h |  1 +
+ drivers/net/ethernet/intel/idpf/virtchnl2.h |  5 +-
+ 4 files changed, 97 insertions(+), 20 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/idpf/idpf.h b/drivers/net/ethernet/intel/idpf/idpf.h
+index 1e812c3f62f9..d9f06764aba0 100644
+--- a/drivers/net/ethernet/intel/idpf/idpf.h
++++ b/drivers/net/ethernet/intel/idpf/idpf.h
+@@ -507,10 +507,11 @@ struct idpf_vc_xn_manager;
+  * @flags: See enum idpf_flags
+  * @reset_reg: See struct idpf_reset_reg
+  * @hw: Device access data
+- * @num_req_msix: Requested number of MSIX vectors
+  * @num_avail_msix: Available number of MSIX vectors
+  * @num_msix_entries: Number of entries in MSIX table
+  * @msix_entries: MSIX table
++ * @num_rdma_msix_entries: Available number of MSIX vectors for RDMA
++ * @rdma_msix_entries: RDMA MSIX table
+  * @req_vec_chunks: Requested vector chunk data
+  * @mb_vector: Mailbox vector data
+  * @vector_stack: Stack to store the msix vector indexes
+@@ -561,10 +562,11 @@ struct idpf_adapter {
+ 	DECLARE_BITMAP(flags, IDPF_FLAGS_NBITS);
+ 	struct idpf_reset_reg reset_reg;
+ 	struct idpf_hw hw;
+-	u16 num_req_msix;
+ 	u16 num_avail_msix;
+ 	u16 num_msix_entries;
+ 	struct msix_entry *msix_entries;
++	u16 num_rdma_msix_entries;
++	struct msix_entry *rdma_msix_entries;
+ 	struct virtchnl2_alloc_vectors *req_vec_chunks;
+ 	struct idpf_q_vector mb_vector;
+ 	struct idpf_vector_lifo vector_stack;
+@@ -630,6 +632,17 @@ static inline int idpf_is_queue_model_split(u16 q_model)
+ bool idpf_is_capability_ena(struct idpf_adapter *adapter, bool all,
+ 			    enum idpf_cap_field field, u64 flag);
+ 
++/**
++ * idpf_is_rdma_cap_ena - Determine if RDMA is supported
++ * @adapter: private data struct
++ *
++ * Return: true if RDMA capability is enabled, false otherwise
++ */
++static inline bool idpf_is_rdma_cap_ena(struct idpf_adapter *adapter)
++{
++	return idpf_is_cap_ena(adapter, IDPF_OTHER_CAPS, VIRTCHNL2_CAP_RDMA);
++}
++
+ #define IDPF_CAP_RSS (\
+ 	VIRTCHNL2_CAP_RSS_IPV4_TCP	|\
+ 	VIRTCHNL2_CAP_RSS_IPV4_TCP	|\
+@@ -682,6 +695,17 @@ static inline u16 idpf_get_reserved_vecs(struct idpf_adapter *adapter)
+ 	return le16_to_cpu(adapter->caps.num_allocated_vectors);
+ }
+ 
++/**
++ * idpf_get_reserved_rdma_vecs - Get reserved RDMA vectors
++ * @adapter: private data struct
++ *
++ * Return: number of vectors reserved for RDMA
++ */
++static inline u16 idpf_get_reserved_rdma_vecs(struct idpf_adapter *adapter)
++{
++	return le16_to_cpu(adapter->caps.num_rdma_allocated_vectors);
++}
++
+ /**
+  * idpf_get_default_vports - Get default number of vports
+  * @adapter: private data struct
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_lib.c b/drivers/net/ethernet/intel/idpf/idpf_lib.c
+index 4eb20ec2accb..71d1577ca9e4 100644
+--- a/drivers/net/ethernet/intel/idpf/idpf_lib.c
++++ b/drivers/net/ethernet/intel/idpf/idpf_lib.c
+@@ -88,6 +88,8 @@ void idpf_intr_rel(struct idpf_adapter *adapter)
+ 	idpf_deinit_vector_stack(adapter);
+ 	kfree(adapter->msix_entries);
+ 	adapter->msix_entries = NULL;
++	kfree(adapter->rdma_msix_entries);
++	adapter->rdma_msix_entries = NULL;
+ }
+ 
+ /**
+@@ -299,13 +301,33 @@ int idpf_req_rel_vector_indexes(struct idpf_adapter *adapter,
+  */
+ int idpf_intr_req(struct idpf_adapter *adapter)
+ {
++	u16 num_lan_vecs, min_lan_vecs, num_rdma_vecs = 0, min_rdma_vecs = 0;
+ 	u16 default_vports = idpf_get_default_vports(adapter);
+ 	int num_q_vecs, total_vecs, num_vec_ids;
+-	int min_vectors, v_actual, err;
++	int min_vectors, actual_vecs, err;
+ 	unsigned int vector;
+ 	u16 *vecids;
++	int i;
+ 
+ 	total_vecs = idpf_get_reserved_vecs(adapter);
++	num_lan_vecs = total_vecs;
++	if (idpf_is_rdma_cap_ena(adapter)) {
++		num_rdma_vecs = idpf_get_reserved_rdma_vecs(adapter);
++		min_rdma_vecs = IDPF_MIN_RDMA_VEC;
++
++		if (!num_rdma_vecs) {
++			/* If idpf_get_reserved_rdma_vecs is 0, vectors are
++			 * pulled from the LAN pool.
++			 */
++			num_rdma_vecs = min_rdma_vecs;
++		} else if (num_rdma_vecs < min_rdma_vecs) {
++			dev_err(&adapter->pdev->dev,
++				"Not enough vectors reserved for RDMA (min: %u, current: %u)\n",
++				min_rdma_vecs, num_rdma_vecs);
++			return -EINVAL;
++		}
++	}
++
+ 	num_q_vecs = total_vecs - IDPF_MBX_Q_VEC;
+ 
+ 	err = idpf_send_alloc_vectors_msg(adapter, num_q_vecs);
+@@ -316,52 +338,76 @@ int idpf_intr_req(struct idpf_adapter *adapter)
+ 		return -EAGAIN;
+ 	}
+ 
+-	min_vectors = IDPF_MBX_Q_VEC + IDPF_MIN_Q_VEC * default_vports;
+-	v_actual = pci_alloc_irq_vectors(adapter->pdev, min_vectors,
+-					 total_vecs, PCI_IRQ_MSIX);
+-	if (v_actual < min_vectors) {
+-		dev_err(&adapter->pdev->dev, "Failed to allocate MSIX vectors: %d\n",
+-			v_actual);
++	min_lan_vecs = IDPF_MBX_Q_VEC + IDPF_MIN_Q_VEC * default_vports;
++	min_vectors = min_lan_vecs + min_rdma_vecs;
++	actual_vecs = pci_alloc_irq_vectors(adapter->pdev, min_vectors,
++					    total_vecs, PCI_IRQ_MSIX);
++	if (actual_vecs < min_vectors) {
++		dev_err(&adapter->pdev->dev, "Failed to allocate minimum MSIX vectors required: %d\n",
++			actual_vecs);
+ 		err = -EAGAIN;
+ 		goto send_dealloc_vecs;
+ 	}
+ 
+-	adapter->msix_entries = kcalloc(v_actual, sizeof(struct msix_entry),
+-					GFP_KERNEL);
++	if (idpf_is_rdma_cap_ena(adapter)) {
++		if (actual_vecs < total_vecs) {
++			dev_warn(&adapter->pdev->dev,
++				 "Warning: %d vectors requested, only %d available. Defaulting to minimum (%d) for RDMA and remaining for LAN.\n",
++				 total_vecs, actual_vecs, IDPF_MIN_RDMA_VEC);
++			num_rdma_vecs = IDPF_MIN_RDMA_VEC;
++		}
+ 
++		adapter->rdma_msix_entries = kcalloc(num_rdma_vecs,
++						     sizeof(struct msix_entry),
++						     GFP_KERNEL);
++		if (!adapter->rdma_msix_entries) {
++			err = -ENOMEM;
++			goto free_irq;
++		}
++	}
++
++	num_lan_vecs = actual_vecs - num_rdma_vecs;
++	adapter->msix_entries = kcalloc(num_lan_vecs, sizeof(struct msix_entry),
++					GFP_KERNEL);
+ 	if (!adapter->msix_entries) {
+ 		err = -ENOMEM;
+-		goto free_irq;
++		goto free_rdma_msix;
+ 	}
+ 
+ 	adapter->mb_vector.v_idx = le16_to_cpu(adapter->caps.mailbox_vector_id);
+ 
+-	vecids = kcalloc(total_vecs, sizeof(u16), GFP_KERNEL);
++	vecids = kcalloc(actual_vecs, sizeof(u16), GFP_KERNEL);
+ 	if (!vecids) {
+ 		err = -ENOMEM;
+ 		goto free_msix;
+ 	}
+ 
+-	num_vec_ids = idpf_get_vec_ids(adapter, vecids, total_vecs,
++	num_vec_ids = idpf_get_vec_ids(adapter, vecids, actual_vecs,
+ 				       &adapter->req_vec_chunks->vchunks);
+-	if (num_vec_ids < v_actual) {
++	if (num_vec_ids < actual_vecs) {
+ 		err = -EINVAL;
+ 		goto free_vecids;
+ 	}
+ 
+-	for (vector = 0; vector < v_actual; vector++) {
++	for (vector = 0; vector < num_lan_vecs; vector++) {
+ 		adapter->msix_entries[vector].entry = vecids[vector];
+ 		adapter->msix_entries[vector].vector =
+ 			pci_irq_vector(adapter->pdev, vector);
+ 	}
++	for (i = 0; i < num_rdma_vecs; vector++, i++) {
++		adapter->rdma_msix_entries[i].entry = vecids[vector];
++		adapter->rdma_msix_entries[i].vector =
++			pci_irq_vector(adapter->pdev, vector);
++	}
+ 
+-	adapter->num_req_msix = total_vecs;
+-	adapter->num_msix_entries = v_actual;
+ 	/* 'num_avail_msix' is used to distribute excess vectors to the vports
+ 	 * after considering the minimum vectors required per each default
+ 	 * vport
+ 	 */
+-	adapter->num_avail_msix = v_actual - min_vectors;
++	adapter->num_avail_msix = num_lan_vecs - min_lan_vecs;
++	adapter->num_msix_entries = num_lan_vecs;
++	if (idpf_is_rdma_cap_ena(adapter))
++		adapter->num_rdma_msix_entries = num_rdma_vecs;
+ 
+ 	/* Fill MSIX vector lifo stack with vector indexes */
+ 	err = idpf_init_vector_stack(adapter);
+@@ -383,6 +429,9 @@ int idpf_intr_req(struct idpf_adapter *adapter)
+ free_msix:
+ 	kfree(adapter->msix_entries);
+ 	adapter->msix_entries = NULL;
++free_rdma_msix:
++	kfree(adapter->rdma_msix_entries);
++	adapter->rdma_msix_entries = NULL;
+ free_irq:
+ 	pci_free_irq_vectors(adapter->pdev);
+ send_dealloc_vecs:
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.h b/drivers/net/ethernet/intel/idpf/idpf_txrx.h
+index 36a0f828a6f8..281de655a813 100644
+--- a/drivers/net/ethernet/intel/idpf/idpf_txrx.h
++++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.h
+@@ -57,6 +57,7 @@
+ /* Default vector sharing */
+ #define IDPF_MBX_Q_VEC		1
+ #define IDPF_MIN_Q_VEC		1
++#define IDPF_MIN_RDMA_VEC	2
+ 
+ #define IDPF_DFLT_TX_Q_DESC_COUNT		512
+ #define IDPF_DFLT_TX_COMPLQ_DESC_COUNT		512
+diff --git a/drivers/net/ethernet/intel/idpf/virtchnl2.h b/drivers/net/ethernet/intel/idpf/virtchnl2.h
+index 11b8f6f05799..a2881979c7f8 100644
+--- a/drivers/net/ethernet/intel/idpf/virtchnl2.h
++++ b/drivers/net/ethernet/intel/idpf/virtchnl2.h
+@@ -483,6 +483,8 @@ VIRTCHNL2_CHECK_STRUCT_LEN(8, virtchnl2_version_info);
+  *			segment offload.
+  * @max_hdr_buf_per_lso: Max number of header buffers that can be used for
+  *			 an LSO.
++ * @num_rdma_allocated_vectors: Maximum number of allocated RDMA vectors for
++ *				the device.
+  * @pad1: Padding for future extensions.
+  *
+  * Dataplane driver sends this message to CP to negotiate capabilities and
+@@ -530,7 +532,8 @@ struct virtchnl2_get_capabilities {
+ 	__le32 device_type;
+ 	u8 min_sso_packet_len;
+ 	u8 max_hdr_buf_per_lso;
+-	u8 pad1[10];
++	__le16 num_rdma_allocated_vectors;
++	u8 pad1[8];
+ };
+ VIRTCHNL2_CHECK_STRUCT_LEN(80, virtchnl2_get_capabilities);
+ 
+-- 
+2.37.3
+
