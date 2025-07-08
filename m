@@ -1,91 +1,90 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A9AA0C8303C
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  8 Jul 2025 08:18:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 78D54C83F0F
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  8 Jul 2025 08:18:42 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 6F03D80CA5;
-	Tue,  8 Jul 2025 08:18:17 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 3oTDJYlxr3I2; Tue,  8 Jul 2025 08:18:16 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org DA0FD80EED
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1751962696;
-	bh=ECt+dIdgaw3umoEGmjzQgPet8hBsCkTrNh5MzSehM/M=;
-	h=From:Date:To:Cc:References:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=Wu32mcSgyx4df+3Q2gdipYFeVTnFMwZE66kie/qzVSfk/gk2kkvcy5LM7fmdkKTKz
-	 TDAgJO5n6lKwlaQuL0jrhyuBXw22u+3EQk4vrgJA+7HudRHkOt/oPsrgcbuDXezWNj
-	 2KRyVm1DD/jcDEyFp/DNw1c8tjssdea7ue9o9KTW+14i6ZtIMoK4g5F8A0+kncz2GW
-	 5Y2PquKQQmm3Dtxinm9MSmT1jV7aMqMMC49SX3c93YLxJNdJEQg6H/12cV98/KZ7p+
-	 iC6KR93P+/N2uL99ctJ7ppBU1UVWcDf7hD9sCbOYZcsqLKCsxlIho2vxCEAmYhZFCa
-	 Ws4dWqwCJbINg==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id DA0FD80EED;
-	Tue,  8 Jul 2025 08:18:16 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id B702115F
- for <intel-wired-lan@lists.osuosl.org>; Tue,  8 Jul 2025 08:18:14 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 9D722406E3
- for <intel-wired-lan@lists.osuosl.org>; Tue,  8 Jul 2025 08:18:14 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 2D1BC406E3;
+	Tue,  8 Jul 2025 08:18:42 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id U5YzXizbpHpI for <intel-wired-lan@lists.osuosl.org>;
- Tue,  8 Jul 2025 08:18:14 +0000 (UTC)
+ id gcFMVsK2J0Hb; Tue,  8 Jul 2025 08:18:41 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 957114071D
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1751962721;
+	bh=BJiSUu3hWE44EXsDXKkg8pF1uNLtKLtK6eYZS81KaN8=;
+	h=From:Date:To:Cc:References:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=h1XRifn08bPgl+SW9Je3lRSA8vqfnRZdNdMeOvNWY7KWh333zXQc6pJUb52syKQcY
+	 njYBq86ZheTGetyA+yu+BZ4TXnzc86Rdb2rUN0RjAvnwbqA6f7vA5/6lzpTxrZG6Sk
+	 LrZYZtFdWQ9XPB7Qq8LRn4mxlL2a7ywiMDsuu6BpALwFxvBqVX/Q//NCsIToZAKsAz
+	 10UX+O71k/j4WxQwnbnWTns5af5Frf0haroKaNcXh3X52AR4eIBWPIGMZ7M+XjQH0l
+	 XvxOc6co7IAtSASyFTS7n5QpZA7XyNji9eFAGRcJn7QuhT8I4NdEyNGXA6fFua3B+9
+	 DJgdgd8McGgXQ==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp4.osuosl.org (Postfix) with ESMTP id 957114071D;
+	Tue,  8 Jul 2025 08:18:41 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id D228C1BF
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  8 Jul 2025 08:18:39 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp1.osuosl.org (Postfix) with ESMTP id C3E56813B6
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  8 Jul 2025 08:18:39 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id O_LMVfhSMWYs for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  8 Jul 2025 08:18:39 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2a00:1450:4864:20::633; helo=mail-ej1-x633.google.com;
+ client-ip=2a00:1450:4864:20::52d; helo=mail-ed1-x52d.google.com;
  envelope-from=jacek@jacekk.info; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org E4CE6407BC
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E4CE6407BC
-Received: from mail-ej1-x633.google.com (mail-ej1-x633.google.com
- [IPv6:2a00:1450:4864:20::633])
- by smtp4.osuosl.org (Postfix) with ESMTPS id E4CE6407BC
- for <intel-wired-lan@lists.osuosl.org>; Tue,  8 Jul 2025 08:18:13 +0000 (UTC)
-Received: by mail-ej1-x633.google.com with SMTP id
- a640c23a62f3a-ae0de1c378fso619392566b.3
- for <intel-wired-lan@lists.osuosl.org>; Tue, 08 Jul 2025 01:18:13 -0700 (PDT)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 132C4813C3
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 132C4813C3
+Received: from mail-ed1-x52d.google.com (mail-ed1-x52d.google.com
+ [IPv6:2a00:1450:4864:20::52d])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 132C4813C3
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  8 Jul 2025 08:18:38 +0000 (UTC)
+Received: by mail-ed1-x52d.google.com with SMTP id
+ 4fb4d7f45d1cf-60867565fb5so6728859a12.3
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 08 Jul 2025 01:18:38 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20230601; t=1751962692; x=1752567492;
+ d=1e100.net; s=20230601; t=1751962717; x=1752567517;
  h=content-transfer-encoding:in-reply-to:content-language:references
  :cc:to:subject:user-agent:mime-version:date:message-id:from
  :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
- bh=ECt+dIdgaw3umoEGmjzQgPet8hBsCkTrNh5MzSehM/M=;
- b=o1PurBkLfoyRSgNYSYWn3HqHduF0eeYrLnyvPcDv7BP4iX5qy+JaWhFqInVrtBZzh+
- XrEUcmK50j8mPyZ2xwxCh2/gvqcElWziUluHwUUdVNe1kTn5aMFItirDzhEk8jmNR5mS
- dXW85YmcfDLHTOC4dOxOCQrw/FYRvhhI91EiPK1ueeyGdv4AzzHz7++AgaLHamUWflmH
- t6dIwTc9KZo28JiPtmha1TmH/x7tl80Zw8EH7q3d73n91Qq21iaiLA68zTRgr3vdOdRx
- xKI2nn6oY7RREmVbUsbzuvpejji/7GqIrwZk/37gvxsFdalDcEshBefjLeqtVyAyuW3V
- Wrdg==
-X-Gm-Message-State: AOJu0YydtGbygaHiWbw5uzF9lK7dTdnSQo/xUv0s/9YlPoxwJPS+M5q5
- c06s9ahvrohyncrHRbhAqAXpZYkeCgMNXYS7Pliqq2MaXaET05ICPRNFgtRVrGXXx+SbJnIbkuK
- nv/YEPQ==
-X-Gm-Gg: ASbGnct0Ke95td/eZH3Jk+TZj996qAyKu6wVhXOUXifP9JIPbWDDWxxNSqKsyiAJvgb
- 3/a4Kd1Xz5fErzUvHCHu8KCiEUuhzQDqCaZYxnQJGJKNwav1R00FmBH7mklU7EwDXtIqGJM/VZK
- ssVaUQy9fm+d2dTTBRwsX8OWYMt+FN3s7bKAx0K1cn+XJNpcJ+LswOrAKwc06GpD4V73y8fnzCC
- f2j1Dpna4DKUcGyo0tJpTHMPOsbmEEgqiClBdS7EBO1gWhJKxwmo9uE5hJ8vbd6YxpAIkzUXb1u
- SXZCBWYW6zqggugSv7ZSEQy5YAI2Qc1XCZx+BS6TbQ2+EOE2aLpqYcylVPFtA9yh
-X-Google-Smtp-Source: AGHT+IH8qs65vRzOkiBv7Armbc4ZYw+Y95kPHGW+aoYsxCldr30MbvH4UbgdZEYl/QTOe4GB0PCvEQ==
-X-Received: by 2002:a17:907:e916:b0:add:ed3a:e792 with SMTP id
- a640c23a62f3a-ae3fbd6160emr1558661666b.47.1751962691879; 
- Tue, 08 Jul 2025 01:18:11 -0700 (PDT)
+ bh=BJiSUu3hWE44EXsDXKkg8pF1uNLtKLtK6eYZS81KaN8=;
+ b=TgfyNLMaiP9JGrRzXW2rNqO9WvRqGa36JmA/Khxs9WpGRXUyq5kz7sx10/becHjzfg
+ qet8qTioNqvv2G/AhL6O/k5Lber5fYHlClpptG8kve+w/iSSHkHexfBtFDLtG6ZgZilB
+ vDg7B9gAqoGmViUsEbAHxJcLqzljsuDTM0bQ1HamE7piw4X/W7otRzwvmwdIWZMyDLVy
+ 5NdF0f5AgddKqeDRmaorTqeHezhz/8rUDMyXNQBalEhLLnjOArHSv0QK48iiguaXr9nM
+ iJNHAcFtnYDBADNPDTqhqwf2ZVLChxs0XB91tJLQrxX1eb2eDIfbRJ4Uc5cTy3XPYzoZ
+ EmzQ==
+X-Gm-Message-State: AOJu0YzYANF9u7xes2o5Y2KpzEcWURCxMC8qEkQS5xHMZ6L7UJ+xYg+v
+ du4FgsrHYwAIJRYSoxwwutAppQwO/+pFZoyuzi5QrVtMG8EKVHCdYbhlUcemLZD4Yw==
+X-Gm-Gg: ASbGncuWZfoGsaBpId2XoJP0ZSGfwMDDyup/1k56iYA1PXQy0/wCYkKTT9G2liIDB8F
+ cwVUx0Xow8txPx0ttUWc98BWXV0hyUEzebMdbJUqp4TMcAecGZKU8jWIz1VNEom/VEuZbtf4ZiS
+ qUrsZlaTzS+2zksJO833YAPSF0UtH3IOYWiQWz+7VDzpxbuOHt7PEun0dOSYgOTn/wgZCaeohCp
+ t7w6R068iE/DOht53oTOTyqtXgeJkaavCp8SgbeKqzz294E8BDjAxRbPrNRPwqV9EkaeOIxOncm
+ YmkKLI0St80YFQuzd9wKc37URQZ9jQmMB6SevL9BPLYZCRLsAp2XD5ea6uzz+a1q
+X-Google-Smtp-Source: AGHT+IH6lR2m+v3knkC3IYA1tue00Z6M59zefIm0jwHX8zDQCkZwXr6vajUJk9ZtXJhj60dlCyqTbQ==
+X-Received: by 2002:a50:ab07:0:b0:60c:3d54:4d2d with SMTP id
+ 4fb4d7f45d1cf-6104ae32aafmr1281314a12.22.1751962716902; 
+ Tue, 08 Jul 2025 01:18:36 -0700 (PDT)
 Received: from [192.168.0.114] ([91.196.212.106])
  by smtp.gmail.com with ESMTPSA id
- a640c23a62f3a-ae3f66d93f2sm852055566b.19.2025.07.08.01.18.11
+ 4fb4d7f45d1cf-60fca667681sm6881085a12.16.2025.07.08.01.18.36
  (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Tue, 08 Jul 2025 01:18:11 -0700 (PDT)
+ Tue, 08 Jul 2025 01:18:36 -0700 (PDT)
 From: Jacek Kowalski <jacek@jacekk.info>
 X-Google-Original-From: Jacek Kowalski <Jacek@jacekk.info>
-Message-ID: <42811fde-9b80-44a5-bc0e-74d204e05fe7@jacekk.info>
-Date: Tue, 8 Jul 2025 10:18:10 +0200
+Message-ID: <33f2005d-4c06-4ed4-b49e-6863ad72c4c0@jacekk.info>
+Date: Tue, 8 Jul 2025 10:18:35 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 To: Tony Nguyen <anthony.l.nguyen@intel.com>,
@@ -101,24 +100,25 @@ In-Reply-To: <b4ee0893-6e57-471d-90f4-fe2a7c0a2ada@jacekk.info>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=jacekk.info; s=g2024; t=1751962692; x=1752567492; darn=lists.osuosl.org;
+ d=jacekk.info; s=g2024; t=1751962717; x=1752567517; darn=lists.osuosl.org;
  h=content-transfer-encoding:in-reply-to:content-language:references
  :cc:to:subject:user-agent:mime-version:date:message-id:from:from:to
  :cc:subject:date:message-id:reply-to;
- bh=ECt+dIdgaw3umoEGmjzQgPet8hBsCkTrNh5MzSehM/M=;
- b=bqqnZkJDIPGTQm4NoYyrCqJuTSSAtvc5ug43DNgAZo5gr96hAt7RHKJiP10R0f5wqK
- F2PXAVxI5IgZnC5gb4IwkuAXoSDDkHICeU3Q/MrrbQj212RSGl7GFBacD4FHmTmUAZ/N
- B1raC9DFGjaw1oj55+KuNLSPFdltGp03Okb1D6pyiV2AHjD6mvUkpOHzQDvLNZ32Nn/B
- tC2T9xGOBQPpRx5dZ1VLuXYe1d5Hw/FhXJOLngUkp2b9Zg4UwzwZ+VUGSX5dlQd9qNEi
- bVw1PaSdCWGVXrllnU8ytk5oTfy3z1heVGaH5Ri99nhdcq+u7y5icRLq45nko8ULBlHm
- 0I8w==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ bh=BJiSUu3hWE44EXsDXKkg8pF1uNLtKLtK6eYZS81KaN8=;
+ b=aEne4peedP/WhEtoNCeVKtL4nS/THTzgfP52SDMcJ0Th1f1hf2Vv6YxcBN+HJOtA3t
+ s9GXczMjC4x6AUR2Kw6Gd2LJsMNvT3Y3O7tFXUwLNazvasjrs4JV3Ydf14JQRkM1oRya
+ IJ4QXYaSe+FU7+I9Qzh3ofQw4r3UZNNUuP3T+JyjMGSCKA6Kn2hTD6c2BkK/A2hr0OFu
+ gAZGL8Ert8nZ/rrjjgDI8pqjbj+QoVC5lknju0hqf8cuKEqKWro/aaV8qqsPIkCAn8Zl
+ Psomdc6xRPGGmDaZdsYxbl3txMAFozDLi1DuXoT/134MkS9/rj0VaeGUuEBB7FUojust
+ /A7w==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=none (p=none dis=none)
  header.from=jacekk.info
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=jacekk.info header.i=@jacekk.info
- header.a=rsa-sha256 header.s=g2024 header.b=bqqnZkJD
-Subject: [Intel-wired-lan] [PATCH iwl-next v2 4/5] igc: drop unnecessary
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=jacekk.info header.i=@jacekk.info header.a=rsa-sha256
+ header.s=g2024 header.b=aEne4pee
+Subject: [Intel-wired-lan] [PATCH iwl-next v2 5/5] ixgbe: drop unnecessary
  constant casts to u16
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
@@ -141,45 +141,50 @@ Let the C type system do it's job.
 Signed-off-by: Jacek Kowalski <Jacek@jacekk.info>
 Suggested-by: Simon Horman <horms@kernel.org>
 ---
- drivers/net/ethernet/intel/igc/igc_i225.c | 2 +-
- drivers/net/ethernet/intel/igc/igc_nvm.c  | 4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_common.c | 2 +-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c   | 2 +-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c   | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_i225.c b/drivers/net/ethernet/intel/igc/igc_i225.c
-index 0dd61719f1ed..5226d10cc95b 100644
---- a/drivers/net/ethernet/intel/igc/igc_i225.c
-+++ b/drivers/net/ethernet/intel/igc/igc_i225.c
-@@ -435,7 +435,7 @@ static s32 igc_update_nvm_checksum_i225(struct igc_hw *hw)
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+index 4ff19426ab74..cb28c26e12f2 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+@@ -1739,7 +1739,7 @@ int ixgbe_calc_eeprom_checksum_generic(struct ixgbe_hw *hw)
  		}
- 		checksum += nvm_data;
- 	}
--	checksum = (u16)NVM_SUM - checksum;
-+	checksum = NVM_SUM - checksum;
- 	ret_val = igc_write_nvm_srwr(hw, NVM_CHECKSUM_REG, 1,
- 				     &checksum);
- 	if (ret_val) {
-diff --git a/drivers/net/ethernet/intel/igc/igc_nvm.c b/drivers/net/ethernet/intel/igc/igc_nvm.c
-index efd121c03967..a47b8d39238c 100644
---- a/drivers/net/ethernet/intel/igc/igc_nvm.c
-+++ b/drivers/net/ethernet/intel/igc/igc_nvm.c
-@@ -123,7 +123,7 @@ s32 igc_validate_nvm_checksum(struct igc_hw *hw)
- 		checksum += nvm_data;
  	}
  
--	if (checksum != (u16)NVM_SUM) {
-+	if (checksum != NVM_SUM) {
- 		hw_dbg("NVM Checksum Invalid\n");
- 		ret_val = -IGC_ERR_NVM;
- 		goto out;
-@@ -155,7 +155,7 @@ s32 igc_update_nvm_checksum(struct igc_hw *hw)
+-	checksum = (u16)IXGBE_EEPROM_SUM - checksum;
++	checksum = IXGBE_EEPROM_SUM - checksum;
+ 
+ 	return (int)checksum;
+ }
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
+index c2353aed0120..07c4a42ea282 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
+@@ -373,7 +373,7 @@ static int ixgbe_calc_eeprom_checksum_X540(struct ixgbe_hw *hw)
  		}
- 		checksum += nvm_data;
  	}
--	checksum = (u16)NVM_SUM - checksum;
-+	checksum = NVM_SUM - checksum;
- 	ret_val = hw->nvm.ops.write(hw, NVM_CHECKSUM_REG, 1, &checksum);
- 	if (ret_val)
- 		hw_dbg("NVM Write Error while updating checksum.\n");
+ 
+-	checksum = (u16)IXGBE_EEPROM_SUM - checksum;
++	checksum = IXGBE_EEPROM_SUM - checksum;
+ 
+ 	return (int)checksum;
+ }
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+index bfa647086c70..0cc80ce8fcdc 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+@@ -1060,7 +1060,7 @@ static int ixgbe_calc_checksum_X550(struct ixgbe_hw *hw, u16 *buffer,
+ 			return status;
+ 	}
+ 
+-	checksum = (u16)IXGBE_EEPROM_SUM - checksum;
++	checksum = IXGBE_EEPROM_SUM - checksum;
+ 
+ 	return (int)checksum;
+ }
 -- 
 2.47.2
 
