@@ -1,54 +1,54 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D17C0C83F1A
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 17 Jul 2025 07:01:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6C8BCC83F35
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 17 Jul 2025 07:01:20 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 9D20E608A2;
-	Thu, 17 Jul 2025 07:01:19 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 7QchPRLvnFi9; Thu, 17 Jul 2025 07:01:19 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2CAB9615A8
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1752735679;
-	bh=9r9AqzJSLA1D1ZaSzMEcs3ZbuUbrvaNUswiizKwmHwU=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=PIJrVWmwOq4sgdysd4HjHDUYL9VwvKKLxwOH2mRAJXE4ndNm8JOWUWrYpQ5HMaHb5
-	 HBr+rQP0KkUyYJbCOPdIUYEXfBuF9Pz1O4BDRy7fXV3plbB8CWevOtEyjXssTZCpW7
-	 22DCY+PmrohSjbqAQ3gIpOgXcEtZ4IuzQmjqCwReSWi+GZn0Kmrh0R3dRFIZV0G0UF
-	 Koqwu+j6lXfPa+TQwjbCrvox6W39LGMnEbRhEYyQV4oeo83/pfC6JS7q7qIZazD7Hg
-	 UxCkeWF8gz5Tm8SWuRPPBNU3FWqhhkxtoSOoSyfuCscxynk0lIFSpWhgQjUkBJnvJ+
-	 y9pgrMNmT7frA==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 2CAB9615A8;
-	Thu, 17 Jul 2025 07:01:19 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id 1EC6195B
- for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Jul 2025 07:01:16 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 67A214116F
- for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Jul 2025 07:01:12 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 3867A416A3;
+	Thu, 17 Jul 2025 07:01:20 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id o3C_TOCaMp17 for <intel-wired-lan@lists.osuosl.org>;
+ id ZB06FVN3QTos; Thu, 17 Jul 2025 07:01:19 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B885641176
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1752735679;
+	bh=PBehm+l6yNaIM6GyguD8OP8uRws9CAXHEEmzeunVrvU=;
+	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=8GQLHTRn2K38AXVjZ2HUZ9+sVbhU1DuIqDoTqvYeanC24ZVFmTzfU1QakbXG4g6Ha
+	 hP9/IsOgcx1TbwV5taWIWq2tZF5EVZm3GjKpRQVRs3YCm5/INS5nbgu0SaOnaW31Fs
+	 Zm4+VA8OeLrUEo79I7L8ZoKrPejIU4iXcLkjTgVoewIkp9lTr7ev6RCpdvuO95RQf8
+	 5blCvGm1NS3qPS30pMq1xMxltnztgG93lQrBMHZ9F/PDJ9xVSOfcyF+1xOWfk7amuG
+	 8HjTJN4DxC6gxK7BVuDHBNQi2QCJi+sl8MVLHp4W0fjFEDeNZE5eedvkfRRMCEYMzP
+	 sTxNeV4VXeaQg==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp4.osuosl.org (Postfix) with ESMTP id B885641176;
+	Thu, 17 Jul 2025 07:01:19 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 0D65695B
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Jul 2025 07:01:17 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp4.osuosl.org (Postfix) with ESMTP id 1B46541176
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Jul 2025 07:01:13 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id gT8E946mu-rs for <intel-wired-lan@lists.osuosl.org>;
  Thu, 17 Jul 2025 07:01:12 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=166.125.252.92;
  helo=invmail4.hynix.com; envelope-from=byungchul@sk.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 9E9BB41120
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9E9BB41120
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 5A3E041127
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 5A3E041127
 Received: from invmail4.hynix.com (exvmail4.hynix.com [166.125.252.92])
- by smtp4.osuosl.org (Postfix) with ESMTP id 9E9BB41120
- for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Jul 2025 07:01:11 +0000 (UTC)
-X-AuditID: a67dfc5b-669ff7000002311f-15-68789fb30571
+ by smtp4.osuosl.org (Postfix) with ESMTP id 5A3E041127
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Jul 2025 07:01:12 +0000 (UTC)
+X-AuditID: a67dfc5b-669ff7000002311f-3b-68789fb3feb4
 From: Byungchul Park <byungchul@sk.com>
 To: willy@infradead.org,
 	netdev@vger.kernel.org
@@ -74,49 +74,50 @@ Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, kernel_team@skhynix.com,
  matthias.schiffer@ew.tq-group.com, robh@kernel.org, imx@lists.linux.dev,
  intel-wired-lan@lists.osuosl.org, linux-arm-kernel@lists.infradead.org,
  linux-wireless@vger.kernel.org, linux-mediatek@lists.infradead.org
-Date: Thu, 17 Jul 2025 16:00:45 +0900
-Message-Id: <20250717070052.6358-6-byungchul@sk.com>
+Date: Thu, 17 Jul 2025 16:00:47 +0900
+Message-Id: <20250717070052.6358-8-byungchul@sk.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20250717070052.6358-1-byungchul@sk.com>
 References: <20250717070052.6358-1-byungchul@sk.com>
-X-Brightmail-Tracker: H4sIAAAAAAAAAzWSfWxLexjH/c57a+XoZM4dIuotJOqd54/lkptczj9DMokgYSd2oo1ulo6u
- I7KhXlZ3xYZsa8Ve7ZUtLVrTznQLixlbzRSzzZYxdLg6y6quabfc/z55vt98v8+TPAwu7ySj
- GXXSQVGbJGgUlJSQDkUULrVd1auWfx1aBZaaagra/YUkVI3qoazXQYKngoO7baMYWCpvIxgO
- vKbBmtmFg7/pIQXFhSM4BGqzCLA8NRDwveYHDgMP+mhodv9HQJU1FnquvSPAedqOQ+P3BdB3
- rpmCLEMQh7zukxSMvQqS4Ap8puG4oxwD16dbNLTdNpFw8UcpDvaM3lBXfycJz+osFDw70Y6g
- u3qMhHfuUKGvvIsGU1U+Ave9CgqOG1aB79YwDV8vNeHQY9oAv3J18KAgCkZafAhelz7HYMzp
- oOFJ9w0SmmrsGHS8DeAw8s8VCoxD5xA8z6vD4PGVWhJKWjqw0B5x0Dn2E4McTwEF/YYeBJ7G
- PgLMx0wIauq9JPzrDJ0cHLVQG/7iG31fcN7xpgTxNyteYvzg+V8Y761/hPF38t/QfIH1EG8r
- X8IXOz9gvNHrwXlrZSbFW79l03xXp5Pim3ODBG8rSecHbXlo6+yd0pgEUaPWidplf8ZLVZZc
- N5GcQ+sHzIsz0FnKiCQMx67mXPYBzIiYcXZenh8eU+wizusN4GGezq7g/H0PCSOSMjjbGsG5
- bLlYWIhkd3At70+SYSbYBVxr2VkynCML5Zwyp0/Ez+GqahvGcyTsGi54MXu8Vh6ydBRl0BOe
- MglXeAGb4D+4++Ve4jySFaBJlUiuTtIlCmrNaqUqLUmtV+49kGhFoW+7dvTnLgf61hbnRiyD
- FBGy+NpUlZwUdClpiW7EMbhiuizHo1PJZQlC2mFRe2CP9pBGTHGjmQyhmCFbOZKaIGf3CQfF
- /aKYLGr/VzFGEp2BEjB2ZreraOr1E5Mure3fT2VG/W1Y11bEuetjjiTPXTj51DbJrLfZ8dPk
- +UUCvqmZ8B8xz1KuiR2mqzc97d04e4svINpc9sHRLYJ+0fpWQemsizRXbJ7i16zMbq/uUu3O
- WqvUpMXLPvbP22yKiT7TGluaHpcqefGpUXtme0NkVIOCSFEJK5bg2hThN4MBEoxpAwAA
-X-Brightmail-Tracker: H4sIAAAAAAAAAzWSfUzMcRzHfX/PnW5+O+HnYbQba5qnkH2GNcbmN83D+INspsNv7lZd3OWU
- odKJriSVXHVxPejRXO6iw4ldjSOkKzmc4hoxeSzNOeTO5r/35/P+7PV+//FhcEkTOYVRKJME
- lVIWL6VEhGj9soy5lvPJ8gVuz1QwmC5S0DlUTkLDj2SoeWUlwVnHwY3HPzAw1F9FMOx9QYM5
- y43DUNtdCirLR3DwNp4kwNChJeC76ScOb+54aHDYfxPQYF4HfdVvCbAdb8ah9fss8JxyUHBS
- 68OhuPcYBaPPfSTc9H6i4ai1FoPWsnv+8cMVGh5fzSWh8OcFHJrTXvkD+3tI6LpuoKAroxNB
- 78VREt7a/amDtW4achtKENhv1VFwVLsIBq8M0/DlTBsOfbkr4I9eA3eME2GkfRDBiwtPMBi1
- WWl41HuJhDZTMwbdr704jOSUUaD7eArBk+LrGDwoayShqr0b8/fYDD2jvzAocBop6Nf2IXC2
- eggoTc9FYGpxkfDVpiVWrOJbBz/jvPVlFeKb6p5h/Lu8PxjvarmP8ddKXtK80byft9SG85W2
- 9xivczlx3lyfRfHmb/k07+6xUbxD7yN4S1Uq/85SjDZO3yZavluIV2gE1fyoWJHcoLcTewvo
- 5Dels9NQNqVDDMOxizlb0UwdCmIoNoxzubx4QIewEdyQ5y6hQyIGZx8GczcteixgjGdjuPaB
- Y2RAE+ws7mFNNhngiP2czNLUwJpjZ3ANjbf/cYLYSM5XmE8FtMR/0l2RRuchkRGNqUchCqUm
- QaaIj5ynjpOnKBXJ83YlJpiR/5eqD/86bUXDXWvsiGWQNFgc23hALiFlGnVKgh1xDC4NERc4
- NXKJeLcs5aCgStyh2h8vqO1oKkNIJ4nXbhFiJeweWZIQJwh7BdV/F2OCpqQh5faOYLuRLEqa
- rE+1bGs6cTvryEDeIl0mN6FmSY547aaoYEiYkb608mlHtOby2LCvtVG+sIqVuHiJlJykXn3O
- vPNDxMR0h5D5qD9yoSPVtDLUHZM4XPGbu9Sx4PX9rSdGohND8+f42seV30uyZmw4lEHtOxsu
- Fas7p0WvGshZNl0kJdRyWUQ4rlLL/gK76wuPRwMAAA==
+X-Brightmail-Tracker: H4sIAAAAAAAAAzWSa0yTdxTG/b93Gpq8qYa9012SLkSCkU1Bcz7gpsYP/y9GEz8saKJWeWMb
+ uaXVWpYsVIQ4GgWjJYKrscrFconFcnvFFrEQILoNqICd1qJlQ8UKSrWhFu1azL49Oec5v+ec
+ 5HCkwkuv5jQFx0RtgSpPycgo2evka+s7rhjUP/zWTYLF3srAWOgqDS2LBrj+VKLB0yTA7dFF
+ AizNXQjeRR6z4KjwkRAaGGKg7mqYhEjbWQosI2UUvLd/IOHfwQALw+6PFLQ4dsJU4wwFztNx
+ dv/7VAhUDTNwtixKQq2/nIHYoygNrsgcC6WSjQDXq04WRrsqaTB/aCCh2/g0njU9ScODHgsD
+ D06NIfC3xmiYcccDgzYfC5UtlxC47zQxUFqWCcHOdyy8qR4gYapyK3yq0cOgNQXC94MIHjdM
+ EBBzSiz85b9Bw4C9m4DxZxESwmcuM2B6XYVgoraHgD8ut9FQf3+ciO+xByZjSwRc8FgZmC6b
+ QuDpD1Dw+8lKBPZeLw1vnfGTo4sWZut23B+cJ7H0pB7hjqa/Cfzi3CcCe3vvEfjWpScstjqO
+ 43ZbOq5zviSwyeshsaO5gsGOhfMs9k06GTxcE6Vwe30JftFei3Z/vVeWnSvmafSi9vsfD8rU
+ HVIrVRRiDYHyXUbkZ0woiRP4LKGzQiJMiFvWb0c0iTLDrxW83giZ0Kv4DUIoMESZkIwj+T+T
+ BVd7DZForORVwtLk2LKJ4lMF88xDNqHlcU6Vf4L4zP9WaGnrW/Yk8ZuEqPn8cq4i7hm/ZmQT
+ UIG3Jwl9FR7288CXwl2blzqH5Fa0ohkpNAX6fJUmLytDXVygMWQcLsx3oPi/Nf66tE9CC6N7
+ 3IjnkDJZfrDthFpBq/S64nw3EjhSuUp+waNXK+S5quJfRG3hAe3xPFHnRms4SvmFfGP4RK6C
+ P6I6Jh4VxSJR+3+X4JJWG1HmmZyG+bQSo8KcHerNPJSdVpIzP4L3ZVcf/qa/cG67K/hsv3Ml
+ 1dU6G9nUuA2FU9fbivuyTktDndU3f66e3blZV5oz25NhsNJrd8To51Ku71HKktX603S6dd2O
+ SNHFzflbphzyscG5i9G0e/8sHDHXuXwW5XeWlNuDu4a+mi4nlZROrdqQTmp1qv8ATxGIJWsD
+ AAA=
+X-Brightmail-Tracker: H4sIAAAAAAAAAzWSa0yTZxTHfd47DY1vOiKveEuaNETY2JwjOcvMQmKMj8Zb9MMW90EqvLGd
+ XEwLXdnm7LBeqFpUMIJCLCsgN2nXcqla0bQEuuEFysUOobgaCJuwzXEJFRQLid9+J/9fzv98
+ OBwpa6bjOHVWjqjJUmbIGQkl2fPFyY+cN/SqT9yzG6HM1sBAz1QFDfVzerj53EWDv1aAu91z
+ BJTVtSCYDj9jwVEwRMJUeycD1opZEsL2CxSUPTFSMGN7TcJoR4gFn+cNBfWO3TBSPUaB+0wr
+ Cd4ZBYQKfQxcMM6TUBo8xcDi4DwN98L/sJDvqiHAW/5bZHzZzEJ3i5mG4tdVJLQankcKXwzQ
+ 0HunjIHekz0Igg2LNIx5Iq0TNUMsmOuvIfDcr2Ug37gZJpqnWfjvSjsJI+YUeFuigw7LKpjt
+ mkDwrKqfgEW3i4XHwUYa2m2tBPT9GSZh9nw5A6bJQgT9pXcIeFhup6Gyq4+I3HEABhYXCCjy
+ Wxh4YRxB4PeGKLj+sxmBrS1Awyu3kUrZir0T/5LYNVyJcFPtHwQev/iWwIG23wl8+9owiy2O
+ XOysScBW918ENgX8JHbUFTDY8f9lFg8NuBnsK5mnsLPyBB53lqJ96w9KtqSLGWqdqPn4y1SJ
+ qsnVQB2bYvWhU3sNKMiYEMcJ/GfCqydqE4riGD5eCATC5BLH8JuEqVAnZUISjuQfRQv3nCXE
+ UvABrxQWBnqWJYpXCMVjT9kllkb2FAb7lx2B3yDU2x8sO1F8sjBffJlZYlnE6fvFwF5EEgta
+ UYdi1Fm6TKU6IzlJe1SVl6XWJ6VlZzpQ5Jmqjy9ccqHp3u0exHNIHi1NtX+nktFKnTYv04ME
+ jpTHSIv8OpVMmq7M+17UZB/S5GaIWg9aw1HyWOnOr8RUGX9EmSMeFcVjouZ9SnBRcQZ0zh4f
+ S53u/rs8oa3DffbzXYb8gh/c13el/fStNjpzYeenllh+eE6+/tcHyYct+0PRivgZ4kfzOr/1
+ ttUwSO2YTHTUkV0vKy1rDiYNznQPp4ziZpn1isL34X3feJHzbs+tq41xiZMrvzmuO6Lzb8he
+ vc2mL9i86uuN3s61jxRzoyVqOaVVKTclkBqt8h3bHVNiSAMAAA==
 X-CFilter-Loop: Reflected
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=none (p=none dis=none)
  header.from=sk.com
-Subject: [Intel-wired-lan] [PATCH net-next v11 05/12] mt76: access ->pp
- through netmem_desc instead of page
+Subject: [Intel-wired-lan] [PATCH net-next v11 07/12] octeontx2-pf: access
+ ->pp through netmem_desc instead of page
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -135,27 +136,26 @@ Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 To eliminate the use of struct page in page pool, the page pool users
 should use netmem descriptor and APIs instead.
 
-Make mt76 access ->pp through netmem_desc instead of page.
+Make octeontx2-pf access ->pp through netmem_desc instead of page.
 
 Signed-off-by: Byungchul Park <byungchul@sk.com>
 ---
- drivers/net/wireless/mediatek/mt76/mt76.h | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/marvell/octeontx2/nic/otx2_txrx.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/wireless/mediatek/mt76/mt76.h b/drivers/net/wireless/mediatek/mt76/mt76.h
-index 14927a92f9d1..7e9ddf91b822 100644
---- a/drivers/net/wireless/mediatek/mt76/mt76.h
-+++ b/drivers/net/wireless/mediatek/mt76/mt76.h
-@@ -1798,7 +1798,8 @@ static inline void mt76_put_page_pool_buf(void *buf, bool allow_direct)
- {
- 	struct page *page = virt_to_head_page(buf);
- 
--	page_pool_put_full_page(page->pp, page, allow_direct);
-+	page_pool_put_full_page(pp_page_to_nmdesc(page)->pp, page,
-+				allow_direct);
- }
- 
- static inline void *
+diff --git a/drivers/net/ethernet/marvell/octeontx2/nic/otx2_txrx.c b/drivers/net/ethernet/marvell/octeontx2/nic/otx2_txrx.c
+index 99ace381cc78..625bb5a05344 100644
+--- a/drivers/net/ethernet/marvell/octeontx2/nic/otx2_txrx.c
++++ b/drivers/net/ethernet/marvell/octeontx2/nic/otx2_txrx.c
+@@ -1571,7 +1571,7 @@ static bool otx2_xdp_rcv_pkt_handler(struct otx2_nic *pfvf,
+ 		cq->pool_ptrs++;
+ 		if (xsk_buff) {
+ 			xsk_buff_free(xsk_buff);
+-		} else if (page->pp) {
++		} else if (pp_page_to_nmdesc(page)->pp) {
+ 			page_pool_recycle_direct(pool->page_pool, page);
+ 		} else {
+ 			otx2_dma_unmap_page(pfvf, iova, pfvf->rbsize,
 -- 
 2.17.1
 
