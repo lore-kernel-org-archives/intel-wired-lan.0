@@ -4,73 +4,73 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 45A23C83F3E
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 18 Jul 2025 15:00:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4D7BFC83F3B
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 18 Jul 2025 15:00:19 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 1333F41165;
-	Fri, 18 Jul 2025 15:00:18 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 1861441194;
+	Fri, 18 Jul 2025 15:00:19 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 2W31b9MUy876; Fri, 18 Jul 2025 15:00:16 +0000 (UTC)
+ id zqY1uQv2qbbA; Fri, 18 Jul 2025 15:00:17 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 220664111A
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 6BE474112A
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1752850816;
-	bh=Qy5sf8xHtt7VTqNK1SGp1oY+L+UVIIve/ZxCo+d8l9k=;
+	s=default; t=1752850817;
+	bh=TqrwnyALV/aV1yJK+mQedDxjAdmHzjNQJZlvGIUdTDg=;
 	h=From:To:CC:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=GrR9oxuI6IgVb2el5VL7+g1O8fcLHOJlOxMilCZW53P8TXt+5dDuhae2WFmiBRcWR
-	 fVKteHyPL3cCVAwZj+dgKkRtcE2TDMPamOpboap/eLJZR+dLrQevaojWh4P3qiZ/ui
-	 zDCJdVWPy07gRQosHinznh6xdjalOmSwRnUwhO3aLJ9eD/kyJx2RzyFZxY0ghIGCC4
-	 2JS0NyWjqwwHlisRcaIVh9KK5p9A1NJ0yAtmD4TgIuHiNALP4ZDX8roZ3ZPTpp9MPQ
-	 mcdKMuF/a7CIPw/J2bap6cMklV2R/NznzZnnyg88B3ywuB5gjD5sXS45PLKpLYSr0S
-	 s2tqerSqO7W7g==
+	b=PbpdbBF8Gq2JRrBDNOl/BlgDPl/UEo/ce7hFRBPaT8RRlUWMDcyHMq6FMXoIOCvtW
+	 YS4trTZQgzWHqfcr/Pq+LiEugUuSjbgcmU0mHPdPbgYWNJFwyQxV/c2y38NUK+E9GJ
+	 s+4LFlcb13+npCvWFs+R92mhh+ddQnws/dEcou6WYJfvPUcrBTIgRpI9Eq6zVYnXse
+	 MTdNyOTjFqEuJd26z0qrgOzlseaheUQeSHmtl+3C/v7B6tDa7Ry/oESsDXeyd3jdY2
+	 9ApcW6vFeWbhaMt01p/o98pvO85LidmgIE0QcKhuV60O/nTUEGYgx/6dXe9fEVPE7e
+	 IVbk/zyETUR2g==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 220664111A;
-	Fri, 18 Jul 2025 15:00:16 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id 4EFA4A59
- for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Jul 2025 16:08:43 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 6BE474112A;
+	Fri, 18 Jul 2025 15:00:17 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 3543895B
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Jul 2025 16:08:56 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 349AE41713
- for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Jul 2025 16:08:43 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 1BADE40D2E
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Jul 2025 16:08:56 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id rcXkBo4Isi8z for <intel-wired-lan@lists.osuosl.org>;
- Thu, 17 Jul 2025 16:08:42 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=40.107.223.46;
- helo=nam11-dm6-obe.outbound.protection.outlook.com;
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id m47xR9hLUXct for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 17 Jul 2025 16:08:55 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=40.107.220.46;
+ helo=nam11-co1-obe.outbound.protection.outlook.com;
  envelope-from=tariqt@nvidia.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org DD96A4170F
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org DD96A4170F
-Received: from NAM11-DM6-obe.outbound.protection.outlook.com
- (mail-dm6nam11on2046.outbound.protection.outlook.com [40.107.223.46])
- by smtp4.osuosl.org (Postfix) with ESMTPS id DD96A4170F
- for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Jul 2025 16:08:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 446344051A
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 446344051A
+Received: from NAM11-CO1-obe.outbound.protection.outlook.com
+ (mail-co1nam11on2046.outbound.protection.outlook.com [40.107.220.46])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 446344051A
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Jul 2025 16:08:55 +0000 (UTC)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=t2GO5mffIGRfxt9fl12q79rwAZA3/qrISqvrdnQxGvfLdWhderc/JD4oCTZOlzYObLg2El7U3FOGkAh76s9FGqiw6MZ8iMthH9mDKZ1WnUTvlo/3+TdvFvoj0Xot4QWC4SzkOsfJ2ocNf+DNsBKJmJ9InY4aRHIAJbjg1yoDkH8So/EKUiiHBDH6bwhRrzSaM2MD3JHu9w27MKX8RZECHsFH32m/WhwRY8YJualUrmDZ+8onYhdgEoJ4bo461L290S9Np2YCLcTc5kbqKvNKapIj/HLlLmp0b79XGvf2rT2L4Q0J/R013DTB9aT3bnHPyTOEsfum8imJ9oLTZ1DY4g==
+ b=CBoB/I8j+ATeMzFu+jUBqgjwBLBFRELBm5cga7We2rac7HTRFlAOD/SecIMYi2AIWenuhHG8wzXvfcHfBQY6HKbCXIDCxFts8B4E8vpFYJ4SLA9csmZucsZdAN10QToBmHJUzKU9st7UJOLEIp5YV6qd2HLlkif1gNq50MRAFnbYa9eTV4vMXOOwgTZGsf8vX5gSORpdV7JdX78t+L9TTOK81R+stAfIvMNf5UOj7KGPQVsmmfqbM/wZwdVbAHcWwz199yFsiaBWV9PKWSnTPrzxFXuZ7DOFJ8oVz1v2c1a39gjqPjuNk/kYrtDe1XfHwvfxZnSguryaOt2eJBcMVA==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=Qy5sf8xHtt7VTqNK1SGp1oY+L+UVIIve/ZxCo+d8l9k=;
- b=gJ8aX+wr7kLMKSC4uBDzkqWwwD3BKIxv0qNud8SCHYHJXXW1/uOtjSTgJdPNH+i0MX8IXEk4KUlnzd0E782FLvjpfcTym8cdHWQWbJkoJhkqJqqOL+9gLEJZsCx1Q/fGewdu3msYLjVrzT+X4bi5JTGijj6Kpy44LoEslwQ3yichYxyvnigFhPs4nEtMBL+PvG5G0Ryc29OA6Kx3gZGdaB9D7GsiZJJFr2FCk+enSESOFZj6TEDHh9PTIAbhDuhUzHtFOw21pw3ZeHwKpvKegbDcpTgVfxCPCkJDhS2+kEUX5puXYDk92LgZITX1Ev7np72w4imOsSgT7xtbGQEXqQ==
+ bh=TqrwnyALV/aV1yJK+mQedDxjAdmHzjNQJZlvGIUdTDg=;
+ b=cmcO6Ui5kLDY28FYhU9GP3ZtXjOfFQswKLqukvgJOZKQ5Plh6HmW7LlfU6qPj0rUaKCBM07kcrMIiwYwVSeDL6GwhVi9jp/FadJadYSfYPPfAA4+W2Q2+IBu6pROuMNayERoLXGo7TdEBHbHjMH0Ji1dA71Rpf0jQsUrta3Kk9ofP5pQGSZPa1j5RYNNysoEqfv4HOMIFr7b4KbRiUBAP9152PsDt0Fl/G7vhKrsjLj3/Gdh4DMVLgafH5v+QmhI7xi1R6Q+zEpI9Y7RSwKcu3fmGvLODn9WqqViqrQmwGnrOvDH9M66Sd0ZpWzVJYTlnCi6nVqY+abgq+OaPhnCXg==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
  216.228.117.160) smtp.rcpttodomain=google.com smtp.mailfrom=nvidia.com;
  dmarc=pass (p=reject sp=reject pct=100) action=none header.from=nvidia.com;
  dkim=none (message not signed); arc=none (0)
-Received: from SJ0PR03CA0225.namprd03.prod.outlook.com (2603:10b6:a03:39f::20)
- by SN7PR12MB8025.namprd12.prod.outlook.com (2603:10b6:806:340::12)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8901.35; Thu, 17 Jul
- 2025 16:08:31 +0000
-Received: from SJ1PEPF00001CE1.namprd05.prod.outlook.com
- (2603:10b6:a03:39f:cafe::b2) by SJ0PR03CA0225.outlook.office365.com
- (2603:10b6:a03:39f::20) with Microsoft SMTP Server (version=TLS1_3,
+Received: from SJ0PR03CA0003.namprd03.prod.outlook.com (2603:10b6:a03:33a::8)
+ by DM6PR12MB4434.namprd12.prod.outlook.com (2603:10b6:5:2ad::12) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8922.39; Thu, 17 Jul
+ 2025 16:08:52 +0000
+Received: from SJ1PEPF00001CDE.namprd05.prod.outlook.com
+ (2603:10b6:a03:33a:cafe::3f) by SJ0PR03CA0003.outlook.office365.com
+ (2603:10b6:a03:33a::8) with Microsoft SMTP Server (version=TLS1_3,
  cipher=TLS_AES_256_GCM_SHA384) id 15.20.8943.20 via Frontend Transport; Thu,
- 17 Jul 2025 16:08:31 +0000
+ 17 Jul 2025 16:08:52 +0000
 X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 216.228.117.160)
  smtp.mailfrom=nvidia.com;
  dkim=none (message not signed)
@@ -79,20 +79,20 @@ Received-SPF: Pass (protection.outlook.com: domain of nvidia.com designates
  216.228.117.160 as permitted sender) receiver=protection.outlook.com;
  client-ip=216.228.117.160; helo=mail.nvidia.com; pr=C
 Received: from mail.nvidia.com (216.228.117.160) by
- SJ1PEPF00001CE1.mail.protection.outlook.com (10.167.242.9) with Microsoft
+ SJ1PEPF00001CDE.mail.protection.outlook.com (10.167.242.6) with Microsoft
  SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.8943.21 via Frontend Transport; Thu, 17 Jul 2025 16:08:31 +0000
-Received: from rnnvmail201.nvidia.com (10.129.68.8) by mail.nvidia.com
+ 15.20.8943.21 via Frontend Transport; Thu, 17 Jul 2025 16:08:52 +0000
+Received: from rnnvmail202.nvidia.com (10.129.68.7) by mail.nvidia.com
  (10.129.200.66) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.4; Thu, 17 Jul
- 2025 09:08:08 -0700
-Received: from rnnvmail203.nvidia.com (10.129.68.9) by rnnvmail201.nvidia.com
- (10.129.68.8) with Microsoft SMTP Server (version=TLS1_2,
+ 2025 09:08:34 -0700
+Received: from rnnvmail203.nvidia.com (10.129.68.9) by rnnvmail202.nvidia.com
+ (10.129.68.7) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.14; Thu, 17 Jul
- 2025 09:08:08 -0700
+ 2025 09:08:33 -0700
 Received: from vdi.nvidia.com (10.127.8.10) by mail.nvidia.com (10.129.68.9)
  with Microsoft SMTP Server id 15.2.1544.14 via Frontend Transport; Thu, 17
- Jul 2025 09:08:00 -0700
+ Jul 2025 09:08:25 -0700
 From: Tariq Toukan <tariqt@nvidia.com>
 To: Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
  Paolo Abeni <pabeni@redhat.com>, Andrew Lunn <andrew+netdev@lunn.ch>, "David
@@ -114,77 +114,87 @@ CC: Saeed Mahameed <saeed@kernel.org>, Gal Pressman <gal@nvidia.com>, "Leon
  <netdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
  <linux-doc@vger.kernel.org>, <intel-wired-lan@lists.osuosl.org>,
  <linux-rdma@vger.kernel.org>
-Date: Thu, 17 Jul 2025 19:07:18 +0300
-Message-ID: <1752768442-264413-2-git-send-email-tariqt@nvidia.com>
+Date: Thu, 17 Jul 2025 19:07:21 +0300
+Message-ID: <1752768442-264413-5-git-send-email-tariqt@nvidia.com>
 X-Mailer: git-send-email 2.8.0
 In-Reply-To: <1752768442-264413-1-git-send-email-tariqt@nvidia.com>
 References: <1752768442-264413-1-git-send-email-tariqt@nvidia.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 X-NV-OnPremToCloud: AnonymousSubmission
 X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SJ1PEPF00001CE1:EE_|SN7PR12MB8025:EE_
-X-MS-Office365-Filtering-Correlation-Id: 638363ac-c8e2-49e8-c59f-08ddc54c2c96
+X-MS-TrafficTypeDiagnostic: SJ1PEPF00001CDE:EE_|DM6PR12MB4434:EE_
+X-MS-Office365-Filtering-Correlation-Id: 430ed534-c16c-4426-4573-08ddc54c3904
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam: BCL:0;
- ARA:13230040|36860700013|1800799024|7416014|376014|82310400026; 
-X-Microsoft-Antispam-Message-Info: =?us-ascii?Q?pwScWYfSS7ODZavchZdyPrH7Ot88Oau/eeAG4UkGkpyRphGUO7ce6rK0onBy?=
- =?us-ascii?Q?wcGzzy8dNv5aSsiTkVdMpd6+q4eHHhfoMEP1uoF8GBfxjJ8CHq0bUbNzvaxc?=
- =?us-ascii?Q?q9ZdS7Jk0oJwEp2cb2Qr5mYwDFjWb7UfS0syygEuoThS3o7/MTD9DC+OstQQ?=
- =?us-ascii?Q?kGZ2ybHqFUYaAFpVVEH+KqbrU1STiySjBLC/J8wl/UT47cVStCNKr9zaeluX?=
- =?us-ascii?Q?mdhmZ/7DG0kLSF43sd/PM5jUYdkJvlTW+X3YMMA6LiYfFylEiF87zlpOqZ6R?=
- =?us-ascii?Q?Kz32St9vhl0nI5Ho3JEndITmUziTdTrnQL0j+qXXDBZ71yAfMuLuTCiQFkNG?=
- =?us-ascii?Q?Da3dDAzDUtjZHX8udO6eifQSwbMjNqp9qNVymHulNvKELw7NBeexrPwaAa0L?=
- =?us-ascii?Q?teVPmswYNIY4HjaOQZweMFnoYkcTixIv+qxqdV6mwgWp9f5oOGLrBONJUM2q?=
- =?us-ascii?Q?UfDe+W3gUyvPmWKo1vnyJkx15fw9xskKFlsl6XrmScIRNfcz7k2+8w7HTK+D?=
- =?us-ascii?Q?6eGBxPYCMwOH8WAvxPwBx9wbuKhw5Sc32V/66wIf5esHPe7d4Vs1RB4ank+M?=
- =?us-ascii?Q?AnwyZdOxIShz8U57K2I0Vn3/qbNN9Fr1A9cKA/FQkEoHkeExsLVZvg4GYa08?=
- =?us-ascii?Q?JmnSPC24MG9hoF1AYGxqcUanmZvfPq/jdfQaojrPRys304zfFsct71yBux/o?=
- =?us-ascii?Q?oU3LfaiDylqk875oKsRYqtcc1KgeNR7xffrGmH9ax0p7Qc8H3STV8K0lNp5H?=
- =?us-ascii?Q?Cg1szqW4LinNxUX4Nj/Ba4CwjOmXG3OwvvDpuspXxX7kEc+46AZd9T/IyOAl?=
- =?us-ascii?Q?3lVmHdJYpDwopk6Wk0Cl3Ja+Zd98aFiY6u5d4eilMwdPuRL6SZAoKZU7OiDk?=
- =?us-ascii?Q?9sYLWA6B+jCGSGoQNqX7ov4uiaUrGENjN5bioZG8Mcjo7SFca9KMiweBw7Lf?=
- =?us-ascii?Q?xsyHdWq7gsBHGJJgFoy1tTlqK9IVxUD8k8T+8d4rtsIdS3lrU364yO3EItt6?=
- =?us-ascii?Q?bHaks9r+dSGUU001aIxA01cLXxX1zt8rTl4rNvLebPCSMAoCyHD5iM0/Ulhn?=
- =?us-ascii?Q?a6S7ASm27GQDlWGqVxstTfmAncOIiqbP1VEP49+Ciw3WvbJcT6peDhp5KzvU?=
- =?us-ascii?Q?STwcWx52HsynkOMzEr7sEDouyvX+/3L8rEY2jmfkCxPjsv6RGj87CBBwLGxv?=
- =?us-ascii?Q?cVwJwZtH74wGBsFoAfkkhjbuepbyLea9pY2P7Yyy5NdwCJRte7MkA+AA6+19?=
- =?us-ascii?Q?lRHzdLdlbARSy4zpRjp28xRCPPatz6BFZhQwPEWZinbnJLnGEQ8WYrEeJXi7?=
- =?us-ascii?Q?iyrWm16qaIe0WmKCsOz9kfQOLPVbXIbU0jg11jFryHmSEgUZOJGmvdqv7q0K?=
- =?us-ascii?Q?TmdnpzKCEvyHcjUhTOGmIotNdPNtWzBzy31GdyVfy//Xh5hyHWIKHV0GFLQr?=
- =?us-ascii?Q?662Phf1c9BrZE148WIySJuBp0x9AL7EpJXf9gqVcC3I20mITJFJz+N2UD2rF?=
- =?us-ascii?Q?CB7t2PNp3ihMEr19WvHplt6uw2WtcjBzvMbb?=
+ ARA:13230040|36860700013|376014|82310400026|1800799024|7416014; 
+X-Microsoft-Antispam-Message-Info: =?utf-8?B?QU5QS3RZVWxqRC9nc25xenpVcXlsRG15VmxlUmUzRVh6RWU3K3k1OTE1OWQ1?=
+ =?utf-8?B?d1RsOENUNk81ZE5HN0Q1a0RPYWhTQzJ3MW5TdTdCMzd1UVJ2djMvTWlsWGc3?=
+ =?utf-8?B?eWE0TTEvNTRXOFRjTTZyRm1KNEQ5ODhoVjlrOXd6RGV3ZThNYmVDQXF3VDRs?=
+ =?utf-8?B?L3JvdkFTVHdxbXc3UFBPd1JZVFVQLzB1NHJKZy9GWnJWMVBvQUdYakVuSzFj?=
+ =?utf-8?B?ajFRSDB0NXFVeHlEOVE5QU84aFNBNHZVbXdXVHZaaHJmc0FGdVJRU0dYYjZG?=
+ =?utf-8?B?RnkyZjQ2T09DTHNsQXRnOWM2cjVaRGtIVFNiTHZMTzBlRXBXZ000RmY5a29k?=
+ =?utf-8?B?YUhZd0t1QkRpWis0OURwbHJZbkdraWJxMG5CYXhhYkN0dHN5blFVem5GeTFr?=
+ =?utf-8?B?SERYd2o5bGl1NVFCVVBmNGJBVWlmVjFSbHIybjIzR2lweUZFVGlsWjZqS3VG?=
+ =?utf-8?B?TzZXNTJjenZwSVZZR2tCaW5HNnluQjNIcW9rVE1BWXo5UllGWGtvV3ZmdUll?=
+ =?utf-8?B?K2pVSE5qUUNWU1YwYlpiWEVXRk5QS1lBWWRtaHAweVlTMTVMWUwxU3hndjNH?=
+ =?utf-8?B?cWJmNCt5QW1QVkUzdXdyS0NLd1pESWlQeVZkQVNLSStjNUtINkFPcStjUjlR?=
+ =?utf-8?B?R2tOaVVJTzkveXJ6cThBVmxRZC9PNHk0YTdjRmZ2Uy9iKzBNSFMvUExmYU1G?=
+ =?utf-8?B?eTB2K0lxL20xVGs4TVpBbGFMSFN5WEwyNERzMnJBTjRGdFY2cndsQWFFWGVq?=
+ =?utf-8?B?SGlab2o4NVZxQjE4U0ZBVG5ybUZjZ0FNNXpBa2h4ZHRmUENpd0t5bHlFNUsr?=
+ =?utf-8?B?VUd2aEZBY0FBTXZXU3gzWFcwTTl1R0lZaFNlclJsRUwzd2FicXhIZUZETjVh?=
+ =?utf-8?B?QWoxWjBPTnA3ZVNaKzErSUFWY0Q0MTU5dXdQTkxrSDZJUy9iWXJUa0NQY1RS?=
+ =?utf-8?B?MkdKQ0IzanR3VE9ycVdvWTQyUng0eDNYWk5EYXo5VlVzaG5VbEEwZHRtWmxH?=
+ =?utf-8?B?azRHaDlSenY3TVhkQVNmQnBXdXhuQmlLMlVkYnNFRVJmVDViamtjVDRkTXBw?=
+ =?utf-8?B?K0N1Ym8wSmMxN1kyQWJTNnh0SjF5SGZKODBYdVN6U2t4MEdHWU9nSzErNGRn?=
+ =?utf-8?B?TUpRQ1hmQnJPY2p0aEdzZk54Q2NQVW5BYUhVRXJ1SnlkSk13Z0FWcmFPYytN?=
+ =?utf-8?B?WnRTdkVGd1IwVitnMHF3Ny9zVnhycUxHZm1SOGt2cG85VU9oVUhTSDZMeXZX?=
+ =?utf-8?B?WG45cTQwYzFsUjY1MzhtbDlPWHQ2QzcvU3F2UHBFVG56ZysrWmpLRk5LNmo2?=
+ =?utf-8?B?bmxCK0lERkM1TE1qcUdDeFJseUx6dHE1ZGFlMENUaDMzM2thYTNLbVRBcjBQ?=
+ =?utf-8?B?RkxYWTNFWmEzV3FDc3FXSE9LbU53SVRqSnJob21KdVZEbnF0SEQ4c0txRlA4?=
+ =?utf-8?B?cFhhQ0JWTjJyS2oxa1FFWW5qWFA3Sm96UHRCTzlub3hVN3FwWTY1ZFl3bDl5?=
+ =?utf-8?B?dGloMzBNSG9qeGFZV1l2RkdDYWdPQ2FUY2JRMmRwd2I4cTJ3VUZyOG5OY1c1?=
+ =?utf-8?B?OXBJbFhtbUZncHNqek1TejhhVk9vb3pBNU14Ym5jalNYSlNUSHA1RU9DcDNJ?=
+ =?utf-8?B?UzFRclFzb2dEQmhPRkgxVUd5dWI4dEdwSW8rQTVRL1MvTzdGdnNZMi9LYkhC?=
+ =?utf-8?B?Vk8remRoK3FjcmZzcEdnR01vUVN6L1plOXhGRXpHOVcyd1d2TThJOWJZMERU?=
+ =?utf-8?B?SzRSSGVwVHd5V0J4TXpKZFZOdmMxUnhZKzlZdi9sVnFEcmFsYkhvV1V0Y1cv?=
+ =?utf-8?B?bjZmM1RpSVpjcnJZL2lqejdPaU1uaVB3eFZVVXY2VHdLOExIbFBzRU1XZC9Z?=
+ =?utf-8?B?cWN0Sk5PaTBkaS93T3VWT2NqZzE1M3gzWFZjN2t2dGgyeSttN3FVbjV6Z0Mv?=
+ =?utf-8?B?RXlrMWJrTGhaUEFnc2hYeTd6djBncXhNSFRzRW9JM2ZpWnNLRjVUaDRQVm5T?=
+ =?utf-8?B?N2R6aERwTG9DajExdk15QndjYldqUkR2UEQxTk03VGFPTjBtdDZkTEgwTHFj?=
+ =?utf-8?Q?5hkwB7?=
 X-Forefront-Antispam-Report: CIP:216.228.117.160; CTRY:US; LANG:en; SCL:1; SRV:;
  IPV:NLI; SFV:NSPM; H:mail.nvidia.com; PTR:dc6edge1.nvidia.com; CAT:NONE;
- SFS:(13230040)(36860700013)(1800799024)(7416014)(376014)(82310400026); DIR:OUT;
+ SFS:(13230040)(36860700013)(376014)(82310400026)(1800799024)(7416014); DIR:OUT;
  SFP:1101; 
 X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 17 Jul 2025 16:08:31.2030 (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 638363ac-c8e2-49e8-c59f-08ddc54c2c96
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 17 Jul 2025 16:08:52.0687 (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 430ed534-c16c-4426-4573-08ddc54c3904
 X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=43083d15-7273-40c1-b7db-39efd9ccc17a; Ip=[216.228.117.160];
  Helo=[mail.nvidia.com]
-X-MS-Exchange-CrossTenant-AuthSource: SJ1PEPF00001CE1.namprd05.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthSource: SJ1PEPF00001CDE.namprd05.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SN7PR12MB8025
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM6PR12MB4434
 X-Mailman-Approved-At: Fri, 18 Jul 2025 15:00:13 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=Nvidia.com; s=selector2;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=Qy5sf8xHtt7VTqNK1SGp1oY+L+UVIIve/ZxCo+d8l9k=;
- b=TxJDlxY8wkUc4D4IjHMq7+R9r8X+kef0gpZ8Jquv1Ej3gORvJWrx7hBQeXK4Nw0aE0oOZIyK/ADCIt21PuckTqnqTD1tnk4hKAVhadJMBVKuJaUvjc06782zuViDDbq1bhz+gx8dqq9U3bAdFk+3ROYnABwuiaeiY9I4TMnsp0R8TSP9cZmnk4E3hi1azYyKW0pZYp+yytoVDdrJ7+haoI/xpZ3raV0UDXiGeFb7Q/hgbaUh1ghSp5iSy5ITx3yYuFZdQwGUYb10+85iMxLOhTgnvS5ZeW0BYXkaPv4zSiPq9fd7zYVNCnsafEOSMwMxIcnnZR4vG19tyP0e4JV90Q==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ bh=TqrwnyALV/aV1yJK+mQedDxjAdmHzjNQJZlvGIUdTDg=;
+ b=clYRGTN5Qi/lkcWguoUgcZ6N0oGOxAM1nYkB+kjVB9IraEOCCjsCnUwl7utqJzMsdi6ibVgyvCUOfsbCFbb8ABTvdfVg+tQmtG8iiO5OtGqm9LYCB/5RdzqWo0S4X9FYXnXVMkgJMgcEF/JlPEIyl4VE9PLUQsc6wauQu3CZiiEkAqfbcG0WANc0rcKs7FQg0oF3s0c3IYEor35EIac/TGE3E+M5M1q6KCGWEBZko6pht6E/CAwUaa4qqeQLyE3ZziJkExjwAN7O0goQOeDQWHkv+D1jTHLqPORMsFhVBWiBU9457ivQXgufQvD/wZlccg9/Ily5CzmrOLu+wegCIg==
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=reject dis=none)
  header.from=nvidia.com
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256
- header.s=selector2 header.b=TxJDlxY8
-Subject: [Intel-wired-lan] [PATCH net-next 1/5] devlink: Move graceful
- period parameter to reporter ops
+ header.s=selector2 header.b=clYRGTN5
+Subject: [Intel-wired-lan] [PATCH net-next 4/5] devlink: Make health
+ reporter grace period delay configurable
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -202,600 +212,197 @@ Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 From: Shahar Shitrit <shshitrit@nvidia.com>
 
-Move the default graceful period from a parameter to
-devlink_health_reporter_create() to a field in the
-devlink_health_reporter_ops structure.
+Enable configuration of the grace period delay — a time window
+starting from the first error recovery, during which the reporter
+allows recovery attempts for each reported error.
 
-This change improves consistency, as the graceful period is inherently
-tied to the reporter's behavior and recovery policy. It simplifies the
-signature of devlink_health_reporter_create() and its internal helper
-functions. It also centralizes the reporter configuration at the ops
-structure, preparing the groundwork for a downstream patch that will
-introduce a devlink health reporter grace period delay attribute whose
-default value will similarly be provided by the driver via the ops
-structure.
+This feature is helpful when a single underlying issue causes
+multiple errors, as it delays the start of the grace period
+to allow sufficient time for recovering all related errors.
+For example, if multiple TX queues time out simultaneously,
+a sufficient grace period delay could allow all affected TX
+queues to be recovered within that window. Without this delay,
+only the first TX queue that reports a timeout will undergo
+recovery, while the remaining TX queues will be blocked once
+the grace period begins.
+
+Configuration example:
+$ devlink health set pci/0000:00:09.0 reporter tx grace_period_delay 500
+
+Configuration example with ynl:
+./tools/net/ynl/pyynl/cli.py \
+ --spec Documentation/netlink/specs/devlink.yaml \
+ --do health-reporter-set --json '{
+  "bus-name": "auxiliary",
+  "dev-name": "mlx5_core.eth.0",
+  "port-index": 65535,
+  "health-reporter-name": "tx",
+  "health-reporter-graceful-period-delay": 500
+}'
 
 Signed-off-by: Shahar Shitrit <shshitrit@nvidia.com>
 Reviewed-by: Jiri Pirko <jiri@nvidia.com>
 Reviewed-by: Carolina Jubran <cjubran@nvidia.com>
 Signed-off-by: Tariq Toukan <tariqt@nvidia.com>
 ---
- drivers/net/ethernet/amd/pds_core/main.c      |  2 +-
- .../net/ethernet/broadcom/bnxt/bnxt_devlink.c |  2 +-
- .../net/ethernet/huawei/hinic/hinic_devlink.c | 10 +++--
- .../net/ethernet/intel/ice/devlink/health.c   |  3 +-
- .../marvell/octeontx2/af/rvu_devlink.c        | 32 +++++++++++----
- .../mellanox/mlx5/core/diag/reporter_vnic.c   |  2 +-
- .../mellanox/mlx5/core/en/reporter_rx.c       | 10 +++--
- .../mellanox/mlx5/core/en/reporter_tx.c       | 10 +++--
- .../net/ethernet/mellanox/mlx5/core/en_rep.c  |  2 +-
- .../net/ethernet/mellanox/mlx5/core/health.c  | 41 +++++++++++--------
- drivers/net/ethernet/mellanox/mlxsw/core.c    |  2 +-
- drivers/net/ethernet/qlogic/qed/qed_devlink.c | 10 +++--
- drivers/net/netdevsim/health.c                |  4 +-
- include/net/devlink.h                         | 11 +++--
- net/devlink/health.c                          | 28 +++++--------
- 15 files changed, 98 insertions(+), 71 deletions(-)
+ Documentation/netlink/specs/devlink.yaml      |  7 +++++
+ .../networking/devlink/devlink-health.rst     |  2 +-
+ include/uapi/linux/devlink.h                  |  2 ++
+ net/devlink/health.c                          | 30 +++++++++++++++++--
+ net/devlink/netlink_gen.c                     |  5 ++--
+ 5 files changed, 40 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/net/ethernet/amd/pds_core/main.c b/drivers/net/ethernet/amd/pds_core/main.c
-index 9b81e1c260c2..c7a2eff57632 100644
---- a/drivers/net/ethernet/amd/pds_core/main.c
-+++ b/drivers/net/ethernet/amd/pds_core/main.c
-@@ -280,7 +280,7 @@ static int pdsc_init_pf(struct pdsc *pdsc)
- 		goto err_out_del_dev;
- 	}
- 
--	hr = devl_health_reporter_create(dl, &pdsc_fw_reporter_ops, 0, pdsc);
-+	hr = devl_health_reporter_create(dl, &pdsc_fw_reporter_ops, pdsc);
- 	if (IS_ERR(hr)) {
- 		devl_unlock(dl);
- 		dev_warn(pdsc->dev, "Failed to create fw reporter: %pe\n", hr);
-diff --git a/drivers/net/ethernet/broadcom/bnxt/bnxt_devlink.c b/drivers/net/ethernet/broadcom/bnxt/bnxt_devlink.c
-index 4c4581b0342e..43fb75806cd6 100644
---- a/drivers/net/ethernet/broadcom/bnxt/bnxt_devlink.c
-+++ b/drivers/net/ethernet/broadcom/bnxt/bnxt_devlink.c
-@@ -220,7 +220,7 @@ __bnxt_dl_reporter_create(struct bnxt *bp,
- {
- 	struct devlink_health_reporter *reporter;
- 
--	reporter = devlink_health_reporter_create(bp->dl, ops, 0, bp);
-+	reporter = devlink_health_reporter_create(bp->dl, ops, bp);
- 	if (IS_ERR(reporter)) {
- 		netdev_warn(bp->dev, "Failed to create %s health reporter, rc = %ld\n",
- 			    ops->name, PTR_ERR(reporter));
-diff --git a/drivers/net/ethernet/huawei/hinic/hinic_devlink.c b/drivers/net/ethernet/huawei/hinic/hinic_devlink.c
-index 03e42512a2d5..300bc267a259 100644
---- a/drivers/net/ethernet/huawei/hinic/hinic_devlink.c
-+++ b/drivers/net/ethernet/huawei/hinic/hinic_devlink.c
-@@ -443,8 +443,9 @@ int hinic_health_reporters_create(struct hinic_devlink_priv *priv)
- 	struct devlink *devlink = priv_to_devlink(priv);
- 
- 	priv->hw_fault_reporter =
--		devlink_health_reporter_create(devlink, &hinic_hw_fault_reporter_ops,
--					       0, priv);
-+		devlink_health_reporter_create(devlink,
-+					       &hinic_hw_fault_reporter_ops,
-+					       priv);
- 	if (IS_ERR(priv->hw_fault_reporter)) {
- 		dev_warn(&priv->hwdev->hwif->pdev->dev, "Failed to create hw fault reporter, err: %ld\n",
- 			 PTR_ERR(priv->hw_fault_reporter));
-@@ -452,8 +453,9 @@ int hinic_health_reporters_create(struct hinic_devlink_priv *priv)
- 	}
- 
- 	priv->fw_fault_reporter =
--		devlink_health_reporter_create(devlink, &hinic_fw_fault_reporter_ops,
--					       0, priv);
-+		devlink_health_reporter_create(devlink,
-+					       &hinic_fw_fault_reporter_ops,
-+					       priv);
- 	if (IS_ERR(priv->fw_fault_reporter)) {
- 		dev_warn(&priv->hwdev->hwif->pdev->dev, "Failed to create fw fault reporter, err: %ld\n",
- 			 PTR_ERR(priv->fw_fault_reporter));
-diff --git a/drivers/net/ethernet/intel/ice/devlink/health.c b/drivers/net/ethernet/intel/ice/devlink/health.c
-index 19c3d37aa768..3177496e7828 100644
---- a/drivers/net/ethernet/intel/ice/devlink/health.c
-+++ b/drivers/net/ethernet/intel/ice/devlink/health.c
-@@ -448,9 +448,8 @@ ice_init_devlink_rep(struct ice_pf *pf,
- {
- 	struct devlink *devlink = priv_to_devlink(pf);
- 	struct devlink_health_reporter *rep;
--	const u64 graceful_period = 0;
- 
--	rep = devl_health_reporter_create(devlink, ops, graceful_period, pf);
-+	rep = devl_health_reporter_create(devlink, ops, pf);
- 	if (IS_ERR(rep)) {
- 		struct device *dev = ice_pf_to_dev(pf);
- 
-diff --git a/drivers/net/ethernet/marvell/octeontx2/af/rvu_devlink.c b/drivers/net/ethernet/marvell/octeontx2/af/rvu_devlink.c
-index 27c3a2daaaa9..3735372539bd 100644
---- a/drivers/net/ethernet/marvell/octeontx2/af/rvu_devlink.c
-+++ b/drivers/net/ethernet/marvell/octeontx2/af/rvu_devlink.c
-@@ -505,7 +505,9 @@ static int rvu_nix_register_reporters(struct rvu_devlink *rvu_dl)
- 
- 	rvu_reporters->nix_event_ctx = nix_event_context;
- 	rvu_reporters->rvu_hw_nix_intr_reporter =
--		devlink_health_reporter_create(rvu_dl->dl, &rvu_hw_nix_intr_reporter_ops, 0, rvu);
-+		devlink_health_reporter_create(rvu_dl->dl,
-+					       &rvu_hw_nix_intr_reporter_ops,
-+					       rvu);
- 	if (IS_ERR(rvu_reporters->rvu_hw_nix_intr_reporter)) {
- 		dev_warn(rvu->dev, "Failed to create hw_nix_intr reporter, err=%ld\n",
- 			 PTR_ERR(rvu_reporters->rvu_hw_nix_intr_reporter));
-@@ -513,7 +515,9 @@ static int rvu_nix_register_reporters(struct rvu_devlink *rvu_dl)
- 	}
- 
- 	rvu_reporters->rvu_hw_nix_gen_reporter =
--		devlink_health_reporter_create(rvu_dl->dl, &rvu_hw_nix_gen_reporter_ops, 0, rvu);
-+		devlink_health_reporter_create(rvu_dl->dl,
-+					       &rvu_hw_nix_gen_reporter_ops,
-+					       rvu);
- 	if (IS_ERR(rvu_reporters->rvu_hw_nix_gen_reporter)) {
- 		dev_warn(rvu->dev, "Failed to create hw_nix_gen reporter, err=%ld\n",
- 			 PTR_ERR(rvu_reporters->rvu_hw_nix_gen_reporter));
-@@ -521,7 +525,9 @@ static int rvu_nix_register_reporters(struct rvu_devlink *rvu_dl)
- 	}
- 
- 	rvu_reporters->rvu_hw_nix_err_reporter =
--		devlink_health_reporter_create(rvu_dl->dl, &rvu_hw_nix_err_reporter_ops, 0, rvu);
-+		devlink_health_reporter_create(rvu_dl->dl,
-+					       &rvu_hw_nix_err_reporter_ops,
-+					       rvu);
- 	if (IS_ERR(rvu_reporters->rvu_hw_nix_err_reporter)) {
- 		dev_warn(rvu->dev, "Failed to create hw_nix_err reporter, err=%ld\n",
- 			 PTR_ERR(rvu_reporters->rvu_hw_nix_err_reporter));
-@@ -529,7 +535,9 @@ static int rvu_nix_register_reporters(struct rvu_devlink *rvu_dl)
- 	}
- 
- 	rvu_reporters->rvu_hw_nix_ras_reporter =
--		devlink_health_reporter_create(rvu_dl->dl, &rvu_hw_nix_ras_reporter_ops, 0, rvu);
-+		devlink_health_reporter_create(rvu_dl->dl,
-+					       &rvu_hw_nix_ras_reporter_ops,
-+					       rvu);
- 	if (IS_ERR(rvu_reporters->rvu_hw_nix_ras_reporter)) {
- 		dev_warn(rvu->dev, "Failed to create hw_nix_ras reporter, err=%ld\n",
- 			 PTR_ERR(rvu_reporters->rvu_hw_nix_ras_reporter));
-@@ -1051,7 +1059,9 @@ static int rvu_npa_register_reporters(struct rvu_devlink *rvu_dl)
- 
- 	rvu_reporters->npa_event_ctx = npa_event_context;
- 	rvu_reporters->rvu_hw_npa_intr_reporter =
--		devlink_health_reporter_create(rvu_dl->dl, &rvu_hw_npa_intr_reporter_ops, 0, rvu);
-+		devlink_health_reporter_create(rvu_dl->dl,
-+					       &rvu_hw_npa_intr_reporter_ops,
-+					       rvu);
- 	if (IS_ERR(rvu_reporters->rvu_hw_npa_intr_reporter)) {
- 		dev_warn(rvu->dev, "Failed to create hw_npa_intr reporter, err=%ld\n",
- 			 PTR_ERR(rvu_reporters->rvu_hw_npa_intr_reporter));
-@@ -1059,7 +1069,9 @@ static int rvu_npa_register_reporters(struct rvu_devlink *rvu_dl)
- 	}
- 
- 	rvu_reporters->rvu_hw_npa_gen_reporter =
--		devlink_health_reporter_create(rvu_dl->dl, &rvu_hw_npa_gen_reporter_ops, 0, rvu);
-+		devlink_health_reporter_create(rvu_dl->dl,
-+					       &rvu_hw_npa_gen_reporter_ops,
-+					       rvu);
- 	if (IS_ERR(rvu_reporters->rvu_hw_npa_gen_reporter)) {
- 		dev_warn(rvu->dev, "Failed to create hw_npa_gen reporter, err=%ld\n",
- 			 PTR_ERR(rvu_reporters->rvu_hw_npa_gen_reporter));
-@@ -1067,7 +1079,9 @@ static int rvu_npa_register_reporters(struct rvu_devlink *rvu_dl)
- 	}
- 
- 	rvu_reporters->rvu_hw_npa_err_reporter =
--		devlink_health_reporter_create(rvu_dl->dl, &rvu_hw_npa_err_reporter_ops, 0, rvu);
-+		devlink_health_reporter_create(rvu_dl->dl,
-+					       &rvu_hw_npa_err_reporter_ops,
-+					       rvu);
- 	if (IS_ERR(rvu_reporters->rvu_hw_npa_err_reporter)) {
- 		dev_warn(rvu->dev, "Failed to create hw_npa_err reporter, err=%ld\n",
- 			 PTR_ERR(rvu_reporters->rvu_hw_npa_err_reporter));
-@@ -1075,7 +1089,9 @@ static int rvu_npa_register_reporters(struct rvu_devlink *rvu_dl)
- 	}
- 
- 	rvu_reporters->rvu_hw_npa_ras_reporter =
--		devlink_health_reporter_create(rvu_dl->dl, &rvu_hw_npa_ras_reporter_ops, 0, rvu);
-+		devlink_health_reporter_create(rvu_dl->dl,
-+					       &rvu_hw_npa_ras_reporter_ops,
-+					       rvu);
- 	if (IS_ERR(rvu_reporters->rvu_hw_npa_ras_reporter)) {
- 		dev_warn(rvu->dev, "Failed to create hw_npa_ras reporter, err=%ld\n",
- 			 PTR_ERR(rvu_reporters->rvu_hw_npa_ras_reporter));
-diff --git a/drivers/net/ethernet/mellanox/mlx5/core/diag/reporter_vnic.c b/drivers/net/ethernet/mellanox/mlx5/core/diag/reporter_vnic.c
-index 86253a89c24c..878f9b46bf18 100644
---- a/drivers/net/ethernet/mellanox/mlx5/core/diag/reporter_vnic.c
-+++ b/drivers/net/ethernet/mellanox/mlx5/core/diag/reporter_vnic.c
-@@ -133,7 +133,7 @@ void mlx5_reporter_vnic_create(struct mlx5_core_dev *dev)
- 	health->vnic_reporter =
- 		devlink_health_reporter_create(devlink,
- 					       &mlx5_reporter_vnic_ops,
--					       0, dev);
-+					       dev);
- 	if (IS_ERR(health->vnic_reporter))
- 		mlx5_core_warn(dev,
- 			       "Failed to create vnic reporter, err = %ld\n",
-diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en/reporter_rx.c b/drivers/net/ethernet/mellanox/mlx5/core/en/reporter_rx.c
-index e75759533ae0..e106f0696486 100644
---- a/drivers/net/ethernet/mellanox/mlx5/core/en/reporter_rx.c
-+++ b/drivers/net/ethernet/mellanox/mlx5/core/en/reporter_rx.c
-@@ -644,22 +644,24 @@ void mlx5e_reporter_icosq_resume_recovery(struct mlx5e_channel *c)
- 	mutex_unlock(&c->icosq_recovery_lock);
- }
- 
-+#define MLX5E_REPORTER_RX_GRACEFUL_PERIOD 500
+diff --git a/Documentation/netlink/specs/devlink.yaml b/Documentation/netlink/specs/devlink.yaml
+index 1c4bb0cbe5f0..c6cc0ce18685 100644
+--- a/Documentation/netlink/specs/devlink.yaml
++++ b/Documentation/netlink/specs/devlink.yaml
+@@ -848,6 +848,10 @@ attribute-sets:
+       -
+         name: region-direct
+         type: flag
++      -
++        name: health-reporter-graceful-period-delay
++        type: u64
 +
- static const struct devlink_health_reporter_ops mlx5_rx_reporter_ops = {
- 	.name = "rx",
- 	.recover = mlx5e_rx_reporter_recover,
- 	.diagnose = mlx5e_rx_reporter_diagnose,
- 	.dump = mlx5e_rx_reporter_dump,
-+	.default_graceful_period = MLX5E_REPORTER_RX_GRACEFUL_PERIOD,
- };
+       -
+         name: rate-tc-bws
+         type: nest
+@@ -1228,6 +1232,8 @@ attribute-sets:
+         name: health-reporter-dump-ts-ns
+       -
+         name: health-reporter-auto-dump
++      -
++        name: health-reporter-graceful-period-delay
  
--#define MLX5E_REPORTER_RX_GRACEFUL_PERIOD 500
--
- void mlx5e_reporter_rx_create(struct mlx5e_priv *priv)
- {
-+	struct devlink_port *port = priv->netdev->devlink_port;
- 	struct devlink_health_reporter *reporter;
+   -
+     name: dl-attr-stats
+@@ -1965,6 +1971,7 @@ operations:
+             - health-reporter-graceful-period
+             - health-reporter-auto-recover
+             - health-reporter-auto-dump
++            - health-reporter-graceful-period-delay
  
--	reporter = devlink_port_health_reporter_create(priv->netdev->devlink_port,
-+	reporter = devlink_port_health_reporter_create(port,
- 						       &mlx5_rx_reporter_ops,
--						       MLX5E_REPORTER_RX_GRACEFUL_PERIOD, priv);
-+						       priv);
- 	if (IS_ERR(reporter)) {
- 		netdev_warn(priv->netdev, "Failed to create rx reporter, err = %ld\n",
- 			    PTR_ERR(reporter));
-diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en/reporter_tx.c b/drivers/net/ethernet/mellanox/mlx5/core/en/reporter_tx.c
-index bd96988e102c..6fb0d143ad1b 100644
---- a/drivers/net/ethernet/mellanox/mlx5/core/en/reporter_tx.c
-+++ b/drivers/net/ethernet/mellanox/mlx5/core/en/reporter_tx.c
-@@ -514,22 +514,24 @@ void mlx5e_reporter_tx_ptpsq_unhealthy(struct mlx5e_ptpsq *ptpsq)
- 	mlx5e_health_report(priv, priv->tx_reporter, err_str, &err_ctx);
- }
+     -
+       name: health-reporter-recover
+diff --git a/Documentation/networking/devlink/devlink-health.rst b/Documentation/networking/devlink/devlink-health.rst
+index e0b8cfed610a..07602f678282 100644
+--- a/Documentation/networking/devlink/devlink-health.rst
++++ b/Documentation/networking/devlink/devlink-health.rst
+@@ -50,7 +50,7 @@ Once an error is reported, devlink health will perform the following actions:
+   * Auto recovery attempt is being done. Depends on:
  
-+#define MLX5_REPORTER_TX_GRACEFUL_PERIOD 500
+     - Auto-recovery configuration
+-    - Grace period vs. time passed since last recover
++    - Grace period (and grace period delay)  vs. time passed since last recover
+ 
+ Devlink formatted message
+ =========================
+diff --git a/include/uapi/linux/devlink.h b/include/uapi/linux/devlink.h
+index e72bcc239afd..42a11b7e4a70 100644
+--- a/include/uapi/linux/devlink.h
++++ b/include/uapi/linux/devlink.h
+@@ -634,6 +634,8 @@ enum devlink_attr {
+ 
+ 	DEVLINK_ATTR_REGION_DIRECT,		/* flag */
+ 
++	DEVLINK_ATTR_HEALTH_REPORTER_GRACEFUL_PERIOD_DELAY,	/* u64 */
 +
- static const struct devlink_health_reporter_ops mlx5_tx_reporter_ops = {
- 		.name = "tx",
- 		.recover = mlx5e_tx_reporter_recover,
- 		.diagnose = mlx5e_tx_reporter_diagnose,
- 		.dump = mlx5e_tx_reporter_dump,
-+		.default_graceful_period = MLX5_REPORTER_TX_GRACEFUL_PERIOD,
- };
- 
--#define MLX5_REPORTER_TX_GRACEFUL_PERIOD 500
--
- void mlx5e_reporter_tx_create(struct mlx5e_priv *priv)
- {
-+	struct devlink_port *port = priv->netdev->devlink_port;
- 	struct devlink_health_reporter *reporter;
- 
--	reporter = devlink_port_health_reporter_create(priv->netdev->devlink_port,
-+	reporter = devlink_port_health_reporter_create(port,
- 						       &mlx5_tx_reporter_ops,
--						       MLX5_REPORTER_TX_GRACEFUL_PERIOD, priv);
-+						       priv);
- 	if (IS_ERR(reporter)) {
- 		netdev_warn(priv->netdev,
- 			    "Failed to create tx reporter, err = %ld\n",
-diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en_rep.c b/drivers/net/ethernet/mellanox/mlx5/core/en_rep.c
-index 63a7a788fb0d..b231e7855bca 100644
---- a/drivers/net/ethernet/mellanox/mlx5/core/en_rep.c
-+++ b/drivers/net/ethernet/mellanox/mlx5/core/en_rep.c
-@@ -1447,7 +1447,7 @@ static void mlx5e_rep_vnic_reporter_create(struct mlx5e_priv *priv,
- 
- 	reporter = devl_port_health_reporter_create(dl_port,
- 						    &mlx5_rep_vnic_reporter_ops,
--						    0, rpriv);
-+						    rpriv);
- 	if (IS_ERR(reporter)) {
- 		mlx5_core_err(priv->mdev,
- 			      "Failed to create representor vnic reporter, err = %ld\n",
-diff --git a/drivers/net/ethernet/mellanox/mlx5/core/health.c b/drivers/net/ethernet/mellanox/mlx5/core/health.c
-index cf7a1edd0530..6959fea03443 100644
---- a/drivers/net/ethernet/mellanox/mlx5/core/health.c
-+++ b/drivers/net/ethernet/mellanox/mlx5/core/health.c
-@@ -669,54 +669,61 @@ static void mlx5_fw_fatal_reporter_err_work(struct work_struct *work)
- 	}
- }
- 
-+#define MLX5_FW_REPORTER_ECPF_GRACEFUL_PERIOD 180000
-+#define MLX5_FW_REPORTER_PF_GRACEFUL_PERIOD 60000
-+#define MLX5_FW_REPORTER_VF_GRACEFUL_PERIOD 30000
-+#define MLX5_FW_REPORTER_DEFAULT_GRACEFUL_PERIOD \
-+	MLX5_FW_REPORTER_VF_GRACEFUL_PERIOD
-+
-+static const
-+struct devlink_health_reporter_ops mlx5_fw_fatal_reporter_ecpf_ops = {
-+		.name = "fw_fatal",
-+		.recover = mlx5_fw_fatal_reporter_recover,
-+		.dump = mlx5_fw_fatal_reporter_dump,
-+		.default_graceful_period =
-+			MLX5_FW_REPORTER_ECPF_GRACEFUL_PERIOD,
-+};
-+
- static const struct devlink_health_reporter_ops mlx5_fw_fatal_reporter_pf_ops = {
- 		.name = "fw_fatal",
- 		.recover = mlx5_fw_fatal_reporter_recover,
- 		.dump = mlx5_fw_fatal_reporter_dump,
-+		.default_graceful_period = MLX5_FW_REPORTER_PF_GRACEFUL_PERIOD,
- };
- 
- static const struct devlink_health_reporter_ops mlx5_fw_fatal_reporter_ops = {
- 		.name = "fw_fatal",
- 		.recover = mlx5_fw_fatal_reporter_recover,
-+		.default_graceful_period =
-+			MLX5_FW_REPORTER_DEFAULT_GRACEFUL_PERIOD,
- };
- 
--#define MLX5_FW_REPORTER_ECPF_GRACEFUL_PERIOD 180000
--#define MLX5_FW_REPORTER_PF_GRACEFUL_PERIOD 60000
--#define MLX5_FW_REPORTER_VF_GRACEFUL_PERIOD 30000
--#define MLX5_FW_REPORTER_DEFAULT_GRACEFUL_PERIOD MLX5_FW_REPORTER_VF_GRACEFUL_PERIOD
--
- void mlx5_fw_reporters_create(struct mlx5_core_dev *dev)
- {
- 	const struct devlink_health_reporter_ops *fw_fatal_ops;
- 	struct mlx5_core_health *health = &dev->priv.health;
- 	const struct devlink_health_reporter_ops *fw_ops;
- 	struct devlink *devlink = priv_to_devlink(dev);
--	u64 grace_period;
- 
--	fw_fatal_ops = &mlx5_fw_fatal_reporter_pf_ops;
- 	fw_ops = &mlx5_fw_reporter_pf_ops;
- 	if (mlx5_core_is_ecpf(dev)) {
--		grace_period = MLX5_FW_REPORTER_ECPF_GRACEFUL_PERIOD;
-+		fw_fatal_ops = &mlx5_fw_fatal_reporter_ecpf_ops;
- 	} else if (mlx5_core_is_pf(dev)) {
--		grace_period = MLX5_FW_REPORTER_PF_GRACEFUL_PERIOD;
-+		fw_fatal_ops = &mlx5_fw_fatal_reporter_pf_ops;
- 	} else {
- 		/* VF or SF */
--		grace_period = MLX5_FW_REPORTER_DEFAULT_GRACEFUL_PERIOD;
- 		fw_fatal_ops = &mlx5_fw_fatal_reporter_ops;
- 		fw_ops = &mlx5_fw_reporter_ops;
- 	}
- 
--	health->fw_reporter =
--		devl_health_reporter_create(devlink, fw_ops, 0, dev);
-+	health->fw_reporter = devl_health_reporter_create(devlink, fw_ops, dev);
- 	if (IS_ERR(health->fw_reporter))
- 		mlx5_core_warn(dev, "Failed to create fw reporter, err = %ld\n",
- 			       PTR_ERR(health->fw_reporter));
- 
--	health->fw_fatal_reporter =
--		devl_health_reporter_create(devlink,
--					    fw_fatal_ops,
--					    grace_period,
--					    dev);
-+	health->fw_fatal_reporter = devl_health_reporter_create(devlink,
-+								fw_fatal_ops,
-+								dev);
- 	if (IS_ERR(health->fw_fatal_reporter))
- 		mlx5_core_warn(dev, "Failed to create fw fatal reporter, err = %ld\n",
- 			       PTR_ERR(health->fw_fatal_reporter));
-diff --git a/drivers/net/ethernet/mellanox/mlxsw/core.c b/drivers/net/ethernet/mellanox/mlxsw/core.c
-index 2bb2b77351bd..980f3223f124 100644
---- a/drivers/net/ethernet/mellanox/mlxsw/core.c
-+++ b/drivers/net/ethernet/mellanox/mlxsw/core.c
-@@ -2043,7 +2043,7 @@ static int mlxsw_core_health_init(struct mlxsw_core *mlxsw_core)
- 		return 0;
- 
- 	fw_fatal = devl_health_reporter_create(devlink, &mlxsw_core_health_fw_fatal_ops,
--					       0, mlxsw_core);
-+					       mlxsw_core);
- 	if (IS_ERR(fw_fatal)) {
- 		dev_err(mlxsw_core->bus_info->dev, "Failed to create fw fatal reporter");
- 		return PTR_ERR(fw_fatal);
-diff --git a/drivers/net/ethernet/qlogic/qed/qed_devlink.c b/drivers/net/ethernet/qlogic/qed/qed_devlink.c
-index 1adc7fbb3f2f..d000ed734c7c 100644
---- a/drivers/net/ethernet/qlogic/qed/qed_devlink.c
-+++ b/drivers/net/ethernet/qlogic/qed/qed_devlink.c
-@@ -87,20 +87,22 @@ qed_fw_fatal_reporter_recover(struct devlink_health_reporter *reporter,
- 	return 0;
- }
- 
-+#define QED_REPORTER_FW_GRACEFUL_PERIOD 0
-+
- static const struct devlink_health_reporter_ops qed_fw_fatal_reporter_ops = {
- 		.name = "fw_fatal",
- 		.recover = qed_fw_fatal_reporter_recover,
- 		.dump = qed_fw_fatal_reporter_dump,
-+		.default_graceful_period = QED_REPORTER_FW_GRACEFUL_PERIOD,
- };
- 
--#define QED_REPORTER_FW_GRACEFUL_PERIOD 0
--
- void qed_fw_reporters_create(struct devlink *devlink)
- {
- 	struct qed_devlink *dl = devlink_priv(devlink);
- 
--	dl->fw_reporter = devlink_health_reporter_create(devlink, &qed_fw_fatal_reporter_ops,
--							 QED_REPORTER_FW_GRACEFUL_PERIOD, dl);
-+	dl->fw_reporter =
-+		devlink_health_reporter_create(devlink,
-+					       &qed_fw_fatal_reporter_ops, dl);
- 	if (IS_ERR(dl->fw_reporter)) {
- 		DP_NOTICE(dl->cdev, "Failed to create fw reporter, err = %ld\n",
- 			  PTR_ERR(dl->fw_reporter));
-diff --git a/drivers/net/netdevsim/health.c b/drivers/net/netdevsim/health.c
-index 688f05316b5e..3bd0e7a489c3 100644
---- a/drivers/net/netdevsim/health.c
-+++ b/drivers/net/netdevsim/health.c
-@@ -183,14 +183,14 @@ int nsim_dev_health_init(struct nsim_dev *nsim_dev, struct devlink *devlink)
- 	health->empty_reporter =
- 		devl_health_reporter_create(devlink,
- 					    &nsim_dev_empty_reporter_ops,
--					    0, health);
-+					    health);
- 	if (IS_ERR(health->empty_reporter))
- 		return PTR_ERR(health->empty_reporter);
- 
- 	health->dummy_reporter =
- 		devl_health_reporter_create(devlink,
- 					    &nsim_dev_dummy_reporter_ops,
--					    0, health);
-+					    health);
- 	if (IS_ERR(health->dummy_reporter)) {
- 		err = PTR_ERR(health->dummy_reporter);
- 		goto err_empty_reporter_destroy;
-diff --git a/include/net/devlink.h b/include/net/devlink.h
-index 93640a29427c..a65aa24e8df4 100644
---- a/include/net/devlink.h
-+++ b/include/net/devlink.h
-@@ -742,6 +742,8 @@ enum devlink_health_reporter_state {
-  *        if priv_ctx is NULL, run a full dump
-  * @diagnose: callback to diagnose the current status
-  * @test: callback to trigger a test event
-+ * @default_graceful_period: default min time (in msec)
-+			     between recovery attempts
-  */
- 
- struct devlink_health_reporter_ops {
-@@ -756,6 +758,7 @@ struct devlink_health_reporter_ops {
- 			struct netlink_ext_ack *extack);
- 	int (*test)(struct devlink_health_reporter *reporter,
- 		    struct netlink_ext_ack *extack);
-+	u64 default_graceful_period;
- };
- 
- /**
-@@ -1924,22 +1927,22 @@ void devlink_fmsg_binary_pair_put(struct devlink_fmsg *fmsg, const char *name,
- struct devlink_health_reporter *
- devl_port_health_reporter_create(struct devlink_port *port,
- 				 const struct devlink_health_reporter_ops *ops,
--				 u64 graceful_period, void *priv);
-+				 void *priv);
- 
- struct devlink_health_reporter *
- devlink_port_health_reporter_create(struct devlink_port *port,
- 				    const struct devlink_health_reporter_ops *ops,
--				    u64 graceful_period, void *priv);
-+				    void *priv);
- 
- struct devlink_health_reporter *
- devl_health_reporter_create(struct devlink *devlink,
- 			    const struct devlink_health_reporter_ops *ops,
--			    u64 graceful_period, void *priv);
-+			    void *priv);
- 
- struct devlink_health_reporter *
- devlink_health_reporter_create(struct devlink *devlink,
- 			       const struct devlink_health_reporter_ops *ops,
--			       u64 graceful_period, void *priv);
-+			       void *priv);
- 
- void
- devl_health_reporter_destroy(struct devlink_health_reporter *reporter);
+ 	DEVLINK_ATTR_RATE_TC_BWS,		/* nested */
+ 	DEVLINK_ATTR_RATE_TC_INDEX,		/* u8 */
+ 	DEVLINK_ATTR_RATE_TC_BW,		/* u32 */
 diff --git a/net/devlink/health.c b/net/devlink/health.c
-index b3ce8ecbb7fb..ba144b7426fa 100644
+index a0269975f592..5699779fce77 100644
 --- a/net/devlink/health.c
 +++ b/net/devlink/health.c
-@@ -108,11 +108,11 @@ devlink_port_health_reporter_find_by_name(struct devlink_port *devlink_port,
- static struct devlink_health_reporter *
- __devlink_health_reporter_create(struct devlink *devlink,
- 				 const struct devlink_health_reporter_ops *ops,
--				 u64 graceful_period, void *priv)
-+				 void *priv)
+@@ -113,7 +113,9 @@ __devlink_health_reporter_create(struct devlink *devlink,
  {
  	struct devlink_health_reporter *reporter;
  
--	if (WARN_ON(graceful_period && !ops->recover))
-+	if (WARN_ON(ops->default_graceful_period && !ops->recover))
+-	if (WARN_ON(ops->default_graceful_period && !ops->recover))
++	if (WARN_ON(ops->default_graceful_period_delay &&
++		    !ops->default_graceful_period) ||
++	    WARN_ON(ops->default_graceful_period && !ops->recover))
  		return ERR_PTR(-EINVAL);
  
  	reporter = kzalloc(sizeof(*reporter), GFP_KERNEL);
-@@ -122,7 +122,7 @@ __devlink_health_reporter_create(struct devlink *devlink,
- 	reporter->priv = priv;
- 	reporter->ops = ops;
- 	reporter->devlink = devlink;
--	reporter->graceful_period = graceful_period;
-+	reporter->graceful_period = ops->default_graceful_period;
- 	reporter->auto_recover = !!ops->recover;
- 	reporter->auto_dump = !!ops->dump;
- 	return reporter;
-@@ -134,13 +134,12 @@ __devlink_health_reporter_create(struct devlink *devlink,
-  *
-  * @port: devlink_port to which health reports will relate
-  * @ops: devlink health reporter ops
-- * @graceful_period: min time (in msec) between recovery attempts
-  * @priv: driver priv pointer
-  */
- struct devlink_health_reporter *
- devl_port_health_reporter_create(struct devlink_port *port,
- 				 const struct devlink_health_reporter_ops *ops,
--				 u64 graceful_period, void *priv)
-+				 void *priv)
- {
- 	struct devlink_health_reporter *reporter;
+@@ -293,6 +295,11 @@ devlink_nl_health_reporter_fill(struct sk_buff *msg,
+ 	    devlink_nl_put_u64(msg, DEVLINK_ATTR_HEALTH_REPORTER_GRACEFUL_PERIOD,
+ 			       reporter->graceful_period))
+ 		goto reporter_nest_cancel;
++	if (reporter->ops->recover &&
++	    devlink_nl_put_u64(msg,
++			       DEVLINK_ATTR_HEALTH_REPORTER_GRACEFUL_PERIOD_DELAY,
++			       reporter->graceful_period_delay))
++		goto reporter_nest_cancel;
+ 	if (reporter->ops->recover &&
+ 	    nla_put_u8(msg, DEVLINK_ATTR_HEALTH_REPORTER_AUTO_RECOVER,
+ 		       reporter->auto_recover))
+@@ -458,16 +465,33 @@ int devlink_nl_health_reporter_set_doit(struct sk_buff *skb,
  
-@@ -150,8 +149,7 @@ devl_port_health_reporter_create(struct devlink_port *port,
- 						   ops->name))
- 		return ERR_PTR(-EEXIST);
+ 	if (!reporter->ops->recover &&
+ 	    (info->attrs[DEVLINK_ATTR_HEALTH_REPORTER_GRACEFUL_PERIOD] ||
+-	     info->attrs[DEVLINK_ATTR_HEALTH_REPORTER_AUTO_RECOVER]))
++	     info->attrs[DEVLINK_ATTR_HEALTH_REPORTER_AUTO_RECOVER] ||
++	     info->attrs[DEVLINK_ATTR_HEALTH_REPORTER_GRACEFUL_PERIOD_DELAY]))
+ 		return -EOPNOTSUPP;
  
--	reporter = __devlink_health_reporter_create(port->devlink, ops,
--						    graceful_period, priv);
-+	reporter = __devlink_health_reporter_create(port->devlink, ops, priv);
- 	if (IS_ERR(reporter))
- 		return reporter;
+ 	if (!reporter->ops->dump &&
+ 	    info->attrs[DEVLINK_ATTR_HEALTH_REPORTER_AUTO_DUMP])
+ 		return -EOPNOTSUPP;
  
-@@ -164,14 +162,13 @@ EXPORT_SYMBOL_GPL(devl_port_health_reporter_create);
- struct devlink_health_reporter *
- devlink_port_health_reporter_create(struct devlink_port *port,
- 				    const struct devlink_health_reporter_ops *ops,
--				    u64 graceful_period, void *priv)
-+				    void *priv)
- {
- 	struct devlink_health_reporter *reporter;
- 	struct devlink *devlink = port->devlink;
+-	if (info->attrs[DEVLINK_ATTR_HEALTH_REPORTER_GRACEFUL_PERIOD])
++	if (info->attrs[DEVLINK_ATTR_HEALTH_REPORTER_GRACEFUL_PERIOD]) {
+ 		reporter->graceful_period =
+ 			nla_get_u64(info->attrs[DEVLINK_ATTR_HEALTH_REPORTER_GRACEFUL_PERIOD]);
++		if (!reporter->graceful_period)
++			reporter->graceful_period_delay = 0;
++	}
++
++	if (info->attrs[DEVLINK_ATTR_HEALTH_REPORTER_GRACEFUL_PERIOD_DELAY]) {
++		u64 configured_delay =
++			nla_get_u64(info->attrs[DEVLINK_ATTR_HEALTH_REPORTER_GRACEFUL_PERIOD_DELAY]);
++
++		if (!reporter->graceful_period && configured_delay) {
++			NL_SET_ERR_MSG_MOD(info->extack,
++					   "Cannot set grace period delay without a grace period.");
++			return -EINVAL;
++		}
++
++		reporter->graceful_period_delay = configured_delay;
++	}
  
- 	devl_lock(devlink);
--	reporter = devl_port_health_reporter_create(port, ops,
--						    graceful_period, priv);
-+	reporter = devl_port_health_reporter_create(port, ops, priv);
- 	devl_unlock(devlink);
- 	return reporter;
- }
-@@ -182,13 +179,12 @@ EXPORT_SYMBOL_GPL(devlink_port_health_reporter_create);
-  *
-  * @devlink: devlink instance which the health reports will relate
-  * @ops: devlink health reporter ops
-- * @graceful_period: min time (in msec) between recovery attempts
-  * @priv: driver priv pointer
-  */
- struct devlink_health_reporter *
- devl_health_reporter_create(struct devlink *devlink,
- 			    const struct devlink_health_reporter_ops *ops,
--			    u64 graceful_period, void *priv)
-+			    void *priv)
- {
- 	struct devlink_health_reporter *reporter;
+ 	if (info->attrs[DEVLINK_ATTR_HEALTH_REPORTER_AUTO_RECOVER])
+ 		reporter->auto_recover =
+diff --git a/net/devlink/netlink_gen.c b/net/devlink/netlink_gen.c
+index c50436433c18..b0f38253d163 100644
+--- a/net/devlink/netlink_gen.c
++++ b/net/devlink/netlink_gen.c
+@@ -389,7 +389,7 @@ static const struct nla_policy devlink_health_reporter_get_dump_nl_policy[DEVLIN
+ };
  
-@@ -197,8 +193,7 @@ devl_health_reporter_create(struct devlink *devlink,
- 	if (devlink_health_reporter_find_by_name(devlink, ops->name))
- 		return ERR_PTR(-EEXIST);
+ /* DEVLINK_CMD_HEALTH_REPORTER_SET - do */
+-static const struct nla_policy devlink_health_reporter_set_nl_policy[DEVLINK_ATTR_HEALTH_REPORTER_AUTO_DUMP + 1] = {
++static const struct nla_policy devlink_health_reporter_set_nl_policy[DEVLINK_ATTR_HEALTH_REPORTER_GRACEFUL_PERIOD_DELAY + 1] = {
+ 	[DEVLINK_ATTR_BUS_NAME] = { .type = NLA_NUL_STRING, },
+ 	[DEVLINK_ATTR_DEV_NAME] = { .type = NLA_NUL_STRING, },
+ 	[DEVLINK_ATTR_PORT_INDEX] = { .type = NLA_U32, },
+@@ -397,6 +397,7 @@ static const struct nla_policy devlink_health_reporter_set_nl_policy[DEVLINK_ATT
+ 	[DEVLINK_ATTR_HEALTH_REPORTER_GRACEFUL_PERIOD] = { .type = NLA_U64, },
+ 	[DEVLINK_ATTR_HEALTH_REPORTER_AUTO_RECOVER] = { .type = NLA_U8, },
+ 	[DEVLINK_ATTR_HEALTH_REPORTER_AUTO_DUMP] = { .type = NLA_U8, },
++	[DEVLINK_ATTR_HEALTH_REPORTER_GRACEFUL_PERIOD_DELAY] = { .type = NLA_U64, },
+ };
  
--	reporter = __devlink_health_reporter_create(devlink, ops,
--						    graceful_period, priv);
-+	reporter = __devlink_health_reporter_create(devlink, ops, priv);
- 	if (IS_ERR(reporter))
- 		return reporter;
- 
-@@ -210,13 +205,12 @@ EXPORT_SYMBOL_GPL(devl_health_reporter_create);
- struct devlink_health_reporter *
- devlink_health_reporter_create(struct devlink *devlink,
- 			       const struct devlink_health_reporter_ops *ops,
--			       u64 graceful_period, void *priv)
-+			       void *priv)
- {
- 	struct devlink_health_reporter *reporter;
- 
- 	devl_lock(devlink);
--	reporter = devl_health_reporter_create(devlink, ops,
--					       graceful_period, priv);
-+	reporter = devl_health_reporter_create(devlink, ops, priv);
- 	devl_unlock(devlink);
- 	return reporter;
- }
+ /* DEVLINK_CMD_HEALTH_REPORTER_RECOVER - do */
+@@ -1032,7 +1033,7 @@ const struct genl_split_ops devlink_nl_ops[74] = {
+ 		.doit		= devlink_nl_health_reporter_set_doit,
+ 		.post_doit	= devlink_nl_post_doit,
+ 		.policy		= devlink_health_reporter_set_nl_policy,
+-		.maxattr	= DEVLINK_ATTR_HEALTH_REPORTER_AUTO_DUMP,
++		.maxattr	= DEVLINK_ATTR_HEALTH_REPORTER_GRACEFUL_PERIOD_DELAY,
+ 		.flags		= GENL_ADMIN_PERM | GENL_CMD_CAP_DO,
+ 	},
+ 	{
 -- 
 2.31.1
 
