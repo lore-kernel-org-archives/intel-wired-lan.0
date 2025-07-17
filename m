@@ -4,120 +4,108 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0C413C83F1A
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 17 Jul 2025 07:01:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2D759C83F1B
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 17 Jul 2025 08:46:32 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id D6498608A2;
-	Thu, 17 Jul 2025 07:01:25 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id C44116066A;
+	Thu, 17 Jul 2025 08:46:32 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id AoZ-rgnJGuLD; Thu, 17 Jul 2025 07:01:25 +0000 (UTC)
+ id uCfNpHV2EmZs; Thu, 17 Jul 2025 08:46:31 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 5D2E9615C5
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 5052560897
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1752735685;
-	bh=3bhrYXWJvKjSvf77mbHNuVoet9w9SexuVEXBSFz8Pbs=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=el0XvbBoYCBghZ7SAvs4itEZg/wzjQpcJ+TL2+nUnh9GWJTnGGDigsJHjIHmNL/TW
-	 Xf5rkMa/Y3hYyZZrLGVtz7OhGW7xxDqhExt9e5kJ4ODEoY6PMCpLATerRVeJ4nqTYP
-	 OQH7wHuWp1n1LgSHVNw0XsMqxhPBVuX/SGB9HI0VJQOVwwd1iL7t+z+Z5osYEdwaV5
-	 zqvvbXt6KAJy2hhGY/Vhd8ePM8dX8Hhj0YUarvP9yccV9pF6oOd1re9j1S2QGsNM1v
-	 pdMHE9qSey/u1k6zNQbfekR8PPXxmVqfYHmIAi/Sp3CeaVlcVZireKIC+WPCC7aHFb
-	 IlmAopJUwz0dw==
+	s=default; t=1752741991;
+	bh=P+kL74j0ExtZ4wXNLIEglOejI1+Gx7vp0SMgGWBrNx0=;
+	h=From:To:CC:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=tKvQVYI+7HAAwLO5GDe7nwLpvUGS6r+VfyHF7Lr/+mtpIsBJTdZwRj3nKsvJx690K
+	 KIaDsHyHdmM+gIedk8LZlxun9rbjz245LHx5QlGjJY1JbXWuUl6H7BKveKp9/3zRMq
+	 kpOHBXf0mULpiWAl3vR5tdp5U5gXSooN44oG+HEnr1S7SgVj03f7KMOcD0/ez3a/0w
+	 teV0G3Escu24mqcxmQ5uzyI0Rormnl9xiInraR4i/vwyUKvs5br9tOGvutxf6m6EA9
+	 a/FiklFTjDzUKWWtD9TjOO29L4peTHoqgJYNYysOFJcAiHf9vfWoGtHONaDNSE/DWS
+	 yM81Js//7mxWg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 5D2E9615C5;
-	Thu, 17 Jul 2025 07:01:25 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id 0D551117
- for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Jul 2025 07:01:23 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 5052560897;
+	Thu, 17 Jul 2025 08:46:31 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 095D8A59
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Jul 2025 08:46:30 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 3347841186
- for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Jul 2025 07:01:16 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id EDBA583FB5
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Jul 2025 08:46:29 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id v7cHWMDODOJK for <intel-wired-lan@lists.osuosl.org>;
- Thu, 17 Jul 2025 07:01:14 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=166.125.252.92;
- helo=invmail4.hynix.com; envelope-from=byungchul@sk.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org E419A41183
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E419A41183
-Received: from invmail4.hynix.com (exvmail4.skhynix.com [166.125.252.92])
- by smtp4.osuosl.org (Postfix) with ESMTP id E419A41183
- for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Jul 2025 07:01:13 +0000 (UTC)
-X-AuditID: a67dfc5b-669ff7000002311f-84-68789fb4f16e
-From: Byungchul Park <byungchul@sk.com>
-To: willy@infradead.org,
-	netdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, kernel_team@skhynix.com,
- almasrymina@google.com, ilias.apalodimas@linaro.org, harry.yoo@oracle.com,
- akpm@linux-foundation.org, andrew+netdev@lunn.ch, asml.silence@gmail.com,
- toke@redhat.com, david@redhat.com, Liam.Howlett@oracle.com, vbabka@suse.cz,
- rppt@kernel.org, surenb@google.com, mhocko@suse.com,
- linux-rdma@vger.kernel.org, bpf@vger.kernel.org, vishal.moola@gmail.com,
- hannes@cmpxchg.org, ziy@nvidia.com, jackmanb@google.com, wei.fang@nxp.com,
- shenwei.wang@nxp.com, xiaoning.wang@nxp.com, davem@davemloft.net,
- edumazet@google.com, kuba@kernel.org, pabeni@redhat.com,
- anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
- sgoutham@marvell.com, gakula@marvell.com, sbhatta@marvell.com,
- hkelam@marvell.com, bbhushan2@marvell.com, tariqt@nvidia.com,
- ast@kernel.org, daniel@iogearbox.net, hawk@kernel.org,
- john.fastabend@gmail.com, sdf@fomichev.me, saeedm@nvidia.com,
- leon@kernel.org, mbloch@nvidia.com, danishanwar@ti.com, rogerq@kernel.org,
- nbd@nbd.name, lorenzo@kernel.org, ryder.lee@mediatek.com,
- shayne.chen@mediatek.com, sean.wang@mediatek.com, matthias.bgg@gmail.com,
- angelogioacchino.delregno@collabora.com, aleksander.lobakin@intel.com,
- horms@kernel.org, m-malladi@ti.com, krzysztof.kozlowski@linaro.org,
- matthias.schiffer@ew.tq-group.com, robh@kernel.org, imx@lists.linux.dev,
- intel-wired-lan@lists.osuosl.org, linux-arm-kernel@lists.infradead.org,
- linux-wireless@vger.kernel.org, linux-mediatek@lists.infradead.org
-Date: Thu, 17 Jul 2025 16:00:51 +0900
-Message-Id: <20250717070052.6358-12-byungchul@sk.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20250717070052.6358-1-byungchul@sk.com>
-References: <20250717070052.6358-1-byungchul@sk.com>
-X-Brightmail-Tracker: H4sIAAAAAAAAAzWSa0yTZxTHfd7nvbXS5E3HtncY42wgZE6ZTpznw+Y1MY8fNCZmHzYztRmv
- tlu5pEiBJcbCaghEilOcoCWClmvNyopAwRa3gkh0m1CQVe6WYNDV6QQaapGuYPz2yzn/8/+f
- kxweK4eYOF6bdkLSp6l1KlZOy5/FVG24cSVHs7G6/UOw2K+z0DdTxYBtPgdqJ5wMeOtFuNk7
- T4GloQXBbGiYA0fhCIaZrjssXKsKYgg1FtNguW+iYc7+CsNUt5+DHs9rGmyOfTBe85gGV0Er
- hs65BPCX9LBQbApjKB87zUJkKMyAO/QvB/nOOgrc/zRz0NtiZqD0VTWGVuNENGtykIH+dgsL
- /T/2IRi7HmHgsScaGKgb4cBsu4TAc6uehXzTZgg0z3Lw4kIXhnHzDlgsM0B35XsQvBdAMFz9
- gIKIy8nBX2O/MNBlb6Vg4FEIQ/BMBQtFz0oQPChvp+CPikYGrPcGqOgeB2EwskDBeW8lC5Om
- cQTeTj8Nl/PMCOwdPgb+c0VPDs9b2B27SGfgOSbOUSsiN+ofUmT67CJFfB13KdJ2aZQjlY4s
- 0lS3jlxzPaFIkc+LiaOhkCWOl+c4MjLoYklPWZgmTdZTZLqpHB1Y/bX88xRJpzVI+k+2HZVr
- XC/ycUanLCccrGWMqJwvQjJeFJJFa1kH9ZbNpkfLzAqJos8XwkscK2wSZ/x36CIk57HwZ4zo
- bipbFr0jfCc29+Uvi2ghQfRMz9FLrBC2iLWm2/iN6RrR1vjbMsui9XDpOXaJldGwgatGbslU
- FGwy8cyvNubNwAfi73U++ixSVKIVDUipTTOkqrW65CRNbpo2J+nb9FQHin5czcmFQ070sveg
- Bwk8UsUojjZma5SM2pCZm+pBIo9VsYrzXoNGqUhR5/4g6dOP6LN0UqYHreJp1fuKT4PZKUrh
- uPqE9L0kZUj6t12Kl8UZUbbxyGeRlssrf76Y2LJ667QieQDHf6SKjT0mH71QsHbhKb/t5E8K
- 4fSa7V9k7MZu88baxP62u8m6QOnCloqkeHfwcMHtxBKSvjXuqzznziE6YWrznvX3h/cP9yTM
- 2qf+pg7xTuuew6f08ZN5ewsXd2Zd/OZ58ZdXJkr8rcaaj7vfbXuoojM16k3rsD5T/T/bKOPB
- bQMAAA==
-X-Brightmail-Tracker: H4sIAAAAAAAAAzWSbUxTZxTHfe5z39rZ5Kay7YrGlzpDJNHNOfQkmuliDDcajdE4DV+kKXdr
- FYpptYJmoWKNsdGqgBEQYhEQCgaaIlK06NKCsDmclEKqImBVBOnwpUAsdXSFxW+/c84/53c+
- HBbLm6h4VqM9LOq0ynQFLSWlO9afXHnzapb6u1GzBErqb9DQFSqjoPZjFlQNOinw2ni48+gj
- ASU1txCMh58y4DjThyHU2k5DedkkhrD9HAklf5tImKifwvDqfoCBDve/JNQ6tsPA9SESXKeb
- MHgmlkPgfAcN50wRDEX9p2iIPolQ0BIeYyDXWU2Ap/SPWDnayMCjWxYKCqYqMTQZB2PCF70U
- dN8uoaH7ZBeC/htRCobcMWuwuo8BS20xAvc9Gw25pjUQbBxn4N2lVgwDlk0wXWiA+9avYPJB
- EMHTyh4Coi4nAw/76yhorW8iwPc8jGHybCkN5n/OI+gpuk3AX6V2Cioe+IjYHbuhN/qJgHyv
- lYYXpgEEXk+AhCsnLAjq7/opeO8ykZs2C57gWyw4n1Ug4abtMSEMX5gmBP/dPwmhufgZI1gd
- R4SG6kSh3DVCCGa/FwuOmjO04PiQxwh9vS5a6CiMkEJDRY4w3FCEdi5KkW5IE9M1BlH37Y+p
- UrXrXS4+5JFkRSarKCMqYs1IwvLcD7zF9JyYYZpL4P3+MJ7hOG41Hwq0k2YkZTHXOZdvaSic
- Dc3jDvCNXbmzIZJbzruHJ8gZlnFJfJWpDf+/dDFfa/99liWxfqQgj55heUzmu2ZkLiCpFc2p
- QXEarSFDqUlPWqU/qM7WarJWqTIzHCj2Ttd/+3TRica7k92IY5FirizVflQtp5QGfXaGG/Es
- VsTJ8r0GtVyWpsw+Juoy9+uOpIt6N1rAkoqvZVv3iqly7lflYfGgKB4SdZ+nBCuJN6J8xZBh
- DRP/0uePBh9/4GWdysSFK6a3vem/skV7IJx5qs6x6+22E+VlrCqnRmpP22X/OWUk2TbR/vD1
- 2YQvNlbtsS7tWXZnqKDNt4Rq/kaOrKcrRzxr51/Wdy6iVKGxL5dNGduKn/DrugLHVZ5ffvI2
- f++1hfx1oyuLxX2aa409LQpSr1auTsQ6vfI/eYGsbkoDAAA=
-X-CFilter-Loop: Reflected
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dmarc=none (p=none dis=none)
- header.from=sk.com
-Subject: [Intel-wired-lan] [PATCH net-next v11 11/12] net: ti: icssg-prueth:
- access ->pp through netmem_desc instead of page
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id ZmM-M5bApxwG for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 17 Jul 2025 08:46:28 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=99.78.197.218;
+ helo=smtp-fw-80007.amazon.com;
+ envelope-from=prvs=28653d3b2=ytohnuki@amazon.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org BB49083F12
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org BB49083F12
+Received: from smtp-fw-80007.amazon.com (smtp-fw-80007.amazon.com
+ [99.78.197.218])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id BB49083F12
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Jul 2025 08:46:28 +0000 (UTC)
+X-IronPort-AV: E=Sophos;i="6.16,318,1744070400"; d="scan'208";a="424163580"
+Received: from pdx4-co-svc-p1-lb2-vlan2.amazon.com (HELO
+ smtpout.prod.us-west-2.prod.farcaster.email.amazon.dev) ([10.25.36.210])
+ by smtp-border-fw-80007.pdx80.corp.amazon.com with
+ ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Jul 2025 08:46:24 +0000
+Received: from EX19MTAUWB002.ant.amazon.com [10.0.38.20:55971]
+ by smtpin.naws.us-west-2.prod.farcaster.email.amazon.dev [10.0.36.115:2525]
+ with esmtp (Farcaster)
+ id f061f135-2222-43bd-98f0-87d97b004775; Thu, 17 Jul 2025 08:46:23 +0000 (UTC)
+X-Farcaster-Flow-ID: f061f135-2222-43bd-98f0-87d97b004775
+Received: from EX19D001UWA001.ant.amazon.com (10.13.138.214) by
+ EX19MTAUWB002.ant.amazon.com (10.250.64.231) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA) id 15.2.1544.14;
+ Thu, 17 Jul 2025 08:46:22 +0000
+Received: from c889f3b07a0a.amazon.com (10.106.83.17) by
+ EX19D001UWA001.ant.amazon.com (10.13.138.214) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA) id 15.2.1544.14;
+ Thu, 17 Jul 2025 08:46:20 +0000
+From: Yuto Ohnuki <ytohnuki@amazon.com>
+To: Tony Nguyen <anthony.l.nguyen@intel.com>, Przemek Kitszel
+ <przemyslaw.kitszel@intel.com>
+CC: Andrew Lunn <andrew+netdev@lunn.ch>, "David S . Miller"
+ <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, Jakub Kicinski
+ <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+ <intel-wired-lan@lists.osuosl.org>, <netdev@vger.kernel.org>,
+ <linux-kernel@vger.kernel.org>, Yuto Ohnuki <ytohnuki@amazon.com>
+Date: Thu, 17 Jul 2025 09:46:09 +0100
+Message-ID: <20250717084609.28436-1-ytohnuki@amazon.com>
+X-Mailer: git-send-email 2.50.0
+MIME-Version: 1.0
+X-Originating-IP: [10.106.83.17]
+X-ClientProxiedBy: EX19D036UWB004.ant.amazon.com (10.13.139.170) To
+ EX19D001UWA001.ant.amazon.com (10.13.138.214)
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=amazon.com; i=@amazon.com; q=dns/txt; s=amazoncorp2;
+ t=1752741988; x=1784277988;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=P+kL74j0ExtZ4wXNLIEglOejI1+Gx7vp0SMgGWBrNx0=;
+ b=R63hDWmNEnxfPBV+KYwWvgJuBqAwLw1rU1UCMJkhkXCSXttf/HQAG4dT
+ jXuMsO73wbfPvGCPbPp8ol6x5tOATJDGM6MyHRICgOpZ2RuLC7ny0JA9w
+ sYvDqIypavDzl9tYNbO6j13gDH6KGF7v0pBrXI4Jw97NqMW4uxA4Cl67o
+ RJ1doTjSddjnRAtDuekJ0AwRvfoK6GYDVUSTDouV9OGIVQiXAV7yHPesc
+ JdmYryO/MDdqVBYX25D5ZpDeYkNewaaVb2gKCn9W+I0rra9ddI4xMzSbJ
+ peiUGnWFuAGFjJZSbKMHzrHwj3JzcDEKDD4eoFy2lwnI0VNJ7e/8s/U9l
+ g==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dmarc=pass (p=quarantine dis=none)
+ header.from=amazon.com
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=amazon.com header.i=@amazon.com header.a=rsa-sha256
+ header.s=amazoncorp2 header.b=R63hDWmN
+Subject: [Intel-wired-lan] [PATCH iwl-next v1] ixgbevf: remove unused fields
+ from struct ixgbevf_adapter
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -133,38 +121,50 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-To eliminate the use of struct page in page pool, the page pool users
-should use netmem descriptor and APIs instead.
+Remove hw_rx_no_dma_resources and eitr_param fields from struct
+ixgbevf_adapter since these fields are never referenced in the driver.
 
-Make icssg-prueth access ->pp through netmem_desc instead of page.
+Note that the interrupt throttle rate is controlled by the
+rx_itr_setting and tx_itr_setting variables.
 
-Signed-off-by: Byungchul Park <byungchul@sk.com>
+This change simplifies the ixgbevf driver by removing unused fields,
+which improves maintainability.
+
+Signed-off-by: Yuto Ohnuki <ytohnuki@amazon.com>
 ---
- drivers/net/ethernet/ti/icssg/icssg_prueth_sr1.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf.h | 3 ---
+ 1 file changed, 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/ti/icssg/icssg_prueth_sr1.c b/drivers/net/ethernet/ti/icssg/icssg_prueth_sr1.c
-index ff5f41bf499e..5e225310c9de 100644
---- a/drivers/net/ethernet/ti/icssg/icssg_prueth_sr1.c
-+++ b/drivers/net/ethernet/ti/icssg/icssg_prueth_sr1.c
-@@ -367,7 +367,7 @@ static irqreturn_t prueth_rx_mgm_ts_thread_sr1(int irq, void *dev_id)
- 		return IRQ_NONE;
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
+index 4384e892f967..3a379e6a3a2a 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
++++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
+@@ -346,7 +346,6 @@ struct ixgbevf_adapter {
+ 	int num_rx_queues;
+ 	struct ixgbevf_ring *rx_ring[MAX_TX_QUEUES]; /* One per active queue */
+ 	u64 hw_csum_rx_error;
+-	u64 hw_rx_no_dma_resources;
+ 	int num_msix_vectors;
+ 	u64 alloc_rx_page_failed;
+ 	u64 alloc_rx_buff_failed;
+@@ -363,8 +362,6 @@ struct ixgbevf_adapter {
+ 	/* structs defined in ixgbe_vf.h */
+ 	struct ixgbe_hw hw;
+ 	u16 msg_enable;
+-	/* Interrupt Throttle Rate */
+-	u32 eitr_param;
  
- 	prueth_tx_ts_sr1(emac, (void *)page_address(page));
--	page_pool_recycle_direct(page->pp, page);
-+	page_pool_recycle_direct(pp_page_to_nmdesc(page)->pp, page);
+ 	struct ixgbevf_hw_stats stats;
  
- 	return IRQ_HANDLED;
- }
-@@ -392,7 +392,7 @@ static irqreturn_t prueth_rx_mgm_rsp_thread(int irq, void *dev_id)
- 		complete(&emac->cmd_complete);
- 	}
- 
--	page_pool_recycle_direct(page->pp, page);
-+	page_pool_recycle_direct(pp_page_to_nmdesc(page)->pp, page);
- 
- 	return IRQ_HANDLED;
- }
 -- 
-2.17.1
+2.47.1
+
+
+
+
+Amazon Web Services EMEA SARL, 38 avenue John F. Kennedy, L-1855 Luxembourg, R.C.S. Luxembourg B186284
+
+Amazon Web Services EMEA SARL, Irish Branch, One Burlington Plaza, Burlington Road, Dublin 4, Ireland, branch registration number 908705
+
+
 
