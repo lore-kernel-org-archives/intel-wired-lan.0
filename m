@@ -1,73 +1,73 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 75C35C83F38
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 18 Jul 2025 00:14:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BBC9EC83F34
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 18 Jul 2025 00:14:27 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 29193411DB;
-	Fri, 18 Jul 2025 00:14:25 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 7B8B180B73;
+	Fri, 18 Jul 2025 00:14:27 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id lXuHETbOySqm; Fri, 18 Jul 2025 00:14:24 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id CDX5Y9pF05Q3; Fri, 18 Jul 2025 00:14:25 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 475ED411E6
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org ED5F183BA0
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1752797664;
-	bh=3w55Fgdr5rtcJoMwg3UUME/MRKeetonFryqZZ/yTiDI=;
+	s=default; t=1752797665;
+	bh=NLqjYXhNHk76/meiRspqLv8BMCi/WXb7U58B3xIIy0E=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=GqbbGeBFiv44KuvtNLlA0IHvEfoUQoHjts1l2t9H77ul7hTxgvkl0w6kcaQg1dO6I
-	 M+YJponIF6JQPQgeYJ1x44QG54xi8Q4HRDKn87VOvClQai8XDs+aBbrfcKNSY65jyV
-	 t5wDNlTZ8fri6+CJ+nSjIyFuFPHdQ/0g89G457MGjrt54yvByJKpCFhBnfyzIfS8GV
-	 eR8O2SVYJD8C7FHfvxmDDA/PkeGsL6z8eUj770L4xa+chp+sqjODhOk4dxDPJqlL5d
-	 0LkQzK1S/J2Wdd4XySbOzbqHcJWtCeCuQCwkZEjAJeVSp9U6COpPlAsJHV1dN7RX5A
-	 MuNUGyV3tzmVQ==
+	b=yLjEyDOTZ8x6kVj/XrwVb/BX5SgizhYsbUgjoG4IH1bL9BmB7+S4RVEx6S66/hXHw
+	 2OVdnZOWVly29qBOOgaGYSTGTWwRn+uhWxR1fmzc7WG4ogFRwHiXXHEyhvyqr89mBG
+	 oELLWAotsMsXJ3tNskkrydYtAWQxYZ9FBnRCLmhlqJDpFPkqpTaPmJIKAzkwF+A5Om
+	 VVR+GqudWpbdDE/4reEbhFeFTKvvulJvWiq8fAye++CAmCbXeuX98rymJYLaWIpZdf
+	 MshZ+UKCfdYXyh0cOkdeAX18rfmM71CccOdujefv0nTAxzaHxekU78DF5JQTVoCJ62
+	 5vUHIrJgPL7yQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 475ED411E6;
+	by smtp1.osuosl.org (Postfix) with ESMTP id ED5F183BA0;
 	Fri, 18 Jul 2025 00:14:24 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id 4BD7DE1E
- for <intel-wired-lan@lists.osuosl.org>; Fri, 18 Jul 2025 00:14:22 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 1A0011A6
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 18 Jul 2025 00:14:23 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id C0A17411E7
- for <intel-wired-lan@lists.osuosl.org>; Fri, 18 Jul 2025 00:14:21 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 0BFEE4091E
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 18 Jul 2025 00:14:23 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id RyqRNovnLzxL for <intel-wired-lan@lists.osuosl.org>;
- Fri, 18 Jul 2025 00:14:21 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id RPAWhBd-tbfI for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 18 Jul 2025 00:14:22 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.11;
  helo=mgamail.intel.com; envelope-from=joshua.a.hay@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org D0953411DB
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D0953411DB
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 28054408D1
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 28054408D1
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.11])
- by smtp4.osuosl.org (Postfix) with ESMTPS id D0953411DB
- for <intel-wired-lan@lists.osuosl.org>; Fri, 18 Jul 2025 00:14:20 +0000 (UTC)
-X-CSE-ConnectionGUID: EN4ZwU8SRP6H0qh2/kn5FQ==
-X-CSE-MsgGUID: sihhFG4+S4iMrgmEJD4g6A==
-X-IronPort-AV: E=McAfee;i="6800,10657,11495"; a="65345425"
-X-IronPort-AV: E=Sophos;i="6.16,320,1744095600"; d="scan'208";a="65345425"
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 28054408D1
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 18 Jul 2025 00:14:22 +0000 (UTC)
+X-CSE-ConnectionGUID: 6VrkJOq2QE+7eEDyI+15UA==
+X-CSE-MsgGUID: HYF5IchwRd64/rLNrc38/Q==
+X-IronPort-AV: E=McAfee;i="6800,10657,11495"; a="65345432"
+X-IronPort-AV: E=Sophos;i="6.16,320,1744095600"; d="scan'208";a="65345432"
 Received: from fmviesa001.fm.intel.com ([10.60.135.141])
  by orvoesa103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 17 Jul 2025 17:14:20 -0700
-X-CSE-ConnectionGUID: T8Qu8UPPRd+/dPWROADV+g==
-X-CSE-MsgGUID: 84cIHkgpSien7FOgENggVA==
+ 17 Jul 2025 17:14:22 -0700
+X-CSE-ConnectionGUID: fibbVGaeTz6a3NZJf+bb7A==
+X-CSE-MsgGUID: T7suhAqpSoO68c9WoQkTlw==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.16,320,1744095600"; d="scan'208";a="188908847"
+X-IronPort-AV: E=Sophos;i="6.16,320,1744095600"; d="scan'208";a="188908854"
 Received: from dcskidmo-m40.jf.intel.com ([10.166.241.13])
- by fmviesa001.fm.intel.com with ESMTP; 17 Jul 2025 17:14:19 -0700
+ by fmviesa001.fm.intel.com with ESMTP; 17 Jul 2025 17:14:21 -0700
 From: Joshua Hay <joshua.a.hay@intel.com>
 To: intel-wired-lan@lists.osuosl.org
 Cc: netdev@vger.kernel.org, Joshua Hay <joshua.a.hay@intel.com>,
  Madhu Chittim <madhu.chittim@intel.com>
-Date: Thu, 17 Jul 2025 17:21:45 -0700
-Message-Id: <20250718002150.2724409-2-joshua.a.hay@intel.com>
+Date: Thu, 17 Jul 2025 17:21:47 -0700
+Message-Id: <20250718002150.2724409-4-joshua.a.hay@intel.com>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20250718002150.2724409-1-joshua.a.hay@intel.com>
 References: <20250718002150.2724409-1-joshua.a.hay@intel.com>
@@ -75,25 +75,26 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1752797661; x=1784333661;
+ t=1752797663; x=1784333663;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=aH41EtBiVizQC/uRX/EAtOtuBEMNgqCBhBAXICZBRrw=;
- b=QU1fi15+5arTOyTSrW2lzrnmNSWR9hJ5M5yfhMn1lGUYmt7OKNXZQEvk
- OQNejQnwybI7HsrbQnFXb/Ga8ZAh/4vCIzUUK2jIwrILqOjYSytt3pMYI
- XDcJh35lFqwBKvWOr1ChHaq0FhjGMzEDfChXPzq0GK3UAgnA8nV2G6RAn
- 2RtCR1bNbgqooKtOP7SKMsF0sMXAf3gNcGzabwEfwX7MCM1+Anrn76Lat
- buc1A/2Axnk5PIA3jOud4O1jNxIxMoFF0q+6fUcNuf04iJ76+IMFhF5yk
- qcsnnUw74E0PjgFABeq5y4iDMPQ4ThyVNTLwd87t8JfXZHQWXLYpHaGHu
- g==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ bh=/bDwmFFINpIWRR5SK/PG7nXu1gtBUvYiwYzW8LY6Lw4=;
+ b=BZS6i2BVeuCPFSn1E9v2HmTlUxfyOn9BlVjcbqz7aS8EYb47SNhM0wvY
+ vF+DBa8OGTWBeuO/sW7TwIjxZVLqefherhKMizy8PBWcZAtRgONl0mKC1
+ 1dMR7vuSADhD3Yr8S4xsC9O51MrEZly9I23xMA6qk2LWduUG6v64xZQba
+ hVX+0CbX1a9OrwhIJ+vatnlY+ew4RoBnHHj06UfBswVT05V5rYOg1zM7J
+ HBlkuaWRu4zxziyZbO6vd6o2DEh8jEqJxpT00tihP1/t4L8mHh8IPqu0w
+ J7GxPNVnQiJRsss/W/UfJ6ROdf0poIh2kkWmu//+vXhsjHxIg50A47IoB
+ Q==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=QU1fi15+
-Subject: [Intel-wired-lan] [PATCH net v2 1/6] idpf: add support for Tx
- refillqs in flow scheduling mode
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=BZS6i2BV
+Subject: [Intel-wired-lan] [PATCH net v2 3/6] idpf: simplify and fix splitq
+ Tx packet rollback error path
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -109,282 +110,259 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-In certain production environments, it is possible for completion tags
-to collide, meaning N packets with the same completion tag are in flight
-at the same time. In this environment, any given Tx queue is effectively
-used to send both slower traffic and higher throughput traffic
-simultaneously. This is the result of a customer's specific
-configuration in the device pipeline, the details of which Intel cannot
-provide. This configuration results in a small number of out-of-order
-completions, i.e., a small number of packets in flight. The existing
-guardrails in the driver only protect against a large number of packets
-in flight. The slower flow completions are delayed which causes the
-out-of-order completions. The fast flow will continue sending traffic
-and generating tags. Because tags are generated on the fly, the fast
-flow eventually uses the same tag for a packet that is still in flight
-from the slower flow. The driver has no idea which packet it should
-clean when it processes the completion with that tag, but it will look
-for the packet on the buffer ring before the hash table.  If the slower
-flow packet completion is processed first, it will end up cleaning the
-fast flow packet on the ring prematurely. This leaves the descriptor
-ring in a bad state resulting in a crashes or Tx timeout.
+Move (and rename) the existing rollback logic to singleq.c since that
+will be the only consumer. Create a simplified splitq specific rollback
+function to loop through and unmap tx_bufs based on the completion tag.
+This is critical before replacing the Tx buffer ring with the buffer
+pool since the previous rollback indexing will not work to unmap the
+chained buffers from the pool.
 
-In summary, generating a tag when a packet is sent can lead to the same
-tag being associated with multiple packets. This can lead to resource
-leaks, crashes, and/or Tx timeouts.
+Cache the next_to_use index before any portion of the packet is put on
+the descriptor ring. In case of an error, the rollback will bump tail to
+the correct next_to_use value. Because the splitq path now supports
+different types of context descriptors (and potentially multiple in the
+future), this will take care of rolling back any and all context
+descriptors encoded on the ring for the erroneous packet. The previous
+rollback logic was broken for PTP packets since it would not account for
+the PTP context descriptor.
 
-Before we can replace the tag generation, we need a new mechanism for
-the send path to know what tag to use next. The driver will allocate and
-initialize a refillq for each TxQ with all of the possible free tag
-values. During send, the driver grabs the next free tag from the refillq
-from next_to_clean. While cleaning the packet, the clean routine posts
-the tag back to the refillq's next_to_use to indicate that it is now
-free to use.
-
-This mechanism works exactly the same way as the existing Rx refill
-queues, which post the cleaned buffer IDs back to the buffer queue to be
-reposted to HW. Since we're using the refillqs for both Rx and Tx now,
-genercize some of the existing refillq support.
-
-Note: the refillqs will not be used yet. This is only demonstrating how
-they will be used to pass free tags back to the send path.
-
+Fixes: 1a49cf814fe1 ("idpf: add Tx timestamp flows")
 Signed-off-by: Joshua Hay <joshua.a.hay@intel.com>
 Reviewed-by: Madhu Chittim <madhu.chittim@intel.com>
-
-v2:
-- reorder refillq init logic to reduce indentation
-- don't drop skb if get free bufid fails, increment busy counter
-- add missing unlikely
 ---
- drivers/net/ethernet/intel/idpf/idpf_txrx.c | 93 +++++++++++++++++++--
- drivers/net/ethernet/intel/idpf/idpf_txrx.h |  8 +-
- 2 files changed, 91 insertions(+), 10 deletions(-)
+ .../ethernet/intel/idpf/idpf_singleq_txrx.c   | 57 +++++++++++-
+ drivers/net/ethernet/intel/idpf/idpf_txrx.c   | 91 ++++++++-----------
+ drivers/net/ethernet/intel/idpf/idpf_txrx.h   |  5 +-
+ 3 files changed, 95 insertions(+), 58 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.c b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-index 5cf440e09d0a..d5908126163d 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-@@ -139,6 +139,9 @@ static void idpf_tx_desc_rel(struct idpf_tx_queue *txq)
- 	if (!txq->desc_ring)
- 		return;
- 
-+	if (txq->refillq)
-+		kfree(txq->refillq->ring);
-+
- 	dmam_free_coherent(txq->dev, txq->size, txq->desc_ring, txq->dma);
- 	txq->desc_ring = NULL;
- 	txq->next_to_use = 0;
-@@ -244,6 +247,7 @@ static int idpf_tx_desc_alloc(const struct idpf_vport *vport,
- 			      struct idpf_tx_queue *tx_q)
- {
- 	struct device *dev = tx_q->dev;
-+	struct idpf_sw_queue *refillq;
- 	int err;
- 
- 	err = idpf_tx_buf_alloc_all(tx_q);
-@@ -267,6 +271,29 @@ static int idpf_tx_desc_alloc(const struct idpf_vport *vport,
- 	tx_q->next_to_clean = 0;
- 	idpf_queue_set(GEN_CHK, tx_q);
- 
-+	if (!idpf_queue_has(FLOW_SCH_EN, tx_q))
-+		return 0;
-+
-+	refillq = tx_q->refillq;
-+	refillq->desc_count = tx_q->desc_count;
-+	refillq->ring = kcalloc(refillq->desc_count, sizeof(u32),
-+				GFP_KERNEL);
-+	if (!refillq->ring) {
-+		err = -ENOMEM;
-+		goto err_alloc;
-+	}
-+
-+	for (u32 i = 0; i < refillq->desc_count; i++)
-+		refillq->ring[i] =
-+			FIELD_PREP(IDPF_RFL_BI_BUFID_M, i) |
-+			FIELD_PREP(IDPF_RFL_BI_GEN_M,
-+				   idpf_queue_has(GEN_CHK, refillq));
-+
-+	/* Go ahead and flip the GEN bit since this counts as filling
-+	 * up the ring, i.e. we already ring wrapped.
-+	 */
-+	idpf_queue_change(GEN_CHK, refillq);
-+
- 	return 0;
- 
- err_alloc:
-@@ -603,18 +630,18 @@ static int idpf_rx_hdr_buf_alloc_all(struct idpf_buf_queue *bufq)
- }
- 
- /**
-- * idpf_rx_post_buf_refill - Post buffer id to refill queue
-+ * idpf_post_buf_refill - Post buffer id to refill queue
-  * @refillq: refill queue to post to
-  * @buf_id: buffer id to post
-  */
--static void idpf_rx_post_buf_refill(struct idpf_sw_queue *refillq, u16 buf_id)
-+static void idpf_post_buf_refill(struct idpf_sw_queue *refillq, u16 buf_id)
- {
- 	u32 nta = refillq->next_to_use;
- 
- 	/* store the buffer ID and the SW maintained GEN bit to the refillq */
- 	refillq->ring[nta] =
--		FIELD_PREP(IDPF_RX_BI_BUFID_M, buf_id) |
--		FIELD_PREP(IDPF_RX_BI_GEN_M,
-+		FIELD_PREP(IDPF_RFL_BI_BUFID_M, buf_id) |
-+		FIELD_PREP(IDPF_RFL_BI_GEN_M,
- 			   idpf_queue_has(GEN_CHK, refillq));
- 
- 	if (unlikely(++nta == refillq->desc_count)) {
-@@ -995,6 +1022,11 @@ static void idpf_txq_group_rel(struct idpf_vport *vport)
- 		struct idpf_txq_group *txq_grp = &vport->txq_grps[i];
- 
- 		for (j = 0; j < txq_grp->num_txq; j++) {
-+			if (flow_sch_en) {
-+				kfree(txq_grp->txqs[j]->refillq);
-+				txq_grp->txqs[j]->refillq = NULL;
-+			}
-+
- 			kfree(txq_grp->txqs[j]);
- 			txq_grp->txqs[j] = NULL;
- 		}
-@@ -1414,6 +1446,13 @@ static int idpf_txq_group_alloc(struct idpf_vport *vport, u16 num_txq)
- 			}
- 
- 			idpf_queue_set(FLOW_SCH_EN, q);
-+
-+			q->refillq = kzalloc(sizeof(*q->refillq), GFP_KERNEL);
-+			if (!q->refillq)
-+				goto err_alloc;
-+
-+			idpf_queue_set(GEN_CHK, q->refillq);
-+			idpf_queue_set(RFL_GEN_CHK, q->refillq);
- 		}
- 
- 		if (!split)
-@@ -2005,6 +2044,8 @@ static void idpf_tx_handle_rs_completion(struct idpf_tx_queue *txq,
- 
- 	compl_tag = le16_to_cpu(desc->q_head_compl_tag.compl_tag);
- 
-+	idpf_post_buf_refill(txq->refillq, compl_tag);
-+
- 	/* If we didn't clean anything on the ring, this packet must be
- 	 * in the hash table. Go clean it there.
- 	 */
-@@ -2364,6 +2405,37 @@ static unsigned int idpf_tx_splitq_bump_ntu(struct idpf_tx_queue *txq, u16 ntu)
- 	return ntu;
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_singleq_txrx.c b/drivers/net/ethernet/intel/idpf/idpf_singleq_txrx.c
+index 993c354aa27a..a3b3261bbdfa 100644
+--- a/drivers/net/ethernet/intel/idpf/idpf_singleq_txrx.c
++++ b/drivers/net/ethernet/intel/idpf/idpf_singleq_txrx.c
+@@ -179,6 +179,58 @@ static int idpf_tx_singleq_csum(struct sk_buff *skb,
+ 	return 1;
  }
  
 +/**
-+ * idpf_tx_get_free_buf_id - get a free buffer ID from the refill queue
-+ * @refillq: refill queue to get buffer ID from
-+ * @buf_id: return buffer ID
-+ *
-+ * Return: true if a buffer ID was found, false if not
++ * idpf_tx_singleq_dma_map_error - handle TX DMA map errors
++ * @txq: queue to send buffer on
++ * @skb: send buffer
++ * @first: original first buffer info buffer for packet
++ * @idx: starting point on ring to unwind
 + */
-+static bool idpf_tx_get_free_buf_id(struct idpf_sw_queue *refillq,
-+				    u16 *buf_id)
++static void idpf_tx_singleq_dma_map_error(struct idpf_tx_queue *txq,
++					  struct sk_buff *skb,
++					  struct idpf_tx_buf *first, u16 idx)
 +{
-+	u16 ntc = refillq->next_to_clean;
-+	u32 refill_desc;
++	struct libeth_sq_napi_stats ss = { };
++	struct libeth_cq_pp cp = {
++		.dev	= txq->dev,
++		.ss	= &ss,
++	};
 +
-+	refill_desc = refillq->ring[ntc];
++	u64_stats_update_begin(&txq->stats_sync);
++	u64_stats_inc(&txq->q_stats.dma_map_errs);
++	u64_stats_update_end(&txq->stats_sync);
 +
-+	if (unlikely(idpf_queue_has(RFL_GEN_CHK, refillq) !=
-+		     !!(refill_desc & IDPF_RFL_BI_GEN_M)))
-+		return false;
++	/* clear dma mappings for failed tx_buf map */
++	for (;;) {
++		struct idpf_tx_buf *tx_buf;
 +
-+	*buf_id = FIELD_GET(IDPF_RFL_BI_BUFID_M, refill_desc);
-+
-+	if (unlikely(++ntc == refillq->desc_count)) {
-+		idpf_queue_change(RFL_GEN_CHK, refillq);
-+		ntc = 0;
++		tx_buf = &txq->tx_buf[idx];
++		libeth_tx_complete(tx_buf, &cp);
++		if (tx_buf == first)
++			break;
++		if (idx == 0)
++			idx = txq->desc_count;
++		idx--;
 +	}
 +
-+	refillq->next_to_clean = ntc;
++	if (skb_is_gso(skb)) {
++		union idpf_tx_flex_desc *tx_desc;
 +
-+	return true;
++		/* If we failed a DMA mapping for a TSO packet, we will have
++		 * used one additional descriptor for a context
++		 * descriptor. Reset that here.
++		 */
++		tx_desc = &txq->flex_tx[idx];
++		memset(tx_desc, 0, sizeof(*tx_desc));
++		if (idx == 0)
++			idx = txq->desc_count;
++		idx--;
++	}
++
++	/* Update tail in case netdev_xmit_more was previously true */
++	idpf_tx_buf_hw_update(txq, idx, false);
++}
++
+ /**
+  * idpf_tx_singleq_map - Build the Tx base descriptor
+  * @tx_q: queue to send buffer on
+@@ -219,8 +271,9 @@ static void idpf_tx_singleq_map(struct idpf_tx_queue *tx_q,
+ 	for (frag = &skb_shinfo(skb)->frags[0];; frag++) {
+ 		unsigned int max_data = IDPF_TX_MAX_DESC_DATA_ALIGNED;
+ 
+-		if (dma_mapping_error(tx_q->dev, dma))
+-			return idpf_tx_dma_map_error(tx_q, skb, first, i);
++		if (unlikely(dma_mapping_error(tx_q->dev, dma)))
++			return idpf_tx_singleq_dma_map_error(tx_q, skb,
++							     first, i);
+ 
+ 		/* record length, and DMA address */
+ 		dma_unmap_len_set(tx_buf, len, size);
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.c b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
+index 3359b3b52625..2362d8588e5b 100644
+--- a/drivers/net/ethernet/intel/idpf/idpf_txrx.c
++++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
+@@ -2339,57 +2339,6 @@ unsigned int idpf_tx_desc_count_required(struct idpf_tx_queue *txq,
+ 	return count;
+ }
+ 
+-/**
+- * idpf_tx_dma_map_error - handle TX DMA map errors
+- * @txq: queue to send buffer on
+- * @skb: send buffer
+- * @first: original first buffer info buffer for packet
+- * @idx: starting point on ring to unwind
+- */
+-void idpf_tx_dma_map_error(struct idpf_tx_queue *txq, struct sk_buff *skb,
+-			   struct idpf_tx_buf *first, u16 idx)
+-{
+-	struct libeth_sq_napi_stats ss = { };
+-	struct libeth_cq_pp cp = {
+-		.dev	= txq->dev,
+-		.ss	= &ss,
+-	};
+-
+-	u64_stats_update_begin(&txq->stats_sync);
+-	u64_stats_inc(&txq->q_stats.dma_map_errs);
+-	u64_stats_update_end(&txq->stats_sync);
+-
+-	/* clear dma mappings for failed tx_buf map */
+-	for (;;) {
+-		struct idpf_tx_buf *tx_buf;
+-
+-		tx_buf = &txq->tx_buf[idx];
+-		libeth_tx_complete(tx_buf, &cp);
+-		if (tx_buf == first)
+-			break;
+-		if (idx == 0)
+-			idx = txq->desc_count;
+-		idx--;
+-	}
+-
+-	if (skb_is_gso(skb)) {
+-		union idpf_tx_flex_desc *tx_desc;
+-
+-		/* If we failed a DMA mapping for a TSO packet, we will have
+-		 * used one additional descriptor for a context
+-		 * descriptor. Reset that here.
+-		 */
+-		tx_desc = &txq->flex_tx[idx];
+-		memset(tx_desc, 0, sizeof(*tx_desc));
+-		if (idx == 0)
+-			idx = txq->desc_count;
+-		idx--;
+-	}
+-
+-	/* Update tail in case netdev_xmit_more was previously true */
+-	idpf_tx_buf_hw_update(txq, idx, false);
+-}
+-
+ /**
+  * idpf_tx_splitq_bump_ntu - adjust NTU and generation
+  * @txq: the tx ring to wrap
+@@ -2438,6 +2387,37 @@ static bool idpf_tx_get_free_buf_id(struct idpf_sw_queue *refillq,
+ 	return true;
+ }
+ 
++/**
++ * idpf_tx_splitq_pkt_err_unmap - Unmap buffers and bump tail in case of error
++ * @txq: Tx queue to unwind
++ * @params: pointer to splitq params struct
++ * @first: starting buffer for packet to unmap
++ */
++static void idpf_tx_splitq_pkt_err_unmap(struct idpf_tx_queue *txq,
++					 struct idpf_tx_splitq_params *params,
++					 struct idpf_tx_buf *first)
++{
++	struct libeth_sq_napi_stats ss = { };
++	struct idpf_tx_buf *tx_buf = first;
++	struct libeth_cq_pp cp = {
++		.dev    = txq->dev,
++		.ss     = &ss,
++	};
++	u32 idx = 0;
++
++	u64_stats_update_begin(&txq->stats_sync);
++	u64_stats_inc(&txq->q_stats.dma_map_errs);
++	u64_stats_update_end(&txq->stats_sync);
++
++	do {
++		libeth_tx_complete(tx_buf, &cp);
++		idpf_tx_clean_buf_ring_bump_ntc(txq, idx, tx_buf);
++	} while (idpf_tx_buf_compl_tag(tx_buf) == params->compl_tag);
++
++	/* Update tail in case netdev_xmit_more was previously true. */
++	idpf_tx_buf_hw_update(txq, params->prev_ntu, false);
 +}
 +
  /**
   * idpf_tx_splitq_map - Build the Tx flex descriptor
   * @tx_q: queue to send buffer on
-@@ -2912,6 +2984,13 @@ static netdev_tx_t idpf_tx_splitq_frame(struct sk_buff *skb,
- 	}
+@@ -2482,8 +2462,9 @@ static void idpf_tx_splitq_map(struct idpf_tx_queue *tx_q,
+ 	for (frag = &skb_shinfo(skb)->frags[0];; frag++) {
+ 		unsigned int max_data = IDPF_TX_MAX_DESC_DATA_ALIGNED;
  
- 	if (idpf_queue_has(FLOW_SCH_EN, tx_q)) {
-+		if (unlikely(!idpf_tx_get_free_buf_id(tx_q->refillq,
-+						      &tx_params.compl_tag))) {
-+			u64_stats_update_begin(&tx_q->stats_sync);
-+			u64_stats_inc(&tx_q->q_stats.q_busy);
-+			u64_stats_update_end(&tx_q->stats_sync);
-+		}
-+
- 		tx_params.dtype = IDPF_TX_DESC_DTYPE_FLEX_FLOW_SCHE;
- 		tx_params.eop_cmd = IDPF_TXD_FLEX_FLOW_CMD_EOP;
- 		/* Set the RE bit to catch any packets that may have not been
-@@ -3464,7 +3543,7 @@ static int idpf_rx_splitq_clean(struct idpf_rx_queue *rxq, int budget)
- skip_data:
- 		rx_buf->page = NULL;
+-		if (dma_mapping_error(tx_q->dev, dma))
+-			return idpf_tx_dma_map_error(tx_q, skb, first, i);
++		if (unlikely(dma_mapping_error(tx_q->dev, dma)))
++			return idpf_tx_splitq_pkt_err_unmap(tx_q, params,
++							    first);
  
--		idpf_rx_post_buf_refill(refillq, buf_id);
-+		idpf_post_buf_refill(refillq, buf_id);
- 		IDPF_RX_BUMP_NTC(rxq, ntc);
- 
- 		/* skip if it is non EOP desc */
-@@ -3572,10 +3651,10 @@ static void idpf_rx_clean_refillq(struct idpf_buf_queue *bufq,
- 		bool failure;
- 
- 		if (idpf_queue_has(RFL_GEN_CHK, refillq) !=
--		    !!(refill_desc & IDPF_RX_BI_GEN_M))
-+		    !!(refill_desc & IDPF_RFL_BI_GEN_M))
- 			break;
- 
--		buf_id = FIELD_GET(IDPF_RX_BI_BUFID_M, refill_desc);
-+		buf_id = FIELD_GET(IDPF_RFL_BI_BUFID_M, refill_desc);
- 		failure = idpf_rx_update_bufq_desc(bufq, buf_id, buf_desc);
- 		if (failure)
- 			break;
+ 		first->nr_frags++;
+ 		idpf_tx_buf_compl_tag(tx_buf) = params->compl_tag;
+@@ -2939,7 +2920,9 @@ static bool idpf_tx_splitq_need_re(struct idpf_tx_queue *tx_q)
+ static netdev_tx_t idpf_tx_splitq_frame(struct sk_buff *skb,
+ 					struct idpf_tx_queue *tx_q)
+ {
+-	struct idpf_tx_splitq_params tx_params = { };
++	struct idpf_tx_splitq_params tx_params = {
++		.prev_ntu = tx_q->next_to_use,
++	};
+ 	union idpf_flex_tx_ctx_desc *ctx_desc;
+ 	struct idpf_tx_buf *first;
+ 	unsigned int count;
 diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.h b/drivers/net/ethernet/intel/idpf/idpf_txrx.h
-index 36a0f828a6f8..6924bee6ff5b 100644
+index 65acad4c929d..e07e21f6a67c 100644
 --- a/drivers/net/ethernet/intel/idpf/idpf_txrx.h
 +++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.h
-@@ -107,8 +107,8 @@ do {								\
+@@ -195,6 +195,7 @@ struct idpf_tx_offload_params {
+  * @compl_tag: Associated tag for completion
+  * @td_tag: Descriptor tunneling tag
+  * @offload: Offload parameters
++ * @prev_ntu: stored TxQ next_to_use in case of rollback
   */
- #define IDPF_TX_SPLITQ_RE_MIN_GAP	64
+ struct idpf_tx_splitq_params {
+ 	enum idpf_tx_desc_dtype_value dtype;
+@@ -205,6 +206,8 @@ struct idpf_tx_splitq_params {
+ 	};
  
--#define IDPF_RX_BI_GEN_M		BIT(16)
--#define IDPF_RX_BI_BUFID_M		GENMASK(15, 0)
-+#define IDPF_RFL_BI_GEN_M		BIT(16)
-+#define IDPF_RFL_BI_BUFID_M		GENMASK(15, 0)
- 
- #define IDPF_RXD_EOF_SPLITQ		VIRTCHNL2_RX_FLEX_DESC_ADV_STATUS0_EOF_M
- #define IDPF_RXD_EOF_SINGLEQ		VIRTCHNL2_RX_BASE_DESC_STATUS_EOF_M
-@@ -621,6 +621,7 @@ libeth_cacheline_set_assert(struct idpf_rx_queue, 64,
-  * @cleaned_pkts: Number of packets cleaned for the above said case
-  * @tx_max_bufs: Max buffers that can be transmitted with scatter-gather
-  * @stash: Tx buffer stash for Flow-based scheduling mode
-+ * @refillq: Pointer to refill queue
-  * @compl_tag_bufid_m: Completion tag buffer id mask
-  * @compl_tag_cur_gen: Used to keep track of current completion tag generation
-  * @compl_tag_gen_max: To determine when compl_tag_cur_gen should be reset
-@@ -670,6 +671,7 @@ struct idpf_tx_queue {
- 
- 	u16 tx_max_bufs;
- 	struct idpf_txq_stash *stash;
-+	struct idpf_sw_queue *refillq;
- 
- 	u16 compl_tag_bufid_m;
- 	u16 compl_tag_cur_gen;
-@@ -691,7 +693,7 @@ struct idpf_tx_queue {
- 	__cacheline_group_end_aligned(cold);
+ 	struct idpf_tx_offload_params offload;
++
++	u16 prev_ntu;
  };
- libeth_cacheline_set_assert(struct idpf_tx_queue, 64,
--			    112 + sizeof(struct u64_stats_sync),
-+			    120 + sizeof(struct u64_stats_sync),
- 			    24);
  
- /**
+ enum idpf_tx_ctx_desc_eipt_offload {
+@@ -1041,8 +1044,6 @@ void idpf_tx_buf_hw_update(struct idpf_tx_queue *tx_q, u32 val,
+ 			   bool xmit_more);
+ unsigned int idpf_size_to_txd_count(unsigned int size);
+ netdev_tx_t idpf_tx_drop_skb(struct idpf_tx_queue *tx_q, struct sk_buff *skb);
+-void idpf_tx_dma_map_error(struct idpf_tx_queue *txq, struct sk_buff *skb,
+-			   struct idpf_tx_buf *first, u16 ring_idx);
+ unsigned int idpf_tx_desc_count_required(struct idpf_tx_queue *txq,
+ 					 struct sk_buff *skb);
+ void idpf_tx_timeout(struct net_device *netdev, unsigned int txqueue);
 -- 
 2.39.2
 
