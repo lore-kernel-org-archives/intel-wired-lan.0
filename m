@@ -4,71 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0F659C83F25
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 22 Jul 2025 11:07:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6F8F4C83F27
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 22 Jul 2025 11:07:26 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id D2A3F6F54E;
-	Tue, 22 Jul 2025 11:07:21 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 47FEB6F4D6;
+	Tue, 22 Jul 2025 11:07:26 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id qRfIpS3UwHqr; Tue, 22 Jul 2025 11:07:20 +0000 (UTC)
+ id NeXkGIXVjS0D; Tue, 22 Jul 2025 11:07:25 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org F28346F4EE
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8B2CA6F559
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1753182440;
-	bh=nACNJ62N5gSXmdg1QFtU+gQOXF5wm43OXCyHg62a1ak=;
+	s=default; t=1753182445;
+	bh=badPAsFMqyDj19CE/mzavlxJi2WEcWs5i0Fk1XLrM+Y=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=jrTTJuPzrA5/80dBuOCfj88CBn2+s4V+7h2RlObr6G9S25mRxQIHIKZKjr9fHBtPC
-	 0XvxavLYLU97PtHn+VAd/t8obKEqxd3FJY6RG/B53qfOv4Axse+xwly7zg7T/HtLi1
-	 Nja1rI4z/kxKO9ccoTpSk71StPJFFGiMtQY5VtALSip6v5epnQKukP400WFUDW/EGK
-	 44XtLRd5xfNBbu8u59njjTfPtT2Q63m+IAG3V/OOMuAfw3k3aBRxJijeECjqmorl6I
-	 MmgdqCWb7JSYQT1OzbZCIlhzz1vF+H7Cc2Zb9Ou49uVn8EjLnHH9UggLIEJMFZsheY
-	 2lfuP8wigK0rQ==
+	b=nrWzODI8sOhQ1ihm9JGnEh1vqrLpZ9kpOM/E62eNh46KDiRRJZHOP7uNjipp+CGEF
+	 e60jo+fkE5Kqa/hP/U0sWcUfOTIu4NyywCLFlMIYNO1U1oaRQqTgvqEt6zu0aDMFGy
+	 REn8NjKApsCbJJ2NoTiQgDI+frUZU9DwK/79BYV30NQyw4+y45ZLz6MYj2NSt3kO0M
+	 fein4bSh1MVWDlrVE000nSXzG8U4G9jMjmFvYXosd/clFCnPY22bgcS1lY/1yF4pst
+	 XgFSDU3L0ma6/y/vqOuTxICM5v8VOAY7I1MTxq5JV4z/oMi6x0HkDsOfU4jOaUDNbP
+	 Kzju1y5+m1gnQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id F28346F4EE;
-	Tue, 22 Jul 2025 11:07:19 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 8B2CA6F559;
+	Tue, 22 Jul 2025 11:07:25 +0000 (UTC)
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id 86FC9127
- for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Jul 2025 11:07:18 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id 64FEC127
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Jul 2025 11:07:22 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 6EC8584B27
- for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Jul 2025 11:07:18 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 625CB84B27
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Jul 2025 11:07:22 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id v2HPru5ABFgU for <intel-wired-lan@lists.osuosl.org>;
- Tue, 22 Jul 2025 11:07:16 +0000 (UTC)
+ id dmKH7WX1vjOi for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 22 Jul 2025 11:07:21 +0000 (UTC)
 Received-SPF: None (mailfrom) identity=mailfrom; client-ip=198.175.65.15;
  helo=mgamail.intel.com; envelope-from=michal.swiatkowski@linux.intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 96DA284B21
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 96DA284B21
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 9F27F84B21
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9F27F84B21
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.15])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 96DA284B21
- for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Jul 2025 11:07:16 +0000 (UTC)
-X-CSE-ConnectionGUID: 2H7h7Up0TF+3/8uOiFBAlg==
-X-CSE-MsgGUID: Qcy6kBp/SbSQBkgV7qLafA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11499"; a="59083624"
-X-IronPort-AV: E=Sophos;i="6.16,331,1744095600"; d="scan'208";a="59083624"
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 9F27F84B21
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Jul 2025 11:07:21 +0000 (UTC)
+X-CSE-ConnectionGUID: 40oGjJ9WTEWWe+XO1ScEug==
+X-CSE-MsgGUID: X/dLjALxTo2giMAWSY5+uw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11499"; a="59083630"
+X-IronPort-AV: E=Sophos;i="6.16,331,1744095600"; d="scan'208";a="59083630"
 Received: from fmviesa003.fm.intel.com ([10.60.135.143])
  by orvoesa107.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 22 Jul 2025 04:07:16 -0700
-X-CSE-ConnectionGUID: So4tg/ePQIy4Np3NfQGeXg==
-X-CSE-MsgGUID: 3uhRAXFRRKOIvQG+xSJv4g==
+ 22 Jul 2025 04:07:22 -0700
+X-CSE-ConnectionGUID: 6SkRrNvYS1eoAarIHrkVMg==
+X-CSE-MsgGUID: 2hlEQh9ZTSSDAY5J/Pw7aQ==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.16,331,1744095600"; d="scan'208";a="163153991"
+X-IronPort-AV: E=Sophos;i="6.16,331,1744095600"; d="scan'208";a="163154014"
 Received: from os-delivery.igk.intel.com ([10.102.21.165])
- by fmviesa003.fm.intel.com with ESMTP; 22 Jul 2025 04:07:14 -0700
+ by fmviesa003.fm.intel.com with ESMTP; 22 Jul 2025 04:07:20 -0700
 From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 To: intel-wired-lan@lists.osuosl.org
 Cc: netdev@vger.kernel.org, przemyslaw.kitszel@intel.com,
  dawid.osuchowski@linux.intel.com,
  Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
-Date: Tue, 22 Jul 2025 12:45:56 +0200
-Message-ID: <20250722104600.10141-12-michal.swiatkowski@linux.intel.com>
+Date: Tue, 22 Jul 2025 12:45:59 +0200
+Message-ID: <20250722104600.10141-15-michal.swiatkowski@linux.intel.com>
 X-Mailer: git-send-email 2.49.0
 In-Reply-To: <20250722104600.10141-1-michal.swiatkowski@linux.intel.com>
 References: <20250722104600.10141-1-michal.swiatkowski@linux.intel.com>
@@ -76,25 +76,25 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1753182437; x=1784718437;
+ t=1753182442; x=1784718442;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=m49kmgjAe4UOEoRmQuab0nqrJvH1ABh2JSHzs6viexE=;
- b=cnUJXU6lfrDiAzi0UcQIuNAcaJotOFXzZe3tCdpQf/Vjv769MJaYK3hb
- lRRfUHEKQQ98l72JUzpa4X1DQjqR3N2IJjk3jNLiXGEL5iEPi73Az6oan
- aaPgxBWf6wWbyg1RSk897k+cAhpDvYaEhMm+gIsu1CzVe+BtlUyeS5CYM
- bUnPw//ISuE8FUgKu1Vj3iQbEMF3WFTidyn5VdEUawBIVi2vHCGPFEvwf
- YFCi2CJ/mjvhwaAZo7AHOSaJ3M0eqGRUfF9t6gkZwBFTCVYV3KNoaUJ9S
- KSTzlJtldczMwcziGHDrO+zLSK3eBkJ9P0Kh1Xbuel7P0FjAeWTRVHZH+
- g==;
+ bh=rB/eUY56LJ6E1rjL1ukt+AIPsUp9C4JymH8zTl2WJsQ=;
+ b=hCgla07VlNawNBqf2AhXiJlQdnoDCW6PIxjfXDipVXKl/6zke8tXz2U7
+ ujwLs1A2ptOig3Ma94t/0yKquLT4IzLAZAznlFsldBzAXqGGzR1Q+mH3X
+ uD1Jll7bT84acQ2Wbb31CYonoeCayAbQgGZ4Uuv9DvHm2OrtMw3arBR+l
+ fk05l6ZVSjDWU3zkrt48Y4N76xpi1rR1phR/yHsUyjGIq2AEUlX8+SprZ
+ 1I3OojXEYWS8YjHdLbpq5sNZqizz7D/VMReHA/uFHz71+KWw6pYbslKAt
+ FyqtjYzGe9kSF5x683YYVY15YIm6kyGtKh1V47CvT1bDzZfPLw7af3KJr
+ w==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=none (p=none dis=none)
  header.from=linux.intel.com
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=cnUJXU6l
-Subject: [Intel-wired-lan] [PATCH iwl-next v1 11/15] ice: move debugfs code
- to fwlog
+ header.a=rsa-sha256 header.s=Intel header.b=hCgla07V
+Subject: [Intel-wired-lan] [PATCH iwl-next v1 14/15] ice,
+ libie: move fwlog code to libie
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -110,1371 +110,194 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-This code is only used in fwlog. Moved it there for easier lib creation.
-There is a circular dependency between debugfs and fwlog. Moving to one
-file is fixing it.
+Move whole code from ice_fwlog.c/h to libie/fwlog.c/h.
 
 Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice.h         |   1 -
- drivers/net/ethernet/intel/ice/ice_debugfs.c | 619 ------------------
- drivers/net/ethernet/intel/ice/ice_fwlog.c   | 652 ++++++++++++++++++-
- drivers/net/ethernet/intel/ice/ice_fwlog.h   |   3 -
- 4 files changed, 635 insertions(+), 640 deletions(-)
+ drivers/net/ethernet/intel/Kconfig                   |  1 +
+ drivers/net/ethernet/intel/ice/Makefile              |  1 -
+ drivers/net/ethernet/intel/ice/ice_main.c            |  1 +
+ drivers/net/ethernet/intel/ice/ice_type.h            |  2 +-
+ drivers/net/ethernet/intel/libie/Kconfig             |  7 +++++++
+ drivers/net/ethernet/intel/libie/Makefile            |  4 ++++
+ .../intel/{ice/ice_fwlog.c => libie/fwlog.c}         | 12 +++++++++---
+ include/linux/net/intel/libie/adminq.h               |  6 +++---
+ .../linux/net/intel/libie/fwlog.h                    |  3 ++-
+ 9 files changed, 28 insertions(+), 9 deletions(-)
+ rename drivers/net/ethernet/intel/{ice/ice_fwlog.c => libie/fwlog.c} (98%)
+ rename drivers/net/ethernet/intel/ice/ice_fwlog.h => include/linux/net/intel/libie/fwlog.h (98%)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index 9ed4197ee7bc..d35eb6404524 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -905,7 +905,6 @@ static inline bool ice_is_adq_active(struct ice_pf *pf)
- 	return false;
- }
+diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
+index b05cc0d7a15d..09f0af386af1 100644
+--- a/drivers/net/ethernet/intel/Kconfig
++++ b/drivers/net/ethernet/intel/Kconfig
+@@ -297,6 +297,7 @@ config ICE
+ 	select DIMLIB
+ 	select LIBIE
+ 	select LIBIE_ADMINQ
++	select LIBIE_FWLOG
+ 	select NET_DEVLINK
+ 	select PACKING
+ 	select PLDMFW
+diff --git a/drivers/net/ethernet/intel/ice/Makefile b/drivers/net/ethernet/intel/ice/Makefile
+index d0f9c9492363..e8cd30da6d53 100644
+--- a/drivers/net/ethernet/intel/ice/Makefile
++++ b/drivers/net/ethernet/intel/ice/Makefile
+@@ -42,7 +42,6 @@ ice-y := ice_main.o	\
+ 	 ice_ethtool.o  \
+ 	 ice_repr.o	\
+ 	 ice_tc_lib.o	\
+-	 ice_fwlog.o	\
+ 	 ice_debugfs.o  \
+ 	 ice_adapter.o
+ ice-$(CONFIG_PCI_IOV) +=	\
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index e307d72f05d3..d501e45eae62 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -39,6 +39,7 @@ static const char ice_copyright[] = "Copyright (c) 2018, Intel Corporation.";
+ MODULE_DESCRIPTION(DRV_SUMMARY);
+ MODULE_IMPORT_NS("LIBIE");
+ MODULE_IMPORT_NS("LIBIE_ADMINQ");
++MODULE_IMPORT_NS("LIBIE_FWLOG");
+ MODULE_LICENSE("GPL v2");
+ MODULE_FIRMWARE(ICE_DDP_PKG_FILE);
  
--void ice_debugfs_fwlog_init(struct ice_fwlog *fwlog, struct dentry *root);
- int ice_debugfs_pf_init(struct ice_pf *pf);
- void ice_debugfs_pf_deinit(struct ice_pf *pf);
- void ice_debugfs_init(void);
-diff --git a/drivers/net/ethernet/intel/ice/ice_debugfs.c b/drivers/net/ethernet/intel/ice/ice_debugfs.c
-index 5d623cea9ef5..f3f6bcb752b3 100644
---- a/drivers/net/ethernet/intel/ice/ice_debugfs.c
-+++ b/drivers/net/ethernet/intel/ice/ice_debugfs.c
-@@ -1,630 +1,11 @@
- // SPDX-License-Identifier: GPL-2.0
- /* Copyright (c) 2022, Intel Corporation. */
+diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
+index 288415e48c05..4213a2b9fa9d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_type.h
++++ b/drivers/net/ethernet/intel/ice/ice_type.h
+@@ -17,7 +17,7 @@
+ #include "ice_protocol_type.h"
+ #include "ice_sbq_cmd.h"
+ #include "ice_vlan_mode.h"
+-#include "ice_fwlog.h"
++#include <linux/net/intel/libie/fwlog.h>
+ #include <linux/wait.h>
+ #include <net/dscp.h>
  
--#include <linux/fs.h>
- #include <linux/debugfs.h>
--#include <linux/random.h>
--#include <linux/vmalloc.h>
- #include "ice.h"
+diff --git a/drivers/net/ethernet/intel/libie/Kconfig b/drivers/net/ethernet/intel/libie/Kconfig
+index e6072758e3d8..679974797dcb 100644
+--- a/drivers/net/ethernet/intel/libie/Kconfig
++++ b/drivers/net/ethernet/intel/libie/Kconfig
+@@ -14,3 +14,10 @@ config LIBIE_ADMINQ
+ 	help
+ 	  Helper functions used by Intel Ethernet drivers for administration
+ 	  queue command interface (aka adminq).
++
++config LIBIE_FWLOG
++	tristate
++	select LIBIE_ADMINQ
++	help
++	  Library to support firmware logging on device that have support
++	  for it.
+diff --git a/drivers/net/ethernet/intel/libie/Makefile b/drivers/net/ethernet/intel/libie/Makefile
+index e98f00b865d3..db57fc6780ea 100644
+--- a/drivers/net/ethernet/intel/libie/Makefile
++++ b/drivers/net/ethernet/intel/libie/Makefile
+@@ -8,3 +8,7 @@ libie-y			:= rx.o
+ obj-$(CONFIG_LIBIE_ADMINQ) 	+= libie_adminq.o
  
- static struct dentry *ice_debugfs_root;
- 
--/* create a define that has an extra module that doesn't really exist. this
-- * is so we can add a module 'all' to easily enable/disable all the modules
-- */
--#define ICE_NR_FW_LOG_MODULES (LIBIE_AQC_FW_LOG_ID_MAX + 1)
--
--/* the ordering in this array is important. it matches the ordering of the
-- * values in the FW so the index is the same value as in
-- * libie_aqc_fw_logging_mod
-- */
--static const char * const ice_fwlog_module_string[] = {
--	"general",
--	"ctrl",
--	"link",
--	"link_topo",
--	"dnl",
--	"i2c",
--	"sdp",
--	"mdio",
--	"adminq",
--	"hdma",
--	"lldp",
--	"dcbx",
--	"dcb",
--	"xlr",
--	"nvm",
--	"auth",
--	"vpd",
--	"iosf",
--	"parser",
--	"sw",
--	"scheduler",
--	"txq",
--	"rsvd",
--	"post",
--	"watchdog",
--	"task_dispatch",
--	"mng",
--	"synce",
--	"health",
--	"tsdrv",
--	"pfreg",
--	"mdlver",
--	"all",
--};
--
--/* the ordering in this array is important. it matches the ordering of the
-- * values in the FW so the index is the same value as in ice_fwlog_level
-- */
--static const char * const ice_fwlog_level_string[] = {
--	"none",
--	"error",
--	"warning",
--	"normal",
--	"verbose",
--};
--
--static const char * const ice_fwlog_log_size[] = {
--	"128K",
--	"256K",
--	"512K",
--	"1M",
--	"2M",
--};
--
--/**
-- * ice_fwlog_print_module_cfg - print current FW logging module configuration
-- * @cfg: pointer to the fwlog cfg structure
-- * @module: module to print
-- * @s: the seq file to put data into
-- */
--static void
--ice_fwlog_print_module_cfg(struct ice_fwlog_cfg *cfg, int module,
--			   struct seq_file *s)
--{
--	struct ice_fwlog_module_entry *entry;
--
--	if (module != LIBIE_AQC_FW_LOG_ID_MAX) {
--		entry =	&cfg->module_entries[module];
--
--		seq_printf(s, "\tModule: %s, Log Level: %s\n",
--			   ice_fwlog_module_string[entry->module_id],
--			   ice_fwlog_level_string[entry->log_level]);
--	} else {
--		int i;
--
--		for (i = 0; i < LIBIE_AQC_FW_LOG_ID_MAX; i++) {
--			entry =	&cfg->module_entries[i];
--
--			seq_printf(s, "\tModule: %s, Log Level: %s\n",
--				   ice_fwlog_module_string[entry->module_id],
--				   ice_fwlog_level_string[entry->log_level]);
--		}
--	}
--}
--
--static int ice_find_module_by_dentry(struct dentry **modules, struct dentry *d)
--{
--	int i, module;
--
--	module = -1;
--	/* find the module based on the dentry */
--	for (i = 0; i < ICE_NR_FW_LOG_MODULES; i++) {
--		if (d == modules[i]) {
--			module = i;
--			break;
--		}
--	}
--
--	return module;
--}
--
--/**
-- * ice_debugfs_module_show - read from 'module' file
-- * @s: the opened file
-- * @v: pointer to the offset
-- */
--static int ice_debugfs_module_show(struct seq_file *s, void *v)
--{
--	struct ice_fwlog *fwlog = s->private;
--	const struct file *filp = s->file;
--	struct dentry *dentry;
--	int module;
--
--	dentry = file_dentry(filp);
--
--	module = ice_find_module_by_dentry(fwlog->debugfs_modules, dentry);
--	if (module < 0) {
--		dev_info(&fwlog->pdev->dev, "unknown module\n");
--		return -EINVAL;
--	}
--
--	ice_fwlog_print_module_cfg(&fwlog->cfg, module, s);
--
--	return 0;
--}
--
--static int ice_debugfs_module_open(struct inode *inode, struct file *filp)
--{
--	return single_open(filp, ice_debugfs_module_show, inode->i_private);
--}
--
--/**
-- * ice_debugfs_module_write - write into 'module' file
-- * @filp: the opened file
-- * @buf: where to find the user's data
-- * @count: the length of the user's data
-- * @ppos: file position offset
-- */
--static ssize_t
--ice_debugfs_module_write(struct file *filp, const char __user *buf,
--			 size_t count, loff_t *ppos)
--{
--	struct ice_fwlog *fwlog = file_inode(filp)->i_private;
--	struct dentry *dentry = file_dentry(filp);
--	struct device *dev = &fwlog->pdev->dev;
--	char user_val[16], *cmd_buf;
--	int module, log_level, cnt;
--
--	/* don't allow partial writes or invalid input */
--	if (*ppos != 0 || count > 8)
--		return -EINVAL;
--
--	cmd_buf = memdup_user_nul(buf, count);
--	if (IS_ERR(cmd_buf))
--		return PTR_ERR(cmd_buf);
--
--	module = ice_find_module_by_dentry(fwlog->debugfs_modules, dentry);
--	if (module < 0) {
--		dev_info(dev, "unknown module\n");
--		return -EINVAL;
--	}
--
--	cnt = sscanf(cmd_buf, "%s", user_val);
--	if (cnt != 1)
--		return -EINVAL;
--
--	log_level = sysfs_match_string(ice_fwlog_level_string, user_val);
--	if (log_level < 0) {
--		dev_info(dev, "unknown log level '%s'\n", user_val);
--		return -EINVAL;
--	}
--
--	if (module != LIBIE_AQC_FW_LOG_ID_MAX) {
--		fwlog->cfg.module_entries[module].log_level = log_level;
--	} else {
--		/* the module 'all' is a shortcut so that we can set
--		 * all of the modules to the same level quickly
--		 */
--		int i;
--
--		for (i = 0; i < LIBIE_AQC_FW_LOG_ID_MAX; i++)
--			fwlog->cfg.module_entries[i].log_level = log_level;
--	}
--
--	return count;
--}
--
--static const struct file_operations ice_debugfs_module_fops = {
--	.owner = THIS_MODULE,
--	.open  = ice_debugfs_module_open,
--	.read = seq_read,
--	.release = single_release,
--	.write = ice_debugfs_module_write,
--};
--
--/**
-- * ice_debugfs_nr_messages_read - read from 'nr_messages' file
-- * @filp: the opened file
-- * @buffer: where to write the data for the user to read
-- * @count: the size of the user's buffer
-- * @ppos: file position offset
-- */
--static ssize_t ice_debugfs_nr_messages_read(struct file *filp,
--					    char __user *buffer, size_t count,
--					    loff_t *ppos)
--{
--	struct ice_fwlog *fwlog = filp->private_data;
--	char buff[32] = {};
--
--	snprintf(buff, sizeof(buff), "%d\n",
--		 fwlog->cfg.log_resolution);
--
--	return simple_read_from_buffer(buffer, count, ppos, buff, strlen(buff));
--}
--
--/**
-- * ice_debugfs_nr_messages_write - write into 'nr_messages' file
-- * @filp: the opened file
-- * @buf: where to find the user's data
-- * @count: the length of the user's data
-- * @ppos: file position offset
-- */
--static ssize_t
--ice_debugfs_nr_messages_write(struct file *filp, const char __user *buf,
--			      size_t count, loff_t *ppos)
--{
--	struct ice_fwlog *fwlog = filp->private_data;
--	struct device *dev = &fwlog->pdev->dev;
--	char user_val[8], *cmd_buf;
--	s16 nr_messages;
--	ssize_t ret;
--
--	/* don't allow partial writes or invalid input */
--	if (*ppos != 0 || count > 4)
--		return -EINVAL;
--
--	cmd_buf = memdup_user_nul(buf, count);
--	if (IS_ERR(cmd_buf))
--		return PTR_ERR(cmd_buf);
--
--	ret = sscanf(cmd_buf, "%s", user_val);
--	if (ret != 1)
--		return -EINVAL;
--
--	ret = kstrtos16(user_val, 0, &nr_messages);
--	if (ret)
--		return ret;
--
--	if (nr_messages < LIBIE_AQC_FW_LOG_MIN_RESOLUTION ||
--	    nr_messages > LIBIE_AQC_FW_LOG_MAX_RESOLUTION) {
--		dev_err(dev, "Invalid FW log number of messages %d, value must be between %d - %d\n",
--			nr_messages, LIBIE_AQC_FW_LOG_MIN_RESOLUTION,
--			LIBIE_AQC_FW_LOG_MAX_RESOLUTION);
--		return -EINVAL;
--	}
--
--	fwlog->cfg.log_resolution = nr_messages;
--
--	return count;
--}
--
--static const struct file_operations ice_debugfs_nr_messages_fops = {
--	.owner = THIS_MODULE,
--	.open  = simple_open,
--	.read = ice_debugfs_nr_messages_read,
--	.write = ice_debugfs_nr_messages_write,
--};
--
--/**
-- * ice_debugfs_enable_read - read from 'enable' file
-- * @filp: the opened file
-- * @buffer: where to write the data for the user to read
-- * @count: the size of the user's buffer
-- * @ppos: file position offset
-- */
--static ssize_t ice_debugfs_enable_read(struct file *filp,
--				       char __user *buffer, size_t count,
--				       loff_t *ppos)
--{
--	struct ice_fwlog *fwlog = filp->private_data;
--	char buff[32] = {};
--
--	snprintf(buff, sizeof(buff), "%u\n",
--		 (u16)(fwlog->cfg.options &
--		 ICE_FWLOG_OPTION_IS_REGISTERED) >> 3);
--
--	return simple_read_from_buffer(buffer, count, ppos, buff, strlen(buff));
--}
--
--/**
-- * ice_debugfs_enable_write - write into 'enable' file
-- * @filp: the opened file
-- * @buf: where to find the user's data
-- * @count: the length of the user's data
-- * @ppos: file position offset
-- */
--static ssize_t
--ice_debugfs_enable_write(struct file *filp, const char __user *buf,
--			 size_t count, loff_t *ppos)
--{
--	struct ice_fwlog *fwlog = filp->private_data;
--	char user_val[8], *cmd_buf;
--	bool enable;
--	ssize_t ret;
--
--	/* don't allow partial writes or invalid input */
--	if (*ppos != 0 || count > 2)
--		return -EINVAL;
--
--	cmd_buf = memdup_user_nul(buf, count);
--	if (IS_ERR(cmd_buf))
--		return PTR_ERR(cmd_buf);
--
--	ret = sscanf(cmd_buf, "%s", user_val);
--	if (ret != 1)
--		return -EINVAL;
--
--	ret = kstrtobool(user_val, &enable);
--	if (ret)
--		goto enable_write_error;
--
--	if (enable)
--		fwlog->cfg.options |= ICE_FWLOG_OPTION_ARQ_ENA;
--	else
--		fwlog->cfg.options &= ~ICE_FWLOG_OPTION_ARQ_ENA;
--
--	ret = ice_fwlog_set(fwlog, &fwlog->cfg);
--	if (ret)
--		goto enable_write_error;
--
--	if (enable)
--		ret = ice_fwlog_register(fwlog);
--	else
--		ret = ice_fwlog_unregister(fwlog);
--
--	if (ret)
--		goto enable_write_error;
--
--	/* if we get here, nothing went wrong; return count since we didn't
--	 * really write anything
--	 */
--	ret = (ssize_t)count;
--
--enable_write_error:
--	/* This function always consumes all of the written input, or produces
--	 * an error. Check and enforce this. Otherwise, the write operation
--	 * won't complete properly.
--	 */
--	if (WARN_ON(ret != (ssize_t)count && ret >= 0))
--		ret = -EIO;
--
--	return ret;
--}
--
--static const struct file_operations ice_debugfs_enable_fops = {
--	.owner = THIS_MODULE,
--	.open  = simple_open,
--	.read = ice_debugfs_enable_read,
--	.write = ice_debugfs_enable_write,
--};
--
--/**
-- * ice_debugfs_log_size_read - read from 'log_size' file
-- * @filp: the opened file
-- * @buffer: where to write the data for the user to read
-- * @count: the size of the user's buffer
-- * @ppos: file position offset
-- */
--static ssize_t ice_debugfs_log_size_read(struct file *filp,
--					 char __user *buffer, size_t count,
--					 loff_t *ppos)
--{
--	struct ice_fwlog *fwlog = filp->private_data;
--	char buff[32] = {};
--	int index;
--
--	index = fwlog->ring.index;
--	snprintf(buff, sizeof(buff), "%s\n", ice_fwlog_log_size[index]);
--
--	return simple_read_from_buffer(buffer, count, ppos, buff, strlen(buff));
--}
--
--/**
-- * ice_debugfs_log_size_write - write into 'log_size' file
-- * @filp: the opened file
-- * @buf: where to find the user's data
-- * @count: the length of the user's data
-- * @ppos: file position offset
-- */
--static ssize_t
--ice_debugfs_log_size_write(struct file *filp, const char __user *buf,
--			   size_t count, loff_t *ppos)
--{
--	struct ice_fwlog *fwlog = filp->private_data;
--	struct device *dev = &fwlog->pdev->dev;
--	char user_val[8], *cmd_buf;
--	ssize_t ret;
--	int index;
--
--	/* don't allow partial writes or invalid input */
--	if (*ppos != 0 || count > 5)
--		return -EINVAL;
--
--	cmd_buf = memdup_user_nul(buf, count);
--	if (IS_ERR(cmd_buf))
--		return PTR_ERR(cmd_buf);
--
--	ret = sscanf(cmd_buf, "%s", user_val);
--	if (ret != 1)
--		return -EINVAL;
--
--	index = sysfs_match_string(ice_fwlog_log_size, user_val);
--	if (index < 0) {
--		dev_info(dev, "Invalid log size '%s'. The value must be one of 128K, 256K, 512K, 1M, 2M\n",
--			 user_val);
--		ret = -EINVAL;
--		goto log_size_write_error;
--	} else if (fwlog->cfg.options & ICE_FWLOG_OPTION_IS_REGISTERED) {
--		dev_info(dev, "FW logging is currently running. Please disable FW logging to change log_size\n");
--		ret = -EINVAL;
--		goto log_size_write_error;
--	}
--
--	/* free all the buffers and the tracking info and resize */
--	ice_fwlog_realloc_rings(fwlog, index);
--
--	/* if we get here, nothing went wrong; return count since we didn't
--	 * really write anything
--	 */
--	ret = (ssize_t)count;
--
--log_size_write_error:
--	/* This function always consumes all of the written input, or produces
--	 * an error. Check and enforce this. Otherwise, the write operation
--	 * won't complete properly.
--	 */
--	if (WARN_ON(ret != (ssize_t)count && ret >= 0))
--		ret = -EIO;
--
--	return ret;
--}
--
--static const struct file_operations ice_debugfs_log_size_fops = {
--	.owner = THIS_MODULE,
--	.open  = simple_open,
--	.read = ice_debugfs_log_size_read,
--	.write = ice_debugfs_log_size_write,
--};
--
--/**
-- * ice_debugfs_data_read - read from 'data' file
-- * @filp: the opened file
-- * @buffer: where to write the data for the user to read
-- * @count: the size of the user's buffer
-- * @ppos: file position offset
-- */
--static ssize_t ice_debugfs_data_read(struct file *filp, char __user *buffer,
--				     size_t count, loff_t *ppos)
--{
--	struct ice_fwlog *fwlog = filp->private_data;
--	int data_copied = 0;
--	bool done = false;
--
--	if (ice_fwlog_ring_empty(&fwlog->ring))
--		return 0;
--
--	while (!ice_fwlog_ring_empty(&fwlog->ring) && !done) {
--		struct ice_fwlog_data *log;
--		u16 cur_buf_len;
--
--		log = &fwlog->ring.rings[fwlog->ring.head];
--		cur_buf_len = log->data_size;
--		if (cur_buf_len >= count) {
--			done = true;
--			continue;
--		}
--
--		if (copy_to_user(buffer, log->data, cur_buf_len)) {
--			/* if there is an error then bail and return whatever
--			 * the driver has copied so far
--			 */
--			done = true;
--			continue;
--		}
--
--		data_copied += cur_buf_len;
--		buffer += cur_buf_len;
--		count -= cur_buf_len;
--		*ppos += cur_buf_len;
--		ice_fwlog_ring_increment(&fwlog->ring.head, fwlog->ring.size);
--	}
--
--	return data_copied;
--}
--
--/**
-- * ice_debugfs_data_write - write into 'data' file
-- * @filp: the opened file
-- * @buf: where to find the user's data
-- * @count: the length of the user's data
-- * @ppos: file position offset
-- */
--static ssize_t
--ice_debugfs_data_write(struct file *filp, const char __user *buf, size_t count,
--		       loff_t *ppos)
--{
--	struct ice_fwlog *fwlog = filp->private_data;
--	struct device *dev = &fwlog->pdev->dev;
--	ssize_t ret;
--
--	/* don't allow partial writes */
--	if (*ppos != 0)
--		return 0;
--
--	/* any value is allowed to clear the buffer so no need to even look at
--	 * what the value is
--	 */
--	if (!(fwlog->cfg.options & ICE_FWLOG_OPTION_IS_REGISTERED)) {
--		fwlog->ring.head = 0;
--		fwlog->ring.tail = 0;
--	} else {
--		dev_info(dev, "Can't clear FW log data while FW log running\n");
--		ret = -EINVAL;
--		goto nr_buffs_write_error;
--	}
--
--	/* if we get here, nothing went wrong; return count since we didn't
--	 * really write anything
--	 */
--	ret = (ssize_t)count;
--
--nr_buffs_write_error:
--	/* This function always consumes all of the written input, or produces
--	 * an error. Check and enforce this. Otherwise, the write operation
--	 * won't complete properly.
--	 */
--	if (WARN_ON(ret != (ssize_t)count && ret >= 0))
--		ret = -EIO;
--
--	return ret;
--}
--
--static const struct file_operations ice_debugfs_data_fops = {
--	.owner = THIS_MODULE,
--	.open  = simple_open,
--	.read = ice_debugfs_data_read,
--	.write = ice_debugfs_data_write,
--};
--
--/**
-- * ice_debugfs_fwlog_init - setup the debugfs directory
-- * @fwlog: pointer to the fwlog structure
-- * @root: debugfs root entry on which fwlog director will be registered
-- */
--void ice_debugfs_fwlog_init(struct ice_fwlog *fwlog, struct dentry *root)
--{
--	struct dentry *fw_modules_dir;
--	struct dentry **fw_modules;
--	int i;
--
--	/* allocate space for this first because if it fails then we don't
--	 * need to unwind
--	 */
--	fw_modules = kcalloc(ICE_NR_FW_LOG_MODULES, sizeof(*fw_modules),
--			     GFP_KERNEL);
--	if (!fw_modules)
--		return;
--
--	pf->ice_debugfs_pf_fwlog = debugfs_create_dir("fwlog",
--						      pf->ice_debugfs_pf);
--	if (IS_ERR(fwlog->debugfs))
--		goto err_create_module_files;
--
--	fw_modules_dir = debugfs_create_dir("modules", fwlog->debugfs);
--	if (IS_ERR(fw_modules_dir))
--		goto err_create_module_files;
--
--	for (i = 0; i < ICE_NR_FW_LOG_MODULES; i++) {
--		fw_modules[i] = debugfs_create_file(ice_fwlog_module_string[i],
--						    0600, fw_modules_dir, fwlog,
--						    &ice_debugfs_module_fops);
--		if (IS_ERR(fw_modules[i]))
--			goto err_create_module_files;
--	}
--
--	debugfs_create_file("nr_messages", 0600, fwlog->debugfs, fwlog,
--			    &ice_debugfs_nr_messages_fops);
--
--	fwlog->debugfs_modules = fw_modules;
--
--	debugfs_create_file("enable", 0600, fwlog->debugfs, fwlog,
--			    &ice_debugfs_enable_fops);
--
--	debugfs_create_file("log_size", 0600, fwlog->debugfs, fwlog,
--			    &ice_debugfs_log_size_fops);
--
--	debugfs_create_file("data", 0600, fwlog->debugfs, fwlog,
--			    &ice_debugfs_data_fops);
--
--	return;
--
--err_create_module_files:
--	debugfs_remove_recursive(fwlog->debugfs);
--	kfree(fw_modules);
--}
--
- /**
-  * ice_debugfs_pf_init - create PF's debugfs
-  * @pf: pointer to the PF struct
-diff --git a/drivers/net/ethernet/intel/ice/ice_fwlog.c b/drivers/net/ethernet/intel/ice/ice_fwlog.c
-index 0e4d0da86e0a..aaf6e20f934f 100644
+ libie_adminq-y			:= adminq.o
++
++obj-$(CONFIG_LIBIE_FWLOG) 	+= libie_fwlog.o
++
++libie_fwlog-y			:= fwlog.o
+diff --git a/drivers/net/ethernet/intel/ice/ice_fwlog.c b/drivers/net/ethernet/intel/libie/fwlog.c
+similarity index 98%
+rename from drivers/net/ethernet/intel/ice/ice_fwlog.c
+rename to drivers/net/ethernet/intel/libie/fwlog.c
+index e76397ade68b..2cc41bbcbead 100644
 --- a/drivers/net/ethernet/intel/ice/ice_fwlog.c
-+++ b/drivers/net/ethernet/intel/ice/ice_fwlog.c
-@@ -1,32 +1,84 @@
- // SPDX-License-Identifier: GPL-2.0
- /* Copyright (c) 2022, Intel Corporation. */
++++ b/drivers/net/ethernet/intel/libie/fwlog.c
+@@ -3,11 +3,10 @@
  
-+#include <linux/debugfs.h>
-+#include <linux/fs.h>
-+#include <linux/random.h>
+ #include <linux/debugfs.h>
+ #include <linux/fs.h>
++#include <linux/net/intel/libie/fwlog.h>
++#include <linux/pci.h>
+ #include <linux/random.h>
  #include <linux/vmalloc.h>
- #include "ice.h"
- #include "ice_common.h"
- #include "ice_fwlog.h"
+-#include "ice.h"
+-#include "ice_common.h"
+-#include "ice_fwlog.h"
  
--static bool ice_fwlog_ring_full(struct ice_fwlog_ring *rings)
--{
--	u16 head, tail;
--
--	head = rings->head;
--	tail = rings->tail;
--
--	if (head < tail && (tail - head == (rings->size - 1)))
--		return true;
--	else if (head > tail && (tail == (head - 1)))
--		return true;
--
--	return false;
--}
-+/* create a define that has an extra module that doesn't really exist. this
-+ * is so we can add a module 'all' to easily enable/disable all the modules
-+ */
-+#define ICE_NR_FW_LOG_MODULES (LIBIE_AQC_FW_LOG_ID_MAX + 1)
+ /* create a define that has an extra module that doesn't really exist. this
+  * is so we can add a module 'all' to easily enable/disable all the modules
+@@ -1038,6 +1037,7 @@ int libie_fwlog_init(struct libie_fwlog *fwlog, struct libie_fwlog_api *api)
  
--bool ice_fwlog_ring_empty(struct ice_fwlog_ring *rings)
-+/* the ordering in this array is important. it matches the ordering of the
-+ * values in the FW so the index is the same value as in
-+ * libie_aqc_fw_logging_mod
-+ */
-+static const char * const ice_fwlog_module_string[] = {
-+	"general",
-+	"ctrl",
-+	"link",
-+	"link_topo",
-+	"dnl",
-+	"i2c",
-+	"sdp",
-+	"mdio",
-+	"adminq",
-+	"hdma",
-+	"lldp",
-+	"dcbx",
-+	"dcb",
-+	"xlr",
-+	"nvm",
-+	"auth",
-+	"vpd",
-+	"iosf",
-+	"parser",
-+	"sw",
-+	"scheduler",
-+	"txq",
-+	"rsvd",
-+	"post",
-+	"watchdog",
-+	"task_dispatch",
-+	"mng",
-+	"synce",
-+	"health",
-+	"tsdrv",
-+	"pfreg",
-+	"mdlver",
-+	"all",
-+};
-+
-+/* the ordering in this array is important. it matches the ordering of the
-+ * values in the FW so the index is the same value as in ice_fwlog_level
-+ */
-+static const char * const ice_fwlog_level_string[] = {
-+	"none",
-+	"error",
-+	"warning",
-+	"normal",
-+	"verbose",
-+};
-+
-+static const char * const ice_fwlog_log_size[] = {
-+	"128K",
-+	"256K",
-+	"512K",
-+	"1M",
-+	"2M",
-+};
-+
-+static bool ice_fwlog_ring_empty(struct ice_fwlog_ring *rings)
- {
- 	return rings->head == rings->tail;
+ 	return 0;
  }
++EXPORT_SYMBOL_NS_GPL(libie_fwlog_init, "LIBIE_FWLOG");
  
--void ice_fwlog_ring_increment(u16 *item, u16 size)
-+static void ice_fwlog_ring_increment(u16 *item, u16 size)
- {
- 	*item = (*item + 1) & (size - 1);
- }
-@@ -77,7 +129,7 @@ static void ice_fwlog_free_ring_buffs(struct ice_fwlog_ring *rings)
-  * @index: the new index to use to allocate memory for the log data
-  *
-  */
--void ice_fwlog_realloc_rings(struct ice_fwlog *fwlog, int index)
-+static void ice_fwlog_realloc_rings(struct ice_fwlog *fwlog, int index)
- {
- 	struct ice_fwlog_ring ring;
- 	int status, ring_size;
-@@ -123,6 +175,572 @@ void ice_fwlog_realloc_rings(struct ice_fwlog *fwlog, int index)
- 	fwlog->ring.tail = 0;
- }
- 
-+/**
-+ * ice_fwlog_print_module_cfg - print current FW logging module configuration
-+ * @cfg: pointer to the fwlog cfg structure
-+ * @module: module to print
-+ * @s: the seq file to put data into
-+ */
-+static void
-+ice_fwlog_print_module_cfg(struct ice_fwlog_cfg *cfg, int module,
-+			   struct seq_file *s)
-+{
-+	struct ice_fwlog_module_entry *entry;
-+
-+	if (module != LIBIE_AQC_FW_LOG_ID_MAX) {
-+		entry =	&cfg->module_entries[module];
-+
-+		seq_printf(s, "\tModule: %s, Log Level: %s\n",
-+			   ice_fwlog_module_string[entry->module_id],
-+			   ice_fwlog_level_string[entry->log_level]);
-+	} else {
-+		int i;
-+
-+		for (i = 0; i < LIBIE_AQC_FW_LOG_ID_MAX; i++) {
-+			entry =	&cfg->module_entries[i];
-+
-+			seq_printf(s, "\tModule: %s, Log Level: %s\n",
-+				   ice_fwlog_module_string[entry->module_id],
-+				   ice_fwlog_level_string[entry->log_level]);
-+		}
-+	}
-+}
-+
-+static int ice_find_module_by_dentry(struct dentry **modules, struct dentry *d)
-+{
-+	int i, module;
-+
-+	module = -1;
-+	/* find the module based on the dentry */
-+	for (i = 0; i < ICE_NR_FW_LOG_MODULES; i++) {
-+		if (d == modules[i]) {
-+			module = i;
-+			break;
-+		}
-+	}
-+
-+	return module;
-+}
-+
-+/**
-+ * ice_debugfs_module_show - read from 'module' file
-+ * @s: the opened file
-+ * @v: pointer to the offset
-+ */
-+static int ice_debugfs_module_show(struct seq_file *s, void *v)
-+{
-+	struct ice_fwlog *fwlog = s->private;
-+	const struct file *filp = s->file;
-+	struct dentry *dentry;
-+	int module;
-+
-+	dentry = file_dentry(filp);
-+
-+	module = ice_find_module_by_dentry(fwlog->debugfs_modules, dentry);
-+	if (module < 0) {
-+		dev_info(&fwlog->pdev->dev, "unknown module\n");
-+		return -EINVAL;
-+	}
-+
-+	ice_fwlog_print_module_cfg(&fwlog->cfg, module, s);
-+
-+	return 0;
-+}
-+
-+static int ice_debugfs_module_open(struct inode *inode, struct file *filp)
-+{
-+	return single_open(filp, ice_debugfs_module_show, inode->i_private);
-+}
-+
-+/**
-+ * ice_debugfs_module_write - write into 'module' file
-+ * @filp: the opened file
-+ * @buf: where to find the user's data
-+ * @count: the length of the user's data
-+ * @ppos: file position offset
-+ */
-+static ssize_t
-+ice_debugfs_module_write(struct file *filp, const char __user *buf,
-+			 size_t count, loff_t *ppos)
-+{
-+	struct ice_fwlog *fwlog = file_inode(filp)->i_private;
-+	struct dentry *dentry = file_dentry(filp);
-+	struct device *dev = &fwlog->pdev->dev;
-+	char user_val[16], *cmd_buf;
-+	int module, log_level, cnt;
-+
-+	/* don't allow partial writes or invalid input */
-+	if (*ppos != 0 || count > 8)
-+		return -EINVAL;
-+
-+	cmd_buf = memdup_user_nul(buf, count);
-+	if (IS_ERR(cmd_buf))
-+		return PTR_ERR(cmd_buf);
-+
-+	module = ice_find_module_by_dentry(fwlog->debugfs_modules, dentry);
-+	if (module < 0) {
-+		dev_info(dev, "unknown module\n");
-+		return -EINVAL;
-+	}
-+
-+	cnt = sscanf(cmd_buf, "%s", user_val);
-+	if (cnt != 1)
-+		return -EINVAL;
-+
-+	log_level = sysfs_match_string(ice_fwlog_level_string, user_val);
-+	if (log_level < 0) {
-+		dev_info(dev, "unknown log level '%s'\n", user_val);
-+		return -EINVAL;
-+	}
-+
-+	if (module != LIBIE_AQC_FW_LOG_ID_MAX) {
-+		fwlog->cfg.module_entries[module].log_level = log_level;
-+	} else {
-+		/* the module 'all' is a shortcut so that we can set
-+		 * all of the modules to the same level quickly
-+		 */
-+		int i;
-+
-+		for (i = 0; i < LIBIE_AQC_FW_LOG_ID_MAX; i++)
-+			fwlog->cfg.module_entries[i].log_level = log_level;
-+	}
-+
-+	return count;
-+}
-+
-+static const struct file_operations ice_debugfs_module_fops = {
-+	.owner = THIS_MODULE,
-+	.open  = ice_debugfs_module_open,
-+	.read = seq_read,
-+	.release = single_release,
-+	.write = ice_debugfs_module_write,
-+};
-+
-+/**
-+ * ice_debugfs_nr_messages_read - read from 'nr_messages' file
-+ * @filp: the opened file
-+ * @buffer: where to write the data for the user to read
-+ * @count: the size of the user's buffer
-+ * @ppos: file position offset
-+ */
-+static ssize_t ice_debugfs_nr_messages_read(struct file *filp,
-+					    char __user *buffer, size_t count,
-+					    loff_t *ppos)
-+{
-+	struct ice_fwlog *fwlog = filp->private_data;
-+	char buff[32] = {};
-+
-+	snprintf(buff, sizeof(buff), "%d\n",
-+		 fwlog->cfg.log_resolution);
-+
-+	return simple_read_from_buffer(buffer, count, ppos, buff, strlen(buff));
-+}
-+
-+/**
-+ * ice_debugfs_nr_messages_write - write into 'nr_messages' file
-+ * @filp: the opened file
-+ * @buf: where to find the user's data
-+ * @count: the length of the user's data
-+ * @ppos: file position offset
-+ */
-+static ssize_t
-+ice_debugfs_nr_messages_write(struct file *filp, const char __user *buf,
-+			      size_t count, loff_t *ppos)
-+{
-+	struct ice_fwlog *fwlog = filp->private_data;
-+	struct device *dev = &fwlog->pdev->dev;
-+	char user_val[8], *cmd_buf;
-+	s16 nr_messages;
-+	ssize_t ret;
-+
-+	/* don't allow partial writes or invalid input */
-+	if (*ppos != 0 || count > 4)
-+		return -EINVAL;
-+
-+	cmd_buf = memdup_user_nul(buf, count);
-+	if (IS_ERR(cmd_buf))
-+		return PTR_ERR(cmd_buf);
-+
-+	ret = sscanf(cmd_buf, "%s", user_val);
-+	if (ret != 1)
-+		return -EINVAL;
-+
-+	ret = kstrtos16(user_val, 0, &nr_messages);
-+	if (ret)
-+		return ret;
-+
-+	if (nr_messages < LIBIE_AQC_FW_LOG_MIN_RESOLUTION ||
-+	    nr_messages > LIBIE_AQC_FW_LOG_MAX_RESOLUTION) {
-+		dev_err(dev, "Invalid FW log number of messages %d, value must be between %d - %d\n",
-+			nr_messages, LIBIE_AQC_FW_LOG_MIN_RESOLUTION,
-+			LIBIE_AQC_FW_LOG_MAX_RESOLUTION);
-+		return -EINVAL;
-+	}
-+
-+	fwlog->cfg.log_resolution = nr_messages;
-+
-+	return count;
-+}
-+
-+static const struct file_operations ice_debugfs_nr_messages_fops = {
-+	.owner = THIS_MODULE,
-+	.open  = simple_open,
-+	.read = ice_debugfs_nr_messages_read,
-+	.write = ice_debugfs_nr_messages_write,
-+};
-+
-+/**
-+ * ice_debugfs_enable_read - read from 'enable' file
-+ * @filp: the opened file
-+ * @buffer: where to write the data for the user to read
-+ * @count: the size of the user's buffer
-+ * @ppos: file position offset
-+ */
-+static ssize_t ice_debugfs_enable_read(struct file *filp,
-+				       char __user *buffer, size_t count,
-+				       loff_t *ppos)
-+{
-+	struct ice_fwlog *fwlog = filp->private_data;
-+	char buff[32] = {};
-+
-+	snprintf(buff, sizeof(buff), "%u\n",
-+		 (u16)(fwlog->cfg.options &
-+		 ICE_FWLOG_OPTION_IS_REGISTERED) >> 3);
-+
-+	return simple_read_from_buffer(buffer, count, ppos, buff, strlen(buff));
-+}
-+
-+/**
-+ * ice_debugfs_enable_write - write into 'enable' file
-+ * @filp: the opened file
-+ * @buf: where to find the user's data
-+ * @count: the length of the user's data
-+ * @ppos: file position offset
-+ */
-+static ssize_t
-+ice_debugfs_enable_write(struct file *filp, const char __user *buf,
-+			 size_t count, loff_t *ppos)
-+{
-+	struct ice_fwlog *fwlog = filp->private_data;
-+	char user_val[8], *cmd_buf;
-+	bool enable;
-+	ssize_t ret;
-+
-+	/* don't allow partial writes or invalid input */
-+	if (*ppos != 0 || count > 2)
-+		return -EINVAL;
-+
-+	cmd_buf = memdup_user_nul(buf, count);
-+	if (IS_ERR(cmd_buf))
-+		return PTR_ERR(cmd_buf);
-+
-+	ret = sscanf(cmd_buf, "%s", user_val);
-+	if (ret != 1)
-+		return -EINVAL;
-+
-+	ret = kstrtobool(user_val, &enable);
-+	if (ret)
-+		goto enable_write_error;
-+
-+	if (enable)
-+		fwlog->cfg.options |= ICE_FWLOG_OPTION_ARQ_ENA;
-+	else
-+		fwlog->cfg.options &= ~ICE_FWLOG_OPTION_ARQ_ENA;
-+
-+	ret = ice_fwlog_set(fwlog, &fwlog->cfg);
-+	if (ret)
-+		goto enable_write_error;
-+
-+	if (enable)
-+		ret = ice_fwlog_register(fwlog);
-+	else
-+		ret = ice_fwlog_unregister(fwlog);
-+
-+	if (ret)
-+		goto enable_write_error;
-+
-+	/* if we get here, nothing went wrong; return count since we didn't
-+	 * really write anything
-+	 */
-+	ret = (ssize_t)count;
-+
-+enable_write_error:
-+	/* This function always consumes all of the written input, or produces
-+	 * an error. Check and enforce this. Otherwise, the write operation
-+	 * won't complete properly.
-+	 */
-+	if (WARN_ON(ret != (ssize_t)count && ret >= 0))
-+		ret = -EIO;
-+
-+	return ret;
-+}
-+
-+static const struct file_operations ice_debugfs_enable_fops = {
-+	.owner = THIS_MODULE,
-+	.open  = simple_open,
-+	.read = ice_debugfs_enable_read,
-+	.write = ice_debugfs_enable_write,
-+};
-+
-+/**
-+ * ice_debugfs_log_size_read - read from 'log_size' file
-+ * @filp: the opened file
-+ * @buffer: where to write the data for the user to read
-+ * @count: the size of the user's buffer
-+ * @ppos: file position offset
-+ */
-+static ssize_t ice_debugfs_log_size_read(struct file *filp,
-+					 char __user *buffer, size_t count,
-+					 loff_t *ppos)
-+{
-+	struct ice_fwlog *fwlog = filp->private_data;
-+	char buff[32] = {};
-+	int index;
-+
-+	index = fwlog->ring.index;
-+	snprintf(buff, sizeof(buff), "%s\n", ice_fwlog_log_size[index]);
-+
-+	return simple_read_from_buffer(buffer, count, ppos, buff, strlen(buff));
-+}
-+
-+/**
-+ * ice_debugfs_log_size_write - write into 'log_size' file
-+ * @filp: the opened file
-+ * @buf: where to find the user's data
-+ * @count: the length of the user's data
-+ * @ppos: file position offset
-+ */
-+static ssize_t
-+ice_debugfs_log_size_write(struct file *filp, const char __user *buf,
-+			   size_t count, loff_t *ppos)
-+{
-+	struct ice_fwlog *fwlog = filp->private_data;
-+	struct device *dev = &fwlog->pdev->dev;
-+	char user_val[8], *cmd_buf;
-+	ssize_t ret;
-+	int index;
-+
-+	/* don't allow partial writes or invalid input */
-+	if (*ppos != 0 || count > 5)
-+		return -EINVAL;
-+
-+	cmd_buf = memdup_user_nul(buf, count);
-+	if (IS_ERR(cmd_buf))
-+		return PTR_ERR(cmd_buf);
-+
-+	ret = sscanf(cmd_buf, "%s", user_val);
-+	if (ret != 1)
-+		return -EINVAL;
-+
-+	index = sysfs_match_string(ice_fwlog_log_size, user_val);
-+	if (index < 0) {
-+		dev_info(dev, "Invalid log size '%s'. The value must be one of 128K, 256K, 512K, 1M, 2M\n",
-+			 user_val);
-+		ret = -EINVAL;
-+		goto log_size_write_error;
-+	} else if (fwlog->cfg.options & ICE_FWLOG_OPTION_IS_REGISTERED) {
-+		dev_info(dev, "FW logging is currently running. Please disable FW logging to change log_size\n");
-+		ret = -EINVAL;
-+		goto log_size_write_error;
-+	}
-+
-+	/* free all the buffers and the tracking info and resize */
-+	ice_fwlog_realloc_rings(fwlog, index);
-+
-+	/* if we get here, nothing went wrong; return count since we didn't
-+	 * really write anything
-+	 */
-+	ret = (ssize_t)count;
-+
-+log_size_write_error:
-+	/* This function always consumes all of the written input, or produces
-+	 * an error. Check and enforce this. Otherwise, the write operation
-+	 * won't complete properly.
-+	 */
-+	if (WARN_ON(ret != (ssize_t)count && ret >= 0))
-+		ret = -EIO;
-+
-+	return ret;
-+}
-+
-+static const struct file_operations ice_debugfs_log_size_fops = {
-+	.owner = THIS_MODULE,
-+	.open  = simple_open,
-+	.read = ice_debugfs_log_size_read,
-+	.write = ice_debugfs_log_size_write,
-+};
-+
-+/**
-+ * ice_debugfs_data_read - read from 'data' file
-+ * @filp: the opened file
-+ * @buffer: where to write the data for the user to read
-+ * @count: the size of the user's buffer
-+ * @ppos: file position offset
-+ */
-+static ssize_t ice_debugfs_data_read(struct file *filp, char __user *buffer,
-+				     size_t count, loff_t *ppos)
-+{
-+	struct ice_fwlog *fwlog = filp->private_data;
-+	int data_copied = 0;
-+	bool done = false;
-+
-+	if (ice_fwlog_ring_empty(&fwlog->ring))
-+		return 0;
-+
-+	while (!ice_fwlog_ring_empty(&fwlog->ring) && !done) {
-+		struct ice_fwlog_data *log;
-+		u16 cur_buf_len;
-+
-+		log = &fwlog->ring.rings[fwlog->ring.head];
-+		cur_buf_len = log->data_size;
-+		if (cur_buf_len >= count) {
-+			done = true;
-+			continue;
-+		}
-+
-+		if (copy_to_user(buffer, log->data, cur_buf_len)) {
-+			/* if there is an error then bail and return whatever
-+			 * the driver has copied so far
-+			 */
-+			done = true;
-+			continue;
-+		}
-+
-+		data_copied += cur_buf_len;
-+		buffer += cur_buf_len;
-+		count -= cur_buf_len;
-+		*ppos += cur_buf_len;
-+		ice_fwlog_ring_increment(&fwlog->ring.head, fwlog->ring.size);
-+	}
-+
-+	return data_copied;
-+}
-+
-+/**
-+ * ice_debugfs_data_write - write into 'data' file
-+ * @filp: the opened file
-+ * @buf: where to find the user's data
-+ * @count: the length of the user's data
-+ * @ppos: file position offset
-+ */
-+static ssize_t
-+ice_debugfs_data_write(struct file *filp, const char __user *buf, size_t count,
-+		       loff_t *ppos)
-+{
-+	struct ice_fwlog *fwlog = filp->private_data;
-+	struct device *dev = &fwlog->pdev->dev;
-+	ssize_t ret;
-+
-+	/* don't allow partial writes */
-+	if (*ppos != 0)
-+		return 0;
-+
-+	/* any value is allowed to clear the buffer so no need to even look at
-+	 * what the value is
-+	 */
-+	if (!(fwlog->cfg.options & ICE_FWLOG_OPTION_IS_REGISTERED)) {
-+		fwlog->ring.head = 0;
-+		fwlog->ring.tail = 0;
-+	} else {
-+		dev_info(dev, "Can't clear FW log data while FW log running\n");
-+		ret = -EINVAL;
-+		goto nr_buffs_write_error;
-+	}
-+
-+	/* if we get here, nothing went wrong; return count since we didn't
-+	 * really write anything
-+	 */
-+	ret = (ssize_t)count;
-+
-+nr_buffs_write_error:
-+	/* This function always consumes all of the written input, or produces
-+	 * an error. Check and enforce this. Otherwise, the write operation
-+	 * won't complete properly.
-+	 */
-+	if (WARN_ON(ret != (ssize_t)count && ret >= 0))
-+		ret = -EIO;
-+
-+	return ret;
-+}
-+
-+static const struct file_operations ice_debugfs_data_fops = {
-+	.owner = THIS_MODULE,
-+	.open  = simple_open,
-+	.read = ice_debugfs_data_read,
-+	.write = ice_debugfs_data_write,
-+};
-+
-+/**
-+ * ice_debugfs_fwlog_init - setup the debugfs directory
-+ * @fwlog: pointer to the fwlog structure
-+ * @root: debugfs root entry on which fwlog director will be registered
-+ */
-+static void ice_debugfs_fwlog_init(struct ice_fwlog *fwlog, struct dentry *root)
-+{
-+	struct dentry *fw_modules_dir;
-+	struct dentry **fw_modules;
-+	int i;
-+
-+	/* allocate space for this first because if it fails then we don't
-+	 * need to unwind
-+	 */
-+	fw_modules = kcalloc(ICE_NR_FW_LOG_MODULES, sizeof(*fw_modules),
-+			     GFP_KERNEL);
-+	if (!fw_modules)
-+		return;
-+
-+	fwlog->debugfs = debugfs_create_dir("fwlog", root);
-+	if (IS_ERR(fwlog->debugfs))
-+		goto err_create_module_files;
-+
-+	fw_modules_dir = debugfs_create_dir("modules", fwlog->debugfs);
-+	if (IS_ERR(fw_modules_dir))
-+		goto err_create_module_files;
-+
-+	for (i = 0; i < ICE_NR_FW_LOG_MODULES; i++) {
-+		fw_modules[i] = debugfs_create_file(ice_fwlog_module_string[i],
-+						    0600, fw_modules_dir, fwlog,
-+						    &ice_debugfs_module_fops);
-+		if (IS_ERR(fw_modules[i]))
-+			goto err_create_module_files;
-+	}
-+
-+	debugfs_create_file("nr_messages", 0600, fwlog->debugfs, fwlog,
-+			    &ice_debugfs_nr_messages_fops);
-+
-+	fwlog->debugfs_modules = fw_modules;
-+
-+	debugfs_create_file("enable", 0600, fwlog->debugfs, fwlog,
-+			    &ice_debugfs_enable_fops);
-+
-+	debugfs_create_file("log_size", 0600, fwlog->debugfs, fwlog,
-+			    &ice_debugfs_log_size_fops);
-+
-+	debugfs_create_file("data", 0600, fwlog->debugfs, fwlog,
-+			    &ice_debugfs_data_fops);
-+
-+	return;
-+
-+err_create_module_files:
-+	debugfs_remove_recursive(fwlog->debugfs);
-+	kfree(fw_modules);
-+}
-+
-+static bool ice_fwlog_ring_full(struct ice_fwlog_ring *rings)
-+{
-+	u16 head, tail;
-+
-+	head = rings->head;
-+	tail = rings->tail;
-+
-+	if (head < tail && (tail - head == (rings->size - 1)))
-+		return true;
-+	else if (head > tail && (tail == (head - 1)))
-+		return true;
-+
-+	return false;
-+}
-+
  /**
-  * ice_fwlog_supported - Cached for whether FW supports FW logging or not
-  * @fwlog: pointer to the fwlog structure
-diff --git a/drivers/net/ethernet/intel/ice/ice_fwlog.h b/drivers/net/ethernet/intel/ice/ice_fwlog.h
-index 9efa4a83c957..d5868b9e4de6 100644
---- a/drivers/net/ethernet/intel/ice/ice_fwlog.h
-+++ b/drivers/net/ethernet/intel/ice/ice_fwlog.h
-@@ -79,13 +79,10 @@ struct ice_fwlog {
- 	);
+  * libie_fwlog_deinit - unroll FW logging configuration
+@@ -1072,6 +1072,7 @@ void libie_fwlog_deinit(struct libie_fwlog *fwlog)
+ 		kfree(fwlog->ring.rings);
+ 	}
+ }
++EXPORT_SYMBOL_NS_GPL(libie_fwlog_deinit, "LIBIE_FWLOG");
+ 
+ /**
+  * libie_get_fwlog_data - copy the FW log data from ARQ event
+@@ -1096,6 +1097,7 @@ void libie_get_fwlog_data(struct libie_fwlog *fwlog, u8 *buf, u16 len)
+ 		libie_fwlog_ring_increment(&fwlog->ring.head, fwlog->ring.size);
+ 	}
+ }
++EXPORT_SYMBOL_NS_GPL(libie_get_fwlog_data, "LIBIE_FWLOG");
+ 
+ void libie_fwlog_reregister(struct libie_fwlog *fwlog)
+ {
+@@ -1105,3 +1107,7 @@ void libie_fwlog_reregister(struct libie_fwlog *fwlog)
+ 	if (libie_fwlog_register(fwlog))
+ 		fwlog->cfg.options &= ~LIBIE_FWLOG_OPTION_IS_REGISTERED;
+ }
++EXPORT_SYMBOL_NS_GPL(libie_fwlog_reregister, "LIBIE_FWLOG");
++
++MODULE_DESCRIPTION("Intel(R) Ethernet common library");
++MODULE_LICENSE("GPL");
+diff --git a/include/linux/net/intel/libie/adminq.h b/include/linux/net/intel/libie/adminq.h
+index 0df4c9326621..970b50fd898a 100644
+--- a/include/linux/net/intel/libie/adminq.h
++++ b/include/linux/net/intel/libie/adminq.h
+@@ -265,7 +265,7 @@ enum libie_aqc_fw_logging_mod {
+ 	LIBIE_AQC_FW_LOG_ID_TSDRV,
+ 	LIBIE_AQC_FW_LOG_ID_PFREG,
+ 	LIBIE_AQC_FW_LOG_ID_MDLVER,
+-	LIBIE_AQC_FW_LOG_ID_MAX,
++	LIBIE_AQC_FW_LOG_ID_MAX
  };
  
--bool ice_fwlog_ring_empty(struct ice_fwlog_ring *rings);
--void ice_fwlog_ring_increment(u16 *item, u16 size);
- int ice_fwlog_init(struct ice_fwlog *fwlog, struct ice_fwlog_api *api);
- void ice_fwlog_deinit(struct ice_fwlog *fwlog);
- int ice_fwlog_set(struct ice_fwlog *fwlog, struct ice_fwlog_cfg *cfg);
- int ice_fwlog_register(struct ice_fwlog *fwlog);
- int ice_fwlog_unregister(struct ice_fwlog *fwlog);
--void ice_fwlog_realloc_rings(struct ice_fwlog *fwlog, int index);
- void ice_get_fwlog_data(struct ice_fwlog *fwlog, u8 *buf, u16 len);
- #endif /* _ICE_FWLOG_H_ */
+ /* Set FW Logging configuration (indirect 0xFF30)
+@@ -280,8 +280,8 @@ enum libie_aqc_fw_logging_mod {
+ #define LIBIE_AQC_FW_LOG_AQ_REGISTER		BIT(0)
+ #define LIBIE_AQC_FW_LOG_AQ_QUERY		BIT(2)
+ 
+-#define LIBIE_AQC_FW_LOG_MIN_RESOLUTION		(1)
+-#define LIBIE_AQC_FW_LOG_MAX_RESOLUTION		(128)
++#define LIBIE_AQC_FW_LOG_MIN_RESOLUTION		1
++#define LIBIE_AQC_FW_LOG_MAX_RESOLUTION		128
+ 
+ struct libie_aqc_fw_log {
+ 	u8 cmd_flags;
+diff --git a/drivers/net/ethernet/intel/ice/ice_fwlog.h b/include/linux/net/intel/libie/fwlog.h
+similarity index 98%
+rename from drivers/net/ethernet/intel/ice/ice_fwlog.h
+rename to include/linux/net/intel/libie/fwlog.h
+index e534205a2d04..36b13fabca9e 100644
+--- a/drivers/net/ethernet/intel/ice/ice_fwlog.h
++++ b/include/linux/net/intel/libie/fwlog.h
+@@ -3,7 +3,8 @@
+ 
+ #ifndef _LIBIE_FWLOG_H_
+ #define _LIBIE_FWLOG_H_
+-#include "ice_adminq_cmd.h"
++
++#include <linux/net/intel/libie/adminq.h>
+ 
+ /* Only a single log level should be set and all log levels under the set value
+  * are enabled, e.g. if log level is set to LIBIE_FW_LOG_LEVEL_VERBOSE, then all
 -- 
 2.49.0
 
