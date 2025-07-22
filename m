@@ -1,128 +1,133 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E4957C83F27
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 22 Jul 2025 13:51:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 95194C83F27
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 22 Jul 2025 14:16:51 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id BC5316F56E;
-	Tue, 22 Jul 2025 13:51:28 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id QdVHBIjpGaDG; Tue, 22 Jul 2025 13:51:28 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 197D66F57B
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1753192288;
-	bh=pD/wWijrKvVTR2o9RA6CvKO4pRLA1Dtb3qzUWgqM4ys=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=W17jAJPHfKtihm1O03vsm6Rl139URG0I1IXYOe+o+26GhNJTe3ZmqIWY1sr3OFRmU
-	 N8OrmD0LCerEpmwgQVjDbhedKLQxak1wsiW6xT6hwDa4yf0NcL+sxFWiEFiAxi7PFF
-	 arBuctjaRbTQ/CvWvhFgTH/mnlV7Ea0wV7vqxNe9wq0UUKNt08xCwMofzwTkMSeevw
-	 7mcj0Ytl7+xBmoeyJE2iH/W1ffXP358ziTJ8QQPqZDRSw+pCf/Q/n9LIcAit3VQSb/
-	 fXpB/VUbbvbsocxxn9dySJLXgzqMk+rXhZY3CkSjSDMlehdb+20KaclNnb/cEiZjTi
-	 +B43IAm1f9tCQ==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 197D66F57B;
-	Tue, 22 Jul 2025 13:51:28 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id 88538E0
- for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Jul 2025 13:51:26 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 7A4D541589
- for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Jul 2025 13:51:26 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 3984640B24;
+	Tue, 22 Jul 2025 14:16:51 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id eRgtB4ZA7GLM for <intel-wired-lan@lists.osuosl.org>;
- Tue, 22 Jul 2025 13:51:25 +0000 (UTC)
+ id H2qwaUTQqPAq; Tue, 22 Jul 2025 14:16:50 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 989E040F27
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1753193810;
+	bh=tVf9s+VBrCxFX0/0lHXJexCtjFH2FtKEcOQbNsybb/U=;
+	h=Date:From:To:Cc:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=K/uwZohHJAu3Q1M4khxaKJgmgel/wP0h5T8HesLJh/5lsUOPRXK0lsfBgfOgHwn3c
+	 Ti5bM4j1xQH/qviwYEcFH/83j51jGRIMW3H0w1kTEu1XcaH+Hptmy2sYKO+HosmTKT
+	 L7aMGx3ZIuTvKrLb9DndkXFg1B62TFZZLkSidY/90YX93P38MpgUiE76vpZ9HmYDeh
+	 wgy6+BImrYGhLW9XLAzGqJwiseF78cpXn+KF8xMOQP6eQyUYbt5oDrWUY9W0h2fG+V
+	 mONxGpjm3q3BBd08m+ZDjzlGIa97/h7pXEIphP2L/r/7gVzMS/FXMn5weR7Rl9ToYb
+	 NXLjNgIgkDQvQ==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp4.osuosl.org (Postfix) with ESMTP id 989E040F27;
+	Tue, 22 Jul 2025 14:16:50 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 73E39E0
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Jul 2025 14:16:49 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp4.osuosl.org (Postfix) with ESMTP id 65ED240F29
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Jul 2025 14:16:49 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 8GKkMQgf_-Bb for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 22 Jul 2025 14:16:49 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2607:f8b0:4864:20::42e; helo=mail-pf1-x42e.google.com;
- envelope-from=kerneljasonxing@gmail.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org B49C941535
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B49C941535
-Received: from mail-pf1-x42e.google.com (mail-pf1-x42e.google.com
- [IPv6:2607:f8b0:4864:20::42e])
- by smtp4.osuosl.org (Postfix) with ESMTPS id B49C941535
- for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Jul 2025 13:51:25 +0000 (UTC)
-Received: by mail-pf1-x42e.google.com with SMTP id
- d2e1a72fcca58-748d982e97cso4914117b3a.1
- for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Jul 2025 06:51:25 -0700 (PDT)
+ client-ip=2607:f8b0:4864:20::b29; helo=mail-yb1-xb29.google.com;
+ envelope-from=willemdebruijn.kernel@gmail.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org C483940A6E
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C483940A6E
+Received: from mail-yb1-xb29.google.com (mail-yb1-xb29.google.com
+ [IPv6:2607:f8b0:4864:20::b29])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id C483940A6E
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Jul 2025 14:16:47 +0000 (UTC)
+Received: by mail-yb1-xb29.google.com with SMTP id
+ 3f1490d57ef6-e8bd2eaf8ccso5061188276.2
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Jul 2025 07:16:47 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20230601; t=1753192285; x=1753797085;
- h=content-transfer-encoding:mime-version:references:in-reply-to
- :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
- :subject:date:message-id:reply-to;
- bh=pD/wWijrKvVTR2o9RA6CvKO4pRLA1Dtb3qzUWgqM4ys=;
- b=lHaZfAQectZikQhkYKMoETnmmx05Mr2cP9pM2j1yUTi7JQgkxjONj2T51FevGXsfK3
- kYeaHKmDsEz5+678KHzBYaFarST8zoc/pLnsUqu2kNzP43QtztMHOcPYAWOvuFFQOsGQ
- hgEKfTB5IByPX1uVEla5GwY1VdKzHW1PavgaUeCWR4pCUC3p1qEWNyj1fAbicZuJf3o2
- MMxZUOS4Ja2emCzg/divVSZxoF/UWE/4J+laIpAAe0kyo1rIt1S+VuLB7WVheUeim3J0
- H7ajc8DdDYdIm7GdybqkemJS9STFCug+d55HRR5VI4TKdBJl4TA8qdp6o61VUKe8RVqH
- soKw==
+ d=1e100.net; s=20230601; t=1753193806; x=1753798606;
+ h=content-transfer-encoding:mime-version:subject:references
+ :in-reply-to:message-id:cc:to:from:date:x-gm-message-state:from:to
+ :cc:subject:date:message-id:reply-to;
+ bh=tVf9s+VBrCxFX0/0lHXJexCtjFH2FtKEcOQbNsybb/U=;
+ b=e1Vdwp3M00COWEr94VPD8htYOSmznvmkLrBaCRDlaCAPX25cuQZWhagPrObhIDPsrd
+ FzKQImccahCFuAwcAgycAHS9snAXAsrEj8eMrIUnKrFbprOzDjVlz+mh5r6artrpitR6
+ E6zTmRc8nBhE7ODY8q9N/B2GKEe2jRvIN7kx3+YfZmBZMSjkYtjpvQbIY851Fqi5RMSl
+ TMLxXmxwQxm2d7wwzRWTOQ0WIRk7z2agyorVy5y8cxBSYtOKZhBn1c/ZCfWtiF8OWKVH
+ Gg9m5stU8EKSNLOPUX4vT2fn2/OcHP567+Cnt/9sAFrFkExx6IefmJEGtLDTwLypnJZU
+ Xo9g==
 X-Forwarded-Encrypted: i=1;
- AJvYcCVsx3LOMYfonBKZyoNOo1tnBpROp9QSS1eQFkYunRHQWq6072L10tD8lcqCLm3e5N30i6y2K8fyoFmdtmJrkro=@lists.osuosl.org
-X-Gm-Message-State: AOJu0YwLhfNp9gYsXe7NHAMF7dJla7QjwsZgHaikAhPxMY6lHEJqKlG8
- ag/Y/XWAzRo+vXAgvfUhCfjA5ZW7Mf8YMSJ+XWf5nfsAtX4OeS/tRkzy
-X-Gm-Gg: ASbGncvWSco2iFBUbgeVpyqsU/8a8iZJvZ219mDWCuNDpfAi47I1oVhAJVfFd9Lh/HR
- wtbxKsX3z0gEId+semOVZUL/j4HvJX0OKZkPSlgw5JYrAznqXliNgin36y+3hSnBE7U50IOy7ld
- DiIuc09aYzBKX7UQLXyo1V+CZPRK/+IM0r6dfli99AkV64GSAwdUmgGAwOf3KS+9GA2zF4f5E7M
- ltX2Krfwr3NIuD2KLEi4avLeB+mBEbYv1kFmq//HlGpa7n6+3bUKNRtlnrdvnm4gheMRpkMMoV7
- 8XMVLuHspISnESlX4YBgjd+kFjhSkGzGa6nTccFUJTbKFP7Vk6cm1OHTym0BXDfSZJQlyO7sGV9
- C75VeR+7KKZCP1XjMgFk9VD0dpIMbwLiLrAfGxEiIXbIocba0FY+q0TtlJlQ=
-X-Google-Smtp-Source: AGHT+IHXWDumReUd0Q4eySHgoAYL7xXcdMWiTo0JJ05taBpvZ5tBQBZAd1EkCjnN//6RaGRS96p7Sw==
-X-Received: by 2002:a05:6a00:1749:b0:747:aa79:e2f5 with SMTP id
- d2e1a72fcca58-7571fd0736bmr32671103b3a.0.1753192284817; 
- Tue, 22 Jul 2025 06:51:24 -0700 (PDT)
-Received: from KERNELXING-MC1.tencent.com ([111.201.24.59])
- by smtp.gmail.com with ESMTPSA id
- d2e1a72fcca58-759c89d3190sm7612924b3a.39.2025.07.22.06.51.17
+ AJvYcCX8wfY+k2y4mswSXz8Qw0t6f68Tkx3HKfJL0VaBdj/nhpjiQs8CLO7CxItO+tTN+/d9S/qrtJDvsxVLWrZ6owo=@lists.osuosl.org
+X-Gm-Message-State: AOJu0Yy6QQvOn/aRYfnKQsrvMtPYIjyUt7kH1EVnANyDhmUY0u2UCjrQ
+ lWcTUNvK+DLV9NEtzxRv6FxUzSpWBuJ4KwOzeFb8PYfOFhE33zBVjdmh
+X-Gm-Gg: ASbGncsb8i2PY4xz1gHPJn21N+m3haiTfnjZ23S8FV9pItVXdCkGEAYvzHfbTa0hx01
+ ZypYNidzLzooDsq2vEqP8T9XXzYiWj2GWaJPHU8LvGFFt0AJEjNAxUKEvHyUKTxjh1YMkOfHejF
+ EVz1x6TpV2RVzG8jCq2K79H8se28KxcONC6i+QSSIuU8++/rn6vZF4Mz79BEx2n0dgM4UCvGzW0
+ PpipyJ+XUe9p/t1tbJ58BEoiFhZf1IZiPpfrxxwOn/yMf7BaIUosU9G68LK4qefTMaiRXOaJtrx
+ 17UrlkabQWkKrV8j6xwbh5WxSUne55qMPnWD513tqhcj3ENevcsw4fP4Nbgr5U4yRVT6aE5yenm
+ o8Am1448Oj+ZZM7pmPAzd5ECAUN1LbdUDlHn6vml74sK8fvPseSDnscOzXOQfKxQvJAWXJg==
+X-Google-Smtp-Source: AGHT+IHP7FxitzXESY9w0S6KZhfv95yINoBxcZiXaQntPpFdLn7KC8PXaCXmQQWqLiwrO+Z+Yy7ijA==
+X-Received: by 2002:a05:6902:2210:b0:e8b:b593:b06b with SMTP id
+ 3f1490d57ef6-e8c5f8acfb2mr24476660276.28.1753193806375; 
+ Tue, 22 Jul 2025 07:16:46 -0700 (PDT)
+Received: from localhost (23.67.48.34.bc.googleusercontent.com. [34.48.67.23])
+ by smtp.gmail.com with UTF8SMTPSA id
+ 3f1490d57ef6-e8d7cc0b1cesm3206309276.3.2025.07.22.07.16.45
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Tue, 22 Jul 2025 06:51:24 -0700 (PDT)
-From: Jason Xing <kerneljasonxing@gmail.com>
-To: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
- andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
- kuba@kernel.org, pabeni@redhat.com, bjorn@kernel.org,
- magnus.karlsson@intel.com, maciej.fijalkowski@intel.com,
- jonathan.lemon@gmail.com, sdf@fomichev.me, ast@kernel.org,
- daniel@iogearbox.net, hawk@kernel.org, john.fastabend@gmail.com,
- mcoquelin.stm32@gmail.com, alexandre.torgue@foss.st.com
-Cc: linux-stm32@st-md-mailman.stormreply.com, bpf@vger.kernel.org,
- intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
+ Tue, 22 Jul 2025 07:16:45 -0700 (PDT)
+Date: Tue, 22 Jul 2025 10:16:44 -0400
+From: Willem de Bruijn <willemdebruijn.kernel@gmail.com>
+To: Jason Xing <kerneljasonxing@gmail.com>, 
+ Paul Menzel <pmenzel@molgen.mpg.de>
+Cc: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com, 
+ andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com, 
+ kuba@kernel.org, pabeni@redhat.com, bjorn@kernel.org, 
+ magnus.karlsson@intel.com, maciej.fijalkowski@intel.com, 
+ jonathan.lemon@gmail.com, sdf@fomichev.me, ast@kernel.org, 
+ daniel@iogearbox.net, hawk@kernel.org, john.fastabend@gmail.com, 
+ mcoquelin.stm32@gmail.com, alexandre.torgue@foss.st.com, 
+ linux-stm32@st-md-mailman.stormreply.com, bpf@vger.kernel.org, 
+ intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org, 
  Jason Xing <kernelxing@tencent.com>
-Date: Tue, 22 Jul 2025 21:50:57 +0800
-Message-Id: <20250722135057.85386-3-kerneljasonxing@gmail.com>
-X-Mailer: git-send-email 2.33.0
-In-Reply-To: <20250722135057.85386-1-kerneljasonxing@gmail.com>
-References: <20250722135057.85386-1-kerneljasonxing@gmail.com>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Message-ID: <687f9d4cf0b14_2aa7cc29443@willemb.c.googlers.com.notmuch>
+In-Reply-To: <CAL+tcoAP7Zk7A4pzK-za+_NMoX11SGR3ubtY6R+aaywoEq_H+g@mail.gmail.com>
+References: <20250721083343.16482-1-kerneljasonxing@gmail.com>
+ <20250721083343.16482-2-kerneljasonxing@gmail.com>
+ <8c9e97e4-3590-49a8-940b-717deac0078d@molgen.mpg.de>
+ <CAL+tcoAP7Zk7A4pzK-za+_NMoX11SGR3ubtY6R+aaywoEq_H+g@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain;
+ charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20230601; t=1753192285; x=1753797085; darn=lists.osuosl.org;
- h=content-transfer-encoding:mime-version:references:in-reply-to
- :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+ d=gmail.com; s=20230601; t=1753193806; x=1753798606; darn=lists.osuosl.org;
+ h=content-transfer-encoding:mime-version:subject:references
+ :in-reply-to:message-id:cc:to:from:date:from:to:cc:subject:date
  :message-id:reply-to;
- bh=pD/wWijrKvVTR2o9RA6CvKO4pRLA1Dtb3qzUWgqM4ys=;
- b=asQnA8L2G/JWE0vtTQ8Gm0aLz3Udk9hIrKKceoismfaGjVO7H5GMUUIwYuXMbo4azd
- Z7S4OlZsF+jsU1YmOzeuDuKqvPYT3EBU69wHCg0l34MMd2JjmmKSvC9u8lkto0ctxZJQ
- 7gIKZZrMFW82GvTUpQ6wrOCidD87QYNl+AnmKDvOB1QKBv00dHty8ASisO39UscdWhe6
- e2b6FCnHQF/GsE+QGybFc7SG/BWsGgyqAYRkQ11nkH+0LC7UllOC4TcfbB0Q1BXlStwm
- 9C7O40i+ILASiqgbAshC2bYEC9AtRdZjGc/MEAKz7MQDjmwTpPBuQLTcXewF5WudfFXE
- thfA==
+ bh=tVf9s+VBrCxFX0/0lHXJexCtjFH2FtKEcOQbNsybb/U=;
+ b=TGQvc9nDXl6KaSsrwwlAbwNjXBtepyHbZiZqXoEwkWanI4+bsVnFjsuL44tW59z0zn
+ Lt46sYnegQhBUOnGtWUwMIUPlKS2bNgVYrnVfp0ZOdPkrr8xKTd2K0vAQXLeujhtCQhc
+ ncsVNj5lwuiw6s68d6CGN/A0qUL4w2cB9fwODxnHHtKrMHLAH/fRHcsM0raM8bTJePYp
+ OAw+aewwiB/Q2oe5Q34U4R/lnVVlIvvTn3gCuXTkcZXH4N8mRU7ZakwRlj5SQ5v71JVc
+ wZh44Gj6Rz+0At6EaVXY7/LDqIrrjyZfrVte/OxP6PJerjQwlFUvfQXVoNgLell1JL0N
+ mPaw==
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=gmail.com
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20230601 header.b=asQnA8L2
-Subject: [Intel-wired-lan] [PATCH net v2 2/2] igb: xsk: solve underflow of
- nb_pkts in zerocopy mode
+ dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
+ header.a=rsa-sha256 header.s=20230601 header.b=TGQvc9nD
+Subject: Re: [Intel-wired-lan] [PATCH net-next 1/2] stmmac: xsk: fix
+ underflow of budget in zerocopy mode
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -138,56 +143,49 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Jason Xing <kernelxing@tencent.com>
+Jason Xing wrote:
+> Hi Paul,
+> =
 
-There is no break time in the while() loop, so every time at the end of
-igb_xmit_zc(), underflow of nb_pkts will occur, which renders the return
-value always false. But theoretically, the result should be set after
-calling xsk_tx_peek_release_desc_batch(). We can take i40e_xmit_zc() as
-a good example.
+> On Mon, Jul 21, 2025 at 4:56=E2=80=AFPM Paul Menzel <pmenzel@molgen.mpg=
+.de> wrote:
+> >
+> > Dear Jason,
+> >
+> >
+> > Thank you for your patch.
+> =
 
-Returning false means we're not done with transmission and we need one
-more poll, which is exactly what igb_xmit_zc() always did before this
-patch. After this patch, the return value depends on the nb_pkts value.
-Two cases might happen then:
-1. if (nb_pkts < budget), it means we process all the possible data, so
-   return true and no more necessary poll will be triggered because of
-   this.
-2. if (nb_pkts == budget), it means we might have more data, so return
-   false to let another poll run again.
+> Thanks for your quick response and review :)
+> =
 
-Fixes: f8e284a02afc ("igb: Add AF_XDP zero-copy Tx support")
-Signed-off-by: Jason Xing <kernelxing@tencent.com>
----
-v2
-Link: https://lore.kernel.org/all/20250721083343.16482-1-kerneljasonxing@gmail.com/
-1. target net tree instead of net-next
-2. use for loop instead
----
- drivers/net/ethernet/intel/igb/igb_xsk.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+> >
+> > Am 21.07.25 um 10:33 schrieb Jason Xing:
+> > > From: Jason Xing <kernelxing@tencent.com>
+> > >
+> > > The issue can happen when the budget number of descs are consumed. =
+As
+> >
+> > Instead of =E2=80=9CThe issue=E2=80=9D, I=E2=80=99d use =E2=80=9CAn u=
+nderflow =E2=80=A6=E2=80=9D.
+> =
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_xsk.c b/drivers/net/ethernet/intel/igb/igb_xsk.c
-index 5cf67ba29269..30ce5fbb5b77 100644
---- a/drivers/net/ethernet/intel/igb/igb_xsk.c
-+++ b/drivers/net/ethernet/intel/igb/igb_xsk.c
-@@ -482,7 +482,7 @@ bool igb_xmit_zc(struct igb_ring *tx_ring, struct xsk_buff_pool *xsk_pool)
- 	if (!nb_pkts)
- 		return true;
- 
--	while (nb_pkts-- > 0) {
-+	for (; i < nb_pkts; i++) {
- 		dma = xsk_buff_raw_get_dma(xsk_pool, descs[i].addr);
- 		xsk_buff_raw_dma_sync_for_device(xsk_pool, dma, descs[i].len);
- 
-@@ -512,7 +512,6 @@ bool igb_xmit_zc(struct igb_ring *tx_ring, struct xsk_buff_pool *xsk_pool)
- 
- 		total_bytes += descs[i].len;
- 
--		i++;
- 		tx_ring->next_to_use++;
- 		tx_buffer_info->next_to_watch = tx_desc;
- 		if (tx_ring->next_to_use == tx_ring->count)
--- 
-2.41.3
+> Will change it.
+> =
 
+> >
+> > > long as the budget is decreased to zero, it will again go into
+> > > while (budget-- > 0) statement and get decreased by one, so the
+> > > underflow issue can happen. It will lead to returning true whereas =
+the
+> > > expected value should be false.
+> >
+> > What is =E2=80=9Cit=E2=80=9D?
+> =
+
+> It means 'underflow of budget' behavior.
+
+A technicality, but this is (negative) overflow.
+
+Underflow is a computation that results in a value that is too small
+to be represented by the given type.=
