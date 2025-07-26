@@ -1,95 +1,126 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3F989C87FCE
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 25 Jul 2025 19:59:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D6FF6C87FCA
+	for <intel-wired-lan@archiver.kernel.org>; Sat, 26 Jul 2025 00:23:01 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id E95A861AD3;
-	Fri, 25 Jul 2025 19:59:30 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id JIh1THFqHhQG; Fri, 25 Jul 2025 19:59:29 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C93FB617BC
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1753473569;
-	bh=ivya1EzVCbw0o4dYe+knkjWoez4RiejZxGf/to9ndCM=;
-	h=Date:To:Cc:References:From:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=IDMbr5jcSXqVG61xXo5gHVio/Dp2XfLsH/kYgvkz36eP4RR4IhTzeNQ4zwqZQZHbi
-	 REsoW7biDj/roHn4QGmx4elq7qKXaWc8Hg7/b7T4diNQvXobNJ2gY3myiznkToNDqM
-	 kWqDizQu8TeIdRoAviDUH7uxYq4ME3OHnLO4LYllKdezd1gqbQANCUESpwMzC3Jw86
-	 gzk0WwxhanH4/gr3eS4fiyZW/7u3KanlMUgrTjwe3jS338kzYepwIyu+tZyCSFzG4u
-	 fPspRtQr68UKIhS6oJ1gNd5AhUoD4TMK583h6X7bfQupkmT7q99mUWgpLyy44RX8et
-	 V0qkTpNDV6Lzg==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id C93FB617BC;
-	Fri, 25 Jul 2025 19:59:29 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id 7EB7D177
- for <intel-wired-lan@lists.osuosl.org>; Fri, 25 Jul 2025 11:40:35 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 6583941AEB
- for <intel-wired-lan@lists.osuosl.org>; Fri, 25 Jul 2025 11:40:35 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 8EB8D4104D;
+	Sat, 26 Jul 2025 00:23:01 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id B0FkBaZW3fSw for <intel-wired-lan@lists.osuosl.org>;
- Fri, 25 Jul 2025 11:40:34 +0000 (UTC)
-X-Greylist: delayed 423 seconds by postgrey-1.37 at util1-new.osuosl.org;
- Fri, 25 Jul 2025 11:40:33 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 0200E41B1B
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0200E41B1B
+ id hozSeuJaRK9K; Sat, 26 Jul 2025 00:23:00 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org AF107411E8
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1753489380;
+	bh=59Vu4UzUC/JMMQqQH2RP8veIclAnDjH6tcSPWkXla5A=;
+	h=References:In-Reply-To:From:Date:To:Cc:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=PFULZ8Myz6thdJ4dhnu73IqGhzuaXugN7xNAxg4KxqkDOWoa+QkuW2YsuEcNZVMkA
+	 QztDVB7sjgXQdN9HkThzl5EL9HduWu/WzWrfWdJJ1R4d7LchlZm0Z+KVFU3a+btNZH
+	 pbvP2XEoDv3uQUMNW7t1C6yOkLu111us2KA8poKltgg+bnhHQ+kj9iPpqGry/8CVq1
+	 QPGoTqhGZ5BD8eAO+TEuzXblR3mxHgvFqugFeGLC8hkN1bXxwea5+3oQrtEb27ae9C
+	 R14gi2vzzH5JAzk9q49FIxlBM+4bmFlMA5G4rPiErpEQgkb3cckvg7jEYJA5khcHvO
+	 VOJL3DqgABvig==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp4.osuosl.org (Postfix) with ESMTP id AF107411E8;
+	Sat, 26 Jul 2025 00:23:00 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id BD379DA
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 26 Jul 2025 00:22:59 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp1.osuosl.org (Postfix) with ESMTP id A2B5C83DC7
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 26 Jul 2025 00:22:59 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id JYFYxjKBVBre for <intel-wired-lan@lists.osuosl.org>;
+ Sat, 26 Jul 2025 00:22:58 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2001:41d0:1004:224b::b3; helo=out-179.mta0.migadu.com;
- envelope-from=kunwu.chan@linux.dev; receiver=<UNKNOWN> 
-Received: from out-179.mta0.migadu.com (out-179.mta0.migadu.com
- [IPv6:2001:41d0:1004:224b::b3])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 0200E41B1B
- for <intel-wired-lan@lists.osuosl.org>; Fri, 25 Jul 2025 11:40:33 +0000 (UTC)
-Message-ID: <c6f54d34-a22f-4533-a7d7-c991ae08d725@linux.dev>
-Date: Fri, 25 Jul 2025 19:32:46 +0800
+ client-ip=2607:f8b0:4864:20::133; helo=mail-il1-x133.google.com;
+ envelope-from=kerneljasonxing@gmail.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org B049583DA3
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B049583DA3
+Received: from mail-il1-x133.google.com (mail-il1-x133.google.com
+ [IPv6:2607:f8b0:4864:20::133])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id B049583DA3
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 26 Jul 2025 00:22:58 +0000 (UTC)
+Received: by mail-il1-x133.google.com with SMTP id
+ e9e14a558f8ab-3e2953dcaa1so9823615ab.1
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 25 Jul 2025 17:22:58 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20230601; t=1753489377; x=1754094177;
+ h=content-transfer-encoding:cc:to:subject:message-id:date:from
+ :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+ :subject:date:message-id:reply-to;
+ bh=59Vu4UzUC/JMMQqQH2RP8veIclAnDjH6tcSPWkXla5A=;
+ b=ndnz0D1hECN1m5zhuVPIV6ivpyUipXoD4DfpU3msuRbVUEi9S2jlGEI/J2uFz2LWMD
+ xds0EbWRm/RiWTMbHMdlCVc7lBoHgq/2FQy4pcRaXYzrldCPH9OSyOizDvWKKQ0Vfu8P
+ LjxiOa8nM5JNppzkOi/iewplbuA072FBO5+ZzQfyIc5F7aD7AK6t7YT5Uw6JUf9kX3rQ
+ w1wdkUDcmiWck72b14CzLayVN1u4KfKvSRpJ/ensuLOBZrYfofhBCVZuwUYiL+g1TZkZ
+ iHpjNg2eOE3U1rIrnhbCWL3UvGOrcrextiasAi1rCFIaRJp+OVU0/eVDjEm9QBBT+2g8
+ RmoA==
+X-Forwarded-Encrypted: i=1;
+ AJvYcCWJSkk+yuam4CmZVGBI9y09KXzV2u7zGzjrvnRYSY4dlZ8tEvPLDHi1wgsRiH2IFnN9NQezq9l+m50F833rjzo=@lists.osuosl.org
+X-Gm-Message-State: AOJu0YwyYkF/MiccTfft3CPjHpxfrp4VIXVcaYEzHL5iX9IyNr5scv2t
+ oh/vaMTDPSjMjjoEkSLVWQzMnPZqpwSE9idnuUSHjcvSZRSfWU+kyg0VfujgGBZNsB7yJ0C2j+R
+ elU31EuvGSoq2wqQ7MCZK8WCY4YdkTv4=
+X-Gm-Gg: ASbGncvKzySH4+wAmtE2Foi8zIFE18wR9/CcvlJildeH3ZAGqMNUp007mOS7USCipLe
+ 5lUJB/trzCK6RHBDkr8BjC4enNhuiszWD1HWFBFLdOMpsiFj05j4LRcLIVX8Vp8lLnMjJtM2xa6
+ uVDMLcMgfkf95cSRtKDRL4HAzbOnzkUVaLYWU7ngtNrVaQYaiERUNZtmjgtVxq+pri+dIRMJzH6
+ ywpsOE=
+X-Google-Smtp-Source: AGHT+IHB4NPlAjQxD6BkYXKrz60HqH1+D3z7Ld1KBDo+gdXSpJRVwQ6CWlgCZppX81Uw++0cNW5F5c2YfK9e28gzm+0=
+X-Received: by 2002:a05:6e02:2681:b0:3dc:7f3b:acb1 with SMTP id
+ e9e14a558f8ab-3e3c52c7ec8mr57210265ab.13.1753489377560; Fri, 25 Jul 2025
+ 17:22:57 -0700 (PDT)
 MIME-Version: 1.0
-To: Jacob Keller <jacob.e.keller@intel.com>,
- Intel Wired LAN <intel-wired-lan@lists.osuosl.org>, netdev@vger.kernel.org
-Cc: Simon Horman <horms@kernel.org>,
- Anthony Nguyen <anthony.l.nguyen@intel.com>,
- Wang Haoran <haoranwangsec@gmail.com>,
- Amir Mohammad Jahangirzad <a.jahangirzad@gmail.com>
-References: <20250722-jk-drop-debugfs-read-access-v1-1-27f13f08d406@intel.com>
-Content-Language: en-US
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and
- include these headers.
-From: Kunwu Chan <kunwu.chan@linux.dev>
-In-Reply-To: <20250722-jk-drop-debugfs-read-access-v1-1-27f13f08d406@intel.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Migadu-Flow: FLOW_OUT
-X-Mailman-Approved-At: Fri, 25 Jul 2025 19:59:28 +0000
+References: <20250720091123.474-1-kerneljasonxing@gmail.com>
+ <20250720091123.474-3-kerneljasonxing@gmail.com>
+ <6ecfc595-04a8-42f4-b86d-fdaec793d4db@intel.com>
+ <CAL+tcoBTejWSmv6XTpFqvgy4Qk4c39-OJm8Vqcwraa0cAST=sw@mail.gmail.com>
+ <aINjHQU7Uwz_ZThs@soc-5CG4396X81.clients.intel.com>
+ <cae34d33-3e32-4c89-a775-df764d964c4d@intel.com>
+In-Reply-To: <cae34d33-3e32-4c89-a775-df764d964c4d@intel.com>
+From: Jason Xing <kerneljasonxing@gmail.com>
+Date: Sat, 26 Jul 2025 08:22:21 +0800
+X-Gm-Features: Ac12FXxnz1RbcpICFx5PlD2qfV1XUE12aPb3sm84n5AESFoJenPD09RXgIli5V0
+Message-ID: <CAL+tcoCCM2Yxy=rQHcLJmi9=Vm=4whCJbVH=EqU8hazL5XXA-A@mail.gmail.com>
+To: Tony Nguyen <anthony.l.nguyen@intel.com>
+Cc: Larysa Zaremba <larysa.zaremba@intel.com>, przemyslaw.kitszel@intel.com, 
+ andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com, 
+ kuba@kernel.org, pabeni@redhat.com, bjorn@kernel.org, 
+ magnus.karlsson@intel.com, maciej.fijalkowski@intel.com, 
+ jonathan.lemon@gmail.com, sdf@fomichev.me, ast@kernel.org, 
+ daniel@iogearbox.net, hawk@kernel.org, john.fastabend@gmail.com, 
+ bpf@vger.kernel.org, intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org, 
+ Jason Xing <kernelxing@tencent.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=linux.dev; s=key1; t=1753443207;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=ivya1EzVCbw0o4dYe+knkjWoez4RiejZxGf/to9ndCM=;
- b=r1JcpPxADtHGVGoReqfDBE5+ELNMpeLSbXkrrGD8Pfrv/pkmjrzm2fDw9LBEFN3+F5myrI
- MEA4P20otqVnmY5o7bonVpnXcl6Ja/6iazkR5+mKmFzWgapjASMOfCnGPq57Xc+of7P8RR
- irYArmYtcdceD4dl6Sm0s4asX8OHfsk=
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ d=gmail.com; s=20230601; t=1753489377; x=1754094177; darn=lists.osuosl.org;
+ h=content-transfer-encoding:cc:to:subject:message-id:date:from
+ :in-reply-to:references:mime-version:from:to:cc:subject:date
+ :message-id:reply-to;
+ bh=59Vu4UzUC/JMMQqQH2RP8veIclAnDjH6tcSPWkXla5A=;
+ b=Z1DEjr+3FRw5lYT+Y2EGISA6oPhBVMeXT0pmpZBeh5BuCUtCMVdQfNxhkwA/1/VN13
+ lgkUx6uiWGpMUE19iE4PWaHsaFxCP362n+fiXN0fvjU/r0BGtH7IU+756/GLLzPOhjg1
+ VclZ7Oc2d6E9eH1w94jOLLc5A6jYJtzOvH+2Hb7j6pVBygdP0FSDk7VaOkb+0uiRzDCH
+ laguJjS9qSKIpz31XfQ3p/wP6g28pE33bUAJwqy0CkQ0i1+Pnlbx0eV2hSvooBZMeTWs
+ 8ZEBWTQfnNfSKo4LbiOXt/yW1x6I63HKT06s6reTtwK1Be3jZf+/ZrR5+1WYN9KznmvV
+ cpng==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
- header.from=linux.dev
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (1024-bit key,
- unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256
- header.s=key1 header.b=r1JcpPxA
-Subject: Re: [Intel-wired-lan] [PATCH] i40e: remove read access to debugfs
- files
+ header.from=gmail.com
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
+ header.a=rsa-sha256 header.s=20230601 header.b=Z1DEjr+3
+Subject: Re: [Intel-wired-lan] [PATCH net-next 2/5] ixgbe: xsk: resolve the
+ underflow of budget in ixgbe_xmit_zc
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -105,294 +136,109 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On 2025/7/23 08:14, Jacob Keller wrote:
-> The 'command' and 'netdev_ops' debugfs files are a legacy debugging
-> interface supported by the i40e driver since its early days by commit
-> 02e9c290814c ("i40e: debugfs interface").
+On Sat, Jul 26, 2025 at 12:54=E2=80=AFAM Tony Nguyen <anthony.l.nguyen@inte=
+l.com> wrote:
 >
-> Both of these debugfs files provide a read handler which is mostly useless,
-> and which is implemented with questionable logic. They both use a static
-> 256 byte buffer which is initialized to the empty string. In the case of
-> the 'command' file this buffer is literally never used and simply wastes
-> space. In the case of the 'netdev_ops' file, the last command written is
-> saved here.
 >
-> On read, the files contents are presented as the name of the device
-> followed by a colon and then the contents of their respective static
-> buffer. For 'command' this will always be "<device>: ". For 'netdev_ops',
-> this will be "<device>: <last command written>". But note the buffer is
-> shared between all devices operated by this module. At best, it is mostly
-> meaningless information, and at worse it could be accessed simultaneously
-> as there doesn't appear to be any locking mechanism.
 >
-> We have also recently received multiple reports for both read functions
-> about their use of snprintf and potential overflow that could result in
-> reading arbitrary kernel memory. For the 'command' file, this is definitely
-> impossible, since the static buffer is always zero and never written to.
-> For the 'netdev_ops' file, it does appear to be possible, if the user
-> carefully crafts the command input, it will be copied into the buffer,
-> which could be large enough to cause snprintf to truncate, which then
-> causes the copy_to_user to read beyond the length of the buffer allocated
-> by kzalloc.
+> On 7/25/2025 3:57 AM, Larysa Zaremba wrote:
+> > On Fri, Jul 25, 2025 at 07:18:11AM +0800, Jason Xing wrote:
+> >> Hi Tony,
+> >>
+> >> On Fri, Jul 25, 2025 at 4:21=E2=80=AFAM Tony Nguyen <anthony.l.nguyen@=
+intel.com> wrote:
+> >>>
+> >>>
+> >>>
+> >>> On 7/20/2025 2:11 AM, Jason Xing wrote:
+> >>>> From: Jason Xing <kernelxing@tencent.com>
+> >>>>
+> >>>> Resolve the budget underflow which leads to returning true in ixgbe_=
+xmit_zc
+> >>>> even when the budget of descs are thoroughly consumed.
+> >>>>
+> >>>> Before this patch, when the budget is decreased to zero and finishes
+> >>>> sending the last allowed desc in ixgbe_xmit_zc, it will always turn =
+back
+> >>>> and enter into the while() statement to see if it should keep proces=
+sing
+> >>>> packets, but in the meantime it unexpectedly decreases the value aga=
+in to
+> >>>> 'unsigned int (0--)', namely, UINT_MAX. Finally, the ixgbe_xmit_zc r=
+eturns
+> >>>> true, showing 'we complete cleaning the budget'. That also means
+> >>>> 'clean_complete =3D true' in ixgbe_poll.
+> >>>>
+> >>>> The true theory behind this is if that budget number of descs are co=
+nsumed,
+> >>>> it implies that we might have more descs to be done. So we should re=
+turn
+> >>>> false in ixgbe_xmit_zc to tell napi poll to find another chance to s=
+tart
+> >>>> polling to handle the rest of descs. On the contrary, returning true=
+ here
+> >>>> means job done and we know we finish all the possible descs this tim=
+e and
+> >>>> we don't intend to start a new napi poll.
+> >>>>
+> >>>> It is apparently against our expectations. Please also see how
+> >>>> ixgbe_clean_tx_irq() handles the problem: it uses do..while() statem=
+ent
+> >>>> to make sure the budget can be decreased to zero at most and the und=
+erflow
+> >>>> never happens.
+> >>>>
+> >>>> Fixes: 8221c5eba8c1 ("ixgbe: add AF_XDP zero-copy Tx support")
+> >>>
+> >>> Hi Jason,
+> >>>
+> >>> Seems like this one should be split off and go to iwl-net/net like th=
+e
+> >>> other similar ones [1]? Also, some of the updates made to the other
+> >>> series apply here as well?
+> >>
+> >> The other three patches are built on top of this one. If without the
+> >> patch, the whole series will be warned because of build failure. I was
+> >> thinking we could backport this patch that will be backported to the
+> >> net branch after the whole series goes into the net-next branch.
+> >>
+> >> Or you expect me to cook four patches without this one first so that
+> >> you could easily cherry pick this one then without building conflict?
+> >>
+> >>>
+> >>> Thanks,
+> >>> Tony
+> >>>
+> >>> [1]
+> >>> https://lore.kernel.org/netdev/20250723142327.85187-1-kerneljasonxing=
+@gmail.com/
+> >>
+> >> Regarding this one, should I send a v4 version with the current patch
+> >> included? And target [iwl-net/net] explicitly as well?
+> >>
+> >> I'm not sure if I follow you. Could you instruct me on how to proceed
+> >> next in detail?
+> >>
+> >
+> > What I usually do is send the fix as soon as I have it. While I prepare=
+ and test
+> > the series, the fix usually manages to get into the tree. Advise you do=
+ the
+> > same, given you have things to change in v2, but the fix can be resent =
+almost
+> > as it is now (just change the tree).
+> >
+> > Tony can have a different opinion though.
 >
-> A minimal fix would be to replace snprintf() with scnprintf() which would
-> cap the return to the number of bytes written, preventing an overflow. A
-> more involved fix would be to drop the mostly useless static buffers,
-> saving 512 bytes and modifying the read functions to stop needing those as
-> input.
->
-> Instead, lets just completely drop the read access to these files. These
-> are debug interfaces exposed as part of debugfs, and I don't believe that
-> dropping read access will break any script, as the provided output is
-> pretty useless. You can find the netdev name through other more standard
-> interfaces, and the 'netdev_ops' interface can easily result in garbage if
-> you issue simultaneous writes to multiple devices at once.
->
-> In order to properly remove the i40e_dbg_netdev_ops_buf, we need to
-> refactor its write function to avoid using the static buffer. Instead, use
-> the same logic as the i40e_dbg_command_write, with an allocated buffer.
-> Update the code to use this instead of the static buffer, and ensure we
-> free the buffer on exit. This fixes simultaneous writes to 'netdev_ops' on
-> multiple devices, and allows us to remove the now unused static buffer
-> along with removing the read access.
->
-> Reported-by: Kunwu Chan <chentao@kylinos.cn>
-> Closes: https://lore.kernel.org/intel-wired-lan/20231208031950.47410-1-chentao@kylinos.cn/
-> Reported-by: Wang Haoran <haoranwangsec@gmail.com>
-> Closes: https://lore.kernel.org/all/CANZ3JQRRiOdtfQJoP9QM=6LS1Jto8PGBGw6y7-TL=BcnzHQn1Q@mail.gmail.com/
-> Reported-by: Amir Mohammad Jahangirzad <a.jahangirzad@gmail.com>
-> Closes: https://lore.kernel.org/all/20250722115017.206969-1-a.jahangirzad@gmail.com/
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> ---
-> I found several reports of the issues with these read functions going at
-> least as far back  as 2023, with suggestions to remove the read access even
-> back then. None of the fixes got accepted or applied, but neither did Intel
-> follow up with removing the interfaces. Its time to just drop the read
-> access altogether.
+> I agree. Normally in these situations, send the fix first and after that
+> one is
+> applied, the other patches can be sent.
+> This patch would've fit in nice with the other series, however, as that
+> one is already in process and this one can standalone. I would send this
+> fix by itself.
 
-Reviewed-by: Kunwu Chan <kunwu.chan@linux.dev>
+Got it. I will leave those two fixes as they are and send this one
+targetting the right branch as soon as possible today.
 
-> ---
->   drivers/net/ethernet/intel/i40e/i40e_debugfs.c | 123 ++++---------------------
->   1 file changed, 19 insertions(+), 104 deletions(-)
->
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-> index 6cd9da662ae1..a5c794371dfe 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-> @@ -40,48 +40,6 @@ static struct i40e_vsi *i40e_dbg_find_vsi(struct i40e_pf *pf, int seid)
->    * setup, adding or removing filters, or other things.  Many of
->    * these will be useful for some forms of unit testing.
->    **************************************************************/
-> -static char i40e_dbg_command_buf[256] = "";
-> -
-> -/**
-> - * i40e_dbg_command_read - read for command datum
-> - * @filp: the opened file
-> - * @buffer: where to write the data for the user to read
-> - * @count: the size of the user's buffer
-> - * @ppos: file position offset
-> - **/
-> -static ssize_t i40e_dbg_command_read(struct file *filp, char __user *buffer,
-> -				     size_t count, loff_t *ppos)
-> -{
-> -	struct i40e_pf *pf = filp->private_data;
-> -	struct i40e_vsi *main_vsi;
-> -	int bytes_not_copied;
-> -	int buf_size = 256;
-> -	char *buf;
-> -	int len;
-> -
-> -	/* don't allow partial reads */
-> -	if (*ppos != 0)
-> -		return 0;
-> -	if (count < buf_size)
-> -		return -ENOSPC;
-> -
-> -	buf = kzalloc(buf_size, GFP_KERNEL);
-> -	if (!buf)
-> -		return -ENOSPC;
-> -
-> -	main_vsi = i40e_pf_get_main_vsi(pf);
-> -	len = snprintf(buf, buf_size, "%s: %s\n", main_vsi->netdev->name,
-> -		       i40e_dbg_command_buf);
-> -
-> -	bytes_not_copied = copy_to_user(buffer, buf, len);
-> -	kfree(buf);
-> -
-> -	if (bytes_not_copied)
-> -		return -EFAULT;
-> -
-> -	*ppos = len;
-> -	return len;
-> -}
->   
->   static char *i40e_filter_state_string[] = {
->   	"INVALID",
-> @@ -1621,7 +1579,6 @@ static ssize_t i40e_dbg_command_write(struct file *filp,
->   static const struct file_operations i40e_dbg_command_fops = {
->   	.owner = THIS_MODULE,
->   	.open =  simple_open,
-> -	.read =  i40e_dbg_command_read,
->   	.write = i40e_dbg_command_write,
->   };
->   
-> @@ -1630,48 +1587,6 @@ static const struct file_operations i40e_dbg_command_fops = {
->    * The netdev_ops entry in debugfs is for giving the driver commands
->    * to be executed from the netdev operations.
->    **************************************************************/
-> -static char i40e_dbg_netdev_ops_buf[256] = "";
-> -
-> -/**
-> - * i40e_dbg_netdev_ops_read - read for netdev_ops datum
-> - * @filp: the opened file
-> - * @buffer: where to write the data for the user to read
-> - * @count: the size of the user's buffer
-> - * @ppos: file position offset
-> - **/
-> -static ssize_t i40e_dbg_netdev_ops_read(struct file *filp, char __user *buffer,
-> -					size_t count, loff_t *ppos)
-> -{
-> -	struct i40e_pf *pf = filp->private_data;
-> -	struct i40e_vsi *main_vsi;
-> -	int bytes_not_copied;
-> -	int buf_size = 256;
-> -	char *buf;
-> -	int len;
-> -
-> -	/* don't allow partal reads */
-> -	if (*ppos != 0)
-> -		return 0;
-> -	if (count < buf_size)
-> -		return -ENOSPC;
-> -
-> -	buf = kzalloc(buf_size, GFP_KERNEL);
-> -	if (!buf)
-> -		return -ENOSPC;
-> -
-> -	main_vsi = i40e_pf_get_main_vsi(pf);
-> -	len = snprintf(buf, buf_size, "%s: %s\n", main_vsi->netdev->name,
-> -		       i40e_dbg_netdev_ops_buf);
-> -
-> -	bytes_not_copied = copy_to_user(buffer, buf, len);
-> -	kfree(buf);
-> -
-> -	if (bytes_not_copied)
-> -		return -EFAULT;
-> -
-> -	*ppos = len;
-> -	return len;
-> -}
->   
->   /**
->    * i40e_dbg_netdev_ops_write - write into netdev_ops datum
-> @@ -1685,35 +1600,36 @@ static ssize_t i40e_dbg_netdev_ops_write(struct file *filp,
->   					 size_t count, loff_t *ppos)
->   {
->   	struct i40e_pf *pf = filp->private_data;
-> +	char *cmd_buf, *buf_tmp;
->   	int bytes_not_copied;
->   	struct i40e_vsi *vsi;
-> -	char *buf_tmp;
->   	int vsi_seid;
->   	int i, cnt;
->   
->   	/* don't allow partial writes */
->   	if (*ppos != 0)
->   		return 0;
-> -	if (count >= sizeof(i40e_dbg_netdev_ops_buf))
-> -		return -ENOSPC;
->   
-> -	memset(i40e_dbg_netdev_ops_buf, 0, sizeof(i40e_dbg_netdev_ops_buf));
-> -	bytes_not_copied = copy_from_user(i40e_dbg_netdev_ops_buf,
-> -					  buffer, count);
-> -	if (bytes_not_copied)
-> +	cmd_buf = kzalloc(count + 1, GFP_KERNEL);
-> +	if (!cmd_buf)
-> +		return count;
-> +	bytes_not_copied = copy_from_user(cmd_buf, buffer, count);
-> +	if (bytes_not_copied) {
-> +		kfree(cmd_buf);
->   		return -EFAULT;
-> -	i40e_dbg_netdev_ops_buf[count] = '\0';
-> +	}
-> +	cmd_buf[count] = '\0';
->   
-> -	buf_tmp = strchr(i40e_dbg_netdev_ops_buf, '\n');
-> +	buf_tmp = strchr(cmd_buf, '\n');
->   	if (buf_tmp) {
->   		*buf_tmp = '\0';
-> -		count = buf_tmp - i40e_dbg_netdev_ops_buf + 1;
-> +		count = buf_tmp - cmd_buf + 1;
->   	}
->   
-> -	if (strncmp(i40e_dbg_netdev_ops_buf, "change_mtu", 10) == 0) {
-> +	if (strncmp(cmd_buf, "change_mtu", 10) == 0) {
->   		int mtu;
->   
-> -		cnt = sscanf(&i40e_dbg_netdev_ops_buf[11], "%i %i",
-> +		cnt = sscanf(&cmd_buf[11], "%i %i",
->   			     &vsi_seid, &mtu);
->   		if (cnt != 2) {
->   			dev_info(&pf->pdev->dev, "change_mtu <vsi_seid> <mtu>\n");
-> @@ -1735,8 +1651,8 @@ static ssize_t i40e_dbg_netdev_ops_write(struct file *filp,
->   			dev_info(&pf->pdev->dev, "Could not acquire RTNL - please try again\n");
->   		}
->   
-> -	} else if (strncmp(i40e_dbg_netdev_ops_buf, "set_rx_mode", 11) == 0) {
-> -		cnt = sscanf(&i40e_dbg_netdev_ops_buf[11], "%i", &vsi_seid);
-> +	} else if (strncmp(cmd_buf, "set_rx_mode", 11) == 0) {
-> +		cnt = sscanf(&cmd_buf[11], "%i", &vsi_seid);
->   		if (cnt != 1) {
->   			dev_info(&pf->pdev->dev, "set_rx_mode <vsi_seid>\n");
->   			goto netdev_ops_write_done;
-> @@ -1756,8 +1672,8 @@ static ssize_t i40e_dbg_netdev_ops_write(struct file *filp,
->   			dev_info(&pf->pdev->dev, "Could not acquire RTNL - please try again\n");
->   		}
->   
-> -	} else if (strncmp(i40e_dbg_netdev_ops_buf, "napi", 4) == 0) {
-> -		cnt = sscanf(&i40e_dbg_netdev_ops_buf[4], "%i", &vsi_seid);
-> +	} else if (strncmp(cmd_buf, "napi", 4) == 0) {
-> +		cnt = sscanf(&cmd_buf[4], "%i", &vsi_seid);
->   		if (cnt != 1) {
->   			dev_info(&pf->pdev->dev, "napi <vsi_seid>\n");
->   			goto netdev_ops_write_done;
-> @@ -1775,21 +1691,20 @@ static ssize_t i40e_dbg_netdev_ops_write(struct file *filp,
->   			dev_info(&pf->pdev->dev, "napi called\n");
->   		}
->   	} else {
-> -		dev_info(&pf->pdev->dev, "unknown command '%s'\n",
-> -			 i40e_dbg_netdev_ops_buf);
-> +		dev_info(&pf->pdev->dev, "unknown command '%s'\n", cmd_buf);
->   		dev_info(&pf->pdev->dev, "available commands\n");
->   		dev_info(&pf->pdev->dev, "  change_mtu <vsi_seid> <mtu>\n");
->   		dev_info(&pf->pdev->dev, "  set_rx_mode <vsi_seid>\n");
->   		dev_info(&pf->pdev->dev, "  napi <vsi_seid>\n");
->   	}
->   netdev_ops_write_done:
-> +	kfree(cmd_buf);
->   	return count;
->   }
->   
->   static const struct file_operations i40e_dbg_netdev_ops_fops = {
->   	.owner = THIS_MODULE,
->   	.open = simple_open,
-> -	.read = i40e_dbg_netdev_ops_read,
->   	.write = i40e_dbg_netdev_ops_write,
->   };
->   
->
-> ---
-> base-commit: cf074eca0065bc5142e6004ae236bb35a2687fdf
-> change-id: 20250722-jk-drop-debugfs-read-access-994721875248
->
-> Best regards,
-> --
-> Jacob Keller <jacob.e.keller@intel.com>
->
--- 
 Thanks,
-        TAO.
----
-“Life finds a way.”
-
+Jason
