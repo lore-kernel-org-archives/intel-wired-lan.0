@@ -4,109 +4,110 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 37318C87FCF
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  7 Aug 2025 17:35:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3DDB3CA0EC0
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  7 Aug 2025 17:35:43 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id E1F93806D4;
-	Thu,  7 Aug 2025 17:35:41 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 0A84E806CC;
+	Thu,  7 Aug 2025 17:35:42 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id FzsqCz3I_ZHK; Thu,  7 Aug 2025 17:35:41 +0000 (UTC)
+ id U0MVaSmW5NuZ; Thu,  7 Aug 2025 17:35:40 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 5894E806CF
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 15CD5806C5
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1754588141;
-	bh=csqfGVeoUQY9v6UpDocHWR5DEYSKclIeLsMUKk401Rg=;
-	h=From:Date:References:In-Reply-To:To:Cc:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=wdxGHQdzU2D3zIt/3rOg5AkymRIib7GA3wfoXg+P2of6npaBPkd/MOmPrgf3H5vVG
-	 lhcU/bCJbBZ7Yx29FtlOEgtmzWN/JCfTBNpo7nX3TqVeHM5Vk974nrkeOQwK9f55H2
-	 LvKEIgeC1pek2rIXYceTtUOG0nVIIGtKMUiSILrJacyvzdZDSfUKuy6OnbL7ijKGPI
-	 Jmg7+0r6bsnxq9+4+aAwGcpSt6/OE/Hxur2mlI690vVtAmJl2Mduo2RF0wlgLnDJ2b
-	 CE+WXmelhiNQTqi3+AQ8qychCe4ns+ukVKRRGEVMil5ts+C6xt0aVvhMGUEHn5Ksxd
-	 qMhekBZE8fcqQ==
+	s=default; t=1754588140;
+	bh=EAnEbA4l9VNK2yo90jP10nAp8/QuzhyTkNb36B1NzEY=;
+	h=From:Date:To:Cc:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=Ggq1T0q92BlBxSUh/+nr3V1RVXPpsxy8b/ffUVyKqekaeF7U96MGVc3ZlIT9+JFIZ
+	 jX39KM46c/y6oTU929tRQbzUCiHaDzBlTPzOd1+AL3OMSYmXQGgC0hbnILT4m4EsrJ
+	 Cu/ggViYw6wz03xjgEICJpunkXsrVhQnWuAdE6zpEiqW9G1d2mS90ZCS6OIoiSBV31
+	 kCgfDfeVKQIJZaqjSWNmmyzoguGJtiuKIyIYSDOsdkDINq+BwKU75NufXOj2Dn88Pi
+	 +IBcjtgHT0tgPybAHboApDZoW5qrMM0VtwkeNt/4MszQWuPVHa2aH6+n+y96LGF03T
+	 gaiRMH1T7dOyA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 5894E806CF;
-	Thu,  7 Aug 2025 17:35:41 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id 885704C4
- for <intel-wired-lan@lists.osuosl.org>; Thu,  7 Aug 2025 17:35:39 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 15CD5806C5;
+	Thu,  7 Aug 2025 17:35:40 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by lists1.osuosl.org (Postfix) with ESMTP id EF27D31
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  7 Aug 2025 17:35:38 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 6E88C806C5
- for <intel-wired-lan@lists.osuosl.org>; Thu,  7 Aug 2025 17:35:39 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id D952340059
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  7 Aug 2025 17:35:38 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 5i5_6FBdT2me for <intel-wired-lan@lists.osuosl.org>;
- Thu,  7 Aug 2025 17:35:39 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id VGUqf-NhIN8O for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  7 Aug 2025 17:35:38 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.8;
  helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org BE1DD806C3
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org BE1DD806C3
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 38E9740027
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 38E9740027
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.8])
- by smtp1.osuosl.org (Postfix) with ESMTPS id BE1DD806C3
- for <intel-wired-lan@lists.osuosl.org>; Thu,  7 Aug 2025 17:35:38 +0000 (UTC)
-X-CSE-ConnectionGUID: Eco6xhq6Q5ibhU/dKCXmDA==
-X-CSE-MsgGUID: RFEcTO+wSJaQpxe6IhSpCA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11514"; a="74511379"
-X-IronPort-AV: E=Sophos;i="6.17,271,1747724400"; d="scan'208";a="74511379"
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 38E9740027
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  7 Aug 2025 17:35:37 +0000 (UTC)
+X-CSE-ConnectionGUID: W6SkYRbnSlGv8d6GX9dnEQ==
+X-CSE-MsgGUID: aYRYw6hST2Om+QyEqEIuCw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11514"; a="74511375"
+X-IronPort-AV: E=Sophos;i="6.17,271,1747724400"; d="scan'208";a="74511375"
 Received: from orviesa009.jf.intel.com ([10.64.159.149])
  by fmvoesa102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  07 Aug 2025 10:35:37 -0700
-X-CSE-ConnectionGUID: DQ2CgVPQSUendbN97tedtQ==
-X-CSE-MsgGUID: mMAwHP99QQCZAOfnWx3RxQ==
+X-CSE-ConnectionGUID: Nsq6/E+kSfCtV9EO58lh3A==
+X-CSE-MsgGUID: WmNTzC3ERpyGeEMCMfOaeA==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.17,271,1747724400"; d="scan'208";a="164787193"
+X-IronPort-AV: E=Sophos;i="6.17,271,1747724400"; d="scan'208";a="164787188"
 Received: from orcnseosdtjek.jf.intel.com (HELO [10.166.28.70])
  ([10.166.28.70])
  by orviesa009-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  07 Aug 2025 10:35:37 -0700
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Thu, 07 Aug 2025 10:35:27 -0700
+Date: Thu, 07 Aug 2025 10:35:25 -0700
+Message-Id: <20250807-jk-ice-fix-tx-tstamp-race-v1-0-730fe20bec11@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250807-jk-ice-fix-tx-tstamp-race-v1-2-730fe20bec11@intel.com>
-References: <20250807-jk-ice-fix-tx-tstamp-race-v1-0-730fe20bec11@intel.com>
-In-Reply-To: <20250807-jk-ice-fix-tx-tstamp-race-v1-0-730fe20bec11@intel.com>
+X-B4-Tracking: v=1; b=H4sIAN7jlGgC/x2MSwqAMAxEryJZG6hStXgVcVE0avxUaYsK4t0Nw
+ mze8GYeCOSZAtTJA55ODrw7gSxNoJusGwm5F4Zc5YUyqsJ5Qe4IB74xSkK024HeSlUMZLTRZaW
+ sBtkfnsT6vxvga0VHEdr3/QDL39pndAAAAA==
+X-Change-ID: 20250807-jk-ice-fix-tx-tstamp-race-5fe8484670a4
 To: Przemek Kitszel <przemyslaw.kitszel@intel.com>, 
  Intel Wired LAN <intel-wired-lan@lists.osuosl.org>, netdev@vger.kernel.org
 Cc: Jacob Keller <jacob.e.keller@intel.com>
 X-Mailer: b4 0.15-dev-c61db
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2118;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1746;
  i=jacob.e.keller@intel.com; h=from:subject:message-id;
- bh=Ngx5yfB0xUuTqpRJe50nUtLyB9vjVE7Mtrld1SDMdcE=;
- b=kA0DAAoWapZdPm8PKOgByyZiAGiU4+iiTcR5VdKxfU6CwpwrEAZz7t2jwg7qpJ0OurfFW8EEx
- oh1BAAWCgAdFiEEIEBUqdczkFYq7EMeapZdPm8PKOgFAmiU4+gACgkQapZdPm8PKOiolQEAq3Gi
- XzhpPn1ZJSH/atNAqTY1nKT/ztrYJItMEx6LMRUBANnVbMdWaooj8oa0dC6k3EtBLZ+zJczKHRn
- T3Z+N3G0K
+ bh=qX7eESPtFbbBYbqvdVvIwZ9KO5pH19YjcurNTasPwYQ=;
+ b=kA0DAAoWapZdPm8PKOgByyZiAGiU4+TITF5IQ+PwW0ILDc3UzhqUJSvD55w6UpesToNbvja2S
+ Ih1BAAWCgAdFiEEIEBUqdczkFYq7EMeapZdPm8PKOgFAmiU4+QACgkQapZdPm8PKOho6QD+OKQ2
+ +EN8EGmcgUn4hl3xai5Gx1TkfLV8knvU3IxG2wcBAN1Mo+jQ7172qfJxf8f+Xk6XEnrwtpVk+2U
+ S9y2AFLQL
 X-Developer-Key: i=jacob.e.keller@intel.com; a=openpgp;
  fpr=204054A9D73390562AEC431E6A965D3E6F0F28E8
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1754588139; x=1786124139;
- h=from:date:subject:mime-version:content-transfer-encoding:
- message-id:references:in-reply-to:to:cc;
- bh=Ngx5yfB0xUuTqpRJe50nUtLyB9vjVE7Mtrld1SDMdcE=;
- b=W3ynx+UwqW36Y1YOMOT04yg+Kiq9sfiD47DOhDpgwK2xwR/q5XHjcc37
- IXQx+sL4cob6+VbgD3rI4TmQi+8+jMHXau23ZoDBq9IZt60bxHn1dlD2J
- HUMr0pkLwrxoyDOGsH3OL8rgq0UD8UcpwG2tbcQfNLFFu9V4v3s9m4+hx
- 6L0Zd13z0qlcdjDi07x23tl+DmpBV8zPBXI2tXvZpruQ1nuOCRaEnfNXY
- RrFsNZu4kwfnzTvuunvnzV1QjvM8El44oF/p4j5SwqWWg1NVddeB/zmfT
- 9MVJe4M5Exti5bOBS/aszI9oCRm9AKugkYmehmXRiGK7WqK0wx/3yGSWc
- g==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ t=1754588138; x=1786124138;
+ h=from:subject:date:message-id:mime-version:
+ content-transfer-encoding:to:cc;
+ bh=qX7eESPtFbbBYbqvdVvIwZ9KO5pH19YjcurNTasPwYQ=;
+ b=nHQz48wfh/5cnLh0z8Jc1UK6LSp6n2XiJYIXCjEuE81iSbOMeTuvw6Nc
+ iW6qk+/Mgthn3bWiRP/+nSppZj4vj1TJhq9nZeqf6bi3rLX5we6+nM2JD
+ 7uC4jx9FbYMmky+Jd4SlNdb16hkqNINXmdtis69aA3SUJ215aJWpi3954
+ Maa+357WPG0HYLWi84Vkmklm2riN6nmiiMYw+q4+SKj096CEKnPKMhMKj
+ obBP7WogVWiHRjr6uyE+rCq3zZK/k/ooDX08Zlqokg/CWQ96gVC79bYtU
+ Skk0qIjkAgHQ9YkHGKwl8wjTtCEiV/qH06CJxuinA1fu4/v1sfeknZA35
+ A==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=W3ynx+Uw
-Subject: [Intel-wired-lan] [PATCH iwl-net 2/2] ice: fix NULL access of
- tx->in_use in ice_ll_ts_intr
+ header.s=Intel header.b=nHQz48wf
+Subject: [Intel-wired-lan] [PATCH iwl-net 0/2] ice: fix NULL access of
+ tx->in_use
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -122,55 +123,45 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Recent versions of the E810 firmware have support for an extra interrupt to
-handle report of the "low latency" Tx timestamps coming from the
-specialized low latency firmware interface. Instead of polling the
-registers, software can wait until the low latency interrupt is fired.
+Recent versions of the E810 firmware have support for a "low latency"
+interface for accessing Tx timestamps without interacting over the AdminQ.
 
-This logic makes use of the Tx timestamp tracking structure, ice_ptp_tx, as
-it uses the same "ready" bitmap to track which Tx timestamps.
+Unfortunately, a couple of the functions involved with this logic don't
+properly check if the Tx timestamp tracker is initialized. This can lead to
+a use-after-free or NULL pointer access violation:
 
-Unfortunately, the ice_ll_ts_intr() function does not check if the
-tracker is initialized before its first access. This results in NULL
-dereference or use-after-free bugs similar to the issues fixed in the
-ice_ptp_ts_irq() function.
+[245977.278756] BUG: kernel NULL pointer dereference, address: 0000000000000000
+[245977.278774] RIP: 0010:_find_first_bit+0x19/0x40
+[245977.278796] Call Trace:
+[245977.278809]  ? ice_misc_intr+0x364/0x380 [ice]
 
-Fix this by only checking the in_use bitmap (and other fields) if the
-tracker is marked as initialized. The reset flow will clear the init field
-under lock before it tears the tracker down, thus preventing any
-use-after-free or NULL access.
+This happens because the reset flow in the driver re-initializes the
+tracker. If a Tx timestamp interrupt occurs concurrently with a reset, the
+ineractions race and the crash can occur.
 
-Fixes: 82e71b226e0e ("ice: Enable SW interrupt from FW for LL TS")
+I split the fixes to two separate patches because the extra interrupt for
+low latency came in a different kernel. Hopefully this aids with
+backporting the fix.
+
+This was originally reported on an older kernel prior to f9472aaabd1f
+("ice: Process TSYN IRQ in a separate function"), which has a similar bug,
+but at a different code point. I plan to look into if any stable kernels
+need a separate fix after this.
+
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
+Jacob Keller (2):
+      ice: fix NULL access of tx->in_use in ice_ptp_ts_irq
+      ice: fix NULL access of tx->in_use in ice_ll_ts_intr
+
  drivers/net/ethernet/intel/ice/ice_main.c | 12 +++++++-----
- 1 file changed, 7 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_ptp.c  | 13 ++++++++-----
+ 2 files changed, 15 insertions(+), 10 deletions(-)
+---
+base-commit: d942fe13f72bec92f6c689fbd74c5ec38228c16a
+change-id: 20250807-jk-ice-fix-tx-tstamp-race-5fe8484670a4
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 8e0b06c1e02b..7b002127e40d 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -3176,12 +3176,14 @@ static irqreturn_t ice_ll_ts_intr(int __always_unused irq, void *data)
- 	hw = &pf->hw;
- 	tx = &pf->ptp.port.tx;
- 	spin_lock_irqsave(&tx->lock, flags);
--	ice_ptp_complete_tx_single_tstamp(tx);
-+	if (tx->init) {
-+		ice_ptp_complete_tx_single_tstamp(tx);
- 
--	idx = find_next_bit_wrap(tx->in_use, tx->len,
--				 tx->last_ll_ts_idx_read + 1);
--	if (idx != tx->len)
--		ice_ptp_req_tx_single_tstamp(tx, idx);
-+		idx = find_next_bit_wrap(tx->in_use, tx->len,
-+					 tx->last_ll_ts_idx_read + 1);
-+		if (idx != tx->len)
-+			ice_ptp_req_tx_single_tstamp(tx, idx);
-+	}
- 	spin_unlock_irqrestore(&tx->lock, flags);
- 
- 	val = GLINT_DYN_CTL_INTENA_M | GLINT_DYN_CTL_CLEARPBA_M |
-
--- 
-2.50.1
+Best regards,
+--  
+Jacob Keller <jacob.e.keller@intel.com>
 
