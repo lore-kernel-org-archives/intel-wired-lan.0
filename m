@@ -4,82 +4,94 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B76BCC87FD2
-	for <intel-wired-lan@archiver.kernel.org>; Fri,  8 Aug 2025 13:08:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E637FC87FD2
+	for <intel-wired-lan@archiver.kernel.org>; Fri,  8 Aug 2025 13:53:22 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 72CE440684;
-	Fri,  8 Aug 2025 13:08:58 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id A472740ABE;
+	Fri,  8 Aug 2025 13:53:22 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id H0KB3lIeMowE; Fri,  8 Aug 2025 13:08:57 +0000 (UTC)
+ id rpK5A53VdBnO; Fri,  8 Aug 2025 13:53:22 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D28A3406A9
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3316140BB5
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1754658537;
-	bh=z9p2PzdGcG2t+0S+5PPulBoo65BbyWEweByD86Lsy0Y=;
-	h=Date:To:Cc:References:From:In-Reply-To:Subject:List-Id:
+	s=default; t=1754661202;
+	bh=uyHO6EEX4wxQ8n1VAYSQJzddq+jQC4+vVFy4wsecucA=;
+	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=u8NS6JKurbh7vCTRwVziCLq78SYD6An8XTP2m3kn2oabyBRccYQgVDWyCxbyRwBuw
-	 tJHt0ErSIDe9cu7NiEBIir+3Q+3/q2RQm+6+9CeU2dYiyW1IZN//V1UefkpUruzkr+
-	 INTJgrRqH8jYynEEpd+ccZO1Si4ilcd1Jl8nnOG34VsueZkXTyuHiHtQ+PAIwlgtVg
-	 lcraRy0Q6OeldhP6RzlUnaqiioAxhJuwI51NUnVi7hLkr2kGmucocPrhJ2MT+nkV7B
-	 iXvk7ov0Iu4tx7izhBTFWGYMPLxXJzRf2nczsxPG89Ae5kuiHr2SITnwKlWbTmf7T4
-	 KU7bOHZAybvzA==
+	b=fgU6Dyb2e2qeP7k7dzcPinWzDj1lqGcHVLN+LznCZTNWqMhU6ZifdoTisidZWtWRS
+	 QzaIBbQrU2uRYTAdbig4YoIOQz+pf5rIBxjDh6qnf4QvsLdbIYVnPIHT0mVWGcuZMY
+	 mfucK36BL7YM1V+8Y5CZET7LA4Q2tlfkuVr6ffHzoq2CUezlZKTUabAuHBkynpAMQo
+	 JqWWzPjDTiiP6++LTrcfFZYZdC72S2/zMW4NUfEWIJthHOFlpN1l5gLToElKYaBgEI
+	 wc51dIUft8VMTekYQ9KyRw4zww8GFd20pVK0u2QQS8xLrXsJYKdy0QW42x2VIwwekB
+	 17yq8H/e0RzHQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id D28A3406A9;
-	Fri,  8 Aug 2025 13:08:57 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id D2EED10A
- for <intel-wired-lan@lists.osuosl.org>; Fri,  8 Aug 2025 13:08:56 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 3316140BB5;
+	Fri,  8 Aug 2025 13:53:22 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 6F66431
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  8 Aug 2025 13:53:20 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id D02D181AD7
- for <intel-wired-lan@lists.osuosl.org>; Fri,  8 Aug 2025 13:08:56 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 55D07405E7
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  8 Aug 2025 13:53:20 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id KURzR6yNGSlq for <intel-wired-lan@lists.osuosl.org>;
- Fri,  8 Aug 2025 13:08:55 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=141.14.17.11;
- helo=mx3.molgen.mpg.de; envelope-from=pmenzel@molgen.mpg.de;
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id XuhbipP9X1Le for <intel-wired-lan@lists.osuosl.org>;
+ Fri,  8 Aug 2025 13:53:19 +0000 (UTC)
+X-Greylist: delayed 537 seconds by postgrey-1.37 at util1.osuosl.org;
+ Fri, 08 Aug 2025 13:53:19 UTC
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org BA39040029
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org BA39040029
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=139.178.84.217;
+ helo=dfw.source.kernel.org; envelope-from=horms@kernel.org;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org C4A5981E5D
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C4A5981E5D
-Received: from mx3.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
- by smtp1.osuosl.org (Postfix) with ESMTPS id C4A5981E5D
- for <intel-wired-lan@lists.osuosl.org>; Fri,  8 Aug 2025 13:08:54 +0000 (UTC)
-Received: from [141.14.220.42] (g42.guest.molgen.mpg.de [141.14.220.42])
- (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested) (Authenticated sender: pmenzel)
- by mx.molgen.mpg.de (Postfix) with ESMTPSA id CD02160288276;
- Fri, 08 Aug 2025 15:08:41 +0200 (CEST)
-Message-ID: <62178d70-07c0-471b-b4dd-2e7523776243@molgen.mpg.de>
-Date: Fri, 8 Aug 2025 15:08:41 +0200
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id BA39040029
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  8 Aug 2025 13:53:19 +0000 (UTC)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+ by dfw.source.kernel.org (Postfix) with ESMTP id 2E3B75C676D;
+ Fri,  8 Aug 2025 13:44:21 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D5C90C4CEED;
+ Fri,  8 Aug 2025 13:44:18 +0000 (UTC)
+Date: Fri, 8 Aug 2025 14:44:16 +0100
+From: Simon Horman <horms@kernel.org>
+To: Jacek Kowalski <jacek@jacekk.info>
+Cc: Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Andrew Lunn <andrew+netdev@lunn.ch>,
+ "David S. Miller" <davem@davemloft.net>,
+ Eric Dumazet <edumazet@google.com>,
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+ intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org
+Message-ID: <20250808134416.GB4654@horms.kernel.org>
+References: <2f87d6e9-9eb6-4532-8a1d-c88e91aac563@jacekk.info>
+ <6d05300d-e5d7-409e-8b78-a7c3da21ed32@jacekk.info>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-To: Michal Kubiak <michal.kubiak@intel.com>
-Cc: Jacob Keller <jacob.e.keller@intel.com>,
- intel-wired-lan@lists.osuosl.org, maciej.fijalkowski@intel.com,
- aleksander.lobakin@intel.com, larysa.zaremba@intel.com,
- netdev@vger.kernel.org, przemyslaw.kitszel@intel.com,
- anthony.l.nguyen@intel.com
-References: <20250704161859.871152-1-michal.kubiak@intel.com>
- <20250704161859.871152-4-michal.kubiak@intel.com>
- <53c62d9c-f542-4cf3-8aeb-a1263e05acad@intel.com>
- <aJXiP-_ZUfBErhAv@localhost.localdomain>
- <ee6af42d-b274-4079-8a8b-35ec8d500c1c@molgen.mpg.de>
- <aJX168tInG4tFk5j@localhost.localdomain>
-Content-Language: en-US
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-In-Reply-To: <aJX168tInG4tFk5j@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dmarc=none (p=none dis=none)
- header.from=molgen.mpg.de
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next 3/3] ice: switch to Page Pool
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <6d05300d-e5d7-409e-8b78-a7c3da21ed32@jacekk.info>
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=kernel.org; s=k20201202; t=1754660660;
+ bh=UE+WfyQP8dXhzeE53Lj+W1t+g6MjoTdQM6znfZUVi9s=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=jSCxEr+t6VsjFiCREmn1P7Lz9745oS6kEpPEeelTsuwoeMzuACA0IfPkH6YplZxZ4
+ JaEdvPoeui1rdllGx0ETBjC7iwu5GbE/mnD9kOeY+JzYt9zTIonX4dKgHuX/8cT9of
+ I+zttJz+3/UHMXZ62lVxEc9wq3e7bK7gc8ymTOYROsjBwG0R+ud9r7qstMUL0lf35N
+ Xoy4hVb2aVdC5yplPgkRkoJpMZaggPACRgegVoD8A3GD/cVkUYKx2P96QMZCnYccgF
+ MPMtK9HyjY1RIDIfK8ZHNi2qZxtHuX2SJIhqCHkNJNeQQcvpjtashRD/yFW4nqrNJG
+ KvqT/tERqxQwA==
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dmarc=pass (p=quarantine dis=none)
+ header.from=kernel.org
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=jSCxEr+t
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next v3 2/5] e1000e: drop
+ unnecessary constant casts to u16
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -95,67 +107,15 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Dear Michal,
+On Wed, Jul 23, 2025 at 10:54:35AM +0200, Jacek Kowalski wrote:
+> Remove unnecessary casts of constant values to u16.
+> C's integer promotion rules make them ints no matter what.
+> 
+> Additionally replace E1000_MNG_VLAN_NONE with resulting value
+> rather than casting -1 to u16.
+> 
+> Signed-off-by: Jacek Kowalski <jacek@jacekk.info>
+> Suggested-by: Simon Horman <horms@kernel.org>
 
+Reviewed-by: Simon Horman <horms@kernel.org>
 
-Thank you for your reply.
-
-Am 08.08.25 um 15:04 schrieb Michal Kubiak:
-> On Fri, Aug 08, 2025 at 02:03:43PM +0200, Paul Menzel wrote:
-
->> Am 08.08.25 um 13:40 schrieb Michal Kubiak:
->>> On Mon, Jul 07, 2025 at 03:58:37PM -0700, Jacob Keller wrote:
->>>>
->>>>
->>>> On 7/4/2025 9:18 AM, Michal Kubiak wrote:
->>>>> @@ -1075,16 +780,17 @@ void ice_clean_ctrl_rx_irq(struct ice_rx_ring *rx_ring)
->>>>>    static int ice_clean_rx_irq(struct ice_rx_ring *rx_ring, int budget)
->>>
->>> [...]
->>>
->>>>> @@ -1144,27 +841,35 @@ static int ice_clean_rx_irq(struct ice_rx_ring *rx_ring, int budget)
->>>>>    		if (ice_is_non_eop(rx_ring, rx_desc))
->>>>>    			continue;
->>>>> -		ice_get_pgcnts(rx_ring);
->>>>>    		xdp_verdict = ice_run_xdp(rx_ring, xdp, xdp_prog, xdp_ring, rx_desc);
->>>>>    		if (xdp_verdict == ICE_XDP_PASS)
->>>>>    			goto construct_skb;
->>>>> -		total_rx_bytes += xdp_get_buff_len(xdp);
->>>>> -		total_rx_pkts++;
->>>>> -		ice_put_rx_mbuf(rx_ring, xdp, &xdp_xmit, ntc, xdp_verdict);
->>>>> +		if (xdp_verdict & (ICE_XDP_TX | ICE_XDP_REDIR))
->>>>> +			xdp_xmit |= xdp_verdict;
->>>>> +		total_rx_bytes += xdp_get_buff_len(&xdp->base);
->>>>> +		total_rx_pkts++;
->>>>> +		xdp->data = NULL;
->>>>> +		rx_ring->first_desc = ntc;
->>>>> +		rx_ring->nr_frags = 0;
->>>>>    		continue;
->>>>>    construct_skb:
->>>>> -		skb = ice_build_skb(rx_ring, xdp);
->>>>> +		skb = xdp_build_skb_from_buff(&xdp->base);
->>>>> +
->>>>>    		/* exit if we failed to retrieve a buffer */
->>>>>    		if (!skb) {
->>>>>    			rx_ring->ring_stats->rx_stats.alloc_page_failed++;
->>>>
->>>> This is not your fault, but we've been incorrectly incrementing
->>>> alloc_page_failed here instead of alloc_buf_failed.
->>>>
->>>
->>> Sure. It's a good idea to fix it while we're rewriting the Rx path.
->>> Will be addressed in v2.
->>
->> Should this be a separate patch, that can be easily backported?
->>
->> […]
-
-> Do you mean that the patch should be included as part of the series, or would
-> you prefer it to be submitted as a standalone patch targeting the 'net' tree?
-Good question. I do not know the rules. My gut would say a separate 
-patch for 'net', but the others know best.
-
-
-Kind regards,
-
-Paul
