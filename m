@@ -4,96 +4,244 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E3B21CA0ED3
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 11 Aug 2025 16:36:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id ED5A4CA0EDA
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 11 Aug 2025 21:39:08 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id B5219414FA;
-	Mon, 11 Aug 2025 16:36:40 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id A48B341BEB;
+	Mon, 11 Aug 2025 21:39:08 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 6B1JqnpyWjgL; Mon, 11 Aug 2025 16:36:38 +0000 (UTC)
+ id HIRfCmRSAvOk; Mon, 11 Aug 2025 21:39:08 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org DB63641590
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E5D5541BE6
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1754930197;
-	bh=cEnAjncqRaoYUxfGkW2mhAxDUGA/dBi/Jv4v31IrZOg=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1754948347;
+	bh=WiE9KhhNaGL/5Mlf8tJVznne/SQgS/9cSo+A1VKi7Ao=;
+	h=Date:To:CC:References:From:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=FkxCA5//KuO33oIjnKxVDtSSQzVKH41Cdksy/gIdZcZWhoSkpE6aMjhdEwcpfz9e0
-	 65ZHJ8YitZmTmqZ3UFvwpLlpKvE/0cdPctRIpH2XksQgsfPCKspH01kedeCtHFcCQC
-	 xvDnA7XCAfO/5nqVZKdr6C8FvWsBkdTg3tPKUvMrtHfiA2nn5ZOMZH22lBJOWW9mtW
-	 4HuuGNMpH+IEZNNhfvnrlWyyRbX2192znorEpfzIOzAGh4YNSC1d0sZa2FlzwD86vT
-	 mLS3q+qAgiUgyGSubzDTxAYf4JlUdpupWkC1RvBFED8oGxtILbAvG2VedMI5XelM9o
-	 W7n9yYwlJFBZw==
+	b=urbCf3HEKA06K81kfYmbH9dyUWQ5XA/YeqOKsi1lNZDJBVue/XG92wz5lvIXdwThA
+	 1NwnVvxdvy5GPBxwPwAqz4UjsOgHdiemsXvHurSyqaPxBj+heX9YTg1ExrS7NeMV4I
+	 GWF39YtSYA/1URZHkvLplZDaheTZr72IcMQM2AmHZ/CIC/RutulzNKEBAk6EWwnq07
+	 AMyTtOmqGkBaR+LxmfbFXWB9k+uo0ms4e8fL/8U261ViPSOhw5t4mQkhAWU1va+UWI
+	 tC2KyVgllASwvapepbz8pMWdQplog+fjGsbpipJ1DSelRB+QnYMHl/yH5FMYl5Y2b8
+	 9jfkDYQJBE93w==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id DB63641590;
-	Mon, 11 Aug 2025 16:36:37 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id 295D3138
- for <intel-wired-lan@lists.osuosl.org>; Mon, 11 Aug 2025 16:36:36 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id E5D5541BE6;
+	Mon, 11 Aug 2025 21:39:07 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id F03A1D98
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 11 Aug 2025 21:39:06 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 05CA861371
- for <intel-wired-lan@lists.osuosl.org>; Mon, 11 Aug 2025 16:36:36 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id D2C1C84059
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 11 Aug 2025 21:39:06 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id zTwxCuMz5coJ for <intel-wired-lan@lists.osuosl.org>;
- Mon, 11 Aug 2025 16:36:34 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.18;
- helo=mgamail.intel.com; envelope-from=paul.greenwalt@intel.com;
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id GFWoaZcv_CNV for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 11 Aug 2025 21:39:06 +0000 (UTC)
+X-Greylist: delayed 428 seconds by postgrey-1.37 at util1.osuosl.org;
+ Mon, 11 Aug 2025 21:39:05 UTC
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org EAC3A840A3
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org EAC3A840A3
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.11;
+ helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 01E6761469
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 01E6761469
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.18])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 01E6761469
- for <intel-wired-lan@lists.osuosl.org>; Mon, 11 Aug 2025 16:36:33 +0000 (UTC)
-X-CSE-ConnectionGUID: Ud48o7+MSBO/k9a1RgWi2Q==
-X-CSE-MsgGUID: aR+3gISxSOGvC5p8i4+fBA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11518"; a="56395922"
-X-IronPort-AV: E=Sophos;i="6.17,278,1747724400"; d="scan'208";a="56395922"
-Received: from orviesa003.jf.intel.com ([10.64.159.143])
- by fmvoesa112.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 11 Aug 2025 09:29:26 -0700
-X-CSE-ConnectionGUID: GCkaTH6oThSonWaAhEp6sA==
-X-CSE-MsgGUID: 4Pk9dotUQUuKJdfTRSCuTw==
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.11])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id EAC3A840A3
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 11 Aug 2025 21:39:05 +0000 (UTC)
+X-CSE-ConnectionGUID: akE4gbSxQ1qFCmc0uxYyPg==
+X-CSE-MsgGUID: VKINHAEeTvGcTr8uPdPTOA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11518"; a="67480413"
+X-IronPort-AV: E=Sophos;i="6.17,284,1747724400"; 
+ d="asc'?scan'208";a="67480413"
+Received: from orviesa006.jf.intel.com ([10.64.159.146])
+ by orvoesa103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 11 Aug 2025 14:31:55 -0700
+X-CSE-ConnectionGUID: 0cd7P9clTK+ENFRxdFpHJA==
+X-CSE-MsgGUID: birzj9tvRDiQxvi2pOcHew==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.17,278,1747724400"; d="scan'208";a="170161878"
-Received: from unknown (HELO fedora.jf.intel.com) ([10.166.5.147])
- by orviesa003.jf.intel.com with ESMTP; 11 Aug 2025 09:29:26 -0700
-From: Paul Greenwalt <paul.greenwalt@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Cc: maciej.fijalkowski@intel.com, Paul Greenwalt <paul.greenwalt@intel.com>,
- Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Date: Mon, 11 Aug 2025 04:44:06 -0400
-Message-ID: <20250811084406.211660-3-paul.greenwalt@intel.com>
-X-Mailer: git-send-email 2.47.0
-In-Reply-To: <20250811084406.211660-1-paul.greenwalt@intel.com>
-References: <20250811084406.211660-1-paul.greenwalt@intel.com>
+X-IronPort-AV: E=Sophos;i="6.17,284,1747724400"; 
+ d="asc'?scan'208";a="165220142"
+Received: from fmsmsx902.amr.corp.intel.com ([10.18.126.91])
+ by orviesa006.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 11 Aug 2025 14:31:52 -0700
+Received: from FMSMSX901.amr.corp.intel.com (10.18.126.90) by
+ fmsmsx902.amr.corp.intel.com (10.18.126.91) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1748.26; Mon, 11 Aug 2025 14:31:50 -0700
+Received: from fmsedg902.ED.cps.intel.com (10.1.192.144) by
+ FMSMSX901.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1748.26 via Frontend Transport; Mon, 11 Aug 2025 14:31:50 -0700
+Received: from NAM10-DM6-obe.outbound.protection.outlook.com (40.107.93.78) by
+ edgegateway.intel.com (192.55.55.82) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1748.26; Mon, 11 Aug 2025 14:31:43 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=LfZmJWVYdi674ze3LZ/61a3wVueOwkkuH49dAVaguQyW7ZiEC/2moi4VdOhEOlzWiPoPg9OaQXQwe9h+EDYsl5gcIYsQOrsBLLg7kwA2f95t+WP3KoYuwifvUT/60sq6++KzG7ZUQ0VSoEuDTY8myDAVx7KlyYL2M2FtlwtS3Cu5qMMf+ZntrRCYjcO4qNuYhVUyQlj6UJZN/cVvoLYg9eIJW2L/Va5kOja5C3MiaQLWYZKIhcVtvX8bg3unj7cj/XSty2zK8wN1XSlb90MX3VXimh9lLI4YZw2UXNDrWBXgLxx7wXpx+rnzRDXtmW29Muf0PAOr4IJqz0dBw0bcGg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=WiE9KhhNaGL/5Mlf8tJVznne/SQgS/9cSo+A1VKi7Ao=;
+ b=G6DAxLyt2mlEPn8X10j2LSrvnijZ5YL3NfucYI96IgjY7vMR6SbYZ+qM8+0vRv4t7aMkhfb1gWJNtJCieiVJDp8VlnP5WAi967PAv/E2QHACcIwsbklmeHnu3/64IPodPCi2HcxFHGay313XIMi00bA40m1O0GMsbRM5lITM4OO1rTz/3tC5Ih0j6pGuWu2tA8D0DoX72JBRtHNExx6fp8yK8U2LrXU/wUGXrFlZSgsVWcCVsKJelbJHh5lVXGo56DRjtLj7JbGOgsEX3CF9OQWO0th0VvpnU/tcpEf3lh47/1Dk/cp5pG4dG/4RRjkqN8Pmu0ha7nwOH+YndJvlxw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Received: from CO1PR11MB5089.namprd11.prod.outlook.com (2603:10b6:303:9b::16)
+ by DM3PPF9EFFC957B.namprd11.prod.outlook.com (2603:10b6:f:fc00::f40)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9009.22; Mon, 11 Aug
+ 2025 21:31:42 +0000
+Received: from CO1PR11MB5089.namprd11.prod.outlook.com
+ ([fe80::81f7:c6c0:ca43:11c3]) by CO1PR11MB5089.namprd11.prod.outlook.com
+ ([fe80::81f7:c6c0:ca43:11c3%5]) with mapi id 15.20.9009.018; Mon, 11 Aug 2025
+ 21:31:42 +0000
+Message-ID: <c5b09040-0484-484c-a8b7-0675b97c3b9f@intel.com>
+Date: Mon, 11 Aug 2025 14:31:39 -0700
+User-Agent: Mozilla Thunderbird
+To: Jason Xing <kerneljasonxing@gmail.com>, Paul Menzel <pmenzel@molgen.mpg.de>
+CC: Michal Kubiak <michal.kubiak@intel.com>,
+ <intel-wired-lan@lists.osuosl.org>, <maciej.fijalkowski@intel.com>,
+ <netdev@vger.kernel.org>, <przemyslaw.kitszel@intel.com>,
+ <aleksander.lobakin@intel.com>, <anthony.l.nguyen@intel.com>
+References: <20250808155310.1053477-1-michal.kubiak@intel.com>
+ <f0752ae6-25f8-4504-b23b-052f60007deb@molgen.mpg.de>
+ <CAL+tcoAwKcy-E6LkLhwvKA9+es5RuFmg4+kPZ8dV08-s-VopPA@mail.gmail.com>
+Content-Language: en-US
+From: Jacob Keller <jacob.e.keller@intel.com>
+Autocrypt: addr=jacob.e.keller@intel.com; keydata=
+ xjMEaFx9ShYJKwYBBAHaRw8BAQdAE+TQsi9s60VNWijGeBIKU6hsXLwMt/JY9ni1wnsVd7nN
+ J0phY29iIEtlbGxlciA8amFjb2IuZS5rZWxsZXJAaW50ZWwuY29tPsKTBBMWCgA7FiEEIEBU
+ qdczkFYq7EMeapZdPm8PKOgFAmhcfUoCGwMFCwkIBwICIgIGFQoJCAsCBBYCAwECHgcCF4AA
+ CgkQapZdPm8PKOiZAAEA4UV0uM2PhFAw+tlK81gP+fgRqBVYlhmMyroXadv0lH4BAIf4jLxI
+ UPEL4+zzp4ekaw8IyFz+mRMUBaS2l+cpoBUBzjgEaFx9ShIKKwYBBAGXVQEFAQEHQF386lYe
+ MPZBiQHGXwjbBWS5OMBems5rgajcBMKc4W4aAwEIB8J4BBgWCgAgFiEEIEBUqdczkFYq7EMe
+ apZdPm8PKOgFAmhcfUoCGwwACgkQapZdPm8PKOjbUQD+MsPBANqBUiNt+7w0dC73R6UcQzbg
+ cFx4Yvms6cJjeD4BAKf193xbq7W3T7r9BdfTw6HRFYDiHXgkyoc/2Q4/T+8H
+In-Reply-To: <CAL+tcoAwKcy-E6LkLhwvKA9+es5RuFmg4+kPZ8dV08-s-VopPA@mail.gmail.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------0vG0lIf3u1bkZaz4KbhqOdGH"
+X-ClientProxiedBy: MW4PR04CA0375.namprd04.prod.outlook.com
+ (2603:10b6:303:81::20) To CO1PR11MB5089.namprd11.prod.outlook.com
+ (2603:10b6:303:9b::16)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: CO1PR11MB5089:EE_|DM3PPF9EFFC957B:EE_
+X-MS-Office365-Filtering-Correlation-Id: a32fd8a5-71a2-459c-491b-08ddd91e76ab
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;ARA:13230040|376014|366016|1800799024|7053199007;
+X-Microsoft-Antispam-Message-Info: =?utf-8?B?WHdlMWRJc0tZSyszQWFocUVDZWZyemtHaG8wUjR6cmd3S1gwa3RzeDBFczMr?=
+ =?utf-8?B?VFFWZFJVWXllUXJwVWRYaW1NRDd1ekxtVGxUM0F0bkd3bXkvNVYxSEVnMHFF?=
+ =?utf-8?B?RndaMEdGODk3SENhZWs5b29MajJmV0VHSlhOYzk1OSs4aEhIdGJmaXNCc25o?=
+ =?utf-8?B?OXpCeU1EYTZCMktMR3FmSktTT0JUU0N6QVBOaUNnL0cweXM5a0ZoeDFNVXIr?=
+ =?utf-8?B?dk93VUV0Ti9LelNKeUJES21pYksvQzZPQ0tGb2pIY1VwaDk2b0c1QlZlekVv?=
+ =?utf-8?B?WDFwUmc3TFBCUmkrMnJ3alpyekNja1lCbXdBdElWWHIvL3R0WHRWYWRGbEtV?=
+ =?utf-8?B?QkcwdUtuSi9jbFJEOUN1UTUwSFk2VElxeW1SWURSVHNvWmFlRmRCUlhvdjhM?=
+ =?utf-8?B?YmtaWGRVWVpxelBDNkRmc2VDeHNmNkZ4eTNoUnJNV1lJUEhWZ0NDZ3lkTDFh?=
+ =?utf-8?B?V1NCSXRLTUdKaDU0b1RQYUFnc3BSbm9VUXp4VkdEZC92MjRzLzVJV0k1YlNs?=
+ =?utf-8?B?d2x4MWtjVW1KK2xFMHBWdmNiNWk0MEd4TzZJTjQ4U3pWU1EwVnpUWWdmU2hw?=
+ =?utf-8?B?bFYrMWRiVEU5M2FrU3AwS0RlVkJGZWZ0UXVQZVM1VXBGQnZVMWhXYU90ZFJV?=
+ =?utf-8?B?VU53OHB4ZzZ2QmRVaC9uMFhHZzNSZ2R2NGs5Wk5TRUtGK1lQNXJ5L2lmU2RX?=
+ =?utf-8?B?VGxzQjBEdUQ3eVlTRE56K1AydDVoWlhLRFljYTdsQmRvYkxnNDBmWDJRUlR2?=
+ =?utf-8?B?T2ZxWG43cVZSbloyVGdjcUovazNPYW94M3VpcC96bkx4YlNSTW9KQ3VLK1lh?=
+ =?utf-8?B?ZVUwNjA3eHNHMzNWN0VZeFJFeS9UMkNjMkxQWmpaUTFTWHdwSXgwRStRZzMx?=
+ =?utf-8?B?TlFkSENseWQwaElZTlp6NUd5WkJxY2tnQlRmM0xGc2J0VFJldnhrVzQ3eU1W?=
+ =?utf-8?B?Zkloa1BOR1ZmdUJPeERZc1dxbG1yM1pvOU9VVFBhaGJNNXlsVVBkL1ZLcmJy?=
+ =?utf-8?B?T2hLTjRtbW5QbG0wczhUSDNyc3U1NTNSUkNUNWFJYjljWTZKSnpTQmREdGRZ?=
+ =?utf-8?B?UmVTWUxhbHVaNVRIMlBqSm5WcE1BT2Z5TzloRElhZCthWDBNRG4ydnBxZnNr?=
+ =?utf-8?B?VWtVRGRQcE40Z3pXR3RPeXZ0ZmpLdXdtQ3Y0OS9JQStrdElncUJoU3hPQTJQ?=
+ =?utf-8?B?bHo5ZzVjejVNWk8raUdhNVlyWFlmZE9xRC9wOXpIL3pEdWh1MWlIZmFvWldm?=
+ =?utf-8?B?aG43eHFDb3VHaEg4RUI1M3NlWW82NW9kS2ViNWx3bXVWS28xeUZtYi9nLzRa?=
+ =?utf-8?B?aUFvMTZ5MUNqb0xNWi9qTlZXanBwMDM4R2RxL2g3RGR2VDRzR241NjRFcFlU?=
+ =?utf-8?B?cTEwRlJmbkFpSlBLaXZNaFZUbEcyRG5NTjI5NzYyOFNJRVRCeGVJT1ZNUWF1?=
+ =?utf-8?B?NzlaSVpPQ0dqNWJHd3lVcmtGdUlkZXVJaE1PWXZVZU93bURMYVFEQjVOb1Zt?=
+ =?utf-8?B?T0s3R05Lbm10T0RpNlRwYTZGc05KYklCdC9FTzV6V2lVZHQ1ckoxQ1Zqb25T?=
+ =?utf-8?B?bVB2SlNjUXlGbngyK0xYaENEcU1aSHQ2UXJMUDJKWVE1d2txMFRuN1VRQk4y?=
+ =?utf-8?B?bEloa3dWQzBsc0tTQlVEdWg2VEY3QWw0WFg0c3ZzbndsU2V4V1RvMGh5WGs5?=
+ =?utf-8?B?MzA5UHBuOG45a2ZCd3luN3Y3Q2k4VWFxNjJXVXJBWFN4c3Z1WWhzanRIdzZL?=
+ =?utf-8?B?eUJzNC9kTUM5aXBHeThRYng5NXRMWHRQbnVDb0VySDhOOHp5QWI4UWF2U0tp?=
+ =?utf-8?B?OGVlSDE3N3l2MHYwTUZqNjNPOThpV0NpK3dlbGdLeXZJbmd5R2RLanBOaFNB?=
+ =?utf-8?B?enAxbGhlTVl1NjNZbFVNcmkzQS9jZ2l0cGNQR1RLbmk5dFB4MVZaejhTVUJT?=
+ =?utf-8?Q?T3+wFF7HcBQ=3D?=
+X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:CO1PR11MB5089.namprd11.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(13230040)(376014)(366016)(1800799024)(7053199007); DIR:OUT; SFP:1101; 
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?bCtYL2VXdnlFZm5jTDJraVFQM2hFUW01SzN1L3RzaGg3T3QxblE3VUM3S01Y?=
+ =?utf-8?B?M1ZkRURuODl2TnZlT0ZsOG80Tk5XMmw0bXA5SUtTUHdBaXpLM0E3RFEwb0Z4?=
+ =?utf-8?B?b3FERzVNVmowa2lkZHV6eXI2K3VlTDAvRmxmeE1EVXRSYWZRODlTL1Q3MmhY?=
+ =?utf-8?B?SEZ0L3N5RXljQ0p4Vjh2M0UySXlyTUR5Tm5XTkRyblkyWUoyZjJERWc0SWNa?=
+ =?utf-8?B?VGlTcXRPS1dibWpUVTZmUUpCZC9mR2pyUkkxR1E4N1BLMWJPNHZLMXdlUiti?=
+ =?utf-8?B?QmxyM21iUk9MRTB2cU9EcC90OHRuTDJPaUdPL051dWVqcXNUbm1jUVZwdFBN?=
+ =?utf-8?B?L2FIeFNGRFVIMzRXMWlabG9tMFFJS1RPcFp5ZlRMcDdaUTY0MjFqaENEZ3JP?=
+ =?utf-8?B?NEFONlljV0t2ME9yZjlKTlRsUFhmQWxCZ0QrUEQ4S3ZMNnJXdzQxcGZxbFZh?=
+ =?utf-8?B?dnVQU0V4ODV4K1pKVm9zMmFZUG9nZmU3cUVvMUpJNkxrN3VpdWtYc3Qrc3Vu?=
+ =?utf-8?B?aU51bnhwYVpIc3FlVmRiNlZia1ZNckx5aGFDSXIwT3hEMXFlSW1pVmF6NUZv?=
+ =?utf-8?B?TXQ5ekpzL2RVR2lHQ3RNQ0dhL3JzNWs3elRDVEp3M09GMzBlZml3OUVpQll6?=
+ =?utf-8?B?QW9DY1dJSEJKZEQ3bDJxTlV6cjlMK0lTWjhOT0M0Vk4zSWNWVWNuK2FUNFMy?=
+ =?utf-8?B?dlJ4VkgySFgydzExRnUrdGl2dmNLSFZDUURvRWFJWCtrekVBQ1RuNHFUeW1s?=
+ =?utf-8?B?R2ZIUG93SkNOSjFFS1RjMml4cEJsTXNKNFJJcmV2UkQvZlQybkFYV1NMRm4z?=
+ =?utf-8?B?R0VNM3F2emE1K1VxVUJWUTE2SFFvc3JkamhsMmNyeHBYdWxuTUZ3aUFUSkg2?=
+ =?utf-8?B?RjY3NHByNGdmWUVIRTFIUzNWT1NGcU5WOGRYMk51RHp5b2lOdnRiMjVWaUND?=
+ =?utf-8?B?MVQzQlhzU1VoV2lpYmRtWjMveVk0R1V1RENFa3UrVFJHRjFEYkdnYURKOUxx?=
+ =?utf-8?B?SGhnRXF2d0FUYWFad0F5dzhEcDZJdHFMLzVUSmphaG5Oajg3MnZITDEyYlY3?=
+ =?utf-8?B?b3VwTDB0N2dtcGM0N3IyM3Z4WXRyQTBEc3ZrRWpBR0RpU0NNdlVRZmFVKy9q?=
+ =?utf-8?B?VlV6WUMwQ2JoZUplejJBa2FFclBvZUlNNUJ5aHVxa1NGc3VFRnh5eU5tZHFw?=
+ =?utf-8?B?NGxwSHVvS0o4M3ZJeWhQb25lcUlJRlJtUWJxUVdUVlJKWmxWZE9BVDFyTEtF?=
+ =?utf-8?B?cHZoaEk3MDBrd2FjWmtaK1VROXZFWXZNZDI0citIbHN4cGd1YUtPSWJJNGtI?=
+ =?utf-8?B?YVdFRVNmVTZvOHVaUHZ2Qm10bEdvU2lINkpCQk1nQml5VmMyenRSZjJxK0oy?=
+ =?utf-8?B?dmpncVZYMlZoREZzVHRoOHltaGhwNmhOaEpVaVNBK2RnSU5GRTRZVUtwdWE0?=
+ =?utf-8?B?YWxvWS9PZXEwLzdYQnpWSENVUjgyeFE4YkpYZS9FUU5kR2RoenJlVmtnOC9v?=
+ =?utf-8?B?cG1LNDA5RmJRT0hlVC9sc1JaTXNjYmJVRGpDM09RdkdZSHVHNlNsTzlFL1Rq?=
+ =?utf-8?B?Q0hpY1IyWmFoMFo5YWx4TmJWZU9lY2JqcnpXMEM4RDI4a2VJYXFaZ3Vmd0lp?=
+ =?utf-8?B?TDhiSmRIUUxmYWM0OWdKSXM5Y3dmc01VcUdwR2tlbzZoTkN1U1lrWWFOcWxh?=
+ =?utf-8?B?SDd3bVd0bkRUWU9Mc3lPbHljc1liVU9IYlBLSEpZbzRKMFpiNWFwWEFIbFBh?=
+ =?utf-8?B?cGtPRmFMN2d3bWJSZ2Ntbk9zVWFGeU44bnBEZ2RaK09IY2VzYUlZTGt6ZnVR?=
+ =?utf-8?B?SDYvTHFyWWtURTZ5WFYxa241enEzTHBZS3U1cFUzRjQ2bnBETVVCemFST3VE?=
+ =?utf-8?B?U1lYVTQ4OGd3UjUrbzV5UXhLd0gzazhjeThUd2NaQlprV1FicDJwZlNWUnVU?=
+ =?utf-8?B?QXVsWHZISS9MQ2xRY0xYdFNqWVd2OXd2UEVJUzF5cDFzcm56dEdBSC9mRkdw?=
+ =?utf-8?B?SnFQKytkblFxODFUcjN5WlA4VHp2MG1kM2Q1UmhMTHZnamdWb1FYUWJyaldy?=
+ =?utf-8?B?bzJmVWxRNjBqMGNieDJuOE5KRlpGUWVRVXBMNGtKZXlicHY3d0tPbjRCYzFE?=
+ =?utf-8?B?em4wUWlEUkdtY1Y4cWtpMjh6bXZ3c2VMWC8rdjJNTEJkWHZUZzM3SnFzUkxC?=
+ =?utf-8?B?aFE9PQ==?=
+X-MS-Exchange-CrossTenant-Network-Message-Id: a32fd8a5-71a2-459c-491b-08ddd91e76ab
+X-MS-Exchange-CrossTenant-AuthSource: CO1PR11MB5089.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 11 Aug 2025 21:31:42.1514 (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: VO08bZBA+0/7O3V2GmwdVVod13CajSFKelZ7YcDYhnegQcC6RhhP3Z60sgBHD80YuVmSna7zgGnnsRrd9gUeK7lqbupHd8VqF+EeLsH6b4o=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM3PPF9EFFC957B
+X-OriginatorOrg: intel.com
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1754930194; x=1786466194;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=Gy+6sYFnQT9GBW/tVs5uyHNFnl+EDLjiDaTfbPAhYqQ=;
- b=K5WUFWmDX25kBQutmv3ZUpBkKVRSSzYUHXF84wb+D6pI9Ccs9DtYwhCk
- e/bsHMorBlRrezWhnVK7PkXdahbsmu3jTub4WaAbC+QM3ujE830xyUIz3
- PvpGgQoU+qIeDnsggcnVH7/2BTUPp2SFQ1e6Ld80mnm9bvAu7VFjb+B3H
- Trdre3sXssN7/cGMWf9pGxRjAf2yVXwsKwMf/nsSA2zp6rrGIsKH9XjYi
- 5P8d52PPqoE3IkZn/dXa1V1tvDVSz7lRkqp8iy9/PAjxa0BJbp4ArVFpn
- uDu+3nuLEvYXJfLkd48hbYMIXL5adnHLoVCIOxOQvTWcn+mnzdPDbAW6d
- w==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ t=1754948346; x=1786484346;
+ h=message-id:date:subject:to:cc:references:from:
+ in-reply-to:mime-version;
+ bh=oSqfoMJ2oCPgiLvZXD4ql8AKFG3zXE/GLjPopT2SlU4=;
+ b=OLQ08zR9D4F7dNqju8ReEId5EckH7rgPgxxanWTErp5KL2em+2AjmCQC
+ mv1LEy2QCzT7A9MgnO+I04O8jMTHOWtXDM6/ndJGpZZZi8B7ONMs3fPNG
+ F1nIkfdSujB3yr47rYs1qliG5iELeIlhwA76Uxky4YAHJEB0vHVL0oNmp
+ SNpoqUZhdpjkUO8ZkwY/0WCFhObucw1qrBAPRZaQQesK314hkPGIPod3u
+ Ph4tLR6z34E5pEU2SHS/W2zOV8oFtbvw58CFyqhxk6Hdb6cMPwElcID+M
+ cpuIEVXeBP4/jvIG0YUAZYOdIQI8yrfV5CR5lJby/ormqta2zaVgltWky
+ Q==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=K5WUFWmD
-Subject: [Intel-wired-lan] [PATCH iwl-next v6 2/2] ice: add E830 Earliest
- TxTime First Offload support
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=OLQ08zR9
+X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Subject: Re: [Intel-wired-lan] [PATCH iwl-net] ice: fix incorrect counter
+ for buffer allocation failures
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -109,1240 +257,138 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-E830 supports Earliest TxTime First (ETF) hardware offload, which is
-configured via the ETF Qdisc on a per-queue basis (see tc-etf(8)). ETF
-introduces a new Tx flow mechanism that utilizes a timestamp ring
-(tstamp_ring) alongside the standard Tx ring. This timestamp ring is
-used to indicate when hardware will transmit a packet. Tx Time is
-supported on the first 2048 Tx queues of the device, and the NVM image
-limits the maximum number of Tx queues to 2048 for the device.
+--------------0vG0lIf3u1bkZaz4KbhqOdGH
+Content-Type: multipart/mixed; boundary="------------XsOxEf09HdJYwoRnz4ZDVQtc";
+ protected-headers="v1"
+From: Jacob Keller <jacob.e.keller@intel.com>
+To: Jason Xing <kerneljasonxing@gmail.com>,
+ Paul Menzel <pmenzel@molgen.mpg.de>
+Cc: Michal Kubiak <michal.kubiak@intel.com>,
+ intel-wired-lan@lists.osuosl.org, maciej.fijalkowski@intel.com,
+ netdev@vger.kernel.org, przemyslaw.kitszel@intel.com,
+ aleksander.lobakin@intel.com, anthony.l.nguyen@intel.com
+Message-ID: <c5b09040-0484-484c-a8b7-0675b97c3b9f@intel.com>
+Subject: Re: [PATCH iwl-net] ice: fix incorrect counter for buffer allocation
+ failures
+References: <20250808155310.1053477-1-michal.kubiak@intel.com>
+ <f0752ae6-25f8-4504-b23b-052f60007deb@molgen.mpg.de>
+ <CAL+tcoAwKcy-E6LkLhwvKA9+es5RuFmg4+kPZ8dV08-s-VopPA@mail.gmail.com>
+In-Reply-To: <CAL+tcoAwKcy-E6LkLhwvKA9+es5RuFmg4+kPZ8dV08-s-VopPA@mail.gmail.com>
 
-The allocation and initialization of the timestamp ring occur when the
-feature is enabled on a specific Tx queue via tc-etf. The requested Tx
-Time queue index cannot be greater than the number of Tx queues
-(vsi->num_txq).
+--------------XsOxEf09HdJYwoRnz4ZDVQtc
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-To support ETF, the following flags and bitmap are introduced:
 
- - ICE_F_TXTIME: Device feature flag set for E830 NICs, indicating ETF
-   support.
- - txtime_txqs: PF-level bitmap set when ETF is enabled and cleared
-   when disabled for a specific Tx queue. It is used by
-   ice_is_txtime_ena() to check if ETF is allocated and configured on
-   any Tx queue, which is checked during Tx ring allocation.
- - ICE_TX_FLAGS_TXTIME: Per Tx ring flag set when ETF is allocated and
-   configured for a specific Tx queue. It determines ETF status during
-   packet transmission and is checked by ice_is_txtime_ena() to verify
-   if ETF is enabled on any Tx queue.
 
-Due to a hardware issue that can result in a malicious driver detection
-event, additional timestamp descriptors are required when wrapping
-around the timestamp ring. Up to 64 additional timestamp descriptors
-are reserved, reducing the available Tx descriptors.
+On 8/9/2025 6:08 AM, Jason Xing wrote:
+> On Sat, Aug 9, 2025 at 5:38=E2=80=AFPM Paul Menzel <pmenzel@molgen.mpg.=
+de> wrote:
+>>
+>> Dear Michal,
+>>
+>>
+>> Thank you for your patch.
+>>
+>>
+>> Am 08.08.25 um 17:53 schrieb Michal Kubiak:
+>>> Currently, the driver increments `alloc_page_failed` when buffer allo=
+cation fails
+>>> in `ice_clean_rx_irq()`. However, this counter is intended for page a=
+llocation
+>>> failures, not buffer allocation issues.
+>>>
+>>> This patch corrects the counter by incrementing `alloc_buf_failed` in=
+stead,
+>>> ensuring accurate statistics reporting for buffer allocation failures=
+=2E
+>>>
+>>> Fixes: 2fba7dc5157b ("ice: Add support for XDP multi-buffer on Rx sid=
+e")
+>>> Reported-by: Jacob Keller <jacob.e.keller@intel.com>
+>>> Suggested-by: Paul Menzel <pmenzel@molgen.mpg.de>
+>>
+>> Thank you, but I merely asked to send in the patch separately and didn=
+=E2=80=99t
+>> spot the error. So, I=E2=80=99d remove the tag, but you add the one at=
+ the end.
+>>
+>>> Signed-off-by: Michal Kubiak <michal.kubiak@intel.com>
+>=20
+> Reviewed-by: Jason Xing <kerneljasonxing@gmail.com>
+>=20
+>>> ---
+>>>   drivers/net/ethernet/intel/ice/ice_txrx.c | 2 +-
+>>>   1 file changed, 1 insertion(+), 1 deletion(-)
+>>>
+>>> diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/=
+ethernet/intel/ice/ice_txrx.c
+>>> index 93907ab2eac7..1b1ebfd347ef 100644
+>>> --- a/drivers/net/ethernet/intel/ice/ice_txrx.c
+>>> +++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
+>>> @@ -1337,7 +1337,7 @@ static int ice_clean_rx_irq(struct ice_rx_ring =
+*rx_ring, int budget)
+>>>                       skb =3D ice_construct_skb(rx_ring, xdp);
+>>>               /* exit if we failed to retrieve a buffer */
+>>>               if (!skb) {
+>>> -                     rx_ring->ring_stats->rx_stats.alloc_page_failed=
+++;
+>>> +                     rx_ring->ring_stats->rx_stats.alloc_buf_failed+=
++;
+>>>                       xdp_verdict =3D ICE_XDP_CONSUMED;
+>>>               }
+>>>               ice_put_rx_mbuf(rx_ring, xdp, ntc, xdp_verdict);
+>>
+>> Reviewed-by: Paul Menzel <pmenzel@molgen.mpg.de>
+>>
+>>
+>> Kind regards,
+>>
+>> Paul
+>>
+>>
+>> PS: A little off-topic: As this code is present since v6.3-rc1, I
+>> wonder, why this has not been causing any user visible issues in the
+>> last two years. Can somebody explain this?
+>>
+>=20
+> From my limited experience, upgrading to the new kernel (like v6.x) is
+> not an easy thing. Plus not that many people monitor the driver
+> counter on the machine with the ice driver loaded. Sometimes we
+> neglect this error because it doesn't harm the real and overall
+> workload even when the allocation fails. Things like this sometimes
+> happen in other areas :)
+>=20
 
-To accommodate this, ICE_MAX_NUM_DESC_BY_MAC is introduced, defining:
+Exactly this. An end user is unlikely to know the difference between the
+buffer allocated vs page allocated failures. Even if they see the
+counters going up, how would they know that the counter going up was a bu=
+g?
 
- - E830: Maximum Tx descriptor count of 8096 (8K - 32 - 64 for timestamp
-   fetch descriptors).
- - E810 and E82X: Maximum Tx descriptor count of 8160 (8K - 32).
+This counter really is just for user visibility into a problem
+occurring. Reporting the right counter is critical from a developer
+perspective as we might use the fact that one but not the other is going
+up in an attempt to isolate issues.. but the end user is unlikely to
+ever notice without code inspection.
 
-Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Co-developed-by: Alice Michael <alice.michael@intel.com>
-Signed-off-by: Alice Michael <alice.michael@intel.com>
-Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
----
- drivers/net/ethernet/intel/ice/ice.h          |  33 ++-
- .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  35 +++
- drivers/net/ethernet/intel/ice/ice_base.c     | 245 +++++++++++++++---
- drivers/net/ethernet/intel/ice/ice_base.h     |   1 +
- drivers/net/ethernet/intel/ice/ice_common.c   |  78 ++++++
- drivers/net/ethernet/intel/ice/ice_common.h   |   6 +
- drivers/net/ethernet/intel/ice/ice_ethtool.c  |  14 +-
- .../net/ethernet/intel/ice/ice_hw_autogen.h   |   3 +
- .../net/ethernet/intel/ice/ice_lan_tx_rx.h    |  41 +++
- drivers/net/ethernet/intel/ice/ice_lib.c      |   1 +
- drivers/net/ethernet/intel/ice/ice_main.c     | 113 +++++++-
- drivers/net/ethernet/intel/ice/ice_txrx.c     | 171 +++++++++++-
- drivers/net/ethernet/intel/ice/ice_txrx.h     |  28 +-
- drivers/net/ethernet/intel/ice/ice_txrx_lib.h |  14 +
- drivers/net/ethernet/intel/ice/ice_virtchnl.c |   2 +-
- 15 files changed, 730 insertions(+), 55 deletions(-)
+> Thanks,
+> Jason
+>=20
 
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index e952d67388bf..a3501eb2103e 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -84,7 +84,11 @@
- #define ICE_BAR0		0
- #define ICE_REQ_DESC_MULTIPLE	32
- #define ICE_MIN_NUM_DESC	64
--#define ICE_MAX_NUM_DESC	8160
-+#define ICE_MAX_NUM_DESC_E810	8160
-+#define ICE_MAX_NUM_DESC_E830	8096
-+#define ICE_MAX_NUM_DESC_BY_MAC(hw) ((hw)->mac_type == ICE_MAC_E830 ? \
-+				     ICE_MAX_NUM_DESC_E830 : \
-+				     ICE_MAX_NUM_DESC_E810)
- #define ICE_DFLT_MIN_RX_DESC	512
- #define ICE_DFLT_NUM_TX_DESC	256
- #define ICE_DFLT_NUM_RX_DESC	2048
-@@ -200,6 +204,7 @@ enum ice_feature {
- 	ICE_F_SMA_CTRL,
- 	ICE_F_CGU,
- 	ICE_F_GNSS,
-+	ICE_F_TXTIME,
- 	ICE_F_GCS,
- 	ICE_F_ROCE_LAG,
- 	ICE_F_SRIOV_LAG,
-@@ -578,6 +583,7 @@ struct ice_pf {
- 	DECLARE_BITMAP(misc_thread, ICE_MISC_THREAD_NBITS);
- 	unsigned long *avail_txqs;	/* bitmap to track PF Tx queue usage */
- 	unsigned long *avail_rxqs;	/* bitmap to track PF Rx queue usage */
-+	unsigned long *txtime_txqs;     /* bitmap to track PF Tx Time queue */
- 	unsigned long serv_tmr_period;
- 	unsigned long serv_tmr_prev;
- 	struct timer_list serv_tmr;
-@@ -751,6 +757,31 @@ static inline void ice_set_ring_xdp(struct ice_tx_ring *ring)
- 	ring->flags |= ICE_TX_FLAGS_RING_XDP;
- }
- 
-+/**
-+ * ice_is_txtime_ena - check if Tx Time is enabled on the Tx ring
-+ * @ring: pointer to Tx ring
-+ *
-+ * Return: true if the Tx ring has Tx Time enabled, false otherwise.
-+ */
-+static inline bool ice_is_txtime_ena(const struct ice_tx_ring *ring)
-+{
-+	struct ice_vsi *vsi = ring->vsi;
-+	struct ice_pf *pf = vsi->back;
-+
-+	return test_bit(ring->q_index,  pf->txtime_txqs);
-+}
-+
-+/**
-+ * ice_is_txtime_cfg - check if Tx Time is configured on the Tx ring
-+ * @ring: pointer to Tx ring
-+ *
-+ * Return: true if the Tx ring is configured for Tx ring, false otherwise.
-+ */
-+static inline bool ice_is_txtime_cfg(const struct ice_tx_ring *ring)
-+{
-+	return !!(ring->flags & ICE_TX_FLAGS_TXTIME);
-+}
-+
- /**
-  * ice_get_xp_from_qid - get ZC XSK buffer pool bound to a queue ID
-  * @vsi: pointer to VSI
-diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-index caae1780fd37..6abfd04c9d25 100644
---- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-@@ -33,6 +33,10 @@ typedef struct __packed { u8 buf[ICE_TXQ_CTX_SZ]; } ice_txq_ctx_buf_t;
- 
- typedef struct __packed { u8 buf[ICE_TXQ_CTX_FULL_SZ]; } ice_txq_ctx_buf_full_t;
- 
-+#define ICE_TXTIME_CTX_SZ		25
-+
-+typedef struct __packed { u8 buf[ICE_TXTIME_CTX_SZ]; } ice_txtime_ctx_buf_t;
-+
- /* Queue Shutdown (direct 0x0003) */
- struct ice_aqc_q_shutdown {
- 	u8 driver_unloading;
-@@ -2117,6 +2121,34 @@ struct ice_aqc_add_rdma_qset_data {
- 	struct ice_aqc_add_tx_rdma_qset_entry rdma_qsets[];
- };
- 
-+/* Set Tx Time LAN Queue (indirect 0x0C35) */
-+struct ice_aqc_set_txtimeqs {
-+	__le16 q_id;
-+	__le16 q_amount;
-+	u8 reserved[4];
-+	__le32 addr_high;
-+	__le32 addr_low;
-+};
-+
-+/* This is the descriptor of each queue entry for the Set Tx Time Queue
-+ * command (0x0C35). Only used within struct ice_aqc_set_txtime_qgrp.
-+ */
-+struct ice_aqc_set_txtimeqs_perq {
-+	u8 reserved[4];
-+	ice_txtime_ctx_buf_t txtime_ctx;
-+	u8 reserved1[3];
-+};
-+
-+/* The format of the command buffer for Set Tx Time Queue (0x0C35)
-+ * is an array of the following structs. Please note that the length of
-+ * each struct ice_aqc_set_txtime_qgrp is variable due to the variable
-+ * number of queues in each group!
-+ */
-+struct ice_aqc_set_txtime_qgrp {
-+	u8 reserved[8];
-+	struct ice_aqc_set_txtimeqs_perq txtimeqs[];
-+};
-+
- /* Download Package (indirect 0x0C40) */
- /* Also used for Update Package (indirect 0x0C41 and 0x0C42) */
- struct ice_aqc_download_pkg {
-@@ -2692,6 +2724,9 @@ enum ice_adminq_opc {
- 	ice_aqc_opc_cfg_txqs				= 0x0C32,
- 	ice_aqc_opc_add_rdma_qset			= 0x0C33,
- 
-+	/* Tx Time queue commands */
-+	ice_aqc_opc_set_txtimeqs			= 0x0C35,
-+
- 	/* package commands */
- 	ice_aqc_opc_download_pkg			= 0x0C40,
- 	ice_aqc_opc_upload_section			= 0x0C41,
-diff --git a/drivers/net/ethernet/intel/ice/ice_base.c b/drivers/net/ethernet/intel/ice/ice_base.c
-index dc4beac04086..791b95242250 100644
---- a/drivers/net/ethernet/intel/ice/ice_base.c
-+++ b/drivers/net/ethernet/intel/ice/ice_base.c
-@@ -242,7 +242,8 @@ static void ice_cfg_itr_gran(struct ice_hw *hw)
-  * @ring: ring to get the absolute queue index
-  * @tc: traffic class number
-  */
--static u16 ice_calc_txq_handle(struct ice_vsi *vsi, struct ice_tx_ring *ring, u8 tc)
-+static u16
-+ice_calc_txq_handle(const struct ice_vsi *vsi, struct ice_tx_ring *ring, u8 tc)
- {
- 	WARN_ONCE(ice_ring_is_xdp(ring) && tc, "XDP ring can't belong to TC other than 0\n");
- 
-@@ -278,30 +279,20 @@ static void ice_cfg_xps_tx_ring(struct ice_tx_ring *ring)
- }
- 
- /**
-- * ice_setup_tx_ctx - setup a struct ice_tlan_ctx instance
-- * @ring: The Tx ring to configure
-- * @tlan_ctx: Pointer to the Tx LAN queue context structure to be initialized
-- * @pf_q: queue index in the PF space
-+ * ice_set_txq_ctx_vmvf - set queue context VM/VF type and number by VSI type
-+ * @ring: the Tx ring to configure
-+ * @vmvf_type: VM/VF type
-+ * @vmvf_num: VM/VF number
-  *
-- * Configure the Tx descriptor ring in TLAN context.
-+ * Return: 0 on success and a negative value on error.
-  */
--static void
--ice_setup_tx_ctx(struct ice_tx_ring *ring, struct ice_tlan_ctx *tlan_ctx, u16 pf_q)
-+static int
-+ice_set_txq_ctx_vmvf(struct ice_tx_ring *ring, u8 *vmvf_type, u16 *vmvf_num)
- {
- 	struct ice_vsi *vsi = ring->vsi;
--	struct ice_hw *hw = &vsi->back->hw;
--
--	tlan_ctx->base = ring->dma >> ICE_TLAN_CTX_BASE_S;
--
--	tlan_ctx->port_num = vsi->port_info->lport;
--
--	/* Transmit Queue Length */
--	tlan_ctx->qlen = ring->count;
--
--	ice_set_cgd_num(tlan_ctx, ring->dcb_tc);
-+	struct ice_hw *hw;
- 
--	/* PF number */
--	tlan_ctx->pf_num = hw->pf_id;
-+	hw = &vsi->back->hw;
- 
- 	/* queue belongs to a specific VSI type
- 	 * VF / VM index should be programmed per vmvf_type setting:
-@@ -314,21 +305,60 @@ ice_setup_tx_ctx(struct ice_tx_ring *ring, struct ice_tlan_ctx *tlan_ctx, u16 pf
- 	case ICE_VSI_CTRL:
- 	case ICE_VSI_PF:
- 		if (ring->ch)
--			tlan_ctx->vmvf_type = ICE_TLAN_CTX_VMVF_TYPE_VMQ;
-+			*vmvf_type = ICE_TLAN_CTX_VMVF_TYPE_VMQ;
- 		else
--			tlan_ctx->vmvf_type = ICE_TLAN_CTX_VMVF_TYPE_PF;
-+			*vmvf_type = ICE_TLAN_CTX_VMVF_TYPE_PF;
- 		break;
- 	case ICE_VSI_VF:
- 		/* Firmware expects vmvf_num to be absolute VF ID */
--		tlan_ctx->vmvf_num = hw->func_caps.vf_base_id + vsi->vf->vf_id;
--		tlan_ctx->vmvf_type = ICE_TLAN_CTX_VMVF_TYPE_VF;
-+		*vmvf_num = hw->func_caps.vf_base_id + vsi->vf->vf_id;
-+		*vmvf_type = ICE_TLAN_CTX_VMVF_TYPE_VF;
- 		break;
- 	case ICE_VSI_SF:
--		tlan_ctx->vmvf_type = ICE_TLAN_CTX_VMVF_TYPE_VMQ;
-+		*vmvf_type = ICE_TLAN_CTX_VMVF_TYPE_VMQ;
- 		break;
- 	default:
--		return;
-+		dev_info(ice_pf_to_dev(vsi->back),
-+			 "Unable to set VMVF type for VSI type %d\n",
-+			 vsi->type);
-+		return -EINVAL;
- 	}
-+	return 0;
-+}
-+
-+/**
-+ * ice_setup_tx_ctx - setup a struct ice_tlan_ctx instance
-+ * @ring: the Tx ring to configure
-+ * @tlan_ctx: pointer to the Tx LAN queue context structure to be initialized
-+ * @pf_q: queue index in the PF space
-+ *
-+ * Configure the Tx descriptor ring in TLAN context.
-+ *
-+ * Return: 0 on success and a negative value on error.
-+ */
-+static int
-+ice_setup_tx_ctx(struct ice_tx_ring *ring, struct ice_tlan_ctx *tlan_ctx, u16 pf_q)
-+{
-+	struct ice_vsi *vsi = ring->vsi;
-+	struct ice_hw *hw;
-+	int err;
-+
-+	hw = &vsi->back->hw;
-+	tlan_ctx->base = ring->dma >> ICE_TLAN_CTX_BASE_S;
-+	tlan_ctx->port_num = vsi->port_info->lport;
-+
-+	/* Transmit Queue Length */
-+	tlan_ctx->qlen = ring->count;
-+
-+	ice_set_cgd_num(tlan_ctx, ring->dcb_tc);
-+
-+	/* PF number */
-+	tlan_ctx->pf_num = hw->pf_id;
-+
-+	err = ice_set_txq_ctx_vmvf(ring, &tlan_ctx->vmvf_type,
-+				   &tlan_ctx->vmvf_num);
-+	if (err)
-+		return err;
- 
- 	/* make sure the context is associated with the right VSI */
- 	if (ring->ch)
-@@ -355,6 +385,80 @@ ice_setup_tx_ctx(struct ice_tx_ring *ring, struct ice_tlan_ctx *tlan_ctx, u16 pf
- 	 * 1: Legacy Host Interface
- 	 */
- 	tlan_ctx->legacy_int = ICE_TX_LEGACY;
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_setup_txtime_ctx - setup a struct ice_txtime_ctx instance
-+ * @ring: the tstamp ring to configure
-+ * @txtime_ctx: pointer to the Tx time queue context structure to be initialized
-+ *
-+ * Return: 0 on success and a negative value on error.
-+ */
-+static int
-+ice_setup_txtime_ctx(const struct ice_tstamp_ring *ring,
-+		     struct ice_txtime_ctx *txtime_ctx)
-+{
-+	struct ice_tx_ring *tx_ring = ring->tx_ring;
-+	struct ice_vsi *vsi = tx_ring->vsi;
-+	struct ice_hw *hw = &vsi->back->hw;
-+	int err;
-+
-+	txtime_ctx->base = ring->dma >> ICE_TXTIME_CTX_BASE_S;
-+
-+	/* Tx time Queue Length */
-+	txtime_ctx->qlen = tx_ring->tstamp_count;
-+	txtime_ctx->txtime_ena_q = 1;
-+
-+	/* PF number */
-+	txtime_ctx->pf_num = hw->pf_id;
-+
-+	err = ice_set_txq_ctx_vmvf(tx_ring, &txtime_ctx->vmvf_type,
-+				   &txtime_ctx->vmvf_num);
-+	if (err)
-+		return err;
-+
-+	/* make sure the context is associated with the right VSI */
-+	if (tx_ring->ch)
-+		txtime_ctx->src_vsi = tx_ring->ch->vsi_num;
-+	else
-+		txtime_ctx->src_vsi = ice_get_hw_vsi_num(hw, vsi->idx);
-+
-+	txtime_ctx->ts_res = ICE_TXTIME_CTX_RESOLUTION_128NS;
-+	txtime_ctx->drbell_mode_32 = ICE_TXTIME_CTX_DRBELL_MODE_32;
-+	txtime_ctx->ts_fetch_prof_id = ICE_TXTIME_CTX_FETCH_PROF_ID_0;
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_calc_ts_ring_count - calculate the number of Tx time stamp descriptors
-+ * @tx_ring: Tx ring to calculate the count for
-+ *
-+ * Return: the number of Tx time stamp descriptors.
-+ */
-+u16 ice_calc_ts_ring_count(struct ice_tx_ring *tx_ring)
-+{
-+	u16 prof = ICE_TXTIME_CTX_FETCH_PROF_ID_0;
-+	struct ice_vsi *vsi = tx_ring->vsi;
-+	struct ice_hw *hw = &vsi->back->hw;
-+	u16 max_fetch_desc = 0, fetch, i;
-+	u32 reg;
-+
-+	for (i = 0; i < ICE_TXTIME_FETCH_PROFILE_CNT; i++) {
-+		reg = rd32(hw, E830_GLTXTIME_FETCH_PROFILE(prof, 0));
-+		fetch = FIELD_GET(E830_GLTXTIME_FETCH_PROFILE_FETCH_TS_DESC_M,
-+				  reg);
-+		max_fetch_desc = max(fetch, max_fetch_desc);
-+	}
-+
-+	if (!max_fetch_desc)
-+		max_fetch_desc = ICE_TXTIME_FETCH_TS_DESC_DFLT;
-+
-+	max_fetch_desc = ALIGN(max_fetch_desc, ICE_REQ_DESC_MULTIPLE);
-+
-+	return tx_ring->count + max_fetch_desc;
- }
- 
- /**
-@@ -881,14 +985,50 @@ void ice_vsi_free_q_vectors(struct ice_vsi *vsi)
- 	vsi->num_q_vectors = 0;
- }
- 
-+/**
-+ * ice_cfg_tstamp - Configure Tx time stamp queue
-+ * @tx_ring: Tx ring to be configured with timestamping
-+ *
-+ * Return: 0 on success and a negative value on error.
-+ */
-+static int
-+ice_cfg_tstamp(struct ice_tx_ring *tx_ring)
-+{
-+	DEFINE_RAW_FLEX(struct ice_aqc_set_txtime_qgrp, txtime_qg_buf,
-+			txtimeqs, 1);
-+	u8 txtime_buf_len = struct_size(txtime_qg_buf, txtimeqs, 1);
-+	struct ice_tstamp_ring *tstamp_ring = tx_ring->tstamp_ring;
-+	struct ice_txtime_ctx txtime_ctx = {};
-+	struct ice_vsi *vsi = tx_ring->vsi;
-+	struct ice_pf *pf = vsi->back;
-+	struct ice_hw *hw = &pf->hw;
-+	u16 pf_q = tx_ring->reg_idx;
-+	int err;
-+
-+	err = ice_setup_txtime_ctx(tstamp_ring, &txtime_ctx);
-+	if (err) {
-+		dev_err(ice_pf_to_dev(pf), "Failed to setup Tx time queue context for queue %d, error: %d\n",
-+			pf_q, err);
-+		return err;
-+	}
-+	ice_pack_txtime_ctx(&txtime_ctx,
-+			    &txtime_qg_buf->txtimeqs[0].txtime_ctx);
-+
-+	tx_ring->tstamp_tail = hw->hw_addr + E830_GLQTX_TXTIME_DBELL_LSB(pf_q);
-+	return ice_aq_set_txtimeq(hw, pf_q, 1, txtime_qg_buf,
-+				  txtime_buf_len, NULL);
-+}
-+
- /**
-  * ice_vsi_cfg_txq - Configure single Tx queue
-  * @vsi: the VSI that queue belongs to
-  * @ring: Tx ring to be configured
-  * @qg_buf: queue group buffer
-+ *
-+ * Return: 0 on success and a negative value on error.
-  */
- static int
--ice_vsi_cfg_txq(struct ice_vsi *vsi, struct ice_tx_ring *ring,
-+ice_vsi_cfg_txq(const struct ice_vsi *vsi, struct ice_tx_ring *ring,
- 		struct ice_aqc_add_tx_qgrp *qg_buf)
- {
- 	u8 buf_len = struct_size(qg_buf, txqs, 1);
-@@ -897,15 +1037,20 @@ ice_vsi_cfg_txq(struct ice_vsi *vsi, struct ice_tx_ring *ring,
- 	struct ice_channel *ch = ring->ch;
- 	struct ice_pf *pf = vsi->back;
- 	struct ice_hw *hw = &pf->hw;
-+	u32 pf_q, vsi_idx;
- 	int status;
--	u16 pf_q;
- 	u8 tc;
- 
- 	/* Configure XPS */
- 	ice_cfg_xps_tx_ring(ring);
- 
- 	pf_q = ring->reg_idx;
--	ice_setup_tx_ctx(ring, &tlan_ctx, pf_q);
-+	status = ice_setup_tx_ctx(ring, &tlan_ctx, pf_q);
-+	if (status) {
-+		dev_err(ice_pf_to_dev(pf), "Failed to setup Tx context for queue %d, error: %d\n",
-+			pf_q, status);
-+		return status;
-+	}
- 	/* copy context contents into the qg_buf */
- 	qg_buf->txqs[0].txq_id = cpu_to_le16(pf_q);
- 	ice_pack_txq_ctx(&tlan_ctx, &qg_buf->txqs[0].txq_ctx);
-@@ -925,14 +1070,15 @@ ice_vsi_cfg_txq(struct ice_vsi *vsi, struct ice_tx_ring *ring,
- 	 */
- 	ring->q_handle = ice_calc_txq_handle(vsi, ring, tc);
- 
--	if (ch)
--		status = ice_ena_vsi_txq(vsi->port_info, ch->ch_vsi->idx, 0,
--					 ring->q_handle, 1, qg_buf, buf_len,
--					 NULL);
--	else
--		status = ice_ena_vsi_txq(vsi->port_info, vsi->idx, tc,
--					 ring->q_handle, 1, qg_buf, buf_len,
--					 NULL);
-+	if (ch) {
-+		tc = 0;
-+		vsi_idx = ch->ch_vsi->idx;
-+	} else {
-+		vsi_idx = vsi->idx;
-+	}
-+
-+	status = ice_ena_vsi_txq(vsi->port_info, vsi_idx, tc, ring->q_handle,
-+				 1, qg_buf, buf_len, NULL);
- 	if (status) {
- 		dev_err(ice_pf_to_dev(pf), "Failed to set LAN Tx queue context, error: %d\n",
- 			status);
-@@ -947,7 +1093,32 @@ ice_vsi_cfg_txq(struct ice_vsi *vsi, struct ice_tx_ring *ring,
- 	if (pf_q == le16_to_cpu(txq->txq_id))
- 		ring->txq_teid = le32_to_cpu(txq->q_teid);
- 
-+	if (ice_is_txtime_ena(ring)) {
-+		status = ice_alloc_setup_tstamp_ring(ring);
-+		if (status) {
-+			dev_err(ice_pf_to_dev(pf),
-+				"Failed to allocate Tx timestamp ring, error: %d\n",
-+				status);
-+			goto err_setup_tstamp;
-+		}
-+
-+		status = ice_cfg_tstamp(ring);
-+		if (status) {
-+			dev_err(ice_pf_to_dev(pf), "Failed to set Tx Time queue context, error: %d\n",
-+				status);
-+			goto err_cfg_tstamp;
-+		}
-+	}
- 	return 0;
-+
-+err_cfg_tstamp:
-+	ice_free_tx_tstamp_ring(ring);
-+err_setup_tstamp:
-+	ice_dis_vsi_txq(vsi->port_info, vsi_idx, tc, 1, &ring->q_handle,
-+			&ring->reg_idx, &ring->txq_teid, ICE_NO_RESET,
-+			tlan_ctx.vmvf_num, NULL);
-+
-+	return status;
- }
- 
- int ice_vsi_cfg_single_txq(struct ice_vsi *vsi, struct ice_tx_ring **tx_rings,
-diff --git a/drivers/net/ethernet/intel/ice/ice_base.h b/drivers/net/ethernet/intel/ice/ice_base.h
-index 632b5be61a98..d28294247599 100644
---- a/drivers/net/ethernet/intel/ice/ice_base.h
-+++ b/drivers/net/ethernet/intel/ice/ice_base.h
-@@ -34,4 +34,5 @@ ice_fill_txq_meta(const struct ice_vsi *vsi, struct ice_tx_ring *ring,
- 		  struct ice_txq_meta *txq_meta);
- int ice_qp_ena(struct ice_vsi *vsi, u16 q_idx);
- int ice_qp_dis(struct ice_vsi *vsi, u16 q_idx);
-+u16 ice_calc_ts_ring_count(struct ice_tx_ring *tx_ring);
- #endif /* _ICE_BASE_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index 95e40779b176..69e3ea8a1ff1 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -1693,6 +1693,44 @@ int ice_write_txq_ctx(struct ice_hw *hw, struct ice_tlan_ctx *tlan_ctx,
- 	return 0;
- }
- 
-+/* Tx time Queue Context */
-+static const struct packed_field_u8 ice_txtime_ctx_fields[] = {
-+				    /* Field			Width	LSB */
-+	ICE_CTX_STORE(ice_txtime_ctx, base,			57,	0),
-+	ICE_CTX_STORE(ice_txtime_ctx, pf_num,			3,	57),
-+	ICE_CTX_STORE(ice_txtime_ctx, vmvf_num,			10,	60),
-+	ICE_CTX_STORE(ice_txtime_ctx, vmvf_type,		2,	70),
-+	ICE_CTX_STORE(ice_txtime_ctx, src_vsi,			10,	72),
-+	ICE_CTX_STORE(ice_txtime_ctx, cpuid,			8,	82),
-+	ICE_CTX_STORE(ice_txtime_ctx, tphrd_desc,		1,	90),
-+	ICE_CTX_STORE(ice_txtime_ctx, qlen,			13,	91),
-+	ICE_CTX_STORE(ice_txtime_ctx, timer_num,		1,	104),
-+	ICE_CTX_STORE(ice_txtime_ctx, txtime_ena_q,		1,	105),
-+	ICE_CTX_STORE(ice_txtime_ctx, drbell_mode_32,		1,	106),
-+	ICE_CTX_STORE(ice_txtime_ctx, ts_res,			4,	107),
-+	ICE_CTX_STORE(ice_txtime_ctx, ts_round_type,		2,	111),
-+	ICE_CTX_STORE(ice_txtime_ctx, ts_pacing_slot,		3,	113),
-+	ICE_CTX_STORE(ice_txtime_ctx, merging_ena,		1,	116),
-+	ICE_CTX_STORE(ice_txtime_ctx, ts_fetch_prof_id,		4,	117),
-+	ICE_CTX_STORE(ice_txtime_ctx, ts_fetch_cache_line_aln_thld, 4,	121),
-+	ICE_CTX_STORE(ice_txtime_ctx, tx_pipe_delay_mode,	1,	125),
-+};
-+
-+/**
-+ * ice_pack_txtime_ctx - pack Tx time queue context into a HW buffer
-+ * @ctx: the Tx time queue context to pack
-+ * @buf: the HW buffer to pack into
-+ *
-+ * Pack the Tx time queue context from the CPU-friendly unpacked buffer into
-+ * its bit-packed HW layout.
-+ */
-+void ice_pack_txtime_ctx(const struct ice_txtime_ctx *ctx,
-+			 ice_txtime_ctx_buf_t *buf)
-+{
-+	pack_fields(buf, sizeof(*buf), ctx, ice_txtime_ctx_fields,
-+		    QUIRK_LITTLE_ENDIAN | QUIRK_LSW32_IS_FIRST);
-+}
-+
- /* Sideband Queue command wrappers */
- 
- /**
-@@ -4816,6 +4854,46 @@ ice_aq_add_rdma_qsets(struct ice_hw *hw, u8 num_qset_grps,
- 	return ice_aq_send_cmd(hw, &desc, qset_list, buf_size, cd);
- }
- 
-+/**
-+ * ice_aq_set_txtimeq - set Tx time queues
-+ * @hw: pointer to the hardware structure
-+ * @txtimeq: first Tx time queue id to configure
-+ * @q_count: number of queues to configure
-+ * @txtime_qg: queue group to be set
-+ * @buf_size: size of buffer for indirect command
-+ * @cd: pointer to command details structure or NULL
-+ *
-+ * Set Tx Time queue (0x0C35)
-+ * Return: 0 on success or negative value on failure.
-+ */
-+int
-+ice_aq_set_txtimeq(struct ice_hw *hw, u16 txtimeq, u8 q_count,
-+		   struct ice_aqc_set_txtime_qgrp *txtime_qg, u16 buf_size,
-+		   struct ice_sq_cd *cd)
-+{
-+	struct ice_aqc_set_txtimeqs *cmd;
-+	struct libie_aq_desc desc;
-+	u16 size;
-+
-+	if (!txtime_qg || txtimeq > ICE_TXTIME_MAX_QUEUE ||
-+	    q_count < 1 || q_count > ICE_SET_TXTIME_MAX_Q_AMOUNT)
-+		return -EINVAL;
-+
-+	size = struct_size(txtime_qg, txtimeqs, q_count);
-+	if (buf_size != size)
-+		return -EINVAL;
-+
-+	cmd = libie_aq_raw(&desc);
-+
-+	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_set_txtimeqs);
-+
-+	desc.flags |= cpu_to_le16(LIBIE_AQ_FLAG_RD);
-+
-+	cmd->q_id = cpu_to_le16(txtimeq);
-+	cmd->q_amount = cpu_to_le16(q_count);
-+	return ice_aq_send_cmd(hw, &desc, txtime_qg, buf_size, cd);
-+}
-+
- /* End of FW Admin Queue command wrappers */
- 
- /**
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
-index dba15ad315a6..e700ac0dc347 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.h
-+++ b/drivers/net/ethernet/intel/ice/ice_common.h
-@@ -275,6 +275,12 @@ int ice_replay_vsi(struct ice_hw *hw, u16 vsi_handle);
- void ice_replay_post(struct ice_hw *hw);
- struct ice_q_ctx *
- ice_get_lan_q_ctx(struct ice_hw *hw, u16 vsi_handle, u8 tc, u16 q_handle);
-+int
-+ice_aq_set_txtimeq(struct ice_hw *hw, u16 txtimeq, u8 q_count,
-+		   struct ice_aqc_set_txtime_qgrp *txtime_qg,
-+		   u16 buf_size, struct ice_sq_cd *cd);
-+void ice_pack_txtime_ctx(const struct ice_txtime_ctx *ctx,
-+			 ice_txtime_ctx_buf_t *buf);
- int ice_sbq_rw_reg(struct ice_hw *hw, struct ice_sbq_msg_input *in, u16 flag);
- int ice_aq_get_cgu_input_pin_measure(struct ice_hw *hw, u8 dpll_idx,
- 				     struct ice_cgu_input_measure *meas,
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index 55e0f2c6af9e..348acd46a0ef 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -3147,9 +3147,11 @@ ice_get_ringparam(struct net_device *netdev, struct ethtool_ringparam *ring,
- {
- 	struct ice_netdev_priv *np = netdev_priv(netdev);
- 	struct ice_vsi *vsi = np->vsi;
-+	struct ice_hw *hw;
- 
--	ring->rx_max_pending = ICE_MAX_NUM_DESC;
--	ring->tx_max_pending = ICE_MAX_NUM_DESC;
-+	hw = &vsi->back->hw;
-+	ring->rx_max_pending = ICE_MAX_NUM_DESC_BY_MAC(hw);
-+	ring->tx_max_pending = ICE_MAX_NUM_DESC_BY_MAC(hw);
- 	if (vsi->tx_rings && vsi->rx_rings) {
- 		ring->rx_pending = vsi->rx_rings[0]->count;
- 		ring->tx_pending = vsi->tx_rings[0]->count;
-@@ -3177,15 +3179,16 @@ ice_set_ringparam(struct net_device *netdev, struct ethtool_ringparam *ring,
- 	struct ice_vsi *vsi = np->vsi;
- 	struct ice_pf *pf = vsi->back;
- 	int i, timeout = 50, err = 0;
-+	struct ice_hw *hw = &pf->hw;
- 	u16 new_rx_cnt, new_tx_cnt;
- 
--	if (ring->tx_pending > ICE_MAX_NUM_DESC ||
-+	if (ring->tx_pending > ICE_MAX_NUM_DESC_BY_MAC(hw) ||
- 	    ring->tx_pending < ICE_MIN_NUM_DESC ||
--	    ring->rx_pending > ICE_MAX_NUM_DESC ||
-+	    ring->rx_pending > ICE_MAX_NUM_DESC_BY_MAC(hw) ||
- 	    ring->rx_pending < ICE_MIN_NUM_DESC) {
- 		netdev_err(netdev, "Descriptors requested (Tx: %d / Rx: %d) out of range [%d-%d] (increment %d)\n",
- 			   ring->tx_pending, ring->rx_pending,
--			   ICE_MIN_NUM_DESC, ICE_MAX_NUM_DESC,
-+			   ICE_MIN_NUM_DESC, ICE_MAX_NUM_DESC_BY_MAC(hw),
- 			   ICE_REQ_DESC_MULTIPLE);
- 		return -EINVAL;
- 	}
-@@ -3258,6 +3261,7 @@ ice_set_ringparam(struct net_device *netdev, struct ethtool_ringparam *ring,
- 		tx_rings[i].count = new_tx_cnt;
- 		tx_rings[i].desc = NULL;
- 		tx_rings[i].tx_buf = NULL;
-+		tx_rings[i].tstamp_ring = NULL;
- 		tx_rings[i].tx_tstamps = &pf->ptp.port.tx;
- 		err = ice_setup_tx_ring(&tx_rings[i]);
- 		if (err) {
-diff --git a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-index dd520aa4d1d6..082ad33c53dc 100644
---- a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-+++ b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-@@ -19,6 +19,7 @@
- #define QTX_COMM_HEAD_MAX_INDEX			16383
- #define QTX_COMM_HEAD_HEAD_S			0
- #define QTX_COMM_HEAD_HEAD_M			ICE_M(0x1FFF, 0)
-+#define E830_GLQTX_TXTIME_DBELL_LSB(_DBQM)	(0x002E0000 + ((_DBQM) * 8))
- #define PF_FW_ARQBAH				0x00080180
- #define PF_FW_ARQBAL				0x00080080
- #define PF_FW_ARQH				0x00080380
-@@ -571,6 +572,8 @@
- #define E830_PFPTM_SEM_BUSY_M			BIT(0)
- #define VFINT_DYN_CTLN(_i)			(0x00003800 + ((_i) * 4))
- #define VFINT_DYN_CTLN_CLEARPBA_M		BIT(1)
-+#define E830_GLTXTIME_FETCH_PROFILE(_i, _j)     (0x002D3500 + ((_i) * 4 + (_j) * 64))
-+#define E830_GLTXTIME_FETCH_PROFILE_FETCH_TS_DESC_M ICE_M(0x1FF, 0)
- #define E830_MBX_PF_IN_FLIGHT_VF_MSGS_THRESH	0x00234000
- #define E830_MBX_VF_DEC_TRIG(_VF)		(0x00233800 + (_VF) * 4)
- #define E830_MBX_VF_IN_FLIGHT_MSGS_AT_PF_CNT(_VF)	(0x00233000 + (_VF) * 4)
-diff --git a/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h b/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
-index 77ba26538b07..c5baee446a00 100644
---- a/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
-+++ b/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
-@@ -569,4 +569,45 @@ struct ice_tlan_ctx {
- 	u8 pkt_shaper_prof_idx;
- };
- 
-+#define ICE_TXTIME_TX_DESC_IDX_M	GENMASK(12, 0)
-+#define ICE_TXTIME_STAMP_M		GENMASK(31, 13)
-+
-+/* Tx time stamp descriptor */
-+struct ice_ts_desc {
-+	__le32 tx_desc_idx_tstamp;
-+};
-+
-+#define ICE_TS_DESC(R, i) (&(((struct ice_ts_desc *)((R)->tstamp_desc))[i]))
-+
-+#define ICE_TXTIME_MAX_QUEUE		2047
-+#define ICE_SET_TXTIME_MAX_Q_AMOUNT	127
-+#define ICE_TXTIME_FETCH_TS_DESC_DFLT	8
-+#define ICE_TXTIME_FETCH_PROFILE_CNT	16
-+
-+/* Tx Time queue context data */
-+struct ice_txtime_ctx {
-+#define ICE_TXTIME_CTX_BASE_S		7
-+	u64 base;			/* base is defined in 128-byte units */
-+	u8 pf_num;
-+	u16 vmvf_num;
-+	u8 vmvf_type;
-+	u16 src_vsi;
-+	u8 cpuid;
-+	u8 tphrd_desc;
-+	u16 qlen;
-+	u8 timer_num;
-+	u8 txtime_ena_q;
-+	u8 drbell_mode_32;
-+#define ICE_TXTIME_CTX_DRBELL_MODE_32	1
-+	u8 ts_res;
-+#define ICE_TXTIME_CTX_RESOLUTION_128NS 7
-+	u8 ts_round_type;
-+	u8 ts_pacing_slot;
-+#define ICE_TXTIME_CTX_FETCH_PROF_ID_0 0
-+	u8 merging_ena;
-+	u8 ts_fetch_prof_id;
-+	u8 ts_fetch_cache_line_aln_thld;
-+	u8 tx_pipe_delay_mode;
-+};
-+
- #endif /* _ICE_LAN_TX_RX_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index a439b5a61a56..4479c824561e 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -3950,6 +3950,7 @@ void ice_init_feature_support(struct ice_pf *pf)
- 	if (pf->hw.mac_type == ICE_MAC_E830) {
- 		ice_set_feature_support(pf, ICE_F_MBX_LIMIT);
- 		ice_set_feature_support(pf, ICE_F_GCS);
-+		ice_set_feature_support(pf, ICE_F_TXTIME);
- 	}
- }
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index a1528edeae24..c7c02ff3cf98 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -3991,6 +3991,11 @@ static void ice_deinit_pf(struct ice_pf *pf)
- 		pf->avail_rxqs = NULL;
- 	}
- 
-+	if (pf->txtime_txqs) {
-+		bitmap_free(pf->txtime_txqs);
-+		pf->txtime_txqs = NULL;
-+	}
-+
- 	if (pf->ptp.clock)
- 		ptp_clock_unregister(pf->ptp.clock);
- 
-@@ -4084,6 +4089,15 @@ static int ice_init_pf(struct ice_pf *pf)
- 		return -ENOMEM;
- 	}
- 
-+	pf->txtime_txqs = bitmap_zalloc(pf->max_pf_txqs, GFP_KERNEL);
-+	if (!pf->txtime_txqs) {
-+		bitmap_free(pf->avail_txqs);
-+		pf->avail_txqs = NULL;
-+		bitmap_free(pf->avail_rxqs);
-+		pf->avail_rxqs = NULL;
-+		return -ENOMEM;
-+	}
-+
- 	mutex_init(&pf->vfs.table_lock);
- 	hash_init(pf->vfs.table);
- 	if (ice_is_feature_supported(pf, ICE_F_MBX_LIMIT))
-@@ -7515,7 +7529,8 @@ int ice_vsi_open(struct ice_vsi *vsi)
- 	if (err)
- 		goto err_setup_rx;
- 
--	ice_vsi_cfg_netdev_tc(vsi, vsi->tc_cfg.ena_tc);
-+	if (bitmap_empty(pf->txtime_txqs, pf->max_pf_txqs))
-+		ice_vsi_cfg_netdev_tc(vsi, vsi->tc_cfg.ena_tc);
- 
- 	if (vsi->type == ICE_VSI_PF || vsi->type == ICE_VSI_SF) {
- 		/* Notify the stack of the actual queue counts. */
-@@ -9304,6 +9319,100 @@ static int ice_setup_tc_mqprio_qdisc(struct net_device *netdev, void *type_data)
- 	return ret;
- }
- 
-+/**
-+ * ice_cfg_txtime - configure Tx Time for the Tx ring
-+ * @tx_ring: pointer to the Tx ring structure
-+ *
-+ * Return: 0 on success, negative value on failure.
-+ */
-+static int ice_cfg_txtime(struct ice_tx_ring *tx_ring)
-+{
-+	int err, timeout = 50;
-+	struct ice_vsi *vsi;
-+	struct device *dev;
-+	struct ice_pf *pf;
-+	u32 queue;
-+
-+	if (!tx_ring)
-+		return -EINVAL;
-+
-+	vsi = tx_ring->vsi;
-+	pf = vsi->back;
-+	while (test_and_set_bit(ICE_CFG_BUSY, pf->state)) {
-+		timeout--;
-+		if (!timeout)
-+			return -EBUSY;
-+		usleep_range(1000, 2000);
-+	}
-+
-+	queue = tx_ring->q_index;
-+	dev = ice_pf_to_dev(pf);
-+	err = ice_qp_dis(vsi, queue);
-+	if (err) {
-+		dev_err(dev, "Failed to disable Tx queue %d for TxTime configuration\n",
-+			queue);
-+		goto exit;
-+	}
-+
-+	err = ice_qp_ena(vsi, queue);
-+	if (err)
-+		dev_err(dev, "Failed to enable Tx queue %d for TxTime configuration\n",
-+			queue);
-+
-+exit:
-+	clear_bit(ICE_CFG_BUSY, pf->state);
-+	return err;
-+}
-+
-+/**
-+ * ice_offload_txtime - set earliest TxTime first
-+ * @netdev: network interface device structure
-+ * @qopt_off: etf queue option offload from the skb to set
-+ *
-+ * Return: 0 on success, negative value on failure.
-+ */
-+static int ice_offload_txtime(struct net_device *netdev,
-+			      void *qopt_off)
-+{
-+	struct ice_netdev_priv *np = netdev_priv(netdev);
-+	struct ice_pf *pf = np->vsi->back;
-+	struct tc_etf_qopt_offload *qopt;
-+	struct ice_vsi *vsi = np->vsi;
-+	struct ice_tx_ring *tx_ring;
-+	int ret = 0;
-+
-+	if (!ice_is_feature_supported(pf, ICE_F_TXTIME))
-+		return -EOPNOTSUPP;
-+
-+	qopt = qopt_off;
-+	if (!qopt_off || qopt->queue < 0 || qopt->queue >= vsi->num_txq)
-+		return -EINVAL;
-+
-+	if (qopt->enable)
-+		set_bit(qopt->queue,  pf->txtime_txqs);
-+	else
-+		clear_bit(qopt->queue, pf->txtime_txqs);
-+
-+	if (netif_running(vsi->netdev)) {
-+		tx_ring = vsi->tx_rings[qopt->queue];
-+		ret = ice_cfg_txtime(tx_ring);
-+		if (ret)
-+			goto err;
-+	}
-+
-+	netdev_info(netdev, "%s TxTime on queue: %i\n",
-+		    str_enable_disable(qopt->enable), qopt->queue);
-+	return 0;
-+
-+err:
-+	netdev_err(netdev, "Failed to %s TxTime on queue: %i\n",
-+		   str_enable_disable(qopt->enable), qopt->queue);
-+
-+	if (qopt->enable)
-+		clear_bit(qopt->queue,  pf->txtime_txqs);
-+	return ret;
-+}
-+
- static LIST_HEAD(ice_block_cb_list);
- 
- static int
-@@ -9367,6 +9476,8 @@ ice_setup_tc(struct net_device *netdev, enum tc_setup_type type,
- 			mutex_unlock(&pf->adev_mutex);
- 		}
- 		return err;
-+	case TC_SETUP_QDISC_ETF:
-+		return ice_offload_txtime(netdev, type_data);
- 	default:
- 		return -EOPNOTSUPP;
- 	}
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
-index 93907ab2eac7..2bcba6a2cc55 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.c
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
-@@ -143,6 +143,55 @@ static struct netdev_queue *txring_txq(const struct ice_tx_ring *ring)
- 	return netdev_get_tx_queue(ring->netdev, ring->q_index);
- }
- 
-+/**
-+ * ice_clean_tstamp_ring - clean time stamp ring
-+ * @tx_ring: Tx ring to clean the Time Stamp ring for
-+ */
-+static void ice_clean_tstamp_ring(struct ice_tx_ring *tx_ring)
-+{
-+	u32 size;
-+
-+	if (!tx_ring->tstamp_desc)
-+		return;
-+
-+	size = ALIGN(tx_ring->tstamp_count * sizeof(struct ice_ts_desc),
-+		     PAGE_SIZE);
-+	memset(tx_ring->tstamp_desc, 0, size);
-+	tx_ring->tstamp_next_to_use = 0;
-+}
-+
-+/**
-+ * ice_free_tstamp_ring - free time stamp resources per queue
-+ * @tx_ring: Tx ring to free the Time Stamp ring for
-+ */
-+void ice_free_tstamp_ring(struct ice_tx_ring *tx_ring)
-+{
-+	struct ice_tstamp_ring *tstamp_ring = tx_ring->tstamp_ring;
-+	u32 size;
-+
-+	if (!tx_ring->tstamp_desc)
-+		return;
-+
-+	ice_clean_tstamp_ring(tx_ring);
-+	size = ALIGN(tx_ring->tstamp_count * sizeof(struct ice_ts_desc),
-+		     PAGE_SIZE);
-+	dmam_free_coherent(tx_ring->dev, size, tx_ring->tstamp_desc,
-+			   tstamp_ring->dma);
-+	tx_ring->tstamp_desc = NULL;
-+}
-+
-+/**
-+ * ice_free_tx_tstamp_ring - free time stamp resources per Tx ring
-+ * @tx_ring: Tx ring to free the Time Stamp ring for
-+ */
-+void ice_free_tx_tstamp_ring(struct ice_tx_ring *tx_ring)
-+{
-+	ice_free_tstamp_ring(tx_ring);
-+	kfree_rcu(tx_ring->tstamp_ring, rcu);
-+	tx_ring->tstamp_ring = NULL;
-+	tx_ring->flags &= ~ICE_TX_FLAGS_TXTIME;
-+}
-+
- /**
-  * ice_clean_tx_ring - Free any empty Tx buffers
-  * @tx_ring: ring to be cleaned
-@@ -181,6 +230,9 @@ void ice_clean_tx_ring(struct ice_tx_ring *tx_ring)
- 
- 	/* cleanup Tx queue statistics */
- 	netdev_tx_reset_queue(txring_txq(tx_ring));
-+
-+	if (ice_is_txtime_cfg(tx_ring))
-+		ice_free_tx_tstamp_ring(tx_ring);
- }
- 
- /**
-@@ -331,6 +383,84 @@ static bool ice_clean_tx_irq(struct ice_tx_ring *tx_ring, int napi_budget)
- 	return !!budget;
- }
- 
-+/**
-+ * ice_alloc_tstamp_ring - allocate the Time Stamp ring
-+ * @tx_ring: Tx ring to allocate the Time Stamp ring for
-+ *
-+ * Return: 0 on success, negative on error
-+ */
-+static int ice_alloc_tstamp_ring(struct ice_tx_ring *tx_ring)
-+{
-+	struct ice_tstamp_ring *tstamp_ring;
-+
-+	/* allocate with kzalloc(), free with kfree_rcu() */
-+	tstamp_ring = kzalloc(sizeof(*tstamp_ring), GFP_KERNEL);
-+	if (!tstamp_ring)
-+		return -ENOMEM;
-+
-+	tstamp_ring->tx_ring = tx_ring;
-+	tx_ring->tstamp_ring = tstamp_ring;
-+	tx_ring->tstamp_desc = NULL;
-+	tx_ring->tstamp_count = ice_calc_ts_ring_count(tx_ring);
-+	tx_ring->flags |= ICE_TX_FLAGS_TXTIME;
-+	return 0;
-+}
-+
-+/**
-+ * ice_setup_tstamp_ring - allocate the Time Stamp ring
-+ * @tx_ring: Tx ring to set up the Time Stamp ring for
-+ *
-+ * Return: 0 on success, negative on error
-+ */
-+static int ice_setup_tstamp_ring(struct ice_tx_ring *tx_ring)
-+{
-+	struct ice_tstamp_ring *tstamp_ring = tx_ring->tstamp_ring;
-+	struct device *dev = tx_ring->dev;
-+	u32 size;
-+
-+	/* round up to nearest page */
-+	size = ALIGN(tx_ring->tstamp_count * sizeof(struct ice_ts_desc),
-+		     PAGE_SIZE);
-+	tx_ring->tstamp_desc = dmam_alloc_coherent(dev, size, &tstamp_ring->dma,
-+						   GFP_KERNEL);
-+	if (!tx_ring->tstamp_desc) {
-+		dev_err(dev, "Unable to allocate memory for Time stamp Ring, size=%d\n",
-+			size);
-+		return -ENOMEM;
-+	}
-+
-+	tx_ring->tstamp_next_to_use = 0;
-+	return 0;
-+}
-+
-+/**
-+ * ice_alloc_setup_tstamp_ring - Allocate and setup the Time Stamp ring
-+ * @tx_ring: Tx ring to allocate and setup the Time Stamp ring for
-+ *
-+ * Return: 0 on success, negative on error
-+ */
-+int ice_alloc_setup_tstamp_ring(struct ice_tx_ring *tx_ring)
-+{
-+	struct device *dev = tx_ring->dev;
-+	int err;
-+
-+	err = ice_alloc_tstamp_ring(tx_ring);
-+	if (err) {
-+		dev_err(dev, "Unable to allocate Time stamp ring for Tx ring %d\n",
-+			tx_ring->q_index);
-+		return err;
-+	}
-+
-+	err = ice_setup_tstamp_ring(tx_ring);
-+	if (err) {
-+		dev_err(dev, "Unable to setup Time stamp ring for Tx ring %d\n",
-+			tx_ring->q_index);
-+		ice_free_tx_tstamp_ring(tx_ring);
-+		return err;
-+	}
-+	return 0;
-+}
-+
- /**
-  * ice_setup_tx_ring - Allocate the Tx descriptors
-  * @tx_ring: the Tx ring to set up
-@@ -1820,10 +1950,45 @@ ice_tx_map(struct ice_tx_ring *tx_ring, struct ice_tx_buf *first,
- 	/* notify HW of packet */
- 	kick = __netdev_tx_sent_queue(txring_txq(tx_ring), first->bytecount,
- 				      netdev_xmit_more());
--	if (kick)
--		/* notify HW of packet */
--		writel(i, tx_ring->tail);
-+	if (!kick)
-+		return;
- 
-+	if (ice_is_txtime_cfg(tx_ring)) {
-+		u32 tstamp_count = tx_ring->tstamp_count;
-+		u32 j = tx_ring->tstamp_next_to_use;
-+		struct ice_ts_desc *ts_desc;
-+		struct timespec64 ts;
-+		u32 tstamp;
-+
-+		ts = ktime_to_timespec64(first->skb->tstamp);
-+		tstamp = ts.tv_nsec >> ICE_TXTIME_CTX_RESOLUTION_128NS;
-+
-+		ts_desc = ICE_TS_DESC(tx_ring, j);
-+		ts_desc->tx_desc_idx_tstamp = ice_build_tstamp_desc(i, tstamp);
-+
-+		j++;
-+		if (j == tstamp_count) {
-+			u32 fetch = tstamp_count - tx_ring->count;
-+
-+			j = 0;
-+
-+			/* To prevent an MDD, when wrapping the tstamp ring
-+			 * create additional TS descriptors equal to the number
-+			 * of the fetch TS descriptors value. HW will merge the
-+			 * TS descriptors with the same timestamp value into a
-+			 * single descriptor.
-+			 */
-+			for (; j < fetch; j++) {
-+				ts_desc = ICE_TS_DESC(tx_ring, j);
-+				ts_desc->tx_desc_idx_tstamp =
-+				       ice_build_tstamp_desc(i, tstamp);
-+			}
-+		}
-+		tx_ring->tstamp_next_to_use = j;
-+		writel_relaxed(j, tx_ring->tstamp_tail);
-+	} else {
-+		writel_relaxed(i, tx_ring->tail);
-+	}
- 	return;
- 
- dma_error:
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.h b/drivers/net/ethernet/intel/ice/ice_txrx.h
-index 2fd8e78178a2..be74851eadd4 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.h
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.h
-@@ -310,6 +310,12 @@ enum ice_dynamic_itr {
- #define ICE_TX_LEGACY	1
- 
- /* descriptor ring, associated with a VSI */
-+struct ice_tstamp_ring {
-+	struct ice_tx_ring *tx_ring;	/* Backreference to associated Tx ring */
-+	dma_addr_t dma;			/* physical address of ring */
-+	struct rcu_head rcu;            /* to avoid race on free */
-+} ____cacheline_internodealigned_in_smp;
-+
- struct ice_rx_ring {
- 	/* CL1 - 1st cacheline starts here */
- 	void *desc;			/* Descriptor ring memory */
-@@ -387,11 +393,22 @@ struct ice_tx_ring {
- 	struct xsk_buff_pool *xsk_pool;
- 	u16 next_to_use;
- 	u16 next_to_clean;
-+	u16 tstamp_next_to_use;		/* Time stamp ring next to use */
-+	u16 tstamp_count;		/* Time stamp ring descriptors count */
-+	u8 __iomem *tstamp_tail;	/* Time stamp ring tail pointer */
-+	void *tstamp_desc;		/* Time stamp descriptor ring memory */
- 	u16 q_handle;			/* Queue handle per TC */
- 	u16 reg_idx;			/* HW register index of the ring */
- 	u16 count;			/* Number of descriptors */
- 	u16 q_index;			/* Queue number of ring */
- 	u16 xdp_tx_active;
-+	u16 quanta_prof_id;
-+	u8 dcb_tc;			/* Traffic class of ring */
-+#define ICE_TX_FLAGS_RING_XDP		BIT(0)
-+#define ICE_TX_FLAGS_RING_VLAN_L2TAG1	BIT(1)
-+#define ICE_TX_FLAGS_RING_VLAN_L2TAG2	BIT(2)
-+#define ICE_TX_FLAGS_TXTIME		BIT(3)
-+	u8 flags;
- 	/* stats structs */
- 	struct ice_ring_stats *ring_stats;
- 	/* CL3 - 3rd cacheline starts here */
-@@ -401,13 +418,7 @@ struct ice_tx_ring {
- 	struct ice_ptp_tx *tx_tstamps;
- 	spinlock_t tx_lock;
- 	u32 txq_teid;			/* Added Tx queue TEID */
--	/* CL4 - 4th cacheline starts here */
--#define ICE_TX_FLAGS_RING_XDP		BIT(0)
--#define ICE_TX_FLAGS_RING_VLAN_L2TAG1	BIT(1)
--#define ICE_TX_FLAGS_RING_VLAN_L2TAG2	BIT(2)
--	u8 flags;
--	u8 dcb_tc;			/* Traffic class of ring */
--	u16 quanta_prof_id;
-+	struct ice_tstamp_ring *tstamp_ring;
- } ____cacheline_internodealigned_in_smp;
- 
- static inline bool ice_ring_uses_build_skb(struct ice_rx_ring *ring)
-@@ -500,6 +511,7 @@ void ice_clean_tx_ring(struct ice_tx_ring *tx_ring);
- void ice_clean_rx_ring(struct ice_rx_ring *rx_ring);
- int ice_setup_tx_ring(struct ice_tx_ring *tx_ring);
- int ice_setup_rx_ring(struct ice_rx_ring *rx_ring);
-+int ice_alloc_setup_tstamp_ring(struct ice_tx_ring *tx_ring);
- void ice_free_tx_ring(struct ice_tx_ring *tx_ring);
- void ice_free_rx_ring(struct ice_rx_ring *rx_ring);
- int ice_napi_poll(struct napi_struct *napi, int budget);
-@@ -508,4 +520,6 @@ ice_prgm_fdir_fltr(struct ice_vsi *vsi, struct ice_fltr_desc *fdir_desc,
- 		   u8 *raw_packet);
- void ice_clean_ctrl_tx_irq(struct ice_tx_ring *tx_ring);
- void ice_clean_ctrl_rx_irq(struct ice_rx_ring *rx_ring);
-+void ice_free_tx_tstamp_ring(struct ice_tx_ring *tx_ring);
-+void ice_free_tstamp_ring(struct ice_tx_ring *tx_ring);
- #endif /* _ICE_TXRX_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx_lib.h b/drivers/net/ethernet/intel/ice/ice_txrx_lib.h
-index 6cf32b404127..99717730f21a 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx_lib.h
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx_lib.h
-@@ -53,6 +53,20 @@ ice_build_ctob(u64 td_cmd, u64 td_offset, unsigned int size, u64 td_tag)
- 			   (td_tag    << ICE_TXD_QW1_L2TAG1_S));
- }
- 
-+/**
-+ * ice_build_tstamp_desc - build Tx time stamp descriptor
-+ * @tx_desc: Tx LAN descriptor index
-+ * @tstamp: time stamp
-+ *
-+ * Return: Tx time stamp descriptor
-+ */
-+static inline __le32
-+ice_build_tstamp_desc(u16 tx_desc, u32 tstamp)
-+{
-+	return cpu_to_le32(FIELD_PREP(ICE_TXTIME_TX_DESC_IDX_M, tx_desc) |
-+			   FIELD_PREP(ICE_TXTIME_STAMP_M, tstamp));
-+}
-+
- /**
-  * ice_get_vlan_tci - get VLAN TCI from Rx flex descriptor
-  * @rx_desc: Rx 32b flex descriptor with RXDID=2
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl.c b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-index 257967273079..2f445385087e 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-@@ -582,7 +582,7 @@ static bool ice_vc_isvalid_ring_len(u16 ring_len)
- {
- 	return ring_len == 0 ||
- 	       (ring_len >= ICE_MIN_NUM_DESC &&
--		ring_len <= ICE_MAX_NUM_DESC &&
-+		ring_len <= ICE_MAX_NUM_DESC_E810 &&
- 		!(ring_len % ICE_REQ_DESC_MULTIPLE));
- }
- 
--- 
-2.47.0
 
+--------------XsOxEf09HdJYwoRnz4ZDVQtc--
+
+--------------0vG0lIf3u1bkZaz4KbhqOdGH
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+wnsEABYIACMWIQQgQFSp1zOQVirsQx5qll0+bw8o6AUCaJphOwUDAAAAAAAKCRBqll0+bw8o6K97
+AP9Vm/xBKi/RPIVwIKEYLcwiRHZ+VkfnjkYj/VSlq7xvoQEA9S76OlfogvvSg4JaB9+5jO8/pThH
+yVnIErxQoX0agQQ=
+=++sm
+-----END PGP SIGNATURE-----
+
+--------------0vG0lIf3u1bkZaz4KbhqOdGH--
