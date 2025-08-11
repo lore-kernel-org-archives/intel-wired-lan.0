@@ -4,93 +4,93 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E99B5CA0ECD
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 11 Aug 2025 15:48:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CD6E5CA0EC4
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 11 Aug 2025 16:16:38 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id BBACB4129C;
-	Mon, 11 Aug 2025 15:48:38 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 8C54B411E5;
+	Mon, 11 Aug 2025 16:16:38 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id jsxXOFRIDJhE; Mon, 11 Aug 2025 15:48:38 +0000 (UTC)
+ id EJNK-Fmq2uki; Mon, 11 Aug 2025 16:16:38 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 39980412C1
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0685B411C0
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1754927318;
-	bh=SQokX4qKpZBZKKFR7Bx+oze8RVAejE94ceUD0Ety1Rk=;
-	h=Date:From:To:Cc:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1754928998;
+	bh=dBTQ/TlTb6tmtqhEpFdAkTjWlfA/en264UPaQXZjsno=;
+	h=Date:To:Cc:References:From:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=XAMCHQAjLgN+AZRdfy+p9O/xcWyZS5OzysmHYXXh/jkoQ2IDIS4VkNj58qoIQgUrI
-	 XasvGPOYsmjrphCLi9SQiZTc5jpsq7vZ/TbmBk34HbOwjLulFwQhPG8cpIPjBsqwWu
-	 BREBi0PY/sjbAIdestei70s9hhTQVavnsmKoPYtjwHzhopC3XTeXQCdxGFtfqBzSPa
-	 vS6lAjdqI8peotSvYrIrNQjY19TLNUJhAPQ0qsmWihFSOHYQlyOw8S7V6rV+UeI3Lf
-	 cZn0ejBjM8gfBV3W5rDl+e9kKzzwep/A3IbXBaS6GRRmFFZy6fNkuKtbpaBbSkpEPN
-	 w6G7CpR7PwxHQ==
+	b=iqDFac1GD8ZkkzTKmdds/bajbVAS+CedqAGnDImUY5s/vPu3lP/ebEGrVVJtH5tkX
+	 Ppo9h8sSxmsb1Ayq6ZoVrYbZFvtYjIo7JSLLXcH/hkf3Z5AVGvqiKaVwcgya2CAAU5
+	 bXxHjxD/aNi2LJXZUX3gan+Fy5/dVQH4vv8kg7wYfnAOeBo4dUTN5pm5WNskbhJ5YY
+	 GrUW6MZElxmN9S39cMt9WqaQrKzojowr4CXnnVIPZCcqOhIUzlID9/BWGlppqyTApt
+	 HlMv+CtRraiWs5rGiZjPC26vH5igB/JYaUZubKeqx+n3+7DmKtfJCil+onIDWfBvpX
+	 GSP8tk0+xQ4Kg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 39980412C1;
-	Mon, 11 Aug 2025 15:48:38 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id EB3FD154
- for <intel-wired-lan@lists.osuosl.org>; Mon, 11 Aug 2025 15:48:36 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 0685B411C0;
+	Mon, 11 Aug 2025 16:16:38 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id A89369E6
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 11 Aug 2025 16:16:36 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id D1266414FB
- for <intel-wired-lan@lists.osuosl.org>; Mon, 11 Aug 2025 15:48:36 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 99D096143E
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 11 Aug 2025 16:16:36 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 8VBHnr1Q413j for <intel-wired-lan@lists.osuosl.org>;
- Mon, 11 Aug 2025 15:48:36 +0000 (UTC)
-X-Greylist: delayed 412 seconds by postgrey-1.37 at util1.osuosl.org;
- Mon, 11 Aug 2025 15:48:36 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 4DBED4141A
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4DBED4141A
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org;
- envelope-from=kuba@kernel.org; receiver=<UNKNOWN> 
-Received: from sea.source.kernel.org (sea.source.kernel.org
- [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 4DBED4141A
- for <intel-wired-lan@lists.osuosl.org>; Mon, 11 Aug 2025 15:48:36 +0000 (UTC)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by sea.source.kernel.org (Postfix) with ESMTP id 356DB43451;
- Mon, 11 Aug 2025 15:41:44 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AA879C4CEED;
- Mon, 11 Aug 2025 15:41:43 +0000 (UTC)
-Date: Mon, 11 Aug 2025 08:41:42 -0700
-From: Jakub Kicinski <kuba@kernel.org>
-To: Vadim Fedorenko <vadim.fedorenko@linux.dev>
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id dEVWEzJjuFyM for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 11 Aug 2025 16:16:36 +0000 (UTC)
+X-Greylist: delayed 475 seconds by postgrey-1.37 at util1.osuosl.org;
+ Mon, 11 Aug 2025 16:16:35 UTC
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org B3CDD60EB8
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B3CDD60EB8
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=91.218.175.189;
+ helo=out-189.mta0.migadu.com; envelope-from=vadim.fedorenko@linux.dev;
+ receiver=<UNKNOWN> 
+Received: from out-189.mta0.migadu.com (out-189.mta0.migadu.com
+ [91.218.175.189])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id B3CDD60EB8
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 11 Aug 2025 16:16:35 +0000 (UTC)
+Message-ID: <34da824b-1922-418f-953f-99287443b088@linux.dev>
+Date: Mon, 11 Aug 2025 17:08:34 +0100
+MIME-Version: 1.0
+To: Jakub Kicinski <kuba@kernel.org>
 Cc: Andrew Lunn <andrew@lunn.ch>, Michael Chan <michael.chan@broadcom.com>,
  Pavan Chebbi <pavan.chebbi@broadcom.com>, Tariq Toukan <tariqt@nvidia.com>,
- Gal Pressman <gal@nvidia.com>, intel-wired-lan@lists.osuosl.org, Donald
- Hunter <donald.hunter@gmail.com>, Carolina Jubran <cjubran@nvidia.com>,
- Paolo Abeni <pabeni@redhat.com>, Simon Horman <horms@kernel.org>,
- netdev@vger.kernel.org
-Message-ID: <20250811084142.459a9a75@kernel.org>
-In-Reply-To: <ec9e7da6-30f0-40aa-8cb7-bfa0ff814126@linux.dev>
+ Gal Pressman <gal@nvidia.com>, intel-wired-lan@lists.osuosl.org,
+ Donald Hunter <donald.hunter@gmail.com>, Carolina Jubran
+ <cjubran@nvidia.com>, Paolo Abeni <pabeni@redhat.com>,
+ Simon Horman <horms@kernel.org>, netdev@vger.kernel.org
 References: <20250807155924.2272507-1-vadfed@meta.com>
  <20250808131522.0dc26de4@kernel.org>
  <ec9e7da6-30f0-40aa-8cb7-bfa0ff814126@linux.dev>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ <20250811084142.459a9a75@kernel.org>
+Content-Language: en-US
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and
+ include these headers.
+From: Vadim Fedorenko <vadim.fedorenko@linux.dev>
+In-Reply-To: <20250811084142.459a9a75@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1754926904;
- bh=F5bH9wCajdZ8aY2x4pPk3brOqFaahwF3R3J0oiktE78=;
- h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=XhoioDC6njhfhtCdQh5Trj5t3/sonMmMfi9zz469Ck8UHeiWwy9z+BVdj6dx4oC2n
- WVIGrbFAeWjrUp1UTXyuAbEgHJqUY+7wuyC1t5L+Fi7sAtkzstuQVdRWwwI/NfkKrD
- 8ujQ03SHM81qkx469j1HANCqnx8aDp7cn1ZDjHQFHH2K14VIeQ70Y6QAJ/GQgjcKJU
- QdYOTliB4P8dOLiXmAgJraigUw/OQ0/jIsk/k7kXRzfyYNfFqr7jpc2YzNPduijqA/
- rRhF1bVlgUE8iKH34HHoODxWt7EWGfFA8Fq8P0enzVYnSODd0T3JHc36Qz2knoz/9s
- jjbm9j2eMQDRg==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dmarc=pass (p=quarantine dis=none)
- header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=XhoioDC6
+X-Migadu-Flow: FLOW_OUT
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=linux.dev; s=key1; t=1754928517;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=dBTQ/TlTb6tmtqhEpFdAkTjWlfA/en264UPaQXZjsno=;
+ b=M6T5Xvji5GkxwoqdFCtbl5IA5oblvaWz9wJ4eM7PN/ADfC2dQs6ANZyoGUeFUuxINIggVb
+ nE0zsblmu+1Zgb02MIZ1fIGWHPu39Fg3dgiYFC8bNwGxGo42MIG3w8m6cbsZJWw7leLV9H
+ T1uGmrOqtOh98ghB33C22sXf7I6HRx4=
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=linux.dev
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (1024-bit key,
+ unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256
+ header.s=key1 header.b=M6T5Xvji
 Subject: Re: [Intel-wired-lan] [RFC PATCH v4] ethtool: add FEC bins
  histogramm report
 X-BeenThere: intel-wired-lan@osuosl.org
@@ -108,18 +108,22 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Sun, 10 Aug 2025 11:52:55 +0100 Vadim Fedorenko wrote:
-> > TBH I'm a bit unsure if this is really worth breaking out into
-> > individual nla_puts(). We generally recommend that, but here it's
-> > an array of simple ints.. maybe we're better of with a binary / C
-> > array of u64. Like the existing FEC stats but without also folding
-> > the total value into index 0.  
+On 11/08/2025 16:41, Jakub Kicinski wrote:
+> On Sun, 10 Aug 2025 11:52:55 +0100 Vadim Fedorenko wrote:
+>>> TBH I'm a bit unsure if this is really worth breaking out into
+>>> individual nla_puts(). We generally recommend that, but here it's
+>>> an array of simple ints.. maybe we're better of with a binary / C
+>>> array of u64. Like the existing FEC stats but without also folding
+>>> the total value into index 0.
+>>
+>> Well, the current implementation is straight forward. Do you propose to
+>> have drivers fill in the amount of lanes they have histogram for, or
+>> should we always put array of ETHTOOL_MAX_LANES values and let
+>> user-space to figure out what to show?
 > 
-> Well, the current implementation is straight forward. Do you propose to
-> have drivers fill in the amount of lanes they have histogram for, or
-> should we always put array of ETHTOOL_MAX_LANES values and let
-> user-space to figure out what to show?
+> Similar logic to what you have, you can move the put outside of the
+> loop, let the loop break or exit, and then @j will tell you how many
+> entries to fill..
 
-Similar logic to what you have, you can move the put outside of the
-loop, let the loop break or exit, and then @j will tell you how many
-entries to fill..
+I see. Fair, I can do it. After this change there will be no need to
+change the code in the reply size calculation, right?
