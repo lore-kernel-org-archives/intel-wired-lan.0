@@ -4,105 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2CA8ACA0EDB
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 12 Aug 2025 20:54:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2B945CA0EC4
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 12 Aug 2025 20:57:19 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id DDF4240677;
-	Tue, 12 Aug 2025 20:54:10 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id F1CCA41326;
+	Tue, 12 Aug 2025 20:57:18 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id MQ0FUsymbv5s; Tue, 12 Aug 2025 20:54:10 +0000 (UTC)
+ id rJgE_GgULiqt; Tue, 12 Aug 2025 20:57:18 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 688A041A58
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3D730414B3
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1755032050;
-	bh=OlAKrjKi+FHoGWuz6d6aZG8S0aTidx2jUWsXjgxNNnY=;
+	s=default; t=1755032238;
+	bh=Rv51wVsr6kgwHTm4cKT5U3Xx/bVt9oEWFl3gthWVbV4=;
 	h=Date:From:To:Cc:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=IyavOU66FDgNbq5WQ6vHiCNTAJkPDaxhZcKdqS6n0yXT4+SMtgBFoSdg6klEJVde2
-	 LoEhCN5eEhod/Elw4IWGY1o/Yz+UqOKUqgYITs3psL5lQrRB4XbLSIOlXYJvmbiimp
-	 KWSwejMl7BMBWDgbcMbRRni2KkWyx8DkfU2X0vw/yHuuFa5Zu+12pO/FE0snHutxt/
-	 lrYY0D7kUSUqLFfc05dPc8EPQuBA1wySJWkcddpVaCgTiCDjlUPJgb7W6of6MENlLz
-	 64leU8zBqZjtoly8QApyZEdoCyy1qEOCEumc5NFrvM9RSphjN/CqPfVrKA9pQlQuKn
-	 8gGsOKFPNA5+Q==
+	b=e+aIUnm2GmJaRsC1mSV7/JZVg63hqxGGaekU/BFxZj0QbyuOOjcpmO6a+bd/Y8uRS
+	 TZ2PuhA6Ozyc2IyzqT2nKLHDJtan73VlYgsV6H+qIe2HYfW/l98wmkhRmHzBUvLdKs
+	 fwp2LNiw0MUf66hp5I6EjYsH1M9wEFN79/SSx/AMUiGK3IVEmETlIfE5biYwI5bgXG
+	 LA2+6xkj/t7pK2QyRjrUHsV24U0tbKIFoOkPJTfUwqjcaXyXqdA2qIvWMa8oxa9E+J
+	 gsXnY+bgkMVx3lzrFMV7dmL0Pyagq5BhoESGxmM84yhB/nSbn2zNIr+uyH6nwr/MIg
+	 X1NED40thi1Qw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 688A041A58;
-	Tue, 12 Aug 2025 20:54:10 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id 2BD171D1
- for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Aug 2025 20:54:09 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 3D730414B3;
+	Tue, 12 Aug 2025 20:57:18 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id A39E71C9
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Aug 2025 20:57:17 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 1270E40119
- for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Aug 2025 20:54:09 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 95939414B3
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Aug 2025 20:57:17 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 5QKQZVZskvZR for <intel-wired-lan@lists.osuosl.org>;
- Tue, 12 Aug 2025 20:54:08 +0000 (UTC)
-X-Greylist: delayed 352 seconds by postgrey-1.37 at util1.osuosl.org;
- Tue, 12 Aug 2025 20:54:08 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 791DF40116
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 791DF40116
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 3j-JOKEesIUs for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 12 Aug 2025 20:57:17 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=147.75.193.91;
  helo=nyc.source.kernel.org; envelope-from=kuba@kernel.org; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org C2B1741326
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C2B1741326
 Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 791DF40116
- for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Aug 2025 20:54:08 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTPS id C2B1741326
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Aug 2025 20:57:16 +0000 (UTC)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by nyc.source.kernel.org (Postfix) with ESMTP id 9BF35A57A2A;
- Tue, 12 Aug 2025 20:48:14 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1335BC4CEF0;
- Tue, 12 Aug 2025 20:48:13 +0000 (UTC)
-Date: Tue, 12 Aug 2025 13:48:12 -0700
+ by nyc.source.kernel.org (Postfix) with ESMTP id DCA6EA57A2A;
+ Tue, 12 Aug 2025 20:57:15 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 24C30C4CEF0;
+ Tue, 12 Aug 2025 20:57:15 +0000 (UTC)
+Date: Tue, 12 Aug 2025 13:57:14 -0700
 From: Jakub Kicinski <kuba@kernel.org>
-To: Qianfeng Rong <rongqianfeng@vivo.com>
-Cc: Tony Nguyen <anthony.l.nguyen@intel.com>, Przemek Kitszel
- <przemyslaw.kitszel@intel.com>, Andrew Lunn <andrew+netdev@lunn.ch>, "David
- S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, Paolo
- Abeni <pabeni@redhat.com>, Simon Horman <horms@kernel.org>, Jiri Slaby
- <jirislaby@kernel.org>, Nick Kossifidis <mickflemm@gmail.com>, Luis
- Chamberlain <mcgrof@kernel.org>, Brian Norris <briannorris@chromium.org>,
- Francesco Dolcini <francesco@dolcini.it>, Alexei Starovoitov
- <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, Jesper Dangaard
- Brouer <hawk@kernel.org>, John Fastabend <john.fastabend@gmail.com>,
- Stanislav Fomichev <sdf@fomichev.me>, Johannes Berg
- <johannes.berg@intel.com>, Sascha Hauer <s.hauer@pengutronix.de>, Kalle
- Valo <kvalo@kernel.org>, Aditya Kumar Singh <quic_adisi@quicinc.com>,
- Roopni Devanathan <quic_rdevanat@quicinc.com>, Dan Carpenter
- <dan.carpenter@linaro.org>, intel-wired-lan@lists.osuosl.org (moderated
- list:INTEL ETHERNET DRIVERS), netdev@vger.kernel.org (open list:NETWORKING
- DRIVERS), linux-kernel@vger.kernel.org (open list),
- oss-drivers@corigine.com (open list:NETRONOME ETHERNET DRIVERS),
- linux-wireless@vger.kernel.org (open list:ATHEROS ATH5K WIRELESS DRIVER),
- bpf@vger.kernel.org (open list:XDP (eXpress Data
- Path):Keyword:(?:\b|_)xdp(?:\b|_))
-Message-ID: <20250812134812.298c7d97@kernel.org>
-In-Reply-To: <20250812133226.258318-1-rongqianfeng@vivo.com>
-References: <20250812133226.258318-1-rongqianfeng@vivo.com>
+To: Przemek Kitszel <przemyslaw.kitszel@intel.com>, Greg Kroah-Hartman
+ <gregkh@linuxfoundation.org>, Sasha Levin <sashal@kernel.org>
+Cc: intel-wired-lan@lists.osuosl.org, Tony Nguyen
+ <anthony.l.nguyen@intel.com>, netdev@vger.kernel.org, Kuniyuki Iwashima
+ <kuniyu@google.com>, stable@vger.kernel.org
+Message-ID: <20250812135714.0e1a7ee0@kernel.org>
+In-Reply-To: <20250812132910.99626-1-przemyslaw.kitszel@intel.com>
+References: <20250812132910.99626-1-przemyslaw.kitszel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1755031694;
- bh=OlAKrjKi+FHoGWuz6d6aZG8S0aTidx2jUWsXjgxNNnY=;
+ d=kernel.org; s=k20201202; t=1755032235;
+ bh=LgWTKMMSUHAbzZLyp/LkRilxvvmP0YcvpZK3k+u1yfQ=;
  h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=iXwEyuUrq2SThIz4NtCAH+4DOZlfF58FZtwmAIjKeimhK0e9rAESTZ1Oa2zAGaZ06
- 4uMmulzeUoAVZpC6h2+eyZ91S87qJC2+2pz/ALz/gWSaiWnGzRARp/3TCsFtJt3vy6
- kHnwKAuo8MmbbJDjqbJo+5c9Is2/G8VRyWjfQKD25yIBdToNhfKTCv9OhUjoXSWM4P
- iBE3HYzixPVVPSlatbZPsGOv5YhtMFgHxp2HLppWWPld3CXpHffEocvDf4mYqJGuBs
- PlCCIudpvi9U/hyWfOzWWr3i7Stw/K/AEwG9d9jmAcClRAov+pbIzajRq+T0DEAWsf
- G3SI13RC/Fh9w==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ b=Yl2gobbNrue0nOUHZvQwKuB3wXGqab5YZ5mYn0tjT6ljrhZVg88xPAmI5LBcOSjWA
+ ht6aFSwEKxTnJlyhpAPuUZzHX4jnBB3wDAnBKPiAzBmubJx3sCqdsYEh0v524dwkMz
+ 7uk03s8Dwg3TQfTTH2JMLPPPNgSJNAr5r+wqs1RaDw5NxVFaIeKcVwzCgTgzOf00rx
+ ajLzz4lkDSdvKdAcfuLRStPj0MEIs6HVMjCm9+pGOp2LzMKb2tqYtYd+VOAqr/tw4E
+ Br5SFsLZnXKiu28Jsivt8LXJZc30olyAS9vSzoXe+PzQLUTApgAhRDSb9dUDhK5z9i
+ vCvYAjVPNUN1A==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=iXwEyuUr
-Subject: Re: [Intel-wired-lan] [PATCH 0/5] net: use vmalloc_array() to
- simplify code
+ header.s=k20201202 header.b=Yl2gobbN
+Subject: Re: [Intel-wired-lan] [PATCH 00/12] ice: split ice_virtchnl.c
+ git-blame friendly way
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -118,10 +100,47 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Tue, 12 Aug 2025 21:32:13 +0800 Qianfeng Rong wrote:
-> Remove array_size() calls and replace vmalloc() with vmalloc_array() to
-> simplify the code and maintain consistency with existing kmalloc_array()
-> usage.
+On Tue, 12 Aug 2025 15:28:58 +0200 Przemek Kitszel wrote:
+> Summary:
+> Split ice_virtchnl.c into two more files (+headers), in a way
+> that git-blame works better.
+> Then move virtchnl files into a new subdir.
+> No logic changes.
+> 
+> I have developed (or discovered ;)) how to split a file in a way that
+> both old and new are nice in terms of git-blame
+> There were no much disscussion on [RFC], so I would like to propose
+> to go forward with this approach.
+> 
+> There is more commits needed to have it nice, so it forms a git-log vs
+> git-blame tradeoff, but (after the brief moment that this is on the top)
+> we spend orders of magnitude more time looking at the blame output (and
+> commit messages linked from that) - so I find it much better to see
+> actual logic changes instead of "move xx to yy" stuff (typical for
+> "squashed/single-commit splits").
+> 
+> Cherry-picks/rebases work the same with this method as with simple
+> "squashed/single-commit" approach (literally all commits squashed into
+> one (to have better git-log, but shitty git-blame output).
+> 
+> Rationale for the split itself is, as usual, "file is big and we want to
+> extend it".
+> 
+> This series is available on my github (just rebased from any
+> earlier mentions):
+> https://github.com/pkitszel/linux/tree/virtchnl-split-Aug12
+> (the simple git-email view flattens this series, removing two
+> merges from the view).
+> 
+> 
+> [RFC]:
+> https://lore.kernel.org/netdev/5b94d14e-a0e7-47bd-82fc-c85171cbf26e@intel.com/T/#u
+> 
+> (I would really look at my fork via your preferred git interaction tool
+> instead of looking at the patches below).
 
-You need to submit the first 3 as a separate series.
-They get applied to a different tree than wireless patches.
+UI tools aside I wish you didn't cut off the diffstat from the cover
+letter :/ It'd make it much easier to understand what you're splitting.
+
+Greg, Sasha, I suspect stable will suffer the most from any file split /
+movement. Do you have any recommendation on what should be allowed?
