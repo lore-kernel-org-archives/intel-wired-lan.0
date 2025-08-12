@@ -1,121 +1,102 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EB6C9C87FCB
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 12 Aug 2025 13:11:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 99CD7C87FCB
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 12 Aug 2025 13:46:13 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 9D77F40F41;
-	Tue, 12 Aug 2025 13:11:08 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 4944A84368;
+	Tue, 12 Aug 2025 13:46:13 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ExNZRlnx6VvY; Tue, 12 Aug 2025 13:11:08 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id gKWgRMOX9pRo; Tue, 12 Aug 2025 13:46:12 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0981940FC0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 215CD8435F
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1755004268;
-	bh=UxIla1HyYnxUj2HsSHmkDkdZP2KuTjodsMUdmS63XNQ=;
-	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=dWhM6H2DMtr1nBRT7xkISMuaBO2AHcjpqclR5FhfUDotuhKA8R/zEAAImLzdM96D1
-	 ZVFqODVfm3wdCS44tRfnWl6479g+uoyRm4a+AqVVF2oSeN9tof4vwjtJNu/rIIZJYl
-	 eze6uZ5dc0zm/BfGBUTMdU5EkhwYgG2Dovkk365QKtVJv3xtq0i2bDEHnI4o0GMpY9
-	 Z2KEYvpCE/OOr2yj3ytvvfXUNINjLRq5mJvs6hfbelUYbQZvuYSzba4dXz5OdRSkD1
-	 L8mFINwzELHdqOUaJDqK/Vs7GG8awZS7QN/LZ1TTUcleQ9zsUUpey95lcnbNu8JLLL
-	 BLbp9zt2XSjig==
+	s=default; t=1755006372;
+	bh=3tYtLXQTnVlFfyDQy/nYfcenuoz71+ZIMVjdDOaSCs4=;
+	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=JAKcUeekladgqhOA0pwlfZpbSddSeWHUB2qxINpi5Pgul5fr6+GhBQQJ/jMXmlDO5
+	 7H4AN6FeeMDMLoFE482QrKMPcEh5F71kSOC5BYbRtb3NWsMzC4NFpHrcf0y/JRcMxY
+	 LdppYim2VMLmf2coIBa49e/P8Vt00ZFxuaGphMVPVj9i6T1/pMo6lOg+lPc7wyH3NQ
+	 JuG30ZclqDdjYl9qX81gbtsG5TkGKMNKAI++QF3jlqiazjsTPMe01a5LdmeKLEuqhB
+	 6e4ILH6z5Tzw7j+33CpvfvqrQiWVERHLX6SRVwpLcE4TD4ZMgROb4vfJzwJE7b8P+E
+	 wT81RiIb7H1jA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 0981940FC0;
-	Tue, 12 Aug 2025 13:11:08 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 215CD8435F;
+	Tue, 12 Aug 2025 13:46:12 +0000 (UTC)
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id A8BBFB8B
- for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Aug 2025 13:11:06 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id 143A8158
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Aug 2025 13:46:11 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 9B06840F1A
- for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Aug 2025 13:11:06 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 05F8841506
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Aug 2025 13:46:11 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id wYs4CNM9tzlT for <intel-wired-lan@lists.osuosl.org>;
- Tue, 12 Aug 2025 13:11:06 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2607:f8b0:4864:20::1030; helo=mail-pj1-x1030.google.com;
- envelope-from=xtydtc@gmail.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 0475440F35
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0475440F35
-Received: from mail-pj1-x1030.google.com (mail-pj1-x1030.google.com
- [IPv6:2607:f8b0:4864:20::1030])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 0475440F35
- for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Aug 2025 13:11:05 +0000 (UTC)
-Received: by mail-pj1-x1030.google.com with SMTP id
- 98e67ed59e1d1-31ee880f7d2so6212862a91.0
- for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Aug 2025 06:11:05 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20230601; t=1755004265; x=1755609065;
- h=content-transfer-encoding:mime-version:message-id:date:subject:cc
- :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
- :reply-to;
- bh=UxIla1HyYnxUj2HsSHmkDkdZP2KuTjodsMUdmS63XNQ=;
- b=Q/qNgYCA0IjYoUVwHGltaXgDPVuEnYTypTIf6tjm6Wx6QFD6q4OiS2Ifi+STCr4BjM
- hsPWuJUrGLemii3LNf504WxIMrbBattWzwvO0rvYC4nn4l+GW0AshLt4D1m//D4P+4r9
- 82LUq50u1akUrG52zCCxSnf22BzRDqky4yjHerUz9ufYUyKP5RgAE9LvDRfLU0jd7F3q
- slS9+Q7r9hwdgOEXaXKwbgHDKvmCEK5mtgUXpDTiietLSeflmkFyRdZw80OmKmz3WTzY
- Niele7FuZad8gxiHyWLRfgvH1u1pYkuvvkoKeBbtd6HEAJLbP03YHl+oi9DTVg2NqBR3
- rGmA==
-X-Forwarded-Encrypted: i=1;
- AJvYcCXdWjYThcpH6rpenvjrs4hik135x1/ZIXUTXG2YFlihLnhzOo/xIBsS/Vwut0I02j4qfVrIrDUcp9dky1Vu5Go=@lists.osuosl.org
-X-Gm-Message-State: AOJu0YyEQRqIX/tlzdvtgIYWYWq5VCAxzan6JSIJseYGhLFKp6yCC88C
- HlYiZT80aBP+vic2IpjXBngkvpCJyuxUpzRN5uBlAPEfw3akldcMOwIE
-X-Gm-Gg: ASbGncvfPrVjhdDOpFQGcgvsN05v7nBKoggVDYy3rawkDoUPkBDF5CYO7sW4fz7/O27
- tvBELkkhWDHMqG9rvRR5gTwR6Urt+JAHTWIWuoCBdTJKnFoh85huulbNQygYlhjXK4i/n1MafSn
- 8ZVgk5V3ZtfsDs2jOYFn9si2okTEs/gawShXotGefk+CcMhSKVsHVVJsrY1yLNsMz5b6bK4hh8E
- TKr59kax3ytR2wNMpM1EbOovtD85+rw8SUowcl42sW0Dq+dzw5Bo1bk2G7K5RuFNcaq/mTSlZ00
- qmC9iGeZmT4igSooGK/xRXrUEmN5LVJN9vWxgC3CvK0bCb86Z89fLCKwEZBA8vxwqG7PfhDy88O
- 8mD/ectg2qtiPPbsrywHiFd/X4gD5JMQZYFR4m9gxN/KPV3JD8qqfFgw=
-X-Google-Smtp-Source: AGHT+IGZho0iQ/1nCW0ztaSgx/gJSrFI5h/wMr3ThsyqUo5BdfFFaDonVE6u2aePsc3KlxqPpcFzPw==
-X-Received: by 2002:a17:90a:e294:b0:321:2407:3cef with SMTP id
- 98e67ed59e1d1-321c0b60856mr3040069a91.32.1755004265102; 
- Tue, 12 Aug 2025 06:11:05 -0700 (PDT)
-Received: from TIANYXU-M-J00K.cisco.com
- ([2001:420:588c:1300:513:ebe8:5ec0:cab3])
- by smtp.gmail.com with ESMTPSA id
- 41be03b00d2f7-b4285a15c26sm13545797a12.16.2025.08.12.06.11.01
- (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
- Tue, 12 Aug 2025 06:11:04 -0700 (PDT)
-From: Tianyu Xu <xtydtc@gmail.com>
-X-Google-Original-From: Tianyu Xu <tianyxu@cisco.com>
-To: anthony.l.nguyen@intel.com
-Cc: przemyslaw.kitszel@intel.com, kuba@kernel.org,
- intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, Tianyu Xu <tianyxu@cisco.com>,
- Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
- Joe Damato <joe@dama.to>
-Date: Tue, 12 Aug 2025 21:10:56 +0800
-Message-Id: <20250812131056.93963-1-tianyxu@cisco.com>
-X-Mailer: git-send-email 2.39.5 (Apple Git-154)
+ id Kk5LDtv1xm9K for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 12 Aug 2025 13:46:10 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.20;
+ helo=mgamail.intel.com; envelope-from=przemyslaw.kitszel@intel.com;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 5BB2B413FE
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 5BB2B413FE
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.20])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 5BB2B413FE
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Aug 2025 13:46:10 +0000 (UTC)
+X-CSE-ConnectionGUID: R96wUUDnRRiiNMQ1vWg+dg==
+X-CSE-MsgGUID: Y08xHxqKSNiWc2kLU/hIew==
+X-IronPort-AV: E=McAfee;i="6800,10657,11520"; a="56994318"
+X-IronPort-AV: E=Sophos;i="6.17,284,1747724400"; d="scan'208";a="56994318"
+Received: from fmviesa005.fm.intel.com ([10.60.135.145])
+ by orvoesa112.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 12 Aug 2025 06:39:03 -0700
+X-CSE-ConnectionGUID: HX8uqehtRy2HeWb7TW4I2g==
+X-CSE-MsgGUID: sALZVvPWR2CaFRait38r8g==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.17,284,1747724400"; d="scan'208";a="170416052"
+Received: from irvmail002.ir.intel.com ([10.43.11.120])
+ by fmviesa005.fm.intel.com with ESMTP; 12 Aug 2025 06:39:01 -0700
+Received: from vecna.igk.intel.com (vecna.igk.intel.com [10.123.220.17])
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id 5420432CAD;
+ Tue, 12 Aug 2025 14:39:00 +0100 (IST)
+From: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+To: intel-wired-lan@lists.osuosl.org, Tony Nguyen <anthony.l.nguyen@intel.com>
+Cc: netdev@vger.kernel.org,
+	Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Date: Tue, 12 Aug 2025 15:28:59 +0200
+Message-Id: <20250812132910.99626-2-przemyslaw.kitszel@intel.com>
+X-Mailer: git-send-email 2.39.3
+In-Reply-To: <20250812132910.99626-1-przemyslaw.kitszel@intel.com>
+References: <20250812132910.99626-1-przemyslaw.kitszel@intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20230601; t=1755004265; x=1755609065; darn=lists.osuosl.org;
- h=content-transfer-encoding:mime-version:message-id:date:subject:cc
- :to:from:from:to:cc:subject:date:message-id:reply-to;
- bh=UxIla1HyYnxUj2HsSHmkDkdZP2KuTjodsMUdmS63XNQ=;
- b=QD4obW+0XzrQZcmSDUeu9sxFYqRCB3MhS11e1IIY6VePq8UvCq3m7mJ43uqhrw++jp
- 67HozyXC5kf6wIw3QlDb51sV6sZo7qmbV2w9mAhQ4w33VLdFPltB7/HkeUJqt4RW56f8
- Y4YiY+7yvPwB31kmKJqQqbmLojLH/mO6uynKlCGD8WdHACK9/ctodPXEPKDEottX+5Ia
- Nl1BralP8fooeIjiYeV2DWhL+gyjKoGsP/qL87lL1SJHPjtVd8LP0GVHxy5mnttoIa7h
- fsYMYE8BahwYSUREzTeYDe1x6UG+od0ZKIQbR8UxV00+7q2N0M0KxdxMrQCvKTh/SjtU
- C6HA==
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1755006371; x=1786542371;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=TOSXConkqbhZiWMfHQMp43j6TW/KPXqP30QVkaB7RRU=;
+ b=GjGzPkPHQ8fOT1VilGQroAGO2XTr8/n5rTM6p4sCtVe3tBgM8UE+R4c4
+ soZys63lS5X3/9+WsSSNHe6H7DZ62c4feLIZrzeIAJ24ZYOGDlUCggAV2
+ vSCtrIwicZrGavuVTmiE6zlyswBuacXZHouOa2aCtzcdi1MD3rUWIW50D
+ J56+8VANTbB8encOO5uhUiTRdyhGyJShUYS0w2BDOGDA0FqKRMtDykijN
+ UsYMwBPtZf3Yq+eOYDlMzfITfSb5G/YMPU3uhmVD9oHPiyzxS0Fg/GyIM
+ s2yi/Hx4ocxRZshsTzSOECYJC5qtxhEB9mShDnLZdBnmFjCM6GNxU3tGk
+ g==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
- header.from=gmail.com
+ header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
- header.a=rsa-sha256 header.s=20230601 header.b=QD4obW+0
-Subject: [Intel-wired-lan] [PATCH v2] igb: Fix NULL pointer dereference in
- ethtool loopback test
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=GjGzPkPH
+Subject: [Intel-wired-lan] [PATCH 01/12] ice: split queue stuff out of
+ ice_virtchnl.c - p1
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -131,40 +112,35 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The igb driver currently causes a NULL pointer dereference when executing
-the ethtool loopback test. This occurs because there is no associated
-q_vector for the test ring when it is set up, as interrupts are typically
-not added to the test rings.
+Temporary rename of ice_virtchnl.c into ice_virtchnl_queues.c
 
-Since commit 5ef44b3cb43b removed the napi_id assignment in
-__xdp_rxq_info_reg(), there is no longer a need to pass a napi_id to it.
-Therefore, simply use 0 as the last parameter.
+In order to split ice_virtchnl.c in a way that makes it much easier
+to still blame new file, we do it via multiple git steps.
 
-Fixes: 2c6196013f84 ("igb: Add AF_XDP zero-copy Rx support")
-Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Reviewed-by: Joe Damato <joe@dama.to>
-Signed-off-by: Tianyu Xu <tianyxu@cisco.com>
+Signed-off-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 ---
-Thanks to Aleksandr and Joe for your feedback. I have added the Fixes tag
-and formatted the lines to 75 characters based on your comments.
+ drivers/net/ethernet/intel/ice/Makefile                         | 2 +-
+ .../intel/ice/{ice_virtchnl.c => ice_virtchnl_queues.c}         | 0
+ 2 files changed, 1 insertion(+), 1 deletion(-)
+ rename drivers/net/ethernet/intel/ice/{ice_virtchnl.c => ice_virtchnl_queues.c} (100%)
 
- drivers/net/ethernet/intel/igb/igb_main.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index a9a7a94ae..453deb6d1 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -4453,8 +4453,7 @@ int igb_setup_rx_resources(struct igb_ring *rx_ring)
- 	if (xdp_rxq_info_is_reg(&rx_ring->xdp_rxq))
- 		xdp_rxq_info_unreg(&rx_ring->xdp_rxq);
- 	res = xdp_rxq_info_reg(&rx_ring->xdp_rxq, rx_ring->netdev,
--			       rx_ring->queue_index,
--			       rx_ring->q_vector->napi.napi_id);
-+			       rx_ring->queue_index, 0);
- 	if (res < 0) {
- 		dev_err(dev, "Failed to register xdp_rxq index %u\n",
- 			rx_ring->queue_index);
+diff --git a/drivers/net/ethernet/intel/ice/Makefile b/drivers/net/ethernet/intel/ice/Makefile
+index d0f9c9492363..56aec5ab9e6b 100644
+--- a/drivers/net/ethernet/intel/ice/Makefile
++++ b/drivers/net/ethernet/intel/ice/Makefile
+@@ -47,7 +47,7 @@ ice-y := ice_main.o	\
+ 	 ice_adapter.o
+ ice-$(CONFIG_PCI_IOV) +=	\
+ 	ice_sriov.o		\
+-	ice_virtchnl.o		\
++	ice_virtchnl_queues.o	\
+ 	ice_virtchnl_allowlist.o \
+ 	ice_virtchnl_fdir.o	\
+ 	ice_vf_mbx.o		\
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_queues.c
+similarity index 100%
+rename from drivers/net/ethernet/intel/ice/ice_virtchnl.c
+rename to drivers/net/ethernet/intel/ice/ice_virtchnl_queues.c
 -- 
-2.39.5 (Apple Git-154)
+2.39.3
 
