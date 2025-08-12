@@ -1,102 +1,102 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 56149CA0EC4
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 12 Aug 2025 13:46:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 85367CA0EDC
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 12 Aug 2025 13:46:16 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 03C3C415C5;
-	Tue, 12 Aug 2025 13:46:15 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 373618435F;
+	Tue, 12 Aug 2025 13:46:16 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 2-A01U70jxnS; Tue, 12 Aug 2025 13:46:14 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id MtjiMtPLuIlE; Tue, 12 Aug 2025 13:46:15 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1E38C415CF
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org A4D5484371
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1755006374;
-	bh=lwhzrYtvQwE/T2R0PdvRI2nNufS5v3oYaxAwGcBNE+4=;
-	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=qIhkymnQQZlLi7wHDNv9f9MTUgcgsr0Ykhao2ZL7u3jFiKYvA7iw5j9cvpNaQvpmx
-	 r6twacTCCmCk0EIc7WhcGsF1dV4hZBpNKlw/0O+8lvTPpGi1re8+nOBca8+m8uaFPU
-	 VHW0oOdBojTCNU2ebT/SxHgxJ59QVHSLLggRVQryoeTGeO42kfm8oASxMqkfqmKJ34
-	 MrIOOBHAxjBvy6HkkumbMs/SdH8PIKOjT12EkQ4+dGfTrzZFAMnfK2dMmdhL6YgsQ9
-	 jLkCrfouz0RgNCVZBlfZGEoXnVZ7SSv4DDs8H1Ctn0AbmKJLAiwqsd0/1hWBknnwXB
-	 QmCTs6CYdWU+g==
+	s=default; t=1755006375;
+	bh=aazLJDfSivYRq+W0KJotwsdKW2pN8tMsOKIOA4IgNKI=;
+	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=XqR4OLk7n/NjRlow3tLLW6HKDAUV4+jcMDxbpsLm2j2Sal0HzGn9noOwMesPjGkYp
+	 nNcTUyEUkYCiFFzcTwrUBNHY+uakRDWSOKnlSWrYQHLIGYB4vIcDTnV0cWusanz496
+	 1giS6OFsrI741KIKJ2dfB46YssICu6kBmCctjh0xGD+AK2XcflmktGCRYCnw4mAdvb
+	 3ybv134IvMNCSBYmRf1XfXfTvHbffWyLoTIUuMFY5qcf0hesw/Q3ZfmaBMBeVYlBeK
+	 /UswwW4XYVx+JsHmoQ8waClPsNnRtX5uT1yyLcGflT0KVgoJTk7n/Gbt+hDTZIlytz
+	 7HiT+j+cRG3+Q==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 1E38C415CF;
-	Tue, 12 Aug 2025 13:46:14 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id A4D5484371;
+	Tue, 12 Aug 2025 13:46:15 +0000 (UTC)
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id 3528F183
- for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Aug 2025 13:46:12 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id 223A6158
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Aug 2025 13:46:13 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 37A5441309
+ by smtp4.osuosl.org (Postfix) with ESMTP id 5F1E941506
  for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Aug 2025 13:46:11 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 9x1gc7l220ix for <intel-wired-lan@lists.osuosl.org>;
+ id foW1Kkq0g8nl for <intel-wired-lan@lists.osuosl.org>;
  Tue, 12 Aug 2025 13:46:10 +0000 (UTC)
-X-Greylist: delayed 427 seconds by postgrey-1.37 at util1.osuosl.org;
- Tue, 12 Aug 2025 13:46:10 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 111484123E
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 111484123E
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.20;
  helo=mgamail.intel.com; envelope-from=przemyslaw.kitszel@intel.com;
  receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org AF986414BB
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org AF986414BB
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.20])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 111484123E
- for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Aug 2025 13:46:09 +0000 (UTC)
-X-CSE-ConnectionGUID: qjcld+rOT0+gnJI7s6jjjQ==
-X-CSE-MsgGUID: MLVvXS9/R76ezno4nPrpog==
-X-IronPort-AV: E=McAfee;i="6800,10657,11520"; a="56994313"
-X-IronPort-AV: E=Sophos;i="6.17,284,1747724400"; d="scan'208";a="56994313"
+ by smtp4.osuosl.org (Postfix) with ESMTPS id AF986414BB
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Aug 2025 13:46:10 +0000 (UTC)
+X-CSE-ConnectionGUID: mguBi3m9Rwic2KILSV0usQ==
+X-CSE-MsgGUID: KAtJlUxMRZmegNd8Zab+Gg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11520"; a="56994322"
+X-IronPort-AV: E=Sophos;i="6.17,284,1747724400"; d="scan'208";a="56994322"
 Received: from fmviesa005.fm.intel.com ([10.60.135.145])
  by orvoesa112.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 12 Aug 2025 06:39:03 -0700
-X-CSE-ConnectionGUID: 5fStNXzpTm6NL+iPSuqkyA==
-X-CSE-MsgGUID: lDrHrFE0ThWRL9eSYz9dvQ==
+ 12 Aug 2025 06:39:06 -0700
+X-CSE-ConnectionGUID: mtL56hs5Sg2reneZuOturg==
+X-CSE-MsgGUID: fJezaJpqQK2KzlPZuwQ/fg==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.17,284,1747724400"; d="scan'208";a="170416049"
+X-IronPort-AV: E=Sophos;i="6.17,284,1747724400"; d="scan'208";a="170416064"
 Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by fmviesa005.fm.intel.com with ESMTP; 12 Aug 2025 06:39:00 -0700
+ by fmviesa005.fm.intel.com with ESMTP; 12 Aug 2025 06:39:04 -0700
 Received: from vecna.igk.intel.com (vecna.igk.intel.com [10.123.220.17])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id D688C32CA9;
- Tue, 12 Aug 2025 14:38:59 +0100 (IST)
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id 2305132CAD;
+ Tue, 12 Aug 2025 14:39:03 +0100 (IST)
 From: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 To: intel-wired-lan@lists.osuosl.org, Tony Nguyen <anthony.l.nguyen@intel.com>
-Cc: netdev@vger.kernel.org, Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Kuniyuki Iwashima <kuniyu@google.com>
-Date: Tue, 12 Aug 2025 15:28:58 +0200
-Message-Id: <20250812132910.99626-1-przemyslaw.kitszel@intel.com>
+Cc: netdev@vger.kernel.org,
+	Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Date: Tue, 12 Aug 2025 15:29:03 +0200
+Message-Id: <20250812132910.99626-6-przemyslaw.kitszel@intel.com>
 X-Mailer: git-send-email 2.39.3
+In-Reply-To: <20250812132910.99626-1-przemyslaw.kitszel@intel.com>
+References: <20250812132910.99626-1-przemyslaw.kitszel@intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
  t=1755006371; x=1786542371;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=MhQnbbRJKJFo03WUy91c4aznF4eJWFz5905kdrgeldo=;
- b=Vs28g9ESpNcnoH5oJlXD1E5oWIsfW15m1hjmiGy9EH+XiSmU2RTm5paJ
- G6S2x8vtdPjahUv+Zo+R139+X0jNQolbFGa9k/h/wg8lKGilDofegT+V+
- L8epajF44oYL1lTcha1fmqhdlBptti335Nxx2YxEy3D5YPfMAPnNgBLZu
- eGOMJNDWJ3GqYt0fXa+OJTbYjm0jPulyw79drZZVqP7J+50lg4Rs+Rgqa
- FxRz7qQcShiy4C2Kb6+cs6jm4bxZRBXSsSNtxHtt8Zrzunfej+kyYxsaQ
- JAvI/a3HH/OGZWSFyi+NMiquSdfDjPqGaytjtW2vtmxSkyGH34GMpD7zy
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=vIpi+g0K3+O6k66kKqZ/03Vf+0OMHaf6O7+yzY2Gtgo=;
+ b=EC5vQ5JxNJFg9MbtrQu4IslUh5uUZa2wRS+o/EyoVwi6NxuY5s2EV9sz
+ T3uQsZ4tOlYTS4atiM/L8WnHGqC0dtazaEll3HPGTCSVnKq0AW/ng+HTh
+ JscMqgacd0897scIwmAHss3iJoo7qkXo1AdwRfACFAxZo7cQaNYusXeDa
+ 8oxAolYX9ZKhHoA6tPgljqkk2mhPVT/7jCk7bvh8BQBU0tGumSw5XmznD
+ u+mkAcxpcDHGbUTxy94+tyZJdiNTxpSVOfWdldzU4cwpx0HH7NzendwUN
+ 4jvEjek6PM2srSWV+2cgMwy7vfF8tykG4zX67uMEhUL0Gu07nI3nfXwzR
  Q==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=Vs28g9ES
-Subject: [Intel-wired-lan] [PATCH 00/12] ice: split ice_virtchnl.c git-blame
- friendly way
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=EC5vQ5Jx
+Subject: [Intel-wired-lan] [PATCH 05/12] ice: split RSS stuff out of
+ ice_virtchnl.c - p1
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -112,60 +112,35 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Summary:
-Split ice_virtchnl.c into two more files (+headers), in a way
-that git-blame works better.
-Then move virtchnl files into a new subdir.
-No logic changes.
+Temporary rename of ice_virtchnl.c into ice_virtchnl_rss.c
 
-I have developed (or discovered ;)) how to split a file in a way that
-both old and new are nice in terms of git-blame
-There were no much disscussion on [RFC], so I would like to propose
-to go forward with this approach.
+In order to split ice_virtchnl.c in a way that makes it much easier
+to still blame new file, we do it via multiple git steps.
 
-There is more commits needed to have it nice, so it forms a git-log vs
-git-blame tradeoff, but (after the brief moment that this is on the top)
-we spend orders of magnitude more time looking at the blame output (and
-commit messages linked from that) - so I find it much better to see
-actual logic changes instead of "move xx to yy" stuff (typical for
-"squashed/single-commit splits").
+Signed-off-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+---
+ drivers/net/ethernet/intel/ice/Makefile                         | 2 +-
+ .../ethernet/intel/ice/{ice_virtchnl.c => ice_virtchnl_rss.c}   | 0
+ 2 files changed, 1 insertion(+), 1 deletion(-)
+ rename drivers/net/ethernet/intel/ice/{ice_virtchnl.c => ice_virtchnl_rss.c} (100%)
 
-Cherry-picks/rebases work the same with this method as with simple
-"squashed/single-commit" approach (literally all commits squashed into
-one (to have better git-log, but shitty git-blame output).
-
-Rationale for the split itself is, as usual, "file is big and we want to
-extend it".
-
-This series is available on my github (just rebased from any
-earlier mentions):
-https://github.com/pkitszel/linux/tree/virtchnl-split-Aug12
-(the simple git-email view flattens this series, removing two
-merges from the view).
-
-
-[RFC]:
-https://lore.kernel.org/netdev/5b94d14e-a0e7-47bd-82fc-c85171cbf26e@intel.com/T/#u
-
-(I would really look at my fork via your preferred git interaction tool
-instead of looking at the patches below).
-
-Przemek Kitszel (12):
-  ice: split queue stuff out of ice_virtchnl.c - p1
-  ice: split queue stuff out of ice_virtchnl.c - p2
-  ice: extract ice_virtchnl_queues.c: cleanup - p1
-  ice: extract ice_virtchnl_queues.c: cleanup - p2
-  ice: split RSS stuff out of ice_virtchnl.c - p1
-  ice: extract ice_virtchnl_queues.c: cleanup - p3
-  ice: split RSS stuff out of ice_virtchnl.c - p2
-  ice: finish ice_virtchnl.c split into ice_virtchnl_queues.c
-  ice: extract ice_virtchnl_rss.c: cleanup - p1
-  ice: extract ice_virtchnl_rss.c: cleanup - p2
-  ice: finish ice_virtchnl.c split into ice_virtchnl_rss.c
-  ice: add virt/ and move ice_virtchnl* files there
-
-CC: Kuniyuki Iwashima <kuniyu@google.com>
-
+diff --git a/drivers/net/ethernet/intel/ice/Makefile b/drivers/net/ethernet/intel/ice/Makefile
+index 46a21ed67066..b5247d370663 100644
+--- a/drivers/net/ethernet/intel/ice/Makefile
++++ b/drivers/net/ethernet/intel/ice/Makefile
+@@ -47,7 +47,7 @@ ice-y := ice_main.o	\
+ 	 ice_adapter.o
+ ice-$(CONFIG_PCI_IOV) +=	\
+ 	ice_sriov.o		\
+-	ice_virtchnl.o		\
++	ice_virtchnl_rss.o	\
+ 	ice_virtchnl_allowlist.o \
+ 	ice_virtchnl_fdir.o	\
+ 	ice_virtchnl_queues.o	\
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_rss.c
+similarity index 100%
+rename from drivers/net/ethernet/intel/ice/ice_virtchnl.c
+rename to drivers/net/ethernet/intel/ice/ice_virtchnl_rss.c
 -- 
 2.39.3
 
