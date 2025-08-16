@@ -1,86 +1,86 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 89E23CA0EE6
-	for <intel-wired-lan@archiver.kernel.org>; Sat, 16 Aug 2025 07:18:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1C15BCA0EE4
+	for <intel-wired-lan@archiver.kernel.org>; Sat, 16 Aug 2025 07:18:16 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 5992583E54;
-	Sat, 16 Aug 2025 07:18:14 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id E02F241413;
+	Sat, 16 Aug 2025 07:18:15 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id PUD_BD05gZTr; Sat, 16 Aug 2025 07:18:13 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id M3gONZNuA6nm; Sat, 16 Aug 2025 07:18:15 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org BB33683E56
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 5752541435
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1755328693;
-	bh=ovVNOrvjLBuGeLXXOZsp09D6Vy+Aw4+UU+9b57Bs+Mo=;
+	s=default; t=1755328695;
+	bh=snwjYxF74w6BQ4U3TU9RgL+oijrifCwY0zkDmnSa2b4=;
 	h=In-Reply-To:References:From:Date:To:Cc:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=nfLE9WL2Zjfczy0CjUL7ijO5pR9ia9w0s1YrsX+KuaXLt1FBXA9FbsFQ2d6Zw6qnM
-	 u1gVIBLKZ33uYQkI9wVbweLUX0QVeM2cQItmaf+Gn++sphirORhfPzcFes9SLz2A9v
-	 5LxhyakBNciVKxBS8sMdFuXbttlefVgMolYG6agf1Vuv2ZwngzzqtAfCKrEhS2EIrB
-	 8OcwW2/6HDCpNNJYJR0L+n5oHTAIEF/PIvYmrYuC5cEHGcRwfKjYnxi+mbSlxH8Fh0
-	 zjoLtHv8MNnwk1ng4MqkAKhnNC93Pp9M/hDCz37lEYYprgUrFGs+1uljMETMzrWDl2
-	 WV7r0SE5S/Xfw==
+	b=FZoikLbkdXlyDXfwlJa1Sb6cjpghp9MkYCMJ36Vnvwu86+X0mVkNAnGiorR7aLv9U
+	 1Ao8hGzWd6gMAdv6/biCdjv87SPRlxP1r4XfjSNUOrHKeDN6NSqHNtxt5IK/x0IkJd
+	 krsaovADpbTRj48emNmNBnBwYnhpoZCwS5AiAly8RJKNqFmyE2BGZe8+SGCDfxxpcQ
+	 SO0awbg2CTcp2LMWDzgnNujaBHIslil/g81uq7Xl5buBOdVwzP1ZTghvMy47/lpL7a
+	 DislsSeveC+orlUWnbCDnN2V3mwmqPZfYNYDAs6tEjMJnwzMLieKvcnTu4xvx5r6r9
+	 81nZVtNVkA58w==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id BB33683E56;
-	Sat, 16 Aug 2025 07:18:13 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 5752541435;
+	Sat, 16 Aug 2025 07:18:15 +0000 (UTC)
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with UTF8SMTP id 1A336223
- for <intel-wired-lan@lists.osuosl.org>; Sat, 16 Aug 2025 07:18:12 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with UTF8SMTP id 047AF223
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 16 Aug 2025 07:18:13 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with UTF8SMTP id D2B7F611DA
- for <intel-wired-lan@lists.osuosl.org>; Sat, 16 Aug 2025 07:18:11 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with UTF8SMTP id 0120661162
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 16 Aug 2025 07:18:12 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024)
- with UTF8SMTP id 9GCr4hABAe7A for <intel-wired-lan@lists.osuosl.org>;
+ with UTF8SMTP id SUdsd6p04QYu for <intel-wired-lan@lists.osuosl.org>;
  Sat, 16 Aug 2025 07:18:11 +0000 (UTC)
-X-Greylist: delayed 388 seconds by postgrey-1.37 at util1.osuosl.org;
- Sat, 16 Aug 2025 07:18:10 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 06F1E61162
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 06F1E61162
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2a01:4f8:150:2161:1:b009:f236:0; helo=mailout3.hostsharing.net;
- envelope-from=lukas@wunner.de; receiver=<UNKNOWN> 
+X-Greylist: delayed 392 seconds by postgrey-1.37 at util1.osuosl.org;
+ Sat, 16 Aug 2025 07:18:11 UTC
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 500BA6119F
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 500BA6119F
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=176.9.242.54;
+ helo=mailout3.hostsharing.net; envelope-from=lukas@wunner.de;
+ receiver=<UNKNOWN> 
 Received: from mailout3.hostsharing.net (mailout3.hostsharing.net
- [IPv6:2a01:4f8:150:2161:1:b009:f236:0])
- by smtp3.osuosl.org (Postfix) with UTF8SMTPS id 06F1E61162
- for <intel-wired-lan@lists.osuosl.org>; Sat, 16 Aug 2025 07:18:10 +0000 (UTC)
+ [176.9.242.54])
+ by smtp3.osuosl.org (Postfix) with UTF8SMTPS id 500BA6119F
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 16 Aug 2025 07:18:11 +0000 (UTC)
 Received: from h08.hostsharing.net (h08.hostsharing.net
  [IPv6:2a01:37:1000::53df:5f1c:0])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256
  client-signature RSA-PSS (4096 bits) client-digest SHA256)
  (Client CN "*.hostsharing.net", Issuer "RapidSSL TLS RSA CA G1" (verified OK))
- by mailout3.hostsharing.net (Postfix) with UTF8SMTPS id 600283008985;
- Sat, 16 Aug 2025 09:12:55 +0200 (CEST)
+ by mailout3.hostsharing.net (Postfix) with UTF8SMTPS id D3B063006799;
+ Sat, 16 Aug 2025 09:11:35 +0200 (CEST)
 Received: from localhost (unknown [89.246.108.87])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (prime256v1) server-signature RSA-PSS (4096 bits)
  server-digest SHA256) (No client certificate requested)
- by h08.hostsharing.net (Postfix) with UTF8SMTPSA id 1C9ED600D2F4;
- Sat, 16 Aug 2025 09:12:55 +0200 (CEST)
-X-Mailbox-Line: From 525e494c981747ef2cdd666c50870b69aabf94af Mon Sep 17
+ by h08.hostsharing.net (Postfix) with UTF8SMTPSA id 78A4B600D2F4;
+ Sat, 16 Aug 2025 09:11:35 +0200 (CEST)
+X-Mailbox-Line: From 24f58fd9bff53f2cd2771d23352343caaefe834b Mon Sep 17
  00:00:00 2001
-Message-ID: <525e494c981747ef2cdd666c50870b69aabf94af.1755327132.git.lukas@wunner.de>
+Message-ID: <24f58fd9bff53f2cd2771d23352343caaefe834b.1755327132.git.lukas@wunner.de>
 In-Reply-To: <cover.1755327132.git.lukas@wunner.de>
 References: <cover.1755327132.git.lukas@wunner.de>
 From: Lukas Wunner <lukas@wunner.de>
-Date: Sat, 16 Aug 2025 09:10:02 +0200
+Date: Sat, 16 Aug 2025 09:10:01 +0200
 To: Tony Nguyen <anthony.l.nguyen@intel.com>,
  Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=none (p=none dis=none)
  header.from=wunner.de
-Subject: [Intel-wired-lan] [PATCH 2/3] ice: Fix enable_cnt imbalance on PCIe
- error recovery
+Subject: [Intel-wired-lan] [PATCH 1/3] ice: Fix enable_cnt imbalance on
+ resume
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -96,82 +96,57 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-After a PCIe Uncorrectable Error has been reported by an ice adapter
-and has been recovered through a Secondary Bus Reset, its driver calls
-pci_enable_device_mem() without having called pci_disable_device().
+The ice driver calls pci_enable_device_mem() on resume without having
+called pci_disable_device() on suspend.
 
 This leads to an imbalance of the enable_cnt tracked by the PCI core:
-Every time error recovery occurs, the enable_cnt keeps growing.  If it
-occurs at least once and the driver is then unbound, the device isn't
-disabled since the enable_cnt hasn't reached zero (and never again will).
+Every time the adapter is resumed, the enable_cnt keeps growing.  If the
+adapter is resumed at least once and the driver is then unbound, the
+device isn't disabled since the enable_cnt hasn't reached zero (and
+never again will).
 
-The call to pci_enable_device_mem() has almost no effect because the
+Moreover the call to pci_enable_device_mem() has no effect because the
 enable_cnt was already incremented in ice_probe() through the call to
 pcim_enable_device().  The subsequent pci_enable_device_mem() thus bails
-out after invoking pci_update_current_state().
+out after invoking pci_update_current_state().  But current_state was
+already updated by the PCI core:
 
-Remove pci_enable_device_mem().  In lieu of pci_update_current_state(),
-set the power state to D0 because that's the power state after a
-Secondary Bus Reset (PCIe r7.0 sec 5.3.1.1).
+  pci_pm_resume_noirq()
+    pci_pm_default_resume_early()
+      pci_pm_power_up_and_verify_state()
+        pci_update_current_state()
 
-The intended purpose of pci_enable_device_mem() may have been to set
-the Memory Space Enable bit in the Command register again after reset,
-but that is already achieved by the subsequent call to
-pci_restore_state().
+In summary, the call to pci_enable_device_mem() is both harmful and
+superfluous, so remove it.
 
-Fixes: 5995b6d0c6fc ("ice: Implement pci_error_handler ops")
+The intended purpose of the call may have been to set the Memory Space
+Enable bit in the Command register again on resume, but that is already
+achieved by the preceding call to pci_restore_state().
+
+Fixes: 769c500dcc1e ("ice: Add advanced power mgmt for WoL")
 Signed-off-by: Lukas Wunner <lukas@wunner.de>
-Cc: stable@vger.kernel.org  # v5.2+
+Cc: stable@vger.kernel.org  # v5.9+
 ---
- drivers/net/ethernet/intel/ice/ice_main.c | 32 ++++++++---------------
- 1 file changed, 11 insertions(+), 21 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_main.c | 6 ------
+ 1 file changed, 6 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 3be4347223ef..848d5b512319 100644
+index 10a473a50710..3be4347223ef 100644
 --- a/drivers/net/ethernet/intel/ice/ice_main.c
 +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -5720,30 +5720,20 @@ ice_pci_err_detected(struct pci_dev *pdev, pci_channel_state_t err)
- static pci_ers_result_t ice_pci_err_slot_reset(struct pci_dev *pdev)
- {
- 	struct ice_pf *pf = pci_get_drvdata(pdev);
--	pci_ers_result_t result;
--	int err;
- 	u32 reg;
+@@ -5643,12 +5643,6 @@ static int ice_resume(struct device *dev)
+ 	if (!pci_device_is_present(pdev))
+ 		return -ENODEV;
  
--	err = pci_enable_device_mem(pdev);
--	if (err) {
--		dev_err(&pdev->dev, "Cannot re-enable PCI device after reset, error %d\n",
--			err);
--		result = PCI_ERS_RESULT_DISCONNECT;
--	} else {
--		pci_set_master(pdev);
--		pci_restore_state(pdev);
--		pci_save_state(pdev);
--		pci_wake_from_d3(pdev, false);
--
--		/* Check for life */
--		reg = rd32(&pf->hw, GLGEN_RTRIG);
--		if (!reg)
--			result = PCI_ERS_RESULT_RECOVERED;
--		else
--			result = PCI_ERS_RESULT_DISCONNECT;
+-	ret = pci_enable_device_mem(pdev);
+-	if (ret) {
+-		dev_err(dev, "Cannot enable device after suspend\n");
+-		return ret;
 -	}
-+	pdev->current_state = PCI_D0;
-+	pci_set_master(pdev);
-+	pci_restore_state(pdev);
-+	pci_save_state(pdev);
-+	pci_wake_from_d3(pdev, false);
+-
+ 	pf = pci_get_drvdata(pdev);
+ 	hw = &pf->hw;
  
--	return result;
-+	/* Check for life */
-+	reg = rd32(&pf->hw, GLGEN_RTRIG);
-+	if (!reg)
-+		return PCI_ERS_RESULT_RECOVERED;
-+	else
-+		return PCI_ERS_RESULT_DISCONNECT;
- }
- 
- /**
 -- 
 2.47.2
 
