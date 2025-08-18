@@ -4,91 +4,93 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 78780CA0ED1
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 18 Aug 2025 18:36:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0DB96CA0EE4
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 18 Aug 2025 21:08:03 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 2AAD0605D1;
-	Mon, 18 Aug 2025 18:36:51 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id C679460680;
+	Mon, 18 Aug 2025 21:08:03 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id HGkYj_CuAWCV; Mon, 18 Aug 2025 18:36:50 +0000 (UTC)
+ id ijZyuXldA6Sp; Mon, 18 Aug 2025 21:08:03 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 9EF6D60646
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 008FF60665
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1755542210;
-	bh=YEleciuqCzDP1u7gctFkcDKDnO/+TN1KeFYy+R1jcs0=;
-	h=Date:To:Cc:References:From:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=OQREszKZnP30nPPntZ5r+6St4IiQOtL5DROeJbkKspIIQ3cSCvNXdwASBuOAOxDd0
-	 8ZgBJYiz0CWKW22cBVgOIgmH+uH/Kp9VZzxbyg6Bx5qEl//40IERPQljHi/jB3yyVD
-	 aBre3AWAGUz7rastN6KesU/tX8plDOYb+TYZip9PDB6QtzGT4FV6Lr1VuTucDTB4QA
-	 y8o8y66KTq1EymjknIsxxu7YhcLK5W7wcV73oqY7Jhd1XOoQD83SncygIg6ZIhezHp
-	 5drNZpzosiN5+ct8+JK5K3lT0jowk5MG0b4dLa5at9/WOK3+kjdOA4i5FRAh/tygOR
-	 Vukack7BeWikg==
+	s=default; t=1755551283;
+	bh=FI+a2Bcje3P/U6HmuLBkuq+O2+fGYHQ18sUDm4j+BFo=;
+	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=xPm4hUk5MPBA8HS20ZWxFfFDjF8pNKC9zsWBR3acdKpUGHhO6oAOZK+Iyyq1DY7k4
+	 kb5Cuq8jNFxFjxwEqBMPFGG8bf5OplQpbYjtrGD3OspVAnuNmv2mz9k4uoEogaxLzJ
+	 97TV19N4yLliZXFoIbaa8MWld3BcBybYNX6a+1SXqDR7N2n0IHeqJWzr2VN6iDFP5q
+	 gw5ZIBz5abqsmTqno6SbwIdkO24GwpUnYRVq0Y1Y+PxyRiGD9G9OlEGGsIMwd6zAh3
+	 Ca4lufR2AXmUBPSM7c/JVjaibgXIbpJs9G+z8XOT6jT8pLnK7kvbRhiI+kc8D2Wtnw
+	 3c1fDZfMZ3CrQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 9EF6D60646;
-	Mon, 18 Aug 2025 18:36:50 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 3D3A1E2
- for <intel-wired-lan@lists.osuosl.org>; Mon, 18 Aug 2025 18:36:49 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 008FF60665;
+	Mon, 18 Aug 2025 21:08:03 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 2E07819E
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 18 Aug 2025 21:08:02 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 3824140162
- for <intel-wired-lan@lists.osuosl.org>; Mon, 18 Aug 2025 18:36:49 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 140B460665
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 18 Aug 2025 21:08:02 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id luznd8VzGgo7 for <intel-wired-lan@lists.osuosl.org>;
- Mon, 18 Aug 2025 18:36:48 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=91.218.175.173;
- helo=out-173.mta0.migadu.com; envelope-from=vadim.fedorenko@linux.dev;
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id UKivv1s5M9P1 for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 18 Aug 2025 21:08:01 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.15;
+ helo=mgamail.intel.com; envelope-from=paul.greenwalt@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 5D1704007D
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 5D1704007D
-Received: from out-173.mta0.migadu.com (out-173.mta0.migadu.com
- [91.218.175.173])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 5D1704007D
- for <intel-wired-lan@lists.osuosl.org>; Mon, 18 Aug 2025 18:36:47 +0000 (UTC)
-Message-ID: <cab8df87-46fc-49f4-be1d-a55585587e61@linux.dev>
-Date: Mon, 18 Aug 2025 19:35:57 +0100
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 3B92C605D1
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3B92C605D1
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.15])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 3B92C605D1
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 18 Aug 2025 21:08:01 +0000 (UTC)
+X-CSE-ConnectionGUID: Npw7TEF8R6ucNWjTiJUBfg==
+X-CSE-MsgGUID: Tz/R6mm4TKyZLG6vz4bPwg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11526"; a="57892554"
+X-IronPort-AV: E=Sophos;i="6.17,300,1747724400"; d="scan'208";a="57892554"
+Received: from orviesa007.jf.intel.com ([10.64.159.147])
+ by fmvoesa109.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 18 Aug 2025 14:08:01 -0700
+X-CSE-ConnectionGUID: 87ucn6oTTyqlQ/Wq7d3Cqg==
+X-CSE-MsgGUID: 1+PSW9u8Qa+xuXe05BxjGQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.17,300,1747724400"; d="scan'208";a="167627281"
+Received: from unknown (HELO fedora.jf.intel.com) ([10.166.5.147])
+ by orviesa007.jf.intel.com with ESMTP; 18 Aug 2025 14:08:01 -0700
+From: Paul Greenwalt <paul.greenwalt@intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Cc: maciej.fijalkowski@intel.com,
+	Paul Greenwalt <paul.greenwalt@intel.com>
+Date: Mon, 18 Aug 2025 09:22:55 -0400
+Message-ID: <20250818132257.21720-1-paul.greenwalt@intel.com>
+X-Mailer: git-send-email 2.47.0
 MIME-Version: 1.0
-To: Carolina Jubran <cjubran@nvidia.com>, Andrew Lunn <andrew@lunn.ch>,
- Michael Chan <michael.chan@broadcom.com>,
- Pavan Chebbi <pavan.chebbi@broadcom.com>, Tariq Toukan <tariqt@nvidia.com>,
- Gal Pressman <gal@nvidia.com>, intel-wired-lan@lists.osuosl.org,
- Donald Hunter <donald.hunter@gmail.com>, Jakub Kicinski <kuba@kernel.org>
-Cc: Paolo Abeni <pabeni@redhat.com>, Simon Horman <horms@kernel.org>,
- netdev@vger.kernel.org
-References: <20250815132729.2251597-1-vadfed@meta.com>
- <5b8da3d8-f24c-43d8-9d82-0bcc257e1dac@nvidia.com>
-Content-Language: en-US
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and
- include these headers.
-From: Vadim Fedorenko <vadim.fedorenko@linux.dev>
-In-Reply-To: <5b8da3d8-f24c-43d8-9d82-0bcc257e1dac@nvidia.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Migadu-Flow: FLOW_OUT
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=linux.dev; s=key1; t=1755542204;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=YEleciuqCzDP1u7gctFkcDKDnO/+TN1KeFYy+R1jcs0=;
- b=gEO4tuua+R3qWKY7ae9B34t7MxPPMhZhAhTH88tS8smrXk0vsQoY18b7cdkNGb7wp5ywpu
- 2ijpvi/fRAFYTVHfQWmNV8+5fo9gDY8h8EYE5KqqCf0X/fzenRAdz5YSYOOr50s1qSh449
- 18YHT00stMsUcbE8itf5NUgvjm1SD68=
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1755551281; x=1787087281;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=dTcXqaLAn/ivq2WqxAkd66j1Osdw8t9dmPEM8a0aQ2g=;
+ b=QZduVp4JJYHgX500kx29Rnu0nr3H5wdbmGegwhCVNFaPEtbGOanfXye2
+ mUmYBjrLSwPmvlqkLttf1jrXQ2HG8nFaTyvDaa2TfQNxz1qroNtf/+yza
+ iqNl6fj3TEWvIdFoxf59R9sI5UlEUEjaSZf40T9+YSfaFwtSVJ4EJ+TO7
+ IlGhQvQPZDDqEFRQTWLkUoE/vm2fTy4gdc9ZSQ3OTw+ORelbXAdiAhXRW
+ DX+/ICDYL/K7yN/rXAKpEwmwZkccNQfbtLmxRARJy3Xw7AI2hIBm8dlwW
+ iDJYxkZpride6NMrVUvPsdW3NW29q32z15OC/g3+fzfZt2wWPySYP86uN
+ Q==;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
- header.from=linux.dev
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (1024-bit key,
- unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256
- header.s=key1 header.b=gEO4tuua
-Subject: Re: [Intel-wired-lan] [RFC PATCH v5] ethtool: add FEC bins
- histogramm report
+ header.from=intel.com
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=QZduVp4J
+Subject: [Intel-wired-lan] [PATCH iwl-next v7 0/2] ice: add E830 Earliest
+ TxTime First (ETF) offload support
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -104,45 +106,102 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On 18/08/2025 19:17, Carolina Jubran wrote:
-> 
-> 
-> On 15/08/2025 16:27, Vadim Fedorenko wrote:
->> diff --git a/include/linux/ethtool.h b/include/linux/ethtool.h
->> index de5bd76a400ca..6c0dc6ae080a8 100644
->> --- a/include/linux/ethtool.h
->> +++ b/include/linux/ethtool.h
->> @@ -492,7 +492,25 @@ struct ethtool_pause_stats {
->>   };
->>   #define ETHTOOL_MAX_LANES    8
->> +#define ETHTOOL_FEC_HIST_MAX    18
-> 
-> Could you clarify why it is set to 18?
-> AFAIU IEEE 802.3ck/df define 16 bins.
+This patch series introduces support for Earliest TxTime First (ETF)
+hardware offload on Intel E830 network devices. ETF allows applications
+to specify when packets should be transmitted, enabling precise timing
+control for time-sensitive networking applications.
 
-Yeah, the standard defines 16 bins, but this value came out of the
-discussion with Gal and Yael because the hardware supports more bins,
-I believe, in RDMA mode
+The implementation consists of two patches:
 
->> diff --git a/net/ethtool/fec.c b/net/ethtool/fec.c
->> index e7d3f2c352a34..9313bd17544fd 100644
->> --- a/net/ethtool/fec.c
->> +++ b/net/ethtool/fec.c
->> @@ -17,6 +17,7 @@ struct fec_reply_data {
->>           u64 stats[1 + ETHTOOL_MAX_LANES];
->>           u8 cnt;
->>       } corr, uncorr, corr_bits;
->> +    struct ethtool_fec_hist fec_stat_hist;
->>   };
->>   #define FEC_REPDATA(__reply_base) \
->> @@ -113,7 +114,11 @@ static int fec_prepare_data(const struct 
->> ethnl_req_info *req_base,
->>           struct ethtool_fec_stats stats;
->>           ethtool_stats_init((u64 *)&stats, sizeof(stats) / 8);
->> -        dev->ethtool_ops->get_fec_stats(dev, &stats);
->> +        ethtool_stats_init((u64 *)data->fec_stat_hist.values,
->> +                   ETHTOOL_MAX_LANES *
-> this should be ETHTOOL_FEC_HIST_MAX since we’re initializing the 
-> histogram bins array.
+1. A preparatory patch that moves queue pair enable/disable functions
+   from ice_xsk.c to ice_base.c for reuse by the ETF implementation.
 
-Yes, you're right, I'll change it in the next version
+2. The main ETF implementation that adds comprehensive support for
+   hardware-accelerated timestamp-based packet transmission.
+
+Key Features
+
+- Hardware offload for Earliest TxTime First (ETF) Qdisc
+- Per-queue configuration via tc-etf(8) 
+- Support for up to 2048 Tx queues with ETF capability
+- Timestamp ring mechanism for precise transmission timing
+- Dynamic enable/disable of ETF on individual queues
+
+Hardware Details
+
+E830 introduces a new Tx flow mechanism using a dedicated timestamp ring
+alongside the standard Tx ring. The timestamp ring contains descriptors
+that specify when hardware should transmit packets. Due to hardware
+limitations, additional timestamp descriptors are reserved when wrapping
+around the ring to prevent malicious driver detection events.
+
+Configuration
+
+ETF is configured per-queue using the standard tc-etf Qdisc (see
+tc-etf(8)).
+
+---
+Changelog
+v6->v7:
+ - Move tstamp_ring related member variables (tail, count, next_to_use,
+   desc) from ice_tx_ring to ice_tstamp_ring,
+ - Ignore ice_qp_dis() return value, and always attempt to enable the queue
+   via ice_qp_ena()
+v5->v6:
+ - Fixed resource leak in error path
+ - Added input validation
+ - Update error handling logic for disable failures
+ - Move ice_qp_* functions to preparatory patch, and add coverletter
+ - Address code style issues (u32 vs u16, code flattening)
+ - Propagate error status from ice_set_txq_ctx_vmvf
+ - Removed unnecessary RDMA compatibility checks
+v4->v5:
+ - Fix ! vs ~ issue reported by Smatch:
+   ice_txrx.c:192 ice_free_tx_tstamp_ring() warn: potential ! vs ~ typo
+v3->v4:
+ - Move ice_tstamp_ring to a member of ice_tx_ring (Maciej).
+  - Add struct ice_tstamp_ring for timestamp ring management.
+  - Move tstsmp ring fast patch variables to ice_tx_ring
+    (i.e. tstamp_[next_to_use|count|tail|desc]).
+  - Allocate/configure Tx Time on a per Tx ring basis using
+    ice_qp_[ena|dis], add txtime_txqs bitmap and ice_is_txtime_ena()
+    helper function, update all Tx ring and tstamp inrg allocation and
+    configuration flows.
+ - Update commit message related to updated implementation/design.
+v2->v3:
+ - Fix const compiler warning.
+ - Fix spelling error in function header.
+ - Fix Changelog version number.
+v1->v2:
+ - Resolve patch apply issue.
+ - Fixes RCT, zero struct initialization, move bailout condition to top
+   of function, removed unnecessary newlines, and added use of
+   str_enable_disable.
+v1: https://patchwork.ozlabs.org/project/intel-wired-lan/patch/20250227111333.30675-1-paul.greenwalt@intel.com/
+
+Paul Greenwalt (2):
+  ice: move ice_qp_[ena|dis] for reuse
+  ice: add E830 Earliest TxTime First Offload support
+
+ drivers/net/ethernet/intel/ice/ice.h          |  33 +-
+ .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  35 ++
+ drivers/net/ethernet/intel/ice/ice_base.c     | 390 ++++++++++++++++--
+ drivers/net/ethernet/intel/ice/ice_base.h     |   3 +
+ drivers/net/ethernet/intel/ice/ice_common.c   |  78 ++++
+ drivers/net/ethernet/intel/ice/ice_common.h   |   6 +
+ drivers/net/ethernet/intel/ice/ice_ethtool.c  |  14 +-
+ .../net/ethernet/intel/ice/ice_hw_autogen.h   |   3 +
+ .../net/ethernet/intel/ice/ice_lan_tx_rx.h    |  41 ++
+ drivers/net/ethernet/intel/ice/ice_lib.c      |   1 +
+ drivers/net/ethernet/intel/ice/ice_main.c     | 109 ++++-
+ drivers/net/ethernet/intel/ice/ice_txrx.c     | 173 +++++++-
+ drivers/net/ethernet/intel/ice/ice_txrx.h     |  15 +
+ drivers/net/ethernet/intel/ice/ice_txrx_lib.h |  14 +
+ drivers/net/ethernet/intel/ice/ice_virtchnl.c |   2 +-
+ drivers/net/ethernet/intel/ice/ice_xsk.c      | 153 +------
+ drivers/net/ethernet/intel/ice/ice_xsk.h      |  22 +
+ 17 files changed, 895 insertions(+), 197 deletions(-)
+
+-- 
+2.47.0
+
