@@ -4,95 +4,210 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 038D6CA0EE4
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 18 Aug 2025 12:39:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9BF7ACA0ED1
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 18 Aug 2025 14:03:05 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id CC8C441DD8;
-	Mon, 18 Aug 2025 12:39:36 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 69DE041DD7;
+	Mon, 18 Aug 2025 14:03:05 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id jKl_qFKBPJGn; Mon, 18 Aug 2025 12:39:36 +0000 (UTC)
+ id Xmdk7R8GX6vd; Mon, 18 Aug 2025 14:03:04 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E9D7841DEA
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org BE0B241DD8
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1755520776;
-	bh=QnMc2IBdOAOjpBBDXcmBoytk4Yr5OVWR1foBKZw497w=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1755525784;
+	bh=vVeJjlZRZN9OOmwVPA98fEdDziBWoHQAoh5EBConaMQ=;
+	h=Date:From:To:CC:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=3PX5tpgIiejxUY9RhPqR7s2X+oJcXMXUUAQuZ+aNpOIgfJRZ0l2ulgWGBOB8TIYab
-	 Y0wAs6MpOzFp0snhQDmK9DP1WS7PgspIlGthCaNI0FOyeG+GR7+lujgMZ8JcKu0iS2
-	 WMbSnYOq2AvYLkPZyTBWMyCE+t14wQc5e1xDNMQgtnAwk7a4gbqJGxtSHbnAazE/Ip
-	 dh4kwQAciWSSjN7cihl/2OhhluBFcr296RsgxNWhnrweNKC0/tzpJhhypwXAgoEAuO
-	 jEyDSQCP7xrvHKXH5wmu7CCiyu+W49SH7qMkUeP+LKO6JPq3+V/ic6vPKGiFxNi5fx
-	 SyJl6zu5AegqA==
+	 From;
+	b=PEYqh34Yp13lW016LdL8Y7cYGmrcH3zpggVWYS5T0uGFIrLt4HvBCJjYrP0fK9Opl
+	 +ZoTRUWCgUqT2gmON1zZ97t8You5/CqC0bEzG4kbVdZXy8LAQuv7ub+PFLzHhJzl7U
+	 Mgi32FMeQNAsOpZCRWiDaVelzgP/DJid6YcpqqiYYo04ezXST4pR8tFMYoA1M+XYJv
+	 rEgiSNsh7vZUgfMVcSmxEOJFfFaoVYFVXJTeqxXnudinsBgCUnR2dTgW8Bkoy/J5w6
+	 sr+1XT4zblgWuQJhxNlvAEdJ5MwtUcpHvutBHVxI25gU5NFhnUu9HVssBxN5Ot3cnO
+	 2S4OeJtH0oICg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id E9D7841DEA;
-	Mon, 18 Aug 2025 12:39:35 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id 936DE75
- for <intel-wired-lan@lists.osuosl.org>; Mon, 18 Aug 2025 12:39:34 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id BE0B241DD8;
+	Mon, 18 Aug 2025 14:03:04 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 201DCE2
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 18 Aug 2025 14:03:03 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 79D9E61AD4
- for <intel-wired-lan@lists.osuosl.org>; Mon, 18 Aug 2025 12:39:34 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 1146B61BBF
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 18 Aug 2025 14:03:03 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id SGRhILSRw6eG for <intel-wired-lan@lists.osuosl.org>;
- Mon, 18 Aug 2025 12:39:33 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.8;
- helo=mgamail.intel.com; envelope-from=aleksandr.loktionov@intel.com;
+ id vTyhRxykVjFz for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 18 Aug 2025 14:03:02 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.10;
+ helo=mgamail.intel.com; envelope-from=maciej.fijalkowski@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 9C7ED61B20
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 9C7ED61B20
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.8])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 9C7ED61B20
- for <intel-wired-lan@lists.osuosl.org>; Mon, 18 Aug 2025 12:39:33 +0000 (UTC)
-X-CSE-ConnectionGUID: 8C9qCjBSTAS7FFPloUbGQA==
-X-CSE-MsgGUID: VdBb3n+VS1GNejo4YbY88g==
-X-IronPort-AV: E=McAfee;i="6800,10657,11526"; a="75309146"
-X-IronPort-AV: E=Sophos;i="6.17,293,1747724400"; d="scan'208";a="75309146"
-Received: from orviesa005.jf.intel.com ([10.64.159.145])
- by fmvoesa102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 18 Aug 2025 05:39:33 -0700
-X-CSE-ConnectionGUID: MDnWOlo7TnaE7OHI8lzLLw==
-X-CSE-MsgGUID: UJbDV6HZSeWe5QeuSjw+1g==
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 3031D61B1F
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3031D61B1F
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.10])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 3031D61B1F
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 18 Aug 2025 14:03:01 +0000 (UTC)
+X-CSE-ConnectionGUID: QOtpeMM8QKeU9Unj3KOrkA==
+X-CSE-MsgGUID: ORBKYERwTZuzgiJPdY7zaQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11526"; a="75201429"
+X-IronPort-AV: E=Sophos;i="6.17,293,1747724400"; d="scan'208";a="75201429"
+Received: from fmviesa010.fm.intel.com ([10.60.135.150])
+ by orvoesa102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 18 Aug 2025 07:03:02 -0700
+X-CSE-ConnectionGUID: yRMByuD7Rsa2NWszfBeM4A==
+X-CSE-MsgGUID: jLlbV5TsRk2xzbUFxc2p1g==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.17,293,1747724400"; d="scan'208";a="172906336"
-Received: from amlin-019-225.igk.intel.com ([10.102.19.225])
- by orviesa005.jf.intel.com with ESMTP; 18 Aug 2025 05:39:31 -0700
-From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-To: intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com,
- aleksandr.loktionov@intel.com
-Date: Mon, 18 Aug 2025 12:39:17 +0000
-Message-ID: <20250818123918.238640-6-aleksandr.loktionov@intel.com>
-X-Mailer: git-send-email 2.49.0
-In-Reply-To: <20250818123918.238640-1-aleksandr.loktionov@intel.com>
-References: <20250818123918.238640-1-aleksandr.loktionov@intel.com>
+X-IronPort-AV: E=Sophos;i="6.17,293,1747724400"; d="scan'208";a="168392136"
+Received: from fmsmsx902.amr.corp.intel.com ([10.18.126.91])
+ by fmviesa010.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 18 Aug 2025 07:03:01 -0700
+Received: from FMSMSX903.amr.corp.intel.com (10.18.126.92) by
+ fmsmsx902.amr.corp.intel.com (10.18.126.91) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.17; Mon, 18 Aug 2025 07:03:00 -0700
+Received: from fmsedg903.ED.cps.intel.com (10.1.192.145) by
+ FMSMSX903.amr.corp.intel.com (10.18.126.92) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.17 via Frontend Transport; Mon, 18 Aug 2025 07:03:00 -0700
+Received: from NAM11-CO1-obe.outbound.protection.outlook.com (40.107.220.62)
+ by edgegateway.intel.com (192.55.55.83) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.17; Mon, 18 Aug 2025 07:03:00 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=t+3vsE29qzTCDZDRm29l3m7G4sTFdNYzowL8pxqOba6i3/kdtZ2PDTgAiaTFyb2Ye9mnBZBPOc3tjzGJPvJB1K9eJMNsRQjpvwoXldXzr7u4dybdITrsdDR6cjSbjyY1PnTbjGPc5T5ohgw7SyIaXtgT4yC6P43CQPWC8D/dPgE3oU2VQ3lqBdO81f6d7SoEhmaty5c+ixOOHgxHb1Jz9kFfawmq8L4R9XCdpxnq8cBJTyktNvwDJJHH/NO6X8tkl07VzwiVgkUfnRGw64/0dH9DBhxM2imy0Pls9KpxitR8wTvQ6XyJP6bnSIagAp3ydovvDlAgCPuwlAmictMixg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=vVeJjlZRZN9OOmwVPA98fEdDziBWoHQAoh5EBConaMQ=;
+ b=mdEyt3RA9CHgS3S2JNmr/XFuXPxSPnkeXW/CaMZxiPc5iKqbeFFvgtl7K4W3RzhiZIaEwLkdtUSap/vDAKVKvZS43FZAIa3bln62IrFgAaN0F8AeqHHWCvOC29iM7CtL3CI6YhaM5IgUUP+tRWTzvhHk2DHOLQCMdpUdnsExAyqpDXVYGaY63i0LI95xAs/HIj+1K+w8v5rYBFKfcztwRNetfG4YfQzuX+u1kCtSb1K+0I+H0DzE8s9beGSo4c2XomQd9YLfVBK0EBfeo/UdFbcXYzOeS2BI3UimlwEzCCMN9anOI2Vm/B6y651un4k/X0X2z08mKi7613uJAINsSg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Received: from DM4PR11MB6117.namprd11.prod.outlook.com (2603:10b6:8:b3::19) by
+ IA0PR11MB7356.namprd11.prod.outlook.com (2603:10b6:208:432::6) with
+ Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.9031.24; Mon, 18 Aug 2025 14:02:58 +0000
+Received: from DM4PR11MB6117.namprd11.prod.outlook.com
+ ([fe80::d19:56fe:5841:77ca]) by DM4PR11MB6117.namprd11.prod.outlook.com
+ ([fe80::d19:56fe:5841:77ca%4]) with mapi id 15.20.9031.021; Mon, 18 Aug 2025
+ 14:02:57 +0000
+Date: Mon, 18 Aug 2025 16:02:48 +0200
+From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+To: "Greenwalt, Paul" <paul.greenwalt@intel.com>
+CC: <intel-wired-lan@lists.osuosl.org>, Aleksandr Loktionov
+ <aleksandr.loktionov@intel.com>
+Message-ID: <aKMyiElfLyqdnqUl@boxer>
+References: <20250811084406.211660-1-paul.greenwalt@intel.com>
+ <20250811084406.211660-3-paul.greenwalt@intel.com>
+ <aJtadxgEiPQXfRl4@boxer>
+ <8f4403b8-493f-4745-88d2-1f9253646eed@intel.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <8f4403b8-493f-4745-88d2-1f9253646eed@intel.com>
+X-ClientProxiedBy: WA0P291CA0007.POLP291.PROD.OUTLOOK.COM
+ (2603:10a6:1d0:1::11) To DM4PR11MB6117.namprd11.prod.outlook.com
+ (2603:10b6:8:b3::19)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DM4PR11MB6117:EE_|IA0PR11MB7356:EE_
+X-MS-Office365-Filtering-Correlation-Id: 7b37a7d5-a5b2-47d6-2d4f-08ddde5fef5f
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;ARA:13230040|366016|1800799024|376014;
+X-Microsoft-Antispam-Message-Info: =?us-ascii?Q?RY2z2HYfL8tyt7vNGOxij1OjfgTfKRLx6W4LIChD7uaWI++/ctMLXMF8yQ2w?=
+ =?us-ascii?Q?lNB0iO+swoLUBAddpjA1RgLh4BehuI3PzHYPdwRu8iS+JOcACDpugU9HALFy?=
+ =?us-ascii?Q?CEmBfrY/ODd0JJFkg5U2/JkJ4NlrcBu6HH1ijREmixiLdk+pxJW/pQXBr6wb?=
+ =?us-ascii?Q?2TDuGOwbhjcEXdAmnMNNWO4apUcjQPjph+r7MetXoj5hk6nVcz8XtJgDWFa2?=
+ =?us-ascii?Q?rd2aWpuRZSNpMz7Nx1iBFYs+wMDp1y+zO1Bkg32uq8NxtNPNNk0oidX8LeWX?=
+ =?us-ascii?Q?YS7Xy7itOiDPeGuJR6SaRdJ4LGZIeRjyw9TbYjkLIM6MZ8rJKJMhC7+TlPGh?=
+ =?us-ascii?Q?/3/n19Rq75ApZ2//cg+ollWgUN45Fr2Y8+vRcI9DBanB5Xt0Ja0dDCX9gbm4?=
+ =?us-ascii?Q?iompcnOJ/TRnSFPWxPifZ0TZhu7LV7jQIjh8vzZgpysUNqPvu8ybErxz/iTJ?=
+ =?us-ascii?Q?60qvs2Lh+jN1RUIAbwP8yfafljdGqVwC9r8QoYB1FmcN8T1mH1wPd27j9+h7?=
+ =?us-ascii?Q?N3BnbjkGOpvTa5H74p1bc2SSbWQLChWQJC8wFbKSCK/ChlffHv7zuXs/2o2U?=
+ =?us-ascii?Q?gesKA/K6a5Zb6rr4rYBlELD5ErrnW3WAFeSqHGHJPeMhmOmVo0CXTFUZXHCL?=
+ =?us-ascii?Q?SuVQVVI0MhyDtgefglrKbZGz6pf0+VRWsA4vSWQ1P29/2hoZ/VuSCc7us68q?=
+ =?us-ascii?Q?0+Z3oiSxIn3fnOvAzOm/e8CEBWJWdAF2Z7Qk7R6rJypWQcR37sJib0e9havS?=
+ =?us-ascii?Q?m2mX/a9/ot22vzF9RD+C5zODIo5idis2o5AqKTVMf2MmOsHoFdbh7NwB3TUW?=
+ =?us-ascii?Q?XdYAlJhzFHUmlb9can8iDubXYjOcbQyiOR2hlmsOqljJeQNCPpuczHHhOywT?=
+ =?us-ascii?Q?OVAt9KPqn6a7XoGvk/MZ4cMTHX2JV9r/nrQe9XZa7SjdsAuMjZ+f6v5wer3b?=
+ =?us-ascii?Q?kehr6nfxuxJ4eQoQ1OZLytUoo2pjU/uHR1f3867CCgwIE6Hn2N1PbKNOfB3K?=
+ =?us-ascii?Q?Ko/UfANtiDzc4fZNjJRU+ewC5vGJMRc0GZZ2o29jsRlolkNW7fCodAoHFTPG?=
+ =?us-ascii?Q?0/nsRFNntiZurrBLMxTPuHhwvBHzDAF4VvJKmKDRIDB1TK4EBCgB6ER2rEqU?=
+ =?us-ascii?Q?jWJQ4Apry78EpJIiTbsm+SaiJfa1FmUNdTyiG6aogC1wHg3frpkXnMvdRTMz?=
+ =?us-ascii?Q?3ZeN9shF+IyTTmI6LGfxM/9beNgDIb4SWteQgeJcSkWt4LPQf1x3RX5kJ1J/?=
+ =?us-ascii?Q?94T9qXmdXmmt9m/MsOeYPlef9BmZF2voRcaI5l22mgvfXE8boLnpC+16VSJ/?=
+ =?us-ascii?Q?xn4G7jr97iolgJEkUxqq9j1Jw1R+iarW1yQUJySqpg+npZIMnyi/3LprCDzC?=
+ =?us-ascii?Q?NV6ncQYYk2CxaIFb+PNNGX/4qCebLx6Q6RzbVu0s1E2bSm1ZvtB5SWFJHkce?=
+ =?us-ascii?Q?91fiOiywnII=3D?=
+X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:DM4PR11MB6117.namprd11.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(13230040)(366016)(1800799024)(376014); DIR:OUT; SFP:1101; 
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?Gf7AJVO16+AFwQFLNLiAOwGWADe3oT4tSZ9mUTS6j8Oprbbp0tz4eDT/0ld4?=
+ =?us-ascii?Q?GYddX0FiPKHpz9mbs8Gb7piCLzhQiH5OXa6RmAQR9GxKxEDRZwHmjAAMiAUH?=
+ =?us-ascii?Q?Kzzcb5gbPnb4Qi85Vs9dvA848G0ICWi9He4Dw7KTAqnqBt/ABBJZhsFwckt1?=
+ =?us-ascii?Q?AHMeWq2IUUnd3F8cukv9EtQr5BkSckuQQ4MH0vNcQ6EjSQGRGkHGib+hc9k/?=
+ =?us-ascii?Q?g522d3i30nb+wmrCI+F8SCTf6YwTGt7u6rbyrrsaTAmIjtioSg/1pu9DCsRM?=
+ =?us-ascii?Q?xNX/Tlxf4mxrvkKxV18v4zAfMPEkyrNHKS40ALTK4DmTY6ZUm+M5KjwCmXq9?=
+ =?us-ascii?Q?NUdl0TWLCbbGRyQwlccJlIWGwWoCxYrg0mxcR0vMmQB1947wv86MH1KyZ34a?=
+ =?us-ascii?Q?xz/rPHF2evp+N65Y7tVPGxvETA1KJ00Qf7+eFn+S7oDseQgqKg1T+BOhqnsI?=
+ =?us-ascii?Q?fZWmmqZlBX4Hoq0EqDTOFmBq4rVSRb7Cy4xGbRZeA/cUs9A/PXdXn5xzLLtb?=
+ =?us-ascii?Q?Ovilehn+HnP493nr08Rwpob0kqxm6Af9vNM/fh0L6WW6V9f5llyUfcZ79Jvu?=
+ =?us-ascii?Q?wO7lvyG3Q72aTR8+8pP2ZqITEYuHQ8WAXuUVB5rblQh+JD5emlbDry3IfUTu?=
+ =?us-ascii?Q?Lt+qOZbfvTgs3SNLZ54MeLpjwvxGlKXh3UQuf6yRU0eJHX999UI5whQi4F25?=
+ =?us-ascii?Q?RS51Z2hTsr+2LhlpivkhhSW7j61BmLOC3BMJyxJH89cb0BVeJBPzLvBB4NH4?=
+ =?us-ascii?Q?KmLSn/pR8CvW+XqqevfzLYCe3kOoTfD+lYJTPcXZplzVk6KEUlnWtLte0Mfl?=
+ =?us-ascii?Q?piZsXpstajGCIK7GQwL8REnUkFAhFYF5ytyDoaQzLsj/LgdCjpiJlkjPE+TY?=
+ =?us-ascii?Q?hghS4+LZpCoCEKL2MNErrULbgxykUgzrDrLcpckD+6U6JzDl8i6zbGjicMRj?=
+ =?us-ascii?Q?Wu7abhUK5r+IGDyO+U4OsIUopY4fTNRkpOEfxrJef8lFu0uF77YM9ApIwFKN?=
+ =?us-ascii?Q?37yU4ad1fgw4ZTTV1+ms4GDElM8cZIqFLVKwSnBHsF+Qk0MeDO8YbdTDkZCO?=
+ =?us-ascii?Q?epX83N6xa5jVCjh9jJhBPMDfN5RB7Yoa+VsgBioAQ/qKKYcvGNL9m5c0E1VL?=
+ =?us-ascii?Q?lcp3+z1S3lzaeMaLRcCx+6k9M4y1Xu1LUbxA9fLHtgm9WsDjtmfyA55+WjGh?=
+ =?us-ascii?Q?4NQr8yWde9pUPCrkhcDLOM58QqHd2hv+pTT7rVyBVLf2pjIVEcySa83jIpf+?=
+ =?us-ascii?Q?4jq+mwRKakccjAvqNUN5DN8GAZdsRZsuPQ2wTXL1D/pMwngQeOAEZntt+V1y?=
+ =?us-ascii?Q?WHXFWnzaBL7YhnKz6VnT8s0Sz/wl4dHML1uYBPRBkd6TlWdX2PbWNf9UEoYY?=
+ =?us-ascii?Q?MS1XHHJsYg/S1JKIS3JFe4nh7MyvGcQ7dFmcwvztpAukh0NRldWsggDwWWRu?=
+ =?us-ascii?Q?KuEAWjBzeyQXJX3CYWJ47fyI4ZidBApoI+Jla94hHEmhtEZy0HT/+TyyG+70?=
+ =?us-ascii?Q?JJrS7yPaauPhTMqFFdxZgMB/PxxVs5YXDYXxeE+rBrSMv0qKLw5PoGSB8ZKu?=
+ =?us-ascii?Q?ZQB9BCLKe9h+ycbWV1jr4OaOmXT3uREo5jBTRZqKq/tUYs1ubyLgUxYDO5t+?=
+ =?us-ascii?Q?DA=3D=3D?=
+X-MS-Exchange-CrossTenant-Network-Message-Id: 7b37a7d5-a5b2-47d6-2d4f-08ddde5fef5f
+X-MS-Exchange-CrossTenant-AuthSource: DM4PR11MB6117.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 Aug 2025 14:02:57.7960 (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 3WQX8aGL2hKtKX5l/qqASwII2gDfQqrzov1U99NUEW3TABHFaMWOZk6ZNAEY855kGOhwaw1PfTTQGQ/5rFevFjsNzbgce/3AwT6XoMxReq0=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA0PR11MB7356
+X-OriginatorOrg: intel.com
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1755520774; x=1787056774;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=lA5wa2YFp5w2hkyXw8VgYV2nkih922u6tmgaB7m2bd4=;
- b=Vt0Dry0tUIVzN/LvaQcu3I5Tkrb/14IXOsrK8fk0oaXIlak4c4DMflqG
- Fep7vlFCU2w/avdJlj/r4CpUuVgrJRLDDbRCTLJC1EwbmhmzNh+B2LSMD
- naZja9/waXV3HAFIEdFljQrP9t0+yG+Ikw1VzCo/g91yoAGJo4GCjVOGt
- HjZRC92ey0cmaRo8pt/JX6fCejYaOLzgKlGJ9nc4OT/qaKGcv9TXzkSkm
- XFPFDt7rkDg1ifASToYGa8HcHYolThypjggJrvIBkprsX4PdIPJoFV4Vr
- u+AmaLicltOReXLThcS+/Ge4dXLcgair/avPvjbPv/GFo/i0I9aQJCLeM
+ t=1755525783; x=1787061783;
+ h=date:from:to:cc:subject:message-id:references:
+ in-reply-to:mime-version;
+ bh=krlQ9yLSUsmr13JxIHzq+v4T9vJq4I3pp/jNCxK3ZZc=;
+ b=PLqHge+80dj2PMj53N0ia75sDZ1t6whrlHZLwUP2Ds31/cwrBdE6MD/D
+ WSV/GL7Jh85d0m+C0/NqnRTupZNthQ9QjfLP/9Rzx+xHVFI3NGEgjvJXg
+ L7vX5SGHVoAYXVGUkfiaL0KUf6h4dufyFhAqSQN+toS101t57RwZJ7jWc
+ s6+kG8w2LKQG+6/3tkmJYnTzQaJnqf5rmaKYU8ZWOfHGHqteaMwHuoxkD
+ WY3N2ExGkksFnN42wBVT76ZhGai4L95fr8ELR2xwKycWQ9ls95u1mBgkD
+ KrcGSu+n7J78ZHUBv0bZEbpY+TS6ZhClSL/aLCwhhIeFwDy1gnkxteSfg
  Q==;
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=Vt0Dry0t
-Subject: [Intel-wired-lan] [PATCH iwl-next v2 5/5] iavf: add RSS support for
- GTP protocol via ethtool
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=PLqHge+8
+X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next v6 2/2] ice: add E830
+ Earliest TxTime First Offload support
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -105,387 +220,156 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, Jedrzej Jagielski <jedrzej.jagielski@intel.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Extend the iavf driver to support Receive Side Scaling (RSS)
-configuration for GTP (GPRS Tunneling Protocol) flows using ethtool.
+On Wed, Aug 13, 2025 at 11:32:10AM -0700, Greenwalt, Paul wrote:
+> 
+> 
+> On 8/12/2025 8:15 AM, Maciej Fijalkowski wrote:
+> > On Mon, Aug 11, 2025 at 04:44:06AM -0400, Paul Greenwalt wrote:
+> > 
+> >>  
+> >> +/**
+> >> + * ice_cfg_txtime - configure Tx Time for the Tx ring
+> >> + * @tx_ring: pointer to the Tx ring structure
+> >> + *
+> >> + * Return: 0 on success, negative value on failure.
+> >> + */
+> >> +static int ice_cfg_txtime(struct ice_tx_ring *tx_ring)
+> >> +{
+> >> +	int err, timeout = 50;
+> >> +	struct ice_vsi *vsi;
+> >> +	struct device *dev;
+> >> +	struct ice_pf *pf;
+> >> +	u32 queue;
+> >> +
+> >> +	if (!tx_ring)
+> >> +		return -EINVAL;
+> >> +
+> >> +	vsi = tx_ring->vsi;
+> >> +	pf = vsi->back;
+> >> +	while (test_and_set_bit(ICE_CFG_BUSY, pf->state)) {
+> >> +		timeout--;
+> >> +		if (!timeout)
+> >> +			return -EBUSY;
+> >> +		usleep_range(1000, 2000);
+> >> +	}
+> >> +
+> >> +	queue = tx_ring->q_index;
+> >> +	dev = ice_pf_to_dev(pf);
+> >> +	err = ice_qp_dis(vsi, queue);
+> >> +	if (err) {
+> >> +		dev_err(dev, "Failed to disable Tx queue %d for TxTime configuration\n",
+> >> +			queue);
+> >> +		goto exit;
+> > 
+> > nit: in this case you leave queue pair in limbo state. i would be trying
+> > to bring it up regardless whether disable succeeded.
+> > 
+> 
+> I will make this change.
+> 
+> > 
+> > (...)
+> > 
+> >>  
+> >>  dma_error:
+> >> diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.h b/drivers/net/ethernet/intel/ice/ice_txrx.h
+> >> index 2fd8e78178a2..be74851eadd4 100644
+> >> --- a/drivers/net/ethernet/intel/ice/ice_txrx.h
+> >> +++ b/drivers/net/ethernet/intel/ice/ice_txrx.h
+> >> @@ -310,6 +310,12 @@ enum ice_dynamic_itr {
+> >>  #define ICE_TX_LEGACY	1
+> >>  
+> >>  /* descriptor ring, associated with a VSI */
+> >> +struct ice_tstamp_ring {
+> >> +	struct ice_tx_ring *tx_ring;	/* Backreference to associated Tx ring */
+> >> +	dma_addr_t dma;			/* physical address of ring */
+> >> +	struct rcu_head rcu;            /* to avoid race on free */
+> >> +} ____cacheline_internodealigned_in_smp;
+> >> +
+> >>  struct ice_rx_ring {
+> >>  	/* CL1 - 1st cacheline starts here */
+> >>  	void *desc;			/* Descriptor ring memory */
+> >> @@ -387,11 +393,22 @@ struct ice_tx_ring {
+> >>  	struct xsk_buff_pool *xsk_pool;
+> >>  	u16 next_to_use;
+> >>  	u16 next_to_clean;
+> >> +	u16 tstamp_next_to_use;		/* Time stamp ring next to use */
+> >> +	u16 tstamp_count;		/* Time stamp ring descriptors count */
+> >> +	u8 __iomem *tstamp_tail;	/* Time stamp ring tail pointer */
+> >> +	void *tstamp_desc;		/* Time stamp descriptor ring memory */
+> > 
+> > we spoke about putting these onto ice_tstamp_ring...if i am reading this
+> > right you want to avoid touching ice_tstamp_ring in hot-path - is that
+> > correct?
+> > 
+> 
+> The time stamp ring next_to_use, count and *desc can be moved into the
+> struct ice_tstamp_ring. The reasoning for place them in the ice_tx_ring
+> 2nd cacheline was to avoid possible cache misses.
 
-The implementation introduces new RSS flow segment headers and hash field
-definitions for various GTP encapsulations, including:
+Paul, from my perspective scoping everything in ice_tstamp_ring and
+putting pointer to it on hot cacheline would be easier to follow,
+code-wise. However, if you might be having any data that would back your
+concerns or if you still insist on keeping the struct layout you're
+proposing here then let us have a comment describing the reason behind
+this design?
 
-  - GTPC
-  - GTPU (IP, Extension Header, Uplink, Downlink)
-  - TEID-based hashing
+> 
+> > if that ring is etf-enabled then does it ever process the normal tx
+> > traffic? what i'm trying to ask is whether you considered putting these
+> > members onto union with next_to_use, count and *desc.
+> > 
+> 
+> The E830 ETF support requires the use of the Tx ring (i.e. next_to_use,
+> count, and *desc) as well as the need for a new time stamp ring. The
+> time stamp ring contains a the time stamp and a reference to the Tx ring
+> descriptor, so both rings are used when etf-enabled.
 
-The ethtool interface is updated to parse and apply these new flow types
-and hash fields, enabling fine-grained traffic distribution for GTP-based
-mobile workloads.
+ok, sorry for brain fart on my side here.
 
-This enhancement improves performance and scalability for virtualized
-network functions (VNFs) and user plane functions (UPFs) in 5G and LTE
-deployments.
-
-Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Reviewed-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
----
- .../net/ethernet/intel/iavf/iavf_adv_rss.c    | 119 ++++++++++++++----
- .../net/ethernet/intel/iavf/iavf_adv_rss.h    |  31 +++++
- .../net/ethernet/intel/iavf/iavf_ethtool.c    |  89 +++++++++++++
- 3 files changed, 216 insertions(+), 23 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_adv_rss.c b/drivers/net/ethernet/intel/iavf/iavf_adv_rss.c
-index a9e1da3..cd61abd 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_adv_rss.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_adv_rss.c
-@@ -90,6 +90,55 @@ iavf_fill_adv_rss_sctp_hdr(struct virtchnl_proto_hdr *hdr, u64 hash_flds)
- 		VIRTCHNL_ADD_PROTO_HDR_FIELD_BIT(hdr, SCTP, DST_PORT);
- }
- 
-+/**
-+ * iavf_fill_adv_rss_gtp_hdr - Fill GTP-related RSS protocol headers
-+ * @proto_hdrs: pointer to the virtchnl protocol headers structure to populate
-+ * @packet_hdrs: bitmask of packet header types to configure
-+ * @hash_flds: RSS hash field configuration
-+ *
-+ * This function populates the virtchnl protocol header structure with
-+ * appropriate GTP-related header types based on the specified packet_hdrs.
-+ * It supports GTPC, GTPU with extension headers, and uplink/downlink PDU
-+ * types. For certain GTPU types, it also appends an IPv4 header to enable
-+ * hashing on the destination IP address.
-+ *
-+ * Return: 0 on success or -EOPNOTSUPP if the packet_hdrs value is unsupported.
-+ */
-+static int
-+iavf_fill_adv_rss_gtp_hdr(struct virtchnl_proto_hdrs *proto_hdrs,
-+			  u32 packet_hdrs, u64 hash_flds)
-+{
-+	struct virtchnl_proto_hdr *hdr;
-+
-+	hdr = &proto_hdrs->proto_hdr[proto_hdrs->count - 1];
-+
-+	switch (packet_hdrs & IAVF_ADV_RSS_FLOW_SEG_HDR_GTP) {
-+	case IAVF_ADV_RSS_FLOW_SEG_HDR_GTPC_TEID:
-+	case IAVF_ADV_RSS_FLOW_SEG_HDR_GTPC:
-+		VIRTCHNL_SET_PROTO_HDR_TYPE(hdr, GTPC);
-+		break;
-+	case IAVF_ADV_RSS_FLOW_SEG_HDR_GTPU_EH:
-+		VIRTCHNL_SET_PROTO_HDR_TYPE(hdr, GTPU_EH);
-+		break;
-+	case IAVF_ADV_RSS_FLOW_SEG_HDR_GTPU_UP:
-+		VIRTCHNL_SET_PROTO_HDR_TYPE(hdr, GTPU_EH_PDU_UP);
-+		hdr = &proto_hdrs->proto_hdr[proto_hdrs->count++];
-+		iavf_fill_adv_rss_ip4_hdr(hdr, IAVF_ADV_RSS_HASH_FLD_IPV4_DA);
-+		break;
-+	case IAVF_ADV_RSS_FLOW_SEG_HDR_GTPU_DWN:
-+		VIRTCHNL_SET_PROTO_HDR_TYPE(hdr, GTPU_EH_PDU_DWN);
-+		fallthrough;
-+	case IAVF_ADV_RSS_FLOW_SEG_HDR_GTPU_IP:
-+		hdr = &proto_hdrs->proto_hdr[proto_hdrs->count++];
-+		iavf_fill_adv_rss_ip4_hdr(hdr, IAVF_ADV_RSS_HASH_FLD_IPV4_DA);
-+		break;
-+	default:
-+		return -EOPNOTSUPP;
-+	}
-+
-+	return 0;
-+}
-+
- /**
-  * iavf_fill_adv_rss_cfg_msg - fill the RSS configuration into virtchnl message
-  * @rss_cfg: the virtchnl message to be filled with RSS configuration setting
-@@ -103,6 +152,8 @@ int
- iavf_fill_adv_rss_cfg_msg(struct virtchnl_rss_cfg *rss_cfg,
- 			  u32 packet_hdrs, u64 hash_flds, bool symm)
- {
-+	const u32 packet_l3_hdrs = packet_hdrs & IAVF_ADV_RSS_FLOW_SEG_HDR_L3;
-+	const u32 packet_l4_hdrs = packet_hdrs & IAVF_ADV_RSS_FLOW_SEG_HDR_L4;
- 	struct virtchnl_proto_hdrs *proto_hdrs = &rss_cfg->proto_hdrs;
- 	struct virtchnl_proto_hdr *hdr;
- 
-@@ -113,31 +164,41 @@ iavf_fill_adv_rss_cfg_msg(struct virtchnl_rss_cfg *rss_cfg,
- 
- 	proto_hdrs->tunnel_level = 0;	/* always outer layer */
- 
--	hdr = &proto_hdrs->proto_hdr[proto_hdrs->count++];
--	switch (packet_hdrs & IAVF_ADV_RSS_FLOW_SEG_HDR_L3) {
--	case IAVF_ADV_RSS_FLOW_SEG_HDR_IPV4:
--		iavf_fill_adv_rss_ip4_hdr(hdr, hash_flds);
--		break;
--	case IAVF_ADV_RSS_FLOW_SEG_HDR_IPV6:
--		iavf_fill_adv_rss_ip6_hdr(hdr, hash_flds);
--		break;
--	default:
--		return -EINVAL;
-+	if (packet_l3_hdrs) {
-+		hdr = &proto_hdrs->proto_hdr[proto_hdrs->count++];
-+		switch (packet_l3_hdrs) {
-+		case IAVF_ADV_RSS_FLOW_SEG_HDR_IPV4:
-+			iavf_fill_adv_rss_ip4_hdr(hdr, hash_flds);
-+			break;
-+		case IAVF_ADV_RSS_FLOW_SEG_HDR_IPV6:
-+			iavf_fill_adv_rss_ip6_hdr(hdr, hash_flds);
-+			break;
-+		default:
-+			return -EINVAL;
-+		}
- 	}
- 
--	hdr = &proto_hdrs->proto_hdr[proto_hdrs->count++];
--	switch (packet_hdrs & IAVF_ADV_RSS_FLOW_SEG_HDR_L4) {
--	case IAVF_ADV_RSS_FLOW_SEG_HDR_TCP:
--		iavf_fill_adv_rss_tcp_hdr(hdr, hash_flds);
--		break;
--	case IAVF_ADV_RSS_FLOW_SEG_HDR_UDP:
--		iavf_fill_adv_rss_udp_hdr(hdr, hash_flds);
--		break;
--	case IAVF_ADV_RSS_FLOW_SEG_HDR_SCTP:
--		iavf_fill_adv_rss_sctp_hdr(hdr, hash_flds);
--		break;
--	default:
--		return -EINVAL;
-+	if (packet_l4_hdrs) {
-+		hdr = &proto_hdrs->proto_hdr[proto_hdrs->count++];
-+		switch (packet_l4_hdrs) {
-+		case IAVF_ADV_RSS_FLOW_SEG_HDR_TCP:
-+			iavf_fill_adv_rss_tcp_hdr(hdr, hash_flds);
-+			break;
-+		case IAVF_ADV_RSS_FLOW_SEG_HDR_UDP:
-+			iavf_fill_adv_rss_udp_hdr(hdr, hash_flds);
-+			break;
-+		case IAVF_ADV_RSS_FLOW_SEG_HDR_SCTP:
-+			iavf_fill_adv_rss_sctp_hdr(hdr, hash_flds);
-+			break;
-+		default:
-+			return -EINVAL;
-+		}
-+	}
-+
-+	if (packet_hdrs & IAVF_ADV_RSS_FLOW_SEG_HDR_GTP) {
-+		hdr = &proto_hdrs->proto_hdr[proto_hdrs->count++];
-+		if (iavf_fill_adv_rss_gtp_hdr(proto_hdrs, packet_hdrs, hash_flds))
-+			return -EINVAL;
- 	}
- 
- 	return 0;
-@@ -186,6 +247,8 @@ iavf_print_adv_rss_cfg(struct iavf_adapter *adapter, struct iavf_adv_rss *rss,
- 		proto = "UDP";
- 	else if (packet_hdrs & IAVF_ADV_RSS_FLOW_SEG_HDR_SCTP)
- 		proto = "SCTP";
-+	else if (packet_hdrs & IAVF_ADV_RSS_FLOW_SEG_HDR_GTP)
-+		proto = "GTP";
- 	else
- 		return;
- 
-@@ -211,6 +274,16 @@ iavf_print_adv_rss_cfg(struct iavf_adapter *adapter, struct iavf_adv_rss *rss,
- 			 IAVF_ADV_RSS_HASH_FLD_UDP_DST_PORT |
- 			 IAVF_ADV_RSS_HASH_FLD_SCTP_DST_PORT))
- 		strcat(hash_opt, "dst port,");
-+	if (hash_flds & (IAVF_ADV_RSS_HASH_FLD_GTPC_TEID | IAVF_ADV_RSS_HASH_FLD_GTPC_TEID))
-+		strcat(hash_opt, "gtp-c,");
-+	if (hash_flds & IAVF_ADV_RSS_HASH_FLD_GTPU_IP_TEID)
-+		strcat(hash_opt, "gtp-u ip,");
-+	if (hash_flds & IAVF_ADV_RSS_HASH_FLD_GTPU_EH_TEID)
-+		strcat(hash_opt, "gtp-u ext,");
-+	if (hash_flds & IAVF_ADV_RSS_HASH_FLD_GTPU_UP_TEID)
-+		strcat(hash_opt, "gtp-u ul,");
-+	if (hash_flds & IAVF_ADV_RSS_HASH_FLD_GTPU_DWN_TEID)
-+		strcat(hash_opt, "gtp-u dl,");
- 
- 	if (!action)
- 		action = "";
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_adv_rss.h b/drivers/net/ethernet/intel/iavf/iavf_adv_rss.h
-index e31eb2a..74cc9e0 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_adv_rss.h
-+++ b/drivers/net/ethernet/intel/iavf/iavf_adv_rss.h
-@@ -22,6 +22,12 @@ enum iavf_adv_rss_flow_seg_hdr {
- 	IAVF_ADV_RSS_FLOW_SEG_HDR_TCP	= 0x00000004,
- 	IAVF_ADV_RSS_FLOW_SEG_HDR_UDP	= 0x00000008,
- 	IAVF_ADV_RSS_FLOW_SEG_HDR_SCTP	= 0x00000010,
-+	IAVF_ADV_RSS_FLOW_SEG_HDR_GTPC		= 0x00000400,
-+	IAVF_ADV_RSS_FLOW_SEG_HDR_GTPC_TEID	= 0x00000800,
-+	IAVF_ADV_RSS_FLOW_SEG_HDR_GTPU_IP	= 0x00001000,
-+	IAVF_ADV_RSS_FLOW_SEG_HDR_GTPU_EH	= 0x00002000,
-+	IAVF_ADV_RSS_FLOW_SEG_HDR_GTPU_DWN	= 0x00004000,
-+	IAVF_ADV_RSS_FLOW_SEG_HDR_GTPU_UP	= 0x00008000,
- };
- 
- #define IAVF_ADV_RSS_FLOW_SEG_HDR_L3		\
-@@ -33,6 +39,14 @@ enum iavf_adv_rss_flow_seg_hdr {
- 	 IAVF_ADV_RSS_FLOW_SEG_HDR_UDP |	\
- 	 IAVF_ADV_RSS_FLOW_SEG_HDR_SCTP)
- 
-+#define IAVF_ADV_RSS_FLOW_SEG_HDR_GTP		\
-+	(IAVF_ADV_RSS_FLOW_SEG_HDR_GTPC |	\
-+	 IAVF_ADV_RSS_FLOW_SEG_HDR_GTPC_TEID |	\
-+	 IAVF_ADV_RSS_FLOW_SEG_HDR_GTPU_IP |	\
-+	 IAVF_ADV_RSS_FLOW_SEG_HDR_GTPU_EH |	\
-+	 IAVF_ADV_RSS_FLOW_SEG_HDR_GTPU_DWN |	\
-+	 IAVF_ADV_RSS_FLOW_SEG_HDR_GTPU_UP)
-+
- enum iavf_adv_rss_flow_field {
- 	/* L3 */
- 	IAVF_ADV_RSS_FLOW_FIELD_IDX_IPV4_SA,
-@@ -46,6 +60,17 @@ enum iavf_adv_rss_flow_field {
- 	IAVF_ADV_RSS_FLOW_FIELD_IDX_UDP_DST_PORT,
- 	IAVF_ADV_RSS_FLOW_FIELD_IDX_SCTP_SRC_PORT,
- 	IAVF_ADV_RSS_FLOW_FIELD_IDX_SCTP_DST_PORT,
-+	/* GTPC_TEID */
-+	IAVF_ADV_RSS_FLOW_FIELD_IDX_GTPC_TEID,
-+	/* GTPU_IP */
-+	IAVF_ADV_RSS_FLOW_FIELD_IDX_GTPU_IP_TEID,
-+	/* GTPU_EH */
-+	IAVF_ADV_RSS_FLOW_FIELD_IDX_GTPU_EH_TEID,
-+	IAVF_ADV_RSS_FLOW_FIELD_IDX_GTPU_EH_QFI,
-+	/* GTPU_UP */
-+	IAVF_ADV_RSS_FLOW_FIELD_IDX_GTPU_UP_TEID,
-+	/* GTPU_DWN */
-+	IAVF_ADV_RSS_FLOW_FIELD_IDX_GTPU_DWN_TEID,
- 
- 	/* The total number of enums must not exceed 64 */
- 	IAVF_ADV_RSS_FLOW_FIELD_IDX_MAX
-@@ -72,6 +97,12 @@ enum iavf_adv_rss_flow_field {
- 	BIT_ULL(IAVF_ADV_RSS_FLOW_FIELD_IDX_SCTP_SRC_PORT)
- #define IAVF_ADV_RSS_HASH_FLD_SCTP_DST_PORT	\
- 	BIT_ULL(IAVF_ADV_RSS_FLOW_FIELD_IDX_SCTP_DST_PORT)
-+#define IAVF_ADV_RSS_HASH_FLD_GTPC_TEID	BIT_ULL(IAVF_ADV_RSS_FLOW_FIELD_IDX_GTPC_TEID)
-+#define IAVF_ADV_RSS_HASH_FLD_GTPU_IP_TEID BIT_ULL(IAVF_ADV_RSS_FLOW_FIELD_IDX_GTPU_IP_TEID)
-+#define IAVF_ADV_RSS_HASH_FLD_GTPU_EH_TEID BIT_ULL(IAVF_ADV_RSS_FLOW_FIELD_IDX_GTPU_EH_TEID)
-+#define IAVF_ADV_RSS_HASH_FLD_GTPU_UP_TEID BIT_ULL(IAVF_ADV_RSS_FLOW_FIELD_IDX_GTPU_UP_TEID)
-+#define IAVF_ADV_RSS_HASH_FLD_GTPU_DWN_TEID \
-+	BIT_ULL(IAVF_ADV_RSS_FLOW_FIELD_IDX_GTPU_DWN_TEID)
- 
- /* bookkeeping of advanced RSS configuration */
- struct iavf_adv_rss {
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-index 05d72be..a3f8ced 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-@@ -1336,6 +1336,56 @@ static u32 iavf_adv_rss_parse_hdrs(const struct ethtool_rxfh_fields *cmd)
- 		hdrs |= IAVF_ADV_RSS_FLOW_SEG_HDR_SCTP |
- 			IAVF_ADV_RSS_FLOW_SEG_HDR_IPV6;
- 		break;
-+	case GTPU_V4_FLOW:
-+		hdrs |= IAVF_ADV_RSS_FLOW_SEG_HDR_GTPU_IP |
-+			IAVF_ADV_RSS_FLOW_SEG_HDR_IPV4;
-+		break;
-+	case GTPC_V4_FLOW:
-+		hdrs |= IAVF_ADV_RSS_FLOW_SEG_HDR_GTPC |
-+			IAVF_ADV_RSS_FLOW_SEG_HDR_UDP |
-+			IAVF_ADV_RSS_FLOW_SEG_HDR_IPV4;
-+		break;
-+	case GTPC_TEID_V4_FLOW:
-+		hdrs |= IAVF_ADV_RSS_FLOW_SEG_HDR_GTPC_TEID |
-+			IAVF_ADV_RSS_FLOW_SEG_HDR_UDP |
-+			IAVF_ADV_RSS_FLOW_SEG_HDR_IPV4;
-+		break;
-+	case GTPU_EH_V4_FLOW:
-+		hdrs |= IAVF_ADV_RSS_FLOW_SEG_HDR_GTPU_EH |
-+			IAVF_ADV_RSS_FLOW_SEG_HDR_IPV4;
-+		break;
-+	case GTPU_UL_V4_FLOW:
-+		hdrs |= IAVF_ADV_RSS_FLOW_SEG_HDR_GTPU_UP |
-+			IAVF_ADV_RSS_FLOW_SEG_HDR_IPV4;
-+		break;
-+	case GTPU_DL_V4_FLOW:
-+		hdrs |= IAVF_ADV_RSS_FLOW_SEG_HDR_GTPU_DWN |
-+			IAVF_ADV_RSS_FLOW_SEG_HDR_IPV4;
-+		break;
-+	case GTPU_V6_FLOW:
-+		hdrs |= IAVF_ADV_RSS_FLOW_SEG_HDR_GTPU_IP |
-+			IAVF_ADV_RSS_FLOW_SEG_HDR_IPV6;
-+		break;
-+	case GTPC_V6_FLOW:
-+		hdrs |= IAVF_ADV_RSS_FLOW_SEG_HDR_GTPC |
-+			IAVF_ADV_RSS_FLOW_SEG_HDR_IPV6;
-+		break;
-+	case GTPC_TEID_V6_FLOW:
-+		hdrs |= IAVF_ADV_RSS_FLOW_SEG_HDR_GTPC_TEID |
-+			IAVF_ADV_RSS_FLOW_SEG_HDR_IPV6;
-+		break;
-+	case GTPU_EH_V6_FLOW:
-+		hdrs |= IAVF_ADV_RSS_FLOW_SEG_HDR_GTPU_EH |
-+			IAVF_ADV_RSS_FLOW_SEG_HDR_IPV6;
-+		break;
-+	case GTPU_UL_V6_FLOW:
-+		hdrs |= IAVF_ADV_RSS_FLOW_SEG_HDR_GTPU_UP |
-+			IAVF_ADV_RSS_FLOW_SEG_HDR_IPV6;
-+		break;
-+	case GTPU_DL_V6_FLOW:
-+		hdrs |= IAVF_ADV_RSS_FLOW_SEG_HDR_GTPU_DWN |
-+			IAVF_ADV_RSS_FLOW_SEG_HDR_IPV6;
-+		break;
- 	default:
- 		break;
- 	}
-@@ -1353,6 +1403,12 @@ iavf_adv_rss_parse_hash_flds(const struct ethtool_rxfh_fields *cmd, bool symm)
- 		case TCP_V4_FLOW:
- 		case UDP_V4_FLOW:
- 		case SCTP_V4_FLOW:
-+		case GTPU_V4_FLOW:
-+		case GTPC_V4_FLOW:
-+		case GTPC_TEID_V4_FLOW:
-+		case GTPU_EH_V4_FLOW:
-+		case GTPU_UL_V4_FLOW:
-+		case GTPU_DL_V4_FLOW:
- 			if (cmd->data & RXH_IP_SRC)
- 				hfld |= IAVF_ADV_RSS_HASH_FLD_IPV4_SA;
- 			if (cmd->data & RXH_IP_DST)
-@@ -1361,6 +1417,12 @@ iavf_adv_rss_parse_hash_flds(const struct ethtool_rxfh_fields *cmd, bool symm)
- 		case TCP_V6_FLOW:
- 		case UDP_V6_FLOW:
- 		case SCTP_V6_FLOW:
-+		case GTPU_V6_FLOW:
-+		case GTPC_V6_FLOW:
-+		case GTPC_TEID_V6_FLOW:
-+		case GTPU_EH_V6_FLOW:
-+		case GTPU_UL_V6_FLOW:
-+		case GTPU_DL_V6_FLOW:
- 			if (cmd->data & RXH_IP_SRC)
- 				hfld |= IAVF_ADV_RSS_HASH_FLD_IPV6_SA;
- 			if (cmd->data & RXH_IP_DST)
-@@ -1382,6 +1444,7 @@ iavf_adv_rss_parse_hash_flds(const struct ethtool_rxfh_fields *cmd, bool symm)
- 			break;
- 		case UDP_V4_FLOW:
- 		case UDP_V6_FLOW:
-+		case GTPC_V4_FLOW:
- 			if (cmd->data & RXH_L4_B_0_1)
- 				hfld |= IAVF_ADV_RSS_HASH_FLD_UDP_SRC_PORT;
- 			if (cmd->data & RXH_L4_B_2_3)
-@@ -1398,6 +1461,32 @@ iavf_adv_rss_parse_hash_flds(const struct ethtool_rxfh_fields *cmd, bool symm)
- 			break;
- 		}
- 	}
-+	if (cmd->data & RXH_GTP_TEID) {
-+		switch (cmd->flow_type) {
-+		case GTPC_TEID_V4_FLOW:
-+		case GTPC_TEID_V6_FLOW:
-+			hfld |= IAVF_ADV_RSS_HASH_FLD_GTPC_TEID;
-+			break;
-+		case GTPU_V4_FLOW:
-+		case GTPU_V6_FLOW:
-+			hfld |= IAVF_ADV_RSS_HASH_FLD_GTPU_IP_TEID;
-+			break;
-+		case GTPU_EH_V4_FLOW:
-+		case GTPU_EH_V6_FLOW:
-+			hfld |= IAVF_ADV_RSS_HASH_FLD_GTPU_EH_TEID;
-+			break;
-+		case GTPU_UL_V4_FLOW:
-+		case GTPU_UL_V6_FLOW:
-+			hfld |= IAVF_ADV_RSS_HASH_FLD_GTPU_UP_TEID;
-+			break;
-+		case GTPU_DL_V4_FLOW:
-+		case GTPU_DL_V6_FLOW:
-+			hfld |= IAVF_ADV_RSS_HASH_FLD_GTPU_DWN_TEID;
-+			break;
-+		default:
-+			break;
-+		}
-+	}
- 
- 	return hfld;
- }
--- 
-2.47.1
-
+> 
+> > how different is layout of ice_tx_ring after your change?
+> > 
+> 
+> The variables that where moved out of the ice_tx_ring 2nd cacheline are
+> not accessed in the fast path.
+> 
+> Thanks,
+> Paul
+> 
+> > rest of the code looks good to me now, however i still would like to
+> > clarify things mentioned above.
+> > 
+> >>  	u16 q_handle;			/* Queue handle per TC */
+> >>  	u16 reg_idx;			/* HW register index of the ring */
+> >>  	u16 count;			/* Number of descriptors */
+> >>  	u16 q_index;			/* Queue number of ring */
+> >>  	u16 xdp_tx_active;
+> >> +	u16 quanta_prof_id;
+> >> +	u8 dcb_tc;			/* Traffic class of ring */
+> >> +#define ICE_TX_FLAGS_RING_XDP		BIT(0)
+> >> +#define ICE_TX_FLAGS_RING_VLAN_L2TAG1	BIT(1)
+> >> +#define ICE_TX_FLAGS_RING_VLAN_L2TAG2	BIT(2)
+> >> +#define ICE_TX_FLAGS_TXTIME		BIT(3)
+> >> +	u8 flags;
+> >>  	/* stats structs */
+> >>  	struct ice_ring_stats *ring_stats;
+> >>  	/* CL3 - 3rd cacheline starts here */
+> >> @@ -401,13 +418,7 @@ struct ice_tx_ring {
+> >>  	struct ice_ptp_tx *tx_tstamps;
+> >>  	spinlock_t tx_lock;
+> >>  	u32 txq_teid;			/* Added Tx queue TEID */
+> >> -	/* CL4 - 4th cacheline starts here */
+> >> -#define ICE_TX_FLAGS_RING_XDP		BIT(0)
+> >> -#define ICE_TX_FLAGS_RING_VLAN_L2TAG1	BIT(1)
+> >> -#define ICE_TX_FLAGS_RING_VLAN_L2TAG2	BIT(2)
+> >> -	u8 flags;
+> >> -	u8 dcb_tc;			/* Traffic class of ring */
+> >> -	u16 quanta_prof_id;
+> >> +	struct ice_tstamp_ring *tstamp_ring;
+> >>  } ____cacheline_internodealigned_in_smp;
+> >>  
+> 
