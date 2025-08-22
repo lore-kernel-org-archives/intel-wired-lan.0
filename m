@@ -1,100 +1,125 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 41197CA0EED
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 22 Aug 2025 03:53:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B88D3CA0EED
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 22 Aug 2025 04:23:29 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id E5A0581296;
-	Fri, 22 Aug 2025 03:53:45 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 73B2E4080A;
+	Fri, 22 Aug 2025 04:23:29 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id nQl_S7sEzVd0; Fri, 22 Aug 2025 03:53:45 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id UR9cszMPO6pI; Fri, 22 Aug 2025 04:23:27 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 0A1A781290
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1824B40808
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1755834825;
-	bh=vvFQ1D8AE8J447lf7Pm53eTpu+uXeSCrC7qxYL9trIo=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1755836607;
+	bh=8OYbr6Zeb0In7ciWZAGGuuclyk12KWAFQqeCkPJi8ew=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=omsfnkrlPlqfaet7tcT71YjVjl0jfapmUL1ENA6KZAELTQa/pYN978F98L2Qzzwvz
-	 oS2sIzPOynfCH1UwtlIeIews/ps9Lzplefa/4kDFBGrQsi4FsauQZ6KwOCNFz5uwEA
-	 pffDHHzTX/kuEZ+jeOHnKdrL42c2r4Z7idS32Y+2OKJkAdf0AA3NWwn+jcxu3FfahL
-	 3Qg3691VoZ1D15cNHvn21EV3uHRWAx44UC8pgSf2fzOpH9JN8YG6HscypsPA7UVAWd
-	 yOgMnu2RRzJRLeRf8dx0WrDRLoRGfF5a11ZzSWwqTqC/WLaC3MVKTpUTwh3xdM2Fm7
-	 TKfUhBCcu1/dw==
+	 Cc:From;
+	b=TevoRn9jW0LgdYHtYxTO5ueV041de2ppkBWlB8Gw/VdCd9wtHQbcKlswejgbb/Ir7
+	 RklvRn092Fr9icVIHgOKMz03S4gNhSXcuqjaAUmLRmJVuSM5jxrEbIk86wstFIXuEM
+	 ix59/4CLEqmUIwYEltDWYUITlbB41i1ZBqTO0D350Xg7vn7vHaMg9JvPJW9xJ8aMH4
+	 nhesqc+MQeQ9nfMNMpIaYFpnIhAQdDRbk9W9EjEcjJc35ZSkrSKHpMPabUjxKD4OQp
+	 tDhdvmaNJclGCLxHHpfYFit3uQwXWqY+JKKRz3QFStmsLbUxloCEQX+A1FnOYdmHj+
+	 2KmRsk/kIi54g==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 0A1A781290;
-	Fri, 22 Aug 2025 03:53:45 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id 0608CD8
- for <intel-wired-lan@lists.osuosl.org>; Fri, 22 Aug 2025 03:53:44 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 1824B40808;
+	Fri, 22 Aug 2025 04:23:27 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by lists1.osuosl.org (Postfix) with ESMTP id ECB641C7
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 22 Aug 2025 04:23:24 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 764B481290
- for <intel-wired-lan@lists.osuosl.org>; Fri, 22 Aug 2025 03:53:42 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id DEB37403D5
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 22 Aug 2025 04:23:24 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id vdP_48-2b7yb for <intel-wired-lan@lists.osuosl.org>;
- Fri, 22 Aug 2025 03:53:41 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.10;
- helo=mgamail.intel.com; envelope-from=emil.s.tantilov@intel.com;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 8E0DD81297
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8E0DD81297
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.10])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 8E0DD81297
- for <intel-wired-lan@lists.osuosl.org>; Fri, 22 Aug 2025 03:53:41 +0000 (UTC)
-X-CSE-ConnectionGUID: 8AhMcsl9S7aW/OzBwG5qvg==
-X-CSE-MsgGUID: uJ1+JWeJStCzrhqWVetL0g==
-X-IronPort-AV: E=McAfee;i="6800,10657,11529"; a="69508580"
-X-IronPort-AV: E=Sophos;i="6.17,309,1747724400"; d="scan'208";a="69508580"
-Received: from fmviesa002.fm.intel.com ([10.60.135.142])
- by fmvoesa104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 21 Aug 2025 20:53:41 -0700
-X-CSE-ConnectionGUID: k8va8TyLRT6DS4pNs2lZyQ==
-X-CSE-MsgGUID: sHVutkXBQRCYz/u/XC3qsA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.17,309,1747724400"; d="scan'208";a="192253212"
-Received: from estantil-desk.jf.intel.com ([10.166.241.24])
- by fmviesa002.fm.intel.com with ESMTP; 21 Aug 2025 20:53:40 -0700
-From: Emil Tantilov <emil.s.tantilov@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Cc: netdev@vger.kernel.org, Aleksandr.Loktionov@intel.com,
- przemyslaw.kitszel@intel.com, anthony.l.nguyen@intel.com,
- andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
- kuba@kernel.org, pabeni@redhat.com, decot@google.com, willemb@google.com,
- joshua.a.hay@intel.com, madhu.chittim@intel.com
-Date: Thu, 21 Aug 2025 20:52:47 -0700
-Message-Id: <20250822035248.22969-2-emil.s.tantilov@intel.com>
-X-Mailer: git-send-email 2.17.2
-In-Reply-To: <20250822035248.22969-1-emil.s.tantilov@intel.com>
-References: <20250822035248.22969-1-emil.s.tantilov@intel.com>
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1755834822; x=1787370822;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references;
- bh=u8SNYrGup52raExP3z9rP7SKIxp+epvEHd3pHNXU0to=;
- b=E9orYyLw+rws7nYXFkqYh3q5r1s9JEi6VQdmPMf/K0NeGOUhRom8pzGe
- 65JAtFI8lGZV/6OYp4E3Jb7Lub73F/i/t2YJvxsBoKMDceKQH2HAnNglo
- TUd3VQSNMrfh8m4UThaCr4Kl4IqQDpvETuUIOXeBELk2LFF9YqoBru5iY
- JYAoEZcby0A6WD9I6lcOMLaZgt/cepEJ746D9y39lIXOAoD2uYC7kBlMa
- Az9c71NxspJ/X4kXzjhkqzR9p033s3hVaet1J5ar3GwLnvN19Ntmq2IGr
- pumLUKBpPs0knfxCDDDU/Pg0eQ2r/+hrWpAgoSF90iJ+Obz/g/Nbz6Or4
- Q==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=E9orYyLw
-Subject: [Intel-wired-lan] [PATCH iwl-net 1/2] idpf: convert vport state to
- bitmap
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 1h9Bd8a2HkBu for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 22 Aug 2025 04:23:24 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2607:f8b0:4864:20::532; helo=mail-pg1-x532.google.com;
+ envelope-from=calvin@wbinvd.org; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org DCBAB403C5
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org DCBAB403C5
+Received: from mail-pg1-x532.google.com (mail-pg1-x532.google.com
+ [IPv6:2607:f8b0:4864:20::532])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id DCBAB403C5
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 22 Aug 2025 04:23:23 +0000 (UTC)
+Received: by mail-pg1-x532.google.com with SMTP id
+ 41be03b00d2f7-b477029ea5eso1598367a12.3
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 21 Aug 2025 21:23:23 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20230601; t=1755836603; x=1756441403;
+ h=in-reply-to:content-transfer-encoding:content-disposition
+ :mime-version:references:message-id:subject:cc:to:from:date
+ :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+ bh=8OYbr6Zeb0In7ciWZAGGuuclyk12KWAFQqeCkPJi8ew=;
+ b=YeHkXIwQGL3Xfy7Npekxd0v5HaVVXfj9cRtreLcsLmL/b+Z75Ppus8lfx9scWNYhpe
+ uQQZYdUCNSE6pYcQ2sXHWMhUxpf0UstpB8VDo2IqX1AAjmvoth+vziEdOHzQVBVt92Eu
+ dhHEjFzOOOqpiRltz+SG1hGNqH77kc3HkObQCG1eFu4YI6M1Vo0ICfjzfSMxdJuloeEI
+ +Fpq03pbMc0pYWGgOJbDTJXY8GrNgSGv3XM5NtDvkccjEdVn8Vlu3+Bz/Pz2SRRjqD12
+ t61S7sghYW3fmhI5Jnu7Gp6OUkAi4y6NbFJDDe34Tab6KYQLhuJWphdHByiefDsUdzGx
+ 3auQ==
+X-Forwarded-Encrypted: i=1;
+ AJvYcCUlO9thzgVEzgiGtvAK3yaDKR2rLWkOdX+2kXL5vvfaUT5TQVeS+mnSwEmuhTSc+NtzfD4jzBoeaJqPt9HbJlg=@lists.osuosl.org
+X-Gm-Message-State: AOJu0Yw7M5BFLLbbzmm+rxDpxl5aEBAHtYUIPXHtfYIFk3vc6pUmaq85
+ 2FM839t958eb6aLXfmphNyzW/QoqOCV+FAgDPte36TK9IgoABXN3ftWsyXVPgrhmE40=
+X-Gm-Gg: ASbGncv3fgtn+H3tOS6dJtPbSPJ2Cy9+Fw11xkrx3Apyqyga56AZpc5vdgwem1dy3LG
+ j/LH2KVoYB4u/fqD7HSwXY7wPxZG7K1f51HufTqYisyXMet5EB8ViG8n8RP76qUE9Zfs+S8j4dd
+ kqZeTDEoyPaCXIYw691bV0hbihTdy1qyxnNWs7H3MVUg/hasb1VZbImVLrD3cvwsYC2A1gJELX0
+ f7ymvG7Frks89v3tekkinQpABaJhi3tRIqfCGZIl4dEG9g7NB2MVvO0oiyftiNxIO2tLTmRfQ+B
+ 5WVeRNLOGZkuKkqQAEpG1jP8PLDQ4ShF/mvmC09y0/3wue3vI1Jk17Nj2uzR2KxauOq5qJFpFvu
+ dvfsRtbXMsaZ6kuTDYSikvdy6
+X-Google-Smtp-Source: AGHT+IGkr6KG1Nu9z0iOHepL9KnzdBIr5e1tJ3KsMa+xu1RZViZOdy4PjdjRbUW4MQjoOYoW45A27Q==
+X-Received: by 2002:a17:902:ce01:b0:245:fcc6:a9d8 with SMTP id
+ d9443c01a7336-2462efbe05amr28662875ad.54.1755836603033; 
+ Thu, 21 Aug 2025 21:23:23 -0700 (PDT)
+Received: from mozart.vkv.me ([192.184.167.117])
+ by smtp.gmail.com with ESMTPSA id
+ d9443c01a7336-24636064715sm8694255ad.29.2025.08.21.21.23.21
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 21 Aug 2025 21:23:22 -0700 (PDT)
+Date: Thu, 21 Aug 2025 21:23:20 -0700
+From: Calvin Owens <calvin@wbinvd.org>
+To: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Message-ID: <aKfwuFXnvOzWx5De@mozart.vkv.me>
+References: <94d7d5c0bb4fc171154ccff36e85261a9f186923.1755661118.git.calvin@wbinvd.org>
+ <CADEbmW100menFu3KACm4p72yPSjbnQwnYumDCGRw+GxpgXeMJA@mail.gmail.com>
+ <aKXqVqj_bUefe1Nj@mozart.vkv.me> <aKYI5wXcEqSjunfk@mozart.vkv.me>
+ <e71fe3bf-ec97-431e-b60c-634c5263ad82@intel.com>
+ <aKcr7FCOHZycDrsC@mozart.vkv.me>
+ <8f077022-e98a-4e30-901b-7e014fe5d5b2@intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <8f077022-e98a-4e30-901b-7e014fe5d5b2@intel.com>
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=wbinvd.org; s=wbinvd; t=1755836603; x=1756441403; darn=lists.osuosl.org;
+ h=in-reply-to:content-transfer-encoding:content-disposition
+ :mime-version:references:message-id:subject:cc:to:from:date:from:to
+ :cc:subject:date:message-id:reply-to;
+ bh=8OYbr6Zeb0In7ciWZAGGuuclyk12KWAFQqeCkPJi8ew=;
+ b=h0nMAMWOszzBoovw5BKNGd/eIGamulBE2QfYyYkR7Xl0e28D41W6A8ObyUAqMaT49Y
+ 3EUnd1auQCm3W+auo08UX5yL9Mtz+/mlsR6b1Zp7JP8GLR8WvrNw1VNWW4E7hJv1f1MT
+ bhjzIULk5PYiChGEunlrWixH4tPTLFrvWkFecIK3AOL1WnidwhrcitJv1HFJ+suoiJRj
+ 1U8nZqwfhxuIOrHqDJyrOAV+b9NQmITG35v9L/1GvQIhURfNIp++chlUpVGIFa9mT+Oy
+ B0UTHzp4WB4WBdFznffbHav6AGphPPYkqMYllxgKtkd2xE+LsBHJoMZ7BE62LbTiUMzJ
+ 2p8g==
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dmarc=none (p=none dis=none)
+ header.from=wbinvd.org
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=wbinvd.org header.i=@wbinvd.org header.a=rsa-sha256
+ header.s=wbinvd header.b=h0nMAMWO
+Subject: Re: [Intel-wired-lan] [PATCH net] i40e: Prevent unwanted interface
+ name changes
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -107,270 +132,129 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
+Cc: Ivan Vecera <ivecera@redhat.com>, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Jedrzej Jagielski <jedrzej.jagielski@intel.com>,
+ Andrew Lunn <andrew+netdev@lunn.ch>, Eric Dumazet <edumazet@google.com>,
+ Tony Nguyen <anthony.l.nguyen@intel.com>, intel-wired-lan@lists.osuosl.org,
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+ "David S. Miller" <davem@davemloft.net>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Convert vport state to a bitmap and remove the DOWN state which is
-redundant in the existing logic. There are no functional changes aside
-from the use of bitwise operations when setting and checking the states.
-Removed the double underscore to be consistent with the naming of other
-bitmaps in the header and renamed current_state to vport_is_up to match
-the meaning of the new variable.
+On Thursday 08/21 at 22:39 +0200, Przemek Kitszel wrote:
+> On 8/21/25 16:23, Calvin Owens wrote:
+> > On Thursday 08/21 at 10:00 +0200, Przemek Kitszel wrote:
+> > > On 8/20/25 19:41, Calvin Owens wrote:
+> > > > On Wednesday 08/20 at 08:31 -0700, Calvin Owens wrote:
+> > > > > On Wednesday 08/20 at 08:42 +0200, Michal Schmidt wrote:
+> > > > > > On Wed, Aug 20, 2025 at 6:30 AM Calvin Owens <calvin@wbinvd.org> wrote:
+> > > > > > > The same naming regression which was reported in ixgbe and fixed in
+> > > > > > > commit e67a0bc3ed4f ("ixgbe: prevent from unwanted interface name
+> > > > > > > changes") still exists in i40e.
+> > > > > > > 
+> > > > > > > Fix i40e by setting the same flag, added in commit c5ec7f49b480
+> > > > > > > ("devlink: let driver opt out of automatic phys_port_name generation").
+> > > > > > > 
+> > > > > > > Fixes: 9e479d64dc58 ("i40e: Add initial devlink support")
+> > > > > > 
+> > > > > > But this one's almost two years old. By now, there may be more users
+> > > > > > relying on the new name than on the old one.
+> > > > > > Michal
+> > > > > 
+> > > > > Well, I was relying on the new ixgbe names, and I had to revert them
+> > > > > all in a bunch of configs yesterday after e67a0bc3ed4f :)
+> > > 
+> > > we have fixed (changed to old naming scheme) ixgbe right after the
+> > > kernel was used by real users (modulo usual delay needed to invent
+> > > a good solution)
+> > 
+> > No, the "fix" actually broke me for a *second time*, because I'd
+> > already converted my infrastructure to use the *new* names, which match
+> > i40e and the rest of the world.
+> > 
+> > We've seen *two* user ABI regressions in the last several months in
+> > ixgbe now, both of which completely broke networking on the system.
+> > 
+> > I'm not here to whine about that: I just want to save as many people out
+> > there in the real world as I can the trouble of having to do the same
+> > work (which has absolutely no benefit) over the next five years in i40e.
+> > 
+> > If it's acceptable to break me for a second time to "fix" this, because
+> > I'm the minority of users (a viewpoint I am in agreement with), it
+> > should also be acceptable to break the minority of i40e users who are
+> > running newer kernels to "fix" it there too.
+> > 
+> > Why isn't it?
+> 
+> I think we agree that it is ok-ish to sometime break setups for bleeding
+> edge users, then fix (aka undo). It's bad that this time it was with
+> effect equivalent to the first breakage (hope that it was easier to fix
+> locally when it occurred second time in a row).
 
-Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Reviewed-by: Chittim Madhu <madhu.chittim@intel.com>
-Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
----
- drivers/net/ethernet/intel/idpf/idpf.h        | 12 ++++------
- .../net/ethernet/intel/idpf/idpf_ethtool.c    | 10 ++++----
- drivers/net/ethernet/intel/idpf/idpf_lib.c    | 24 +++++++++----------
- .../ethernet/intel/idpf/idpf_singleq_txrx.c   |  2 +-
- drivers/net/ethernet/intel/idpf/idpf_txrx.c   |  2 +-
- .../net/ethernet/intel/idpf/idpf_virtchnl.c   |  4 ++--
- 6 files changed, 26 insertions(+), 28 deletions(-)
+I just want to re-emphasize, it was *not* my intent to gripe at you
+about this. A big reason I test new kernels is in the hope I can hit
+things like this myself and get them fixed before they impact the wide
+userbase, I'm only frustrated I'm probably too late here to do that.
 
-diff --git a/drivers/net/ethernet/intel/idpf/idpf.h b/drivers/net/ethernet/intel/idpf/idpf.h
-index f4c0eaf9bde3..cfbf3a716f34 100644
---- a/drivers/net/ethernet/intel/idpf/idpf.h
-+++ b/drivers/net/ethernet/intel/idpf/idpf.h
-@@ -130,14 +130,12 @@ enum idpf_cap_field {
- 
- /**
-  * enum idpf_vport_state - Current vport state
-- * @__IDPF_VPORT_DOWN: Vport is down
-- * @__IDPF_VPORT_UP: Vport is up
-- * @__IDPF_VPORT_STATE_LAST: Must be last, number of states
-+ * @IDPF_VPORT_UP: Vport is up
-+ * @IDPF_VPORT_STATE_NBITS: Must be last, number of states
-  */
- enum idpf_vport_state {
--	__IDPF_VPORT_DOWN,
--	__IDPF_VPORT_UP,
--	__IDPF_VPORT_STATE_LAST,
-+	IDPF_VPORT_UP,
-+	IDPF_VPORT_STATE_NBITS
- };
- 
- /**
-@@ -159,7 +157,7 @@ struct idpf_netdev_priv {
- 	u32 link_speed_mbps;
- 	u16 vport_idx;
- 	u16 max_tx_hdr_size;
--	enum idpf_vport_state state;
-+	DECLARE_BITMAP(state, IDPF_VPORT_STATE_NBITS);
- 	struct rtnl_link_stats64 netstats;
- 	spinlock_t stats_lock;
- };
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_ethtool.c b/drivers/net/ethernet/intel/idpf/idpf_ethtool.c
-index 0eb812ac19c2..f84e247399a7 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_ethtool.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_ethtool.c
-@@ -386,7 +386,7 @@ static int idpf_get_rxfh(struct net_device *netdev,
- 	}
- 
- 	rss_data = &adapter->vport_config[np->vport_idx]->user_config.rss_data;
--	if (np->state != __IDPF_VPORT_UP)
-+	if (!test_bit(IDPF_VPORT_UP, np->state))
- 		goto unlock_mutex;
- 
- 	rxfh->hfunc = ETH_RSS_HASH_TOP;
-@@ -436,7 +436,7 @@ static int idpf_set_rxfh(struct net_device *netdev,
- 	}
- 
- 	rss_data = &adapter->vport_config[vport->idx]->user_config.rss_data;
--	if (np->state != __IDPF_VPORT_UP)
-+	if (!test_bit(IDPF_VPORT_UP, np->state))
- 		goto unlock_mutex;
- 
- 	if (rxfh->hfunc != ETH_RSS_HASH_NO_CHANGE &&
-@@ -1167,7 +1167,7 @@ static void idpf_get_ethtool_stats(struct net_device *netdev,
- 	idpf_vport_ctrl_lock(netdev);
- 	vport = idpf_netdev_to_vport(netdev);
- 
--	if (np->state != __IDPF_VPORT_UP) {
-+	if (!test_bit(IDPF_VPORT_UP, np->state)) {
- 		idpf_vport_ctrl_unlock(netdev);
- 
- 		return;
-@@ -1319,7 +1319,7 @@ static int idpf_get_q_coalesce(struct net_device *netdev,
- 	idpf_vport_ctrl_lock(netdev);
- 	vport = idpf_netdev_to_vport(netdev);
- 
--	if (np->state != __IDPF_VPORT_UP)
-+	if (!test_bit(IDPF_VPORT_UP, np->state))
- 		goto unlock_mutex;
- 
- 	if (q_num >= vport->num_rxq && q_num >= vport->num_txq) {
-@@ -1507,7 +1507,7 @@ static int idpf_set_coalesce(struct net_device *netdev,
- 	idpf_vport_ctrl_lock(netdev);
- 	vport = idpf_netdev_to_vport(netdev);
- 
--	if (np->state != __IDPF_VPORT_UP)
-+	if (!test_bit(IDPF_VPORT_UP, np->state))
- 		goto unlock_mutex;
- 
- 	for (i = 0; i < vport->num_txq; i++) {
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_lib.c b/drivers/net/ethernet/intel/idpf/idpf_lib.c
-index 513032cb5f08..89d30c395533 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_lib.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_lib.c
-@@ -517,7 +517,7 @@ static int idpf_del_mac_filter(struct idpf_vport *vport,
- 	}
- 	spin_unlock_bh(&vport_config->mac_filter_list_lock);
- 
--	if (np->state == __IDPF_VPORT_UP) {
-+	if (test_bit(IDPF_VPORT_UP, np->state)) {
- 		int err;
- 
- 		err = idpf_add_del_mac_filters(vport, np, false, async);
-@@ -588,7 +588,7 @@ static int idpf_add_mac_filter(struct idpf_vport *vport,
- 	if (err)
- 		return err;
- 
--	if (np->state == __IDPF_VPORT_UP)
-+	if (test_bit(IDPF_VPORT_UP, np->state))
- 		err = idpf_add_del_mac_filters(vport, np, true, async);
- 
- 	return err;
-@@ -888,7 +888,7 @@ static void idpf_vport_stop(struct idpf_vport *vport)
- {
- 	struct idpf_netdev_priv *np = netdev_priv(vport->netdev);
- 
--	if (np->state <= __IDPF_VPORT_DOWN)
-+	if (!test_bit(IDPF_VPORT_UP, np->state))
- 		return;
- 
- 	netif_carrier_off(vport->netdev);
-@@ -911,7 +911,7 @@ static void idpf_vport_stop(struct idpf_vport *vport)
- 	idpf_vport_intr_deinit(vport);
- 	idpf_vport_queues_rel(vport);
- 	idpf_vport_intr_rel(vport);
--	np->state = __IDPF_VPORT_DOWN;
-+	clear_bit(IDPF_VPORT_UP, np->state);
- }
- 
- /**
-@@ -1332,7 +1332,7 @@ static int idpf_up_complete(struct idpf_vport *vport)
- 		netif_tx_start_all_queues(vport->netdev);
- 	}
- 
--	np->state = __IDPF_VPORT_UP;
-+	set_bit(IDPF_VPORT_UP, np->state);
- 
- 	return 0;
- }
-@@ -1377,7 +1377,7 @@ static int idpf_vport_open(struct idpf_vport *vport)
- 	struct idpf_vport_config *vport_config;
- 	int err;
- 
--	if (np->state != __IDPF_VPORT_DOWN)
-+	if (test_bit(IDPF_VPORT_UP, np->state))
- 		return -EBUSY;
- 
- 	/* we do not allow interface up just yet */
-@@ -1569,7 +1569,7 @@ void idpf_init_task(struct work_struct *work)
- 
- 	/* Once state is put into DOWN, driver is ready for dev_open */
- 	np = netdev_priv(vport->netdev);
--	np->state = __IDPF_VPORT_DOWN;
-+	clear_bit(IDPF_VPORT_UP, np->state);
- 	if (test_and_clear_bit(IDPF_VPORT_UP_REQUESTED, vport_config->flags))
- 		idpf_vport_open(vport);
- 
-@@ -1768,7 +1768,7 @@ static void idpf_set_vport_state(struct idpf_adapter *adapter)
- 			continue;
- 
- 		np = netdev_priv(adapter->netdevs[i]);
--		if (np->state == __IDPF_VPORT_UP)
-+		if (test_bit(IDPF_VPORT_UP, np->state))
- 			set_bit(IDPF_VPORT_UP_REQUESTED,
- 				adapter->vport_config[i]->flags);
- 	}
-@@ -1906,7 +1906,7 @@ int idpf_initiate_soft_reset(struct idpf_vport *vport,
- 			     enum idpf_vport_reset_cause reset_cause)
- {
- 	struct idpf_netdev_priv *np = netdev_priv(vport->netdev);
--	enum idpf_vport_state current_state = np->state;
-+	bool vport_is_up = test_bit(IDPF_VPORT_UP, np->state);
- 	struct idpf_adapter *adapter = vport->adapter;
- 	struct idpf_vport *new_vport;
- 	int err;
-@@ -1957,7 +1957,7 @@ int idpf_initiate_soft_reset(struct idpf_vport *vport,
- 		goto free_vport;
- 	}
- 
--	if (current_state <= __IDPF_VPORT_DOWN) {
-+	if (!vport_is_up) {
- 		idpf_send_delete_queues_msg(vport);
- 	} else {
- 		set_bit(IDPF_VPORT_DEL_QUEUES, vport->flags);
-@@ -1990,7 +1990,7 @@ int idpf_initiate_soft_reset(struct idpf_vport *vport,
- 	if (err)
- 		goto err_open;
- 
--	if (current_state == __IDPF_VPORT_UP)
-+	if (vport_is_up)
- 		err = idpf_vport_open(vport);
- 
- 	goto free_vport;
-@@ -2000,7 +2000,7 @@ int idpf_initiate_soft_reset(struct idpf_vport *vport,
- 				 vport->num_rxq, vport->num_bufq);
- 
- err_open:
--	if (current_state == __IDPF_VPORT_UP)
-+	if (vport_is_up)
- 		idpf_vport_open(vport);
- 
- free_vport:
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_singleq_txrx.c b/drivers/net/ethernet/intel/idpf/idpf_singleq_txrx.c
-index b19b462e0bb6..06199fde3b57 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_singleq_txrx.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_singleq_txrx.c
-@@ -571,7 +571,7 @@ static bool idpf_tx_singleq_clean(struct idpf_tx_queue *tx_q, int napi_budget,
- 	np = netdev_priv(tx_q->netdev);
- 	nq = netdev_get_tx_queue(tx_q->netdev, tx_q->idx);
- 
--	dont_wake = np->state != __IDPF_VPORT_UP ||
-+	dont_wake = !test_bit(IDPF_VPORT_UP, np->state) ||
- 		    !netif_carrier_ok(tx_q->netdev);
- 	__netif_txq_completed_wake(nq, ss.packets, ss.bytes,
- 				   IDPF_DESC_UNUSED(tx_q), IDPF_TX_WAKE_THRESH,
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.c b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-index 68b3857c803b..b72d3e4d40f7 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-@@ -1868,7 +1868,7 @@ static bool idpf_tx_clean_complq(struct idpf_compl_queue *complq, int budget,
- 		/* Update BQL */
- 		nq = netdev_get_tx_queue(tx_q->netdev, tx_q->idx);
- 
--		dont_wake = !complq_ok || np->state != __IDPF_VPORT_UP ||
-+		dont_wake = !complq_ok || !test_bit(IDPF_VPORT_UP, np->state) ||
- 			    !netif_carrier_ok(tx_q->netdev);
- 		/* Check if the TXQ needs to and can be restarted */
- 		__netif_txq_completed_wake(nq, tx_q->cleaned_pkts, tx_q->cleaned_bytes,
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
-index 6330d4a0ae07..d751d40c4e46 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
-@@ -68,7 +68,7 @@ static void idpf_handle_event_link(struct idpf_adapter *adapter,
- 
- 	vport->link_up = v2e->link_status;
- 
--	if (np->state != __IDPF_VPORT_UP)
-+	if (!test_bit(IDPF_VPORT_UP, np->state))
- 		return;
- 
- 	if (vport->link_up) {
-@@ -2432,7 +2432,7 @@ int idpf_send_get_stats_msg(struct idpf_vport *vport)
- 
- 
- 	/* Don't send get_stats message if the link is down */
--	if (np->state <= __IDPF_VPORT_DOWN)
-+	if (!test_bit(IDPF_VPORT_UP, np->state))
- 		return 0;
- 
- 	stats_msg.vport_id = cpu_to_le32(vport->vport_id);
--- 
-2.37.3
+> But we dispute over change from Oct 2023, for me it is carved in stone
+> at this point. Every user either adjusted or worked it around [1]
 
+IMHO the date of the release (Jan 2024) is more relevant than the
+commit date, but it's not really that different in this case.
+
+I think there's merit to the idea that the lack of complaining is a sign
+that most users have not had to adjust yet, because if they had, they'd
+have complained about it. But I don't have any real data either way.
+
+The objections raised over the new interface naming in ixgbe are in no
+way specific to ixgbe. You can s/ixgbe/i40e/ any mail about it and
+nothing really changes. They're generalized objections against the
+renaming of interfaces, so from a certain POV people *are* actively
+complaining.
+
+> > > > And, even if it is e67a0bc3ed4f that introduced it, v6.7 was the first
+> > > > release with it. I strongly suspect most servers with i40e NICs running
+> > > > in the wild are running older kernels than that, and have not yet
+> > > > encountered the naming regression. But you probably have much better
+> > > > data about that than I do :)
+> > > 
+> > > RedHat patches their kernels with current code of the drivers that their
+> > > customers use (including i40e and ixgbe)
+> > > One could expect that changes made today to those will reach RHEL 10.3,
+> > > even if it would be named "kernel 6.12".
+> > > 
+> > > (*) the changes will likely be also in 10.2, but I don't want to make
+> > > any promises from Intel or Redhat here
+> > 
+> > But how many i40e users are actually on the most recent version of RHEL?
+> > Not very many, is my guess. RHEL9 is 5.14, and has the old behavior.
+> 
+> RHEL 9 backported devlink for i40e in July 2024 [0], together with undo
+> of interface name change [1] (this likely tells why there were zero
+> complains from RH users).
+> 
+> [0]
+> https://gitlab.com/redhat/centos-stream/src/kernel/centos-stream-9/-/commit/bcbc349375ecd977aa429c3eff4d182b74dcdd8a
+> 
+> [1]
+> https://gitlab.com/redhat/centos-stream/src/kernel/centos-stream-9/-/commit/5ab8aa31dc2b44fbd6761bb19463f5427b9be245
+
+Heh. Thank you very much for checking that, and for the links.
+
+> > 
+> > If you actually have data on that, obviously that's different. But it
+> > sounds like you're guessing just like I am.
+> 
+> I could only guess about other OS Vendors, one could check it also
+> for Ubuntu in their public git, but I don't think we need more data, as
+> ultimate judge here are Stable Maintainers
+
+Maybe I'm barking up the wrong tree, it's udev after all that decides to
+read the thing in /sys and name the interfaces differently because it's
+there...
+
+In any case, Debian stable is on 6.12 and didn't patch it (just
+checked), so I concede, it is simply too late :/
+
+Thanks,
+Calvin
