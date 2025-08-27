@@ -1,72 +1,72 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1DC88CA0EFF
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 27 Aug 2025 18:53:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9DCC3CA0EFF
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 27 Aug 2025 18:53:52 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id D891A61098;
-	Wed, 27 Aug 2025 18:53:46 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 61B8540E8F;
+	Wed, 27 Aug 2025 18:53:52 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id jhyZ22Tvh8Do; Wed, 27 Aug 2025 18:53:45 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id ewbvEEaMj8Y3; Wed, 27 Aug 2025 18:53:51 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org D19E9610DE
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org A07C840EDA
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1756320825;
-	bh=Z1YgWLJ2zaDLSVhx6lDW/mlt2BWjaxGZDfTvTtkpnHA=;
+	s=default; t=1756320831;
+	bh=8zDSd5VDRn07YYZ70FGLUlnM/wQu+b1qep3/i6fX9/s=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=bljg5foN5NqZq/a3Chn/n1bKqAMsFJkI4SAbmglWhmQMk88r60H0zXLW1Uq5GkfBT
-	 bNh2RDt5t9aFVhHg9MoT72dqQAX/2NAGNLdQN6ZCcYOeTkodRafwlbT61nTPXeCiC+
-	 E6Zz/ue8iC5/Psw8IqaROot3oFyMM4gRvXMkrgHFYyePtYatdr8IDEVnoyVxybHkXt
-	 MdyQ+CTU08sI/2fUbr4833mYExmHTAQdhCjBFGLP02OGP1ZEfsPhxGuFH0XwZlV+6I
-	 WxhOsIp6eEecdZVEMG9+YnM56cUoy43wU7/hhyDMVw5zdmKfXVRelK2AfjCLQRteK4
-	 DcpFLA1dvFdEQ==
+	b=T6Do9xojz1gov5p2K7rsYtn0fEZUTNRJ2EBwKEZlPdszeP3ILqNtoizEk2u5v4j4/
+	 rGjS84pILFzAmN+ul3VhFV8vW3MZGh/0JKEyXBIxp+l26J0WmhJ+8jmkqHNDjza4aW
+	 s2uk3uacN5fhrTsXY5+s3+s87NurT/nfq/W9VpsVEmxn6/nLMeV6TDIKG6aB7v2W3I
+	 VgemUAf2EDLOFhCWVAQewrCj6PlUVghPTI9B6PoC8IxMuTLmFTpn/zXmCRXGRrVrFG
+	 J/CC79Ay1hIh50u4u4kebRtJPUcEOd8GVN86N6FTr3Nwf8DNXqQMSM178ozb7H6mHU
+	 EviRrmfIAzbmg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id D19E9610DE;
-	Wed, 27 Aug 2025 18:53:45 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id A07C840EDA;
+	Wed, 27 Aug 2025 18:53:51 +0000 (UTC)
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id BA47F17D
- for <intel-wired-lan@lists.osuosl.org>; Wed, 27 Aug 2025 18:53:43 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id 204DF114
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 27 Aug 2025 18:53:48 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id AC6B0610DA
- for <intel-wired-lan@lists.osuosl.org>; Wed, 27 Aug 2025 18:53:43 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 12AFD61102
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 27 Aug 2025 18:53:48 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id KYZ4IWfXoFaC for <intel-wired-lan@lists.osuosl.org>;
- Wed, 27 Aug 2025 18:53:42 +0000 (UTC)
+ id hm1f0FZJexZJ for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 27 Aug 2025 18:53:47 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.15;
  helo=mgamail.intel.com; envelope-from=aleksandr.loktionov@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org A907A61098
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A907A61098
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 489E961111
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 489E961111
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.15])
- by smtp3.osuosl.org (Postfix) with ESMTPS id A907A61098
- for <intel-wired-lan@lists.osuosl.org>; Wed, 27 Aug 2025 18:53:42 +0000 (UTC)
-X-CSE-ConnectionGUID: rMlNHIBNQse/aNN+C8rqjg==
-X-CSE-MsgGUID: ti/us7BYTEeglOP2rG1iyA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11535"; a="58677616"
-X-IronPort-AV: E=Sophos;i="6.18,217,1751266800"; d="scan'208";a="58677616"
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 489E961111
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 27 Aug 2025 18:53:47 +0000 (UTC)
+X-CSE-ConnectionGUID: FPvvZbr0SG+wqTGJzf43LQ==
+X-CSE-MsgGUID: crg4gAOuRCGIm0ddiszkHw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11535"; a="58677626"
+X-IronPort-AV: E=Sophos;i="6.18,217,1751266800"; d="scan'208";a="58677626"
 Received: from fmviesa006.fm.intel.com ([10.60.135.146])
  by fmvoesa109.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 27 Aug 2025 11:53:42 -0700
-X-CSE-ConnectionGUID: xK59b7ioT8Cxd/kCYY7bDQ==
-X-CSE-MsgGUID: HwteY0AUTCmGC7xzzj2Gjg==
+ 27 Aug 2025 11:53:47 -0700
+X-CSE-ConnectionGUID: jM9FYu5oSpSGO1rAvN/wPg==
+X-CSE-MsgGUID: b2A3w3XrQueqr71rO7gw6g==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.18,217,1751266800"; d="scan'208";a="169846086"
+X-IronPort-AV: E=Sophos;i="6.18,217,1751266800"; d="scan'208";a="169846106"
 Received: from unknown (HELO amlin-019-225.igk.intel.com) ([10.102.19.225])
- by fmviesa006.fm.intel.com with ESMTP; 27 Aug 2025 11:53:40 -0700
+ by fmviesa006.fm.intel.com with ESMTP; 27 Aug 2025 11:53:45 -0700
 From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 To: intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com,
  aleksandr.loktionov@intel.com
-Date: Wed, 27 Aug 2025 18:53:34 +0000
-Message-ID: <20250827185338.1943489-2-aleksandr.loktionov@intel.com>
+Date: Wed, 27 Aug 2025 18:53:36 +0000
+Message-ID: <20250827185338.1943489-4-aleksandr.loktionov@intel.com>
 X-Mailer: git-send-email 2.49.0
 In-Reply-To: <20250827185338.1943489-1-aleksandr.loktionov@intel.com>
 References: <20250827185338.1943489-1-aleksandr.loktionov@intel.com>
@@ -74,25 +74,25 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1756320823; x=1787856823;
+ t=1756320827; x=1787856827;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=mHHbWmZ6A7GmJzAwEXbuWMtXiy/cRhEEmpjRTMCDqKY=;
- b=ZEEymWSyjqIbaPTb96VXKw8L7wQhvVKRNx8x7d2jdtKa7ObdsW5QwSfd
- 8JYYyjjJB0cijDsmAKkLXwAtdmNX+uyAKJ2b0zUlhVsuFtZYJI3aPXA2U
- r1t7zJPbw48B/o0soShVVc8SULebnSSQVLLRrKlnSZc6euKwfE64jd1y7
- n2Gwi45JwXCpuD/dMAa8w27NsLWNFSOEEriV0K7KjcXEPLA/I0JIi4ZvI
- Ec6Nk+En3YpF7qLJ4j/WTNYzEVGmn8FWbUvrwI0SMZFrIXgfOgllTnRl+
- NPAEvLU8BOyZh1yH0K0Yl1W8+N2GDKW71kFjUeGU76Sof/91fAwn/lGHK
+ bh=4U7tcKxyFVD9kIHNjQVnRzjZECz80gqZCXTPB4y62x4=;
+ b=grQW/z3BLpRpKx62DUnpDYkpu0L6xr4lRNcrx0e+O11D0CyJQrUI7SK4
+ D4TcRVmqDzDmlmPxX+C0MGie6XQHHoy7uH2G2rKReE8FtRfp3BQtl1L4A
+ H1Rr0SpYTo2lP7eRZWw7UMd8OFfBFAqWGrw8K7MpgNOHJ7KgxKVW9Ou86
+ 0fHXDjxcSrfvyWSMaltNZGByWUMqAuKFGXD1gFt85teGkFDkwoSwVZOKp
+ gxd1mU6zW8zjEv8x3cr/7K9rHmjPlYPBLvmKf2fBOa0Hj/0DQ5hf5eVAG
+ m9iajQaIYN6PbRFDNyFkCZQ1XnilXv6w+JdjHdMNXkzPmeEyQr2t3ZtQL
  A==;
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=ZEEymWSy
-Subject: [Intel-wired-lan] [PATCH iwl-next v3 1/5] ice: add flow parsing for
- GTP and new protocol field support
+ header.a=rsa-sha256 header.s=Intel header.b=grQW/z3B
+Subject: [Intel-wired-lan] [PATCH iwl-next v3 3/5] ice: improve TCAM
+ priority handling for RSS profiles
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -110,510 +110,216 @@ Cc: netdev@vger.kernel.org, Przemek Kitszel <przemyslaw.kitszel@intel.com>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Introduce new protocol header types and field sizes to support GTPU, GTPC
-tunneling protocols.
+Enhance TCAM priority logic to avoid conflicts between RSS profiles
+with overlapping PTGs and attributes.
 
- - Add field size macros for GTP TEID, QFI, and other headers
- - Extend ice_flow_field_info and enum definitions
- - Update hash macros for new protocols
- - Add support for IPv6 prefix matching and fragment headers
+Track used PTG and attribute combinations.
+Ensure higher-priority profiles override lower ones.
+Add helper for setting TCAM flags and masks.
 
-This patch lays the groundwork for enhanced RSS and flow classification
-capabilities.
+Ensure RSS rule consistency and prevent unintended matches.
 
 Co-developed-by: Dan Nowlin <dan.nowlin@intel.com>
 Signed-off-by: Dan Nowlin <dan.nowlin@intel.com>
-Co-developed-by: Junfeng Guo <junfeng.guo@intel.com>
-Signed-off-by: Junfeng Guo <junfeng.guo@intel.com>
-Co-developed-by: Ting Xu <ting.xu@intel.com>
-Signed-off-by: Ting Xu <ting.xu@intel.com>
 Signed-off-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_flow.c     | 197 +++++++++++++++++-
- drivers/net/ethernet/intel/ice/ice_flow.h     |  95 ++++++++-
- .../ethernet/intel/ice/ice_protocol_type.h    |  20 ++
- 3 files changed, 303 insertions(+), 9 deletions(-)
+ .../net/ethernet/intel/ice/ice_flex_pipe.c    | 91 ++++++++++++++++---
+ .../net/ethernet/intel/ice/ice_flex_type.h    |  1 +
+ 2 files changed, 78 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_flow.c b/drivers/net/ethernet/intel/ice/ice_flow.c
-index 6d5c939..54e259b 100644
---- a/drivers/net/ethernet/intel/ice/ice_flow.c
-+++ b/drivers/net/ethernet/intel/ice/ice_flow.c
-@@ -5,6 +5,38 @@
- #include "ice_flow.h"
- #include <net/gre.h>
- 
-+/* Size of known protocol header fields */
-+#define ICE_FLOW_FLD_SZ_ETH_TYPE	2
-+#define ICE_FLOW_FLD_SZ_VLAN		2
-+#define ICE_FLOW_FLD_SZ_IPV4_ADDR	4
-+#define ICE_FLOW_FLD_SZ_IPV6_ADDR	16
-+#define ICE_FLOW_FLD_SZ_IPV6_PRE32_ADDR	4
-+#define ICE_FLOW_FLD_SZ_IPV6_PRE48_ADDR	6
-+#define ICE_FLOW_FLD_SZ_IPV6_PRE64_ADDR	8
-+#define ICE_FLOW_FLD_SZ_IPV4_ID		2
-+#define ICE_FLOW_FLD_SZ_IPV6_ID		4
-+#define ICE_FLOW_FLD_SZ_IP_CHKSUM	2
-+#define ICE_FLOW_FLD_SZ_TCP_CHKSUM	2
-+#define ICE_FLOW_FLD_SZ_UDP_CHKSUM	2
-+#define ICE_FLOW_FLD_SZ_SCTP_CHKSUM	4
-+#define ICE_FLOW_FLD_SZ_IP_DSCP		1
-+#define ICE_FLOW_FLD_SZ_IP_TTL		1
-+#define ICE_FLOW_FLD_SZ_IP_PROT		1
-+#define ICE_FLOW_FLD_SZ_PORT		2
-+#define ICE_FLOW_FLD_SZ_TCP_FLAGS	1
-+#define ICE_FLOW_FLD_SZ_ICMP_TYPE	1
-+#define ICE_FLOW_FLD_SZ_ICMP_CODE	1
-+#define ICE_FLOW_FLD_SZ_ARP_OPER	2
-+#define ICE_FLOW_FLD_SZ_GRE_KEYID	4
-+#define ICE_FLOW_FLD_SZ_GTP_TEID	4
-+#define ICE_FLOW_FLD_SZ_GTP_QFI		2
-+#define ICE_FLOW_FLD_SZ_PFCP_SEID 8
-+#define ICE_FLOW_FLD_SZ_ESP_SPI	4
-+#define ICE_FLOW_FLD_SZ_AH_SPI	4
-+#define ICE_FLOW_FLD_SZ_NAT_T_ESP_SPI	4
-+#define ICE_FLOW_FLD_SZ_L2TPV2_SESS_ID	2
-+#define ICE_FLOW_FLD_SZ_L2TPV2_LEN_SESS_ID	2
-+
- /* Describe properties of a protocol header field */
- struct ice_flow_field_info {
- 	enum ice_flow_seg_hdr hdr;
-@@ -61,7 +93,33 @@ struct ice_flow_field_info ice_flds_info[ICE_FLOW_FIELD_IDX_MAX] = {
- 	/* ICE_FLOW_FIELD_IDX_IPV6_SA */
- 	ICE_FLOW_FLD_INFO(ICE_FLOW_SEG_HDR_IPV6, 8, sizeof(struct in6_addr)),
- 	/* ICE_FLOW_FIELD_IDX_IPV6_DA */
--	ICE_FLOW_FLD_INFO(ICE_FLOW_SEG_HDR_IPV6, 24, sizeof(struct in6_addr)),
-+	ICE_FLOW_FLD_INFO(ICE_FLOW_SEG_HDR_IPV6, 24, ICE_FLOW_FLD_SZ_IPV6_ADDR),
-+	/* ICE_FLOW_FIELD_IDX_IPV4_CHKSUM */
-+	ICE_FLOW_FLD_INFO(ICE_FLOW_SEG_HDR_IPV4, 10, ICE_FLOW_FLD_SZ_IP_CHKSUM),
-+	/* ICE_FLOW_FIELD_IDX_IPV4_FRAG */
-+	ICE_FLOW_FLD_INFO(ICE_FLOW_SEG_HDR_IPV_FRAG, 4,
-+			  ICE_FLOW_FLD_SZ_IPV4_ID),
-+	/* ICE_FLOW_FIELD_IDX_IPV6_FRAG */
-+	ICE_FLOW_FLD_INFO(ICE_FLOW_SEG_HDR_IPV_FRAG, 4,
-+			  ICE_FLOW_FLD_SZ_IPV6_ID),
-+	/* ICE_FLOW_FIELD_IDX_IPV6_PRE32_SA */
-+	ICE_FLOW_FLD_INFO(ICE_FLOW_SEG_HDR_IPV6, 8,
-+			  ICE_FLOW_FLD_SZ_IPV6_PRE32_ADDR),
-+	/* ICE_FLOW_FIELD_IDX_IPV6_PRE32_DA */
-+	ICE_FLOW_FLD_INFO(ICE_FLOW_SEG_HDR_IPV6, 24,
-+			  ICE_FLOW_FLD_SZ_IPV6_PRE32_ADDR),
-+	/* ICE_FLOW_FIELD_IDX_IPV6_PRE48_SA */
-+	ICE_FLOW_FLD_INFO(ICE_FLOW_SEG_HDR_IPV6, 8,
-+			  ICE_FLOW_FLD_SZ_IPV6_PRE48_ADDR),
-+	/* ICE_FLOW_FIELD_IDX_IPV6_PRE48_DA */
-+	ICE_FLOW_FLD_INFO(ICE_FLOW_SEG_HDR_IPV6, 24,
-+			  ICE_FLOW_FLD_SZ_IPV6_PRE48_ADDR),
-+	/* ICE_FLOW_FIELD_IDX_IPV6_PRE64_SA */
-+	ICE_FLOW_FLD_INFO(ICE_FLOW_SEG_HDR_IPV6, 8,
-+			  ICE_FLOW_FLD_SZ_IPV6_PRE64_ADDR),
-+	/* ICE_FLOW_FIELD_IDX_IPV6_PRE64_DA */
-+	ICE_FLOW_FLD_INFO(ICE_FLOW_SEG_HDR_IPV6, 24,
-+			  ICE_FLOW_FLD_SZ_IPV6_PRE64_ADDR),
- 	/* Transport */
- 	/* ICE_FLOW_FIELD_IDX_TCP_SRC_PORT */
- 	ICE_FLOW_FLD_INFO(ICE_FLOW_SEG_HDR_TCP, 0, sizeof(__be16)),
-@@ -76,7 +134,14 @@ struct ice_flow_field_info ice_flds_info[ICE_FLOW_FIELD_IDX_MAX] = {
- 	/* ICE_FLOW_FIELD_IDX_SCTP_DST_PORT */
- 	ICE_FLOW_FLD_INFO(ICE_FLOW_SEG_HDR_SCTP, 2, sizeof(__be16)),
- 	/* ICE_FLOW_FIELD_IDX_TCP_FLAGS */
--	ICE_FLOW_FLD_INFO(ICE_FLOW_SEG_HDR_TCP, 13, 1),
-+	ICE_FLOW_FLD_INFO(ICE_FLOW_SEG_HDR_TCP, 13, ICE_FLOW_FLD_SZ_TCP_FLAGS),
-+	/* ICE_FLOW_FIELD_IDX_TCP_CHKSUM */
-+	ICE_FLOW_FLD_INFO(ICE_FLOW_SEG_HDR_TCP, 16, ICE_FLOW_FLD_SZ_TCP_CHKSUM),
-+	/* ICE_FLOW_FIELD_IDX_UDP_CHKSUM */
-+	ICE_FLOW_FLD_INFO(ICE_FLOW_SEG_HDR_UDP, 6, ICE_FLOW_FLD_SZ_UDP_CHKSUM),
-+	/* ICE_FLOW_FIELD_IDX_SCTP_CHKSUM */
-+	ICE_FLOW_FLD_INFO(ICE_FLOW_SEG_HDR_SCTP, 8,
-+			  ICE_FLOW_FLD_SZ_SCTP_CHKSUM),
- 	/* ARP */
- 	/* ICE_FLOW_FIELD_IDX_ARP_SIP */
- 	ICE_FLOW_FLD_INFO(ICE_FLOW_SEG_HDR_ARP, 14, sizeof(struct in_addr)),
-@@ -108,9 +173,17 @@ struct ice_flow_field_info ice_flds_info[ICE_FLOW_FIELD_IDX_MAX] = {
- 	ICE_FLOW_FLD_INFO_MSK(ICE_FLOW_SEG_HDR_GTPU_EH, 22, sizeof(__be16),
- 			      0x3f00),
- 	/* ICE_FLOW_FIELD_IDX_GTPU_UP_TEID */
--	ICE_FLOW_FLD_INFO(ICE_FLOW_SEG_HDR_GTPU_UP, 12, sizeof(__be32)),
-+	ICE_FLOW_FLD_INFO(ICE_FLOW_SEG_HDR_GTPU_UP, 12,
-+			  ICE_FLOW_FLD_SZ_GTP_TEID),
-+	/* ICE_FLOW_FIELD_IDX_GTPU_UP_QFI */
-+	ICE_FLOW_FLD_INFO_MSK(ICE_FLOW_SEG_HDR_GTPU_UP, 22,
-+			      ICE_FLOW_FLD_SZ_GTP_QFI, 0x3f00),
- 	/* ICE_FLOW_FIELD_IDX_GTPU_DWN_TEID */
--	ICE_FLOW_FLD_INFO(ICE_FLOW_SEG_HDR_GTPU_DWN, 12, sizeof(__be32)),
-+	ICE_FLOW_FLD_INFO(ICE_FLOW_SEG_HDR_GTPU_DWN, 12,
-+			  ICE_FLOW_FLD_SZ_GTP_TEID),
-+	/* ICE_FLOW_FIELD_IDX_GTPU_DWN_QFI */
-+	ICE_FLOW_FLD_INFO_MSK(ICE_FLOW_SEG_HDR_GTPU_DWN, 22,
-+			      ICE_FLOW_FLD_SZ_GTP_QFI, 0x3f00),
- 	/* PPPoE */
- 	/* ICE_FLOW_FIELD_IDX_PPPOE_SESS_ID */
- 	ICE_FLOW_FLD_INFO(ICE_FLOW_SEG_HDR_PPPOE, 2, sizeof(__be16)),
-@@ -128,7 +201,16 @@ struct ice_flow_field_info ice_flds_info[ICE_FLOW_FIELD_IDX_MAX] = {
- 	ICE_FLOW_FLD_INFO(ICE_FLOW_SEG_HDR_AH, 4, sizeof(__be32)),
- 	/* NAT_T_ESP */
- 	/* ICE_FLOW_FIELD_IDX_NAT_T_ESP_SPI */
--	ICE_FLOW_FLD_INFO(ICE_FLOW_SEG_HDR_NAT_T_ESP, 8, sizeof(__be32)),
-+	ICE_FLOW_FLD_INFO(ICE_FLOW_SEG_HDR_NAT_T_ESP, 8,
-+			  ICE_FLOW_FLD_SZ_NAT_T_ESP_SPI),
-+	/* L2TPV2 */
-+	/* ICE_FLOW_FIELD_IDX_L2TPV2_SESS_ID */
-+	ICE_FLOW_FLD_INFO(ICE_FLOW_SEG_HDR_L2TPV2, 12,
-+			  ICE_FLOW_FLD_SZ_L2TPV2_SESS_ID),
-+	/* L2TPV2_LEN */
-+	/* ICE_FLOW_FIELD_IDX_L2TPV2_LEN_SESS_ID */
-+	ICE_FLOW_FLD_INFO(ICE_FLOW_SEG_HDR_L2TPV2, 14,
-+			  ICE_FLOW_FLD_SZ_L2TPV2_LEN_SESS_ID),
- };
- 
- /* Bitmaps indicating relevant packet types for a particular protocol header
-@@ -2324,6 +2406,111 @@ static void ice_rss_set_symm(struct ice_hw *hw, struct ice_flow_prof *prof)
- 	}
+diff --git a/drivers/net/ethernet/intel/ice/ice_flex_pipe.c b/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
+
+--- a/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
++++ b/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
+@@ -3581,6 +3581,20 @@ ice_move_vsi(struct ice_hw *hw, enum ice_block blk, u16 vsi, u16 vsig,
+ 	return 0;
  }
  
 +/**
-+ * ice_rss_cfg_raw_symm - configure symmetric hash parameters
-+ * for raw pattern
-+ * @hw: pointer to the hardware structure
-+ * @prof: pointer to parser profile
-+ * @prof_id: profile ID
-+ *
-+ * Calculate symmetric hash parameters based on input protocol type.
++ * ice_set_tcam_flags - set TCAM flag don't care mask
++ * @mask: mask for flags
++ * @dc_mask: pointer to the don't care mask
 + */
-+static void
-+ice_rss_cfg_raw_symm(struct ice_hw *hw,
-+		     struct ice_parser_profile *prof, u64 prof_id)
++static void ice_set_tcam_flags(u16 mask, u8 dc_mask[ICE_TCAM_KEY_VAL_SZ])
 +{
-+	u8 src_idx, dst_idx, proto_id;
-+	int len;
++	u16 *flag_word;
 +
-+	for (int i = 0; i < prof->fv_num; ++i) {
-+		proto_id = prof->fv[i].proto_id;
-+
-+		switch (proto_id) {
-+		case ICE_PROT_IPV4_OF_OR_S:
-+		case ICE_PROT_IPV4_IL:
-+		case ICE_PROT_IPV4_IL_IL:
-+			len = ICE_FLOW_FLD_SZ_IPV4_ADDR /
-+			      ICE_FLOW_FV_EXTRACT_SZ;
-+			if (prof->fv[i].offset ==
-+			    ICE_FLOW_FIELD_IPV4_SRC_OFFSET &&
-+			    prof->fv[i + len].proto_id == proto_id &&
-+			    prof->fv[i + len].offset ==
-+			    ICE_FLOW_FIELD_IPV4_DST_OFFSET) {
-+				break;
-+			}
-+			continue;
-+		case ICE_PROT_IPV6_OF_OR_S:
-+		case ICE_PROT_IPV6_IL:
-+		case ICE_PROT_IPV6_IL_IL:
-+			len = ICE_FLOW_FLD_SZ_IPV6_ADDR /
-+			      ICE_FLOW_FV_EXTRACT_SZ;
-+			if (prof->fv[i].offset ==
-+			    ICE_FLOW_FIELD_IPV6_SRC_OFFSET &&
-+			    prof->fv[i + len].proto_id == proto_id &&
-+			    prof->fv[i + len].offset ==
-+			    ICE_FLOW_FIELD_IPV6_DST_OFFSET) {
-+				break;
-+			}
-+			continue;
-+		case ICE_PROT_TCP_IL:
-+		case ICE_PROT_UDP_IL_OR_S:
-+		case ICE_PROT_SCTP_IL:
-+			len = ICE_FLOW_FLD_SZ_PORT /
-+			      ICE_FLOW_FV_EXTRACT_SZ;
-+			if (prof->fv[i].offset ==
-+			    ICE_FLOW_FIELD_SRC_PORT_OFFSET &&
-+			    prof->fv[i + len].proto_id == proto_id &&
-+			    prof->fv[i + len].offset ==
-+			    ICE_FLOW_FIELD_DST_PORT_OFFSET) {
-+				break;
-+			}
-+			continue;
-+		default:
-+			continue;
-+		}
-+		src_idx = i;
-+		dst_idx = i + len;
-+		i += 2 * len;
-+		ice_rss_config_xor(hw, prof_id, src_idx, dst_idx, len);
-+		--i;
-+	}
-+}
-+
-+/* Max registers index per packet profile */
-+#define ICE_SYMM_REG_INDEX_MAX 6
-+
-+/**
-+ * ice_rss_update_raw_symm - update symmetric hash configuration
-+ * for raw pattern
-+ * @hw: pointer to the hardware structure
-+ * @cfg: configure parameters for raw pattern
-+ * @id: profile tracking ID
-+ *
-+ * Update symmetric hash configuration for raw pattern if required.
-+ * Otherwise only clear to default.
-+ */
-+void
-+ice_rss_update_raw_symm(struct ice_hw *hw,
-+			struct ice_rss_raw_cfg *cfg, u64 id)
-+{
-+	struct ice_prof_map *map;
-+	u8 prof_id, m;
-+
-+	mutex_lock(&hw->blk[ICE_BLK_RSS].es.prof_map_lock);
-+	map = ice_search_prof_id(hw, ICE_BLK_RSS, id);
-+	if (map)
-+		prof_id = map->prof_id;
-+	mutex_unlock(&hw->blk[ICE_BLK_RSS].es.prof_map_lock);
-+	if (!map)
-+		return;
-+	/* clear to default */
-+	for (m = 0; m < ICE_SYMM_REG_INDEX_MAX; m++)
-+		wr32(hw, GLQF_HSYMM(prof_id, m), 0);
-+
-+	if (cfg->symm)
-+		ice_rss_cfg_raw_symm(hw, &cfg->prof, prof_id);
++	/* flags are lowest u16 */
++	flag_word = (u16 *)dc_mask;
++	*flag_word = ~mask;
 +}
 +
  /**
-  * ice_add_rss_cfg_sync - add an RSS configuration
-  * @hw: pointer to the hardware structure
-diff --git a/drivers/net/ethernet/intel/ice/ice_flow.h b/drivers/net/ethernet/intel/ice/ice_flow.h
-index 52f906d..29d7bbe 100644
---- a/drivers/net/ethernet/intel/ice/ice_flow.h
-+++ b/drivers/net/ethernet/intel/ice/ice_flow.h
-@@ -22,6 +22,15 @@
- #define ICE_FLOW_HASH_IPV6	\
- 	(BIT_ULL(ICE_FLOW_FIELD_IDX_IPV6_SA) | \
- 	 BIT_ULL(ICE_FLOW_FIELD_IDX_IPV6_DA))
-+#define ICE_FLOW_HASH_IPV6_PRE32	\
-+	(BIT_ULL(ICE_FLOW_FIELD_IDX_IPV6_PRE32_SA) | \
-+	 BIT_ULL(ICE_FLOW_FIELD_IDX_IPV6_PRE32_DA))
-+#define ICE_FLOW_HASH_IPV6_PRE48	\
-+	(BIT_ULL(ICE_FLOW_FIELD_IDX_IPV6_PRE48_SA) | \
-+	 BIT_ULL(ICE_FLOW_FIELD_IDX_IPV6_PRE48_DA))
-+#define ICE_FLOW_HASH_IPV6_PRE64	\
-+	(BIT_ULL(ICE_FLOW_FIELD_IDX_IPV6_PRE64_SA) | \
-+	 BIT_ULL(ICE_FLOW_FIELD_IDX_IPV6_PRE64_DA))
- #define ICE_FLOW_HASH_TCP_PORT	\
- 	(BIT_ULL(ICE_FLOW_FIELD_IDX_TCP_SRC_PORT) | \
- 	 BIT_ULL(ICE_FLOW_FIELD_IDX_TCP_DST_PORT))
-@@ -40,6 +49,33 @@
- #define ICE_HASH_SCTP_IPV4	(ICE_FLOW_HASH_IPV4 | ICE_FLOW_HASH_SCTP_PORT)
- #define ICE_HASH_SCTP_IPV6	(ICE_FLOW_HASH_IPV6 | ICE_FLOW_HASH_SCTP_PORT)
+  * ice_rem_chg_tcam_ent - remove a specific TCAM entry from change list
+  * @hw: pointer to the HW struct
+@@ -3651,6 +3665,9 @@ ice_prof_tcam_ena_dis(struct ice_hw *hw, enum ice_block blk, bool enable,
+ 	if (!p)
+ 		return -ENOMEM;
  
-+#define ICE_HASH_TCP_IPV6_PRE32	 \
-+	(ICE_FLOW_HASH_IPV6_PRE32 | ICE_FLOW_HASH_TCP_PORT)
-+#define ICE_HASH_UDP_IPV6_PRE32	 \
-+	(ICE_FLOW_HASH_IPV6_PRE32 | ICE_FLOW_HASH_UDP_PORT)
-+#define ICE_HASH_SCTP_IPV6_PRE32 \
-+	(ICE_FLOW_HASH_IPV6_PRE32 | ICE_FLOW_HASH_SCTP_PORT)
-+#define ICE_HASH_TCP_IPV6_PRE48	 \
-+	(ICE_FLOW_HASH_IPV6_PRE48 | ICE_FLOW_HASH_TCP_PORT)
-+#define ICE_HASH_UDP_IPV6_PRE48	 \
-+	(ICE_FLOW_HASH_IPV6_PRE48 | ICE_FLOW_HASH_UDP_PORT)
-+#define ICE_HASH_SCTP_IPV6_PRE48 \
-+	(ICE_FLOW_HASH_IPV6_PRE48 | ICE_FLOW_HASH_SCTP_PORT)
-+#define ICE_HASH_TCP_IPV6_PRE64	 \
-+	(ICE_FLOW_HASH_IPV6_PRE64 | ICE_FLOW_HASH_TCP_PORT)
-+#define ICE_HASH_UDP_IPV6_PRE64	 \
-+	(ICE_FLOW_HASH_IPV6_PRE64 | ICE_FLOW_HASH_UDP_PORT)
-+#define ICE_HASH_SCTP_IPV6_PRE64 \
-+	(ICE_FLOW_HASH_IPV6_PRE64 | ICE_FLOW_HASH_SCTP_PORT)
++	/* set don't care masks for TCAM flags */
++	ice_set_tcam_flags(tcam->attr.mask, dc_msk);
 +
-+#define ICE_FLOW_HASH_GTP_TEID \
-+	(BIT_ULL(ICE_FLOW_FIELD_IDX_GTPC_TEID))
-+
-+#define ICE_FLOW_HASH_GTP_IPV4_TEID \
-+	(ICE_FLOW_HASH_IPV4 | ICE_FLOW_HASH_GTP_TEID)
-+#define ICE_FLOW_HASH_GTP_IPV6_TEID \
-+	(ICE_FLOW_HASH_IPV6 | ICE_FLOW_HASH_GTP_TEID)
-+
- #define ICE_FLOW_HASH_GTP_C_TEID \
- 	(BIT_ULL(ICE_FLOW_FIELD_IDX_GTPC_TEID))
+ 	status = ice_tcam_write_entry(hw, blk, tcam->tcam_idx, tcam->prof_id,
+ 				      tcam->ptg, vsig, 0, tcam->attr.flags,
+ 				      vl_msk, dc_msk, nm_msk);
+@@ -3676,6 +3693,32 @@ ice_prof_tcam_ena_dis(struct ice_hw *hw, enum ice_block blk, bool enable,
+ 	return status;
+ }
  
-@@ -128,6 +164,23 @@
- #define ICE_FLOW_HASH_NAT_T_ESP_IPV6_SPI \
- 	(ICE_FLOW_HASH_IPV6 | ICE_FLOW_HASH_NAT_T_ESP_SPI)
++/**
++ * ice_ptg_attr_in_use - determine if PTG and attribute pair is in use
++ * @ptg_attr: pointer to the PTG and attribute pair to check
++ * @ptgs_used: bitmap that denotes which PTGs are in use
++ * @attr_used: array of PTG and attributes pairs already used
++ * @attr_cnt: count of entries in the attr_used array
++ */
++static bool
++ice_ptg_attr_in_use(struct ice_tcam_inf *ptg_attr, unsigned long *ptgs_used,
++		    struct ice_tcam_inf *attr_used[], u16 attr_cnt)
++{
++	u16 i;
++
++	if (!test_bit(ptg_attr->ptg, ptgs_used))
++		return false;
++
++	/* the PTG is used, so now look for correct attributes */
++	for (i = 0; i < attr_cnt; i++)
++		if (attr_used[i]->ptg == ptg_attr->ptg &&
++		    attr_used[i]->attr.flags == ptg_attr->attr.flags &&
++		    attr_used[i]->attr.mask == ptg_attr->attr.mask)
++			return true;
++
++	return false;
++}
++
+ /**
+  * ice_adj_prof_priorities - adjust profile based on priorities
+  * @hw: pointer to the HW struct
+@@ -3688,10 +3731,17 @@ ice_adj_prof_priorities(struct ice_hw *hw, enum ice_block blk, u16 vsig,
+ 			struct list_head *chg)
+ {
+ 	DECLARE_BITMAP(ptgs_used, ICE_XLT1_CNT);
++	struct ice_tcam_inf **attr_used;
+ 	struct ice_vsig_prof *t;
+-	int status;
++	u16 attr_used_cnt = 0;
++	int status = 0;
+ 	u16 idx;
  
-+#define ICE_FLOW_HASH_L2TPV2_SESS_ID \
-+	(BIT_ULL(ICE_FLOW_FIELD_IDX_L2TPV2_SESS_ID))
-+#define ICE_FLOW_HASH_L2TPV2_SESS_ID_ETH \
-+	(ICE_FLOW_HASH_ETH | ICE_FLOW_HASH_L2TPV2_SESS_ID)
++	attr_used = devm_kcalloc(ice_hw_to_dev(hw), ICE_MAX_PTG_ATTRS,
++				 sizeof(*attr_used), GFP_KERNEL);
++	if (!attr_used)
++		return -ENOMEM;
 +
-+#define ICE_FLOW_HASH_L2TPV2_LEN_SESS_ID \
-+	(BIT_ULL(ICE_FLOW_FIELD_IDX_L2TPV2_LEN_SESS_ID))
-+#define ICE_FLOW_HASH_L2TPV2_LEN_SESS_ID_ETH \
-+	(ICE_FLOW_HASH_ETH | ICE_FLOW_HASH_L2TPV2_LEN_SESS_ID)
+ 	bitmap_zero(ptgs_used, ICE_XLT1_CNT);
+ 	idx = vsig & ICE_VSIG_IDX_M;
+ 
+@@ -3709,11 +3759,15 @@ ice_adj_prof_priorities(struct ice_hw *hw, enum ice_block blk, u16 vsig,
+ 		u16 i;
+ 
+ 		for (i = 0; i < t->tcam_count; i++) {
++			bool used;
 +
-+#define ICE_FLOW_FIELD_IPV4_SRC_OFFSET 12
-+#define ICE_FLOW_FIELD_IPV4_DST_OFFSET 16
-+#define ICE_FLOW_FIELD_IPV6_SRC_OFFSET 8
-+#define ICE_FLOW_FIELD_IPV6_DST_OFFSET 24
-+#define ICE_FLOW_FIELD_SRC_PORT_OFFSET 0
-+#define ICE_FLOW_FIELD_DST_PORT_OFFSET 2
+ 			/* Scan the priorities from newest to oldest.
+ 			 * Make sure that the newest profiles take priority.
+ 			 */
+-			if (test_bit(t->tcam[i].ptg, ptgs_used) &&
+-			    t->tcam[i].in_use) {
++			used = ice_ptg_attr_in_use(&t->tcam[i], ptgs_used,
++						   attr_used, attr_used_cnt);
 +
- /* Protocol header fields within a packet segment. A segment consists of one or
-  * more protocol headers that make up a logical group of protocol headers. Each
-  * logical group of protocol headers encapsulates or is encapsulated using/by
-@@ -160,10 +213,13 @@ enum ice_flow_seg_hdr {
- 	ICE_FLOW_SEG_HDR_AH		= 0x00200000,
- 	ICE_FLOW_SEG_HDR_NAT_T_ESP	= 0x00400000,
- 	ICE_FLOW_SEG_HDR_ETH_NON_IP	= 0x00800000,
-+	ICE_FLOW_SEG_HDR_GTPU_NON_IP	= 0x01000000,
-+	ICE_FLOW_SEG_HDR_L2TPV2		= 0x10000000,
- 	/* The following is an additive bit for ICE_FLOW_SEG_HDR_IPV4 and
--	 * ICE_FLOW_SEG_HDR_IPV6 which include the IPV4 other PTYPEs
-+	 * ICE_FLOW_SEG_HDR_IPV6.
- 	 */
--	ICE_FLOW_SEG_HDR_IPV_OTHER      = 0x20000000,
-+	ICE_FLOW_SEG_HDR_IPV_FRAG	= 0x40000000,
-+	ICE_FLOW_SEG_HDR_IPV_OTHER	= 0x80000000,
++			if (used && t->tcam[i].in_use) {
+ 				/* need to mark this PTG as never match, as it
+ 				 * was already in use and therefore duplicate
+ 				 * (and lower priority)
+@@ -3723,9 +3777,8 @@ ice_adj_prof_priorities(struct ice_hw *hw, enum ice_block blk, u16 vsig,
+ 							       &t->tcam[i],
+ 							       chg);
+ 				if (status)
+-					return status;
+-			} else if (!test_bit(t->tcam[i].ptg, ptgs_used) &&
+-				   !t->tcam[i].in_use) {
++					goto free_attr_used;
++			} else if (!used && !t->tcam[i].in_use) {
+ 				/* need to enable this PTG, as it in not in use
+ 				 * and not enabled (highest priority)
+ 				 */
+@@ -3734,15 +3787,21 @@ ice_adj_prof_priorities(struct ice_hw *hw, enum ice_block blk, u16 vsig,
+ 							       &t->tcam[i],
+ 							       chg);
+ 				if (status)
+-					return status;
++					goto free_attr_used;
+ 			}
+ 
+ 			/* keep track of used ptgs */
+-			__set_bit(t->tcam[i].ptg, ptgs_used);
++			set_bit(t->tcam[i].ptg, ptgs_used);
++			if (attr_used_cnt < ICE_MAX_PTG_ATTRS)
++				attr_used[attr_used_cnt++] = &t->tcam[i];
++			else
++				ice_debug(hw, ICE_DBG_INIT, "Warn: ICE_MAX_PTG_ATTRS exceeded\n");
+ 		}
+ 	}
+ 
+-	return 0;
++free_attr_used:
++	devm_kfree(ice_hw_to_dev(hw), attr_used);
++	return status;
+ }
+ 
+ /**
+@@ -3825,11 +3884,15 @@ ice_add_prof_id_vsig(struct ice_hw *hw, enum ice_block blk, u16 vsig, u64 hdl,
+ 		p->vsig = vsig;
+ 		p->tcam_idx = t->tcam[i].tcam_idx;
+ 
++		/* set don't care masks for TCAM flags */
++		ice_set_tcam_flags(t->tcam[i].attr.mask, dc_msk);
++
+ 		/* write the TCAM entry */
+ 		status = ice_tcam_write_entry(hw, blk, t->tcam[i].tcam_idx,
+ 					      t->tcam[i].prof_id,
+-					      t->tcam[i].ptg, vsig, 0, 0,
+-					      vl_msk, dc_msk, nm_msk);
++					      t->tcam[i].ptg, vsig, 0,
++					      t->tcam[i].attr.flags, vl_msk,
++					      dc_msk, nm_msk);
+ 		if (status) {
+ 			devm_kfree(ice_hw_to_dev(hw), p);
+ 			goto err_ice_add_prof_id_vsig;
+@@ -4143,9 +4206,6 @@ ice_flow_assoc_fdir_prof(struct ice_hw *hw, enum ice_block blk,
+ 	u16 vsi_num;
+ 	int status;
+ 
+-	if (blk != ICE_BLK_FD)
+-		return -EINVAL;
+-
+ 	vsi_num = ice_get_hw_vsi_num(hw, dest_vsi);
+ 	status = ice_add_prof_id_flow(hw, blk, vsi_num, hdl);
+ 	if (status) {
+@@ -4154,6 +4214,9 @@ ice_flow_assoc_fdir_prof(struct ice_hw *hw, enum ice_block blk,
+ 		return status;
+ 	}
+ 
++	if (blk != ICE_BLK_FD)
++		return 0;
++
+ 	vsi_num = ice_get_hw_vsi_num(hw, fdir_vsi);
+ 	status = ice_add_prof_id_flow(hw, blk, vsi_num, hdl);
+ 	if (status) {
+diff --git a/drivers/net/ethernet/intel/ice/ice_flex_type.h b/drivers/net/ethernet/intel/ice/ice_flex_type.h
+index 817beca..80c9e7c 100644
+--- a/drivers/net/ethernet/intel/ice/ice_flex_type.h
++++ b/drivers/net/ethernet/intel/ice/ice_flex_type.h
+@@ -187,6 +187,7 @@ struct ice_prof_map {
  };
  
- /* These segments all have the same PTYPES, but are otherwise distinguished by
-@@ -200,6 +256,15 @@ enum ice_flow_field {
- 	ICE_FLOW_FIELD_IDX_IPV4_DA,
- 	ICE_FLOW_FIELD_IDX_IPV6_SA,
- 	ICE_FLOW_FIELD_IDX_IPV6_DA,
-+	ICE_FLOW_FIELD_IDX_IPV4_CHKSUM,
-+	ICE_FLOW_FIELD_IDX_IPV4_ID,
-+	ICE_FLOW_FIELD_IDX_IPV6_ID,
-+	ICE_FLOW_FIELD_IDX_IPV6_PRE32_SA,
-+	ICE_FLOW_FIELD_IDX_IPV6_PRE32_DA,
-+	ICE_FLOW_FIELD_IDX_IPV6_PRE48_SA,
-+	ICE_FLOW_FIELD_IDX_IPV6_PRE48_DA,
-+	ICE_FLOW_FIELD_IDX_IPV6_PRE64_SA,
-+	ICE_FLOW_FIELD_IDX_IPV6_PRE64_DA,
- 	/* L4 */
- 	ICE_FLOW_FIELD_IDX_TCP_SRC_PORT,
- 	ICE_FLOW_FIELD_IDX_TCP_DST_PORT,
-@@ -208,6 +273,9 @@ enum ice_flow_field {
- 	ICE_FLOW_FIELD_IDX_SCTP_SRC_PORT,
- 	ICE_FLOW_FIELD_IDX_SCTP_DST_PORT,
- 	ICE_FLOW_FIELD_IDX_TCP_FLAGS,
-+	ICE_FLOW_FIELD_IDX_TCP_CHKSUM,
-+	ICE_FLOW_FIELD_IDX_UDP_CHKSUM,
-+	ICE_FLOW_FIELD_IDX_SCTP_CHKSUM,
- 	/* ARP */
- 	ICE_FLOW_FIELD_IDX_ARP_SIP,
- 	ICE_FLOW_FIELD_IDX_ARP_DIP,
-@@ -228,13 +296,13 @@ enum ice_flow_field {
- 	ICE_FLOW_FIELD_IDX_GTPU_EH_QFI,
- 	/* GTPU_UP */
- 	ICE_FLOW_FIELD_IDX_GTPU_UP_TEID,
-+	ICE_FLOW_FIELD_IDX_GTPU_UP_QFI,
- 	/* GTPU_DWN */
- 	ICE_FLOW_FIELD_IDX_GTPU_DWN_TEID,
--	/* PPPoE */
-+	ICE_FLOW_FIELD_IDX_GTPU_DWN_QFI,
- 	ICE_FLOW_FIELD_IDX_PPPOE_SESS_ID,
- 	/* PFCP */
- 	ICE_FLOW_FIELD_IDX_PFCP_SEID,
--	/* L2TPv3 */
- 	ICE_FLOW_FIELD_IDX_L2TPV3_SESS_ID,
- 	/* ESP */
- 	ICE_FLOW_FIELD_IDX_ESP_SPI,
-@@ -242,10 +310,16 @@ enum ice_flow_field {
- 	ICE_FLOW_FIELD_IDX_AH_SPI,
- 	/* NAT_T ESP */
- 	ICE_FLOW_FIELD_IDX_NAT_T_ESP_SPI,
-+	/* L2TPV2 SESSION ID*/
-+	ICE_FLOW_FIELD_IDX_L2TPV2_SESS_ID,
-+	/* L2TPV2_LEN SESSION ID */
-+	ICE_FLOW_FIELD_IDX_L2TPV2_LEN_SESS_ID,
- 	 /* The total number of enums must not exceed 64 */
- 	ICE_FLOW_FIELD_IDX_MAX
- };
+ #define ICE_INVALID_TCAM	0xFFFF
++#define ICE_MAX_PTG_ATTRS	1024
  
-+static_assert(ICE_FLOW_FIELD_IDX_MAX <= 64, "The total number of enums must not exceed 64");
-+
- #define ICE_FLOW_HASH_FLD_IPV4_SA	BIT_ULL(ICE_FLOW_FIELD_IDX_IPV4_SA)
- #define ICE_FLOW_HASH_FLD_IPV6_SA	BIT_ULL(ICE_FLOW_FIELD_IDX_IPV6_SA)
- #define ICE_FLOW_HASH_FLD_IPV4_DA	BIT_ULL(ICE_FLOW_FIELD_IDX_IPV4_DA)
-@@ -296,6 +370,10 @@ enum ice_rss_cfg_hdr_type {
- 	/* take inner headers as inputset for packet with outer ipv6. */
- 	ICE_RSS_INNER_HEADERS_W_OUTER_IPV6,
- 	/* take outer headers first then inner headers as inputset */
-+	/* take inner as inputset for GTPoGRE with outer IPv4 + GRE. */
-+	ICE_RSS_INNER_HEADERS_W_OUTER_IPV4_GRE,
-+	/* take inner as inputset for GTPoGRE with outer IPv6 + GRE. */
-+	ICE_RSS_INNER_HEADERS_W_OUTER_IPV6_GRE,
- 	ICE_RSS_ANY_HEADERS
- };
- 
-@@ -406,6 +484,12 @@ struct ice_flow_prof {
- 	bool symm; /* Symmetric Hash for RSS */
- };
- 
-+struct ice_rss_raw_cfg {
-+	struct ice_parser_profile prof;
-+	bool raw_ena;
-+	bool symm;
-+};
-+
- struct ice_rss_cfg {
- 	struct list_head l_entry;
- 	/* bitmap of VSIs added to the RSS entry */
-@@ -444,4 +528,6 @@ int ice_add_rss_cfg(struct ice_hw *hw, struct ice_vsi *vsi,
- int ice_rem_rss_cfg(struct ice_hw *hw, u16 vsi_handle,
- 		    const struct ice_rss_hash_cfg *cfg);
- u64 ice_get_rss_cfg(struct ice_hw *hw, u16 vsi_handle, u32 hdrs, bool *symm);
-+void ice_rss_update_raw_symm(struct ice_hw *hw,
-+			     struct ice_rss_raw_cfg *cfg, u64 id);
- #endif /* _ICE_FLOW_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice_protocol_type.h b/drivers/net/ethernet/intel/ice/ice_protocol_type.h
-index 7c09ea0..725167d 100644
---- a/drivers/net/ethernet/intel/ice/ice_protocol_type.h
-+++ b/drivers/net/ethernet/intel/ice/ice_protocol_type.h
-@@ -82,26 +82,46 @@ enum ice_sw_tunnel_type {
- enum ice_prot_id {
- 	ICE_PROT_ID_INVAL	= 0,
- 	ICE_PROT_MAC_OF_OR_S	= 1,
-+	ICE_PROT_MAC_O2		= 2,
- 	ICE_PROT_MAC_IL		= 4,
-+	ICE_PROT_MAC_IN_MAC	= 7,
- 	ICE_PROT_ETYPE_OL	= 9,
- 	ICE_PROT_ETYPE_IL	= 10,
-+	ICE_PROT_PAY		= 15,
-+	ICE_PROT_EVLAN_O	= 16,
-+	ICE_PROT_VLAN_O		= 17,
-+	ICE_PROT_VLAN_IF	= 18,
-+	ICE_PROT_MPLS_OL_MINUS_1 = 27,
-+	ICE_PROT_MPLS_OL_OR_OS	= 28,
-+	ICE_PROT_MPLS_IL	= 29,
- 	ICE_PROT_IPV4_OF_OR_S	= 32,
- 	ICE_PROT_IPV4_IL	= 33,
-+	ICE_PROT_IPV4_IL_IL	= 34,
- 	ICE_PROT_IPV6_OF_OR_S	= 40,
- 	ICE_PROT_IPV6_IL	= 41,
-+	ICE_PROT_IPV6_IL_IL	= 42,
-+	ICE_PROT_IPV6_NEXT_PROTO = 43,
-+	ICE_PROT_IPV6_FRAG	= 47,
- 	ICE_PROT_TCP_IL		= 49,
- 	ICE_PROT_UDP_OF		= 52,
- 	ICE_PROT_UDP_IL_OR_S	= 53,
- 	ICE_PROT_GRE_OF		= 64,
-+	ICE_PROT_NSH_F		= 84,
- 	ICE_PROT_ESP_F		= 88,
- 	ICE_PROT_ESP_2		= 89,
- 	ICE_PROT_SCTP_IL	= 96,
- 	ICE_PROT_ICMP_IL	= 98,
- 	ICE_PROT_ICMPV6_IL	= 100,
-+	ICE_PROT_VRRP_F		= 101,
-+	ICE_PROT_OSPF		= 102,
- 	ICE_PROT_PPPOE		= 103,
- 	ICE_PROT_L2TPV3		= 104,
-+	ICE_PROT_ATAOE_OF	= 114,
-+	ICE_PROT_CTRL_OF	= 116,
-+	ICE_PROT_LLDP_OF	= 117,
- 	ICE_PROT_ARP_OF		= 118,
- 	ICE_PROT_META_ID	= 255, /* when offset == metadata */
-+	ICE_PROT_EAPOL_OF	= 120,
- 	ICE_PROT_INVALID	= 255  /* when offset == ICE_FV_OFFSET_INVAL */
- };
- 
+ struct ice_tcam_inf {
+ 	u16 tcam_idx;
 -- 
 2.47.1
 
