@@ -4,83 +4,77 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 18EECCA0FF9
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 27 Aug 2025 15:15:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 834DACA0FED
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 27 Aug 2025 15:19:12 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id D4EE1813EB;
-	Wed, 27 Aug 2025 15:15:54 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 39DF481434;
+	Wed, 27 Aug 2025 15:19:12 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id MV7xgPBNEBqo; Wed, 27 Aug 2025 15:15:53 +0000 (UTC)
+ id 6SmUbo8z-dAP; Wed, 27 Aug 2025 15:19:11 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 54E9D8134D
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B04BF8143C
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1756307753;
-	bh=0ze5sI5qLVJiZG2jK8doSpuXVK3lImEh4BnZocKVUJg=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1756307951;
+	bh=+lbduQnnscDvQeLayDEHm9y46Z9GRYi4sidREbMvUIE=;
+	h=Date:To:Cc:References:From:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=GkIRf2/MNmRKTcbF7Jpu2Z2yZwdeyWXFOb7fRYeuOSoVUn1UKZoMsGTMipM9/2krp
-	 EL/hrmRb98pV8nzy4T77hbOn4616cSJnEea49PaHsUinm7NxecG1IWl3RT/I0hUOPu
-	 br2muJ4PtZt26oYTWILaQiC3j5iK56XuD2chVhAoDeb7I+hH79zOaien/iXlyZjyom
-	 M9SFQ9pFpXJUDUpG7qMkM8KP990cMM23OEdK5KiQjnFEOvtFlbp/b8S1s8/nQ7bQGn
-	 cNNutPxtso4pPzmdRKySmksdM/hlxphf7ySL1T5Q6F4bHR8NfhXJyhIJChKG7htShd
-	 V/JY9gkwQ/fuw==
+	b=dy35NeCAHDaAWITSDAMk6ojGIlPqpysf1L+ox1VSmkVTiyQ0A1FZA4dNa6mqMmxpS
+	 HwDfI7755i9abxGT2myysaq2lnSglodB5JPuROtVWdd0Lk0PmosTE6JSX9Kd9hIOYA
+	 rX2b7SNJjLmjtNfdFQq0aeO4FBbGQF3TzKcy39AMnwJGREQo3cfYG6EjJq5VKcSV6P
+	 9gyuLs6ERv+41fhQClA8/SG6Hc8yhVT0ePhIo3oGG2qOZ6fPq80gmecET15+/vvQOu
+	 v9QzoLAbIWL9EnLhPUBXlai3K1fCweQEEHIRhZH8O5HES+6KTzMQldlXghEs8hSfWx
+	 sQt8D+2OmlJaw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 54E9D8134D;
-	Wed, 27 Aug 2025 15:15:53 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id A5D9F114
- for <intel-wired-lan@lists.osuosl.org>; Wed, 27 Aug 2025 12:02:04 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id B04BF8143C;
+	Wed, 27 Aug 2025 15:19:11 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 8086E17D
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 27 Aug 2025 15:19:10 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 8CCE940A66
- for <intel-wired-lan@lists.osuosl.org>; Wed, 27 Aug 2025 12:02:04 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 727F040482
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 27 Aug 2025 15:19:10 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id zeGiP7WfIKKb for <intel-wired-lan@lists.osuosl.org>;
- Wed, 27 Aug 2025 12:02:03 +0000 (UTC)
-X-Greylist: delayed 305 seconds by postgrey-1.37 at util1.osuosl.org;
- Wed, 27 Aug 2025 12:02:03 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 3D0DA407D6
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3D0DA407D6
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=117.135.214.73;
- helo=mail-m21473.qiye.163.com; envelope-from=zhen.ni@easystack.cn;
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id cbUVYMQz4op3 for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 27 Aug 2025 15:19:09 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=141.14.17.11;
+ helo=mx3.molgen.mpg.de; envelope-from=pmenzel@molgen.mpg.de;
  receiver=<UNKNOWN> 
-Received: from mail-m21473.qiye.163.com (mail-m21473.qiye.163.com
- [117.135.214.73])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 3D0DA407D6
- for <intel-wired-lan@lists.osuosl.org>; Wed, 27 Aug 2025 12:02:02 +0000 (UTC)
-Received: from localhost.localdomain (unknown [218.94.118.90])
- by smtp.qiye.163.com (Hmail) with ESMTP id f46bbc4e;
- Wed, 27 Aug 2025 19:56:52 +0800 (GMT+08:00)
-From: Zhen Ni <zhen.ni@easystack.cn>
-To: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
- andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
- kuba@kernel.org, pabeni@redhat.com
-Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- Zhen Ni <zhen.ni@easystack.cn>
-Date: Wed, 27 Aug 2025 19:56:31 +0800
-Message-Id: <20250827115631.1428742-1-zhen.ni@easystack.cn>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20250827032348.1374048-1-zhen.ni@easystack.cn>
-References: <20250827032348.1374048-1-zhen.ni@easystack.cn>
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org B0D5740578
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B0D5740578
+Received: from mx3.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id B0D5740578
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 27 Aug 2025 15:19:08 +0000 (UTC)
+Received: from [192.168.2.202] (p5dc558dd.dip0.t-ipconnect.de [93.197.88.221])
+ (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested) (Authenticated sender: pmenzel)
+ by mx.molgen.mpg.de (Postfix) with ESMTPSA id B625A60213AC3;
+ Wed, 27 Aug 2025 17:18:35 +0200 (CEST)
+Message-ID: <6dc3bd8e-66db-4237-86bc-717f7b5c7b2a@molgen.mpg.de>
+Date: Wed, 27 Aug 2025 17:18:34 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+User-Agent: Mozilla Thunderbird
+To: Zhen Ni <zhen.ni@easystack.cn>
+Cc: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
+ andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
+ kuba@kernel.org, pabeni@redhat.com, intel-wired-lan@lists.osuosl.org,
+ netdev@vger.kernel.org
+References: <20250827032348.1374048-1-zhen.ni@easystack.cn>
+Content-Language: en-US
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+In-Reply-To: <20250827032348.1374048-1-zhen.ni@easystack.cn>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-HM-Tid: 0a98eb6353aa022akunmaac10b1a148a57
-X-HM-MType: 1
-X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
- tZV1koWUFJQjdXWS1ZQUlXWQ8JGhUIEh9ZQVkaQ09CVkxKHhoeSktOGhpKSFYVFAkWGhdVGRETFh
- oSFyQUDg9ZV1kYEgtZQVlJSkNVQk9VSkpDVUJLWVdZFhoPEhUdFFlBWU9LSFVKS0lPT09IVUpLS1
- VKQktLWQY+
-X-Mailman-Approved-At: Wed, 27 Aug 2025 15:15:51 +0000
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=easystack.cn
-Subject: [Intel-wired-lan] [PATCH iwl-net v2] i40e: Fix potential invalid
- access when MAC list is empty
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dmarc=none (p=none dis=none)
+ header.from=molgen.mpg.de
+Subject: Re: [Intel-wired-lan] [PATCH] i40e: Fix potential invalid access
+ when MAC list is empty
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -96,36 +90,51 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-list_first_entry() never returns NULL — if the list is empty, it still
-returns a pointer to an invalid object, leading to potential invalid
-memory access when dereferenced.
+Dear Zhen,
 
-Fix this by using list_first_entry_or_null instead of list_first_entry.
 
-Fixes: e3219ce6a775 ("i40e: Add support for client interface for IWARP driver")
-Signed-off-by: Zhen Ni <zhen.ni@easystack.cn>
----
-Changes in v2:
-- Replace the list_empty() pre-check with list_first_entry_or_null()
----
- drivers/net/ethernet/intel/i40e/i40e_client.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Thank you for your patch.
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_client.c b/drivers/net/ethernet/intel/i40e/i40e_client.c
-index 5f1a405cbbf8..518bc738ea3b 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_client.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_client.c
-@@ -359,8 +359,8 @@ static void i40e_client_add_instance(struct i40e_pf *pf)
- 	if (i40e_client_get_params(vsi, &cdev->lan_info.params))
- 		goto free_cdev;
- 
--	mac = list_first_entry(&cdev->lan_info.netdev->dev_addrs.list,
--			       struct netdev_hw_addr, list);
-+	mac = list_first_entry_or_null(&cdev->lan_info.netdev->dev_addrs.list,
-+				       struct netdev_hw_addr, list);
- 	if (mac)
- 		ether_addr_copy(cdev->lan_info.lanmac, mac->addr);
- 	else
--- 
-2.20.1
+Am 27.08.25 um 05:23 schrieb Zhen Ni:
+> list_first_entry() never returns NULL — if the list is empty, it still
+> returns a pointer to an invalid object, leading to potential invalid
+> memory access when dereferenced.
+> 
+> Fix this by checking list_empty() before calling list_first_entry(),
+> and only copying the MAC address when the list is not empty.
+> 
+> Fixes: e3219ce6a775 ("i40e: Add support for client interface for IWARP driver")
+> Signed-off-by: Zhen Ni <zhen.ni@easystack.cn>
+> ---
+>   drivers/net/ethernet/intel/i40e/i40e_client.c | 9 +++++----
+>   1 file changed, 5 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_client.c b/drivers/net/ethernet/intel/i40e/i40e_client.c
+> index 5f1a405cbbf8..0a72157aee0e 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_client.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_client.c
+> @@ -359,12 +359,13 @@ static void i40e_client_add_instance(struct i40e_pf *pf)
+>   	if (i40e_client_get_params(vsi, &cdev->lan_info.params))
+>   		goto free_cdev;
+>   
+> -	mac = list_first_entry(&cdev->lan_info.netdev->dev_addrs.list,
+> -			       struct netdev_hw_addr, list);
+> -	if (mac)
+> +	if (!list_empty(&cdev->lan_info.netdev->dev_addrs.list)) {
+> +		mac = list_first_entry(&cdev->lan_info.netdev->dev_addrs.list,
+> +				       struct netdev_hw_addr, list);
+>   		ether_addr_copy(cdev->lan_info.lanmac, mac->addr);
+> -	else
+> +	} else {
+>   		dev_err(&pf->pdev->dev, "MAC address list is empty!\n");
+> +	}
+>   
+>   	pf->cinst = cdev;
+>   
 
+Reviewed-by: Paul Menzel <pmenzel@molgen.mpg.de>
+
+
+Kind regards,
+
+Paul
