@@ -4,87 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 63203C8303F
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 28 Aug 2025 10:33:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2434EC8303F
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 28 Aug 2025 10:40:46 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 298566076C;
-	Thu, 28 Aug 2025 10:33:10 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id D806B60B29;
+	Thu, 28 Aug 2025 10:40:45 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id sNWYltnas6LW; Thu, 28 Aug 2025 10:33:09 +0000 (UTC)
+ id 5KPyYAMKofZf; Thu, 28 Aug 2025 10:40:44 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8D34060B0A
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org F04E860BBE
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1756377189;
-	bh=V7yMT0jTN0Fq+VgOjtqCaC7Vr7+9qsVFkZwtAVQoXko=;
+	s=default; t=1756377644;
+	bh=/sqTPAhGuwTYFXfsuiKw4m1Tn0kTsx3MzexPL5jVVYY=;
 	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=Xc/byRzno0i/sME/Ou4+MDaBBr2cY4uq+ePnApMZ26LrTvy2xLrxoB3NxbY13V2S2
-	 TBhr8ZwXNjrRJR0P+VAmFz2TR5HEu9iPGcHR7iL5K//o/ho/xglZrGS4TXYvF767ko
-	 y4mGPb4Xpcs7cLo6hy6aKhN0yQw+e+w1nBaEKSDcU4mgVc+LEP00apDxqgguzmhxU8
-	 a23KQlpuuPaBao2OtWsYtEGvuH3xrFF0eSJd7v//bekK5dwSpG4IPaN1cOgYxBqA59
-	 nDMNKEelt3CV4johN9swiLdETo7BUs3gnEkc8RXriRP3Rf6T0c9IYLGyUl0RaRZlNu
-	 I7UhzaKiW2Paw==
+	b=VQGsdgVn5fkys+ts0iUWrhEZQqfoxeeVKc8zGHATF6Ju9L1tY8JXQLnBcKny8vlGC
+	 3kgi6lfIcyyCJ5FH80ap8tU84l2pBlpH38OnqSkwNHwYMchIJPAYeX4wGw+hsqhG+t
+	 k4cg23AD+nj9U3BeYD/TdbL7qAGw3TtIOFA+qRiJ0Puf03RupL8WhdiR55iX8y5rto
+	 tky6X6Ywa30XetYwLK2EOBSamXjPHnCfdkYv/WZQw7476kyaKbUNbkgOlrNery5CPh
+	 sn4DiBeIGSdJ8tgAv+MDtDausnBqvGMDxD/8iG9sz1zC1BRCN9E+19o95pB2kST+hv
+	 JmlKYU+l+ptzQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 8D34060B0A;
-	Thu, 28 Aug 2025 10:33:09 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id A6A351B0
- for <intel-wired-lan@lists.osuosl.org>; Thu, 28 Aug 2025 10:33:07 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id F04E860BBE;
+	Thu, 28 Aug 2025 10:40:43 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 9D61517D
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 28 Aug 2025 10:40:42 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 852CE60B21
- for <intel-wired-lan@lists.osuosl.org>; Thu, 28 Aug 2025 10:33:07 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 81F9A813DC
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 28 Aug 2025 10:40:42 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Daw8eNbSdHpN for <intel-wired-lan@lists.osuosl.org>;
- Thu, 28 Aug 2025 10:33:07 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.234.252.31;
- helo=sea.source.kernel.org; envelope-from=horms@kernel.org;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 04EAE60B0A
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 04EAE60B0A
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 04EAE60B0A
- for <intel-wired-lan@lists.osuosl.org>; Thu, 28 Aug 2025 10:33:06 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id W_qO9YSPUS0s for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 28 Aug 2025 10:40:41 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org;
+ envelope-from=horms@kernel.org; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 9F1F98142A
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9F1F98142A
+Received: from tor.source.kernel.org (tor.source.kernel.org
+ [IPv6:2600:3c04:e001:324:0:1991:8:25])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 9F1F98142A
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 28 Aug 2025 10:40:41 +0000 (UTC)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by sea.source.kernel.org (Postfix) with ESMTP id 3FD794058A;
- Thu, 28 Aug 2025 10:33:06 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7BD44C4CEEB;
- Thu, 28 Aug 2025 10:33:04 +0000 (UTC)
-Date: Thu, 28 Aug 2025 11:33:02 +0100
+ by tor.source.kernel.org (Postfix) with ESMTP id 5054C601BB;
+ Thu, 28 Aug 2025 10:40:40 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C80CAC4CEEB;
+ Thu, 28 Aug 2025 10:40:38 +0000 (UTC)
+Date: Thu, 28 Aug 2025 11:40:36 +0100
 From: Simon Horman <horms@kernel.org>
-To: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
-Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
- linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
- Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Message-ID: <20250828103302.GZ10519@horms.kernel.org>
-References: <20250826153118.2129807-1-arkadiusz.kubalewski@intel.com>
+To: Pavan Kumar Linga <pavan.kumar.linga@intel.com>
+Cc: intel-wired-lan@lists.osuosl.org, madhu.chittim@intel.com,
+ netdev@vger.kernel.org, Sridhar Samudrala <sridhar.samudrala@intel.com>
+Message-ID: <20250828104036.GA10519@horms.kernel.org>
+References: <20250826172845.265142-1-pavan.kumar.linga@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20250826153118.2129807-1-arkadiusz.kubalewski@intel.com>
+In-Reply-To: <20250826172845.265142-1-pavan.kumar.linga@intel.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1756377186;
- bh=ApaRwpJeqb99ibXDe3dtLn8mCDS3zrygAvunHsREGr4=;
+ d=kernel.org; s=k20201202; t=1756377640;
+ bh=NwR50ZpM6+Ymc6dkl0+mc9OsZhEF6EybCCscmIk+Dzo=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=Xe0HND/Qwks2jszGWekVHOQjyj8NWBMyOky2BTPU21LUfvhuQf48DAs4FhKGtQRkt
- StQhX62q5huazo0L39Z43I2isj3Pi+k8l9lf2mKFVBvSC922kotnryEubQ9KnZOMxN
- SJBuiSYG+iCYrtfzChQcq/5FPzzjf4/P57S6ogPCoWYeOJo9bP+08kevOZdWaex212
- oO59BInnittt8Uv6j9Ct5xUy9oCgappCgd43OdKMuZW/WgPu3r6IpU4yLSWfTcY+Z+
- 5VJGKslNTyQBWSUfUayq+5mEwqtWm+2e+cxcBRTFAqVUvajQY+E6xWaOGH+yAp894k
- frPFamw6H8Awg==
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ b=b/MrN/V9C+XQmfWdIPZiTK9ah1S1Zvix6O9zkq3Qk26i/Wna/kqG9XOV+7+c7Wc9n
+ JOaIkR3bmfJ0nePmMaaodHhqeCe+bzLayOWcV/yN7bzttvT2ekqaA8euLSU9xVRBpg
+ ASE0RGmdG/2Lw7YAcyeunohVxv0bsNNnWqgIodTSFLiCWvgeNYOaT9lijWiI9wGljk
+ JDP+cO/0LiLRW/NOm3mYHeUoRyxWxK7wEC8DINQU5qmiOMB4gXijI7bPNt6wLLx05d
+ SzfiX/U+JRiEeHGtjhwB4asa3qE+5NnfTBuTbC8YkeTvtEc1sXzExl8u6cKszlWGmR
+ 9fwoNM83X5gdw==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=Xe0HND/Q
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next v1] ice: add support for
- unmanaged dpll on E830 NIC
+ header.a=rsa-sha256 header.s=k20201202 header.b=b/MrN/V9
+Subject: Re: [Intel-wired-lan] [PATCH net-next v1] idpf: add support for
+ IDPF PCI programming interface
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -100,70 +99,96 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Tue, Aug 26, 2025 at 05:31:18PM +0200, Arkadiusz Kubalewski wrote:
+On Tue, Aug 26, 2025 at 10:28:45AM -0700, Pavan Kumar Linga wrote:
+> At present IDPF supports only 0x1452 and 0x145C as PF and VF device IDs
+> on our current generation hardware. Future hardware exposes a new set of
+> device IDs for each generation. To avoid adding a new device ID for each
+> generation and to make the driver forward and backward compatible,
+> make use of the IDPF PCI programming interface to load the driver.
+> 
+> Write and read the VF_ARQBAL mailbox register to find if the current
+> device is a PF or a VF.
+> 
+> PCI SIG allocated a new programming interface for the IDPF compliant
+> ethernet network controller devices. It can be found at:
+> https://members.pcisig.com/wg/PCI-SIG/document/20113
+> with the document titled as 'PCI Code and ID Assignment Revision 1.16'
+> or any latest revisions.
+> 
+> Reviewed-by: Madhu Chittim <madhu.chittim@intel.com>
+> Reviewed-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
+> Signed-off-by: Pavan Kumar Linga <pavan.kumar.linga@intel.com>
 
 ...
 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_dpll.c b/drivers/net/ethernet/intel/ice/ice_dpll.c
-
-...
-
+> diff --git a/drivers/net/ethernet/intel/idpf/idpf_main.c b/drivers/net/ethernet/intel/idpf/idpf_main.c
+> index 8c46481d2e1f..b161715e1168 100644
+> --- a/drivers/net/ethernet/intel/idpf/idpf_main.c
+> +++ b/drivers/net/ethernet/intel/idpf/idpf_main.c
+> @@ -7,11 +7,57 @@
+>  
+>  #define DRV_SUMMARY	"Intel(R) Infrastructure Data Path Function Linux Driver"
+>  
+> +#define IDPF_NETWORK_ETHERNET_PROGIF				0x01
+> +#define IDPF_CLASS_NETWORK_ETHERNET_PROGIF			\
+> +	(PCI_CLASS_NETWORK_ETHERNET << 8 | IDPF_NETWORK_ETHERNET_PROGIF)
+> +
+>  MODULE_DESCRIPTION(DRV_SUMMARY);
+>  MODULE_IMPORT_NS("LIBETH");
+>  MODULE_IMPORT_NS("LIBETH_XDP");
+>  MODULE_LICENSE("GPL");
+>  
 > +/**
-> + * ice_dpll_init_info_unmanaged - init dpll information for unmanaged dpll
-> + * @pf: board private structure
+> + * idpf_dev_init - Initialize device specific parameters
+> + * @adapter: adapter to initialize
+> + * @ent: entry in idpf_pci_tbl
 > + *
-> + * Acquire (from HW) and set basic dpll information (on pf->dplls struct).
-> + * For unmanaged dpll mode.
-> + *
-> + * Return:
-> + * * 0 - success
-> + * * negative - init failure reason
+> + * Return: %0 on success, -%errno on failure.
 > + */
-> +static int ice_dpll_init_info_unmanaged(struct ice_pf *pf)
+> +static int idpf_dev_init(struct idpf_adapter *adapter,
+> +			 const struct pci_device_id *ent)
 > +{
-> +	struct ice_dplls *d = &pf->dplls;
-> +	struct ice_dpll *de = &d->eec;
-> +	int ret = 0;
+> +	u8 is_vf = 0;
+> +	int err;
 > +
-> +	d->clock_id = ice_generate_clock_id(pf);
-> +	d->num_inputs = ice_cgu_get_pin_num(&pf->hw, true);
-> +	d->num_outputs = ice_cgu_get_pin_num(&pf->hw, false);
-> +	ice_dpll_lock_state_init_unmanaged(pf);
+> +	switch (ent->device) {
+> +	case IDPF_DEV_ID_PF:
+> +		goto dev_ops_init;
+> +	case IDPF_DEV_ID_VF:
+> +		is_vf = 1;
+> +		goto dev_ops_init;
+> +	default:
+> +		if (ent->class == IDPF_CLASS_NETWORK_ETHERNET_PROGIF)
+> +			goto check_vf;
 > +
-> +	d->inputs = kcalloc(d->num_inputs, sizeof(*d->inputs), GFP_KERNEL);
-> +	if (!d->inputs)
-> +		return -ENOMEM;
+> +		return -ENODEV;
+> +	}
 > +
-> +	ret = ice_dpll_init_pins_info(pf, ICE_DPLL_PIN_TYPE_INPUT);
-> +	if (ret)
-> +		goto deinit_info;
+> +check_vf:
+> +	err = idpf_is_vf_device(adapter->pdev, &is_vf);
+> +	if (err)
+> +		return err;
 > +
-> +	d->outputs = kcalloc(d->num_outputs, sizeof(*d->outputs), GFP_KERNEL);
-> +	if (!d->outputs)
-
-Hi Arkadiusz,
-
-I think the following is needed here:
-
-		err = -ENOMEM;
-
-Flagged by Smatch.
-
-> +		goto deinit_info;
+> +dev_ops_init:
+> +	if (is_vf) {
+> +		idpf_vf_dev_ops_init(adapter);
+> +		adapter->crc_enable = true;
+> +	} else {
+> +		idpf_dev_ops_init(adapter);
+> +	}
 > +
-> +	ret = ice_dpll_init_pins_info(pf, ICE_DPLL_PIN_TYPE_OUTPUT);
-> +	if (ret)
-> +		goto deinit_info;
-> +
-> +	de->mode = DPLL_MODE_AUTOMATIC;
-> +	dev_dbg(ice_pf_to_dev(pf), "%s - success, inputs:%u, outputs:%u\n",
-> +		__func__, d->num_inputs, d->num_outputs);
 > +	return 0;
-> +deinit_info:
-> +	dev_err(ice_pf_to_dev(pf), "%s - fail: d->inputs:%p, d->outputs:%p\n",
-> +		__func__, d->inputs, d->outputs);
-> +	ice_dpll_deinit_info(pf);
-> +	return ret;
 > +}
+
+Hi Pavan,
+
+I think that in Kernel Networking code the usual use cases
+of goto labels are: for error handling; and, optimisation,
+f.e. in the datapath.
+
+I don't think this code falls into either category.
+So I suggest implementing it without gotos.
+
+Thanks!
 
 ...
