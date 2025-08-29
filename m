@@ -4,122 +4,96 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0544CCA0FF0
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 29 Aug 2025 13:50:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D0624CA0FF9
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 29 Aug 2025 15:59:25 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id B096D61517;
-	Fri, 29 Aug 2025 13:50:36 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 998246167E;
+	Fri, 29 Aug 2025 15:59:25 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id sSjphmiqZUix; Fri, 29 Aug 2025 13:50:35 +0000 (UTC)
+ id tHILb9xRQilr; Fri, 29 Aug 2025 15:59:24 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B113F6151A
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2D9B461676
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1756475435;
-	bh=dV0VetiIkZg6OKtzkxyKWCKROkMG8CWw91TX1g10wz4=;
-	h=References:In-Reply-To:From:Date:To:Cc:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=Y03b9J947l5cUTdebK4PEyaYygCoT7YXrlJ8A9tmgbX+zbH2T0h5O5+c68vDIB5v2
-	 mhkzhCe0XzAF288cKY5hSn4xQxTX6N9lTR1RXPc6eZNh2SwPnntS3lrm3thttBFYjT
-	 6MiD4sOQkoNkxIxTljZSLJJLoe9el4Z0HadaHfCKp+6/THfzdvANOoQN6saGOzUBFQ
-	 31d/MguDTsogqA70gtupQlmig6pl1Rp+S9qpKFFovAhv3PHjFCbJ/wW8D7QPTg9JvJ
-	 a5TqAQxN5tyI+V+T5m8SkDyMVXX4InxSuQ1M8FJkEVRyuGpiBql/5jXvrngKcdtZo8
-	 R4YCSZgnSpZNQ==
+	s=default; t=1756483164;
+	bh=ogN/SxSXM+aZlMuQZjwtsaFgmP8xmbGYkEI3z8qhhDg=;
+	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=puG44HSibOa/RTz+/23SlS8VXwSVAarLwAUA61qF0OkFH2y41jVBOER+A3+0KFDqE
+	 zsJEojcjO8zrjBJNkmiWbjeTFnQyeNL3bRBuZDpd9cXX8TZVWPrieDstp4ootg5d4d
+	 sNPmtpMIwRsBlgtdcWlMBOgCVVoA5Om48eIbEOH+26U6Xr2RkOUZBKct1OrS5xkk9T
+	 g59zdWkLU/CKZ38dI+tSDMpcY5wLrKLWWoNjDrRyyKqqiIsprXOvqfbaVdZ/Y/ieSy
+	 LvFBWRweDR3KQq5F684XqV070xAF3NzJ7Ao8/yVQzqzsT2rE5igXf6AlB6WAji5UvZ
+	 cDa3Y5oZB5DmQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id B113F6151A;
-	Fri, 29 Aug 2025 13:50:35 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 292B16C
- for <intel-wired-lan@lists.osuosl.org>; Fri, 29 Aug 2025 13:50:35 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 2D9B461676;
+	Fri, 29 Aug 2025 15:59:24 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 4BECBD2
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 29 Aug 2025 15:59:23 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 1B1BF6151A
- for <intel-wired-lan@lists.osuosl.org>; Fri, 29 Aug 2025 13:50:35 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 318004196F
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 29 Aug 2025 15:59:23 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id X268ppK8FEof for <intel-wired-lan@lists.osuosl.org>;
- Fri, 29 Aug 2025 13:50:34 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.129.124;
- helo=us-smtp-delivery-124.mimecast.com; envelope-from=mschmidt@redhat.com;
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id V--dgqav_lYs for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 29 Aug 2025 15:59:22 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.9;
+ helo=mgamail.intel.com; envelope-from=anton.nadezhdin@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 0215E61517
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 0215E61517
-Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.129.124])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 0215E61517
- for <intel-wired-lan@lists.osuosl.org>; Fri, 29 Aug 2025 13:50:33 +0000 (UTC)
-Received: from mail-oa1-f69.google.com (mail-oa1-f69.google.com
- [209.85.160.69]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-601-t0siutRoPSOHipn0tscKtw-1; Fri, 29 Aug 2025 09:50:31 -0400
-X-MC-Unique: t0siutRoPSOHipn0tscKtw-1
-X-Mimecast-MFC-AGG-ID: t0siutRoPSOHipn0tscKtw_1756475430
-Received: by mail-oa1-f69.google.com with SMTP id
- 586e51a60fabf-30cce8cffa8so506603fac.1
- for <intel-wired-lan@lists.osuosl.org>; Fri, 29 Aug 2025 06:50:30 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20230601; t=1756475430; x=1757080230;
- h=content-transfer-encoding:cc:to:subject:message-id:date:from
- :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
- :subject:date:message-id:reply-to;
- bh=dV0VetiIkZg6OKtzkxyKWCKROkMG8CWw91TX1g10wz4=;
- b=KG1kDFJyEJEmgHXMH1YxSePy/4n6XYFQG5rFkRFH0cxf6WjB+xLKkG1t7DTOgr7rV4
- lp3I1AEXt3+P1j9xpeeQ/egWoPPyJ8/cZK+UX55T4nlXP6RDDIvcPFuc3v8ID3GwMI4l
- n/MAo+SvWtUInXVyC0EuwXZZAR7Ta+ztIlhJ86qmIqMtZUAjpugB7D+O5muUSvGw7PFS
- AgwPoPWuXJgXECiAkPk9qpbgujXiirJod8LPBcA740fIwCNWb2VvNnBtjS3KiMWULwAX
- EbHHagxnq0xdgOLZdPHltjNHrFMAmZREUymPKGFbZIH5WABlUEN0XjFMo+SCgQ8UxNSH
- VnzQ==
-X-Gm-Message-State: AOJu0YyP90AyjeaxasoxN+BqlxfSzbUog7RdJOK/fIvxEdzZUI6zR8Ec
- bzpmq8gnyQF8paUGjRAQsBUL+LKDspct7yHUovw2m5d8UYr59jnFbVbhGEHuqwl4hbH9zO0rzoe
- mwCg01DZZq6aNckqjCDtoY9mgaFEPv/uaBSbceh5JIafR0RKLUJepKMl2xhWv1y1x5m78CZi01K
- CW+A6sSvke9kBJeApwqml8gz63iQ/9VCfcNZ6HH/3eMiNerw==
-X-Gm-Gg: ASbGncs1+ROXGrLgyRf52T7OQH3TPwgSgM9UT0kn9Z38ojWQQgLu3f6c1iKwg6UXr05
- hzYcvQvZtpYKS+nkt9gepYyrJAFLWO2v4ZfdnNqNXi+D+inxRDAWgz1MWCCuG/m2em6PXNiVQ3f
- vO4BvpLZC+fHO9mTzZDIkn
-X-Received: by 2002:a05:6871:5005:b0:315:8e99:1ce6 with SMTP id
- 586e51a60fabf-315bfb1adb4mr325912fac.8.1756475429988; 
- Fri, 29 Aug 2025 06:50:29 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IHBzOcyCosA1TMLZwj0/Z9Kqygb0T0L6g/fPksz6fCLVlX5p6IH1ebXqx0gMKGPOOe1s+6vva2fmraCZmI0IKg=
-X-Received: by 2002:a05:6871:5005:b0:315:8e99:1ce6 with SMTP id
- 586e51a60fabf-315bfb1adb4mr325901fac.8.1756475429502; Fri, 29 Aug 2025
- 06:50:29 -0700 (PDT)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 6E5C94196D
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 6E5C94196D
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.9])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 6E5C94196D
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 29 Aug 2025 15:59:22 +0000 (UTC)
+X-CSE-ConnectionGUID: 91Ti7G3qSoyADRPX3tSoHw==
+X-CSE-MsgGUID: AUh0V1iHS6+CyhWUrhRuIw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11537"; a="69480038"
+X-IronPort-AV: E=Sophos;i="6.18,221,1751266800"; d="scan'208";a="69480038"
+Received: from orviesa003.jf.intel.com ([10.64.159.143])
+ by fmvoesa103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 29 Aug 2025 08:59:22 -0700
+X-CSE-ConnectionGUID: RhBOPIPfTl2dYYb6yUKFyw==
+X-CSE-MsgGUID: ibE3l8BnTiOhYcJX1xkpCA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.18,221,1751266800"; d="scan'208";a="174583492"
+Received: from host59.igk.intel.com ([10.123.220.59])
+ by orviesa003.jf.intel.com with ESMTP; 29 Aug 2025 08:59:19 -0700
+From: Anton Nadezhdin <anton.nadezhdin@intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Cc: netdev@vger.kernel.org, anthony.l.nguyen@intel.com,
+ richardcochran@gmail.com, Milena Olech <milena.olech@intel.com>,
+ Anton Nadezhdin <anton.nadezhdin@intel.com>,
+ Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Date: Fri, 29 Aug 2025 13:57:33 -0400
+Message-ID: <20250829175734.175963-1-anton.nadezhdin@intel.com>
+X-Mailer: git-send-email 2.42.0
 MIME-Version: 1.0
-References: <20250827-jk-fix-i40e-ice-pxe-9k-mtu-v3-1-14341728e572@intel.com>
-In-Reply-To: <20250827-jk-fix-i40e-ice-pxe-9k-mtu-v3-1-14341728e572@intel.com>
-From: Michal Schmidt <mschmidt@redhat.com>
-Date: Fri, 29 Aug 2025 15:50:18 +0200
-X-Gm-Features: Ac12FXw6MbSN3H0zo4lHXjtWmj4bb6-ESWHDsvmVqvdLLGY_eJT2xAz1GWdnNWE
-Message-ID: <CADEbmW2eDnADv78cwWRAVMuq_JrgPACbfTf_Yc_oA-Xiuv+x_w@mail.gmail.com>
-To: Jacob Keller <jacob.e.keller@intel.com>
-Cc: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>, 
- Anthony Nguyen <anthony.l.nguyen@intel.com>, netdev@vger.kernel.org
-X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: NULsJPsy3IKecpKyrWln2NUwnwQNjBv2sR-mcpqM4FI_1756475430
-X-Mimecast-Originator: redhat.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=redhat.com; 
- s=mimecast20190719; t=1756475432;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=dV0VetiIkZg6OKtzkxyKWCKROkMG8CWw91TX1g10wz4=;
- b=JDVHuyTOFZ5tM8qVqyMsK48IHqcGGMnwuCCYcJNvQvDtSHbjn7AetSi4Vu5Uv6u1St2UtA
- kq4xqXF5CtXI4RJhqtTEI9OY9alQ9ATPpFlLVBYoG5b2IA+5kD/VttCK5OGkf+TfPN0U/0
- +5NvQQdQSlQx/n2E/ZEAcDp4LlVnIhM=
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dmarc=pass (p=quarantine dis=none)
- header.from=redhat.com
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (1024-bit key,
- unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=JDVHuyTO
-Subject: Re: [Intel-wired-lan] [PATCH iwl-net v3] i40e: fix Jumbo Frame
- support after iPXE boot
+Content-Transfer-Encoding: 8bit
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1756483163; x=1788019163;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=uoQ2xAb52qfxyXqftTwYIMBhksOqI6yk9akjsG4e9Yo=;
+ b=Bq8V1gjXlTzhtEMhAMTob8sgNogtJx/ys6pKKqtT16GX+CzG3qgp3HZa
+ wf3kW1oUqLAGKHAVjUh/2MuTp34RB0oMzYzUwBpLjAnWjGLg7Rq2UWqrB
+ 0xl8FX+dUQkRcl139oRtnR/ZFj99tQLSxvpApcZuFtYvFpWd5p+YSwFys
+ lg4gIl0R0FMPRnP6/XaZF5tDl3djNu9S1lvtVRSyjDmptkBXldMOduGLq
+ 0UAE5ZuPlQ888yRDypAa6NlD4cA9zFOst6hZfwCqqd8Ga4tV1A/VAAQZW
+ h/fFO0Xp2GoUoyuqn2zz8pwRJPbqS0brf2rDAEcWUD80+Q3M0hty8jsDl
+ w==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=intel.com
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=Bq8V1gjX
+Subject: [Intel-wired-lan] [PATCH iwl-next v3] idpf: add HW timestamping
+ statistics
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -135,227 +109,211 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Wed, Aug 27, 2025 at 11:18=E2=80=AFPM Jacob Keller <jacob.e.keller@intel=
-.com> wrote:
-> The i40e hardware has multiple hardware settings which define the Maximum
-> Frame Size (MFS) of the physical port. The firmware has an AdminQ command
-> (0x0603) to configure the MFS, but the i40e Linux driver never issues thi=
-s
-> command.
->
-> In most cases this is no problem, as the NVM default value has the device
-> configured for its maximum value of 9728. Unfortunately, recent versions =
-of
-> the iPXE intelxl driver now issue the 0x0603 Set Mac Config command,
-> modifying the MFS and reducing it from its default value of 9728.
->
-> This occurred as part of iPXE commit 6871a7de705b ("[intelxl] Use admin
-> queue to set port MAC address and maximum frame size"), a prerequisite
-> change for supporting the E800 series hardware in iPXE. Both the E700 and
-> E800 firmware support the AdminQ command, and the iPXE code shares much o=
-f
-> the logic between the two device drivers.
->
-> The ice E800 Linux driver already issues the 0x0603 Set Mac Config comman=
-d
-> early during probe, and is thus unaffected by the iPXE change.
->
-> Since commit 3a2c6ced90e1 ("i40e: Add a check to see if MFS is set"), the
-> i40e driver does check the I40E_PRTGL_SAH register, but it only logs a
-> warning message if its value is below the 9728 default. This register als=
-o
-> only covers received packets and not transmitted packets. A warning can
-> inform system administrators, but does not correct the issue. No
-> interactions from userspace cause the driver to write to PRTGL_SAH or iss=
-ue
-> the 0x0603 AdminQ command. Only a GLOBR reset will restore the value to i=
-ts
-> default value. There is no obvious method to trigger a GLOBR reset from
-> user space.
->
-> To fix this, introduce the i40e_aq_set_mac_config() function, similar to
-> the one from the ice driver. Call this during early probe to ensure that
-> the device configuration matches driver expectation. Unlike E800, the E70=
-0
-> firmware also has a bit to control whether the MAC should append CRC data=
-.
-> It is on by default, but setting a 0 to this bit would disable CRC. The
-> i40e implementation must set this bit to ensure CRC will be appended by t=
-he
-> MAC.
->
-> In addition to the AQ command, instead of just checking the I40E_PRTGL_SA=
-H
-> register, update its value to the 9728 default and write it back. This
-> ensures that the hardware is in the expected state, regardless of whether
-> the iPXE (or any other early boot driver) has modified this state.
->
-> This is a better user experience, as we now fix the issues with larger MT=
-U
-> instead of merely warning. It also aligns with the way the ice E800 serie=
-s
-> driver works.
->
-> A final note: The Fixes tag provided here is not strictly accurate. The
-> issue occurs as a result of an external entity (the iPXE intelxl driver),
-> and this is not a regression specifically caused by the mentioned change.
-> However, I believe the original change to just warn about PRTGL_SAH being
-> too low was an insufficient fix.
->
-> Fixes: 3a2c6ced90e1 ("i40e: Add a check to see if MFS is set")
-> Link: https://github.com/ipxe/ipxe/commit/6871a7de705b6f6a4046f0d19da9bcd=
-689c3bc8e
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> ---
-> Changes in v3:
-> - Don't disable CRC. Otherwise, Tx traffic will not be accepted
->   appropriately.
-> - Link to v2: https://lore.kernel.org/r/20250815-jk-fix-i40e-ice-pxe-9k-m=
-tu-v2-1-ce857cdc6488@intel.com
->
-> Changes in v2:
-> - Rewrite commit message with feedback from Paul Menzel.
-> - Add missing initialization of cmd via libie_aq_raw().
-> - Fix the Kdoc comment for i40e_aq_set_mac_config().
-> - Move clarification of the Fixes tag to the commit message.
-> - Link to v1: https://lore.kernel.org/r/20250814-jk-fix-i40e-ice-pxe-9k-m=
-tu-v1-1-c3926287fb78@intel.com
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h |  1 +
->  drivers/net/ethernet/intel/i40e/i40e_prototype.h  |  2 ++
->  drivers/net/ethernet/intel/i40e/i40e_common.c     | 34 +++++++++++++++++=
-++++++
->  drivers/net/ethernet/intel/i40e/i40e_main.c       | 17 ++++++++----
->  4 files changed, 48 insertions(+), 6 deletions(-)
->
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h b/drivers/=
-net/ethernet/intel/i40e/i40e_adminq_cmd.h
-> index 76d872b91a38..cc02a85ad42b 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-> @@ -1561,6 +1561,7 @@ I40E_CHECK_CMD_LENGTH(i40e_aq_set_phy_config);
->  struct i40e_aq_set_mac_config {
->         __le16  max_frame_size;
->         u8      params;
-> +#define I40E_AQ_SET_MAC_CONFIG_CRC_EN  BIT(2)
->         u8      tx_timer_priority; /* bitmap */
->         __le16  tx_timer_value;
->         __le16  fc_refresh_threshold;
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_prototype.h b/drivers/n=
-et/ethernet/intel/i40e/i40e_prototype.h
-> index aef5de53ce3b..26bb7bffe361 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_prototype.h
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
-> @@ -98,6 +98,8 @@ int i40e_aq_set_mac_loopback(struct i40e_hw *hw,
->                              struct i40e_asq_cmd_details *cmd_details);
->  int i40e_aq_set_phy_int_mask(struct i40e_hw *hw, u16 mask,
->                              struct i40e_asq_cmd_details *cmd_details);
-> +int i40e_aq_set_mac_config(struct i40e_hw *hw, u16 max_frame_size,
-> +                          struct i40e_asq_cmd_details *cmd_details);
->  int i40e_aq_clear_pxe_mode(struct i40e_hw *hw,
->                            struct i40e_asq_cmd_details *cmd_details);
->  int i40e_aq_set_link_restart_an(struct i40e_hw *hw,
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/=
-ethernet/intel/i40e/i40e_common.c
-> index 270e7e8cf9cf..59f5c1e810eb 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_common.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
-> @@ -1189,6 +1189,40 @@ int i40e_set_fc(struct i40e_hw *hw, u8 *aq_failure=
-s,
->         return status;
->  }
->
-> +/**
-> + * i40e_aq_set_mac_config - Configure MAC settings
-> + * @hw: pointer to the hw struct
-> + * @max_frame_size: Maximum Frame Size to be supported by the port
-> + * @cmd_details: pointer to command details structure or NULL
-> + *
-> + * Set MAC configuration (0x0603). Note that max_frame_size must be grea=
-ter
-> + * than zero.
-> + *
-> + * Return: 0 on success, or a negative error code on failure.
-> + */
-> +int i40e_aq_set_mac_config(struct i40e_hw *hw, u16 max_frame_size,
-> +                          struct i40e_asq_cmd_details *cmd_details)
-> +{
-> +       struct i40e_aq_set_mac_config *cmd;
-> +       struct libie_aq_desc desc;
-> +
-> +       cmd =3D libie_aq_raw(&desc);
-> +
-> +       if (max_frame_size =3D=3D 0)
-> +               return -EINVAL;
-> +
-> +       i40e_fill_default_direct_cmd_desc(&desc, i40e_aqc_opc_set_mac_con=
-fig);
-> +
-> +       cmd->max_frame_size =3D cpu_to_le16(max_frame_size);
-> +       cmd->params =3D I40E_AQ_SET_MAC_CONFIG_CRC_EN;
-> +
-> +#define I40E_AQ_SET_MAC_CONFIG_FC_DEFAULT_THRESHOLD    0x7FFF
-> +       cmd->fc_refresh_threshold =3D
-> +               cpu_to_le16(I40E_AQ_SET_MAC_CONFIG_FC_DEFAULT_THRESHOLD);
-> +
-> +       return i40e_asq_send_command(hw, &desc, NULL, 0, cmd_details);
-> +}
-> +
->  /**
->   * i40e_aq_clear_pxe_mode
->   * @hw: pointer to the hw struct
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/et=
-hernet/intel/i40e/i40e_main.c
-> index b83f823e4917..4796fdd0b966 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> @@ -16045,13 +16045,18 @@ static int i40e_probe(struct pci_dev *pdev, con=
-st struct pci_device_id *ent)
->                 dev_dbg(&pf->pdev->dev, "get supported phy types ret =3D =
- %pe last_status =3D  %s\n",
->                         ERR_PTR(err), libie_aq_str(pf->hw.aq.asq_last_sta=
-tus));
->
-> -       /* make sure the MFS hasn't been set lower than the default */
->  #define MAX_FRAME_SIZE_DEFAULT 0x2600
-> -       val =3D FIELD_GET(I40E_PRTGL_SAH_MFS_MASK,
-> -                       rd32(&pf->hw, I40E_PRTGL_SAH));
-> -       if (val < MAX_FRAME_SIZE_DEFAULT)
-> -               dev_warn(&pdev->dev, "MFS for port %x (%d) has been set b=
-elow the default (%d)\n",
-> -                        pf->hw.port, val, MAX_FRAME_SIZE_DEFAULT);
-> +
-> +       err =3D i40e_aq_set_mac_config(hw, MAX_FRAME_SIZE_DEFAULT, NULL);
-> +       if (err) {
-> +               dev_warn(&pdev->dev, "set mac config ret =3D  %pe last_st=
-atus =3D  %s\n",
+From: Milena Olech <milena.olech@intel.com>
 
-Just a nit:
-There are double spaces here after the '=3D' signs for no good reason.
-It's not just in this message. There are a few more like that in this file.
+Add HW timestamping statistics support - through implementing get_ts_stats.
+Timestamp statistics include correctly timestamped packets, discarded,
+skipped and flushed during PTP release.
 
-> +                        ERR_PTR(err), libie_aq_str(pf->hw.aq.asq_last_st=
-atus));
-> +       }
-> +
-> +       /* Make sure the MFS is set to the expected value */
-> +       val =3D rd32(hw, I40E_PRTGL_SAH);
-> +       FIELD_MODIFY(I40E_PRTGL_SAH_MFS_MASK, &val, MAX_FRAME_SIZE_DEFAUL=
-T);
-> +       wr32(hw, I40E_PRTGL_SAH, val);
->
->         /* Add a filter to drop all Flow control frames from any VSI from=
- being
->          * transmitted. By doing so we stop a malicious VF from sending o=
-ut
->
-> ---
-> base-commit: ceb9515524046252c522b16f38881e8837ec0d91
-> change-id: 20250813-jk-fix-i40e-ice-pxe-9k-mtu-2b6d03621cd9
->
-> Best regards,
-> --
-> Jacob Keller <jacob.e.keller@intel.com>
+Most of the stats are collected per vport, only requests skipped due to
+lack of free latch index are collected per Tx queue.
 
-Reviewed-by: Michal Schmidt <mschmidt@redhat.com>
+Statistics can be obtained using kernel ethtool since version 6.10
+with:
+ethtool -I -T <interface>
+
+The output will include:
+Statistics:
+  tx_pkts: 15
+  tx_lost: 0
+  tx_err: 0
+
+Signed-off-by: Milena Olech <milena.olech@intel.com>
+Co-developed-by: Anton Nadezhdin <anton.nadezhdin@intel.com>
+Signed-off-by: Anton Nadezhdin <anton.nadezhdin@intel.com>
+Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+---
+Changelog:
+v2: Add testing information
+v3: Add check for port status to resolve driver crash during statistic
+  read when port is down
+---
+ drivers/net/ethernet/intel/idpf/idpf.h        | 17 ++++++
+ .../net/ethernet/intel/idpf/idpf_ethtool.c    | 56 +++++++++++++++++++
+ drivers/net/ethernet/intel/idpf/idpf_ptp.c    | 11 +++-
+ .../ethernet/intel/idpf/idpf_virtchnl_ptp.c   |  4 ++
+ 4 files changed, 87 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/idpf/idpf.h b/drivers/net/ethernet/intel/idpf/idpf.h
+index 6e79fa8556e9..6db6d6f0562a 100644
+--- a/drivers/net/ethernet/intel/idpf/idpf.h
++++ b/drivers/net/ethernet/intel/idpf/idpf.h
+@@ -256,6 +256,21 @@ enum idpf_vport_flags {
+ 	IDPF_VPORT_FLAGS_NBITS,
+ };
+ 
++/**
++ * struct idpf_tstamp_stats - Tx timestamp statistics
++ * @stats_sync: See struct u64_stats_sync
++ * @packets: Number of packets successfully timestamped by the hardware
++ * @discarded: Number of Tx skbs discarded due to cached PHC
++ *	       being too old to correctly extend timestamp
++ * @flushed: Number of Tx skbs flushed due to interface closed
++ */
++struct idpf_tstamp_stats {
++	struct u64_stats_sync stats_sync;
++	u64_stats_t packets;
++	u64_stats_t discarded;
++	u64_stats_t flushed;
++};
++
+ struct idpf_port_stats {
+ 	struct u64_stats_sync stats_sync;
+ 	u64_stats_t rx_hw_csum_err;
+@@ -328,6 +343,7 @@ struct idpf_fsteer_fltr {
+  * @tx_tstamp_caps: Capabilities negotiated for Tx timestamping
+  * @tstamp_config: The Tx tstamp config
+  * @tstamp_task: Tx timestamping task
++ * @tstamp_stats: Tx timestamping statistics
+  */
+ struct idpf_vport {
+ 	u16 num_txq;
+@@ -386,6 +402,7 @@ struct idpf_vport {
+ 	struct idpf_ptp_vport_tx_tstamp_caps *tx_tstamp_caps;
+ 	struct kernel_hwtstamp_config tstamp_config;
+ 	struct work_struct tstamp_task;
++	struct idpf_tstamp_stats tstamp_stats;
+ };
+ 
+ /**
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_ethtool.c b/drivers/net/ethernet/intel/idpf/idpf_ethtool.c
+index 0eb812ac19c2..786d0bacdd3c 100644
+--- a/drivers/net/ethernet/intel/idpf/idpf_ethtool.c
++++ b/drivers/net/ethernet/intel/idpf/idpf_ethtool.c
+@@ -1685,6 +1685,61 @@ static int idpf_get_ts_info(struct net_device *netdev,
+ 	return err;
+ }
+ 
++/**
++ * idpf_get_ts_stats - Collect HW tstamping statistics
++ * @netdev: network interface device structure
++ * @ts_stats: HW timestamping stats structure
++ *
++ * Collect HW timestamping statistics including successfully timestamped
++ * packets, discarded due to illegal values, flushed during releasing PTP and
++ * skipped due to lack of the free index.
++ */
++static void idpf_get_ts_stats(struct net_device *netdev,
++			      struct ethtool_ts_stats *ts_stats)
++{
++	struct idpf_netdev_priv *np = netdev_priv(netdev);
++	struct idpf_vport *vport;
++	unsigned int start;
++
++	idpf_vport_ctrl_lock(netdev);
++	vport = idpf_netdev_to_vport(netdev);
++	do {
++		start = u64_stats_fetch_begin(&vport->tstamp_stats.stats_sync);
++		ts_stats->pkts = u64_stats_read(&vport->tstamp_stats.packets);
++		ts_stats->lost = u64_stats_read(&vport->tstamp_stats.flushed);
++		ts_stats->err = u64_stats_read(&vport->tstamp_stats.discarded);
++	} while (u64_stats_fetch_retry(&vport->tstamp_stats.stats_sync, start));
++
++	if (np->state != __IDPF_VPORT_UP)
++		goto exit;
++
++	for (u16 i = 0; i < vport->num_txq_grp; i++) {
++		struct idpf_txq_group *txq_grp = &vport->txq_grps[i];
++
++		for (u16 j = 0; j < txq_grp->num_txq; j++) {
++			struct idpf_tx_queue *txq = txq_grp->txqs[j];
++			struct idpf_tx_queue_stats *stats;
++			u64 ts;
++
++			if (!txq)
++				continue;
++
++			stats = &txq->q_stats;
++			do {
++				start = u64_stats_fetch_begin(&txq->stats_sync);
++
++				ts = u64_stats_read(&stats->tstamp_skipped);
++			} while (u64_stats_fetch_retry(&txq->stats_sync,
++						       start));
++
++			ts_stats->lost += ts;
++		}
++	}
++
++exit:
++	idpf_vport_ctrl_unlock(netdev);
++}
++
+ static const struct ethtool_ops idpf_ethtool_ops = {
+ 	.supported_coalesce_params = ETHTOOL_COALESCE_USECS |
+ 				     ETHTOOL_COALESCE_USE_ADAPTIVE,
+@@ -1711,6 +1766,7 @@ static const struct ethtool_ops idpf_ethtool_ops = {
+ 	.set_ringparam		= idpf_set_ringparam,
+ 	.get_link_ksettings	= idpf_get_link_ksettings,
+ 	.get_ts_info		= idpf_get_ts_info,
++	.get_ts_stats		= idpf_get_ts_stats,
+ };
+ 
+ /**
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_ptp.c b/drivers/net/ethernet/intel/idpf/idpf_ptp.c
+index 63a41e688733..3e1052d070cf 100644
+--- a/drivers/net/ethernet/intel/idpf/idpf_ptp.c
++++ b/drivers/net/ethernet/intel/idpf/idpf_ptp.c
+@@ -618,8 +618,13 @@ u64 idpf_ptp_extend_ts(struct idpf_vport *vport, u64 in_tstamp)
+ 
+ 	discard_time = ptp->cached_phc_jiffies + 2 * HZ;
+ 
+-	if (time_is_before_jiffies(discard_time))
++	if (time_is_before_jiffies(discard_time)) {
++		u64_stats_update_begin(&vport->tstamp_stats.stats_sync);
++		u64_stats_inc(&vport->tstamp_stats.discarded);
++		u64_stats_update_end(&vport->tstamp_stats.stats_sync);
++
+ 		return 0;
++	}
+ 
+ 	return idpf_ptp_tstamp_extend_32b_to_64b(ptp->cached_phc_time,
+ 						 lower_32_bits(in_tstamp));
+@@ -853,13 +858,17 @@ static void idpf_ptp_release_vport_tstamp(struct idpf_vport *vport)
+ 
+ 	/* Remove list with latches in use */
+ 	head = &vport->tx_tstamp_caps->latches_in_use;
++	u64_stats_update_begin(&vport->tstamp_stats.stats_sync);
+ 	list_for_each_entry_safe(ptp_tx_tstamp, tmp, head, list_member) {
++		u64_stats_inc(&vport->tstamp_stats.flushed);
++
+ 		list_del(&ptp_tx_tstamp->list_member);
+ 		if (ptp_tx_tstamp->skb)
+ 			consume_skb(ptp_tx_tstamp->skb);
+ 
+ 		kfree(ptp_tx_tstamp);
+ 	}
++	u64_stats_update_end(&vport->tstamp_stats.stats_sync);
+ 
+ 	spin_unlock_bh(&vport->tx_tstamp_caps->latches_lock);
+ 
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_virtchnl_ptp.c b/drivers/net/ethernet/intel/idpf/idpf_virtchnl_ptp.c
+index 688a6f4e0acc..61cedb6f2854 100644
+--- a/drivers/net/ethernet/intel/idpf/idpf_virtchnl_ptp.c
++++ b/drivers/net/ethernet/intel/idpf/idpf_virtchnl_ptp.c
+@@ -522,6 +522,10 @@ idpf_ptp_get_tstamp_value(struct idpf_vport *vport,
+ 	list_add(&ptp_tx_tstamp->list_member,
+ 		 &tx_tstamp_caps->latches_free);
+ 
++	u64_stats_update_begin(&vport->tstamp_stats.stats_sync);
++	u64_stats_inc(&vport->tstamp_stats.packets);
++	u64_stats_update_end(&vport->tstamp_stats.stats_sync);
++
+ 	return 0;
+ }
+ 
+
+base-commit: e9d3c152a5c44376d901100fac80858278acc3eb
+-- 
+2.42.0
 
