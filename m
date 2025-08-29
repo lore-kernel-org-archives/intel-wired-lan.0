@@ -1,99 +1,217 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D0624CA0FF9
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 29 Aug 2025 15:59:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 52595CA0FF0
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 29 Aug 2025 17:23:41 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 998246167E;
-	Fri, 29 Aug 2025 15:59:25 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id tHILb9xRQilr; Fri, 29 Aug 2025 15:59:24 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2D9B461676
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1756483164;
-	bh=ogN/SxSXM+aZlMuQZjwtsaFgmP8xmbGYkEI3z8qhhDg=;
-	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=puG44HSibOa/RTz+/23SlS8VXwSVAarLwAUA61qF0OkFH2y41jVBOER+A3+0KFDqE
-	 zsJEojcjO8zrjBJNkmiWbjeTFnQyeNL3bRBuZDpd9cXX8TZVWPrieDstp4ootg5d4d
-	 sNPmtpMIwRsBlgtdcWlMBOgCVVoA5Om48eIbEOH+26U6Xr2RkOUZBKct1OrS5xkk9T
-	 g59zdWkLU/CKZ38dI+tSDMpcY5wLrKLWWoNjDrRyyKqqiIsprXOvqfbaVdZ/Y/ieSy
-	 LvFBWRweDR3KQq5F684XqV070xAF3NzJ7Ao8/yVQzqzsT2rE5igXf6AlB6WAji5UvZ
-	 cDa3Y5oZB5DmQ==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 2D9B461676;
-	Fri, 29 Aug 2025 15:59:24 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id 4BECBD2
- for <intel-wired-lan@lists.osuosl.org>; Fri, 29 Aug 2025 15:59:23 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 318004196F
- for <intel-wired-lan@lists.osuosl.org>; Fri, 29 Aug 2025 15:59:23 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 23B31417E3;
+	Fri, 29 Aug 2025 17:23:41 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id V--dgqav_lYs for <intel-wired-lan@lists.osuosl.org>;
- Fri, 29 Aug 2025 15:59:22 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.9;
- helo=mgamail.intel.com; envelope-from=anton.nadezhdin@intel.com;
+ id vwN88ogUiSHq; Fri, 29 Aug 2025 17:23:40 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 84558417EC
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1756488220;
+	bh=mJ/fFz3jnJkohBQiw3PD1vninml4sDq8XP3P1YzZ+ao=;
+	h=From:To:CC:Date:References:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=tivLx+zg4nOxHLLL0uGn/nxQ2SSl1SwA3yauo57ev5B43r9Baq/B8b54ut43z1jWe
+	 kq2M1OGsWSKhKmHyTqcDOQl6IJoqyp2OTgVMU0iRS6CKEKUb0TQDXYLmfZRYUocKUV
+	 Dz5VgFl0LYZzNqBk2798INB9erOcfzvgecqyfMEVX4j0pBKFYc3fb+58AYuQS8IuYx
+	 GP4yjBGiHTtdmx5Rq443kOX8PHlmf6ytBik+a/qbJ0thDqJKfCDaJcbJWAtvXyaHfm
+	 +Y9EafRoO80oxgepKJsFPHOJm+dzh+dLQ05epNntlNF1QCw8D5rAVRSBYgl3RntPfC
+	 lYEs3ZaZogrbg==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp4.osuosl.org (Postfix) with ESMTP id 84558417EC;
+	Fri, 29 Aug 2025 17:23:40 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 3880ED2
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 29 Aug 2025 17:23:40 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp3.osuosl.org (Postfix) with ESMTP id 1F8C7615BA
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 29 Aug 2025 17:23:40 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id JJgFLTaGatAd for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 29 Aug 2025 17:23:39 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.19;
+ helo=mgamail.intel.com; envelope-from=samuel.salin@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 6E5C94196D
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 6E5C94196D
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.9])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 6E5C94196D
- for <intel-wired-lan@lists.osuosl.org>; Fri, 29 Aug 2025 15:59:22 +0000 (UTC)
-X-CSE-ConnectionGUID: 91Ti7G3qSoyADRPX3tSoHw==
-X-CSE-MsgGUID: AUh0V1iHS6+CyhWUrhRuIw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11537"; a="69480038"
-X-IronPort-AV: E=Sophos;i="6.18,221,1751266800"; d="scan'208";a="69480038"
-Received: from orviesa003.jf.intel.com ([10.64.159.143])
- by fmvoesa103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 29 Aug 2025 08:59:22 -0700
-X-CSE-ConnectionGUID: RhBOPIPfTl2dYYb6yUKFyw==
-X-CSE-MsgGUID: ibE3l8BnTiOhYcJX1xkpCA==
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 776DA61529
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 776DA61529
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.19])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 776DA61529
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 29 Aug 2025 17:23:39 +0000 (UTC)
+X-CSE-ConnectionGUID: 3d5ZUtmcRTeMv0vh6zha+w==
+X-CSE-MsgGUID: cDNC00X/RLa1CAdGfiBlfQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11537"; a="57805254"
+X-IronPort-AV: E=Sophos;i="6.18,221,1751266800"; d="scan'208";a="57805254"
+Received: from orviesa007.jf.intel.com ([10.64.159.147])
+ by fmvoesa113.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 29 Aug 2025 10:23:39 -0700
+X-CSE-ConnectionGUID: GUmyk/HhSiWN5WUQDBI8Mw==
+X-CSE-MsgGUID: N/PI73biQjO4GMInyaMjuw==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.18,221,1751266800"; d="scan'208";a="174583492"
-Received: from host59.igk.intel.com ([10.123.220.59])
- by orviesa003.jf.intel.com with ESMTP; 29 Aug 2025 08:59:19 -0700
-From: Anton Nadezhdin <anton.nadezhdin@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Cc: netdev@vger.kernel.org, anthony.l.nguyen@intel.com,
- richardcochran@gmail.com, Milena Olech <milena.olech@intel.com>,
- Anton Nadezhdin <anton.nadezhdin@intel.com>,
- Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Date: Fri, 29 Aug 2025 13:57:33 -0400
-Message-ID: <20250829175734.175963-1-anton.nadezhdin@intel.com>
-X-Mailer: git-send-email 2.42.0
+X-IronPort-AV: E=Sophos;i="6.18,221,1751266800"; d="scan'208";a="170329156"
+Received: from fmsmsx902.amr.corp.intel.com ([10.18.126.91])
+ by orviesa007.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 29 Aug 2025 10:23:39 -0700
+Received: from FMSMSX903.amr.corp.intel.com (10.18.126.92) by
+ fmsmsx902.amr.corp.intel.com (10.18.126.91) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.17; Fri, 29 Aug 2025 10:23:37 -0700
+Received: from fmsedg902.ED.cps.intel.com (10.1.192.144) by
+ FMSMSX903.amr.corp.intel.com (10.18.126.92) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.17 via Frontend Transport; Fri, 29 Aug 2025 10:23:37 -0700
+Received: from NAM04-DM6-obe.outbound.protection.outlook.com (40.107.102.67)
+ by edgegateway.intel.com (192.55.55.82) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.17; Fri, 29 Aug 2025 10:23:37 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=c1TXQ4EBKJ/5Q7u4rYx5SnL3c5NPOpNFhrhvg7fVemmR1pbeUQ24HgIGsAGDjtSp6fzkX4+j+dmAwsGf8B2FzfcnkE/ZP7RzP3IcL7k1tocDV+UbUWu7zbj9yTRFmz2Fdhsj+ySFuBxlSxP/GdbwiagAE3pq5AQGFCzemOpGyDNPsk3/sPYHchu9Ex40E8j+JLNRjXiVzCIUR2Nyn+R2dO+LErRSpNnjafc9GafZCSU4qdvxnYNuTayQOM4L4ahp6AlbHtufXnN6bt/JNAs289xazwOpwTslCkFossskgYBp88KyvHtPeGm3Tg28rodYX17JxWDFicwDq4Pwtwndvg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=mJ/fFz3jnJkohBQiw3PD1vninml4sDq8XP3P1YzZ+ao=;
+ b=eqy++Uxzuqt9Dw+HcaSUlXUqjOq4VCE9IVkHsbLq66TlHH3LX7LSPVcTnOzhyQNcytaRDb4S7STzBy3EjHSfreQmKBn8uHb4HhCAgGS5i6by1sWgVjM24P18vdKas0XtWY3THmIskVseth8Z8qwXU7Zyqn7pWKKz4iPmkGrkNuwxm0R6UjcZgnU1/hjn7uHVEPI4qDU38yxvqcQQ6EEPqRvbGrbmb2FCN8FNwnM9Arb4AUW5v1aUL62Ysk/KU/Ao3TyG6QRRIRV3QzSOJsLuJDvK4nR1F3yxKvC/sZDhnfjfADRsaCrtYkxAid6R/DZLps3rP8zhMcjBGyyOoUvc6A==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Received: from SJ1PR11MB6297.namprd11.prod.outlook.com (2603:10b6:a03:458::8)
+ by PH8PR11MB7118.namprd11.prod.outlook.com (2603:10b6:510:216::6)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9052.14; Fri, 29 Aug
+ 2025 17:23:28 +0000
+Received: from SJ1PR11MB6297.namprd11.prod.outlook.com
+ ([fe80::dc50:edbf:3882:abf7]) by SJ1PR11MB6297.namprd11.prod.outlook.com
+ ([fe80::dc50:edbf:3882:abf7%5]) with mapi id 15.20.9052.019; Fri, 29 Aug 2025
+ 17:23:27 +0000
+From: "Salin, Samuel" <samuel.salin@intel.com>
+To: "Hay, Joshua A" <joshua.a.hay@intel.com>,
+ "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>
+CC: "netdev@vger.kernel.org" <netdev@vger.kernel.org>, "Zaremba, Larysa"
+ <larysa.zaremba@intel.com>, "Hay, Joshua A" <joshua.a.hay@intel.com>,
+ "Loktionov, Aleksandr" <aleksandr.loktionov@intel.com>
+Thread-Topic: [Intel-wired-lan] [PATCH iwl-net] idpf: fix UAF in RDMA core aux
+ dev deinitialization
+Thread-Index: AQHcCx66sVEbyqmQ4EijVAIkDKVMrrR5/BsQ
+Date: Fri, 29 Aug 2025 17:23:27 +0000
+Message-ID: <SJ1PR11MB6297415A2DAD536807C0EF609B3AA@SJ1PR11MB6297.namprd11.prod.outlook.com>
+References: <20250812001921.4076454-1-joshua.a.hay@intel.com>
+In-Reply-To: <20250812001921.4076454-1-joshua.a.hay@intel.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: SJ1PR11MB6297:EE_|PH8PR11MB7118:EE_
+x-ms-office365-filtering-correlation-id: bc5a8b12-f917-45ec-c383-08dde720c487
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+ ARA:13230040|1800799024|366016|376014|38070700018|7053199007; 
+x-microsoft-antispam-message-info: =?us-ascii?Q?9e0PHhGBemIzA/1mmc04ZRdY3yJZP6Woa5FMGHXdfsaG8cWdOTKTkgHy83jn?=
+ =?us-ascii?Q?mI3ho/GXDryFKlUWZahRlaLmAMBBNrKMouIqprjJTjqdYxf71HN09hWvLTXi?=
+ =?us-ascii?Q?0q6sH+DixItnVvpGvfqb7hk7B9GhXsdqn47Oq48iYgL8+D1XTbwWVtC4ViaO?=
+ =?us-ascii?Q?D/9OUajQe+SqM7/9bR5a2Rn+0QfmHEgHNzaplpXU//g8ggMCJfYCv5A3prme?=
+ =?us-ascii?Q?bUBalSOvvjduel205Y8ODS2IiKuyKrGy6jmAUj9IBz4dEw+Uf2VNUupK8m/t?=
+ =?us-ascii?Q?VmKGEti3H/ijaAJNT4funjGfJquK+vrtCfg0L31Np+h+dajOtrbECisUwW4d?=
+ =?us-ascii?Q?yg8n8FgxcUNz9f+MSFd6JLYzROHQaVVmIfUCd51+xHyHUZBvGstgGw48SqKI?=
+ =?us-ascii?Q?lTsYgCQvF1PGpiBTjByYl/O+bKJbyHJjNzKMN6pTqvFaxVYxOZl3ehOgW3Mw?=
+ =?us-ascii?Q?CnRz2n+PbdGXSRa6Brcg9ur4I8p2SkIHPdJ7rqvfLmPqnTokFXlGFtaXYkyi?=
+ =?us-ascii?Q?O5EILSpUNCJqXj36ruhp5ST5N3ZYOBJ7lxjhHMA8ygvDVMLPbj6WArI+11WL?=
+ =?us-ascii?Q?r7Y1HVOKFgm/xlwDkOkJY9rjnilTkucFjHTJNvKtxakv81eg5Dsn8Kp1897q?=
+ =?us-ascii?Q?kj3SqibM8kpd3rLl2PeB1DKgz0nth6SOXMgRQiBxajPYhaNNoo54iREYxNR9?=
+ =?us-ascii?Q?K5bazexJsI7k/I9wBsR9fDYzVh7iAK18t1ys4eXlVqrZVvrmfFetZWFytdqx?=
+ =?us-ascii?Q?AsXSKan+0Dx7U3jdP9rV/EiZ3/61dbGw8du+4s8pBX4Qm7ByGTcyk3p/VWON?=
+ =?us-ascii?Q?fRqijC28KfiT9L3gL+Sk2MBHTTwy/ZaLG33S/IRnSk2Jb0V7C9+RKw5Xoy+9?=
+ =?us-ascii?Q?7SVzHFtJciDwyeUBjrhY5iXeMlzQNFi4jz3/DmmhAkcDiM2C7T8IwOGketqn?=
+ =?us-ascii?Q?w6sMe2/2Rm20DZEUPqAuz3ouh+w3yAzKyxSKLLY6Fza55bNxGcqQBUgkKjjM?=
+ =?us-ascii?Q?6c127LJFl8k5y+AkgZyiNUdsEUF2+E9sMfc61/JA+t49OTmVsk4lP7HY7fEf?=
+ =?us-ascii?Q?JSX9UTLtctJcRZpLL0RpKCIL8HOFAVStny+hRdMwVkZNCdOz+gZ3tfBFAaQS?=
+ =?us-ascii?Q?KMe8Xr1voDEl6b8KX3WD1G+oJB0LAEIj4P7mgiYyZH5WYKHvFbY4muchn/g+?=
+ =?us-ascii?Q?oTvCP4z1ILIB0Kqq2wyTY/aH9Fq9p/d6kNY36zltiBlXkVLIJsfR2g6gOlL7?=
+ =?us-ascii?Q?dApdGzYTQpjYlHE3TCRy8dy9xDdJZP+dUc/xD/ZCOxoS6YqIIO59UBTmXEqF?=
+ =?us-ascii?Q?Av9rle1EFLyq0FfQj0O+Z6lDJGtE3egtSFclC6h7I0HY9XAgidyFw12UKFiV?=
+ =?us-ascii?Q?gdImqvLCss3ryrBYlD2TxK+qDUHXkkOlT4sNEatL/G+9JfTmroi/mwIxNpuA?=
+ =?us-ascii?Q?nzpHZmAop3+liC302V8u41KZX1mAoSCQwXlqEYnTG4Apte37zybKRhL1jACM?=
+ =?us-ascii?Q?lKq+R5ywJQ81Or0=3D?=
+x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:SJ1PR11MB6297.namprd11.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(13230040)(1800799024)(366016)(376014)(38070700018)(7053199007); DIR:OUT;
+ SFP:1101; 
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0: =?us-ascii?Q?CWMRZZvAPYB0AU6HECY82+aAqXuDPggq9Sc9Pze2VURHq5QA2a0CxGxtwUiS?=
+ =?us-ascii?Q?nGC6VAnuZAAp6suXpbt3VOeZsFlvymmnDCUbbSElS8nJmJLpmUQRaNJeK4+a?=
+ =?us-ascii?Q?6BD9PYQFuBkKs6NjxydCNSYDdLlLb+2qYkwhI3hudXGPWdrG0zFPYChuc9dN?=
+ =?us-ascii?Q?/aR61Jno293DAOFXEiAUJM3rQgU1bBldigVY/AbNUtOYjIjilCUOdHcTCyi9?=
+ =?us-ascii?Q?L6rxiMO0GUHb7H/zvOK8xOcLWhDd6Xts2FgPY64YphzUNnoYSfS3wa4p3ED5?=
+ =?us-ascii?Q?Bd6AeuxUao07QY0VsCqM5JqH3/5Z90FrJxa6Vo3sBF/j10npFU6S8BgPX1w9?=
+ =?us-ascii?Q?iKh+63viRDDhwJ+HLLSu9S1KTWC86FUeI5VTldD45ZKF7Xw9Lv5cUPiX6YqV?=
+ =?us-ascii?Q?zw4p1ILTfxaqzG3v8htDko1usIexHpZ9QZYhbZHPFZqPZYOHuGKTxXachwNm?=
+ =?us-ascii?Q?EIBE+Em9rYIEawpHyAcGWjKv0n7EeY/Kca5cJai/6ODaPb4oSmsQgdySyuwV?=
+ =?us-ascii?Q?x18tQapDQlNXrohfz2AvFC3TWWGXZdSD2AmxKbiz8pxymZybyvAa+TbQLVs1?=
+ =?us-ascii?Q?UQsBi2EaZc/nkHAhuNV5RHG5zAvx5c0AzjstLmBb2j0SRpWYZGFm+PaoMwOF?=
+ =?us-ascii?Q?EYDtYQC2xWfcDLQoHRUcX2x+HfTQxPclP6OuAiTELtA7agN7TZWcRrdKisrk?=
+ =?us-ascii?Q?zylSQWz9i8ypNQrXckRtxLzt2NqD62VWocCG8rW9RS4sM/pBGe4lhdy2QnJq?=
+ =?us-ascii?Q?kOFKXjPw173pGHfz2wAjUJUnXGE+8rG6Cp02v9w+lNyh0Tq/Bvp8piuACFqE?=
+ =?us-ascii?Q?FoAoxTaLWzUpVoS7Ed5eowxT9tVY87ASVge1/eFamKhUvcVqAWBn54eL3vSk?=
+ =?us-ascii?Q?eyEJVerb7mZ9A958QnlfFaYNj76Aay3QQLGA9qEVee98G7rTqqo+c7pUP0N5?=
+ =?us-ascii?Q?1CXFje1SSetoG2Jx00mJ8lOO75r8wraHwLuuZ7FFDUepK4S5fIkfC5jbXnPo?=
+ =?us-ascii?Q?6A56qf0jB5cs3hiUmpYz8vNhSrvfuyaU/+duyw69+gKSNCYa6SdOWEtsb3Bg?=
+ =?us-ascii?Q?LvQ1Sfs35qL2DS+pQ4g6v5GsR5PikavfsKRHx5QLs/QDSAm1P5rgU+027kEm?=
+ =?us-ascii?Q?M/kv41xlMylQB+KlqGYENlQN+Rx/oUfe1/0smat9mT7n6zlZgJykE8vtyRpq?=
+ =?us-ascii?Q?MEGZo+1JUPNd8nSYJIT3f4jP09AXyg7XRjdcfUjudLVNnHwFeX9Ij+/ekL3D?=
+ =?us-ascii?Q?Ncq4IkL459IFnSj9pXF3wiZwI0xDgVjUKYXCTfImwZa7PzopfE8XgEkopdxI?=
+ =?us-ascii?Q?Zq0LMmFP0HrCOrH7jXr+FI4yU9+nVGrmE1AM0RQj/YJ+u2V61njjNPGTGLIj?=
+ =?us-ascii?Q?bUtBGFC8mQTriRm+IqyiaFDd5st6fTINEXLtgk8OUXFsI1Gt8laFrhE4S0dF?=
+ =?us-ascii?Q?9quBRuN30v3iCb0BoNnP3ItZ+eFqFmg4jJyQqDJGLnFYxOb1WeZgrAA49AWw?=
+ =?us-ascii?Q?ZVPXdee9dnqSJFxizlWh4ASs7ks8u06JuN+abyQM2OA2sEQWpMb9JqrUXI2w?=
+ =?us-ascii?Q?SLDLKaJSjoZnPtYb+wv+/4EdbiTYDtuhAI66eKJr?=
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: SJ1PR11MB6297.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: bc5a8b12-f917-45ec-c383-08dde720c487
+X-MS-Exchange-CrossTenant-originalarrivaltime: 29 Aug 2025 17:23:27.8600 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: 3WouKk+BokH+vAZ5U5PFclKTjgrtB5k+TR8WPd63fboTCqpnqB6TYKnkW9aoFCKWzqB7/0Vf4wywEIwHawsB7w==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH8PR11MB7118
+X-OriginatorOrg: intel.com
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1756483163; x=1788019163;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=uoQ2xAb52qfxyXqftTwYIMBhksOqI6yk9akjsG4e9Yo=;
- b=Bq8V1gjXlTzhtEMhAMTob8sgNogtJx/ys6pKKqtT16GX+CzG3qgp3HZa
- wf3kW1oUqLAGKHAVjUh/2MuTp34RB0oMzYzUwBpLjAnWjGLg7Rq2UWqrB
- 0xl8FX+dUQkRcl139oRtnR/ZFj99tQLSxvpApcZuFtYvFpWd5p+YSwFys
- lg4gIl0R0FMPRnP6/XaZF5tDl3djNu9S1lvtVRSyjDmptkBXldMOduGLq
- 0UAE5ZuPlQ888yRDypAa6NlD4cA9zFOst6hZfwCqqd8Ga4tV1A/VAAQZW
- h/fFO0Xp2GoUoyuqn2zz8pwRJPbqS0brf2rDAEcWUD80+Q3M0hty8jsDl
- w==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ t=1756488219; x=1788024219;
+ h=from:to:cc:subject:date:message-id:references:
+ in-reply-to:content-transfer-encoding:mime-version;
+ bh=/wSBK7pwNkTWvBun+s1mEN7tfZuDkF+Rpq4P/BR+aT0=;
+ b=UlHbFzM3wMDXIkHZd/aZhf0Bh8igusYzvrqHb9PbN3NCDrz5pmDnf0ty
+ eibIKSpwJGq8gAyE5EKuRPciBT2vacbuUS1BDLF4rAbGvcbHuKfcMyloc
+ 7pgM1Ws5WggBOgLYYUase1tSOLw0MADnfBjf+auGgqcwLQFnvQBaFW0n9
+ 5f80GH9J9HpGwmh6W0rsK0/HtrbS+VwqGn8eyF6UkpzHuMFrbzCJap385
+ VOUijL/et0EOkf7i/l7bGYazgBrLbzPUeLrDAV7GQkivR006i4j8AHSH3
+ LWlPV7kLrTZIdd/+5RuOtSoQuFNkAI+NcWp6L7HpBg4mZohsNMtj3KuPq
+ g==;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=Bq8V1gjX
-Subject: [Intel-wired-lan] [PATCH iwl-next v3] idpf: add HW timestamping
- statistics
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=UlHbFzM3
+X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Subject: Re: [Intel-wired-lan] [PATCH iwl-net] idpf: fix UAF in RDMA core
+ aux dev deinitialization
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -109,211 +227,70 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Milena Olech <milena.olech@intel.com>
 
-Add HW timestamping statistics support - through implementing get_ts_stats.
-Timestamp statistics include correctly timestamped packets, discarded,
-skipped and flushed during PTP release.
 
-Most of the stats are collected per vport, only requests skipped due to
-lack of free latch index are collected per Tx queue.
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Joshua Hay
+> Sent: Monday, August 11, 2025 5:19 PM
+> To: intel-wired-lan@lists.osuosl.org
+> Cc: netdev@vger.kernel.org; Zaremba, Larysa <larysa.zaremba@intel.com>;
+> Hay, Joshua A <joshua.a.hay@intel.com>; Loktionov, Aleksandr
+> <aleksandr.loktionov@intel.com>
+> Subject: [Intel-wired-lan] [PATCH iwl-net] idpf: fix UAF in RDMA core aux=
+ dev
+> deinitialization
+>=20
+> Free the adev->id before auxiliary_device_uninit. The call to uninit trig=
+gers the
+> release callback, which frees the iadev memory containing the adev. The
+> previous flow results in a UAF during rmmod due to the adev->id access.
+>=20
+> [264939.604077]
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> [264939.604093] BUG: KASAN: slab-use-after-free in
+> idpf_idc_deinit_core_aux_device+0xe4/0x100 [idpf] [264939.604134] Read
+> of size 4 at addr ff1100109eb6eaf8 by task rmmod/17842
+>=20
+> ...
+>=20
+> [264939.604635] Allocated by task 17597:
+> [264939.604643]  kasan_save_stack+0x20/0x40 [264939.604654]
+> kasan_save_track+0x14/0x30 [264939.604663]  __kasan_kmalloc+0x8f/0xa0
+> [264939.604672]  idpf_idc_init_aux_core_dev+0x4bd/0xb60 [idpf]
+> [264939.604700]  idpf_idc_init+0x55/0xd0 [idpf] [264939.604726]
+> process_one_work+0x658/0xfe0 [264939.604742]
+> worker_thread+0x6e1/0xf10 [264939.604750]  kthread+0x382/0x740
+> [264939.604762]  ret_from_fork+0x23a/0x310 [264939.604772]
+> ret_from_fork_asm+0x1a/0x30
+>=20
+> [264939.604785] Freed by task 17842:
+> [264939.604790]  kasan_save_stack+0x20/0x40 [264939.604799]
+> kasan_save_track+0x14/0x30 [264939.604808]
+> kasan_save_free_info+0x3b/0x60 [264939.604820]
+> __kasan_slab_free+0x37/0x50 [264939.604830]  kfree+0xf1/0x420
+> [264939.604840]  device_release+0x9c/0x210 [264939.604850]
+> kobject_put+0x17c/0x4b0 [264939.604860]
+> idpf_idc_deinit_core_aux_device+0x4f/0x100 [idpf] [264939.604886]
+> idpf_vc_core_deinit+0xba/0x3a0 [idpf] [264939.604915]
+> idpf_remove+0xb0/0x7c0 [idpf] [264939.604944]
+> pci_device_remove+0xab/0x1e0 [264939.604955]
+> device_release_driver_internal+0x371/0x530
+> [264939.604969]  driver_detach+0xbf/0x180 [264939.604981]
+> bus_remove_driver+0x11b/0x2a0 [264939.604991]
+> pci_unregister_driver+0x2a/0x250 [264939.605005]
+> __do_sys_delete_module.constprop.0+0x2eb/0x540
+> [264939.605014]  do_syscall_64+0x64/0x2c0 [264939.605024]
+> entry_SYSCALL_64_after_hwframe+0x76/0x7e
+>=20
+> Fixes: f4312e6bfa2a ("idpf: implement core RDMA auxiliary dev create, ini=
+t,
+> and destroy")
+> Signed-off-by: Joshua Hay <joshua.a.hay@intel.com>
+> Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+> ---
+> 2.39.2
 
-Statistics can be obtained using kernel ethtool since version 6.10
-with:
-ethtool -I -T <interface>
-
-The output will include:
-Statistics:
-  tx_pkts: 15
-  tx_lost: 0
-  tx_err: 0
-
-Signed-off-by: Milena Olech <milena.olech@intel.com>
-Co-developed-by: Anton Nadezhdin <anton.nadezhdin@intel.com>
-Signed-off-by: Anton Nadezhdin <anton.nadezhdin@intel.com>
-Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
----
-Changelog:
-v2: Add testing information
-v3: Add check for port status to resolve driver crash during statistic
-  read when port is down
----
- drivers/net/ethernet/intel/idpf/idpf.h        | 17 ++++++
- .../net/ethernet/intel/idpf/idpf_ethtool.c    | 56 +++++++++++++++++++
- drivers/net/ethernet/intel/idpf/idpf_ptp.c    | 11 +++-
- .../ethernet/intel/idpf/idpf_virtchnl_ptp.c   |  4 ++
- 4 files changed, 87 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/idpf/idpf.h b/drivers/net/ethernet/intel/idpf/idpf.h
-index 6e79fa8556e9..6db6d6f0562a 100644
---- a/drivers/net/ethernet/intel/idpf/idpf.h
-+++ b/drivers/net/ethernet/intel/idpf/idpf.h
-@@ -256,6 +256,21 @@ enum idpf_vport_flags {
- 	IDPF_VPORT_FLAGS_NBITS,
- };
- 
-+/**
-+ * struct idpf_tstamp_stats - Tx timestamp statistics
-+ * @stats_sync: See struct u64_stats_sync
-+ * @packets: Number of packets successfully timestamped by the hardware
-+ * @discarded: Number of Tx skbs discarded due to cached PHC
-+ *	       being too old to correctly extend timestamp
-+ * @flushed: Number of Tx skbs flushed due to interface closed
-+ */
-+struct idpf_tstamp_stats {
-+	struct u64_stats_sync stats_sync;
-+	u64_stats_t packets;
-+	u64_stats_t discarded;
-+	u64_stats_t flushed;
-+};
-+
- struct idpf_port_stats {
- 	struct u64_stats_sync stats_sync;
- 	u64_stats_t rx_hw_csum_err;
-@@ -328,6 +343,7 @@ struct idpf_fsteer_fltr {
-  * @tx_tstamp_caps: Capabilities negotiated for Tx timestamping
-  * @tstamp_config: The Tx tstamp config
-  * @tstamp_task: Tx timestamping task
-+ * @tstamp_stats: Tx timestamping statistics
-  */
- struct idpf_vport {
- 	u16 num_txq;
-@@ -386,6 +402,7 @@ struct idpf_vport {
- 	struct idpf_ptp_vport_tx_tstamp_caps *tx_tstamp_caps;
- 	struct kernel_hwtstamp_config tstamp_config;
- 	struct work_struct tstamp_task;
-+	struct idpf_tstamp_stats tstamp_stats;
- };
- 
- /**
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_ethtool.c b/drivers/net/ethernet/intel/idpf/idpf_ethtool.c
-index 0eb812ac19c2..786d0bacdd3c 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_ethtool.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_ethtool.c
-@@ -1685,6 +1685,61 @@ static int idpf_get_ts_info(struct net_device *netdev,
- 	return err;
- }
- 
-+/**
-+ * idpf_get_ts_stats - Collect HW tstamping statistics
-+ * @netdev: network interface device structure
-+ * @ts_stats: HW timestamping stats structure
-+ *
-+ * Collect HW timestamping statistics including successfully timestamped
-+ * packets, discarded due to illegal values, flushed during releasing PTP and
-+ * skipped due to lack of the free index.
-+ */
-+static void idpf_get_ts_stats(struct net_device *netdev,
-+			      struct ethtool_ts_stats *ts_stats)
-+{
-+	struct idpf_netdev_priv *np = netdev_priv(netdev);
-+	struct idpf_vport *vport;
-+	unsigned int start;
-+
-+	idpf_vport_ctrl_lock(netdev);
-+	vport = idpf_netdev_to_vport(netdev);
-+	do {
-+		start = u64_stats_fetch_begin(&vport->tstamp_stats.stats_sync);
-+		ts_stats->pkts = u64_stats_read(&vport->tstamp_stats.packets);
-+		ts_stats->lost = u64_stats_read(&vport->tstamp_stats.flushed);
-+		ts_stats->err = u64_stats_read(&vport->tstamp_stats.discarded);
-+	} while (u64_stats_fetch_retry(&vport->tstamp_stats.stats_sync, start));
-+
-+	if (np->state != __IDPF_VPORT_UP)
-+		goto exit;
-+
-+	for (u16 i = 0; i < vport->num_txq_grp; i++) {
-+		struct idpf_txq_group *txq_grp = &vport->txq_grps[i];
-+
-+		for (u16 j = 0; j < txq_grp->num_txq; j++) {
-+			struct idpf_tx_queue *txq = txq_grp->txqs[j];
-+			struct idpf_tx_queue_stats *stats;
-+			u64 ts;
-+
-+			if (!txq)
-+				continue;
-+
-+			stats = &txq->q_stats;
-+			do {
-+				start = u64_stats_fetch_begin(&txq->stats_sync);
-+
-+				ts = u64_stats_read(&stats->tstamp_skipped);
-+			} while (u64_stats_fetch_retry(&txq->stats_sync,
-+						       start));
-+
-+			ts_stats->lost += ts;
-+		}
-+	}
-+
-+exit:
-+	idpf_vport_ctrl_unlock(netdev);
-+}
-+
- static const struct ethtool_ops idpf_ethtool_ops = {
- 	.supported_coalesce_params = ETHTOOL_COALESCE_USECS |
- 				     ETHTOOL_COALESCE_USE_ADAPTIVE,
-@@ -1711,6 +1766,7 @@ static const struct ethtool_ops idpf_ethtool_ops = {
- 	.set_ringparam		= idpf_set_ringparam,
- 	.get_link_ksettings	= idpf_get_link_ksettings,
- 	.get_ts_info		= idpf_get_ts_info,
-+	.get_ts_stats		= idpf_get_ts_stats,
- };
- 
- /**
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_ptp.c b/drivers/net/ethernet/intel/idpf/idpf_ptp.c
-index 63a41e688733..3e1052d070cf 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_ptp.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_ptp.c
-@@ -618,8 +618,13 @@ u64 idpf_ptp_extend_ts(struct idpf_vport *vport, u64 in_tstamp)
- 
- 	discard_time = ptp->cached_phc_jiffies + 2 * HZ;
- 
--	if (time_is_before_jiffies(discard_time))
-+	if (time_is_before_jiffies(discard_time)) {
-+		u64_stats_update_begin(&vport->tstamp_stats.stats_sync);
-+		u64_stats_inc(&vport->tstamp_stats.discarded);
-+		u64_stats_update_end(&vport->tstamp_stats.stats_sync);
-+
- 		return 0;
-+	}
- 
- 	return idpf_ptp_tstamp_extend_32b_to_64b(ptp->cached_phc_time,
- 						 lower_32_bits(in_tstamp));
-@@ -853,13 +858,17 @@ static void idpf_ptp_release_vport_tstamp(struct idpf_vport *vport)
- 
- 	/* Remove list with latches in use */
- 	head = &vport->tx_tstamp_caps->latches_in_use;
-+	u64_stats_update_begin(&vport->tstamp_stats.stats_sync);
- 	list_for_each_entry_safe(ptp_tx_tstamp, tmp, head, list_member) {
-+		u64_stats_inc(&vport->tstamp_stats.flushed);
-+
- 		list_del(&ptp_tx_tstamp->list_member);
- 		if (ptp_tx_tstamp->skb)
- 			consume_skb(ptp_tx_tstamp->skb);
- 
- 		kfree(ptp_tx_tstamp);
- 	}
-+	u64_stats_update_end(&vport->tstamp_stats.stats_sync);
- 
- 	spin_unlock_bh(&vport->tx_tstamp_caps->latches_lock);
- 
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_virtchnl_ptp.c b/drivers/net/ethernet/intel/idpf/idpf_virtchnl_ptp.c
-index 688a6f4e0acc..61cedb6f2854 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_virtchnl_ptp.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_virtchnl_ptp.c
-@@ -522,6 +522,10 @@ idpf_ptp_get_tstamp_value(struct idpf_vport *vport,
- 	list_add(&ptp_tx_tstamp->list_member,
- 		 &tx_tstamp_caps->latches_free);
- 
-+	u64_stats_update_begin(&vport->tstamp_stats.stats_sync);
-+	u64_stats_inc(&vport->tstamp_stats.packets);
-+	u64_stats_update_end(&vport->tstamp_stats.stats_sync);
-+
- 	return 0;
- }
- 
-
-base-commit: e9d3c152a5c44376d901100fac80858278acc3eb
--- 
-2.42.0
-
+Tested-by: Samuel Salin <Samuel.salin@intel.com>
