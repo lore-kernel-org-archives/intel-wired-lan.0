@@ -1,88 +1,90 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3A16BCA1000
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  1 Sep 2025 13:56:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E281DCA1007
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  1 Sep 2025 22:13:21 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id F2F3360BE4;
-	Mon,  1 Sep 2025 13:56:42 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 8D2A740B1A;
+	Mon,  1 Sep 2025 22:13:21 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id FCKj75OjVJgp; Mon,  1 Sep 2025 13:56:42 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id C-IVEbeTHAPM; Mon,  1 Sep 2025 22:13:21 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4A9B66133E
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0DC2940B1B
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1756735002;
-	bh=OgjHgfXFmrJuDSDEQwnED0AwPVrucC/NwIldpxyeuVg=;
-	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
+	s=default; t=1756764801;
+	bh=iAn/M/2ucy/8Lh/WFBw3kIMvkZg2yrA5U3RNBpGf4FE=;
+	h=Date:To:Cc:References:From:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=d7L6kft/cKMrjhWb98nyWWoi1RV7SlSM+ybrn3xQnIN6Nh5lfeq/ODvZ9MUMKSFv7
-	 UpYY+e+fYGmaVNnFvyghRlAprOuEGAunvvTBzGN208tPAQXVlJHylwzX7Vk626LelK
-	 0hbRSUyOTYX6zAHdBnsy35Rfg2YWOXKO1pTPV9y8CNRAMwz9Blgg8DbaQ8EEq0yW4T
-	 EeV/oSkLOp0e2dmBNkuKewBF1+4P7wOtKTfuGookNiM3xq2aprEfsHgxuRwuNsFJ3W
-	 lv5OF6lnobzleOq4KgpD95qCPWhqaLf6NjBnxWmtCRaGKdu6aGEd/KhdjZ9zK+Rucl
-	 9sCdXQ3Ww8Rbg==
+	b=daxj/S01yawUxJi3EXhcaHM23WNNYlf/S0NjRE8XbU2RgOIjxG2S2/3M90VCNUGdJ
+	 2RaeFZ/bWKfnUK3quAjBrrBYKocARX06N72bbkwUTOhrscbY6jJ5eoSNgPDLTmpKt5
+	 RgTVKtKgK3JUazXX8x9G/syxvD3EZGePNEgYvA/8i850cZffAvYtK6WvtgpmrHPYai
+	 UfC4FlQIELq3+4hnlH7APRBQykw8/XSRpVHJtQXkzK8CbXbgEIn40Tc87QdjQWpkBi
+	 iHZzEftOsAR/pe9twbV2/tvxcZ/kOZGNPeZI8E5flMiM85jN76ssUzraNMP1Kjfi8s
+	 k77vieLS4qiUg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 4A9B66133E;
-	Mon,  1 Sep 2025 13:56:42 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 01BADD2
- for <intel-wired-lan@lists.osuosl.org>; Mon,  1 Sep 2025 13:56:41 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 0DC2940B1B;
+	Mon,  1 Sep 2025 22:13:21 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id A972CD2
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  1 Sep 2025 22:13:19 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id DB84E60BE4
- for <intel-wired-lan@lists.osuosl.org>; Mon,  1 Sep 2025 13:56:40 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 8E53840B1A
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  1 Sep 2025 22:13:19 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id UHYds6NVXUIn for <intel-wired-lan@lists.osuosl.org>;
- Mon,  1 Sep 2025 13:56:40 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
- helo=tor.source.kernel.org; envelope-from=horms@kernel.org;
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 9Qllaxp-IUFG for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  1 Sep 2025 22:13:19 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=95.215.58.188;
+ helo=out-188.mta1.migadu.com; envelope-from=vadim.fedorenko@linux.dev;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 1CA4860D9F
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 1CA4860D9F
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 1CA4860D9F
- for <intel-wired-lan@lists.osuosl.org>; Mon,  1 Sep 2025 13:56:39 +0000 (UTC)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by tor.source.kernel.org (Postfix) with ESMTP id 9E2D0601D9;
- Mon,  1 Sep 2025 13:56:38 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 89A7FC4CEF1;
- Mon,  1 Sep 2025 13:56:37 +0000 (UTC)
-Date: Mon, 1 Sep 2025 14:56:35 +0100
-From: Simon Horman <horms@kernel.org>
-To: Madhu Chittim <madhu.chittim@intel.com>
-Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org
-Message-ID: <20250901135635.GD15473@horms.kernel.org>
-References: <20250829172453.2059973-1-madhu.chittim@intel.com>
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 9069740B1B
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9069740B1B
+Received: from out-188.mta1.migadu.com (out-188.mta1.migadu.com
+ [95.215.58.188])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 9069740B1B
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  1 Sep 2025 22:13:18 +0000 (UTC)
+Message-ID: <e13abc99-fb35-4bc4-b110-9ddfa8cdb442@linux.dev>
+Date: Mon, 1 Sep 2025 23:13:05 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250829172453.2059973-1-madhu.chittim@intel.com>
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1756734998;
- bh=asAQ1rU9wQg5Jw8z/zz8HqbStFkcokLIB+1C8gbNlTQ=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=jwx9lZUNn5ud6c3n50UvP8qILOvFaDF9ecgpIMT+IhtAE1GICx2ncUFL52zwD52QR
- RNIkVrYh20XkvqT9qPl5Fb3DNbz2bF+xbEEcOPkcu4zaeVMUl/YQdIgURBelQIrctk
- w9mm3LClKEAKppAfjjBuvZAZY4LsIC+jwdHONqtpbZZEP2CcgR0neVI1KCB81hxDeI
- bVKW52nrJyFnN1yIXDeA+iAHkQEGt3bJtn3KpNFmP6A/TqYJFdOhJOnB+9Cg2ngn34
- gl7GKWREc8ILb+LhZBgHdIyZvAF4eWwAWy06pDQXh4g5Hs8Kx6tF+TAnRiXtXdHHpr
- 739dR6kWtkLCQ==
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dmarc=pass (p=quarantine dis=none)
- header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=jwx9lZUN
-Subject: Re: [Intel-wired-lan] [PATCH net-next v3] idpf: add support for
- IDPF PCI programming interface
+To: Brahmajit Das <listout@listout.xyz>, netdev@vger.kernel.org,
+ intel-wired-lan@lists.osuosl.org
+Cc: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
+ andrew+netdev@lunn.ch, davem@davemloft.net, kuba@kernel.org
+References: <20250901213100.3799820-1-listout@listout.xyz>
+Content-Language: en-US
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and
+ include these headers.
+From: Vadim Fedorenko <vadim.fedorenko@linux.dev>
+In-Reply-To: <20250901213100.3799820-1-listout@listout.xyz>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Migadu-Flow: FLOW_OUT
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=linux.dev; s=key1; t=1756764795;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=iAn/M/2ucy/8Lh/WFBw3kIMvkZg2yrA5U3RNBpGf4FE=;
+ b=WnjL1/ItZhqaTB0PEP7mrbcPFRjcmo8EezPjX3VC2Al1+490dkK6EQvoxQ+wI2vE757tT4
+ 7UM94bu4scxY7QSY67gKOvY+/6aYw3CU4bdfYGrC14n+ROCg5zjRWcLcZx6fKXyPcDPT6s
+ fDeIJOfphiHa4PHwGjTjxgVFgRGLtkg=
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=linux.dev
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (1024-bit key,
+ unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256
+ header.s=key1 header.b=WnjL1/It
+Subject: Re: [Intel-wired-lan] [PATCH] net: intel: fm10k: Fix parameter idx
+ set but not used
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -98,37 +100,30 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Fri, Aug 29, 2025 at 10:24:53AM -0700, Madhu Chittim wrote:
-> From: Pavan Kumar Linga <pavan.kumar.linga@intel.com>
+On 01/09/2025 22:31, Brahmajit Das wrote:
+> Variable idx is set in the loop, but is never used resulting in dead
+> code. Building with GCC 16, which enables
+> -Werror=unused-but-set-parameter= by default results in build error.
+> This patch removes the dead code and fixes the build error.
 > 
-> At present IDPF supports only 0x1452 and 0x145C as PF and VF device IDs
-> on our current generation hardware. Future hardware exposes a new set of
-> device IDs for each generation. To avoid adding a new device ID for each
-> generation and to make the driver forward and backward compatible,
-> make use of the IDPF PCI programming interface to load the driver.
-> 
-> Write and read the VF_ARQBAL mailbox register to find if the current
-> device is a PF or a VF.
-> 
-> PCI SIG allocated a new programming interface for the IDPF compliant
-> ethernet network controller devices. It can be found at:
-> https://members.pcisig.com/wg/PCI-SIG/document/20113
-> with the document titled as 'PCI Code and ID Assignment Revision 1.16'
-> or any latest revisions.
-> 
-> Reviewed-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
-> Signed-off-by: Pavan Kumar Linga <pavan.kumar.linga@intel.com>
-> Signed-off-by: Madhu Chittim <madhu.chittim@intel.com>
-> 
+> Signed-off-by: Brahmajit Das <listout@listout.xyz>
 > ---
-> v3:
-> - reworked logic to avoid gotos
+>   drivers/net/ethernet/intel/fm10k/fm10k_common.c | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_common.c b/drivers/net/ethernet/intel/fm10k/fm10k_common.c
+> index f51a63fca513..2fcbbd5accc2 100644
+> --- a/drivers/net/ethernet/intel/fm10k/fm10k_common.c
+> +++ b/drivers/net/ethernet/intel/fm10k/fm10k_common.c
+> @@ -457,7 +457,7 @@ void fm10k_unbind_hw_stats_q(struct fm10k_hw_stats_q *q, u32 idx, u32 count)
+>   {
+>   	u32 i;
+>   
+> -	for (i = 0; i < count; i++, idx++, q++) {
+> +	for (i = 0; i < count; i++, q++) {
+>   		q->rx_stats_idx = 0;
+>   		q->tx_stats_idx = 0;
+>   	}
 
-Thanks,
-
-I see that Paul has provided some review, which I don't disagree with.
-But overall this looks good to me. Feel free to add.
-
-Reviewed-by: Simon Horman <horms@kernel.org>
-
-...
+All callers to this function provide constant 0 as idx param. The better
+solution would be to remove the parameter completely.
