@@ -1,82 +1,91 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A193FCA0FFE
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  2 Sep 2025 07:25:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 255D4CA0FFE
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  2 Sep 2025 07:41:44 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 569D561B62;
-	Tue,  2 Sep 2025 07:25:07 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 65_3rfhBLjiG; Tue,  2 Sep 2025 07:25:06 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C896D61B67
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1756797906;
-	bh=LxBZQxhXzXmEiDVvUdDBS1gtzfMJ33JXA/rJI4+uey4=;
-	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=Sw/fdTqV22qyDewINwzZzj0mB2xv6k92j+babGLmrvFnQhWJwzPeXVNYTm2QQJk+f
-	 SMH2Bxg8mketlz2Dx30ECIB98JhhsbeHzCy9H+qCQXQV3ejwFr1aBL2ETgG+YLWcgQ
-	 D6ffoEYaWiXwZ/V0E1mjpePEcNbKT5UGNsV9p5n5UfNYEenYK4Q6IEsnJjV+kmM2D/
-	 3czv+C8Jgzc3ADirg6ZKLlx5/EpVuvKYeEAzZAsbj4sdqogkNP5okalwSZT3ILcZLj
-	 rfN7cHR5KY4EdjD8/F9NFEuVCsUNUkV4sSp2EWCG/Pc3fy+LPRsSRF0Nb5dlI1Nrls
-	 dJY6SOJBFFyIQ==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id C896D61B67;
-	Tue,  2 Sep 2025 07:25:06 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id E423C10E
- for <intel-wired-lan@lists.osuosl.org>; Tue,  2 Sep 2025 07:25:04 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id E138941B4F
- for <intel-wired-lan@lists.osuosl.org>; Tue,  2 Sep 2025 07:25:04 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id CFB7141396;
+	Tue,  2 Sep 2025 07:41:43 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 9BsuI2rVyTy1 for <intel-wired-lan@lists.osuosl.org>;
- Tue,  2 Sep 2025 07:25:03 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=141.14.17.11;
- helo=mx3.molgen.mpg.de; envelope-from=pmenzel@molgen.mpg.de;
+ id Vvxo9LrETB6z; Tue,  2 Sep 2025 07:41:43 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 56B1A41398
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1756798903;
+	bh=IeU3paiQ9HhrqVYRKq8jOEDqZ9NfHngwUbp9m30YdWo=;
+	h=Date:To:Cc:References:From:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=u7QY4l0QDdwhw3QFuE5B/jjrhvlJhzslxWQTnIdzrmgySEYLAmOL3BnC4XqJeWEPZ
+	 K3wZADnBpbW43M5NNQ59xqkDdDx3kJ8Gh6OhEE/hB3YG5Tj4n22td0LanruoutbhE4
+	 E1vVhQ3cyUymNmxAUch4KtYNubCjPUFa9MWABUU+urnkyEc0IonMTPSVlHd0BUvjAX
+	 usZ6yo6rRHIZZ0K7+MTBD5a+QtBtYfmb6LBE8dgmPpWp9V9G46MeLwboP+OWl3i47L
+	 EN3LnpXEp+uMrYRmACBVXU0Bdy+n+1dsrCVTQakDym10SjebuidT2UZkgUkWG5MODb
+	 UuxxmamVpo8lA==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp4.osuosl.org (Postfix) with ESMTP id 56B1A41398;
+	Tue,  2 Sep 2025 07:41:43 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 24C1DD2
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  2 Sep 2025 07:41:42 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp1.osuosl.org (Postfix) with ESMTP id 0A9488451C
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  2 Sep 2025 07:41:42 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id C31nm6N5nXCO for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  2 Sep 2025 07:41:41 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=95.215.58.178;
+ helo=out-178.mta1.migadu.com; envelope-from=vadim.fedorenko@linux.dev;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 2461541B48
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2461541B48
-Received: from mx3.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 2461541B48
- for <intel-wired-lan@lists.osuosl.org>; Tue,  2 Sep 2025 07:25:02 +0000 (UTC)
-Received: from [141.14.12.217] (g217.RadioFreeInternet.molgen.mpg.de
- [141.14.12.217])
- (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested) (Authenticated sender: pmenzel)
- by mx.molgen.mpg.de (Postfix) with ESMTPSA id F1F5360213ADA;
- Tue, 02 Sep 2025 09:24:49 +0200 (CEST)
-Message-ID: <acf7a445-b58b-49dc-8d2c-1afe86805953@molgen.mpg.de>
-Date: Tue, 2 Sep 2025 09:24:49 +0200
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 418E28451B
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 418E28451B
+Received: from out-178.mta1.migadu.com (out-178.mta1.migadu.com
+ [95.215.58.178])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 418E28451B
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  2 Sep 2025 07:41:40 +0000 (UTC)
+Message-ID: <195a39b6-e4e6-48b0-bb47-3c86d8be20fa@linux.dev>
+Date: Tue, 2 Sep 2025 08:41:23 +0100
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-To: Koichiro Den <den@valinux.co.jp>
-Cc: intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com,
- przemyslaw.kitszel@intel.com, andrew+netdev@lunn.ch,
- jedrzej.jagielski@intel.com, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org
-References: <20250902003941.2561389-1-den@valinux.co.jp>
- <4f746e98-b81b-4632-a2f8-f14d66c71ced@molgen.mpg.de>
+To: Brahmajit Das <listout@listout.xyz>
+Cc: andrew+netdev@lunn.ch, anthony.l.nguyen@intel.com, davem@davemloft.net,
+ intel-wired-lan@lists.osuosl.org, kuba@kernel.org, netdev@vger.kernel.org,
+ przemyslaw.kitszel@intel.com
+References: <e13abc99-fb35-4bc4-b110-9ddfa8cdb442@linux.dev>
+ <20250902072422.603237-1-listout@listout.xyz>
 Content-Language: en-US
-In-Reply-To: <4f746e98-b81b-4632-a2f8-f14d66c71ced@molgen.mpg.de>
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and
+ include these headers.
+From: Vadim Fedorenko <vadim.fedorenko@linux.dev>
+In-Reply-To: <20250902072422.603237-1-listout@listout.xyz>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dmarc=none (p=none dis=none)
- header.from=molgen.mpg.de
-Subject: Re: [Intel-wired-lan] [PATCH v2] ixgbe: fix too early
- devlink_free() in ixgbe_remove()
+Content-Transfer-Encoding: 7bit
+X-Migadu-Flow: FLOW_OUT
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=linux.dev; s=key1; t=1756798897;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=IeU3paiQ9HhrqVYRKq8jOEDqZ9NfHngwUbp9m30YdWo=;
+ b=q3UoKuHI6ukCKweGSo4WX/fL2NwxsGF2knvkeWskJUIHacuCDJL7uQQJOXeRMc4BHADlMz
+ tSTTwdJ3r0MkXZSzgcpihM1CVtctB4FKpu83Jxg0yqxZ76owrtESOeeGdeB4sbeXMeRkCp
+ 99jB3zagFkLf9Gl+8CevvDdXfA724iU=
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=linux.dev
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (1024-bit key,
+ unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256
+ header.s=key1 header.b=q3UoKuHI
+Subject: Re: [Intel-wired-lan] [PATCH v2] net: intel: fm10k: Fix parameter
+ idx set but not used
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -92,85 +101,14 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-[Cc: Remove mateusz.polchlopek@intel.com (address rejected)]
+On 02/09/2025 08:24, Brahmajit Das wrote:
+> Variable idx is set in the loop, but is never used resulting in dead
+> code. Building with GCC 16, which enables
+> -Werror=unused-but-set-parameter= by default results in build error.
+> This patch removes the idx parameter, since all the callers of the
+> fm10k_unbind_hw_stats_q as 0 as idx anyways.
+> 
+> Suggested-by: Vadim Fedorenko <vadim.fedorenko@linux.dev>
+> Signed-off-by: Brahmajit Das <listout@listout.xyz>
 
-Am 02.09.25 um 07:08 schrieb Paul Menzel:
-> Dear Koichiro,
-> 
-> 
-> Thank you for your patch.
-> 
-> Am 02.09.25 um 02:39 schrieb Koichiro Den:
->> Since ixgbe_adapter is embedded in devlink, calling devlink_free()
->> prematurely in the ixgbe_remove() path can lead to UAF. Move devlink_free()
->> to the end.
->>
->> KASAN report:
->>
->>   BUG: KASAN: use-after-free in ixgbe_reset_interrupt_capability+0x140/0x180 [ixgbe]
->>   Read of size 8 at addr ffff0000adf813e0 by task bash/2095
->>   CPU: 1 UID: 0 PID: 2095 Comm: bash Tainted: G S  6.17.0-rc2-tnguy.net-queue+ #1 PREEMPT(full)
->>   [...]
->>   Call trace:
->>    show_stack+0x30/0x90 (C)
->>    dump_stack_lvl+0x9c/0xd0
->>    print_address_description.constprop.0+0x90/0x310
->>    print_report+0x104/0x1f0
->>    kasan_report+0x88/0x180
->>    __asan_report_load8_noabort+0x20/0x30
->>    ixgbe_reset_interrupt_capability+0x140/0x180 [ixgbe]
->>    ixgbe_clear_interrupt_scheme+0xf8/0x130 [ixgbe]
->>    ixgbe_remove+0x2d0/0x8c0 [ixgbe]
->>    pci_device_remove+0xa0/0x220
->>    device_remove+0xb8/0x170
->>    device_release_driver_internal+0x318/0x490
->>    device_driver_detach+0x40/0x68
->>    unbind_store+0xec/0x118
->>    drv_attr_store+0x64/0xb8
->>    sysfs_kf_write+0xcc/0x138
->>    kernfs_fop_write_iter+0x294/0x440
->>    new_sync_write+0x1fc/0x588
->>    vfs_write+0x480/0x6a0
->>    ksys_write+0xf0/0x1e0
->>    __arm64_sys_write+0x70/0xc0
->>    invoke_syscall.constprop.0+0xcc/0x280
->>    el0_svc_common.constprop.0+0xa8/0x248
->>    do_el0_svc+0x44/0x68
->>    el0_svc+0x54/0x160
->>    el0t_64_sync_handler+0xa0/0xe8
->>    el0t_64_sync+0x1b0/0x1b8
->>
->> Fixes: a0285236ab93 ("ixgbe: add initial devlink support")
->> Signed-off-by: Koichiro Den <den@valinux.co.jp>
->> ---
->> Changes in v2:
->> - Move only devlink_free()
->> ---
->>   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 3 ++-
->>   1 file changed, 2 insertions(+), 1 deletion(-)
->>
->> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/ 
->> net/ethernet/intel/ixgbe/ixgbe_main.c
->> index 80e6a2ef1350..b3822c229300 100644
->> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
->> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
->> @@ -12092,7 +12092,6 @@ static void ixgbe_remove(struct pci_dev *pdev)
->>       devl_port_unregister(&adapter->devlink_port);
->>       devl_unlock(adapter->devlink);
->> -    devlink_free(adapter->devlink);
->>       ixgbe_stop_ipsec_offload(adapter);
->>       ixgbe_clear_interrupt_scheme(adapter);
->> @@ -12125,6 +12124,8 @@ static void ixgbe_remove(struct pci_dev *pdev)
->>       if (disable_dev)
->>           pci_disable_device(pdev);
->> +
->> +    devlink_free(adapter->devlink);
->>   }
->>   /**
-> 
-> Reviewed-by: Paul Menzel <pmenzel@molgen.mpg.de>
-> 
-> 
-> Kind regards,
-> 
-> Paul
+Reviewed-by: Vadim Fedorenko <vadim.fedorenko@linux.dev>
