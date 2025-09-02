@@ -4,88 +4,90 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 75418CA1005
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  2 Sep 2025 10:34:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9663ECA1005
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  2 Sep 2025 11:05:36 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 2148060034;
-	Tue,  2 Sep 2025 10:34:11 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 3616361735;
+	Tue,  2 Sep 2025 11:05:36 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 84kep4RW0lV1; Tue,  2 Sep 2025 10:34:10 +0000 (UTC)
+ id HeWc5o9WSau7; Tue,  2 Sep 2025 11:05:35 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A0EE860BC8
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8699C6178E
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1756809250;
-	bh=B5dadqOPXnawLXbOXYYjUzwsybHxfQkh6+VqxS9pnBQ=;
+	s=default; t=1756811135;
+	bh=mEaZqYvixNRgRC3/d54C/oQgrIAXOVmkXhcS/Oi9GCY=;
 	h=Date:To:Cc:References:From:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=i7cwh6QbeGtR+A+OQP79LENkjCJ18L9kZHpNUOJgvfbN0UHmtYNjkNLTF7DwccNy+
-	 VHluhIPsVBvpl+JWPtBiA3ewKj3blQ/zwTKYeWLzOHiO7SdExZjkNNPW+Zoid7619h
-	 FiGGjvEgoTdUK/aTRe8vBfzb280dYVJQXt4cfLbvMF3R5dD5X9/42GhQq3GHV8YG+V
-	 WeN+jocKmeo6Uow9I4DfQ26cbVwRb9ydVrjFSmDiQpX5ebRK4t+XjbZsgzRVRUYPyX
-	 M/xW20iXNpKSpq8NFVXj+Gd9K8DBcRfDTM3BOjAuh+XukOXgNRI6RO1WlVB3qej5qw
-	 /2WIAcc5cTUsg==
+	b=RFY8tMg2Ijn03ZAp5x1F+N3mwHwQc5S92QAal0IrKrl6oPf5XTMkN8RAiej8/uUVc
+	 ua3nyTUKahQJkdtmSuxytkCIRhRbmfdJotlchvcR1J3KvoaRJp366CZElVmCl1cbOC
+	 Yj6UPMG4jAt040pn0+/qRma3wUJRYyJAqp+Y9U0npGz+rEIemfe+NpeL9c9rDDaR/c
+	 KHOMi53btw7EP4aXOZjMa2ZGf4yQ6Y8fRo5L6zvEthdlIuVgi8Wzb6Whr3xAn5T5Tp
+	 JhXJPbxzwy8WHk2uA1Nqbol0RcBU+8nFyyQNh2lqWDsuxkp0aJcuGO/y0c1DNo3Vdc
+	 A7j5+1XAOVDiQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id A0EE860BC8;
-	Tue,  2 Sep 2025 10:34:10 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id D9A76439
- for <intel-wired-lan@lists.osuosl.org>; Tue,  2 Sep 2025 10:34:08 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 8699C6178E;
+	Tue,  2 Sep 2025 11:05:35 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 1FF8AD2
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  2 Sep 2025 11:05:35 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id C410660DA2
- for <intel-wired-lan@lists.osuosl.org>; Tue,  2 Sep 2025 10:34:08 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id F32E484129
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  2 Sep 2025 11:05:34 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id pCaEjPsXVJu9 for <intel-wired-lan@lists.osuosl.org>;
- Tue,  2 Sep 2025 10:34:08 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id l67u9r6ZrKLL for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  2 Sep 2025 11:05:34 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2001:41d0:1004:224b::b3; helo=out-179.mta0.migadu.com;
+ client-ip=2001:41d0:1004:224b::ac; helo=out-172.mta0.migadu.com;
  envelope-from=vadim.fedorenko@linux.dev; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org BDF4C60BEC
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org BDF4C60BEC
-Received: from out-179.mta0.migadu.com (out-179.mta0.migadu.com
- [IPv6:2001:41d0:1004:224b::b3])
- by smtp3.osuosl.org (Postfix) with ESMTPS id BDF4C60BEC
- for <intel-wired-lan@lists.osuosl.org>; Tue,  2 Sep 2025 10:34:07 +0000 (UTC)
-Message-ID: <c7005c02-63dc-4316-905c-e02283e398c5@linux.dev>
-Date: Tue, 2 Sep 2025 11:34:00 +0100
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 013A984124
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 013A984124
+Received: from out-172.mta0.migadu.com (out-172.mta0.migadu.com
+ [IPv6:2001:41d0:1004:224b::ac])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 013A984124
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  2 Sep 2025 11:05:33 +0000 (UTC)
+Message-ID: <2cbee590-1143-4c45-b86f-b4e9cdc0a36e@linux.dev>
+Date: Tue, 2 Sep 2025 12:05:24 +0100
 MIME-Version: 1.0
-To: Brahmajit Das <listout@listout.xyz>
-Cc: andrew+netdev@lunn.ch, anthony.l.nguyen@intel.com, davem@davemloft.net,
- intel-wired-lan@lists.osuosl.org, kuba@kernel.org, netdev@vger.kernel.org,
- przemyslaw.kitszel@intel.com
-References: <e13abc99-fb35-4bc4-b110-9ddfa8cdb442@linux.dev>
- <20250902072422.603237-1-listout@listout.xyz>
+To: Anton Nadezhdin <anton.nadezhdin@intel.com>,
+ intel-wired-lan@lists.osuosl.org
+Cc: netdev@vger.kernel.org, anthony.l.nguyen@intel.com,
+ richardcochran@gmail.com, Milena Olech <milena.olech@intel.com>,
+ Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
+ Jakub Kicinski <kuba@kernel.org>, Willem de Bruijn <willemb@google.com>
+References: <20250902105321.5750-1-anton.nadezhdin@intel.com>
+ <20250902105321.5750-2-anton.nadezhdin@intel.com>
 Content-Language: en-US
 X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and
  include these headers.
 From: Vadim Fedorenko <vadim.fedorenko@linux.dev>
-In-Reply-To: <20250902072422.603237-1-listout@listout.xyz>
+In-Reply-To: <20250902105321.5750-2-anton.nadezhdin@intel.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 X-Migadu-Flow: FLOW_OUT
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=linux.dev; s=key1; t=1756809243;
+ d=linux.dev; s=key1; t=1756811129;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=B5dadqOPXnawLXbOXYYjUzwsybHxfQkh6+VqxS9pnBQ=;
- b=TEhXgNd/20zf4/RnqZqmSxfPjz8bsRHnAEQXdruje2qZhpH25fL0rRpMc/fFHJYhqTyWIo
- 9HJxvGQrJrOQxv+BkJlIUGpwCI09VVa5t/RgAIH1Uyon/zcxRe0zChuBIroTerhE6o2WZx
- OEB05JZua5lQdVYhOdImktPN5ljIBlU=
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ bh=mEaZqYvixNRgRC3/d54C/oQgrIAXOVmkXhcS/Oi9GCY=;
+ b=MRrYwcZN/VvSPb7YVJ7p7LN6fjdZ/yqqLo86yPjp7hdbs3pfMjsdlb9iRePp8FP6CW5AsX
+ j4KZP4LkbyQyg09eSRLuF/s1r+w7f9E2u5sYDPt7J74UV1fyeczTI+G3tRMXTkyT3ai1uq
+ /7uwr78NbWep8w380F5vNd3GKrICZ38=
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=linux.dev
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (1024-bit key,
  unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256
- header.s=key1 header.b=TEhXgNd/
-Subject: Re: [Intel-wired-lan] [PATCH v2] net: intel: fm10k: Fix parameter
- idx set but not used
+ header.s=key1 header.b=MRrYwcZN
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next 1/2] idpf: add direct access
+ to discipline the main timer
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -101,24 +103,119 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On 02/09/2025 08:24, Brahmajit Das wrote:
-> Variable idx is set in the loop, but is never used resulting in dead
-> code. Building with GCC 16, which enables
-> -Werror=unused-but-set-parameter= by default results in build error.
-> This patch removes the idx parameter, since all the callers of the
-> fm10k_unbind_hw_stats_q as 0 as idx anyways.
+On 02/09/2025 11:50, Anton Nadezhdin wrote:
+> From: Milena Olech <milena.olech@intel.com>
 > 
-> Suggested-by: Vadim Fedorenko <vadim.fedorenko@linux.dev>
-> Signed-off-by: Brahmajit Das <listout@listout.xyz>
+> IDPF allows to access the clock through virtchnl messages, or directly,
+> through PCI BAR registers. Registers offsets are negotiated with the
+> Control Plane during driver initialization process.
+> Add support for direct operations to modify the clock.
+> 
+> Signed-off-by: Milena Olech <milena.olech@intel.com>
+> Signed-off-by: Anton Nadezhdin <anton.nadezhdin@intel.com>
+> Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 > ---
-> changes in v2:
-> 	- Removed the idx parameter, since all callers of
-> 	fm10k_unbind_hw_stats_q passes idx as 0 anyways.
-Just a reminder that you shouldn't send another version of the patch
-as a reply to the previous version. And you have to wait for at least
-24h before sending next version to let other reviewers look at the code.
-Current submission looks OK in patchwork, so no action is needed from
-you right now.
 
-Thanks,
-Vadim
+[...]
+
+>   static void idpf_ptp_reg_init(const struct idpf_adapter *adapter)
+>   {
+> -	adapter->ptp->cmd.shtime_enable_mask = PF_GLTSYN_CMD_SYNC_SHTIME_EN_M;
+> -	adapter->ptp->cmd.exec_cmd_mask = PF_GLTSYN_CMD_SYNC_EXEC_CMD_M;
+> +	adapter->ptp->cmd.shtime_enable = PF_GLTSYN_CMD_SYNC_SHTIME_EN_M;
+> +	adapter->ptp->cmd.exec_cmd = PF_GLTSYN_CMD_SYNC_EXEC_CMD_M;
+>   }
+
+[...]
+
+> +/**
+> + * idpf_ptp_set_dev_clk_time_direct- Set the time of the clock directly through
+> + *				     BAR registers.
+> + * @adapter: Driver specific private structure
+> + * @dev_clk_time: Value expressed in nanoseconds to set
+> + *
+> + * Set the time of the device clock to provided value directly through BAR
+> + * registers received during PTP capabilities negotiation.
+> + */
+> +static void idpf_ptp_set_dev_clk_time_direct(struct idpf_adapter *adapter,
+> +					     u64 dev_clk_time)
+> +{
+> +	struct idpf_ptp *ptp = adapter->ptp;
+> +	u32 dev_clk_time_l, dev_clk_time_h;
+> +
+> +	dev_clk_time_l = lower_32_bits(dev_clk_time);
+> +	dev_clk_time_h = upper_32_bits(dev_clk_time);
+> +
+> +	writel(dev_clk_time_l, ptp->dev_clk_regs.dev_clk_ns_l);
+> +	writel(dev_clk_time_h, ptp->dev_clk_regs.dev_clk_ns_h);
+> +
+> +	writel(dev_clk_time_l, ptp->dev_clk_regs.phy_clk_ns_l);
+> +	writel(dev_clk_time_h, ptp->dev_clk_regs.phy_clk_ns_h);
+> +
+> +	idpf_ptp_tmr_cmd(adapter, ptp->cmd.init_time);
+> +}
+> +
+[...]
+
+> +/**
+> + * idpf_ptp_adj_dev_clk_time_direct - Adjust the time of the clock directly
+> + *				      through BAR registers.
+> + * @adapter: Driver specific private structure
+> + * @delta: Offset in nanoseconds to adjust the time by
+> + *
+> + * Adjust the time of the clock directly through BAR registers received during
+> + * PTP capabilities negotiation.
+> + */
+> +static void idpf_ptp_adj_dev_clk_time_direct(struct idpf_adapter *adapter,
+> +					     s64 delta)
+> +{
+> +	struct idpf_ptp *ptp = adapter->ptp;
+> +	u32 delta_l = (s32)delta;
+> +
+> +	writel(0, ptp->dev_clk_regs.shadj_l);
+> +	writel(delta_l, ptp->dev_clk_regs.shadj_h);
+> +
+> +	writel(0, ptp->dev_clk_regs.phy_shadj_l);
+> +	writel(delta_l, ptp->dev_clk_regs.phy_shadj_h);
+> +
+> +	idpf_ptp_tmr_cmd(adapter, ptp->cmd.adj_time);
+> +}
+
+[...]
+
+> - * struct idpf_ptp_cmd - PTP command masks
+> - * @exec_cmd_mask: mask to trigger command execution
+> - * @shtime_enable_mask: mask to enable shadow time
+> + * struct idpf_ptp_cmd_mask - PTP command masks
+> + * @exec_cmd: mask to trigger command execution
+> + * @shtime_enable: mask to enable shadow time
+> + * @init_time: initialize the device clock timer
+> + * @init_incval: initialize increment value
+> + * @adj_time: adjust the device clock timer
+> + * @read_time: read the device clock timer
+>    */
+> -struct idpf_ptp_cmd {
+> -	u32 exec_cmd_mask;
+> -	u32 shtime_enable_mask;
+> +struct idpf_ptp_cmd_mask {
+> +	u32 exec_cmd;
+> +	u32 shtime_enable;
+> +	u32 init_time;
+> +	u32 init_incval;
+> +	u32 adj_time;
+> +	u32 read_time;
+>   };
+>   
+>   /* struct idpf_ptp_dev_clk_regs - PTP device registers
+> @@ -183,7 +191,7 @@ struct idpf_ptp {
+>   	struct idpf_adapter *adapter;
+>   	u64 base_incval;
+>   	u64 max_adj;
+> -	struct idpf_ptp_cmd cmd;
+> +	struct idpf_ptp_cmd_mask cmd;
+>   	u64 cached_phc_time;
+For the field cmd you changed the struct definition to add more commands
+but this diff doesn't init values for new fields. At the same time these
+new fields are used in several new functions (idpf_ptp_*_direct). We end
+up using 0 while issuing the command.
+
