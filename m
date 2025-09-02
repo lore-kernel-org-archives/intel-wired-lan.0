@@ -1,93 +1,95 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 12BC1CA0FFE
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  2 Sep 2025 15:02:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8D3F8CA100D
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  2 Sep 2025 15:02:55 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id B970D40D61;
-	Tue,  2 Sep 2025 15:02:54 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 5C78D60850;
+	Tue,  2 Sep 2025 15:02:55 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Hls6-atYQK54; Tue,  2 Sep 2025 15:02:54 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id grRpFaRDxzfK; Tue,  2 Sep 2025 15:02:54 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1A7A140F9D
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C8E5660DE8
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
 	s=default; t=1756825374;
-	bh=FJo80hbPCPbCCJKX0571Juj5yIIkXR1ClDqsjuHHfa0=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	bh=lV+l/abgmHpQqmeGSBvsTCuokZnuY1jXVG9xt6N9/rg=;
+	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=sQ5mkORwaQ6ljsd1bsQqtbKXWKUYbslnCcDShRTRHoJYaIfe2lBPS4C+n3NiMYK9y
-	 ZG73C/GPeOjQHuXpfcx5aP2GUTQAj28+vc0MkhGqTqfJOXitSb409/p92RbZQ/d+Ef
-	 fXhf2Su2C3CssKzD8TjGXlPqB+RKM6ybts121dOTXn93hDMIT5y9BK6pti/VWfrdY6
-	 sDUI8Os6cfDXBBfTTJUNmB172O8imrVQIEFWLD+RyrkPEC/3qfNR94RsMJx1GKeL5m
-	 VyVnFthsBWxnKT2dO8/hmx8Wf8qveYwBAteTu7XfF/0LLZ42Q9nD6/gnyKTYCJ/Vsk
-	 iHCKOK8HdoHjg==
+	b=Yvo+ssa9QXcjZ09U23qBCNfeKfE9r3ZplAEXNGjDsVM0NHeCVqoKDt6P18oqoImI1
+	 aFymIHZ1tkyU6Gocj8f2UZ0vFoBd6mJEohpMIzl4PD6X/AftG+31egjPKoYMuKJrmI
+	 z6WKSeS9zGtath+huvA2/8GTxR9eOt1vyoz31N2d0DobBKIURmZq5yE1eo5JJwXix2
+	 B4YPpxHxoiC9EvlGj7sNj2KxAP6jiru12/3si6DFs8GU9awnb+Xw9S5kQ8LYxo6XfB
+	 T79ar4wPlpeodwewfgcxm1I2SgrJNal3bGH0qhCgEZYhQjR+ZhAuaKRJDEUoCV8V4q
+	 whvrEx6OXwmUg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 1A7A140F9D;
+	by smtp3.osuosl.org (Postfix) with ESMTP id C8E5660DE8;
 	Tue,  2 Sep 2025 15:02:54 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id C7A56D2
- for <intel-wired-lan@lists.osuosl.org>; Tue,  2 Sep 2025 07:24:52 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 4FA2D439
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  2 Sep 2025 10:47:26 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id ADD4040B94
- for <intel-wired-lan@lists.osuosl.org>; Tue,  2 Sep 2025 07:24:52 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 2B93F60AEE
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  2 Sep 2025 10:47:26 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 0wgkKqGjo1s6 for <intel-wired-lan@lists.osuosl.org>;
- Tue,  2 Sep 2025 07:24:52 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 9AGuoC-bqyaF for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  2 Sep 2025 10:47:25 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=80.241.56.151;
  helo=mout-p-101.mailbox.org; envelope-from=listout@listout.xyz;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org A2D0E4021F
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org A2D0E4021F
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 0A13560A61
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 0A13560A61
 Received: from mout-p-101.mailbox.org (mout-p-101.mailbox.org [80.241.56.151])
- by smtp2.osuosl.org (Postfix) with ESMTPS id A2D0E4021F
- for <intel-wired-lan@lists.osuosl.org>; Tue,  2 Sep 2025 07:24:50 +0000 (UTC)
-Received: from smtp202.mailbox.org (smtp202.mailbox.org [10.196.197.202])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 0A13560A61
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  2 Sep 2025 10:47:24 +0000 (UTC)
+Received: from smtp2.mailbox.org (smtp2.mailbox.org [10.196.197.2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
  (No client certificate requested)
- by mout-p-101.mailbox.org (Postfix) with ESMTPS id 4cGHLh5SN2z9spY;
- Tue,  2 Sep 2025 09:24:44 +0200 (CEST)
+ by mout-p-101.mailbox.org (Postfix) with ESMTPS id 4cGMrQ21snz9tQ2;
+ Tue,  2 Sep 2025 12:47:18 +0200 (CEST)
+Date: Tue, 2 Sep 2025 16:17:11 +0530
 From: Brahmajit Das <listout@listout.xyz>
-To: vadim.fedorenko@linux.dev
-Cc: andrew+netdev@lunn.ch, anthony.l.nguyen@intel.com, davem@davemloft.net,
- intel-wired-lan@lists.osuosl.org, kuba@kernel.org, listout@listout.xyz,
- netdev@vger.kernel.org, przemyslaw.kitszel@intel.com
-Date: Tue,  2 Sep 2025 12:54:22 +0530
-Message-ID: <20250902072422.603237-1-listout@listout.xyz>
-In-Reply-To: <e13abc99-fb35-4bc4-b110-9ddfa8cdb442@linux.dev>
+To: Vadim Fedorenko <vadim.fedorenko@linux.dev>
+Cc: andrew+netdev@lunn.ch, anthony.l.nguyen@intel.com, davem@davemloft.net, 
+ intel-wired-lan@lists.osuosl.org, kuba@kernel.org, netdev@vger.kernel.org, 
+ przemyslaw.kitszel@intel.com
+Message-ID: <crnofgnchveaeduom44nzbq26m2zudy4wut3pl7xgf3fwar46n@tzvxk3nwlgmq>
 References: <e13abc99-fb35-4bc4-b110-9ddfa8cdb442@linux.dev>
+ <20250902072422.603237-1-listout@listout.xyz>
+ <c7005c02-63dc-4316-905c-e02283e398c5@linux.dev>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <c7005c02-63dc-4316-905c-e02283e398c5@linux.dev>
 X-Mailman-Approved-At: Tue, 02 Sep 2025 15:02:51 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=listout.xyz; s=MBO0001; t=1756797884;
+ d=listout.xyz; s=MBO0001; t=1756810038;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:
- content-transfer-encoding:content-transfer-encoding:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  in-reply-to:in-reply-to:references:references;
- bh=FJo80hbPCPbCCJKX0571Juj5yIIkXR1ClDqsjuHHfa0=;
- b=Sgo1G0NG6jbVsILifTC4DIswvCE0Z0Z6NBRjSx3oWpI6CtS6wS9ywaXAEdDigzESiep1zN
- 5pFKy/h4z35DynMlcZ38fJxcwrcFp8T1HXh+gKeZ/67oiNbZgUm4whs/IGKC+PGDVz4HTe
- SpRyCD/3iWjxEFSkXwI4YWds+zHntEL/LQcFe8zARUF6Lc26LjGwcO394bjmlywrwCIkGe
- Jm2DOqTTdt8OsIeZmeFFQOyrxbSO2KQKnF/rfkqU5g47qfMCeTdQMXP15XRg0KCBU1aif2
- xAYTGR8Z7bsdZQUjhx9U3Vp+RYQDZg2vSxgT0jJhhaT55ujUfx2ktrffi2bndQ==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ bh=lV+l/abgmHpQqmeGSBvsTCuokZnuY1jXVG9xt6N9/rg=;
+ b=wXfarb3+X1eSJg3DUEtiHXAviwGIcCABPRUQHzI9dmwGqo2CStl1aGBJSPFrvUw89ARXUI
+ g/DGvr34anPxAZjGqw62gT/SgdMqSWzJ0sIQq7meyJp36iaS7ReKAjgh90Vq7+sGJcBhs6
+ l4tvIHSCZshf+uCKe6IJAzPyqtGu3wcabMlsAhKum4I+Q/2lBPKBGxNxlQhkC9QgKOk5Yy
+ OBJwXFXFsALybvALsPT1CDtM1Hz/1kM/NVje1g0iM972GY9Rcq1d0VCJB45ZXc9DEc4iHv
+ 6+w7g/PvgWmuKoV8tmw57nuoD5NF8w98LptEb6oAVk2xdvLpLSMH2O60MzFHpw==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=listout.xyz
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=listout.xyz header.i=@listout.xyz header.a=rsa-sha256
- header.s=MBO0001 header.b=Sgo1G0NG
-Subject: [Intel-wired-lan] [PATCH v2] net: intel: fm10k: Fix parameter idx
- set but not used
+ header.s=MBO0001 header.b=wXfarb3+
+Subject: Re: [Intel-wired-lan] [PATCH v2] net: intel: fm10k: Fix parameter
+ idx set but not used
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -103,87 +105,30 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Variable idx is set in the loop, but is never used resulting in dead
-code. Building with GCC 16, which enables
--Werror=unused-but-set-parameter= by default results in build error.
-This patch removes the idx parameter, since all the callers of the
-fm10k_unbind_hw_stats_q as 0 as idx anyways.
+On 02.09.2025 11:34, Vadim Fedorenko wrote:
+> On 02/09/2025 08:24, Brahmajit Das wrote:
+> > Variable idx is set in the loop, but is never used resulting in dead
+> > code. Building with GCC 16, which enables
+> > -Werror=unused-but-set-parameter= by default results in build error.
+> > This patch removes the idx parameter, since all the callers of the
+> > fm10k_unbind_hw_stats_q as 0 as idx anyways.
+> > 
+> > Suggested-by: Vadim Fedorenko <vadim.fedorenko@linux.dev>
+> > Signed-off-by: Brahmajit Das <listout@listout.xyz>
+> > ---
+> > changes in v2:
+> > 	- Removed the idx parameter, since all callers of
+> > 	fm10k_unbind_hw_stats_q passes idx as 0 anyways.
+> Just a reminder that you shouldn't send another version of the patch
+> as a reply to the previous version. And you have to wait for at least
+> 24h before sending next version to let other reviewers look at the code.
+> Current submission looks OK in patchwork, so no action is needed from
+> you right now.
+> 
+> Thanks,
+> Vadim
 
-Suggested-by: Vadim Fedorenko <vadim.fedorenko@linux.dev>
-Signed-off-by: Brahmajit Das <listout@listout.xyz>
----
-changes in v2:
-	- Removed the idx parameter, since all callers of
-	fm10k_unbind_hw_stats_q passes idx as 0 anyways.
----
- drivers/net/ethernet/intel/fm10k/fm10k_common.c | 5 ++---
- drivers/net/ethernet/intel/fm10k/fm10k_common.h | 2 +-
- drivers/net/ethernet/intel/fm10k/fm10k_pf.c     | 2 +-
- drivers/net/ethernet/intel/fm10k/fm10k_vf.c     | 2 +-
- 4 files changed, 5 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_common.c b/drivers/net/ethernet/intel/fm10k/fm10k_common.c
-index f51a63fca513..1f919a50c765 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_common.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_common.c
-@@ -447,17 +447,16 @@ void fm10k_update_hw_stats_q(struct fm10k_hw *hw, struct fm10k_hw_stats_q *q,
- /**
-  *  fm10k_unbind_hw_stats_q - Unbind the queue counters from their queues
-  *  @q: pointer to the ring of hardware statistics queue
-- *  @idx: index pointing to the start of the ring iteration
-  *  @count: number of queues to iterate over
-  *
-  *  Function invalidates the index values for the queues so any updates that
-  *  may have happened are ignored and the base for the queue stats is reset.
-  **/
--void fm10k_unbind_hw_stats_q(struct fm10k_hw_stats_q *q, u32 idx, u32 count)
-+void fm10k_unbind_hw_stats_q(struct fm10k_hw_stats_q *q, u32 count)
- {
- 	u32 i;
- 
--	for (i = 0; i < count; i++, idx++, q++) {
-+	for (i = 0; i < count; i++, q++) {
- 		q->rx_stats_idx = 0;
- 		q->tx_stats_idx = 0;
- 	}
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_common.h b/drivers/net/ethernet/intel/fm10k/fm10k_common.h
-index 4c48fb73b3e7..13fca6a91a01 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_common.h
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_common.h
-@@ -43,6 +43,6 @@ u32 fm10k_read_hw_stats_32b(struct fm10k_hw *hw, u32 addr,
- void fm10k_update_hw_stats_q(struct fm10k_hw *hw, struct fm10k_hw_stats_q *q,
- 			     u32 idx, u32 count);
- #define fm10k_unbind_hw_stats_32b(s) ((s)->base_h = 0)
--void fm10k_unbind_hw_stats_q(struct fm10k_hw_stats_q *q, u32 idx, u32 count);
-+void fm10k_unbind_hw_stats_q(struct fm10k_hw_stats_q *q, u32 count);
- s32 fm10k_get_host_state_generic(struct fm10k_hw *hw, bool *host_ready);
- #endif /* _FM10K_COMMON_H_ */
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-index b9dd7b719832..3394645a18fe 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-@@ -1389,7 +1389,7 @@ static void fm10k_rebind_hw_stats_pf(struct fm10k_hw *hw,
- 	fm10k_unbind_hw_stats_32b(&stats->nodesc_drop);
- 
- 	/* Unbind Queue Statistics */
--	fm10k_unbind_hw_stats_q(stats->q, 0, hw->mac.max_queues);
-+	fm10k_unbind_hw_stats_q(stats->q, hw->mac.max_queues);
- 
- 	/* Reinitialize bases for all stats */
- 	fm10k_update_hw_stats_pf(hw, stats);
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_vf.c b/drivers/net/ethernet/intel/fm10k/fm10k_vf.c
-index 7fb1961f2921..6861a0bdc14e 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_vf.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_vf.c
-@@ -465,7 +465,7 @@ static void fm10k_rebind_hw_stats_vf(struct fm10k_hw *hw,
- 				     struct fm10k_hw_stats *stats)
- {
- 	/* Unbind Queue Statistics */
--	fm10k_unbind_hw_stats_q(stats->q, 0, hw->mac.max_queues);
-+	fm10k_unbind_hw_stats_q(stats->q, hw->mac.max_queues);
- 
- 	/* Reinitialize bases for all stats */
- 	fm10k_update_hw_stats_vf(hw, stats);
+Noted, thank you.
 -- 
-2.51.0
-
+Regards,
+listout
