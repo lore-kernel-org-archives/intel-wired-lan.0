@@ -4,87 +4,91 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8EAB3CAC583
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  9 Sep 2025 15:43:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 409DFCA0FED
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  9 Sep 2025 18:50:12 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 3A9DA41348;
-	Tue,  9 Sep 2025 15:43:32 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id E5E684142A;
+	Tue,  9 Sep 2025 18:50:11 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id GqZeim9wJETM; Tue,  9 Sep 2025 15:43:30 +0000 (UTC)
+ id NNVIFPJCpTRU; Tue,  9 Sep 2025 18:50:09 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 5F1054133D
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D41DF4141E
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1757432610;
-	bh=XVplyzM6BOwI9Tq6Au35JwRk0BAgwQZwEu51YbpWdn8=;
-	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
+	s=default; t=1757443809;
+	bh=0hdCwsUdqxbkvyqqDVE6MYjEaZTRoA0QzrkQgbyUfTQ=;
+	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=mXZ1IQTEPXqqo1ptxfXnZ42//wpelm8lEK8PKMtUjJ+Rq/GVGpZvTcl2+OI6CC6sJ
-	 Xdd56XZHIKnAzDpfl3jEOi9rmD7Di6ch3UpsBTmauW32wkWz5ozUcHAHgWIIhplGAp
-	 fDUV2Y/CJo5JMAYdTzeOHKjTZDgfQr6mXwFGuL+wW3TpT3wFcjLWkX7GX94HQg/WOu
-	 N8wtzMfzyHzi7POjA6zZ5GpnrDgiFEgdoUBX2oa/Un0SkDMONUFvtQi9coYIE81k6j
-	 F8wmx79xp2qQEpYqCQoST7ZiAmjUYjbL9q/1/Ab2Ph49ID7xfN1YkiR/ZRroG5bgck
-	 SPBZRb/91wblw==
+	b=UxGUybPOFIjd5/nup2s65GwpoieXiFFVI5DRQSYRw8oaCL1zOAKiaDirSy+O9ie2I
+	 lVBZRYhbclgAGJpmyjO23OdCmA2kErHBR3m/AuFgsUUgSW3GTXSz4g6zG3fkCY8tKt
+	 NDNnvXD1aSy/ZZJn/FmEduNC/kEJquzlvWnQvT4hFQdKxumov+bAV+HluciwiC9zIr
+	 wyy2zvOC2wj7ZrKUZvadsKv9Zise7YF15CLzY26SkB2RgmGiFrHckOIxMb06l7K3JI
+	 a5r6auAvZBhg6bsr++TvOBwYCOxoRQzZ8NBXkyZ04AAfp4PatYfIrUW2Fbi2Pewt6t
+	 aJk9rOCcT9Slg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 5F1054133D;
-	Tue,  9 Sep 2025 15:43:30 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 200F9186
- for <intel-wired-lan@lists.osuosl.org>; Tue,  9 Sep 2025 15:43:29 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id D41DF4141E;
+	Tue,  9 Sep 2025 18:50:09 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id BED4810E
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  9 Sep 2025 18:50:08 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 11F5E401B8
- for <intel-wired-lan@lists.osuosl.org>; Tue,  9 Sep 2025 15:43:29 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id B006D6143F
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  9 Sep 2025 18:50:08 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Gtz7GJF0e057 for <intel-wired-lan@lists.osuosl.org>;
- Tue,  9 Sep 2025 15:43:28 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org;
- envelope-from=horms@kernel.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 5931740028
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 5931740028
-Received: from tor.source.kernel.org (tor.source.kernel.org
- [IPv6:2600:3c04:e001:324:0:1991:8:25])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 5931740028
- for <intel-wired-lan@lists.osuosl.org>; Tue,  9 Sep 2025 15:43:28 +0000 (UTC)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by tor.source.kernel.org (Postfix) with ESMTP id D4785601AC;
- Tue,  9 Sep 2025 15:43:26 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 83E31C4CEF4;
- Tue,  9 Sep 2025 15:43:25 +0000 (UTC)
-Date: Tue, 9 Sep 2025 16:43:23 +0100
-From: Simon Horman <horms@kernel.org>
-To: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
-Cc: intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com,
- netdev@vger.kernel.org
-Message-ID: <20250909154323.GB20205@horms.kernel.org>
-References: <20250908112629.1938159-1-jedrzej.jagielski@intel.com>
- <20250908112629.1938159-3-jedrzej.jagielski@intel.com>
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id SWKZhZhK4cp2 for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  9 Sep 2025 18:50:08 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=95.215.58.182;
+ helo=out-182.mta1.migadu.com; envelope-from=vadim.fedorenko@linux.dev;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 82BE861429
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 82BE861429
+Received: from out-182.mta1.migadu.com (out-182.mta1.migadu.com
+ [95.215.58.182])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 82BE861429
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  9 Sep 2025 18:50:07 +0000 (UTC)
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and
+ include these headers.
+From: Vadim Fedorenko <vadim.fedorenko@linux.dev>
+To: Jakub Kicinski <kuba@kernel.org>, Andrew Lunn <andrew@lunn.ch>,
+ Michael Chan <michael.chan@broadcom.com>,
+ Pavan Chebbi <pavan.chebbi@broadcom.com>, Tariq Toukan <tariqt@nvidia.com>,
+ Gal Pressman <gal@nvidia.com>, intel-wired-lan@lists.osuosl.org,
+ Donald Hunter <donald.hunter@gmail.com>,
+ Carolina Jubran <cjubran@nvidia.com>,
+ Vadim Fedorenko <vadim.fedorenko@linux.dev>
+Cc: Paolo Abeni <pabeni@redhat.com>, Simon Horman <horms@kernel.org>,
+ netdev@vger.kernel.org, Yael Chemla <ychemla@nvidia.com>,
+ Dragos Tatulea <dtatulea@nvidia.com>
+Date: Tue,  9 Sep 2025 18:42:16 +0000
+Message-ID: <20250909184216.1524669-5-vadim.fedorenko@linux.dev>
+In-Reply-To: <20250909184216.1524669-1-vadim.fedorenko@linux.dev>
+References: <20250909184216.1524669-1-vadim.fedorenko@linux.dev>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250908112629.1938159-3-jedrzej.jagielski@intel.com>
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1757432606;
- bh=fXPPeMKvaera8ovcQMSzAU21wcQMEHgyCpGtqBdp7ns=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=jCOGLnGEHJlkyBkZ6wrIP/V/7aKmBgZNTwOW6FSeonuymDyU6eVPAbYXN9I7Qd6TS
- t55LhinALYD98T095qog81yGVNg7hWBsr8Sra+29AmZ6QFXIrxX+zukmhFE37wKASl
- UW7p927qyEgOfQ/uCrXSzZQ0cnVsu533wGCiVorxYq4tspLWZnCNbxVPcNG5GV2Rsy
- q+wrz+maRoFoiJ4RFzFG16C7dw721XpagreDsJwy+HwMh6DY3gyt+KtS/HOrXht3op
- K0CogCuvPkWUogRs8bKG4xMBilSEmfsXOGbrun4OCTEpdbO0yPyAWpZYnTLx+Gb61L
- wiAQj/CRNHV0w==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dmarc=pass (p=quarantine dis=none)
- header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=jCOGLnGE
-Subject: Re: [Intel-wired-lan] [PATCH iwl-net v2 2/2] ixgbe: destroy
- aci.lock later within ixgbe_remove path
+Content-Transfer-Encoding: 8bit
+X-Migadu-Flow: FLOW_OUT
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=linux.dev; s=key1; t=1757443804;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=0hdCwsUdqxbkvyqqDVE6MYjEaZTRoA0QzrkQgbyUfTQ=;
+ b=NcF0y0qz3t/eqDtZztAMBfOs66T64i65Aj7keSjNFArKz6JCHN+C/ZUVpXL7okGLBbTVrS
+ UxU50xBuRQTuH5geo9qei2RFSfcpoyU+gz1d7LjZVgUTN+qdjx52/1cU+2BBcbIzY7a9en
+ SVCQcQ8SQFYz84j+ublnAgI3bvvJw6E=
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=linux.dev
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (1024-bit key,
+ unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256
+ header.s=key1 header.b=NcF0y0qz
+Subject: [Intel-wired-lan] [PATCH net-next 4/4] net/mlx5e: Report RS-FEC
+ histogram statistics via ethtool
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -100,48 +104,85 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Mon, Sep 08, 2025 at 01:26:29PM +0200, Jedrzej Jagielski wrote:
-> There's another issue with aci.lock and previous patch uncovers it.
-> aci.lock is being destroyed during removing ixgbe while some of the
-> ixgbe closing routines are still ongoing. These routines use Admin
-> Command Interface which require taking aci.lock which has been already
-> destroyed what leads to call trace.
-> 
-> [  +0.000004] DEBUG_LOCKS_WARN_ON(lock->magic != lock)
-> [  +0.000007] WARNING: CPU: 12 PID: 10277 at kernel/locking/mutex.c:155 mutex_lock+0x5f/0x70
-> [  +0.000002] Call Trace:
-> [  +0.000003]  <TASK>
-> [  +0.000006]  ixgbe_aci_send_cmd+0xc8/0x220 [ixgbe]
-> [  +0.000049]  ? try_to_wake_up+0x29d/0x5d0
-> [  +0.000009]  ixgbe_disable_rx_e610+0xc4/0x110 [ixgbe]
-> [  +0.000032]  ixgbe_disable_rx+0x3d/0x200 [ixgbe]
-> [  +0.000027]  ixgbe_down+0x102/0x3b0 [ixgbe]
-> [  +0.000031]  ixgbe_close_suspend+0x28/0x90 [ixgbe]
-> [  +0.000028]  ixgbe_close+0xfb/0x100 [ixgbe]
-> [  +0.000025]  __dev_close_many+0xae/0x220
-> [  +0.000005]  dev_close_many+0xc2/0x1a0
-> [  +0.000004]  ? kernfs_should_drain_open_files+0x2a/0x40
-> [  +0.000005]  unregister_netdevice_many_notify+0x204/0xb00
-> [  +0.000006]  ? __kernfs_remove.part.0+0x109/0x210
-> [  +0.000006]  ? kobj_kset_leave+0x4b/0x70
-> [  +0.000008]  unregister_netdevice_queue+0xf6/0x130
-> [  +0.000006]  unregister_netdev+0x1c/0x40
-> [  +0.000005]  ixgbe_remove+0x216/0x290 [ixgbe]
-> [  +0.000021]  pci_device_remove+0x42/0xb0
-> [  +0.000007]  device_release_driver_internal+0x19c/0x200
-> [  +0.000008]  driver_detach+0x48/0x90
-> [  +0.000003]  bus_remove_driver+0x6d/0xf0
-> [  +0.000006]  pci_unregister_driver+0x2e/0xb0
-> [  +0.000005]  ixgbe_exit_module+0x1c/0xc80 [ixgbe]
-> 
-> Same as for the previous commit, the issue has been highlighted by the
-> commit 337369f8ce9e ("locking/mutex: Add MUTEX_WARN_ON() into fast path").
-> 
-> Move destroying aci.lock to the end of ixgbe_remove(), as this
-> simply fixes the issue.
-> 
-> Fixes: 4600cdf9f5ac ("ixgbe: Enable link management in E610 device")
-> Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
+From: Carolina Jubran <cjubran@nvidia.com>
 
-Reviewed-by: Simon Horman <horms@kernel.org>
+Add support for reporting RS-FEC histogram counters by reading them
+from the RS_FEC_HISTOGRAM_GROUP in the PPCNT register.
+
+Co-developed-by: Yael Chemla <ychemla@nvidia.com>
+Signed-off-by: Yael Chemla <ychemla@nvidia.com>
+Signed-off-by: Carolina Jubran <cjubran@nvidia.com>
+Reviewed-by: Dragos Tatulea <dtatulea@nvidia.com>
+Reviewed-by: Yael Chemla <ychemla@nvidia.com>
+Signed-off-by: Vadim Fedorenko <vadim.fedorenko@linux.dev>
+---
+ .../ethernet/mellanox/mlx5/core/en_stats.c    | 39 +++++++++++++++++--
+ 1 file changed, 35 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en_stats.c b/drivers/net/ethernet/mellanox/mlx5/core/en_stats.c
+index f64cae6dd367..e9f2bf342f95 100644
+--- a/drivers/net/ethernet/mellanox/mlx5/core/en_stats.c
++++ b/drivers/net/ethernet/mellanox/mlx5/core/en_stats.c
+@@ -1519,24 +1519,55 @@ fec_rs_histogram_fill_ranges(struct mlx5e_priv *priv,
+ 		void *bin_range = MLX5_ADDR_OF(pphcr_reg, out, bin_range[i]);
+ 
+ 		priv->fec_ranges[i].high = MLX5_GET(bin_range_layout, bin_range,
+-						    high_val);
++						    high_val);
+ 		priv->fec_ranges[i].low = MLX5_GET(bin_range_layout, bin_range,
+-						   low_val);
++						   low_val);
+ 	}
+ 	*ranges = priv->fec_ranges;
+ 
+ 	return num_of_bins;
+ }
+ 
++static void fec_rs_histogram_fill_stats(struct mlx5e_priv *priv,
++					u8 num_of_bins,
++					struct ethtool_fec_hist *hist)
++{
++	struct mlx5_core_dev *mdev = priv->mdev;
++	u32 out[MLX5_ST_SZ_DW(ppcnt_reg)] = {0};
++	u32 in[MLX5_ST_SZ_DW(ppcnt_reg)] = {0};
++	int sz = MLX5_ST_SZ_BYTES(ppcnt_reg);
++	void *rs_histogram_cntrs;
++
++	MLX5_SET(ppcnt_reg, in, local_port, 1);
++	MLX5_SET(ppcnt_reg, in, grp, MLX5_RS_FEC_HISTOGRAM_GROUP);
++	if (mlx5_core_access_reg(mdev, in, sz, out, sz, MLX5_REG_PPCNT, 0, 0))
++		return;
++
++	rs_histogram_cntrs = MLX5_ADDR_OF(ppcnt_reg, out,
++					  counter_set.rs_histogram_cntrs);
++	/* Guaranteed that num_of_bins is less than MLX5E_FEC_RS_HIST_MAX
++	 * by fec_rs_histogram_fill_ranges().
++	 */
++	for (int i = 0; i < num_of_bins; i++) {
++		hist->values[i].bin_value = MLX5_GET64(rs_histogram_cntrs,
++						       rs_histogram_cntrs,
++						       hist[i]);
++	}
++}
++
+ static void fec_set_histograms_stats(struct mlx5e_priv *priv, int mode,
+-				     struct ethtool_fec_hist *hist)
++				     struct ethtool_fec_hist *hist)
+ {
++	u8 num_of_bins;
++
+ 	switch (mode) {
+ 	case MLX5E_FEC_RS_528_514:
+ 	case MLX5E_FEC_RS_544_514:
+ 	case MLX5E_FEC_LLRS_272_257_1:
+ 	case MLX5E_FEC_RS_544_514_INTERLEAVED_QUAD:
+-		fec_rs_histogram_fill_ranges(priv, &hist->ranges);
++		num_of_bins = fec_rs_histogram_fill_ranges(priv, &hist->ranges);
++		if (num_of_bins)
++			fec_rs_histogram_fill_stats(priv, num_of_bins, hist);
+ 		break;
+ 	default:
+ 		return;
+-- 
+2.47.3
 
