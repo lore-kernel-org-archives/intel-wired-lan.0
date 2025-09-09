@@ -1,55 +1,55 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 409DFCA0FED
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  9 Sep 2025 18:50:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2CFB1CAC582
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  9 Sep 2025 18:50:13 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id E5E684142A;
-	Tue,  9 Sep 2025 18:50:11 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id D0EE883B8C;
+	Tue,  9 Sep 2025 18:50:12 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id NNVIFPJCpTRU; Tue,  9 Sep 2025 18:50:09 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 1IcmvEwN5x09; Tue,  9 Sep 2025 18:50:11 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D41DF4141E
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 744DC83B75
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1757443809;
-	bh=0hdCwsUdqxbkvyqqDVE6MYjEaZTRoA0QzrkQgbyUfTQ=;
+	s=default; t=1757443811;
+	bh=RolQY7XF/hJ6SZjtTj0WkVgsFPIyQJbXgC9ZRipRoJw=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=UxGUybPOFIjd5/nup2s65GwpoieXiFFVI5DRQSYRw8oaCL1zOAKiaDirSy+O9ie2I
-	 lVBZRYhbclgAGJpmyjO23OdCmA2kErHBR3m/AuFgsUUgSW3GTXSz4g6zG3fkCY8tKt
-	 NDNnvXD1aSy/ZZJn/FmEduNC/kEJquzlvWnQvT4hFQdKxumov+bAV+HluciwiC9zIr
-	 wyy2zvOC2wj7ZrKUZvadsKv9Zise7YF15CLzY26SkB2RgmGiFrHckOIxMb06l7K3JI
-	 a5r6auAvZBhg6bsr++TvOBwYCOxoRQzZ8NBXkyZ04AAfp4PatYfIrUW2Fbi2Pewt6t
-	 aJk9rOCcT9Slg==
+	b=9I71DKMrZQxbbm511mWLzpCaySwVNVbLnwlrU/7s5a+cZqthuLk1o4ZofFGPlNDyL
+	 1U4C5Hiorwq4rXOM4qLNcuMRavoLE4gRVyvkbGx8AV6dKWxO5sMGWqkXdhUBgUW9rR
+	 VY2rsgTL87cRbTSZjRDVnH8E6nm9NDeeYkXYnBrjULvX1AoyIQhLNisIXRApL/xwok
+	 clsjdDIi2mv9VZyj7YDnTGgeGj//jsUZKoQDHvYns52SOsxwfyw5P96436vGNWv0Dj
+	 OLxFKgNxAWRkVwz3ggEOHNILU8SCL3Q5/Y/S+zTZAEM5rFIFEOSLMqtq3LUnYoRFM8
+	 IQs8lJHd/YmeA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id D41DF4141E;
-	Tue,  9 Sep 2025 18:50:09 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id BED4810E
- for <intel-wired-lan@lists.osuosl.org>; Tue,  9 Sep 2025 18:50:08 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 744DC83B75;
+	Tue,  9 Sep 2025 18:50:11 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id DDB2B234
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  9 Sep 2025 18:50:09 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id B006D6143F
- for <intel-wired-lan@lists.osuosl.org>; Tue,  9 Sep 2025 18:50:08 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id CEF676143F
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  9 Sep 2025 18:50:09 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id SWKZhZhK4cp2 for <intel-wired-lan@lists.osuosl.org>;
- Tue,  9 Sep 2025 18:50:08 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=95.215.58.182;
- helo=out-182.mta1.migadu.com; envelope-from=vadim.fedorenko@linux.dev;
+ id Cc9OPlcV3UPM for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  9 Sep 2025 18:50:09 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=95.215.58.176;
+ helo=out-176.mta1.migadu.com; envelope-from=vadim.fedorenko@linux.dev;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 82BE861429
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 82BE861429
-Received: from out-182.mta1.migadu.com (out-182.mta1.migadu.com
- [95.215.58.182])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 82BE861429
- for <intel-wired-lan@lists.osuosl.org>; Tue,  9 Sep 2025 18:50:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org E466B6141D
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E466B6141D
+Received: from out-176.mta1.migadu.com (out-176.mta1.migadu.com
+ [95.215.58.176])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id E466B6141D
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  9 Sep 2025 18:50:08 +0000 (UTC)
 X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and
  include these headers.
 From: Vadim Fedorenko <vadim.fedorenko@linux.dev>
@@ -61,34 +61,34 @@ To: Jakub Kicinski <kuba@kernel.org>, Andrew Lunn <andrew@lunn.ch>,
  Carolina Jubran <cjubran@nvidia.com>,
  Vadim Fedorenko <vadim.fedorenko@linux.dev>
 Cc: Paolo Abeni <pabeni@redhat.com>, Simon Horman <horms@kernel.org>,
- netdev@vger.kernel.org, Yael Chemla <ychemla@nvidia.com>,
- Dragos Tatulea <dtatulea@nvidia.com>
-Date: Tue,  9 Sep 2025 18:42:16 +0000
-Message-ID: <20250909184216.1524669-5-vadim.fedorenko@linux.dev>
+ netdev@vger.kernel.org, Dragos Tatulea <dtatulea@nvidia.com>,
+ Yael Chemla <ychemla@nvidia.com>
+Date: Tue,  9 Sep 2025 18:42:14 +0000
+Message-ID: <20250909184216.1524669-3-vadim.fedorenko@linux.dev>
 In-Reply-To: <20250909184216.1524669-1-vadim.fedorenko@linux.dev>
 References: <20250909184216.1524669-1-vadim.fedorenko@linux.dev>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Migadu-Flow: FLOW_OUT
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=linux.dev; s=key1; t=1757443804;
+ d=linux.dev; s=key1; t=1757443802;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=0hdCwsUdqxbkvyqqDVE6MYjEaZTRoA0QzrkQgbyUfTQ=;
- b=NcF0y0qz3t/eqDtZztAMBfOs66T64i65Aj7keSjNFArKz6JCHN+C/ZUVpXL7okGLBbTVrS
- UxU50xBuRQTuH5geo9qei2RFSfcpoyU+gz1d7LjZVgUTN+qdjx52/1cU+2BBcbIzY7a9en
- SVCQcQ8SQFYz84j+ublnAgI3bvvJw6E=
+ bh=RolQY7XF/hJ6SZjtTj0WkVgsFPIyQJbXgC9ZRipRoJw=;
+ b=KCb9AhZlyrqnIjdOXL5FcI/UMu59k5HdzU8dOtD1GN8uSG19cEjmXYwKFQS8+BfciTfc7o
+ qx/6GC4D+XoHFqOpVkHZnkMBm7DFVRyznDjOep2dN9cd8FU49pd+tVPeXSda4B3fya1lDL
+ Fy5zgvVmnOwgLdWb94B00lQhyqwI4OE=
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=linux.dev
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (1024-bit key,
  unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256
- header.s=key1 header.b=NcF0y0qz
-Subject: [Intel-wired-lan] [PATCH net-next 4/4] net/mlx5e: Report RS-FEC
- histogram statistics via ethtool
+ header.s=key1 header.b=KCb9AhZl
+Subject: [Intel-wired-lan] [PATCH net-next 2/4] net/mlx5e: Don't query FEC
+ statistics when FEC is disabled
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -106,83 +106,56 @@ Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 From: Carolina Jubran <cjubran@nvidia.com>
 
-Add support for reporting RS-FEC histogram counters by reading them
-from the RS_FEC_HISTOGRAM_GROUP in the PPCNT register.
+Update mlx5e_stats_fec_get() to check the active FEC mode and skip
+statistics collection when FEC is disabled.
 
-Co-developed-by: Yael Chemla <ychemla@nvidia.com>
-Signed-off-by: Yael Chemla <ychemla@nvidia.com>
 Signed-off-by: Carolina Jubran <cjubran@nvidia.com>
 Reviewed-by: Dragos Tatulea <dtatulea@nvidia.com>
 Reviewed-by: Yael Chemla <ychemla@nvidia.com>
 Signed-off-by: Vadim Fedorenko <vadim.fedorenko@linux.dev>
 ---
- .../ethernet/mellanox/mlx5/core/en_stats.c    | 39 +++++++++++++++++--
- 1 file changed, 35 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/mellanox/mlx5/core/en_stats.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en_stats.c b/drivers/net/ethernet/mellanox/mlx5/core/en_stats.c
-index f64cae6dd367..e9f2bf342f95 100644
+index 87536f158d07..aae0022e8736 100644
 --- a/drivers/net/ethernet/mellanox/mlx5/core/en_stats.c
 +++ b/drivers/net/ethernet/mellanox/mlx5/core/en_stats.c
-@@ -1519,24 +1519,55 @@ fec_rs_histogram_fill_ranges(struct mlx5e_priv *priv,
- 		void *bin_range = MLX5_ADDR_OF(pphcr_reg, out, bin_range[i]);
- 
- 		priv->fec_ranges[i].high = MLX5_GET(bin_range_layout, bin_range,
--						    high_val);
-+						    high_val);
- 		priv->fec_ranges[i].low = MLX5_GET(bin_range_layout, bin_range,
--						   low_val);
-+						   low_val);
- 	}
- 	*ranges = priv->fec_ranges;
- 
- 	return num_of_bins;
+@@ -1446,16 +1446,13 @@ static void fec_set_rs_stats(struct ethtool_fec_stats *fec_stats, u32 *ppcnt)
  }
  
-+static void fec_rs_histogram_fill_stats(struct mlx5e_priv *priv,
-+					u8 num_of_bins,
-+					struct ethtool_fec_hist *hist)
-+{
-+	struct mlx5_core_dev *mdev = priv->mdev;
-+	u32 out[MLX5_ST_SZ_DW(ppcnt_reg)] = {0};
-+	u32 in[MLX5_ST_SZ_DW(ppcnt_reg)] = {0};
-+	int sz = MLX5_ST_SZ_BYTES(ppcnt_reg);
-+	void *rs_histogram_cntrs;
-+
-+	MLX5_SET(ppcnt_reg, in, local_port, 1);
-+	MLX5_SET(ppcnt_reg, in, grp, MLX5_RS_FEC_HISTOGRAM_GROUP);
-+	if (mlx5_core_access_reg(mdev, in, sz, out, sz, MLX5_REG_PPCNT, 0, 0))
-+		return;
-+
-+	rs_histogram_cntrs = MLX5_ADDR_OF(ppcnt_reg, out,
-+					  counter_set.rs_histogram_cntrs);
-+	/* Guaranteed that num_of_bins is less than MLX5E_FEC_RS_HIST_MAX
-+	 * by fec_rs_histogram_fill_ranges().
-+	 */
-+	for (int i = 0; i < num_of_bins; i++) {
-+		hist->values[i].bin_value = MLX5_GET64(rs_histogram_cntrs,
-+						       rs_histogram_cntrs,
-+						       hist[i]);
-+	}
-+}
-+
- static void fec_set_histograms_stats(struct mlx5e_priv *priv, int mode,
--				     struct ethtool_fec_hist *hist)
-+				     struct ethtool_fec_hist *hist)
+ static void fec_set_block_stats(struct mlx5e_priv *priv,
++				int mode,
+ 				struct ethtool_fec_stats *fec_stats)
  {
-+	u8 num_of_bins;
+ 	struct mlx5_core_dev *mdev = priv->mdev;
+ 	u32 out[MLX5_ST_SZ_DW(ppcnt_reg)] = {};
+ 	u32 in[MLX5_ST_SZ_DW(ppcnt_reg)] = {};
+ 	int sz = MLX5_ST_SZ_BYTES(ppcnt_reg);
+-	int mode = fec_active_mode(mdev);
+-
+-	if (mode == MLX5E_FEC_NOFEC)
+-		return;
+ 
+ 	MLX5_SET(ppcnt_reg, in, local_port, 1);
+ 	MLX5_SET(ppcnt_reg, in, grp, MLX5_PHYSICAL_LAYER_COUNTERS_GROUP);
+@@ -1496,11 +1493,14 @@ static void fec_set_corrected_bits_total(struct mlx5e_priv *priv,
+ void mlx5e_stats_fec_get(struct mlx5e_priv *priv,
+ 			 struct ethtool_fec_stats *fec_stats)
+ {
+-	if (!MLX5_CAP_PCAM_FEATURE(priv->mdev, ppcnt_statistical_group))
++	int mode = fec_active_mode(priv->mdev);
 +
- 	switch (mode) {
- 	case MLX5E_FEC_RS_528_514:
- 	case MLX5E_FEC_RS_544_514:
- 	case MLX5E_FEC_LLRS_272_257_1:
- 	case MLX5E_FEC_RS_544_514_INTERLEAVED_QUAD:
--		fec_rs_histogram_fill_ranges(priv, &hist->ranges);
-+		num_of_bins = fec_rs_histogram_fill_ranges(priv, &hist->ranges);
-+		if (num_of_bins)
-+			fec_rs_histogram_fill_stats(priv, num_of_bins, hist);
- 		break;
- 	default:
++	if (mode == MLX5E_FEC_NOFEC ||
++	    !MLX5_CAP_PCAM_FEATURE(priv->mdev, ppcnt_statistical_group))
  		return;
+ 
+ 	fec_set_corrected_bits_total(priv, fec_stats);
+-	fec_set_block_stats(priv, fec_stats);
++	fec_set_block_stats(priv, mode, fec_stats);
+ }
+ 
+ #define PPORT_ETH_EXT_OFF(c) \
 -- 
 2.47.3
 
