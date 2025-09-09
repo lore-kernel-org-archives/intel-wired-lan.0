@@ -1,93 +1,94 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BE031CAC582
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  9 Sep 2025 18:58:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0C232CA0FED
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  9 Sep 2025 19:52:37 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 854F041437;
-	Tue,  9 Sep 2025 18:58:36 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id C255060711;
+	Tue,  9 Sep 2025 19:52:37 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id WwPP4Rj6GnYh; Tue,  9 Sep 2025 19:52:37 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 03D08606D3
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1757447557;
+	bh=AnVXyUxlt/5DNJIV9PDSRAs8c6PryE3w5SBbrx1lVKE=;
+	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=QEiaH2aQ8lMSOyBEod0mKwQogZqzDwEAxu433fj+QXltmYvOIuAfURF/eAQYEdsQV
+	 TaxMNT5f4vi5Nbvf+59DjalyMuIHMysPWBElzjBQ9YUVr4Jz1wyr/y/Ubac4uEm4Rk
+	 QB+LMlX5bwMgPG/6Xne8DSPbnh2vqBlnDuVCp08LAcq2HAQx0f788UixYEQYYEtHn9
+	 ECa9HvN9wOrErHeFrThxS9N68khlHW/8TYL/fqv+KFIg9sQYaZ0a80fys2EF/LVWNO
+	 rBQzJXvjHW/ptKR/C8xwr1mxebWInvw5TiGWfrHvnuQI+l0ZG3I815m31JRjPaVBRH
+	 0+cOU68PLU69A==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp3.osuosl.org (Postfix) with ESMTP id 03D08606D3;
+	Tue,  9 Sep 2025 19:52:37 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 2170410E
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  9 Sep 2025 19:52:36 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp4.osuosl.org (Postfix) with ESMTP id 0762A408C6
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  9 Sep 2025 19:52:36 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id QGbYSX0i3AEO; Tue,  9 Sep 2025 18:58:35 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9AF044143B
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1757444315;
-	bh=VwxmoZ74DpU2Bt5KyjlqSryD4vNumOVJKlX9gkFzMpw=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=mzIQw076rEdnNiQS+jSQgOHcfb7aiepmXIQOreIg2/xEGv+hJmgVN4yYvZb+CfHWB
-	 cPay2UhqPLuTqdp+c2S0CejaEZLcB16VANKz7GfRLtk6HVe1Au6DNIUcFRjXMHPaGO
-	 LhQYAuU6S2F0iEdpSd7BW/YtUglPFpG6cGDIFBqzgQzjZXZJnnhyxg1P2g/wvLGk+X
-	 8P3PvTZQFzPXWfJXL6WKdYIcwUK3rJvCdiqeNKsrnrqbX/NTFlErjC/+RFoZwihza2
-	 qvbWUbM8EURhjcrt/0EdhOlugXDM4g7qN3v46D3dvPl2X0DCG/MIxsYeSRaMivWTxD
-	 Ks/sRgkuqM2xw==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 9AF044143B;
-	Tue,  9 Sep 2025 18:58:35 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id A545610E
- for <intel-wired-lan@lists.osuosl.org>; Tue,  9 Sep 2025 18:58:34 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 8C3DA400A4
- for <intel-wired-lan@lists.osuosl.org>; Tue,  9 Sep 2025 18:58:34 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id HI17shdtygCt for <intel-wired-lan@lists.osuosl.org>;
- Tue,  9 Sep 2025 18:58:33 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=95.215.58.177;
- helo=out-177.mta1.migadu.com; envelope-from=vadim.fedorenko@linux.dev;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 4406F40051
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 4406F40051
-Received: from out-177.mta1.migadu.com (out-177.mta1.migadu.com
- [95.215.58.177])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 4406F40051
- for <intel-wired-lan@lists.osuosl.org>; Tue,  9 Sep 2025 18:58:33 +0000 (UTC)
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and
- include these headers.
-From: Vadim Fedorenko <vadim.fedorenko@linux.dev>
-To: Jakub Kicinski <kuba@kernel.org>, Andrew Lunn <andrew@lunn.ch>,
- Michael Chan <michael.chan@broadcom.com>,
- Pavan Chebbi <pavan.chebbi@broadcom.com>, Tariq Toukan <tariqt@nvidia.com>,
- Gal Pressman <gal@nvidia.com>, intel-wired-lan@lists.osuosl.org,
- Donald Hunter <donald.hunter@gmail.com>,
- Carolina Jubran <cjubran@nvidia.com>,
- Vadim Fedorenko <vadim.fedorenko@linux.dev>
-Cc: Paolo Abeni <pabeni@redhat.com>, Simon Horman <horms@kernel.org>,
- netdev@vger.kernel.org
-Date: Tue,  9 Sep 2025 18:42:13 +0000
-Message-ID: <20250909184216.1524669-2-vadim.fedorenko@linux.dev>
-In-Reply-To: <20250909184216.1524669-1-vadim.fedorenko@linux.dev>
-References: <20250909184216.1524669-1-vadim.fedorenko@linux.dev>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Migadu-Flow: FLOW_OUT
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=linux.dev; s=key1; t=1757443801;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=VwxmoZ74DpU2Bt5KyjlqSryD4vNumOVJKlX9gkFzMpw=;
- b=A5OcCJUTSd3wG6mLtuCf3IeoBexg36CkVk1TUTDot/NOkJ67mTussXGz76H4hgRWPEWNgV
- 6ePHHM9NQv//sGJVui/wcnitg2apuv9zwqUbhIy2IS7ulj/z18Aj8XtYr4lsR7FQ9ONMWL
- Dw6a5ocE0bMxh5d2i/5/+tCSqmNwzro=
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ id cEi55qT74GPC for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  9 Sep 2025 19:52:35 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.17;
+ helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 1769440655
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1769440655
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.17])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 1769440655
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  9 Sep 2025 19:52:34 +0000 (UTC)
+X-CSE-ConnectionGUID: Uyn6S5T6REafp3yIN+QJfw==
+X-CSE-MsgGUID: UQHkjRvhRXmucxtbvsspgQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11531"; a="59697506"
+X-IronPort-AV: E=Sophos;i="6.17,312,1747724400"; d="scan'208";a="59697506"
+Received: from fmviesa005.fm.intel.com ([10.60.135.145])
+ by orvoesa109.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 09 Sep 2025 12:52:34 -0700
+X-CSE-ConnectionGUID: LOj7GYYrRH+fFqoFpRg7Ng==
+X-CSE-MsgGUID: LZOdwffgRVyryu4MbXKpfA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.18,252,1751266800"; d="scan'208";a="177521367"
+Received: from lkp-server01.sh.intel.com (HELO 114d98da2b6c) ([10.239.97.150])
+ by fmviesa005.fm.intel.com with ESMTP; 09 Sep 2025 12:52:31 -0700
+Received: from kbuild by 114d98da2b6c with local (Exim 4.96)
+ (envelope-from <lkp@intel.com>) id 1uw4OB-0005Dr-0p
+ for intel-wired-lan@lists.osuosl.org; Tue, 09 Sep 2025 19:52:27 +0000
+Date: Wed, 10 Sep 2025 03:51:55 +0800
+From: kernel test robot <lkp@intel.com>
+To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+Message-ID: <202509100345.mHFXZAFr-lkp@intel.com>
+User-Agent: s-nail v14.9.24
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1757447555; x=1788983555;
+ h=date:from:to:subject:message-id;
+ bh=EPWiFSWhroDX8ELWhgWe2R0hFUMqO+4J+mEZnSijA9M=;
+ b=PQDf2RAd3piQf0pWXeLN43VqW8wREfklPq50un/kifJkZtpT9uFODKpF
+ fc74yIbprLhDfxEw6xYZCsiweOh9qxCo0CzBwAKMTfcjozurD6fay3r04
+ kq5UyslMa1U9cyUP3D4jvzF4q1gSZ7XOuzmdj+/w8WnYv07sauZIylgk4
+ 9ZBKQ4iheLcrxn0NhvgJvvuaNehDbZn20xDnIrEl8r8a7sqyatgNEZQel
+ 4i+ZYnlx95GseJ1xyOxt4OGMeGk03lkBtnTMOJDeFeUxgJ2tFSEAo4ZIV
+ NOuaWEhoaKNiVR63T4HxWpWMVbct3NXwdltoujLxp6U3jB+xMF+lNQShr
+ A==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
- header.from=linux.dev
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (1024-bit key,
- unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256
- header.s=key1 header.b=A5OcCJUT
-Subject: [Intel-wired-lan] [PATCH net-next 1/4] ethtool: add FEC bins
- histogramm report
+ header.from=intel.com
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=PQDf2RAd
+Subject: [Intel-wired-lan] [tnguy-next-queue:200GbE] BUILD SUCCESS
+ 88ca0c738c4159ce87893782b6dd964b5aa01f6e
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -103,416 +104,138 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-IEEE 802.3ck-2022 defines counters for FEC bins and 802.3df-2024
-clarifies it a bit further. Implement reporting interface through as
-addition to FEC stats available in ethtool.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git 200GbE
+branch HEAD: 88ca0c738c4159ce87893782b6dd964b5aa01f6e  idpf: add XDP RSS hash hint
 
-Signed-off-by: Vadim Fedorenko <vadim.fedorenko@linux.dev>
----
- Documentation/netlink/specs/ethtool.yaml      | 22 ++++++
- Documentation/networking/ethtool-netlink.rst  |  5 ++
- .../net/ethernet/broadcom/bnxt/bnxt_ethtool.c |  3 +-
- .../ethernet/fungible/funeth/funeth_ethtool.c |  3 +-
- .../ethernet/hisilicon/hns3/hns3_ethtool.c    |  3 +-
- drivers/net/ethernet/intel/ice/ice_ethtool.c  |  4 +-
- .../marvell/octeontx2/nic/otx2_ethtool.c      |  3 +-
- .../ethernet/mellanox/mlx5/core/en_ethtool.c  |  3 +-
- drivers/net/ethernet/sfc/ethtool.c            |  3 +-
- drivers/net/ethernet/sfc/siena/ethtool.c      |  3 +-
- drivers/net/netdevsim/ethtool.c               | 22 +++++-
- include/linux/ethtool.h                       | 25 ++++++-
- .../uapi/linux/ethtool_netlink_generated.h    | 11 +++
- net/ethtool/fec.c                             | 69 ++++++++++++++++++-
- 14 files changed, 167 insertions(+), 12 deletions(-)
+elapsed time: 1461m
 
-diff --git a/Documentation/netlink/specs/ethtool.yaml b/Documentation/netlink/specs/ethtool.yaml
-index 7a7594713f1f..9f5084a7d534 100644
---- a/Documentation/netlink/specs/ethtool.yaml
-+++ b/Documentation/netlink/specs/ethtool.yaml
-@@ -1219,6 +1219,23 @@ attribute-sets:
-         name: udp-ports
-         type: nest
-         nested-attributes: tunnel-udp
-+  -
-+    name: fec-hist
-+    attr-cnt-name: __ethtool-a-fec-hist-cnt
-+    attributes:
-+      -
-+        name: bin-low
-+        type: u32
-+      -
-+        name: bin-high
-+        type: u32
-+      -
-+        name: bin-val
-+        type: uint
-+      -
-+        name: bin-val-per-lane
-+        type: uint
-+        multi-attr: True
-   -
-     name: fec-stat
-     attr-cnt-name: __ethtool-a-fec-stat-cnt
-@@ -1242,6 +1259,11 @@ attribute-sets:
-         name: corr-bits
-         type: binary
-         sub-type: u64
-+      -
-+        name: hist
-+        type: nest
-+        multi-attr: True
-+        nested-attributes: fec-hist
-   -
-     name: fec
-     attr-cnt-name: __ethtool-a-fec-cnt
-diff --git a/Documentation/networking/ethtool-netlink.rst b/Documentation/networking/ethtool-netlink.rst
-index ab20c644af24..b270886c5f5d 100644
---- a/Documentation/networking/ethtool-netlink.rst
-+++ b/Documentation/networking/ethtool-netlink.rst
-@@ -1541,6 +1541,11 @@ Drivers fill in the statistics in the following structure:
- .. kernel-doc:: include/linux/ethtool.h
-     :identifiers: ethtool_fec_stats
- 
-+Statistics may have FEC bins histogram attribute ``ETHTOOL_A_FEC_STAT_HIST``
-+as defined in IEEE 802.3ck-2022 and 802.3df-2024. Nested attributes will have
-+the range of FEC errors in the bin (inclusive) and the amount of error events
-+in the bin.
-+
- FEC_SET
- =======
- 
-diff --git a/drivers/net/ethernet/broadcom/bnxt/bnxt_ethtool.c b/drivers/net/ethernet/broadcom/bnxt/bnxt_ethtool.c
-index 2830a2b17a27..e3dab169c865 100644
---- a/drivers/net/ethernet/broadcom/bnxt/bnxt_ethtool.c
-+++ b/drivers/net/ethernet/broadcom/bnxt/bnxt_ethtool.c
-@@ -3208,7 +3208,8 @@ static int bnxt_get_fecparam(struct net_device *dev,
- }
- 
- static void bnxt_get_fec_stats(struct net_device *dev,
--			       struct ethtool_fec_stats *fec_stats)
-+			       struct ethtool_fec_stats *fec_stats,
-+			       struct ethtool_fec_hist *hist)
- {
- 	struct bnxt *bp = netdev_priv(dev);
- 	u64 *rx;
-diff --git a/drivers/net/ethernet/fungible/funeth/funeth_ethtool.c b/drivers/net/ethernet/fungible/funeth/funeth_ethtool.c
-index ba83dbf4ed22..1966dba512f8 100644
---- a/drivers/net/ethernet/fungible/funeth/funeth_ethtool.c
-+++ b/drivers/net/ethernet/fungible/funeth/funeth_ethtool.c
-@@ -930,7 +930,8 @@ static void fun_get_rmon_stats(struct net_device *netdev,
- }
- 
- static void fun_get_fec_stats(struct net_device *netdev,
--			      struct ethtool_fec_stats *stats)
-+			      struct ethtool_fec_stats *stats,
-+			      struct ethtool_fec_hist *hist)
- {
- 	const struct funeth_priv *fp = netdev_priv(netdev);
- 
-diff --git a/drivers/net/ethernet/hisilicon/hns3/hns3_ethtool.c b/drivers/net/ethernet/hisilicon/hns3/hns3_ethtool.c
-index a752d0e3db3a..a5eefa28454c 100644
---- a/drivers/net/ethernet/hisilicon/hns3/hns3_ethtool.c
-+++ b/drivers/net/ethernet/hisilicon/hns3/hns3_ethtool.c
-@@ -1659,7 +1659,8 @@ static void hns3_set_msglevel(struct net_device *netdev, u32 msg_level)
- }
- 
- static void hns3_get_fec_stats(struct net_device *netdev,
--			       struct ethtool_fec_stats *fec_stats)
-+			       struct ethtool_fec_stats *fec_stats,
-+			       struct ethtool_fec_hist *hist)
- {
- 	struct hnae3_handle *handle = hns3_get_handle(netdev);
- 	struct hnae3_ae_dev *ae_dev = hns3_get_ae_dev(handle);
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index 55e0f2c6af9e..62d3cfca350c 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -4620,10 +4620,12 @@ static int ice_get_port_fec_stats(struct ice_hw *hw, u16 pcs_quad, u16 pcs_port,
-  * ice_get_fec_stats - returns FEC correctable, uncorrectable stats per netdev
-  * @netdev: network interface device structure
-  * @fec_stats: buffer to hold FEC statistics for given port
-+ * @hist: buffer to put FEC histogram statistics for given port
-  *
-  */
- static void ice_get_fec_stats(struct net_device *netdev,
--			      struct ethtool_fec_stats *fec_stats)
-+			      struct ethtool_fec_stats *fec_stats,
-+			      struct ethtool_fec_hist *hist)
- {
- 	struct ice_netdev_priv *np = netdev_priv(netdev);
- 	struct ice_port_topology port_topology;
-diff --git a/drivers/net/ethernet/marvell/octeontx2/nic/otx2_ethtool.c b/drivers/net/ethernet/marvell/octeontx2/nic/otx2_ethtool.c
-index 998c734ff839..b90e23dc49de 100644
---- a/drivers/net/ethernet/marvell/octeontx2/nic/otx2_ethtool.c
-+++ b/drivers/net/ethernet/marvell/octeontx2/nic/otx2_ethtool.c
-@@ -1283,7 +1283,8 @@ static int otx2_set_link_ksettings(struct net_device *netdev,
- }
- 
- static void otx2_get_fec_stats(struct net_device *netdev,
--			       struct ethtool_fec_stats *fec_stats)
-+			       struct ethtool_fec_stats *fec_stats,
-+			       struct ethtool_fec_hist *hist)
- {
- 	struct otx2_nic *pfvf = netdev_priv(netdev);
- 	struct cgx_fw_data *rsp;
-diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en_ethtool.c b/drivers/net/ethernet/mellanox/mlx5/core/en_ethtool.c
-index d507366d773e..bcc3bbb78cc9 100644
---- a/drivers/net/ethernet/mellanox/mlx5/core/en_ethtool.c
-+++ b/drivers/net/ethernet/mellanox/mlx5/core/en_ethtool.c
-@@ -1927,7 +1927,8 @@ static int mlx5e_set_wol(struct net_device *netdev, struct ethtool_wolinfo *wol)
- }
- 
- static void mlx5e_get_fec_stats(struct net_device *netdev,
--				struct ethtool_fec_stats *fec_stats)
-+				struct ethtool_fec_stats *fec_stats,
-+				struct ethtool_fec_hist *hist)
- {
- 	struct mlx5e_priv *priv = netdev_priv(netdev);
- 
-diff --git a/drivers/net/ethernet/sfc/ethtool.c b/drivers/net/ethernet/sfc/ethtool.c
-index 23c6a7df78d0..18fe5850a978 100644
---- a/drivers/net/ethernet/sfc/ethtool.c
-+++ b/drivers/net/ethernet/sfc/ethtool.c
-@@ -217,7 +217,8 @@ static int efx_ethtool_set_wol(struct net_device *net_dev,
- }
- 
- static void efx_ethtool_get_fec_stats(struct net_device *net_dev,
--				      struct ethtool_fec_stats *fec_stats)
-+				      struct ethtool_fec_stats *fec_stats,
-+				      struct ethtool_fec_hist *hist)
- {
- 	struct efx_nic *efx = efx_netdev_priv(net_dev);
- 
-diff --git a/drivers/net/ethernet/sfc/siena/ethtool.c b/drivers/net/ethernet/sfc/siena/ethtool.c
-index 994909789bfe..8c3ebd0617fb 100644
---- a/drivers/net/ethernet/sfc/siena/ethtool.c
-+++ b/drivers/net/ethernet/sfc/siena/ethtool.c
-@@ -217,7 +217,8 @@ static int efx_ethtool_set_wol(struct net_device *net_dev,
- }
- 
- static void efx_ethtool_get_fec_stats(struct net_device *net_dev,
--				      struct ethtool_fec_stats *fec_stats)
-+				      struct ethtool_fec_stats *fec_stats,
-+				      struct ethtool_fec_hist *hist)
- {
- 	struct efx_nic *efx = netdev_priv(net_dev);
- 
-diff --git a/drivers/net/netdevsim/ethtool.c b/drivers/net/netdevsim/ethtool.c
-index f631d90c428a..6ef163847d13 100644
---- a/drivers/net/netdevsim/ethtool.c
-+++ b/drivers/net/netdevsim/ethtool.c
-@@ -165,11 +165,31 @@ nsim_set_fecparam(struct net_device *dev, struct ethtool_fecparam *fecparam)
- 	return 0;
- }
- 
-+static const struct ethtool_fec_hist_range netdevsim_fec_ranges[] = {
-+	{ 0, 0},
-+	{ 1, 3},
-+	{ 4, 7},
-+	{ 0, 0}
-+};
-+
- static void
--nsim_get_fec_stats(struct net_device *dev, struct ethtool_fec_stats *fec_stats)
-+nsim_get_fec_stats(struct net_device *dev, struct ethtool_fec_stats *fec_stats,
-+		   struct ethtool_fec_hist *hist)
- {
-+	struct ethtool_fec_hist_value *values = hist->values;
-+
-+	hist->ranges = netdevsim_fec_ranges;
-+
- 	fec_stats->corrected_blocks.total = 123;
- 	fec_stats->uncorrectable_blocks.total = 4;
-+
-+	values[0].bin_value = 445;
-+	values[1].bin_value = 12;
-+	values[2].bin_value = 2;
-+	values[0].bin_value_per_lane[0] = 125;
-+	values[0].bin_value_per_lane[1] = 120;
-+	values[0].bin_value_per_lane[2] = 100;
-+	values[0].bin_value_per_lane[3] = 100;
- }
- 
- static int nsim_get_ts_info(struct net_device *dev,
-diff --git a/include/linux/ethtool.h b/include/linux/ethtool.h
-index de5bd76a400c..473e33da29d8 100644
---- a/include/linux/ethtool.h
-+++ b/include/linux/ethtool.h
-@@ -492,7 +492,29 @@ struct ethtool_pause_stats {
- };
- 
- #define ETHTOOL_MAX_LANES	8
-+/**
-+ * IEEE 802.3ck/df defines 16 bins for FEC histogram plus one more for
-+ * the end-of-list marker, total 17 items
-+ */
-+#define ETHTOOL_FEC_HIST_MAX	17
-+/**
-+ * struct ethtool_fec_hist_range - error bits range for FEC bins histogram
-+ * statistics
-+ * @low: low bound of the bin (inclusive)
-+ * @high: high bound of the bin (inclusive)
-+ */
-+struct ethtool_fec_hist_range {
-+	s16 low;
-+	s16 high;
-+};
- 
-+struct ethtool_fec_hist {
-+	struct ethtool_fec_hist_value {
-+		u64 bin_value;
-+		u64 bin_value_per_lane[ETHTOOL_MAX_LANES];
-+	} values[ETHTOOL_FEC_HIST_MAX];
-+	const struct ethtool_fec_hist_range *ranges;
-+};
- /**
-  * struct ethtool_fec_stats - statistics for IEEE 802.3 FEC
-  * @corrected_blocks: number of received blocks corrected by FEC
-@@ -1212,7 +1234,8 @@ struct ethtool_ops {
- 	int	(*set_link_ksettings)(struct net_device *,
- 				      const struct ethtool_link_ksettings *);
- 	void	(*get_fec_stats)(struct net_device *dev,
--				 struct ethtool_fec_stats *fec_stats);
-+				 struct ethtool_fec_stats *fec_stats,
-+				 struct ethtool_fec_hist *hist);
- 	int	(*get_fecparam)(struct net_device *,
- 				      struct ethtool_fecparam *);
- 	int	(*set_fecparam)(struct net_device *,
-diff --git a/include/uapi/linux/ethtool_netlink_generated.h b/include/uapi/linux/ethtool_netlink_generated.h
-index e3b8813465d7..fd70f15666c1 100644
---- a/include/uapi/linux/ethtool_netlink_generated.h
-+++ b/include/uapi/linux/ethtool_netlink_generated.h
-@@ -561,12 +561,23 @@ enum {
- 	ETHTOOL_A_TUNNEL_INFO_MAX = (__ETHTOOL_A_TUNNEL_INFO_CNT - 1)
- };
- 
-+enum {
-+	ETHTOOL_A_FEC_HIST_BIN_LOW = 1,
-+	ETHTOOL_A_FEC_HIST_BIN_HIGH,
-+	ETHTOOL_A_FEC_HIST_BIN_VAL,
-+	ETHTOOL_A_FEC_HIST_BIN_VAL_PER_LANE,
-+
-+	__ETHTOOL_A_FEC_HIST_CNT,
-+	ETHTOOL_A_FEC_HIST_MAX = (__ETHTOOL_A_FEC_HIST_CNT - 1)
-+};
-+
- enum {
- 	ETHTOOL_A_FEC_STAT_UNSPEC,
- 	ETHTOOL_A_FEC_STAT_PAD,
- 	ETHTOOL_A_FEC_STAT_CORRECTED,
- 	ETHTOOL_A_FEC_STAT_UNCORR,
- 	ETHTOOL_A_FEC_STAT_CORR_BITS,
-+	ETHTOOL_A_FEC_STAT_HIST,
- 
- 	__ETHTOOL_A_FEC_STAT_CNT,
- 	ETHTOOL_A_FEC_STAT_MAX = (__ETHTOOL_A_FEC_STAT_CNT - 1)
-diff --git a/net/ethtool/fec.c b/net/ethtool/fec.c
-index e7d3f2c352a3..536b19f4f1cf 100644
---- a/net/ethtool/fec.c
-+++ b/net/ethtool/fec.c
-@@ -17,6 +17,7 @@ struct fec_reply_data {
- 		u64 stats[1 + ETHTOOL_MAX_LANES];
- 		u8 cnt;
- 	} corr, uncorr, corr_bits;
-+	struct ethtool_fec_hist fec_stat_hist;
- };
- 
- #define FEC_REPDATA(__reply_base) \
-@@ -113,7 +114,11 @@ static int fec_prepare_data(const struct ethnl_req_info *req_base,
- 		struct ethtool_fec_stats stats;
- 
- 		ethtool_stats_init((u64 *)&stats, sizeof(stats) / 8);
--		dev->ethtool_ops->get_fec_stats(dev, &stats);
-+		ethtool_stats_init((u64 *)data->fec_stat_hist.values,
-+				   ETHTOOL_FEC_HIST_MAX *
-+				   sizeof(struct ethtool_fec_hist_value) / 8);
-+		dev->ethtool_ops->get_fec_stats(dev, &stats,
-+						&data->fec_stat_hist);
- 
- 		fec_stats_recalc(&data->corr, &stats.corrected_blocks);
- 		fec_stats_recalc(&data->uncorr, &stats.uncorrectable_blocks);
-@@ -157,13 +162,70 @@ static int fec_reply_size(const struct ethnl_req_info *req_base,
- 	len += nla_total_size(sizeof(u8)) +	/* _FEC_AUTO */
- 	       nla_total_size(sizeof(u32));	/* _FEC_ACTIVE */
- 
--	if (req_base->flags & ETHTOOL_FLAG_STATS)
-+	if (req_base->flags & ETHTOOL_FLAG_STATS) {
- 		len += 3 * nla_total_size_64bit(sizeof(u64) *
- 						(1 + ETHTOOL_MAX_LANES));
-+		/* add FEC bins information */
-+		len += (nla_total_size(0) +  /* _A_FEC_HIST */
-+			nla_total_size(4) +  /* _A_FEC_HIST_BIN_LOW */
-+			nla_total_size(4) +  /* _A_FEC_HIST_BIN_HI */
-+			/* _A_FEC_HIST_BIN_VAL + per-lane values */
-+			nla_total_size_64bit(sizeof(u64)) +
-+			nla_total_size_64bit(sizeof(u64) * ETHTOOL_MAX_LANES)) *
-+			ETHTOOL_FEC_HIST_MAX;
-+	}
- 
- 	return len;
- }
- 
-+static int fec_put_hist(struct sk_buff *skb, const struct ethtool_fec_hist *hist)
-+{
-+	const struct ethtool_fec_hist_range *ranges = hist->ranges;
-+	const struct ethtool_fec_hist_value *values = hist->values;
-+	struct nlattr *nest;
-+	int i, j;
-+
-+	if (!ranges)
-+		return 0;
-+
-+	for (i = 0; i < ETHTOOL_FEC_HIST_MAX; i++) {
-+		if (i && !ranges[i].low && !ranges[i].high)
-+			break;
-+
-+		if (WARN_ON_ONCE(values[i].bin_value == ETHTOOL_STAT_NOT_SET))
-+			break;
-+
-+		nest = nla_nest_start(skb, ETHTOOL_A_FEC_STAT_HIST);
-+		if (!nest)
-+			return -EMSGSIZE;
-+
-+		if (nla_put_u32(skb, ETHTOOL_A_FEC_HIST_BIN_LOW,
-+				ranges[i].low) ||
-+		    nla_put_u32(skb, ETHTOOL_A_FEC_HIST_BIN_HIGH,
-+				ranges[i].high) ||
-+		    nla_put_uint(skb, ETHTOOL_A_FEC_HIST_BIN_VAL,
-+				 values[i].bin_value))
-+			goto err_cancel_hist;
-+		for (j = 0; j < ETHTOOL_MAX_LANES; j++) {
-+			if (values[i].bin_value_per_lane[j] == ETHTOOL_STAT_NOT_SET)
-+				break;
-+		}
-+		if (j && nla_put_64bit(skb, ETHTOOL_A_FEC_HIST_BIN_VAL_PER_LANE,
-+				       sizeof(u64) * j,
-+				       values[i].bin_value_per_lane,
-+				       ETHTOOL_A_FEC_STAT_PAD))
-+			goto err_cancel_hist;
-+
-+		nla_nest_end(skb, nest);
-+	}
-+
-+	return 0;
-+
-+err_cancel_hist:
-+	nla_nest_cancel(skb, nest);
-+	return -EMSGSIZE;
-+}
-+
- static int fec_put_stats(struct sk_buff *skb, const struct fec_reply_data *data)
- {
- 	struct nlattr *nest;
-@@ -183,6 +245,9 @@ static int fec_put_stats(struct sk_buff *skb, const struct fec_reply_data *data)
- 			  data->corr_bits.stats, ETHTOOL_A_FEC_STAT_PAD))
- 		goto err_cancel;
- 
-+	if (fec_put_hist(skb, &data->fec_stat_hist))
-+		goto err_cancel;
-+
- 	nla_nest_end(skb, nest);
- 	return 0;
- 
--- 
-2.47.3
+configs tested: 119
+configs skipped: 3
 
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+tested configs:
+alpha                             allnoconfig    gcc-15.1.0
+alpha                            allyesconfig    gcc-15.1.0
+arc                              allmodconfig    gcc-15.1.0
+arc                               allnoconfig    gcc-15.1.0
+arc                              allyesconfig    gcc-15.1.0
+arc                   randconfig-001-20250909    gcc-8.5.0
+arc                   randconfig-002-20250909    gcc-8.5.0
+arm                              allmodconfig    gcc-15.1.0
+arm                               allnoconfig    clang-22
+arm                              allyesconfig    gcc-15.1.0
+arm                          pxa910_defconfig    gcc-15.1.0
+arm                   randconfig-001-20250909    clang-18
+arm                   randconfig-002-20250909    clang-17
+arm                   randconfig-003-20250909    clang-22
+arm                   randconfig-004-20250909    clang-19
+arm64                            allmodconfig    clang-19
+arm64                             allnoconfig    gcc-15.1.0
+arm64                 randconfig-001-20250909    clang-16
+arm64                 randconfig-002-20250909    gcc-11.5.0
+arm64                 randconfig-003-20250909    gcc-11.5.0
+arm64                 randconfig-004-20250909    clang-22
+csky                              allnoconfig    gcc-15.1.0
+csky                  randconfig-001-20250909    gcc-15.1.0
+csky                  randconfig-002-20250909    gcc-15.1.0
+hexagon                          allmodconfig    clang-17
+hexagon                           allnoconfig    clang-22
+hexagon                          allyesconfig    clang-22
+hexagon               randconfig-001-20250909    clang-22
+hexagon               randconfig-002-20250909    clang-22
+i386                             allmodconfig    gcc-14
+i386                              allnoconfig    gcc-14
+i386        buildonly-randconfig-001-20250909    gcc-13
+i386        buildonly-randconfig-002-20250909    clang-20
+i386        buildonly-randconfig-003-20250909    clang-20
+i386        buildonly-randconfig-004-20250909    clang-20
+i386        buildonly-randconfig-005-20250909    clang-20
+i386        buildonly-randconfig-006-20250909    clang-20
+i386                                defconfig    clang-20
+loongarch                        allmodconfig    clang-19
+loongarch                         allnoconfig    clang-22
+loongarch             randconfig-001-20250909    gcc-15.1.0
+loongarch             randconfig-002-20250909    gcc-15.1.0
+m68k                             allmodconfig    gcc-15.1.0
+m68k                              allnoconfig    gcc-15.1.0
+m68k                             allyesconfig    gcc-15.1.0
+microblaze                       allmodconfig    gcc-15.1.0
+microblaze                        allnoconfig    gcc-15.1.0
+microblaze                       allyesconfig    gcc-15.1.0
+microblaze                          defconfig    gcc-15.1.0
+mips                              allnoconfig    gcc-15.1.0
+mips                     loongson1b_defconfig    clang-22
+nios2                             allnoconfig    gcc-11.5.0
+nios2                               defconfig    gcc-11.5.0
+nios2                 randconfig-001-20250909    gcc-11.5.0
+nios2                 randconfig-002-20250909    gcc-8.5.0
+openrisc                          allnoconfig    gcc-15.1.0
+openrisc                         allyesconfig    gcc-15.1.0
+parisc                           allmodconfig    gcc-15.1.0
+parisc                            allnoconfig    gcc-15.1.0
+parisc                           allyesconfig    gcc-15.1.0
+parisc                              defconfig    gcc-15.1.0
+parisc                randconfig-001-20250909    gcc-8.5.0
+parisc                randconfig-002-20250909    gcc-12.5.0
+parisc64                            defconfig    gcc-15.1.0
+powerpc                          allmodconfig    gcc-15.1.0
+powerpc                           allnoconfig    gcc-15.1.0
+powerpc                          allyesconfig    clang-22
+powerpc                 mpc834x_itx_defconfig    clang-16
+powerpc               randconfig-001-20250909    clang-22
+powerpc               randconfig-002-20250909    clang-17
+powerpc               randconfig-003-20250909    gcc-8.5.0
+powerpc                     redwood_defconfig    clang-22
+powerpc64             randconfig-001-20250909    clang-20
+powerpc64             randconfig-002-20250909    gcc-10.5.0
+powerpc64             randconfig-003-20250909    gcc-8.5.0
+riscv                            allmodconfig    clang-22
+riscv                             allnoconfig    gcc-15.1.0
+riscv                            allyesconfig    clang-16
+riscv                 randconfig-001-20250909    clang-22
+riscv                 randconfig-002-20250909    clang-22
+s390                             allmodconfig    clang-18
+s390                              allnoconfig    clang-22
+s390                             allyesconfig    gcc-15.1.0
+s390                  randconfig-001-20250909    gcc-11.5.0
+s390                  randconfig-002-20250909    clang-18
+sh                               allmodconfig    gcc-15.1.0
+sh                                allnoconfig    gcc-15.1.0
+sh                               allyesconfig    gcc-15.1.0
+sh                               j2_defconfig    gcc-15.1.0
+sh                    randconfig-001-20250909    gcc-15.1.0
+sh                    randconfig-002-20250909    gcc-9.5.0
+sh                           se7619_defconfig    gcc-15.1.0
+sparc                            allmodconfig    gcc-15.1.0
+sparc                             allnoconfig    gcc-15.1.0
+sparc                               defconfig    gcc-15.1.0
+sparc                 randconfig-001-20250909    gcc-8.5.0
+sparc                 randconfig-002-20250909    gcc-15.1.0
+sparc64               randconfig-001-20250909    clang-22
+sparc64               randconfig-002-20250909    gcc-8.5.0
+um                               allmodconfig    clang-19
+um                                allnoconfig    clang-22
+um                               allyesconfig    gcc-14
+um                    randconfig-001-20250909    gcc-14
+um                    randconfig-002-20250909    gcc-14
+x86_64                            allnoconfig    clang-20
+x86_64                           allyesconfig    clang-20
+x86_64      buildonly-randconfig-001-20250909    clang-20
+x86_64      buildonly-randconfig-002-20250909    clang-20
+x86_64      buildonly-randconfig-003-20250909    gcc-14
+x86_64      buildonly-randconfig-004-20250909    clang-20
+x86_64      buildonly-randconfig-005-20250909    gcc-14
+x86_64      buildonly-randconfig-006-20250909    clang-20
+x86_64                              defconfig    gcc-14
+x86_64                          rhel-9.4-rust    clang-20
+xtensa                            allnoconfig    gcc-15.1.0
+xtensa                  audio_kc705_defconfig    gcc-15.1.0
+xtensa                randconfig-001-20250909    gcc-8.5.0
+xtensa                randconfig-002-20250909    gcc-15.1.0
+xtensa                    xip_kc705_defconfig    gcc-15.1.0
+
+--
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
