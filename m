@@ -1,132 +1,98 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 483B1CA101F
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 12 Sep 2025 13:07:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 11565CA101F
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 12 Sep 2025 13:17:16 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id F018A61017;
-	Fri, 12 Sep 2025 13:07:45 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id C3DBE406ED;
+	Fri, 12 Sep 2025 13:17:16 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id TZ0C2wVsNuYG; Fri, 12 Sep 2025 13:07:44 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id eIjMRifPIEwk; Fri, 12 Sep 2025 13:17:15 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4E26B608F5
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 12FA5405B9
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1757682464;
-	bh=AhN3kcAG8s569E8YZrQ3IpCqcZPTOWGxuTdywrZKkkQ=;
-	h=From:To:CC:Date:References:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=FiCwEVS75APcGVOB95y2y308s9Ag3agLUsujEJlPNt8z5Op/t44y8ikHV3lLm2QuV
-	 kD0kUQpijUyIxUKt2xqanUqn/KFlqMJGtkQafviZWteKm4jXWRwJHu+9WJM7SXyUhD
-	 3Ihf0PEKTpgCHnJPb0f9LeTAGVSPEIy+Uney9nQYMssEfr5UEusfWdK2pWl3wF0XXf
-	 adbvwlqYj8xvmbjTBG35z2y7J2nItOiX0hk3iTM504Ccnp1+9XGMDIxO4LmeIXroap
-	 GJj5kKb0ImRgu+Xe7Y1eeUMXfUzZeO8W1HtNlSakt7Y6Tifge6K21Bl7MCW04xcfkW
-	 w2oCSjFm6mRLA==
+	s=default; t=1757683035;
+	bh=ZAavoENXfPqTusXgPpFczF98QCl79zugGk9n+wZua8Y=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=MyJoBw1MfEcNAl+9vMnuvJew1jB33eb0qW7q6etRzVHe7WFNjyovPKfiJ+6fRTPNo
+	 klooHhV51uCLfJTaFfJKdId5Bgufzt2rMM9aH/BqzI5LqLEnRvnheVK39vwtdUtDI0
+	 JOBFqAZdV8YyvuWDPN9T8xSkLqIlfEAA3mJcMqTwklVmEuNqX55F7kRQg9teOrddmV
+	 X4AHPTwa3HSaZFad+2JARQz1/0RTu2OHYETpiuP89fXIZBsFVjn8/SrBRCVJU+KlF2
+	 gRTPNn4RhvLJRfMKxEQgWm9RjXZ2JQAdVJ5619vKxzFPRWPlb3Mii8PTNn1OCvmH63
+	 6PVO302xVyFoQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 4E26B608F5;
-	Fri, 12 Sep 2025 13:07:44 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id 36AA512D
- for <intel-wired-lan@lists.osuosl.org>; Fri, 12 Sep 2025 13:07:42 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 12FA5405B9;
+	Fri, 12 Sep 2025 13:17:15 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 1820625B
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 12 Sep 2025 13:17:14 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 1D7428127F
- for <intel-wired-lan@lists.osuosl.org>; Fri, 12 Sep 2025 13:07:42 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 090A640605
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 12 Sep 2025 13:17:14 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id yKusksEyc-lH for <intel-wired-lan@lists.osuosl.org>;
- Fri, 12 Sep 2025 13:07:41 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=35.158.23.94;
- helo=fra-out-008.esa.eu-central-1.outbound.mail-perimeter.amazon.com;
- envelope-from=prvs=343cc6bfb=farbere@amazon.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org BBCE4811BE
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org BBCE4811BE
-Received: from fra-out-008.esa.eu-central-1.outbound.mail-perimeter.amazon.com
- (fra-out-008.esa.eu-central-1.outbound.mail-perimeter.amazon.com
- [35.158.23.94])
- by smtp1.osuosl.org (Postfix) with ESMTPS id BBCE4811BE
- for <intel-wired-lan@lists.osuosl.org>; Fri, 12 Sep 2025 13:07:40 +0000 (UTC)
-X-CSE-ConnectionGUID: 1aNlGU+5Rf6yIjIrkLsmtA==
-X-CSE-MsgGUID: 8ilwknIVRdeG8d/0rLfTWQ==
-X-IronPort-AV: E=Sophos;i="6.18,259,1751241600"; 
-   d="scan'208";a="2023068"
-Received: from ip-10-6-11-83.eu-central-1.compute.internal (HELO
- smtpout.naws.eu-central-1.prod.farcaster.email.amazon.dev) ([10.6.11.83])
- by internal-fra-out-008.esa.eu-central-1.outbound.mail-perimeter.amazon.com
- with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Sep 2025 13:07:37 +0000
-Received: from EX19MTAEUA002.ant.amazon.com [54.240.197.232:28668]
- by smtpin.naws.eu-central-1.prod.farcaster.email.amazon.dev [10.0.20.211:2525]
- with esmtp (Farcaster)
- id f101f8c5-b944-4295-b7d2-10d8943975ce; Fri, 12 Sep 2025 13:07:37 +0000 (UTC)
-X-Farcaster-Flow-ID: f101f8c5-b944-4295-b7d2-10d8943975ce
-Received: from EX19D018EUA004.ant.amazon.com (10.252.50.85) by
- EX19MTAEUA002.ant.amazon.com (10.252.50.124) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA) id 15.2.2562.20;
- Fri, 12 Sep 2025 13:07:36 +0000
-Received: from EX19D018EUA004.ant.amazon.com (10.252.50.85) by
- EX19D018EUA004.ant.amazon.com (10.252.50.85) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA) id 15.2.2562.20;
- Fri, 12 Sep 2025 13:07:35 +0000
-Received: from EX19D018EUA004.ant.amazon.com ([fe80::e53:84f8:3456:a97d]) by
- EX19D018EUA004.ant.amazon.com ([fe80::e53:84f8:3456:a97d%3]) with mapi id
- 15.02.2562.020; Fri, 12 Sep 2025 13:07:35 +0000
-From: "Farber, Eliav" <farbere@amazon.com>
-To: Greg KH <gregkh@linuxfoundation.org>
-CC: "jesse.brandeburg@intel.com" <jesse.brandeburg@intel.com>,
- "anthony.l.nguyen@intel.com" <anthony.l.nguyen@intel.com>,
- "davem@davemloft.net" <davem@davemloft.net>, "kuba@kernel.org"
- <kuba@kernel.org>, "vitaly.lifshits@intel.com" <vitaly.lifshits@intel.com>,
- "post@mikaelkw.online" <post@mikaelkw.online>,
- "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Chocron,
- Jonathan" <jonnyc@amazon.com>, "stable@vger.kernel.org"
- <stable@vger.kernel.org>, "Farber, Eliav" <farbere@amazon.com>
-Thread-Topic: [PATCH 5.10.y] e1000e: fix EEPROM length types for overflow
- checks
-Thread-Index: AQHcI+Y14Hz9ZqTtuk67HsScGeoBbw==
-Date: Fri, 12 Sep 2025 13:07:35 +0000
-Message-ID: <5614ed5db9bd412cb43a78ad656eb433@amazon.com>
-References: <20250910173138.8307-1-farbere@amazon.com>
- <2025091131-tractor-almost-6987@gregkh>
- <f524c24888924a999c3bb90de0099b78@amazon.com>
- <2025091122-obsolete-earthen-8c9b@gregkh>
-In-Reply-To: <2025091122-obsolete-earthen-8c9b@gregkh>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-originating-ip: [10.85.143.179]
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id xDAtYLsOvIPx for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 12 Sep 2025 13:17:13 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.7;
+ helo=mgamail.intel.com; envelope-from=przemyslaw.kitszel@intel.com;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 396AC405E3
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 396AC405E3
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.7])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 396AC405E3
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 12 Sep 2025 13:17:12 +0000 (UTC)
+X-CSE-ConnectionGUID: NBrMpvwTSn+8xpwhMliLPg==
+X-CSE-MsgGUID: hVZY7bkLT0+2i8devfxlZA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11551"; a="85461398"
+X-IronPort-AV: E=Sophos;i="6.18,259,1751266800"; d="scan'208";a="85461398"
+Received: from orviesa006.jf.intel.com ([10.64.159.146])
+ by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 12 Sep 2025 06:17:12 -0700
+X-CSE-ConnectionGUID: jAmMynUMS+iiQ33zQpcMmQ==
+X-CSE-MsgGUID: dozrqj/ARvOLvhPTPLceOw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.18,259,1751266800"; d="scan'208";a="173131203"
+Received: from irvmail002.ir.intel.com ([10.43.11.120])
+ by orviesa006.jf.intel.com with ESMTP; 12 Sep 2025 06:17:10 -0700
+Received: from vecna.igk.intel.com (vecna.igk.intel.com [10.123.220.17])
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id 9DF1D2FC6E;
+ Fri, 12 Sep 2025 14:17:08 +0100 (IST)
+From: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+To: intel-wired-lan@lists.osuosl.org, Tony Nguyen <anthony.l.nguyen@intel.com>
+Date: Fri, 12 Sep 2025 15:06:18 +0200
+Message-Id: <20250912130627.5015-1-przemyslaw.kitszel@intel.com>
+X-Mailer: git-send-email 2.39.3
 MIME-Version: 1.0
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=amazon.com; i=@amazon.com; q=dns/txt; s=amazoncorp2;
- t=1757682461; x=1789218461;
- h=from:to:cc:subject:date:message-id:references:
- in-reply-to:content-transfer-encoding:mime-version;
- bh=AhN3kcAG8s569E8YZrQ3IpCqcZPTOWGxuTdywrZKkkQ=;
- b=MqtMph4pf1fHNBSyfm7PAXhOrZQWx5+vxeV00CWdVRXT/p7EYRAALze+
- HEq/JMuWai0DCgwA853DSOZXrfJn/rFU2OLSKMOSv63D0geGJk/lAPzMh
- uaUcIoL0ufJJborWv6oXWxo0rkAnUj7GPoFngSMrDTAgJDnopzEOk4tNx
- vUB4D3pr0B+U4sRkhJN3DzqTfAKVpdR91LX8XSKvBeEQTy0Bx+U2ym/58
- ZiPJJOWZJb6VvoAQIdjuNB7/wR17EWz3WpvG204A2wD/j6P1nGsErjODo
- jXmMH7t4xQtvPLP6KPmxLK1R6ro0jvFG2vdjUXEi/gM8ujP4uwrd9CDFX
- w==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dmarc=pass (p=quarantine dis=none)
- header.from=amazon.com
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+Content-Transfer-Encoding: 8bit
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1757683033; x=1789219033;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=Qmp/sVrKPtWZYE32eNYZrLxUcCXTL+w4Rquv9L6eNds=;
+ b=Tm+gETZE2JohBW7eYWsQ1AuXi37+PT9eO4ZqQsX5GLydr3fH5GLZZNud
+ Kr2LGpUw09IR54Cgdj6c+ylnGUikrk69aYeovtrbkGRA+QY2MS7Q+gmzD
+ Yhh1QHLhlAGX7COGnqoz46r/MkSeF7I/fvilrVJh0zTVJIJ+LGVHaBb9r
+ r3pqeWpL8Ag3KiTi/mv288FvdOmcH4Fd+YA3Sj7zCvMCP1W8tL4mdBP2t
+ SLDIGGmMQuxgO3ULkQQXdFDt+7x4VyQ3WuDMmKPdQGo3mBDG5l7ubvNhy
+ BEii3PTEVRU9VtoExh352G97ybUmWo+KLHL+/J5+qqHRjjHPKeZF8jiwt
+ A==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=intel.com
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key,
- unprotected) header.d=amazon.com header.i=@amazon.com header.a=rsa-sha256
- header.s=amazoncorp2 header.b=MqtMph4p
-Subject: Re: [Intel-wired-lan] [PATCH 5.10.y] e1000e: fix EEPROM length
- types for overflow checks
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=Tm+gETZE
+Subject: [Intel-wired-lan] [PATCH iwl-next 0/9] ice: pospone service task
+ disabling
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -139,68 +105,48 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
+Cc: netdev@vger.kernel.org, Simon Horman <horms@kernel.org>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Jacob Keller <jacob.e.keller@intel.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-PiBPbiBUaHUsIFNlcCAxMSwgMjAyNSBhdCAwNjoxMzozM0FNICswMDAwLCBGYXJiZXIsIEVsaWF2
-IHdyb3RlOg0KPiA+ID4gT24gV2VkLCBTZXAgMTAsIDIwMjUgYXQgMDU6MzE6MzhQTSArMDAwMCwg
-RWxpYXYgRmFyYmVyIHdyb3RlOg0KPiA+ID4+IEZpeCBhIGNvbXBpbGF0aW9uIGZhaWx1cmUgd2hl
-biB3YXJuaW5ncyBhcmUgdHJlYXRlZCBhcyBlcnJvcnM6DQo+ID4gPj4NCj4gPiA+PiBkcml2ZXJz
-L25ldC9ldGhlcm5ldC9pbnRlbC9lMTAwMGUvZXRodG9vbC5jOiBJbiBmdW5jdGlvbiDigJhlMTAw
-MF9zZXRfZWVwcm9t4oCZOg0KPiA+ID4+IC4vaW5jbHVkZS9saW51eC9vdmVyZmxvdy5oOjcxOjE1
-OiBlcnJvcjogY29tcGFyaXNvbiBvZiBkaXN0aW5jdCBwb2ludGVyIHR5cGVzIGxhY2tzIGEgY2Fz
-dCBbLVdlcnJvcl0NCj4gPiA+PiAgICA3MSB8ICAodm9pZCkgKCZfX2EgPT0gX19kKTsgICBcDQo+
-ID4gPj4gICAgICAgfCAgICAgICAgICAgICAgIF5+DQo+ID4gPj4gZHJpdmVycy9uZXQvZXRoZXJu
-ZXQvaW50ZWwvZTEwMDBlL2V0aHRvb2wuYzo1ODI6Njogbm90ZTogaW4gZXhwYW5zaW9uIG9mIG1h
-Y3JvIOKAmGNoZWNrX2FkZF9vdmVyZmxvd+KAmQ0KPiA+ID4+ICAgNTgyIHwgIGlmIChjaGVja19h
-ZGRfb3ZlcmZsb3coZWVwcm9tLT5vZmZzZXQsIGVlcHJvbS0+bGVuLCAmdG90YWxfbGVuKSB8fA0K
-PiA+ID4+ICAgICAgIHwgICAgICBefn5+fn5+fn5+fn5+fn5+fn4NCj4gPiA+Pg0KPiA+ID4+IFRv
-IGZpeCB0aGlzLCBjaGFuZ2UgdG90YWxfbGVuIGFuZCBtYXhfbGVuIGZyb20gc2l6ZV90IHRvIHUz
-MiBpbg0KPiA+ID4+IGUxMDAwX3NldF9lZXByb20oKS4NCj4gPiA+PiBUaGUgY2hlY2tfYWRkX292
-ZXJmbG93KCkgaGVscGVyIHJlcXVpcmVzIHRoYXQgdGhlIGZpcnN0IHR3byBvcGVyYW5kcw0KPiA+
-ID4+IGFuZCB0aGUgcG9pbnRlciB0byB0aGUgcmVzdWx0ICh0aGlyZCBvcGVyYW5kKSBhbGwgaGF2
-ZSB0aGUgc2FtZSB0eXBlLg0KPiA+ID4+IE9uIDY0LWJpdCBidWlsZHMsIHVzaW5nIHNpemVfdCBj
-YXVzZWQgYSBtaXNtYXRjaCB3aXRoIHRoZSB1MzIgZmllbGRzDQo+ID4gPj4gZWVwcm9tLT5vZmZz
-ZXQgYW5kIGVlcHJvbS0+bGVuLCBsZWFkaW5nIHRvIHR5cGUgY2hlY2sgZmFpbHVyZXMuDQo+ID4g
-Pj4NCj4gPiA+PiBGaXhlczogY2U4ODI5ZDNkNDRiICgiZTEwMDBlOiBmaXggaGVhcCBvdmVyZmxv
-dyBpbiBlMTAwMF9zZXRfZWVwcm9tIikNCj4gPiA+PiBTaWduZWQtb2ZmLWJ5OiBFbGlhdiBGYXJi
-ZXIgPGZhcmJlcmVAYW1hem9uLmNvbT4NCj4gPiA+PiAtLS0NCj4gPiA+PiAgZHJpdmVycy9uZXQv
-ZXRoZXJuZXQvaW50ZWwvZTEwMDBlL2V0aHRvb2wuYyB8IDIgKy0NCj4gPiA+PiAgMSBmaWxlIGNo
-YW5nZWQsIDEgaW5zZXJ0aW9uKCspLCAxIGRlbGV0aW9uKC0pDQo+ID4gPj4NCj4gPiA+PiBkaWZm
-IC0tZ2l0IGEvZHJpdmVycy9uZXQvZXRoZXJuZXQvaW50ZWwvZTEwMDBlL2V0aHRvb2wuYw0KPiA+
-ID4+IGIvZHJpdmVycy9uZXQvZXRoZXJuZXQvaW50ZWwvZTEwMDBlL2V0aHRvb2wuYw0KPiA+ID4+
-IGluZGV4IDRhY2E4NTQ3ODNlMi4uNTg0Mzc4MjkxZjNmIDEwMDY0NA0KPiA+ID4+IC0tLSBhL2Ry
-aXZlcnMvbmV0L2V0aGVybmV0L2ludGVsL2UxMDAwZS9ldGh0b29sLmMNCj4gPiA+PiArKysgYi9k
-cml2ZXJzL25ldC9ldGhlcm5ldC9pbnRlbC9lMTAwMGUvZXRodG9vbC5jDQo+ID4gPj4gQEAgLTU1
-OSw3ICs1NTksNyBAQCBzdGF0aWMgaW50IGUxMDAwX3NldF9lZXByb20oc3RydWN0IG5ldF9kZXZp
-Y2UNCj4gPiA+PiAqbmV0ZGV2LCAgew0KPiA+ID4+ICAgICAgIHN0cnVjdCBlMTAwMF9hZGFwdGVy
-ICphZGFwdGVyID0gbmV0ZGV2X3ByaXYobmV0ZGV2KTsNCj4gPiA+PiAgICAgICBzdHJ1Y3QgZTEw
-MDBfaHcgKmh3ID0gJmFkYXB0ZXItPmh3Ow0KPiA+ID4+IC0gICAgIHNpemVfdCB0b3RhbF9sZW4s
-IG1heF9sZW47DQo+ID4gPj4gKyAgICAgdTMyIHRvdGFsX2xlbiwgbWF4X2xlbjsNCj4gPiA+PiAg
-ICAgICB1MTYgKmVlcHJvbV9idWZmOw0KPiA+ID4+ICAgICAgIGludCByZXRfdmFsID0gMDsNCj4g
-PiA+PiAgICAgICBpbnQgZmlyc3Rfd29yZDsNCj4gPiA+PiAtLQ0KPiA+ID4+IDIuNDcuMw0KPiA+
-ID4+DQo+ID4gPg0KPiA+ID4gV2h5IGlzIHRoaXMgbm90IG5lZWRlZCBpbiBMaW51cydzIHRyZWU/
-DQo+ID4gS2VybmVsIDUuMTAuMjQzIGVuZm9yY2VzIHRoZSBzYW1lIHR5cGUsIGJ1dCB0aGlzIGVu
-Zm9yY2VtZW50IGlzDQo+ID4gYWJzZW50IGZyb20gNS4xNS4xOTIgYW5kIGxhdGVyOg0KPiA+IC8q
-DQo+ID4gICogRm9yIHNpbXBsaWNpdHkgYW5kIGNvZGUgaHlnaWVuZSwgdGhlIGZhbGxiYWNrIGNv
-ZGUgYmVsb3cgaW5zaXN0cyBvbg0KPiA+ICAqIGEsIGIgYW5kICpkIGhhdmluZyB0aGUgc2FtZSB0
-eXBlIChzaW1pbGFyIHRvIHRoZSBtaW4oKSBhbmQgbWF4KCkNCj4gPiAgKiBtYWNyb3MpLCB3aGVy
-ZWFzIGdjYydzIHR5cGUtZ2VuZXJpYyBvdmVyZmxvdyBjaGVja2VycyBhY2NlcHQNCj4gPiAgKiBk
-aWZmZXJlbnQgdHlwZXMuIEhlbmNlIHdlIGRvbid0IGp1c3QgbWFrZSBjaGVja19hZGRfb3ZlcmZs
-b3cgYW4NCj4gPiAgKiBhbGlhcyBmb3IgX19idWlsdGluX2FkZF9vdmVyZmxvdywgYnV0IGFkZCB0
-eXBlIGNoZWNrcyBzaW1pbGFyIHRvDQo+ID4gICogYmVsb3cuDQo+ID4gICovDQo+ID4gI2RlZmlu
-ZSBjaGVja19hZGRfb3ZlcmZsb3coYSwgYiwgZCkgX19tdXN0X2NoZWNrX292ZXJmbG93KCh7ICBc
-DQo+DQo+IFllYWgsIHRoZSBtaW4oKSBidWlsZCB3YXJuaW5nIG1lc3MgaXMgc2xvd2x5IHByb3Bh
-Z2F0aW5nIGJhY2sgdG8gb2xkZXINCj4ga2VybmVscyBvdmVyIHRpbWUgYXMgd2UgdGFrZSB0aGVz
-ZSB0eXBlcyBvZiBmaXhlcyBiYWNrd2FyZHMuICBJIGNvdW50IDMNCj4gc3VjaCBuZXcgd2Fybmlu
-Z3MgaW4gdGhlIG5ldyA1LjEwIHJlbGVhc2UsIG5vdCBqdXN0IHRoaXMgc2luZ2xlIG9uZS4NCj4N
-Cj4gT3ZlcmFsbCwgaG93IGFib3V0IGZpeGluZyB0aGlzIHVwIHNvIGl0IGRvZXNuJ3QgaGFwcGVu
-IGFueW1vcmUgYnkNCj4gYmFja3BvcnRpbmcgdGhlIG1pbigpIGxvZ2ljIGluc3RlYWQ/ICBUaGF0
-IHNob3VsZCBzb2x2ZSB0aGlzIGJ1aWxkDQo+IHdhcm5pbmcsIGFuZCBrZWVwIGl0IGZyb20gaGFw
-cGVuaW5nIGFnYWluIGluIHRoZSBmdXR1cmU/ICBJIGRpZCB0aGF0IGZvcg0KPiBuZXdlciBrZXJu
-ZWwgYnJhbmNoZXMsIGJ1dCBuZXZlciBnb3QgYXJvdW5kIHRvIGl0IGZvciB0aGVzZS4NCg0KSSBk
-aWQgYmFja3BvcnRpbmcgb2YgNCBjb21taXRzIHRvIGJyaW5nIGluY2x1ZGUvbGludXgvb3ZlcmZs
-b3cuaCBpbg0KbGluZSB3aXRoIHY1LjE1LjE5MyBpbiBvcmRlciB0byBwdWxsIGNvbW1pdCAxZDFh
-YzgyNDRjMjIgKCJvdmVyZmxvdzoNCkFsbG93IG1peGVkIHR5cGUgYXJndW1lbnRzIikuDQpJJ2xs
-IGFsc28gY2hlY2sgd2hhdCBjYW4gYmUgZG9uZSBmb3IgaW5jbHVkZS9saW51eC9taW5tYXguaC4N
-Cg0KLS0tDQpSZWdhcmRzLCBFbGlhdg0K
+Move service task shutdown to the very end of driver teardown procedure.
+This is needed (or at least beneficial) for all unwinding functions that
+talk to FW/HW via Admin Queue (so, most of top-level functions, like
+ice_deinit_hw()).
+
+Most of the patches move stuff around (I believe it makes it much easier
+to review/proof when kept separate) in preparation to defer stopping the
+service task to the very end of ice_remove() (and other unwinding flows).
+Then last patch fixes duplicate call to ice_init_hw() (actual, but
+unlikely to encounter, so -next, given the size of the changes).
+
+First patch is not much related, only by that it was developed together
+with the rest, and is so small, that there is no point for separate thread
+
+--
+changes vs internal review:
+Expanded cover letter (Jake).
+
+Przemek Kitszel (9):
+  ice: enforce RTNL assumption of queue NAPI manipulation
+  ice: move service task start out of ice_init_pf()
+  ice: move ice_init_interrupt_scheme() prior ice_init_pf()
+  ice: ice_init_pf: destroy mutexes and xarrays on memory alloc failure
+  ice: move udp_tunnel_nic and misc IRQ setup into ice_init_pf()
+  ice: move ice_init_pf() out of ice_init_dev()
+  ice: extract ice_init_dev() from ice_init()
+  ice: move ice_deinit_dev() to the end of deinit paths
+  ice: remove duplicate call to ice_deinit_hw() on error paths
+
+ drivers/net/ethernet/intel/ice/ice.h          |   4 +
+ .../net/ethernet/intel/ice/devlink/devlink.c  |  21 ++-
+ drivers/net/ethernet/intel/ice/ice_common.c   |   3 +
+ drivers/net/ethernet/intel/ice/ice_lib.c      |   4 +-
+ drivers/net/ethernet/intel/ice/ice_main.c     | 159 +++++++++---------
+ 5 files changed, 109 insertions(+), 82 deletions(-)
+
+-- 
+2.39.3
+
