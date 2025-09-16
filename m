@@ -4,72 +4,72 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 33672CAC59D
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 16 Sep 2025 19:17:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 282B2CAC59F
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 16 Sep 2025 19:17:01 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 6DE09822EC;
-	Tue, 16 Sep 2025 19:16:59 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id B40AC8228C;
+	Tue, 16 Sep 2025 19:17:00 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id DZvFMHMOns-T; Tue, 16 Sep 2025 19:16:58 +0000 (UTC)
+ id FHBeU0jfZKpb; Tue, 16 Sep 2025 19:16:59 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 755D8822EB
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org BE10D827A0
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1758050218;
-	bh=kjkkgRhcr5Sea/dpDadHhu9zEPEQBGiAG48htW1Y90A=;
+	s=default; t=1758050219;
+	bh=2kS6+LAN7Y6KtFkb5h+oh54iSlxhX+iiEu7lm1JF3wo=;
 	h=From:Date:References:In-Reply-To:To:Cc:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=Esq1uliCtMGOwaZ+ZvFG/wHgFzT2VN9BAqMgmMfrJmCtTvmHTTnDx4dD+mhYg8LIw
-	 LOD2gsLm7PuEbnq52IgLYay/14TG2zH+omOMgUryWh8hD/HJvGNJ5QHZlTI3F3D+8D
-	 MheZNkOegzVUxJLXxZEQrwHY6DrdmnXtgvX8y4wxM4DYLtTc3X9/Tw4mMpY+3Ql/cX
-	 pP9Lq1Eo2PxkBf2BP/qNZHtW0j2GXv8bN6QL6f2wPAdgMgj5O4UAHhmDxOOBB+5yUv
-	 iV0ypZ51mCiz482QxA27+ICTDuZ8XTGguXsvpDEzF7PyN0vXzQ3SEnZAH4NAUl6mUR
-	 ZTX+tly+hbNHw==
+	b=IcdTobxcOg3SXpysA1nT/v+V1MI3ZiZ81xvCc2PHEZWiu9u9SRR0ajjBzgIvtBMm+
+	 cVw1Wi0kUQOxVEko7MrzoChA6augBZk2zLxXDY9Kb2zRpMnWkzWl7h6F0+LFOau2i4
+	 3c538M6Bbe7wIk0d/Qjev4Oa5D7GLuIQSVsFRyizf9q4zU51D0XIK83Z0Qkut9GOvM
+	 oRn/Qd9+76tXZ6b5bhZjuM6P10dbXa/5tjrf2fzLpAg1B2gymxGR8e5vTwg3WPl+Kl
+	 4YkOQrtcW/1a8LuMnEJSRrV5pnkKgsu28JxeMyM+Tko+Jz0DSeq3y/nocWPwnrJnBf
+	 DPK21SOBo3CPg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 755D8822EB;
-	Tue, 16 Sep 2025 19:16:58 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id BE10D827A0;
+	Tue, 16 Sep 2025 19:16:59 +0000 (UTC)
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id 3367E279
- for <intel-wired-lan@lists.osuosl.org>; Tue, 16 Sep 2025 19:16:56 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id 50FEA12D
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 16 Sep 2025 19:16:57 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 1D22C40D3C
+ by smtp4.osuosl.org (Postfix) with ESMTP id C228C40E97
  for <intel-wired-lan@lists.osuosl.org>; Tue, 16 Sep 2025 19:16:55 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id tGrLUszoT7nW for <intel-wired-lan@lists.osuosl.org>;
- Tue, 16 Sep 2025 19:16:54 +0000 (UTC)
+ id 7tYPXDQWtStO for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 16 Sep 2025 19:16:55 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.20;
  helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 6E44C40DB2
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 6E44C40DB2
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 283BE40DB2
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 283BE40DB2
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.20])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 6E44C40DB2
- for <intel-wired-lan@lists.osuosl.org>; Tue, 16 Sep 2025 19:16:54 +0000 (UTC)
-X-CSE-ConnectionGUID: LPEjpJ+lT2KePR/wF+UFYg==
-X-CSE-MsgGUID: 3EH4y0JXTZimiEwn+AsYkA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11555"; a="60037580"
-X-IronPort-AV: E=Sophos;i="6.18,269,1751266800"; d="scan'208";a="60037580"
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 283BE40DB2
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 16 Sep 2025 19:16:55 +0000 (UTC)
+X-CSE-ConnectionGUID: xCaeJoDHSICGHa9sEDPZ5Q==
+X-CSE-MsgGUID: rBQ9TcF6QlCbnXdQP3wvMw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11555"; a="60037602"
+X-IronPort-AV: E=Sophos;i="6.18,269,1751266800"; d="scan'208";a="60037602"
 Received: from fmviesa006.fm.intel.com ([10.60.135.146])
  by orvoesa112.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 16 Sep 2025 12:16:54 -0700
-X-CSE-ConnectionGUID: 6n+vR93nSqCTUNP7tKLnRw==
-X-CSE-MsgGUID: J18ZnI/HQ1O3fJFO1fJTAQ==
+ 16 Sep 2025 12:16:55 -0700
+X-CSE-ConnectionGUID: q6LBvRBbQ5KRtxJ/2R9pwQ==
+X-CSE-MsgGUID: JgyBbiYDTT+bJKO8cKh56g==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.18,269,1751266800"; d="scan'208";a="174961755"
+X-IronPort-AV: E=Sophos;i="6.18,269,1751266800"; d="scan'208";a="174961767"
 Received: from orcnseosdtjek.jf.intel.com (HELO [10.166.28.70])
  ([10.166.28.70])
  by fmviesa006-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 16 Sep 2025 12:16:53 -0700
+ 16 Sep 2025 12:16:54 -0700
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Tue, 16 Sep 2025 12:14:54 -0700
+Date: Tue, 16 Sep 2025 12:14:57 -0700
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250916-resend-jbrandeb-ice-standard-stats-v4-1-ec198614c738@intel.com>
+Message-Id: <20250916-resend-jbrandeb-ice-standard-stats-v4-4-ec198614c738@intel.com>
 References: <20250916-resend-jbrandeb-ice-standard-stats-v4-0-ec198614c738@intel.com>
 In-Reply-To: <20250916-resend-jbrandeb-ice-standard-stats-v4-0-ec198614c738@intel.com>
 To: Jesse Brandeburg <jbrandeburg@cloudflare.com>, 
@@ -81,36 +81,36 @@ To: Jesse Brandeburg <jbrandeburg@cloudflare.com>,
  Jacob Keller <jacob.e.keller@intel.com>
 Cc: jbrandeburg@cloudflare.com
 X-Mailer: b4 0.15-dev-cbe0e
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1472;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1987;
  i=jacob.e.keller@intel.com; h=from:subject:message-id;
- bh=tgbQu2OqsM4wvoaJ2Ac7Pu7HlNzbap0vQ4hGe758rUM=;
- b=owGbwMvMwCWWNS3WLp9f4wXjabUkhoyT2xfbrSpT5zhu5a/0JWHqvtk2sV6eCayXUrfY3Vn6M
- r9qjtO/jlIWBjEuBlkxRRYFh5CV140nhGm9cZaDmcPKBDKEgYtTACaSVsjIsHtekb7solp18/j5
- izKMWyTj6jwElhZdDrq7wujfJe2nuQz/w1ef9FZLjgzQsfayyGR60qqeuF5Ablac6eu/Wz5ZGcq
- yAQA=
+ bh=fVsMI2sxazmf90Rmjei3DDI63a9Lm7CC2bI4YMCczTA=;
+ b=owGbwMvMwCWWNS3WLp9f4wXjabUkhoyT25fUB66/Wip4ckvfosXTmRT1btUkb7XtFFy7YaLRU
+ bZL1udPdZSyMIhxMciKKbIoOISsvG48IUzrjbMczBxWJpAhDFycAjCRJSqMDP9XRfjcczDcxvdy
+ WbzTrSPZ0e5/j3seKApv2eIRUlKtLcrIsO3g6uO53jlNS84I6V9c48GVJSeZnsQx1WTKy09fFq6
+ 7yAwA
 X-Developer-Key: i=jacob.e.keller@intel.com; a=openpgp;
  fpr=204054A9D73390562AEC431E6A965D3E6F0F28E8
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1758050214; x=1789586214;
+ t=1758050215; x=1789586215;
  h=from:date:subject:mime-version:content-transfer-encoding:
  message-id:references:in-reply-to:to:cc;
- bh=U5LicZk3zOH+cfVm8UiDiYn2gNrNlZZkTJ30LuKTw3c=;
- b=Bgqfotht8a6VOyWEXyQc9wgDlrp4gtF9Afmpn9i6fVQPT9ED3Q5iwpEM
- ZEBV9O2b5HkC/vscv+JoPv2fjAutEjSl3RTzjvPjprMhOM1bxZV79C4CH
- v35ePr1IHcebXhq2WhAU2tgyjEYZ5EJbRAEFkUnOL3qCviXnPijCJPsUE
- kjsY/zaCxLosUXxYExIwOepbRDPPxa7kPKZ9NYKFoW5FM9cXxvQkqsRfj
- BXngerBv+KdhYUThThm3+49NsMg8ECgjqHLmuFZsDwclQ/a67NsCiZfeR
- xbiDLVGwFwQ8GP4zuJvUieDAFthSZsT60UA+Ib36CSkIXX58CqKoV5mS0
- w==;
+ bh=9YzEHPC3kMFw3ZqY8wpSZT2CZ0Ko0RK1ZiOYgDcqnaY=;
+ b=XGZmNyTRRLOwM8EkES36rhz5KJe76ORQeEdD022WlP2kJ8npLfJxjjDZ
+ Dhts4R7jEuCZlmlebO4QWxPOZEdcXv4I+AfFkukXszanNdLvzZMxeKian
+ S/2jz9CB6ViFYCkn3DZNHpMI58rCiRmEPO3rKz79JEGfMUPsfqdt1Z7yx
+ ruEFHbXoBr//nnNgT5/fVhE/B323ShyycLQ8zMaoM+/0emX/KpFEDYOF9
+ JSOPWcyretAM6Lm5VHiCfcs4tARTbpyV3K9F85V4uNQTc7JvurspAacQO
+ qQtpOuvneEVfyA/f2ymUWfkpM6bsZLbaQN/vK+Me9t/5oMSnERfYV8ORv
+ Q==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=Bgqfotht
-Subject: [Intel-wired-lan] [PATCH iwl-next v4 1/5] net: docs: add missing
- features that can have stats
+ header.a=rsa-sha256 header.s=Intel header.b=XGZmNyTR
+Subject: [Intel-wired-lan] [PATCH iwl-next v4 4/5] ice: implement transmit
+ hardware timestamp statistics
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -128,41 +128,58 @@ Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
-While trying to figure out ethtool -I | --include-statistics, I noticed
-some docs got missed when implementing commit 0e9c127729be ("ethtool:
-add interface to read Tx hardware timestamping statistics").
+The kernel now has common statistics for transmit timestamps, so
+implement them in the ice driver.
 
-Fix up the docs to match the kernel code, and while there, sort them in
-alphabetical order.
+use via
+ethtool -I -T eth0
 
-Cc: Rahul Rameshbabu <rrameshbabu@nvidia.com>
 Reviewed-by: Jacob Keller <jacob.e.keller@intel.com>
-Reviewed-by: Rahul Rameshbabu <rrameshbabu@nvidia.com>
 Reviewed-by: Jakub Kicinski <kuba@kernel.org>
+Reviewed-by: Hariprasad Kelam <hkelam@marvell.com>
 Reviewed-by: Simon Horman <horms@kernel.org>
 Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- Documentation/networking/statistics.rst | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ice/ice_ethtool.c | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
 
-diff --git a/Documentation/networking/statistics.rst b/Documentation/networking/statistics.rst
-index 518284e287b0..66b0ef941457 100644
---- a/Documentation/networking/statistics.rst
-+++ b/Documentation/networking/statistics.rst
-@@ -184,9 +184,11 @@ Protocol-related statistics can be requested in get commands by setting
- the `ETHTOOL_FLAG_STATS` flag in `ETHTOOL_A_HEADER_FLAGS`. Currently
- statistics are supported in the following commands:
+diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+index 3d99c4a1e287..f8bb2d55b28c 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
++++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+@@ -4730,6 +4730,23 @@ static void ice_get_rmon_stats(struct net_device *netdev,
+ 	*ranges = ice_rmon_ranges;
+ }
  
--  - `ETHTOOL_MSG_PAUSE_GET`
-   - `ETHTOOL_MSG_FEC_GET`
-+  - `ETHTOOL_MSG_LINKSTATE_GET`
-   - `ETHTOOL_MSG_MM_GET`
-+  - `ETHTOOL_MSG_PAUSE_GET`
-+  - `ETHTOOL_MSG_TSINFO_GET`
++/* ice_get_ts_stats - provide timestamping stats
++ * @netdev: the netdevice pointer from ethtool
++ * @ts_stats: the ethtool data structure to fill in
++ */
++static void ice_get_ts_stats(struct net_device *netdev,
++			     struct ethtool_ts_stats *ts_stats)
++{
++	struct ice_pf *pf = ice_netdev_to_pf(netdev);
++	struct ice_ptp *ptp = &pf->ptp;
++
++	ts_stats->pkts = ptp->tx_hwtstamp_good;
++	ts_stats->err = ptp->tx_hwtstamp_skipped +
++			ptp->tx_hwtstamp_flushed +
++			ptp->tx_hwtstamp_discarded;
++	ts_stats->lost = ptp->tx_hwtstamp_timeouts;
++}
++
+ #define ICE_ETHTOOL_PFR (ETH_RESET_IRQ | ETH_RESET_DMA | \
+ 	ETH_RESET_FILTER | ETH_RESET_OFFLOAD)
  
- debugfs
- -------
+@@ -4816,6 +4833,7 @@ static const struct ethtool_ops ice_ethtool_ops = {
+ 	.get_eth_mac_stats	= ice_get_eth_mac_stats,
+ 	.get_pause_stats	= ice_get_pause_stats,
+ 	.get_rmon_stats		= ice_get_rmon_stats,
++	.get_ts_stats		= ice_get_ts_stats,
+ 	.get_drvinfo		= ice_get_drvinfo,
+ 	.get_regs_len		= ice_get_regs_len,
+ 	.get_regs		= ice_get_regs,
 
 -- 
 2.51.0.rc1.197.g6d975e95c9d7
