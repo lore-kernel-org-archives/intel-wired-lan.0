@@ -1,108 +1,98 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DA451CA1013
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 18 Sep 2025 15:33:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2FE99CAC59A
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 18 Sep 2025 15:40:08 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 949A380A82;
-	Thu, 18 Sep 2025 15:33:25 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Zv4XJs4yZwiX; Thu, 18 Sep 2025 15:33:24 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D20A380A7E
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1758209604;
-	bh=6aQGR9NinAsnMFj4rMFnHoEwwGxXKQvHw7d7ZbYMd38=;
-	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=J8ykZvqhTYN1y8mtX8wHI2ZXlxkXOKTPk6Dsuoe97CjaT4++Oi3Z5H1/aW2wuT5eO
-	 V4Rlg4kvRFehrNvkJhGBLa5pEAjIfViqQWvuU8q5EjmransUr9mB3k7o+dZKNE8wZR
-	 mLpcviEb/4gYdnJy+Z+HV6plAnvOeokoC+DAPjv4tvU7Jlnuv0mv3zIhM7qjoQbMtb
-	 FB6W7iIVFdXDfgxisGYyc6Yvz0mWtDWlf0cV3HJsENbx6oxkIvgclgqGbKuDCDqJCe
-	 HCQ7f7dqCV0zSyOlKPQU17FqEhkjC44fgGJIH0QAzJViLniLWNl3buGYjMY76iDL+a
-	 /RaOTrqfxgnuA==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id D20A380A7E;
-	Thu, 18 Sep 2025 15:33:24 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id 8051F1E3
- for <intel-wired-lan@lists.osuosl.org>; Thu, 18 Sep 2025 11:06:54 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 7D55B611D5
- for <intel-wired-lan@lists.osuosl.org>; Thu, 18 Sep 2025 11:06:54 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id CA703605D2;
+	Thu, 18 Sep 2025 15:40:07 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id dfUkZujDFMk4 for <intel-wired-lan@lists.osuosl.org>;
- Thu, 18 Sep 2025 11:06:54 +0000 (UTC)
-X-Greylist: delayed 428 seconds by postgrey-1.37 at util1.osuosl.org;
- Thu, 18 Sep 2025 11:06:53 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 8EDE361167
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8EDE361167
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.12;
- helo=mgamail.intel.com; envelope-from=chwee.lin.choong@intel.com;
- receiver=<UNKNOWN> 
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.12])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 8EDE361167
- for <intel-wired-lan@lists.osuosl.org>; Thu, 18 Sep 2025 11:06:53 +0000 (UTC)
-X-CSE-ConnectionGUID: YtglKuZ7TbO5rq0EE/9ZsA==
-X-CSE-MsgGUID: cxEhjPapRLuwY0Wy6TsRpQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11556"; a="64336084"
-X-IronPort-AV: E=Sophos;i="6.18,274,1751266800"; d="scan'208";a="64336084"
-Received: from orviesa005.jf.intel.com ([10.64.159.145])
- by fmvoesa106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 18 Sep 2025 03:59:45 -0700
-X-CSE-ConnectionGUID: TW+Q+WYtS32lblmpHmpoQw==
-X-CSE-MsgGUID: ZVBunwrSQee44Q89CHxReQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.18,274,1751266800"; d="scan'208";a="180627016"
-Received: from p2dy149cchoong.png.intel.com ([10.107.243.50])
- by orviesa005.jf.intel.com with ESMTP; 18 Sep 2025 03:59:41 -0700
-From: Chwee-Lin Choong <chwee.lin.choong@intel.com>
-To: Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Andrew Lunn <andrew+netdev@lunn.ch>,
- "David S . Miller" <davem@davemloft.net>,
- Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>,
- Richard Cochran <richardcochran@gmail.com>,
- Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, Avi Shalev <avi.shalev@intel.com>,
- Song Yoong Siang <yoong.siang.song@intel.com>
-Date: Fri, 19 Sep 2025 02:38:11 +0800
-Message-ID: <20250918183811.31270-1-chwee.lin.choong@intel.com>
-X-Mailer: git-send-email 2.42.0
+ id dV5eCak-GDzR; Thu, 18 Sep 2025 15:40:06 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 58D2A605D0
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1758210006;
+	bh=T6BZ74K7NAO2zW7jZ6vG89Tm0AtcEgvrfsAlTbl3HIo=;
+	h=Date:From:To:Cc:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=l/mQCdMSo+Tm+TMy0MfWEb8VpKyDjOUbNNrfEKV9UfTfz/OQgKqofvzM+oK8dbFcu
+	 o5dvaSBJiMlsNebIKIs6FvY3vyh00DQfHWL15rW8MMnfRJfABeVq6tsIqExI1IKJKc
+	 3OYh5NhP3dast9Tb55T49JhKWpmknZzO/OUvQENTsb7GAYx3KmlDp/ff7R5hXAhlfC
+	 4YNaVV8eGWkBpVtIQx8td1bRSwPgTWqd08VpAxdiXQM+DkSMGTJvxQn0dW1v1Ul+Km
+	 xAdwvq9BSP0sBCLykp4bU6W0A3T7hVa3Iaw9t1PNZn3wxpSXilNTd4Dlz304Dg7FJu
+	 74NwRYHNzvx2Q==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp3.osuosl.org (Postfix) with ESMTP id 58D2A605D0;
+	Thu, 18 Sep 2025 15:40:06 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id C381F279
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 18 Sep 2025 15:40:05 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp4.osuosl.org (Postfix) with ESMTP id A9D724008F
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 18 Sep 2025 15:40:05 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 15lImUWTQS_C for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 18 Sep 2025 15:40:05 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
+ helo=tor.source.kernel.org; envelope-from=kuba@kernel.org; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 029DB40061
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 029DB40061
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 029DB40061
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 18 Sep 2025 15:40:04 +0000 (UTC)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+ by tor.source.kernel.org (Postfix) with ESMTP id 20281601D5;
+ Thu, 18 Sep 2025 15:40:03 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id F2E52C4CEE7;
+ Thu, 18 Sep 2025 15:40:01 +0000 (UTC)
+Date: Thu, 18 Sep 2025 08:40:00 -0700
+From: Jakub Kicinski <kuba@kernel.org>
+To: Carolina Jubran <cjubran@nvidia.com>
+Cc: Vadim Fedorenko <vadim.fedorenko@linux.dev>, Andrew Lunn
+ <andrew@lunn.ch>, Michael Chan <michael.chan@broadcom.com>, Pavan Chebbi
+ <pavan.chebbi@broadcom.com>, Tariq Toukan <tariqt@nvidia.com>, Gal Pressman
+ <gal@nvidia.com>, intel-wired-lan@lists.osuosl.org, Donald Hunter
+ <donald.hunter@gmail.com>, Paolo Abeni <pabeni@redhat.com>, Simon Horman
+ <horms@kernel.org>, netdev@vger.kernel.org, Yael Chemla
+ <ychemla@nvidia.com>, Dragos Tatulea <dtatulea@nvidia.com>
+Message-ID: <20250918084000.1b4fb4f4@kernel.org>
+In-Reply-To: <76611a9c-4c53-40a2-96c1-e1cf5b211611@nvidia.com>
+References: <20250916191257.13343-1-vadim.fedorenko@linux.dev>
+ <20250916191257.13343-4-vadim.fedorenko@linux.dev>
+ <20250917174638.238fa5fc@kernel.org>
+ <4d3a0a08-bda4-483f-a120-b1f905ec0761@nvidia.com>
+ <20250918073551.782c5c25@kernel.org>
+ <76611a9c-4c53-40a2-96c1-e1cf5b211611@nvidia.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Mailman-Approved-At: Thu, 18 Sep 2025 15:33:23 +0000
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1758193614; x=1789729614;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=k7WjdxD1akUFMFsnjD+igZOq30uLF23C9JuX5ROO/Wk=;
- b=P7ljWbHrtE7ynS9UX3dOAFEK4w7cbvEDUx5FsUPIpW2mhcfNlXef804W
- I+omYG0D86qDNgV9ESGoFaEeDG3773lJEu9eLyvkkFL6rmBscoO9uO1zS
- WyXnulF3sluVfUS97paWcv8h0Hu6yGhmtnIG1mGukFGFnsRCAR9+D0uUB
- OvuGNHEK3jayXwvRFllA8p0zO6zEn/gy3is2wQqX3lajciPuLA+hpA7JI
- XgYODkhya1UZXo5CUlS9nYORlruMZDqoqZC3E+gcAbN58TjYVGWmLIWiE
- yhme4m6R0XeuY9jahdXENz56XomZ4XQVG/h2JE2xi7fjKE5uFoATm+3r2
- Q==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ d=kernel.org; s=k20201202; t=1758210002;
+ bh=T6BZ74K7NAO2zW7jZ6vG89Tm0AtcEgvrfsAlTbl3HIo=;
+ h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+ b=IHflm/A+vpAygcZIfolMpJH+YUURnj7y5T6HcWGcDXH64mmV1l/YpMEibtls5X7lS
+ J6cNRah6vwkTIp7m4R1YJaa44DFOBwjZHQMcZ2NviyLqJOi2mpAkNzLGT8VbvFtpOI
+ zDUdQyLdPnezvUNMcb9w6FWtJc3ru6HRszriY3sA/heXQ3/Wj0fCIihYYeJu3345l0
+ 1W/rJVUIOLIOj23mavEohQypaXMGCFpBNV5taxSNeATcK+l2nBMGjjeG1UEBTs81Ct
+ qeXTG3ma4u9nA4E8Ay+rTIGVv/Ds8S7NJlfVEMRgb9IOTmuklcxTXhlfUOPsD1RKVq
+ ysR7Rf1nX+aAA==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dmarc=pass (p=quarantine dis=none)
+ header.from=kernel.org
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=P7ljWbHr
-Subject: [Intel-wired-lan] [PATCH iwl-net v1] igc: fix race condition in TX
- timestamp read for register 0
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=IHflm/A+
+Subject: Re: [Intel-wired-lan] [PATCH net-next v3 3/4] net/mlx5e: Add logic
+ to read RS-FEC histogram bin ranges from PPHCR
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -118,62 +108,25 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The current HW bug workaround checks the TXTT_0 ready bit first,
-then reads LOW -> HIGH -> LOW from register 0 to detect if a
-timestamp was captured.
+On Thu, 18 Sep 2025 18:16:14 +0300 Carolina Jubran wrote:
+> On 18/09/2025 17:35, Jakub Kicinski wrote:
+> > On Thu, 18 Sep 2025 17:25:40 +0300 Carolina Jubran wrote: =20
+> >>> why does MLX5E_FEC_RS_HIST_MAX exist?
+> >>> We care that bins_cnt <=3D ETHTOOL_FEC_HIST_MAX - 1
+> >>> or is there something in the interface that hardcodes 16? =20
+> >> My intention was to keep mlx5 capped at 16 even if ethtool raises its =
+max.
+> >> We=E2=80=99ll only increase this once we know the device should expose=
+ more than 16.
+> >> Since our HW has internal modes that can report more than 16 bins, this
+> >> ensures we don=E2=80=99t accidentally expose them if ethtool increases=
+ its max. =20
+> > But why? =20
+>=20
+> Because currently those modes shouldn't be exposed for ethernet.
 
-This sequence has a race: if a new timestamp is latched after
-reading the TXTT mask but before the first LOW read, both old
-and new timestamp match, causing the driver to drop a valid
-timestamp.
-
-Fix by reading the LOW register first, then the TXTT mask,
-so a newly latched timestamp will always be detected.
-
-This fix also prevents TX unit hangs observed under heavy
-timestamping load.
-
-Fixes: c789ad7cbebc ("igc: Work around HW bug causing missing timestamps")
-Suggested-by: Avi Shalev <avi.shalev@intel.com>
-Signed-off-by: Song Yoong Siang <yoong.siang.song@intel.com>
-Signed-off-by: Chwee-Lin Choong <chwee.lin.choong@intel.com>
----
- drivers/net/ethernet/intel/igc/igc_ptp.c | 10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/igc/igc_ptp.c b/drivers/net/ethernet/intel/igc/igc_ptp.c
-index b7b46d863bee..930486b02fc1 100644
---- a/drivers/net/ethernet/intel/igc/igc_ptp.c
-+++ b/drivers/net/ethernet/intel/igc/igc_ptp.c
-@@ -774,10 +774,17 @@ static void igc_ptp_tx_reg_to_stamp(struct igc_adapter *adapter,
- static void igc_ptp_tx_hwtstamp(struct igc_adapter *adapter)
- {
- 	struct igc_hw *hw = &adapter->hw;
-+	u32 txstmpl_old;
- 	u64 regval;
- 	u32 mask;
- 	int i;
- 
-+	/* Read the "low" register 0 first to establish a baseline value.
-+	 * This avoids a race where a new timestamp could be latched
-+	 * after checking the TXTT mask.
-+	 */
-+	txstmpl_old = rd32(IGC_TXSTMPL);
-+
- 	mask = rd32(IGC_TSYNCTXCTL) & IGC_TSYNCTXCTL_TXTT_ANY;
- 	if (mask & IGC_TSYNCTXCTL_TXTT_0) {
- 		regval = rd32(IGC_TXSTMPL);
-@@ -801,9 +808,8 @@ static void igc_ptp_tx_hwtstamp(struct igc_adapter *adapter)
- 		 * timestamp was captured, we can read the "high"
- 		 * register again.
- 		 */
--		u32 txstmpl_old, txstmpl_new;
-+		u32 txstmpl_new;
- 
--		txstmpl_old = rd32(IGC_TXSTMPL);
- 		rd32(IGC_TXSTMPH);
- 		txstmpl_new = rd32(IGC_TXSTMPL);
- 
--- 
-2.42.0
-
+I understand that the modes should not be exposed.
+I don't get why this has anything to do with the number of bins.
+Does the FW hardcode that the non-Ethernet modes use bins >=3D16?
+When you say "internal modes that can report more than 16 bins"
+it sounds like it uses bins starting from 0, e.g. 0..31.
