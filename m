@@ -4,52 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 410E6CAC592
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 19 Sep 2025 19:55:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 367C0CAC5AC
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 19 Sep 2025 19:55:15 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id B74D261329;
-	Fri, 19 Sep 2025 19:55:13 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 0FB8161333;
+	Fri, 19 Sep 2025 19:55:15 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id QP_cefcS-MDH; Fri, 19 Sep 2025 19:55:13 +0000 (UTC)
+ id zOC4N0NSjbZT; Fri, 19 Sep 2025 19:55:14 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 325A66132A
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2794E61336
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1758311713;
-	bh=CnZCjqoEahQWY1Uj9sMTWSoFWTsJ1zeUtzuSBvyDx0E=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=pzQy7E+8bKkxpJtSP6qTjAh35eYXlaa+86oyjOVua0NZKLc4r8c7v/XpwCLrtF7rd
-	 HBR3Es7VaXNV0VAZKfyfvhI69HuHwsV7X5vVCJqQ+J1MVjRsNQQXy1a/0AVtXbjIxf
-	 r9QTwe8PBrj46B4qMIVgbe+v91xepga/XSfWJk3DPwJDDyrQRlxF43fBR4iwnQTMjU
-	 2Om5C2ib/ANcjGXuzqWxacB6mmR99rCq2Zd4VtB1M8lQIGCMF+pSrYz8Z+Mw0miyu7
-	 P8nkQb60TW3dG6sE0s5mvOOwwivAJKe43KzAY+ZwLIDY7gSyowfVl1rnOdEU/xHbC1
-	 vHYaSbXXnz13w==
+	s=default; t=1758311714;
+	bh=E+w6qOWzvh2g66VAnZ4KloAj0QUPg15CUYZ3Dwlu1Ts=;
+	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=71LopMXyhcSaxMl/6mzl19gh0n3YEXGFjatOPVT/H0B5eICEQnM0DhtaT6b1o2cX9
+	 N3UjZ6YB0kAg3ArsXz5m/yXX00Ifhu02t3JI0mj3yqnM7Lhjnifc/NKn7hhgkNS090
+	 E+51JfgpBMEfp23NZxD1kVjkqWQjnVILAUl4dMq0QyFbYTNZPEk4K9TC0UqYOxv+vB
+	 quGu0HRwLGul0Qw91hZgKyx91pax/WtmU9dvuACIt0IMrAXsUcd6QbNLkyagJpMv1c
+	 Bjf7B60+rhu8WYN51T1QG9e9rtlSzrbeut5XNrSj7zWhZrt82zwSGq+UPGttuHV4jw
+	 do9sqC2WI/wmw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 325A66132A;
-	Fri, 19 Sep 2025 19:55:13 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id 2804AD7F
- for <intel-wired-lan@lists.osuosl.org>; Fri, 19 Sep 2025 19:55:10 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 2794E61336;
+	Fri, 19 Sep 2025 19:55:14 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 9C1BF150
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 19 Sep 2025 19:55:13 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 25A8482BBC
- for <intel-wired-lan@lists.osuosl.org>; Fri, 19 Sep 2025 19:55:10 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 8241A410C6
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 19 Sep 2025 19:55:13 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 22hBZN2YDf8V for <intel-wired-lan@lists.osuosl.org>;
- Fri, 19 Sep 2025 19:55:08 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=95.215.58.182;
- helo=out-182.mta1.migadu.com; envelope-from=vadim.fedorenko@linux.dev;
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 7Z8zLSrLAigQ for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 19 Sep 2025 19:55:12 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=95.215.58.170;
+ helo=out-170.mta1.migadu.com; envelope-from=vadim.fedorenko@linux.dev;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 57A1D82C04
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 57A1D82C04
-Received: from out-182.mta1.migadu.com (out-182.mta1.migadu.com
- [95.215.58.182])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 57A1D82C04
- for <intel-wired-lan@lists.osuosl.org>; Fri, 19 Sep 2025 19:55:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 9D9EB410A3
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9D9EB410A3
+Received: from out-170.mta1.migadu.com (out-170.mta1.migadu.com
+ [95.215.58.170])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 9D9EB410A3
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 19 Sep 2025 19:55:12 +0000 (UTC)
 X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and
  include these headers.
 From: Vadim Fedorenko <vadim.fedorenko@linux.dev>
@@ -63,32 +62,29 @@ To: Jakub Kicinski <kuba@kernel.org>, Andrew Lunn <andrew@lunn.ch>,
  Vadim Fedorenko <vadim.fedorenko@linux.dev>
 Cc: Paolo Abeni <pabeni@redhat.com>, Simon Horman <horms@kernel.org>,
  netdev@vger.kernel.org
-Date: Fri, 19 Sep 2025 19:46:51 +0000
-Message-ID: <20250919194651.2164987-6-vadim.fedorenko@linux.dev>
-In-Reply-To: <20250919194651.2164987-1-vadim.fedorenko@linux.dev>
-References: <20250919194651.2164987-1-vadim.fedorenko@linux.dev>
+Date: Fri, 19 Sep 2025 19:46:46 +0000
+Message-ID: <20250919194651.2164987-1-vadim.fedorenko@linux.dev>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Migadu-Flow: FLOW_OUT
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=linux.dev; s=key1; t=1758311705;
+ d=linux.dev; s=key1; t=1758311699;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=CnZCjqoEahQWY1Uj9sMTWSoFWTsJ1zeUtzuSBvyDx0E=;
- b=IdY+CtxJ/MMOb2TZMbBOFoOpPgXISZcTYb+HVEiK+lNmS+QBAnadT4Ff5mOlihMAZIjGIf
- D9nvqxYGpTtjlEEeYnDBAyg83RvqLxviElnN5l6s/WZUvfgL+AXZp+eEuKuCL3jlJ7aimy
- zV3J5uC/huUNu/1zFtWMzNc2ZTLT9Vc=
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ content-transfer-encoding:content-transfer-encoding;
+ bh=E+w6qOWzvh2g66VAnZ4KloAj0QUPg15CUYZ3Dwlu1Ts=;
+ b=wOam7OVGeFHO/S6Tg2asMxWBEEHBEASP13JzvWp0iChlB60iBPGzYYhgLf5iM3Sla74Jkt
+ kKx614+mtgifBrLKiYvhaTJjty7yr8pDds0WY/dOj5L+I693WIM7bgxjPOIqwX9je3G+WQ
+ s0NIU1RArILkQYs/gzYdWMd8tg4fUT8=
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=linux.dev
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (1024-bit key,
  unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256
- header.s=key1 header.b=IdY+CtxJ
-Subject: [Intel-wired-lan] [PATCH net-next v4 5/5] selftests: net-drv:
- stats: sanity check FEC histogram
+ header.s=key1 header.b=wOam7OVG
+Subject: [Intel-wired-lan] [PATCH net-next v4 0/5] add FEC bins histogram
+ report via ethtool
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -104,69 +100,84 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Simple tests to validate kernel's output. FEC bin range should be valid
-means high boundary should be not less than low boundary. Bin boundaries
-have to be provided as well as error counter value. Per-plane value
-should match bin's value.
+IEEE 802.3ck-2022 defines counters for FEC bins and 802.3df-2024
+clarifies it a bit further. Implement reporting interface through as
+addition to FEC stats available in ethtool. NetDevSim driver has simple
+implementation as an example while mlx5 has much more complex solution.
 
-Signed-off-by: Vadim Fedorenko <vadim.fedorenko@linux.dev>
----
- tools/testing/selftests/drivers/net/stats.py | 35 ++++++++++++++++++--
- 1 file changed, 33 insertions(+), 2 deletions(-)
+The example query is the same as usual FEC statistics while the answer
+is a bit more verbose:
 
-diff --git a/tools/testing/selftests/drivers/net/stats.py b/tools/testing/selftests/drivers/net/stats.py
-index c2bb5d3f1ca1..d433ac71aa02 100755
---- a/tools/testing/selftests/drivers/net/stats.py
-+++ b/tools/testing/selftests/drivers/net/stats.py
-@@ -57,6 +57,36 @@ def check_fec(cfg) -> None:
-     ksft_true(data['stats'], "driver does not report stats")
- 
- 
-+def check_fec_hist(cfg) -> None:
-+    """
-+    Check that drivers which support FEC histogram statistics report
-+    reasonable values.
-+    """
-+
-+    try:
-+        data = ethnl.fec_get({"header": {"dev-index": cfg.ifindex,
-+                                         "flags": {'stats'}}})
-+    except NlError as e:
-+        if e.error == errno.EOPNOTSUPP:
-+            raise KsftSkipEx("FEC not supported by the device") from e
-+        raise
-+    if 'stats' not in data:
-+        raise KsftSkipEx("FEC stats not supported by the device") from e
-+    if 'hist' not in data['stats']:
-+        raise KsftSkipEx("FEC histogram not supported by the device") from e
-+
-+    hist = data['stats']['hist']
-+    for fec_bin in hist:
-+        for key in ['bin-low', 'bin-high', 'bin-val']:
-+            ksft_in(key, fec_bin,
-+	            "Drivers should always report FEC bin range and value")
-+        ksft_ge(fec_bin['bin-high'], fec_bin['bin-low'],
-+                "FEC bin range should be valid")
-+        if 'bin-val-per-lane' in fec_bin:
-+            ksft_eq(sum(fec_bin['bin-val-per-lane']), fec_bin['bin-val'],
-+                    "FEC bin value should be equal to sum of per-plane values")
-+
-+
- def pkt_byte_sum(cfg) -> None:
-     """
-     Check that qstat and interface stats match in value.
-@@ -279,8 +309,9 @@ def main() -> None:
-     """ Ksft boiler plate main """
- 
-     with NetDrvEnv(__file__, queue_count=100) as cfg:
--        ksft_run([check_pause, check_fec, pkt_byte_sum, qstat_by_ifindex,
--                  check_down, procfs_hammer, procfs_downup_hammer],
-+        ksft_run([check_pause, check_fec, check_fec_hist, pkt_byte_sum,
-+		  qstat_by_ifindex, check_down, procfs_hammer,
-+		  procfs_downup_hammer],
-                  args=(cfg, ))
-     ksft_exit()
- 
+[vmuser@archvm9 linux]$ ./tools/net/ynl/pyynl/cli.py --spec Documentation/netlink/specs/ethtool.yaml --do fec-get --json '{"header":{"dev-index": 10, "flags": 4}}'
+{'auto': 0,
+ 'header': {'dev-index': 10, 'dev-name': 'eni10np1'},
+ 'modes': {'bits': {}, 'nomask': True, 'size': 121},
+ 'stats': {'corr-bits': [],
+           'corrected': [123],
+           'hist': [{'bin-high': 0,
+                     'bin-low': 0,
+                     'bin-val': 445,
+                     'bin-val-per-lane': [125, 120, 100, 100]},
+                    {'bin-high': 3, 'bin-low': 1, 'bin-val': 12},
+                    {'bin-high': 7,
+                     'bin-low': 4,
+                     'bin-val': 2,
+                     'bin-val-per-lane': [2, 0, 0, 0]}],
+           'uncorr': [4]}}
+
+v3 -> v4:
+* update spec to avoid using underscores
+* make core accumulate per-lane errors into bin error counter
+* adjust wording in Documentation
+* improve FEC type check in mlx5
+* add selftest to do sanity check of reported histogram
+* partially carry-over Rb tags from Aleksandr because of logical changes
+v3 Link - https://lore.kernel.org/netdev/20250916191257.13343-1-vadim.fedorenko@linux.dev/
+v2 -> v3:
+* fix yaml spec to use binary array for histogram per-lane values
+* fix spelling
+v1 -> v2:
+* fix memset size of FEC histogram bins in mlx5
+* adjust fbnic driver FEC stats callback
+
+Links to RFC discussions:
+v1 - https://lore.kernel.org/netdev/20250729102354.771859-1-vadfed@meta.com/
+v2 - https://lore.kernel.org/netdev/20250731231019.1809172-1-vadfed@meta.com/
+v3 - https://lore.kernel.org/netdev/20250802063024.2423022-1-vadfed@meta.com/
+v4 - https://lore.kernel.org/netdev/20250807155924.2272507-1-vadfed@meta.com/
+v5 - https://lore.kernel.org/netdev/20250815132729.2251597-1-vadfed@meta.com/
+
+Carolina Jubran (3):
+  net/mlx5e: Don't query FEC statistics when FEC is disabled
+  net/mlx5e: Add logic to read RS-FEC histogram bin ranges from PPHCR
+  net/mlx5e: Report RS-FEC histogram statistics via ethtool
+
+Vadim Fedorenko (2):
+  ethtool: add FEC bins histogram report
+  selftests: net-drv: stats: sanity check FEC histogram
+
+ Documentation/netlink/specs/ethtool.yaml      |  26 ++++
+ Documentation/networking/ethtool-netlink.rst  |   5 +
+ .../net/ethernet/broadcom/bnxt/bnxt_ethtool.c |   3 +-
+ .../ethernet/fungible/funeth/funeth_ethtool.c |   3 +-
+ .../ethernet/hisilicon/hns3/hns3_ethtool.c    |   3 +-
+ drivers/net/ethernet/intel/ice/ice_ethtool.c  |   4 +-
+ .../marvell/octeontx2/nic/otx2_ethtool.c      |   3 +-
+ drivers/net/ethernet/mellanox/mlx5/core/en.h  |   1 +
+ .../ethernet/mellanox/mlx5/core/en_ethtool.c  |   5 +-
+ .../net/ethernet/mellanox/mlx5/core/en_main.c |   8 ++
+ .../ethernet/mellanox/mlx5/core/en_stats.c    | 125 +++++++++++++++++-
+ .../ethernet/mellanox/mlx5/core/en_stats.h    |   3 +-
+ .../net/ethernet/meta/fbnic/fbnic_ethtool.c   |   3 +-
+ drivers/net/ethernet/sfc/ethtool.c            |   3 +-
+ drivers/net/ethernet/sfc/siena/ethtool.c      |   3 +-
+ drivers/net/netdevsim/ethtool.c               |  25 +++-
+ include/linux/ethtool.h                       |  25 +++-
+ .../uapi/linux/ethtool_netlink_generated.h    |  11 ++
+ net/ethtool/fec.c                             |  75 ++++++++++-
+ tools/testing/selftests/drivers/net/stats.py  |  35 ++++-
+ 20 files changed, 345 insertions(+), 24 deletions(-)
+
 -- 
 2.47.3
 
