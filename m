@@ -4,221 +4,91 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 53AA1CAC59A
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 19 Sep 2025 19:35:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 45907CAC59A
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 19 Sep 2025 19:55:10 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 0583C612F5;
-	Fri, 19 Sep 2025 19:35:03 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id EF1806067B;
+	Fri, 19 Sep 2025 19:55:09 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 00FsgwS01HIU; Fri, 19 Sep 2025 19:35:00 +0000 (UTC)
+ id qcNTdQK5IJze; Fri, 19 Sep 2025 19:55:08 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org D62FE612F1
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org CE70D6131B
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1758310500;
-	bh=UCVNtIQIu31T5oqDkx7sNLS15mxyYrCRjiKA1dBeBVg=;
-	h=From:To:CC:Date:References:In-Reply-To:Subject:List-Id:
+	s=default; t=1758311708;
+	bh=qtYP7RPnnCKUdnp6KT3Y5PSjKkUq5g8EUr8XaWWVCQs=;
+	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=mG46nE0Cx9036Py+AkEJmaCva/3L4abVxK7zVJ7miNbysaXKkWCF+QfN0Qcz5O1nP
-	 B9PhV+cIcXik9/mwTPD6Lxkcl7qpo11PsKWM6lNtCrLi8fyn1VdFWlKHksInHZDiAH
-	 /3O1HP95WjmOMr6QcreK4Lr8iOfp6rAowyR3u8PoKQXnCwxM7MJaAkEXEHvRAym3cb
-	 nB5n5KiT1v0qfWvaBQ7vVdG4HPJEoAFmZ29BBHWjXv/8OoqiByxMGlfEZoieiuJ58n
-	 PbTrQk2Qd8ZK1Ac+bzlgNSScfrNz0t/JKn1AuQzngHm2UE6xo6w46F06n0z94zuNOw
-	 s5SN4HMabIJwA==
+	b=e7IruM0gaYuJ1jFh0mZT5lsKEpnGMkVbaRC8FeuNbP8soJ4lsRB4c5/cRHAGu9mG4
+	 D4Em9nIZLxGFCqQANU8JnRYXtnBJ6kxmqT6pSqzUzucHfvibAg78w+Z2EaWfOm2qUa
+	 ROSOnr/SNQOFMbjUvi8ybcanA0XyNMmVfN74vJoFmU+UtV7RVE902FhTSDMLUd+gDq
+	 jeMo7H0WAEwQ3TjmVzckuXYruslfewd2/1IfHGA+UXp3okU0HqzMGp5vakUIvdYnhz
+	 0WTWtDzNv0sB44fvTyIpoKEvFgdlIv1SlrOEXMsa4Yx4v5fckDqOTyq1wXtZrBOliK
+	 Qp/5mwS3Ot6zw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id D62FE612F1;
-	Fri, 19 Sep 2025 19:35:00 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id A3E5C150
- for <intel-wired-lan@lists.osuosl.org>; Fri, 19 Sep 2025 19:34:59 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id CE70D6131B;
+	Fri, 19 Sep 2025 19:55:08 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id AA0D9150
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 19 Sep 2025 19:55:06 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 8A14C4108C
- for <intel-wired-lan@lists.osuosl.org>; Fri, 19 Sep 2025 19:34:59 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 901E882BF5
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 19 Sep 2025 19:55:06 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 2YRV56fPhNGK for <intel-wired-lan@lists.osuosl.org>;
- Fri, 19 Sep 2025 19:34:59 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.15;
- helo=mgamail.intel.com; envelope-from=aleksandr.loktionov@intel.com;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org A355941085
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org A355941085
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.15])
- by smtp4.osuosl.org (Postfix) with ESMTPS id A355941085
- for <intel-wired-lan@lists.osuosl.org>; Fri, 19 Sep 2025 19:34:58 +0000 (UTC)
-X-CSE-ConnectionGUID: RJdB2mRuRW6hXqNIlss6JA==
-X-CSE-MsgGUID: f9UldTatRSWuCTvS6PS71A==
-X-IronPort-AV: E=McAfee;i="6800,10657,11558"; a="60777966"
-X-IronPort-AV: E=Sophos;i="6.18,278,1751266800"; d="scan'208";a="60777966"
-Received: from fmviesa005.fm.intel.com ([10.60.135.145])
- by fmvoesa109.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 19 Sep 2025 12:34:58 -0700
-X-CSE-ConnectionGUID: 8YJhX/6ISPqr1MQeu0x6Tw==
-X-CSE-MsgGUID: BQ9Hhb1hS3+ErcZ4n3Gl+A==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.18,278,1751266800"; d="scan'208";a="180317708"
-Received: from fmsmsx902.amr.corp.intel.com ([10.18.126.91])
- by fmviesa005.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 19 Sep 2025 12:34:57 -0700
-Received: from FMSMSX902.amr.corp.intel.com (10.18.126.91) by
- fmsmsx902.amr.corp.intel.com (10.18.126.91) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.17; Fri, 19 Sep 2025 12:34:57 -0700
-Received: from fmsedg901.ED.cps.intel.com (10.1.192.143) by
- FMSMSX902.amr.corp.intel.com (10.18.126.91) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.17 via Frontend Transport; Fri, 19 Sep 2025 12:34:57 -0700
-Received: from BN1PR04CU002.outbound.protection.outlook.com (52.101.56.49) by
- edgegateway.intel.com (192.55.55.81) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.17; Fri, 19 Sep 2025 12:34:56 -0700
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=ZsiMdJhoKt6LgEWSagwMks/nGjG90V8TqOVfcbMvgyxNS6TA4Zkbw6EkyG7GDl6POJP7wMbtqukm0UvWzs5DouPQJALquKIqXmfvty7KnUetOcL7X76ZX8NJjSe2GHGQSW4vKSqb7FTQoAH02vFm8+umNNxQCp3wYR6PruVSVOxsCvvoK3hA5+iOjCMnL99nzRVBcuagpn+IoXU7+pUc/jKXqICEcoLKd8mZqJMcUbBMwOOFM9K8wWk6X5+PsguZbXRSNmbFdixFXuVOdY6KaloLT7iKf5JZQphWVyf/pgClFMhCRtg6ZUP/Z7mH9BvLBvyubpnMt55APouQdU9bfQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=UCVNtIQIu31T5oqDkx7sNLS15mxyYrCRjiKA1dBeBVg=;
- b=OMDJWzkd8NnNckwjlEjnkJ9JD9AKOspl8q5Qt4Il0ikYm0wbWS5nKc+TUIdcOl0dclBYylvKNZuUK1UnfVyEaBW9Xux458ngeIlIXjqwNzeSXkgfU6Aqt/lakwQi4l4M0E/x1BPio8czBCcvAhHFZPSLrlB0U9TKt9b9vLyEd84tIZrjRU0SlayndatlLWSOqM5ymcd3KOwCk9tmY3MAtjtlVgFuHX1NWVUbTgdpgi+Eb3ErOroZ494Vyf4Alj/T8rxQBH4EcneZFZBWHuiqdvUxF39kRT7LDqr7KoCcQ6pKgVfI2f9gV4LFOTyXdLv/OLEeQSW8nMjDyRXUCvxxVw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
- dkim=pass header.d=intel.com; arc=none
-Received: from IA3PR11MB8986.namprd11.prod.outlook.com (2603:10b6:208:577::21)
- by SA2PR11MB5180.namprd11.prod.outlook.com (2603:10b6:806:fb::16)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9137.16; Fri, 19 Sep
- 2025 19:34:54 +0000
-Received: from IA3PR11MB8986.namprd11.prod.outlook.com
- ([fe80::395e:7a7f:e74c:5408]) by IA3PR11MB8986.namprd11.prod.outlook.com
- ([fe80::395e:7a7f:e74c:5408%3]) with mapi id 15.20.9115.020; Fri, 19 Sep 2025
- 19:34:54 +0000
-From: "Loktionov, Aleksandr" <aleksandr.loktionov@intel.com>
-To: "Choong, Chwee Lin" <chwee.lin.choong@intel.com>, "Nguyen, Anthony L"
- <anthony.l.nguyen@intel.com>, "Kitszel, Przemyslaw"
- <przemyslaw.kitszel@intel.com>, Andrew Lunn <andrew+netdev@lunn.ch>, "David S
- . Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, "Jakub
- Kicinski" <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Richard Cochran
- <richardcochran@gmail.com>, "Gomes, Vinicius" <vinicius.gomes@intel.com>
-CC: "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Shalev, Avi"
- <avi.shalev@intel.com>, "Song, Yoong Siang" <yoong.siang.song@intel.com>
-Thread-Topic: [Intel-wired-lan] [PATCH iwl-net v1] igc: fix race condition in
- TX timestamp read for register 0
-Thread-Index: AQHcKLGjPJAydz31xUamh5mdpL2LfbSa53qw
-Date: Fri, 19 Sep 2025 19:34:54 +0000
-Message-ID: <IA3PR11MB89860D4DD0D79426AE6C7447E511A@IA3PR11MB8986.namprd11.prod.outlook.com>
-References: <20250918183811.31270-1-chwee.lin.choong@intel.com>
-In-Reply-To: <20250918183811.31270-1-chwee.lin.choong@intel.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: IA3PR11MB8986:EE_|SA2PR11MB5180:EE_
-x-ms-office365-filtering-correlation-id: 9ae40c71-0218-4757-4987-08ddf7b39c05
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam: BCL:0;
- ARA:13230040|376014|1800799024|366016|38070700021|921020; 
-x-microsoft-antispam-message-info: =?us-ascii?Q?AI8Zg+Pdp5Fx95dBQZN4f9HtmxnlsaGPi0oU5oFQeoy2TYKN0/E9Sw8lqHlX?=
- =?us-ascii?Q?qAC9crl7SOhyi2+VikT6ZJNzjH7sjd/EpzW8hLS0fBhgPAMnD5wmcKq2quVh?=
- =?us-ascii?Q?DJRPhVKSqdaAu3lKE9GQ5pFog8/NGWnhjfUk0wF5KmMqjzVU9VAKr1PMS/pB?=
- =?us-ascii?Q?UlQqloK49+T4iWUgNE3eDpkpHo0NFEoRpmhcAQ3DL2tVgGdoGGEtpsCJIfPZ?=
- =?us-ascii?Q?xa8ENNl/wcF/ENS9Hi0UJRJgRK0ulsMAsTGZVF0oEjThG5IHbmc1fRkCnLuN?=
- =?us-ascii?Q?PQjsa250tUH76XG9E7noSo3Jcp16yStFy4Rx0iNs7OA5TaVUEj0awsWJeZeN?=
- =?us-ascii?Q?eFeDH+Ys/zVc9Y5n9QtKnUUiLtSHVLL8AD/7xEdJEIZap2W4PINaBKHbBUMQ?=
- =?us-ascii?Q?SucErOYKNV58HEEc6DBkFnA5H75coTUFq7d8jL/DSXnvJ5leknCKEM76rh9g?=
- =?us-ascii?Q?tsZZxyOsbFA1gDnl3l9QJTWU+rN3SFVPQE797EtMOstSOild9OgBDmCx+VBB?=
- =?us-ascii?Q?ZqIoP0NrjCLKDRLrU1xRD5e0abpzjztYXln9ezW7qY5xrz+kZvM7qsq5y1V/?=
- =?us-ascii?Q?FsqrV/59hC+NUaqbGIFIwv1CZGbVsYJcymvLv3tWDEVlHEovPdFI+tTVnrnM?=
- =?us-ascii?Q?D9sr3vWEhG150xjywIf0mSIIpGRArmkNFraSzyW3UDuzEoxnWTSH7n0QyiBX?=
- =?us-ascii?Q?3DsR0a8DclMyK69jX9itdCWkQXlTUqahBwbZ0AC1c05BMon6fGVvJUkiBZaV?=
- =?us-ascii?Q?IL4+GaGXEh+SPRr1KrIJ7ioXrZwqK+vEU+AO3qPrNyCHjJr+lOCFN4uonRqK?=
- =?us-ascii?Q?q+bDNQuCv8BJk3vhmbzlAS2t2+n6RrwYxqfp/DbMIC+bUo0t/7YzezLADasx?=
- =?us-ascii?Q?4zqH8mYKSJxuXUuPuyK5RBgSWfIWJOQ02OMAK58nvQn6ipDIXTAva1pirkR8?=
- =?us-ascii?Q?yZCTloSqJjyNNvvLWjmjUQ7PRj2GYEsKYupom1tTqDZoB0qmR4Kdp2tJXEAE?=
- =?us-ascii?Q?Wls10C4H6ljpHOGpk4QbvFOwOmxo+/y010zrgczG2C0YcOnOaXmzhcxxuujt?=
- =?us-ascii?Q?3hFPVMIK6mtD9L1/upbpSlMLr8HbC72k04AkYew5mZrITQT/pqmMNFJynE9O?=
- =?us-ascii?Q?oVu9HXhjND2pUCMluv0D+MFXyiFtHL6y0Yi0wrqXVB7g2MWZJUdw0rFQ4UD1?=
- =?us-ascii?Q?ZnKuDKrjrbjQ6rKlVmi+X/8Qbl9D5OphyxK5JmJ98WCIToQ9ZucKqGWkG0qr?=
- =?us-ascii?Q?0+iT6BKL5fG2rZ/VUpocKkEuj7Yo2Ua8HL+T6HFntAElkhcEpPMBC9DbZZm7?=
- =?us-ascii?Q?vKe+ynXvA8RG4ZxpGxdt4JuY+FtQi7F17RHJubVWFVvbnfxYLcIDKWgySqSG?=
- =?us-ascii?Q?amim8KyXC72oNUslmF9jBeZ+WD0Y6FxVq+lre2LpbaPMhspNL0SPMv9AySeB?=
- =?us-ascii?Q?3fJXjpLa/UBu1/th08EzutD5ExB84O8m29TUjAFB0DO7Qjh8odmjWvgMrafA?=
- =?us-ascii?Q?8rsuLVtTSC+bpFI=3D?=
-x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:IA3PR11MB8986.namprd11.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230040)(376014)(1800799024)(366016)(38070700021)(921020); DIR:OUT;
- SFP:1101; 
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0: =?us-ascii?Q?H+I+FAqpbim+n33a+uJX8fIndZRd1ioXA1rZ9pSJNO9bRkUq1GUqm7Kgn/pP?=
- =?us-ascii?Q?GOBrHHJVzf7IPSg5SypP0QChlY42bcIQ4iki9WIyVvz6pRhLpmhdc20wqfda?=
- =?us-ascii?Q?HEI4ewgls8NYNby0hAjkkZCbA1Gi9O7wYqBaD/mAEfNBNEaAxrb+/KyPguhu?=
- =?us-ascii?Q?auuNQjGq4iy8qQQyI2uffGYcdoHR6xOp3YhD4dwTRrI+cwm2WwHnc6YNEdaN?=
- =?us-ascii?Q?NoC0ESi3ICZEbFuggjCeV+qnu3LIiKh8jlrXXX3wjnPZPg1I2ijN4sNS0Zjz?=
- =?us-ascii?Q?SAyxVGf/3J+sPciM7et39HnZh8NUfAJ6g0ygGpoTxEhzDjeBQHoLaFueg1Fj?=
- =?us-ascii?Q?48HtTbFZ9wPLQ8hPFwc6tL1rHy4X/g51lWpeBahc+wqEL38+Wuqjcdhdtcqp?=
- =?us-ascii?Q?wGtUoOGKg7mrdj5hkMKPQ7C3DdnApcuczliVqoB1oWOtuTrnW5gWrFrOgFsG?=
- =?us-ascii?Q?2CI+ZQXumNsmGVnoFN6axvjXUdY9TBgU1hhDSXLwZqPHy/RGmkCE2E8zPgbk?=
- =?us-ascii?Q?4+A91JMQz0XXQ8utNDceEkEpUTVJ+iW1FIpDnt60QnFSXaZBWOToV4gkA1rU?=
- =?us-ascii?Q?S1DgfBcwDtHu6g3pLLkDxfl9utQ5Xuagtt0fzVSQ5zC8q4QSmRoCwzeRN3eK?=
- =?us-ascii?Q?l5PNxjobpTnGgMyJKp758xJlCQVOEtkK1XLpH3+ag3zz6pjJJGmubmBtnC2N?=
- =?us-ascii?Q?agKeXcuf0n6UaIJ3oXjzpi4bexil+wLaRNkbmwAULZe8Ky0D/3x0GAqS67Ul?=
- =?us-ascii?Q?cJsl4IIb9xE8neOr0vsyiIpo6cHzxdHsVixaxrsY85b8/SntEBzC7MAs9Pq3?=
- =?us-ascii?Q?nSQl6ngNPGhdotDsy/5blMHEVj7QWRUFBs1nlIAsQsnWama4U6VwSNOc+ZVr?=
- =?us-ascii?Q?hre4WYCW/wj8UGAa3jNOFVvZfaeBSRbJ7HaF6slvoU7jqmq0AEIB8kZRYK8r?=
- =?us-ascii?Q?p183SUEIKe/9cyQPpCo9q447wgWTRwVQ46KyZ1a5x8HKxHN+yKOfd7ahu4AL?=
- =?us-ascii?Q?yxl4N3zqQw59RE/2ZAwzexsT4Vz7DY9aLvrjgRxAVC7kCj1VyKo5Y9HLIbUq?=
- =?us-ascii?Q?VePRQaf3PkhovYJzCHiKp1H1pgChaEieCSsvTjHvk4Kh4UkrGz/kD2i1tu3G?=
- =?us-ascii?Q?wmqqeFcCDxmqSQife19yVSUOrC/HTHnwTZy3PEF5p1Xq31lRsGQaK3e9pt/f?=
- =?us-ascii?Q?CMh5QJMP4VTb0IvIMMFkbG8aSl7QSG6f0U0gBLCAIKd0gy0dgpfIWJp1PtRU?=
- =?us-ascii?Q?T639EG86msi8LqycHk0EM/UwlaJD+bfJpvj2/7dBl8BmXuxis+7MWjAQoAsY?=
- =?us-ascii?Q?3bXP5icq8ne/OE3JRJ5sP37Dd4a5MT8H9fudkEHGZPv2J6U1r7JMe8ZtiqHX?=
- =?us-ascii?Q?QitQsrtpYvGdoo8TAqrWC+p09uvaRQ8qINyNZw+fxgSHjLmm5iLoCv/cDHQ7?=
- =?us-ascii?Q?ZYeihjRlkQjN84TOEA8JhJTjnoVWKIr4iGupcLIYMUV/SVQfXJjtIjyK+QKY?=
- =?us-ascii?Q?MJw3b5g3LY494uztc8kyc8NRpmkOsMJRMzu47Sx3d/0gfk9Z1cjFnsxo8YDx?=
- =?us-ascii?Q?eLOe/GoqPr4T2++JOqkHQ+s/WHYZiWHvHfc8Fcqgk4RKs+swStYpi0NBM0oM?=
- =?us-ascii?Q?Ug=3D=3D?=
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id EIKBEUOv_lMc for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 19 Sep 2025 19:55:05 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2001:41d0:203:375::bb; helo=out-187.mta1.migadu.com;
+ envelope-from=vadim.fedorenko@linux.dev; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org C30FF82B51
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C30FF82B51
+Received: from out-187.mta1.migadu.com (out-187.mta1.migadu.com
+ [IPv6:2001:41d0:203:375::bb])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id C30FF82B51
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 19 Sep 2025 19:55:03 +0000 (UTC)
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and
+ include these headers.
+From: Vadim Fedorenko <vadim.fedorenko@linux.dev>
+To: Jakub Kicinski <kuba@kernel.org>, Andrew Lunn <andrew@lunn.ch>,
+ Michael Chan <michael.chan@broadcom.com>,
+ Pavan Chebbi <pavan.chebbi@broadcom.com>, Tariq Toukan <tariqt@nvidia.com>,
+ Gal Pressman <gal@nvidia.com>, intel-wired-lan@lists.osuosl.org,
+ Donald Hunter <donald.hunter@gmail.com>,
+ Carolina Jubran <cjubran@nvidia.com>,
+ Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
+ Vadim Fedorenko <vadim.fedorenko@linux.dev>
+Cc: Paolo Abeni <pabeni@redhat.com>, Simon Horman <horms@kernel.org>,
+ netdev@vger.kernel.org
+Date: Fri, 19 Sep 2025 19:46:47 +0000
+Message-ID: <20250919194651.2164987-2-vadim.fedorenko@linux.dev>
+In-Reply-To: <20250919194651.2164987-1-vadim.fedorenko@linux.dev>
+References: <20250919194651.2164987-1-vadim.fedorenko@linux.dev>
 MIME-Version: 1.0
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: IA3PR11MB8986.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 9ae40c71-0218-4757-4987-08ddf7b39c05
-X-MS-Exchange-CrossTenant-originalarrivaltime: 19 Sep 2025 19:34:54.5174 (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: pOtNymnKSrr2X9qh7KICAp+gleyITAM6FvVQqrhDVgbmc7eJpOwaI+mhjqB1VJ9clz+sQQvCmCgK7KyidboBlW5XOLh1Z5mH98YAVJyqD0g=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA2PR11MB5180
-X-OriginatorOrg: intel.com
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1758310498; x=1789846498;
- h=from:to:cc:subject:date:message-id:references:
- in-reply-to:content-transfer-encoding:mime-version;
- bh=IL/lyDIUz/UpMaIh/+sYYrCL3QUCT/fnnzO3pao0fCE=;
- b=fNiDR4fo20llQk2Vc1G2TVUkOoIq8dCdb9pMpaNfScqyeTr/S96Ts/4O
- rscGV1M2n86pBLxosV+X6q6UQkgZPuN8ZmfoGZHztOKYiN3uSrK7GvY8u
- 4C45O1p2mEOhmsXTco3QXA5YiVVCNEwmKklYthbdOEmCsuq9W8xbgt63U
- lscLhhsy9ixPHuUSpn30gtAQLTwXAfz9dRGV1M0hxJK8gApy67iCR5XYh
- pEEwjPUc3AIPFrlGhIKrceIypx/956IQG0GzSOUAsXLFdKqDUYwX4uLzE
- gMF9biHQYdRSX9rr8AH6aXNd2Le61M8EzcY2zL2GfTDC1CpBNFJkKpU0B
- A==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+Content-Transfer-Encoding: 8bit
+X-Migadu-Flow: FLOW_OUT
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=linux.dev; s=key1; t=1758311700;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=qtYP7RPnnCKUdnp6KT3Y5PSjKkUq5g8EUr8XaWWVCQs=;
+ b=UhNYBs+FLo5ssEuAcLFQ1Nb2IMS6I9Um1LpAoJ+1mzm5VG7XGXlt81r/UzApgm4uFVIpkS
+ +MzhMioVkR0zi/jPaxwUuBNfhsSwDj5+Vbxh4XwH/6FiTt2GLt+IJ8j3N6xmWEIyoLcmJ2
+ H7kGzAFjG5BOuYkrx4LThzZioA9VOFI=
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
- header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=fNiDR4fo
-X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=intel.com;
-Subject: Re: [Intel-wired-lan] [PATCH iwl-net v1] igc: fix race condition in
- TX timestamp read for register 0
+ header.from=linux.dev
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (1024-bit key,
+ unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256
+ header.s=key1 header.b=UhNYBs+F
+Subject: [Intel-wired-lan] [PATCH net-next v4 1/5] ethtool: add FEC bins
+ histogram report
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -234,84 +104,446 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
+IEEE 802.3ck-2022 defines counters for FEC bins and 802.3df-2024
+clarifies it a bit further. Implement reporting interface through as
+addition to FEC stats available in ethtool. Drivers can leave bin
+counter uninitialized if per-lane values are provided. In this case the
+core will recalculate summ for the bin.
 
+Signed-off-by: Vadim Fedorenko <vadim.fedorenko@linux.dev>
+---
+ Documentation/netlink/specs/ethtool.yaml      | 26 +++++++
+ Documentation/networking/ethtool-netlink.rst  |  5 ++
+ .../net/ethernet/broadcom/bnxt/bnxt_ethtool.c |  3 +-
+ .../ethernet/fungible/funeth/funeth_ethtool.c |  3 +-
+ .../ethernet/hisilicon/hns3/hns3_ethtool.c    |  3 +-
+ drivers/net/ethernet/intel/ice/ice_ethtool.c  |  4 +-
+ .../marvell/octeontx2/nic/otx2_ethtool.c      |  3 +-
+ .../ethernet/mellanox/mlx5/core/en_ethtool.c  |  3 +-
+ .../net/ethernet/meta/fbnic/fbnic_ethtool.c   |  3 +-
+ drivers/net/ethernet/sfc/ethtool.c            |  3 +-
+ drivers/net/ethernet/sfc/siena/ethtool.c      |  3 +-
+ drivers/net/netdevsim/ethtool.c               | 25 ++++++-
+ include/linux/ethtool.h                       | 25 ++++++-
+ .../uapi/linux/ethtool_netlink_generated.h    | 11 +++
+ net/ethtool/fec.c                             | 75 ++++++++++++++++++-
+ 15 files changed, 182 insertions(+), 13 deletions(-)
 
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf
-> Of Chwee-Lin Choong
-> Sent: Thursday, September 18, 2025 8:38 PM
-> To: Nguyen, Anthony L <anthony.l.nguyen@intel.com>; Kitszel,
-> Przemyslaw <przemyslaw.kitszel@intel.com>; Andrew Lunn
-> <andrew+netdev@lunn.ch>; David S . Miller <davem@davemloft.net>; Eric
-> Dumazet <edumazet@google.com>; Jakub Kicinski <kuba@kernel.org>; Paolo
-> Abeni <pabeni@redhat.com>; Richard Cochran <richardcochran@gmail.com>;
-> Gomes, Vinicius <vinicius.gomes@intel.com>
-> Cc: intel-wired-lan@lists.osuosl.org; netdev@vger.kernel.org; linux-
-> kernel@vger.kernel.org; Shalev, Avi <avi.shalev@intel.com>; Song,
-> Yoong Siang <yoong.siang.song@intel.com>
-> Subject: [Intel-wired-lan] [PATCH iwl-net v1] igc: fix race condition
-> in TX timestamp read for register 0
->=20
-> The current HW bug workaround checks the TXTT_0 ready bit first, then
-> reads LOW -> HIGH -> LOW from register 0 to detect if a timestamp was
-> captured.
->=20
-> This sequence has a race: if a new timestamp is latched after reading
-> the TXTT mask but before the first LOW read, both old and new
-> timestamp match, causing the driver to drop a valid timestamp.
->=20
-> Fix by reading the LOW register first, then the TXTT mask, so a newly
-> latched timestamp will always be detected.
->=20
-> This fix also prevents TX unit hangs observed under heavy timestamping
-> load.
->=20
-> Fixes: c789ad7cbebc ("igc: Work around HW bug causing missing
-> timestamps")
-> Suggested-by: Avi Shalev <avi.shalev@intel.com>
-> Signed-off-by: Song Yoong Siang <yoong.siang.song@intel.com>
-> Signed-off-by: Chwee-Lin Choong <chwee.lin.choong@intel.com>
-> ---
->  drivers/net/ethernet/intel/igc/igc_ptp.c | 10 ++++++++--
->  1 file changed, 8 insertions(+), 2 deletions(-)
->=20
-> diff --git a/drivers/net/ethernet/intel/igc/igc_ptp.c
-> b/drivers/net/ethernet/intel/igc/igc_ptp.c
-> index b7b46d863bee..930486b02fc1 100644
-> --- a/drivers/net/ethernet/intel/igc/igc_ptp.c
-> +++ b/drivers/net/ethernet/intel/igc/igc_ptp.c
-> @@ -774,10 +774,17 @@ static void igc_ptp_tx_reg_to_stamp(struct
-> igc_adapter *adapter,  static void igc_ptp_tx_hwtstamp(struct
-> igc_adapter *adapter)  {
->  	struct igc_hw *hw =3D &adapter->hw;
-> +	u32 txstmpl_old;
->  	u64 regval;
->  	u32 mask;
->  	int i;
->=20
-> +	/* Read the "low" register 0 first to establish a baseline
-> value.
-> +	 * This avoids a race where a new timestamp could be latched
-> +	 * after checking the TXTT mask.
-> +	 */
-> +	txstmpl_old =3D rd32(IGC_TXSTMPL);
-> +
->  	mask =3D rd32(IGC_TSYNCTXCTL) & IGC_TSYNCTXCTL_TXTT_ANY;
->  	if (mask & IGC_TSYNCTXCTL_TXTT_0) {
->  		regval =3D rd32(IGC_TXSTMPL);
-> @@ -801,9 +808,8 @@ static void igc_ptp_tx_hwtstamp(struct igc_adapter
-> *adapter)
->  		 * timestamp was captured, we can read the "high"
->  		 * register again.
->  		 */
-> -		u32 txstmpl_old, txstmpl_new;
-> +		u32 txstmpl_new;
->=20
-> -		txstmpl_old =3D rd32(IGC_TXSTMPL);
->  		rd32(IGC_TXSTMPH);
->  		txstmpl_new =3D rd32(IGC_TXSTMPL);
->=20
-> --
-> 2.42.0
+diff --git a/Documentation/netlink/specs/ethtool.yaml b/Documentation/netlink/specs/ethtool.yaml
+index 7a7594713f1f..6ad4c1514501 100644
+--- a/Documentation/netlink/specs/ethtool.yaml
++++ b/Documentation/netlink/specs/ethtool.yaml
+@@ -1219,6 +1219,27 @@ attribute-sets:
+         name: udp-ports
+         type: nest
+         nested-attributes: tunnel-udp
++  -
++    name: fec-hist
++    attr-cnt-name: --ethtool-a-fec-hist-cnt
++    attributes:
++      -
++        name: bin-low
++        type: u32
++        doc: Low bound of FEC bin (inclusive)
++      -
++        name: bin-high
++        type: u32
++        doc: High bound of FEC bin (inclusive)
++      -
++        name: bin-val
++        type: uint
++        doc: Error count in the bin (optional if per-lane values exist)
++      -
++        name: bin-val-per-lane
++        type: binary
++        sub-type: u64
++        doc: An array of per-lane error counters in the bin (optional)
+   -
+     name: fec-stat
+     attr-cnt-name: __ethtool-a-fec-stat-cnt
+@@ -1242,6 +1263,11 @@ attribute-sets:
+         name: corr-bits
+         type: binary
+         sub-type: u64
++      -
++        name: hist
++        type: nest
++        multi-attr: True
++        nested-attributes: fec-hist
+   -
+     name: fec
+     attr-cnt-name: __ethtool-a-fec-cnt
+diff --git a/Documentation/networking/ethtool-netlink.rst b/Documentation/networking/ethtool-netlink.rst
+index ab20c644af24..b270886c5f5d 100644
+--- a/Documentation/networking/ethtool-netlink.rst
++++ b/Documentation/networking/ethtool-netlink.rst
+@@ -1541,6 +1541,11 @@ Drivers fill in the statistics in the following structure:
+ .. kernel-doc:: include/linux/ethtool.h
+     :identifiers: ethtool_fec_stats
+ 
++Statistics may have FEC bins histogram attribute ``ETHTOOL_A_FEC_STAT_HIST``
++as defined in IEEE 802.3ck-2022 and 802.3df-2024. Nested attributes will have
++the range of FEC errors in the bin (inclusive) and the amount of error events
++in the bin.
++
+ FEC_SET
+ =======
+ 
+diff --git a/drivers/net/ethernet/broadcom/bnxt/bnxt_ethtool.c b/drivers/net/ethernet/broadcom/bnxt/bnxt_ethtool.c
+index be32ef8f5c96..41686a6f84b5 100644
+--- a/drivers/net/ethernet/broadcom/bnxt/bnxt_ethtool.c
++++ b/drivers/net/ethernet/broadcom/bnxt/bnxt_ethtool.c
+@@ -3208,7 +3208,8 @@ static int bnxt_get_fecparam(struct net_device *dev,
+ }
+ 
+ static void bnxt_get_fec_stats(struct net_device *dev,
+-			       struct ethtool_fec_stats *fec_stats)
++			       struct ethtool_fec_stats *fec_stats,
++			       struct ethtool_fec_hist *hist)
+ {
+ 	struct bnxt *bp = netdev_priv(dev);
+ 	u64 *rx;
+diff --git a/drivers/net/ethernet/fungible/funeth/funeth_ethtool.c b/drivers/net/ethernet/fungible/funeth/funeth_ethtool.c
+index ba83dbf4ed22..1966dba512f8 100644
+--- a/drivers/net/ethernet/fungible/funeth/funeth_ethtool.c
++++ b/drivers/net/ethernet/fungible/funeth/funeth_ethtool.c
+@@ -930,7 +930,8 @@ static void fun_get_rmon_stats(struct net_device *netdev,
+ }
+ 
+ static void fun_get_fec_stats(struct net_device *netdev,
+-			      struct ethtool_fec_stats *stats)
++			      struct ethtool_fec_stats *stats,
++			      struct ethtool_fec_hist *hist)
+ {
+ 	const struct funeth_priv *fp = netdev_priv(netdev);
+ 
+diff --git a/drivers/net/ethernet/hisilicon/hns3/hns3_ethtool.c b/drivers/net/ethernet/hisilicon/hns3/hns3_ethtool.c
+index a752d0e3db3a..a5eefa28454c 100644
+--- a/drivers/net/ethernet/hisilicon/hns3/hns3_ethtool.c
++++ b/drivers/net/ethernet/hisilicon/hns3/hns3_ethtool.c
+@@ -1659,7 +1659,8 @@ static void hns3_set_msglevel(struct net_device *netdev, u32 msg_level)
+ }
+ 
+ static void hns3_get_fec_stats(struct net_device *netdev,
+-			       struct ethtool_fec_stats *fec_stats)
++			       struct ethtool_fec_stats *fec_stats,
++			       struct ethtool_fec_hist *hist)
+ {
+ 	struct hnae3_handle *handle = hns3_get_handle(netdev);
+ 	struct hnae3_ae_dev *ae_dev = hns3_get_ae_dev(handle);
+diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+index 55e0f2c6af9e..62d3cfca350c 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
++++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+@@ -4620,10 +4620,12 @@ static int ice_get_port_fec_stats(struct ice_hw *hw, u16 pcs_quad, u16 pcs_port,
+  * ice_get_fec_stats - returns FEC correctable, uncorrectable stats per netdev
+  * @netdev: network interface device structure
+  * @fec_stats: buffer to hold FEC statistics for given port
++ * @hist: buffer to put FEC histogram statistics for given port
+  *
+  */
+ static void ice_get_fec_stats(struct net_device *netdev,
+-			      struct ethtool_fec_stats *fec_stats)
++			      struct ethtool_fec_stats *fec_stats,
++			      struct ethtool_fec_hist *hist)
+ {
+ 	struct ice_netdev_priv *np = netdev_priv(netdev);
+ 	struct ice_port_topology port_topology;
+diff --git a/drivers/net/ethernet/marvell/octeontx2/nic/otx2_ethtool.c b/drivers/net/ethernet/marvell/octeontx2/nic/otx2_ethtool.c
+index 998c734ff839..b90e23dc49de 100644
+--- a/drivers/net/ethernet/marvell/octeontx2/nic/otx2_ethtool.c
++++ b/drivers/net/ethernet/marvell/octeontx2/nic/otx2_ethtool.c
+@@ -1283,7 +1283,8 @@ static int otx2_set_link_ksettings(struct net_device *netdev,
+ }
+ 
+ static void otx2_get_fec_stats(struct net_device *netdev,
+-			       struct ethtool_fec_stats *fec_stats)
++			       struct ethtool_fec_stats *fec_stats,
++			       struct ethtool_fec_hist *hist)
+ {
+ 	struct otx2_nic *pfvf = netdev_priv(netdev);
+ 	struct cgx_fw_data *rsp;
+diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en_ethtool.c b/drivers/net/ethernet/mellanox/mlx5/core/en_ethtool.c
+index d507366d773e..bcc3bbb78cc9 100644
+--- a/drivers/net/ethernet/mellanox/mlx5/core/en_ethtool.c
++++ b/drivers/net/ethernet/mellanox/mlx5/core/en_ethtool.c
+@@ -1927,7 +1927,8 @@ static int mlx5e_set_wol(struct net_device *netdev, struct ethtool_wolinfo *wol)
+ }
+ 
+ static void mlx5e_get_fec_stats(struct net_device *netdev,
+-				struct ethtool_fec_stats *fec_stats)
++				struct ethtool_fec_stats *fec_stats,
++				struct ethtool_fec_hist *hist)
+ {
+ 	struct mlx5e_priv *priv = netdev_priv(netdev);
+ 
+diff --git a/drivers/net/ethernet/meta/fbnic/fbnic_ethtool.c b/drivers/net/ethernet/meta/fbnic/fbnic_ethtool.c
+index b4ff98ee2051..b6e5bdd509f1 100644
+--- a/drivers/net/ethernet/meta/fbnic/fbnic_ethtool.c
++++ b/drivers/net/ethernet/meta/fbnic/fbnic_ethtool.c
+@@ -1659,7 +1659,8 @@ fbnic_get_pause_stats(struct net_device *netdev,
+ 
+ static void
+ fbnic_get_fec_stats(struct net_device *netdev,
+-		    struct ethtool_fec_stats *fec_stats)
++		    struct ethtool_fec_stats *fec_stats,
++		    struct ethtool_fec_hist *hist)
+ {
+ 	struct fbnic_net *fbn = netdev_priv(netdev);
+ 	struct fbnic_phy_stats *phy_stats;
+diff --git a/drivers/net/ethernet/sfc/ethtool.c b/drivers/net/ethernet/sfc/ethtool.c
+index 23c6a7df78d0..18fe5850a978 100644
+--- a/drivers/net/ethernet/sfc/ethtool.c
++++ b/drivers/net/ethernet/sfc/ethtool.c
+@@ -217,7 +217,8 @@ static int efx_ethtool_set_wol(struct net_device *net_dev,
+ }
+ 
+ static void efx_ethtool_get_fec_stats(struct net_device *net_dev,
+-				      struct ethtool_fec_stats *fec_stats)
++				      struct ethtool_fec_stats *fec_stats,
++				      struct ethtool_fec_hist *hist)
+ {
+ 	struct efx_nic *efx = efx_netdev_priv(net_dev);
+ 
+diff --git a/drivers/net/ethernet/sfc/siena/ethtool.c b/drivers/net/ethernet/sfc/siena/ethtool.c
+index 994909789bfe..8c3ebd0617fb 100644
+--- a/drivers/net/ethernet/sfc/siena/ethtool.c
++++ b/drivers/net/ethernet/sfc/siena/ethtool.c
+@@ -217,7 +217,8 @@ static int efx_ethtool_set_wol(struct net_device *net_dev,
+ }
+ 
+ static void efx_ethtool_get_fec_stats(struct net_device *net_dev,
+-				      struct ethtool_fec_stats *fec_stats)
++				      struct ethtool_fec_stats *fec_stats,
++				      struct ethtool_fec_hist *hist)
+ {
+ 	struct efx_nic *efx = netdev_priv(net_dev);
+ 
+diff --git a/drivers/net/netdevsim/ethtool.c b/drivers/net/netdevsim/ethtool.c
+index f631d90c428a..36a201533aae 100644
+--- a/drivers/net/netdevsim/ethtool.c
++++ b/drivers/net/netdevsim/ethtool.c
+@@ -165,11 +165,34 @@ nsim_set_fecparam(struct net_device *dev, struct ethtool_fecparam *fecparam)
+ 	return 0;
+ }
+ 
++static const struct ethtool_fec_hist_range netdevsim_fec_ranges[] = {
++	{ 0, 0},
++	{ 1, 3},
++	{ 4, 7},
++	{ 0, 0}
++};
++
+ static void
+-nsim_get_fec_stats(struct net_device *dev, struct ethtool_fec_stats *fec_stats)
++nsim_get_fec_stats(struct net_device *dev, struct ethtool_fec_stats *fec_stats,
++		   struct ethtool_fec_hist *hist)
+ {
++	struct ethtool_fec_hist_value *values = hist->values;
++
++	hist->ranges = netdevsim_fec_ranges;
++
+ 	fec_stats->corrected_blocks.total = 123;
+ 	fec_stats->uncorrectable_blocks.total = 4;
++
++	values[0].per_lane[0] = 125;
++	values[0].per_lane[1] = 120;
++	values[0].per_lane[2] = 100;
++	values[0].per_lane[3] = 100;
++	values[1].sum = 12;
++	values[2].sum = 2;
++	values[2].per_lane[0] = 2;
++	values[2].per_lane[1] = 0;
++	values[2].per_lane[2] = 0;
++	values[2].per_lane[3] = 0;
+ }
+ 
+ static int nsim_get_ts_info(struct net_device *dev,
+diff --git a/include/linux/ethtool.h b/include/linux/ethtool.h
+index c869b7f8bce8..c2d8b4ec62eb 100644
+--- a/include/linux/ethtool.h
++++ b/include/linux/ethtool.h
+@@ -492,7 +492,29 @@ struct ethtool_pause_stats {
+ };
+ 
+ #define ETHTOOL_MAX_LANES	8
++/**
++ * IEEE 802.3ck/df defines 16 bins for FEC histogram plus one more for
++ * the end-of-list marker, total 17 items
++ */
++#define ETHTOOL_FEC_HIST_MAX	17
++/**
++ * struct ethtool_fec_hist_range - error bits range for FEC histogram
++ * statistics
++ * @low: low bound of the bin (inclusive)
++ * @high: high bound of the bin (inclusive)
++ */
++struct ethtool_fec_hist_range {
++	u16 low;
++	u16 high;
++};
+ 
++struct ethtool_fec_hist {
++	struct ethtool_fec_hist_value {
++		u64 sum;
++		u64 per_lane[ETHTOOL_MAX_LANES];
++	} values[ETHTOOL_FEC_HIST_MAX];
++	const struct ethtool_fec_hist_range *ranges;
++};
+ /**
+  * struct ethtool_fec_stats - statistics for IEEE 802.3 FEC
+  * @corrected_blocks: number of received blocks corrected by FEC
+@@ -1214,7 +1236,8 @@ struct ethtool_ops {
+ 	int	(*set_link_ksettings)(struct net_device *,
+ 				      const struct ethtool_link_ksettings *);
+ 	void	(*get_fec_stats)(struct net_device *dev,
+-				 struct ethtool_fec_stats *fec_stats);
++				 struct ethtool_fec_stats *fec_stats,
++				 struct ethtool_fec_hist *hist);
+ 	int	(*get_fecparam)(struct net_device *,
+ 				      struct ethtool_fecparam *);
+ 	int	(*set_fecparam)(struct net_device *,
+diff --git a/include/uapi/linux/ethtool_netlink_generated.h b/include/uapi/linux/ethtool_netlink_generated.h
+index e3b8813465d7..fd70f15666c1 100644
+--- a/include/uapi/linux/ethtool_netlink_generated.h
++++ b/include/uapi/linux/ethtool_netlink_generated.h
+@@ -561,12 +561,23 @@ enum {
+ 	ETHTOOL_A_TUNNEL_INFO_MAX = (__ETHTOOL_A_TUNNEL_INFO_CNT - 1)
+ };
+ 
++enum {
++	ETHTOOL_A_FEC_HIST_BIN_LOW = 1,
++	ETHTOOL_A_FEC_HIST_BIN_HIGH,
++	ETHTOOL_A_FEC_HIST_BIN_VAL,
++	ETHTOOL_A_FEC_HIST_BIN_VAL_PER_LANE,
++
++	__ETHTOOL_A_FEC_HIST_CNT,
++	ETHTOOL_A_FEC_HIST_MAX = (__ETHTOOL_A_FEC_HIST_CNT - 1)
++};
++
+ enum {
+ 	ETHTOOL_A_FEC_STAT_UNSPEC,
+ 	ETHTOOL_A_FEC_STAT_PAD,
+ 	ETHTOOL_A_FEC_STAT_CORRECTED,
+ 	ETHTOOL_A_FEC_STAT_UNCORR,
+ 	ETHTOOL_A_FEC_STAT_CORR_BITS,
++	ETHTOOL_A_FEC_STAT_HIST,
+ 
+ 	__ETHTOOL_A_FEC_STAT_CNT,
+ 	ETHTOOL_A_FEC_STAT_MAX = (__ETHTOOL_A_FEC_STAT_CNT - 1)
+diff --git a/net/ethtool/fec.c b/net/ethtool/fec.c
+index e7d3f2c352a3..f37a1fe20355 100644
+--- a/net/ethtool/fec.c
++++ b/net/ethtool/fec.c
+@@ -17,6 +17,7 @@ struct fec_reply_data {
+ 		u64 stats[1 + ETHTOOL_MAX_LANES];
+ 		u8 cnt;
+ 	} corr, uncorr, corr_bits;
++	struct ethtool_fec_hist fec_stat_hist;
+ };
+ 
+ #define FEC_REPDATA(__reply_base) \
+@@ -113,7 +114,10 @@ static int fec_prepare_data(const struct ethnl_req_info *req_base,
+ 		struct ethtool_fec_stats stats;
+ 
+ 		ethtool_stats_init((u64 *)&stats, sizeof(stats) / 8);
+-		dev->ethtool_ops->get_fec_stats(dev, &stats);
++		ethtool_stats_init((u64 *)data->fec_stat_hist.values,
++				   sizeof(data->fec_stat_hist.values) / 8);
++		dev->ethtool_ops->get_fec_stats(dev, &stats,
++						&data->fec_stat_hist);
+ 
+ 		fec_stats_recalc(&data->corr, &stats.corrected_blocks);
+ 		fec_stats_recalc(&data->uncorr, &stats.uncorrectable_blocks);
+@@ -157,13 +161,77 @@ static int fec_reply_size(const struct ethnl_req_info *req_base,
+ 	len += nla_total_size(sizeof(u8)) +	/* _FEC_AUTO */
+ 	       nla_total_size(sizeof(u32));	/* _FEC_ACTIVE */
+ 
+-	if (req_base->flags & ETHTOOL_FLAG_STATS)
++	if (req_base->flags & ETHTOOL_FLAG_STATS) {
+ 		len += 3 * nla_total_size_64bit(sizeof(u64) *
+ 						(1 + ETHTOOL_MAX_LANES));
++		/* add FEC bins information */
++		len += (nla_total_size(0) +  /* _A_FEC_HIST */
++			nla_total_size(4) +  /* _A_FEC_HIST_BIN_LOW */
++			nla_total_size(4) +  /* _A_FEC_HIST_BIN_HI */
++			/* _A_FEC_HIST_BIN_VAL + per-lane values */
++			nla_total_size_64bit(sizeof(u64)) +
++			nla_total_size_64bit(sizeof(u64) * ETHTOOL_MAX_LANES)) *
++			ETHTOOL_FEC_HIST_MAX;
++	}
+ 
+ 	return len;
+ }
+ 
++static int fec_put_hist(struct sk_buff *skb,
++			const struct ethtool_fec_hist *hist)
++{
++	const struct ethtool_fec_hist_range *ranges = hist->ranges;
++	const struct ethtool_fec_hist_value *values = hist->values;
++	struct nlattr *nest;
++	int i, j;
++	u64 sum;
++
++	if (!ranges)
++		return 0;
++
++	for (i = 0; i < ETHTOOL_FEC_HIST_MAX; i++) {
++		if (i && !ranges[i].low && !ranges[i].high)
++			break;
++
++		if (WARN_ON_ONCE(values[i].sum == ETHTOOL_STAT_NOT_SET &&
++				 values[i].per_lane[0] == ETHTOOL_STAT_NOT_SET))
++			break;
++
++		nest = nla_nest_start(skb, ETHTOOL_A_FEC_STAT_HIST);
++		if (!nest)
++			return -EMSGSIZE;
++
++		if (nla_put_u32(skb, ETHTOOL_A_FEC_HIST_BIN_LOW,
++				ranges[i].low) ||
++		    nla_put_u32(skb, ETHTOOL_A_FEC_HIST_BIN_HIGH,
++				ranges[i].high))
++			goto err_cancel_hist;
++		sum = 0;
++		for (j = 0; j < ETHTOOL_MAX_LANES; j++) {
++			if (values[i].per_lane[j] == ETHTOOL_STAT_NOT_SET)
++				break;
++			sum += values[i].per_lane[j];
++		}
++		if (nla_put_uint(skb, ETHTOOL_A_FEC_HIST_BIN_VAL,
++				 values[i].sum == ETHTOOL_STAT_NOT_SET ?
++				 sum : values[i].sum))
++			goto err_cancel_hist;
++		if (j && nla_put_64bit(skb, ETHTOOL_A_FEC_HIST_BIN_VAL_PER_LANE,
++				       sizeof(u64) * j,
++				       values[i].per_lane,
++				       ETHTOOL_A_FEC_STAT_PAD))
++			goto err_cancel_hist;
++
++		nla_nest_end(skb, nest);
++	}
++
++	return 0;
++
++err_cancel_hist:
++	nla_nest_cancel(skb, nest);
++	return -EMSGSIZE;
++}
++
+ static int fec_put_stats(struct sk_buff *skb, const struct fec_reply_data *data)
+ {
+ 	struct nlattr *nest;
+@@ -183,6 +251,9 @@ static int fec_put_stats(struct sk_buff *skb, const struct fec_reply_data *data)
+ 			  data->corr_bits.stats, ETHTOOL_A_FEC_STAT_PAD))
+ 		goto err_cancel;
+ 
++	if (fec_put_hist(skb, &data->fec_stat_hist))
++		goto err_cancel;
++
+ 	nla_nest_end(skb, nest);
+ 	return 0;
+ 
+-- 
+2.47.3
 
-Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
