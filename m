@@ -4,68 +4,66 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 96B54CCD195
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 14 Oct 2025 23:35:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5FE42CCD184
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 14 Oct 2025 23:35:19 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 55BA041234;
-	Tue, 14 Oct 2025 23:35:17 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 2F73F41283;
+	Tue, 14 Oct 2025 23:35:19 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id mwlMtfxiLXoh; Tue, 14 Oct 2025 23:35:16 +0000 (UTC)
+ id c4VH_T8wmSGR; Tue, 14 Oct 2025 23:35:18 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 77ABA41260
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 665084126F
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1760484916;
-	bh=qkDwWiN5rF12RQprOyCws4B2/U6Nb5W0TPJ55iohsfo=;
+	s=default; t=1760484918;
+	bh=q2xu1au+xx+LRSslxph8gMWrBEwtO99rkZtS0jToPLg=;
 	h=From:Date:To:Cc:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:From;
-	b=TX+dzLKVAkRz9MrmuUvu/53hYcB86XpMZIk9aHLIQnpxUTRJmwuQkHRcN2iyrvtw8
-	 dDcWtrRJ5+Lax5aTmRVab1ZdihaMLWNaMnTNhnpJV5yq6V1OE+LYCYcy8P2wPaKePr
-	 gHazpolWuObEJp4VU//glY5t/ojmLgMW1glyEHusRWKzMNI8Xm65Qf+hORZlr2uiwD
-	 1zEwgdBEs9520OO26dRpfIKP/xyRs75cwjWQzgnjkZbqCErHSVYY8HBa5Ys1xLSCPW
-	 f/nG1TMSNHAXSdBbUa2GfULFc/vQuVEZr2wXJI6Fxwq78N4MEi/Rwq9e6P6kxWaGdU
-	 bveVQCWlnq26A==
+	b=RIxOTt06wXEdZ6ocmdUuuV+idMNdsyqoZuAczfUrhSLoz9e+hTLSd7h3zBWDe7L3B
+	 xEO9CZacCF08vWF4teF99FmIUS743iF0lms6g7gXgi0WcL/MHEt/QXhXwrPYaCRmda
+	 sfuvt2WLEPKfF+828HVXKn2tUbKkBgtL/NHjy4jPSyT3ok9QT5shdw/4bCkNeFgTq6
+	 TLnhKIwQ6UUE6AYFvgBzojxcTvhLHxTqmo5vupVNXA7/wtnP1uDKs+OSDMvGqp4hUl
+	 Gc7JpCugKi7CAR+2QluxUqtflFtQdC4XgECJnS1gz5FS3osYu5Fo5APpB8EZn5LY7v
+	 9ttXvN0RdJm9A==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 77ABA41260;
-	Tue, 14 Oct 2025 23:35:16 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id D39CDBC
- for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Oct 2025 16:02:04 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 665084126F;
+	Tue, 14 Oct 2025 23:35:18 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id CDB5C294
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 14 Oct 2025 04:18:40 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id C53F460E01
- for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Oct 2025 16:02:04 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id C0462415E6
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 14 Oct 2025 04:18:40 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 0ppFuY54ePv4 for <intel-wired-lan@lists.osuosl.org>;
- Mon, 13 Oct 2025 16:02:04 +0000 (UTC)
-X-Greylist: delayed 465 seconds by postgrey-1.37 at util1.osuosl.org;
- Mon, 13 Oct 2025 16:02:03 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org A0ABB60B25
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A0ABB60B25
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id f9BF9Qt31ebV for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 14 Oct 2025 04:18:40 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=23.88.97.239;
  helo=bkemail.birger-koblitz.de; envelope-from=mail@birger-koblitz.de;
  receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org BF64E415E4
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org BF64E415E4
 Received: from bkemail.birger-koblitz.de (bkemail.birger-koblitz.de
  [23.88.97.239])
- by smtp3.osuosl.org (Postfix) with ESMTPS id A0ABB60B25
- for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Oct 2025 16:02:03 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTPS id BF64E415E4
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 14 Oct 2025 04:18:39 +0000 (UTC)
 Received: by bkemail.birger-koblitz.de (Postfix, from userid 109)
- id 8DF224852D; Mon, 13 Oct 2025 15:54:14 +0000 (UTC)
+ id 50A974852E; Tue, 14 Oct 2025 04:18:36 +0000 (UTC)
 Received: from AMDDesktop.lan (unknown
  [IPv6:2a00:6020:47a3:e800:94d3:d213:724a:4e07])
- by bkemail.birger-koblitz.de (Postfix) with ESMTPSA id 6E89648525;
- Mon, 13 Oct 2025 15:54:13 +0000 (UTC)
+ by bkemail.birger-koblitz.de (Postfix) with ESMTPSA id 4E51948390;
+ Tue, 14 Oct 2025 04:18:35 +0000 (UTC)
 From: Birger Koblitz <mail@birger-koblitz.de>
-Date: Mon, 13 Oct 2025 17:54:11 +0200
+Date: Tue, 14 Oct 2025 06:18:27 +0200
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20251013-10gbx-v1-1-ab9896af3d58@birger-koblitz.de>
-X-B4-Tracking: v=1; b=H4sIAKIg7WgC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyDHUUlJIzE
- vPSU3UzU4B8JSMDI1NDA0MjXUOD9KQK3cQkEwujZNNUwxRTEyWg2oKi1LTMCrA50bG1tQDHcVV
- uVwAAAA==
+Message-Id: <20251014-10gbx-v2-1-980c524111e7@birger-koblitz.de>
+X-B4-Tracking: v=1; b=H4sIABLP7WgC/zXMQQ6CMBCF4auQWVvTKdSAK+9hWLR0gIkGSEsal
+ PTuVqLL/+Xl2yGQZwpwLXbwFDnwPOVQpwK60UwDCXa5QUmlUaISKAe7CWOrWnWa0OkK8nfx1PN
+ 2OPc298hhnf3rYCN+179Q/oSIAjPT1M3F9KXT9c2yH8iLx2yfvL7PjqBNKX0AABBKKKIAAAA=
 X-Change-ID: 20251012-10gbx-ab482c5e1d54
 To: Tony Nguyen <anthony.l.nguyen@intel.com>, 
  Przemek Kitszel <przemyslaw.kitszel@intel.com>, 
@@ -76,10 +74,10 @@ Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
  linux-kernel@vger.kernel.org, Birger Koblitz <mail@birger-koblitz.de>
 X-Mailer: b4 0.14.2
 X-Mailman-Approved-At: Tue, 14 Oct 2025 23:35:13 +0000
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=none (p=none dis=none)
  header.from=birger-koblitz.de
-Subject: [Intel-wired-lan] [PATCH net-next] ixgbe: Add 10G-BX support
+Subject: [Intel-wired-lan] [PATCH net-next v2] ixgbe: Add 10G-BX support
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -133,12 +131,16 @@ $ sudo ethtool -m enp1s0f1
 
 Signed-off-by: Birger Koblitz <mail@birger-koblitz.de>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c   |  7 +++++
+Changes in v2:
+  Allow also modules with only Byte 15 (100m SM link length) set to
+  be identified as BX
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c   |  7 ++++
  drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |  2 ++
- drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c     | 37 ++++++++++++++++++++----
- drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h     |  1 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c     | 43 +++++++++++++++++++++---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h     |  2 ++
  drivers/net/ethernet/intel/ixgbe/ixgbe_type.h    |  2 ++
- 5 files changed, 44 insertions(+), 5 deletions(-)
+ 5 files changed, 51 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c
 index d5b1b974b4a33e7dd51b7cfe5ea211ff038a36f0..892a73a4bc6b0bb1c976ca95bf874059b987054f 100644
@@ -172,18 +174,19 @@ index 2d660e9edb80af8fc834e097703dfd6a82b8c45b..76edf02bc47e5dd24bb0936f730f0361
  							     FIBRE);
  			ethtool_link_ksettings_add_link_mode(cmd, advertising,
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-index 2449e4cf2679ddf3277f4ada7619303eb618d393..99959602a33105c81206b5c711a0f9dfdc5c5d4a 100644
+index 2449e4cf2679ddf3277f4ada7619303eb618d393..ad6a1eae6042bb16e329fb817bcfcb87e9008ce8 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-@@ -1541,6 +1541,7 @@ int ixgbe_identify_sfp_module_generic(struct ixgbe_hw *hw)
+@@ -1541,6 +1541,8 @@ int ixgbe_identify_sfp_module_generic(struct ixgbe_hw *hw)
  	u8 identifier = 0;
  	u8 cable_tech = 0;
  	u8 cable_spec = 0;
-+	u8 sm_length;
++	u8 sm_length_km = 0;
++	u8 sm_length_100m = 0;
  	int status;
  
  	if (hw->mac.ops.get_media_type(hw) != ixgbe_media_type_fiber) {
-@@ -1678,6 +1679,26 @@ int ixgbe_identify_sfp_module_generic(struct ixgbe_hw *hw)
+@@ -1678,6 +1680,31 @@ int ixgbe_identify_sfp_module_generic(struct ixgbe_hw *hw)
  			else
  				hw->phy.sfp_type =
  					ixgbe_sfp_type_1g_bx_core1;
@@ -195,11 +198,16 @@ index 2449e4cf2679ddf3277f4ada7619303eb618d393..99959602a33105c81206b5c711a0f9df
 +			   (!(cable_tech & IXGBE_SFF_DA_PASSIVE_CABLE)) &&
 +			   (!(cable_tech & IXGBE_SFF_DA_ACTIVE_CABLE))) {
 +			status = hw->phy.ops.read_i2c_eeprom(hw,
-+					    IXGBE_SFF_SM_LENGTH,
-+					    &sm_length);
++					    IXGBE_SFF_SM_LENGTH_KM,
++					    &sm_length_km);
 +			if (status != 0)
 +				goto err_read_i2c_eeprom;
-+			if (sm_length > 0) {
++			status = hw->phy.ops.read_i2c_eeprom(hw,
++					    IXGBE_SFF_SM_LENGTH_100M,
++					    &sm_length_100m);
++			if (status != 0)
++				goto err_read_i2c_eeprom;
++			if (sm_length_km > 0 || sm_length_100m >= 10) {
 +				if (hw->bus.lan_id == 0)
 +					hw->phy.sfp_type =
 +						ixgbe_sfp_type_10g_bx_core0;
@@ -210,7 +218,7 @@ index 2449e4cf2679ddf3277f4ada7619303eb618d393..99959602a33105c81206b5c711a0f9df
  		} else {
  			hw->phy.sfp_type = ixgbe_sfp_type_unknown;
  		}
-@@ -1768,7 +1789,9 @@ int ixgbe_identify_sfp_module_generic(struct ixgbe_hw *hw)
+@@ -1768,7 +1795,9 @@ int ixgbe_identify_sfp_module_generic(struct ixgbe_hw *hw)
  	      hw->phy.sfp_type == ixgbe_sfp_type_1g_sx_core0 ||
  	      hw->phy.sfp_type == ixgbe_sfp_type_1g_sx_core1 ||
  	      hw->phy.sfp_type == ixgbe_sfp_type_1g_bx_core0 ||
@@ -221,7 +229,7 @@ index 2449e4cf2679ddf3277f4ada7619303eb618d393..99959602a33105c81206b5c711a0f9df
  		hw->phy.type = ixgbe_phy_sfp_unsupported;
  		return -EOPNOTSUPP;
  	}
-@@ -1786,7 +1809,9 @@ int ixgbe_identify_sfp_module_generic(struct ixgbe_hw *hw)
+@@ -1786,7 +1815,9 @@ int ixgbe_identify_sfp_module_generic(struct ixgbe_hw *hw)
  	      hw->phy.sfp_type == ixgbe_sfp_type_1g_sx_core0 ||
  	      hw->phy.sfp_type == ixgbe_sfp_type_1g_sx_core1 ||
  	      hw->phy.sfp_type == ixgbe_sfp_type_1g_bx_core0 ||
@@ -232,7 +240,7 @@ index 2449e4cf2679ddf3277f4ada7619303eb618d393..99959602a33105c81206b5c711a0f9df
  		/* Make sure we're a supported PHY type */
  		if (hw->phy.type == ixgbe_phy_sfp_intel)
  			return 0;
-@@ -2016,20 +2041,22 @@ int ixgbe_get_sfp_init_sequence_offsets(struct ixgbe_hw *hw,
+@@ -2016,20 +2047,22 @@ int ixgbe_get_sfp_init_sequence_offsets(struct ixgbe_hw *hw,
  		return -EOPNOTSUPP;
  
  	/*
@@ -259,14 +267,15 @@ index 2449e4cf2679ddf3277f4ada7619303eb618d393..99959602a33105c81206b5c711a0f9df
  
  	/* Read offset to PHY init contents */
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h
-index 81179c60af4e0199a8b9d0fcdf34654b02eedfac..fc875ce33d5d3ed08906ad91b3312c522ab09960 100644
+index 81179c60af4e0199a8b9d0fcdf34654b02eedfac..039ba4b6c120f3e824c93cb00fdd9483e7cf9cba 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h
-@@ -32,6 +32,7 @@
+@@ -32,6 +32,8 @@
  #define IXGBE_SFF_QSFP_1GBE_COMP	0x86
  #define IXGBE_SFF_QSFP_CABLE_LENGTH	0x92
  #define IXGBE_SFF_QSFP_DEVICE_TECH	0x93
-+#define IXGBE_SFF_SM_LENGTH		0xE
++#define IXGBE_SFF_SM_LENGTH_KM		0xE
++#define IXGBE_SFF_SM_LENGTH_100M	0xF
  
  /* Bitmasks */
  #define IXGBE_SFF_DA_PASSIVE_CABLE		0x4
