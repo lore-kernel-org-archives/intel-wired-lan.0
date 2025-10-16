@@ -4,95 +4,75 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B5A53CCD194
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 16 Oct 2025 06:54:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BDAF8CCD194
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 16 Oct 2025 07:45:10 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 6389261AD1;
-	Thu, 16 Oct 2025 06:54:11 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 6225861AE8;
+	Thu, 16 Oct 2025 07:45:10 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ED5ry-_nBpke; Thu, 16 Oct 2025 06:54:09 +0000 (UTC)
+ id KmiGdL3K76eM; Thu, 16 Oct 2025 07:45:09 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A9A876179C
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 9ADBE61AE1
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1760597649;
-	bh=kf97hgp4gnVvaB9Mq8xDY2xLd3CVqZzbxfR2jv8DOUA=;
-	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=pzS6fn0CsW0EvKVuYJkd8XOAMYPVIwdFJoT3W4/ABudBVtUNT1f82hItABYvspX9z
-	 itBd7rAqSzATWgeXeHnxfmTKq++1rFfHy08e8XATz/XmYwGTQ7G/F9m+pXxmRfSLn/
-	 Ltb2/NzCrFZWikOxQvHXYBPvFWXByl2SnGr5d8JAL7ngTBlPTlv+y3nDPD9bIY0kEM
-	 uU1XdESWaIijSj11OFD8b8IeaOIYZF9Sv4eGwbfFhZuxZSV1wnlaq76OyIAH3vQLYs
-	 smzSxcWhtivUED4Q9ii6CN68SyMirYwHxkwvJuG6QW4joGISm7wBRXs8ZTNPQj6VED
-	 9SoiZ6eLDCDUw==
+	s=default; t=1760600709;
+	bh=0/P3hqg7qBlZJwUk7Phgp5l8D/KHNKV8isuaNTeO5V4=;
+	h=Date:To:Cc:References:From:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=Y85eIl7samCUduyBG3xeI4ixrdmZ6fxmp1m5JhsqfCjB+m1Ge5s65J3E/Ha3wKRAS
+	 Fv2e9ZGhcHp9qzZC/wuIyxCbrvr9GGGdUHwxM1R2TNhtrlCLGEvEVkFLgJT/6X6qMd
+	 QtkrXHB89XPl5QsgMO5uBB6VWuJP+S7ByE9zYiYrhhiiKiyKKP76HjGccjVd0OhXum
+	 vYKsOB7QvZkl4hOp7EDuadRKFbUJr4Z6lu5jITJlaK7M3kNWyq3pPHQO4ToldJABhU
+	 AiAY53Dv/ccF4zaCtJsmm3vcV3dLeG+RPxFjmw/nIH1NpZUMKMFGAC1I6w7g6h+VbB
+	 g2TFKh3BF+8dQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id A9A876179C;
-	Thu, 16 Oct 2025 06:54:09 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 83AFA116F
- for <intel-wired-lan@lists.osuosl.org>; Thu, 16 Oct 2025 06:54:08 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 9ADBE61AE1;
+	Thu, 16 Oct 2025 07:45:09 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 3DDDD116F
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 16 Oct 2025 07:45:08 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 69FA3403C8
- for <intel-wired-lan@lists.osuosl.org>; Thu, 16 Oct 2025 06:54:08 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 31FA441BA1
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 16 Oct 2025 07:45:08 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id zH4tgAns84TH for <intel-wired-lan@lists.osuosl.org>;
- Thu, 16 Oct 2025 06:54:07 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.20;
- helo=mgamail.intel.com; envelope-from=michal.swiatkowski@linux.intel.com;
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id Xi7B9CzRUnmJ for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 16 Oct 2025 07:45:06 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=141.14.17.11;
+ helo=mx3.molgen.mpg.de; envelope-from=pmenzel@molgen.mpg.de;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 18D05403AD
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 18D05403AD
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.20])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 18D05403AD
- for <intel-wired-lan@lists.osuosl.org>; Thu, 16 Oct 2025 06:54:06 +0000 (UTC)
-X-CSE-ConnectionGUID: XID8Dc+pTa+Zn8WqSlAxew==
-X-CSE-MsgGUID: UfP/E9TbS3+fq1Nr/h/J+g==
-X-IronPort-AV: E=McAfee;i="6800,10657,11583"; a="62492420"
-X-IronPort-AV: E=Sophos;i="6.19,233,1754982000"; d="scan'208";a="62492420"
-Received: from orviesa010.jf.intel.com ([10.64.159.150])
- by orvoesa112.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 15 Oct 2025 23:54:06 -0700
-X-CSE-ConnectionGUID: I6iY64mQTWC/a991+Jt4HQ==
-X-CSE-MsgGUID: 8onTWFUhRnez5NMIY1Nqsw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.19,233,1754982000"; d="scan'208";a="181582344"
-Received: from os-delivery.igk.intel.com ([10.102.21.165])
- by orviesa010.jf.intel.com with ESMTP; 15 Oct 2025 23:54:05 -0700
-From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Cc: netdev@vger.kernel.org,
- Michal Swiatkowski <michal.swiatkowski@linux.intel.com>,
- Jacob Keller <jacob.e.keller@intel.com>
-Date: Thu, 16 Oct 2025 08:22:50 +0200
-Message-ID: <20251016062250.1461903-1-michal.swiatkowski@linux.intel.com>
-X-Mailer: git-send-email 2.49.0
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org D137E41BB2
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D137E41BB2
+Received: from mx3.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id D137E41BB2
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 16 Oct 2025 07:45:05 +0000 (UTC)
+Received: from [192.168.2.212] (p5dc5567b.dip0.t-ipconnect.de [93.197.86.123])
+ (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested) (Authenticated sender: pmenzel)
+ by mx.molgen.mpg.de (Postfix) with ESMTPSA id A22AC6028F36A;
+ Thu, 16 Oct 2025 09:44:44 +0200 (CEST)
+Message-ID: <d6a90d0d-55f9-467a-b414-5ced78d12c54@molgen.mpg.de>
+Date: Thu, 16 Oct 2025 09:44:43 +0200
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+To: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
+ Jacob Keller <jacob.e.keller@intel.com>
+References: <20251016062250.1461903-1-michal.swiatkowski@linux.intel.com>
+Content-Language: en-US
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+In-Reply-To: <20251016062250.1461903-1-michal.swiatkowski@linux.intel.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1760597647; x=1792133647;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=y9g7++ThMeSMQPh1ylrPaNSSi2JtgH52izVD4ZWgxXk=;
- b=nUAvPbC97KW+i1JO6+SLm2TNUa9tyxqvu7EZABV2gR7PPTvGcJkLGsvT
- pI+qTNnlGtAcw5GXXMKTl3oEF9EBthyFeGaciTF0JKBOSQe/dlBsfdSSK
- nTrNNiqoCQx2XGiQ4boVuK7JzXXGKUTCQ5LWuFEcVEURe8wkiH1CARuAd
- IjlGRbYx2oj1wgK1GvovWo8zgN6Nz7y63kOPehQJKy2apCpy2+Cu2sSaG
- On4OLv6YIBeCdwC//3E7sKVi0fkwd1srToKvuWhFoNYSZ6MaKzlRIdABn
- bexfK0zYfVYoiZdOqxJHPpBonQ0brg5UE9RcYAPDdSFIEdWankVAPqmCX
- A==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=none (p=none dis=none)
- header.from=linux.intel.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=nUAvPbC9
-Subject: [Intel-wired-lan] [PATCH iwl-next v1] ice: lower default irq/queue
- counts on high-core systems
+ header.from=molgen.mpg.de
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next v1] ice: lower default
+ irq/queue counts on high-core systems
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -108,107 +88,132 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On some high-core systems loading ice driver with default values can
-lead to queue/irq exhaustion. It will result in no additional resources
-for SR-IOV.
+Dear Michal,
 
-In most cases there is no performance reason for more than 64 queues.
-Limit the default value to 64. Still, using ethtool the number of
-queues can be changed up to num_online_cpus().
 
-This change affects only the default queue amount on systems with more
-than 64 cores.
+Thank you for the patch. I’d mention the 64 in the summary:
 
-Reviewed-by: Jacob Keller <jacob.e.keller@intel.com>
-Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
----
- drivers/net/ethernet/intel/ice/ice.h     | 20 ++++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_irq.c |  6 ++++--
- drivers/net/ethernet/intel/ice/ice_lib.c |  8 ++++----
- 3 files changed, 28 insertions(+), 6 deletions(-)
+ > ice: lower default irq/queue counts to 64 on > 64 core systems
 
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index 3d4d8b88631b..354ec2950ff3 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -1133,4 +1133,24 @@ static inline struct ice_hw *ice_get_primary_hw(struct ice_pf *pf)
- 	else
- 		return &pf->adapter->ctrl_pf->hw;
- }
-+
-+/**
-+ * ice_capped_num_cpus - normalize the number of CPUs to a reasonable limit
-+ *
-+ * This function returns the number of online CPUs, but caps it at suitable
-+ * default to prevent excessive resource allocation on systems with very high
-+ * CPU counts.
-+ *
-+ * Note: suitable default is currently at 64, which is reflected in default_cpus
-+ * constant. In most cases there is no much benefit for more than 64 and it is a
-+ * power of 2 number.
-+ *
-+ * Return: number of online CPUs, capped at suitable default.
-+ */
-+static inline u16 ice_capped_num_cpus(void)
-+{
-+	const int default_cpus = 64;
-+
-+	return min(num_online_cpus(), default_cpus);
-+}
- #endif /* _ICE_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice_irq.c b/drivers/net/ethernet/intel/ice/ice_irq.c
-index 30801fd375f0..df4d847ca858 100644
---- a/drivers/net/ethernet/intel/ice/ice_irq.c
-+++ b/drivers/net/ethernet/intel/ice/ice_irq.c
-@@ -106,9 +106,11 @@ static struct ice_irq_entry *ice_get_irq_res(struct ice_pf *pf,
- #define ICE_RDMA_AEQ_MSIX 1
- static int ice_get_default_msix_amount(struct ice_pf *pf)
- {
--	return ICE_MIN_LAN_OICR_MSIX + num_online_cpus() +
-+	u16 cpus = ice_capped_num_cpus();
-+
-+	return ICE_MIN_LAN_OICR_MSIX + cpus +
- 	       (test_bit(ICE_FLAG_FD_ENA, pf->flags) ? ICE_FDIR_MSIX : 0) +
--	       (ice_is_rdma_ena(pf) ? num_online_cpus() + ICE_RDMA_AEQ_MSIX : 0);
-+	       (ice_is_rdma_ena(pf) ? cpus + ICE_RDMA_AEQ_MSIX : 0);
- }
- 
- /**
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index bac481e8140d..3c5f8a4b6c6d 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -159,12 +159,12 @@ static void ice_vsi_set_num_desc(struct ice_vsi *vsi)
- 
- static u16 ice_get_rxq_count(struct ice_pf *pf)
- {
--	return min(ice_get_avail_rxq_count(pf), num_online_cpus());
-+	return min(ice_get_avail_rxq_count(pf), ice_capped_num_cpus());
- }
- 
- static u16 ice_get_txq_count(struct ice_pf *pf)
- {
--	return min(ice_get_avail_txq_count(pf), num_online_cpus());
-+	return min(ice_get_avail_txq_count(pf), ice_capped_num_cpus());
- }
- 
- /**
-@@ -907,13 +907,13 @@ static void ice_vsi_set_rss_params(struct ice_vsi *vsi)
- 		if (vsi->type == ICE_VSI_CHNL)
- 			vsi->rss_size = min_t(u16, vsi->num_rxq, max_rss_size);
- 		else
--			vsi->rss_size = min_t(u16, num_online_cpus(),
-+			vsi->rss_size = min_t(u16, ice_capped_num_cpus(),
- 					      max_rss_size);
- 		vsi->rss_lut_type = ICE_LUT_PF;
- 		break;
- 	case ICE_VSI_SF:
- 		vsi->rss_table_size = ICE_LUT_VSI_SIZE;
--		vsi->rss_size = min_t(u16, num_online_cpus(), max_rss_size);
-+		vsi->rss_size = min_t(u16, ice_capped_num_cpus(), max_rss_size);
- 		vsi->rss_lut_type = ICE_LUT_VSI;
- 		break;
- 	case ICE_VSI_VF:
--- 
-2.49.0
 
+Am 16.10.25 um 08:22 schrieb Michal Swiatkowski:
+> On some high-core systems loading ice driver with default values can
+> lead to queue/irq exhaustion. It will result in no additional resources
+> for SR-IOV.
+> 
+> In most cases there is no performance reason for more than 64 queues.
+> Limit the default value to 64. Still, using ethtool the number of
+> queues can be changed up to num_online_cpus().
+> 
+> This change affects only the default queue amount on systems with more
+> than 64 cores.
+
+Please document a specific system and steps to reproduce the issue.
+
+Please also document how to override the value.
+
+> Reviewed-by: Jacob Keller <jacob.e.keller@intel.com>
+> Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+> ---
+>   drivers/net/ethernet/intel/ice/ice.h     | 20 ++++++++++++++++++++
+>   drivers/net/ethernet/intel/ice/ice_irq.c |  6 ++++--
+>   drivers/net/ethernet/intel/ice/ice_lib.c |  8 ++++----
+>   3 files changed, 28 insertions(+), 6 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
+> index 3d4d8b88631b..354ec2950ff3 100644
+> --- a/drivers/net/ethernet/intel/ice/ice.h
+> +++ b/drivers/net/ethernet/intel/ice/ice.h
+> @@ -1133,4 +1133,24 @@ static inline struct ice_hw *ice_get_primary_hw(struct ice_pf *pf)
+>   	else
+>   		return &pf->adapter->ctrl_pf->hw;
+>   }
+> +
+> +/**
+> + * ice_capped_num_cpus - normalize the number of CPUs to a reasonable limit
+> + *
+> + * This function returns the number of online CPUs, but caps it at suitable
+> + * default to prevent excessive resource allocation on systems with very high
+> + * CPU counts.
+> + *
+> + * Note: suitable default is currently at 64, which is reflected in default_cpus
+> + * constant. In most cases there is no much benefit for more than 64 and it is a
+
+no*t* much
+
+> + * power of 2 number.
+> + *
+> + * Return: number of online CPUs, capped at suitable default.
+> + */
+> +static inline u16 ice_capped_num_cpus(void)
+
+Why not return `unsigned int` or `size_t`?
+
+> +{
+> +	const int default_cpus = 64;
+> +
+> +	return min(num_online_cpus(), default_cpus);
+> +}
+>   #endif /* _ICE_H_ */
+> diff --git a/drivers/net/ethernet/intel/ice/ice_irq.c b/drivers/net/ethernet/intel/ice/ice_irq.c
+> index 30801fd375f0..df4d847ca858 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_irq.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_irq.c
+> @@ -106,9 +106,11 @@ static struct ice_irq_entry *ice_get_irq_res(struct ice_pf *pf,
+>   #define ICE_RDMA_AEQ_MSIX 1
+>   static int ice_get_default_msix_amount(struct ice_pf *pf)
+>   {
+> -	return ICE_MIN_LAN_OICR_MSIX + num_online_cpus() +
+> +	u16 cpus = ice_capped_num_cpus();
+> +
+> +	return ICE_MIN_LAN_OICR_MSIX + cpus +
+>   	       (test_bit(ICE_FLAG_FD_ENA, pf->flags) ? ICE_FDIR_MSIX : 0) +
+> -	       (ice_is_rdma_ena(pf) ? num_online_cpus() + ICE_RDMA_AEQ_MSIX : 0);
+> +	       (ice_is_rdma_ena(pf) ? cpus + ICE_RDMA_AEQ_MSIX : 0);
+>   }
+>   
+>   /**
+> diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+> index bac481e8140d..3c5f8a4b6c6d 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_lib.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+> @@ -159,12 +159,12 @@ static void ice_vsi_set_num_desc(struct ice_vsi *vsi)
+>   
+>   static u16 ice_get_rxq_count(struct ice_pf *pf)
+>   {
+> -	return min(ice_get_avail_rxq_count(pf), num_online_cpus());
+> +	return min(ice_get_avail_rxq_count(pf), ice_capped_num_cpus());
+>   }
+>   
+>   static u16 ice_get_txq_count(struct ice_pf *pf)
+>   {
+> -	return min(ice_get_avail_txq_count(pf), num_online_cpus());
+> +	return min(ice_get_avail_txq_count(pf), ice_capped_num_cpus());
+>   }
+>   
+>   /**
+> @@ -907,13 +907,13 @@ static void ice_vsi_set_rss_params(struct ice_vsi *vsi)
+>   		if (vsi->type == ICE_VSI_CHNL)
+>   			vsi->rss_size = min_t(u16, vsi->num_rxq, max_rss_size);
+>   		else
+> -			vsi->rss_size = min_t(u16, num_online_cpus(),
+> +			vsi->rss_size = min_t(u16, ice_capped_num_cpus(),
+>   					      max_rss_size);
+>   		vsi->rss_lut_type = ICE_LUT_PF;
+>   		break;
+>   	case ICE_VSI_SF:
+>   		vsi->rss_table_size = ICE_LUT_VSI_SIZE;
+> -		vsi->rss_size = min_t(u16, num_online_cpus(), max_rss_size);
+> +		vsi->rss_size = min_t(u16, ice_capped_num_cpus(), max_rss_size);
+>   		vsi->rss_lut_type = ICE_LUT_VSI;
+>   		break;
+>   	case ICE_VSI_VF:
+
+With the changes addressed, feel free to add:
+
+Reviewed-by: Paul Menzel <pmenzel@molgen.mpg.de>
+
+
+Kind regards,
+
+Paul
