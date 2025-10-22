@@ -1,98 +1,127 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B2ECFCCD1BD
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 21 Oct 2025 23:20:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 45AEECCD1A5
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 22 Oct 2025 03:11:43 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 8BC7C82E19;
-	Tue, 21 Oct 2025 23:20:25 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id VPr8lNInADGP; Tue, 21 Oct 2025 23:20:22 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 25A4182EB4
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1761088821;
-	bh=yaZm26zIGoYs9S+YVSa6iUBS1DPn0V2LU8HkcXOcDao=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=rKQyiYxJ8CZ/RebAwrL3/Wvoy1GGmfDX3++/+5ncQt2DIngWYHFLQA3XSYtU+hjOK
-	 Wd0YDj0I0zqBWz9UIWXZRP62hlfK2Og/HLbNQ13zi5w8lb/Mi7tg/y+NwF0VTjuKVA
-	 OzS7M30VKj9I4YMsRtoBBV3z2eMgVvP3mMLghkJcAWcaMt0xHhzthPWh+lhphXEbUX
-	 Te4mNiwJUAD45f8tNWur8/Y9l2Ggou6xyzy7NnXCIZ5zjRQ/eg1qw/ay3jKrOBDI5l
-	 H10cK6Ka43WmxjRKYcybcMs0VigOKn0inQ83LKdR+b+sSWSrTLA0cMD7D6Q1C5bRXW
-	 jkuwJCbq4sCZQ==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 25A4182EB4;
-	Tue, 21 Oct 2025 23:20:21 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id 81FDB43F
- for <intel-wired-lan@lists.osuosl.org>; Tue, 21 Oct 2025 23:20:17 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 5D94A60DE3
- for <intel-wired-lan@lists.osuosl.org>; Tue, 21 Oct 2025 23:20:14 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id EBEC260EB5;
+	Wed, 22 Oct 2025 03:11:42 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id S3asu-DDqWrC for <intel-wired-lan@lists.osuosl.org>;
- Tue, 21 Oct 2025 23:20:13 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.12;
- helo=mgamail.intel.com; envelope-from=joshua.a.hay@intel.com;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 25E7360DDA
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 25E7360DDA
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.12])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 25E7360DDA
- for <intel-wired-lan@lists.osuosl.org>; Tue, 21 Oct 2025 23:20:13 +0000 (UTC)
-X-CSE-ConnectionGUID: 2FTj/8svQZOwf7Jt5utH6A==
-X-CSE-MsgGUID: JA2Rbh2tQa6svA/FYfcGhw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11586"; a="74665331"
-X-IronPort-AV: E=Sophos;i="6.19,246,1754982000"; d="scan'208";a="74665331"
-Received: from orviesa002.jf.intel.com ([10.64.159.142])
- by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 21 Oct 2025 16:20:12 -0700
-X-CSE-ConnectionGUID: mj7O1BRAQmyrfmxlWkueUw==
-X-CSE-MsgGUID: LI+uCwrNTEG042e9T8RjjA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.19,246,1754982000"; d="scan'208";a="214352308"
-Received: from dcskidmo-m40.jf.intel.com ([10.166.241.14])
- by orviesa002.jf.intel.com with ESMTP; 21 Oct 2025 16:20:11 -0700
-From: Joshua Hay <joshua.a.hay@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Cc: netdev@vger.kernel.org
-Date: Tue, 21 Oct 2025 16:30:53 -0700
-Message-Id: <20251021233056.1320108-8-joshua.a.hay@intel.com>
-X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20251021233056.1320108-1-joshua.a.hay@intel.com>
-References: <20251021233056.1320108-1-joshua.a.hay@intel.com>
+ id 7AjdPCFaYgbi; Wed, 22 Oct 2025 03:11:42 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 1E8B760E06
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1761102702;
+	bh=1w81N5UwqCcLk9lzNRuUpjETqoES8d1bFB+ZdpugPTA=;
+	h=References:In-Reply-To:From:Date:To:Cc:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=l8CCo6rot+9Zz/SLXknK4YTVPZXVQeY/QZqGtkp2zzcU9fV1FGfzo5L7m6dklbiuD
+	 /Jl3UK2m+AIf4hYcyYHwp4rOxGuJECQ4Lyla3FRs/tEpnbTfjTWGkJDuZyNL43gYW2
+	 H/Cx+CELeS7RgSfdCNyd3On2BDJJTB/LZSleGjoYqM4krxQV/uJ6MU37nVZq1I8w1q
+	 FVArzGS4oDWLIO9rpE+tNLv2I0rqSoJhv41EwdYQzMoLGw8oKcV4CXyWM3GB077qAk
+	 +7/bdwqpzDfIPiQx+SmayH+eso77n3KmDFRmQVStVBXg5zG+ozeqeGnFEVgyCd2fBJ
+	 rlRkkFaKiboHg==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp3.osuosl.org (Postfix) with ESMTP id 1E8B760E06;
+	Wed, 22 Oct 2025 03:11:42 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 3899043F
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Oct 2025 03:11:40 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp1.osuosl.org (Postfix) with ESMTP id 145C080D6A
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Oct 2025 03:11:40 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id qDaUEw188hif for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 22 Oct 2025 03:11:39 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2607:f8b0:4864:20::12e; helo=mail-il1-x12e.google.com;
+ envelope-from=kerneljasonxing@gmail.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 2B03F80C26
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2B03F80C26
+Received: from mail-il1-x12e.google.com (mail-il1-x12e.google.com
+ [IPv6:2607:f8b0:4864:20::12e])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 2B03F80C26
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Oct 2025 03:11:39 +0000 (UTC)
+Received: by mail-il1-x12e.google.com with SMTP id
+ e9e14a558f8ab-430aeaffeaeso28492365ab.3
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 21 Oct 2025 20:11:39 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20230601; t=1761102698; x=1761707498;
+ h=content-transfer-encoding:cc:to:subject:message-id:date:from
+ :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+ :subject:date:message-id:reply-to;
+ bh=1w81N5UwqCcLk9lzNRuUpjETqoES8d1bFB+ZdpugPTA=;
+ b=O5FoGWvsL3+hF8yKruXZgZCtCHQg3Y0wKyVTpSisLBquCs9cpfu6YFOs9PaBvtiP++
+ SaEqKbr71s0F9WMFwoJqxGW2PfO96TJYSH3OaZqCLq8kLXxz+kwDA+F8iduuHqQzd6KP
+ RSA+BaSnYM2ILovkhltH3JtimoD3AKPWOzKnlPxW+qILBApujyusEoEi5yzbntGFUezy
+ wPS1/tlGbkFLfaiTNTPjdHq7wZUfmvteBJS1iRDiZ1DZEK8jQDJHB62mENsGZ696JumH
+ DiiDBvsb5KU+j0ckJpNbrvqz1ccaFDwcO35cqERg49VXECavcKFih5JJakZ0NglkknyB
+ MgHA==
+X-Forwarded-Encrypted: i=1;
+ AJvYcCWy22DLa016YhnZ62J3vk0onfFRpOYqLyZjk1DL3SXqt1a3pwNA1BkHaWZoiUWspS/zN69qs46il5bYmPRPkhI=@lists.osuosl.org
+X-Gm-Message-State: AOJu0YwOV74q267K5+sQ8MpziQcuR4WlfmDF/rJvet7LV+sq/XOqbhE1
+ gBS6rY+fSAcBBGEVIxRYMgSnEk8/Caowhs00FfIAVh0Ff3VqS1+RcLd8HMXwqDacgVBpqFkbLby
+ l/TIWRXZThjhLPU7HjNgnImk7p/Nbr+w=
+X-Gm-Gg: ASbGncvOWgMqzFfCVox+m/wk5/pHJCW8ui/eQBzidC7qkgTMNQ4s8yIkl4aHLnh+zej
+ Ya+0P3WFT0gsstr85gX58JglJcjh0t6uZmqUdlklJv8TpjF3fC/nts3zwbzzRlne6k1sjbnC4ih
+ 0ZXvCi+No8Px2KudRGbchrd0SsTJnJuSDenNFz/xxyPFllAcfoMXWPskopeRxFjHttZCbOtSXgB
+ WdDMhjsUJEXH7QVQsAnEWPTVFuhYcMG0RbkUb1CGsWqxpCUdf7WlZJC5ElMcjirpLaRX2k=
+X-Google-Smtp-Source: AGHT+IHsc5L8H41oQ6pWuGlwc/6nz3oXWi8+Bcroke4DapuC5C0EkQMaKnI90LLtcbQ2XDw0xbZs5GobUsx8JgiIzoU=
+X-Received: by 2002:a05:6e02:1689:b0:42d:876e:61bd with SMTP id
+ e9e14a558f8ab-430c527fb41mr284123945ab.28.1761102697970; Tue, 21 Oct 2025
+ 20:11:37 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1761088814; x=1792624814;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=w6KGGDUYtkiSvJqNnX9eNFHStD7CP8cfvEbEgBqAD5k=;
- b=LDqb6Eyr0d+Z4/CFntaLc/h7yliVhSZ7QzpdSYgyw8TStnyk1SySrdEJ
- tbAYJ+pKhFsV8RYxotxC4v+51+GLMgOeGSKNnTDPHgRMBBEiRjGBfo7iI
- orF6RDTaFLlcl8XvFZ05g3BADySsie3FKsaOoRgWkKEriJ/tsYd5F0am8
- xHyhtJAHjfMmdoTjsum2ltqR3CYipMnvY7NQg6GCoZhYkSgWh8oZE1tqO
- lDEESCxhMv3ssyExfxM9tOVRyApnIuIjxeAI4Pm4e2gA/e17+JcD5lmXa
- tnoH8Sxe+pzvNXXyiffLh3bLaxlqZ7SXznuyA8QYWOkLZ/HKpXUzN0lX1
- A==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+References: <20251021173200.7908-1-alessandro.d@gmail.com>
+ <20251021173200.7908-2-alessandro.d@gmail.com>
+In-Reply-To: <20251021173200.7908-2-alessandro.d@gmail.com>
+From: Jason Xing <kerneljasonxing@gmail.com>
+Date: Wed, 22 Oct 2025 11:11:01 +0800
+X-Gm-Features: AS18NWBBSoMIxcuhS-7Wwy3NqCqJITQFYqxcB1a6KZpfmjK1-38rwvJFwSyOIzY
+Message-ID: <CAL+tcoCwGQyNSv9BZ_jfsia6YFoyT790iknqxG7bB7wVi3C_vQ@mail.gmail.com>
+To: Alessandro Decina <alessandro.d@gmail.com>
+Cc: netdev@vger.kernel.org, Maciej Fijalkowski <maciej.fijalkowski@intel.com>, 
+ "David S. Miller" <davem@davemloft.net>,
+ Alexei Starovoitov <ast@kernel.org>, 
+ Andrew Lunn <andrew+netdev@lunn.ch>, Daniel Borkmann <daniel@iogearbox.net>, 
+ Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, 
+ Jesper Dangaard Brouer <hawk@kernel.org>,
+ John Fastabend <john.fastabend@gmail.com>, 
+ Paolo Abeni <pabeni@redhat.com>, Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Stanislav Fomichev <sdf@fomichev.me>,
+ Tirthendu Sarkar <tirthendu.sarkar@intel.com>, 
+ Tony Nguyen <anthony.l.nguyen@intel.com>, bpf@vger.kernel.org, 
+ intel-wired-lan@lists.osuosl.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=gmail.com; s=20230601; t=1761102698; x=1761707498; darn=lists.osuosl.org;
+ h=content-transfer-encoding:cc:to:subject:message-id:date:from
+ :in-reply-to:references:mime-version:from:to:cc:subject:date
+ :message-id:reply-to;
+ bh=1w81N5UwqCcLk9lzNRuUpjETqoES8d1bFB+ZdpugPTA=;
+ b=S3Rd/hVO1BHN7J6ASaGdbVoZA83zh5XYsR+KS9MJ+dfW0OsM04Gu6s3e6i+WuQ5yco
+ AiD/rAO5+QVHXr1EwCY4FaDzKFJ7dIOKXOAFlOqQs26elv5K33C0DKjOQwuPV2IwPq37
+ WsOIoMDGgysrqzTq8wNpiad87GKDeeh1iknkJKdT0su5dMeNGflBrtF5vGKJrZRq8bQW
+ bpbr1ttf445+gj3o098OxW1FncVrf6hmQjSGVuKTGmSOcZhWmdKEmrtVOo8dnAk8dKfy
+ VtfNactR6vPbYw/f/s3u0St3UULI0G2X1lpSdJN6MT5CJrf9i3v3loFu68sU6V+tHMlb
+ XGNw==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
- header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=LDqb6Eyr
-Subject: [Intel-wired-lan] [PATCH iwl-next v9 07/10] idpf: remove vport
- pointer from queue sets
+ header.from=gmail.com
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20230601 header.b=S3Rd/hVO
+Subject: Re: [Intel-wired-lan] [PATCH net v2 1/1] i40e: xsk: advance
+ next_to_clean on status descriptors
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -108,612 +137,142 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Replace vport pointer in queue sets struct with adapter backpointer and
-vport_id as those are the primary fields necessary for virtchnl
-communication. Otherwise, pass the vport pointer as a separate parameter
-where available. Also move xdp_txq_offset to queue vector resource
-struct since we no longer have the vport pointer.
+On Wed, Oct 22, 2025 at 1:33=E2=80=AFAM Alessandro Decina
+<alessandro.d@gmail.com> wrote:
+>
+> Whenever a status descriptor is received, i40e processes and skips over
+> it, correctly updating next_to_process but forgetting to update
+> next_to_clean. In the next iteration this accidentally causes the
+> creation of an invalid multi-buffer xdp_buff where the first fragment
+> is the status descriptor.
+>
+> If then a skb is constructed from such an invalid buffer - because the
+> eBPF program returns XDP_PASS - a panic occurs:
+>
+> [ 5866.367317] BUG: unable to handle page fault for address: ffd31c37eab1=
+c980
+> [ 5866.375050] #PF: supervisor read access in kernel mode
+> [ 5866.380825] #PF: error_code(0x0000) - not-present page
+> [ 5866.386602] PGD 0
+> [ 5866.388867] Oops: Oops: 0000 [#1] SMP NOPTI
+> [ 5866.393575] CPU: 34 UID: 0 PID: 0 Comm: swapper/34 Not tainted 6.17.0-=
+custom #1 PREEMPT(voluntary)
+> [ 5866.403740] Hardware name: Supermicro AS -2115GT-HNTR/H13SST-G, BIOS 3=
+.2 03/20/2025
+> [ 5866.412339] RIP: 0010:memcpy+0x8/0x10
+> [ 5866.416454] Code: cc cc 90 cc cc cc cc cc cc cc cc cc cc cc cc cc cc c=
+c 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 66 90 48 89 f8 48 89 d1 <=
+f3> a4 e9 fc 26 c0 fe 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90
+> [ 5866.437538] RSP: 0018:ff428d9ec0bb0ca8 EFLAGS: 00010286
+> [ 5866.443415] RAX: ff2dd26dbd8f0000 RBX: ff2dd265ad161400 RCX: 000000000=
+00004e1
+> [ 5866.451435] RDX: 00000000000004e1 RSI: ffd31c37eab1c980 RDI: ff2dd26db=
+d8f0000
+> [ 5866.459454] RBP: ff428d9ec0bb0d40 R08: 0000000000000000 R09: 000000000=
+0000000
+> [ 5866.467470] R10: 0000000000000000 R11: 0000000000000000 R12: ff428d9ee=
+c726ef8
+> [ 5866.475490] R13: ff2dd26dbd8f0000 R14: ff2dd265ca2f9fc0 R15: ff2dd2654=
+8548b80
+> [ 5866.483509] FS:  0000000000000000(0000) GS:ff2dd2c363592000(0000) knlG=
+S:0000000000000000
+> [ 5866.492600] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+> [ 5866.499060] CR2: ffd31c37eab1c980 CR3: 0000000178d7b040 CR4: 000000000=
+0f71ef0
+> [ 5866.507079] PKRU: 55555554
+> [ 5866.510125] Call Trace:
+> [ 5866.512867]  <IRQ>
+> [ 5866.515132]  ? i40e_clean_rx_irq_zc+0xc50/0xe60 [i40e]
+> [ 5866.520921]  i40e_napi_poll+0x2d8/0x1890 [i40e]
+> [ 5866.526022]  ? srso_alias_return_thunk+0x5/0xfbef5
+> [ 5866.531408]  ? raise_softirq+0x24/0x70
+> [ 5866.535623]  ? srso_alias_return_thunk+0x5/0xfbef5
+> [ 5866.541011]  ? srso_alias_return_thunk+0x5/0xfbef5
+> [ 5866.546397]  ? rcu_sched_clock_irq+0x225/0x1800
+> [ 5866.551493]  __napi_poll+0x30/0x230
+> [ 5866.555423]  net_rx_action+0x20b/0x3f0
+> [ 5866.559643]  handle_softirqs+0xe4/0x340
+> [ 5866.563962]  __irq_exit_rcu+0x10e/0x130
+> [ 5866.568283]  irq_exit_rcu+0xe/0x20
+> [ 5866.572110]  common_interrupt+0xb6/0xe0
+> [ 5866.576425]  </IRQ>
+> [ 5866.578791]  <TASK>
+>
+> Advance next_to_clean to ensure invalid xdp_buff(s) aren't created.
+>
+> Fixes: 1c9ba9c14658 ("i40e: xsk: add RX multi-buffer support")
+> Signed-off-by: Alessandro Decina <alessandro.d@gmail.com>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_xsk.c | 7 ++++++-
+>  1 file changed, 6 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.c b/drivers/net/eth=
+ernet/intel/i40e/i40e_xsk.c
+> index 9f47388eaba5..dbc19083bbb7 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_xsk.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
+> @@ -441,13 +441,18 @@ int i40e_clean_rx_irq_zc(struct i40e_ring *rx_ring,=
+ int budget)
+>                 dma_rmb();
+>
+>                 if (i40e_rx_is_programming_status(qword)) {
+> +                       u16 ntp;
+> +
+>                         i40e_clean_programming_status(rx_ring,
+>                                                       rx_desc->raw.qword[=
+0],
+>                                                       qword);
+>                         bi =3D *i40e_rx_bi(rx_ring, next_to_process);
+>                         xsk_buff_free(bi);
+> -                       if (++next_to_process =3D=3D count)
+> +                       ntp =3D next_to_process++;
+> +                       if (next_to_process =3D=3D count)
+>                                 next_to_process =3D 0;
+> +                       if (next_to_clean =3D=3D ntp)
+> +                               next_to_clean =3D next_to_process;
+>                         continue;
+>                 }
+>
+> --
+> 2.43.0
+>
+>
 
-Reviewed-by: Madhu Chittim <madhu.chittim@intel.com>
-Signed-off-by: Joshua Hay <joshua.a.hay@intel.com>
----
- drivers/net/ethernet/intel/idpf/idpf.h        |  4 +-
- drivers/net/ethernet/intel/idpf/idpf_txrx.c   | 41 +++++-----
- .../net/ethernet/intel/idpf/idpf_virtchnl.c   | 78 ++++++++++---------
- .../net/ethernet/intel/idpf/idpf_virtchnl.h   |  7 +-
- drivers/net/ethernet/intel/idpf/xdp.c         | 11 ++-
- drivers/net/ethernet/intel/idpf/xsk.c         |  5 +-
- 6 files changed, 80 insertions(+), 66 deletions(-)
+I'm copying your reply from v1 as shown below so that we can continue
+with the discussion :)
 
-diff --git a/drivers/net/ethernet/intel/idpf/idpf.h b/drivers/net/ethernet/intel/idpf/idpf.h
-index 03df59829296..e08147b9ce51 100644
---- a/drivers/net/ethernet/intel/idpf/idpf.h
-+++ b/drivers/net/ethernet/intel/idpf/idpf.h
-@@ -307,6 +307,7 @@ struct idpf_fsteer_fltr {
-  * @num_txq: number of allocated TX queues
-  * @num_complq: number of allocated completion queues
-  * @num_txq_grp: number of TX queue groups
-+ * @xdp_txq_offset: index of the first XDPSQ (== number of regular SQs)
-  * @num_rxq_grp: number of RX queues in a group
-  * @rxq_model: splitq queue or single queue queuing model
-  * @rxq_grps: total number of RX groups. Number of groups * number of RX per
-@@ -335,6 +336,7 @@ struct idpf_q_vec_rsrc {
- 	u16			num_txq;
- 	u16			num_complq;
- 	u16			num_txq_grp;
-+	u16			xdp_txq_offset;
- 
- 	u16			num_rxq_grp;
- 	u32			rxq_model;
-@@ -353,7 +355,6 @@ struct idpf_q_vec_rsrc {
-  * @txqs: Used only in hotpath to get to the right queue very fast
-  * @num_txq: Number of allocated TX queues
-  * @num_xdp_txq: number of XDPSQs
-- * @xdp_txq_offset: index of the first XDPSQ (== number of regular SQs)
-  * @xdpsq_share: whether XDPSQ sharing is enabled
-  * @xdp_prog: installed XDP program
-  * @vdev_info: IDC vport device info pointer
-@@ -384,7 +385,6 @@ struct idpf_vport {
- 	struct idpf_tx_queue **txqs;
- 	u16 num_txq;
- 	u16 num_xdp_txq;
--	u16 xdp_txq_offset;
- 	bool xdpsq_share;
- 	struct bpf_prog *xdp_prog;
- 
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.c b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-index bea2fd0154a2..0a33a4a0f1f9 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-@@ -960,9 +960,9 @@ static int idpf_rx_desc_alloc_all(struct idpf_vport *vport,
- 	return err;
- }
- 
--static int idpf_init_queue_set(const struct idpf_queue_set *qs)
-+static int idpf_init_queue_set(const struct idpf_vport *vport,
-+			       const struct idpf_queue_set *qs)
- {
--	const struct idpf_vport *vport = qs->vport;
- 	bool splitq;
- 	int err;
- 
-@@ -1114,7 +1114,8 @@ static void idpf_qvec_ena_irq(struct idpf_q_vector *qv)
- static struct idpf_queue_set *
- idpf_vector_to_queue_set(struct idpf_q_vector *qv)
- {
--	bool xdp = qv->vport->xdp_txq_offset && !qv->num_xsksq;
-+	u32 xdp_txq_offset = qv->vport->dflt_qv_rsrc.xdp_txq_offset;
-+	bool xdp = xdp_txq_offset && !qv->num_xsksq;
- 	struct idpf_vport *vport = qv->vport;
- 	struct idpf_queue_set *qs;
- 	u32 num;
-@@ -1124,7 +1125,8 @@ idpf_vector_to_queue_set(struct idpf_q_vector *qv)
- 	if (!num)
- 		return NULL;
- 
--	qs = idpf_alloc_queue_set(vport, &vport->dflt_qv_rsrc, num);
-+	qs = idpf_alloc_queue_set(vport->adapter, &vport->dflt_qv_rsrc,
-+				  vport->vport_id, num);
- 	if (!qs)
- 		return NULL;
- 
-@@ -1150,12 +1152,12 @@ idpf_vector_to_queue_set(struct idpf_q_vector *qv)
- 		qs->qs[num++].complq = qv->complq[i];
- 	}
- 
--	if (!vport->xdp_txq_offset)
-+	if (!xdp_txq_offset)
- 		goto finalize;
- 
- 	if (xdp) {
- 		for (u32 i = 0; i < qv->num_rxq; i++) {
--			u32 idx = vport->xdp_txq_offset + qv->rx[i]->idx;
-+			u32 idx = xdp_txq_offset + qv->rx[i]->idx;
- 
- 			qs->qs[num].type = VIRTCHNL2_QUEUE_TYPE_TX;
- 			qs->qs[num++].txq = vport->txqs[idx];
-@@ -1182,23 +1184,23 @@ idpf_vector_to_queue_set(struct idpf_q_vector *qv)
- 	return qs;
- }
- 
--static int idpf_qp_enable(const struct idpf_queue_set *qs, u32 qid)
-+static int idpf_qp_enable(const struct idpf_vport *vport,
-+			  const struct idpf_queue_set *qs, u32 qid)
- {
--	struct idpf_q_vec_rsrc *rsrc = qs->qv_rsrc;
--	struct idpf_vport *vport = qs->vport;
-+	const struct idpf_q_vec_rsrc *rsrc = &vport->dflt_qv_rsrc;
- 	struct idpf_q_vector *q_vector;
- 	int err;
- 
- 	q_vector = idpf_find_rxq_vec(vport, qid);
- 
--	err = idpf_init_queue_set(qs);
-+	err = idpf_init_queue_set(vport, qs);
- 	if (err) {
- 		netdev_err(vport->netdev, "Could not initialize queues in pair %u: %pe\n",
- 			   qid, ERR_PTR(err));
- 		return err;
- 	}
- 
--	if (!vport->xdp_txq_offset)
-+	if (!rsrc->xdp_txq_offset)
- 		goto config;
- 
- 	q_vector->xsksq = kcalloc(DIV_ROUND_UP(rsrc->num_rxq_grp,
-@@ -1245,9 +1247,9 @@ static int idpf_qp_enable(const struct idpf_queue_set *qs, u32 qid)
- 	return 0;
- }
- 
--static int idpf_qp_disable(const struct idpf_queue_set *qs, u32 qid)
-+static int idpf_qp_disable(const struct idpf_vport *vport,
-+			   const struct idpf_queue_set *qs, u32 qid)
- {
--	struct idpf_vport *vport = qs->vport;
- 	struct idpf_q_vector *q_vector;
- 	int err;
- 
-@@ -1292,7 +1294,8 @@ int idpf_qp_switch(struct idpf_vport *vport, u32 qid, bool en)
- 	if (!qs)
- 		return -ENOMEM;
- 
--	return en ? idpf_qp_enable(qs, qid) : idpf_qp_disable(qs, qid);
-+	return en ? idpf_qp_enable(vport, qs, qid) :
-+		    idpf_qp_disable(vport, qs, qid);
- }
- 
- /**
-@@ -1490,12 +1493,12 @@ void idpf_vport_init_num_qs(struct idpf_vport *vport,
- 
- 	vport->xdp_prog = config_data->xdp_prog;
- 	if (idpf_xdp_enabled(vport)) {
--		vport->xdp_txq_offset = config_data->num_req_tx_qs;
-+		rsrc->xdp_txq_offset = config_data->num_req_tx_qs;
- 		vport->num_xdp_txq = le16_to_cpu(vport_msg->num_tx_q) -
--				     vport->xdp_txq_offset;
-+				     rsrc->xdp_txq_offset;
- 		vport->xdpsq_share = libeth_xdpsq_shared(vport->num_xdp_txq);
- 	} else {
--		vport->xdp_txq_offset = 0;
-+		rsrc->xdp_txq_offset = 0;
- 		vport->num_xdp_txq = 0;
- 		vport->xdpsq_share = false;
- 	}
-@@ -4432,7 +4435,7 @@ static void idpf_vport_intr_map_vector_to_qs(struct idpf_vport *vport,
- 		struct idpf_tx_queue *xdpsq;
- 		struct idpf_q_vector *qv;
- 
--		xdpsq = vport->txqs[vport->xdp_txq_offset + i];
-+		xdpsq = vport->txqs[rsrc->xdp_txq_offset + i];
- 		if (!idpf_queue_has(XSK, xdpsq))
- 			continue;
- 
-@@ -4588,7 +4591,7 @@ int idpf_vport_intr_alloc(struct idpf_vport *vport,
- 		if (!q_vector->complq)
- 			goto error;
- 
--		if (!vport->xdp_txq_offset)
-+		if (!rsrc->xdp_txq_offset)
- 			continue;
- 
- 		q_vector->xsksq = kcalloc(rxqs_per_vector,
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
-index ab3a8ed86e96..97ac5ed7e3f2 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
-@@ -717,9 +717,8 @@ int idpf_recv_mb_msg(struct idpf_adapter *adapter)
- }
- 
- struct idpf_chunked_msg_params {
--	u32			(*prepare_msg)(const struct idpf_vport *vport,
--					       void *buf, const void *pos,
--					       u32 num);
-+	u32			(*prepare_msg)(u32 vport_id, void *buf,
-+					       const void *pos, u32 num);
- 
- 	const void		*chunks;
- 	u32			num_chunks;
-@@ -728,11 +727,12 @@ struct idpf_chunked_msg_params {
- 	u32			config_sz;
- 
- 	u32			vc_op;
-+	u32			vport_id;
- };
- 
--struct idpf_queue_set *idpf_alloc_queue_set(struct idpf_vport *vport,
-+struct idpf_queue_set *idpf_alloc_queue_set(struct idpf_adapter *adapter,
- 					    struct idpf_q_vec_rsrc *qv_rsrc,
--					    u32 num)
-+					    u32 vport_id, u32 num)
- {
- 	struct idpf_queue_set *qp;
- 
-@@ -740,8 +740,9 @@ struct idpf_queue_set *idpf_alloc_queue_set(struct idpf_vport *vport,
- 	if (!qp)
- 		return NULL;
- 
--	qp->vport = vport;
-+	qp->adapter = adapter;
- 	qp->qv_rsrc = qv_rsrc;
-+	qp->vport_id = vport_id;
- 	qp->num = num;
- 
- 	return qp;
-@@ -749,7 +750,7 @@ struct idpf_queue_set *idpf_alloc_queue_set(struct idpf_vport *vport,
- 
- /**
-  * idpf_send_chunked_msg - send VC message consisting of chunks
-- * @vport: virtual port data structure
-+ * @adapter: Driver specific private structure
-  * @params: message params
-  *
-  * Helper function for preparing a message describing queues to be enabled
-@@ -757,7 +758,7 @@ struct idpf_queue_set *idpf_alloc_queue_set(struct idpf_vport *vport,
-  *
-  * Return: the total size of the prepared message.
-  */
--static int idpf_send_chunked_msg(struct idpf_vport *vport,
-+static int idpf_send_chunked_msg(struct idpf_adapter *adapter,
- 				 const struct idpf_chunked_msg_params *params)
- {
- 	struct idpf_vc_xn_params xn_params = {
-@@ -768,6 +769,7 @@ static int idpf_send_chunked_msg(struct idpf_vport *vport,
- 	u32 num_chunks, num_msgs, buf_sz;
- 	void *buf __free(kfree) = NULL;
- 	u32 totqs = params->num_chunks;
-+	u32 vid = params->vport_id;
- 
- 	num_chunks = min(IDPF_NUM_CHUNKS_PER_MSG(params->config_sz,
- 						 params->chunk_sz), totqs);
-@@ -786,10 +788,10 @@ static int idpf_send_chunked_msg(struct idpf_vport *vport,
- 		memset(buf, 0, buf_sz);
- 		xn_params.send_buf.iov_len = buf_sz;
- 
--		if (params->prepare_msg(vport, buf, pos, num_chunks) != buf_sz)
-+		if (params->prepare_msg(vid, buf, pos, num_chunks) != buf_sz)
- 			return -EINVAL;
- 
--		reply_sz = idpf_vc_xn_exec(vport->adapter, &xn_params);
-+		reply_sz = idpf_vc_xn_exec(adapter, &xn_params);
- 		if (reply_sz < 0)
- 			return reply_sz;
- 
-@@ -812,6 +814,7 @@ static int idpf_send_chunked_msg(struct idpf_vport *vport,
-  */
- static int idpf_wait_for_marker_event_set(const struct idpf_queue_set *qs)
- {
-+	struct net_device *netdev;
- 	struct idpf_tx_queue *txq;
- 	bool markers_rcvd = true;
- 
-@@ -820,6 +823,8 @@ static int idpf_wait_for_marker_event_set(const struct idpf_queue_set *qs)
- 		case VIRTCHNL2_QUEUE_TYPE_TX:
- 			txq = qs->qs[i].txq;
- 
-+			netdev = txq->netdev;
-+
- 			idpf_queue_set(SW_MARKER, txq);
- 			idpf_wait_for_sw_marker_completion(txq);
- 			markers_rcvd &= !idpf_queue_has(SW_MARKER, txq);
-@@ -830,7 +835,7 @@ static int idpf_wait_for_marker_event_set(const struct idpf_queue_set *qs)
- 	}
- 
- 	if (!markers_rcvd) {
--		netdev_warn(qs->vport->netdev,
-+		netdev_warn(netdev,
- 			    "Failed to receive marker packets\n");
- 		return -ETIMEDOUT;
- 	}
-@@ -848,7 +853,8 @@ static int idpf_wait_for_marker_event(struct idpf_vport *vport)
- {
- 	struct idpf_queue_set *qs __free(kfree) = NULL;
- 
--	qs = idpf_alloc_queue_set(vport, &vport->dflt_qv_rsrc, vport->num_txq);
-+	qs = idpf_alloc_queue_set(vport->adapter, &vport->dflt_qv_rsrc,
-+				  vport->vport_id, vport->num_txq);
- 	if (!qs)
- 		return -ENOMEM;
- 
-@@ -1784,7 +1790,7 @@ static void idpf_fill_complq_config_chunk(const struct idpf_q_vec_rsrc *rsrc,
- 
- /**
-  * idpf_prepare_cfg_txqs_msg - prepare message to configure selected Tx queues
-- * @vport: virtual port data structure
-+ * @vport_id: ID of virtual port queues are associatd with
-  * @buf: buffer containing the message
-  * @pos: pointer to the first chunk describing the tx queue
-  * @num_chunks: number of chunks in the message
-@@ -1794,13 +1800,12 @@ static void idpf_fill_complq_config_chunk(const struct idpf_q_vec_rsrc *rsrc,
-  *
-  * Return: the total size of the prepared message.
-  */
--static u32 idpf_prepare_cfg_txqs_msg(const struct idpf_vport *vport,
--				     void *buf, const void *pos,
-+static u32 idpf_prepare_cfg_txqs_msg(u32 vport_id, void *buf, const void *pos,
- 				     u32 num_chunks)
- {
- 	struct virtchnl2_config_tx_queues *ctq = buf;
- 
--	ctq->vport_id = cpu_to_le32(vport->vport_id);
-+	ctq->vport_id = cpu_to_le32(vport_id);
- 	ctq->num_qinfo = cpu_to_le16(num_chunks);
- 	memcpy(ctq->qinfo, pos, num_chunks * sizeof(*ctq->qinfo));
- 
-@@ -1821,6 +1826,7 @@ static int idpf_send_config_tx_queue_set_msg(const struct idpf_queue_set *qs)
- {
- 	struct virtchnl2_txq_info *qi __free(kfree) = NULL;
- 	struct idpf_chunked_msg_params params = {
-+		.vport_id	= qs->vport_id,
- 		.vc_op		= VIRTCHNL2_OP_CONFIG_TX_QUEUES,
- 		.prepare_msg	= idpf_prepare_cfg_txqs_msg,
- 		.config_sz	= sizeof(struct virtchnl2_config_tx_queues),
-@@ -1843,7 +1849,7 @@ static int idpf_send_config_tx_queue_set_msg(const struct idpf_queue_set *qs)
- 						      &qi[params.num_chunks++]);
- 	}
- 
--	return idpf_send_chunked_msg(qs->vport, &params);
-+	return idpf_send_chunked_msg(qs->adapter, &params);
- }
- 
- /**
-@@ -1860,7 +1866,7 @@ static int idpf_send_config_tx_queues_msg(struct idpf_vport *vport,
- 	u32 totqs = rsrc->num_txq + rsrc->num_complq;
- 	u32 k = 0;
- 
--	qs = idpf_alloc_queue_set(vport, rsrc, totqs);
-+	qs = idpf_alloc_queue_set(vport->adapter, rsrc, vport->vport_id, totqs);
- 	if (!qs)
- 		return -ENOMEM;
- 
-@@ -1971,7 +1977,7 @@ static void idpf_fill_bufq_config_chunk(const struct idpf_q_vec_rsrc *rsrc,
- 
- /**
-  * idpf_prepare_cfg_rxqs_msg - prepare message to configure selected Rx queues
-- * @vport: virtual port data structure
-+ * @vport_id: ID of virtual port queues are associatd with
-  * @buf: buffer containing the message
-  * @pos: pointer to the first chunk describing the rx queue
-  * @num_chunks: number of chunks in the message
-@@ -1981,13 +1987,12 @@ static void idpf_fill_bufq_config_chunk(const struct idpf_q_vec_rsrc *rsrc,
-  *
-  * Return: the total size of the prepared message.
-  */
--static u32 idpf_prepare_cfg_rxqs_msg(const struct idpf_vport *vport,
--				     void *buf, const void *pos,
-+static u32 idpf_prepare_cfg_rxqs_msg(u32 vport_id, void *buf, const void *pos,
- 				     u32 num_chunks)
- {
- 	struct virtchnl2_config_rx_queues *crq = buf;
- 
--	crq->vport_id = cpu_to_le32(vport->vport_id);
-+	crq->vport_id = cpu_to_le32(vport_id);
- 	crq->num_qinfo = cpu_to_le16(num_chunks);
- 	memcpy(crq->qinfo, pos, num_chunks * sizeof(*crq->qinfo));
- 
-@@ -2008,6 +2013,7 @@ static int idpf_send_config_rx_queue_set_msg(const struct idpf_queue_set *qs)
- {
- 	struct virtchnl2_rxq_info *qi __free(kfree) = NULL;
- 	struct idpf_chunked_msg_params params = {
-+		.vport_id	= qs->vport_id,
- 		.vc_op		= VIRTCHNL2_OP_CONFIG_RX_QUEUES,
- 		.prepare_msg	= idpf_prepare_cfg_rxqs_msg,
- 		.config_sz	= sizeof(struct virtchnl2_config_rx_queues),
-@@ -2029,7 +2035,7 @@ static int idpf_send_config_rx_queue_set_msg(const struct idpf_queue_set *qs)
- 						    &qi[params.num_chunks++]);
- 	}
- 
--	return idpf_send_chunked_msg(qs->vport, &params);
-+	return idpf_send_chunked_msg(qs->adapter, &params);
- }
- 
- /**
-@@ -2047,7 +2053,7 @@ static int idpf_send_config_rx_queues_msg(struct idpf_vport *vport,
- 	u32 totqs = rsrc->num_rxq + rsrc->num_bufq;
- 	u32 k = 0;
- 
--	qs = idpf_alloc_queue_set(vport, rsrc, totqs);
-+	qs = idpf_alloc_queue_set(vport->adapter, rsrc, vport->vport_id, totqs);
- 	if (!qs)
- 		return -ENOMEM;
- 
-@@ -2090,7 +2096,7 @@ static int idpf_send_config_rx_queues_msg(struct idpf_vport *vport,
- /**
-  * idpf_prepare_ena_dis_qs_msg - prepare message to enable/disable selected
-  *				 queues
-- * @vport: virtual port data structure
-+ * @vport_id: ID of virtual port queues are associatd with
-  * @buf: buffer containing the message
-  * @pos: pointer to the first chunk describing the queue
-  * @num_chunks: number of chunks in the message
-@@ -2100,13 +2106,12 @@ static int idpf_send_config_rx_queues_msg(struct idpf_vport *vport,
-  *
-  * Return: the total size of the prepared message.
-  */
--static u32 idpf_prepare_ena_dis_qs_msg(const struct idpf_vport *vport,
--				       void *buf, const void *pos,
-+static u32 idpf_prepare_ena_dis_qs_msg(u32 vport_id, void *buf, const void *pos,
- 				       u32 num_chunks)
- {
- 	struct virtchnl2_del_ena_dis_queues *eq = buf;
- 
--	eq->vport_id = cpu_to_le32(vport->vport_id);
-+	eq->vport_id = cpu_to_le32(vport_id);
- 	eq->chunks.num_chunks = cpu_to_le16(num_chunks);
- 	memcpy(eq->chunks.chunks, pos,
- 	       num_chunks * sizeof(*eq->chunks.chunks));
-@@ -2131,6 +2136,7 @@ static int idpf_send_ena_dis_queue_set_msg(const struct idpf_queue_set *qs,
- {
- 	struct virtchnl2_queue_chunk *qc __free(kfree) = NULL;
- 	struct idpf_chunked_msg_params params = {
-+		.vport_id	= qs->vport_id,
- 		.vc_op		= en ? VIRTCHNL2_OP_ENABLE_QUEUES :
- 				       VIRTCHNL2_OP_DISABLE_QUEUES,
- 		.prepare_msg	= idpf_prepare_ena_dis_qs_msg,
-@@ -2172,7 +2178,7 @@ static int idpf_send_ena_dis_queue_set_msg(const struct idpf_queue_set *qs,
- 		qc[i].start_queue_id = cpu_to_le32(qid);
- 	}
- 
--	return idpf_send_chunked_msg(qs->vport, &params);
-+	return idpf_send_chunked_msg(qs->adapter, &params);
- }
- 
- /**
-@@ -2193,7 +2199,7 @@ static int idpf_send_ena_dis_queues_msg(struct idpf_vport *vport, bool en)
- 	num_txq = rsrc->num_txq + rsrc->num_complq;
- 	num_q = num_txq + rsrc->num_rxq + rsrc->num_bufq;
- 
--	qs = idpf_alloc_queue_set(vport, rsrc, num_q);
-+	qs = idpf_alloc_queue_set(vport->adapter, rsrc, vport->vport_id, num_q);
- 	if (!qs)
- 		return -ENOMEM;
- 
-@@ -2256,7 +2262,7 @@ static int idpf_send_ena_dis_queues_msg(struct idpf_vport *vport, bool en)
- /**
-  * idpf_prep_map_unmap_queue_set_vector_msg - prepare message to map or unmap
-  *					      queue set to the interrupt vector
-- * @vport: virtual port data structure
-+ * @vport_id: ID of virtual port queues are associatd with
-  * @buf: buffer containing the message
-  * @pos: pointer to the first chunk describing the vector mapping
-  * @num_chunks: number of chunks in the message
-@@ -2267,13 +2273,12 @@ static int idpf_send_ena_dis_queues_msg(struct idpf_vport *vport, bool en)
-  * Return: the total size of the prepared message.
-  */
- static u32
--idpf_prep_map_unmap_queue_set_vector_msg(const struct idpf_vport *vport,
--					 void *buf, const void *pos,
-+idpf_prep_map_unmap_queue_set_vector_msg(u32 vport_id, void *buf, const void *pos,
- 					 u32 num_chunks)
- {
- 	struct virtchnl2_queue_vector_maps *vqvm = buf;
- 
--	vqvm->vport_id = cpu_to_le32(vport->vport_id);
-+	vqvm->vport_id = cpu_to_le32(vport_id);
- 	vqvm->num_qv_maps = cpu_to_le16(num_chunks);
- 	memcpy(vqvm->qv_maps, pos, num_chunks * sizeof(*vqvm->qv_maps));
- 
-@@ -2294,6 +2299,7 @@ idpf_send_map_unmap_queue_set_vector_msg(const struct idpf_queue_set *qs,
- {
- 	struct virtchnl2_queue_vector *vqv __free(kfree) = NULL;
- 	struct idpf_chunked_msg_params params = {
-+		.vport_id	= qs->vport_id,
- 		.vc_op		= map ? VIRTCHNL2_OP_MAP_QUEUE_VECTOR :
- 					VIRTCHNL2_OP_UNMAP_QUEUE_VECTOR,
- 		.prepare_msg	= idpf_prep_map_unmap_queue_set_vector_msg,
-@@ -2364,7 +2370,7 @@ idpf_send_map_unmap_queue_set_vector_msg(const struct idpf_queue_set *qs,
- 		vqv[i].itr_idx = cpu_to_le32(itr_idx);
- 	}
- 
--	return idpf_send_chunked_msg(qs->vport, &params);
-+	return idpf_send_chunked_msg(qs->adapter, &params);
- }
- 
- /**
-@@ -2384,7 +2390,7 @@ int idpf_send_map_unmap_queue_vector_msg(struct idpf_vport *vport,
- 	u32 num_q = rsrc->num_txq + rsrc->num_rxq;
- 	u32 k = 0;
- 
--	qs = idpf_alloc_queue_set(vport, rsrc, num_q);
-+	qs = idpf_alloc_queue_set(vport->adapter, rsrc, vport->vport_id, num_q);
- 	if (!qs)
- 		return -ENOMEM;
- 
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.h b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.h
-index a07f80ac8a2c..950b3e51665f 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.h
-+++ b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.h
-@@ -131,16 +131,17 @@ struct idpf_queue_ptr {
- };
- 
- struct idpf_queue_set {
--	struct idpf_vport		*vport;
-+	struct idpf_adapter		*adapter;
- 	struct idpf_q_vec_rsrc		*qv_rsrc;
-+	u32				vport_id;
- 
- 	u32				num;
- 	struct idpf_queue_ptr		qs[] __counted_by(num);
- };
- 
--struct idpf_queue_set *idpf_alloc_queue_set(struct idpf_vport *vport,
-+struct idpf_queue_set *idpf_alloc_queue_set(struct idpf_adapter *adapter,
- 					    struct idpf_q_vec_rsrc *rsrc,
--					    u32 num);
-+					    u32 vport_id, u32 num);
- 
- int idpf_send_enable_queue_set_msg(const struct idpf_queue_set *qs);
- int idpf_send_disable_queue_set_msg(const struct idpf_queue_set *qs);
-diff --git a/drivers/net/ethernet/intel/idpf/xdp.c b/drivers/net/ethernet/intel/idpf/xdp.c
-index 47018112c161..ee5ac1700a6e 100644
---- a/drivers/net/ethernet/intel/idpf/xdp.c
-+++ b/drivers/net/ethernet/intel/idpf/xdp.c
-@@ -74,7 +74,7 @@ static int __idpf_xdp_rxq_info_init(struct idpf_rx_queue *rxq, void *arg)
- 	if (!split)
- 		return 0;
- 
--	rxq->xdpsqs = &vport->txqs[vport->xdp_txq_offset];
-+	rxq->xdpsqs = &vport->txqs[rsrc->xdp_txq_offset];
- 	rxq->num_xdp_txq = vport->num_xdp_txq;
- 
- 	return 0;
-@@ -169,7 +169,7 @@ int idpf_xdpsqs_get(const struct idpf_vport *vport)
- 	}
- 
- 	dev = vport->netdev;
--	sqs = vport->xdp_txq_offset;
-+	sqs = vport->dflt_qv_rsrc.xdp_txq_offset;
- 
- 	for (u32 i = sqs; i < vport->num_txq; i++) {
- 		struct idpf_tx_queue *xdpsq = vport->txqs[i];
-@@ -206,7 +206,7 @@ void idpf_xdpsqs_put(const struct idpf_vport *vport)
- 		return;
- 
- 	dev = vport->netdev;
--	sqs = vport->xdp_txq_offset;
-+	sqs = vport->dflt_qv_rsrc.xdp_txq_offset;
- 
- 	for (u32 i = sqs; i < vport->num_txq; i++) {
- 		struct idpf_tx_queue *xdpsq = vport->txqs[i];
-@@ -362,12 +362,15 @@ int idpf_xdp_xmit(struct net_device *dev, int n, struct xdp_frame **frames,
- {
- 	const struct idpf_netdev_priv *np = netdev_priv(dev);
- 	const struct idpf_vport *vport = np->vport;
-+	u32 xdp_txq_offset;
- 
- 	if (unlikely(!netif_carrier_ok(dev) || !vport->link_up))
- 		return -ENETDOWN;
- 
-+	xdp_txq_offset = vport->dflt_qv_rsrc.xdp_txq_offset;
-+
- 	return libeth_xdp_xmit_do_bulk(dev, n, frames, flags,
--				       &vport->txqs[vport->xdp_txq_offset],
-+				       &vport->txqs[xdp_txq_offset],
- 				       vport->num_xdp_txq,
- 				       idpf_xdp_xmit_flush_bulk,
- 				       idpf_xdp_tx_finalize);
-diff --git a/drivers/net/ethernet/intel/idpf/xsk.c b/drivers/net/ethernet/intel/idpf/xsk.c
-index e4768ec07336..676cbd80774d 100644
---- a/drivers/net/ethernet/intel/idpf/xsk.c
-+++ b/drivers/net/ethernet/intel/idpf/xsk.c
-@@ -62,7 +62,7 @@ static void idpf_xsk_setup_txq(const struct idpf_vport *vport,
- 	if (!idpf_queue_has(XDP, txq))
- 		return;
- 
--	qid = txq->idx - vport->xdp_txq_offset;
-+	qid = txq->idx - vport->dflt_qv_rsrc.xdp_txq_offset;
- 
- 	pool = xsk_get_pool_from_qid(vport->netdev, qid);
- 	if (!pool || !pool->dev)
-@@ -87,7 +87,8 @@ static void idpf_xsk_setup_complq(const struct idpf_vport *vport,
- 	if (!idpf_queue_has(XDP, complq))
- 		return;
- 
--	qid = complq->txq_grp->txqs[0]->idx - vport->xdp_txq_offset;
-+	qid = complq->txq_grp->txqs[0]->idx -
-+		vport->dflt_qv_rsrc.xdp_txq_offset;
- 
- 	pool = xsk_get_pool_from_qid(vport->netdev, qid);
- 	if (!pool || !pool->dev)
--- 
-2.39.2
+> It really depends on whether a status descriptor can be received in the
+> middle of multi-buffer packet. Based on the existing code, I assumed it
+> can. Therefore, consider this case:
+>
+> [valid_1st_packet][status_descriptor][valid_2nd_packet]
+>
+> In this case you want to skip status_descriptor but keep the existing
+> logic that leads to:
+>
+>     first =3D next_to_clean =3D valid_1st_packet
+>
+> so then you can go and add valid_2nd_packet as a fragment to the first.
 
+Sorry, honestly, I still don't follow you.
+
+Looking at the case you provided, I think @first always pointing to
+valid_1st_packet is valid which does not bring any trouble. You mean
+the case is what you're trying to handle?
+
+You patch updates next_to_clean that is only used at the very
+beginning, so it will not affect @first. Imaging the following case:
+
+     [status_descriptor][valid_1st_packet][valid_2nd_packet]
+
+Even if the next_to_clean is updated, the @first still points to
+[status_descriptor] that is invalid and that will later cause the
+panic when constructing the skb.
+
+I'm afraid that we're not on the same page. Let me confirm that it is
+@first that points to the status descriptor that causes the panic,
+right? Could you share with us the exact case just like you did as
+above. Thank you.
+
+Thanks,
+Jason
