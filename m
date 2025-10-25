@@ -4,107 +4,97 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C6A22CCF9EE
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 27 Oct 2025 15:22:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 002C5CCF9EB
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 27 Oct 2025 15:22:13 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 8F826610B6;
-	Mon, 27 Oct 2025 15:22:01 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id CD5EA60EB6;
+	Mon, 27 Oct 2025 15:22:13 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 6C6GR2fSoQaY; Mon, 27 Oct 2025 15:22:00 +0000 (UTC)
+ id 4pmLyMZwjxFr; Mon, 27 Oct 2025 15:22:12 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 0DEF560FC7
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8909A61095
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1761578520;
-	bh=BwAdxCHRgEQ+91R3lmIAM0trfHzgVfiaQ7nM5FiQFM8=;
-	h=From:Date:References:In-Reply-To:To:Cc:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=0RixpmnyUIF0gEsUeKbPoqJZ4KjvW7wtePYdEbDBohes3LoQfbr+F0EkwtsdGvjhd
-	 G1ddSn38QOppgvaQWpxoGFxsrl+b9LNSwoTsUgpLb4JvuVOfT/GHCoAbFrDPbrsW6L
-	 Jcw9br/HK0vRNT/oxAuzRrJGGEqah4qgOFv79S+wQpNx1Mao433CrgZ0/D1wdmTiHV
-	 xmfVVVW+coVoKJGlgfV+0o23RMshsT7J7V7XlFQVDCBxdfuqFNjfmKJMRA+8pCaaRF
-	 03Hyibh4BTabKzPuWb4irBmbx+o7U0tfPMaQWeUiYbJ9PAIt04wL4phNwKpWDLGiGo
-	 2pn6yTWLe1jRw==
+	s=default; t=1761578532;
+	bh=Y7Rj9E2CdLAIkXLhpNINjdklw1IJhaMfMqQhc80+fB4=;
+	h=From:To:CC:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=8nBTZ+1aaQZMxp3b4cJVlYY072xrrWrBiNwB8FS6S1ICc9hsftYpPyUw1TPWla2Of
+	 Xh5F2bPed4xVacwO1N+2YvOrmo8kbWhEE+Wh16FDQhLLNz12D1CQUvO8a/8JR79eF3
+	 lRmj4qASSZSk+lWRV47MsBqozc/wRxdAAUW54HOOpCKgbLuTyGz+yY3SnfhIAueG7x
+	 jmobzQcQ6LUCyd2B1W+29p/5db+68UW67YSNfZQ61xypLySyatcwsC7rvztKi0IPbY
+	 H/FzUYSN9M9PER4FLmtMgHD9SPWFNv9oQ+ojSn/7qOFl/cpHHYsXzK7jtZnUrYdY1F
+	 9yzRw04WsUQfQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 0DEF560FC7;
-	Mon, 27 Oct 2025 15:22:00 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id 8B8A9976
- for <intel-wired-lan@lists.osuosl.org>; Sat, 25 Oct 2025 20:53:48 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 8909A61095;
+	Mon, 27 Oct 2025 15:22:12 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 4DAAB43F
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 25 Oct 2025 04:05:10 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 7C6C040825
- for <intel-wired-lan@lists.osuosl.org>; Sat, 25 Oct 2025 20:53:48 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 3F72980C51
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 25 Oct 2025 04:05:10 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 7FtuxLBYNm2w for <intel-wired-lan@lists.osuosl.org>;
- Sat, 25 Oct 2025 20:53:47 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org;
- envelope-from=nathan@kernel.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 80A1D40819
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 80A1D40819
-Received: from tor.source.kernel.org (tor.source.kernel.org
- [IPv6:2600:3c04:e001:324:0:1991:8:25])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 80A1D40819
- for <intel-wired-lan@lists.osuosl.org>; Sat, 25 Oct 2025 20:53:47 +0000 (UTC)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by tor.source.kernel.org (Postfix) with ESMTP id 469FA602E6;
- Sat, 25 Oct 2025 20:53:46 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E0286C4CEFF;
- Sat, 25 Oct 2025 20:53:41 +0000 (UTC)
-From: Nathan Chancellor <nathan@kernel.org>
-Date: Sat, 25 Oct 2025 21:53:19 +0100
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 0nWRttXF4Zwk for <intel-wired-lan@lists.osuosl.org>;
+ Sat, 25 Oct 2025 04:05:08 +0000 (UTC)
+X-Greylist: delayed 1200 seconds by postgrey-1.37 at util1.osuosl.org;
+ Sat, 25 Oct 2025 04:05:06 UTC
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 4B64D80C4C
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4B64D80C4C
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=45.249.212.189;
+ helo=szxga03-in.huawei.com; envelope-from=wangliang74@huawei.com;
+ receiver=<UNKNOWN> 
+Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [45.249.212.189])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 4B64D80C4C
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 25 Oct 2025 04:05:06 +0000 (UTC)
+Received: from canpmsgout12.his.huawei.com (unknown [172.19.92.144])
+ by szxga03-in.huawei.com (SkyGuard) with ESMTP id 4ctls465cwzJsbw
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 25 Oct 2025 11:40:08 +0800 (CST)
+Received: from mail.maildlp.com (unknown [172.19.162.112])
+ by canpmsgout12.his.huawei.com (SkyGuard) with ESMTPS id 4ctlxk6vMWznTVF;
+ Sat, 25 Oct 2025 11:44:10 +0800 (CST)
+Received: from dggpemf500016.china.huawei.com (unknown [7.185.36.197])
+ by mail.maildlp.com (Postfix) with ESMTPS id 8DF1C140278;
+ Sat, 25 Oct 2025 11:44:50 +0800 (CST)
+Received: from huawei.com (10.50.85.128) by dggpemf500016.china.huawei.com
+ (7.185.36.197) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Sat, 25 Oct
+ 2025 11:44:49 +0800
+From: Wang Liang <wangliang74@huawei.com>
+To: <anthony.l.nguyen@intel.com>, <przemyslaw.kitszel@intel.com>,
+ <andrew+netdev@lunn.ch>, <davem@davemloft.net>, <edumazet@google.com>,
+ <kuba@kernel.org>, <pabeni@redhat.com>
+CC: <intel-wired-lan@lists.osuosl.org>, <netdev@vger.kernel.org>,
+ <linux-kernel@vger.kernel.org>, <yuehaibing@huawei.com>,
+ <zhangchangzhong@huawei.com>, <wangliang74@huawei.com>
+Date: Sat, 25 Oct 2025 12:07:35 +0800
+Message-ID: <20251025040735.558953-1-wangliang74@huawei.com>
+X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20251025-idpf-fix-arm-kcfi-build-error-v1-2-ec57221153ae@kernel.org>
-References: <20251025-idpf-fix-arm-kcfi-build-error-v1-0-ec57221153ae@kernel.org>
-In-Reply-To: <20251025-idpf-fix-arm-kcfi-build-error-v1-0-ec57221153ae@kernel.org>
-To: Kees Cook <kees@kernel.org>, 
- Alexander Lobakin <aleksander.lobakin@intel.com>, 
- "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>
-Cc: Simon Horman <horms@kernel.org>, Nathan Chancellor <nathan@kernel.org>, 
- Nick Desaulniers <nick.desaulniers+lkml@gmail.com>, 
- Bill Wendling <morbo@google.com>, Justin Stitt <justinstitt@google.com>, 
- Sami Tolvanen <samitolvanen@google.com>, 
- Russell King <linux@armlinux.org.uk>, 
- Tony Nguyen <anthony.l.nguyen@intel.com>, 
- Michal Kubiak <michal.kubiak@intel.com>, linux-kernel@vger.kernel.org, 
- llvm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, 
- netdev@vger.kernel.org, intel-wired-lan@lists.osuosl.org
-X-Mailer: b4 0.15-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1058; i=nathan@kernel.org;
- h=from:subject:message-id; bh=iG5SfyTk4AKapcKPPrgaFC/L53w+793p/xw4lohb8j4=;
- b=owGbwMvMwCUmm602sfCA1DTG02pJDBl/Lc7cXRGgEvFzhe+9sFOGP38axfW9tZlhLmOZX/NkW
- wwnw6SbHaUsDGJcDLJiiizVj1WPGxrOOct449QkmDmsTCBDGLg4BWAiySwM/wxDz1zd/XRjSMYZ
- vym50b0nP25112lec31i1Ha1lzW5idmMDF3XTz96kqbppmE8gT+FIdqm4Ne2c1cVVkeGynAsFN3
- FxQ4A
-X-Developer-Key: i=nathan@kernel.org; a=openpgp;
- fpr=2437CB76E544CB6AB3D9DFD399739260CB6CB716
-X-Mailman-Approved-At: Mon, 27 Oct 2025 15:21:57 +0000
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1761425625;
- bh=iG5SfyTk4AKapcKPPrgaFC/L53w+793p/xw4lohb8j4=;
- h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
- b=tIOI0fBX3xZrYkIIJKOTTujgZFS5HWbD5Fq0jy1bprFv8lhHtqpaHaNXYfigNsuvV
- IPJSVSUUb/H19XVseECrJfWHff5FzANCf/bFsgYXSmZ/XitcJLQDCQGQ202ZyXySnC
- djE0aeNgokJhBAFjxVoNpURGUPu2DzKnoiu2vgAb900a+kKkBB0z2R6qGyQHX9QfRF
- 1U4yvR2tstfL8mdlQBpehKXVDp/ifN51kZf6nVyfEZIRrNPsGSDhaEalZBTe+tnZ9h
- A+qqxJAg6ovg04sN7aHZT34rLlamKBuPYTeqC6s31CrnnGAbsnTjvE6oV5d2oD76aQ
- ctQrpfhR7nA/w==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.50.85.128]
+X-ClientProxiedBy: kwepems200001.china.huawei.com (7.221.188.67) To
+ dggpemf500016.china.huawei.com (7.185.36.197)
+X-Mailman-Approved-At: Mon, 27 Oct 2025 15:22:10 +0000
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
+ c=relaxed/relaxed; q=dns/txt; h=From;
+ bh=Y7Rj9E2CdLAIkXLhpNINjdklw1IJhaMfMqQhc80+fB4=;
+ b=T8pDU1FwYdR5RRmiX67izPdS9NVMhoZJZ6aWK1LfM5MzIj8S5CuiPMBmc2i9ZR/DOMT3Nbxhk
+ 5YJgBhgh9yAjjW2M5AopCT3bmqTSEMwnfr+9yydDdmRjjBbFR2d+m7djIcC/oqkV9dmjAkCaUu6
+ d+HD5qU+HLdSL9J2eL7KHPM=
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
- header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=tIOI0fBX
-Subject: [Intel-wired-lan] [PATCH 2/3] ARM: Select
- ARCH_USES_CFI_GENERIC_LLVM_PASS
+ header.from=huawei.com
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (1024-bit key,
+ unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256
+ header.s=dkim header.b=T8pDU1Fw
+Subject: [Intel-wired-lan] [PATCH -next] i40e: Replace sscanf() with
+ kstrtoint() in i40e_dbg_netdev_ops_write()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -120,31 +110,76 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Prior to clang 22.0.0 [1], ARM did not have an architecture specific
-kCFI bundle lowering in the backend, which may cause issues. Select
-CONFIG_ARCH_USES_CFI_GENERIC_LLVM_PASS to enable use of __nocfi_generic.
+Commit 9fcdb1c3c4ba ("i40e: remove read access to debugfs files")
+introduced some checkpatch warnings like this:
 
-Link: https://github.com/llvm/llvm-project/commit/d130f402642fba3d065aacb506cb061c899558de [1]
-Link: https://github.com/ClangBuiltLinux/linux/issues/2124
-Signed-off-by: Nathan Chancellor <nathan@kernel.org>
+  WARNING: Prefer kstrto<type> to single variable sscanf
+  #240: FILE: drivers/net/ethernet/intel/i40e/i40e_debugfs.c:1655:
+  +               cnt = sscanf(&cmd_buf[11], "%i", &vsi_seid);
+
+  WARNING: Prefer kstrto<type> to single variable sscanf
+  #251: FILE: drivers/net/ethernet/intel/i40e/i40e_debugfs.c:1676:
+  +               cnt = sscanf(&cmd_buf[4], "%i", &vsi_seid);
+
+  total: 0 errors, 2 warnings, 0 checks, 194 lines checked
+
+Function kstrtoint() provides better error detection, overflow protection,
+and consistent error handling than sscanf(). Replace sscanf() with
+kstrtoint() in i40e_dbg_netdev_ops_write() to silence the checkpatch
+warnings.
+
+Signed-off-by: Wang Liang <wangliang74@huawei.com>
 ---
- arch/arm/Kconfig | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/net/ethernet/intel/i40e/i40e_debugfs.c | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-index 2e3f93b690f4..4fb985b76e97 100644
---- a/arch/arm/Kconfig
-+++ b/arch/arm/Kconfig
-@@ -44,6 +44,8 @@ config ARM
- 	select ARCH_USE_BUILTIN_BSWAP
- 	select ARCH_USE_CMPXCHG_LOCKREF
- 	select ARCH_USE_MEMTEST
-+	# https://github.com/llvm/llvm-project/commit/d130f402642fba3d065aacb506cb061c899558de
-+	select ARCH_USES_CFI_GENERIC_LLVM_PASS if CLANG_VERSION < 220000
- 	select ARCH_WANT_DEFAULT_TOPDOWN_MMAP_LAYOUT if MMU
- 	select ARCH_WANT_GENERAL_HUGETLB
- 	select ARCH_WANT_IPC_PARSE_VERSION
-
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
+index c17b5d290f0a..2abd12b62509 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
+@@ -1604,7 +1604,7 @@ static ssize_t i40e_dbg_netdev_ops_write(struct file *filp,
+ 	int bytes_not_copied;
+ 	struct i40e_vsi *vsi;
+ 	int vsi_seid;
+-	int i, cnt;
++	int i, ret;
+ 
+ 	/* don't allow partial writes */
+ 	if (*ppos != 0)
+@@ -1629,9 +1629,9 @@ static ssize_t i40e_dbg_netdev_ops_write(struct file *filp,
+ 	if (strncmp(cmd_buf, "change_mtu", 10) == 0) {
+ 		int mtu;
+ 
+-		cnt = sscanf(&cmd_buf[11], "%i %i",
++		ret = sscanf(&cmd_buf[11], "%i %i",
+ 			     &vsi_seid, &mtu);
+-		if (cnt != 2) {
++		if (ret != 2) {
+ 			dev_info(&pf->pdev->dev, "change_mtu <vsi_seid> <mtu>\n");
+ 			goto netdev_ops_write_done;
+ 		}
+@@ -1652,8 +1652,8 @@ static ssize_t i40e_dbg_netdev_ops_write(struct file *filp,
+ 		}
+ 
+ 	} else if (strncmp(cmd_buf, "set_rx_mode", 11) == 0) {
+-		cnt = sscanf(&cmd_buf[11], "%i", &vsi_seid);
+-		if (cnt != 1) {
++		ret = kstrtoint(&cmd_buf[11], 0, &vsi_seid);
++		if (ret) {
+ 			dev_info(&pf->pdev->dev, "set_rx_mode <vsi_seid>\n");
+ 			goto netdev_ops_write_done;
+ 		}
+@@ -1673,8 +1673,8 @@ static ssize_t i40e_dbg_netdev_ops_write(struct file *filp,
+ 		}
+ 
+ 	} else if (strncmp(cmd_buf, "napi", 4) == 0) {
+-		cnt = sscanf(&cmd_buf[4], "%i", &vsi_seid);
+-		if (cnt != 1) {
++		ret = kstrtoint(&cmd_buf[4], 0, &vsi_seid);
++		if (ret) {
+ 			dev_info(&pf->pdev->dev, "napi <vsi_seid>\n");
+ 			goto netdev_ops_write_done;
+ 		}
 -- 
-2.51.1
+2.34.1
 
