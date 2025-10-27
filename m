@@ -1,74 +1,75 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 418B5CCF9E0
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 27 Oct 2025 09:37:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6B953CCF9EA
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 27 Oct 2025 09:37:50 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 19109840E4;
-	Mon, 27 Oct 2025 09:37:47 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 3953460F0E;
+	Mon, 27 Oct 2025 09:37:50 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Qq0Q6bOnIMPW; Mon, 27 Oct 2025 09:37:46 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id kURa9ZWcqO9I; Mon, 27 Oct 2025 09:37:49 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2B113840D7
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 73B456128A
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1761557866;
-	bh=mM3pnkaKS9vZ1yK38sP82pm9t0Fgr97a99X8Z9AVgiA=;
+	s=default; t=1761557869;
+	bh=9zgKynJ53cdFCnno9SROSh0qHSOV6I+cDhoXPKsPOWo=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=SnhyAHkl6K78h+X4ZDU41Qjx/Cs1AtDtyqQ40Y+W/qv4+KehoTndHrVGaDX3+TE68
-	 3EIasaAnlJykDvR0Ocls5FdN1HaBIMlJlwrFw8x+2hJ0BPImBLGtQ8KUElrH0yX4Jv
-	 cZwQtXmrIOEasglnm19spP8Gkxszi5oz0qmAJH0pvmPzS7AbSBPIvayiMU2qntEe5G
-	 hmN8etVM4zYjt7wQMwqPRbU927Ewnt1fnF2X3/FC+00dbHy1oFlKBVsnaj3tuiL+b4
-	 Mo1/jCBtQIcFUe3AA6RdlAwnNlR+SkzvgyVRWrtDw4OMpCMwYN3JNy/ym2dAziDfhy
-	 At3k3F22vkpyw==
+	b=QqbCuaD4PjfwruStnC/dXF1pp5Q3P9teiXTb62guljoQITGAjVnl8o9Hgp0xCZ38O
+	 OfxicH4dV0E7S8y9c+8+RxT9hiqdLD3ZCIwPZ7Hl0C1RFofqk5gflboIA/ny+DrZUa
+	 8IelI6IxCUnnujPnnQfjJAPG/jgDxeXSMr+9hlnfwgxaNUW/PiPC+wiaIDYHu6r+2N
+	 pXsOAXTSu/EFvG9FUP3jIdCu9/AN/cuaX0MBXil7MVDopTw18w/mB83KNpTYp1gn+F
+	 C9/U/byLEQTIijCcKcLBHHeKt5Fztpi1XmTGjKM46BaqrO9QR/1yCHBtv0BsTC/FOa
+	 DEMLws/9aU9mQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 2B113840D7;
-	Mon, 27 Oct 2025 09:37:46 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 060DB43F
- for <intel-wired-lan@lists.osuosl.org>; Mon, 27 Oct 2025 09:37:44 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 73B456128A;
+	Mon, 27 Oct 2025 09:37:49 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 81BF515F
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 27 Oct 2025 09:37:48 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id E0EF840DFC
- for <intel-wired-lan@lists.osuosl.org>; Mon, 27 Oct 2025 09:37:43 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 7444340DB3
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 27 Oct 2025 09:37:48 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id LGe8zb5y9OxX for <intel-wired-lan@lists.osuosl.org>;
- Mon, 27 Oct 2025 09:37:43 +0000 (UTC)
+ id HdpwWplkFyY8 for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 27 Oct 2025 09:37:47 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.18;
  helo=mgamail.intel.com; envelope-from=aleksandr.loktionov@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org E2AA240DB3
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org E2AA240DB3
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 708AC40DFC
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 708AC40DFC
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.18])
- by smtp2.osuosl.org (Postfix) with ESMTPS id E2AA240DB3
- for <intel-wired-lan@lists.osuosl.org>; Mon, 27 Oct 2025 09:37:42 +0000 (UTC)
-X-CSE-ConnectionGUID: uGzcUmjhSkyC8iw1HcmI1A==
-X-CSE-MsgGUID: hCFUi9LzQ3OjXYtXggIasA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11586"; a="63670488"
-X-IronPort-AV: E=Sophos;i="6.19,258,1754982000"; d="scan'208";a="63670488"
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 708AC40DFC
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 27 Oct 2025 09:37:47 +0000 (UTC)
+X-CSE-ConnectionGUID: dCLqc2VRRj6tSDUke7/H5A==
+X-CSE-MsgGUID: Q62Y2/5gQIy5y9KMflGnZA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11586"; a="63670494"
+X-IronPort-AV: E=Sophos;i="6.19,258,1754982000"; d="scan'208";a="63670494"
 Received: from fmviesa008.fm.intel.com ([10.60.135.148])
  by orvoesa110.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 27 Oct 2025 02:37:43 -0700
-X-CSE-ConnectionGUID: yfNEGmz+T4OniHTuEQ3/iQ==
-X-CSE-MsgGUID: rBhschT1RnuHRbiT+Jgdyw==
+ 27 Oct 2025 02:37:48 -0700
+X-CSE-ConnectionGUID: FMhwSmdXSlG2N4jgCTZfng==
+X-CSE-MsgGUID: Q+/Zad8xSSeic8OhDkohMQ==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.19,258,1754982000"; d="scan'208";a="185349372"
+X-IronPort-AV: E=Sophos;i="6.19,258,1754982000"; d="scan'208";a="185349400"
 Received: from amlin-019-225.igk.intel.com ([10.102.19.225])
- by fmviesa008.fm.intel.com with ESMTP; 27 Oct 2025 02:37:40 -0700
+ by fmviesa008.fm.intel.com with ESMTP; 27 Oct 2025 02:37:45 -0700
 From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 To: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
  anthony.l.nguyen@intel.com, aleksandr.loktionov@intel.com
-Cc: Dan Nowlin <dan.nowlin@intel.com>, Qi Zhang <qi.z.zhang@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Date: Mon, 27 Oct 2025 10:37:32 +0100
-Message-ID: <20251027093736.3582567-3-aleksandr.loktionov@intel.com>
+Cc: Dan Nowlin <dan.nowlin@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Simon Horman <horms@kernel.org>
+Date: Mon, 27 Oct 2025 10:37:34 +0100
+Message-ID: <20251027093736.3582567-5-aleksandr.loktionov@intel.com>
 X-Mailer: git-send-email 2.49.0
 In-Reply-To: <20251027093736.3582567-1-aleksandr.loktionov@intel.com>
 References: <20251027093736.3582567-1-aleksandr.loktionov@intel.com>
@@ -76,25 +77,25 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1761557863; x=1793093863;
+ t=1761557868; x=1793093868;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=jqOKmErsdbja9tgUAS59D8e84rlJgey2JcmFKJOONL8=;
- b=SbMBklpyC8usujryCaAppIXzZ7w1K+nOpjeAgSsupZNMLi92ZopSODEU
- NTOBLr92vMK+98XVdOk/ih95GscpfhfbjPOaEig3Ra8/hSYNyNV6BO79L
- zAgV2TzZxudFfdEyIAo/igw42xHSNe8ZGIxkXyXsKfwnKDphje6tXSosz
- sCNgRnuDUIN5608xhrC1d+qt4BM4QjcqHc+VI8J5x3AUqg6i1nKdzIrxJ
- ltNiUGGq+kOKNQGEYwoU/OrPZfkUE8MD43zjEcvm3beyW164XBn+PnSLm
- 7N0hNv/kSUrO8iHmVWQOfUh+LHkjImZ7rfK9GRdoxvTI2M2i5oCB1bMvV
- A==;
+ bh=RYdERU2OF9FXiSyRGTBVw/rAQ6DqOnPD5N99reRBDek=;
+ b=QqkGeFw6koof1SdQjvw71bL+SESxgVACCZCtTaiiSi+0PvlPqfj39t57
+ eYbQvjYfRO3Pp5647ZSEEWZcjGz/tbBC2sMqZqH1smIyvBVKiZGiMJhoO
+ dxjG/l3xPXDdFwP4nMO/KyDdWysYstr2erhTJ/yVmBViWMKPkHv8vkVtO
+ 2QoLnFw+ul8a5V4hRxotLGjjhw4Y162/+5ODFz+P2QV346z6H5cFm5fmA
+ rWbS727zUfKxEJAyXXa+o8vNPXKk5ts5IHQ4Ugc/EzCD+Ex4R0TxamE8o
+ d7Ex1tq5WEWxAorCStQBcSJ9ZZsJ0O+f9WE38d4OsU9UyLbo5ZEDV772R
+ Q==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=SbMBklpy
-Subject: [Intel-wired-lan] [PATCH iwl-next v7 2/6] ice: add virtchnl
- definitions and static data for GTP RSS
+ header.a=rsa-sha256 header.s=Intel header.b=QqkGeFw6
+Subject: [Intel-wired-lan] [PATCH iwl-next v7 4/6] ice: improve TCAM
+ priority handling for RSS profiles
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -110,232 +111,224 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Add virtchnl protocol header and field definitions for advanced RSS
-configuration including GTPC, GTPU, L2TPv2, ECPRI, PPP, GRE, and IP
-fragment headers.
+Enhance TCAM priority logic to avoid conflicts between RSS profiles
+with overlapping PTGs and attributes.
 
-- Define new virtchnl protocol header types
-- Add RSS field selectors for tunnel protocols
-- Extend static mapping arrays for protocol field matching
-- Add L2TPv2 session ID and length+session ID field support
+Track used PTG and attribute combinations.
+Ensure higher-priority profiles override lower ones.
+Add helper for setting TCAM flags and masks.
 
-This provides the foundational definitions needed for VF RSS
-configuration of tunnel protocols.
+Ensure RSS rule consistency and prevent unintended matches.
 
 Co-developed-by: Dan Nowlin <dan.nowlin@intel.com>
 Signed-off-by: Dan Nowlin <dan.nowlin@intel.com>
-Co-developed-by: Jie Wang <jie1x.wang@intel.com>
-Signed-off-by: Jie Wang <jie1x.wang@intel.com>
-Co-developed-by: Junfeng Guo <junfeng.guo@intel.com>
-Signed-off-by: Junfeng Guo <junfeng.guo@intel.com>
-Co-developed-by: Qi Zhang <qi.z.zhang@intel.com>
-Signed-off-by: Qi Zhang <qi.z.zhang@intel.com>
-Co-developed-by: Ting Xu <ting.xu@intel.com>
-Signed-off-by: Ting Xu <ting.xu@intel.com>
 Signed-off-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Reviewed-by: Simon Horman <horms@kernel.org>
 Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 ---
- drivers/net/ethernet/intel/ice/virt/rss.c | 91 +++++++++++++++++++++++
- include/linux/avf/virtchnl.h              | 48 ++++++++++++
- 2 files changed, 139 insertions(+)
+ .../net/ethernet/intel/ice/ice_flex_pipe.c    | 90 ++++++++++++++++---
+ .../net/ethernet/intel/ice/ice_flex_type.h    |  1 +
+ 2 files changed, 77 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/virt/rss.c b/drivers/net/ethernet/intel/ice/virt/rss.c
-index cbdbb32..71d7db6 100644
---- a/drivers/net/ethernet/intel/ice/virt/rss.c
-+++ b/drivers/net/ethernet/intel/ice/virt/rss.c
-@@ -36,6 +36,13 @@ static const struct ice_vc_hdr_match_type ice_vc_hdr_list[] = {
- 	{VIRTCHNL_PROTO_HDR_ESP,	ICE_FLOW_SEG_HDR_ESP},
- 	{VIRTCHNL_PROTO_HDR_AH,		ICE_FLOW_SEG_HDR_AH},
- 	{VIRTCHNL_PROTO_HDR_PFCP,	ICE_FLOW_SEG_HDR_PFCP_SESSION},
-+	{VIRTCHNL_PROTO_HDR_GTPC,	ICE_FLOW_SEG_HDR_GTPC},
-+	{VIRTCHNL_PROTO_HDR_L2TPV2,	ICE_FLOW_SEG_HDR_L2TPV2},
-+	{VIRTCHNL_PROTO_HDR_PPP,	ICE_FLOW_SEG_HDR_PPP},
-+	{VIRTCHNL_PROTO_HDR_ECPRI,	ICE_FLOW_SEG_HDR_ECPRI_TP0},
-+	{VIRTCHNL_PROTO_HDR_IPV4_FRAG,	ICE_FLOW_SEG_HDR_IPV_FRAG},
-+	{VIRTCHNL_PROTO_HDR_IPV6_EH_FRAG,	ICE_FLOW_SEG_HDR_IPV_FRAG},
-+	{VIRTCHNL_PROTO_HDR_GRE,        ICE_FLOW_SEG_HDR_GRE},
+diff --git a/drivers/net/ethernet/intel/ice/ice_flex_pipe.c b/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
+index 06b8786..ea53066 100644
+--- a/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
++++ b/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
+@@ -3577,6 +3578,19 @@ ice_move_vsi(struct ice_hw *hw, enum ice_block blk, u16 vsi, u16 vsig,
+ 	return 0;
+ }
+ 
++/**
++ * ice_set_tcam_flags - set TCAM flag don't care mask
++ * @mask: mask for flags
++ * @dc_mask: pointer to the don't care mask
++ */
++static void ice_set_tcam_flags(u16 mask, u8 dc_mask[ICE_TCAM_KEY_VAL_SZ])
++{
++	u16 inverted_mask = ~mask;
++
++	/* flags are lowest u16 */
++	put_unaligned_le16(inverted_mask, dc_mask);
++}
++
+ /**
+  * ice_rem_chg_tcam_ent - remove a specific TCAM entry from change list
+  * @hw: pointer to the HW struct
+@@ -3647,6 +3661,9 @@ ice_prof_tcam_ena_dis(struct ice_hw *hw, enum ice_block blk, bool enable,
+ 	if (!p)
+ 		return -ENOMEM;
+ 
++	/* set don't care masks for TCAM flags */
++	ice_set_tcam_flags(tcam->attr.mask, dc_msk);
++
+ 	status = ice_tcam_write_entry(hw, blk, tcam->tcam_idx, tcam->prof_id,
+ 				      tcam->ptg, vsig, 0, tcam->attr.flags,
+ 				      vl_msk, dc_msk, nm_msk);
+@@ -3672,22 +3689,54 @@ ice_prof_tcam_ena_dis(struct ice_hw *hw, enum ice_block blk, bool enable,
+ 	return status;
+ }
+ 
++/**
++ * ice_ptg_attr_in_use - determine if PTG and attribute pair is in use
++ * @ptg_attr: pointer to the PTG and attribute pair to check
++ * @ptgs_used: bitmap that denotes which PTGs are in use
++ * @attr_used: array of PTG and attributes pairs already used
++ * @attr_cnt: count of entries in the attr_used array
++ */
++static bool
++ice_ptg_attr_in_use(struct ice_tcam_inf *ptg_attr, unsigned long *ptgs_used,
++		    struct ice_tcam_inf *attr_used[], u16 attr_cnt)
++{
++	u16 i;
++
++	if (!test_bit(ptg_attr->ptg, ptgs_used))
++		return false;
++
++	/* the PTG is used, so now look for correct attributes */
++	for (i = 0; i < attr_cnt; i++)
++		if (attr_used[i]->ptg == ptg_attr->ptg &&
++		    attr_used[i]->attr.flags == ptg_attr->attr.flags &&
++		    attr_used[i]->attr.mask == ptg_attr->attr.mask)
++			return true;
++
++	return false;
++}
++
+ /**
+  * ice_adj_prof_priorities - adjust profile based on priorities
+  * @hw: pointer to the HW struct
+  * @blk: hardware block
+  * @vsig: the VSIG for which to adjust profile priorities
+  * @chg: the change list
+  */
+ static int
+ ice_adj_prof_priorities(struct ice_hw *hw, enum ice_block blk, u16 vsig,
+ 			struct list_head *chg)
+ {
+ 	DECLARE_BITMAP(ptgs_used, ICE_XLT1_CNT);
++	struct ice_tcam_inf **attr_used;
+ 	struct ice_vsig_prof *t;
+-	int status;
++	u16 attr_used_cnt = 0;
++	int status = 0;
+ 	u16 idx;
+ 
++	attr_used = kcalloc(ICE_MAX_PTG_ATTRS, sizeof(*attr_used), GFP_KERNEL);
++	if (!attr_used)
++		return -ENOMEM;
++
+ 	bitmap_zero(ptgs_used, ICE_XLT1_CNT);
+ 	idx = vsig & ICE_VSIG_IDX_M;
+ 
+@@ -3705,40 +3754,49 @@ ice_adj_prof_priorities(struct ice_hw *hw, enum ice_block blk, u16 vsig,
+ 		u16 i;
+ 
+ 		for (i = 0; i < t->tcam_count; i++) {
++			bool used;
++
+ 			/* Scan the priorities from newest to oldest.
+ 			 * Make sure that the newest profiles take priority.
+ 			 */
+-			if (test_bit(t->tcam[i].ptg, ptgs_used) &&
+-			    t->tcam[i].in_use) {
++			used = ice_ptg_attr_in_use(&t->tcam[i], ptgs_used,
++						   attr_used, attr_used_cnt);
++
++			if (used && t->tcam[i].in_use) {
+ 				/* need to mark this PTG as never match, as it
+ 				 * was already in use and therefore duplicate
+ 				 * (and lower priority)
+ 				 */
+ 				status = ice_prof_tcam_ena_dis(hw, blk, false,
+ 							       vsig,
+ 							       &t->tcam[i],
+ 							       chg);
+ 				if (status)
+-					return status;
+-			} else if (!test_bit(t->tcam[i].ptg, ptgs_used) &&
+-				   !t->tcam[i].in_use) {
++					goto free_attr_used;
++			} else if (!used && !t->tcam[i].in_use) {
+ 				/* need to enable this PTG, as it in not in use
+ 				 * and not enabled (highest priority)
+ 				 */
+ 				status = ice_prof_tcam_ena_dis(hw, blk, true,
+ 							       vsig,
+ 							       &t->tcam[i],
+ 							       chg);
+ 				if (status)
+-					return status;
++					goto free_attr_used;
+ 			}
+ 
+ 			/* keep track of used ptgs */
+-			__set_bit(t->tcam[i].ptg, ptgs_used);
++			set_bit(t->tcam[i].ptg, ptgs_used);
++			if (attr_used_cnt < ICE_MAX_PTG_ATTRS)
++				attr_used[attr_used_cnt++] = &t->tcam[i];
++			else
++				ice_debug(hw, ICE_DBG_INIT, "Warn: ICE_MAX_PTG_ATTRS exceeded\n");
+ 		}
+ 	}
+ 
+-	return 0;
++free_attr_used:
++	kfree(attr_used);
++	return status;
+ }
+ 
+ /**
+@@ -3821,11 +3879,15 @@ ice_add_prof_id_vsig(struct ice_hw *hw, enum ice_block blk, u16 vsig, u64 hdl,
+ 		p->vsig = vsig;
+ 		p->tcam_idx = t->tcam[i].tcam_idx;
+ 
++		/* set don't care masks for TCAM flags */
++		ice_set_tcam_flags(t->tcam[i].attr.mask, dc_msk);
++
+ 		/* write the TCAM entry */
+ 		status = ice_tcam_write_entry(hw, blk, t->tcam[i].tcam_idx,
+ 					      t->tcam[i].prof_id,
+-					      t->tcam[i].ptg, vsig, 0, 0,
+-					      vl_msk, dc_msk, nm_msk);
++					      t->tcam[i].ptg, vsig, 0,
++					      t->tcam[i].attr.flags, vl_msk,
++					      dc_msk, nm_msk);
+ 		if (status) {
+ 			devm_kfree(ice_hw_to_dev(hw), p);
+ 			goto err_ice_add_prof_id_vsig;
+@@ -4139,17 +4201,17 @@ ice_flow_assoc_fdir_prof(struct ice_hw *hw, enum ice_block blk,
+ 	u16 vsi_num;
+ 	int status;
+ 
+-	if (blk != ICE_BLK_FD)
+-		return -EINVAL;
+-
+ 	vsi_num = ice_get_hw_vsi_num(hw, dest_vsi);
+ 	status = ice_add_prof_id_flow(hw, blk, vsi_num, hdl);
+ 	if (status) {
+ 		ice_debug(hw, ICE_DBG_FLOW, "Adding HW profile failed for main VSI flow entry: %d\n",
+ 			  status);
+ 		return status;
+ 	}
+ 
++	if (blk != ICE_BLK_FD)
++		return 0;
++
+ 	vsi_num = ice_get_hw_vsi_num(hw, fdir_vsi);
+ 	status = ice_add_prof_id_flow(hw, blk, vsi_num, hdl);
+ 	if (status) {
+diff --git a/drivers/net/ethernet/intel/ice/ice_flex_type.h b/drivers/net/ethernet/intel/ice/ice_flex_type.h
+index 817beca..80c9e7c 100644
+--- a/drivers/net/ethernet/intel/ice/ice_flex_type.h
++++ b/drivers/net/ethernet/intel/ice/ice_flex_type.h
+@@ -187,6 +187,7 @@ struct ice_prof_map {
  };
  
- struct ice_vc_hash_field_match_type {
-@@ -149,6 +156,90 @@ ice_vc_hash_field_match_type ice_vc_hash_field_list[] = {
- 	{VIRTCHNL_PROTO_HDR_L2TPV3,
- 		FIELD_SELECTOR(VIRTCHNL_PROTO_HDR_L2TPV3_SESS_ID),
- 		BIT_ULL(ICE_FLOW_FIELD_IDX_L2TPV3_SESS_ID)},
-+	{VIRTCHNL_PROTO_HDR_L2TPV2,
-+		FIELD_SELECTOR(VIRTCHNL_PROTO_HDR_L2TPV2_SESS_ID),
-+		BIT_ULL(ICE_FLOW_FIELD_IDX_L2TPV2_SESS_ID)},
-+	{VIRTCHNL_PROTO_HDR_L2TPV2,
-+		FIELD_SELECTOR(VIRTCHNL_PROTO_HDR_L2TPV2_LEN_SESS_ID),
-+		BIT_ULL(ICE_FLOW_FIELD_IDX_L2TPV2_LEN_SESS_ID)},
-+	{VIRTCHNL_PROTO_HDR_PPP,
-+		FIELD_SELECTOR(VIRTCHNL_PROTO_HDR_PPP_PROTO_ID),
-+		BIT_ULL(ICE_FLOW_FIELD_IDX_PPP_PROTO_ID)},
-+	{VIRTCHNL_PROTO_HDR_GTPC,
-+		FIELD_SELECTOR(VIRTCHNL_PROTO_HDR_GTPC_TEID),
-+		BIT_ULL(ICE_FLOW_FIELD_IDX_GTPC_TEID)},
-+	{VIRTCHNL_PROTO_HDR_IPV4,
-+		FIELD_SELECTOR(VIRTCHNL_PROTO_HDR_IPV4_CHKSUM),
-+		BIT_ULL(ICE_FLOW_FIELD_IDX_IPV4_CHKSUM)},
-+	{VIRTCHNL_PROTO_HDR_IPV4,
-+		FIELD_SELECTOR(VIRTCHNL_PROTO_HDR_IPV4_ID),
-+		BIT_ULL(ICE_FLOW_FIELD_IDX_IPV4_ID)},
-+	{VIRTCHNL_PROTO_HDR_IPV6,
-+		FIELD_SELECTOR(VIRTCHNL_PROTO_HDR_IPV6_TC),
-+		BIT_ULL(ICE_FLOW_FIELD_IDX_IPV6_TC)},
-+	{VIRTCHNL_PROTO_HDR_IPV6,
-+		FIELD_SELECTOR(VIRTCHNL_PROTO_HDR_IPV6_HOP_LIMIT),
-+		BIT_ULL(ICE_FLOW_FIELD_IDX_IPV6_HLIM)},
-+	{VIRTCHNL_PROTO_HDR_IPV6,
-+		FIELD_SELECTOR(VIRTCHNL_PROTO_HDR_IPV6_PREFIX32_SRC),
-+		BIT_ULL(ICE_FLOW_FIELD_IDX_IPV6_PRE32_SA)},
-+	{VIRTCHNL_PROTO_HDR_IPV6,
-+		FIELD_SELECTOR(VIRTCHNL_PROTO_HDR_IPV6_PREFIX32_DST),
-+		BIT_ULL(ICE_FLOW_FIELD_IDX_IPV6_PRE32_DA)},
-+	{VIRTCHNL_PROTO_HDR_IPV6,
-+		FIELD_SELECTOR(VIRTCHNL_PROTO_HDR_IPV6_PREFIX40_SRC),
-+		BIT_ULL(ICE_FLOW_FIELD_IDX_IPV6_PRE40_SA)},
-+	{VIRTCHNL_PROTO_HDR_IPV6,
-+		FIELD_SELECTOR(VIRTCHNL_PROTO_HDR_IPV6_PREFIX40_DST),
-+		BIT_ULL(ICE_FLOW_FIELD_IDX_IPV6_PRE40_DA)},
-+	{VIRTCHNL_PROTO_HDR_IPV6,
-+		FIELD_SELECTOR(VIRTCHNL_PROTO_HDR_IPV6_PREFIX48_SRC),
-+		BIT_ULL(ICE_FLOW_FIELD_IDX_IPV6_PRE48_SA)},
-+	{VIRTCHNL_PROTO_HDR_IPV6,
-+		FIELD_SELECTOR(VIRTCHNL_PROTO_HDR_IPV6_PREFIX48_DST),
-+		BIT_ULL(ICE_FLOW_FIELD_IDX_IPV6_PRE48_DA)},
-+	{VIRTCHNL_PROTO_HDR_IPV6,
-+		FIELD_SELECTOR(VIRTCHNL_PROTO_HDR_IPV6_PREFIX56_SRC),
-+		BIT_ULL(ICE_FLOW_FIELD_IDX_IPV6_PRE56_SA)},
-+	{VIRTCHNL_PROTO_HDR_IPV6,
-+		FIELD_SELECTOR(VIRTCHNL_PROTO_HDR_IPV6_PREFIX56_DST),
-+		BIT_ULL(ICE_FLOW_FIELD_IDX_IPV6_PRE56_DA)},
-+	{VIRTCHNL_PROTO_HDR_IPV6,
-+		FIELD_SELECTOR(VIRTCHNL_PROTO_HDR_IPV6_PREFIX64_SRC),
-+		BIT_ULL(ICE_FLOW_FIELD_IDX_IPV6_PRE64_SA)},
-+	{VIRTCHNL_PROTO_HDR_IPV6,
-+		FIELD_SELECTOR(VIRTCHNL_PROTO_HDR_IPV6_PREFIX64_DST),
-+		BIT_ULL(ICE_FLOW_FIELD_IDX_IPV6_PRE64_DA)},
-+	{VIRTCHNL_PROTO_HDR_IPV6,
-+		FIELD_SELECTOR(VIRTCHNL_PROTO_HDR_IPV6_PREFIX96_SRC),
-+		BIT_ULL(ICE_FLOW_FIELD_IDX_IPV6_PRE96_SA)},
-+	{VIRTCHNL_PROTO_HDR_IPV6,
-+		FIELD_SELECTOR(VIRTCHNL_PROTO_HDR_IPV6_PREFIX96_DST),
-+		BIT_ULL(ICE_FLOW_FIELD_IDX_IPV6_PRE96_DA)},
-+	{VIRTCHNL_PROTO_HDR_TCP,
-+		FIELD_SELECTOR(VIRTCHNL_PROTO_HDR_TCP_CHKSUM),
-+		BIT_ULL(ICE_FLOW_FIELD_IDX_TCP_CHKSUM)},
-+	{VIRTCHNL_PROTO_HDR_UDP,
-+		FIELD_SELECTOR(VIRTCHNL_PROTO_HDR_UDP_CHKSUM),
-+		BIT_ULL(ICE_FLOW_FIELD_IDX_UDP_CHKSUM)},
-+	{VIRTCHNL_PROTO_HDR_GRE,
-+		FIELD_SELECTOR(VIRTCHNL_PROTO_HDR_GRE_PROTO),
-+		BIT_ULL(ICE_FLOW_FIELD_IDX_GRE_PROTO)},
-+	{VIRTCHNL_PROTO_HDR_ECPRI,
-+		FIELD_SELECTOR(VIRTCHNL_PROTO_HDR_ECPRI_MSG_TYPE),
-+		BIT_ULL(ICE_FLOW_FIELD_IDX_ECPRI_TP0_MSG_TYPE)},
-+	{VIRTCHNL_PROTO_HDR_ECPRI,
-+		FIELD_SELECTOR(VIRTCHNL_PROTO_HDR_ECPRI_PC_RTC_ID),
-+		BIT_ULL(ICE_FLOW_FIELD_IDX_ECPRI_TP0_PC_ID)},
-+	{VIRTCHNL_PROTO_HDR_ECPRI,
-+		FIELD_SELECTOR(VIRTCHNL_PROTO_HDR_ECPRI_REV),
-+		BIT_ULL(ICE_FLOW_FIELD_IDX_ECPRI_TP0_REV)},
-+	{VIRTCHNL_PROTO_HDR_ECPRI,
-+		FIELD_SELECTOR(VIRTCHNL_PROTO_HDR_ECPRI_CONCAT),
-+		BIT_ULL(ICE_FLOW_FIELD_IDX_ECPRI_TP0_CONCAT)},
-+	{VIRTCHNL_PROTO_HDR_ECPRI,
-+		FIELD_SELECTOR(VIRTCHNL_PROTO_HDR_ECPRI_MSG_LEN),
-+		BIT_ULL(ICE_FLOW_FIELD_IDX_ECPRI_TP0_MSG_LEN)},
- 	{VIRTCHNL_PROTO_HDR_ESP, FIELD_SELECTOR(VIRTCHNL_PROTO_HDR_ESP_SPI),
- 		BIT_ULL(ICE_FLOW_FIELD_IDX_ESP_SPI)},
- 	{VIRTCHNL_PROTO_HDR_AH, FIELD_SELECTOR(VIRTCHNL_PROTO_HDR_AH_SPI),
-diff --git a/include/linux/avf/virtchnl.h b/include/linux/avf/virtchnl.h
-index 5be1881..b0d5164 100644
---- a/include/linux/avf/virtchnl.h
-+++ b/include/linux/avf/virtchnl.h
-@@ -1253,6 +1253,17 @@ enum virtchnl_proto_hdr_type {
- 	VIRTCHNL_PROTO_HDR_ESP,
- 	VIRTCHNL_PROTO_HDR_AH,
- 	VIRTCHNL_PROTO_HDR_PFCP,
-+	VIRTCHNL_PROTO_HDR_GTPC,
-+	VIRTCHNL_PROTO_HDR_ECPRI,
-+	VIRTCHNL_PROTO_HDR_L2TPV2,
-+	VIRTCHNL_PROTO_HDR_PPP,
-+	/* IPv4 and IPv6 Fragment header types are only associated to
-+	 * VIRTCHNL_PROTO_HDR_IPV4 and VIRTCHNL_PROTO_HDR_IPV6 respectively,
-+	 * cannot be used independently.
-+	 */
-+	VIRTCHNL_PROTO_HDR_IPV4_FRAG,
-+	VIRTCHNL_PROTO_HDR_IPV6_EH_FRAG,
-+	VIRTCHNL_PROTO_HDR_GRE,
- };
+ #define ICE_INVALID_TCAM	0xFFFF
++#define ICE_MAX_PTG_ATTRS	1024
  
- /* Protocol header field within a protocol header. */
-@@ -1275,6 +1286,8 @@ enum virtchnl_proto_hdr_field {
- 	VIRTCHNL_PROTO_HDR_IPV4_DSCP,
- 	VIRTCHNL_PROTO_HDR_IPV4_TTL,
- 	VIRTCHNL_PROTO_HDR_IPV4_PROT,
-+	VIRTCHNL_PROTO_HDR_IPV4_CHKSUM,
-+	VIRTCHNL_PROTO_HDR_IPV4_ID,
- 	/* IPV6 */
- 	VIRTCHNL_PROTO_HDR_IPV6_SRC =
- 		PROTO_HDR_FIELD_START(VIRTCHNL_PROTO_HDR_IPV6),
-@@ -1282,14 +1295,29 @@ enum virtchnl_proto_hdr_field {
- 	VIRTCHNL_PROTO_HDR_IPV6_TC,
- 	VIRTCHNL_PROTO_HDR_IPV6_HOP_LIMIT,
- 	VIRTCHNL_PROTO_HDR_IPV6_PROT,
-+	/* IPV6 Prefix */
-+	VIRTCHNL_PROTO_HDR_IPV6_PREFIX32_SRC,
-+	VIRTCHNL_PROTO_HDR_IPV6_PREFIX32_DST,
-+	VIRTCHNL_PROTO_HDR_IPV6_PREFIX40_SRC,
-+	VIRTCHNL_PROTO_HDR_IPV6_PREFIX40_DST,
-+	VIRTCHNL_PROTO_HDR_IPV6_PREFIX48_SRC,
-+	VIRTCHNL_PROTO_HDR_IPV6_PREFIX48_DST,
-+	VIRTCHNL_PROTO_HDR_IPV6_PREFIX56_SRC,
-+	VIRTCHNL_PROTO_HDR_IPV6_PREFIX56_DST,
-+	VIRTCHNL_PROTO_HDR_IPV6_PREFIX64_SRC,
-+	VIRTCHNL_PROTO_HDR_IPV6_PREFIX64_DST,
-+	VIRTCHNL_PROTO_HDR_IPV6_PREFIX96_SRC,
-+	VIRTCHNL_PROTO_HDR_IPV6_PREFIX96_DST,
- 	/* TCP */
- 	VIRTCHNL_PROTO_HDR_TCP_SRC_PORT =
- 		PROTO_HDR_FIELD_START(VIRTCHNL_PROTO_HDR_TCP),
- 	VIRTCHNL_PROTO_HDR_TCP_DST_PORT,
-+	VIRTCHNL_PROTO_HDR_TCP_CHKSUM,
- 	/* UDP */
- 	VIRTCHNL_PROTO_HDR_UDP_SRC_PORT =
- 		PROTO_HDR_FIELD_START(VIRTCHNL_PROTO_HDR_UDP),
- 	VIRTCHNL_PROTO_HDR_UDP_DST_PORT,
-+	VIRTCHNL_PROTO_HDR_UDP_CHKSUM,
- 	/* SCTP */
- 	VIRTCHNL_PROTO_HDR_SCTP_SRC_PORT =
- 		PROTO_HDR_FIELD_START(VIRTCHNL_PROTO_HDR_SCTP),
-@@ -1317,6 +1345,26 @@ enum virtchnl_proto_hdr_field {
- 	VIRTCHNL_PROTO_HDR_PFCP_S_FIELD =
- 		PROTO_HDR_FIELD_START(VIRTCHNL_PROTO_HDR_PFCP),
- 	VIRTCHNL_PROTO_HDR_PFCP_SEID,
-+	/* GTPC */
-+	VIRTCHNL_PROTO_HDR_GTPC_TEID =
-+		PROTO_HDR_FIELD_START(VIRTCHNL_PROTO_HDR_GTPC),
-+	/* L2TPV2 */
-+	VIRTCHNL_PROTO_HDR_L2TPV2_SESS_ID =
-+		PROTO_HDR_FIELD_START(VIRTCHNL_PROTO_HDR_L2TPV2),
-+	VIRTCHNL_PROTO_HDR_L2TPV2_LEN_SESS_ID,
-+	/* PPP */
-+	VIRTCHNL_PROTO_HDR_PPP_PROTO_ID =
-+		PROTO_HDR_FIELD_START(VIRTCHNL_PROTO_HDR_PPP),
-+	/* GRE */
-+	VIRTCHNL_PROTO_HDR_GRE_PROTO =
-+		PROTO_HDR_FIELD_START(VIRTCHNL_PROTO_HDR_GRE),
-+	/* ECPRI */
-+	VIRTCHNL_PROTO_HDR_ECPRI_MSG_TYPE =
-+		PROTO_HDR_FIELD_START(VIRTCHNL_PROTO_HDR_ECPRI),
-+	VIRTCHNL_PROTO_HDR_ECPRI_PC_RTC_ID,
-+	VIRTCHNL_PROTO_HDR_ECPRI_REV,
-+	VIRTCHNL_PROTO_HDR_ECPRI_CONCAT,
-+	VIRTCHNL_PROTO_HDR_ECPRI_MSG_LEN,
- };
- 
- struct virtchnl_proto_hdr {
+ struct ice_tcam_inf {
+ 	u16 tcam_idx;
 -- 
 2.49.0
 
