@@ -1,93 +1,93 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 644F4CCD1BF
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 28 Oct 2025 11:46:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CBAECCCF9E0
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 28 Oct 2025 11:49:33 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id DB36A410FB;
-	Tue, 28 Oct 2025 11:46:01 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 8B1D683EF8;
+	Tue, 28 Oct 2025 11:49:33 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Gc_jJ_cNtjeP; Tue, 28 Oct 2025 11:46:00 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 4osY3apgpLhZ; Tue, 28 Oct 2025 11:49:31 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 61377410BD
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 86FA683ED3
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1761651960;
-	bh=ffz+xBa46D+c5SWp6Lx1HnJOWzhbEkEh9tNkycnKGpk=;
+	s=default; t=1761652171;
+	bh=QiK7RPkkoci4AX1FTPiBC0ExbLNiHoqD2BqoMIPPJds=;
 	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=GlgFQyHQ/JGwIfywsMVohyO7y0zsdEZ3akvpXQQWRAFKGaKh4I81fgqoEFNV4j9Ol
-	 Oy44fFlAXr6kXrvRglQk8dmDJhwmWS94gVNAqb4KwEcIDZVd2oU5F07Ngg0aJfW/I5
-	 TBFgWK3SDRKi7M+JCzWXSX+Ntmb11sfIqotiBzH69ggG4OenmW6/KnW1Q1xwZoLMaT
-	 jJPQUJrxYFgrjjyeKHMvvGyKvdRdtGHweTqPPV447G6pc0UODrWhtTKlR32b9hD52z
-	 tI5364zk19l+OrQc5LUkyOJKYurKKx+O2TQRFQJzG82txP9OGAhdp1KPcM+72yyDvY
-	 476nsY9c82tSw==
+	b=EWNVhFu9kx3Rf+MmSxHwVX06GpccXOihltZkZ7qfQia3nR5VQvQfeL6TbFBaypgMs
+	 A4MsO3gYOCk+s5ovX9JYrbFGdLqywuPBhsmOg+oKgA4C1k8cfUzReide1KKL6ZrRIS
+	 HZhTp0du2V998AZkVsSHK0bmr1nhkIHU3YXbmdPoNxDRfSact6ZhqBhy3iwePc73DR
+	 y5PBoKX77wrgyxuTRpEnekiIcsBcqFofyknhRnchozLGiwsTdmx/C0o9ngoqtU0CAz
+	 a4pBWzArb5JJF6G37VjY0R2CH/pyYkM9Zr7p18ZkDyMNYygulEM6OmLquMhPeYBXyz
+	 j66HaeYNxvKdA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 61377410BD;
-	Tue, 28 Oct 2025 11:46:00 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 3CFF443F
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Oct 2025 11:45:59 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 86FA683ED3;
+	Tue, 28 Oct 2025 11:49:31 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 23A8543F
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Oct 2025 11:49:30 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 1BAF46159F
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Oct 2025 11:45:59 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 15E8B83EBC
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Oct 2025 11:49:30 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Rmcuj5kOZHZf for <intel-wired-lan@lists.osuosl.org>;
- Tue, 28 Oct 2025 11:45:58 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id vDwSeq0s8w3k for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 28 Oct 2025 11:49:29 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org;
+ client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org;
  envelope-from=horms@kernel.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 663E361593
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 663E361593
-Received: from tor.source.kernel.org (tor.source.kernel.org
- [IPv6:2600:3c04:e001:324:0:1991:8:25])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 663E361593
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Oct 2025 11:45:58 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 673FD83E77
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 673FD83E77
+Received: from sea.source.kernel.org (sea.source.kernel.org
+ [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 673FD83E77
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Oct 2025 11:49:29 +0000 (UTC)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by tor.source.kernel.org (Postfix) with ESMTP id 94B3D61E2D;
- Tue, 28 Oct 2025 11:45:56 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D0063C4CEE7;
- Tue, 28 Oct 2025 11:45:54 +0000 (UTC)
-Date: Tue, 28 Oct 2025 11:45:52 +0000
+ by sea.source.kernel.org (Postfix) with ESMTP id BBA6948DE5;
+ Tue, 28 Oct 2025 11:49:28 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 04417C4CEE7;
+ Tue, 28 Oct 2025 11:49:26 +0000 (UTC)
+Date: Tue, 28 Oct 2025 11:49:24 +0000
 From: Simon Horman <horms@kernel.org>
 To: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- anthony.l.nguyen@intel.com, Dan Nowlin <dan.nowlin@intel.com>,
- Qi Zhang <qi.z.zhang@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Message-ID: <aQCs8CAj5Xz0blT_@horms.kernel.org>
+ anthony.l.nguyen@intel.com, Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Dan Nowlin <dan.nowlin@intel.com>, Qi Zhang <qi.z.zhang@intel.com>,
+ Jedrzej Jagielski <jedrzej.jagielski@intel.com>
+Message-ID: <aQCtxIJiuVADyc1R@horms.kernel.org>
 References: <20251027093736.3582567-1-aleksandr.loktionov@intel.com>
- <20251027093736.3582567-3-aleksandr.loktionov@intel.com>
+ <20251027093736.3582567-6-aleksandr.loktionov@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20251027093736.3582567-3-aleksandr.loktionov@intel.com>
+In-Reply-To: <20251027093736.3582567-6-aleksandr.loktionov@intel.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1761651956;
- bh=f3X3nfeTiWH/Xuq9DwxayFrAf/Iofm6E+bfZi4+Yh84=;
+ d=kernel.org; s=k20201202; t=1761652168;
+ bh=JmqcCi+GOwJI9weQpXLYFTgQXGBYVITGNtQadOF6pPU=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=kHF7eotVV9kG1byr4kGyR1WcoAmd6AAPWejWcaWcg+NM5sjKvp5nMk9Hz6mtAPBtY
- yJW7H9lMoY6XkSRzNs8XQ4s4RWwBE2d6XZtOdNEq/xhML4LbjIKdUwgx9vCYaB+lW9
- i+1R5+O8LUH5YBcR7ojjA9GAXL2SwxqPF6AUFmCEQxaHF7+r3UfvcE0z7ilJputdko
- r6wOBvGJK9r+RU1l36+pbEznp3KZxhHUdQEBHhjG+psvvO4x6q8Vx2E52C1+ozLKma
- 5Lm5PeeN/toHF95kmigaW4w4irAWn5O1qyjl2Dq8xqIyM7lq/Gy7a1ZKlACwe6y0Zt
- JiiVTkuW+cFqQ==
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ b=oOK34LRGnCMqUglM2hkkkCqZABMvjePIM8cH4mbKXDY20x2UVK1qn8K1SalmSSLkw
+ FkRrFsPaXjo3JWWk0bjaR8WFvp3cDZpCbaH30Y+6idGPHxkzqepAkI4E4Lz9SPQ1Uy
+ dChwmYlLrzc3NOg5tUsLTh47pbU2OK6GsEGqCwiZcCIy68NoIdPQ/ZEUOj2mdgCfjm
+ tOH3oOHYHxhZuw2PuWrEb3F24tKzJppfK7N8KTIS6AmtDLihp9iITCY678+4EJaVT/
+ xdmtUyPmlwDkPCzAGWg0JFSAItT5B1KKGQMUad+ppQFMyKp6G6OqzORINA1r7pf2Xq
+ 1FZskvf0cgdvg==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=kHF7eotV
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next v7 2/6] ice: add virtchnl
- definitions and static data for GTP RSS
+ header.s=k20201202 header.b=oOK34LRG
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next v7 5/6] ice: Extend PTYPE
+ bitmap coverage for GTP encapsulated flows
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -103,56 +103,47 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Mon, Oct 27, 2025 at 10:37:32AM +0100, Aleksandr Loktionov wrote:
-> Add virtchnl protocol header and field definitions for advanced RSS
-> configuration including GTPC, GTPU, L2TPv2, ECPRI, PPP, GRE, and IP
-> fragment headers.
+On Mon, Oct 27, 2025 at 10:37:35AM +0100, Aleksandr Loktionov wrote:
+> From: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 > 
-> - Define new virtchnl protocol header types
-> - Add RSS field selectors for tunnel protocols
-> - Extend static mapping arrays for protocol field matching
-> - Add L2TPv2 session ID and length+session ID field support
+> Consolidate updates to the Protocol Type (PTYPE) bitmap definitions
+> across multiple flow types in the Intel ICE driver to support GTP
+> (GPRS Tunneling Protocol) encapsulated traffic.
 > 
-> This provides the foundational definitions needed for VF RSS
-> configuration of tunnel protocols.
+> Enable improved Receive Side Scaling (RSS) configuration for both user
+> and control plane GTP flows.
+> 
+> Cover a wide range of protocol and encapsulation scenarios, including:
+>  - MAC OFOS and IL
+>  - IPv4 and IPv6 (OFOS, IL, ALL, no-L4)
+>  - TCP, SCTP, ICMP
+>  - GRE OF
+>  - GTPC (control plane)
+> 
+> Expand the PTYPE bitmap entries to improve classification and
+> distribution of GTP traffic across multiple queues, enhancing
+> performance and scalability in mobile network environments.
+> 
+> --
+>  ice_flow.c |   54 +++++++++++++++++++++++++++---------------------------
+>  1 file changed, 26 insertions(+), 26 deletions(-)
+
+The four lines above seem out of place.
+And as git truncates the commit message at the ('--')
+the tags below are missing in it's view of the world.
+
 > 
 > Co-developed-by: Dan Nowlin <dan.nowlin@intel.com>
 > Signed-off-by: Dan Nowlin <dan.nowlin@intel.com>
+> Co-developed-by: Qi Zhang <qi.z.zhang@intel.com>
+> Signed-off-by: Qi Zhang <qi.z.zhang@intel.com>
 > Co-developed-by: Jie Wang <jie1x.wang@intel.com>
 > Signed-off-by: Jie Wang <jie1x.wang@intel.com>
 > Co-developed-by: Junfeng Guo <junfeng.guo@intel.com>
 > Signed-off-by: Junfeng Guo <junfeng.guo@intel.com>
-> Co-developed-by: Qi Zhang <qi.z.zhang@intel.com>
-> Signed-off-by: Qi Zhang <qi.z.zhang@intel.com>
-> Co-developed-by: Ting Xu <ting.xu@intel.com>
-> Signed-off-by: Ting Xu <ting.xu@intel.com>
 > Signed-off-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+> Reviewed-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
+> Reviewed-by: Simon Horman <horms@kernel.org>
 > Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-> ---
->  drivers/net/ethernet/intel/ice/virt/rss.c | 91 +++++++++++++++++++++++
->  include/linux/avf/virtchnl.h              | 48 ++++++++++++
->  2 files changed, 139 insertions(+)
-> 
-> diff --git a/drivers/net/ethernet/intel/ice/virt/rss.c b/drivers/net/ethernet/intel/ice/virt/rss.c
-> index cbdbb32..71d7db6 100644
-> --- a/drivers/net/ethernet/intel/ice/virt/rss.c
-> +++ b/drivers/net/ethernet/intel/ice/virt/rss.c
-> @@ -36,6 +36,13 @@ static const struct ice_vc_hdr_match_type ice_vc_hdr_list[] = {
->  	{VIRTCHNL_PROTO_HDR_ESP,	ICE_FLOW_SEG_HDR_ESP},
->  	{VIRTCHNL_PROTO_HDR_AH,		ICE_FLOW_SEG_HDR_AH},
->  	{VIRTCHNL_PROTO_HDR_PFCP,	ICE_FLOW_SEG_HDR_PFCP_SESSION},
-> +	{VIRTCHNL_PROTO_HDR_GTPC,	ICE_FLOW_SEG_HDR_GTPC},
-> +	{VIRTCHNL_PROTO_HDR_L2TPV2,	ICE_FLOW_SEG_HDR_L2TPV2},
-> +	{VIRTCHNL_PROTO_HDR_PPP,	ICE_FLOW_SEG_HDR_PPP},
-
-This patch does not compile because, amongst other things,
-ICE_FLOW_SEG_HDR_PPP is not declared (here).
-
-> +	{VIRTCHNL_PROTO_HDR_ECPRI,	ICE_FLOW_SEG_HDR_ECPRI_TP0},
-> +	{VIRTCHNL_PROTO_HDR_IPV4_FRAG,	ICE_FLOW_SEG_HDR_IPV_FRAG},
-> +	{VIRTCHNL_PROTO_HDR_IPV6_EH_FRAG,	ICE_FLOW_SEG_HDR_IPV_FRAG},
-> +	{VIRTCHNL_PROTO_HDR_GRE,        ICE_FLOW_SEG_HDR_GRE},
->  };
->
 
 ...
