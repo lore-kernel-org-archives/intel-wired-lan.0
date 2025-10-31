@@ -1,110 +1,108 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 205B8CCF9FF
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 31 Oct 2025 09:30:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0A947CCF9FE
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 31 Oct 2025 13:19:24 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id CF590416DC;
-	Fri, 31 Oct 2025 09:30:11 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id GNF-HWoVdJzS; Fri, 31 Oct 2025 09:30:11 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 08061416EF
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1761903011;
-	bh=dJCHY1xD4kMzxCb5bZ79VDVwPE90+O5Z/44h0qgKOvI=;
-	h=Date:To:Cc:References:From:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=JMnwHxTuuQIjneTELq81qBF5NRKi38ZmuzuxTknszjd+XM6/8DjKwnBB2u8syYafU
-	 ToXOKbv8QJUwKlKtWrrQXU2k8UakPYK8MJmoFcc5cN0ud+fXUXRv+E9dWx982H35tS
-	 FcObC/ZYZagUoM+sNnybwK0AnMVYmHnRWtj//5K/8YFbG4pxwlg58vtBzl/H3D4CPN
-	 iYA1oEC37JHJScc3koEI35Jq0W7A/5GuYUbIP989Oulwd28FqUx1GI6HCoI8D5ccuJ
-	 MbQk1AWfbaEC9oQFwrL5GQtpJ4sR8sVIodwSzf1rc+PPJa825B5VQgwT3ZWRIFzY/E
-	 R85l4oZM4dn7g==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 08061416EF;
-	Fri, 31 Oct 2025 09:30:11 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id 55C68160
- for <intel-wired-lan@lists.osuosl.org>; Fri, 31 Oct 2025 09:30:09 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 47C91816E2
- for <intel-wired-lan@lists.osuosl.org>; Fri, 31 Oct 2025 09:30:09 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id AAEAF83CBE;
+	Fri, 31 Oct 2025 13:19:24 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id TvVAxmDhAHDg for <intel-wired-lan@lists.osuosl.org>;
- Fri, 31 Oct 2025 09:30:08 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.8;
- helo=mgamail.intel.com; envelope-from=dawid.osuchowski@linux.intel.com;
+ id g78bDVYMnAOv; Fri, 31 Oct 2025 13:19:22 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org A5C38835C4
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1761916762;
+	bh=gWR4Sgd26TCDtl1/nDhgivtwhURlv4dp+N+a9qv98AI=;
+	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=ekj2LD0okAi75B0yFvP3j6Z+Ihs3D//CZhv/X6sShQBTqZ5KFUJunrzmiCsySdoD9
+	 oy0YL5Ss7/xMxCPMNOgAITQL9gcBBVOtmppPZLsP2VvX8TINPtY9tMTLAEHOETjaDO
+	 ZwY6rZGO3wWWdlSf6Q+stQRPy+dFgItZ/YRtpQTpCdNFfNttwO9ZuGZikwBFHL9chz
+	 o4L2jvt8ygni1Go/Kme2uYN6K0EIDE3nJEMpm67pOoRTEkkijnpQEUkdfb/PheFwwK
+	 MlH8kgootet05FbwQVfe1BTih5YSpH8OyQRUK16J5v9TtJ3m1vDtoOuGTTSTPBY9eg
+	 mnZPTx54CQsCw==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp1.osuosl.org (Postfix) with ESMTP id A5C38835C4;
+	Fri, 31 Oct 2025 13:19:22 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 51F892A3
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 31 Oct 2025 13:19:21 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp3.osuosl.org (Postfix) with ESMTP id 42A4760FD8
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 31 Oct 2025 13:19:21 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 8DMZ9Y_e59hX for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 31 Oct 2025 13:19:20 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.11;
+ helo=mgamail.intel.com; envelope-from=michal.swiatkowski@linux.intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 31EA083506
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 31EA083506
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.8])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 31EA083506
- for <intel-wired-lan@lists.osuosl.org>; Fri, 31 Oct 2025 09:30:07 +0000 (UTC)
-X-CSE-ConnectionGUID: /ZFUl55oQe2eeHIU/+RgFw==
-X-CSE-MsgGUID: BWuSyLenTf2RX3QLjtpzqA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11598"; a="81690555"
-X-IronPort-AV: E=Sophos;i="6.19,269,1754982000"; d="scan'208";a="81690555"
-Received: from orviesa010.jf.intel.com ([10.64.159.150])
- by fmvoesa102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 31 Oct 2025 02:30:07 -0700
-X-CSE-ConnectionGUID: S5PZvJ/MTP+l9A3gvPAJwQ==
-X-CSE-MsgGUID: hTCdttE1SA2eh0rICcHl5Q==
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 3760260F97
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3760260F97
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.11])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 3760260F97
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 31 Oct 2025 13:19:19 +0000 (UTC)
+X-CSE-ConnectionGUID: dgEGUjzDRNig3cWehTTjFw==
+X-CSE-MsgGUID: Zo9+OiIeTeCMW2tEH9c82Q==
+X-IronPort-AV: E=McAfee;i="6800,10657,11598"; a="74676920"
+X-IronPort-AV: E=Sophos;i="6.19,269,1754982000"; d="scan'208";a="74676920"
+Received: from fmviesa002.fm.intel.com ([10.60.135.142])
+ by fmvoesa105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 31 Oct 2025 06:19:20 -0700
+X-CSE-ConnectionGUID: Bl+i9EzFTE+wfRK/Lq6/pQ==
+X-CSE-MsgGUID: akk5Bya7R9yaDhKS6P+3BA==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.19,269,1754982000"; d="scan'208";a="185465564"
-Received: from soc-5cg4396xfb.clients.intel.com (HELO [172.28.180.29])
- ([172.28.180.29])
- by orviesa010-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 31 Oct 2025 02:30:05 -0700
-Message-ID: <d4fd9c18-e8bd-4dc1-bacc-51be080cc693@linux.intel.com>
-Date: Fri, 31 Oct 2025 10:29:53 +0100
+X-IronPort-AV: E=Sophos;i="6.19,269,1754982000"; d="scan'208";a="209801248"
+Received: from mev-dev.igk.intel.com ([10.237.112.144])
+ by fmviesa002-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 31 Oct 2025 06:19:18 -0700
+Date: Fri, 31 Oct 2025 14:17:11 +0100
+From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+To: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Cc: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>,
+ Paul Menzel <pmenzel@molgen.mpg.de>,
+ intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
+ aleksander.lobakin@intel.com, jacob.e.keller@intel.com,
+ Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Message-ID: <aQS216HKiUmF0tky@mev-dev.igk.intel.com>
+References: <20251030083053.2166525-1-michal.swiatkowski@linux.intel.com>
+ <370cf4f0-c0a8-480a-939d-33c75961e587@molgen.mpg.de>
+ <aQMxvzYqJkwNBYf0@mev-dev.igk.intel.com>
+ <621665db-e881-4adc-8caa-9275a4ed7a50@intel.com>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-To: "Sanigani, SarithaX" <sarithax.sanigani@intel.com>,
- "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>
-Cc: "Fijalkowski, Maciej" <maciej.fijalkowski@intel.com>,
- "Lobakin, Aleksander" <aleksander.lobakin@intel.com>,
- "Keller, Jacob E" <jacob.e.keller@intel.com>,
- "Zaremba, Larysa" <larysa.zaremba@intel.com>,
- "Kitszel, Przemyslaw" <przemyslaw.kitszel@intel.com>,
- "Nguyen, Anthony L" <anthony.l.nguyen@intel.com>,
- "Kubiak, Michal" <michal.kubiak@intel.com>
-References: <PH8PR11MB69764650A4A2EB8CCAFD5461F9F8A@PH8PR11MB6976.namprd11.prod.outlook.com>
-Content-Language: pl, en-US
-From: Dawid Osuchowski <dawid.osuchowski@linux.intel.com>
-In-Reply-To: <PH8PR11MB69764650A4A2EB8CCAFD5461F9F8A@PH8PR11MB6976.namprd11.prod.outlook.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <621665db-e881-4adc-8caa-9275a4ed7a50@intel.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1761903008; x=1793439008;
- h=message-id:date:mime-version:subject:to:cc:references:
- from:in-reply-to:content-transfer-encoding;
- bh=+K4yEluZ9DNkA/LHn1mgdDau/jNPIfLmkaXdvyofzzc=;
- b=QGqTwihgYpEVbt5rkx0l+WlEFfKcIhGScJh0MooVbfFH6SsclG1LeoWi
- RnVcMC1nTiyXO2lE1aFff3MzTLwFEkxEvyZiQ5WSmn3DKXm2mqhxwTGIt
- WBhQn+94/uN3V6Z7uYT2uSdjqRLA4cWIIwgHX3aEgpqF70/yPHQFYwYAR
- 88YmnScu0+EkO4cola6n1qoq1X5uvSDJx5xyDdQFPcLZIFJLGte69rB6n
- NAJxv84m+a1cb8l2fkxL426ve2S9krf9pxM1SnqxCqUrr4yHcZhXeVdj9
- Nj+b/7Y4mVReyVTs+8654nnXbM5iY/dPGFKJfyUI+ZtOWvuvkeYjx2Dn9
- A==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ t=1761916760; x=1793452760;
+ h=date:from:to:cc:subject:message-id:references:
+ mime-version:content-transfer-encoding:in-reply-to;
+ bh=OkpMyqH9LMB5gbHNeVe9QsvLOlwbhxR1aW4ZuqBdvtM=;
+ b=GLj9bMbwO6dhXWGNr5Fvvc/LcI0MYSZUKsLnZVwQ1DTAVhvYjAWciAbV
+ iWni6hjtmEtPzc4r4bf6JX2MS2bMgd+Q1yM3tXEVcE2tkm8AwLiFQOZ5L
+ MJoICE/aDmZzzD3qc1QfmBiILgkZ9/vdl6TtPQ+MLBqOuQ1bLZ81Pkr61
+ 8NneaI13jXlnenefkPhAi2UehUUpdP0OwsYc7y5yLQVRqFAWL8q1+grxy
+ 5HIFuB7Bm+n63a4hhGmr/g875BWjclGRnDZsSU6oWXsuYFJ1p/VHyqj+u
+ WrhHzYfWqSPuw4cx1E1otcr0zfC89/OZy8q5Ls8jf+uOde/gocLm4Cmde
+ g==;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=none (p=none dis=none)
  header.from=linux.intel.com
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=QGqTwihg
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next v3 1/3] ice: remove legacy Rx
- and construct SKB
+ header.s=Intel header.b=GLj9bMbw
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next v3] ice: use
+ netif_get_num_default_rss_queues()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -120,87 +118,77 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On 2025-10-31 5:58 AM, Sanigani, SarithaX wrote:
->> -----Original Message-----
+On Thu, Oct 30, 2025 at 11:39:30AM +0100, Przemek Kitszel wrote:
+> On 10/30/25 10:37, Michal Swiatkowski wrote:
+> > On Thu, Oct 30, 2025 at 10:10:32AM +0100, Paul Menzel wrote:
+> > > Dear Michal,
+> > > 
+> > > 
+> > > Thank you for your patch. For the summary, I’d add:
+> > > 
+> > > ice: Use netif_get_num_default_rss_queues() to decrease queue number
 > 
->> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org<mailto:intel-wired-lan-bounces@osuosl.org>> On Behalf Of Michal Kubiak
+> I would instead just say:
+> ice: cap the default number of queues to 64
 > 
->> Sent: Thursday, September 25, 2025 2:53 PM
+> as this is exactly what happens. Then next paragraph could be:
+> Use netif_get_num_default_rss_queues() as a better base (instead of
+> the number of CPU cores), but still cap it to 64 to avoid excess IRQs
+> assigned to PF (what would leave, in some cases, nothing for VFs).
 > 
->> To: intel-wired-lan@lists.osuosl.org<mailto:intel-wired-lan@lists.osuosl.org>
-> 
->> Cc: Fijalkowski, Maciej <maciej.fijalkowski@intel.com<mailto:maciej.fijalkowski@intel.com>>; Lobakin, Aleksander <aleksander.lobakin@intel.com<mailto:aleksander.lobakin@intel.com>>; Keller, Jacob E <jacob.e.keller@intel.com<mailto:jacob.e.keller@intel.com>>;
-> 
->> Zaremba, Larysa <larysa.zaremba@intel.com<mailto:larysa.zaremba@intel.com>>; netdev@vger.kernel.org<mailto:netdev@vger.kernel.org>; Kitszel, Przemyslaw <przemyslaw.kitszel@intel.com<mailto:przemyslaw.kitszel@intel.com>>; pmenzel@molgen.mpg.de<mailto:pmenzel@molgen.mpg.de>;
-> 
->> Nguyen, Anthony L <anthony.l.nguyen@intel.com<mailto:anthony.l.nguyen@intel.com>>; Kubiak, Michal <michal.kubiak@intel.com<mailto:michal.kubiak@intel.com>>
-> 
->> Subject: [Intel-wired-lan] [PATCH iwl-next v3 1/3] ice: remove legacy Rx and construct SKB
-> 
->>
-> 
->> The commit 53844673d555 ("iavf: kill 'legacy-rx' for good") removed the legacy Rx path in the iavf driver. This change applies the same rationale to the ice driver.
-> 
->>
-> 
->> The legacy Rx path relied on manual skb allocation and header copying, which has become increasingly inefficient and difficult to maintain.
-> 
->> With the stabilization of build_skb() and the growing adoption of features like XDP, page_pool, and multi-buffer support, the legacy approach is no longer viable.
-> 
->>
-> 
->> Key drawbacks of the legacy path included:
-> 
->> - Higher memory pressure due to direct page allocations and splitting;
-> 
->> - Redundant memcpy() operations for packet headers;
-> 
->> - CPU overhead from eth_get_headlen() and Flow Dissector usage;
-> 
->> - Compatibility issues with XDP, which imposes strict headroom and
-> 
->> tailroom requirements.
-> 
->>
-> 
->> The ice driver, like iavf, does not benefit from the minimal headroom savings that legacy Rx once offered, as it already splits pages into fixed halves. Removing this path simplifies the Rx logic, eliminates unnecessary branches in the hotpath, and prepares the driver for upcoming enhancements.
-> 
->>
-> 
->> In addition to removing the legacy Rx path, this change also eliminates the custom construct_skb() functions from both the standard and zero-copy (ZC) Rx paths. These are replaced with the build_skb() > and standardized xdp_build_skb_from_zc() helpers, aligning the driver with the modern XDP infrastructure and reducing code duplication.
-> 
->>
-> 
->> This cleanup also reduces code complexity and improves maintainability as we move toward a more unified and modern Rx model across drivers.
-> 
->>
-> 
->> Co-developed-by: Alexander Lobakin <aleksander.lobakin@intel.com<mailto:aleksander.lobakin@intel.com>>
-> 
->> Signed-off-by: Alexander Lobakin <aleksander.lobakin@intel.com<mailto:aleksander.lobakin@intel.com>>
-> 
->> Reviewed-by: Alexander Lobakin <aleksander.lobakin@intel.com<mailto:aleksander.lobakin@intel.com>>
-> 
->> Reviewed-by: Jacob Keller <jacob.e.keller@intel.com<mailto:jacob.e.keller@intel.com>>
-> 
->> Signed-off-by: Michal Kubiak <michal.kubiak@intel.com<mailto:michal.kubiak@intel.com>>
-> 
->> ---
-<snip>>
-> Tested-by: Saritha Sanigani <sarithax.sanigani@intel.com<mailto:sarithax.sanigani@intel.com>> (A Contingent Worker at Intel)
+> sorry for such late nitpicks
+> and, see below too
 
-Hello Saritha
+I moved away from capping to 64, now it is just call to
+netif_get_num_default_rss_queues(). Following Olek's comment, dividing
+by 2 is just fine now and looks like there is no good reasone to cap it
+more in the driver, but let's discuss it here if you have different
+opinion.
 
-It seems your email client is misconfigured as this message (and the 
-rest of messages for this series) appear as completely separate from the 
-thread "ice: convert Rx path to Page Pool". This also means patchwork 
-did not pick up your Tested-by tags [1].
+> 
+> > > 
+> > > Am 30.10.25 um 09:30 schrieb Michal Swiatkowski:
+> > > > On some high-core systems (like AMD EPYC Bergamo, Intel Clearwater
+> > > > Forest) loading ice driver with default values can lead to queue/irq
+> > > > exhaustion. It will result in no additional resources for SR-IOV.
+> > > 
+> > > Could you please elaborate how to make the queue/irq exhaustion visible?
+> > > 
+> > 
+> > What do you mean? On high core system, lets say num_online_cpus()
+> > returns 288, on 8 ports card we have online 256 irqs per eqch PF (2k in
+> > total). Driver will load with the 256 queues (and irqs) on each PF.
+> > Any VFs creation command will fail due to no free irqs available.
+> 
+> this clearly means this is a -net material,
+> even if this commit will be rather unpleasant for backports to stable
+>
 
-Another issue is the mangled email addresses in 
-Signed-off-by/Reviewed-by/Tested-by tags.
+In my opinion it isn't. It is just about default values. Still in the
+described case user can call ethtool -L and lower the queues to create
+VFs without a problem.
 
-Best,
-Dawid
-
-[1] 
-https://patchwork.ozlabs.org/project/intel-wired-lan/patch/20250925092253.1306476-2-michal.kubiak@intel.com/
+> > (echo X > /sys/class/net/ethX/device/sriov_numvfs)
+> > 
+> > > > In most cases there is no performance reason for more than half
+> > > > num_cpus(). Limit the default value to it using generic
+> > > > netif_get_num_default_rss_queues().
+> > > > 
+> > > > Still, using ethtool the number of queues can be changed up to
+> > > > num_online_cpus(). It can be done by calling:
+> > > > $ethtool -L ethX combined $(nproc)
+> > > > 
+> > > > This change affects only the default queue amount.
+> > > 
+> > > How would you judge the regression potential, that means for people where
+> > > the defaults work good enough, and the queue number is reduced now?
+> > > 
+> > 
+> > You can take a look into commit that introduce /2 change in
+> > netif_get_num_default_rss_queues() [1]. There is a good justification
+> > for such situation. In short, heaving physical core number is just a
+> > wasting of CPU resources.
+> > 
+> > [1] https://lore.kernel.org/netdev/20220315091832.13873-1-ihuguet@redhat.com/
+> > 
+> [...]
