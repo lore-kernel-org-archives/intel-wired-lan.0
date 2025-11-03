@@ -4,94 +4,150 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8F57FCCFA03
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  3 Nov 2025 21:09:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1069ACCFA03
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  3 Nov 2025 21:48:34 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 41E8260A68;
-	Mon,  3 Nov 2025 21:09:58 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id B5CF160A37;
+	Mon,  3 Nov 2025 21:48:34 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ve30UTnRknYZ; Mon,  3 Nov 2025 21:09:56 +0000 (UTC)
+ id jRG1-eQh01Ty; Mon,  3 Nov 2025 21:48:34 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3750760A66
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org EA35360A3A
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1762204196;
-	bh=wEzv4ilkDufOCMLKBLb5k19NK+x2RF6mjTNu7DKBFQc=;
+	s=default; t=1762206514;
+	bh=zDgrJGPwTkDqRWUIRmg2o0UWPQlQh5Pa4lWjqQeT3Vs=;
 	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:From;
-	b=8zgkyAfs7Ipv2H1PB+lnyuVs3nRUx41qvme/XZky59lpKFbybpzvyiTF/Af4Qo219
-	 w63t8qSeaQas0MNt+OqKMXxXTSqnedFzVZ0cSMNkceWSMybdTpR+JKb590Ezip9gwS
-	 S8aRju2EO2daxKaUs0fAWwnHMo14jc95sFE+STfwL2aVyz2mOkU7fyNJXyo7dqAXlt
-	 Wq7yQSFXwFApb/vOtVMtJvxtghvNzjLOtbbwEGle4Hd47SyqxkjIKDb4mLtkNyBIvw
-	 Yexm2l2dG4+7hEJACMpRmrqZqcBFH2isusAEvCkJr5AR7eh6NXuzg+/4AT0VXYptnr
-	 0wNPcS/6dxQ4A==
+	b=IKYvAMg/v1i4pAy4qRo3UAJGXDkKKfDXaEGBUnhMns2RUGVQPwQILEVuab2tPZhVl
+	 P6biW+R+rSGqDyDqO8f4HON5O6W+6aJW/up1NaqH9L+L2QET7aNzV7z2jxrxUc2lbW
+	 JxCQ/oeABvYwKjCus2hogyEucm/88fSorHiq9dciyxJSQ9iN6Ruwh88AU8bQrhZiLS
+	 GWSJjWwoBOgOHkUeizdPTZcxVVw57iibSy4+zP0+r6uyhqUzhuUJrVNuCh/4ZRG8la
+	 RZYmadK2SC8sULeXNkS3Wx/83FaHWt1jG4c5aomWff8PZQX3dZRifehVMSBecwjd55
+	 gHqZtwAhHnG6A==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 3750760A66;
-	Mon,  3 Nov 2025 21:09:56 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id E8E45278
- for <intel-wired-lan@lists.osuosl.org>; Mon,  3 Nov 2025 21:09:54 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id EA35360A3A;
+	Mon,  3 Nov 2025 21:48:33 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id DC903222
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  3 Nov 2025 19:45:58 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id CF19C40502
- for <intel-wired-lan@lists.osuosl.org>; Mon,  3 Nov 2025 21:09:54 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id CDFC740645
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  3 Nov 2025 19:45:58 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id LxEj1qUPzEu4 for <intel-wired-lan@lists.osuosl.org>;
- Mon,  3 Nov 2025 21:09:54 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.14;
- helo=mgamail.intel.com; envelope-from=joshua.a.hay@intel.com;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org D1F724052B
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org D1F724052B
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.14])
- by smtp2.osuosl.org (Postfix) with ESMTPS id D1F724052B
- for <intel-wired-lan@lists.osuosl.org>; Mon,  3 Nov 2025 21:09:53 +0000 (UTC)
-X-CSE-ConnectionGUID: nIOTAV2TSaSrzsJymQ+Lhg==
-X-CSE-MsgGUID: 1F6w4UGbS3itMOCfZaU/Rg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11531"; a="68129454"
-X-IronPort-AV: E=Sophos;i="6.17,312,1747724400"; d="scan'208";a="68129454"
-Received: from orviesa008.jf.intel.com ([10.64.159.148])
- by orvoesa106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 03 Nov 2025 13:09:53 -0800
-X-CSE-ConnectionGUID: +DecENeHQMqgOLLCvjIoHA==
-X-CSE-MsgGUID: lAAtYi4yT/mi97Y2uTqotg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.19,277,1754982000"; d="scan'208";a="187121168"
-Received: from dcskidmo-m40.jf.intel.com ([10.166.241.14])
- by orviesa008.jf.intel.com with ESMTP; 03 Nov 2025 13:09:53 -0800
-From: Joshua Hay <joshua.a.hay@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Cc: netdev@vger.kernel.org, Joshua Hay <joshua.a.hay@intel.com>,
- Alexander Lobakin <aleksander.lobakin@intel.com>,
- Madhu Chittim <madhu.chittim@intel.com>
-Date: Mon,  3 Nov 2025 13:20:36 -0800
-Message-Id: <20251103212036.2788093-1-joshua.a.hay@intel.com>
-X-Mailer: git-send-email 2.39.2
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 4DfJvD6axfSv for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  3 Nov 2025 19:45:58 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2607:f8b0:4864:20::b12e; helo=mail-yx1-xb12e.google.com;
+ envelope-from=daniel.zahka@gmail.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org CF38240648
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org CF38240648
+Received: from mail-yx1-xb12e.google.com (mail-yx1-xb12e.google.com
+ [IPv6:2607:f8b0:4864:20::b12e])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id CF38240648
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  3 Nov 2025 19:45:57 +0000 (UTC)
+Received: by mail-yx1-xb12e.google.com with SMTP id
+ 956f58d0204a3-63e393c49f1so4359019d50.0
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 03 Nov 2025 11:45:57 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20230601; t=1762199156; x=1762803956;
+ h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+ :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+ :reply-to;
+ bh=zDgrJGPwTkDqRWUIRmg2o0UWPQlQh5Pa4lWjqQeT3Vs=;
+ b=kuhq2MCqIOkn5n6jOV+Kadb35YW6+qvuaaTYoSYIYZdWf1vJa5mHeOqTIv50buleQc
+ hXisd7l6uIcZMNsjTpOnqI1yU7haNMgklb46F0rTScNB5pYxtYNoQm9vAzniePtPS3Xi
+ W4XRAsD4cEikUyA1xdkxJAupzyCsHNl03ealo6/Ucs1k9IvDAxwk2u9W3QARnVukQ+km
+ hm8II2eEsCYP3askDTp2QbFNH9xCJiR/Oe3y+Xm2GQ8jaEeIoGxhnt8keTCVa9e4vcen
+ ZYbXzvhYKFr2ssePJ0QqJ/dSXpkjfW12+9H7o84QJouoW+lGfBcDnPl9Z6RmNX7O5IX2
+ rMlg==
+X-Forwarded-Encrypted: i=1;
+ AJvYcCVHb9kBGecVRMRCzMGvzNukpUMJKa9YyXPiwryMRbk6I2rTsUdIJhQ48bjEz58iBwSw/IgAQWe0nKNQgImLHfE=@lists.osuosl.org
+X-Gm-Message-State: AOJu0YyU5fJv2VskZOvJUSLY9JOjON49MFlY8OGI9EKXUM/ok2bEI/Y+
+ bDJ+3TKADoCsQe6IIfVVgO0dJoTktqBRisPAzN4AGnxRayCkJrokFL6m
+X-Gm-Gg: ASbGncsKSM30ngOGfbwfVClWLOXcpupGQLxWBKvlGvWkrG+vxuvtjClwbIkI3nZ3n98
+ sHpB+HKiK53ANRZKtbGgXLx3b7WcD/pnhVZfB+DNK/oB0oJGxunsq3DCebwFMfakExsJqdfrWai
+ cy53W9R9be1nADBsaSBqlt+D4KCUP9S8leMDb2GFTqtWr0aG4JaqOpjW6PqGFhCgld1AMk97y0Z
+ TARLappMnxe56BMPXKvY3c2P0eCteLNdHH1rPF4e7JO4Mm4d4dbSpoQczZCmDVM43yUdxMfm9Ds
+ 3wLzRj4xTuBWrPzc/a9eUyasThhtLXy6FSTveiXPYmjL+pWRsUJ0O0bcvZ4U2aF2ar50O2UGpNg
+ IUU7xBW/t0SrDd4NlFT0IE27jO+CUX9w9rl8DIX7YDvc1Bqij7dAROzFVjHctuctDXmFIkXgq8a
+ ESU1T4NLt9SfJnfV5QHfTR4wZ2f43BRKE=
+X-Google-Smtp-Source: AGHT+IGNH0RPJesBeIcKsla8XUDm1bFpyEtjHsBQ6vejr6g2P49YD8AtgFLGMiN2odUrOWMz5ZeYtA==
+X-Received: by 2002:a05:690c:6706:b0:786:8dc1:5242 with SMTP id
+ 00721157ae682-7868dc1591dmr18450727b3.53.1762199156319; 
+ Mon, 03 Nov 2025 11:45:56 -0800 (PST)
+Received: from localhost ([2a03:2880:25ff:72::])
+ by smtp.gmail.com with ESMTPSA id
+ 00721157ae682-7869200367fsm3408667b3.42.2025.11.03.11.45.55
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Mon, 03 Nov 2025 11:45:55 -0800 (PST)
+From: Daniel Zahka <daniel.zahka@gmail.com>
+To: Jiri Pirko <jiri@resnulli.us>, "David S. Miller" <davem@davemloft.net>,
+ Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>, Simon Horman <horms@kernel.org>,
+ Jonathan Corbet <corbet@lwn.net>, Srujana Challa <schalla@marvell.com>,
+ Bharat Bhushan <bbhushan2@marvell.com>,
+ Herbert Xu <herbert@gondor.apana.org.au>,
+ Brett Creeley <brett.creeley@amd.com>, Andrew Lunn <andrew+netdev@lunn.ch>,
+ Michael Chan <michael.chan@broadcom.com>,
+ Pavan Chebbi <pavan.chebbi@broadcom.com>,
+ Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Sunil Goutham <sgoutham@marvell.com>, Linu Cherian <lcherian@marvell.com>,
+ Geetha sowjanya <gakula@marvell.com>, Jerin Jacob <jerinj@marvell.com>,
+ hariprasad <hkelam@marvell.com>, Subbaraya Sundeep <sbhatta@marvell.com>,
+ Tariq Toukan <tariqt@nvidia.com>, Saeed Mahameed <saeedm@nvidia.com>,
+ Leon Romanovsky <leon@kernel.org>, Mark Bloch <mbloch@nvidia.com>,
+ Ido Schimmel <idosch@nvidia.com>, Petr Machata <petrm@nvidia.com>,
+ Manish Chopra <manishc@marvell.com>,
+ Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+ Alexandre Torgue <alexandre.torgue@foss.st.com>,
+ Siddharth Vadapalli <s-vadapalli@ti.com>,
+ Roger Quadros <rogerq@kernel.org>,
+ Loic Poulain <loic.poulain@oss.qualcomm.com>,
+ Sergey Ryazanov <ryazanov.s.a@gmail.com>,
+ Johannes Berg <johannes@sipsolutions.net>,
+ Vladimir Oltean <olteanv@gmail.com>,
+ Michal Swiatkowski <michal.swiatkowski@linux.intel.com>,
+ Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
+ Dave Ertman <david.m.ertman@intel.com>,
+ Vlad Dumitrescu <vdumitrescu@nvidia.com>,
+ "Russell King (Oracle)" <rmk+kernel@armlinux.org.uk>,
+ Alexander Sverdlin <alexander.sverdlin@gmail.com>,
+ Lorenzo Bianconi <lorenzo@kernel.org>
+Cc: netdev@vger.kernel.org, linux-doc@vger.kernel.org,
+ intel-wired-lan@lists.osuosl.org, linux-rdma@vger.kernel.org,
+ linux-stm32@st-md-mailman.stormreply.com,
+ linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org
+Date: Mon,  3 Nov 2025 11:45:51 -0800
+Message-ID: <20251103194554.3203178-1-daniel.zahka@gmail.com>
+X-Mailer: git-send-email 2.47.3
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1762204194; x=1793740194;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=nHyUw7CH5fqHOkzGJzjMZOpnhWd4lMtXz+aZjNJ3p9c=;
- b=mEbo96O/02qjHlaNiF5x0YoJl94dS4ArRqOEnYsp2AIBqXCCN9Os1qsL
- sPAw7rb3KH9oOnkas3xsa1MdEJ220msgw1Efwh0SRcP7pYhLd8JLIlZUH
- vBkb+tYmkfwsfz0Er9xQHjOj45P1riKHCdQlIvDikMCPNo9ryNfL94Tnd
- OfG6ymajpS0jfYTbMjRy6exj/lFU90dc0tHJjqyiGyDGCgdKw7z60br2o
- 2pifyIcaw3XOWlH8/jYEJPXi3/sEPIEAJpEp27RgJYjFV/1IlFbvoSJAr
- HtI7nUvACY/cz7ZGqnzXjBvAa+igWgXx0z65VJFGGZydn9QO7IEJ3vRV6
- A==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+X-Mailman-Approved-At: Mon, 03 Nov 2025 21:48:32 +0000
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=gmail.com; s=20230601; t=1762199156; x=1762803956; darn=lists.osuosl.org;
+ h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+ :to:from:from:to:cc:subject:date:message-id:reply-to;
+ bh=zDgrJGPwTkDqRWUIRmg2o0UWPQlQh5Pa4lWjqQeT3Vs=;
+ b=W/o6WmABXBf8nTD8O0hQKcxBlUu3M7edwmbmhQuSUTC1b1lkaRRn+FDIuviH6WaWeS
+ SgREe4+xSJ0U09nApcIL/Sw+kmIWwDQxHgUUSLjoSgM72SGpUpPRaHjp1a+XNS7IvfMU
+ 9WjxZSzJV56liNwBhnkV1RF01tsuWpfOXPDtz7uniCXaJ2RDjjoqvffJWuO9dqHlhtJv
+ ZPrxlpecatjSwhnFfU1B0q4pLj9Aj2yfnmarVJTY+4XkF39K99POC17Io2J2kZI+hvTq
+ hsAcYw1GjYeL0UfB5Vlxq3dHRoPy4Sdk/eeF4uKG1m6WFwqMQK1yPSUKLB+vMbVSlO+4
+ yrVw==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
- header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ header.from=gmail.com
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=mEbo96O/
-Subject: [Intel-wired-lan] [PATCH iwl-net] idpf: cap maximum Rx buffer size
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20230601 header.b=W/o6WmAB
+Subject: [Intel-wired-lan] [PATCH net-next v2 0/2] devlink: net/mlx5:
+ implement swp_l4_csum_mode via devlink params
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -107,64 +163,57 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The HW only supports a maximum Rx buffer size of 16K-128. On systems
-using large pages, the libeth logic can configure the buffer size to be
-larger than this. The upper bound is PAGE_SIZE while the lower bound is
-MTU rounded up to the nearest power of 2. For example, ARM systems with
-a 64K page size and an mtu of 9000 will set the Rx buffer size to 16K,
-which will cause the config Rx queues message to fail.
+This series contains two patches. The first is a pure refactor that
+passes through the extack to devlink_param::get() implementations. The
+second introduces a permanent devlink param to the mlx5 driver for
+controlling tx csum behavior.
 
-Initialize the bufq/fill queue buf_len field to the maximum supported
-size. This will trigger the libeth logic to cap the maximum Rx buffer
-size by reducing the upper bound.
+Enabling extack for devlink_param::get() allows drivers to provide
+more information in cases when reading parameters from hardware can
+result in errors or unexpected values.
 
-Fixes: 74d1412ac8f37 ("idpf: use libeth Rx buffer management for payload buffer")
-Signed-off-by: Joshua Hay <joshua.a.hay@intel.com>
-Acked-by: Alexander Lobakin <aleksander.lobakin@intel.com>
-Reviewed-by: Madhu Chittim <madhu.chittim@intel.com>
----
- drivers/net/ethernet/intel/idpf/idpf_txrx.c | 8 +++++---
- drivers/net/ethernet/intel/idpf/idpf_txrx.h | 1 +
- 2 files changed, 6 insertions(+), 3 deletions(-)
+The mlx5 swp_l4_csum_mode devlink param is necessary for initializing
+PSP on CX7 NICs.
 
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.c b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-index 828f7c444d30..dcdd4fef1c7a 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-@@ -695,9 +695,10 @@ static int idpf_rx_buf_alloc_singleq(struct idpf_rx_queue *rxq)
- static int idpf_rx_bufs_init_singleq(struct idpf_rx_queue *rxq)
- {
- 	struct libeth_fq fq = {
--		.count	= rxq->desc_count,
--		.type	= LIBETH_FQE_MTU,
--		.nid	= idpf_q_vector_to_mem(rxq->q_vector),
-+		.count		= rxq->desc_count,
-+		.type		= LIBETH_FQE_MTU,
-+		.buf_len	= IDPF_RX_MAX_BUF_SZ,
-+		.nid		= idpf_q_vector_to_mem(rxq->q_vector),
- 	};
- 	int ret;
- 
-@@ -754,6 +755,7 @@ static int idpf_rx_bufs_init(struct idpf_buf_queue *bufq,
- 		.truesize	= bufq->truesize,
- 		.count		= bufq->desc_count,
- 		.type		= type,
-+		.buf_len	= IDPF_RX_MAX_BUF_SZ,
- 		.hsplit		= idpf_queue_has(HSPLIT_EN, bufq),
- 		.xdp		= idpf_xdp_enabled(bufq->q_vector->vport),
- 		.nid		= idpf_q_vector_to_mem(bufq->q_vector),
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.h b/drivers/net/ethernet/intel/idpf/idpf_txrx.h
-index 75b977094741..a1255099656f 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_txrx.h
-+++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.h
-@@ -101,6 +101,7 @@ do {								\
- 		idx = 0;					\
- } while (0)
- 
-+#define IDPF_RX_MAX_BUF_SZ			(16384 - 128)
- #define IDPF_RX_BUF_STRIDE			32
- #define IDPF_RX_BUF_POST_STRIDE			16
- #define IDPF_LOW_WATERMARK			64
+CHANGES:
+v2:
+  - fix indentation issue in new mlx5.rst entry
+  - use extack in mlx5_nv_param_devlink_swp_l4_csum_mode_get()
+  - introduce extack patch.
+v1: https://lore.kernel.org/netdev/20251022190932.1073898-1-daniel.zahka@gmail.com/
+
+Daniel Zahka (2):
+  devlink: pass extack through to devlink_param::get()
+  net/mlx5: implement swp_l4_csum_mode via devlink params
+
+ Documentation/networking/devlink/mlx5.rst     |   9 +
+ .../marvell/octeontx2/otx2_cpt_devlink.c      |   6 +-
+ drivers/net/ethernet/amd/pds_core/core.h      |   3 +-
+ drivers/net/ethernet/amd/pds_core/devlink.c   |   3 +-
+ .../net/ethernet/broadcom/bnxt/bnxt_devlink.c |   6 +-
+ .../net/ethernet/intel/ice/devlink/devlink.c  |  12 +-
+ .../marvell/octeontx2/af/rvu_devlink.c        |  15 +-
+ .../marvell/octeontx2/nic/otx2_devlink.c      |   6 +-
+ drivers/net/ethernet/mellanox/mlx4/main.c     |   6 +-
+ .../net/ethernet/mellanox/mlx5/core/devlink.h |   3 +-
+ .../net/ethernet/mellanox/mlx5/core/eswitch.c |   3 +-
+ .../mellanox/mlx5/core/eswitch_offloads.c     |   3 +-
+ .../net/ethernet/mellanox/mlx5/core/fs_core.c |   3 +-
+ .../ethernet/mellanox/mlx5/core/fw_reset.c    |   3 +-
+ .../mellanox/mlx5/core/lib/nv_param.c         | 170 +++++++++++++++++-
+ .../mellanox/mlxsw/spectrum_acl_tcam.c        |   3 +-
+ .../ethernet/netronome/nfp/devlink_param.c    |   3 +-
+ drivers/net/ethernet/qlogic/qed/qed_devlink.c |   3 +-
+ .../net/ethernet/stmicro/stmmac/stmmac_main.c |   3 +-
+ drivers/net/ethernet/ti/am65-cpsw-nuss.c      |   3 +-
+ drivers/net/ethernet/ti/cpsw_new.c            |   6 +-
+ drivers/net/wwan/iosm/iosm_ipc_devlink.c      |   3 +-
+ include/net/devlink.h                         |   3 +-
+ include/net/dsa.h                             |   3 +-
+ net/devlink/param.c                           |  19 +-
+ net/dsa/devlink.c                             |   3 +-
+ 26 files changed, 257 insertions(+), 46 deletions(-)
+
 -- 
-2.39.2
+2.47.3
 
