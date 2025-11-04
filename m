@@ -1,162 +1,131 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8E1EDCCFA04
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  4 Nov 2025 14:48:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F1632CCFA0C
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  4 Nov 2025 15:09:11 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 4BF6C8221E;
-	Tue,  4 Nov 2025 14:48:29 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id AD6A140D5D;
+	Tue,  4 Nov 2025 15:09:11 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id DO7_S04iBU7P; Tue,  4 Nov 2025 14:48:27 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id tnzPYZhILFxt; Tue,  4 Nov 2025 15:09:10 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 3EF948221B
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 329BE40D44
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1762267707;
-	bh=TYbk9wPxk/JA4+MxrrdLZ/GfKAsrpCoWC70+eUl4rp4=;
-	h=Date:To:Cc:References:From:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=I0I6bHxcYCE4QNxW3Gmk09x5HJ0U74/267KfHwzbKNCV/oav/HcojSY1IJFSFJVZS
-	 6aPWjJX7YxEjLfVW4797Cbv/EteW4w3vCw3/QlOdBWbY66I8LRoroXGgD2N8+b7O0/
-	 3IGYUpYnEFe+1jc1XwpUy/snkqqIOcmE9H04afu/JD7VRhieR0WzkRSemahGs6Rm11
-	 ZSDiPv+qZr4AFvKQssfK4FC8L/YLzVvvM0FrYEys/PVbHYoUvH1EsUWrx4pgPNLzSG
-	 ZaGyEYlfuM/MYytlKL076quzTyV+yWL7XH5XS8mGJgWqCRTnUqELuA9OQFKt0iI6Bo
-	 6G877s2Uij3YA==
+	s=default; t=1762268950;
+	bh=hQBwQoGzHrMQMWBFlP8/3WEktsb+1DIpXJFeBQPhykw=;
+	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=bIVVW/gv6QjLbduzfunL9L4PQS8djendNzMxlGhwvGhH4KQZhmnVsvg1DlwL0cOJO
+	 BeaVd7iXqb3AW0VZu0l8eHX5IfchnSUHcoSOs9xsoS+Ueo8rzxZ+DGTjmjTSEhwlT6
+	 kmbsw2wXvPG7EzJub8PML45t+YzeWE++ISk0Rf6NXUXJyJOgGJdScJhD6l8i/k6qNY
+	 ajzkJbI+N6k8HtgUH2oc2kLd1nu2Y8RVxkg/0zF8QIehzg4o6PJsJ8xTCwYkBqfq7Y
+	 jn7AIpDxpUwSsqtR/RSKwxTXo4YZcmTvFq5/cCkmtHN2VXUEe7q/GA2uYnhTOoxj6v
+	 iWPy/Ka1jDrhw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 3EF948221B;
-	Tue,  4 Nov 2025 14:48:27 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id 3C339222
- for <intel-wired-lan@lists.osuosl.org>; Tue,  4 Nov 2025 14:48:26 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 329BE40D44;
+	Tue,  4 Nov 2025 15:09:10 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 2B37C222
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  4 Nov 2025 15:09:09 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 1AFA24010B
- for <intel-wired-lan@lists.osuosl.org>; Tue,  4 Nov 2025 14:48:26 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 118D260FCC
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  4 Nov 2025 15:09:09 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 7nULy8eIRTWL for <intel-wired-lan@lists.osuosl.org>;
- Tue,  4 Nov 2025 14:48:25 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2607:f8b0:4864:20::729; helo=mail-qk1-x729.google.com;
- envelope-from=daniel.zahka@gmail.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 507DB400E7
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 507DB400E7
-Received: from mail-qk1-x729.google.com (mail-qk1-x729.google.com
- [IPv6:2607:f8b0:4864:20::729])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 507DB400E7
- for <intel-wired-lan@lists.osuosl.org>; Tue,  4 Nov 2025 14:48:25 +0000 (UTC)
-Received: by mail-qk1-x729.google.com with SMTP id
- af79cd13be357-891208f6185so520793085a.1
- for <intel-wired-lan@lists.osuosl.org>; Tue, 04 Nov 2025 06:48:25 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20230601; t=1762267704; x=1762872504;
- h=content-transfer-encoding:in-reply-to:from:content-language
- :references:cc:to:subject:user-agent:mime-version:date:message-id
- :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
- bh=TYbk9wPxk/JA4+MxrrdLZ/GfKAsrpCoWC70+eUl4rp4=;
- b=nywNOFFGbn5r+SYRHxnFN9ImpxYPLXb+kZOhmp7s39UMtPDbtW2IkqKEzlvFIc0F3K
- 4k2ZkAFF5F2bzW6K3QSP5pMH+0gnvDbmGCy14v75R+BZ2s32s0EQ2l/fzYkyiVou+orc
- fUQ8JjKBbOPY9dah9HFbAla5HtNM83nMBsgVgdnok5A/wZ7mLganqSWfZJXu3AHF4lv/
- B/aSYmajxTAsoHtSRNf7+AZJGNMkKHaMnksbvLh1W8hNo/ATDjj9w309KLrTW8SkXNGE
- +m7Rkd43jmNcmwERZdKnh+JvKJkI0VxvIqTU6RzLGWehEqwBnjvZxCvtB0BLcyFL0EKN
- ftgQ==
-X-Forwarded-Encrypted: i=1;
- AJvYcCXq1cuLuL+jdG8jolQhm3uD7yGP4e9/Mn0g+AoVWTq4YuTx2t/Dw5cU33FIv/jEiEKVOz0XUNpf9u62ly3H5UU=@lists.osuosl.org
-X-Gm-Message-State: AOJu0YwUTWHhqbMcm6zWHK+4PcYVqFCfk279PAYifG3WacJdaR1uSzFL
- xessN/5JFgsaqAilUT0kGjbO1qd4NpPDX9Mt4KfPm0n8qfhWG7pfsCc8
-X-Gm-Gg: ASbGncu3MvhJAUj9yR+K2PQ01SD26Vu1/7tn4YL6oI/IIl+IwS+neTKOkcaIJAX69iS
- U6HKt+pivZOH/P53A9NreT1AgayRybJtQhcyHpzH1lIWd4v8yxGgvuShzmh1YzlgpmN4Cekin2z
- 3UKeh1CkryBBwmLOKzFSb/u9oeYqoLkmoM7zeUvexo5LvjH7EyBGnzjKRbGozuBUw20KmxrTUZM
- VY7rCIbUG6V6dBIzE08S2jj1zQMWDGpL1BFyyXJTxTdImGXohcO8Kgpphf8FLfyBG+gzHM1UqeG
- yAKusJ7qVVrl94WYM6nHhWyVuiqrre/bayQ6V73kJdaf37/oLxRZpUDZTxyJYu0je2IcO4MJxgQ
- p2p8kcBZsrtMNTJrrYFoXWVD2Jbs46hJKnJRRW7YWlX6DQo+tkwxK9eIKBhn2w+E79cKYO7FHS2
- 5VOpomh+mjmes7iCq1rEh81CtgVZs4vwrAdOVgXBrSy1BdLloycLRB+os1N2tjOMrGQg==
-X-Google-Smtp-Source: AGHT+IGmraHbZP2E2iRwXxMxNgGXM9zhZedCgpJV66vhLBH8PzAO8Dn4btILshzP2e0cEKgwNzEvBA==
-X-Received: by 2002:a05:620a:1a27:b0:886:173f:1b4c with SMTP id
- af79cd13be357-8ab9ba6fd3emr1982205785a.80.1762267703489; 
- Tue, 04 Nov 2025 06:48:23 -0800 (PST)
-Received: from ?IPV6:2600:4040:93b8:5f00:52dd:c164:4581:b7eb?
- ([2600:4040:93b8:5f00:52dd:c164:4581:b7eb])
- by smtp.gmail.com with ESMTPSA id
- af79cd13be357-8b0f543d90csm198693785a.17.2025.11.04.06.48.21
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Tue, 04 Nov 2025 06:48:23 -0800 (PST)
-Message-ID: <78db1fab-e482-4ebc-82ce-ba84b3f561e2@gmail.com>
-Date: Tue, 4 Nov 2025 09:48:21 -0500
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id w27mLErzAcAD for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  4 Nov 2025 15:09:08 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=205.220.177.32;
+ helo=mx0b-00069f02.pphosted.com; envelope-from=alok.a.tiwari@oracle.com;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 601CC60FB1
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 601CC60FB1
+Received: from mx0b-00069f02.pphosted.com (mx0b-00069f02.pphosted.com
+ [205.220.177.32])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 601CC60FB1
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  4 Nov 2025 15:09:06 +0000 (UTC)
+Received: from pps.filterd (m0246630.ppops.net [127.0.0.1])
+ by mx0b-00069f02.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 5A4ExYkM026294;
+ Tue, 4 Nov 2025 15:08:58 GMT
+Received: from iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com
+ (iadpaimrmta03.appoci.oracle.com [130.35.103.27])
+ by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 4a7kr0r0nq-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 04 Nov 2025 15:08:57 +0000 (GMT)
+Received: from pps.filterd
+ (iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
+ by iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (8.18.1.2/8.18.1.2)
+ with ESMTP id 5A4Dmh4t022014; Tue, 4 Nov 2025 15:08:57 GMT
+Received: from pps.reinject (localhost [127.0.0.1])
+ by iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id
+ 4a58nkg7aj-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 04 Nov 2025 15:08:57 +0000
+Received: from iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com
+ (iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
+ by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 5A4F8uS0014809;
+ Tue, 4 Nov 2025 15:08:56 GMT
+Received: from ca-dev112.us.oracle.com (ca-dev112.us.oracle.com
+ [10.129.136.47])
+ by iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTP id
+ 4a58nkg77r-1; Tue, 04 Nov 2025 15:08:56 +0000
+From: Alok Tiwari <alok.a.tiwari@oracle.com>
+To: przemyslaw.kitszel@intel.com, aleksander.lobakin@intel.com,
+ anthony.l.nguyen@intel.com, andrew+netdev@lunn.ch, kuba@kernel.org,
+ davem@davemloft.net, edumazet@google.com, pabeni@redhat.com,
+ horms@kernel.org, intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org
+Cc: alok.a.tiwarilinux@gmail.com, alok.a.tiwari@oracle.com
+Date: Tue,  4 Nov 2025 07:08:35 -0800
+Message-ID: <20251104150849.532195-1-alok.a.tiwari@oracle.com>
+X-Mailer: git-send-email 2.50.1
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-To: Jiri Pirko <jiri@resnulli.us>
-Cc: "David S. Miller" <davem@davemloft.net>,
- Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, Simon Horman <horms@kernel.org>,
- Jonathan Corbet <corbet@lwn.net>, Srujana Challa <schalla@marvell.com>,
- Bharat Bhushan <bbhushan2@marvell.com>,
- Herbert Xu <herbert@gondor.apana.org.au>,
- Brett Creeley <brett.creeley@amd.com>, Andrew Lunn <andrew+netdev@lunn.ch>,
- Michael Chan <michael.chan@broadcom.com>,
- Pavan Chebbi <pavan.chebbi@broadcom.com>,
- Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Sunil Goutham <sgoutham@marvell.com>, Linu Cherian <lcherian@marvell.com>,
- Geetha sowjanya <gakula@marvell.com>, Jerin Jacob <jerinj@marvell.com>,
- hariprasad <hkelam@marvell.com>, Subbaraya Sundeep <sbhatta@marvell.com>,
- Tariq Toukan <tariqt@nvidia.com>, Saeed Mahameed <saeedm@nvidia.com>,
- Leon Romanovsky <leon@kernel.org>, Mark Bloch <mbloch@nvidia.com>,
- Ido Schimmel <idosch@nvidia.com>, Petr Machata <petrm@nvidia.com>,
- Manish Chopra <manishc@marvell.com>,
- Maxime Coquelin <mcoquelin.stm32@gmail.com>,
- Alexandre Torgue <alexandre.torgue@foss.st.com>,
- Siddharth Vadapalli <s-vadapalli@ti.com>, Roger Quadros <rogerq@kernel.org>,
- Loic Poulain <loic.poulain@oss.qualcomm.com>,
- Sergey Ryazanov <ryazanov.s.a@gmail.com>,
- Johannes Berg <johannes@sipsolutions.net>,
- Vladimir Oltean <olteanv@gmail.com>,
- Michal Swiatkowski <michal.swiatkowski@linux.intel.com>,
- Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
- Dave Ertman <david.m.ertman@intel.com>,
- Vlad Dumitrescu <vdumitrescu@nvidia.com>,
- "Russell King (Oracle)" <rmk+kernel@armlinux.org.uk>,
- Alexander Sverdlin <alexander.sverdlin@gmail.com>,
- Lorenzo Bianconi <lorenzo@kernel.org>, netdev@vger.kernel.org,
- linux-doc@vger.kernel.org, intel-wired-lan@lists.osuosl.org,
- linux-rdma@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com,
- linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org
-References: <20251103194554.3203178-1-daniel.zahka@gmail.com>
- <20251103194554.3203178-3-daniel.zahka@gmail.com>
- <mhm4hkz52gmqok56iuiukdcz2kaowvppbqrfi3zxuq67p3otit@5fhpgu2axab2>
- <db5c46b4-cc66-48bb-aafb-40d83dd3620c@gmail.com>
- <6aa2f011-3ba5-4614-950d-d8f0ec62222b@gmail.com>
- <p3pj3mu4mabgninwowqikegeotxgzhc4yptf7qrfhns37bnkoz@ugkbgvlkxqxb>
-Content-Language: en-US
-From: Daniel Zahka <daniel.zahka@gmail.com>
-In-Reply-To: <p3pj3mu4mabgninwowqikegeotxgzhc4yptf7qrfhns37bnkoz@ugkbgvlkxqxb>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.100.49
+ definitions=2025-11-04_01,2025-11-03_03,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 mlxlogscore=999
+ bulkscore=0 spamscore=0
+ suspectscore=0 mlxscore=0 adultscore=0 phishscore=0 malwarescore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2510240000
+ definitions=main-2511040126
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUxMTA0MDEyNCBTYWx0ZWRfX1dCixKPHWNj9
+ mMn81lHtRovp90dOQy+CqFH8NQUd6OXujDobssxY0/RYYy3UiTu7yDJ8b5HLp7gXyiE83vTNsEi
+ dTANCjxx986n70rqFUXp0m7guygmI6lyG1kIpyKqrKO/XKGxmJDcSZWnnSXCjV2ZXnBCGcyJFOG
+ MHBmhy5UVk/mxRF/B7jlrKsOBBEecWrSK16y9GIbnX+Ql65jgOyuArpV1t74PFV2/rT1AmN/WC2
+ 9le65JY6eFmBKBhhqVAGpMhopuiq8VAO8UaeRnIO70LErB/B10zq9Dq+xzFyE98KgVfDyGF2Esc
+ 4b1lsptqlYrJRV4sNnSx5FyNHVZRYAh03gwNMiBFJLuUuHM7W+K6ewexfZU9LzEEN/dSlf0vgi8
+ z4TsG0lDFGKjSNWaiPKLLOphLcjE6TZBQTQbvMAOIC1KZOaWSkU=
+X-Authority-Analysis: v=2.4 cv=Z5fh3XRA c=1 sm=1 tr=0 ts=690a1709 b=1 cx=c_pps
+ a=qoll8+KPOyaMroiJ2sR5sw==:117
+ a=qoll8+KPOyaMroiJ2sR5sw==:17
+ a=6UeiqGixMTsA:10 a=VkNPw1HP01LnGYTKEx00:22 a=QyXUC8HyAAAA:8 a=yPCof4ZbAAAA:8
+ a=aDMgItlAmnlL-JTvjQ0A:9 cc=ntf awl=host:12124
+X-Proofpoint-ORIG-GUID: bYrG44d6fm9pxrGPK0mk727xPe8vhZFt
+X-Proofpoint-GUID: bYrG44d6fm9pxrGPK0mk727xPe8vhZFt
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20230601; t=1762267704; x=1762872504; darn=lists.osuosl.org;
- h=content-transfer-encoding:in-reply-to:from:content-language
- :references:cc:to:subject:user-agent:mime-version:date:message-id
- :from:to:cc:subject:date:message-id:reply-to;
- bh=TYbk9wPxk/JA4+MxrrdLZ/GfKAsrpCoWC70+eUl4rp4=;
- b=DBg/Gbixdc4aYaT4G6jlM3aN4V5MZzx2d7J14s/qQWH2xMItuAjwlSEK/WhRRUCVDd
- v3duGC7MaLOcMjcZx1ABovO5f9iizHpw6X1EmW4UApJRFQQrA+7DpDpNta3BMCOI0lX8
- 8ou5TSaCyRzd12XyZALiIqW6gROonvrtibcFfFymKYyPt1lasbjPc9xJuHKjXDoYaXdW
- nN3Yaw4nbFxnRomMdosLOGuLiQtv/92IuRpyjPi9+FX35FRiBv66ZLrpoaJ1XC6OanB2
- 5h8giBYRdxv0XAqIRao+qcFR+JRWTGgnunASi/h/nO6NMo84HDx8iT2klU0kGYUxd86N
- oF3A==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=gmail.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
- header.a=rsa-sha256 header.s=20230601 header.b=DBg/Gbix
-Subject: Re: [Intel-wired-lan] [PATCH net-next v2 2/2] net/mlx5: implement
- swp_l4_csum_mode via devlink params
+ d=oracle.com; h=cc
+ :content-transfer-encoding:date:from:message-id:mime-version
+ :subject:to; s=corp-2025-04-25; bh=hQBwQoGzHrMQMWBFlP8/3WEktsb+1
+ DIpXJFeBQPhykw=; b=LkLRZbLYuzTXiRy8RX2LwUPIBasAfO4eScwKSkz+bt1aV
+ spwzWYCqFfLArkehautY+2VPW8f7n6KqPaQheROx9/dAG5k8KgBFlvc2Yd+IB8Tf
+ YykCUrCT2+30baREe/OVKehO5fuUpR0YPaEmuSY1pkB+/w7+RVcREEenHc1wpL56
+ V7bCmfqOmRp8zDxWBfcYAlaCHEmHITaRjGvATzq8nfwpTkl6VXZrstjVJ872tGJZ
+ WEtMqP/D5YH4ug/C2TouDbXZ+RORK29LM0Rq5WLH6Y9gwv9xB2GN0cUV3YZ4pusY
+ /f/jPZ2I2z4ZCVEGg4eAX87MNU+RvEZ9yEOsq8lAQ==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dmarc=pass (p=reject dis=none)
+ header.from=oracle.com
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256
+ header.s=corp-2025-04-25 header.b=LkLRZbLY
+Subject: [Intel-wired-lan] [PATCH net-next v2] iavf: clarify VLAN add/delete
+ log messages and lower log level
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -172,56 +141,69 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
+The current dev_warn messages for too many VLAN changes are confusing
+and one place incorrectly references "add" instead of "delete" VLANs
+due to copy-paste errors.
 
+- Use dev_info instead of dev_warn to lower the log level.
+- Rephrase the message to: "[vvfl|vvfl_v2] Too many VLAN [add|delete]
+  requests; splitting into multiple messages to PF".
 
-On 11/4/25 9:39 AM, Jiri Pirko wrote:
-> Tue, Nov 04, 2025 at 01:51:16PM +0100, daniel.zahka@gmail.com wrote:
->>
->> On 11/4/25 6:38 AM, Daniel Zahka wrote:
->>>
->>> On 11/4/25 5:14 AM, Jiri Pirko wrote:
->>>> I did some research. 0/DEVICE_DEFAULT should not be ever reported back
->>>> from FW. It's purpose is for user to reset to default FW configuration.
->>>> What's the usecase for that? I think you could just avoid
->>>> 0/DEVICE_DEFAULT entirely, for both get and set.
->>> I find that 0/DEVICE_DEFAULT is reported back on my device. I have
->>> observed this same behavior when using the mstconfig tool for setting the
->>> parameter too.
->> e.g.
->> $ dmesg | grep -i mlx | grep -i firmware
->> [   10.165767] mlx5_core 0000:01:00.0: firmware version: 28.46.1006
->>
->> $ ./mstconfig -d 01:00.0 -b ./mlxconfig_host.db query SWP_L4_CHECKSUM_MODE
->>
->> Device #1:
->> ----------
->>
->> Device type:        ConnectX7
->> Name:               CX71143DMC-CDAE_FB_Ax
->> Description:        ConnectX-7 Ethernet adapter card; 100 GbE OCP3.0;
->> Single-port QSFP; Multi Host; 2 Host; PCIe 4.0 x16; Crypto and Secure Boot
->> Device:             01:00.0
->>
->> Configurations:                                          Next Boot
->>          SWP_L4_CHECKSUM_MODE DEVICE_DEFAULT(0)
-> This is next-boot value. You should query current (--enable_verbosity)
-> to show in param get.
+Suggested-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Signed-off-by: Alok Tiwari <alok.a.tiwari@oracle.com>
+Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+---
+v1 -> v2
+remove "\n" b/w message 
+added vvfl and vvfl_v2 prefix
+---
+ drivers/net/ethernet/intel/iavf/iavf_virtchnl.c | 12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
 
-I am still seeing that DEVICE_DEFAULT(0) is read back:
-
-$ ./mstconfig --enable_verbosity -d 01:00.0 -b ./mlxconfig_host.db query 
-SWP_L4_CHECKSUM_MODE
-
-Device #1:
-----------
-
-Device type:        ConnectX7
-Name:               CX71143DMC-CDAE_FB_Ax
-Description:        ConnectX-7 Ethernet adapter card; 100 GbE OCP3.0; 
-Single-port QSFP; Multi Host; 2 Host; PCIe 4.0 x16; Crypto and Secure Boot
-Device:             01:00.0
-
-Configurations:                  Default             Current       Next Boot
-         SWP_L4_CHECKSUM_MODE DEVICE_DEFAULT(0) DEVICE_DEFAULT(0)    
-DEVICE_DEFAULT(0)
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+index 34a422a4a29c..c9495c260e6a 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+@@ -793,7 +793,8 @@ void iavf_add_vlans(struct iavf_adapter *adapter)
+ 
+ 		len = virtchnl_struct_size(vvfl, vlan_id, count);
+ 		if (len > IAVF_MAX_AQ_BUF_SIZE) {
+-			dev_warn(&adapter->pdev->dev, "Too many add VLAN changes in one request\n");
++			dev_info(&adapter->pdev->dev,
++				 "vvfl Too many VLAN add requests; splitting into multiple messages to PF\n");
+ 			while (len > IAVF_MAX_AQ_BUF_SIZE)
+ 				len = virtchnl_struct_size(vvfl, vlan_id,
+ 							   --count);
+@@ -838,7 +839,8 @@ void iavf_add_vlans(struct iavf_adapter *adapter)
+ 
+ 		len = virtchnl_struct_size(vvfl_v2, filters, count);
+ 		if (len > IAVF_MAX_AQ_BUF_SIZE) {
+-			dev_warn(&adapter->pdev->dev, "Too many add VLAN changes in one request\n");
++			dev_info(&adapter->pdev->dev,
++				 "vvfl_v2 Too many VLAN add requests; splitting into multiple messages to PF\n");
+ 			while (len > IAVF_MAX_AQ_BUF_SIZE)
+ 				len = virtchnl_struct_size(vvfl_v2, filters,
+ 							   --count);
+@@ -941,7 +943,8 @@ void iavf_del_vlans(struct iavf_adapter *adapter)
+ 
+ 		len = virtchnl_struct_size(vvfl, vlan_id, count);
+ 		if (len > IAVF_MAX_AQ_BUF_SIZE) {
+-			dev_warn(&adapter->pdev->dev, "Too many delete VLAN changes in one request\n");
++			dev_info(&adapter->pdev->dev,
++				 "vvfl Too many VLAN delete requests; splitting into multiple messages to PF\n");
+ 			while (len > IAVF_MAX_AQ_BUF_SIZE)
+ 				len = virtchnl_struct_size(vvfl, vlan_id,
+ 							   --count);
+@@ -987,7 +990,8 @@ void iavf_del_vlans(struct iavf_adapter *adapter)
+ 
+ 		len = virtchnl_struct_size(vvfl_v2, filters, count);
+ 		if (len > IAVF_MAX_AQ_BUF_SIZE) {
+-			dev_warn(&adapter->pdev->dev, "Too many add VLAN changes in one request\n");
++			dev_info(&adapter->pdev->dev,
++				 "vvfl_v2 Too many VLAN delete requests; splitting into multiple messages to PF\n");
+ 			while (len > IAVF_MAX_AQ_BUF_SIZE)
+ 				len = virtchnl_struct_size(vvfl_v2, filters,
+ 							   --count);
+-- 
+2.50.1
 
