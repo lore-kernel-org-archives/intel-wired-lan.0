@@ -1,75 +1,75 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 68677CCF9F8
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C86BACCFA1D
 	for <intel-wired-lan@archiver.kernel.org>; Wed,  5 Nov 2025 21:07:21 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 4A82B845A1;
-	Wed,  5 Nov 2025 21:07:20 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 63B45612E0;
+	Wed,  5 Nov 2025 21:07:21 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id IhqiRTv2Q4cj; Wed,  5 Nov 2025 21:07:19 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id gE02QKp2O1y8; Wed,  5 Nov 2025 21:07:20 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 6CA718458E
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B57B2613F8
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1762376839;
-	bh=QlgRnVKqohX1RALX4uqbfJN+LVAWf/2E08qL8j0Ch+s=;
+	s=default; t=1762376840;
+	bh=FhgynvB4H2iLt7fbk8K//qnOy7UMi/RywtEekBWQ2yc=;
 	h=From:Date:References:In-Reply-To:To:Cc:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=uHWI8TIVEnOYv3z8gxUG3liBclh4gQYVzqVMiVE34QTrsrp6AqqKGCCweXSwx6WK3
-	 S+N0erxVFZeMriXQZXm30UuBiBl9WwaA4jvmVOXPJhV83Zv6tikHmESkiqmZySAXn6
-	 KLsAtp1osFMf0l+aZHSkue6c99Szf/y+j69iEhTRA+sQEDWBGh5xi0snejOV3PLp4b
-	 yPHme8It0qGDuU6cqdKHGGbl/mZplikC+t4sJ/kVW1blbAFVvGNIYEmTnQsycV+8r6
-	 QitaVStNsVY//wGxpER9tdw4YnBYpcwxofxJHtag+QWEDv3W0cwm1INwMMIkvCkoCl
-	 ygNYx1GjhERPQ==
+	b=FvjRji+POUQf5c9pv1/cc9P9b0Ewesr5dys/QaHOJPousOdsU0mF59ShIZFd03HRG
+	 hpk2Lkw9HsMP/AkWRQ1qrArLaFK+qRuTIyhcFsiHhDicOj0VqnZlogfsed5uImG0BU
+	 uYcQLoO8rPW9ltPDBl9Otr6R/mp1bTM4C8pmqmzde3rj2M1Kott4UK9ag292btbi03
+	 kk9wxZcqiF/njuknjpnt2bnfH+xCTmsqjALEbUveXe81dqFg5OACtx7VVRW6azFFTA
+	 Pg26jhyt5qIUeHAK4I9SlIKdFPB2EDMbqFEtM7c3jpAH5lsmE/ir5GPfMpocJSFXEG
+	 TMRQ8jT7woX3A==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 6CA718458E;
-	Wed,  5 Nov 2025 21:07:19 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id B57B2613F8;
+	Wed,  5 Nov 2025 21:07:20 +0000 (UTC)
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id 25D1E4C6
- for <intel-wired-lan@lists.osuosl.org>; Wed,  5 Nov 2025 21:07:17 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id 28419462
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  5 Nov 2025 21:07:18 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id EF178411A8
- for <intel-wired-lan@lists.osuosl.org>; Wed,  5 Nov 2025 21:07:14 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 1F8F5411A9
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  5 Nov 2025 21:07:15 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 8QW0e-9KIcxS for <intel-wired-lan@lists.osuosl.org>;
+ id 0sJ6zxn1D64X for <intel-wired-lan@lists.osuosl.org>;
  Wed,  5 Nov 2025 21:07:14 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.11;
  helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 4A7D3411A9
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4A7D3411A9
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 8062B4108F
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 8062B4108F
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.11])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 4A7D3411A9
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 8062B4108F
  for <intel-wired-lan@lists.osuosl.org>; Wed,  5 Nov 2025 21:07:14 +0000 (UTC)
-X-CSE-ConnectionGUID: YHNMv35ET0eHGKoLPrgm/w==
-X-CSE-MsgGUID: pCBIBnDXRPaqRY8QIVVGaQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11604"; a="75114374"
-X-IronPort-AV: E=Sophos;i="6.19,282,1754982000"; d="scan'208";a="75114374"
+X-CSE-ConnectionGUID: mjCEDHmHR4mNo5xtnDlPog==
+X-CSE-MsgGUID: uZBmui6EQtOINtD7lIyl4A==
+X-IronPort-AV: E=McAfee;i="6800,10657,11604"; a="75114376"
+X-IronPort-AV: E=Sophos;i="6.19,282,1754982000"; d="scan'208";a="75114376"
 Received: from orviesa007.jf.intel.com ([10.64.159.147])
  by fmvoesa105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  05 Nov 2025 13:07:13 -0800
-X-CSE-ConnectionGUID: 20Il3zpjRIySqyuhQBHkfA==
-X-CSE-MsgGUID: QIgSlvcCQj+KB8/gcR0mcg==
+X-CSE-ConnectionGUID: 2f7MdbgkSIeXEOef7PsfPw==
+X-CSE-MsgGUID: zomOHQBsQxCqIqhkFeWWDg==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.19,282,1754982000"; d="scan'208";a="187513287"
+X-IronPort-AV: E=Sophos;i="6.19,282,1754982000"; d="scan'208";a="187513293"
 Received: from orcnseosdtjek.jf.intel.com (HELO [10.166.28.90])
  ([10.166.28.90])
  by orviesa007-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  05 Nov 2025 13:07:13 -0800
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed, 05 Nov 2025 13:06:35 -0800
+Date: Wed, 05 Nov 2025 13:06:37 -0800
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20251105-jk-refactor-queue-stats-v2-3-8652557f9572@intel.com>
+Message-Id: <20251105-jk-refactor-queue-stats-v2-5-8652557f9572@intel.com>
 References: <20251105-jk-refactor-queue-stats-v2-0-8652557f9572@intel.com>
 In-Reply-To: <20251105-jk-refactor-queue-stats-v2-0-8652557f9572@intel.com>
 To: Aleksandr Loktionov <aleksandr.loktionov@intel.com>, 
@@ -77,15 +77,16 @@ To: Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
  Tony Nguyen <anthony.l.nguyen@intel.com>, 
  Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org, 
- Jacob Keller <jacob.e.keller@intel.com>
+ Jacob Keller <jacob.e.keller@intel.com>, 
+ Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 X-Mailer: b4 0.15-dev-f4b34
-X-Developer-Signature: v=1; a=openpgp-sha256; l=6516;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3937;
  i=jacob.e.keller@intel.com; h=from:subject:message-id;
- bh=C7Ub1lQiPkE76ZdA+gKucj8P3cMmzoBNp+zDOI78nro=;
- b=owGbwMvMwCWWNS3WLp9f4wXjabUkhkzuPXXqYSdCOYtvPKq+zKgyq+XNj+d7kh8JMb332bTO6
- rT/u/qnHaUsDGJcDLJiiiwKDiErrxtPCNN64ywHM4eVCWQIAxenAEzkeycjw/P6p905tjezjQPs
- 9q+f8cR3YdnzOeunOXkwrTVf2eC+5C4jQ4+czN2YPZ8aP1aaXjfP6XX0DZkvJbzGRCdJ57CRwKl
- sRgA=
+ bh=Z+iNgR7A3aqU394PqDxWa/II2wAO5hBF06V7ijjqcBA=;
+ b=owGbwMvMwCWWNS3WLp9f4wXjabUkhkzuPfVZPdm/upUtvv759MZr45VX3NG6jM07eDhKq7I+X
+ r3/492rjlIWBjEuBlkxRRYFh5CV140nhGm9cZaDmcPKBDKEgYtTACbS+4bhf8iM60ofHKpZItq2
+ P9hvel7ZWGX/3I2uDvuntC47Uihz+grDb/aNYipsF7X6FVlSDP/VXFF+xLV9ToJMP7uFgnvz7kX
+ zOQA=
 X-Developer-Key: i=jacob.e.keller@intel.com; a=openpgp;
  fpr=204054A9D73390562AEC431E6A965D3E6F0F28E8
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
@@ -93,22 +94,22 @@ X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  t=1762376834; x=1793912834;
  h=from:date:subject:mime-version:content-transfer-encoding:
  message-id:references:in-reply-to:to:cc;
- bh=C7Ub1lQiPkE76ZdA+gKucj8P3cMmzoBNp+zDOI78nro=;
- b=It/DaopqxpGwIvo6Q8i8FmvBd3PcB+2vOzR4cTSGnu975G7tEhA2BQbo
- 9A5dgq183+4zqOcAxA3xl2xGElQGhrSbq4u9hOnje5+E4zeqQ6s/a0ry2
- Ky+XNKePKY1y/A2l3IlbiBZA0HcNrnNYS4z910ZQC1Bjzwo6oZXwd4Pop
- 8V9HqSseysCb76CdgIlyF3aBds3VU6cBMceAeLP5Sf8dPbkI62vUOcFQD
- O8EP8iU1DigTDa5OCW71038VQJpOke2VGnUiicHvj6p6lj2Nzcw+pfbca
- eNRk26VZH64UxyGQQ+E0Rnl1FIDZnoclxojbknr77/869p1JZbx6JbAYi
- A==;
+ bh=Z+iNgR7A3aqU394PqDxWa/II2wAO5hBF06V7ijjqcBA=;
+ b=MYWJna5vRprczaYbj//zEWsMRuccvXOAkChNPnI5M6hb+87of50BYLj4
+ H0rbEZcWxiO2jrQrnqbQ6AjOWMR8piPTmVVqkCFeqy4CNG5OqWfGR8tX1
+ Q6H9bBU3iA5pWDnwNSc8OUHTtcxzQMlF6SuSGrNQaE7G7twgzTsmBgNWh
+ RMKYXOzvHRcDLvqXhSTSsz98xLEHgGI2H6MY5JEaf8EoB4sVqRijPUBEV
+ Sq5eTwhXdCx3sQ/VRXDtFEMRxBFxtD/m93Xmd5oqholsOO1y8KQmFpkOx
+ MTqSZqoWjb0CgvYjc610dkPB7fIhiwNTU9e+BqvnZ64maoYc7709M0H71
+ Q==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=It/Daopq
-Subject: [Intel-wired-lan] [PATCH iwl-next v2 3/9] ice: use cacheline groups
- for ice_tx_ring structure
+ header.a=rsa-sha256 header.s=Intel header.b=MYWJna5v
+Subject: [Intel-wired-lan] [PATCH iwl-next v2 5/9] ice: pass pointer to
+ ice_fetch_u64_stats_per_ring
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -124,150 +125,97 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The ice ring structure was reorganized by commit 65124bbf980c ("ice:
-Reorganize tx_buf and ring structs"), and later split into a separate
-ice_tx_ring structure by commit e72bba21355d ("ice: split ice_ring onto
-Tx/Rx separate structs").
+The ice_fetch_u64_stats_per_ring function takes a pointer to the syncp from
+the ring stats to synchronize reading of the packet stats. It also takes a
+*copy* of the ice_q_stats fields instead of a pointer to the stats. This
+completely defeats the point of using the u64_stats API. We pass the stats
+by value, so they are static at the point of reading within the
+u64_stats_fetch_retry loop.
 
-The ice_tx_ring structure has comments left over from this reorganization
-and split indicating which fields are supposed to belong to which
-cachelines. Unfortunately, these comments are almost completely incorrect.
+Simplify the function to take a pointer to the ice_ring_stats instead of
+two separate parameters. Additionally, since we never call this outside of
+ice_main.c, make it a static function.
 
- * Cacheline 1 spans from the start of the structure to the vsi pointer.
-   This cacheline is correct, and appears to be the only one that is.
-
- * Cacheline 2 spans from the DMA address down to the xps_state field. The
-   comments indicate it should end at the rcu head field.
-
- * Cacheline 3 spans from the ice_channel pointer to the end of the struct,
-   and completely contains what is marked as a separate 4th cacheline.
-
-The use of such comments to indicate cache lines is error prone. It is
-extremely likely that the comments will become out of date with future
-refactors. Instead, use __cacheline_group_(begin|end)_aligned() which is
-more explicit. It guarantees that members between the cacheline groups will
-be in distinct cache lines through the use of padding. It additionally
-enables compile time assertions to help prevent new fields from drastically
-re-arranging the cache lines.
-
-There are two main issues if we just replace the existing comments with
-cache line group markers. First, the spinlock_t tx_lock field is 24 bytes
-on most kernels, but is 64 bytes on CONFIG_DEBUG_LOCK_ALLOC kernels.
-Ideally we want to place this field at the start of a cacheline so that
-other fields in the group don't get split across such a debug kernel. While
-optimizing such a debug kernel is not a priority, doing this makes the
-assertions around the cacheline a bit easier to understand.
-
-Remove the out-of-date cacheline comments, and add __cacheline_group
-annotations. These are set to match the existing layout instead of matching
-the original comments. The only change to layout is to re-order the tx_lock
-to be the start of cacheline 3, and move txq_teid to avoid a 4-byte gap in
-the layout.
-
-Ideally, we should profile the Tx hot path and figure out which fields go
-together and re-arrange the cacheline groups, possibly along "read_mostly",
-"readwrite" and "cold" groupings similar to the idpf driver. This has been
-left as an exercise for a later improvement.
-
-Finally, add annotations which check the cacheline sizes. For cacheline 3,
-we enforce that tx_lock is in this cacheline group, and check the size
-based on whether or not the CONFIG_DEBUG_LOCK_ALLOC is enabled. Similar to
-the Rx annotations, these check that the size of each cacheline group
-(excluding padding) is no greater than 64 bytes. This is primarily intended
-to produce compiler failures if developers add or re-arrange fields such
-that cacheline groups exceed the expected 64 byte sizes on x86_64 systems.
-Because the assertions check the size excluding any padding, they should
-behave the same even on systems with larger L1 cacheline sizes.
-
+Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_txrx.h | 32 +++++++++++++++++++++++++------
- drivers/net/ethernet/intel/ice/ice_main.c |  1 +
- 2 files changed, 27 insertions(+), 6 deletions(-)
+ drivers/net/ethernet/intel/ice/ice.h      |  3 ---
+ drivers/net/ethernet/intel/ice/ice_main.c | 24 +++++++++---------------
+ 2 files changed, 9 insertions(+), 18 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.h b/drivers/net/ethernet/intel/ice/ice_txrx.h
-index 6c708caf3a91..5350eb832ee5 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.h
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.h
-@@ -319,7 +319,7 @@ static inline void ice_rx_ring_struct_check(void)
- }
- 
- struct ice_tx_ring {
--	/* CL1 - 1st cacheline starts here */
-+	__cacheline_group_begin_aligned(cl1);
- 	struct ice_tx_ring *next;	/* pointer to next ring in q_vector */
- 	void *desc;			/* Descriptor ring memory */
- 	struct device *dev;		/* Used for DMA mapping */
-@@ -328,7 +328,9 @@ struct ice_tx_ring {
- 	struct ice_q_vector *q_vector;	/* Backreference to associated vector */
- 	struct net_device *netdev;	/* netdev ring maps to */
- 	struct ice_vsi *vsi;		/* Backreference to associated VSI */
--	/* CL2 - 2nd cacheline starts here */
-+	__cacheline_group_end_aligned(cl1);
-+
-+	__cacheline_group_begin_aligned(cl2);
- 	dma_addr_t dma;			/* physical address of ring */
- 	struct xsk_buff_pool *xsk_pool;
- 	u16 next_to_use;
-@@ -340,15 +342,18 @@ struct ice_tx_ring {
- 	u16 xdp_tx_active;
- 	/* stats structs */
- 	struct ice_ring_stats *ring_stats;
--	/* CL3 - 3rd cacheline starts here */
- 	struct rcu_head rcu;		/* to avoid race on free */
- 	DECLARE_BITMAP(xps_state, ICE_TX_NBITS);	/* XPS Config State */
-+	__cacheline_group_end_aligned(cl2);
-+
-+	__cacheline_group_begin_aligned(cl3);
-+	spinlock_t tx_lock;
- 	struct ice_channel *ch;
- 	struct ice_ptp_tx *tx_tstamps;
--	spinlock_t tx_lock;
--	u32 txq_teid;			/* Added Tx queue TEID */
--	/* CL4 - 4th cacheline starts here */
- 	struct ice_tstamp_ring *tstamp_ring;
-+
-+	u32 txq_teid;			/* Added Tx queue TEID */
-+
- #define ICE_TX_FLAGS_RING_XDP		BIT(0)
- #define ICE_TX_FLAGS_RING_VLAN_L2TAG1	BIT(1)
- #define ICE_TX_FLAGS_RING_VLAN_L2TAG2	BIT(2)
-@@ -356,8 +361,23 @@ struct ice_tx_ring {
- 	u8 flags;
- 	u8 dcb_tc;			/* Traffic class of ring */
- 	u16 quanta_prof_id;
-+	__cacheline_group_end_aligned(cl3);
- } ____cacheline_internodealigned_in_smp;
- 
-+static inline void ice_tx_ring_struct_check(void)
-+{
-+	CACHELINE_ASSERT_GROUP_SIZE(struct ice_tx_ring, cl1, 64);
-+	CACHELINE_ASSERT_GROUP_SIZE(struct ice_tx_ring, cl2, 64);
-+
-+	CACHELINE_ASSERT_GROUP_MEMBER(struct ice_tx_ring, cl3, tx_lock);
-+#ifdef CONFIG_DEBUG_LOCK_ALLOC
-+	/* spinlock_t is larger on DEBUG_LOCK_ALLOC kernels */
-+	CACHELINE_ASSERT_GROUP_SIZE(struct ice_tx_ring, cl3, 128);
-+#else
-+	CACHELINE_ASSERT_GROUP_SIZE(struct ice_tx_ring, cl3, 64);
-+#endif
-+}
-+
- static inline bool ice_ring_ch_enabled(struct ice_tx_ring *ring)
- {
- 	return !!ring->ch;
+diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
+index 147aaee192a7..5c01e886e83e 100644
+--- a/drivers/net/ethernet/intel/ice/ice.h
++++ b/drivers/net/ethernet/intel/ice/ice.h
+@@ -957,9 +957,6 @@ u16 ice_get_avail_rxq_count(struct ice_pf *pf);
+ int ice_vsi_recfg_qs(struct ice_vsi *vsi, int new_rx, int new_tx, bool locked);
+ void ice_update_vsi_stats(struct ice_vsi *vsi);
+ void ice_update_pf_stats(struct ice_pf *pf);
+-void
+-ice_fetch_u64_stats_per_ring(struct u64_stats_sync *syncp,
+-			     struct ice_q_stats stats, u64 *pkts, u64 *bytes);
+ int ice_up(struct ice_vsi *vsi);
+ int ice_down(struct ice_vsi *vsi);
+ int ice_down_up(struct ice_vsi *vsi);
 diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 4731dbaca9de..645a2113e8aa 100644
+index df5da7b4ec62..5a3bcbb5f63c 100644
 --- a/drivers/net/ethernet/intel/ice/ice_main.c
 +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -5917,6 +5917,7 @@ static int __init ice_module_init(void)
- 	int status = -ENOMEM;
+@@ -6826,25 +6826,23 @@ int ice_up(struct ice_vsi *vsi)
  
- 	ice_rx_ring_struct_check();
-+	ice_tx_ring_struct_check();
+ /**
+  * ice_fetch_u64_stats_per_ring - get packets and bytes stats per ring
+- * @syncp: pointer to u64_stats_sync
+- * @stats: stats that pkts and bytes count will be taken from
++ * @stats: pointer to ring stats structure
+  * @pkts: packets stats counter
+  * @bytes: bytes stats counter
+  *
+  * This function fetches stats from the ring considering the atomic operations
+  * that needs to be performed to read u64 values in 32 bit machine.
+  */
+-void
+-ice_fetch_u64_stats_per_ring(struct u64_stats_sync *syncp,
+-			     struct ice_q_stats stats, u64 *pkts, u64 *bytes)
++static void ice_fetch_u64_stats_per_ring(struct ice_ring_stats *stats,
++					 u64 *pkts, u64 *bytes)
+ {
+ 	unsigned int start;
  
- 	pr_info("%s\n", ice_driver_string);
- 	pr_info("%s\n", ice_copyright);
+ 	do {
+-		start = u64_stats_fetch_begin(syncp);
+-		*pkts = stats.pkts;
+-		*bytes = stats.bytes;
+-	} while (u64_stats_fetch_retry(syncp, start));
++		start = u64_stats_fetch_begin(&stats->syncp);
++		*pkts = stats->stats.pkts;
++		*bytes = stats->stats.bytes;
++	} while (u64_stats_fetch_retry(&stats->syncp, start));
+ }
+ 
+ /**
+@@ -6868,9 +6866,7 @@ ice_update_vsi_tx_ring_stats(struct ice_vsi *vsi,
+ 		ring = READ_ONCE(rings[i]);
+ 		if (!ring || !ring->ring_stats)
+ 			continue;
+-		ice_fetch_u64_stats_per_ring(&ring->ring_stats->syncp,
+-					     ring->ring_stats->stats, &pkts,
+-					     &bytes);
++		ice_fetch_u64_stats_per_ring(ring->ring_stats, &pkts, &bytes);
+ 		vsi_stats->tx_packets += pkts;
+ 		vsi_stats->tx_bytes += bytes;
+ 		vsi->tx_restart += ring->ring_stats->tx_stats.restart_q;
+@@ -6914,9 +6910,7 @@ static void ice_update_vsi_ring_stats(struct ice_vsi *vsi)
+ 		struct ice_ring_stats *ring_stats;
+ 
+ 		ring_stats = ring->ring_stats;
+-		ice_fetch_u64_stats_per_ring(&ring_stats->syncp,
+-					     ring_stats->stats, &pkts,
+-					     &bytes);
++		ice_fetch_u64_stats_per_ring(ring_stats, &pkts, &bytes);
+ 		vsi_stats->rx_packets += pkts;
+ 		vsi_stats->rx_bytes += bytes;
+ 		vsi->rx_buf_failed += ring_stats->rx_stats.alloc_buf_failed;
 
 -- 
 2.51.0.rc1.197.g6d975e95c9d7
