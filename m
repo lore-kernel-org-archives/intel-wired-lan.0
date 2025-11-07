@@ -4,86 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 48486CCF9E3
-	for <intel-wired-lan@archiver.kernel.org>; Fri,  7 Nov 2025 20:43:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DE431CCF9E3
+	for <intel-wired-lan@archiver.kernel.org>; Fri,  7 Nov 2025 20:43:58 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id B5E5240554;
-	Fri,  7 Nov 2025 20:43:55 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id A062B40528;
+	Fri,  7 Nov 2025 20:43:58 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id L4TMCJNLZ0xR; Fri,  7 Nov 2025 20:43:54 +0000 (UTC)
+ id NNcFlGvZG9kI; Fri,  7 Nov 2025 20:43:57 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D69AA40544
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org CC3BF4053E
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1762548233;
-	bh=hiMcVVi9rEIv/j5eQ05ENk15pvqtAPzV3c3AT9Vw3fI=;
-	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=L6JUURM8cXnDFn/06V0QqI0US7WHbmxFqQMPeHs3EfUq7KTpa6jSvrt7iHEL2+Lry
-	 tyhURe24tLv/K0vkiWEjEPV3tYlG9yCp1NqZKE1L1qBC6YM3J4muOkwmvMk8DrzE6b
-	 Z9Cenrqw4W/SWoaOscyccErxI1L58vDRBqbOCNvJafTXca6PGqOdGxUvGvhsFHV6wi
-	 vZxHSHALf+M4Kk1bmNlkzuUHnvZKREhf+IzUK7d+VGEgZPag2nV4BQ6zGMUiRUwSJb
-	 U4WdC1simw9uvsXY1Jhve4dsX0epAw8U/h8m0p0u+6bhsr3JKUizv4fuseB5cVJ7+3
-	 PsTpnzC2/zU/g==
+	s=default; t=1762548237;
+	bh=JRbS6VI2bNTHm/o6rxRH2I/vNUA+a3DGv8cXb7Is3Tw=;
+	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=w0ej/hu1hosseqF4joriPZDofCOHZFDyGrYNcXJ83Gg5xRBAY+w9suYMIZlHL3Jz0
+	 AXcc9CtYqZlenvw4GohECaVpS1K83fN5ghdlSmby2w3k1KkCKpwvPwUmIS6ahZ5uk0
+	 /ZuxElqUj++9HebczLOspT5I+sDTG/BmbgGjCThba58hHJ0BwMV2XK9H/8IchC71yz
+	 rmqR8hcTPh7RpblVQIXIlrcAyL/j5Hu9CK7bf0RJiiyrIsU4TGA9GxfIQs47C+dVDd
+	 OBbDGtL6A6MFwqxZB+V46azixsd1e01t6y0883r5nSjckvq+P+sfdcfSfcktcxy07x
+	 w1cmjuU5TfRYQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id D69AA40544;
-	Fri,  7 Nov 2025 20:43:53 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id C32A91CD
- for <intel-wired-lan@lists.osuosl.org>; Fri,  7 Nov 2025 20:43:51 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id CC3BF4053E;
+	Fri,  7 Nov 2025 20:43:57 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 1437C1BC
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  7 Nov 2025 20:43:56 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id A996D6066F
- for <intel-wired-lan@lists.osuosl.org>; Fri,  7 Nov 2025 20:43:51 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 0330340528
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  7 Nov 2025 20:43:56 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ZxmPlFaPPA1e for <intel-wired-lan@lists.osuosl.org>;
- Fri,  7 Nov 2025 20:43:50 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 2NiC4EOLvH9u for <intel-wired-lan@lists.osuosl.org>;
+ Fri,  7 Nov 2025 20:43:54 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2607:f8b0:4864:20::b131; helo=mail-yx1-xb131.google.com;
+ client-ip=2607:f8b0:4864:20::1130; helo=mail-yw1-x1130.google.com;
  envelope-from=daniel.zahka@gmail.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 3D6D460678
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3D6D460678
-Received: from mail-yx1-xb131.google.com (mail-yx1-xb131.google.com
- [IPv6:2607:f8b0:4864:20::b131])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 3D6D460678
- for <intel-wired-lan@lists.osuosl.org>; Fri,  7 Nov 2025 20:43:50 +0000 (UTC)
-Received: by mail-yx1-xb131.google.com with SMTP id
- 956f58d0204a3-640c9c85255so1247345d50.3
- for <intel-wired-lan@lists.osuosl.org>; Fri, 07 Nov 2025 12:43:49 -0800 (PST)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org D194B4053E
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D194B4053E
+Received: from mail-yw1-x1130.google.com (mail-yw1-x1130.google.com
+ [IPv6:2607:f8b0:4864:20::1130])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id D194B4053E
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  7 Nov 2025 20:43:53 +0000 (UTC)
+Received: by mail-yw1-x1130.google.com with SMTP id
+ 00721157ae682-786a85a68c6so12461187b3.3
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 07 Nov 2025 12:43:53 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20230601; t=1762548229; x=1763153029;
- h=content-transfer-encoding:mime-version:message-id:date:subject:cc
- :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
- :message-id:reply-to;
- bh=hiMcVVi9rEIv/j5eQ05ENk15pvqtAPzV3c3AT9Vw3fI=;
- b=tuySEScHXcuvm+YtN55GkTD5SZpMczGgrUKVCe/6eqIIO8bgA0n/Yxyi+tw+dB/as5
- U957VjMvKJtWLqOrGcrYaqbEYgFd/iWou5knMB2Reh7R3c+04060QBynwUBf/KjpuKqF
- JSuY3Nro2uJ4uZ/IC4A+gLMbsCS7k3EbyRRo6V5QuWcV76ZImzmWIOedtp/Yr/c8Dy+q
- ePMgQFomALW4WZPqFPddeVJwfm1sBYjoQsMvadENFUmKHLwAIRMqpyCpEWO8hvnaRTBK
- mo94oAZQvyeeMhOtpU3wD6NtmXqgHSMMEzCSfyrRaFVzLMBP+s3YYhmksO7ifPeLguOh
- yEeA==
+ d=1e100.net; s=20230601; t=1762548232; x=1763153032;
+ h=content-transfer-encoding:mime-version:references:in-reply-to
+ :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+ :to:cc:subject:date:message-id:reply-to;
+ bh=JRbS6VI2bNTHm/o6rxRH2I/vNUA+a3DGv8cXb7Is3Tw=;
+ b=K50bp2sW5wEhE4avFSxUFEnm0NIn0oYzZy3jEJlvd3z0Hb5TEihpP7wFvMarIksmDX
+ mdLEao+JKb7dxhwDg2vBwwUdPgT2jxEUzmV0PZ9T//JA4TBas5yabmS3jOVO5Z2X3DP3
+ jiUV3XLllpsiee03IduL5X2hL+DITYmyAgAg4cxT9DkETBCykR6xIdJHy5dYVlVnkDLg
+ ZhYkWixqudxp/GHj+U8kTkQb34/wL3lTwmJqBSXlga/c1KJdo9xTsxNewFq5JuAwBKYm
+ kxWPRASlIOx0fWfrVXnb2juvdeHLP+Th19hsx/m/UBh0KoXWK9t5ly85nnimsa6m3ru9
+ wJrA==
 X-Forwarded-Encrypted: i=1;
- AJvYcCVoLfiBk+RrnmZJGtNEUSma5wARWgBZRzB429l9kZSkihZpQTA8QRCTelG1OcM7A+44f8y1DCcbnl0ZIfW6CZg=@lists.osuosl.org
-X-Gm-Message-State: AOJu0YzOVkvitU3mwgYWQgqv6OGrD5EcRq4Z+5WJl6MPc3zdOfg7z0Pl
- cPiby3bu/FH9ALcV2V+vRk+ZyGr4zGqHo4khiBsBbb6oCO2pkvLrR3AW
-X-Gm-Gg: ASbGnctM9k6rOgnIEygk/uz+74Gj1GKH641dqVFXg7LRAl93YkEThn2lJTqrCyKVFYy
- OuAyF4srxPDawv+qPIs+2GCog3H9+4Zt8kqEeTLHlVRqzNxqtU2GreC+UNPa1RkXDdA0U4rEUXk
- vCyP/1tKBt3m4Z4FvvmvmL17DuObedYnj9T7ZzpwB3wwOdJ53nHzL6G72CxmE2m7DXNHPoVYLEF
- zbvT1D0+qeTeJ/aFYdjxpndK6o+VhnQeqzuJ5fpbikuSO8+fHnKBtcLzouZQVh4v7MVFQ8pYN58
- GwSiFoa18lRl5RiatV4GtQi/5YC5CFQe8dTPM2FzirhbJygk9KNchbTHDpBet52jiAqQQIbjroG
- trzPeqvhJR0TPm/QY3hEMkCsvFCdPVl9nJUA50M4idJdwE+v0/o+gzBKGu3zGj6aUKEDZR10uww
- sBPlC7ACDw+1DP9+oObM0=
-X-Google-Smtp-Source: AGHT+IFI8VG0P0n7qrm0zcp7SSN4eaMEgytqB19PsfLf5CxPVrAGvs9YLrEVD7m3nAlBeq12jFghtw==
-X-Received: by 2002:a05:690e:160f:b0:63f:a4d7:b523 with SMTP id
- 956f58d0204a3-640d45527c6mr354482d50.28.1762548228918; 
- Fri, 07 Nov 2025 12:43:48 -0800 (PST)
-Received: from localhost ([2a03:2880:25ff:b::])
+ AJvYcCWfPm4ozwV+TXuK3K0b+uk1de+JM2K0dzx4YWcYRnqTi22lcA8hp1YRsAU1gpgHfqItDWbBzrkslHOLLmeahUA=@lists.osuosl.org
+X-Gm-Message-State: AOJu0YwNEBBV4y6Dngubu7gF2R9Jh187zyhpDHSb8AL9Lhi31JLOLKFk
+ JKN/L9cSAv0yikoYIrQzyT/VYjmcjTl22YS/U2CPPKhgWBi7Q54LKJqy
+X-Gm-Gg: ASbGncuWGYs67jgwXk2TU2wb1P5ULaktTjJNBqkPAOfHWCCn6wtWCKQGfzin5Vpewr9
+ oyVc5NO7imYUrHU328wBaWSJmErcdxXwhpTIpVKc08Z44uFgFrdoeaZnWzLlC2t1jEEqic+1fTT
+ CntZ1qSfAPohC8SVYWPSjK/3FbFlxGuK93dD+h2y+cmIQ6DS0k0CrX4OAaV83Ggk2n2BJgyv2+m
+ p2bmpDT6D0tOrkEQ6LZvmwc65zAOD3c7Jto3X6tHZwm/dHLSUI2cTM30R3OgXkkSxpHGTrr+eiS
+ KUyXEFEPqXEesBGq+NxDmnHUU/fyfVSVs6eirADJm5GWTBiEDKx+37Gda/kGxKSX+4PpzLIgs7m
+ PHufy8VgF5HPN4Tyiqq2CYniOvD0Kh/MuM1VbPvmXiB/zWNUvybMUthuLsA0KdS0pyST8V2XE7d
+ HYrD3v9GDZnw==
+X-Google-Smtp-Source: AGHT+IE0Ugc4C6NPSk5vUZlI98wOMo4Ff0U+yawpaKDpCc1QgQFDLIe3p4+5eXnHVHgkKJ3wKPJQDw==
+X-Received: by 2002:a05:690c:6ac9:b0:785:cbf4:72cd with SMTP id
+ 00721157ae682-787d53524b1mr8282087b3.3.1762548232348; 
+ Fri, 07 Nov 2025 12:43:52 -0800 (PST)
+Received: from localhost ([2a03:2880:25ff:73::])
  by smtp.gmail.com with ESMTPSA id
- 956f58d0204a3-640b5d81427sm2087281d50.18.2025.11.07.12.43.48
+ 00721157ae682-787d6809e07sm856687b3.3.2025.11.07.12.43.51
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 07 Nov 2025 12:43:48 -0800 (PST)
+ Fri, 07 Nov 2025 12:43:51 -0800 (PST)
 From: Daniel Zahka <daniel.zahka@gmail.com>
 To: Jiri Pirko <jiri@resnulli.us>, "David S. Miller" <davem@davemloft.net>,
  Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
@@ -122,31 +123,33 @@ Cc: netdev@vger.kernel.org, linux-doc@vger.kernel.org,
  intel-wired-lan@lists.osuosl.org, linux-rdma@vger.kernel.org,
  linux-stm32@st-md-mailman.stormreply.com,
  linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org
-Date: Fri,  7 Nov 2025 12:43:44 -0800
-Message-ID: <20251107204347.4060542-1-daniel.zahka@gmail.com>
+Date: Fri,  7 Nov 2025 12:43:46 -0800
+Message-ID: <20251107204347.4060542-3-daniel.zahka@gmail.com>
 X-Mailer: git-send-email 2.47.3
+In-Reply-To: <20251107204347.4060542-1-daniel.zahka@gmail.com>
+References: <20251107204347.4060542-1-daniel.zahka@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20230601; t=1762548229; x=1763153029; darn=lists.osuosl.org;
- h=content-transfer-encoding:mime-version:message-id:date:subject:cc
- :to:from:from:to:cc:subject:date:message-id:reply-to;
- bh=hiMcVVi9rEIv/j5eQ05ENk15pvqtAPzV3c3AT9Vw3fI=;
- b=EIQE59s50UW2v13OKoNK/4ThyVOGoTzS+5a/8sSwE7C57dFtZ6SpqBTTdubQ+XSjhq
- vP/nApaRQZ+enGzNeRYBHU6sS1t/093SL+AoX2mOOm+iutdHEPezeGDz72vVaXE3tpFK
- daV4qTUZChlBwhPLmDlz9ibA4y6/qwJEEGSlezIE/ahbGTZqp3c+EK4NPmr3y95lIOe7
- hqdWW+/xrAwxuJwkhskNfjGShCsKlXOvirvXCrfrJJdxYYZPf/4uuUqjGTzDIfb2ArZ8
- j4XQvP9c6cIV/FBnLDs94KFVLJgKXwS9NFP6TZhCcEGU8ooqiMpkEL0Fb0N6576sNpiZ
- tJHQ==
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ d=gmail.com; s=20230601; t=1762548232; x=1763153032; darn=lists.osuosl.org;
+ h=content-transfer-encoding:mime-version:references:in-reply-to
+ :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+ :message-id:reply-to;
+ bh=JRbS6VI2bNTHm/o6rxRH2I/vNUA+a3DGv8cXb7Is3Tw=;
+ b=aF+NoLZuq9MWx+8r43jmz3i3tdrdeUzKfAvNAjodBJMO+5asR4iIgH9t4PSTIoId+h
+ W4/9gFJqjbLnMdrPVYUVZacdZ8Ms7q/u5yGgEn2k34R3i+0zd27diC8ygOl3oX3kizGO
+ 33rvQdLJ3GDdBkkBnMVjRS9Sp3bqFaSV5Bw9ReF/xLoAUmMVEi4ThJdYT1M+kOBra+Bz
+ pzDFBcZ65NPyK6HWdiLA6NprBmv9YkIbY2zhSyprJg6UGBSL+0+ensSOf940C9xQU1qz
+ F2H9Gs3xQOTMe+guz7NaP6zIO3onNYjYFtlCzxNgo4oExFGrI5ls8iFRrHrxdL/0E1Fo
+ kcyQ==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=gmail.com
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20230601 header.b=EIQE59s5
-Subject: [Intel-wired-lan] [PATCH net-next v3 0/2] devlink: net/mlx5:
- implement swp_l4_csum_mode via devlink params
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
+ header.a=rsa-sha256 header.s=20230601 header.b=aF+NoLZu
+Subject: [Intel-wired-lan] [PATCH net-next v3 2/2] net/mlx5: implement
+ swp_l4_csum_mode via devlink params
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -162,59 +165,266 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-This series contains two patches. The first is a pure refactor that
-passes through the extack to devlink_param::get() implementations. The
-second introduces a permanent devlink param to the mlx5 driver for
-controlling tx csum behavior.
+swp_l4_csum_mode controls how L4 transmit checksums are computed when
+using Software Parser (SWP) hints for header locations.
 
-Enabling extack for devlink_param::get() allows drivers to provide
-more information in cases when reading parameters from hardware can
-result in errors or unexpected values.
+Supported values:
+  1. device_default: use device default setting.
+  2. full_csum: calculate L4 checksum with the pseudo-header.
+  3. l4_only: calculate L4 checksum without the pseudo-header. Only
+     available when swp_l4_csum_mode_l4_only is set in
+     mlx5_ifc_nv_sw_offload_cap_bits.
 
-The mlx5 swp_l4_csum_mode devlink param is necessary for initializing
-PSP on CX7 NICs.
+The l4_only setting is a dependency for PSP initialization in
+mlx5e_psp_init().
 
-CHANGES:
-v3:
-  - fix warnings about undocumented param in intel ice driver
-v2: https://lore.kernel.org/netdev/20251103194554.3203178-1-daniel.zahka@gmail.com/
-  - fix indentation issue in new mlx5.rst entry
-  - use extack in mlx5_nv_param_devlink_swp_l4_csum_mode_get()
-  - introduce extack patch.
-v1: https://lore.kernel.org/netdev/20251022190932.1073898-1-daniel.zahka@gmail.com/
+Signed-off-by: Daniel Zahka <daniel.zahka@gmail.com>
+---
 
-Daniel Zahka (2):
-  devlink: pass extack through to devlink_param::get()
-  net/mlx5: implement swp_l4_csum_mode via devlink params
+Notes:
+    v2:
+    - use extack in mlx5_nv_param_devlink_swp_l4_csum_mode_get()
+    - fix indentation issue in mlx5.rst entry
 
  Documentation/networking/devlink/mlx5.rst     |   9 +
- .../marvell/octeontx2/otx2_cpt_devlink.c      |   6 +-
- drivers/net/ethernet/amd/pds_core/core.h      |   3 +-
- drivers/net/ethernet/amd/pds_core/devlink.c   |   3 +-
- .../net/ethernet/broadcom/bnxt/bnxt_devlink.c |   6 +-
- .../net/ethernet/intel/ice/devlink/devlink.c  |  14 +-
- .../marvell/octeontx2/af/rvu_devlink.c        |  15 +-
- .../marvell/octeontx2/nic/otx2_devlink.c      |   6 +-
- drivers/net/ethernet/mellanox/mlx4/main.c     |   6 +-
  .../net/ethernet/mellanox/mlx5/core/devlink.h |   3 +-
- .../net/ethernet/mellanox/mlx5/core/eswitch.c |   3 +-
- .../mellanox/mlx5/core/eswitch_offloads.c     |   3 +-
- .../net/ethernet/mellanox/mlx5/core/fs_core.c |   3 +-
- .../ethernet/mellanox/mlx5/core/fw_reset.c    |   3 +-
- .../mellanox/mlx5/core/lib/nv_param.c         | 170 +++++++++++++++++-
- .../mellanox/mlxsw/spectrum_acl_tcam.c        |   3 +-
- .../ethernet/netronome/nfp/devlink_param.c    |   3 +-
- drivers/net/ethernet/qlogic/qed/qed_devlink.c |   3 +-
- .../net/ethernet/stmicro/stmmac/stmmac_main.c |   3 +-
- drivers/net/ethernet/ti/am65-cpsw-nuss.c      |   3 +-
- drivers/net/ethernet/ti/cpsw_new.c            |   6 +-
- drivers/net/wwan/iosm/iosm_ipc_devlink.c      |   3 +-
- include/net/devlink.h                         |   3 +-
- include/net/dsa.h                             |   3 +-
- net/devlink/param.c                           |  19 +-
- net/dsa/devlink.c                             |   3 +-
- 26 files changed, 259 insertions(+), 46 deletions(-)
+ .../mellanox/mlx5/core/lib/nv_param.c         | 161 ++++++++++++++++++
+ 3 files changed, 172 insertions(+), 1 deletion(-)
 
+diff --git a/Documentation/networking/devlink/mlx5.rst b/Documentation/networking/devlink/mlx5.rst
+index 0e5f9c76e514..675b5a1ec625 100644
+--- a/Documentation/networking/devlink/mlx5.rst
++++ b/Documentation/networking/devlink/mlx5.rst
+@@ -218,6 +218,15 @@ parameters.
+        * ``balanced`` : Merges fewer CQEs, resulting in a moderate compression ratio but maintaining a balance between bandwidth savings and performance
+        * ``aggressive`` : Merges more CQEs into a single entry, achieving a higher compression rate and maximizing performance, particularly under high traffic loads
+ 
++   * - ``swp_l4_csum_mode``
++     - string
++     - permanent
++     - Configure how the L4 checksum is calculated by the device when using
++       Software Parser (SWP) hints for header locations.
++       * ``device_default`` : Use the device's default checksum calculation mode
++       * ``full_csum`` : Calculate full checksum including the pseudo-header
++       * ``l4_only`` : Calculate L4-only checksum, excluding the pseudo-header
++
+ The ``mlx5`` driver supports reloading via ``DEVLINK_CMD_RELOAD``
+ 
+ Info versions
+diff --git a/drivers/net/ethernet/mellanox/mlx5/core/devlink.h b/drivers/net/ethernet/mellanox/mlx5/core/devlink.h
+index c9555119a661..43b9bf8829cf 100644
+--- a/drivers/net/ethernet/mellanox/mlx5/core/devlink.h
++++ b/drivers/net/ethernet/mellanox/mlx5/core/devlink.h
+@@ -26,7 +26,8 @@ enum mlx5_devlink_param_id {
+ 	MLX5_DEVLINK_PARAM_ID_PCIE_CONG_IN_HIGH,
+ 	MLX5_DEVLINK_PARAM_ID_PCIE_CONG_OUT_LOW,
+ 	MLX5_DEVLINK_PARAM_ID_PCIE_CONG_OUT_HIGH,
+-	MLX5_DEVLINK_PARAM_ID_CQE_COMPRESSION_TYPE
++	MLX5_DEVLINK_PARAM_ID_CQE_COMPRESSION_TYPE,
++	MLX5_DEVLINK_PARAM_ID_SWP_L4_CSUM_MODE,
+ };
+ 
+ struct mlx5_trap_ctx {
+diff --git a/drivers/net/ethernet/mellanox/mlx5/core/lib/nv_param.c b/drivers/net/ethernet/mellanox/mlx5/core/lib/nv_param.c
+index 3d2195338d39..3dc5b899a5fb 100644
+--- a/drivers/net/ethernet/mellanox/mlx5/core/lib/nv_param.c
++++ b/drivers/net/ethernet/mellanox/mlx5/core/lib/nv_param.c
+@@ -8,6 +8,8 @@ enum {
+ 	MLX5_CLASS_0_CTRL_ID_NV_GLOBAL_PCI_CONF               = 0x80,
+ 	MLX5_CLASS_0_CTRL_ID_NV_GLOBAL_PCI_CAP                = 0x81,
+ 	MLX5_CLASS_0_CTRL_ID_NV_SW_OFFLOAD_CONFIG             = 0x10a,
++	MLX5_CLASS_0_CTRL_ID_NV_SW_OFFLOAD_CAP                = 0x10b,
++	MLX5_CLASS_0_CTRL_ID_NV_SW_ACCELERATE_CONF            = 0x11d,
+ 
+ 	MLX5_CLASS_3_CTRL_ID_NV_PF_PCI_CONF                   = 0x80,
+ };
+@@ -123,6 +125,17 @@ struct mlx5_ifc_nv_sw_offload_conf_bits {
+ 	u8         lro_log_timeout0[0x4];
+ };
+ 
++struct mlx5_ifc_nv_sw_offload_cap_bits {
++	u8         reserved_at_0[0x19];
++	u8         swp_l4_csum_mode_l4_only[0x1];
++	u8         reserved_at_1a[0x6];
++};
++
++struct mlx5_ifc_nv_sw_accelerate_conf_bits {
++	u8         swp_l4_csum_mode[0x2];
++	u8         reserved_at_2[0x3e];
++};
++
+ #define MNVDA_HDR_SZ \
+ 	(MLX5_ST_SZ_BYTES(mnvda_reg) - \
+ 	 MLX5_BYTE_OFF(mnvda_reg, configuration_item_data))
+@@ -195,6 +208,30 @@ mlx5_nv_param_read_sw_offload_conf(struct mlx5_core_dev *dev, void *mnvda,
+ 	return mlx5_nv_param_read(dev, mnvda, len);
+ }
+ 
++static int
++mlx5_nv_param_read_sw_offload_cap(struct mlx5_core_dev *dev, void *mnvda,
++				  size_t len)
++{
++	MLX5_SET_CFG_ITEM_TYPE(global, mnvda, type_class, 0);
++	MLX5_SET_CFG_ITEM_TYPE(global, mnvda, parameter_index,
++			       MLX5_CLASS_0_CTRL_ID_NV_SW_OFFLOAD_CAP);
++	MLX5_SET_CFG_HDR_LEN(mnvda, nv_sw_offload_cap);
++
++	return mlx5_nv_param_read(dev, mnvda, len);
++}
++
++static int
++mlx5_nv_param_read_sw_accelerate_conf(struct mlx5_core_dev *dev, void *mnvda,
++				      size_t len)
++{
++	MLX5_SET_CFG_ITEM_TYPE(global, mnvda, type_class, 0);
++	MLX5_SET_CFG_ITEM_TYPE(global, mnvda, parameter_index,
++			       MLX5_CLASS_0_CTRL_ID_NV_SW_ACCELERATE_CONF);
++	MLX5_SET_CFG_HDR_LEN(mnvda, nv_sw_accelerate_conf);
++
++	return mlx5_nv_param_read(dev, mnvda, len);
++}
++
+ static const char *const
+ 	cqe_compress_str[] = { "balanced", "aggressive" };
+ 
+@@ -269,6 +306,124 @@ mlx5_nv_param_devlink_cqe_compress_set(struct devlink *devlink, u32 id,
+ 	return mlx5_nv_param_write(dev, mnvda, sizeof(mnvda));
+ }
+ 
++enum swp_l4_csum_mode {
++	SWP_L4_CSUM_MODE_DEVICE_DEFAULT = 0,
++	SWP_L4_CSUM_MODE_FULL_CSUM = 1,
++	SWP_L4_CSUM_MODE_L4_ONLY = 2,
++};
++
++static const char *const
++	swp_l4_csum_mode_str[] = { "device_default", "full_csum", "l4_only" };
++
++static int
++mlx5_nv_param_devlink_swp_l4_csum_mode_get(struct devlink *devlink, u32 id,
++					   struct devlink_param_gset_ctx *ctx,
++					   struct netlink_ext_ack *extack)
++{
++	struct mlx5_core_dev *dev = devlink_priv(devlink);
++	u32 mnvda[MLX5_ST_SZ_DW(mnvda_reg)] = {};
++	u8 value = U8_MAX;
++	void *data;
++	int err;
++
++	err = mlx5_nv_param_read_sw_accelerate_conf(dev, mnvda, sizeof(mnvda));
++	if (err) {
++		NL_SET_ERR_MSG_MOD(extack,
++				   "Failed to read sw_accelerate_conf mnvda reg");
++		return err;
++	}
++
++	data = MLX5_ADDR_OF(mnvda_reg, mnvda, configuration_item_data);
++	value = MLX5_GET(nv_sw_accelerate_conf, data, swp_l4_csum_mode);
++
++	if (value >= ARRAY_SIZE(swp_l4_csum_mode_str)) {
++		NL_SET_ERR_MSG_FMT_MOD(extack,
++				       "Invalid swp_l4_csum_mode value %u read from device",
++				       value);
++		return -EINVAL;
++	}
++
++	strscpy(ctx->val.vstr, swp_l4_csum_mode_str[value],
++		sizeof(ctx->val.vstr));
++	return 0;
++}
++
++static int
++mlx5_nv_param_devlink_swp_l4_csum_mode_validate(struct devlink *devlink, u32 id,
++						union devlink_param_value val,
++						struct netlink_ext_ack *extack)
++{
++	struct mlx5_core_dev *dev = devlink_priv(devlink);
++	u32 cap[MLX5_ST_SZ_DW(mnvda_reg)] = {};
++	void *data;
++	int err, i;
++
++	for (i = 0; i < ARRAY_SIZE(swp_l4_csum_mode_str); i++) {
++		if (!strcmp(val.vstr, swp_l4_csum_mode_str[i]))
++			break;
++	}
++
++	if (i >= ARRAY_SIZE(swp_l4_csum_mode_str)) {
++		NL_SET_ERR_MSG_MOD(extack,
++				   "Invalid value, supported values are device_default/full_csum/l4_only");
++		return -EINVAL;
++	}
++
++	if (i == SWP_L4_CSUM_MODE_L4_ONLY) {
++		err = mlx5_nv_param_read_sw_offload_cap(dev, cap, sizeof(cap));
++		if (err) {
++			NL_SET_ERR_MSG_MOD(extack,
++					   "Failed to read sw_offload_cap");
++			return err;
++		}
++
++		data = MLX5_ADDR_OF(mnvda_reg, cap, configuration_item_data);
++		if (!MLX5_GET(nv_sw_offload_cap, data, swp_l4_csum_mode_l4_only)) {
++			NL_SET_ERR_MSG_MOD(extack,
++					   "l4_only mode is not supported on this device");
++			return -EOPNOTSUPP;
++		}
++	}
++
++	return 0;
++}
++
++static int
++mlx5_nv_param_devlink_swp_l4_csum_mode_set(struct devlink *devlink, u32 id,
++					   struct devlink_param_gset_ctx *ctx,
++					   struct netlink_ext_ack *extack)
++{
++	struct mlx5_core_dev *dev = devlink_priv(devlink);
++	u32 mnvda[MLX5_ST_SZ_DW(mnvda_reg)] = {};
++	void *data;
++	u8 value;
++	int err;
++
++	if (!strcmp(ctx->val.vstr, "device_default"))
++		value = SWP_L4_CSUM_MODE_DEVICE_DEFAULT;
++	else if (!strcmp(ctx->val.vstr, "full_csum"))
++		value = SWP_L4_CSUM_MODE_FULL_CSUM;
++	else
++		value = SWP_L4_CSUM_MODE_L4_ONLY;
++
++	err = mlx5_nv_param_read_sw_accelerate_conf(dev, mnvda, sizeof(mnvda));
++	if (err) {
++		NL_SET_ERR_MSG_MOD(extack,
++				   "Failed to read sw_accelerate_conf mnvda reg");
++		return err;
++	}
++
++	data = MLX5_ADDR_OF(mnvda_reg, mnvda, configuration_item_data);
++	MLX5_SET(nv_sw_accelerate_conf, data, swp_l4_csum_mode, value);
++
++	err = mlx5_nv_param_write(dev, mnvda, sizeof(mnvda));
++	if (err)
++		NL_SET_ERR_MSG_MOD(extack,
++				   "Failed to write sw_accelerate_conf mnvda reg");
++
++	return err;
++}
++
+ static int mlx5_nv_param_read_global_pci_conf(struct mlx5_core_dev *dev,
+ 					      void *mnvda, size_t len)
+ {
+@@ -548,6 +703,12 @@ static const struct devlink_param mlx5_nv_param_devlink_params[] = {
+ 			     mlx5_nv_param_devlink_cqe_compress_get,
+ 			     mlx5_nv_param_devlink_cqe_compress_set,
+ 			     mlx5_nv_param_devlink_cqe_compress_validate),
++	DEVLINK_PARAM_DRIVER(MLX5_DEVLINK_PARAM_ID_SWP_L4_CSUM_MODE,
++			     "swp_l4_csum_mode", DEVLINK_PARAM_TYPE_STRING,
++			     BIT(DEVLINK_PARAM_CMODE_PERMANENT),
++			     mlx5_nv_param_devlink_swp_l4_csum_mode_get,
++			     mlx5_nv_param_devlink_swp_l4_csum_mode_set,
++			     mlx5_nv_param_devlink_swp_l4_csum_mode_validate),
+ };
+ 
+ int mlx5_nv_param_register_dl_params(struct devlink *devlink)
 -- 
 2.47.3
 
