@@ -1,101 +1,88 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CBF0CCCFA13
-	for <intel-wired-lan@archiver.kernel.org>; Sat,  8 Nov 2025 16:37:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A7D06CCFA13
+	for <intel-wired-lan@archiver.kernel.org>; Sat,  8 Nov 2025 17:20:23 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 7F5F880F60;
-	Sat,  8 Nov 2025 16:37:05 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 9sb0_zA2FXCf; Sat,  8 Nov 2025 16:37:04 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B815A80F62
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1762619824;
-	bh=OgKvQpo+18c2Kd8I5LEEz34v3JgbfmdfKeQ9jCsdo+o=;
-	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=UTHl+RYWp+K1ev0x5LALbU7iXcYONzkeUBuEjMi+By9Nw2PgEl7YsSCQc4QX7vt4K
-	 q9lknuMYaDgMzawLikTj6SEbwyQ8F+6IbQM+wr+2JR7E8uIyfYd9ZglIafA3ivHR1X
-	 hdIwPAIYI4LKnzCucPr48r6e+RmN9Kkhn5rLLUdTpu0xIjbyTkeYcq/CM1XJb3R/Gb
-	 uJYKy6IP5TsbJ52WfDH8w40yxXYbPEJQglNAiBK4PE3JntGTNXX10g5oSZJrcjY13K
-	 GP/uFyiQdqop9vmmGRZiC/eTH47V6VPmlF0Ul74tA30JUFqdiTa3+1X4/AY26S2YZl
-	 YMx5BbjPNKd9A==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id B815A80F62;
-	Sat,  8 Nov 2025 16:37:04 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id 307C22CE
- for <intel-wired-lan@lists.osuosl.org>; Sat,  8 Nov 2025 16:37:03 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 227E86063B
- for <intel-wired-lan@lists.osuosl.org>; Sat,  8 Nov 2025 16:37:03 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 64BD96066A;
+	Sat,  8 Nov 2025 17:20:23 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id L5dtvG2INFJp for <intel-wired-lan@lists.osuosl.org>;
- Sat,  8 Nov 2025 16:37:02 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.234.252.31;
- helo=sea.source.kernel.org; envelope-from=horms@kernel.org;
+ id x1eixXYADE20; Sat,  8 Nov 2025 17:20:22 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A54FF606F6
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1762622422;
+	bh=245FECgiEJwbVFuGBJMyKrXvA4v2dbWrCYnXImQuMMQ=;
+	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=6cg32Toha9a9ciCD9OepMA/klTrmIYvQsmnbc9JHIWlxJihoAPF/DlQ0FhO1+rXhp
+	 f/e696lS+vZ7moWxnIEzXcSPK3od05dzgThZzyrAAX43jiS7JnmqzltnrCwoR/n3Ch
+	 ceygyIpT9hD82FOwoao8ZMUE8pnIe6o1J4lRDAc930/u94qhqlzrftIS0mNZ1xHmhx
+	 pHSLz0oHV/j1O3/FQt52lZziiJsWA9sUbCEoxPOtFXOXracYYy/flEN8RsyQBsYoI2
+	 xIY9UsPUNL4hZvMygl91qavH/aBm0IeXpPkc5VNCqwwl16H6/bQWXrW+6Fdvf2aXYs
+	 NIZDtil0MmFaQ==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp3.osuosl.org (Postfix) with ESMTP id A54FF606F6;
+	Sat,  8 Nov 2025 17:20:22 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id EC1A72CD
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  8 Nov 2025 17:20:20 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp3.osuosl.org (Postfix) with ESMTP id DD71A606F6
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  8 Nov 2025 17:20:20 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id nRTqKX39hEoX for <intel-wired-lan@lists.osuosl.org>;
+ Sat,  8 Nov 2025 17:20:20 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
+ helo=tor.source.kernel.org; envelope-from=horms@kernel.org;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org BADAB60638
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org BADAB60638
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
- by smtp3.osuosl.org (Postfix) with ESMTPS id BADAB60638
- for <intel-wired-lan@lists.osuosl.org>; Sat,  8 Nov 2025 16:37:01 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 2929D6066A
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2929D6066A
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 2929D6066A
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  8 Nov 2025 17:20:19 +0000 (UTC)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by sea.source.kernel.org (Postfix) with ESMTP id DF0B540B98;
- Sat,  8 Nov 2025 16:37:00 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 334C7C16AAE;
- Sat,  8 Nov 2025 16:36:57 +0000 (UTC)
-Date: Sat, 8 Nov 2025 16:36:55 +0000
+ by tor.source.kernel.org (Postfix) with ESMTP id 7805D60007;
+ Sat,  8 Nov 2025 17:20:18 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 533CAC4AF09;
+ Sat,  8 Nov 2025 17:20:17 +0000 (UTC)
+Date: Sat, 8 Nov 2025 17:20:15 +0000
 From: Simon Horman <horms@kernel.org>
-To: Alexander Lobakin <aleksander.lobakin@intel.com>
-Cc: Ally Heev <allyheev@gmail.com>, Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Andrew Lunn <andrew+netdev@lunn.ch>,
- "David S. Miller" <davem@davemloft.net>,
- Eric Dumazet <edumazet@google.com>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- "K. Y. Srinivasan" <kys@microsoft.com>,
- Haiyang Zhang <haiyangz@microsoft.com>,
- Wei Liu <wei.liu@kernel.org>, Dexuan Cui <decui@microsoft.com>,
- Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
- intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-hyperv@vger.kernel.org,
- Dan Carpenter <dan.carpenter@linaro.org>
-Message-ID: <aQ9xp9pchMwml30P@horms.kernel.org>
-References: <20251106-aheev-uninitialized-free-attr-net-ethernet-v3-1-ef2220f4f476@gmail.com>
- <575bfdb1-8fc4-4147-8af7-33c40e619b66@intel.com>
+To: Joshua Hay <joshua.a.hay@intel.com>
+Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org
+Message-ID: <aQ97z8ZZToGIxb3X@horms.kernel.org>
+References: <20251021233056.1320108-1-joshua.a.hay@intel.com>
+ <20251021233056.1320108-2-joshua.a.hay@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <575bfdb1-8fc4-4147-8af7-33c40e619b66@intel.com>
+In-Reply-To: <20251021233056.1320108-2-joshua.a.hay@intel.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1762619820;
- bh=LVT/aIc2AON71l19ykVx0Fj5Bo0LsiK+P1KP4yuRAkc=;
+ d=kernel.org; s=k20201202; t=1762622418;
+ bh=4uBXZNjEeUsMFg1PyKHuxUfuFeuIUqbxNWqH+XsncZY=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=UogX/wtWXGveHNi5Em0vXRdgXw47JbmHjtRNDT1sbxetQOrviyCtRRnWBqFBMbyh/
- DjfLPBul3iwbBViop268FCO1X1Sh345YbI0xD7QH4rTBGwV82ApQ0uo2HcEKGi91i5
- T4ixlSoOkS0aVHfEw9wTUDzdVlg0EaYv2veGEEN1nqtVnvmtluIvThF2BBVEE1TaM1
- QGbzZOo1waADecLNENgmjqFwpPd9DYb2PyR5hYc8tAaA0JxPFDiCnP6fgXIQXFkjRT
- SD1Ls0Pi+qbphltPr0kHJO6ywttC7sqMeeAlEglbSC0OZ+gpunSTmLV6lib5M45Qo0
- nbhdv69juwlqQ==
+ b=fBB0NZLp5IH2E2etese6w6N2OmdjvSftvJX5j98h1R8XtJu21Q7Dfhq51/XRWtgrH
+ hGr4UIa+biFRFYlok4QKaNz8i1PExtd5xQPoBt5ukAjyafVjOa3uctbi8Lhy6hTBuq
+ RDfyP/jmtOk/BBdbZ3XeKr1N4c81dpgZxrZ6HxQmsyHEN+kQ55F/x/wS8fSaD2EItr
+ EHiiq4/jamcGK1luSUdnwf8jLfsf5fsdJdslUSvaFhPNc/tHYyoUA3K7nlo3D0z8fq
+ a+B5U3ghKA+IPCsziyZQFhGvbMqmtQXMlwmbEA29VwCRWQHKs64bIPvopCeyatp7ZV
+ zvHPGj4ZxFPEQ==
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=UogX/wtW
-Subject: Re: [Intel-wired-lan] [PATCH v3] net: ethernet: fix uninitialized
- pointers with free attribute
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20201202 header.b=fBB0NZLp
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next v9 01/10] idpf: introduce
+ local idpf structure to store virtchnl queue chunks
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -111,71 +98,72 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Thu, Nov 06, 2025 at 03:07:26PM +0100, Alexander Lobakin wrote:
-> From: Ally Heev <allyheev@gmail.com>
-> Date: Thu, 06 Nov 2025 17:25:48 +0530
-> 
-> > Uninitialized pointers with `__free` attribute can cause undefined
-> > behavior as the memory assigned randomly to the pointer is freed
-> > automatically when the pointer goes out of scope.
-> > 
-> > It is better to initialize and assign pointers with `__free`
-> > attribute in one statement to ensure proper scope-based cleanup.
-> > 
-> > Reported-by: Dan Carpenter <dan.carpenter@linaro.org>
-> > Closes: https://lore.kernel.org/all/aPiG_F5EBQUjZqsl@stanley.mountain/
-> > Signed-off-by: Ally Heev <allyheev@gmail.com>
-> > ---
-> > Changes in v3:
-> > - fixed style issues
-> > - Link to v2: https://lore.kernel.org/r/20251106-aheev-uninitialized-free-attr-net-ethernet-v2-1-048da0c5d6b6@gmail.com
-> > 
-> > Changes in v2:
-> > - fixed non-pointer initialization to NULL
-> > - NOTE: drop v1
-> > - Link to v1: https://lore.kernel.org/r/20251105-aheev-uninitialized-free-attr-net-ethernet-v1-1-f6ea84bbd750@gmail.com
-> > ---
-> >  drivers/net/ethernet/intel/ice/ice_flow.c       | 5 +++--
-> >  drivers/net/ethernet/intel/idpf/idpf_virtchnl.c | 5 +++--
-> >  2 files changed, 6 insertions(+), 4 deletions(-)
-> > 
-> > diff --git a/drivers/net/ethernet/intel/ice/ice_flow.c b/drivers/net/ethernet/intel/ice/ice_flow.c
-> > index 6d5c939dc8a515c252cd2b77d155b69fa264ee92..3590dacf3ee57879b3809d715e40bb290e40c4aa 100644
-> > --- a/drivers/net/ethernet/intel/ice/ice_flow.c
-> > +++ b/drivers/net/ethernet/intel/ice/ice_flow.c
-> > @@ -1573,12 +1573,13 @@ ice_flow_set_parser_prof(struct ice_hw *hw, u16 dest_vsi, u16 fdir_vsi,
-> >  			 struct ice_parser_profile *prof, enum ice_block blk)
-> >  {
-> >  	u64 id = find_first_bit(prof->ptypes, ICE_FLOW_PTYPE_MAX);
-> > -	struct ice_flow_prof_params *params __free(kfree);
-> >  	u8 fv_words = hw->blk[blk].es.fvw;
-> >  	int status;
-> >  	int i, idx;
-> >  
-> > -	params = kzalloc(sizeof(*params), GFP_KERNEL);
-> > +	struct ice_flow_prof_params *params __free(kfree) =
-> > +		kzalloc(sizeof(*params), GFP_KERNEL);
-> 
-> Please don't do it that way. It's not C++ with RAII and
-> declare-where-you-use.
-> Just leave the variable declarations where they are, but initialize them
-> with `= NULL`.
-> 
-> Variable declarations must be in one block and sorted from the longest
-> to the shortest.
-> 
-> But most important, I'm not even sure how you could trigger an
-> "undefined behaviour" here. Both here and below the variable tagged with
-> `__free` is initialized right after the declaration block, before any
-> return. So how to trigger an UB here?
+On Tue, Oct 21, 2025 at 04:30:47PM -0700, Joshua Hay wrote:
 
-FWIIW, I'd prefer if we sidestepped this discussion entirely
-by not using __free [1] in this driver.
+...
 
-It seems to me that for both functions updated by this
-patch that can easily be achieved using an idiomatic
-goto label to free on error.
+> diff --git a/drivers/net/ethernet/intel/idpf/idpf_lib.c b/drivers/net/ethernet/intel/idpf/idpf_lib.c
 
-[1] https://docs.kernel.org/process/maintainer-netdev.html#using-device-managed-and-cleanup-h-constructs
+...
+
+> @@ -1237,6 +1242,8 @@ static struct idpf_vport *idpf_vport_alloc(struct idpf_adapter *adapter,
+>  
+>  	return vport;
+>  
+> +free_qreg_chunks:
+> +	kfree(adapter->vport_config[idx]->qid_reg_info.queue_chunks);
+
+I think that the following is also needed here, to avoid a subsequent
+double-free.
+
+	adapter->vport_config[idx]->qid_reg_info.queue_chunks = NULL;
+
+>  free_vector_idxs:
+>  	kfree(vport->q_vector_idxs);
+>  free_vport:
+
+...
+
+> @@ -3658,6 +3668,11 @@ void idpf_vport_init(struct idpf_vport *vport, struct idpf_vport_max_q *max_q)
+>  	rss_data = &vport_config->user_config.rss_data;
+>  	vport_msg = adapter->vport_params_recvd[idx];
+>  
+> +	err = idpf_vport_init_queue_reg_chunks(vport_config,
+> +					       &vport_msg->chunks);
+> +	if (err)
+> +		return err;
+> +
+>  	vport_config->max_q.max_txq = max_q->max_txq;
+>  	vport_config->max_q.max_rxq = max_q->max_rxq;
+>  	vport_config->max_q.max_complq = max_q->max_complq;
+> @@ -3690,15 +3705,17 @@ void idpf_vport_init(struct idpf_vport *vport, struct idpf_vport_max_q *max_q)
+>  
+>  	if (!(vport_msg->vport_flags &
+>  	      cpu_to_le16(VIRTCHNL2_VPORT_UPLINK_PORT)))
+> -		return;
+> +		return 0;
+>  
+>  	err = idpf_ptp_get_vport_tstamps_caps(vport);
+>  	if (err) {
+>  		pci_dbg(vport->adapter->pdev, "Tx timestamping not supported\n");
+> -		return;
+> +		return err == -EOPNOTSUPP ? 0 : err;
+
+If a non-zero value is returned here, then
+the allocation (of adapter->vport_config[idx]->qid_reg_info.queue_chunks)
+made in idpf_vport_init_queue_reg_chunks() will be leaked.
+
+I think it should be both freed and set to NULL in this error path.
+Which I think suggests a helper to do so here and elsewhere.
+
+Flagged by Claude Code with https://github.com/masoncl/review-prompts/
+
+
+>  	}
+>  
+>  	INIT_WORK(&vport->tstamp_task, idpf_tstamp_task);
+> +
+> +	return 0;
+>  }
 
 ...
