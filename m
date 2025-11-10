@@ -4,66 +4,66 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9B5F8CD13D8
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 10 Nov 2025 18:48:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9AB52CD13DD
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 10 Nov 2025 18:48:01 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 665DD81755;
-	Mon, 10 Nov 2025 18:48:00 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 75C0A817A4;
+	Mon, 10 Nov 2025 18:48:01 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id yi87pyNSf6Em; Mon, 10 Nov 2025 18:47:59 +0000 (UTC)
+ id XpNOe1QncBLZ; Mon, 10 Nov 2025 18:48:00 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org A620E81754
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 404988179B
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1762800479;
-	bh=wvXE1YQbUXmnk2SXL3Nt32HHjh8bsLglRm8kPDbc+B4=;
+	s=default; t=1762800480;
+	bh=K3iIOwjiWMymf60BZffD+9E/XL5WhkHBkPnRWDokEjg=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=misaOsx3anqz9UsbrYtEIbn0xHAqWGgMV2EbcgJFRduHTrIyackS8DRfj5T/6H5tY
-	 hsTaLtNSfamBCSnI3dVk883IOJF0IyqltFE5kqGdqmCr5oZlfAct2fxitJijqg7hLr
-	 WQIbSiU7ZOekcjyIwW1u4lL687giLZm0yXNHxhxRXl75f/Qnqv5yOi/ty+1Mo5BikT
-	 gSi3x9Qk7CwKoQrOUr7bqQF3h4kUZLk3Ypg700jnOzdYY3forsRbrdLG6vzUAEBqdP
-	 gXoZAIFnOi5K6W66ywAupUx65ONaeo869i++9j1YbWRAjDcTkhhcTheppovEaTfkrk
-	 jbyifKUy65/Qg==
+	b=Juv+TDO212POj4S2UcbKieQ5jCooJFsgopgC7RoStl2l1vdTdrWtgzZEI/twMYD0v
+	 8mp+7RRLIxZClj8XQ5gC+p0yfIMC3BHMxOZ7rDcyR/O0uTEwsPGWROZ84Vdk3noaQ/
+	 lEI0X88UMmfr60NcFOdV5mmzawJ7xFjkK/+qi0WbvLXU0KGHIuNVp+Nr6zxVltFr/2
+	 btjUcJ5cjb0P13pRGC3iuwXO2/1gz6cMS1j9NVrlSi+D4SqdMaMPPszgmCgRSX4FoN
+	 gICLe0hob0zuQD/I/803OaMqjQQMPSJO3trVnTRedz9y1VgfLuk1DdEu23x1a3iH/e
+	 y0oqCUebalpkQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id A620E81754;
-	Mon, 10 Nov 2025 18:47:59 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id 1225C2CD
+	by smtp1.osuosl.org (Postfix) with ESMTP id 404988179B;
+	Mon, 10 Nov 2025 18:48:00 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 348E0FA
  for <intel-wired-lan@lists.osuosl.org>; Mon, 10 Nov 2025 18:47:58 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 0FFD7404D3
+ by smtp3.osuosl.org (Postfix) with ESMTP id 2681F60AB3
  for <intel-wired-lan@lists.osuosl.org>; Mon, 10 Nov 2025 18:47:58 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 0R5efkqUaTyX for <intel-wired-lan@lists.osuosl.org>;
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id s_3SYWNMwcXI for <intel-wired-lan@lists.osuosl.org>;
  Mon, 10 Nov 2025 18:47:57 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.15;
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.16;
  helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 35AA2404AB
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 35AA2404AB
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.15])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 35AA2404AB
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 6B7FC608A8
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 6B7FC608A8
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.16])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 6B7FC608A8
  for <intel-wired-lan@lists.osuosl.org>; Mon, 10 Nov 2025 18:47:57 +0000 (UTC)
-X-CSE-ConnectionGUID: ymCqaLcIQSiSPyWYpvLLDg==
-X-CSE-MsgGUID: XnCfQS5KQ6WdyQO+b3O25Q==
-X-IronPort-AV: E=McAfee;i="6800,10657,11609"; a="68499911"
-X-IronPort-AV: E=Sophos;i="6.19,294,1754982000"; d="scan'208";a="68499911"
-Received: from orviesa001.jf.intel.com ([10.64.159.141])
- by orvoesa107.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+X-CSE-ConnectionGUID: HEWjp3NCSoWqxKNFGMGjmA==
+X-CSE-MsgGUID: dgVQlavMTyyKBGaiOwrDKA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11609"; a="65013805"
+X-IronPort-AV: E=Sophos;i="6.19,294,1754982000"; d="scan'208";a="65013805"
+Received: from fmviesa009.fm.intel.com ([10.60.135.149])
+ by orvoesa108.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  10 Nov 2025 10:47:57 -0800
-X-CSE-ConnectionGUID: XMv8GPTSQgyrg/C7cjgYBQ==
-X-CSE-MsgGUID: 0l3jCKJNT96CGISaIatOPQ==
+X-CSE-ConnectionGUID: xYHtbT9SR/mNMyLa35Gtcw==
+X-CSE-MsgGUID: o0fIDUZxQyyrUK7H/cG3FA==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.19,294,1754982000"; d="scan'208";a="226005217"
+X-IronPort-AV: E=Sophos;i="6.19,294,1754982000"; d="scan'208";a="189190253"
 Received: from black.igk.intel.com ([10.91.253.5])
- by orviesa001.jf.intel.com with ESMTP; 10 Nov 2025 10:47:39 -0800
+ by fmviesa009.fm.intel.com with ESMTP; 10 Nov 2025 10:47:48 -0800
 Received: by black.igk.intel.com (Postfix, from userid 1003)
- id 07AD198; Mon, 10 Nov 2025 19:47:29 +0100 (CET)
+ id 219C19C; Mon, 10 Nov 2025 19:47:29 +0100 (CET)
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 To: Corey Minyard <corey@minyard.net>,
  =?UTF-8?q?Christian=20K=C3=B6nig?= <christian.koenig@amd.com>,
@@ -136,8 +136,8 @@ Cc: Rasmus Villemoes <linux@rasmusvillemoes.dk>,
  Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
  Andrew Morton <akpm@linux-foundation.org>,
  Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>
-Date: Mon, 10 Nov 2025 19:40:22 +0100
-Message-ID: <20251110184727.666591-4-andriy.shevchenko@linux.intel.com>
+Date: Mon, 10 Nov 2025 19:40:26 +0100
+Message-ID: <20251110184727.666591-8-andriy.shevchenko@linux.intel.com>
 X-Mailer: git-send-email 2.50.1
 In-Reply-To: <20251110184727.666591-1-andriy.shevchenko@linux.intel.com>
 References: <20251110184727.666591-1-andriy.shevchenko@linux.intel.com>
@@ -145,25 +145,25 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1762800478; x=1794336478;
+ t=1762800477; x=1794336477;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=I9iY7lWtdcI82SbW3jxFgfzqyuy05arUSY4fM8KaZz8=;
- b=QcxwpnkLt7tbYN2Ks0pgTUkPfZwGERbppVQVinSo5pD2PqZD4hD9OItZ
- ey7p+byra9t2D8aJlYj8DbL3Ax00cQ51zo2hmpJmRIanwiaTXVHNGTqyz
- FPmMTXJOX+Fc159TLPZkY4Sa+K9KOIvNMTbWGFujXeVutx/kQ26XZBbfE
- d4Un2Ya05E1y0/u3GR7g+htfDbrlknadNye6OMlUHUZQX2Ygg1+IwhU/z
- j0ubOetn5L2FOcCfO6lj+zskDNFtWQEsEUSssNeLgz3F3ap08ac2yB0T7
- 7ub9qTl3RcR0NXSoBtePViiC5CvBZqyvQKx4FQQoQcskEP4K91Ek3B/1L
- g==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ bh=Re9XzxeVgaRpFu9Nr8p7rXjuLRXS6TBbrXT9/XQ7Zd0=;
+ b=SNveR/f2KBiO0XEB8ZvRWWvBacbmrj7IoAUb81kXwImd1gGpl+Bc1D9t
+ 5Luo2tOLn6nNUopVDXWkRGARPsQV7LR5x1e4ytlZrVV5E4+ih7f7wuBjM
+ A9JpcBsc4DYlxkhpqPxIxJx5NyiQkyvrdypKM7U/67cpx2VneADoq+61c
+ 8QIhuGY/6Q6Ckr8LSWV6OZRmxi5y+9TUL6aZOXQa8Y5rpDNR2rTLwmZJl
+ so4dIFdhB/7SnZnj0BaZYwjAieaYx12+yk2Xx6iicCcdt0YI6AzBmOjlV
+ 1ccwXXIUCFU1PCMkIMd3aVPhbQBk2QRVf3Ztfk/LcaVQbOmXm8QjxT20T
+ Q==;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=none (p=none dis=none)
  header.from=linux.intel.com
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=QcxwpnkL
-Subject: [Intel-wired-lan] [PATCH v1 03/23] ceph: Switch to use %ptSp
+ header.s=Intel header.b=SNveR/f2
+Subject: [Intel-wired-lan] [PATCH v1 07/23] drm/msm: Switch to use %ptSp
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -184,161 +184,38 @@ struct timespec64 in human readable format.
 
 Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- fs/ceph/dir.c   |  5 ++---
- fs/ceph/inode.c | 47 +++++++++++++++--------------------------------
- fs/ceph/xattr.c |  6 ++----
- 3 files changed, 19 insertions(+), 39 deletions(-)
+ drivers/gpu/drm/msm/disp/msm_disp_snapshot_util.c | 3 +--
+ drivers/gpu/drm/msm/msm_gpu.c                     | 3 +--
+ 2 files changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/fs/ceph/dir.c b/fs/ceph/dir.c
-index d18c0eaef9b7..bf50c6e7a029 100644
---- a/fs/ceph/dir.c
-+++ b/fs/ceph/dir.c
-@@ -2155,7 +2155,7 @@ static ssize_t ceph_read_dir(struct file *file, char __user *buf, size_t size,
- 				" rfiles:   %20lld\n"
- 				" rsubdirs: %20lld\n"
- 				"rbytes:    %20lld\n"
--				"rctime:    %10lld.%09ld\n",
-+				"rctime:    %ptSp\n",
- 				ci->i_files + ci->i_subdirs,
- 				ci->i_files,
- 				ci->i_subdirs,
-@@ -2163,8 +2163,7 @@ static ssize_t ceph_read_dir(struct file *file, char __user *buf, size_t size,
- 				ci->i_rfiles,
- 				ci->i_rsubdirs,
- 				ci->i_rbytes,
--				ci->i_rctime.tv_sec,
--				ci->i_rctime.tv_nsec);
-+				&ci->i_rctime);
- 	}
+diff --git a/drivers/gpu/drm/msm/disp/msm_disp_snapshot_util.c b/drivers/gpu/drm/msm/disp/msm_disp_snapshot_util.c
+index 071bcdea80f7..19b470968f4d 100644
+--- a/drivers/gpu/drm/msm/disp/msm_disp_snapshot_util.c
++++ b/drivers/gpu/drm/msm/disp/msm_disp_snapshot_util.c
+@@ -82,8 +82,7 @@ void msm_disp_state_print(struct msm_disp_state *state, struct drm_printer *p)
+ 	drm_printf(p, "kernel: " UTS_RELEASE "\n");
+ 	drm_printf(p, "module: " KBUILD_MODNAME "\n");
+ 	drm_printf(p, "dpu devcoredump\n");
+-	drm_printf(p, "time: %lld.%09ld\n",
+-		state->time.tv_sec, state->time.tv_nsec);
++	drm_printf(p, "time: %ptSp\n", &state->time);
  
- 	if (*ppos >= dfi->dir_info_len)
-diff --git a/fs/ceph/inode.c b/fs/ceph/inode.c
-index 37d3a2477c17..6db8951d79e0 100644
---- a/fs/ceph/inode.c
-+++ b/fs/ceph/inode.c
-@@ -879,7 +879,9 @@ void ceph_fill_file_time(struct inode *inode, int issued,
- {
- 	struct ceph_client *cl = ceph_inode_to_client(inode);
- 	struct ceph_inode_info *ci = ceph_inode(inode);
-+	struct timespec64 iatime = inode_get_atime(inode);
- 	struct timespec64 ictime = inode_get_ctime(inode);
-+	struct timespec64 imtime = inode_get_mtime(inode);
- 	int warn = 0;
- 
- 	if (issued & (CEPH_CAP_FILE_EXCL|
-@@ -889,39 +891,26 @@ void ceph_fill_file_time(struct inode *inode, int issued,
- 		      CEPH_CAP_XATTR_EXCL)) {
- 		if (ci->i_version == 0 ||
- 		    timespec64_compare(ctime, &ictime) > 0) {
--			doutc(cl, "ctime %lld.%09ld -> %lld.%09ld inc w/ cap\n",
--			     ictime.tv_sec, ictime.tv_nsec,
--			     ctime->tv_sec, ctime->tv_nsec);
-+			doutc(cl, "ctime %ptSp -> %ptSp inc w/ cap\n", &ictime, ctime);
- 			inode_set_ctime_to_ts(inode, *ctime);
- 		}
- 		if (ci->i_version == 0 ||
- 		    ceph_seq_cmp(time_warp_seq, ci->i_time_warp_seq) > 0) {
- 			/* the MDS did a utimes() */
--			doutc(cl, "mtime %lld.%09ld -> %lld.%09ld tw %d -> %d\n",
--			     inode_get_mtime_sec(inode),
--			     inode_get_mtime_nsec(inode),
--			     mtime->tv_sec, mtime->tv_nsec,
-+			doutc(cl, "mtime %ptSp -> %ptSp tw %d -> %d\n", &imtime, mtime,
- 			     ci->i_time_warp_seq, (int)time_warp_seq);
- 
- 			inode_set_mtime_to_ts(inode, *mtime);
- 			inode_set_atime_to_ts(inode, *atime);
- 			ci->i_time_warp_seq = time_warp_seq;
- 		} else if (time_warp_seq == ci->i_time_warp_seq) {
--			struct timespec64	ts;
--
- 			/* nobody did utimes(); take the max */
--			ts = inode_get_mtime(inode);
--			if (timespec64_compare(mtime, &ts) > 0) {
--				doutc(cl, "mtime %lld.%09ld -> %lld.%09ld inc\n",
--				     ts.tv_sec, ts.tv_nsec,
--				     mtime->tv_sec, mtime->tv_nsec);
-+			if (timespec64_compare(mtime, &imtime) > 0) {
-+				doutc(cl, "mtime %ptSp -> %ptSp inc\n", &imtime, mtime);
- 				inode_set_mtime_to_ts(inode, *mtime);
- 			}
--			ts = inode_get_atime(inode);
--			if (timespec64_compare(atime, &ts) > 0) {
--				doutc(cl, "atime %lld.%09ld -> %lld.%09ld inc\n",
--				     ts.tv_sec, ts.tv_nsec,
--				     atime->tv_sec, atime->tv_nsec);
-+			if (timespec64_compare(atime, &iatime) > 0) {
-+				doutc(cl, "atime %ptSp -> %ptSp inc\n", &iatime, atime);
- 				inode_set_atime_to_ts(inode, *atime);
- 			}
- 		} else if (issued & CEPH_CAP_FILE_EXCL) {
-@@ -2703,10 +2692,8 @@ int __ceph_setattr(struct mnt_idmap *idmap, struct inode *inode,
- 	if (ia_valid & ATTR_ATIME) {
- 		struct timespec64 atime = inode_get_atime(inode);
- 
--		doutc(cl, "%p %llx.%llx atime %lld.%09ld -> %lld.%09ld\n",
--		      inode, ceph_vinop(inode),
--		      atime.tv_sec, atime.tv_nsec,
--		      attr->ia_atime.tv_sec, attr->ia_atime.tv_nsec);
-+		doutc(cl, "%p %llx.%llx atime %ptSp -> %ptSp\n",
-+		      inode, ceph_vinop(inode), &atime, &attr->ia_atime);
- 		if (!do_sync && (issued & CEPH_CAP_FILE_EXCL)) {
- 			ci->i_time_warp_seq++;
- 			inode_set_atime_to_ts(inode, attr->ia_atime);
-@@ -2780,10 +2767,8 @@ int __ceph_setattr(struct mnt_idmap *idmap, struct inode *inode,
- 	if (ia_valid & ATTR_MTIME) {
- 		struct timespec64 mtime = inode_get_mtime(inode);
- 
--		doutc(cl, "%p %llx.%llx mtime %lld.%09ld -> %lld.%09ld\n",
--		      inode, ceph_vinop(inode),
--		      mtime.tv_sec, mtime.tv_nsec,
--		      attr->ia_mtime.tv_sec, attr->ia_mtime.tv_nsec);
-+		doutc(cl, "%p %llx.%llx mtime %ptSp -> %ptSp\n",
-+		      inode, ceph_vinop(inode), &mtime, &attr->ia_mtime);
- 		if (!do_sync && (issued & CEPH_CAP_FILE_EXCL)) {
- 			ci->i_time_warp_seq++;
- 			inode_set_mtime_to_ts(inode, attr->ia_mtime);
-@@ -2804,13 +2789,11 @@ int __ceph_setattr(struct mnt_idmap *idmap, struct inode *inode,
- 
- 	/* these do nothing */
- 	if (ia_valid & ATTR_CTIME) {
-+		struct timespec64 ictime = inode_get_ctime(inode);
- 		bool only = (ia_valid & (ATTR_SIZE|ATTR_MTIME|ATTR_ATIME|
- 					 ATTR_MODE|ATTR_UID|ATTR_GID)) == 0;
--		doutc(cl, "%p %llx.%llx ctime %lld.%09ld -> %lld.%09ld (%s)\n",
--		      inode, ceph_vinop(inode),
--		      inode_get_ctime_sec(inode),
--		      inode_get_ctime_nsec(inode),
--		      attr->ia_ctime.tv_sec, attr->ia_ctime.tv_nsec,
-+		doutc(cl, "%p %llx.%llx ctime %ptSp -> %ptSp (%s)\n",
-+		      inode, ceph_vinop(inode), &ictime, &attr->ia_ctime,
- 		      only ? "ctime only" : "ignored");
- 		if (only) {
- 			/*
-diff --git a/fs/ceph/xattr.c b/fs/ceph/xattr.c
-index 537165db4519..ad1f30bea175 100644
---- a/fs/ceph/xattr.c
-+++ b/fs/ceph/xattr.c
-@@ -249,8 +249,7 @@ static ssize_t ceph_vxattrcb_dir_rbytes(struct ceph_inode_info *ci, char *val,
- static ssize_t ceph_vxattrcb_dir_rctime(struct ceph_inode_info *ci, char *val,
- 					size_t size)
- {
--	return ceph_fmt_xattr(val, size, "%lld.%09ld", ci->i_rctime.tv_sec,
--				ci->i_rctime.tv_nsec);
-+	return ceph_fmt_xattr(val, size, "%ptSp", &ci->i_rctime);
- }
- 
- /* dir pin */
-@@ -307,8 +306,7 @@ static bool ceph_vxattrcb_snap_btime_exists(struct ceph_inode_info *ci)
- static ssize_t ceph_vxattrcb_snap_btime(struct ceph_inode_info *ci, char *val,
- 					size_t size)
- {
--	return ceph_fmt_xattr(val, size, "%lld.%09ld", ci->i_snap_btime.tv_sec,
--				ci->i_snap_btime.tv_nsec);
-+	return ceph_fmt_xattr(val, size, "%ptSp", &ci->i_snap_btime);
- }
- 
- static ssize_t ceph_vxattrcb_cluster_fsid(struct ceph_inode_info *ci,
+ 	list_for_each_entry_safe(block, tmp, &state->blocks, node) {
+ 		drm_printf(p, "====================%s================\n", block->name);
+diff --git a/drivers/gpu/drm/msm/msm_gpu.c b/drivers/gpu/drm/msm/msm_gpu.c
+index 17759abc46d7..a4251afe4541 100644
+--- a/drivers/gpu/drm/msm/msm_gpu.c
++++ b/drivers/gpu/drm/msm/msm_gpu.c
+@@ -197,8 +197,7 @@ static ssize_t msm_gpu_devcoredump_read(char *buffer, loff_t offset,
+ 	drm_printf(&p, "---\n");
+ 	drm_printf(&p, "kernel: " UTS_RELEASE "\n");
+ 	drm_printf(&p, "module: " KBUILD_MODNAME "\n");
+-	drm_printf(&p, "time: %lld.%09ld\n",
+-		state->time.tv_sec, state->time.tv_nsec);
++	drm_printf(&p, "time: %ptSp\n", &state->time);
+ 	if (state->comm)
+ 		drm_printf(&p, "comm: %s\n", state->comm);
+ 	if (state->cmd)
 -- 
 2.50.1
 
