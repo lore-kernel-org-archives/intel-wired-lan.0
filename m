@@ -1,69 +1,69 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9F044CD13D3
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 11 Nov 2025 12:27:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C6C80CD13D8
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 11 Nov 2025 12:27:59 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 339AD60B9B;
-	Tue, 11 Nov 2025 12:27:52 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id OaBn_WJGcQfh; Tue, 11 Nov 2025 12:27:50 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org CADC860BA5
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1762864070;
-	bh=Y5r1nTziB8h17GUDW6RpOJ3bXeCV5EyDYesNxKaVYtQ=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=G8qJQ0AwIJ93/8VezKccCKkw2CYenvxjhtaZgIj2Cwk73WTtivagphELlgo0quATt
-	 fv6JOIoQ3k7gdmMm2/1ly050JrTVIMHP82nbLeCKnQ/MIjAwJ8bGe2Nf/n2obI81zK
-	 zNlumC++KJ26YZNVQzAgd/zP3/1VSHI4VjaMbkLEUaD7CkLgWwSD7ayYIlrh3IfPki
-	 G2Bbq3JfBzyzKacyveOQq4iBEaxGxv+8Ie6yHZ/NmVErzirFE5YOgHCZRE2xNA8DU9
-	 yGVSX8q+zh2eCu8MErFRPzeCS3Uch6zEMhIxr8J6NVg8aMkWQK7VTBM9YvnLeK6wTt
-	 wKZuWrQ8GIkyg==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id CADC860BA5;
-	Tue, 11 Nov 2025 12:27:50 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id 6DB4125D
- for <intel-wired-lan@lists.osuosl.org>; Tue, 11 Nov 2025 12:27:49 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 5FF1E81EC1
- for <intel-wired-lan@lists.osuosl.org>; Tue, 11 Nov 2025 12:27:49 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 9A78881ECC;
+	Tue, 11 Nov 2025 12:27:59 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 6kx9tYkeRkRP for <intel-wired-lan@lists.osuosl.org>;
- Tue, 11 Nov 2025 12:27:48 +0000 (UTC)
+ id f2jajybtQUea; Tue, 11 Nov 2025 12:27:58 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org F24C581EC3
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1762864078;
+	bh=5HnuAHyFxhvNH+YKz2DXjSGDnG0wp2o8dTAlzqIoYQE=;
+	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=1Pd1JRREue6MmT0AGwz+Am0JU3e84f2t6j+n1TJzNHnHjkAAYGz/P2YdE5d2tN1n5
+	 JwA0Q7zCICqUZebr0Cbi4wiwHGrYhdA7/PbZ4kx2zNFJVxY8IMA8gcOzbEuP9ZxZj+
+	 vYotOS10QHMOXPhXtNF/nKqDTU4QltUBqCYsMG1ch3R3ReM3MqWV703UzlP/AcAHEu
+	 Kk8JCYfsrraCGg1NG/HynhGuyt7jIYsG2OQOiUDPjp18oXKGLMnLaBMLy6aqclBfwY
+	 i8HYHpCAD95rT3n9cDT8B15HalR5rI1w76jJki5HzFDk/4cx3BAuSmDMhXTKKRd0b5
+	 Vdz1Je48YjgYA==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp1.osuosl.org (Postfix) with ESMTP id F24C581EC3;
+	Tue, 11 Nov 2025 12:27:57 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 7F15825D
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 11 Nov 2025 12:27:57 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp2.osuosl.org (Postfix) with ESMTP id 70F89407C9
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 11 Nov 2025 12:27:57 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id znW4hUHw8Y9r for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 11 Nov 2025 12:27:57 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.9;
  helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 1455981EC0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 1455981EC0
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org BE5AD407C1
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org BE5AD407C1
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.9])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 1455981EC0
- for <intel-wired-lan@lists.osuosl.org>; Tue, 11 Nov 2025 12:27:47 +0000 (UTC)
-X-CSE-ConnectionGUID: VZrvj0a0Tf6cea80Noi3TA==
-X-CSE-MsgGUID: JcaZOjQ9T5WWj0YfZBWqIQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11609"; a="75606796"
-X-IronPort-AV: E=Sophos;i="6.19,296,1754982000"; d="scan'208";a="75606796"
+ by smtp2.osuosl.org (Postfix) with ESMTPS id BE5AD407C1
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 11 Nov 2025 12:27:56 +0000 (UTC)
+X-CSE-ConnectionGUID: yCoWm8jcT8ONmX6JI0s70A==
+X-CSE-MsgGUID: BlBl7BE1SROyv5CRLPYSZw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11609"; a="75606861"
+X-IronPort-AV: E=Sophos;i="6.19,296,1754982000"; d="scan'208";a="75606861"
 Received: from fmviesa007.fm.intel.com ([10.60.135.147])
  by fmvoesa103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 11 Nov 2025 04:27:47 -0800
-X-CSE-ConnectionGUID: 27aLKgpbQgyuRTW/cPkNLA==
-X-CSE-MsgGUID: uLAEySsEStOcyWXcWtA4FA==
+ 11 Nov 2025 04:27:55 -0800
+X-CSE-ConnectionGUID: liFe4ozoTXCmNT5tPfSnAQ==
+X-CSE-MsgGUID: gKVH+9KbSESEHGgPJqvBHg==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.19,296,1754982000"; d="scan'208";a="188592894"
+X-IronPort-AV: E=Sophos;i="6.19,296,1754982000"; d="scan'208";a="188592904"
 Received: from black.igk.intel.com ([10.91.253.5])
- by fmviesa007.fm.intel.com with ESMTP; 11 Nov 2025 04:27:39 -0800
+ by fmviesa007.fm.intel.com with ESMTP; 11 Nov 2025 04:27:47 -0800
 Received: by black.igk.intel.com (Postfix, from userid 1003)
- id D15F797; Tue, 11 Nov 2025 13:27:37 +0100 (CET)
+ id DEBCD99; Tue, 11 Nov 2025 13:27:37 +0100 (CET)
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 To: Corey Minyard <corey@minyard.net>,
  =?UTF-8?q?Christian=20K=C3=B6nig?= <christian.koenig@amd.com>,
@@ -134,8 +134,8 @@ Cc: Rasmus Villemoes <linux@rasmusvillemoes.dk>,
  Masami Hiramatsu <mhiramat@kernel.org>,
  Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
  Andrew Morton <akpm@linux-foundation.org>
-Date: Tue, 11 Nov 2025 13:20:01 +0100
-Message-ID: <20251111122735.880607-2-andriy.shevchenko@linux.intel.com>
+Date: Tue, 11 Nov 2025 13:20:03 +0100
+Message-ID: <20251111122735.880607-4-andriy.shevchenko@linux.intel.com>
 X-Mailer: git-send-email 2.50.1
 In-Reply-To: <20251111122735.880607-1-andriy.shevchenko@linux.intel.com>
 References: <20251111122735.880607-1-andriy.shevchenko@linux.intel.com>
@@ -143,26 +143,24 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1762864068; x=1794400068;
+ t=1762864077; x=1794400077;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=t3O/1gfEc/6EHpptFUQui/+YRYvWifZWWwljDBKqPQc=;
- b=lOUCn1XP5XTQUxwrU/xmyESe/nHTgaSInGdg0rhGuqXDxyscfr522fDR
- nk0p5jNJ6+8ftfzdJ88FpkUBUFCYVehjNZaWNvSrgtd8PSzoDCRQ7D+sv
- v1x9dPDxzPp0h3U68MW18AJHZJH6xsu9NtWrfmGFKOEcQuJrR7Olae76j
- ddUR3K1hc25pbv1w8tHum0CFrTDeDxCz4V/EQqiGjIUEStsiQJ2ws8Dai
- X3y+WpYfbU0+0blzrC9Hbv5YzBVyaJc9nxqTsFuFUcJkjPqlQOwBW7nPl
- N+giSKIqJPLM2se6bkafLzC6DhJdtMcQnm8qPvnusQ+KTY0kIf9LxglgY
+ bh=biAt7h9SZCWEseGnW36hqThT4FR7mM7YTOf8pyCUSJI=;
+ b=moEJmN1XMSi0TLXEMApdXqNfyJJVc7N1VvZSsJRT+xzd39UQDCD5gCJS
+ f5BwVSnRmm9CNuLV393A6TF/Hk2cY0WJgsmZPFhIytfzb4YlUHnrIylLT
+ xSfXyMqH8FkhlOQY0iO4zz8JL81qqNFQ2H0bkxP7N1Pcikee+M1hvvwjq
+ DBNiM9EsHMBDmcCUeAiltH13a7bjOj0g1Hkq5vmXeeci7Df9arO2P3W28
+ /fTzsWGwNl67eduxN9FVU+ux0C00iMRGtkq9kIDc7MaXb0GnT6QgYaYOS
+ 8Clux8zhBgC/qa1lNcnTtovcasfXneCpRHHkI+bdi7VD4NC6+O1V/P+Im
  w==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=none (p=none dis=none)
  header.from=linux.intel.com
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=lOUCn1XP
-Subject: [Intel-wired-lan] [PATCH v2 01/21] lib/vsprintf: Add specifier for
- printing struct timespec64
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=moEJmN1X
+Subject: [Intel-wired-lan] [PATCH v2 03/21] libceph: Switch to use %ptSp
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -178,121 +176,39 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-A handful drivers want to print a content of the struct timespec64
-in a format of %lld:%09ld. In order to make their lives easier, add
-the respecting specifier directly to the printf() implementation.
+Use %ptSp instead of open coded variants to print content of
+struct timespec64 in human readable format.
 
+Reviewed-by: Viacheslav Dubeyko <Slava.Dubeyko@ibm.com>
 Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- Documentation/core-api/printk-formats.rst | 11 ++++++++--
- lib/tests/printf_kunit.c                  |  4 ++++
- lib/vsprintf.c                            | 25 +++++++++++++++++++++++
- 3 files changed, 38 insertions(+), 2 deletions(-)
+ net/ceph/messenger_v2.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/Documentation/core-api/printk-formats.rst b/Documentation/core-api/printk-formats.rst
-index 7f2f11b48286..c0b1b6089307 100644
---- a/Documentation/core-api/printk-formats.rst
-+++ b/Documentation/core-api/printk-formats.rst
-@@ -547,11 +547,13 @@ Time and date
- 	%pt[RT]s		YYYY-mm-dd HH:MM:SS
- 	%pt[RT]d		YYYY-mm-dd
- 	%pt[RT]t		HH:MM:SS
--	%pt[RT][dt][r][s]
-+	%ptSp			<seconds>.<nanoseconds>
-+	%pt[RST][dt][r][s]
+diff --git a/net/ceph/messenger_v2.c b/net/ceph/messenger_v2.c
+index 9e39378eda00..6e676e2d4ba0 100644
+--- a/net/ceph/messenger_v2.c
++++ b/net/ceph/messenger_v2.c
+@@ -1535,8 +1535,7 @@ static int prepare_keepalive2(struct ceph_connection *con)
+ 	struct timespec64 now;
  
- For printing date and time as represented by::
+ 	ktime_get_real_ts64(&now);
+-	dout("%s con %p timestamp %lld.%09ld\n", __func__, con, now.tv_sec,
+-	     now.tv_nsec);
++	dout("%s con %p timestamp %ptSp\n", __func__, con, &now);
  
--	R  struct rtc_time structure
-+	R  content of struct rtc_time
-+	S  content of struct timespec64
- 	T  time64_t type
+ 	ceph_encode_timespec64(ts, &now);
  
- in human readable format.
-@@ -563,6 +565,11 @@ The %pt[RT]s (space) will override ISO 8601 separator by using ' ' (space)
- instead of 'T' (Capital T) between date and time. It won't have any effect
- when date or time is omitted.
+@@ -2729,8 +2728,7 @@ static int process_keepalive2_ack(struct ceph_connection *con,
+ 	ceph_decode_need(&p, end, sizeof(struct ceph_timespec), bad);
+ 	ceph_decode_timespec64(&con->last_keepalive_ack, p);
  
-+The %ptSp is equivalent to %lld.%09ld for the content of the struct timespec64.
-+When the other specifiers are given, it becomes the respective equivalent of
-+%ptT[dt][r][s].%09ld. In other words, the seconds are being printed in
-+the human readable format followed by a dot and nanoseconds.
-+
- Passed by reference.
+-	dout("%s con %p timestamp %lld.%09ld\n", __func__, con,
+-	     con->last_keepalive_ack.tv_sec, con->last_keepalive_ack.tv_nsec);
++	dout("%s con %p timestamp %ptSp\n", __func__, con, &con->last_keepalive_ack);
  
- struct clk
-diff --git a/lib/tests/printf_kunit.c b/lib/tests/printf_kunit.c
-index bc54cca2d7a6..7617e5b8b02c 100644
---- a/lib/tests/printf_kunit.c
-+++ b/lib/tests/printf_kunit.c
-@@ -504,6 +504,7 @@ time_and_date(struct kunit *kunittest)
- 	};
- 	/* 2019-01-04T15:32:23 */
- 	time64_t t = 1546615943;
-+	struct timespec64 ts = { .tv_sec = t, .tv_nsec = 11235813 };
+ 	return 0;
  
- 	test("(%pt?)", "%pt", &tm);
- 	test("2018-11-26T05:35:43", "%ptR", &tm);
-@@ -522,6 +523,9 @@ time_and_date(struct kunit *kunittest)
- 	test("0119-00-04 15:32:23", "%ptTsr", &t);
- 	test("15:32:23|2019-01-04", "%ptTts|%ptTds", &t, &t);
- 	test("15:32:23|0119-00-04", "%ptTtrs|%ptTdrs", &t, &t);
-+
-+	test("2019-01-04T15:32:23.011235813", "%ptS", &ts);
-+	test("1546615943.011235813", "%ptSp", &ts);
- }
- 
- static void
-diff --git a/lib/vsprintf.c b/lib/vsprintf.c
-index 3f99834fd788..fdd06e8957a3 100644
---- a/lib/vsprintf.c
-+++ b/lib/vsprintf.c
-@@ -1989,6 +1989,28 @@ char *time64_str(char *buf, char *end, const time64_t time,
- 	return rtc_str(buf, end, &rtc_time, spec, fmt);
- }
- 
-+static noinline_for_stack
-+char *timespec64_str(char *buf, char *end, const struct timespec64 *ts,
-+		     struct printf_spec spec, const char *fmt)
-+{
-+	static const struct printf_spec default_dec09_spec = {
-+		.base = 10,
-+		.field_width = 9,
-+		.precision = -1,
-+		.flags = ZEROPAD,
-+	};
-+
-+	if (fmt[2] == 'p')
-+		buf = number(buf, end, ts->tv_sec, default_dec_spec);
-+	else
-+		buf = time64_str(buf, end, ts->tv_sec, spec, fmt);
-+	if (buf < end)
-+		*buf = '.';
-+	buf++;
-+
-+	return number(buf, end, ts->tv_nsec, default_dec09_spec);
-+}
-+
- static noinline_for_stack
- char *time_and_date(char *buf, char *end, void *ptr, struct printf_spec spec,
- 		    const char *fmt)
-@@ -1999,6 +2021,8 @@ char *time_and_date(char *buf, char *end, void *ptr, struct printf_spec spec,
- 	switch (fmt[1]) {
- 	case 'R':
- 		return rtc_str(buf, end, (const struct rtc_time *)ptr, spec, fmt);
-+	case 'S':
-+		return timespec64_str(buf, end, (const struct timespec64 *)ptr, spec, fmt);
- 	case 'T':
- 		return time64_str(buf, end, *(const time64_t *)ptr, spec, fmt);
- 	default:
-@@ -2464,6 +2488,7 @@ early_param("no_hash_pointers", no_hash_pointers_enable);
-  * - 'g' For block_device name (gendisk + partition number)
-  * - 't[RT][dt][r][s]' For time and date as represented by:
-  *      R    struct rtc_time
-+ *      S    struct timespec64
-  *      T    time64_t
-  * - 'C' For a clock, it prints the name (Common Clock Framework) or address
-  *       (legacy clock framework) of the clock
 -- 
 2.50.1
 
