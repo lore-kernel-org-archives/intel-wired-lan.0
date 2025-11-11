@@ -1,69 +1,69 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EFA33CD3420
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 11 Nov 2025 12:28:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4EE5CCCFA1A
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 11 Nov 2025 12:28:08 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id B0A6A60BB1;
-	Tue, 11 Nov 2025 12:28:02 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 23BB481F1A;
+	Tue, 11 Nov 2025 12:28:08 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 14U6A1v7jWV6; Tue, 11 Nov 2025 12:28:01 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 69D0kbIgi7p1; Tue, 11 Nov 2025 12:28:07 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 1C21660BA5
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 1950381EC8
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1762864081;
-	bh=CT492DISbffbDVzCNEhDrCYUt+BW7al+qim6HTV/YVo=;
+	s=default; t=1762864087;
+	bh=sl+e+TWv0FZkPtZYGSYZ1lL6PuN8+zzAIX7M80VhNuY=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=Aczm7S/1NuYdxHHmxvFNlYCSoSIAj7CeVf4am8wnb1LkQlbLeH/rBSVt6sVxQVJnW
-	 x4yxm1JJRnNMu6uWfg8MEO1TvaSTlUKOLttsskCWxu0D+sJaVsmmQ4xBIYXLkRg9br
-	 fNDkMiEDAlPVo6e7ME9PXR62XfoXQKBvale1C5W+V209tKuCoHzcbZRFAzi9aNfQS0
-	 375Gd5Gfeujp2MQvdmkAZYhBWwpxmeZBi3A9idR3D4Wy2NetvnfFmsnwFjPNqAg7sb
-	 mS9gTeb7zFt6HF8Gk9hAec/TIkecQQSDg/61hR1739Af14QqeUXxa/ZWl7mRcsJZTl
-	 ++EKiGUZzdX/A==
+	b=ep2o717tlc05QTTbWG3l7jAJOFu/HnNN0EAULPql9Wcfli/Omo8DM/4btam0S70c7
+	 JptOU8kg9xOYphdaTkA1OVXWQJNPYwdFtCURNJaoDkO0HDBewa0TFJaDl3qMJkdwZa
+	 XHXaaul+EQLZOoz9eWFCIvlFWGtO2MM4ckzrS/IhcJZYw4rOxeUd/5lVeP4u+aKhzf
+	 ss7DY37+gtcdJ6vCsB1hsrW43QuNxUHRF4EgJ/tmX0rwJX4+Dh5GAuaL8/6G7nQI7l
+	 zxD47Q+CW85m9jqTmc2jli4tvZbChmFVvlp7Y+tEXnRgMw3tPb2kzcQQOTHwxxBHmD
+	 qeNQHG1cnmaTQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 1C21660BA5;
-	Tue, 11 Nov 2025 12:28:01 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id 71106FA
- for <intel-wired-lan@lists.osuosl.org>; Tue, 11 Nov 2025 12:27:59 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 1950381EC8;
+	Tue, 11 Nov 2025 12:28:07 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 2E30525D
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 11 Nov 2025 12:28:06 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 4AA01407C6
- for <intel-wired-lan@lists.osuosl.org>; Tue, 11 Nov 2025 12:27:58 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 150D64084C
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 11 Nov 2025 12:28:06 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 11RbpJIdFxN8 for <intel-wired-lan@lists.osuosl.org>;
- Tue, 11 Nov 2025 12:27:56 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id azagFTVJecKw for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 11 Nov 2025 12:28:04 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.9;
  helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 6A354406F9
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 6A354406F9
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 328954081D
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 328954081D
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.9])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 6A354406F9
- for <intel-wired-lan@lists.osuosl.org>; Tue, 11 Nov 2025 12:27:56 +0000 (UTC)
-X-CSE-ConnectionGUID: AEMB+SO3ROCLx3K3F8g7xA==
-X-CSE-MsgGUID: TOvyD0EYTyOln5lT68xEGQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11609"; a="75606841"
-X-IronPort-AV: E=Sophos;i="6.19,296,1754982000"; d="scan'208";a="75606841"
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 328954081D
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 11 Nov 2025 12:28:04 +0000 (UTC)
+X-CSE-ConnectionGUID: xEvLO6YjQ3KMun2qQUlh4g==
+X-CSE-MsgGUID: +rdziWCWQiKnQcsNwTbKgQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11609"; a="75606950"
+X-IronPort-AV: E=Sophos;i="6.19,296,1754982000"; d="scan'208";a="75606950"
 Received: from fmviesa007.fm.intel.com ([10.60.135.147])
  by fmvoesa103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 11 Nov 2025 04:27:55 -0800
-X-CSE-ConnectionGUID: EF85IjB2TdiLGZsQTq6TSA==
-X-CSE-MsgGUID: W0MVRMT/SGiKxXDFXSY42A==
+ 11 Nov 2025 04:28:03 -0800
+X-CSE-ConnectionGUID: yb65GK5dTgmnslAPrRM0gA==
+X-CSE-MsgGUID: J9zlwCCETMGq265hl7+R7Q==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.19,296,1754982000"; d="scan'208";a="188592903"
+X-IronPort-AV: E=Sophos;i="6.19,296,1754982000"; d="scan'208";a="188592913"
 Received: from black.igk.intel.com ([10.91.253.5])
- by fmviesa007.fm.intel.com with ESMTP; 11 Nov 2025 04:27:47 -0800
+ by fmviesa007.fm.intel.com with ESMTP; 11 Nov 2025 04:27:55 -0800
 Received: by black.igk.intel.com (Postfix, from userid 1003)
- id D7E5398; Tue, 11 Nov 2025 13:27:37 +0100 (CET)
+ id 0AB809E; Tue, 11 Nov 2025 13:27:38 +0100 (CET)
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 To: Corey Minyard <corey@minyard.net>,
  =?UTF-8?q?Christian=20K=C3=B6nig?= <christian.koenig@amd.com>,
@@ -134,8 +134,8 @@ Cc: Rasmus Villemoes <linux@rasmusvillemoes.dk>,
  Masami Hiramatsu <mhiramat@kernel.org>,
  Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
  Andrew Morton <akpm@linux-foundation.org>
-Date: Tue, 11 Nov 2025 13:20:02 +0100
-Message-ID: <20251111122735.880607-3-andriy.shevchenko@linux.intel.com>
+Date: Tue, 11 Nov 2025 13:20:08 +0100
+Message-ID: <20251111122735.880607-9-andriy.shevchenko@linux.intel.com>
 X-Mailer: git-send-email 2.50.1
 In-Reply-To: <20251111122735.880607-1-andriy.shevchenko@linux.intel.com>
 References: <20251111122735.880607-1-andriy.shevchenko@linux.intel.com>
@@ -143,24 +143,24 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1762864076; x=1794400076;
+ t=1762864084; x=1794400084;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=+UQGsnSg1BaEGnQW/GmmVLAGeLaVWJuQCcCUScfVp7s=;
- b=Ukd8IXiakAsKABJwX6rupjwlFMODWkCZVETvkKuRI+AHZlfMn3kQuPts
- RUGT4tIUhPCk8sxcFVKCshlxyg3ZogYed7sCpQQB1HOSWCyDMROeX36e2
- SXB8VGJAtc3jfkNpcZbEq9OX96BE8vymoHp/Rr2VHld6/d80/Vwt07y1Y
- bQodZYrhEKw0Tgayy8g9ShIyQGB+wnJ0F7qhx0DkGR9o9K4OSkDFoz6HS
- PAtm+P3jEjyMSioLjZYczop1S9MJ4LMI4oW6x6fboAUGCvPU6RZE2eXSg
- HifT6WjQFEqq/5/0hWVPxQ1bDvwkwDRdx/veuausNJZ18y8dhlwKC/AyH
- w==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ bh=BmDr+9WwyAhMzsfsAApxDHVanVdl5gKra56KPccq0Eg=;
+ b=EUoO0L6UXKmkEWOZpzHeZr5/Oky9G+Aoa5Rmj1oivuaDhFW9v51K4CBy
+ wa26fkaamsZzXV+r8Hwd9gOPzF0Gis6NFkdvyRq71I8yuGZAEFpXfb9cm
+ XMZUWmi3XSN85TnFR7Z95/FQ9u8YxreE7ZvfHUv+rMh6r0ptIDm9NHDeI
+ qE12XFuuaSaCZL3K2IIdfrWP+l+kkDMzjv0z6gXDxXlgac412JBaKA9MM
+ zvlKr/0KB8BqwsTs++9uGsI+mcOYuZT1yYlWxXhhaTC0Cr1IgrlPk8s5/
+ grtmNHqVOEBGZyWC5PSC+uhKE+1vtC3WOk2gNrU2EHyg5CqUNf6NDC1vd
+ A==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=none (p=none dis=none)
  header.from=linux.intel.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=Ukd8IXia
-Subject: [Intel-wired-lan] [PATCH v2 02/21] ceph: Switch to use %ptSp
+ header.a=rsa-sha256 header.s=Intel header.b=EUoO0L6U
+Subject: [Intel-wired-lan] [PATCH v2 08/21] drm/xe: Switch to use %ptSp
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -179,165 +179,28 @@ Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 Use %ptSp instead of open coded variants to print content of
 struct timespec64 in human readable format.
 
-Reviewed-by: Viacheslav Dubeyko <Slava.Dubeyko@ibm.com>
+Acked-by: Lucas De Marchi <lucas.demarchi@intel.com>
 Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- fs/ceph/dir.c   |  5 ++---
- fs/ceph/inode.c | 49 ++++++++++++++++---------------------------------
- fs/ceph/xattr.c |  6 ++----
- 3 files changed, 20 insertions(+), 40 deletions(-)
+ drivers/gpu/drm/xe/xe_devcoredump.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/fs/ceph/dir.c b/fs/ceph/dir.c
-index d18c0eaef9b7..bf50c6e7a029 100644
---- a/fs/ceph/dir.c
-+++ b/fs/ceph/dir.c
-@@ -2155,7 +2155,7 @@ static ssize_t ceph_read_dir(struct file *file, char __user *buf, size_t size,
- 				" rfiles:   %20lld\n"
- 				" rsubdirs: %20lld\n"
- 				"rbytes:    %20lld\n"
--				"rctime:    %10lld.%09ld\n",
-+				"rctime:    %ptSp\n",
- 				ci->i_files + ci->i_subdirs,
- 				ci->i_files,
- 				ci->i_subdirs,
-@@ -2163,8 +2163,7 @@ static ssize_t ceph_read_dir(struct file *file, char __user *buf, size_t size,
- 				ci->i_rfiles,
- 				ci->i_rsubdirs,
- 				ci->i_rbytes,
--				ci->i_rctime.tv_sec,
--				ci->i_rctime.tv_nsec);
-+				&ci->i_rctime);
- 	}
+diff --git a/drivers/gpu/drm/xe/xe_devcoredump.c b/drivers/gpu/drm/xe/xe_devcoredump.c
+index 203e3038cc81..d444eda65ca6 100644
+--- a/drivers/gpu/drm/xe/xe_devcoredump.c
++++ b/drivers/gpu/drm/xe/xe_devcoredump.c
+@@ -106,9 +106,9 @@ static ssize_t __xe_devcoredump_read(char *buffer, ssize_t count,
+ 	drm_puts(&p, "module: " KBUILD_MODNAME "\n");
  
- 	if (*ppos >= dfi->dir_info_len)
-diff --git a/fs/ceph/inode.c b/fs/ceph/inode.c
-index 37d3a2477c17..a596cb53f1ac 100644
---- a/fs/ceph/inode.c
-+++ b/fs/ceph/inode.c
-@@ -879,7 +879,9 @@ void ceph_fill_file_time(struct inode *inode, int issued,
- {
- 	struct ceph_client *cl = ceph_inode_to_client(inode);
- 	struct ceph_inode_info *ci = ceph_inode(inode);
-+	struct timespec64 iatime = inode_get_atime(inode);
- 	struct timespec64 ictime = inode_get_ctime(inode);
-+	struct timespec64 imtime = inode_get_mtime(inode);
- 	int warn = 0;
+ 	ts = ktime_to_timespec64(ss->snapshot_time);
+-	drm_printf(&p, "Snapshot time: %lld.%09ld\n", ts.tv_sec, ts.tv_nsec);
++	drm_printf(&p, "Snapshot time: %ptSp\n", &ts);
+ 	ts = ktime_to_timespec64(ss->boot_time);
+-	drm_printf(&p, "Uptime: %lld.%09ld\n", ts.tv_sec, ts.tv_nsec);
++	drm_printf(&p, "Uptime: %ptSp\n", &ts);
+ 	drm_printf(&p, "Process: %s [%d]\n", ss->process_name, ss->pid);
+ 	xe_device_snapshot_print(xe, &p);
  
- 	if (issued & (CEPH_CAP_FILE_EXCL|
-@@ -889,39 +891,26 @@ void ceph_fill_file_time(struct inode *inode, int issued,
- 		      CEPH_CAP_XATTR_EXCL)) {
- 		if (ci->i_version == 0 ||
- 		    timespec64_compare(ctime, &ictime) > 0) {
--			doutc(cl, "ctime %lld.%09ld -> %lld.%09ld inc w/ cap\n",
--			     ictime.tv_sec, ictime.tv_nsec,
--			     ctime->tv_sec, ctime->tv_nsec);
-+			doutc(cl, "ctime %ptSp -> %ptSp inc w/ cap\n", &ictime, ctime);
- 			inode_set_ctime_to_ts(inode, *ctime);
- 		}
- 		if (ci->i_version == 0 ||
- 		    ceph_seq_cmp(time_warp_seq, ci->i_time_warp_seq) > 0) {
- 			/* the MDS did a utimes() */
--			doutc(cl, "mtime %lld.%09ld -> %lld.%09ld tw %d -> %d\n",
--			     inode_get_mtime_sec(inode),
--			     inode_get_mtime_nsec(inode),
--			     mtime->tv_sec, mtime->tv_nsec,
--			     ci->i_time_warp_seq, (int)time_warp_seq);
-+			doutc(cl, "mtime %ptSp -> %ptSp tw %d -> %d\n", &imtime, mtime,
-+			      ci->i_time_warp_seq, (int)time_warp_seq);
- 
- 			inode_set_mtime_to_ts(inode, *mtime);
- 			inode_set_atime_to_ts(inode, *atime);
- 			ci->i_time_warp_seq = time_warp_seq;
- 		} else if (time_warp_seq == ci->i_time_warp_seq) {
--			struct timespec64	ts;
--
- 			/* nobody did utimes(); take the max */
--			ts = inode_get_mtime(inode);
--			if (timespec64_compare(mtime, &ts) > 0) {
--				doutc(cl, "mtime %lld.%09ld -> %lld.%09ld inc\n",
--				     ts.tv_sec, ts.tv_nsec,
--				     mtime->tv_sec, mtime->tv_nsec);
-+			if (timespec64_compare(mtime, &imtime) > 0) {
-+				doutc(cl, "mtime %ptSp -> %ptSp inc\n", &imtime, mtime);
- 				inode_set_mtime_to_ts(inode, *mtime);
- 			}
--			ts = inode_get_atime(inode);
--			if (timespec64_compare(atime, &ts) > 0) {
--				doutc(cl, "atime %lld.%09ld -> %lld.%09ld inc\n",
--				     ts.tv_sec, ts.tv_nsec,
--				     atime->tv_sec, atime->tv_nsec);
-+			if (timespec64_compare(atime, &iatime) > 0) {
-+				doutc(cl, "atime %ptSp -> %ptSp inc\n", &iatime, atime);
- 				inode_set_atime_to_ts(inode, *atime);
- 			}
- 		} else if (issued & CEPH_CAP_FILE_EXCL) {
-@@ -2703,10 +2692,8 @@ int __ceph_setattr(struct mnt_idmap *idmap, struct inode *inode,
- 	if (ia_valid & ATTR_ATIME) {
- 		struct timespec64 atime = inode_get_atime(inode);
- 
--		doutc(cl, "%p %llx.%llx atime %lld.%09ld -> %lld.%09ld\n",
--		      inode, ceph_vinop(inode),
--		      atime.tv_sec, atime.tv_nsec,
--		      attr->ia_atime.tv_sec, attr->ia_atime.tv_nsec);
-+		doutc(cl, "%p %llx.%llx atime %ptSp -> %ptSp\n",
-+		      inode, ceph_vinop(inode), &atime, &attr->ia_atime);
- 		if (!do_sync && (issued & CEPH_CAP_FILE_EXCL)) {
- 			ci->i_time_warp_seq++;
- 			inode_set_atime_to_ts(inode, attr->ia_atime);
-@@ -2780,10 +2767,8 @@ int __ceph_setattr(struct mnt_idmap *idmap, struct inode *inode,
- 	if (ia_valid & ATTR_MTIME) {
- 		struct timespec64 mtime = inode_get_mtime(inode);
- 
--		doutc(cl, "%p %llx.%llx mtime %lld.%09ld -> %lld.%09ld\n",
--		      inode, ceph_vinop(inode),
--		      mtime.tv_sec, mtime.tv_nsec,
--		      attr->ia_mtime.tv_sec, attr->ia_mtime.tv_nsec);
-+		doutc(cl, "%p %llx.%llx mtime %ptSp -> %ptSp\n",
-+		      inode, ceph_vinop(inode), &mtime, &attr->ia_mtime);
- 		if (!do_sync && (issued & CEPH_CAP_FILE_EXCL)) {
- 			ci->i_time_warp_seq++;
- 			inode_set_mtime_to_ts(inode, attr->ia_mtime);
-@@ -2804,13 +2789,11 @@ int __ceph_setattr(struct mnt_idmap *idmap, struct inode *inode,
- 
- 	/* these do nothing */
- 	if (ia_valid & ATTR_CTIME) {
-+		struct timespec64 ictime = inode_get_ctime(inode);
- 		bool only = (ia_valid & (ATTR_SIZE|ATTR_MTIME|ATTR_ATIME|
- 					 ATTR_MODE|ATTR_UID|ATTR_GID)) == 0;
--		doutc(cl, "%p %llx.%llx ctime %lld.%09ld -> %lld.%09ld (%s)\n",
--		      inode, ceph_vinop(inode),
--		      inode_get_ctime_sec(inode),
--		      inode_get_ctime_nsec(inode),
--		      attr->ia_ctime.tv_sec, attr->ia_ctime.tv_nsec,
-+		doutc(cl, "%p %llx.%llx ctime %ptSp -> %ptSp (%s)\n",
-+		      inode, ceph_vinop(inode), &ictime, &attr->ia_ctime,
- 		      only ? "ctime only" : "ignored");
- 		if (only) {
- 			/*
-diff --git a/fs/ceph/xattr.c b/fs/ceph/xattr.c
-index 537165db4519..ad1f30bea175 100644
---- a/fs/ceph/xattr.c
-+++ b/fs/ceph/xattr.c
-@@ -249,8 +249,7 @@ static ssize_t ceph_vxattrcb_dir_rbytes(struct ceph_inode_info *ci, char *val,
- static ssize_t ceph_vxattrcb_dir_rctime(struct ceph_inode_info *ci, char *val,
- 					size_t size)
- {
--	return ceph_fmt_xattr(val, size, "%lld.%09ld", ci->i_rctime.tv_sec,
--				ci->i_rctime.tv_nsec);
-+	return ceph_fmt_xattr(val, size, "%ptSp", &ci->i_rctime);
- }
- 
- /* dir pin */
-@@ -307,8 +306,7 @@ static bool ceph_vxattrcb_snap_btime_exists(struct ceph_inode_info *ci)
- static ssize_t ceph_vxattrcb_snap_btime(struct ceph_inode_info *ci, char *val,
- 					size_t size)
- {
--	return ceph_fmt_xattr(val, size, "%lld.%09ld", ci->i_snap_btime.tv_sec,
--				ci->i_snap_btime.tv_nsec);
-+	return ceph_fmt_xattr(val, size, "%ptSp", &ci->i_snap_btime);
- }
- 
- static ssize_t ceph_vxattrcb_cluster_fsid(struct ceph_inode_info *ci,
 -- 
 2.50.1
 
