@@ -4,66 +4,66 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5614CCD13D9
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 11 Nov 2025 12:28:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E88E4CCF9E3
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 11 Nov 2025 12:28:09 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 1532660A99;
-	Tue, 11 Nov 2025 12:28:08 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id BE09260A7C;
+	Tue, 11 Nov 2025 12:28:09 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id vd5ozs67LGj8; Tue, 11 Nov 2025 12:28:06 +0000 (UTC)
+ id v6cI9EbUY9Ej; Tue, 11 Nov 2025 12:28:09 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8349660A7C
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3C22560B9D
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1762864086;
-	bh=o72IIuYiDD380WOtn6WlmYYiTrpSLcgpIZ4ZT1R5+NY=;
+	s=default; t=1762864089;
+	bh=fB3vSFUuDz+Q3AKsurTBqbREB7p9/3PjSYMX28sunTY=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=ex8e5K1jnkqCPE42KgAUbtObXY1NY4fEvHTFlnN0bTiP0XRnPNXEqZBpiTqk4TuRu
-	 xelDoJln7HfoilzzEMgkhhuTxi3/3WQtPdzdeVmNBjcpJtyJpfx99YFj4tVw9aG0ad
-	 WyP6m9jdSobyuPV6sV/bEsYZcMWKp24Vpy/jV9o6qJm9zwfK0zCtnZiP+AE1y7LtfC
-	 ZYx8tFnU+YwTIEMvhP+fDEy0zkN5vvRqNdFZUtTVbqxT56iMxrOO7mcmdpccMqJGg3
-	 o+KVCd25bZ0KdBhFCYp3BnBfg1ktWNPI3jMv8OTqpkshO0Zx6dxMbGG3E2oj8HHGXb
-	 nlJKJarhIR/Yw==
+	b=ePkYIvh1LkiFN+MrlEQDy7N4pcywW2fXgp35a2Hhy5In2Jegdq8VIiNb1ps3Fh6XC
+	 +1oyF5fAfxFKgrbNCJQSDdMNOROysE9ctg0LZnHMpSZFGVk682ko+3h6dC98JKefka
+	 lHQ4FKcjT80bERpiN57IvyDiJLmVPDyd/sEZMVuua+J+2gSCcl7isSMRK8UIUDil5R
+	 8a3+MfnlD6ev75j2UOokd8XGj3CoXz1fpqSd7p8Jjwwx03vLQOl6RplPJzcoDcc60N
+	 dkD3Fmn3IoVOU99cPz3LJL9bxHy4Tbm9m806Oq6SVMzZrfTg/n3o5homiu+v4dgcDk
+	 DGJAi9DCStsDA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 8349660A7C;
-	Tue, 11 Nov 2025 12:28:06 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id DEE5825D
- for <intel-wired-lan@lists.osuosl.org>; Tue, 11 Nov 2025 12:28:04 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 3C22560B9D;
+	Tue, 11 Nov 2025 12:28:09 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 3AE7B25D
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 11 Nov 2025 12:28:08 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id DC8C140854
- for <intel-wired-lan@lists.osuosl.org>; Tue, 11 Nov 2025 12:28:04 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id A92CA4084C
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 11 Nov 2025 12:28:07 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 9RYHHa57ui_N for <intel-wired-lan@lists.osuosl.org>;
- Tue, 11 Nov 2025 12:28:04 +0000 (UTC)
+ id QIoN5CdOU4tQ for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 11 Nov 2025 12:28:06 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.9;
  helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org E258340813
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E258340813
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 9A4B040813
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9A4B040813
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.9])
- by smtp4.osuosl.org (Postfix) with ESMTPS id E258340813
- for <intel-wired-lan@lists.osuosl.org>; Tue, 11 Nov 2025 12:28:03 +0000 (UTC)
-X-CSE-ConnectionGUID: XXqOqkBdRvCrVVc+ROidug==
-X-CSE-MsgGUID: pl2xEOazRRW+7YRBtnHdAg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11609"; a="75606928"
-X-IronPort-AV: E=Sophos;i="6.19,296,1754982000"; d="scan'208";a="75606928"
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 9A4B040813
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 11 Nov 2025 12:28:06 +0000 (UTC)
+X-CSE-ConnectionGUID: 3C12BNJ5TJC6F39bl42xPA==
+X-CSE-MsgGUID: KyaFcvl5QIuDCwJt7VncxQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11609"; a="75607049"
+X-IronPort-AV: E=Sophos;i="6.19,296,1754982000"; d="scan'208";a="75607049"
 Received: from fmviesa007.fm.intel.com ([10.60.135.147])
  by fmvoesa103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 11 Nov 2025 04:28:03 -0800
-X-CSE-ConnectionGUID: 3kTDYZbdSGuh8Y2wW057ug==
-X-CSE-MsgGUID: 0+0RXBJqS5e5h/JXqx5zIg==
+ 11 Nov 2025 04:28:06 -0800
+X-CSE-ConnectionGUID: YHDSoTq9Rr+aZdtO+8m67w==
+X-CSE-MsgGUID: KCI6LE1SS0+Hf144PvkzVA==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.19,296,1754982000"; d="scan'208";a="188592912"
+X-IronPort-AV: E=Sophos;i="6.19,296,1754982000"; d="scan'208";a="188592922"
 Received: from black.igk.intel.com ([10.91.253.5])
- by fmviesa007.fm.intel.com with ESMTP; 11 Nov 2025 04:27:55 -0800
+ by fmviesa007.fm.intel.com with ESMTP; 11 Nov 2025 04:27:58 -0800
 Received: by black.igk.intel.com (Postfix, from userid 1003)
- id 03F3C9D; Tue, 11 Nov 2025 13:27:38 +0100 (CET)
+ id 30E48A4; Tue, 11 Nov 2025 13:27:38 +0100 (CET)
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 To: Corey Minyard <corey@minyard.net>,
  =?UTF-8?q?Christian=20K=C3=B6nig?= <christian.koenig@amd.com>,
@@ -134,8 +134,8 @@ Cc: Rasmus Villemoes <linux@rasmusvillemoes.dk>,
  Masami Hiramatsu <mhiramat@kernel.org>,
  Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
  Andrew Morton <akpm@linux-foundation.org>
-Date: Tue, 11 Nov 2025 13:20:07 +0100
-Message-ID: <20251111122735.880607-8-andriy.shevchenko@linux.intel.com>
+Date: Tue, 11 Nov 2025 13:20:14 +0100
+Message-ID: <20251111122735.880607-15-andriy.shevchenko@linux.intel.com>
 X-Mailer: git-send-email 2.50.1
 In-Reply-To: <20251111122735.880607-1-andriy.shevchenko@linux.intel.com>
 References: <20251111122735.880607-1-andriy.shevchenko@linux.intel.com>
@@ -143,25 +143,25 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1762864084; x=1794400084;
+ t=1762864087; x=1794400087;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=EefPNFQBUNuGlR0DgULcxn8v9QseDyeQnp72XVg7OAg=;
- b=BUzbLsmf3/oQvVOFHAzLwxXLCths7Vfx/oyIpPL0r0kK4zIhqMShIDFV
- lQ9YebAS9XKvJFIfTOhULolhwnIk7wdDRiKiIpc/VjXoSzyE66zVMC2Zf
- 1tOS77+se129UsYHnIJzClDTbg7o4Zp/33GadyuoPlObHCM+YETCKNqEQ
- 5XHPhXOqI+e3u7O+WL+BqGuR1KUhC+pd84afHwlYJY0FYJhFIANg8mA6z
- PgTVtGchHUnq2eJg7XjAt0O5uhLooAjnppA6hMqeuYANOTqRdBUlxtkCU
- s3GSJJQ+E3HCCi49ljVp6w9Vpg4U+f1KwpVQNONDdOZ5s40L8L4mPxdav
- w==;
+ bh=e8WeGxOtZtcbZrMvs9n+wJZzGptxfxh9oxsAvrP2sMQ=;
+ b=HGtBRhl50OYnMLsFdXrt0Am4r5ZMvIlPxXRLG29ydoGcB01doNI8XlzG
+ rKTttwAWL+r9bgmfPsKvvzqKqLiqyt9ysEOq8f/bGzwH1JCOyOtSw8d3C
+ dsMxOgDScSsxGJdol+tjzLd2kNzv5u+mm4xjinMJEq9aUN17xpv+DCqMK
+ A4YlR7/aAyvMBU6Rrq0qyRbhKEzuggPlhN7ap1vk9GxFAaEt1+CjEeaqQ
+ v7UvAzmkD0HRUOrJu3FJFMsALU/yEMkz0IFSdtD2JlCE8bvqzktwmPo0S
+ dZdhvKEVICxOfG6S+DB4haurGvJq/typyZuWV4chViyzUClUD712mlAFc
+ g==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=none (p=none dis=none)
  header.from=linux.intel.com
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=BUzbLsmf
-Subject: [Intel-wired-lan] [PATCH v2 07/21] drm/vblank: Switch to use %ptSp
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=HGtBRhl5
+Subject: [Intel-wired-lan] [PATCH v2 14/21] net: dsa: sja1105: Switch to use
+ %ptSp
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -182,26 +182,35 @@ struct timespec64 in human readable format.
 
 Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- drivers/gpu/drm/drm_vblank.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+ drivers/net/dsa/sja1105/sja1105_tas.c | 8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/gpu/drm/drm_vblank.c b/drivers/gpu/drm/drm_vblank.c
-index 32d013c5c8fc..5c14140cd0c2 100644
---- a/drivers/gpu/drm/drm_vblank.c
-+++ b/drivers/gpu/drm/drm_vblank.c
-@@ -806,10 +806,8 @@ drm_crtc_vblank_helper_get_vblank_timestamp_internal(
- 	ts_vblank_time = ktime_to_timespec64(*vblank_time);
+diff --git a/drivers/net/dsa/sja1105/sja1105_tas.c b/drivers/net/dsa/sja1105/sja1105_tas.c
+index d7818710bc02..d5949d2c3e71 100644
+--- a/drivers/net/dsa/sja1105/sja1105_tas.c
++++ b/drivers/net/dsa/sja1105/sja1105_tas.c
+@@ -775,9 +775,8 @@ static void sja1105_tas_state_machine(struct work_struct *work)
+ 		base_time_ts = ns_to_timespec64(base_time);
+ 		now_ts = ns_to_timespec64(now);
  
- 	drm_dbg_vbl(dev,
--		    "crtc %u : v p(%d,%d)@ %lld.%06ld -> %lld.%06ld [e %d us, %d rep]\n",
--		    pipe, hpos, vpos,
--		    (u64)ts_etime.tv_sec, ts_etime.tv_nsec / 1000,
--		    (u64)ts_vblank_time.tv_sec, ts_vblank_time.tv_nsec / 1000,
-+		    "crtc %u : v p(%d,%d)@ %ptSp -> %ptSp [e %d us, %d rep]\n",
-+		    pipe, hpos, vpos, &ts_etime, &ts_vblank_time,
- 		    duration_ns / 1000, i);
+-		dev_dbg(ds->dev, "OPER base time %lld.%09ld (now %lld.%09ld)\n",
+-			base_time_ts.tv_sec, base_time_ts.tv_nsec,
+-			now_ts.tv_sec, now_ts.tv_nsec);
++		dev_dbg(ds->dev, "OPER base time %ptSp (now %ptSp)\n",
++			&base_time_ts, &now_ts);
  
- 	return true;
+ 		break;
+ 
+@@ -798,8 +797,7 @@ static void sja1105_tas_state_machine(struct work_struct *work)
+ 		if (now < tas_data->oper_base_time) {
+ 			/* TAS has not started yet */
+ 			diff = ns_to_timespec64(tas_data->oper_base_time - now);
+-			dev_dbg(ds->dev, "time to start: [%lld.%09ld]",
+-				diff.tv_sec, diff.tv_nsec);
++			dev_dbg(ds->dev, "time to start: [%ptSp]", &diff);
+ 			break;
+ 		}
+ 
 -- 
 2.50.1
 
