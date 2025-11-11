@@ -1,107 +1,107 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4F8D7CD342D
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 12 Nov 2025 16:35:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 50601CD342A
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 12 Nov 2025 16:35:21 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 1F59281292;
+	by smtp3.osuosl.org (Postfix) with ESMTP id 0260A60E74;
 	Wed, 12 Nov 2025 16:35:20 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id y-rV4TwJEsPw; Wed, 12 Nov 2025 16:35:18 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 1B62260E35
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1762965318;
+	bh=0w05K6KxFo07worIjxTlWcgaX/lcLwwSdDEeFRVch6g=;
+	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=fiETgqU2nKU4Vgpjs4/zP7C6749TEcumX805HPV2x3yoftZhmbB2ON55MXObEQoqN
+	 h/C/J32L0lCZ1DjY+hwU4MQFsLl7n/57DbRSLfGYLdabsyP9Znm7lOKHIpNgEJ9HSR
+	 MprRnlwfIm3ldZJPNkGWBgrm0iRlDvPdgRsYcLAQqcs88/fkT4UVEMw6iRmczPXkeB
+	 UyfbOoDf8atuFSAlsSLqJF4OAJf4yzEdccxJNvv+xNmIkoQAfsdufJ/8zEH6Wstdxz
+	 ow2DYQLZ25J8NtXfkPi8wd2lsXztyo1HclVtpmw1oAc8tCn0AmXR/2CL0eHVhDgyx4
+	 6X+Do5wEmbyTQ==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp3.osuosl.org (Postfix) with ESMTP id 1B62260E35;
+	Wed, 12 Nov 2025 16:35:18 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id C6077FA
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 11 Nov 2025 08:08:49 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp1.osuosl.org (Postfix) with ESMTP id ACAAA815D9
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 11 Nov 2025 08:08:49 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 3iT8zdxCqLAo; Wed, 12 Nov 2025 16:35:19 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 555CE81371
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1762965319;
-	bh=aB3Kna1Ydum3rSWq2Q4kNhk8LAGVHiOY3JIzqpUlVwM=;
-	h=References:In-Reply-To:From:Date:To:Cc:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=k35kNP7+x6aJ3zNeYCHUFg2ckxsGtBHIopEfi1NlfH196+9Id2FICjTKQEW1FUzay
-	 aHq1kIQfnDjtMS6jzsKd7rd895MxuzTXmAvVFeAU3/Fa4SX2W7ZJ/Z2rDwM/hksnEA
-	 ET4JFM21IHJnNo68bWuVAtt8lAWslNRQPux0JlanJxSnHpJCs1xZB/p6VzOfgmp+pm
-	 k8tMkyuq2urGSxKbjLHxwERGCPznKLU8SkYZD8DIR0lITOSdAbxB4zXTPPgA1guvWc
-	 eJZhuyoZxlVfGoWY0JFURO7qWz8esEbAlx/4nhZg/kTfGmUAfuCOh/hvikW6qbBT3W
-	 FGa+ODmIqVpsg==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 555CE81371;
-	Wed, 12 Nov 2025 16:35:19 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id CBD8D31C
- for <intel-wired-lan@lists.osuosl.org>; Tue, 11 Nov 2025 14:30:40 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id B2A2D407ED
- for <intel-wired-lan@lists.osuosl.org>; Tue, 11 Nov 2025 14:30:40 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 8og5sV9CdzFB for <intel-wired-lan@lists.osuosl.org>;
- Tue, 11 Nov 2025 14:30:39 +0000 (UTC)
-Received-SPF: None (mailfrom) identity=mailfrom;
- client-ip=2a00:1450:4864:20::132; helo=mail-lf1-x132.google.com;
- envelope-from=corey@minyard.net; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 243BC407D8
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 243BC407D8
-Received: from mail-lf1-x132.google.com (mail-lf1-x132.google.com
- [IPv6:2a00:1450:4864:20::132])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 243BC407D8
- for <intel-wired-lan@lists.osuosl.org>; Tue, 11 Nov 2025 14:30:38 +0000 (UTC)
-Received: by mail-lf1-x132.google.com with SMTP id
- 2adb3069b0e04-5930f751531so3952503e87.3
- for <intel-wired-lan@lists.osuosl.org>; Tue, 11 Nov 2025 06:30:38 -0800 (PST)
+ id etGwm4wYwPN7 for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 11 Nov 2025 08:08:44 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2607:f8b0:4864:20::630; helo=mail-pl1-x630.google.com;
+ envelope-from=senozhatsky@chromium.org; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 22C74815D3
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 22C74815D3
+Received: from mail-pl1-x630.google.com (mail-pl1-x630.google.com
+ [IPv6:2607:f8b0:4864:20::630])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 22C74815D3
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 11 Nov 2025 08:08:43 +0000 (UTC)
+Received: by mail-pl1-x630.google.com with SMTP id
+ d9443c01a7336-29808a9a96aso21262255ad.1
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 11 Nov 2025 00:08:43 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20230601; t=1762871437; x=1763476237;
- h=cc:to:subject:message-id:date:from:in-reply-to:references
- :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
- :message-id:reply-to;
- bh=aB3Kna1Ydum3rSWq2Q4kNhk8LAGVHiOY3JIzqpUlVwM=;
- b=Sx7wzPmwGrZnKDDlWo/30VN9oKulYeu5dqYVbB107pEYEW5wRtVRW4ozdmQVR0VwKg
- r7dDG2f/d7OssCh1WHG+daTjksbCeAA/xAKCbgrtWzYdlMIIPhaajgzek2FLs7lynsGc
- TLFUJjg9dJb1wY5NsuFd+vRjIlrL90iVQi2hGohUuUjM3DHfL+99Z36zRothppb2s6Ua
- +StxVGfAkFqEX6gU3ERdbobLFKRpigarB9XATKyj93pgEKC7cKpqN7COX4GNSY3RQVMI
- wIOpw5wF1ZpjzL1qxRaZG8SzY4lTQgPsKb8CHRrhtgEtA64Jh+XedzxT0i80GaWc5K19
- vEUQ==
+ d=1e100.net; s=20230601; t=1762848523; x=1763453323;
+ h=in-reply-to:content-disposition:mime-version:references:message-id
+ :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+ :subject:date:message-id:reply-to;
+ bh=0w05K6KxFo07worIjxTlWcgaX/lcLwwSdDEeFRVch6g=;
+ b=NvTC4JdKJceCkigE2Aiyag/5Fm8LlP0/3QgUmM6bv7g41vW5v1CAmPGnDUCMlQ4k1C
+ g7tmz7Ixy1Lt/NbXlw3XgP+YWwWvbd+Tm6+4ssEWvqa9J/4AI/Tz9ZTxYFDVKAC+ESGW
+ ShuyhlEkHKLaBo1Ul/ZgEoFArSFGwe3RzM6f4Ivd+jb8oL82pssMyxAASXbO67IiJXNC
+ oorQudcwXKRLsm/hVBPsgqaVpHM+IMRaK1ie95t0KFqs4CLGv7rt4lVk88P8N53y1XK5
+ ++YRgquCsPi0jl/6ZEyNyj5m+dmFWv/81mlhq6NYxFbBXNBy8ezdB+0cIWVJzqjYLHEw
+ G38w==
 X-Forwarded-Encrypted: i=1;
- AJvYcCWruo+h14xbUMwd25qOMVcW6TMQHoQc1Kr1wcJJVpvOu4Vm0oV8weRA6MkJ+zr+OG4s1miDedFABSE8ao/ZQf0=@lists.osuosl.org
-X-Gm-Message-State: AOJu0YzaoHlBY7lxTzOCUDHKubpmV9+PRjKbGdCpPQKfo/hKwDEoocf4
- TRb827Cuam+HyFTxfzOaS1DI0pSBn7oFBg7cbH4x+KlBAw3bVnYlDLzTL9051XDYxWGMN1zG4Ft
- h8qyBSLrKelJNrOEccPjZ3bwJWBOWSNNHo+uI37inzw==
-X-Gm-Gg: ASbGncvRcWTCbn1LUOFZUkU87Yr6wVS4g0TG1v0D7VxIQOIZQPKHt7VRgh8CsupGTj5
- kVihum6Fhf5iECv66jyS5VJXxFW02oCON1LOSlGeQvMEhFLl9btU6e9RHzuSw7epqdKnNLmxiKh
- ZaxXfOsr5ovl4j6NoKcyCaWDG87DjZ3F9C27+XScrhVrkP7PME+OHEwzmOxoJIGB6NzbVLlRon1
- RpLFt7p3E8hfeuOaJ6FO+TqDhT4kgUdSCYr/pwzzaodUmPEti1vx7RHqKihNfoW2n8cZA==
-X-Google-Smtp-Source: AGHT+IHIkpA6rhiYIBJPGXbu43mtrXsVXRAjUn5Tnc/nVn4XCQWhRjYlEu/X5WxF0zlqRt3mYY1fmThRtTARr/9+XVU=
-X-Received: by 2002:a05:6512:10d2:b0:594:2db8:312b with SMTP id
- 2adb3069b0e04-5945f1465c4mr3726443e87.7.1762871436263; Tue, 11 Nov 2025
- 06:30:36 -0800 (PST)
-MIME-Version: 1.0
-References: <20251110184727.666591-1-andriy.shevchenko@linux.intel.com>
- <20251110184727.666591-13-andriy.shevchenko@linux.intel.com>
- <pvjnjwm25ogu7khrpg5ttxylwnxazwxxb4jpvxhw7ysvqzkkpa@ucekjrrppaqm>
-In-Reply-To: <pvjnjwm25ogu7khrpg5ttxylwnxazwxxb4jpvxhw7ysvqzkkpa@ucekjrrppaqm>
-From: Corey Minyard <corey@minyard.net>
-Date: Tue, 11 Nov 2025 06:30:24 -0800
-X-Gm-Features: AWmQ_bmtZ_NzCjBDc-E_88i-zoQ3qkiy8-YjkQobPCCDd_5SvJDnh5UOEsI6sqU
-Message-ID: <CAB9gMfrr5ReWD6EzGLpwnubnkRJg-VX0vpnPn-kuXsaYGFEAMg@mail.gmail.com>
-To: Sergey Senozhatsky <senozhatsky@chromium.org>
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, 
- =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>, 
- "Dr. David Alan Gilbert" <linux@treblig.org>,
- Alex Deucher <alexander.deucher@amd.com>, 
- Thomas Zimmermann <tzimmermann@suse.de>,
- Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>, 
- Rob Clark <robin.clark@oss.qualcomm.com>,
- Matthew Brost <matthew.brost@intel.com>, 
- Hans Verkuil <hverkuil@kernel.org>, 
- Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, 
- Ulf Hansson <ulf.hansson@linaro.org>,
- Vitaly Lifshits <vitaly.lifshits@intel.com>, 
- Manivannan Sadhasivam <mani@kernel.org>, Niklas Cassel <cassel@kernel.org>,
- Calvin Owens <calvin@wbinvd.org>, Sagi Maimon <maimon.sagi@gmail.com>,
+ AJvYcCWONAXtdXaW9ynSDZj1WojWq4rMCVLE79i3tpPfOkkEtYtAB5cu4x5BeHhn6K70qosOdJPOngGcjTqxWGLMQHE=@lists.osuosl.org
+X-Gm-Message-State: AOJu0Yy2tVEqLHBOgQIiDxbSaVQ7dV0SaRZYG2LazBzWD5IpYhjooyX3
+ b4lCmC+v8fRxnEbvPHLUqaJK8u2qHZNz7yzhzwcqSLKw10VVPgu8vGWJkyFyEOW1fw==
+X-Gm-Gg: ASbGncsNCWCfz+vnDPNoOdkOLKhUuNSt8rkIrK6nn/qMVGUFORuhYFRkYJ7K1YilyUW
+ L/G964BCqeMfaEvZf1paQUfu09xodO/dpMIwTW78qUDMgCqhiUtnDYOfQvPjD+haS0Npi5UPfwI
+ xypNTPmQFZx2rkIFdAmYg3sUnbRTE9GZBUSuW6bGIV3GyCDlVMSWZl33LiU6SfwRMq4hGiPSbiA
+ cHs3yjMSRuuPBVu3ybafuyoIAzLVAnZ0J0PBhef3LQsSSxjXgbVunlIxxwRhDKmvOLGr2Mf+J8J
+ k/BoioQ1PsFuzq9odepQ/aX6oMPrXR6uWkxayDHfnqUiwhxixYNqa/RgB5tA2MZ9/F00HH7oyXS
+ EoJ3XwLj/Jajh292Ez7MRR7xugiZ6MHNHsUdQoSwqQkLSSBXvrM3S9GjR1zdnXiDBYuzh6mDtp5
+ 6Ep7du
+X-Google-Smtp-Source: AGHT+IHC6xuDhDXvZKC9hTiDPjxDoSsReKjYtkLbxL1ziXkP+RR6tEjoFAFy33iKv0lQXU9dzXWwTw==
+X-Received: by 2002:a17:903:2c06:b0:295:62d:503c with SMTP id
+ d9443c01a7336-297e5627aecmr142808835ad.16.1762848523256; 
+ Tue, 11 Nov 2025 00:08:43 -0800 (PST)
+Received: from google.com ([2401:fa00:8f:203:4557:54b2:676a:c304])
+ by smtp.gmail.com with ESMTPSA id
+ d9443c01a7336-29651ca4262sm173807695ad.86.2025.11.11.00.08.27
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Tue, 11 Nov 2025 00:08:42 -0800 (PST)
+Date: Tue, 11 Nov 2025 17:08:25 +0900
+From: Sergey Senozhatsky <senozhatsky@chromium.org>
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: Corey Minyard <corey@minyard.net>, 
+ Christian =?utf-8?B?S8O2bmln?= <christian.koenig@amd.com>,
+ "Dr. David Alan Gilbert" <linux@treblig.org>, 
+ Alex Deucher <alexander.deucher@amd.com>,
+ Thomas Zimmermann <tzimmermann@suse.de>, 
+ Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
+ Rob Clark <robin.clark@oss.qualcomm.com>, 
+ Matthew Brost <matthew.brost@intel.com>, Hans Verkuil <hverkuil@kernel.org>, 
+ Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>,
+ Ulf Hansson <ulf.hansson@linaro.org>, 
+ Vitaly Lifshits <vitaly.lifshits@intel.com>,
+ Manivannan Sadhasivam <mani@kernel.org>, 
+ Niklas Cassel <cassel@kernel.org>, Calvin Owens <calvin@wbinvd.org>, 
+ Sagi Maimon <maimon.sagi@gmail.com>,
  "Martin K. Petersen" <martin.petersen@oracle.com>, 
  Karan Tilak Kumar <kartilak@cisco.com>,
  Casey Schaufler <casey@schaufler-ca.com>, 
@@ -109,34 +109,36 @@ Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
  Max Kellermann <max.kellermann@ionos.com>, Takashi Iwai <tiwai@suse.de>,
  linux-doc@vger.kernel.org, 
  linux-kernel@vger.kernel.org, openipmi-developer@lists.sourceforge.net, 
- linux-media@vger.kernel.org, dri-devel@lists.freedesktop.org, 
- linaro-mm-sig@lists.linaro.org, amd-gfx@lists.freedesktop.org, 
- linux-arm-msm@vger.kernel.org, freedreno@lists.freedesktop.org, 
- intel-xe@lists.freedesktop.org, linux-mmc@vger.kernel.org, 
- netdev@vger.kernel.org, intel-wired-lan@lists.osuosl.org, 
- linux-pci@vger.kernel.org, linux-s390@vger.kernel.org, 
- linux-scsi@vger.kernel.org, linux-staging@lists.linux.dev, 
- ceph-devel@vger.kernel.org, linux-trace-kernel@vger.kernel.org, 
- linux-sound@vger.kernel.org, Rasmus Villemoes <linux@rasmusvillemoes.dk>, 
+ linux-media@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linaro-mm-sig@lists.linaro.org, 
+ amd-gfx@lists.freedesktop.org, linux-arm-msm@vger.kernel.org,
+ freedreno@lists.freedesktop.org, 
+ intel-xe@lists.freedesktop.org, linux-mmc@vger.kernel.org,
+ netdev@vger.kernel.org, 
+ intel-wired-lan@lists.osuosl.org, linux-pci@vger.kernel.org,
+ linux-s390@vger.kernel.org, 
+ linux-scsi@vger.kernel.org, linux-staging@lists.linux.dev,
+ ceph-devel@vger.kernel.org, 
+ linux-trace-kernel@vger.kernel.org, linux-sound@vger.kernel.org, 
+ Rasmus Villemoes <linux@rasmusvillemoes.dk>,
+ Sergey Senozhatsky <senozhatsky@chromium.org>, 
  Jonathan Corbet <corbet@lwn.net>, Sumit Semwal <sumit.semwal@linaro.org>, 
- Gustavo Padovan <gustavo@padovan.org>, David Airlie <airlied@gmail.com>,
- Simona Vetter <simona@ffwll.ch>, 
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Maxime Ripard <mripard@kernel.org>, 
- Dmitry Baryshkov <lumag@kernel.org>, Abhinav Kumar <abhinav.kumar@linux.dev>, 
- Jessica Zhang <jesszhan0024@gmail.com>, Sean Paul <sean@poorly.run>, 
- Marijn Suijten <marijn.suijten@somainline.org>,
- Konrad Dybcio <konradybcio@kernel.org>, 
+ Gustavo Padovan <gustavo@padovan.org>, David Airlie <airlied@gmail.com>, 
+ Simona Vetter <simona@ffwll.ch>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
+ Maxime Ripard <mripard@kernel.org>, Dmitry Baryshkov <lumag@kernel.org>, 
+ Abhinav Kumar <abhinav.kumar@linux.dev>, Jessica Zhang <jesszhan0024@gmail.com>,
+ Sean Paul <sean@poorly.run>, Marijn Suijten <marijn.suijten@somainline.org>, 
+ Konrad Dybcio <konradybcio@kernel.org>,
  Lucas De Marchi <lucas.demarchi@intel.com>, 
- =?UTF-8?Q?Thomas_Hellstr=C3=B6m?= <thomas.hellstrom@linux.intel.com>, 
- Rodrigo Vivi <rodrigo.vivi@intel.com>,
- Mauro Carvalho Chehab <mchehab@kernel.org>, 
- Vladimir Oltean <olteanv@gmail.com>, Andrew Lunn <andrew@lunn.ch>, 
- "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
- Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>, 
- =?UTF-8?Q?Krzysztof_Wilczy=C5=84ski?= <kwilczynski@kernel.org>, 
+ Thomas =?utf-8?Q?Hellstr=C3=B6m?= <thomas.hellstrom@linux.intel.com>,
+ Rodrigo Vivi <rodrigo.vivi@intel.com>, 
+ Mauro Carvalho Chehab <mchehab@kernel.org>, Vladimir Oltean <olteanv@gmail.com>,
+ Andrew Lunn <andrew@lunn.ch>, "David S. Miller" <davem@davemloft.net>, 
+ Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, 
+ Paolo Abeni <pabeni@redhat.com>, Tony Nguyen <anthony.l.nguyen@intel.com>, 
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kwilczynski@kernel.org>, 
  Kishon Vijay Abraham I <kishon@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>,
  Rodolfo Giometti <giometti@enneenne.com>,
  Jonathan Lemon <jonathan.lemon@gmail.com>, 
@@ -147,35 +149,36 @@ Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
  Alexander Gordeev <agordeev@linux.ibm.com>,
  Christian Borntraeger <borntraeger@linux.ibm.com>, 
  Sven Schnelle <svens@linux.ibm.com>, Satish Kharat <satishkh@cisco.com>, 
- Sesidhar Baddela <sebaddel@cisco.com>, 
+ Sesidhar Baddela <sebaddel@cisco.com>,
  "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, 
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Xiubo Li <xiubli@redhat.com>, 
- Ilya Dryomov <idryomov@gmail.com>, Masami Hiramatsu <mhiramat@kernel.org>, 
- Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
- Andrew Morton <akpm@linux-foundation.org>, 
- Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>
-Content-Type: multipart/alternative; boundary="000000000000be4f5a0643527dff"
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Xiubo Li <xiubli@redhat.com>,
+ Ilya Dryomov <idryomov@gmail.com>, Masami Hiramatsu <mhiramat@kernel.org>,
+ Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, 
+ Andrew Morton <akpm@linux-foundation.org>, Jaroslav Kysela <perex@perex.cz>,
+ Takashi Iwai <tiwai@suse.com>
+Message-ID: <pvjnjwm25ogu7khrpg5ttxylwnxazwxxb4jpvxhw7ysvqzkkpa@ucekjrrppaqm>
+References: <20251110184727.666591-1-andriy.shevchenko@linux.intel.com>
+ <20251110184727.666591-13-andriy.shevchenko@linux.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20251110184727.666591-13-andriy.shevchenko@linux.intel.com>
 X-Mailman-Approved-At: Wed, 12 Nov 2025 16:35:13 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=minyard-net.20230601.gappssmtp.com; s=20230601; t=1762871437; x=1763476237;
- darn=lists.osuosl.org; 
- h=cc:to:subject:message-id:date:from:in-reply-to:references
- :mime-version:from:to:cc:subject:date:message-id:reply-to;
- bh=aB3Kna1Ydum3rSWq2Q4kNhk8LAGVHiOY3JIzqpUlVwM=;
- b=YiDxvJ+ERcO3srA7vNdMJW99RGQww4WZZtLa4XTSOiKXNxQdLGX13m6NVLNtlpcR+X
- DgyYIOMqRlPEPIB3Bu2vOmPoqTZrecGbUFhSWD024IeQ7HQNDjl/faRBc6V51ayD8OJ/
- uMDW3JLVBP7Uzc6AXDc+PCa2IPHH8VN5hxJVYOcFMc09KZgGJZPz4EKaETOgxrxXRv8Y
- oEarQiRx49Mgj4erREtq1vKMLLnKuzz/9R/oNK98OfS9eUSQLADWX1Wkbt6rIO177Z/U
- ejpSOM/8c1C7M0245HaorBL5ZbLrtI3KGrtNvCveDCV65jhXe3Zxl4CfbCWAe26OcDWi
- GsPQ==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dmarc=none (p=none dis=none)
- header.from=minyard.net
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=minyard-net.20230601.gappssmtp.com
- header.i=@minyard-net.20230601.gappssmtp.com header.a=rsa-sha256
- header.s=20230601 header.b=YiDxvJ+E
+ d=chromium.org; s=google; t=1762848523; x=1763453323; darn=lists.osuosl.org;
+ h=in-reply-to:content-disposition:mime-version:references:message-id
+ :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+ bh=0w05K6KxFo07worIjxTlWcgaX/lcLwwSdDEeFRVch6g=;
+ b=DFg1O3fM2JCZ4PU279eAzkQCLTsIjJ5Q3eUDcX+WPOyQdTf1T8l4tkFdxAdBnE8+Vj
+ qW6AH0cZp0sO0W8AML5WzpvUcOlnC2TAm8x5ikg2DuTWrmVXryZvx8dF8xD8AZt/Q6vz
+ u/lIZKojqoB1S0/IlxLl+ndOaPwLToQGc6Bn8=
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=chromium.org
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (1024-bit key,
+ unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256
+ header.s=google header.b=DFg1O3fM
 Subject: Re: [Intel-wired-lan] [PATCH v1 12/23] ipmi: Switch to use %ptSp
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
@@ -192,48 +195,10 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
---000000000000be4f5a0643527dff
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+On (25/11/10 19:40), Andy Shevchenko wrote:
+[..]
+> +	dev_dbg(smi_info->io.dev, "**%s: %ptSp\n", msg, &t);
 
-No, it's not really important, and it's better to use a standardized
-output.  Thanks for pointing this out, though.
+Strictly speaking, this is not exactly equivalent to %lld.%9.9ld
+or %lld.%6.6ld but I don't know if that's of any importance.
 
--corey
-
-On Tue, Nov 11, 2025 at 12:08=E2=80=AFAM Sergey Senozhatsky <
-senozhatsky@chromium.org> wrote:
-
-> On (25/11/10 19:40), Andy Shevchenko wrote:
-> [..]
-> > +     dev_dbg(smi_info->io.dev, "**%s: %ptSp\n", msg, &t);
->
-> Strictly speaking, this is not exactly equivalent to %lld.%9.9ld
-> or %lld.%6.6ld but I don't know if that's of any importance.
->
->
-
---000000000000be4f5a0643527dff
-Content-Type: text/html; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-<div dir=3D"ltr">No, it&#39;s not really important, and it&#39;s better to =
-use a standardized output.=C2=A0 Thanks for pointing this out, though.<div>=
-<br></div><div>-corey</div></div><br><div class=3D"gmail_quote gmail_quote_=
-container"><div dir=3D"ltr" class=3D"gmail_attr">On Tue, Nov 11, 2025 at 12=
-:08=E2=80=AFAM Sergey Senozhatsky &lt;<a href=3D"mailto:senozhatsky@chromiu=
-m.org">senozhatsky@chromium.org</a>&gt; wrote:<br></div><blockquote class=
-=3D"gmail_quote" style=3D"margin:0px 0px 0px 0.8ex;border-left:1px solid rg=
-b(204,204,204);padding-left:1ex">On (25/11/10 19:40), Andy Shevchenko wrote=
-:<br>
-[..]<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0dev_dbg(smi_info-&gt;<a href=3D"http://io.dev" re=
-l=3D"noreferrer" target=3D"_blank">io.dev</a>, &quot;**%s: %ptSp\n&quot;, m=
-sg, &amp;t);<br>
-<br>
-Strictly speaking, this is not exactly equivalent to %lld.%9.9ld<br>
-or %lld.%6.6ld but I don&#39;t know if that&#39;s of any importance.<br>
-<br>
-</blockquote></div>
-
---000000000000be4f5a0643527dff--
