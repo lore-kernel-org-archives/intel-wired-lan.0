@@ -1,69 +1,69 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BE9BCCD8C87
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 13 Nov 2025 15:03:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B275ECD8C80
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 13 Nov 2025 15:03:07 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 8981B606E3;
-	Thu, 13 Nov 2025 15:03:06 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 76D3B40D81;
+	Thu, 13 Nov 2025 15:03:07 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id YeGVfLbKHICI; Thu, 13 Nov 2025 15:03:05 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id aNNtPabZdXRx; Thu, 13 Nov 2025 15:03:06 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2749C605C3
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0A01B40D7A
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1763046185;
-	bh=RpfjCz49db88iDyr0k04s2hQO8oyQ1amKS5No2pIA+w=;
+	s=default; t=1763046186;
+	bh=t68BDsiEQtTArdaXToXrVl/YWKANcd0lrB3ne8lj/Wo=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=sJnz79pAG23p+YGNLqfa+cYASiIQkBMSJ8FdBSLAL4piCehB0GjoqHJFNB41DUdN3
-	 zJuU9QrNiPLVS8i7x7t3nsAa7upiUBIqQlfHUyhvJwJZTy4vTek1Wrq3mpdipkITqZ
-	 YOzQkfKq6K++81o2CDfZ1IQenDHUSJ+i+2CBrQ/WLD3ku5wxQbqRpb6yTKWRyhZrd+
-	 THKPXKAXvbw1k/riw060gj8bJrkHeSc1Jvykzst7YurB39vCbWcRdPFQzBkrtPnBa0
-	 T8gLtQl8m8Ef0qyyGzzT4D/kkWgA2jsaMJfeGw/QMXu9lNkr6gQTePIGKruR/XsTgf
-	 Cd0AwsZg/WOMw==
+	b=emVEKZqpoPdJf4yrp4pTmy2vR5wwAUoT6l5Fc/bik7EkYP+6wIt6kyXZWiZyDMPyj
+	 mNuWrR1M/f/3qgzCOHtjVlzGjZtEamoHN5qJRU6kjsqleZQw94xIj5oVCoidRfF3Wo
+	 93sKEWSxzFlQHSxZ4SDaqY1ASKiyUgNCCSIQRxtGCNlSfPcOz3MqYKjU/UcVzNRnkd
+	 Oe41C8wtZcKDDvtLIcjpQ7DvtHxfxzbtXrxS8Ql0pwlUYSlFC37ckp+K5CsHqztSad
+	 XlfGLWnoS2CWFbXZi0ybXwE9xGlzbqQovI1HHCFOP9/0OxNw+ux4RXLxn8fsiR1KNg
+	 9kR6T5678E/1A==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 2749C605C3;
-	Thu, 13 Nov 2025 15:03:05 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 9713B158
- for <intel-wired-lan@lists.osuosl.org>; Thu, 13 Nov 2025 15:03:03 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 0A01B40D7A;
+	Thu, 13 Nov 2025 15:03:06 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by lists1.osuosl.org (Postfix) with ESMTP id C3760230
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 13 Nov 2025 15:03:04 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 8946C402EC
- for <intel-wired-lan@lists.osuosl.org>; Thu, 13 Nov 2025 15:03:03 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id B5C15402EC
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 13 Nov 2025 15:03:04 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id TyBJIofG47Eu for <intel-wired-lan@lists.osuosl.org>;
- Thu, 13 Nov 2025 15:03:02 +0000 (UTC)
+ id qJCycXK_nra8 for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 13 Nov 2025 15:03:03 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.21;
  helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 82420402BB
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 82420402BB
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org AC6F8402BB
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org AC6F8402BB
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.21])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 82420402BB
- for <intel-wired-lan@lists.osuosl.org>; Thu, 13 Nov 2025 15:03:02 +0000 (UTC)
-X-CSE-ConnectionGUID: FzjnodXbRYa8TWoXyqLSug==
-X-CSE-MsgGUID: Egpjsp9VSh+j9Sd3A4T8Uw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11531"; a="65054383"
-X-IronPort-AV: E=Sophos;i="6.17,312,1747724400"; d="scan'208";a="65054383"
+ by smtp2.osuosl.org (Postfix) with ESMTPS id AC6F8402BB
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 13 Nov 2025 15:03:03 +0000 (UTC)
+X-CSE-ConnectionGUID: gQ7Ajh7uQXmGBJiJp8k7MQ==
+X-CSE-MsgGUID: rsgMRtbmRNmEQbE0HFVTJQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11531"; a="65054405"
+X-IronPort-AV: E=Sophos;i="6.17,312,1747724400"; d="scan'208";a="65054405"
 Received: from fmviesa001.fm.intel.com ([10.60.135.141])
  by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 13 Nov 2025 07:02:54 -0800
-X-CSE-ConnectionGUID: su8ZrPJCTtCP5q12FDQ0vA==
-X-CSE-MsgGUID: RvU45Gy6TcG+EGRqWvrdGQ==
+ 13 Nov 2025 07:02:55 -0800
+X-CSE-ConnectionGUID: 2CGxfRHHRFSF6KrA3ZFyKA==
+X-CSE-MsgGUID: NKL+10FBQ76Ij4qV5CJgZA==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.19,302,1754982000"; d="scan'208";a="220325039"
+X-IronPort-AV: E=Sophos;i="6.19,302,1754982000"; d="scan'208";a="220325069"
 Received: from black.igk.intel.com ([10.91.253.5])
- by fmviesa001.fm.intel.com with ESMTP; 13 Nov 2025 07:02:41 -0800
+ by fmviesa001.fm.intel.com with ESMTP; 13 Nov 2025 07:02:42 -0800
 Received: by black.igk.intel.com (Postfix, from userid 1003)
- id 3A7EC9F; Thu, 13 Nov 2025 16:02:19 +0100 (CET)
+ id 4DAEBA2; Thu, 13 Nov 2025 16:02:19 +0100 (CET)
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 To: Corey Minyard <corey@minyard.net>,
  =?UTF-8?q?Christian=20K=C3=B6nig?= <christian.koenig@amd.com>,
@@ -135,8 +135,8 @@ Cc: Rasmus Villemoes <linux@rasmusvillemoes.dk>,
  Masami Hiramatsu <mhiramat@kernel.org>,
  Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
  Andrew Morton <akpm@linux-foundation.org>
-Date: Thu, 13 Nov 2025 15:32:23 +0100
-Message-ID: <20251113150217.3030010-10-andriy.shevchenko@linux.intel.com>
+Date: Thu, 13 Nov 2025 15:32:26 +0100
+Message-ID: <20251113150217.3030010-13-andriy.shevchenko@linux.intel.com>
 X-Mailer: git-send-email 2.50.1
 In-Reply-To: <20251113150217.3030010-1-andriy.shevchenko@linux.intel.com>
 References: <20251113150217.3030010-1-andriy.shevchenko@linux.intel.com>
@@ -144,24 +144,25 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1763046182; x=1794582182;
+ t=1763046184; x=1794582184;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=4/irNvWfkjiG7J+zROfpNlDN2UsVekylUnv/Irisaf0=;
- b=DkNhVOxsChYg9OYxWjF7r5pBuyiWsb53T24zzJOAYhyvvbhlmtxAnYBz
- 8MHAloV0OuQXO0Z9XP4aZrY02v9kIAJElAPxvydXEbdZ0IZI0Syu26Hj5
- pHiz8JIkY893zByE4PrXaNIM7oQ6DauhgyDHjXLVIRYXDJPFlBIzQqGqg
- Ocs6RCtymzTeN1v+Hxsyb1uxs+vhrNa18AFvVS9Als+3OS0dctWhOByPw
- wnPXyiK+QCdEqYkySQ7PKtX2qdjlVbSdEuOCS5QtI+WGTDYDCD393jIsE
- 9GTh7yvBq7ugr+N0sBOlEv6x25y1WQ7c3/ICkUfX1MSaIBGb3kEbsPDAX
+ bh=+wzhaFxSnGOIgXfPGWXmMsmYdpSBfK5IjZcpII7NT9c=;
+ b=Yygv49dr7PBWa+mVbOyy9QETTngJUYC0S1E1/8VjuKOolbO/MSME0B8d
+ r2MMwkFLhjkWLVW5mpK6EE3UA4u1HK0S2Dyo32J/NfqzydcXAdKu1jO39
+ 4n8IVZwCW4ElRNpBAcMyHSGn9Ezvy8SfOBgOiLDhX2jIGHJRvdS4PE8uR
+ lkePYEheiYZHsmQj5HmEerMQdg2wtmt0hmLr113pYcjHvGvUy1ictE8vM
+ 9EYvGBxnLL9BVwdsxlXP+7rSkbFGNP0vdwRe6I3cOljzQ7ox0T6CKbo6l
+ fOAlEiPSmlsVjkMatD05yZbpAdnySIwmQm+yFHkzfsCGQQUQqbo4kudHv
  Q==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=none (p=none dis=none)
  header.from=linux.intel.com
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=DkNhVOxs
-Subject: [Intel-wired-lan] [PATCH v3 09/21] e1000e: Switch to use %ptSp
+ header.a=rsa-sha256 header.s=Intel header.b=Yygv49dr
+Subject: [Intel-wired-lan] [PATCH v3 12/21] media: av7110: Switch to use
+ %ptSp
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -180,33 +181,25 @@ Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 Use %ptSp instead of open coded variants to print content of
 struct timespec64 in human readable format.
 
-Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Acked-by: Hans Verkuil <hverkuil+cisco@kernel.org>
 Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- drivers/net/ethernet/intel/e1000e/ptp.c | 7 ++-----
- 1 file changed, 2 insertions(+), 5 deletions(-)
+ drivers/staging/media/av7110/av7110.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/e1000e/ptp.c b/drivers/net/ethernet/intel/e1000e/ptp.c
-index ea3c3eb2ef20..ec39e35f3857 100644
---- a/drivers/net/ethernet/intel/e1000e/ptp.c
-+++ b/drivers/net/ethernet/intel/e1000e/ptp.c
-@@ -229,14 +229,11 @@ static void e1000e_systim_overflow_work(struct work_struct *work)
- 						     systim_overflow_work.work);
- 	struct e1000_hw *hw = &adapter->hw;
+diff --git a/drivers/staging/media/av7110/av7110.c b/drivers/staging/media/av7110/av7110.c
+index bc9a2a40afcb..602342d1174f 100644
+--- a/drivers/staging/media/av7110/av7110.c
++++ b/drivers/staging/media/av7110/av7110.c
+@@ -321,7 +321,7 @@ static inline void print_time(char *s)
  	struct timespec64 ts;
--	u64 ns;
  
- 	/* Update the timecounter */
--	ns = timecounter_read(&adapter->tc);
-+	ts = ns_to_timespec64(timecounter_read(&adapter->tc));
+ 	ktime_get_real_ts64(&ts);
+-	pr_info("%s(): %lld.%09ld\n", s, (s64)ts.tv_sec, ts.tv_nsec);
++	pr_info("%s(): %ptSp\n", s, &ts);
+ #endif
+ }
  
--	ts = ns_to_timespec64(ns);
--	e_dbg("SYSTIM overflow check at %lld.%09lu\n",
--	      (long long) ts.tv_sec, ts.tv_nsec);
-+	e_dbg("SYSTIM overflow check at %ptSp\n", &ts);
- 
- 	schedule_delayed_work(&adapter->systim_overflow_work,
- 			      E1000_SYSTIM_OVERFLOW_PERIOD);
 -- 
 2.50.1
 
