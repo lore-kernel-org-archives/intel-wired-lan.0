@@ -1,135 +1,239 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 71016CE8D50
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 14 Nov 2025 16:03:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 611E2CE8D53
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 14 Nov 2025 16:25:07 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 39EC7611B1;
-	Fri, 14 Nov 2025 16:03:36 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 0AEEB8125E;
+	Fri, 14 Nov 2025 16:25:07 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Hv_GWkXjoqMr; Fri, 14 Nov 2025 16:03:35 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id kjpSAYCD-XB9; Fri, 14 Nov 2025 16:25:06 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2F4B8607EF
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 126118129F
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1763136215;
-	bh=bte06RvP1Ns3uJUbnsCYNwVEAvBdal+RTPg/GP86gGU=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1763137506;
+	bh=l9FUBbeUidxIV00pdQyQahKHPpoxkuEk9fyNczKyhZ4=;
+	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=k3vVFbxfIIBE0yZcdej4iZ6V6xuNu8XRnhaChLahdEwnA+i0KMmTe2UtB/qNvxMTy
-	 nvZQVRthDXRB7lcbPGAHe9ojEHz5XMtu6pPrPajiC/612nMvYiobm2lnDCx7RtTaMA
-	 u5K7K69Z9pUtJHYxoZzdrHcwFtzr0B0agO0F00cJbo9iMByFBYDv2MF/yLi0V/qq9i
-	 +0EHAu/fZUjHDVPb8PaG+Vu3P1xE7jLUCj3EcjbKCJwC6h+ObXXZ01IX95JQ8aNPpO
-	 HXUP8RvcSTZYQMN6gQYS2IDZYZ4vzqwx0IQ8XNq/mLEKsB4hxN+6qGy+y90LjLRwf0
-	 SsViXAqF/rJ+A==
+	b=HF5ocH5KnQi5zVNyVhsv3z7SybnI9lnFlQmW7/UfPk8hujYIUWg6F5pEzzhclxQkL
+	 YLbG4x2qee58sXGn6QkJIrWXc/vF7YnwpXxGs2Rfgb9n8Ww68n52cUBOtTDI/hVebg
+	 OCaGoorEZjZsYVzKHPTCPEiMpWrdjB7F8tSLAsV/aBgGpvkHok886hvQ9rXbp7c79U
+	 PHBx4S9we1qNmgqyDLr21yq2kCrqkQnssBo+OVPAXjrwwcw9nfPifUJJnxHcK5FSnA
+	 ICnrla4U2IaduvZOkrzBC1NdrTGCFgtoz80Qn9pdKQMbUw4Tj8PS8uBU4KmswbMGfv
+	 vpljpoWDS6Jbg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 2F4B8607EF;
-	Fri, 14 Nov 2025 16:03:35 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 126118129F;
+	Fri, 14 Nov 2025 16:25:06 +0000 (UTC)
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id E977DD5
- for <intel-wired-lan@lists.osuosl.org>; Fri, 14 Nov 2025 16:03:33 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id EBA37158
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 14 Nov 2025 04:12:34 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id DA68B4111B
- for <intel-wired-lan@lists.osuosl.org>; Fri, 14 Nov 2025 16:03:33 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id E0B7340AA9
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 14 Nov 2025 04:12:34 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id WBf1TgxcZqAe for <intel-wired-lan@lists.osuosl.org>;
- Fri, 14 Nov 2025 16:03:33 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=205.220.165.32;
- helo=mx0a-00069f02.pphosted.com; envelope-from=gregory.herrero@oracle.com;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org CA4FA41119
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org CA4FA41119
-Received: from mx0a-00069f02.pphosted.com (mx0a-00069f02.pphosted.com
- [205.220.165.32])
- by smtp4.osuosl.org (Postfix) with ESMTPS id CA4FA41119
- for <intel-wired-lan@lists.osuosl.org>; Fri, 14 Nov 2025 16:03:32 +0000 (UTC)
-Received: from pps.filterd (m0246629.ppops.net [127.0.0.1])
- by mx0b-00069f02.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 5AECuFdI000348;
- Fri, 14 Nov 2025 16:03:28 GMT
-Received: from phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com
- (phxpaimrmta03.appoci.oracle.com [138.1.37.129])
- by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 4adr8uhdy7-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 14 Nov 2025 16:03:28 +0000 (GMT)
-Received: from pps.filterd
- (phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com [127.0.0.1])
- by phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com (8.18.1.2/8.18.1.2)
- with ESMTP id 5AEEYTWu022109; Fri, 14 Nov 2025 16:03:27 GMT
-Received: from pps.reinject (localhost [127.0.0.1])
- by phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com (PPS) with ESMTPS id
- 4a9vadpv9b-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 14 Nov 2025 16:03:27 +0000
-Received: from phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com
- (phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com [127.0.0.1])
- by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 5AEG3IZD029266;
- Fri, 14 Nov 2025 16:03:27 GMT
-Received: from oracle (dhcp-10-154-173-166.vpn.oracle.com [10.154.173.166])
- by phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com (PPS) with ESMTP id
- 4a9vadpv0s-2; Fri, 14 Nov 2025 16:03:26 +0000
-From: gregory.herrero@oracle.com
-To: aleksandr.loktionov@intel.com, anthony.l.nguyen@intel.com,
- przemyslaw.kitszel@intel.com, andrew+netdev@lunn.ch,
- davem@davemloft.net, edumazet@google.com, kuba@kernel.org,
- pabeni@redhat.com
-Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, Gregory Herrero <gregory.herrero@oracle.com>
-Date: Fri, 14 Nov 2025 17:03:04 +0100
-Message-ID: <20251114160304.2576306-2-gregory.herrero@oracle.com>
-X-Mailer: git-send-email 2.51.0
-In-Reply-To: <20251114160304.2576306-1-gregory.herrero@oracle.com>
-References: <20251114160304.2576306-1-gregory.herrero@oracle.com>
+ id E-zWcixbRUNc for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 14 Nov 2025 04:12:34 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=205.220.180.131;
+ helo=mx0b-0031df01.pphosted.com;
+ envelope-from=dmitry.baryshkov@oss.qualcomm.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 03F7E40A34
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 03F7E40A34
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com
+ [205.220.180.131])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 03F7E40A34
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 14 Nov 2025 04:12:33 +0000 (UTC)
+Received: from pps.filterd (m0279869.ppops.net [127.0.0.1])
+ by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id
+ 5ADMbDIw1697454
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 14 Nov 2025 04:12:32 GMT
+Received: from mail-qk1-f199.google.com (mail-qk1-f199.google.com
+ [209.85.222.199])
+ by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4adr9g0rpe-1
+ (version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 14 Nov 2025 04:12:32 +0000 (GMT)
+Received: by mail-qk1-f199.google.com with SMTP id
+ af79cd13be357-891504015e5so474110885a.3
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 13 Nov 2025 20:12:32 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20230601; t=1763093552; x=1763698352;
+ h=in-reply-to:content-disposition:mime-version:references:message-id
+ :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+ :subject:date:message-id:reply-to;
+ bh=l9FUBbeUidxIV00pdQyQahKHPpoxkuEk9fyNczKyhZ4=;
+ b=gayIe71GU7J0+pNYGasKzc91aVDDDk2ejdfi9u9jTR7qGTdx4QqxfXGkbq1roXWDIW
+ Hc6ZCScFl8ga8hqbR4WUX2Yr0i0upxT35zdtIoBGP1uoFbfENSHUiRoiqleCIP+7R265
+ XHrYDMpF6UODd+Ab/pBpZXpFGYtNqK+7+GRmuiy2P4xIzjeCFzs/k+KF1RrOpKqoSyBp
+ E/6lLRJYfBKjfcGQeRzXafEWIwOvTUab35huPm3JFTs/XwjEN5geDF/H6fKe0OHyfRRe
+ oKQgHlV3CqlI+IDbMZXOYztggit+FElayCQ6zAerNt6iZZozQEi+YcJoR6twZ14F/P7H
+ WxxQ==
+X-Forwarded-Encrypted: i=1;
+ AJvYcCVOhCsKpl1FiYGRMYZF/fHwLnOpC+DMP6Ve3X+1Yi73R6JAXYNZIiLXVMHwlfWOet6xHOE0qO/ettQQPTcp+mU=@lists.osuosl.org
+X-Gm-Message-State: AOJu0YwnkSkFT/o4WfkTVcw0shELMnuYIBg8ONzkZ3etm/02S87zkk8M
+ w6Itrc2Xerp0T2Dd5sJt9UpGIQ9+m+862hmgzYsbChzBD9AlR8OsPYU98HPysajjz5aV1Gm/DMI
+ pc+rnGNb8EDoNIYFxxUhLTbrahvOHubzfHPvRIWc8kbGPlflHemIC0r9o9htP7/IAsbqvHyuA
+X-Gm-Gg: ASbGncs5tLi2wm7AEZmzKayU1pSnZPAnL4mnZgCAIJJrvlhBxKLiQ0GLsy776D9wZ2q
+ 6JIHXOSrT1WO99mE14Ghc/OQBCmtc98BvtHnZu54vA0LWDPOWgWk6KONW17LO8QTM/PVzgm5ddP
+ pJcP8/uW9L60cHoJoGxvMMhLaFCRjX45mnW2yX1e42DjglQavqLTUqdu82BJ0k1MT48PvssjNz2
+ fBlH/hti7DRAz+QXUBJpB8SA349sdRPSPRulW1oEnUJ2K2j2uy4iPHVbpN0kpgqYW6T+XYkrn+m
+ 7H06EDZ3vN07hryNucIKABy6C02geES8Yj1LxOkX1mllAuwfEy1/lKVaontTkxVCGpPeHMRjLwc
+ akv6ngRDQo57Wkjpr8lHqpdjm3GIla992tIXiZ9gH+gEmEjF1of1ttcWpiNKsE07VQK5CmjSQQP
+ zqahM7+t/qsVG7
+X-Received: by 2002:a05:620a:4628:b0:8b1:ed55:e4f1 with SMTP id
+ af79cd13be357-8b2c3175d59mr235426385a.39.1763093551868; 
+ Thu, 13 Nov 2025 20:12:31 -0800 (PST)
+X-Google-Smtp-Source: AGHT+IGRBRFxxiAD30mEJm55HBtKCBqJwVeb/nqEO1wa7PZ+U+vRFrL3SI4k/Rw4EJ92OxtkmKQ+nw==
+X-Received: by 2002:a05:620a:4628:b0:8b1:ed55:e4f1 with SMTP id
+ af79cd13be357-8b2c3175d59mr235424485a.39.1763093551352; 
+ Thu, 13 Nov 2025 20:12:31 -0800 (PST)
+Received: from umbar.lan
+ (2001-14ba-a0c3-3a00-264b-feff-fe8b-be8a.rev.dnainternet.fi.
+ [2001:14ba:a0c3:3a00:264b:feff:fe8b:be8a])
+ by smtp.gmail.com with ESMTPSA id
+ 2adb3069b0e04-59580405a4esm784867e87.95.2025.11.13.20.12.30
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 13 Nov 2025 20:12:30 -0800 (PST)
+Date: Fri, 14 Nov 2025 06:12:28 +0200
+From: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: Corey Minyard <corey@minyard.net>,
+ Christian =?utf-8?B?S8O2bmln?= <christian.koenig@amd.com>,
+ "Dr. David Alan Gilbert" <linux@treblig.org>,
+ Alex Deucher <alexander.deucher@amd.com>,
+ Thomas Zimmermann <tzimmermann@suse.de>,
+ Rob Clark <robin.clark@oss.qualcomm.com>,
+ Matthew Brost <matthew.brost@intel.com>,
+ Ulf Hansson <ulf.hansson@linaro.org>,
+ Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
+ Vitaly Lifshits <vitaly.lifshits@intel.com>,
+ Manivannan Sadhasivam <mani@kernel.org>,
+ Niklas Cassel <cassel@kernel.org>, Calvin Owens <calvin@wbinvd.org>,
+ Vadim Fedorenko <vadim.fedorenko@linux.dev>,
+ Sagi Maimon <maimon.sagi@gmail.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ Karan Tilak Kumar <kartilak@cisco.com>,
+ Hans Verkuil <hverkuil+cisco@kernel.org>,
+ Casey Schaufler <casey@schaufler-ca.com>,
+ Steven Rostedt <rostedt@goodmis.org>, Petr Mladek <pmladek@suse.com>,
+ Viacheslav Dubeyko <Slava.Dubeyko@ibm.com>,
+ Max Kellermann <max.kellermann@ionos.com>, linux-doc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, openipmi-developer@lists.sourceforge.net,
+ linux-media@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linaro-mm-sig@lists.linaro.org, amd-gfx@lists.freedesktop.org,
+ linux-arm-msm@vger.kernel.org, freedreno@lists.freedesktop.org,
+ intel-xe@lists.freedesktop.org, linux-mmc@vger.kernel.org,
+ netdev@vger.kernel.org, intel-wired-lan@lists.osuosl.org,
+ linux-pci@vger.kernel.org, linux-s390@vger.kernel.org,
+ linux-scsi@vger.kernel.org, linux-staging@lists.linux.dev,
+ ceph-devel@vger.kernel.org, linux-trace-kernel@vger.kernel.org,
+ Rasmus Villemoes <linux@rasmusvillemoes.dk>,
+ Sergey Senozhatsky <senozhatsky@chromium.org>,
+ Jonathan Corbet <corbet@lwn.net>, Sumit Semwal <sumit.semwal@linaro.org>,
+ Gustavo Padovan <gustavo@padovan.org>,
+ David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, Dmitry Baryshkov <lumag@kernel.org>,
+ Abhinav Kumar <abhinav.kumar@linux.dev>,
+ Jessica Zhang <jesszhan0024@gmail.com>, Sean Paul <sean@poorly.run>,
+ Marijn Suijten <marijn.suijten@somainline.org>,
+ Konrad Dybcio <konradybcio@kernel.org>,
+ Lucas De Marchi <lucas.demarchi@intel.com>,
+ Thomas =?utf-8?Q?Hellstr=C3=B6m?= <thomas.hellstrom@linux.intel.com>,
+ Rodrigo Vivi <rodrigo.vivi@intel.com>,
+ Vladimir Oltean <olteanv@gmail.com>, Andrew Lunn <andrew@lunn.ch>,
+ "David S. Miller" <davem@davemloft.net>,
+ Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>, Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kwilczynski@kernel.org>,
+ Kishon Vijay Abraham I <kishon@kernel.org>,
+ Bjorn Helgaas <bhelgaas@google.com>,
+ Rodolfo Giometti <giometti@enneenne.com>,
+ Jonathan Lemon <jonathan.lemon@gmail.com>,
+ Richard Cochran <richardcochran@gmail.com>,
+ Stefan Haberland <sth@linux.ibm.com>,
+ Jan Hoeppner <hoeppner@linux.ibm.com>,
+ Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
+ Alexander Gordeev <agordeev@linux.ibm.com>,
+ Christian Borntraeger <borntraeger@linux.ibm.com>,
+ Sven Schnelle <svens@linux.ibm.com>, Satish Kharat <satishkh@cisco.com>,
+ Sesidhar Baddela <sebaddel@cisco.com>,
+ "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
+ Mauro Carvalho Chehab <mchehab@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Xiubo Li <xiubli@redhat.com>, Ilya Dryomov <idryomov@gmail.com>,
+ Masami Hiramatsu <mhiramat@kernel.org>,
+ Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ Andrew Morton <akpm@linux-foundation.org>
+Message-ID: <ngzyqzrjg2msv6odahkirdipjizbpaecfscfgnic3su5fl6hs7@qgdb53svq64p>
+References: <20251113150217.3030010-1-andriy.shevchenko@linux.intel.com>
+ <20251113150217.3030010-7-andriy.shevchenko@linux.intel.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20251113150217.3030010-7-andriy.shevchenko@linux.intel.com>
+X-Proofpoint-GUID: 6ZbadXVrIPSUgobi_RT5Oa3kgNAvuE9R
+X-Proofpoint-ORIG-GUID: 6ZbadXVrIPSUgobi_RT5Oa3kgNAvuE9R
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUxMTE0MDAyOSBTYWx0ZWRfX+X3V+LFB4ati
+ 92OdKepfimzOva4LHLCWHrPuBZXqSSoV5oim6wiuh2SPIFkIndptfKl20ZXXu+qs+K/Gc2yZOS7
+ 2RC6RTS6y1GDEFXp9I5qPCcirbyV9XoaQ0k9nP1rpEJzETEz899IEUxmcwbnz2wWZu+4Gd3Ft82
+ oXAfwAJFfTuzvS6aNbOhPntR1ozegtGUqu6tTzZmntSftW4pHu4yR2sMK3LT/TRrpQQBeVzPjbQ
+ hl4D4FXKD/VgU0J9csiL7sBDdMg25KmpGXQ9Y70zKSu8chbxIL9fVxEIOCAwlpoHCr3VbUsQ7Av
+ mivG+S7OKPEb7rtLAZxfkYOeiX4BaGj7TqlNCcSi6kAZLJmVcTc3DLKY8/fAv8A/bpIf4rbeLY9
+ iMd16dgiO/YlpUUsG7xFnA9Isb+7+g==
+X-Authority-Analysis: v=2.4 cv=IM8PywvG c=1 sm=1 tr=0 ts=6916ac30 cx=c_pps
+ a=HLyN3IcIa5EE8TELMZ618Q==:117 a=xqWC_Br6kY4A:10 a=kj9zAlcOel0A:10
+ a=6UeiqGixMTsA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=QyXUC8HyAAAA:8 a=EUspDBNiAAAA:8 a=JNz3O4sEs4oywJvo4n4A:9 a=CjuIK1q_8ugA:10
+ a=bTQJ7kPSJx9SKPbeHEYW:22
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.100.49
- definitions=2025-11-14_04,2025-11-13_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 adultscore=0
- mlxscore=0 phishscore=0
- mlxlogscore=999 spamscore=0 suspectscore=0 bulkscore=0 malwarescore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2510240000
- definitions=main-2511140129
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUxMTEzMDE3OCBTYWx0ZWRfX8OMqO2mhG4Fa
- zsKtH5bI9Dq/Jy4eDfczc/o8RoT7kIwnYwuhAxN0ZHCobL1ohdfdSTMmjZGE+6lUPXGIBhJgiFh
- RNwPGd6U4V9P1pfyvzDNlkdCIF6D4G3zh6PrmgtQUG4I/PqThyxFzCwNl5WqJGzXCTUssU99w8w
- 9mdGU++6VUUUML3MwEdehrYcySBixAC4OgO4drVL6Nuymw+10DSFFcnqsLF/Ko58huTE+NgIgJK
- pf1hVJR2XyO8dmBwF49zaAime183ZCfXnjaAIRngwMsRLjouybMEuZ2EV3O4NmhQGVvM2Nj8157
- iM/xAviIJKTRy7WpXWwJTE6DB4JhA/IHi9FcKZGblGnjiBRgrdzVDwmflWxXnTVtcL0xUKzXOsV
- qNcogqgUJkiWYoRwzfN6t2G7X9/emQ==
-X-Proofpoint-ORIG-GUID: BUMw4X2x_zQxi5VwPb3LmPctTwbwx19T
-X-Authority-Analysis: v=2.4 cv=FKAWBuos c=1 sm=1 tr=0 ts=691752d0 b=1 cx=c_pps
- a=WeWmnZmh0fydH62SvGsd2A==:117
- a=WeWmnZmh0fydH62SvGsd2A==:17
- a=6UeiqGixMTsA:10 a=VkNPw1HP01LnGYTKEx00:22 a=yPCof4ZbAAAA:8
- a=9o2BAfuAlkXtMw4cUEAA:9
-X-Proofpoint-GUID: BUMw4X2x_zQxi5VwPb3LmPctTwbwx19T
+ definitions=2025-11-13_07,2025-11-13_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 clxscore=1011 malwarescore=0 suspectscore=0 lowpriorityscore=0
+ adultscore=0 impostorscore=0 phishscore=0 priorityscore=1501 spamscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2510240001 definitions=main-2511140029
+X-Mailman-Approved-At: Fri, 14 Nov 2025 16:25:04 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=oracle.com; h=cc
- :content-transfer-encoding:date:from:in-reply-to:message-id
- :mime-version:references:subject:to; s=corp-2025-04-25; bh=bte06
- RvP1Ns3uJUbnsCYNwVEAvBdal+RTPg/GP86gGU=; b=G24IlMxMxLaydliB0hUlF
- 6KKP9cmuZr+NSd7HptSQstJt49HMcJL6wOTEnVE4bsjcD72c3sWXrotypeV/sIzZ
- pvFO52bBQQzplparMYw7jEPKWOx+ciuXXC8Ohzljn8orTgT/pCOHFv271jYtPSs4
- XXlZxwUC7AGw+KGI3bUn3i79kASTDkuhcFCPb3h1X2/Oc65LYVO8EovTsqvjYP1f
- YiXYrMo9U18Fvv9wedDAxW4H5wPJAd++3jB9jsagDtzKnFAUr/HVYE93EiNitNSM
- VFPQnb2SBI132FWv7bXkbEv76zLN0/OwHUKrIt5VwA+fditOgXGUopA//kHd2zo9
- A==
+ d=qualcomm.com; h=
+ cc:content-type:date:from:in-reply-to:message-id:mime-version
+ :references:subject:to; s=qcppdkim1; bh=l9FUBbeUidxIV00pdQyQahKH
+ PpoxkuEk9fyNczKyhZ4=; b=WcdvIvc3sMDYJHBly1X7GlPj50GGKCEK4vrDj8k0
+ 5eaZ80++Ws3b6M4a/w2eVgp5fBZPqpReXJ6xcZvCuGqlyHQVAUPNMJplXDtRkmjR
+ y6847o+zGxT2XJUEtVt8QOs1dNpy77MXiVZuOJgYMs0BamIgUtjw2hTVBYrDWjPI
+ ByZ746JdSL8Gv5MgaoTNMk2yzeUNW4jCf/D2j643Vd/vNt+46rBlvy+jz4Ihw0Z+
+ fTd/SLbn6SPCPWVriGZp93nSNSFJRad1vxT6ksE51c5WW0OqhiOxjWbi0pFY79Eh
+ 201wVoknTjIeNpA4GWGoZTCf94s18YBclqS5YUrFYMV7Vg==
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=oss.qualcomm.com; s=google; t=1763093552; x=1763698352; darn=lists.osuosl.org;
+ h=in-reply-to:content-disposition:mime-version:references:message-id
+ :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+ bh=l9FUBbeUidxIV00pdQyQahKHPpoxkuEk9fyNczKyhZ4=;
+ b=fn3NSjck1Dr65QZsyg56YSPkQeDLWZIRsJj6XTZbIx2/wcw4+6bgBZ/5aCLmVL4AkZ
+ 44cwXhRmAPDObyFL3m+cfRiBNGBETKH2cT7ULW+csruVuoovujhBLb6z1dTTTWsx5wAu
+ xgsoyNEUqXyiSnjnqyowMvFG772HtYSIvFHtwpN1Trqy7gttqD8dIPtExsOsHARtWRZ+
+ 1A0rkGWFiOuCINC52Hf2u0jSHr17qkPXmbljx9Vwz+Hg6qWQ5eMUWZCJveg6BtpNdqQd
+ ddJ6grCQtKADEdou9sMtnBT1GrTX/Z32xZPtGNvN+GfOnA0LVH/fHQ3MQCaNJ3imYpmw
+ Y5VQ==
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dmarc=pass (p=reject dis=none)
- header.from=oracle.com
+ dmarc=none (p=none dis=none)
+ header.from=oss.qualcomm.com
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key, unprotected) header.d=qualcomm.com
+ header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1
+ header.b=WcdvIvc3; 
  dkim=pass (2048-bit key,
- unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256
- header.s=corp-2025-04-25 header.b=G24IlMxM
-Subject: [Intel-wired-lan] [PATCH v3 1/1] i40e: validate ring_len parameter
- against hardware-specific values
+ unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com
+ header.a=rsa-sha256 header.s=google header.b=fn3NSjck
+Subject: Re: [Intel-wired-lan] [PATCH v3 06/21] drm/msm: Switch to use %ptSp
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -145,98 +249,20 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Gregory Herrero <gregory.herrero@oracle.com>
+On Thu, Nov 13, 2025 at 03:32:20PM +0100, Andy Shevchenko wrote:
+> Use %ptSp instead of open coded variants to print content of
+> struct timespec64 in human readable format.
+> 
+> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> ---
+>  drivers/gpu/drm/msm/disp/msm_disp_snapshot_util.c | 3 +--
+>  drivers/gpu/drm/msm/msm_gpu.c                     | 3 +--
+>  2 files changed, 2 insertions(+), 4 deletions(-)
+> 
 
-The maximum number of descriptors supported by the hardware is hardware
-dependent and can be retrieved using i40e_get_max_num_descriptors().
-Move this function to a shared header and use it when checking for valid
-ring_len parameter rather than using hardcoded value.
-Cast info->ring_len to u32 in i40e_config_vsi_tx_queue() as it's u16 in
-struct virtchnl_txq_info.
+Acked-by: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
 
-By fixing an over-acceptance issue, behavior change could be seen where
-ring_len could now be rejected while configuring rx and tx queues if its
-size is larger than the hardware-specific maximum number of descriptors.
 
-Fixes: 55d225670def ("i40e: add validation for ring_len param")
-Signed-off-by: Gregory Herrero <gregory.herrero@oracle.com>
----
- drivers/net/ethernet/intel/i40e/i40e.h          | 17 +++++++++++++++++
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c  | 12 ------------
- .../net/ethernet/intel/i40e/i40e_virtchnl_pf.c  |  4 ++--
- 3 files changed, 19 insertions(+), 14 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index 801a57a925da..a953cce008f4 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -1418,4 +1418,21 @@ static inline struct i40e_veb *i40e_pf_get_main_veb(struct i40e_pf *pf)
- 	return (pf->lan_veb != I40E_NO_VEB) ? pf->veb[pf->lan_veb] : NULL;
- }
- 
-+/**
-+ * i40e_get_max_num_descriptors - get maximum number of descriptors for this hardware.
-+ * @pf: pointer to a PF
-+ *
-+ * Return: u32 value corresponding to the maximum number of descriptors.
-+ **/
-+static inline u32 i40e_get_max_num_descriptors(const struct i40e_pf *pf)
-+{
-+	const struct i40e_hw *hw = &pf->hw;
-+
-+	switch (hw->mac.type) {
-+	case I40E_MAC_XL710:
-+		return I40E_MAX_NUM_DESCRIPTORS_XL710;
-+	default:
-+		return I40E_MAX_NUM_DESCRIPTORS;
-+	}
-+}
- #endif /* _I40E_H_ */
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index 86c72596617a..61c39e881b00 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -2013,18 +2013,6 @@ static void i40e_get_drvinfo(struct net_device *netdev,
- 		drvinfo->n_priv_flags += I40E_GL_PRIV_FLAGS_STR_LEN;
- }
- 
--static u32 i40e_get_max_num_descriptors(struct i40e_pf *pf)
--{
--	struct i40e_hw *hw = &pf->hw;
--
--	switch (hw->mac.type) {
--	case I40E_MAC_XL710:
--		return I40E_MAX_NUM_DESCRIPTORS_XL710;
--	default:
--		return I40E_MAX_NUM_DESCRIPTORS;
--	}
--}
--
- static void i40e_get_ringparam(struct net_device *netdev,
- 			       struct ethtool_ringparam *ring,
- 			       struct kernel_ethtool_ringparam *kernel_ring,
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 081a4526a2f0..5ecc9bb908f9 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -656,7 +656,7 @@ static int i40e_config_vsi_tx_queue(struct i40e_vf *vf, u16 vsi_id,
- 
- 	/* ring_len has to be multiple of 8 */
- 	if (!IS_ALIGNED(info->ring_len, 8) ||
--	    info->ring_len > I40E_MAX_NUM_DESCRIPTORS_XL710) {
-+	    (u32)info->ring_len > i40e_get_max_num_descriptors(pf)) {
- 		ret = -EINVAL;
- 		goto error_context;
- 	}
-@@ -726,7 +726,7 @@ static int i40e_config_vsi_rx_queue(struct i40e_vf *vf, u16 vsi_id,
- 
- 	/* ring_len has to be multiple of 32 */
- 	if (!IS_ALIGNED(info->ring_len, 32) ||
--	    info->ring_len > I40E_MAX_NUM_DESCRIPTORS_XL710) {
-+	    info->ring_len > i40e_get_max_num_descriptors(pf)) {
- 		ret = -EINVAL;
- 		goto error_param;
- 	}
 -- 
-2.51.0
-
+With best wishes
+Dmitry
