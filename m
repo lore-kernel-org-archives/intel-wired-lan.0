@@ -4,100 +4,75 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 072A3CFD317
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 24 Nov 2025 11:49:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 06F43CFA466
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 24 Nov 2025 11:50:44 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id B0FDD82B97;
-	Mon, 24 Nov 2025 11:49:36 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id D1DCC8347D;
+	Mon, 24 Nov 2025 11:50:43 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id p6-6TofQeJds; Mon, 24 Nov 2025 11:49:36 +0000 (UTC)
+ id U6CM_4TOyK2p; Mon, 24 Nov 2025 11:50:41 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E0262827AF
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C9376834DB
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1763984975;
-	bh=FjdzdIPkjbTIBcp35cu3ku9sDz7C3Xa9HnUZjtJmWn0=;
+	s=default; t=1763985041;
+	bh=WrnKlMBKkkTxRS01ZHMBD3yodBDqret0LgJ3AytrPsk=;
 	h=Date:To:Cc:References:From:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=tpe2XxI+HyWBrfDP80zWea4KbkrNo7gQwqPwgywqzxLsVi9aPSD8vt7TlIbytiqXZ
-	 I35oDLAet2GZD/pO6/I41uuvFp/Q/A15Ok4WPO5QanWMu4cMmAH89ECgLlWbdJWN5K
-	 pESnXIFWD+BxPSi1Ueg/y3BoH9Gvzs5Wuk4oTT7LajD/ocmaAwWFq6PMsrj01ChuCB
-	 6j3nks4VuV3Ha6PSN2QBS/ViSpV2MRJUojLU+Qh1yY75JHtgMLGfvZ3lgZrncb3qu/
-	 lQzdQcBmEJ4jV/b3b/hVjS+UiwZtysibOKKO/mAF9psNbkDo01JwMNepq0zaLAlnPN
-	 8yf4k2BYtxBTQ==
+	b=0auZTHnsjXPsqVj9rdf2ou0DeS34gCLbLzDy/93SR20z0NJAGObSmrm7+Jlijf/oi
+	 W1bJV181j7kehDd23Im9qLhoDKh7H0q7/tdbdGP5WWN5zurggvYOOAEplFBY1SK8ff
+	 KmhvI8iS7uKcu43OJnohDzq2jPX5jClO9TqRAlKbmq7HstYwHICTyjDnCKCc+AKMoI
+	 rra+gED5WZimO9bXw8E73EdtacmvaMEmmQkfxk9YBQDBFpYXYXPWio11X+mPLB/hOT
+	 h2wP5G7CH/fDdU9L2BammshFQPK6ZKGuDVwpCLBexC+JSD1ulJ1KUojilVdIO6c03v
+	 5lX9EljH8iJXQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id E0262827AF;
-	Mon, 24 Nov 2025 11:49:35 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id B18C3E4
- for <intel-wired-lan@lists.osuosl.org>; Mon, 24 Nov 2025 11:49:34 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id C9376834DB;
+	Mon, 24 Nov 2025 11:50:41 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 2B97234E
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 24 Nov 2025 11:50:41 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 9DAE740377
- for <intel-wired-lan@lists.osuosl.org>; Mon, 24 Nov 2025 11:49:34 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 1CDE940377
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 24 Nov 2025 11:50:41 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id CjCbYwOq8wgk for <intel-wired-lan@lists.osuosl.org>;
- Mon, 24 Nov 2025 11:49:34 +0000 (UTC)
-X-Greylist: delayed 425 seconds by postgrey-1.37 at util1.osuosl.org;
- Mon, 24 Nov 2025 11:49:33 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org D8BEA40376
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org D8BEA40376
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.9;
- helo=mgamail.intel.com; envelope-from=marcin.szycik@linux.intel.com;
+ id qHt-OdIyMSGd for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 24 Nov 2025 11:50:40 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=141.14.17.11;
+ helo=mx3.molgen.mpg.de; envelope-from=pmenzel@molgen.mpg.de;
  receiver=<UNKNOWN> 
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.9])
- by smtp2.osuosl.org (Postfix) with ESMTPS id D8BEA40376
- for <intel-wired-lan@lists.osuosl.org>; Mon, 24 Nov 2025 11:49:33 +0000 (UTC)
-X-CSE-ConnectionGUID: 0I+DMkxsSuGkiVMfPuLi7Q==
-X-CSE-MsgGUID: 4GxuQ3mMTFu1RxsWDm0f1g==
-X-IronPort-AV: E=McAfee;i="6800,10657,11622"; a="88633388"
-X-IronPort-AV: E=Sophos;i="6.20,222,1758610800"; d="scan'208";a="88633388"
-Received: from fmviesa010.fm.intel.com ([10.60.135.150])
- by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 24 Nov 2025 03:42:27 -0800
-X-CSE-ConnectionGUID: 2IUEq4b2SGOmPHJmaemNTQ==
-X-CSE-MsgGUID: o8R/nalYQP2UEybVJILtaA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.20,222,1758610800"; d="scan'208";a="193095019"
-Received: from unknown (HELO [10.217.181.108]) ([10.217.181.108])
- by fmviesa010-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 24 Nov 2025 03:42:26 -0800
-Message-ID: <e822ab45-0fa7-43bd-8236-3497d8ec0ca3@linux.intel.com>
-Date: Mon, 24 Nov 2025 12:42:20 +0100
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 2FB7340376
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 2FB7340376
+Received: from mx3.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 2FB7340376
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 24 Nov 2025 11:50:38 +0000 (UTC)
+Received: from [192.168.44.160] (unknown [185.238.219.78])
+ (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested) (Authenticated sender: pmenzel)
+ by mx.molgen.mpg.de (Postfix) with ESMTPSA id D4D5261CC3FF6;
+ Mon, 24 Nov 2025 12:50:20 +0100 (CET)
+Message-ID: <7a18de32-73c6-4d54-831e-714e6ff0ccf1@molgen.mpg.de>
+Date: Mon, 24 Nov 2025 12:50:18 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-To: Tony Nguyen <anthony.l.nguyen@intel.com>, intel-wired-lan@lists.osuosl.org
-Cc: netdev@vger.kernel.org, Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-References: <20251118121709.122512-1-marcin.szycik@linux.intel.com>
- <84d7bbbd-5902-4b9d-9bc2-eb1704b81d57@intel.com>
+To: Marcin Szycik <marcin.szycik@linux.intel.com>
+Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
+ anthony.l.nguyen@intel.com,
+ Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+References: <20251124114356.75699-1-marcin.szycik@linux.intel.com>
 Content-Language: en-US
-From: Marcin Szycik <marcin.szycik@linux.intel.com>
-In-Reply-To: <84d7bbbd-5902-4b9d-9bc2-eb1704b81d57@intel.com>
-Content-Type: text/plain; charset=UTF-8
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+In-Reply-To: <20251124114356.75699-1-marcin.szycik@linux.intel.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1763984973; x=1795520973;
- h=message-id:date:mime-version:subject:to:cc:references:
- from:in-reply-to:content-transfer-encoding;
- bh=q4ntfVxQRZkW2CuKNeZO79nxICArr40RgNvtkzd65V4=;
- b=IDFQEOiwmI8PvX9+GUNwfHn/XUXd2r2YrP4/vpkLmNLfV3HOTtlv8bQB
- BakKse9AIQbuAH4uGzt42ar9VhxQ19RZfmD7YxK1UzHzddMce3L+wygLB
- LzCuL2MZNK88fExB40SoHoT1I14UOx5V8mXgmoXHLJO7pf5C/8H5f54D/
- DZ+sf+YkPaSSjmozNeYmMEdhqMdY7dLUWtFk0HAb3cooHajrE3x8Xkg56
- 9NEhd7qjQ1bPEJSbRkgLNw/hc8CHpoimX1advTjS85AHx+xGJky2xERld
- MA4RrS9coZLT48MXGcjGud4NeqyLWKESRQCvnwSn594mdEZIAs9rZP1vS
- A==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=none (p=none dis=none)
- header.from=linux.intel.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=IDFQEOiw
-Subject: Re: [Intel-wired-lan] [PATCH linux-firmware] ice: update DDP LAG
+ header.from=molgen.mpg.de
+Subject: Re: [Intel-wired-lan] [PATCH linux-firmware v2] ice: update DDP LAG
  package to 1.3.2.0
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
@@ -116,51 +91,67 @@ Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 
 
-On 21.11.2025 22:38, Tony Nguyen wrote:
+Am 24.11.25 um 12:43 schrieb Marcin Szycik:
+> Highlights of changes since 1.3.1.0:
 > 
+> - Add support for Intel E830 series SR-IOV Link Aggregation (LAG) in
+>    active-active mode. This uses a dual-segment package with one segment
+>    for E810 and one for E830, which increases package size.
 > 
-> On 11/18/2025 4:17 AM, Marcin Szycik wrote:
->> Highlights of changes since 1.3.1.0:
->>
->> - Add support for Intel E830 series SR-IOV Link Aggregation (LAG) in
->>    active-active mode. This uses a dual-segment package with one segment
->>    for E810 and one for E830, which increases package size.
->>
->> Testing hints:
->> - Install ice_lag package
->> - Load ice driver
->> - devlink dev eswitch set $PF1_PCI mode switchdev
->> - ip link add $BR type bridge
->> - echo 1 > /sys/class/net/$PF1/device/sriov_numvfs
->> - ip link add $BOND type bond miimon 100 mode 802.3ad
->> - ip link set $PF1 down
->> - ip link set $PF1 master $BOND
->> - ip link set $PF2 down
->> - ip link set $PF2 master $BOND
->> - ip link set $BOND master $BR
->> - ip link set $VF1_PR master $BR
->> - Configure link partner in 802.3ad bond mode
->> - Verify both links in bond are transmitting/receiving VF traffic
->> - Verify bond still works after pulling one of the cables
->>
->> Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
->> Signed-off-by: Marcin Szycik <marcin.szycik@linux.intel.com>
->> ---
->>   ...ce_lag-1.3.1.0.pkg => ice_lag-1.3.2.0.pkg} | Bin 692776 -> 1360772 bytes
->>   1 file changed, 0 insertions(+), 0 deletions(-)
->>   rename intel/ice/ddp-lag/{ice_lag-1.3.1.0.pkg => ice_lag-1.3.2.0.pkg} (49%)
-> 
-> The WHENCE file needs to be updated to reflect the new version.
+> Testing hints:
+> - Install ice_lag package
+> - Load ice driver
 
-Sorry, will update in v2.
+Give the command?
 
-Marcin
+Format the comands below without the bullet, so it can be copied more 
+easily?
 
->>
->> diff --git a/intel/ice/ddp-lag/ice_lag-1.3.1.0.pkg b/intel/ice/ddp-lag/ice_lag-1.3.2.0.pkg
->> similarity index 49%
->> rename from intel/ice/ddp-lag/ice_lag-1.3.1.0.pkg
->> rename to intel/ice/ddp-lag/ice_lag-1.3.2.0.pkg
+> - devlink dev eswitch set $PF1_PCI mode switchdev
+> - ip link add $BR type bridge
+> - echo 1 > /sys/class/net/$PF1/device/sriov_numvfs
+> - ip link add $BOND type bond miimon 100 mode 802.3ad
+> - ip link set $PF1 down
+> - ip link set $PF1 master $BOND
+> - ip link set $PF2 down
+> - ip link set $PF2 master $BOND
+> - ip link set $BOND master $BR
+> - ip link set $VF1_PR master $BR
+> - Configure link partner in 802.3ad bond mode
+
+How?
+
+> - Verify both links in bond are transmitting/receiving VF traffic
+> - Verify bond still works after pulling one of the cables
+
+Please give the command.
+
+> Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+> Signed-off-by: Marcin Szycik <marcin.szycik@linux.intel.com>
+> ---
+> v2: Update WHENCE
+> ---
+>   WHENCE                                        |   2 +-
+>   ...ce_lag-1.3.1.0.pkg => ice_lag-1.3.2.0.pkg} | Bin 692776 -> 1360772 bytes
+>   2 files changed, 1 insertion(+), 1 deletion(-)
+>   rename intel/ice/ddp-lag/{ice_lag-1.3.1.0.pkg => ice_lag-1.3.2.0.pkg} (49%)
 > 
-> 
+> diff --git a/WHENCE b/WHENCE
+> index 02e6d3575f99..7b63c659f100 100644
+> --- a/WHENCE
+> +++ b/WHENCE
+> @@ -6970,7 +6970,7 @@ Driver: ice - Intel(R) Ethernet Connection E800 Series
+>   
+>   File: intel/ice/ddp/ice-1.3.43.0.pkg
+>   Link: intel/ice/ddp/ice.pkg -> ice-1.3.43.0.pkg
+> -File: intel/ice/ddp-lag/ice_lag-1.3.1.0.pkg
+> +File: intel/ice/ddp-lag/ice_lag-1.3.2.0.pkg
 
+[…]
+
+Reviewed-by: Paul Menzel <pmenzel@molgen.mpg.de>
+
+
+Kind regards,
+
+Paul
