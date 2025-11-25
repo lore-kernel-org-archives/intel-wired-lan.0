@@ -4,58 +4,58 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0E323CFD377
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 25 Nov 2025 10:16:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AD3D9CFD37E
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 25 Nov 2025 10:16:38 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id C40886072D;
-	Tue, 25 Nov 2025 10:16:24 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 67ACE610A7;
+	Tue, 25 Nov 2025 10:16:38 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id iMPWqfXFnp8t; Tue, 25 Nov 2025 10:16:24 +0000 (UTC)
+ id dVTNPZQFotRb; Tue, 25 Nov 2025 10:16:37 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 010F961018
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A71446081E
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1764065784;
-	bh=iUhJd6NxAvevHlST64UaYTjD+yjmtlesUdlh7v+jLZA=;
+	s=default; t=1764065797;
+	bh=TetX4l+WgxRtvj8B+Ro8HemF14SDJ4C0ROoIyMI5/Iw=;
 	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=urpziRgeZXN/sK8ArfWu//ktnkCJM9tH1SnJLQ5JirFuhOlpDs0D5iKfP0FuKI50P
-	 xVNwYQt06R9U4hxI6PBR6lnn9RgEeMD2ysGC+xjWk6f8JFGRuG/CjvLdNi4I3EBP0M
-	 WKo4Q6HWtT0kMehrmdKoScV+YbbC2Ag0nAWu360JeFFvqruibOz933UO3liyIgP7m0
-	 Ko4GXhNooiOlFg22gRE3rX9T6XQxKofvgp35qyNAR/+6YcHYl6X9EC98IbW0E0e7Fd
-	 6TcmZxUnjCKYtxM49AE+jvvc4F4UiCGC9xVfWvn7RD4LrNqzOJtUew4PgRfnUjbuoh
-	 U1eO3RbUd3xXw==
+	b=kPgIo6yuBLb3IwP+qQwlRogqPVgJ5e1x2+bhpq8CPUUrBKIbU0ZoBEDt+LeN5hmNB
+	 uKJvTIcN4DBqRXB9mMGMuYAferaR4ky+UH7t2Nxn0SD5zJcnoTk3bKKwxJrbDAXJM1
+	 JlT5wL1uswsfWg7cNEw4+sd7D2MgK5jBgm5KQPDfQ1t2F5UmKqXgZR+m+WRganwIoi
+	 qrVaFhxPE1pAC0QCWzbVMRgmVtQAp2afL7r9N2Yvyq/9fcpBORmp0q96TqqYYcHz1C
+	 PP9N3UIeUqgg9ht/MDoVh4A7NJUXlVLhTfuygmCOXSra5FhqTS0C4boR3A8I+bMZIF
+	 7dZD6nf6XDk2w==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 010F961018;
-	Tue, 25 Nov 2025 10:16:24 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id 40C33E4
- for <intel-wired-lan@lists.osuosl.org>; Tue, 25 Nov 2025 10:16:23 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id A71446081E;
+	Tue, 25 Nov 2025 10:16:37 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 45A18359
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 25 Nov 2025 10:16:36 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 32A9182348
- for <intel-wired-lan@lists.osuosl.org>; Tue, 25 Nov 2025 10:16:23 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 376AE60F9D
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 25 Nov 2025 10:16:36 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id txTL2M1OoxJc for <intel-wired-lan@lists.osuosl.org>;
- Tue, 25 Nov 2025 10:16:22 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id IYmM2mfVOQHk for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 25 Nov 2025 10:16:35 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom;
  client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org;
  envelope-from=horms@kernel.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 8A3AF81767
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8A3AF81767
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 493EE6072D
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 493EE6072D
 Received: from sea.source.kernel.org (sea.source.kernel.org
  [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 8A3AF81767
- for <intel-wired-lan@lists.osuosl.org>; Tue, 25 Nov 2025 10:16:22 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 493EE6072D
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 25 Nov 2025 10:16:35 +0000 (UTC)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by sea.source.kernel.org (Postfix) with ESMTP id E998C4065A;
- Tue, 25 Nov 2025 10:16:21 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5BB26C4CEF1;
- Tue, 25 Nov 2025 10:16:20 +0000 (UTC)
-Date: Tue, 25 Nov 2025 10:16:18 +0000
+ by sea.source.kernel.org (Postfix) with ESMTP id 0F0D440B81;
+ Tue, 25 Nov 2025 10:16:35 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 74DA6C4CEF1;
+ Tue, 25 Nov 2025 10:16:33 +0000 (UTC)
+Date: Tue, 25 Nov 2025 10:16:31 +0000
 From: Simon Horman <horms@kernel.org>
 To: Jacob Keller <jacob.e.keller@intel.com>
 Cc: Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
@@ -63,32 +63,31 @@ Cc: Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
  Tony Nguyen <anthony.l.nguyen@intel.com>,
  Przemek Kitszel <przemyslaw.kitszel@intel.com>,
  intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org
-Message-ID: <aSWB8tuqClJGBqrg@horms.kernel.org>
+Message-ID: <aSWB_yLwW-DKvuc_@horms.kernel.org>
 References: <20251120-jk-refactor-queue-stats-v4-0-6e8b0cea75cc@intel.com>
- <20251120-jk-refactor-queue-stats-v4-2-6e8b0cea75cc@intel.com>
+ <20251120-jk-refactor-queue-stats-v4-3-6e8b0cea75cc@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20251120-jk-refactor-queue-stats-v4-2-6e8b0cea75cc@intel.com>
+In-Reply-To: <20251120-jk-refactor-queue-stats-v4-3-6e8b0cea75cc@intel.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1764065781;
- bh=kUniJafciv27Xvx3LLc76+RtUt+Q5LB696ZK63CIuBQ=;
+ d=kernel.org; s=k20201202; t=1764065794;
+ bh=7E9Z3qVoq+7y8LsemeRstJN9txhp8hp5rPn+YXZEZ7o=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=qxiMyivbYMU3Zko+9SnrDqE8PTPwt0wQ65N6xKMonvXm3aCfi3hO3/Gx7KhmvrbJs
- Mls7iEZ7PdcOrexJTKyU+OuamKLbsl5xtAudQVXN2tpy7JTVYgk/c40eIHUEUsTuMe
- ut5dtx9QXbEspGZEreIEv4phPKSUvyBAuxFErupzQPgQf6TOPQd4O0X0smKsbHe60+
- Uvl8bnGZUTkSDcwDA/4IcM/hN6IUd3/nUgjGIYrnHzru5t/IsxvEzUE4LOUIXQQA+A
- cocHyUOxjc9O8hDDQTioomwFQvLZT7HNt+95VZeXQ9k6C+ynKrZTA1c/MogNNn1uBY
- /yZ/wysZDFyqg==
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ b=jHUsFJK0FOB2Rk0SKdN7vFe+USWSskei3ELRJ0LnIo6BxrL3WGUw4ALkDQthb7ePT
+ L3ge5lhLDsOJdQ3vehsxLMqh+hhwAQEBV45+suPUVIA9EwkidBuSSUFZvpgampmO76
+ RjvmUGcbMjaM4OpwDoklT6xKbBD6D2vwi60pjJQ5pxjoCntRnrC85/+IWGP9HR8f9T
+ OjJ+0665pc9yb4spxBoQi0pOfm6q8d9WyuJhUN94w3b+wmeWK37bak1zg7NJMeACkz
+ htzWkTymrHR79fifxPe5KihV8Peg3iqaeO0nf9UwpGgvXktJ+Ar8kY4Xvbxe2UkPld
+ 1lVpMdH9fU+bg==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=qxiMyivb
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next v4 2/6] ice: pass pointer to
- ice_fetch_u64_stats_per_ring
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20201202 header.b=jHUsFJK0
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next v4 3/6] ice: remove
+ ice_q_stats struct and use struct_group
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -104,23 +103,33 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Thu, Nov 20, 2025 at 12:20:42PM -0800, Jacob Keller wrote:
-> The ice_fetch_u64_stats_per_ring function takes a pointer to the syncp from
-> the ring stats to synchronize reading of the packet stats. It also takes a
-> *copy* of the ice_q_stats fields instead of a pointer to the stats. This
-> completely defeats the point of using the u64_stats API. We pass the stats
-> by value, so they are static at the point of reading within the
-> u64_stats_fetch_retry loop.
+On Thu, Nov 20, 2025 at 12:20:43PM -0800, Jacob Keller wrote:
+> The ice_qp_reset_stats function resets the stats for all rings on a VSI. It
+> currently behaves differently for Tx and Rx rings. For Rx rings, it only
+> clears the rx_stats which do not include the pkt and byte counts. For Tx
+> rings and XDP rings, it clears only the pkt and byte counts.
 > 
-> Simplify the function to take a pointer to the ice_ring_stats instead of
-> two separate parameters. Additionally, since we never call this outside of
-> ice_main.c, make it a static function.
+> We could add extra memset calls to cover both the stats and relevant
+> tx/rx stats fields. Instead, lets convert stats into a struct_group which
+> contains both the pkts and bytes fields as well as the Tx or Rx stats, and
+> remove the ice_q_stats structure entirely.
+> 
+> The only remaining user of ice_q_stats is the ice_q_stats_len function in
+> ice_ethtool.c, which just counts the number of fields. Replace this with a
+> simple multiplication by 2. I find this to be simpler to reason about than
+> relying on knowing the layout of the ice_q_stats structure.
+> 
+> Now that the stats field of the ice_ring_stats covers all of the statistic
+> values, the ice_qp_reset_stats function will properly zero out all of the
+> fields.
 > 
 > Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 
-The *copy* was certainly working against us here.
-But TBH, C syntax led me to read the code more than
-once before seeing it.
+I agree this is both more consistent and cleaner.
+
+I do feel there might be a yet cleaner way to handle things
+in place of multiplication by 2. But I can't think of such
+a way at this time.
 
 Reviewed-by: Simon Horman <horms@kernel.org>
