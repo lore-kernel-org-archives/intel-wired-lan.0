@@ -1,84 +1,126 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A6E3CD116F3
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  1 Dec 2025 13:22:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E1E0BD116F1
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  1 Dec 2025 16:24:41 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 5A94D6058C;
-	Mon,  1 Dec 2025 13:22:59 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 997AA40A9A;
+	Mon,  1 Dec 2025 16:24:41 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id gjCkizbaDq3l; Mon,  1 Dec 2025 13:22:57 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id yFAAGzszQK6y; Mon,  1 Dec 2025 16:24:41 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 767E260BA1
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 26608409BC
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1764595377;
-	bh=N41QxgnRtCHlZmVKqsWUR/C875H5hHPGxtqi2SvPlXY=;
-	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
+	s=default; t=1764606281;
+	bh=R1I+uJ/sne3ODi0I5rhgl1VBy+mSK7EuH1XFyAWlLB4=;
+	h=References:In-Reply-To:From:Date:To:Cc:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=0tyqp2T2QeaaMDgpLm6zFECIJlTKHL5p+sPZPcI4CPyDpO6ltlzUwefOOYRuq4Fmf
-	 Q85d6b6H84f0PmU/FGA//mZBA33KL2jNLmLXiyBdCS6xGQanX/ZZfNtEEKSp3E+sEg
-	 jT+8ubag9pOEikgQQ3r3E9IYPo+pjjWUvC/3lqoNx6SmFdw0Te3llA17VzQw/7+Ceu
-	 NI2mdkPypxa9vTtjWDziCxN/0psm7mydIalJDu1QmIJZcFox6gAS+ttyaYPCTlhYMh
-	 mMvK549ha/RmuO6JE/J2KTkX2f3W+/yBhBes2mnUs08eJJFfxoLFNzt0EJlxou+yl9
-	 93wtm1RIH1DMg==
+	b=RqxjzOEGAKn3/Rcst+ZsqIbR4og816flXDB12lZ1Q8iyJFL9yAh28vyf9XII0PGPU
+	 TwTO/QV+r+UJrm39cpvIouupuzRREKtJ6Efa8xEESklDN6TnA9hIq0IrGrkVbsMZOv
+	 0NvuomLRE0gStxk3yU0GgYdr1CXPxFJtwQqwnb/TuX0fmen4ZS0cy1Kfu9QoLRBSn1
+	 SkpXtRmByqA8PbRKxDvUU04hpxIS+hqkibsjxPVlJDmKu2/cDru5hGFyL3YLsJvg+P
+	 djSVo0RUbnuec6vF882+Tq8yD5oYUZUo6NkIyT9Ac7SgjTZQpb6RDtbzXM1SADSBQu
+	 vE2Bn4UG2de0w==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 767E260BA1;
-	Mon,  1 Dec 2025 13:22:57 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 26608409BC;
+	Mon,  1 Dec 2025 16:24:41 +0000 (UTC)
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id 2DDFAD3
- for <intel-wired-lan@lists.osuosl.org>; Mon,  1 Dec 2025 13:22:56 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id CDB8635E
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 26 Nov 2025 17:39:15 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 1401B83089
- for <intel-wired-lan@lists.osuosl.org>; Mon,  1 Dec 2025 13:22:56 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id B3E6F841A9
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 26 Nov 2025 17:39:15 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id HcmMkCNfFQjJ for <intel-wired-lan@lists.osuosl.org>;
- Mon,  1 Dec 2025 13:22:55 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=141.14.17.11;
- helo=mx3.molgen.mpg.de; envelope-from=pmenzel@molgen.mpg.de;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 2FB6683005
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2FB6683005
-Received: from mx3.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 2FB6683005
- for <intel-wired-lan@lists.osuosl.org>; Mon,  1 Dec 2025 13:22:54 +0000 (UTC)
-Received: from [141.14.220.42] (g42.guest.molgen.mpg.de [141.14.220.42])
- (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested) (Authenticated sender: pmenzel)
- by mx.molgen.mpg.de (Postfix) with ESMTPSA id E4F7961B4846C;
- Mon, 01 Dec 2025 14:22:29 +0100 (CET)
-Message-ID: <fd3c66f1-4b16-4da9-8a9d-615332fd0c8e@molgen.mpg.de>
-Date: Mon, 1 Dec 2025 14:22:29 +0100
+ id eooMBzgN00_Y for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 26 Nov 2025 17:39:15 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2a00:1450:4864:20::52d; helo=mail-ed1-x52d.google.com;
+ envelope-from=thostet@google.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org D68D5841A8
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D68D5841A8
+Received: from mail-ed1-x52d.google.com (mail-ed1-x52d.google.com
+ [IPv6:2a00:1450:4864:20::52d])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id D68D5841A8
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 26 Nov 2025 17:39:14 +0000 (UTC)
+Received: by mail-ed1-x52d.google.com with SMTP id
+ 4fb4d7f45d1cf-643165976dcso13467a12.1
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 26 Nov 2025 09:39:14 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20230601; t=1764178753; x=1764783553;
+ h=content-transfer-encoding:cc:to:subject:message-id:date:from
+ :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+ :to:cc:subject:date:message-id:reply-to;
+ bh=R1I+uJ/sne3ODi0I5rhgl1VBy+mSK7EuH1XFyAWlLB4=;
+ b=ftDzB5DIjg436L9phoP7CUPcg6HrzbXWYNeGHf8HYe6GUVIFXI+7EQSO8wU/Kr4kE7
+ d3vmxTOSeRIKYePWjal+PIaGLYJfPpKMOQHKC3Q6Z71Pj4bAAlXDmXvJqfQRaVS01Oyk
+ NgXlyNngQLCpxbzmUSLMrRPhbDrYQA95T4Ky+U4sayO3GvnxMqgkM9jAxU5DkMoFKsP+
+ WrV7cjGcV1CE62QjdhXRaRTVwfJS/9aOA65Gw0Pc0tjtbQToXZT0QDHDiBrSJYaP2Q+X
+ k/8saZy2kuA4MwnZrkOhYrHiPR3g8aQ15HePujgRxB3mgila46G4yJsMNFqAyOKyZZ/l
+ mWeQ==
+X-Forwarded-Encrypted: i=1;
+ AJvYcCXS4eZDdAAUuS6856wBtiaYkrmf0ZgzTjj9SOpwRGt/CH3lvmvFaOz7EDc/Ee9oeG+4329cdir5tHiB4jZ3Si4=@lists.osuosl.org
+X-Gm-Message-State: AOJu0Ywlov7BUatR/oTLMxEjEjsCGkq1PeTkodDfgi4uepMh0EBUQcz+
+ aEK+COMSu8PRtx5YXomEccdI0pp1pf+ByQV2D2BzY3JvBENwXnPrbhTSx4RbEeSKtK9zx7GFRSz
+ QJn6qXKowAro5dScNOAnUO7bVo62qhfOi2gd1pvY3
+X-Gm-Gg: ASbGncssdaN2AK6ynfOHqv4hNklbBuiiFs7FKRLImTZ3LDYjOmrCyYt+8ZAViHrI1+j
+ X5rmMzOnZ4R9leW5BXsBy1HK/GJSvJX5jEGqXHQDM/YFtvQGJyTN2lna+JwCE8NAx8XWLz3eQ+l
+ R3JwGKapVIKoSeuAGoLmnCqzIMg1jrr6c8WZ3QD7HTwWcrqGeUyr+M77QZRGH9sfJ222lfmQtT7
+ niHOSAYBbsI/xcyhV4cgi/vIEh3nyEQQqvKyu93kPn89YDu5//0k1sb347+vqG7xyQ1p6drT/pf
+ X0CcoCk=
+X-Google-Smtp-Source: AGHT+IEkGK/VHxp1lm1rvuHJf0EzAfe7zdVnaY0ne4s+608bQz6lFzGkrtc5jOoeA5Aed/P/aq8jpGwwN4k9ODR79Fk=
+X-Received: by 2002:aa7:c458:0:b0:643:bfa:62d0 with SMTP id
+ 4fb4d7f45d1cf-646014fd34dmr33248a12.10.1764178752509; Wed, 26 Nov 2025
+ 09:39:12 -0800 (PST)
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-To: Guangshuo Li <lgs201920130244@gmail.com>
-Cc: Jesse Brandeburg <jbrandeburg@cloudflare.com>,
- Tony Nguyen <anthony.l.nguyen@intel.com>,
- "David S. Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, Florian Westphal <fw@strlen.de>,
- intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, stable@vger.kernel.org,
- Tony Nguyen <tony.nguyen@intel.com>
-References: <20251201034058.263839-1-lgs201920130244@gmail.com>
- <7917b0db-82b7-4a75-91cd-d3b6b0364728@molgen.mpg.de>
-Content-Language: en-US
-In-Reply-To: <7917b0db-82b7-4a75-91cd-d3b6b0364728@molgen.mpg.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+References: <20251126094850.2842557-1-mschmidt@redhat.com>
+In-Reply-To: <20251126094850.2842557-1-mschmidt@redhat.com>
+From: Tim Hostetler <thostet@google.com>
+Date: Wed, 26 Nov 2025 09:39:01 -0800
+X-Gm-Features: AWmQ_bnwtAMUJOIKVfMGtvWBZahdFkBhWMQmC9LHTDnDUnFiDtU2cq_7mHmDfEc
+Message-ID: <CAByH8Uu3ZBa1Zux=TLAGR2+VAHT+AoS0oHvqaMmgCHWVfmZhUA@mail.gmail.com>
+To: Michal Schmidt <mschmidt@redhat.com>
+Cc: Tony Nguyen <anthony.l.nguyen@intel.com>, 
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Andrew Lunn <andrew+netdev@lunn.ch>, 
+ "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
+ Richard Cochran <richardcochran@gmail.com>, 
+ Mateusz Polchlopek <mateusz.polchlopek@intel.com>,
+ Sai Krishna <saikrishnag@marvell.com>, 
+ Simon Horman <horms@kernel.org>, Jacob Keller <jacob.e.keller@intel.com>, 
+ Ahmed Zaki <ahmed.zaki@intel.com>, intel-wired-lan@lists.osuosl.org, 
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Mailman-Approved-At: Mon, 01 Dec 2025 16:24:40 +0000
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=google.com; s=20230601; t=1764178753; x=1764783553; darn=lists.osuosl.org;
+ h=content-transfer-encoding:cc:to:subject:message-id:date:from
+ :in-reply-to:references:mime-version:from:to:cc:subject:date
+ :message-id:reply-to;
+ bh=R1I+uJ/sne3ODi0I5rhgl1VBy+mSK7EuH1XFyAWlLB4=;
+ b=uWq4XKhC1K9jIh0DVuxvw/rI3xnrZ2C2aySdWGlQmXf7r/fJWCESd3cXjU6qjh+vU2
+ FTsaf36Rcz6qLTEBLU3T1Fe93Tq81SAAw97r3/ZR6AQWrWs8j8uWy3V0nOBuiKaNjubk
+ QoOz3J3CwsqhVpU1K6dhuEioq5lf7eHgUcMeHF2rS9aEGZD8417GACUDxQVlmjfgp4ke
+ rscVooDyiL3VO+JatZdr9Yt9oZe4fkD2hsWp+GziH1TUKDO3+LZiw4VPmQkhXpu+bJjm
+ gJjD3PxVButvJEOGayS7m1GQqnsgWXMfLadgeoFic8R4uV02TisgaGrVBd0hh29IwxH6
+ 4u8Q==
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dmarc=none (p=none dis=none)
- header.from=molgen.mpg.de
-Subject: Re: [Intel-wired-lan] [PATCH v2] e1000: fix OOB in
- e1000_tbi_should_accept()
+ dmarc=pass (p=reject dis=none)
+ header.from=google.com
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key) header.d=google.com header.i=@google.com
+ header.a=rsa-sha256 header.s=20230601 header.b=uWq4XKhC
+Subject: Re: [Intel-wired-lan] [PATCH net] iavf: Implement settime64 with
+ -EOPNOTSUPP
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -94,142 +136,17 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-[Cc: Remove bouncing address of Jeffrey and update Jesse’s]
+On Wed, Nov 26, 2025 at 1:49=E2=80=AFAM Michal Schmidt <mschmidt@redhat.com=
+> wrote:
+>
+> ptp_clock_settime() assumes every ptp_clock has implemented settime64().
+> Stub it with -EOPNOTSUPP to prevent a NULL dereference.
+>
+> The fix is similar to commit 329d050bbe63 ("gve: Implement settime64
+> with -EOPNOTSUPP").
+>
+> Fixes: d734223b2f0d ("iavf: add initial framework for registering PTP clo=
+ck")
+> Signed-off-by: Michal Schmidt <mschmidt@redhat.com>
 
-Am 01.12.25 um 14:18 schrieb Paul Menzel:
-> Dear Guangshuo,
-> 
-> 
-> Thank you for your patch.
-> 
-> Am 01.12.25 um 04:40 schrieb Guangshuo Li:
->> In e1000_tbi_should_accept() we read the last byte of the frame via
->> 'data[length - 1]' to evaluate the TBI workaround. If the descriptor-
->> reported length is zero or larger than the actual RX buffer size, this
->> read goes out of bounds and can hit unrelated slab objects. The issue
->> is observed from the NAPI receive path (e1000_clean_rx_irq):
->>
->> ==================================================================
->> BUG: KASAN: slab-out-of-bounds in e1000_tbi_should_accept+0x610/0x790
->> Read of size 1 at addr ffff888014114e54 by task sshd/363
->>
->> CPU: 0 PID: 363 Comm: sshd Not tainted 5.18.0-rc1 #1
->> Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS 
->> rel-1.12.0-59-gc9ba5276e321-prebuilt.qemu.org 04/01/2014
->> Call Trace:
->>   <IRQ>
->>   dump_stack_lvl+0x5a/0x74
->>   print_address_description+0x7b/0x440
->>   print_report+0x101/0x200
->>   kasan_report+0xc1/0xf0
->>   e1000_tbi_should_accept+0x610/0x790
->>   e1000_clean_rx_irq+0xa8c/0x1110
->>   e1000_clean+0xde2/0x3c10
->>   __napi_poll+0x98/0x380
->>   net_rx_action+0x491/0xa20
->>   __do_softirq+0x2c9/0x61d
->>   do_softirq+0xd1/0x120
->>   </IRQ>
->>   <TASK>
->>   __local_bh_enable_ip+0xfe/0x130
->>   ip_finish_output2+0x7d5/0xb00
->>   __ip_queue_xmit+0xe24/0x1ab0
->>   __tcp_transmit_skb+0x1bcb/0x3340
->>   tcp_write_xmit+0x175d/0x6bd0
->>   __tcp_push_pending_frames+0x7b/0x280
->>   tcp_sendmsg_locked+0x2e4f/0x32d0
->>   tcp_sendmsg+0x24/0x40
->>   sock_write_iter+0x322/0x430
->>   vfs_write+0x56c/0xa60
->>   ksys_write+0xd1/0x190
->>   do_syscall_64+0x43/0x90
->>   entry_SYSCALL_64_after_hwframe+0x44/0xae
->> RIP: 0033:0x7f511b476b10
->> Code: 73 01 c3 48 8b 0d 88 d3 2b 00 f7 d8 64 89 01 48 83 c8 ff c3 66 0f 1f 44 00 00 83 3d f9 2b 2c 00 00 75 10 b8 01 00 00 00 0f 05 <48> 3d 01 f0 ff ff 73 31 c3 48 83 ec 08 e8 8e 9b 01 00 48 89 04 24
->> RSP: 002b:00007ffc9211d4e8 EFLAGS: 00000246 ORIG_RAX: 0000000000000001
->> RAX: ffffffffffffffda RBX: 0000000000004024 RCX: 00007f511b476b10
->> RDX: 0000000000004024 RSI: 0000559a9385962c RDI: 0000000000000003
->> RBP: 0000559a9383a400 R08: fffffffffffffff0 R09: 0000000000004f00
->> R10: 0000000000000070 R11: 0000000000000246 R12: 0000000000000000
->> R13: 00007ffc9211d57f R14: 0000559a9347bde7 R15: 0000000000000003
->>   </TASK>
->> Allocated by task 1:
->>   __kasan_krealloc+0x131/0x1c0
->>   krealloc+0x90/0xc0
->>   add_sysfs_param+0xcb/0x8a0
->>   kernel_add_sysfs_param+0x81/0xd4
->>   param_sysfs_builtin+0x138/0x1a6
->>   param_sysfs_init+0x57/0x5b
->>   do_one_initcall+0x104/0x250
->>   do_initcall_level+0x102/0x132
->>   do_initcalls+0x46/0x74
->>   kernel_init_freeable+0x28f/0x393
->>   kernel_init+0x14/0x1a0
->>   ret_from_fork+0x22/0x30
->> The buggy address belongs to the object at ffff888014114000
->>   which belongs to the cache kmalloc-2k of size 2048
->> The buggy address is located 1620 bytes to the right of
->>   2048-byte region [ffff888014114000, ffff888014114800]
->> The buggy address belongs to the physical page:
->> page:ffffea0000504400 refcount:1 mapcount:0 mapping:0000000000000000 index:0x0 pfn:0x14110
->> head:ffffea0000504400 order:3 compound_mapcount:0 compound_pincount:0
->> flags: 0x100000000010200(slab|head|node=0|zone=1)
->> raw: 0100000000010200 0000000000000000 dead000000000001 ffff888013442000
->> raw: 0000000000000000 0000000000080008 00000001ffffffff 0000000000000000
->> page dumped because: kasan: bad access detected
->> ==================================================================
->>
->> This happens because the TBI check unconditionally dereferences the last
->> byte without validating the reported length first:
->>
->>     u8 last_byte = *(data + length - 1);
->>
->> Fix by rejecting the frame early if the length is zero, or if it exceeds
->> adapter->rx_buffer_len. This preserves the TBI workaround semantics for
->> valid frames and prevents touching memory beyond the RX buffer.
-> 
-> Do you have reproducer to forth an invalid length?
-> 
->> Fixes: 2037110c96d5 ("e1000: move tbi workaround code into helper function")
->> Cc: stable@vger.kernel.org
->> Suggested-by: Tony Nguyen <tony.nguyen@intel.com>
->> Signed-off-by: Guangshuo Li <lgs201920130244@gmail.com>
->> ---
->> changelog:
->> v2:
->> - Keep declarations at the beginning of e1000_tbi_should_accept().
->> - Move the last_byte assignment after the length bounds checks 
->> (suggested by Tony Nguyen)
->> ---
->>   drivers/net/ethernet/intel/e1000/e1000_main.c | 9 ++++++++-
->>   1 file changed, 8 insertions(+), 1 deletion(-)
->>
->> diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
->> index 3f5feb55cfba..cb49ec49f836 100644
->> --- a/drivers/net/ethernet/intel/e1000/e1000_main.c
->> +++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
->> @@ -4091,7 +4091,14 @@ static bool e1000_tbi_should_accept(struct 
->> e1000_adapter *adapter,
->>                       u32 length, const u8 *data)
->>   {
->>       struct e1000_hw *hw = &adapter->hw;
->> -    u8 last_byte = *(data + length - 1);
->> +    u8 last_byte;
->> +    /* Guard against OOB on data[length - 1] */
->> +    if (unlikely(!length))
->> +        return false;
->> +    /* Upper bound: length must not exceed rx_buffer_len */
->> +    if (unlikely(length > adapter->rx_buffer_len))
-> 
-> Should an error be logged, or is it a common scenario, that such traffic 
-> exists?
-> 
->> +        return false;
->> +    last_byte = *(data + length - 1);
->>       if (TBI_ACCEPT(hw, status, errors, length, last_byte)) {
->>           unsigned long irq_flags;
-> 
-> 
-> Kind regards,
-> 
-> Paul
+Reviewed-by: Tim Hostetler <thostet@google.com>
