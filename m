@@ -1,99 +1,109 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6507CCFD2F6
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 27 Nov 2025 04:30:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8C35ED10375
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 27 Nov 2025 06:16:28 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 22DEC822CE;
-	Thu, 27 Nov 2025 04:30:57 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 360AE409A6;
+	Thu, 27 Nov 2025 06:16:28 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id LL3KRWMcv6co; Thu, 27 Nov 2025 04:30:56 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id n6J2CApIKfW7; Thu, 27 Nov 2025 06:16:27 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 598F9822EB
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org F30604094F
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1764217856;
-	bh=6npSUhzWfJyihXsG6deh98KI1plU2MLohAC4HM7XJSI=;
+	s=default; t=1764224187;
+	bh=0nJxzo8eX9HUYh2nxCXAAnMnReFQtPkunXrI7pOfvJ0=;
 	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:From;
-	b=nlfeW0tqUAjRDphesjJHRaIEXz/c4i2+xjsJmQYuUODiq/xjC9flzmo9icB2PFQiH
-	 1gMOs1ldyH9TE7Btntsadk3zLrWPQ/mOvVChrjoN1ksne6YfWIua9r1N4xAalZG5EN
-	 C0wMPBFOoVUDkIqGKd09snmmjOJfuqKNA8fVov0wOcaqKXbWwGQrjB1Uckex/9yFFO
-	 AAzatoQ5wEGrv7xrwt+PwOmfkoNdtfbebit/oDS0XZjSgiX/bAvqfNmrpkYyozm1zm
-	 4AgAXHuCzMOGe3eN0FK85kBdQZzrYq5AJeOcAf8uIgKe/Ue4bCN4iGYqIQi4sMMcXZ
-	 62+lBhTpr0Y8Q==
+	b=WuNI5jyi9+7LzIydk/uB1WCFguGNu2C5MfoSqy4yQ+iI5AKuWVYkT1ui/Mu5OLVoy
+	 TeubEV7mct1reD8ZQcPKQqmAvM135ajSO2B2siUwPRj87Za5LXVKqv+iHoBxAMXvoy
+	 VzyJX1Q8I3c3JT0K/8I34dgc8SlAMY1xA0T3uZ4QVpYxujxdm5vnN406AexDIsSU/3
+	 /FIF3DLUdkFMv7Yn2AsskX3mMAeY3yoWLVtKw9l43RYtwH/mop72V9gJJmAHZHCA1H
+	 /6dgNvXYWdsdWZ8fuvkou9XblHuBOLRstnGK+dSCKlg9miiU/RTAUpeFvzwGIvcpBc
+	 dCZ/szgAJhRBw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 598F9822EB;
-	Thu, 27 Nov 2025 04:30:56 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id 370552A9
- for <intel-wired-lan@lists.osuosl.org>; Thu, 27 Nov 2025 04:30:55 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id F30604094F;
+	Thu, 27 Nov 2025 06:16:26 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 8B3C1DE
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 27 Nov 2025 06:16:25 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 29466822A8
- for <intel-wired-lan@lists.osuosl.org>; Thu, 27 Nov 2025 04:30:55 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 70C0360B53
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 27 Nov 2025 06:16:25 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id AjoV0JpETLR3 for <intel-wired-lan@lists.osuosl.org>;
- Thu, 27 Nov 2025 04:30:54 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.10;
- helo=mgamail.intel.com; envelope-from=vitaly.lifshits@intel.com;
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id ZXdmMrHDb1lv for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 27 Nov 2025 06:16:24 +0000 (UTC)
+X-Greylist: delayed 426 seconds by postgrey-1.37 at util1.osuosl.org;
+ Thu, 27 Nov 2025 06:16:23 UTC
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org A7B6A60B52
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A7B6A60B52
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.19;
+ helo=mgamail.intel.com; envelope-from=chwee.lin.choong@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 4FF548229D
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4FF548229D
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.10])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 4FF548229D
- for <intel-wired-lan@osuosl.org>; Thu, 27 Nov 2025 04:30:53 +0000 (UTC)
-X-CSE-ConnectionGUID: JEH0/IcGQ8OUjXfuKitP8Q==
-X-CSE-MsgGUID: zbcUi8cOQYyHnJfszv+d5w==
-X-IronPort-AV: E=McAfee;i="6800,10657,11625"; a="77625022"
-X-IronPort-AV: E=Sophos;i="6.20,230,1758610800"; d="scan'208";a="77625022"
-Received: from fmviesa004.fm.intel.com ([10.60.135.144])
- by fmvoesa104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 26 Nov 2025 20:30:53 -0800
-X-CSE-ConnectionGUID: kfPQP0dAQYyncKYK+1Rl3g==
-X-CSE-MsgGUID: L5MmAWq4QgenPI/dZaLjCQ==
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.19])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id A7B6A60B52
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 27 Nov 2025 06:16:23 +0000 (UTC)
+X-CSE-ConnectionGUID: WKAOyOJQSt+Bou6jIDAALQ==
+X-CSE-MsgGUID: CULrsMCQRl2+E6zrndpYAg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11625"; a="66152501"
+X-IronPort-AV: E=Sophos;i="6.20,230,1758610800"; d="scan'208";a="66152501"
+Received: from fmviesa010.fm.intel.com ([10.60.135.150])
+ by orvoesa111.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 26 Nov 2025 22:09:15 -0800
+X-CSE-ConnectionGUID: EVF9C2O+SjiFGmSG7wL5Cw==
+X-CSE-MsgGUID: vE3Dx5+ZRZOttXv2lq5bAw==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.20,230,1758610800"; d="scan'208";a="198079068"
-Received: from ccdlinuxdev11.iil.intel.com ([143.185.162.70])
- by fmviesa004.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 26 Nov 2025 20:30:51 -0800
-From: Vitaly Lifshits <vitaly.lifshits@intel.com>
-To: intel-wired-lan@osuosl.org, netdev@vger.kernel.org, andrew+netdev@lunn.ch,
- horms@kernel.org, kuba@kernel.org, edumazet@google.com,
- davem@davemloft.net, pabeni@redhat.com
-Cc: Vitaly Lifshits <vitaly.lifshits@intel.com>
-Date: Thu, 27 Nov 2025 06:30:47 +0200
-Message-Id: <20251127043047.728116-1-vitaly.lifshits@intel.com>
-X-Mailer: git-send-email 2.34.1
+X-IronPort-AV: E=Sophos;i="6.20,230,1758610800"; d="scan'208";a="193956120"
+Received: from p2dy149cchoong.png.intel.com ([10.107.243.50])
+ by fmviesa010.fm.intel.com with ESMTP; 26 Nov 2025 22:09:12 -0800
+From: Chwee-Lin Choong <chwee.lin.choong@intel.com>
+To: Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Andrew Lunn <andrew+netdev@lunn.ch>,
+ "David S . Miller" <davem@davemloft.net>,
+ Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>,
+ Richard Cochran <richardcochran@gmail.com>,
+ Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Avi Shalev <avi.shalev@intel.com>,
+ Song Yoong Siang <yoong.siang.song@intel.com>,
+ Chwee-Lin Choong <chwee.lin.choong@intel.com>
+Date: Thu, 27 Nov 2025 21:49:27 +0800
+Message-ID: <20251127134927.2133-1-chwee.lin.choong@intel.com>
+X-Mailer: git-send-email 2.42.0
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1764217854; x=1795753854;
+ t=1764224182; x=1795760182;
  h=from:to:cc:subject:date:message-id:mime-version:
  content-transfer-encoding;
- bh=thAE5Beno2ivMQNVSCVf47IBVxGLTgHfsFGBA8RJM7c=;
- b=m1u2KEfaQ+vVBPIDOBCyVUllKlWDkxABpIpi8RwOHAbIWh6l5bW8wFfb
- KusPzo/ghaf64nTQ9pvZ8FJjXOK6rNBpTJ5w5FezC6Ho8v0Gn1bwPv9Xy
- /0EBnl61TwKZ6J9EiKlkFROcQ+rtWxPxVHi7YX5wHwo5sBetThtpeuzLC
- tHoWbjvKGCGYLt20FTrOahRdNX0DF+R3xUcTVIxUQ49cb+Zt7gtE3sboB
- YzjrMOMEjzfvrYFJD1ziEMATrRoQjAkJAy1CP0FSdAUUqey22XVTvp4n9
- oPCpV3moNb2aUI1Jb6c4b66nAokBp1xBnyXPnlNZ9mNwyqRo+GcWvJALv
- A==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ bh=aHUC8nU4inAMF0lcxnfBXRfDJnB0i8imv9buU6Z9arU=;
+ b=g/m7Pdwcq/OGOIZMya1AWNLI2XEQX+Fxr2feHoDjC/Jxaddd8jGPeEiN
+ ONQhqcpsr/3BOlIj+1IxUTp71V8o7UsGOvfVBFHKQ4enTAmi6ZZz6f+Q4
+ ONEHftUQNbk+QUOxSnXAIPtiDAHYHtQ6yELOqmhGBt3gz4IRGTcPFuEkC
+ /E+WgdAJ0nYJSLdHBameXkBhJxxpGYjHECc5vJCHyUwXoz3OSKKa8Yr05
+ J75aFxk2/PgBfQW8HtTsE0uqydFmrQvLDC7DMRv2PQ8UM0ak//EpTKK1f
+ s/Agee4fMrOt7ngNTvccR+kmYzllAdVjAVvhM7nSHleS91mmglVSmTSKM
+ Q==;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=m1u2KEfa
-Subject: [Intel-wired-lan] [PATCH iwl-next v1 1/1] e1000e: introduce private
- flag to override XTAL clock frequency
+ header.s=Intel header.b=g/m7Pdwc
+Subject: [Intel-wired-lan] [PATCH iwl-net v2] igc: fix race condition in TX
+ timestamp read for register 0
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -109,220 +119,122 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On some TGP and ADP systems, the hardware XTAL clock is incorrectly
-set to 24MHz instead of the expected 38.4MHz, causing PTP timer
-inaccuracies. Since affected systems cannot be reliably detected,
-introduce an ethtool private flag that allows user-space to override
-the XTAL clock frequency.
+The current HW bug workaround checks the TXTT_0 ready bit first,
+then reads TXSTMPL_0 twice (before and after reading TXSTMPH_0)
+to detect whether a new timestamp was captured by timestamp
+register 0 during the workaround.
 
-Tested on an affected system using the phc_ctl tool:
+This sequence has a race: if a new timestamp is captured after
+checking the TXTT_0 bit but before the first TXSTMPL_0 read, the
+detection fails because both the “old” and “new” values come from
+the same timestamp.
 
-Without the flag:
-  sudo phc_ctl enp0s31f6 set 0.0 wait 10 get
-  phc_ctl[...] clock time is 16.000541250 (expected ~10s)
+Fix by reading TXSTMPL_0 first to establish a baseline, then
+checking the TXTT_0 bit. This ensures any timestamp captured
+during the race window will be detected.
 
-With the flag:
-  sudo phc_ctl enp0s31f6 set 0.0 wait 10 get
-  phc_ctl[...] clock time is 9.984407212 (expected ~10s)
+Old sequence:
+  1. Check TXTT_0 ready bit
+  2. Read TXSTMPL_0 (baseline)
+  3. Read TXSTMPH_0 (interrupt workaround)
+  4. Read TXSTMPL_0 (detect changes vs baseline)
 
-Signed-off-by: Vitaly Lifshits <vitaly.lifshits@intel.com>
+New sequence:
+  1. Read TXSTMPL_0 (baseline)
+  2. Check TXTT_0 ready bit
+  3. Read TXSTMPH_0 (interrupt workaround)
+  4. Read TXSTMPL_0 (detect changes vs baseline)
+
+Fixes: c789ad7cbebc ("igc: Work around HW bug causing missing timestamps")
+Suggested-by: Avi Shalev <avi.shalev@intel.com>
+Signed-off-by: Song Yoong Siang <yoong.siang.song@intel.com>
+Signed-off-by: Chwee-Lin Choong <chwee.lin.choong@intel.com>
 ---
- drivers/net/ethernet/intel/e1000e/e1000.h   |  7 ++--
- drivers/net/ethernet/intel/e1000e/ethtool.c | 39 ++++++++++-----------
- drivers/net/ethernet/intel/e1000e/ich8lan.c |  4 +--
- drivers/net/ethernet/intel/e1000e/netdev.c  | 18 +++++++---
- 4 files changed, 39 insertions(+), 29 deletions(-)
+v2: Added detailed comments explaining the hardware bug workaround and race
+    detection mechanism
+---
+ drivers/net/ethernet/intel/igc/igc_ptp.c | 43 ++++++++++++++----------
+ export                                   |  0
+ 2 files changed, 25 insertions(+), 18 deletions(-)
+ create mode 100644 export
 
-diff --git a/drivers/net/ethernet/intel/e1000e/e1000.h b/drivers/net/ethernet/intel/e1000e/e1000.h
-index aa08f397988e..63145bf5adcf 100644
---- a/drivers/net/ethernet/intel/e1000e/e1000.h
-+++ b/drivers/net/ethernet/intel/e1000e/e1000.h
-@@ -310,6 +310,7 @@ struct e1000_adapter {
- 
- 	unsigned int flags;
- 	unsigned int flags2;
-+	unsigned int priv_flags;
- 	struct work_struct downshift_task;
- 	struct work_struct update_phy_task;
- 	struct work_struct print_hang_task;
-@@ -460,8 +461,10 @@ s32 e1000e_get_base_timinca(struct e1000_adapter *adapter, u32 *timinca);
- #define FLAG2_DFLT_CRC_STRIPPING          BIT(12)
- #define FLAG2_CHECK_RX_HWTSTAMP           BIT(13)
- #define FLAG2_CHECK_SYSTIM_OVERFLOW       BIT(14)
--#define FLAG2_ENABLE_S0IX_FLOWS           BIT(15)
--#define FLAG2_DISABLE_K1		   BIT(16)
-+
-+#define PRIV_FLAG_ENABLE_S0IX_FLOWS	   BIT(0)
-+#define PRIV_FLAG_DISABLE_K1		   BIT(1)
-+#define PRIV_FLAG_38_4MHZ_XTAL_CLK	   BIT(2)
- 
- #define E1000_RX_DESC_PS(R, i)	    \
- 	(&(((union e1000_rx_desc_packet_split *)((R).desc))[i]))
-diff --git a/drivers/net/ethernet/intel/e1000e/ethtool.c b/drivers/net/ethernet/intel/e1000e/ethtool.c
-index cee57a2149ab..3415c38e1d9a 100644
---- a/drivers/net/ethernet/intel/e1000e/ethtool.c
-+++ b/drivers/net/ethernet/intel/e1000e/ethtool.c
-@@ -24,10 +24,9 @@ struct e1000_stats {
- };
- 
- static const char e1000e_priv_flags_strings[][ETH_GSTRING_LEN] = {
--#define E1000E_PRIV_FLAGS_S0IX_ENABLED	BIT(0)
- 	"s0ix-enabled",
--#define E1000E_PRIV_FLAGS_DISABLE_K1	BIT(1)
- 	"disable-k1",
-+	"force_38_4mhz_xtal_clock",
- };
- 
- #define E1000E_PRIV_FLAGS_STR_LEN ARRAY_SIZE(e1000e_priv_flags_strings)
-@@ -2298,49 +2297,49 @@ static int e1000e_get_ts_info(struct net_device *netdev,
- static u32 e1000e_get_priv_flags(struct net_device *netdev)
+diff --git a/drivers/net/ethernet/intel/igc/igc_ptp.c b/drivers/net/ethernet/intel/igc/igc_ptp.c
+index b7b46d863bee..7aae83c108fd 100644
+--- a/drivers/net/ethernet/intel/igc/igc_ptp.c
++++ b/drivers/net/ethernet/intel/igc/igc_ptp.c
+@@ -774,36 +774,43 @@ static void igc_ptp_tx_reg_to_stamp(struct igc_adapter *adapter,
+ static void igc_ptp_tx_hwtstamp(struct igc_adapter *adapter)
  {
- 	struct e1000_adapter *adapter = netdev_priv(netdev);
--	u32 priv_flags = 0;
+ 	struct igc_hw *hw = &adapter->hw;
++	u32 txstmpl_old;
+ 	u64 regval;
+ 	u32 mask;
+ 	int i;
  
--	if (adapter->flags2 & FLAG2_ENABLE_S0IX_FLOWS)
--		priv_flags |= E1000E_PRIV_FLAGS_S0IX_ENABLED;
--
--	if (adapter->flags2 & FLAG2_DISABLE_K1)
--		priv_flags |= E1000E_PRIV_FLAGS_DISABLE_K1;
--
--	return priv_flags;
-+	return adapter->priv_flags;
- }
- 
- static int e1000e_set_priv_flags(struct net_device *netdev, u32 priv_flags)
- {
- 	struct e1000_adapter *adapter = netdev_priv(netdev);
- 	struct e1000_hw *hw = &adapter->hw;
--	unsigned int flags2 = adapter->flags2;
-+	unsigned int temp_flags = 0;
- 	unsigned int changed;
- 
--	flags2 &= ~(FLAG2_ENABLE_S0IX_FLOWS | FLAG2_DISABLE_K1);
--
--	if (priv_flags & E1000E_PRIV_FLAGS_S0IX_ENABLED) {
-+	if (priv_flags & PRIV_FLAG_ENABLE_S0IX_FLOWS) {
- 		if (hw->mac.type < e1000_pch_cnp) {
- 			e_err("S0ix is not supported on this device\n");
- 			return -EINVAL;
- 		}
- 
--		flags2 |= FLAG2_ENABLE_S0IX_FLOWS;
-+		temp_flags |= PRIV_FLAG_ENABLE_S0IX_FLOWS;
- 	}
- 
--	if (priv_flags & E1000E_PRIV_FLAGS_DISABLE_K1) {
-+	if (priv_flags & PRIV_FLAG_DISABLE_K1) {
- 		if (hw->mac.type < e1000_ich8lan) {
- 			e_err("Disabling K1 is not supported on this device\n");
- 			return -EINVAL;
- 		}
- 
--		flags2 |= FLAG2_DISABLE_K1;
-+		temp_flags |= PRIV_FLAG_DISABLE_K1;
-+	}
++	/* Establish baseline of TXSTMPL_0 before checking TXTT_0.
++	 * This baseline is used to detect if a new timestamp arrives in
++	 * register 0 during the hardware bug workaround below.
++	 */
++	txstmpl_old = rd32(IGC_TXSTMPL);
 +
-+	if (priv_flags & PRIV_FLAG_38_4MHZ_XTAL_CLK) {
-+		if (hw->mac.type != e1000_pch_tgp && hw->mac.type != e1000_pch_adp) {
-+			e_err("Forcing 38.4MHz frequency on the XTAL is not supported on this device\n");
-+			return -EINVAL;
-+		}
-+
-+		temp_flags |= PRIV_FLAG_38_4MHZ_XTAL_CLK;
- 	}
+ 	mask = rd32(IGC_TSYNCTXCTL) & IGC_TSYNCTXCTL_TXTT_ANY;
+ 	if (mask & IGC_TSYNCTXCTL_TXTT_0) {
+ 		regval = rd32(IGC_TXSTMPL);
+ 		regval |= (u64)rd32(IGC_TXSTMPH) << 32;
+ 	} else {
+-		/* There's a bug in the hardware that could cause
+-		 * missing interrupts for TX timestamping. The issue
+-		 * is that for new interrupts to be triggered, the
+-		 * IGC_TXSTMPH_0 register must be read.
++		/* TXTT_0 not set - register 0 has no new timestamp initially.
++		 *
++		 * Hardware bug: Future timestamp interrupts won't fire unless
++		 * TXSTMPH_0 is read, even if the timestamp was captured in
++		 * registers 1-3.
+ 		 *
+-		 * To avoid discarding a valid timestamp that just
+-		 * happened at the "wrong" time, we need to confirm
+-		 * that there was no timestamp captured, we do that by
+-		 * assuming that no two timestamps in sequence have
+-		 * the same nanosecond value.
++		 * Workaround: Read TXSTMPH_0 here to enable future interrupts.
++		 * However, this read clears TXTT_0. If a timestamp arrives in
++		 * register 0 after checking TXTT_0 but before this read, it
++		 * would be lost.
+ 		 *
+-		 * So, we read the "low" register, read the "high"
+-		 * register (to latch a new timestamp) and read the
+-		 * "low" register again, if "old" and "new" versions
+-		 * of the "low" register are different, a valid
+-		 * timestamp was captured, we can read the "high"
+-		 * register again.
++		 * To detect this race: We saved a baseline read of TXSTMPL_0
++		 * before TXTT_0 check. After performing the workaround read of
++		 * TXSTMPH_0, we read TXSTMPL_0 again. Since consecutive
++		 * timestamps never share the same nanosecond value, a change
++		 * between the baseline and new TXSTMPL_0 indicates a timestamp
++		 * arrived during the race window. If so, read the complete
++		 * timestamp.
+ 		 */
+-		u32 txstmpl_old, txstmpl_new;
++		u32 txstmpl_new;
  
--	changed = adapter->flags2 ^ flags2;
-+	changed = adapter->priv_flags ^ temp_flags;
- 	if (changed)
--		adapter->flags2 = flags2;
-+		adapter->priv_flags = temp_flags;
+-		txstmpl_old = rd32(IGC_TXSTMPL);
+ 		rd32(IGC_TXSTMPH);
+ 		txstmpl_new = rd32(IGC_TXSTMPL);
  
--	if (changed & FLAG2_DISABLE_K1) {
-+	if (changed & (PRIV_FLAG_DISABLE_K1 | PRIV_FLAG_38_4MHZ_XTAL_CLK)) {
- 		/* reset the hardware to apply the changes */
- 		while (test_and_set_bit(__E1000_RESETTING,
- 					&adapter->state))
-diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-index 0ff8688ac3b8..8669dfaf38ea 100644
---- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
-+++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-@@ -302,7 +302,7 @@ static s32 e1000_reconfigure_k1_params(struct e1000_hw *hw)
- 	s32 ret_val;
+@@ -818,7 +825,7 @@ static void igc_ptp_tx_hwtstamp(struct igc_adapter *adapter)
  
- 	if (hw->mac.type < e1000_pch_mtp) {
--		if (hw->adapter->flags2 & FLAG2_DISABLE_K1)
-+		if (hw->adapter->priv_flags & PRIV_FLAG_DISABLE_K1)
- 			return e1000_configure_k1_ich8lan(hw, false);
- 		return 0;
- 	}
-@@ -315,7 +315,7 @@ static s32 e1000_reconfigure_k1_params(struct e1000_hw *hw)
- 
- 	/* Wait for the interface the settle */
- 	usleep_range(1000, 1100);
--	if (hw->adapter->flags2 & FLAG2_DISABLE_K1)
-+	if (hw->adapter->flags2 & PRIV_FLAG_DISABLE_K1)
- 		return e1000_configure_k1_ich8lan(hw, false);
- 
- 	/* Change K1 exit timeout */
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index 116f3c92b5bc..93ab22f3cd3e 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -3531,9 +3531,17 @@ s32 e1000e_get_base_timinca(struct e1000_adapter *adapter, u32 *timinca)
- 		shift = INCVALUE_SHIFT_24MHZ;
- 		adapter->cc.shift = shift;
- 		break;
--	case e1000_pch_cnp:
- 	case e1000_pch_tgp:
- 	case e1000_pch_adp:
-+		if (adapter->priv_flags & PRIV_FLAG_38_4MHZ_XTAL_CLK) {
-+			incperiod = INCPERIOD_38400KHZ;
-+			incvalue = INCVALUE_38400KHZ;
-+			shift = INCVALUE_SHIFT_38400KHZ;
-+			adapter->cc.shift = shift;
-+			break;
-+		}
-+		fallthrough;
-+	case e1000_pch_cnp:
- 	case e1000_pch_nvp:
- 		if (er32(TSYNCRXCTL) & E1000_TSYNCRXCTL_SYSCFI) {
- 			/* Stable 24MHz frequency */
-@@ -6987,7 +6995,7 @@ static int e1000e_pm_suspend(struct device *dev)
- 	rc = __e1000_shutdown(pdev, false);
- 	if (!rc) {
- 		/* Introduce S0ix implementation */
--		if (adapter->flags2 & FLAG2_ENABLE_S0IX_FLOWS)
-+		if (adapter->priv_flags & PRIV_FLAG_ENABLE_S0IX_FLOWS)
- 			e1000e_s0ix_entry_flow(adapter);
- 	}
- 
-@@ -7002,7 +7010,7 @@ static int e1000e_pm_resume(struct device *dev)
- 	int rc;
- 
- 	/* Introduce S0ix implementation */
--	if (adapter->flags2 & FLAG2_ENABLE_S0IX_FLOWS)
-+	if (adapter->priv_flags & PRIV_FLAG_ENABLE_S0IX_FLOWS)
- 		e1000e_s0ix_exit_flow(adapter);
- 
- 	rc = __e1000_resume(pdev);
-@@ -7676,7 +7684,7 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	e1000e_ptp_init(adapter);
- 
- 	if (hw->mac.type >= e1000_pch_mtp)
--		adapter->flags2 |= FLAG2_DISABLE_K1;
-+		adapter->priv_flags |= PRIV_FLAG_DISABLE_K1;
- 
- 	/* reset the hardware with the new settings */
- 	e1000e_reset(adapter);
-@@ -7689,7 +7697,7 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 		e1000e_get_hw_control(adapter);
- 
- 	if (hw->mac.type >= e1000_pch_cnp)
--		adapter->flags2 |= FLAG2_ENABLE_S0IX_FLOWS;
-+		adapter->priv_flags |= PRIV_FLAG_ENABLE_S0IX_FLOWS;
- 
- 	strscpy(netdev->name, "eth%d", sizeof(netdev->name));
- 	err = register_netdev(netdev);
+ done:
+ 	/* Now that the problematic first register was handled, we can
+-	 * use retrieve the timestamps from the other registers
++	 * retrieve the timestamps from the other registers
+ 	 * (starting from '1') with less complications.
+ 	 */
+ 	for (i = 1; i < IGC_MAX_TX_TSTAMP_REGS; i++) {
+diff --git a/export b/export
+new file mode 100644
+index 000000000000..e69de29bb2d1
 -- 
-2.34.1
+2.43.0
 
