@@ -1,97 +1,110 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 36ADCCFD2F6
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 28 Nov 2025 02:13:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 080D3CFD2F6
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 28 Nov 2025 03:12:58 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id D117684426;
-	Fri, 28 Nov 2025 02:13:09 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 9EB0B40C19;
+	Fri, 28 Nov 2025 03:12:58 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id FF_a5m2JRZ8T; Fri, 28 Nov 2025 03:12:57 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 21C5240BAE
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1764299577;
+	bh=TmQhWDlu36JNsljW+1Mc0DkpkcJw6nmneJNdUUN1wKA=;
+	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=XiNudoouxGr6MulKzMMzZ/AKQlr/3gt8UGdl2JV99P/i0xS4K9zOnChz5ybEU3Jlm
+	 tmNM1CmcRM39hGatFtXOSOLVHa8qipmIWW9Y17zRcZ3BShSMBCKesI3ZcFNG8OWhTr
+	 j6dluMSr2V+6o33dHErKLJAl/FMcTGUoEDwE2ocOhTM67eWWrwG/fWtmg9kCtXknww
+	 6tmyI7pqHYcC+WbBNxdjgmn0ZsYnhXNrFBiE+DZx2039jkGNk5DzIKoULuHOr8SlyQ
+	 EC7PVPPZovvG7C+E/OsVBtwN/A3BXkDWzjCGKlhIRqg4kZqWTEJvpHFOhI9ekNGbMD
+	 KK+h4a0LYMVYw==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp4.osuosl.org (Postfix) with ESMTP id 21C5240BAE;
+	Fri, 28 Nov 2025 03:12:57 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 6F91F708
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 28 Nov 2025 03:12:55 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp1.osuosl.org (Postfix) with ESMTP id 61ECC8447A
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 28 Nov 2025 03:12:55 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id wl-M_gslJgZV; Fri, 28 Nov 2025 02:13:08 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2F2EE84421
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1764295988;
-	bh=rV6HEebwW+Pfsq7sW4m+KQI4BZ0xLI1qyfCnSKYo/kQ=;
-	h=From:Date:References:In-Reply-To:To:Cc:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=R9me0/LiXykuVPIi/iYJN57qIPB+HlLM0ZwadhblARIWp9sNvMnQgk3SlURYRiIXO
-	 t6GHzSBLEQAUCYMdM1SpHk3ETSaq18+VbttV7lH+YD7Df20VrQkbmsTfGbSudV9iOp
-	 8UiRJo1toRSOXdsD006cjLoAvGKvZA2GOz3FXOPzVhjdW5V2rqR6y0r+cQDmQOgeap
-	 lrvvplfgeIfdS/vVJhwGPJ7lVbZwlms2P6Huc6UG+4wzwCZ5O2Xw23sW9H6zjU1cv/
-	 G/PjYijKBrSW++oeKAKmHPfbSF5MalweqkfO8WLulGUDGKj4mjFE/tSGR2qcd1K2Tk
-	 pPoFBZUIbu08Q==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 2F2EE84421;
-	Fri, 28 Nov 2025 02:13:08 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id 8F901967
- for <intel-wired-lan@lists.osuosl.org>; Fri, 28 Nov 2025 02:13:07 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 758984009C
- for <intel-wired-lan@lists.osuosl.org>; Fri, 28 Nov 2025 02:13:07 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id rv-19Lhi8bP0 for <intel-wired-lan@lists.osuosl.org>;
- Fri, 28 Nov 2025 02:13:06 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
- helo=tor.source.kernel.org; envelope-from=patchwork-bot+netdevbpf@kernel.org;
+ id qth1M5qYbu1D for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 28 Nov 2025 03:12:54 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.16;
+ helo=mgamail.intel.com; envelope-from=chwee.lin.choong@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 6C4D840079
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 6C4D840079
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 6C4D840079
- for <intel-wired-lan@lists.osuosl.org>; Fri, 28 Nov 2025 02:13:06 +0000 (UTC)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by tor.source.kernel.org (Postfix) with ESMTP id D59AA60251;
- Fri, 28 Nov 2025 02:13:04 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8446AC4CEF8;
- Fri, 28 Nov 2025 02:13:04 +0000 (UTC)
-Received: from [10.30.226.235] (localhost [IPv6:::1])
- by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id
- F2B6C3808204; Fri, 28 Nov 2025 02:10:07 +0000 (UTC)
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-From: patchwork-bot+netdevbpf@kernel.org
-Message-Id: <176429580680.112305.4866761396083363563.git-patchwork-notify@kernel.org>
-Date: Fri, 28 Nov 2025 02:10:06 +0000
-References: <20251126094850.2842557-1-mschmidt@redhat.com>
-In-Reply-To: <20251126094850.2842557-1-mschmidt@redhat.com>
-To: Michal Schmidt <mschmidt@redhat.com>
-Cc: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
- andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
- kuba@kernel.org, pabeni@redhat.com, richardcochran@gmail.com,
- mateusz.polchlopek@intel.com, saikrishnag@marvell.com, horms@kernel.org,
- jacob.e.keller@intel.com, thostet@google.com, ahmed.zaki@intel.com,
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 2A76D84485
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2A76D84485
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.16])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 2A76D84485
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 28 Nov 2025 03:12:53 +0000 (UTC)
+X-CSE-ConnectionGUID: fXEAFD56Sj6mAKQoxvghlw==
+X-CSE-MsgGUID: I10Hby5lR3+LopjJQfDOow==
+X-IronPort-AV: E=McAfee;i="6800,10657,11626"; a="66500622"
+X-IronPort-AV: E=Sophos;i="6.20,232,1758610800"; d="scan'208";a="66500622"
+Received: from fmviesa009.fm.intel.com ([10.60.135.149])
+ by orvoesa108.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 27 Nov 2025 19:12:53 -0800
+X-CSE-ConnectionGUID: UyhN+mBzTWaUaR9uVesNfw==
+X-CSE-MsgGUID: l1KoUe8NSmilh7V/r3oCxw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.20,232,1758610800"; d="scan'208";a="193801781"
+Received: from p2dy149cchoong.png.intel.com ([10.107.243.50])
+ by fmviesa009.fm.intel.com with ESMTP; 27 Nov 2025 19:12:48 -0800
+From: Chwee-Lin Choong <chwee.lin.choong@intel.com>
+To: Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Andrew Lunn <andrew+netdev@lunn.ch>,
+ "David S . Miller" <davem@davemloft.net>,
+ Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>,
+ Richard Cochran <richardcochran@gmail.com>,
+ Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Cc: yipeng.chai@amd.com, alexander.deucher@amd.com,
  intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org
+ linux-kernel@vger.kernel.org,
+ Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
+ Avi Shalev <avi.shalev@intel.com>,
+ Song Yoong Siang <yoong.siang.song@intel.com>,
+ Chwee-Lin Choong <chwee.lin.choong@intel.com>
+Date: Fri, 28 Nov 2025 18:53:04 +0800
+Message-ID: <20251128105304.8147-1-chwee.lin.choong@intel.com>
+X-Mailer: git-send-email 2.42.0
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1764295984;
- bh=NberzIKstWpJhkRDZwOMPC5eimdM4ACC4Dp1LcvG6zc=;
- h=Subject:From:Date:References:In-Reply-To:To:Cc:From;
- b=Xo4ggw4Ainal5UoqtfOtsPrB2mImTiG/Czbpc/jd0DS9gWzT8w/6sWvKUnv+IiC7X
- geTd6++6IXtY3syRpxcXYp38Y4Q2rbtGdMzb0aSPE1YMk+3g4SbSKjIA28gF0U0Gt8
- c07WljIavqpQHpLUp/XqQYt38DcAEytaA9KAXrjjHolKIV5FZ8Avo/BLyhfUZiR9Gs
- B6+cfVVtaUOH5Z8Ilfq9qbYsAxSmZTUJplf6vCQBSnplpDtT9f3K8dUp64enSp1ugE
- mXDQnE+8Wk4MXO67ZHXmj/pAw7Sd9NhuAhd+gcaRG1U/geBKa3A9f9/NbI+zHk05cd
- w8oTbH32FSZkQ==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dmarc=pass (p=quarantine dis=none)
- header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1764299574; x=1795835574;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=PC8CtawtAciwUgegT5AMHY8McV+ox6nJttR4Bkx7m+k=;
+ b=f5RBZGNmWvyV2Q8EaRSa/zyZ/KuTxA9yaeE9MJoCC01orI3gGj9QD2en
+ oqivMOkl/BcOh5MrSZ0TfcAmIBVt3HhlOcucte8I2lmR4RN7AB9iLPD7T
+ GB5SM8l4oBRUSqRjGr4KFWQEW1wMT0/Lo3Wll1S0uhA7ybGkQn92kix2B
+ xXhxzecthcmeffkrXqk9rRYeRLm7V4b9+bhPi2soPaJfrPYqRWEP5bw4O
+ M8ycbxBTLvEk9xAhV/e+Zw4/VhW8af2BQGEChnCqjMCridciPjYhUdgXy
+ Y4wvdUjbFzmXzWIkYFAA9efKfb+xxHZYCACWGSip4Yz+KT6SNV4jxopBu
+ A==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=intel.com
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=Xo4ggw4A
-Subject: Re: [Intel-wired-lan] [PATCH net] iavf: Implement settime64 with
- -EOPNOTSUPP
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=f5RBZGNm
+Subject: [Intel-wired-lan] [PATCH iwl-net v4] igc: fix race condition in TX
+ timestamp read for register 0
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -107,30 +120,129 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Hello:
+The current HW bug workaround checks the TXTT_0 ready bit first,
+then reads TXSTMPL_0 twice (before and after reading TXSTMPH_0)
+to detect whether a new timestamp was captured by timestamp
+register 0 during the workaround.
 
-This patch was applied to netdev/net.git (main)
-by Jakub Kicinski <kuba@kernel.org>:
+This sequence has a race: if a new timestamp is captured after
+checking the TXTT_0 bit but before the first TXSTMPL_0 read, the
+detection fails because both the “old” and “new” values come from
+the same timestamp.
 
-On Wed, 26 Nov 2025 10:48:49 +0100 you wrote:
-> ptp_clock_settime() assumes every ptp_clock has implemented settime64().
-> Stub it with -EOPNOTSUPP to prevent a NULL dereference.
-> 
-> The fix is similar to commit 329d050bbe63 ("gve: Implement settime64
-> with -EOPNOTSUPP").
-> 
-> Fixes: d734223b2f0d ("iavf: add initial framework for registering PTP clock")
-> Signed-off-by: Michal Schmidt <mschmidt@redhat.com>
-> 
-> [...]
+Fix by reading TXSTMPL_0 first to establish a baseline, then
+checking the TXTT_0 bit. This ensures any timestamp captured
+during the race window will be detected.
 
-Here is the summary with links:
-  - [net] iavf: Implement settime64 with -EOPNOTSUPP
-    https://git.kernel.org/netdev/net/c/1e43ebcd5152
+Old sequence:
+  1. Check TXTT_0 ready bit
+  2. Read TXSTMPL_0 (baseline)
+  3. Read TXSTMPH_0 (interrupt workaround)
+  4. Read TXSTMPL_0 (detect changes vs baseline)
 
-You are awesome, thank you!
+New sequence:
+  1. Read TXSTMPL_0 (baseline)
+  2. Check TXTT_0 ready bit
+  3. Read TXSTMPH_0 (interrupt workaround)
+  4. Read TXSTMPL_0 (detect changes vs baseline)
+
+Fixes: c789ad7cbebc ("igc: Work around HW bug causing missing timestamps")
+Suggested-by: Avi Shalev <avi.shalev@intel.com>
+Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Co-developed-by: Song Yoong Siang <yoong.siang.song@intel.com>
+Signed-off-by: Song Yoong Siang <yoong.siang.song@intel.com>
+Signed-off-by: Chwee-Lin Choong <chwee.lin.choong@intel.com>
+---
+v1: https://patchwork.ozlabs.org/project/intel-wired-lan/patch/20250918183811.31270-1-chwee.lin.choong@intel.com/
+v2: https://patchwork.ozlabs.org/project/intel-wired-lan/patch/20251127134927.2133-1-chwee.lin.choong@intel.com/
+v3: https://patchwork.ozlabs.org/project/intel-wired-lan/patch/20251127151137.2883-1-chwee.lin.choong@intel.com/
+
+changelog:
+v1 -> v2 
+- Added detailed comments explaining the hardware bug workaround and race
+    detection mechanism
+v2 -> v3
+- Removed extra export file added by mistake	
+v3 -> v4
+- Added co-developer
+---
+ drivers/net/ethernet/intel/igc/igc_ptp.c | 43 ++++++++++++++----------
+ 1 file changed, 25 insertions(+), 18 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/igc/igc_ptp.c b/drivers/net/ethernet/intel/igc/igc_ptp.c
+index b7b46d863bee..7aae83c108fd 100644
+--- a/drivers/net/ethernet/intel/igc/igc_ptp.c
++++ b/drivers/net/ethernet/intel/igc/igc_ptp.c
+@@ -774,36 +774,43 @@ static void igc_ptp_tx_reg_to_stamp(struct igc_adapter *adapter,
+ static void igc_ptp_tx_hwtstamp(struct igc_adapter *adapter)
+ {
+ 	struct igc_hw *hw = &adapter->hw;
++	u32 txstmpl_old;
+ 	u64 regval;
+ 	u32 mask;
+ 	int i;
+ 
++	/* Establish baseline of TXSTMPL_0 before checking TXTT_0.
++	 * This baseline is used to detect if a new timestamp arrives in
++	 * register 0 during the hardware bug workaround below.
++	 */
++	txstmpl_old = rd32(IGC_TXSTMPL);
++
+ 	mask = rd32(IGC_TSYNCTXCTL) & IGC_TSYNCTXCTL_TXTT_ANY;
+ 	if (mask & IGC_TSYNCTXCTL_TXTT_0) {
+ 		regval = rd32(IGC_TXSTMPL);
+ 		regval |= (u64)rd32(IGC_TXSTMPH) << 32;
+ 	} else {
+-		/* There's a bug in the hardware that could cause
+-		 * missing interrupts for TX timestamping. The issue
+-		 * is that for new interrupts to be triggered, the
+-		 * IGC_TXSTMPH_0 register must be read.
++		/* TXTT_0 not set - register 0 has no new timestamp initially.
++		 *
++		 * Hardware bug: Future timestamp interrupts won't fire unless
++		 * TXSTMPH_0 is read, even if the timestamp was captured in
++		 * registers 1-3.
+ 		 *
+-		 * To avoid discarding a valid timestamp that just
+-		 * happened at the "wrong" time, we need to confirm
+-		 * that there was no timestamp captured, we do that by
+-		 * assuming that no two timestamps in sequence have
+-		 * the same nanosecond value.
++		 * Workaround: Read TXSTMPH_0 here to enable future interrupts.
++		 * However, this read clears TXTT_0. If a timestamp arrives in
++		 * register 0 after checking TXTT_0 but before this read, it
++		 * would be lost.
+ 		 *
+-		 * So, we read the "low" register, read the "high"
+-		 * register (to latch a new timestamp) and read the
+-		 * "low" register again, if "old" and "new" versions
+-		 * of the "low" register are different, a valid
+-		 * timestamp was captured, we can read the "high"
+-		 * register again.
++		 * To detect this race: We saved a baseline read of TXSTMPL_0
++		 * before TXTT_0 check. After performing the workaround read of
++		 * TXSTMPH_0, we read TXSTMPL_0 again. Since consecutive
++		 * timestamps never share the same nanosecond value, a change
++		 * between the baseline and new TXSTMPL_0 indicates a timestamp
++		 * arrived during the race window. If so, read the complete
++		 * timestamp.
+ 		 */
+-		u32 txstmpl_old, txstmpl_new;
++		u32 txstmpl_new;
+ 
+-		txstmpl_old = rd32(IGC_TXSTMPL);
+ 		rd32(IGC_TXSTMPH);
+ 		txstmpl_new = rd32(IGC_TXSTMPL);
+ 
+@@ -818,7 +825,7 @@ static void igc_ptp_tx_hwtstamp(struct igc_adapter *adapter)
+ 
+ done:
+ 	/* Now that the problematic first register was handled, we can
+-	 * use retrieve the timestamps from the other registers
++	 * retrieve the timestamps from the other registers
+ 	 * (starting from '1') with less complications.
+ 	 */
+ 	for (i = 1; i < IGC_MAX_TX_TSTAMP_REGS; i++) {
 -- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/patchwork/pwbot.html
-
+2.43.0
 
