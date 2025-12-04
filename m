@@ -4,105 +4,88 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 01DF5D216A3
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  4 Dec 2025 15:52:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E0C48D216AD
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  4 Dec 2025 16:20:07 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id BA73360ADB;
-	Thu,  4 Dec 2025 15:52:08 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id A7BCE616D7;
+	Thu,  4 Dec 2025 16:20:07 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id HZLCC3Xiomby; Thu,  4 Dec 2025 15:52:07 +0000 (UTC)
+ id 8aVMsUFSYorv; Thu,  4 Dec 2025 16:20:06 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org D533E614D5
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7069E6149E
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1764863527;
-	bh=EaXhmULyleN2TOl6zxaNSBm/gTTZoltJPSGwM7ZMfFo=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1764865206;
+	bh=u57tejH3ziyE8514FYcFiPLeeh+C6htGPe3gajhMtxY=;
+	h=Date:From:To:Cc:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=mx6466iM3aD9FZkFH929JY7CKsEQjk7aVc0V2/TF+SC6lxxEMy27j4rMdG+cuJ3Uj
-	 inTMYC4G258nx420Ohtsjzbj5LV0nxNB1FlEAmbrMYYu7PttoI7koqcN4UbTbXbtYu
-	 AGV/2XybVQL4CQg2W6MswSlONJ1sSuPvG8oCpe0Nr/UcDat9WiT6m+9W1ikvu6OMo8
-	 4JKAkerZXMG309/TPG4jUUrl2i8ZWJ3/ydGsN5fQZgUA+8NNzhQV1iP13t5QsJglBQ
-	 YePuZzsANoDXqxBY3ZLuZaq3nTNuOjlwyuBLa5Akphz6jiU3bljxJqDJhJsESeKxvM
-	 PAqfguBVF8iVQ==
+	b=3ki56G+dAuD7p0V7v0S941Kh5aELNzG4U0wO/FHqWZYaHVm1bgEcueac7W4/XjRhz
+	 WSh2IcW80BTs0Vv30ysPJIeDY2TypShwykbAyhpbOjjtqbfZ5pTWAWq7OneVnHulnL
+	 Bl6l+GRZ4L1pQS2+l9mJEWL+Aj3BGmxjWwTI39eU7pOQbZ3YYWzPuDgKFCJArujuUx
+	 LoGIV8nzorcsqIpmEWikEcF6mFy+vl0EQD4YmEO2AQtvlHTg5UOOXFo2bSBpPjc7ZI
+	 5z8NdvM/MvbBkDMvbzhdYFPISBHSVEVZrsIGgSgcLz2+eJDoGluLP8EGXn+JrqrDYA
+	 k0I+V6iY1+Zmg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id D533E614D5;
-	Thu,  4 Dec 2025 15:52:07 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 6D308E7
- for <intel-wired-lan@lists.osuosl.org>; Thu,  4 Dec 2025 15:52:06 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 7069E6149E;
+	Thu,  4 Dec 2025 16:20:06 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 71F3B1A9
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  4 Dec 2025 16:20:04 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 53A4B614D5
- for <intel-wired-lan@lists.osuosl.org>; Thu,  4 Dec 2025 15:52:06 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 5155C4082E
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  4 Dec 2025 16:20:04 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id g93-nfVrl0gj for <intel-wired-lan@lists.osuosl.org>;
- Thu,  4 Dec 2025 15:52:04 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.7;
- helo=mgamail.intel.com; envelope-from=aleksander.lobakin@intel.com;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 3AD6560ADB
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3AD6560ADB
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.7])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 3AD6560ADB
- for <intel-wired-lan@lists.osuosl.org>; Thu,  4 Dec 2025 15:52:04 +0000 (UTC)
-X-CSE-ConnectionGUID: IwW4dMyCQS+3ZgfkNGggfw==
-X-CSE-MsgGUID: fBI1vw26RzuJgYR7bm/4AA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11632"; a="92365148"
-X-IronPort-AV: E=Sophos;i="6.20,249,1758610800"; d="scan'208";a="92365148"
-Received: from fmviesa007.fm.intel.com ([10.60.135.147])
- by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 04 Dec 2025 07:52:01 -0800
-X-CSE-ConnectionGUID: yDe8UagYRJSuE0iByuFK2Q==
-X-CSE-MsgGUID: wsggtH19TY6eicO4qtF1DQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.20,249,1758610800"; d="scan'208";a="194677286"
-Received: from newjersey.igk.intel.com ([10.102.20.203])
- by fmviesa007.fm.intel.com with ESMTP; 04 Dec 2025 07:51:57 -0800
-From: Alexander Lobakin <aleksander.lobakin@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Cc: Alexander Lobakin <aleksander.lobakin@intel.com>,
- Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Andrew Lunn <andrew+netdev@lunn.ch>,
- "David S. Miller" <davem@davemloft.net>,
- Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, Simon Horman <horms@kernel.org>,
- Jacob Keller <jacob.e.keller@intel.com>,
- Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
- nxne.cnse.osdt.itp.upstreaming@intel.com, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Date: Thu,  4 Dec 2025 16:51:32 +0100
-Message-ID: <20251204155133.2437621-5-aleksander.lobakin@intel.com>
-X-Mailer: git-send-email 2.52.0
-In-Reply-To: <20251204155133.2437621-1-aleksander.lobakin@intel.com>
-References: <20251204155133.2437621-1-aleksander.lobakin@intel.com>
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id FAhIV8G1EFiN for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  4 Dec 2025 16:20:03 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.234.252.31;
+ helo=sea.source.kernel.org; envelope-from=kuba@kernel.org; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 6735A40722
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 6735A40722
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 6735A40722
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  4 Dec 2025 16:20:03 +0000 (UTC)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+ by sea.source.kernel.org (Postfix) with ESMTP id E542242A32;
+ Thu,  4 Dec 2025 16:20:02 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3F1BCC4CEFB;
+ Thu,  4 Dec 2025 16:20:02 +0000 (UTC)
+Date: Thu, 4 Dec 2025 08:20:01 -0800
+From: Jakub Kicinski <kuba@kernel.org>
+To: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ <adrian.pielech@intel.com>, "intel-wired-lan@lists.osuosl.org"
+ <intel-wired-lan@lists.osuosl.org>, Tony Nguyen
+ <anthony.l.nguyen@intel.com>, Paolo Abeni <pabeni@redhat.com>, "David S.
+ Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, Simon
+ Horman <horms@kernel.org>, Andrew Lunn <andrew+netdev@lunn.ch>, Krzysztof
+ Galazka <krzysztof.galazka@intel.com>
+Message-ID: <20251204082001.561a5f3b@kernel.org>
+In-Reply-To: <a0561c1f-f64e-4d76-b08b-877897d45eae@intel.com>
+References: <a0561c1f-f64e-4d76-b08b-877897d45eae@intel.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1764863524; x=1796399524;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=f9UDea29lu8cpYEglSq82yFHqRMlFa5MXpp+E2WlLZE=;
- b=RE4VuqIzUaKwiVmI1Iu9rdv9mvan+lswbHvDYIWItVWtv6X7tR7GqegJ
- 6lZtxyv9BYGkHAjpIJixQDiQI3jcUEY8d+KowjXuAYlbeWkWEN8EzxSDk
- lSBm9GARK/n69/AkzwP7e44CNl2HAXR5EVxyKGweLOB2il9EtC06hRQgU
- 2/Qs6Offhgs97g2bWfSxi4It1vlpxZU+71+UbpwnEwwfthdrH66fdvmC4
- WcCWLaJMoM7aIJc2TkNJRResLyrg9ZbuV4x01+HHVYyyChA8m8cV41P61
- AAK4BbXdIdS9wJJh1qkB06bJgnd771BxkS2e7y8itoBhkYiGhndODqbHx
- g==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=RE4VuqIz
-Subject: [Intel-wired-lan] [PATCH iwl-next v2 4/5] ice: implement Rx queue
- management ops
+ d=kernel.org; s=k20201202; t=1764865202;
+ bh=u57tejH3ziyE8514FYcFiPLeeh+C6htGPe3gajhMtxY=;
+ h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+ b=nS4h5NKxZvuSMz0vL4EUSHgrMMa93APGW1Sn7U4/9XdshedNV/m4RYfcYJNNdyDJ5
+ nlsQ2RyL8wiOfE2RCwKN8kpOsUzOmH0CDeRbBehsGvMSIrdIYAjWD1z1+cEHLC3Gyf
+ U1MWGJKffKxTuEu91RNLl/KxPYSExql59sG2hifLiDr3NdYqByYMpue+AHeTtA34A3
+ f7/iXH/QpMB+egw+5Vhn7JjAGtiP4dz5EVKIXvYks8EWIQdKledxUJ3ghl0G4I2Az6
+ +FesnEuHBDZjSWmD0oIn9LG+dNgu3uPhb1AHCqPVaODaXouoA/ZMs4dUKms0TSD1tI
+ 3xUN7uooCD9cw==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dmarc=pass (p=quarantine dis=none)
+ header.from=kernel.org
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20201202 header.b=nS4h5NKx
+Subject: Re: [Intel-wired-lan] [ANN] intel's netdev-ci
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -118,422 +101,30 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Now ice is ready to get queue_mgmt_ops support. It already has API
-to disable/reconfig/enable one particular queue (for XSk). Reuse as
-much of its code as possible to implement Rx queue management
-callbacks and vice versa -- ice_queue_mem_{alloc,free}() can be
-reused during ifup/ifdown to elide code duplication.
-With this, ice passes the io_uring zcrx selftests, meaning the Rx
-part of netmem/MP support is done.
+On Thu, 4 Dec 2025 13:59:34 +0100 Przemek Kitszel wrote:
+> Hi all!
+>=20
+> I'm pleased to announce that we have set up infrastructure for testing
+> netdev on our e810 NICs, with more to come.
+>=20
+> Big thanks to Adrian Pielech who made substantial effort to make this
+> possible and to Krzysztof Ga=C5=82=C4=85zka for the initial PoC work.
+>=20
+> This work plugs into netdev-ci initiative by netdev maintainers,
+> to run kselftests (mostly functional tests in python) against current
+> proposed net-next branch, on real hardware.
 
-Reviewed-by: Jacob Keller <jacob.e.keller@intel.com>
-Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Signed-off-by: Alexander Lobakin <aleksander.lobakin@intel.com>
----
- drivers/net/ethernet/intel/ice/ice_lib.h    |   5 +
- drivers/net/ethernet/intel/ice/ice_txrx.h   |   2 +
- drivers/net/ethernet/intel/ice/ice_base.c   | 192 ++++++++++++++------
- drivers/net/ethernet/intel/ice/ice_main.c   |   2 +-
- drivers/net/ethernet/intel/ice/ice_sf_eth.c |   2 +-
- drivers/net/ethernet/intel/ice/ice_txrx.c   |  26 ++-
- 6 files changed, 163 insertions(+), 66 deletions(-)
+Thank you for doing this work! I really appreciate participation=20
+in the community testing efforts.
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.h b/drivers/net/ethernet/intel/ice/ice_lib.h
-index 347b63e497e7..2d3168458891 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.h
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.h
-@@ -4,6 +4,8 @@
- #ifndef _ICE_LIB_H_
- #define _ICE_LIB_H_
- 
-+#include <net/netdev_queues.h>
-+
- #include "ice.h"
- #include "ice_vlan.h"
- 
-@@ -132,4 +134,7 @@ void ice_clear_feature_support(struct ice_pf *pf, enum ice_feature f);
- void ice_init_feature_support(struct ice_pf *pf);
- bool ice_vsi_is_rx_queue_active(struct ice_vsi *vsi);
- void ice_vsi_update_l2tsel(struct ice_vsi *vsi, enum ice_l2tsel l2tsel);
-+
-+extern const struct netdev_queue_mgmt_ops ice_queue_mgmt_ops;
-+
- #endif /* !_ICE_LIB_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.h b/drivers/net/ethernet/intel/ice/ice_txrx.h
-index c51b1e60f717..e3c682723107 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.h
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.h
-@@ -440,6 +440,8 @@ u16
- ice_select_queue(struct net_device *dev, struct sk_buff *skb,
- 		 struct net_device *sb_dev);
- void ice_clean_tx_ring(struct ice_tx_ring *tx_ring);
-+void ice_queue_mem_free(struct net_device *dev, void *per_queue_mem);
-+void ice_zero_rx_ring(struct ice_rx_ring *rx_ring);
- void ice_clean_rx_ring(struct ice_rx_ring *rx_ring);
- int ice_setup_tx_ring(struct ice_tx_ring *tx_ring);
- int ice_setup_rx_ring(struct ice_rx_ring *rx_ring);
-diff --git a/drivers/net/ethernet/intel/ice/ice_base.c b/drivers/net/ethernet/intel/ice/ice_base.c
-index 7097324c38f3..4479bb5e66ac 100644
---- a/drivers/net/ethernet/intel/ice/ice_base.c
-+++ b/drivers/net/ethernet/intel/ice/ice_base.c
-@@ -651,6 +651,42 @@ static int ice_rxq_pp_create(struct ice_rx_ring *rq)
- 	return err;
- }
- 
-+static int ice_queue_mem_alloc(struct net_device *dev, void *per_queue_mem,
-+			       int idx)
-+{
-+	const struct ice_netdev_priv *priv = netdev_priv(dev);
-+	const struct ice_rx_ring *real = priv->vsi->rx_rings[idx];
-+	struct ice_rx_ring *new = per_queue_mem;
-+	int ret;
-+
-+	new->count = real->count;
-+	new->netdev = real->netdev;
-+	new->q_index = real->q_index;
-+	new->q_vector = real->q_vector;
-+	new->vsi = real->vsi;
-+
-+	ret = ice_rxq_pp_create(new);
-+	if (ret)
-+		return ret;
-+
-+	if (!netif_running(dev))
-+		return 0;
-+
-+	ret = __xdp_rxq_info_reg(&new->xdp_rxq, new->netdev, new->q_index,
-+				 new->q_vector->napi.napi_id, new->rx_buf_len);
-+	if (ret)
-+		goto err_destroy_fq;
-+
-+	xdp_rxq_info_attach_page_pool(&new->xdp_rxq, new->pp);
-+
-+	return 0;
-+
-+err_destroy_fq:
-+	ice_rxq_pp_destroy(new);
-+
-+	return ret;
-+}
-+
- /**
-  * ice_vsi_cfg_rxq - Configure an Rx queue
-  * @ring: the ring being configured
-@@ -665,23 +701,12 @@ static int ice_vsi_cfg_rxq(struct ice_rx_ring *ring)
- 	int err;
- 
- 	if (ring->vsi->type == ICE_VSI_PF || ring->vsi->type == ICE_VSI_SF) {
--		if (!xdp_rxq_info_is_reg(&ring->xdp_rxq)) {
--			err = __xdp_rxq_info_reg(&ring->xdp_rxq, ring->netdev,
--						 ring->q_index,
--						 ring->q_vector->napi.napi_id,
--						 ring->rx_buf_len);
--			if (err)
--				return err;
--		}
--
- 		ice_rx_xsk_pool(ring);
- 		err = ice_realloc_rx_xdp_bufs(ring, ring->xsk_pool);
- 		if (err)
- 			return err;
- 
- 		if (ring->xsk_pool) {
--			xdp_rxq_info_unreg(&ring->xdp_rxq);
--
- 			rx_buf_len =
- 				xsk_pool_get_rx_frame_size(ring->xsk_pool);
- 			err = __xdp_rxq_info_reg(&ring->xdp_rxq, ring->netdev,
-@@ -700,20 +725,10 @@ static int ice_vsi_cfg_rxq(struct ice_rx_ring *ring)
- 			dev_info(dev, "Registered XDP mem model MEM_TYPE_XSK_BUFF_POOL on Rx ring %d\n",
- 				 ring->q_index);
- 		} else {
--			err = ice_rxq_pp_create(ring);
-+			err = ice_queue_mem_alloc(ring->netdev, ring,
-+						  ring->q_index);
- 			if (err)
- 				return err;
--
--			if (!xdp_rxq_info_is_reg(&ring->xdp_rxq)) {
--				err = __xdp_rxq_info_reg(&ring->xdp_rxq, ring->netdev,
--							 ring->q_index,
--							 ring->q_vector->napi.napi_id,
--							 ring->rx_buf_len);
--				if (err)
--					goto err_destroy_fq;
--			}
--			xdp_rxq_info_attach_page_pool(&ring->xdp_rxq,
--						      ring->pp);
- 		}
- 	}
- 
-@@ -722,7 +737,7 @@ static int ice_vsi_cfg_rxq(struct ice_rx_ring *ring)
- 	if (err) {
- 		dev_err(dev, "ice_setup_rx_ctx failed for RxQ %d, err %d\n",
- 			ring->q_index, err);
--		goto err_destroy_fq;
-+		goto err_clean_rq;
- 	}
- 
- 	if (ring->xsk_pool) {
-@@ -753,12 +768,12 @@ static int ice_vsi_cfg_rxq(struct ice_rx_ring *ring)
- 		err = ice_alloc_rx_bufs(ring, num_bufs);
- 
- 	if (err)
--		goto err_destroy_fq;
-+		goto err_clean_rq;
- 
- 	return 0;
- 
--err_destroy_fq:
--	ice_rxq_pp_destroy(ring);
-+err_clean_rq:
-+	ice_clean_rx_ring(ring);
- 
- 	return err;
- }
-@@ -1425,27 +1440,7 @@ static void ice_qp_reset_stats(struct ice_vsi *vsi, u16 q_idx)
- 		       sizeof(vsi->xdp_rings[q_idx]->ring_stats->stats));
- }
- 
--/**
-- * ice_qp_clean_rings - Cleans all the rings of a given index
-- * @vsi: VSI that contains rings of interest
-- * @q_idx: ring index in array
-- */
--static void ice_qp_clean_rings(struct ice_vsi *vsi, u16 q_idx)
--{
--	ice_clean_tx_ring(vsi->tx_rings[q_idx]);
--	if (vsi->xdp_rings)
--		ice_clean_tx_ring(vsi->xdp_rings[q_idx]);
--	ice_clean_rx_ring(vsi->rx_rings[q_idx]);
--}
--
--/**
-- * ice_qp_dis - Disables a queue pair
-- * @vsi: VSI of interest
-- * @q_idx: ring index in array
-- *
-- * Returns 0 on success, negative on failure.
-- */
--int ice_qp_dis(struct ice_vsi *vsi, u16 q_idx)
-+static int __ice_qp_dis(struct ice_vsi *vsi, u16 q_idx)
- {
- 	struct ice_txq_meta txq_meta = { };
- 	struct ice_q_vector *q_vector;
-@@ -1484,23 +1479,35 @@ int ice_qp_dis(struct ice_vsi *vsi, u16 q_idx)
- 	}
- 
- 	ice_vsi_ctrl_one_rx_ring(vsi, false, q_idx, false);
--	ice_qp_clean_rings(vsi, q_idx);
- 	ice_qp_reset_stats(vsi, q_idx);
- 
-+	ice_clean_tx_ring(vsi->tx_rings[q_idx]);
-+	if (vsi->xdp_rings)
-+		ice_clean_tx_ring(vsi->xdp_rings[q_idx]);
-+
- 	return fail;
- }
- 
- /**
-- * ice_qp_ena - Enables a queue pair
-+ * ice_qp_dis - Disables a queue pair
-  * @vsi: VSI of interest
-  * @q_idx: ring index in array
-  *
-  * Returns 0 on success, negative on failure.
-  */
--int ice_qp_ena(struct ice_vsi *vsi, u16 q_idx)
-+int ice_qp_dis(struct ice_vsi *vsi, u16 q_idx)
-+{
-+	int ret;
-+
-+	ret = __ice_qp_dis(vsi, q_idx);
-+	ice_clean_rx_ring(vsi->rx_rings[q_idx]);
-+
-+	return ret;
-+}
-+
-+static int __ice_qp_ena(struct ice_vsi *vsi, u16 q_idx, int fail)
- {
- 	struct ice_q_vector *q_vector;
--	int fail = 0;
- 	bool link_up;
- 	int err;
- 
-@@ -1518,10 +1525,6 @@ int ice_qp_ena(struct ice_vsi *vsi, u16 q_idx)
- 		ice_tx_xsk_pool(vsi, q_idx);
- 	}
- 
--	err = ice_vsi_cfg_single_rxq(vsi, q_idx);
--	if (!fail)
--		fail = err;
--
- 	q_vector = vsi->rx_rings[q_idx]->q_vector;
- 	ice_qvec_cfg_msix(vsi, q_vector, q_idx);
- 
-@@ -1542,3 +1545,80 @@ int ice_qp_ena(struct ice_vsi *vsi, u16 q_idx)
- 
- 	return fail;
- }
-+
-+/**
-+ * ice_qp_ena - Enables a queue pair
-+ * @vsi: VSI of interest
-+ * @q_idx: ring index in array
-+ *
-+ * Returns 0 on success, negative on failure.
-+ */
-+int ice_qp_ena(struct ice_vsi *vsi, u16 q_idx)
-+{
-+	return __ice_qp_ena(vsi, q_idx, ice_vsi_cfg_single_rxq(vsi, q_idx));
-+}
-+
-+static int ice_queue_start(struct net_device *dev, void *per_queue_mem,
-+			   int idx)
-+{
-+	const struct ice_netdev_priv *priv = netdev_priv(dev);
-+	struct ice_rx_ring *real = priv->vsi->rx_rings[idx];
-+	struct ice_rx_ring *new = per_queue_mem;
-+	struct napi_struct *napi;
-+	int ret;
-+
-+	real->pp = new->pp;
-+	real->rx_fqes = new->rx_fqes;
-+	real->hdr_fqes = new->hdr_fqes;
-+	real->hdr_pp = new->hdr_pp;
-+
-+	real->hdr_truesize = new->hdr_truesize;
-+	real->truesize = new->truesize;
-+	real->rx_hdr_len = new->rx_hdr_len;
-+	real->rx_buf_len = new->rx_buf_len;
-+
-+	memcpy(&real->xdp_rxq, &new->xdp_rxq, sizeof(new->xdp_rxq));
-+
-+	ret = ice_setup_rx_ctx(real);
-+	if (ret)
-+		return ret;
-+
-+	napi = &real->q_vector->napi;
-+
-+	page_pool_enable_direct_recycling(real->pp, napi);
-+	if (real->hdr_pp)
-+		page_pool_enable_direct_recycling(real->hdr_pp, napi);
-+
-+	ret = ice_alloc_rx_bufs(real, ICE_DESC_UNUSED(real));
-+
-+	return __ice_qp_ena(priv->vsi, idx, ret);
-+}
-+
-+static int ice_queue_stop(struct net_device *dev, void *per_queue_mem,
-+			  int idx)
-+{
-+	const struct ice_netdev_priv *priv = netdev_priv(dev);
-+	struct ice_rx_ring *real = priv->vsi->rx_rings[idx];
-+	int ret;
-+
-+	ret = __ice_qp_dis(priv->vsi, idx);
-+	if (ret)
-+		return ret;
-+
-+	page_pool_disable_direct_recycling(real->pp);
-+	if (real->hdr_pp)
-+		page_pool_disable_direct_recycling(real->hdr_pp);
-+
-+	ice_zero_rx_ring(real);
-+	memcpy(per_queue_mem, real, sizeof(*real));
-+
-+	return 0;
-+}
-+
-+const struct netdev_queue_mgmt_ops ice_queue_mgmt_ops = {
-+	.ndo_queue_mem_alloc	= ice_queue_mem_alloc,
-+	.ndo_queue_mem_free	= ice_queue_mem_free,
-+	.ndo_queue_mem_size	= sizeof(struct ice_rx_ring),
-+	.ndo_queue_start	= ice_queue_start,
-+	.ndo_queue_stop		= ice_queue_stop,
-+};
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 881b41d37821..25e9091ca309 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -3523,7 +3523,7 @@ static void ice_set_ops(struct ice_vsi *vsi)
- 	}
- 
- 	netdev->netdev_ops = &ice_netdev_ops;
--	netdev->request_ops_lock = true;
-+	netdev->queue_mgmt_ops = &ice_queue_mgmt_ops;
- 	netdev->udp_tunnel_nic_info = &pf->hw.udp_tunnel_nic;
- 	netdev->xdp_metadata_ops = &ice_xdp_md_ops;
- 	ice_set_ethtool_ops(netdev);
-diff --git a/drivers/net/ethernet/intel/ice/ice_sf_eth.c b/drivers/net/ethernet/intel/ice/ice_sf_eth.c
-index 2c3db1b03055..41e1606a8222 100644
---- a/drivers/net/ethernet/intel/ice/ice_sf_eth.c
-+++ b/drivers/net/ethernet/intel/ice/ice_sf_eth.c
-@@ -58,7 +58,7 @@ static int ice_sf_cfg_netdev(struct ice_dynamic_port *dyn_port,
- 	eth_hw_addr_set(netdev, dyn_port->hw_addr);
- 	ether_addr_copy(netdev->perm_addr, dyn_port->hw_addr);
- 	netdev->netdev_ops = &ice_sf_netdev_ops;
--	netdev->request_ops_lock = true;
-+	netdev->queue_mgmt_ops = &ice_queue_mgmt_ops;
- 	SET_NETDEV_DEVLINK_PORT(netdev, devlink_port);
- 
- 	err = register_netdev(netdev);
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
-index 47d44796635a..b6f56cb81f93 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.c
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
-@@ -530,17 +530,13 @@ void ice_rxq_pp_destroy(struct ice_rx_ring *rq)
- 	rq->hdr_pp = NULL;
- }
- 
--/**
-- * ice_clean_rx_ring - Free Rx buffers
-- * @rx_ring: ring to be cleaned
-- */
--void ice_clean_rx_ring(struct ice_rx_ring *rx_ring)
-+void ice_queue_mem_free(struct net_device *dev, void *per_queue_mem)
- {
--	u32 size;
-+	struct ice_rx_ring *rx_ring = per_queue_mem;
- 
- 	if (rx_ring->xsk_pool) {
- 		ice_xsk_clean_rx_ring(rx_ring);
--		goto rx_skip_free;
-+		return;
- 	}
- 
- 	/* ring already cleared, nothing to do */
-@@ -567,8 +563,12 @@ void ice_clean_rx_ring(struct ice_rx_ring *rx_ring)
- 	}
- 
- 	ice_rxq_pp_destroy(rx_ring);
-+}
-+
-+void ice_zero_rx_ring(struct ice_rx_ring *rx_ring)
-+{
-+	size_t size;
- 
--rx_skip_free:
- 	/* Zero out the descriptor ring */
- 	size = ALIGN(rx_ring->count * sizeof(union ice_32byte_rx_desc),
- 		     PAGE_SIZE);
-@@ -579,6 +579,16 @@ void ice_clean_rx_ring(struct ice_rx_ring *rx_ring)
- 	rx_ring->next_to_use = 0;
- }
- 
-+/**
-+ * ice_clean_rx_ring - Free Rx buffers
-+ * @rx_ring: ring to be cleaned
-+ */
-+void ice_clean_rx_ring(struct ice_rx_ring *rx_ring)
-+{
-+	ice_queue_mem_free(rx_ring->netdev, rx_ring);
-+	ice_zero_rx_ring(rx_ring);
-+}
-+
- /**
-  * ice_free_rx_ring - Free Rx resources
-  * @rx_ring: ring to clean the resources from
--- 
-2.52.0
+> Our results are here:
+> https://netdev-ci-results.intel.com/ice-results/results.json
+>=20
+> with a viewer for humans:
+> https://netdev-ci-results.intel.com/
 
+Very neat UI :)
+
+Are you planning to stay on the SW branch stream? I was anticipating
+that HW testing will need a lower frequency of branches hence the
+existence of the:
