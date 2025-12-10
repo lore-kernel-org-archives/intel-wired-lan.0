@@ -4,97 +4,106 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AF887D3C52A
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 10 Dec 2025 11:51:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8A96BD3C526
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 10 Dec 2025 14:34:57 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 703E261559;
-	Wed, 10 Dec 2025 11:51:11 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 4975260893;
+	Wed, 10 Dec 2025 14:34:57 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id MOxCzreQxgk7; Wed, 10 Dec 2025 11:51:10 +0000 (UTC)
+ id O6Vyhj6BGoJ9; Wed, 10 Dec 2025 14:34:55 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 86C8E61543
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 760F26075D
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1765367470;
-	bh=RDTOqY8iZVDp5iYG9ik0MNJdzdeDGP2TDtvOfZ0Hiv0=;
-	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=Yq5KLJgZFTJAMVNBFbhJNrSQ7HNUfQN5ZWHJiQAON2nPs48cJ+iHJmY51V5iylVb8
-	 /Ka4kE0aA68uBtr0PuSb+q+O3bClbDFIQrz4EonA56hRyglvb49vdNfmZOKliQ83RK
-	 InXHZiczfgWt0a1uke155x9bbGIgCZDISe1UUjymRiOZ6Ka+6GIRqYxVVxy5kjq3XP
-	 K9v4QMOPJyM9Z+I6GU13kV2cWMI9QPsOkpsFSqr+WLE7oVWMDrltQuK/1Rk1S2MlOk
-	 UYAXRWwGnClVg9hPXjRrtiE+aphT+gZGPRNhVYi6+nauY4OX6G8iJaqw4NJhFEbOn3
-	 o41YoOWGIWoXw==
+	s=default; t=1765377295;
+	bh=GXu+C6jn4wjNW66trWRFDg4n3Pcoz6KWv3Dl/BCG4/U=;
+	h=From:To:Cc:In-Reply-To:References:Date:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=BkwP/ehYgvea1X0sl3G1uvjVj6S4FLncW1/1vhLAtEMCSrg/WZxCwfau9aNl3JBGn
+	 5Ah9GqivrcY/AEiY+tzXEAQZ2tc0dAwSMapn4u27/5vPEqkhSKqT4F2dVAFBMokDwR
+	 Qv4K0NnINI1ow0ClW5BP8tC3e/CF1BuxY+W/FPOOfPPps/CLVSwM9X0MUq0lwXFJU9
+	 YgyERBTzJpv18D8k4ZRzyoXtZdN3m1U7Jy9+jpFphBZWsF+js0fYCbNC1MZYsaF6zX
+	 Kq3FpoF8/G3aaiSooeFBzRQ27kHCp9hwSuAgVC3o4RVArCLlFzRQTOeBTUeT5E1B86
+	 P+KXXyzxJ8f9A==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 86C8E61543;
-	Wed, 10 Dec 2025 11:51:10 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id 316422C0
- for <intel-wired-lan@lists.osuosl.org>; Wed, 10 Dec 2025 11:51:10 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 760F26075D;
+	Wed, 10 Dec 2025 14:34:55 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 9E8E8E7
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 10 Dec 2025 14:34:53 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 1780884008
- for <intel-wired-lan@lists.osuosl.org>; Wed, 10 Dec 2025 11:51:10 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 90C0F40804
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 10 Dec 2025 14:34:53 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id uk_c9WuKNsls for <intel-wired-lan@lists.osuosl.org>;
- Wed, 10 Dec 2025 11:51:09 +0000 (UTC)
-X-Greylist: delayed 426 seconds by postgrey-1.37 at util1.osuosl.org;
- Wed, 10 Dec 2025 11:51:08 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 2154D84025
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2154D84025
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.17;
- helo=mgamail.intel.com; envelope-from=jedrzej.jagielski@intel.com;
- receiver=<UNKNOWN> 
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.17])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 2154D84025
- for <intel-wired-lan@lists.osuosl.org>; Wed, 10 Dec 2025 11:51:08 +0000 (UTC)
-X-CSE-ConnectionGUID: M1Lcr+YiS/yz5wzTn5m+bQ==
-X-CSE-MsgGUID: OUiBPDmaQF2BX12ZW5zJ3w==
-X-IronPort-AV: E=McAfee;i="6800,10657,11637"; a="67295043"
-X-IronPort-AV: E=Sophos;i="6.20,263,1758610800"; d="scan'208";a="67295043"
-Received: from fmviesa003.fm.intel.com ([10.60.135.143])
- by orvoesa109.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 10 Dec 2025 03:44:01 -0800
-X-CSE-ConnectionGUID: q04pivX1QJmDf+uZnJqq7A==
-X-CSE-MsgGUID: /1HxCaSnRZm1ArVDnfMqTg==
-X-ExtLoop1: 1
-Received: from os-delivery.igk.intel.com ([10.102.18.218])
- by fmviesa003.fm.intel.com with ESMTP; 10 Dec 2025 03:44:00 -0800
-From: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Cc: anthony.l.nguyen@intel.com, netdev@vger.kernel.org, stable@vger.kernel.org,
- Jedrzej Jagielski <jedrzej.jagielski@intel.com>,
- Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
- Piotr Kwapulinski <piotr.kwapulinski@intel.com>,
- Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Wed, 10 Dec 2025 12:26:51 +0100
-Message-Id: <20251210112651.5556-1-jedrzej.jagielski@intel.com>
-X-Mailer: git-send-email 2.31.1
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id V8FHaLD-TFaL for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 10 Dec 2025 14:34:53 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de;
+ envelope-from=kurt@linutronix.de; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org B15CC407CA
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B15CC407CA
+Received: from galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2a0a:51c0:0:12e:550::1])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id B15CC407CA
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 10 Dec 2025 14:34:52 +0000 (UTC)
+From: Kurt Kanzenbach <kurt@linutronix.de>
+To: "Behera, VIVEK" <vivek.behera@siemens.com>, "Loktionov, Aleksandr"
+ <aleksandr.loktionov@intel.com>, "Keller, Jacob E"
+ <jacob.e.keller@intel.com>, "Nguyen, Anthony L"
+ <anthony.l.nguyen@intel.com>, "Kitszel, Przemyslaw"
+ <przemyslaw.kitszel@intel.com>, Andrew Lunn <andrew+netdev@lunn.ch>,
+ "David S. Miller" <davem@davemloft.net>, Eric
+ Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, Paolo
+ Abeni <pabeni@redhat.com>
+Cc: "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>
+In-Reply-To: <AS1PR10MB5392E7164825969656D966CB8FA0A@AS1PR10MB5392.EURPRD10.PROD.OUTLOOK.COM>
+References: <AS1PR10MB5392B7268416DB8A1624FDB88FA7A@AS1PR10MB5392.EURPRD10.PROD.OUTLOOK.COM>
+ <4c90ed4e-307c-429a-9f8c-29032cc146ee@intel.com>
+ <AS1PR10MB5392C71EED7AB2446036FB9F8FA3A@AS1PR10MB5392.EURPRD10.PROD.OUTLOOK.COM>
+ <AS1PR10MB539202E6B3C43BE259831AD88FA3A@AS1PR10MB5392.EURPRD10.PROD.OUTLOOK.COM>
+ <IA3PR11MB89863C74B0554055470B9EE0E5A3A@IA3PR11MB8986.namprd11.prod.outlook.com>
+ <IA3PR11MB8986E4ACB7F264CF2DD1D750E5A0A@IA3PR11MB8986.namprd11.prod.outlook.com>
+ <AS1PR10MB5392FCA415A38B9DD7BB5F218FA0A@AS1PR10MB5392.EURPRD10.PROD.OUTLOOK.COM>
+ <878qfaabgn.fsf@jax.kurt.home>
+ <AS1PR10MB5392E7164825969656D966CB8FA0A@AS1PR10MB5392.EURPRD10.PROD.OUTLOOK.COM>
+Date: Wed, 10 Dec 2025 15:34:46 +0100
+Message-ID: <87tsxymmm1.fsf@jax.kurt.home>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1765367469; x=1796903469;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=IkfhRNzUnouX7a6mrrN/6q745/lh5kAROmWm94XLLFw=;
- b=c7jIlLZF073UPHN5V5J/VKVTGpyEEmlyqh0dYEe/Q8WQ2LaV2Y0O3u5V
- LyqqpqlWjY+6VPrYPxplhEAL9zVfJglF7OTZn4+3aXmP66wvz9kpvZGQB
- zZouw+ZRZ3mQ6WYuEDW+4eUmrYvEMPyhzaA3SZSfmOyAtqyCZbaKNyw+A
- waPBVjy0bIXbdlt/nD9YKPkAvRF0fkE6R5XJ1CoTEKXWXBTLdmzOuXW7q
- HYCunqYu8VvA2NGlc4bRI9EC0oM51zA4wffrkoVifuVYyMVX2YVz4ge4e
- ubNE5Z4dd2ixVwr0ioIwyKr+udaRLmmjqNkyKlfw1fx8nqIobMtsrofzP
- w==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+Content-Type: multipart/signed; boundary="=-=-=";
+ micalg=pgp-sha512; protocol="application/pgp-signature"
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=linutronix.de; s=2020; t=1765377287;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ in-reply-to:in-reply-to:references:references;
+ bh=GXu+C6jn4wjNW66trWRFDg4n3Pcoz6KWv3Dl/BCG4/U=;
+ b=T6j3yqIVmBeB0ZISQ7pXgIvc+wlse/GfbOpdZTxduJssaJ+ou0LW7vpx+FNuqPsJLYj1rI
+ TjLshd3OS52nWERDFmkRTgLsq/HnJwMsgmUQNgB4LS3rrGh/wsWUlIpcM2rgD2RfDQf7Vj
+ mtlFN5JUhmSWkrCuPtGQeb366BI1jjgq5FuFBoClOuQlnIUQYiC3HhV8jLlpmJyFog+bUx
+ d2NSXeVsK+elSnZ1vUHLZjIvxUwvzyu2uudDaFzK7rIqKbA1lAOlQ0pXW1IH2GpFqiBKVF
+ uA3UYmPH+4jshBxw+xttRHEkOmPfLyr11iOOnjcX3ubwKoKkbdTfmh98JtJtCQ==
+X-Mailman-Original-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
+ d=linutronix.de; s=2020e; t=1765377287;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ in-reply-to:in-reply-to:references:references;
+ bh=GXu+C6jn4wjNW66trWRFDg4n3Pcoz6KWv3Dl/BCG4/U=;
+ b=qo4CQNBpydMgYbtx5IzbN0U3qtcMhvxqHRnrhntUgZhqptowtBxu/gQTW3kDa0pDyPSGfJ
+ KfBH2p47p9CRN8Dw==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
- header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=c7jIlLZF
-Subject: [Intel-wired-lan] [PATCH iwl-net v2] ixgbevf: fix link setup issue
+ header.from=linutronix.de
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key, unprotected) header.d=linutronix.de
+ header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=T6j3yqIV; 
+ dkim=pass header.d=linutronix.de header.i=@linutronix.de
+ header.a=ed25519-sha256 header.s=2020e header.b=qo4CQNBp
+Subject: Re: [Intel-wired-lan] [PATCH v5 iwl-net] igc: Fix trigger of
+ incorrect irq in igc_xsk_wakeup function
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -110,48 +119,78 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-It may happen that VF spawned for E610 adapter has problem with setting
-link up. This happens when ixgbevf supporting mailbox API 1.6 cooperates
-with PF driver which doesn't support this version of API, and hence
-doesn't support new approach for getting PF link data.
+--=-=-=
+Content-Type: text/plain
 
-In that case VF asks PF to provide link data but as PF doesn't support
-it, returns -EOPNOTSUPP what leads to early bail from link configuration
-sequence.
+On Wed Dec 10 2025, Behera, VIVEK wrote:
+> On Wed Dec 10 2025, Kurt Kanzenbach wrote:
+>> On Wed Dec 10 2025, Behera, VIVEK wrote:
+>>> Changes in v5:
+>>> - Updated comment style from multi-star to standard /* */ as suggested by  Aleksandr.
+>>>
+>>> From ab2583ff8a17405d3aa6caf4df1c4fdfb21f5e98 Mon Sep 17 00:00:00 2001
+>>> From: Vivek Behera <vivek.behera@siemens.com>
+>>> Date: Fri, 5 Dec 2025 10:26:05 +0100
+>>> Subject: [PATCH v5] [iwl-net] igc: Fix trigger of incorrect irq in
+>>> igc_xsk_wakeup function
+>>>
+>>> This patch addresses the issue where the igc_xsk_wakeup function was
+>>> triggering an incorrect IRQ for tx-0 when the i226 is configured with
+>>> only 2 combined queues or in an environment with 2 active CPU cores.
+>>> This prevented XDP Zero-copy send functionality in such split IRQ
+>>> configurations.
+>>>
+>>> The fix implements the correct logic for extracting q_vectors saved
+>>> during rx and tx ring allocation and utilizes flags provided by the
+>>> ndo_xsk_wakeup API to trigger the appropriate IRQ.
+>>>
+>>> Changed comment blocks to align with standard Linux comments
+>>>
+>>> Fixes: fc9df2a0b520d7d439ecf464794d53e91be74b93 ("igc: Enable RX via
+>>> AF_XDP zero-copy")
+>>> Fixes: 15fd021bc4270273d8f4b7f58fdda8a16214a377 ("igc: Add Tx hardware
+>>> timestamp request for AF_XDP zero-copy packet")
+>>> Signed-off-by: Vivek Behera <vivek.behera@siemens.com>
+>>> Reviewed-by: Jacob Keller <jacob.keller@intel.com>
+>>> Reviewed-by: Aleksandr loktinov <aleksandr.loktionov@intel.com>
+>>
+>> Hi,
+>>
+>> thanks for this fix. Does the same issue also exist for i210 in the igb driver? The igb driver also has this split IRQ configuration with 2 queues. Might be good to fix this one as well :).
+>>
+>> Thanks,
+>> Kurt
+>
+> Hi Kurt,
+>
+> The issue so far has not popped up in i210 igb driver for XDP ZC send
+> but will impact the xsk_wakeup attempting to wakeup the RX irqs or
+> both Rx and Tx (for.e.g in xsk_poll) if IRQ configuration is with 2
+> queues. Essentially same logic submitted in the patch is needed for
+> igb. I am preparing a patch for the igb aswell.  However, I would wait
+> for submission until I manage to resolve the formatting and other
+> guideline related issue pointed out by Jakub in the igc patch.
 
-Avoid such situation by using legacy VFLINKS approach whenever negotiated
-API version is less than 1.6.
+Sounds great. Thanks!
 
-To reproduce the issue just create VF and set its link up - adapter must
-be any from the E610 family, ixgbevf must support API 1.6 or higher while
-ixgbevf must not.
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
 
-Fixes: 53f0eb62b4d2 ("ixgbevf: fix getting link speed data for E610 devices")
-Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Reviewed-by: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
-Reviewed-by: Paul Menzel <pmenzel@molgen.mpg.de>
-Cc: stable@vger.kernel.org
-Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
----
-v2: extend the commit msg (Paul)
----
- drivers/net/ethernet/intel/ixgbevf/vf.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+-----BEGIN PGP SIGNATURE-----
 
-diff --git a/drivers/net/ethernet/intel/ixgbevf/vf.c b/drivers/net/ethernet/intel/ixgbevf/vf.c
-index 29c5ce967938..8af88f615776 100644
---- a/drivers/net/ethernet/intel/ixgbevf/vf.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/vf.c
-@@ -846,7 +846,8 @@ static s32 ixgbevf_check_mac_link_vf(struct ixgbe_hw *hw,
- 	if (!mac->get_link_status)
- 		goto out;
- 
--	if (hw->mac.type == ixgbe_mac_e610_vf) {
-+	if (hw->mac.type == ixgbe_mac_e610_vf &&
-+	    hw->api_version >= ixgbe_mbox_api_16) {
- 		ret_val = ixgbevf_get_pf_link_state(hw, speed, link_up);
- 		if (ret_val)
- 			goto out;
--- 
-2.31.1
-
+iQJHBAEBCgAxFiEEvLm/ssjDfdPf21mSwZPR8qpGc4IFAmk5hQYTHGt1cnRAbGlu
+dXRyb25peC5kZQAKCRDBk9HyqkZzguaED/0RHqQGYwR2cNrg6ozr/W/x0636Bc7C
+V1E1anymBBnf18gJPwYvFBPLlxcUsId07oOEVPRI9E2NMj0/0DGFedzUX+WNqspB
+ncAOU075/J/IH7sVtbra5VKqg5dDkSnBSgCGpFY8P0RoAoJAJhiMEd30fQjE5PUm
+mqNslkKqWQ+llA/8Vwp2tZEZYvOKGXQofPGq1NVX4E/bbxHl1z4ThlCc0FOniMJT
+mIueeuQLNM+EwC5g5hXzkEfcmMsOYgjPd8waVd8AWc4wOBN7SFb+r2OHWQN6YsMx
+e+NHzm6aZs+H6TaGjAbrTVJzd/7osBMefOK5d1i1QCuPoTLQMtNv3Nr0usFDw8sW
+nCR8/43nVv6Ho5Y1uL+pGKlnLtnAoqQjkFFjp59CTrgKKxQAbrIQZwHtJYlcJ3Ir
+E47s51QmBafxYKKpqMmqWvhjIKp51vJ+ciJfWtLRCMSqm0q+skERvvzGbAawM62R
+AbsL2a7OzrN+bu94XaIWKjmqjJsHhHGvCVuAjMG98EChbqVdRlgH3he6XuZ1HegX
+ngeZOW7ViGWOkLa3YgxFuW8+c480VqQ48uaA+2RkYFy/kihPfalsf+NtLGpxJfMk
+UQcttAUhQrWIGcZrPul76QTeOHBopj59HoQrriatrJUWRSgpduwdkAnbYzX+BE79
+IMypurogsOBBug==
+=lLxh
+-----END PGP SIGNATURE-----
+--=-=-=--
