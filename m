@@ -1,122 +1,93 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1AB5CD5B87A
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 16 Dec 2025 00:28:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7F610D5B161
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 16 Dec 2025 04:20:42 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id B0F2D40AFD;
-	Tue, 16 Dec 2025 00:28:59 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 3144A821DC;
+	Tue, 16 Dec 2025 04:20:42 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id yubIgTt-5IfM; Tue, 16 Dec 2025 00:28:58 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 3mxgQit0DgZS; Tue, 16 Dec 2025 04:20:41 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 192B740AEA
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 35748821E3
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1765844938;
-	bh=vS+iE22pE5yQk0ecXq1w/+qZcaWovgCEPqFWh4+wKk0=;
-	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=Wy06TY0yQsMniSr3yE2qvrNOPMQELZNL9u2uc2ohF3myi8hy1YT5wZW4knRMTsOdl
-	 EIrg6fjlUKdz7/HvyToRpkKijOkHvZenUrUPnXANwz2BY2BSE6MBC7jHZhmy/9+Ojx
-	 8G8ZQ5dmQe1DF1ZLI9LejOZyz7XGONfLonqcx5Tpk9C+zfl+3YXS/dTGGxut1hxIGf
-	 OxfJxiKJjKNrdLAddDVpFv7NlBSRQBsZY3IEDVbo3nkfR3czN57ZD/CNwd/VXIVAu2
-	 loncfOYCIdZtTcgO+zsRA5L68adGyFpukaLfmMiiteQSao5xd1neTBdM32VbLXwDZS
-	 9QTIF8BZZr4dw==
+	s=default; t=1765858841;
+	bh=6qQGXRw0JmSkbF1VRkTl2wi0ub7QsQOJpcz3FBQSCoQ=;
+	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=U8H2s6TkEhRYnVY67Oc/O9/WTdTQM4MtdkLpSV/Ru23fWDeaMuXBn6cTWmInM1/Mb
+	 dIXTzOvLN02XAmKTWLZdw49EG1k50AkZHf/dbzo2Z2bVVbNQ1/kvRIoL1oNoJMpwQb
+	 xMt5HjwAJfc+BuvPTb/RAlFdwj+BE+Z7DgonhyNVwjizWVRDlAkpOg01wP8rwcs74w
+	 DV0VXiJMx2zL54ggoOjnTw4VR7SoImpEVZM794dA7UYJNSxQJcRez/nDAfSCVPlgPo
+	 NK2hgwbZcsqCY10YisQtm3zlU5/ufc0Vsn2hcpdZGMdZO2nRMDVGdNreHUa65OcviT
+	 lIXLt7OkYVnkw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 192B740AEA;
-	Tue, 16 Dec 2025 00:28:58 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id 793E3219
- for <intel-wired-lan@lists.osuosl.org>; Tue, 16 Dec 2025 00:28:56 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 35748821E3;
+	Tue, 16 Dec 2025 04:20:41 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id E92E8151
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 16 Dec 2025 04:20:39 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 6AF714034A
- for <intel-wired-lan@lists.osuosl.org>; Tue, 16 Dec 2025 00:28:56 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id CFF8460F63
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 16 Dec 2025 04:20:39 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id mj-ydkClQasd for <intel-wired-lan@lists.osuosl.org>;
- Tue, 16 Dec 2025 00:28:55 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2607:f8b0:4864:20::b129; helo=mail-yx1-xb129.google.com;
- envelope-from=yury.norov@gmail.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org ADB94400B7
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org ADB94400B7
-Received: from mail-yx1-xb129.google.com (mail-yx1-xb129.google.com
- [IPv6:2607:f8b0:4864:20::b129])
- by smtp2.osuosl.org (Postfix) with ESMTPS id ADB94400B7
- for <intel-wired-lan@lists.osuosl.org>; Tue, 16 Dec 2025 00:28:55 +0000 (UTC)
-Received: by mail-yx1-xb129.google.com with SMTP id
- 956f58d0204a3-6446bae1e17so3628514d50.0
- for <intel-wired-lan@lists.osuosl.org>; Mon, 15 Dec 2025 16:28:55 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20230601; t=1765844934; x=1766449734;
- h=content-transfer-encoding:mime-version:message-id:date:subject:cc
- :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
- :message-id:reply-to;
- bh=vS+iE22pE5yQk0ecXq1w/+qZcaWovgCEPqFWh4+wKk0=;
- b=Ei+zKuA/O0sl4rdQhADl9vYHWb1NrxxM2kOsQVL7hnM0MZ/GLKCX1WlMsoR05/zrtq
- FhOXnMg3RR8/26HXgu5AcJvKVodx5MsYF3+oDTeHMlvanJ6cvSxbRlxXGMmpkruKHayz
- xa5jhXBhirjR8CoVxTFxV28JYqJekd8qT9PX6v0p24a4INPXfDQUNyiz4UYjz6CihioT
- Nr1HZlauUqKrrof96o/OvmMtNVgatORR5/Cu0jbQq3tIjwUtQqk77LEAldcDrirfomXn
- ynWebZzjE5Y/20IznBDd2aNXvojr6a4/FnRe1VuiomVvJFzQTkKLXwSnfbLvyON5OYdt
- /1yw==
-X-Forwarded-Encrypted: i=1;
- AJvYcCUm4dASdq3+LWMibs2sAM+5YWW1Mte/WRFrAjpWrK0cXgwLnOOfzwjgyHHtxvhbjZfIEylMz5Kltiryrp3Y2ZE=@lists.osuosl.org
-X-Gm-Message-State: AOJu0YxIaz1mFaCQkGx+5NDFEkjXA8EKHlMl/dpjLt86yhl0olDK1Wof
- Gr2wLuOGOTRmV51bxrecaEFTFacKdOULQHSurLp5IOrEXcB4IKurA0zC
-X-Gm-Gg: AY/fxX4HlWdqhaSTOxV+HTOdqlihIZf/IVYPPdH8TXSIGmj9Eol/qLAUN30lbcw5ttT
- rwKpVdZnf8ASbdCAMyjbG3mI9eeqdIe052pARXQ2M9GlQg3mdBiXOxOaDbubSRU4KJhFU9DrMYP
- j8r+Btjs+qXDC+MjI0omYn02BSja4xwfxAQ4GVCGEfJwtY+0lyMDfKR1f3FcWH8YGbjwTaW8sPe
- e5AefwS0huiQsf4b9ADsuN1XPRv1ys/0mK7P0/umHhkgO5kWqRLoK50sM9Rz3zjeFuxgIoRLRNE
- iZSFxOb3BhA04vxrAEbWfSaU66yzW1qkg0ZzRPPABiTZdW/FkmBuVZvxZgDNqyaZ5EnejJPOgWK
- YL0xYbex3q7AO4PX13NwNiI7huSRizBmKijJYwDEPsmeZKxyCl5IzNuI4TocsaiRZOfjrv13qVG
- I3/E3lZg==
-X-Google-Smtp-Source: AGHT+IF6G9gSXRla2Tz5bO6Ji7opQVGOgE8yQgrLkp9/eG0gts1hC1CXc9Ec1S8HnYTPHfxxJ7DoYA==
-X-Received: by 2002:a05:690e:1a61:b0:644:6c45:4ee9 with SMTP id
- 956f58d0204a3-645555fa40fmr7908718d50.39.1765844934492; 
- Mon, 15 Dec 2025 16:28:54 -0800 (PST)
-Received: from localhost ([2601:346:0:79bd:6b0:1f10:bc87:9bd7])
- by smtp.gmail.com with ESMTPSA id
- 00721157ae682-78e74a42aeasm33437797b3.52.2025.12.15.16.28.54
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 15 Dec 2025 16:28:54 -0800 (PST)
-From: "Yury Norov (NVIDIA)" <yury.norov@gmail.com>
-To: Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Andrew Lunn <andrew+netdev@lunn.ch>,
- "David S. Miller" <davem@davemloft.net>,
- Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, intel-wired-lan@lists.osuosl.org,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: "Yury Norov (NVIDIA)" <yury.norov@gmail.com>
-Date: Mon, 15 Dec 2025 19:28:52 -0500
-Message-ID: <20251216002852.334561-1-yury.norov@gmail.com>
-X-Mailer: git-send-email 2.43.0
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id Lft55fxSROvN for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 16 Dec 2025 04:20:38 +0000 (UTC)
+Received-SPF: None (mailfrom) identity=mailfrom; client-ip=2001:8b0:10b:1236::1;
+ helo=casper.infradead.org; envelope-from=willy@infradead.org;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 5983B60F46
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 5983B60F46
+Received: from casper.infradead.org (casper.infradead.org
+ [IPv6:2001:8b0:10b:1236::1])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 5983B60F46
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 16 Dec 2025 04:20:34 +0000 (UTC)
+Received: from willy by casper.infradead.org with local (Exim 4.98.2 #2 (Red
+ Hat Linux)) id 1vVMXe-00000002o0y-3VFp;
+ Tue, 16 Dec 2025 04:20:06 +0000
+Date: Tue, 16 Dec 2025 04:20:06 +0000
+From: Matthew Wilcox <willy@infradead.org>
+To: Byungchul Park <byungchul@sk.com>
+Cc: netdev@vger.kernel.org, kuba@kernel.org, linux-kernel@vger.kernel.org,
+ kernel_team@skhynix.com, harry.yoo@oracle.com, david@redhat.com,
+ toke@redhat.com, asml.silence@gmail.com, almasrymina@google.com,
+ anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
+ andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
+ pabeni@redhat.com, intel-wired-lan@lists.osuosl.org
+Message-ID: <aUDd9lLy76sBejrP@casper.infradead.org>
+References: <20251216040723.10545-1-byungchul@sk.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20230601; t=1765844934; x=1766449734; darn=lists.osuosl.org;
- h=content-transfer-encoding:mime-version:message-id:date:subject:cc
- :to:from:from:to:cc:subject:date:message-id:reply-to;
- bh=vS+iE22pE5yQk0ecXq1w/+qZcaWovgCEPqFWh4+wKk0=;
- b=LEPiHP6mx+L4tZHB4JxzSoecliv8r76WXYOb/NU0a7eY7g5jnBNMLfc5ExyoKVFGVK
- I+fXswAcAYU0OlRw9hEWJuVT2PXXgLZ2YfDnKQ3KfEuNZWDLBPcX+Bl+I3YSuUlad+6S
- 7Bjuq1GjIyz4gvwGpVaR+Z0lGTBS+u8DiYLEliwKt0o/WiqtNtTtJ0Tg73aGGCK7gf0r
- D61yajAyWqOw9y6C494IjM8t1cPId2I7sk6/z0sOCRjth2m0uxFZ/ljXsVy7vtveI8Ds
- oWFsPLYInDrjhHwUx4XsppWRny5G/xeiAr3DRfsl2Qi2sI5Xlyd4j3pknDMWHCof+5yT
- Y/JA==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20251216040723.10545-1-byungchul@sk.com>
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt;
+ c=relaxed/relaxed; 
+ d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+ References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+ Content-Transfer-Encoding:Content-ID:Content-Description;
+ bh=6qQGXRw0JmSkbF1VRkTl2wi0ub7QsQOJpcz3FBQSCoQ=; b=gmwJBtzH6RNaOjJj8Ol+4ChGWs
+ DLQ0MAdjqAWUojtjOdaaXRyI4S4UO50luZzYFGyO5UfHShg/i15PVUkr0z/RmCtNxLUxgaxSYHXMl
+ 2qN1M8cSXnrf754uT/fumx1dujDsKyolpWokXTECXKNKTQm75uW1tks19MZcTvr9NQZN2dYOXb6H/
+ dDykcWGidk1hOuv42iF6Qs4qtrpFww65yJV8boCeE/BEvBsR+DrvVJ5N2sT1oY3f3e28GDI4v/48f
+ LCPwi21hE8hQdy8oZdgHYTjQAtZFaSmlVqJue3lagnSUrgCc3MyF2jiPyl46XkByiv5PlFfI/GRuD
+ m+eqLKLQ==;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
- header.from=gmail.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
- header.a=rsa-sha256 header.s=20230601 header.b=LEPiHP6m
-Subject: [Intel-wired-lan] [PATCH] i40e: drop useless bitmap_weight() call
- in i40e_set_rxfh_fields()
+ header.from=infradead.org
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=infradead.org header.i=@infradead.org
+ header.a=rsa-sha256 header.s=casper.20170209 header.b=gmwJBtzH
+Subject: Re: [Intel-wired-lan] [PATCH net-next] ice: access @pp through
+ netmem_desc instead of page
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -132,49 +103,19 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-bitmap_weight() is O(N) and useless here, because the following
-for_each_set_bit() returns immediately in case of empty flow_pctypes.
+On Tue, Dec 16, 2025 at 01:07:23PM +0900, Byungchul Park wrote:
+> +++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+> @@ -1251,7 +1251,7 @@ static int ice_lbtest_receive_frames(struct ice_rx_ring *rx_ring)
+>  		rx_buf = &rx_ring->rx_fqes[i];
+>  		page = __netmem_to_page(rx_buf->netmem);
+>  		received_buf = page_address(page) + rx_buf->offset +
+> -			       page->pp->p.offset;
+> +			       pp_page_to_nmdesc(page)->pp->p.offset;
 
-Signed-off-by: Yury Norov (NVIDIA) <yury.norov@gmail.com>
----
- .../net/ethernet/intel/i40e/i40e_ethtool.c    | 24 ++++++++-----------
- 1 file changed, 10 insertions(+), 14 deletions(-)
+Shouldn't we rather use:
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index f2c2646ea298..54b0348fdee3 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -3720,20 +3720,16 @@ static int i40e_set_rxfh_fields(struct net_device *netdev,
- 		return -EINVAL;
- 	}
- 
--	if (bitmap_weight(flow_pctypes, FLOW_PCTYPES_SIZE)) {
--		u8 flow_id;
--
--		for_each_set_bit(flow_id, flow_pctypes, FLOW_PCTYPES_SIZE) {
--			i_setc = (u64)i40e_read_rx_ctl(hw, I40E_GLQF_HASH_INSET(0, flow_id)) |
--				 ((u64)i40e_read_rx_ctl(hw, I40E_GLQF_HASH_INSET(1, flow_id)) << 32);
--			i_set = i40e_get_rss_hash_bits(&pf->hw, nfc, i_setc);
--
--			i40e_write_rx_ctl(hw, I40E_GLQF_HASH_INSET(0, flow_id),
--					  (u32)i_set);
--			i40e_write_rx_ctl(hw, I40E_GLQF_HASH_INSET(1, flow_id),
--					  (u32)(i_set >> 32));
--			hena |= BIT_ULL(flow_id);
--		}
-+	for_each_set_bit(flow_id, flow_pctypes, FLOW_PCTYPES_SIZE) {
-+		i_setc = (u64)i40e_read_rx_ctl(hw, I40E_GLQF_HASH_INSET(0, flow_id)) |
-+			 ((u64)i40e_read_rx_ctl(hw, I40E_GLQF_HASH_INSET(1, flow_id)) << 32);
-+		i_set = i40e_get_rss_hash_bits(&pf->hw, nfc, i_setc);
-+
-+		i40e_write_rx_ctl(hw, I40E_GLQF_HASH_INSET(0, flow_id),
-+				  (u32)i_set);
-+		i40e_write_rx_ctl(hw, I40E_GLQF_HASH_INSET(1, flow_id),
-+				  (u32)(i_set >> 32));
-+		hena |= BIT_ULL(flow_id);
- 	}
- 
- 	i40e_write_rx_ctl(hw, I40E_PFQF_HENA(0), (u32)hena);
--- 
-2.43.0
+		nmdesc = __netmem_to_nmdesc(rx_buf->netmem);
+		received_buf = nmdesc_address(nmdesc) + rx_buf->offset +
+				nmdesc->pp->p_offset;
 
+(also. i think we're missing a nmdesc_address() function in our API).
