@@ -4,109 +4,104 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E422DC79F9E
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  5 Jan 2026 16:18:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 01509C79FA3
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  5 Jan 2026 16:24:10 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id A36B04038D;
-	Mon,  5 Jan 2026 16:18:30 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id B1E13406F1;
+	Mon,  5 Jan 2026 16:24:10 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id YVK8Pe-3Bqfg; Mon,  5 Jan 2026 16:18:28 +0000 (UTC)
+ id yyUBeHZv44TL; Mon,  5 Jan 2026 16:24:10 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org DB3F0402CB
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E2A52406C4
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1767629908;
-	bh=otefy10bqMQ6Rkz8jl3RITolqSd8NKK7YcepSO+lkXo=;
-	h=Date:In-Reply-To:References:To:Cc:Subject:List-Id:
+	s=default; t=1767630249;
+	bh=46dE8wQn1HVL0x3WTf36oZBc8LAD4VTY8ItMtpTUnY8=;
+	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From:Reply-To:From;
-	b=AvZ44qjPS9JxOh1DaMNLoXDEMTkMCICwnImeTdtQeJLH5Ie+M1aIjyvc8TdGdmVln
-	 vIgjtcwrcw/L4WPrDSlLnwlRm03+pU/bhjTuyZKo6Y5bY4ncguZMGN9eOq8mC6QiWc
-	 dlC5fdTwUipqZqYfbadzLG2lPI30w/BACVRmHbfXegBqHa3qxKgJNVaLIdNGzoAT4V
-	 ds5nc5Zz+nTO3aEXhazHdgBykdNTX0100T40Ph0f6/tzdApEI1dDNGSB4vrulSUwav
-	 FdsG5o8muW6V5eOhL5sDmkcs42U5EGO1mpHIcO9Ddogc4WZ9SQoEsW4gt0hgyxmvUq
-	 W4bpirDZ2+2Xw==
+	 Cc:From;
+	b=dQUYqjzu59kmlawRqiedEJ248WDAYn9pR5lSaV91vA8CVitw2zF8Z1yndiUFDIekm
+	 qMbKG2COY7EuTD5QnVt2G+KruNNjCfTXH0DMWscdJAIcFw0WJ7rPG9lAKrmEOMAA54
+	 C2+Hr55FzJFGRGACBFb3VRADlCgMfBfcu4b/P/8I3W796CMR7Bi/0cSpB2FlLwyzc7
+	 YXvdR/AJVIR2xmaEnhKHDU6yF2Fwud2UgbXYmNTq0TUd5woc5dpT0r9bHjP6zR5Efh
+	 poYQ9WatXV3snqaaC2OGFlKL+FUAEtetkBVa19sC9d3rKP+spIB5pGBz7tp4gFUen3
+	 PSVG+hfK07IGw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id DB3F0402CB;
-	Mon,  5 Jan 2026 16:18:28 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 4A107277
- for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Dec 2025 23:24:27 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id E2A52406C4;
+	Mon,  5 Jan 2026 16:24:09 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id AEB512DF
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  5 Jan 2026 16:24:08 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 3ADF460BAC
- for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Dec 2025 23:24:27 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 9173F60AC7
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  5 Jan 2026 16:24:08 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id E81TKS8cYioj for <intel-wired-lan@lists.osuosl.org>;
- Tue, 30 Dec 2025 23:24:26 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2607:f8b0:4864:20::64a; helo=mail-pl1-x64a.google.com;
- envelope-from=3kv9uaqkkd4orsq27+uw7u22uzs.q20w17sz-aw5sr-zo1zw676.26826z.25u@flex--decot.bounces.google.com;
+ id R_GUj749nDWs for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  5 Jan 2026 16:24:07 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.133.124;
+ helo=us-smtp-delivery-124.mimecast.com; envelope-from=ivecera@redhat.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 2C67960BAA
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2C67960BAA
-Received: from mail-pl1-x64a.google.com (mail-pl1-x64a.google.com
- [IPv6:2607:f8b0:4864:20::64a])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 2C67960BAA
- for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Dec 2025 23:24:25 +0000 (UTC)
-Received: by mail-pl1-x64a.google.com with SMTP id
- d9443c01a7336-2a0dabc192eso238676855ad.0
- for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Dec 2025 15:24:25 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20230601; t=1767137065; x=1767741865;
- h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
- :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
- bh=otefy10bqMQ6Rkz8jl3RITolqSd8NKK7YcepSO+lkXo=;
- b=qlcwuTxmHmpJeR7c255IYXdCgkoN4oO+QxYSlG6XLxZbPBnSiY4OSsVS4LGBX2dqvP
- ac3KtKbMazk/wLGNMc5BZYLYBkKJV+BiZ7pw3APWKY7+CZKMq9dJg68fKfEHRjCAaQ4p
- HXh54QIN4SXs04p0nnsTYX56uud7zbzKHjZ8RcXZ2M680LvTI2bXqAXwBN8gwjwmNyzI
- Q2VPch3I0RaU6l19y8avnSQhPXxGXxRHamO6UplOOxYFC4QLqAxGw618lzltaL2/vLfq
- R0yhC5CVDzcN3u8+8CkwfnVUmNaowmoi18je8QIr7LUfxlFrz3VYnBz8r8y9bx3BSVxl
- T+dg==
-X-Gm-Message-State: AOJu0YwX9GHjxojpDES0rP/jeaDri+O22qKRQMGkoaCADOiXyV2ukuwU
- wflzhIfbGdE7wXyIskj3ri6H7zpgqRIBVZ6Kys0XPRIAkuKMXaoVoQSTyApla8xENfSbiGUTtto
- AiloaYxMiwn5yJiePXsGBdNKTTB2i80lHxGoKXxtWyHyxmcl1J5VSF0UjQ6y714kS7s+mZKKBT4
- LefPeDnYkXTegK6xs2+eIQATAr8QVibqHEhIZqOJgihpNF
-X-Google-Smtp-Source: AGHT+IHqR/6lsYHNU7FNcWu3yhSTAtOgs3q5BmJ4yTy19weMjJ3YUksVel4kP5W/QptL5Y2q7QbRD4Sv8Q==
-X-Received: from plzu9.prod.google.com ([2002:a17:902:82c9:b0:2a0:8cbb:6431])
- (user=decot job=prod-delivery.src-stubby-dispatcher) by
- 2002:a17:903:3c6e:b0:2a0:c1e4:e25
- with SMTP id d9443c01a7336-2a2f293bdc3mr328462765ad.54.1767137065078; Tue, 30
- Dec 2025 15:24:25 -0800 (PST)
-Date: Tue, 30 Dec 2025 15:23:46 -0800
-In-Reply-To: <20251103212036.2788093-1-joshua.a.hay@intel.com>
-Mime-Version: 1.0
-References: <20251103212036.2788093-1-joshua.a.hay@intel.com>
-X-Mailer: git-send-email 2.52.0.351.gbe84eed79e-goog
-Message-ID: <20251230232400.3515704-1-decot+git@google.com>
-To: intel-wired-lan@lists.osuosl.org
-Cc: netdev@vger.kernel.org, Joshua Hay <joshua.a.hay@intel.com>, 
- Alexander Lobakin <aleksander.lobakin@intel.com>,
- Madhu Chittim <madhu.chittim@intel.com>, 
- David Decotigny <ddecotig@google.com>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailman-Approved-At: Mon, 05 Jan 2026 16:18:27 +0000
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 7076960A9D
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7076960A9D
+Received: from us-smtp-delivery-124.mimecast.com
+ (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 7076960A9D
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  5 Jan 2026 16:24:06 +0000 (UTC)
+Received: from mx-prod-mc-03.mail-002.prod.us-west-2.aws.redhat.com
+ (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
+ relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-612-qAfVWpaVPVmwinV2Ig6kOw-1; Mon,
+ 05 Jan 2026 11:24:00 -0500
+X-MC-Unique: qAfVWpaVPVmwinV2Ig6kOw-1
+X-Mimecast-MFC-AGG-ID: qAfVWpaVPVmwinV2Ig6kOw_1767630236
+Received: from mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com
+ (mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.17])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by mx-prod-mc-03.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
+ id C443F1956050; Mon,  5 Jan 2026 16:23:55 +0000 (UTC)
+Received: from [10.44.32.50] (unknown [10.44.32.50])
+ by mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP
+ id 982321956048; Mon,  5 Jan 2026 16:23:44 +0000 (UTC)
+Message-ID: <5db81f5b-4f35-46e4-8fec-4298f1ac0c4e@redhat.com>
+Date: Mon, 5 Jan 2026 17:23:42 +0100
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+To: Rob Herring <robh@kernel.org>, Andrew Lunn <andrew@lunn.ch>
+References: <20251211194756.234043-1-ivecera@redhat.com>
+ <20251211194756.234043-2-ivecera@redhat.com>
+ <2de556f0-d7db-47f1-a59e-197f92f93d46@lunn.ch>
+ <20251217004946.GA3445804-robh@kernel.org>
+Content-Language: en-US
+From: Ivan Vecera <ivecera@redhat.com>
+In-Reply-To: <20251217004946.GA3445804-robh@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Scanned-By: MIMEDefang 3.0 on 10.30.177.17
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=google.com; s=20230601; t=1767137065; x=1767741865; darn=lists.osuosl.org;
- h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
- :date:from:to:cc:subject:date:message-id:reply-to;
- bh=otefy10bqMQ6Rkz8jl3RITolqSd8NKK7YcepSO+lkXo=;
- b=k3x92C95OoPOBJKMsWaLw24gjDQ/Y/1VYdrBZbhra+NygaJTo5B4bPQmmv99AKXOSV
- T8wwG2NOW0fhIdnm7Qh+PYBc2u66XOLHE2QKpGUzFBpiKwHKhSfuORBgGKwcX1OVtlmt
- mQOPqmn8xOilK0Ko7lai7NfuE3smgtTh6n9JlKaikVXJivq7M9UeIdIrJyRzgEt4+R1A
- bDPrwveZdv4Zo7QC/r/X3q1Uv2TrTgItP/wdqS3sYm+BDNHk16xP59PBXKEwVjvEzUay
- 2ToshZXXZuPyD+gCD1ZNBSO8Vh47M6Se3TTEH+oeuiOcNs687FzLGuk9XsSGYsnhAUrA
- jrwQ==
+ d=redhat.com; 
+ s=mimecast20190719; t=1767630245;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=46dE8wQn1HVL0x3WTf36oZBc8LAD4VTY8ItMtpTUnY8=;
+ b=Mfrlad7tbe4J0qLdqN7oubqgss9UKy/WMdvFp+zdFF6AuzVsi7MDwKfMY94MnD5IaZ/Jke
+ aFdRDw1+AQnk/lzCS3pbPrCCZO4AZAZFMiS8yMFWm/rfIDsMAoME6ddSnnFtbogUjAGH2W
+ si6W14DBfbQoE+tyrNO1Bb4E0kfiCiM=
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dmarc=pass (p=reject dis=none)
- header.from=google.com
+ dmarc=pass (p=quarantine dis=none)
+ header.from=redhat.com
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key) header.d=google.com header.i=@google.com
- header.a=rsa-sha256 header.s=20230601 header.b=k3x92C95
-Subject: Re: [Intel-wired-lan] [PATCH iwl-net] idpf: cap maximum Rx buffer
- size
+ dkim=pass (1024-bit key,
+ unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
+ header.s=mimecast20190719 header.b=Mfrlad7t
+Subject: Re: [Intel-wired-lan] [PATCH RFC net-next 01/13] dt-bindings: net:
+ ethernet-controller: Add DPLL pin properties
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -119,27 +114,74 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-From: David Decotigny via Intel-wired-lan <intel-wired-lan@osuosl.org>
-Reply-To: David Decotigny <decot+git@google.com>
+Cc: Eric Dumazet <edumazet@google.com>,
+ Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Horatiu Vultur <Horatiu.Vultur@microchip.com>,
+ Leon Romanovsky <leon@kernel.org>,
+ Alexander Lobakin <aleksander.lobakin@intel.com>, linux-rdma@vger.kernel.org,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>,
+ intel-wired-lan@lists.osuosl.org, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>, devicetree@vger.kernel.org,
+ Conor Dooley <conor+dt@kernel.org>, Jiri Pirko <jiri@resnulli.us>,
+ Richard Cochran <richardcochran@gmail.com>,
+ Prathosh Satish <Prathosh.Satish@microchip.com>,
+ Willem de Bruijn <willemb@google.com>,
+ Vadim Fedorenko <vadim.fedorenko@linux.dev>, netdev@vger.kernel.org,
+ Mark Bloch <mbloch@nvidia.com>, linux-kernel@vger.kernel.org,
+ Tariq Toukan <tariqt@nvidia.com>, Andrew Lunn <andrew+netdev@lunn.ch>,
+ Stefan Wahren <wahrenst@gmx.net>, Simon Horman <horms@kernel.org>,
+ Jonathan Lemon <jonathan.lemon@gmail.com>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Saeed Mahameed <saeedm@nvidia.com>,
+ "David S. Miller" <davem@davemloft.net>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On 11/3/2025 1:20 PM, Joshua Hay wrote:
-> The HW only supports a maximum Rx buffer size of 16K-128. On systems
-> using large pages, the libeth logic can configure the buffer size to be
-> larger than this. The upper bound is PAGE_SIZE while the lower bound is
-> MTU rounded up to the nearest power of 2. For example, ARM systems with
-> a 64K page size and an mtu of 9000 will set the Rx buffer size to 16K,
-> which will cause the config Rx queues message to fail.
+On 12/17/25 1:49 AM, Rob Herring wrote:
+> On Thu, Dec 11, 2025 at 08:56:52PM +0100, Andrew Lunn wrote:
+>> On Thu, Dec 11, 2025 at 08:47:44PM +0100, Ivan Vecera wrote:
+>>> Ethernet controllers may be connected to DPLL (Digital Phase Locked Loop)
+>>> pins for frequency synchronization purposes, such as in Synchronous
+>>> Ethernet (SyncE) configurations.
+>>>
+>>> Add 'dpll-pins' and 'dpll-pin-names' properties to the generic
+>>> ethernet-controller schema. This allows describing the physical
+>>> connections between the Ethernet controller and the DPLL subsystem pins
+>>> in the Device Tree, enabling drivers to request and manage these
+>>> resources.
+>>
+>> Please include a .dts patch in the series which actually makes use of
+>> these new properties.
 > 
-> Initialize the bufq/fill queue buf_len field to the maximum supported
-> size. This will trigger the libeth logic to cap the maximum Rx buffer
-> size by reducing the upper bound.
-> 
-> Fixes: 74d1412ac8f37 ("idpf: use libeth Rx buffer management for payload buffer")
-> Signed-off-by: Joshua Hay <joshua.a.hay@intel.com>
-> Acked-by: Alexander Lobakin <aleksander.lobakin@intel.com>
-> Reviewed-by: Madhu Chittim <madhu.chittim@intel.com>
-> ---
+> Actually, first you need a device (i.e. a specific ethernet
+> controller bindings) using this and defining the number of dpll-pins
+> entries and the names.
 
-Reviewed-by: David Decotigny <ddecotig@google.com>
+The goal of this patch is to define properties that allow referencing
+dpll pins from other devices. I included it in this series to allow
+implementing helpers that use the property names defined in the schema.
+
+This series implements the dpll pin consumer in the ice driver. This is
+usually present on ACPI platforms, so the properties are stored in _DSD
+ACPI nodes. Although I don't have a DT user right now, isn't it better
+to define the schema now?
+
+Thinking about this further, consumers could be either an Ethernet
+controller (where the PHY is not exposed and is driven directly by the
+NIC driver) or an Ethernet PHY.
+
+For the latter case (Ethernet PHY), I have been preparing a similar
+implementation for the Micrel phy driver (lan8814) on the Microchip EDS2
+board (pcb8385). Unfortunately, the DTS is not upstreamed yet [1], so I
+cannot include the necessary bindings here.
+
+Since there can be multiple consumer types (Ethernet controller or PHY),
+would it be better to define a dpll-pin-consumer.yaml schema instead
+(similar to mux-consumer)?
+
+Thanks for the advice,
+Ivan
+
+[1] 
+https://patchwork.kernel.org/project/linux-arm-kernel/list/?series=1031294&state=*
+
