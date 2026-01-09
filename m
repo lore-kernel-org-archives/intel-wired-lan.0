@@ -1,100 +1,89 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0667AD167F3
-	for <intel-wired-lan@archiver.kernel.org>; Fri,  9 Jan 2026 09:53:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DB3F5D167F5
+	for <intel-wired-lan@archiver.kernel.org>; Fri,  9 Jan 2026 09:55:10 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id C02CC60E0E;
-	Fri,  9 Jan 2026 09:53:40 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id AB02C83829;
+	Fri,  9 Jan 2026 09:55:10 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 3Crf1a5P8lhM; Fri,  9 Jan 2026 09:53:39 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id I_L6RS6yy8NF; Fri,  9 Jan 2026 09:55:09 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 5FF6760D66
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 3244C83807
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1767952419;
-	bh=J0fV7Q6QwtvNo/R0F1+7rc9zpPvYCDlIAaoCm76Z1eA=;
-	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=UuKC4o+lm5+mm23yIYamlvu5atf8mya+/0Ag9NA1kQ62Q8zBaLf2DGJKiOtql43uu
-	 7J4ToZE4FrvL4D7FlvNb6WLzZqZYbD+gwwqXmN+TInf01v7e1HJ1iuL4kBn/GvN/Qq
-	 BeBqs9Vw+9sBkY0mAblAFYDP5bma31A3igcknyjbCB1ZwXr2W5PJGLHV/VVrDxzLYc
-	 /i74LxuYgbp/brTcftZvO3ISUeDu3wncPaxzGIYsFEW+iWY6+KpZV24ghxdOSSResS
-	 Z9jwd+EyCSsqDH9+ZtmpnYu+w0WKhIE/KeIfkIROgUWEMvYXm3J0NfDki5b7vHHHFW
-	 c1Y9vJDctlKXw==
+	s=default; t=1767952509;
+	bh=cjz3vTKRnASzhAPFGYEKw/NSsxGGE0gPPYH6xGuydTY=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=a4DKVrD3Cdg/QaKxdJwqnstCVg856wJrN33R3Sm7jtVXfQbGe/rCuoOSQTGlF1FRe
+	 pKCZVMw2ApnFFfZCU3W5qPpmFNmMFtgcuJKjD74vpMbBzaqFhKMuhJwDwFVKDYatBH
+	 BbQG3i5H/2XNOYWvH5gSyNvOoq+sqC4yzfMEd2FWduMw1TNecRSL+/TTmAkRR1eVa/
+	 +o80So17ysvGVTvT39uCedIB95uxgfoSnVbcKvE+8VUCBjmPn6GNhODH6XEOGfCcit
+	 KJiSUhY5hE7Q/Jllc6chOcs3b00qXljl8qrU2e/EyLpSsMCxgcizYhi7wmnY58dH48
+	 VQ7DC7unr5yHQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 5FF6760D66;
-	Fri,  9 Jan 2026 09:53:39 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id 63FEB131
- for <intel-wired-lan@lists.osuosl.org>; Fri,  9 Jan 2026 09:53:37 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 3244C83807;
+	Fri,  9 Jan 2026 09:55:09 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 2219D12E
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  9 Jan 2026 09:55:08 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 4B541401EA
- for <intel-wired-lan@lists.osuosl.org>; Fri,  9 Jan 2026 09:53:37 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 13AA483807
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  9 Jan 2026 09:55:08 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id iWz-LSYVYzbX for <intel-wired-lan@lists.osuosl.org>;
- Fri,  9 Jan 2026 09:53:36 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.13;
- helo=mgamail.intel.com; envelope-from=marcin.szycik@linux.intel.com;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 5BC404011A
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 5BC404011A
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.13])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 5BC404011A
- for <intel-wired-lan@lists.osuosl.org>; Fri,  9 Jan 2026 09:53:35 +0000 (UTC)
-X-CSE-ConnectionGUID: X+jghJy1THmV2O+zUYl/IA==
-X-CSE-MsgGUID: EQGuKdYmQQ6PU47zxxc2tw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11665"; a="80444232"
-X-IronPort-AV: E=Sophos;i="6.21,212,1763452800"; d="scan'208";a="80444232"
-Received: from fmviesa002.fm.intel.com ([10.60.135.142])
- by orvoesa105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 09 Jan 2026 01:53:35 -0800
-X-CSE-ConnectionGUID: wq7xPbJ/SriYC6E5Y/eZAA==
-X-CSE-MsgGUID: TAQXvhJ3QIOgUXKXYCknJw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.21,212,1763452800"; d="scan'208";a="226813256"
-Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by fmviesa002.fm.intel.com with ESMTP; 09 Jan 2026 01:53:33 -0800
-Received: from gond.igk.intel.com (gond.igk.intel.com [10.123.220.52])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id 86320278D4;
- Fri,  9 Jan 2026 09:53:32 +0000 (GMT)
-From: Marcin Szycik <marcin.szycik@linux.intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Cc: netdev@vger.kernel.org, Marcin Szycik <marcin.szycik@linux.intel.com>,
- Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Date: Fri,  9 Jan 2026 09:53:39 +0100
-Message-ID: <20260109085339.49839-1-marcin.szycik@linux.intel.com>
-X-Mailer: git-send-email 2.49.0
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id ffOjdShUO7Kv for <intel-wired-lan@lists.osuosl.org>;
+ Fri,  9 Jan 2026 09:55:07 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org;
+ envelope-from=krzk@kernel.org; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 766AE837A4
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 766AE837A4
+Received: from sea.source.kernel.org (sea.source.kernel.org
+ [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 766AE837A4
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  9 Jan 2026 09:55:07 +0000 (UTC)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+ by sea.source.kernel.org (Postfix) with ESMTP id 2382540BAE;
+ Fri,  9 Jan 2026 09:55:07 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 733D0C4CEF1;
+ Fri,  9 Jan 2026 09:55:06 +0000 (UTC)
+Date: Fri, 9 Jan 2026 10:55:04 +0100
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: Ivan Vecera <ivecera@redhat.com>
+Message-ID: <20260109-cooperative-chinchilla-of-swiftness-aebbc8@quoll>
+References: <20260108182318.20935-1-ivecera@redhat.com>
+ <20260108182318.20935-4-ivecera@redhat.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20260108182318.20935-4-ivecera@redhat.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1767952417; x=1799488417;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=RB5uC0PLRMLIszW++ntMi95ZkbuVdAu3AgLwewqxGYU=;
- b=lft4QVq2hmY8wpe+pQ+A7IUdZDPDJt5fqbVyUSY+XNMdKnJIGScwWEsR
- EDVohp4ADzbOm7da4Gh4z8ljUCkupOSj8h2TgApThoTVH39qxrlS3Q5HT
- Km6fP7GQDo6X1iflkk9rvn6CcW+mTgHGk+kgr5O2Wwg4hQVDQb4Ek+3J+
- Vgd4NZ8pxuMqXo7YvHFbAz08wb0EHdc94KuxafQo6vlesJplDB2HTclYS
- kz7zDjXlVNb2kRjVD0HvDwJV+5uygyMxRsNulZ+SFGOZ0Izhms3M4DxOg
- 4XHQWeski8ItU86KtPo9NyQ2U1GB8z4tJXkr7mHb6Bcpd3FbiHfivlQdU
- g==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dmarc=none (p=none dis=none)
- header.from=linux.intel.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ d=kernel.org; s=k20201202; t=1767952507;
+ bh=IkP/SuZc1+HGIgfAujt+bjifZCCZ5ZU7yuwDHWYE8Fc=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=s2x90MK0EAhZ4PAprwB0+AyumDxUtdgTloJ+xSh5vPw0sT1j1J693MTOh5xuFExx3
+ upZKMBqEsOuYGvxG8IHrd2TWURcKuiIZSrxSd8ttBfdZg+DQhyuqdGBwoaTiBM/4nA
+ 6jxM5+fxloGBhxQss83HRXT/+paQ76TAghTAjXeUzEpV7iC6LOm2m6Sf4ebbGFL9e0
+ Icjozkt6b9n/DCdcRmguLoAJy4vcgm5ZHWefXQiIb8lkU4xA29RofrsCSHUeHd5Exc
+ fwMKZVwioZzz7h/XOP9hYfEHgVdOA3eRdR0dedOg7hdMzVuebFAS9ZxzT7yKZAgpRD
+ nsGa3JxdJnusg==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dmarc=pass (p=quarantine dis=none)
+ header.from=kernel.org
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=lft4QVq2
-Subject: [Intel-wired-lan] [PATCH net] ice: fix setting RSS VSI hash for E830
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=s2x90MK0
+Subject: Re: [Intel-wired-lan] [PATCH net-next 03/12] dpll: Add helpers to
+ find DPLL pin fwnode
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -107,49 +96,50 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
+Cc: Eric Dumazet <edumazet@google.com>,
+ Tony Nguyen <anthony.l.nguyen@intel.com>, Rob Herring <robh@kernel.org>,
+ Leon Romanovsky <leon@kernel.org>, Andrew Lunn <andrew+netdev@lunn.ch>,
+ linux-rdma@vger.kernel.org, Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>,
+ intel-wired-lan@lists.osuosl.org, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>, devicetree@vger.kernel.org,
+ Conor Dooley <conor+dt@kernel.org>, Jiri Pirko <jiri@resnulli.us>,
+ Richard Cochran <richardcochran@gmail.com>,
+ Prathosh Satish <Prathosh.Satish@microchip.com>,
+ Vadim Fedorenko <vadim.fedorenko@linux.dev>, netdev@vger.kernel.org,
+ Mark Bloch <mbloch@nvidia.com>, linux-kernel@vger.kernel.org,
+ Tariq Toukan <tariqt@nvidia.com>,
+ Alexander Lobakin <aleksander.lobakin@intel.com>,
+ Jonathan Lemon <jonathan.lemon@gmail.com>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Saeed Mahameed <saeedm@nvidia.com>,
+ "David S. Miller" <davem@davemloft.net>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-ice_set_rss_hfunc() performs a VSI update, in which it sets hashing
-function, leaving other VSI options unchanged. However, ::q_opt_flags is
-mistakenly set to the value of another field, instead of its original
-value, probably due to a typo. What happens next is hardware-dependent:
+On Thu, Jan 08, 2026 at 07:23:09PM +0100, Ivan Vecera wrote:
+> Add helper functions to the DPLL core to retrieve a DPLL pin's firmware
+> node handle based on the "dpll-pins" and "dpll-pin-names" properties.
+> 
+> * `fwnode_dpll_pin_node_get()`: matches the given name against the
+>   "dpll-pin-names" property to find the correct index, then retrieves
+>   the reference from "dpll-pins".
+> * `device_dpll_pin_node_get()`: a wrapper around the fwnode helper for
+>   convenience when using a `struct device`.
+> 
+> These helpers simplify the process for consumer drivers (such as Ethernet
+> controllers or PHYs) to look up their associated DPLL pins defined in
+> the DT or ACPI, which can then be passed to the DPLL subsystem to acquire
+> the pin object.
+> 
+> Signed-off-by: Ivan Vecera <ivecera@redhat.com>
+> ---
+>  drivers/dpll/dpll_core.c | 20 ++++++++++++++++++++
+>  include/linux/dpll.h     | 15 +++++++++++++++
+>  2 files changed, 35 insertions(+)
+> 
 
-On E810, only the first bit is meaningful (see
-ICE_AQ_VSI_Q_OPT_PE_FLTR_EN) and can potentially end up in a different
-state than before VSI update.
+I don't see cells defined in your binding. Neither updated property.c.
 
-On E830, some of the remaining bits are not reserved. Setting them
-to some unrelated values can cause the firmware to reject the update
-because of invalid settings, or worse - succeed.
-
-Reproducer:
-  sudo ethtool -X $PF1 equal 8
-
-Output in dmesg:
-  Failed to configure RSS hash for VSI 6, error -5
-
-Fixes: 352e9bf23813 ("ice: enable symmetric-xor RSS for Toeplitz hash function")
-Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Signed-off-by: Marcin Szycik <marcin.szycik@linux.intel.com>
----
- drivers/net/ethernet/intel/ice/ice_main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index cf8ba5a85384..08268f1a03da 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -8038,7 +8038,7 @@ int ice_set_rss_hfunc(struct ice_vsi *vsi, u8 hfunc)
- 	ctx->info.q_opt_rss |=
- 		FIELD_PREP(ICE_AQ_VSI_Q_OPT_RSS_HASH_M, hfunc);
- 	ctx->info.q_opt_tc = vsi->info.q_opt_tc;
--	ctx->info.q_opt_flags = vsi->info.q_opt_rss;
-+	ctx->info.q_opt_flags = vsi->info.q_opt_flags;
- 
- 	err = ice_update_vsi(hw, vsi->idx, ctx, NULL);
- 	if (err) {
--- 
-2.49.0
+Best regards,
+Krzysztof
 
