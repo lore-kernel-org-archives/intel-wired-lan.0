@@ -4,86 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 32F86CF45BB
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 12 Jan 2026 18:18:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 41995CF45C3
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 12 Jan 2026 18:18:49 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id EA65860D92;
-	Mon, 12 Jan 2026 18:18:46 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id A0DE960D95;
+	Mon, 12 Jan 2026 18:18:48 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id bnVoqDRqioX5; Mon, 12 Jan 2026 18:18:46 +0000 (UTC)
+ id Md_zEsqPEeyg; Mon, 12 Jan 2026 18:18:47 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org F24CC60D87
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C5AA560D8B
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1768241926;
-	bh=yhpaAlKW26OhYlxc15mNDWFg1nSuNxZpLWCT9AQiLQU=;
-	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=zpVVhtOZ91aZPDT7/GOr0GGEtEBKHRt3vDotyB8PMJfP/WYfnV9iivBuEGYWGmW+1
-	 KsibKVI6bem8fZBn7aeoy/E4Y0QqPSw4IB6oTiXZCdrWSLJruDzZemHiQAaAslIuqi
-	 zBzsMRdcwOl/yMuZRi7pWN0NMmPE58k6zXHFTn+JKzpWAqaGvfn/f6PmBQPBzZVKeE
-	 nVP7fFURS+yGo/YHLku/q89ocvIKmuhymHNhtkGr+1LP3NmwU1fj+DDipqV6oHrViq
-	 wvL+huS3/f9M+Yy5Iwq3uJqjk91XBAOcLAqoK3JZN8ZRhDZEE6bCz48JcPhmrknzCO
-	 FvZS4B0IQSNIQ==
+	s=default; t=1768241927;
+	bh=YsXS6L+T4eWxoCFRdBnUQMJP/+ral8MRAKD6IFiqy1I=;
+	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=WNXOrpWqyQ+DM7oZmE9F3GeqhrouSFTwnblchOUsQQJ3hpHYdbLd2YQ59JDTaEi+L
+	 jfBmcOiJvW2Jnbqozlpl21p00C08i/bfK/owcuw8e9DkwRC8T1KFCLe0ht17UZl3t3
+	 fS1vhDgU5hAxG9iznTPxbno33MxAHj4qGbpMN6Nlp/Qb8R596AusYt7ozLBoachLuB
+	 Vhz94zqzBbeif3UkmOuoJk9rm1BzH7a8M+cVhJHPnmcpEMOvemKge9xEXY+RUz4tQY
+	 YwoGS6b3RkcrMj2/FQiHzdSgdmwmnSyCbex5HqY0nQMYDoPPJVG3BduDIdwNIFILRc
+	 O9U6no0x4S48w==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id F24CC60D87;
-	Mon, 12 Jan 2026 18:18:45 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id EC50C18D
- for <intel-wired-lan@lists.osuosl.org>; Mon, 12 Jan 2026 18:17:01 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id C5AA560D8B;
+	Mon, 12 Jan 2026 18:18:47 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 8076018D
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 12 Jan 2026 18:17:27 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id DE5CF83D1C
- for <intel-wired-lan@lists.osuosl.org>; Mon, 12 Jan 2026 18:17:01 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 7230F60D78
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 12 Jan 2026 18:17:27 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ePLB_nEO-3Wq for <intel-wired-lan@lists.osuosl.org>;
- Mon, 12 Jan 2026 18:17:00 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id k97uYXeywYyq for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 12 Jan 2026 18:17:26 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2607:f8b0:4864:20::42b; helo=mail-pf1-x42b.google.com;
+ client-ip=2607:f8b0:4864:20::1030; helo=mail-pj1-x1030.google.com;
  envelope-from=viswanathiyyappan@gmail.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 77EAA83CF8
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 77EAA83CF8
-Received: from mail-pf1-x42b.google.com (mail-pf1-x42b.google.com
- [IPv6:2607:f8b0:4864:20::42b])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 77EAA83CF8
- for <intel-wired-lan@lists.osuosl.org>; Mon, 12 Jan 2026 18:17:00 +0000 (UTC)
-Received: by mail-pf1-x42b.google.com with SMTP id
- d2e1a72fcca58-81f3fba4a11so1870381b3a.1
- for <intel-wired-lan@lists.osuosl.org>; Mon, 12 Jan 2026 10:17:00 -0800 (PST)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org B95BA60B58
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B95BA60B58
+Received: from mail-pj1-x1030.google.com (mail-pj1-x1030.google.com
+ [IPv6:2607:f8b0:4864:20::1030])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id B95BA60B58
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 12 Jan 2026 18:17:26 +0000 (UTC)
+Received: by mail-pj1-x1030.google.com with SMTP id
+ 98e67ed59e1d1-34ccb7ad166so3709316a91.2
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 12 Jan 2026 10:17:26 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20230601; t=1768241820; x=1768846620;
- h=content-transfer-encoding:mime-version:message-id:date:subject:cc
- :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
- :message-id:reply-to;
- bh=yhpaAlKW26OhYlxc15mNDWFg1nSuNxZpLWCT9AQiLQU=;
- b=hFdX/t91G2cMNQvuvQqH+PRGV/2OUXLdLd9oNC54wfkN9zE6veqlqkSFhc+wTbBVkC
- uHethqkIGrQtNv4gQbGHFSbN+uC0NxSz7ZJ9y+fPS99ZC2wM8RAW9h1I6sjieqBvew68
- ttL8qNZnoVCEZsGzEMloFfNPdAKkIzFo2nSbIqsvgs9cHWhiERpwzBg5VbX0xHGIIfDr
- AYrD9oTxs8OrUTZUgSum8fEXau06xvYhTmwy5IXpnVpMEq2c/WHqRoXk4dIPOsF2X1VS
- iEDxjcRAXkoRbfpFE6/QruwK+f6AJhefyC5/SBzSIZueUT4po7+ahT50rPzTbI0gp4kQ
- o10A==
+ d=1e100.net; s=20230601; t=1768241846; x=1768846646;
+ h=content-transfer-encoding:mime-version:references:in-reply-to
+ :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+ :to:cc:subject:date:message-id:reply-to;
+ bh=YsXS6L+T4eWxoCFRdBnUQMJP/+ral8MRAKD6IFiqy1I=;
+ b=cLA48Ubp2gGgGfmnR2Yh8yCujxi+vMYbgd85ytZDo0AnU8KUv14l9KSimdTgd5VQRp
+ nJCltxEI/X7XfjfJ/lBCfoi8et8d/FmxgN5mSVLWalyDhG99k0UgsbijvjDyR/FxaI0a
+ 3B51bKnTbzjkB5EshUTsO041FmXs3uE2G6QpNjuT+KpJzSoDwpia4SR+RZGu2N8HlbuR
+ LxLQI3H5aFwCgP98reIrkzH9N5noy1zXaIY5w1d/qAMUXmnFDgwJjAhjJB5BppHWKdAy
+ 2Fi9QNMolOQI117Za408L3+/W9AY100c3ddQBGeX7Fei4xpDDklJaFOAnTASO/tFX3Az
+ u+5A==
 X-Forwarded-Encrypted: i=1;
- AJvYcCU1/BJbQhmh6xZzQfuL//fhSgbQuX0fVIcDDmctFBRMXsMkg4Lcsv5oqNYUsYGUVSyZCJyLOb3PrCGWJ/0xPr4=@lists.osuosl.org
-X-Gm-Message-State: AOJu0YwtCH2i1sTpbzPLGqmxSrKnY1reC8/d8xZWkwFoDpdKjbCeqfUi
- EZTVzRNwQcXJzRwUNajCZgT7wbTF3asIJh37YOnQhGPNGFXReiTDxkrpC7TX5g==
-X-Gm-Gg: AY/fxX4f0Dy+1Nxsw2nBXmDsd//yK/hEg9yJBFnsf9WLkcTNnMkX3T95BE8t3CgQTGI
- 1pUzObfXgPvLnidt/9jnskr81qNTJIJKTc4uw2WTYs7L/yII4fIJzPh0LUOx6aa1TYIFX9BHZ8Y
- OHdd4qx4GIlsj6j6B/wW9iwrpCdTdIxPk559Av+V6hgHvrCmmHRlxFnEy8SQYniPL0lDop4A24C
- r6eEwfEgdVBs3Ln/WLZwfBG8RZAQcJk9rjRCBy/UvdMahi9nm/mft7cplVk5ND/jWdyxl1bMSut
- qDDJrkorrNN79sVw3fVXmVDWj75STxOBYZB21d5O6pH/bekZjfWv03lxdIDQnXejRdpzTcmV5ad
- LKI+PvD6HGaG+YevPlmAxNxvMBUFQlAOqH8ElndyXtwL4VAto6iL+iMX4Ss65bgajjeiSgsoOYQ
- Yx8ZEl4Eztx1KQ7lGQfUe42mXKCgdXGUvnsT4MeCqeryf+EIENxoaoLJo/2FRcPFaO9Q==
-X-Google-Smtp-Source: AGHT+IHCbvxDzVKglJnQ5DCOnCgrWdajUJ3xC4WJMbnpDbcyewmJC9+3bPGSnBu1mkm93FTZAHDPBA==
-X-Received: by 2002:a05:6a21:6da4:b0:375:4426:e78b with SMTP id
- adf61e73a8af0-3898f9f0e9dmr17726103637.71.1768241819635; 
- Mon, 12 Jan 2026 10:16:59 -0800 (PST)
+ AJvYcCVwK/XC5KHlq24HQOPyocmIVPVH0iJsNGjd9BDtOwqyaKgKvKN6QKRFWQWt64uO6igPtld4Ukc+nE3iWtpvJ4o=@lists.osuosl.org
+X-Gm-Message-State: AOJu0YwtuKqj23F+Tm4qw0bsi4HnACvvvT5Fzo/R/zivAI+u5+2q2eBU
+ YQl+CNdi61Vp/bo/wT9NM6Zp4fwlvNirLBOS5/IvIKVGVq+IoJANxTr7
+X-Gm-Gg: AY/fxX7tPmJvnJ3vt8QX5GfSMd+jpSzE2V/V76+jmZOZJVSKQ6wjlQYMw4yXSe3NrQW
+ tZ73vCrc5okrz4SkkzLxv4LPagWOGkY+zuJFTBKiQzib1wpP0kczHcSvcvaBmXFZAQah0y0mSSF
+ alQ8WFUb1/0iTkHyn9psxxxfRdooo+3/CghHi4TvmSAJ+GQ2Q6gWmPUvN24Gtk9m4HF4j34tLew
+ eSRDQtqzTOuWPWpGajKrbksW1B69e2vstKJNR7OcY8bsuAHaZcVgSrVxJkcR9pJ/EzL2WztGwdb
+ 1vGYW6a93R6jhSeZVr2LjNUFt0MXGAHkNonmAo6Ajqy/HGAm/tElwyj/FsOkL4rgh0i1gAwYjuX
+ KRkVCYJ0FVzH/3CsJWJYIrA0CzDsz/FDU90zFhfsW4Kcw1FrscL0YJKTWeNy9Dmoxc9oCfHcnFd
+ HzWVCAdeq4P92UD2936conXQKy1TMg8gGwUawxPkxAjBeDPqqiCT6x3bcFS0i2zMrxUA==
+X-Google-Smtp-Source: AGHT+IGuIkRrAnjG6E/2zRE+ar/qUHm3eneYw8JDZqcsw4DJueiT7pf+BtL7KohCktRxTsjaNEWUXg==
+X-Received: by 2002:a17:90b:4c09:b0:335:2747:a9b3 with SMTP id
+ 98e67ed59e1d1-34f68c281a5mr14987512a91.32.1768241845853; 
+ Mon, 12 Jan 2026 10:17:25 -0800 (PST)
 Received: from localhost.localdomain ([122.183.54.120])
  by smtp.gmail.com with ESMTPSA id
- 98e67ed59e1d1-34f5f7c4141sm18165365a91.6.2026.01.12.10.16.51
+ 98e67ed59e1d1-34f5f7c4141sm18165365a91.6.2026.01.12.10.17.16
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 12 Jan 2026 10:16:58 -0800 (PST)
+ Mon, 12 Jan 2026 10:17:25 -0800 (PST)
 From: I Viswanath <viswanathiyyappan@gmail.com>
 To: edumazet@google.com, horms@kernel.org, sdf@fomichev.me, kuba@kernel.org,
  andrew+netdev@lunn.ch, pabeni@redhat.com, jasowang@redhat.com,
@@ -93,32 +94,35 @@ To: edumazet@google.com, horms@kernel.org, sdf@fomichev.me, kuba@kernel.org,
 Cc: bcm-kernel-feedback-list@broadcom.com, intel-wired-lan@lists.osuosl.org,
  virtualization@lists.linux.dev, netdev@vger.kernel.org,
  I Viswanath <viswanathiyyappan@gmail.com>
-Date: Mon, 12 Jan 2026 23:46:20 +0530
-Message-ID: <20260112181626.20117-1-viswanathiyyappan@gmail.com>
+Date: Mon, 12 Jan 2026 23:46:23 +0530
+Message-ID: <20260112181626.20117-4-viswanathiyyappan@gmail.com>
 X-Mailer: git-send-email 2.47.3
+In-Reply-To: <20260112181626.20117-1-viswanathiyyappan@gmail.com>
+References: <20260112181626.20117-1-viswanathiyyappan@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Approved-At: Mon, 12 Jan 2026 18:18:44 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20230601; t=1768241820; x=1768846620; darn=lists.osuosl.org;
- h=content-transfer-encoding:mime-version:message-id:date:subject:cc
- :to:from:from:to:cc:subject:date:message-id:reply-to;
- bh=yhpaAlKW26OhYlxc15mNDWFg1nSuNxZpLWCT9AQiLQU=;
- b=eG6d2JmhRiEPrO61awKn9z8TA30MtDhiepLo4IXy24Z48XlD65TxqqTJ7BTUsza984
- 7sLff6gQA9sio4evREmLzNsTkmYfgbpZNcM1oJgm3nFaL60c+6yx/XOL4tkG5WEl0nR5
- 4D0rdBqCQf1FGg5XfQrzKGJa1fRFPzNP5wHNUcKmgDHSsEiDdizICBvXX8zyTLyWakiC
- cEZn9EVgbnCA1EnAiZQ8QML5b+OyaFN0hchx/yiSzwfD14uOG0CooCwdgFFM62jemVVu
- X/L3lf+UNsvUWr6ANkaxRwHiHWiLY3gk5lZFZtXDRYEVQ68HQN1p+LyL7U1wP2qg3Cdw
- F/hA==
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ d=gmail.com; s=20230601; t=1768241846; x=1768846646; darn=lists.osuosl.org;
+ h=content-transfer-encoding:mime-version:references:in-reply-to
+ :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+ :message-id:reply-to;
+ bh=YsXS6L+T4eWxoCFRdBnUQMJP/+ral8MRAKD6IFiqy1I=;
+ b=MlRmUZVfKiIpuhxpCPxd8Wac0VOgmB5ytp13cFCreX81mKidX2+TnzINGQcPPPDtoH
+ /HfSuVa/Umq3Q2udQiwgWU2JZTITM8Jskssg6pR9QJOwnKxxyEIfVor0ghJsRZxQ4Cv2
+ TNLr9X7gPSI/0EuKvODjqpj4fQ2Gb44yglDg2l68LJWadb+bILuogk64uLks5FAoZgLl
+ dJLZRX5uLT0L4gi4M47bU0iPJCCO8iiNC2dr67sPU6iK0HaTXJZrHKVMxlTNKhFKnnZ/
+ ElK1NIKRutAVgwfX7TG+beee0dl6mskhpOHOJHZihEZFX8CRYSpMorzvE9rHzhUAHLI1
+ M9mQ==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=gmail.com
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20230601 header.b=eG6d2Jmh
-Subject: [Intel-wired-lan] [PATCH net-next v8 0/6] net: Split
- ndo_set_rx_mode into snapshot and deferred write
+ header.s=20230601 header.b=MlRmUZVf
+Subject: [Intel-wired-lan] [PATCH net-next v8 3/6] e1000: Implement
+ ndo_write_rx_mode callback
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -134,117 +138,172 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-This is an implementation of the idea provided by Jakub here
-
-https://lore.kernel.org/netdev/20250923163727.5e97abdb@kernel.org/
-
-ndo_set_rx_mode is problematic because it cannot sleep. 
-
-To address this, this series proposes dividing the concept of setting
-rx_mode into 2 stages: snapshot and deferred I/O. To achieve this, we
-change the semantics of set_rx_mode and add a new ndo write_rx_mode.
-
-The new set_rx_mode will be responsible for customizing the rx_mode
-snapshot which will be used by write_rx_mode to update the hardware
-
-This refactor has the secondary benefit of stopping set rx_mode
-requests from building up as only the most recent request (before the
-work has gotten a chance to run) will be confirmed/executed.
-
-In brief, the new flow will look something like:
-
-set_rx_mode():
-    ndo_set_rx_mode();
-    prepare_rx_mode();
-
-write_rx_mode():
-    use_snapshot();
-    ndo_write_rx_mode();
-
-write_rx_mode() is called from a work item and doesn't hold the 
-netif_addr_lock spin lock during ndo_write_rx_mode() making it sleepable
-in that section.
-
-This model should work correctly if the following conditions hold:
-
-1. write_rx_mode should use the rx_mode set by the most recent
-    call to prepare_rx_mode() before its execution.
-
-2. If a make_snapshot_ready call happens during execution of write_rx_mode,
-    write_rx_mode() should be rescheduled.
-
-3. All calls to modify rx_mode should pass through the prepare_rx_mode +
-	schedule write_rx_mode() execution flow. netif_schedule_rx_mode_work()
-    has been implemented in core for this purpose.
-
-1 and 2 are implemented in core
-
-Drivers need to ensure 3 using netif_schedule_rx_mode_work()
-
-To use this model, a driver needs to implement the
-ndo_write_rx_mode callback, change the set_rx_mode callback
-appropriately and replace all calls to modify rx mode with
-netif_schedule_rx_mode_work()
+Add callback and update the code to use the rx_mode snapshot and
+deferred write model
 
 Signed-off-by: I Viswanath <viswanathiyyappan@gmail.com>
 ---
+ The suspend callback was calling the set_rx_mode ndo even when the netif was down.
+ Since that wouldn't make sense in the new model, Now, It does that only if netif 
+ is not down. Correct me if this is a mistake
+ 
+ drivers/net/ethernet/intel/e1000/e1000_main.c | 59 ++++++++++++-------
+ 1 file changed, 38 insertions(+), 21 deletions(-)
 
-v1:
-Link: https://lore.kernel.org/netdev/20251020134857.5820-1-viswanathiyyappan@gmail.com/
-
-v2:
-- Exported set_and_schedule_rx_config as a symbol for use in modules
-- Fixed incorrect cleanup for the case of rx_work alloc failing in alloc_netdev_mqs
-- Removed the locked version (cp_set_rx_mode) and renamed __cp_set_rx_mode to cp_set_rx_mode
-Link: https://lore.kernel.org/netdev/20251026175445.1519537-1-viswanathiyyappan@gmail.com/
-
-v3:
-- Added RFT tag
-- Corrected mangled patch
-Link: https://lore.kernel.org/netdev/20251028174222.1739954-1-viswanathiyyappan@gmail.com/
-
-v4:
-- Completely reworked the snapshot mechanism as per v3 comments
-- Implemented the callback for virtio-net instead of 8139cp driver
-- Removed RFC tag
-Link: https://lore.kernel.org/netdev/20251118164333.24842-1-viswanathiyyappan@gmail.com/
-
-v5:
-- Fix broken code and titles
-- Remove RFT tag
-Link: https://lore.kernel.org/netdev/20251120141354.355059-1-viswanathiyyappan@gmail.com/
-
-v6:
-- Added struct netif_deferred_work_cleanup and members needs_deferred_cleanup and deferred_work_cleanup in net_device
-- Moved out ctrl bits from netif_rx_mode_config to netif_rx_mode_work_ctx
-Link: https://lore.kernel.org/netdev/20251227174225.699975-1-viswanathiyyappan@gmail.com/
-
-v7:
-- Improved function, enum and struct names
-Link: https://lore.kernel.org/netdev/20260102180530.1559514-1-viswanathiyyappan@gmail.com/
-
-v8:
-- Implemented the callback for drivers e1000, 8139cp, vmxnet3 and pcnet32
-- Moved the rx_mode config set calls (for prom and allmulti) in prepare_rx_mode to the ndo_set_rx_mode callback for consistency
-- Improved commit messages 
-
-I Viswanath (6):
-  net: refactor set_rx_mode into snapshot and deferred I/O
-  virtio-net: Implement ndo_write_rx_mode callback
-  e1000: Implement ndo_write_rx_mode callback
-  8139cp: Implement ndo_write_rx_mode callback
-  vmxnet3: Implement ndo_write_rx_mode callback
-  pcnet32: Implement ndo_write_rx_mode callback
-
- drivers/net/ethernet/amd/pcnet32.c            |  57 +++-
- drivers/net/ethernet/intel/e1000/e1000_main.c |  59 ++--
- drivers/net/ethernet/realtek/8139cp.c         |  33 ++-
- drivers/net/virtio_net.c                      |  61 ++--
- drivers/net/vmxnet3/vmxnet3_drv.c             |  38 ++-
- include/linux/netdevice.h                     | 112 +++++++-
- net/core/dev.c                                | 265 +++++++++++++++++-
- 7 files changed, 522 insertions(+), 103 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
+index 7f078ec9c14c..3b0260d502d4 100644
+--- a/drivers/net/ethernet/intel/e1000/e1000_main.c
++++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
+@@ -99,6 +99,7 @@ static void e1000_clean_tx_ring(struct e1000_adapter *adapter,
+ static void e1000_clean_rx_ring(struct e1000_adapter *adapter,
+ 				struct e1000_rx_ring *rx_ring);
+ static void e1000_set_rx_mode(struct net_device *netdev);
++static void e1000_write_rx_mode(struct net_device *netdev);
+ static void e1000_update_phy_info_task(struct work_struct *work);
+ static void e1000_watchdog(struct work_struct *work);
+ static void e1000_82547_tx_fifo_stall_task(struct work_struct *work);
+@@ -359,7 +360,7 @@ static void e1000_configure(struct e1000_adapter *adapter)
+ 	struct net_device *netdev = adapter->netdev;
+ 	int i;
+ 
+-	e1000_set_rx_mode(netdev);
++	netif_schedule_rx_mode_work(netdev);
+ 
+ 	e1000_restore_vlan(adapter);
+ 	e1000_init_manageability(adapter);
+@@ -823,6 +824,7 @@ static const struct net_device_ops e1000_netdev_ops = {
+ 	.ndo_stop		= e1000_close,
+ 	.ndo_start_xmit		= e1000_xmit_frame,
+ 	.ndo_set_rx_mode	= e1000_set_rx_mode,
++	.ndo_write_rx_mode	= e1000_write_rx_mode,
+ 	.ndo_set_mac_address	= e1000_set_mac,
+ 	.ndo_tx_timeout		= e1000_tx_timeout,
+ 	.ndo_change_mtu		= e1000_change_mtu,
+@@ -1827,7 +1829,7 @@ static void e1000_setup_rctl(struct e1000_adapter *adapter)
+ 	/* This is useful for sniffing bad packets. */
+ 	if (adapter->netdev->features & NETIF_F_RXALL) {
+ 		/* UPE and MPE will be handled by normal PROMISC logic
+-		 * in e1000e_set_rx_mode
++		 * in e1000_write_rx_mode
+ 		 */
+ 		rctl |= (E1000_RCTL_SBP | /* Receive bad packets */
+ 			 E1000_RCTL_BAM | /* RX All Bcast Pkts */
+@@ -2222,26 +2224,39 @@ static int e1000_set_mac(struct net_device *netdev, void *p)
+ 	return 0;
+ }
+ 
++static void e1000_set_rx_mode(struct net_device *netdev)
++{
++	struct e1000_adapter *adapter = netdev_priv(netdev);
++
++	bool allmulti = !!(netdev->flags & IFF_ALLMULTI);
++	bool promisc = !!(netdev->flags & IFF_PROMISC);
++	bool vlan = e1000_vlan_used(adapter);
++
++	netif_rx_mode_set_flag(netdev, NETIF_RX_MODE_UC_SKIP, promisc);
++
++	netif_rx_mode_set_cfg(netdev, NETIF_RX_MODE_CFG_ALLMULTI, allmulti);
++	netif_rx_mode_set_cfg(netdev, NETIF_RX_MODE_CFG_PROMISC, promisc);
++	netif_rx_mode_set_cfg(netdev, NETIF_RX_MODE_CFG_VLAN, vlan);
++}
++
+ /**
+- * e1000_set_rx_mode - Secondary Unicast, Multicast and Promiscuous mode set
++ * e1000_write_rx_mode - Secondary Unicast, Multicast and Promiscuous mode set
+  * @netdev: network interface device structure
+  *
+- * The set_rx_mode entry point is called whenever the unicast or multicast
+- * address lists or the network interface flags are updated. This routine is
+- * responsible for configuring the hardware for proper unicast, multicast,
+- * promiscuous mode, and all-multi behavior.
++ * This routine is responsible for configuring the hardware for proper unicast,
++ * multicast, promiscuous mode, and all-multi behavior.
+  **/
+-static void e1000_set_rx_mode(struct net_device *netdev)
++static void e1000_write_rx_mode(struct net_device *netdev)
+ {
+ 	struct e1000_adapter *adapter = netdev_priv(netdev);
+ 	struct e1000_hw *hw = &adapter->hw;
+-	struct netdev_hw_addr *ha;
+ 	bool use_uc = false;
+ 	u32 rctl;
+ 	u32 hash_value;
+-	int i, rar_entries = E1000_RAR_ENTRIES;
++	int i, rar_entries = E1000_RAR_ENTRIES, ni;
+ 	int mta_reg_count = E1000_NUM_MTA_REGISTERS;
+ 	u32 *mcarray = kcalloc(mta_reg_count, sizeof(u32), GFP_ATOMIC);
++	char *ha_addr;
+ 
+ 	if (!mcarray)
+ 		return;
+@@ -2250,22 +2265,22 @@ static void e1000_set_rx_mode(struct net_device *netdev)
+ 
+ 	rctl = er32(RCTL);
+ 
+-	if (netdev->flags & IFF_PROMISC) {
++	if (netif_rx_mode_get_cfg(netdev, NETIF_RX_MODE_CFG_PROMISC)) {
+ 		rctl |= (E1000_RCTL_UPE | E1000_RCTL_MPE);
+ 		rctl &= ~E1000_RCTL_VFE;
+ 	} else {
+-		if (netdev->flags & IFF_ALLMULTI)
++		if (netif_rx_mode_get_cfg(netdev, NETIF_RX_MODE_CFG_ALLMULTI))
+ 			rctl |= E1000_RCTL_MPE;
+ 		else
+ 			rctl &= ~E1000_RCTL_MPE;
+ 		/* Enable VLAN filter if there is a VLAN */
+-		if (e1000_vlan_used(adapter))
++		if (netif_rx_mode_get_cfg(netdev, NETIF_RX_MODE_CFG_VLAN))
+ 			rctl |= E1000_RCTL_VFE;
+ 	}
+ 
+-	if (netdev_uc_count(netdev) > rar_entries - 1) {
++	if (netif_rx_mode_uc_count(netdev) > rar_entries - 1) {
+ 		rctl |= E1000_RCTL_UPE;
+-	} else if (!(netdev->flags & IFF_PROMISC)) {
++	} else if (!netif_rx_mode_get_cfg(netdev, NETIF_RX_MODE_CFG_PROMISC)) {
+ 		rctl &= ~E1000_RCTL_UPE;
+ 		use_uc = true;
+ 	}
+@@ -2286,23 +2301,23 @@ static void e1000_set_rx_mode(struct net_device *netdev)
+ 	 */
+ 	i = 1;
+ 	if (use_uc)
+-		netdev_for_each_uc_addr(ha, netdev) {
++		netif_rx_mode_for_each_uc_addr(ha_addr, netdev, ni) {
+ 			if (i == rar_entries)
+ 				break;
+-			e1000_rar_set(hw, ha->addr, i++);
++			e1000_rar_set(hw, ha_addr, i++);
+ 		}
+ 
+-	netdev_for_each_mc_addr(ha, netdev) {
++	netif_rx_mode_for_each_mc_addr(ha_addr, netdev, ni) {
+ 		if (i == rar_entries) {
+ 			/* load any remaining addresses into the hash table */
+ 			u32 hash_reg, hash_bit, mta;
+-			hash_value = e1000_hash_mc_addr(hw, ha->addr);
++			hash_value = e1000_hash_mc_addr(hw, ha_addr);
+ 			hash_reg = (hash_value >> 5) & 0x7F;
+ 			hash_bit = hash_value & 0x1F;
+ 			mta = (1 << hash_bit);
+ 			mcarray[hash_reg] |= mta;
+ 		} else {
+-			e1000_rar_set(hw, ha->addr, i++);
++			e1000_rar_set(hw, ha_addr, i++);
+ 		}
+ 	}
+ 
+@@ -5094,7 +5109,9 @@ static int __e1000_shutdown(struct pci_dev *pdev, bool *enable_wake)
+ 
+ 	if (wufc) {
+ 		e1000_setup_rctl(adapter);
+-		e1000_set_rx_mode(netdev);
++
++		if (netif_running(netdev))
++			netif_schedule_rx_mode_work(netdev);
+ 
+ 		rctl = er32(RCTL);
+ 
 -- 
 2.47.3
 
