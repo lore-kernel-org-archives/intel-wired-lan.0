@@ -4,71 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0B45AC9EC93
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 12 Jan 2026 14:18:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4EDEAC9EC95
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 12 Jan 2026 14:18:50 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id C4F0984ED8;
-	Mon, 12 Jan 2026 14:18:48 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 1BB0E84EDA;
+	Mon, 12 Jan 2026 14:18:50 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id paig8YLvWmPJ; Mon, 12 Jan 2026 14:18:47 +0000 (UTC)
+ id ieIGCUHOgngC; Mon, 12 Jan 2026 14:18:48 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E4CB384EDA
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B25CC84EE1
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1768227526;
-	bh=E/U9t2Jhetq+zBPAOZ7hn2n/egA2h246k6dFrD3/vQQ=;
+	s=default; t=1768227528;
+	bh=zhzpXOmLQYdINzF+dDnjz0Yqg0kbTeORYHIL8n6ypmE=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=sQ5wAj0XRMhVFnwYLHud84XX8JHT2gtP6YjxPHSO/bS01HcxUuKMEy7M3ijJlZL9d
-	 WtTSModUuG8dh1TXWuPELqtTSbzJLVAHXjr+0zXMp8zhEf//6M/dp6kCDEk2/cr8om
-	 jMt7vBz/M/IMDf6yB9line3SltR22s5ljBioujFJa/qIiBbcKaNzNUMIr+DEn4PHZ1
-	 MnkOxvf0wnitmRs/o+27S2u/onZ+K0B76KM7powaGJwqD8iE8MNZx4xbw9DCm7ygKQ
-	 EJnf9by6pdivtEEhfvkNwK7T9qPXI9Q9OlxXuuNyQa0p5y1otoPT/NRrXo65wYq+mq
-	 SJ2kXUdq9pVjw==
+	b=MgD3UqTb40Ok6hZ45wLLa2Y1RwWl+h456xE0tKU3iMM4PQHsJDVkOgLPrqoJ0LCIA
+	 2D4Fodp1VWQBr1qFVK5ae2WdXLNven/4df0NjgM7uoX33uW0ArpQpAircXddnUWRiH
+	 VxC40FLbD5oy5Qt+YtXVDcTMBOercoCzCgJ0AQ7FfIf7N3+mFkBIctzZTz56438NQO
+	 ypgjhujYotUyP9FDoZD+CwmjmxmW8UBnGhqG0ZASjObZiUMCr/nv/i3M71xGiK0sAs
+	 FkEBP0Wn3yzHATa6c9K6cpH7h29smT/jhyCQNzbLNfmXMFI7nwg/oaxR1QvJlKxvto
+	 WSW1fD2vYNMBw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id E4CB384EDA;
-	Mon, 12 Jan 2026 14:18:46 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id E05E818D
- for <intel-wired-lan@lists.osuosl.org>; Mon, 12 Jan 2026 14:18:45 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id B25CC84EE1;
+	Mon, 12 Jan 2026 14:18:48 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 7D5FF12E
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 12 Jan 2026 14:18:47 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id C738B6F4F6
- for <intel-wired-lan@lists.osuosl.org>; Mon, 12 Jan 2026 14:18:45 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 6F7CD6F4F7
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 12 Jan 2026 14:18:47 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 0lhnq_cc0RlC for <intel-wired-lan@lists.osuosl.org>;
- Mon, 12 Jan 2026 14:18:45 +0000 (UTC)
+ id hKW4EnQG1-bx for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 12 Jan 2026 14:18:46 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.12;
  helo=mgamail.intel.com; envelope-from=jedrzej.jagielski@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org D943E6F4E5
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org D943E6F4E5
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 8213A6F4F6
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8213A6F4F6
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.12])
- by smtp3.osuosl.org (Postfix) with ESMTPS id D943E6F4E5
- for <intel-wired-lan@lists.osuosl.org>; Mon, 12 Jan 2026 14:18:44 +0000 (UTC)
-X-CSE-ConnectionGUID: XkufiST3SliX/XqCqC/hXA==
-X-CSE-MsgGUID: DLWFGCPCRcGOpVLeqvszUg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11669"; a="73352294"
-X-IronPort-AV: E=Sophos;i="6.21,221,1763452800"; d="scan'208";a="73352294"
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 8213A6F4F6
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 12 Jan 2026 14:18:46 +0000 (UTC)
+X-CSE-ConnectionGUID: i6TDYQaLRHqa8OONM8cR3Q==
+X-CSE-MsgGUID: 47h3WnZ2RZCTAzJVA1v1qw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11669"; a="73352296"
+X-IronPort-AV: E=Sophos;i="6.21,221,1763452800"; d="scan'208";a="73352296"
 Received: from fmviesa002.fm.intel.com ([10.60.135.142])
  by fmvoesa106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 12 Jan 2026 06:18:45 -0800
-X-CSE-ConnectionGUID: 4sI+qMeaTKu6tQwKVRxUDQ==
-X-CSE-MsgGUID: mkXci2x4QDim20my20ZE1A==
+ 12 Jan 2026 06:18:46 -0800
+X-CSE-ConnectionGUID: STld3o2fTBmfTl22aDzyBg==
+X-CSE-MsgGUID: 3suDrD0wQ3OUzIoB5x8e/Q==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.21,221,1763452800"; d="scan'208";a="227355644"
+X-IronPort-AV: E=Sophos;i="6.21,221,1763452800"; d="scan'208";a="227355650"
 Received: from os-delivery.igk.intel.com ([10.102.18.218])
- by fmviesa002.fm.intel.com with ESMTP; 12 Jan 2026 06:18:43 -0800
+ by fmviesa002.fm.intel.com with ESMTP; 12 Jan 2026 06:18:45 -0800
 From: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
 To: intel-wired-lan@lists.osuosl.org
 Cc: anthony.l.nguyen@intel.com, netdev@vger.kernel.org,
  Jedrzej Jagielski <jedrzej.jagielski@intel.com>,
  Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Date: Mon, 12 Jan 2026 15:01:06 +0100
-Message-Id: <20260112140108.1173835-6-jedrzej.jagielski@intel.com>
+Date: Mon, 12 Jan 2026 15:01:07 +0100
+Message-Id: <20260112140108.1173835-7-jedrzej.jagielski@intel.com>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <20260112140108.1173835-1-jedrzej.jagielski@intel.com>
 References: <20260112140108.1173835-1-jedrzej.jagielski@intel.com>
@@ -76,25 +76,25 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1768227525; x=1799763525;
+ t=1768227526; x=1799763526;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=AXdINbRBuIy9g/76USC93YCAVLgclKx3SgzFPZ3UToQ=;
- b=I87l8soC6ktDrkr6TNVMlfcQ1TPdWL0cxqMHY6KRMxLqAFyqkpmC0txG
- tnJBsGThTRt/EfV+qm9OWaFkVQPGFqLfz3x8z5okHRuXyUK/xg4+7p3Kz
- xRoWsdYDHtFAsAucnV+BxG7YBm/pOkylMqBF/bisUHK1d9hxzfx4EBiad
- K0Y/j6S/2dQpSqoe8oiBaDfU5FJcrXQ9IdjWZio0Uiu3cEeBnWUnNZ5zF
- GxnqH9R3euroG+zTymQsum9JQdcdLpITqKajAHBykC2j8ADPrEo5HJURb
- wNSl/hxkmM6c0JR2OZDtq+oTkNczE9v4nRXXOX2BO7hE18mT8ohgGFsVn
- A==;
+ bh=dVvvYrj79xK+qLiOmCoLFSe9MUazobjKGxWIwIwTUms=;
+ b=jkWp1lixI0p3ioEomfOthjmzbJ8mzjNu9ga1SbuW16Z2QCNta7Eluu4S
+ xrMyCA1XInsqM/iZGoM/Us0DJsnfSgE9nWYPVijpALns57xPP41yof6d3
+ mgziB0lfuC3TmFvyw/srNujXs042+3agcGqzSIWNN308fZdQ4OkVBckm0
+ t42HhtcJOw0SIRYrgSjVHjjhLURbSVHPt/9PWn6lW3B/T7P7GZLwU87+n
+ p3LG1BJMN4AGlUamkGIrYVJ+IYh9ur7LxS3J6xDIDPfC/n92MJSzOjjmG
+ DS2w7ataWxHV6CrOjBgNrsmrOwmyzQBpPapBgQbHViAOpGG4aDqZRzfeK
+ w==;
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=I87l8soC
-Subject: [Intel-wired-lan] [PATCH iwl-next v1 5/7] ixgbe: move EEE config
- validation out of ixgbe_set_eee()
+ header.a=rsa-sha256 header.s=Intel header.b=jkWp1lix
+Subject: [Intel-wired-lan] [PATCH iwl-next v1 6/7] ixgbe: replace EEE enable
+ flag with state enum
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -110,133 +110,95 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-To make this part of the code mode reusable move all
-EEE input checks out of ixgbe_set_eee().
+Change approach from using EEE enabled flag to using newly introduced
+enum dedicated to reflect state of the EEE feature.
+
+New enum is required to extend on/off state with new forced off state,
+which is set when EEE must be temporarily disabled due to unsupported
+conditions, but should be enabled back when possible.
+
+Such scenario happens eg when link comes up with newly negotiated
+speed which is not one of the EEE supported link speeds.
 
 Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
 ---
- .../net/ethernet/intel/ixgbe/ixgbe_ethtool.c  | 95 +++++++++++--------
- 1 file changed, 54 insertions(+), 41 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h         | 11 ++++++++++-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |  4 ++--
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    |  4 ++--
+ 3 files changed, 14 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-index 5764530b9667..7a7a58fd065d 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-@@ -3551,6 +3551,44 @@ static const struct {
- 	{ FW_PHY_ACT_UD_2_10G_KR_EEE, ETHTOOL_LINK_MODE_10000baseKR_Full_BIT},
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+index 14d275270123..9f52da4ec711 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+@@ -324,6 +324,14 @@ enum ixgbe_ring_state_t {
+ 	__IXGBE_TX_DISABLED,
  };
  
-+static int ixgbe_validate_keee(struct net_device *netdev,
-+			       struct ethtool_keee *keee_requested)
-+{
-+	struct ixgbe_adapter *adapter = ixgbe_from_netdev(netdev);
-+	struct ethtool_keee keee_stored = {};
-+	int err;
++enum ixgbe_eee_state_t {
++	IXGBE_EEE_DISABLED,	/* EEE explicitly disabled by user */
++	IXGBE_EEE_ENABLED,	/* EEE enabled; for E610 it's default state */
++	IXGBE_EEE_FORCED_DOWN,	/* EEE disabled by link conditions, try to
++				 * restore when possible
++				 */
++};
 +
-+	if (!(adapter->flags2 & IXGBE_FLAG2_EEE_CAPABLE))
-+		return -EOPNOTSUPP;
-+
-+	err = netdev->ethtool_ops->get_eee(netdev, &keee_stored);
-+	if (err)
-+		return err;
-+
-+	if (keee_stored.tx_lpi_enabled != keee_requested->tx_lpi_enabled) {
-+		e_err(drv, "Setting EEE tx-lpi is not supported\n");
-+		return -EINVAL;
-+	}
-+
-+	if (keee_stored.tx_lpi_timer != keee_requested->tx_lpi_timer) {
-+		e_err(drv,
-+		      "Setting EEE Tx LPI timer is not supported\n");
-+		return -EINVAL;
-+	}
-+
-+	if (!linkmode_equal(keee_stored.advertised,
-+			    keee_requested->advertised)) {
-+		e_err(drv,
-+		      "Setting EEE advertised speeds is not supported\n");
-+		return -EINVAL;
-+	}
-+
-+	if (keee_stored.eee_enabled == keee_requested->eee_enabled)
-+		return -EALREADY;
-+
-+	return 0;
-+}
-+
- static int
- ixgbe_get_eee_fw(struct ixgbe_adapter *adapter, struct ethtool_keee *edata)
- {
-@@ -3609,53 +3647,28 @@ static int ixgbe_set_eee(struct net_device *netdev, struct ethtool_keee *edata)
- {
- 	struct ixgbe_adapter *adapter = ixgbe_from_netdev(netdev);
- 	struct ixgbe_hw *hw = &adapter->hw;
--	struct ethtool_keee eee_data;
- 	int ret_val;
+ #define ring_uses_build_skb(ring) \
+ 	test_bit(__IXGBE_RX_BUILD_SKB_ENABLED, &(ring)->state)
  
--	if (!(adapter->flags2 & IXGBE_FLAG2_EEE_CAPABLE))
--		return -EOPNOTSUPP;
--
--	memset(&eee_data, 0, sizeof(struct ethtool_keee));
--
--	ret_val = ixgbe_get_eee(netdev, &eee_data);
--	if (ret_val)
-+	ret_val = ixgbe_validate_keee(netdev, edata);
-+	if (ret_val == -EALREADY)
-+		return 0;
-+	else if (ret_val)
+@@ -671,7 +679,6 @@ struct ixgbe_adapter {
+ #define IXGBE_FLAG2_FW_ASYNC_EVENT		BIT(12)
+ #define IXGBE_FLAG2_VLAN_PROMISC		BIT(13)
+ #define IXGBE_FLAG2_EEE_CAPABLE			BIT(14)
+-#define IXGBE_FLAG2_EEE_ENABLED			BIT(15)
+ #define IXGBE_FLAG2_RX_LEGACY			BIT(16)
+ #define IXGBE_FLAG2_IPSEC_ENABLED		BIT(17)
+ #define IXGBE_FLAG2_VF_IPSEC_ENABLED		BIT(18)
+@@ -682,6 +689,8 @@ struct ixgbe_adapter {
+ #define IXGBE_FLAG2_API_MISMATCH		BIT(23)
+ #define IXGBE_FLAG2_FW_ROLLBACK			BIT(24)
+ 
++	enum ixgbe_eee_state_t eee_state;
++
+ 	/* Tx fast path data */
+ 	int num_tx_queues;
+ 	u16 tx_itr_setting;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+index 7a7a58fd065d..24781bbbcf46 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+@@ -3656,11 +3656,11 @@ static int ixgbe_set_eee(struct net_device *netdev, struct ethtool_keee *edata)
  		return ret_val;
  
--	if (eee_data.eee_enabled && !edata->eee_enabled) {
--		if (eee_data.tx_lpi_enabled != edata->tx_lpi_enabled) {
--			e_err(drv, "Setting EEE tx-lpi is not supported\n");
--			return -EINVAL;
--		}
--
--		if (eee_data.tx_lpi_timer != edata->tx_lpi_timer) {
--			e_err(drv,
--			      "Setting EEE Tx LPI timer is not supported\n");
--			return -EINVAL;
--		}
--
--		if (!linkmode_equal(eee_data.advertised, edata->advertised)) {
--			e_err(drv,
--			      "Setting EEE advertised speeds is not supported\n");
--			return -EINVAL;
--		}
-+	if (edata->eee_enabled) {
-+		adapter->flags2 |= IXGBE_FLAG2_EEE_ENABLED;
-+		hw->phy.eee_speeds_advertised =
-+					   hw->phy.eee_speeds_supported;
-+	} else {
-+		adapter->flags2 &= ~IXGBE_FLAG2_EEE_ENABLED;
-+		hw->phy.eee_speeds_advertised = 0;
+ 	if (edata->eee_enabled) {
+-		adapter->flags2 |= IXGBE_FLAG2_EEE_ENABLED;
++		adapter->eee_state = IXGBE_EEE_ENABLED;
+ 		hw->phy.eee_speeds_advertised =
+ 					   hw->phy.eee_speeds_supported;
+ 	} else {
+-		adapter->flags2 &= ~IXGBE_FLAG2_EEE_ENABLED;
++		adapter->eee_state = IXGBE_EEE_DISABLED;
+ 		hw->phy.eee_speeds_advertised = 0;
  	}
  
--	if (eee_data.eee_enabled != edata->eee_enabled) {
--		if (edata->eee_enabled) {
--			adapter->flags2 |= IXGBE_FLAG2_EEE_ENABLED;
--			hw->phy.eee_speeds_advertised =
--						   hw->phy.eee_speeds_supported;
--		} else {
--			adapter->flags2 &= ~IXGBE_FLAG2_EEE_ENABLED;
--			hw->phy.eee_speeds_advertised = 0;
--		}
--
--		/* reset link */
--		if (netif_running(netdev))
--			ixgbe_reinit_locked(adapter);
--		else
--			ixgbe_reset(adapter);
--	}
-+	/* reset link */
-+	if (netif_running(netdev))
-+		ixgbe_reinit_locked(adapter);
-+	else
-+		ixgbe_reset(adapter);
- 
- 	return 0;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 692b095b5c16..b87d553413cd 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -6763,11 +6763,11 @@ static void ixgbe_set_eee_capable(struct ixgbe_adapter *adapter)
+ 		adapter->flags2 |= IXGBE_FLAG2_EEE_CAPABLE;
+ 		if (!hw->phy.eee_speeds_advertised)
+ 			break;
+-		adapter->flags2 |= IXGBE_FLAG2_EEE_ENABLED;
++		adapter->eee_state = IXGBE_EEE_ENABLED;
+ 		break;
+ 	default:
+ 		adapter->flags2 &= ~IXGBE_FLAG2_EEE_CAPABLE;
+-		adapter->flags2 &= ~IXGBE_FLAG2_EEE_ENABLED;
++		adapter->eee_state = IXGBE_EEE_DISABLED;
+ 		break;
+ 	}
  }
 -- 
 2.31.1
