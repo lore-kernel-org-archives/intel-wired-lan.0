@@ -1,75 +1,74 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 20156D2ECE9
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E832AD2ED0F
 	for <intel-wired-lan@archiver.kernel.org>; Tue, 20 Jan 2026 14:02:33 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id C535285BF8;
-	Tue, 20 Jan 2026 14:02:32 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ih9ax-WPdCfQ; Tue, 20 Jan 2026 14:02:32 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 3980A85BFA
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1768917752;
-	bh=0Z6VrNnIqfgRzNwqf78eMp+vjzJGicROND2x04njY0w=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=imd0cYMVvyaF2kw3TGub3ZopAFEJTiYA+9CbvPQRvAJkClfy0aTpQYPpWdmCdg3mH
-	 h+LLWXJKhBGBd1XWRPHiSZ6kz9S/HtEgT1/az49DDZQvk8Wg0MMUuM1f/VQm0h38lo
-	 nrLJrP7nbKxEtreL4DNEC+ltE8vUXpLq9fKhH95I9ToRgoMnNS5sK+mgNRJKqW8teR
-	 U+z2bo2tDvOgQirlp1hTYXyQwo9S0e+6Fz2zW9/Yq6ocNtIYSKBvLSxUu9J651k3jo
-	 6qBCJeKFuWJOgU/rO0MCbYOT6q9JVsRTmA/elCm0qGK2xoiDtCLxEpSX42hXMQ43UP
-	 I8OQFmaC+rPgQ==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 3980A85BFA;
-	Tue, 20 Jan 2026 14:02:32 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id 20394160
- for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Jan 2026 14:02:31 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 115716FE3B
- for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Jan 2026 14:02:31 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id B10646FE39;
+	Tue, 20 Jan 2026 14:02:33 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id VPD7VVt5LM7q for <intel-wired-lan@lists.osuosl.org>;
- Tue, 20 Jan 2026 14:02:30 +0000 (UTC)
+ id ZH9K1tCLn7UJ; Tue, 20 Jan 2026 14:02:31 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8DE076FE3B
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1768917751;
+	bh=AP7qfC3XZTiN5WUzR3NjiwX+higk8bj2NOePTObTcz0=;
+	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=0v2sGpvjDwBuoizuiMX+pXBvZFxJZy72apWj4hLBDHRe4K4JYwSt4KDLnlzTW/vvd
+	 49DHCCZ4AXbYjywDX/HLnZPwky1tYU9zeV3QfZdQ+TQ1fle/QddOkza8OSuax2Z0Af
+	 0Ktneh3kO2xx6Oin42zs0aRzcOxlJj2Qv7Cc8ovvA0/AYuqxoL7VzJRCXzszgk3ae3
+	 KvIo/TjmufH2ueNAxOPuSHmrpYe0qn9LXix0vXmxCnr5B1IVVdbgw2mMBCb/cjke6A
+	 YZjuDv/3F5eT0ovVw7Qn6HhZWgbQRlA2BoAmHnJ0vYXKbziIWik2F5sDzfpU+AfGFS
+	 Zkm++kGfFzVHg==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp3.osuosl.org (Postfix) with ESMTP id 8DE076FE3B;
+	Tue, 20 Jan 2026 14:02:31 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id D5FA0160
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Jan 2026 14:02:29 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp4.osuosl.org (Postfix) with ESMTP id C3B864F103
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Jan 2026 14:02:28 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id Eclx38RvDi5D for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 20 Jan 2026 14:02:28 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.13;
  helo=mgamail.intel.com; envelope-from=jedrzej.jagielski@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org E23306FE33
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E23306FE33
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 0593E4F110
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0593E4F110
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.13])
- by smtp3.osuosl.org (Postfix) with ESMTPS id E23306FE33
- for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Jan 2026 14:02:29 +0000 (UTC)
-X-CSE-ConnectionGUID: ++XdgoXURxWwyc0j9qm4ew==
-X-CSE-MsgGUID: VkBxwiK9T1KWSQzKae6xjw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11676"; a="72711758"
-X-IronPort-AV: E=Sophos;i="6.21,240,1763452800"; d="scan'208";a="72711758"
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 0593E4F110
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Jan 2026 14:02:27 +0000 (UTC)
+X-CSE-ConnectionGUID: HobmG0O2QvOhkV33T/f+OA==
+X-CSE-MsgGUID: q2sI/etLQPud9TY3jlZ9/w==
+X-IronPort-AV: E=McAfee;i="6800,10657,11676"; a="72711752"
+X-IronPort-AV: E=Sophos;i="6.21,240,1763452800"; d="scan'208";a="72711752"
 Received: from fmviesa004.fm.intel.com ([10.60.135.144])
  by fmvoesa107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 20 Jan 2026 06:02:29 -0800
-X-CSE-ConnectionGUID: 0hmNlgYgSAyhvDQW1kbBtA==
-X-CSE-MsgGUID: Oda85k0BS7S4WTnPxHeIkQ==
+ 20 Jan 2026 06:02:27 -0800
+X-CSE-ConnectionGUID: AN43iOWwRte1kfUYFsOXng==
+X-CSE-MsgGUID: uEb2u9GbQEOvAvbU7iyuug==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.21,240,1763452800"; d="scan'208";a="210978904"
+X-IronPort-AV: E=Sophos;i="6.21,240,1763452800"; d="scan'208";a="210978890"
 Received: from os-delivery.igk.intel.com ([10.102.18.218])
- by fmviesa004.fm.intel.com with ESMTP; 20 Jan 2026 06:02:27 -0800
+ by fmviesa004.fm.intel.com with ESMTP; 20 Jan 2026 06:02:26 -0800
 From: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
 To: intel-wired-lan@lists.osuosl.org
 Cc: anthony.l.nguyen@intel.com, netdev@vger.kernel.org,
  Jedrzej Jagielski <jedrzej.jagielski@intel.com>,
- Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Date: Tue, 20 Jan 2026 14:44:30 +0100
-Message-Id: <20260120134434.1931602-3-jedrzej.jagielski@intel.com>
+ Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Date: Tue, 20 Jan 2026 14:44:29 +0100
+Message-Id: <20260120134434.1931602-2-jedrzej.jagielski@intel.com>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <20260120134434.1931602-1-jedrzej.jagielski@intel.com>
 References: <20260120134434.1931602-1-jedrzej.jagielski@intel.com>
@@ -77,26 +76,25 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1768917750; x=1800453750;
+ t=1768917748; x=1800453748;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=u6BDPVmJnQcjyrbWwPYe11Nbl9F6UGAuH3XDGMTgEw8=;
- b=TJ4ZMwJG2Z4k7Zo3SX17HYYepOYbYiSDYtpFE4ByoKB1pmUBrchTPXCj
- SxjZ0Ey3jVjXrZhdbIoGmes3MzSFQwWAqXvNnmaWcCauKi3HzxaD3+tB9
- Ke/mbgcv2oZbGh5IKZ0rC+YqqY21dQ9erJtx3Ai7/uyhuitWlYy5zLVY6
- UPJBmbfQ7VDiZfrQCiv5x9Mw91CPlgUbC86XAHDNfevnAgtvs3c8Rs8W5
- 83xHe77SwZLjPZ+q6pY9rK2ZXsq11GGUPYkTMG+VOKYvo+cVLn6SX7haq
- Ut4R4i1TFQYQi5EjOb/WuX4OyinYaDPISdOmnaUT3l094pafPovQkg97/
+ bh=RQtxxTx0BaYQbBXGPsoMwvYiTSzOJ7lvWIteby4+xQM=;
+ b=lkmkwOdYpmy+FjIwTlDhexZ6SKuf4/vII+0UPX6zSp0NBt1rdkgCoZse
+ e5A/u8QHvRJd7cAwVKuZScX685k1uZbJgY3z7bzpOeUgt3HdRSBuJP4Ek
+ 3OFShbdOQd9cCUxzBwKTwUdnLzshuQWJtqzKQQ1xsaqr+uU8NpFa/gtow
+ q/EHDyQ+JfCQ9kPT8oRgRFd7mMtoYEhNm+Auv3d93RorW0bXudbHk7/ix
+ ROa0nKp3fclmLa6KFAGbMzzC0g8CXsTg01ae+UfSFg0UOBtIqDjoXfl2h
+ csQk2yg4+Ohfjfe7nDxrua03AhA4J4qIrqdy0H10JVuUY9eNNqv2UHkE7
  Q==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=TJ4ZMwJG
-Subject: [Intel-wired-lan] [PATCH iwl-next v2 2/6] ixgbe: E610: use new
- version of 0x601 ACI command buffer
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=lkmkwOdY
+Subject: [Intel-wired-lan] [PATCH iwl-next v2 1/6] ixgbe: E610: add
+ discovering EEE capability
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -112,99 +110,74 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Since FW version 1.40, buffer size of the 0x601 cmd has been increased
-by 2B - from 24 to 26B. Buffer has been extended with new field
-which can be used to configure EEE entry delay.
+Add detecting and parsing EEE device capability.
 
-Pre-1.40 FW versions still expect 24B buffer and throws error when
-receipts 26B buffer. To keep compatibility, check whether EEE
-device capability flag is set and basing on it use appropriate
-size of the command buffer.
+Recently EEE functionality support has been introduced to E610 FW.
+Currently ixgbe driver has no possibility to detect whether NVM
+loaded on given adapter supports EEE.
 
-Additionally place Set PHY Config capabilities defines out of
-structs definitions.
+There's dedicated device capability element reflecting FW support
+for given EEE link speed.
 
 Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c   | 17 ++++++++++++++++-
- .../net/ethernet/intel/ixgbe/ixgbe_type_e610.h  | 15 +++++++++------
- 2 files changed, 25 insertions(+), 7 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c      | 3 +++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type_e610.h | 7 +++++++
+ include/linux/intel/libie/adminq.h                 | 1 +
+ 3 files changed, 11 insertions(+)
 
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c
-index 9ae1e3620ee1..431c932f036b 100644
+index c2f8189a0738..9ae1e3620ee1 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c
-@@ -1096,11 +1096,16 @@ int ixgbe_aci_set_phy_cfg(struct ixgbe_hw *hw,
- {
- 	struct ixgbe_aci_cmd_set_phy_cfg *cmd;
- 	struct libie_aq_desc desc;
-+	bool use_buff_eee_field;
-+	u16 buf_size;
- 	int err;
- 
- 	if (!cfg)
- 		return -EINVAL;
- 
-+	/* If FW supports EEE, we have to use buffer with EEE field. */
-+	use_buff_eee_field = hw->dev_caps.common_cap.eee_support;
-+
- 	cmd = libie_aq_raw(&desc);
- 	/* Ensure that only valid bits of cfg->caps can be turned on. */
- 	cfg->caps &= IXGBE_ACI_PHY_ENA_VALID_MASK;
-@@ -1109,7 +1114,17 @@ int ixgbe_aci_set_phy_cfg(struct ixgbe_hw *hw,
- 	cmd->lport_num = hw->bus.func;
- 	desc.flags |= cpu_to_le16(LIBIE_AQ_FLAG_RD);
- 
--	err = ixgbe_aci_send_cmd(hw, &desc, cfg, sizeof(*cfg));
-+	if (use_buff_eee_field)
-+		buf_size = sizeof(*cfg);
-+	else
-+		/* Buffer w/o eee_entry_delay field is 2B smaller. */
-+		buf_size = sizeof(*cfg) - sizeof(u16);
-+
-+	err = ixgbe_aci_send_cmd(hw, &desc, cfg, buf_size);
-+
-+	/* 1.40 config format is compatible with pre-1.40, just extends
-+	 * it at the end.
-+	 */
- 	if (!err)
- 		hw->phy.curr_user_phy_cfg = *cfg;
- 
+@@ -628,6 +628,9 @@ static bool ixgbe_parse_e610_caps(struct ixgbe_hw *hw,
+ 			(phys_id & IXGBE_EXT_TOPO_DEV_IMG_PROG_EN) != 0;
+ 		break;
+ 	}
++	case LIBIE_AQC_CAPS_EEE:
++		caps->eee_support = (u8)number;
++		break;
+ 	default:
+ 		/* Not one of the recognized common capabilities */
+ 		return false;
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type_e610.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type_e610.h
-index 11dc7fc71b71..db62281c9413 100644
+index cde148eec38d..11dc7fc71b71 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type_e610.h
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type_e610.h
-@@ -382,6 +382,15 @@ struct ixgbe_aci_cmd_set_phy_cfg_data {
- 	__le64 phy_type_low; /* Use values from IXGBE_PHY_TYPE_LOW_* */
- 	__le64 phy_type_high; /* Use values from IXGBE_PHY_TYPE_HIGH_* */
- 	u8 caps;
-+	u8 low_power_ctrl_an;
-+	__le16 eee_cap; /* Value from ixgbe_aci_get_phy_caps */
-+	__le16 eeer_value; /* Use defines from ixgbe_aci_get_phy_caps */
-+	u8 link_fec_opt; /* Use defines from ixgbe_aci_get_phy_caps */
-+	u8 module_compliance_enforcement;
-+	__le16  eee_entry_delay;
-+} __packed;
-+
-+/* Set PHY config capabilities (@caps) defines */
- #define IXGBE_ACI_PHY_ENA_VALID_MASK		0xef
- #define IXGBE_ACI_PHY_ENA_TX_PAUSE_ABILITY	BIT(0)
- #define IXGBE_ACI_PHY_ENA_RX_PAUSE_ABILITY	BIT(1)
-@@ -390,12 +399,6 @@ struct ixgbe_aci_cmd_set_phy_cfg_data {
- #define IXGBE_ACI_PHY_ENA_AUTO_LINK_UPDT	BIT(5)
- #define IXGBE_ACI_PHY_ENA_LESM			BIT(6)
- #define IXGBE_ACI_PHY_ENA_AUTO_FEC		BIT(7)
--	u8 low_power_ctrl_an;
--	__le16 eee_cap; /* Value from ixgbe_aci_get_phy_caps */
--	__le16 eeer_value; /* Use defines from ixgbe_aci_get_phy_caps */
--	u8 link_fec_opt; /* Use defines from ixgbe_aci_get_phy_caps */
--	u8 module_compliance_enforcement;
--};
+@@ -892,6 +892,7 @@ struct ixgbe_hw_caps {
+ 	u8 apm_wol_support;
+ 	u8 acpi_prog_mthd;
+ 	u8 proxy_support;
++	u8 eee_support;
+ 	bool nvm_update_pending_nvm;
+ 	bool nvm_update_pending_orom;
+ 	bool nvm_update_pending_netlist;
+@@ -927,6 +928,12 @@ struct ixgbe_hw_caps {
  
- /* Restart AN command data structure (direct 0x0605)
-  * Also used for response, with only the lport_num field present.
+ #define IXGBE_OROM_CIV_SIGNATURE	"$CIV"
+ 
++#define IXGBE_EEE_SUPPORT_100BASE_TX	BIT(0)
++#define IXGBE_EEE_SUPPORT_1000BASE_T	BIT(1)
++#define IXGBE_EEE_SUPPORT_10GBASE_T	BIT(2)
++#define IXGBE_EEE_SUPPORT_5GBASE_T	BIT(3)
++#define IXGBE_EEE_SUPPORT_2_5GBASE_T	BIT(4)
++
+ struct ixgbe_orom_civd_info {
+ 	u8 signature[4];	/* Must match ASCII '$CIV' characters */
+ 	u8 checksum;		/* Simple modulo 256 sum of all structure bytes must equal 0 */
+diff --git a/include/linux/intel/libie/adminq.h b/include/linux/intel/libie/adminq.h
+index ab13bd777a28..839114d8975a 100644
+--- a/include/linux/intel/libie/adminq.h
++++ b/include/linux/intel/libie/adminq.h
+@@ -196,6 +196,7 @@ LIBIE_CHECK_STRUCT_LEN(16, libie_aqc_list_caps);
+ #define LIBIE_AQC_BIT_ROCEV2_LAG			BIT(0)
+ #define LIBIE_AQC_BIT_SRIOV_LAG				BIT(1)
+ #define LIBIE_AQC_BIT_SRIOV_AA_LAG			BIT(2)
++#define LIBIE_AQC_CAPS_EEE				0x009B
+ #define LIBIE_AQC_CAPS_FLEX10				0x00F1
+ #define LIBIE_AQC_CAPS_CEM				0x00F2
+ 
 -- 
 2.31.1
 
