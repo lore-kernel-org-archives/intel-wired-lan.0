@@ -4,142 +4,103 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6FC1CD26290
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 20 Jan 2026 19:10:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 29C9AD262AD
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 20 Jan 2026 22:44:43 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 5847040A55;
-	Tue, 20 Jan 2026 19:10:28 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id D512940CF7;
+	Tue, 20 Jan 2026 22:44:42 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 9gpbw4q7V38L; Tue, 20 Jan 2026 19:10:27 +0000 (UTC)
+ id 1WvsU-VfuTXJ; Tue, 20 Jan 2026 22:44:41 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 001FB40A43
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9163540CF2
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1768936227;
-	bh=+Csf/X+A6Yj7XM/zwDG6j8QqnjMgcQ6DA65ZzCNcagU=;
-	h=References:In-Reply-To:From:Date:To:Cc:Subject:List-Id:
+	s=default; t=1768949081;
+	bh=Lc5y+oZmTsX/1mrxdBWKFkiekrPC6HZeLaC2h0xMm5M=;
+	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=GMpsIgOE01zsoj9oh3Jf9s7Nx2zLQY3t2l0m9+u7YgD/7Vgpufz29DXcw/VVb6wv0
-	 8ytm4bpWnPcDdlllcez7NqIDBY3T61oW2P/MAmih/oljj7yIcBsfeCq+PMBeFBmukS
-	 aMwukHwo6pr8TjHLwhTyPjlLO3uROXLyZ1KpM2OoONDaCN30hALMv4XGVS+j9tOJWN
-	 qS48UsSflIQzY3U+Sfwzvco4kRvf2z5b90AJWYXTKpffPdYxcn//TXz7LuzUDXqW9v
-	 RrIA0wC80OULAT8DPvBg/5WU728iymof2oJUNM39L39iXG1119XYYTqb3sYE6mfUAp
-	 r1Q5lJcaSt2Jg==
+	b=eGk3h3qAriZGJVE2nztEFzRzeGImwrB3IOdSJJ8RW9Dz3Jpc1tddxPElXT+4si9z2
+	 NqI3kEROl1FWta46HcfY4TeNOp43piR5oEw1i4JkwHdWDY0TBXYPKj4oGF0k6vG6FN
+	 Z9We47BBms5uCH2+tpUVKll9hPZDN80n1spgkGXsFLYF+wplpZof/nGbDaXU21Pkia
+	 INQ7bQicsNlc611SBP4cyDj+TqCTJfeNLREl8+EjXvx8OPIOZcE40CMkG0gSHs1rnL
+	 P9mUJpmN7SVIYbeOeTwKMYYtKqTIyVmP71edOQPmR/aAsaO2hrCiW+inYXLWLBtdat
+	 55R7culCFwX7Q==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 001FB40A43;
-	Tue, 20 Jan 2026 19:10:26 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id 758DA169
- for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Jan 2026 19:10:25 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 9163540CF2;
+	Tue, 20 Jan 2026 22:44:41 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id C427A160
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Jan 2026 22:44:40 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 5B9AD6088E
- for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Jan 2026 19:10:25 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id A3B5F80883
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Jan 2026 22:44:40 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id O9LAbxYlacl1 for <intel-wired-lan@lists.osuosl.org>;
- Tue, 20 Jan 2026 19:10:24 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2607:f8b0:4864:20::c32; helo=mail-oo1-xc32.google.com;
- envelope-from=mmyangfl@gmail.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 89DB16088B
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 89DB16088B
-Received: from mail-oo1-xc32.google.com (mail-oo1-xc32.google.com
- [IPv6:2607:f8b0:4864:20::c32])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 89DB16088B
- for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Jan 2026 19:10:24 +0000 (UTC)
-Received: by mail-oo1-xc32.google.com with SMTP id
- 006d021491bc7-65f6f9d84d6so3428465eaf.1
- for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Jan 2026 11:10:24 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1768936223; cv=none;
- d=google.com; s=arc-20240605;
- b=EenJ1Pk+2dcBYDQtSJlyx83IM2WdraYcDu5pH65FVccYjCzX2fEjISPYmlSIKI3wNF
- nDHKemmbbgNXhHzf8tH0K/XAWy7N51Mv86+bsfaIPspa20AU1m16Mmbm/EuJ40bs9SOj
- 4IzRbknr5+zlvQa6bMzkMLyGwkg6Wny4sFkhwooi3hyyk0pzze6WX7uWrLBSMOzQC6/r
- WGVNiYF8OSVFowVVAIrDXnV6iXf+RJs+tcUfikSK1YT8hNT5MoHJPIzIeWCufM2qx33Y
- 9RLXF9b879o7rrTncVgQ8G+OaOs/D/AjEZ/SWsrP+jm3ROyYHOjdMbXtYwfrRM3dFotb
- CTWQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com;
- s=arc-20240605; 
- h=content-transfer-encoding:cc:to:subject:message-id:date:from
- :in-reply-to:references:mime-version:dkim-signature;
- bh=+Csf/X+A6Yj7XM/zwDG6j8QqnjMgcQ6DA65ZzCNcagU=;
- fh=HSVK/WHRMSRvDGDYjQ7vYHm2xKrzxHAbh0of6yzGank=;
- b=WW5bjGbw5NGu4AZjPZeMZx3uUaZihO2o80X8f9anMHTzoe4sjkx2+bcsQgmqZHZtpS
- ny7vLrP9+vNVBkZb0CkORisnxhJjifkO90RNk8vVPJ+p7iUdoiAdd9FN00zCnfoZHNMJ
- udmDTY9Gog0cFLwgtGPyze1Enq1+zpc7fG/0wCeHZKSTJsULnFrqN4xEV8dOc8o0E144
- WVKzE13QeyK7L99NMWbvHAXj/T6vqMZMG2H7YvsEe+8WMHpvt2hz3o51j8u+LXZDa6Ho
- CvbvFaxnoFKtj378mhCGKGRGmCobi+lU57OsYI5w7CoPGdvN6iYRT2Ea32JQQj9WzZoO
- KYcg==; darn=lists.osuosl.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20230601; t=1768936223; x=1769541023;
- h=content-transfer-encoding:cc:to:subject:message-id:date:from
- :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
- :to:cc:subject:date:message-id:reply-to;
- bh=+Csf/X+A6Yj7XM/zwDG6j8QqnjMgcQ6DA65ZzCNcagU=;
- b=qd4TNs1/mtCH3ynwjzTxBMwg4WmrDYxqk/Y22gTktn4qDdJk36Yhf7gfxaRabQ6Xqr
- uWxyNFtIJkdAySIa30YBpFI7uH2x68e5KyRSioA8WWPFXWQxvbXKYwoCg3YcgOltWYDP
- K5UaqgDYH1v+r0jYnOkxrT5MbscoJlxIY/5KAmNXdEpaj77QHw+Za7rsDWmqclG0Ewkx
- WXRH9WBCB/BwYXQB2L6Oy9zt4x4p9NICi84rBf7Jmv0BhXvE5Z8jfmfek2bQlAsJbkv2
- Fp4uf0PalquM8QYOvq/HO5GJzushD/F/S4laos34B01mdeHNkbkE0OvFMZzMZOHHWmAz
- C6TQ==
-X-Forwarded-Encrypted: i=1;
- AJvYcCVEf24bVq0CJt+6+SC+Gl2zjvjnRk4whKbXVlhcZHV6We7Wm+Hyc2EIGBW0lGHkAnfOiVf5W9cTXSdMP4x4AYs=@lists.osuosl.org
-X-Gm-Message-State: AOJu0Yw73lp9ydwBggVojyUX8ZY+IgtCcCZWiWRk379/LuOiGcyK0WOA
- jfPClxeulFpZBGsjl4yE17qXQkWy2Fmt/x2FbfBDmXnO6Xcz7uIidGd26v+LAB0UNxgvqfEpQld
- 01dsdL84HWIEH+DQrk2u3qgjTTH3UHnc=
-X-Gm-Gg: AY/fxX6X7t8wXRHyo51ys8nUL9lRse3s1jKxinfVL98aetJJDn6HK6atViDQOxJ9T6l
- LEiuAlpqJYA2J4ifJKPqsVDvnJm0Fww+ZExNs9mUp2msIPo1C1fOaSk51pN+rwgQV7ieJt5PFcP
- 1a+7RtzWiZDCLx2wSfmLafCmq8Pubr7kvt0oqFUPWY9xOwKu55bIj0bUHoaTgJ/h6BINTCAVkHo
- NU/iQMpdFJWL/IPpAHUQIMn4/4MnTYxrEpamt+MRYgdJYQFARATziiBXghGGeNTaMTHeAi1SIB+
- 7NNtSacbFx0dTCxFtYZS4MpmAeeH30FO7WxCKHwZjjc2qzWVR2AyqiH3OQJp
-X-Received: by 2002:a05:6820:f00a:b0:65f:6a70:2324 with SMTP id
- 006d021491bc7-662b00940c8mr1223440eaf.56.1768936223274; Tue, 20 Jan 2026
- 11:10:23 -0800 (PST)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id x7f3FKbwrAUq for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 20 Jan 2026 22:44:40 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.10;
+ helo=mgamail.intel.com; envelope-from=anthony.l.nguyen@intel.com;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org C8F8580879
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C8F8580879
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.10])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id C8F8580879
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Jan 2026 22:44:39 +0000 (UTC)
+X-CSE-ConnectionGUID: pWtO8bTWQPq6isq1pdkcCw==
+X-CSE-MsgGUID: AdHsoKNERZWBsTcKpSivJA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11677"; a="81548795"
+X-IronPort-AV: E=Sophos;i="6.21,241,1763452800"; d="scan'208";a="81548795"
+Received: from orviesa002.jf.intel.com ([10.64.159.142])
+ by fmvoesa104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 20 Jan 2026 14:44:38 -0800
+X-CSE-ConnectionGUID: PjyR6n8sQC6ACo5AEPesVg==
+X-CSE-MsgGUID: 2pbY1saLRR+Yj0qNZ0D42Q==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.21,241,1763452800"; d="scan'208";a="236920163"
+Received: from anguy11-upstream.jf.intel.com ([10.166.9.133])
+ by orviesa002.jf.intel.com with ESMTP; 20 Jan 2026 14:44:37 -0800
+From: Tony Nguyen <anthony.l.nguyen@intel.com>
+To: davem@davemloft.net, kuba@kernel.org, pabeni@redhat.com,
+ edumazet@google.com, andrew+netdev@lunn.ch, netdev@vger.kernel.org
+Cc: Mina Almasry <almasrymina@google.com>, anthony.l.nguyen@intel.com,
+ richardcochran@gmail.com, lrizzo@google.com, namangulati@google.com,
+ willemb@google.com, intel-wired-lan@lists.osuosl.org,
+ milena.olech@intel.com, jacob.e.keller@intel.com,
+ Shachar Raindel <shacharr@google.com>,
+ Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
+ Samuel Salin <Samuel.salin@intel.com>
+Date: Tue, 20 Jan 2026 14:44:28 -0800
+Message-ID: <20260120224430.410377-5-anthony.l.nguyen@intel.com>
+X-Mailer: git-send-email 2.47.1
+In-Reply-To: <20260120224430.410377-1-anthony.l.nguyen@intel.com>
+References: <20260120224430.410377-1-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
-References: <20260119162720.1463859-1-mmyangfl@gmail.com>
- <8cfba7ca-03d0-46fe-92fa-5d4a119fc31e@molgen.mpg.de>
-In-Reply-To: <8cfba7ca-03d0-46fe-92fa-5d4a119fc31e@molgen.mpg.de>
-From: Yangfl <mmyangfl@gmail.com>
-Date: Wed, 21 Jan 2026 03:09:47 +0800
-X-Gm-Features: AZwV_QjxhMmCVLVMg326Zu3TrNeYwemKLCUFGwJp4YRXr5m1z-pDq9pWaByfCFQ
-Message-ID: <CAAXyoMPxG5DbfMoLztWL3W78Xf3TMMVvkKJFD8L3Dup2-hMyyA@mail.gmail.com>
-To: Paul Menzel <pmenzel@molgen.mpg.de>
-Cc: netdev@vger.kernel.org, Tony Nguyen <anthony.l.nguyen@intel.com>, 
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Andrew Lunn <andrew+netdev@lunn.ch>, 
- "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
- Phani Burra <phani.r.burra@intel.com>, Willem de Bruijn <willemb@google.com>, 
- Sridhar Samudrala <sridhar.samudrala@intel.com>,
- Joshua Hay <joshua.a.hay@intel.com>, 
- intel-wired-lan@lists.osuosl.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20230601; t=1768936223; x=1769541023; darn=lists.osuosl.org;
- h=content-transfer-encoding:cc:to:subject:message-id:date:from
- :in-reply-to:references:mime-version:from:to:cc:subject:date
- :message-id:reply-to;
- bh=+Csf/X+A6Yj7XM/zwDG6j8QqnjMgcQ6DA65ZzCNcagU=;
- b=gcIPgSu6QcamcTmbtAKSKlXz53RAq9uUwS5jvjP98HaS0kDArY9+rz6ZscgQRmEHPW
- i41nKVfUy8ngQ3ePKTPvQYZdqFsZ4l2IYhnwxbbz5ZBO84ZabCTV6uE6C1ogvz3EVBVU
- I7u1lyLntFu0P7GddMyHdHgFLG7fZoukJCqYREmdcYmCBzgRULz6akv0l8wrek+TIfyI
- 3YqxTD0L9an5ABulQP5amT/uT4ERR8c3m7WRzWBbWX1xeY72+YCKqZG4y9k+ShKkmyfS
- aN1J5QYAG6mq1cDdvWIvOFVsW/gU6HbYoXvIt17c+2eG0Y0hj9eC7o2CqNsPeFLJyvBb
- MhHA==
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+Content-Transfer-Encoding: 8bit
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1768949080; x=1800485080;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=RF0DMaTL2HFT3ksEd5Q3xpKkrh26dMUQMd95p6l5Yvk=;
+ b=OR4GDsaweSjyo5LxVWKIYWLhw5NpsnkqdC15fEnqcyFWepcOhx9PT0z8
+ 2nlVe1bCTy4sIz+0FJ0e0DOLm5lvdcdFPCxz6e5w/vB9nui8nfdtLt4c/
+ PdJJfrvwCgkCGKqrp3kg13gXiJJTAC8uzJGjuKQCpJ3WBV28ABMKy0PFq
+ 3X4oXjZvGQf8vgQZ+HsKnYAOKAMO0CJnJd2NsEJ8qjysXdsGSV0tEmf84
+ y+6L+/SJYzP6m75uxh7jc0gxBlEJv92sxyE9aX8HL6kOH5iA02fiIUjZm
+ rRHKCMlCdk2pWXXk7DoPjygaS5m8smvs9Z8f/UzKz2+0PC5G69YCRrKVd
+ g==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
- header.from=gmail.com
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ header.from=intel.com
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key,
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20230601 header.b=gcIPgSu6
-Subject: Re: [Intel-wired-lan] [PATCH net] idpf: Fix data race in
- idpf_net_dim
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=OR4GDsaw
+Subject: [Intel-wired-lan] [PATCH net 4/4] idpf: read lower clock bits
+ inside the time sandwich
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -155,95 +116,49 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Wed, Jan 21, 2026 at 12:50=E2=80=AFAM Paul Menzel <pmenzel@molgen.mpg.de=
-> wrote:
->
-> Dear David,
->
->
-> Thank you for your patch.
->
-> Am 19.01.26 um 17:27 schrieb David Yang:
-> > In idpf_net_dim(), some statistics protected by u64_stats_sync, are rea=
-d
-> > and accumulated in ignorance of possible u64_stats_fetch_retry() events=
-.
-> > The correct way to copy statistics is already illustrated by
-> > idpf_add_queue_stats(). Fix this by reading them into temporary variabl=
-es
-> > first.
->
-> It=E2=80=99d be great if you also documented a test case.
->
+From: Mina Almasry <almasrymina@google.com>
 
-Sorry, I didn't get what "documente a test case" means. Triggering the
-bug would require precise timing between the writer and reader. If
-u64_stats_fetch_retry() returns true you already know the previous
-critical section was invalid, which is documented in u64_stats_sync.h.
+PCIe reads need to be done inside the time sandwich because PCIe
+writes may get buffered in the PCIe fabric and posted to the device
+after the _postts completes. Doing the PCIe read inside the time
+sandwich guarantees that the write gets flushed before the _postts
+timestamp is taken.
 
-> > Fixes: c2d548cad150 ("idpf: add TX splitq napi poll support")
-> > Fixes: 3a8845af66ed ("idpf: add RX splitq napi poll support")
-> > Signed-off-by: David Yang <mmyangfl@gmail.com>
-> > ---
-> >   drivers/net/ethernet/intel/idpf/idpf_txrx.c | 16 +++++++++++-----
-> >   1 file changed, 11 insertions(+), 5 deletions(-)
-> >
-> > diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.c b/drivers/net/=
-ethernet/intel/idpf/idpf_txrx.c
-> > index 97a5fe766b6b..66ba645e8b90 100644
-> > --- a/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-> > +++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-> > @@ -3956,7 +3956,7 @@ static void idpf_update_dim_sample(struct idpf_q_=
-vector *q_vector,
-> >   static void idpf_net_dim(struct idpf_q_vector *q_vector)
-> >   {
-> >       struct dim_sample dim_sample =3D { };
-> > -     u64 packets, bytes;
-> > +     u64 packets, bytes, pkts, bts;
->
-> The new variable names are ambiguous. Would _tmp or so be better?
->
-> >       u32 i;
-> >
-> >       if (!IDPF_ITR_IS_DYNAMIC(q_vector->tx_intr_mode))
-> > @@ -3968,9 +3968,12 @@ static void idpf_net_dim(struct idpf_q_vector *q=
-_vector)
-> >
-> >               do {
-> >                       start =3D u64_stats_fetch_begin(&txq->stats_sync)=
-;
-> > -                     packets +=3D u64_stats_read(&txq->q_stats.packets=
-);
-> > -                     bytes +=3D u64_stats_read(&txq->q_stats.bytes);
-> > +                     pkts =3D u64_stats_read(&txq->q_stats.packets);
-> > +                     bts =3D u64_stats_read(&txq->q_stats.bytes);
-> >               } while (u64_stats_fetch_retry(&txq->stats_sync, start));
-> > +
-> > +             packets +=3D pkts;
-> > +             bytes +=3D bts;
-> >       }
-> >
-> >       idpf_update_dim_sample(q_vector, &dim_sample, &q_vector->tx_dim,
-> > @@ -3987,9 +3990,12 @@ static void idpf_net_dim(struct idpf_q_vector *q=
-_vector)
-> >
-> >               do {
-> >                       start =3D u64_stats_fetch_begin(&rxq->stats_sync)=
-;
-> > -                     packets +=3D u64_stats_read(&rxq->q_stats.packets=
-);
-> > -                     bytes +=3D u64_stats_read(&rxq->q_stats.bytes);
-> > +                     pkts =3D u64_stats_read(&rxq->q_stats.packets);
-> > +                     bts =3D u64_stats_read(&rxq->q_stats.bytes);
-> >               } while (u64_stats_fetch_retry(&rxq->stats_sync, start));
-> > +
-> > +             packets +=3D pkts;
-> > +             bytes +=3D bts;
-> >       }
-> >
-> >       idpf_update_dim_sample(q_vector, &dim_sample, &q_vector->rx_dim,
->
->
-> Kind regards,
->
-> Paul
+Cc: lrizzo@google.com
+Cc: namangulati@google.com
+Cc: willemb@google.com
+Cc: intel-wired-lan@lists.osuosl.org
+Cc: milena.olech@intel.com
+Cc: jacob.e.keller@intel.com
+
+Fixes: 5cb8805d2366 ("idpf: negotiate PTP capabilities and get PTP clock")
+Suggested-by: Shachar Raindel <shacharr@google.com>
+Signed-off-by: Mina Almasry <almasrymina@google.com>
+Reviewed-by: Jacob Keller <jacob.e.keller@intel.com>
+Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Tested-by: Samuel Salin <Samuel.salin@intel.com>
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+---
+ drivers/net/ethernet/intel/idpf/idpf_ptp.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_ptp.c b/drivers/net/ethernet/intel/idpf/idpf_ptp.c
+index 3e1052d070cf..0a8b50350b86 100644
+--- a/drivers/net/ethernet/intel/idpf/idpf_ptp.c
++++ b/drivers/net/ethernet/intel/idpf/idpf_ptp.c
+@@ -108,11 +108,11 @@ static u64 idpf_ptp_read_src_clk_reg_direct(struct idpf_adapter *adapter,
+ 	ptp_read_system_prets(sts);
+ 
+ 	idpf_ptp_enable_shtime(adapter);
++	lo = readl(ptp->dev_clk_regs.dev_clk_ns_l);
+ 
+ 	/* Read the system timestamp post PHC read */
+ 	ptp_read_system_postts(sts);
+ 
+-	lo = readl(ptp->dev_clk_regs.dev_clk_ns_l);
+ 	hi = readl(ptp->dev_clk_regs.dev_clk_ns_h);
+ 
+ 	spin_unlock(&ptp->read_dev_clk_lock);
+-- 
+2.47.1
+
