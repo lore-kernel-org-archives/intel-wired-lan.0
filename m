@@ -4,82 +4,93 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A1E29D2629F
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 21 Jan 2026 00:19:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1303FD262B7
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 21 Jan 2026 02:40:31 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 5F3AE60BFB;
-	Wed, 21 Jan 2026 00:19:02 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id B5D4560C29;
+	Wed, 21 Jan 2026 02:40:31 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id tV3EMpfbVLrj; Wed, 21 Jan 2026 00:19:01 +0000 (UTC)
+ id 7jB0L94thIbq; Wed, 21 Jan 2026 02:40:31 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org EE95560C00
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E80F660C26
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1768954741;
-	bh=utaebAyrEiOoTCURTJd/8LSmmnZCQIXWsclarvY9VL4=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1768963231;
+	bh=3H4bzSRWxadtr0XyHCArWon468q49YyhMq9PXcRtOWA=;
+	h=From:Date:References:In-Reply-To:To:Cc:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=5cMN1ee4/e7lYyThOSMcxocj5Bza/A+qcroe5Xm98b6sL9dTZEXWGl4E2KfMI1zW1
-	 WWrqr+VDEB/+McV4JfGRqNvXJXUyMnoYDTmSqm4Z7tOmJVPHEWHyOv5zrXYP3lKraK
-	 zN2beXlmvu8C5jDACEYLhoeuH4UdYjfc1AFMx5a8+c5j6E5uSOomPGddhQ7onyR/2k
-	 WXyaXCYl4UcusGBp3lAnCZGr8PC0RWWSsPXHMojIJ12XgJXyJF4i/d5z3+Elk4STsx
-	 8EUuVVXyzCizlc1DxytQ31YKGl215a7W/qMflLVNeLFRtb5897R7okgaME9fWTVHvf
-	 9ntaHDB1j9b2A==
+	 From;
+	b=E7nvBaYs67w2ZdhmqQMlQB/DjMZgbxSapKvncUSYc7x4EERBq3Y45OcQmKh5nPxpq
+	 s/m36ZzcThZvDgEZ3BUArmbq7U3kW7PrfvOorNUgYW2DVGv8Yl5anaGTc4+Jv1d7Wo
+	 c8eK0mpd90+ydV8CesmlcvAe71w569eS21Ad3F25fhX0tDl/3KBJsauaKK3lJ2ImPM
+	 Eo2SD3Pg7rEn2UzHFf6rc2KxBGZvkmaLv4aEyl4iQLUJoLeIWXuycCl/uaWx3s1iMt
+	 leZU/vWWn3AXF4WK8qo/3a2YCNqsIxCh4IoArZX9L9T1wKsiu1nvrXmiEb44KekrsK
+	 07KIpImLrd0zg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id EE95560C00;
-	Wed, 21 Jan 2026 00:19:00 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id 525FA160
- for <intel-wired-lan@lists.osuosl.org>; Wed, 21 Jan 2026 00:18:59 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id E80F660C26;
+	Wed, 21 Jan 2026 02:40:30 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id DA63C169
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 21 Jan 2026 02:40:28 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 43EB660AC6
- for <intel-wired-lan@lists.osuosl.org>; Wed, 21 Jan 2026 00:18:59 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id C72B340D9E
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 21 Jan 2026 02:40:28 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id QqNkgwakmYBh for <intel-wired-lan@lists.osuosl.org>;
- Wed, 21 Jan 2026 00:18:58 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.234.252.31;
- helo=sea.source.kernel.org; envelope-from=kuba@kernel.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org D310D60A7B
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org D310D60A7B
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
- by smtp3.osuosl.org (Postfix) with ESMTPS id D310D60A7B
- for <intel-wired-lan@lists.osuosl.org>; Wed, 21 Jan 2026 00:18:57 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id cvQ2Hm5u-v_j for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 21 Jan 2026 02:40:28 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
+ helo=tor.source.kernel.org; envelope-from=patchwork-bot+netdevbpf@kernel.org;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org EB37C40D9C
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org EB37C40D9C
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id EB37C40D9C
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 21 Jan 2026 02:40:27 +0000 (UTC)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by sea.source.kernel.org (Postfix) with ESMTP id 651E444353;
- Wed, 21 Jan 2026 00:18:57 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EC0FBC19424;
- Wed, 21 Jan 2026 00:18:55 +0000 (UTC)
-From: Jakub Kicinski <kuba@kernel.org>
-To: ivecera@redhat.com
-Date: Tue, 20 Jan 2026 16:18:54 -0800
-Message-ID: <20260121001854.1905391-1-kuba@kernel.org>
-X-Mailer: git-send-email 2.52.0
-In-Reply-To: <20260116184610.147591-13-ivecera@redhat.com>
-References: <20260116184610.147591-13-ivecera@redhat.com>
+ by tor.source.kernel.org (Postfix) with ESMTP id 4ECC260123;
+ Wed, 21 Jan 2026 02:40:26 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 04014C19424;
+ Wed, 21 Jan 2026 02:40:26 +0000 (UTC)
+Received: from [10.30.226.235] (localhost [IPv6:::1])
+ by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id
+ 8BBB9380820D; Wed, 21 Jan 2026 02:40:24 +0000 (UTC)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+From: patchwork-bot+netdevbpf@kernel.org
+Message-Id: <176896322309.699622.15744094488253371273.git-patchwork-notify@kernel.org>
+Date: Wed, 21 Jan 2026 02:40:23 +0000
+References: <20260119162720.1463859-1-mmyangfl@gmail.com>
+In-Reply-To: <20260119162720.1463859-1-mmyangfl@gmail.com>
+To: Yangfl <mmyangfl@gmail.com>
+Cc: netdev@vger.kernel.org, anthony.l.nguyen@intel.com,
+ przemyslaw.kitszel@intel.com, andrew+netdev@lunn.ch, davem@davemloft.net,
+ edumazet@google.com, kuba@kernel.org, pabeni@redhat.com,
+ pavan.kumar.linga@intel.com, phani.r.burra@intel.com, willemb@google.com,
+ alan.brady@intel.com, sridhar.samudrala@intel.com, joshua.a.hay@intel.com,
+ intel-wired-lan@lists.osuosl.org, linux-kernel@vger.kernel.org
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1768954737;
- bh=0HGVVeTAHwzSzLFOpdIyNRyTdHYdyUOMXgvp4PSevFs=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=JOs9JzpEXQU9eIhdVdrnpwlJd0Lx0KFCd8ly+f79aar8QjwM2HCTDp7T2RDQX6+ob
- Ef9GBFn5ZqaGH2OJ6HKk2NRVk0s19bpGE0qROw8XqoLaHrl2MbUSfdXv34sVf+DUBb
- iymuRI1xM9TuNJtGFlFnZ19X2vWr4c9tNa4QGmfzht+9hEMLeD0ymHhGU6jsqT13Mh
- 5vSV+8CWuQp5z++nE3yV/gFB8Xkafkx+HVPMcvclMjBddewvQqcLVsOIlQFdW1EKkz
- xb2OLPuFdNV0gCfKRAW6XMmlONmiLocH+s3wChGXAFZTlkeKRDBO4kN2xoU7xIF4hH
- Au9H717kdzrig==
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ d=kernel.org; s=k20201202; t=1768963226;
+ bh=kU4ivi3it5EOayRcuk2PGsOSIABVoKbr13xV7JDnuyI=;
+ h=Subject:From:Date:References:In-Reply-To:To:Cc:From;
+ b=H+TFNmjy86zH6Vd9cQTCklv1uMDdw1OCATQTpq/hflNnK6PWiikynVkZMlDVYRiHl
+ YuRnJ1EXCUBW8hFGcpcrFxU6nOBrJq1lQI2+NyZCrYNfn1D0nUyjdyBbkOhNUslL6/
+ LtUujWiihzDPcAUjVu3WvfZXoTMLzkB24WMK9SOXxMu2gVK61gr3G/n9UmemyIy1Eh
+ g3I29XgFevbXzv9/xMD0GbI7q1l7tJZgcQAYn/wo1UKqtKSnEsK06ngQjA06KjYXBS
+ GYbpkN1nGm37oGkgUQKcCOWtkGo7LeIue3dNUb5HNSSdevYKwOxqa2gVQ21ZIxpiED
+ Ud1v4QtY7LRTg==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=JOs9JzpE
-Subject: Re: [Intel-wired-lan] [net-next, v2,
- 12/12] ice: dpll: Support E825-C SyncE and dynamic pin discovery
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=H+TFNmjy
+Subject: Re: [Intel-wired-lan] [PATCH net] idpf: Fix data race in
+ idpf_net_dim
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -92,139 +103,34 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: edumazet@google.com, anthony.l.nguyen@intel.com, robh@kernel.org,
- leon@kernel.org, andrew+netdev@lunn.ch, linux-rdma@vger.kernel.org,
- przemyslaw.kitszel@intel.com, arkadiusz.kubalewski@intel.com,
- aleksandr.loktionov@intel.com, intel-wired-lan@lists.osuosl.org,
- Jakub Kicinski <kuba@kernel.org>, pabeni@redhat.com,
- devicetree@vger.kernel.org, conor+dt@kernel.org, jiri@resnulli.us,
- richardcochran@gmail.com, saravanak@kernel.org, Prathosh.Satish@microchip.com,
- vadim.fedorenko@linux.dev, netdev@vger.kernel.org, mbloch@nvidia.com,
- linux-kernel@vger.kernel.org, tariqt@nvidia.com, aleksander.lobakin@intel.com,
- jonathan.lemon@gmail.com, krzk+dt@kernel.org, saeedm@nvidia.com,
- davem@davemloft.net
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-This is an AI-generated review of your patch. The human sending this
-email has considered the AI review valid, or at least plausible.
+Hello:
 
-For local reproduction steps see https://netdev-ai.bots.linux.dev/ai-local.html
----
-ice: dpll: Support E825-C SyncE and dynamic pin discovery
+This patch was applied to netdev/net.git (main)
+by Jakub Kicinski <kuba@kernel.org>:
 
-This patch adds DPLL support for the Intel E825-C Ethernet controller.
-It implements dynamic pin discovery via firmware nodes, asynchronous
-registration using a DPLL notifier chain, and hardware configuration
-for CGU registers.
+On Tue, 20 Jan 2026 00:27:16 +0800 you wrote:
+> In idpf_net_dim(), some statistics protected by u64_stats_sync, are read
+> and accumulated in ignorance of possible u64_stats_fetch_retry() events.
+> The correct way to copy statistics is already illustrated by
+> idpf_add_queue_stats(). Fix this by reading them into temporary variables
+> first.
+> 
+> Fixes: c2d548cad150 ("idpf: add TX splitq napi poll support")
+> Fixes: 3a8845af66ed ("idpf: add RX splitq napi poll support")
+> Signed-off-by: David Yang <mmyangfl@gmail.com>
+> 
+> [...]
 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_dpll.c b/drivers/net/ethernet/intel/ice/ice_dpll.c
-> index 4eca62688d83..9d82748810a3 100644
+Here is the summary with links:
+  - [net] idpf: Fix data race in idpf_net_dim
+    https://git.kernel.org/netdev/net/c/5fbe395cd1fd
 
-[ ... ]
+You are awesome, thank you!
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/patchwork/pwbot.html
 
-> +static void ice_dpll_pin_notify_work(struct work_struct *work)
-> +{
-> +	struct ice_dpll_pin_work *w = container_of(work,
-> +						   struct ice_dpll_pin_work,
-> +						   work);
-> +	struct ice_dpll_pin *pin, *parent = w->pin;
-> +	struct ice_pf *pf = parent->pf;
-> +	int ret;
-> +
-> +	switch (w->action) {
-> +	case DPLL_PIN_CREATED:
-> +		if (!IS_ERR_OR_NULL(parent->pin)) {
-> +			/* We have already our pin registered */
-> +			goto out;
-> +		}
-> +
-> +		/* Grab reference on fwnode pin */
-> +		parent->pin = fwnode_dpll_pin_find(parent->fwnode,
-> +						   &parent->tracker);
-> +		if (IS_ERR_OR_NULL(parent->pin)) {
-> +			dev_err(ice_pf_to_dev(pf),
-> +				"Cannot get fwnode pin reference\n");
-> +			goto out;
-> +		}
-> +
-> +		/* Register rclk pin */
-> +		pin = &pf->dplls.rclk;
-> +		ret = dpll_pin_on_pin_register(parent->pin, pin->pin,
-> +					       &ice_dpll_rclk_ops, pin);
 
-Can pin->pin (pf->dplls.rclk.pin) be NULL here? Looking at the init
-order in ice_dpll_init_pins_e825():
-
-    ret = ice_dpll_init_fwnode_pins(pf, pf->dplls.inputs, 0);
-    ...
-    ret = ice_dpll_init_rclk_pin(pf, DPLL_PIN_IDX_UNSPEC, ...);
-
-The fwnode pins are initialized first, which registers notifiers. If a
-DPLL_PIN_CREATED notification fires before ice_dpll_init_rclk_pin()
-completes, this work handler will run while pf->dplls.rclk.pin is still
-NULL (the structure is zeroed by kcalloc). Passing NULL to
-dpll_pin_on_pin_register() causes a NULL dereference in
-dpll_xa_ref_pin_add() when it accesses pin->parent_refs.
-
-> +		if (ret) {
-> +			dev_err(ice_pf_to_dev(pf),
-> +				"Failed to register pin: %pe\n", ERR_PTR(ret));
-> +			dpll_pin_put(parent->pin, &parent->tracker);
-> +			parent->pin = NULL;
-> +			goto out;
-> +		}
-> +		break;
-
-[ ... ]
-
-> diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
-> index 4c8d20f2d2c0..0eb8a9e29a52 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_ptp.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-> @@ -1341,6 +1341,35 @@ void ice_ptp_link_change(struct ice_pf *pf, bool linkup)
->  	if (pf->hw.reset_ongoing)
->  		return;
->
-> +	if (hw->mac_type == ICE_MAC_GENERIC_3K_E825) {
-> +		int pin, err;
-> +
-> +		mutex_lock(&pf->dplls.lock);
-
-Should this check ICE_FLAG_DPLL before using pf->dplls.lock? Looking at
-ice_dpll_init_e825(), if initialization fails the mutex is destroyed:
-
-    err = ice_dpll_init_info_e825c(pf);
-    if (err)
-        goto err_exit;
-    ...
-    err_exit:
-        mutex_destroy(&d->lock);
-
-But ICE_FLAG_DPLL is only set on success. If DPLL init fails and a link
-change event occurs, this code will use a destroyed mutex.
-
-> +		for (pin = 0; pin < ICE_SYNCE_CLK_NUM; pin++) {
-> +			enum ice_synce_clk clk_pin;
-> +			bool active;
-> +			u8 port_num;
-> +
-> +			port_num = ptp_port->port_num;
-> +			clk_pin = (enum ice_synce_clk)pin;
-> +			err = ice_tspll_bypass_mux_active_e825c(hw,
-> +								port_num,
-> +								&active,
-> +								clk_pin);
-> +			if (WARN_ON_ONCE(err)) {
-> +				mutex_unlock(&pf->dplls.lock);
-> +				return;
-> +			}
-> +
-> +			err = ice_tspll_cfg_synce_ethdiv_e825c(hw, clk_pin);
-> +			if (active && WARN_ON_ONCE(err)) {
-> +				mutex_unlock(&pf->dplls.lock);
-> +				return;
-> +			}
-> +		}
-> +		mutex_unlock(&pf->dplls.lock);
-> +	}
