@@ -4,80 +4,117 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9E51AD3EE6B
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 22 Jan 2026 15:00:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4A2C8D3EE72
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 22 Jan 2026 15:26:51 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 3D9B144438;
-	Thu, 22 Jan 2026 15:00:52 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 0088241341;
+	Thu, 22 Jan 2026 15:26:51 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id lCb_lA_57b2C; Thu, 22 Jan 2026 15:00:50 +0000 (UTC)
+ id T1C0vgZ62eaK; Thu, 22 Jan 2026 15:26:50 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3BDDC43AB1
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 39B00412D3
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1769094050;
-	bh=C4ih43BAca0SA9TZlScagesC30I6QlqwkFpgROthTHg=;
-	h=Date:To:Cc:References:From:In-Reply-To:Subject:List-Id:
+	s=default; t=1769095610;
+	bh=EC6SH53RK9tBd5Fp7gIiY7yZ4DLB1JMDI6tC+GGvcN0=;
+	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=srx01pChOnYsCz+5vZYgWcRFS67wBd5/LRhoM776dGUhFlfc64LAokt226JBQ9RlP
-	 YKt4KZvJTR1MDRI/oINuuEO63N0jb7p2qbDbTyS+BrrV0SDQVccMW/Chbdfe+E2AMG
-	 9evrSoEQBL5hKYNdJz1DZVCUUTwGxzzWHg6v9FE5wggSAbWP94iSxRO7BxdTnnzk+1
-	 XZV7vnIF6gkov0jL2GiCEh6WGAAnCS/gFbMmBZgjfR+uZLsWzHY/iTEZybccffQAWa
-	 akjtJVhNdAWuCmgG+HH5JSmlBYjX9cPfo73zPVMd9Xl8aWkpjaW8HYmLNldMlwbDnx
-	 Zrgsep4U62spQ==
+	b=cPag+Dzcz60vWYksLFtFsfRt3P+XxfhHt34aw7DcpAnFfm5fU/XYRCRMnYVxn8wtu
+	 MZaD+s8NXf51hvxvesvzksEWFZ/ggmTg+lE6MIh7qchDa7JID7GP9s22/GpZqb0J/T
+	 pqhIxrmLC2g8V8fI98+7SG7ylF7/MuCo+nzRoiK/I285SRGf+hUVJR9Pmhh6f8TYf8
+	 h4DU2WZvY+VdtA9ApEr6Kmoa1iFpVgEeJbZM154V/fz3J3T2ZqaPY/M7jQUUpM9e/3
+	 zqnyD8UgNiwZTmUr1PiVtSKvL4nDZI3Q+X8tuZ5CEq756DrDmH9nMuEMgVXjT6WBqv
+	 ahlBJhhqwp4kA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 3BDDC43AB1;
-	Thu, 22 Jan 2026 15:00:50 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 360D8122
- for <intel-wired-lan@lists.osuosl.org>; Thu, 22 Jan 2026 15:00:48 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 39B00412D3;
+	Thu, 22 Jan 2026 15:26:50 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 996B6122
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 22 Jan 2026 09:39:53 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 31D376F5D5
- for <intel-wired-lan@lists.osuosl.org>; Thu, 22 Jan 2026 15:00:48 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 7B04540E54
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 22 Jan 2026 09:39:53 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id CgxbVz2yLoH4 for <intel-wired-lan@lists.osuosl.org>;
- Thu, 22 Jan 2026 15:00:47 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=141.14.17.11;
- helo=mx3.molgen.mpg.de; envelope-from=pmenzel@molgen.mpg.de;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 6472C6F5BF
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 6472C6F5BF
-Received: from mx3.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 6472C6F5BF
- for <intel-wired-lan@lists.osuosl.org>; Thu, 22 Jan 2026 15:00:45 +0000 (UTC)
-Received: from [141.14.220.42] (g42.guest.molgen.mpg.de [141.14.220.42])
- (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested) (Authenticated sender: pmenzel)
- by mx.molgen.mpg.de (Postfix) with ESMTPSA id 8B5144C44303AE;
- Thu, 22 Jan 2026 16:00:02 +0100 (CET)
-Message-ID: <ab7b6df0-53d6-4304-8e65-5f1e243d9615@molgen.mpg.de>
-Date: Thu, 22 Jan 2026 16:00:02 +0100
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id bCN5bGlZh3wx for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 22 Jan 2026 09:39:52 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2607:f8b0:4864:20::1236; helo=mail-dl1-x1236.google.com;
+ envelope-from=dqfext@gmail.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 8DE9D40E4B
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 8DE9D40E4B
+Received: from mail-dl1-x1236.google.com (mail-dl1-x1236.google.com
+ [IPv6:2607:f8b0:4864:20::1236])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 8DE9D40E4B
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 22 Jan 2026 09:39:52 +0000 (UTC)
+Received: by mail-dl1-x1236.google.com with SMTP id
+ a92af1059eb24-12332910300so239225c88.0
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 22 Jan 2026 01:39:52 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20230601; t=1769074791; x=1769679591;
+ h=content-transfer-encoding:mime-version:references:in-reply-to
+ :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+ :to:cc:subject:date:message-id:reply-to;
+ bh=EC6SH53RK9tBd5Fp7gIiY7yZ4DLB1JMDI6tC+GGvcN0=;
+ b=X553QNHcm/wDSgM7f0u2ReDwn5mEu8ttyXFx9sBphDAFlAy8OE6RNcBQ1fDwWDvTU9
+ KlM6DGCCFhx3w8DY8uPJ7LBytrZBDJtB55XtpsNlB8g8XBHqcBkNE5tqPZoQ1NojHowC
+ sdl0euNYN+ZE7IfdRQr5QfwM+X5sxvfeXWSyOnZ2HhTT+0ccMfBuSsZfrhcPSUA7NRm6
+ basJPTCgj0tMQ+LPF8wEEZ99gqeKjkjqMySoLrUyMunEfRkO8l2BjRLiRNmM/qk1nwwy
+ +hilyp+DTiS0tYoysRJEOECJ2iz2Z96XzM7nwdRP6By2PGgGmggKKFYB9ugIdTtRYtfD
+ Q4dA==
+X-Gm-Message-State: AOJu0YwVocjVJqEoGoYmMgbHT+ffJubP0brFscAOu/LeVjLrf5pxasXk
+ VPwlnGKxRJMVtVZayrR7RTmWmKusLb0KAP+BeLAhLN6K+UZjwRsBBKBd
+X-Gm-Gg: AZuq6aJKsp2g9+vYEOXOX7HmrPVQVFzI1N3UYlIrADHjz2hLgPZAnEU7L8F7lWq6zQE
+ TiAVaZWMNHJYxMELoCzpmfhX4LOeCEyNP3PH7ecbPXMDpfMM9PpdDhyAKSO0M9HFG13xi/4ZaYR
+ hrfOfMw6WNwm7jrdis8aOgxHiO4uBWjqs1+w71A7efe6OQeneib3Kgn0xpKXaMPH84OjLgvFtit
+ iR8YK+4K/j2BytI6jbN8sqhUzcNX+bN5/kuCVbpeb1vsoGDBOnfBekQ6YMDbgzt9YNRq/qawSWm
+ ddsdABOHRuamWnU7DhIYGrsVgxUuYLRysxnPqflJmeWtV/1d47aupp+7d+VHjBU0aa1zrJnxPze
+ uLVBwBNzJDYSSsGnuyGY74mTaOeq1rX7v7Mry9TAOPpigYEZn2WI634ais0LotkE=
+X-Received: by 2002:a05:7022:4586:b0:122:9d:bd43 with SMTP id
+ a92af1059eb24-1244a70cd2bmr17402148c88.19.1769074791226; 
+ Thu, 22 Jan 2026 01:39:51 -0800 (PST)
+Received: from gmail.com ([2a09:bac5:1f0e:28::4:33f])
+ by smtp.gmail.com with ESMTPSA id
+ a92af1059eb24-1244ac57fd0sm28473087c88.3.2026.01.22.01.39.48
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 22 Jan 2026 01:39:50 -0800 (PST)
+From: Qingfang Deng <dqfext@gmail.com>
+To: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Cc: intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com,
+ netdev@vger.kernel.org, Jedrzej Jagielski <jedrzej.jagielski@intel.com>,
+ Chuanhong Guo <gch981213@gmail.com>
+Date: Thu, 22 Jan 2026 17:39:33 +0800
+Message-ID: <20260122093940.213113-1-dqfext@gmail.com>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20260122085102.1117651-1-aleksandr.loktionov@intel.com>
+References: <20260122085102.1117651-1-aleksandr.loktionov@intel.com>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-To: Kohei Enju <kohei@enjuk.jp>
-Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller"
- <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- kohei.enju@gmail.com, Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-References: <20260122134809.7765-1-kohei@enjuk.jp>
-Content-Language: en-US
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-In-Reply-To: <20260122134809.7765-1-kohei@enjuk.jp>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dmarc=none (p=none dis=none)
- header.from=molgen.mpg.de
-Subject: Re: [Intel-wired-lan] [PATCH v2 iwl-next] igb: set skb hash type
- from RSS_TYPE
+Content-Transfer-Encoding: 8bit
+X-Mailman-Approved-At: Thu, 22 Jan 2026 15:26:49 +0000
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=gmail.com; s=20230601; t=1769074791; x=1769679591; darn=lists.osuosl.org;
+ h=content-transfer-encoding:mime-version:references:in-reply-to
+ :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+ :message-id:reply-to;
+ bh=EC6SH53RK9tBd5Fp7gIiY7yZ4DLB1JMDI6tC+GGvcN0=;
+ b=kO+tc/WvOf5DefhY9NvS/Cv7bd8OObR/ZpSgdmayfEXRczPDJQEoj34qxmibz2a8C+
+ fOloqcd4RgUxpDRwRzlN4FFzCID4z7GM1VcXqpTLyEI6gCLCLDmMsnZx/iJ+MOlI7DBt
+ PqFSfNNm/CKrshM8W0l3NHqBjOb4XdzoebZth5Q50vBJ10zHE4rLOk2Sxu+xhQWVIU0b
+ 1RHFqUvp+MsAK/aJtz6Duip2BLygaRJ+LBp5dglj0QvbAxC0vHYTPDLY+egEDF3NDnsq
+ 0nW4M12UX71VejWkLddpRwrobCpnLmnDpMkbfbDTe8eP0nMphqKL6L1qo2WpsYFbvbMG
+ kM1A==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=gmail.com
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20230601 header.b=kO+tc/Wv
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next v1] ixgbe: fix type punning
+ in ixgbe_update_flash_X550
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -93,108 +130,79 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Dear Kohei,
+On Thu, 22 Jan 2026 09:51:02 +0100, Aleksandr Loktionov wrote:
+> Add a u32 buffer array member to union ixgbe_hic_hdr2 and use it
+> directly instead of casting the union address to u32 pointer. This
+> avoids potential strict aliasing violations and makes the code more
+> explicit about the buffer usage.
+> 
+> The ixgbe_host_interface_command function expects a void* buffer, so
+> providing a proper u32 array member in the union is the correct
+> approach rather than relying on pointer casting. This eliminates the
+> type punning issue where we were casting the union pointer to u32*.
+> 
+> By using buffer.buf instead of &buffer, we pass the address of the
+> u32 array directly, which is semantically correct and avoids any
+> potential undefined behavior from strict aliasing rule violations.
 
+This commit message is unnecessarily verbose, looks like AI-generated.
+The kernel is built with -fno-strict-aliasing, so it's okay to not
+follow the rule.
+What you're fixing is likely an alignment issue. (see below)
 
-Thank you for your patch.
-
-Am 22.01.26 um 14:47 schrieb Kohei Enju:
-> igb always marks the RX hash as L3 regardless of RSS_TYPE in the
-> advanced descriptor, which may indicate L4 (TCP/UDP) hash. This can
-> trigger unnecessary SW hash recalculation and breaks toeplitz selftests.
 > 
-> Use RSS_TYPE from pkt_info to set the correct PKT_HASH_TYPE_*
-> 
-> Tested by toeplitz.py with the igb RSS key get/set patches applied as
-> they are required for toeplitz.py (see Link below).
->   # ethtool -N $DEV rx-flow-hash udp4 sdfn
->   # ethtool -N $DEV rx-flow-hash udp6 sdfn
->   # python toeplitz.py | grep -E "^# Totals"
-> 
-> Without patch:
->   # Totals: pass:0 fail:12 xfail:0 xpass:0 skip:0 error:0
-> 
-> With patch:
->   # Totals: pass:12 fail:0 xfail:0 xpass:0 skip:0 error:0
-> 
-> Link: https://lore.kernel.org/intel-wired-lan/20260119084511.95287-5-takkozu@amazon.com/
-> Signed-off-by: Kohei Enju <kohei@enjuk.jp>
-> Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+> Fixes: 49425dfc7451 ("ixgbe: Add support for x550em_a 10G MAC type")
+> Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+> Reviewed-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
 > ---
-> Changelog:
->    v2:
->      - Fix max-line-length by removing unnecessary comment
->    v1: https://lore.kernel.org/intel-wired-lan/20260119175922.199950-1-kohei@enjuk.jp/
-> ---
->   drivers/net/ethernet/intel/igb/e1000_82575.h | 21 ++++++++++++++++++++
->   drivers/net/ethernet/intel/igb/igb_main.c    | 18 +++++++++++++----
->   2 files changed, 35 insertions(+), 4 deletions(-)
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_type.h | 1 +
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c | 2 +-
+>  2 files changed, 2 insertions(+), 1 deletion(-)
 > 
-> diff --git a/drivers/net/ethernet/intel/igb/e1000_82575.h b/drivers/net/ethernet/intel/igb/e1000_82575.h
-> index 63ec253ac788..9e696d55e512 100644
-> --- a/drivers/net/ethernet/intel/igb/e1000_82575.h
-> +++ b/drivers/net/ethernet/intel/igb/e1000_82575.h
-> @@ -87,6 +87,27 @@ union e1000_adv_rx_desc {
->   	} wb;  /* writeback */
->   };
->   
-> +#define E1000_RSS_TYPE_NO_HASH		 0
-> +#define E1000_RSS_TYPE_HASH_TCP_IPV4	 1
-> +#define E1000_RSS_TYPE_HASH_IPV4	 2
-> +#define E1000_RSS_TYPE_HASH_TCP_IPV6	 3
-> +#define E1000_RSS_TYPE_HASH_IPV6_EX	 4
-> +#define E1000_RSS_TYPE_HASH_IPV6	 5
-> +#define E1000_RSS_TYPE_HASH_TCP_IPV6_EX	 6
-> +#define E1000_RSS_TYPE_HASH_UDP_IPV4	 7
-> +#define E1000_RSS_TYPE_HASH_UDP_IPV6	 8
-> +#define E1000_RSS_TYPE_HASH_UDP_IPV6_EX	 9
-> +
-> +#define E1000_RSS_TYPE_MASK		GENMASK(3, 0)
-> +
-> +#define E1000_RSS_L4_TYPES_MASK	\
-> +	(BIT(E1000_RSS_TYPE_HASH_TCP_IPV4)	| \
-> +	 BIT(E1000_RSS_TYPE_HASH_TCP_IPV6)	| \
-> +	 BIT(E1000_RSS_TYPE_HASH_TCP_IPV6_EX)	| \
-> +	 BIT(E1000_RSS_TYPE_HASH_UDP_IPV4)	| \
-> +	 BIT(E1000_RSS_TYPE_HASH_UDP_IPV6)	| \
-> +	 BIT(E1000_RSS_TYPE_HASH_UDP_IPV6_EX))
-> +
->   #define E1000_RXDADV_HDRBUFLEN_MASK      0x7FE0
->   #define E1000_RXDADV_HDRBUFLEN_SHIFT     5
->   #define E1000_RXDADV_STAT_TS             0x10000 /* Pkt was time stamped */
-> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-> index 8dab133296ca..ef0cbf532716 100644
-> --- a/drivers/net/ethernet/intel/igb/igb_main.c
-> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
-> @@ -8824,10 +8824,20 @@ static inline void igb_rx_hash(struct igb_ring *ring,
->   			       union e1000_adv_rx_desc *rx_desc,
->   			       struct sk_buff *skb)
->   {
-> -	if (ring->netdev->features & NETIF_F_RXHASH)
-> -		skb_set_hash(skb,
-> -			     le32_to_cpu(rx_desc->wb.lower.hi_dword.rss),
-> -			     PKT_HASH_TYPE_L3);
-> +	u16 rss_type;
-> +
-> +	if (!(ring->netdev->features & NETIF_F_RXHASH))
-> +		return;
-> +
-> +	rss_type = le16_to_cpu(rx_desc->wb.lower.lo_dword.pkt_info) &
-> +		   E1000_RSS_TYPE_MASK;
-> +
-> +	if (!rss_type)
-> +		return;
-> +
-> +	skb_set_hash(skb, le32_to_cpu(rx_desc->wb.lower.hi_dword.rss),
-> +		     (E1000_RSS_L4_TYPES_MASK & BIT(rss_type)) ?
-> +		     PKT_HASH_TYPE_L4 : PKT_HASH_TYPE_L3);
->   }
->   
->   /**
+> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+> index 61f2ef6..eb5bf3b 100644
+> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+> @@ -2798,6 +2798,7 @@ struct ixgbe_hic_hdr2_rsp {
+>  };
+>  
+>  union ixgbe_hic_hdr2 {
+> +	u32 buf[1];
 
-Reviewed-by: Paul Menzel <pmenzel@molgen.mpg.de>
+The alignment of this union was 1 byte. By adding a u32 member, you're
+effectively making it align to u32 (4 bytes).
 
+>  	struct ixgbe_hic_hdr2_req req;
+>  	struct ixgbe_hic_hdr2_rsp rsp;
+>  };
+> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+> index 76d2fa3..4a0ccbf 100644
+> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+> @@ -1228,7 +1228,7 @@ static int ixgbe_update_flash_X550(struct ixgbe_hw *hw)
+>  	buffer.req.buf_lenl = FW_SHADOW_RAM_DUMP_LEN;
+>  	buffer.req.checksum = FW_DEFAULT_CHECKSUM;
+>  
+> -	status = ixgbe_host_interface_command(hw, &buffer, sizeof(buffer),
+> +	status = ixgbe_host_interface_command(hw, buffer.buf, sizeof(buffer),
+>  					      IXGBE_HI_COMMAND_TIMEOUT, false);
 
-Kind regards,
+`buffer` is a local variable allocated on stack, and the compiler did
+not guarantee its alignment. As ixgbe_host_interface_command() casts
+`buffer` to a u32 array, this may cause an unaligned-access exception
+on some arch.
 
-Paul
+For your reference, I addressed a similar issue previously:
+https://lore.kernel.org/all/20230601015432.159066-1-dqfext@gmail.com/
+
+Please update your message, and try not to use completely-AIGC phrases.
+
+>  	return status;
+>  }
+> -- 
+> 2.52.0
+> 
+> 
+
+Regards,
+Qingfang
