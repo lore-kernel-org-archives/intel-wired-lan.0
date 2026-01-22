@@ -1,106 +1,105 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B0C4BD74EE9
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 23 Jan 2026 15:27:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 07DEDD74EFB
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 23 Jan 2026 16:12:58 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 5B3D7822AA;
-	Fri, 23 Jan 2026 15:27:50 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id B2B696089F;
+	Fri, 23 Jan 2026 16:12:58 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id s_Fj22CchS-9; Fri, 23 Jan 2026 15:27:49 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id DXdyYBg-kYsj; Fri, 23 Jan 2026 16:12:55 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org A12BE822A2
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 794B96089E
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1769182069;
-	bh=m+56liWIY6rlDS8EqIYZo8N4mcFKH8UtPhn96TVJ+gk=;
-	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
+	s=default; t=1769184775;
+	bh=SmsPbxD4P2U6cfRhimAmDFnoSDOJmyA6gTw2jvjRFQo=;
+	h=Date:To:Cc:References:From:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=TXzReISL6lfJ7zrOWTnttuZrEAylnN/O2T6+yCI1fhn/pvDrpzEQ/eEJEOrGN/p1P
-	 +jDAH8oz/+66wqwzFFsWLFcUbgvWlp6uhh+9tabSqHQOjGREIx1CqE8KHllvUlaUoB
-	 kB69RoRScOOC5Sfdk/KAAxjnrJv62oWM5dJRe5SSclY0vFGuXDH8f8aEYP8hRlqflF
-	 bkMNV4OXjq73tQCyn2WsSVJ7JYLi1dNRinwCQYG4dJkFnw/0xYOoZyKUWpR9Y7tCMw
-	 cCzATl207tZYSPM0maPD0mQiMD1z2FyHz3pFr7Fj66/OxAglBzmdXzqHAZM+zfx+cv
-	 +YMHEU9u7lb8w==
+	 From;
+	b=rQIERknflM9lw/GgUqQTxhj+VzZ2pNg0X+Ftc4RzAMFNOJH6j6WU9pym7VpU2La46
+	 RCUD5niYS0PjE14Ab/yr5LLW3jaaW8er7z8NcWILild/MNSIeDf5Ddrg8kWh591OBI
+	 fSk23NCEaKYscaPruhXiEjgrhuL4BxfvtjF0J2EZWzzFyhy2jAMpsR1QzGiYpCueNy
+	 1K418rCNT0FkYVPgHLwWAtxPcJkanFbVCrYz8CFsgaBKHzIHfUOZ/Thqzmr88nBo8T
+	 +ASXdUiRpMnmnAmohVU28bL1BOfB76MctIzDEGwLXmW4fkyvhyZ5pbBvvFBz2UgKBi
+	 LSrjt6QTnTxsA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id A12BE822A2;
-	Fri, 23 Jan 2026 15:27:49 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 794B96089E;
+	Fri, 23 Jan 2026 16:12:55 +0000 (UTC)
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id C70CA23F
- for <intel-wired-lan@lists.osuosl.org>; Fri, 23 Jan 2026 15:27:47 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id E313E122
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 22 Jan 2026 20:27:35 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id A8BFB40934
- for <intel-wired-lan@lists.osuosl.org>; Fri, 23 Jan 2026 15:27:47 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id C3A4E40A13
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 22 Jan 2026 20:27:35 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id BcRC29Ak8EM8 for <intel-wired-lan@lists.osuosl.org>;
- Fri, 23 Jan 2026 15:27:46 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.133.124;
- helo=us-smtp-delivery-124.mimecast.com; envelope-from=ivecera@redhat.com;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 9500740930
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9500740930
-Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.133.124])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 9500740930
- for <intel-wired-lan@lists.osuosl.org>; Fri, 23 Jan 2026 15:27:45 +0000 (UTC)
-Received: from mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com
- (ec2-35-165-154-97.us-west-2.compute.amazonaws.com [35.165.154.97]) by
- relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-562-rNxsUbaiMsWxSlRGkiLwwA-1; Fri,
- 23 Jan 2026 10:27:40 -0500
-X-MC-Unique: rNxsUbaiMsWxSlRGkiLwwA-1
-X-Mimecast-MFC-AGG-ID: rNxsUbaiMsWxSlRGkiLwwA_1769182057
-Received: from mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com
- (mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.17])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
- id 5B3AF1800624; Fri, 23 Jan 2026 15:27:31 +0000 (UTC)
-Received: from [10.44.34.120] (unknown [10.44.34.120])
- by mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP
- id 613A71956095; Fri, 23 Jan 2026 15:27:22 +0000 (UTC)
-Message-ID: <6da98781-9cf2-4756-a6b1-89cc650c9bce@redhat.com>
-Date: Fri, 23 Jan 2026 16:27:21 +0100
+ id rPq6z4aZJHCY for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 22 Jan 2026 20:27:34 +0000 (UTC)
+X-Greylist: delayed 343 seconds by postgrey-1.37 at util1.osuosl.org;
+ Thu, 22 Jan 2026 20:27:33 UTC
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 27FD840A0D
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 27FD840A0D
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2001:41d0:203:375::b4; helo=out-180.mta1.migadu.com;
+ envelope-from=martin.lau@linux.dev; receiver=<UNKNOWN> 
+Received: from out-180.mta1.migadu.com (out-180.mta1.migadu.com
+ [IPv6:2001:41d0:203:375::b4])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 27FD840A0D
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 22 Jan 2026 20:27:33 +0000 (UTC)
+Message-ID: <ad835a9b-e544-48d3-b6e2-ffe172fcfa6d@linux.dev>
+Date: Thu, 22 Jan 2026 12:21:21 -0800
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-To: Simon Horman <horms@kernel.org>
-References: <20260116184610.147591-9-ivecera@redhat.com>
- <20260121001650.1904392-2-kuba@kernel.org>
- <f676c151-e871-4b2e-83f6-6d62bc146337@redhat.com>
- <aXOMiAhf-NdQTonz@horms.kernel.org>
+To: Jakub Sitnicki <jakub@cloudflare.com>
+Cc: netdev@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
+ Eric Dumazet <edumazet@google.com>, Paolo Abeni <pabeni@redhat.com>,
+ Simon Horman <horms@kernel.org>, Michael Chan <michael.chan@broadcom.com>,
+ Pavan Chebbi <pavan.chebbi@broadcom.com>, Andrew Lunn
+ <andrew+netdev@lunn.ch>, Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Saeed Mahameed <saeedm@nvidia.com>, Leon Romanovsky <leon@kernel.org>,
+ Tariq Toukan <tariqt@nvidia.com>, Mark Bloch <mbloch@nvidia.com>,
+ Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>,
+ Jesper Dangaard Brouer <hawk@kernel.org>,
+ John Fastabend <john.fastabend@gmail.com>,
+ Stanislav Fomichev <sdf@fomichev.me>, intel-wired-lan@lists.osuosl.org,
+ bpf@vger.kernel.org, kernel-team@cloudflare.com,
+ Jakub Kicinski <kuba@kernel.org>, Amery Hung <ameryhung@gmail.com>
+References: <20260110-skb-meta-fixup-skb_metadata_set-calls-v1-0-1047878ed1b0@cloudflare.com>
+ <20260112190856.3ff91f8d@kernel.org> <87bjixwv41.fsf@cloudflare.com>
 Content-Language: en-US
-From: Ivan Vecera <ivecera@redhat.com>
-In-Reply-To: <aXOMiAhf-NdQTonz@horms.kernel.org>
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and
+ include these headers.
+From: Martin KaFai Lau <martin.lau@linux.dev>
+In-Reply-To: <87bjixwv41.fsf@cloudflare.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Scanned-By: MIMEDefang 3.0 on 10.30.177.17
+X-Migadu-Flow: FLOW_OUT
+X-Mailman-Approved-At: Fri, 23 Jan 2026 16:12:54 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=redhat.com; 
- s=mimecast20190719; t=1769182063;
+ d=linux.dev; s=key1; t=1769113307;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=m+56liWIY6rlDS8EqIYZo8N4mcFKH8UtPhn96TVJ+gk=;
- b=V6i6XGfVqxK1YyzRh0XKLOGJ5545I+wTRr4N6cqHD/WZQKltbaPwUdu2ZcqYIEgeeLGJP+
- 6d1aoVWHSbkDfvt46vsf8ZOp/Ff1NHL7Ke609CGf1fR36mavWduV8QzN+ORtAVZwTiXLVX
- /3WD7u4Q3ApVrfL6N6Q0MJoYH2wCUeo=
+ bh=SmsPbxD4P2U6cfRhimAmDFnoSDOJmyA6gTw2jvjRFQo=;
+ b=PwXNemkSVY+ky4LEOmfP2pan4B5MDwzZCRi6xu+xEhtfhvYzFZS7qTQxmSfgbVn8p7vAse
+ 8kz6jbK06oD70NIh5+furf0Dm3ao8i8vlft2osWnUQKB38nwgSp1lE6TquDLMrCmz/M5rm
+ 4RgcUg9CBFSFRB9bO8oReErZOUz3QeI=
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dmarc=pass (p=quarantine dis=none)
- header.from=redhat.com
+ dmarc=pass (p=none dis=none)
+ header.from=linux.dev
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=V6i6XGfV
-Subject: Re: [Intel-wired-lan] [net-next, v2,
- 08/12] dpll: Enhance and consolidate reference counting logic
+ dkim=pass (1024-bit key,
+ unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256
+ header.s=key1 header.b=PwXNemkS
+Subject: Re: [Intel-wired-lan] [PATCH net-next 00/10] Call skb_metadata_set
+ when skb->data points past metadata
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -113,41 +112,32 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: edumazet@google.com, anthony.l.nguyen@intel.com, robh@kernel.org,
- leon@kernel.org, andrew+netdev@lunn.ch, linux-rdma@vger.kernel.org,
- przemyslaw.kitszel@intel.com, arkadiusz.kubalewski@intel.com,
- aleksandr.loktionov@intel.com, intel-wired-lan@lists.osuosl.org,
- Jakub Kicinski <kuba@kernel.org>, pabeni@redhat.com,
- devicetree@vger.kernel.org, conor+dt@kernel.org, jiri@resnulli.us,
- richardcochran@gmail.com, saravanak@kernel.org, Prathosh.Satish@microchip.com,
- vadim.fedorenko@linux.dev, netdev@vger.kernel.org, mbloch@nvidia.com,
- linux-kernel@vger.kernel.org, tariqt@nvidia.com, aleksander.lobakin@intel.com,
- jonathan.lemon@gmail.com, krzk+dt@kernel.org, saeedm@nvidia.com,
- davem@davemloft.net
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On 1/23/26 3:58 PM, Simon Horman wrote:
-> On Wed, Jan 21, 2026 at 09:18:02AM +0100, Ivan Vecera wrote:
->> On 1/21/26 1:16 AM, Jakub Kicinski wrote:
->>> This is an AI-generated review of your patch.
->>>
->>> Dunno if there's a reason for having this fixed by a later patch,
->>> if not let's fix. I'm sending the review mostly because of the
->>> comments on patch 12.
->> Will reorder these patches... Maybe it would be better to send patch 9
->> separately to net as this is the fix for the bug we found during
->> development of this series.
-> 
-> Hi Ivan,
-> 
-> If it is a but in net, then yes, that sounds like a good idea to me.
-> 
-> Please include a Fixes tag if you take that route.
-> 
-Yes, it was submitted to net with Fixes and recently merged as
+On 1/13/26 4:33 AM, Jakub Sitnicki wrote:
+> Good point. I'm hoping we don't have to allocate from
+> skb_metadata_set(), which does sound prohibitively expensive. Instead
+> we'd allocate the extension together with the skb if we know upfront
+> that metadata will be used.
 
-https://git.kernel.org/netdev/net/c/f3ddbaaaaf4d
+[ Sorry for being late. Have been catching up after holidays. ]
 
-Ivan
+For the sk local storage (which was mentioned in other replies as making 
+skb metadata to look more like sk local storage), there is a plan (Amery 
+has been looking into it) to allocate the storage together with sk for 
+performance reason. This means allocating a larger 'struct sock'. The 
+extra space will be at the front of sk instead of the end of sk because 
+of how the 'struct sock' is embedded in tcp_sock/udp_sock/... If skb is 
+going in the same direction, it should be useful to have a similar 
+scheme on: upfront allocation and then shared by multiple BPF progs.
+
+The current thinking is to built upon the existing bpf_sk_local_storage 
+usage. A boot param decides how much BPF space should be allocated for 
+'struct sock'. When a bpf_sk_storage_map is created (with a new 
+use_reserve flag), the space will be allocated permanently from the head 
+space of every sk for this map. The read (from a BPF prog) will be at 
+one stable offset before a sk. If there is no more head space left, the 
+map creation will fail. User can decide if it wants to retry without the 
+'use_reserve' flag.
 
