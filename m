@@ -4,77 +4,84 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2005FD19503
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 26 Jan 2026 16:52:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B1A4BD1950F
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 26 Jan 2026 17:29:12 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id C61AE60C2E;
-	Mon, 26 Jan 2026 16:52:23 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 5215D60D8C;
+	Mon, 26 Jan 2026 17:29:12 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id zp_iJu7GJSQG; Mon, 26 Jan 2026 16:52:23 +0000 (UTC)
+ id awomxWCUGJUe; Mon, 26 Jan 2026 17:29:11 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 01D0160C1E
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 05A4B60D6F
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1769446343;
-	bh=y/ZLXg/bukRRC9lfu2j5gYFIwAJwqmvfj4ggjQwJ9TU=;
+	s=default; t=1769448551;
+	bh=EMBb7vEPHe5VZXPOhmrnIghrzhrIEU6ms3G408NLi7w=;
 	h=Date:To:Cc:References:From:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=U6ZR8Qk/MXQdJfNEItK8slJVgvg8leMgJcSDm/gkK+NLS10H7yuLF1peZm9azp1p5
-	 0i1tO+2UaWUwhJt7JZnEfhv3iyC5Yz0LZoGFPZRmECjbmaEhmBEaZIdIpjzqSQ7fvF
-	 EgS4NtbB9qNTfACzaRQB9C5z7uOvs0IyqMx7083FdXVl1gZlncQoXC39LLQJgmAbNT
-	 BMilKridxy+++gpQvmkciivbcsggWWKkCXlwD6YKN3qsFmojHH4f1fnrZlXq8C6NNq
-	 pbnHd234c8KHL8hIENjJ1LUNCWZh7Fwt8ApHElP53SaeDtqTl9mrwET4ymv7qrg8Od
-	 QMnroAiUPxvqg==
+	b=1rGC4KGJ95aK4z19CZ5YnUJG6kcwpLz00XkP2mq+R5jwfjI4GV7gH9pDb29CiqGlB
+	 jjNh4D/mSY+aguPretsfaEAn5W+x+FcYhn71VExb4prjQ7L3nIlXe338AWb0Ofr1X3
+	 9QZ4UQlCW6+a4UAVJmJWDLMTZRjuGrOC6eVM/4o+LPa574YG3s6/zi5Mv2gxjOrzVU
+	 +nx9/9fwnAIctUQS1q22hl6J9Gq4/fACOjGX81es3zf1JMW0HUIgILxLBA/9zYpo3c
+	 fAZDiecJAFd7abcriqrm40k3fwsCt8+/lbb8i0I7dgHWBaZw0Db55Ps3Z3fEh6pRCV
+	 hPfDwDS456UBw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 01D0160C1E;
-	Mon, 26 Jan 2026 16:52:23 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id 81794355
- for <intel-wired-lan@lists.osuosl.org>; Mon, 26 Jan 2026 16:52:21 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 05A4B60D6F;
+	Mon, 26 Jan 2026 17:29:11 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 4A64511B
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 26 Jan 2026 17:29:09 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 70BA940912
- for <intel-wired-lan@lists.osuosl.org>; Mon, 26 Jan 2026 16:52:21 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 2F4B440631
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 26 Jan 2026 17:29:09 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id y9NatDVHjkki for <intel-wired-lan@lists.osuosl.org>;
- Mon, 26 Jan 2026 16:52:20 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id TFOIq5Aa54Fo for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 26 Jan 2026 17:29:07 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=141.14.17.11;
  helo=mx3.molgen.mpg.de; envelope-from=pmenzel@molgen.mpg.de;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org C5B8740817
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org C5B8740817
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 83AFA40748
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 83AFA40748
 Received: from mx3.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
- by smtp2.osuosl.org (Postfix) with ESMTPS id C5B8740817
- for <intel-wired-lan@lists.osuosl.org>; Mon, 26 Jan 2026 16:52:18 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 83AFA40748
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 26 Jan 2026 17:29:06 +0000 (UTC)
 Received: from [192.168.2.221] (p57bd931f.dip0.t-ipconnect.de [87.189.147.31])
  (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested) (Authenticated sender: pmenzel)
- by mx.molgen.mpg.de (Postfix) with ESMTPSA id BFB144C4430092;
- Mon, 26 Jan 2026 17:51:37 +0100 (CET)
-Message-ID: <4eae4d1a-8043-4186-bd38-87f47dd35eda@molgen.mpg.de>
-Date: Mon, 26 Jan 2026 17:51:35 +0100
+ by mx.molgen.mpg.de (Postfix) with ESMTPSA id A4ED24C4430092;
+ Mon, 26 Jan 2026 18:28:30 +0100 (CET)
+Message-ID: <4347b1f7-dcd5-40a1-aebd-40060e9769f2@molgen.mpg.de>
+Date: Mon, 26 Jan 2026 18:28:29 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-To: Haoxiang Li <lihaoxiang@isrc.iscas.ac.cn>
-Cc: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
- andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
- kuba@kernel.org, pabeni@redhat.com, intel-wired-lan@lists.osuosl.org,
- netdev@vger.kernel.org
-References: <20260125140423.2077845-1-lihaoxiang@isrc.iscas.ac.cn>
+To: Brian Vazquez <brianvv@google.com>,
+ Brian Vazquez <brianvv.kernel@gmail.com>
+Cc: Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+ intel-wired-lan@lists.osuosl.org, David Decotigny <decot@google.com>,
+ Li Li <boolli@google.com>, Anjali Singhai <anjali.singhai@intel.com>,
+ Sridhar Samudrala <sridhar.samudrala@intel.com>,
+ linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+ emil.s.tantilov@intel.com, Brett Creeley <brett.creeley@amd.com>,
+ Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+References: <20260126144624.2319784-1-brianvv@google.com>
 Content-Language: en-US
 From: Paul Menzel <pmenzel@molgen.mpg.de>
-In-Reply-To: <20260125140423.2077845-1-lihaoxiang@isrc.iscas.ac.cn>
+In-Reply-To: <20260126144624.2319784-1-brianvv@google.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=none (p=none dis=none)
  header.from=molgen.mpg.de
-Subject: Re: [Intel-wired-lan] [PATCH] i40e: add an error handling path in
- i40e_xsk_pool_enable()
+Subject: Re: [Intel-wired-lan] [iwl-net PATCH v2] idpf: change IRQ naming to
+ match netdev and ethtool queue numbering
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -90,48 +97,85 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Dear Haoxiang,
+Dear Brian,
 
 
 Thank you for your patch.
 
-Am 25.01.26 um 15:04 schrieb Haoxiang Li:
-> In i40e_xsk_pool_enable(), the memory allocated by 
-> xsk_pool_dma_map() should be released if some error occurs. Add an
-> error handling path to do so.
+Am 26.01.26 um 15:46 schrieb Brian Vazquez via Intel-wired-lan:
+> The code uses the vidx for the IRQ name but that doesn't match ethtool
+> reporting or netdev naming, this makes it hard to tune the device and
+> associate queues with IRQs. Sequentially requesting irqs starting from
+> '0' makes the output consistent.
+> 
+> Before:
+> 
+> ethtool -L eth1 tx 1 combined 3
+> 
+> grep . /proc/irq/*/*idpf*/../smp_affinity_list
+> /proc/irq/67/idpf-Mailbox-0/../smp_affinity_list:0-55,112-167
+> /proc/irq/68/idpf-eth1-TxRx-1/../smp_affinity_list:0
+> /proc/irq/70/idpf-eth1-TxRx-3/../smp_affinity_list:1
+> /proc/irq/71/idpf-eth1-TxRx-4/../smp_affinity_list:2
+> /proc/irq/72/idpf-eth1-Tx-5/../smp_affinity_list:3
+> 
+> ethtool -S eth1 | grep -v ': 0'
+> NIC statistics:
+>       tx_q-0_pkts: 1002
+>       tx_q-1_pkts: 2679
+>       tx_q-2_pkts: 1113
+>       tx_q-3_pkts: 1192 <----- tx_q-3 vs idpf-eth1-Tx-5
+>       rx_q-0_pkts: 1143
+>       rx_q-1_pkts: 3172
+>       rx_q-2_pkts: 1074
+> 
+> After:
+> 
+> ethtool -L eth1 tx 1 combined 3
+> 
+> grep . /proc/irq/*/*idpf*/../smp_affinity_list
+> 
+> /proc/irq/67/idpf-Mailbox-0/../smp_affinity_list:0-55,112-167
+> /proc/irq/68/idpf-eth1-TxRx-0/../smp_affinity_list:0
+> /proc/irq/70/idpf-eth1-TxRx-1/../smp_affinity_list:1
+> /proc/irq/71/idpf-eth1-TxRx-2/../smp_affinity_list:2
+> /proc/irq/72/idpf-eth1-Tx-3/../smp_affinity_list:3
+> 
+> ethtool -S eth1 | grep -v ': 0'
+> NIC statistics:
+>       tx_q-0_pkts: 118
+>       tx_q-1_pkts: 134
+>       tx_q-2_pkts: 228
+>       tx_q-3_pkts: 138 <--- tx_q-3 matches idpf-eth1-Tx-3
+>       rx_q-0_pkts: 111
+>       rx_q-1_pkts: 366
+>       rx_q-2_pkts: 120
+> 
+> Fixes: d4d558718266 ("idpf: initialize interrupts and enable vport")
+> Signed-off-by: Brian Vazquez <brianvv@google.com>
+> Reviewed-by: Brett Creeley <brett.creeley@amd.com>
+> Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+> ---
+> V2: Add mising Fixes tag
+> 
+>   drivers/net/ethernet/intel/idpf/idpf_txrx.c | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.c b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
+> index c2a1fe3c79ec..c1f8dfc570ce 100644
+> --- a/drivers/net/ethernet/intel/idpf/idpf_txrx.c
+> +++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
+> @@ -4093,7 +4093,7 @@ static int idpf_vport_intr_req_irq(struct idpf_vport *vport,
+>   			continue;
+>   
+>   		name = kasprintf(GFP_KERNEL, "%s-%s-%s-%d", drv_name, if_name,
+> -				 vec_name, vidx);
+> +				 vec_name, vector);
+>   
+>   		err = request_irq(irq_num, idpf_vport_intr_clean_queues, 0,
+>   				  name, q_vector);
 
-(Please be aware to use the fully allowed text width of 75 characters
-per line. (It wouldn’t save a line here though.))
-
-Please add a Fixes: tag.
-
-> Signed-off-by: Haoxiang Li <lihaoxiang@isrc.iscas.ac.cn> --- drivers/
-> net/ethernet/intel/i40e/i40e_xsk.c | 12 ++++++++---- 1 file changed,
-> 8 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.c b/drivers/
-> net/ethernet/intel/i40e/i40e_xsk.c index 9f47388eaba5..92b853a75b28
-> 100644 --- a/drivers/net/ethernet/intel/i40e/i40e_xsk.c +++ b/
-> drivers/net/ethernet/intel/i40e/i40e_xsk.c @@ -108,23 +108,27 @@
-> static int i40e_xsk_pool_enable(struct i40e_vsi *vsi, if
-> (if_running) { err = i40e_queue_pair_disable(vsi, qid); if (err) -
-> return err; +			goto unmap;
-> 
-> err = i40e_realloc_rx_xdp_bi(vsi->rx_rings[qid], true); if (err) -
-> return err; +			goto unmap;
-> 
-> err = i40e_queue_pair_enable(vsi, qid); if (err) -			return err; +
-> goto unmap;
-> 
-> /* Kick start the NAPI context so that receiving will start */ err =
-> i40e_xsk_wakeup(vsi->netdev, qid, XDP_WAKEUP_RX); if (err) -
-> return err; +			goto unmap; }
-> 
-> return 0; + +unmap: +	xsk_pool_dma_unmap(pool, I40E_RX_DMA_ATTR); +
-> return err; }
-> 
-> /**
-
+With Andrew’s comment addressed in the commit message, this looks sensible.
 
 Reviewed-by: Paul Menzel <pmenzel@molgen.mpg.de>
 
