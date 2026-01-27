@@ -1,76 +1,76 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A919DCA6C92
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 27 Jan 2026 08:57:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BCAB7CA6CB6
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 27 Jan 2026 08:58:26 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 7415B60F38;
-	Tue, 27 Jan 2026 08:57:04 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 82899822B0;
+	Tue, 27 Jan 2026 08:58:26 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Pl8E1IgOuCp8; Tue, 27 Jan 2026 08:57:02 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id RFyW8_UvPfUh; Tue, 27 Jan 2026 08:58:24 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org CBFB860F2D
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9BE7A8224E
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1769504222;
-	bh=Hpm3tzHmLebq8eIS8qDAzoE8I3X/7qHvO8PMgK5y+KM=;
+	s=default; t=1769504304;
+	bh=uX/5mrMkeTkN9LjvZeBrGkA31EqPLswoMX6OI/4YseM=;
 	h=From:To:CC:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=somSR+Cjgmtq/xlbuns8DJz4OM5tLS70olF7rgG5flJpF1nwcLxYgmOoc152Qr7+6
-	 dI+NPmFUuv9qx5sIwPMJrid78/Z3fWvjhwsncECEEqGKp++3u8ULi2NcujCW6xE4IW
-	 tJfihkUeM+vEC9AqDyy35J9hAxVYzkI3EyP9EiO0lWChnIv2bXXJZHyFjJ3OxBIVVt
-	 N+z5FGETTUBmr7p8L0WTCIn3QnQFzXsRO0/tcy7X4WzMfXOLoUpVBKRB46MMK85SBJ
-	 Baa/Y+95j95MpN2zbOXCnutUhBaJLkAxIe1J7kTJXbZzJzBHYuRWGavYnLP7ER2ida
-	 BRk0thIdFRduQ==
+	b=9jCKQIALLTuAtBqVRjl4RwDE/sEk8NPKSP4IuXnWkaeWuuxEYY4Y1+6u4UO73w85W
+	 t4yul5R5snnfY0c8M5j940ZrUm3o34KwXxuuXqTwZLcS4QgKXMCUPitz8aZFCLr6pp
+	 7oL74QCfTMp1nGwEbSZCP5rXCNzNbSOy2Z1iVFy64Vjxe6Z0/4Qmzsqeq+2DvYeIJ3
+	 pzVRXHFNSPT6oSls/KLtZjnI34sJq7OPZxm4nAUnl4XSXuBNc6sO+R1FXyu3y9M1oa
+	 rKVo6b96rU9hzB4IoQLPh1NGhfazfzinWFoASZcOkIPQ/HCbNeIvRpzsBB1OlKWxRl
+	 YTYr+ZmbKA5+Q==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id CBFB860F2D;
-	Tue, 27 Jan 2026 08:57:02 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id D7AE02F4
- for <intel-wired-lan@lists.osuosl.org>; Tue, 27 Jan 2026 08:57:01 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 9BE7A8224E;
+	Tue, 27 Jan 2026 08:58:24 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 8B40533A
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 27 Jan 2026 08:58:22 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id BC83F409DD
- for <intel-wired-lan@lists.osuosl.org>; Tue, 27 Jan 2026 08:57:01 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 784A340B84
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 27 Jan 2026 08:58:22 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ax07aNNStjKG for <intel-wired-lan@lists.osuosl.org>;
- Tue, 27 Jan 2026 08:57:01 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=44.245.243.92;
- helo=pdx-out-001.esa.us-west-2.outbound.mail-perimeter.amazon.com;
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id Fd_Ioe5NH2tW for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 27 Jan 2026 08:58:21 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=50.112.246.219;
+ helo=pdx-out-015.esa.us-west-2.outbound.mail-perimeter.amazon.com;
  envelope-from=prvs=4803e00d0=takkozu@amazon.co.jp; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org D8943404F1
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org D8943404F1
-Received: from pdx-out-001.esa.us-west-2.outbound.mail-perimeter.amazon.com
- (pdx-out-001.esa.us-west-2.outbound.mail-perimeter.amazon.com
- [44.245.243.92])
- by smtp2.osuosl.org (Postfix) with ESMTPS id D8943404F1
- for <intel-wired-lan@lists.osuosl.org>; Tue, 27 Jan 2026 08:57:00 +0000 (UTC)
-X-CSE-ConnectionGUID: PCqPgmyxTsqX5IPybaFVKA==
-X-CSE-MsgGUID: XXDa8TXbRuydT3HlY2gr/g==
-X-IronPort-AV: E=Sophos;i="6.21,256,1763424000"; d="scan'208";a="11205858"
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 5DA4940B76
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 5DA4940B76
+Received: from pdx-out-015.esa.us-west-2.outbound.mail-perimeter.amazon.com
+ (pdx-out-015.esa.us-west-2.outbound.mail-perimeter.amazon.com
+ [50.112.246.219])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 5DA4940B76
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 27 Jan 2026 08:58:21 +0000 (UTC)
+X-CSE-ConnectionGUID: Yuatk1bvSKOSx5SsuqALRg==
+X-CSE-MsgGUID: +JWy8BhZQ7+lBNDztTlZiw==
+X-IronPort-AV: E=Sophos;i="6.21,256,1763424000"; d="scan'208";a="11489358"
 Received: from ip-10-5-0-115.us-west-2.compute.internal (HELO
  smtpout.naws.us-west-2.prod.farcaster.email.amazon.dev) ([10.5.0.115])
- by internal-pdx-out-001.esa.us-west-2.outbound.mail-perimeter.amazon.com with
- ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 Jan 2026 08:56:58 +0000
-Received: from EX19MTAUWC001.ant.amazon.com [205.251.233.105:27460]
- by smtpin.naws.us-west-2.prod.farcaster.email.amazon.dev [10.0.40.218:2525]
+ by internal-pdx-out-015.esa.us-west-2.outbound.mail-perimeter.amazon.com with
+ ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 Jan 2026 08:58:17 +0000
+Received: from EX19MTAUWB002.ant.amazon.com [205.251.233.111:9193]
+ by smtpin.naws.us-west-2.prod.farcaster.email.amazon.dev [10.0.53.66:2525]
  with esmtp (Farcaster)
- id 2d422e7d-f6de-45cd-9d73-b8f9930c4032; Tue, 27 Jan 2026 08:56:57 +0000 (UTC)
-X-Farcaster-Flow-ID: 2d422e7d-f6de-45cd-9d73-b8f9930c4032
+ id 14b8c192-8f08-4013-8f10-c3ddba579f9f; Tue, 27 Jan 2026 08:58:17 +0000 (UTC)
+X-Farcaster-Flow-ID: 14b8c192-8f08-4013-8f10-c3ddba579f9f
 Received: from EX19D001UWA001.ant.amazon.com (10.13.138.214) by
- EX19MTAUWC001.ant.amazon.com (10.250.64.174) with Microsoft SMTP Server
+ EX19MTAUWB002.ant.amazon.com (10.250.64.231) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA) id 15.2.2562.35;
- Tue, 27 Jan 2026 08:56:57 +0000
+ Tue, 27 Jan 2026 08:58:17 +0000
 Received: from 603e5f7bc1fe.amazon.com (10.37.245.7) by
  EX19D001UWA001.ant.amazon.com (10.13.138.214) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA) id 15.2.2562.35;
- Tue, 27 Jan 2026 08:56:55 +0000
+ Tue, 27 Jan 2026 08:58:15 +0000
 From: Takashi Kozu <takkozu@amazon.com>
 To: <anthony.l.nguyen@intel.com>
 CC: <przemyslaw.kitszel@intel.com>, <andrew+netdev@lunn.ch>,
@@ -79,8 +79,8 @@ CC: <przemyslaw.kitszel@intel.com>, <andrew+netdev@lunn.ch>,
  <netdev@vger.kernel.org>, <aleksandr.loktionov@intel.com>,
  <pmenzel@molgen.mpg.de>, <piotr.kwapulinski@intel.com>, <enjuk@amazon.com>,
  Takashi Kozu <takkozu@amazon.com>
-Date: Tue, 27 Jan 2026 17:54:09 +0900
-Message-ID: <20260127085410.79645-7-takkozu@amazon.com>
+Date: Tue, 27 Jan 2026 17:54:10 +0900
+Message-ID: <20260127085410.79645-8-takkozu@amazon.com>
 X-Mailer: git-send-email 2.47.0
 In-Reply-To: <20260127085410.79645-5-takkozu@amazon.com>
 References: <20260127085410.79645-5-takkozu@amazon.com>
@@ -88,30 +88,30 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
 X-Originating-IP: [10.37.245.7]
-X-ClientProxiedBy: EX19D032UWB004.ant.amazon.com (10.13.139.136) To
+X-ClientProxiedBy: EX19D039UWB003.ant.amazon.com (10.13.138.93) To
  EX19D001UWA001.ant.amazon.com (10.13.138.214)
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=amazon.com; i=@amazon.com; q=dns/txt; s=amazoncorp2;
- t=1769504220; x=1801040220;
+ t=1769504301; x=1801040301;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=Hpm3tzHmLebq8eIS8qDAzoE8I3X/7qHvO8PMgK5y+KM=;
- b=JUebszPbD/WTGQgK0tzbyDbuiO746wfUzH7TgIKObJnVdFoRJU5lkMne
- 959ZD5sdm0UXKCqnX14oo8FFohxAoHBbYzYjPL/ZgpNqgB9JAvXhCTrqO
- TAmhSzq0zp1YxPFvYkm0Vrg838GXM8owBcQ1NA8jlLFcF8IOCfZNGsYv2
- hkaSsWB3ZqE1azLybkAtDBwlVC480PG4lpWjB0MC4ke4rTQTYexgCbFRJ
- /4fojbRV3FMHz25vdbOXgimGAsK4v2pwlFOF9SNH5jonGF2OabmMXZpJV
- vkJ03hZtG1bvMsfeVd7FKKm0nAWw6q0q9ifaM6nNd0WpLmtL7HLGlI1rY
- g==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ bh=uX/5mrMkeTkN9LjvZeBrGkA31EqPLswoMX6OI/4YseM=;
+ b=DY+XRpsKxb9MMyMUOHckkSJ/GaGoVP1pJAS8OnFrsrtRI3c3MAZhJxhs
+ 6O6dsFR3rhD0ysYdxvbtJBdS2HwhDVkqq2YwkLzjnWij4JnPsFnks7wSV
+ vHuAgJzHxdj83HKw60cuf5h7AQ+99s2PBZP/YcXAyMo6EOFtSDKF5eyD3
+ b2Ufe/zdF52nI2ryTXk2dzL29fR7uoOJs0oAqB7vaWgidJV9V52dD2ugp
+ +e7x0oulX9GNfj9m17HGI0c0s8W3JTsrD0XHZBmFt7jXdipWkzgajRRye
+ Dzg6Nl4JHZ+Yqd+P0d+E+d2cBA9nUnnRb7VKLDV9My2mmsacS5Qg891Dl
+ Q==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=amazon.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=amazon.com header.i=@amazon.com header.a=rsa-sha256
- header.s=amazoncorp2 header.b=JUebszPb
-Subject: [Intel-wired-lan] [PATCH iwl-next v5 2/3] igb: expose RSS key via
- ethtool get_rxfh
+ header.s=amazoncorp2 header.b=DY+XRpsK
+Subject: [Intel-wired-lan] [PATCH iwl-next v5 3/3] igb: allow configuring
+ RSS key via ethtool set_rxfh
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -127,58 +127,83 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Implement igb_get_rxfh_key_size() and extend
-igb_get_rxfh() to return the RSS key to userspace.
+Change igc_set_rxfh() to accept and save a userspace-provided
+RSS key. When a key is provided, store it in the adapter and write the
+E1000 registers accordingly.
 
-This can be tested using `ethtool -x <dev>`.
+This can be tested using `ethtool -X <dev> hkey <key>`.
 
-Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 Signed-off-by: Takashi Kozu <takkozu@amazon.com>
 ---
- drivers/net/ethernet/intel/igb/igb_ethtool.c | 16 ++++++++++++----
- 1 file changed, 12 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/intel/igb/igb_ethtool.c | 48 +++++++++++---------
+ 1 file changed, 26 insertions(+), 22 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-index a93069b761a6..b387121f0ea7 100644
+index b387121f0ea7..b4eef14c09d5 100644
 --- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
 +++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-@@ -3297,10 +3297,12 @@ static int igb_get_rxfh(struct net_device *netdev,
- 	int i;
+@@ -3357,35 +3357,39 @@ static int igb_set_rxfh(struct net_device *netdev,
+ 	u32 num_queues;
  
- 	rxfh->hfunc = ETH_RSS_HASH_TOP;
+ 	/* We do not allow change in unsupported parameters */
+-	if (rxfh->key ||
+-	    (rxfh->hfunc != ETH_RSS_HASH_NO_CHANGE &&
+-	     rxfh->hfunc != ETH_RSS_HASH_TOP))
++	if (rxfh->hfunc != ETH_RSS_HASH_NO_CHANGE &&
++	    rxfh->hfunc != ETH_RSS_HASH_TOP)
+ 		return -EOPNOTSUPP;
 -	if (!rxfh->indir)
 -		return 0;
+ 
+-	num_queues = adapter->rss_queues;
++	if (rxfh->indir) {
++		num_queues = adapter->rss_queues;
+ 
+-	switch (hw->mac.type) {
+-	case e1000_82576:
+-		/* 82576 supports 2 RSS queues for SR-IOV */
+-		if (adapter->vfs_allocated_count)
+-			num_queues = 2;
+-		break;
+-	default:
+-		break;
+-	}
++		switch (hw->mac.type) {
++		case e1000_82576:
++			/* 82576 supports 2 RSS queues for SR-IOV */
++			if (adapter->vfs_allocated_count)
++				num_queues = 2;
++			break;
++		default:
++			break;
++		}
+ 
+-	/* Verify user input. */
 -	for (i = 0; i < IGB_RETA_SIZE; i++)
--		rxfh->indir[i] = adapter->rss_indir_tbl[i];
-+	if (rxfh->indir)
+-		if (rxfh->indir[i] >= num_queues)
+-			return -EINVAL;
++		/* Verify user input. */
 +		for (i = 0; i < IGB_RETA_SIZE; i++)
-+			rxfh->indir[i] = adapter->rss_indir_tbl[i];
++			if (rxfh->indir[i] >= num_queues)
++				return -EINVAL;
+ 
+ 
+-	for (i = 0; i < IGB_RETA_SIZE; i++)
+-		adapter->rss_indir_tbl[i] = rxfh->indir[i];
++		for (i = 0; i < IGB_RETA_SIZE; i++)
++			adapter->rss_indir_tbl[i] = rxfh->indir[i];
 +
-+	if (rxfh->key)
-+		memcpy(rxfh->key, adapter->rss_key, sizeof(adapter->rss_key));
++		igb_write_rss_indir_tbl(adapter);
++	}
+ 
+-	igb_write_rss_indir_tbl(adapter);
++	if (rxfh->key) {
++		memcpy(adapter->rss_key, rxfh->key, sizeof(adapter->rss_key));
++		igb_write_rss_key(adapter);
++	}
  
  	return 0;
  }
-@@ -3340,6 +3342,11 @@ void igb_write_rss_indir_tbl(struct igb_adapter *adapter)
- 	}
- }
- 
-+static u32 igb_get_rxfh_key_size(struct net_device *netdev)
-+{
-+	return IGB_RSS_KEY_SIZE;
-+}
-+
- static int igb_set_rxfh(struct net_device *netdev,
- 			struct ethtool_rxfh_param *rxfh,
- 			struct netlink_ext_ack *extack)
-@@ -3504,6 +3511,7 @@ static const struct ethtool_ops igb_ethtool_ops = {
- 	.get_module_eeprom	= igb_get_module_eeprom,
- 	.get_rxfh_indir_size	= igb_get_rxfh_indir_size,
- 	.get_rxfh		= igb_get_rxfh,
-+	.get_rxfh_key_size	= igb_get_rxfh_key_size,
- 	.set_rxfh		= igb_set_rxfh,
- 	.get_rxfh_fields	= igb_get_rxfh_fields,
- 	.set_rxfh_fields	= igb_set_rxfh_fields,
 -- 
 2.52.0
 
