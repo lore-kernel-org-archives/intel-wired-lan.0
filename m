@@ -4,94 +4,99 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2B939D3F099
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 28 Jan 2026 16:50:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2EFB4D3F083
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 28 Jan 2026 16:50:45 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 02A544097F;
+	by smtp4.osuosl.org (Postfix) with ESMTP id AB3404098C;
 	Wed, 28 Jan 2026 16:50:41 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id BoKrXD1VzBQM; Wed, 28 Jan 2026 16:50:40 +0000 (UTC)
+ id bjr5kDfmVirb; Wed, 28 Jan 2026 16:50:39 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 5E564408BA
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org A1AB440701
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1769619040;
-	bh=UdSVi0o1uq+l2JvN876bEU4Qi8OjzG7pK/mhhTmMvrU=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=iFpdvf95zsyLcbzTkr1bruD8Ol+K9Lh6Ibv64K2IAJow0QLcoR2kWaAldKDrqI0c1
-	 QYdmhkZPGC6/PUMS5jgXf4B8Jp2eOhw7IqdHS4PpPLp4fAkROiTg7yWe/SoQ2g7juR
-	 9hRsp/OLdP2F7lAuBvbdEqX19YxXIokpzPCcDBwV1r2mrz9nt+7FmWDODK/XIaceDV
-	 iAa/ju0YWOL+j5t7P4bFBpC+264qnA9lMjqC9Lh3Sq4Ftg2FIutjNNoYtZZK3WkWhj
-	 nV/utnuTgqRAOyOWzAB+DOCy8x+b6vUwYb8vjZqwyI5kw3n3k/vtvxKUJW2rFwdJtl
-	 RmIDPYLDzkm/A==
+	s=default; t=1769619039;
+	bh=IqDSAu7laVueoLYvG13XkP9ttAtdGXv6i2DJMNCIq7c=;
+	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=Ha3tTral2TfpOMUpcTeDQkmVXH93AOMRA47hQCOPYzC5e251Lmm1mYQWDPzDTl/Sg
+	 Vvchj30tttH3cgK9/7OZPTjRxAaDKFwfJ6BBM49JzhyG8mMK3z+mJuBvplqqEczmWw
+	 1damUEiRV23tQChFVKMeLNRhzSVX5pZ1KQngQuUDo0TSzVYyeOIu/s535UioMWiLTq
+	 h1+ruSX+uE7bJ+lTwfL7+jiBQflOberDQrrsOz6ITy50I3d95Z5KV4JiKgzAqCKUQ2
+	 zhAk7w0LgFLo6xs8VOEX9WWuCyOf7z9cgT/JdSE5mLdbfkJR7kDwwhY4jzeQSRYUsP
+	 2iscrgw0vU3Hg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 5E564408BA;
-	Wed, 28 Jan 2026 16:50:40 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id 292021AD
- for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Jan 2026 16:50:36 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 091F4810E4
+	by smtp4.osuosl.org (Postfix) with ESMTP id A1AB440701;
+	Wed, 28 Jan 2026 16:50:39 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 1C6CD31D
  for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Jan 2026 16:50:35 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp3.osuosl.org (Postfix) with ESMTP id E8D8460774
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Jan 2026 16:50:33 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id pkcv3BAvF48g for <intel-wired-lan@lists.osuosl.org>;
- Wed, 28 Jan 2026 16:50:34 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id I7qwiD74Wxwq for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 28 Jan 2026 16:50:33 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org;
+ client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org;
  envelope-from=mchehab+huawei@kernel.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 14324810D0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 14324810D0
-Received: from sea.source.kernel.org (sea.source.kernel.org
- [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 14324810D0
- for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Jan 2026 16:50:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 358C760779
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 358C760779
+Received: from tor.source.kernel.org (tor.source.kernel.org
+ [IPv6:2600:3c04:e001:324:0:1991:8:25])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 358C760779
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Jan 2026 16:50:32 +0000 (UTC)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by sea.source.kernel.org (Postfix) with ESMTP id ED74B444FA;
- Wed, 28 Jan 2026 16:50:33 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D0229C2BC9E;
- Wed, 28 Jan 2026 16:50:33 +0000 (UTC)
+ by tor.source.kernel.org (Postfix) with ESMTP id C3DC960007;
+ Wed, 28 Jan 2026 16:50:31 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 753F6C4CEF7;
+ Wed, 28 Jan 2026 16:50:31 +0000 (UTC)
 Received: from mchehab by mail.kernel.org with local (Exim 4.99.1)
  (envelope-from <mchehab+huawei@kernel.org>)
- id 1vl8kR-0000000DAwc-3XJq; Wed, 28 Jan 2026 17:50:31 +0100
+ id 1vl8kO-0000000DAjS-2j79; Wed, 28 Jan 2026 17:50:28 +0100
 From: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
-To: Jonathan Corbet <corbet@lwn.net>,
- Linux Doc Mailing List <linux-doc@vger.kernel.org>
+To: "David S. Miller" <davem@davemloft.net>,
+ Alexander Lobakin <aleksander.lobakin@intel.com>,
+ Alexei Starovoitov <ast@kernel.org>,
+ Daniel Borkmann <daniel@iogearbox.net>, Jakub Kicinski <kuba@kernel.org>,
+ Jesper Dangaard Brouer <hawk@kernel.org>,
+ John Fastabend <john.fastabend@gmail.com>,
+ Jonathan Corbet <corbet@lwn.net>,
+ Mauro Carvalho Chehab <mchehab@kernel.org>,
+ Richard Cochran <richardcochran@gmail.com>
 Cc: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>, bpf@vger.kernel.org,
- intel-wired-lan@lists.osuosl.org, linux-kernel@vger.kernel.org,
- netdev@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+ intel-wired-lan@lists.osuosl.org, linux-doc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
  Randy Dunlap <rdunlap@infradead.org>,
- Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Wed, 28 Jan 2026 17:50:09 +0100
-Message-ID: <ab5e7c447c49dd000d7bb32788e434d23569c46d.1769617841.git.mchehab+huawei@kernel.org>
+ Shuah Khan <skhan@linuxfoundation.org>,
+ Stanislav Fomichev <sdf@fomichev.me>
+Date: Wed, 28 Jan 2026 17:49:58 +0100
+Message-ID: <cover.1769617841.git.mchehab+huawei@kernel.org>
 X-Mailer: git-send-email 2.52.0
-In-Reply-To: <cover.1769617841.git.mchehab+huawei@kernel.org>
-References: <cover.1769617841.git.mchehab+huawei@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1769619033;
- bh=+PHSHQk42n1s2eoXmKBeCEHsRg0AhUmcVaeG8R0cpiE=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=fUDxbWwUpvODFtK7Bn0IDVqUo4wRl4FZ2y9tMSl8n6OmeL6FaTaJaETZ5HletL/27
- u8zCMurLOPRvtO/7H7AQe96Wf8qEBLTNx0Aw36SaM+fzSuEMHw5ZCQhwyBXtywuX2E
- ufdxiWhrr5oS2RxdPl1QJlXpIHzMqbDUpLV+WhA1dTiPyuq+nHo088Q0At0522ASsm
- Ts6u1Lw7NlGhW7jxOvGMK7DM6rvGvPdUC/qyPO1+N294RvCj7H7W9lapR7ZCd4ciSi
- wHdhYOHvfvIYkRUJsrqDaLONAREIdqxtJMQE3N86mlUzpNSfM/2pfGVddAZI8cJ4Ry
- xCQHCMdaN32JQ==
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ d=kernel.org; s=k20201202; t=1769619031;
+ bh=UbNYriofE/WtsPUbSLmtYEzz8gqiNFUggra4R8CS2BA=;
+ h=From:To:Cc:Subject:Date:From;
+ b=Q/bdnRb0F86wJ7HS6Cyp6eWiPP3TJGKOgmFgxuJ65RsPq579vdhDYe+fVzfjLjpLR
+ bQYW+sP2LP2epfwlQnKZ7Sp22sArGB4RfarEhMojtoVcVZuGNjjgTLoA1ymxA0r+to
+ kP/2G5C4fu05NnC5O28IizXy4gZWEIwSO78HZr+ThT2dHlAa3PqE1WljduYbzBO8GD
+ +2voYYHnYZuKawWPO5aq7HCXmKy1+8FAFsvpwkfsgF8nQeqJyhksIk+T2sAhkT2xfA
+ zfiqrzk1X+y0tkaDhJWpouTEzvcLDNVYlsu0f/192Y0ZCnDptrESgdzA6VARMzTMBt
+ c/PsNGftn3uNg==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=fUDxbWwU
-Subject: [Intel-wired-lan] [PATCH v2 11/25] docs: kdoc_parser: fix parser to
- support multi-word types
+ header.a=rsa-sha256 header.s=k20201202 header.b=Q/bdnRb0
+Subject: [Intel-wired-lan] [PATCH v2 00/25] kernel-doc: make it parse new
+ functions and structs
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -107,40 +112,121 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The regular expression currently expects a single word for the
-type, but it may be something like  "struct foo".
+Hi Jon,
 
-Add support for it.
+It is impressive how a single patch became a series with 25 ones ;-)
 
-Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
-Acked-by: Randy Dunlap <rdunlap@infradead.org>
-Tested-by: Randy Dunlap <rdunlap@infradead.org>
----
- tools/lib/python/kdoc/kdoc_parser.py | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+This version was rebased on next-20260127, which is after docs-mw
+got merged with my doc patches, solving some merge conflicts.
 
-diff --git a/tools/lib/python/kdoc/kdoc_parser.py b/tools/lib/python/kdoc/kdoc_parser.py
-index 0b6cba442d72..21cc4e19a1e8 100644
---- a/tools/lib/python/kdoc/kdoc_parser.py
-+++ b/tools/lib/python/kdoc/kdoc_parser.py
-@@ -1026,7 +1026,7 @@ class KernelDoc:
- 
-         default_val = None
- 
--        r= KernRe(OPTIONAL_VAR_ATTR + r"[\w_]*\s+(?:\*+)?([\w_]+)\s*[\d\]\[]*\s*(=.*)?")
-+        r= KernRe(OPTIONAL_VAR_ATTR + r"\s*[\w_\s]*\s+(?:\*+)?([\w_]+)\s*[\d\]\[]*\s*(=.*)?")
-         if r.match(proto):
-             if not declaration_name:
-                 declaration_name = r.group(1)
-@@ -1037,7 +1037,7 @@ class KernelDoc:
-                                   r.groups(), proto)
- 
-         else:
--            r= KernRe(OPTIONAL_VAR_ATTR + r"(?:[\w_]*)?\s+(?:\*+)?(?:[\w_]+)\s*[\d\]\[]*\s*(=.*)?")
-+            r= KernRe(OPTIONAL_VAR_ATTR + r"(?:[\w_\s]*)?\s+(?:\*+)?(?:[\w_]+)\s*[\d\]\[]*\s*(=.*)?")
- 
-             if r.match(proto):
-                 default_val = r.group(1)
+It should now apply cleanly on the top of upstream and it will address
+the kernel-doc issues with context analysis patches that are already
+at linux-next.
+
+On this version, I opted to do something I always wanted when
+porting from the venerable kernel-doc perl logic: properly handle
+macros without writing really complex regular expressions.
+
+After those changes, the replacement logic becomes a lot more
+easier to write, as we can have a cleaner logic to handle
+function calls:
+
+	function_xforms = [
+	    (KernRe(r"^static +"), ""),
+	    (KernRe(r"^extern +"), ""),
+	...
+	    (NestedMatch(r"__cond_acquires\s*\("), ""),
+	    (NestedMatch(r"__cond_releases\s*\("), ""),
+	...
+	}
+
+It can even be used to replace comma-separated arguments like here:
+
+	struct_xforms = [
+	...
+	    (NestedMatch(r'\bstruct_group\s*\('), r'\2'),
+	    (NestedMatch(r'\bstruct_group_attr\s*\('), r'\3'),
+	    (NestedMatch(r'\bstruct_group_tagged\s*\('), r'struct \1 { \3 } \2;'),
+	    (NestedMatch(r'\b__struct_group\s*\('), r'\4'),
+	...
+	]
+
+As both KernRe and NestedMatch have sub methods, they can be placed
+altogether at the same transforms tables.
+
+The regex syntax for them are quite simple: they should end with a
+delimiter (usually open parenthesis, but brackets and square
+brackets are also supported).
+
+The first 15 patches on this series were co-developed with Randy,
+with came up with the original patch. I ended helping identifying
+kernel-doc issues and doing some changes to make the parser more
+reliable.
+
+Then, I added 10 other patches to improve NestedMatch.
+
+The final two patches on it fixes an issue when parsing
+include/net/page_pool/types.h. Right now, it doesn't parse
+well struct page_pool_params, as the second struct_group_tagged()
+has a /* private */ on it, causing the end parenthesis to be
+commented out. After the series, the documentation for it
+should be ok.
+
+-
+
+Even NestedMatch being more complex than KernRe, on my machine,
+parsing all files is 5% faster than before, because we're not
+parsing anymore macro definitions.
+
+Ah, due to the complexity of NestedMatch, I opted to write
+some unit tests to verify that the logic there is correct.
+We can use it to add other border cases.
+
+Using it is as easy as running:
+
+	$ tools/unittests/nested_match.py
+
+(I opted to create a separate directory for it, as this
+is not really documentation)
+
+Mauro Carvalho Chehab (23):
+  docs: kdoc_re: add support for groups()
+  docs: kdoc_re: don't go past the end of a line
+  docs: kdoc_parser: move var transformers to the beginning
+  docs: kdoc_parser: don't mangle with function defines
+  docs: kdoc_parser: add functions support for NestedMatch
+  docs: kdoc_parser: use NestedMatch to handle __attribute__ on
+    functions
+  docs: kdoc_parser: fix variable regexes to work with size_t
+  docs: kdoc_parser: fix the default_value logic for variables
+  docs: kdoc_parser: add some debug for variable parsing
+  docs: kdoc_parser: don't exclude defaults from prototype
+  docs: kdoc_parser: fix parser to support multi-word types
+  docs: kdoc_parser: add support for LIST_HEAD
+  docs: kdoc_re: properly handle strings and escape chars on it
+  docs: kdoc_re: better show KernRe() at documentation
+  docs: kdoc_re: don't recompile NextMatch regex every time
+  docs: kdoc_re: Change NestedMath args replacement to \0
+  docs: kdoc_re: make NextedMatch use KernRe
+  tools: kdoc_re: add support on NestedMatch for argument replacement
+  tools: python: add helpers to run unit tests
+  unittests: add tests for NestedMatch class
+  tools/lib/python/unittest_helper.py
+  docs: kdoc_parser: better handle struct_group macros
+  docs: kdoc_re: fix a parse bug on struct page_pool_params
+
+Randy Dunlap (2):
+  docs: kdoc_parser: ignore context analysis and lock attributes
+  kdoc_parser: handle struct member macro VIRTIO_DECLARE_FEATURES(name)
+
+ tools/lib/python/kdoc/kdoc_parser.py | 109 +++--
+ tools/lib/python/kdoc/kdoc_re.py     | 154 +++++--
+ tools/lib/python/unittest_helper.py  | 279 +++++++++++++
+ tools/unittests/nested_match.py      | 589 +++++++++++++++++++++++++++
+ 4 files changed, 1063 insertions(+), 68 deletions(-)
+ create mode 100755 tools/lib/python/unittest_helper.py
+ create mode 100755 tools/unittests/nested_match.py
+
 -- 
 2.52.0
 
