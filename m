@@ -4,72 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3010CD3F083
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 28 Jan 2026 16:50:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 32853D3F098
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 28 Jan 2026 16:50:55 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id B0AA9409A0;
-	Wed, 28 Jan 2026 16:50:47 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 16A6A4070F;
+	Wed, 28 Jan 2026 16:50:49 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id xUAkxeBdoc12; Wed, 28 Jan 2026 16:50:47 +0000 (UTC)
+ id 0kQqlQPOdGMC; Wed, 28 Jan 2026 16:50:48 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org DFF794097C
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 7741B40A17
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1769619046;
-	bh=X2IDBEdYKbLoHIHTheeSTTurGZSimgHp+hraUOuBw48=;
+	s=default; t=1769619048;
+	bh=BhehFTuvtSUZobGQ8YN/Vb9NG1w8Wpi4HBBk6jcgMr0=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=K4g0rk5WlaqIEpfjFa29pHW/e/B0vypIIVH+6ShHY36ylrKBfUc7CYtKIzmgXiGk9
-	 NtoSNV/TOetSb9EqXGIa7NEsR1EArbh6KbeFdMvt/0Vke3gmnkyJEZW/6X03Bm8MBZ
-	 /C3V0A8zzDS0njBlw/Vai694+iWsaDvfQbj+cVhkRH+bc3UoLQT15AiJso95fYEpa+
-	 qHj61NXKdWqQLUFq2p+JbLiP+k8HnjC0mHnSJGUmyWp9O+DKufidzBm+HQfzEOt0SC
-	 pP1luuNILZ4rgiQ9udqRmwh+Uh2vX+Uj+FMkl2h0g7CdxKxEI8tOU5GlSF94Ap3vlf
-	 ih2aU7pSFh1bg==
+	b=Rn8h3NlmQ46AZ3yVnLi2lomLPdPAKZry9kxr/QsfTY9VR3g002DAHwpJJ1GlkKIHY
+	 6hbVb4OBzR5ph61MLpmXUxYudHMQNQHsel6/l5HbfXzYK3FGrovhrsbMnk4l5HCYFC
+	 RdX8407pC/5b7tceknGExP1/Uh4MscZR+EeY/Ci/k/8D8Vgzj98Ja6kvRwdfmzS/Nr
+	 yELmGzb6HwiQCty6aXVaM1iAXiJhFyUBt20Uj//GigsVGVPbiHTnIRJFMvrTh6s+bp
+	 SkmQjUk6q7l4mo2Wf3Nq94ZKqYOER4ZwqXopBaIz0TtHixpg5Tc6J0A8ZW7UP1Cary
+	 YLBijACGfDngQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id DFF794097C;
-	Wed, 28 Jan 2026 16:50:46 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id 16212160
+	by smtp4.osuosl.org (Postfix) with ESMTP id 7741B40A17;
+	Wed, 28 Jan 2026 16:50:48 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id EE5A4160
  for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Jan 2026 16:50:39 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 0481381124
+ by smtp2.osuosl.org (Postfix) with ESMTP id E8C25400C5
  for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Jan 2026 16:50:39 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id sNUK9jpYWCCr for <intel-wired-lan@lists.osuosl.org>;
- Wed, 28 Jan 2026 16:50:38 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id jUe7kqZm_6V9 for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 28 Jan 2026 16:50:39 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom;
  client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org;
  envelope-from=mchehab+huawei@kernel.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 6922281106
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 6922281106
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org F1F7B400AD
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org F1F7B400AD
 Received: from sea.source.kernel.org (sea.source.kernel.org
  [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 6922281106
+ by smtp2.osuosl.org (Postfix) with ESMTPS id F1F7B400AD
  for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Jan 2026 16:50:38 +0000 (UTC)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by sea.source.kernel.org (Postfix) with ESMTP id 1738544502;
+ by sea.source.kernel.org (Postfix) with ESMTP id B477B44530;
  Wed, 28 Jan 2026 16:50:38 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EF896C4CEF7;
- Wed, 28 Jan 2026 16:50:37 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 94F5AC116C6;
+ Wed, 28 Jan 2026 16:50:38 +0000 (UTC)
 Received: from mchehab by mail.kernel.org with local (Exim 4.99.1)
  (envelope-from <mchehab+huawei@kernel.org>)
- id 1vl8kW-0000000DBB4-0bdW; Wed, 28 Jan 2026 17:50:36 +0100
+ id 1vl8kW-0000000DBDS-33rZ; Wed, 28 Jan 2026 17:50:36 +0100
 From: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
 To: Jonathan Corbet <corbet@lwn.net>,
- Linux Doc Mailing List <linux-doc@vger.kernel.org>,
- Mauro Carvalho Chehab <mchehab@kernel.org>
+ Linux Doc Mailing List <linux-doc@vger.kernel.org>
 Cc: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>, bpf@vger.kernel.org,
  intel-wired-lan@lists.osuosl.org, linux-kernel@vger.kernel.org,
  netdev@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
  Randy Dunlap <rdunlap@infradead.org>,
- Shuah Khan <skhan@linuxfoundation.org>,
  Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Wed, 28 Jan 2026 17:50:21 +0100
-Message-ID: <f370f2a0dfcaa679c9969488c908eaac82026031.1769617841.git.mchehab+huawei@kernel.org>
+Date: Wed, 28 Jan 2026 17:50:23 +0100
+Message-ID: <beef1362dbec07d025ce1fafa5d32b69cf30d705.1769617841.git.mchehab+huawei@kernel.org>
 X-Mailer: git-send-email 2.52.0
 In-Reply-To: <cover.1769617841.git.mchehab+huawei@kernel.org>
 References: <cover.1769617841.git.mchehab+huawei@kernel.org>
@@ -78,22 +76,22 @@ Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=kernel.org; s=k20201202; t=1769619038;
- bh=xPgXK1Bxhql6KwBQMghZiM8porm1utQ6AVnpiugaqXI=;
+ bh=yKLcYi21z0S4G3m+JtOZZ58rdI04u1dgDTVjrPTBONM=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=L52Is0d2Mam9VJ+4YyKHw1zLjYczDjF+baeNR4vHB26sFkhUBDLbAVrQFv2uTDSKC
- d7cLGmgpmI93G/ZRxWuZS8P4LzgHpLLntNDVJTs163AvSVDSS326iDw8yHfbJzXAUs
- 7akuYBSCS1QjtWefJUVP8iWzgl7unab3zdzhgTO5+ygwLEdzTljtWwYIfnlwAqxRUQ
- ZaHiv9HLvtufnVmn1+/piCFM3ZQogA3HNU/VunJZQKYtI/bUm4ljfWDkxUfexL0VRA
- LSdCAMa0h/oR+dWNMSlAFb00nE5+7b24OayJ0TKOejbCXpe0ulDsf0383a+/LA+Xed
- JMZ2p1xI9Zk9g==
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ b=QNYwL1LloL0tgc/bNbJ4eTY7SP6VRNYxS21BwoJeOsGGSveE04ClXL0HOZ/+PDRnX
+ FCf2Eg4BOqbx+rQ/c7VcgGslBcOlePMq7GI5oSPnfg7OgxUfFJvOVZWnEaS/vZ2Xb0
+ iA8YYy7c8KI8IH9FHszPoQ2+0hoUZP4hE4+gn69yB//YUgiCiYlRtiPZZ4h+CZ9CSs
+ 8IUbbvq8LNjEwpFzj63GeIm7toBEilk6XFGTLdms7NmdMlBF5Zny79vYw4NoWikm9A
+ jIAFIA34uV+sF9pHgazcC7oJm1x7EnJtAah71fcCrzD4MFumRQFoho9+5bzUGpNS92
+ 5NCEx/7eluGJQ==
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=L52Is0d2
-Subject: [Intel-wired-lan] [PATCH v2 23/25]
- tools/lib/python/unittest_helper.py
+ header.a=rsa-sha256 header.s=k20201202 header.b=QNYwL1Ll
+Subject: [Intel-wired-lan] [PATCH v2 25/25] docs: kdoc_re: fix a parse bug
+ on struct page_pool_params
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -109,38 +107,67 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
+The struct page_pool_params definition has a private
+definition on it:
+
+    struct page_pool_params {
+	struct_group_tagged(page_pool_params_fast, fast,
+		unsigned int	order;
+		unsigned int	pool_size;
+		int		nid;
+		struct device	*dev;
+		struct napi_struct *napi;
+		enum dma_data_direction dma_dir;
+		unsigned int	max_len;
+		unsigned int	offset;
+	);
+	struct_group_tagged(page_pool_params_slow, slow,
+		struct net_device *netdev;
+		unsigned int queue_idx;
+		unsigned int	flags;
+    /* private: used by test code only */
+		void (*init_callback)(netmem_ref netmem, void *arg);
+		void *init_arg;
+	);
+   };
+
+This makes kernel-doc parser to miss the end parenthesis of
+the second struct_group_tagged, causing documentation issues.
+
+Address it by ensuring that, if are there anything at the stack,
+it will be placed as the last part of the argument.
+
 Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
 ---
- tools/lib/python/unittest_helper.py | 16 +---------------
- 1 file changed, 1 insertion(+), 15 deletions(-)
+ tools/lib/python/kdoc/kdoc_re.py | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/tools/lib/python/unittest_helper.py b/tools/lib/python/unittest_helper.py
-index e438472fa704..3cf1075b1de4 100755
---- a/tools/lib/python/unittest_helper.py
-+++ b/tools/lib/python/unittest_helper.py
-@@ -8,21 +8,7 @@
- Helper class to better display unittest results.
+diff --git a/tools/lib/python/kdoc/kdoc_re.py b/tools/lib/python/kdoc/kdoc_re.py
+index f49a568b9155..8d4cfdf8f479 100644
+--- a/tools/lib/python/kdoc/kdoc_re.py
++++ b/tools/lib/python/kdoc/kdoc_re.py
+@@ -206,6 +206,9 @@ class NestedMatch:
+         """
  
- Those help functions provide a nice colored output summary of each
--executed test and, when a test fails, it shows the different in diff
--format when running in verbose mode, like::
--
--    $ tools/unittests/nested_match.py -v
--    ...
--    Traceback (most recent call last):
--    File "/new_devel/docs/tools/unittests/nested_match.py", line 69, in test_count_limit
--        self.assertEqual(replaced, "bar(a); bar(b); foo(c)")
--        ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
--    AssertionError: 'bar(a) foo(b); foo(c)' != 'bar(a); bar(b); foo(c)'
--    - bar(a) foo(b); foo(c)
--    ?       ^^^^
--    + bar(a); bar(b); foo(c)
--    ?       ^^^^^
--    ...
-+executed test.
+         stack = []
++        start = 0
++        offset = 0
++        pos = 0
  
- It also allows filtering what tests will be executed via ``-k`` parameter.
+         for match_re in self.regex.finditer(line):
+             start = match_re.start()
+@@ -255,6 +258,11 @@ class NestedMatch:
+                         yield start, offset, pos + 1
+                         break
  
++        # When /* private */ is used, it may end the end delimiterq
++        if stack:
++            stack.pop()
++            yield start, offset, len(line) + 1
++
+     def search(self, line):
+         """
+         This is similar to re.search:
 -- 
 2.52.0
 
