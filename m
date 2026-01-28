@@ -4,60 +4,60 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 339C8D3F09A
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 28 Jan 2026 16:50:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2B939D3F099
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 28 Jan 2026 16:50:44 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id D29BA4070A;
-	Wed, 28 Jan 2026 16:50:39 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 02A544097F;
+	Wed, 28 Jan 2026 16:50:41 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 5u6rD2lBDoLg; Wed, 28 Jan 2026 16:50:39 +0000 (UTC)
+ id BoKrXD1VzBQM; Wed, 28 Jan 2026 16:50:40 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0604A40931
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 5E564408BA
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1769619039;
-	bh=4M7zqRvly2LwVk3UnXJ6txcGYO6Izm8l4215ElW9vc4=;
+	s=default; t=1769619040;
+	bh=UdSVi0o1uq+l2JvN876bEU4Qi8OjzG7pK/mhhTmMvrU=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=IfGGT0QjjSVGRChynsFUMMF7adHVqCBupMAnFb6HBdtPfvASgERYI//F07l9kfdeP
-	 CTCthYQCGn2H7lYLXb+EvNuUie0RCWN0TMsBep8aMD13b86ra0HTxb3SUD02qHwSNp
-	 c4ck6EKTJLsb9H8Vl+vtzNVXWJE+bpgv28dF1cDzHXXMciYQNDEplWfFqoNSMIEEMg
-	 qVF6HxeBNluf7ewSroSoGX9fQzqoXXxts4VekfzGmSHHuHTbRwkYgBAQh5ap55KRB3
-	 IM12ZvmiQ7afvSpSwIyWaqOMb8E2Yuht6eOSV86TRBx2GbUFVSlcumHTrXY9wk0Ski
-	 4zWvs57eUe8kQ==
+	b=iFpdvf95zsyLcbzTkr1bruD8Ol+K9Lh6Ibv64K2IAJow0QLcoR2kWaAldKDrqI0c1
+	 QYdmhkZPGC6/PUMS5jgXf4B8Jp2eOhw7IqdHS4PpPLp4fAkROiTg7yWe/SoQ2g7juR
+	 9hRsp/OLdP2F7lAuBvbdEqX19YxXIokpzPCcDBwV1r2mrz9nt+7FmWDODK/XIaceDV
+	 iAa/ju0YWOL+j5t7P4bFBpC+264qnA9lMjqC9Lh3Sq4Ftg2FIutjNNoYtZZK3WkWhj
+	 nV/utnuTgqRAOyOWzAB+DOCy8x+b6vUwYb8vjZqwyI5kw3n3k/vtvxKUJW2rFwdJtl
+	 RmIDPYLDzkm/A==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 0604A40931;
-	Wed, 28 Jan 2026 16:50:39 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id 09EFB160
- for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Jan 2026 16:50:35 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 5E564408BA;
+	Wed, 28 Jan 2026 16:50:40 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 292021AD
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Jan 2026 16:50:36 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id D25428110B
- for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Jan 2026 16:50:34 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 091F4810E4
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Jan 2026 16:50:35 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id KcitXFCg0F_T for <intel-wired-lan@lists.osuosl.org>;
- Wed, 28 Jan 2026 16:50:33 +0000 (UTC)
+ id pkcv3BAvF48g for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 28 Jan 2026 16:50:34 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom;
  client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org;
  envelope-from=mchehab+huawei@kernel.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 4BBB2810E4
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4BBB2810E4
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 14324810D0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 14324810D0
 Received: from sea.source.kernel.org (sea.source.kernel.org
  [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 4BBB2810E4
- for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Jan 2026 16:50:33 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 14324810D0
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Jan 2026 16:50:34 +0000 (UTC)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by sea.source.kernel.org (Postfix) with ESMTP id 424104449C;
+ by sea.source.kernel.org (Postfix) with ESMTP id ED74B444FA;
  Wed, 28 Jan 2026 16:50:33 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1D9ADC4CEF1;
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D0229C2BC9E;
  Wed, 28 Jan 2026 16:50:33 +0000 (UTC)
 Received: from mchehab by mail.kernel.org with local (Exim 4.99.1)
  (envelope-from <mchehab+huawei@kernel.org>)
- id 1vl8kR-0000000DAuD-0xVA; Wed, 28 Jan 2026 17:50:31 +0100
+ id 1vl8kR-0000000DAwc-3XJq; Wed, 28 Jan 2026 17:50:31 +0100
 From: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
 To: Jonathan Corbet <corbet@lwn.net>,
  Linux Doc Mailing List <linux-doc@vger.kernel.org>
@@ -66,8 +66,8 @@ Cc: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>, bpf@vger.kernel.org,
  netdev@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
  Randy Dunlap <rdunlap@infradead.org>,
  Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Wed, 28 Jan 2026 17:50:07 +0100
-Message-ID: <e7d2dcabb0211447772127b6f32483184cd577ca.1769617841.git.mchehab+huawei@kernel.org>
+Date: Wed, 28 Jan 2026 17:50:09 +0100
+Message-ID: <ab5e7c447c49dd000d7bb32788e434d23569c46d.1769617841.git.mchehab+huawei@kernel.org>
 X-Mailer: git-send-email 2.52.0
 In-Reply-To: <cover.1769617841.git.mchehab+huawei@kernel.org>
 References: <cover.1769617841.git.mchehab+huawei@kernel.org>
@@ -76,22 +76,22 @@ Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=kernel.org; s=k20201202; t=1769619033;
- bh=kiVn8gJsa15hW54tTb5XhUjmr8gdDA7uMvhSg2gJwFM=;
+ bh=+PHSHQk42n1s2eoXmKBeCEHsRg0AhUmcVaeG8R0cpiE=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=I1Plv/sDNNLqEuYlpf96nRMOHVctQMqw1/gHSPz20Wefhsilu6hzo6TplPo0fPvzB
- IZ95bftdX1wqWOUsgGwGHIbXXNtVX8YT98XyB9kDrIDJqeBLxO+QQu5L+T23vvAAoK
- rnieO7iSHT/5d3BlzchDtUFKMlj5hYRvkmkyfUzzc2ROe+KkM27VQEp+bWfPJa6rzv
- 6s7VjUAfbxCqG/fLCX877/GrAFAvdDVIZme9Pnssxu37AuYzdWt0xN5J52xWQFjar/
- HFH6BksW/Q+6cM8Lt3UVUe1oAnp1aeGeH4DUxK7AaNLRhvpm6mboJIa4g6H+vVQcRf
- mNTfSACMShHww==
+ b=fUDxbWwUpvODFtK7Bn0IDVqUo4wRl4FZ2y9tMSl8n6OmeL6FaTaJaETZ5HletL/27
+ u8zCMurLOPRvtO/7H7AQe96Wf8qEBLTNx0Aw36SaM+fzSuEMHw5ZCQhwyBXtywuX2E
+ ufdxiWhrr5oS2RxdPl1QJlXpIHzMqbDUpLV+WhA1dTiPyuq+nHo088Q0At0522ASsm
+ Ts6u1Lw7NlGhW7jxOvGMK7DM6rvGvPdUC/qyPO1+N294RvCj7H7W9lapR7ZCd4ciSi
+ wHdhYOHvfvIYkRUJsrqDaLONAREIdqxtJMQE3N86mlUzpNSfM/2pfGVddAZI8cJ4Ry
+ xCQHCMdaN32JQ==
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=I1Plv/sD
-Subject: [Intel-wired-lan] [PATCH v2 09/25] docs: kdoc_parser: add some
- debug for variable parsing
+ header.a=rsa-sha256 header.s=k20201202 header.b=fUDxbWwU
+Subject: [Intel-wired-lan] [PATCH v2 11/25] docs: kdoc_parser: fix parser to
+ support multi-word types
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -107,50 +107,40 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-This is a new parser that we're still fine-tuning. Add some
-extra debug messages to help addressing issues over there.
+The regular expression currently expects a single word for the
+type, but it may be something like  "struct foo".
+
+Add support for it.
 
 Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
 Acked-by: Randy Dunlap <rdunlap@infradead.org>
 Tested-by: Randy Dunlap <rdunlap@infradead.org>
 ---
- tools/lib/python/kdoc/kdoc_parser.py | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+ tools/lib/python/kdoc/kdoc_parser.py | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/tools/lib/python/kdoc/kdoc_parser.py b/tools/lib/python/kdoc/kdoc_parser.py
-index cbfdaba39494..ccee4e0bcaab 100644
+index 0b6cba442d72..21cc4e19a1e8 100644
 --- a/tools/lib/python/kdoc/kdoc_parser.py
 +++ b/tools/lib/python/kdoc/kdoc_parser.py
-@@ -1033,11 +1033,19 @@ class KernelDoc:
-                 declaration_name = r.group(1)
+@@ -1026,7 +1026,7 @@ class KernelDoc:
  
-             default_val = r.group(2)
-+
-+            self.config.log.debug("Variable proto parser: %s from '%s'",
-+                                  r.groups(), proto)
-+
+         default_val = None
+ 
+-        r= KernRe(OPTIONAL_VAR_ATTR + r"[\w_]*\s+(?:\*+)?([\w_]+)\s*[\d\]\[]*\s*(=.*)?")
++        r= KernRe(OPTIONAL_VAR_ATTR + r"\s*[\w_\s]*\s+(?:\*+)?([\w_]+)\s*[\d\]\[]*\s*(=.*)?")
+         if r.match(proto):
+             if not declaration_name:
+                 declaration_name = r.group(1)
+@@ -1037,7 +1037,7 @@ class KernelDoc:
+                                   r.groups(), proto)
+ 
          else:
-             r= KernRe(OPTIONAL_VAR_ATTR + r"(?:[\w_]*)?\s+(?:\*+)?(?:[\w_]+)\s*[\d\]\[]*\s*(=.*)?")
+-            r= KernRe(OPTIONAL_VAR_ATTR + r"(?:[\w_]*)?\s+(?:\*+)?(?:[\w_]+)\s*[\d\]\[]*\s*(=.*)?")
++            r= KernRe(OPTIONAL_VAR_ATTR + r"(?:[\w_\s]*)?\s+(?:\*+)?(?:[\w_]+)\s*[\d\]\[]*\s*(=.*)?")
  
              if r.match(proto):
                  default_val = r.group(1)
-+
-+        if default_val:
-+            self.config.log.debug("default: '%s'", default_val)
-+
-         if not declaration_name:
-            self.emit_msg(ln,f"{proto}: can't parse variable")
-            return
-@@ -1045,6 +1053,9 @@ class KernelDoc:
-         if default_val:
-             default_val = default_val.lstrip("=").strip()
- 
-+        self.config.log.debug("'%s' variable prototype: '%s', default: %s",
-+                              declaration_name, proto, default_val)
-+
-         self.output_declaration("var", declaration_name,
-                                 full_proto=full_proto,
-                                 default_val=default_val,
 -- 
 2.52.0
 
