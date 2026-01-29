@@ -1,96 +1,84 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9A382D73E81
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 29 Jan 2026 17:33:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5BE40D73E81
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 29 Jan 2026 17:44:44 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 3E83840C4A;
-	Thu, 29 Jan 2026 17:33:58 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id OXZ4NGwhXCWM; Thu, 29 Jan 2026 17:33:56 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org BFC5E40C42
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1769708036;
-	bh=iGrxPtow25DQCg7gYX4cuizprfQXIsgOmTd0n3Na5VQ=;
-	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=P9la2gk+TgVbBSzOqun/S6FLU9Fot4jQgYsj8UjBIcRHtAkAFL4VhTfVwwadQOZQX
-	 mYMJ7HrzWJgs6ifybb8Cf+AbPj0ENVdwq4KWLFRclPcoaAWyc1/VGZg2e1U+ih1pfq
-	 KG4RfLymjb7Eudyyr2r+6EfykGlTKZpZTLFJVSOmSYw5J0QZZ+IRsL2gGphsk5HBRG
-	 Ush/J10tDIo4dpYLRhvmIFlVKSRBxmti6Z/PU/O0CFQcTakQ1RWD0Aw7Q+lqMm5CDB
-	 XHq504cBdC24ivJCpojgLH8zs3YZaKkHbN/mcCfhFF+k8WSMl2PI3FKXMCpDiLtciW
-	 hzL/4O8wXw3ow==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id BFC5E40C42;
-	Thu, 29 Jan 2026 17:33:56 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id 9E4932CF
- for <intel-wired-lan@lists.osuosl.org>; Thu, 29 Jan 2026 17:33:54 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 8144683E42
- for <intel-wired-lan@lists.osuosl.org>; Thu, 29 Jan 2026 17:33:54 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 1CCF180ED9;
+	Thu, 29 Jan 2026 17:44:44 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Q0MNDaxhstfV for <intel-wired-lan@lists.osuosl.org>;
- Thu, 29 Jan 2026 17:33:54 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.20;
- helo=mgamail.intel.com; envelope-from=piotr.kwapulinski@intel.com;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org CCBC683C90
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org CCBC683C90
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.20])
- by smtp1.osuosl.org (Postfix) with ESMTPS id CCBC683C90
- for <intel-wired-lan@lists.osuosl.org>; Thu, 29 Jan 2026 17:33:53 +0000 (UTC)
-X-CSE-ConnectionGUID: PkWPpg5eSdmlGABH0TSTDg==
-X-CSE-MsgGUID: hvHgIUSyS2GSl7Jxz7j/4g==
-X-IronPort-AV: E=McAfee;i="6800,10657,11686"; a="70669875"
-X-IronPort-AV: E=Sophos;i="6.21,261,1763452800"; d="scan'208";a="70669875"
-Received: from orviesa003.jf.intel.com ([10.64.159.143])
- by orvoesa112.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 29 Jan 2026 09:33:53 -0800
-X-CSE-ConnectionGUID: 4X0A2IIfTjq0eptgPZDixw==
-X-CSE-MsgGUID: TehO8w2/S227xSzpkeJksQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.21,261,1763452800"; d="scan'208";a="212714930"
-Received: from amlin-018-252.igk.intel.com ([10.102.18.252])
- by orviesa003.jf.intel.com with ESMTP; 29 Jan 2026 09:33:52 -0800
-From: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Cc: netdev@vger.kernel.org, dan.carpenter@linaro.org, horms@kernel.org,
- pmenzel@molgen.mpg.de, Piotr Kwapulinski <piotr.kwapulinski@intel.com>
-Date: Thu, 29 Jan 2026 18:54:55 +0100
-Message-ID: <20260129175455.174241-1-piotr.kwapulinski@intel.com>
-X-Mailer: git-send-email 2.47.1
+ id 36Wcf83TEGKh; Thu, 29 Jan 2026 17:44:42 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org ED98B80DFD
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1769708682;
+	bh=y9D1drPigF3GBERuSadntJ/K8x+G3Qy3gQC2QgkpIHs=;
+	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=bjy85RPJK7ypwHxD2/OlwNQlyPx3ikmccEQ/YtoXaiK/HPB0cW8TL0h+W5gzSvlFa
+	 xo86y4KYvjXaXpuviB+QspUEn2YuRfqcvU7hb7j4g9TRjv4TBolY8pcGJD0WbAJ+YO
+	 9S7V5cTFjxDLPErBImLbKM9js+OQHSwojT7Bz168rQWOOrn5h6vjZ0VEUZMBosXhXE
+	 jMlONJy85u9mnS2f31TqDYTfvElDpLpmxbYEj6mTP3OR+MNVYZKQiQO1D8tuJB7zDr
+	 7UnDh6vMDZG2g+hN67KZd3jAPeo+vBPZ7xiH+Z/12Hgc8ESySygBatL+rT+xnbGJq4
+	 ELbNVYUJJ/Ipg==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp1.osuosl.org (Postfix) with ESMTP id ED98B80DFD;
+	Thu, 29 Jan 2026 17:44:41 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 2F0C92CF
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 29 Jan 2026 17:44:40 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp3.osuosl.org (Postfix) with ESMTP id 1FE8060A3D
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 29 Jan 2026 17:44:40 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id SlHuAqIMTEbF for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 29 Jan 2026 17:44:39 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=156.67.10.101;
+ helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 1EB2160A3F
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 1EB2160A3F
+Received: from vps0.lunn.ch (vps0.lunn.ch [156.67.10.101])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 1EB2160A3F
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 29 Jan 2026 17:44:38 +0000 (UTC)
+Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
+ (envelope-from <andrew@lunn.ch>)
+ id 1vlW4H-005OhC-8x; Thu, 29 Jan 2026 18:44:33 +0100
+Date: Thu, 29 Jan 2026 18:44:33 +0100
+From: Andrew Lunn <andrew@lunn.ch>
+To: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
+Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
+ dan.carpenter@linaro.org, horms@kernel.org, pmenzel@molgen.mpg.de
+Message-ID: <60e6bfa6-4267-4d33-9987-24b87c0d0091@lunn.ch>
+References: <20260129175455.174241-1-piotr.kwapulinski@intel.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1769708034; x=1801244034;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=wvvhLxpUEzjH/aPyrEvcmEFhPUBwZcBiCHVY0w9yFpE=;
- b=FZdCRG/Gwx14Pd84GDbv8mLeSHsoO8yuMXlBASbV8b8BNsOxLkeFNY+q
- NzdqQa1gBMXGa7RaMs6+kI2HR+XlkhyCgo14S0ymVmOl/1SbxAVnDWCMk
- Bw5wNzfaP3zw24wy+rQl3JmXucTziMqLBuq+6Y/00UXw9dyu61Wp80OoK
- mL2LiwnNq7fPgm0pc8CVfijpXCzTRzvnUBaSY8dB3X+QKi6G9D/8NOW2y
- GerPONdZVhaUm2Svxw3kV6thNGI3qinjh5FbX/j3gd0nOHbD2kFRuYMuL
- msWqCTBdljUw8qy9Glc2g9r4K8xrAMwiU9i/8AquxRSXNWXM1NOu6ftQ6
- A==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260129175455.174241-1-piotr.kwapulinski@intel.com>
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt;
+ c=relaxed/relaxed; d=lunn.ch; 
+ s=20171124; h=In-Reply-To:Content-Disposition:Content-Type:MIME-Version:
+ References:Message-ID:Subject:Cc:To:From:Date:From:Sender:Reply-To:Subject:
+ Date:Message-ID:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:
+ Content-ID:Content-Description:Content-Disposition:In-Reply-To:References;
+ bh=y9D1drPigF3GBERuSadntJ/K8x+G3Qy3gQC2QgkpIHs=; b=moE76XG27gjdd+QZotxLBinDqt
+ gFbktZYq47ZTWoMjGx+m+Dg9bIS5tKLfWmJV5Mv4HnHgXeM/cnU58XsyzJN6gRyU+un9/uM1jhVqN
+ 0WS+7eBSi6VrH7uGLvxWDiNyg5AtYZDyVEEOgovEWK+H9Aq0xG4ZvCug0jW+4o5fGXTI=;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
- header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=FZdCRG/G
-Subject: [Intel-wired-lan] [PATCH iwl-next] ixgbe: e610: remove redundant
- assignment
+ header.from=lunn.ch
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (1024-bit key) header.d=lunn.ch header.i=@lunn.ch
+ header.a=rsa-sha256 header.s=20171124 header.b=moE76XG2
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next] ixgbe: e610: remove
+ redundant assignment
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -106,43 +94,28 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Remove unnecessary code. No functional impact.
+>  	/* Read sync Admin Command response */
+> -	if ((hicr & IXGBE_PF_HICR_SV)) {
+> -		for (i = 0; i < IXGBE_ACI_DESC_SIZE_IN_DWORDS; i++) {
+> +	if ((hicr & IXGBE_PF_HICR_SV))
+> +		for (i = 0; i < IXGBE_ACI_DESC_SIZE_IN_DWORDS; i++)
+>  			raw_desc[i] = IXGBE_READ_REG(hw, IXGBE_PF_HIDA(i));
+> -			raw_desc[i] = raw_desc[i];
 
-Fixes: 46761fd52a88 ("ixgbe: Add support for E610 FW Admin Command Interface")
-Signed-off-by: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c | 14 ++++----------
- 1 file changed, 4 insertions(+), 10 deletions(-)
+Did you look through the history? When i see code like this it makes
+me want to have an understanding why it exists, since it looks so odd.
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c
-index c2f8189..6f380fc 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c
-@@ -142,20 +142,14 @@ static int ixgbe_aci_send_cmd_execute(struct ixgbe_hw *hw,
- 			  IXGBE_PF_HICR);
- 
- 	/* Read sync Admin Command response */
--	if ((hicr & IXGBE_PF_HICR_SV)) {
--		for (i = 0; i < IXGBE_ACI_DESC_SIZE_IN_DWORDS; i++) {
-+	if ((hicr & IXGBE_PF_HICR_SV))
-+		for (i = 0; i < IXGBE_ACI_DESC_SIZE_IN_DWORDS; i++)
- 			raw_desc[i] = IXGBE_READ_REG(hw, IXGBE_PF_HIDA(i));
--			raw_desc[i] = raw_desc[i];
--		}
--	}
- 
- 	/* Read async Admin Command response */
--	if ((hicr & IXGBE_PF_HICR_EV) && !(hicr & IXGBE_PF_HICR_C)) {
--		for (i = 0; i < IXGBE_ACI_DESC_SIZE_IN_DWORDS; i++) {
-+	if ((hicr & IXGBE_PF_HICR_EV) && !(hicr & IXGBE_PF_HICR_C))
-+		for (i = 0; i < IXGBE_ACI_DESC_SIZE_IN_DWORDS; i++)
- 			raw_desc[i] = IXGBE_READ_REG(hw, IXGBE_PF_HIDA_2(i));
--			raw_desc[i] = raw_desc[i];
--		}
--	}
- 
- 	/* Handle timeout and invalid state of HICR register */
- 	if (hicr & IXGBE_PF_HICR_C)
--- 
-2.47.1
+Is it a merge conflict resolution gone bad? Is it a typo and there is
+a cooked_desc[i] which could be set?
 
+>  	/* Read async Admin Command response */
+> -	if ((hicr & IXGBE_PF_HICR_EV) && !(hicr & IXGBE_PF_HICR_C)) {
+> -		for (i = 0; i < IXGBE_ACI_DESC_SIZE_IN_DWORDS; i++) {
+> +	if ((hicr & IXGBE_PF_HICR_EV) && !(hicr & IXGBE_PF_HICR_C))
+> +		for (i = 0; i < IXGBE_ACI_DESC_SIZE_IN_DWORDS; i++)
+>  			raw_desc[i] = IXGBE_READ_REG(hw, IXGBE_PF_HIDA_2(i));
+> -			raw_desc[i] = raw_desc[i];
+
+and it exists twice. Which makes it even odder....
+
+    Andrew
