@@ -4,69 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8648FD358DD
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 29 Jan 2026 08:08:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 322BAD358DA
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 29 Jan 2026 08:08:54 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 5229283DEA;
+	by smtp1.osuosl.org (Postfix) with ESMTP id CD59883DF2;
 	Thu, 29 Jan 2026 08:08:53 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 01CRQharq74Z; Thu, 29 Jan 2026 08:08:51 +0000 (UTC)
+ id zZfvlQ64MzZI; Thu, 29 Jan 2026 08:08:53 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 3CE2283DDD
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 241FF83D9C
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1769674131;
-	bh=GPt39J/z14kVG5JW3Ifz/vrTsdXGI+DceJjB3l42Wv8=;
+	s=default; t=1769674133;
+	bh=QiC0PXc7+2Hc8wjTOJCNQU1P9LQiOMFCae7k9zta+Oo=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=1gl8Df6hJrCbYGKNwtGYZS4KUBvx/eSTEbrTebd1zKQFXJP+xlf4XCfWYC54L6NnO
-	 6USx7zES1Np/6C+MqoOLq3We07wWsPk0gem4hr+jIXwJfAqK+7NkrIRB+VNE3x0Xox
-	 rJz7joCfWOpCp0eND9rJr8HUmlfwOFzfYp+faZSH8IPiglp3FtrucpwopcrizPoGeV
-	 QrFcKBq/+4r75DdhbU2/6eQbx812AmKfidL5tbIWjR+wzKPvlYmnP4BMeZP2VBT1TJ
-	 3xavDmtlrU4sa6D6qUPrt1f3wUxrDDMdhbWKOP6z6lQPd0pYhzoG2huy60z+nFbaq+
-	 RIqbFEDCYBm8g==
+	b=gVNN1M0cvBjKbcXp7JuVF5PhPRVYCmcqLvGiE+gyhh4IwaO4ilCuuk/3DSo8MQ0hf
+	 tr2dWI1Ge1GK3HGRKNcwbgXFpG4FkVk2Gqb0BADdYBhbpxBUimEH4C8a6dzfCrG9qr
+	 PT5ZsZPuagBuDmUc7PfZzI0VeqigY60N1TmkCBqsZqJEzc72deg9MdP/qBvMy4rK06
+	 +1HggSy/2IjXQW9bTDBNG4ibohZv6We7xshUNA6e3EE4P89Z9zc+G/a9j1Ntvt5v3v
+	 CLaUlPe8AT91Qp3wiksgb5tXGaDBKx/xCcX29s0bRGzMzxSZTnHDVtQmbPgOPdZxFO
+	 ii55eSQwR7bIA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 3CE2283DDD;
-	Thu, 29 Jan 2026 08:08:51 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id 5F5C41AD
- for <intel-wired-lan@lists.osuosl.org>; Thu, 29 Jan 2026 08:08:40 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 241FF83D9C;
+	Thu, 29 Jan 2026 08:08:53 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 1B73D1AD
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 29 Jan 2026 08:08:42 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 1541840B83
+ by smtp3.osuosl.org (Postfix) with ESMTP id 7CBB760859
  for <intel-wired-lan@lists.osuosl.org>; Thu, 29 Jan 2026 08:08:35 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id DA53YJ8TTTDt for <intel-wired-lan@lists.osuosl.org>;
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id gNmx3pbb4jjq for <intel-wired-lan@lists.osuosl.org>;
  Thu, 29 Jan 2026 08:08:32 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
- helo=tor.source.kernel.org; envelope-from=mchehab+huawei@kernel.org;
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.234.252.31;
+ helo=sea.source.kernel.org; envelope-from=mchehab+huawei@kernel.org;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 2A43A40B80
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2A43A40B80
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 2A43A40B80
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 55655606F1
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 55655606F1
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 55655606F1
  for <intel-wired-lan@lists.osuosl.org>; Thu, 29 Jan 2026 08:08:32 +0000 (UTC)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by tor.source.kernel.org (Postfix) with ESMTP id 3412F60125;
+ by sea.source.kernel.org (Postfix) with ESMTP id 62B1D4456E;
  Thu, 29 Jan 2026 08:08:31 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B54CBC2BCB0;
- Thu, 29 Jan 2026 08:08:30 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3A3C2C2BD04;
+ Thu, 29 Jan 2026 08:08:31 +0000 (UTC)
 Received: from mchehab by mail.kernel.org with local (Exim 4.99.1)
  (envelope-from <mchehab+huawei@kernel.org>)
- id 1vlN4m-0000000ERMb-2ntt; Thu, 29 Jan 2026 09:08:28 +0100
+ id 1vlN4n-0000000EROT-25XE; Thu, 29 Jan 2026 09:08:29 +0100
 From: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
-To: Jonathan Corbet <corbet@lwn.net>,
+To: Jonathan Corbet <corbet@lwn.net>, Kees Cook <kees@kernel.org>,
  Linux Doc Mailing List <linux-doc@vger.kernel.org>
 Cc: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>, bpf@vger.kernel.org,
  intel-wired-lan@lists.osuosl.org, linux-hardening@vger.kernel.org,
  linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+ "Gustavo A. R. Silva" <gustavoars@kernel.org>,
  Mauro Carvalho Chehab <mchehab@kernel.org>,
  Randy Dunlap <rdunlap@infradead.org>
-Date: Thu, 29 Jan 2026 09:07:52 +0100
-Message-ID: <c9bc631eb90afcb0bfcba53c806c9829fe0bc43f.1769673038.git.mchehab+huawei@kernel.org>
+Date: Thu, 29 Jan 2026 09:08:21 +0100
+Message-ID: <823756f6f8e5864817464560227820d8ef3a600f.1769673038.git.mchehab+huawei@kernel.org>
 X-Mailer: git-send-email 2.52.0
 In-Reply-To: <cover.1769673038.git.mchehab+huawei@kernel.org>
 References: <cover.1769673038.git.mchehab+huawei@kernel.org>
@@ -74,23 +75,23 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1769674110;
- bh=Mtp3U2b4BAZhIQ5Am742/0g+jFDD4JwsLEBjzPmmPH0=;
+ d=kernel.org; s=k20201202; t=1769674111;
+ bh=zrn1R99JmhSDpw80vFG4cNPSq/xnegn/WMP5J1mznhQ=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=M6nosDk8fYDIsSlp6ATV417qFSFvZLeDrcJ0DFLzhIxpdgYZLsQidMIQGQwl45cOQ
- yfjBTYWAgl3mzRxHYG34D8EPENzj1qPGR0sCNr2yefv5CRmvtXxpiQZ7TivRqgM4Y5
- +lw6ZFuHoPr1vtv8JL6yf3fwB+xmIz4ro22Y1lv8sB7PxDkFi+5B/6vQfy5RHBvdAT
- 4mwuWbPdeF1Ah5KSBYonlVIEUjl3Zj1Urv5wyjh5XNmq0EfxtDBsCOQZGnQg4VGGVP
- 6ILcnW9OT5nOXRqIY7VZvPRhbx5VgyhH/ptwuqGPPtZaOdzwv6IRTANelkqWi80P36
- UjSi6lN6ygKSg==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ b=uhVQE0clrmRRFi6sGV6bb+5Ub4LO1z8yNb9HI/vnrJW+Jp3s1Br8Ym/rNoefncoiC
+ nA/7J5lgEJMtAXkHq6CY/wh84UMpacfDQkvPayr4v4Er5buS5c+Vm8psLK21oXkf6A
+ BaJnF4xeffly1o7j0tzxhLJLrA6B5FRmk95Wjf0/eZ35OGyx6juJ1Bdkl1pVWkgZ1D
+ yljMKKDrrJM3H4UHjz5mvwyNNGAUJ5MWu6WwwtgzhCVRr50bigYZmwY5yF7qanLyBP
+ pdX8AHr2XMznKUKthYQgDBRLSb0pETFbZPskImF6+HcUYgHYDI1dKqc2KcAI70hDly
+ SxomQMtuh381g==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=M6nosDk8
-Subject: [Intel-wired-lan] [PATCH v3 01/30] docs: kdoc_re: add support for
- groups()
+ header.a=rsa-sha256 header.s=k20201202 header.b=uhVQE0cl
+Subject: [Intel-wired-lan] [PATCH v3 30/30] docs: xforms_lists.py: use
+ CFuntion to handle all function macros
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -106,34 +107,104 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Add an equivalent to re groups() method.
-This is useful on debug messages.
+The new CFunction class handles better macros, as it works the same
+way C compilers do, handling delimiters tha right way.
+
+This allows removing complex regular expressions, placing instead
+just a simple one with the name(s) of the functions to be replaced.
+
+Doing a before/after check using "kernel-doc -man ." shows only
+cosmetic changes (whitespaces, mostly).
 
 Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
-Acked-by: Randy Dunlap <rdunlap@infradead.org>
-Tested-by: Randy Dunlap <rdunlap@infradead.org>
 ---
- tools/lib/python/kdoc/kdoc_re.py | 7 +++++++
- 1 file changed, 7 insertions(+)
+ tools/lib/python/kdoc/xforms_lists.py | 54 +++++++++++----------------
+ 1 file changed, 21 insertions(+), 33 deletions(-)
 
-diff --git a/tools/lib/python/kdoc/kdoc_re.py b/tools/lib/python/kdoc/kdoc_re.py
-index 2816bd9f90f8..19e777e2c97e 100644
---- a/tools/lib/python/kdoc/kdoc_re.py
-+++ b/tools/lib/python/kdoc/kdoc_re.py
-@@ -106,6 +106,13 @@ class KernRe:
+diff --git a/tools/lib/python/kdoc/xforms_lists.py b/tools/lib/python/kdoc/xforms_lists.py
+index 88968bafdb78..6e917beceb89 100644
+--- a/tools/lib/python/kdoc/xforms_lists.py
++++ b/tools/lib/python/kdoc/xforms_lists.py
+@@ -17,51 +17,38 @@ class CTransforms:
  
-         return self.last_match.group(num)
- 
-+    def groups(self):
-+        """
-+        Returns the group results of the last match
-+        """
+     #: Transforms for structs and unions
+     struct_xforms = [
+-        # Strip attributes
+-        (KernRe(r"__attribute__\s*\(\([a-z0-9,_\*\s\(\)]*\)\)", flags=re.I | re.S, cache=False), ' '),
+-        (KernRe(r'\s*__aligned\s*\([^;]*\)', re.S), ' '),
+-        (KernRe(r'\s*__counted_by\s*\([^;]*\)', re.S), ' '),
+-        (KernRe(r'\s*__counted_by_(le|be)\s*\([^;]*\)', re.S), ' '),
+-        (KernRe(r'\s*__guarded_by\s*\([^\)]*\)', re.S), ' '),
+-        (KernRe(r'\s*__pt_guarded_by\s*\([^\)]*\)', re.S), ' '),
++        (CFunction("__attribute__"), ' '),
++        (CFunction('__aligned'), ' '),
++        (CFunction('__counted_by'), ' '),
++        (CFunction('__counted_by_(le|be)'), ' '),
++        (CFunction('__guarded_by'), ' '),
++        (CFunction('__pt_guarded_by'), ' '),
 +
-+        return self.last_match.groups()
+         (KernRe(r'\s*__packed\s*', re.S), ' '),
+         (KernRe(r'\s*CRYPTO_MINALIGN_ATTR', re.S), ' '),
+         (KernRe(r'\s*__private', re.S), ' '),
+         (KernRe(r'\s*__rcu', re.S), ' '),
+         (KernRe(r'\s*____cacheline_aligned_in_smp', re.S), ' '),
+         (KernRe(r'\s*____cacheline_aligned', re.S), ' '),
+-        (KernRe(r'\s*__cacheline_group_(begin|end)\([^\)]+\);'), ''),
 +
++        (CFunction('__cacheline_group_(begin|end)'), ''),
  
- class NestedMatch:
-     """
+         (CFunction('struct_group'), r'\2'),
+         (CFunction('struct_group_attr'), r'\3'),
+         (CFunction('struct_group_tagged'), r'struct \1 \2; \3'),
+         (CFunction('__struct_group'), r'\4'),
+ 
+-        #
+-        # Replace macros
+-        #
+-        # TODO: use CFunction on all FOO($1, $2, ...) matches
+-        #
+-        # it is better to also move those to the CFunction logic,
+-        # to ensure that parentheses will be properly matched.
+-        #
+-        (KernRe(r'__ETHTOOL_DECLARE_LINK_MODE_MASK\s*\(([^\)]+)\)', re.S),
+-        r'DECLARE_BITMAP(\1, __ETHTOOL_LINK_MODE_MASK_NBITS)'),
+-        (KernRe(r'DECLARE_PHY_INTERFACE_MASK\s*\(([^\)]+)\)', re.S),
+-        r'DECLARE_BITMAP(\1, PHY_INTERFACE_MODE_MAX)'),
+-        (KernRe(r'DECLARE_BITMAP\s*\(' + struct_args_pattern + r',\s*' + struct_args_pattern + r'\)',
+-                re.S), r'unsigned long \1[BITS_TO_LONGS(\2)]'),
+-        (KernRe(r'DECLARE_HASHTABLE\s*\(' + struct_args_pattern + r',\s*' + struct_args_pattern + r'\)',
+-                re.S), r'unsigned long \1[1 << ((\2) - 1)]'),
+-        (KernRe(r'DECLARE_KFIFO\s*\(' + struct_args_pattern + r',\s*' + struct_args_pattern +
+-                r',\s*' + struct_args_pattern + r'\)', re.S), r'\2 *\1'),
+-        (KernRe(r'DECLARE_KFIFO_PTR\s*\(' + struct_args_pattern + r',\s*' +
+-                struct_args_pattern + r'\)', re.S), r'\2 *\1'),
+-        (KernRe(r'(?:__)?DECLARE_FLEX_ARRAY\s*\(' + struct_args_pattern + r',\s*' +
+-                struct_args_pattern + r'\)', re.S), r'\1 \2[]'),
+-        (KernRe(r'DEFINE_DMA_UNMAP_ADDR\s*\(' + struct_args_pattern + r'\)', re.S), r'dma_addr_t \1'),
+-        (KernRe(r'DEFINE_DMA_UNMAP_LEN\s*\(' + struct_args_pattern + r'\)', re.S), r'__u32 \1'),
+-        (KernRe(r'VIRTIO_DECLARE_FEATURES\(([\w_]+)\)'), r'union { u64 \1; u64 \1_array[VIRTIO_FEATURES_U64S]; }'),
++        (CFunction('__ETHTOOL_DECLARE_LINK_MODE_MASK'), r'DECLARE_BITMAP(\1, __ETHTOOL_LINK_MODE_MASK_NBITS)'),
++        (CFunction('DECLARE_PHY_INTERFACE_MASK',), r'DECLARE_BITMAP(\1, PHY_INTERFACE_MODE_MAX)'),
++        (CFunction('DECLARE_BITMAP'), r'unsigned long \1[BITS_TO_LONGS(\2)]'),
++
++        (CFunction('DECLARE_HASHTABLE'), r'unsigned long \1[1 << ((\2) - 1)]'),
++        (CFunction('DECLARE_KFIFO'), r'\2 *\1'),
++        (CFunction('DECLARE_KFIFO_PTR'), r'\2 *\1'),
++        (CFunction('(?:__)?DECLARE_FLEX_ARRAY'), r'\1 \2[]'),
++        (CFunction('DEFINE_DMA_UNMAP_ADDR'), r'dma_addr_t \1'),
++        (CFunction('DEFINE_DMA_UNMAP_LEN'), r'__u32 \1'),
++        (CFunction('VIRTIO_DECLARE_FEATURES'), r'union { u64 \1; u64 \1_array[VIRTIO_FEATURES_U64S]; }'),
+     ]
+ 
+     #: Transforms for function prototypes
+@@ -91,6 +78,7 @@ class CTransforms:
+         (KernRe(r"DECL_BUCKET_PARAMS\s*\(\s*(\S+)\s*,\s*(\S+)\s*\)"), r"\1, \2"),
+         (KernRe(r"__no_context_analysis\s*"), ""),
+         (KernRe(r"__attribute_const__ +"), ""),
++
+         (CFunction("__cond_acquires"), ""),
+         (CFunction("__cond_releases"), ""),
+         (CFunction("__acquires"), ""),
 -- 
 2.52.0
 
