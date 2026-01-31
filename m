@@ -1,73 +1,74 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7DB13D79774
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B17DAD79775
 	for <intel-wired-lan@archiver.kernel.org>; Sat, 31 Jan 2026 14:25:52 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 5524D60B4A;
+	by smtp1.osuosl.org (Postfix) with ESMTP id 8808983DEE;
 	Sat, 31 Jan 2026 14:25:52 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id O-1owAJIl6n2; Sat, 31 Jan 2026 14:25:51 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id n8AFm0WEPvzZ; Sat, 31 Jan 2026 14:25:50 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B82C560B4F
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 6E4DB83DCB
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1769869551;
-	bh=S0y8FysIz/thK4IwH4O1FCI1U56mxA+e+Qm66tW5c24=;
+	s=default; t=1769869550;
+	bh=nPSrh5ocNOcaNswbJ4c/Q5Iqz91wa7RxNGM8FSed97c=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=efUdGEMp+muGHXu9+U1u1+ighgtvmdJ1C96zFSBuSKn4CfCihBkKcPdQCeuTzE2c2
-	 CMzHXNwcceKB3rD62iOOyTBGt/5WeVCzMhH1ZPMFNJltfeWKRzSjwq1NudjyLJHX8k
-	 FTlbkTGfmwzR7YjMwu8HonSforEo/GHmVWx8FtxWwBHf1AdVFkC6QOosTNe3Fu+CQ2
-	 AOsH3luKAUFWCZRszd6z3vVvCaXbWzBtC6L8XbJM82l8Whcp++a0MGDT2kZ8wgtC2v
-	 B6LH9j+V89qD4O9U/SkQgwn83BKXgFWvA0W1C9ojANu5Kzg+mTn7PP+Opj0Y8gYe16
-	 fu/8LLssiBnow==
+	b=P1ZgvxHosLndx9NOWZLAyRIseGdh9EnSH8ZCxLjWTvW99xpEZJWjnvK66m6XsoMr2
+	 P+j4f/akETRIDwpiWomwLtDv4X8yU9JVoc9GOD8XC9UCzyfKkD8uGBpmnzKGeZbGGa
+	 bu/956H+0UOS0KUlEa/1btSeOc1Rd302d9S9497izn7VJsRwC2hMolA3xhF20rmII6
+	 t9ZCnkjQa34miyroxTmHnKya3m1mh3vb+0Q1GAiZDIoASyCK4kZAejfp7jBPdGue0E
+	 8tIp/fP0kIlGMkJcj3dgdWNInVJUBi0rEHX9AwvPCN/1h3Jhsl7CkMiB7K0YVhf1Qp
+	 q3P3dGQK1T2Cg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id B82C560B4F;
-	Sat, 31 Jan 2026 14:25:51 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 17B641E0
- for <intel-wired-lan@lists.osuosl.org>; Sat, 31 Jan 2026 14:25:37 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 6E4DB83DCB;
+	Sat, 31 Jan 2026 14:25:50 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 3978F25F
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 31 Jan 2026 14:25:35 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 27C5060B4E
- for <intel-wired-lan@lists.osuosl.org>; Sat, 31 Jan 2026 14:25:26 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 14D4740820
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 31 Jan 2026 14:25:25 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id dGYouL9bo5ni for <intel-wired-lan@lists.osuosl.org>;
- Sat, 31 Jan 2026 14:25:24 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
- helo=tor.source.kernel.org; envelope-from=mchehab+huawei@kernel.org;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 6118960B4F
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 6118960B4F
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 6118960B4F
- for <intel-wired-lan@lists.osuosl.org>; Sat, 31 Jan 2026 14:25:24 +0000 (UTC)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by tor.source.kernel.org (Postfix) with ESMTP id 82E7260135;
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id DEN1JHh_M2om for <intel-wired-lan@lists.osuosl.org>;
  Sat, 31 Jan 2026 14:25:22 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E75FEC4CEF1;
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org;
+ envelope-from=mchehab+huawei@kernel.org; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org C133B4080D
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org C133B4080D
+Received: from sea.source.kernel.org (sea.source.kernel.org
+ [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id C133B4080D
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 31 Jan 2026 14:25:22 +0000 (UTC)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+ by sea.source.kernel.org (Postfix) with ESMTP id 20F8A4441A;
+ Sat, 31 Jan 2026 14:25:22 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8DB7EC4AF09;
  Sat, 31 Jan 2026 14:25:21 +0000 (UTC)
 Received: from mchehab by mail.kernel.org with local (Exim 4.99.1)
  (envelope-from <mchehab+huawei@kernel.org>)
- id 1vmBua-0000000AVlr-0oEC; Sat, 31 Jan 2026 15:25:20 +0100
+ id 1vmBuZ-0000000AVky-3UDo; Sat, 31 Jan 2026 15:25:19 +0100
 From: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
 To: Jonathan Corbet <corbet@lwn.net>,
- Linux Doc Mailing List <linux-doc@vger.kernel.org>,
- Mauro Carvalho Chehab <mchehab@kernel.org>
+ Linux Doc Mailing List <linux-doc@vger.kernel.org>
 Cc: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
  intel-wired-lan@lists.osuosl.org, linux-hardening@vger.kernel.org,
  linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
- Randy Dunlap <rdunlap@infradead.org>,
- Shuah Khan <skhan@linuxfoundation.org>
-Date: Sat, 31 Jan 2026 15:25:06 +0100
-Message-ID: <64fe15e0ddaba7de59a7c031db03f87c19873c04.1769867954.git.mchehab+huawei@kernel.org>
+ Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
+ Mauro Carvalho Chehab <mchehab@kernel.org>,
+ Randy Dunlap <rdunlap@infradead.org>
+Date: Sat, 31 Jan 2026 15:24:53 +0100
+Message-ID: <c75c6e6a367e4305105cac64e0162118581d329f.1769867953.git.mchehab+huawei@kernel.org>
 X-Mailer: git-send-email 2.52.0
 In-Reply-To: <cover.1769867953.git.mchehab+huawei@kernel.org>
 References: <cover.1769867953.git.mchehab+huawei@kernel.org>
@@ -75,23 +76,23 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1769869522;
- bh=4aMfKYcVERhHxWAsYjEi8+tgICvrID1mZsAmSUTyoxc=;
+ d=kernel.org; s=k20201202; t=1769869521;
+ bh=4M1YK6ZJUo4rGAubeAeexggWDOfAzOxlq3GsBbCweOM=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=GwEnvRTBbcukjFCvBXvPdgcMk8cgUg/NaCFQ0rJOvDeTecyO+ZPAkjpB/Ku3JxiY8
- GMBLmijNIKMU44tEeKWSwefOeYvvim8vyZpfqFsjJMPO27NfrgSeVMkDacZNKm60Cb
- XNLdkazVD4yre6r7b0aF1is/lkAwGwRGaMrdozz4fvmF7zDzMfTsOM4TI6kuu2Slbq
- HzMCVXVkDYQh+J+b9YGeyPpOtOwVbT/ma64oMzW8R51OIxHD7f2f8KzCF9jzsjf+ZK
- Yy7GXjlkf9Owx8xrNBMDZGTq6Wzv4s0SsQNowqDsocRn2CoCKudSeOONO5uwmZbHCx
- 3ZESXL3Kdrumg==
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ b=uGAySrqK+FUoVyvfESY+zPPzry/nIvZYIBTGlQVoAUsUni7DbNWAyr4MVctd06Saa
+ 7mx6c57UyhnrBfZuCKDWBaX3Fxr/yVqUq5UgvCdBASa4py9n8B3XegPb9WPjWKSbDn
+ ynMejjIx8CcRJE8ZMF5e6xcW/l3nZHATpMiiyV/BTYgtkPZ9W3D2NtL8eIfRESqHf3
+ j5wlPU3it89qGDFzG8yq0ASR1iXdPkJ6bB9HlCdJg+R17JglELBEfl/F0/Fx/xsr+e
+ 4k3ou29LSiC3kwpZvA8sj4RLErf/1JarLl2nvF5s1D88tl+eqFW4RcgVp+uf5Dm9+f
+ v857d/YNoMptg==
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=GwEnvRTB
-Subject: [Intel-wired-lan] [PATCH v4 32/41] docs: sphinx-build-wrapper:
- allow -v override -q
+ header.a=rsa-sha256 header.s=k20201202 header.b=uGAySrqK
+Subject: [Intel-wired-lan] [PATCH v4 19/41] docs: kdoc_re: make NestedMatch
+ use KernRe
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -107,63 +108,195 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Documentation builds were using "-q" for a long time, but sometimes
-it is nice to see the Sphinx progress, without increasing build
-verbosity - which would also turn on kernel-doc verbosity.
-
-Instead of doing that, let's parse the sphinx-build already-existing
--v: each time it is used, it increases the verbosity level.
-
-With that, if the default is to use -q, a single -v will disable
-quiet mode. Passing more -v will keep increasing its verbosity.
+Instead of using re_compile, let's create the class with the
+regex and use KernRe to keep it cached.
 
 Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 ---
- tools/docs/sphinx-build-wrapper | 14 +++++++++++---
- 1 file changed, 11 insertions(+), 3 deletions(-)
+ tools/lib/python/kdoc/kdoc_parser.py | 55 ++++++++--------------------
+ tools/lib/python/kdoc/kdoc_re.py     | 22 ++++++++---
+ 2 files changed, 32 insertions(+), 45 deletions(-)
 
-diff --git a/tools/docs/sphinx-build-wrapper b/tools/docs/sphinx-build-wrapper
-index 78ff7ac202ef..8080ace60680 100755
---- a/tools/docs/sphinx-build-wrapper
-+++ b/tools/docs/sphinx-build-wrapper
-@@ -168,6 +168,7 @@ class SphinxBuilder:
-         parser = argparse.ArgumentParser()
-         parser.add_argument('-j', '--jobs', type=int)
-         parser.add_argument('-q', '--quiet', action='store_true')
-+        parser.add_argument('-v', '--verbose', default=0, action='count')
+diff --git a/tools/lib/python/kdoc/kdoc_parser.py b/tools/lib/python/kdoc/kdoc_parser.py
+index 4d52a00acfad..3a5614106af7 100644
+--- a/tools/lib/python/kdoc/kdoc_parser.py
++++ b/tools/lib/python/kdoc/kdoc_parser.py
+@@ -153,32 +153,7 @@ struct_xforms = [
+     (KernRe(r'DEFINE_DMA_UNMAP_ADDR\s*\(' + struct_args_pattern + r'\)', re.S), r'dma_addr_t \1'),
+     (KernRe(r'DEFINE_DMA_UNMAP_LEN\s*\(' + struct_args_pattern + r'\)', re.S), r'__u32 \1'),
+     (KernRe(r'VIRTIO_DECLARE_FEATURES\(([\w_]+)\)'), r'union { u64 \1; u64 \1_array[VIRTIO_FEATURES_U64S]; }'),
+-]
+-#
+-# Struct regexes here are guaranteed to have the end delimiter matching
+-# the start delimiter. Yet, right now, only one replace group
+-# is allowed.
+-#
+-struct_nested_prefixes = [
+-    (re.compile(r'\bSTRUCT_GROUP\('), r'\0'),
+-]
+-
+-#
+-# Function Regexes here are guaranteed to have the end delimiter matching
+-# the start delimiter.
+-#
+-function_nested_prefixes = [
+-    (re.compile(r"__cond_acquires\s*\("), ""),
+-    (re.compile(r"__cond_releases\s*\("), ""),
+-    (re.compile(r"__acquires\s*\("), ""),
+-    (re.compile(r"__releases\s*\("), ""),
+-    (re.compile(r"__must_hold\s*\("), ""),
+-    (re.compile(r"__must_not_hold\s*\("), ""),
+-    (re.compile(r"__must_hold_shared\s*\("), ""),
+-    (re.compile(r"__cond_acquires_shared\s*\("), ""),
+-    (re.compile(r"__acquires_shared\s*\("), ""),
+-    (re.compile(r"__releases_shared\s*\("), ""),
+-    (re.compile(r"__attribute__\s*\("), ""),
++    (NestedMatch(r'\bSTRUCT_GROUP\('), r'\0'),
+ ]
+ 
+ #
+@@ -210,6 +185,17 @@ function_xforms = [
+     (KernRe(r"DECL_BUCKET_PARAMS\s*\(\s*(\S+)\s*,\s*(\S+)\s*\)"), r"\1, \2"),
+     (KernRe(r"__no_context_analysis\s*"), ""),
+     (KernRe(r"__attribute_const__ +"), ""),
++    (NestedMatch(r"__cond_acquires\s*\("), ""),
++    (NestedMatch(r"__cond_releases\s*\("), ""),
++    (NestedMatch(r"__acquires\s*\("), ""),
++    (NestedMatch(r"__releases\s*\("), ""),
++    (NestedMatch(r"__must_hold\s*\("), ""),
++    (NestedMatch(r"__must_not_hold\s*\("), ""),
++    (NestedMatch(r"__must_hold_shared\s*\("), ""),
++    (NestedMatch(r"__cond_acquires_shared\s*\("), ""),
++    (NestedMatch(r"__acquires_shared\s*\("), ""),
++    (NestedMatch(r"__releases_shared\s*\("), ""),
++    (NestedMatch(r"__attribute__\s*\("), ""),
+ ]
+ 
+ #
+@@ -230,7 +216,6 @@ var_xforms = [
+ # Ancillary functions
+ #
+ 
+-
+ multi_space = KernRe(r'\s\s+')
+ def trim_whitespace(s):
+     """
+@@ -424,8 +409,6 @@ class KernelDoc:
+         # Place all potential outputs into an array
+         self.entries = []
+ 
+-        self.nested = NestedMatch()
+-
+         #
+         # We need Python 3.7 for its "dicts remember the insertion
+         # order" guarantee
+@@ -523,14 +506,11 @@ class KernelDoc:
+         # State flags
+         self.state = state.NORMAL
+ 
+-    def apply_transforms(self, regex_xforms, nested_xforms, text):
++    def apply_transforms(self, xforms, text):
+         """Apply a set of transforms to a block of text."""
+-        for search, subst in regex_xforms:
++        for search, subst in xforms:
+             text = search.sub(subst, text)
+ 
+-        for search, sub in nested_xforms:
+-            text = self.nested.sub(search, sub, text)
+-
+         return text.strip()
+ 
+     def push_parameter(self, ln, decl_type, param, dtype,
+@@ -909,8 +889,7 @@ class KernelDoc:
+         # Go through the list of members applying all of our transformations.
+         #
+         members = trim_private_members(members)
+-        members = self.apply_transforms(struct_xforms, struct_nested_prefixes,
+-                                        members)
++        members = self.apply_transforms(struct_xforms, members)
  
          #
-         # Other sphinx-build arguments go as-is, so place them
-@@ -179,10 +180,14 @@ class SphinxBuilder:
-         # Build a list of sphinx args, honoring verbosity here if specified
-         #
+         # Deal with embedded struct and union members, and drop enums entirely.
+@@ -1125,9 +1104,7 @@ class KernelDoc:
+             #
+             # Apply the initial transformations.
+             #
+-            prototype = self.apply_transforms(function_xforms,
+-                                              function_nested_prefixes,
+-                                              prototype)
++            prototype = self.apply_transforms(function_xforms, prototype)
  
--        verbose = self.verbose
-         sphinx_args, self.sphinxopts = parser.parse_known_args(sphinxopts)
+         # Yes, this truly is vile.  We are looking for:
+         # 1. Return type (may be nothing if we're looking at a macro)
+diff --git a/tools/lib/python/kdoc/kdoc_re.py b/tools/lib/python/kdoc/kdoc_re.py
+index 8933e1a62776..e34d55c25680 100644
+--- a/tools/lib/python/kdoc/kdoc_re.py
++++ b/tools/lib/python/kdoc/kdoc_re.py
+@@ -200,7 +200,10 @@ class NestedMatch:
+     #
+     #   FOO(arg1, arg2, arg3)
+ 
+-    def _search(self, regex, line):
++    def __init__(self, regex):
++        self.regex = KernRe(regex)
 +
-+        verbose = sphinx_args.verbose
-+        if self.verbose:
-+            verbose += 1
++    def _search(self, line):
+         """
+         Finds paired blocks for a regex that ends with a delimiter.
+ 
+@@ -222,7 +225,7 @@ class NestedMatch:
+ 
+         stack = []
+ 
+-        for match_re in regex.finditer(line):
++        for match_re in self.regex.finditer(line):
+             start = match_re.start()
+             offset = match_re.end()
+             string_char = None
+@@ -270,7 +273,7 @@ class NestedMatch:
+                         yield start, offset, pos + 1
+                         break
+ 
+-    def search(self, regex, line):
++    def search(self, line):
+         """
+         This is similar to re.search:
+ 
+@@ -278,11 +281,11 @@ class NestedMatch:
+         returning occurrences only if all delimiters are paired.
+         """
+ 
+-        for t in self._search(regex, line):
++        for t in self._search(line):
+ 
+             yield line[t[0]:t[2]]
+ 
+-    def sub(self, regex, sub, line, count=0):
++    def sub(self, sub, line, count=0):
+         """
+         This is similar to re.sub:
+ 
+@@ -301,7 +304,7 @@ class NestedMatch:
+         cur_pos = 0
+         n = 0
+ 
+-        for start, end, pos in self._search(regex, line):
++        for start, end, pos in self._search(line):
+             out += line[cur_pos:start]
+ 
+             # Value, ignoring start/end delimiters
+@@ -328,3 +331,10 @@ class NestedMatch:
+         out += line[cur_pos:l]
+ 
+         return out
 +
-         if sphinx_args.quiet is True:
--            verbose = False
-+            verbose = 0
- 
-         #
-         # If the user explicitly sets "-j" at command line, use it.
-@@ -195,8 +200,11 @@ class SphinxBuilder:
-         else:
-             self.n_jobs = None
- 
--        if not verbose:
-+        if verbose < 1:
-             self.sphinxopts += ["-q"]
-+        else:
-+            for i in range(1, sphinx_args.verbose):
-+                self.sphinxopts += ["-v"]
- 
-     def __init__(self, builddir, venv=None, verbose=False, n_jobs=None,
-                  interactive=None):
++    def __repr__(self):
++        """
++        Returns a displayable version of the class init.
++        """
++
++        return f'NestedMatch("{self.regex.regex.pattern}")'
 -- 
 2.52.0
 
