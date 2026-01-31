@@ -1,62 +1,62 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2D97DD7976C
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7EDF8D79773
 	for <intel-wired-lan@archiver.kernel.org>; Sat, 31 Jan 2026 14:25:36 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id F135160B5D;
-	Sat, 31 Jan 2026 14:25:35 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 3FE6A409F4;
+	Sat, 31 Jan 2026 14:25:36 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id gpXHypw-dELq; Sat, 31 Jan 2026 14:25:35 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id KeMtnui-mcum; Sat, 31 Jan 2026 14:25:34 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3432D60B53
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 945F340A6F
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1769869535;
-	bh=B1XX/pgcVtrAcqUcW5bALc53QydI+KN4WSmgnQXEmhE=;
+	s=default; t=1769869534;
+	bh=lcfUpC58AhpIuI6AXrGPTMzSrKho8EC1wCskh+bEZ+8=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=f9wkV2/ZUctkxN98ukLcWXQu6PMPxtgm0cs2aGADFqcDj0C+kdsiboxqxkfuIfDXI
-	 G5yHlAuC8xUntVcg42OmtwuBRKCgxkRZ3mCp8d43I6ffsh+pBp3c1hUFJz0DCuzhJ1
-	 8W1UduH4djeemiWQsniSziVK7ab0ALw4l4ECo8PF10+7QBikVH28wyQ/57PS5EuEFj
-	 zNIoOoDQjIiBrL0MP9O7EC9RhWzvPa8mLHzLyg82D2reRZcbxcMycK1V0lzWzH54Yn
-	 LOtlFG0T5iOvigNt1eLvr/YsjOwPdYCkJ7Nle1vzobFIGy8YoHHKduWVuTcMjEYcbE
-	 cOA3bOu+h3zxg==
+	b=OwowUtN/4v4MYqlp2UVDSBdfwORFYkrb4Sa4xiltc04sv5d6xPSNl2fQ9hWZ8MlCE
+	 u4/72zzfN+Y6kD5T0W1xU4lW/cov1Ro972e3qwnsZg2+rWwafczg1BuuveGDRgi6Ws
+	 54LMG/uaLYbonHXOaRj4x+PYnonSJfPzfH5DVOHmCzElbF437oEqHIIwHjnB7djUoQ
+	 +wTxJgfaW8vROyCPt9oNgbjD/HEqh5GeHhtxz5DzA1v4ClzDvBduCvKo7YPTOGH9/i
+	 /RwSnI82MX3W2sw7e58RtdCYi3CG/gyIMR4lFamCF613A8sdb7GCunOqhuFfApzy/V
+	 Hp6a9xPEDTNsg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 3432D60B53;
-	Sat, 31 Jan 2026 14:25:35 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id 1B30E25F
+	by smtp4.osuosl.org (Postfix) with ESMTP id 945F340A6F;
+	Sat, 31 Jan 2026 14:25:34 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 0CF7F69
  for <intel-wired-lan@lists.osuosl.org>; Sat, 31 Jan 2026 14:25:27 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 07E6383BE4
+ by smtp3.osuosl.org (Postfix) with ESMTP id 0130D60B3A
  for <intel-wired-lan@lists.osuosl.org>; Sat, 31 Jan 2026 14:25:24 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id APOiwBl--mrA for <intel-wired-lan@lists.osuosl.org>;
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id uEoMMwc1lUdh for <intel-wired-lan@lists.osuosl.org>;
  Sat, 31 Jan 2026 14:25:23 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.234.252.31;
  helo=sea.source.kernel.org; envelope-from=mchehab+huawei@kernel.org;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 3B6C383BD4
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 3B6C383BD4
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 0B4D260B4B
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 0B4D260B4B
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 3B6C383BD4
- for <intel-wired-lan@lists.osuosl.org>; Sat, 31 Jan 2026 14:25:23 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 0B4D260B4B
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 31 Jan 2026 14:25:22 +0000 (UTC)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by sea.source.kernel.org (Postfix) with ESMTP id 7FBC4444C8;
+ by sea.source.kernel.org (Postfix) with ESMTP id 2C26D44429;
  Sat, 31 Jan 2026 14:25:22 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E19B8C4AF5F;
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9414FC2BCF6;
  Sat, 31 Jan 2026 14:25:21 +0000 (UTC)
 Received: from mchehab by mail.kernel.org with local (Exim 4.99.1)
  (envelope-from <mchehab+huawei@kernel.org>)
- id 1vmBua-0000000AVln-0hEO; Sat, 31 Jan 2026 15:25:20 +0100
+ id 1vmBuZ-0000000AVl2-3bSB; Sat, 31 Jan 2026 15:25:19 +0100
 From: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
 To: Jonathan Corbet <corbet@lwn.net>,
  Linux Doc Mailing List <linux-doc@vger.kernel.org>
@@ -65,9 +65,9 @@ Cc: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
  linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
  Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
  Mauro Carvalho Chehab <mchehab@kernel.org>,
- Randy Dunlap <rdunlap@infradead.org>, Akira Yokosawa <akiyks@gmail.com>
-Date: Sat, 31 Jan 2026 15:25:05 +0100
-Message-ID: <47bbc4753235edb31c9faec00bfa790f798a2ca0.1769867953.git.mchehab+huawei@kernel.org>
+ Randy Dunlap <rdunlap@infradead.org>
+Date: Sat, 31 Jan 2026 15:24:54 +0100
+Message-ID: <ff9a001e213558d419b3e149710db4c5ba8a53e3.1769867953.git.mchehab+huawei@kernel.org>
 X-Mailer: git-send-email 2.52.0
 In-Reply-To: <cover.1769867953.git.mchehab+huawei@kernel.org>
 References: <cover.1769867953.git.mchehab+huawei@kernel.org>
@@ -75,23 +75,23 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1769869522;
- bh=ZDgtUhg2xj+M7eiW7ljRE3PrlESL14jiN0cCN9aIl+c=;
+ d=kernel.org; s=k20201202; t=1769869521;
+ bh=exVw90yVLaIyCuiKNYXLsf4VR9OXQdWgf2cZhrnzV2Q=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=mElXao9y30lRlSfpVtg3eDT9wtAXjfGnpkDTDKoe7L5Ol/J9zWWyaPRjl6FMGl/hS
- PMRQFW2NrYPDGbhoOyZd0RnmHVSOctMhQx3ZZOn1b2OHrh0xvTYKGPq6zFsWh4q5N8
- JxfowYerQf7tcIjQLaPz+9C+UD++YeKeBkS3mzQtBOFvIEcOolGenu/C26lSdUp/6u
- +t0OI3hXqZzbzZXKg0QrRaUHEK34jZ+c+XoZIt+nCfuEXPj7zOz0NAuqQFFAbhOpIE
- z9b9KaCdLxwp4sgFRd3/leU3c2swVljHE2LoKoEYmibadeYizGwhwXZNHS+ngpQJcl
- UalErO7YsO7jA==
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ b=Jhqi27BiIT4Cy//A3hEMRtGYKj50D5duVDfRfGkKdNgh6LD77COjmfBm64oC/rxgq
+ Chi6eJlVjvFKzFZuicwjfCRd11XLJCUS4y/RL0kbRwZ93UpgHzfdcmU7UGDcOZrvVc
+ b0AQNa8jXCKYwbGEB4m4iBCrAiRwlde4FiB95ffOYcdlvFbEW50gZvUNn9bI+RzTgA
+ YvT9Fp7wKQG7suV9128aCSi0eZxhIBzXVaHZA1C7ebawmkE7z0rtN5py4KusvhVf45
+ Mf4siTxDUozZqHAqMAb3GDntztQCBlHnv0NkDutJpfgao47cERvK1EirAQQ6kCAmTq
+ M7HeP0nAPIEaA==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=mElXao9y
-Subject: [Intel-wired-lan] [PATCH v4 31/41] docs: kdoc_re: Fix
- NestedMatch.sub() which causes PDF builds to break
+ header.a=rsa-sha256 header.s=k20201202 header.b=Jhqi27Bi
+Subject: [Intel-wired-lan] [PATCH v4 20/41] docs: kdoc_re: add support on
+ NestedMatch for argument replacement
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -107,78 +107,127 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Having a "\digit"  inside a docstring with normal strings causes
-PDF output to break, as it will add a weird character inside the
-string. It should be using a raw string instead.
+Currently, NestedMatch has very limited support for aguments
+replacement: it is all or nothing.
 
-Yet, having r"\0" won't solve, as this would be converted in
-Sphinx as "0". So, this has to be inside a pre formatted text.
+Add support to allow replacing individual arguments as well.
 
-That's said, the comment itself is probably not the best one.
-
-Rewrite the entire comment to properly document each parameter
-and add a "delim" parameter that will be passed to the
-ancillary function.
-
-Reported-by: Akira Yokosawa <akiyks@gmail.com>
-Closes: https://lore.kernel.org/linux-doc/63e99049-cc72-4156-83af-414fdde34312@gmail.com/
 Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 ---
- tools/lib/python/kdoc/kdoc_re.py | 31 ++++++++++++++++++++-----------
- 1 file changed, 20 insertions(+), 11 deletions(-)
+ tools/lib/python/kdoc/kdoc_re.py | 84 ++++++++++++++++++++++----------
+ 1 file changed, 59 insertions(+), 25 deletions(-)
 
 diff --git a/tools/lib/python/kdoc/kdoc_re.py b/tools/lib/python/kdoc/kdoc_re.py
-index 886e33ffd2b9..f67ebe86c458 100644
+index e34d55c25680..858cc688a58f 100644
 --- a/tools/lib/python/kdoc/kdoc_re.py
 +++ b/tools/lib/python/kdoc/kdoc_re.py
-@@ -323,19 +323,28 @@ class NestedMatch:
+@@ -177,29 +177,6 @@ class NestedMatch:
+     will ignore the search string.
+     """
  
-         return args
+-    # TODO: make NestedMatch handle multiple match groups
+-    #
+-    # Right now, regular expressions to match it are defined only up to
+-    #       the start delimiter, e.g.:
+-    #
+-    #       \bSTRUCT_GROUP\(
+-    #
+-    # is similar to: STRUCT_GROUP\((.*)\)
+-    # except that the content inside the match group is delimiter-aligned.
+-    #
+-    # The content inside parentheses is converted into a single replace
+-    # group (e.g. r`\1').
+-    #
+-    # It would be nice to change such definition to support multiple
+-    # match groups, allowing a regex equivalent to:
+-    #
+-    #   FOO\((.*), (.*), (.*)\)
+-    #
+-    # it is probably easier to define it not as a regular expression, but
+-    # with some lexical definition like:
+-    #
+-    #   FOO(arg1, arg2, arg3)
+-
+     def __init__(self, regex):
+         self.regex = KernRe(regex)
  
--    def sub(self, sub, line, count=0):
--        """
--        This is similar to re.sub:
-+    def sub(self, sub, line, delim=",", count=0):
-+        r"""
-+        Perform a regex‑based replacement on ``line`` for all matches with
-+        the ``self.regex`` pattern. It uses the following parameters:
+@@ -285,6 +262,59 @@ class NestedMatch:
  
--        It matches a regex that it is followed by a delimiter,
--        replacing occurrences only if all delimiters are paired.
-+        ``sub``
-+            Replacement string that may contain placeholders in the form
-+            ``\{digit}``, where  ``digit`` is an integer referring to the regex
-+            capture group number.
+             yield line[t[0]:t[2]]
  
--        if r'\0' is used, it works on a similar way of using re.group(0):
--        it places the entire args of the matched paired data, with the
--        delimiter stripped.
-+            ``\{0}`` is a special case that expands to the entire matched text.
- 
--        If count is different than zero, it will replace at most count
--        items.
-+        ``line``
-+            The string to operate on.
++    @staticmethod
++    def _split_args(all_args, delim=","):
++        """
++        Helper method to split comma-separated function arguments
++        or struct elements, if delim is set to ";".
 +
-+        ``delim``
-+            The delimiter used by identify the placeholder groups
-+            (defaults to ",").
++        It returns a list of arguments that can be used later on by
++        the sub() method.
++        """
++        args = [all_args]
++        stack = []
++        arg_start = 0
++        string_char = None
++        escape = False
 +
-+        ``count``
-+            Maximum number of replacements per match.  If 0 or omitted,
-+            all matches are replaced.
++        for idx, d in enumerate(all_args):
++            if escape:
++                escape = False
++                continue
++
++            if string_char:
++                if d == '\\':
++                    escape = True
++                elif d == string_char:
++                    string_char = None
++
++                continue
++
++            if d in ('"', "'"):
++                string_char = d
++                continue
++
++            if d in DELIMITER_PAIRS:
++                end = DELIMITER_PAIRS[d]
++
++                stack.append(end)
++                continue
++
++            if stack and d == stack[-1]:
++                stack.pop()
++                continue
++
++            if d == delim and not stack:
++                args.append(all_args[arg_start:idx].strip())
++                arg_start = idx + 1
++
++        # Add the last argument (if any)
++        last = all_args[arg_start:].strip()
++        if last:
++            args.append(last)
++
++        return args
++
+     def sub(self, sub, line, count=0):
          """
-         out = ""
+         This is similar to re.sub:
+@@ -310,9 +340,13 @@ class NestedMatch:
+             # Value, ignoring start/end delimiters
+             value = line[end:pos - 1]
  
-@@ -355,7 +364,7 @@ class NestedMatch:
-             # replace arguments
+-            # replaces \0 at the sub string, if \0 is used there
++            # replace arguments
              new_sub = sub
-             if "\\" in sub:
--                args = self._split_args(value)
-+                args = self._split_args(value, delim=delim)
+-            new_sub = new_sub.replace(r'\0', value)
++            if "\\" in sub:
++                args = self._split_args(value)
++
++                new_sub = re.sub(r'\\(\d+)',
++                                 lambda m: args[int(m.group(1))], new_sub)
  
-                 new_sub = re.sub(r'\\(\d+)',
-                                  lambda m: args[int(m.group(1))], new_sub)
+             out += new_sub
+ 
 -- 
 2.52.0
 
