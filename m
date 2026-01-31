@@ -1,74 +1,75 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4F028D79774
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 44BB7D7976C
 	for <intel-wired-lan@archiver.kernel.org>; Sat, 31 Jan 2026 14:25:47 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 24A3283DB6;
+	by smtp3.osuosl.org (Postfix) with ESMTP id 1F8CB60B49;
 	Sat, 31 Jan 2026 14:25:47 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 5_hkxvztiq20; Sat, 31 Jan 2026 14:25:46 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id divjOzQe9CZ1; Sat, 31 Jan 2026 14:25:46 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9D32683C37
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 1A0E860B4C
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
 	s=default; t=1769869546;
-	bh=GAVAPQazlKsM1YNJSYOLnuGRanZ2bm5d3V61TfYT+IA=;
+	bh=OeY0iuwZSHLHy4Qtvsc0fV6Ph2b4c2dRLjQraiK7oF0=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=k863s0hjRQIB2zMjxxix0D+HFsAbvSeQ/UV995ds+EAWbvvCCEI5ux4bzaZasXWO8
-	 5tZZMlkOFUcjkkXFFkznh49BA7jfYHU8eFYZ8TPG0NnIXQ7mkQb8nNN8+wG2yG0mEY
-	 YDX0s13rDipowBkoQKFIgpa24vaqYlkVulBDK1UHaR/Ky5Pq4mdO8815glkB8d8i21
-	 ewqfmJU00lpKWWy4im9Huq8QcGL6GmCS9IKnJcxNwktYL8qCC8D9NbJUkOAILK3fFb
-	 Zydoz9gx8SY1ASiI4wyiTlRkzoA5J+otgaDz0V9kkGrDm2DVZQCU4WM74odQT4DTCw
-	 Z8cDovEXp+dxg==
+	b=S1o+i0s6Yw6Zox/PA4SxX0SbIkgzBANFfo2XOGfciTBu0w6U1Pp9HBJOicmkpsqXX
+	 r3dEc359Nw9ijnOaSdImXMFVsH4yZweh7RcEzuvmbURrKwOmfB094IR2uRgzrdlRNq
+	 FJ0fxJ8GbNO97WA8eumJpLQD7BXb43BGZ6fkd6DU/6izqruQ0hrYH+CQpwEaK8b030
+	 2WZTXjMOYtTHkInSOTa3/MoTAjX4gZvg+iwfyVcib92vaTE78CGqz0jzYUmVaC5L5Z
+	 CehLRJGmEnE/NHob/QIWJE9VaMeEoV3laj5mmkDrBHQdZFTGYL3LNX/eZu5mxmW0hc
+	 39KfITSWwd3wQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 9D32683C37;
+	by smtp3.osuosl.org (Postfix) with ESMTP id 1A0E860B4C;
 	Sat, 31 Jan 2026 14:25:46 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 1827B25F
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 1761D69
  for <intel-wired-lan@lists.osuosl.org>; Sat, 31 Jan 2026 14:25:32 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 1E5EC40800
- for <intel-wired-lan@lists.osuosl.org>; Sat, 31 Jan 2026 14:25:24 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 0FD0860B56
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 31 Jan 2026 14:25:25 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id dpNcTrK1SGLd for <intel-wired-lan@lists.osuosl.org>;
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 6z-m5pAxFQiE for <intel-wired-lan@lists.osuosl.org>;
  Sat, 31 Jan 2026 14:25:23 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org;
- envelope-from=mchehab+huawei@kernel.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 7CEC240823
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 7CEC240823
-Received: from tor.source.kernel.org (tor.source.kernel.org
- [IPv6:2600:3c04:e001:324:0:1991:8:25])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 7CEC240823
- for <intel-wired-lan@lists.osuosl.org>; Sat, 31 Jan 2026 14:25:23 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.234.252.31;
+ helo=sea.source.kernel.org; envelope-from=mchehab+huawei@kernel.org;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 091F160B4A
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 091F160B4A
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 091F160B4A
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 31 Jan 2026 14:25:22 +0000 (UTC)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by tor.source.kernel.org (Postfix) with ESMTP id 15BE360128;
+ by sea.source.kernel.org (Postfix) with ESMTP id 982D74451A;
  Sat, 31 Jan 2026 14:25:22 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7B123C2BCB2;
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C555FC2BCC4;
  Sat, 31 Jan 2026 14:25:21 +0000 (UTC)
 Received: from mchehab by mail.kernel.org with local (Exim 4.99.1)
  (envelope-from <mchehab+huawei@kernel.org>)
- id 1vmBuZ-0000000AVkS-2YEf; Sat, 31 Jan 2026 15:25:19 +0100
+ id 1vmBua-0000000AVlT-07B5; Sat, 31 Jan 2026 15:25:20 +0100
 From: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
 To: Jonathan Corbet <corbet@lwn.net>,
  Linux Doc Mailing List <linux-doc@vger.kernel.org>
 Cc: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
  intel-wired-lan@lists.osuosl.org, linux-hardening@vger.kernel.org,
  linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+ "Gustavo A. R. Silva" <gustavoars@kernel.org>,
  Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
- Mauro Carvalho Chehab <mchehab@kernel.org>,
- Randy Dunlap <rdunlap@infradead.org>
-Date: Sat, 31 Jan 2026 15:24:45 +0100
-Message-ID: <f2b1c15602871f866ea179808fded10dbad447da.1769867953.git.mchehab+huawei@kernel.org>
+ Kees Cook <kees@kernel.org>, Mauro Carvalho Chehab <mchehab@kernel.org>,
+ Randy Dunlap <rdunlap@infradead.org>,
+ Shuah Khan <skhan@linuxfoundation.org>
+Date: Sat, 31 Jan 2026 15:25:00 +0100
+Message-ID: <543bc5c380a64a85d1bd656e0e7045626398206c.1769867953.git.mchehab+huawei@kernel.org>
 X-Mailer: git-send-email 2.52.0
 In-Reply-To: <cover.1769867953.git.mchehab+huawei@kernel.org>
 References: <cover.1769867953.git.mchehab+huawei@kernel.org>
@@ -76,23 +77,23 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1769869521;
- bh=aiHLIfS5F+miX7dW9x3ionw6eHjNQsSUUYhH3F5IK/s=;
+ d=kernel.org; s=k20201202; t=1769869522;
+ bh=FQwon0lGCEEl3a0ZrhHyVTozHezlG7Q5rbiRVSPsdCM=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=GZ8ffB0okAa/JZq9EY0ksEvsodBd6UavOLLuUMYwJGch0xaJ5NzYy/XmzPvHPCo3q
- RqSaKMODYYaWzPYPITpqTiZ4yCGBhA0Hqk0xQYThuoP3/dzmCL9UShHBcj9vbLKvXk
- 5iYtPT8ML/OhYwkWrBTnCoRX14C8GyC0dy4WHAaf2dj5JS8NnxttcDA2fqoZ8+Qdec
- 9pp7YED0qK5vhb7GtLxFuNVzNwefL1IxAyM3xMdf0X3e2Bo7Suzfbz4hi0xetRN8TL
- 1VHVBEenAyQxB8YZ8M0U7zBdg2/K4wZpYEhp7J2WPpk3U60jnUMJVi2JX2ltmfVDss
- pqkDmdp3yNW+w==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ b=qf3OnObvsEFFPnhT3+O8KOqp/K+XwsoKEtc+YF8lt9UkxJbB7PxET8ThukOfyEvSn
+ 6jnEo6D3ildurzqP6tQ2kB8Ql1hpleDK99D47s3d3C48XUE9uRnoBCx3CyRzFX5anu
+ 36GgeiDO3s2+t7FuVw5eMiSa8tEvAGikz4l3EWF46NmIC38pVSYJiHLqFZJf098R0J
+ CKwGMiUPe8SuV5l5RxaSYY4xggo178IO4MllCs5UXux/4dRkqyt38paYfvxxc4UeG/
+ XjIsIVdEksIoo9HyOj5lSUxdv7QnpBbSkVyMSv8L4D+Y+u2jsVEN/n4+awZDOdtUxw
+ FwpLYxzQTErWA==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=GZ8ffB0o
-Subject: [Intel-wired-lan] [PATCH v4 11/41] docs: kdoc_parser: fix parser to
- support multi-word types
+ header.a=rsa-sha256 header.s=k20201202 header.b=qf3OnObv
+Subject: [Intel-wired-lan] [PATCH v4 26/41] docs: kdoc_parser: move
+ transform lists to a separate file
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -108,41 +109,384 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The regular expression currently expects a single word for the
-type, but it may be something like  "struct foo".
+Over the time, most of the changes at kernel-doc are related
+to maintaining a list of transforms to convert macros into pure
+C code.
 
-Add support for it.
+Place such transforms on a separate module, to cleanup the
+parser module.
+
+While here, drop the now obsolete comment about the two-steps
+logic to handle struct_group macros.
+
+There is an advantage on that: QEMU also uses our own kernel-doc,
+but the xforms list there is different. By placing it on a
+separate module, we can minimize the differences and make it
+easier to keep QEMU in sync with Kernel upstream.
 
 Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
-Acked-by: Randy Dunlap <rdunlap@infradead.org>
-Tested-by: Randy Dunlap <rdunlap@infradead.org>
 Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 ---
- tools/lib/python/kdoc/kdoc_parser.py | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ Documentation/tools/kdoc_parser.rst   |   8 ++
+ tools/lib/python/kdoc/kdoc_files.py   |   3 +-
+ tools/lib/python/kdoc/kdoc_parser.py  | 147 ++------------------------
+ tools/lib/python/kdoc/xforms_lists.py | 117 ++++++++++++++++++++
+ 4 files changed, 133 insertions(+), 142 deletions(-)
+ create mode 100644 tools/lib/python/kdoc/xforms_lists.py
 
+diff --git a/Documentation/tools/kdoc_parser.rst b/Documentation/tools/kdoc_parser.rst
+index 03ee54a1b1cc..55b202173195 100644
+--- a/Documentation/tools/kdoc_parser.rst
++++ b/Documentation/tools/kdoc_parser.rst
+@@ -4,6 +4,14 @@
+ Kernel-doc parser stage
+ =======================
+ 
++C replacement rules used by the parser
++======================================
++
++.. automodule:: lib.python.kdoc.xforms_lists
++   :members:
++   :show-inheritance:
++   :undoc-members:
++
+ File handler classes
+ ====================
+ 
+diff --git a/tools/lib/python/kdoc/kdoc_files.py b/tools/lib/python/kdoc/kdoc_files.py
+index 022487ea2cc6..7357c97a4b01 100644
+--- a/tools/lib/python/kdoc/kdoc_files.py
++++ b/tools/lib/python/kdoc/kdoc_files.py
+@@ -15,6 +15,7 @@ import os
+ import re
+ 
+ from kdoc.kdoc_parser import KernelDoc
++from kdoc.xforms_lists import CTransforms
+ from kdoc.kdoc_output import OutputFormat
+ 
+ 
+@@ -117,7 +118,7 @@ class KernelFiles():
+         if fname in self.files:
+             return
+ 
+-        doc = KernelDoc(self.config, fname)
++        doc = KernelDoc(self.config, fname, CTransforms)
+         export_table, entries = doc.parse_kdoc()
+ 
+         self.export_table[fname] = export_table
 diff --git a/tools/lib/python/kdoc/kdoc_parser.py b/tools/lib/python/kdoc/kdoc_parser.py
-index 0b6cba442d72..21cc4e19a1e8 100644
+index 1e8e156e2a9e..a280fe581937 100644
 --- a/tools/lib/python/kdoc/kdoc_parser.py
 +++ b/tools/lib/python/kdoc/kdoc_parser.py
-@@ -1026,7 +1026,7 @@ class KernelDoc:
+@@ -75,142 +75,6 @@ doc_begin_func = KernRe(str(doc_com) +			# initial " * '
+ #
+ struct_args_pattern = r'([^,)]+)'
  
-         default_val = None
+-struct_xforms = [
+-    # Strip attributes
+-    (KernRe(r"__attribute__\s*\(\([a-z0-9,_\*\s\(\)]*\)\)", flags=re.I | re.S, cache=False), ' '),
+-    (KernRe(r'\s*__aligned\s*\([^;]*\)', re.S), ' '),
+-    (KernRe(r'\s*__counted_by\s*\([^;]*\)', re.S), ' '),
+-    (KernRe(r'\s*__counted_by_(le|be)\s*\([^;]*\)', re.S), ' '),
+-    (KernRe(r'\s*__guarded_by\s*\([^\)]*\)', re.S), ' '),
+-    (KernRe(r'\s*__pt_guarded_by\s*\([^\)]*\)', re.S), ' '),
+-    (KernRe(r'\s*__packed\s*', re.S), ' '),
+-    (KernRe(r'\s*CRYPTO_MINALIGN_ATTR', re.S), ' '),
+-    (KernRe(r'\s*__private', re.S), ' '),
+-    (KernRe(r'\s*__rcu', re.S), ' '),
+-    (KernRe(r'\s*____cacheline_aligned_in_smp', re.S), ' '),
+-    (KernRe(r'\s*____cacheline_aligned', re.S), ' '),
+-    (KernRe(r'\s*__cacheline_group_(begin|end)\([^\)]+\);'), ''),
+-    #
+-    # Unwrap struct_group macros based on this definition:
+-    # __struct_group(TAG, NAME, ATTRS, MEMBERS...)
+-    # which has variants like: struct_group(NAME, MEMBERS...)
+-    # Only MEMBERS arguments require documentation.
+-    #
+-    # Parsing them happens on two steps:
+-    #
+-    # 1. drop struct group arguments that aren't at MEMBERS,
+-    #    storing them as STRUCT_GROUP(MEMBERS)
+-    #
+-    # 2. remove STRUCT_GROUP() ancillary macro.
+-    #
+-    # The original logic used to remove STRUCT_GROUP() using an
+-    # advanced regex:
+-    #
+-    #   \bSTRUCT_GROUP(\(((?:(?>[^)(]+)|(?1))*)\))[^;]*;
+-    #
+-    # with two patterns that are incompatible with
+-    # Python re module, as it has:
+-    #
+-    #   - a recursive pattern: (?1)
+-    #   - an atomic grouping: (?>...)
+-    #
+-    # I tried a simpler version: but it didn't work either:
+-    #   \bSTRUCT_GROUP\(([^\)]+)\)[^;]*;
+-    #
+-    # As it doesn't properly match the end parenthesis on some cases.
+-    #
+-    # So, a better solution was crafted: there's now a CFunction
+-    # class that ensures that delimiters after a search are properly
+-    # matched. So, the implementation to drop STRUCT_GROUP() will be
+-    # handled in separate.
+-    #
+-    (CFunction('struct_group'), r'\2'),
+-    (CFunction('struct_group_attr'), r'\3'),
+-    (CFunction('struct_group_tagged'), r'struct \1 \2; \3'),
+-    (CFunction('__struct_group'), r'\4'),
+-
+-    #
+-    # Replace macros
+-    #
+-    # TODO: use CFunction on all FOO($1, $2, ...) matches
+-    #
+-    # it is better to also move those to the CFunction logic,
+-    # to ensure that parentheses will be properly matched.
+-    #
+-    (KernRe(r'__ETHTOOL_DECLARE_LINK_MODE_MASK\s*\(([^\)]+)\)', re.S),
+-     r'DECLARE_BITMAP(\1, __ETHTOOL_LINK_MODE_MASK_NBITS)'),
+-    (KernRe(r'DECLARE_PHY_INTERFACE_MASK\s*\(([^\)]+)\)', re.S),
+-     r'DECLARE_BITMAP(\1, PHY_INTERFACE_MODE_MAX)'),
+-    (KernRe(r'DECLARE_BITMAP\s*\(' + struct_args_pattern + r',\s*' + struct_args_pattern + r'\)',
+-            re.S), r'unsigned long \1[BITS_TO_LONGS(\2)]'),
+-    (KernRe(r'DECLARE_HASHTABLE\s*\(' + struct_args_pattern + r',\s*' + struct_args_pattern + r'\)',
+-            re.S), r'unsigned long \1[1 << ((\2) - 1)]'),
+-    (KernRe(r'DECLARE_KFIFO\s*\(' + struct_args_pattern + r',\s*' + struct_args_pattern +
+-            r',\s*' + struct_args_pattern + r'\)', re.S), r'\2 *\1'),
+-    (KernRe(r'DECLARE_KFIFO_PTR\s*\(' + struct_args_pattern + r',\s*' +
+-            struct_args_pattern + r'\)', re.S), r'\2 *\1'),
+-    (KernRe(r'(?:__)?DECLARE_FLEX_ARRAY\s*\(' + struct_args_pattern + r',\s*' +
+-            struct_args_pattern + r'\)', re.S), r'\1 \2[]'),
+-    (KernRe(r'DEFINE_DMA_UNMAP_ADDR\s*\(' + struct_args_pattern + r'\)', re.S), r'dma_addr_t \1'),
+-    (KernRe(r'DEFINE_DMA_UNMAP_LEN\s*\(' + struct_args_pattern + r'\)', re.S), r'__u32 \1'),
+-    (KernRe(r'VIRTIO_DECLARE_FEATURES\(([\w_]+)\)'), r'union { u64 \1; u64 \1_array[VIRTIO_FEATURES_U64S]; }'),
+-]
+-
+-#
+-# Transforms for function prototypes
+-#
+-function_xforms = [
+-    (KernRe(r"^static +"), ""),
+-    (KernRe(r"^extern +"), ""),
+-    (KernRe(r"^asmlinkage +"), ""),
+-    (KernRe(r"^inline +"), ""),
+-    (KernRe(r"^__inline__ +"), ""),
+-    (KernRe(r"^__inline +"), ""),
+-    (KernRe(r"^__always_inline +"), ""),
+-    (KernRe(r"^noinline +"), ""),
+-    (KernRe(r"^__FORTIFY_INLINE +"), ""),
+-    (KernRe(r"__init +"), ""),
+-    (KernRe(r"__init_or_module +"), ""),
+-    (KernRe(r"__deprecated +"), ""),
+-    (KernRe(r"__flatten +"), ""),
+-    (KernRe(r"__meminit +"), ""),
+-    (KernRe(r"__must_check +"), ""),
+-    (KernRe(r"__weak +"), ""),
+-    (KernRe(r"__sched +"), ""),
+-    (KernRe(r"_noprof"), ""),
+-    (KernRe(r"__always_unused *"), ""),
+-    (KernRe(r"__printf\s*\(\s*\d*\s*,\s*\d*\s*\) +"), ""),
+-    (KernRe(r"__(?:re)?alloc_size\s*\(\s*\d+\s*(?:,\s*\d+\s*)?\) +"), ""),
+-    (KernRe(r"__diagnose_as\s*\(\s*\S+\s*(?:,\s*\d+\s*)*\) +"), ""),
+-    (KernRe(r"DECL_BUCKET_PARAMS\s*\(\s*(\S+)\s*,\s*(\S+)\s*\)"), r"\1, \2"),
+-    (KernRe(r"__no_context_analysis\s*"), ""),
+-    (KernRe(r"__attribute_const__ +"), ""),
+-    (CFunction("__cond_acquires"), ""),
+-    (CFunction("__cond_releases"), ""),
+-    (CFunction("__acquires"), ""),
+-    (CFunction("__releases"), ""),
+-    (CFunction("__must_hold"), ""),
+-    (CFunction("__must_not_hold"), ""),
+-    (CFunction("__must_hold_shared"), ""),
+-    (CFunction("__cond_acquires_shared"), ""),
+-    (CFunction("__acquires_shared"), ""),
+-    (CFunction("__releases_shared"), ""),
+-    (CFunction("__attribute__"), ""),
+-]
+-
+-#
+-# Transforms for variable prototypes
+-#
+-var_xforms = [
+-    (KernRe(r"__read_mostly"), ""),
+-    (KernRe(r"__ro_after_init"), ""),
+-    (KernRe(r'\s*__guarded_by\s*\([^\)]*\)', re.S), ""),
+-    (KernRe(r'\s*__pt_guarded_by\s*\([^\)]*\)', re.S), ""),
+-    (KernRe(r"LIST_HEAD\(([\w_]+)\)"), r"struct list_head \1"),
+-    (KernRe(r"(?://.*)$"), ""),
+-    (KernRe(r"(?:/\*.*\*/)"), ""),
+-    (KernRe(r";$"), ""),
+-]
  
--        r= KernRe(OPTIONAL_VAR_ATTR + r"[\w_]*\s+(?:\*+)?([\w_]+)\s*[\d\]\[]*\s*(=.*)?")
-+        r= KernRe(OPTIONAL_VAR_ATTR + r"\s*[\w_\s]*\s+(?:\*+)?([\w_]+)\s*[\d\]\[]*\s*(=.*)?")
-         if r.match(proto):
-             if not declaration_name:
-                 declaration_name = r.group(1)
-@@ -1037,7 +1037,7 @@ class KernelDoc:
-                                   r.groups(), proto)
+ #
+ # Ancillary functions
+@@ -394,11 +258,12 @@ class KernelDoc:
+     #: String to write when a parameter is not described.
+     undescribed = "-- undescribed --"
  
-         else:
--            r= KernRe(OPTIONAL_VAR_ATTR + r"(?:[\w_]*)?\s+(?:\*+)?(?:[\w_]+)\s*[\d\]\[]*\s*(=.*)?")
-+            r= KernRe(OPTIONAL_VAR_ATTR + r"(?:[\w_\s]*)?\s+(?:\*+)?(?:[\w_]+)\s*[\d\]\[]*\s*(=.*)?")
+-    def __init__(self, config, fname):
++    def __init__(self, config, fname, xforms):
+         """Initialize internal variables"""
  
-             if r.match(proto):
-                 default_val = r.group(1)
+         self.fname = fname
+         self.config = config
++        self.xforms = xforms
+ 
+         # Initial state for the state machines
+         self.state = state.NORMAL
+@@ -889,7 +754,7 @@ class KernelDoc:
+         # Go through the list of members applying all of our transformations.
+         #
+         members = trim_private_members(members)
+-        members = self.apply_transforms(struct_xforms, members)
++        members = self.apply_transforms(self.xforms.struct_xforms, members)
+ 
+         #
+         # Deal with embedded struct and union members, and drop enums entirely.
+@@ -1011,8 +876,7 @@ class KernelDoc:
+         # Drop comments and macros to have a pure C prototype
+         #
+         if not declaration_name:
+-            for r, sub in var_xforms:
+-                proto = r.sub(sub, proto)
++            proto = self.apply_transforms(self.xforms.var_xforms, proto)
+ 
+         proto = proto.rstrip()
+ 
+@@ -1104,7 +968,8 @@ class KernelDoc:
+             #
+             # Apply the initial transformations.
+             #
+-            prototype = self.apply_transforms(function_xforms, prototype)
++            prototype = self.apply_transforms(self.xforms.function_xforms,
++                                              prototype)
+ 
+         # Yes, this truly is vile.  We are looking for:
+         # 1. Return type (may be nothing if we're looking at a macro)
+diff --git a/tools/lib/python/kdoc/xforms_lists.py b/tools/lib/python/kdoc/xforms_lists.py
+new file mode 100644
+index 000000000000..88968bafdb78
+--- /dev/null
++++ b/tools/lib/python/kdoc/xforms_lists.py
+@@ -0,0 +1,117 @@
++#!/usr/bin/env python3
++# SPDX-License-Identifier: GPL-2.0
++# Copyright(c) 2026: Mauro Carvalho Chehab <mchehab@kernel.org>.
++
++import re
++
++from kdoc.kdoc_re import CFunction, KernRe
++
++struct_args_pattern = r'([^,)]+)'
++
++class CTransforms:
++    """
++    Data class containing a long set of transformations to turn
++    structure member prefixes, and macro invocations and variables
++    into something we can parse and generate kdoc for.
++    """
++
++    #: Transforms for structs and unions
++    struct_xforms = [
++        # Strip attributes
++        (KernRe(r"__attribute__\s*\(\([a-z0-9,_\*\s\(\)]*\)\)", flags=re.I | re.S, cache=False), ' '),
++        (KernRe(r'\s*__aligned\s*\([^;]*\)', re.S), ' '),
++        (KernRe(r'\s*__counted_by\s*\([^;]*\)', re.S), ' '),
++        (KernRe(r'\s*__counted_by_(le|be)\s*\([^;]*\)', re.S), ' '),
++        (KernRe(r'\s*__guarded_by\s*\([^\)]*\)', re.S), ' '),
++        (KernRe(r'\s*__pt_guarded_by\s*\([^\)]*\)', re.S), ' '),
++        (KernRe(r'\s*__packed\s*', re.S), ' '),
++        (KernRe(r'\s*CRYPTO_MINALIGN_ATTR', re.S), ' '),
++        (KernRe(r'\s*__private', re.S), ' '),
++        (KernRe(r'\s*__rcu', re.S), ' '),
++        (KernRe(r'\s*____cacheline_aligned_in_smp', re.S), ' '),
++        (KernRe(r'\s*____cacheline_aligned', re.S), ' '),
++        (KernRe(r'\s*__cacheline_group_(begin|end)\([^\)]+\);'), ''),
++
++        (CFunction('struct_group'), r'\2'),
++        (CFunction('struct_group_attr'), r'\3'),
++        (CFunction('struct_group_tagged'), r'struct \1 \2; \3'),
++        (CFunction('__struct_group'), r'\4'),
++
++        #
++        # Replace macros
++        #
++        # TODO: use CFunction on all FOO($1, $2, ...) matches
++        #
++        # it is better to also move those to the CFunction logic,
++        # to ensure that parentheses will be properly matched.
++        #
++        (KernRe(r'__ETHTOOL_DECLARE_LINK_MODE_MASK\s*\(([^\)]+)\)', re.S),
++        r'DECLARE_BITMAP(\1, __ETHTOOL_LINK_MODE_MASK_NBITS)'),
++        (KernRe(r'DECLARE_PHY_INTERFACE_MASK\s*\(([^\)]+)\)', re.S),
++        r'DECLARE_BITMAP(\1, PHY_INTERFACE_MODE_MAX)'),
++        (KernRe(r'DECLARE_BITMAP\s*\(' + struct_args_pattern + r',\s*' + struct_args_pattern + r'\)',
++                re.S), r'unsigned long \1[BITS_TO_LONGS(\2)]'),
++        (KernRe(r'DECLARE_HASHTABLE\s*\(' + struct_args_pattern + r',\s*' + struct_args_pattern + r'\)',
++                re.S), r'unsigned long \1[1 << ((\2) - 1)]'),
++        (KernRe(r'DECLARE_KFIFO\s*\(' + struct_args_pattern + r',\s*' + struct_args_pattern +
++                r',\s*' + struct_args_pattern + r'\)', re.S), r'\2 *\1'),
++        (KernRe(r'DECLARE_KFIFO_PTR\s*\(' + struct_args_pattern + r',\s*' +
++                struct_args_pattern + r'\)', re.S), r'\2 *\1'),
++        (KernRe(r'(?:__)?DECLARE_FLEX_ARRAY\s*\(' + struct_args_pattern + r',\s*' +
++                struct_args_pattern + r'\)', re.S), r'\1 \2[]'),
++        (KernRe(r'DEFINE_DMA_UNMAP_ADDR\s*\(' + struct_args_pattern + r'\)', re.S), r'dma_addr_t \1'),
++        (KernRe(r'DEFINE_DMA_UNMAP_LEN\s*\(' + struct_args_pattern + r'\)', re.S), r'__u32 \1'),
++        (KernRe(r'VIRTIO_DECLARE_FEATURES\(([\w_]+)\)'), r'union { u64 \1; u64 \1_array[VIRTIO_FEATURES_U64S]; }'),
++    ]
++
++    #: Transforms for function prototypes
++    function_xforms = [
++        (KernRe(r"^static +"), ""),
++        (KernRe(r"^extern +"), ""),
++        (KernRe(r"^asmlinkage +"), ""),
++        (KernRe(r"^inline +"), ""),
++        (KernRe(r"^__inline__ +"), ""),
++        (KernRe(r"^__inline +"), ""),
++        (KernRe(r"^__always_inline +"), ""),
++        (KernRe(r"^noinline +"), ""),
++        (KernRe(r"^__FORTIFY_INLINE +"), ""),
++        (KernRe(r"__init +"), ""),
++        (KernRe(r"__init_or_module +"), ""),
++        (KernRe(r"__deprecated +"), ""),
++        (KernRe(r"__flatten +"), ""),
++        (KernRe(r"__meminit +"), ""),
++        (KernRe(r"__must_check +"), ""),
++        (KernRe(r"__weak +"), ""),
++        (KernRe(r"__sched +"), ""),
++        (KernRe(r"_noprof"), ""),
++        (KernRe(r"__always_unused *"), ""),
++        (KernRe(r"__printf\s*\(\s*\d*\s*,\s*\d*\s*\) +"), ""),
++        (KernRe(r"__(?:re)?alloc_size\s*\(\s*\d+\s*(?:,\s*\d+\s*)?\) +"), ""),
++        (KernRe(r"__diagnose_as\s*\(\s*\S+\s*(?:,\s*\d+\s*)*\) +"), ""),
++        (KernRe(r"DECL_BUCKET_PARAMS\s*\(\s*(\S+)\s*,\s*(\S+)\s*\)"), r"\1, \2"),
++        (KernRe(r"__no_context_analysis\s*"), ""),
++        (KernRe(r"__attribute_const__ +"), ""),
++        (CFunction("__cond_acquires"), ""),
++        (CFunction("__cond_releases"), ""),
++        (CFunction("__acquires"), ""),
++        (CFunction("__releases"), ""),
++        (CFunction("__must_hold"), ""),
++        (CFunction("__must_not_hold"), ""),
++        (CFunction("__must_hold_shared"), ""),
++        (CFunction("__cond_acquires_shared"), ""),
++        (CFunction("__acquires_shared"), ""),
++        (CFunction("__releases_shared"), ""),
++        (CFunction("__attribute__"), ""),
++    ]
++
++    #: Transforms for variables
++    var_xforms = [
++        (KernRe(r"__read_mostly"), ""),
++        (KernRe(r"__ro_after_init"), ""),
++        (KernRe(r'\s*__guarded_by\s*\([^\)]*\)', re.S), ""),
++        (KernRe(r'\s*__pt_guarded_by\s*\([^\)]*\)', re.S), ""),
++        (KernRe(r"LIST_HEAD\(([\w_]+)\)"), r"struct list_head \1"),
++        (KernRe(r"(?://.*)$"), ""),
++        (KernRe(r"(?:/\*.*\*/)"), ""),
++        (KernRe(r";$"), ""),
++    ]
 -- 
 2.52.0
 
