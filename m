@@ -1,74 +1,74 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DD35ED79773
-	for <intel-wired-lan@archiver.kernel.org>; Sat, 31 Jan 2026 14:25:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1011DD79745
+	for <intel-wired-lan@archiver.kernel.org>; Sat, 31 Jan 2026 14:25:39 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id B479F60B59;
+	by smtp4.osuosl.org (Postfix) with ESMTP id D440740815;
 	Sat, 31 Jan 2026 14:25:38 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id sUETuQalauQI; Sat, 31 Jan 2026 14:25:37 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 0B73160B4B
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1769869537;
-	bh=MI06T2AHGLX3d1ru2UAwE/DQVMYDtxCTHG5lUP/539E=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=WQ9xad/VHcEt8PKGijmnFjZ8mj2bXLqaXUT0zGUKkDu1b9yjXM3ncY6oYPhGeX7RP
-	 +6/X/OskY2iiMWxbST6DQl9ewH+7MEBbQ7anhhwY6COA+MCs1lC9fX71z1NO4/HBKf
-	 rrX2+t/pcsvGFd4uYK4MHy1C6qTyYLra50g97E3AOoTxnfwVZ81LjNPPViw2aoHuqX
-	 GO2SBiNtZ83oAa13UOcX1bB7PjkTbqKPAPy5qoMPEyjfmafwiV7gSzPSwXksxUb3Ia
-	 1glDjioyf8GUEOajjQ682OS5ETtH/JA7hQhGTAppANNRrhxYBtEF1Nj7qPr/46OQh6
-	 l+ikROkpwhfHg==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 0B73160B4B;
-	Sat, 31 Jan 2026 14:25:37 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id 0584069
- for <intel-wired-lan@lists.osuosl.org>; Sat, 31 Jan 2026 14:25:28 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id F041B4098D
- for <intel-wired-lan@lists.osuosl.org>; Sat, 31 Jan 2026 14:25:23 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id w93o4G3bMBj3 for <intel-wired-lan@lists.osuosl.org>;
+ id VIiaGdQAeaHw; Sat, 31 Jan 2026 14:25:38 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4BCAE409D7
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1769869538;
+	bh=s1Iw1eYu5P8uqz2OjZRWfBNw/4vGHFrYA6OR+NamvDc=;
+	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=Z9BqaCk3/fSArCMOr8fEfV4B0AnouoJmOIC4+kIwiPSwuHCjkmRf5K8Khs3TNkAmG
+	 tmB3w3MluCpftBHJe54mUScKtdt6K8UXaVBXuj78kX6L9JUsiOKqibyVvPrMHywSqR
+	 N5vvkAfE1AzIGoVdKpUyIO1ZZ0b/SYXbjFPJCcwFXYlD3BhGp59V0tkdd1/U607xxz
+	 U2BtiGUF3hezSZyfKQ9GnJ13CN79du6vb0EgIFV1L85684bDHgPrz4/lFeyTZ/sZjP
+	 fEdNCTPYr5Gpl8o25ig5/sPPScljztUKt6HRZSAUY4n4AUpxCoIAlhSW57zjFCKgeE
+	 ngeY/G3RIP7/w==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp4.osuosl.org (Postfix) with ESMTP id 4BCAE409D7;
+	Sat, 31 Jan 2026 14:25:38 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 16D1A425
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 31 Jan 2026 14:25:28 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp2.osuosl.org (Postfix) with ESMTP id AE8E54080C
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 31 Jan 2026 14:25:23 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id nnqJUp4GSSuC for <intel-wired-lan@lists.osuosl.org>;
  Sat, 31 Jan 2026 14:25:23 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org;
+ client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org;
  envelope-from=mchehab+huawei@kernel.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 53DB640817
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 53DB640817
-Received: from tor.source.kernel.org (tor.source.kernel.org
- [IPv6:2600:3c04:e001:324:0:1991:8:25])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 53DB640817
- for <intel-wired-lan@lists.osuosl.org>; Sat, 31 Jan 2026 14:25:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org EA9664070D
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org EA9664070D
+Received: from sea.source.kernel.org (sea.source.kernel.org
+ [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id EA9664070D
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 31 Jan 2026 14:25:22 +0000 (UTC)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by tor.source.kernel.org (Postfix) with ESMTP id BD43D6001D;
- Sat, 31 Jan 2026 14:25:21 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 642CEC16AAE;
- Sat, 31 Jan 2026 14:25:21 +0000 (UTC)
+ by sea.source.kernel.org (Postfix) with ESMTP id 91A60444E8;
+ Sat, 31 Jan 2026 14:25:22 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1600DC2BD04;
+ Sat, 31 Jan 2026 14:25:22 +0000 (UTC)
 Received: from mchehab by mail.kernel.org with local (Exim 4.99.1)
  (envelope-from <mchehab+huawei@kernel.org>)
- id 1vmBuZ-0000000AVk8-1yFJ; Sat, 31 Jan 2026 15:25:19 +0100
+ id 1vmBua-0000000AVmB-1Mc4; Sat, 31 Jan 2026 15:25:20 +0100
 From: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
 To: Jonathan Corbet <corbet@lwn.net>,
  Linux Doc Mailing List <linux-doc@vger.kernel.org>
 Cc: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
  intel-wired-lan@lists.osuosl.org, linux-hardening@vger.kernel.org,
  linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
- Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
  Mauro Carvalho Chehab <mchehab@kernel.org>,
- Randy Dunlap <rdunlap@infradead.org>
-Date: Sat, 31 Jan 2026 15:24:40 +0100
-Message-ID: <7efbd500b098b45d697beb769f07d471c33a7117.1769867953.git.mchehab+huawei@kernel.org>
+ Randy Dunlap <rdunlap@infradead.org>,
+ Shuah Khan <skhan@linuxfoundation.org>
+Date: Sat, 31 Jan 2026 15:25:11 +0100
+Message-ID: <b41dd589cfde10cda5ada6b629f93916a4e96162.1769867954.git.mchehab+huawei@kernel.org>
 X-Mailer: git-send-email 2.52.0
 In-Reply-To: <cover.1769867953.git.mchehab+huawei@kernel.org>
 References: <cover.1769867953.git.mchehab+huawei@kernel.org>
@@ -76,23 +76,23 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1769869521;
- bh=SI0OuhHT6kvx7zPg3IIsJPCvtLTTLub7sg5GnAeFE/g=;
+ d=kernel.org; s=k20201202; t=1769869522;
+ bh=xc3bdeTKA4gaQTm1QPUjzckBF1/Bc6XutKPIezxeXB8=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=Xo/3Vt23C7chjuZ7k/WMNAMPjI5tDrGE7fZP0881O6poSzzKpdAOGgMXFZkaKBcOi
- no/HeR0CPK5DIDvj3lJWubQwPmmVIw8DwxCavnGH5IzOrbP8WJUXLGjcB1KfG1NlgA
- PJ4m93OsS0puDcKLOQnP3XRvIRAPCFGTlprCq+vFHzSoLKdnW9Xj0MP9LtTnWAH7+Q
- pN7VlDM/8lqPDYESZtNBvPTh0ksLTf73qARHwjoy9LFFEY+K5IB+ztfVpcjxvr0a4n
- 83vHXEwItfBnH8rSEXV+QyUi0wquTHG83DNa5ipLR1fEgeFbb+7emItvvl4KDEaRMF
- EPMj34EU7ssnw==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ b=e+lgoG9CCnr7rpRrfsny4rjU3fOjEA51AuUGLbiRKwx4JxSMtmKdWklJMdOrLCagH
+ JF5wdiKyo3olj2bQCU/JKO4RWNPvW5PiF38+1ed3tFZVgSB6VxYq7mXw5iNUgROa9S
+ f2AqXDqsVXQKNJAnTON850mtt7wlHtt6Q00qG5g9KlvTCRkHgxbsgj/Ag22zWTaXeT
+ aUo438xrkfrN2S8hpQFTeJ0cPbJZfK6PMPnw486vZ72kMUbNXYGXODLNQcTQqAeIhP
+ 0yiQUASDOOvdYUZeyMG0irPKAvFiWPIWSvNVWbbf9wn9hQpeZ7Hu2CHivgMnC22av+
+ kONely4AuJDNw==
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=Xo/3Vt23
-Subject: [Intel-wired-lan] [PATCH v4 06/41] docs: kdoc_parser: use
- NestedMatch to handle __attribute__ on functions
+ header.a=rsa-sha256 header.s=k20201202 header.b=e+lgoG9C
+Subject: [Intel-wired-lan] [PATCH v4 37/41] docs: kdoc_output: use a more
+ standard order for .TH on man pages
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -108,41 +108,44 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Some annotations macros may have nested parenthesis, causing normal
-regex parsing to fail. The __attribute__ regex is currently very
-complex to try to avoid that, but it doesn't catch all cases.
-
-Ensure that the parenthesis will be properly handled by using
-the NestedMatch() logic.
+The generated man pages are not following the current standards
+for Linux documentation. Reorder .TH fields for them to look
+like other Linux man pages.
 
 Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
-Acked-by: Randy Dunlap <rdunlap@infradead.org>
-Tested-by: Randy Dunlap <rdunlap@infradead.org>
-Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 ---
- tools/lib/python/kdoc/kdoc_parser.py | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ tools/docs/sphinx-build-wrapper      | 2 +-
+ tools/lib/python/kdoc/kdoc_output.py | 4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/tools/lib/python/kdoc/kdoc_parser.py b/tools/lib/python/kdoc/kdoc_parser.py
-index ae5b2ef80f75..64165d8df84e 100644
---- a/tools/lib/python/kdoc/kdoc_parser.py
-+++ b/tools/lib/python/kdoc/kdoc_parser.py
-@@ -165,6 +165,7 @@ struct_nested_prefixes = [
- # the start delimiter.
- #
- function_nested_prefixes = [
-+    (re.compile(r"__attribute__\s*\("), ""),
- ]
+diff --git a/tools/docs/sphinx-build-wrapper b/tools/docs/sphinx-build-wrapper
+index e6418e22e2ff..ac6852e3dd8c 100755
+--- a/tools/docs/sphinx-build-wrapper
++++ b/tools/docs/sphinx-build-wrapper
+@@ -625,7 +625,7 @@ class SphinxBuilder:
  
- #
-@@ -195,7 +196,6 @@ function_xforms = [
-     (KernRe(r"__diagnose_as\s*\(\s*\S+\s*(?:,\s*\d+\s*)*\) +"), ""),
-     (KernRe(r"DECL_BUCKET_PARAMS\s*\(\s*(\S+)\s*,\s*(\S+)\s*\)"), r"\1, \2"),
-     (KernRe(r"__attribute_const__ +"), ""),
--    (KernRe(r"__attribute__\s*\(\((?:[\w\s]+(?:\([^)]*\))?\s*,?)+\)\)\s+"), ""),
- ]
+                 # Use shlex here, as it handles well parameters with commas
+                 args = shlex.split(line)
+-                fname = f"{output_dir}/{args[3]}.{args[2]}"
++                fname = f"{output_dir}/{args[1]}.{args[2]}"
  
- #
+                 if self.verbose:
+                     print(f"Creating {fname}")
+diff --git a/tools/lib/python/kdoc/kdoc_output.py b/tools/lib/python/kdoc/kdoc_output.py
+index fe3fc0dfd02b..fb44cc8e0770 100644
+--- a/tools/lib/python/kdoc/kdoc_output.py
++++ b/tools/lib/python/kdoc/kdoc_output.py
+@@ -611,8 +611,8 @@ class ManFormat(OutputFormat):
+         """Emit a title header line."""
+         name = name.strip()
+ 
+-        self.data += f'.TH "{self.modulename}" {self.section} "{name}" '
+-        self.data += f' "{self.date}" "{self.manual}"\n'
++        self.data += f'.TH "{name}" {self.section} "{self.date}" '
++        self.data += f' "{self.modulename}" "{self.manual}"\n'
+ 
+     def __init__(self, modulename, section="9", manual="Kernel API Manual"):
+         """
 -- 
 2.52.0
 
