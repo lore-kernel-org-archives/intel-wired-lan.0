@@ -1,62 +1,62 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6C107D79778
-	for <intel-wired-lan@archiver.kernel.org>; Sat, 31 Jan 2026 14:25:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 398C4D79779
+	for <intel-wired-lan@archiver.kernel.org>; Sat, 31 Jan 2026 14:25:29 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 43395409F4;
-	Sat, 31 Jan 2026 14:25:28 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id hqJHFI8WJo4C; Sat, 31 Jan 2026 14:25:26 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0ADBE409E3
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1769869526;
-	bh=hA4Bv6ileKJGfeT/J0r1zkrd29rn1G+Kok3lw2XqdFU=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=L63haamRGRSISQ+GMgj4k1aX1EYNqFZUy2Oy2FST2ds/1iFgtqfaXnfIjda/TRR1d
-	 waR/VHnqsPFpdD1h6KpunQUgljJ0CFjdCzbf8oJQtJc/qm8R2dB9ej52NAaMsXAtN3
-	 Ob8MhEbO2e7wa6zb797ykf4sAnOif9A2e/6SUDWBhKUf2oYJvFhriIzJhBcHPPogxK
-	 GbJJX8UkANXyozkpsAZ8dOfcecPHAqvdXOw/bnqeWa6f9y6Q22Qqppb1fEp42a70yB
-	 WFYoqxblW40ya49qJRUD/fGeCoU3SvOZog6Ui+qEwbYoAQe+M3YO3urAza01kv5yr+
-	 pHtSrIgP0sb7w==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 0ADBE409E3;
-	Sat, 31 Jan 2026 14:25:26 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 539841E0
- for <intel-wired-lan@lists.osuosl.org>; Sat, 31 Jan 2026 14:25:23 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 39C3760B4E
- for <intel-wired-lan@lists.osuosl.org>; Sat, 31 Jan 2026 14:25:23 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 076E160B3A;
+	Sat, 31 Jan 2026 14:25:29 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id kWvgmAJGa6RO for <intel-wired-lan@lists.osuosl.org>;
+ id MI7sEER_vdWR; Sat, 31 Jan 2026 14:25:28 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7ABF160B55
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1769869528;
+	bh=RmhSyJ9qEcDnrBDZ2f5b+eYFYp1tjtv6kSWtaU3LnaU=;
+	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=VQXi/iMzFXNEzr27YK02rEBrTrV4/kpJiDbJ2ybf5pR7Cn2FNnx4gDSksZq8QxfGX
+	 1QVMii7LO6BKFHjPwow2+wmT30ssYz80Pdui0/z4cPiESmsH1hFxB8xjFu2gN+5TZk
+	 BctHH/ibYwWuwdn8fhDJ/5mGXfWtMl0MfaCWSsSF/kHEZxobz526KIKTN5Ob9lsB9h
+	 oksmyRYzgbmaqo/XDYO5zLjdFrfGwPTONOEgvRwWOgD3ci3tZsSOcZw2k0K+ullfn3
+	 eY5Krnw/XFFSy/i/nX/NJK6XSk7KtMxkVHX8hT+OLqAeAx4X8wyZDlOSUhWhqlj1Lq
+	 GgJXEWBpAefdg==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp3.osuosl.org (Postfix) with ESMTP id 7ABF160B55;
+	Sat, 31 Jan 2026 14:25:28 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 3810169
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 31 Jan 2026 14:25:24 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp4.osuosl.org (Postfix) with ESMTP id 2FFA740812
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 31 Jan 2026 14:25:23 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id Ah6eTXMZz8qB for <intel-wired-lan@lists.osuosl.org>;
  Sat, 31 Jan 2026 14:25:22 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.234.252.31;
  helo=sea.source.kernel.org; envelope-from=mchehab+huawei@kernel.org;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org A1EA760B3C
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A1EA760B3C
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 9700B40815
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9700B40815
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
- by smtp3.osuosl.org (Postfix) with ESMTPS id A1EA760B3C
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 9700B40815
  for <intel-wired-lan@lists.osuosl.org>; Sat, 31 Jan 2026 14:25:22 +0000 (UTC)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by sea.source.kernel.org (Postfix) with ESMTP id 0C75844402;
- Sat, 31 Jan 2026 14:25:22 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 80AF9C2BCB8;
+ by sea.source.kernel.org (Postfix) with ESMTP id E3103443EF;
+ Sat, 31 Jan 2026 14:25:21 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7FEB9C2BCB7;
  Sat, 31 Jan 2026 14:25:21 +0000 (UTC)
 Received: from mchehab by mail.kernel.org with local (Exim 4.99.1)
  (envelope-from <mchehab+huawei@kernel.org>)
- id 1vmBuZ-0000000AVkm-38lv; Sat, 31 Jan 2026 15:25:19 +0100
+ id 1vmBuZ-0000000AVka-2msr; Sat, 31 Jan 2026 15:25:19 +0100
 From: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
 To: Jonathan Corbet <corbet@lwn.net>,
  Linux Doc Mailing List <linux-doc@vger.kernel.org>
@@ -66,8 +66,8 @@ Cc: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
  Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
  Mauro Carvalho Chehab <mchehab@kernel.org>,
  Randy Dunlap <rdunlap@infradead.org>
-Date: Sat, 31 Jan 2026 15:24:50 +0100
-Message-ID: <affc3bcc500311dcebc0ded047cff134a7095968.1769867953.git.mchehab+huawei@kernel.org>
+Date: Sat, 31 Jan 2026 15:24:47 +0100
+Message-ID: <b53c8adc52fc0263d73fe85ff0c57b9cbc58bfd1.1769867953.git.mchehab+huawei@kernel.org>
 X-Mailer: git-send-email 2.52.0
 In-Reply-To: <cover.1769867953.git.mchehab+huawei@kernel.org>
 References: <cover.1769867953.git.mchehab+huawei@kernel.org>
@@ -76,22 +76,22 @@ Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=kernel.org; s=k20201202; t=1769869521;
- bh=f75PYMG6ddvHOj0au37tuHra8a1RYsJ5qmzwD4SUTjA=;
+ bh=E4fJO9wVUnaqUlAi5WmkzEmXnpOij75g8JwiGBZaJ9Q=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=f1p0q3/rMjMPWREONbC8rMKcph3t8I45QF2IDKfCfUrKuKcq9HvyuMUORKQSeqoSO
- l/62TEU6GDqm5+sXuxKGCu0LxVoCSrMoZXv2aqGSvk9sE7IJH9Tmbgk4NbnGj+4Lwh
- 8Ou4aS6bDve+hsKdq6rSEM7nYXRLhxTkimeNGhQ1Pni0UxA4PFIoiWWL9styvraMjs
- Qah5GB1BvxahKCe7e08+hwOouK12F1U8SnWGsM1NVhN3sxI7zByxNEyBojHHYbsiHv
- Kb9ZpHitHaOKYubFpvnmr9xVxu+qqOv27H50IN3bSXkof4Ek9bU9TQR9HS9KVQEHgs
- GhEdoBGmIK8BA==
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ b=T3JUosEFJJEjm57nIN5CeAd93uZO4+2EAFKhDcuIbkebO1FR7POhOcbcWgZueyjxz
+ /IXGruDaiYAZz5IDDMkSzYsse7MozmnPNwyYQ8YggFCXDpNaPTh0vTGS/jP152zC7j
+ czzMbvpxWdlmG/CBEtjZDH+Jxejj1xUlPWmhmsAvgpBeAjSfrsEp6at4bEQGHheS0p
+ 2Pd6103t7cEK0kCjoXibs2v9jbZ0I009Vab8mMb4bm3yMhx7jMcI1E/PLCPjN2dVXw
+ nj/EAPU4U/6kUE05hcZ18vsYp8a1GBMvr+2v2XPhxvic6Epx9QexnaN5o3IjvqpgNq
+ mqUN574QnMeEA==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=f1p0q3/r
-Subject: [Intel-wired-lan] [PATCH v4 16/41] docs: kdoc_re: better show
- KernRe() at documentation
+ header.a=rsa-sha256 header.s=k20201202 header.b=T3JUosEF
+Subject: [Intel-wired-lan] [PATCH v4 13/41] docs: kdoc_parser: add support
+ for LIST_HEAD
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -107,51 +107,29 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-the __repr__() function is used by autodoc to document macro
-initialization.
-
-Add a better representation for them.
+Convert LIST_HEAD into struct list_head when handling its
+prototype.
 
 Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+Acked-by: Randy Dunlap <rdunlap@infradead.org>
+Tested-by: Randy Dunlap <rdunlap@infradead.org>
 Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 ---
- tools/lib/python/kdoc/kdoc_re.py | 23 ++++++++++++++++++++++-
- 1 file changed, 22 insertions(+), 1 deletion(-)
+ tools/lib/python/kdoc/kdoc_parser.py | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/tools/lib/python/kdoc/kdoc_re.py b/tools/lib/python/kdoc/kdoc_re.py
-index 1861799f1966..3f405addcc58 100644
---- a/tools/lib/python/kdoc/kdoc_re.py
-+++ b/tools/lib/python/kdoc/kdoc_re.py
-@@ -52,7 +52,28 @@ class KernRe:
-         return self.regex.pattern
- 
-     def __repr__(self):
--        return f're.compile("{self.regex.pattern}")'
-+        """
-+        Returns a displayable version of the class init.
-+        """
-+
-+        flag_map = {
-+            re.IGNORECASE: "re.I",
-+            re.MULTILINE: "re.M",
-+            re.DOTALL: "re.S",
-+            re.VERBOSE: "re.X",
-+        }
-+
-+        flags = []
-+        for flag, name in flag_map.items():
-+            if self.regex.flags & flag:
-+                flags.append(name)
-+
-+        flags_name = " | ".join(flags)
-+
-+        if flags_name:
-+            return f'KernRe("{self.regex.pattern}", {flags_name})'
-+        else:
-+            return f'KernRe("{self.regex.pattern}")'
- 
-     def __add__(self, other):
-         """
+diff --git a/tools/lib/python/kdoc/kdoc_parser.py b/tools/lib/python/kdoc/kdoc_parser.py
+index 92b550189988..33710c4be145 100644
+--- a/tools/lib/python/kdoc/kdoc_parser.py
++++ b/tools/lib/python/kdoc/kdoc_parser.py
+@@ -219,6 +219,7 @@ var_xforms = [
+     (KernRe(r"__ro_after_init"), ""),
+     (KernRe(r'\s*__guarded_by\s*\([^\)]*\)', re.S), ""),
+     (KernRe(r'\s*__pt_guarded_by\s*\([^\)]*\)', re.S), ""),
++    (KernRe(r"LIST_HEAD\(([\w_]+)\)"), r"struct list_head \1"),
+     (KernRe(r"(?://.*)$"), ""),
+     (KernRe(r"(?:/\*.*\*/)"), ""),
+     (KernRe(r";$"), ""),
 -- 
 2.52.0
 
