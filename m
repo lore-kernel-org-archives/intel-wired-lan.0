@@ -1,73 +1,74 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E30D1D79745
-	for <intel-wired-lan@archiver.kernel.org>; Sat, 31 Jan 2026 14:25:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 44D1CD79774
+	for <intel-wired-lan@archiver.kernel.org>; Sat, 31 Jan 2026 14:25:49 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id AB95460B73;
-	Sat, 31 Jan 2026 14:25:48 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 1C1A283C37;
+	Sat, 31 Jan 2026 14:25:49 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id deM8WQKMKchx; Sat, 31 Jan 2026 14:25:48 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id g7ikQCrTDWkF; Sat, 31 Jan 2026 14:25:48 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org EBBAE60B72
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 837AE83C3A
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
 	s=default; t=1769869548;
-	bh=IxwbLYpjjTtJrwx9Vp0TzdxncrLBsNiUUA8AIZpxhHA=;
+	bh=sosQN2f/G3+XWThMFCIT3ZXPBhbb6sGts+p/TwmxPiw=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=9OX+qzKzi0YjfLq7qtDNHg0jB4euTLB8equ0ZSPfXIEN39BAmzoXl36wk2auD6sGB
-	 jFauCNnfOv21KB8HK7g6BVjdeRqPl5CC/zn/xOb6yJG6SDGgN7oLdvFlkrQ6DiU/35
-	 PzNQM9Z3k4OKnx50rrQIB6U6rYpjRENH7sbpKm+u6qnJpgQXIErQN8wrw7RmN4MGHx
-	 zFqtL8hqnNwlS+Yi8+Cvw8Uo8uicVMuloTAQPGDERx63Iw3FfqoYogmb4pqIqhKZTA
-	 9to0oME7BhoTpgdVl21D8Qr23a9x10zVzZinYbMo38Hk84/U94i6PeyMsyhteRkBHe
-	 p/MkwBR3Dy0NQ==
+	b=QjMInITZnfTEtwgNx5Vchk0kxSabYKiTbgLp1KVE4jubCOp68TWn3/ZJiibjkjinT
+	 2A3xX4oIkSRwe/frs8+YWJ+ZOUIgNA6k+xOeJ0WePx+1Zc9SHLq28AJPpirsB5FcdE
+	 eEGbxY30ZHrXRSuBvmrYKBKYeC31TtXKQP6IYwGMVavQRaebXPpnR0+FsfTOnU7Qzg
+	 rzjnbS1Q09Cthksm4gdJ1vgtusQlrgaIUq/sD1lVn6kUZ408h7IHMy6gWPQ7rquOpr
+	 rErzgWUrIyi3a7TE26URpKTZtPKXkT443eE1XWP7hhodc8miB9kJG33s1fwOZKs6g6
+	 1sGcw0ZM/Yzlw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id EBBAE60B72;
-	Sat, 31 Jan 2026 14:25:47 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 837AE83C3A;
+	Sat, 31 Jan 2026 14:25:48 +0000 (UTC)
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 1497025F
- for <intel-wired-lan@lists.osuosl.org>; Sat, 31 Jan 2026 14:25:33 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id 17B511E0
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 31 Jan 2026 14:25:34 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 1E5F260B50
+ by smtp3.osuosl.org (Postfix) with ESMTP id 4E99D60B44
  for <intel-wired-lan@lists.osuosl.org>; Sat, 31 Jan 2026 14:25:25 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id XHMNvzsiVqmg for <intel-wired-lan@lists.osuosl.org>;
- Sat, 31 Jan 2026 14:25:22 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.234.252.31;
- helo=sea.source.kernel.org; envelope-from=mchehab+huawei@kernel.org;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org CB94660648
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org CB94660648
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
- by smtp3.osuosl.org (Postfix) with ESMTPS id CB94660648
- for <intel-wired-lan@lists.osuosl.org>; Sat, 31 Jan 2026 14:25:22 +0000 (UTC)
+ id G0lYUKFzU7EO for <intel-wired-lan@lists.osuosl.org>;
+ Sat, 31 Jan 2026 14:25:24 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org;
+ envelope-from=mchehab+huawei@kernel.org; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 3DD7760B3C
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3DD7760B3C
+Received: from tor.source.kernel.org (tor.source.kernel.org
+ [IPv6:2600:3c04:e001:324:0:1991:8:25])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 3DD7760B3C
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 31 Jan 2026 14:25:24 +0000 (UTC)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by sea.source.kernel.org (Postfix) with ESMTP id 157514440C;
+ by tor.source.kernel.org (Postfix) with ESMTP id 99E0D6013B;
  Sat, 31 Jan 2026 14:25:22 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8BAEFC2BCF4;
- Sat, 31 Jan 2026 14:25:21 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 04926C4AF67;
+ Sat, 31 Jan 2026 14:25:22 +0000 (UTC)
 Received: from mchehab by mail.kernel.org with local (Exim 4.99.1)
  (envelope-from <mchehab+huawei@kernel.org>)
- id 1vmBuZ-0000000AVku-3NDi; Sat, 31 Jan 2026 15:25:19 +0100
+ id 1vmBua-0000000AVlv-0v7X; Sat, 31 Jan 2026 15:25:20 +0100
 From: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
 To: Jonathan Corbet <corbet@lwn.net>,
  Linux Doc Mailing List <linux-doc@vger.kernel.org>
 Cc: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
  intel-wired-lan@lists.osuosl.org, linux-hardening@vger.kernel.org,
  linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
- Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
  Mauro Carvalho Chehab <mchehab@kernel.org>,
- Randy Dunlap <rdunlap@infradead.org>
-Date: Sat, 31 Jan 2026 15:24:52 +0100
-Message-ID: <b57510c349fecec95a5b2be1ca22f8fa95f2b3be.1769867953.git.mchehab+huawei@kernel.org>
+ Randy Dunlap <rdunlap@infradead.org>,
+ Shuah Khan <skhan@linuxfoundation.org>
+Date: Sat, 31 Jan 2026 15:25:07 +0100
+Message-ID: <9a41e5aa1da74e30a05bc21537a0c170450f01e3.1769867954.git.mchehab+huawei@kernel.org>
 X-Mailer: git-send-email 2.52.0
 In-Reply-To: <cover.1769867953.git.mchehab+huawei@kernel.org>
 References: <cover.1769867953.git.mchehab+huawei@kernel.org>
@@ -75,23 +76,23 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1769869521;
- bh=iz9xyvW3XE7yzsvjnd3rhkZs9CrYswt5vPlbqVTvJig=;
+ d=kernel.org; s=k20201202; t=1769869522;
+ bh=C2cStPoOoGCftK6fYM/VQjKEO1UC2wtJ9483nmjaklU=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=lMa+luBPJ+zqyvOKQ8UuTGthfF+2TtQ/CWvwB5BZwiH5tjhj+j7tP78WOQIcjq1q3
- z9utSNnb2u18xV2StNusik9UkeaQCD4/blOqo9cGO1oiAGK4SYrf0v+ZQ7hhHRUBZa
- Lv/RmhZbQJQkh99vGMaaLaUmfjQ+7tvF2OlvlHM1qJWIyX1JSz0UKk0ZlsyYtQSJNp
- 0yJ33k3qum1OVb3t1kMevOJ+Yyjp+oMKLHon7AbC+TK8MvW6Pq0gUKhO59/VSLU8GO
- DqcXAsYA83Ol1TmkaIZI/vWQk21uMiBE8JO2EJqWsPEd6cHO1hht0LwZ0IRCzoducH
- /LiW+wK0uJElQ==
+ b=XUlq74Q3cKfYzyY2KmtaeWNQkjLbbRDt5JtA5d4kbIkyhkSG2+r9AGrHLU4Qs3OAO
+ 3CImQgNMNaRltbbsjangUr8/RFy/xKGsHu358A75l53bxFqHHyasF1Y45xDrcFc7ZZ
+ zUGz4lPK3g2E73Jcj6dtY4eaNtIuN0oRlF39s22PGLYoBlu/2KrKfAQvAhr+IyXRR+
+ fiDNVldhW85MRQCVRgbBHJVmTVarAAtjw7rDnTFIEHavj+WTvsWpLmLJ87yKpKiD0Q
+ +HIoB2dNIDt/n0P2oHfuEaY5mV8k8GNS3pw9TsRmf1W18wyoLE9yQyFvxtldDB8Ism
+ kso7P7jRnB1bA==
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=lMa+luBP
-Subject: [Intel-wired-lan] [PATCH v4 18/41] docs: kdoc_re: Change NestedMath
- args replacement to \0
+ header.a=rsa-sha256 header.s=k20201202 header.b=XUlq74Q3
+Subject: [Intel-wired-lan] [PATCH v4 33/41] tools: sphinx-build-wrapper:
+ improve its help message
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -107,60 +108,74 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Future patches will allow parsing each argument instead of the
-hole set. Prepare for it by changing the replace all args from
-\1 to \0.
+Besides the parameters that are passed via command line arguments,
+the wrapper's behavior is affected by several environment variables.
 
-No functional changes.
+Document that. While here, use __doc__ for its description.
 
 Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
-Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 ---
- tools/lib/python/kdoc/kdoc_parser.py | 2 +-
- tools/lib/python/kdoc/kdoc_re.py     | 9 +++++----
- 2 files changed, 6 insertions(+), 5 deletions(-)
+ tools/docs/sphinx-build-wrapper | 28 +++++++++++++++++++++++++---
+ 1 file changed, 25 insertions(+), 3 deletions(-)
 
-diff --git a/tools/lib/python/kdoc/kdoc_parser.py b/tools/lib/python/kdoc/kdoc_parser.py
-index db140363104a..4d52a00acfad 100644
---- a/tools/lib/python/kdoc/kdoc_parser.py
-+++ b/tools/lib/python/kdoc/kdoc_parser.py
-@@ -160,7 +160,7 @@ struct_xforms = [
- # is allowed.
- #
- struct_nested_prefixes = [
--    (re.compile(r'\bSTRUCT_GROUP\('), r'\1'),
-+    (re.compile(r'\bSTRUCT_GROUP\('), r'\0'),
- ]
+diff --git a/tools/docs/sphinx-build-wrapper b/tools/docs/sphinx-build-wrapper
+index 8080ace60680..b7c149dff06b 100755
+--- a/tools/docs/sphinx-build-wrapper
++++ b/tools/docs/sphinx-build-wrapper
+@@ -814,20 +814,42 @@ def jobs_type(value):
+     except ValueError:
+         raise argparse.ArgumentTypeError(f"Must be 'auto' or positive integer, got {value}")  # pylint: disable=W0707
  
- #
-diff --git a/tools/lib/python/kdoc/kdoc_re.py b/tools/lib/python/kdoc/kdoc_re.py
-index 7b7ddc50ac36..8933e1a62776 100644
---- a/tools/lib/python/kdoc/kdoc_re.py
-+++ b/tools/lib/python/kdoc/kdoc_re.py
-@@ -289,8 +289,9 @@ class NestedMatch:
-         It matches a regex that it is followed by a delimiter,
-         replacing occurrences only if all delimiters are paired.
++EPILOG="""
++Besides the command line arguments, several environment variables affect its
++default behavior, meant to be used when called via Kernel Makefile:
++
++- KERNELVERSION:  Kernel major version
++- KERNELRELEASE:  Kernel release
++- KBUILD_VERBOSE: Contains the value of "make V=[0|1] variable.
++                  When V=0 (KBUILD_VERBOSE=0), sets verbose level to "-q".
++- SPHINXBUILD:    Documentation build tool (default: "sphinx-build").
++- SPHINXOPTS:     Extra options pased to SPHINXBUILD
++                  (default: "-j auto" and "-q" if KBUILD_VERBOSE=0).
++                  The "-v" flag can be used to increase verbosity.
++                  If V=0, the first "-v" will drop "-q".
++- PYTHON3:        Python command to run SPHINXBUILD
++- PDFLATEX:       LaTeX PDF engine. (default: "xelatex")
++- LATEXOPTS:      Optional set of command line arguments to the LaTeX engine
++- srctree:        Location of the Kernel root directory (default: ".").
++
++"""
++
+ def main():
+     """
+     Main function. The only mandatory argument is the target. If not
+     specified, the other arguments will use default values if not
+     specified at os.environ.
+     """
+-    parser = argparse.ArgumentParser(description="Kernel documentation builder")
++    parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter,
++                                     description=__doc__,
++                                     epilog=EPILOG)
  
--        if r'\1' is used, it works just like re: it places there the
--        matched paired data with the delimiter stripped.
-+        if r'\0' is used, it works on a similar way of using re.group(0):
-+        it places the entire args of the matched paired data, with the
-+        delimiter stripped.
+     parser.add_argument("target", choices=list(TARGETS.keys()),
+                         help="Documentation target to build")
+     parser.add_argument("--sphinxdirs", nargs="+",
+                         help="Specific directories to build")
+     parser.add_argument("--builddir", default="output",
+-                        help="Sphinx configuration file")
++                        help="Sphinx configuration file (default: %(default)s)")
  
-         If count is different than zero, it will replace at most count
-         items.
-@@ -306,9 +307,9 @@ class NestedMatch:
-             # Value, ignoring start/end delimiters
-             value = line[end:pos - 1]
+     parser.add_argument("--theme", help="Sphinx theme to use")
  
--            # replaces \1 at the sub string, if \1 is used there
-+            # replaces \0 at the sub string, if \0 is used there
-             new_sub = sub
--            new_sub = new_sub.replace(r'\1', value)
-+            new_sub = new_sub.replace(r'\0', value)
+@@ -843,7 +865,7 @@ def main():
+                         help="place build in verbose mode")
  
-             out += new_sub
+     parser.add_argument('-j', '--jobs', type=jobs_type,
+-                        help="Sets number of jobs to use with sphinx-build")
++                        help="Sets number of jobs to use with sphinx-build(default: auto)")
  
+     parser.add_argument('-i', '--interactive', action='store_true',
+                         help="Change latex default to run in interactive mode")
 -- 
 2.52.0
 
