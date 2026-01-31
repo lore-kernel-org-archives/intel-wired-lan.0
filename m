@@ -1,73 +1,75 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 59B5CD79773
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CEFD1D7976C
 	for <intel-wired-lan@archiver.kernel.org>; Sat, 31 Jan 2026 14:25:33 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 2DC8483C37;
+	by smtp4.osuosl.org (Postfix) with ESMTP id A57FD40A9B;
 	Sat, 31 Jan 2026 14:25:33 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id i82BYTeLQ2TX; Sat, 31 Jan 2026 14:25:31 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id pdplZOdz4S6i; Sat, 31 Jan 2026 14:25:33 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 0074483C19
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org DE9B640A3B
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1769869531;
-	bh=8PP3Jsp8GxWj96StrT7RUGSqaXln0Jxsg5MUi6NBozw=;
+	s=default; t=1769869532;
+	bh=7Ia3vA/WmBWOfKk+rvjzn5ZlM3bnuvZks0B6IAOq8WU=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=CJif2u3LZTCGfEIHtD5MDo0Z+Pk1RjTYclPN5a93lhRrYEcKxR0OdOc7oX52742Zf
-	 cQQ80nVkExxatsP+uf9YOj5qXVsRWxm89UL2HZt2fu64JW3qrIJ3xBVsrB7f7xh0ns
-	 XPVn5VxJJ5gX46fjaRmppqojcQzK1C5RVJM4N/cz5ztXtEnd2qEw9jmUos72d2CVHm
-	 o/WZ2gjhIsVFDM0XjIwp8mJT9iaVqeDhY3nnYuiojwbaf55pqfmkSMoa7sQD8Jc/N3
-	 9LC96NgBhWR5AUG9a+QE6uG3aXiA9cWlcP3zjv2ZAfvEIB90Fuxhau+bZYGMH6mvTc
-	 ot7WPii9zl2hA==
+	b=YvUuUjP1ptr3pROndKr5DkVSejqmekXeoDFKfDLUc7K85kBfkoSfqhsszcwenFdz4
+	 BpyUlO3QXdmhgLRFIzJkpYI1mK0A3qIb0oMjgiyV0X1qm3hnE7reNAggtMq7vzxcng
+	 fnniyS93u8OVk5V+wZexSg1cx8oNBFazLKNDfc/iO2+54q6M0w3PkbK2msvtd6gXad
+	 q++ycROMA5TxTSRcr9+fvjepbTmWn4plrINnMz2+010fsTiZ+jinjCZGnTvpMdlbNv
+	 vnyeCjgHISzDZEHFX5Dpa+IISkDGElxc3lS5tLTEXX6zb7gOSYzf2nzgLD/XUbcQSI
+	 xwrHCk1Q6AjDg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 0074483C19;
-	Sat, 31 Jan 2026 14:25:30 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id 3D97769
- for <intel-wired-lan@lists.osuosl.org>; Sat, 31 Jan 2026 14:25:25 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id DE9B640A3B;
+	Sat, 31 Jan 2026 14:25:32 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 17D6B25F
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 31 Jan 2026 14:25:26 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id D78FA83BCF
+ by smtp4.osuosl.org (Postfix) with ESMTP id B3600409CE
  for <intel-wired-lan@lists.osuosl.org>; Sat, 31 Jan 2026 14:25:23 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 08VhH8a7mmaT for <intel-wired-lan@lists.osuosl.org>;
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id TZZYz0APZMDy for <intel-wired-lan@lists.osuosl.org>;
  Sat, 31 Jan 2026 14:25:23 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.234.252.31;
- helo=sea.source.kernel.org; envelope-from=mchehab+huawei@kernel.org;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 39AC283BC7
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 39AC283BC7
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 39AC283BC7
- for <intel-wired-lan@lists.osuosl.org>; Sat, 31 Jan 2026 14:25:23 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org;
+ envelope-from=mchehab+huawei@kernel.org; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org DA3AC4099E
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org DA3AC4099E
+Received: from sea.source.kernel.org (sea.source.kernel.org
+ [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id DA3AC4099E
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 31 Jan 2026 14:25:22 +0000 (UTC)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by sea.source.kernel.org (Postfix) with ESMTP id 86DEF444DE;
+ by sea.source.kernel.org (Postfix) with ESMTP id 693BF44491;
  Sat, 31 Jan 2026 14:25:22 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0AE0AC4DDE2;
- Sat, 31 Jan 2026 14:25:22 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D6D96C4AF1B;
+ Sat, 31 Jan 2026 14:25:21 +0000 (UTC)
 Received: from mchehab by mail.kernel.org with local (Exim 4.99.1)
  (envelope-from <mchehab+huawei@kernel.org>)
- id 1vmBua-0000000AVm7-1FNc; Sat, 31 Jan 2026 15:25:20 +0100
+ id 1vmBua-0000000AVlf-0TIM; Sat, 31 Jan 2026 15:25:20 +0100
 From: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
-To: Jonathan Corbet <corbet@lwn.net>,
- Linux Doc Mailing List <linux-doc@vger.kernel.org>,
- Mauro Carvalho Chehab <mchehab@kernel.org>
+To: Jonathan Corbet <corbet@lwn.net>, Kees Cook <kees@kernel.org>,
+ Linux Doc Mailing List <linux-doc@vger.kernel.org>
 Cc: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
  intel-wired-lan@lists.osuosl.org, linux-hardening@vger.kernel.org,
  linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
- Randy Dunlap <rdunlap@infradead.org>,
- Shuah Khan <skhan@linuxfoundation.org>
-Date: Sat, 31 Jan 2026 15:25:10 +0100
-Message-ID: <56468f3cf9ba583a0759953a931bddc361b869aa.1769867954.git.mchehab+huawei@kernel.org>
+ "Gustavo A. R. Silva" <gustavoars@kernel.org>,
+ Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
+ Mauro Carvalho Chehab <mchehab@kernel.org>,
+ Randy Dunlap <rdunlap@infradead.org>
+Date: Sat, 31 Jan 2026 15:25:03 +0100
+Message-ID: <4ad68fce80ea7f994665ce2d72b39f0098df2476.1769867953.git.mchehab+huawei@kernel.org>
 X-Mailer: git-send-email 2.52.0
 In-Reply-To: <cover.1769867953.git.mchehab+huawei@kernel.org>
 References: <cover.1769867953.git.mchehab+huawei@kernel.org>
@@ -75,23 +77,23 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1769869522;
- bh=J9gpBcUhWSmksHEje7HfFrvd/UJKiZjrUhxoxqAfK3o=;
+ d=kernel.org; s=k20201202; t=1769869521;
+ bh=c78VBSuB3zJR1YCeHGb5UJcGA9b8DZwRfytxgWk/nVQ=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=etJT7UQkV81clZC3G9h1rJ6n/Coqg5VDtA8GfexHi9ncJVJvmpBQn1iDvm2eAuBhd
- Fj2wqeMsPUTEWk9IWBwYb7NqerSM4TNrTRMxWYPUk7i181CDG8Gi7dOnc3eOZ24S0X
- h1Z4uZMcX8n+nsH0YSf0+ou5Y+ltihG+SwY/lHVlE0E/JmJyjrHO4O2jsrAHbuRtPA
- rmuphAK/iswiSm/1w46YZxxM8R7TX0lmY6q9CKMz7x188BBO3DQlNRe0dm7aCy16zZ
- /5ICALjF/4Z/ZMxwm6EtuGqjEOym6sXbhoG/WTbzLDMJ08JaKg/9CVMtBUVXBc3OmR
- 5GBDzj4RSnRIw==
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ b=FlayTHJs2JUrQOYizmq+bu9LbW2w66UJVg9tbVq+HjdhRH0wnlriOKQ+ObL4grHnZ
+ +r98L9a4ebz0IGwaVufND7ECK2QORhXbBvQVK5a+kMDa7qGwng3sDR4o0E+xDmh6Op
+ VlmGodLkSbAOyoXmJxvDaIwuRmHzyOtGFbDIInKiTpzGbIK10Z0gzL/C6WkfT6FQTL
+ Ppij1jr5RxAiEHQouiIYV7XVqh0HDtQumuNQ46hazfxSkW5WVTVX3lu2dcaOXH1KrM
+ y3vvDQo+EnhPO+Mu8nbkXFfGeeANwYzVECJbdDObW/IbfycnsGRe0ICaCffV0Ut1G7
+ 58BrPSt6HvYoA==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=etJT7UQk
-Subject: [Intel-wired-lan] [PATCH v4 36/41] docs: sphinx-build-wrapper:
- better handle troff .TH markups
+ header.a=rsa-sha256 header.s=k20201202 header.b=FlayTHJs
+Subject: [Intel-wired-lan] [PATCH v4 29/41] docs: xforms_lists.py: use
+ CFuntion to handle all function macros
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -107,49 +109,130 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Using a regular expression to match .TH is problematic, as it
-doesn't handle well quotation marks.
+The new CFunction class handles better macros, as it works the same
+way C compilers do, handling delimiters tha right way.
 
-Use shlex instead.
+This allows removing complex regular expressions, placing instead
+just a simple one with the name(s) of the functions to be replaced.
+
+Doing a before/after check using "kernel-doc -man ." shows only
+cosmetic changes (whitespaces, mostly).
 
 Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
 ---
- tools/docs/sphinx-build-wrapper | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ tools/lib/python/kdoc/xforms_lists.py | 71 ++++++++++++---------------
+ 1 file changed, 31 insertions(+), 40 deletions(-)
 
-diff --git a/tools/docs/sphinx-build-wrapper b/tools/docs/sphinx-build-wrapper
-index b7c149dff06b..e6418e22e2ff 100755
---- a/tools/docs/sphinx-build-wrapper
-+++ b/tools/docs/sphinx-build-wrapper
-@@ -576,7 +576,6 @@ class SphinxBuilder:
-         """
+diff --git a/tools/lib/python/kdoc/xforms_lists.py b/tools/lib/python/kdoc/xforms_lists.py
+index 88968bafdb78..ea6520b38ea2 100644
+--- a/tools/lib/python/kdoc/xforms_lists.py
++++ b/tools/lib/python/kdoc/xforms_lists.py
+@@ -17,51 +17,38 @@ class CTransforms:
  
-         re_kernel_doc = re.compile(r"^\.\.\s+kernel-doc::\s*(\S+)")
--        re_man = re.compile(r'^\.TH "[^"]*" (\d+) "([^"]*)"')
+     #: Transforms for structs and unions
+     struct_xforms = [
+-        # Strip attributes
+-        (KernRe(r"__attribute__\s*\(\([a-z0-9,_\*\s\(\)]*\)\)", flags=re.I | re.S, cache=False), ' '),
+-        (KernRe(r'\s*__aligned\s*\([^;]*\)', re.S), ' '),
+-        (KernRe(r'\s*__counted_by\s*\([^;]*\)', re.S), ' '),
+-        (KernRe(r'\s*__counted_by_(le|be)\s*\([^;]*\)', re.S), ' '),
+-        (KernRe(r'\s*__guarded_by\s*\([^\)]*\)', re.S), ' '),
+-        (KernRe(r'\s*__pt_guarded_by\s*\([^\)]*\)', re.S), ' '),
++        (CFunction("__attribute__"), ' '),
++        (CFunction('__aligned'), ' '),
++        (CFunction('__counted_by'), ' '),
++        (CFunction('__counted_by_(le|be)'), ' '),
++        (CFunction('__guarded_by'), ' '),
++        (CFunction('__pt_guarded_by'), ' '),
++
+         (KernRe(r'\s*__packed\s*', re.S), ' '),
+         (KernRe(r'\s*CRYPTO_MINALIGN_ATTR', re.S), ' '),
+         (KernRe(r'\s*__private', re.S), ' '),
+         (KernRe(r'\s*__rcu', re.S), ' '),
+         (KernRe(r'\s*____cacheline_aligned_in_smp', re.S), ' '),
+         (KernRe(r'\s*____cacheline_aligned', re.S), ' '),
+-        (KernRe(r'\s*__cacheline_group_(begin|end)\([^\)]+\);'), ''),
++
++        (CFunction('__cacheline_group_(begin|end)'), ''),
  
-         if docs_dir == src_dir:
-             #
-@@ -616,8 +615,7 @@ class SphinxBuilder:
-         fp = None
-         try:
-             for line in result.stdout.split("\n"):
--                match = re_man.match(line)
--                if not match:
-+                if not line.startswith(".TH"):
-                     if fp:
-                         fp.write(line + '\n')
-                     continue
-@@ -625,7 +623,9 @@ class SphinxBuilder:
-                 if fp:
-                     fp.close()
+         (CFunction('struct_group'), r'\2'),
+         (CFunction('struct_group_attr'), r'\3'),
+         (CFunction('struct_group_tagged'), r'struct \1 \2; \3'),
+         (CFunction('__struct_group'), r'\4'),
  
--                fname = f"{output_dir}/{match.group(2)}.{match.group(1)}"
-+                # Use shlex here, as it handles well parameters with commas
-+                args = shlex.split(line)
-+                fname = f"{output_dir}/{args[3]}.{args[2]}"
+-        #
+-        # Replace macros
+-        #
+-        # TODO: use CFunction on all FOO($1, $2, ...) matches
+-        #
+-        # it is better to also move those to the CFunction logic,
+-        # to ensure that parentheses will be properly matched.
+-        #
+-        (KernRe(r'__ETHTOOL_DECLARE_LINK_MODE_MASK\s*\(([^\)]+)\)', re.S),
+-        r'DECLARE_BITMAP(\1, __ETHTOOL_LINK_MODE_MASK_NBITS)'),
+-        (KernRe(r'DECLARE_PHY_INTERFACE_MASK\s*\(([^\)]+)\)', re.S),
+-        r'DECLARE_BITMAP(\1, PHY_INTERFACE_MODE_MAX)'),
+-        (KernRe(r'DECLARE_BITMAP\s*\(' + struct_args_pattern + r',\s*' + struct_args_pattern + r'\)',
+-                re.S), r'unsigned long \1[BITS_TO_LONGS(\2)]'),
+-        (KernRe(r'DECLARE_HASHTABLE\s*\(' + struct_args_pattern + r',\s*' + struct_args_pattern + r'\)',
+-                re.S), r'unsigned long \1[1 << ((\2) - 1)]'),
+-        (KernRe(r'DECLARE_KFIFO\s*\(' + struct_args_pattern + r',\s*' + struct_args_pattern +
+-                r',\s*' + struct_args_pattern + r'\)', re.S), r'\2 *\1'),
+-        (KernRe(r'DECLARE_KFIFO_PTR\s*\(' + struct_args_pattern + r',\s*' +
+-                struct_args_pattern + r'\)', re.S), r'\2 *\1'),
+-        (KernRe(r'(?:__)?DECLARE_FLEX_ARRAY\s*\(' + struct_args_pattern + r',\s*' +
+-                struct_args_pattern + r'\)', re.S), r'\1 \2[]'),
+-        (KernRe(r'DEFINE_DMA_UNMAP_ADDR\s*\(' + struct_args_pattern + r'\)', re.S), r'dma_addr_t \1'),
+-        (KernRe(r'DEFINE_DMA_UNMAP_LEN\s*\(' + struct_args_pattern + r'\)', re.S), r'__u32 \1'),
+-        (KernRe(r'VIRTIO_DECLARE_FEATURES\(([\w_]+)\)'), r'union { u64 \1; u64 \1_array[VIRTIO_FEATURES_U64S]; }'),
++        (CFunction('__ETHTOOL_DECLARE_LINK_MODE_MASK'), r'DECLARE_BITMAP(\1, __ETHTOOL_LINK_MODE_MASK_NBITS)'),
++        (CFunction('DECLARE_PHY_INTERFACE_MASK',), r'DECLARE_BITMAP(\1, PHY_INTERFACE_MODE_MAX)'),
++        (CFunction('DECLARE_BITMAP'), r'unsigned long \1[BITS_TO_LONGS(\2)]'),
++
++        (CFunction('DECLARE_HASHTABLE'), r'unsigned long \1[1 << ((\2) - 1)]'),
++        (CFunction('DECLARE_KFIFO'), r'\2 *\1'),
++        (CFunction('DECLARE_KFIFO_PTR'), r'\2 *\1'),
++        (CFunction('(?:__)?DECLARE_FLEX_ARRAY'), r'\1 \2[]'),
++        (CFunction('DEFINE_DMA_UNMAP_ADDR'), r'dma_addr_t \1'),
++        (CFunction('DEFINE_DMA_UNMAP_LEN'), r'__u32 \1'),
++        (CFunction('VIRTIO_DECLARE_FEATURES'), r'union { u64 \1; u64 \1_array[VIRTIO_FEATURES_U64S]; }'),
+     ]
  
-                 if self.verbose:
-                     print(f"Creating {fname}")
+     #: Transforms for function prototypes
+@@ -85,12 +72,14 @@ class CTransforms:
+         (KernRe(r"__sched +"), ""),
+         (KernRe(r"_noprof"), ""),
+         (KernRe(r"__always_unused *"), ""),
+-        (KernRe(r"__printf\s*\(\s*\d*\s*,\s*\d*\s*\) +"), ""),
+-        (KernRe(r"__(?:re)?alloc_size\s*\(\s*\d+\s*(?:,\s*\d+\s*)?\) +"), ""),
+-        (KernRe(r"__diagnose_as\s*\(\s*\S+\s*(?:,\s*\d+\s*)*\) +"), ""),
+-        (KernRe(r"DECL_BUCKET_PARAMS\s*\(\s*(\S+)\s*,\s*(\S+)\s*\)"), r"\1, \2"),
+         (KernRe(r"__no_context_analysis\s*"), ""),
+         (KernRe(r"__attribute_const__ +"), ""),
++
++        (CFunction('__printf'), ""),
++        (CFunction('__(?:re)?alloc_size'), ""),
++        (CFunction("__diagnose_as"), ""),
++        (CFunction("DECL_BUCKET_PARAMS"), r"\1, \2"),
++
+         (CFunction("__cond_acquires"), ""),
+         (CFunction("__cond_releases"), ""),
+         (CFunction("__acquires"), ""),
+@@ -108,9 +97,11 @@ class CTransforms:
+     var_xforms = [
+         (KernRe(r"__read_mostly"), ""),
+         (KernRe(r"__ro_after_init"), ""),
+-        (KernRe(r'\s*__guarded_by\s*\([^\)]*\)', re.S), ""),
+-        (KernRe(r'\s*__pt_guarded_by\s*\([^\)]*\)', re.S), ""),
+-        (KernRe(r"LIST_HEAD\(([\w_]+)\)"), r"struct list_head \1"),
++
++        (CFunction('__guarded_by'), ""),
++        (CFunction('__pt_guarded_by'), ""),
++        (CFunction("LIST_HEAD"), r"struct list_head \1"),
++
+         (KernRe(r"(?://.*)$"), ""),
+         (KernRe(r"(?:/\*.*\*/)"), ""),
+         (KernRe(r";$"), ""),
 -- 
 2.52.0
 
