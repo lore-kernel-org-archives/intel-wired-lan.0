@@ -1,81 +1,80 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 221B0D7977D
-	for <intel-wired-lan@archiver.kernel.org>; Sat, 31 Jan 2026 16:34:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BD269E7C70D
+	for <intel-wired-lan@archiver.kernel.org>; Sun,  1 Feb 2026 05:48:15 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id D3C044097C;
-	Sat, 31 Jan 2026 16:34:25 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id mvpCMBb9FY13; Sat, 31 Jan 2026 16:34:24 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 674A54096A
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1769877264;
-	bh=WIUBsr2pVQlJZPXK7Tz01JMH5MzKJvO2+jxPnyQon4s=;
-	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=OPeWN7waHslsMQa1jLFcba3sqI1je21E2bOrgei+ctNKUT/r2GAKmZQC3mhWFEHUZ
-	 h8GPhj1/NN4jvSlZIxUXe9Up6LHRh9C4pWxVE+O5fIYnKJ0PLI/sA0XY83IW+1vrqP
-	 n2LZT5543QgGWWGTIi6IWTXfhda1k57CGkn7it7i6BD8ax2pm9Z+cOp9qQJHm5vXjS
-	 q4W+Omfrq6ia1J0Q20QUN+TsPeXNL8Me/PMCemHxymBcFfR3rIRohA7n++PwhtJIdo
-	 eSZsKewrfltjQWYPbtW0lelbZx3y+Ia80S5CRKp2AiZKHLwXef990S3lL4F6kqKBnV
-	 g23rvQ3yLzXpg==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 674A54096A;
-	Sat, 31 Jan 2026 16:34:24 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 3ECF31E0
- for <intel-wired-lan@lists.osuosl.org>; Sat, 31 Jan 2026 16:34:23 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 318A460B35
- for <intel-wired-lan@lists.osuosl.org>; Sat, 31 Jan 2026 16:34:23 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 70BF4605DD;
+	Sun,  1 Feb 2026 05:48:15 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Z3RftukZRizz for <intel-wired-lan@lists.osuosl.org>;
- Sat, 31 Jan 2026 16:34:22 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.7;
+ id bOOg7Ra8eekR; Sun,  1 Feb 2026 05:48:14 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org D36DA610E9
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1769924749;
+	bh=iE8TMAmwtoo8AgAnvU1m9Mf7yjI+u0EmBbzpsYy+hak=;
+	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=YAXrABlJIX2RDGLFoq53lDX74XOetC4OMeY1I2wAMVFgbDknRJlGKJI9vTwkDdNr5
+	 h+pvqmDmF+UkYgs0ppYRH/z5FBAyi+huROqUv/eHm+ZAQTNn3YZaBnAqEwuIu4uUYu
+	 /y7+tlIEuMHxNlNnaYFD+B93eeHNrgHdRRY+WFDJKayXPLZBiGvjYQta/INifIlvEN
+	 n5Rvgqd568EBnCnZS+XPKUJCJMr6F5WW2aY+RYtrJblDE7IWvg/U6QttiDBNfiMhAe
+	 7wBMurEnCNRPekhYSjC6ifpaGRSQZBaCGN/tfiETm2hB3H3wR0gS8bcuYr1D1Jiig0
+	 gkUz5v3VUF2ng==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp3.osuosl.org (Postfix) with ESMTP id D36DA610E9;
+	Sun,  1 Feb 2026 05:45:49 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id C867134C
+ for <intel-wired-lan@lists.osuosl.org>; Sun,  1 Feb 2026 05:45:48 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp4.osuosl.org (Postfix) with ESMTP id B618940777
+ for <intel-wired-lan@lists.osuosl.org>; Sun,  1 Feb 2026 05:45:48 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id wz6HkZimSK-i for <intel-wired-lan@lists.osuosl.org>;
+ Sun,  1 Feb 2026 05:45:47 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.19;
  helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 484BA60B23
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 484BA60B23
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.7])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 484BA60B23
- for <intel-wired-lan@lists.osuosl.org>; Sat, 31 Jan 2026 16:34:21 +0000 (UTC)
-X-CSE-ConnectionGUID: BlDQQR4gQ3C53DB2SWmoOQ==
-X-CSE-MsgGUID: cCx63VTpRGaWwEQ3SKDYbQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11688"; a="96563086"
-X-IronPort-AV: E=Sophos;i="6.21,265,1763452800"; d="scan'208";a="96563086"
-Received: from fmviesa004.fm.intel.com ([10.60.135.144])
- by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 31 Jan 2026 08:34:21 -0800
-X-CSE-ConnectionGUID: 4QyvG5cbS1CNBVjK40AkeQ==
-X-CSE-MsgGUID: GELKly7XR12F1jp2aZ2MzQ==
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 3EADD40766
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3EADD40766
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.19])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 3EADD40766
+ for <intel-wired-lan@lists.osuosl.org>; Sun,  1 Feb 2026 05:45:46 +0000 (UTC)
+X-CSE-ConnectionGUID: 1kye5GWWRPuI5wTOxbWj0A==
+X-CSE-MsgGUID: Rz1/SkvzQiWTl9LVKbplrQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11688"; a="71017505"
+X-IronPort-AV: E=Sophos;i="6.21,266,1763452800"; d="scan'208";a="71017505"
+Received: from orviesa004.jf.intel.com ([10.64.159.144])
+ by orvoesa111.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 31 Jan 2026 21:45:46 -0800
+X-CSE-ConnectionGUID: ziBlGkAeS/OM7AIQFZruYA==
+X-CSE-MsgGUID: T9cKmxjqQpaU1ewOp7BJZA==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.21,265,1763452800"; d="scan'208";a="214007532"
+X-IronPort-AV: E=Sophos;i="6.21,266,1763452800"; d="scan'208";a="213731916"
 Received: from lkp-server01.sh.intel.com (HELO 765f4a05e27f) ([10.239.97.150])
- by fmviesa004.fm.intel.com with ESMTP; 31 Jan 2026 08:34:17 -0800
+ by orviesa004.jf.intel.com with ESMTP; 31 Jan 2026 21:45:42 -0800
 Received: from kbuild by 765f4a05e27f with local (Exim 4.98.2)
- (envelope-from <lkp@intel.com>) id 1vmDvL-00000000eBI-1pKZ;
- Sat, 31 Jan 2026 16:34:15 +0000
-Date: Sun, 1 Feb 2026 00:33:52 +0800
+ (envelope-from <lkp@intel.com>) id 1vmQHE-00000000ebw-1ReG;
+ Sun, 01 Feb 2026 05:45:40 +0000
+Date: Sun, 1 Feb 2026 13:44:54 +0800
 From: kernel test robot <lkp@intel.com>
 To: Haoxiang Li <lihaoxiang@isrc.iscas.ac.cn>, anthony.l.nguyen@intel.com,
  przemyslaw.kitszel@intel.com, andrew+netdev@lunn.ch,
  davem@davemloft.net, edumazet@google.com, kuba@kernel.org,
  pabeni@redhat.com, daniel@iogearbox.net, magnus.karlsson@intel.com,
  bjorn@kernel.org
-Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
- intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org,
+Cc: oe-kbuild-all@lists.linux.dev, intel-wired-lan@lists.osuosl.org,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
  Haoxiang Li <lihaoxiang@isrc.iscas.ac.cn>, stable@vger.kernel.org
-Message-ID: <202602010050.pI2ZZmft-lkp@intel.com>
+Message-ID: <202602011335.eVX5YSY8-lkp@intel.com>
 References: <20260131055217.729048-1-lihaoxiang@isrc.iscas.ac.cn>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -83,24 +82,24 @@ Content-Disposition: inline
 In-Reply-To: <20260131055217.729048-1-lihaoxiang@isrc.iscas.ac.cn>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1769877262; x=1801413262;
+ t=1769924747; x=1801460747;
  h=date:from:to:cc:subject:message-id:references:
  mime-version:in-reply-to;
- bh=TXGzYCfaxy+KgDZAD5l6FylHMzTOKjN6aZabO5U+s5Q=;
- b=hdQ/VfPxUVpQlOme6qrny900QM4q7aodZeJFWBjAF8meRGMwpX1CUBp0
- OQBcQHICc8YaQEAO0eB8K8VuojyoIlTZbZPsirnO4X2H7lviTeAkECwhj
- 3Fpbtu+yo574H5II308OPj9NkY8a+fyoqMwIig1HeL5vSl7uhM/UDeRDl
- VUXHsWX5sG5i0MZt7pL9j0Ce0wAEiOpdeU9s+XX67ZWyug3rKfH973jM3
- Anm2erKdGfgZZ04fqKrCsCGaBUiJ9ldaHCZHQABqDHlz+0cgNJq//FlFE
- yLLWF1oUn48Dfrgxz7enCGzX5hphBWDF9QldrbtpkDcskWsA3/0KNfTDN
- w==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ bh=wmdU6j24xok3QN+AvpOevv0hG+C0xnYZebCq708jyl4=;
+ b=TE6xRE80v8f9zaplkyVDcgWqcl4HjE1XrHRnwWkZi8rc2BKW4vCfF7/Z
+ LUGknvlp/IH8kzF2mQonQt8MgbO/KcKr2/3AEEbfHLb/mG3yy+7zvjCh1
+ g2PUp0VuvawLm4bCExQBGfEmGDDp8JAENQANuvCxSt4AfE4NSddaVjLlI
+ L2PEXsxqajZOmq5MkrgFERbKx6xDJ2VhPZMUfiqmlsoPjgE3R+AeodbBD
+ 4+lQ0rc3XrvPx6a6xTPirt+eRboHOGIvGScqU7q+D02yjhhLTZYxsbWbL
+ hAxogGRzO3/Xo4wOa9fYni7Sy8m2icf8ST6Z4Eldj6kQZvYeruqIQp1WM
+ Q==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=hdQ/VfPx
+ header.s=Intel header.b=TE6xRE80
 Subject: Re: [Intel-wired-lan] [PATCH v2] i40e: add an error handling path
  in i40e_xsk_pool_enable()
 X-BeenThere: intel-wired-lan@osuosl.org
@@ -132,34 +131,39 @@ url:    https://github.com/intel-lab-lkp/linux/commits/Haoxiang-Li/i40e-add-an-e
 base:   https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
 patch link:    https://lore.kernel.org/r/20260131055217.729048-1-lihaoxiang%40isrc.iscas.ac.cn
 patch subject: [Intel-wired-lan] [PATCH v2] i40e: add an error handling path in i40e_xsk_pool_enable()
-config: s390-allmodconfig (https://download.01.org/0day-ci/archive/20260201/202602010050.pI2ZZmft-lkp@intel.com/config)
-compiler: clang version 18.1.8 (https://github.com/llvm/llvm-project 3b5b5c1ec4a3095ab096dd780e84d7ab81f3d7ff)
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260201/202602010050.pI2ZZmft-lkp@intel.com/reproduce)
+config: mips-allyesconfig (https://download.01.org/0day-ci/archive/20260201/202602011335.eVX5YSY8-lkp@intel.com/config)
+compiler: mips-linux-gcc (GCC) 15.2.0
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260201/202602011335.eVX5YSY8-lkp@intel.com/reproduce)
 
 If you fix the issue in a separate patch/commit (i.e. not just a new version of
 the same patch/commit), kindly add following tags
 | Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202602010050.pI2ZZmft-lkp@intel.com/
+| Closes: https://lore.kernel.org/oe-kbuild-all/202602011335.eVX5YSY8-lkp@intel.com/
 
 All errors (new ones prefixed by >>):
 
->> drivers/net/ethernet/intel/i40e/i40e_xsk.c:130:2: error: call to undeclared function 'i40e_xsk_pool_disable'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+   drivers/net/ethernet/intel/i40e/i40e_xsk.c: In function 'i40e_xsk_pool_enable':
+>> drivers/net/ethernet/intel/i40e/i40e_xsk.c:130:9: error: implicit declaration of function 'i40e_xsk_pool_disable'; did you mean 'i40e_xsk_pool_enable'? [-Wimplicit-function-declaration]
      130 |         i40e_xsk_pool_disable(vsi, qid);
-         |         ^
-   drivers/net/ethernet/intel/i40e/i40e_xsk.c:130:2: note: did you mean 'i40e_xsk_pool_enable'?
-   drivers/net/ethernet/intel/i40e/i40e_xsk.c:82:12: note: 'i40e_xsk_pool_enable' declared here
-      82 | static int i40e_xsk_pool_enable(struct i40e_vsi *vsi,
-         |            ^
->> drivers/net/ethernet/intel/i40e/i40e_xsk.c:141:12: error: conflicting types for 'i40e_xsk_pool_disable'
+         |         ^~~~~~~~~~~~~~~~~~~~~
+         |         i40e_xsk_pool_enable
+   drivers/net/ethernet/intel/i40e/i40e_xsk.c: At top level:
+>> drivers/net/ethernet/intel/i40e/i40e_xsk.c:141:12: error: conflicting types for 'i40e_xsk_pool_disable'; have 'int(struct i40e_vsi *, u16)' {aka 'int(struct i40e_vsi *, short unsigned int)'}
      141 | static int i40e_xsk_pool_disable(struct i40e_vsi *vsi, u16 qid)
-         |            ^
-   drivers/net/ethernet/intel/i40e/i40e_xsk.c:130:2: note: previous implicit declaration is here
+         |            ^~~~~~~~~~~~~~~~~~~~~
+   drivers/net/ethernet/intel/i40e/i40e_xsk.c:142:1: note: an argument type that has a default promotion cannot match an empty parameter name list declaration
+     142 | {
+         | ^
+   drivers/net/ethernet/intel/i40e/i40e_xsk.c:130:9: note: previous implicit declaration of 'i40e_xsk_pool_disable' with type 'int()'
      130 |         i40e_xsk_pool_disable(vsi, qid);
-         |         ^
-   2 errors generated.
+         |         ^~~~~~~~~~~~~~~~~~~~~
+   drivers/net/ethernet/intel/i40e/i40e_xsk.c: In function 'i40e_xsk_pool_enable':
+   drivers/net/ethernet/intel/i40e/i40e_xsk.c:131:1: warning: control reaches end of non-void function [-Wreturn-type]
+     131 | }
+         | ^
 
 
-vim +/i40e_xsk_pool_disable +130 drivers/net/ethernet/intel/i40e/i40e_xsk.c
+vim +130 drivers/net/ethernet/intel/i40e/i40e_xsk.c
 
     72	
     73	/**
