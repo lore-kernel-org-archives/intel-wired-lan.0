@@ -4,107 +4,102 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5FDC8E7DEFD
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  2 Feb 2026 16:17:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 50721E7DEFE
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  2 Feb 2026 16:17:39 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 096C340743;
-	Mon,  2 Feb 2026 16:17:37 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 0145140108;
+	Mon,  2 Feb 2026 16:17:39 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id wJLXVOszv11k; Mon,  2 Feb 2026 16:17:36 +0000 (UTC)
+ id zei_lyH72UJc; Mon,  2 Feb 2026 16:17:37 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2494E406F1
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C020B4071F
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
 	s=default; t=1770049056;
-	bh=LrGZL3kwWC2bOMtcfXncyzMs8mCUoEApPzsF4rcC84M=;
-	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=9qt9IvZJwq0phuQrsL+mdPpkcOO6YG+0BBfWmbgs7DON2cht//GN8PKSw/Lnj+Dz+
-	 ftfc7neiflL448P+0z+JzfNc9q+IBv/oWSIY4yrVCAMOIkpwhlPynzfnVADdUe2/he
-	 rvAyXmPTW61iUdDDK57m6vTgOg533LR5/QJqzP4+wBVLc5qFh6tWmivU9MO162zwr3
-	 JXtEkoapVBhDNR+klQOLd9wHm/0YoeqD9D9GfBFUPnB13GtjP1d7Hcs0QgPIQCFNZe
-	 CKZNdpcmZjrJYDn/ExS7c/Y6tlWwkV2X4/VsQiw912sTBxnaS11YyqoaxTiyAhID3g
-	 GKdllMQog6RNw==
+	bh=IAB7g4oOle0bWWJEkgpFGulKR8NRIdAGZJceBUD5WTc=;
+	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=bCys6O9EJTnQaO/n1i0Gqux2vnxWhBUSlc0mVjfb6cyukUGTTWKNTngrOJqSyGUWu
+	 MRbTU+p1C0w+sGCezefq9vEkyqzIvNKbd/vzpsootJlzgSmeq2yENhYJbyg9EyFicn
+	 mayMoHDiKKg+eDj/GKXdtqjPsJOeTqJyuVUndxySusEmHwSeUlbK2t4AyZM1bBVa4Q
+	 kyOYKJEI4oryNCRpP1H4EQ9So5a8rIWxmdqTx1uXZdNX+aFEYLiDv/xuF6+E/Sl6OZ
+	 S03J67xPT5WVgEA8OjgMyausj4HpBJ2zv3asJvuXv6G06ytySxyPRXlpUKwSxtt2Sy
+	 icG1Zzwy/KvHQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 2494E406F1;
+	by smtp4.osuosl.org (Postfix) with ESMTP id C020B4071F;
 	Mon,  2 Feb 2026 16:17:36 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id 2D84F69
- for <intel-wired-lan@lists.osuosl.org>; Sat, 31 Jan 2026 16:31:40 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 5D52A23E
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  2 Feb 2026 11:14:03 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 0F3FD4088D
- for <intel-wired-lan@lists.osuosl.org>; Sat, 31 Jan 2026 16:31:40 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 4AEE1402E9
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  2 Feb 2026 11:14:03 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id L0146ibXN1nR for <intel-wired-lan@lists.osuosl.org>;
- Sat, 31 Jan 2026 16:31:39 +0000 (UTC)
-X-Greylist: delayed 604 seconds by postgrey-1.37 at util1.osuosl.org;
- Sat, 31 Jan 2026 16:31:38 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 9AA4B40877
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9AA4B40877
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=125.209.209.18;
- helo=cvsmtppost103.wmail.worksmobile.com;
- envelope-from=ingyujang25@korea.ac.kr; receiver=<UNKNOWN> 
-Received: from cvsmtppost103.wmail.worksmobile.com
- (cvsmtppost103.wmail.worksmobile.com [125.209.209.18])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 9AA4B40877
- for <intel-wired-lan@lists.osuosl.org>; Sat, 31 Jan 2026 16:31:37 +0000 (UTC)
-X-Originating-IP: 163.152.163.130
-Received: from cvsendbo002.wmail ([10.113.20.164])
- by cvsmtppost103.wmail.worksmobile.com with ESMTP id CrrGrSfKSVmrgsy9Nr+lzA
- for <intel-wired-lan@lists.osuosl.org>;
- Sat, 31 Jan 2026 16:21:31 -0000
-X-Session-ID: pwF-SrQ2R6OZKk0RtgIb1Q
-X-Originating-IP: 163.152.163.130
-X-Works-Send-Opt: kendjAJYjHm/FqM9FqJYFxMqFNwYjAg=
-X-Works-Smtp-Source: AZbdaAvrFqJZ+Hmmaxgd+6E=
-Received: from s2lab05.. ([163.152.163.130])
- by jvnsmtp402.gwmail.worksmobile.com with ESMTP id pwF-SrQ2R6OZKk0RtgIb1Q
- for <multiple recipients>
- (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384);
- Sat, 31 Jan 2026 16:21:30 -0000
-From: Ingyu Jang <ingyujang25@korea.ac.kr>
-To: intel-wired-lan@lists.osuosl.org
-Cc: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
- andrew+netdev@lunn.ch, Ingyu Jang <ingyujang25@korea.ac.kr>
-Date: Sun,  1 Feb 2026 01:21:28 +0900
-Message-Id: <20260131162128.3334803-1-ingyujang25@korea.ac.kr>
-X-Mailer: git-send-email 2.34.1
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id brPQ-SW9aVoZ for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  2 Feb 2026 11:14:02 +0000 (UTC)
+X-Greylist: delayed 1196 seconds by postgrey-1.37 at util1.osuosl.org;
+ Mon, 02 Feb 2026 11:13:59 UTC
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 7C8F1402DF
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 7C8F1402DF
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=45.249.212.187;
+ helo=szxga01-in.huawei.com; envelope-from=shaojijie@huawei.com;
+ receiver=<UNKNOWN> 
+Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 7C8F1402DF
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  2 Feb 2026 11:13:58 +0000 (UTC)
+Received: from canpmsgout07.his.huawei.com (unknown [172.19.92.160])
+ by szxga01-in.huawei.com (SkyGuard) with ESMTPS id 4f4Nkj5SLtz1BFpy
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  2 Feb 2026 18:53:17 +0800 (CST)
+Received: from mail.maildlp.com (unknown [172.19.163.163])
+ by canpmsgout07.his.huawei.com (SkyGuard) with ESMTPS id 4f4Nf33M03zLlTg;
+ Mon,  2 Feb 2026 18:49:15 +0800 (CST)
+Received: from kwepemk100013.china.huawei.com (unknown [7.202.194.61])
+ by mail.maildlp.com (Postfix) with ESMTPS id 4755F4048B;
+ Mon,  2 Feb 2026 18:53:48 +0800 (CST)
+Received: from [10.67.120.192] (10.67.120.192) by
+ kwepemk100013.china.huawei.com (7.202.194.61) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1544.36; Mon, 2 Feb 2026 18:53:47 +0800
+Message-ID: <df89d793-ee1a-4519-bc36-3a1580a33b12@huawei.com>
+Date: Mon, 2 Feb 2026 18:53:46 +0800
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+To: Petr Oros <poros@redhat.com>, <netdev@vger.kernel.org>
+References: <20260202084820.260033-1-poros@redhat.com>
+From: Jijie Shao <shaojijie@huawei.com>
+In-Reply-To: <20260202084820.260033-1-poros@redhat.com>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.67.120.192]
+X-ClientProxiedBy: kwepems100002.china.huawei.com (7.221.188.206) To
+ kwepemk100013.china.huawei.com (7.202.194.61)
 X-Mailman-Approved-At: Mon, 02 Feb 2026 16:17:34 +0000
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=worksmobile.com; 
- s=s20171120; t=1769876491;
- bh=RFGCgDzlchgbRYBER3xMRQ4n5O8oW5xKFPYNPN8Ma0E=;
- h=From:To:Subject:Date:Message-Id:From:Subject:Feedback-ID:
- X-Works-Security;
- b=c2JgOwwcc7VLmtmGRSN3Mp7dnL7Gv9oKPE7ZMg5qjKhTFrnaMKcvGLPXvIN9WVExc
- HUtCmLN+gFVvELPrkxkW9opx/IhFikrFfS3nBoRaBtxKjLNHi+muX+IxBw1C67lkBZ
- Dv8LTnzLOWRsXuLEu+VVPp3eJZ33MIDwlAnltq4KTBxEIte0gI4Rnvx13K/7+nir7X
- r9ER22F5izk3WO2DsQbK4cYVlaVRkQ5riPkSHhedaf5xsCBU6i6ED+yWJ+fCH99gs8
- kf+/Sze4jPByySZj0dQPBk7WcAnczfKDWA9Niuf2XB4wfVCTxsQ+swWKa/E35nFzf6
- B8hFAdDXawNDw==
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=korea.ac.kr; s=naverworks; t=1769876491;
- bh=RFGCgDzlchgbRYBER3xMRQ4n5O8oW5xKFPYNPN8Ma0E=;
- h=From:To:Subject:Date:Message-Id:From:Subject:Feedback-ID:
- X-Works-Security;
- b=LEhQD8tCoYvnSuluDafPLLlSEnVvOBByLkeojLlHlYcIEAVAdBkDh4t5exNQL62+g
- AdH7uM+ipzPOCNeQ8v6U8AD+e7noE6fcgCLoGnskOn/q9FeQVIkXe7fVB9hRn8b5Wc
- waMLf0OsKtqgfZen6Jc/73WSD4/TZ+qjmAnnHw3s=
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=korea.ac.kr
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=worksmobile.com header.i=@worksmobile.com
- header.a=rsa-sha256 header.s=s20171120 header.b=c2JgOwwc; 
- dkim=pass (1024-bit key) header.d=korea.ac.kr header.i=@korea.ac.kr
- header.a=rsa-sha256 header.s=naverworks header.b=LEhQD8tC
-Subject: [Intel-wired-lan] [Question] Dead code in
- ixgbe_init_eeprom_params_generic()?
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
+ c=relaxed/relaxed; q=dns/txt; h=From;
+ bh=IAB7g4oOle0bWWJEkgpFGulKR8NRIdAGZJceBUD5WTc=;
+ b=kfX+EitIJx+3rT9MiKn70t2HWlc1bskbaNbNMHwrgMRMdUia76qxh81DRZIqQ9wEjeJNP2KG6
+ 0KfitBm7bVxhOACqRXqKy3oAIpiJj5vD3yoy1dPbESJRZmwrCLPZhfNbeNstAbFiYrSZjysmCeS
+ J+RfqzGdoxE0Rroi83vvx5I=
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
+ c=relaxed/relaxed; q=dns/txt; h=From;
+ bh=IAB7g4oOle0bWWJEkgpFGulKR8NRIdAGZJceBUD5WTc=;
+ b=kfX+EitIJx+3rT9MiKn70t2HWlc1bskbaNbNMHwrgMRMdUia76qxh81DRZIqQ9wEjeJNP2KG6
+ 0KfitBm7bVxhOACqRXqKy3oAIpiJj5vD3yoy1dPbESJRZmwrCLPZhfNbeNstAbFiYrSZjysmCeS
+ J+RfqzGdoxE0Rroi83vvx5I=
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dmarc=pass (p=quarantine dis=none)
+ header.from=huawei.com
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (1024-bit key, unprotected) header.d=huawei.com header.i=@huawei.com
+ header.a=rsa-sha256 header.s=dkim header.b=kfX+EitI; 
+ dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com
+ header.a=rsa-sha256 header.s=dkim header.b=kfX+EitI
+Subject: Re: [Intel-wired-lan] [PATCH net] iavf: fix deadlock in reset
+ handling
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -117,46 +112,107 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
+Cc: ivecera@redhat.com, Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ linux-kernel@vger.kernel.org, shaojijie@huawei.com,
+ Andrew Lunn <andrew+netdev@lunn.ch>, Eric Dumazet <edumazet@google.com>,
+ Stanislav Fomichev <sdf@fomichev.me>, Tony Nguyen <anthony.l.nguyen@intel.com>,
+ intel-wired-lan@lists.osuosl.org, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>, "David S. Miller" <davem@davemloft.net>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Hi,
 
-I noticed that in drivers/net/ethernet/intel/ixgbe/ixgbe_common.c,
-the function ixgbe_init_eeprom_params_generic() always returns 0.
+on 2026/2/2 16:48, Petr Oros wrote:
+> Three driver callbacks schedule a reset and wait for its completion:
+> ndo_change_mtu(), ethtool set_ringparam(), and ethtool set_channels().
+>
+> Waiting for reset in ndo_change_mtu() and set_ringparam() was added by
+> commit c2ed2403f12c74 ("iavf: Wait for reset in callbacks which trigger
+> it") to fix a race condition where adding an interface to bonding
+> immediately after MTU or ring parameter change failed because the
+> interface was still in __RESETTING state. The same commit also added
+> waiting in iavf_set_priv_flags(), which was later removed by commit
+> 53844673d55529 ("iavf: kill "legacy-rx" for good").
+>
+> Waiting in set_channels() was introduced earlier by commit 4e5e6b5d9d13
+> ("iavf: Fix return of set the new channel count") to ensure the PF has
+> enough time to complete the VF reset when changing channel count, and to
+> return correct error codes to userspace.
+>
+> Commit ef490bbb226702 ("iavf: Add net_shaper_ops support") added
+> net_shaper_ops to iavf, which required reset_task to use _locked NAPI
+> variants (napi_enable_locked, napi_disable_locked) that need the netdev
+> instance lock.
+>
+> Later, commit 7e4d784f5810 ("net: hold netdev instance lock during
+> rtnetlink operations") and commit 2bcf4772e45adb ("net: ethtool: try to
+> protect all callback with netdev instance lock") started holding the
+> netdev instance lock during ndo and ethtool callbacks for drivers with
+> net_shaper_ops.
+>
+> The combination of waiting for reset and the new locking requirements
+> creates a deadlock: the callback holds the lock and waits for reset_task,
+> but reset_task is blocked waiting for the same lock:
+>
+>    Thread 1 (callback)               Thread 2 (reset_task)
+>    -------------------               ---------------------
+>    netdev_lock()
+>    ndo_change_mtu() or ethtool op
+>      iavf_schedule_reset()
+>      iavf_wait_for_reset()           iavf_reset_task()
+>        waiting...                      netdev_lock() <- DEADLOCK
+>
+> Reproducer:
+>
+>    # echo 16 > /sys/class/net/$PF/device/sriov_numvfs
+>    # ip link set $VF up
+>    # ip link set $VF mtu 5000
+>    RTNETLINK answers: Device or resource busy
+>
+>    # dmesg | tail -1
+>    iavf: MTU change interrupted waiting for reset
+>
+> Fix this by temporarily releasing the lock while waiting for reset to
+> complete. This follows the pattern used elsewhere in the kernel (e.g.,
+> do_set_master() releases rtnl_lock before calling ndo_add_slave()).
+>
+> Fixes: 7e4d784f5810 ("net: hold netdev instance lock during rtnetlink operations")
+> Signed-off-by: Petr Oros <poros@redhat.com>
 
-The function (at line 860) performs EEPROM initialization and
-always ends with:
-  return 0;
 
-However, in drivers/net/ethernet/intel/ixgbe/ixgbe_e610.c, there
-are multiple places where the return value is checked through the
-function pointer hw->eeprom.ops.init_params(hw):
+Reviewed-by: Jijie Shao <shaojijie@huawei.com>
 
-1. ixgbe_read_ee_e610() at line 3627:
-   err = hw->eeprom.ops.init_params(hw);
-   if (err)
-       return err;
-
-2. ixgbe_write_ee_e610() at line 3660:
-   err = hw->eeprom.ops.init_params(hw);
-   if (err)
-       return err;
-
-3. ixgbe_validate_ee_e610() at line 3693:
-   err = hw->eeprom.ops.init_params(hw);
-   if (err)
-       return err;
-
-The init_params function pointer points to
-ixgbe_init_eeprom_params_generic for 82598 and 82599 chips
-(ixgbe_82598.c:1164, ixgbe_82599.c:2225).
-
-Since ixgbe_init_eeprom_params_generic() never fails, these error
-checks appear to be dead code for those chip types.
-
-Is this intentional defensive coding for potential future changes,
-or could this be cleaned up?
-
-Thanks,
-Ingyu Jang
+> ---
+>   drivers/net/ethernet/intel/iavf/iavf_main.c | 15 ++++++++++++---
+>   1 file changed, 12 insertions(+), 3 deletions(-)
+>
+> diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
+> index 8aa6e92c16431f..d7738fb8fa60bc 100644
+> --- a/drivers/net/ethernet/intel/iavf/iavf_main.c
+> +++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
+> @@ -189,13 +189,22 @@ static bool iavf_is_reset_in_progress(struct iavf_adapter *adapter)
+>    * iavf_wait_for_reset - Wait for reset to finish.
+>    * @adapter: board private structure
+>    *
+> + * The iavf driver selects NET_SHAPER, so callbacks that trigger reset are
+> + * always called with netdev instance lock held, while reset_task also needs
+> + * this lock. Release the lock while waiting to avoid deadlock.
+> + *
+>    * Returns 0 if reset finished successfully, negative on timeout or interrupt.
+>    */
+>   int iavf_wait_for_reset(struct iavf_adapter *adapter)
+>   {
+> -	int ret = wait_event_interruptible_timeout(adapter->reset_waitqueue,
+> -					!iavf_is_reset_in_progress(adapter),
+> -					msecs_to_jiffies(5000));
+> +	struct net_device *netdev = adapter->netdev;
+> +	int ret;
+> +
+> +	netdev_unlock(netdev);
+> +	ret = wait_event_interruptible_timeout(adapter->reset_waitqueue,
+> +					       !iavf_is_reset_in_progress(adapter),
+> +					       msecs_to_jiffies(5000));
+> +	netdev_lock(netdev);
+>   
+>   	/* If ret < 0 then it means wait was interrupted.
+>   	 * If ret == 0 then it means we got a timeout while waiting
