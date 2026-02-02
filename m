@@ -1,116 +1,88 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7CF52E7FDFA
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  2 Feb 2026 23:56:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1CE6FE7FDE0
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  2 Feb 2026 23:58:20 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 2D86A82A3B;
-	Mon,  2 Feb 2026 23:56:43 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id C052C606D3;
+	Mon,  2 Feb 2026 23:58:19 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Il7IEi-o-y30; Mon,  2 Feb 2026 23:56:42 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id Tt_zhPFSVGSB; Mon,  2 Feb 2026 23:58:17 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 539DC81D47
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org BB71C6067E
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1770076602;
-	bh=zY6bm/pUgRPh/CWp9UOaFUA+CQT5itjLNkPQUyTaJX8=;
-	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
+	s=default; t=1770076697;
+	bh=kxVFHLHk1GFXyxSOxpB/S03QfZtGcTHjBT1hQPIQylU=;
+	h=Date:From:To:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=WVvpUkkRHQ/8oxmS74TYToirIItniQUH41COyx2oqyXFiJoqBWKw14xy4NXr/cwF4
-	 1Cra8dJaoEKRJNYwBEIWqL/FwT9OkohWuthAyCAaLE1skfgZru/IbP2oX5TaTZGxL4
-	 IFe9CfNEQ2gfqDNkQiJcE60E9ueLnc1ryKKy3WxfAmsjDaZPY8QDlhPyRi40wbGPgJ
-	 8DTDHZAHV/JJ5gViDWSASXBNAbE/3DhXBdqDkrzvmptxsQHqmZLUSoYF1ie6J/Oz3M
-	 JYvcr136mqfc6rFvTZOVq4SIeEDuTkZpcKwfueO1JPihTPB48TYTff6WaxhGHQV60o
-	 zGpgcvFkQThNg==
+	 Cc:From;
+	b=Y4xklZq0D+lPZ8OHwyG4BMirZkreQuc23tntA9LgIbMFHzW0eDGcFuEocwaQcvWVp
+	 OD5mnPGd2INPkDRhrG0k2dGDX4tuYMeGSlKE6PjZpz+BxPFqIWwamRSoxdJnfu19m7
+	 eBDv1S9HO24AjbBDrpkEwIS7GXmCkThUjaS+KWg8/Ix2dwb55XkyerGMabJve4xVYx
+	 w4w+6Kxq95iheOaFFBSH6OnOOPa43lp/w3eeKMA6XIPnH+oIV96l11DL7oTpUmPrzc
+	 SW7B5q5BQ+54rIxGuXSnR++AeVp/eQzZLeAraWcH0/FB8l5kbda+PuUh9ei4Dm6Ghp
+	 HEQZQQW++TY0A==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 539DC81D47;
-	Mon,  2 Feb 2026 23:56:42 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id C1857F4
- for <intel-wired-lan@lists.osuosl.org>; Mon,  2 Feb 2026 23:56:40 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id BB71C6067E;
+	Mon,  2 Feb 2026 23:58:17 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 945D4F4
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  2 Feb 2026 23:58:16 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id ACC09403B1
- for <intel-wired-lan@lists.osuosl.org>; Mon,  2 Feb 2026 23:56:40 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 824D8403AB
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  2 Feb 2026 23:58:16 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Y7Xt-m9UQSYC for <intel-wired-lan@lists.osuosl.org>;
- Mon,  2 Feb 2026 23:56:40 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.14;
- helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 84E12403AB
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 84E12403AB
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.14])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 84E12403AB
- for <intel-wired-lan@lists.osuosl.org>; Mon,  2 Feb 2026 23:56:38 +0000 (UTC)
-X-CSE-ConnectionGUID: ZjHv7PTHTaWR/TaiQCzGIw==
-X-CSE-MsgGUID: 78HqBzCPS9CJ7cp046Fpdg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11690"; a="75097561"
-X-IronPort-AV: E=Sophos;i="6.21,269,1763452800"; d="scan'208";a="75097561"
-Received: from fmviesa007.fm.intel.com ([10.60.135.147])
- by orvoesa106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 02 Feb 2026 15:56:35 -0800
-X-CSE-ConnectionGUID: L+pyejYsRy6s24YSBOKrEw==
-X-CSE-MsgGUID: cgdgIDZnThCzdIH8XF/Dyg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.21,269,1763452800"; d="scan'208";a="209135095"
-Received: from lkp-server01.sh.intel.com (HELO 765f4a05e27f) ([10.239.97.150])
- by fmviesa007.fm.intel.com with ESMTP; 02 Feb 2026 15:56:29 -0800
-Received: from kbuild by 765f4a05e27f with local (Exim 4.98.2)
- (envelope-from <lkp@intel.com>) id 1vn3mN-00000000g3Y-0ynt;
- Mon, 02 Feb 2026 23:56:27 +0000
-Date: Tue, 3 Feb 2026 07:55:33 +0800
-From: kernel test robot <lkp@intel.com>
-To: Ivan Vecera <ivecera@redhat.com>, netdev@vger.kernel.org
-Cc: oe-kbuild-all@lists.linux.dev, Eric Dumazet <edumazet@google.com>,
- Tony Nguyen <anthony.l.nguyen@intel.com>,
- Leon Romanovsky <leon@kernel.org>,
- Alexander Lobakin <aleksander.lobakin@intel.com>,
- linux-rdma@vger.kernel.org, Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>,
- Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
- intel-wired-lan@lists.osuosl.org, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, Jiri Pirko <jiri@resnulli.us>,
- Richard Cochran <richardcochran@gmail.com>,
- Prathosh Satish <Prathosh.Satish@microchip.com>,
- Vadim Fedorenko <vadim.fedorenko@linux.dev>,
- Mark Bloch <mbloch@nvidia.com>, linux-kernel@vger.kernel.org,
- Tariq Toukan <tariqt@nvidia.com>, Andrew Lunn <andrew+netdev@lunn.ch>,
- Jonathan Lemon <jonathan.lemon@gmail.com>,
- Saeed Mahameed <saeedm@nvidia.com>
-Message-ID: <202602030740.Jdw6BiOU-lkp@intel.com>
-References: <20260202171638.17427-8-ivecera@redhat.com>
+ id 9dPP0k6AfOKa for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  2 Feb 2026 23:58:16 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org;
+ envelope-from=kuba@kernel.org; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org CA86040137
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org CA86040137
+Received: from sea.source.kernel.org (sea.source.kernel.org
+ [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id CA86040137
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  2 Feb 2026 23:58:15 +0000 (UTC)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+ by sea.source.kernel.org (Postfix) with ESMTP id D974E42B63;
+ Mon,  2 Feb 2026 23:58:14 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 15747C116C6;
+ Mon,  2 Feb 2026 23:58:14 +0000 (UTC)
+Date: Mon, 2 Feb 2026 15:58:13 -0800
+From: Jakub Kicinski <kuba@kernel.org>
+To: Petr Oros <poros@redhat.com>
+Message-ID: <20260202155813.3f8fbc27@kernel.org>
+In-Reply-To: <20260202084820.260033-1-poros@redhat.com>
+References: <20260202084820.260033-1-poros@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260202171638.17427-8-ivecera@redhat.com>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1770076600; x=1801612600;
- h=date:from:to:cc:subject:message-id:references:
- mime-version:in-reply-to;
- bh=ZtK3OYsfbQaKryYG3GNg+fYHVaBUJzVlFN3ArYyXJF8=;
- b=K8ihJVOCTSDi+riWY6wsVv5i5veNCkjoEe3ym4vcby8e0ZIJwy+8ZGuR
- o+Zx6GP52PEAlwKoG5KArsY9BSgfQKGa/oKX00dRQl3ucPafMAYt/vYE/
- 1xMlF3r5ZDWf0v3288NhZM/jsStFbttCfbrHQT55sVAmRvagXTcAkeQmP
- cd3hl+KIVx9iTv4bINAojWXxm5I0r0oEnFX8pMcfb15u60WFrVUKkFd/4
- GHNQRQyv5505CFW15ASKZDlHBi70p+5R6bpiHxk6iFnADlmSWSE8DmT4S
- NPWWXJmcS8pIWKU7ymgAnGhJxq9etK95oBodcJGY4OXvAt9jHAbWsjkVK
- w==;
+ d=kernel.org; s=k20201202; t=1770076694;
+ bh=BRzLYgVhduJBkOdpDGMvQh4aM+Uyxm2O3nUvq4ILHMo=;
+ h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+ b=XIR2hMpkUMbhV1MpUhritR1FLGXUgquvWgO+cNXu5uIv3h6mT47Es8QhNileswiVR
+ BZWZgFSxGoU5G8yrZQDufhvQ3Mj0Wqb1knY1oX+J3pPveV1n6c0u9DuUdnmPeSLa9g
+ /rrIDZHPlJwzvMEpL3e8OlvzExblqQrdLksg/Ll0WWbgSiLO0MxudHUM3+kiQn1BTU
+ xiY5lHWFewarOGX+MX7o12YOYAQTiLQR3Z521BySibAmGmXjDIYmUPKNKOhBYslXTU
+ MIw71MZsNU8LpfTMksiQbcSIrzo8r0cdHnu08MkYFHwIRYSuWW4pzY7lu4VxkQRsWu
+ tYf+Rr9Yi3V5A==
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=intel.com
+ dmarc=pass (p=quarantine dis=none)
+ header.from=kernel.org
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=K8ihJVOC
-Subject: Re: [Intel-wired-lan] [PATCH net-next v4 7/9] dpll: Add reference
- count tracking support
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=XIR2hMpk
+Subject: Re: [Intel-wired-lan] [PATCH net] iavf: fix deadlock in reset
+ handling
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -123,50 +95,21 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
+Cc: ivecera@redhat.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Andrew Lunn <andrew+netdev@lunn.ch>, Eric Dumazet <edumazet@google.com>,
+ Stanislav Fomichev <sdf@fomichev.me>, Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ intel-wired-lan@lists.osuosl.org, Paolo Abeni <pabeni@redhat.com>, "David
+ S. Miller" <davem@davemloft.net>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Hi Ivan,
+On Mon,  2 Feb 2026 09:48:20 +0100 Petr Oros wrote:
+> +	netdev_unlock(netdev);
+> +	ret = wait_event_interruptible_timeout(adapter->reset_waitqueue,
+> +					       !iavf_is_reset_in_progress(adapter),
+> +					       msecs_to_jiffies(5000));
+> +	netdev_lock(netdev);
 
-kernel test robot noticed the following build errors:
-
-[auto build test ERROR on net-next/main]
-
-url:    https://github.com/intel-lab-lkp/linux/commits/Ivan-Vecera/dpll-Allow-associating-dpll-pin-with-a-firmware-node/20260203-012705
-base:   net-next/main
-patch link:    https://lore.kernel.org/r/20260202171638.17427-8-ivecera%40redhat.com
-patch subject: [Intel-wired-lan] [PATCH net-next v4 7/9] dpll: Add reference count tracking support
-config: parisc-randconfig-001-20260203 (https://download.01.org/0day-ci/archive/20260203/202602030740.Jdw6BiOU-lkp@intel.com/config)
-compiler: hppa-linux-gcc (GCC) 12.5.0
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260203/202602030740.Jdw6BiOU-lkp@intel.com/reproduce)
-
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202602030740.Jdw6BiOU-lkp@intel.com/
-
-All error/warnings (new ones prefixed by >>):
-
-   In file included from net/core/rtnetlink.c:61:
->> include/linux/dpll.h:235:1: error: expected identifier or '(' before '{' token
-     235 | {
-         | ^
->> include/linux/dpll.h:234:1: warning: 'fwnode_dpll_pin_find' declared 'static' but never defined [-Wunused-function]
-     234 | fwnode_dpll_pin_find(struct fwnode_handle *fwnode, dpll_tracker *tracker);
-         | ^~~~~~~~~~~~~~~~~~~~
-
-
-vim +235 include/linux/dpll.h
-
-877c40367bc8a7 Ivan Vecera 2026-02-02  232  
-877c40367bc8a7 Ivan Vecera 2026-02-02  233  static inline struct dpll_pin *
-bed78c2008cb37 Ivan Vecera 2026-02-02 @234  fwnode_dpll_pin_find(struct fwnode_handle *fwnode, dpll_tracker *tracker);
-877c40367bc8a7 Ivan Vecera 2026-02-02 @235  {
-877c40367bc8a7 Ivan Vecera 2026-02-02  236  	return NULL;
-877c40367bc8a7 Ivan Vecera 2026-02-02  237  }
-5f18426928800c Jiri Pirko  2023-09-13  238  #endif
-5f18426928800c Jiri Pirko  2023-09-13  239  
-
--- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+Dropping locks taken by the core around the driver callback
+is obviously unacceptable. SMH.
