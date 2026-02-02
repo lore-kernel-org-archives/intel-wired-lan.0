@@ -1,93 +1,76 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ED3D2E7DF11
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  2 Feb 2026 17:17:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6502BE7DF13
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  2 Feb 2026 17:17:21 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 871CC408E8;
-	Mon,  2 Feb 2026 17:17:12 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 2C6BF60BD2;
+	Mon,  2 Feb 2026 17:17:21 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id n41OFbVio2_b; Mon,  2 Feb 2026 17:17:11 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id MXxpaT-snqht; Mon,  2 Feb 2026 17:17:20 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org BF987408A5
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 58DD860BF1
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1770052631;
-	bh=KS4/gkGq27/8plMJdM75D50Du3giTwG6upf6vajwDBo=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1770052640;
+	bh=QV89xPUnCNJIH6v1OPSMlUsAUmfkwSqBeHfnsysjb1c=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=YDwZH5+h8V2HA3zyOKgruAJryYK26/i7i4pG3bzhNgyoK39IqMyGEhgwl54+Fm60h
-	 gQ7dXi+vPZ02oDD2ht6X+p9UOHGX2VLIy0Np+TnPdwO6FZDVB2bi7PYXr8FDtHVK78
-	 d291C7nByqgKXBeHOVwBQHuNV/Yi55c/WkZE1WTR/iIPxcXuWQ6i+aMQzPdQWU9n5y
-	 wpWtqjflgru7TD3UxhegSkwYy2sR2T9O51h99mccm3jaXZjWnpz9EP6rjqtQ58wPg3
-	 WPOre8OevQtSOwWZlyEStO1gWoLBDIiwUM2+lFKxqSgJEU9FRp2FaSeqgAM+p4wzoX
-	 NDqxu6E+XuuvQ==
+	 Cc:From;
+	b=TKfra6lPaG9vkbjhSxZTKXokFobDJmmyiyHng2DuMUuKdwAX2SF945Kx38UFnUJQD
+	 QcshxEmmmH0q7QE7CL0X//27vTXkWccjLq+/aVoBwqGzVys+m4L4qvZ0OXQxiMFc7/
+	 p42MXglrobtCXfyp23u/gxA2CHQ30jX82BFsAJ05QkIIFcqGwAucA1N7FlEqA5nLKP
+	 ftYc1L3werCI7DXUA2iXZ8c8sb7i9d0ZHUWqHEZYiOIPCcYbvJ7AgMIzpxES93btUI
+	 KQTHtAGYQgP/7HP7Vv7FSZqT3JEWSyuEBmGJcEvzgS3JzP2fop8Yap9EExZ1USzkxj
+	 WwHUx4v/wZxgw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id BF987408A5;
-	Mon,  2 Feb 2026 17:17:11 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id DED70149
- for <intel-wired-lan@lists.osuosl.org>; Mon,  2 Feb 2026 17:17:10 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 58DD860BF1;
+	Mon,  2 Feb 2026 17:17:20 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id B336923E
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  2 Feb 2026 17:17:18 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id CACF8408A5
- for <intel-wired-lan@lists.osuosl.org>; Mon,  2 Feb 2026 17:17:10 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id AC10260BF9
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  2 Feb 2026 17:17:18 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id V_yEKBAWhpRm for <intel-wired-lan@lists.osuosl.org>;
- Mon,  2 Feb 2026 17:17:10 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.129.124;
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id muvilvDBzcSR for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  2 Feb 2026 17:17:17 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.133.124;
  helo=us-smtp-delivery-124.mimecast.com; envelope-from=ivecera@redhat.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org B77274085D
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B77274085D
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 9984260BF1
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 9984260BF1
 Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.129.124])
- by smtp4.osuosl.org (Postfix) with ESMTPS id B77274085D
- for <intel-wired-lan@lists.osuosl.org>; Mon,  2 Feb 2026 17:17:09 +0000 (UTC)
-Received: from mx-prod-mc-08.mail-002.prod.us-west-2.aws.redhat.com
- (ec2-35-165-154-97.us-west-2.compute.amazonaws.com [35.165.154.97]) by
+ (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 9984260BF1
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  2 Feb 2026 17:17:17 +0000 (UTC)
+Received: from mx-prod-mc-01.mail-002.prod.us-west-2.aws.redhat.com
+ (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
  relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-133-2Azq84XyOXKEJhfGtlnfEg-1; Mon,
- 02 Feb 2026 12:17:03 -0500
-X-MC-Unique: 2Azq84XyOXKEJhfGtlnfEg-1
-X-Mimecast-MFC-AGG-ID: 2Azq84XyOXKEJhfGtlnfEg_1770052620
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-12-tYj-W-DdOEiFRa9He3W0gg-1; Mon,
+ 02 Feb 2026 12:17:09 -0500
+X-MC-Unique: tYj-W-DdOEiFRa9He3W0gg-1
+X-Mimecast-MFC-AGG-ID: tYj-W-DdOEiFRa9He3W0gg_1770052627
 Received: from mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com
  (mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.12])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by mx-prod-mc-08.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
- id 72E62180034A; Mon,  2 Feb 2026 17:17:00 +0000 (UTC)
+ by mx-prod-mc-01.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
+ id 362D81954B17; Mon,  2 Feb 2026 17:17:07 +0000 (UTC)
 Received: from p16v.redhat.com (unknown [10.45.224.17])
  by mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP
- id 6289319560B2; Mon,  2 Feb 2026 17:16:53 +0000 (UTC)
+ id DAE6219560B2; Mon,  2 Feb 2026 17:17:00 +0000 (UTC)
 From: Ivan Vecera <ivecera@redhat.com>
 To: netdev@vger.kernel.org
-Cc: Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
- Alexander Lobakin <aleksander.lobakin@intel.com>,
- Andrew Lunn <andrew+netdev@lunn.ch>,
- Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>,
- "David S. Miller" <davem@davemloft.net>,
- Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
- Jiri Pirko <jiri@resnulli.us>, Jonathan Lemon <jonathan.lemon@gmail.com>,
- Leon Romanovsky <leon@kernel.org>, Mark Bloch <mbloch@nvidia.com>,
- Paolo Abeni <pabeni@redhat.com>,
- Prathosh Satish <Prathosh.Satish@microchip.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Richard Cochran <richardcochran@gmail.com>,
- Saeed Mahameed <saeedm@nvidia.com>, Tariq Toukan <tariqt@nvidia.com>,
- Tony Nguyen <anthony.l.nguyen@intel.com>,
- Vadim Fedorenko <vadim.fedorenko@linux.dev>,
- intel-wired-lan@lists.osuosl.org, linux-kernel@vger.kernel.org,
- linux-rdma@vger.kernel.org
-Date: Mon,  2 Feb 2026 18:16:31 +0100
-Message-ID: <20260202171638.17427-3-ivecera@redhat.com>
+Date: Mon,  2 Feb 2026 18:16:32 +0100
+Message-ID: <20260202171638.17427-4-ivecera@redhat.com>
 In-Reply-To: <20260202171638.17427-1-ivecera@redhat.com>
 References: <20260202171638.17427-1-ivecera@redhat.com>
 MIME-Version: 1.0
@@ -95,23 +78,24 @@ Content-Transfer-Encoding: 8bit
 X-Scanned-By: MIMEDefang 3.0 on 10.30.177.12
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=redhat.com; 
- s=mimecast20190719; t=1770052628;
+ s=mimecast20190719; t=1770052636;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=KS4/gkGq27/8plMJdM75D50Du3giTwG6upf6vajwDBo=;
- b=KLQzZeBP6faTJS7nnaYI4quW60yLbiMspGT5HM/pe8GyB3v5fmfRbBsnS2ZBUPpLANL+oP
- +7qU28f+dgNqfcUa/xVSJws0blxfRO25wktqWUj/Cqqy/5zmY7VR9GDca+e6p2zu2K+ihl
- QCwOUYZYZOAK/xhVZCaaxBpKUEvmfKc=
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ bh=QV89xPUnCNJIH6v1OPSMlUsAUmfkwSqBeHfnsysjb1c=;
+ b=WXrKTNGu2IL5kjR/LClZWlwtmFpEIHePi7wFIQ+uXeYjl1ZSbjgQgmseoo5ZX5xI1RE2vr
+ fwOxfTe0UFG2jhfQOWQlbgiw7Bv45DVm+YZZGq89LZH2dzepuuDX9FXdzyGUi8njcPeOFZ
+ JjAbomyZH92oUh0OCyaK3/VBnDrOcVA=
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=redhat.com
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=KLQzZeBP
-Subject: [Intel-wired-lan] [PATCH net-next v4 2/9] dpll: zl3073x: Associate
- pin with fwnode handle
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (1024-bit key,
+ unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
+ header.s=mimecast20190719 header.b=WXrKTNGu
+Subject: [Intel-wired-lan] [PATCH net-next v4 3/9] dpll: Add notifier chain
+ for dpll events
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -124,35 +108,246 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
+Cc: Eric Dumazet <edumazet@google.com>,
+ Tony Nguyen <anthony.l.nguyen@intel.com>, Leon Romanovsky <leon@kernel.org>,
+ Alexander Lobakin <aleksander.lobakin@intel.com>, linux-rdma@vger.kernel.org,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>,
+ intel-wired-lan@lists.osuosl.org, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>, Jiri Pirko <jiri@resnulli.us>,
+ Richard Cochran <richardcochran@gmail.com>,
+ Prathosh Satish <Prathosh.Satish@microchip.com>,
+ Vadim Fedorenko <vadim.fedorenko@linux.dev>, Mark Bloch <mbloch@nvidia.com>,
+ linux-kernel@vger.kernel.org, Tariq Toukan <tariqt@nvidia.com>,
+ Andrew Lunn <andrew+netdev@lunn.ch>, Jonathan Lemon <jonathan.lemon@gmail.com>,
+ Saeed Mahameed <saeedm@nvidia.com>, "David S. Miller" <davem@davemloft.net>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Associate the registered DPLL pin with its firmware node by calling
-dpll_pin_fwnode_set().
+From: Petr Oros <poros@redhat.com>
 
-This links the created pin object to its corresponding DT/ACPI node
-in the DPLL core. Consequently, this enables consumer drivers (such as
-network drivers) to locate and request this specific pin using the
-fwnode_dpll_pin_find() helper.
+Currently, the DPLL subsystem reports events (creation, deletion, changes)
+to userspace via Netlink. However, there is no mechanism for other kernel
+components to be notified of these events directly.
 
-Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Add a raw notifier chain to the DPLL core protected by dpll_lock. This
+allows other kernel subsystems or drivers to register callbacks and
+receive notifications when DPLL devices or pins are created, deleted,
+or modified.
+
+Define the following:
+- Registration helpers: {,un}register_dpll_notifier()
+- Event types: DPLL_DEVICE_CREATED, DPLL_PIN_CREATED, etc.
+- Context structures: dpll_{device,pin}_notifier_info  to pass relevant
+  data to the listeners.
+
+The notification chain is invoked alongside the existing Netlink event
+generation to ensure in-kernel listeners are kept in sync with the
+subsystem state.
+
+Reviewed-by: Vadim Fedorenko <vadim.fedorenko@linux.dev>
+Co-developed-by: Ivan Vecera <ivecera@redhat.com>
 Signed-off-by: Ivan Vecera <ivecera@redhat.com>
+Signed-off-by: Petr Oros <poros@redhat.com>
 ---
- drivers/dpll/zl3073x/dpll.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/dpll/dpll_core.c    | 57 +++++++++++++++++++++++++++++++++++++
+ drivers/dpll/dpll_core.h    |  4 +++
+ drivers/dpll/dpll_netlink.c |  6 ++++
+ include/linux/dpll.h        | 29 +++++++++++++++++++
+ 4 files changed, 96 insertions(+)
 
-diff --git a/drivers/dpll/zl3073x/dpll.c b/drivers/dpll/zl3073x/dpll.c
-index 7d8ed948b9706..9eed21088adac 100644
---- a/drivers/dpll/zl3073x/dpll.c
-+++ b/drivers/dpll/zl3073x/dpll.c
-@@ -1485,6 +1485,7 @@ zl3073x_dpll_pin_register(struct zl3073x_dpll_pin *pin, u32 index)
- 		rc = PTR_ERR(pin->dpll_pin);
- 		goto err_pin_get;
- 	}
-+	dpll_pin_fwnode_set(pin->dpll_pin, props->fwnode);
+diff --git a/drivers/dpll/dpll_core.c b/drivers/dpll/dpll_core.c
+index f04ed7195cadd..b05fe2ba46d91 100644
+--- a/drivers/dpll/dpll_core.c
++++ b/drivers/dpll/dpll_core.c
+@@ -23,6 +23,8 @@ DEFINE_MUTEX(dpll_lock);
+ DEFINE_XARRAY_FLAGS(dpll_device_xa, XA_FLAGS_ALLOC);
+ DEFINE_XARRAY_FLAGS(dpll_pin_xa, XA_FLAGS_ALLOC);
  
- 	if (zl3073x_dpll_is_input_pin(pin))
- 		ops = &zl3073x_dpll_input_pin_ops;
++static RAW_NOTIFIER_HEAD(dpll_notifier_chain);
++
+ static u32 dpll_device_xa_id;
+ static u32 dpll_pin_xa_id;
+ 
+@@ -46,6 +48,39 @@ struct dpll_pin_registration {
+ 	void *cookie;
+ };
+ 
++static int call_dpll_notifiers(unsigned long action, void *info)
++{
++	lockdep_assert_held(&dpll_lock);
++	return raw_notifier_call_chain(&dpll_notifier_chain, action, info);
++}
++
++void dpll_device_notify(struct dpll_device *dpll, unsigned long action)
++{
++	struct dpll_device_notifier_info info = {
++		.dpll = dpll,
++		.id = dpll->id,
++		.idx = dpll->device_idx,
++		.clock_id = dpll->clock_id,
++		.type = dpll->type,
++	};
++
++	call_dpll_notifiers(action, &info);
++}
++
++void dpll_pin_notify(struct dpll_pin *pin, unsigned long action)
++{
++	struct dpll_pin_notifier_info info = {
++		.pin = pin,
++		.id = pin->id,
++		.idx = pin->pin_idx,
++		.clock_id = pin->clock_id,
++		.fwnode = pin->fwnode,
++		.prop = &pin->prop,
++	};
++
++	call_dpll_notifiers(action, &info);
++}
++
+ struct dpll_device *dpll_device_get_by_id(int id)
+ {
+ 	if (xa_get_mark(&dpll_device_xa, id, DPLL_REGISTERED))
+@@ -539,6 +574,28 @@ void dpll_netdev_pin_clear(struct net_device *dev)
+ }
+ EXPORT_SYMBOL(dpll_netdev_pin_clear);
+ 
++int register_dpll_notifier(struct notifier_block *nb)
++{
++	int ret;
++
++	mutex_lock(&dpll_lock);
++	ret = raw_notifier_chain_register(&dpll_notifier_chain, nb);
++	mutex_unlock(&dpll_lock);
++	return ret;
++}
++EXPORT_SYMBOL_GPL(register_dpll_notifier);
++
++int unregister_dpll_notifier(struct notifier_block *nb)
++{
++	int ret;
++
++	mutex_lock(&dpll_lock);
++	ret = raw_notifier_chain_unregister(&dpll_notifier_chain, nb);
++	mutex_unlock(&dpll_lock);
++	return ret;
++}
++EXPORT_SYMBOL_GPL(unregister_dpll_notifier);
++
+ /**
+  * dpll_pin_get - find existing or create new dpll pin
+  * @clock_id: clock_id of creator
+diff --git a/drivers/dpll/dpll_core.h b/drivers/dpll/dpll_core.h
+index d3e17ff0ecef0..b7b4bb251f739 100644
+--- a/drivers/dpll/dpll_core.h
++++ b/drivers/dpll/dpll_core.h
+@@ -91,4 +91,8 @@ struct dpll_pin_ref *dpll_xa_ref_dpll_first(struct xarray *xa_refs);
+ extern struct xarray dpll_device_xa;
+ extern struct xarray dpll_pin_xa;
+ extern struct mutex dpll_lock;
++
++void dpll_device_notify(struct dpll_device *dpll, unsigned long action);
++void dpll_pin_notify(struct dpll_pin *pin, unsigned long action);
++
+ #endif
+diff --git a/drivers/dpll/dpll_netlink.c b/drivers/dpll/dpll_netlink.c
+index 904199ddd1781..83cbd64abf5a4 100644
+--- a/drivers/dpll/dpll_netlink.c
++++ b/drivers/dpll/dpll_netlink.c
+@@ -761,17 +761,20 @@ dpll_device_event_send(enum dpll_cmd event, struct dpll_device *dpll)
+ 
+ int dpll_device_create_ntf(struct dpll_device *dpll)
+ {
++	dpll_device_notify(dpll, DPLL_DEVICE_CREATED);
+ 	return dpll_device_event_send(DPLL_CMD_DEVICE_CREATE_NTF, dpll);
+ }
+ 
+ int dpll_device_delete_ntf(struct dpll_device *dpll)
+ {
++	dpll_device_notify(dpll, DPLL_DEVICE_DELETED);
+ 	return dpll_device_event_send(DPLL_CMD_DEVICE_DELETE_NTF, dpll);
+ }
+ 
+ static int
+ __dpll_device_change_ntf(struct dpll_device *dpll)
+ {
++	dpll_device_notify(dpll, DPLL_DEVICE_CHANGED);
+ 	return dpll_device_event_send(DPLL_CMD_DEVICE_CHANGE_NTF, dpll);
+ }
+ 
+@@ -829,16 +832,19 @@ dpll_pin_event_send(enum dpll_cmd event, struct dpll_pin *pin)
+ 
+ int dpll_pin_create_ntf(struct dpll_pin *pin)
+ {
++	dpll_pin_notify(pin, DPLL_PIN_CREATED);
+ 	return dpll_pin_event_send(DPLL_CMD_PIN_CREATE_NTF, pin);
+ }
+ 
+ int dpll_pin_delete_ntf(struct dpll_pin *pin)
+ {
++	dpll_pin_notify(pin, DPLL_PIN_DELETED);
+ 	return dpll_pin_event_send(DPLL_CMD_PIN_DELETE_NTF, pin);
+ }
+ 
+ int __dpll_pin_change_ntf(struct dpll_pin *pin)
+ {
++	dpll_pin_notify(pin, DPLL_PIN_CHANGED);
+ 	return dpll_pin_event_send(DPLL_CMD_PIN_CHANGE_NTF, pin);
+ }
+ 
+diff --git a/include/linux/dpll.h b/include/linux/dpll.h
+index f2e8660e90cdf..8ed90dfc65f05 100644
+--- a/include/linux/dpll.h
++++ b/include/linux/dpll.h
+@@ -11,6 +11,7 @@
+ #include <linux/device.h>
+ #include <linux/netlink.h>
+ #include <linux/netdevice.h>
++#include <linux/notifier.h>
+ #include <linux/rtnetlink.h>
+ 
+ struct dpll_device;
+@@ -172,6 +173,30 @@ struct dpll_pin_properties {
+ 	u32 phase_gran;
+ };
+ 
++#define DPLL_DEVICE_CREATED	1
++#define DPLL_DEVICE_DELETED	2
++#define DPLL_DEVICE_CHANGED	3
++#define DPLL_PIN_CREATED	4
++#define DPLL_PIN_DELETED	5
++#define DPLL_PIN_CHANGED	6
++
++struct dpll_device_notifier_info {
++	struct dpll_device *dpll;
++	u32 id;
++	u32 idx;
++	u64 clock_id;
++	enum dpll_type type;
++};
++
++struct dpll_pin_notifier_info {
++	struct dpll_pin *pin;
++	u32 id;
++	u32 idx;
++	u64 clock_id;
++	const struct fwnode_handle *fwnode;
++	const struct dpll_pin_properties *prop;
++};
++
+ #if IS_ENABLED(CONFIG_DPLL)
+ void dpll_netdev_pin_set(struct net_device *dev, struct dpll_pin *dpll_pin);
+ void dpll_netdev_pin_clear(struct net_device *dev);
+@@ -242,4 +267,8 @@ int dpll_device_change_ntf(struct dpll_device *dpll);
+ 
+ int dpll_pin_change_ntf(struct dpll_pin *pin);
+ 
++int register_dpll_notifier(struct notifier_block *nb);
++
++int unregister_dpll_notifier(struct notifier_block *nb);
++
+ #endif
 -- 
 2.52.0
 
