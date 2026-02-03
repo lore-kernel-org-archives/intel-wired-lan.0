@@ -4,114 +4,158 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CA83DE87822
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  3 Feb 2026 12:55:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AFBA2E87827
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  3 Feb 2026 13:38:06 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 9818260896;
-	Tue,  3 Feb 2026 12:55:51 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 1838B607D9;
+	Tue,  3 Feb 2026 13:38:06 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id iVswsnF0xqKL; Tue,  3 Feb 2026 12:55:51 +0000 (UTC)
+ id skRvZ61qK7Qj; Tue,  3 Feb 2026 13:38:04 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org D4F1D60893
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 82E0460633
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1770123350;
-	bh=W1p9ZU1anq8c3tA5/K3cU5JbzW1imGiGjezF2dcMG5o=;
-	h=From:To:CC:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1770125884;
+	bh=iOS7tpo+UZQJEwdA3wxEe6jwUqGIqBiJfHv1ZGaOoVI=;
+	h=From:To:Cc:In-Reply-To:References:Date:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=mRF4aJdgMqrk+FkuFJn0pS6C42PiRpSe1ok9b4gCkyokElYrd234wUCOU8kVcF0K6
-	 o+lkvSi1O5GnL4/aTuhCqk+FlcgxBYc6HHzLSs3+Z04Lvakj1gS68Qsm+nji8/wMAT
-	 BiUKvB5yjJhoteJVTCulgB5bvg9YK/z1RfY3bqueW0PSY7uq1RHHEWaeGB14/lZeJK
-	 6/nrypDOSbszMy5l+whly4FcnGauLTmbySx+sTGtA8W+bUYIDff9UjoHntD6dqg9pg
-	 0ach20PAhWpiGFszckPNjqMrtxCQE/aTQUkNvmP89kLYYeBpxzY2ocRWIR8PwGk1x8
-	 yuVcAGodxFDAw==
+	b=SUA6AsUtLj8KjcRf+FJ+aYAhx6yNRBbCd9q+f1S+UCQ05tC0BHZ4GaYneRjjUeu9V
+	 RJZ5zew2ax5UovvKsNjk2lcW2IGAJwv/PiNrIt0KPlTRzaI1UIgiUdXvw1BeW3kf3V
+	 SKjnqV7+acpg3kCdkjSfuxZ0GfW/Ax72UnzQM5MERpr8jz9rLexCQV0V1+xjKJzZ3T
+	 NZyTx4c1MZhkkN0M9EIie/hmbvr6/5dZCB550DGnEWXi67hnFzuJa1Uy/SxqScPehe
+	 I8BPYUq+qmIx7MyRDquLp4N7jX4/ZPq57bcPNHLaSaZ/KFsCj7uOp1lwsuMZuP69Z/
+	 FonunGPqNbmjQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id D4F1D60893;
-	Tue,  3 Feb 2026 12:55:50 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id E9D73F5
- for <intel-wired-lan@lists.osuosl.org>; Tue,  3 Feb 2026 12:55:49 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 82E0460633;
+	Tue,  3 Feb 2026 13:38:04 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 5576613D
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  3 Feb 2026 13:38:03 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id D797160873
- for <intel-wired-lan@lists.osuosl.org>; Tue,  3 Feb 2026 12:55:49 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 4275040B1A
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  3 Feb 2026 13:38:03 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Y-pIm2KgIXWa for <intel-wired-lan@lists.osuosl.org>;
- Tue,  3 Feb 2026 12:55:49 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=44.246.68.102;
- helo=pdx-out-003.esa.us-west-2.outbound.mail-perimeter.amazon.com;
- envelope-from=prvs=487b0b5b4=takkozu@amazon.co.jp; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org E12E66086D
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E12E66086D
-Received: from pdx-out-003.esa.us-west-2.outbound.mail-perimeter.amazon.com
- (pdx-out-003.esa.us-west-2.outbound.mail-perimeter.amazon.com
- [44.246.68.102])
- by smtp3.osuosl.org (Postfix) with ESMTPS id E12E66086D
- for <intel-wired-lan@lists.osuosl.org>; Tue,  3 Feb 2026 12:55:48 +0000 (UTC)
-X-CSE-ConnectionGUID: BA2TFj8aRWKimPNqD0okYg==
-X-CSE-MsgGUID: yiaUqkMeT0i3/+jqQdUuRQ==
-X-IronPort-AV: E=Sophos;i="6.21,270,1763424000"; d="scan'208";a="12190615"
-Received: from ip-10-5-12-219.us-west-2.compute.internal (HELO
- smtpout.naws.us-west-2.prod.farcaster.email.amazon.dev) ([10.5.12.219])
- by internal-pdx-out-003.esa.us-west-2.outbound.mail-perimeter.amazon.com with
- ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Feb 2026 12:55:46 +0000
-Received: from EX19MTAUWB001.ant.amazon.com [205.251.233.104:29351]
- by smtpin.naws.us-west-2.prod.farcaster.email.amazon.dev [10.0.17.158:2525]
- with esmtp (Farcaster)
- id bea7ed2c-7832-42d6-9b20-8c0bec80b03f; Tue, 3 Feb 2026 12:55:45 +0000 (UTC)
-X-Farcaster-Flow-ID: bea7ed2c-7832-42d6-9b20-8c0bec80b03f
-Received: from EX19D001UWA001.ant.amazon.com (10.13.138.214) by
- EX19MTAUWB001.ant.amazon.com (10.250.64.248) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA) id 15.2.2562.35;
- Tue, 3 Feb 2026 12:55:45 +0000
-Received: from 603e5f7bc1fe.amazon.com (10.37.245.7) by
- EX19D001UWA001.ant.amazon.com (10.13.138.214) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA) id 15.2.2562.35;
- Tue, 3 Feb 2026 12:55:43 +0000
-From: Takashi Kozu <takkozu@amazon.com>
-To: <horms@kernel.org>
-CC: <anthony.l.nguyen@intel.com>, <przemyslaw.kitszel@intel.com>,
- <andrew+netdev@lunn.ch>, <davem@davemloft.net>, <edumazet@google.com>,
- <kuba@kernel.org>, <pabeni@redhat.com>, <intel-wired-lan@lists.osuosl.org>,
- <netdev@vger.kernel.org>, <aleksandr.loktionov@intel.com>,
- <pmenzel@molgen.mpg.de>, <piotr.kwapulinski@intel.com>, <enjuk@amazon.com>,
- Takashi Kozu <takkozu@amazon.com>
-Date: Tue, 3 Feb 2026 21:54:13 +0900
-Message-ID: <20260203125417.37285-8-takkozu@amazon.com>
-X-Mailer: git-send-email 2.47.0
-In-Reply-To: <20260203125417.37285-5-takkozu@amazon.com>
-References: <20260203125417.37285-5-takkozu@amazon.com>
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id HZQ9DSmCAhRg for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  3 Feb 2026 13:38:02 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.129.124;
+ helo=us-smtp-delivery-124.mimecast.com; envelope-from=toke@redhat.com;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org E9D0540B04
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E9D0540B04
+Received: from us-smtp-delivery-124.mimecast.com
+ (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id E9D0540B04
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  3 Feb 2026 13:38:00 +0000 (UTC)
+Received: from mail-ed1-f69.google.com (mail-ed1-f69.google.com
+ [209.85.208.69]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-31-PjcKHcvmN8CWujbnTLxt4Q-1; Tue, 03 Feb 2026 08:37:57 -0500
+X-MC-Unique: PjcKHcvmN8CWujbnTLxt4Q-1
+X-Mimecast-MFC-AGG-ID: PjcKHcvmN8CWujbnTLxt4Q_1770125877
+Received: by mail-ed1-f69.google.com with SMTP id
+ 4fb4d7f45d1cf-659444abe90so233989a12.1
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 03 Feb 2026 05:37:57 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20230601; t=1770125876; x=1770730676;
+ h=content-transfer-encoding:mime-version:message-id:date:references
+ :in-reply-to:subject:cc:to:from:x-gm-gg:x-gm-message-state:from:to
+ :cc:subject:date:message-id:reply-to;
+ bh=ZtmJ0MecevVOkqmQ0sbIYbbzUt1IRFmbl82qHWlUp74=;
+ b=PVIeFTjxpm4yRSi8R4zRrDg+MYdIg8E8YSxJr6t2Wt4RYZVB/IV5V06lvJ2lz7p2as
+ C/RQhd3FQw7TCO2UUSVP/gS0i14RX0AbgLFc6iidvR6N4Y4zf0W85690/YYvyldJ2zYb
+ J6HHqVKxjuyythq7etI61CeDO6WbzvDwFHaWJN+ku1tyMJgiaS43bvrpcCDLcnbf/aqX
+ fvSFhTCt1QUwbJpsEjm3PNrLP9lNCyojBJXJYCpQJAIswKAIJyQXO2hwxXxh5Y/GJB/T
+ sMz2YnQPoqgWsuNWQhYff1mLSSYRg1KA4W3/SN3J9l76AOlq4z2voR9XvwmXk/edJOdK
+ 1SUQ==
+X-Forwarded-Encrypted: i=1;
+ AJvYcCWmD00gVd0o3g1k47rNyAzQn9pgpdAVDxTixcCJc0Au7fHFb/M/g+ffbhrN+D8TOcjRosREI5JeVC/84AOInrs=@lists.osuosl.org
+X-Gm-Message-State: AOJu0YxgmRob8UAH6Djev8VZs8138mOxW32c7LkUS4q+T48M/eKFfRaa
+ KZnEeFSrmNSrBAK0mbg3zmxIZdblQQyECvP2oc2nfgvB//89MDHOHfrAEQQOj4wJ5HLirZXeY6w
+ lr7v+wExSX8n2pAg1hvoEw56UcBWjbBltu75atyv8XIXwjC9S+synGBPOVksERMxwWppK218=
+X-Gm-Gg: AZuq6aLUGyVhm+j/UzbSJNTOBJ9dzLmx3y5+cNohkF0m8ZPhb0d38+DQMXEnh6PY7cx
+ SohRkvxfcmcZM1ALNbuDInlNYeAcg6LXWQcu/BmrvjuPyDmW04GJZhrv7CtzdZ01/eTthFkXS46
+ 4Ofx+rJSwMohFmpb3CQR5c3Skhp6Mf6lfS1r7cG7ZCpJGe8VRXU7XJp2Fd3cdQ/fDLTAlPscr0N
+ CCR2VHfIIw05Zz0xNGBT1MHusYwighM6YTJ0zc6ZoJwMWHRPPaWjXa+on9EQnvOiyjy/145pB1r
+ O7mUn9jefBJbqPyEknhOmQq+ZeY7I7SbL2K7ZdkBrZd41ZduD0B7lwYc2R/39T1Ps942xoSIQVO
+ sUFNrXXGT0lgf52VdGFGsdZKzAJndoEM4BA==
+X-Received: by 2002:a05:6402:520b:b0:64b:416a:cb48 with SMTP id
+ 4fb4d7f45d1cf-658de5ac5b8mr9740680a12.19.1770125876459; 
+ Tue, 03 Feb 2026 05:37:56 -0800 (PST)
+X-Received: by 2002:a05:6402:520b:b0:64b:416a:cb48 with SMTP id
+ 4fb4d7f45d1cf-658de5ac5b8mr9740648a12.19.1770125875931; 
+ Tue, 03 Feb 2026 05:37:55 -0800 (PST)
+Received: from alrua-x1.borgediget.toke.dk ([45.145.92.2])
+ by smtp.gmail.com with ESMTPSA id
+ 4fb4d7f45d1cf-658b4691d0asm9527874a12.18.2026.02.03.05.37.55
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Tue, 03 Feb 2026 05:37:55 -0800 (PST)
+Received: by alrua-x1.borgediget.toke.dk (Postfix, from userid 1000)
+ id B21574D0E3A; Tue, 03 Feb 2026 14:37:54 +0100 (CET)
+From: Toke =?utf-8?Q?H=C3=B8iland-J=C3=B8rgensen?= <toke@redhat.com>
+To: Larysa Zaremba <larysa.zaremba@intel.com>
+Cc: bpf@vger.kernel.org, Claudiu Manoil <claudiu.manoil@nxp.com>, Vladimir
+ Oltean <vladimir.oltean@nxp.com>, Wei Fang <wei.fang@nxp.com>, Clark Wang
+ <xiaoning.wang@nxp.com>, Andrew Lunn <andrew+netdev@lunn.ch>, "David S.
+ Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, Jakub
+ Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Tony Nguyen
+ <anthony.l.nguyen@intel.com>, Przemek Kitszel
+ <przemyslaw.kitszel@intel.com>, Alexei Starovoitov <ast@kernel.org>,
+ Daniel Borkmann <daniel@iogearbox.net>, Jesper Dangaard Brouer
+ <hawk@kernel.org>, John Fastabend <john.fastabend@gmail.com>, Stanislav
+ Fomichev <sdf@fomichev.me>, Andrii Nakryiko <andrii@kernel.org>, Martin
+ KaFai Lau <martin.lau@linux.dev>, Eduard Zingerman <eddyz87@gmail.com>,
+ Song Liu <song@kernel.org>, Yonghong Song <yonghong.song@linux.dev>, KP
+ Singh <kpsingh@kernel.org>, Hao Luo <haoluo@google.com>, Jiri Olsa
+ <jolsa@kernel.org>, Simon Horman <horms@kernel.org>, Shuah Khan
+ <shuah@kernel.org>, Alexander Lobakin <aleksander.lobakin@intel.com>,
+ Maciej Fijalkowski <maciej.fijalkowski@intel.com>, "Bastien Curutchet
+ (eBPF Foundation)" <bastien.curutchet@bootlin.com>, Tushar Vyavahare
+ <tushar.vyavahare@intel.com>, Jason Xing <kernelxing@tencent.com>,
+ =?utf-8?Q?Ricardo_B=2E_Marli=C3=A8re?= <rbm@suse.com>, Eelco Chaudron
+ <echaudro@redhat.com>, Lorenzo Bianconi <lorenzo@kernel.org>,
+ imx@lists.linux.dev, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ intel-wired-lan@lists.osuosl.org, linux-kselftest@vger.kernel.org,
+ Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+In-Reply-To: <aYHwDlDwN0ZniMev@soc-5CG4396X81.clients.intel.com>
+References: <20260203105417.2302672-1-larysa.zaremba@intel.com>
+ <20260203105417.2302672-2-larysa.zaremba@intel.com>
+ <87zf5q109e.fsf@toke.dk>
+ <aYHqtxtg3uNXO668@soc-5CG4396X81.clients.intel.com>
+ <87o6m60zoo.fsf@toke.dk>
+ <aYHwDlDwN0ZniMev@soc-5CG4396X81.clients.intel.com>
+X-Clacks-Overhead: GNU Terry Pratchett
+Date: Tue, 03 Feb 2026 14:37:54 +0100
+Message-ID: <87fr7i0wy5.fsf@toke.dk>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.37.245.7]
-X-ClientProxiedBy: EX19D044UWB003.ant.amazon.com (10.13.139.168) To
- EX19D001UWA001.ant.amazon.com (10.13.138.214)
+X-Mimecast-Spam-Score: 0
+X-Mimecast-MFC-PROC-ID: yd3xEWYRzFNo4VOB8Ql6sTSdphOU9lAzvVeaFc0vzwE_1770125877
+X-Mimecast-Originator: redhat.com
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=amazon.com; i=@amazon.com; q=dns/txt; s=amazoncorp2;
- t=1770123348; x=1801659348;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=W1p9ZU1anq8c3tA5/K3cU5JbzW1imGiGjezF2dcMG5o=;
- b=GfCt9Q1ec16i/HMExvGa8Q1esMz6M+SxKwPvyHyPmGBQC+Cc1z04lrKB
- oiZ1Vz0qSH80P5Y2818cANIGGsf7J+GLyug+GAm4QeyxpIzJ2D468FjC8
- tSbX7GgZCZZO0isOsuD4JmSFQn4+mGtri6l/KOCbeyO2k6E9i3DhHv+Qt
- qGHZ6GB8PXkw9nD6Wfv28m4dIT4wVfWepzi1ogDyyyg8QqU1lYfG5/ynt
- E+0+zaEwCAe48932Y0zv68fXqPgUQlHVRIC0smPq+5kixjeDWTWDHJ2W4
- jPoOSp7eFy2OQqiEjk5Kr4U8+RilF0ozuNj0Aw34pObAxwGqLYLlBgPbJ
- Q==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ d=redhat.com; 
+ s=mimecast20190719; t=1770125879;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=iOS7tpo+UZQJEwdA3wxEe6jwUqGIqBiJfHv1ZGaOoVI=;
+ b=A7JUff2nK4nxmHkkuBeHxGKh3c1LcE57RO9QE4dOkmRfaWZiYx4OcHXoLeX//2GDu8qlfz
+ T1S2fOXM1+bCyQylDTQ+QV2WfcCTTbL+fOz4fZp09QtwQy/HNcE14MLKh/XHX84EjyVsyQ
+ g8Erq1nrkP9lppLCGERnhTIO/NhJ9+g=
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
- header.from=amazon.com
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=amazon.com header.i=@amazon.com header.a=rsa-sha256
- header.s=amazoncorp2 header.b=GfCt9Q1e
-Subject: [Intel-wired-lan] [PATCH iwl-next v6 3/3] igb: allow configuring
- RSS key via ethtool set_rxfh
+ header.from=redhat.com
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (1024-bit key,
+ unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
+ header.s=mimecast20190719 header.b=A7JUff2n
+Subject: Re: [Intel-wired-lan] [PATCH bpf 1/6] xdp: produce a warning when
+ calculated tailroom is negative
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -127,84 +171,193 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Change igb_set_rxfh() to accept and save a userspace-provided
-RSS key. When a key is provided, store it in the adapter and write the
-E1000 registers accordingly.
+Larysa Zaremba <larysa.zaremba@intel.com> writes:
 
-This can be tested using `ethtool -X <dev> hkey <key>`.
+> On Tue, Feb 03, 2026 at 01:38:47PM +0100, Toke H=C3=B8iland-J=C3=B8rgense=
+n wrote:
+>> Larysa Zaremba <larysa.zaremba@intel.com> writes:
+>>=20
+>> > On Tue, Feb 03, 2026 at 01:26:21PM +0100, Toke H=C3=B8iland-J=C3=B8rge=
+nsen wrote:
+>> >> Larysa Zaremba <larysa.zaremba@intel.com> writes:
+>> >>=20
+>> >> > Many ethernet drivers report xdp Rx queue frag size as being the sa=
+me as
+>> >> > DMA write size. However, the only user of this field, namely
+>> >> > bpf_xdp_frags_increase_tail(), clearly expects a truesize.
+>> >> >
+>> >> > Such difference leads to unspecific memory corruption issues under =
+certain
+>> >> > circumstances, e.g. in ixgbevf maximum DMA write size is 3 KB, so w=
+hen
+>> >> > running xskxceiver's XDP_ADJUST_TAIL_GROW_MULTI_BUFF, 6K packet ful=
+ly uses
+>> >> > all DMA-writable space in 2 buffers. This would be fine, if only
+>> >> > rxq->frag_size was properly set to 4K, but value of 3K results in a
+>> >> > negative tailroom, because there is a non-zero page offset.
+>> >> >
+>> >> > We could return -EINVAL and be done with it in such case, but due t=
+o
+>> >> > tailroom being stored as an unsigned int, it is reported to be some=
+where
+>> >> > near UINT_MAX, resulting in a tail being grown, even if the request=
+ed
+>> >> > offset is too much (it is around 2K in the abovementioned test). Th=
+is later
+>> >> > leads to all kinds of unspecific calltraces.
+>> >> >
+>> >> > [ 7340.337579] xskxceiver[1440]: segfault at 1da718 ip 00007f4161ae=
+ac9d sp 00007f41615a6a00 error 6
+>> >> > [ 7340.338040] xskxceiver[1441]: segfault at 7f410000000b ip 000000=
+00004042b5 sp 00007f415bffecf0 error 4
+>> >> > [ 7340.338179]  in libc.so.6[61c9d,7f4161aaf000+160000]
+>> >> > [ 7340.339230]  in xskxceiver[42b5,400000+69000]
+>> >> > [ 7340.340300]  likely on CPU 6 (core 0, socket 6)
+>> >> > [ 7340.340302] Code: ff ff 01 e9 f4 fe ff ff 0f 1f 44 00 00 4c 39 f=
+0 74 73 31 c0 ba 01 00 00 00 f0 0f b1 17 0f 85 ba 00 00 00 49 8b 87 88 00 0=
+0 00 <4c> 89 70 08 eb cc 0f 1f 44 00 00 48 8d bd f0 fe ff ff 89 85 ec fe
+>> >> > [ 7340.340888]  likely on CPU 3 (core 0, socket 3)
+>> >> > [ 7340.345088] Code: 00 00 00 ba 00 00 00 00 be 00 00 00 00 89 c7 e=
+8 31 ca ff ff 89 45 ec 8b 45 ec 85 c0 78 07 b8 00 00 00 00 eb 46 e8 0b c8 f=
+f ff <8b> 00 83 f8 69 74 24 e8 ff c7 ff ff 8b 00 83 f8 0b 74 18 e8 f3 c7
+>> >> > [ 7340.404334] Oops: general protection fault, probably for non-can=
+onical address 0x6d255010bdffc: 0000 [#1] SMP NOPTI
+>> >> > [ 7340.405972] CPU: 7 UID: 0 PID: 1439 Comm: xskxceiver Not tainted=
+ 6.19.0-rc1+ #21 PREEMPT(lazy)
+>> >> > [ 7340.408006] Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), =
+BIOS 1.17.0-5.fc42 04/01/2014
+>> >> > [ 7340.409716] RIP: 0010:lookup_swap_cgroup_id+0x44/0x80
+>> >> > [ 7340.410455] Code: 83 f8 1c 73 39 48 ba ff ff ff ff ff ff ff 03 4=
+8 8b 04 c5 20 55 fa bd 48 21 d1 48 89 ca 83 e1 01 48 d1 ea c1 e1 04 48 8d 0=
+4 90 <8b> 00 48 83 c4 10 d3 e8 c3 cc cc cc cc 31 c0 e9 98 b7 dd 00 48 89
+>> >> > [ 7340.412787] RSP: 0018:ffffcc5c04f7f6d0 EFLAGS: 00010202
+>> >> > [ 7340.413494] RAX: 0006d255010bdffc RBX: ffff891f477895a8 RCX: 000=
+0000000000010
+>> >> > [ 7340.414431] RDX: 0001c17e3fffffff RSI: 00fa070000000000 RDI: 000=
+382fc7fffffff
+>> >> > [ 7340.415354] RBP: 00fa070000000000 R08: ffffcc5c04f7f8f8 R09: fff=
+fcc5c04f7f7d0
+>> >> > [ 7340.416283] R10: ffff891f4c1a7000 R11: ffffcc5c04f7f9c8 R12: fff=
+fcc5c04f7f7d0
+>> >> > [ 7340.417218] R13: 03ffffffffffffff R14: 00fa06fffffffe00 R15: fff=
+f891f47789500
+>> >> > [ 7340.418229] FS:  0000000000000000(0000) GS:ffff891ffdfaa000(0000=
+) knlGS:0000000000000000
+>> >> > [ 7340.419489] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+>> >> > [ 7340.420286] CR2: 00007f415bfffd58 CR3: 0000000103f03002 CR4: 000=
+0000000772ef0
+>> >> > [ 7340.421237] PKRU: 55555554
+>> >> > [ 7340.421623] Call Trace:
+>> >> > [ 7340.421987]  <TASK>
+>> >> > [ 7340.422309]  ? softleaf_from_pte+0x77/0xa0
+>> >> > [ 7340.422855]  swap_pte_batch+0xa7/0x290
+>> >> > [ 7340.423363]  zap_nonpresent_ptes.constprop.0.isra.0+0xd1/0x270
+>> >> > [ 7340.424102]  zap_pte_range+0x281/0x580
+>> >> > [ 7340.424607]  zap_pmd_range.isra.0+0xc9/0x240
+>> >> > [ 7340.425177]  unmap_page_range+0x24d/0x420
+>> >> > [ 7340.425714]  unmap_vmas+0xa1/0x180
+>> >> > [ 7340.426185]  exit_mmap+0xe1/0x3b0
+>> >> > [ 7340.426644]  __mmput+0x41/0x150
+>> >> > [ 7340.427098]  exit_mm+0xb1/0x110
+>> >> > [ 7340.427539]  do_exit+0x1b2/0x460
+>> >> > [ 7340.427992]  do_group_exit+0x2d/0xc0
+>> >> > [ 7340.428477]  get_signal+0x79d/0x7e0
+>> >> > [ 7340.428957]  arch_do_signal_or_restart+0x34/0x100
+>> >> > [ 7340.429571]  exit_to_user_mode_loop+0x8e/0x4c0
+>> >> > [ 7340.430159]  do_syscall_64+0x188/0x6b0
+>> >> > [ 7340.430672]  ? __do_sys_clone3+0xd9/0x120
+>> >> > [ 7340.431212]  ? switch_fpu_return+0x4e/0xd0
+>> >> > [ 7340.431761]  ? arch_exit_to_user_mode_prepare.isra.0+0xa1/0xc0
+>> >> > [ 7340.432498]  ? do_syscall_64+0xbb/0x6b0
+>> >> > [ 7340.433015]  ? __handle_mm_fault+0x445/0x690
+>> >> > [ 7340.433582]  ? count_memcg_events+0xd6/0x210
+>> >> > [ 7340.434151]  ? handle_mm_fault+0x212/0x340
+>> >> > [ 7340.434697]  ? do_user_addr_fault+0x2b4/0x7b0
+>> >> > [ 7340.435271]  ? clear_bhb_loop+0x30/0x80
+>> >> > [ 7340.435788]  ? clear_bhb_loop+0x30/0x80
+>> >> > [ 7340.436299]  ? clear_bhb_loop+0x30/0x80
+>> >> > [ 7340.436812]  ? clear_bhb_loop+0x30/0x80
+>> >> > [ 7340.437323]  entry_SYSCALL_64_after_hwframe+0x76/0x7e
+>> >> > [ 7340.437973] RIP: 0033:0x7f4161b14169
+>> >> > [ 7340.438468] Code: Unable to access opcode bytes at 0x7f4161b1413=
+f.
+>> >> > [ 7340.439242] RSP: 002b:00007ffc6ebfa770 EFLAGS: 00000246 ORIG_RAX=
+: 00000000000000ca
+>> >> > [ 7340.440173] RAX: fffffffffffffe00 RBX: 00000000000005a1 RCX: 000=
+07f4161b14169
+>> >> > [ 7340.441061] RDX: 00000000000005a1 RSI: 0000000000000109 RDI: 000=
+07f415bfff990
+>> >> > [ 7340.441943] RBP: 00007ffc6ebfa7a0 R08: 0000000000000000 R09: 000=
+00000ffffffff
+>> >> > [ 7340.442824] R10: 0000000000000000 R11: 0000000000000246 R12: 000=
+0000000000000
+>> >> > [ 7340.443707] R13: 0000000000000000 R14: 00007f415bfff990 R15: 000=
+07f415bfff6c0
+>> >> > [ 7340.444586]  </TASK>
+>> >> > [ 7340.444922] Modules linked in: rfkill intel_rapl_msr intel_rapl_=
+common intel_uncore_frequency_common skx_edac_common nfit libnvdimm kvm_int=
+el vfat fat kvm snd_pcm irqbypass rapl iTCO_wdt snd_timer intel_pmc_bxt iTC=
+O_vendor_support snd ixgbevf virtio_net soundcore i2c_i801 pcspkr libeth_xd=
+p net_failover i2c_smbus lpc_ich failover libeth virtio_balloon joydev 9p f=
+use loop zram lz4hc_compress lz4_compress 9pnet_virtio 9pnet netfs ghash_cl=
+mulni_intel serio_raw qemu_fw_cfg
+>> >> > [ 7340.449650] ---[ end trace 0000000000000000 ]---
+>> >> >
+>> >> > The issue can be fixed in all in-tree drivers, but we cannot just t=
+rust OOT
+>> >> > drivers to not do this. Therefore, make tailroom a signed int and p=
+roduce a
+>> >> > warning when it is negative to prevent such mistakes in the future.
+>> >> >
+>> >> > Fixes: bf25146a5595 ("bpf: add frags support to the bpf_xdp_adjust_=
+tail() API")
+>> >> > Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+>> >> > Signed-off-by: Larysa Zaremba <larysa.zaremba@intel.com>
+>> >> > ---
+>> >> >  net/core/filter.c | 3 ++-
+>> >> >  1 file changed, 2 insertions(+), 1 deletion(-)
+>> >> >
+>> >> > diff --git a/net/core/filter.c b/net/core/filter.c
+>> >> > index 616e0520a0bb..9715d957e3c5 100644
+>> >> > --- a/net/core/filter.c
+>> >> > +++ b/net/core/filter.c
+>> >> > @@ -4149,12 +4149,13 @@ static int bpf_xdp_frags_increase_tail(stru=
+ct xdp_buff *xdp, int offset)
+>> >> >  =09struct skb_shared_info *sinfo =3D xdp_get_shared_info_from_buff=
+(xdp);
+>> >> >  =09skb_frag_t *frag =3D &sinfo->frags[sinfo->nr_frags - 1];
+>> >> >  =09struct xdp_rxq_info *rxq =3D xdp->rxq;
+>> >> > -=09unsigned int tailroom;
+>> >> > +=09int tailroom;
+>> >> > =20
+>> >> >  =09if (!rxq->frag_size || rxq->frag_size > xdp->frame_sz)
+>> >> >  =09=09return -EOPNOTSUPP;
+>> >> > =20
+>> >> >  =09tailroom =3D rxq->frag_size - skb_frag_size(frag) - skb_frag_of=
+f(frag);
+>> >> > +=09WARN_ON_ONCE(tailroom < 0);
+>> >> >  =09if (unlikely(offset > tailroom))
+>> >> >  =09=09return -EINVAL;
+>> >> > =20
+>> >>=20
+>> >> Why can't we do both? I.e., WARN_ON_ONCE() *and* return -EINVAL?
+>> >>=20
+>> >> -Toke
+>> >>=20
+>> >
+>> > It would be redundant, offset is always >=3D 0 here, so with tailroom =
+now being a=20
+>> > signed int, offset is always bigger and -EINVAL is returned.
+>>=20
+>> Oh, I see. OK, may be worth calling out; I read this paragraph in your
+>> commit message to mean "we don't bother returning EINVAL in this case,
+>> we just warn":
+>
+> Worth changing 'could' to 'are supposed to', if there will be v2.
 
-Reviewed-by: Simon Horman <horms@kernel.org>
-Signed-off-by: Takashi Kozu <takkozu@amazon.com>
----
- drivers/net/ethernet/intel/igb/igb_ethtool.c | 48 +++++++++++---------
- 1 file changed, 26 insertions(+), 22 deletions(-)
+Yeah, that would be better, thanks!
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-index b387121f0ea7..b4eef14c09d5 100644
---- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
-+++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-@@ -3357,35 +3357,39 @@ static int igb_set_rxfh(struct net_device *netdev,
- 	u32 num_queues;
- 
- 	/* We do not allow change in unsupported parameters */
--	if (rxfh->key ||
--	    (rxfh->hfunc != ETH_RSS_HASH_NO_CHANGE &&
--	     rxfh->hfunc != ETH_RSS_HASH_TOP))
-+	if (rxfh->hfunc != ETH_RSS_HASH_NO_CHANGE &&
-+	    rxfh->hfunc != ETH_RSS_HASH_TOP)
- 		return -EOPNOTSUPP;
--	if (!rxfh->indir)
--		return 0;
- 
--	num_queues = adapter->rss_queues;
-+	if (rxfh->indir) {
-+		num_queues = adapter->rss_queues;
- 
--	switch (hw->mac.type) {
--	case e1000_82576:
--		/* 82576 supports 2 RSS queues for SR-IOV */
--		if (adapter->vfs_allocated_count)
--			num_queues = 2;
--		break;
--	default:
--		break;
--	}
-+		switch (hw->mac.type) {
-+		case e1000_82576:
-+			/* 82576 supports 2 RSS queues for SR-IOV */
-+			if (adapter->vfs_allocated_count)
-+				num_queues = 2;
-+			break;
-+		default:
-+			break;
-+		}
- 
--	/* Verify user input. */
--	for (i = 0; i < IGB_RETA_SIZE; i++)
--		if (rxfh->indir[i] >= num_queues)
--			return -EINVAL;
-+		/* Verify user input. */
-+		for (i = 0; i < IGB_RETA_SIZE; i++)
-+			if (rxfh->indir[i] >= num_queues)
-+				return -EINVAL;
- 
- 
--	for (i = 0; i < IGB_RETA_SIZE; i++)
--		adapter->rss_indir_tbl[i] = rxfh->indir[i];
-+		for (i = 0; i < IGB_RETA_SIZE; i++)
-+			adapter->rss_indir_tbl[i] = rxfh->indir[i];
-+
-+		igb_write_rss_indir_tbl(adapter);
-+	}
- 
--	igb_write_rss_indir_tbl(adapter);
-+	if (rxfh->key) {
-+		memcpy(adapter->rss_key, rxfh->key, sizeof(adapter->rss_key));
-+		igb_write_rss_key(adapter);
-+	}
- 
- 	return 0;
- }
--- 
-2.52.0
+Other than that,
+
+Reviewed-by: Toke H=C3=B8iland-J=C3=B8rgensen <toke@redhat.com>
 
