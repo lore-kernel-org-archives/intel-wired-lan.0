@@ -4,69 +4,69 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D2A09E87850
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  3 Feb 2026 17:40:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 679A2E87850
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  3 Feb 2026 17:40:54 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 97DC4608BB;
-	Tue,  3 Feb 2026 17:40:50 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 407CE608CB;
+	Tue,  3 Feb 2026 17:40:54 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id u7zzwpFtmfX3; Tue,  3 Feb 2026 17:40:48 +0000 (UTC)
+ id neRCQlZiX2kI; Tue,  3 Feb 2026 17:40:53 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 74D7D60893
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 70919608C4
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1770140448;
-	bh=swufWl6SHGcyC7YD5gze37xCr7gFlNxzAIYlJ+GmO3U=;
+	s=default; t=1770140453;
+	bh=HBmYOQu1HbXXIGYjKiGL7F/z2NmzMJqt9ZutoxF0liM=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=Z+6gyXaoULimWl06N2s/THvUqQVrif8nQUyYQeQExqItjTrRtLz4fhLuReZr+Gf9i
-	 6K1sl4R9nnUFYkPKpyY4VY13WGRg1EHQ3yHh/9LH4F4XvNYvRoOvMzfobTBJMuF/DU
-	 FZOQSFCU2rcSYgVenQro4Lc0vKyG0rKUZRO75KHf6td2yDDzhnIn8UuXmuUpFd5GRs
-	 10wEL+5TB8bXu3zQL2f7ntPYKmCNLoD42L1eydjFBqpWypx6y488YiFQGIC1/qFD2a
-	 u7fiZ1u2T/PseEcelGcLwcMOKY91jKD1Yieko3L5N7YrzFYa/7/hVjlPqCBmjKEfg0
-	 Pq2bwEbRVr1gQ==
+	b=N5kVSD59TOYvQG3tJS/wqUnlJ0rN35pR/DbcHm7T2rrV+pa0q4I0HxsBRtdcDuSsX
+	 DrnGO7PL7Bj10ytBJmjOT5aqG96uxnu1OAXmEWjXZNVqS1Ye1TZttqMD8J90IROwkV
+	 gukOMrKrdVis5NZsnxmddsnxitbyYpbF07VmX5MUh66j4bfh8rtlenwIjYRFkZH44g
+	 /b9wLj/K+t4INa7Jp8g14edA/UThEi22K0OGiJVYZPJfvUq3HZtKFK/l000+4RxA4F
+	 c9GvzLTQ+crmNpy9rtpZpX6fGIhm3Fv2RvbIyTDimlv5AJLU4kP+ziiR2ckKBN08bR
+	 Z96mBABTu6Dew==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 74D7D60893;
-	Tue,  3 Feb 2026 17:40:48 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id 1300DF4
- for <intel-wired-lan@lists.osuosl.org>; Tue,  3 Feb 2026 17:40:47 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 70919608C4;
+	Tue,  3 Feb 2026 17:40:53 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 28E1913D
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  3 Feb 2026 17:40:52 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id EEB4840A46
- for <intel-wired-lan@lists.osuosl.org>; Tue,  3 Feb 2026 17:40:46 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 033AF40205
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  3 Feb 2026 17:40:52 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id mowg-cLIjpAR for <intel-wired-lan@lists.osuosl.org>;
- Tue,  3 Feb 2026 17:40:46 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id DYLpGOF1nKGx for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  3 Feb 2026 17:40:51 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.129.124;
  helo=us-smtp-delivery-124.mimecast.com; envelope-from=ivecera@redhat.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org BBD0140A7B
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org BBD0140A7B
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org D1BC440025
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org D1BC440025
 Received: from us-smtp-delivery-124.mimecast.com
  (us-smtp-delivery-124.mimecast.com [170.10.129.124])
- by smtp4.osuosl.org (Postfix) with ESMTPS id BBD0140A7B
- for <intel-wired-lan@lists.osuosl.org>; Tue,  3 Feb 2026 17:40:45 +0000 (UTC)
-Received: from mx-prod-mc-03.mail-002.prod.us-west-2.aws.redhat.com
+ by smtp2.osuosl.org (Postfix) with ESMTPS id D1BC440025
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  3 Feb 2026 17:40:50 +0000 (UTC)
+Received: from mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com
  (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
  relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-197-BNtItwj8P-il7I9leF_O1A-1; Tue,
- 03 Feb 2026 12:40:40 -0500
-X-MC-Unique: BNtItwj8P-il7I9leF_O1A-1
-X-Mimecast-MFC-AGG-ID: BNtItwj8P-il7I9leF_O1A_1770140437
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-249-9U3qrlHUM5qeUpQnKAN7Cg-1; Tue,
+ 03 Feb 2026 12:40:46 -0500
+X-MC-Unique: 9U3qrlHUM5qeUpQnKAN7Cg-1
+X-Mimecast-MFC-AGG-ID: 9U3qrlHUM5qeUpQnKAN7Cg_1770140443
 Received: from mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com
  (mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.4])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by mx-prod-mc-03.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
- id 17F361956048; Tue,  3 Feb 2026 17:40:37 +0000 (UTC)
+ by mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
+ id 5144B19560A1; Tue,  3 Feb 2026 17:40:43 +0000 (UTC)
 Received: from p16v.luc.cera.cz (unknown [10.45.224.28])
  by mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP
- id C47B73001DBA; Tue,  3 Feb 2026 17:40:30 +0000 (UTC)
+ id 6A61C30001A7; Tue,  3 Feb 2026 17:40:37 +0000 (UTC)
 From: Ivan Vecera <ivecera@redhat.com>
 To: netdev@vger.kernel.org
 Cc: Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
@@ -86,8 +86,8 @@ Cc: Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
  Vadim Fedorenko <vadim.fedorenko@linux.dev>,
  intel-wired-lan@lists.osuosl.org, linux-kernel@vger.kernel.org,
  linux-rdma@vger.kernel.org
-Date: Tue,  3 Feb 2026 18:39:57 +0100
-Message-ID: <20260203174002.705176-5-ivecera@redhat.com>
+Date: Tue,  3 Feb 2026 18:39:58 +0100
+Message-ID: <20260203174002.705176-6-ivecera@redhat.com>
 In-Reply-To: <20260203174002.705176-1-ivecera@redhat.com>
 References: <20260203174002.705176-1-ivecera@redhat.com>
 MIME-Version: 1.0
@@ -95,24 +95,23 @@ Content-Transfer-Encoding: 8bit
 X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.4
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=redhat.com; 
- s=mimecast20190719; t=1770140444;
+ s=mimecast20190719; t=1770140449;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=swufWl6SHGcyC7YD5gze37xCr7gFlNxzAIYlJ+GmO3U=;
- b=HjZRK6xYnGvMm4CuO16ZF6B3zXudPyDHmnlTE5DaNbHH69ISPTq2yZua9UtVX5AAOKnN6X
- FioiWT15/AJYrePS82C1aWNDiQFIn/gYu0PXMibFcKFQrknWrZZ4nUQPGfN1hdROqXcEAv
- SANcUvI0NO2q4F1mX6YcFTpSNNhgMCg=
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ bh=HBmYOQu1HbXXIGYjKiGL7F/z2NmzMJqt9ZutoxF0liM=;
+ b=GcWfc6HwlUcPFomo+wkLQZW0fGgOen5KmssfOF6Doz7/ZYsb1fj7R5cQAUfkwjZ0kST+qK
+ Y74VefylB169HVFcopaVDmeY2//jAoCTd/roY/l5UuKFs8nH8JIj2WzxGs/vvBwYdy9AJH
+ tRuT5pmyHyAxQTFerhugaLLtE+U2CB4=
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=redhat.com
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (1024-bit key,
- unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=HjZRK6xY
-Subject: [Intel-wired-lan] [PATCH net-next v5 4/9] dpll: Support dynamic pin
- index allocation
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=GcWfc6Hw
+Subject: [Intel-wired-lan] [PATCH net-next v5 5/9] dpll: zl3073x: Add
+ support for mux pin type
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -128,142 +127,32 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Allow drivers to register DPLL pins without manually specifying a pin
-index.
+Add parsing for the "mux" string in the 'connection-type' pin property
+mapping it to DPLL_PIN_TYPE_MUX.
 
-Currently, drivers must provide a unique pin index when calling
-dpll_pin_get(). This works well for hardware-mapped pins but creates
-friction for drivers handling virtual pins or those without a strict
-hardware indexing scheme.
-
-Introduce DPLL_PIN_IDX_UNSPEC (U32_MAX). When a driver passes this
-value as the pin index:
-1. The core allocates a unique index using an IDA
-2. The allocated index is mapped to a range starting above `INT_MAX`
-
-This separation ensures that dynamically allocated indices never collide
-with standard driver-provided hardware indices, which are assumed to be
-within the `0` to `INT_MAX` range. The index is automatically freed when
-the pin is released in dpll_pin_put().
+Recognizing this type in the driver allows these pins to be taken as
+parent pins for pin-on-pin pins coming from different modules (e.g.
+network drivers).
 
 Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 Signed-off-by: Ivan Vecera <ivecera@redhat.com>
 ---
-v2:
-* fixed integer overflow in dpll_pin_idx_free()
----
- drivers/dpll/dpll_core.c | 48 ++++++++++++++++++++++++++++++++++++++--
- include/linux/dpll.h     |  2 ++
- 2 files changed, 48 insertions(+), 2 deletions(-)
+ drivers/dpll/zl3073x/prop.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/dpll/dpll_core.c b/drivers/dpll/dpll_core.c
-index b05fe2ba46d91..59081cf2c73ae 100644
---- a/drivers/dpll/dpll_core.c
-+++ b/drivers/dpll/dpll_core.c
-@@ -10,6 +10,7 @@
- 
- #include <linux/device.h>
- #include <linux/err.h>
-+#include <linux/idr.h>
- #include <linux/property.h>
- #include <linux/slab.h>
- #include <linux/string.h>
-@@ -24,6 +25,7 @@ DEFINE_XARRAY_FLAGS(dpll_device_xa, XA_FLAGS_ALLOC);
- DEFINE_XARRAY_FLAGS(dpll_pin_xa, XA_FLAGS_ALLOC);
- 
- static RAW_NOTIFIER_HEAD(dpll_notifier_chain);
-+static DEFINE_IDA(dpll_pin_idx_ida);
- 
- static u32 dpll_device_xa_id;
- static u32 dpll_pin_xa_id;
-@@ -464,6 +466,36 @@ void dpll_device_unregister(struct dpll_device *dpll,
- }
- EXPORT_SYMBOL_GPL(dpll_device_unregister);
- 
-+static int dpll_pin_idx_alloc(u32 *pin_idx)
-+{
-+	int ret;
-+
-+	if (!pin_idx)
-+		return -EINVAL;
-+
-+	/* Alloc unique number from IDA. Number belongs to <0, INT_MAX> range */
-+	ret = ida_alloc(&dpll_pin_idx_ida, GFP_KERNEL);
-+	if (ret < 0)
-+		return ret;
-+
-+	/* Map the value to dynamic pin index range <INT_MAX+1, U32_MAX> */
-+	*pin_idx = (u32)ret + INT_MAX + 1;
-+
-+	return 0;
-+}
-+
-+static void dpll_pin_idx_free(u32 pin_idx)
-+{
-+	if (pin_idx <= INT_MAX)
-+		return; /* Not a dynamic pin index */
-+
-+	/* Map the index value from dynamic pin index range to IDA range and
-+	 * free it.
-+	 */
-+	pin_idx -= (u32)INT_MAX + 1;
-+	ida_free(&dpll_pin_idx_ida, pin_idx);
-+}
-+
- static void dpll_pin_prop_free(struct dpll_pin_properties *prop)
- {
- 	kfree(prop->package_label);
-@@ -521,9 +553,18 @@ dpll_pin_alloc(u64 clock_id, u32 pin_idx, struct module *module,
- 	struct dpll_pin *pin;
- 	int ret;
- 
-+	if (pin_idx == DPLL_PIN_IDX_UNSPEC) {
-+		ret = dpll_pin_idx_alloc(&pin_idx);
-+		if (ret)
-+			return ERR_PTR(ret);
-+	} else if (pin_idx > INT_MAX) {
-+		return ERR_PTR(-EINVAL);
-+	}
- 	pin = kzalloc(sizeof(*pin), GFP_KERNEL);
--	if (!pin)
--		return ERR_PTR(-ENOMEM);
-+	if (!pin) {
-+		ret = -ENOMEM;
-+		goto err_pin_alloc;
-+	}
- 	pin->pin_idx = pin_idx;
- 	pin->clock_id = clock_id;
- 	pin->module = module;
-@@ -551,6 +592,8 @@ dpll_pin_alloc(u64 clock_id, u32 pin_idx, struct module *module,
- 	dpll_pin_prop_free(&pin->prop);
- err_pin_prop:
- 	kfree(pin);
-+err_pin_alloc:
-+	dpll_pin_idx_free(pin_idx);
- 	return ERR_PTR(ret);
- }
- 
-@@ -654,6 +697,7 @@ void dpll_pin_put(struct dpll_pin *pin)
- 		xa_destroy(&pin->ref_sync_pins);
- 		dpll_pin_prop_free(&pin->prop);
- 		fwnode_handle_put(pin->fwnode);
-+		dpll_pin_idx_free(pin->pin_idx);
- 		kfree_rcu(pin, rcu);
- 	}
- 	mutex_unlock(&dpll_lock);
-diff --git a/include/linux/dpll.h b/include/linux/dpll.h
-index 8ed90dfc65f05..8fff048131f1d 100644
---- a/include/linux/dpll.h
-+++ b/include/linux/dpll.h
-@@ -240,6 +240,8 @@ int dpll_device_register(struct dpll_device *dpll, enum dpll_type type,
- void dpll_device_unregister(struct dpll_device *dpll,
- 			    const struct dpll_device_ops *ops, void *priv);
- 
-+#define DPLL_PIN_IDX_UNSPEC	U32_MAX
-+
- struct dpll_pin *
- dpll_pin_get(u64 clock_id, u32 dev_driver_id, struct module *module,
- 	     const struct dpll_pin_properties *prop);
+diff --git a/drivers/dpll/zl3073x/prop.c b/drivers/dpll/zl3073x/prop.c
+index 4ed153087570b..ad1f099cbe2b5 100644
+--- a/drivers/dpll/zl3073x/prop.c
++++ b/drivers/dpll/zl3073x/prop.c
+@@ -249,6 +249,8 @@ struct zl3073x_pin_props *zl3073x_pin_props_get(struct zl3073x_dev *zldev,
+ 			props->dpll_props.type = DPLL_PIN_TYPE_INT_OSCILLATOR;
+ 		else if (!strcmp(type, "synce"))
+ 			props->dpll_props.type = DPLL_PIN_TYPE_SYNCE_ETH_PORT;
++		else if (!strcmp(type, "mux"))
++			props->dpll_props.type = DPLL_PIN_TYPE_MUX;
+ 		else
+ 			dev_warn(zldev->dev,
+ 				 "Unknown or unsupported pin type '%s'\n",
 -- 
 2.52.0
 
