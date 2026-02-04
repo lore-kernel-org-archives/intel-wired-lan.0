@@ -1,133 +1,119 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5CA78E9D408
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EAD43E9D409
 	for <intel-wired-lan@archiver.kernel.org>; Wed,  4 Feb 2026 16:22:31 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 1C5E740CB8;
+	by smtp3.osuosl.org (Postfix) with ESMTP id AD75460F1A;
 	Wed,  4 Feb 2026 16:22:31 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id pI-ynri7AIeW; Wed,  4 Feb 2026 16:22:30 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 4oHbV9Qm4mS8; Wed,  4 Feb 2026 16:22:29 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9B94F40CDB
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 78E9A60DED
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1770222150;
-	bh=U2SZUJ4vwKEV8AGXg/Pcz7quXw/+sB9ZkQglPIRsmo8=;
-	h=From:Date:To:Cc:Subject:List-Id:List-Unsubscribe:List-Archive:
+	s=default; t=1770222149;
+	bh=5Z2IM4Z35Vn6qnneQ2FOXC3Xxl6YzIbYQR2DMfu8vCY=;
+	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:From;
-	b=HLhQtuPls0EnANxJ0k7QW7Bqa9WbcZmAA5c1zk/wuFVms+FOFkiIVfkTL6NX62wtJ
-	 YAuq7hSl63TgcANPxVIBdiGk4kCrUQilQMQRINPCVQ5SGtZf3bHUFS0z6+HdzYbV/J
-	 4Uhg0b/lE97JBVteftyf0cro6Ng59DBaLeYnVF9NCawK9Yrybyd/F2A6CEufCzx+iB
-	 Li7VNi9Z97ZjpBiTg1u82UJ1lWUMEqdTO+uzmy0xvNb7nLJP1bb0WYxJ4F724a2Rzd
-	 sL4CV6O+7gp9IWZynK6MQpiad9puodj1HFmuE99dDlTm0CluAotj+YshvXyrQS+kV8
-	 x0JHVSmLsn+LA==
+	b=lI4tyBdoE9qpxD6kEZctHPh03cxCwNC8HbTVCnxt9poMI+7K6Z9uShD8KJqlJ7Drk
+	 nZd8z7+8gnrvftQAj9PmzBO+GuzMbGEQ+kw31QAn0thcUlKYgCUiGdSTqKmG1J7zCT
+	 bWT7kypPlioDxNc4AMweljRUrUvwGyuxwRVb3nD/OadMPW1u9ovM2vDCYRKLLB5OqS
+	 p81NQupExQFL95pTmQJW+T+Q38Li3XoNVgMeGmSztmydK6jWZAEFOhK43Q4zEZdzVN
+	 QRlD5KMTGx1Zi7QfiMaEx5xeulA/H7+p9uh7deiN1XBTPqo49/hdmiVgo6h++xSZiq
+	 +E5CvtbJEG3OA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 9B94F40CDB;
-	Wed,  4 Feb 2026 16:22:30 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id A4F89F4
- for <intel-wired-lan@lists.osuosl.org>; Wed,  4 Feb 2026 10:15:57 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 78E9A60DED;
+	Wed,  4 Feb 2026 16:22:29 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 8782EF4
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  4 Feb 2026 04:48:36 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 867CE405E8
- for <intel-wired-lan@lists.osuosl.org>; Wed,  4 Feb 2026 10:15:57 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 7230483EB0
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  4 Feb 2026 04:48:36 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Fox0-e7GqD3t for <intel-wired-lan@lists.osuosl.org>;
- Wed,  4 Feb 2026 10:15:57 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id KKapFKi3tZbR for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  4 Feb 2026 04:48:35 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2607:f8b0:4864:20::f44; helo=mail-qv1-xf44.google.com;
- envelope-from=enelsonmoore@gmail.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org B9BA54016B
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B9BA54016B
-Received: from mail-qv1-xf44.google.com (mail-qv1-xf44.google.com
- [IPv6:2607:f8b0:4864:20::f44])
- by smtp2.osuosl.org (Postfix) with ESMTPS id B9BA54016B
- for <intel-wired-lan@lists.osuosl.org>; Wed,  4 Feb 2026 10:15:56 +0000 (UTC)
-Received: by mail-qv1-xf44.google.com with SMTP id
- 6a1803df08f44-89505dd3e24so47354126d6.1
- for <intel-wired-lan@lists.osuosl.org>; Wed, 04 Feb 2026 02:15:56 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1770200155; cv=none;
- d=google.com; s=arc-20240605;
- b=IRgSS1njE/4udUNlGeL47rtcTmDZF0geqr1ErmTHou1ufFudjFIjnab0N/7JHKwh1K
- 8zE64bp64je2pP9bflBudpiuF0iEr/xGpe16p5//3yjHom5Nr+sqd4ty2DlUlnoSDpNZ
- iJPPvbtYU1RNW2hy5RgYfwQ/Ainy2bggJM1iJO6fk+HZirf0LRgdo7fo4supc0q4ahkS
- w4+/nWXq1K48Js5mxIRvXoNTAxToKrgWX3xyswNWxEUep1mF+jedkACk6IIfL4PBwkCG
- iVLd2Xj3cLMIYR18AZsjM9O7Xuz6eEyPcZ6nMgAsKlKRP2kSwE5u8kd0IfH/7a6Bnq40
- q54A==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com;
- s=arc-20240605; 
- h=cc:to:subject:message-id:date:from:mime-version:dkim-signature;
- bh=U2SZUJ4vwKEV8AGXg/Pcz7quXw/+sB9ZkQglPIRsmo8=;
- fh=DgrC5eV8xnKVDLsEXlnbbvfzwVTsMVL4bQXYB2+TjVg=;
- b=eUoOT8vhxMhrn3BXFsmPsPy0+3aXyaLIMU53SnGmr1gFE5+o4gy/8v20OxJXN7Fejp
- qwi4A94UZzdGJBkvNrJUvnyDSEZ+cN1BJTIkwkL5eoyO5QhzHSKe+Bdy2aDvjNODwKx2
- wj7pkXH9WvTCTNhU9hSgsUN8w677ORdYi9/EY0qkIPS56kE293rJGLK3PLC/iITgGpJC
- KnnBvcaIpcizliJBArfuWK8psUpvMcLYvn3KTdydS+g1xYtlIycGLGLljYMzLNu6cLW0
- yXCJ0/ePrNOyVQYVDhyWEBc1PN18msP65HU4oTEe22bvzckS2uH6Gpnj32ph0TIVJsw+
- hPrw==; darn=lists.osuosl.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+ client-ip=2607:f8b0:4864:20::633; helo=mail-pl1-x633.google.com;
+ envelope-from=kmta1236@gmail.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org A268583EA8
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org A268583EA8
+Received: from mail-pl1-x633.google.com (mail-pl1-x633.google.com
+ [IPv6:2607:f8b0:4864:20::633])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id A268583EA8
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  4 Feb 2026 04:48:35 +0000 (UTC)
+Received: by mail-pl1-x633.google.com with SMTP id
+ d9443c01a7336-2a90055b9e9so1643965ad.1
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 03 Feb 2026 20:48:35 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20230601; t=1770200155; x=1770804955;
- h=cc:to:subject:message-id:date:from:mime-version:x-gm-gg
- :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
- bh=U2SZUJ4vwKEV8AGXg/Pcz7quXw/+sB9ZkQglPIRsmo8=;
- b=pn4J2SUt8lm6KAvwSgqIw8cEMOGyw2JyTiNiHwdaLfq095kF84u/mEXoPt66+LYV4t
- aJTu+K/m+wAolb6XHMBakCckHQVKsAfE7zmM5vSiexutwpiiM0tCiKSG4fT8QFtbabFf
- F2h/Eh+KmZvKn1edCSQus13q/+T95W1Qe4ERCF+jv/oDObtlCbHiTeeuvHfHcqgPnkUe
- kmqULv9mz+hdUoIC/AZEytURgW64oC8euC9rHbeAo3f1qm2YuZbgLaJfb+Q2zoLVQbwh
- R6v+6zDhGA3KokXH/8mAu5MevnTYeyBBZszVCexCvdQkrsKF1qzIbg5BDUTwJ9wUM8MB
- I/xg==
-X-Gm-Message-State: AOJu0YxLf6iYxm4j3pVMCoHWXOg8Pd3zbuwPFGBbyxdnigDUoao2N+h5
- D4AztWs8wU5hEDAQjoNl/jEzq23KX/uFomRt+D63cqi5Hl3lnujEk9cFV02GlWQjFQ7CvpsixB/
- c4bVqp+nHjeZ5haZVYxeHiXhIeRRovJ6bJBQyx4k=
-X-Gm-Gg: AZuq6aJBFRxOueslV/Qn+Oc7peZfIOqOKawZZruDGfLEAVe4p6ck7aqxgEbRJe9XyAE
- 84SHUFEy/l40Vr3310DCBcDMnUoUDhSePkr4ms49ZWIfvTV66f2lugWZ6iMRP5NTp95PUQfh+sb
- 7xZ0OaENaBEoMHyUiWF8SHHohah+8yuFORSpTimvgesxD9Z8ZGaLIgz9iR/qzV/ltaUH4BsTAIT
- 2HYbHm13eALkmnxbAjhvTpKcGBlofZFqwtdwMhnSgLoOilk9vfigpI1ZBYlJ9rcTljXmR7dWOTJ
- LPaGs+4oLmDRNokjkCQHtxg7s4aNh1k7RLZuxrQIKG8F4r+GY4HzKGRb
-X-Received: by 2002:a05:6214:410d:b0:894:5f6e:fde3 with SMTP id
- 6a1803df08f44-89522101930mr33818186d6.19.1770200155305; Wed, 04 Feb 2026
- 02:15:55 -0800 (PST)
+ d=1e100.net; s=20230601; t=1770180515; x=1770785315;
+ h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+ :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+ :message-id:reply-to;
+ bh=5Z2IM4Z35Vn6qnneQ2FOXC3Xxl6YzIbYQR2DMfu8vCY=;
+ b=njA1t6YkiMrONUmtS7Aq5BHfkroRSh91LhDvAUWvf6klVI2vH2Xd/ReyWpsi4txuBs
+ GE4tRLPGWY8ykEhIkOEsPcGccX3ewCqxJfuCuyq5wBKeORGCEp1JD462+3mQ6sN5s0I5
+ CHs22S5RwieAlyTtIIYsjIjKZ11v9vt++Pr00/lHw2LYUbFD+xbQlhqB1NEg3jby7K65
+ CnIAaCzyX0xRFltlLgXxOBdNjJj/nPl6mPUkVrxaqXH8ZZkSo/hu6S1bPQkAB3DAquG5
+ n3nv/UoXJULyQAB2RXbZ6tAQvqfNWABS29Ar3Sdeov3dOcVZE/MaCveepM7iN8RBoLB/
+ LxkQ==
+X-Forwarded-Encrypted: i=1;
+ AJvYcCWd6zyTuhqDroJpBB9VFVznY7SiIwTXlVFJnL7kwZXjkrTGA9JNTJ/7O2vrbLcs6XUyiBVOxj7DgUiHNe63gaU=@lists.osuosl.org
+X-Gm-Message-State: AOJu0YxKF4thvnMwqOHj8YEd7DLc9PBOemTjFO0g7Hg66jz6R69PcrZ7
+ bNFNQq1F3c4o8t7JaSWaGJkH9PkflQh3k58tD8DD7lE0oFwz9/swur+M
+X-Gm-Gg: AZuq6aKAnwHQgqznL7ZSpY95PMOJbGWzFloxM1OFJS25k01FX6eVJhdSe33aKV8Dtdu
+ XZwGcJ3zHUBmereJaNr44EBx31J9Y4NorbEGplFk64os0aJHmdi2hWMbpvCktU7eMcUk43Qmkvg
+ o1OKrQyrLgVz9DBpgUxmmnmUuhNRPzl+xWYFLsngiMXZ06pCm5RtzfLm4X1cInkGN55C6CMx0AS
+ m0Z63Lz3HmyuHs5PoWpg0g0R4Hg7mD1Dv5Y3b4uQFqZXFp6DSsuVQFwvY8OrwmNU3qOlbKe78GS
+ IBVs/YbGtaYwEluJD3m9ECdnmE1VZC4WAzAf7+eKel7ujNVwFblq2O3NE/VyayQ73JV5UQQqKLF
+ ZgFv0Hkw/32AssUlRnjFbt0z1gP8Gd0/uz0mv5Zc3iMD103PRY+gOOkHqERNlpAEyPtOa323GIR
+ EYiNJ6r59blMPnUXmLTOtZa/ZawrqKYMrSKxFD2/iZhViWWYdvJExdE6XJ0LEU23rymk69VV1B
+X-Received: by 2002:a17:902:e54c:b0:29e:facd:7c02 with SMTP id
+ d9443c01a7336-2a933e68cf0mr20042835ad.28.1770180514780; 
+ Tue, 03 Feb 2026 20:48:34 -0800 (PST)
+Received: from dpc2500057.. (fsb6a9315e.tkyc502.ap.nuro.jp. [182.169.49.94])
+ by smtp.gmail.com with ESMTPSA id
+ d9443c01a7336-2a933977e8bsm9503835ad.85.2026.02.03.20.48.33
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Tue, 03 Feb 2026 20:48:34 -0800 (PST)
+From: Keita Morisaki <kmta1236@gmail.com>
+To: Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Cc: netdev@vger.kernel.org, intel-wired-lan@lists.osuosl.org,
+ Keita Morisaki <kmta1236@gmail.com>
+Date: Wed,  4 Feb 2026 13:48:22 +0900
+Message-Id: <20260204044822.2754803-1-kmta1236@gmail.com>
+X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
-From: Ethan Nelson-Moore <enelsonmoore@gmail.com>
-Date: Wed, 4 Feb 2026 02:15:44 -0800
-X-Gm-Features: AZwV_Qhu3PjSdqm3E8rcFb457xyh_rZqtpf1XguM6GwwOWxTIMYwBBEqTi_NSxY
-Message-ID: <CADkSEUhXO-01yaNUawo58MQ=xOC5bCDHWCFrCwe6TX2D+WVR=w@mail.gmail.com>
-To: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org, 
- linux-wireless@vger.kernel.org
-Cc: Tony Nguyen <anthony.l.nguyen@intel.com>, 
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Andrew Lunn <andrew+netdev@lunn.ch>, 
- "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
- Stanislav Yakovlev <stas.yakovlev@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 X-Mailman-Approved-At: Wed, 04 Feb 2026 16:22:28 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20230601; t=1770200155; x=1770804955; darn=lists.osuosl.org;
- h=cc:to:subject:message-id:date:from:mime-version:from:to:cc:subject
- :date:message-id:reply-to;
- bh=U2SZUJ4vwKEV8AGXg/Pcz7quXw/+sB9ZkQglPIRsmo8=;
- b=fysj+2ZHyMzT1akMiSg4opTvNf+dMZsX0kwG9aaKpqib+uTENxcdKJcrDEESdRlPeN
- KKIST/iwbDWmW1xoiIF6J6WhO6/VzIO8IudsL+MggrOC+8PDAGOaAOR7b7Z7EOY7QJW2
- uuY5BlI/CzOsxcMg37wxOS9LEpzUiPAKgyPaAGxZS0GMYhcV55UgDfZhuBV0Q4lW/B6W
- byk/OURzjia8TqQHi/4EwR+fVOWoY/LKp/8ZqosCq2y5tu3d4TKgHUKbXEwm8Qtm2DFn
- q7UEz9YDTtw6DT32Tq2aSvP4hxFP2Yah/xANk7NLeg1DpGH495S8H0Eti8H0D7GG6ucO
- 3L5A==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ d=gmail.com; s=20230601; t=1770180515; x=1770785315; darn=lists.osuosl.org;
+ h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+ :to:from:from:to:cc:subject:date:message-id:reply-to;
+ bh=5Z2IM4Z35Vn6qnneQ2FOXC3Xxl6YzIbYQR2DMfu8vCY=;
+ b=nIN77rG2JZfmgNC6Viugn7bNyVht0tU6r4dngci/5ajn1/9PDm7uZdU7b48+JOLSr8
+ bSNsUHkJVDZmY4F6NxzUp17/GH3RBS5Hzk73p3F9EDmsKyPaJb16DqJwVYC4JONdk4oL
+ j9rxFC2MIiJUZvb7x1Zs4spHUIq+Cclp+KRroVHwMI8YIda8axkBRTFXZnEMyRrLhe8f
+ J9xDy3jP0v4NBWiJ4vfVTvVgpAWNZVdJ6g2F6kFGlZit+HgQSgtnpGdmDDPkTDR+XSN4
+ 6LpWMMO8EO6Hss8U6sJ2+qw83qsT2QIhm5wMfvy02uO8qKhfE0tzkpKi4wl8F8N6JUR4
+ zOlA==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=gmail.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20230601 header.b=fysj+2ZH
-Subject: [Intel-wired-lan] PCI ID conflict between ipw2x00 and i40e
+ header.s=20230601 header.b=nIN77rG2
+Subject: [Intel-wired-lan] [PATCH] ice: fix race condition in TX timestamp
+ ring cleanup
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -143,11 +129,88 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-I have written a script to find device IDs that are claimed by
-multiple drivers in the kernel. It has found that the PCI ID 8086:104f
-is supported by both drivers/net/wireless/intel/ipw2x00 and
-drivers/net/ethernet/intel/i40e. I assume the i40e one is correct,
-since that's what the ID is assigned to in the pci.ids database. Can
-anyone at Intel confirm this?
+Fix a race condition between ice_free_tx_tstamp_ring() and ice_tx_map()
+that can cause a NULL pointer dereference.
 
-Ethan
+ice_free_tx_tstamp_ring currently clears the ICE_TX_FLAGS_TXTIME flag
+after NULLing the tstamp_ring. This could allow a concurrent ice_tx_map
+call on another CPU to dereference the tstamp_ring, which could lead to
+a NULL pointer dereference.
+
+  CPU A:ice_free_tx_tstamp_ring() | CPU B:ice_tx_map()
+  --------------------------------|---------------------------------
+  tx_ring->tstamp_ring = NULL     |
+                                  | ice_is_txtime_cfg() -> true
+                                  | tstamp_ring = tx_ring->tstamp_ring
+                                  | tstamp_ring->count  // NULL deref!
+  flags &= ~ICE_TX_FLAGS_TXTIME   |
+
+Fix by
+1. ice_free_tx_tstamp_ring: Clear the flag before NULLing the pointer.
+   Use WRITE_ONCE() to prevent store tearing, and smp_wmb() to
+   prevent re-ordering.
+2. ice_tx_map: Add smp_rmb() after the flag check to order the flag
+   read before the pointer read, use READ_ONCE() for the pointer, and
+   add a NULL check. If tstamp_ring is NULL, fall through to the
+   regular TX ring kick to avoid leaving packets stuck in the ring.
+
+Fixes: ccde82e90946 ("ice: add E830 Earliest TxTime First Offload support")
+Signed-off-by: Keita Morisaki <kmta1236@gmail.com>
+---
+ drivers/net/ethernet/intel/ice/ice_txrx.c | 19 ++++++++++++++-----
+ 1 file changed, 14 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
+index ad76768a42323..d48740f2b626a 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.c
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
+@@ -190,9 +190,10 @@ void ice_free_tstamp_ring(struct ice_tx_ring *tx_ring)
+ void ice_free_tx_tstamp_ring(struct ice_tx_ring *tx_ring)
+ {
+ 	ice_free_tstamp_ring(tx_ring);
++	WRITE_ONCE(tx_ring->flags, tx_ring->flags & ~ICE_TX_FLAGS_TXTIME);
++	smp_wmb();	/* order flag clear before pointer NULL; pairs with ice_tx_map() */
+ 	kfree_rcu(tx_ring->tstamp_ring, rcu);
+-	tx_ring->tstamp_ring = NULL;
+-	tx_ring->flags &= ~ICE_TX_FLAGS_TXTIME;
++	WRITE_ONCE(tx_ring->tstamp_ring, NULL);
+ }
+ 
+ /**
+@@ -1519,13 +1520,20 @@ ice_tx_map(struct ice_tx_ring *tx_ring, struct ice_tx_buf *first,
+ 		return;
+ 
+ 	if (ice_is_txtime_cfg(tx_ring)) {
+-		struct ice_tstamp_ring *tstamp_ring = tx_ring->tstamp_ring;
+-		u32 tstamp_count = tstamp_ring->count;
+-		u32 j = tstamp_ring->next_to_use;
++		struct ice_tstamp_ring *tstamp_ring;
++		u32 tstamp_count, j;
+ 		struct ice_ts_desc *ts_desc;
+ 		struct timespec64 ts;
+ 		u32 tstamp;
+ 
++		smp_rmb();	/* order flag read before pointer read */
++		tstamp_ring = READ_ONCE(tx_ring->tstamp_ring);
++		if (unlikely(!tstamp_ring))
++			goto ring_kick;
++
++		tstamp_count = tstamp_ring->count;
++		j = tstamp_ring->next_to_use;
++
+ 		ts = ktime_to_timespec64(first->skb->tstamp);
+ 		tstamp = ts.tv_nsec >> ICE_TXTIME_CTX_RESOLUTION_128NS;
+ 
+@@ -1553,6 +1561,7 @@ ice_tx_map(struct ice_tx_ring *tx_ring, struct ice_tx_buf *first,
+ 		tstamp_ring->next_to_use = j;
+ 		writel_relaxed(j, tstamp_ring->tail);
+ 	} else {
++ring_kick:
+ 		writel_relaxed(i, tx_ring->tail);
+ 	}
+ 	return;
+
+base-commit: 18f7fcd5e69a04df57b563360b88be72471d6b62
+-- 
+2.34.1
+
