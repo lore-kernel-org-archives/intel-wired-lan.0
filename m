@@ -4,95 +4,92 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C5195E9D3E6
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  4 Feb 2026 14:30:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D7770E9D3ED
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  4 Feb 2026 14:49:22 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 8120E60D62;
-	Wed,  4 Feb 2026 14:30:08 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 9420460D80;
+	Wed,  4 Feb 2026 14:49:22 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 7na0AxH6DQwS; Wed,  4 Feb 2026 14:30:07 +0000 (UTC)
+ id eXB2yDd7U-KC; Wed,  4 Feb 2026 14:49:21 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 1E05D60A55
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org BB66C60C2A
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1770215407;
-	bh=AsQa8W6KnKJ7vVh4W36ji+1sTPnT2pkn89GFbzErC2o=;
+	s=default; t=1770216561;
+	bh=6GGzvVi7/MoGKecYwgnZ4vfBdoYJ7BD2ohz6T5kGtys=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=zDkBxeFA9IUYEv3ZeZX6YWhl4+s5HxUbpR4NPxxWh2IgqDTLCt83tFbk0BqK/lKYC
-	 1q12SGiIaaJnsAO0AOIaClzPJnXuGqvcgVR+MhaSOtrNH1vSaRfDIgp84jKITUM4KX
-	 q17vwer3geqzllc7pGrRLwZI2ei4V4M+x3+NkanaacCQaMYJ4f0L9r+xdA0UyAKlLQ
-	 JX8Z/HpvvKND0hPv0NOZRM8Hn/tMdfcHM740FZj5n0Eq3YP/k26E//Md2gM4dthZTy
-	 UTGq5lNzkRSWCWX12eKsOFhGGTjD3s4/U1fi7I2nNhM3/TpJ3uODlHhGTpcIkb8wZl
-	 t3WuDRAo89PVg==
+	b=XtLET2C6QW4gnW7Fu3wHGqghqhQl3tZ7BtcA6lJ/U3guWLhISLEXY9uDrS3WQkOyF
+	 c8SwmGN344VBG0iEZ+1mNRqqAJR3EMd/qfkNS5IF8cNTB86fHqUhgrHOBWl2O1bbRl
+	 LQVG7M4JB/TXfP87wFTBVlab9gjuns6uKVivaW5hVOfa8Akw0KrP7IPxSuEg0E0mJB
+	 V9AezSUzn2QfUsIfIxK3tb20/pLW/Fl2d8wuRgZKXwZGAKXpqQlk7Mz1Kmxr+dEn9X
+	 5pjKBpGjMQwJaQsG95j3nal7G5JCYQRaPhviaxLQ6j4p6a/0d4XgTbZtrg8kqfduC/
+	 6RvMIpUHQHUOg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 1E05D60A55;
-	Wed,  4 Feb 2026 14:30:07 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 74F1BF4
- for <intel-wired-lan@lists.osuosl.org>; Wed,  4 Feb 2026 14:30:05 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id BB66C60C2A;
+	Wed,  4 Feb 2026 14:49:21 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id F1E61173
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  4 Feb 2026 14:49:19 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 6236F60BD9
- for <intel-wired-lan@lists.osuosl.org>; Wed,  4 Feb 2026 14:30:05 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id DD18040824
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  4 Feb 2026 14:49:19 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id dLwICvA-DNaP for <intel-wired-lan@lists.osuosl.org>;
- Wed,  4 Feb 2026 14:30:04 +0000 (UTC)
-X-Greylist: delayed 2282 seconds by postgrey-1.37 at util1.osuosl.org;
- Wed, 04 Feb 2026 14:30:04 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 7041B60C30
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7041B60C30
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=2a01:4f8:242:246e::2;
- helo=sipsolutions.net; envelope-from=johannes@sipsolutions.net;
- receiver=<UNKNOWN> 
-Received: from sipsolutions.net (s3.sipsolutions.net
- [IPv6:2a01:4f8:242:246e::2])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 7041B60C30
- for <intel-wired-lan@lists.osuosl.org>; Wed,  4 Feb 2026 14:30:04 +0000 (UTC)
-Received: by sipsolutions.net with esmtpsa
- (TLS1.3:ECDHE_X25519__RSA_PSS_RSAE_SHA256__AES_256_GCM:256)
- (Exim 4.98.2) (envelope-from <johannes@sipsolutions.net>)
- id 1vndIR-0000000EPxD-1SEs; Wed, 04 Feb 2026 14:51:55 +0100
-Message-ID: <f3ef31b332a5f28a20054d5e55e6024421f14dd1.camel@sipsolutions.net>
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Ethan Nelson-Moore <enelsonmoore@gmail.com>, 
- intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org, 
- linux-wireless@vger.kernel.org
-Cc: Tony Nguyen <anthony.l.nguyen@intel.com>, Przemek Kitszel	
- <przemyslaw.kitszel@intel.com>, Andrew Lunn <andrew+netdev@lunn.ch>, "David
- S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, Jakub
- Kicinski <kuba@kernel.org>,  Paolo Abeni <pabeni@redhat.com>, Stanislav
- Yakovlev <stas.yakovlev@gmail.com>
-Date: Wed, 04 Feb 2026 14:51:54 +0100
-In-Reply-To: <CADkSEUhXO-01yaNUawo58MQ=xOC5bCDHWCFrCwe6TX2D+WVR=w@mail.gmail.com>
-References: <CADkSEUhXO-01yaNUawo58MQ=xOC5bCDHWCFrCwe6TX2D+WVR=w@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.58.3 (3.58.3-1.fc43) 
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id PhZFiIefUhQq for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  4 Feb 2026 14:49:19 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org;
+ envelope-from=gregkh@linuxfoundation.org; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 03B43407F9
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 03B43407F9
+Received: from sea.source.kernel.org (sea.source.kernel.org
+ [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 03B43407F9
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  4 Feb 2026 14:49:18 +0000 (UTC)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+ by sea.source.kernel.org (Postfix) with ESMTP id 334EC4427E;
+ Wed,  4 Feb 2026 14:49:18 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 90373C4CEF7;
+ Wed,  4 Feb 2026 14:49:17 +0000 (UTC)
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: stable@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, patches@lists.linux.dev,
+ Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Jake Keller <jacob.e.keller@intel.com>,
+ IWL <intel-wired-lan@lists.osuosl.org>,
+ Jesse Brandeburg <jbrandeburg@cloudflare.com>,
+ Sasha Levin <sashal@kernel.org>
+Date: Wed,  4 Feb 2026 15:39:46 +0100
+Message-ID: <20260204143856.170523056@linuxfoundation.org>
+X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20260204143851.755002596@linuxfoundation.org>
+References: <20260204143851.755002596@linuxfoundation.org>
+User-Agent: quilt/0.69
+X-stable: review
+X-Patchwork-Hint: ignore
 MIME-Version: 1.0
-X-malware-bazaar: not-scanned
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt;
- c=relaxed/relaxed; 
- d=sipsolutions.net; s=mail; h=MIME-Version:Content-Transfer-Encoding:
- Content-Type:References:In-Reply-To:Date:Cc:To:From:Subject:Message-ID:Sender
- :Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:Resent-To:
- Resent-Cc:Resent-Message-ID; bh=AsQa8W6KnKJ7vVh4W36ji+1sTPnT2pkn89GFbzErC2o=; 
- t=1770215404; x=1771425004; b=c7ElgIRUuYAK0BFa3HrcBTVI7vmw/FgkmVog76bhl5BVZET
- d2j3cCw99mpyPMg/1oZE6wDFIRDTvYkwOfioNXHkjydOgZg4cGfcVs0qcA2qyQVwg2EDKna1he9wc
- sgkv58Fz+DFCC/mt3/u7l6Wmd9VlR+C9VQTbp858n44W6B0dWORsSt88ILz/959kHIPRymHsAzJsB
- gSHPzkv9XbmtYe7NsnKs4kQPQyVn0/9pE+sXcQNxMNsfRiAWE9NulLlTrJdyVe9L1WMmOisbjxvH1
- q1gOcF2wToEq5c5NZfgaTk4a8sWIc8+daszEu1jIhJOFn1RkJxNS5Z1HkvXSYEQg==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+Content-Transfer-Encoding: 8bit
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=linuxfoundation.org; 
+ s=korg; t=1770216558;
+ bh=z49r8F/N9pYXEvHtwTDjEobAwH73W5KPNVK7lGJgDLQ=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=IxMQvx8SlR5il+rxRBqHZpMneJxzNDdwLhNZ/rIZWsBK/EZhRvA7s7jbV8Xb/2dB/
+ V19HCKsYklkB9BXURkdkDEkWBsZDiV8n3duVAqUf1WC1zjiZsw3ej5WcAexeeBHIJ6
+ MbW/0K/E4kt9QRYcBQcWVpEoMvp2NSVLc/sLWkNw=
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
- header.from=sipsolutions.net
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=sipsolutions.net header.i=@sipsolutions.net
- header.a=rsa-sha256 header.s=mail header.b=c7ElgIRU
-Subject: Re: [Intel-wired-lan] PCI ID conflict between ipw2x00 and i40e
+ header.from=linuxfoundation.org
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (1024-bit key,
+ unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org
+ header.a=rsa-sha256 header.s=korg header.b=IxMQvx8S
+Subject: [Intel-wired-lan] [PATCH 5.10 123/161] ice: stop counting UDP csum
+ mismatch as rx_errors
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -108,22 +105,66 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Wed, 2026-02-04 at 02:15 -0800, Ethan Nelson-Moore wrote:
-> I have written a script to find device IDs that are claimed by
-> multiple drivers in the kernel. It has found that the PCI ID 8086:104f
-> is supported by both drivers/net/wireless/intel/ipw2x00 and
-> drivers/net/ethernet/intel/i40e. I assume the i40e one is correct,
-> since that's what the ID is assigned to in the pci.ids database. Can
-> anyone at Intel confirm this?
+5.10-stable review patch.  If anyone has any objections, please let me know.
 
-FWIW, I wouldn't be surprised if both are correct, and we just forgot
-about an almost 30 year (I think) old device ID assignment ... I'll try
-to figure out who even does these assignments etc., I don't know right
-now. Let's see if I can figure out anything for the ancient WiFi IDs,
-but I'm not very hopeful.
+------------------
 
-If we knew the subdevice IDs we could perhaps match on that, or add some
-code to have ipw2x00 reject PCIe devices, and i40e reject PCI devices,
-or something like that ...
+From: Jesse Brandeburg <jbrandeburg@cloudflare.com>
 
-johannes
+[ Upstream commit 05faf2c0a76581d0a7fdbb8ec46477ba183df95b ]
+
+Since the beginning, the Intel ice driver has counted receive checksum
+offload mismatches into the rx_errors member of the rtnl_link_stats64
+struct. In ethtool -S these show up as rx_csum_bad.nic.
+
+I believe counting these in rx_errors is fundamentally wrong, as it's
+pretty clear from the comments in if_link.h and from every other statistic
+the driver is summing into rx_errors, that all of them would cause a
+"hardware drop" except for the UDP checksum mismatch, as well as the fact
+that all the other causes for rx_errors are L2 reasons, and this L4 UDP
+"mismatch" is an outlier.
+
+A last nail in the coffin is that rx_errors is monitored in production and
+can indicate a bad NIC/cable/Switch port, but instead some random series of
+UDP packets with bad checksums will now trigger this alert. This false
+positive makes the alert useless and affects us as well as other companies.
+
+This packet with presumably a bad UDP checksum is *already* passed to the
+stack, just not marked as offloaded by the hardware/driver. If it is
+dropped by the stack it will show up as UDP_MIB_CSUMERRORS.
+
+And one more thing, none of the other Intel drivers, and at least bnxt_en
+and mlx5 both don't appear to count UDP offload mismatches as rx_errors.
+
+Here is a related customer complaint:
+https://community.intel.com/t5/Ethernet-Products/ice-rx-errros-is-too-sensitive-to-IP-TCP-attack-packets-Intel/td-p/1662125
+
+Fixes: 4f1fe43c920b ("ice: Add more Rx errors to netdev's rx_error counter")
+Cc: Tony Nguyen <anthony.l.nguyen@intel.com>
+Cc: Jake Keller <jacob.e.keller@intel.com>
+Cc: IWL <intel-wired-lan@lists.osuosl.org>
+Signed-off-by: Jesse Brandeburg <jbrandeburg@cloudflare.com>
+Acked-by: Jacob Keller <jacob.e.keller@intel.com>
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/net/ethernet/intel/ice/ice_main.c | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index a337a6826a845..b3ae457b4db6b 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -5441,7 +5441,6 @@ void ice_update_vsi_stats(struct ice_vsi *vsi)
+ 				    pf->stats.illegal_bytes +
+ 				    pf->stats.rx_len_errors +
+ 				    pf->stats.rx_undersize +
+-				    pf->hw_csum_rx_error +
+ 				    pf->stats.rx_jabber +
+ 				    pf->stats.rx_fragments +
+ 				    pf->stats.rx_oversize;
+-- 
+2.51.0
+
+
+
