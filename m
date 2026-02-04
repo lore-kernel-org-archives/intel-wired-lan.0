@@ -4,92 +4,100 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BF73AE9D401
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  4 Feb 2026 15:30:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A5059E9D405
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  4 Feb 2026 15:44:34 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 8574660DB5;
-	Wed,  4 Feb 2026 15:30:51 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 73277610B7;
+	Wed,  4 Feb 2026 15:44:34 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id PvJ8Z8xdZ5Xn; Wed,  4 Feb 2026 15:30:50 +0000 (UTC)
+ id 3ybdZ42Su0rS; Wed,  4 Feb 2026 15:44:33 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C3E3260DA5
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org DFDD261054
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1770219050;
-	bh=nSg6iWYacstPOCBbx9abXkax6U/R3jgtiYjbyOmOyVI=;
+	s=default; t=1770219871;
+	bh=7bTL/IL5JLOqTt0ruWIiRy8lRZlpcI5tPVzOHeLHfYQ=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=YP5sCIXCmv1ORYevEjoKcObA5E9PQcgkOW3MpHbBz17eY/LnkN5QDrHEneageDL56
-	 P9fMmiRdb/CZ09q+rktSEZzkuRSt/BVzD0KmayhqKAwL/eKrn/JnOdviKoL6dRe5fs
-	 ALZ8J0V9IdHxM5dOgNJHJFQ0019hwce3DOZCcjn6PpMVrxXOoaSSP4aTHnefBpmJbx
-	 t/pYJApVNozXCKgPHRiaFiRxHqghTFcZOR+n5xBBbmZzJW1rVgN3rRwpB096dF4r6l
-	 xjnHAiYmpmW9AwLMhp0eBh1YuTojpFbApPeGIuLQFigKQEbwG4EHDGWfNky3cle5Wh
-	 xMKsubuVUfHQQ==
+	b=S/35ylQH6az2ckSfTTmrAmIZDuuCudcwpJXjxGYM/iaup2gOrNLqGFdY7z1WEGHIW
+	 QIPDVCCIkLQEutYTOKUhXrXoe3AR504q8K89sRyrnI2/8K4HK9RZMZiIObsokgfpP0
+	 ugAmjYEkt7+enT6ThJ1M0S4GovZpIsPQt2Q7FFTMI3UFzWT8ffd9B60fzXD+bd8b4p
+	 A9zR7oEDhlU7IfI+xiWWm8DMDw3DmhuBkXmd6L9yerFu/bL7hafMxiAO8LxnQMrhhK
+	 c249kuY9/k+M8eqTQVlJfBl5+IoqMswaF0vutJRTgTp5LMqVLVP/yOR+auh9TyHant
+	 Wr5Mki6O3Om9Q==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id C3E3260DA5;
-	Wed,  4 Feb 2026 15:30:50 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id C4455F4
- for <intel-wired-lan@lists.osuosl.org>; Wed,  4 Feb 2026 15:30:49 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id DFDD261054;
+	Wed,  4 Feb 2026 15:44:30 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id BA251F5
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  4 Feb 2026 15:44:24 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id B241C60DA5
- for <intel-wired-lan@lists.osuosl.org>; Wed,  4 Feb 2026 15:30:49 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id B1D5483F00
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  4 Feb 2026 15:44:24 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 2zOA2s_5NGLu for <intel-wired-lan@lists.osuosl.org>;
- Wed,  4 Feb 2026 15:30:49 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org;
- envelope-from=gregkh@linuxfoundation.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org B99F660D7E
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B99F660D7E
-Received: from tor.source.kernel.org (tor.source.kernel.org
- [IPv6:2600:3c04:e001:324:0:1991:8:25])
- by smtp3.osuosl.org (Postfix) with ESMTPS id B99F660D7E
- for <intel-wired-lan@lists.osuosl.org>; Wed,  4 Feb 2026 15:30:48 +0000 (UTC)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by tor.source.kernel.org (Postfix) with ESMTP id A024C6013B;
- Wed,  4 Feb 2026 15:30:47 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D6C30C19423;
- Wed,  4 Feb 2026 15:30:46 +0000 (UTC)
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: stable@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, patches@lists.linux.dev,
- Tony Nguyen <anthony.l.nguyen@intel.com>,
- Jake Keller <jacob.e.keller@intel.com>,
- IWL <intel-wired-lan@lists.osuosl.org>,
- Jesse Brandeburg <jbrandeburg@cloudflare.com>,
- Sasha Levin <sashal@kernel.org>
-Date: Wed,  4 Feb 2026 15:40:06 +0100
-Message-ID: <20260204143852.734559013@linuxfoundation.org>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260204143851.857060534@linuxfoundation.org>
-References: <20260204143851.857060534@linuxfoundation.org>
-User-Agent: quilt/0.69
-X-stable: review
-X-Patchwork-Hint: ignore
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 9-o1fEAaErbY for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  4 Feb 2026 15:44:23 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.8;
+ helo=mgamail.intel.com; envelope-from=jakub.slepecki@intel.com;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org B760A83E9A
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B760A83E9A
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.8])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id B760A83E9A
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  4 Feb 2026 15:44:23 +0000 (UTC)
+X-CSE-ConnectionGUID: 3E5f0XtaRQaRy7hMgXEELw==
+X-CSE-MsgGUID: 0KF5+6fVS+yqr6SgIYvY9A==
+X-IronPort-AV: E=McAfee;i="6800,10657,11691"; a="88987087"
+X-IronPort-AV: E=Sophos;i="6.21,272,1763452800"; d="scan'208";a="88987087"
+Received: from orviesa010.jf.intel.com ([10.64.159.150])
+ by fmvoesa102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 04 Feb 2026 07:44:23 -0800
+X-CSE-ConnectionGUID: CiN9cfT+QQ6oak+3mG5LwA==
+X-CSE-MsgGUID: yzzJF2+6RhKZB9/RP/OxhA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.21,272,1763452800"; d="scan'208";a="209494108"
+Received: from hpe-dl385gen10.igk.intel.com ([10.91.240.117])
+ by orviesa010.jf.intel.com with ESMTP; 04 Feb 2026 07:44:21 -0800
+From: Jakub Slepecki <jakub.slepecki@intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+ przemyslaw.kitszel@intel.com, anthony.l.nguyen@intel.com,
+ michal.swiatkowski@linux.intel.com, jakub.slepecki@intel.com,
+ aleksandr.loktionov@intel.com
+Date: Wed,  4 Feb 2026 16:44:12 +0100
+Message-ID: <20260204154418.1285309-2-jakub.slepecki@intel.com>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20260204154418.1285309-1-jakub.slepecki@intel.com>
+References: <20260204154418.1285309-1-jakub.slepecki@intel.com>
 MIME-Version: 1.0
+Organization: Intel Technology Poland sp. z o.o. - ul. Slowackiego 173,
+ 80-298 Gdansk - KRS 101882 - NIP 957-07-52-316
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=linuxfoundation.org; 
- s=korg; t=1770219047;
- bh=ncWHsbe55fScPBoRp/erwYQt5J0YUH+Z5gwLVy/iP+I=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=wVrixGAB5qTV2Ann1ZklrFxLu2LtvVuo7SWXWBpAf+u6s9Y44t5doUSBYlz2AFTle
- ZhBCqpmNoKEi9whkef9PgTRUawzSW27xut8aoIUWqEa/Sk97HtBHYnYEFMqvEo2P08
- sukDlijLJO5yVp2XBnfEigdjCTT26gW0Pb02h+MU=
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1770219864; x=1801755864;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=dwcyIJF8VgjcMQ3xJeX68AIy1NtJFyfUkiIvEZTRHPw=;
+ b=ZV6XuF1O2iiX2/VgOs3Zry092byxM1rCGAT6Fh9VhgAI/SkWFPP/0Dr/
+ 2UqIQ7FCrlPez/iD+FzesjpJ6YVpdEPUPrCqmkE2Bt2VITiR++S8zm+zi
+ oZDosId0ZIBtEg46kIPnC69Yj7B6jo/Fv4O5l1m34q1Tmy5BFfRxmM5WI
+ 2nhCRkXT8FQHp2AGJt6Zyi+FYEoEwwBvPcbwk/J6/Bh2zAc7tbZbp3nvV
+ gLlZ8hlyeCl2UoxoDo5oknQz6yO4sDRWzfq6RH9ldS8rxvlUa3+Ff2DYQ
+ wKC1J3ArDdVirM6MrGQhfV2cuUI90AuO+HlgJqteTsLzOrqGW/ad9dEyL
+ g==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
- header.from=linuxfoundation.org
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (1024-bit key,
- unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org
- header.a=rsa-sha256 header.s=korg header.b=wVrixGAB
-Subject: [Intel-wired-lan] [PATCH 6.18 024/122] ice: stop counting UDP csum
- mismatch as rx_errors
+ header.from=intel.com
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=ZV6XuF1O
+Subject: [Intel-wired-lan] [PATCH iwl-next v4 1/7] ice: in dvm,
+ use outer VLAN in MAC, VLAN lookup
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -105,66 +113,55 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-6.18-stable review patch.  If anyone has any objections, please let me know.
+In double VLAN mode (DVM), outer VLAN is located a word earlier in
+the field vector compared to the single VLAN mode.  We already modify
+ICE_SW_LKUP_VLAN to use it but ICE_SW_LKUP_MAC_VLAN was left untouched,
+causing the lookup to match any packet with one or no layer of Dot1q.
+This change enables to fix cross-vlan loopback traffic using MAC,VLAN
+lookups.
 
-------------------
+Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Reviewed-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+Signed-off-by: Jakub Slepecki <jakub.slepecki@intel.com>
 
-From: Jesse Brandeburg <jbrandeburg@cloudflare.com>
-
-[ Upstream commit 05faf2c0a76581d0a7fdbb8ec46477ba183df95b ]
-
-Since the beginning, the Intel ice driver has counted receive checksum
-offload mismatches into the rx_errors member of the rtnl_link_stats64
-struct. In ethtool -S these show up as rx_csum_bad.nic.
-
-I believe counting these in rx_errors is fundamentally wrong, as it's
-pretty clear from the comments in if_link.h and from every other statistic
-the driver is summing into rx_errors, that all of them would cause a
-"hardware drop" except for the UDP checksum mismatch, as well as the fact
-that all the other causes for rx_errors are L2 reasons, and this L4 UDP
-"mismatch" is an outlier.
-
-A last nail in the coffin is that rx_errors is monitored in production and
-can indicate a bad NIC/cable/Switch port, but instead some random series of
-UDP packets with bad checksums will now trigger this alert. This false
-positive makes the alert useless and affects us as well as other companies.
-
-This packet with presumably a bad UDP checksum is *already* passed to the
-stack, just not marked as offloaded by the hardware/driver. If it is
-dropped by the stack it will show up as UDP_MIB_CSUMERRORS.
-
-And one more thing, none of the other Intel drivers, and at least bnxt_en
-and mlx5 both don't appear to count UDP offload mismatches as rx_errors.
-
-Here is a related customer complaint:
-https://community.intel.com/t5/Ethernet-Products/ice-rx-errros-is-too-sensitive-to-IP-TCP-attack-packets-Intel/td-p/1662125
-
-Fixes: 4f1fe43c920b ("ice: Add more Rx errors to netdev's rx_error counter")
-Cc: Tony Nguyen <anthony.l.nguyen@intel.com>
-Cc: Jake Keller <jacob.e.keller@intel.com>
-Cc: IWL <intel-wired-lan@lists.osuosl.org>
-Signed-off-by: Jesse Brandeburg <jbrandeburg@cloudflare.com>
-Acked-by: Jacob Keller <jacob.e.keller@intel.com>
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/net/ethernet/intel/ice/ice_main.c | 1 -
- 1 file changed, 1 deletion(-)
+No changes in v4.
+No changes in v3.
+No changes in v2.
+---
+ drivers/net/ethernet/intel/ice/ice_vlan_mode.c | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index fc284802e2bcd..b5ebfcdc9d434 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -6993,7 +6993,6 @@ void ice_update_vsi_stats(struct ice_vsi *vsi)
- 		cur_ns->rx_errors = pf->stats.crc_errors +
- 				    pf->stats.illegal_bytes +
- 				    pf->stats.rx_undersize +
--				    pf->hw_csum_rx_error +
- 				    pf->stats.rx_jabber +
- 				    pf->stats.rx_fragments +
- 				    pf->stats.rx_oversize;
+diff --git a/drivers/net/ethernet/intel/ice/ice_vlan_mode.c b/drivers/net/ethernet/intel/ice/ice_vlan_mode.c
+index fb526cb84776..68a7b05de44e 100644
+--- a/drivers/net/ethernet/intel/ice/ice_vlan_mode.c
++++ b/drivers/net/ethernet/intel/ice/ice_vlan_mode.c
+@@ -198,6 +198,7 @@ static bool ice_is_dvm_supported(struct ice_hw *hw)
+ #define ICE_SW_LKUP_VLAN_LOC_LKUP_IDX			1
+ #define ICE_SW_LKUP_VLAN_PKT_FLAGS_LKUP_IDX		2
+ #define ICE_SW_LKUP_PROMISC_VLAN_LOC_LKUP_IDX		2
++#define ICE_SW_LKUP_MAC_VLAN_LOC_LKUP_IDX		4
+ #define ICE_PKT_FLAGS_0_TO_15_FV_IDX			1
+ static struct ice_update_recipe_lkup_idx_params ice_dvm_dflt_recipes[] = {
+ 	{
+@@ -234,6 +235,17 @@ static struct ice_update_recipe_lkup_idx_params ice_dvm_dflt_recipes[] = {
+ 		.mask_valid = false,  /* use pre-existing mask */
+ 		.lkup_idx = ICE_SW_LKUP_PROMISC_VLAN_LOC_LKUP_IDX,
+ 	},
++	{
++		/* Similarly to ICE_SW_LKUP_VLAN, change to outer/single VLAN in
++		 * DVM
++		 */
++		.rid = ICE_SW_LKUP_MAC_VLAN,
++		.fv_idx = ICE_EXTERNAL_VLAN_ID_FV_IDX,
++		.ignore_valid = true,
++		.mask = 0,
++		.mask_valid = false,
++		.lkup_idx = ICE_SW_LKUP_MAC_VLAN_LOC_LKUP_IDX,
++	},
+ };
+ 
+ /**
 -- 
-2.51.0
-
-
+2.43.0
 
