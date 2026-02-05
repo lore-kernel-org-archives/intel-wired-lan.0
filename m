@@ -1,100 +1,91 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E12ABEC1EBC
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  5 Feb 2026 15:10:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 81775ECD983
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  5 Feb 2026 15:50:18 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 87ABE81315;
-	Thu,  5 Feb 2026 15:10:23 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id TeCvNd48GrLM; Thu,  5 Feb 2026 15:10:22 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org EA468812BF
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1770304222;
-	bh=MoRGkBTin9+wOP6e+OvXZBTezNwdyzO3M7EeXB/EIgs=;
-	h=From:Date:References:In-Reply-To:To:Cc:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=TxiJYLgwm4TkEtkIMAp4x3hirnjIhdIoL+ni5mn7z/sIKteM95PM3JTJMGArCNPtZ
-	 Gkr3zT39IZAVNVhrWy5ObuM4ch9Joh1AfdRWCDVg0BkWU9i47Ym92yuVxczQlO1hPb
-	 F1VqX8HsqJLbWKSdCYUNvZfrs/w37XoNldiwptDpSqDQjeMFFbsJs1q2fsI8qakB72
-	 SWET/+KXMHyRk1WEA+xu6E2vrUYJIiAYiXSPF8GdmsyOJ0svUlrP3ZmQGVwY3eUvHk
-	 cobfObP16IhFi1UDTE2zrSOQEgnSodQkC+mTGWD4BDo50whgk1zu0MZpKZza+LTCXJ
-	 Lj8Obl4yUXggw==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id EA468812BF;
-	Thu,  5 Feb 2026 15:10:21 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id 6DB71117
- for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Feb 2026 15:10:21 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 4DC6F60D9C
- for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Feb 2026 15:10:21 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 2C70360B43;
+	Thu,  5 Feb 2026 15:50:18 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id QJal2D2HXkt2 for <intel-wired-lan@lists.osuosl.org>;
- Thu,  5 Feb 2026 15:10:20 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org;
- envelope-from=patchwork-bot+netdevbpf@kernel.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 6ACED60D87
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 6ACED60D87
-Received: from sea.source.kernel.org (sea.source.kernel.org
- [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 6ACED60D87
- for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Feb 2026 15:10:20 +0000 (UTC)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by sea.source.kernel.org (Postfix) with ESMTP id 75C7A441BB;
- Thu,  5 Feb 2026 15:10:19 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4F532C4CEF7;
- Thu,  5 Feb 2026 15:10:19 +0000 (UTC)
-Received: from [10.30.226.235] (localhost [IPv6:::1])
- by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id
- 486033808200; Thu,  5 Feb 2026 15:10:18 +0000 (UTC)
-Content-Type: text/plain; charset="utf-8"
+ id mgPaV47yZupv; Thu,  5 Feb 2026 15:50:17 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 697D960B26
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1770306617;
+	bh=mbHqqpvf1EsyENiG3xgpDiZNiWcRfgRHeO49XVCu+yQ=;
+	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=xH5Tizi5vvFM3bnEr8TFojpJpYeuKFZyk/q5LAIOzNv3RbqY1GtDH+zgrAnNb0HeL
+	 yR9N8VkOPt9SpQ2mUcPkQl8II7HnIeKmxZ1cAoqgVzbel8tPjb3dzE0DvlP7wLE+Rr
+	 vxHvklNDGMNqEaX2bzwxrNAzA1yilMw0bBxwmpysJ2e14FC4PXlfAdfER11g+byW+d
+	 P2YWNuNtdjn0sLGeX2j0HJZ66ZBMXk+AtOeLtlqvaWyi8QjSWA/PrNxwjoKdYgVT8m
+	 EupvHHHZkIs2uqLCawYB+/ueBHdaJnWzXGwHrdvfUSYRxyfdhPqOEKFTNd4YUQCeJ/
+	 f7ZoxImVOlgcg==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp3.osuosl.org (Postfix) with ESMTP id 697D960B26;
+	Thu,  5 Feb 2026 15:50:17 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id BE75B17A
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Feb 2026 15:50:15 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp3.osuosl.org (Postfix) with ESMTP id AB3E660B26
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Feb 2026 15:50:15 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id aF12WUtUS-PZ for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  5 Feb 2026 15:50:15 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=49.212.198.91;
+ helo=www2881.sakura.ne.jp; envelope-from=kohei@enjuk.jp; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org B62D060B25
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B62D060B25
+Received: from www2881.sakura.ne.jp (www2881.sakura.ne.jp [49.212.198.91])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id B62D060B25
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Feb 2026 15:50:14 +0000 (UTC)
+Received: from ms-a2 (182.51.30.125.dy.iij4u.or.jp [125.30.51.182])
+ (authenticated bits=0)
+ by www2881.sakura.ne.jp (8.16.1/8.16.1) with ESMTPSA id 615Fnh3S027695
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NO);
+ Fri, 6 Feb 2026 00:49:44 +0900 (JST) (envelope-from kohei@enjuk.jp)
+From: Kohei Enju <kohei@enjuk.jp>
+To: vitaly.lifshits@intel.com
+Cc: andrew+netdev@lunn.ch, anthony.l.nguyen@intel.com, davem@davemloft.net,
+ edumazet@google.com, intel-wired-lan@lists.osuosl.org,
+ kohei.enju@gmail.com, kohei@enjuk.jp, kuba@kernel.org,
+ netdev@vger.kernel.org, pabeni@redhat.com, przemyslaw.kitszel@intel.com
+Date: Thu,  5 Feb 2026 15:49:43 +0000
+Message-ID: <20260205154943.20985-1-kohei@enjuk.jp>
+X-Mailer: git-send-email 2.51.0
+In-Reply-To: <3b481682-5a64-412e-a085-8d3c6323dd4e@intel.com>
+References: <3b481682-5a64-412e-a085-8d3c6323dd4e@intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-From: patchwork-bot+netdevbpf@kernel.org
-Message-Id: <177030421708.447604.18321209785815350003.git-patchwork-notify@kernel.org>
-Date: Thu, 05 Feb 2026 15:10:17 +0000
-References: <20260203174002.705176-1-ivecera@redhat.com>
-In-Reply-To: <20260203174002.705176-1-ivecera@redhat.com>
-To: Ivan Vecera <ivecera@redhat.com>
-Cc: netdev@vger.kernel.org, aleksander.lobakin@intel.com,
- andrew+netdev@lunn.ch, arkadiusz.kubalewski@intel.com, davem@davemloft.net,
- edumazet@google.com, kuba@kernel.org, jiri@resnulli.us,
- jonathan.lemon@gmail.com, leon@kernel.org, mbloch@nvidia.com,
- pabeni@redhat.com, Prathosh.Satish@microchip.com,
- przemyslaw.kitszel@intel.com, richardcochran@gmail.com, saeedm@nvidia.com,
- tariqt@nvidia.com, anthony.l.nguyen@intel.com, vadim.fedorenko@linux.dev,
- intel-wired-lan@lists.osuosl.org, linux-kernel@vger.kernel.org,
- linux-rdma@vger.kernel.org
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1770304219;
- bh=VeYMHdnKfPv54A8U9mPwiib6zhPfIcEkcUaDZYvk7xQ=;
- h=Subject:From:Date:References:In-Reply-To:To:Cc:From;
- b=bNsEOqd/D0WbPvbvhpNW8Oi8MvEVrx0k7s8eCItOfz3WEHl/YBnrOIyVQoR2TC2fk
- JxS1oPlrwZj5YQREz5cDlRbfUvg2sy7HDDEkOYZJkB/Y8swytDxUsBPTrIG8jSpXJo
- I5ZsWtKcNgv+whp2eVYoGrTXx5NPB8h3j5KVy99Ud9ZMlKRAKOSlQqxQDw2pEdamYh
- 5Ol9Ve9ORYMFCjmn5nwo28POQqYswmuP8Bta4LIAGY6UIJVdARqVgDQ/ViIkZv5scD
- 4GKt+Ng7ubfci9POrdU72wYksAypsZbJMHZmHeFdnr2sOou1Da3MShZqPsvzGnGB5j
- 5Nq7vqDPmp38A==
+X-Mailman-Original-DKIM-Signature: a=rsa-sha256;
+ bh=mbHqqpvf1EsyENiG3xgpDiZNiWcRfgRHeO49XVCu+yQ=; 
+ c=relaxed/relaxed; d=enjuk.jp;
+ h=From:To:Subject:Date:Message-ID;
+ s=rs20251215; t=1770306584; v=1;
+ b=Z5AQtUexhixK+Evq42B8d88+dTevYkDrD7m1v+MP4Jt9tmDqwJG0wED8E0kmMWIj
+ PTFFjGjlvaOqrZIBoDWKjILFsh+T+NRwhvfMvFLCt51ewz40oos1n4lyS/qYhvyk
+ tt4dr+XX9nrkwx0J7+eYfifdQoHYp+TcBrK0QeUQ0ktTIiGRG0xkUkoLe2wlyMzS
+ RkiSMcQxQB/B+eaQq6VirsZx55l94TyXXR+gfXOuNfCODP1ARKVCBzzkQuGwupwm
+ hZh3gdCzwnOxbQWlIVG5+LHzsyGWXQNit23NsCmc3y8IDYfuux2mMYEMD4pd62qE
+ /M7J1cWoO6/88HrM5TNonw==
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dmarc=pass (p=quarantine dis=none)
- header.from=kernel.org
+ dmarc=pass (p=none dis=none)
+ header.from=enjuk.jp
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=bNsEOqd/
-Subject: Re: [Intel-wired-lan] [PATCH net-next v5 0/9] dpll: Core
- improvements and ice E825-C SyncE support
+ unprotected) header.d=enjuk.jp header.i=@enjuk.jp header.a=rsa-sha256
+ header.s=rs20251215 header.b=Z5AQtUex
+Subject: Re: [Intel-wired-lan] [PATCH v1 iwl-net] igc: fix null pointer
+ dereference in
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -110,49 +101,102 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Hello:
+On Thu, 5 Feb 2026 12:16:06 +0200, "Lifshits, Vitaly" wrote:
 
-This series was applied to netdev/net-next.git (main)
-by Paolo Abeni <pabeni@redhat.com>:
-
-On Tue,  3 Feb 2026 18:39:53 +0100 you wrote:
-> This series introduces Synchronous Ethernet (SyncE) support for the Intel
-> E825-C Ethernet controller. Unlike previous generations where DPLL
-> connections were implicitly assumed, the E825-C architecture relies
-> on the platform firmware (ACPI) to describe the physical connections
-> between the Ethernet controller and external DPLLs (such as the ZL3073x).
+> >> Hi Kohei,
+> >>
+> >> Thank you for your patch.
+> >>
+> >> Since there are no NVM-less devices I suggest removing the flash-less
+> >> code entirely from the init flow.
+> > 
+> > Oh, I see there're no NVM-less devices. Then removing sounds good to me.
+> > 
+> > Could you clarify what you mean by "init flow"? Do you mean removing
+> > only the flash-less branch in igc_init_nvm_params_i225(), or removing
+> > all flash-less related code including igc_get_flash_presence_i225() and
+> > its callers?
+> > 
+> > After clarification, I'd love to work on it. Thank you for taking a
+> > look!
 > 
-> To accommodate this, the series extends the DPLL subsystem to support
-> firmware node (fwnode) associations, asynchronous discovery via notifiers,
-> and dynamic pin management. Additionally, a significant refactor of
-> the DPLL reference counting logic is included to ensure robustness and
-> debuggability.
+> No, you shouldn’t remove this function.
 > 
-> [...]
+> However, if for any reason the flash is not present, the driver should 
+> fail initialization.
 
-Here is the summary with links:
-  - [net-next,v5,1/9] dpll: Allow associating dpll pin with a firmware node
-    https://git.kernel.org/netdev/net-next/c/d0f4771e2bef
-  - [net-next,v5,2/9] dpll: zl3073x: Associate pin with fwnode handle
-    https://git.kernel.org/netdev/net-next/c/e6dc7727b608
-  - [net-next,v5,3/9] dpll: Add notifier chain for dpll events
-    https://git.kernel.org/netdev/net-next/c/2be467588d6b
-  - [net-next,v5,4/9] dpll: Support dynamic pin index allocation
-    https://git.kernel.org/netdev/net-next/c/711696b3e168
-  - [net-next,v5,5/9] dpll: zl3073x: Add support for mux pin type
-    https://git.kernel.org/netdev/net-next/c/fdad05ed4ec2
-  - [net-next,v5,6/9] dpll: Enhance and consolidate reference counting logic
-    https://git.kernel.org/netdev/net-next/c/729f5e0153bd
-  - [net-next,v5,7/9] dpll: Add reference count tracking support
-    https://git.kernel.org/netdev/net-next/c/3c0da1030c58
-  - [net-next,v5,8/9] drivers: Add support for DPLL reference count tracking
-    https://git.kernel.org/netdev/net-next/c/085ca5d20171
-  - [net-next,v5,9/9] ice: dpll: Support E825-C SyncE and dynamic pin discovery
-    https://git.kernel.org/netdev/net-next/c/ad1df4f2d591
+I see. I understand we should fail igc_probe() for NVM-less devices.
 
-You are awesome, thank you!
--- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/patchwork/pwbot.html
+> 
+> There are two related places that need to be updated to enforce this:
+> 
+> igc_probe() in igc_main.c
+> igc_init_nvm_params_i225() in igc_i225.c
+> 
+> This way we avoid supporting a configuration that doesn’t exist, and we 
+> prevent the driver from partially initializing in an invalid state.
 
+As far as I've skimmed the code, the only call trace is:
 
+igc_probe()
+  ei->get_invariants() (always igc_get_invariants_base())
+    igc_init_nvm_params_i225()
+
+so modifying igc_init_nvm_params_i225() is sufficient and IIUC we don't
+have to modify igc_probe().
+
+igc_init_nvm_params_i225() returns -EIO when there is no NVM, and its
+caller igc_get_invariants_base() propagates the error back to
+igc_probe().
+Note that igc_get_invariants_base() currently ignores the return value
+of igc_init_nvm_params_i225(), so I added that check as well.
+
+diff --git a/drivers/net/ethernet/intel/igc/igc_base.c b/drivers/net/ethernet/intel/igc/igc_base.c
+index 1613b562d17c..e4200279e15f 100644
+--- a/drivers/net/ethernet/intel/igc/igc_base.c
++++ b/drivers/net/ethernet/intel/igc/igc_base.c
+@@ -235,6 +235,9 @@ static s32 igc_get_invariants_base(struct igc_hw *hw)
+                break;
+        }
+
++       if (ret_val)
++               goto out;
++
+        /* setup PHY parameters */
+        ret_val = igc_init_phy_params_base(hw);
+        if (ret_val)
+diff --git a/drivers/net/ethernet/intel/igc/igc_i225.c b/drivers/net/ethernet/intel/igc/igc_i225.c
+index 5226d10cc95b..ee1a8eeed9d5 100644
+--- a/drivers/net/ethernet/intel/igc/igc_i225.c
++++ b/drivers/net/ethernet/intel/igc/igc_i225.c
+@@ -476,21 +476,17 @@ s32 igc_init_nvm_params_i225(struct igc_hw *hw)
+ {
+        struct igc_nvm_info *nvm = &hw->nvm;
+
++       /* fail initialization for NVM-less devices */
++       if (!igc_get_flash_presence_i225(hw))
++               return -EIO;
++
+        nvm->ops.acquire = igc_acquire_nvm_i225;
+        nvm->ops.release = igc_release_nvm_i225;
++       nvm->ops.read = igc_read_nvm_srrd_i225;
++       nvm->ops.write = igc_write_nvm_srwr_i225;
++       nvm->ops.validate = igc_validate_nvm_checksum_i225;
++       nvm->ops.update = igc_update_nvm_checksum_i225;
+
+-       /* NVM Function Pointers */
+-       if (igc_get_flash_presence_i225(hw)) {
+-               nvm->ops.read = igc_read_nvm_srrd_i225;
+-               nvm->ops.write = igc_write_nvm_srwr_i225;
+-               nvm->ops.validate = igc_validate_nvm_checksum_i225;
+-               nvm->ops.update = igc_update_nvm_checksum_i225;
+-       } else {
+-               nvm->ops.read = igc_read_nvm_eerd;
+-               nvm->ops.write = NULL;
+-               nvm->ops.validate = NULL;
+-               nvm->ops.update = NULL;
+-       }
+        return 0;
+ }
+
+Does this diff make sense to you?
