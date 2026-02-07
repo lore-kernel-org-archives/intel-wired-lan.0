@@ -4,97 +4,91 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1332BEE0AC6
-	for <intel-wired-lan@archiver.kernel.org>; Sat,  7 Feb 2026 10:23:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BA186EE0AE7
+	for <intel-wired-lan@archiver.kernel.org>; Sat,  7 Feb 2026 14:54:54 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id B7B3C411E4;
-	Sat,  7 Feb 2026 10:23:15 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 5269D40B14;
+	Sat,  7 Feb 2026 14:54:54 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id R7Ax_t-5U_-W; Sat,  7 Feb 2026 10:23:14 +0000 (UTC)
+ id fvpqYiefaTyl; Sat,  7 Feb 2026 14:54:52 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org DBB4C409F9
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 94CA240AFC
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1770459793;
-	bh=Thyxn2x8GwemcetTaIDmag0sXUro2/XLqu/zb3JPMFI=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=3p/CEzGSEz3ERoWZ6XW8noAEidunTN1VheY1xhb0xKrH54SgOEAWHSpyMytJBf7R8
-	 NgQgd99/qkRoEpMZna89w6Kt4G61c8g6ccaR52/3/UtLFeBGPjuVYHxjKbfAXH9wuC
-	 DjBjkX/aXq0ywuDMiBcg/14xTjTsRewfVQOjsnzPV89HL6GhftcldFLyBtqjzbC0uH
-	 OqXoa+CJQg7TKqmDqbp7lMIS3skt4ehdTo6vjHxyqpWG9n/XLsYnEh1QHo8lpd7Sqf
-	 vZIZg/SEji8vUfPJqMtMgwAilzCMWOqSF/nciVoqsUQeJ4PT1v3MdbxMcnisaMS1Hh
-	 3okuQfVJ9R4og==
+	s=default; t=1770476092;
+	bh=t8Bh40WBFXFPhjUdwb97kbNklff0jB3c4d3LkMHtDhw=;
+	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=4REUUxOIoTFPewgakYOA7wK0MHD/NwMbi4qsdi3ywv9KCduKHsNBPLloqpMrTHSX9
+	 +zRxoV3DZ+BXkpw+gz9Q71OEjmdJzu/nU8uwWEl7vgbeJ8WJrYc6NyFauxwlM1rZMq
+	 +wqm4KzW3+JCsFl8Fr3BhDXvI8k25yCUkxfhdjPUKOA5vHVw5ODu4EKvSpJtULs3nI
+	 uT4ykbKTUWAChgNryNDI5g7wa8blmM/e2KD1vRuicLENlkQWhoAvxrbvWaF0B3f/7b
+	 Amgu7DgFJgd8SBPO7yM+3BPOiOTNh25ioGgvBT9wt1uYyIC7trRLbjaso+AEgql51K
+	 W7xX6ojIboN0w==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id DBB4C409F9;
-	Sat,  7 Feb 2026 10:23:13 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id B12F22C5
- for <intel-wired-lan@lists.osuosl.org>; Sat,  7 Feb 2026 10:23:12 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 94CA240AFC;
+	Sat,  7 Feb 2026 14:54:52 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by lists1.osuosl.org (Postfix) with ESMTP id D0E13173
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  7 Feb 2026 14:54:51 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 9319182AAA
- for <intel-wired-lan@lists.osuosl.org>; Sat,  7 Feb 2026 10:23:12 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id C1B144027F
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  7 Feb 2026 14:54:51 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id BcsyVs3pkmXm for <intel-wired-lan@lists.osuosl.org>;
- Sat,  7 Feb 2026 10:23:11 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.129.124;
- helo=us-smtp-delivery-124.mimecast.com; envelope-from=poros@redhat.com;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 8AFEC821F1
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8AFEC821F1
-Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.129.124])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 8AFEC821F1
- for <intel-wired-lan@lists.osuosl.org>; Sat,  7 Feb 2026 10:23:10 +0000 (UTC)
-Received: from mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com
- (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
- relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-381-PzplIJJsOyeGzHzKmK9iOA-1; Sat,
- 07 Feb 2026 05:23:04 -0500
-X-MC-Unique: PzplIJJsOyeGzHzKmK9iOA-1
-X-Mimecast-MFC-AGG-ID: PzplIJJsOyeGzHzKmK9iOA_1770459782
-Received: from mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com
- (mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.4])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
- id 219C5195608A; Sat,  7 Feb 2026 10:23:02 +0000 (UTC)
-Received: from ShadowPeak.redhat.com (unknown [10.44.34.231])
- by mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP
- id 5E7C630001A8; Sat,  7 Feb 2026 10:22:57 +0000 (UTC)
-From: Petr Oros <poros@redhat.com>
-To: netdev@vger.kernel.org
-Date: Sat,  7 Feb 2026 11:22:45 +0100
-Message-ID: <20260207102245.812795-1-poros@redhat.com>
-MIME-Version: 1.0
-X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.4
-X-Mimecast-MFC-PROC-ID: jgUH_deg5vdGZSbJNyRXrlafVlofoxLaJZszoAg9FF8_1770459782
-X-Mimecast-Originator: redhat.com
-Content-Transfer-Encoding: 8bit
-content-type: text/plain; charset="US-ASCII"; x-default=true
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=redhat.com; 
- s=mimecast20190719; t=1770459789;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding;
- bh=Thyxn2x8GwemcetTaIDmag0sXUro2/XLqu/zb3JPMFI=;
- b=Sg/MQnCMD6w25vOrirJCTRCOJv9z2YZnene0p/u95ViIOtpf3wg0B4Abucr2qBKMz6WYdc
- KAJwp50IyO0pyyqA7HS66ZMwV+huoAvxiN8fnHcztIWsIBrUNSCNWOV+lDqcny+Q9xIQ2/
- xRXa04H/TdDStrE2leW5c/p0rJe66To=
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dmarc=pass (p=quarantine dis=none)
- header.from=redhat.com
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (1024-bit key,
- unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=Sg/MQnCM
-Subject: [Intel-wired-lan] [PATCH net v2] iavf: fix deadlock in reset
- handling
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id xBsfU5Wx4jGm for <intel-wired-lan@lists.osuosl.org>;
+ Sat,  7 Feb 2026 14:54:50 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.19;
+ helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 5C53340077
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 5C53340077
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.19])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 5C53340077
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  7 Feb 2026 14:54:49 +0000 (UTC)
+X-CSE-ConnectionGUID: qKSyUU55RZWnqV/un09EWw==
+X-CSE-MsgGUID: Q3K5mP+lSduLx4Wzc09KdA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11694"; a="71560392"
+X-IronPort-AV: E=Sophos;i="6.21,278,1763452800"; d="scan'208";a="71560392"
+Received: from fmviesa006.fm.intel.com ([10.60.135.146])
+ by orvoesa111.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 07 Feb 2026 06:54:49 -0800
+X-CSE-ConnectionGUID: nOJibGWEQU2jdps3/aaFNQ==
+X-CSE-MsgGUID: GBx2BxlaSIWnGbsX1nH6qw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.21,278,1763452800"; d="scan'208";a="210407782"
+Received: from lkp-server01.sh.intel.com (HELO 765f4a05e27f) ([10.239.97.150])
+ by fmviesa006.fm.intel.com with ESMTP; 07 Feb 2026 06:54:47 -0800
+Received: from kbuild by 765f4a05e27f with local (Exim 4.98.2)
+ (envelope-from <lkp@intel.com>) id 1vojhs-00000000lhf-3Jah;
+ Sat, 07 Feb 2026 14:54:44 +0000
+Date: Sat, 07 Feb 2026 22:54:32 +0800
+From: kernel test robot <lkp@intel.com>
+To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+Message-ID: <202602072224.sjJTXBxr-lkp@intel.com>
+User-Agent: s-nail v14.9.25
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1770476091; x=1802012091;
+ h=date:from:to:subject:message-id;
+ bh=Ih/qfRprtMSnm2MERPgBWLpH/UV9aXBTyB0GDiS8nV8=;
+ b=Njfp5yz2iid0EF457CfBorPOGujcTjmIBRBa0gda1Mn0pagPyjDktrsP
+ 2V4iVHDc8bUfRX1v+dRi2CSBC4WRlMJ49tlr8MeuVAi047snCzb0S/I0q
+ 3JbhKwGU8cTgDly8vFOP3CsIaUepu/JrrFI1eGvY60cuu10vU4s1/u/MB
+ JGf0P7uhCWR/xGNkrMg+HURBYZZ/AXpP6BDd0IpPY8gAUF/hLxRzipna4
+ tazSYOLFcIrkMmijmhMOQlq8XUUeB1lgF4otyPxK/A9qPHvFsk2PmwKNT
+ yFZFVihAi6L+zPMezQ9S8MPg1VJEXf1luI1vBE4AbAlC4wC9Ur3Z+N09J
+ A==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=intel.com
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=Njfp5yz2
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ 33489c7b58a39b088549e29568d912cdd2fadb29
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -107,294 +101,291 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: ivecera@redhat.com, shaojijie@huawei.com,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Eric Dumazet <edumazet@google.com>, linux-kernel@vger.kernel.org,
- aleksandr.loktionov@intel.com, Andrew Lunn <andrew+netdev@lunn.ch>,
- Stanislav Fomichev <sdf@fomichev.me>, Tony Nguyen <anthony.l.nguyen@intel.com>,
- intel-wired-lan@lists.osuosl.org, Jacob Keller <jacob.e.keller@intel.com>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- "David S. Miller" <davem@davemloft.net>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Three driver callbacks schedule a reset and wait for its completion:
-ndo_change_mtu(), ethtool set_ringparam(), and ethtool set_channels().
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
+branch HEAD: 33489c7b58a39b088549e29568d912cdd2fadb29  ice: fix crash in ethtool offline loopback test
 
-Waiting for reset in ndo_change_mtu() and set_ringparam() was added by
-commit c2ed2403f12c ("iavf: Wait for reset in callbacks which trigger
-it") to fix a race condition where adding an interface to bonding
-immediately after MTU or ring parameter change failed because the
-interface was still in __RESETTING state. The same commit also added
-waiting in iavf_set_priv_flags(), which was later removed by commit
-53844673d555 ("iavf: kill "legacy-rx" for good").
+elapsed time: 1326m
 
-Waiting in set_channels() was introduced earlier by commit 4e5e6b5d9d13
-("iavf: Fix return of set the new channel count") to ensure the PF has
-enough time to complete the VF reset when changing channel count, and to
-return correct error codes to userspace.
+configs tested: 269
+configs skipped: 5
 
-Commit ef490bbb2267 ("iavf: Add net_shaper_ops support") added
-net_shaper_ops to iavf, which required reset_task to use _locked NAPI
-variants (napi_enable_locked, napi_disable_locked) that need the netdev
-instance lock.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Later, commit 7e4d784f5810 ("net: hold netdev instance lock during
-rtnetlink operations") and commit 2bcf4772e45a ("net: ethtool: try to
-protect all callback with netdev instance lock") started holding the
-netdev instance lock during ndo and ethtool callbacks for drivers with
-net_shaper_ops.
+tested configs:
+alpha                             allnoconfig    gcc-15.2.0
+alpha                            allyesconfig    gcc-15.2.0
+alpha                               defconfig    gcc-15.2.0
+arc                              allmodconfig    clang-16
+arc                              allmodconfig    gcc-15.2.0
+arc                               allnoconfig    gcc-15.2.0
+arc                              allyesconfig    clang-22
+arc                              allyesconfig    gcc-15.2.0
+arc                                 defconfig    gcc-15.2.0
+arc                         haps_hs_defconfig    gcc-15.2.0
+arc                   randconfig-001-20260207    gcc-8.5.0
+arc                   randconfig-001-20260207    gcc-9.5.0
+arc                   randconfig-002-20260207    gcc-8.5.0
+arm                               allnoconfig    clang-22
+arm                               allnoconfig    gcc-15.2.0
+arm                              allyesconfig    clang-16
+arm                              allyesconfig    gcc-15.2.0
+arm                     am200epdkit_defconfig    gcc-15.2.0
+arm                                 defconfig    clang-22
+arm                                 defconfig    gcc-15.2.0
+arm                      footbridge_defconfig    gcc-15.2.0
+arm                       imx_v6_v7_defconfig    clang-16
+arm                         mv78xx0_defconfig    gcc-15.2.0
+arm                          pxa3xx_defconfig    gcc-15.2.0
+arm                   randconfig-001-20260207    gcc-10.5.0
+arm                   randconfig-001-20260207    gcc-8.5.0
+arm                   randconfig-002-20260207    gcc-12.5.0
+arm                   randconfig-002-20260207    gcc-8.5.0
+arm                   randconfig-003-20260207    gcc-8.5.0
+arm                   randconfig-004-20260207    gcc-8.5.0
+arm64                            allmodconfig    clang-19
+arm64                            allmodconfig    clang-22
+arm64                             allnoconfig    gcc-15.2.0
+arm64                               defconfig    gcc-15.2.0
+arm64                 randconfig-001-20260207    clang-22
+arm64                 randconfig-001-20260207    gcc-15.2.0
+arm64                 randconfig-002-20260207    clang-22
+arm64                 randconfig-002-20260207    gcc-15.2.0
+arm64                 randconfig-003-20260207    gcc-14.3.0
+arm64                 randconfig-003-20260207    gcc-15.2.0
+arm64                 randconfig-004-20260207    gcc-14.3.0
+arm64                 randconfig-004-20260207    gcc-15.2.0
+csky                             allmodconfig    gcc-15.2.0
+csky                              allnoconfig    gcc-15.2.0
+csky                                defconfig    gcc-15.2.0
+csky                  randconfig-001-20260207    gcc-15.2.0
+csky                  randconfig-002-20260207    gcc-15.2.0
+hexagon                          allmodconfig    clang-17
+hexagon                          allmodconfig    gcc-15.2.0
+hexagon                           allnoconfig    clang-22
+hexagon                           allnoconfig    gcc-15.2.0
+hexagon                             defconfig    clang-22
+hexagon                             defconfig    gcc-15.2.0
+hexagon               randconfig-001-20260207    clang-22
+hexagon               randconfig-002-20260207    clang-18
+hexagon               randconfig-002-20260207    clang-22
+i386                             allmodconfig    clang-20
+i386                             allmodconfig    gcc-14
+i386                              allnoconfig    gcc-14
+i386                              allnoconfig    gcc-15.2.0
+i386                             allyesconfig    clang-20
+i386                             allyesconfig    gcc-14
+i386        buildonly-randconfig-001-20260207    clang-20
+i386        buildonly-randconfig-001-20260207    gcc-14
+i386        buildonly-randconfig-002-20260207    clang-20
+i386        buildonly-randconfig-003-20260207    clang-20
+i386        buildonly-randconfig-004-20260207    clang-20
+i386        buildonly-randconfig-005-20260207    clang-20
+i386        buildonly-randconfig-006-20260207    clang-20
+i386                                defconfig    clang-20
+i386                                defconfig    gcc-15.2.0
+i386                  randconfig-001-20260207    clang-20
+i386                  randconfig-002-20260207    clang-20
+i386                  randconfig-003-20260207    clang-20
+i386                  randconfig-004-20260207    clang-20
+i386                  randconfig-005-20260207    clang-20
+i386                  randconfig-006-20260207    clang-20
+i386                  randconfig-007-20260207    clang-20
+i386                  randconfig-011-20260207    clang-20
+i386                  randconfig-011-20260207    gcc-14
+i386                  randconfig-012-20260207    clang-20
+i386                  randconfig-012-20260207    gcc-14
+i386                  randconfig-013-20260207    clang-20
+i386                  randconfig-013-20260207    gcc-12
+i386                  randconfig-014-20260207    clang-20
+i386                  randconfig-015-20260207    clang-20
+i386                  randconfig-015-20260207    gcc-14
+i386                  randconfig-016-20260207    clang-20
+i386                  randconfig-017-20260207    clang-20
+i386                  randconfig-017-20260207    gcc-14
+loongarch                        allmodconfig    clang-19
+loongarch                        allmodconfig    clang-22
+loongarch                         allnoconfig    clang-22
+loongarch                         allnoconfig    gcc-15.2.0
+loongarch                           defconfig    clang-19
+loongarch             randconfig-001-20260207    clang-22
+loongarch             randconfig-001-20260207    gcc-13.4.0
+loongarch             randconfig-002-20260207    clang-22
+m68k                             allmodconfig    gcc-15.2.0
+m68k                              allnoconfig    gcc-15.2.0
+m68k                             allyesconfig    clang-16
+m68k                             allyesconfig    gcc-15.2.0
+m68k                                defconfig    clang-19
+m68k                                defconfig    gcc-15.2.0
+microblaze                        allnoconfig    gcc-15.2.0
+microblaze                       allyesconfig    gcc-15.2.0
+microblaze                          defconfig    clang-19
+microblaze                          defconfig    gcc-15.2.0
+mips                             allmodconfig    gcc-15.2.0
+mips                              allnoconfig    gcc-15.2.0
+mips                             allyesconfig    gcc-15.2.0
+nios2                            alldefconfig    gcc-11.5.0
+nios2                            allmodconfig    clang-22
+nios2                            allmodconfig    gcc-11.5.0
+nios2                             allnoconfig    clang-22
+nios2                             allnoconfig    gcc-11.5.0
+nios2                               defconfig    clang-19
+nios2                               defconfig    gcc-11.5.0
+nios2                 randconfig-001-20260207    clang-22
+nios2                 randconfig-001-20260207    gcc-10.5.0
+nios2                 randconfig-002-20260207    clang-22
+nios2                 randconfig-002-20260207    gcc-11.5.0
+openrisc                         allmodconfig    clang-22
+openrisc                         allmodconfig    gcc-15.2.0
+openrisc                          allnoconfig    clang-22
+openrisc                          allnoconfig    gcc-15.2.0
+openrisc                            defconfig    gcc-15.2.0
+parisc                           allmodconfig    gcc-15.2.0
+parisc                            allnoconfig    clang-22
+parisc                            allnoconfig    gcc-15.2.0
+parisc                           allyesconfig    clang-19
+parisc                           allyesconfig    gcc-15.2.0
+parisc                              defconfig    gcc-15.2.0
+parisc                randconfig-001-20260207    gcc-14.3.0
+parisc                randconfig-002-20260207    gcc-14.3.0
+parisc                randconfig-002-20260207    gcc-8.5.0
+parisc64                            defconfig    clang-19
+parisc64                            defconfig    gcc-15.2.0
+powerpc                          allmodconfig    gcc-15.2.0
+powerpc                           allnoconfig    clang-22
+powerpc                           allnoconfig    gcc-15.2.0
+powerpc                        icon_defconfig    gcc-15.2.0
+powerpc                     mpc512x_defconfig    gcc-15.2.0
+powerpc                     mpc5200_defconfig    clang-22
+powerpc                 mpc832x_rdb_defconfig    gcc-15.2.0
+powerpc               randconfig-001-20260207    gcc-10.5.0
+powerpc               randconfig-001-20260207    gcc-14.3.0
+powerpc               randconfig-002-20260207    gcc-14.3.0
+powerpc               randconfig-002-20260207    gcc-15.2.0
+powerpc                     redwood_defconfig    gcc-15.2.0
+powerpc64             randconfig-001-20260207    clang-22
+powerpc64             randconfig-001-20260207    gcc-14.3.0
+powerpc64             randconfig-002-20260207    clang-22
+powerpc64             randconfig-002-20260207    gcc-14.3.0
+riscv                            allmodconfig    clang-22
+riscv                             allnoconfig    clang-22
+riscv                             allnoconfig    gcc-15.2.0
+riscv                            allyesconfig    clang-16
+riscv                               defconfig    clang-22
+riscv                               defconfig    gcc-15.2.0
+riscv                 randconfig-001-20260207    clang-18
+riscv                 randconfig-002-20260207    clang-18
+riscv                 randconfig-002-20260207    clang-22
+s390                             allmodconfig    clang-18
+s390                             allmodconfig    clang-19
+s390                              allnoconfig    clang-22
+s390                             allyesconfig    gcc-15.2.0
+s390                                defconfig    clang-22
+s390                                defconfig    gcc-15.2.0
+s390                  randconfig-001-20260207    clang-18
+s390                  randconfig-001-20260207    gcc-8.5.0
+s390                  randconfig-002-20260207    clang-18
+s390                  randconfig-002-20260207    gcc-14.3.0
+sh                               allmodconfig    gcc-15.2.0
+sh                                allnoconfig    clang-22
+sh                                allnoconfig    gcc-15.2.0
+sh                               allyesconfig    clang-19
+sh                               allyesconfig    gcc-15.2.0
+sh                                  defconfig    gcc-14
+sh                                  defconfig    gcc-15.2.0
+sh                        edosk7705_defconfig    gcc-15.2.0
+sh                          landisk_defconfig    gcc-15.2.0
+sh                    randconfig-001-20260207    clang-18
+sh                    randconfig-001-20260207    gcc-15.2.0
+sh                    randconfig-002-20260207    clang-18
+sh                    randconfig-002-20260207    gcc-12.5.0
+sh                           se7712_defconfig    gcc-15.2.0
+sparc                             allnoconfig    clang-22
+sparc                             allnoconfig    gcc-15.2.0
+sparc                               defconfig    gcc-15.2.0
+sparc                 randconfig-001-20260207    gcc-15.2.0
+sparc                 randconfig-001-20260207    gcc-8.5.0
+sparc                 randconfig-002-20260207    gcc-15.2.0
+sparc                       sparc64_defconfig    gcc-15.2.0
+sparc64                          allmodconfig    clang-22
+sparc64                             defconfig    clang-20
+sparc64                             defconfig    gcc-14
+sparc64               randconfig-001-20260207    gcc-14.3.0
+sparc64               randconfig-001-20260207    gcc-15.2.0
+sparc64               randconfig-002-20260207    clang-20
+sparc64               randconfig-002-20260207    gcc-15.2.0
+um                               allmodconfig    clang-19
+um                                allnoconfig    clang-22
+um                               allyesconfig    gcc-14
+um                               allyesconfig    gcc-15.2.0
+um                                  defconfig    clang-22
+um                                  defconfig    gcc-14
+um                             i386_defconfig    gcc-14
+um                    randconfig-001-20260207    clang-22
+um                    randconfig-001-20260207    gcc-15.2.0
+um                    randconfig-002-20260207    gcc-14
+um                    randconfig-002-20260207    gcc-15.2.0
+um                           x86_64_defconfig    clang-22
+um                           x86_64_defconfig    gcc-14
+x86_64                           allmodconfig    clang-20
+x86_64                            allnoconfig    clang-20
+x86_64                            allnoconfig    clang-22
+x86_64                           allyesconfig    clang-20
+x86_64      buildonly-randconfig-001-20260207    clang-20
+x86_64      buildonly-randconfig-001-20260207    gcc-14
+x86_64      buildonly-randconfig-002-20260207    gcc-14
+x86_64      buildonly-randconfig-003-20260207    gcc-14
+x86_64      buildonly-randconfig-004-20260207    clang-20
+x86_64      buildonly-randconfig-004-20260207    gcc-14
+x86_64      buildonly-randconfig-005-20260207    clang-20
+x86_64      buildonly-randconfig-005-20260207    gcc-14
+x86_64      buildonly-randconfig-006-20260207    gcc-14
+x86_64                              defconfig    gcc-14
+x86_64                                  kexec    clang-20
+x86_64                randconfig-001-20260207    clang-20
+x86_64                randconfig-001-20260207    gcc-14
+x86_64                randconfig-002-20260207    clang-20
+x86_64                randconfig-002-20260207    gcc-14
+x86_64                randconfig-003-20260207    clang-20
+x86_64                randconfig-004-20260207    clang-20
+x86_64                randconfig-005-20260207    clang-20
+x86_64                randconfig-006-20260207    clang-20
+x86_64                randconfig-011-20260207    gcc-14
+x86_64                randconfig-012-20260207    gcc-14
+x86_64                randconfig-013-20260207    gcc-14
+x86_64                randconfig-014-20260207    clang-20
+x86_64                randconfig-014-20260207    gcc-14
+x86_64                randconfig-015-20260207    gcc-14
+x86_64                randconfig-016-20260207    gcc-14
+x86_64                randconfig-071-20260207    gcc-14
+x86_64                randconfig-072-20260207    clang-20
+x86_64                randconfig-072-20260207    gcc-14
+x86_64                randconfig-073-20260207    clang-20
+x86_64                randconfig-073-20260207    gcc-14
+x86_64                randconfig-074-20260207    gcc-13
+x86_64                randconfig-074-20260207    gcc-14
+x86_64                randconfig-075-20260207    clang-20
+x86_64                randconfig-075-20260207    gcc-14
+x86_64                randconfig-076-20260207    gcc-14
+x86_64                               rhel-9.4    clang-20
+x86_64                           rhel-9.4-bpf    gcc-14
+x86_64                          rhel-9.4-func    clang-20
+x86_64                    rhel-9.4-kselftests    clang-20
+x86_64                         rhel-9.4-kunit    gcc-14
+x86_64                           rhel-9.4-ltp    gcc-14
+x86_64                          rhel-9.4-rust    clang-20
+xtensa                            allnoconfig    clang-22
+xtensa                            allnoconfig    gcc-15.2.0
+xtensa                           allyesconfig    clang-22
+xtensa                           allyesconfig    gcc-15.2.0
+xtensa                randconfig-001-20260207    gcc-15.2.0
+xtensa                randconfig-001-20260207    gcc-8.5.0
+xtensa                randconfig-002-20260207    gcc-15.2.0
+xtensa                randconfig-002-20260207    gcc-8.5.0
 
-Finally, commit 120f28a6f314 ("iavf: get rid of the crit lock")
-replaced the driver's crit_lock with netdev_lock in reset_task, making
-the deadlock manifest: the callback holds netdev_lock and waits for
-reset_task, but reset_task needs the same lock:
-
-  Thread 1 (callback)               Thread 2 (reset_task)
-  -------------------               ---------------------
-  netdev_lock()                     [blocked on workqueue]
-  ndo_change_mtu() or ethtool op
-    iavf_schedule_reset()
-    iavf_wait_for_reset()           iavf_reset_task()
-      waiting...                      netdev_lock() <- DEADLOCK
-
-Fix this by extracting the reset logic from iavf_reset_task() into a new
-iavf_reset_step() function that expects netdev_lock to be already held.
-The three callbacks now call iavf_reset_step() directly instead of
-scheduling the work and waiting, performing the reset synchronously in
-the caller's context which already holds netdev_lock. This eliminates
-both the deadlock and the need for iavf_wait_for_reset(), which is
-removed.
-
-The workqueue-based iavf_reset_task() becomes a thin wrapper that
-acquires netdev_lock and calls iavf_reset_step(), preserving its use
-for PF-initiated resets.
-
-The callbacks may block for several seconds while iavf_reset_step()
-polls hardware registers, but this is acceptable since netdev_lock is a
-per-device mutex and only serializes operations on the same interface.
-
-Fixes: 120f28a6f314 ("iavf: get rid of the crit lock")
-Reviewed-by: Jacob Keller <jacob.e.keller@intel.com>
-Signed-off-by: Petr Oros <poros@redhat.com>
----
- drivers/net/ethernet/intel/iavf/iavf.h        |  2 +-
- .../net/ethernet/intel/iavf/iavf_ethtool.c    | 21 +++---
- drivers/net/ethernet/intel/iavf/iavf_main.c   | 72 +++++++------------
- 3 files changed, 33 insertions(+), 62 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/iavf/iavf.h b/drivers/net/ethernet/intel/iavf/iavf.h
-index d552f912e8a947..0c3844b3ff1c86 100644
---- a/drivers/net/ethernet/intel/iavf/iavf.h
-+++ b/drivers/net/ethernet/intel/iavf/iavf.h
-@@ -625,5 +625,5 @@ void iavf_add_adv_rss_cfg(struct iavf_adapter *adapter);
- void iavf_del_adv_rss_cfg(struct iavf_adapter *adapter);
- struct iavf_mac_filter *iavf_add_filter(struct iavf_adapter *adapter,
- 					const u8 *macaddr);
--int iavf_wait_for_reset(struct iavf_adapter *adapter);
-+void iavf_reset_step(struct iavf_adapter *adapter);
- #endif /* _IAVF_H_ */
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-index 2cc21289a70779..9b0f47f9340942 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-@@ -492,7 +492,6 @@ static int iavf_set_ringparam(struct net_device *netdev,
- {
- 	struct iavf_adapter *adapter = netdev_priv(netdev);
- 	u32 new_rx_count, new_tx_count;
--	int ret = 0;
- 
- 	if ((ring->rx_mini_pending) || (ring->rx_jumbo_pending))
- 		return -EINVAL;
-@@ -537,13 +536,11 @@ static int iavf_set_ringparam(struct net_device *netdev,
- 	}
- 
- 	if (netif_running(netdev)) {
--		iavf_schedule_reset(adapter, IAVF_FLAG_RESET_NEEDED);
--		ret = iavf_wait_for_reset(adapter);
--		if (ret)
--			netdev_warn(netdev, "Changing ring parameters timeout or interrupted waiting for reset");
-+		adapter->flags |= IAVF_FLAG_RESET_NEEDED;
-+		iavf_reset_step(adapter);
- 	}
- 
--	return ret;
-+	return 0;
- }
- 
- /**
-@@ -1723,7 +1720,6 @@ static int iavf_set_channels(struct net_device *netdev,
- {
- 	struct iavf_adapter *adapter = netdev_priv(netdev);
- 	u32 num_req = ch->combined_count;
--	int ret = 0;
- 
- 	if ((adapter->vf_res->vf_cap_flags & VIRTCHNL_VF_OFFLOAD_ADQ) &&
- 	    adapter->num_tc) {
-@@ -1745,13 +1741,12 @@ static int iavf_set_channels(struct net_device *netdev,
- 
- 	adapter->num_req_queues = num_req;
- 	adapter->flags |= IAVF_FLAG_REINIT_ITR_NEEDED;
--	iavf_schedule_reset(adapter, IAVF_FLAG_RESET_NEEDED);
--
--	ret = iavf_wait_for_reset(adapter);
--	if (ret)
--		netdev_warn(netdev, "Changing channel count timeout or interrupted waiting for reset");
-+	if (netif_running(netdev)) {
-+		adapter->flags |= IAVF_FLAG_RESET_NEEDED;
-+		iavf_reset_step(adapter);
-+	}
- 
--	return ret;
-+	return 0;
- }
- 
- /**
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index 8aa6e92c16431f..9c8d6125106f5a 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -185,31 +185,6 @@ static bool iavf_is_reset_in_progress(struct iavf_adapter *adapter)
- 	return false;
- }
- 
--/**
-- * iavf_wait_for_reset - Wait for reset to finish.
-- * @adapter: board private structure
-- *
-- * Returns 0 if reset finished successfully, negative on timeout or interrupt.
-- */
--int iavf_wait_for_reset(struct iavf_adapter *adapter)
--{
--	int ret = wait_event_interruptible_timeout(adapter->reset_waitqueue,
--					!iavf_is_reset_in_progress(adapter),
--					msecs_to_jiffies(5000));
--
--	/* If ret < 0 then it means wait was interrupted.
--	 * If ret == 0 then it means we got a timeout while waiting
--	 * for reset to finish.
--	 * If ret > 0 it means reset has finished.
--	 */
--	if (ret > 0)
--		return 0;
--	else if (ret < 0)
--		return -EINTR;
--	else
--		return -EBUSY;
--}
--
- /**
-  * iavf_allocate_dma_mem_d - OS specific memory alloc for shared code
-  * @hw:   pointer to the HW structure
-@@ -3100,18 +3075,16 @@ static void iavf_reconfig_qs_bw(struct iavf_adapter *adapter)
- }
- 
- /**
-- * iavf_reset_task - Call-back task to handle hardware reset
-- * @work: pointer to work_struct
-+ * iavf_reset_step - Perform the VF reset sequence
-+ * @adapter: board private structure
-  *
-- * During reset we need to shut down and reinitialize the admin queue
-- * before we can use it to communicate with the PF again. We also clear
-- * and reinit the rings because that context is lost as well.
-- **/
--static void iavf_reset_task(struct work_struct *work)
-+ * Requests a reset from PF, polls for completion, and reconfigures
-+ * the driver. Caller must hold the netdev instance lock.
-+ *
-+ * This can sleep for several seconds while polling HW registers.
-+ */
-+void iavf_reset_step(struct iavf_adapter *adapter)
- {
--	struct iavf_adapter *adapter = container_of(work,
--						      struct iavf_adapter,
--						      reset_task);
- 	struct virtchnl_vf_resource *vfres = adapter->vf_res;
- 	struct net_device *netdev = adapter->netdev;
- 	struct iavf_hw *hw = &adapter->hw;
-@@ -3122,7 +3095,7 @@ static void iavf_reset_task(struct work_struct *work)
- 	int i = 0, err;
- 	bool running;
- 
--	netdev_lock(netdev);
-+	netdev_assert_locked(netdev);
- 
- 	iavf_misc_irq_disable(adapter);
- 	if (adapter->flags & IAVF_FLAG_RESET_NEEDED) {
-@@ -3167,7 +3140,6 @@ static void iavf_reset_task(struct work_struct *work)
- 		dev_err(&adapter->pdev->dev, "Reset never finished (%x)\n",
- 			reg_val);
- 		iavf_disable_vf(adapter);
--		netdev_unlock(netdev);
- 		return; /* Do not attempt to reinit. It's dead, Jim. */
- 	}
- 
-@@ -3179,7 +3151,6 @@ static void iavf_reset_task(struct work_struct *work)
- 		iavf_startup(adapter);
- 		queue_delayed_work(adapter->wq, &adapter->watchdog_task,
- 				   msecs_to_jiffies(30));
--		netdev_unlock(netdev);
- 		return;
- 	}
- 
-@@ -3321,7 +3292,6 @@ static void iavf_reset_task(struct work_struct *work)
- 	adapter->flags &= ~IAVF_FLAG_REINIT_ITR_NEEDED;
- 
- 	wake_up(&adapter->reset_waitqueue);
--	netdev_unlock(netdev);
- 
- 	return;
- reset_err:
-@@ -3331,10 +3301,21 @@ static void iavf_reset_task(struct work_struct *work)
- 	}
- 	iavf_disable_vf(adapter);
- 
--	netdev_unlock(netdev);
- 	dev_err(&adapter->pdev->dev, "failed to allocate resources during reinit\n");
- }
- 
-+static void iavf_reset_task(struct work_struct *work)
-+{
-+	struct iavf_adapter *adapter = container_of(work,
-+						      struct iavf_adapter,
-+						      reset_task);
-+	struct net_device *netdev = adapter->netdev;
-+
-+	netdev_lock(netdev);
-+	iavf_reset_step(adapter);
-+	netdev_unlock(netdev);
-+}
-+
- /**
-  * iavf_adminq_task - worker thread to clean the admin queue
-  * @work: pointer to work_struct containing our data
-@@ -4600,22 +4581,17 @@ static int iavf_close(struct net_device *netdev)
- static int iavf_change_mtu(struct net_device *netdev, int new_mtu)
- {
- 	struct iavf_adapter *adapter = netdev_priv(netdev);
--	int ret = 0;
- 
- 	netdev_dbg(netdev, "changing MTU from %d to %d\n",
- 		   netdev->mtu, new_mtu);
- 	WRITE_ONCE(netdev->mtu, new_mtu);
- 
- 	if (netif_running(netdev)) {
--		iavf_schedule_reset(adapter, IAVF_FLAG_RESET_NEEDED);
--		ret = iavf_wait_for_reset(adapter);
--		if (ret < 0)
--			netdev_warn(netdev, "MTU change interrupted waiting for reset");
--		else if (ret)
--			netdev_warn(netdev, "MTU change timed out waiting for reset");
-+		adapter->flags |= IAVF_FLAG_RESET_NEEDED;
-+		iavf_reset_step(adapter);
- 	}
- 
--	return ret;
-+	return 0;
- }
- 
- /**
--- 
-2.52.0
-
+--
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
