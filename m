@@ -1,181 +1,173 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3DDF6E7E0D5
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  9 Feb 2026 18:41:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 69199E7E0D9
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  9 Feb 2026 18:41:30 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id D48A783BF4;
-	Mon,  9 Feb 2026 18:41:30 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id sKQwMaTdbEHb; Mon,  9 Feb 2026 18:41:29 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 0D16783D9F
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1770662489;
-	bh=s1QESa/MbosOGVwqqQRjSoMSoH/kPnhascspn4JCiMI=;
-	h=From:To:CC:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=QPk/LGkKuMuR7S9U5U7zWtm0WJgOzkf1E46rlv4zoshTOac2ZAS7isyGaoziqknqZ
-	 1WiAydbyzYrTxjgppd4X9deBgFKImvgunFWJAHaTRQW54qHfp9lO6vnAT6jsnZxTGe
-	 kucFB3Z9T2N7iOKpTs7gCvnG6dmwsTTQubJZDv/sqqKfYuu3HVoYrU/70X68oaVA5s
-	 CO/YBQxnGILPrTKFZibZrzoUCGSUCjwrw04K/7XR/Vdi0F9+NDzexDWTNAvfFwPEZK
-	 Je1OfDId0UznRVLvpxVDoypNmGi1n9haa08D/eFHGDw+euh+F9vFCDRMiUOFb70O9m
-	 y09km2HHRy6qw==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 0D16783D9F;
+	by smtp4.osuosl.org (Postfix) with ESMTP id DD93C40368;
 	Mon,  9 Feb 2026 18:41:29 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id 65628219
- for <intel-wired-lan@lists.osuosl.org>; Mon,  9 Feb 2026 12:08:50 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 471F740BDD
- for <intel-wired-lan@lists.osuosl.org>; Mon,  9 Feb 2026 12:08:50 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id odDVQA8cxI4i for <intel-wired-lan@lists.osuosl.org>;
- Mon,  9 Feb 2026 12:08:49 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=52.103.10.22;
- helo=mw6pr02cu001.outbound.protection.outlook.com;
+ id wyX_kZ5gnZva; Mon,  9 Feb 2026 18:41:28 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 57292401C2
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1770662488;
+	bh=JggTqoBrwZBNqHzWyp0HVtMk9xzpBEA4L9eOkSRHggg=;
+	h=From:To:CC:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=LmK9PXT+Zlu6Agw2wM+LwziSUWG6wtAW9QSNtphNP96bGXm2bZLrCkQng3g6nNd0f
+	 PtF/kfl9QOLH8pw0IDgZBAfwtyapwMsPuSE2umhWGyYxV2fxhSQtwrHICy62btupiL
+	 I7uj3k/dxBlrrxX0kLVj3gklDSVyYK/pUR8j7b7iZjGp4NvaPM3XIrb/CkqiOWHIaS
+	 yesWwSAbA9hOe2vEbkUkxOh1AhWFOnz92++wVKf0m1JN8gGCHDBFamyAH8mkG3cgYW
+	 CprCdWb+wijfMMYUCl9Ygv0bW2snLPAY6E4T1CVuyGq0+Jb2zIW+6FcqVDLbkP7Pcn
+	 rFQZCB2ZIYLyw==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp4.osuosl.org (Postfix) with ESMTP id 57292401C2;
+	Mon,  9 Feb 2026 18:41:28 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 233E02A2
+ for <intel-wired-lan@lists.osuosl.org>; Sun,  8 Feb 2026 12:33:35 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp4.osuosl.org (Postfix) with ESMTP id 09ED340829
+ for <intel-wired-lan@lists.osuosl.org>; Sun,  8 Feb 2026 12:33:35 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id CKbjm_x1Q2A3 for <intel-wired-lan@lists.osuosl.org>;
+ Sun,  8 Feb 2026 12:33:33 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=52.103.7.19;
+ helo=cy7pr03cu001.outbound.protection.outlook.com;
  envelope-from=harshankmatkar1304@outlook.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 4278740BB8
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4278740BB8
-Received: from MW6PR02CU001.outbound.protection.outlook.com
- (mail-westus2azolkn19012022.outbound.protection.outlook.com [52.103.10.22])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 4278740BB8
- for <intel-wired-lan@lists.osuosl.org>; Mon,  9 Feb 2026 12:08:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 5DC6340816
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 5DC6340816
+Received: from CY7PR03CU001.outbound.protection.outlook.com
+ (mail-westcentralusazolkn19010019.outbound.protection.outlook.com
+ [52.103.7.19])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 5DC6340816
+ for <intel-wired-lan@lists.osuosl.org>; Sun,  8 Feb 2026 12:33:33 +0000 (UTC)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=CPGe/i9XIJnUkcAIDVtTFdtB0LGFRRYW9pz9O8JCMLTzZTTymRQQklYg8KaU5QuJvGcoviyvbqoOS68Nj/9NjZbWXtDRy/qAJeXRxD1lJ4Xzfh+txzQfEtGLXbAEls4N0E9D92jaWOGr7dd9Bsc+1mN1IuT3ix0Nt3r4FO7FCekCEyKaWgGZrWnUZtb/C4M7tVQPc93bMyqdSquJd1DgGeH3erbF+lk7x9qaH6XXfoP4a/g/aNAd0KPJhtHp9AmgLYcOVDDJi135KXjbHTl+6oYTNgK/F/kqjV8yEc8LPIi15XOaB/e+3ZjStVGMU7HoiEZ4vTidFToq1A23KnCc2Q==
+ b=yfxAXr1i1CRWqJfXppsQa5Ssye2Q1pERb6uG0cLyPRLfsoRuAtCWICiBBgzn+EveQwIr1rSlpbJCySIIyx0Y57o0mRF9q8T+AraSl0fYehqAi9j5tGEzlWkMLFt+9Z927s43blIXynVGaIGnQbmYt8ZTjJ4OkBYJu428ECBU6w+8Diag3sbXoK39cgJIsRKEJFBwAzctuKhcfugIrVdXrCA32p2FuCjND+SL5sK6J6LQeCS4UJhjLcA9/VrbEAJzGAcm8IlYtEA9jYuP+Be5vYSGQKhgwuhhxSED8fpagr7zVvA3UFLs+ecJoaj1MdgZDcO4cMQcY/vkDZqK7b7LkQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=s1QESa/MbosOGVwqqQRjSoMSoH/kPnhascspn4JCiMI=;
- b=Fy/TUgGaHuM4ata5jc804oOe42FWoe2jW9bp7Js0Yh0yAVB9KEqiyJNcbKseyuPPQMoyNTSHIL1jhtDW46FY0W6aAtMpXj3puUCYgsAIViNz/QTyK4wqEgjo4a2DFKmpaGQh7MJobbWhDxsRM32GxZw0ACHIkVr5WNyIwl2lRodus+L8HbJ5MXaYh/yVpumh5/Z7P0OJWSEyBy3H89/t6XzBC/Ma976/s70iV4GCna3KGUNVLTqEP9flllZ2wlGVBBHSHQtFXD6Cloxn/5goRCpbTTlJ+jR3xrivU0DO9wB+xl5B0ZzA6DCAOJZ60kyNRI/C/TxGmYAeo7bGBrvpkA==
+ bh=JggTqoBrwZBNqHzWyp0HVtMk9xzpBEA4L9eOkSRHggg=;
+ b=EVygxfzEZFIvNXkONNl8WMjpm0ZYl3L+LKEkstqWBTOgzI//fqSU5dY/Ft/1P6mj+Faxr0MC6DJzLdWXSSxFVaTO3eqNAuhHNG0au5FB5X5KfGnY6M9D759fLVQ+l5sYMAu3DgndvpbfJs8biLxDKAqwBtifeH7Pu3DQPg7xRRR7FFiktBUuA+bbgWQv/ijsuyacTLcId7/YAzR6BVmJ3NIhm3NZkTyKZ5MFSoDKKKJxOT3vOqKoj2t2t9uy3Edje6UOrOwnZKaSLL6AnlEkaLL6E3411kUsC97f+bvU5VkdZB8q2q6abfL51VfDzFvKF3ekOucTWB8iCJkbboX4Tw==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
  dkim=none; arc=none
 Received: from MN2PR14MB2638.namprd14.prod.outlook.com (2603:10b6:208:cc::16)
- by BY1PR14MB7125.namprd14.prod.outlook.com (2603:10b6:a03:52e::21)
+ by SAWPR14MB958172.namprd14.prod.outlook.com (2603:10b6:806:4ea::13)
  with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9587.16; Mon, 9 Feb
- 2026 12:08:46 +0000
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9587.18; Sun, 8 Feb
+ 2026 12:33:30 +0000
 Received: from MN2PR14MB2638.namprd14.prod.outlook.com
  ([fe80::101a:ee9b:a260:5e50]) by MN2PR14MB2638.namprd14.prod.outlook.com
- ([fe80::101a:ee9b:a260:5e50%6]) with mapi id 15.20.9587.017; Mon, 9 Feb 2026
- 12:08:46 +0000
+ ([fe80::101a:ee9b:a260:5e50%6]) with mapi id 15.20.9587.017; Sun, 8 Feb 2026
+ 12:33:30 +0000
 From: Harshank Matkar <harshankmatkar1304@outlook.com>
-To: "anthony.l.nguyen@intel.com" <anthony.l.nguyen@intel.com>,
- "przemyslaw.kitszel@intel.com" <przemyslaw.kitszel@intel.com>
-CC: "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>, Harshank Matkar
- <harshankmatkar1304@outlook.com>
+To: "anthony.l.nguyen@intel.com" <anthony.l.nguyen@intel.com>
+CC: "przemyslaw.kitszel@intel.com" <przemyslaw.kitszel@intel.com>,
+ "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>
 Thread-Topic: [PATCH] igc: Add PCIe link recovery for I225/I226
-Thread-Index: AQHcmbzXc3p+n5zUJUKDNFrykiLBQQ==
-Date: Mon, 9 Feb 2026 12:08:45 +0000
-Message-ID: <20260209120815.29545-1-harshankmatkar1304@outlook.com>
+Thread-Index: AQHcmPRoRFslS/JtjUu2hVBnd7mLkw==
+Date: Sun, 8 Feb 2026 12:33:30 +0000
+Message-ID: <MN2PR14MB263885081E3A4C87043676CFDE64A@MN2PR14MB2638.namprd14.prod.outlook.com>
 Accept-Language: en-IN, en-US
-Content-Language: en-US
+Content-Language: en-IN
 X-MS-Has-Attach: 
 X-MS-TNEF-Correlator: 
+x-ms-reactions: allow
+x-ms-exchange-messagesentrepresentingtype: 1
 x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: MN2PR14MB2638:EE_|BY1PR14MB7125:EE_
-x-ms-office365-filtering-correlation-id: 4c2ff9e5-a73d-4169-d5e8-08de67d3f9d9
+x-ms-traffictypediagnostic: MN2PR14MB2638:EE_|SAWPR14MB958172:EE_
+x-ms-office365-filtering-correlation-id: d677758e-b23a-434e-c71b-08de670e4468
 x-microsoft-antispam: BCL:0;
- ARA:14566002|8062599012|8060799015|38102599003|461199028|41001999006|31061999003|15080799012|12121999013|51005399006|19110799012|440099028|3412199025|102099032|40105399003|1710799026;
-x-microsoft-antispam-message-info: =?utf-8?B?NTBXTVFFM0VkL1hFQnhXaFhjRXgyNGFUTk95RkhmTzJ6NUpPL3JXeHlKYkVi?=
- =?utf-8?B?NnVzMVYrMXNFQ3ByVWpUSGllaFM3YldibVlRaEppbnliUXlCT2J1cFN3cldT?=
- =?utf-8?B?bjBBQ21NQ0hGWDNoZEhuTUdxNUlwWFFmeGJjQ0htZVBOODhGQ3VFMjhEL2tI?=
- =?utf-8?B?STJrbFhSRnVmVTdKdXFMcVdEUDBGaUEwUi9jakl5bmpZbGVLc2lBK3VBM050?=
- =?utf-8?B?UlVXU0hWb2ZrODYwSUpPNkZkS1JYSmNMRmNYbVBWekNwcUZqQjVkWXY2WVpC?=
- =?utf-8?B?ZUpRWVdqOG83TEM1bXkvREcxMVM0NlR5Wm5tTzdoTWFPQndkM09CTjIzM2M1?=
- =?utf-8?B?cFk4SjFSOEJmOXMwNTBOMVJSVitTb1RXUjVFMzJFTWVrM3JNR3BqdEp1K2dw?=
- =?utf-8?B?bldpYWsvd29pQVZ2ODJOamRnQmFPQS9qdTZGSWJHOVRqTkt1Mm8rL3ZjTWZr?=
- =?utf-8?B?a2kvb3VoTnZHdkF0U1hiR1puRi9qRXlDZmVHcktBTUtYeXp0MFBGQXhMbE94?=
- =?utf-8?B?bWtMNkRQUHRKRU5IVUhlbHJISUJSL1lEaU03c2QrMnQ0NXc0THY5Qkdkdy94?=
- =?utf-8?B?bTc3bElIU1E4TS9YQ2EveFlaeWRMSWx6ZFBHVlNNaEFVMFR6ajdCejFlWWg5?=
- =?utf-8?B?T0Z3MHFZdXFrVXkyR25kaWZ6RzlZUVozQmdFb01Qd29YRjQyU29xWnRqc3BK?=
- =?utf-8?B?amQ2dWxPM2tsdFpEK0FlU3VZRVJhbUpINTdMdllWQnN5T0hBbjRNWnlnODJF?=
- =?utf-8?B?SmZVVmNmdUFUTWs1MnEzUGZYOEdXMm9xU25zSHFNQlJHMmNpd2FvdDZSMTNi?=
- =?utf-8?B?d2oyeEJTclpWOFBUR0prSHFDOVRSblQ2OVVaWnJlc090MTBhemdsOWtHSkZv?=
- =?utf-8?B?dEpXcG1FNW1UM2dqVFRqQituZXFQVE9uTGdNTllaTGlMUzFEV1UvMHhSNk9J?=
- =?utf-8?B?b2toVjdDRHFLWmhxaW96SGJUa0V4ZTdsMXIwOEZnaXJXdVZMeVBaWmF3dG9E?=
- =?utf-8?B?Q1V2MlM2T2FIRTU4a1ViRHhrNjg3dlMxZTFTSitKWS9XTFdzUHFHS2Q1cEp0?=
- =?utf-8?B?NzZYeXVlSWMybHpMYmxic1JKU0pGUldvTUdFeERJMUc1OFdiU1dPUlV0b3NZ?=
- =?utf-8?B?ZGVvbmtSaUZaQWgzUWl5eDJZekZPMDlUbHRyTWZHS2hWZnJoU3lTUEpyQnhY?=
- =?utf-8?B?ajNlL2xDZ2dTVFdDdUZ4a1FtcFlWZEJXczFxYUxkVEhpYkFGd0JEaklmZm5L?=
- =?utf-8?B?TW1rUHVVVnFvMXQ3MFVFdDZtVU5VTmgzR0daT0VVVkFDUEF0aS9RMFg2QTl4?=
- =?utf-8?B?K0hNbmx2TmN3OFJ2YVJuNHI4U2lHMWNKNENpK3dxZmcxb0UycjUyUkkwbHlQ?=
- =?utf-8?B?b1BUS0pKKy95WHVzRC9kTi9tdkdEZXZLV0hNRU43SFg2MERHK0VHYkdjUUhH?=
- =?utf-8?B?TUdVMloxM1hjakduNG40N1ZRZys5aVZWeEtoRVNRWi9yeTZuZUhDVmVhNjlO?=
- =?utf-8?B?ZUdHamFXdnhKMm8ydk1xV2dLaDVZQk91MVhYSnh6eVZRcEw0Z0tOaHEyTzA3?=
- =?utf-8?B?UG9tVVRuQVppNHJVRDZKb3lNdSt1c1lnNWtIVDllejlXM2xQKzFXY2J4a3FN?=
- =?utf-8?B?T20zS1c1bWR3SW8wbUdDYkRjVG5yWW9ER05vR0dMVnNodTJTdzUzaS81ejlt?=
- =?utf-8?B?aDVPNEdFQVY0TEJVZWhUWExiSml6bUMxV3BKQVludXJaZFBYNVZEWEpMWUJF?=
- =?utf-8?Q?5HG+GzJIFErZv7MeyU=3D?=
+ ARA:14566002|461199028|31061999003|41001999006|8060799015|8062599012|19110799012|15080799012|12121999013|12050799012|20031999003|39105399006|9400799043|55001999003|14030799003|5062599005|1602099012|40105399003|440099028|4302099013|3412199025|10035399007|102099032;
+x-microsoft-antispam-message-info: =?iso-8859-7?Q?FYch+Pv02QhnDFMzNBf2Hb0YFS+KQchj4lPYotOm7edbbkl+7SkfhyEFgR?=
+ =?iso-8859-7?Q?1Xxz3fRV70hqj5HS86+fQ37v6ELR2HolFC1kMDsz8CVd6zX/YRg92EgnML?=
+ =?iso-8859-7?Q?Wo6Q+s+PSq+3QfZznJC1u+ylgmTSnH542MGYxvkkx0eD0MMLuFYtuVUd4F?=
+ =?iso-8859-7?Q?PiN0xIRGTsgQcStPYRhVYWF4sNlaKp3hDuEv14akuDJZ8Ck3c1abpZ/i9T?=
+ =?iso-8859-7?Q?kBYtEv6AL5NkV0cuAjlLHNIKhOOH8NHIa9UjOQ+Kvnl2OTkt1HIr0Mv36R?=
+ =?iso-8859-7?Q?9e11pXZQ7KLZALo4r12sOSkyMzW7lzdS5OZEXh7UhdznE4yxnQzMOwWe9A?=
+ =?iso-8859-7?Q?lByYrKd+j1e7+0vE0+8DT1uuOJ1ymCumpYvVOzV5wxWyDrj+9xnMleyRuA?=
+ =?iso-8859-7?Q?oki8rsxBpEg0/eDL6CnoVG/niO5E3K/bmY4RZXNc8nUY5FImTnjQPiZGdV?=
+ =?iso-8859-7?Q?KLoHjg8kSPJDVw8+LPBolBOVVt+RfcMKOS8UOwcKpmoPpLGjvydb4o99gw?=
+ =?iso-8859-7?Q?7ixg1lSJtSZXsztWx+84b6ZNhQW1djGx2NTFzdjCGqPKvA+WMmTtaxtANG?=
+ =?iso-8859-7?Q?uMa2JB+K0sOlwPWTZOQiy49I0nm4hDo/1MvydvZmrWoVOQ1hWSroVUkMSU?=
+ =?iso-8859-7?Q?EB21VE4RFv4+IvemKw3Til+veppUpOtoiu7FWpRRlzVr0io/XAEh98H7Jg?=
+ =?iso-8859-7?Q?bVSo2e4UAzu5n1x8Fy90ipTE6C6xsWoae9guELtKwNvm2l4V5rEyZSPY5m?=
+ =?iso-8859-7?Q?jTeQOKgDcZDFcQS8moR6vFMvQvBDS4peNLdfe9U2THX/Er4ORF5oh2bXxc?=
+ =?iso-8859-7?Q?9DZ4o6xD7UG90qYsX+TYG4TQpu150dzF26BnSdcchaIHBpcod8JpKBaqd5?=
+ =?iso-8859-7?Q?5nH55Qh9HS0SV+hlsrcY55oAI7sASlCs99saLdU7REscb+8k8dvDvP6oK4?=
+ =?iso-8859-7?Q?elTH5RkQl7SwAN2AAm0cyi1YQo58eeXzgkVazL7OKT/WWcn8jSOIgxOiJ/?=
+ =?iso-8859-7?Q?q7jrFhTL9RzIY3+pb2OmG3IUuoOaZAcpJDfE6N/ihzbQezg0LDFAgFkm6s?=
+ =?iso-8859-7?Q?H5I5T+ZNRvUX2rqL856flk1vu5K30b4Y5ckQPbjNq4L5Y3nH/TjbP5ytSB?=
+ =?iso-8859-7?Q?7LOuOerLW8JeO+SE9pwMmoxpMnJbS9gLec8H7jyiUWz01It//KYVrShNzu?=
+ =?iso-8859-7?Q?V4qBB60W1jEAX/t2z8rnAfgR3jl3GwmtDZm3eJ9UFQVbj9fo4NApCEYRj4?=
+ =?iso-8859-7?Q?IdvuWa+f9cCJowiQvaZJ3MUi/+bkiqs73YYIhmn3AZypQxJlPng5uvgqPC?=
+ =?iso-8859-7?Q?RX+zaNN+A8fTWGAYqO2AgDwEUc9CbCGQjXyIcSo68Ejqkhx4RRJkWgRDiZ?=
+ =?iso-8859-7?Q?ZihybjLlqoOiTSpL25LpUieTYaETzY+ebpa1z5ej7AFOuSKziWqH93wesO?=
+ =?iso-8859-7?Q?dTRDoYm7viINW+eXH6sA3kZMBF8d4wbKVHqcLNAqhEq7Ch8XNy0D2fzj90?=
+ =?iso-8859-7?Q?ou/0FlmEaUgWLAdvgBpUuDZLFdFya5/k3/yod9EG6vKUtkCA9G4UrOLqIi?=
+ =?iso-8859-7?Q?YpLzE6OVteoTi4/S5qpfx1XOeikN?=
 x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0: =?utf-8?B?MnRVK1dXcDZIY1pheE9lNjRrb2sxSExxWllMS09VTXAzMDhqTTZONkJzTUZw?=
- =?utf-8?B?Q25ibmUxUkRZU1Z1VkRlMHgwNjVJNFZVbVluNTlvYStKMGFiZE9pcVNxVnFF?=
- =?utf-8?B?eklrK0h6bTYraFZFVEkrdU5rMnYwUVV2TTN1cDFaSVFHeHdKdWNLRlVsa1NQ?=
- =?utf-8?B?STE4RmRFUXIxa1RKanVOZFpTcm0vKytqNWFTOURxVWQydVJCRnl5RXBta1NX?=
- =?utf-8?B?aHZrc2ZPRGYzTCs4NUhYOE5yaDFLc2wzMVUwUWJNVVRjUHRwUkRBZDlCM05y?=
- =?utf-8?B?K2w1b05hdUQ1VUlRbU15MGxXZzBwNEVkZjZMcEhRTS9xMUVrbGcyemJOb3ly?=
- =?utf-8?B?Q3JjSEoyU0N0Q0xrTkhwMEl1NTh3VkVCRENXVGRIN3NjK2ZQZmoyTEdMWDZS?=
- =?utf-8?B?eXZPb0QzZnlyNXJpM1pSdUg0SVJNcTFQUHJWNGRnaEhoMFFJRElMbFhDblEv?=
- =?utf-8?B?WHpaZkl2NW9oUTJjTXdEeDFqZlNpeVN0NXZBL1ZpSjVEWUtzQXhlblZLV2k4?=
- =?utf-8?B?RGZJclQ4Q1FvY2dQOFFTUkVxbU5mbnh1V3l0Wm1BQlVHZXpQQXpsNFJQNkFq?=
- =?utf-8?B?eXBiNFUrTkl3aFZjL3ZENHJlM3lubTFjYVljRDJGMmFRUW12Q1hKK2hxK1Jt?=
- =?utf-8?B?N1JDbkdaZTVFWkttY2VTSlJPNWJ1MXc4d2NIOVdZMWhoaHltalQ0M2F3a2hp?=
- =?utf-8?B?NHN5MUF3eFl6ZzVCSUNVTTRaeUpQRGljNnFGZkFKTnBZZ2Z3VWVXNmpXZE1U?=
- =?utf-8?B?ekM5S2JTVGh2UDlqMVJaMGt4SWJXZ3FoZEExU2V0UFpMVWp2TTd3dXpiRFdS?=
- =?utf-8?B?UVRhOVFKUkhFL2lsNi9ZRFg0Y3FtRnQ3WkNZaGZUVWR4WmRKYk9tMUxmcUg3?=
- =?utf-8?B?bk14Y1RDOWUwaGFpWW9XOXZIU29vM1R3bUZPL21tRERqUVVoRWdUdlZQMkJX?=
- =?utf-8?B?Z21jNE5PZytFQ1FnMDhmc0lDNSttcXVuVzJUZHpxUHBiU0ljMTNZNWV2OGc1?=
- =?utf-8?B?QWR0dzRWcy9XZndnQlAwMkR5eXBRVGl2KzI4ZHF1Nk1ZaUJ2ZFgwWlY0Q01R?=
- =?utf-8?B?alFtbE1TeE5YSjViaXZEaFNNMWxFNzlIcTg5V0M3WVVFeEdwSVVrRlhrWEZB?=
- =?utf-8?B?TWhqVXk4bWY1UTl1SllqNGVMT3g3ZFZpd05jRDBRZ2xlYVNiZ1NjZDFpV3Bi?=
- =?utf-8?B?ZXpaSy9BTytOSDcvc2VjTnY4dEQ2OG43Rkg3WE9BUFVGcHg1ZFNYWnpURVFD?=
- =?utf-8?B?d0tJcWllQVBZcGg4UFdxMVRtMm9xY3pzREQ0bGdnS3IvbWY3YlZGYy9HVE1v?=
- =?utf-8?B?dVFaSWdBZUFDV1gxNzF1aGNGak1jT1dHajdXTEJsTnFPSnNQci8xeFVRYnFj?=
- =?utf-8?B?b2pBQ1dpUGhFVjRHQVdBU1ZwNVVxR0s5QW9MWnREQU5ubmpoZ2ZCa2xiRzFn?=
- =?utf-8?B?V3ZyaWQ0NzlGQVZFUlhoUFN2Skk3Ti81aWtINDRHaHAxWjZuTzNrcmdHaWxy?=
- =?utf-8?B?R1o3dm4vd1FSbVkwbWNDVS9KM3QzbzVtK0l2a1l6ZDl0MEhsSjFqQWlVNnZZ?=
- =?utf-8?B?K3dDcGpMMktqbDBzVVFMbG9ka0xWNDlqbytwSXpvTU53b1VvdVFINVYzL1hz?=
- =?utf-8?B?dU9vdGd6RzIraDRGdDF6WlJ1SEZaeFRGdUxMK1RkRXhaTzlrZlFTZzNWQnhx?=
- =?utf-8?B?dXR6N2FyZk5nN3FNWW9yNDdBTmxpTi9TY2o1eGR6RUZXT0hmOEJlcEsra2M4?=
- =?utf-8?B?Vm5VeXNjVWY0L0h1YStkSUVlTDZnNlRDN1YvOTZSVzdmdkdNRG1nOC9Nemdi?=
- =?utf-8?B?dG5STHRuNlFpYU1nQTVTdTVMK2JucGdQWlR1NWZQR3JiRkRBMFFSVzd2dDFX?=
- =?utf-8?B?WE1JcldFL2cxQlpnTDZESFdHNStnZHYreVBhRkdJOFZiR1E9PQ==?=
-Content-Type: text/plain; charset="utf-8"
-Content-ID: <F54EB8E8B06893499D83CB407BF4DD51@namprd14.prod.outlook.com>
-Content-Transfer-Encoding: base64
+x-ms-exchange-antispam-messagedata-0: =?iso-8859-7?Q?ad2lLtk2zU4FspYvAbzFK6+juGazWzB73kFpRMylFoqJWOkPz7jHtoIdnR?=
+ =?iso-8859-7?Q?NrBrjV3NRGP83Q71NKnc7Nmlt5vZxLTmrCpAVDtLphs5um9SsLksg3S23w?=
+ =?iso-8859-7?Q?2tnvkU+4Ob+/KWdBmIk9OZemqdLPfp5HiaHYPq5FHRd0d6iCqdyXQuOQi7?=
+ =?iso-8859-7?Q?s4ePaQLieSlWW5iOz0yrt3Hl1tDfZgLPsxn2vOZFSpLyIlYBXL+Id6S0bp?=
+ =?iso-8859-7?Q?EDWbBsrIwEZNez1DP3m21XzXXAkBjdGoqNoamTTyg6ByO2GOu4KJ0+8IeY?=
+ =?iso-8859-7?Q?ObgaIz8oQ4a6kaBr6JZnSUYnoIA0UhHq7PIup0bHwMwK6WyDT7B1oBsZjL?=
+ =?iso-8859-7?Q?ONbIViXwrzuvzQNYzoz9EBEZnpZ37fdoh8HBTWMDG0Wxc3ZShiOb00dP28?=
+ =?iso-8859-7?Q?eyyORwFkx9MjEyIUFN5ZgX2AHSTHFoete5OFjvlx7zS2MbCLyPD52ZZbo6?=
+ =?iso-8859-7?Q?qImJqdj7IUJJTVk6zQBlXoCPhzrZilJNTQnQk6HUSofegQW5gJu8d8K7ts?=
+ =?iso-8859-7?Q?KR/mzeRItpMT8REtba6WjBXQOv/PltIBdXQfXBvMtbAHTXFRYY+yS/e6B2?=
+ =?iso-8859-7?Q?fKzFAvnMcsXVUzvYXL0xE1AgQRG22pdArXHtSBesEWF/m/P4yeyOAOpesi?=
+ =?iso-8859-7?Q?08UuMm5OF8EaMg+ef0Hgx34v6BUGLKRIHP//t4wK6C2M8h3sFSZeuPa6U4?=
+ =?iso-8859-7?Q?yHVaD1F+2qOuBNuC8rbhC3uOYxC01DXDnlm6SA16jAzwF96nB+qOryiDAh?=
+ =?iso-8859-7?Q?u/4p1tLcFD+OYHIgcUqex5dcz3lJCmNH45pFGLKhaFxtnnCr7T5P2PvdkG?=
+ =?iso-8859-7?Q?OrnCfTiAd8t7+SDT2yHrLPU8XC7CQQtkk3uxe8x76lUJIssEZXnIwhAa4Y?=
+ =?iso-8859-7?Q?4rHtSOocFkQUwmUu6+Mlq47jrs0nsGve3b9vbbeli4uHgBJcjYD1E6moK7?=
+ =?iso-8859-7?Q?jlv6N8LnDmbRH1CcNbiXsg+lhKVjU6J4b9KTuNePVtg16oI5EiPEZJfi9s?=
+ =?iso-8859-7?Q?CHWJ47acLoPJmyMhfDWbItK5iMvYozvGN0yKBiN9OEj+Hc9Fpylk8/Imh4?=
+ =?iso-8859-7?Q?hCPrOpAsJK55klarEh8LYIOEYmKxgN7DCUA8i8YfoGd5fZh81K7GAG72vs?=
+ =?iso-8859-7?Q?i9sKqD/E6wcPMQIzkf0THHWVg7xUY/K4XUoEHsrYCKy3TzeFAg4pOcLsDm?=
+ =?iso-8859-7?Q?9xNQOAJrWjh0g8OnVye1StuI0OPt18+BS33KmQB4Kd9S19rcukGUmEqw0p?=
+ =?iso-8859-7?Q?YDRD2H8WDJuNmE+uxBfYcoRtBagyG0b+12VBGIFT6R7Jnw5cD18EIaGNMD?=
+ =?iso-8859-7?Q?CTLkGECPCxkNEaKB2h3hEroViJZzzSxouyuFHw/D1xwMzH0/YqJuINJoV2?=
+ =?iso-8859-7?Q?6YUNoV5hUI+WacS4djKJGIRkglk28i1Q/JHJl6IIBV+QcLou1G0KEF5o3j?=
+ =?iso-8859-7?Q?LG1imY+OR6F7R+2pF26Fq4HBXwFPWmOnl+XNQthlbANS9EiKqKgOVDTbAV?=
+ =?iso-8859-7?Q?k=3D?=
+Content-Type: multipart/alternative;
+ boundary="_000_MN2PR14MB263885081E3A4C87043676CFDE64AMN2PR14MB2638namp_"
 MIME-Version: 1.0
 X-OriginatorOrg: outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
 X-MS-Exchange-CrossTenant-AuthSource: MN2PR14MB2638.namprd14.prod.outlook.com
 X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg: 00000000-0000-0000-0000-000000000000
-X-MS-Exchange-CrossTenant-Network-Message-Id: 4c2ff9e5-a73d-4169-d5e8-08de67d3f9d9
-X-MS-Exchange-CrossTenant-originalarrivaltime: 09 Feb 2026 12:08:46.0258 (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: d677758e-b23a-434e-c71b-08de670e4468
+X-MS-Exchange-CrossTenant-originalarrivaltime: 08 Feb 2026 12:33:30.7872 (UTC)
 X-MS-Exchange-CrossTenant-fromentityheader: Hosted
 X-MS-Exchange-CrossTenant-id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
 X-MS-Exchange-CrossTenant-rms-persistedconsumerorg: 00000000-0000-0000-0000-000000000000
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BY1PR14MB7125
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SAWPR14MB958172
 X-Mailman-Approved-At: Mon, 09 Feb 2026 18:41:25 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=outlook.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=s1QESa/MbosOGVwqqQRjSoMSoH/kPnhascspn4JCiMI=;
- b=bWZfAjrJAUleLp8mMbJgcMyMdZi7Rj2NXsyCsoRw+Q17na1p88zn8CzjxDXj/3XzsE3d2ePk3gKNc/k11/Li8KQ3K9q+htxTnxI1B9h1n7IkiYLVLApfQ1IaWVUT8XHmcgF5ybSpTYxMTYlIewPVGUtS4tesA3vzJfjM6+Jad3KATLHutRfORr/YSTImSnL7ASsirdxV3qbiZNWrXmk5692VIA31RqWpVNXu4L/kB9aeG1vbi4fINobuPtO9Y4toYXenx5ODB+r/qemZU4EDoMZsm3vBAbYNjlYqiE4V5+x9lvktKQYDq7DNgNkAKAa9f8jWvqggarV/P5hBddWVaw==
+ bh=JggTqoBrwZBNqHzWyp0HVtMk9xzpBEA4L9eOkSRHggg=;
+ b=ebL0SFs87chTO6/1FEjefREY1FGRc3JgAEPLHBOGeisX4NFTlXHJrA0DaS/LCj4R8YAM/yz6OE0U2HfEjP0dZMByPQDaXLo6k+U+Itn12UXk24TfKub3l7HwR6xHxbijFk916D4vO9HTUp2Q2hPHWcdkVcXxbDutfb+VE7ywqqYCP6SjEchjh8RAKj/z7r2YeTSOApDyl8DvJ1ps7OXZQyNxlmkqF3S7JdqeIsGmH6mPI5JJ4d1b4CYuEJ2b6fsWjx1rXFAvQbYiZ6ZpI/h1+HXmOS55pnvWMzs0Me+CG0s+nftiSoZRuwf0uHL9DYOG1D1JhwhKuttNQKZaqoi5Lw==
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=outlook.com
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=outlook.com header.i=@outlook.com header.a=rsa-sha256
- header.s=selector1 header.b=bWZfAjrJ
+ header.s=selector1 header.b=ebL0SFs8
 Subject: [Intel-wired-lan] [PATCH] igc: Add PCIe link recovery for I225/I226
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
@@ -192,160 +184,1544 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-RnJvbTogSGFyc2hhbmsgTWF0a2FyIDxoYXJzaGFua21hdGthcjEzMDRAb3V0bG9vay5jb20+CgpX
-aGVuIEFTUE0gTDBzIHRyYW5zaXRpb25zIG9jY3VyIG9uIEludGVsIEkyMjUvSTIyNiBjb250cm9s
-bGVycywKdHJhbnNpZW50IFBDSWUgbGluayBpbnN0YWJpbGl0eSBjYW4gY2F1c2UgcmVnaXN0ZXIg
-cmVhZCBmYWlsdXJlcwooMHhGRkZGRkZGRiByZXNwb25zZXMpLiBJbXBsZW1lbnQgYSBtdWx0aS1s
-YXllciByZWNvdmVyeSBzdHJhdGVneToKCjEuIEltbWVkaWF0ZSByZXRyaWVzOiAzIGF0dGVtcHRz
-IHdpdGggMTAwLTIwMM68cyBkZWxheXMKMi4gTGluayByZXRyYWluaW5nOiBUcmlnZ2VyIFBDSWUg
-bGluayByZXRyYWluaW5nIHZpYSBjYXBhYmlsaXRpZXMKMy4gRGV2aWNlIGRldGFjaG1lbnQ6IE9u
-bHkgYXMgbGFzdCByZXNvcnQgYWZ0ZXIgbWF4IGF0dGVtcHRzCgpUaGUgcmVjb3ZlcnkgbWVjaGFu
-aXNtIGluY2x1ZGVzIHJhdGUgbGltaXRpbmcsIG1heGltdW0gYXR0ZW1wdAp0cmFja2luZywgYW5k
-IGRldmljZSBwcmVzZW5jZSB2YWxpZGF0aW9uIHRvIHByZXZlbnQgZmFsc2UgZGV0YWNoZXMKb24g
-dHJhbnNpZW50IEFTUE0gZ2xpdGNoZXMgd2hpbGUgbWFpbnRhaW5pbmcgc2FmZXR5IHRocm91Z2gK
-Ym91bmRlZCByZXRyeSBsaW1pdHMuCgpTaWduZWQtb2ZmLWJ5OiBIYXJzaGFuayBNYXRrYXIgPGhh
-cnNoYW5rbWF0a2FyMTMwNEBvdXRsb29rLmNvbT4KLS0tCiBkcml2ZXJzL25ldC9ldGhlcm5ldC9p
-bnRlbC9pZ2MvaWdjLmggICAgICB8ICAgNiArLQogZHJpdmVycy9uZXQvZXRoZXJuZXQvaW50ZWwv
-aWdjL2lnY19tYWluLmMgfCAxNTUgKysrKysrKysrKysrKysrKysrKystLQogMiBmaWxlcyBjaGFu
-Z2VkLCAxNDkgaW5zZXJ0aW9ucygrKSwgMTIgZGVsZXRpb25zKC0pCgpkaWZmIC0tZ2l0IGEvZHJp
-dmVycy9uZXQvZXRoZXJuZXQvaW50ZWwvaWdjL2lnYy5oIGIvZHJpdmVycy9uZXQvZXRoZXJuZXQv
-aW50ZWwvaWdjL2lnYy5oCmluZGV4IGE0MjdmMDU4MTRjMS4uMmVmNDg4YjI3OWI5IDEwMDY0NAot
-LS0gYS9kcml2ZXJzL25ldC9ldGhlcm5ldC9pbnRlbC9pZ2MvaWdjLmgKKysrIGIvZHJpdmVycy9u
-ZXQvZXRoZXJuZXQvaW50ZWwvaWdjL2lnYy5oCkBAIC0zNDYsNiArMzQ2LDEwIEBAIHN0cnVjdCBp
-Z2NfYWRhcHRlciB7CiAJc3RydWN0IG11dGV4IGxlZF9tdXRleDsKIAlzdHJ1Y3QgaWdjX2xlZF9j
-bGFzc2RldiAqbGVkczsKIAlib29sIGxlZHNfYXZhaWxhYmxlOworCisJLyogUENJZSByZWNvdmVy
-eSB0cmFja2luZyAqLworCXVuc2lnbmVkIGludCBwY2llX3JlY292ZXJ5X2F0dGVtcHRzOworCXVu
-c2lnbmVkIGxvbmcgbGFzdF9yZWNvdmVyeV90aW1lOwogfTsKIAogdm9pZCBpZ2NfdXAoc3RydWN0
-IGlnY19hZGFwdGVyICphZGFwdGVyKTsKQEAgLTQyMiw3ICs0MjYsNyBAQCBlbnVtIGlnY19yc3Nf
-dHlwZV9udW0gewogCUlHQ19SU1NfVFlQRV9NQVgJCT0gMTAsCiB9OwogI2RlZmluZSBJR0NfUlNT
-X1RZUEVfTUFYX1RBQkxFCQkxNgotI2RlZmluZSBJR0NfUlNTX1RZUEVfTUFTSwkJR0VOTUFTSygz
-LDApIC8qIDQtYml0cyAoMzowKSA9IG1hc2sgMHgwRiAqLworI2RlZmluZSBJR0NfUlNTX1RZUEVf
-TUFTSwkJR0VOTUFTSygzLCAwKSAvKiA0LWJpdHMgKDM6MCkgPSBtYXNrIDB4MEYgKi8KIAogLyog
-aWdjX3Jzc190eXBlIC0gUnggZGVzY3JpcHRvciBSU1MgdHlwZSBmaWVsZCAqLwogc3RhdGljIGlu
-bGluZSB1MzIgaWdjX3Jzc190eXBlKGNvbnN0IHVuaW9uIGlnY19hZHZfcnhfZGVzYyAqcnhfZGVz
-YykKZGlmZiAtLWdpdCBhL2RyaXZlcnMvbmV0L2V0aGVybmV0L2ludGVsL2lnYy9pZ2NfbWFpbi5j
-IGIvZHJpdmVycy9uZXQvZXRoZXJuZXQvaW50ZWwvaWdjL2lnY19tYWluLmMKaW5kZXggODlhMzIx
-YTM0NGQyLi5mMGRhYTNlZGJiNzkgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvbmV0L2V0aGVybmV0L2lu
-dGVsL2lnYy9pZ2NfbWFpbi5jCisrKyBiL2RyaXZlcnMvbmV0L2V0aGVybmV0L2ludGVsL2lnYy9p
-Z2NfbWFpbi5jCkBAIC0xNDExLDkgKzE0MTEsOCBAQCBzdGF0aWMgaW50IGlnY190eF9tYXAoc3Ry
-dWN0IGlnY19yaW5nICp0eF9yaW5nLAogCS8qIE1ha2Ugc3VyZSB0aGVyZSBpcyBzcGFjZSBpbiB0
-aGUgcmluZyBmb3IgdGhlIG5leHQgc2VuZC4gKi8KIAlpZ2NfbWF5YmVfc3RvcF90eCh0eF9yaW5n
-LCBERVNDX05FRURFRCk7CiAKLQlpZiAobmV0aWZfeG1pdF9zdG9wcGVkKHR4cmluZ190eHEodHhf
-cmluZykpIHx8ICFuZXRkZXZfeG1pdF9tb3JlKCkpIHsKKwlpZiAobmV0aWZfeG1pdF9zdG9wcGVk
-KHR4cmluZ190eHEodHhfcmluZykpIHx8ICFuZXRkZXZfeG1pdF9tb3JlKCkpCiAJCXdyaXRlbChp
-LCB0eF9yaW5nLT50YWlsKTsKLQl9CiAKIAlyZXR1cm4gMDsKIGRtYV9lcnJvcjoKQEAgLTE2MTMs
-OCArMTYxMiw3IEBAIHN0YXRpYyBuZXRkZXZfdHhfdCBpZ2NfeG1pdF9mcmFtZV9yaW5nKHN0cnVj
-dCBza19idWZmICpza2IsCiAJICogb3RoZXJ3aXNlIHRyeSBuZXh0IHRpbWUKIAkgKi8KIAlmb3Ig
-KGYgPSAwOyBmIDwgc2tiX3NoaW5mbyhza2IpLT5ucl9mcmFnczsgZisrKQotCQljb3VudCArPSBU
-WERfVVNFX0NPVU5UKHNrYl9mcmFnX3NpemUoCi0JCQkJCQkmc2tiX3NoaW5mbyhza2IpLT5mcmFn
-c1tmXSkpOworCQljb3VudCArPSBUWERfVVNFX0NPVU5UKHNrYl9mcmFnX3NpemUoJnNrYl9zaGlu
-Zm8oc2tiKS0+ZnJhZ3NbZl0pKTsKIAogCWlmIChpZ2NfbWF5YmVfc3RvcF90eCh0eF9yaW5nLCBj
-b3VudCArIDUpKSB7CiAJCS8qIHRoaXMgaXMgYSBoYXJkIGVycm9yICovCkBAIC0yNTI0LDcgKzI1
-MjIsNiBAQCBzdGF0aWMgaW50IF9faWdjX3hkcF9ydW5fcHJvZyhzdHJ1Y3QgaWdjX2FkYXB0ZXIg
-KmFkYXB0ZXIsCiAJCWlmICh4ZHBfZG9fcmVkaXJlY3QoYWRhcHRlci0+bmV0ZGV2LCB4ZHAsIHBy
-b2cpIDwgMCkKIAkJCWdvdG8gb3V0X2ZhaWx1cmU7CiAJCXJldHVybiBJR0NfWERQX1JFRElSRUNU
-OwotCQlicmVhazsKIAlkZWZhdWx0OgogCQlicGZfd2Fybl9pbnZhbGlkX3hkcF9hY3Rpb24oYWRh
-cHRlci0+bmV0ZGV2LCBwcm9nLCBhY3QpOwogCQlmYWxsdGhyb3VnaDsKQEAgLTI3OTEsNyArMjc4
-OCw3IEBAIHN0YXRpYyBzdHJ1Y3QgaWdjX3hkcF9idWZmICp4c2tfYnVmZl90b19pZ2NfY3R4KHN0
-cnVjdCB4ZHBfYnVmZiAqeGRwKQogCSAqIGlnY194ZHBfYnVmZiBzaGFyZXMgaXRzIGxheW91dCB3
-aXRoIHhkcF9idWZmX3hzayBhbmQgcHJpdmF0ZQogCSAqIGlnY194ZHBfYnVmZiBmaWVsZHMgZmFs
-bCBpbnRvIHhkcF9idWZmX3hzay0+Y2IKIAkgKi8KLSAgICAgICByZXR1cm4gKHN0cnVjdCBpZ2Nf
-eGRwX2J1ZmYgKil4ZHA7CisJcmV0dXJuIChzdHJ1Y3QgaWdjX3hkcF9idWZmICopeGRwOwogfQog
-CiBzdGF0aWMgaW50IGlnY19jbGVhbl9yeF9pcnFfemMoc3RydWN0IGlnY19xX3ZlY3RvciAqcV92
-ZWN0b3IsIGNvbnN0IGludCBidWRnZXQpCkBAIC0zODk1LDkgKzM4OTIsOCBAQCBzdGF0aWMgaW50
-IGlnY19lbmFibGVfbmZjX3J1bGUoc3RydWN0IGlnY19hZGFwdGVyICphZGFwdGVyLAogewogCWlu
-dCBlcnI7CiAKLQlpZiAocnVsZS0+ZmxleCkgeworCWlmIChydWxlLT5mbGV4KQogCQlyZXR1cm4g
-aWdjX2FkZF9mbGV4X2ZpbHRlcihhZGFwdGVyLCBydWxlKTsKLQl9CiAKIAlpZiAocnVsZS0+Zmls
-dGVyLm1hdGNoX2ZsYWdzICYgSUdDX0ZJTFRFUl9GTEFHX0VUSEVSX1RZUEUpIHsKIAkJZXJyID0g
-aWdjX2FkZF9ldHlwZV9maWx0ZXIoYWRhcHRlciwgcnVsZS0+ZmlsdGVyLmV0eXBlLApAQCAtNjk4
-NCwxMSArNjk4MCwxMTIgQEAgc3RhdGljIGNvbnN0IHN0cnVjdCBuZXRfZGV2aWNlX29wcyBpZ2Nf
-bmV0ZGV2X29wcyA9IHsKIAkubmRvX2h3dHN0YW1wX3NldAk9IGlnY19wdHBfaHd0c3RhbXBfc2V0
-LAogfTsKIAorI2RlZmluZSBJR0NfUkVHSVNURVJfUkVBRF9SRVRSSUVTCTMKKyNkZWZpbmUgSUdD
-X1BDSUVfUkVDT1ZFUllfTUFYX0FUVEVNUFRTCTEwCisjZGVmaW5lIElHQ19QQ0lFX1JFQ09WRVJZ
-X0lOVEVSVkFMX01TCTEwMDAKKworLyoqCisgKiBpZ2NfcGNpZV9saW5rX3JlY292ZXIgLSBBdHRl
-bXB0IFBDSWUgbGluayByZWNvdmVyeQorICogQGFkYXB0ZXI6IGJvYXJkIHByaXZhdGUgc3RydWN0
-dXJlCisgKgorICogQXR0ZW1wdHMgdG8gcmVjb3ZlciBhIGZhaWxlZCBQQ0llIGxpbmsgYnkgdHJp
-Z2dlcmluZyBhIGxpbmsgcmV0cmFpbi4KKyAqIFJhdGUtbGltaXRlZCB0byAxIGF0dGVtcHQgcGVy
-IHNlY29uZCwgbWF4aW11bSAxMCBhdHRlbXB0cy4KKyAqCisgKiBSZXR1cm5zIHRydWUgaWYgcmVj
-b3Zlcnkgd2FzIHN1Y2Nlc3NmdWwsIGZhbHNlIG90aGVyd2lzZS4KKyAqLworc3RhdGljIGJvb2wg
-aWdjX3BjaWVfbGlua19yZWNvdmVyKHN0cnVjdCBpZ2NfYWRhcHRlciAqYWRhcHRlcikKK3sKKwlz
-dHJ1Y3QgcGNpX2RldiAqcGRldiA9IGFkYXB0ZXItPnBkZXY7CisJdW5zaWduZWQgbG9uZyBub3cg
-PSBqaWZmaWVzOworCXUxNiBsbmtzdGEsIGxua2N0bDsKKwlpbnQgcmV0OworCWludCBpOworCisJ
-LyogUmF0ZSBsaW1pdGluZzogbm8gbW9yZSB0aGFuIDEgYXR0ZW1wdCBwZXIgc2Vjb25kICovCisJ
-aWYgKHRpbWVfYmVmb3JlKG5vdywgYWRhcHRlci0+bGFzdF9yZWNvdmVyeV90aW1lICsKKwkJCW1z
-ZWNzX3RvX2ppZmZpZXMoSUdDX1BDSUVfUkVDT1ZFUllfSU5URVJWQUxfTVMpKSkKKwkJcmV0dXJu
-IGZhbHNlOworCisJLyogTWF4aW11bSBhdHRlbXB0IGxpbWl0ICovCisJaWYgKGFkYXB0ZXItPnBj
-aWVfcmVjb3ZlcnlfYXR0ZW1wdHMgPj0gSUdDX1BDSUVfUkVDT1ZFUllfTUFYX0FUVEVNUFRTKSB7
-CisJCW5ldGRldl9lcnIoYWRhcHRlci0+bmV0ZGV2LAorCQkJICAgIkV4Y2VlZGVkIG1heGltdW0g
-UENJZSByZWNvdmVyeSBhdHRlbXB0cyAoJWQpXG4iLAorCQkJICAgSUdDX1BDSUVfUkVDT1ZFUllf
-TUFYX0FUVEVNUFRTKTsKKwkJcmV0dXJuIGZhbHNlOworCX0KKworCWFkYXB0ZXItPmxhc3RfcmVj
-b3ZlcnlfdGltZSA9IG5vdzsKKwlhZGFwdGVyLT5wY2llX3JlY292ZXJ5X2F0dGVtcHRzKys7CisK
-KwluZXRkZXZfd2FybihhZGFwdGVyLT5uZXRkZXYsCisJCSAgICAiQXR0ZW1wdGluZyBQQ0llIGxp
-bmsgcmVjb3ZlcnkgKGF0dGVtcHQgJWQvJWQpXG4iLAorCQkgICAgYWRhcHRlci0+cGNpZV9yZWNv
-dmVyeV9hdHRlbXB0cywKKwkJICAgIElHQ19QQ0lFX1JFQ09WRVJZX01BWF9BVFRFTVBUUyk7CisK
-KwkvKiBDaGVjayBpZiBkZXZpY2UgaXMgc3RpbGwgcHJlc2VudCBvbiB0aGUgYnVzICovCisJaWYg
-KCFwY2lfZGV2aWNlX2lzX3ByZXNlbnQocGRldikpIHsKKwkJbmV0ZGV2X2VycihhZGFwdGVyLT5u
-ZXRkZXYsICJEZXZpY2Ugbm90IHByZXNlbnQgb24gUENJZSBidXNcbiIpOworCQlyZXR1cm4gZmFs
-c2U7CisJfQorCisJLyogQ2hlY2sgbGluayBzdGF0dXMgKi8KKwlyZXQgPSBwY2llX2NhcGFiaWxp
-dHlfcmVhZF93b3JkKHBkZXYsIFBDSV9FWFBfTE5LU1RBLCAmbG5rc3RhKTsKKwlpZiAocmV0KSB7
-CisJCW5ldGRldl9lcnIoYWRhcHRlci0+bmV0ZGV2LCAiRmFpbGVkIHRvIHJlYWQgbGluayBzdGF0
-dXNcbiIpOworCQlyZXR1cm4gZmFsc2U7CisJfQorCisJLyogVHJpZ2dlciBsaW5rIHJldHJhaW4g
-aWYgbGluayBhcHBlYXJzIGRvd24gKi8KKwlpZiAoIShsbmtzdGEgJiBQQ0lfRVhQX0xOS1NUQV9E
-TExMQSkpIHsKKwkJbmV0ZGV2X2luZm8oYWRhcHRlci0+bmV0ZGV2LAorCQkJICAgICJMaW5rIGRv
-d24sIGF0dGVtcHRpbmcgcmV0cmFpblxuIik7CisKKwkJLyogUmVhZCBsaW5rIGNvbnRyb2wgcmVn
-aXN0ZXIgKi8KKwkJcmV0ID0gcGNpZV9jYXBhYmlsaXR5X3JlYWRfd29yZChwZGV2LCBQQ0lfRVhQ
-X0xOS0NUTCwgJmxua2N0bCk7CisJCWlmIChyZXQgPT0gMCkgeworCQkJLyogVHJpZ2dlciByZXRy
-YWluIGJ5IHNldHRpbmcgUkwgYml0ICovCisJCQlwY2llX2NhcGFiaWxpdHlfd3JpdGVfd29yZChw
-ZGV2LCBQQ0lfRVhQX0xOS0NUTCwKKwkJCQkJCSAgIGxua2N0bCB8IFBDSV9FWFBfTE5LQ1RMX1JM
-KTsKKworCQkJLyogV2FpdCBmb3IgcmV0cmFpbiB0byBjb21wbGV0ZSAodXAgdG8gMSBzZWNvbmQp
-ICovCisJCQlmb3IgKGkgPSAwOyBpIDwgMTAwOyBpKyspIHsKKwkJCQl1c2xlZXBfcmFuZ2UoMTAw
-MDAsIDIwMDAwKTsKKwkJCQlyZXQgPSBwY2llX2NhcGFiaWxpdHlfcmVhZF93b3JkKHBkZXYsIFBD
-SV9FWFBfTE5LU1RBLAorCQkJCQkJCQkmbG5rc3RhKTsKKwkJCQlpZiAocmV0ID09IDAgJiYgKGxu
-a3N0YSAmIFBDSV9FWFBfTE5LU1RBX0RMTExBKSAmJgorCQkJCSAgICAhKGxua3N0YSAmIFBDSV9F
-WFBfTE5LU1RBX0xUKSkgeworCQkJCQluZXRkZXZfaW5mbyhhZGFwdGVyLT5uZXRkZXYsCisJCQkJ
-CQkgICAgIlBDSWUgbGluayByZWNvdmVyeSBzdWNjZXNzZnVsXG4iKTsKKwkJCQkJcmV0dXJuIHRy
-dWU7CisJCQkJfQorCQkJfQorCQl9CisJfQorCisJLyogR2l2ZSB0aGUgbGluayBzb21lIGFkZGl0
-aW9uYWwgdGltZSB0byByZWNvdmVyIG9uIGl0cyBvd24gKi8KKwltc2xlZXAoMTAwKTsKKworCS8q
-IENoZWNrIGlmIGRldmljZSBpcyByZXNwb25kaW5nIG5vdyAqLworCWlmIChwY2lfZGV2aWNlX2lz
-X3ByZXNlbnQocGRldikpIHsKKwkJcmV0ID0gcGNpZV9jYXBhYmlsaXR5X3JlYWRfd29yZChwZGV2
-LCBQQ0lfRVhQX0xOS1NUQSwgJmxua3N0YSk7CisJCWlmIChyZXQgPT0gMCAmJiAobG5rc3RhICYg
-UENJX0VYUF9MTktTVEFfRExMTEEpKSB7CisJCQluZXRkZXZfaW5mbyhhZGFwdGVyLT5uZXRkZXYs
-CisJCQkJICAgICJQQ0llIGxpbmsgcmVjb3ZlcmVkIGFmdGVyIGRlbGF5XG4iKTsKKwkJCXJldHVy
-biB0cnVlOworCQl9CisJfQorCisJbmV0ZGV2X3dhcm4oYWRhcHRlci0+bmV0ZGV2LCAiUENJZSBs
-aW5rIHJlY292ZXJ5IGZhaWxlZFxuIik7CisJcmV0dXJuIGZhbHNlOworfQorCiB1MzIgaWdjX3Jk
-MzIoc3RydWN0IGlnY19odyAqaHcsIHUzMiByZWcpCiB7CiAJc3RydWN0IGlnY19hZGFwdGVyICpp
-Z2MgPSBjb250YWluZXJfb2YoaHcsIHN0cnVjdCBpZ2NfYWRhcHRlciwgaHcpOwogCXU4IF9faW9t
-ZW0gKmh3X2FkZHIgPSBSRUFEX09OQ0UoaHctPmh3X2FkZHIpOworCXN0cnVjdCBuZXRfZGV2aWNl
-ICpuZXRkZXYgPSBpZ2MtPm5ldGRldjsKIAl1MzIgdmFsdWUgPSAwOworCWludCByZXRyeTsKIAog
-CWlmIChJR0NfUkVNT1ZFRChod19hZGRyKSkKIAkJcmV0dXJuIH52YWx1ZTsKQEAgLTY5OTcsMTMg
-KzcwOTQsNDkgQEAgdTMyIGlnY19yZDMyKHN0cnVjdCBpZ2NfaHcgKmh3LCB1MzIgcmVnKQogCiAJ
-LyogcmVhZHMgc2hvdWxkIG5vdCByZXR1cm4gYWxsIEYncyAqLwogCWlmICghKH52YWx1ZSkgJiYg
-KCFyZWcgfHwgISh+cmVhZGwoaHdfYWRkcikpKSkgewotCQlzdHJ1Y3QgbmV0X2RldmljZSAqbmV0
-ZGV2ID0gaWdjLT5uZXRkZXY7CisJCS8qIExheWVyIDE6IEltbWVkaWF0ZSByZXRyaWVzIHdpdGgg
-c2hvcnQgZGVsYXlzICgxMDAtMjAwzrxzKSAqLworCQlmb3IgKHJldHJ5ID0gMDsgcmV0cnkgPCBJ
-R0NfUkVHSVNURVJfUkVBRF9SRVRSSUVTOyByZXRyeSsrKSB7CisJCQl1c2xlZXBfcmFuZ2UoMTAw
-LCAyMDApOworCQkJdmFsdWUgPSByZWFkbCgmaHdfYWRkcltyZWddKTsKKworCQkJLyogSWYgd2Ug
-Z290IGEgdmFsaWQgcmVhZCwgcmV0dXJuIGltbWVkaWF0ZWx5ICovCisJCQlpZiAofnZhbHVlIHx8
-IChyZWcgJiYgfnJlYWRsKGh3X2FkZHIpKSkgeworCQkJCW5ldGRldl9kYmcobmV0ZGV2LAorCQkJ
-CQkgICAiUmVnaXN0ZXIgcmVhZCByZWNvdmVyZWQgYWZ0ZXIgJWQgcmV0cmllc1xuIiwKKwkJCQkJ
-ICAgcmV0cnkgKyAxKTsKKwkJCQlyZXR1cm4gdmFsdWU7CisJCQl9CisJCX0KKworCQkvKiBMYXll
-ciAyOiBBdHRlbXB0IGZ1bGwgUENJZSBsaW5rIHJlY292ZXJ5ICovCisJCW5ldGRldl93YXJuKG5l
-dGRldiwKKwkJCSAgICAiQWxsIGltbWVkaWF0ZSByZXRyaWVzIGZhaWxlZCwgYXR0ZW1wdGluZyBQ
-Q0llIGxpbmsgcmVjb3ZlcnlcbiIpOworCisJCWlmIChpZ2NfcGNpZV9saW5rX3JlY292ZXIoaWdj
-KSkgeworCQkJLyogUmVjb3Zlcnkgc3VjY2VlZGVkLCByZS1yZWFkIHRoZSByZWdpc3RlciAqLwor
-CQkJaHdfYWRkciA9IFJFQURfT05DRShody0+aHdfYWRkcik7CisJCQlpZiAoaHdfYWRkciAmJiAh
-SUdDX1JFTU9WRUQoaHdfYWRkcikpIHsKKwkJCQl2YWx1ZSA9IHJlYWRsKCZod19hZGRyW3JlZ10p
-OworCisJCQkJLyogVmVyaWZ5IHRoZSByZWFkIGlzIHZhbGlkICovCisJCQkJaWYgKH52YWx1ZSB8
-fCAocmVnICYmIH5yZWFkbChod19hZGRyKSkpIHsKKwkJCQkJbmV0ZGV2X2luZm8obmV0ZGV2LAor
-CQkJCQkJICAgICJSZWdpc3RlciByZWFkIHN1Y2Nlc3NmdWwgYWZ0ZXIgbGluayByZWNvdmVyeVxu
-Iik7CisJCQkJCXJldHVybiB2YWx1ZTsKKwkJCQl9CisJCQl9CisJCX0KKworCQkvKiBMYXllciAz
-OiBBbGwgcmVjb3ZlcnkgYXR0ZW1wdHMgZmFpbGVkLCBkZXRhY2ggZGV2aWNlICovCisJCW5ldGRl
-dl9lcnIobmV0ZGV2LAorCQkJICAgIlBDSWUgbGluayBsb3N0IGFmdGVyICVkIHJldHJpZXMgYW5k
-IHJlY292ZXJ5IGF0dGVtcHRzLCBkZXZpY2Ugbm93IGRldGFjaGVkXG4iLAorCQkJICAgSUdDX1JF
-R0lTVEVSX1JFQURfUkVUUklFUyk7CiAKIAkJaHctPmh3X2FkZHIgPSBOVUxMOwogCQluZXRpZl9k
-ZXZpY2VfZGV0YWNoKG5ldGRldik7Ci0JCW5ldGRldl9lcnIobmV0ZGV2LCAiUENJZSBsaW5rIGxv
-c3QsIGRldmljZSBub3cgZGV0YWNoZWRcbiIpOworCiAJCVdBUk4ocGNpX2RldmljZV9pc19wcmVz
-ZW50KGlnYy0+cGRldiksCi0JCSAgICAgImlnYzogRmFpbGVkIHRvIHJlYWQgcmVnIDB4JXghXG4i
-LCByZWcpOworCQkgICAgICJpZ2M6IEZhaWxlZCB0byByZWFkIHJlZyAweCV4IGFmdGVyIGFsbCBy
-ZWNvdmVyeSBhdHRlbXB0cyFcbiIsIHJlZyk7CiAJfQogCiAJcmV0dXJuIHZhbHVlOwotLSAKMi41
-Mi4wCgo=
+--_000_MN2PR14MB263885081E3A4C87043676CFDE64AMN2PR14MB2638namp_
+Content-Type: text/plain; charset="iso-8859-7"
+Content-Transfer-Encoding: quoted-printable
+
+When ASPM L0s transitions occur on Intel I225/I226 controllers,
+transient PCIe link instability can cause register read failures
+(0xFFFFFFFF responses). Implement a multi-layer recovery strategy:
+
+1. Immediate retries: 3 attempts with 100-200=ECs delays
+2. Link retraining: Trigger PCIe link retraining via capabilities
+3. Device detachment: Only as last resort after max attempts
+
+The recovery mechanism includes rate limiting, maximum attempt
+tracking, and device presence validation to prevent false detaches
+on transient ASPM glitches while maintaining safety through
+bounded retry limits.
+
+Signed-off-by: Harshank Matkar <harshankmatkar1304@outlook.com>
+From 2723a65f7f1f4c91e99d44ecbc4bbceb21f5aea2 Mon Sep 17 00:00:00 2001
+From: Harshank Matkar <harshankmatkar1304@outlook.com>
+Date: Sun, 8 Feb 2026 11:21:58 +0000
+Subject: [PATCH] igc: Add PCIe link recovery for I225/I226
+MIME-Version: 1.0
+Content-Type: text/plain; charset=3DUTF-8
+Content-Transfer-Encoding: 8bit
+
+When ASPM L0s transitions occur on Intel I225/I226 controllers,
+transient PCIe link instability can cause register read failures
+(0xFFFFFFFF responses). Implement a multi-layer recovery strategy:
+
+1. Immediate retries: 3 attempts with 100-200=ECs delays
+2. Link retraining: Trigger PCIe link retraining via capabilities
+3. Device detachment: Only as last resort after max attempts
+
+The recovery mechanism includes rate limiting, maximum attempt
+tracking, and device presence validation to prevent false detaches
+on transient ASPM glitches while maintaining safety through
+bounded retry limits.
+
+Signed-off-by: Harshank Matkar <harshankmatkar1304@outlook.com>
+---
+ drivers/net/ethernet/intel/igc/igc.h | 6 +-
+ drivers/net/ethernet/intel/igc/igc_main.c | 155 ++++++++++++++++++++--
+ 2 files changed, 149 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/in=
+tel/igc/igc.h
+index a427f05814c1..2ef488b279b9 100644
+--- a/drivers/net/ethernet/intel/igc/igc.h
++++ b/drivers/net/ethernet/intel/igc/igc.h
+@@ -346,6 +346,10 @@ struct igc_adapter {
+  struct mutex led_mutex;
+  struct igc_led_classdev *leds;
+  bool leds_available;
++
++ /* PCIe recovery tracking */
++ unsigned int pcie_recovery_attempts;
++ unsigned long last_recovery_time;
+ };
+
+ void igc_up(struct igc_adapter *adapter);
+@@ -422,7 +426,7 @@ enum igc_rss_type_num {
+  IGC_RSS_TYPE_MAX =3D 10,
+ };
+ #define IGC_RSS_TYPE_MAX_TABLE 16
+-#define IGC_RSS_TYPE_MASK GENMASK(3,0) /* 4-bits (3:0) =3D mask 0x0F */
++#define IGC_RSS_TYPE_MASK GENMASK(3, 0) /* 4-bits (3:0) =3D mask 0x0F */
+
+ /* igc_rss_type - Rx descriptor RSS type field */
+ static inline u32 igc_rss_type(const union igc_adv_rx_desc *rx_desc)
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethern=
+et/intel/igc/igc_main.c
+index 89a321a344d2..f0daa3edbb79 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -1411,9 +1411,8 @@ static int igc_tx_map(struct igc_ring *tx_ring,
+  /* Make sure there is space in the ring for the next send. */
+  igc_maybe_stop_tx(tx_ring, DESC_NEEDED);
+
+- if (netif_xmit_stopped(txring_txq(tx_ring)) || !netdev_xmit_more()) {
++ if (netif_xmit_stopped(txring_txq(tx_ring)) || !netdev_xmit_more())
+   writel(i, tx_ring->tail);
+- }
+
+  return 0;
+ dma_error:
+@@ -1613,8 +1612,7 @@ static netdev_tx_t igc_xmit_frame_ring(struct sk_buff=
+ *skb,
+   * otherwise try next time
+   */
+  for (f =3D 0; f < skb_shinfo(skb)->nr_frags; f++)
+- count +=3D TXD_USE_COUNT(skb_frag_size(
+- &skb_shinfo(skb)->frags[f]));
++ count +=3D TXD_USE_COUNT(skb_frag_size(&skb_shinfo(skb)->frags[f]));
+
+  if (igc_maybe_stop_tx(tx_ring, count + 5)) {
+   /* this is a hard error */
+@@ -2524,7 +2522,6 @@ static int __igc_xdp_run_prog(struct igc_adapter *ada=
+pter,
+   if (xdp_do_redirect(adapter->netdev, xdp, prog) < 0)
+    goto out_failure;
+   return IGC_XDP_REDIRECT;
+- break;
+  default:
+   bpf_warn_invalid_xdp_action(adapter->netdev, prog, act);
+   fallthrough;
+@@ -2791,7 +2788,7 @@ static struct igc_xdp_buff *xsk_buff_to_igc_ctx(struc=
+t xdp_buff *xdp)
+   * igc_xdp_buff shares its layout with xdp_buff_xsk and private
+   * igc_xdp_buff fields fall into xdp_buff_xsk->cb
+   */
+- return (struct igc_xdp_buff *)xdp;
++ return (struct igc_xdp_buff *)xdp;
+ }
+
+ static int igc_clean_rx_irq_zc(struct igc_q_vector *q_vector, const int bu=
+dget)
+@@ -3895,9 +3892,8 @@ static int igc_enable_nfc_rule(struct igc_adapter *ad=
+apter,
+ {
+  int err;
+
+- if (rule->flex) {
++ if (rule->flex)
+   return igc_add_flex_filter(adapter, rule);
+- }
+
+  if (rule->filter.match_flags & IGC_FILTER_FLAG_ETHER_TYPE) {
+   err =3D igc_add_etype_filter(adapter, rule->filter.etype,
+@@ -6984,11 +6980,112 @@ static const struct net_device_ops igc_netdev_ops =
+=3D {
+  .ndo_hwtstamp_set =3D igc_ptp_hwtstamp_set,
+ };
+
++#define IGC_REGISTER_READ_RETRIES 3
++#define IGC_PCIE_RECOVERY_MAX_ATTEMPTS 10
++#define IGC_PCIE_RECOVERY_INTERVAL_MS 1000
++
++/**
++ * igc_pcie_link_recover - Attempt PCIe link recovery
++ * @adapter: board private structure
++ *
++ * Attempts to recover a failed PCIe link by triggering a link retrain.
++ * Rate-limited to 1 attempt per second, maximum 10 attempts.
++ *
++ * Returns true if recovery was successful, false otherwise.
++ */
++static bool igc_pcie_link_recover(struct igc_adapter *adapter)
++{
++ struct pci_dev *pdev =3D adapter->pdev;
++ unsigned long now =3D jiffies;
++ u16 lnksta, lnkctl;
++ int ret;
++ int i;
++
++ /* Rate limiting: no more than 1 attempt per second */
++ if (time_before(now, adapter->last_recovery_time +
++ msecs_to_jiffies(IGC_PCIE_RECOVERY_INTERVAL_MS)))
++ return false;
++
++ /* Maximum attempt limit */
++ if (adapter->pcie_recovery_attempts >=3D IGC_PCIE_RECOVERY_MAX_ATTEMPTS) =
+{
++ netdev_err(adapter->netdev,
++ "Exceeded maximum PCIe recovery attempts (%d)\n",
++ IGC_PCIE_RECOVERY_MAX_ATTEMPTS);
++ return false;
++ }
++
++ adapter->last_recovery_time =3D now;
++ adapter->pcie_recovery_attempts++;
++
++ netdev_warn(adapter->netdev,
++ "Attempting PCIe link recovery (attempt %d/%d)\n",
++ adapter->pcie_recovery_attempts,
++ IGC_PCIE_RECOVERY_MAX_ATTEMPTS);
++
++ /* Check if device is still present on the bus */
++ if (!pci_device_is_present(pdev)) {
++ netdev_err(adapter->netdev, "Device not present on PCIe bus\n");
++ return false;
++ }
++
++ /* Check link status */
++ ret =3D pcie_capability_read_word(pdev, PCI_EXP_LNKSTA, &lnksta);
++ if (ret) {
++ netdev_err(adapter->netdev, "Failed to read link status\n");
++ return false;
++ }
++
++ /* Trigger link retrain if link appears down */
++ if (!(lnksta & PCI_EXP_LNKSTA_DLLLA)) {
++ netdev_info(adapter->netdev,
++ "Link down, attempting retrain\n");
++
++ /* Read link control register */
++ ret =3D pcie_capability_read_word(pdev, PCI_EXP_LNKCTL, &lnkctl);
++ if (ret =3D=3D 0) {
++ /* Trigger retrain by setting RL bit */
++ pcie_capability_write_word(pdev, PCI_EXP_LNKCTL,
++ lnkctl | PCI_EXP_LNKCTL_RL);
++
++ /* Wait for retrain to complete (up to 1 second) */
++ for (i =3D 0; i < 100; i++) {
++ usleep_range(10000, 20000);
++ ret =3D pcie_capability_read_word(pdev, PCI_EXP_LNKSTA,
++ &lnksta);
++ if (ret =3D=3D 0 && (lnksta & PCI_EXP_LNKSTA_DLLLA) &&
++ !(lnksta & PCI_EXP_LNKSTA_LT)) {
++ netdev_info(adapter->netdev,
++ "PCIe link recovery successful\n");
++ return true;
++ }
++ }
++ }
++ }
++
++ /* Give the link some additional time to recover on its own */
++ msleep(100);
++
++ /* Check if device is responding now */
++ if (pci_device_is_present(pdev)) {
++ ret =3D pcie_capability_read_word(pdev, PCI_EXP_LNKSTA, &lnksta);
++ if (ret =3D=3D 0 && (lnksta & PCI_EXP_LNKSTA_DLLLA)) {
++ netdev_info(adapter->netdev,
++ "PCIe link recovered after delay\n");
++ return true;
++ }
++ }
++
++ netdev_warn(adapter->netdev, "PCIe link recovery failed\n");
++ return false;
++}
++
+ u32 igc_rd32(struct igc_hw *hw, u32 reg)
+ {
+  struct igc_adapter *igc =3D container_of(hw, struct igc_adapter, hw);
+  u8 __iomem *hw_addr =3D READ_ONCE(hw->hw_addr);
++ struct net_device *netdev =3D igc->netdev;
+  u32 value =3D 0;
++ int retry;
+
+  if (IGC_REMOVED(hw_addr))
+   return ~value;
+@@ -6997,13 +7094,49 @@ u32 igc_rd32(struct igc_hw *hw, u32 reg)
+
+  /* reads should not return all F's */
+  if (!(~value) && (!reg || !(~readl(hw_addr)))) {
+- struct net_device *netdev =3D igc->netdev;
++ /* Layer 1: Immediate retries with short delays (100-200=ECs) */
++ for (retry =3D 0; retry < IGC_REGISTER_READ_RETRIES; retry++) {
++ usleep_range(100, 200);
++ value =3D readl(&hw_addr[reg]);
++
++ /* If we got a valid read, return immediately */
++ if (~value || (reg && ~readl(hw_addr))) {
++ netdev_dbg(netdev,
++ "Register read recovered after %d retries\n",
++ retry + 1);
++ return value;
++ }
++ }
++
++ /* Layer 2: Attempt full PCIe link recovery */
++ netdev_warn(netdev,
++ "All immediate retries failed, attempting PCIe link recovery\n");
++
++ if (igc_pcie_link_recover(igc)) {
++ /* Recovery succeeded, re-read the register */
++ hw_addr =3D READ_ONCE(hw->hw_addr);
++ if (hw_addr && !IGC_REMOVED(hw_addr)) {
++ value =3D readl(&hw_addr[reg]);
++
++ /* Verify the read is valid */
++ if (~value || (reg && ~readl(hw_addr))) {
++ netdev_info(netdev,
++ "Register read successful after link recovery\n");
++ return value;
++ }
++ }
++ }
++
++ /* Layer 3: All recovery attempts failed, detach device */
++ netdev_err(netdev,
++ "PCIe link lost after %d retries and recovery attempts, device now detach=
+ed\n",
++ IGC_REGISTER_READ_RETRIES);
+
+   hw->hw_addr =3D NULL;
+   netif_device_detach(netdev);
+- netdev_err(netdev, "PCIe link lost, device now detached\n");
++
+   WARN(pci_device_is_present(igc->pdev),
+- "igc: Failed to read reg 0x%x!\n", reg);
++ "igc: Failed to read reg 0x%x after all recovery attempts!\n", reg);
+  }
+
+  return value;
+--
+2.52.0
+
+
+
+
+
+Get Outlook for Android<https://aka.ms/AAb9ysg>
+
+--_000_MN2PR14MB263885081E3A4C87043676CFDE64AMN2PR14MB2638namp_
+Content-Type: text/html; charset="iso-8859-7"
+Content-Transfer-Encoding: quoted-printable
+
+<html>
+<head>
+<meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Diso-8859-=
+7">
+</head>
+<body>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+When ASPM L0s transitions occur on Intel I225/I226 controllers,</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+transient PCIe link instability can cause register read failures</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+(0xFFFFFFFF responses). Implement a multi-layer recovery strategy:</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+<br>
+</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+1. Immediate retries: 3 attempts with 100-200=ECs delays</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+2. Link retraining: Trigger PCIe link retraining via capabilities</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+3. Device detachment: Only as last resort after max attempts</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+<br>
+</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+The recovery mechanism includes rate limiting, maximum attempt</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+tracking, and device presence validation to prevent false detaches</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+on transient ASPM glitches while maintaining safety through</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+bounded retry limits.</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+<br>
+</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+Signed-off-by: Harshank Matkar &lt;harshankmatkar1304@outlook.com&gt;</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+From 2723a65f7f1f4c91e99d44ecbc4bbceb21f5aea2 Mon Sep 17 00:00:00 2001</div=
+>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+From: Harshank Matkar &lt;harshankmatkar1304@outlook.com&gt;</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+Date: Sun, 8 Feb 2026 11:21:58 +0000</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+Subject: [PATCH] igc: Add PCIe link recovery for I225/I226</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+MIME-Version: 1.0</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+Content-Type: text/plain; charset=3DUTF-8</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+Content-Transfer-Encoding: 8bit</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+<br>
+</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+When ASPM L0s transitions occur on Intel I225/I226 controllers,</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+transient PCIe link instability can cause register read failures</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+(0xFFFFFFFF responses). Implement a multi-layer recovery strategy:</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+<br>
+</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+1. Immediate retries: 3 attempts with 100-200=ECs delays</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+2. Link retraining: Trigger PCIe link retraining via capabilities</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+3. Device detachment: Only as last resort after max attempts</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+<br>
+</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+The recovery mechanism includes rate limiting, maximum attempt</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+tracking, and device presence validation to prevent false detaches</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+on transient ASPM glitches while maintaining safety through</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+bounded retry limits.</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+<br>
+</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+Signed-off-by: Harshank Matkar &lt;harshankmatkar1304@outlook.com&gt;</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+---</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp;drivers/net/ethernet/intel/igc/igc.h | 6 +-</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp;drivers/net/ethernet/intel/igc/igc_main.c | 155 ++++++++++++++++++++-=
+-</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp;2 files changed, 149 insertions(+), 12 deletions(-)</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+<br>
+</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/in=
+tel/igc/igc.h</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+index a427f05814c1..2ef488b279b9 100644</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+--- a/drivers/net/ethernet/intel/igc/igc.h</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++++ b/drivers/net/ethernet/intel/igc/igc.h</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+@@ -346,6 +346,10 @@ struct igc_adapter {</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp; struct mutex led_mutex;</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp; struct igc_led_classdev *leds;</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp; bool leds_available;</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ /* PCIe recovery tracking */</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ unsigned int pcie_recovery_attempts;</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ unsigned long last_recovery_time;</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp;};</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp;</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp;void igc_up(struct igc_adapter *adapter);</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+@@ -422,7 +426,7 @@ enum igc_rss_type_num {</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp; IGC_RSS_TYPE_MAX =3D 10,</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp;};</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp;#define IGC_RSS_TYPE_MAX_TABLE 16</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+-#define IGC_RSS_TYPE_MASK GENMASK(3,0) /* 4-bits (3:0) =3D mask 0x0F */</d=
+iv>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++#define IGC_RSS_TYPE_MASK GENMASK(3, 0) /* 4-bits (3:0) =3D mask 0x0F */</=
+div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp;</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp;/* igc_rss_type - Rx descriptor RSS type field */</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp;static inline u32 igc_rss_type(const union igc_adv_rx_desc *rx_desc)<=
+/div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethern=
+et/intel/igc/igc_main.c</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+index 89a321a344d2..f0daa3edbb79 100644</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+--- a/drivers/net/ethernet/intel/igc/igc_main.c</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++++ b/drivers/net/ethernet/intel/igc/igc_main.c</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+@@ -1411,9 +1411,8 @@ static int igc_tx_map(struct igc_ring *tx_ring,</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp; /* Make sure there is space in the ring for the next send. */</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp; igc_maybe_stop_tx(tx_ring, DESC_NEEDED);</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp;</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+- if (netif_xmit_stopped(txring_txq(tx_ring)) || !netdev_xmit_more()) {</di=
+v>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ if (netif_xmit_stopped(txring_txq(tx_ring)) || !netdev_xmit_more())</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp; &nbsp;writel(i, tx_ring-&gt;tail);</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+- }</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp;</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp; return 0;</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp;dma_error:</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+@@ -1613,8 +1612,7 @@ static netdev_tx_t igc_xmit_frame_ring(struct sk_buff=
+ *skb,</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp; &nbsp;* otherwise try next time</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp; &nbsp;*/</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp; for (f =3D 0; f &lt; skb_shinfo(skb)-&gt;nr_frags; f++)</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+- count +=3D TXD_USE_COUNT(skb_frag_size(</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+- &amp;skb_shinfo(skb)-&gt;frags[f]));</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ count +=3D TXD_USE_COUNT(skb_frag_size(&amp;skb_shinfo(skb)-&gt;frags[f])=
+);</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp;</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp; if (igc_maybe_stop_tx(tx_ring, count + 5)) {</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp; &nbsp;/* this is a hard error */</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+@@ -2524,7 +2522,6 @@ static int __igc_xdp_run_prog(struct igc_adapter *ada=
+pter,</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp; &nbsp;if (xdp_do_redirect(adapter-&gt;netdev, xdp, prog) &lt; 0)</di=
+v>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp; &nbsp; goto out_failure;</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp; &nbsp;return IGC_XDP_REDIRECT;</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+- break;</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp; default:</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp; &nbsp;bpf_warn_invalid_xdp_action(adapter-&gt;netdev, prog, act);</d=
+iv>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp; &nbsp;fallthrough;</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+@@ -2791,7 +2788,7 @@ static struct igc_xdp_buff *xsk_buff_to_igc_ctx(struc=
+t xdp_buff *xdp)</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp; &nbsp;* igc_xdp_buff shares its layout with xdp_buff_xsk and private=
+</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp; &nbsp;* igc_xdp_buff fields fall into xdp_buff_xsk-&gt;cb</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp; &nbsp;*/</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+- return (struct igc_xdp_buff *)xdp;</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ return (struct igc_xdp_buff *)xdp;</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp;}</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp;</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp;static int igc_clean_rx_irq_zc(struct igc_q_vector *q_vector, const i=
+nt budget)</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+@@ -3895,9 +3892,8 @@ static int igc_enable_nfc_rule(struct igc_adapter *ad=
+apter,</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp;{</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp; int err;</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp;</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+- if (rule-&gt;flex) {</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ if (rule-&gt;flex)</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp; &nbsp;return igc_add_flex_filter(adapter, rule);</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+- }</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp;</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp; if (rule-&gt;filter.match_flags &amp; IGC_FILTER_FLAG_ETHER_TYPE) {<=
+/div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp; &nbsp;err =3D igc_add_etype_filter(adapter, rule-&gt;filter.etype,</=
+div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+@@ -6984,11 +6980,112 @@ static const struct net_device_ops igc_netdev_ops =
+=3D {</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp; .ndo_hwtstamp_set =3D igc_ptp_hwtstamp_set,</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp;};</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp;</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++#define IGC_REGISTER_READ_RETRIES 3</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++#define IGC_PCIE_RECOVERY_MAX_ATTEMPTS 10</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++#define IGC_PCIE_RECOVERY_INTERVAL_MS 1000</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++/**</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ * igc_pcie_link_recover - Attempt PCIe link recovery</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ * @adapter: board private structure</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ *</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ * Attempts to recover a failed PCIe link by triggering a link retrain.</d=
+iv>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ * Rate-limited to 1 attempt per second, maximum 10 attempts.</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ *</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ * Returns true if recovery was successful, false otherwise.</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ */</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++static bool igc_pcie_link_recover(struct igc_adapter *adapter)</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++{</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ struct pci_dev *pdev =3D adapter-&gt;pdev;</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ unsigned long now =3D jiffies;</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ u16 lnksta, lnkctl;</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ int ret;</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ int i;</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ /* Rate limiting: no more than 1 attempt per second */</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ if (time_before(now, adapter-&gt;last_recovery_time +</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ msecs_to_jiffies(IGC_PCIE_RECOVERY_INTERVAL_MS)))</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ return false;</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ /* Maximum attempt limit */</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ if (adapter-&gt;pcie_recovery_attempts &gt;=3D IGC_PCIE_RECOVERY_MAX_ATTE=
+MPTS) {</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ netdev_err(adapter-&gt;netdev,</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ &quot;Exceeded maximum PCIe recovery attempts (%d)\n&quot;,</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ IGC_PCIE_RECOVERY_MAX_ATTEMPTS);</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ return false;</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ }</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ adapter-&gt;last_recovery_time =3D now;</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ adapter-&gt;pcie_recovery_attempts++;</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ netdev_warn(adapter-&gt;netdev,</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ &quot;Attempting PCIe link recovery (attempt %d/%d)\n&quot;,</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ adapter-&gt;pcie_recovery_attempts,</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ IGC_PCIE_RECOVERY_MAX_ATTEMPTS);</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ /* Check if device is still present on the bus */</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ if (!pci_device_is_present(pdev)) {</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ netdev_err(adapter-&gt;netdev, &quot;Device not present on PCIe bus\n&quo=
+t;);</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ return false;</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ }</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ /* Check link status */</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ ret =3D pcie_capability_read_word(pdev, PCI_EXP_LNKSTA, &amp;lnksta);</di=
+v>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ if (ret) {</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ netdev_err(adapter-&gt;netdev, &quot;Failed to read link status\n&quot;);=
+</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ return false;</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ }</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ /* Trigger link retrain if link appears down */</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ if (!(lnksta &amp; PCI_EXP_LNKSTA_DLLLA)) {</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ netdev_info(adapter-&gt;netdev,</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ &quot;Link down, attempting retrain\n&quot;);</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ /* Read link control register */</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ ret =3D pcie_capability_read_word(pdev, PCI_EXP_LNKCTL, &amp;lnkctl);</di=
+v>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ if (ret =3D=3D 0) {</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ /* Trigger retrain by setting RL bit */</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ pcie_capability_write_word(pdev, PCI_EXP_LNKCTL,</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ lnkctl | PCI_EXP_LNKCTL_RL);</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ /* Wait for retrain to complete (up to 1 second) */</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ for (i =3D 0; i &lt; 100; i++) {</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ usleep_range(10000, 20000);</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ ret =3D pcie_capability_read_word(pdev, PCI_EXP_LNKSTA,</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ &amp;lnksta);</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ if (ret =3D=3D 0 &amp;&amp; (lnksta &amp; PCI_EXP_LNKSTA_DLLLA) &amp;&amp=
+;</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ !(lnksta &amp; PCI_EXP_LNKSTA_LT)) {</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ netdev_info(adapter-&gt;netdev,</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ &quot;PCIe link recovery successful\n&quot;);</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ return true;</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ }</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ }</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ }</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ }</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ /* Give the link some additional time to recover on its own */</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ msleep(100);</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ /* Check if device is responding now */</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ if (pci_device_is_present(pdev)) {</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ ret =3D pcie_capability_read_word(pdev, PCI_EXP_LNKSTA, &amp;lnksta);</di=
+v>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ if (ret =3D=3D 0 &amp;&amp; (lnksta &amp; PCI_EXP_LNKSTA_DLLLA)) {</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ netdev_info(adapter-&gt;netdev,</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ &quot;PCIe link recovered after delay\n&quot;);</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ return true;</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ }</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ }</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ netdev_warn(adapter-&gt;netdev, &quot;PCIe link recovery failed\n&quot;);=
+</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ return false;</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++}</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp;u32 igc_rd32(struct igc_hw *hw, u32 reg)</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp;{</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp; struct igc_adapter *igc =3D container_of(hw, struct igc_adapter, hw)=
+;</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp; u8 __iomem *hw_addr =3D READ_ONCE(hw-&gt;hw_addr);</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ struct net_device *netdev =3D igc-&gt;netdev;</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp; u32 value =3D 0;</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ int retry;</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp;</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp; if (IGC_REMOVED(hw_addr))</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp; &nbsp;return ~value;</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+@@ -6997,13 +7094,49 @@ u32 igc_rd32(struct igc_hw *hw, u32 reg)</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp;</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp; /* reads should not return all F's */</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp; if (!(~value) &amp;&amp; (!reg || !(~readl(hw_addr)))) {</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+- struct net_device *netdev =3D igc-&gt;netdev;</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ /* Layer 1: Immediate retries with short delays (100-200=ECs) */</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ for (retry =3D 0; retry &lt; IGC_REGISTER_READ_RETRIES; retry++) {</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ usleep_range(100, 200);</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ value =3D readl(&amp;hw_addr[reg]);</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ /* If we got a valid read, return immediately */</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ if (~value || (reg &amp;&amp; ~readl(hw_addr))) {</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ netdev_dbg(netdev,</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ &quot;Register read recovered after %d retries\n&quot;,</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ retry + 1);</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ return value;</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ }</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ }</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ /* Layer 2: Attempt full PCIe link recovery */</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ netdev_warn(netdev,</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ &quot;All immediate retries failed, attempting PCIe link recovery\n&quot;=
+);</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ if (igc_pcie_link_recover(igc)) {</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ /* Recovery succeeded, re-read the register */</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ hw_addr =3D READ_ONCE(hw-&gt;hw_addr);</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ if (hw_addr &amp;&amp; !IGC_REMOVED(hw_addr)) {</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ value =3D readl(&amp;hw_addr[reg]);</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ /* Verify the read is valid */</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ if (~value || (reg &amp;&amp; ~readl(hw_addr))) {</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ netdev_info(netdev,</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ &quot;Register read successful after link recovery\n&quot;);</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ return value;</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ }</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ }</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ }</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ /* Layer 3: All recovery attempts failed, detach device */</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ netdev_err(netdev,</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ &quot;PCIe link lost after %d retries and recovery attempts, device now d=
+etached\n&quot;,</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ IGC_REGISTER_READ_RETRIES);</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp;</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp; &nbsp;hw-&gt;hw_addr =3D NULL;</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp; &nbsp;netif_device_detach(netdev);</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+- netdev_err(netdev, &quot;PCIe link lost, device now detached\n&quot;);</d=
+iv>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp; &nbsp;WARN(pci_device_is_present(igc-&gt;pdev),</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+- &quot;igc: Failed to read reg 0x%x!\n&quot;, reg);</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
++ &quot;igc: Failed to read reg 0x%x after all recovery attempts!\n&quot;, =
+reg);</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp; }</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp;</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+&nbsp; return value;</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+--&nbsp;</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+2.52.0</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+<br>
+</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+<br>
+</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+<br>
+</div>
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt; color: rgb(3=
+3, 33, 33);">
+<br>
+</div>
+<div id=3D"ms-outlook-mobile-body-separator-line" data-applydefaultfontstyl=
+es=3D"true" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-system=
+, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt;" dir=3D"auto">
+<div dir=3D"auto" style=3D"font-family: Aptos, Aptos_MSFontService, -apple-=
+system, Roboto, Arial, Helvetica, sans-serif; font-size: 12pt;">
+<br>
+</div>
+</div>
+<div style=3D"font-family: Aptos, Aptos_MSFontService, -apple-system, Robot=
+o, Arial, Helvetica, sans-serif; font-size: 12pt;" id=3D"ms-outlook-mobile-=
+signature" dir=3D"auto">
+<span style=3D"font-family: Aptos, Aptos_MSFontService, -apple-system, Robo=
+to, Arial, Helvetica, sans-serif; font-size: 12pt;">Get
+<a href=3D"https://aka.ms/AAb9ysg">Outlook for Android</a></span></div>
+</body>
+</html>
+
+--_000_MN2PR14MB263885081E3A4C87043676CFDE64AMN2PR14MB2638namp_--
