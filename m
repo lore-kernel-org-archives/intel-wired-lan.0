@@ -4,144 +4,99 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 54A78E81BAD
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  9 Feb 2026 12:46:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3ABCCE7E0D2
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  9 Feb 2026 18:41:29 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id E20E7837C9;
-	Mon,  9 Feb 2026 12:46:11 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id DD8E283C86;
+	Mon,  9 Feb 2026 18:41:28 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 1dAmrgGUpw-Y; Mon,  9 Feb 2026 12:46:10 +0000 (UTC)
+ id 59RDrWmiqITn; Mon,  9 Feb 2026 18:41:28 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 05153837B6
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C6DD783BD9
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1770641170;
-	bh=QlrEMA6U+xP0E3BuDUykUYlfoN4reTbUOv4b0PXeCW4=;
-	h=Date:From:To:Cc:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1770662487;
+	bh=/lsgPaZnJEzeqZBK37tJjHVn2e9UNTcYkarSBXN1Dbc=;
+	h=References:In-Reply-To:From:Date:To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=NEtneF1LLlQgBe53Q1ahNCzwotkBqeqt8J/OeAVSDHAfKJQ8JsROR1Dl9vZ8HkzZj
-	 X4YPbFOpaJeM87LJPDBzgVA+kmbd68ZIegNpsiXPKzF3iRKlDIixwAzjZ4GE8h0y/R
-	 cEizUKzwU09umPf/cEwpT0UuAdrwcR97VB6awaSUEat/pjMaqxYygdeLLEU204hsMA
-	 ZmUcRnIkpL0RdlBSf6+Dtny+FZu2Rv58vzS+Z6rkDqaO7Gk3C7zwecZKtVI3LjMJ4G
-	 Bk92GJZpSyetML4JCS7mgtsZvxt9xD4pg3TTmvvjVUIFIgXKs8R6G5mgll6RtoUCsK
-	 IgMMXbLcFQfeQ==
+	 Cc:From;
+	b=Gx0WvOc71TiwQx99FoBA3fM6DJvelZE025avMHUkwtML+ogLRs0kmTaGwK5Js9zd5
+	 BFIQvp4z+m58DfZTmMKWQ1IFcQP7p6WAdZVii5ixrqWo/EYQynqJWUgEo4N/Oo4lo3
+	 j2NlohHaHz95n0CumCYvpCnTvkNbfXVOPuUh+5ipXq5kJgdd+4A+aZq2K+trjyI66b
+	 1SjBsWIZ8QlfcDEv23VV6y7nwUIW4dU3ZUtxr9fziDOGka2myl/TepsPw3zN66MAPV
+	 Sd+ZB0J0vhLvJ7sB696pbe+MNjjm76ChqDOLkwF6udY3EwADMh2P/wXh5vgAIDcwHt
+	 41PCOfkeK494Q==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 05153837B6;
-	Mon,  9 Feb 2026 12:46:10 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id 0221B1A9
- for <intel-wired-lan@lists.osuosl.org>; Mon,  9 Feb 2026 12:46:07 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id C6DD783BD9;
+	Mon,  9 Feb 2026 18:41:27 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id C3C8E219
+ for <intel-wired-lan@lists.osuosl.org>; Sun,  8 Feb 2026 01:46:41 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id D13CE837AD
- for <intel-wired-lan@lists.osuosl.org>; Mon,  9 Feb 2026 12:46:07 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id A8D964056F
+ for <intel-wired-lan@lists.osuosl.org>; Sun,  8 Feb 2026 01:46:41 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id HogElvYodlqb for <intel-wired-lan@lists.osuosl.org>;
- Mon,  9 Feb 2026 12:46:05 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2607:f8b0:4864:20::1131; helo=mail-yw1-x1131.google.com;
- envelope-from=willemdebruijn.kernel@gmail.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 7EA21837AC
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7EA21837AC
-Received: from mail-yw1-x1131.google.com (mail-yw1-x1131.google.com
- [IPv6:2607:f8b0:4864:20::1131])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 7EA21837AC
- for <intel-wired-lan@lists.osuosl.org>; Mon,  9 Feb 2026 12:46:05 +0000 (UTC)
-Received: by mail-yw1-x1131.google.com with SMTP id
- 00721157ae682-79430ef54c3so25509377b3.2
- for <intel-wired-lan@lists.osuosl.org>; Mon, 09 Feb 2026 04:46:05 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20230601; t=1770641164; x=1771245964;
- h=content-transfer-encoding:mime-version:subject:references
- :in-reply-to:message-id:cc:to:from:date:x-gm-gg:x-gm-message-state
- :from:to:cc:subject:date:message-id:reply-to;
- bh=QlrEMA6U+xP0E3BuDUykUYlfoN4reTbUOv4b0PXeCW4=;
- b=fl9yR9d5qTv/TY5H5i2Gmmof8xBY9c9vFhvpCboW5uBu4CRmmEOo1ID+24GIjMiI/J
- YQWZKPnV9o0xAJmIK/aVlgGDMn0i69/FxOvRz00H12H1xQC2sgfW/NEn6xJQ+5czU+f2
- PRbNCDb8QVaR5PFo8qJKIo7AVlIsSEatOKHAtg7Afl4pCmm4RFPUfkI4WJd4yKQXUeTR
- 7UEB939lPN3kFBiSYBEtQyXEcK5FaF7WNRSmlDP5l+JXC90QCbWFFm9W+Y7q1U63qXJU
- zKW44i7ttKgHw5e6jkHXOa6t9Da2DUSjXbvfUddnrhfS8EhzifoG8BUt8htloa48Xxjn
- 3yvA==
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id XhwomIkMut7S for <intel-wired-lan@lists.osuosl.org>;
+ Sun,  8 Feb 2026 01:46:41 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.234.252.31;
+ helo=sea.source.kernel.org; envelope-from=saravanak@kernel.org;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org D883040561
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D883040561
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id D883040561
+ for <intel-wired-lan@lists.osuosl.org>; Sun,  8 Feb 2026 01:46:40 +0000 (UTC)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+ by sea.source.kernel.org (Postfix) with ESMTP id 11DD4441D7
+ for <intel-wired-lan@lists.osuosl.org>; Sun,  8 Feb 2026 01:46:40 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AF4B3C2BCB0
+ for <intel-wired-lan@lists.osuosl.org>; Sun,  8 Feb 2026 01:46:39 +0000 (UTC)
+Received: by mail-ed1-f48.google.com with SMTP id
+ 4fb4d7f45d1cf-658f1fde4bfso6853711a12.1
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 07 Feb 2026 17:46:39 -0800 (PST)
 X-Forwarded-Encrypted: i=1;
- AJvYcCXnHe8dQUnMN9u2ACCYBrDwDQwmz1/FattmySvFj6KmssdpuL3iLxMTeHV3oQxqYJPqYKz14+0Dd9qchDKn2LA=@lists.osuosl.org
-X-Gm-Message-State: AOJu0YzROSBUoVo18gnpon+OV2g5dbfsHfJuPUcNqszqyTT/VdePi3wx
- Ho4v/BJXzECd/G8xY9gWB+XS8G0YuB5nHx7voyJe8cABQM3YPX6CefMZ
-X-Gm-Gg: AZuq6aIUGaZyAO1DmRPu4vR9utUO8ZO7fHgk9IOdyxXsn9uEeUrR/dPxWLrMTfGzOva
- sbCPwuh3CgCzRFQvms5dWcTYjCJ1yaGRJzzk5iR1zCNtk2DJQlm/0GlfvGOzGAoo4gi7oFO/0Bg
- 4m01Yxr7C6SgR2pRsLjeX1rZMo35FjR8yuY+KJ8OzPOzMfV0huE2Z43vqG+csVhYzJucAzmlcSw
- m1fh//ajwXvKF79zu2cRBdqirbbFbif4E4+PaAXb0B96FS36a/UaR84zHoGZQWMSw9Z+itBS50J
- KgF1+yELntyJs5E4pj6IazCp3/8DSS4u4nsn9MQdRWJ4ap6UTev5s7O1PcdurS1i1cepfGgugCr
- j06c5HNb/Fu3axJPfx59OHWz6zSKr+v/I6reF9Ojy+djaamg6bElZ/febAdI6u3h+Pd+yT8Z4JQ
- cOjIGMgvCBwxRWs8pZ9pjME4WaeY+o2cNL3J2Sy9tdC4mkSJ/TS92tvFgiQOraPPWZA/8fEw==
-X-Received: by 2002:a05:690c:9b0a:b0:794:a165:1c3b with SMTP id
- 00721157ae682-7952aab650dmr91143427b3.30.1770641163990; 
- Mon, 09 Feb 2026 04:46:03 -0800 (PST)
-Received: from gmail.com (21.33.48.34.bc.googleusercontent.com. [34.48.33.21])
- by smtp.gmail.com with UTF8SMTPSA id
- 00721157ae682-79529e45621sm91555017b3.0.2026.02.09.04.46.03
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 09 Feb 2026 04:46:03 -0800 (PST)
-Date: Mon, 09 Feb 2026 07:46:01 -0500
-From: Willem de Bruijn <willemdebruijn.kernel@gmail.com>
-To: Vadim Fedorenko <vadim.fedorenko@linux.dev>, 
- Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Cc: Willem de Bruijn <willemdebruijn.kernel@gmail.com>, 
- Willem de Bruijn <willemb@google.com>, Jakub Kicinski <kuba@kernel.org>, 
- Paolo Abeni <pabeni@redhat.com>, Eric Dumazet <edumazet@google.com>, 
- "David S. Miller" <davem@davemloft.net>, 
- "Loktionov, Aleksandr" <aleksandr.loktionov@intel.com>, 
- Kurt Kanzenbach <kurt@linutronix.de>, 
- "Nguyen, Anthony L" <anthony.l.nguyen@intel.com>, 
- "Kitszel, Przemyslaw" <przemyslaw.kitszel@intel.com>, 
- Paul Menzel <pmenzel@molgen.mpg.de>, 
- "Gomes, Vinicius" <vinicius.gomes@intel.com>, 
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>, 
- Richard Cochran <richardcochran@gmail.com>, 
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, 
- Andrew Lunn <andrew+netdev@lunn.ch>, 
- "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>, 
- "Keller, Jacob E" <jacob.e.keller@intel.com>
-Message-ID: <willemdebruijn.kernel.2e6213a98660b@gmail.com>
-In-Reply-To: <78e2af2c-40e6-43f1-9471-42f350e69389@linux.dev>
-References: <6a0f4cbb-e8b3-4f0e-b7f1-7f9ca5cba97d@linux.dev>
- <20260205145104.iWinkXHv@linutronix.de>
- <66925f09-ef9f-4401-baec-7d4c82a68ce3@linux.dev>
- <20260205164341.pJvni8kA@linutronix.de>
- <76acd5cc-eb6f-4c56-a5e6-f6413736afbb@linux.dev>
- <willemdebruijn.kernel.459b2672b1e7@gmail.com>
- <601f0c4b-52d8-4b60-96bf-f2d65f8073d8@linux.dev>
- <willemdebruijn.kernel.bbdefedfb87e@gmail.com>
- <20260209090621.GiZqTiMJ@linutronix.de>
- <8e762437-69f9-40d7-bb75-3a45bef1d5d6@linux.dev>
- <20260209114836.GPU-vnnh@linutronix.de>
- <78e2af2c-40e6-43f1-9471-42f350e69389@linux.dev>
-Mime-Version: 1.0
-Content-Type: text/plain;
- charset=utf-8
+ AJvYcCVtvChns6Uoo7sYy1EG7kXhaYAy4mihePD8NDAKOp4iApzBbeMzCKzwYHDqVZHrXKCLwUDMTj6et2fVgopZe74=@lists.osuosl.org
+X-Gm-Message-State: AOJu0YybOi0GDFOoq3imkV7wWSmeqp+eAVCOoLleRRuzperNXCOGSmva
+ Hor3samy2oWldZPUPXSkEruyfDtc9KFr7FnXlcJPr1oixDxDrab9vzr3nxOVugJyKEkrWQdpNss
+ jm3/+0Ek4Z+btr3xc0bNQM6lZBTfSCcY=
+X-Received: by 2002:a17:907:3f26:b0:b80:1403:764c with SMTP id
+ a640c23a62f3a-b8eba262322mr666655266b.24.1770515198428; Sat, 07 Feb 2026
+ 17:46:38 -0800 (PST)
+MIME-Version: 1.0
+References: <20260116184610.147591-1-ivecera@redhat.com>
+ <20260116184610.147591-4-ivecera@redhat.com>
+In-Reply-To: <20260116184610.147591-4-ivecera@redhat.com>
+From: Saravana Kannan <saravanak@kernel.org>
+Date: Sat, 7 Feb 2026 17:46:27 -0800
+X-Gmail-Original-Message-ID: <CACRMN=dy3eosPYSne3UKBL+ArOT-pzd3N5k3e7GPwSXJQ=6UwA@mail.gmail.com>
+X-Gm-Features: AZwV_Qg_RIFSoCTTzuceW6K6a5A6HDh2-N6dPY7F917i1v3mTVT5QWLwoY0jwlk
+Message-ID: <CACRMN=dy3eosPYSne3UKBL+ArOT-pzd3N5k3e7GPwSXJQ=6UwA@mail.gmail.com>
+To: Ivan Vecera <ivecera@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20230601; t=1770641164; x=1771245964; darn=lists.osuosl.org;
- h=content-transfer-encoding:mime-version:subject:references
- :in-reply-to:message-id:cc:to:from:date:from:to:cc:subject:date
- :message-id:reply-to;
- bh=QlrEMA6U+xP0E3BuDUykUYlfoN4reTbUOv4b0PXeCW4=;
- b=Ix4oAUKN753a8IhwAJsYPuHCa/rL+BkXHjXtpb26nk/+p53zyXwh1CI6P0T1IH8NDl
- ChPGK1niO1I46wLgSluv2QzMUnqfCnfDA9j6GxaBcGH/QZ7NE4rBwqRr1Y6nQGfKHWvc
- rxp3Kd4hJR3M+KnPuwwSDp7xz9ZZtXXHVBL6SEYqnb455ehOAycRGBGwEJ1fyqYXmiH2
- BGnrfaVErKCKl/5rlUaPB4DFxr6H+abz4stjlgfYVnsHFyWqZYv4U30IvibBJT1Cfmm7
- kUXsDbciC1Mt2HJOmUpkxZy71zNSObc6cDpJDAY8dAUNANOp45cmF5ROpZQoYpg86BrC
- V8WA==
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=gmail.com
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
- header.a=rsa-sha256 header.s=20230601 header.b=Ix4oAUKN
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next v3] igb: Retrieve Tx
- timestamp directly from interrupt for i210
+X-Mailman-Approved-At: Mon, 09 Feb 2026 18:41:25 +0000
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=kernel.org; s=k20201202; t=1770515199;
+ bh=tyWxKxHsau3OE/oOgqAMGEezSdgdUNWkxIfNxt57e0o=;
+ h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+ b=QDdMCyE9FaslMT+tqVeDGyLkA0xMjAYaKfS3mx6ZcgEHXqpcucaofAyQ1H09X6VW1
+ mz3CWkYMvfWrn9KQ0lG9il8AmmNDS1jIP+7JLyrPF2chvbPfRanw6BzUCIZWr8NAJd
+ WQXZFmkm4WMJ9Uav00q1irrRY5cx2UuUXbtvFi8ZSV32EJhQBNRqFrEoxSj67cqZy8
+ bYqxrS/BjSgy/WMWQ79sWBa5wjsKXbPvaF5vbGzWfaarZM+Hx7AUZYuNOAPEtbit7M
+ VFGojULfqI6GaIOM+fGSP1GvYp76cyjUsBuIkSuQbVmNW3iG6c/VOlkr+0b56NfqY6
+ L/DqvALmsPqWQ==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dmarc=pass (p=quarantine dis=none)
+ header.from=kernel.org
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=QDdMCyE9
+Subject: Re: [Intel-wired-lan] [PATCH net-next v2 03/12] dpll: Add helpers
+ to find DPLL pin fwnode
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -154,91 +109,234 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
+Cc: Eric Dumazet <edumazet@google.com>,
+ Tony Nguyen <anthony.l.nguyen@intel.com>, Rob Herring <robh@kernel.org>,
+ Leon Romanovsky <leon@kernel.org>, Andrew Lunn <andrew+netdev@lunn.ch>,
+ linux-rdma@vger.kernel.org, Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>,
+ intel-wired-lan@lists.osuosl.org, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>, devicetree@vger.kernel.org,
+ Conor Dooley <conor+dt@kernel.org>, Jiri Pirko <jiri@resnulli.us>,
+ Richard Cochran <richardcochran@gmail.com>,
+ Saravana Kannan <saravanak@kernel.org>,
+ Prathosh Satish <Prathosh.Satish@microchip.com>,
+ Vadim Fedorenko <vadim.fedorenko@linux.dev>, netdev@vger.kernel.org,
+ Mark Bloch <mbloch@nvidia.com>, linux-kernel@vger.kernel.org,
+ Tariq Toukan <tariqt@nvidia.com>,
+ Alexander Lobakin <aleksander.lobakin@intel.com>,
+ Jonathan Lemon <jonathan.lemon@gmail.com>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Saeed Mahameed <saeedm@nvidia.com>,
+ "David S. Miller" <davem@davemloft.net>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Vadim Fedorenko wrote:
-> On 09/02/2026 11:48, Sebastian Andrzej Siewior wrote:
-> > On 2026-02-09 10:43:55 [+0000], Vadim Fedorenko wrote:
-> >> On 09/02/2026 09:06, Sebastian Andrzej Siewior wrote:
-> >>> On 2026-02-08 11:25:40 [-0500], Willem de Bruijn wrote:
-> >>>>>>> But it's more like a question to maintainers whether it is acce=
-ptable
-> >>>>>>> way of "fixing" drivers or it's no-go solution
-> >>>>>>
-> >>>>>> Requiring OPT_TSONLY unless CAP_NET_RAW would break legacy users=
+On Fri, Jan 16, 2026 at 10:46=E2=80=AFAM Ivan Vecera <ivecera@redhat.com> w=
+rote:
+>
+> dpll: core: add helpers to find DPLL pin fwnode
+>
+> Add helper functions to the DPLL core to retrieve a DPLL pin's firmware
+> node handle based on the 'dpll-pins' and 'dpll-pin-names' properties.
+>
+> Unlike simple phandle arrays, 'dpll-pins' entries typically contain
+> a pin specifier (index and direction) as defined by '#dpll-pin-cells'.
+> The new helper fwnode_dpll_pin_node_get() parses these specifiers
+> using fwnode_property_get_reference_args(). It resolves the target
+> pin by:
+> 1. Identifying the DPLL device node from the phandle.
+> 2. Selecting the correct sub-node ('input-pins' or 'output-pins') based
+>    on the direction argument.
+> 3. Matching the pin index argument against the 'reg' property of
+>    the child nodes.
+>
+> Additionally, register 'dpll-pins' in drivers/of/property.c to enable
+> proper parsing of the supplier bindings by the OF core.
+>
+> Signed-off-by: Ivan Vecera <ivecera@redhat.com>
+> ---
+> v2:
+> * added check for fwnode_property_match_string() return value
+> * reworked searching for the pin using dpll device phandle and
+>   pin specifier
+> * added dpll-pins into OF core supplier_bindings
+> ---
+>  drivers/dpll/dpll_core.c | 74 ++++++++++++++++++++++++++++++++++++++++
+>  drivers/of/property.c    |  2 ++
+>  include/linux/dpll.h     | 15 ++++++++
+>  3 files changed, 91 insertions(+)
+>
+> diff --git a/drivers/dpll/dpll_core.c b/drivers/dpll/dpll_core.c
+> index fb68b5e19b480..b0083b5c10aa4 100644
+> --- a/drivers/dpll/dpll_core.c
+> +++ b/drivers/dpll/dpll_core.c
+> @@ -13,6 +13,7 @@
+>  #include <linux/property.h>
+>  #include <linux/slab.h>
+>  #include <linux/string.h>
+> +#include <dt-bindings/dpll/dpll.h>
+>
+>  #include "dpll_core.h"
+>  #include "dpll_netlink.h"
+> @@ -654,6 +655,79 @@ struct dpll_pin *fwnode_dpll_pin_find(struct fwnode_=
+handle *fwnode)
+>  }
+>  EXPORT_SYMBOL_GPL(fwnode_dpll_pin_find);
+>
+> +/**
+> + * fwnode_dpll_pin_node_get - get dpll pin node from given fw node and p=
+in name
+> + * @fwnode: firmware node that uses the dpll pin
+> + * @name: dpll pin name from dpll-pin-names property
+> + *
+> + * Return: ERR_PTR() on error or a valid firmware node handle on success=
 .
-> >>>>>
-> >>>>> Well, they are kinda broken already. Without OPT_TSONLY and CAP_N=
-ET_RAW all TX
-> >>>>> timestamps are silently dropped.
-> >>>>
-> >>>> Are you referring to sysctl_tstamp_allow_data?
-> >>>>
-> >>>> That is enabled by default.
-> >>>
-> >>> Yes. If so, then we don't need the check below which requires
-> >>> sk_callback_lock.
-> >>>
-> >>> Are SIOCSHWTSTAMP the legacy users or the ones which do not set
-> >>> OPT_TSONLY?
-> >>>
-> >>> I would suggest to move the CAP_NET_RAW check to the point where
-> >>> timestamping is getting enabled.
-> >>> Also if ndo_hwtstamp_set is the preferred method of getting things =
-done,
-> >>> I could check how many old ones are can be easily converted=E2=80=A6=
+> + */
+> +struct fwnode_handle *fwnode_dpll_pin_node_get(struct fwnode_handle *fwn=
+ode,
+> +                                              const char *name)
+> +{
+> +       struct fwnode_handle *parent_node, *pin_node;
+> +       struct fwnode_reference_args args;
+> +       const char *parent_name;
+> +       int ret, index =3D 0;
+> +
+> +       if (name) {
+> +               index =3D fwnode_property_match_string(fwnode, "dpll-pin-=
+names",
+> +                                                    name);
+> +               if (index < 0)
+> +                       return ERR_PTR(-ENOENT);
+> +       }
+> +
+> +       ret =3D fwnode_property_get_reference_args(fwnode, "dpll-pins",
+> +                                                "#dpll-pin-cells", 2, in=
+dex,
+> +                                                &args);
+> +       if (ret)
+> +               return ERR_PTR(ret);
+> +
+> +       /* We support only 2 cell DPLL bindings in the kernel currently. =
+*/
+> +       if (args.nargs !=3D 2) {
+> +               fwnode_handle_put(args.fwnode);
+> +               return ERR_PTR(-ENOENT);
+> +       }
+> +
+> +       /* Resolve parent node name according pin direction type */
+> +       switch (args.args[1]) {
+> +       case DPLL_PIN_INPUT:
+> +               parent_name =3D "input-pins";
+> +               break;
+> +       case DPLL_PIN_OUTPUT:
+> +               parent_name =3D "output-pins";
+> +               break;
+> +       default:
+> +               fwnode_handle_put(args.fwnode);
+> +               return ERR_PTR(-EINVAL);
+> +       }
+> +
+> +       /* Get pin's parent sub-node */
+> +       parent_node =3D fwnode_get_named_child_node(args.fwnode, parent_n=
+ame);
+> +       if (!parent_node) {
+> +               fwnode_handle_put(args.fwnode);
+> +               return ERR_PTR(-ENOENT);
+> +       }
+> +
+> +       /* Enumerate child pin nodes and find the requested one */
+> +       fwnode_for_each_child_node(parent_node, pin_node) {
+> +               u32 reg;
+> +
+> +               if (fwnode_property_read_u32(pin_node, "reg", &reg))
+> +                       continue;
+> +
+> +               if (reg =3D=3D args.args[0])
+> +                       break;
+> +       }
+> +
+> +       /* Release pin's parent and dpll device node */
+> +       fwnode_handle_put(parent_node);
+> +       fwnode_handle_put(args.fwnode);
+> +
+> +       return pin_node ? pin_node : ERR_PTR(-ENOENT);
+> +}
+> +EXPORT_SYMBOL_GPL(fwnode_dpll_pin_node_get);
+> +
+>  static int
+>  __dpll_pin_register(struct dpll_device *dpll, struct dpll_pin *pin,
+>                     const struct dpll_pin_ops *ops, void *priv, void *coo=
+kie)
+> diff --git a/drivers/of/property.c b/drivers/of/property.c
+> index 4e3524227720a..8571c8bb71ade 100644
+> --- a/drivers/of/property.c
+> +++ b/drivers/of/property.c
+> @@ -1410,6 +1410,7 @@ DEFINE_SIMPLE_PROP(post_init_providers, "post-init-=
+providers", NULL)
+>  DEFINE_SIMPLE_PROP(access_controllers, "access-controllers", "#access-co=
+ntroller-cells")
+>  DEFINE_SIMPLE_PROP(pses, "pses", "#pse-cells")
+>  DEFINE_SIMPLE_PROP(power_supplies, "power-supplies", NULL)
+> +DEFINE_SIMPLE_PROP(dpll_pins, "dpll-pins", "#dpll-pin-cells")
+>  DEFINE_SUFFIX_PROP(regulators, "-supply", NULL)
+>  DEFINE_SUFFIX_PROP(gpio, "-gpio", "#gpio-cells")
+>
+> @@ -1568,6 +1569,7 @@ static const struct supplier_bindings of_supplier_b=
+indings[] =3D {
+>                 .parse_prop =3D parse_post_init_providers,
+>                 .fwlink_flags =3D FWLINK_FLAG_IGNORE,
+>         },
+> +       { .parse_prop =3D parse_dpll_pins, },
 
-> >>
-> >> Looks like you are mixing things. SIOCSHWTSTAMP/ndo_hwtstamp_set are=
- HW
-> >> configuration calls while OPT_TSONLY is socket option, which is setu=
-p via
-> >> setsockopt, you can find points searching for
-> >> SOF_TIMESTAMPING_OPT_TSONLY in the sources, basically
-> >> sock_set_timestamping() is the function to check
-> > =
+Keep the same order as the other table please.
 
-> > Yeah, but what is the legacy user here? If you enable HW-timestamps b=
-ut
-> > never set OPT_TSONLY and the sysctl is also 0 then you reply on the
-> > CAP_NET_RAW later on. Right?
-> =
-
-> Legacy users here means users of HW TX timestamps expecting full skb to=
- =
-
-> be returned back with the TX timestamp. Legacy here means that skb will=
- =
-
-> be returned with headers modified by stack, which is kind of exposure o=
-f
-> data, which requires CAP_NET_RAW...
-> =
-
-> > I just try to justify the CAP_NET_RAW check and if it is required to
-> > move it earlier (where HW timestamps are enabled). And if the sysctl
-> > check is enough then maybe it is not needed.
-> =
-
-> Capabilities should not change during lifetime of the process, should b=
-e
-> fine to move. On the other, sysctl can be changed system-wide which may=
- =
-
-> affect users.
-
-Ignore the hardware configuration. That is entirely optional. Some
-devices will timestamp every packet.
-
-The capability check here is per-socket, independent from the system
-hardware configuration.
-
-I don't see how it could be moved.
-
-Before OPT_TSONLY was introduced packets were always queued with their
-payload. The sysctl check was added to optionally disallow this. The
-check could arguably be moved earlier in the socket lifecycle and the
-decision cached in the socket. But then flipping the sysctl would not
-affect existing sockets, so that is a change in ABI behavior.
-
+-Saravana
+>         {}
+>  };
+>
+> diff --git a/include/linux/dpll.h b/include/linux/dpll.h
+> index f0c31a111c304..755c36d1ef45a 100644
+> --- a/include/linux/dpll.h
+> +++ b/include/linux/dpll.h
+> @@ -11,6 +11,7 @@
+>  #include <linux/device.h>
+>  #include <linux/netlink.h>
+>  #include <linux/netdevice.h>
+> +#include <linux/property.h>
+>  #include <linux/rtnetlink.h>
+>
+>  struct dpll_device;
+> @@ -176,6 +177,8 @@ int dpll_netdev_add_pin_handle(struct sk_buff *msg,
+>                                const struct net_device *dev);
+>
+>  struct dpll_pin *fwnode_dpll_pin_find(struct fwnode_handle *fwnode);
+> +struct fwnode_handle *fwnode_dpll_pin_node_get(struct fwnode_handle *fwn=
+ode,
+> +                                              const char *name);
+>  #else
+>  static inline void
+>  dpll_netdev_pin_set(struct net_device *dev, struct dpll_pin *dpll_pin) {=
+ }
+> @@ -197,8 +200,20 @@ fwnode_dpll_pin_find(struct fwnode_handle *fwnode)
+>  {
+>         return NULL;
+>  }
+> +
+> +static inline struct fwnode_handle *
+> +fwnode_dpll_pin_node_get(struct fwnode_handle *fwnode, const char *name)
+> +{
+> +       return NULL;
+> +}
+>  #endif
+>
+> +static inline struct fwnode_handle *
+> +device_dpll_pin_node_get(struct device *dev, const char *name)
+> +{
+> +       return fwnode_dpll_pin_node_get(dev_fwnode(dev), name);
+> +}
+> +
+>  struct dpll_device *
+>  dpll_device_get(u64 clock_id, u32 dev_driver_id, struct module *module);
+>
+> --
+> 2.52.0
+>
