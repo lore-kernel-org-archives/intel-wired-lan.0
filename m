@@ -4,58 +4,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 14CA7E81BA5
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  9 Feb 2026 11:48:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 36F5FE81BAD
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  9 Feb 2026 12:25:20 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id BB58883578;
-	Mon,  9 Feb 2026 11:48:45 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id B39D282848;
+	Mon,  9 Feb 2026 12:25:19 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id sE5uXHKpfb4x; Mon,  9 Feb 2026 11:48:44 +0000 (UTC)
+ id RtdhoqcQUwav; Mon,  9 Feb 2026 12:25:17 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 68E6583211
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 913B882751
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1770637724;
-	bh=bii6nDpRq3u0mpk5uwFaoKraWGApqndaiRM8N5c949k=;
-	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
+	s=default; t=1770639917;
+	bh=PIrNZzus55bKquXO+5YoeklSWCz4FLC8RX4qxihAbzU=;
+	h=Date:To:Cc:References:From:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=dBWmvce2/9b1J5GC5NYIeu9JuTARl+Rnamd4n/nZclAJuKf84p5KL/yfwCcmthFEv
-	 KA62o40qv/tUEDXC1xweRjUzJJ4y7j9o8eLHjo2YBBd9Rl0ZucjdMQtRiUH153u+Hw
-	 5bcUGLk2xlZ9S/T7oQ8fQ9poEzJVz9jIm8KtIYpM7Z1M46811TqluQnwUA4llPEXTn
-	 s0Uorgk70y97qPouBKHQGFZqS54Zg6CrT5WPyGPRrspZPUmWZ4Y64gM/OziiNQkZhX
-	 EDirlzC/IwlYSSaiRdtwE18CrwcqZNF7ZRzhnw3ZHWjYHJS3ouSQioPZuNnE0r4Cl/
-	 gLF78kNKr/Ekw==
+	b=rrFeJJTgEirkBgIMhT5vtybkGb+Jhie9RVdsBPq9pYCpdIAj9YXPAiyWxKwRaJqUb
+	 CviiOGeMJRrlcuPa4FOQ1EnrqcazPduTx+5+VAejmW1Vvl8UeQcko/AnCh6X/eHcjN
+	 eJyT/wFwLo0hFOhSQ2wvqRwQeCihunXjN4qvv5G82LRjn3BB7IN5gQFfKFPVSFVqAi
+	 ljn+FJAw70N5nhWsKgNxoHm2QYtpwDzEkRT/qim5I55hxxPvtYnYkFf+i7Ca4Q/wXw
+	 xTuEOH98xvXi44sYbiCAecQgtsQ1VJWi2LOiOpWuCjyepmnaqg7QQMHRtqHcolidMc
+	 wNBzCG6+frbBg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 68E6583211;
-	Mon,  9 Feb 2026 11:48:44 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id B6C50219
- for <intel-wired-lan@lists.osuosl.org>; Mon,  9 Feb 2026 11:48:42 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 913B882751;
+	Mon,  9 Feb 2026 12:25:17 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 1DBDD1A9
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  9 Feb 2026 12:25:16 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id A791C40109
- for <intel-wired-lan@lists.osuosl.org>; Mon,  9 Feb 2026 11:48:42 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id EEBB440A17
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  9 Feb 2026 12:25:15 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id beJpmqMHwuTo for <intel-wired-lan@lists.osuosl.org>;
- Mon,  9 Feb 2026 11:48:42 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=193.142.43.55;
- helo=galois.linutronix.de; envelope-from=bigeasy@linutronix.de;
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id Xiu-35ZQNYV9 for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  9 Feb 2026 12:25:14 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=91.218.175.186;
+ helo=out-186.mta0.migadu.com; envelope-from=vadim.fedorenko@linux.dev;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org DC2E54005C
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org DC2E54005C
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
- by smtp2.osuosl.org (Postfix) with ESMTPS id DC2E54005C
- for <intel-wired-lan@lists.osuosl.org>; Mon,  9 Feb 2026 11:48:41 +0000 (UTC)
-Date: Mon, 9 Feb 2026 12:48:36 +0100
-From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-To: Vadim Fedorenko <vadim.fedorenko@linux.dev>
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org DC54740A16
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org DC54740A16
+Received: from out-186.mta0.migadu.com (out-186.mta0.migadu.com
+ [91.218.175.186])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id DC54740A16
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  9 Feb 2026 12:25:13 +0000 (UTC)
+Message-ID: <78e2af2c-40e6-43f1-9471-42f350e69389@linux.dev>
+Date: Mon, 9 Feb 2026 12:24:59 +0000
+MIME-Version: 1.0
+To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 Cc: Willem de Bruijn <willemdebruijn.kernel@gmail.com>,
- Willem de Bruijn <willemb@google.com>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- Eric Dumazet <edumazet@google.com>,
+ Willem de Bruijn <willemb@google.com>, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>, Eric Dumazet <edumazet@google.com>,
  "David S. Miller" <davem@davemloft.net>,
  "Loktionov, Aleksandr" <aleksandr.loktionov@intel.com>,
  Kurt Kanzenbach <kurt@linutronix.de>,
@@ -69,7 +70,6 @@ Cc: Willem de Bruijn <willemdebruijn.kernel@gmail.com>,
  Andrew Lunn <andrew+netdev@lunn.ch>,
  "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
  "Keller, Jacob E" <jacob.e.keller@intel.com>
-Message-ID: <20260209114836.GPU-vnnh@linutronix.de>
 References: <6a0f4cbb-e8b3-4f0e-b7f1-7f9ca5cba97d@linux.dev>
  <20260205145104.iWinkXHv@linutronix.de>
  <66925f09-ef9f-4401-baec-7d4c82a68ce3@linux.dev>
@@ -80,40 +80,32 @@ References: <6a0f4cbb-e8b3-4f0e-b7f1-7f9ca5cba97d@linux.dev>
  <willemdebruijn.kernel.bbdefedfb87e@gmail.com>
  <20260209090621.GiZqTiMJ@linutronix.de>
  <8e762437-69f9-40d7-bb75-3a45bef1d5d6@linux.dev>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-In-Reply-To: <8e762437-69f9-40d7-bb75-3a45bef1d5d6@linux.dev>
+ <20260209114836.GPU-vnnh@linutronix.de>
+Content-Language: en-US
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and
+ include these headers.
+From: Vadim Fedorenko <vadim.fedorenko@linux.dev>
+In-Reply-To: <20260209114836.GPU-vnnh@linutronix.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Migadu-Flow: FLOW_OUT
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=linutronix.de; s=2020; t=1770637718;
+ d=linux.dev; s=key1; t=1770639908;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=bii6nDpRq3u0mpk5uwFaoKraWGApqndaiRM8N5c949k=;
- b=A31THiiXz/ZEIBWBv9USPdzhGFjS+SGL92Q7iViSw2762PATFFUy6ZZgX3AxSH4CAXs/DF
- 9EEk+SyCQZzPKjl9g2IIGUxwQyGQP3EZIyhixke96C998lAB8bo0rUPRh35UImFZokyOHI
- qKEWWe32YXtrlsFKkyKNskEvQI3UwxOgactbVBQzJHknxz99jxc1I30DZkaJWyJ1RVMtRS
- s44DgJou9Kx/YRZSO5O2sENh10/dAVxGadEIaTz+lJ1fS9LCB7Wzw+NMOrzgaIpNgDTURF
- TKdTCVSdlfeJWzCWJwFNQbqKNHtSXLe8Bii6uBJIAUwM8JGIdvLeTxj6+z9/oQ==
-X-Mailman-Original-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
- d=linutronix.de; s=2020e; t=1770637718;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=bii6nDpRq3u0mpk5uwFaoKraWGApqndaiRM8N5c949k=;
- b=l0fcvTmRCFEA7JLnK8XN1VpILVOQ5rHWlrEEm4fFMfqcV8w9osP7VJYir6sXCGjcsLC+8l
- +fLT7xoD74c8vIDQ==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ bh=PIrNZzus55bKquXO+5YoeklSWCz4FLC8RX4qxihAbzU=;
+ b=nuiOAqIX+K7Wf4ItbxoEm23TvJItgvGTpSmmpMtnOEJuXvBs8FEQeBCay943fS11SNJ6Wl
+ W6LDiWmjSsI95PPw5uwxV0QXkBMrY+51CteA7DrAreCf3eRruVme0PHRhST04xG7NBqf8k
+ CR+DC27Wv2ZbV5qw6p4Yj4xHcTASCFs=
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
- header.from=linutronix.de
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key, unprotected) header.d=linutronix.de
- header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=A31THiiX; 
- dkim=pass header.d=linutronix.de header.i=@linutronix.de
- header.a=ed25519-sha256 header.s=2020e header.b=l0fcvTmR
+ header.from=linux.dev
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (1024-bit key,
+ unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256
+ header.s=key1 header.b=nuiOAqIX
 Subject: Re: [Intel-wired-lan] [PATCH iwl-next v3] igb: Retrieve Tx
  timestamp directly from interrupt for i210
 X-BeenThere: intel-wired-lan@osuosl.org
@@ -131,50 +123,59 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On 2026-02-09 10:43:55 [+0000], Vadim Fedorenko wrote:
-> On 09/02/2026 09:06, Sebastian Andrzej Siewior wrote:
-> > On 2026-02-08 11:25:40 [-0500], Willem de Bruijn wrote:
-> > > > > > But it's more like a question to maintainers whether it is acce=
-ptable
-> > > > > > way of "fixing" drivers or it's no-go solution
-> > > > >=20
-> > > > > Requiring OPT_TSONLY unless CAP_NET_RAW would break legacy users.
-> > > >=20
-> > > > Well, they are kinda broken already. Without OPT_TSONLY and CAP_NET=
-_RAW all TX
-> > > > timestamps are silently dropped.
-> > >=20
-> > > Are you referring to sysctl_tstamp_allow_data?
-> > >=20
-> > > That is enabled by default.
-> >=20
-> > Yes. If so, then we don't need the check below which requires
-> > sk_callback_lock.
-> >=20
-> > Are SIOCSHWTSTAMP the legacy users or the ones which do not set
-> > OPT_TSONLY?
-> >=20
-> > I would suggest to move the CAP_NET_RAW check to the point where
-> > timestamping is getting enabled.
-> > Also if ndo_hwtstamp_set is the preferred method of getting things done,
-> > I could check how many old ones are can be easily converted=E2=80=A6
->=20
-> Looks like you are mixing things. SIOCSHWTSTAMP/ndo_hwtstamp_set are HW
-> configuration calls while OPT_TSONLY is socket option, which is setup via
-> setsockopt, you can find points searching for
-> SOF_TIMESTAMPING_OPT_TSONLY in the sources, basically
-> sock_set_timestamping() is the function to check
+On 09/02/2026 11:48, Sebastian Andrzej Siewior wrote:
+> On 2026-02-09 10:43:55 [+0000], Vadim Fedorenko wrote:
+>> On 09/02/2026 09:06, Sebastian Andrzej Siewior wrote:
+>>> On 2026-02-08 11:25:40 [-0500], Willem de Bruijn wrote:
+>>>>>>> But it's more like a question to maintainers whether it is acceptable
+>>>>>>> way of "fixing" drivers or it's no-go solution
+>>>>>>
+>>>>>> Requiring OPT_TSONLY unless CAP_NET_RAW would break legacy users.
+>>>>>
+>>>>> Well, they are kinda broken already. Without OPT_TSONLY and CAP_NET_RAW all TX
+>>>>> timestamps are silently dropped.
+>>>>
+>>>> Are you referring to sysctl_tstamp_allow_data?
+>>>>
+>>>> That is enabled by default.
+>>>
+>>> Yes. If so, then we don't need the check below which requires
+>>> sk_callback_lock.
+>>>
+>>> Are SIOCSHWTSTAMP the legacy users or the ones which do not set
+>>> OPT_TSONLY?
+>>>
+>>> I would suggest to move the CAP_NET_RAW check to the point where
+>>> timestamping is getting enabled.
+>>> Also if ndo_hwtstamp_set is the preferred method of getting things done,
+>>> I could check how many old ones are can be easily converted…
+>>
+>> Looks like you are mixing things. SIOCSHWTSTAMP/ndo_hwtstamp_set are HW
+>> configuration calls while OPT_TSONLY is socket option, which is setup via
+>> setsockopt, you can find points searching for
+>> SOF_TIMESTAMPING_OPT_TSONLY in the sources, basically
+>> sock_set_timestamping() is the function to check
+> 
+> Yeah, but what is the legacy user here? If you enable HW-timestamps but
+> never set OPT_TSONLY and the sysctl is also 0 then you reply on the
+> CAP_NET_RAW later on. Right?
 
-Yeah, but what is the legacy user here? If you enable HW-timestamps but
-never set OPT_TSONLY and the sysctl is also 0 then you reply on the
-CAP_NET_RAW later on. Right?
+Legacy users here means users of HW TX timestamps expecting full skb to 
+be returned back with the TX timestamp. Legacy here means that skb will 
+be returned with headers modified by stack, which is kind of exposure of
+data, which requires CAP_NET_RAW...
 
-I just try to justify the CAP_NET_RAW check and if it is required to
-move it earlier (where HW timestamps are enabled). And if the sysctl
-check is enough then maybe it is not needed.
-=20
-> > > > To receive these timestamps users have to get
-> > > > CAP_NET_RAW permission, and it will work with the updated logic as =
-well...
+> I just try to justify the CAP_NET_RAW check and if it is required to
+> move it earlier (where HW timestamps are enabled). And if the sysctl
+> check is enough then maybe it is not needed.
 
-Sebastian
+Capabilities should not change during lifetime of the process, should be
+fine to move. On the other, sysctl can be changed system-wide which may 
+affect users.
+
+>   
+>>>>> To receive these timestamps users have to get
+>>>>> CAP_NET_RAW permission, and it will work with the updated logic as well...
+> 
+> Sebastian
+
