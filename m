@@ -4,61 +4,62 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 61528ECD6CD
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 11 Feb 2026 16:40:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A3649ECD6CB
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 11 Feb 2026 16:40:07 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 2D8A561100;
-	Wed, 11 Feb 2026 16:40:09 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 5A52661113;
+	Wed, 11 Feb 2026 16:40:07 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id VhyTTXS9zrJ9; Wed, 11 Feb 2026 16:40:08 +0000 (UTC)
+ id XQzbBrPPV-tl; Wed, 11 Feb 2026 16:40:06 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 604EE60B54
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 83C8460BCA
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1770828008;
-	bh=/Z89kjNIWY0VINr+vZGPHeTTZHc/93JV5sVKb4+gpko=;
+	s=default; t=1770828006;
+	bh=cya0hjQvK+1xpTSPzH/YmT47uqaxKjyugM2JA9Rjpwc=;
 	h=In-Reply-To:References:From:To:Cc:Date:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=rCLs5rsSTVvf+5oVY6YL66UuBak9fCdEns1C9wMCCtWYQFLj8d119nBI9kDNcJo4G
-	 SvKzEatyOrcygbTOYATM3UcdodWj7dOqmjNPoXlYWdOx97BiQkck38AeOadpyN3i7u
-	 WsAWp5c6YHKGpotpf66BfNaClmfJO6OOxmoMmTGivUH/h8czgTt9evsctDL5sGZSCQ
-	 Clj7INx0KDTXkssowpOjiAsGDIzJVI88zMsBCKuJ1uh8ltDowN74M/6tDyZ5B9JxYc
-	 QcvPRwADHQoJPHrXkM/Ncbqe6BkpBX6I7zei/Dl3oGSHcyeJHeNFoWNxEDjDX31uTu
-	 BNP2LeHByOhZQ==
+	b=bSUGoB8u2JbLKTM+lagdAEdB3vQIIbrqeN2zAIR4tHqybcybHKXuyA56A9O2/Jwp5
+	 pU51xohQMo7E6NePYXrXkFIQztSB9Mp7x9w6zkXOnOC6rGVu1qfd9PmqsF1aFJQRvX
+	 43+1ADGIjKXMMFDO4pt1z6TA5k3rlyuzrOKtbrE2tnj9ppJ0YwsapHq9EKj8q0Fe0g
+	 sugdT1dTyC0KhMofOuJ4qiB/LaS6NjLCG0yq22UxfTThS2CvzOP22QW6QP9VtCAT+e
+	 yGgjHtFMl5G5ww0QRxjtNK/oKL4BLhUA/2s1eJTLdAOKDPEAJZGRK5lVApMlSixqkR
+	 ke/juZvT8AAkQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 604EE60B54;
-	Wed, 11 Feb 2026 16:40:08 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 83C8460BCA;
+	Wed, 11 Feb 2026 16:40:06 +0000 (UTC)
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id A0188341
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Feb 2026 17:55:03 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id BB9962EF
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Feb 2026 17:54:58 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 7EC34411C8
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Feb 2026 17:55:03 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id ACE40411C8
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Feb 2026 17:54:58 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id x0EGgalVxMI0 for <intel-wired-lan@lists.osuosl.org>;
- Tue, 10 Feb 2026 17:55:02 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.234.252.31;
- helo=sea.source.kernel.org; envelope-from=bot+bpf-ci@kernel.org;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 942B2411AD
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 942B2411AD
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 942B2411AD
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Feb 2026 17:55:02 +0000 (UTC)
+ id H7j5tLeFn_1o for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 10 Feb 2026 17:54:57 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org;
+ envelope-from=bot+bpf-ci@kernel.org; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 9AC96411AD
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9AC96411AD
+Received: from tor.source.kernel.org (tor.source.kernel.org
+ [IPv6:2600:3c04:e001:324:0:1991:8:25])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 9AC96411AD
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Feb 2026 17:54:57 +0000 (UTC)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by sea.source.kernel.org (Postfix) with ESMTP id 2D18D444E9;
- Tue, 10 Feb 2026 17:55:02 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7E45DC116C6;
- Tue, 10 Feb 2026 17:55:01 +0000 (UTC)
-Content-Type: multipart/mixed; boundary="===============7295902335523839857=="
+ by tor.source.kernel.org (Postfix) with ESMTP id 7B0F06013D;
+ Tue, 10 Feb 2026 17:54:56 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B8003C116C6;
+ Tue, 10 Feb 2026 17:54:55 +0000 (UTC)
+Content-Type: multipart/mixed; boundary="===============0694556948236941952=="
 MIME-Version: 1.0
-Message-Id: <8d3fe8a5425f2e6af5a75f8d1a26d1b460719b1e904b6e1499747ca479b73832@mail.kernel.org>
-In-Reply-To: <20260210-bpf-xdp-meta-rxcksum-v1-4-e5d55caa0541@kernel.org>
-References: <20260210-bpf-xdp-meta-rxcksum-v1-4-e5d55caa0541@kernel.org>
+Message-Id: <fead0617797f86cced73d09a7ef91fbef62a5b47d3b37b5c7c3827e2a4478b81@mail.kernel.org>
+In-Reply-To: <20260210-bpf-xdp-meta-rxcksum-v1-3-e5d55caa0541@kernel.org>
+References: <20260210-bpf-xdp-meta-rxcksum-v1-3-e5d55caa0541@kernel.org>
 From: bot+bpf-ci@kernel.org
 To: lorenzo@kernel.org, donald.hunter@gmail.com, kuba@kernel.org,
  davem@davemloft.net, edumazet@google.com, pabeni@redhat.com, horms@kernel.org,
@@ -74,26 +75,26 @@ Cc: jakub@cloudflare.com, netdev@vger.kernel.org, bpf@vger.kernel.org,
  lorenzo@kernel.org, ast@kernel.org, andrii@kernel.org, daniel@iogearbox.net,
  martin.lau@kernel.org, eddyz87@gmail.com, yonghong.song@linux.dev,
  clm@meta.com, ihor.solodrai@linux.dev
-Date: Tue, 10 Feb 2026 17:55:01 +0000 (UTC)
+Date: Tue, 10 Feb 2026 17:54:55 +0000 (UTC)
 X-Mailman-Approved-At: Wed, 11 Feb 2026 16:40:04 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1770746102;
- bh=oakjD26/4tkGvWqhilxMCc4hiHX5ft4jQ4Iq6CfC8Ok=;
+ d=kernel.org; s=k20201202; t=1770746096;
+ bh=e1xJaT+uG0wdPiJkGC4RZFHoLPIzk8CspqV5GrifOBg=;
  h=In-Reply-To:References:Subject:From:To:Cc:Date:From;
- b=IV5HWXkc/FCiRpLej35EorMs268YVetMhHEcMuM8RZrQDwNon4ujlVriIsWMItPQO
- EqpPqMEeYxMCD6O4YFIrEvdJEAaFfqIGPwZOjfLqaxtmbteFvtM06iSeex9Dz5XBgO
- eId3ASq6UbrOQNwrEjse/Tdi30l18VlSWm7BlPWh5mf4t33MAhtXT3IbgjW51LF+r9
- vzEBdcZkI3eZTjdO3Q29eABxls3qZxt/DDPJl5+t8fLfEvnhAh5SbzAkjEx5m1VN5S
- rM53+ku47GAnrwJMK4bvWMODcdVtJF+2hO0GTGelBaK5cYQfywiYVchoItLmFSR3p/
- OS8Eizj1vbL9A==
+ b=AzesiNURdXz4fdLNWrZWBv/qi1bPZ19rLdpPtyGfK+0NTiTS2SVh4neJq90IYHipY
+ n63QcpbBDeJgeRNWUo7c7NHM0Uge43ZGQ1QuMJij21WInr+TbBi4w3YrvooOj6aclR
+ i3EVb7UXuJoGXPEkvcDxPj37qEPEyLeJuhGAOgjXNs10GK2S5zuEMcpzzC77OJFt2y
+ aQJoQCTOcRo+2ymCslPFE6naVRCWNVNhkG9yuxZ3Loldg5ViAZYhPoU67eUFszSqki
+ CgC4yO7+LcyEY0Rz+VAbMprRzlLkL5ydafzg9qYSEKFnndaRcgbBzuSv5htVn//Saa
+ zB1l4jw99ybbQ==
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=IV5HWXkc
-Subject: Re: [Intel-wired-lan] [PATCH bpf-next 4/5] selftests/bpf: Add
- selftest support for bpf_xdp_metadata_rx_checksum
+ header.a=rsa-sha256 header.s=k20201202 header.b=AzesiNUR
+Subject: Re: [Intel-wired-lan] [PATCH bpf-next 3/5] net: ice: Add
+ xmo_rx_checksum callback
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -109,37 +110,65 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
---===============7295902335523839857==
+--===============0694556948236941952==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 
-> diff --git a/tools/testing/selftests/bpf/progs/xdp_metadata.c b/tools/testing/selftests/bpf/progs/xdp_metadata.c
-> index 09bb8a038d52..ef6a5584a187 100644
-> --- a/tools/testing/selftests/bpf/progs/xdp_metadata.c
-> +++ b/tools/testing/selftests/bpf/progs/xdp_metadata.c
+> diff --git a/drivers/net/ethernet/intel/ice/ice_txrx_lib.c b/drivers/net/ethernet/intel/ice/ice_txrx_lib.c
+> --- a/drivers/net/ethernet/intel/ice/ice_txrx_lib.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_txrx_lib.c
 
 [ ... ]
 
-> @@ -98,6 +98,7 @@ int rx(struct xdp_md *ctx)
->  	bpf_xdp_metadata_rx_hash(ctx, &meta->rx_hash, &meta->rx_hash_type);
->  	bpf_xdp_metadata_rx_vlan_tag(ctx, &meta->rx_vlan_proto,
->  				     &meta->rx_vlan_tci);
-> +	bpf_xdp_metadata_rx_checksum(ctx, &meta->ip_summed, &meta->cksum_meta);
+> @@ -168,16 +144,49 @@
+>  	 * we are indicating we validated the inner checksum.
+>  	 */
+>  	if (decoded.tunnel_type >= LIBETH_RX_PT_TUNNEL_IP_GRENAT)
+> -		skb->csum_level = 1;
+> +		*cksum_meta = 1;
+>
+> -	skb->ip_summed = CHECKSUM_UNNECESSARY;
+> +	*ip_summed = XDP_CHECKSUM_UNNECESSARY;
+>  	return;
 
-Is there a missing extern declaration for bpf_xdp_metadata_rx_checksum()?
-The other kfuncs used in this file have extern declarations with __ksym:
+For non-tunneled packets that reach this return, is cksum_meta left
+uninitialized? The tunnel_type check only sets *cksum_meta = 1 for
+tunneled packets, but there's no else clause setting it to 0.
 
-extern int bpf_xdp_metadata_rx_timestamp(const struct xdp_md *ctx,
-                                         __u64 *timestamp) __ksym;
-extern int bpf_xdp_metadata_rx_hash(const struct xdp_md *ctx, __u32 *hash,
-                                    enum xdp_rss_hash_type *rss_type) __ksym;
-extern int bpf_xdp_metadata_rx_vlan_tag(const struct xdp_md *ctx,
-                                        __be16 *vlan_proto,
-                                        __u16 *vlan_tci) __ksym;
+The caller ice_rx_csum() declares cksum_meta without initialization:
 
-Without a similar declaration for bpf_xdp_metadata_rx_checksum(), the BPF
-program may fail to compile or link.
+> +static void
+> +ice_rx_csum(struct ice_rx_ring *ring, struct sk_buff *skb,
+> +	    union ice_32b_rx_flex_desc *rx_desc, u16 ptype)
+> +{
+> +	enum xdp_checksum ip_summed;
+> +	u32 cksum_meta;
+> +
+> +	ice_get_rx_csum(rx_desc, ptype, ring, &ip_summed, &cksum_meta);
+> +	switch (ip_summed) {
+> +	case XDP_CHECKSUM_UNNECESSARY:
+> +		skb->csum_level = cksum_meta;
+
+When ip_summed is XDP_CHECKSUM_UNNECESSARY and the packet is not tunneled,
+this assigns an uninitialized value to skb->csum_level.
+
+The original code relied on skb fields being pre-initialized to 0, but now
+the refactored ice_get_rx_csum() needs to explicitly set *cksum_meta = 0
+for the non-tunneled CHECKSUM_UNNECESSARY case, similar to how
+checksum_none does.
+
+> +		break;
+> +	case XDP_CHECKSUM_COMPLETE:
+> +		skb->csum = cksum_meta;
+> +		break;
+> +	default:
+> +		break;
+> +	}
+> +	skb->ip_summed = ip_summed;
+> +}
+
+[ ... ]
 
 
 ---
@@ -149,9 +178,9 @@ See: https://github.com/kernel-patches/vmtest/blob/master/ci/claude/README.md
 CI run summary: https://github.com/kernel-patches/bpf/actions/runs/21875603263
 
 AI-authorship-score: low
-AI-authorship-explanation: The code follows standard BPF selftest patterns and appears to be written by a domain expert familiar with XDP metadata kfuncs.
+AI-authorship-explanation: The commit shows typical human characteristics including a subtle uninitialized variable bug and minor grammatical imperfections in the commit message, both of which are patterns AI tools tend to avoid.
 issues-found: 1
 issue-severity-score: medium
-issue-severity-explanation: Missing extern declaration for bpf_xdp_metadata_rx_checksum kfunc will cause BPF program build failure.
+issue-severity-explanation: Uninitialized variable causes skb->csum_level to receive garbage values for non-tunneled packets with valid checksums, potentially affecting network stack checksum handling.
 
---===============7295902335523839857==--
+--===============0694556948236941952==--
