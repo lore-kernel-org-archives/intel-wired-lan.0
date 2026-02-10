@@ -4,88 +4,107 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 999F4EB26EC
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 10 Feb 2026 17:06:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5E86EEB26EA
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 10 Feb 2026 17:22:10 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 3A46360B18;
-	Tue, 10 Feb 2026 17:06:28 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 152E960DA5;
+	Tue, 10 Feb 2026 17:22:10 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id IR3a0qzFG2YJ; Tue, 10 Feb 2026 17:06:27 +0000 (UTC)
+ id bvZ6GugTUmdz; Tue, 10 Feb 2026 17:22:09 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E2F8160A65
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2A8D460B1E
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1770743186;
-	bh=YezTYZm45Fc+/sBHnpyG3y/+AmmZnnp675nXVb6MGag=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=y9nyonZaEL4vyyCwfhMjoSN3I6jTf8TbFOE05tT4bh+eNVryQoO0VQQRMlgKCPdf3
-	 ZFQBvTAFFHlL5e0BRDf9DCmkYpzjIsgyDRpC+pI5sUhZY06TuBHDK76lNHyvdqUVcI
-	 bAd9IJG20sKzIUhmRkAQFtywifa22CKc1bYFJdCSBx0lNF0i7X7+A3E0F0ty2nKMjN
-	 EnARAwpllRisPTRlo4tG1eiGcf59kCvRyDCUD/e7MDB96XAbPZgk7awl8AoTTeijXt
-	 ns3J7jtnh1Bk1Jp21nKXdyAEPN8xEAh32EsHMmn03DW7tUz6m9iK4MiMiHTk1cebAR
-	 5JZD9SpKWZgEQ==
+	s=default; t=1770744129;
+	bh=bG6dYON7mVYL6DP/jk+9BG+xFunSczJQtaRVZAXOdWo=;
+	h=From:Date:To:Cc:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=oJE9N9b5qXZlRVyJpQ8Tn1vV1GcGCwVSTEQJY+ib09s3uTklCKHehA4uBWodCFvVW
+	 9y8JaEp9G08RFVIxDEYSC6f9Zk9H/8tKDwZo0VnoLgvLAqNjg8917DjguuUIapF6Lj
+	 inwznNJKpFIf3l2wGSB83/NAe8qTdGvaqZlhohJ6QTXiTfkYWZAWMY2Ng1Du2uNaUr
+	 1MSzAxGbYNt01t54BItv/PsmJzTYqG2sj0HQ8lmbbfomI5Nx0kSnc59QYnFHmxYi70
+	 JXhvHKbOEnJnZTajKZ7B8VE6XzpPquFc7GuiLoAg1KPEzPPaj8JCDsd5BUXUL1V8CM
+	 p4punDOBWM6cQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id E2F8160A65;
-	Tue, 10 Feb 2026 17:06:26 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 47D171A9
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Feb 2026 17:06:26 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 2A8D460B1E;
+	Tue, 10 Feb 2026 17:22:09 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by lists1.osuosl.org (Postfix) with ESMTP id D163D1A9
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Feb 2026 17:22:07 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 37F4360A65
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Feb 2026 17:06:26 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id CEBE74068D
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Feb 2026 17:22:07 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id b3e3CVz7dMix for <intel-wired-lan@lists.osuosl.org>;
- Tue, 10 Feb 2026 17:06:25 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=49.212.198.91;
- helo=www2881.sakura.ne.jp; envelope-from=kohei@enjuk.jp; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 489E6608FB
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 489E6608FB
-Received: from www2881.sakura.ne.jp (www2881.sakura.ne.jp [49.212.198.91])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 489E6608FB
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Feb 2026 17:06:24 +0000 (UTC)
-Received: from ms-a2 (227.25.31.150.dy.iij4u.or.jp [150.31.25.227])
- (authenticated bits=0)
- by www2881.sakura.ne.jp (8.16.1/8.16.1) with ESMTPSA id 61AH63Pl051026
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NO);
- Wed, 11 Feb 2026 02:06:03 +0900 (JST) (envelope-from kohei@enjuk.jp)
-From: Kohei Enju <kohei@enjuk.jp>
-To: aleksander.lobakin@intel.com
-Cc: andrew+netdev@lunn.ch, anthony.l.nguyen@intel.com, davem@davemloft.net,
- edumazet@google.com, intel-wired-lan@lists.osuosl.org,
- kohei.enju@gmail.com, kohei@enjuk.jp, kuba@kernel.org,
- netdev@vger.kernel.org, pabeni@redhat.com, przemyslaw.kitszel@intel.com
-Date: Tue, 10 Feb 2026 17:05:55 +0000
-Message-ID: <20260210170603.149842-1-kohei@enjuk.jp>
-X-Mailer: git-send-email 2.51.0
-In-Reply-To: <c48f08ad-b402-4cfe-a362-4cb0c3a7801f@intel.com>
-References: <c48f08ad-b402-4cfe-a362-4cb0c3a7801f@intel.com>
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 0YjbccAZL7XV for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 10 Feb 2026 17:22:07 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org;
+ envelope-from=lorenzo@kernel.org; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org EDC0F4008D
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org EDC0F4008D
+Received: from tor.source.kernel.org (tor.source.kernel.org
+ [IPv6:2600:3c04:e001:324:0:1991:8:25])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id EDC0F4008D
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Feb 2026 17:22:06 +0000 (UTC)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+ by tor.source.kernel.org (Postfix) with ESMTP id 2672C60130;
+ Tue, 10 Feb 2026 17:22:05 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 519D8C116C6;
+ Tue, 10 Feb 2026 17:22:04 +0000 (UTC)
+From: Lorenzo Bianconi <lorenzo@kernel.org>
+Date: Tue, 10 Feb 2026 18:21:46 +0100
+Message-Id: <20260210-bpf-xdp-meta-rxcksum-v1-0-e5d55caa0541@kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Mailman-Original-DKIM-Signature: a=rsa-sha256;
- bh=YezTYZm45Fc+/sBHnpyG3y/+AmmZnnp675nXVb6MGag=; 
- c=relaxed/relaxed; d=enjuk.jp;
- h=From:To:Subject:Date:Message-ID;
- s=rs20251215; t=1770743164; v=1;
- b=uRapuCaqjzt2tSLkJafgkf45ZonwnV6PnUlsd0owq2EDy+33vnVuPpvt0BGl8hwa
- 615kND/WPvWQi84vSX8vQO8lV5u52HLPfPOojUmj+EEXRb6eUlzkD6KgWhXerg1k
- eZxNSNDxZYZ7zkSmG2w1pj7/bx8i0dRMgnI37QDwiVpWM2twqUQ8DTWXvK7jFZqN
- MeaXZJ6HTl/exE2sTlfaphyqbJ7+VxQcR2hQHt8P4EpGeaB1Dx/cgRqhNoDMllEr
- MfqW3fH744oNl6zM9SF992V3lhT6z6alCGQq/WF8G8O/61j/r2otpovqP+0lgvHm
- 3/phIwHRCaT5VzuerB9LdQ==
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=enjuk.jp
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=enjuk.jp header.i=@enjuk.jp header.a=rsa-sha256
- header.s=rs20251215 header.b=uRapuCaq
-Subject: Re: [Intel-wired-lan] [PATCH v1 iwl-net] iavf: fix netdev->max_mtu
- to respect actual
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/4WNQQ6CMBBFr0Jm7ZhSU6SuuIdhAXQKDUKbKRIM4
+ e5WLuDyveS/v0MkdhThke3AtLro/Jwgv2TQDc3cEzqTGKSQSmipsA0WNxNwoqVB3roxvifUQhS
+ lIqmFNpCmgcm67cw+68SDi4vnz/myyp/9E1wlCizamyVd3jvSeTUSz/S6eu6hPo7jCxFkhzO5A
+ AAA
+X-Change-ID: 20250925-bpf-xdp-meta-rxcksum-900685e2909d
+To: Donald Hunter <donald.hunter@gmail.com>, 
+ Jakub Kicinski <kuba@kernel.org>, "David S. Miller" <davem@davemloft.net>, 
+ Eric Dumazet <edumazet@google.com>, Paolo Abeni <pabeni@redhat.com>, 
+ Simon Horman <horms@kernel.org>, Alexei Starovoitov <ast@kernel.org>, 
+ Daniel Borkmann <daniel@iogearbox.net>, 
+ Jesper Dangaard Brouer <hawk@kernel.org>, 
+ John Fastabend <john.fastabend@gmail.com>, 
+ Stanislav Fomichev <sdf@fomichev.me>, Andrew Lunn <andrew+netdev@lunn.ch>, 
+ Tony Nguyen <anthony.l.nguyen@intel.com>, 
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>, 
+ Alexander Lobakin <aleksander.lobakin@intel.com>, 
+ Andrii Nakryiko <andrii@kernel.org>, 
+ Martin KaFai Lau <martin.lau@linux.dev>, 
+ Eduard Zingerman <eddyz87@gmail.com>, Song Liu <song@kernel.org>, 
+ Yonghong Song <yonghong.song@linux.dev>, KP Singh <kpsingh@kernel.org>, 
+ Hao Luo <haoluo@google.com>, Jiri Olsa <jolsa@kernel.org>, 
+ Shuah Khan <shuah@kernel.org>, 
+ Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+Cc: Jakub Sitnicki <jakub@cloudflare.com>, netdev@vger.kernel.org, 
+ bpf@vger.kernel.org, intel-wired-lan@lists.osuosl.org, 
+ linux-kselftest@vger.kernel.org, Lorenzo Bianconi <lorenzo@kernel.org>
+X-Mailer: b4 0.14.2
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=kernel.org; s=k20201202; t=1770744124;
+ bh=2gXAQUZwt1m8QP/RD9+/QxmuC5Ub8RRVPrxGR9ZsYoU=;
+ h=From:Subject:Date:To:Cc:From;
+ b=Nqofsrd98XpnLI5MRiATQ28YBTk/rzXZjVERm8iB11RKSRZXkH57TMEDejNr/awZO
+ 29nvxpL0FFKpGXsMRSxScdzGQmfveZSwzIU8AMhesztdS06Od0AAlsbJ/iMnSGWYHO
+ 8domYBkwWPxgOveYFlAsxZjg1u64kcgJWRB3FyNwZeykfEYdFG3F+I/kgVv3RJ9JfY
+ a1ClyowQ1BLlqQg/G8+ZdvL8kj+ZXzabgDetiZxrr1rAuee9GvDRlqIOawwHSDugGc
+ 3WhjX0qgvs5HNxKuTP6oWMPB44c9DQAQyQm+5MJ6cbEvg22adEeq9i4EpJJKVjcMK9
+ 0A0Z+Tv+SR2+A==
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dmarc=pass (p=quarantine dis=none)
+ header.from=kernel.org
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20201202 header.b=Nqofsrd9
+Subject: [Intel-wired-lan] [PATCH bpf-next 0/5] Add the the capability to
+ load HW RX checsum in eBPF programs
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -101,58 +120,61 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Tue, 10 Feb 2026 17:37:23 +0100, Alexander Lobakin wrote:
+Introduce bpf_xdp_metadata_rx_checksum() kfunc in order to load the HW
+RX cheksum results in the eBPF program binded to the NIC.
+Implement xmo_rx_checksum callback for veth and ice drivers.
 
-> From: Kohei Enju <kohei@enjuk.jp>
-> Date: Tue, 10 Feb 2026 15:57:14 +0000
-> 
-> > iavf sets LIBIE_MAX_MTU as netdev->max_mtu, ignoring vf_res->max_mtu
-> > from PF [1]. This allows setting an MTU beyond the actual hardware
-> > limit, causing TX queue timeouts [2].
-> > 
-> > Set correct netdev->max_mtu using vf_res->max_mtu from the PF.
-> > 
-> > Note that currently PF drivers such as ice/i40e set the frame size in
-> > vf_res->max_mtu, not MTU. Convert vf_res->max_mtu to MTU before setting
-> > netdev->max_mtu.
-> > 
-> > [1]
-> >  # ip -j -d link show $DEV | jq '.[0].max_mtu'
-> >  16356
-> > 
-> > [2]
-> >  iavf 0000:00:05.0 enp0s5: NETDEV WATCHDOG: CPU: 1: transmit queue 0 timed out 5692 ms
-> >  iavf 0000:00:05.0 enp0s5: NIC Link is Up Speed is 10 Gbps Full Duplex
-> >  iavf 0000:00:05.0 enp0s5: NETDEV WATCHDOG: CPU: 6: transmit queue 3 timed out 5312 ms
-> >  iavf 0000:00:05.0 enp0s5: NIC Link is Up Speed is 10 Gbps Full Duplex
-> >  ...
-> > 
-> > Fixes: 5fa4caff59f2 ("iavf: switch to Page Pool")
-> > Signed-off-by: Kohei Enju <kohei@enjuk.jp>
-> 
-> Reviewed-by: Alexander Lobakin <aleksander.lobakin@intel.com>
-> 
-> Although I'm not sure the 'Fixes:' tag is correct. Was vs_res->max_mtu
-> accounted before switching to Page Pool? If so, then yes, my fault.
-> Otherwise, this issue is older than libie.
+If the hardware detects a wrong/failed checksum, it will report
+CHECKSUM_NONE in the packet metadata. Moreover, CHECKSUM_NONE will be
+returned even if the NIC can't parse the packet (e.g. if it does not
+support a specific protocol). A possible use case for
+bpf_xdp_metadata_rx_checksum() would be to implement a XDP DDoS
+application [1] combining the info from bpf_xdp_metadata_rx_checksum()
+and bpf_xdp_metadata_rx_hash() kfuncs in order to filter packets with a
+wrong/failed checksum.
 
-You're right that vf_res->mtu was also not accounted before the commit.
+[1] https://blog.cloudflare.com/unimog-cloudflares-edge-load-balancer/
 
-The commit changes:
--       netdev->max_mtu = IAVF_MAX_RXBUFFER - IAVF_PACKET_HDR_PAD;
-+       netdev->max_mtu = LIBIE_MAX_MTU;
-...
--#define IAVF_MAX_RXBUFFER   9728  /* largest size for single descriptor */
+---
+Changes in v1:
+- Rebase on top of bpf-next
+- Test ice driver using xdp_hw_metadata tool available in the bpf
+  kernel selftest
+- Improve cover letter with an use-case for
+  bpf_xdp_metadata_rx_checksum()
+- Link to RFC v2: https://lore.kernel.org/r/20250925-bpf-xdp-meta-rxcksum-v2-0-6b3fe987ce91@kernel.org
 
-and thus netdev->max_mtu was already hardcoded, but just because
-IAVF_MAX_RXBUFFER was valid for VFs there hadn't been any issues, and
-invalid MTU could start to be set after the commit.
+Changes in RFC v2:
+- Squash patch 1/6 and 2/6
+- Introduce enum xdp_checksum definitions
+- Rework ice support to reuse ice_rx_csum codebase
 
-> I'm asking as IIRC before I did set max_mtu to the libie definition,
-> there was a hardcoded value already.
+---
+Lorenzo Bianconi (5):
+      netlink: specs: Add XDP RX checksum capability to XDP metadata specs
+      net: veth: Add xmo_rx_checksum callback to veth driver
+      net: ice: Add xmo_rx_checksum callback
+      selftests/bpf: Add selftest support for bpf_xdp_metadata_rx_checksum
+      selftests/bpf: Add bpf_xdp_metadata_rx_checksum support to xdp_hw_metadat prog
 
-Yea, as far as I checked the value was hardcoded from the beginning
-(91c527a55664 ("ethernet/intel: use core min/max MTU checking")).
+ Documentation/netlink/specs/netdev.yaml            |   5 +
+ drivers/net/ethernet/intel/ice/ice_txrx_lib.c      | 114 +++++++++++++--------
+ drivers/net/veth.c                                 |  20 ++++
+ include/net/xdp.h                                  |  14 +++
+ include/uapi/linux/netdev.h                        |   3 +
+ net/core/xdp.c                                     |  29 ++++++
+ tools/include/uapi/linux/netdev.h                  |   3 +
+ .../selftests/bpf/prog_tests/xdp_metadata.c        |   7 ++
+ .../testing/selftests/bpf/progs/xdp_hw_metadata.c  |   7 ++
+ tools/testing/selftests/bpf/progs/xdp_metadata.c   |   1 +
+ tools/testing/selftests/bpf/xdp_hw_metadata.c      |  28 +++++
+ tools/testing/selftests/bpf/xdp_metadata.h         |  13 +++
+ 12 files changed, 204 insertions(+), 40 deletions(-)
+---
+base-commit: db975debcb8c4cd367a78811bc1ba84c83f854bd
+change-id: 20250925-bpf-xdp-meta-rxcksum-900685e2909d
 
-Although I'm not attached to the exact commit as the Fixes: tag, I chose
-that since (coincidently) that commit made this regression.
+Best regards,
+-- 
+Lorenzo Bianconi <lorenzo@kernel.org>
+
