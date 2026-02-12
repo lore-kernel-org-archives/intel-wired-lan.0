@@ -1,144 +1,100 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 732D0EDF026
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 12 Feb 2026 03:41:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1C7EFEDF04C
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 12 Feb 2026 07:53:31 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 1860C611CA;
-	Thu, 12 Feb 2026 03:41:01 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id ACA7241D1D;
+	Thu, 12 Feb 2026 07:53:31 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 4BG9LMTfAiGu; Thu, 12 Feb 2026 03:41:00 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id kcOTwVdAviRG; Thu, 12 Feb 2026 07:53:31 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2FE99611EE
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0FFA341D21
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1770867660;
-	bh=tK21a4JoivTAPugf5a0tgKET71snd9+E0xX3YsV0FIM=;
-	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=F09vhUhU6IdkF31EnF/c08RcSxMKaK6mH4cMoLydeTKwX2AJutpXTlF09y3vJwh8z
-	 hI9+xL4dIsLC2WJ7qc1TTeDdJEOINNPqvTyTomcHZOrAahxxtAOH2U2LxJ9uocz1cp
-	 /CnB89CvF2SN6OEiC+NM3YBMXI+hnrXdHn1sjguVJQ/OtjtLzw0yr6+p/ytFBE4XFh
-	 6+PfcazaC5czHB6wEAvGQAlU1uve1ikVosoj9gd/OO36zzEtqEC7xLyUV9sL+zX1wO
-	 6vTHVSQ33vn7v0j0F2lZrdhdw1POEoLm2tjsiTCRJYdU62+DA4HkexeJ4BxTOmIiM7
-	 vaTQOsDWMXH7w==
+	s=default; t=1770882811;
+	bh=l0/e9zeYXG8z/u3O4hC/oU1DdGHJKYlimLvsT/jtTTU=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=nZzHzSeWBIfDykHLYWqizdk3HR7dNVV/wWo57ZRDCRPsl9EY9HTd7/ta+stlmRdNk
+	 45YxTk1ZXqbkxj4JsZiQOZrh24/prDBTxlKFJEJHLXDmc5p+70QU2nevE3ZabtTdwB
+	 gKjGYdewfddnYZPkaHyjFP5E1ZopRljciqYAEMJZxTHKAF53ylyCMrQ+SX98QGnHOO
+	 JveQTt2lHKgyaP7MXrIk9Bwo8C0bvMLTmxUAC8pElvX+aiGwfLRU+p3D2H214juC9h
+	 pnpMZ/s3tllJm52p9mG6wN/wprvu6EGNsMFnd3Ti61aaGavU0Mndi72ZBhpw9Inbo8
+	 tioBXiaDwn6nw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 2FE99611EE;
-	Thu, 12 Feb 2026 03:41:00 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id 05CCEBE
- for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Feb 2026 03:40:59 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 0FFA341D21;
+	Thu, 12 Feb 2026 07:53:31 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 2537123D
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Feb 2026 07:53:29 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id DE20E4028B
- for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Feb 2026 03:40:58 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 13E0384255
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Feb 2026 07:53:29 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 3QtEZ4tx53OE for <intel-wired-lan@lists.osuosl.org>;
- Thu, 12 Feb 2026 03:40:58 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2001:4860:4864:20::32; helo=mail-oa1-x32.google.com;
- envelope-from=stfomichev@gmail.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org AB1C74016B
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org AB1C74016B
-Received: from mail-oa1-x32.google.com (mail-oa1-x32.google.com
- [IPv6:2001:4860:4864:20::32])
- by smtp2.osuosl.org (Postfix) with ESMTPS id AB1C74016B
- for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Feb 2026 03:40:57 +0000 (UTC)
-Received: by mail-oa1-x32.google.com with SMTP id
- 586e51a60fabf-404254ffe8aso1014166fac.0
- for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Feb 2026 19:40:57 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20230601; t=1770867656; x=1771472456;
- h=in-reply-to:content-disposition:mime-version:references:message-id
- :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
- :subject:date:message-id:reply-to;
- bh=tK21a4JoivTAPugf5a0tgKET71snd9+E0xX3YsV0FIM=;
- b=fgi6p9a/BuZMcBTg0TaqckQb+4S2lg1dsRuG8uCIIh7sRiL7/wF//Nn6USxxK54Xat
- BRA6WTKmJe0rwieqMBKVwW07X7aAhQaYHW8kk4fANXl79Yf47zXdTCN6BohXUFqQjH6l
- F4HAzmDi2rkr5rXA/t/4bwXCNNNlFv4vWowHFBJCdYhUrgLJBoAD2KYJrutmAG7PlPC4
- aCKoJVytQTQcbun+zK8UG2U/+qUGHgBTabYWdy9xuANq5jrujgVTRa3i26qZ6xMCXNBF
- 2hJ53HEN+vx6RoXc2oTg+ZATl84lINSvUwi2zMlq3l5qNRXKUc/LCkX3wxlWvlGjObmX
- q+uQ==
-X-Forwarded-Encrypted: i=1;
- AJvYcCXB6W2nhydmlI5ZCREELQ4yCE3SrodyBtRRlL6+z3Bz5gMBE6u8eO1TExHm2NlbCnWZnmVIZZnKHhPlN2qX+Rw=@lists.osuosl.org
-X-Gm-Message-State: AOJu0YzXeClgdPh0INCS2ILs38BDiflTlysqcxqHi0PmSlrlB/CnRtX0
- AhgY+qhDGD8B4hTpAvo8P8KsxYXXchVNNw9Id3JKk4fB8auikxcgTJoEN3y9
-X-Gm-Gg: AZuq6aJW5oSJJU7H4KAQJzrQCIFyjbH3R2Q249GySopXCP3X80ykB/PAmfIMugi8Nqv
- OGe21WJK2A3TPKc0MA3Ea5QIrtmTs6h7378fH6IinL4eTT2jXXSzmqqBwrrCWqXW9GpuhXave3I
- KGYA29bY5OQH2NrapON7nwj6K/CLb6X1YsznJRK/BnX3KAerjVsFow5PITrPEZG+L1WY1YRaZmG
- p989RePy3VbbPYWr3uBI7d60bqxn4PKR4sWnZ5ldNss5rARR4IiMUSyIqr9G44xeICSMZW9qLsP
- gTjr34OSB/HWor7vKh6mgvU1pEm3SdWpr4xIhiCdkuSPHbj1SE1qYydDukk4Lv+EU9T7StVDu9h
- UR4zFOwsGxanzMTkYNp9LgDkGuPGEifG5ztUqEBYYsaZAgO2zS8O+/XrhC08Vnx8BnhxAtbxuZm
- TZn125xhBqp1ln01CmuQf/85AXE5FHLie93pGMI3OtjIGAwAfsD9s3WAIBYHw82cC+73WkXBYDQ
- yLbRQHt9uIY59YIrw==
-X-Received: by 2002:a05:7022:249f:b0:121:d898:edae with SMTP id
- a92af1059eb24-1272fd99529mr389245c88.24.1770861432625; 
- Wed, 11 Feb 2026 17:57:12 -0800 (PST)
-Received: from localhost (c-76-102-12-149.hsd1.ca.comcast.net. [76.102.12.149])
- by smtp.gmail.com with ESMTPSA id
- a92af1059eb24-1272a6e943fsm2870384c88.11.2026.02.11.17.57.12
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 11 Feb 2026 17:57:12 -0800 (PST)
-Date: Wed, 11 Feb 2026 17:57:11 -0800
-From: Stanislav Fomichev <stfomichev@gmail.com>
-To: Lorenzo Bianconi <lorenzo.bianconi@redhat.com>
-Cc: Jesper Dangaard Brouer <hawk@kernel.org>,
- Lorenzo Bianconi <lorenzo@kernel.org>,
- Donald Hunter <donald.hunter@gmail.com>, Jakub Kicinski <kuba@kernel.org>,
- "David S. Miller" <davem@davemloft.net>,
- Eric Dumazet <edumazet@google.com>, Paolo Abeni <pabeni@redhat.com>,
- Simon Horman <horms@kernel.org>, Alexei Starovoitov <ast@kernel.org>,
- Daniel Borkmann <daniel@iogearbox.net>,
- John Fastabend <john.fastabend@gmail.com>,
- Stanislav Fomichev <sdf@fomichev.me>, Andrew Lunn <andrew+netdev@lunn.ch>,
- Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Alexander Lobakin <aleksander.lobakin@intel.com>,
- Andrii Nakryiko <andrii@kernel.org>,
- Martin KaFai Lau <martin.lau@linux.dev>,
- Eduard Zingerman <eddyz87@gmail.com>, Song Liu <song@kernel.org>,
- Yonghong Song <yonghong.song@linux.dev>,
- KP Singh <kpsingh@kernel.org>, Hao Luo <haoluo@google.com>,
- Jiri Olsa <jolsa@kernel.org>, Shuah Khan <shuah@kernel.org>,
- Maciej Fijalkowski <maciej.fijalkowski@intel.com>,
- netdev@vger.kernel.org, bpf@vger.kernel.org,
- intel-wired-lan@lists.osuosl.org, linux-kselftest@vger.kernel.org
-Message-ID: <aY0zd4Esewxa-8hw@mini-arch>
-References: <20250925-bpf-xdp-meta-rxcksum-v2-0-6b3fe987ce91@kernel.org>
- <20250925-bpf-xdp-meta-rxcksum-v2-1-6b3fe987ce91@kernel.org>
- <aNYUqdaIJV1cvFCb@mini-arch>
- <e03d6d69-73ea-46dc-b632-149ef5831f85@kernel.org>
- <aNcZdfCivLR2slFw@mini-arch> <aYtqKfv0F0l2-hgy@lore-desk>
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id HD22PHm60GJx for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 12 Feb 2026 07:53:28 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.133.124;
+ helo=us-smtp-delivery-124.mimecast.com; envelope-from=poros@redhat.com;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 046E281111
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 046E281111
+Received: from us-smtp-delivery-124.mimecast.com
+ (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 046E281111
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Feb 2026 07:53:26 +0000 (UTC)
+Received: from mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com
+ (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
+ relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-324-h8SiWTshP5Wb4tDvq4HgUA-1; Thu,
+ 12 Feb 2026 02:53:22 -0500
+X-MC-Unique: h8SiWTshP5Wb4tDvq4HgUA-1
+X-Mimecast-MFC-AGG-ID: h8SiWTshP5Wb4tDvq4HgUA_1770882800
+Received: from mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com
+ (mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.17])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
+ id BC7B71955D88; Thu, 12 Feb 2026 07:53:19 +0000 (UTC)
+Received: from ShadowPeak.redhat.com (unknown [10.44.32.184])
+ by mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP
+ id 4EF281956095; Thu, 12 Feb 2026 07:53:15 +0000 (UTC)
+From: Petr Oros <poros@redhat.com>
+To: netdev@vger.kernel.org
+Date: Thu, 12 Feb 2026 08:53:09 +0100
+Message-ID: <cover.1770882260.git.poros@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <aYtqKfv0F0l2-hgy@lore-desk>
+X-Scanned-By: MIMEDefang 3.0 on 10.30.177.17
+X-Mimecast-MFC-PROC-ID: od2Jf-Bi8UCjgbp8TqjjjPcM4EpeiNTFhM61JBkoHjs_1770882800
+X-Mimecast-Originator: redhat.com
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20230601; t=1770867656; x=1771472456; darn=lists.osuosl.org;
- h=in-reply-to:content-disposition:mime-version:references:message-id
- :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
- bh=tK21a4JoivTAPugf5a0tgKET71snd9+E0xX3YsV0FIM=;
- b=J1QaE16Bk2YpFc2ibycAUK8whN8yiPHh4fzGLT9hrlj6aDUnIBMsyhXFLcPdB+4m8+
- oYxiDV0LnLNjkzRxoPEw0AC6wjBMQX3gIZ2x5alHSdlWagq2lEDt3QZLBwySuk8v0wwT
- t6MpShFT/AlBxO1QNaAFKAF+D9DC5y8CN5IAcmpO6gsrsYMA6LEh3c+CtJ09Je8DPJp9
- FHPMlQOpIX+H1tvvvOOkhbWQQDRpLAy/JK1QcdckUlUfQS6Ue0VcI0UsYkrDxKXlhdq2
- 5NTquYl+jPknmPU4W4QduglI5jRJuhLg1GbiOs6P/pphdpD5PYQ+z9Eqvoe+9W3lcfpY
- asPQ==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=gmail.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20230601 header.b=J1QaE16B
-Subject: Re: [Intel-wired-lan] [PATCH RFC bpf-next v2 1/5] netlink: specs:
- Add XDP RX checksum capability to XDP metadata specs
+ d=redhat.com; 
+ s=mimecast20190719; t=1770882805;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding;
+ bh=l0/e9zeYXG8z/u3O4hC/oU1DdGHJKYlimLvsT/jtTTU=;
+ b=UWp0sjje5uXoE45nnBvBFQiqVPapgAEJrzfC1WwqZGcSkVxfFxXHc/bi62S/BgXZSO6Ooa
+ lmISSwHKoZjBQITmaMTHBZDXk3xiUgZJ5GtNrRNglMUj12J6smjsqrt6qdpVbzPwq+LnUn
+ 9TrjrPWzIZ6VTEymfJNao8Ifp/wYkEA=
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dmarc=pass (p=quarantine dis=none)
+ header.from=redhat.com
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (1024-bit key,
+ unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
+ header.s=mimecast20190719 header.b=UWp0sjje
+Subject: [Intel-wired-lan] [PATCH iwl-net 0/2] ice: fix representor stats in
+ switchdev mode
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -151,90 +107,41 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
+Cc: Wojciech Drewek <wojciech.drewek@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Eric Dumazet <edumazet@google.com>, linux-kernel@vger.kernel.org,
+ Andrew Lunn <andrew+netdev@lunn.ch>, Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Simon Horman <horms@kernel.org>,
+ Michal Swiatkowski <michal.swiatkowski@linux.intel.com>,
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+ "David S. Miller" <davem@davemloft.net>, intel-wired-lan@lists.osuosl.org
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On 02/10, Lorenzo Bianconi wrote:
-> > On 09/26, Jesper Dangaard Brouer wrote:
-> > > 
-> > > 
-> > > On 26/09/2025 06.20, Stanislav Fomichev wrote:
-> > > > On 09/25, Lorenzo Bianconi wrote:
-> > > > > Introduce XDP RX checksum capability to XDP metadata specs. XDP RX
-> > > > > checksum will be use by devices capable of exposing receive checksum
-> > > > > result via bpf_xdp_metadata_rx_checksum().
-> > > > > Moreover, introduce xmo_rx_checksum netdev callback in order allow the
-> > > > > eBPF program bounded to the device to retrieve the RX checksum result
-> > > > > computed by the hw NIC.
-> > > > > 
-> > > > > Signed-off-by: Lorenzo Bianconi <lorenzo@kernel.org>
-> > > > > ---
-> > > > >   Documentation/netlink/specs/netdev.yaml |  5 +++++
-> > > > >   include/net/xdp.h                       | 14 ++++++++++++++
-> > > > >   net/core/xdp.c                          | 29 +++++++++++++++++++++++++++++
-> > > > >   3 files changed, 48 insertions(+)
-> > > > > 
-> > > > > diff --git a/Documentation/netlink/specs/netdev.yaml b/Documentation/netlink/specs/netdev.yaml
-> > > > > index e00d3fa1c152d7165e9485d6d383a2cc9cef7cfd..00699bf4a7fdb67c6b9ee3548098b0c933fd39a4 100644
-> > > > > --- a/Documentation/netlink/specs/netdev.yaml
-> > > > > +++ b/Documentation/netlink/specs/netdev.yaml
-> > > > > @@ -61,6 +61,11 @@ definitions:
-> > > > >           doc: |
-> > > > >             Device is capable of exposing receive packet VLAN tag via
-> > > > >             bpf_xdp_metadata_rx_vlan_tag().
-> > > > > +      -
-> > > > > +        name: checksum
-> > > > > +        doc: |
-> > > > > +          Device is capable of exposing receive checksum result via
-> > > > > +          bpf_xdp_metadata_rx_checksum().
-> > > > >     -
-> > > > >       type: flags
-> > > > >       name: xsk-flags
-> > > > > diff --git a/include/net/xdp.h b/include/net/xdp.h
-> > > > > index aa742f413c358575396530879af4570dc3fc18de..9ab9ac10ae2074b70618a9d4f32544d8b9a30b63 100644
-> > > > > --- a/include/net/xdp.h
-> > > > > +++ b/include/net/xdp.h
-> > > > > @@ -586,6 +586,10 @@ void xdp_attachment_setup(struct xdp_attachment_info *info,
-> > > > >   			   NETDEV_XDP_RX_METADATA_VLAN_TAG, \
-> > > > >   			   bpf_xdp_metadata_rx_vlan_tag, \
-> > > > >   			   xmo_rx_vlan_tag) \
-> > > > > +	XDP_METADATA_KFUNC(XDP_METADATA_KFUNC_RX_CHECKSUM, \
-> > > > > +			   NETDEV_XDP_RX_METADATA_CHECKSUM, \
-> > > > > +			   bpf_xdp_metadata_rx_checksum, \
-> > > > > +			   xmo_rx_checksum)
-> > > > >   enum xdp_rx_metadata {
-> > > > >   #define XDP_METADATA_KFUNC(name, _, __, ___) name,
-> > > > > @@ -643,12 +647,22 @@ enum xdp_rss_hash_type {
-> > > > >   	XDP_RSS_TYPE_L4_IPV6_SCTP_EX = XDP_RSS_TYPE_L4_IPV6_SCTP | XDP_RSS_L3_DYNHDR,
-> > > > >   };
-> > > > > +enum xdp_checksum {
-> > > > > +	XDP_CHECKSUM_NONE		= CHECKSUM_NONE,
-> > > > > +	XDP_CHECKSUM_UNNECESSARY	= CHECKSUM_UNNECESSARY,
-> > > > > +	XDP_CHECKSUM_COMPLETE		= CHECKSUM_COMPLETE,
-> > > > > +	XDP_CHECKSUM_PARTIAL		= CHECKSUM_PARTIAL,
-> > > > > +};
-> > > > 
-> > > > Btw, might be worth mentioning, awhile ago we had settled on a smaller set of
-> > > > exposed types:
-> > > > 
-> > > > https://lore.kernel.org/netdev/20230811161509.19722-13-larysa.zaremba@intel.com/
-> > > > 
-> > > > Maybe go through the previous postings and check if the arguments are
-> > > > still relevant? (or explain why we want more checksum now)
-> > > 
-> > > IHMO the linked proposal reduced the types too much.
-> > 
-> > IIRC, PARTIAL was removed because it's mostly (or only) a TX feature?
-> > So no real need to expose it as an rx hint. And I think empty xdp_csum_status
-> > in that proposal might have indicated NONE?
-> 
-> Sorry for the (very) late reply. According to [0] CHECKSUM_PARTIAL can be used
-> even on Rx side, right?
+Port representor statistics in switchdev mode are completely broken due
+to two independent bugs:
 
-So is this for virtio (which I don't think you need)? Or something else?
-Can we start with the "easy" cases of UNNECESSARY/COMPLETE/NONE? I'm not even
-sure we need to expose the csum_level (start with level=0 and handle
-encap if/when there is a real usecase). With kfuncs we should be able to
-change/extend the API when needed.
+1) ice_repr_ready_vf() has inverted logic — it returns "not ready" when
+   the VF is actually ready, causing all ethtool and ndo_get_stats64
+   callbacks to bail out early.
 
-(for PARTIAL, not even sure what the BPF prog is supposed to do with it)
+2) Even with the readiness check fixed, ice_update_vsi_stats() always
+   returns early for VF VSIs because ICE_VSI_DOWN is permanently set.
+   The stats counters are never updated from hardware.
+
+Patch 1 fixes the inverted readiness check.
+Patch 2 switches to ice_update_eth_stats() which reads the GLV_*
+hardware counters directly, matching what ice_get_vf_stats() already
+does for VF stats in legacy mode.
+
+Petr Oros (2):
+  ice: fix inverted ready check for VF representors
+  ice: use ice_update_eth_stats() for representor stats
+
+ drivers/net/ethernet/intel/ice/ice_ethtool.c | 14 +++++++++++---
+ drivers/net/ethernet/intel/ice/ice_repr.c    |  5 +++--
+ 2 files changed, 14 insertions(+), 5 deletions(-)
+
+--
+2.52.0
+
