@@ -4,119 +4,89 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0FFC5EE3698
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 12 Feb 2026 16:47:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D4798EE36A9
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 12 Feb 2026 16:51:33 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id CAE8D842C2;
-	Thu, 12 Feb 2026 16:47:34 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 8E9B2842B7;
+	Thu, 12 Feb 2026 16:51:33 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Gq6rQTLCRZmC; Thu, 12 Feb 2026 16:47:34 +0000 (UTC)
+ id SY4ys4DhhRBd; Thu, 12 Feb 2026 16:51:32 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 127B1842B8
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B7490842B8
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1770914854;
-	bh=s/DyEPe+77NoYsDIGpxy2seHogqaqunQv6TIiFOPDzI=;
-	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
+	s=default; t=1770915092;
+	bh=mz3faHTRLCenuin280CUhN2KcEIoRxLUGJtQBDYings=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=yR5cZ2AXL64G6Jee2ipWQJkjdrlwkGilRKMNb0Cgcp6rmJFQGB+lFTYiCPChJIFh1
-	 TUsdakPe1GKnbMUbNac46ZpmH2Q31nE5d3idM1saTjaWwxOu6oEs1VbmQisxBB4VV/
-	 Do2nLO/Icszn0rJLzOSnfAY33h7+DrCopHqWOQ4CLllBR7JIFCHSEPVlt8nlaYR3/l
-	 nC/dhfHOQv5UeHJWN6Am9UDZE37moc3j8kO9OnwO4bcKolR9HFxNVMYW0ZQ7DetWKV
-	 e8HW7ax0t9FWi9oNGNyxWkOSxjytNmxdKl9Xat2zBx94YX5+Gl4vPDwk6+aDwXoGWB
-	 cLc/B38j3SG/g==
+	 Cc:From;
+	b=gApwuv2Bq2kcijS3O68Gt7l6Si0UBPWi0dhDS1Gyxy9y9FwbEUkAmOae3u3NprJeq
+	 23nvfy79wrq5oJm1RJDn3GP6Wcczhc9tUFYcF9mpFIoNDv+4FiS6a/INczQ1hvNHMB
+	 t3vhoGbI5mQX7YFsoi3+O9n5d7rvj/PTUuXYYGD2PwEUYg1RugxAoL7cVPFjV55zbM
+	 nX6clY7RnV3lWaYqzWj1hK+xMGVhhdQWIuWDv2NmvXvGKI5zO/Ok6z6lmgHEA4oLV6
+	 PvpXunhRFIeRO5S7UNw2Skav2YFV/iJjUVj6TQylhGWE9p91dX/AKUi4OlHVgKigjZ
+	 +zewFVKgfU1GQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 127B1842B8;
-	Thu, 12 Feb 2026 16:47:34 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id B7490842B8;
+	Thu, 12 Feb 2026 16:51:32 +0000 (UTC)
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id B355F23D
- for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Feb 2026 16:47:31 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id 3D166EC
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Feb 2026 16:51:32 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 948BC842BA
- for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Feb 2026 16:47:31 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 2A1A0842B8
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Feb 2026 16:51:32 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id gUEu9CeeMshf for <intel-wired-lan@lists.osuosl.org>;
- Thu, 12 Feb 2026 16:47:31 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de;
- envelope-from=bigeasy@linutronix.de; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org AAE5F842B8
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org AAE5F842B8
-Received: from galois.linutronix.de (Galois.linutronix.de
- [IPv6:2a0a:51c0:0:12e:550::1])
- by smtp1.osuosl.org (Postfix) with ESMTPS id AAE5F842B8
- for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Feb 2026 16:47:30 +0000 (UTC)
-Date: Thu, 12 Feb 2026 17:47:25 +0100
-From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-To: Jakub Kicinski <kuba@kernel.org>
-Cc: Jacob Keller <jacob.e.keller@intel.com>,
- Kurt Kanzenbach <kurt@linutronix.de>,
- Willem de Bruijn <willemdebruijn.kernel@gmail.com>,
- Vadim Fedorenko <vadim.fedorenko@linux.dev>,
- Willem de Bruijn <willemb@google.com>,
- Paolo Abeni <pabeni@redhat.com>, Eric Dumazet <edumazet@google.com>,
- "David S. Miller" <davem@davemloft.net>,
- "Loktionov, Aleksandr" <aleksandr.loktionov@intel.com>,
- "Nguyen, Anthony L" <anthony.l.nguyen@intel.com>,
- "Kitszel, Przemyslaw" <przemyslaw.kitszel@intel.com>,
- Paul Menzel <pmenzel@molgen.mpg.de>,
- "Gomes, Vinicius" <vinicius.gomes@intel.com>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- Richard Cochran <richardcochran@gmail.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Andrew Lunn <andrew+netdev@lunn.ch>,
- "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>
-Message-ID: <20260212164725.ltllw51l@linutronix.de>
-References: <20260209090621.GiZqTiMJ@linutronix.de>
- <8e762437-69f9-40d7-bb75-3a45bef1d5d6@linux.dev>
- <20260209114836.GPU-vnnh@linutronix.de>
- <78e2af2c-40e6-43f1-9471-42f350e69389@linux.dev>
- <willemdebruijn.kernel.2e6213a98660b@gmail.com>
- <20260210121207.9kLHroS0@linutronix.de>
- <willemdebruijn.kernel.cceee43f5b9b@gmail.com>
- <87qzqr5vos.fsf@jax.kurt.home>
- <12520aac-c69a-41a0-9710-497392bc18f6@intel.com>
- <20260211134436.1e623034@kernel.org>
+ id 33aFB8QOtyFY for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 12 Feb 2026 16:51:23 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.234.252.31;
+ helo=sea.source.kernel.org; envelope-from=lorenzo@kernel.org;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 22A12842B7
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 22A12842B7
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 22A12842B7
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Feb 2026 16:51:22 +0000 (UTC)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+ by sea.source.kernel.org (Postfix) with ESMTP id 3A2E543C3F;
+ Thu, 12 Feb 2026 16:51:22 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8DE26C4CEF7;
+ Thu, 12 Feb 2026 16:51:21 +0000 (UTC)
+Date: Thu, 12 Feb 2026 17:51:19 +0100
+From: Lorenzo Bianconi <lorenzo@kernel.org>
+To: Stanislav Fomichev <stfomichev@gmail.com>
+Message-ID: <aY4FB_Gf31V-VYiF@lore-desk>
+References: <20250925-bpf-xdp-meta-rxcksum-v2-0-6b3fe987ce91@kernel.org>
+ <20250925-bpf-xdp-meta-rxcksum-v2-1-6b3fe987ce91@kernel.org>
+ <aNYUqdaIJV1cvFCb@mini-arch>
+ <e03d6d69-73ea-46dc-b632-149ef5831f85@kernel.org>
+ <aNcZdfCivLR2slFw@mini-arch> <aYtqKfv0F0l2-hgy@lore-desk>
+ <aY0zd4Esewxa-8hw@mini-arch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: multipart/signed; micalg=pgp-sha512;
+ protocol="application/pgp-signature"; boundary="8qT/NFgXfwBYc55E"
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-In-Reply-To: <20260211134436.1e623034@kernel.org>
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=linutronix.de; s=2020; t=1770914846;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=s/DyEPe+77NoYsDIGpxy2seHogqaqunQv6TIiFOPDzI=;
- b=N+K6lj3wl0VbioEZ2q8gSVvJkdOh63504F2+D57irJaU2pWVpxcMDwW9us2dAeOCkB/87C
- +QBuXkmNV+2uv2l5Rv6bomcRt4GBEOzbGtYteuiWnLRR3fLUbPgh1g1mHzovFydc/yjjds
- 9cPwYvdaVH8N7HpjkDlUQYYqs87NCmNd3vtohZSP0bkHKFo7bd0f7Iy4hwigfKarWD2LJY
- x+N/LBXH9JCfQHOV9/+6NjeFbfX+RZHl8VXpVRq/0He245+/CjNjude04vIqPCIjJnbMUI
- E0Z/y55krglNbf8fu8b+K/KNn2E2EACfL1AecxGuyPmjUed+yYkmWdEE5hanGw==
-X-Mailman-Original-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
- d=linutronix.de; s=2020e; t=1770914846;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=s/DyEPe+77NoYsDIGpxy2seHogqaqunQv6TIiFOPDzI=;
- b=btvf8tItfDYAqnNr2fTa3aIBM0VfbBgRuxc5XlsgCD+E/96PiUpsz5xehfp5OiFe9pqUAc
- nsEH/9rOuy4fCGBQ==
+In-Reply-To: <aY0zd4Esewxa-8hw@mini-arch>
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=kernel.org; s=k20201202; t=1770915082;
+ bh=XdxVG+YXGaMS3AWMGOWVYDuXvjuKlsGk0gHHkVYXoBE=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=g301/aHxOBg/tZoPaoIo39YQf6X3yf/bDbcpa60KjMq6uJblkjbFxXdfsoMG8aTBn
+ nlwV7lbuECo+Mv9r5Kk484RzEJleTWEL0UWNOeOomzwDmP1ZcORj3OW2batpf6uiFA
+ FMhVTI5BQs4yfi6qfcJmiINE42oRNQfLcZBxaFclppUqy/bQn1aafFpob6bcLbBzEr
+ ZkZHWziHAccDsvfcp7A85qp34HZJxItkFXVKl9KzYf2sQ4dXSG2DjYkn6XNd3V6Jsj
+ 5SgHidUP7eTxjL/wKPAV7aos/RXsrc8CJ9uYaP2Tpp/uVBzWPv7Um3Yf7zIgfR1INM
+ 0w2O4FVC4LexA==
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=linutronix.de
+ dmarc=pass (p=quarantine dis=none)
+ header.from=kernel.org
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key, unprotected) header.d=linutronix.de
- header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=N+K6lj3w; 
- dkim=pass header.d=linutronix.de header.i=@linutronix.de
- header.a=ed25519-sha256 header.s=2020e header.b=btvf8tIt
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next v3] igb: Retrieve Tx
- timestamp directly from interrupt for i210
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20201202 header.b=g301/aHx
+Subject: Re: [Intel-wired-lan] [PATCH RFC bpf-next v2 1/5] netlink: specs:
+ Add XDP RX checksum capability to XDP metadata specs
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -129,32 +99,157 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
+Cc: linux-kselftest@vger.kernel.org, Alexei Starovoitov <ast@kernel.org>,
+ Song Liu <song@kernel.org>, Eric Dumazet <edumazet@google.com>,
+ Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Yonghong Song <yonghong.song@linux.dev>, Shuah Khan <shuah@kernel.org>,
+ Jiri Olsa <jolsa@kernel.org>, Donald Hunter <donald.hunter@gmail.com>,
+ Daniel Borkmann <daniel@iogearbox.net>,
+ Alexander Lobakin <aleksander.lobakin@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ John Fastabend <john.fastabend@gmail.com>, Andrii Nakryiko <andrii@kernel.org>,
+ Stanislav Fomichev <sdf@fomichev.me>, intel-wired-lan@lists.osuosl.org,
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+ Maciej Fijalkowski <maciej.fijalkowski@intel.com>,
+ Jesper Dangaard Brouer <hawk@kernel.org>, KP Singh <kpsingh@kernel.org>,
+ Hao Luo <haoluo@google.com>, netdev@vger.kernel.org,
+ Eduard Zingerman <eddyz87@gmail.com>, Simon Horman <horms@kernel.org>,
+ bpf@vger.kernel.org, Martin KaFai Lau <martin.lau@linux.dev>,
+ "David S. Miller" <davem@davemloft.net>, Andrew Lunn <andrew+netdev@lunn.ch>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On 2026-02-11 13:44:36 [-0800], Jakub Kicinski wrote:
-> On Wed, 11 Feb 2026 11:29:03 -0800 Jacob Keller wrote:
-> > > Moving the timestamping in IRQ looked like a good solution, because t=
-he
-> > > device already signals that the Tx timestamp is available now. No need
-> > > to schedule any worker/work at all. So, it'd be very nice if
-> > > skb_tstamp_tx() could be called from IRQ context. BTW other drivers l=
-ike
-> > > igc call this function in IRQ context as well.
+
+--8qT/NFgXfwBYc55E
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+> On 02/10, Lorenzo Bianconi wrote:
+> > > On 09/26, Jesper Dangaard Brouer wrote:
+> > > >=20
+> > > >=20
+> > > > On 26/09/2025 06.20, Stanislav Fomichev wrote:
+> > > > > On 09/25, Lorenzo Bianconi wrote:
+> > > > > > Introduce XDP RX checksum capability to XDP metadata specs. XDP=
+ RX
+> > > > > > checksum will be use by devices capable of exposing receive che=
+cksum
+> > > > > > result via bpf_xdp_metadata_rx_checksum().
+> > > > > > Moreover, introduce xmo_rx_checksum netdev callback in order al=
+low the
+> > > > > > eBPF program bounded to the device to retrieve the RX checksum =
+result
+> > > > > > computed by the hw NIC.
+> > > > > >=20
+> > > > > > Signed-off-by: Lorenzo Bianconi <lorenzo@kernel.org>
+> > > > > > ---
+> > > > > >   Documentation/netlink/specs/netdev.yaml |  5 +++++
+> > > > > >   include/net/xdp.h                       | 14 ++++++++++++++
+> > > > > >   net/core/xdp.c                          | 29 ++++++++++++++++=
++++++++++++++
+> > > > > >   3 files changed, 48 insertions(+)
+> > > > > >=20
+> > > > > > diff --git a/Documentation/netlink/specs/netdev.yaml b/Document=
+ation/netlink/specs/netdev.yaml
+> > > > > > index e00d3fa1c152d7165e9485d6d383a2cc9cef7cfd..00699bf4a7fdb67=
+c6b9ee3548098b0c933fd39a4 100644
+> > > > > > --- a/Documentation/netlink/specs/netdev.yaml
+> > > > > > +++ b/Documentation/netlink/specs/netdev.yaml
+> > > > > > @@ -61,6 +61,11 @@ definitions:
+> > > > > >           doc: |
+> > > > > >             Device is capable of exposing receive packet VLAN t=
+ag via
+> > > > > >             bpf_xdp_metadata_rx_vlan_tag().
+> > > > > > +      -
+> > > > > > +        name: checksum
+> > > > > > +        doc: |
+> > > > > > +          Device is capable of exposing receive checksum resul=
+t via
+> > > > > > +          bpf_xdp_metadata_rx_checksum().
+> > > > > >     -
+> > > > > >       type: flags
+> > > > > >       name: xsk-flags
+> > > > > > diff --git a/include/net/xdp.h b/include/net/xdp.h
+> > > > > > index aa742f413c358575396530879af4570dc3fc18de..9ab9ac10ae2074b=
+70618a9d4f32544d8b9a30b63 100644
+> > > > > > --- a/include/net/xdp.h
+> > > > > > +++ b/include/net/xdp.h
+> > > > > > @@ -586,6 +586,10 @@ void xdp_attachment_setup(struct xdp_attac=
+hment_info *info,
+> > > > > >   			   NETDEV_XDP_RX_METADATA_VLAN_TAG, \
+> > > > > >   			   bpf_xdp_metadata_rx_vlan_tag, \
+> > > > > >   			   xmo_rx_vlan_tag) \
+> > > > > > +	XDP_METADATA_KFUNC(XDP_METADATA_KFUNC_RX_CHECKSUM, \
+> > > > > > +			   NETDEV_XDP_RX_METADATA_CHECKSUM, \
+> > > > > > +			   bpf_xdp_metadata_rx_checksum, \
+> > > > > > +			   xmo_rx_checksum)
+> > > > > >   enum xdp_rx_metadata {
+> > > > > >   #define XDP_METADATA_KFUNC(name, _, __, ___) name,
+> > > > > > @@ -643,12 +647,22 @@ enum xdp_rss_hash_type {
+> > > > > >   	XDP_RSS_TYPE_L4_IPV6_SCTP_EX =3D XDP_RSS_TYPE_L4_IPV6_SCTP |=
+ XDP_RSS_L3_DYNHDR,
+> > > > > >   };
+> > > > > > +enum xdp_checksum {
+> > > > > > +	XDP_CHECKSUM_NONE		=3D CHECKSUM_NONE,
+> > > > > > +	XDP_CHECKSUM_UNNECESSARY	=3D CHECKSUM_UNNECESSARY,
+> > > > > > +	XDP_CHECKSUM_COMPLETE		=3D CHECKSUM_COMPLETE,
+> > > > > > +	XDP_CHECKSUM_PARTIAL		=3D CHECKSUM_PARTIAL,
+> > > > > > +};
+> > > > >=20
+> > > > > Btw, might be worth mentioning, awhile ago we had settled on a sm=
+aller set of
+> > > > > exposed types:
+> > > > >=20
+> > > > > https://lore.kernel.org/netdev/20230811161509.19722-13-larysa.zar=
+emba@intel.com/
+> > > > >=20
+> > > > > Maybe go through the previous postings and check if the arguments=
+ are
+> > > > > still relevant? (or explain why we want more checksum now)
+> > > >=20
+> > > > IHMO the linked proposal reduced the types too much.
+> > >=20
+> > > IIRC, PARTIAL was removed because it's mostly (or only) a TX feature?
+> > > So no real need to expose it as an rx hint. And I think empty xdp_csu=
+m_status
+> > > in that proposal might have indicated NONE?
 > >=20
-> > Right. Reporting the timestamp from the interrupt is the simplest and=
-=20
-> > lowest latency method. I know Miroslav had some situations and devices=
-=20
-> > where it apparently caused more problems than it helped, though I don't=
-=20
-> > believe anyone else has reproduced those?
+> > Sorry for the (very) late reply. According to [0] CHECKSUM_PARTIAL can =
+be used
+> > even on Rx side, right?
 >=20
-> There's a BH workqueue now, as a replacement for tasklets.
-> Presumably smallest fix would be to switch to that?
+> So is this for virtio (which I don't think you need)? Or something else?
 
-Hmm. This would raise the TASKLET softirq from the interrupt handler and
-then handle it on the irq-exit path.=20
-Let me look if that one lock can be removed first=E2=80=A6
+I forgot to mention before CHECKSUM_PARTIAL is used for the veth use-case
+when the packet is coming from the networking stack.
 
-Sebastian
+> Can we start with the "easy" cases of UNNECESSARY/COMPLETE/NONE? I'm not =
+even
+> sure we need to expose the csum_level (start with level=3D0 and handle
+> encap if/when there is a real usecase). With kfuncs we should be able to
+> change/extend the API when needed.
+
+ack, I am fine to drop csum_level for the moment but I am not sure if it ca=
+n be
+useful for the use-case described by Jesper.
+@Jesper: any input on it?
+
+Regards,
+Lorenzo
+
+>=20
+> (for PARTIAL, not even sure what the BPF prog is supposed to do with it)
+
+--8qT/NFgXfwBYc55E
+Content-Type: application/pgp-signature; name=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYKAB0WIQTquNwa3Txd3rGGn7Y6cBh0uS2trAUCaY4FBwAKCRA6cBh0uS2t
+rLgyAQDNKqpoeLWazkdUXhQHQ1Jjc9nNvo0J0et1ZcPKGvP2RgD/aGy9hpI/I7tJ
+HHNGMx9dyMNBjMP6TKwbgmwxuYvj9As=
+=RLM+
+-----END PGP SIGNATURE-----
+
+--8qT/NFgXfwBYc55E--
