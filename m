@@ -4,110 +4,104 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3D1FFEDF170
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 13 Feb 2026 15:22:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id ECBC4EDF175
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 13 Feb 2026 15:27:07 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id D5343844AB;
-	Fri, 13 Feb 2026 15:22:09 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id BA76B844A7;
+	Fri, 13 Feb 2026 15:27:07 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id NFd3RNIpHO4N; Fri, 13 Feb 2026 15:22:09 +0000 (UTC)
+ id nDZHIl76Tn2y; Fri, 13 Feb 2026 15:27:07 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 00B66844A6
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 0ED1B844AC
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1770996129;
-	bh=HqldCT71mbDoDmaJksXXeb0a2vmhAF/mGBEjDq1VJ/k=;
-	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
+	s=default; t=1770996427;
+	bh=vUeH6dRgvpYGFGfgBcHtGKEv8HY1bL48rkJYSmPg/4g=;
+	h=From:Date:References:In-Reply-To:To:Cc:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=3VA9R/aJM2ubChUk2fr/OFRg+9kaL2+bof8M2BGNU1NuemmVVXeU8npkeYvwS99DN
-	 BjBCRkhr5dg4Irh2JDvQrYwvvfUi6JY9FDHli8zCWFxnKcYtkxJhCxObBru6YGQegk
-	 wmbxJecaxsYcLzGMOOxenQSUlIxdqXoO9O/SsTZm82F5h8c+rkCaJ60ULzwIGv2yJF
-	 MK7r+aQHOqQTw9e+0bIpRCWPwOs2Eut3c78HgSP4KzhNzwwMVoIMhxljWj1XQz9FBy
-	 bM6Ivhpgse/o4op7fJxiYg7RqQaHa2Lovbwz8q8asv62QkmPIcSxMfBmSLkyAAK28k
-	 qWthhn+fiTX9w==
+	b=jLzJ/gAk9QJ18M3AYYzv3ur+AMd53msoszBw/pmp26RUnunhnejuA4dA+1RmVupPa
+	 SzQxvXd0YUiBRTqyzVO2nHMvZdgN6nck2hsqStjneer7BA0In6sUqeHBWiIwLjXE38
+	 GpGX/aNy5qyfl7pKncMYdu2iL5bPkQeHq54eOp0Zl7yoGeytDmX8w+cfX8LkBiX5GY
+	 wNaAwzXseaMwEPBKinNbe3dncUHNDVRQR52cBrfQNJwpU8TFjz7Lrmg99iJceA59HE
+	 7Kd4/IBOt5yGppj82/Y8WtqXg+cFz5buhVB+WWOqhEf3JjvxU4t50EX89kh5PInP63
+	 1R9WuAoMvsm5Q==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 00B66844A6;
-	Fri, 13 Feb 2026 15:22:09 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 48F70255
- for <intel-wired-lan@lists.osuosl.org>; Fri, 13 Feb 2026 15:22:07 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 0ED1B844AC;
+	Fri, 13 Feb 2026 15:27:07 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 8FC8DEC
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 13 Feb 2026 15:27:05 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 2A7E740248
- for <intel-wired-lan@lists.osuosl.org>; Fri, 13 Feb 2026 15:22:07 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 716D5844AD
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 13 Feb 2026 15:27:05 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id P-6cqDMNRyf4 for <intel-wired-lan@lists.osuosl.org>;
- Fri, 13 Feb 2026 15:22:06 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.234.252.31;
- helo=sea.source.kernel.org; envelope-from=lorenzo@kernel.org;
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id InK5j8U82Yfm for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 13 Feb 2026 15:27:04 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
+ helo=tor.source.kernel.org; envelope-from=lorenzo@kernel.org;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 765E3400A0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 765E3400A0
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 765E3400A0
- for <intel-wired-lan@lists.osuosl.org>; Fri, 13 Feb 2026 15:22:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 952F7844AB
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 952F7844AB
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 952F7844AB
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 13 Feb 2026 15:27:04 +0000 (UTC)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by sea.source.kernel.org (Postfix) with ESMTP id 181BC44050;
- Fri, 13 Feb 2026 15:22:06 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 71D33C2BC86;
- Fri, 13 Feb 2026 15:22:05 +0000 (UTC)
-Date: Fri, 13 Feb 2026 16:22:03 +0100
+ by tor.source.kernel.org (Postfix) with ESMTP id 9D0466132B;
+ Fri, 13 Feb 2026 15:27:03 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CBD91C116C6;
+ Fri, 13 Feb 2026 15:27:02 +0000 (UTC)
 From: Lorenzo Bianconi <lorenzo@kernel.org>
-To: "Loktionov, Aleksandr" <aleksandr.loktionov@intel.com>
-Cc: Donald Hunter <donald.hunter@gmail.com>, Jakub Kicinski <kuba@kernel.org>,
- "David S. Miller" <davem@davemloft.net>,
- Eric Dumazet <edumazet@google.com>, Paolo Abeni <pabeni@redhat.com>,
- Simon Horman <horms@kernel.org>, Alexei Starovoitov <ast@kernel.org>,
- Daniel Borkmann <daniel@iogearbox.net>,
- Jesper Dangaard Brouer <hawk@kernel.org>,
- John Fastabend <john.fastabend@gmail.com>,
- Stanislav Fomichev <sdf@fomichev.me>, Andrew Lunn <andrew+netdev@lunn.ch>,
- "Nguyen, Anthony L" <anthony.l.nguyen@intel.com>,
- "Kitszel, Przemyslaw" <przemyslaw.kitszel@intel.com>,
- "Lobakin, Aleksander" <aleksander.lobakin@intel.com>,
- Andrii Nakryiko <andrii@kernel.org>,
- Martin KaFai Lau <martin.lau@linux.dev>,
- Eduard Zingerman <eddyz87@gmail.com>, Song Liu <song@kernel.org>,
- Yonghong Song <yonghong.song@linux.dev>,
- KP Singh <kpsingh@kernel.org>, Hao Luo <haoluo@google.com>,
- Jiri Olsa <jolsa@kernel.org>, Shuah Khan <shuah@kernel.org>,
- "Fijalkowski, Maciej" <maciej.fijalkowski@intel.com>,
- Jakub Sitnicki <jakub@cloudflare.com>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "bpf@vger.kernel.org" <bpf@vger.kernel.org>,
- "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
- "linux-kselftest@vger.kernel.org" <linux-kselftest@vger.kernel.org>
-Message-ID: <aY9Bm0ewK6lLWpqe@lore-desk>
-References: <20260210-bpf-xdp-meta-rxcksum-v1-0-e5d55caa0541@kernel.org>
- <20260210-bpf-xdp-meta-rxcksum-v1-2-e5d55caa0541@kernel.org>
- <IA3PR11MB8986DFE4F3C0D804F50B0A56E563A@IA3PR11MB8986.namprd11.prod.outlook.com>
+Date: Fri, 13 Feb 2026 16:26:20 +0100
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
- protocol="application/pgp-signature"; boundary="HFmkBUtLTk0X/kCd"
-Content-Disposition: inline
-In-Reply-To: <IA3PR11MB8986DFE4F3C0D804F50B0A56E563A@IA3PR11MB8986.namprd11.prod.outlook.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260213-bpf-xdp-meta-rxcksum-v2-1-a82c4802afbe@kernel.org>
+References: <20260213-bpf-xdp-meta-rxcksum-v2-0-a82c4802afbe@kernel.org>
+In-Reply-To: <20260213-bpf-xdp-meta-rxcksum-v2-0-a82c4802afbe@kernel.org>
+To: Donald Hunter <donald.hunter@gmail.com>, 
+ Jakub Kicinski <kuba@kernel.org>, "David S. Miller" <davem@davemloft.net>, 
+ Eric Dumazet <edumazet@google.com>, Paolo Abeni <pabeni@redhat.com>, 
+ Simon Horman <horms@kernel.org>, Alexei Starovoitov <ast@kernel.org>, 
+ Daniel Borkmann <daniel@iogearbox.net>, 
+ Jesper Dangaard Brouer <hawk@kernel.org>, 
+ John Fastabend <john.fastabend@gmail.com>, 
+ Stanislav Fomichev <sdf@fomichev.me>, Andrew Lunn <andrew+netdev@lunn.ch>, 
+ Tony Nguyen <anthony.l.nguyen@intel.com>, 
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>, 
+ Alexander Lobakin <aleksander.lobakin@intel.com>, 
+ Andrii Nakryiko <andrii@kernel.org>, 
+ Martin KaFai Lau <martin.lau@linux.dev>, 
+ Eduard Zingerman <eddyz87@gmail.com>, Song Liu <song@kernel.org>, 
+ Yonghong Song <yonghong.song@linux.dev>, KP Singh <kpsingh@kernel.org>, 
+ Hao Luo <haoluo@google.com>, Jiri Olsa <jolsa@kernel.org>, 
+ Shuah Khan <shuah@kernel.org>, 
+ Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+Cc: Jakub Sitnicki <jakub@cloudflare.com>, netdev@vger.kernel.org, 
+ bpf@vger.kernel.org, intel-wired-lan@lists.osuosl.org, 
+ linux-kselftest@vger.kernel.org, Lorenzo Bianconi <lorenzo@kernel.org>
+X-Mailer: b4 0.14.2
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1770996126;
- bh=uiXKGrta5YSlOI9oj98H0JbtZs40BXq+md8wHRRZ+YA=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=mGw9ILGuBrof3W4ID1AXaRcRnWS+kvUe3FQSoaOotADVb3P1+lkFpDJx7SZ/rsNLP
- lbQwMFYHr2exFPdbAgOzH5VWP0xmXnQzWKbVS+WVH9riUpsC2RnaK4VyhlWYiHeJRE
- XeD7rthBaCh+xiTm1VJ6cGvPMlcnwWKjwkwUsnXUmf0gazK3hOApJrYbEkDJyzcNqX
- 5gUxrcwaI0X9ilHL6V/SODI9T/awsKhEh2niVe4F3mCPpT50kuesxEol/Z5Ck0wf5x
- a+kNvDip0saLJHQFWVlr/jY81zF6sc2vP+ZW1+052sC008Vyyf1H8FqdiRmfI4UbIP
- ZnZWYmY77zCvQ==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ d=kernel.org; s=k20201202; t=1770996423;
+ bh=EiGaUL0ROvikOtaVZH/yKZqISOioK3OyNtnUo8P3Yhk=;
+ h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
+ b=mW4FxCdrzTg+jglxtFS9riskLYBPZIGlvSE1xXBjIhch53csKnZM8Oyw3wGiGsjb8
+ RW2Whh87yBkM9/svGY0AUv6gQApMtL/xnPtuOuiOyobhsxJglCrnkLNwAMnW4BgGvy
+ gbMEYLhetNiw4M54Nx9X9lJHQkMsvoQKxeQwwjsV2YAsdiJF3k0AkNPCFip158FQ3c
+ Ymkr2QKTtlPjp6/fwMqYYPP6O3OlYyaJD49/SHdX3GP5bro2TmDwJ63rNyrv86RXdH
+ F00AKFtAmbLvB7cBcFt6NxlRDL55/9iY+UWsYaeIblrvnqvLdh31Ob4KnFoGBAjWEh
+ AJZWLocF2T1QQ==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=mGw9ILGu
-Subject: Re: [Intel-wired-lan] [PATCH bpf-next 2/5] net: veth: Add
- xmo_rx_checksum callback to veth driver
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20201202 header.b=mW4FxCdr
+Subject: [Intel-wired-lan] [PATCH bpf-next v2 1/5] netlink: specs: Add XDP
+ RX checksum capability to XDP metadata specs
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -123,114 +117,153 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
+Introduce XDP RX checksum capability to XDP metadata specs. XDP RX
+checksum will be use by devices capable of exposing receive checksum
+result via bpf_xdp_metadata_rx_checksum().
+Moreover, introduce xmo_rx_checksum netdev callback in order allow the
+eBPF program bounded to the device to retrieve the RX checksum result
+computed by the hw NIC.
 
---HFmkBUtLTk0X/kCd
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Lorenzo Bianconi <lorenzo@kernel.org>
+---
+ Documentation/netlink/specs/netdev.yaml |  5 +++++
+ include/net/xdp.h                       | 13 +++++++++++++
+ include/uapi/linux/netdev.h             |  3 +++
+ net/core/xdp.c                          | 28 ++++++++++++++++++++++++++++
+ tools/include/uapi/linux/netdev.h       |  3 +++
+ 5 files changed, 52 insertions(+)
 
->=20
->=20
-> > -----Original Message-----
-> > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf
-> > Of Lorenzo Bianconi
-> > Sent: Tuesday, February 10, 2026 6:22 PM
-> > To: Donald Hunter <donald.hunter@gmail.com>; Jakub Kicinski
-> > <kuba@kernel.org>; David S. Miller <davem@davemloft.net>; Eric Dumazet
-> > <edumazet@google.com>; Paolo Abeni <pabeni@redhat.com>; Simon Horman
-> > <horms@kernel.org>; Alexei Starovoitov <ast@kernel.org>; Daniel
-> > Borkmann <daniel@iogearbox.net>; Jesper Dangaard Brouer
-> > <hawk@kernel.org>; John Fastabend <john.fastabend@gmail.com>;
-> > Stanislav Fomichev <sdf@fomichev.me>; Andrew Lunn
-> > <andrew+netdev@lunn.ch>; Nguyen, Anthony L
-> > <anthony.l.nguyen@intel.com>; Kitszel, Przemyslaw
-> > <przemyslaw.kitszel@intel.com>; Lobakin, Aleksander
-> > <aleksander.lobakin@intel.com>; Andrii Nakryiko <andrii@kernel.org>;
-> > Martin KaFai Lau <martin.lau@linux.dev>; Eduard Zingerman
-> > <eddyz87@gmail.com>; Song Liu <song@kernel.org>; Yonghong Song
-> > <yonghong.song@linux.dev>; KP Singh <kpsingh@kernel.org>; Hao Luo
-> > <haoluo@google.com>; Jiri Olsa <jolsa@kernel.org>; Shuah Khan
-> > <shuah@kernel.org>; Fijalkowski, Maciej <maciej.fijalkowski@intel.com>
-> > Cc: Jakub Sitnicki <jakub@cloudflare.com>; netdev@vger.kernel.org;
-> > bpf@vger.kernel.org; intel-wired-lan@lists.osuosl.org; linux-
-> > kselftest@vger.kernel.org; Lorenzo Bianconi <lorenzo@kernel.org>
-> > Subject: [Intel-wired-lan] [PATCH bpf-next 2/5] net: veth: Add
-> > xmo_rx_checksum callback to veth driver
-> >=20
-> > Implement xmo_rx_checksum callback in veth driver to report RX
-> > checksum result to the eBPF program bounded to the veth device.
-> >=20
-> > Signed-off-by: Lorenzo Bianconi <lorenzo@kernel.org>
-> > ---
-> >  drivers/net/veth.c | 20 ++++++++++++++++++++
-> >  1 file changed, 20 insertions(+)
-> >=20
-> > diff --git a/drivers/net/veth.c b/drivers/net/veth.c index
-> > 14e6f2a2fb7783334d8f6afd54e658cf9a0e6f3d..38b70ad62db7e92cccc6c6c9ed1f
-> > 5573d8baf48b 100644
-> > --- a/drivers/net/veth.c
-> > +++ b/drivers/net/veth.c
-> > @@ -1693,6 +1693,25 @@ static int veth_xdp_rx_vlan_tag(const struct
-> > xdp_md *ctx, __be16 *vlan_proto,
-> >  	return err;
-> >  }
-> >=20
-> > +static int veth_xdp_rx_checksum(const struct xdp_md *ctx,
-> > +				enum xdp_checksum *ip_summed,
-> > +				u32 *cksum_meta)
-> > +{
-> > +	const struct veth_xdp_buff *_ctx =3D (void *)ctx;
-> > +	const struct sk_buff *skb =3D _ctx->skb;
-> > +
-> > +	if (!skb)
-> > +		return -ENODATA;
-> > +
-> > +	/* For locally generated packets ip_summed is set to
-> > +	 * CHECKSUM_PARTIAL.
-> > +	 */
-> > +	*ip_summed =3D skb->ip_summed;
-> > +	*cksum_meta =3D 0;
-> > +
-> > +	return 0;
-> > +}
-> > +
-> >  static const struct net_device_ops veth_netdev_ops =3D {
-> >  	.ndo_init            =3D veth_dev_init,
-> >  	.ndo_open            =3D veth_open,
-> > @@ -1718,6 +1737,7 @@ static const struct xdp_metadata_ops
-> > veth_xdp_metadata_ops =3D {
-> >  	.xmo_rx_timestamp		=3D veth_xdp_rx_timestamp,
-> >  	.xmo_rx_hash			=3D veth_xdp_rx_hash,
-> >  	.xmo_rx_vlan_tag		=3D veth_xdp_rx_vlan_tag,
-> > +	.xmo_rx_checksum		=3D veth_xdp_rx_checksum,
-> >  };
-> >=20
-> >  #define VETH_FEATURES (NETIF_F_SG | NETIF_F_FRAGLIST |
-> > NETIF_F_HW_CSUM | \
-> >=20
-> > --
-> > 2.53.0
->=20
-> Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+diff --git a/Documentation/netlink/specs/netdev.yaml b/Documentation/netlink/specs/netdev.yaml
+index 596c306ce52b8303b20680ff0cd34d4fd9db0e48..58eda634668a07860447a65d9fc2284839af6244 100644
+--- a/Documentation/netlink/specs/netdev.yaml
++++ b/Documentation/netlink/specs/netdev.yaml
+@@ -61,6 +61,11 @@ definitions:
+         doc: |
+           Device is capable of exposing receive packet VLAN tag via
+           bpf_xdp_metadata_rx_vlan_tag().
++      -
++        name: checksum
++        doc: |
++          Device is capable of exposing receive checksum result via
++          bpf_xdp_metadata_rx_checksum().
+   -
+     type: flags
+     name: xsk-flags
+diff --git a/include/net/xdp.h b/include/net/xdp.h
+index aa742f413c358575396530879af4570dc3fc18de..00abb2e1e85514b4080d0e4e6e3b8f5f67f73b61 100644
+--- a/include/net/xdp.h
++++ b/include/net/xdp.h
+@@ -586,6 +586,10 @@ void xdp_attachment_setup(struct xdp_attachment_info *info,
+ 			   NETDEV_XDP_RX_METADATA_VLAN_TAG, \
+ 			   bpf_xdp_metadata_rx_vlan_tag, \
+ 			   xmo_rx_vlan_tag) \
++	XDP_METADATA_KFUNC(XDP_METADATA_KFUNC_RX_CHECKSUM, \
++			   NETDEV_XDP_RX_METADATA_CHECKSUM, \
++			   bpf_xdp_metadata_rx_checksum, \
++			   xmo_rx_checksum)
+ 
+ enum xdp_rx_metadata {
+ #define XDP_METADATA_KFUNC(name, _, __, ___) name,
+@@ -643,12 +647,21 @@ enum xdp_rss_hash_type {
+ 	XDP_RSS_TYPE_L4_IPV6_SCTP_EX = XDP_RSS_TYPE_L4_IPV6_SCTP | XDP_RSS_L3_DYNHDR,
+ };
+ 
++enum xdp_checksum {
++	XDP_CHECKSUM_NONE		= CHECKSUM_NONE,
++	XDP_CHECKSUM_UNNECESSARY	= CHECKSUM_UNNECESSARY,
++	XDP_CHECKSUM_COMPLETE		= CHECKSUM_COMPLETE,
++};
++
+ struct xdp_metadata_ops {
+ 	int	(*xmo_rx_timestamp)(const struct xdp_md *ctx, u64 *timestamp);
+ 	int	(*xmo_rx_hash)(const struct xdp_md *ctx, u32 *hash,
+ 			       enum xdp_rss_hash_type *rss_type);
+ 	int	(*xmo_rx_vlan_tag)(const struct xdp_md *ctx, __be16 *vlan_proto,
+ 				   u16 *vlan_tci);
++	int	(*xmo_rx_checksum)(const struct xdp_md *ctx,
++				   enum xdp_checksum *ip_summed,
++				   u32 *cksum_meta);
+ };
+ 
+ #ifdef CONFIG_NET
+diff --git a/include/uapi/linux/netdev.h b/include/uapi/linux/netdev.h
+index e0b579a1df4f2126acec6c44c299e97bbbefe640..d20da430cfd57bc26b5ea2f406c27b48d8a81693 100644
+--- a/include/uapi/linux/netdev.h
++++ b/include/uapi/linux/netdev.h
+@@ -47,11 +47,14 @@ enum netdev_xdp_act {
+  *   hash via bpf_xdp_metadata_rx_hash().
+  * @NETDEV_XDP_RX_METADATA_VLAN_TAG: Device is capable of exposing receive
+  *   packet VLAN tag via bpf_xdp_metadata_rx_vlan_tag().
++ * @NETDEV_XDP_RX_METADATA_CHECKSUM: Device is capable of exposing receive
++ *   checksum result via bpf_xdp_metadata_rx_checksum().
+  */
+ enum netdev_xdp_rx_metadata {
+ 	NETDEV_XDP_RX_METADATA_TIMESTAMP = 1,
+ 	NETDEV_XDP_RX_METADATA_HASH = 2,
+ 	NETDEV_XDP_RX_METADATA_VLAN_TAG = 4,
++	NETDEV_XDP_RX_METADATA_CHECKSUM = 8,
+ };
+ 
+ /**
+diff --git a/net/core/xdp.c b/net/core/xdp.c
+index fee6d080ee85fc2d278bfdddfd1365633058ec06..06d3c2333fa4aacd1b9343471efb0d3150838de5 100644
+--- a/net/core/xdp.c
++++ b/net/core/xdp.c
+@@ -961,6 +961,34 @@ __bpf_kfunc int bpf_xdp_metadata_rx_vlan_tag(const struct xdp_md *ctx,
+ 	return -EOPNOTSUPP;
+ }
+ 
++/**
++ * bpf_xdp_metadata_rx_checksum - Read XDP frame RX checksum.
++ * @ctx: XDP context pointer.
++ * @ip_summed: Return value pointer indicating checksum result.
++ * @cksum_meta: Return value pointer indicating checksum result metadata.
++ *
++ * In case of success, ``ip_summed`` is set to the RX checksum result. Possible
++ * values are:
++ * ``XDP_CHECKSUM_NONE``
++ * ``XDP_CHECKSUM_UNNECESSARY``
++ * ``XDP_CHECKSUM_COMPLETE``
++ *
++ * In case of success, ``cksum_meta`` contains the hw computed checksum value
++ * for ``XDP_CHECKSUM_COMPLETE`` or the ``csum_level`` for
++ * ``XDP_CHECKSUM_UNNECESSARY``. It is set to 0 for ``XDP_CHECKSUM_NONE``
++ *
++ * Return:
++ * * Returns 0 on success or ``-errno`` on error.
++ * * ``-EOPNOTSUPP`` : means device driver does not implement kfunc
++ * * ``-ENODATA``    : means no RX-timestamp available for this frame
++ */
++__bpf_kfunc int bpf_xdp_metadata_rx_checksum(const struct xdp_md *ctx,
++					     enum xdp_checksum *ip_summed,
++					     u32 *cksum_meta)
++{
++	return -EOPNOTSUPP;
++}
++
+ __bpf_kfunc_end_defs();
+ 
+ BTF_KFUNCS_START(xdp_metadata_kfunc_ids)
+diff --git a/tools/include/uapi/linux/netdev.h b/tools/include/uapi/linux/netdev.h
+index e0b579a1df4f2126acec6c44c299e97bbbefe640..d20da430cfd57bc26b5ea2f406c27b48d8a81693 100644
+--- a/tools/include/uapi/linux/netdev.h
++++ b/tools/include/uapi/linux/netdev.h
+@@ -47,11 +47,14 @@ enum netdev_xdp_act {
+  *   hash via bpf_xdp_metadata_rx_hash().
+  * @NETDEV_XDP_RX_METADATA_VLAN_TAG: Device is capable of exposing receive
+  *   packet VLAN tag via bpf_xdp_metadata_rx_vlan_tag().
++ * @NETDEV_XDP_RX_METADATA_CHECKSUM: Device is capable of exposing receive
++ *   checksum result via bpf_xdp_metadata_rx_checksum().
+  */
+ enum netdev_xdp_rx_metadata {
+ 	NETDEV_XDP_RX_METADATA_TIMESTAMP = 1,
+ 	NETDEV_XDP_RX_METADATA_HASH = 2,
+ 	NETDEV_XDP_RX_METADATA_VLAN_TAG = 4,
++	NETDEV_XDP_RX_METADATA_CHECKSUM = 8,
+ };
+ 
+ /**
 
-@Aleksandr: veth implementation is quite different in v2 so I will
-remove your Reviewed-by tag.
-Can you please take a look to the new version when you have some free cycle=
-s?
-Thanks in advance.
+-- 
+2.53.0
 
-Regards,
-Lorenzo
-
---HFmkBUtLTk0X/kCd
-Content-Type: application/pgp-signature; name=signature.asc
-
------BEGIN PGP SIGNATURE-----
-
-iHUEABYKAB0WIQTquNwa3Txd3rGGn7Y6cBh0uS2trAUCaY9BmwAKCRA6cBh0uS2t
-rM9GAP9pqasZqU5mkbE9HeZKaEA/3fmJnoxbUinX2RuFECIihQD+MfrvsdLGCvNi
-SmxAUR2eFsKybJxZcgoL96b8QXXhzgQ=
-=09aw
------END PGP SIGNATURE-----
-
---HFmkBUtLTk0X/kCd--
