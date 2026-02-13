@@ -1,192 +1,113 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D773DEDF143
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 13 Feb 2026 16:26:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C4E62EF99D3
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 13 Feb 2026 20:34:55 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 9520B84488;
-	Fri, 13 Feb 2026 16:26:25 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id CnRAYIuPeGxa; Fri, 13 Feb 2026 16:26:25 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 0748684489
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1770999985;
-	bh=1n+CH7JkACVh6+jBdbvJUem948km/ZIkeh1v7AO+0uM=;
-	h=To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From:Reply-To:From;
-	b=KcrztTRx3jcC75kuaYKkFvEejy8XTxMMKsnCJtk6CnvoktajiFPNBNTujez7h7N37
-	 EMTvAvIcVwpDRtSJ6jq4QFe+m3lXL0hezo9QXfA1s8edmV9nEbiwoTWgbYogMFJMeT
-	 adSzdt2cbOeM0b1Ybng2PRir5hNMT+5YB183QDZCFEloJLFMATpZvFv4jj80Jtevm1
-	 NA2fVWyYpqOEJNGAqdzKy9LV+rHWRqauFKGUANTDMPJaX/9MPdgQEkkdSbzIfEHF8S
-	 F2UMsQlUUcUoh1yw9qFrJQ4ftafzO1u68MefB2qmL7xqyxFUmnbfzi70GuKANCqbOF
-	 rMyEQCiEw7zyQ==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 0748684489;
-	Fri, 13 Feb 2026 16:26:25 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id E42BF255
- for <intel-wired-lan@lists.osuosl.org>; Fri, 13 Feb 2026 08:51:22 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id C8D0A402D6
- for <intel-wired-lan@lists.osuosl.org>; Fri, 13 Feb 2026 08:51:22 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 6B39741E17;
+	Fri, 13 Feb 2026 20:34:55 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id RbPtrXfdZung for <intel-wired-lan@lists.osuosl.org>;
- Fri, 13 Feb 2026 08:51:22 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=40.93.201.17;
- helo=cy3pr05cu001.outbound.protection.outlook.com;
- envelope-from=nikolay@nvidia.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 86F22402D4
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 86F22402D4
-Received: from CY3PR05CU001.outbound.protection.outlook.com
- (mail-westcentralusazon11013017.outbound.protection.outlook.com
- [40.93.201.17])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 86F22402D4
- for <intel-wired-lan@lists.osuosl.org>; Fri, 13 Feb 2026 08:51:21 +0000 (UTC)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=aq2YngK9EHo81V+of2K9EXNrz4u+aX0wnjLnlxJrDX08rkXzDjY9EMVaf3btuzgw/1wMzvhVzy+H2qtUePBb9S8dWhEJE0Utmt2Rf+O6P6yODTTs440TRwG6oaNKqUqN5bmiMb0PdNaJWxXgO5SusMTPLjKnKts7UJdxPdED2ELBNmKC9mJpZb0zxT/H6oyDD7djbrS6ET54w8wXMAQ9X7j6i30cu2PgU5gqTXKT90pHT8G2SNZb/i+pla2Y+SiH2BIeM/4fjt7f7+yWxWVGI7SsuzFNXXh7ZH02oQq2n8jk8hBSM0cjOSX3noctw15uMuAy03zZaFDlw50PYtbBAg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=1n+CH7JkACVh6+jBdbvJUem948km/ZIkeh1v7AO+0uM=;
- b=HXrD40wbKwlqlxc0vn2eBuTXc/8X/ae7RqaZ26YI56wyMZdBGT1e9vqq/wpSxHhBrBfxuNtBT+PUCpKAj12ZRgE5in8XLWxjNtnJbt2PDbpPbj5jVXKf33o2lUQCe26ntM1mWXVfhw/XV9qkrrM5FLqz5RF+rlnBY/zzME1DGKXHttyTuHLOBJzSPDMhecUxlzG1yyab/a48A5ZTjtn7Z0NCh9kEJHyP4cmd8dhu9jo4z7v6Pw1HG9TVq/AaclqHt+uqDkRgicIP8NXUe6lG6lH8q0X/CQZpP/D/ZGBFA/M2PL/adYqf0QkSDyTzZZTcjMJWEPATXksyfEzhgGPvLQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-Received: from DS0PR12MB7928.namprd12.prod.outlook.com (2603:10b6:8:14c::13)
- by PH0PR12MB5630.namprd12.prod.outlook.com (2603:10b6:510:146::12) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9611.13; Fri, 13 Feb
- 2026 08:51:16 +0000
-Received: from DS0PR12MB7928.namprd12.prod.outlook.com
- ([fe80::5420:4724:4733:9abd]) by DS0PR12MB7928.namprd12.prod.outlook.com
- ([fe80::5420:4724:4733:9abd%4]) with mapi id 15.20.9611.012; Fri, 13 Feb 2026
- 08:51:16 +0000
-To: netdev@vger.kernel.org
-Cc: David Ahern <dsahern@kernel.org>, Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Andrew Lunn <andrew+netdev@lunn.ch>, davem@davemloft.net,
- Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>,
- Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
- Paul Greenwalt <paul.greenwalt@intel.com>,
- Daniel Zahka <daniel.zahka@gmail.com>,
- Michal Swiatkowski <michal.swiatkowski@linux.intel.com>,
- Dave Ertman <david.m.ertman@intel.com>,
- Mustafa Ismail <mustafa.ismail@intel.com>,
- Shiraz Saleem <shiraz.saleem@intel.com>,
- Tatyana Nikolova <tatyana.e.nikolova@intel.com>,
- intel-wired-lan@lists.osuosl.org, Nikolay Aleksandrov <nikolay@nvidia.com>
-Date: Fri, 13 Feb 2026 10:48:41 +0200
-Message-ID: <20260213084841.1406442-1-nikolay@nvidia.com>
-X-Mailer: git-send-email 2.47.3
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: BY3PR04CA0017.namprd04.prod.outlook.com
- (2603:10b6:a03:217::22) To DS0PR12MB7928.namprd12.prod.outlook.com
- (2603:10b6:8:14c::13)
+ id rOkXYB-XIC59; Fri, 13 Feb 2026 20:34:53 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 703A641E14
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1771014893;
+	bh=byJ7P9wBxKwBGxzkiFFWkFLzr5TIuDdg2vakTlQnC1w=;
+	h=Date:From:To:Cc:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=YlfOY4PEbUFDp8asKeS4kcJgn7bkm52maZcxAa5HWzV7+IhL3TT8m282rKCtYiZ1C
+	 OOAi0ZSSbFQAKFZN+W2Z7d+y+rJ97v6jrAC9vWHuuxSujpugxn+IaVrL1rDgmWkqju
+	 yl1Yga+3/SWc+VdmVzQ3Q/QJv73W7e5zKXGAIQoUaeg4MVFoC3bDGCPN1pewQBP3yY
+	 J+BsO64AQcTpcUFYVSeHDKTpgttP94HqJvMBNSN5e5FREZ8mq6GjodRszFz10V1aFj
+	 hbYCZLWCAe720B2+uipRS8NUivmyC2Z1THPKu44QhpWf91PaOy7qLjWDSMZdrjY5Nd
+	 26wF/7LayQ0Vw==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp4.osuosl.org (Postfix) with ESMTP id 703A641E14;
+	Fri, 13 Feb 2026 20:34:53 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 4767569
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 13 Feb 2026 20:34:51 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp1.osuosl.org (Postfix) with ESMTP id 28C308130D
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 13 Feb 2026 20:34:51 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 73ctHupYJvW6 for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 13 Feb 2026 20:34:49 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org;
+ envelope-from=kuba@kernel.org; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 956CD812D4
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 956CD812D4
+Received: from tor.source.kernel.org (tor.source.kernel.org
+ [IPv6:2600:3c04:e001:324:0:1991:8:25])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 956CD812D4
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 13 Feb 2026 20:34:49 +0000 (UTC)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+ by tor.source.kernel.org (Postfix) with ESMTP id 44C6F6091C;
+ Fri, 13 Feb 2026 20:34:47 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 13816C116C6;
+ Fri, 13 Feb 2026 20:34:45 +0000 (UTC)
+Date: Fri, 13 Feb 2026 12:34:44 -0800
+From: Jakub Kicinski <kuba@kernel.org>
+To: Larysa Zaremba <larysa.zaremba@intel.com>
+Cc: bpf@vger.kernel.org, Claudiu Manoil <claudiu.manoil@nxp.com>, Vladimir
+ Oltean <vladimir.oltean@nxp.com>, Wei Fang <wei.fang@nxp.com>, Clark Wang
+ <xiaoning.wang@nxp.com>, Andrew Lunn <andrew+netdev@lunn.ch>, "David S.
+ Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, Paolo
+ Abeni <pabeni@redhat.com>, Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>, Alexei Starovoitov
+ <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, Jesper Dangaard
+ Brouer <hawk@kernel.org>, John Fastabend <john.fastabend@gmail.com>,
+ Stanislav Fomichev <sdf@fomichev.me>, Andrii Nakryiko <andrii@kernel.org>,
+ Martin KaFai Lau <martin.lau@linux.dev>, Eduard Zingerman
+ <eddyz87@gmail.com>, Song Liu <song@kernel.org>, Yonghong Song
+ <yonghong.song@linux.dev>, KP Singh <kpsingh@kernel.org>, Hao Luo
+ <haoluo@google.com>, Jiri Olsa <jolsa@kernel.org>, Simon Horman
+ <horms@kernel.org>, Shuah Khan <shuah@kernel.org>, Alexander Lobakin
+ <aleksander.lobakin@intel.com>, Maciej Fijalkowski
+ <maciej.fijalkowski@intel.com>, "Bastien Curutchet (eBPF Foundation)"
+ <bastien.curutchet@bootlin.com>, Tushar Vyavahare
+ <tushar.vyavahare@intel.com>, Jason Xing <kernelxing@tencent.com>, "Ricardo
+ B. =?UTF-8?B?TWFybGnDqHJl?=" <rbm@suse.com>, Eelco Chaudron
+ <echaudro@redhat.com>, Lorenzo Bianconi <lorenzo@kernel.org>, Toke
+ Hoiland-Jorgensen <toke@redhat.com>, imx@lists.linux.dev,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ intel-wired-lan@lists.osuosl.org, linux-kselftest@vger.kernel.org,
+ Aleksandr Loktionov <aleksandr.loktionov@intel.com>, Dragos Tatulea
+ <dtatulea@nvidia.com>
+Message-ID: <20260213123444.12fd433e@kernel.org>
+In-Reply-To: <20260212183328.1883148-3-larysa.zaremba@intel.com>
+References: <20260212183328.1883148-2-larysa.zaremba@intel.com>
+ <20260212183328.1883148-3-larysa.zaremba@intel.com>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DS0PR12MB7928:EE_|PH0PR12MB5630:EE_
-X-MS-Office365-Filtering-Correlation-Id: b0de5d81-f45c-44eb-0e36-08de6add0c7a
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;ARA:13230040|1800799024|366016|7416014|376014;
-X-Microsoft-Antispam-Message-Info: =?us-ascii?Q?Q2jJLqMa5dBU/uELmdlYqG+B75gimpEORgKDWb7r/Z8UYqaTNx26qi4dIpuh?=
- =?us-ascii?Q?qlWD9+1NWZynhErFDzsu01zaskT2jlUjTAqp7eMC4700Qan0S/BpeUzIlukA?=
- =?us-ascii?Q?dHckL9WghCHymRz/5LkSWs1NTbqs6eT30P6sTvUNVXVnf1aWZfcLjje10dIR?=
- =?us-ascii?Q?anMeGyKgUchucuHlf8MG7caMXV3Q3LZctTrBlxMxhMmZUj+lKEwG3Pv+uJsp?=
- =?us-ascii?Q?GOYK0mbRrlgwEPygVBj39g5uHr2iOPdqcBy/YWM6wrND8A6Py8IggPD8uCOp?=
- =?us-ascii?Q?yPFyodNeR9zEikCmaQvin00MIzqwEkraKRtg0qFrPWcR+oxLAbnbyIIT4PD2?=
- =?us-ascii?Q?T49xUJeBHAyEbLBaHBOYObF15ybNMS6IwUZtOzIcldv6phzrpqXL34+Xs0qj?=
- =?us-ascii?Q?F76XRJAXc1loZ96hVIApAwz0uKjkVXRZou+ZgaZ97yR0Ea3d8YZ0i1F0NExN?=
- =?us-ascii?Q?+6qiwE89kCYiDyTCMeND8v3EoiJzkhKEAVaib+PWj8Cc3tP3bVCnh2PaYsO+?=
- =?us-ascii?Q?jYSdrAWy7mCY5L0YSyJFenAHerbG+zb5tAWiVkPwRkOtGY5NPQfq21x3F9yO?=
- =?us-ascii?Q?KWdfTJXHMw0a79CaxP/8nBwU0nFfEkF3bkxdvJbX67LimCuDh0XxlwmONc3H?=
- =?us-ascii?Q?s89AUxa5DNuPe0aXGfxwoKDC8HH0HES9s0xeMF9LesYM3NK/8FeCUhdsBWFM?=
- =?us-ascii?Q?zMPLf91lLaNHC9tAs/uVIRJYeTGn0yFzuU3koni0RaVV+VW2g2UIUZbGMWo3?=
- =?us-ascii?Q?Bdh/bTO7HVIOC/4EyoYohd1Y+rDlTzuoeEMBjpX/C7l45b4qIQw7fG0v47Yz?=
- =?us-ascii?Q?0G1aV3R8XCLyx5Am2O4rTGahPYn/RVdfOuxSbHSnBJyvUiuVkprywqzjKnjt?=
- =?us-ascii?Q?laZqv0KiZcws85zWmO2oCTkOAIGmsDpWa559qAev8M3kU/l9Of+qjxLypTqT?=
- =?us-ascii?Q?y9wozljDChq0CWYr6vbziTx6ZTHMSAQrI7F8qqhQ54RAaMc3zYE+kczo72KQ?=
- =?us-ascii?Q?b1KKNsDCVEzixOyZXp+czpgyf09xMbm/FkjgfMyMyT7ooRhq8tWPmHLNivS6?=
- =?us-ascii?Q?nn4OPqLJgeneig9eYPWt1m7puA7dR5NTYnBeWlD+Tug8U3JZydYQQKd5ryfs?=
- =?us-ascii?Q?UFukENFtT15dDyurWsrN0cDK4OHa47oyKKZrf+rZ/4ZM50ylPO42ArPVRV+L?=
- =?us-ascii?Q?m8eyreumtJLZPdosgMN7o9gppJIz1ArG69jTAyaFhsJAen6tL/BTor/QGAP2?=
- =?us-ascii?Q?qET4YhqWCZOj3lAiRKsWw1VN3mB47axnh0o0fPjfNBDbEIA2ZOeHg4/tcDq+?=
- =?us-ascii?Q?wnHBx/7GBnBnEB0oXmW6t8isbZM0z5+gJc0FnU+DdHzSbX3+QjYxQ8RxJSLE?=
- =?us-ascii?Q?R8/eM4bkvdREOeuVZpImYbQtanr7X2SKqvzqMBhWiNP5c9iMJHLp7yaJIDJ2?=
- =?us-ascii?Q?nn5+jqB23n8vCdENmf+av+5h+ozlIEzVayO71qIAulMJsy5BUzTQaMy2CyEH?=
- =?us-ascii?Q?ST8KQIcZdyaP72sKTEAYlgRJgtCYXj/G6hAOVM2AXua0pbBFZz1ULyGA6SQ1?=
- =?us-ascii?Q?07rGuPp9DvdXnE9FUrI=3D?=
-X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:DS0PR12MB7928.namprd12.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230040)(1800799024)(366016)(7416014)(376014); DIR:OUT; SFP:1101; 
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?9NjiDXOgwWxuIGTrnyTioi1INwW7VbnlAcXE+pgg6cYPWe/OK2s9QeYuyWxX?=
- =?us-ascii?Q?AEbF2jtnyTWhG3RNf90wYMqc2S0FihvBOPkUcEgxXsrgEQG+TKdqMEEJFgBz?=
- =?us-ascii?Q?/JbCMSCIQ2b9CsCelM+eCuZRQHyuaQXinNALQM7/zVaV1vcizAVFBUx48ZlN?=
- =?us-ascii?Q?cVqg1QLipgGA03h9Z+mY11TW0Kh4XyhMJhd26ZFB1D2pTZ5iIP+OLnXGKPUX?=
- =?us-ascii?Q?LhP6S833q0CvkDJ7plXID+F+7CenFNYsWBEBBZiRq9rX7+GOALf66j2mEW7f?=
- =?us-ascii?Q?q9seTxlW+d1qxHpjEogX0akeYzErqbVYAFaq2BZE6744bYTbtR/qmuA6wjfY?=
- =?us-ascii?Q?MmVyACoe7ltYVR5vVIOejTBs4I6yemOwqzUeRmbg7kA7zJl+ElgtIsBJ+2KZ?=
- =?us-ascii?Q?x602Gxo43m0Rf9TwdF+c/Zg+yp5EE3HLpLYknuv/+niwKff+BfLvXbcDiSJX?=
- =?us-ascii?Q?Cy32O48JnTu+eIrADgfc2K7T9c1Qf0tF4yCfavjaBN956k22/JzRc5AFa2pF?=
- =?us-ascii?Q?bD6zylusuLw2fleUBMjQKFq/P+EGOcGRHCPcupe1EOfS4DU1IN++6qdiqEln?=
- =?us-ascii?Q?PfNs73GG2xio4fzWEbEVyySL/7TnTMbYQj/dEniBKRoEP8XDv7EWZ1LYd2zk?=
- =?us-ascii?Q?0R6EjlpVI3EZs09hPQKq2qp8Tbo5vFAYVt1KSh+24Km3JrIYbtl10lhycuYn?=
- =?us-ascii?Q?oA4eTEcjLtowee3PZ5Sv8FIDMzn0luCd+MWxBcJ5sq/EEPQ5BvUBr5GyuoF0?=
- =?us-ascii?Q?DX108fNZyXFi+E6U3WYPWbsGDpTUOTmM+BrP47Nu7h5aLLGspKGBdVipqnrg?=
- =?us-ascii?Q?NR8WzEEjrRtM6ULciIr94HtrURrR7mXEfblqVYc0b64WvbPENsukAJElKJJz?=
- =?us-ascii?Q?ALVnXb98kSE6ajRYfG7Bxk/iXmxw46hE6dHDAcpXTddAaEXCvAOuzr9mZIW0?=
- =?us-ascii?Q?/MMAs5ES4DgON5OwEefhmA9r0pcuYychCJDGq01Y9jxmzU4gRhVcg95sJbB7?=
- =?us-ascii?Q?PKwVyWY9LTGLRH/yTodwlYLWA1nGULb9zIqzG1hNIrtjSEywlzLAwPbRwp1T?=
- =?us-ascii?Q?xiAKeJIYCbznpC6DMZzpd+MOtVf1w9vsVnBSTRubsAN0b1DhXaaLzEdCIhXL?=
- =?us-ascii?Q?Gr9s6wZ2YZILsxqmwHT28cZQkHWlg6j92ItWlenDhNKHkcIoyoZGTNgOHEjo?=
- =?us-ascii?Q?REkg7Xo5aj+8A62JcFKJ+YtBefKOSFicbscJKr7hkSgLrWgoex0VhpNepwDa?=
- =?us-ascii?Q?WYzOSSyA3idCHYfzP/ABJ09AI0+O72Y1J1rFGbZTmTFE7vkt1DUKvo8IcnRS?=
- =?us-ascii?Q?9+yPQkz61kMUXbchE4ZEGA7XnnuxinNhbO5kl3AJaPJUHt2QvzQIo4j/h+qD?=
- =?us-ascii?Q?yFt1Fa2sUJXe3SYmHNomVDKd46NLrfRyEvFWVTRKP3S9gRSj0yRCHzhOsbls?=
- =?us-ascii?Q?TiFVtLiKBlZJSqcVXqAxNFFKf7uhDoCmiVJUBMrLV6oPz5I1ZJCQmKHtyyo+?=
- =?us-ascii?Q?4Xrkcygpf9dWAMNxwCSlp1R37YEFCL9pasvfyUaAB4mG8NIxBRz4Koodh5hZ?=
- =?us-ascii?Q?GZU7urZUYWA/UrmW0DYp3SMEnfgebe95/oOHCJxTi2Y/hlnuOSlj2n1jmcuH?=
- =?us-ascii?Q?4HSbwmxJF9qffakAan3478eJEKWzYAl30TU3JKo2exAuag8O27PXoAWQWrs/?=
- =?us-ascii?Q?vCMMCmm9xgTj8dfzdrbW6mNrTqfsnmsJf9W9xiHtSZoBgwasIP9Jua/V9GdX?=
- =?us-ascii?Q?8Q3ASgL7dQ=3D=3D?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: b0de5d81-f45c-44eb-0e36-08de6add0c7a
-X-MS-Exchange-CrossTenant-AuthSource: DS0PR12MB7928.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 13 Feb 2026 08:51:16.4683 (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 4xIAEcZrthG596HUboLVAih9dkDcBUkA89oeFuzLFb5QQbiks8mynXM7VZjEOI7EZghKerN7yiznRCrY9DYE5A==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH0PR12MB5630
-X-Mailman-Approved-At: Fri, 13 Feb 2026 16:26:23 +0000
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=Nvidia.com; s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=1n+CH7JkACVh6+jBdbvJUem948km/ZIkeh1v7AO+0uM=;
- b=cejD1PssEGo7wU64WW1Meux7q/9a4QSmC+UEjtSsOCAcTcYjxvqLpDbPuUqIOetJTjNljNg7OHS2XXcnI8KsQO3T/pXtN0bKcu1NSriUhRQ98ywRzRmoLCyYIdNMhYcbK00Wz9Tczy75/9MVzxg8SRLHWJbn9bHLq+Bz9ZOduGqs8OQcdYi/3Er9GwY/OskTrk3KwWFqEf4g/1BDx0Y2uZ92/PMuN2UpDdY48BsucGzChjgY5/w3Ybnl7oaJBmllLV0Vh3eWRmJWgDu95UYN14yGvdBkWSK+wLbrSt40kgsaZoyRBQeu6tiQkOgO9YFK9neBoU1JVLXzj1lx0eHZfQ==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dmarc=pass (p=reject dis=none)
- header.from=nvidia.com
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256
- header.s=selector2 header.b=cejD1Pss
-X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Subject: [Intel-wired-lan] [PATCH net] drivers: net: ice: fix devlink
- parameters get without irdma
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=kernel.org; s=k20201202; t=1771014887;
+ bh=XxUt9o01tkl2YeDC894gfSKrSV9JalAY+MmXygvGPhk=;
+ h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+ b=hDp60Yyho4yXiHjPDWqvFUJnMKAiJv7mwRpUKs0th2GCzeNB+Froz1yzy6qvMW7MR
+ Fau2WLI+fY9sPaBEFU577fpBUmaZt3TjJWBWKloUV9JpEkQCxPt+RgCRzP/0X8byCs
+ lzxfCwb6bpODUIUEXWbcP3isLC9l9yuvBc6EbJWmqOkEwf4Bqvp5lbEuHNCj4VxcXU
+ QUNKJeQTF2nRqwHbO2777R+lSnwQsn4FBRGdnE7kVFQOAFKzfg4/l+FyQbHOYu/d9E
+ /YdFBaoWReY6379kNQ03msQ3Hhdrw6hwdAu2GYoFe00CPDhnxuOEweL6qsXDXBt9QF
+ 9vuP2MXDPvBUw==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dmarc=pass (p=quarantine dis=none)
+ header.from=kernel.org
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20201202 header.b=hDp60Yyh
+Subject: Re: [Intel-wired-lan] [PATCH bpf v2 1/9] xdp: use modulo operation
+ to calculate XDP frag tailroom
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -199,55 +120,13 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-From: Nikolay Aleksandrov via Intel-wired-lan <intel-wired-lan@osuosl.org>
-Reply-To: Nikolay Aleksandrov <nikolay@nvidia.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-If CONFIG_IRDMA isn't enabled but there are ice NICs in the system, the
-driver will prevent full devlink dev param show dump because its rdma get
-callbacks return ENODEV and stop the dump. For example:
- $ devlink dev param show
- pci/0000:82:00.0:
-   name msix_vec_per_pf_max type generic
-     values:
-       cmode driverinit value 2
-   name msix_vec_per_pf_min type generic
-     values:
-       cmode driverinit value 2
- kernel answers: No such device
+On Thu, 12 Feb 2026 19:33:16 +0100 Larysa Zaremba wrote:
+> -	tailroom = rxq->frag_size - skb_frag_size(frag) - skb_frag_off(frag);
+> +	tailroom = rxq->frag_size - skb_frag_size(frag) -
+> +		   skb_frag_off(frag) % rxq->frag_size;
+>  	if (unlikely(offset > tailroom))
 
-Returning EOPNOTSUPP allows the dump to continue so we can see all devices'
-devlink parameters.
-
-Fixes: c24a65b6a27c ("iidc/ice/irdma: Update IDC to support multiple consumers")
-Signed-off-by: Nikolay Aleksandrov <nikolay@nvidia.com>
----
- drivers/net/ethernet/intel/ice/devlink/devlink.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/devlink/devlink.c b/drivers/net/ethernet/intel/ice/devlink/devlink.c
-index 2ef39cc70c21..7de749d3f047 100644
---- a/drivers/net/ethernet/intel/ice/devlink/devlink.c
-+++ b/drivers/net/ethernet/intel/ice/devlink/devlink.c
-@@ -1360,7 +1360,7 @@ ice_devlink_enable_roce_get(struct devlink *devlink, u32 id,
- 
- 	cdev = pf->cdev_info;
- 	if (!cdev)
--		return -ENODEV;
-+		return -EOPNOTSUPP;
- 
- 	ctx->val.vbool = !!(cdev->rdma_protocol & IIDC_RDMA_PROTOCOL_ROCEV2);
- 
-@@ -1427,7 +1427,7 @@ ice_devlink_enable_iw_get(struct devlink *devlink, u32 id,
- 
- 	cdev = pf->cdev_info;
- 	if (!cdev)
--		return -ENODEV;
-+		return -EOPNOTSUPP;
- 
- 	ctx->val.vbool = !!(cdev->rdma_protocol & IIDC_RDMA_PROTOCOL_IWARP);
- 
--- 
-2.47.3
-
+Acked-by: Jakub Kicinski <kuba@kernel.org>
