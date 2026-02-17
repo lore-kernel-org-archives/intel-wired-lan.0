@@ -4,93 +4,129 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BCAC5E6816B
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 17 Feb 2026 13:00:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D271BE909A3
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 17 Feb 2026 13:54:46 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 5D20181EAB;
-	Tue, 17 Feb 2026 13:00:47 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 6252580ECC;
+	Tue, 17 Feb 2026 13:54:46 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id fif06izr8VqV; Tue, 17 Feb 2026 13:00:46 +0000 (UTC)
+ id AG40kh2slIRU; Tue, 17 Feb 2026 13:54:45 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 1B38981C2F
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9B7A080E66
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1771333246;
-	bh=9K45mUTti+ZgXRVNz1MIJ1/ahkqTWJhhwXD3zELEFC0=;
-	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=1wyG8AM3z7Q/VP/WZgMN+uzhsTgGY9MVMh6OB775gBD3J39Udj8mjibgWLI7ejpsk
-	 H0D5sSQT8XDOOXrv2CQd7Ksg9RCAOgk7KrrsTA9OmG/ojSP2kAPEjWxfjWrzeDy2xB
-	 Yu/0jKpEF9ocU9Uc6WFs/WUSpJI27oLNj8G6lehrK9tqzeRsuAzqQcgztmRCF2eoUG
-	 zEaL7ICKiJu566Kbwec85+79xkiu6DwQb7E4yZfQGXfq1w9QO5ddJb+hNyFN9S9E/+
-	 E6X2Nwws876muPC2cb6t8RZ6jwppaTqbBMBye/ezGc/YG/rlGN1xLekuCcOaRItHhX
-	 Rt7sBtsDknQUg==
+	s=default; t=1771336485;
+	bh=30+QSEbSVE6PVfuLMhyA3g7Ky0FyNgo2EwMxjEfBwqs=;
+	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=VNqQmZGMyKMlvjBNAcBgsS7GQlQUIczyxjH3pKj6KbXQ6Sr50F30B9iilYkqoYKEy
+	 NkXay2fO6BPqLNcOVJHeF4aOpqQy+UJ73uDWm8tytwdakTGpyBzG2gJS0+Bd5wIjkv
+	 7dBV8B7M7NZwfA+RVBd0LRTgYlyaGnEqfSy2h5AV+VLl7BzqS43W6Lh/sqp36eLJEr
+	 m2yiZZV4Lv8hhgciba7BYgt/HiC0WZbsc/RyEEdz7JLsUHH27pVLurpTRrztPXuTes
+	 eSX4C3yorvQbJCZVhxa1yOYk8Jrb76uTJje8imE/ZQwSmNEXxm/DsExF0lv/xUBEg1
+	 n+8D0pJxjk4ag==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 1B38981C2F;
-	Tue, 17 Feb 2026 13:00:46 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 9B7A080E66;
+	Tue, 17 Feb 2026 13:54:45 +0000 (UTC)
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id 6D19E206
- for <intel-wired-lan@lists.osuosl.org>; Tue, 17 Feb 2026 13:00:44 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id 352D3206
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 17 Feb 2026 13:54:44 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 6757B81C2F
- for <intel-wired-lan@lists.osuosl.org>; Tue, 17 Feb 2026 13:00:44 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 1687180E66
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 17 Feb 2026 13:54:44 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id SDHUeML94jQx for <intel-wired-lan@lists.osuosl.org>;
- Tue, 17 Feb 2026 13:00:43 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.15;
- helo=mgamail.intel.com; envelope-from=aleksandr.loktionov@intel.com;
+ id 3DDuUS6jVFU8 for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 17 Feb 2026 13:54:43 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.14;
+ helo=mgamail.intel.com; envelope-from=larysa.zaremba@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 8482581B10
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8482581B10
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.15])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 8482581B10
- for <intel-wired-lan@lists.osuosl.org>; Tue, 17 Feb 2026 13:00:43 +0000 (UTC)
-X-CSE-ConnectionGUID: /MtUTK0dRqG1+sZLbBAWIg==
-X-CSE-MsgGUID: ZTPQF9unQyS0n1rxZu4Q4g==
-X-IronPort-AV: E=McAfee;i="6800,10657,11703"; a="76021991"
-X-IronPort-AV: E=Sophos;i="6.21,296,1763452800"; d="scan'208";a="76021991"
-Received: from fmviesa003.fm.intel.com ([10.60.135.143])
- by orvoesa107.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 17 Feb 2026 05:00:42 -0800
-X-CSE-ConnectionGUID: NafDHaqOTK2nH9w672EwLw==
-X-CSE-MsgGUID: 4oaL9CVXRQOasj5pkDdpoQ==
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 621ED80E5C
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 621ED80E5C
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.14])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 621ED80E5C
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 17 Feb 2026 13:54:43 +0000 (UTC)
+X-CSE-ConnectionGUID: lsXzNyjmSK2iNr9sp75hMQ==
+X-CSE-MsgGUID: y9sPe+6PTTqQRTl8qCaVGQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11703"; a="72470412"
+X-IronPort-AV: E=Sophos;i="6.21,296,1763452800"; d="scan'208";a="72470412"
+Received: from orviesa008.jf.intel.com ([10.64.159.148])
+ by fmvoesa108.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 17 Feb 2026 05:54:43 -0800
+X-CSE-ConnectionGUID: 7jK9LTbDQAiS33Lvxj6GIw==
+X-CSE-MsgGUID: EO9s9ieDT9eSHMx5SL8p1w==
 X-ExtLoop1: 1
-Received: from amlin-019-225.igk.intel.com ([10.102.19.225])
- by fmviesa003.fm.intel.com with ESMTP; 17 Feb 2026 05:00:41 -0800
-From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-To: intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com,
- aleksandr.loktionov@intel.com
-Cc: netdev@vger.kernel.org
-Date: Tue, 17 Feb 2026 14:00:39 +0100
-Message-ID: <20260217130039.1802805-1-aleksandr.loktionov@intel.com>
+X-IronPort-AV: E=Sophos;i="6.21,296,1763452800"; d="scan'208";a="213904603"
+Received: from irvmail002.ir.intel.com ([10.43.11.120])
+ by orviesa008.jf.intel.com with ESMTP; 17 Feb 2026 05:54:34 -0800
+Received: from lincoln.igk.intel.com (lincoln.igk.intel.com [10.102.21.235])
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id 173E128791;
+ Tue, 17 Feb 2026 13:54:31 +0000 (GMT)
+From: Larysa Zaremba <larysa.zaremba@intel.com>
+To: bpf@vger.kernel.org
+Cc: Larysa Zaremba <larysa.zaremba@intel.com>,
+ Claudiu Manoil <claudiu.manoil@nxp.com>,
+ Vladimir Oltean <vladimir.oltean@nxp.com>, Wei Fang <wei.fang@nxp.com>,
+ Clark Wang <xiaoning.wang@nxp.com>, Andrew Lunn <andrew+netdev@lunn.ch>,
+ "David S. Miller" <davem@davemloft.net>,
+ Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>, Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Alexei Starovoitov <ast@kernel.org>,
+ Daniel Borkmann <daniel@iogearbox.net>,
+ Jesper Dangaard Brouer <hawk@kernel.org>,
+ John Fastabend <john.fastabend@gmail.com>,
+ Stanislav Fomichev <sdf@fomichev.me>, Andrii Nakryiko <andrii@kernel.org>,
+ Martin KaFai Lau <martin.lau@linux.dev>,
+ Eduard Zingerman <eddyz87@gmail.com>, Song Liu <song@kernel.org>,
+ Yonghong Song <yonghong.song@linux.dev>, KP Singh <kpsingh@kernel.org>,
+ Hao Luo <haoluo@google.com>, Jiri Olsa <jolsa@kernel.org>,
+ Simon Horman <horms@kernel.org>, Shuah Khan <shuah@kernel.org>,
+ Alexander Lobakin <aleksander.lobakin@intel.com>,
+ Maciej Fijalkowski <maciej.fijalkowski@intel.com>,
+ "Bastien Curutchet (eBPF Foundation)" <bastien.curutchet@bootlin.com>,
+ Tushar Vyavahare <tushar.vyavahare@intel.com>,
+ Jason Xing <kernelxing@tencent.com>,
+ =?UTF-8?q?Ricardo=20B=2E=20Marli=C3=A8re?= <rbm@suse.com>,
+ Eelco Chaudron <echaudro@redhat.com>,
+ Lorenzo Bianconi <lorenzo@kernel.org>,
+ Toke Hoiland-Jorgensen <toke@redhat.com>, imx@lists.linux.dev,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ intel-wired-lan@lists.osuosl.org, linux-kselftest@vger.kernel.org,
+ Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
+ Dragos Tatulea <dtatulea@nvidia.com>
+Date: Tue, 17 Feb 2026 14:24:41 +0100
+Message-ID: <20260217132450.1936200-4-larysa.zaremba@intel.com>
 X-Mailer: git-send-email 2.52.0
+In-Reply-To: <20260217132450.1936200-1-larysa.zaremba@intel.com>
+References: <20260217132450.1936200-1-larysa.zaremba@intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1771333243; x=1802869243;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=st2ZcirQgBmImzpLEHqlId9omyCr1JIg0L8y81+wvEA=;
- b=Fq1EW9oyhT2a/zubDAvD3DeLXMv84OtRbYP5uJIOEPXYUbCbgtWpEZLh
- yhlAO8uHB+clLvUG3AfS+VmqK4IqPrN7JE4jZyHxwiRUwd/rVt5F/u6Mw
- mScc1BntV9mThANC4JCXyZk7lNQHUwnyPI++bS02hzvAOFZQUp4yF9erg
- vQGqD6dUydFnoOVvytF6fvYqMRyOzgVo1VsO9DRwZFXrjoQAWh1IDM1wp
- 3LLMCJsgzSWA/W+26GkeFmzUcava/YIDlvlDLTXEZDMC1mn6ytzRdPMMq
- TPd8igGCgdrfNSRd+Tqh8vhI5/rvDHY6M8+iD+Kzv4z713WFMwr9QmfGZ
- w==;
+ t=1771336484; x=1802872484;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=2d5txlEQAOFqOdUpFD2V/T7FiaZwo8ubtwK2yRi/b6A=;
+ b=f7A2eDXZEV9NgY8bHBogVt5sOMqte7ACcm1U4tqP+xMdwiIyQAhcmryI
+ sgXwhjTVWZh/GKvlf6UlOBlJp70wFZCZSdltyR4RBVkvhnv3FlNTPr09C
+ XKo/Jex75HTgWkRL4CBHKmpUeV8oHXHGtoHRMDl9saRT2OowXnSjtlS2C
+ gBaj7Fihs47qkFOm98A+vYx8GQlRuulkvgl678ouon9QjUsGdUk9uMKev
+ i6o2hsvw2i+bCJO+dSjyI7rXh4tBK2PA4rIaNThguEQ29AK3mHNro+8oS
+ klKxPZBuYFw7RjzcgIuzUk5hMRBeC/eJJ5pFEz+iO9+L9VClnUaUKSwXQ
+ Q==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=Fq1EW9oy
-Subject: [Intel-wired-lan] [PATCH iwl-next v2] ice: implement symmetric RSS
- hash configuration
+ header.s=Intel header.b=f7A2eDXZ
+Subject: [Intel-wired-lan] [PATCH bpf v3 3/9] ice: fix rxq info registering
+ in mbuf packets
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -106,163 +142,100 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The driver advertises symmetric RSS support via supported_input_xfrm
-but ice_set_rxfh() ignored the input_xfrm parameter, making it
-impossible to configure symmetric hashing.
+XDP RxQ info contains frag_size, which depends on the MTU. This makes the
+old way of registering RxQ info before calculating new buffer sizes
+invalid. Currently, it leads to frag_size being outdated, making it
+sometimes impossible to grow tailroom in a mbuf packet. E.g. fragments are
+actually 3K+, but frag size is still as if MTU was 1500.
 
-Fix ice_set_rxfh() to check rxfh->input_xfrm and call
-ice_set_rss_hfunc() with ICE_AQ_VSI_Q_OPT_RSS_HASH_SYM_TPLZ when
-RXH_XFRM_SYM_XOR is requested.
+Always register new XDP RxQ info after reconfiguring memory pools.
 
-Modify ice_set_rss_vsi_ctx() to use vsi->rss_hfunc instead of
-hardcoding ICE_AQ_VSI_Q_OPT_RSS_HASH_TPLZ, and export it for
-use by ice_set_rxfh().
-
-The kernel requires get_rxfh_fields() to report symmetric hash
-configurations when symmetric transforms are supported. Update
-ice_get_rxfh_fields() to return symmetric field configuration
-(src+dst IP and ports) for all flow types.
-
-Tested with tools/testing/selftests/drivers/net/hw/rss_input_xfrm.py
-
-Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Fixes: 93f53db9f9dc ("ice: switch to Page Pool")
+Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Signed-off-by: Larysa Zaremba <larysa.zaremba@intel.com>
 ---
-v1 -> v2 preserve valid symmetric RSS fields.
----
- drivers/net/ethernet/intel/ice/ice_ethtool.c | 45 ++++++++++++++++----
- drivers/net/ethernet/intel/ice/ice_lib.c     |  7 +--
- drivers/net/ethernet/intel/ice/ice_lib.h     |  1 +
- 3 files changed, 41 insertions(+), 12 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_base.c | 26 ++++++-----------------
+ drivers/net/ethernet/intel/ice/ice_txrx.c |  3 ++-
+ drivers/net/ethernet/intel/ice/ice_xsk.c  |  3 +++
+ 3 files changed, 12 insertions(+), 20 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index c6bc29c..27c97ca 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -3008,14 +3008,18 @@ ice_set_rxfh_fields(struct net_device *netdev,
- 	return 0;
- }
+diff --git a/drivers/net/ethernet/intel/ice/ice_base.c b/drivers/net/ethernet/intel/ice/ice_base.c
+index eadb1e3d12b3..511d803cf0a4 100644
+--- a/drivers/net/ethernet/intel/ice/ice_base.c
++++ b/drivers/net/ethernet/intel/ice/ice_base.c
+@@ -663,23 +663,12 @@ static int ice_vsi_cfg_rxq(struct ice_rx_ring *ring)
+ 	int err;
  
-+#define ICE_RSS_ALLOWED_FIELDS	(RXH_IP_SRC | RXH_IP_DST | RXH_L4_B_0_1 | RXH_L4_B_2_3)
-+#define ICE_RSS_L3_PAIR		(RXH_IP_SRC | RXH_IP_DST)
-+#define ICE_RSS_L4_PAIR		(RXH_L4_B_0_1 | RXH_L4_B_2_3)
+ 	if (ring->vsi->type == ICE_VSI_PF || ring->vsi->type == ICE_VSI_SF) {
+-		if (!xdp_rxq_info_is_reg(&ring->xdp_rxq)) {
+-			err = __xdp_rxq_info_reg(&ring->xdp_rxq, ring->netdev,
+-						 ring->q_index,
+-						 ring->q_vector->napi.napi_id,
+-						 ring->rx_buf_len);
+-			if (err)
+-				return err;
+-		}
+-
+ 		ice_rx_xsk_pool(ring);
+ 		err = ice_realloc_rx_xdp_bufs(ring, ring->xsk_pool);
+ 		if (err)
+ 			return err;
+ 
+ 		if (ring->xsk_pool) {
+-			xdp_rxq_info_unreg(&ring->xdp_rxq);
+-
+ 			rx_buf_len =
+ 				xsk_pool_get_rx_frame_size(ring->xsk_pool);
+ 			err = __xdp_rxq_info_reg(&ring->xdp_rxq, ring->netdev,
+@@ -702,14 +691,13 @@ static int ice_vsi_cfg_rxq(struct ice_rx_ring *ring)
+ 			if (err)
+ 				return err;
+ 
+-			if (!xdp_rxq_info_is_reg(&ring->xdp_rxq)) {
+-				err = __xdp_rxq_info_reg(&ring->xdp_rxq, ring->netdev,
+-							 ring->q_index,
+-							 ring->q_vector->napi.napi_id,
+-							 ring->rx_buf_len);
+-				if (err)
+-					goto err_destroy_fq;
+-			}
++			err = __xdp_rxq_info_reg(&ring->xdp_rxq, ring->netdev,
++						 ring->q_index,
++						 ring->q_vector->napi.napi_id,
++						 ring->rx_buf_len);
++			if (err)
++				goto err_destroy_fq;
 +
- static int
- ice_get_rxfh_fields(struct net_device *netdev, struct ethtool_rxfh_fields *nfc)
- {
- 	struct ice_netdev_priv *np = netdev_priv(netdev);
- 	struct ice_vsi *vsi = np->vsi;
- 	struct ice_pf *pf = vsi->back;
-+	u64 l3, l4, hash_flds;
- 	struct device *dev;
--	u64 hash_flds;
- 	bool symm;
- 	u32 hdrs;
- 
-@@ -3037,8 +3041,10 @@ ice_get_rxfh_fields(struct net_device *netdev, struct ethtool_rxfh_fields *nfc)
- 
- 	hash_flds = ice_get_rss_cfg(&pf->hw, vsi->idx, hdrs, &symm);
- 	if (hash_flds == ICE_HASH_INVALID) {
--		dev_dbg(dev, "No hash fields found for the given header type, vsi num = %d\n",
-+		/* Provide default symmetric hash fields when no config exists */
-+		dev_dbg(dev, "No RSS config for this flow, using symmetric defaults, vsi num = %d\n",
- 			vsi->vsi_num);
-+		nfc->data = RXH_IP_SRC | RXH_IP_DST | RXH_L4_B_0_1 | RXH_L4_B_2_3;
- 		return 0;
+ 			xdp_rxq_info_attach_page_pool(&ring->xdp_rxq,
+ 						      ring->pp);
+ 		}
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
+index ad76768a4232..4c294ab7df30 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.c
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
+@@ -560,7 +560,8 @@ void ice_clean_rx_ring(struct ice_rx_ring *rx_ring)
+ 			i = 0;
  	}
  
-@@ -3067,6 +3073,13 @@ ice_get_rxfh_fields(struct net_device *netdev, struct ethtool_rxfh_fields *nfc)
- 	    hash_flds & ICE_FLOW_HASH_FLD_GTPU_DWN_TEID)
- 		nfc->data |= (u64)RXH_GTP_TEID;
+-	if (rx_ring->vsi->type == ICE_VSI_PF &&
++	if ((rx_ring->vsi->type == ICE_VSI_PF ||
++	     rx_ring->vsi->type == ICE_VSI_SF) &&
+ 	    xdp_rxq_info_is_reg(&rx_ring->xdp_rxq)) {
+ 		xdp_rxq_info_detach_mem_model(&rx_ring->xdp_rxq);
+ 		xdp_rxq_info_unreg(&rx_ring->xdp_rxq);
+diff --git a/drivers/net/ethernet/intel/ice/ice_xsk.c b/drivers/net/ethernet/intel/ice/ice_xsk.c
+index 989ff1fd9110..102631398af3 100644
+--- a/drivers/net/ethernet/intel/ice/ice_xsk.c
++++ b/drivers/net/ethernet/intel/ice/ice_xsk.c
+@@ -900,6 +900,9 @@ void ice_xsk_clean_rx_ring(struct ice_rx_ring *rx_ring)
+ 	u16 ntc = rx_ring->next_to_clean;
+ 	u16 ntu = rx_ring->next_to_use;
  
-+	nfc->data &= ICE_RSS_ALLOWED_FIELDS;
-+	l3 = nfc->data & ICE_RSS_L3_PAIR;
-+	l4 = nfc->data & ICE_RSS_L4_PAIR;
-+	if (!nfc->data ||
-+	    (l3 && l3 != ICE_RSS_L3_PAIR) ||
-+	    (l4 && l4 != ICE_RSS_L4_PAIR))
-+		nfc->data = ICE_RSS_ALLOWED_FIELDS;
- 	return 0;
- }
- 
-@@ -3667,7 +3680,6 @@ ice_set_rxfh(struct net_device *netdev, struct ethtool_rxfh_param *rxfh,
- 	     struct netlink_ext_ack *extack)
- {
- 	struct ice_netdev_priv *np = netdev_priv(netdev);
--	u8 hfunc = ICE_AQ_VSI_Q_OPT_RSS_HASH_TPLZ;
- 	struct ice_vsi *vsi = np->vsi;
- 	struct ice_pf *pf = vsi->back;
- 	struct device *dev;
-@@ -3689,13 +3701,28 @@ ice_set_rxfh(struct net_device *netdev, struct ethtool_rxfh_param *rxfh,
- 		return -EOPNOTSUPP;
- 	}
- 
--	/* Update the VSI's hash function */
--	if (rxfh->input_xfrm & RXH_XFRM_SYM_XOR)
--		hfunc = ICE_AQ_VSI_Q_OPT_RSS_HASH_SYM_TPLZ;
-+	/* Handle RSS symmetric hash transformation */
-+	if (rxfh->input_xfrm != RXH_XFRM_NO_CHANGE) {
-+		u8 new_hfunc;
- 
--	err = ice_set_rss_hfunc(vsi, hfunc);
--	if (err)
--		return err;
-+		if (rxfh->input_xfrm == RXH_XFRM_SYM_XOR)
-+			new_hfunc = ICE_AQ_VSI_Q_OPT_RSS_HASH_SYM_TPLZ;
-+		else if (!rxfh->input_xfrm)
-+			new_hfunc = ICE_AQ_VSI_Q_OPT_RSS_HASH_TPLZ;
-+		else
-+			return -EOPNOTSUPP;
++	if (xdp_rxq_info_is_reg(&rx_ring->xdp_rxq))
++		xdp_rxq_info_unreg(&rx_ring->xdp_rxq);
 +
-+		if (new_hfunc != vsi->rss_hfunc) {
-+			err = ice_set_rss_hfunc(vsi, new_hfunc);
-+			if (err) {
-+				netdev_err(netdev, "Failed to set RSS hash function\n");
-+				return err;
-+			}
-+			netdev_dbg(netdev, "RSS hash function: %sToeplitz\n",
-+				    new_hfunc == ICE_AQ_VSI_Q_OPT_RSS_HASH_SYM_TPLZ ?
-+				    "Symmetric " : "");
-+		}
-+	}
- 
- 	if (rxfh->key) {
- 		if (!vsi->rss_hkey_user) {
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index d921269..5b1934b 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -1155,7 +1155,7 @@ static void ice_set_fd_vsi_ctx(struct ice_vsi_ctx *ctxt, struct ice_vsi *vsi)
-  * @ctxt: the VSI context being set
-  * @vsi: the VSI being configured
-  */
--static void ice_set_rss_vsi_ctx(struct ice_vsi_ctx *ctxt, struct ice_vsi *vsi)
-+void ice_set_rss_vsi_ctx(struct ice_vsi_ctx *ctxt, struct ice_vsi *vsi)
- {
- 	u8 lut_type, hash_type;
- 	struct device *dev;
-@@ -1181,8 +1181,9 @@ static void ice_set_rss_vsi_ctx(struct ice_vsi_ctx *ctxt, struct ice_vsi *vsi)
- 		return;
- 	}
- 
--	hash_type = ICE_AQ_VSI_Q_OPT_RSS_HASH_TPLZ;
--	vsi->rss_hfunc = hash_type;
-+	if (!vsi->rss_hfunc)
-+		vsi->rss_hfunc = ICE_AQ_VSI_Q_OPT_RSS_HASH_TPLZ;
-+	hash_type = vsi->rss_hfunc;
- 
- 	ctxt->info.q_opt_rss =
- 		FIELD_PREP(ICE_AQ_VSI_Q_OPT_RSS_LUT_M, lut_type) |
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.h b/drivers/net/ethernet/intel/ice/ice_lib.h
-index 49454d98..29ba335 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.h
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.h
-@@ -46,6 +46,7 @@ void ice_vsi_delete(struct ice_vsi *vsi);
- int ice_vsi_cfg_tc(struct ice_vsi *vsi, u8 ena_tc);
- 
- int ice_vsi_cfg_rss_lut_key(struct ice_vsi *vsi);
-+void ice_set_rss_vsi_ctx(struct ice_vsi_ctx *ctxt, struct ice_vsi *vsi);
- 
- void ice_vsi_cfg_netdev_tc(struct ice_vsi *vsi, u8 ena_tc);
+ 	while (ntc != ntu) {
+ 		struct xdp_buff *xdp = *ice_xdp_buf(rx_ring, ntc);
  
 -- 
 2.52.0
