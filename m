@@ -1,89 +1,97 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1F819E9A03E
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 18 Feb 2026 09:26:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C65BEE9A03E
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 18 Feb 2026 10:13:23 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id C4C2660797;
-	Wed, 18 Feb 2026 09:26:11 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 6F96240759;
+	Wed, 18 Feb 2026 10:13:23 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id MlpxBrHUFZv7; Wed, 18 Feb 2026 09:26:10 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id YpxQR_2boOVM; Wed, 18 Feb 2026 10:13:21 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7EE2960794
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C29F74074E
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1771406770;
-	bh=NXE46Iq+ZRGqIZghj/MG1spLwP3gedxYrigSc2VFcEk=;
-	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
+	s=default; t=1771409601;
+	bh=RZiVcoqkBC/JFnaNthD7YqfMckNY+HlSnPGOg1NITxY=;
+	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=NFLz9I5RmC7MNw/enkrH91wIRPze3lEAQjruvEKBegC3xHhNeFScBmceRxHMggDUT
-	 abZBoHT4pUkH7u1BkUDXdfTo9DPZbg6Dr5vSbuxzXyZQCoBIGry7wpJchFcPAGriXQ
-	 21O1ap5eoM5kT/XOH9FpSDGZ0XJssekzn53PstPP4dIqv79CNadPGecvdI8CEXYQ1D
-	 o26x/pMOf2H1EhHiAgGYdQ3F6GPIZ+yCyNygucksX6olyaKYACLLwFklSYJzbugst5
-	 XJ4mgmF8ytxjxjAVfbPchX/uRkfuqL6s4UeSReMKJiPIazM4Pn54q5MgXMFtg80OfH
-	 X/+lw8GvlrqzA==
+	b=JvI7bYfIRQydM2F2k5uE0b33u4gg+s15jSf1SlkWZGwgiQ8PpxLUWm1hMNAI0TRdL
+	 1dbIdIcidxnW3cGo97iDUzMAb7UstCtkgNGzMUrmnvttE4FW+KaKuT7HjRzdd65/1m
+	 vfofq8glTctEN5L8IFNtaCKCPdZQTHYL5lBv+xEbfbsHhw8L8FQ3wI7h5i/8NK+Vk2
+	 w7vdmVu6wysJfYu1is95VSLRzquo/2gRQrwkGWfJagmTTPQIpjLjQfy0C2RppLn+cU
+	 spTfxI1fOqV5cdaELHIEjakM+I8GB6azyKpcrr4Sujv16iZ5BcI3h6t4n1ZYxucym0
+	 iQC61f1/gwddw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 7EE2960794;
-	Wed, 18 Feb 2026 09:26:10 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id 684271CE
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Feb 2026 09:26:09 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id C29F74074E;
+	Wed, 18 Feb 2026 10:13:21 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 3CE2C35B
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Feb 2026 10:13:20 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 5975F4009A
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Feb 2026 09:26:09 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 1DA898108E
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Feb 2026 10:13:20 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Y2XcfZSP-UnE for <intel-wired-lan@lists.osuosl.org>;
- Wed, 18 Feb 2026 09:26:08 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.234.252.31;
- helo=sea.source.kernel.org; envelope-from=horms@kernel.org;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org E323B4011A
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org E323B4011A
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
- by smtp2.osuosl.org (Postfix) with ESMTPS id E323B4011A
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Feb 2026 09:26:07 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id kUGhtwyiz9b1 for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 18 Feb 2026 10:13:19 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org;
+ envelope-from=mchehab+huawei@kernel.org; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 39D4A8108B
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 39D4A8108B
+Received: from sea.source.kernel.org (sea.source.kernel.org
+ [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 39D4A8108B
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Feb 2026 10:13:19 +0000 (UTC)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by sea.source.kernel.org (Postfix) with ESMTP id 8093E40269;
- Wed, 18 Feb 2026 09:26:07 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 69F13C19421;
- Wed, 18 Feb 2026 09:26:06 +0000 (UTC)
-Date: Wed, 18 Feb 2026 09:26:04 +0000
-From: Simon Horman <horms@kernel.org>
-To: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Cc: intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com,
- netdev@vger.kernel.org
-Message-ID: <aZWFrEqPvAKxQB3z@horms.kernel.org>
-References: <20260217130039.1802805-1-aleksandr.loktionov@intel.com>
+ by sea.source.kernel.org (Postfix) with ESMTP id 8B7424452F;
+ Wed, 18 Feb 2026 10:13:18 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6BE31C2BC86;
+ Wed, 18 Feb 2026 10:13:18 +0000 (UTC)
+Received: from mchehab by mail.kernel.org with local (Exim 4.99.1)
+ (envelope-from <mchehab+huawei@kernel.org>)
+ id 1vseYW-00000000LMC-2DMh; Wed, 18 Feb 2026 11:13:16 +0100
+From: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+To: Jonathan Corbet <corbet@lwn.net>,
+ Linux Doc Mailing List <linux-doc@vger.kernel.org>
+Cc: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
+ intel-wired-lan@lists.osuosl.org, linux-hardening@vger.kernel.org,
+ linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+ Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
+ Randy Dunlap <rdunlap@infradead.org>
+Date: Wed, 18 Feb 2026 11:12:32 +0100
+Message-ID: <98da31eb6b5b2c84e960945e0ea283d3fcd2cce5.1771408406.git.mchehab+huawei@kernel.org>
+X-Mailer: git-send-email 2.52.0
+In-Reply-To: <cover.1771408406.git.mchehab+huawei@kernel.org>
+References: <cover.1771408406.git.mchehab+huawei@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260217130039.1802805-1-aleksandr.loktionov@intel.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1771406767;
- bh=TLfKk2qADOrbfEuoBvhVTAIQXEmEQg3OyhClYssyi+c=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=rd25Sy6BoRHD4/ffww6s9HAOxt1aJRcGlZVuLkXC1340br/EyvtvtNKzn9cq6Y9YB
- rzGXypO7d1nPBiW4mAg2gp80FS5nXuVmTZlboU5bwELH8GJTdcvgjSUd5Pqyk5qLxS
- Xak01NvEqNjC48nRlLUCFonz22EHPoujXM6XrnLBfRyMi12T3or+sfLvpZqsc0pYeo
- p2PgXOt8uSFvV2RnebrsWw2HcD0DbWtc5sPlQ0bKmy+A3j6BDC46J46/9ZgNbCxxu3
- FIALwvy3I+YmiNcOIwVu4QQQl1C1PWG81fdfr87VnsfVT8xIg1yg3LY9kr8gnn2WuC
- KBNRph9BdlNug==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ d=kernel.org; s=k20201202; t=1771409598;
+ bh=ZQpmZi3xCboNCaTitC+DH8Zwcl8IPzrA6Uao2EOU9sw=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=V4mai1t9MrPfripNwkG+T4D2sdL2EKgkZEsiE7+/d1+6A635o536kp8D/PJk8JfN5
+ jY7ne68OA3MfMpRFOglO9rou7faRljM2edDo7w5fWjhhGT4z34ctWyOgLP5wIYc1Ka
+ OAzHwdsccUyFXZHS63EAhy68OeW+dJ//KdcIPegB+ChAlHM+7s7Y/Y7VD1ZXrjM53x
+ pCD8Nr7cqwwSDDKw0iWZAuQgDwoA/CxtRKlhxK36ZO32/k+CbhkaysSWLLq0gdKG1U
+ Wl+8fR0RKi6gB/0XQPF27N05gWr3DJw5EqGz+mTuBFqW/uxvOsDgnTfO9Oqr4W3Kn9
+ CcKWiujG5to0g==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=rd25Sy6B
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next v2] ice: implement symmetric
- RSS hash configuration
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20201202 header.b=V4mai1t9
+Subject: [Intel-wired-lan] [PATCH 02/38] docs: kdoc_re: don't go past the
+ end of a line
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -99,30 +107,32 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Tue, Feb 17, 2026 at 02:00:39PM +0100, Aleksandr Loktionov wrote:
-> The driver advertises symmetric RSS support via supported_input_xfrm
-> but ice_set_rxfh() ignored the input_xfrm parameter, making it
-> impossible to configure symmetric hashing.
-> 
-> Fix ice_set_rxfh() to check rxfh->input_xfrm and call
-> ice_set_rss_hfunc() with ICE_AQ_VSI_Q_OPT_RSS_HASH_SYM_TPLZ when
-> RXH_XFRM_SYM_XOR is requested.
-> 
-> Modify ice_set_rss_vsi_ctx() to use vsi->rss_hfunc instead of
-> hardcoding ICE_AQ_VSI_Q_OPT_RSS_HASH_TPLZ, and export it for
-> use by ice_set_rxfh().
-> 
-> The kernel requires get_rxfh_fields() to report symmetric hash
-> configurations when symmetric transforms are supported. Update
-> ice_get_rxfh_fields() to return symmetric field configuration
-> (src+dst IP and ports) for all flow types.
-> 
-> Tested with tools/testing/selftests/drivers/net/hw/rss_input_xfrm.py
-> 
-> Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-> ---
-> v1 -> v2 preserve valid symmetric RSS fields.
+The logic which checks if the line ends with ";" is currently
+broken: it may try to read past the buffer.
 
-Thanks for the update.
+Fix it by checking before trying to access line[pos].
 
-Reviewed-by: Simon Horman <horms@kernel.org>
+Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+Acked-by: Randy Dunlap <rdunlap@infradead.org>
+Tested-by: Randy Dunlap <rdunlap@infradead.org>
+Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+---
+ tools/lib/python/kdoc/kdoc_re.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/tools/lib/python/kdoc/kdoc_re.py b/tools/lib/python/kdoc/kdoc_re.py
+index 774dd747ecb0..6c44fcce0415 100644
+--- a/tools/lib/python/kdoc/kdoc_re.py
++++ b/tools/lib/python/kdoc/kdoc_re.py
+@@ -269,7 +269,7 @@ class NestedMatch:
+             out += new_sub
+ 
+             # Drop end ';' if any
+-            if line[pos] == ';':
++            if pos < len(line) and line[pos] == ';':
+                 pos += 1
+ 
+             cur_pos = pos
+-- 
+2.52.0
+
