@@ -1,71 +1,70 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E2274E9A052
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E0028E9A051
 	for <intel-wired-lan@archiver.kernel.org>; Wed, 18 Feb 2026 10:13:45 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id B1FC2810BE;
+	by smtp3.osuosl.org (Postfix) with ESMTP id B34EF60818;
 	Wed, 18 Feb 2026 10:13:45 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 3dbFvETJOvRo; Wed, 18 Feb 2026 10:13:44 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id XAjZRS-OVD-Z; Wed, 18 Feb 2026 10:13:45 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E949A810B0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2DF8D60656
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1771409624;
-	bh=ZFarqj/R/r3ArEfpTLMMZ2sYAwIm9hgPCWPCcnBmnQU=;
+	s=default; t=1771409625;
+	bh=M2r75xLw6ki6hw5UNSDMhyRUQglSOxJKz5TH7Cvh25s=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=4lwJS5/88P5LN9jnpz/L8/c1sQqZqd7rFtu9rnL9IYiXONBs/tioFLR2hwmaeEhNA
-	 R/FQ0zt72n2wWh74OUTxxdjFvgr1leDRyfuuGVtY1j2s94iXombEGf/J6fJFLUYtzD
-	 r59+9XUt6PTuxSi01lrNb4Q3qPnRDwkk+Tz1RanZngEikkzBpJtQEwzPBcptVN/B+m
-	 AIdJ/eYMYOfrV7fqw84HtCrmUriWOJGuwUK/D285X6nHFV95LzP+BWAQNsXHc6gpvX
-	 9iynB+WAoc19OFdyOtvUk/pyaXE3eMzF630jOLRQdWFplIXHg+fZyaB+w8AosnFhVO
-	 SbbSZJV23Kxvw==
+	b=Mq/VdpSKRsQncN+tKbKeQcR/lbOQfGBpbG8QmfFmHew3kYk+u4hsoi5QpyFc/eBeB
+	 C6zUQni12iV7GgPgBlzPdP19KjHzcu9koAS6n9GaDn0i4+lsDbuq3X1tCmd4ELmSGJ
+	 N1Nvz9jgFdlGGWBdTQC4TtfRvnF5jdXnoH+duLoTi7esZCV3D96dHS29UnSE8pqjpC
+	 5xbcwnjJHuHfHA9F2pfCC4UOY/Vky/Wph6gwOsRcbH/sIZzS88BJk8ZYkI2YTUzcME
+	 A8I4nJml5omnUgefUizjp8dPNNOWLdla2hNRiAF6L366q/MBBPKssJzdRPIBCBJRwd
+	 7GNmDyh/nD6dA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id E949A810B0;
-	Wed, 18 Feb 2026 10:13:43 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id 5D165206
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Feb 2026 10:13:33 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 2DF8D60656;
+	Wed, 18 Feb 2026 10:13:45 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 88F9F206
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Feb 2026 10:13:34 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 3FA1E810B6
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Feb 2026 10:13:33 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 7ADB540175
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Feb 2026 10:13:34 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id VS8mePKkIRm2 for <intel-wired-lan@lists.osuosl.org>;
- Wed, 18 Feb 2026 10:13:32 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
- helo=tor.source.kernel.org; envelope-from=mchehab+huawei@kernel.org;
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id TJRP_nN_-UoI for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 18 Feb 2026 10:13:33 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.234.252.31;
+ helo=sea.source.kernel.org; envelope-from=mchehab+huawei@kernel.org;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 4CD0D810A5
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4CD0D810A5
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 4CD0D810A5
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Feb 2026 10:13:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 8DEBE40078
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 8DEBE40078
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 8DEBE40078
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Feb 2026 10:13:33 +0000 (UTC)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by tor.source.kernel.org (Postfix) with ESMTP id 712BC61862;
- Wed, 18 Feb 2026 10:13:31 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 26B82C19421;
- Wed, 18 Feb 2026 10:13:31 +0000 (UTC)
+ by sea.source.kernel.org (Postfix) with ESMTP id 5477D44559;
+ Wed, 18 Feb 2026 10:13:33 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 355F5C19423;
+ Wed, 18 Feb 2026 10:13:33 +0000 (UTC)
 Received: from mchehab by mail.kernel.org with local (Exim 4.99.1)
  (envelope-from <mchehab+huawei@kernel.org>)
- id 1vseYj-00000000Lxe-1kJB; Wed, 18 Feb 2026 11:13:29 +0100
+ id 1vseYl-00000000M3c-1jrv; Wed, 18 Feb 2026 11:13:31 +0100
 From: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
 To: Jonathan Corbet <corbet@lwn.net>,
  Linux Doc Mailing List <linux-doc@vger.kernel.org>
 Cc: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
  intel-wired-lan@lists.osuosl.org, linux-hardening@vger.kernel.org,
- linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
- Randy Dunlap <rdunlap@infradead.org>
-Date: Wed, 18 Feb 2026 11:13:02 +0100
-Message-ID: <ca064642fd70b1dd2fa2c72a119a3a579ef0a3c2.1771408406.git.mchehab+huawei@kernel.org>
+ linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Date: Wed, 18 Feb 2026 11:13:07 +0100
+Message-ID: <260f2d989f4187940e371023dc8a035c28521b8e.1771408406.git.mchehab+huawei@kernel.org>
 X-Mailer: git-send-email 2.52.0
 In-Reply-To: <cover.1771408406.git.mchehab+huawei@kernel.org>
 References: <cover.1771408406.git.mchehab+huawei@kernel.org>
@@ -73,23 +72,23 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1771409611;
- bh=93FI6HCbFuKLoTGysvIesP/671jVJYX05qdlxtKR9Kk=;
+ d=kernel.org; s=k20201202; t=1771409613;
+ bh=3P9hiqMJWs99bANIe05s+PiDHBtg0dmIB/Ud7yaibWo=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=D6zqkt/3NUB6EpxHEputgfvaw1vHtc0NsZ65QNN3AAKsJuHWSBcq82NKFzJu8llkR
- S+1bk/UPxulyqkqcMbYtUMX/IIRr09HFtRuwNOA1NPlhPHsSPUiXhECDzbmymTKCPU
- JmPJyAld8CPADXng3h49bxxTnDEx8O6tZ/7uUMOx2P8DlevrZHSEFbuD7SA01tAoZe
- Wy2GDlPrU1hQLkRN135ojO5oHWcW9ckY5i4kcvDUXG5i7xXrBHkp+i3T/cZga64Syq
- yIzxySQ3SnLG+PqvN40MnLlrYGZ278mb8gxtsx2bB1lNqpGUgxCJ6tFZMhIOwetkTl
- /MxbF5cjFyQRg==
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ b=BIqwfoV+v2/xOuRN3E350Oc1l18+qkwnx9/6fTKNR5zqTbMATC7FyhCuXooCYEFv+
+ nuM+zMKR0Dkz76X0z+E27ndHyVP60cR4SY0EnFxlB/tmE9dpC2E6vxiaTrzzNrQCgq
+ N/s/PVLmWVtxqkDYYgqml5YXJxERJp9sZnI8wxLeuPkES5tQEw87AGs+ijfiuzH+9d
+ 8aY7C5sLaHyfK00lC4HG4/4qB022KabQuKgPsjpyUY+Ph4W2czJRHO+lgACqw0A7oE
+ n6rLK0qfM05yTq7X21eGyzrHxkfKv12GCRxxBtH+72jVUmcsleSjOxBtcSALVF/SWd
+ 8rjjIjpYU76FQ==
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=D6zqkt/3
-Subject: [Intel-wired-lan] [PATCH 32/38] docs: kdoc_files: document
- KernelFiles() ABI
+ header.a=rsa-sha256 header.s=k20201202 header.b=BIqwfoV+
+Subject: [Intel-wired-lan] [PATCH 37/38] docs: kdoc_output: describe the
+ class init parameters
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -105,75 +104,55 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The KernelFiles is the main entry point to run kernel-doc,
-being used by both tools/docs/kernel-doc and
-Documentation/sphinx/kerneldoc.py.
-
-It is also used on QEMU, which also uses the kernel-doc
-libraries from tools/lib/python/kdoc.
-
-Properly describe its ABI contract.
+As this class is part of the ABI used by both Sphinx kerneldoc
+extension and docs/tools/kernel-doc, better describe what
+parmeters are used to initialize ManOutput class.
 
 Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
 ---
- tools/lib/python/kdoc/kdoc_files.py | 44 ++++++++++++++++++++++++++++-
- 1 file changed, 43 insertions(+), 1 deletion(-)
+ tools/lib/python/kdoc/kdoc_output.py | 29 +++++++++++++++++++++++++++-
+ 1 file changed, 28 insertions(+), 1 deletion(-)
 
-diff --git a/tools/lib/python/kdoc/kdoc_files.py b/tools/lib/python/kdoc/kdoc_files.py
-index c35e033cf123..8c2059623949 100644
---- a/tools/lib/python/kdoc/kdoc_files.py
-+++ b/tools/lib/python/kdoc/kdoc_files.py
-@@ -91,7 +91,49 @@ class KernelFiles():
-     """
-     Parse kernel-doc tags on multiple kernel source files.
+diff --git a/tools/lib/python/kdoc/kdoc_output.py b/tools/lib/python/kdoc/kdoc_output.py
+index fb44cc8e0770..1e3dc47bc696 100644
+--- a/tools/lib/python/kdoc/kdoc_output.py
++++ b/tools/lib/python/kdoc/kdoc_output.py
+@@ -580,7 +580,34 @@ class RestFormat(OutputFormat):
  
--    There are two type of parsers defined here:
-+    This is the main entry point to run kernel-doc. This class is initialized
-+    using a series of optional arguments:
+ 
+ class ManFormat(OutputFormat):
+-    """Consts and functions used by man pages output."""
++    """
++    Consts and functions used by man pages output.
 +
-+    ``verbose``
-+        If True, enables kernel-doc verbosity. Default: False.
++    This class has one mandatory parameter and some optional ones, which
++    are needed to define the title header contents:
 +
-+    ``out_style``
-+        Class to be used to format output. If None (default),
-+        only report errors.
++    ``modulename``
++        Defines the module name to be used at the troff ``.TH`` output.
 +
-+    ``xforms``
-+        Transforms to be applied to C prototypes and data structs.
-+        If not specified, defaults to xforms = CFunction()
++        This argument is mandatory.
 +
-+    ``werror``
-+        If True, treat warnings as errors, retuning an error code on warnings.
++    ``section``
++        Usually a numeric value from 0 to 9, but man pages also accept
++        some strings like "p".
 +
-+        Default: False.
++        Defauls to ``9``
 +
-+    ``wreturn``
-+        If True, warns about the lack of a return markup on functions.
++    ``manual``
++        Defaults to ``Kernel API Manual``.
 +
-+        Default: False.
-+    ``wshort_desc``
-+        If True, warns if initial short description is missing.
++    The above controls the output of teh corresponding fields on troff
++    title headers, which will be filled like this::
 +
-+        Default: False.
++        .TH "{name}" {section} "{date}" "{modulename}" "{manual}"
 +
-+    ``wcontents_before_sections``
-+        If True, warn if there are contents before sections (deprecated).
-+        This option is kept just for backward-compatibility, but it does
-+        nothing, neither here nor at the original Perl script.
-+
-+        Default: False.
-+
-+    ``logger``
-+        Optional logger class instance.
-+
-+        If not specified, defaults to use: ``logging.getLogger("kernel-doc")``
-+
-+    Note:
-+        There are two type of parsers defined here:
-+
-         - self.parse_file(): parses both kernel-doc markups and
-           ``EXPORT_SYMBOL*`` macros;
-         - self.process_export_file(): parses only ``EXPORT_SYMBOL*`` macros.
++    where ``name``` will match the API symbol name, and ``date`` will be
++    either the date where the Kernel was compiled or the current date
++    """
+ 
+     highlights = (
+         (type_constant, r"\1"),
 -- 
 2.52.0
 
