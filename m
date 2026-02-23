@@ -1,98 +1,109 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 40107EA4FBB
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 23 Feb 2026 13:25:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6EE89EA4FBB
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 23 Feb 2026 13:47:15 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id E2D336073C;
-	Mon, 23 Feb 2026 13:25:42 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ijzLmACFAPKl; Mon, 23 Feb 2026 13:25:41 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8122A60703
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1771853141;
-	bh=87m90BdOlbCVCbazRyH726TTlayvIP6wGlah0q525/A=;
-	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=VfcoK9CxHIFFbKsBNWe+/ZidtX5u9P6oY7SgSFp+6o6rlO+724eoKhXq4PXKtxwJe
-	 dk7YuyoaPxpqBLssy3bCwjmerV4QltUAoPVTrfT3uxUxPDvR7YucQg/LZsfge6QZVc
-	 317XcTNg34lVGLlkpftrQE2FTnlgzeve9fRyQfw5NFBzqJLIZ3DdRssmVCHXFI9lQR
-	 ejAYvdshYEGDDVjVhmDw4gy+e6ShLIRwzHyVWQ6Uc3q3/1ARvmEV5UtY0K/BVTAaug
-	 epzm8S+4wLDyp6LJrvOsZ7V9/Af23vHwBGhYiBV4nxcqJ2ZJ1x2g9JEv54wDBBLoqc
-	 wNt9fGUBFgL6g==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 8122A60703;
-	Mon, 23 Feb 2026 13:25:41 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id DBE7C237
- for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Feb 2026 13:25:38 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id C149840A12
- for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Feb 2026 13:25:38 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 256E940C13;
+	Mon, 23 Feb 2026 13:47:15 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id al-7ruT6FO3L for <intel-wired-lan@lists.osuosl.org>;
- Mon, 23 Feb 2026 13:25:37 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.16;
- helo=mgamail.intel.com; envelope-from=michal.swiatkowski@linux.intel.com;
+ id 3gJb_aJlNKeS; Mon, 23 Feb 2026 13:47:14 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3B6BB40BE9
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1771854434;
+	bh=J23ZZyUd0FB7ErfJRpotw2F/RF4vICfawSHZ87HnyhQ=;
+	h=From:To:Cc:In-Reply-To:References:Date:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=rPWqLn1RTlJawdCRLoIVJstcOMG3Sqt9NsPczOjT4xCz/3xklSv6wTVKkombgIaQm
+	 Pp74BNWghqFhbHOZBFso62FllkDpmq2Xwf3zSWLio9Uyo6iPc9LCQmL7GmT4i1xJtg
+	 KL8XwmRF5qXHjWVRkqcpnCzInIkA/V5WACv02ZNg9TBu3BAI2b6jAuRwAqlxQTC+dX
+	 QH2VG14H1j1OuH3m5toWhpfb3iPujX5SyeDI5uam/OWkxRvx/pHzXCnOM0VFWLGdnH
+	 c4TZy9OnMIuLCGLcdvyyKrrHZQvlfqjuuR0soUnWNErMnuB3xEhnTYcczw8S8kf41/
+	 jtRXnhkpJyaDw==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp4.osuosl.org (Postfix) with ESMTP id 3B6BB40BE9;
+	Mon, 23 Feb 2026 13:47:14 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 840D2249
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Feb 2026 13:47:12 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp1.osuosl.org (Postfix) with ESMTP id 7D377842A6
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Feb 2026 13:47:12 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id txdCSrFbeC65 for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 23 Feb 2026 13:47:11 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.17;
+ helo=mgamail.intel.com; envelope-from=jani.nikula@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org D172C408CD
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D172C408CD
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.16])
- by smtp4.osuosl.org (Postfix) with ESMTPS id D172C408CD
- for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Feb 2026 13:25:36 +0000 (UTC)
-X-CSE-ConnectionGUID: hm7k9fnWTCu7zsyezgLyaw==
-X-CSE-MsgGUID: poURiJW2S5yHRhhOYPlKQw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11709"; a="60421081"
-X-IronPort-AV: E=Sophos;i="6.21,306,1763452800"; d="scan'208";a="60421081"
-Received: from orviesa001.jf.intel.com ([10.64.159.141])
- by fmvoesa110.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 23 Feb 2026 05:25:35 -0800
-X-CSE-ConnectionGUID: qhMCWJpHSnazyPqUZFC/mQ==
-X-CSE-MsgGUID: iBZk0vBrQy2MbjUHGKSngg==
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 743DA842A5
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 743DA842A5
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.17])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 743DA842A5
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Feb 2026 13:47:09 +0000 (UTC)
+X-CSE-ConnectionGUID: wEcN/waRQdi5ZEz0rgcr4w==
+X-CSE-MsgGUID: qA3dNR0nQ0WQfrWPl2puRQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11709"; a="72756779"
+X-IronPort-AV: E=Sophos;i="6.21,306,1763452800"; d="scan'208";a="72756779"
+Received: from orviesa003.jf.intel.com ([10.64.159.143])
+ by fmvoesa111.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 23 Feb 2026 05:47:08 -0800
+X-CSE-ConnectionGUID: 1v88AsnGQx+5D12EpgNwKg==
+X-CSE-MsgGUID: mmVGelq+SZamc1NuWYyuZg==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.21,306,1763452800"; d="scan'208";a="253283464"
-Received: from os-delivery.igk.intel.com ([10.102.21.165])
- by orviesa001.jf.intel.com with ESMTP; 23 Feb 2026 05:25:31 -0800
-From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Cc: netdev@vger.kernel.org,
- Michal Swiatkowski <michal.swiatkowski@linux.intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Date: Mon, 23 Feb 2026 13:51:57 +0100
-Message-ID: <20260223125157.819135-1-michal.swiatkowski@linux.intel.com>
-X-Mailer: git-send-email 2.49.0
+X-IronPort-AV: E=Sophos;i="6.21,306,1763452800"; d="scan'208";a="219682264"
+Received: from ettammin-mobl3.ger.corp.intel.com (HELO localhost)
+ ([10.245.246.249])
+ by ORVIESA003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 23 Feb 2026 05:47:03 -0800
+From: Jani Nikula <jani.nikula@linux.intel.com>
+To: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>, Alexander Lobakin
+ <aleksander.lobakin@intel.com>, Jonathan Corbet <corbet@lwn.net>, Kees
+ Cook <kees@kernel.org>, Mauro Carvalho Chehab <mchehab@kernel.org>
+Cc: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
+ intel-wired-lan@lists.osuosl.org, linux-doc@vger.kernel.org,
+ linux-hardening@vger.kernel.org, linux-kernel@vger.kernel.org,
+ netdev@vger.kernel.org, "Gustavo A. R. Silva" <gustavoars@kernel.org>,
+ Aleksandr Loktionov <aleksandr.loktionov@intel.com>, Randy Dunlap
+ <rdunlap@infradead.org>, Shuah Khan <skhan@linuxfoundation.org>
+In-Reply-To: <cover.1771408406.git.mchehab+huawei@kernel.org>
+Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park,
+ 6 krs Bertel Jungin Aukio 5, 02600 Espoo, Finland
+References: <cover.1771408406.git.mchehab+huawei@kernel.org>
+Date: Mon, 23 Feb 2026 15:47:00 +0200
+Message-ID: <33d214091909b9a060637f56f81fb8f525cf433b@intel.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1771853136; x=1803389136;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=8GljxCdIML4JwqSHoSvnhyZ8D7LTSTtgjk4jLabrviM=;
- b=kA80m0ekNjp5c9hODYl7qvqS3JITzIzxJ13GwJmHTFQIy5y+2CKndDUk
- SUIeTyhTSB1gfqy2Re0+9YUlSQoasHfPyodV8JX1q/JbmwIYVNPui7Ko7
- E5HDeUkH6hUtardu/j6p+YndxnOco1FT5q14e24sA5vGm2+Ar7IlvSK1P
- PHn4kIeyzcQQEERB9xTQX8w1VJn7tpSL6oIL5xyZinM9M6gYV8cCY0idi
- HOQMhB7a428DXIQcfV+mYgR3/UGgVdFVClvSySqwAs2xL60nsef1OpvOt
- SbdWldB0+hN4NBFY9JL8e4XBITRt2RuB6eWs2lxbkC7SyGdrGyQKERd50
- w==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ t=1771854429; x=1803390429;
+ h=from:to:cc:subject:in-reply-to:references:date:
+ message-id:mime-version;
+ bh=ydmdhEGM/O41rgUA/G7JvzJvk3KxbBzvvuzH7eImK34=;
+ b=VW6zsY06sAfcNAvKJWHscJ64vXxvEeKcaVZlOfLrkM+hM7lsQXrvesiq
+ pr3SEdJpszneKIzb69UK/XLs9Ehl9kHECZmu81ue8uW6XqMc7bY7Mh52W
+ lR3kgIIN2AppERlvRcPOhclAskuO3AU9XK5IX8B/c5vZSJy/LBKWgHZAd
+ 3EQf79t1MCDfIfqJMrj9FbIyVOyM8hC/mb2jwLWIYW3730sjVSAk3uD5O
+ sCO9DsSFwQ+NnnxMImulw3b4uxKLaBrB5TKyQa3zGkUP2vzQlBjEMu+Eg
+ tk0YA/oXRe+kW+6NbEZE0ONr9aQ1+lWRFQdnIp1F3vEKcgBL/0+nbeuEV
+ Q==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=none (p=none dis=none)
  header.from=linux.intel.com
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=kA80m0ek
-Subject: [Intel-wired-lan] [PATCH iwl-net v1] ice: set max queues in
- alloc_etherdev_mqs()
+ header.s=Intel header.b=VW6zsY06
+Subject: Re: [Intel-wired-lan] [PATCH 00/38] docs: several improvements to
+ kernel-doc
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -108,117 +119,27 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-When allocating netdevice using alloc_etherdev_mqs() the maximum
-supported queues number should be passed. The vsi->alloc_txq/rxq is
-storing current number of queues, not the maximum ones.
+On Wed, 18 Feb 2026, Mauro Carvalho Chehab <mchehab+huawei@kernel.org> wrote:
+> As anyone that worked before with kernel-doc are aware, using regex to
+> handle C input is not great. Instead, we need something closer to how
+> C statements and declarations are handled.
+>
+> Yet, to avoid breaking  docs, I avoided touching the regex-based algorithms
+> inside it with one exception: struct_group logic was using very complex
+> regexes that are incompatible with Python internal "re" module.
+>
+> So, I came up with a different approach: NestedMatch. The logic inside
+> it is meant to properly handle brackets, square brackets and parenthesis,
+> which is closer to what C lexical parser does. On that time, I added
+> a TODO about the need to extend that.
 
-Use the same function for getting max Tx and Rx queues which is used
-during ethtool -l call to set maximum number of queues during netdev
-allocation.
+There's always the question, if you're putting a lot of effort into
+making kernel-doc closer to an actual C parser, why not put all that
+effort into using and adapting to, you know, an actual C parser?
 
-Reproduction steps:
-$ethtool -l $pf # says current 16, max 64
-$ethtool -S $pf # fine
-$ethtool -L $pf combined 40 # crash
 
-[491187.472594] Call Trace:
-[491187.472829]  <TASK>
-[491187.473067]  netif_set_xps_queue+0x26/0x40
-[491187.473305]  ice_vsi_cfg_txq+0x265/0x3d0 [ice]
-[491187.473619]  ice_vsi_cfg_lan_txqs+0x68/0xa0 [ice]
-[491187.473918]  ice_vsi_cfg_lan+0x2b/0xa0 [ice]
-[491187.474202]  ice_vsi_open+0x71/0x170 [ice]
-[491187.474484]  ice_vsi_recfg_qs+0x17f/0x230 [ice]
-[491187.474759]  ? dev_get_min_mp_channel_count+0xab/0xd0
-[491187.474987]  ice_set_channels+0x185/0x3d0 [ice]
-[491187.475278]  ethnl_set_channels+0x26f/0x340
+BR,
+Jani.
 
-Fixes: ee13aa1a2c5a ("ice: use netif_get_num_default_rss_queues()")
-Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
----
- drivers/net/ethernet/intel/ice/ice.h         | 22 ++++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_ethtool.c | 18 ----------------
- drivers/net/ethernet/intel/ice/ice_main.c    |  4 ++--
- 3 files changed, 24 insertions(+), 20 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index f6a56a864459..725b130dd3a2 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -839,6 +839,28 @@ static inline void ice_tx_xsk_pool(struct ice_vsi *vsi, u16 qid)
- 	WRITE_ONCE(ring->xsk_pool, ice_get_xp_from_qid(vsi, qid));
- }
- 
-+/**
-+ * ice_get_max_txq - return the maximum number of Tx queues for in a PF
-+ * @pf: PF structure
-+ *
-+ * Return: maximum number of Tx queues
-+ */
-+static inline int ice_get_max_txq(struct ice_pf *pf)
-+{
-+	return min(num_online_cpus(), pf->hw.func_caps.common_cap.num_txq);
-+}
-+
-+/**
-+ * ice_get_max_rxq - return the maximum number of Rx queues for in a PF
-+ * @pf: PF structure
-+ *
-+ * Return: maximum number of Rx queues
-+ */
-+static inline int ice_get_max_rxq(struct ice_pf *pf)
-+{
-+	return min(num_online_cpus(), pf->hw.func_caps.common_cap.num_rxq);
-+}
-+
- /**
-  * ice_get_main_vsi - Get the PF VSI
-  * @pf: PF instance
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index a897a6b22495..a0b0416f5aea 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -3780,24 +3780,6 @@ ice_get_ts_info(struct net_device *dev, struct kernel_ethtool_ts_info *info)
- 	return 0;
- }
- 
--/**
-- * ice_get_max_txq - return the maximum number of Tx queues for in a PF
-- * @pf: PF structure
-- */
--static int ice_get_max_txq(struct ice_pf *pf)
--{
--	return min(num_online_cpus(), pf->hw.func_caps.common_cap.num_txq);
--}
--
--/**
-- * ice_get_max_rxq - return the maximum number of Rx queues for in a PF
-- * @pf: PF structure
-- */
--static int ice_get_max_rxq(struct ice_pf *pf)
--{
--	return min(num_online_cpus(), pf->hw.func_caps.common_cap.num_rxq);
--}
--
- /**
-  * ice_get_combined_cnt - return the current number of combined channels
-  * @vsi: PF VSI pointer
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index fa4095037be5..863ac81eebce 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -4699,8 +4699,8 @@ static int ice_cfg_netdev(struct ice_vsi *vsi)
- 	struct net_device *netdev;
- 	u8 mac_addr[ETH_ALEN];
- 
--	netdev = alloc_etherdev_mqs(sizeof(*np), vsi->alloc_txq,
--				    vsi->alloc_rxq);
-+	netdev = alloc_etherdev_mqs(sizeof(*np), ice_get_max_txq(vsi->back),
-+				    ice_get_max_rxq(vsi->back));
- 	if (!netdev)
- 		return -ENOMEM;
- 
 -- 
-2.49.0
-
+Jani Nikula, Intel
