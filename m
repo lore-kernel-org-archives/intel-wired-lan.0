@@ -4,95 +4,96 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 56A70EA4FC9
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 23 Feb 2026 14:30:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 71566EA4FCF
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 23 Feb 2026 15:02:16 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id D4A20409B9;
-	Mon, 23 Feb 2026 14:30:56 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 2AC6840C78;
+	Mon, 23 Feb 2026 15:02:16 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id d2I52SAnsARs; Mon, 23 Feb 2026 14:30:56 +0000 (UTC)
+ id yYxsHj510t7Z; Mon, 23 Feb 2026 15:02:15 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 179B840822
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 6939E40BA9
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1771857056;
-	bh=GXTr5LSS9KHqo0lu7bIMNJ/WMdAd7khGdmVGvSGzPcM=;
-	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=Pb7Qo5am2oAesKwYhJCn4+Arp+7n5KTLJU+FEDjsh0WMH3RDSgs438EZk1YouoCY8
-	 wHH7NNgB6P0ZH6NHuDYTnDV+WqTn2XDzcNMAErEC87hEXcGEKqiUF+5hL/rL9eXRdC
-	 B8sHt8buqYpKOrY9eZ92ACm4yu8E55sMGGou66ewL9VMoPU/t/9WtDMrgi0F6tkOoF
-	 LunsricEX0yKdtXE0Av9bmaLfoE34+eF3zLoDBkjTtQISsmHPtLH38jfCe8/ZCZcOp
-	 Wp+rgG1yLdGZ83jTWC/VNrXZ09yjMXSzi4FG6oR/Z3VT1M09s7fSXMQ2Y+vuCG2mOv
-	 TXlc47Z02oeaw==
+	s=default; t=1771858935;
+	bh=uNGo1sx9Ki+w096sWaEIkC6IKo4fwwadEMyWfut8oEA=;
+	h=From:To:Cc:In-Reply-To:References:Date:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=Ui+2aivRufGVUsYVdGkkQKY2yUO6pj+eS0TejNpXbNdRms58XwxRhjwYyKzYm3FuC
+	 nJhZw84maf2oSfEZZx0ydskMT4l36s/BWpruunRLPsjm2McBML4jXmzbAIL6yDfba7
+	 FNwmu2p/gP65YgY9cQw0nfb2j08l5Ww+D2vHOnzsoqF+o4NgrwFq9TwNvaxYS5ityf
+	 23KS+KrMtFJNPG64nHb755nq3jt8+mfP2UVqFgf1v5vfqJ7MPLIw2fpZbvg5qYr2lC
+	 Ny7f5t03/8b3SLE1D3ic/xmjN2lSoFugfRnmrbgtXrdOyK8hmnKr1ZHLjptGjWhKX9
+	 6XK2JZR0JALBw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 179B840822;
-	Mon, 23 Feb 2026 14:30:56 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id BE25E249
- for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Feb 2026 14:30:54 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 6939E40BA9;
+	Mon, 23 Feb 2026 15:02:15 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 54932249
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Feb 2026 15:02:14 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id A3CF4400A5
- for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Feb 2026 14:30:54 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 45DFD40BA9
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Feb 2026 15:02:14 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id KPT35e59rNkn for <intel-wired-lan@lists.osuosl.org>;
- Mon, 23 Feb 2026 14:30:54 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.18;
- helo=mgamail.intel.com; envelope-from=przemyslaw.korba@intel.com;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org C406840029
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org C406840029
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.18])
- by smtp2.osuosl.org (Postfix) with ESMTPS id C406840029
- for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Feb 2026 14:30:53 +0000 (UTC)
-X-CSE-ConnectionGUID: 8GbaZ+DQSTCWi+eqH8en7w==
-X-CSE-MsgGUID: y8Y19hAVSrSDNTpsVySMjA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11710"; a="72061137"
-X-IronPort-AV: E=Sophos;i="6.21,306,1763452800"; d="scan'208";a="72061137"
-Received: from orviesa005.jf.intel.com ([10.64.159.145])
- by fmvoesa112.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 23 Feb 2026 06:30:52 -0800
-X-CSE-ConnectionGUID: 5L0wxdfrRy+XNyQYOtxE8g==
-X-CSE-MsgGUID: vvogyipbQ1S3Nu6ppaGaRA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.21,306,1763452800"; d="scan'208";a="220574764"
-Received: from pae-d-dell-r7525-263.igk.intel.com ([172.28.191.240])
- by orviesa005.jf.intel.com with ESMTP; 23 Feb 2026 06:30:50 -0800
-From: Przemyslaw Korba <przemyslaw.korba@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Cc: netdev@vger.kernel.org, anthony.l.nguyen@intel.com,
- przemyslaw.kitszel@intel.com, Przemyslaw Korba <przemyslaw.korba@intel.com>
-Date: Mon, 23 Feb 2026 15:31:55 +0100
-Message-ID: <20260223143214.241797-1-przemyslaw.korba@intel.com>
-X-Mailer: git-send-email 2.43.0
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id Kksku8CGxfi1 for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 23 Feb 2026 15:02:13 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2600:3c01:e000:3a1::42; helo=ms.lwn.net;
+ envelope-from=corbet@lwn.net; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 9087D40B92
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9087D40B92
+Received: from ms.lwn.net (ms.lwn.net [IPv6:2600:3c01:e000:3a1::42])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 9087D40B92
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Feb 2026 15:02:13 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 ms.lwn.net 36B9640C6F
+Received: from localhost (c-71-229-227-126.hsd1.co.comcast.net
+ [71.229.227.126])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (prime256v1) server-signature ECDSA (prime256v1)
+ server-digest SHA256) (No client certificate requested)
+ by ms.lwn.net (Postfix) with ESMTPSA id 36B9640C6F;
+ Mon, 23 Feb 2026 15:02:12 +0000 (UTC)
+From: Jonathan Corbet <corbet@lwn.net>
+To: Jani Nikula <jani.nikula@linux.intel.com>, Mauro Carvalho Chehab
+ <mchehab+huawei@kernel.org>, Alexander Lobakin
+ <aleksander.lobakin@intel.com>, Kees
+ Cook <kees@kernel.org>, Mauro Carvalho Chehab <mchehab@kernel.org>
+Cc: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
+ intel-wired-lan@lists.osuosl.org, linux-doc@vger.kernel.org,
+ linux-hardening@vger.kernel.org, linux-kernel@vger.kernel.org,
+ netdev@vger.kernel.org, "Gustavo A. R. Silva" <gustavoars@kernel.org>,
+ Aleksandr Loktionov <aleksandr.loktionov@intel.com>, Randy Dunlap
+ <rdunlap@infradead.org>, Shuah Khan <skhan@linuxfoundation.org>
+In-Reply-To: <33d214091909b9a060637f56f81fb8f525cf433b@intel.com>
+References: <cover.1771408406.git.mchehab+huawei@kernel.org>
+ <33d214091909b9a060637f56f81fb8f525cf433b@intel.com>
+Date: Mon, 23 Feb 2026 08:02:11 -0700
+Message-ID: <878qcj8pvw.fsf@trenco.lwn.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1771857054; x=1803393054;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=OJi9lpGzM89oH9Z8nNCPiZuO5Ihla7QNdmtPLvDfI14=;
- b=c/jY77n2WfpQ3ScIgGi2vwFs3QP/pGPJ3vEOiC+FNN016TVC18JgTwcq
- 0ToSMJripgY0oyVGZkN7+KVtan1R3ZrsZupSxmC1EKCVsuFrPXbvnYDd3
- c5sWh76AOLs2fhXjfhwBoe/2I8jbWfCFRTqgwb6q6r4/L1op0PVN7yeMd
- gScCvHW2esvHpGNRwV/SdN79bfheIyE/+OtDQnDi6KZ9NCjAGEtqDQZyS
- YinZSXQjtOQ6KSgZ9+bhgfYoQ7hPI6jGZTk0pY6RWfXwBepb7Yr0fpnHI
- KNS2CiAmafP3+MTVGGhKe4b2SkBWXiboFynEkOtF3JaTUjFTI+22EV33l
- g==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+Content-Type: text/plain
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=lwn.net; s=20201203; 
+ t=1771858932; bh=uNGo1sx9Ki+w096sWaEIkC6IKo4fwwadEMyWfut8oEA=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=pmyRjEdODIjeAipqFcXYuUUMrCqulImfJMdvpChSX4o/WEBWx/D9iIlWRpC28MpMR
+ qVDCmq+hq0AkV08Ab8WKXCSn3jVSTe44fDZpyszr6qmMY8FVvxyKZSG4VIFau2YsLd
+ 6HmQreBiYMLctEplPjUNpkQHDtzx90LkD1LwYV6ym6ZGVr2QfWgD8ASD79pfZpssJm
+ 6jsdZ7c9cQC8TcmBk0h3GmT35iZy0vd2tpZL0AmNvmaqMWI1Q7BnfoIBzCZR5JfsDI
+ 1+Hnuvb8/6/Nn5MLCnkYX2noN97MOig+H33SStCdhDKoh1Zib9BjIAcfdAoKMAPONc
+ fVwEGo2bWGoog==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
- header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ header.from=lwn.net
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=c/jY77n2
-Subject: [Intel-wired-lan] [PATCH iwl-net v2] ice: dpll: Fix compilation
- warning
+ unprotected) header.d=lwn.net header.i=@lwn.net header.a=rsa-sha256
+ header.s=20201203 header.b=pmyRjEdO
+Subject: Re: [Intel-wired-lan] [PATCH 00/38] docs: several improvements to
+ kernel-doc
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -108,33 +109,17 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-ice_dpll.c: In function ‘ice_dpll_init’:
-ice_dpll.c:3588:59: error: ‘%u’ directive output may be truncated
-writing between 1 and 10 bytes into a region of size 4
-[-Werror=format-truncation=] snprintf(pin_name, sizeof(pin_name),
-"rclk%u", i);
+Jani Nikula <jani.nikula@linux.intel.com> writes:
 
-Fixes: ad1df4f2d591 ("ice: dpll: Support E825-C SyncE and dynamic pin discovery")
-Signed-off-by: Przemyslaw Korba <przemyslaw.korba@intel.com>
----
- drivers/net/ethernet/intel/ice/ice_dpll.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+> There's always the question, if you're putting a lot of effort into
+> making kernel-doc closer to an actual C parser, why not put all that
+> effort into using and adapting to, you know, an actual C parser?
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_dpll.c b/drivers/net/ethernet/intel/ice/ice_dpll.c
-index 73a4e28ed75f..f101fdb3e9cf 100644
---- a/drivers/net/ethernet/intel/ice/ice_dpll.c
-+++ b/drivers/net/ethernet/intel/ice/ice_dpll.c
-@@ -3532,7 +3532,7 @@ static int
- ice_dpll_init_fwnode_pins(struct ice_pf *pf, struct ice_dpll_pin *pins,
- 			  int start_idx)
- {
--	char pin_name[8];
-+	char pin_name[16];
- 	int i, ret;
- 
- 	pf->dplls.wq = create_singlethread_workqueue("ice_dpll_wq");
+Not speaking to the current effort but ... in the past, when I have
+contemplated this (using, say, tree-sitter), the real problem is that
+those parsers simply strip out the comments.  Kerneldoc without comments
+... doesn't work very well.  If there were a parser without those
+problems, and which could be made to do the right thing with all of our
+weird macro usage, it would certainly be worth considering.
 
-base-commit: af960c69349a922fac3b4fbdb42e118a35c8700f
--- 
-2.43.0
-
+jon
