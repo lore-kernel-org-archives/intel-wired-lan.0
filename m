@@ -1,66 +1,67 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 93741F4BB65
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 24 Feb 2026 17:49:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A884EF4BB65
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 24 Feb 2026 17:49:21 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 579D840AAF;
-	Tue, 24 Feb 2026 17:49:17 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 7472160DD4;
+	Tue, 24 Feb 2026 17:49:21 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id zJ5Dh5mFvprL; Tue, 24 Feb 2026 17:49:16 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id HZuLmI1oMPQ4; Tue, 24 Feb 2026 17:49:19 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 833B840AB3
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7419860E17
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1771955356;
-	bh=mB9O0Fhm2js0HGCs5/NTI/zVMfqHv3cgj4dK76wV6M4=;
-	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=4UPbFrRqzJu+iOU0Gm44gx36mU6ACB83ZIJhiYAMgI/G0KugtXp8NT8DXHIqm4f/n
-	 h5KkZ4pFmo0w7z4qPhrnMa0G9Yu7WEQCpQyUzwQT5fQlBjhHycJmF6/1klqggonHyn
-	 Z7kCchag+A2Jo/PssKdMOd9JId90eLwNf58w2+WvaWJJ1TzlNqw1kKJo2FTHMQ55EH
-	 vVFpaM0rOKo109l0Tq5ydqMvpQeJAqkHwDIelywNvy7bOkibdU6qFClTvKmjoSk7Bk
-	 W0JExXAg09hTzpTGO4MzLWZwxczxrEw/5mfHZajftEj5toAjSbRKjldH4hkHRdBsVw
-	 l4VvGrEundvrw==
+	s=default; t=1771955359;
+	bh=INYvMaoLiOhniBfUCXkBpSOwWIudXsMBn4ffkS7ZbVU=;
+	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=Lcrs1Zfrk6SqA4KkPnbzEq/ucJFlf00DuaOsqXwUAc+P84EFPwrEi22d0rvC+MMlI
+	 KjLMxUwN8SKcHSY59v68WxBA6yrWTcE+k/28QIVqDy8lUsThsxyTAj01FeNpJbjtvV
+	 7gv3mGwXdi5JCBWlMEGmEW7LgUptqch8EwVUeDkNRK2BCEGZs2bDXksx4DSO7TL4rE
+	 KTjgHHPiT/MIe1UoYyETRv1uAOUAoWrLS3Ef67mYwyJaT2KwjzN1eKK9XcKzhhnYMt
+	 G2YfS4cQi61/30iP+AIeNwsRFCfsXRCvvtSaRhGw1Y9FTByWEgffxvLizXkyw0xsWA
+	 HGrN+LwbCAJ5A==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 833B840AB3;
-	Tue, 24 Feb 2026 17:49:16 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 3B2BE237
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Feb 2026 17:49:15 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 7419860E17;
+	Tue, 24 Feb 2026 17:49:19 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 0EBCC249
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Feb 2026 17:49:16 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 2D79360DD4
+ by smtp3.osuosl.org (Postfix) with ESMTP id 5FBEE60DD4
  for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Feb 2026 17:49:15 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id eB7yy_Cf-ZtM for <intel-wired-lan@lists.osuosl.org>;
+ id 06vwrAENjxH9 for <intel-wired-lan@lists.osuosl.org>;
  Tue, 24 Feb 2026 17:49:14 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.7;
  helo=mgamail.intel.com; envelope-from=aleksander.lobakin@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 527FB60DFE
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 527FB60DFE
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org A8DA960E03
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A8DA960E03
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.7])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 527FB60DFE
+ by smtp3.osuosl.org (Postfix) with ESMTPS id A8DA960E03
  for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Feb 2026 17:49:14 +0000 (UTC)
-X-CSE-ConnectionGUID: BEFUmKomTbeDBRH/EEUrBg==
-X-CSE-MsgGUID: lhGRHtM/RxayjG0+VF+NwA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11711"; a="98444495"
-X-IronPort-AV: E=Sophos;i="6.21,309,1763452800"; d="scan'208";a="98444495"
+X-CSE-ConnectionGUID: vLb42qm2QqSLbdmMOCWUbA==
+X-CSE-MsgGUID: xMCEqUYhS5aaotZWqgXO2A==
+X-IronPort-AV: E=McAfee;i="6800,10657,11711"; a="98444525"
+X-IronPort-AV: E=Sophos;i="6.21,309,1763452800"; d="scan'208";a="98444525"
 Received: from orviesa003.jf.intel.com ([10.64.159.143])
  by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 24 Feb 2026 09:49:06 -0800
-X-CSE-ConnectionGUID: cgKAUa66Tuy3HwMMfh0Yuw==
-X-CSE-MsgGUID: x8yiX51ISMWPVFsT1j4Llw==
+ 24 Feb 2026 09:49:14 -0800
+X-CSE-ConnectionGUID: wlcf4D5URwuHL4h1OFyvPg==
+X-CSE-MsgGUID: HMk6XLcnSQayD+v5jryM7g==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.21,309,1763452800"; d="scan'208";a="220088494"
+X-IronPort-AV: E=Sophos;i="6.21,309,1763452800"; d="scan'208";a="220088525"
 Received: from newjersey.igk.intel.com ([10.102.20.203])
- by orviesa003.jf.intel.com with ESMTP; 24 Feb 2026 09:49:02 -0800
+ by orviesa003.jf.intel.com with ESMTP; 24 Feb 2026 09:49:10 -0800
 From: Alexander Lobakin <aleksander.lobakin@intel.com>
 To: intel-wired-lan@lists.osuosl.org
 Cc: Alexander Lobakin <aleksander.lobakin@intel.com>,
@@ -74,32 +75,34 @@ Cc: Alexander Lobakin <aleksander.lobakin@intel.com>,
  Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
  nxne.cnse.osdt.itp.upstreaming@intel.com, netdev@vger.kernel.org,
  linux-kernel@vger.kernel.org
-Date: Tue, 24 Feb 2026 18:46:13 +0100
-Message-ID: <20260224174618.2780516-1-aleksander.lobakin@intel.com>
+Date: Tue, 24 Feb 2026 18:46:15 +0100
+Message-ID: <20260224174618.2780516-3-aleksander.lobakin@intel.com>
 X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20260224174618.2780516-1-aleksander.lobakin@intel.com>
+References: <20260224174618.2780516-1-aleksander.lobakin@intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
  t=1771955354; x=1803491354;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=u4IRNFH9va3OeQ5nrZg8gWMVIxl5+G7rTkHNbJnhzAA=;
- b=ZtAdMPtvyH+bUFplZXPcj2tdlyRpfaiDsJTmLpKRzeS4EJd87e6qYfiQ
- 1VuIPI2eERb8utA5z9CndeCswpI3TT+zvt8TfxkUQ9n8/RmRSYwdVkHW5
- paALcvkX7CpNITWO8sYdflCORcDDRDsDUmug1YNuCrclYGwzMWwjsB9mt
- OzewJ8AYAENdJ0eZI0FEqigblsR/urgF6P6w2GLuHcIxjT/P5vy8orm5D
- GPwSH4nQwdfNCeBeY5owCkPYykeOdxmZwUl+sJ9yYn7VLkPnDAG0m2qeB
- jzzkVc22s8rQHOoAAioG9H17+s1+yR7QuH/P7VDKRkpS1+HmJyHVJqFhU
- g==;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=dbnQ/MMu1E+QSK5rCsf9tW1qv5XIaaGwExNh2lKHdx4=;
+ b=I9pcqqRpr3KFpAH5FD7gyiBHsMguGLV8snX8bDecybvi3hU14rmGXyD4
+ jiGC1J0B6akJEt0PK0aDiHlldfIQX52vgfjSR3E5iP1s9G+1nzgja/5bX
+ JnlI+ASe/P2+OGsDXTSzsFpVLTJt+E+sKZX+iURillSk7p44ze5FuDc2k
+ KH2dqNlaCKxUAsc8W8Db1rkbm3JzCulJ0DXg4hzPTcnz8K/J2cboWnQZQ
+ 4lezMJ8CyFBz5F1OFo3bwlTDGwTXCpoSblj6GBOm+1Y45oiushdjQvzB1
+ 6OdGk8C6QwibgQeOWRAmhlp07Q88efFbe0/OhrhLYJFasG4n7z7af3pnn
+ w==;
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=ZtAdMPtv
-Subject: [Intel-wired-lan] [PATCH iwl-next v3 0/5] ice: add support for
- devmem/io_uring Rx and Tx
+ header.a=rsa-sha256 header.s=Intel header.b=I9pcqqRp
+Subject: [Intel-wired-lan] [PATCH iwl-next v3 2/5] libeth: handle creating
+ pools with unreadable buffers
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -115,65 +118,111 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Now that ice uses libeth for managing Rx buffers and supports
-configurable header split, it's ready to get support for sending
-and receiving packets with unreadable (to the kernel) frags.
+libeth uses netmems for quite some time already, so in order to
+support unreadable frags / memory providers, it only needs to set
+PP_FLAG_ALLOW_UNREADABLE_NETMEM when needed.
+Also add a couple sanity checks to make sure the driver didn't mess
+up the configuration options and, in case when an MP is installed,
+return the truesize always equal to PAGE_SIZE, so that
+libeth_rx_alloc() will never try to allocate frags. Memory providers
+manage buffers on their own and expect 1:1 buffer / HW Rx descriptor
+association.
 
-Extend libeth just a little bit to allow creating PPs with custom
-memory providers and make sure ice works correctly with the netdev
-ops locking. Then add the full set of queue_mgmt_ops and don't
-unmap unreadable frags on Tx completion.
-No perf regressions for the regular flows and no code duplication
-implied.
+Bonus: mention in the libeth_sqe_type description that
+LIBETH_SQE_EMPTY should also be used for netmem Tx SQEs -- they
+don't need DMA unmapping.
 
-Credits to the fbnic developers, which's code helped me understand
-the memory providers and queue_mgmt_ops logics and served as
-a reference.
-
-Alexander Lobakin (5):
-  libeth: pass Rx queue index to PP when creating a fill queue
-  libeth: handle creating pools with unreadable buffers
-  ice: migrate to netdev ops lock
-  ice: implement Rx queue management ops
-  ice: add support for transmitting unreadable frags
-
- drivers/net/ethernet/intel/ice/ice_base.h    |   2 +
- drivers/net/ethernet/intel/ice/ice_lib.h     |  15 +-
- drivers/net/ethernet/intel/ice/ice_txrx.h    |   2 +
- drivers/net/ethernet/intel/idpf/idpf_txrx.h  |   2 +
- include/net/libeth/rx.h                      |   2 +
- include/net/libeth/tx.h                      |   2 +-
- drivers/net/ethernet/intel/iavf/iavf_txrx.c  |   1 +
- drivers/net/ethernet/intel/ice/ice_base.c    | 259 ++++++++++++++-----
- drivers/net/ethernet/intel/ice/ice_dcb_lib.c |  15 +-
- drivers/net/ethernet/intel/ice/ice_ethtool.c |   1 +
- drivers/net/ethernet/intel/ice/ice_lib.c     | 183 ++++++++++---
- drivers/net/ethernet/intel/ice/ice_main.c    |  70 ++---
- drivers/net/ethernet/intel/ice/ice_sf_eth.c  |   4 +
- drivers/net/ethernet/intel/ice/ice_txrx.c    |  43 ++-
- drivers/net/ethernet/intel/ice/ice_xsk.c     |   4 +-
- drivers/net/ethernet/intel/idpf/idpf_txrx.c  |  13 +
- drivers/net/ethernet/intel/libeth/rx.c       |  43 +++
- 17 files changed, 509 insertions(+), 152 deletions(-)
-
+Reviewed-by: Jacob Keller <jacob.e.keller@intel.com>
+Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Signed-off-by: Alexander Lobakin <aleksander.lobakin@intel.com>
 ---
-From v2[0]:
-* rebase on top of net-next-7.0;
-* 3/5: fix [hopefully] all inconsistent locking (Jakub, Tony);
-* 4/5: pick a hotfix from Kohei.
+ include/net/libeth/tx.h                |  2 +-
+ drivers/net/ethernet/intel/libeth/rx.c | 42 ++++++++++++++++++++++++++
+ 2 files changed, 43 insertions(+), 1 deletion(-)
 
-From v1[1]:
-* rebase on top of the latest next-queue;
-* fix a typo 'rxq_ixd' -> 'rxq_idx' (Tony).
-
-Testing hints:
-* regular Rx and Tx for regressions;
-* <kernel root>/tools/testing/selftests/drivers/net/hw/ contains
-  scripts for testing netmem Rx and Tx, namely devmem.py and
-  iou-zcrx.py (read the documentation first).
-
-[0] https://lore.kernel.org/intel-wired-lan/20251204155133.2437621-1-aleksander.lobakin@intel.com
-[1] https://lore.kernel.org/intel-wired-lan/20251125173603.3834486-1-aleksander.lobakin@intel.com
+diff --git a/include/net/libeth/tx.h b/include/net/libeth/tx.h
+index c3db5c6f1641..a66fc2b3a114 100644
+--- a/include/net/libeth/tx.h
++++ b/include/net/libeth/tx.h
+@@ -12,7 +12,7 @@
+ 
+ /**
+  * enum libeth_sqe_type - type of &libeth_sqe to act on Tx completion
+- * @LIBETH_SQE_EMPTY: unused/empty OR XDP_TX/XSk frame, no action required
++ * @LIBETH_SQE_EMPTY: empty OR netmem/XDP_TX/XSk frame, no action required
+  * @LIBETH_SQE_CTX: context descriptor with empty SQE, no action required
+  * @LIBETH_SQE_SLAB: kmalloc-allocated buffer, unmap and kfree()
+  * @LIBETH_SQE_FRAG: mapped skb frag, only unmap DMA
+diff --git a/drivers/net/ethernet/intel/libeth/rx.c b/drivers/net/ethernet/intel/libeth/rx.c
+index 8874b714cdcc..11e6e8f353ef 100644
+--- a/drivers/net/ethernet/intel/libeth/rx.c
++++ b/drivers/net/ethernet/intel/libeth/rx.c
+@@ -6,6 +6,7 @@
+ #include <linux/export.h>
+ 
+ #include <net/libeth/rx.h>
++#include <net/netdev_queues.h>
+ 
+ /* Rx buffer management */
+ 
+@@ -139,9 +140,47 @@ static bool libeth_rx_page_pool_params_zc(struct libeth_fq *fq,
+ 	fq->buf_len = clamp(mtu, LIBETH_RX_BUF_STRIDE, max);
+ 	fq->truesize = fq->buf_len;
+ 
++	/*
++	 * Allow frags only for kernel pages. `fq->truesize == pp->max_len`
++	 * will always fall back to regular page_pool_alloc_netmems()
++	 * regardless of the MTU / FQ buffer size.
++	 */
++	if (pp->flags & PP_FLAG_ALLOW_UNREADABLE_NETMEM)
++		fq->truesize = pp->max_len;
++
+ 	return true;
+ }
+ 
++/**
++ * libeth_rx_page_pool_check_unread - check input params for unreadable MPs
++ * @fq: buffer queue to check
++ * @pp: &page_pool_params for the queue
++ *
++ * Make sure we don't create an invalid pool with full-frame unreadable
++ * buffers, bidirectional unreadable buffers or so, and configure the
++ * ZC payload pool accordingly.
++ *
++ * Return: true on success, false on invalid input params.
++ */
++static bool libeth_rx_page_pool_check_unread(const struct libeth_fq *fq,
++					     struct page_pool_params *pp)
++{
++	if (!netif_rxq_has_unreadable_mp(pp->netdev, pp->queue_idx))
++		return true;
++
++	/* For now, the core stack doesn't allow XDP with unreadable frags */
++	if (fq->xdp)
++		return false;
++
++	/* It should be either a header pool or a ZC payload pool */
++	if (fq->type == LIBETH_FQE_HDR)
++		return !fq->hsplit;
++
++	pp->flags |= PP_FLAG_ALLOW_UNREADABLE_NETMEM;
++
++	return fq->hsplit;
++}
++
+ /**
+  * libeth_rx_fq_create - create a PP with the default libeth settings
+  * @fq: buffer queue struct to fill
+@@ -165,6 +204,9 @@ int libeth_rx_fq_create(struct libeth_fq *fq, struct napi_struct *napi)
+ 	struct page_pool *pool;
+ 	int ret;
+ 
++	if (!libeth_rx_page_pool_check_unread(fq, &pp))
++		return -EINVAL;
++
+ 	pp.dma_dir = fq->xdp ? DMA_BIDIRECTIONAL : DMA_FROM_DEVICE;
+ 
+ 	if (!fq->hsplit)
 -- 
 2.53.0
 
