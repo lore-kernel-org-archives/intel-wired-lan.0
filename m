@@ -1,102 +1,109 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D912AF4BB65
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 24 Feb 2026 17:46:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E9900F4BB63
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 24 Feb 2026 17:49:16 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 6242140AA9;
-	Tue, 24 Feb 2026 17:46:01 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id kKXL--zMSdrg; Tue, 24 Feb 2026 17:45:59 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 28694409E4
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1771955159;
-	bh=dUv9O9np9kOMO29aaqyHQxJmi3HQI5bDnO+hPFX64H0=;
-	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=spKRnHVh3ybnemqYgJgOmuJjX2edUW18MDRXgsEOdJsWIqAiZ/xbotjvouK6Z91Mb
-	 aCCnJYAnhaICZ7vNmsOUyiR8ZkQ0ULDpW5KzY3PfdkDagfttsHdNLilreAiaVDtYP9
-	 DzgHwc/I0Nrj1VaDJP+YfITxCh18MAFkvOPMIdDXdebKZazs2xGzNh/6iNbyQCMc7L
-	 f2T9ledDssia+JIIkpcakmigy3yNBV7/01QknnFseTJKUppBhMKZ+ikYyceGyGMnor
-	 BUAUy2Q2NuCoyTcxGw3XMemw3L+rvwX76Wb3mEFu8ogLOw20k3sbVUggQdLXAwzrEF
-	 KVQ5C1awv0how==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 28694409E4;
-	Tue, 24 Feb 2026 17:45:59 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 9114E237
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Feb 2026 17:45:58 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 829F460893
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Feb 2026 17:45:58 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id B940260E18;
+	Tue, 24 Feb 2026 17:49:16 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id j6swmPkbV793 for <intel-wired-lan@lists.osuosl.org>;
- Tue, 24 Feb 2026 17:45:58 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
- helo=tor.source.kernel.org; envelope-from=horms@kernel.org;
+ id VwL2yiBWbVt0; Tue, 24 Feb 2026 17:49:16 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 02B1F60E03
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1771955356;
+	bh=/C8LEeKvz+WVvl7+48A3N22LOy3NH1jqAsw162gVuz8=;
+	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=COGYhk18h2Scma9APw9t6nws+45Ur6c5geSDbXSxrQrRt2yu/8l+3zYF9m6rik2xW
+	 Nz//R9DRjJKpZb4MFDcVBZTSOunlPUUQ8TxXRNcDWNwjDVDevctxIw+QWjum0NOzpW
+	 H9oeVRCIQXa4WUETpd7+liBAhYiWL3xaDkbRFF9px3xvX9W532aT1xraHEppJDENr6
+	 jur/VfT9sW1TXcS7u76d1yiEcvnTmB+XNIwtj8sGHpqGGPvkTj/z/d0fdCC9swqhy0
+	 9PeMWa/2KNEWJV3rqcqyV8u3POiTeMY9NE6fbvbJNid1azo0hvHbjoylQbG6VXWDgi
+	 Cqz+4dxzy5dJw==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp3.osuosl.org (Postfix) with ESMTP id 02B1F60E03;
+	Tue, 24 Feb 2026 17:49:16 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id D605B249
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Feb 2026 17:49:14 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp3.osuosl.org (Postfix) with ESMTP id D37F360E17
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Feb 2026 17:49:14 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id CGrtFOQAm4EE for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 24 Feb 2026 17:49:14 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.7;
+ helo=mgamail.intel.com; envelope-from=aleksander.lobakin@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org C19CD60876
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C19CD60876
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
- by smtp3.osuosl.org (Postfix) with ESMTPS id C19CD60876
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Feb 2026 17:45:57 +0000 (UTC)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by tor.source.kernel.org (Postfix) with ESMTP id A7A7E60053;
- Tue, 24 Feb 2026 17:45:56 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AF172C116D0;
- Tue, 24 Feb 2026 17:45:52 +0000 (UTC)
-Date: Tue, 24 Feb 2026 17:45:50 +0000
-From: Simon Horman <horms@kernel.org>
-To: Larysa Zaremba <larysa.zaremba@intel.com>
-Cc: Tony Nguyen <anthony.l.nguyen@intel.com>, intel-wired-lan@lists.osuosl.org,
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org EA04760DD4
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org EA04760DD4
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.7])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id EA04760DD4
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Feb 2026 17:49:13 +0000 (UTC)
+X-CSE-ConnectionGUID: qaifq6m3Sse3+iFEVLfJLg==
+X-CSE-MsgGUID: otP/VaiUQfmenB22zHHFLw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11711"; a="98444508"
+X-IronPort-AV: E=Sophos;i="6.21,309,1763452800"; d="scan'208";a="98444508"
+Received: from orviesa003.jf.intel.com ([10.64.159.143])
+ by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 24 Feb 2026 09:49:10 -0800
+X-CSE-ConnectionGUID: RbB2iYdJQHm19K+bCzlcMA==
+X-CSE-MsgGUID: BCoLnusBQcKblh/pZXhz2g==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.21,309,1763452800"; d="scan'208";a="220088507"
+Received: from newjersey.igk.intel.com ([10.102.20.203])
+ by orviesa003.jf.intel.com with ESMTP; 24 Feb 2026 09:49:06 -0800
+From: Alexander Lobakin <aleksander.lobakin@intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Cc: Alexander Lobakin <aleksander.lobakin@intel.com>,
+ Tony Nguyen <anthony.l.nguyen@intel.com>,
  Przemek Kitszel <przemyslaw.kitszel@intel.com>,
  Andrew Lunn <andrew+netdev@lunn.ch>,
  "David S. Miller" <davem@davemloft.net>,
- Eric Dumazet <edumazet@google.com>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- Alexander Lobakin <aleksander.lobakin@intel.com>,
- Alexei Starovoitov <ast@kernel.org>,
- Daniel Borkmann <daniel@iogearbox.net>,
- Jesper Dangaard Brouer <hawk@kernel.org>,
- John Fastabend <john.fastabend@gmail.com>,
- Stanislav Fomichev <sdf@fomichev.me>,
+ Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>, Simon Horman <horms@kernel.org>,
+ Kohei Enju <kohei@enjuk.jp>, Jacob Keller <jacob.e.keller@intel.com>,
  Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
- Natalia Wochtman <natalia.wochtman@intel.com>,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org, bpf@vger.kernel.org
-Message-ID: <aZ3jzpKs7VcVi-mL@horms.kernel.org>
-References: <20260223095222.3205363-1-larysa.zaremba@intel.com>
- <20260223095222.3205363-4-larysa.zaremba@intel.com>
+ nxne.cnse.osdt.itp.upstreaming@intel.com, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Date: Tue, 24 Feb 2026 18:46:14 +0100
+Message-ID: <20260224174618.2780516-2-aleksander.lobakin@intel.com>
+X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20260224174618.2780516-1-aleksander.lobakin@intel.com>
+References: <20260224174618.2780516-1-aleksander.lobakin@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260223095222.3205363-4-larysa.zaremba@intel.com>
+Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1771955156;
- bh=fsV5OtmQB3MCcvqHSs0f1XcawGCHuZ+36al1QPuGjBs=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=RtH4k/hE7nEZnU15GOAtp9wp/KmTvWE7qaI5tjRV7a8nRnVZ+X1IjTYIkXdLTybEM
- XV4BW+Dm44O4QMuZfJ5jpAygzMC0QkEJrHcunM/qTlct0GoYCpaxi+08OaQ7g569/i
- h1ywD//a+WKtwOCIwdcd7rM61MKB4DJB+vyFBzf7CdFwCfEYn8vuMcwJd2Hni2VduB
- UxOPjJI0rhih49yRI2cpTA8QIwWSSeqkuw76rlRBlZgwNAqotw8qJWPlyrbnvg4Ei1
- VvCTeVlEe6cN1QXn6QjwSEre9OhQY5lWmbRfBnCaWikfWlND+4qAU5K0ie6cDA/jkT
- p8dp1FlYQYL3A==
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1771955354; x=1803491354;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=v81pqgfqLoKxRRvZY6YNw/vEXD12/vAS0CkEOZl6RjU=;
+ b=MqlrkldsuZn2ELls83Bn/7pBFZqwx5lVxIvAw9RZrJs0p7OnASAZZXka
+ XbfukDwic3I/vprcyoS63NkIPDwKdxN6FG+lDyNWIIA4RdW/YNsjfKtb9
+ nKN+0daaPufhR8ADJZPn/u+IdujLf0c55sTX2aClXVffTMbkc8KiOiDUy
+ K5Z9Mn86+ndjRB1hCXlAvdIY01cibJJ673QqjzhJ2wfM2EUoNtyUzpt5k
+ F0KO+DhGXcjZk1d3t1Ws+SNw3iWlMz3tCFOtQBVUCzN3OjKovOxc4moU+
+ xf6WHD2zdyhBXv5d/GV6ybTBTLwYPECCQtMx4Ny5GCToASZNrCyoPPmB9
+ w==;
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dmarc=pass (p=quarantine dis=none)
- header.from=kernel.org
+ dmarc=pass (p=none dis=none)
+ header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=RtH4k/hE
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next 03/10] ixgbevf: use libeth in
- Rx processing
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=Mqlrklds
+Subject: [Intel-wired-lan] [PATCH iwl-next v3 1/5] libeth: pass Rx queue
+ index to PP when creating a fill queue
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -112,93 +119,158 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Mon, Feb 23, 2026 at 10:52:10AM +0100, Larysa Zaremba wrote:
-> Use page_pool buffers by the means of libeth in the Rx queues, this
-> significantly reduces code complexity of the driver itself.
-> 
-> Suggested-by: Alexander Lobakin <aleksander.lobakin@intel.com>
-> Reviewed-by: Alexander Lobakin <aleksander.lobakin@intel.com>
-> Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-> Signed-off-by: Larysa Zaremba <larysa.zaremba@intel.com>
+Since recently, page_pool_create() accepts optional stack index of
+the Rx queue which the pool will be created for. It can then be
+used on control path for stuff like memory providers.
+Add the same field to libeth_fq and pass the index from all the
+drivers using libeth for managing Rx to simplify implementing MP
+support later.
+idpf has one libeth_fq per buffer/fill queue and each Rx queue has
+two fill queues, but since fill queues can never be shared, we can
+store the corresponding Rx queue index there during the
+initialization to pass it to libeth.
 
-...
+Reviewed-by: Jacob Keller <jacob.e.keller@intel.com>
+Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Signed-off-by: Alexander Lobakin <aleksander.lobakin@intel.com>
+---
+ drivers/net/ethernet/intel/idpf/idpf_txrx.h |  2 ++
+ include/net/libeth/rx.h                     |  2 ++
+ drivers/net/ethernet/intel/iavf/iavf_txrx.c |  1 +
+ drivers/net/ethernet/intel/ice/ice_base.c   |  2 ++
+ drivers/net/ethernet/intel/idpf/idpf_txrx.c | 13 +++++++++++++
+ drivers/net/ethernet/intel/libeth/rx.c      |  1 +
+ 6 files changed, 21 insertions(+)
 
-> @@ -3257,12 +3133,26 @@ static int ixgbevf_setup_all_tx_resources(struct ixgbevf_adapter *adapter)
->  int ixgbevf_setup_rx_resources(struct ixgbevf_adapter *adapter,
->  			       struct ixgbevf_ring *rx_ring)
->  {
-> -	int size;
-> +	struct libeth_fq fq = {
-> +		.count		= rx_ring->count,
-> +		.nid		= NUMA_NO_NODE,
-> +		.type		= LIBETH_FQE_MTU,
-> +		.xdp		= !!rx_ring->xdp_prog,
-> +		.idx		= rx_ring->queue_index,
-> +		.buf_len	= IXGBEVF_RX_PAGE_LEN(rx_ring->xdp_prog ?
-> +						      LIBETH_XDP_HEADROOM :
-> +						      LIBETH_SKB_HEADROOM),
-> +	};
-> +	int ret;
->  
-> -	size = sizeof(struct ixgbevf_rx_buffer) * rx_ring->count;
-> -	rx_ring->rx_buffer_info = vmalloc(size);
-> -	if (!rx_ring->rx_buffer_info)
-> -		goto err;
-> +	ret = libeth_rx_fq_create(&fq, &rx_ring->q_vector->napi);
-> +	if (ret)
-> +		return ret;
-> +
-> +	rx_ring->pp = fq.pp;
-> +	rx_ring->rx_fqes = fq.fqes;
-> +	rx_ring->truesize = fq.truesize;
-> +	rx_ring->rx_buf_len = fq.buf_len;
->  
->  	u64_stats_init(&rx_ring->syncp);
->  
-> @@ -3270,25 +3160,29 @@ int ixgbevf_setup_rx_resources(struct ixgbevf_adapter *adapter,
->  	rx_ring->size = rx_ring->count * sizeof(union ixgbe_adv_rx_desc);
->  	rx_ring->size = ALIGN(rx_ring->size, 4096);
->  
-> -	rx_ring->desc = dma_alloc_coherent(rx_ring->dev, rx_ring->size,
-> +	rx_ring->desc = dma_alloc_coherent(fq.pp->p.dev, rx_ring->size,
->  					   &rx_ring->dma, GFP_KERNEL);
->  
->  	if (!rx_ring->desc)
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.h b/drivers/net/ethernet/intel/idpf/idpf_txrx.h
+index 4be5b3b6d3ed..a0d92adf11c4 100644
+--- a/drivers/net/ethernet/intel/idpf/idpf_txrx.h
++++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.h
+@@ -748,6 +748,7 @@ libeth_cacheline_set_assert(struct idpf_tx_queue, 64,
+  * @size: Length of descriptor ring in bytes
+  * @dma: Physical address of ring
+  * @q_vector: Backreference to associated vector
++ * @rxq_idx: stack index of the corresponding Rx queue
+  * @rx_buffer_low_watermark: RX buffer low watermark
+  * @rx_hbuf_size: Header buffer size
+  * @rx_buf_size: Buffer size
+@@ -791,6 +792,7 @@ struct idpf_buf_queue {
+ 	dma_addr_t dma;
+ 
+ 	struct idpf_q_vector *q_vector;
++	u16 rxq_idx;
+ 
+ 	u16 rx_buffer_low_watermark;
+ 	u16 rx_hbuf_size;
+diff --git a/include/net/libeth/rx.h b/include/net/libeth/rx.h
+index 5d991404845e..3b3d7acd13c9 100644
+--- a/include/net/libeth/rx.h
++++ b/include/net/libeth/rx.h
+@@ -71,6 +71,7 @@ enum libeth_fqe_type {
+  * @xdp: flag indicating whether XDP is enabled
+  * @buf_len: HW-writeable length per each buffer
+  * @nid: ID of the closest NUMA node with memory
++ * @idx: stack index of the corresponding Rx queue
+  */
+ struct libeth_fq {
+ 	struct_group_tagged(libeth_fq_fp, fp,
+@@ -88,6 +89,7 @@ struct libeth_fq {
+ 
+ 	u32			buf_len;
+ 	int			nid;
++	u32			idx;
+ };
+ 
+ int libeth_rx_fq_create(struct libeth_fq *fq, struct napi_struct *napi);
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_txrx.c b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
+index 363c42bf3dcf..d3c68659162b 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_txrx.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
+@@ -771,6 +771,7 @@ int iavf_setup_rx_descriptors(struct iavf_ring *rx_ring)
+ 		.count		= rx_ring->count,
+ 		.buf_len	= LIBIE_MAX_RX_BUF_LEN,
+ 		.nid		= NUMA_NO_NODE,
++		.idx		= rx_ring->queue_index,
+ 	};
+ 	int ret;
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_base.c b/drivers/net/ethernet/intel/ice/ice_base.c
+index afbff8aa9ceb..1b7d10fad4f2 100644
+--- a/drivers/net/ethernet/intel/ice/ice_base.c
++++ b/drivers/net/ethernet/intel/ice/ice_base.c
+@@ -607,6 +607,7 @@ static int ice_rxq_pp_create(struct ice_rx_ring *rq)
+ 	struct libeth_fq fq = {
+ 		.count		= rq->count,
+ 		.nid		= NUMA_NO_NODE,
++		.idx		= rq->q_index,
+ 		.hsplit		= rq->vsi->hsplit,
+ 		.xdp		= ice_is_xdp_ena_vsi(rq->vsi),
+ 		.buf_len	= LIBIE_MAX_RX_BUF_LEN,
+@@ -629,6 +630,7 @@ static int ice_rxq_pp_create(struct ice_rx_ring *rq)
+ 		.count		= rq->count,
+ 		.type		= LIBETH_FQE_HDR,
+ 		.nid		= NUMA_NO_NODE,
++		.idx		= rq->q_index,
+ 		.xdp		= ice_is_xdp_ena_vsi(rq->vsi),
+ 	};
+ 
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.c b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
+index 376050308b06..36e2050dbb04 100644
+--- a/drivers/net/ethernet/intel/idpf/idpf_txrx.c
++++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
+@@ -558,6 +558,7 @@ static int idpf_rx_hdr_buf_alloc_all(struct idpf_buf_queue *bufq)
+ 		.type	= LIBETH_FQE_HDR,
+ 		.xdp	= idpf_xdp_enabled(bufq->q_vector->vport),
+ 		.nid	= idpf_q_vector_to_mem(bufq->q_vector),
++		.idx	= bufq->rxq_idx,
+ 	};
+ 	int ret;
+ 
+@@ -700,6 +701,7 @@ static int idpf_rx_bufs_init_singleq(struct idpf_rx_queue *rxq)
+ 		.type		= LIBETH_FQE_MTU,
+ 		.buf_len	= IDPF_RX_MAX_BUF_SZ,
+ 		.nid		= idpf_q_vector_to_mem(rxq->q_vector),
++		.idx		= rxq->idx,
+ 	};
+ 	int ret;
+ 
+@@ -760,6 +762,7 @@ static int idpf_rx_bufs_init(struct idpf_buf_queue *bufq,
+ 		.hsplit		= idpf_queue_has(HSPLIT_EN, bufq),
+ 		.xdp		= idpf_xdp_enabled(bufq->q_vector->vport),
+ 		.nid		= idpf_q_vector_to_mem(bufq->q_vector),
++		.idx		= bufq->rxq_idx,
+ 	};
+ 	int ret;
+ 
+@@ -1919,6 +1922,16 @@ static int idpf_rxq_group_alloc(struct idpf_vport *vport,
+ 							LIBETH_RX_LL_LEN;
+ 			idpf_rxq_set_descids(rsrc, q);
+ 		}
++
++		if (!idpf_is_queue_model_split(rsrc->rxq_model))
++			continue;
++
++		for (u32 j = 0; j < rsrc->num_bufqs_per_qgrp; j++) {
++			struct idpf_buf_queue *bufq;
++
++			bufq = &rx_qgrp->splitq.bufq_sets[j].bufq;
++			bufq->rxq_idx = rx_qgrp->splitq.rxq_sets[0]->rxq.idx;
++		}
+ 	}
+ 
+ err_alloc:
+diff --git a/drivers/net/ethernet/intel/libeth/rx.c b/drivers/net/ethernet/intel/libeth/rx.c
+index 62521a1f4ec9..8874b714cdcc 100644
+--- a/drivers/net/ethernet/intel/libeth/rx.c
++++ b/drivers/net/ethernet/intel/libeth/rx.c
+@@ -156,6 +156,7 @@ int libeth_rx_fq_create(struct libeth_fq *fq, struct napi_struct *napi)
+ 		.order		= LIBETH_RX_PAGE_ORDER,
+ 		.pool_size	= fq->count,
+ 		.nid		= fq->nid,
++		.queue_idx	= fq->idx,
+ 		.dev		= napi->dev->dev.parent,
+ 		.netdev		= napi->dev,
+ 		.napi		= napi,
+-- 
+2.53.0
 
-Hi Larysa,
-
-Prior to this patch, if this error condition was met,
-then function would return -ENOMEM. But now it will return 0.
-This does not seem intentional.
-
-Flagged by Smatch.
-
->  		goto err;
->  
->  	/* XDP RX-queue info */
-> -	if (xdp_rxq_info_reg(&rx_ring->xdp_rxq, adapter->netdev,
-> -			     rx_ring->queue_index, 0) < 0)
-> +	ret = __xdp_rxq_info_reg(&rx_ring->xdp_rxq, adapter->netdev,
-> +				 rx_ring->queue_index, 0, rx_ring->truesize);
-> +	if (ret)
->  		goto err;
->  
-> +	xdp_rxq_info_attach_page_pool(&rx_ring->xdp_rxq, fq.pp);
-> +
->  	rx_ring->xdp_prog = adapter->xdp_prog;
->  
->  	return 0;
->  err:
-> -	vfree(rx_ring->rx_buffer_info);
-> -	rx_ring->rx_buffer_info = NULL;
-> +	libeth_rx_fq_destroy(&fq);
-> +	rx_ring->rx_fqes = NULL;
-> +	rx_ring->pp = NULL;
->  	dev_err(rx_ring->dev, "Unable to allocate memory for the Rx descriptor ring\n");
-> -	return -ENOMEM;
-> +	return ret;
->  }
->  
->  /**
-
-...
