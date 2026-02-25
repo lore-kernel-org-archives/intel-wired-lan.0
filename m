@@ -4,100 +4,111 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E3600FD45F3
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 25 Feb 2026 21:16:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 88D65FD45FC
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 25 Feb 2026 23:56:52 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 9FB4E615AF;
-	Wed, 25 Feb 2026 21:16:00 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 33A0B6103D;
+	Wed, 25 Feb 2026 23:56:52 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 8reKtkcjT9yw; Wed, 25 Feb 2026 21:16:00 +0000 (UTC)
+ id FaQBqdsuj4j6; Wed, 25 Feb 2026 23:56:50 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org DD93A61578
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 6EBA960D64
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1772054159;
-	bh=6pvHtk/iJP/raD3akWPfDvbFO59G6TvizKrKKRmOGSc=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1772063810;
+	bh=Fze38fQh3jYeQvMp+laFGBIXCYEEb1EnfKKcalJI/qY=;
+	h=From:To:Cc:In-Reply-To:References:Date:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=wVdIGeYrjqs2pZtrUeDATCyMXMln3+a2w9wYetFiTmot7tEUiqWEFjaw10Kn6YpWI
-	 3idkcjc+lNnks522kr+4053TRnlT8XRP2MzN9ekBGdc5FgXQD2xcFLN9maI286zfKs
-	 /tYWucKWKb0XIEcthSf62PZVg5yYZqlBCQXpmk3h+9lM97Bfvo9lcOTwIErokhUmWS
-	 YjIrjxmRfPCA9PA1BTlfRmAWFLWE3hPNIWv03S1D3SyuorttYRjpHU8/N253ESR/Nk
-	 n5GsR63Ox5MlO7LnKy1bTJNZUAU8R1YxPFNt+Q+Ayb6eevm6k1+oQdAE6TdsIs/lPA
-	 fZO84muJ4LLmw==
+	b=AllU7NOwNJIUmfbTOGdZHMHDjsf5sK8x+loR18qLqD6zgtPykAlAvyN1dNio8DBgG
+	 Fm9/H2OtpBbr5N4RjKtg4V6qvaBOMpplgx1CC1MWoVgqVSAuYKlxbTMPGNQ9+fqNR9
+	 kfzzbkMfo64btfzNR+U4y0dK7omWdGqBuEYR1qlqJ//LGViuNtF3yTFTW5J/kXbJ+M
+	 /ocJQHCecvOyJ4LkubFLwgs1Ii8IunfiOkIcdD1sJhiidEcOup7/kU4h5T3amILLVj
+	 7g2GNUN+bPc8bpudu1LMIfTq0AbpLC1pr2Xl17M+H35Y0Jov97D/H/+WZx5TbHp5iT
+	 BJJq0VhN5y7eA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id DD93A61578;
-	Wed, 25 Feb 2026 21:15:59 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id 6287D204
- for <intel-wired-lan@lists.osuosl.org>; Wed, 25 Feb 2026 21:15:58 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 6EBA960D64;
+	Wed, 25 Feb 2026 23:56:50 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 77380204
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 25 Feb 2026 23:56:48 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 4899461578
- for <intel-wired-lan@lists.osuosl.org>; Wed, 25 Feb 2026 21:15:58 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 68FCC60D64
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 25 Feb 2026 23:56:48 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id IgTr5uEExnqJ for <intel-wired-lan@lists.osuosl.org>;
- Wed, 25 Feb 2026 21:15:57 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.17;
- helo=mgamail.intel.com; envelope-from=anthony.l.nguyen@intel.com;
+ id NWXqf9ZQeP5p for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 25 Feb 2026 23:56:47 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.16;
+ helo=mgamail.intel.com; envelope-from=vinicius.gomes@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 4B90D61572
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4B90D61572
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.17])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 4B90D61572
- for <intel-wired-lan@lists.osuosl.org>; Wed, 25 Feb 2026 21:15:56 +0000 (UTC)
-X-CSE-ConnectionGUID: bfVfVYy+S/ai76dsDcOaXw==
-X-CSE-MsgGUID: YIyYJj6pRuyYSvMJpbKasg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11712"; a="73013821"
-X-IronPort-AV: E=Sophos;i="6.21,311,1763452800"; d="scan'208";a="73013821"
-Received: from fmviesa002.fm.intel.com ([10.60.135.142])
- by fmvoesa111.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 25 Feb 2026 13:15:57 -0800
-X-CSE-ConnectionGUID: TOkjgf7RSI6oT4o+yZZg2A==
-X-CSE-MsgGUID: qRQp1OlLSLugHN5Epy+usg==
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org B084760D5C
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B084760D5C
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.16])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id B084760D5C
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 25 Feb 2026 23:56:46 +0000 (UTC)
+X-CSE-ConnectionGUID: 3WPK37XkT3CXwGFKgjk6zg==
+X-CSE-MsgGUID: CzTplUYQQq+aNeSiCGTc8Q==
+X-IronPort-AV: E=McAfee;i="6800,10657,11712"; a="73296037"
+X-IronPort-AV: E=Sophos;i="6.21,311,1763452800"; d="scan'208";a="73296037"
+Received: from orviesa001.jf.intel.com ([10.64.159.141])
+ by orvoesa108.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 25 Feb 2026 15:56:45 -0800
+X-CSE-ConnectionGUID: OHcdCXSgQxiLJtblpsZj+A==
+X-CSE-MsgGUID: w2L6W3WVTdeZm1ACxOS+Gw==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.21,311,1763452800"; d="scan'208";a="239349705"
-Received: from anguy11-upstream.jf.intel.com ([10.166.9.133])
- by fmviesa002.fm.intel.com with ESMTP; 25 Feb 2026 13:15:56 -0800
-From: Tony Nguyen <anthony.l.nguyen@intel.com>
-To: davem@davemloft.net, kuba@kernel.org, pabeni@redhat.com,
- edumazet@google.com, andrew+netdev@lunn.ch, netdev@vger.kernel.org
-Cc: Thomas Gleixner <tglx@kernel.org>, anthony.l.nguyen@intel.com,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- intel-wired-lan@lists.osuosl.org, Joe Damato <joe@dama.to>,
- Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Date: Wed, 25 Feb 2026 13:15:40 -0800
-Message-ID: <20260225211546.1949260-10-anthony.l.nguyen@intel.com>
-X-Mailer: git-send-email 2.47.1
-In-Reply-To: <20260225211546.1949260-1-anthony.l.nguyen@intel.com>
-References: <20260225211546.1949260-1-anthony.l.nguyen@intel.com>
+X-IronPort-AV: E=Sophos;i="6.21,311,1763452800"; d="scan'208";a="254143884"
+Received: from ssimmeri-mobl2.amr.corp.intel.com (HELO vcostago-mobl3)
+ ([10.125.111.103])
+ by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 25 Feb 2026 15:56:45 -0800
+From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+To: Mika Westerberg <mika.westerberg@linux.intel.com>, Bjorn Helgaas
+ <helgaas@kernel.org>
+Cc: linux-pci@vger.kernel.org, intel-wired-lan@lists.osuosl.org, Bjorn
+ Helgaas <bhelgaas@google.com>, Lukas Wunner <lukas@wunner.de>, Tony Nguyen
+ <anthony.l.nguyen@intel.com>, Przemek Kitszel
+ <przemyslaw.kitszel@intel.com>, Andrew Lunn <andrew+netdev@lunn.ch>,
+ "David S . Miller" <davem@davemloft.net>, Eric Dumazet
+ <edumazet@google.com>, Paolo Abeni <pabeni@redhat.com>, Saeed Mahameed
+ <saeedm@nvidia.com>, Leon Romanovsky <leon@kernel.org>, Tariq Toukan
+ <tariqt@nvidia.com>, Mark Bloch <mbloch@nvidia.com>, Richard Cochran
+ <richardcochran@gmail.com>, Andy
+ Shevchenko <andriy.shevchenko@intel.com>, Vitaly Lifshits
+ <vitaly.lifshits@intel.com>, Ilpo =?utf-8?Q?J=C3=A4rvinen?=
+ <ilpo.jarvinen@linux.intel.com>, Dima Ruinskiy <dima.ruinskiy@intel.com>
+In-Reply-To: <20260225122619.GA2275908@black.igk.intel.com>
+References: <20260224111044.3487873-3-mika.westerberg@linux.intel.com>
+ <20260224165837.GA3736201@bhelgaas>
+ <20260225122619.GA2275908@black.igk.intel.com>
+Date: Wed, 25 Feb 2026 15:56:44 -0800
+Message-ID: <87jyw09y2r.fsf@intel.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1772054158; x=1803590158;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=BceDO1lWMoKFD6z4ktQ3P5Lo8MQAF++Bz9Jxyty0ryY=;
- b=WXMsAawfzt/oyc/d1WneiD64nCXS5ZhmtUmfwEOpkPlvkglDOSlp4sPm
- 67qKWwQv7No9N0yO/3A2xcFPeByUqYvpQ44LGY6fCB5gqXCPkiXIoSj36
- NJBPy3UQWbUPjAGMJMOlv8hq73lu9SW8kqQtO6qPdESNe3+oESD7kS2F+
- E3IIKd5WFKYJj/+P3ntB1l8TvV4KUi/LOZ8Drs4NRrREA6A9rnYvzd0NA
- MHppvIWUygDw4uZSSjFKHNtz5enZNm5vTqQdcgVjdzb6vGTua7rSEmov3
- 9y9QlDl30iE5+Lay8g7xxuPL7n5A1o7W1I1dK0AVQxvc83n/ZFCFCKOKa
- g==;
+ t=1772063807; x=1803599807;
+ h=from:to:cc:subject:in-reply-to:references:date:
+ message-id:mime-version;
+ bh=PUDRRJUvwufwpdxAeV/prfHMJbc5bfvWNHyTsiVnrog=;
+ b=mzC31bOnEt90syKyjEH5bRjnGFgxEwOeCYXzECNYNRB3XO03JOifscVs
+ 8dgQHr5zYH2mrAufs8Wkq1/P3LA+QCRPFwqWzrO19EwLB0fMdzXP6wEiS
+ XavzuCVc3l9itYcTZcrMYTiiY1shcL+o89Xtn3Sa3DDcZ3g8B+pPvE82t
+ Tle85MH1nPCv6WZzG8PoxfJhIGhOF8VpcnLQQD5juXP/syOooM1D/sv0Z
+ VfmIf+nY6PN4g2B/HGLolIpjtm4sWFzDDswTfaBxxqHhZw357v+lDA/Ot
+ cnXovvoWu7oiwkDiN8BdcGM+sYKYT7xn6WzHgooJScia0VwnvvCadUqZF
+ Q==;
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=WXMsAawf
-Subject: [Intel-wired-lan] [PATCH net v2 09/12] i40e: Fix preempt count leak
- in napi poll tracepoint
+ header.s=Intel header.b=mzC31bOn
+Subject: Re: [Intel-wired-lan] [PATCH 2/5] igc: Let the PCI core deal with
+ the PM resume flow
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -113,43 +124,39 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Thomas Gleixner <tglx@kernel.org>
+Mika Westerberg <mika.westerberg@linux.intel.com> writes:
 
-Using get_cpu() in the tracepoint assignment causes an obvious preempt
-count leak because nothing invokes put_cpu() to undo it:
+> On Tue, Feb 24, 2026 at 10:58:37AM -0600, Bjorn Helgaas wrote:
+>> On Tue, Feb 24, 2026 at 12:10:41PM +0100, Mika Westerberg wrote:
+>> > Currently igc driver calls pci_set_power_state() and pci_restore_state()
+>> > and the like to bring the device back from low power states. However,
+>> > PCI core handles all this on behalf of the driver. Furthermore with PTM
+>> > enabled the PCI core re-enables it on resume but the driver calls
+>> > pci_restore_state() which ends up disabling it again.
+>> > 
+>> > For this reason let the PCI core handle the common PM resume flow.
+>> > 
+>> > Signed-off-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+>> > Reviewed-by: Andy Shevchenko <andriy.shevchenko@intel.com>
+>> 
+>> I love it, thanks a lot for doing this!
+>> 
+>> Do we still need the pci_enable_device_mem() and pci_set_master()
+>> in __igc_resume()?
+>>
+>> I suppose some of that is related to the pci_disable_device() in the
+>> suspend path (__igc_shutdown()), but there are only a few dozen
+>> drivers that do this, so I'm not sure it's essential.
+>
+> I think they are just as you describe due the fact there are explicit
+> pci_disable_device() calls. Probably we can get rid of them as well but
+> that requires careful testing that nothing accidentally breaks.
+>
 
-  softirq: huh, entered softirq 3 NET_RX with preempt_count 00000100, exited with 00000101?
+This series is solving real problems (thank you btw), I think the
+pci_disable_device() one would be better as a separate series.
 
-This clearly has seen a lot of testing in the last 3+ years...
 
-Use smp_processor_id() instead.
-
-Fixes: 6d4d584a7ea8 ("i40e: Add i40e_napi_poll tracepoint")
-Signed-off-by: Thomas Gleixner <tglx@kernel.org>
-Cc: Tony Nguyen <anthony.l.nguyen@intel.com>
-Cc: Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Cc: intel-wired-lan@lists.osuosl.org
-Cc: netdev@vger.kernel.org
-Reviewed-by: Joe Damato <joe@dama.to>
-Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_trace.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_trace.h b/drivers/net/ethernet/intel/i40e/i40e_trace.h
-index 759f3d1c4c8f..dde0ccd789ed 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_trace.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_trace.h
-@@ -88,7 +88,7 @@ TRACE_EVENT(i40e_napi_poll,
- 		__entry->rx_clean_complete = rx_clean_complete;
- 		__entry->tx_clean_complete = tx_clean_complete;
- 		__entry->irq_num = q->irq_num;
--		__entry->curr_cpu = get_cpu();
-+		__entry->curr_cpu = smp_processor_id();
- 		__assign_str(qname);
- 		__assign_str(dev_name);
- 		__assign_bitmask(irq_affinity, cpumask_bits(&q->affinity_mask),
+Cheers,
 -- 
-2.47.1
-
+Vinicius
