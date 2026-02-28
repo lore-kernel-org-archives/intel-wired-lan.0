@@ -4,96 +4,124 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0AC55EA4E24
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  2 Mar 2026 15:54:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 84EEEEA4E38
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  2 Mar 2026 16:11:52 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id A612741C87;
-	Mon,  2 Mar 2026 15:54:41 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 2A5D440A48;
+	Mon,  2 Mar 2026 16:11:52 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 2RK1YJ8lT897; Mon,  2 Mar 2026 15:54:40 +0000 (UTC)
+ id iiO4Ad95xPA3; Mon,  2 Mar 2026 16:11:51 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E9DC041C85
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 55B474094D
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1772466880;
-	bh=uoDsUjmNtIKrn5Kz6/l+roZEKktY4DgB5luIjppuxUo=;
-	h=Date:From:To:Cc:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=JE9WI2lq1XaiMG05WlZfxekP7Vb+rYzrtI1aOA5MZEC+hTDZb74DP5sfvWm+GeUHl
-	 j3ZRu2r5L4x7aH+m+9y9p5/fc2TEZiG3HPpvtVuysmkx17HqiwKjrgVj4FogJKmJnc
-	 Qexn0yWqlyUYeMAdqfIHcm8Oa5COlQq3OfsubS3PVXqWiz8hXwR3XasJjLQpoqTAyr
-	 faQ2lPBToMpkTA3D3ykSs5+deq7pdXn6j5QO8kFQOCQHoyC7oatzBB7YTLaEYaubXi
-	 D9f3rg7D7RghTsOQBHOaeIW2p/WkN5f02dR46WDIY9U22NGs1+jcVy/HAnpebhdoJR
-	 STXME5cX8WSOQ==
+	s=default; t=1772467911;
+	bh=NyluPCHT90VZ2IGr8H87MLzDkTcha73dsX9pgK3w8t4=;
+	h=From:Date:To:Cc:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=f/mk2Mxf6OjFIjJbEyNqNbmAftPY7NGjKsDIcV5DGLTHZDaA71VjvqqGWW56KLOBk
+	 NbOiifsy7sbQce3Hp5K3jrFxW/7BJZwXJLKw9eKDf/hWQnsBN5NVzrHz7N7PgoF+oA
+	 +QLBJvD0JcWUstKNk3l4tue2hpTVFyvkA09kugvpIF5WkWuhrpF//8GsPkx8qdUo+W
+	 VOIJVZEddH0RZHO/6SZ5m05uWzF8s5jRDB2gcUZ+xBq0TY51k634QDCyBFhcdY3mbI
+	 QNy3/0IfeSVgLrEG0llFjQWccS93GVxpyMpHITWPP6P+PYjCdHXE0ScXEPAQeNffzn
+	 73AX/s9ucWC5A==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id E9DC041C85;
-	Mon,  2 Mar 2026 15:54:39 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 55B474094D;
+	Mon,  2 Mar 2026 16:11:51 +0000 (UTC)
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id 24EEF25B
- for <intel-wired-lan@lists.osuosl.org>; Mon,  2 Mar 2026 15:54:39 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id 1B14B1F3
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 28 Feb 2026 00:08:18 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 15E6483DDF
- for <intel-wired-lan@lists.osuosl.org>; Mon,  2 Mar 2026 15:54:39 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 1881A83B98
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 28 Feb 2026 00:08:18 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id IPie-xugv247 for <intel-wired-lan@lists.osuosl.org>;
- Mon,  2 Mar 2026 15:54:38 +0000 (UTC)
+ id 3Sz0V0ZNQxwK for <intel-wired-lan@lists.osuosl.org>;
+ Sat, 28 Feb 2026 00:08:17 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org;
- envelope-from=mchehab+huawei@kernel.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 6201883DDB
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 6201883DDB
-Received: from tor.source.kernel.org (tor.source.kernel.org
- [IPv6:2600:3c04:e001:324:0:1991:8:25])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 6201883DDB
- for <intel-wired-lan@lists.osuosl.org>; Mon,  2 Mar 2026 15:54:38 +0000 (UTC)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by tor.source.kernel.org (Postfix) with ESMTP id 11A98600AD;
- Mon,  2 Mar 2026 15:54:37 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B2D4EC2BC87;
- Mon,  2 Mar 2026 15:54:36 +0000 (UTC)
-Received: from localhost ([::1]) by mail.kernel.org with esmtp (Exim 4.99.1)
- (envelope-from <mchehab+huawei@kernel.org>)
- id 1vx5bO-0000000GuZ0-2ElO; Mon, 02 Mar 2026 16:54:34 +0100
-Date: Mon, 2 Mar 2026 16:54:33 +0100
-From: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
-To: Jonathan Corbet <corbet@lwn.net>
-Cc: Alexander Lobakin <aleksander.lobakin@intel.com>, Kees Cook
- <kees@kernel.org>, Mauro Carvalho Chehab <mchehab@kernel.org>,
- intel-wired-lan@lists.osuosl.org, linux-doc@vger.kernel.org,
- linux-hardening@vger.kernel.org, linux-kernel@vger.kernel.org,
- netdev@vger.kernel.org, "Gustavo A. R. Silva" <gustavoars@kernel.org>,
- Aleksandr Loktionov <aleksandr.loktionov@intel.com>, Randy Dunlap
- <rdunlap@infradead.org>, Shuah Khan <skhan@linuxfoundation.org>
-Message-ID: <20260302165433.27f11148@localhost>
-In-Reply-To: <87sear2kbm.fsf@trenco.lwn.net>
-References: <cover.1771408406.git.mchehab+huawei@kernel.org>
- <87sear2kbm.fsf@trenco.lwn.net>
-X-Mailer: Claws Mail 4.3.1 (GTK 3.24.51; x86_64-redhat-linux-gnu)
+ client-ip=2607:f8b0:4864:20::1232; helo=mail-dl1-x1232.google.com;
+ envelope-from=mromanus@lbl.gov; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org E923C83B91
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E923C83B91
+Received: from mail-dl1-x1232.google.com (mail-dl1-x1232.google.com
+ [IPv6:2607:f8b0:4864:20::1232])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id E923C83B91
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 28 Feb 2026 00:08:16 +0000 (UTC)
+Received: by mail-dl1-x1232.google.com with SMTP id
+ a92af1059eb24-124b07e5fe4so124424c88.3
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 27 Feb 2026 16:08:16 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1772237296; cv=none;
+ d=google.com; s=arc-20240605;
+ b=aMJRPvyobCBQWqat5mOB83TggU6eLjx/mSHIQwLlx/51hZSNrvOjy7L2K7wo1f038R
+ bt0gEHHonwFixG9nuqhV+PujV0WC20lHgFoFYT3F26lWn3+AdIL9WgGiKYkCATfhilA0
+ jrWfw29YWTWcr0Wq1bIUdsW95FxE4MloQYP/c6e5z7wx8pz8IvcmERRk4KozJbT7Z9Mp
+ jbaqzJ5mZ+4hYF6e56N5AtBfFmBHwcDf0hW+KBphxU7v8C+uQ0XCEj07XhWmnsl0slVV
+ R8jN9B7a6QT1RiNciaoXs6wMUo8FpwmFGwHAMKwtI5R+Dkz+0ABuK9GDHyagtVt12GXG
+ HWzg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com;
+ s=arc-20240605; 
+ h=cc:to:subject:message-id:date:from:mime-version:dkim-signature;
+ bh=NyluPCHT90VZ2IGr8H87MLzDkTcha73dsX9pgK3w8t4=;
+ fh=OV+FvphG9Gv01U4LLMUoeG8BPF8PErMQVey8EXSevNM=;
+ b=Qqekthp3AzMS4LxFfvHFJjZ/LkSGyb2Uw2lsnkifK+4C4I7y7KR893BHn06iNFPv6N
+ PxO65sDmSuBlnr1AeRQUsBVEAeTrbh7O7hYU1kU7uC5EKB0kgyqrvGHAjaqpueXYYw2N
+ FDEDcFehRUMMzrsI/H0AgsxkZ4x5ErHXXiKYMnWjI4CQOFxt8A6qXJDM162ao52Ozr5Z
+ OlzZnNYYj9mjiBaOnQIC22o8aW9dfVx92GoSvIATQ9UhBOtVSjdWK1HZCpcXLCFc3BqB
+ sORIe9pVz0WYTRO9e4w2L0UuEAkL9lb0ExL8a2+piuuCien3Hr2G3OF7linhaMfuRPYQ
+ SygQ==; darn=lists.osuosl.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20230601; t=1772237296; x=1772842096;
+ h=cc:to:subject:message-id:date:from:mime-version:x-gm-gg
+ :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+ bh=NyluPCHT90VZ2IGr8H87MLzDkTcha73dsX9pgK3w8t4=;
+ b=LhSFfKSxIj0tclP9wavcQ+jopstn2VxzTsYcxcOx7I/YndEuTtJPeS8WgkVWKYdvEq
+ nrixGIrDlKWtf9opTzRB9Q1OSk0mBANkjCz2cgl8dY7kNz+ReP9198/Sa0oRf8EJ1jM6
+ wg1D/wM4+VAIJbqr0CHr8+5YkkO5RDlqUads9suK+4xyz2jNouvmydm0FPjS7ZQP46X7
+ SlXj4xUsR2vR9jQ4NuoUaufN+aWy++2LeYsOJxf6lIi4n7v9ONuESRnqCyiD1r32fnCB
+ s8hRn3W2IiUjpwGr+rrokejeu8XORPeqckq3AB621sjo/SIGeOi8jjb5/sF5anlck3To
+ 5Xyg==
+X-Gm-Message-State: AOJu0Yxc1K+DvJPesYxiwV6cFYHs/JHW2Ywd1pN0Mz/euvyaiEcu8Eyw
+ ZyVXFoT288gDsl5tvgR7FFbZRrBI+2m8H9ZB/sJ0OI4qyX3GILEVpZhVX8ArABv9GeHp/sIysSH
+ /T2giKfI65WbkVUHgnOZVzj0KYiP9IVx3R77cdTKTLwqfBlZ+TDmdJu+3d2Q/5+61rpMNC3s+6u
+ b9GnnfFOoIKSq4jn8pViWjzljceifLPQ+7KkA3GXUjWR08T/1545+Ih7G9Z5f19euyzrNwf0AET
+ hY3nOsWOHdtTBPhvs6yVrKyop2mBJzGwr7qbcsdyrmhnfa+V5ONQqNv8bT/f1T4
+X-Gm-Gg: ATEYQzwQBnVcO3qOhOJZCsEqgLpzTHK5b5gET8JzQYKgEUUNSimDl8qeOKR04QZiViX
+ r+vq0dzTzhotfBBwSuma8KIgObmcGzVz38Q7RIyTn2UhOw5b382Oc8qYMv/BQTsF1LG0uq03RfL
+ BQohRe8WScXHqUdS4nQgMYsZv/uIKwedRQp2GvW7SUzXdgHMM3SF+aXamFW/DcZa13/ZC6xAoyr
+ bljSJ1gb+6ntlIpjBH/2W/uHBZFjS7pK7F6affIi/CWhiw6kgm/glgMh06L0chzROzgbmtHydW5
+ Wdedaed11BcuZooPOds2FPi3MIgTLZMnAKccTA==
+X-Received: by 2002:a05:693c:3018:b0:2bd:d404:e018 with SMTP id
+ 5a478bee46e88-2bde1e92b77mr950673eec.8.1772237295288; Fri, 27 Feb 2026
+ 16:08:15 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1772466876;
- bh=3BQmq9dvDpl2+fop+k6JBpifN8Rg7E6/3o3+NwzLUys=;
- h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=jgDRLpR1lV5Tw0Ecq/vLiVK0zxCyZGfh1QQbGSPkdVdk1kFg7jD5JrKWWujT+3ecn
- RjXtWbXFBDkmX7zxn30hP1eQwct2sf7gJb1MzO1hPFScV+HwOVAPZ5NAFNcsGl/JbI
- eAVuF1oT4mtua5qCAOSkJ0A3nSHPDpAMyGacFS/ugKah1ihP+Fr8LZy6rriEy4chT7
- f4eyrHL4vKxvgQ02eB5Fz+VSkK9pN0/GX8il4ctbFuZcp5j4Afl5dTpoP058MHmxwM
- DXYNh6GjhipUwJDF3NojaQIG5EBzIqcCyrCtCTW6IsPV+/P3ZOFPNIPM61nOqBe5cr
- Tn9PETygu4k/Q==
+From: Melissa Romanus <MRomanus@lbl.gov>
+Date: Fri, 27 Feb 2026 16:08:04 -0800
+X-Gm-Features: AaiRm52gIDz6ZnDB1h0RliQoKZuWyOIqsPdoS7SkOncXyCLXvyV8H5YOF_tSIpw
+Message-ID: <CA+MmCVf4nw=0iFNw1vCT3SU_n27tRJByh_BgHiEcBXroESeDCg@mail.gmail.com>
+To: netdev@vger.kernel.org
+Cc: intel-wired-lan@lists.osuosl.org
+Content-Type: multipart/alternative; boundary="00000000000071b01c064bd7260c"
+X-Mailman-Approved-At: Mon, 02 Mar 2026 16:11:50 +0000
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=lbl.gov; s=google; t=1772237296; x=1772842096; darn=lists.osuosl.org;
+ h=cc:to:subject:message-id:date:from:mime-version:from:to:cc:subject
+ :date:message-id:reply-to;
+ bh=NyluPCHT90VZ2IGr8H87MLzDkTcha73dsX9pgK3w8t4=;
+ b=J1f5+pOkmqss/jDiJKz8tilBRue7lZgqUye9gtCY5upjN67uPN2D+Pm2F4CqbHSYXH
+ yFiHAJp2d/2MAgYWiDX1qaKE9mu42X8jbZdA7c3lbi+zQcOlRmf2WKU2wML9+A4i5H/o
+ R+ak9CF15B99QgZ/X2GVlwPQkmifvPySTQHgw=
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dmarc=pass (p=quarantine dis=none)
- header.from=kernel.org
+ dmarc=pass (p=none dis=none)
+ header.from=lbl.gov
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=jgDRLpR1
-Subject: Re: [Intel-wired-lan] [PATCH 00/38] docs: several improvements to
- kernel-doc
+ dkim=pass (1024-bit key,
+ unprotected) header.d=lbl.gov header.i=@lbl.gov header.a=rsa-sha256
+ header.s=google header.b=J1f5+pOk
+Subject: [Intel-wired-lan] ixgbe/X550: kernel NULL pointer dereference
+ following "Malicious event on VF" after upgrade to 6.17.7
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -109,36 +137,141 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Mon, 23 Feb 2026 14:58:53 -0700
-Jonathan Corbet <corbet@lwn.net> wrote:
+--00000000000071b01c064bd7260c
+Content-Type: text/plain; charset="UTF-8"
 
-> Mauro Carvalho Chehab <mchehab+huawei@kernel.org> writes:
-> 
-> > Hi Jon,
-> >
-> > This series contain several improvements for kernel-doc.
-> >
-> > Most of the patches came from v4 of this series:
-> > 	https://lore.kernel.org/linux-doc/cover.1769867953.git.mchehab+huawei@kernel.org/  
-> 
-> So I will freely confess to having lost the plot with this stuff; I'm
-> now trying to get back up to speed. 
+Hi netdev,
 
-Yeah, I kinda figure it out ;-)
+After a recent Fedora CoreOS upgrade at the beginning of February, we are
+experiencing several kernel crashes on multiple nodes of the same style
+hardware, which are pointing to an issue with the ixgbe driver.
 
-> But, before I dig into this big
-> series, can you say whether you think it's ready, or whether there's
-> another one on the horizon that I should wait for?
+The affected nodes reboot following a kernel NULL pointer dereference
+immediately after an ixgbe "Malicious event on VF" message.
 
-There are more things undergoing, but I need some time to reorganize
-the patchset... currently, there are 60+ patches on my pile.
+Feb 27 21:34:34 d8-r11-c8-n3 kernel: ixgbe 0000:21:00.0: Malicious event on
+VF 3 tx:80000 rx:0
+Feb 27 21:34:34 d8-r11-c8-n3 kernel: BUG: kernel NULL pointer dereference,
+address: 0000000000000304
 
-So, instead of merging this patchset, I'll be sending you
-a smaller series with the basic stuff, in a way that it would
-be easier to review. My plan is to send patches along this week
-on smaller chunks, and after checking the differences before/after,
-in terms of man/rst/error output.
+Different node in another chassis (identical hardware):
 
--- 
-Thanks,
-Mauro
+Feb 13 10:42:49 d8-r11-c9-n2 kernel: ixgbe 0000:21:00.0: Malicious event on
+VF 12 tx:80000 rx:0
+Feb 13 10:42:49 d8-r11-c9-n2 kernel: BUG: kernel NULL pointer dereference,
+address: 0000000000000b2c
+
+This has occurred on at least five separate nodes since our FCOS upgrade
+maintenance on February 3. After reboot, nodes return to normal operation
+until the next occurrence. Currently for each of these systems, the journal
+always truncates after the BUG line. I will increase the panic delay and
+capture settings and update if we happen to catch a more meaningful trace
+before the reboot triggers.
+
+Here's some relevant info pertaining to our environment:
+
+- Linux kernel: 6.17.7-300.fc43.x86_64
+- OS: Fedora CoreOS 43.20251110.3.1
+
+Hardware Info:
+
+- Gigabyte MZ62-HD0 nodes (H262-Z62 chassis) -- happening across multiple
+nodes in multiple chassis in the stack (i.e., not isolated to a single
+chassis)
+- CPU is AMD EPYC 7302
+- The NIC causing issues is: Intel X550 (rev 01) dual-port 10GBASE-T
+-- Bonded interfaces (802.3ad) to redundant leaf switches
+
+Driver/mod Info:
+
+- driver: ixgbe
+- version: 6.17.7-300.fc43.x86_64
+- firmware-version: 0x80000c67, 1.1276.0
+
+From the modinfo:
+- filename:
+/lib/modules/6.17.7-300.fc43.x86_64/kernel/drivers/net/ethernet/intel/ixgbe/ixgbe.ko.xz
+- description:    Intel(R) 10 Gigabit PCI Express Network Driver
+- rhelversion:    10.99
+
+The SR-IOV capability is present on the X550 adapter, however no VFs are
+configured:
+
+/sys/class/net/enp33s0f0/device/sriov_numvfs = 0
+
+/sys/module/ixgbe/parameters/ has only allow_unsupported_sfp = N
+
+Also, no VF PCI devices appear in lspci output.
+
+In checking the priv flags, I noticed there's one for mdd-disable-vf. I can
+try to set mdd-disable-vf to on after sending to see if that helps as a
+potential mitigation, but the nondeterministic nature of this issue means
+it will take some time for us to know whether this change restores
+stability:
+
+Private flags for enp33s0f0:
+- legacy-rx     : off
+- vf-ipsec      : off
+- mdd-disable-vf: off
+
+I'm wondering if this is a known issue in recent kernels affecting
+ixgbe/X550 devices when MDD events are triggered without SR-IOV VFs
+configured? I could not find anything recent in my searches, so I thought I
+would reach out to report the behavior and see if there's anything I might
+be missing.
+
+Thanks for your time,
+
+Melissa
+
+--00000000000071b01c064bd7260c
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"ltr"><div><div><div>Hi netdev,</div><div><br></div>After a rece=
+nt Fedora CoreOS upgrade at the beginning of February, we are experiencing =
+several kernel crashes on multiple nodes of the same style hardware, which =
+are pointing to an issue with the ixgbe driver.<br><br>The affected nodes r=
+eboot following a kernel NULL pointer dereference immediately after an ixgb=
+e &quot;Malicious event on VF&quot; message.<br><br>Feb 27 21:34:34 d8-r11-=
+c8-n3 kernel: ixgbe 0000:21:00.0: Malicious event on VF 3 tx:80000 rx:0<br>=
+Feb 27 21:34:34 d8-r11-c8-n3 kernel: BUG: kernel NULL pointer dereference, =
+address: 0000000000000304<br><br>Different node in another chassis (identic=
+al hardware):<br><br>Feb 13 10:42:49 d8-r11-c9-n2 kernel: ixgbe 0000:21:00.=
+0: Malicious event on VF 12 tx:80000 rx:0<br>Feb 13 10:42:49 d8-r11-c9-n2 k=
+ernel: BUG: kernel NULL pointer dereference, address: 0000000000000b2c<br><=
+br>This has occurred on at least five separate nodes since our FCOS upgrade=
+ maintenance on February 3. After reboot, nodes return to normal operation =
+until the next occurrence. Currently for each of these systems, the journal=
+ always truncates after the BUG line. I will increase the panic delay and c=
+apture settings and update if we happen to catch a more meaningful trace be=
+fore the reboot triggers.<br><br>Here&#39;s some relevant info pertaining t=
+o our environment:<br><br>- Linux kernel: 6.17.7-300.fc43.x86_64<br>- OS: F=
+edora CoreOS 43.20251110.3.1<br><br>Hardware Info:<br><br>- Gigabyte MZ62-H=
+D0 nodes (H262-Z62 chassis) -- happening across multiple nodes in multiple =
+chassis in the stack (i.e., not isolated to a single chassis)<br>- CPU is A=
+MD EPYC 7302<br>- The NIC causing issues is: Intel X550 (rev 01) dual-port =
+10GBASE-T<br>-- Bonded interfaces (802.3ad) to redundant leaf switches<br><=
+br>Driver/mod Info:<br><br>- driver: ixgbe<br>- version: 6.17.7-300.fc43.x8=
+6_64<br>- firmware-version: 0x80000c67, 1.1276.0<br><br>From the modinfo:<b=
+r>- filename: =C2=A0 =C2=A0 =C2=A0 /lib/modules/6.17.7-300.fc43.x86_64/kern=
+el/drivers/net/ethernet/intel/ixgbe/ixgbe.ko.xz<br>- description: =C2=A0 =
+=C2=A0Intel(R) 10 Gigabit PCI Express Network Driver<br>- rhelversion: =C2=
+=A0 =C2=A010.99<br><br>The SR-IOV capability is present on the X550 adapter=
+, however no VFs are configured:<br><br></div><div>/sys/class/net/enp33s0f0=
+/device/sriov_numvfs =3D 0</div><div><br></div><div>/sys/module/ixgbe/param=
+eters/ has only allow_unsupported_sfp =3D N</div><div><br>Also, no VF PCI d=
+evices appear in lspci output.<br><br>In checking the priv flags, I noticed=
+ there&#39;s one for mdd-disable-vf. I can try to set mdd-disable-vf to on =
+after sending to see if that helps as a potential mitigation, but the nonde=
+terministic nature of this issue means it will take some time for us to kno=
+w whether this change restores stability:<br><br>Private flags for enp33s0f=
+0:<br>- legacy-rx =C2=A0 =C2=A0 : off<br>- vf-ipsec =C2=A0 =C2=A0 =C2=A0: o=
+ff<br>- mdd-disable-vf: off<br><br>I&#39;m wondering if this is a known iss=
+ue in recent kernels affecting ixgbe/X550 devices when MDD events are trigg=
+ered without SR-IOV VFs configured? I could not find anything recent in my =
+searches, so I thought I would reach out to report the behavior and see if =
+there&#39;s anything I might be missing.</div><div><br>Thanks for your time=
+,</div><div><br><div>Melissa</div></div></div></div>
+
+--00000000000071b01c064bd7260c--
