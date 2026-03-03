@@ -1,146 +1,111 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6EC5AEDEBEC
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  3 Mar 2026 19:45:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 021E3EDEBF7
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  3 Mar 2026 21:39:44 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 26DD1606DA;
-	Tue,  3 Mar 2026 19:45:01 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id xp1Ll8tIS85i; Tue,  3 Mar 2026 19:45:00 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 549F9606D5
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1772567100;
-	bh=4o6LTJ8NutkryaJMGJUUr00PI2f87nHxwk9b3ynu0+k=;
-	h=References:In-Reply-To:Date:To:Cc:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From:Reply-To:From;
-	b=mDOtgycNg6PdcY2+LgpFdkIXPx0BuKkXTsmSFUiodX4XElCamEgwNF/SHyRXPm5RZ
-	 4+dtQLkOrpRmPXxKyReLBext7cShIR62y/sn62KZ/TkZe8xEeW2i+aFnLYZ3kG5EUA
-	 LRypSvuADl3lbL6lxkO7d8la6SoQn6sGC/23hXC+FIeoqQaD6q+DLpYzXlsi3BKH16
-	 w6DZG2I0l7tlSVMS+rH5tY5/naQ0tzexvrRrif0GYMCNSGOcgvAlf6Dl1VOYGqlB3D
-	 Dq+IbArGa4UXfXVWlzk+h5tZcr5a/oBsrQ9qt0JS3SrTIOY0yS2j0YGDq3FlF1IMVo
-	 xFgf7M6X2UbWg==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 549F9606D5;
-	Tue,  3 Mar 2026 19:45:00 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id 7066D25B
- for <intel-wired-lan@lists.osuosl.org>; Tue,  3 Mar 2026 19:44:59 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 61E5A4187E
- for <intel-wired-lan@lists.osuosl.org>; Tue,  3 Mar 2026 19:44:59 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id B212440982;
+	Tue,  3 Mar 2026 21:39:44 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 9xTkSiCMS6ya for <intel-wired-lan@lists.osuosl.org>;
- Tue,  3 Mar 2026 19:44:58 +0000 (UTC)
+ id pkSNfomqOeWq; Tue,  3 Mar 2026 21:39:44 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0E8644099A
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1772573984;
+	bh=5tFr+VCU5MgdTJeB8l5sJEL17KHuhraEVD1f4KvyvgA=;
+	h=From:Date:References:In-Reply-To:To:Cc:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Reply-To:From;
+	b=guWW8lND1i/WZr+1aVoA7HuH+OPqQSzDiQXDeVqDpRQtT9ImcStvXGKab7/7T6Az2
+	 KBBpXPhWqzt8yUT6uKB8GUy+KJixQzAhBtRsklV9DfIW4t9ktMtUiJnT7i+YCnzUX/
+	 EzI23CETrixP/AwzxLih8i4dXeHrSb6+KU+Pl6T6kqqGeV+gwCs2jbIFF9nGTULjov
+	 RAjt3mH+bQBMBHAThYdFcUFJsEOjU6AtRQnReWry/4gkDxcgzhb+2jtviKru24iLXH
+	 NcQ24Vy8zv2hGXaRQ3W/o5+GC9rQASJRuRny8CHvqSpY2wjRvtfGhju9g4Ny34j1Pn
+	 wOGIKmJpAIVVQ==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp4.osuosl.org (Postfix) with ESMTP id 0E8644099A;
+	Tue,  3 Mar 2026 21:39:44 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 0E33A1EB
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  3 Mar 2026 21:38:43 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp1.osuosl.org (Postfix) with ESMTP id E84988188D
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  3 Mar 2026 21:38:42 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 35Wuid5PXYKm for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  3 Mar 2026 21:38:42 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2607:f8b0:4864:20::1231; helo=mail-dl1-x1231.google.com;
- envelope-from=srutherford@google.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org B300840D20
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B300840D20
-Received: from mail-dl1-x1231.google.com (mail-dl1-x1231.google.com
- [IPv6:2607:f8b0:4864:20::1231])
- by smtp4.osuosl.org (Postfix) with ESMTPS id B300840D20
- for <intel-wired-lan@lists.osuosl.org>; Tue,  3 Mar 2026 19:44:58 +0000 (UTC)
-Received: by mail-dl1-x1231.google.com with SMTP id
- a92af1059eb24-1275750cfc7so893352c88.0
- for <intel-wired-lan@lists.osuosl.org>; Tue, 03 Mar 2026 11:44:58 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1772567098; cv=none;
- d=google.com; s=arc-20240605;
- b=WEY6k8VXSo6sH8YOHYxlVv96sLRw+KrM5GoueQHLkeKhiaWDqdbk7IbTZ76j1fuKCA
- R3ZvucVXRPc1o+CK3x4RB0XZXJsfNeAxfgh0FZpoBHXCTK7sdittb0zv9iQlOW4VtJlO
- ye4TJSzfxchGmQFOkXLIPrp4UD8lUNzKjDuY/YBQ1mBDHiijKyjADVuu9vrNuno8JkKx
- LOQuxnwO8Ug91iv+KqJcSx1KcS4VMIU+cgxQ460ASeseFRdtPwMVK+fYkYr3eqFcOsJr
- 4MgU4DBWoVN5NdnfG/0QSGlwaU21FKJNJrRTfXXb56TMRv7NzVFAlhx843QS1gs5yrbv
- aXlQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com;
- s=arc-20240605; 
- h=content-transfer-encoding:cc:to:subject:message-id:date:from
- :in-reply-to:references:mime-version:dkim-signature;
- bh=4o6LTJ8NutkryaJMGJUUr00PI2f87nHxwk9b3ynu0+k=;
- fh=cBQgQxc3M8cAjWs38AQxEyvh4DIia1aVUtNyoT4OmWk=;
- b=OhOeqnvOV9qGadly05KCK+LDXSKuJWLH7Mp5diU6aN4ATPqAC/jx+2btLeMYrO3Sit
- c1No0DlQx3+er72Ck0lCrqZsF2fhECbDplQ3M2YhdYlxduXn5Ew+fhPd7+qszuil8NE2
- G6PYFlw9UwTSc2+A1txiohiLRHh3BVZVFT+190G7OzqdlWU9mthrRjV5cjxoSsRW2i2D
- hpe4j9FMCvNtQ6T600Gc+qWVuVP/fRRmqK8rJOxc/LwpEPB4qONj2xPBe+yzteBWo6YC
- xGi3PsFLzjXuYyZIzzBZEEx1ZKO1QegppwUTM1lAx+O9tKN1ElFZ//Z0Xz+s4eVxjYBH
- /Lgw==; darn=lists.osuosl.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20230601; t=1772567098; x=1773171898;
- h=content-transfer-encoding:cc:to:subject:message-id:date:from
- :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
- :to:cc:subject:date:message-id:reply-to;
- bh=4o6LTJ8NutkryaJMGJUUr00PI2f87nHxwk9b3ynu0+k=;
- b=Ozf2f9ZNrjAZOaX+g7x6W3dUu19/2MIv/MBpR/UpPtPMzyXlxcXnqOU313ej/+5fNR
- 0UJgvAAokk1IaeyGn1V2phYYvFHo1V3dxAK2lkpTOBQjLZWJnY2NJccGfPLDcdA22Z2M
- jIi7dCVKjvpWL5e6ff9ujEbm85c3kzQezzrhFIdv0s6FvDGT7w+0Ci90ZptcWEnpfJPk
- dqy/8rWqqlCZDWxQRs1u0J5MuZs0en5KEm0PvGkMHtP9k1crgDw9AsxlyzwAOS6vl55a
- IkREFdytb9STvgmY2HZ5jaMNih1JdXpN6rx0V1umXSqibnvBzm50t4DrUvSlIE9dLATz
- rp8w==
-X-Forwarded-Encrypted: i=1;
- AJvYcCX++UcAsK4XK0iTTUl5IQoTQrumTSGYc1DitWMWLZhOQq6PCIRy7hhtn8EYEf9rf1jEwIIUz44uaLYU/lAh56M=@lists.osuosl.org
-X-Gm-Message-State: AOJu0Yx0c60TTBZ5bYKJgPf4EU5nWHqo4GTY8abfrdSifDNKtlBVC8M+
- R3P+z6Hwe8Wb4FO/4LX05VGbYpYKYeCDBRrLs2eyDBtdplamVDDEilrN6m01pbv48DDg0N2QGiV
- kY6R4Htl/K996PPp2nvywgHyEWbw8r+X3nO5+QCgu
-X-Gm-Gg: ATEYQzy85WR+EbWKhJ8B1pByKhdD2JjyA44xzfanMaa0uglyrNWVtCX6dPZTOImX5u3
- DKTDB/kaCPQS6BRS636UphQ562SQluJgCEBofaAHrf5vz/Q9QT+LWNh0fmr2pQUydiNk+bagwiz
- sfSXnOnUS6tujwZhAS+6f1B24GR5TTRyWZdX6I4I8HaIzITamrQf6dB74kMzd/+dq7J/elq87V3
- QP2zr5lczwxFKM77tEELjdnEDO3o37J4+Pz9514ec3sGAXeoVMgt971TvCihJHOtjTubkIURZ9R
- wbKydIGGCXU9O+0n/k9xk3bxpHSHyONU/OA6ojcuu+cgs9cwLs3lStrtxvyyhyghFYFw0Rqlo4O
- IWcXF
-X-Received: by 2002:a05:7022:24a0:b0:11b:9386:7ecf with SMTP id
- a92af1059eb24-1278fd39e53mr7929988c88.44.1772567096881; Tue, 03 Mar 2026
- 11:44:56 -0800 (PST)
+ client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org;
+ envelope-from=devnull+maximilianpezzullo.gmail.com@kernel.org;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 514B98188A
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 514B98188A
+Received: from tor.source.kernel.org (tor.source.kernel.org
+ [IPv6:2600:3c04:e001:324:0:1991:8:25])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 514B98188A
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  3 Mar 2026 21:38:42 +0000 (UTC)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+ by tor.source.kernel.org (Postfix) with ESMTP id D758561118;
+ Tue,  3 Mar 2026 21:38:40 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 7F4A5C2BC87;
+ Tue,  3 Mar 2026 21:38:40 +0000 (UTC)
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org
+ (localhost.localdomain [127.0.0.1])
+ by smtp.lore.kernel.org (Postfix) with ESMTP id 6CCECEDEBF7;
+ Tue,  3 Mar 2026 21:38:40 +0000 (UTC)
+From: Maximilian Pezzullo via B4 Relay
+ <devnull+maximilianpezzullo.gmail.com@kernel.org>
+Date: Tue, 03 Mar 2026 22:38:20 +0100
 MIME-Version: 1.0
-References: <20260227203457.558196-1-srutherford@google.com>
- <20260227203457.558196-2-srutherford@google.com>
- <6a7fbafa-cdcd-4bfa-ac00-204e68602f61@intel.com>
-In-Reply-To: <6a7fbafa-cdcd-4bfa-ac00-204e68602f61@intel.com>
-Date: Tue, 3 Mar 2026 11:44:19 -0800
-X-Gm-Features: AaiRm521Th__xaTNnXE93XdLGaT-9yoWqssZueW9zKUGNuOJyvzZ_SxDnuaYaU4
-Message-ID: <CABayD+eF30_OHRrGYiG-7qKbJjvs5=7U8H7SH9Hj=ou6aZJBbw@mail.gmail.com>
-To: Alexander Lobakin <aleksander.lobakin@intel.com>
-Cc: Tony Nguyen <anthony.l.nguyen@intel.com>, 
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- "David S. Miller" <davem@davemloft.net>, 
- Jakub Kicinski <kuba@kernel.org>, Eric Dumazet <edumazet@google.com>,
- intel-wired-lan@lists.osuosl.org, 
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org, 
- David Decotigny <decot@google.com>, Anjali Singhai <anjali.singhai@intel.com>, 
- Sridhar Samudrala <sridhar.samudrala@intel.com>,
- Brian Vazquez <brianvv@google.com>, 
- Li Li <boolli@google.com>, emil.s.tantilov@intel.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=google.com; s=20230601; t=1772567098; x=1773171898; darn=lists.osuosl.org;
- h=content-transfer-encoding:cc:to:subject:message-id:date:from
- :in-reply-to:references:mime-version:from:to:cc:subject:date
- :message-id:reply-to;
- bh=4o6LTJ8NutkryaJMGJUUr00PI2f87nHxwk9b3ynu0+k=;
- b=LkI7njSSsd270Q1ZXeArI23bUQGO1Xd81HePwDfIDa7cI5FOrCFY1YPFzw0y2XRh2t
- 4XsIu6cFLBftI8pK/7Lhgk6U/E9bG/WBc+732H1+NyPJk8cuEOJct4+keUCWEDxbMtX8
- MMHaaJaVuPv4MgrMggGRfxnXda1nKRxjTq637b3u3DZHCLCdxDrCikm5poPjji1NAPQU
- xotgURqpUW2NmjvlfUJUO3Nr07dBlqvQLa0eiTLsMAETKyExloeccC5/9WzIDURsUh/m
- CabwSmvOLRycyJOEdxBrhru6wnMSCdl4N7ROeOtCYmVs6pcdYHMm1kFqct96h5b3QKiS
- GMQQ==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dmarc=pass (p=reject dis=none)
- header.from=google.com
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=google.com header.i=@google.com
- header.a=rsa-sha256 header.s=20230601 header.b=LkI7njSS
-Subject: Re: [Intel-wired-lan] [RFC PATCHv2 1/1] idpf: Fix header clobber in
- IDPF with SWIOTLB enabled
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260303-master-v1-1-f180b1ad98b5@gmail.com>
+References: <20260303-master-v1-0-f180b1ad98b5@gmail.com>
+In-Reply-To: <20260303-master-v1-0-f180b1ad98b5@gmail.com>
+To: Tony Nguyen <anthony.l.nguyen@intel.com>, 
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>, 
+ Andrew Lunn <andrew+netdev@lunn.ch>, 
+ "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>
+Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, 
+ Maximilian Pezzullo <maximilianpezzullo@gmail.com>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1772573919; l=2465;
+ i=maximilianpezzullo@gmail.com; s=20260303; h=from:subject:message-id;
+ bh=AFngQ6STbyhDDwY5fngMlDBMLtfCdqw2s6bzouZtL2E=;
+ b=qscFiBIdFr8gVcycZYKsdxDbGRaYYhZi4k7TpaBmZU7jRhh6Nk2lxZlcIWLxJ7Zpg/q6WksS8
+ hzVQxLU3m3aCckvy74Hmcjb2k2p2TNMacZ7ggzkVt5InwkGRXoR1osh
+X-Developer-Key: i=maximilianpezzullo@gmail.com; a=ed25519;
+ pk=TRTR4c2Vb1IfluQvv5OUDPg7EE+pIzdPBND85UU559w=
+X-Endpoint-Received: by B4 Relay for maximilianpezzullo@gmail.com/20260303
+ with auth_id=658
+X-Original-From: Maximilian Pezzullo <maximilianpezzullo@gmail.com>
+X-Mailman-Approved-At: Tue, 03 Mar 2026 21:39:42 +0000
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=kernel.org; s=k20201202; t=1772573920;
+ bh=ncE0CctbXbxGWCznoqU5F/hOD+FPfa97eLIKp7komgg=;
+ h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+ b=sbnFiomABj/XjQvcSLjqFae8r0RjcI+S8ubExK+QDP4GkOHMIB3OfgSVwJrbM6jSu
+ xq5j69eJpOBrBiavGLFlVeOViMxIEKYDWZGjmme5sJlD0iijoSOf8TAziRwY4hPrmw
+ 9kPg10/nPvlOgpqdgk70IDWPN3JqiA1ykrANz/HW9I3W59ywwniCrkhapDSECNOOfH
+ Ps1X23UijDyZms5XXlZRf3Vx3mOm2/M37Oh9HihEPfD8pOdH0cDwaakXB98/YnxdkW
+ dZcKNb23a+kaZXDadD5Pta8wpp0qTp3RI1PfRR2wymWH1VYgjCcRgCUGSs3ncReP/s
+ S7J39mveIaJiA==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dmarc=pass (p=quarantine dis=none)
+ header.from=kernel.org
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20201202 header.b=sbnFiomA
+Subject: [Intel-wired-lan] [PATCH 1/2] igb: fix typos in comments
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -153,82 +118,65 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-From: Steve Rutherford via Intel-wired-lan <intel-wired-lan@osuosl.org>
-Reply-To: Steve Rutherford <srutherford@google.com>
+Reply-To: maximilianpezzullo@gmail.com
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Tue, Mar 3, 2026 at 7:34=E2=80=AFAM Alexander Lobakin
-<aleksander.lobakin@intel.com> wrote:
->
-> From: Steve Rutherford <srutherford@google.com>
-> Date: Fri, 27 Feb 2026 20:34:57 +0000
->
-> > When SWIOTLB and header split are enabled, IDPF sees empty packets in t=
-he
-> > rx queue.
-> >
-> > This is caused by libeth_rx_sync_for_cpu clobbering the synthesized hea=
-der
-> > in the workaround (i.e. overflow) path. After the header is synthesized=
- by
-> > idpf_rx_hsplit_wa, the sync call pulls from the empty SWIOTLB buffer,
-> > effectively zeroing out the buffer.
-> >
-> > This skips the extra sync in the workaround path in most cases. The one
-> > exception is that it calls sync to trigger a recycle the header buffer =
-when
-> > it fails to find a header in the payload.
-> >
-> > Fixes: 90912f9f4f2d1 ("idpf: convert header split mode to libeth + napi=
-_build_skb()")
-> > Signed-off-by: Steve Rutherford <srutherford@google.com>
-> > ---
-> >  drivers/net/ethernet/intel/idpf/idpf_txrx.c | 9 +++++++--
-> >  1 file changed, 7 insertions(+), 2 deletions(-)
-> >
-> > diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.c b/drivers/net/=
-ethernet/intel/idpf/idpf_txrx.c
-> > index 3ddf7b1e85ef..946203a6bd86 100644
-> > --- a/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-> > +++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-> > @@ -3007,9 +3007,14 @@ static int idpf_rx_splitq_clean(struct idpf_rx_q=
-ueue *rxq, int budget)
-> >                       u64_stats_update_begin(&rxq->stats_sync);
-> >                       u64_stats_inc(&rxq->q_stats.hsplit_buf_ovf);
-> >                       u64_stats_update_end(&rxq->stats_sync);
-> > -             }
-> >
-> > -             if (libeth_rx_sync_for_cpu(hdr, hdr_len)) {
-> > +                     /* Recycle the hdr buffer if unused.*/
-> > +                     if (!hdr_len)
-> > +                             libeth_rx_sync_for_cpu(hdr, 0);
-> > +             } else if (!libeth_rx_sync_for_cpu(hdr, hdr_len))
-> > +                     hdr_len =3D 0;
-> > +
-> > +             if (hdr_len) {
->
-> This is for a very old tree I believe? We now have
-> libeth_xdp_process_buff() there for quite some time already.
+From: Maximilian Pezzullo <maximilianpezzullo@gmail.com>
 
-It is, yeah. I thought I posted a cover letter with more of a description, =
-but,
-frankly, I may have messed up the process of posting.
+Fix spelling errors in code comments:
+ - e1000_nvm.c: 'likley' -> 'likely'
+ - e1000_mac.c: 'auto-negotitation' -> 'auto-negotiation'
+ - e1000_mbx.h: 'exra' -> 'extra'
 
-From the cover letter -
-Found an issue with the IDPF driver when SWIOTLB is enabled. The issue
-results in empty headers for packets that hit the split queue workaround
-path. It's caused by a spurious sync in that path. The header is synced
-from the SWIOTLB even when the header was shoved into the payload.
+Signed-off-by: Maximilian Pezzullo <maximilianpezzullo@gmail.com>
+---
+ drivers/net/ethernet/intel/igb/e1000_mac.c | 2 +-
+ drivers/net/ethernet/intel/igb/e1000_mbx.h | 2 +-
+ drivers/net/ethernet/intel/igb/e1000_nvm.c | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
-I cooked up a sample patch, but I'm not an expert in this driver, so I have
-no idea if it's the right solution. It did allow my QEMU VM to boot with a
-superficially functional passed-through IDPF NIC and SWIOTLB=3Dforce.
+diff --git a/drivers/net/ethernet/intel/igb/e1000_mac.c b/drivers/net/ethernet/intel/igb/e1000_mac.c
+index fa3dfafd2..2bcce6eef 100644
+--- a/drivers/net/ethernet/intel/igb/e1000_mac.c
++++ b/drivers/net/ethernet/intel/igb/e1000_mac.c
+@@ -1581,7 +1581,7 @@ s32 igb_disable_pcie_master(struct e1000_hw *hw)
+  *  igb_validate_mdi_setting - Verify MDI/MDIx settings
+  *  @hw: pointer to the HW structure
+  *
+- *  Verify that when not using auto-negotitation that MDI/MDIx is correctly
++ *  Verify that when not using auto-negotiation that MDI/MDIx is correctly
+  *  set, which is forced to MDI mode only.
+  **/
+ s32 igb_validate_mdi_setting(struct e1000_hw *hw)
+diff --git a/drivers/net/ethernet/intel/igb/e1000_mbx.h b/drivers/net/ethernet/intel/igb/e1000_mbx.h
+index 178e60ec7..9e44527f5 100644
+--- a/drivers/net/ethernet/intel/igb/e1000_mbx.h
++++ b/drivers/net/ethernet/intel/igb/e1000_mbx.h
+@@ -30,7 +30,7 @@
+ /* Indicates that VF is still clear to send requests */
+ #define E1000_VT_MSGTYPE_CTS	0x20000000
+ #define E1000_VT_MSGINFO_SHIFT	16
+-/* bits 23:16 are used for exra info for certain messages */
++/* bits 23:16 are used for extra info for certain messages */
+ #define E1000_VT_MSGINFO_MASK	(0xFF << E1000_VT_MSGINFO_SHIFT)
+ 
+ #define E1000_VF_RESET		0x01 /* VF requests reset */
+diff --git a/drivers/net/ethernet/intel/igb/e1000_nvm.c b/drivers/net/ethernet/intel/igb/e1000_nvm.c
+index c8638502c..cf4e5d0e9 100644
+--- a/drivers/net/ethernet/intel/igb/e1000_nvm.c
++++ b/drivers/net/ethernet/intel/igb/e1000_nvm.c
+@@ -405,7 +405,7 @@ s32 igb_read_nvm_eerd(struct e1000_hw *hw, u16 offset, u16 words, u16 *data)
+  *  Writes data to EEPROM at offset using SPI interface.
+  *
+  *  If e1000_update_nvm_checksum is not called after this function , the
+- *  EEPROM will most likley contain an invalid checksum.
++ *  EEPROM will most likely contain an invalid checksum.
+  **/
+ s32 igb_write_nvm_spi(struct e1000_hw *hw, u16 offset, u16 words, u16 *data)
+ {
 
-The patch was written against COS's 6.12, so I assume that it will not
-apply cleanly elsewhere, but I figured a wrong sample patch was better than
-a long paragraph describing the same thing. My read of more recent kernels
-is that this problem is still present, but could be mistaken.
+-- 
+Git-155)
 
-Thanks,
-Steve
+
