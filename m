@@ -1,75 +1,73 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4C3DAEDEC1B
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AA414EDEC12
 	for <intel-wired-lan@archiver.kernel.org>; Wed,  4 Mar 2026 07:22:03 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 17C54810ED;
+	by smtp3.osuosl.org (Postfix) with ESMTP id 7B7216079A;
 	Wed,  4 Mar 2026 07:22:03 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id n45teEu2yV5N; Wed,  4 Mar 2026 07:22:02 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4E1CE810FA
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1772608922;
-	bh=yooAt4nwgOEFBGp9yNB6yDlYIlatxdgqRh7cI21DMUg=;
-	h=From:Date:To:Cc:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Reply-To:From;
-	b=UPokxNteq/qpznQzsePwoCEoGgucoLYgY7ABqeHhjFlCf1rNdtHpauBGXEtG8GYQu
-	 Xah3Awj3s1VtFQFJv4R5298QvriffQ1fImhggesTYqUvWJRQOndMJUn+vIkLuiSpfr
-	 GW+c66WKvfCUbXB389gvJSv4dAeK51K3aKkv1malXYNi+G9cQpqL9F7PBrMiJMV4xQ
-	 D9FckOkHoaJSXf9btEPQSigBdr0ap7aMY1t6BFOxyQuQa5WigjIDWIT07cKGNn2bOy
-	 NbEM01/rcFDXvVs4tTjwHR5QujS8Q1fixBhKTLGTytDrdQ9lL5yqdYLdtElTpjElr3
-	 LOlVeOz+aseow==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 4E1CE810FA;
-	Wed,  4 Mar 2026 07:22:02 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 29AFE1EB
- for <intel-wired-lan@lists.osuosl.org>; Wed,  4 Mar 2026 07:22:00 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 270F560797
- for <intel-wired-lan@lists.osuosl.org>; Wed,  4 Mar 2026 07:22:00 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 2i3GAEZWQ1VB for <intel-wired-lan@lists.osuosl.org>;
+ id k5uS-Vd64lTG; Wed,  4 Mar 2026 07:22:03 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E81AA6079B
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1772608923;
+	bh=5H+bs/3FF4eu4JdibRYM/lEmI0Y+Jyr0cKZ6o0pfvfw=;
+	h=From:Date:References:In-Reply-To:To:Cc:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Reply-To:From;
+	b=0P8P3EbbqxCA7hdnWr7BfeWZPcWMuFT/C0/RGBopg2p+EosUjF65BXnwLkCQkqzki
+	 vL5/hJM9CI7mdPwqYhcHraXXlzCsPQdXJ28biVqAvaVrIjM2SevbmhKql72RI83HZj
+	 zFtJyrlXdGgmeg7e+CHaeNP4CFgbo9C4lh8DHFqa04g2J4wOO2wxjHbCet/hmQbRm1
+	 hoUkLYG/kclv/kJ1pWkC/s+B99fOP+s2sSNx94uuB4yCyNLFvIz9PB4LfZEnQL3yRy
+	 mb0MMDte7lebLZjMHU33KYt1STjbZFvseEIRGBaq7GKj8GkjcJZZvV8ENxnKFzEn0K
+	 SBkpE+BeMpD5w==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp3.osuosl.org (Postfix) with ESMTP id E81AA6079B;
+	Wed,  4 Mar 2026 07:22:02 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 4D86B1EB
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  4 Mar 2026 07:22:00 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp2.osuosl.org (Postfix) with ESMTP id 325844020A
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  4 Mar 2026 07:22:00 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id ai4yL71Xzz_J for <intel-wired-lan@lists.osuosl.org>;
  Wed,  4 Mar 2026 07:21:59 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org;
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
+ helo=tor.source.kernel.org;
  envelope-from=devnull+maximilianpezzullo.gmail.com@kernel.org;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 64D4960792
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 64D4960792
-Received: from tor.source.kernel.org (tor.source.kernel.org
- [IPv6:2600:3c04:e001:324:0:1991:8:25])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 64D4960792
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 5330540153
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 5330540153
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 5330540153
  for <intel-wired-lan@lists.osuosl.org>; Wed,  4 Mar 2026 07:21:59 +0000 (UTC)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by tor.source.kernel.org (Postfix) with ESMTP id CAAAD60097;
+ by tor.source.kernel.org (Postfix) with ESMTP id E6F4E6057A;
  Wed,  4 Mar 2026 07:21:57 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 7035DC19423;
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 9327FC19425;
  Wed,  4 Mar 2026 07:21:57 +0000 (UTC)
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org
  (localhost.localdomain [127.0.0.1])
- by smtp.lore.kernel.org (Postfix) with ESMTP id 5978AEDEBF7;
+ by smtp.lore.kernel.org (Postfix) with ESMTP id 849E6EDEC1B;
  Wed,  4 Mar 2026 07:21:57 +0000 (UTC)
 From: Maximilian Pezzullo via B4 Relay
  <devnull+maximilianpezzullo.gmail.com@kernel.org>
-Date: Wed, 04 Mar 2026 08:21:18 +0100
-Message-Id: <20260304-fix-typos-in-comments-in-intel-ethernet-drivers-igb-igc-v2-0-b6a9f1d336ff@gmail.com>
+Date: Wed, 04 Mar 2026 08:21:20 +0100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/x2NwQqDMBBEf0X23IUQQ6X9ldJDk6y6UDeyCWIR/
- 72Lh4F5DLw5oJIyVXh2ByhtXLmIgb91kOaPTIScjcE7f3e9Czjyju23loosmMqykLSrszT6IrW
- ZVKhhVt5IbZmiJWEfw2OILo9hyGD2VclU1/PrfZ5/iTsfY4kAAAA=
-X-Change-ID: 20260304-fix-typos-in-comments-in-intel-ethernet-drivers-igb-igc-3b497b0df47d
+Message-Id: <20260304-fix-typos-in-comments-in-intel-ethernet-drivers-igb-igc-v2-2-b6a9f1d336ff@gmail.com>
+References: <20260304-fix-typos-in-comments-in-intel-ethernet-drivers-igb-igc-v2-0-b6a9f1d336ff@gmail.com>
+In-Reply-To: <20260304-fix-typos-in-comments-in-intel-ethernet-drivers-igb-igc-v2-0-b6a9f1d336ff@gmail.com>
 To: Tony Nguyen <anthony.l.nguyen@intel.com>, 
  Przemek Kitszel <przemyslaw.kitszel@intel.com>, 
  Andrew Lunn <andrew+netdev@lunn.ch>, 
@@ -79,11 +77,11 @@ Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
  linux-kernel@vger.kernel.org, Joe Damato <joe@dama.to>, 
  Maximilian Pezzullo <maximilianpezzullo@gmail.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1772608916; l=1013;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1772608916; l=2238;
  i=maximilianpezzullo@gmail.com; s=20260303; h=from:subject:message-id;
- bh=rqm1hIKFXnYB5F1diGKPD+DC9avHWqfyIaJZ3phGQak=;
- b=jGLaa1WXEILpn8rGbNZrfHas9wq6FwGnb0CbwLp9lSUNsPN3/058qUyC7++bGPw7K1sgWQRmm
- 5uUvoYTwCdADv8y8Mi2qy30t1bf7xB0s9WLxX1ycQNn88z8rC5f/MhL
+ bh=wTWL+QiTKzAwIGFQ05V+EO1NynA/0tINfOR7I6TtIno=;
+ b=/AN+sK9PL2C+4d7bU9X1/MY23gpkk2X6byJ0rYwfANKT2fEFNCgCoHvnRiyNRURPmdy3Gt82U
+ SDZKdJvfvv0CYINO1Xu58PXu7nGfNAZ8emc6DFPAG3FvYI5jLyZILdU
 X-Developer-Key: i=maximilianpezzullo@gmail.com; a=ed25519;
  pk=TRTR4c2Vb1IfluQvv5OUDPg7EE+pIzdPBND85UU559w=
 X-Endpoint-Received: by B4 Relay for maximilianpezzullo@gmail.com/20260303
@@ -91,23 +89,22 @@ X-Endpoint-Received: by B4 Relay for maximilianpezzullo@gmail.com/20260303
 X-Original-From: Maximilian Pezzullo <maximilianpezzullo@gmail.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=kernel.org; s=k20201202; t=1772608917;
- bh=rqm1hIKFXnYB5F1diGKPD+DC9avHWqfyIaJZ3phGQak=;
- h=From:Subject:Date:To:Cc:Reply-To:From;
- b=EFjVtNVyr9P91dwDw6fBSnxhY9/uQ1KUl/I2b6zgolUX95XdIsvGk50btt0DzglTs
- IMSFvem0Pe2QF2Mxr1/UjtnkkmM5gYZs5p/IhXNVTgCBHFrQZgzz/rOXRLIvpZWbGN
- boLr7X0+eVMgSANoPrJ1g9Cl76EERzXEMelhvTLwDt3zbaYAbQO4Ky6B6195Vs59CZ
- 682+p1tX3FGVohvFO68bL793nPU9mXvdeX3P4rnydzGmD/MMLjeHdx0li4/cEag8GX
- sAtPBRZkes4LMeVYyJcmLD2kOzsgkTze+TsWA95z3UuKwJ/pzPhofcxsffgX+EDW5R
- MFWfl+KOzBQxA==
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ bh=oyRqZoSbdyXDKvYDihwfAYkGmgYR4/jkeHFWdp8zAhw=;
+ h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+ b=S2W1jNNHfzgsJx9+QKkefG2Di66ktkhoWKa8Qsz6Ui8VCjmL7Cf5dm1/ljKWJ/R9b
+ 0z5gfo8H9Cs2zhZXRxqRbyLt8qOHimmlA3yOt8p2/b+7rUlv/Y3uodAr+6KVwYSGPi
+ r5QuNGU32fPfkWv6PouMdZCRgkDJfoqfNayOI+63jBjz6R7OxgI1TEJ9+yu1PovXVv
+ znqI4Dc0dMNAfjXF+dzgIMMvhUAkmhocBPj9Ot6lQeo+8klEr4ZIjRGmEKZhe/H7Sl
+ ARqPaOdcs2av9ETNrE94OUXcVdlQBjGUQdR8f7eiap3Dn76cZe3SZykwHUM8Ykhfcs
+ Bv6OXXIBZfk3w==
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=EFjVtNVy
-Subject: [Intel-wired-lan] [PATCH v2 0/2] Fix typos in comments in Intel
- Ethernet drivers (igb, igc)
+ header.s=k20201202 header.b=S2W1jNNH
+Subject: [Intel-wired-lan] [PATCH v2 2/2] igc: fix typos in comments
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -124,31 +121,55 @@ Reply-To: maximilianpezzullo@gmail.com
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-This is v2, adding a typo fix noticed by Joe Damato in e1000_defines.h
-("Device Reset Aserted" -> "Device Reset Asserted").
+From: Maximilian Pezzullo <maximilianpezzullo@gmail.com>
 
-Changes in v2:
-- igb: also fix 'Aserted' -> 'Asserted' in e1000_defines.h (suggested by Joe Damato)
+Fix spelling errors in code comments:
+ - igc_diag.c: 'autonegotioation' -> 'autonegotiation'
+ - igc_main.c: 'revisons' -> 'revisions' (two occurrences)
 
 Signed-off-by: Maximilian Pezzullo <maximilianpezzullo@gmail.com>
 ---
-Maximilian Pezzullo (2):
-      igb: fix typos in comments
-      igc: fix typos in comments
+ drivers/net/ethernet/intel/igc/igc_diag.c | 2 +-
+ drivers/net/ethernet/intel/igc/igc_main.c | 4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
- drivers/net/ethernet/intel/igb/e1000_defines.h | 2 +-
- drivers/net/ethernet/intel/igb/e1000_mac.c     | 2 +-
- drivers/net/ethernet/intel/igb/e1000_mbx.h     | 2 +-
- drivers/net/ethernet/intel/igb/e1000_nvm.c     | 2 +-
- drivers/net/ethernet/intel/igc/igc_diag.c      | 2 +-
- drivers/net/ethernet/intel/igc/igc_main.c      | 4 ++--
- 6 files changed, 7 insertions(+), 7 deletions(-)
----
-base-commit: af4e9ef3d78420feb8fe58cd9a1ab80c501b3c08
-change-id: 20260304-fix-typos-in-comments-in-intel-ethernet-drivers-igb-igc-3b497b0df47d
+diff --git a/drivers/net/ethernet/intel/igc/igc_diag.c b/drivers/net/ethernet/intel/igc/igc_diag.c
+index a43d7244ee70..031561fdce49 100644
+--- a/drivers/net/ethernet/intel/igc/igc_diag.c
++++ b/drivers/net/ethernet/intel/igc/igc_diag.c
+@@ -172,7 +172,7 @@ bool igc_link_test(struct igc_adapter *adapter, u64 *data)
+ 
+ 	*data = 0;
+ 
+-	/* add delay to give enough time for autonegotioation to finish */
++	/* add delay to give enough time for autonegotiation to finish */
+ 	ssleep(5);
+ 
+ 	link_up = igc_has_link(adapter);
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index 27e5c2109138..de3f3d95de19 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -1793,7 +1793,7 @@ static const enum pkt_hash_types igc_rss_type_table[IGC_RSS_TYPE_MAX_TABLE] = {
+ 	[IGC_RSS_TYPE_HASH_UDP_IPV6_EX] = PKT_HASH_TYPE_L4,
+ 	[10] = PKT_HASH_TYPE_NONE, /* RSS Type above 9 "Reserved" by HW  */
+ 	[11] = PKT_HASH_TYPE_NONE, /* keep array sized for SW bit-mask   */
+-	[12] = PKT_HASH_TYPE_NONE, /* to handle future HW revisons       */
++	[12] = PKT_HASH_TYPE_NONE, /* to handle future HW revisions       */
+ 	[13] = PKT_HASH_TYPE_NONE,
+ 	[14] = PKT_HASH_TYPE_NONE,
+ 	[15] = PKT_HASH_TYPE_NONE,
+@@ -7021,7 +7021,7 @@ static enum xdp_rss_hash_type igc_xdp_rss_type[IGC_RSS_TYPE_MAX_TABLE] = {
+ 	[IGC_RSS_TYPE_HASH_UDP_IPV6_EX] = XDP_RSS_TYPE_L4_IPV6_UDP_EX,
+ 	[10] = XDP_RSS_TYPE_NONE, /* RSS Type above 9 "Reserved" by HW  */
+ 	[11] = XDP_RSS_TYPE_NONE, /* keep array sized for SW bit-mask   */
+-	[12] = XDP_RSS_TYPE_NONE, /* to handle future HW revisons       */
++	[12] = XDP_RSS_TYPE_NONE, /* to handle future HW revisions       */
+ 	[13] = XDP_RSS_TYPE_NONE,
+ 	[14] = XDP_RSS_TYPE_NONE,
+ 	[15] = XDP_RSS_TYPE_NONE,
 
-Best regards,
 -- 
-Maximilian Pezzullo <maximilianpezzullo@gmail.com>
+Git-155)
 
 
