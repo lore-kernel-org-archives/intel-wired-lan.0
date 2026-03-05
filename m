@@ -1,110 +1,104 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BF8BCEFCE43
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  5 Mar 2026 02:55:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5F966EEF33D
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  5 Mar 2026 08:56:04 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 64E51608CB;
-	Thu,  5 Mar 2026 02:55:38 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 0FCEA81786;
+	Thu,  5 Mar 2026 08:56:04 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id SVMibDODBONg; Thu,  5 Mar 2026 02:55:37 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id gzsxgJUZ3OoT; Thu,  5 Mar 2026 08:56:02 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org D388A608FC
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 3308281776
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1772679337;
-	bh=AS003hYPMKVNDBZvHRWuPlXHnvYEF5VFOEacKtuMb3E=;
-	h=Date:From:To:Cc:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1772700962;
+	bh=ecqro3YS78h33SUaUsJYIVaoB0LHuu2VIDT6L98U+ZU=;
+	h=From:To:Cc:In-Reply-To:References:Date:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=Z9S1TBaH4Xz2d20/0N8/YTz8rKqpV/QbR1pQQpWdWWOefyg0aHGWJ2xpTIP/isLnE
-	 3RO6N2mzWXcgcm3CzEJpvug9aAiqlVSRJHyarIdYopAg9SVdWqVQokxf4WyEGwzmC7
-	 camQM/euUkIWSXDXwRIqBBMnmX7hJ1TDnvg7qA8+XAJcVLwZp4ghcCG6tZ3f/q4ZGO
-	 VrKUcN5CUmLmRNhP0NcLSF6vroIn+kjcV1YRwc4tGgnLlV0tEJdxnRaeO15NIF0ndu
-	 HXrFLmB2/YREJYvHEm0KVwL61ZsHkWc5u6vJMMgob1N1xcuCvltGr9TkCdxiZpT6BL
-	 WbHkkEMXMT03w==
+	b=JW1hOO2cOkzhxB8miBxFrcz2X7JRevE2SsXhM3mLrxZAHhQUTqf6rcfyCVdNhIenK
+	 yCjUYr1SDxnQrKdef4c/G8VCkVpldHotLLdvGffClgaJaG5/E07V+VXaIgk/8OudWn
+	 FMRe/2TgIPaaIEBGZ7XSYDyhuPG0UeHpFCZCXF8SoFsfeXSEg36NgoZJXzrtFDql3l
+	 nX9QnMrWsCpQRuIcqu7dLuw5KcY8n7qtayTVKkFG05vpcC/EAGzqorWqysltAdaYiU
+	 xL458tw5MJWfvJNxcrjGsnfTVrvKWBSvwfNMN2gR5ThzRdulA1Dz4zox2oD6jbPDF/
+	 RqfRuzAmET/wQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id D388A608FC;
-	Thu,  5 Mar 2026 02:55:37 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id CA8FA223
- for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Mar 2026 02:55:35 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 3308281776;
+	Thu,  5 Mar 2026 08:56:02 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 435E9223
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Mar 2026 08:56:00 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id BC595608FC
- for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Mar 2026 02:55:35 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 2F16D40336
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Mar 2026 08:56:00 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id RQ1b162yMdlO for <intel-wired-lan@lists.osuosl.org>;
- Thu,  5 Mar 2026 02:55:35 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.234.252.31;
- helo=sea.source.kernel.org; envelope-from=kuba@kernel.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 246A4608CB
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 246A4608CB
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 246A4608CB
- for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Mar 2026 02:55:34 +0000 (UTC)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by sea.source.kernel.org (Postfix) with ESMTP id 88F6D404ED;
- Thu,  5 Mar 2026 02:55:34 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A2664C4CEF7;
- Thu,  5 Mar 2026 02:55:32 +0000 (UTC)
-Date: Wed, 4 Mar 2026 18:55:31 -0800
-From: Jakub Kicinski <kuba@kernel.org>
-To: Larysa Zaremba <larysa.zaremba@intel.com>
-Cc: bpf@vger.kernel.org, Claudiu Manoil <claudiu.manoil@nxp.com>, Vladimir
- Oltean <vladimir.oltean@nxp.com>, Wei Fang <wei.fang@nxp.com>, Clark Wang
- <xiaoning.wang@nxp.com>, Andrew Lunn <andrew+netdev@lunn.ch>, "David S.
- Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, Paolo
- Abeni <pabeni@redhat.com>, Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>, Alexei Starovoitov
- <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, Jesper Dangaard
- Brouer <hawk@kernel.org>, John Fastabend <john.fastabend@gmail.com>,
- Stanislav Fomichev <sdf@fomichev.me>, Andrii Nakryiko <andrii@kernel.org>,
- Martin KaFai Lau <martin.lau@linux.dev>, Eduard Zingerman
- <eddyz87@gmail.com>, Song Liu <song@kernel.org>, Yonghong Song
- <yonghong.song@linux.dev>, KP Singh <kpsingh@kernel.org>, Hao Luo
- <haoluo@google.com>, Jiri Olsa <jolsa@kernel.org>, Simon Horman
- <horms@kernel.org>, Shuah Khan <shuah@kernel.org>, Alexander Lobakin
- <aleksander.lobakin@intel.com>, Maciej Fijalkowski
- <maciej.fijalkowski@intel.com>, "Bastien Curutchet (eBPF Foundation)"
- <bastien.curutchet@bootlin.com>, Tushar Vyavahare
- <tushar.vyavahare@intel.com>, Jason Xing <kernelxing@tencent.com>, "Ricardo
- B. =?UTF-8?B?TWFybGnDqHJl?=" <rbm@suse.com>, Eelco Chaudron
- <echaudro@redhat.com>, Lorenzo Bianconi <lorenzo@kernel.org>, Toke
- Hoiland-Jorgensen <toke@redhat.com>, imx@lists.linux.dev,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- intel-wired-lan@lists.osuosl.org, linux-kselftest@vger.kernel.org,
- Aleksandr Loktionov <aleksandr.loktionov@intel.com>, Dragos Tatulea
- <dtatulea@nvidia.com>
-Message-ID: <20260304185531.4f49fda4@kernel.org>
-In-Reply-To: <20260302161723.858616-1-larysa.zaremba@intel.com>
-References: <20260302161723.858616-1-larysa.zaremba@intel.com>
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id YeHr7HcRvd-v for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  5 Mar 2026 08:55:59 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=193.142.43.55;
+ helo=galois.linutronix.de; envelope-from=kurt@linutronix.de;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org EBB654006A
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org EBB654006A
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id EBB654006A
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Mar 2026 08:55:58 +0000 (UTC)
+From: Kurt Kanzenbach <kurt@linutronix.de>
+To: Miroslav Lichvar <mlichvar@redhat.com>
+Cc: Paul Menzel <pmenzel@molgen.mpg.de>, Tony Nguyen
+ <anthony.l.nguyen@intel.com>, Przemek Kitszel
+ <przemyslaw.kitszel@intel.com>, Andrew Lunn <andrew+netdev@lunn.ch>,
+ "David S. Miller" <davem@davemloft.net>, Eric Dumazet
+ <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni
+ <pabeni@redhat.com>, Richard Cochran <richardcochran@gmail.com>, Vinicius
+ Costa Gomes <vinicius.gomes@intel.com>, Sebastian Andrzej Siewior
+ <bigeasy@linutronix.de>, Vadim Fedorenko <vadim.fedorenko@linux.dev>,
+ Jacob Keller <jacob.e.keller@intel.com>, intel-wired-lan@lists.osuosl.org,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <aaf8xVPWQ0-y1BnX@localhost>
+References: <20260303-igb_irq_ts-v4-1-cbae7f127061@linutronix.de>
+ <9805389e-9ea4-4e7a-a122-65f733ead33c@molgen.mpg.de>
+ <87qzq1rq2k.fsf@jax.kurt.home> <aaf8xVPWQ0-y1BnX@localhost>
+Date: Thu, 05 Mar 2026 09:55:52 +0100
+Message-ID: <87seae4puv.fsf@jax.kurt.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1772679334;
- bh=4d7y/xjgWSGuhuezCdtH2976xfIP6uASlpXYDBGcWGw=;
- h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=pYK7YM4m0fnSsQAyhefMcDaOBvn8Y9c20FaOvCpYggIpa60A8z3EWxFyPSfPRL9FU
- REN3e4tRWW1m7oG26k1oqS+4aO937R4czODpAvvERAsyQWEQMzozLXDSJml7d3155z
- jcXg03aXYVxS0lHpCo0e59gkB2hrJHpLLVbwZU5kMt/dzDbqrUe3XWteUg9Db2G9AZ
- 7CMUJ2C/mOnC6YdoiPoF+jNUvhw4vyDicAInnAmtwaJ8ckXg8wYOq8SMe7YFrs82cG
- +bU8uWFw2JBclJCUuwTUOm5ex6kn+DfB7sKrnPaJvlby8tgUkH8ayRDaMdRV+ro3nH
- mC/rbafRFsa9A==
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dmarc=pass (p=quarantine dis=none)
- header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=pYK7YM4m
-Subject: Re: [Intel-wired-lan] [PATCH bpf v4 0/9] Address XDP frags having
- negative tailroom
+Content-Type: multipart/signed; boundary="=-=-=";
+ micalg=pgp-sha512; protocol="application/pgp-signature"
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=linutronix.de; s=2020; t=1772700954;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ in-reply-to:in-reply-to:references:references;
+ bh=ecqro3YS78h33SUaUsJYIVaoB0LHuu2VIDT6L98U+ZU=;
+ b=g8zxm0UO+kYJydvh1gWJZkCT+dKwS0pl90SUdHLmfQ4K5Lm0U3H+xs52y/+nZILqf+Vt2h
+ 00zGgW4a/bQM3PPFHLF8Q26jDBJvgnptZrTX8zlvbncO13NhMIzCkZIj1bb3MLA5YakQIr
+ 3yNg9jbqq2Av2G169EYRFyBy4PWiOkb5ZeXHvHDAqjCUamFegvw5gA6aTGPLf6Lalc4R2r
+ Lluv6c/YXLRXkJap4FaxyL9Utv05JihGu6oAjCPc7fqFu9iDedvKeDn+HoFZL9af26+6mx
+ GqLtl+RovxzqBh5l2T+PZQY6KHxgCMPcN07IP2Utl3j3VXkcAeu6TpRlsrensA==
+X-Mailman-Original-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
+ d=linutronix.de; s=2020e; t=1772700954;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ in-reply-to:in-reply-to:references:references;
+ bh=ecqro3YS78h33SUaUsJYIVaoB0LHuu2VIDT6L98U+ZU=;
+ b=57KdUgHm8XZ5ZyAILCqJCRhioJDmsfvZQ4foBQSX4OSPxosP3hojz58idK/qgceU9NqX4y
+ Gj1t5GqqfGthbbCQ==
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=linutronix.de
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key, unprotected) header.d=linutronix.de
+ header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=g8zxm0UO; 
+ dkim=pass header.d=linutronix.de header.i=@linutronix.de
+ header.a=ed25519-sha256 header.s=2020e header.b=57KdUgHm
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next v4] igb: Retrieve Tx
+ timestamp from BH workqueue
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -120,15 +114,118 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Mon,  2 Mar 2026 17:17:13 +0100 Larysa Zaremba wrote:
-> Aside from the issue described below, tailroom calculation does not account
-> for pages being split between frags, e.g. in i40e, enetc and
-> AF_XDP ZC with smaller chunks. These series address the problem by
-> calculating modulo (skb_frag_off() % rxq->frag_size) in order to get
-> data offset within a smaller block of memory. Please note, xskxceiver
-> tail grow test passes without modulo e.g. in xdpdrv mode on i40e,
-> because there is not enough descriptors to get to flipped buffers.
+--=-=-=
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-This was re-assigned to netdev in pw, I presume by BPF maintainers.
-But it doesn't apply to net. There's a conflict in ice.
-Could you rebase on net and repost?
+On Wed Mar 04 2026, Miroslav Lichvar wrote:
+> On Tue, Mar 03, 2026 at 02:38:11PM +0100, Kurt Kanzenbach wrote:
+>> > It would be great, if you shared the numbers. Did Miroslav already tes=
+t=20
+>> > this?
+>>=20
+>> Great question. I did test with ptp4l and synchronization looks fine <
+>> below 10ns back to back as expected. I did not test with ntpperf,
+>> because I was never able to reproduce the NTP regression to the same
+>> extent as Miroslav reported. Therefore, Miroslav is on Cc in case he
+>> wants to test it. Let's see.
+>
+> I ran the same test with I350 as before and there still seems to be a
+> regression, but interestingly it's quite different to the previous versio=
+ns of
+> the patch. It's like there is a load-sensitive on/off switch.
+>
+> Without the patch:
+>
+>                |          responses            |        response time (ns)
+> rate   clients |  lost invalid   basic  xleave |    min    mean     max s=
+tddev
+> 150000   15000   0.00%   0.00%   0.00% 100.00%    +4188  +36475 +193328  =
+16179
+> 157500   15750   0.02%   0.00%   0.02%  99.96%    +6373  +42969 +683894  =
+22682
+> 165375   16384   0.03%   0.00%   0.00%  99.97%    +7911  +43960 +692471  =
+24454
+> 173643   16384   0.06%   0.00%   0.00%  99.94%    +8323  +45627 +707240  =
+28452
+> 182325   16384   0.06%   0.00%   0.00%  99.94%    +8404  +47292 +722524  =
+26936
+> 191441   16384   0.00%   0.00%   0.00% 100.00%    +8930  +51738 +223727  =
+14272
+> 201013   16384   0.05%   0.00%   0.00%  99.95%    +9634  +53696 +776445  =
+23783
+> 211063   16384   0.00%   0.00%   0.00% 100.00%   +14393  +54558 +329546  =
+20473
+> 221616   16384   2.59%   0.00%   0.05%  97.36%   +23924 +321205 +518192  =
+21838
+> 232696   16384   7.00%   0.00%   0.10%  92.90%   +33396 +337709 +575661  =
+21017
+> 244330   16384  10.82%   0.00%   0.15%  89.03%   +34188 +340248 +556237  =
+20880
+>
+> With the patch:
+> 150000   15000   5.11%   0.00%   0.00%  94.88%    +4426 +460642 +640884  =
+83746
+> 157500   15750  11.54%   0.00%   0.26%  88.20%   +14434 +543656 +738355  =
+30349
+> 165375   16384  15.61%   0.00%   0.31%  84.08%   +35822 +515304 +833859  =
+25596
+> 173643   16384  19.58%   0.00%   0.37%  80.05%   +20762 +568962 +900100  =
+28118
+> 182325   16384  23.46%   0.00%   0.42%  76.13%   +41829 +547974 +804170  =
+27890
+> 191441   16384  27.23%   0.00%   0.46%  72.31%   +15182 +557920 +798212  =
+28868
+> 201013   16384  30.51%   0.00%   0.49%  69.00%   +15980 +560764 +805576  =
+29979
+> 211063   16384   0.06%   0.00%   0.00%  99.94%   +12668  +80487 +410555  =
+62182
+> 221616   16384   2.94%   0.00%   0.05%  97.00%   +21587 +342769 +517566  =
+23359
+> 232696   16384   6.94%   0.00%   0.10%  92.96%   +16581 +336068 +484574  =
+18453
+> 244330   16384  11.45%   0.00%   0.14%  88.41%   +23608 +345023 +564130  =
+19177
+>
+> At 211063 requests per second and higher the performance looks the
+> same. But at the lower rates there is a clear drop. The higher
+> mean response time (difference between server TX and RX timestamps)
+> indicates more of the provided TX timestamps are hardware timestamps
+> and the chrony server timestamp statistics confirm that.
+>
+> So, my interpretation is that like with the earlier version of the
+> patch it's trading performance for timestamp quality at lower rates,
+> but unlike the earlier version it's not losing performance at the
+> higher rates. That seems acceptable to me. Admins of busy servers
+> might need to decide if they should keep HW timestamping enabled. In
+> theory, chrony could have an option to do that automatically.
+
+Great! Thanks a lot for testing and sharing your numbers.
+
+I'll send v5 then with updated changelog as suggested by Aleksandr and
+Paul.
+
+Thanks,
+Kurt
+
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQJHBAEBCgAxFiEEvLm/ssjDfdPf21mSwZPR8qpGc4IFAmmpRRgTHGt1cnRAbGlu
+dXRyb25peC5kZQAKCRDBk9HyqkZzgnfXD/9TOnDNTDngr0PXrCtQH9FliXc8zyXZ
+fU5BOkrfttxRPocIgW3SSBLdNuyEhA/yBRjT1jnbPzc3qnZq4jvykXPpzS3CiVbg
+eTM3f9zJWeFRBTEH1593e3CRNF6N4GMeDjWfnWYFwwgzcq87ifH5BZm36mdTVBPo
+QhvO53dFSWdilG1AEc5RTc5Ltjc5cLWpK2LETxISJdA0+vYty3HKFSSZ3niEkxO7
+AW6NhQKXowYuOa0yXmuhtGqDZGZ3TIyKAGJoS3rsAb0NyjW7mV3jTwlMMpY2OhHm
+pVlOEs2qbMZQF4zElGubGiVNMGLSw/NYTnjgrFep02FykjPuXSh+3A3ZXL5ks2R1
+WW8z98HNdUjeEyj7+DMfRPXTsHil4wKeBW+P8G5lLV9RdC9Mw6sUH+mfNhO4IB5m
+O3avxJQZaYwYrnumpTWVIrYl+GN1qo8X6QvaM94+wX2agFA8nt9s5zxAclxYWPbc
+cvUs/D8bO0+QQe1ZDGhmqLV97rVr3IttAcyDp1a+IHrYT4OtFBzW/wXIS4hsqjDc
+SDzDh3q0CXkXGX2MGGzx8R5H9t+Di65UC71Mk49WSCx/d1WdHIdSuoPnrDp+cITa
+QHyCdTzHhBZEBltEGUMl2COP+lQRgNhqIRciJddZWqNZKkMxSEuqIrZDvpgbV4M/
+LG/gG9sVUNvAjw==
+=8NQy
+-----END PGP SIGNATURE-----
+--=-=-=--
