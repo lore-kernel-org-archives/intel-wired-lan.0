@@ -4,101 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5F966EEF33D
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  5 Mar 2026 08:56:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 62809F30925
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  5 Mar 2026 09:31:01 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 0FCEA81786;
-	Thu,  5 Mar 2026 08:56:04 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 0F9F581DE5;
+	Thu,  5 Mar 2026 09:31:01 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id gzsxgJUZ3OoT; Thu,  5 Mar 2026 08:56:02 +0000 (UTC)
+ id flRYHJIt2T8S; Thu,  5 Mar 2026 09:30:59 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 3308281776
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 5DADA81DE6
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1772700962;
-	bh=ecqro3YS78h33SUaUsJYIVaoB0LHuu2VIDT6L98U+ZU=;
-	h=From:To:Cc:In-Reply-To:References:Date:Subject:List-Id:
+	s=default; t=1772703059;
+	bh=johCU6idJup7WxIBVk2NTKubfm7Hnx/VtL8EYfM5cKs=;
+	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=JW1hOO2cOkzhxB8miBxFrcz2X7JRevE2SsXhM3mLrxZAHhQUTqf6rcfyCVdNhIenK
-	 yCjUYr1SDxnQrKdef4c/G8VCkVpldHotLLdvGffClgaJaG5/E07V+VXaIgk/8OudWn
-	 FMRe/2TgIPaaIEBGZ7XSYDyhuPG0UeHpFCZCXF8SoFsfeXSEg36NgoZJXzrtFDql3l
-	 nX9QnMrWsCpQRuIcqu7dLuw5KcY8n7qtayTVKkFG05vpcC/EAGzqorWqysltAdaYiU
-	 xL458tw5MJWfvJNxcrjGsnfTVrvKWBSvwfNMN2gR5ThzRdulA1Dz4zox2oD6jbPDF/
-	 RqfRuzAmET/wQ==
+	b=qKfnNrfmTDebzukSJO69de86wTbGglj2Q4DsI0AJTo9r9xWu/5RT9+j41zMJ2DG3g
+	 s5HWWmXDTW7wcfAUI6gOGv0l6I7OiJib5ckQNd5RJd1w0+4/USiWSlqjP2P3OxnCJh
+	 x+M5ulHUBa6G+e9mNgZm3lvdC/4H+W6rytr0qLRO99FEYtfnSowmrponfw4kNGbw9G
+	 PDsfAb9d/2Z60bhrQgCELUiNYAalSMOQCc6jw29mTHhPYIWGdNvBvOpzOO64j/bmle
+	 DnflZQUvNYIIQKz/b2/DlAYO73pZPkB/jm5ktCj2oZ1dT1OObN9XNjWLG1Qu6DgLum
+	 IR0XqS+I31/TQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 3308281776;
-	Thu,  5 Mar 2026 08:56:02 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id 435E9223
- for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Mar 2026 08:56:00 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 5DADA81DE6;
+	Thu,  5 Mar 2026 09:30:59 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 76BDD25B
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Mar 2026 09:30:57 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 2F16D40336
- for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Mar 2026 08:56:00 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 6846481DE6
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Mar 2026 09:30:57 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id YeHr7HcRvd-v for <intel-wired-lan@lists.osuosl.org>;
- Thu,  5 Mar 2026 08:55:59 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=193.142.43.55;
- helo=galois.linutronix.de; envelope-from=kurt@linutronix.de;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org EBB654006A
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org EBB654006A
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
- by smtp2.osuosl.org (Postfix) with ESMTPS id EBB654006A
- for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Mar 2026 08:55:58 +0000 (UTC)
-From: Kurt Kanzenbach <kurt@linutronix.de>
-To: Miroslav Lichvar <mlichvar@redhat.com>
-Cc: Paul Menzel <pmenzel@molgen.mpg.de>, Tony Nguyen
- <anthony.l.nguyen@intel.com>, Przemek Kitszel
- <przemyslaw.kitszel@intel.com>, Andrew Lunn <andrew+netdev@lunn.ch>,
- "David S. Miller" <davem@davemloft.net>, Eric Dumazet
- <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni
- <pabeni@redhat.com>, Richard Cochran <richardcochran@gmail.com>, Vinicius
- Costa Gomes <vinicius.gomes@intel.com>, Sebastian Andrzej Siewior
- <bigeasy@linutronix.de>, Vadim Fedorenko <vadim.fedorenko@linux.dev>,
- Jacob Keller <jacob.e.keller@intel.com>, intel-wired-lan@lists.osuosl.org,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <aaf8xVPWQ0-y1BnX@localhost>
-References: <20260303-igb_irq_ts-v4-1-cbae7f127061@linutronix.de>
- <9805389e-9ea4-4e7a-a122-65f733ead33c@molgen.mpg.de>
- <87qzq1rq2k.fsf@jax.kurt.home> <aaf8xVPWQ0-y1BnX@localhost>
-Date: Thu, 05 Mar 2026 09:55:52 +0100
-Message-ID: <87seae4puv.fsf@jax.kurt.home>
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 59usXwl2zBjl for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  5 Mar 2026 09:30:56 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org;
+ envelope-from=horms@kernel.org; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org CA19E81DE5
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org CA19E81DE5
+Received: from sea.source.kernel.org (sea.source.kernel.org
+ [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id CA19E81DE5
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Mar 2026 09:30:56 +0000 (UTC)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+ by sea.source.kernel.org (Postfix) with ESMTP id E009643D90;
+ Thu,  5 Mar 2026 09:30:55 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8E3F0C116C6;
+ Thu,  5 Mar 2026 09:30:54 +0000 (UTC)
+Date: Thu, 5 Mar 2026 09:30:51 +0000
+From: Simon Horman <horms@kernel.org>
+To: Joshua Hay <joshua.a.hay@intel.com>
+Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Message-ID: <20260305093051.GB90938@kernel.org>
+References: <20260303012831.662492-1-joshua.a.hay@intel.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
- micalg=pgp-sha512; protocol="application/pgp-signature"
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=linutronix.de; s=2020; t=1772700954;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=ecqro3YS78h33SUaUsJYIVaoB0LHuu2VIDT6L98U+ZU=;
- b=g8zxm0UO+kYJydvh1gWJZkCT+dKwS0pl90SUdHLmfQ4K5Lm0U3H+xs52y/+nZILqf+Vt2h
- 00zGgW4a/bQM3PPFHLF8Q26jDBJvgnptZrTX8zlvbncO13NhMIzCkZIj1bb3MLA5YakQIr
- 3yNg9jbqq2Av2G169EYRFyBy4PWiOkb5ZeXHvHDAqjCUamFegvw5gA6aTGPLf6Lalc4R2r
- Lluv6c/YXLRXkJap4FaxyL9Utv05JihGu6oAjCPc7fqFu9iDedvKeDn+HoFZL9af26+6mx
- GqLtl+RovxzqBh5l2T+PZQY6KHxgCMPcN07IP2Utl3j3VXkcAeu6TpRlsrensA==
-X-Mailman-Original-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
- d=linutronix.de; s=2020e; t=1772700954;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=ecqro3YS78h33SUaUsJYIVaoB0LHuu2VIDT6L98U+ZU=;
- b=57KdUgHm8XZ5ZyAILCqJCRhioJDmsfvZQ4foBQSX4OSPxosP3hojz58idK/qgceU9NqX4y
- Gj1t5GqqfGthbbCQ==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=linutronix.de
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key, unprotected) header.d=linutronix.de
- header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=g8zxm0UO; 
- dkim=pass header.d=linutronix.de header.i=@linutronix.de
- header.a=ed25519-sha256 header.s=2020e header.b=57KdUgHm
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next v4] igb: Retrieve Tx
- timestamp from BH workqueue
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260303012831.662492-1-joshua.a.hay@intel.com>
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=kernel.org; s=k20201202; t=1772703055;
+ bh=2b1eWPC49WnzEkK2zp9nESZ7FeyXoj/88zwhNB7MJhs=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=cqvccO2V4yW8Qla55RUDyFGDyZ4LlRg1amcoSpYDapttyd8FJxEJRoe9pyT/IXm2C
+ bEGzA/cfV9lI3JdP9jIn8H1RihSY9YtyWCZUdxINykMUk7peDOxtuvDo8IRHJtZMVL
+ bwwbgKLw10BL9JsqKjxeC400LG4ZScDj2zz0fm0xWNwDFk2VUK7HQsHWjFdLSBokNx
+ BzB/3oJ96sNFv4jpI/3DjJHnfi6ETBPfPzWxZ3u7kG8gYcwU966sVL+1WjojKAQyVY
+ TgFTXaRq4/1+rqpdqOo4IRZfdvT81XYItsU2nCJIEHuyUT4VNbW7O/1zOHWYxjFKR7
+ dfS9Ras3aHQYQ==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dmarc=pass (p=quarantine dis=none)
+ header.from=kernel.org
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20201202 header.b=cqvccO2V
+Subject: Re: [Intel-wired-lan] [PATCH iwl-net] idpf: clear stale cdev_info
+ ptr
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -114,118 +100,44 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
---=-=-=
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+On Mon, Mar 02, 2026 at 05:28:31PM -0800, Joshua Hay wrote:
+> Deinit calls idpf_idc_deinit_core_aux_device to free the cdev_info
+> memory, but leaves the adapter->cdev_info field with a stale pointer
+> value. This will bypass subsequent "if (!cdev_info)" checks if cdev_info
+> is not reallocated. For example, if idc_init fails after a reset,
+> cdev_info will already have been freed during the reset handling, but it
+> will not have been reallocated. The next reset or rmmod will result in a
+> crash.
+> 
+> [  +0.000008] BUG: kernel NULL pointer dereference, address: 00000000000000d0
+> [  +0.000033] #PF: supervisor read access in kernel mode
+> [  +0.000020] #PF: error_code(0x0000) - not-present page
+> [  +0.000017] PGD 2097dfa067 P4D 0
+> [  +0.000017] Oops: Oops: 0000 [#1] SMP NOPTI
+> ...
+> [  +0.000018] RIP: 0010:device_del+0x3e/0x3d0
+> [  +0.000010] Call Trace:
+> [  +0.000010]  <TASK>
+> [  +0.000012]  idpf_idc_deinit_core_aux_device+0x36/0x70 [idpf]
+> [  +0.000034]  idpf_vc_core_deinit+0x3e/0x180 [idpf]
+> [  +0.000035]  idpf_remove+0x40/0x1d0 [idpf]
+> [  +0.000035]  pci_device_remove+0x42/0xb0
+> [  +0.000020]  device_release_driver_internal+0x19c/0x200
+> [  +0.000024]  driver_detach+0x48/0x90
+> [  +0.000018]  bus_remove_driver+0x6d/0x100
+> [  +0.000023]  pci_unregister_driver+0x2e/0xb0
+> [  +0.000022]  __do_sys_delete_module.isra.0+0x18c/0x2b0
+> [  +0.000025]  ? kmem_cache_free+0x2c2/0x390
+> [  +0.000023]  do_syscall_64+0x107/0x7d0
+> [  +0.000023]  entry_SYSCALL_64_after_hwframe+0x76/0x7e
+> 
+> Pass the adapter struct into idpf_idc_deinit_core_aux_device instead and
+> clear the cdev_info ptr.
+> 
+> Fixes: f4312e6bfa2a ("idpf: implement core RDMA auxiliary dev create, init, and destroy")
+> Signed-off-by: Joshua Hay <joshua.a.hay@intel.com>
+> Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+> Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 
-On Wed Mar 04 2026, Miroslav Lichvar wrote:
-> On Tue, Mar 03, 2026 at 02:38:11PM +0100, Kurt Kanzenbach wrote:
->> > It would be great, if you shared the numbers. Did Miroslav already tes=
-t=20
->> > this?
->>=20
->> Great question. I did test with ptp4l and synchronization looks fine <
->> below 10ns back to back as expected. I did not test with ntpperf,
->> because I was never able to reproduce the NTP regression to the same
->> extent as Miroslav reported. Therefore, Miroslav is on Cc in case he
->> wants to test it. Let's see.
->
-> I ran the same test with I350 as before and there still seems to be a
-> regression, but interestingly it's quite different to the previous versio=
-ns of
-> the patch. It's like there is a load-sensitive on/off switch.
->
-> Without the patch:
->
->                |          responses            |        response time (ns)
-> rate   clients |  lost invalid   basic  xleave |    min    mean     max s=
-tddev
-> 150000   15000   0.00%   0.00%   0.00% 100.00%    +4188  +36475 +193328  =
-16179
-> 157500   15750   0.02%   0.00%   0.02%  99.96%    +6373  +42969 +683894  =
-22682
-> 165375   16384   0.03%   0.00%   0.00%  99.97%    +7911  +43960 +692471  =
-24454
-> 173643   16384   0.06%   0.00%   0.00%  99.94%    +8323  +45627 +707240  =
-28452
-> 182325   16384   0.06%   0.00%   0.00%  99.94%    +8404  +47292 +722524  =
-26936
-> 191441   16384   0.00%   0.00%   0.00% 100.00%    +8930  +51738 +223727  =
-14272
-> 201013   16384   0.05%   0.00%   0.00%  99.95%    +9634  +53696 +776445  =
-23783
-> 211063   16384   0.00%   0.00%   0.00% 100.00%   +14393  +54558 +329546  =
-20473
-> 221616   16384   2.59%   0.00%   0.05%  97.36%   +23924 +321205 +518192  =
-21838
-> 232696   16384   7.00%   0.00%   0.10%  92.90%   +33396 +337709 +575661  =
-21017
-> 244330   16384  10.82%   0.00%   0.15%  89.03%   +34188 +340248 +556237  =
-20880
->
-> With the patch:
-> 150000   15000   5.11%   0.00%   0.00%  94.88%    +4426 +460642 +640884  =
-83746
-> 157500   15750  11.54%   0.00%   0.26%  88.20%   +14434 +543656 +738355  =
-30349
-> 165375   16384  15.61%   0.00%   0.31%  84.08%   +35822 +515304 +833859  =
-25596
-> 173643   16384  19.58%   0.00%   0.37%  80.05%   +20762 +568962 +900100  =
-28118
-> 182325   16384  23.46%   0.00%   0.42%  76.13%   +41829 +547974 +804170  =
-27890
-> 191441   16384  27.23%   0.00%   0.46%  72.31%   +15182 +557920 +798212  =
-28868
-> 201013   16384  30.51%   0.00%   0.49%  69.00%   +15980 +560764 +805576  =
-29979
-> 211063   16384   0.06%   0.00%   0.00%  99.94%   +12668  +80487 +410555  =
-62182
-> 221616   16384   2.94%   0.00%   0.05%  97.00%   +21587 +342769 +517566  =
-23359
-> 232696   16384   6.94%   0.00%   0.10%  92.96%   +16581 +336068 +484574  =
-18453
-> 244330   16384  11.45%   0.00%   0.14%  88.41%   +23608 +345023 +564130  =
-19177
->
-> At 211063 requests per second and higher the performance looks the
-> same. But at the lower rates there is a clear drop. The higher
-> mean response time (difference between server TX and RX timestamps)
-> indicates more of the provided TX timestamps are hardware timestamps
-> and the chrony server timestamp statistics confirm that.
->
-> So, my interpretation is that like with the earlier version of the
-> patch it's trading performance for timestamp quality at lower rates,
-> but unlike the earlier version it's not losing performance at the
-> higher rates. That seems acceptable to me. Admins of busy servers
-> might need to decide if they should keep HW timestamping enabled. In
-> theory, chrony could have an option to do that automatically.
+Reviewed-by: Simon Horman <horms@kernel.org>
 
-Great! Thanks a lot for testing and sharing your numbers.
-
-I'll send v5 then with updated changelog as suggested by Aleksandr and
-Paul.
-
-Thanks,
-Kurt
-
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQJHBAEBCgAxFiEEvLm/ssjDfdPf21mSwZPR8qpGc4IFAmmpRRgTHGt1cnRAbGlu
-dXRyb25peC5kZQAKCRDBk9HyqkZzgnfXD/9TOnDNTDngr0PXrCtQH9FliXc8zyXZ
-fU5BOkrfttxRPocIgW3SSBLdNuyEhA/yBRjT1jnbPzc3qnZq4jvykXPpzS3CiVbg
-eTM3f9zJWeFRBTEH1593e3CRNF6N4GMeDjWfnWYFwwgzcq87ifH5BZm36mdTVBPo
-QhvO53dFSWdilG1AEc5RTc5Ltjc5cLWpK2LETxISJdA0+vYty3HKFSSZ3niEkxO7
-AW6NhQKXowYuOa0yXmuhtGqDZGZ3TIyKAGJoS3rsAb0NyjW7mV3jTwlMMpY2OhHm
-pVlOEs2qbMZQF4zElGubGiVNMGLSw/NYTnjgrFep02FykjPuXSh+3A3ZXL5ks2R1
-WW8z98HNdUjeEyj7+DMfRPXTsHil4wKeBW+P8G5lLV9RdC9Mw6sUH+mfNhO4IB5m
-O3avxJQZaYwYrnumpTWVIrYl+GN1qo8X6QvaM94+wX2agFA8nt9s5zxAclxYWPbc
-cvUs/D8bO0+QQe1ZDGhmqLV97rVr3IttAcyDp1a+IHrYT4OtFBzW/wXIS4hsqjDc
-SDzDh3q0CXkXGX2MGGzx8R5H9t+Di65UC71Mk49WSCx/d1WdHIdSuoPnrDp+cITa
-QHyCdTzHhBZEBltEGUMl2COP+lQRgNhqIRciJddZWqNZKkMxSEuqIrZDvpgbV4M/
-LG/gG9sVUNvAjw==
-=8NQy
------END PGP SIGNATURE-----
---=-=-=--
