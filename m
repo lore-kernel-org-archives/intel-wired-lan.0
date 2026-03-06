@@ -4,119 +4,118 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5FFCAFCC07B
-	for <intel-wired-lan@archiver.kernel.org>; Fri,  6 Mar 2026 21:14:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3728CFCC07D
+	for <intel-wired-lan@archiver.kernel.org>; Fri,  6 Mar 2026 21:14:23 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id C899283F0F;
-	Fri,  6 Mar 2026 21:14:21 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id A274383EFE;
+	Fri,  6 Mar 2026 21:14:22 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id QpdaRFqPvnLZ; Fri,  6 Mar 2026 21:14:20 +0000 (UTC)
+ id Kfiqjipu3OGb; Fri,  6 Mar 2026 21:14:21 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E807183F04
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 0A9CA83F12
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1772831660;
-	bh=j+wVFXDJqFGNNH+A2DIP/hdXRUUa1ETvoAO9jfbvYfc=;
+	s=default; t=1772831661;
+	bh=pMTRV/w5uF1FJW7BPbinMB5ysdrzJZZCY3sqGJfURo8=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=iN7F5OlarB4Mmujx2FU9oL2Y145IRdtclteKI7rbOsnK9JrnR2QAMUKWms6JYfEEy
-	 XTA+JhBgZzl08C0HdnrcKaaKosHxENw8wKUj+yKzum+znvzZQPo5HmM4YSABPkqRQ3
-	 D060Nq2RsyvMqCaH5qRepzqunnf9wpis9TL1spL7K4XZTd8D3XXlZuA3WRid5MShhr
-	 xDy123UqbMbBJdXNSChrtpkt008K1DPw5/dH16xG4mMbWOUjlm+4vv1Nuhu7F2HVKy
-	 SdkxBprnR4r2oQQwK23oLOTKSPa9mV4cOovIrLHDFBh0rEIjrl5EQ+v9AtTzgHPTgi
-	 K2Hw5tk/NYwOA==
+	b=IWVAY4Bn/ARn5NWVyDUT3SJb1XWem1eK3u3Ldm8uF6Y6Rkk6g8Sox0phrdl26ufUb
+	 MpZUE13qE+e+Jltu+o9ZNPeR1eoDcDjHD59wiuBYU+t5u0lhfSITVgYC7/Yybe7Rjc
+	 47bTMA+EcB26xiSwhO4upJIlKpyKw8mjLbda7EZHmIbic5QCG4rJ3XY54i1I4NzLBs
+	 pV6dheMWngaIdSuR3F3SBOONX2JUZA2THIGexiUnDqvDA2CD2c88kR7Dk6fDunySo0
+	 dIMMsscvt6WRLXrSCx88ttip2NqJmRH0DB6ygXMx9yBxUpPqRLGelJSyIEls3ySoF5
+	 hvdvvYFG2b0Zg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id E807183F04;
-	Fri,  6 Mar 2026 21:14:19 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id 81FCB223
- for <intel-wired-lan@lists.osuosl.org>; Fri,  6 Mar 2026 21:13:21 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 0A9CA83F12;
+	Fri,  6 Mar 2026 21:14:21 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id B1ACF223
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  6 Mar 2026 21:13:27 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 737DE40ABE
- for <intel-wired-lan@lists.osuosl.org>; Fri,  6 Mar 2026 21:13:21 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id A3A8E83EEE
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  6 Mar 2026 21:13:27 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id OtTRySLS-Mfj for <intel-wired-lan@lists.osuosl.org>;
- Fri,  6 Mar 2026 21:13:21 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id WT6il_oZC_lB for <intel-wired-lan@lists.osuosl.org>;
+ Fri,  6 Mar 2026 21:13:27 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2a00:1450:4864:20::134; helo=mail-lf1-x134.google.com;
+ client-ip=2a00:1450:4864:20::12f; helo=mail-lf1-x12f.google.com;
  envelope-from=advoretsky@gmail.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 9F2E840088
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 9F2E840088
-Received: from mail-lf1-x134.google.com (mail-lf1-x134.google.com
- [IPv6:2a00:1450:4864:20::134])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 9F2E840088
- for <intel-wired-lan@lists.osuosl.org>; Fri,  6 Mar 2026 21:13:20 +0000 (UTC)
-Received: by mail-lf1-x134.google.com with SMTP id
- 2adb3069b0e04-5a131870b72so2757415e87.1
- for <intel-wired-lan@lists.osuosl.org>; Fri, 06 Mar 2026 13:13:20 -0800 (PST)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org DD08083EF9
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org DD08083EF9
+Received: from mail-lf1-x12f.google.com (mail-lf1-x12f.google.com
+ [IPv6:2a00:1450:4864:20::12f])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id DD08083EF9
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  6 Mar 2026 21:13:26 +0000 (UTC)
+Received: by mail-lf1-x12f.google.com with SMTP id
+ 2adb3069b0e04-5a13e1cfa45so859373e87.2
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 06 Mar 2026 13:13:26 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20230601; t=1772831598; x=1773436398;
+ d=1e100.net; s=20230601; t=1772831604; x=1773436404;
  h=content-transfer-encoding:mime-version:references:in-reply-to
  :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
  :to:cc:subject:date:message-id:reply-to;
- bh=j+wVFXDJqFGNNH+A2DIP/hdXRUUa1ETvoAO9jfbvYfc=;
- b=Wp6NnH4/uW/obEdJZGZz36kLmEVfmL0oCZ2y5+BJ5Hzy4zmqGzAyo2pyNVEnxegIEt
- bJ4g0ESehvp7jSjiBeEQ7qOOT1PyXhNd9oOQ1OlV31w4PNdDk3+dIezbUMXOQI1jrrgl
- h57z2qI11kel2dCR3nrLivZuIdnh+iijP+zqNZ4iJvs7V4N+X4VyKyi9Vu0D8V9cR2RV
- ySd9owbqGeES6n+gb5noPGcXq3qOTZS62lB38s2jnv5v9seNe96xRfqksryuw1v+bzIf
- 0cjrmGD8m/ifN28gFMG08bXjin/B/SWj99ITq5y+Aj5/tG7yuCyX93ElS+nDI2NXlh3G
- 8EQw==
-X-Gm-Message-State: AOJu0YyTdFkP0sHTP7ioI4C+WmzejznWsuYR4Z+o5O+TXF9b4IvFtFPQ
- vN7bzVrUni/iJ1UnGEQ7S/JZRuV1CPobutCvoooMle+C4xQay8vA8xcEnuJI+58f
-X-Gm-Gg: ATEYQzwRFIC5HIjHBUF4se4BXLvtWHlhhKg5TrtuauqnukHjturM0aIO0zFTInLXCMy
- pNg3TZeCle5W71nw2nNq4/oG/Xtq7ecvaLjJc+7YcYiBZrKu6u66hY/rAtV/esMfDhhA3Jy6adH
- DWnjHEm0EqMsfWmSvTGxyhc9OTnEmqWB0QteXTm5ohPoBpQ/EFU5zHLaEw7MCUc/p0PT0Q7KhA4
- fRp5hdu2bmG4uBtvVxN8V/Mt3pb2MxrxX/rGBQ2kcVfjK8EcM/lQzjOSv3ZoF/WxHxMInyTgXRx
- mJbpMrx/1dTF2drPOvRtsvRERWiaVDN6NOMpZem1QlL6G+ChFyHXwVBotSh7u6g7kdYWxmazYa9
- SPPlu93Yf/m7D7+moOIsRVE8Ldo9Xw0IBzCWrC0fxvJ1eBfXaBvx8OE5RC2O3S7JsRxgkmFC2R8
- gjeLth+DvK2qVEGmo=
-X-Received: by 2002:a05:6512:22c7:b0:5a1:4c8:a632 with SMTP id
- 2adb3069b0e04-5a13cab84f8mr850239e87.13.1772831597351; 
- Fri, 06 Mar 2026 13:13:17 -0800 (PST)
+ bh=pMTRV/w5uF1FJW7BPbinMB5ysdrzJZZCY3sqGJfURo8=;
+ b=EU24cc4K781U2d7Za1pkUZKqz9TLW9ZXie4R5maik4szMDwEDxkVVjN9Kn3V9xpQC8
+ ezPsjCz/XkfowEAH+DFTNIRFaQQASm1uN4GssayTSvZWwLh4CvtSratG9gMHCJu2AhgP
+ LeSVA7bQ19HEa+jp6DaZdYNgu3obnqfgrbr9ohdGxG7OFbRQ4p1m27icKldQg5aq39Dp
+ SJJVvi9JSu8rnbHo1Yx4zWaccLXmi+9qE6a2aO32jJ7WHOqSGGS38MCeBXHvhoYYSloa
+ vE3DYjW8EuutnD7vsyF/CyCUbbnlwavu2Chhk6auqMIWQpJntgN4A7M2OcpZxLk/nMcE
+ nQKQ==
+X-Gm-Message-State: AOJu0YxMxw7lvj50v9d7iQztDrZ/+BrJ+k6gYP/PYXO/CCS+hvtE/ZnH
+ Kh2pbUDNgTelb1JwEOkl0sojzvouUGGTh3aDFlbM4W8sD0SLhWKhFaBqxKSz25Xp
+X-Gm-Gg: ATEYQzz+f5w+oiWYCb0We/tMkVdwz2l2a2tHje7pH/GmEvQb1po1jVSRloHZA5ykenM
+ HKxtzlDYF62qN4Gq75s1UrKirUSJRV/OOVdY3CLZXDVUHiewKRKsORftMMmBjHlZECDJ5s3ysfs
+ NPb6zkqmPEsAfOYK6bl9Kvxl6f/PHfzK9e4V2ab+SvNiOJYGYdXi9ATe7szEj49YgFsuVHUkz/9
+ aLcemGLZbgTikaNwjDO3FfhPYdChzbDLPrZhVR3zF1TIjXuineVXuTOlJy+bblxAF7sHNEyKj7Z
+ DbsvuHNh4OukPetHO0HL3cGepe84plDLoiLCOHzFDQlnI5o+pzyxPV+FGQBK5TTArB7HPlNiI8A
+ lY3115zNA9D6rbbtG4jldFwCQyV3xy9zcTjJ1Y7rmYexMfHH+cntxyF7I/bdwfsZlowtAP3japZ
+ d5voT8
+X-Received: by 2002:a05:6512:3b23:b0:5a1:2f7b:b5b0 with SMTP id
+ 2adb3069b0e04-5a13ccd4283mr1149039e87.23.1772831603857; 
+ Fri, 06 Mar 2026 13:13:23 -0800 (PST)
 Received: from router-0001 ([2a01:4f9:3080:2e0f::2])
  by smtp.gmail.com with ESMTPSA id
- 2adb3069b0e04-5a13d07e0f1sm554433e87.58.2026.03.06.13.13.15
+ 2adb3069b0e04-5a13d07e0f1sm554433e87.58.2026.03.06.13.13.19
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 06 Mar 2026 13:13:16 -0800 (PST)
+ Fri, 06 Mar 2026 13:13:22 -0800 (PST)
 From: Alex Dvoretsky <advoretsky@gmail.com>
 To: intel-wired-lan@lists.osuosl.org
 Cc: netdev@vger.kernel.org, anthony.l.nguyen@intel.com,
  przemyslaw.kitszel@intel.com, stable@vger.kernel.org, kurt@linutronix.de,
  maciej.fijalkowski@intel.com, Alex Dvoretsky <advoretsky@gmail.com>
-Date: Fri,  6 Mar 2026 22:13:08 +0100
-Message-ID: <20260306211310.1213330-2-advoretsky@gmail.com>
+Date: Fri,  6 Mar 2026 22:13:10 +0100
+Message-ID: <20260306211310.1213330-4-advoretsky@gmail.com>
 X-Mailer: git-send-email 2.51.0
 In-Reply-To: <20260306211310.1213330-1-advoretsky@gmail.com>
 References: <20260306211310.1213330-1-advoretsky@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-Mailman-Approved-At: Fri, 06 Mar 2026 21:14:18 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20230601; t=1772831598; x=1773436398; darn=lists.osuosl.org;
+ d=gmail.com; s=20230601; t=1772831604; x=1773436404; darn=lists.osuosl.org;
  h=content-transfer-encoding:mime-version:references:in-reply-to
  :message-id:date:subject:cc:to:from:from:to:cc:subject:date
  :message-id:reply-to;
- bh=j+wVFXDJqFGNNH+A2DIP/hdXRUUa1ETvoAO9jfbvYfc=;
- b=GvfMULvGYetrzCDGNsfyErp+IsI2LMCzbRP2TJTpLf34kMH0aOmyCgV63OQGjsNtsp
- /Lyix3JQuN64EL5VYVUl7maDzIR1AX59ldXYV2Q9piMfg8CYp0XMQi1uClxSJJws1BI4
- 87gmpaDD6+d5bjqT8EDvDk/1cUd6ESmifHpXtNBDIrlae8IL6/wb7+AMJOQzT5assnii
- 6SeaW4CFyI+Q3TgKf915M7Shtdf3Tz/nrAoqsV7QhqpSmUve1PsuMa7GcvmvWlgBy8MY
- SQEnIs0sj0U64bA/N7KRDrFnJWRE77GOT+pOcdp7qwzPA2G9W5ipoHaVhUNE3q8g+3fr
- VCUA==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ bh=pMTRV/w5uF1FJW7BPbinMB5ysdrzJZZCY3sqGJfURo8=;
+ b=fL96AjIVJyJs6dF7jytg2fq6OwqYUz3B3MHRkK6ynmGh0W6Kzz16KUAFRb8VQXYcH8
+ MMf8StARyMJMvojK1x8Q7kfY9PV/E9e6qlTV/0O71jtDrcPb9OyDHjJPX3t+Oswirex5
+ l8b2Iaa9GCRo2ePCIskZJE6AGWRQZDKMf45VOt4RvnZZZzJWycZzZNO+Q5+KilaSRHok
+ 9uVSraELHXiGhvcz5+hrKmxELfTxHPhkR36hPdlZIRnRivrd5uWJnvYoYfKUNsudZK8c
+ uj0mM8TMNk8mp7Zd/88csEv8KFBvQhMyeHHJ+SE6YkM/ra8gqFuonDrnf8x4i+8xJxKR
+ FiXA==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=gmail.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20230601 header.b=GvfMULvG
-Subject: [Intel-wired-lan] [PATCH net 1/3] igb: check __IGB_DOWN in
- igb_clean_rx_irq_zc()
+ header.s=20230601 header.b=fL96AjIV
+Subject: [Intel-wired-lan] [PATCH net 3/3] igb: add XDP transition guards in
+ igb_xdp_setup()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -132,44 +131,63 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-When an AF_XDP zero-copy application terminates abruptly (e.g.,
-kill -9), the XSK buffer pool is destroyed but NAPI polling continues.
-igb_clean_rx_irq_zc() repeatedly returns the full budget (no
-descriptors, no buffers to allocate, xsk_buff_alloc() returns NULL)
-which makes napi_complete_done() re-arm the poll indefinitely.
+igb_xdp_setup() calls igb_close() + igb_open() when transitioning
+between XDP and non-XDP mode on a running device. This has two issues:
 
-Meanwhile igb_down() calls napi_synchronize(), which waits for a NAPI
-poll cycle that completes with done < budget. This never happens, so
-igb_down() blocks indefinitely. The 5-second TX watchdog fires because
-no TX completions are processed while NAPI is stuck. Since igb_down()
-never finishes, igb_up() is never called, and the TX queue remains
-permanently stalled.
+1. ndo_xsk_wakeup() runs under rcu_read_lock() and may still access
+   the rings while igb_xdp_setup() removes the XDP program. Without
+   waiting for an RCU grace period, igb_close() can tear down the
+   rings while ndo_xsk_wakeup() is still executing. Add
+   synchronize_rcu() before igb_close() when removing an XDP program
+   to ensure all in-flight RCU readers complete first.
 
-Fix this by adding an __IGB_DOWN check at the top of
-igb_clean_rx_irq_zc(), returning 0 immediately when the adapter is
-going down. This allows napi_synchronize() in igb_down() to complete,
-matching the pattern already used in igb_clean_tx_irq().
+2. The igb_close()/igb_open() window leaves trans_start stale from
+   before the close: the TX watchdog can fire a spurious timeout and
+   queue a reset_task that races with igb_open(). Add
+   netif_trans_update() after igb_open() to refresh the timestamp, and
+   cancel_work() to cancel any reset_task that may have been queued
+   while the device was down.
 
-Fixes: 2c6196013f84 ("igb: Add AF_XDP zero-copy Rx support")
+Note: cancel_work_sync() cannot be used here because igb_reset_task()
+takes rtnl_lock, which is already held by the ndo_bpf caller. Plain
+cancel_work() is sufficient: if reset_task is already running, it blocks
+on rtnl_lock and will check __IGB_DOWN when it acquires it.
+
+Fixes: 9cbc948b5a20 ("igb: add XDP support")
 Cc: stable@vger.kernel.org
 Signed-off-by: Alex Dvoretsky <advoretsky@gmail.com>
 ---
- drivers/net/ethernet/intel/igb/igb_xsk.c | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/net/ethernet/intel/igb/igb_main.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_xsk.c b/drivers/net/ethernet/intel/igb/igb_xsk.c
-index 30ce5fbb5b77..ca4aa4d935d5 100644
---- a/drivers/net/ethernet/intel/igb/igb_xsk.c
-+++ b/drivers/net/ethernet/intel/igb/igb_xsk.c
-@@ -351,6 +351,9 @@ int igb_clean_rx_irq_zc(struct igb_q_vector *q_vector,
- 	u16 entries_to_alloc;
- 	struct sk_buff *skb;
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index ddb7ce9e97bf..9ba944bf67b4 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -2913,6 +2913,9 @@ static int igb_xdp_setup(struct net_device *dev, struct netdev_bpf *bpf)
  
-+	if (test_bit(__IGB_DOWN, &adapter->state))
-+		return 0;
+ 	/* device is up and bpf is added/removed, must setup the RX queues */
+ 	if (need_reset && running) {
++		if (!prog)
++			/* Wait for RCU readers (e.g. ndo_xsk_wakeup). */
++			synchronize_rcu();
+ 		igb_close(dev);
+ 	} else {
+ 		for (i = 0; i < adapter->num_rx_queues; i++)
+@@ -2936,6 +2939,14 @@ static int igb_xdp_setup(struct net_device *dev, struct netdev_bpf *bpf)
+ 	if (running)
+ 		igb_open(dev);
+ 
++	/* Refresh watchdog timestamp after reopen and cancel any
++	 * reset task queued while the device was down.
++	 */
++	if (need_reset && running) {
++		netif_trans_update(dev);
++		cancel_work(&adapter->reset_task);
++	}
 +
- 	/* xdp_prog cannot be NULL in the ZC path */
- 	xdp_prog = READ_ONCE(rx_ring->xdp_prog);
+ 	return 0;
+ }
  
 -- 
 2.51.0
