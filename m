@@ -4,54 +4,55 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7D853F55104
-	for <intel-wired-lan@archiver.kernel.org>; Sat,  7 Mar 2026 18:28:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B65D7F55104
+	for <intel-wired-lan@archiver.kernel.org>; Sat,  7 Mar 2026 18:28:48 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 335CF838E6;
-	Sat,  7 Mar 2026 18:28:46 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 78EA183BF2;
+	Sat,  7 Mar 2026 18:28:48 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id qZCIAr6pQ8IS; Sat,  7 Mar 2026 18:28:44 +0000 (UTC)
+ id TQwcXYpweI7D; Sat,  7 Mar 2026 18:28:47 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 5BAC08315C
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E24D083BD3
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1772908124;
-	bh=xw4m4OYj1kiX/5z7U5EmezmMROr17D8a2T9m4a8VOEY=;
-	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=oMb1+5PfUPiE+19qNH+NGUhhJauvvv+zJ6sVvdMU27kXm4gwNpxLcLFjA+ToDm44e
-	 VC/mS5jhXg2HCpNic1QfKKdqbIknfN6V7ZjpZnMCiFvv4c5W8iR1lB+3cXN+XNycWu
-	 8Opi9GF0GcrF3WOcB5JumelQvZgL1nS6GY/VOrsW5BrNG6E+AHo5Za3vztx0XOTe2G
-	 Tzl3Pw4zyuFUuZ67p5EK8dmXsIJEUv3bPreyySKHjNhxFAzPkp9Wy+F1c9hveSwA7w
-	 N+FQPs5Uz/+KhiU7dvGJqAUUZI2rNa1jLucvpMzaQMSPQ7I0pfOFtt9qHfZQeFJEBE
-	 cq4spSgkXkwtA==
+	s=default; t=1772908126;
+	bh=HQ8r0KD4toX/rc513azQPOVmYJYl5d5vX7tPVgX5kFk=;
+	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=xu3lOp7e3PWk0zHDSngUw5KN9OHTcOrkpP5aycsaoxXf7Nkshcs7mw5v4e/jwt5kb
+	 HI2GszzZB3M6rDejHk5DV97GfKkvPeKq5lmWlv+HQ1d6Top0kFe4uVJj9I6mplNXSe
+	 eNrw+fLoNEOO7yu6p/ra7LWOgGSUk/ZoDK/QhUQc31zloDcgBCxVrK9YAqRFf7IOPg
+	 8F+l+C3Extmq39A2eK3PFOvYIrOZtePPJ3+Y7dnjeYZwQIn9bdrMFQkznsy/Am3ced
+	 nHa2mAe0fM+hdJqVgVzXTT6E0g/KP4ttqHuMx/YPRQK78UeU+iJo9FQubty86e5AnV
+	 ftmZWW0xoOFng==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 5BAC08315C;
-	Sat,  7 Mar 2026 18:28:44 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id 01643223
- for <intel-wired-lan@lists.osuosl.org>; Sat,  7 Mar 2026 18:28:43 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id E24D083BD3;
+	Sat,  7 Mar 2026 18:28:46 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 07DB1169
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  7 Mar 2026 18:28:45 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id E730440453
- for <intel-wired-lan@lists.osuosl.org>; Sat,  7 Mar 2026 18:28:42 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id ED0EF60E13
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  7 Mar 2026 18:28:44 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id je-d8fXbq-yq for <intel-wired-lan@lists.osuosl.org>;
- Sat,  7 Mar 2026 18:28:42 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id GEL3fevG_HbR for <intel-wired-lan@lists.osuosl.org>;
+ Sat,  7 Mar 2026 18:28:44 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=49.212.198.91;
  helo=www2881.sakura.ne.jp; envelope-from=kohei@enjuk.jp; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org BFD144044B
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org BFD144044B
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org B0D4160B5A
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B0D4160B5A
 Received: from www2881.sakura.ne.jp (www2881.sakura.ne.jp [49.212.198.91])
- by smtp2.osuosl.org (Postfix) with ESMTPS id BFD144044B
- for <intel-wired-lan@lists.osuosl.org>; Sat,  7 Mar 2026 18:28:41 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTPS id B0D4160B5A
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  7 Mar 2026 18:28:43 +0000 (UTC)
 Received: from ms-a2 (79.25.31.150.dy.iij4u.or.jp [150.31.25.79])
  (authenticated bits=0)
- by www2881.sakura.ne.jp (8.16.1/8.16.1) with ESMTPSA id 627IS9o2043132
+ by www2881.sakura.ne.jp (8.16.1/8.16.1) with ESMTPSA id 627ISK1U043213
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NO);
- Sun, 8 Mar 2026 03:28:09 +0900 (JST) (envelope-from kohei@enjuk.jp)
+ Sun, 8 Mar 2026 03:28:20 +0900 (JST) (envelope-from kohei@enjuk.jp)
 From: Kohei Enju <kohei@enjuk.jp>
 To: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org
 Cc: Tony Nguyen <anthony.l.nguyen@intel.com>,
@@ -61,30 +62,33 @@ Cc: Tony Nguyen <anthony.l.nguyen@intel.com>,
  Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
  Paolo Abeni <pabeni@redhat.com>, kohei.enju@gmail.com,
  Kohei Enju <kohei@enjuk.jp>
-Date: Sat,  7 Mar 2026 18:27:37 +0000
-Message-ID: <20260307182808.155027-1-kohei@enjuk.jp>
+Date: Sat,  7 Mar 2026 18:27:39 +0000
+Message-ID: <20260307182808.155027-3-kohei@enjuk.jp>
 X-Mailer: git-send-email 2.51.0
+In-Reply-To: <20260307182808.155027-1-kohei@enjuk.jp>
+References: <20260307182808.155027-1-kohei@enjuk.jp>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: a=rsa-sha256;
- bh=xw4m4OYj1kiX/5z7U5EmezmMROr17D8a2T9m4a8VOEY=; 
+ bh=HQ8r0KD4toX/rc513azQPOVmYJYl5d5vX7tPVgX5kFk=; 
  c=relaxed/relaxed; d=enjuk.jp;
  h=From:Message-ID:To:Subject:Date;
- s=rs20251215; t=1772908090; v=1;
- b=ZmXtY5L4guy2PE3b7i0o8VcNXrDqgH0/Nbtbw6cj3XLFZPLCR4p6nP56Mv2ofxzM
- hRUnu3qCjhpjcB5SDTawK1ckoWGX9k/tlndBlO3/io0gvxK/usyejZagTpO+1FUU
- 1O1pE6kqGzr1xPhCouV0f7GNZYYn+7xSdmICcDPPYM66DuEruXqma/IzNrapvw9r
- 8JXX6fiTVvF9JhomYbDsid2M7X8d4zBcGhZTfkGyeXiFnbsP/Y6IquF6aN+enM3t
- 99eH2q0M1t7kdgMpmVB2TSm8k9xxHxTAQ3MFEOpDuy93PgPQv6e7R/5ahaI2tJbg
- Xz7aUIbNOsux0/63RTCO2A==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ s=rs20251215; t=1772908101; v=1;
+ b=U0sMezoFkOQ9cAVyLHK4zpPnJ2qlY/uDJtDQYI+1cJEnBlmjrnANnkV/W6joGAfN
+ BTRW5+olSpLpkRlMYyOspZbNKgk8HAdqXwwkobnKipPZPF/1guCi/A2Qb5ByLl0g
+ BeiMl1lRSyFZxii0OBWD8GgX6QZnkusrji0Mm2YsY7dBH+7ja4CyMB9jXRQoT6sC
+ qhBJOLfI2zIYAkHXNv3WiCTQkc9TEh2wKpRWWI9BafPN5VTaqiOIa45ToBuFdhDL
+ cwOnJNCDF7ayFN1LxuNTCbgQnF5L+hGKwXCM5WIH/+0V+kfGaoctMrQnEe7OPjQQ
+ zhktN2fOHXymaE6+JOVtxg==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=enjuk.jp
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=enjuk.jp header.i=@enjuk.jp header.a=rsa-sha256
- header.s=rs20251215 header.b=ZmXtY5L4
-Subject: [Intel-wired-lan] [PATCH iwl-next v1 0/2] igc: enable build_skb path
+ header.s=rs20251215 header.b=U0sMezoF
+Subject: [Intel-wired-lan] [PATCH iwl-next v1 2/2] igc: enable build_skb on
+ the non-XDP small-frame RX path
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -100,24 +104,63 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-This series enables the build_skb RX path in igc, which is currently not
-enabled in any configuration.
+igc implements igc_build_skb(), but it is currently unused because the
+IGC_RING_FLAG_RX_BUILD_SKB_ENABLED bit is never set. Enable the
+build_skb path when XDP is not active and the configured maximum frame
+size fits within IGC_MAX_FRAME_BUILD_SKB.
 
-Patch 1/2 adds missing RX hardware timestamp handling in the build_skb
-path.
-Patch 2/2 enables the build_skb path when XDP is inactive and other
-conditions are met.
+In a single-queue small-packet (64-byte) RX microbenchmark on my setup,
+enabling build_skb improved the receive rate from about 3.11 Mpps to
+about 3.30 Mpps, while reducing missed packets from about 484 kpps to
+about 300 kpps.
 
-Tested on Intel Corporation Ethernet Controller I226-V (rev 04).
+Keep the XDP path unchanged for now, since it uses a different RX buffer
+layout based on XDP_PACKET_HEADROOM, and enabling it there would need
+separate validation and buffer layout adjustments.
 
-Kohei Enju (2):
-  igc: set RX hardware timestamps in igc_build_skb()
-  igc: enable build_skb on the non-XDP small-frame RX path
+Signed-off-by: Kohei Enju <kohei@enjuk.jp>
+---
+ drivers/net/ethernet/intel/igc/igc.h      | 4 ++++
+ drivers/net/ethernet/intel/igc/igc_main.c | 4 ++++
+ 2 files changed, 8 insertions(+)
 
- drivers/net/ethernet/intel/igc/igc.h      |  4 ++++
- drivers/net/ethernet/intel/igc/igc_main.c | 22 +++++++++++++++++-----
- 2 files changed, 21 insertions(+), 5 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
+index e66799507f81..acbd2c237667 100644
+--- a/drivers/net/ethernet/intel/igc/igc.h
++++ b/drivers/net/ethernet/intel/igc/igc.h
+@@ -734,6 +734,10 @@ enum igc_ring_flags_t {
+ 
+ #define ring_uses_build_skb(ring) \
+ 	test_bit(IGC_RING_FLAG_RX_BUILD_SKB_ENABLED, &(ring)->flags)
++#define set_ring_uses_build_skb(ring) \
++	set_bit(IGC_RING_FLAG_RX_BUILD_SKB_ENABLED, &(ring)->flags)
++#define clear_ring_uses_build_skb(ring) \
++	clear_bit(IGC_RING_FLAG_RX_BUILD_SKB_ENABLED, &(ring)->flags)
+ 
+ static inline unsigned int igc_rx_bufsz(struct igc_ring *ring)
+ {
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index 3a4c1ebe4faa..1f3ed1e4db1b 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -474,6 +474,7 @@ static void igc_clean_rx_ring(struct igc_ring *ring)
+ 		igc_clean_rx_ring_page_shared(ring);
+ 
+ 	clear_ring_uses_large_buffer(ring);
++	clear_ring_uses_build_skb(ring);
+ 
+ 	ring->next_to_alloc = 0;
+ 	ring->next_to_clean = 0;
+@@ -654,6 +655,9 @@ static void igc_configure_rx_ring(struct igc_adapter *adapter,
+ 
+ 	if (igc_xdp_is_enabled(adapter))
+ 		set_ring_uses_large_buffer(ring);
++	else if (!(adapter->flags & IGC_FLAG_RX_LEGACY) &&
++		 adapter->max_frame_size <= IGC_MAX_FRAME_BUILD_SKB)
++		set_ring_uses_build_skb(ring);
+ 
+ 	/* disable the queue */
+ 	wr32(IGC_RXDCTL(reg_idx), 0);
 -- 
 2.51.0
 
