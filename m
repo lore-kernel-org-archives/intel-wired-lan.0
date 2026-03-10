@@ -1,67 +1,67 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 83D25EB1073
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7C8E4EB1071
 	for <intel-wired-lan@archiver.kernel.org>; Tue, 10 Mar 2026 15:27:12 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 561D24046C;
+	by smtp1.osuosl.org (Postfix) with ESMTP id 33DE080C5D;
 	Tue, 10 Mar 2026 15:27:12 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 1P1Um_lAmuj0; Tue, 10 Mar 2026 15:27:10 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 4Axgu-squAQZ; Tue, 10 Mar 2026 15:27:11 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 760D9403A9
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org AF3C680FA4
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1773156430;
-	bh=+mEgDc6W6dmx2m0hBCrDKrYdyaZdhiJE+p4uCpJlqL8=;
+	s=default; t=1773156431;
+	bh=ZO/wrR73FYLAl6k0Rsc8zfSsoIcYSzctfHSIfQZUiOc=;
 	h=From:Date:References:In-Reply-To:To:Cc:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=YO7OEdmhOMYMNRJt17fbUfVSZdA5daxj+lFREq5Hr002TuKLLcI8zGflizyNs5I7Y
-	 7ss+aG00MMlmXFSXZxYqiGemiT63Wwfo469J2xjZ8mb5JhJzDfdas9d862dfTyxNdt
-	 3gbcjYbetaJUE0rCUUX+CBxO1YeXli4Ck/IVHD8ygsILD9gAS2i2gIw7tJVn0LsHQj
-	 sCFs8HQxpTLBiBrBJl6bj4C5VehPzod/2exhvbEDuRWP6KLfoO3+qjxu8bn9ns5dAo
-	 86FR3whJeqRvgHgt/zy231OxWTnn0DyrsZiNK9VzVu23EBCjjet66OmJguCkx8QgB0
-	 daa5KiWkuRnQA==
+	b=yAkd2GZC6fuYpc+SVp26lfh5xWU112mhrt2T4wzsAw+pE4mEe16uEq7QLHFyl2U8J
+	 1sy/qbL7E22MCXJ/VdWzdFhYVYirIlUtBX5SLPYFAFa8Pqk2pynY7ClOB+0D5XTJ4B
+	 2c87NyCaS/kz3ldm9kS5ri6fXgBOCqWS99BCQjn8ZFsFHSFWpNF6CGd6jpkGY4HVBA
+	 z8A4Ji/0SCx5xSeiDJvShunYBBILz4NW54rnzLCPYr4GQ2lS0d3a96xVk4t86BIFmJ
+	 6cyfIRslG5EgCH3Z0bITO+VIHQy7MBiq76CBDZfg7tn6Pt9n1pUvcMn+3YA5X2aRgP
+	 KGTJgWOjdLgXg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 760D9403A9;
-	Tue, 10 Mar 2026 15:27:10 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 1C14EB2C
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:01:23 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id AF3C680FA4;
+	Tue, 10 Mar 2026 15:27:11 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 0E9AA201
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:01:24 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 02262406A4
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:01:23 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 4AF6E840E4
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:01:22 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ryDPrTYH3dVx for <intel-wired-lan@lists.osuosl.org>;
- Tue, 10 Mar 2026 12:01:19 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=212.42.244.119;
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id swBPGOW9fmDm for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 10 Mar 2026 12:01:21 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=2001:bf0:244:244::94;
  helo=mail.avm.de; envelope-from=phahn-oss@avm.de; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 466BB403A1
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 466BB403A1
-Received: from mail.avm.de (mail.avm.de [212.42.244.119])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 466BB403A1
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:01:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 7DBAA84247
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7DBAA84247
+Received: from mail.avm.de (mail.avm.de [IPv6:2001:bf0:244:244::94])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 7DBAA84247
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:01:21 +0000 (UTC)
 Received: from [212.42.244.71] (helo=mail.avm.de)
  by mail.avm.de with ESMTP (eXpurgate 4.55.2)
  (envelope-from <phahn-oss@avm.de>)
- id 69b006ae-2367-7f0000032729-7f000001c98c-1
- for <multiple-recipients>; Tue, 10 Mar 2026 12:55:26 +0100
+ id 69b006ac-e21d-7f0000032729-7f000001d9c0-1
+ for <multiple-recipients>; Tue, 10 Mar 2026 12:55:24 +0100
 Received: from mail-auth.avm.de (dovecot-mx-01.avm.de [212.42.244.71])
  by mail.avm.de (Postfix) with ESMTPS;
- Tue, 10 Mar 2026 12:55:26 +0100 (CET)
+ Tue, 10 Mar 2026 12:55:24 +0100 (CET)
 From: Philipp Hahn <phahn-oss@avm.de>
-Date: Tue, 10 Mar 2026 12:49:00 +0100
+Date: Tue, 10 Mar 2026 12:48:37 +0100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260310-b4-is_err_or_null-v1-34-bd63b656022d@avm.de>
+Message-Id: <20260310-b4-is_err_or_null-v1-11-bd63b656022d@avm.de>
 References: <20260310-b4-is_err_or_null-v1-0-bd63b656022d@avm.de>
 In-Reply-To: <20260310-b4-is_err_or_null-v1-0-bd63b656022d@avm.de>
 To: amd-gfx@lists.freedesktop.org, apparmor@lists.ubuntu.com, 
@@ -91,41 +91,32 @@ To: amd-gfx@lists.freedesktop.org, apparmor@lists.ubuntu.com,
  sched-ext@lists.linux.dev, target-devel@vger.kernel.org, 
  tipc-discussion@lists.sourceforge.net, v9fs@lists.linux.dev, 
  Philipp Hahn <phahn-oss@avm.de>
-Cc: Russell King <linux@armlinux.org.uk>
-X-Developer-Signature: v=1; a=openpgp-sha256; l=925; i=phahn-oss@avm.de;
- h=from:subject:message-id; bh=MCi9bfMt/yjRjpkUd1ZhwbiaE2CmX7FKcN3LCeZC+s8=;
- b=owEBbQGS/pANAwAKATQtBlPRrKzbAcsmYgBpsAZJPXZg3WsXcrZtjOff8m1jvG6yKXz3axEvS
- kboSQL/SpuJATMEAAEKAB0WIQQ5bPBtrWDUcDQCppg0LQZT0ays2wUCabAGSQAKCRA0LQZT0ays
- 2zfACACzyLECzgi3MrIMlJkcwSfYhn2m+PRIL8f9uOY3XlWqWmweHlYuZj3OMlVlJtGjvYSQaMR
- 9+D2tmynuqJf309fIXDWVkgzjy8866w+a/UJmSXv/T4izax84D3f8LghtIzFi7mZ97slccnBaIH
- bYp2esZnYrGMRYLzsh/aOQvmQdhErxNZysqZJWPMzNnDfK6XoXYg2wPfHrL2waLBmLBd1ruAh8/
- q/1mTUtEwi8tnMzF9vKrDxFY8VrHUkQh/DKxepIobrtB7u/NL1zHZyVzUjIKrp3fP30IB0/fbFP
- nBUcDJnBx61wdRtaxbBVJBgZihX6FfH11PRkPQUNc/WVeaiP
+Cc: Kees Cook <kees@kernel.org>, Tony Luck <tony.luck@intel.com>, 
+ "Guilherme G. Piccoli" <gpiccoli@igalia.com>
+X-Developer-Signature: v=1; a=openpgp-sha256; l=958; i=phahn-oss@avm.de;
+ h=from:subject:message-id; bh=50ahf3Ovo2xs3bKtWfsEny3TDWNoY4zAg8ay7QEz3LI=;
+ b=owEBbQGS/pANAwAKATQtBlPRrKzbAcsmYgBpsAX7sQcV3VwS+mx5jK1HizkW2meRfNqVaBq2u
+ sez6firU+2JATMEAAEKAB0WIQQ5bPBtrWDUcDQCppg0LQZT0ays2wUCabAF+wAKCRA0LQZT0ays
+ 2xq8B/0SUo4r3rxVq9RsANPcVwQvjAVIq5IHS3vrGpufO9mdcUCVswBYAGcqVWlGUWYhZ9D5Afm
+ wOzPQKPaAOE+fY5h8prRvYwP+dSX3nADwI8Y6unKqygPjUrnO+GjcQ97MVfA906q0I9/A6k6cjF
+ jRX1r++tFvKvjX46AZyTpQKZC7YoNaBrH37lhDan3ZiZqsJrJDSI+f2JPLEkh5ffnrBrT1NRvPO
+ /GMhxFHqkXWNux7Q6NSnWc5GTjmQY/JD/+/V9BILGVpDvPcV2orOeVbtK+hA0s3T4ekXooFahFe
+ 5VVhIFMEZXUHZMw53adA+fpwHBkKMznHg4ePWJsQNeHf/dyM
 X-Developer-Key: i=phahn-oss@avm.de; a=openpgp;
  fpr=58AF7C2E007CDBE62C59E078F50EFDCF8AD04B1A
-X-purgate-ID: 149429::1773143726-8AC99E1F-6B772227/0/0
+X-purgate-ID: 149429::1773143724-9167EF2F-D7D1D994/0/0
 X-purgate-type: clean
-X-purgate-size: 927
+X-purgate-size: 960
 X-purgate-Ad: Categorized by eleven eXpurgate (R) https://www.eleven.de
 X-purgate: This mail is considered clean (visit https://www.eleven.de for
  further information)
 X-purgate: clean
 X-Mailman-Approved-At: Tue, 10 Mar 2026 15:27:04 +0000
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=avm.de; s=mail; 
- t=1773143726; bh=MCi9bfMt/yjRjpkUd1ZhwbiaE2CmX7FKcN3LCeZC+s8=;
- h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
- b=PKx4gVlkKTdBK4hC8DhkZHv6XjY3aXLFzpRRf+9yfpJ7sETH73wJIPUWVun5ApODc
- fB1HpEzfhSmPsza3W/UlEsW+FK27FdFsyHgYe+IbnAc85JpgiLO0UqynRTi7RRWY3c
- Qcjq/1RWaavgSPFWfIRpI/rqChIvo10IblUQ9PGA=
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=avm.de
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (1024-bit key) header.d=avm.de header.i=@avm.de header.a=rsa-sha256
- header.s=mail header.b=PKx4gVlk
-Subject: [Intel-wired-lan] [PATCH 34/61] arch/arm: Prefer IS_ERR_OR_NULL
- over manual NULL check
+Subject: [Intel-wired-lan] [PATCH 11/61] pstore: Prefer IS_ERR_OR_NULL over
+ manual NULL check
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -146,27 +137,28 @@ check.
 
 Change generated with coccinelle.
 
-To: Russell King <linux@armlinux.org.uk>
-Cc: linux-arm-kernel@lists.infradead.org
+To: Kees Cook <kees@kernel.org>
+To: Tony Luck <tony.luck@intel.com>
+To: "Guilherme G. Piccoli" <gpiccoli@igalia.com>
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Philipp Hahn <phahn-oss@avm.de>
 ---
- arch/arm/common/bL_switcher.c | 2 +-
+ fs/pstore/zone.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/arm/common/bL_switcher.c b/arch/arm/common/bL_switcher.c
-index d1e82a318e3b22bf6f54e9a8d5366ddc7a6e44ca..46cbb5caf9f17a22a7c42e4254cb68c6cdebc4e4 100644
---- a/arch/arm/common/bL_switcher.c
-+++ b/arch/arm/common/bL_switcher.c
-@@ -628,7 +628,7 @@ static void bL_switcher_disable(void)
- 		t = &bL_threads[cpu];
- 		task = t->task;
- 		t->task = NULL;
--		if (!task || IS_ERR(task))
-+		if (IS_ERR_OR_NULL(task))
- 			continue;
- 		kthread_stop(task);
- 		/* no more switch may happen on this CPU at this point */
+diff --git a/fs/pstore/zone.c b/fs/pstore/zone.c
+index a3b003f9a3a079c482b673f57023ce88fc290dbf..dce8403ca18566cc4a7a853ccdc7e1c165666fcb 100644
+--- a/fs/pstore/zone.c
++++ b/fs/pstore/zone.c
+@@ -1226,7 +1226,7 @@ static struct pstore_zone **psz_init_zones(enum pstore_type_id type,
+ 
+ 	for (i = 0; i < c; i++) {
+ 		zone = psz_init_zone(type, off, record_size);
+-		if (!zone || IS_ERR(zone)) {
++		if (IS_ERR_OR_NULL(zone)) {
+ 			pr_err("initialize zones %s failed\n", name);
+ 			psz_free_zones(&zones, &i);
+ 			return (void *)zone;
 
 -- 
 2.43.0
