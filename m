@@ -1,90 +1,61 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 32E77EB1073
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 10 Mar 2026 15:28:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B1871EB1071
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 10 Mar 2026 15:28:21 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id C29C260633;
+	by smtp4.osuosl.org (Postfix) with ESMTP id 8B61040558;
 	Tue, 10 Mar 2026 15:28:21 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id eQFqWDOpt_8s; Tue, 10 Mar 2026 15:28:20 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 945E440367
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1773156500;
+	bh=CYE/HV7EYizpiAYX6Lz6xzxADa1AFKYBU1J/zOcqJyk=;
+	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=Fklfs0Re1Ydrs6pI2mqNT57KN61EevFLGTptPaRJpbQe3Au4SuzdrzFS3OoacBE/v
+	 0QVF0agWfwWwMOE+l1aq9N2BrmAtC7FHP3ixxDNS33LmG3hyOBLrcAyVfcv81RvCHe
+	 J0bDwkxsa4Cbn0qr68CL0yBAo88mcRWXZWL8EkZep8JG9Kbml9E5Slp6/lRz6LXqcr
+	 P3I1grnYFpqWX8bD/Ecbt20XHE8t+bfRjDbJIGm/vmV0/YYwA/jO2l057X3HI/2VrL
+	 vD6BqhHtNXsZmPsUkBC2mmVtkp4xSGPuZJsZhL07rpAiI5FrCzA3FoZwWljwciGizV
+	 0jUk60Hg+P0Cg==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp4.osuosl.org (Postfix) with ESMTP id 945E440367;
+	Tue, 10 Mar 2026 15:28:20 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id C888B201
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:28:35 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp3.osuosl.org (Postfix) with ESMTP id AE09360ACD
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:28:35 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id BqtTD7cju2BK; Tue, 10 Mar 2026 15:28:21 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3BC776064A
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1773156501;
-	bh=mm6hm+LHoMGo5Ew01sq1dP9YSITnoqIDxYFDqmtgvh0=;
-	h=Date:To:Cc:References:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From:Reply-To:From;
-	b=1FabsSlMs9W4kZl53t29kXO7+yBWt4fSHeN6YMNafjG4RY+7u3uMIAK8gyRUJ51Gx
-	 wxE/qUQGQXU7GwWwyOqMIsrKio8m0Z5qKUByILZiintk7CFK/RI7Jua98gvsQHf4df
-	 VkLCOwObdaBYu1Z1NFDQrF2HGD1GcBXS5vVKNk846Dd/PW2AVkS+5UVAw+VvUmXpDo
-	 7oekbzeWDLeWKq2+horjwBCpWMqNuX6vnYNOdMvlL7wGLAhTISSCY7vstiR7bnl7Kc
-	 sshz/EyjVEuoST7j1ZwudoysucaCWD1W4jaH889alKoauJBs86bQDU92cEVlYk97jS
-	 /hrUDUoojujYw==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 3BC776064A;
-	Tue, 10 Mar 2026 15:28:21 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id 88067201
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:54:09 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 7C38983F0E
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:54:09 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id rQzASimhmZkZ for <intel-wired-lan@lists.osuosl.org>;
- Tue, 10 Mar 2026 12:54:09 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2607:f8b0:4864:20::634; helo=mail-pl1-x634.google.com;
- envelope-from=praan@google.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org D29FD83F11
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D29FD83F11
-Received: from mail-pl1-x634.google.com (mail-pl1-x634.google.com
- [IPv6:2607:f8b0:4864:20::634])
- by smtp1.osuosl.org (Postfix) with ESMTPS id D29FD83F11
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:54:08 +0000 (UTC)
-Received: by mail-pl1-x634.google.com with SMTP id
- d9443c01a7336-2aeab6ff148so1475ad.1
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 05:54:08 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20230601; t=1773147248; x=1773752048;
- h=in-reply-to:content-disposition:mime-version:references:message-id
- :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
- :subject:date:message-id:reply-to;
- bh=mm6hm+LHoMGo5Ew01sq1dP9YSITnoqIDxYFDqmtgvh0=;
- b=gTYJnJCehKvLzhAC3iITgYF5pDzyagLc5c/KISFA21Hywz8tuCNSmMv1Nk2uEQtU3x
- gOebIfd6nWAFXJf0uQmcmQoRHyqxHwZ66rxJfwtHeqFQgZzxQVuJ1S9AokITABCsQOki
- VKkqiTKP0tIRdMxS7FiMLV0KaQEZDUS4gJAmOntTdZThMzcpYDL46bTJqCF7sTyMHVW8
- LITXTvGD4hrztLMv+kqvXrXYqzFsN2+wtnp8gjE6Qq54N3TmaLEzJcg2gL2xnUkDOtoZ
- SSDY25uMO7vFxgP1ld8Z+BrSc3MeTwGK0sRUz/YFsHzUu+ABsU644gOFZsO7Nr8pgT54
- H2Dw==
-X-Forwarded-Encrypted: i=1;
- AJvYcCUvp3N3W+87TlA3cQjXfYnT8j6QAdSR2OSQeh3hmih73ag36RvoVi5AYUdkJxkl39Z346BNSPNY83ZVUxfb2Iw=@lists.osuosl.org
-X-Gm-Message-State: AOJu0Yy96AmRENbXNVg83boDXF894AyAgurS73khaig6Gi/zeqnS2rPT
- qet1Zn86EUiMypLc11ZfwfGwi9nUS9gQSaafGL4QrifJZsK5lRxZfIqbeHG0SwgaTQ==
-X-Gm-Gg: ATEYQzyLFjpEGcyI5KE35T4A/7frkwu+57b4JJ1m11a5FO6mlnR4X6zS60VaSkd2vqn
- FvreUg5TpbKg48tiIhPA6dNQbM+Vvga64kbwywHDiNzj7hOTpn88NLu1N1JCzTCzGqHtxa9+jSd
- eZNOUf6avrGPLuCHsS/CRXSCi2et88+p25uQzqzbZOE2daALuVwu7G9EZOFklP7k48BZ2n4RN9X
- kEhOWP1ieJMD8VKMx5pDfOriZLuByq+RlWbhX4koxlA3FWJXfefyLf+Xj+nTBn3MC3Vidj+Vese
- dIhw8xuOHwKw/3cVtX6TCK7qOL9UeDPDDhuS7svuXmS4Wli9wTY/m6P4gjdF2f72T9n6+ErLEgw
- 7BspyJG/5nBCWKUgovgjamm5hJtojtMuDJqF4u3t+gLxtZp1qg97LToUBWN5dMmOu8XtDHhhtMp
- jX/tGoUw1TjGyalvQrhRRqXMiHB178cBpP7fRJGOWbgDId0UVJAlNL7i7b7Q==
-X-Received: by 2002:a17:902:ebd2:b0:2ae:45bb:bc4e with SMTP id
- d9443c01a7336-2aea30ebe48mr3008685ad.24.1773147247400; 
- Tue, 10 Mar 2026 05:54:07 -0700 (PDT)
-Received: from google.com (10.129.124.34.bc.googleusercontent.com.
- [34.124.129.10]) by smtp.gmail.com with ESMTPSA id
- 41be03b00d2f7-c739e0cb73dsm12445679a12.11.2026.03.10.05.53.57
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Tue, 10 Mar 2026 05:54:06 -0700 (PDT)
-Date: Tue, 10 Mar 2026 12:53:54 +0000
+ id bk1Oount1p6d for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 10 Mar 2026 12:28:35 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.234.252.31;
+ helo=sea.source.kernel.org; envelope-from=broonie@kernel.org;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org D47E0608A5
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org D47E0608A5
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id D47E0608A5
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:28:34 +0000 (UTC)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+ by sea.source.kernel.org (Postfix) with ESMTP id 337BD43449;
+ Tue, 10 Mar 2026 12:28:34 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A8179C19423;
+ Tue, 10 Mar 2026 12:28:23 +0000 (UTC)
+Date: Tue, 10 Mar 2026 12:28:20 +0000
+From: Mark Brown <broonie@kernel.org>
 To: Philipp Hahn <phahn-oss@avm.de>
 Cc: amd-gfx@lists.freedesktop.org, apparmor@lists.ubuntu.com,
  bpf@vger.kernel.org, ceph-devel@vger.kernel.org, cocci@inria.fr,
@@ -112,34 +83,37 @@ Cc: amd-gfx@lists.freedesktop.org, apparmor@lists.ubuntu.com,
  ntfs3@lists.linux.dev, samba-technical@lists.samba.org,
  sched-ext@lists.linux.dev, target-devel@vger.kernel.org,
  tipc-discussion@lists.sourceforge.net, v9fs@lists.linux.dev,
- Alex Williamson <alex@shazbot.org>
-Message-ID: <abAUYvx6VEdSmInm@google.com>
+ Sylwester Nawrocki <s.nawrocki@samsung.com>,
+ Liam Girdwood <lgirdwood@gmail.com>,
+ Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
+ Max Filippov <jcmvbkbc@gmail.com>
+Message-ID: <19aa26fc-8570-492e-8e17-23d6950676f0@sirena.org.uk>
 References: <20260310-b4-is_err_or_null-v1-0-bd63b656022d@avm.de>
- <20260310-b4-is_err_or_null-v1-46-bd63b656022d@avm.de>
+ <20260310-b4-is_err_or_null-v1-18-bd63b656022d@avm.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha512;
+ protocol="application/pgp-signature"; boundary="7JjDB+7CEHk89uTh"
 Content-Disposition: inline
-In-Reply-To: <20260310-b4-is_err_or_null-v1-46-bd63b656022d@avm.de>
+In-Reply-To: <20260310-b4-is_err_or_null-v1-18-bd63b656022d@avm.de>
+X-Cookie: A fool and his honey are soon parted.
 X-Mailman-Approved-At: Tue, 10 Mar 2026 15:28:18 +0000
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=google.com; s=20230601; t=1773147248; x=1773752048; darn=lists.osuosl.org;
- h=in-reply-to:content-disposition:mime-version:references:message-id
- :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
- bh=mm6hm+LHoMGo5Ew01sq1dP9YSITnoqIDxYFDqmtgvh0=;
- b=xIQdaHpswHSWWYjb1XJYn4f40EWB6DR/Hix6At7mhsuGdgdldBZOFrfWp2P7e/ZHJ+
- h489Grdd/hrEigX+wZdBy5t02fDDY1rjJaK/QMS6R+utpArTgaRtK9bt3aHcCmrY7F+m
- Z1DieTcP7jCLx/zwcz3p5eHuUlH8WVUA4Dc27A8foqANg5if/BglDIn4iVezmpWg+igl
- j+PAbPWPsdGsHnbjBdEPE5b0w3uFrsL7jpPFuir5+RwQWx0OxJpDFsjZGfbE61OxZGYd
- czd+kg0bMEWPQ6Co9Ha9/3MQsb3fmxOp3iXFaisMYSUog05lw4CxYw2mfnJPS5/dwOky
- SSXA==
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dmarc=pass (p=reject dis=none)
- header.from=google.com
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256
- header.s=20230601 header.b=xIQdaHps
-Subject: Re: [Intel-wired-lan] [PATCH 46/61] vfio: Prefer IS_ERR_OR_NULL
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=kernel.org; s=k20201202; t=1773145714;
+ bh=NZ5oTCN6VGzePwnu776uK+3unhTqb8pwokxv1IJtK7c=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=FOutLnoL/seeB/icY17T5kE23weT+c8OWPxsN1CuLtbqZf1qO8twCXpCHPEW4zEb5
+ uM5pcZxBh8XK3wQOjz6gQLnb8DbNMsJ6SwgjqzPaDdyeQRMdzDiadj+7d8CVSVSbbp
+ WbSnGZkMbwo0cpPlViR1A0oh5e53oFE0sYAJxulW9oCNKaXKAhhACMzXx6XsRo3Hlx
+ /XgKdmLcz/EtWl6VZEOUGY5PBqGn3Xb4X+aqLL+l2HoSL3wZMd6NhcSGeVt+ZFpBkn
+ 8s7ZymgPrZjLjSz7/xRlCoCIsHrVCduE0eaA6Z9IamuK4ZW4bnyThB9ZhLWcSUucoJ
+ BJsDSXl6ZXWkQ==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dmarc=pass (p=quarantine dis=none)
+ header.from=kernel.org
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20201202 header.b=FOutLnoL
+Subject: Re: [Intel-wired-lan] [PATCH 18/61] sound: Prefer IS_ERR_OR_NULL
  over manual NULL check
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
@@ -153,45 +127,41 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-From: Pranjal Shrivastava via Intel-wired-lan <intel-wired-lan@osuosl.org>
-Reply-To: Pranjal Shrivastava <praan@google.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Tue, Mar 10, 2026 at 12:49:12PM +0100, Philipp Hahn wrote:
+
+--7JjDB+7CEHk89uTh
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+On Tue, Mar 10, 2026 at 12:48:44PM +0100, Philipp Hahn wrote:
 > Prefer using IS_ERR_OR_NULL() over using IS_ERR() and a manual NULL
 > check.
-> 
-> Change generated with coccinelle.
-> 
-> To: Alex Williamson <alex@shazbot.org>
-> Cc: kvm@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org
-> Signed-off-by: Philipp Hahn <phahn-oss@avm.de>
-> ---
->  drivers/vfio/vfio_main.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/vfio/vfio_main.c b/drivers/vfio/vfio_main.c
-> index 742477546b15d4dbaf9ebcfb2e67627db71521e0..d71922dfde5885967398deddec3e9e04b05adfec 100644
-> --- a/drivers/vfio/vfio_main.c
-> +++ b/drivers/vfio/vfio_main.c
-> @@ -923,7 +923,7 @@ vfio_ioctl_device_feature_mig_device_state(struct vfio_device *device,
->  
->  	/* Handle the VFIO_DEVICE_FEATURE_SET */
->  	filp = device->mig_ops->migration_set_state(device, mig.device_state);
-> -	if (IS_ERR(filp) || !filp)
-> +	if (IS_ERR_OR_NULL(filp))
->  		goto out_copy;
->  
->  	return vfio_ioct_mig_return_fd(filp, arg, &mig);
-> 
 
-Reviewed-by: Pranjal Shrivastava <praan@google.com>
+I can't tell what the dependency story is here, it looks like there's
+none?  If that's the case you shouldn't send things as a single series,
+send separate patches to the various subsystems.
 
-The cleanup alone looks fine, but I'm not sure if the maintainers would
-be happy about the tree-wide spam, since each patch might go through a
-different tree. I'd wait for Alex's preference/ack on that.
+Please submit patches using subject lines reflecting the style for the
+subsystem, this makes it easier for people to identify relevant patches.
+Look at what existing commits in the area you're changing are doing and
+make sure your subject lines visually resemble what they're doing.
+There's no need to resubmit to fix this alone.
 
-Thanks,
-Praan
+--7JjDB+7CEHk89uTh
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmmwDmMACgkQJNaLcl1U
+h9D4VAf/VCpoXjivQsq8mL1i6sHdID6byBqwG7egrwiRCrsZav80JlvY/F+1fWQl
+Fe3Ct+yRv1pWeNy67wSCZD3mtHtNH0JpwRTNxS1XQrnXc7CLjzKunCldDfzTbfom
++QmXWHQB3Qo9ie1ugoAGet9gx/vkV0z+cv9sVHg1o1R7/AKqfgov7xnuP9Hlv9Uk
+p1pkMya/NhbXBsrh+BFbktLgp+7sAOMjWgtGZ3NfHzwju9n4Jdbl1JcPxgDl0SHp
+6z8kP2+oskOspesqLWw62mZF+bN32Ycjt1N7/EFjtPBdJKIcQJLICoACzxyQBZYg
++i50s/oSRL1HiP4US2lxoy8BqxaqrQ==
+=U6jW
+-----END PGP SIGNATURE-----
+
+--7JjDB+7CEHk89uTh--
