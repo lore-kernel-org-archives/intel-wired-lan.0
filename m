@@ -1,102 +1,126 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2B620EB1060
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 10 Mar 2026 15:06:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 69129EB1071
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 10 Mar 2026 15:27:06 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id D6B4360B27;
-	Tue, 10 Mar 2026 15:06:30 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 1E5B440306;
+	Tue, 10 Mar 2026 15:27:06 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 8tZzwaUj7gUI; Tue, 10 Mar 2026 15:27:05 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 10F6540312
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1773156425;
+	bh=p0plzaKeSbxjl79A2lleHYZjr3IgqG3bFMpzk2gkjBk=;
+	h=From:Date:References:In-Reply-To:To:Cc:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=dQ9yx6syxJFf14jhCd67nLKWdxJKxPGjxEhmcaxTPDb+bMqdbaRyajNpt2mPNgBfr
+	 j3fAfivI/z8lJ7Gw0tigbbtPgbpOGsZZTzs0IDA6KWyncSR5YeKNCp92WsTBCuE1i/
+	 Y9h4mTZM/tAObcIG2V5HmstdlODA7/yUP+VoTy/bVsaUKvxXgc14oVkbW9rsHUAHs0
+	 tRj2QaPjhr68G5nUbDZnK8U3CjhLkzB6+REthVeKR9lqiMHssDCzRQDqGhuxgGaWQe
+	 wdnrgOZ84AcB1rwGleAXB21vJbVThsCND7RuPb4gDjiCcx+H864E7dqpkK/eo0TEJ0
+	 RvLNPB2ozGWUg==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp4.osuosl.org (Postfix) with ESMTP id 10F6540312;
+	Tue, 10 Mar 2026 15:27:05 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 2E92635C
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:00:46 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp3.osuosl.org (Postfix) with ESMTP id 14C1360B3C
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:00:46 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id xe2ZU8s2GI0y; Tue, 10 Mar 2026 15:06:29 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 91CC860B2B
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1773155189;
-	bh=+ylnD5+3z30iOCEMiABhC1oFqELC5abezo7oEw1t5mI=;
-	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=S5Qnl9ReaaMqbu5SQl08VoVQiOum/UzsCgWCgQ6O6W2YGWlmd5r4XvMu34ZEl2EH8
-	 ZWyyAbX0cKSgnE9vmTpoOPpDRrQSNkRhFw6KZvSoSlMiYo2Q0avy2KgDpuZ3N4JwXs
-	 GiSaiAQrVLvhotNrarOcJSQonAVTif7W3o7R1w1uB38vTzm2xbQUsmXjC1qJ9NPsL4
-	 YGgrW8IVwaRhlZRQg8IxecegXQSb5iw4zHnZiw2q1LmXRusO83ffRvZKU0tnPO5FEU
-	 Cg/wakAxM6nbGLUDHP3jBgeQ/AdpzJ2a0sMobhSwYulUA2j61MLFvojbpqsDL6ZAuA
-	 HQNQOU/QbIhqg==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 91CC860B2B;
-	Tue, 10 Mar 2026 15:06:29 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id 3A33535C
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 15:06:28 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 2D7C7840AC
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 15:06:28 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 3udq_3srUzfl for <intel-wired-lan@lists.osuosl.org>;
- Tue, 10 Mar 2026 15:06:27 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.133.124;
- helo=us-smtp-delivery-124.mimecast.com; envelope-from=jramaseu@redhat.com;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 260998409B
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 260998409B
-Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.133.124])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 260998409B
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 15:06:26 +0000 (UTC)
-Received: from mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com
- (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
- relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-164-rHKfhB85Pay9xB7YopzXhA-1; Tue,
- 10 Mar 2026 11:06:23 -0400
-X-MC-Unique: rHKfhB85Pay9xB7YopzXhA-1
-X-Mimecast-MFC-AGG-ID: rHKfhB85Pay9xB7YopzXhA_1773155182
-Received: from mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com
- (mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.12])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
- id 7BA521955E98; Tue, 10 Mar 2026 15:06:22 +0000 (UTC)
-Received: from jramaseu-thinkpadt14gen5.tpbc.csb (unknown [10.43.3.226])
- by mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP
- id 92B4219560B7; Tue, 10 Mar 2026 15:06:20 +0000 (UTC)
-From: Jakub Ramaseuski <jramaseu@redhat.com>
-To: intel-wired-lan@lists.osuosl.org
-Cc: netdev@vger.kernel.org, anthony.l.nguyen@intel.com,
- przemyslaw.kitszel@intel.com, przemyslaw.korba@intel.com,
- Jakub Ramaseuski <jramaseu@redhat.com>
-Date: Tue, 10 Mar 2026 16:05:57 +0100
-Message-ID: <20260310150557.1138437-1-jramaseu@redhat.com>
+ id SLhTw8rurY8h for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 10 Mar 2026 12:00:40 +0000 (UTC)
+X-Greylist: delayed 313 seconds by postgrey-1.37 at util1.osuosl.org;
+ Tue, 10 Mar 2026 12:00:40 UTC
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 40F4460B75
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 40F4460B75
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=2001:bf0:244:244::94;
+ helo=mail.avm.de; envelope-from=phahn-oss@avm.de; receiver=<UNKNOWN> 
+Received: from mail.avm.de (mail.avm.de [IPv6:2001:bf0:244:244::94])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 40F4460B75
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:00:40 +0000 (UTC)
+Received: from [212.42.244.71] (helo=mail.avm.de)
+ by mail.avm.de with ESMTP (eXpurgate 4.55.2)
+ (envelope-from <phahn-oss@avm.de>)
+ id 69b006ab-e21d-7f0000032729-7f000001d99c-1
+ for <multiple-recipients>; Tue, 10 Mar 2026 12:55:24 +0100
+Received: from mail-auth.avm.de (dovecot-mx-01.avm.de [212.42.244.71])
+ by mail.avm.de (Postfix) with ESMTPS;
+ Tue, 10 Mar 2026 12:55:23 +0100 (CET)
+From: Philipp Hahn <phahn-oss@avm.de>
+Date: Tue, 10 Mar 2026 12:48:33 +0100
 MIME-Version: 1.0
-X-Scanned-By: MIMEDefang 3.0 on 10.30.177.12
-X-Mimecast-MFC-PROC-ID: -xtSwKACO-KMZyUO2DbNJY-QRLU2nitaL4kNCNSAyYM_1773155182
-X-Mimecast-Originator: redhat.com
-Content-Transfer-Encoding: 8bit
-content-type: text/plain; charset="US-ASCII"; x-default=true
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=redhat.com; 
- s=mimecast20190719; t=1773155185;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding;
- bh=+ylnD5+3z30iOCEMiABhC1oFqELC5abezo7oEw1t5mI=;
- b=IGrm49PdXpMyu6xkODBQwNBuIuQrULdVU7Jt+Wcj9OdtN8Eyp7rJv2cyDO67fVL2+Ii1FQ
- NG59rnO2t8O8KxKWsdZWOij2ePN8tJXhqqwM62dOKNEgfyuMgObXEtB6AeD9qILyJtpAWN
- Sg9hd7ug55OLG062GZBcTEtcHkKiGzc=
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260310-b4-is_err_or_null-v1-7-bd63b656022d@avm.de>
+References: <20260310-b4-is_err_or_null-v1-0-bd63b656022d@avm.de>
+In-Reply-To: <20260310-b4-is_err_or_null-v1-0-bd63b656022d@avm.de>
+To: amd-gfx@lists.freedesktop.org, apparmor@lists.ubuntu.com, 
+ bpf@vger.kernel.org, ceph-devel@vger.kernel.org, cocci@inria.fr, 
+ dm-devel@lists.linux.dev, dri-devel@lists.freedesktop.org, 
+ gfs2@lists.linux.dev, intel-gfx@lists.freedesktop.org, 
+ intel-wired-lan@lists.osuosl.org, iommu@lists.linux.dev, 
+ kvm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+ linux-block@vger.kernel.org, linux-bluetooth@vger.kernel.org, 
+ linux-btrfs@vger.kernel.org, linux-cifs@vger.kernel.org, 
+ linux-clk@vger.kernel.org, linux-erofs@lists.ozlabs.org, 
+ linux-ext4@vger.kernel.org, linux-fsdevel@vger.kernel.org, 
+ linux-gpio@vger.kernel.org, linux-hyperv@vger.kernel.org, 
+ linux-input@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ linux-leds@vger.kernel.org, linux-media@vger.kernel.org, 
+ linux-mips@vger.kernel.org, linux-mm@kvack.org, 
+ linux-modules@vger.kernel.org, linux-mtd@lists.infradead.org, 
+ linux-nfs@vger.kernel.org, linux-omap@vger.kernel.org, 
+ linux-phy@lists.infradead.org, linux-pm@vger.kernel.org, 
+ linux-rockchip@lists.infradead.org, linux-s390@vger.kernel.org, 
+ linux-scsi@vger.kernel.org, linux-sctp@vger.kernel.org, 
+ linux-security-module@vger.kernel.org, linux-sh@vger.kernel.org, 
+ linux-sound@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com, 
+ linux-trace-kernel@vger.kernel.org, linux-usb@vger.kernel.org, 
+ linux-wireless@vger.kernel.org, netdev@vger.kernel.org, 
+ ntfs3@lists.linux.dev, samba-technical@lists.samba.org, 
+ sched-ext@lists.linux.dev, target-devel@vger.kernel.org, 
+ tipc-discussion@lists.sourceforge.net, v9fs@lists.linux.dev, 
+ Philipp Hahn <phahn-oss@avm.de>
+Cc: Gao Xiang <xiang@kernel.org>, Chao Yu <chao@kernel.org>, 
+ Yue Hu <zbestahu@gmail.com>, Jeffle Xu <jefflexu@linux.alibaba.com>, 
+ Sandeep Dhavale <dhavale@google.com>, Hongbo Li <lihongbo22@huawei.com>, 
+ Chunhai Guo <guochunhai@vivo.com>
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1165; i=phahn-oss@avm.de;
+ h=from:subject:message-id; bh=Wx/k10vuVbp8ZUI17J5Bmoq0XIce6rBC9+YI4+K5MhY=;
+ b=owEBbQGS/pANAwAKATQtBlPRrKzbAcsmYgBpsAXuTWLAsZgE3CYfS0prKIO5oYoR3eM1fSwdn
+ +XKr0TQn0GJATMEAAEKAB0WIQQ5bPBtrWDUcDQCppg0LQZT0ays2wUCabAF7gAKCRA0LQZT0ays
+ 2/j8B/sEd5J2vRHsnvhncB2lMo9VZ5h3+ZMJUztWw9QhmuXX9Qx3HEdJ5GLZ84ct6sqOhNTdJzS
+ JFD7aVZEzrOOhcVXC4LBSF/0LTyuRs08pHBx90juaWCHs505i/RK57onvWUjJYv2jNvBVJQQ+S6
+ AU4u0SqHLiT0AAUqbjuiM2TTHxhB5xD59cg+mk4rXkCdmvt3sw2+h9McRwE+VdqWIniC4/IsZt/
+ lSDklfOcCL2PaTrHCFhWHaM0/yrWd/ljPTRmFceOPsri9YRyl2VkofnQ4LBx/tIitZdlpukR5BZ
+ 3gdZMB70thXOoVOpRxkVmdjJvHPiGXebLpJqAK8oxLcbLF+S
+X-Developer-Key: i=phahn-oss@avm.de; a=openpgp;
+ fpr=58AF7C2E007CDBE62C59E078F50EFDCF8AD04B1A
+X-purgate-ID: 149429::1773143724-8966EF2F-D5F13E8E/0/0
+X-purgate-type: clean
+X-purgate-size: 1167
+X-purgate-Ad: Categorized by eleven eXpurgate (R) https://www.eleven.de
+X-purgate: This mail is considered clean (visit https://www.eleven.de for
+ further information)
+X-purgate: clean
+X-Mailman-Approved-At: Tue, 10 Mar 2026 15:27:04 +0000
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
- header.from=redhat.com
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=IGrm49Pd
-Subject: [Intel-wired-lan] [PATCH iwl-net v2] ice: enable NETIF_F_HW_CSUM
- for GSO packets
+ header.from=avm.de
+Subject: [Intel-wired-lan] [PATCH 07/61] erofs: Prefer IS_ERR_OR_NULL over
+ manual NULL check
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -112,95 +136,39 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-IPv4 over IPv6 GRE currently fails on E810 with skb_warn_bad_offload,
-while IPv6 over IPv6 GRE falls back to software segmentation.
-This happens because the kernel's GSO engine requires the generic HW_CSUM
-flag to trust the hardware with complex encapsulation offloads.
+Prefer using IS_ERR_OR_NULL() over using IS_ERR() and a manual NULL
+check.
 
-Add NETIF_F_HW_CSUM to the device's csumo_features to satisfy the network
-stack and unlock full hardware segmentation for GRE tunnels.
-To prevent checksum corruption on standard traffic, evaluate the packet
-in ice_features_check() and dynamically clear the NETIF_F_HW_CSUM bit
-if it is not a GSO frame. This forces the driver to fall back to safe,
-protocol-specific checksum features for non-GSO packets
-while preserving the generic offload for tunnels.
+Change generated with coccinelle.
 
-Steps to reproduce:
-
-Server Side (Receiver):
-```
-  #!/bin/bash
-  DEV="enp65s0f0np0"
-
-  # 1. Configure underlay device
-  ip addr add 2011::11/64 dev $DEV
-  ip addr add 192.168.42.11/24 dev $DEV
-  ip link set $DEV up
-
-  # 2. Create and configure IPv6 GRE tunnel
-  ip link add gre1 type ip6gre local 2011::11 remote 2011::12 dev $DEV
-  ip addr add 2023::11/64 dev gre1
-  ip addr add 192.168.44.11/24 dev gre1
-  ip link set gre1 up
-
-  iperf3 -s
-```
-
-Client Side (Sender):
-```
-  #!/bin/bash
-  DEV="enp65s0f0np0"
-
-  # 1. Configure underlay device
-  ip addr add 2011::12/64 dev $DEV
-  ip addr add 192.168.42.12/24 dev $DEV
-  ip link set $DEV up
-
-  # 2. Create and configure IPv6 GRE tunnel
-  ip link add gre1 type ip6gre local 2011::12 remote 2011::11 dev $DEV
-  ip addr add 2023::12/64 dev gre1
-  ip addr add 192.168.44.12/24 dev gre1
-  ip link set gre1 up
-
-  # 3. Execute Tests
-  iperf3 -c 192.168.44.11 -t 20   # IPv4 over IPv6 GRE (Triggers bad_offload)
-  iperf3 -c 2023::11 -t 20        # IPv6 over IPv6 GRE (Triggers SW fallback)
-  iperf3 -c 192.168.42.11 -t 20   # Native IPv4 Baseline
-  iperf3 -c 2011::11 -t 20        # Native IPv6 Baseline
-```
-
-Signed-off-by: Jakub Ramaseuski <jramaseu@redhat.com>
+To: Gao Xiang <xiang@kernel.org>
+To: Chao Yu <chao@kernel.org>
+To: Yue Hu <zbestahu@gmail.com>
+To: Jeffle Xu <jefflexu@linux.alibaba.com>
+To: Sandeep Dhavale <dhavale@google.com>
+To: Hongbo Li <lihongbo22@huawei.com>
+To: Chunhai Guo <guochunhai@vivo.com>
+Cc: linux-erofs@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Philipp Hahn <phahn-oss@avm.de>
 ---
- drivers/net/ethernet/intel/ice/ice_main.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
+ fs/erofs/zdata.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index e7308e381e2f..9b4ad03e1a32 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -3565,6 +3565,7 @@ void ice_set_netdev_features(struct net_device *netdev)
+diff --git a/fs/erofs/zdata.c b/fs/erofs/zdata.c
+index 3977e42b9516861bf3d59c072b6b8aaa6898dd8a..88c293ab2b1ef7962c6f5c0aa82639859e41b8e2 100644
+--- a/fs/erofs/zdata.c
++++ b/fs/erofs/zdata.c
+@@ -1227,7 +1227,7 @@ static int z_erofs_parse_in_bvecs(struct z_erofs_backend *be, bool *overlapped)
+ 		struct page *page = bvec->page;
  
- 	csumo_features = NETIF_F_RXCSUM	  |
- 			 NETIF_F_IP_CSUM  |
-+			 NETIF_F_HW_CSUM  |
- 			 NETIF_F_SCTP_CRC |
- 			 NETIF_F_IPV6_CSUM;
- 
-@@ -9789,6 +9790,14 @@ ice_features_check(struct sk_buff *skb,
- 	if (skb->ip_summed != CHECKSUM_PARTIAL)
- 		return features;
- 
-+	/* Hardware requires strictly-typed Tx descriptors for non-GSO frames.
-+	 * Leaving generic NETIF_F_HW_CSUM enabled corrupts checksums,
-+	 * causing TCP drops. We strip it here to force safe,
-+	 * protocol-specific IPv4/IPv6 offloads instead.
-+	 */
-+	if (!gso)
-+		features &= ~NETIF_F_HW_CSUM;
-+
- 	/* We cannot support GSO if the MSS is going to be less than
- 	 * 64 bytes. If it is then we need to drop support for GSO.
- 	 */
+ 		/* compressed data ought to be valid when decompressing */
+-		if (IS_ERR(page) || !page) {
++		if (IS_ERR_OR_NULL(page)) {
+ 			bvec->page = NULL;	/* clear the failure reason */
+ 			err = page ? PTR_ERR(page) : -EIO;
+ 			continue;
+
 -- 
-2.52.0
+2.43.0
 
