@@ -1,82 +1,75 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 971DBEB1070
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 10 Mar 2026 15:27:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BDF50EB1070
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 10 Mar 2026 15:28:20 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 6CC3D61563;
-	Tue, 10 Mar 2026 15:27:42 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 9549D81332;
+	Tue, 10 Mar 2026 15:28:20 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id W76GQb5Z_fvP; Tue, 10 Mar 2026 15:27:41 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id Yb1ev-gEyGTS; Tue, 10 Mar 2026 15:28:20 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 276A46066F
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 0DFA48175F
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1773156461;
-	bh=n8Jm3vj7u3QNjr1p8t4oOjObln75+m5CO9VCo8tfBlU=;
-	h=From:Date:References:In-Reply-To:To:Cc:Subject:List-Id:
+	s=default; t=1773156500;
+	bh=sWy9ef7Hud0vVkgTkw0OoHXnvQiMcKWf2ClKsqXhea4=;
+	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=l5t5kOIHWivgc6Va3Lssz4FZnord8Jkh0gOycoq5nokrzspf2y1M9YhR9raZepPyz
-	 2jKoNgFVKkHEmNwcWpohBb44/sWTZR06k4PbVQ/wVCY30AvzvSgKZZ1fSj2qrnNw5x
-	 AMrDl4OY4hYSY7xkdwKyLTf7kWwyq1J2kGOUYInN637JFjPRt2mjBx59PXcxMiJVaU
-	 Mqq6ARBPz/BQAvGjhsmhzH+FyHZd0gZrs82Sjg0wnP2aM20Lq9SQ5Vms/ldSZCc5FO
-	 CxofSc/fcM6ua59eiRqQ6CHtD2weWfpHBbmUu6gSXU5pZI16l6kCTsHwOU5LDrd0nS
-	 lJznA3eJglE2Q==
+	b=ypNR1SmMAdITvu+PunQjEPHyM4Y4pJPnRZEEt2jjzLzjMrOzDNMcWjGVvK44zYEM8
+	 AuqZ3FH2bIGaqk9tGzi2lAfj07actXZ7et4jq4QQp7nfBXvwulC+0/ogZkxlUjdSSU
+	 WMwAKzBBtcnL/ZRza51EtQIeZe3Fc/CfQ4Hwj9GE3h6cL2lZ3kW8/gQ/Qp5U7p+Bo9
+	 jWjdSFBUssjsrx4x6T+ZIauhoQnMS00kv2uDlcob4VEA9EL/hXn1dwlPTdRvLKBkW+
+	 We7Yn5CbCjVNqKDyaOCF1Co82zP7wV/7siALvApIWe3N+vNSiJrcd7kv2F1jQEvQKW
+	 puPRRLyJolpkQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 276A46066F;
-	Tue, 10 Mar 2026 15:27:41 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 0DFA48175F;
+	Tue, 10 Mar 2026 15:28:20 +0000 (UTC)
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id 3C377B2A
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:05:14 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id EA50E35C
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:23:35 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id CADA641EAF
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:05:10 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id D021641C85
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:23:35 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id E3Zbxm1fyV02 for <intel-wired-lan@lists.osuosl.org>;
- Tue, 10 Mar 2026 12:05:10 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=212.42.244.120;
- helo=mail.avm.de; envelope-from=phahn-oss@avm.de; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org B764E41EC0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B764E41EC0
-Received: from mail.avm.de (mail.avm.de [212.42.244.120])
- by smtp4.osuosl.org (Postfix) with ESMTPS id B764E41EC0
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:05:09 +0000 (UTC)
-Received: from [2001:bf0:244:244::71] (helo=mail.avm.de)
- by mail.avm.de with ESMTP (eXpurgate 4.55.2)
- (envelope-from <phahn-oss@avm.de>)
- id 69b006ab-b734-7f0000032729-7f000001c000-1
- for <multiple-recipients>; Tue, 10 Mar 2026 12:55:23 +0100
-Received: from mail-auth.avm.de (dovecot-mx-01.avm.de
- [IPv6:2001:bf0:244:244::71]) by mail.avm.de (Postfix) with ESMTPS;
- Tue, 10 Mar 2026 12:55:23 +0100 (CET)
-From: Philipp Hahn <phahn-oss@avm.de>
-Date: Tue, 10 Mar 2026 12:48:44 +0100
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260310-b4-is_err_or_null-v1-18-bd63b656022d@avm.de>
-References: <20260310-b4-is_err_or_null-v1-0-bd63b656022d@avm.de>
-In-Reply-To: <20260310-b4-is_err_or_null-v1-0-bd63b656022d@avm.de>
-To: amd-gfx@lists.freedesktop.org, apparmor@lists.ubuntu.com, 
- bpf@vger.kernel.org, ceph-devel@vger.kernel.org, cocci@inria.fr, 
- dm-devel@lists.linux.dev, dri-devel@lists.freedesktop.org, 
+ id h4NDySMBLS5z for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 10 Mar 2026 12:23:35 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org;
+ envelope-from=jlayton@kernel.org; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 13BEC41C79
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 13BEC41C79
+Received: from tor.source.kernel.org (tor.source.kernel.org
+ [IPv6:2600:3c04:e001:324:0:1991:8:25])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 13BEC41C79
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:23:34 +0000 (UTC)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+ by tor.source.kernel.org (Postfix) with ESMTP id BB3CC600B0;
+ Tue, 10 Mar 2026 12:23:33 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B10E4C19423;
+ Tue, 10 Mar 2026 12:23:27 +0000 (UTC)
+Message-ID: <d97c4fd76d7b7fc8b38d3bb4e4ed700b1003ecba.camel@kernel.org>
+From: Jeff Layton <jlayton@kernel.org>
+To: Philipp Hahn <phahn-oss@avm.de>, amd-gfx@lists.freedesktop.org, 
+ apparmor@lists.ubuntu.com, bpf@vger.kernel.org, ceph-devel@vger.kernel.org,
+ cocci@inria.fr, dm-devel@lists.linux.dev, dri-devel@lists.freedesktop.org,
  gfs2@lists.linux.dev, intel-gfx@lists.freedesktop.org, 
- intel-wired-lan@lists.osuosl.org, iommu@lists.linux.dev, 
- kvm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- linux-block@vger.kernel.org, linux-bluetooth@vger.kernel.org, 
- linux-btrfs@vger.kernel.org, linux-cifs@vger.kernel.org, 
- linux-clk@vger.kernel.org, linux-erofs@lists.ozlabs.org, 
- linux-ext4@vger.kernel.org, linux-fsdevel@vger.kernel.org, 
- linux-gpio@vger.kernel.org, linux-hyperv@vger.kernel.org, 
- linux-input@vger.kernel.org, linux-kernel@vger.kernel.org, 
- linux-leds@vger.kernel.org, linux-media@vger.kernel.org, 
+ intel-wired-lan@lists.osuosl.org, iommu@lists.linux.dev,
+ kvm@vger.kernel.org, 	linux-arm-kernel@lists.infradead.org,
+ linux-block@vger.kernel.org, 	linux-bluetooth@vger.kernel.org,
+ linux-btrfs@vger.kernel.org, 	linux-cifs@vger.kernel.org,
+ linux-clk@vger.kernel.org, 	linux-erofs@lists.ozlabs.org,
+ linux-ext4@vger.kernel.org, 	linux-fsdevel@vger.kernel.org,
+ linux-gpio@vger.kernel.org, 	linux-hyperv@vger.kernel.org,
+ linux-input@vger.kernel.org, 	linux-kernel@vger.kernel.org,
+ linux-leds@vger.kernel.org, 	linux-media@vger.kernel.org,
  linux-mips@vger.kernel.org, linux-mm@kvack.org, 
  linux-modules@vger.kernel.org, linux-mtd@lists.infradead.org, 
  linux-nfs@vger.kernel.org, linux-omap@vger.kernel.org, 
@@ -86,49 +79,117 @@ To: amd-gfx@lists.freedesktop.org, apparmor@lists.ubuntu.com,
  linux-security-module@vger.kernel.org, linux-sh@vger.kernel.org, 
  linux-sound@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com, 
  linux-trace-kernel@vger.kernel.org, linux-usb@vger.kernel.org, 
- linux-wireless@vger.kernel.org, netdev@vger.kernel.org, 
- ntfs3@lists.linux.dev, samba-technical@lists.samba.org, 
- sched-ext@lists.linux.dev, target-devel@vger.kernel.org, 
- tipc-discussion@lists.sourceforge.net, v9fs@lists.linux.dev, 
- Philipp Hahn <phahn-oss@avm.de>
-Cc: Sylwester Nawrocki <s.nawrocki@samsung.com>, 
- Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, 
- Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, 
- Max Filippov <jcmvbkbc@gmail.com>
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2160; i=phahn-oss@avm.de;
- h=from:subject:message-id; bh=TePjCBJ2mRHkUlSzKz9AEyXwCeNO/T4sJeJlLVRUEek=;
- b=owEBbQGS/pANAwAKATQtBlPRrKzbAcsmYgBpsAYTbY49pcWmI+zPeufRNN/9dH/gm0tUhIW5M
- sSE0KnGvN+JATMEAAEKAB0WIQQ5bPBtrWDUcDQCppg0LQZT0ays2wUCabAGEwAKCRA0LQZT0ays
- 20TjCACXYevOdzzWZ8zg+QT0mj5XNSQgsj+29ztKUJ+NhTXTaWid39EhUMP397Ax0ta31zsGPRm
- 0odiGii9nvcNMTK3z0LbXHwAyd2Q0fNqi4zFsqaNgSljw41n6QLzk50RIIvlMAtwUsismcvcfkc
- GlGmvCqi0YMh5Ps6ZKTVJuHiANRfJwasfti849ayN0tL2bNpZjcStJrsD6oocum/i0yO/DOehLD
- OGOf2TSq2UVG28aLw7N49gUvv1bUDwk6CT215ovMEtUyRG0UE7FpDGWKSdiW4/MWJSzpOO7eARa
- NIfS+Ckmg34HqAiCowU5EbKs98L8LUAVBFgmoB7oAUhpavOc
-X-Developer-Key: i=phahn-oss@avm.de; a=openpgp;
- fpr=58AF7C2E007CDBE62C59E078F50EFDCF8AD04B1A
-X-purgate-ID: 149429::1773143723-26DC0A3D-7CFC2EAB/0/0
-X-purgate-type: clean
-X-purgate-size: 2162
-X-purgate-Ad: Categorized by eleven eXpurgate (R) https://www.eleven.de
-X-purgate: This mail is considered clean (visit https://www.eleven.de for
- further information)
-X-purgate: clean
-X-Mailman-Approved-At: Tue, 10 Mar 2026 15:27:04 +0000
+ linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+ ntfs3@lists.linux.dev, 	samba-technical@lists.samba.org,
+ sched-ext@lists.linux.dev, 	target-devel@vger.kernel.org,
+ tipc-discussion@lists.sourceforge.net, 	v9fs@lists.linux.dev
+Cc: Trond Myklebust <trondmy@kernel.org>, Anna Schumaker <anna@kernel.org>, 
+ Chuck Lever <chuck.lever@oracle.com>, NeilBrown <neil@brown.name>, Olga
+ Kornievskaia <okorniev@redhat.com>,  Dai Ngo <Dai.Ngo@oracle.com>, Tom
+ Talpey <tom@talpey.com>, "David S. Miller" <davem@davemloft.net>,  Eric
+ Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, Paolo
+ Abeni <pabeni@redhat.com>,  Simon Horman <horms@kernel.org>
+Date: Tue, 10 Mar 2026 08:23:26 -0400
+In-Reply-To: <20260310-b4-is_err_or_null-v1-30-bd63b656022d@avm.de>
+References: <20260310-b4-is_err_or_null-v1-0-bd63b656022d@avm.de>
+ <20260310-b4-is_err_or_null-v1-30-bd63b656022d@avm.de>
+Autocrypt: addr=jlayton@kernel.org; prefer-encrypt=mutual;
+ keydata=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
+ QZIQXVeAA+smfTT0tDrisj1U5x6ZB9b3nBg65kc=
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.58.3 (3.58.3-1.fc43) 
+MIME-Version: 1.0
+X-Mailman-Approved-At: Tue, 10 Mar 2026 15:28:18 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=avm.de; s=mail; 
- t=1773143724; bh=TePjCBJ2mRHkUlSzKz9AEyXwCeNO/T4sJeJlLVRUEek=;
- h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
- b=CWhZH8pYoPHXJ9GodRv8bZf7CTCXPR5biEc/ESvLjFSG7M9EoK4FQxeOy1o2q/xFG
- adtTUhZFnjWgEtd3EnUld9xRhtBPP2LCXHOMBXjK/IfTv5IvUPb5jOISEusb1eiq65
- jalyJvpG8KfbWsOaQK+eTSDIbq4VvwVTL38wqr+Y=
+ d=kernel.org; s=k20201202; t=1773145413;
+ bh=dKSFFzRnVfNET7rWuE5Oko4JdMIW5clek3Ra8qeLWt0=;
+ h=Subject:From:To:Cc:Date:In-Reply-To:References:From;
+ b=fkez07TlE1bfdj9q72lfPh33xZUWj92R+6N34570wM83IJULMKkc+t1NI+NIthPJ8
+ udd0+wDsOsLyEYtc2rUq6c/04oYHs4Ijd8GvgL72KdgHcTTjuge6542A67j9ng4nMs
+ ibR7d2V6NwLDyu/uVXWq0145yHAFZxvc42G+2L2+sUZ3uktv+EclNSS20uQ7swL0HP
+ LWOaDsIKcth0kzayTnUnDFQv7L72QnV4UUeRrzt36Vk9ZcP+WXEjov00vhjcxe3Gp8
+ CPc1GnWeA6B7VfYAg6uLBaadmh06wX7OXgaehJVXZ7xVcjj32thXyrmbMa6Rym7GyL
+ HCCmPdJG4zvRQ==
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
- header.from=avm.de
+ header.from=kernel.org
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (1024-bit key) header.d=avm.de header.i=@avm.de header.a=rsa-sha256
- header.s=mail header.b=CWhZH8pY
-Subject: [Intel-wired-lan] [PATCH 18/61] sound: Prefer IS_ERR_OR_NULL over
- manual NULL check
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20201202 header.b=fkez07Tl
+Subject: Re: [Intel-wired-lan] [PATCH 30/61] net/sunrpc: Prefer
+ IS_ERR_OR_NULL over manual NULL check
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -144,61 +205,78 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Prefer using IS_ERR_OR_NULL() over using IS_ERR() and a manual NULL
-check.
+On Tue, 2026-03-10 at 12:48 +0100, Philipp Hahn wrote:
+> Prefer using IS_ERR_OR_NULL() over using IS_ERR() and a manual NULL
+> check.
+>=20
+> Change generated with coccinelle.
+>=20
+> To: Trond Myklebust <trondmy@kernel.org>
+> To: Anna Schumaker <anna@kernel.org>
+> To: Chuck Lever <chuck.lever@oracle.com>
+> To: Jeff Layton <jlayton@kernel.org>
+> To: NeilBrown <neil@brown.name>
+> To: Olga Kornievskaia <okorniev@redhat.com>
+> To: Dai Ngo <Dai.Ngo@oracle.com>
+> To: Tom Talpey <tom@talpey.com>
+> To: "David S. Miller" <davem@davemloft.net>
+> To: Eric Dumazet <edumazet@google.com>
+> To: Jakub Kicinski <kuba@kernel.org>
+> To: Paolo Abeni <pabeni@redhat.com>
+> To: Simon Horman <horms@kernel.org>
+> Cc: linux-nfs@vger.kernel.org
+> Cc: netdev@vger.kernel.org
+> Cc: linux-kernel@vger.kernel.org
+> Signed-off-by: Philipp Hahn <phahn-oss@avm.de>
+> ---
+>  net/sunrpc/xprtrdma/svc_rdma_transport.c | 12 ++++++------
+>  1 file changed, 6 insertions(+), 6 deletions(-)
+>=20
+> diff --git a/net/sunrpc/xprtrdma/svc_rdma_transport.c b/net/sunrpc/xprtrd=
+ma/svc_rdma_transport.c
+> index 9b623849723ed0eb74b827881c6f32d3434c891b..b4d03e59a8202f20360cff1e2=
+e79b1e325396517 100644
+> --- a/net/sunrpc/xprtrdma/svc_rdma_transport.c
+> +++ b/net/sunrpc/xprtrdma/svc_rdma_transport.c
+> @@ -578,7 +578,7 @@ static struct svc_xprt *svc_rdma_accept(struct svc_xp=
+rt *xprt)
+>   errout:
+>  	/* Take a reference in case the DTO handler runs */
+>  	svc_xprt_get(&newxprt->sc_xprt);
+> -	if (newxprt->sc_qp && !IS_ERR(newxprt->sc_qp))
+> +	if (!IS_ERR_OR_NULL(newxprt->sc_qp))
+>  		ib_destroy_qp(newxprt->sc_qp);
+>  	rdma_destroy_id(newxprt->sc_cm_id);
+>  	rpcrdma_rn_unregister(dev, &newxprt->sc_rn);
+> @@ -608,7 +608,7 @@ static void svc_rdma_free(struct svc_xprt *xprt)
+>  	might_sleep();
+> =20
+>  	/* This blocks until the Completion Queues are empty */
+> -	if (rdma->sc_qp && !IS_ERR(rdma->sc_qp))
+> +	if (!IS_ERR_OR_NULL(rdma->sc_qp))
+>  		ib_drain_qp(rdma->sc_qp);
+>  	flush_workqueue(svcrdma_wq);
+> =20
+> @@ -619,16 +619,16 @@ static void svc_rdma_free(struct svc_xprt *xprt)
+>  	svc_rdma_recv_ctxts_destroy(rdma);
+> =20
+>  	/* Destroy the QP if present (not a listener) */
+> -	if (rdma->sc_qp && !IS_ERR(rdma->sc_qp))
+> +	if (!IS_ERR_OR_NULL(rdma->sc_qp))
+>  		ib_destroy_qp(rdma->sc_qp);
+> =20
+> -	if (rdma->sc_sq_cq && !IS_ERR(rdma->sc_sq_cq))
+> +	if (!IS_ERR_OR_NULL(rdma->sc_sq_cq))
+>  		ib_free_cq(rdma->sc_sq_cq);
+> =20
+> -	if (rdma->sc_rq_cq && !IS_ERR(rdma->sc_rq_cq))
+> +	if (!IS_ERR_OR_NULL(rdma->sc_rq_cq))
+>  		ib_free_cq(rdma->sc_rq_cq);
+> =20
+> -	if (rdma->sc_pd && !IS_ERR(rdma->sc_pd))
+> +	if (!IS_ERR_OR_NULL(rdma->sc_pd))
+>  		ib_dealloc_pd(rdma->sc_pd);
+> =20
+>  	/* Destroy the CM ID */
 
-Change generated with coccinelle.
-
-To: Sylwester Nawrocki <s.nawrocki@samsung.com>
-To: Liam Girdwood <lgirdwood@gmail.com>
-To: Mark Brown <broonie@kernel.org>
-To: Jaroslav Kysela <perex@perex.cz>
-To: Takashi Iwai <tiwai@suse.com>
-To: Max Filippov <jcmvbkbc@gmail.com>
-Cc: linux-sound@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Philipp Hahn <phahn-oss@avm.de>
----
- sound/soc/samsung/i2s.c       | 4 ++--
- sound/soc/xtensa/xtfpga-i2s.c | 2 +-
- 2 files changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/sound/soc/samsung/i2s.c b/sound/soc/samsung/i2s.c
-index e9964f0e010aee549cced75d8fe2023e8271d443..6e86f3a0a52dd3f8fc728d634594eb81f9945c57 100644
---- a/sound/soc/samsung/i2s.c
-+++ b/sound/soc/samsung/i2s.c
-@@ -559,7 +559,7 @@ static int i2s_set_sysclk(struct snd_soc_dai *dai, int clk_id, unsigned int rfs,
- 			clk_id = 1;
- 
- 		if (!any_active(i2s)) {
--			if (priv->op_clk && !IS_ERR(priv->op_clk)) {
-+			if (!IS_ERR_OR_NULL(priv->op_clk)) {
- 				if ((clk_id && !(mod & rsrc_mask)) ||
- 					(!clk_id && (mod & rsrc_mask))) {
- 					clk_disable_unprepare(priv->op_clk);
-@@ -812,7 +812,7 @@ static int i2s_hw_params(struct snd_pcm_substream *substream,
- 	i2s->frmclk = params_rate(params);
- 
- 	rclksrc = priv->clk_table[CLK_I2S_RCLK_SRC];
--	if (rclksrc && !IS_ERR(rclksrc))
-+	if (!IS_ERR_OR_NULL(rclksrc))
- 		priv->rclk_srcrate = clk_get_rate(rclksrc);
- 
- 	return 0;
-diff --git a/sound/soc/xtensa/xtfpga-i2s.c b/sound/soc/xtensa/xtfpga-i2s.c
-index 678ded059b959d475b6be3766867c8a78bdd4e54..698905257b690457a5d3d315e77d99d487d91f77 100644
---- a/sound/soc/xtensa/xtfpga-i2s.c
-+++ b/sound/soc/xtensa/xtfpga-i2s.c
-@@ -609,7 +609,7 @@ static void xtfpga_i2s_remove(struct platform_device *pdev)
- {
- 	struct xtfpga_i2s *i2s = dev_get_drvdata(&pdev->dev);
- 
--	if (i2s->regmap && !IS_ERR(i2s->regmap)) {
-+	if (!IS_ERR_OR_NULL(i2s->regmap)) {
- 		regmap_write(i2s->regmap, XTFPGA_I2S_CONFIG, 0);
- 		regmap_write(i2s->regmap, XTFPGA_I2S_INT_MASK, 0);
- 		regmap_write(i2s->regmap, XTFPGA_I2S_INT_STATUS,
-
--- 
-2.43.0
-
+Reviewed-by: Jeff Layton <jlayton@kernel.org>
