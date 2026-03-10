@@ -1,68 +1,68 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6298CEB1071
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 35D3FEB1072
 	for <intel-wired-lan@archiver.kernel.org>; Tue, 10 Mar 2026 15:27:29 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 3F4D660B66;
-	Tue, 10 Mar 2026 15:27:29 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id B181041C22;
+	Tue, 10 Mar 2026 15:27:28 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id TQXWE9qRnFcS; Tue, 10 Mar 2026 15:27:28 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id pg8JM6XnBpRg; Tue, 10 Mar 2026 15:27:28 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C16E360B91
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 203DD41B27
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
 	s=default; t=1773156448;
-	bh=tH1cp5PCJpa6ROYs7l2uv7rYJsMuwswI+vu0oa+RdzE=;
+	bh=oRms2TNuhttZVO2eqUKVu4EHhty44FDK73pubUBpo0E=;
 	h=From:Date:References:In-Reply-To:To:Cc:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=Zr+pOehY2BV01PD3tjweRH6rtCRlTGD26SU1vCJ16gtX7nZiC5pIuC0oXpELVSS+0
-	 TxwPpLeeyj9Ff4NHr8F0cTvgWg+BVTT03G8VYM/za+Epx0BTfaPEs1Kkg1/k/lEP9k
-	 WVZh+JI6/bgjX2zcZzpC6F6Bu4y+o08gGrKYT1XhKWmNYeLnOGnmBUjJUqHXICLLOd
-	 H5ATlPYDZVc2FVTieFDY79EvfrkX+ztQrpqQcX1oPEH+9dSK5MAcl+cw8YkBAyqaum
-	 B5r/u5+NHZNAo+OBlTbCpT6Fa0W3MGoUOBdnZ9OHSbk5JcqFB458Rh+q9WBilwwlOY
-	 0GdnQ2Nq/AF4g==
+	b=5d0f9yh+4ata1UTxKPGS6WXQdyADrM5s81BRaz1nrmaM+LX5j48sbPXlrvcrUUAfp
+	 v8HiZW757Qx5PbJkQn2QheRlmtqpXAS53lfkZ6FhyNqqY7IJ3FtkOXGfvuKnLnOzFG
+	 gR5YS3zD/zHvR9MJ9tCoZFJeTmm2re6WmPO236UaEThL9+cPWaIw/7CGZfyJlRxje3
+	 hl+3I99nHM6CaGn9V3ywCtbIsHzRpSROJxS0PUCin7J7cB7cMzIBUEYP2r/mWo6Wop
+	 8wXtscd4MAqqR7xH9+W4NvfJuzbLxgLtnjD2/vM8IIVMfyTz8YbE0VKy1nwrapaW8j
+	 kpfcbxwSZrAMw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id C16E360B91;
+	by smtp4.osuosl.org (Postfix) with ESMTP id 203DD41B27;
 	Tue, 10 Mar 2026 15:27:28 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id 4D0FEB2A
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 4B11C35C
  for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:04:20 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 3247284106
+ by smtp4.osuosl.org (Postfix) with ESMTP id 30FF741FA7
  for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:04:20 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id CB-XVe1qiGdU for <intel-wired-lan@lists.osuosl.org>;
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id DZXwpOH_hsKK for <intel-wired-lan@lists.osuosl.org>;
  Tue, 10 Mar 2026 12:04:19 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom;
  client-ip=2001:bf0:244:244::119; helo=mail.avm.de;
  envelope-from=phahn-oss@avm.de; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 7522284104
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7522284104
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 2637141F18
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2637141F18
 Received: from mail.avm.de (mail.avm.de [IPv6:2001:bf0:244:244::119])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 7522284104
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 2637141F18
  for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:04:19 +0000 (UTC)
 Received: from [212.42.244.71] (helo=mail.avm.de)
  by mail.avm.de with ESMTP (eXpurgate 4.55.2)
  (envelope-from <phahn-oss@avm.de>)
- id 69b006b1-2367-7f0000032729-7f000001ca68-1
+ id 69b006b1-2367-7f0000032729-7f000001ca3e-1
  for <multiple-recipients>; Tue, 10 Mar 2026 12:55:29 +0100
 Received: from mail-auth.avm.de (dovecot-mx-01.avm.de [212.42.244.71])
  by mail.avm.de (Postfix) with ESMTPS;
  Tue, 10 Mar 2026 12:55:29 +0100 (CET)
 From: Philipp Hahn <phahn-oss@avm.de>
-Date: Tue, 10 Mar 2026 12:49:27 +0100
+Date: Tue, 10 Mar 2026 12:49:24 +0100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260310-b4-is_err_or_null-v1-61-bd63b656022d@avm.de>
+Message-Id: <20260310-b4-is_err_or_null-v1-58-bd63b656022d@avm.de>
 References: <20260310-b4-is_err_or_null-v1-0-bd63b656022d@avm.de>
 In-Reply-To: <20260310-b4-is_err_or_null-v1-0-bd63b656022d@avm.de>
 To: amd-gfx@lists.freedesktop.org, apparmor@lists.ubuntu.com, 
@@ -92,21 +92,23 @@ To: amd-gfx@lists.freedesktop.org, apparmor@lists.ubuntu.com,
  sched-ext@lists.linux.dev, target-devel@vger.kernel.org, 
  tipc-discussion@lists.sourceforge.net, v9fs@lists.linux.dev, 
  Philipp Hahn <phahn-oss@avm.de>
-Cc: Christian Brauner <brauner@kernel.org>, Jeff Layton <jlayton@kernel.org>
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1020; i=phahn-oss@avm.de;
- h=from:subject:message-id; bh=BZdZKAXpTi8WGNXN2fiMzetM/noYEEE0kBAl+EzvNzY=;
- b=owEBbQGS/pANAwAKATQtBlPRrKzbAcsmYgBpsAamjmr2YH1D6NIv4bWMOoOgSjqlNw1AkTnEk
- z4zblGz3BCJATMEAAEKAB0WIQQ5bPBtrWDUcDQCppg0LQZT0ays2wUCabAGpgAKCRA0LQZT0ays
- 24dkB/9I2IH2WVtNuAbc4pN8k/UWfzfn7IBk5SYldKbG4a3vAt2BCQOMLY6KBgHTT+SL+30NFE0
- eqhT72U09tRMvyWUaeodCCSJABvxL6Unq+gQWaX6/P1+X8+kVa/Fa0v8GHtiYqiopntbOsAjZBr
- sS0Bbptn0GuVsdoMNke4vQD0A9rA3xW5nWOgDpK1U8FjC9uaXfz1Bfzn2XQq/Me0fZtcNCJpNlZ
- qjNOLRSw3BZGb7IPqnUrcjHIuuNd6dYbs6wYHOgbyiibTqQrj6tp6SnoDxHnYU93V6GBh2lMfHt
- 9qSEynUbZNIYOnoqI2ah9KWLVKFkMsTrddsdp5JisL6z2WZS
+Cc: Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, 
+ Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, 
+ x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1972; i=phahn-oss@avm.de;
+ h=from:subject:message-id; bh=Zdu+cVQUurUlnC57nYv7WmkJa7Su1n9ZL+7ubRQiCbU=;
+ b=owEBbQGS/pANAwAKATQtBlPRrKzbAcsmYgBpsAabkCM/59lsV79Q3PWR22p56JLuGabUpuR4i
+ qxQub+ly/qJATMEAAEKAB0WIQQ5bPBtrWDUcDQCppg0LQZT0ays2wUCabAGmwAKCRA0LQZT0ays
+ 2xXOB/9ZPHi30qdJIkWySghqlR16lgaAoi3kyqOX8y681/67uYGL/oYTixO52tnBrjVPqGtMJMl
+ /Q1KhfevGkVNYzFAfMrFBpAZag+UIgbv/BCAd+mAYMHmfUSOVrYD15iCyuV/mzNjhjHEufwESj4
+ I0XaRrF8IjuTyxoOaAktjvNz5kPAQuNzEBmaZ3v2GCRGsUPgyn1rW2fNRbOhVzN0Q0ZlAeRhTj/
+ Qq0svuNBXvGJBVWHLKzaFNv3dtadS6o0vkr1vZsO43v1j0qtJ5bmVxhOhChUZ8M0SvSfZzOtGDb
+ woeHnmnHVjGmRuu20BTVhdN6fCN/9hgCBGPx0vI7/S13IInk
 X-Developer-Key: i=phahn-oss@avm.de; a=openpgp;
  fpr=58AF7C2E007CDBE62C59E078F50EFDCF8AD04B1A
-X-purgate-ID: 149429::1773143729-96CB1E1F-80912B69/0/0
+X-purgate-ID: 149429::1773143729-8448CE1F-1FDA919B/0/0
 X-purgate-type: clean
-X-purgate-size: 1022
+X-purgate-size: 1974
 X-purgate-Ad: Categorized by eleven eXpurgate (R) https://www.eleven.de
 X-purgate: This mail is considered clean (visit https://www.eleven.de for
  further information)
@@ -114,19 +116,19 @@ X-purgate: clean
 X-Mailman-Approved-At: Tue, 10 Mar 2026 15:27:04 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=avm.de; s=mail; 
- t=1773143730; bh=BZdZKAXpTi8WGNXN2fiMzetM/noYEEE0kBAl+EzvNzY=;
+ t=1773143729; bh=Zdu+cVQUurUlnC57nYv7WmkJa7Su1n9ZL+7ubRQiCbU=;
  h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
- b=SoumYKRreG/py1h5mHUmmcf5MNhTA0IWVyuhwVtBQDsB3zjLeFZGYUpB8dmBQK885
- 8zp8zOhWINTswvz/8Dpb4sCQeiaM8MeFzyXeYCejwMtQ6v6ZBfw76CXpeNeZINOkH+
- x4yAkEpkA6PhpBthZhWBkiZQBi3374fgQonGrnmw=
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ b=arIjqC+eOW50ePPRI7IzTKWN2gbhB0tQ9WRbPXDZdH2y8Tl8MVJAS9gxKOCgGSNO1
+ MKRth9R9YTwOofMsTkyRe5Kz4PcjK/cLboke0inMKDssNbfSjXTkXB1/ZhuTMFSoly
+ YzXp7hvqApt2TDtbnjQwMPLewEHxBbUoVg9XuPpY=
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=avm.de
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (1024-bit key) header.d=avm.de header.i=@avm.de header.a=rsa-sha256
- header.s=mail header.b=SoumYKRr
-Subject: [Intel-wired-lan] [PATCH 61/61] file: Drop unlikely() around
- IS_ERR_OR_NULL()
+ header.s=mail header.b=arIjqC+e
+Subject: [Intel-wired-lan] [PATCH 58/61] arch/x86: Prefer IS_ERR_OR_NULL
+ over manual NULL check
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -142,35 +144,60 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
+Prefer using IS_ERR_OR_NULL() over using IS_ERR() and a manual NULL
+check.
+
 IS_ERR_OR_NULL() already uses likely(!ptr) internally. checkpatch does
 not like nesting it:
 > WARNING: nested (un)?likely() calls, IS_ERR_OR_NULL already uses
 > unlikely() internally
-Remove the explicit use of unlikely().
+Remove the explicit use of likely().
 
-Change generated with coccinelle.
+Semantich change: Previously the code only printed the warning on error,
+but not when the pointer was NULL. Now the warning is printed in both
+cases!
 
-To: Christian Brauner <brauner@kernel.org>
-To: Jeff Layton <jlayton@kernel.org>
+Change found with coccinelle.
+
+To: Thomas Gleixner <tglx@kernel.org>
+To: Ingo Molnar <mingo@redhat.com>
+To: Borislav Petkov <bp@alien8.de>
+To: Dave Hansen <dave.hansen@linux.intel.com>
+To: x86@kernel.org
+To: "H. Peter Anvin" <hpa@zytor.com>
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Philipp Hahn <phahn-oss@avm.de>
 ---
- include/linux/file.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/x86/kernel/callthunks.c | 2 +-
+ arch/x86/kernel/irq.c        | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/include/linux/file.h b/include/linux/file.h
-index 27484b444d3155685cdbb89f546f26ef66e3e1b4..007b9b9d365a052c1c056e12571eaf4f8ef5a45c 100644
---- a/include/linux/file.h
-+++ b/include/linux/file.h
-@@ -163,7 +163,7 @@ static inline void class_fd_prepare_destructor(const struct fd_prepare *fdf)
- {
- 	if (unlikely(fdf->__fd >= 0))
- 		put_unused_fd(fdf->__fd);
--	if (unlikely(!IS_ERR_OR_NULL(fdf->__file)))
-+	if (!IS_ERR_OR_NULL(fdf->__file))
- 		fput(fdf->__file);
- }
+diff --git a/arch/x86/kernel/callthunks.c b/arch/x86/kernel/callthunks.c
+index e37728f7032277a99ffb0e6bb7dfa318660e56a0..6dc45838d8e439e117815b85e2840bb3a6688ed8 100644
+--- a/arch/x86/kernel/callthunks.c
++++ b/arch/x86/kernel/callthunks.c
+@@ -212,7 +212,7 @@ static __init_or_module void patch_call(void *addr, const struct core_text *ct)
+ 		return;
  
+ 	dest = call_get_dest(addr);
+-	if (!dest || WARN_ON_ONCE(IS_ERR(dest)))
++	if (WARN_ON_ONCE(IS_ERR_OR_NULL(dest)))
+ 		return;
+ 
+ 	if (!is_coretext(ct, dest))
+diff --git a/arch/x86/kernel/irq.c b/arch/x86/kernel/irq.c
+index ec77be217eaf5f558fa73c2ff6cf1ab8953ee2f8..81963909066d72607f58d3e443a21a3b3e701a99 100644
+--- a/arch/x86/kernel/irq.c
++++ b/arch/x86/kernel/irq.c
+@@ -282,7 +282,7 @@ static __always_inline bool call_irq_handler(int vector, struct pt_regs *regs)
+ {
+ 	struct irq_desc *desc = __this_cpu_read(vector_irq[vector]);
+ 
+-	if (likely(!IS_ERR_OR_NULL(desc))) {
++	if (!IS_ERR_OR_NULL(desc)) {
+ 		handle_irq(desc, regs);
+ 		return true;
+ 	}
 
 -- 
 2.43.0
