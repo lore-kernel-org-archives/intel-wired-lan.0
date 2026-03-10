@@ -1,67 +1,67 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CA4C5EB1074
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 10 Mar 2026 15:27:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3C845EB1073
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 10 Mar 2026 15:27:31 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id A6F2A41C4E;
-	Tue, 10 Mar 2026 15:27:30 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 17499605EB;
+	Tue, 10 Mar 2026 15:27:31 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id a1yN0pYkX5Oe; Tue, 10 Mar 2026 15:27:30 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id SbIDn504e4pl; Tue, 10 Mar 2026 15:27:30 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E203041983
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8DFF9606DC
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1773156449;
-	bh=PYVbgZ2nKxN5YxfS32Q6BrkzgM9oUAmR+BouSLEtSW0=;
+	s=default; t=1773156450;
+	bh=bnRdJAitx6jOs8jJbv01Seyqv4d1C7aP2K2DqYjHEbY=;
 	h=From:Date:References:In-Reply-To:To:Cc:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=rln6As6BVuu8pT5caHHQjHK9+N+HOZWnClX83AW0FShndVg5lsuLTKW4PIGIjdwrF
-	 0+YK8s+DeFW97CvGLvNRdUN635Fm7xBvSd0ouJjFg9b0wMtK0oeFzvw/oD7EBhGyfq
-	 Bxlb6Q/06Hz5A7s9LAAMmhI+PvNhovFzlSkpR5axGh0Ri7BtPlbKnHAiKb1UvYMxMj
-	 w2KDQWdL8oanprjL+VNPWieY8bxB4CfGfJR/+MgBnG9ws1Ee3Izao0PeA1FbORzB1f
-	 umsetDvQ/wJhEUML9ogESyJC2L1y+XWOGgNW7X8drc1/ahMU81t4hy9jVfkYSaO9r4
-	 ShEk5M7h8lSug==
+	b=u/Qb5l6URCZmi708LRE3MQidJ0mS4H0h6dIhVjzyAKf82LThWs/Kg3PKKPws5CSxQ
+	 DkeF4CRWbTGXuQMbUroS+u14H/0tJAG/rM24EIj5YYEFZ8/u6S0TrzD80BNCioeX8U
+	 hCVMptfCmkMCfgUG7vcHHr5yDC5gKsKGIL9HiuxcCO9Jf6GYtqq2vHA1vA+417zxHv
+	 TDoqkhhkiaRhOZjAHR1OKmUMkjkx2pfkfPAPVFmJ52GPqqsUh4OCgihMfcrLlQ50N1
+	 tiIlRHI2wcWV7pIy5rihcrrcHMUV4JmaoA7kuf1N8ifZ2NlPOFeF7jIiqTNIJ0xGnK
+	 y/1xujDHxrR0A==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id E203041983;
-	Tue, 10 Mar 2026 15:27:29 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 8DFF9606DC;
+	Tue, 10 Mar 2026 15:27:30 +0000 (UTC)
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id 3E25335C
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:04:21 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id 9AAD935C
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:04:22 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id BEEE541F18
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:04:20 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 810F841EC0
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:04:21 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id EZzmLcVQj0KC for <intel-wired-lan@lists.osuosl.org>;
+ id A9100J8t88yQ for <intel-wired-lan@lists.osuosl.org>;
  Tue, 10 Mar 2026 12:04:20 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=212.42.244.119;
  helo=mail.avm.de; envelope-from=phahn-oss@avm.de; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org BED6341F6E
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org BED6341F6E
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org DE0EB41F70
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org DE0EB41F70
 Received: from mail.avm.de (mail.avm.de [212.42.244.119])
- by smtp4.osuosl.org (Postfix) with ESMTPS id BED6341F6E
+ by smtp4.osuosl.org (Postfix) with ESMTPS id DE0EB41F70
  for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:04:19 +0000 (UTC)
-Received: from [212.42.244.71] (helo=mail.avm.de)
+Received: from [2001:bf0:244:244::71] (helo=mail.avm.de)
  by mail.avm.de with ESMTP (eXpurgate 4.55.2)
  (envelope-from <phahn-oss@avm.de>)
- id 69b006b0-2367-7f0000032729-7f000001ca2a-1
- for <multiple-recipients>; Tue, 10 Mar 2026 12:55:29 +0100
-Received: from mail-auth.avm.de (dovecot-mx-01.avm.de [212.42.244.71])
- by mail.avm.de (Postfix) with ESMTPS;
+ id 69b006b0-2367-7f0000032729-7f000001c9d2-1
+ for <multiple-recipients>; Tue, 10 Mar 2026 12:55:28 +0100
+Received: from mail-auth.avm.de (dovecot-mx-01.avm.de
+ [IPv6:2001:bf0:244:244::71]) by mail.avm.de (Postfix) with ESMTPS;
  Tue, 10 Mar 2026 12:55:28 +0100 (CET)
 From: Philipp Hahn <phahn-oss@avm.de>
-Date: Tue, 10 Mar 2026 12:49:22 +0100
+Date: Tue, 10 Mar 2026 12:49:15 +0100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260310-b4-is_err_or_null-v1-56-bd63b656022d@avm.de>
+Message-Id: <20260310-b4-is_err_or_null-v1-49-bd63b656022d@avm.de>
 References: <20260310-b4-is_err_or_null-v1-0-bd63b656022d@avm.de>
 In-Reply-To: <20260310-b4-is_err_or_null-v1-0-bd63b656022d@avm.de>
 To: amd-gfx@lists.freedesktop.org, apparmor@lists.ubuntu.com, 
@@ -91,23 +91,23 @@ To: amd-gfx@lists.freedesktop.org, apparmor@lists.ubuntu.com,
  sched-ext@lists.linux.dev, target-devel@vger.kernel.org, 
  tipc-discussion@lists.sourceforge.net, v9fs@lists.linux.dev, 
  Philipp Hahn <phahn-oss@avm.de>
-Cc: Michael Turquette <mturquette@baylibre.com>, 
- Stephen Boyd <sboyd@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
- Thomas Gleixner <tglx@kernel.org>
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1921; i=phahn-oss@avm.de;
- h=from:subject:message-id; bh=D3MT7fsInTbF+Q1IcBY1KlhxZOhv8n1GbgMEryPc1iY=;
- b=owEBbQGS/pANAwAKATQtBlPRrKzbAcsmYgBpsAaUcbSjlqDNveOR0T7quZaIRE99Gs4Y40VBm
- M+JmB4D/wiJATMEAAEKAB0WIQQ5bPBtrWDUcDQCppg0LQZT0ays2wUCabAGlAAKCRA0LQZT0ays
- 29iMCACZFg0QUOFeRuYtY3bNuohm/w3gB25wtydzkEpw1y51B0CHIEYO2D+JTSeLzAXWxzoBnW9
- HXPmPssLJbvCLWKHMMkr0gAWPlZj2r2H5W9oWdTzVn7prfkWfj3QlC8PF6krEUlEdaF6S2eKHnY
- z1zuimMLbUrpcxQrqC7ES4i2d/Rp5LYwIEnS9CU2G4AgF3dSj7KUVqb2Lo1UirL++DC+eGcQfPA
- Ura0HOmvOdmbreSMPuxW3hgubjzqbYDJe+u22CiDbkdU8O1mLNiEw60lO04uucHvbyqPHMrNt0s
- Po0xv5cdM7Uk0fq2L3KaKWcmaytoRStiJNfwvalXm+okYQVa
+Cc: Shuah Khan <skhan@linuxfoundation.org>, 
+ Kieran Bingham <kieran.bingham@ideasonboard.com>, 
+ Mauro Carvalho Chehab <mchehab@kernel.org>
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1137; i=phahn-oss@avm.de;
+ h=from:subject:message-id; bh=ZbyyRff0LT6QULh5d8SMPc41iTaBzP0/3JVOQy1bx0k=;
+ b=owGbwMvMwMVoossWfHHNmtuMp9WSGDI3sNXOaG8LSpQxY8hSPVKqIh1pc5sxIOPz7VZbeXXdX
+ ZHfDi7vZDRmYWDkYpAVU2SxzPmQuzbhSoEJ07IZMINYmUCmMHBxCsBETr7kYJhV9Mu9xk6ccYGt
+ z5eI8srl4dfXXYqUXRzEX+fI1uJjH6WxrLeo7biojv5WpVXreE2zezbYn9tpWFQcfdhA7GboGts
+ YsRtM2Sv+M4kcacuwnNqZvb/GZGJWrZS8LE8bh/QGFvGyvRsUfnm1/N3xyXReUlT8crHiVPEW88
+ th9t3G59lklUJeXporbNhhPOddhfW2O0w/bnRvOz2h//fC3tr8X+mn7tezeLhE/9TY8ugub9qq6
+ ED20BjzW2dmxov+rXp6lOvAkub/n+Z/6nD5cFX/zdFNpRcPRKxfsPR8nlf6/VdXbs812Sme8b7r
+ xv6PtjP3CotJpB81uFK+Mnp2gw1/TIQQc7bV7OyuT17mAA==
 X-Developer-Key: i=phahn-oss@avm.de; a=openpgp;
  fpr=58AF7C2E007CDBE62C59E078F50EFDCF8AD04B1A
-X-purgate-ID: 149429::1773143729-974B6E1F-DBF721A0/0/0
+X-purgate-ID: 149429::1773143728-1F4BEE1F-D1FCF248/0/0
 X-purgate-type: clean
-X-purgate-size: 1923
+X-purgate-size: 1139
 X-purgate-Ad: Categorized by eleven eXpurgate (R) https://www.eleven.de
 X-purgate: This mail is considered clean (visit https://www.eleven.de for
  further information)
@@ -115,18 +115,18 @@ X-purgate: clean
 X-Mailman-Approved-At: Tue, 10 Mar 2026 15:27:04 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=avm.de; s=mail; 
- t=1773143729; bh=D3MT7fsInTbF+Q1IcBY1KlhxZOhv8n1GbgMEryPc1iY=;
+ t=1773143728; bh=ZbyyRff0LT6QULh5d8SMPc41iTaBzP0/3JVOQy1bx0k=;
  h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
- b=FuoIkm8y1r9jmy9XkB/nIcxLjk6bi+LjK6sb5O5ohjTjMY18sKNe5fNP8s8fr+eSE
- cVA8MM9YDRtdE2+c+3jQLNZHyd4epnj5ZDnSjfPWRMAs2R10VO12Ss6TLbgdzang/C
- IuQfXi2yHqFGvraOYFSaQFSWS/mBIxmUmEAiJKQg=
+ b=aVdcR7RTuv8C7CerJpQOdVZlvXCBSYXBl1Kv3fGDCxhNKTGGiEGlaXMofbFocGsc4
+ PzD9er4ULxnCoKhdyrJwuV7PXDV42OgML5UN/9dor/cwn1OQ+AYgKJ5KgncLE+Nq9J
+ Tp/LrzPDmFSH5N41KkG4TAeS71Wuyf5xaF4BLtTc=
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=avm.de
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (1024-bit key) header.d=avm.de header.i=@avm.de header.a=rsa-sha256
- header.s=mail header.b=FuoIkm8y
-Subject: [Intel-wired-lan] [PATCH 56/61] clk: Prefer IS_ERR_OR_NULL over
+ header.s=mail header.b=aVdcR7RT
+Subject: [Intel-wired-lan] [PATCH 49/61] media: Prefer IS_ERR_OR_NULL over
  manual NULL check
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
@@ -146,59 +146,31 @@ Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 Prefer using IS_ERR_OR_NULL() over using IS_ERR() and a manual NULL
 check.
 
-Semantich change: Previously the code only printed the warning on error,
-but not when the pointer was NULL. Now the warning is printed in both
-cases!
+Change generated with coccinelle.
 
-Change found with coccinelle.
-
-To: Michael Turquette <mturquette@baylibre.com>
-To: Stephen Boyd <sboyd@kernel.org>
-To: Daniel Lezcano <daniel.lezcano@kernel.org>
-To: Thomas Gleixner <tglx@kernel.org>
-Cc: linux-clk@vger.kernel.org
+To: Shuah Khan <skhan@linuxfoundation.org>
+To: Kieran Bingham <kieran.bingham@ideasonboard.com>
+To: Mauro Carvalho Chehab <mchehab@kernel.org>
+Cc: linux-media@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Philipp Hahn <phahn-oss@avm.de>
 ---
- drivers/clk/clk.c               | 4 ++--
- drivers/clocksource/timer-pxa.c | 2 +-
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/media/test-drivers/vimc/vimc-streamer.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
-index 47093cda9df32223c1120c3710261296027c4cd3..35146e3869a7dd93741d10b7223d4488a9216ed1 100644
---- a/drivers/clk/clk.c
-+++ b/drivers/clk/clk.c
-@@ -4558,7 +4558,7 @@ void clk_unregister(struct clk *clk)
- 	unsigned long flags;
- 	const struct clk_ops *ops;
- 
--	if (!clk || WARN_ON_ONCE(IS_ERR(clk)))
-+	if (WARN_ON_ONCE(IS_ERR_OR_NULL(clk)))
- 		return;
- 
- 	clk_debug_unregister(clk->core);
-@@ -4744,7 +4744,7 @@ void __clk_put(struct clk *clk)
- {
- 	struct module *owner;
- 
--	if (!clk || WARN_ON_ONCE(IS_ERR(clk)))
-+	if (WARN_ON_ONCE(IS_ERR_OR_NULL(clk)))
- 		return;
- 
- 	clk_prepare_lock();
-diff --git a/drivers/clocksource/timer-pxa.c b/drivers/clocksource/timer-pxa.c
-index 7ad0e5adb2ffac4125c34710fc67f4b45f30331d..f65fb0b7fc318b766227e5e7a4c0fb08ba11c8f9 100644
---- a/drivers/clocksource/timer-pxa.c
-+++ b/drivers/clocksource/timer-pxa.c
-@@ -218,7 +218,7 @@ void __init pxa_timer_nodt_init(int irq, void __iomem *base)
- 
- 	timer_base = base;
- 	clk = clk_get(NULL, "OSTIMER0");
--	if (clk && !IS_ERR(clk)) {
-+	if (!IS_ERR_OR_NULL(clk)) {
- 		clk_prepare_enable(clk);
- 		pxa_timer_common_init(irq, clk_get_rate(clk));
- 	} else {
+diff --git a/drivers/media/test-drivers/vimc/vimc-streamer.c b/drivers/media/test-drivers/vimc/vimc-streamer.c
+index 15d863f97cbf96b7ca7fbf3d7b6b6ec39fcc8ae3..da5aca50bcb4990c06f28e5a883eb398606991e9 100644
+--- a/drivers/media/test-drivers/vimc/vimc-streamer.c
++++ b/drivers/media/test-drivers/vimc/vimc-streamer.c
+@@ -167,7 +167,7 @@ static int vimc_streamer_thread(void *data)
+ 		for (i = stream->pipe_size - 1; i >= 0; i--) {
+ 			frame = stream->ved_pipeline[i]->process_frame(
+ 					stream->ved_pipeline[i], frame);
+-			if (!frame || IS_ERR(frame))
++			if (IS_ERR_OR_NULL(frame))
+ 				break;
+ 		}
+ 		//wait for 60hz
 
 -- 
 2.43.0
