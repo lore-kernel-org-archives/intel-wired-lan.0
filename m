@@ -1,69 +1,67 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D8887EB1073
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 10 Mar 2026 15:27:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 69DE6EB1074
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 10 Mar 2026 15:27:08 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 9C68A80759;
-	Tue, 10 Mar 2026 15:27:07 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 1ABA3605D4;
+	Tue, 10 Mar 2026 15:27:08 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id I5KlHGYooKwT; Tue, 10 Mar 2026 15:27:06 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 7v1u8O1bKoqw; Tue, 10 Mar 2026 15:27:07 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 399FD80741
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 75AB8605EB
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1773156426;
-	bh=Bw00K/cYen8HzVy4Opfh9Xr2YPOPoH4QqmKdT33VAv8=;
+	s=default; t=1773156427;
+	bh=x7yqvKgRQlPCuPxWpeGgWE7MFZhfk9JfcC1gFXD6dw4=;
 	h=From:Date:References:In-Reply-To:To:Cc:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=n4UEzNanfIbF/ZWtxM9F6Ldq4HMTBuyQGYaZaF4Ka7gyvZ7IAiwGKTx9vKt4pWcZs
-	 GwrodoIOq0XrRIjFfilhbkdh5bdToX0zXY+LxyqbsrnOJVoR/ncr0f1FBHiolBIFwR
-	 yJjGJUBqAOaRqv2bZ/SElfULReKUzmj8nv+M9Xi05epoovZ42STwdz83k6RVvOSBlu
-	 uUOZVadyH9Th7cTROCrX95hF7ba4Gk9Tv8/IHqHJGLqUMc6g4xJOwPcY+E42WTNmQj
-	 QUrQo0GznFpDkubcSgSoa5qmg/sXgAD8Cv1vV3vkoD3/UMn3+loawB+UFjoF6KDbbk
-	 SDHMEcfQdQeBA==
+	b=n8vGS92qdeomE72JvJPCEKWNVDKwBOVbSOIObajmse6mPf9BYR9AbiP7Qnzp4kLED
+	 8aQeArHQ37cAHixk33J1G8atd4szqglaRKHy/7BE+hN0gqqhAFfDTFiWo4eYZvO9H6
+	 yv4WbaXGE8KlM+uI15FOLTEp0xXT6hJxWa2195YmHEQzWqxXLc5jXe88DT4ESAlt7B
+	 iXOJAPKGfqseZlC7r4jqnLE0KM5tOrLRSFSkbc+wJvmNIh/qRJgqinmRVuTF9n2sJ1
+	 v1n/pytkCz2GyGQX1bCCHo2XF8kE/LzludjrhRZirX9LTTito8e57azEdjGI/JgZkM
+	 X9lvqVAO1yzdg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 399FD80741;
-	Tue, 10 Mar 2026 15:27:06 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 81FA4201
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:01:21 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 75AB8605EB;
+	Tue, 10 Mar 2026 15:27:07 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 23D8E35C
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:01:22 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 7BFA761563
+ by smtp3.osuosl.org (Postfix) with ESMTP id BFB2060B3C
  for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:01:21 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id AI9s7tDHldl7 for <intel-wired-lan@lists.osuosl.org>;
+ id tRFd3Gq93Fbu for <intel-wired-lan@lists.osuosl.org>;
  Tue, 10 Mar 2026 12:01:17 +0000 (UTC)
-X-Greylist: delayed 350 seconds by postgrey-1.37 at util1.osuosl.org;
- Tue, 10 Mar 2026 12:01:17 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 0F1B860B3C
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 0F1B860B3C
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=212.42.244.119;
  helo=mail.avm.de; envelope-from=phahn-oss@avm.de; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 912CE60B75
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 912CE60B75
 Received: from mail.avm.de (mail.avm.de [212.42.244.119])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 0F1B860B3C
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 912CE60B75
  for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:01:17 +0000 (UTC)
-Received: from [2001:bf0:244:244::71] (helo=mail.avm.de)
+Received: from [212.42.244.71] (helo=mail.avm.de)
  by mail.avm.de with ESMTP (eXpurgate 4.55.2)
  (envelope-from <phahn-oss@avm.de>)
- id 69b006ac-2367-7f0000032729-7f0000019d5a-1
- for <multiple-recipients>; Tue, 10 Mar 2026 12:55:25 +0100
-Received: from mail-auth.avm.de (dovecot-mx-01.avm.de
- [IPv6:2001:bf0:244:244::71]) by mail.avm.de (Postfix) with ESMTPS;
- Tue, 10 Mar 2026 12:55:24 +0100 (CET)
+ id 69b006ae-2367-7f0000032729-7f000001c97e-1
+ for <multiple-recipients>; Tue, 10 Mar 2026 12:55:26 +0100
+Received: from mail-auth.avm.de (dovecot-mx-01.avm.de [212.42.244.71])
+ by mail.avm.de (Postfix) with ESMTPS;
+ Tue, 10 Mar 2026 12:55:26 +0100 (CET)
 From: Philipp Hahn <phahn-oss@avm.de>
-Date: Tue, 10 Mar 2026 12:48:46 +0100
+Date: Tue, 10 Mar 2026 12:48:59 +0100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260310-b4-is_err_or_null-v1-20-bd63b656022d@avm.de>
+Message-Id: <20260310-b4-is_err_or_null-v1-33-bd63b656022d@avm.de>
 References: <20260310-b4-is_err_or_null-v1-0-bd63b656022d@avm.de>
 In-Reply-To: <20260310-b4-is_err_or_null-v1-0-bd63b656022d@avm.de>
 To: amd-gfx@lists.freedesktop.org, apparmor@lists.ubuntu.com, 
@@ -93,23 +91,22 @@ To: amd-gfx@lists.freedesktop.org, apparmor@lists.ubuntu.com,
  sched-ext@lists.linux.dev, target-devel@vger.kernel.org, 
  tipc-discussion@lists.sourceforge.net, v9fs@lists.linux.dev, 
  Philipp Hahn <phahn-oss@avm.de>
-Cc: John Johansen <john.johansen@canonical.com>, 
- Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>, 
- "Serge E. Hallyn" <serge@hallyn.com>
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1034; i=phahn-oss@avm.de;
- h=from:subject:message-id; bh=pn4l4Bneda6cRvLB6hSFUDCMaCdQu5yrimDpnU+4XNM=;
- b=owEBbQGS/pANAwAKATQtBlPRrKzbAcsmYgBpsAYZg+c1WuLJkNtjs3nyvfVhnVwRMFZkjRyjg
- 9Bta5ElUMSJATMEAAEKAB0WIQQ5bPBtrWDUcDQCppg0LQZT0ays2wUCabAGGQAKCRA0LQZT0ays
- 21AMCAC7XRT2CFV3uyPK4StoEGsXQYqMR1ynn7bit9TqTcf+0Wgtn6TYvMctAHR6A5S0MhH7yf7
- gILWOKn6+HLqPdr3lmY3ZuYwuYUr4OHhvBA9aCnbDXWOuH1dD12oVxx3wu0+3drbZUUw1a5lJWN
- hsJfyDm3gNagxfOpgqCfQqiJ9xVVghJWjS+o0/hto7AZgqOBw9ObaanKLghJUEDwwTwpQEVda2+
- 0LDNyTd4iej+Ak8COmDse1KGC2gcs+EiSzfYOC0pte2fBmGM11VRcAnsxd2vAsBFmvs/mJ8XFJS
- YSqDB3vEx2vFoOZdvhWx2ECAhXN2w/fnobSlleabiSgRaViM
+Cc: Catalin Marinas <catalin.marinas@arm.com>, 
+ Andrew Morton <akpm@linux-foundation.org>
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3181; i=phahn-oss@avm.de;
+ h=from:subject:message-id; bh=Axff4FnAHPNmyZXZ2vgEuavJkfKhCKJPqZGqnoou9Q8=;
+ b=owEBbQGS/pANAwAKATQtBlPRrKzbAcsmYgBpsAZGGzCaztqu0lpdWvBpBbRCmO+WdPRS9iZCq
+ y8ebihz4r+JATMEAAEKAB0WIQQ5bPBtrWDUcDQCppg0LQZT0ays2wUCabAGRgAKCRA0LQZT0ays
+ 21/8B/wPP7xI3S+6VTDXKISgyNvBqi0UZCbrYypvYfajV0SZbWCEuGKdkXjsEnnFt9YRKxoHeyi
+ XmpmbA47CMrp+VNl6him9YVO8BEPZHU4T3m6BB2+Ps31+3rQDfYs7d+nPEStYiJ7CseLk0vc9Xu
+ aMyI8bSdyPpcRveFxPuH/uy4iV8zrSXLAoi0Ddm83MyR2aRNl2iCZfPRsvcbR2T8dPBVJjhKzKb
+ 5v+Zz66IZ/QArfKSmSkUD+nw+Micr3w6XFCa9e1WMrdcQ/Zh9MZx0TWZwcRgOAgfEwQG/fxgX8/
+ bLP83oq+8G1pw01czFBtKoe7eUKh6J8z9KOOUPoqLrMipRXq
 X-Developer-Key: i=phahn-oss@avm.de; a=openpgp;
  fpr=58AF7C2E007CDBE62C59E078F50EFDCF8AD04B1A
-X-purgate-ID: 149429::1773143725-914AAE1F-0BAD1D24/0/0
+X-purgate-ID: 149429::1773143726-05CBBE1F-4CFCA352/0/0
 X-purgate-type: clean
-X-purgate-size: 1036
+X-purgate-size: 3183
 X-purgate-Ad: Categorized by eleven eXpurgate (R) https://www.eleven.de
 X-purgate: This mail is considered clean (visit https://www.eleven.de for
  further information)
@@ -117,20 +114,19 @@ X-purgate: clean
 X-Mailman-Approved-At: Tue, 10 Mar 2026 15:27:04 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=avm.de; s=mail; 
- t=1773143725; bh=pn4l4Bneda6cRvLB6hSFUDCMaCdQu5yrimDpnU+4XNM=;
+ t=1773143726; bh=Axff4FnAHPNmyZXZ2vgEuavJkfKhCKJPqZGqnoou9Q8=;
  h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
- b=XrOjEMLxKN0Q5AmyrWHNIKWYwAXYvxSGofpRw1fSzyTCz7O3kSu9wZMVhCigrODma
- xaDgiBmBXDbNfcoI5fcc6yYimuO3Cnj4vKRdoox62XvE8LKZz+/gN4z3zTXbmuJ2J8
- 09unIVObBESNuzHAoxHz8OyIcq6YqGzcxhMd6Jyc=
+ b=vC8qGYtmoTTFtKG57rlNoXWnybB42U6r7mF3yDjZNK169i+LPPc6FbsKjJViJXz0P
+ z0SkvHe3S8CzlbyDQgjnVKCfReu3jwjo1Tnr6q9iIPykZjcNCRLdwFjqB3/YTiencA
+ upketXPZTZxW0W7lPSDpgLsiq82FnKI8pFh7qlSE=
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=avm.de
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (1024-bit key,
- unprotected) header.d=avm.de header.i=@avm.de header.a=rsa-sha256
- header.s=mail header.b=XrOjEMLx
-Subject: [Intel-wired-lan] [PATCH 20/61] apparmor: Prefer IS_ERR_OR_NULL
- over manual NULL check
+ dkim=pass (1024-bit key) header.d=avm.de header.i=@avm.de header.a=rsa-sha256
+ header.s=mail header.b=vC8qGYtm
+Subject: [Intel-wired-lan] [PATCH 33/61] mm: Prefer IS_ERR_OR_NULL over
+ manual NULL check
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -149,33 +145,93 @@ Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 Prefer using IS_ERR_OR_NULL() over using IS_ERR() and a manual NULL
 check.
 
-Change generated with coccinelle.
+Change generated with coccinelle and adapted by hand.
 
-To: John Johansen <john.johansen@canonical.com>
-To: Paul Moore <paul@paul-moore.com>
-To: James Morris <jmorris@namei.org>
-To: "Serge E. Hallyn" <serge@hallyn.com>
-Cc: apparmor@lists.ubuntu.com
-Cc: linux-security-module@vger.kernel.org
+To: Catalin Marinas <catalin.marinas@arm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-mm@kvack.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Philipp Hahn <phahn-oss@avm.de>
 ---
- security/apparmor/apparmorfs.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ mm/kmemleak.c | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/security/apparmor/apparmorfs.c b/security/apparmor/apparmorfs.c
-index 2f84bd23edb69e7e69cb097e554091df0132816d..5145b0c9c699514697291967c5a7b1e96b8753d1 100644
---- a/security/apparmor/apparmorfs.c
-+++ b/security/apparmor/apparmorfs.c
-@@ -352,7 +352,7 @@ static void aafs_remove(struct dentry *dentry)
+diff --git a/mm/kmemleak.c b/mm/kmemleak.c
+index d79acf5c51006c3ed42fd88a2246ca148e401999..91136be23a84d825698e98b4f2d0e666429dd593 100644
+--- a/mm/kmemleak.c
++++ b/mm/kmemleak.c
+@@ -1092,7 +1092,7 @@ void __ref kmemleak_alloc(const void *ptr, size_t size, int min_count,
  {
- 	struct inode *dir;
+ 	pr_debug("%s(0x%px, %zu, %d)\n", __func__, ptr, size, min_count);
  
--	if (!dentry || IS_ERR(dentry))
-+	if (IS_ERR_OR_NULL(dentry))
- 		return;
+-	if (kmemleak_enabled && ptr && !IS_ERR(ptr))
++	if (kmemleak_enabled && !IS_ERR_OR_NULL(ptr))
+ 		create_object((unsigned long)ptr, size, min_count, gfp);
+ }
+ EXPORT_SYMBOL_GPL(kmemleak_alloc);
+@@ -1152,7 +1152,7 @@ void __ref kmemleak_free(const void *ptr)
+ {
+ 	pr_debug("%s(0x%px)\n", __func__, ptr);
  
- 	/* ->d_parent is stable as rename is not supported */
+-	if (kmemleak_free_enabled && ptr && !IS_ERR(ptr))
++	if (kmemleak_free_enabled && !IS_ERR_OR_NULL(ptr))
+ 		delete_object_full((unsigned long)ptr, 0);
+ }
+ EXPORT_SYMBOL_GPL(kmemleak_free);
+@@ -1170,7 +1170,7 @@ void __ref kmemleak_free_part(const void *ptr, size_t size)
+ {
+ 	pr_debug("%s(0x%px)\n", __func__, ptr);
+ 
+-	if (kmemleak_enabled && ptr && !IS_ERR(ptr))
++	if (kmemleak_enabled && !IS_ERR_OR_NULL(ptr))
+ 		delete_object_part((unsigned long)ptr, size, 0);
+ }
+ EXPORT_SYMBOL_GPL(kmemleak_free_part);
+@@ -1238,7 +1238,7 @@ void __ref kmemleak_not_leak(const void *ptr)
+ {
+ 	pr_debug("%s(0x%px)\n", __func__, ptr);
+ 
+-	if (kmemleak_enabled && ptr && !IS_ERR(ptr))
++	if (kmemleak_enabled && !IS_ERR_OR_NULL(ptr))
+ 		make_gray_object((unsigned long)ptr);
+ }
+ EXPORT_SYMBOL(kmemleak_not_leak);
+@@ -1255,7 +1255,7 @@ void __ref kmemleak_transient_leak(const void *ptr)
+ {
+ 	pr_debug("%s(0x%px)\n", __func__, ptr);
+ 
+-	if (kmemleak_enabled && ptr && !IS_ERR(ptr))
++	if (kmemleak_enabled && !IS_ERR_OR_NULL(ptr))
+ 		reset_checksum((unsigned long)ptr);
+ }
+ EXPORT_SYMBOL(kmemleak_transient_leak);
+@@ -1287,7 +1287,7 @@ void __ref kmemleak_ignore(const void *ptr)
+ {
+ 	pr_debug("%s(0x%px)\n", __func__, ptr);
+ 
+-	if (kmemleak_enabled && ptr && !IS_ERR(ptr))
++	if (kmemleak_enabled && !IS_ERR_OR_NULL(ptr))
+ 		make_black_object((unsigned long)ptr, 0);
+ }
+ EXPORT_SYMBOL(kmemleak_ignore);
+@@ -1307,7 +1307,7 @@ void __ref kmemleak_scan_area(const void *ptr, size_t size, gfp_t gfp)
+ {
+ 	pr_debug("%s(0x%px)\n", __func__, ptr);
+ 
+-	if (kmemleak_enabled && ptr && size && !IS_ERR(ptr))
++	if (kmemleak_enabled && size && !IS_ERR_OR_NULL(ptr))
+ 		add_scan_area((unsigned long)ptr, size, gfp);
+ }
+ EXPORT_SYMBOL(kmemleak_scan_area);
+@@ -1325,7 +1325,7 @@ void __ref kmemleak_no_scan(const void *ptr)
+ {
+ 	pr_debug("%s(0x%px)\n", __func__, ptr);
+ 
+-	if (kmemleak_enabled && ptr && !IS_ERR(ptr))
++	if (kmemleak_enabled && !IS_ERR_OR_NULL(ptr))
+ 		object_no_scan((unsigned long)ptr);
+ }
+ EXPORT_SYMBOL(kmemleak_no_scan);
 
 -- 
 2.43.0
