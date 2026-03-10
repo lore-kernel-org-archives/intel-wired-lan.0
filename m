@@ -1,61 +1,60 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BDF50EB1070
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 10 Mar 2026 15:28:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A00ECEB1072
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 10 Mar 2026 15:28:21 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 9549D81332;
-	Tue, 10 Mar 2026 15:28:20 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 7C4DE6065E;
+	Tue, 10 Mar 2026 15:28:21 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Yb1ev-gEyGTS; Tue, 10 Mar 2026 15:28:20 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id SL3s_gGQYW9b; Tue, 10 Mar 2026 15:28:19 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 0DFA48175F
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 771DC6060B
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1773156500;
-	bh=sWy9ef7Hud0vVkgTkw0OoHXnvQiMcKWf2ClKsqXhea4=;
+	s=default; t=1773156499;
+	bh=5U3NeXHJE8lfg4BXS8esFmXtZQ5l+VHcEWPXt89DuYc=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=ypNR1SmMAdITvu+PunQjEPHyM4Y4pJPnRZEEt2jjzLzjMrOzDNMcWjGVvK44zYEM8
-	 AuqZ3FH2bIGaqk9tGzi2lAfj07actXZ7et4jq4QQp7nfBXvwulC+0/ogZkxlUjdSSU
-	 WMwAKzBBtcnL/ZRza51EtQIeZe3Fc/CfQ4Hwj9GE3h6cL2lZ3kW8/gQ/Qp5U7p+Bo9
-	 jWjdSFBUssjsrx4x6T+ZIauhoQnMS00kv2uDlcob4VEA9EL/hXn1dwlPTdRvLKBkW+
-	 We7Yn5CbCjVNqKDyaOCF1Co82zP7wV/7siALvApIWe3N+vNSiJrcd7kv2F1jQEvQKW
-	 puPRRLyJolpkQ==
+	b=6dyKXTFq/YQweGqiXIXQhwHcqwKgIYtHYsjOClbPWxiBQCh4g3fzAkKW5a8oBBSzB
+	 6Njqcr3e9jopPoW7xjlhVxt0XmCekacgcI3+poJuTjZLUkIlARFhLfU/Ap03z9J0vm
+	 0Q7dWVT4VNdOKa7If4jsqxFHVMt22MfyYjf3wy4PuF7nFiilbrO2MHIVzxz1rMWU6q
+	 EA2pciWwn1lvSam9WVSUapvsJ4G+2HE79HXdKMeHkK4zehVTg7TPeiEIwq4IgcjIB+
+	 IalbmA8DnO6oprQNMxhYQx16B/d0XhCIgAuvslxYMvlSPIIJWAZkMqYtJ0zNXsIvlc
+	 VNNoX/OwRFqig==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 0DFA48175F;
-	Tue, 10 Mar 2026 15:28:20 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 771DC6060B;
+	Tue, 10 Mar 2026 15:28:19 +0000 (UTC)
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id EA50E35C
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:23:35 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id 8BFEE201
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:23:11 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id D021641C85
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:23:35 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 78C054198B
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:23:11 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id h4NDySMBLS5z for <intel-wired-lan@lists.osuosl.org>;
- Tue, 10 Mar 2026 12:23:35 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org;
- envelope-from=jlayton@kernel.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 13BEC41C79
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 13BEC41C79
-Received: from tor.source.kernel.org (tor.source.kernel.org
- [IPv6:2600:3c04:e001:324:0:1991:8:25])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 13BEC41C79
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:23:34 +0000 (UTC)
+ id OgyIt8vLSpK5 for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 10 Mar 2026 12:23:10 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
+ helo=tor.source.kernel.org; envelope-from=jlayton@kernel.org;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org B561640CA9
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B561640CA9
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id B561640CA9
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:23:10 +0000 (UTC)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by tor.source.kernel.org (Postfix) with ESMTP id BB3CC600B0;
- Tue, 10 Mar 2026 12:23:33 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B10E4C19423;
- Tue, 10 Mar 2026 12:23:27 +0000 (UTC)
-Message-ID: <d97c4fd76d7b7fc8b38d3bb4e4ed700b1003ecba.camel@kernel.org>
+ by tor.source.kernel.org (Postfix) with ESMTP id A441D60054;
+ Tue, 10 Mar 2026 12:23:09 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 72C6FC19423;
+ Tue, 10 Mar 2026 12:23:04 +0000 (UTC)
+Message-ID: <2ff39929dad06ca7d009ccd6dfe873da22a07c8a.camel@kernel.org>
 From: Jeff Layton <jlayton@kernel.org>
 To: Philipp Hahn <phahn-oss@avm.de>, amd-gfx@lists.freedesktop.org, 
  apparmor@lists.ubuntu.com, bpf@vger.kernel.org, ceph-devel@vger.kernel.org,
@@ -83,16 +82,11 @@ To: Philipp Hahn <phahn-oss@avm.de>, amd-gfx@lists.freedesktop.org,
  ntfs3@lists.linux.dev, 	samba-technical@lists.samba.org,
  sched-ext@lists.linux.dev, 	target-devel@vger.kernel.org,
  tipc-discussion@lists.sourceforge.net, 	v9fs@lists.linux.dev
-Cc: Trond Myklebust <trondmy@kernel.org>, Anna Schumaker <anna@kernel.org>, 
- Chuck Lever <chuck.lever@oracle.com>, NeilBrown <neil@brown.name>, Olga
- Kornievskaia <okorniev@redhat.com>,  Dai Ngo <Dai.Ngo@oracle.com>, Tom
- Talpey <tom@talpey.com>, "David S. Miller" <davem@davemloft.net>,  Eric
- Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, Paolo
- Abeni <pabeni@redhat.com>,  Simon Horman <horms@kernel.org>
-Date: Tue, 10 Mar 2026 08:23:26 -0400
-In-Reply-To: <20260310-b4-is_err_or_null-v1-30-bd63b656022d@avm.de>
+Cc: Christian Brauner <brauner@kernel.org>
+Date: Tue, 10 Mar 2026 08:23:01 -0400
+In-Reply-To: <20260310-b4-is_err_or_null-v1-61-bd63b656022d@avm.de>
 References: <20260310-b4-is_err_or_null-v1-0-bd63b656022d@avm.de>
- <20260310-b4-is_err_or_null-v1-30-bd63b656022d@avm.de>
+ <20260310-b4-is_err_or_null-v1-61-bd63b656022d@avm.de>
 Autocrypt: addr=jlayton@kernel.org; prefer-encrypt=mutual;
  keydata=mQINBE6V0TwBEADXhJg7s8wFDwBMEvn0qyhAnzFLTOCHooMZyx7XO7dAiIhDSi7G1NPxw
  n8jdFUQMCR/GlpozMFlSFiZXiObE7sef9rTtM68ukUyZM4pJ9l0KjQNgDJ6Fr342Htkjxu/kFV1Wv
@@ -173,23 +167,24 @@ User-Agent: Evolution 3.58.3 (3.58.3-1.fc43)
 MIME-Version: 1.0
 X-Mailman-Approved-At: Tue, 10 Mar 2026 15:28:18 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1773145413;
- bh=dKSFFzRnVfNET7rWuE5Oko4JdMIW5clek3Ra8qeLWt0=;
+ d=kernel.org; s=k20201202; t=1773145389;
+ bh=GC3Sg9J7xD8kIPv5UD36basFOlkNvWWf+dL0gpcN4gs=;
  h=Subject:From:To:Cc:Date:In-Reply-To:References:From;
- b=fkez07TlE1bfdj9q72lfPh33xZUWj92R+6N34570wM83IJULMKkc+t1NI+NIthPJ8
- udd0+wDsOsLyEYtc2rUq6c/04oYHs4Ijd8GvgL72KdgHcTTjuge6542A67j9ng4nMs
- ibR7d2V6NwLDyu/uVXWq0145yHAFZxvc42G+2L2+sUZ3uktv+EclNSS20uQ7swL0HP
- LWOaDsIKcth0kzayTnUnDFQv7L72QnV4UUeRrzt36Vk9ZcP+WXEjov00vhjcxe3Gp8
- CPc1GnWeA6B7VfYAg6uLBaadmh06wX7OXgaehJVXZ7xVcjj32thXyrmbMa6Rym7GyL
- HCCmPdJG4zvRQ==
+ b=USBW0I5R1IRmIxXZQ4igYISdfUhrLNnzBamW3ly9QC3INE+BegS2zslKhDKzhXDG7
+ fKMU7RIbXNpol1PHCzCb5aV7jzNo2emhRzvTpOYCvay1rk9VpMjF/PBmugESDxkXYL
+ S0eTx6lMzIbdUYaaQJ7wmSE0g/aO76gzcuT07juTvznRsdelMLPOv9tAcL33MuZDV4
+ MJfe/XfyamWxe2yqSYGMcVQ926M3F363GVs0b2nOXa4FFqyaQNv/s+Jdn7Lo043fzU
+ f7A0IS8nsfHXq1XpvhuTTXROF4mFHi4SpARL1EaftIE0z7e8v+uGDZL5stw1zyUhEs
+ 3V3NLgotla0yg==
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=fkez07Tl
-Subject: Re: [Intel-wired-lan] [PATCH 30/61] net/sunrpc: Prefer
- IS_ERR_OR_NULL over manual NULL check
+ dkim=pass (2048-bit key,
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=USBW0I5R
+Subject: Re: [Intel-wired-lan] [PATCH 61/61] file: Drop unlikely() around
+ IS_ERR_OR_NULL()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -205,78 +200,37 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Tue, 2026-03-10 at 12:48 +0100, Philipp Hahn wrote:
-> Prefer using IS_ERR_OR_NULL() over using IS_ERR() and a manual NULL
-> check.
+On Tue, 2026-03-10 at 12:49 +0100, Philipp Hahn wrote:
+> IS_ERR_OR_NULL() already uses likely(!ptr) internally. checkpatch does
+> not like nesting it:
+> > WARNING: nested (un)?likely() calls, IS_ERR_OR_NULL already uses
+> > unlikely() internally
+> Remove the explicit use of unlikely().
 >=20
 > Change generated with coccinelle.
 >=20
-> To: Trond Myklebust <trondmy@kernel.org>
-> To: Anna Schumaker <anna@kernel.org>
-> To: Chuck Lever <chuck.lever@oracle.com>
+> To: Christian Brauner <brauner@kernel.org>
 > To: Jeff Layton <jlayton@kernel.org>
-> To: NeilBrown <neil@brown.name>
-> To: Olga Kornievskaia <okorniev@redhat.com>
-> To: Dai Ngo <Dai.Ngo@oracle.com>
-> To: Tom Talpey <tom@talpey.com>
-> To: "David S. Miller" <davem@davemloft.net>
-> To: Eric Dumazet <edumazet@google.com>
-> To: Jakub Kicinski <kuba@kernel.org>
-> To: Paolo Abeni <pabeni@redhat.com>
-> To: Simon Horman <horms@kernel.org>
-> Cc: linux-nfs@vger.kernel.org
-> Cc: netdev@vger.kernel.org
 > Cc: linux-kernel@vger.kernel.org
 > Signed-off-by: Philipp Hahn <phahn-oss@avm.de>
 > ---
->  net/sunrpc/xprtrdma/svc_rdma_transport.c | 12 ++++++------
->  1 file changed, 6 insertions(+), 6 deletions(-)
+>  include/linux/file.h | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 >=20
-> diff --git a/net/sunrpc/xprtrdma/svc_rdma_transport.c b/net/sunrpc/xprtrd=
-ma/svc_rdma_transport.c
-> index 9b623849723ed0eb74b827881c6f32d3434c891b..b4d03e59a8202f20360cff1e2=
-e79b1e325396517 100644
-> --- a/net/sunrpc/xprtrdma/svc_rdma_transport.c
-> +++ b/net/sunrpc/xprtrdma/svc_rdma_transport.c
-> @@ -578,7 +578,7 @@ static struct svc_xprt *svc_rdma_accept(struct svc_xp=
-rt *xprt)
->   errout:
->  	/* Take a reference in case the DTO handler runs */
->  	svc_xprt_get(&newxprt->sc_xprt);
-> -	if (newxprt->sc_qp && !IS_ERR(newxprt->sc_qp))
-> +	if (!IS_ERR_OR_NULL(newxprt->sc_qp))
->  		ib_destroy_qp(newxprt->sc_qp);
->  	rdma_destroy_id(newxprt->sc_cm_id);
->  	rpcrdma_rn_unregister(dev, &newxprt->sc_rn);
-> @@ -608,7 +608,7 @@ static void svc_rdma_free(struct svc_xprt *xprt)
->  	might_sleep();
+> diff --git a/include/linux/file.h b/include/linux/file.h
+> index 27484b444d3155685cdbb89f546f26ef66e3e1b4..007b9b9d365a052c1c056e125=
+71eaf4f8ef5a45c 100644
+> --- a/include/linux/file.h
+> +++ b/include/linux/file.h
+> @@ -163,7 +163,7 @@ static inline void class_fd_prepare_destructor(const =
+struct fd_prepare *fdf)
+>  {
+>  	if (unlikely(fdf->__fd >=3D 0))
+>  		put_unused_fd(fdf->__fd);
+> -	if (unlikely(!IS_ERR_OR_NULL(fdf->__file)))
+> +	if (!IS_ERR_OR_NULL(fdf->__file))
+>  		fput(fdf->__file);
+>  }
 > =20
->  	/* This blocks until the Completion Queues are empty */
-> -	if (rdma->sc_qp && !IS_ERR(rdma->sc_qp))
-> +	if (!IS_ERR_OR_NULL(rdma->sc_qp))
->  		ib_drain_qp(rdma->sc_qp);
->  	flush_workqueue(svcrdma_wq);
-> =20
-> @@ -619,16 +619,16 @@ static void svc_rdma_free(struct svc_xprt *xprt)
->  	svc_rdma_recv_ctxts_destroy(rdma);
-> =20
->  	/* Destroy the QP if present (not a listener) */
-> -	if (rdma->sc_qp && !IS_ERR(rdma->sc_qp))
-> +	if (!IS_ERR_OR_NULL(rdma->sc_qp))
->  		ib_destroy_qp(rdma->sc_qp);
-> =20
-> -	if (rdma->sc_sq_cq && !IS_ERR(rdma->sc_sq_cq))
-> +	if (!IS_ERR_OR_NULL(rdma->sc_sq_cq))
->  		ib_free_cq(rdma->sc_sq_cq);
-> =20
-> -	if (rdma->sc_rq_cq && !IS_ERR(rdma->sc_rq_cq))
-> +	if (!IS_ERR_OR_NULL(rdma->sc_rq_cq))
->  		ib_free_cq(rdma->sc_rq_cq);
-> =20
-> -	if (rdma->sc_pd && !IS_ERR(rdma->sc_pd))
-> +	if (!IS_ERR_OR_NULL(rdma->sc_pd))
->  		ib_dealloc_pd(rdma->sc_pd);
-> =20
->  	/* Destroy the CM ID */
 
 Reviewed-by: Jeff Layton <jlayton@kernel.org>
