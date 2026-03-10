@@ -1,67 +1,67 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 21049EB1071
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EAAB7EB1072
 	for <intel-wired-lan@archiver.kernel.org>; Tue, 10 Mar 2026 15:27:35 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id EE52F81379;
-	Tue, 10 Mar 2026 15:27:34 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id C481441C93;
+	Tue, 10 Mar 2026 15:27:35 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id B7Ue20nSwxEG; Tue, 10 Mar 2026 15:27:33 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 9CyDhDH4mZoJ; Tue, 10 Mar 2026 15:27:35 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E36768132C
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 39DC641C68
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1773156452;
-	bh=h8TjN/2NPFGBCTqh5wE+Sg730eIFQE4v4MynIZorfX4=;
+	s=default; t=1773156455;
+	bh=UZ1R+4oZb1OFARHwN3kW6NWT/McIyfCGe+74kGs96GA=;
 	h=From:Date:References:In-Reply-To:To:Cc:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=FoC2XI9KaxCtrXP5/JhCzOjmriUDNVa2HoLXeFBlnNlLRFT8WufCt4xPwXi3VO+zr
-	 HsCMu8yQer0LfGVgoh84oeyDmva3jI23DbrpyNlFSI7PEldOwGqbHLLsH+oKoNVzk8
-	 r9AWIUYP005OUpGHg9R1EYD5TpDiqxXdBVV+h9v1zVS1xOUo67zK1BNPlzDkXtzLvT
-	 l3NrVc+cQVzCDwcCiABfH/q8iTrenkWvjcVZVGXXcuMgn7lGM1NvHa4OEBzjaJ96hD
-	 1IRq0ZqtBuo4Tig5gwP2Uite6itrnA6MNhydKf1SASaZ3gmwoCjSXbDHd2qLpiSNot
-	 CMAdcA00PV+EQ==
+	b=4vxiu77CabWlHfCXnPniWaeb39eEYpD3OjUeKxHkOmd3nJiEGoyqjalP5i2a9PZll
+	 crIs9A8ASOl5HwR2+yXeYZgTNdpjC1yAr1iChdI5Ci3jTYKI8zjngPGrIgIuuKa4jf
+	 JJzfF/lC/ChdSfp9D05i5CXhF1Ak8x0cyGdSgK9Mes+orXsMOvfZSx0WGXih+V8tw+
+	 0t8cIiII1Am3fDqP1/mMgqh18udt35BtUcK4Aynx3n9nSyRSd42kcV9b7neOymeJ5B
+	 SVSPU+7p1opRKHYhnl/69/cIhyYNb34WnEaohjk+hjn8IpRAixgBghyyB5rPyNkyV4
+	 yftbi74ZYeINg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id E36768132C;
-	Tue, 10 Mar 2026 15:27:32 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id CA54635C
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:05:07 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 39DC641C68;
+	Tue, 10 Mar 2026 15:27:35 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id B7CA335C
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:05:09 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id C7E5C84129
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:05:07 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 9E3BC60B56
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:05:09 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id qb_ZANeoDg6e for <intel-wired-lan@lists.osuosl.org>;
- Tue, 10 Mar 2026 12:05:07 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id IM19wmEbPoCF for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 10 Mar 2026 12:05:08 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=212.42.244.120;
  helo=mail.avm.de; envelope-from=phahn-oss@avm.de; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org AB02284106
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org AB02284106
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 8FED260B1C
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8FED260B1C
 Received: from mail.avm.de (mail.avm.de [212.42.244.120])
- by smtp1.osuosl.org (Postfix) with ESMTPS id AB02284106
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:05:06 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 8FED260B1C
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:05:08 +0000 (UTC)
 Received: from [2001:bf0:244:244::71] (helo=mail.avm.de)
  by mail.avm.de with ESMTP (eXpurgate 4.55.2)
  (envelope-from <phahn-oss@avm.de>)
- id 69b006af-b734-7f0000032729-7f0000019c1c-1
- for <multiple-recipients>; Tue, 10 Mar 2026 12:55:27 +0100
+ id 69b006b0-b734-7f0000032729-7f0000019cb0-1
+ for <multiple-recipients>; Tue, 10 Mar 2026 12:55:28 +0100
 Received: from mail-auth.avm.de (dovecot-mx-01.avm.de
  [IPv6:2001:bf0:244:244::71]) by mail.avm.de (Postfix) with ESMTPS;
- Tue, 10 Mar 2026 12:55:27 +0100 (CET)
+ Tue, 10 Mar 2026 12:55:28 +0100 (CET)
 From: Philipp Hahn <phahn-oss@avm.de>
-Date: Tue, 10 Mar 2026 12:49:16 +0100
+Date: Tue, 10 Mar 2026 12:49:25 +0100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260310-b4-is_err_or_null-v1-50-bd63b656022d@avm.de>
+Message-Id: <20260310-b4-is_err_or_null-v1-59-bd63b656022d@avm.de>
 References: <20260310-b4-is_err_or_null-v1-0-bd63b656022d@avm.de>
 In-Reply-To: <20260310-b4-is_err_or_null-v1-0-bd63b656022d@avm.de>
 To: amd-gfx@lists.freedesktop.org, apparmor@lists.ubuntu.com, 
@@ -91,22 +91,22 @@ To: amd-gfx@lists.freedesktop.org, apparmor@lists.ubuntu.com,
  sched-ext@lists.linux.dev, target-devel@vger.kernel.org, 
  tipc-discussion@lists.sourceforge.net, v9fs@lists.linux.dev, 
  Philipp Hahn <phahn-oss@avm.de>
-Cc: Joerg Roedel <joro@8bytes.org>, Will Deacon <will@kernel.org>, 
- Robin Murphy <robin.murphy@arm.com>
-X-Developer-Signature: v=1; a=openpgp-sha256; l=934; i=phahn-oss@avm.de;
- h=from:subject:message-id; bh=+XsCLvfG0yRq7Clc+S6vXeLkWzACx5pWWBTw1PU8u30=;
- b=owEBbQGS/pANAwAKATQtBlPRrKzbAcsmYgBpsAaAP0a4MkqsRJ5x7o2AECAXDJXUcNnvcP2jL
- Fnncqolc+mJATMEAAEKAB0WIQQ5bPBtrWDUcDQCppg0LQZT0ays2wUCabAGgAAKCRA0LQZT0ays
- 26BWCACZ2FsBOvK5vymJ4jNeheyMBLZmlutrR9jfimv19CKbp3wX0yqY0IgbC3+xiW+xz2CmiEu
- elpLzpFROPj+lHciOMtwniWl836Y8y3OBxdIzgp1Tcy3Ffv4iiDYZg6fn4s21C30sfDewBkZzM/
- oTShSXVQk2aaQji24A4tVvesTB1YCSJ0cdodFVu8ytRsCFbRhzUGEybOG9Bk1gp1pizhlUrevZe
- ky3pa8774nGDXRNTenO3QPi5eYmjmp3+jl22odQgRq4UYaTFuckuTj8ZjbSd3Db6Vvti4yjTzbj
- dPn6v3i40vUhGSdowNFCOZB8euyQhRspr8tJsS+hGDqM4vf7
+Cc: Andrew Morton <akpm@linux-foundation.org>, 
+ Thomas Gleixner <tglx@kernel.org>
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1116; i=phahn-oss@avm.de;
+ h=from:subject:message-id; bh=ljsuTOpGREUyGER98xbD6/ci86SD8pohlonTQBpqGIg=;
+ b=owEBbQGS/pANAwAKATQtBlPRrKzbAcsmYgBpsAafUF4Co3bKHEJh1nSPEbGPanpbmXqLGBVTE
+ nsli8aGTIqJATMEAAEKAB0WIQQ5bPBtrWDUcDQCppg0LQZT0ays2wUCabAGnwAKCRA0LQZT0ays
+ 2/eqCACfKEiwIm4grjaffCaqYK9UtMC/I42k93h5L5QQzw4cYMYd8FGhvLp+Ug9Jk9iQltpydL0
+ M021kU+8e5LuC9HNGAP+FvXfKicTrLe4WOGLghTKJxJD0Qnwt87qFBwN4C5TgDS7lK8yPptqdRT
+ xavsstUunap8iVxwbzeUWdgcTpG4nsY9KAjliWo7xLgVYhCSEWYrkYbks39zWe9p1rptJWM2IT/
+ +/O3p9icHSV3twwgGTFQhBYPys+tvE7XNArxXHhB+XYW7AEdqLgSeLiL6ig5y++9xZFwEIcnWi0
+ 5dJklCZYTethhL0MgTuOAEkoSCl0Bk6MDrD8akTrSRkzdCkv
 X-Developer-Key: i=phahn-oss@avm.de; a=openpgp;
  fpr=58AF7C2E007CDBE62C59E078F50EFDCF8AD04B1A
-X-purgate-ID: 149429::1773143727-E15CBA3D-56C34FAB/0/0
+X-purgate-ID: 149429::1773143728-7AAFCA3D-1B7F7E41/0/0
 X-purgate-type: clean
-X-purgate-size: 936
+X-purgate-size: 1118
 X-purgate-Ad: Categorized by eleven eXpurgate (R) https://www.eleven.de
 X-purgate: This mail is considered clean (visit https://www.eleven.de for
  further information)
@@ -114,19 +114,19 @@ X-purgate: clean
 X-Mailman-Approved-At: Tue, 10 Mar 2026 15:27:04 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=avm.de; s=mail; 
- t=1773143727; bh=+XsCLvfG0yRq7Clc+S6vXeLkWzACx5pWWBTw1PU8u30=;
+ t=1773143728; bh=ljsuTOpGREUyGER98xbD6/ci86SD8pohlonTQBpqGIg=;
  h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
- b=NQWcwkCO5Yf5aFU0Fr+hSnIE5j/fbQz1ZZ6kLAVpTNGfPh7umHqxt9pFFOy6bAroX
- RBLvd0qLA99dtqQiGKYjsTOTfTZlUhx6yNiXQHG8dQ5sdIeNL7CirLYAhT5AwBd36o
- YiESNxlbhaOWr4PVxOJfomk8wbeHNmFvrkSTOpuc=
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ b=PqCygKH8TUTFzdsVoltpS6V+urh3nKuUaWPGyQ9+G5dBBIMLMlSqFUF2pQu2ztCks
+ nKjygDeUmN//qOptE9nqaXpkixC5XmuX8GEDJn5HpI8613PWAZldzQgtG5ilRHjEDe
+ PPv3OqXdqRSmvRO/4sRCoDxU/Kdn2GWugjDbKUbA=
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=avm.de
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (1024-bit key) header.d=avm.de header.i=@avm.de header.a=rsa-sha256
- header.s=mail header.b=NQWcwkCO
-Subject: [Intel-wired-lan] [PATCH 50/61] iommu: Prefer IS_ERR_OR_NULL over
- manual NULL check
+ header.s=mail header.b=PqCygKH8
+Subject: [Intel-wired-lan] [PATCH 59/61] debugobjects: Drop likely() around
+ !IS_ERR_OR_NULL()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -142,34 +142,35 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Prefer using IS_ERR_OR_NULL() over using IS_ERR() and a manual NULL
-check.
+IS_ERR_OR_NULL() already uses likely(!ptr) internally. checkpatch does
+not like nesting it:
+> WARNING: nested (un)?likely() calls, IS_ERR_OR_NULL already uses
+> unlikely() internally
+Remove the explicit use of likely().
 
 Change generated with coccinelle.
 
-To: Joerg Roedel <joro@8bytes.org>
-To: Will Deacon <will@kernel.org>
-To: Robin Murphy <robin.murphy@arm.com>
-Cc: iommu@lists.linux.dev
+To: Andrew Morton <akpm@linux-foundation.org>
+To: Thomas Gleixner <tglx@kernel.org>
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Philipp Hahn <phahn-oss@avm.de>
 ---
- drivers/iommu/omap-iommu.c | 2 +-
+ lib/debugobjects.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/iommu/omap-iommu.c b/drivers/iommu/omap-iommu.c
-index 8231d7d6bb6a9202025643639a6b28e6faa84659..500a42b57a997696ff37c76f028a717ab71d01f9 100644
---- a/drivers/iommu/omap-iommu.c
-+++ b/drivers/iommu/omap-iommu.c
-@@ -881,7 +881,7 @@ static int omap_iommu_attach(struct omap_iommu *obj, u32 *iopgd)
-  **/
- static void omap_iommu_detach(struct omap_iommu *obj)
- {
--	if (!obj || IS_ERR(obj))
-+	if (IS_ERR_OR_NULL(obj))
+diff --git a/lib/debugobjects.c b/lib/debugobjects.c
+index 12f50de85b621a743a5b6f2638a308f6162c6fcc..12e2e42e6a31aa8706e859aca41b81c03889cffe 100644
+--- a/lib/debugobjects.c
++++ b/lib/debugobjects.c
+@@ -1024,7 +1024,7 @@ void debug_object_assert_init(void *addr, const struct debug_obj_descr *descr)
+ 	raw_spin_lock_irqsave(&db->lock, flags);
+ 	obj = lookup_object_or_alloc(addr, db, descr, false, true);
+ 	raw_spin_unlock_irqrestore(&db->lock, flags);
+-	if (likely(!IS_ERR_OR_NULL(obj)))
++	if (!IS_ERR_OR_NULL(obj))
  		return;
  
- 	spin_lock(&obj->iommu_lock);
+ 	/* If NULL the allocation has hit OOM */
 
 -- 
 2.43.0
