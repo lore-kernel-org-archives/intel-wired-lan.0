@@ -1,67 +1,67 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9C7A7EB1071
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 10 Mar 2026 15:27:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 53AF3EB1074
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 10 Mar 2026 15:27:24 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 72442811E2;
-	Tue, 10 Mar 2026 15:27:23 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 27B5060633;
+	Tue, 10 Mar 2026 15:27:24 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 9Ma3TvFeQb6w; Tue, 10 Mar 2026 15:27:22 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id sluPOCdW0kVs; Tue, 10 Mar 2026 15:27:23 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2BC5F8116B
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 674E06064A
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1773156442;
-	bh=bwwsNpEuSxMWe0JpfJUzg0wYN6Lh2+T0V7r+oLFgaoc=;
+	s=default; t=1773156443;
+	bh=Ph1uUWr1L/iF1ZEQmadj650OhaHNRF4I0z9qkCXYfg8=;
 	h=From:Date:References:In-Reply-To:To:Cc:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=ah7WGY02g0kwHO3M7Jb4fgThSuv9WsTnstlMYeXPZ+6cqWZBpmweNjxli2CpmfvsO
-	 t+OjfEM3LlJ2Eovm6yW0AOu9F8jFj9QhG6aMs061p7TEmSDNqqn6AsVa7QRunBPaBv
-	 KJUTMBTYxHf21klbEzuJkp1vLIsWfapBKli8ITwnij/rvEO87eziEelL7gMN+//Efg
-	 9+w5AU4FgLnGBzZhht3AkXSqK0E+Y36LMUpiILdHTCvEmT+WM6IrhafsSRhmVz76p6
-	 nljOzyB+yAa995gzZKasDviorlLOMbj09yi9JC8Av37dJUNpR0kHSW+PWoPlImzyVB
-	 1cTFDVT2vOInQ==
+	b=W1ONupbXJ3naAjtkHMmPH5Y7dCRaWpZQodSJgWDznYJhDAGDLgRFViRVvvgWDM30v
+	 4nViM/vnwLveVY8dDNbTJyT7/I1Ud6JoBb0skW/KJV8cTWUKfNk0g3zmMKy3UXgkmz
+	 8FV2ZBKLwgctJA55AtaZdUSHvZQFE3odf5RsyStN5CocAyBJuNPhxVU+l2AQhd9aqx
+	 z/ViCQh00f5SpkdGXSlFjRJppOEtA3wIxYhH9R2ZUMHebwk82SfVJEOBpUMRdoTM95
+	 1UEfUcnZdhpgiF1WV0KWNFOv+1gREysehhsn9XqHbFQjDQ8/y9MGFgMq1kuJCLJjpx
+	 zGxkRWFST03fw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 2BC5F8116B;
-	Tue, 10 Mar 2026 15:27:22 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id E48E235C
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:01:29 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 674E06064A;
+	Tue, 10 Mar 2026 15:27:23 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 310F935C
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:01:31 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id B79E140691
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:01:26 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id B897060B56
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:01:25 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 7-2ewaHgDvqn for <intel-wired-lan@lists.osuosl.org>;
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id mgOLVle3GNX9 for <intel-wired-lan@lists.osuosl.org>;
  Tue, 10 Mar 2026 12:01:21 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=2001:bf0:244:244::94;
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=212.42.244.94;
  helo=mail.avm.de; envelope-from=phahn-oss@avm.de; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org B2C8940018
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B2C8940018
-Received: from mail.avm.de (mail.avm.de [IPv6:2001:bf0:244:244::94])
- by smtp2.osuosl.org (Postfix) with ESMTPS id B2C8940018
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:01:21 +0000 (UTC)
-Received: from [2001:bf0:244:244::71] (helo=mail.avm.de)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 9248A61516
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 9248A61516
+Received: from mail.avm.de (mail.avm.de [212.42.244.94])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 9248A61516
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:01:19 +0000 (UTC)
+Received: from [212.42.244.71] (helo=mail.avm.de)
  by mail.avm.de with ESMTP (eXpurgate 4.55.2)
  (envelope-from <phahn-oss@avm.de>)
- id 69b006b1-e21d-7f0000032729-7f000001bb0c-1
- for <multiple-recipients>; Tue, 10 Mar 2026 12:55:29 +0100
-Received: from mail-auth.avm.de (dovecot-mx-01.avm.de
- [IPv6:2001:bf0:244:244::71]) by mail.avm.de (Postfix) with ESMTPS;
- Tue, 10 Mar 2026 12:55:29 +0100 (CET)
+ id 69b006ae-e21d-7f0000032729-7f000001da34-1
+ for <multiple-recipients>; Tue, 10 Mar 2026 12:55:26 +0100
+Received: from mail-auth.avm.de (dovecot-mx-01.avm.de [212.42.244.71])
+ by mail.avm.de (Postfix) with ESMTPS;
+ Tue, 10 Mar 2026 12:55:26 +0100 (CET)
 From: Philipp Hahn <phahn-oss@avm.de>
-Date: Tue, 10 Mar 2026 12:49:26 +0100
+Date: Tue, 10 Mar 2026 12:49:04 +0100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Message-Id: <20260310-b4-is_err_or_null-v1-60-bd63b656022d@avm.de>
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260310-b4-is_err_or_null-v1-38-bd63b656022d@avm.de>
 References: <20260310-b4-is_err_or_null-v1-0-bd63b656022d@avm.de>
 In-Reply-To: <20260310-b4-is_err_or_null-v1-0-bd63b656022d@avm.de>
 To: amd-gfx@lists.freedesktop.org, apparmor@lists.ubuntu.com, 
@@ -91,22 +91,36 @@ To: amd-gfx@lists.freedesktop.org, apparmor@lists.ubuntu.com,
  sched-ext@lists.linux.dev, target-devel@vger.kernel.org, 
  tipc-discussion@lists.sourceforge.net, v9fs@lists.linux.dev, 
  Philipp Hahn <phahn-oss@avm.de>
-Cc: =?utf-8?q?Pali_Roh=C3=A1r?= <pali@kernel.org>, 
- Dmitry Torokhov <dmitry.torokhov@gmail.com>
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1263; i=phahn-oss@avm.de;
- h=from:subject:message-id; bh=xxm4pfrA8vpE+55Nunaq1/3InG5TW5+yUEKOnNPaCHE=;
- b=owEBbQGS/pANAwAKATQtBlPRrKzbAcsmYgBpsAai8jb0hbCBoPmYA/prWl4PUOkbFdhFm9gPO
- hWtVu2rtPaJATMEAAEKAB0WIQQ5bPBtrWDUcDQCppg0LQZT0ays2wUCabAGogAKCRA0LQZT0ays
- 28GYB/9rclpgBQgsqGF0yAXWM/97auTunqqLKOGDeyV/S4nC7HDn1d4UqQoeaSmUw2DOYO4u7t3
- FPnU9VUXE2nXM5FAQLfpjYhH7CG3jEkW4klm33iXRLo1nkpvx8klWZbYR7PMwPnVZTnxKNJmzgZ
- kL0ECVGQ0EahRXa5TL96qA0Z3YR0RjsX+MNWafES7VGwl+HS5Artyl+8jg+/p0RFHayhxpHi2hi
- Ftz0Ut7BpqlmrXUo0TzIlFmAGFe7tZCdcMDr5ii9ECIA4sGLz4jBK2uiDVL8YFZ25Y3k7DF6RQV
- m+hUB3KTG86705bO5a0t2DamRuiInU805Ah5rzh9tCueh4HO
+Cc: Igor Russkikh <irusskikh@marvell.com>, 
+ Andrew Lunn <andrew+netdev@lunn.ch>, 
+ "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
+ Pavan Chebbi <pavan.chebbi@broadcom.com>, Michael Chan <mchan@broadcom.com>, 
+ Potnuri Bharat Teja <bharat@chelsio.com>, 
+ Tony Nguyen <anthony.l.nguyen@intel.com>, 
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>, 
+ Taras Chornyi <taras.chornyi@plvision.eu>, 
+ Maxime Coquelin <mcoquelin.stm32@gmail.com>, 
+ Alexandre Torgue <alexandre.torgue@foss.st.com>, 
+ Iyappan Subramanian <iyappan@os.amperecomputing.com>, 
+ Keyur Chudgar <keyur@os.amperecomputing.com>, 
+ Quan Nguyen <quan@os.amperecomputing.com>, 
+ Heiner Kallweit <hkallweit1@gmail.com>, 
+ Russell King <linux@armlinux.org.uk>
+X-Developer-Signature: v=1; a=openpgp-sha256; l=6679; i=phahn-oss@avm.de;
+ h=from:subject:message-id; bh=KQiEoi/5KK1uW5/WekNTwCqBkzEqSA1SWtsVPdM2q90=;
+ b=owEBbQGS/pANAwAKATQtBlPRrKzbAcsmYgBpsAZXMdz3AdJ9BDXSNnmAtbN1zmhCLGlM5aT0i
+ DUnFwIG7QKJATMEAAEKAB0WIQQ5bPBtrWDUcDQCppg0LQZT0ays2wUCabAGVwAKCRA0LQZT0ays
+ 20CyB/4lggnkY4K4Lo4sONwYMpv2ax2osa3aOBaZeOsk7IrX5OefQhdbIn4njQGFhSRkoN1OS74
+ RFM1P8Zj2ox5AT2OTTsGgJszYrviPiI6f3OB4fORCX0D5Uy+q+MJ9QaHAVOTki7YRDRPqPU8eot
+ qXUXo3MWBintiQb+VUgj0c7V53AbuvEdsGiANz4ngxrRyeRv0LQno6AOBMWbXRBogpDl1L0S2i4
+ UZBntAPoWZbboJc05+3p5MczuG3QperMntaj9Tb4wrxw8nvaoynlDjGr2dg61cj+UKtCoiisS82
+ re/u1kbEtkI5dJs+aKf1mABBLdny1Poccch6DjzUum6aDXBE
 X-Developer-Key: i=phahn-oss@avm.de; a=openpgp;
  fpr=58AF7C2E007CDBE62C59E078F50EFDCF8AD04B1A
-X-purgate-ID: 149429::1773143729-373CFF2F-EC21F89B/0/0
+X-purgate-ID: 149429::1773143726-95E77E6F-9B3D9DCE/0/0
 X-purgate-type: clean
-X-purgate-size: 1265
+X-purgate-size: 6681
 X-purgate-Ad: Categorized by eleven eXpurgate (R) https://www.eleven.de
 X-purgate: This mail is considered clean (visit https://www.eleven.de for
  further information)
@@ -114,19 +128,19 @@ X-purgate: clean
 X-Mailman-Approved-At: Tue, 10 Mar 2026 15:27:04 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=avm.de; s=mail; 
- t=1773143729; bh=xxm4pfrA8vpE+55Nunaq1/3InG5TW5+yUEKOnNPaCHE=;
+ t=1773143727; bh=KQiEoi/5KK1uW5/WekNTwCqBkzEqSA1SWtsVPdM2q90=;
  h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
- b=vpe0akhPijy+fdFGsJlWa9KadgjO2UW3S7CfTGj2Nb6xgJuadPCv9jJW3GCcgmmDp
- NsscICFVG30n95MZjrlzYTppWlcYdN0G1O633y0snTb7dDyj/NfP2miiuKsPdNfmP+
- vAwjLimypqw9PSgx5KgoEmL24wgMu4NPRFNkUtuM=
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ b=Hzc3GuxHf6WKr4EWmy7suWfFtUIN+cSSog0xcKAdq1K62+58VIbGObMn11FXUjfnw
+ XSgX37V9MsgZIzaqlzkHaWhxgePi5JwVjORgVIpVxik46tgfvcV/Ti0iljkdkzgEMz
+ GP23Vofxf0i5EbReeE876OiemRlixpOKPI/O3H3w=
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=avm.de
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (1024-bit key) header.d=avm.de header.i=@avm.de header.a=rsa-sha256
- header.s=mail header.b=vpe0akhP
-Subject: [Intel-wired-lan] [PATCH 60/61] Input alps: Drop unlikely() around
- IS_ERR_OR_NULL()
+ header.s=mail header.b=Hzc3GuxH
+Subject: [Intel-wired-lan] [PATCH 38/61] net: Prefer IS_ERR_OR_NULL over
+ manual NULL check
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -142,36 +156,153 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-IS_ERR_OR_NULL() already uses likely(!ptr) internally. checkpatch does
-not like nesting it:
-> WARNING: nested (un)?likely() calls, IS_ERR_OR_NULL already uses
-> unlikely() internally
-Remove the explicit use of unlikely().
+Prefer using IS_ERR_OR_NULL() over using IS_ERR() and a manual NULL
+check.
 
 Change generated with coccinelle.
 
-To: "Pali Rohár" <pali@kernel.org>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: linux-input@vger.kernel.org
+To: Igor Russkikh <irusskikh@marvell.com>
+To: Andrew Lunn <andrew+netdev@lunn.ch>
+To: "David S. Miller" <davem@davemloft.net>
+To: Eric Dumazet <edumazet@google.com>
+To: Jakub Kicinski <kuba@kernel.org>
+To: Paolo Abeni <pabeni@redhat.com>
+To: Pavan Chebbi <pavan.chebbi@broadcom.com>
+To: Michael Chan <mchan@broadcom.com>
+To: Potnuri Bharat Teja <bharat@chelsio.com>
+To: Tony Nguyen <anthony.l.nguyen@intel.com>
+To: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+To: Taras Chornyi <taras.chornyi@plvision.eu>
+To: Maxime Coquelin <mcoquelin.stm32@gmail.com>
+To: Alexandre Torgue <alexandre.torgue@foss.st.com>
+To: Iyappan Subramanian <iyappan@os.amperecomputing.com>
+To: Keyur Chudgar <keyur@os.amperecomputing.com>
+To: Quan Nguyen <quan@os.amperecomputing.com>
+To: Heiner Kallweit <hkallweit1@gmail.com>
+To: Russell King <linux@armlinux.org.uk>
+Cc: netdev@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
+Cc: intel-wired-lan@lists.osuosl.org
+Cc: linux-stm32@st-md-mailman.stormreply.com
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-usb@vger.kernel.org
 Signed-off-by: Philipp Hahn <phahn-oss@avm.de>
 ---
- drivers/input/mouse/alps.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/aquantia/atlantic/aq_ring.c        | 2 +-
+ drivers/net/ethernet/broadcom/tg3.c                     | 2 +-
+ drivers/net/ethernet/chelsio/cxgb4/cxgb4_tc_flower.c    | 3 +--
+ drivers/net/ethernet/intel/ice/devlink/devlink.c        | 2 +-
+ drivers/net/ethernet/marvell/prestera/prestera_router.c | 2 +-
+ drivers/net/ethernet/stmicro/stmmac/stmmac_main.c       | 2 +-
+ drivers/net/mdio/mdio-xgene.c                           | 2 +-
+ drivers/net/usb/r8152.c                                 | 2 +-
+ 8 files changed, 8 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/input/mouse/alps.c b/drivers/input/mouse/alps.c
-index f3d3b6b4e02d798e75a90333ace72a367befdbac..82e11efad7f7f02b4aaefde340f9b71fa792cf6b 100644
---- a/drivers/input/mouse/alps.c
-+++ b/drivers/input/mouse/alps.c
-@@ -1482,7 +1482,7 @@ static void alps_report_bare_ps2_packet(struct psmouse *psmouse,
- 		/* On V2 devices the DualPoint Stick reports bare packets */
- 		dev = priv->dev2;
- 		dev2 = psmouse->dev;
--	} else if (unlikely(IS_ERR_OR_NULL(priv->dev3))) {
-+	} else if (IS_ERR_OR_NULL(priv->dev3)) {
- 		/* Register dev3 mouse if we received PS/2 packet first time */
- 		if (!IS_ERR(priv->dev3))
- 			psmouse_queue_work(psmouse, &priv->dev3_register_work,
+diff --git a/drivers/net/ethernet/aquantia/atlantic/aq_ring.c b/drivers/net/ethernet/aquantia/atlantic/aq_ring.c
+index e270327e47fd804cc8ee5cfd53ed1b993c955c41..43edef35c4b1ff606b2f1519a07fad4c9a990ad4 100644
+--- a/drivers/net/ethernet/aquantia/atlantic/aq_ring.c
++++ b/drivers/net/ethernet/aquantia/atlantic/aq_ring.c
+@@ -810,7 +810,7 @@ static int __aq_ring_xdp_clean(struct aq_ring_s *rx_ring,
+ 		}
+ 
+ 		skb = aq_xdp_run_prog(aq_nic, &xdp, rx_ring, buff);
+-		if (IS_ERR(skb) || !skb)
++		if (IS_ERR_OR_NULL(skb))
+ 			continue;
+ 
+ 		if (ptp_hwtstamp_len > 0)
+diff --git a/drivers/net/ethernet/broadcom/tg3.c b/drivers/net/ethernet/broadcom/tg3.c
+index 2328fce336447eb4a796f9300ccc0ab536ff0a35..8ed79f34f03d81184dcc12e6eaff009cb8f7756e 100644
+--- a/drivers/net/ethernet/broadcom/tg3.c
++++ b/drivers/net/ethernet/broadcom/tg3.c
+@@ -7943,7 +7943,7 @@ static int tg3_tso_bug(struct tg3 *tp, struct tg3_napi *tnapi,
+ 
+ 	segs = skb_gso_segment(skb, tp->dev->features &
+ 				    ~(NETIF_F_TSO | NETIF_F_TSO6));
+-	if (IS_ERR(segs) || !segs) {
++	if (IS_ERR_OR_NULL(segs)) {
+ 		tnapi->tx_dropped++;
+ 		goto tg3_tso_bug_end;
+ 	}
+diff --git a/drivers/net/ethernet/chelsio/cxgb4/cxgb4_tc_flower.c b/drivers/net/ethernet/chelsio/cxgb4/cxgb4_tc_flower.c
+index 3307e50426819087ad985178c4a5383f16b8e7b4..1c8a6445d4b2e3535d8f1b7908dd02d8dd2f23fa 100644
+--- a/drivers/net/ethernet/chelsio/cxgb4/cxgb4_tc_flower.c
++++ b/drivers/net/ethernet/chelsio/cxgb4/cxgb4_tc_flower.c
+@@ -1032,8 +1032,7 @@ static void ch_flower_stats_handler(struct work_struct *work)
+ 	do {
+ 		rhashtable_walk_start(&iter);
+ 
+-		while ((flower_entry = rhashtable_walk_next(&iter)) &&
+-		       !IS_ERR(flower_entry)) {
++		while (!IS_ERR_OR_NULL((flower_entry = rhashtable_walk_next(&iter)))) {
+ 			ret = cxgb4_get_filter_counters(adap->port[0],
+ 							flower_entry->filter_id,
+ 							&packets, &bytes,
+diff --git a/drivers/net/ethernet/intel/ice/devlink/devlink.c b/drivers/net/ethernet/intel/ice/devlink/devlink.c
+index 6c72bd15db6d75a1d4fa04ef8fefbd26fb6e84bd..3d08b9187fd76ca3198af28111b6f1c1765ea01e 100644
+--- a/drivers/net/ethernet/intel/ice/devlink/devlink.c
++++ b/drivers/net/ethernet/intel/ice/devlink/devlink.c
+@@ -791,7 +791,7 @@ static void ice_traverse_tx_tree(struct devlink *devlink, struct ice_sched_node
+ 						  node->parent->rate_node);
+ 	}
+ 
+-	if (rate_node && !IS_ERR(rate_node))
++	if (!IS_ERR_OR_NULL(rate_node))
+ 		node->rate_node = rate_node;
+ 
+ traverse_children:
+diff --git a/drivers/net/ethernet/marvell/prestera/prestera_router.c b/drivers/net/ethernet/marvell/prestera/prestera_router.c
+index b036b173a308b5f994ad8538eb010fa27196988c..4492938e8a3da91d32efe8d45ccbe2eb437c0e49 100644
+--- a/drivers/net/ethernet/marvell/prestera/prestera_router.c
++++ b/drivers/net/ethernet/marvell/prestera/prestera_router.c
+@@ -1061,7 +1061,7 @@ static void __prestera_k_arb_hw_state_upd(struct prestera_switch *sw,
+ 		n = NULL;
+ 	}
+ 
+-	if (!IS_ERR(n) && n) {
++	if (!IS_ERR_OR_NULL(n)) {
+ 		neigh_event_send(n, NULL);
+ 		neigh_release(n);
+ 	} else {
+diff --git a/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c b/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
+index 6827c99bde8c22db42b363d2d36ad6f26075ed50..356a4e9ce04b1fcf8786d7274d31ace404be2cf6 100644
+--- a/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
++++ b/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
+@@ -1275,7 +1275,7 @@ static int stmmac_init_phy(struct net_device *dev)
+ 	/* Some DT bindings do not set-up the PHY handle. Let's try to
+ 	 * manually parse it
+ 	 */
+-	if (!phy_fwnode || IS_ERR(phy_fwnode)) {
++	if (IS_ERR_OR_NULL(phy_fwnode)) {
+ 		int addr = priv->plat->phy_addr;
+ 		struct phy_device *phydev;
+ 
+diff --git a/drivers/net/mdio/mdio-xgene.c b/drivers/net/mdio/mdio-xgene.c
+index a8f91a4b7fed0927ee14e408000cd3a2bfb9b09a..09b30b563295c6085dc1358ac361301e5cf6b2a8 100644
+--- a/drivers/net/mdio/mdio-xgene.c
++++ b/drivers/net/mdio/mdio-xgene.c
+@@ -265,7 +265,7 @@ struct phy_device *xgene_enet_phy_register(struct mii_bus *bus, int phy_addr)
+ 	struct phy_device *phy_dev;
+ 
+ 	phy_dev = get_phy_device(bus, phy_addr, false);
+-	if (!phy_dev || IS_ERR(phy_dev))
++	if (IS_ERR_OR_NULL(phy_dev))
+ 		return NULL;
+ 
+ 	if (phy_device_register(phy_dev))
+diff --git a/drivers/net/usb/r8152.c b/drivers/net/usb/r8152.c
+index 0c83bbbea2e7c322ee6339893e281237663bd3ae..73f17ebd7d40007eec5004f887a46249defd28ab 100644
+--- a/drivers/net/usb/r8152.c
++++ b/drivers/net/usb/r8152.c
+@@ -2218,7 +2218,7 @@ static void r8152_csum_workaround(struct r8152 *tp, struct sk_buff *skb,
+ 
+ 		features &= ~(NETIF_F_SG | NETIF_F_IPV6_CSUM | NETIF_F_TSO6);
+ 		segs = skb_gso_segment(skb, features);
+-		if (IS_ERR(segs) || !segs)
++		if (IS_ERR_OR_NULL(segs))
+ 			goto drop;
+ 
+ 		__skb_queue_head_init(&seg_list);
 
 -- 
 2.43.0
