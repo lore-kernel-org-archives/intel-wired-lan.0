@@ -4,65 +4,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 28414EB1074
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 10 Mar 2026 15:27:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 295C1EB1071
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 10 Mar 2026 15:27:41 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id DB63A41C8D;
-	Tue, 10 Mar 2026 15:27:39 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 01D1741CC6;
+	Tue, 10 Mar 2026 15:27:41 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id lxxSy8Oua2jD; Tue, 10 Mar 2026 15:27:37 +0000 (UTC)
+ id oFAmObH_xyJR; Tue, 10 Mar 2026 15:27:40 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0421B41C79
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 8223D41CAC
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1773156457;
-	bh=C+GdyesCqjDCe4PZkQJNYjcFFIcNfAxTkK/W4yWnbYU=;
+	s=default; t=1773156460;
+	bh=vRq2g61wWE1srncME+gnVjuT8yOFss+lGNNn6b4Uit4=;
 	h=From:Date:References:In-Reply-To:To:Cc:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=PmIxNLA/nPOVpFYNg7hpPl8c0BRe5PhWB4vtnbtZlv3Mpr3oPGLVZH9Ihbc8ROQoF
-	 ggTQ7zEUxpwjAc039ogsKqWhWF0CVlX8FIzlcnShMf7g6Cd7I96Ko/00PdxkL5rXHa
-	 jHWc7tbLkGtdpueyX7hkS+UYctK5wGpQICKBv9dHAtFJHUxeaGGjkWwheszRBkgxwv
-	 kKgoqLCq4zqRYcVe55niOOB0NwMg4XJ3dqpkbtmUESc+S6FjA/zdonfNbmeMXKo/OW
-	 eyljSsxfcdSHEeyJNiABEoXb7oCtJDENcgm2rfYpzME1twdyPuUqLIT9hAY4TD0zfK
-	 7c2LUAmveIKBA==
+	b=lg2gJDUIKcKACn4zcTpJYirFVRB0+gfa7tjqqA0y/j6B78AdpJDRWjR2Mrc5seQL2
+	 /6ZRgPp8zq5J+MKgAHlXYmiZzt2opFHtataafu5onP5FknQOU5ipERx5yK8SwgzZt0
+	 qDI2f+Vz/SWvVYRBQ4jaHJrpDXZz39Ssxb6/cvjyXo015rKZcmrKVYFdozVM7TWGkF
+	 7x3BzkgVsALqm6jA0+aEGt75ttXpD6ET0j4duNw2fyHDD5+ZRCZ7BP+BAIzOIA+REI
+	 0qkNhihq8je6ZlGLgdyALyxuhViCcNu+hU1SSGQHXUSxrrn+EDomVn9Rg1ramoBpCr
+	 T0vq8uZUeVP6A==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 0421B41C79;
-	Tue, 10 Mar 2026 15:27:37 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 16EE4201
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:05:10 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 8223D41CAC;
+	Tue, 10 Mar 2026 15:27:40 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 51DF5B2A
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:05:13 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 08E16403EE
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:05:10 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 1991E404F8
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:05:11 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 16QtXKz0pndC for <intel-wired-lan@lists.osuosl.org>;
+ id DavhJdXZQ0sm for <intel-wired-lan@lists.osuosl.org>;
  Tue, 10 Mar 2026 12:05:09 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom;
  client-ip=2001:bf0:244:244::120; helo=mail.avm.de;
  envelope-from=phahn-oss@avm.de; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 57D6C404F8
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 57D6C404F8
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org D2AE7403A1
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org D2AE7403A1
 Received: from mail.avm.de (mail.avm.de [IPv6:2001:bf0:244:244::120])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 57D6C404F8
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:05:09 +0000 (UTC)
-Received: from [2001:bf0:244:244::71] (helo=mail.avm.de)
+ by smtp2.osuosl.org (Postfix) with ESMTPS id D2AE7403A1
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Mar 2026 12:05:08 +0000 (UTC)
+Received: from [212.42.244.71] (helo=mail.avm.de)
  by mail.avm.de with ESMTP (eXpurgate 4.55.2)
  (envelope-from <phahn-oss@avm.de>)
- id 69b006af-b734-7f0000032729-7f0000019c20-1
+ id 69b006af-b734-7f0000032729-7f0000019c66-1
  for <multiple-recipients>; Tue, 10 Mar 2026 12:55:27 +0100
-Received: from mail-auth.avm.de (dovecot-mx-01.avm.de
- [IPv6:2001:bf0:244:244::71]) by mail.avm.de (Postfix) with ESMTPS;
+Received: from mail-auth.avm.de (dovecot-mx-01.avm.de [212.42.244.71])
+ by mail.avm.de (Postfix) with ESMTPS;
  Tue, 10 Mar 2026 12:55:27 +0100 (CET)
 From: Philipp Hahn <phahn-oss@avm.de>
-Date: Tue, 10 Mar 2026 12:49:17 +0100
+Date: Tue, 10 Mar 2026 12:49:20 +0100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260310-b4-is_err_or_null-v1-51-bd63b656022d@avm.de>
+Message-Id: <20260310-b4-is_err_or_null-v1-54-bd63b656022d@avm.de>
 References: <20260310-b4-is_err_or_null-v1-0-bd63b656022d@avm.de>
 In-Reply-To: <20260310-b4-is_err_or_null-v1-0-bd63b656022d@avm.de>
 To: amd-gfx@lists.freedesktop.org, apparmor@lists.ubuntu.com, 
@@ -92,21 +92,21 @@ To: amd-gfx@lists.freedesktop.org, apparmor@lists.ubuntu.com,
  sched-ext@lists.linux.dev, target-devel@vger.kernel.org, 
  tipc-discussion@lists.sourceforge.net, v9fs@lists.linux.dev, 
  Philipp Hahn <phahn-oss@avm.de>
-Cc: Lee Jones <lee@kernel.org>, Pavel Machek <pavel@kernel.org>
-X-Developer-Signature: v=1; a=openpgp-sha256; l=923; i=phahn-oss@avm.de;
- h=from:subject:message-id; bh=gXi6ivSyh7ZdNYhxQJgA68gjpGeiYyVoxWZ9PHNV1mk=;
- b=owEBbQGS/pANAwAKATQtBlPRrKzbAcsmYgBpsAaDRzpibZr08PkdSw8N3Wy2DsiAYuwbT7jaR
- Q+T5qeGz2qJATMEAAEKAB0WIQQ5bPBtrWDUcDQCppg0LQZT0ays2wUCabAGgwAKCRA0LQZT0ays
- 2y8ACACMKWU5TdDg1OYJ2RnR6HQxJ+2JBIhOyDk8x3FmHidd0wyjcAKA49FqYhtFEhdjGJpgNO3
- wlcNr4zJ0vDoKzMmVWNj4Kco49QymIlKxd4ko1v9jLom22gL6FIw+i0pd7JG7Dw9K0M9qv/g65X
- psKPmTQlkBRnjyq+gEp1UF+Z+aW8svU4fmV048TA2bEb7zgfrp0dmnA9hbj2JEYjWrt/pHjBWtC
- 27oF1sxBbFSjPkNzuaBpb0y9RWyLO/07lImA1AItNHZGlvNpydtzvqp/I3qxgt9sXKt1PHRt8iZ
- u4zVb/lltaBI2wPScPn/3+nmKc5y9QbdtT1oK6vzRsjkH2h6
+Cc: Justin Sanders <justin@coraid.com>, Jens Axboe <axboe@kernel.dk>
+X-Developer-Signature: v=1; a=openpgp-sha256; l=955; i=phahn-oss@avm.de;
+ h=from:subject:message-id; bh=r2ZNUyu6wG+N08MfsdquggU1Q5xHuPu+4B/VYVv0t9Q=;
+ b=owEBbQGS/pANAwAKATQtBlPRrKzbAcsmYgBpsAaNWcUAch/xMnI0wAbOgPf41K9NsP36Msk7P
+ Nki6xRL5YKJATMEAAEKAB0WIQQ5bPBtrWDUcDQCppg0LQZT0ays2wUCabAGjQAKCRA0LQZT0ays
+ 2xbWCACfzS98X1Mp5R5EwpIK0pTgqrssQIB840NNUj3GRa/d9D29Lch2JFjR2Yy+ldzvSmEDJYr
+ +FATwB8i4z+nArVkmYPgbG8vodjj8pep1H5lik7YhU3G9ClazVWr99T039Q+W8sEprULXLQ0dbA
+ 4Kpe3/L1QfxY1N+GchfqAHMv0rRJq1RvirATmISGmxTg7n0SEymJW83Bn4X8R0ZnvK6kohy5NEW
+ 2Ii5RKfTmBA8YgN2bfh5HrwrKAUrDiQU4qD40KTADcaRVC7Oxd160l9rFHE0+fB+GiDoct83TcC
+ /85+2RTmaR+Iva1VQ69ftJxFcgDmZC/vMk3mknKyTuNPcNM+
 X-Developer-Key: i=phahn-oss@avm.de; a=openpgp;
  fpr=58AF7C2E007CDBE62C59E078F50EFDCF8AD04B1A
-X-purgate-ID: 149429::1773143727-CD5F3A3D-F6F9F436/0/0
+X-purgate-ID: 149429::1773143727-DADD8A3D-0ED39ACF/0/0
 X-purgate-type: clean
-X-purgate-size: 925
+X-purgate-size: 957
 X-purgate-Ad: Categorized by eleven eXpurgate (R) https://www.eleven.de
 X-purgate: This mail is considered clean (visit https://www.eleven.de for
  further information)
@@ -114,18 +114,18 @@ X-purgate: clean
 X-Mailman-Approved-At: Tue, 10 Mar 2026 15:27:04 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=avm.de; s=mail; 
- t=1773143727; bh=gXi6ivSyh7ZdNYhxQJgA68gjpGeiYyVoxWZ9PHNV1mk=;
+ t=1773143727; bh=r2ZNUyu6wG+N08MfsdquggU1Q5xHuPu+4B/VYVv0t9Q=;
  h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
- b=i31l4ZLCMLhpXpaK7/Y2yOfuiAhnSJr8fMnqxjs25j5opOPrdqJNTkpsIEDFkqgSp
- sZnvLSPj8tGgU4HRU29DH4iPyKhf4v+uoWFgpTspJJOsv7N1zoPc8cizNZidyZ8Q0X
- jUywybPonMt30TuRnw66+h5bxhBLfRmMmaXnPfrQ=
+ b=YXGm2fddB0bD05XRQUo0zroBzSiXv55w6mXtnC3/rbyTRBzDlz9PWwan2loANEchz
+ 3nUHhdwioF2zPrdtj5GGDiz2/RlpAekCz2aZgV1toF9qbrEYEb5oV3jU7h9yUVsShF
+ X4koU5bE7tqGGpl7IdLmkPqUNFFBIWSBlmjRRwMc=
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=avm.de
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (1024-bit key) header.d=avm.de header.i=@avm.de header.a=rsa-sha256
- header.s=mail header.b=i31l4ZLC
-Subject: [Intel-wired-lan] [PATCH 51/61] leds: Prefer IS_ERR_OR_NULL over
+ header.s=mail header.b=YXGm2fdd
+Subject: [Intel-wired-lan] [PATCH 54/61] aoe: Prefer IS_ERR_OR_NULL over
  manual NULL check
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
@@ -147,28 +147,28 @@ check.
 
 Change generated with coccinelle.
 
-To: Lee Jones <lee@kernel.org>
-To: Pavel Machek <pavel@kernel.org>
-Cc: linux-leds@vger.kernel.org
+To: Justin Sanders <justin@coraid.com>
+To: Jens Axboe <axboe@kernel.dk>
+Cc: linux-block@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Philipp Hahn <phahn-oss@avm.de>
 ---
- drivers/leds/trigger/ledtrig-tty.c | 2 +-
+ drivers/block/aoe/aoecmd.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/leds/trigger/ledtrig-tty.c b/drivers/leds/trigger/ledtrig-tty.c
-index 8eb6286b33ac3cdcbb72ed9ad5ad7105e15d20b6..3725571144d910b225ca9605771fc0f0c8355efd 100644
---- a/drivers/leds/trigger/ledtrig-tty.c
-+++ b/drivers/leds/trigger/ledtrig-tty.c
-@@ -220,7 +220,7 @@ static void ledtrig_tty_work(struct work_struct *work)
- 			goto out;
+diff --git a/drivers/block/aoe/aoecmd.c b/drivers/block/aoe/aoecmd.c
+index a4744a30a8af4ff05113f3234021eec728265b4f..b31e539a66433a0a5d6e81117a32d12735ffc1bc 100644
+--- a/drivers/block/aoe/aoecmd.c
++++ b/drivers/block/aoe/aoecmd.c
+@@ -1268,7 +1268,7 @@ aoe_ktstart(struct ktstate *k)
  
- 		tty = tty_kopen_shared(devno);
--		if (IS_ERR(tty) || !tty)
-+		if (IS_ERR_OR_NULL(tty))
- 			/* What to do? retry or abort */
- 			goto out;
- 
+ 	init_completion(&k->rendez);
+ 	task = kthread_run(kthread, k, "%s", k->name);
+-	if (task == NULL || IS_ERR(task))
++	if (IS_ERR_OR_NULL(task))
+ 		return -ENOMEM;
+ 	k->task = task;
+ 	wait_for_completion(&k->rendez); /* allow kthread to start */
 
 -- 
 2.43.0
