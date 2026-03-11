@@ -4,128 +4,112 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B4465106ACE5
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 12 Mar 2026 19:40:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7D27F106ACE3
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 12 Mar 2026 19:45:08 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 5CA0B80CE9;
-	Thu, 12 Mar 2026 19:40:51 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 29E2580CDB;
+	Thu, 12 Mar 2026 19:45:08 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id PlJo0ROlgSmk; Thu, 12 Mar 2026 19:40:50 +0000 (UTC)
+ id WprCaCl0b9BU; Thu, 12 Mar 2026 19:45:05 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8DCEC80CD8
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E575A80CE0
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1773344450;
-	bh=VQ4I1//oujMg/wMbvtHZ1fNg62i5rEhIWcPKRohhj4U=;
-	h=Date:From:To:Cc:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1773344704;
+	bh=33EAGUBLBYod3tzyGg7m09477vqXsAXQIQrUfRFHjU8=;
+	h=In-Reply-To:References:From:Cc:To:Date:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=5uRhkQIelFfQ9J+kAwDmuwr1Zh/fHmXRQdykiCTYm9qnSDS7mMZo0JF0N4JNNtXob
-	 RsguF928pk8v13aMN17LnBU1TXzqKUIIrdgXSwn6SLQce0o088uBu94/5nGE9hiPUA
-	 tdJNZaiBPHgF7rUgMB0PmzlWpFvh9cKWZqRHni1OBYZNMrgks2lGAdJ+O/Mp4OsKM2
-	 oY32JcBWyfiiGqvaJguw7bZLD/XnX2MXCnivdlfAgsC42qcO9XxLS7vy8ucJXQVD33
-	 puX8iZZ3NIGQlsyx9mzPV+rul+oEMkZutbivdLYd0c1IIODFKkAmlOSi3YVuPjWg/p
-	 uCBJXpXA5xPdw==
+	b=ZyHLHFsMXoj5jA59miKQBF9kmlM+q8Qj5cXbICwG/uQ5oXA/qmhjfbmrJxilwo2hP
+	 tu2DO1vBurKmaBTgBTQ0u2sd5YOW6xbpmw5zeGOvHbtEdHzCVkl7HiPNVaaC3mF2T/
+	 OQXELWNdHX5XGVzMmcPWlJnKfbEHiG2kljFWT1SIdxPAdbJOBXBaDysK2wM2wkzhcY
+	 WvRd7Z5qygx1nsihivZGw3smxoVn/z4GB4q9OXGNe0ZPVkHXqeEbzl5ds+6wrDbn49
+	 VujHTVeBkRuFGgix8YtJTbBL6wboixJ6Pw5s8EbS+EwR5qUqNsE77FNd5mVpmMq+vV
+	 tG1jzj27yCz2Q==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 8DCEC80CD8;
-	Thu, 12 Mar 2026 19:40:50 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id 069A3282
- for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Mar 2026 19:40:49 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id E575A80CE0;
+	Thu, 12 Mar 2026 19:45:04 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id CCA5E201
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Mar 2026 23:10:31 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id EC52C407BC
- for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Mar 2026 19:40:48 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id BE1D1413C6
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Mar 2026 23:10:31 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id HsEbmpP2onRZ for <intel-wired-lan@lists.osuosl.org>;
- Thu, 12 Mar 2026 19:40:48 +0000 (UTC)
-X-Greylist: delayed 419 seconds by postgrey-1.37 at util1.osuosl.org;
- Thu, 12 Mar 2026 19:40:47 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 82239407B3
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 82239407B3
-Received-SPF: Permerror (mailfrom) identity=mailfrom; client-ip=116.203.167.152;
- helo=lithops.sigma-star.at; envelope-from=richard@nod.at; receiver=<UNKNOWN> 
-Received: from lithops.sigma-star.at (mailout.nod.at [116.203.167.152])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 82239407B3
- for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Mar 2026 19:40:47 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by lithops.sigma-star.at (Postfix) with ESMTP id 4DE582C14A8;
- Thu, 12 Mar 2026 20:33:44 +0100 (CET)
-Received: from lithops.sigma-star.at ([127.0.0.1])
- by localhost (lithops.sigma-star.at [127.0.0.1]) (amavisd-new, port 10032)
- with ESMTP id yCwNT8mwVvHB; Thu, 12 Mar 2026 20:33:43 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by lithops.sigma-star.at (Postfix) with ESMTP id 8A34D2C14AA;
- Thu, 12 Mar 2026 20:33:43 +0100 (CET)
-Received: from lithops.sigma-star.at ([127.0.0.1])
- by localhost (lithops.sigma-star.at [127.0.0.1]) (amavisd-new, port 10026)
- with ESMTP id 3HN7guaAFMsE; Thu, 12 Mar 2026 20:33:43 +0100 (CET)
-Received: from lithops.sigma-star.at (lithops.sigma-star.at [195.201.40.130])
- by lithops.sigma-star.at (Postfix) with ESMTP id ABF4A2C14A6;
- Thu, 12 Mar 2026 20:33:42 +0100 (CET)
-Date: Thu, 12 Mar 2026 20:33:42 +0100 (CET)
-From: Richard Weinberger <richard@nod.at>
-To: Philipp Hahn <phahn-oss@avm.de>
-Cc: amd-gfx <amd-gfx@lists.freedesktop.org>, 
- apparmor <apparmor@lists.ubuntu.com>, bpf <bpf@vger.kernel.org>, 
- ceph-devel <ceph-devel@vger.kernel.org>, cocci <cocci@inria.fr>, 
- dm-devel@lists.linux.dev, 
- DRI mailing list <dri-devel@lists.freedesktop.org>, 
- gfs2 <gfs2@lists.linux.dev>, intel-gfx <intel-gfx@lists.freedesktop.org>, 
- intel-wired-lan@lists.osuosl.org, iommu@lists.linux.dev, 
- kvm@vger.kernel.org, 
- linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, 
- linux-block <linux-block@vger.kernel.org>, 
- linux-bluetooth@vger.kernel.org, 
- linux-btrfs <linux-btrfs@vger.kernel.org>, 
- linux-cifs <linux-cifs@vger.kernel.org>, linux-clk@vger.kernel.org, 
- linux-erofs <linux-erofs@lists.ozlabs.org>, 
- linux-ext4 <linux-ext4@vger.kernel.org>, 
- linux-fsdevel <linux-fsdevel@vger.kernel.org>, 
- linux-gpio@vger.kernel.org, linux-hyperv <linux-hyperv@vger.kernel.org>, 
- linux-input@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, 
- linux-leds@vger.kernel.org, linux-media <linux-media@vger.kernel.org>, 
- linux-mips <linux-mips@vger.kernel.org>, 
- linux-mm <linux-mm@kvack.org>, linux-modules@vger.kernel.org, 
- linux-mtd <linux-mtd@lists.infradead.org>, 
- linux-nfs <linux-nfs@vger.kernel.org>, 
- linux-omap <linux-omap@vger.kernel.org>, 
- linux-phy@lists.infradead.org, linux-pm <linux-pm@vger.kernel.org>, 
- linux-rockchip <linux-rockchip@lists.infradead.org>, 
- linux-s390 <linux-s390@vger.kernel.org>, 
- linux-scsi <linux-scsi@vger.kernel.org>, linux-sctp@vger.kernel.org, 
- LSM <linux-security-module@vger.kernel.org>, 
- linux-sh <linux-sh@vger.kernel.org>, 
- linux-sound <linux-sound@vger.kernel.org>, 
- linux-stm32 <linux-stm32@st-md-mailman.stormreply.com>, 
- linux-trace-kernel <linux-trace-kernel@vger.kernel.org>, 
- linux-usb@vger.kernel.org, 
- linux-wireless <linux-wireless@vger.kernel.org>, 
- netdev <netdev@vger.kernel.org>, ntfs3 <ntfs3@lists.linux.dev>, 
- samba-technical <samba-technical@lists.samba.org>, 
- sched-ext@lists.linux.dev, target-devel@vger.kernel.org, 
- tipc-discussion@lists.sourceforge.net, v9fs <v9fs@lists.linux.dev>, 
- Miquel Raynal <miquel.raynal@bootlin.com>, 
- Vignesh Raghavendra <vigneshr@ti.com>
-Message-ID: <1584421372.26258.1773344022512.JavaMail.zimbra@nod.at>
-In-Reply-To: <20260310-b4-is_err_or_null-v1-48-bd63b656022d@avm.de>
-References: <20260310-b4-is_err_or_null-v1-0-bd63b656022d@avm.de>
- <20260310-b4-is_err_or_null-v1-48-bd63b656022d@avm.de>
+ id Uu4ecKfkpdU4 for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 11 Mar 2026 23:10:31 +0000 (UTC)
+X-Greylist: delayed 403 seconds by postgrey-1.37 at util1.osuosl.org;
+ Wed, 11 Mar 2026 23:10:30 UTC
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org E45F3413C5
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E45F3413C5
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2001:4b98:dc2:55:216:3eff:fef7:d647; helo=perceval.ideasonboard.com;
+ envelope-from=kieran.bingham@ideasonboard.com; receiver=<UNKNOWN> 
+Received: from perceval.ideasonboard.com (perceval.ideasonboard.com
+ [IPv6:2001:4b98:dc2:55:216:3eff:fef7:d647])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id E45F3413C5
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Mar 2026 23:10:30 +0000 (UTC)
+Received: from monstersaurus.ideasonboard.com
+ (cpc89244-aztw30-2-0-cust6594.18-1.cable.virginm.net [86.31.185.195])
+ by perceval.ideasonboard.com (Postfix) with ESMTPSA id CD91E448;
+ Thu, 12 Mar 2026 00:02:28 +0100 (CET)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
-X-Originating-IP: [195.201.40.130]
-X-Mailer: Zimbra 8.8.12_GA_3807 (ZimbraWebClient - FF148
- (Linux)/8.8.12_GA_3809)
-Thread-Topic: Prefer IS_ERR_OR_NULL over manual NULL check
-Thread-Index: 0l8CyewQmrWlgaG6N3QgQFfukutRbA==
+In-Reply-To: <20260310-b4-is_err_or_null-v1-49-bd63b656022d@avm.de>
+References: <20260310-b4-is_err_or_null-v1-0-bd63b656022d@avm.de>
+ <20260310-b4-is_err_or_null-v1-49-bd63b656022d@avm.de>
+From: Kieran Bingham <kieran.bingham@ideasonboard.com>
+Cc: Shuah Khan <skhan@linuxfoundation.org>,
+ Mauro Carvalho Chehab <mchehab@kernel.org>
+To: Philipp Hahn <phahn-oss@avm.de>, amd-gfx@lists.freedesktop.org,
+ apparmor@lists.ubuntu.com, bpf@vger.kernel.org, ceph-devel@vger.kernel.org,
+ cocci@inria.fr, dm-devel@lists.linux.dev, dri-devel@lists.freedesktop.org,
+ gfs2@lists.linux.dev, intel-gfx@lists.freedesktop.org,
+ intel-wired-lan@lists.osuosl.org, iommu@lists.linux.dev, kvm@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-block@vger.kernel.org,
+ linux-bluetooth@vger.kernel.org, linux-btrfs@vger.kernel.org,
+ linux-cifs@vger.kernel.org, linux-clk@vger.kernel.org,
+ linux-erofs@lists.ozlabs.org, linux-ext4@vger.kernel.org,
+ linux-fsdevel@vger.kernel.org, linux-gpio@vger.kernel.org,
+ linux-hyperv@vger.kernel.org, linux-input@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-leds@vger.kernel.org,
+ linux-media@vger.kernel.org, linux-mips@vger.kernel.org, linux-mm@kvack.org,
+ linux-modules@vger.kernel.org, linux-mtd@lists.infradead.org,
+ linux-nfs@vger.kernel.org, linux-omap@vger.kernel.org,
+ linux-phy@lists.infradead.org, lin
+ ux-pm@vger.kernel.org, linux-rockchip@lists.infradead.org,
+ linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org,
+ linux-sctp@vger.kernel.org, linux-security-module@vger.kernel.org,
+ linux-sh@vger.kernel.org, linux-sound@vger.kernel.org,
+ linux-stm32@st-md-mailman.stormreply.com, linux-trace-kernel@vger.kernel.org,
+ linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org,
+ netdev@vger.kernel.org, ntfs3@lists.linux.dev, samba-technical@lists.samba.org,
+ sched-ext@lists.linux.dev, target-devel@vger.kernel.org,
+ tipc-discussion@lists.sourceforge.net, v9fs@lists.linux.dev
+Date: Wed, 11 Mar 2026 23:03:33 +0000
+Message-ID: <177327021364.3167621.11851238159935183684@ping.linuxembedded.co.uk>
+User-Agent: alot/0.9.1
+X-Mailman-Approved-At: Thu, 12 Mar 2026 19:45:03 +0000
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=ideasonboard.com; s=mail; t=1773270149;
+ bh=ATo3aRyKmYSXuSYD8x/NeBUp5LJcLKbzHVpozNXQJC0=;
+ h=In-Reply-To:References:Subject:From:Cc:To:Date:From;
+ b=WxcdvAR4zphcUuTNTLXCbLGiiCOKCwemLRMbnRdmW3ARcBHAWQiYVeysDpnfCIDuk
+ B8rMCjKjDjoWJdgj4Zp0scfHxrPnr5P3xl9hFANY/wyWKZBZYHzyf2qsFxVEe9S31Y
+ m9r/HjFnopry9bsUUdk6/id/Q3d97jYK/FiMa+Qw=
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dmarc=none (p=none dis=none)
- header.from=nod.at
-Subject: Re: [Intel-wired-lan] [PATCH 48/61] mtd: Prefer IS_ERR_OR_NULL over
- manual NULL check
+ dmarc=pass (p=none dis=none)
+ header.from=ideasonboard.com
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=fail reason="signature verification failed" (1024-bit key)
+ header.d=ideasonboard.com header.i=@ideasonboard.com header.a=rsa-sha256
+ header.s=mail header.b=WxcdvAR4
+Subject: Re: [Intel-wired-lan] [PATCH 49/61] media: Prefer IS_ERR_OR_NULL
+ over manual NULL check
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -141,14 +125,41 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
------ Urspr=C3=BCngliche Mail -----
-> Von: "Philipp Hahn" <phahn-oss@avm.de>
-> -=09if (gpiomtd->nwp && !IS_ERR(gpiomtd->nwp))
-> +=09if (!IS_ERR_OR_NULL(gpiomtd->nwp))
+Quoting Philipp Hahn (2026-03-10 11:49:15)
+> Prefer using IS_ERR_OR_NULL() over using IS_ERR() and a manual NULL
+> check.
+>=20
+> Change generated with coccinelle.
+>=20
+> To: Shuah Khan <skhan@linuxfoundation.org>
+> To: Kieran Bingham <kieran.bingham@ideasonboard.com>
+> To: Mauro Carvalho Chehab <mchehab@kernel.org>
+> Cc: linux-media@vger.kernel.org
+> Cc: linux-kernel@vger.kernel.org
+> Signed-off-by: Philipp Hahn <phahn-oss@avm.de>
+> ---
+>  drivers/media/test-drivers/vimc/vimc-streamer.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>=20
+> diff --git a/drivers/media/test-drivers/vimc/vimc-streamer.c b/drivers/me=
+dia/test-drivers/vimc/vimc-streamer.c
+> index 15d863f97cbf96b7ca7fbf3d7b6b6ec39fcc8ae3..da5aca50bcb4990c06f28e5a8=
+83eb398606991e9 100644
+> --- a/drivers/media/test-drivers/vimc/vimc-streamer.c
+> +++ b/drivers/media/test-drivers/vimc/vimc-streamer.c
+> @@ -167,7 +167,7 @@ static int vimc_streamer_thread(void *data)
+>                 for (i =3D stream->pipe_size - 1; i >=3D 0; i--) {
+>                         frame =3D stream->ved_pipeline[i]->process_frame(
+>                                         stream->ved_pipeline[i], frame);
+> -                       if (!frame || IS_ERR(frame))
+> +                       if (IS_ERR_OR_NULL(frame))
 
-No, please don't.
+Reviewed-by: Kieran Bingham <kieran.bingham@ideasonboard.com>
 
-This makes reading the code not easier.
-
-Thanks,
-//richard
+>                                 break;
+>                 }
+>                 //wait for 60hz
+>=20
+> --=20
+> 2.43.0
+>
