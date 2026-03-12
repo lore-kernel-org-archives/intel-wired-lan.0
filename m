@@ -1,115 +1,97 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7D27F106ACE3
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 12 Mar 2026 19:45:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 670CB106ACE4
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 12 Mar 2026 20:23:44 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 29E2580CDB;
-	Thu, 12 Mar 2026 19:45:08 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id WprCaCl0b9BU; Thu, 12 Mar 2026 19:45:05 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E575A80CE0
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1773344704;
-	bh=33EAGUBLBYod3tzyGg7m09477vqXsAXQIQrUfRFHjU8=;
-	h=In-Reply-To:References:From:Cc:To:Date:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=ZyHLHFsMXoj5jA59miKQBF9kmlM+q8Qj5cXbICwG/uQ5oXA/qmhjfbmrJxilwo2hP
-	 tu2DO1vBurKmaBTgBTQ0u2sd5YOW6xbpmw5zeGOvHbtEdHzCVkl7HiPNVaaC3mF2T/
-	 OQXELWNdHX5XGVzMmcPWlJnKfbEHiG2kljFWT1SIdxPAdbJOBXBaDysK2wM2wkzhcY
-	 WvRd7Z5qygx1nsihivZGw3smxoVn/z4GB4q9OXGNe0ZPVkHXqeEbzl5ds+6wrDbn49
-	 VujHTVeBkRuFGgix8YtJTbBL6wboixJ6Pw5s8EbS+EwR5qUqNsE77FNd5mVpmMq+vV
-	 tG1jzj27yCz2Q==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id E575A80CE0;
-	Thu, 12 Mar 2026 19:45:04 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id CCA5E201
- for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Mar 2026 23:10:31 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id BE1D1413C6
- for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Mar 2026 23:10:31 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 1D0EA4079D;
+	Thu, 12 Mar 2026 20:23:44 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Uu4ecKfkpdU4 for <intel-wired-lan@lists.osuosl.org>;
- Wed, 11 Mar 2026 23:10:31 +0000 (UTC)
-X-Greylist: delayed 403 seconds by postgrey-1.37 at util1.osuosl.org;
- Wed, 11 Mar 2026 23:10:30 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org E45F3413C5
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E45F3413C5
+ id SWdLIkrgHZ1y; Thu, 12 Mar 2026 20:23:42 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org BBFDB40788
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1773347022;
+	bh=F0AjuU9hU6DJ/4e9OlLDjc0XFAYb4xcOmFu8pLLQO0I=;
+	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=iRY1Yf5EIGRniLb6TpSGFIkbeNDlYE8jIdjlc4rdN1o4vC1DkysTuglBZiUD3PK+2
+	 GdHqwmd7UTxfeoMaXV829GUtCT5688M+xTvROsFuzopwGMI5x7HnFDhEARwVpq/ha5
+	 +2RxHRmbgr4eJGxfzrjvkjIRVpT4RXpTfK+2nAoSdYzsVev40p7KRHKE7yBpWqyW4G
+	 RB4okUSRz8jHbrm9iAUJHVSbnIEz3GEgrnQtYr59xbJz7knS24+9xRQjfxRqD3m+C2
+	 LuC1IoVZ9qZu/AWiiwZSA3QuFcp20gvbKel072Y2x3dUN0A/q1dLLzKp76zQzh215B
+	 c76yXijSSyEOQ==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp4.osuosl.org (Postfix) with ESMTP id BBFDB40788;
+	Thu, 12 Mar 2026 20:23:42 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id E23C1282
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Mar 2026 20:23:40 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp3.osuosl.org (Postfix) with ESMTP id C7BF8606E2
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Mar 2026 20:23:40 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id dEoB0hDFjrGD for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 12 Mar 2026 20:23:40 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2001:4b98:dc2:55:216:3eff:fef7:d647; helo=perceval.ideasonboard.com;
- envelope-from=kieran.bingham@ideasonboard.com; receiver=<UNKNOWN> 
-Received: from perceval.ideasonboard.com (perceval.ideasonboard.com
- [IPv6:2001:4b98:dc2:55:216:3eff:fef7:d647])
- by smtp4.osuosl.org (Postfix) with ESMTPS id E45F3413C5
- for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Mar 2026 23:10:30 +0000 (UTC)
-Received: from monstersaurus.ideasonboard.com
- (cpc89244-aztw30-2-0-cust6594.18-1.cable.virginm.net [86.31.185.195])
- by perceval.ideasonboard.com (Postfix) with ESMTPSA id CD91E448;
- Thu, 12 Mar 2026 00:02:28 +0100 (CET)
-Content-Type: text/plain; charset="utf-8"
+ client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org;
+ envelope-from=gregkh@linuxfoundation.org; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 13DAC606E1
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 13DAC606E1
+Received: from tor.source.kernel.org (tor.source.kernel.org
+ [IPv6:2600:3c04:e001:324:0:1991:8:25])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 13DAC606E1
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Mar 2026 20:23:39 +0000 (UTC)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+ by tor.source.kernel.org (Postfix) with ESMTP id E67A361336;
+ Thu, 12 Mar 2026 20:23:37 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3CC95C4CEF7;
+ Thu, 12 Mar 2026 20:23:36 +0000 (UTC)
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: stable@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, patches@lists.linux.dev,
+ Thomas Gleixner <tglx@kernel.org>,
+ Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
+ Joe Damato <joe@dama.to>,
+ Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
+ Sasha Levin <sashal@kernel.org>
+Date: Thu, 12 Mar 2026 21:09:28 +0100
+Message-ID: <20260312201024.845105273@linuxfoundation.org>
+X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20260312201018.128816016@linuxfoundation.org>
+References: <20260312201018.128816016@linuxfoundation.org>
+User-Agent: quilt/0.69
+X-stable: review
+X-Patchwork-Hint: ignore
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-In-Reply-To: <20260310-b4-is_err_or_null-v1-49-bd63b656022d@avm.de>
-References: <20260310-b4-is_err_or_null-v1-0-bd63b656022d@avm.de>
- <20260310-b4-is_err_or_null-v1-49-bd63b656022d@avm.de>
-From: Kieran Bingham <kieran.bingham@ideasonboard.com>
-Cc: Shuah Khan <skhan@linuxfoundation.org>,
- Mauro Carvalho Chehab <mchehab@kernel.org>
-To: Philipp Hahn <phahn-oss@avm.de>, amd-gfx@lists.freedesktop.org,
- apparmor@lists.ubuntu.com, bpf@vger.kernel.org, ceph-devel@vger.kernel.org,
- cocci@inria.fr, dm-devel@lists.linux.dev, dri-devel@lists.freedesktop.org,
- gfs2@lists.linux.dev, intel-gfx@lists.freedesktop.org,
- intel-wired-lan@lists.osuosl.org, iommu@lists.linux.dev, kvm@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-block@vger.kernel.org,
- linux-bluetooth@vger.kernel.org, linux-btrfs@vger.kernel.org,
- linux-cifs@vger.kernel.org, linux-clk@vger.kernel.org,
- linux-erofs@lists.ozlabs.org, linux-ext4@vger.kernel.org,
- linux-fsdevel@vger.kernel.org, linux-gpio@vger.kernel.org,
- linux-hyperv@vger.kernel.org, linux-input@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-leds@vger.kernel.org,
- linux-media@vger.kernel.org, linux-mips@vger.kernel.org, linux-mm@kvack.org,
- linux-modules@vger.kernel.org, linux-mtd@lists.infradead.org,
- linux-nfs@vger.kernel.org, linux-omap@vger.kernel.org,
- linux-phy@lists.infradead.org, lin
- ux-pm@vger.kernel.org, linux-rockchip@lists.infradead.org,
- linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org,
- linux-sctp@vger.kernel.org, linux-security-module@vger.kernel.org,
- linux-sh@vger.kernel.org, linux-sound@vger.kernel.org,
- linux-stm32@st-md-mailman.stormreply.com, linux-trace-kernel@vger.kernel.org,
- linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org,
- netdev@vger.kernel.org, ntfs3@lists.linux.dev, samba-technical@lists.samba.org,
- sched-ext@lists.linux.dev, target-devel@vger.kernel.org,
- tipc-discussion@lists.sourceforge.net, v9fs@lists.linux.dev
-Date: Wed, 11 Mar 2026 23:03:33 +0000
-Message-ID: <177327021364.3167621.11851238159935183684@ping.linuxembedded.co.uk>
-User-Agent: alot/0.9.1
-X-Mailman-Approved-At: Thu, 12 Mar 2026 19:45:03 +0000
+Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=ideasonboard.com; s=mail; t=1773270149;
- bh=ATo3aRyKmYSXuSYD8x/NeBUp5LJcLKbzHVpozNXQJC0=;
- h=In-Reply-To:References:Subject:From:Cc:To:Date:From;
- b=WxcdvAR4zphcUuTNTLXCbLGiiCOKCwemLRMbnRdmW3ARcBHAWQiYVeysDpnfCIDuk
- B8rMCjKjDjoWJdgj4Zp0scfHxrPnr5P3xl9hFANY/wyWKZBZYHzyf2qsFxVEe9S31Y
- m9r/HjFnopry9bsUUdk6/id/Q3d97jYK/FiMa+Qw=
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ d=linuxfoundation.org; 
+ s=korg; t=1773347017;
+ bh=0t7Zjfl86gAcogx9eD4kCbzbz/ROtmtqZzdhjGQWNNI=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=EBC2sHp8BEKLvcqIavCor6NMMLiyn8IENzdh7MajoEG4iS3bGR3tLqoq1IUxoZwTQ
+ TWI5Din6c7APIBmonoRx+Zzfis8AIBop5zTeXspc63lrVZK71GEtAJBU8T3Cj4m4O/
+ IJyD1GQ2NAWmELdhFQaX8lrcQT/vBLAH0orwqO/g=
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
- header.from=ideasonboard.com
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=fail reason="signature verification failed" (1024-bit key)
- header.d=ideasonboard.com header.i=@ideasonboard.com header.a=rsa-sha256
- header.s=mail header.b=WxcdvAR4
-Subject: Re: [Intel-wired-lan] [PATCH 49/61] media: Prefer IS_ERR_OR_NULL
- over manual NULL check
+ header.from=linuxfoundation.org
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (1024-bit key,
+ unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org
+ header.a=rsa-sha256 header.s=korg header.b=EBC2sHp8
+Subject: [Intel-wired-lan] [PATCH 6.12 181/265] i40e: Fix preempt count leak
+ in napi poll tracepoint
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -125,41 +107,52 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Quoting Philipp Hahn (2026-03-10 11:49:15)
-> Prefer using IS_ERR_OR_NULL() over using IS_ERR() and a manual NULL
-> check.
->=20
-> Change generated with coccinelle.
->=20
-> To: Shuah Khan <skhan@linuxfoundation.org>
-> To: Kieran Bingham <kieran.bingham@ideasonboard.com>
-> To: Mauro Carvalho Chehab <mchehab@kernel.org>
-> Cc: linux-media@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org
-> Signed-off-by: Philipp Hahn <phahn-oss@avm.de>
-> ---
->  drivers/media/test-drivers/vimc/vimc-streamer.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/drivers/media/test-drivers/vimc/vimc-streamer.c b/drivers/me=
-dia/test-drivers/vimc/vimc-streamer.c
-> index 15d863f97cbf96b7ca7fbf3d7b6b6ec39fcc8ae3..da5aca50bcb4990c06f28e5a8=
-83eb398606991e9 100644
-> --- a/drivers/media/test-drivers/vimc/vimc-streamer.c
-> +++ b/drivers/media/test-drivers/vimc/vimc-streamer.c
-> @@ -167,7 +167,7 @@ static int vimc_streamer_thread(void *data)
->                 for (i =3D stream->pipe_size - 1; i >=3D 0; i--) {
->                         frame =3D stream->ved_pipeline[i]->process_frame(
->                                         stream->ved_pipeline[i], frame);
-> -                       if (!frame || IS_ERR(frame))
-> +                       if (IS_ERR_OR_NULL(frame))
+6.12-stable review patch.  If anyone has any objections, please let me know.
 
-Reviewed-by: Kieran Bingham <kieran.bingham@ideasonboard.com>
+------------------
 
->                                 break;
->                 }
->                 //wait for 60hz
->=20
-> --=20
-> 2.43.0
->
+From: Thomas Gleixner <tglx@kernel.org>
+
+[ Upstream commit 4b3d54a85bd37ebf2d9836f0d0de775c0ff21af9 ]
+
+Using get_cpu() in the tracepoint assignment causes an obvious preempt
+count leak because nothing invokes put_cpu() to undo it:
+
+  softirq: huh, entered softirq 3 NET_RX with preempt_count 00000100, exited with 00000101?
+
+This clearly has seen a lot of testing in the last 3+ years...
+
+Use smp_processor_id() instead.
+
+Fixes: 6d4d584a7ea8 ("i40e: Add i40e_napi_poll tracepoint")
+Signed-off-by: Thomas Gleixner <tglx@kernel.org>
+Cc: Tony Nguyen <anthony.l.nguyen@intel.com>
+Cc: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Cc: intel-wired-lan@lists.osuosl.org
+Cc: netdev@vger.kernel.org
+Reviewed-by: Joe Damato <joe@dama.to>
+Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/net/ethernet/intel/i40e/i40e_trace.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_trace.h b/drivers/net/ethernet/intel/i40e/i40e_trace.h
+index 759f3d1c4c8f0..dde0ccd789ed1 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_trace.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_trace.h
+@@ -88,7 +88,7 @@ TRACE_EVENT(i40e_napi_poll,
+ 		__entry->rx_clean_complete = rx_clean_complete;
+ 		__entry->tx_clean_complete = tx_clean_complete;
+ 		__entry->irq_num = q->irq_num;
+-		__entry->curr_cpu = get_cpu();
++		__entry->curr_cpu = smp_processor_id();
+ 		__assign_str(qname);
+ 		__assign_str(dev_name);
+ 		__assign_bitmask(irq_affinity, cpumask_bits(&q->affinity_mask),
+-- 
+2.51.0
+
+
+
