@@ -4,96 +4,93 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EDC48EFCBD1
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 16 Mar 2026 07:21:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 89670EFCBD4
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 16 Mar 2026 07:21:02 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 8C79D40C9D;
+	by smtp4.osuosl.org (Postfix) with ESMTP id B425740C8A;
 	Mon, 16 Mar 2026 07:21:01 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id DXKNVEFFY3bT; Mon, 16 Mar 2026 07:21:01 +0000 (UTC)
+ id AhItdwfQhDwt; Mon, 16 Mar 2026 07:21:00 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org BFE5C40C92
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4364440C88
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
 	s=default; t=1773645660;
-	bh=YFyK9Oqgfq6kyY7eL0ZXTk+UzohKrWINlFygaLd7fhc=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=Fl4fCQsSBehpFG7UHrWtqM0kvUkQKy2uhJP/qd/41lz31GMoEdsizooltlvwWHyyd
-	 Q5FoAZzC3UEf0c1NS3dDTaJ9crzjIffTAXIFgxItp4Du30PlC4SUIpOuIaIDtKc1UU
-	 7BKnTdIftSbdzkZ2GH2V4bdS9O9Ne9FpCqN9Q5sF+CiiqGhb++GAiGQWbSu/heveh0
-	 cTwtao36bYUbXTIC4IkYOsqIZpFAzUu8YYZ9ZCYNwQJLoT91xRBuYGg6uBmg1P+VY0
-	 nTg1sgyc7DzzEIMc/Uut9FUU7H72D9iJnOsngJHWiSaseYK3+fWpNgfyjl3dx+mpjw
-	 RMFYu84nk63rA==
+	bh=H48cvs97Khlf4xvRcHC1E565UJSXN/21EEA5xFeq6Is=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=detz7+YMxkR7esisjY/0rMWcIn2UoH/dZH43QaN5dheyuCMD0VCA5xDoCAgUbUA12
+	 Z2visIGxJksh0I7XP36eRaSEFo1NhzcAZy4mqkEWuAbAG2rtXcGyHndB8roDs3aaG5
+	 SytQDb/vmcUOo1zQSNcH2ZgwXrWLFBUObqguYic9OEo7WydSKD/GNrqzwUmc73AA36
+	 sG+EG2JqCgJIYHKVeKwj8f0cKH2+Ww52Au6dsNGMKu/lY6oONyLK9BecHt5w+wJWFQ
+	 U3chXXJdg9XjDXXX1nyudSecgTAwYcBt/HG8p2WeISGShOtOuXqo19xaBVIqsyOMbg
+	 +mnkNRavWVglA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id BFE5C40C92;
+	by smtp4.osuosl.org (Postfix) with ESMTP id 4364440C88;
 	Mon, 16 Mar 2026 07:21:00 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id E7B69D3
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id C8881D3
  for <intel-wired-lan@lists.osuosl.org>; Mon, 16 Mar 2026 07:20:58 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id CE20882965
+ by smtp4.osuosl.org (Postfix) with ESMTP id B67D240C81
  for <intel-wired-lan@lists.osuosl.org>; Mon, 16 Mar 2026 07:20:58 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id pOTYWBhCzqY2 for <intel-wired-lan@lists.osuosl.org>;
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id Z6zakszmmMwM for <intel-wired-lan@lists.osuosl.org>;
  Mon, 16 Mar 2026 07:20:58 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.11;
  helo=mgamail.intel.com; envelope-from=aleksandr.loktionov@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 0768882923
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 0768882923
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org B3A5540C80
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B3A5540C80
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.11])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 0768882923
- for <intel-wired-lan@lists.osuosl.org>; Mon, 16 Mar 2026 07:20:57 +0000 (UTC)
-X-CSE-ConnectionGUID: aZv/140VTCihNWSvGaSTmA==
-X-CSE-MsgGUID: SafIHXmzTySzemEeQZ0JVw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11730"; a="84970607"
-X-IronPort-AV: E=Sophos;i="6.23,123,1770624000"; d="scan'208";a="84970607"
+ by smtp4.osuosl.org (Postfix) with ESMTPS id B3A5540C80
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 16 Mar 2026 07:20:56 +0000 (UTC)
+X-CSE-ConnectionGUID: 7fnMIHm8RRewLfVfE2Rq7A==
+X-CSE-MsgGUID: Iw0yDdZLS8+W7mMcO/c/fA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11730"; a="84970605"
+X-IronPort-AV: E=Sophos;i="6.23,123,1770624000"; d="scan'208";a="84970605"
 Received: from orviesa007.jf.intel.com ([10.64.159.147])
  by orvoesa103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 16 Mar 2026 00:20:58 -0700
-X-CSE-ConnectionGUID: 4zrcfXAoQZm+uBI43UVKrg==
-X-CSE-MsgGUID: 2Jq7VfvHRVutPyfkT0S0fQ==
+ 16 Mar 2026 00:20:56 -0700
+X-CSE-ConnectionGUID: 7ejrkCxsQCuWLn/rS8Qhzg==
+X-CSE-MsgGUID: YlyGacnDTT2ZtH2WjcxdbA==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,123,1770624000"; d="scan'208";a="222030145"
+X-IronPort-AV: E=Sophos;i="6.23,123,1770624000"; d="scan'208";a="222030138"
 Received: from amlin-019-225.igk.intel.com ([10.102.19.225])
- by orviesa007.jf.intel.com with ESMTP; 16 Mar 2026 00:20:56 -0700
+ by orviesa007.jf.intel.com with ESMTP; 16 Mar 2026 00:20:55 -0700
 From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 To: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
  anthony.l.nguyen@intel.com, aleksandr.loktionov@intel.com
-Date: Mon, 16 Mar 2026 08:20:52 +0100
-Message-ID: <20260316072053.1241987-2-aleksandr.loktionov@intel.com>
+Date: Mon, 16 Mar 2026 08:20:51 +0100
+Message-ID: <20260316072053.1241987-1-aleksandr.loktionov@intel.com>
 X-Mailer: git-send-email 2.52.0
-In-Reply-To: <20260316072053.1241987-1-aleksandr.loktionov@intel.com>
-References: <20260316072053.1241987-1-aleksandr.loktionov@intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
  t=1773645658; x=1805181658;
- h=from:to:subject:date:message-id:in-reply-to:references:
- mime-version:content-transfer-encoding;
- bh=jcgu0G4yFwmZlw8w+NTRKbolWpD1J9LZq4Y9zKRM4Gc=;
- b=e7ypEIe+gMoBMaR+WTI9DmFnX3ORvtzlMHblmzu3NASqUNHFxRPFa4zZ
- A8E1xu14iIM+i9TCU2lDsigB5BWpMMZjpxsUiV73b2OZ1uHi/+QJe5PUd
- +CnSDOMlxvUGdwXomQ73r7wfIDWn8S3fTjlqZAUyOUlzkQZTYItxDgphy
- j1Ks361q11lzzMbQl8QqjQofvG/nul3VSxpj3/bBBnMQyUyMVOB9OQLBS
- BUM6Un1iAnSruoiRpkWVRYzgLz7/HW8pNIv/hI/o5wEAai3zwuJo0b50r
- IGOF55gR95EXqoBeBPntnx/66n0awcYpnjnhL7TE47p0nDykh6U/5xS0Q
- g==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ h=from:to:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=54qse0Zod1IPGDYwpG/5iToZX2jpx6R59l5KQJ9Nw7A=;
+ b=VxQTwFq4d4biyc0oSsT1Vjoksz4XeUxCL5SmOjxss80cQ1ArlK2tCHTO
+ 7v53yVZgzKd3l3oq2yZRSknPvtSE3kYkYB4EOfTY9wqRZFQSp2LGJYaem
+ RR508BGi1laQNXltk8LJseoVqQlPXM5CqyTo6hYUVL9yUOwpOgQxczNjq
+ pxg5uz5QwrOBBQIT0/LlveU2sYr+/3zcTwiI8rundjNCMbpNPxodYfxj0
+ i8aZtf0CfYpuzYlYIAz/O0vQN9sZPJTQ2wFZ/eaezVd1+TZE0cQPhFMwI
+ Mw10aq81t37fj2hqWw1eLFvYIjwBauMsa015dSlpqPvr90rnKjHsnV/kk
+ w==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=e7ypEIe+
-Subject: [Intel-wired-lan] [PATCH iwl-next v5 1/2] ethtool: treat
- RXH_GTP_TEID as intrinsically symmetric
+ header.s=Intel header.b=VxQTwFq4
+Subject: [Intel-wired-lan] [PATCH iwl-next v5 0/2] ice: implement symmetric
+ RSS hash configuration
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -109,38 +106,69 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-A GTP tunnel uses the same TEID value in both directions of a flow;
-including TEID in the hash input does not break src/dst symmetry.
+The ice driver has advertised symmetric RSS support via
+supported_input_xfrm since the capability was added, but ice_set_rxfh()
+ignored the input_xfrm parameter entirely, so enabling symmetric hashing
+had no actual effect.
 
-ethtool_rxfh_config_is_sym() currently rejects any hash field bitmap
-that contains bits outside the four paired L3/L4 fields.  This causes
-drivers that hash GTP flows on TEID to fail the kernel's preflight
-validation in ethtool_check_flow_types(), making it impossible for
-those drivers to support symmetric-xor transforms at all.
+This series fixes that.  Patch 1 extends the ethtool core so that
+drivers hashing GTP flows on TEID can report it honestly without
+blocking symmetric-xor configuration.  Patch 2 wires up the ice driver.
 
-Strip RXH_GTP_TEID from the bitmap before the paired-field check so
-that drivers may honestly report TEID hashing without blocking the
-configuration of symmetric transforms.
+The need for patch 1 surfaced because GTP flow profiles in ice always
+include TEID in the hash.  ethtool_check_flow_types() calls
+get_rxfh_fields() for every hashable flow type before allowing
+symmetric-xor; ethtool_rxfh_config_is_sym() rejected any bitmap
+containing RXH_GTP_TEID since it has no src/dst counterpart.  TEID
+is the same value in both tunnel directions, so this rejection is
+incorrect: including it does not break symmetry.
 
-Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Rather than hiding TEID from the reported fields (which would silently
+misrepresent hardware behaviour), patch 1 fixes the validator, and
+patch 2 reports TEID honestly.
+
+Tested with tools/testing/selftests/drivers/net/hw/rss_input_xfrm.py
+on an E810 card running kernel 6.19-rc8.
+
 ---
- net/ethtool/common.c | 3 +++
- 1 file changed, 3 insertions(+)
+v4 -> v5:
+ - remove redundant (u64) type conversion
 
-diff --git a/net/ethtool/common.c b/net/ethtool/common.c
-index 5fae329..9a3fd76 100644
---- a/net/ethtool/common.c
-+++ b/net/ethtool/common.c
-@@ -911,6 +911,9 @@ int ethtool_rxfh_config_is_sym(u64 rxfh)
- {
- 	bool sym;
- 
-+	/* Strip TEID before checking - it carries no src/dst asymmetry */
-+	rxfh &= ~RXH_GTP_TEID;
-+
- 	sym = rxfh == (rxfh & (RXH_IP_SRC | RXH_IP_DST |
- 			       RXH_L4_B_0_1 | RXH_L4_B_2_3));
- 	sym &= !!(rxfh & RXH_IP_SRC)   == !!(rxfh & RXH_IP_DST);
+v3 -> v4:
+ - Drop the ICE_HASH_INVALID fallback in ice_get_rxfh_fields() that
+   fabricated default L3+L4 hash fields when no hardware RSS config
+   exists for a flow type; returning zero fields is more honest and
+   avoids misrepresenting hardware state
+ - Drop the companion "if (!l3 && !l4)" special case in the
+   pair-completion block; it was only necessary to cover the synthetic
+   defaults added by the fallback, which is now gone
+ - No functional change to ice_set_rxfh() or the ethtool core patch
+
+v2 -> v3:
+ - Split into 2 patches: ethtool core fix separate from driver change
+ - Drop the RXH_GTP_TEID stripping workaround from the driver; instead
+   fix ethtool_rxfh_config_is_sym() to accept TEID as intrinsically
+   symmetric (patch 1)
+ - Fix ice_get_rxfh_fields(): the v2 unconditional assignment
+   "nfc->data = ICE_RSS_ALLOWED_FIELDS" clobbered fields set earlier in
+   the same function; replaced with pair-completion using |= so only
+   the missing half of a partial pair is filled in
+ - Remove ICE_RSS_ALLOWED_FIELDS define (no longer needed)
+ - Report RXH_GTP_TEID honestly for GTP flow types
+
+v1 -> v2:
+ - Preserve valid symmetric RSS fields instead of overwriting nfc->data
+   unconditionally
+
+Aleksandr Loktionov (2):
+  ethtool: treat RXH_GTP_TEID as intrinsically symmetric
+  ice: implement symmetric RSS hash configuration
+
+ drivers/net/ethernet/intel/ice/ice_ethtool.c | 40 +++++++++++++---
+ drivers/net/ethernet/intel/ice/ice_lib.c     |  7 ++--
+ drivers/net/ethernet/intel/ice/ice_lib.h     |  1 +
+ net/ethtool/common.c                         |  3 +++
+ 4 files changed, 40 insertions(+), 11 deletions(-)
+
 -- 
-2.52.0
-
+2.43.0
