@@ -4,87 +4,96 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8C628F3026E
-	for <intel-wired-lan@archiver.kernel.org>; Sun, 15 Mar 2026 20:22:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EDC48EFCBD1
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 16 Mar 2026 07:21:01 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 4DEE14129A;
-	Sun, 15 Mar 2026 20:22:51 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 8C79D40C9D;
+	Mon, 16 Mar 2026 07:21:01 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id krjdJbIjVrOX; Sun, 15 Mar 2026 20:22:49 +0000 (UTC)
+ id DXKNVEFFY3bT; Mon, 16 Mar 2026 07:21:01 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3DE164128F
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org BFE5C40C92
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1773606169;
-	bh=A6gHr88sgO49lwJ/L+egufKPsQuyRH5gQjmOgF/BNa8=;
-	h=Date:From:To:Cc:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1773645660;
+	bh=YFyK9Oqgfq6kyY7eL0ZXTk+UzohKrWINlFygaLd7fhc=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=NWNISobrpUw/DT53fdySv+eV1SOyIUwDPqTuL/t0rpK15efsDOGjjDFkQxYIWKc5G
-	 62L6J4iQSKILGP/shzWIzByQBl18WVZbzjVzIYkl6Y4ThBVYtWLX6qNW9bUTrrzQkN
-	 YgPfMa8IFscFBLXN3byO6Or+mOYZ5680+2RBzqMiUFS1O+OoqwwBXyQrBOjeQG1RC2
-	 RHw82vJPFChbR6pGlSSTs7YzwceALFhPBsxEod4JE0EHiFFwlqUmrqtC/C8TX8UbEL
-	 igvLz3gTsqbWa/VqLf9pKRqmbaMMVMucyqa1u2ufqNEWMjOMdsHhKwDFfb1U2U9TIq
-	 YIQvvSC6Pch0A==
+	b=Fl4fCQsSBehpFG7UHrWtqM0kvUkQKy2uhJP/qd/41lz31GMoEdsizooltlvwWHyyd
+	 Q5FoAZzC3UEf0c1NS3dDTaJ9crzjIffTAXIFgxItp4Du30PlC4SUIpOuIaIDtKc1UU
+	 7BKnTdIftSbdzkZ2GH2V4bdS9O9Ne9FpCqN9Q5sF+CiiqGhb++GAiGQWbSu/heveh0
+	 cTwtao36bYUbXTIC4IkYOsqIZpFAzUu8YYZ9ZCYNwQJLoT91xRBuYGg6uBmg1P+VY0
+	 nTg1sgyc7DzzEIMc/Uut9FUU7H72D9iJnOsngJHWiSaseYK3+fWpNgfyjl3dx+mpjw
+	 RMFYu84nk63rA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 3DE164128F;
-	Sun, 15 Mar 2026 20:22:49 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id 7271A1B4
- for <intel-wired-lan@lists.osuosl.org>; Sun, 15 Mar 2026 20:22:48 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id BFE5C40C92;
+	Mon, 16 Mar 2026 07:21:00 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id E7B69D3
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 16 Mar 2026 07:20:58 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 6FFBD406EE
- for <intel-wired-lan@lists.osuosl.org>; Sun, 15 Mar 2026 20:22:48 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id CE20882965
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 16 Mar 2026 07:20:58 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id CRv5q98N6Xqk for <intel-wired-lan@lists.osuosl.org>;
- Sun, 15 Mar 2026 20:22:48 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org;
- envelope-from=kuba@kernel.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org C7798403AF
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org C7798403AF
-Received: from sea.source.kernel.org (sea.source.kernel.org
- [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
- by smtp2.osuosl.org (Postfix) with ESMTPS id C7798403AF
- for <intel-wired-lan@lists.osuosl.org>; Sun, 15 Mar 2026 20:22:47 +0000 (UTC)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by sea.source.kernel.org (Postfix) with ESMTP id 2A68140117;
- Sun, 15 Mar 2026 20:22:47 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BEB05C4CEF7;
- Sun, 15 Mar 2026 20:22:46 +0000 (UTC)
-Date: Sun, 15 Mar 2026 13:22:45 -0700
-From: Jakub Kicinski <kuba@kernel.org>
-To: intel-wired-lan@lists.osuosl.org, michal.swiatkowski@linux.intel.com
-Cc: "Kitszel, Przemyslaw" <przemyslaw.kitszel@intel.com>,
- jacob.e.keller@intel.com, anthony.l.nguyen@intel.com
-Message-ID: <20260315132245.1a7efb20@kernel.org>
-In-Reply-To: <20260315130150.12829f88@kernel.org>
-References: <20260315125451.3741843c@kernel.org>
- <20260315130150.12829f88@kernel.org>
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id pOTYWBhCzqY2 for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 16 Mar 2026 07:20:58 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.11;
+ helo=mgamail.intel.com; envelope-from=aleksandr.loktionov@intel.com;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 0768882923
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 0768882923
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.11])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 0768882923
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 16 Mar 2026 07:20:57 +0000 (UTC)
+X-CSE-ConnectionGUID: aZv/140VTCihNWSvGaSTmA==
+X-CSE-MsgGUID: SafIHXmzTySzemEeQZ0JVw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11730"; a="84970607"
+X-IronPort-AV: E=Sophos;i="6.23,123,1770624000"; d="scan'208";a="84970607"
+Received: from orviesa007.jf.intel.com ([10.64.159.147])
+ by orvoesa103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 16 Mar 2026 00:20:58 -0700
+X-CSE-ConnectionGUID: 4zrcfXAoQZm+uBI43UVKrg==
+X-CSE-MsgGUID: 2Jq7VfvHRVutPyfkT0S0fQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,123,1770624000"; d="scan'208";a="222030145"
+Received: from amlin-019-225.igk.intel.com ([10.102.19.225])
+ by orviesa007.jf.intel.com with ESMTP; 16 Mar 2026 00:20:56 -0700
+From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+To: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
+ anthony.l.nguyen@intel.com, aleksandr.loktionov@intel.com
+Date: Mon, 16 Mar 2026 08:20:52 +0100
+Message-ID: <20260316072053.1241987-2-aleksandr.loktionov@intel.com>
+X-Mailer: git-send-email 2.52.0
+In-Reply-To: <20260316072053.1241987-1-aleksandr.loktionov@intel.com>
+References: <20260316072053.1241987-1-aleksandr.loktionov@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1773606167;
- bh=mEK9cUx7D03T6LsZAAaY/ZB5m0gcPHNqitim7X3Dgxk=;
- h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=iDsP5AYtFb6PR+Fs/NN925z9HxVd7TkcPZtcm8q4MzmQHfMuScdXsZ9xux/3cNhLK
- PWrm+PLY80zwtwij1Kw+xc4U2xoEjMzkkqWfkprflv2PFrTsuF3U0t1YwMUUF5Ggvd
- 8hUsAP3sTUq2+FoY2Toi6DJhFfPB4zxHYrH26d8Mq6sHQjfs4CV8xvx6HAqmhCeJRK
- I/BEZ/E1bFZnhhWGNZoaBJ+o5s7pqcXJqr+nWwCI6t4CE6ZYEYqljzl3u3dUAU4dnr
- giOMTRg2EwJgmLrbNfrG28cAYdXCl6gVfcxQxU27zMtGwsXDKMtAx+MPcxVOVeUp/P
- cq75PQWnVL10w==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dmarc=pass (p=quarantine dis=none)
- header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1773645658; x=1805181658;
+ h=from:to:subject:date:message-id:in-reply-to:references:
+ mime-version:content-transfer-encoding;
+ bh=jcgu0G4yFwmZlw8w+NTRKbolWpD1J9LZq4Y9zKRM4Gc=;
+ b=e7ypEIe+gMoBMaR+WTI9DmFnX3ORvtzlMHblmzu3NASqUNHFxRPFa4zZ
+ A8E1xu14iIM+i9TCU2lDsigB5BWpMMZjpxsUiV73b2OZ1uHi/+QJe5PUd
+ +CnSDOMlxvUGdwXomQ73r7wfIDWn8S3fTjlqZAUyOUlzkQZTYItxDgphy
+ j1Ks361q11lzzMbQl8QqjQofvG/nul3VSxpj3/bBBnMQyUyMVOB9OQLBS
+ BUM6Un1iAnSruoiRpkWVRYzgLz7/HW8pNIv/hI/o5wEAai3zwuJo0b50r
+ IGOF55gR95EXqoBeBPntnx/66n0awcYpnjnhL7TE47p0nDykh6U/5xS0Q
+ g==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=intel.com
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=iDsP5AYt
-Subject: Re: [Intel-wired-lan] ice crashes when not enough IRQs
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=e7ypEIe+
+Subject: [Intel-wired-lan] [PATCH iwl-next v5 1/2] ethtool: treat
+ RXH_GTP_TEID as intrinsically symmetric
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -100,29 +109,38 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Sun, 15 Mar 2026 13:01:50 -0700 Jakub Kicinski wrote:
-> On Sun, 15 Mar 2026 12:54:51 -0700 Jakub Kicinski wrote:
-> > Trying to build a minimal kernel I dropped CONFIG_IRQ_REMAP=y from 
-> > my config, and (on AMD) that caused IRQ shortage. 
-> > 
-> > This seems to crash ice after commit ad61cd9c67ad ("ice: get rid of
-> > num_lan_msix field"). Sorry for the lack of line numbers, I also
-> > dropped DEBUG_INFO. But I think the problem itself is pretty obvious.
-> > The fix less so, short of reverting ad61cd9c67ad. We can't just clamp
-> > the queues in ice_vsi_alloc_q_vectors() because AFAICT that would make
-> > ethtool -L succeed but driver would have a lower queue count than
-> > requested.  
-> 
-> Hm, maybe it's not just CONFIG_IRQ_REMAP=y
-> Enabling it makes no difference. Let me try to see what state the IRQ
-> allocation machinery is in on this kernel. On distro kernel ice gets
-> all the IRQs it wants at boot. But it also barfs something RDMA so
-> I can't really compare..
+A GTP tunnel uses the same TEID value in both directions of a flow;
+including TEID in the hash input does not break src/dst symmetry.
 
-I think it's ee13aa1a2c5a ("ice: use netif_get_num_default_rss_queues()")
-It clamped the number of allocated queues but I think it meant to only
-clamp the default enabled queue count. No idea how y'all gonna get the
-extra IRQs later or whether you intended to pack multiple queues per IRQ
-so I'll let you figure this out..
+ethtool_rxfh_config_is_sym() currently rejects any hash field bitmap
+that contains bits outside the four paired L3/L4 fields.  This causes
+drivers that hash GTP flows on TEID to fail the kernel's preflight
+validation in ethtool_check_flow_types(), making it impossible for
+those drivers to support symmetric-xor transforms at all.
 
-Thanks for letting me test crash detection and recovery in NIPA, I guess :D
+Strip RXH_GTP_TEID from the bitmap before the paired-field check so
+that drivers may honestly report TEID hashing without blocking the
+configuration of symmetric transforms.
+
+Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+---
+ net/ethtool/common.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/net/ethtool/common.c b/net/ethtool/common.c
+index 5fae329..9a3fd76 100644
+--- a/net/ethtool/common.c
++++ b/net/ethtool/common.c
+@@ -911,6 +911,9 @@ int ethtool_rxfh_config_is_sym(u64 rxfh)
+ {
+ 	bool sym;
+ 
++	/* Strip TEID before checking - it carries no src/dst asymmetry */
++	rxfh &= ~RXH_GTP_TEID;
++
+ 	sym = rxfh == (rxfh & (RXH_IP_SRC | RXH_IP_DST |
+ 			       RXH_L4_B_0_1 | RXH_L4_B_2_3));
+ 	sym &= !!(rxfh & RXH_IP_SRC)   == !!(rxfh & RXH_IP_DST);
+-- 
+2.52.0
+
