@@ -1,97 +1,99 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2EB21F33817
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 17 Mar 2026 08:45:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 037DCF3381D
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 17 Mar 2026 09:01:09 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id DA41061498;
-	Tue, 17 Mar 2026 08:45:06 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Xplnio8K8Vqf; Tue, 17 Mar 2026 08:45:06 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 619BF61465
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1773737106;
-	bh=qlrgBzBmmql/l09nQXSVU+R5EyGtYoctbLed2EqtFv0=;
-	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=76c3i/gq0pr+xR7DV8JsJQlUJsW6uyoN2v73GJghYUW1Csg77fA0h+jWMlbmE5+ca
-	 GYuE1XSlOYVTWWCxGfFc2xpiL6sx9u8MpF8Uj8xvHl0kOFNAOCuGD3eh5LuET/08Ut
-	 VgKsVKkgNtfmjkaC4nq/DqiOxaZq/qdgXXFb4f21vZpP/yP4IhA53WsxGKyRnOc+mR
-	 BaHyDsTvO7xG92/Jyh29ciFuIWyYzH+PtctxtAV3K7EFH3Cx0TL9QIYg85v9+GZCDO
-	 bG4tMYFVFQJaRsPOQSvslpDKUq7H4+/8G0nleuCm15C/PGU0UiIdwU0RVsLV7GWEUQ
-	 XEhokYH3E96vQ==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 619BF61465;
-	Tue, 17 Mar 2026 08:45:06 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id 6ED27D3
- for <intel-wired-lan@lists.osuosl.org>; Tue, 17 Mar 2026 08:45:05 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 5474483E35
- for <intel-wired-lan@lists.osuosl.org>; Tue, 17 Mar 2026 08:45:05 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id BCB7483EA3;
+	Tue, 17 Mar 2026 09:01:09 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id tC7M1oagyp_7 for <intel-wired-lan@lists.osuosl.org>;
- Tue, 17 Mar 2026 08:45:04 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.21;
- helo=mgamail.intel.com; envelope-from=aleksandr.loktionov@intel.com;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 5835083E34
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 5835083E34
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.21])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 5835083E34
- for <intel-wired-lan@lists.osuosl.org>; Tue, 17 Mar 2026 08:45:02 +0000 (UTC)
-X-CSE-ConnectionGUID: +aEoQKxjSbeNiSJiCRYUdg==
-X-CSE-MsgGUID: 0wjYLGM8RgKg8OzwFHyx8g==
-X-IronPort-AV: E=McAfee;i="6800,10657,11731"; a="74651557"
-X-IronPort-AV: E=Sophos;i="6.23,124,1770624000"; d="scan'208";a="74651557"
-Received: from fmviesa008.fm.intel.com ([10.60.135.148])
- by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 17 Mar 2026 01:45:01 -0700
-X-CSE-ConnectionGUID: X0jYK42PQgeUEzYVlt/b6Q==
-X-CSE-MsgGUID: Zc28UOdfQgeO2Nuz+NTU+g==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,124,1770624000"; d="scan'208";a="219710027"
-Received: from amlin-019-225.igk.intel.com ([10.102.19.225])
- by fmviesa008.fm.intel.com with ESMTP; 17 Mar 2026 01:45:00 -0700
-From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-To: intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com,
- aleksandr.loktionov@intel.com
-Cc: netdev@vger.kernel.org
-Date: Tue, 17 Mar 2026 09:44:59 +0100
-Message-ID: <20260317084459.2196606-1-aleksandr.loktionov@intel.com>
-X-Mailer: git-send-email 2.52.0
+ id pCtAdRDLeehZ; Tue, 17 Mar 2026 09:01:05 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2E7DF83EA4
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1773738065;
+	bh=ojgsEh5obRGiSq1T5vrGWdb+Psz+QfVFhSaFy+wU9pg=;
+	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=Z/2By/luD74kL7Zba1bJzjpy8x8u9xvJeywHRmowEALojocdQGGprq4iUNmtKkmjM
+	 SOKGajP1Z99/2VLvvyirBhXfTlzv7P3VT7JnHvwOvyvTLQpfcL2OcdSj6+qRljLAfF
+	 +mviYVJRE0QiuMrxYmGNxaZtU6EMTTAi+tFTQ+Mq4VcGtuzd4lFN5I2Vvq42Yv0SVr
+	 pWGxp24lTiXioo+neU5KlQFdcMQGI5xQCPI/u8tnOHEYYLHp3CcjODZ5YsYmSoHSM2
+	 +VavlIAX1F8lsbbfpgXPaZ0ubtZZ+RD7fxw+3ewhN6a+6G+HrhjFTWAt7YXwY6CaEb
+	 yUoN+ytAdQZsw==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp1.osuosl.org (Postfix) with ESMTP id 2E7DF83EA4;
+	Tue, 17 Mar 2026 09:01:05 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id C09BED3
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 17 Mar 2026 09:01:03 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp1.osuosl.org (Postfix) with ESMTP id A686F83EA3
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 17 Mar 2026 09:01:03 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id PyhycWIAa8Xc for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 17 Mar 2026 09:00:59 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de;
+ envelope-from=bigeasy@linutronix.de; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 412E383EA2
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 412E383EA2
+Received: from galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2a0a:51c0:0:12e:550::1])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 412E383EA2
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 17 Mar 2026 09:00:59 +0000 (UTC)
+Date: Tue, 17 Mar 2026 10:00:54 +0100
+From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+To: Emil Tantilov <emil.s.tantilov@intel.com>
+Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
+ anthony.l.nguyen@intel.com, aleksandr.loktionov@intel.com,
+ przemyslaw.kitszel@intel.com, andrew+netdev@lunn.ch,
+ davem@davemloft.net, edumazet@google.com, kuba@kernel.org,
+ pabeni@redhat.com, clrkwllms@kernel.org, rostedt@goodmis.org,
+ linux-rt-devel@lists.linux.dev, sgzhang@google.com, boolli@google.com
+Message-ID: <20260317090054.DuPZ6O0O@linutronix.de>
+References: <20260316232819.6872-1-emil.s.tantilov@intel.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1773737103; x=1805273103;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=IRQR4EX62gHxndHVD5ol1tVDrK0iQUrN/1zkt/4CXKQ=;
- b=emCw/ZL3AI8xVRmnY+Y89gjgpIa2u4vg9nt3S3qGSOmcQcFZhEOeWdDB
- 2//qY485z8Eu4+046pX2ySG/spA0FzcMppt9/SPME/gcIwkWRsrjE/0ai
- JHVuBUx3anAXLXtcHZy+ICJB5AUG+3+HfD3cKNGhxZTrhLANZUOrXQ2JM
- L63+FDV1PHUZti75ugVTPlhPpyilRFpd8ZFwp858AJfatxVrtWqueUyX5
- +/qmm2BSrA5IYwV6sOcDxXBM2+NIZyAG6zf5SX5NHbAnXlLdkINjd06XQ
- BCyOoUhugN0qhE9FJ/gkttyO8JK5e3icBJe+4Ct/iCU3W1pvmqiPfNY5D
- g==;
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20260316232819.6872-1-emil.s.tantilov@intel.com>
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=linutronix.de; s=2020; t=1773738056;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ in-reply-to:in-reply-to:references:references;
+ bh=ojgsEh5obRGiSq1T5vrGWdb+Psz+QfVFhSaFy+wU9pg=;
+ b=SLQ3uN6YVuQEg9kQON08A+uY+LzsYogYGBF7WzKqp6aoAg3T5JlIvHYGN8zvU3k3CdOnpZ
+ 2Jg2yvFNQTvabKDfBp7RhgeZjkGDUGRMQOn7ahIkopEC4k4woJfiAlRuusg77RPsfBXSf8
+ cSkQUm6rAv6bJZurgBFWhvRDvfjkQgYJZWIble8dNDWYf/7CWXoQRniv26Z/HfU223GRTk
+ AANgoYNmPEjUM+TnUB/5FmDTHaMTF54iirhdrsPimpfjHHNFnrsgpCNpgaE4IO1z/7Af6t
+ RVkImuD7anFB2pqhswu8OXdF+RTUILeT4WknwXNjZ1r2X5GPdRAm+KIxVIPE+g==
+X-Mailman-Original-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
+ d=linutronix.de; s=2020e; t=1773738056;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ in-reply-to:in-reply-to:references:references;
+ bh=ojgsEh5obRGiSq1T5vrGWdb+Psz+QfVFhSaFy+wU9pg=;
+ b=UbrxvkWhkDSOs+slId8jQ4SyV8kdAoHk7Q+mesTO1eEAkG3Da51ejvSL2WnUEuXdS8Fqll
+ HSEHKiRrtHStMHAg==
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
- header.from=intel.com
+ header.from=linutronix.de
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=emCw/ZL3
-Subject: [Intel-wired-lan] [PATCH iwl-next v1] ice: add ethtool reset
- support to safe mode ops
+ dkim=pass (2048-bit key, unprotected) header.d=linutronix.de
+ header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=SLQ3uN6Y; 
+ dkim=pass header.d=linutronix.de header.i=@linutronix.de
+ header.a=ed25519-sha256 header.s=2020e header.b=UbrxvkWh
+Subject: Re: [Intel-wired-lan] [PATCH iwl-net 0/3] idpf: virtchnl locking
+ and async fixes
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -107,34 +109,16 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
+On 2026-03-16 16:28:16 [-0700], Emil Tantilov wrote:
+> The first patch in this series improves the locking around the setting
+> and clearing of the free_xn_bm bitmap. Previously the lock was only
+> taken during init shutdown and pop, but not the push function.
+> 
+> Patches 2 and 3 are fixes for the async handler. Patch 2 ensures the
+> payload size is set before the async handler is called, and patch 3 fixes
+> an sleeping bug due to nesting of raw/bh spinlocks.
 
-Wire up ice_ethtool_reset() into ice_ethtool_safe_mode_ops so that the
-.reset ethtool operation is available when the driver is operating in safe
-mode, consistent with the behaviour exposed by the full ice_ethtool_ops.
+Why is there a raw_spinlock_t? From a quick look a spinlock_t would do
+just fine with not runtime change for !PREEMPT_RT.
 
-Without this, a user-space call to ethtool --reset while the driver is in
-safe mode would return EOPNOTSUPP even though the underlying reset logic
-is fully implemented and works correctly.
-
-Signed-off-by: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
-Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
----
- drivers/net/ethernet/intel/ice/ice_ethtool.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index 301947d..bf90bd5 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -4917,6 +4917,7 @@ static const struct ethtool_ops ice_ethtool_safe_mode_ops = {
- 	.set_ringparam		= ice_set_ringparam,
- 	.nway_reset		= ice_nway_reset,
- 	.get_channels		= ice_get_channels,
-+	.reset			= ice_ethtool_reset,
- };
- 
- /**
--- 
-2.52.0
-
+Sebastian
