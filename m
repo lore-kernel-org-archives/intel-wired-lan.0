@@ -4,94 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 68948FB5E8B
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 16 Mar 2026 23:31:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E9E83FB5E90
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 17 Mar 2026 00:09:38 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 2AB0C41093;
-	Mon, 16 Mar 2026 23:31:39 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id AA2F1410F5;
+	Tue, 17 Mar 2026 00:09:38 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id DbvxaX6yoWge; Mon, 16 Mar 2026 23:31:35 +0000 (UTC)
+ id VtpIEQxpNlpu; Tue, 17 Mar 2026 00:09:38 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C6465410B1
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2C45941283
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1773703895;
-	bh=3sg0rNsK9i6651ldWiAXg/gl9hLCFOcU8hjf0CpNrpc=;
+	s=default; t=1773706178;
+	bh=ATZMGm6Kor6Jl5vT2gGBe5Rda+tu+yZ4oP1k5ytlK/o=;
 	h=Date:From:To:Cc:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=0yN96DYIkboI6gFP9SAI0jbn1+cDglwJVa19XCHg1ZVAw/4zl9OyGVJdfAfM7LJb5
-	 Ai9UKa2WeSl3oJdTxMYQMVAKjvOVr+PGnXDyiHxoWpO8XK5k8F5hvLf8fTjynvVu1k
-	 J2VnpDLMw5O+hWnu2Ji7lcvQ1MCje4TsUIFzOWfv6O8/kysLvQLUHT2McWQBr/5tga
-	 l5XDBCt5rCqCCeru1TZY1NwXR0Wxb+VVd7lhraX4sn2CNiKbeQ21kHvJzlvcGFzgJ8
-	 4ucj1BHt9GQ5LS43O/nQwEEBVCRMJSB5S+U2bm77sc12jqDsIQv3VjPBDIB7xlKgKM
-	 6kbQrdssDJikQ==
+	b=WN9D/5WdBBg3xy+An8PtUmvn0cI2wPzva84AzocAScu87rIQyLGnXZsyPPOAgnKJ3
+	 KtbOqDUk68Wy+8F5r5qbLpyhaaF+dcyXJ5dwr9dZYCJJifVqVL4amtuEyRDdGNma/8
+	 Li76Wdm6pYWiXLkkQSUCemtgaGgSm7NMc6F5me6EiiJ8YopImyHBst/RoOPvnJIJJc
+	 GpG01tloWR9WQyW7kTwY1OBuHI8LbaFRTb54SJl6pvVg/OLEiJDV41rh7WqEZapqhp
+	 hYvfRlQjISlp9VbBPDXXNlfg9GGqTWLRN85k0mNdvJX5vFBegV6hfimRSGGgy/hM7U
+	 RWcBhij52jzmg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id C6465410B1;
-	Mon, 16 Mar 2026 23:31:35 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 24FB43C6
- for <intel-wired-lan@lists.osuosl.org>; Mon, 16 Mar 2026 23:31:35 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 2C45941283;
+	Tue, 17 Mar 2026 00:09:38 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 6828B3C6
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 17 Mar 2026 00:09:36 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 1673B4093C
- for <intel-wired-lan@lists.osuosl.org>; Mon, 16 Mar 2026 23:31:35 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 53D4341283
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 17 Mar 2026 00:09:33 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id mc_x0SSO64Mk for <intel-wired-lan@lists.osuosl.org>;
- Mon, 16 Mar 2026 23:31:34 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
- helo=tor.source.kernel.org; envelope-from=kuba@kernel.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 7364240074
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 7364240074
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 7364240074
- for <intel-wired-lan@lists.osuosl.org>; Mon, 16 Mar 2026 23:31:34 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id UqybJWtbSSEE for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 17 Mar 2026 00:09:32 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.234.252.31;
+ helo=sea.source.kernel.org; envelope-from=kuba@kernel.org; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 8F7F1410F5
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 8F7F1410F5
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 8F7F1410F5
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 17 Mar 2026 00:09:32 +0000 (UTC)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by tor.source.kernel.org (Postfix) with ESMTP id 4589360018;
- Mon, 16 Mar 2026 23:31:33 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4A749C19421;
- Mon, 16 Mar 2026 23:31:32 +0000 (UTC)
-Date: Mon, 16 Mar 2026 16:31:31 -0700
+ by sea.source.kernel.org (Postfix) with ESMTP id E57CD40BF2;
+ Tue, 17 Mar 2026 00:09:31 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 94CD3C19421;
+ Tue, 17 Mar 2026 00:09:31 +0000 (UTC)
+Date: Mon, 16 Mar 2026 17:09:30 -0700
 From: Jakub Kicinski <kuba@kernel.org>
-To: =?UTF-8?B?QmrDtnJuIFTDtnBlbA==?= <bjorn@kernel.org>
-Cc: netdev@vger.kernel.org, Michael Chan <michael.chan@broadcom.com>, Pavan
- Chebbi <pavan.chebbi@broadcom.com>, Andrew Lunn <andrew+netdev@lunn.ch>,
- "David S. Miller" <davem@davemloft.net>, Eric Dumazet
- <edumazet@google.com>, Paolo Abeni <pabeni@redhat.com>, Simon Horman
- <horms@kernel.org>, linux-kselftest@vger.kernel.org, Willem de Bruijn
- <willemb@google.com>, Shuah Khan <shuah@kernel.org>, Maxime Chevallier
- <maxime.chevallier@bootlin.com>, Andrew Lunn <andrew@lunn.ch>,
- intel-wired-lan@lists.osuosl.org, Przemek Kitszel
- <przemyslaw.kitszel@intel.com>
-Message-ID: <20260316163131.2ff161c5@kernel.org>
-In-Reply-To: <87a4w9p95i.fsf@all.your.base.are.belong.to.us>
-References: <20260313071322.3489243-1-bjorn@kernel.org>
- <20260314093518.43b820b7@kernel.org>
- <87a4w9p95i.fsf@all.your.base.are.belong.to.us>
+To: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
+ anthony.l.nguyen@intel.com
+Message-ID: <20260316170927.11e7fa70@kicinski-fedora-PF5CM1Y0>
+In-Reply-To: <20260316072053.1241987-2-aleksandr.loktionov@intel.com>
+References: <20260316072053.1241987-1-aleksandr.loktionov@intel.com>
+ <20260316072053.1241987-2-aleksandr.loktionov@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1773703893;
- bh=mokbVaSNGRbUCQQ4SGbI4E3yKDImZ3QdINhNbLzi8Po=;
+ d=kernel.org; s=k20201202; t=1773706171;
+ bh=pBBEWSiMf49jslYnPFwytDruyiiglb/OMToWGB7S42s=;
  h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=hN1fRzFkuoAPo5qf7cCUj/3UZ74Zrg2FGMIpeV+WXs3DgSmup1ufDh90hMZjFc0TC
- DFJ5TZCjZPQKQKjORnD6nXc/kg4X+SL6SJtuFZKzc/SmJH8x3Lpni7zXRGSJmC7zCx
- g7VH7wJOZJqANs6wbO3dzR0eI7+48NtQaOEffLB3o9yHJpLmt0FdQpGcv1EWJJtNb/
- ADvmnC44FS9xSHGIWnlJtVwSRO6c9ouBQkKC+O0VI4rosda2SYh3oAyxbDRgyDV0SU
- SPJVnJB69/VFFVSBjUhPhbnu67KO1WBCN7X1nUwGRmGsi0HPAY8in067EPcMCo8ChC
- 2fFBt9f9P7NSg==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ b=Uu383U+76kwAiejYtpx/LfVRKghv0poVuLZnaxmrc1QjWBCjHwdan9lU7uJZl9+2h
+ EhIQjdBbyBfPlc5ar2AhW3p0ORp5BE/neMw+r/C9hvR8HkjsnAipMn+/h10cMdzL6Z
+ WB3h90znM4VR5Kiqb4+xzrSe51UdzA2ORVKrb3xZ7Pde9oACqjL2XHqdjLx8a4vGdt
+ +2mTW5CCA63b2trmQRUZfcAVWFnOGfFVm375vdwgkErVf790TkLhFVv233IThbXwgJ
+ +5062wsbeNH7RPEhU3baLLB37pCuyXCAEZS8No54ze5Fb/aE0mG5q3FcGo0qXGDsJB
+ 9w6DAgBHXVkFw==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=hN1fRzFk
-Subject: Re: [Intel-wired-lan] [PATCH net-next v4 0/3] ethtool: Dynamic RSS
- context indirection table resizing
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20201202 header.b=Uu383U+7
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next v5 1/2] ethtool: treat
+ RXH_GTP_TEID as intrinsically symmetric
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -107,33 +98,18 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Sun, 15 Mar 2026 13:30:33 +0100 Bj=C3=B6rn T=C3=B6pel wrote:
-> Jakub Kicinski <kuba@kernel.org> writes:
->=20
-> > On Fri, 13 Mar 2026 08:13:12 +0100 Bj=C3=B6rn T=C3=B6pel wrote: =20
-> >> Some NICs (e.g. bnxt) change their RSS indirection table size based on
-> >> the queue count, because the hardware table is a shared resource. The
-> >> ethtool core locks ctx->indir_size at context creation, so drivers
-> >> have to reject channel changes when RSS contexts exist.
-> >>=20
-> >> This series adds resize helpers and wires them up in bnxt. =20
-> >
-> > Sorry Bjorn, I was typing the explanation below and I realized that=20
-> > we may be violating user intent. We should already record the user_size
-> > from rss_set_prep_indir() as part of the context (and presumably some
-> > netdev state for the main context?) and don't allow shrinking the
-> > context below that mark.. =20
->=20
-> Don't be sorry! Good catch, and glad you caught it now rather than after
-> it landed.
->=20
-> I'll respin with user_size tracked in the context (and netdev state for
-> context 0) as a lower bound, so resize never folds below the size the
-> user explicitly configured.
->=20
-> WDYT?
+On Mon, 16 Mar 2026 08:20:52 +0100 Aleksandr Loktionov wrote:
+> A GTP tunnel uses the same TEID value in both directions of a flow;
+> including TEID in the hash input does not break src/dst symmetry.
+> 
+> ethtool_rxfh_config_is_sym() currently rejects any hash field bitmap
+> that contains bits outside the four paired L3/L4 fields.  This causes
+> drivers that hash GTP flows on TEID to fail the kernel's preflight
+> validation in ethtool_check_flow_types(), making it impossible for
+> those drivers to support symmetric-xor transforms at all.
+> 
+> Strip RXH_GTP_TEID from the bitmap before the paired-field check so
+> that drivers may honestly report TEID hashing without blocking the
+> configuration of symmetric transforms.
 
-Yes, keep in mind that AFAIR context 0 is not currently tracked
-in the xarray. So maybe add the size of the main / default context=20
-as a field in struct ethtool_netdev_state ?  Or we can start tracking
-it (partially). IDK what's cleaner.
+LG, thanks!
