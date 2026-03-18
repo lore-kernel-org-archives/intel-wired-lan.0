@@ -1,102 +1,99 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4798BFCD0C5
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 18 Mar 2026 07:24:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C8013FCD0CE
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 18 Mar 2026 08:07:43 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id D8E9341655;
-	Wed, 18 Mar 2026 07:24:45 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 5XKjDSpfAKgb; Wed, 18 Mar 2026 07:24:45 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 177FA41520
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1773818685;
-	bh=GMXojMRx2DusSv/c5foBS++mXTfilxtffy+hvVganPA=;
-	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=TmB8OvKIof3svtcqIUH5iV95EbHKLxtAPhWNuekFKlIe25f0/t8OLCZOQ6r9EvVbR
-	 O4TYpbWnSrIgpBiaRdD51Vl4JjQmyLFM/Ld9rBXOtUpELhHSUrr/C+rRalQzjp1Nox
-	 OalGTrePRIQAN0iUUJWDVBiY7KJkkKU4YPtBQivgRqStOF9a4JMEV3NCiPKcYPl8R1
-	 0ZNxTMHCYuXaHRerXkX/9LMcgTf7A6bnppw17zJXa/yEbkH+ZXBM6RzSvY+rJUL0/0
-	 5NjuQw/11mhp8nPwgLhz4ukul2g+XTRlevu5qRisu86T7lZQFufb1EaTe9o0wnzIXK
-	 eefu6+n806h/w==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 177FA41520;
-	Wed, 18 Mar 2026 07:24:45 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id E5FE7D3
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Mar 2026 07:24:43 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id C73CD608F4
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Mar 2026 07:24:43 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 7BF1860904;
+	Wed, 18 Mar 2026 08:07:43 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id GrHUB3gx4BoN for <intel-wired-lan@lists.osuosl.org>;
- Wed, 18 Mar 2026 07:24:43 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=193.142.43.55;
- helo=galois.linutronix.de; envelope-from=bigeasy@linutronix.de;
+ id DjQUjc_4XSPt; Wed, 18 Mar 2026 08:07:42 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B1196608FD
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1773821262;
+	bh=qfO6LRNCVs3bhBoA47/zWK1gG62swW8c6ySP3LLpou0=;
+	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=w/ZbAzQJCzp9m9F/g5BWKX65z1zqReE6MjXjaSyOTUV4zxQNwuiCOxFqR+3bQexUS
+	 6EZEIs2xNkyYG2sHhZfc/AEcChhHLfsr3UliwYCQ/uRQwRGRt22n5dPuGBe0vIlmwZ
+	 MUB9TrXXa1QvkNnP5+yIRf5v2bvx39Y9yAATraCu6S+yCGxAMze9V441+Z6/+bYe6e
+	 1+HyAGVIbR/gisO3BzDEhW4apkgvbI51MpSF5LoniQKDvQulFc8NIN4JkxMI+1bTAw
+	 7/X2zLeKnLwyh+/YrZu9dqPGFBzjrMaonwdWXMqrXNVb5rlu5WWmWUWyH1gDfwImab
+	 i/Mg21pTtL+6g==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp3.osuosl.org (Postfix) with ESMTP id B1196608FD;
+	Wed, 18 Mar 2026 08:07:42 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 37145D3
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Mar 2026 08:07:42 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp4.osuosl.org (Postfix) with ESMTP id 1C8F540BE1
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Mar 2026 08:07:42 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id PolAXBbTRLhz for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 18 Mar 2026 08:07:41 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.19;
+ helo=mgamail.intel.com; envelope-from=aleksandr.loktionov@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org B6BE4608DF
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B6BE4608DF
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
- by smtp3.osuosl.org (Postfix) with ESMTPS id B6BE4608DF
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Mar 2026 07:24:42 +0000 (UTC)
-Date: Wed, 18 Mar 2026 08:24:36 +0100
-From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-To: "Tantilov, Emil S" <emil.s.tantilov@intel.com>
-Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- anthony.l.nguyen@intel.com, aleksandr.loktionov@intel.com,
- przemyslaw.kitszel@intel.com, andrew+netdev@lunn.ch,
- davem@davemloft.net, edumazet@google.com, kuba@kernel.org,
- pabeni@redhat.com, clrkwllms@kernel.org, rostedt@goodmis.org,
- linux-rt-devel@lists.linux.dev, sgzhang@google.com, boolli@google.com
-Message-ID: <20260318072436.4JmVdDfK@linutronix.de>
-References: <20260316232819.6872-1-emil.s.tantilov@intel.com>
- <20260317090054.DuPZ6O0O@linutronix.de>
- <7247024b-fc8d-4a75-ba15-a10399db03bc@intel.com>
- <20260317143850.BLrnAox8@linutronix.de>
- <f77ad6b1-1fff-4f3c-a411-5115bb66e31d@intel.com>
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 5D58F40B82
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 5D58F40B82
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.19])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 5D58F40B82
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Mar 2026 08:07:40 +0000 (UTC)
+X-CSE-ConnectionGUID: dKDra2AgTLitZeEAWo85uA==
+X-CSE-MsgGUID: /1efvYvKQsqVe2U3fGrxRA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11732"; a="74755245"
+X-IronPort-AV: E=Sophos;i="6.23,127,1770624000"; d="scan'208";a="74755245"
+Received: from orviesa006.jf.intel.com ([10.64.159.146])
+ by orvoesa111.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 18 Mar 2026 01:07:41 -0700
+X-CSE-ConnectionGUID: jdC19aAIR+2gvK0MrbS1bw==
+X-CSE-MsgGUID: nV1zGSKUSb67sYXQUFbPUw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,127,1770624000"; d="scan'208";a="221628545"
+Received: from amlin-019-225.igk.intel.com ([10.102.19.225])
+ by orviesa006.jf.intel.com with ESMTP; 18 Mar 2026 01:07:39 -0700
+From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+To: intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com,
+ aleksandr.loktionov@intel.com
+Cc: netdev@vger.kernel.org
+Date: Wed, 18 Mar 2026 09:07:35 +0100
+Message-ID: <20260318080737.3012293-2-aleksandr.loktionov@intel.com>
+X-Mailer: git-send-email 2.52.0
+In-Reply-To: <20260318080737.3012293-1-aleksandr.loktionov@intel.com>
+References: <20260318080737.3012293-1-aleksandr.loktionov@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <f77ad6b1-1fff-4f3c-a411-5115bb66e31d@intel.com>
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=linutronix.de; s=2020; t=1773818678;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=GMXojMRx2DusSv/c5foBS++mXTfilxtffy+hvVganPA=;
- b=S7lNnBevReHY99KsphuvNO/RK9P26Ns+4nArqabBAs1aBiuHflX+bv+F5qvBlR4+2ljCsv
- 4ghLWAw7eXvoyKM4agFSwLDTsQirl6Cb3lYs15mATHR4H9Suz0KRc7xYxnPuwdz/K6v7xt
- OjyBiWzESZ7awsJbWfKleMx6+RkAYeR3iQK0sATcjWYzoLKnpgtiOdn/MSeJcdEuQmv2j2
- rzQAbKFWbZDajTEQZPXi3OVDJ7cuhgvblcvgWupHh+1hf99uXLAhv3JkQP+m3pZMcabAdC
- j3BjhQUMOeqD5xSj5xJt8twr4bWoUUnSx15waNrj2TS6URBSezG/HxHhTSvkPw==
-X-Mailman-Original-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
- d=linutronix.de; s=2020e; t=1773818678;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=GMXojMRx2DusSv/c5foBS++mXTfilxtffy+hvVganPA=;
- b=sYJiqZbWtA9QAURWngFUcR85rU8xJ40MigLKGcHADExuVS2kSkbUQ+itgzSefupLqBrc/8
- N4d7P2Q42WVCnhDw==
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+Content-Transfer-Encoding: 8bit
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1773821261; x=1805357261;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=84LnzcZCMYp6duMUvt8hli/mHgvmoXyWC9z9VVw9BfA=;
+ b=MI+/NFXbZfUTOY0MBWmoqBqro309j80moFVkpTCkzUlSxp7opGhhLvV9
+ +kOkdgWVu1V/51zoxy62MsE8SWbzdt6+1vNblm967IwdNB5Iy446TPSIB
+ g6/Mh4NTRDd7aKcrwpDwYVzTe5joxBRV2bMoO5fzfmJEhCUI1CDdIK0SD
+ HUjTqrae6EaS8qd6+NICrz/IdFLT/o6LKiWq6UEUzWmZCC3Ovrhhr7Gnb
+ cGMhslN6NRZbHk0ZLTw9scXZxOEGPS6Q0km+H5Eu4VGwWAHdBcyi+i01R
+ 5EwvTxysew0PvkffyjwZRq3DNRRM/sGuw+Qc9OtdgICLdH7+RkfChW9p6
+ A==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
- header.from=linutronix.de
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key, unprotected) header.d=linutronix.de
- header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=S7lNnBev; 
- dkim=pass header.d=linutronix.de header.i=@linutronix.de
- header.a=ed25519-sha256 header.s=2020e header.b=sYJiqZbW
-Subject: Re: [Intel-wired-lan] [PATCH iwl-net 0/3] idpf: virtchnl locking
- and async fixes
+ header.from=intel.com
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=MI+/NFXb
+Subject: [Intel-wired-lan] [PATCH net-next v1 1/2] virtchnl: add
+ VIRTCHNL_VLAN_ETHERTYPE_88E7 support
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -112,30 +109,37 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On 2026-03-17 12:30:39 [-0700], Tantilov, Emil S wrote:
-> > What would break if you make that lock a spinlock_t?
-> 
-> Right. Scope and risk - these fixes are specifically for the async
-> handler and I did not want to touch the global locking that will
-> impact the entire VC handling. We do have series in flight for -next
-> that refactor that code, while moving it to libie:
-> https://lore.kernel.org/netdev/20251117134912.18566-10-larysa.zaremba@intel.com/
+IEEE 802.1ah (Provider Backbone Bridging) uses ethertype 0x88E7 as the
+Backbone Service Tag (B-TAG). Some deployments stack 802.1ah on top of
+existing QinQ or single-tagged VLAN infrastructure, creating scenarios
+where a VF needs to negotiate support for the 0x88E7 ethertype with the
+PF in order to install correct VLAN filters.
 
-Now I understood. You fiddle with the completion's lock. That is
-something that should not have been done.
+Add VIRTCHNL_VLAN_ETHERTYPE_88E7 = BIT(3) to the virtchnl_vlan_support
+capability bitmask so that VF drivers can advertise and negotiate 0x88E7
+VLAN ethertype support through the existing VIRTCHNL_OP_GET_OFFLOAD_VLAN_V2_CAPS
+handshake.
 
-> ... that also remove the raw spinlock. With that being said, I can look
-> into converting the lock to spinlock_t if that is the preferred approach.
+The new bit follows the established BIT(N) pattern of the enum and does
+not conflict with any existing flag.
 
-The preferred approach is that, if you pick raw_spinlock_t for locking,
-you are aware of all the consequences and you have a solid reason for
-it. The comment in the file says
-| For now, this API is only used from within a workqueue context;
-| - * raw_spin_lock() is enough.
+Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+---
+ include/linux/avf/virtchnl.h | 1 +
+ 1 file changed, 1 insertion(+)
 
-that is not it.
+diff --git a/include/linux/avf/virtchnl.h b/include/linux/avf/virtchnl.h
+index 11bdab5..511c882 100644
+--- a/include/linux/avf/virtchnl.h
++++ b/include/linux/avf/virtchnl.h
+@@ -636,6 +636,7 @@ enum virtchnl_vlan_support {
+ 	VIRTCHNL_VLAN_ETHERTYPE_8100 =		BIT(0),
+ 	VIRTCHNL_VLAN_ETHERTYPE_88A8 =		BIT(1),
+ 	VIRTCHNL_VLAN_ETHERTYPE_9100 =		BIT(2),
++	VIRTCHNL_VLAN_ETHERTYPE_88E7 =		BIT(3),
+ 	VIRTCHNL_VLAN_TAG_LOCATION_L2TAG1 =	BIT(8),
+ 	VIRTCHNL_VLAN_TAG_LOCATION_L2TAG2 =	BIT(9),
+ 	VIRTCHNL_VLAN_TAG_LOCATION_L2TAG2_2 =	BIT(10),
+-- 
+2.52.0
 
-> Thanks,
-> Emil
-
-Sebastian
