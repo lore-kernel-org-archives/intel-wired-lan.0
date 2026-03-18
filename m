@@ -4,86 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 75843103E19A
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 18 Mar 2026 15:03:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2F96C103E195
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 18 Mar 2026 15:03:33 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 45F6A60A93;
-	Wed, 18 Mar 2026 15:03:30 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id F01AD60A92;
+	Wed, 18 Mar 2026 15:03:32 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id DoWv_8NEYnGV; Wed, 18 Mar 2026 15:03:28 +0000 (UTC)
+ id Dsfv_8KPoEqv; Wed, 18 Mar 2026 15:03:31 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 838B160A68
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org F1F8760A68
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1773846208;
-	bh=RnwqqwAxnRG8s2vaRYDrbUdfVznpcDcr1raRDlnvaSE=;
+	s=default; t=1773846211;
+	bh=S2Eshwmt0Yi5gowTBPApYQhLiCclUhxDbq8BJfNjYyM=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=EQjSGJNCp82i6HlWcKndfNgM5YsgvV0kemTl7eclV37E1OR3hlK9o1Q6rYJVYSJMo
-	 CfjWZJxEhm2avN24b38ex/C0Wn8kbPARJnlJNwvqO22EddDkvIQ4h0wgXeoPrxybLk
-	 EKbO+7DZid15ybcsFZ+Rw4iBWu912wRpqY+Gi3ALuAln2/ah0HTd5HiCb/9NCSxMo+
-	 N2ToSHXOv/0Z5hkno0kxY5yNntAiuKtX0cCK2dR0CtaEpN4s/oBrPOql/i2FhY01l1
-	 xXgSKgngqHdr2gtd+3Noeq9ebknfOZa/mcIezqmiOd8nkaVSRnS1/F6/1VSDQCwdS9
-	 oalAcK/Bdt4IA==
+	b=iDRQMnppw138mQ/Sy8Fofmes3KQzEzeh6ATls/qwsCYLHDRAliihIo7F0GNJH3MmD
+	 FnwRvppWIXFwFepoveobciYJ9qQuSbdT1HtlTGoSOwKVlFGhJHzc+Ru2YVHTgBGFVJ
+	 XtM6/+PLBlwlrHFwkP9aZxqXsqbHFnLmyJ6JDCErZe6xc9RF7ia5mL+2Dv1mM2hHSz
+	 rYeatWJS0c66V1QD5J5Puk7japxClzm6UvNxmHPapIPmFL5EFOxQEZTtWH8ezDXWnL
+	 750Pdunb/alCnc7G3orHA9hG5k0b3oJLokNxyZm8mesm9CWhysTzjcScRI2o43pI6g
+	 ojgBgp7DDzPfg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 838B160A68;
-	Wed, 18 Mar 2026 15:03:28 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id EC4F31AD
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Mar 2026 15:03:26 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id F1F8760A68;
+	Wed, 18 Mar 2026 15:03:30 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 276BC1AD
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Mar 2026 15:03:29 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id D2E2481E1F
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Mar 2026 15:03:26 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 25B1D81EFA
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Mar 2026 15:03:29 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id yMRKxDA4QSJt for <intel-wired-lan@lists.osuosl.org>;
- Wed, 18 Mar 2026 15:03:26 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=74.125.82.41;
- helo=mail-dl1-f41.google.com; envelope-from=stfomichev@gmail.com;
+ id C7MRtZr0NECH for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 18 Mar 2026 15:03:28 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=74.125.82.175;
+ helo=mail-dy1-f175.google.com; envelope-from=stfomichev@gmail.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 3A64F81DF5
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 3A64F81DF5
-Received: from mail-dl1-f41.google.com (mail-dl1-f41.google.com [74.125.82.41])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 3A64F81DF5
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Mar 2026 15:03:26 +0000 (UTC)
-Received: by mail-dl1-f41.google.com with SMTP id
- a92af1059eb24-126ea4e9694so2428533c88.1
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Mar 2026 08:03:26 -0700 (PDT)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 7914D81F11
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7914D81F11
+Received: from mail-dy1-f175.google.com (mail-dy1-f175.google.com
+ [74.125.82.175])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 7914D81F11
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Mar 2026 15:03:28 +0000 (UTC)
+Received: by mail-dy1-f175.google.com with SMTP id
+ 5a478bee46e88-2b4520f6b32so17288eec.0
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Mar 2026 08:03:28 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20251104; t=1773846205; x=1774451005;
+ d=1e100.net; s=20251104; t=1773846207; x=1774451007;
  h=content-transfer-encoding:mime-version:references:in-reply-to
  :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
  :to:cc:subject:date:message-id:reply-to;
- bh=RnwqqwAxnRG8s2vaRYDrbUdfVznpcDcr1raRDlnvaSE=;
- b=CXGDKRsw/+z4ET5NxvCXoVMsXpRenbhFnHRsI3f1Vd0LMsNd6D9m2WLVkcAgxa7sdv
- XtKMqHZytMXz7OVsWGfk8A6K12HzLeoKRkxChSSX/CyCQJ4VdnhlD0Iml4uzXCFoMKvh
- XcKVlZho8Py2eWqLyeO0ti1VIWsy9Wx7Ne20M3SdX/o+WOgTID7XYd/i+CSW/kDbdGAt
- KY3UGnpMaZk5upsgJQn/LpJ+L0AfkfKg4L4XLX7kftX/+pjS3433i0bUCDFUwT6ptsJi
- m5cJUgr82u3wPy21YqMAzNy58fSFKvpntmyZjNVaCpCGmTRW+ovL9uMMTs2hrtbQgnka
- wF1w==
+ bh=S2Eshwmt0Yi5gowTBPApYQhLiCclUhxDbq8BJfNjYyM=;
+ b=TCdIG6OFVYQC2l3/6Vc9nVIFFBmO1Tyqs4jqAsLrdYf051SwHpDhpPqBM6rg+Ia9KK
+ 1n18NEc8uR5dHB99Aj6sygoWt3uS2XUOqV7t3IWMTBaQgXc52O//ySFbQHlO+lOtWRvy
+ NEeWC9jRUJdbyBZXC5YfNqQJUH8afkaG6b7tuxF2Ls8MbrZcx0vvQYJ+GI08MkGXZUs+
+ nl6CW7uOs5ZzNfoC66ir8pNhw6JBSFY0/hu7LE7ynK+O1LjVJEd//UKmLVtGqak3ayyM
+ P/2h9212LdAhYnTZgCaK3wCcvOxhlVx/NlImwrZkLzcExldB6Hmd/gjOEDYzyIkPcVhB
+ IYRQ==
 X-Forwarded-Encrypted: i=1;
- AJvYcCUztiKgLInUqlcqA+2eG7Lq9ZxjY1xb8JMaUcQIzsUiR45GFMZYzBOthmg2QB5CNq686M8NHUUVViVEEUrhauM=@lists.osuosl.org
-X-Gm-Message-State: AOJu0Yx49nqDbsMxUTHRiylq91j+Z4EvytTGHmzLuOKVfBdHI2b4JYFT
- TFNBGzdelPBKnttPB/PEzp1JJLUCdnfYtBS4HB842wtgdDEPl96nHNU=
-X-Gm-Gg: ATEYQzy1/JBWW1g1aIVYWic/cmwPf9R86ZZJvoOkH7x2rZ0QCmVLbipK4XRSByoZZlT
- 8wYK3mQapgT8zTHH4veCEUym9VVXkqyF5BqmYWWBErIXN03GPOb2nLTEREEj4JlBUT5TNuFfPQB
- ZvO+JYA8kxKBZzWl3Kyf/PF4+L2+F9o4uwL1P4v8yRn++w2C1d9BC6Q7797ojHleYokVpZ6wWbB
- jDD97PEhSC+k0VgORaCPLXY3UCW/dgUrGZARF10U/2t/52Qi8yxPt/D0elF8BNBlzilGuciFYct
- 39S1vPtor3tPwBMFSePjLPfr1rJLio/N2sU9QEMb0ICVpqQuQCprpdxsr01pAaqLgjqmmDn0vAf
- Omj09TTYhpt3AVM/hGn4dEVO2nUh5Rl+WbDek1UW9SLdISqcKxtAlMVAVtaafsSqEFRhcYf9w5s
- +fM5kX3W//BWmlk/UM/CyfixotE0Gdu1d7Rx/5RmQEoGPrfKaGYL6BWYZNjTvO/1N0dHILq13n1
- BGqS86vrpSVo4hiL3tthXNw/0cU
-X-Received: by 2002:a05:7022:61a:b0:128:cf5c:5362 with SMTP id
- a92af1059eb24-129a70e0ccbmr2203458c88.12.1773846204437; 
- Wed, 18 Mar 2026 08:03:24 -0700 (PDT)
+ AJvYcCWzP/d29qbdiK1Kpt8N6oUw9jYmP0zRPcVh4VYC0MKKD+z6XF6Y2AdnhezzCrrj08LKnGpDH3M0yUrZqcZFIDs=@lists.osuosl.org
+X-Gm-Message-State: AOJu0Yzaf0bebh+InaXz0ZeswFaD73TEhMmL9n/LzBpMLI9Zd3uJuPxr
+ IVGi002B985CeRRIUH6Uej4XIrn9jn0odbvOYpi/Zfj96ZSnOI4+d+I=
+X-Gm-Gg: ATEYQzytSygNaKFh64D/WXrUrVJXVG4OtIem1Qra9xXCqthP2bf2p6C4+0t9iKcfYrs
+ UWeIVH0B6qh5+RxCCTMjIrptuiwpK6+pLbm5KF8272qVBMOSPQbxwfFU1v1o/YA+Q9R7jwlk7pL
+ 0WKe+vekg6EjpiGiVZ8FSXXjyR9G5WwOf/PoYXbOlDsKWZ/brlfDaOil+LyG25XwaNWaQvGA0Ts
+ 8+gTSzMc9R5DvY/ecpAdkEZKR5luuk4z701fKhAka8FKLaqOsyukrYMAjXOZ4XczFYiDC04GsCG
+ WVLMyHDZZgTQRRFh47/o9AH9yBlYk4K2qR6eMLbGAfFVTgK+eVTUwkBHWPCkfCq+pZ31UztsYDC
+ 0X8UGnfbS6ii8XFZdV2n3I4UcmFV+zxJ64eGbKyPIx6pm2lW2VKJYwHIWsUFwmhWdvkabbWru6Y
+ 38nUO5Y4+nYXUczBJ5Y4WgflOW3airWriDzTgjOWYdHYMROz/x7WhAc7ykqD+TqQ8eD/xxgD8hF
+ RaA6nKkCtjLRdcyjQ==
+X-Received: by 2002:a05:7300:fb97:b0:2ba:a3f2:958c with SMTP id
+ 5a478bee46e88-2c0e4dc3156mr1648308eec.0.1773846207075; 
+ Wed, 18 Mar 2026 08:03:27 -0700 (PDT)
 Received: from localhost (c-76-102-12-149.hsd1.ca.comcast.net. [76.102.12.149])
  by smtp.gmail.com with ESMTPSA id
- a92af1059eb24-129b3e8d34dsm3689514c88.7.2026.03.18.08.03.23
+ 5a478bee46e88-2c0e55cd9cfsm3997754eec.26.2026.03.18.08.03.26
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 18 Mar 2026 08:03:24 -0700 (PDT)
+ Wed, 18 Mar 2026 08:03:26 -0700 (PDT)
 From: Stanislav Fomichev <sdf@fomichev.me>
 To: netdev@vger.kernel.org
 Cc: davem@davemloft.net, edumazet@google.com, kuba@kernel.org,
@@ -100,8 +101,8 @@ Cc: davem@davemloft.net, edumazet@google.com, kuba@kernel.org,
  intel-wired-lan@lists.osuosl.org, linux-rdma@vger.kernel.org,
  linux-wireless@vger.kernel.org, linux-kselftest@vger.kernel.org,
  leon@kernel.org
-Date: Wed, 18 Mar 2026 08:03:02 -0700
-Message-ID: <20260318150305.123900-11-sdf@fomichev.me>
+Date: Wed, 18 Mar 2026 08:03:04 -0700
+Message-ID: <20260318150305.123900-13-sdf@fomichev.me>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260318150305.123900-1-sdf@fomichev.me>
 References: <20260318150305.123900-1-sdf@fomichev.me>
@@ -110,8 +111,8 @@ Content-Transfer-Encoding: 8bit
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=none (p=none dis=none)
  header.from=fomichev.me
-Subject: [Intel-wired-lan] [PATCH net-next v2 10/13] netdevsim: convert to
- ndo_set_rx_mode_async
+Subject: [Intel-wired-lan] [PATCH net-next v2 12/13] net: warn ops-locked
+ drivers still using ndo_set_rx_mode
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -127,48 +128,47 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Convert netdevsim from ndo_set_rx_mode to ndo_set_rx_mode_async.
-The callback is a no-op stub so just update the signature and
-ops struct wiring.
+Now that all in-tree ops-locked drivers have been converted to
+ndo_set_rx_mode_async, add a warning in register_netdevice to catch
+any remaining or newly added drivers that use ndo_set_rx_mode with
+ops locking. This ensures future driver authors are guided toward
+the async path.
+
+Also route ops-locked devices through dev_rx_mode_work even if they
+lack rx_mode NDOs, to ensure netdev_ops_assert_locked() does not fire
+on the legacy path where only RTNL is held.
 
 Signed-off-by: Stanislav Fomichev <sdf@fomichev.me>
 ---
- drivers/net/netdevsim/netdev.c | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+ net/core/dev.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/netdevsim/netdev.c b/drivers/net/netdevsim/netdev.c
-index 5ec028a00c62..9c9217792125 100644
---- a/drivers/net/netdevsim/netdev.c
-+++ b/drivers/net/netdevsim/netdev.c
-@@ -182,7 +182,9 @@ static netdev_tx_t nsim_start_xmit(struct sk_buff *skb, struct net_device *dev)
- 	return NETDEV_TX_OK;
- }
+diff --git a/net/core/dev.c b/net/core/dev.c
+index d50d6dc6ac1f..187cd7b5074f 100644
+--- a/net/core/dev.c
++++ b/net/core/dev.c
+@@ -9778,7 +9778,8 @@ void __dev_set_rx_mode(struct net_device *dev)
+ 	if (!netif_up_and_present(dev))
+ 		return;
  
--static void nsim_set_rx_mode(struct net_device *dev)
-+static void nsim_set_rx_mode(struct net_device *dev,
-+			     struct netdev_hw_addr_list *uc,
-+			     struct netdev_hw_addr_list *mc)
- {
- }
+-	if (ops->ndo_set_rx_mode_async || ops->ndo_change_rx_flags) {
++	if (ops->ndo_set_rx_mode_async || ops->ndo_change_rx_flags ||
++	    netdev_need_ops_lock(dev)) {
+ 		queue_work(rx_mode_wq, &dev->rx_mode_work);
+ 		return;
+ 	}
+@@ -11470,6 +11471,11 @@ int register_netdevice(struct net_device *dev)
+ 		goto err_uninit;
+ 	}
  
-@@ -641,7 +643,7 @@ static const struct net_shaper_ops nsim_shaper_ops = {
- 
- static const struct net_device_ops nsim_netdev_ops = {
- 	.ndo_start_xmit		= nsim_start_xmit,
--	.ndo_set_rx_mode	= nsim_set_rx_mode,
-+	.ndo_set_rx_mode_async	= nsim_set_rx_mode,
- 	.ndo_set_mac_address	= eth_mac_addr,
- 	.ndo_validate_addr	= eth_validate_addr,
- 	.ndo_change_mtu		= nsim_change_mtu,
-@@ -664,7 +666,7 @@ static const struct net_device_ops nsim_netdev_ops = {
- 
- static const struct net_device_ops nsim_vf_netdev_ops = {
- 	.ndo_start_xmit		= nsim_start_xmit,
--	.ndo_set_rx_mode	= nsim_set_rx_mode,
-+	.ndo_set_rx_mode_async	= nsim_set_rx_mode,
- 	.ndo_set_mac_address	= eth_mac_addr,
- 	.ndo_validate_addr	= eth_validate_addr,
- 	.ndo_change_mtu		= nsim_change_mtu,
++	if (netdev_need_ops_lock(dev) &&
++	    dev->netdev_ops->ndo_set_rx_mode &&
++	    !dev->netdev_ops->ndo_set_rx_mode_async)
++		netdev_WARN(dev, "ops-locked drivers should use ndo_set_rx_mode_async\n");
++
+ 	ret = netdev_do_alloc_pcpu_stats(dev);
+ 	if (ret)
+ 		goto err_uninit;
 -- 
 2.53.0
 
