@@ -1,59 +1,59 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B417A10775FE
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 18 Mar 2026 17:56:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 443981077608
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 18 Mar 2026 18:56:44 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 7111160BBE;
-	Wed, 18 Mar 2026 17:56:32 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id ED8124170B;
+	Wed, 18 Mar 2026 18:56:43 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id mQs1ANRq6m7Z; Wed, 18 Mar 2026 17:56:31 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id Ez_PAOxbWovq; Wed, 18 Mar 2026 18:56:42 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B062160BB8
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 12E8340BDB
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1773856591;
-	bh=iUa0cUAD4togZvYKxzXDBpSFVS/rOwnteKTz4jTJm+8=;
+	s=default; t=1773860202;
+	bh=PfderLH1PeQJs9EdZnKIFcadn6yQyUif1ZtSb/oqtWI=;
 	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=L2U8DiVltpzcuq0WzKyI4Zr2Dkgh7B3NgvMgmU7CVWZSG5Zg69nf+0hSPM/OVVcMa
-	 YT8oaU7Glu7avBB37tLg2xg11TdzL2dZ3fzyLxvb2ADq6s9o7T+DfCfq7C+EAEYzMc
-	 vk1ZgvYvO2Q7hAoYCV0iUEUJ07dPd2lEHOk6a7S2Nmadl6wclV6gR3bovC3CFrNgrK
-	 Zk8eIBRnRTtpbthgiRhYGgRcRWFNVXvaO9myELvPtH9pdQya/fANysHOMSlo035xzj
-	 /ZmXtvDv1OpjLI1tFFofIrT97jofXvnAK2Tr+y1ZTiHiCXoGz5jWujO/3GiySJ40uS
-	 2Mfj1JT5s7Kcg==
+	b=hqwU4oex6fqcDwf8v4QGN/l7R/YaeHVUNhuPzg9oAakFwzNl61u2YYGSCbJggLnfE
+	 DWXIhNvfZ/WsmvrxrD7uVgLfMyigNb0D+nVgRaVw5hGvTXwtyRBc/cHML2F4URgu49
+	 oBWmn/bPgr9nyvGqt33A308EzVoj7kJvHZvJcbqW9FqYTShKmYRDb1U+9MvUqH/nxv
+	 Oyi5WHSHE6hFt9TZ2McLEhFPdtm/ZoeBe9gOhcmN6jrRRw06/Sdx9CU8IOYGwVcNt5
+	 vm0NRG55LGfBmXz7CVQ9CiHoPGhj/ibwNqEKQHqeeKD9g5eUxNBRemWNh4dnkX7BOr
+	 YM7w6/vqBkPuA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id B062160BB8;
-	Wed, 18 Mar 2026 17:56:31 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id 10FE71AD
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Mar 2026 17:56:31 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 12E8340BDB;
+	Wed, 18 Mar 2026 18:56:42 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 8D0371B6
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Mar 2026 18:56:41 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 0267360BB8
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Mar 2026 17:56:31 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 724EA404AC
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Mar 2026 18:56:41 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id nHOqawO9X6Ih for <intel-wired-lan@lists.osuosl.org>;
- Wed, 18 Mar 2026 17:56:30 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id oE2YFxewWwbO for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 18 Mar 2026 18:56:40 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=49.212.198.91;
  helo=www2881.sakura.ne.jp; envelope-from=kohei@enjuk.jp; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org AC62960BB6
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org AC62960BB6
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 1EC4B40494
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 1EC4B40494
 Received: from www2881.sakura.ne.jp (www2881.sakura.ne.jp [49.212.198.91])
- by smtp3.osuosl.org (Postfix) with ESMTPS id AC62960BB6
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Mar 2026 17:56:29 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 1EC4B40494
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Mar 2026 18:56:39 +0000 (UTC)
 Received: from x1 (122.24.31.150.dy.iij4u.or.jp [150.31.24.122])
  (authenticated bits=0)
- by www2881.sakura.ne.jp (8.16.1/8.16.1) with ESMTPSA id 62IHtmKq077402
+ by www2881.sakura.ne.jp (8.16.1/8.16.1) with ESMTPSA id 62IIuJEi017320
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NO);
- Thu, 19 Mar 2026 02:55:50 +0900 (JST) (envelope-from kohei@enjuk.jp)
-Date: Thu, 19 Mar 2026 02:55:48 +0900
+ Thu, 19 Mar 2026 03:56:20 +0900 (JST) (envelope-from kohei@enjuk.jp)
+Date: Thu, 19 Mar 2026 03:56:19 +0900
 From: Kohei Enju <kohei@enjuk.jp>
 To: Alexander Lobakin <aleksander.lobakin@intel.com>
 Cc: intel-wired-lan@lists.osuosl.org, Tony Nguyen <anthony.l.nguyen@intel.com>,
@@ -66,31 +66,32 @@ Cc: intel-wired-lan@lists.osuosl.org, Tony Nguyen <anthony.l.nguyen@intel.com>,
  Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
  nxne.cnse.osdt.itp.upstreaming@intel.com, netdev@vger.kernel.org,
  linux-kernel@vger.kernel.org
-Message-ID: <abripOPt4oVu-Ksb@x1>
+Message-ID: <abrzq5_S7p-YjqhE@x1>
 References: <20260318163505.31765-1-aleksander.lobakin@intel.com>
  <20260318163505.31765-4-aleksander.lobakin@intel.com>
+ <abripOPt4oVu-Ksb@x1>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20260318163505.31765-4-aleksander.lobakin@intel.com>
+In-Reply-To: <abripOPt4oVu-Ksb@x1>
 X-Mailman-Original-DKIM-Signature: a=rsa-sha256;
- bh=iUa0cUAD4togZvYKxzXDBpSFVS/rOwnteKTz4jTJm+8=; 
+ bh=PfderLH1PeQJs9EdZnKIFcadn6yQyUif1ZtSb/oqtWI=; 
  c=relaxed/relaxed; d=enjuk.jp;
  h=From:Message-ID:To:Subject:Date;
- s=rs20251215; t=1773856550; v=1;
- b=vf/PIfqCgBa02vkmAd/4zNIX/nnJjZaA/43ZKAb+r7I05Qh6JgLI+NNqLk+XQj2W
- 0cuskUKclaTebUPaCfUg5+b0DelcmFWX2hTJHzbVH3dDxs9D4Ar49c1NkI70sVMt
- dQo5EZoYmPtsAWOIiE9c4I69FHFRfJYUrj9gTrGPNOD184LFGRbEm+1UzwQkDsvd
- LmXuY8fEojSUR3lz1bs2L/U/0fH0c9z0JpM3APidWvgRMDKR+IdkOKNTn9WZ1Pzc
- TkqbfHJRM96ybw2j+nWtHiQO3gM3gYk3eKPj4E7HaAAa8KEigMktcUKijGhztafE
- BtgZaakc4orZCYaSWGdngw==
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ s=rs20251215; t=1773860181; v=1;
+ b=K0asMe8Bso9Ms0gHC0knLQXE0V905i2fkm+90GcE7+0yepNdl+XmgToKCnGULFcJ
+ ng37HOG9o0RqNOvcPHe6FxthSU0ruaSbaOjTjMWc6jrup+ZIuI5+P+nyICZdi8sC
+ 8uZnLzl58iIgVwVI66oBM6DRvEZrr2hhYnj5fQgAwphdIhNwZT14odCzsFkCLInS
+ oZI+yZOjHQqgoWPmT/GG44VKldi9ne0pvv5vaH7TjZZXOhAGgQhE7Wr0QL7Gz4Ov
+ XOkoPceBg7+z2T0C/ooHjZexfYMZyTVdZxMDVKuuq9eDwpI/YPqpjGg3cYxrx43k
+ V7HbXxXEhU9UckYddlT9eQ==
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=enjuk.jp
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=enjuk.jp header.i=@enjuk.jp header.a=rsa-sha256
- header.s=rs20251215 header.b=vf/PIfqC
+ header.s=rs20251215 header.b=K0asMe8B
 Subject: Re: [Intel-wired-lan] [PATCH iwl-next v4 3/5] ice: migrate to
  netdev ops lock
 X-BeenThere: intel-wired-lan@osuosl.org
@@ -108,141 +109,46 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On 03/18 17:35, Alexander Lobakin wrote:
-> Queue management ops unconditionally enable netdev locking. The same
-> lock is taken by default by several NAPI configuration functions,
-> such as napi_enable() and netif_napi_set_irq().
-> Request ops locking in advance and make sure we use the _locked
-> counterparts of those functions to avoid deadlocks, taking the lock
-> manually where needed (suspend/resume, queue rebuild and resets).
+On 03/19 02:55, Kohei Enju wrote:
+> On 03/18 17:35, Alexander Lobakin wrote:
+> > Queue management ops unconditionally enable netdev locking. The same
+> > lock is taken by default by several NAPI configuration functions,
+> > such as napi_enable() and netif_napi_set_irq().
+> > Request ops locking in advance and make sure we use the _locked
+> > counterparts of those functions to avoid deadlocks, taking the lock
+> > manually where needed (suspend/resume, queue rebuild and resets).
+> 
+> Hi Alexander,
+> After applying this patch (3/5) along with the preceding ones on top of
+> net-next, I got some WARNING splats when changing the admin state
+> (up/down) using the ip link command. [1, 2]
+> 
+> Since I haven't looked into this series in detail, I'm reporting the
+> splats anyway. 
+> I'm wondering why I haven't seen anyone report this type of issue up to
+> v3. Maybe there is something wrong with my setup or devices?
+> 
+> Device: Intel Corporation Ethernet Controller E810-XXV for SFP (rev 02)
 
-Hi Alexander,
-After applying this patch (3/5) along with the preceding ones on top of
-net-next, I got some WARNING splats when changing the admin state
-(up/down) using the ip link command. [1, 2]
+Ah, I think I figured out the reason. My adapter accidentally fell into
+safe mode. When the adapter is in the safe mode, netdev->queue_mgmt_ops
+== NULL and netdev->request_ops_lock == false, so
+netdev_assert_locked_or_invisible() complains about not holding the
+netdev lock.
 
-Since I haven't looked into this series in detail, I'm reporting the
-splats anyway. 
-I'm wondering why I haven't seen anyone report this type of issue up to
-v3. Maybe there is something wrong with my setup or devices?
+Setting netdev->request_ops_lock = true in the safe mode path also
+worked fine for me.
 
-Device: Intel Corporation Ethernet Controller E810-XXV for SFP (rev 02)
+---
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 9ef258d5ab48..3477c53316ba 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -3519,6 +3519,7 @@ static void ice_set_ops(struct ice_vsi *vsi)
 
-[1] ip link set $DEV up
-  WARNING: ./include/net/netdev_lock.h:17 at netif_napi_set_irq_locked+0x393/0x4b0, CPU#0: ip/898
-  Modules linked in:
-  CPU: 0 UID: 0 PID: 898 Comm: ip Not tainted 7.0.0-rc3-00751-gf0103a010a50 #88 PREEMPT(full)
-  Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.16.3-debian-1.16.3-2 04/01/2014
-  RIP: 0010:netif_napi_set_irq_locked+0x393/0x4b0
-  [...]
-  Call Trace:
-   <TASK>
-   ice_vsi_set_napi_queues_locked+0x31b/0x4d0
-   ice_vsi_open+0x359/0x420
-   ice_open_internal+0x1a4/0x230
-   __dev_open+0x2e9/0x830
-   __dev_change_flags+0x411/0x610
-   netif_change_flags+0x76/0x170
-   do_setlink.isra.0+0x17e8/0x39a0
-   rtnl_newlink+0xe72/0x22a0
-   rtnetlink_rcv_msg+0x6ea/0xb40
-   netlink_rcv_skb+0x121/0x380
-   netlink_unicast+0x4aa/0x780
-   netlink_sendmsg+0x753/0xc80
-   ____sys_sendmsg+0x7a2/0x950
-   ___sys_sendmsg+0xf8/0x180
-   __sys_sendmsg+0x11f/0x1c0
-   do_syscall_64+0xf3/0x690
-   entry_SYSCALL_64_after_hwframe+0x77/0x7f
-  RIP: 0033:0x7f07ffabec5e
-  [...]
-
-[2] ip link set $DEV down
-  WARNING: ./include/net/netdev_lock.h:17 at napi_disable_locked+0x3dd/0x5e0, CPU#0: ip/921
-  Modules linked in:
-  CPU: 0 UID: 0 PID: 921 Comm: ip Tainted: G        W           7.0.0-rc3-00751-gf0103a010a50 #88 PREEMPT(full)
-  Tainted: [W]=WARN
-  Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.16.3-debian-1.16.3-2 04/01/2014
-  RIP: 0010:napi_disable_locked+0x3dd/0x5e0
-  [...]
-  Call Trace:
-   <TASK>
-   ice_down+0x7c3/0x1010
-   ice_vsi_close+0x26f/0x360
-   ice_stop+0xde/0x120
-   __dev_close_many+0x2a2/0x650
-   __dev_change_flags+0x237/0x610
-   netif_change_flags+0x76/0x170
-   do_setlink.isra.0+0x17e8/0x39a0
-   rtnl_newlink+0xe72/0x22a0
-   rtnetlink_rcv_msg+0x6ea/0xb40
-   netlink_rcv_skb+0x121/0x380
-   netlink_unicast+0x4aa/0x780
-   netlink_sendmsg+0x753/0xc80
-   ____sys_sendmsg+0x7a2/0x950
-   ___sys_sendmsg+0xf8/0x180
-   __sys_sendmsg+0x11f/0x1c0
-   do_syscall_64+0xf3/0x690
-   entry_SYSCALL_64_after_hwframe+0x77/0x7f
-  RIP: 0033:0x7fc0bb17cc5e
-  [...]
-  ------------[ cut here ]------------
-  WARNING: ./include/net/netdev_lock.h:17 at netif_napi_set_irq_locked+0x393/0x4b0, CPU#0: ip/921
-  Modules linked in:
-  CPU: 0 UID: 0 PID: 921 Comm: ip Tainted: G        W           7.0.0-rc3-00751-gf0103a010a50 #88 PREEMPT(full)
-  Tainted: [W]=WARN
-  Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.16.3-debian-1.16.3-2 04/01/2014
-  RIP: 0010:netif_napi_set_irq_locked+0x393/0x4b0
-  [...]
-  Call Trace:
-   <TASK>
-   ice_vsi_clear_napi_queues_locked+0xe7/0x2b0
-   ice_vsi_close+0x38/0x360
-   ice_stop+0xde/0x120
-   __dev_close_many+0x2a2/0x650
-   __dev_change_flags+0x237/0x610
-   netif_change_flags+0x76/0x170
-   do_setlink.isra.0+0x17e8/0x39a0
-   rtnl_newlink+0xe72/0x22a0
-   rtnetlink_rcv_msg+0x6ea/0xb40
-   netlink_rcv_skb+0x121/0x380
-   netlink_unicast+0x4aa/0x780
-   netlink_sendmsg+0x753/0xc80
-   ____sys_sendmsg+0x7a2/0x950
-   ___sys_sendmsg+0xf8/0x180
-   __sys_sendmsg+0x11f/0x1c0
-   do_syscall_64+0xf3/0x690
-   entry_SYSCALL_64_after_hwframe+0x77/0x7f
-  RIP: 0033:0x7fc0bb17cc5e
-  [...]
-  ------------[ cut here ]------------
-  WARNING: ./include/net/netdev_lock.h:17 at netif_napi_affinity_release+0x1cb/0x250, CPU#1: ip/921
-  Modules linked in:
-  CPU: 1 UID: 0 PID: 921 Comm: ip Tainted: G        W           7.0.0-rc3-00751-gf0103a010a50 #88 PREEMPT(full)
-  Tainted: [W]=WARN
-  Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.16.3-debian-1.16.3-2 04/01/2014
-  RIP: 0010:netif_napi_affinity_release+0x1cb/0x250
-  [...]
-  Call Trace:
-   <TASK>
-   irq_set_affinity_notifier+0x261/0x360
-   netif_napi_set_irq_locked+0x338/0x4b0
-   ice_vsi_clear_napi_queues_locked+0xe7/0x2b0
-   ice_vsi_close+0x38/0x360
-   ice_stop+0xde/0x120
-   __dev_close_many+0x2a2/0x650
-   __dev_change_flags+0x237/0x610
-   netif_change_flags+0x76/0x170
-   do_setlink.isra.0+0x17e8/0x39a0
-   rtnl_newlink+0xe72/0x22a0
-   rtnetlink_rcv_msg+0x6ea/0xb40
-   netlink_rcv_skb+0x121/0x380
-   netlink_unicast+0x4aa/0x780
-   netlink_sendmsg+0x753/0xc80
-   ____sys_sendmsg+0x7a2/0x950
-   ___sys_sendmsg+0xf8/0x180
-   __sys_sendmsg+0x11f/0x1c0
-   do_syscall_64+0xf3/0x690
-   entry_SYSCALL_64_after_hwframe+0x77/0x7f
-  RIP: 0033:0x7fc0bb17cc5e
-  [...]
+        if (ice_is_safe_mode(pf)) {
+                netdev->netdev_ops = &ice_netdev_safe_mode_ops;
++               netdev->request_ops_lock = true;
+                ice_set_ethtool_safe_mode_ops(netdev);
+                return;
+        }
