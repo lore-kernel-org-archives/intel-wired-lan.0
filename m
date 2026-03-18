@@ -4,87 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 78E25103E195
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 18 Mar 2026 15:03:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B3514103E199
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 18 Mar 2026 15:03:27 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 4099481EB9;
-	Wed, 18 Mar 2026 15:03:25 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 8CAAE81DF5;
+	Wed, 18 Mar 2026 15:03:27 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id L5nPV6g1VUFV; Wed, 18 Mar 2026 15:03:24 +0000 (UTC)
+ id gwgsCra7vLkp; Wed, 18 Mar 2026 15:03:27 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7F1BD81E29
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org EC49681E99
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1773846204;
-	bh=4k+owXpgYHddeJNnypZucTVOUuVNXL7iUBaXVHuuV44=;
+	s=default; t=1773846207;
+	bh=ZI1/cLnyDnVOs4qvF1/y00bhWF98dmH7Q3P7jVrTCz8=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=5qunTYB8ZNVo4DacEutViC+0nmFLWArAKzON/ZSsAjjOc9NeEKuNADjD5xpnFVwNU
-	 rsxxdokavPuFlr0LC2Xr/9wlc8LBfEY6lbNom19oabtap/6POKXzaE7FFRtNPIK5nV
-	 4Y995q9QWKzTUd9DdbB4h62yO0xw853BQ4N3tP0dltXPMUtuR2bL9l+lvXEdAuC6e1
-	 zdZVNZvHeceKNKkt8I4PVW2YYT0etKoSIuNKIijp0QtrtPRYAGyID/gihIJJRrjItV
-	 y9IGfuzlFiEkGK029J6EDf6YgX2qYsv86FhbDGE/whMmAPo8jX/CJDbSBGYJkRLftV
-	 LfDYWDHaxPlnw==
+	b=vrPXtszwA4FayAqMKr2pg4m/9EjsWzrGY/RSRoGwctsOrsOaVmJKc73yBPl2tmDd3
+	 UYKIb49SVSXw7g//tv0byVoxhSNW+SeU97qnyvuF0Kot+y2/YB83CWjlKVkapPHBmv
+	 EWmHqL/cDDzhgvokNmyn7svpU1LlHJPNKarWQ5UQhNP2l2PotGZLySzH+HsqUGNFG6
+	 wSraDJhfSZrFVXZzNVGjO1m07Alk4sI6K1LSlDo1NpCZsSbXD2scjUOkD2UMCCu10r
+	 WWc849leFtDlR23zhr1gsT4dZf9GD4O1Ew7LtEd3ueYorjpL/RD3ieagvIkeFwV/pr
+	 5vkTvGG5pnQZA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 7F1BD81E29;
-	Wed, 18 Mar 2026 15:03:24 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id C839F1AD
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Mar 2026 15:03:22 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id EC49681E99;
+	Wed, 18 Mar 2026 15:03:26 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id A48AE1BD
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Mar 2026 15:03:25 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id BA2F781E10
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Mar 2026 15:03:22 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 8A71E40BA6
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Mar 2026 15:03:25 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id B8giM0ypvAXD for <intel-wired-lan@lists.osuosl.org>;
- Wed, 18 Mar 2026 15:03:21 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=74.125.82.172;
- helo=mail-dy1-f172.google.com; envelope-from=stfomichev@gmail.com;
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id PaRDO96ACNun for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 18 Mar 2026 15:03:25 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=74.125.82.174;
+ helo=mail-dy1-f174.google.com; envelope-from=stfomichev@gmail.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org B842A81E29
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B842A81E29
-Received: from mail-dy1-f172.google.com (mail-dy1-f172.google.com
- [74.125.82.172])
- by smtp1.osuosl.org (Postfix) with ESMTPS id B842A81E29
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Mar 2026 15:03:21 +0000 (UTC)
-Received: by mail-dy1-f172.google.com with SMTP id
- 5a478bee46e88-2beab594d8eso18367eec.0
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Mar 2026 08:03:21 -0700 (PDT)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org D2E2840BA5
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D2E2840BA5
+Received: from mail-dy1-f174.google.com (mail-dy1-f174.google.com
+ [74.125.82.174])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id D2E2840BA5
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Mar 2026 15:03:24 +0000 (UTC)
+Received: by mail-dy1-f174.google.com with SMTP id
+ 5a478bee46e88-2c0e3a2605fso12438eec.0
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Mar 2026 08:03:24 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20251104; t=1773846201; x=1774451001;
+ d=1e100.net; s=20251104; t=1773846204; x=1774451004;
  h=content-transfer-encoding:mime-version:references:in-reply-to
  :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
  :to:cc:subject:date:message-id:reply-to;
- bh=4k+owXpgYHddeJNnypZucTVOUuVNXL7iUBaXVHuuV44=;
- b=KqrQqUHyYMNlA1iAoTm02gxUq5TjAHMNLdwEr5hm15haX4DMCJSnMrrunWcv71RV3V
- IB4iguMJk1yNtjSqSaQwQK3VEXoFNGnPm8T5h9ssALxHSTkisp4F1Y98m8GVFtYmjsEX
- 5U7n7E0vaHuPisJRwio5T44eH6LU/rHMZbtK+ErxniM3uzGyRo9GAnBDeMzEp3w6Sfkw
- EQ2x2STCtO5fvXAOgNZI4NGMPQSljRMjOJXqzhbOWHLumx7x8jvxBeOfm48yScYvyyBJ
- KWZhqpB3RicIBEa/XMgUoFhnL8hDmPGndXlp5eG+Pa70aZ09UU8Nu6F6KnjNVGNKZjZ5
- 9ahQ==
+ bh=ZI1/cLnyDnVOs4qvF1/y00bhWF98dmH7Q3P7jVrTCz8=;
+ b=N3s0yo+5BMS2f6mYOcgRZOG689gsLQab/PeQzF2HKhu20m0DE1rACNTHKbgT1va1YG
+ 34sE40mRvJFiNBAPZAmpNZJ4R96uGwhOZ4pxSXptJYZQI3ADxb68y+IbkWxZTlcKt+ZB
+ XKppYxQnP6OqddwcaEZMlNTz9BzVvaV85JASVASmUX6A8dtBQF6tbPLKirHNl/17GvBy
+ Su15dv5SVIufgBsM+ScDB8f+aZs3pz/MFL8hyQhbAJFtXOf+yjHi9I0OYLJM7oNCEbkE
+ n8RqG5sUPGtT4g4Hlfe/taRag+wgpdBZP2EtBU5hXk/gO36KlRP1s8Eiyk18QLrGsvLp
+ kK0A==
 X-Forwarded-Encrypted: i=1;
- AJvYcCUWhILPtq969uBQfQXXJwApu+MwkZYtuvNMm6MiGrQPou7ScGfKSVXb05zcGrSxFyMQlvEfit9CUkAbWO3ZthI=@lists.osuosl.org
-X-Gm-Message-State: AOJu0YxpJ4hmYa9wVMoFh9TqR6lPeZQlGn7tqI00ocU+Bk804DBxATur
- 5YecdZQun67DvStXffdPlh/hk4UjAx61s90jxP8gNa+jFnl8uIsJc44=
-X-Gm-Gg: ATEYQzzbW6IIqcdAWF6/rlddD81sq+pN1yo5MRLsZQv987a8VCw6NjZaDw3AZyPxcRR
- BIm0/gt4X5iA/H/yKtE16EF5kfnQDbZ7cAXbI+9xkV2mXYnWrIsTAWj30PvljvoZYevxsMZ8toL
- f9RfPAVoMyPetnnbV3cVKUvCXoU5LLcdSaVBg09cV949oUavr135FS3e8Oi6piHvc5GDPtrTD08
- 38jbBAJRDjfTAsVbdo/Z3CK+USr9iu3OQAswqujwwUlprauluqKst5rgnBarTmNr8TR+Nm0fv9K
- 9gQXge6WxWQP2gkEWFmjVROpezDlUEHZ8lYkTBi34uSIsl1p2fkCPQXaCyAQ/Q6zvsnlYenRh8g
- Wb64rz99IRSPgobTAwzF+JkLjgYlMIsmhYQvkbAT4R8i2XYhWlokoDax8M7E5hMESwJ8YmxaOaF
- 1OBKu/x6NM4gSEwQsdh41C9g2scA2vAsx8HsYSC6UMV9wsiFVJLcxpAzvFwDn8lRbuOvmChYpwT
- iUtcob6yIktIJ3XUm0//vo1Xe/K
-X-Received: by 2002:a05:7301:1004:b0:2c0:e31b:1814 with SMTP id
- 5a478bee46e88-2c0e4f77bbemr1902433eec.10.1773846200088; 
- Wed, 18 Mar 2026 08:03:20 -0700 (PDT)
+ AJvYcCVjm/npRwwwUR54H9xwdv0sCgRU+y7xHmpthlzq0sKaKvHzLmZIkrOPHOmVKVOseCr/eA+JMxYVImX/5dXIQ6w=@lists.osuosl.org
+X-Gm-Message-State: AOJu0YyxpDsLFzwlQCWF9lxTVplRLg7quD4cVZrAGLZ8CokHLHuo79dQ
+ omkiv5PEjLcCh4p1uZMe3TTYKRDPL43Rqm99laA/1fY4cnAdwFtGosk=
+X-Gm-Gg: ATEYQzxgaAjeUtaX+ebLZMsPdmuOeqyCG++JpXbsB3N0SFTItMQK2s88lxMD1AK+Pt2
+ Vj8OePjCWizxHQFgQwSkuIacjDESsemtxN0YPm1aTYf3j1ueP1j2NHvuUxibDTJDoMgFYnuAhgK
+ +lYs3+vR9Xj3vg0+FcudxNOU2K9rLXIR1ShAxn4mkNUrJYsukZTWSc1gCFQcPBVEqqQ0Fz0MHrN
+ hofdxSGgnxdFIlYeoLSiGfiw3vdHwbIEN0ByZjOK+uIIgGRyCGaY9+l7F5fNq+IJokYr1xcYJlb
+ jV+Q3kC2yHu1Ls835pAHmjDGlTUY57B1awG4oIz8mz+E91YPngKcDyOJZ60XVN6BiOkTBndzWWS
+ ckDPMHo6JgKruxlA/Duwf9YwWg5XlqqrO9ln0AtKdSVIYXWJwRNC3RP/OrlXbXcChFDyzlBI06Y
+ DdYh9DwwELH2WmmlTAes9YRTnPfVhnKrHcWwMgZt95IZXPwo1AyMz7Xkjp8FVbUNYatSf3Y3YY1
+ Cv+1V8XsSlaB5wddw==
+X-Received: by 2002:a05:7300:3724:b0:2be:126c:e335 with SMTP id
+ 5a478bee46e88-2c0e5011ac8mr1873924eec.10.1773846202672; 
+ Wed, 18 Mar 2026 08:03:22 -0700 (PDT)
 Received: from localhost (c-76-102-12-149.hsd1.ca.comcast.net. [76.102.12.149])
  by smtp.gmail.com with ESMTPSA id
- 5a478bee46e88-2c0e55834a0sm4171479eec.14.2026.03.18.08.03.19
+ 5a478bee46e88-2c0e56062e4sm4123423eec.30.2026.03.18.08.03.22
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 18 Mar 2026 08:03:19 -0700 (PDT)
+ Wed, 18 Mar 2026 08:03:22 -0700 (PDT)
 From: Stanislav Fomichev <sdf@fomichev.me>
 To: netdev@vger.kernel.org
 Cc: davem@davemloft.net, edumazet@google.com, kuba@kernel.org,
@@ -101,17 +101,17 @@ Cc: davem@davemloft.net, edumazet@google.com, kuba@kernel.org,
  intel-wired-lan@lists.osuosl.org, linux-rdma@vger.kernel.org,
  linux-wireless@vger.kernel.org, linux-kselftest@vger.kernel.org,
  leon@kernel.org
-Date: Wed, 18 Mar 2026 08:02:59 -0700
-Message-ID: <20260318150305.123900-8-sdf@fomichev.me>
+Date: Wed, 18 Mar 2026 08:03:01 -0700
+Message-ID: <20260318150305.123900-10-sdf@fomichev.me>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260318150305.123900-1-sdf@fomichev.me>
 References: <20260318150305.123900-1-sdf@fomichev.me>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=none (p=none dis=none)
  header.from=fomichev.me
-Subject: [Intel-wired-lan] [PATCH net-next v2 07/13] bnxt: convert to
+Subject: [Intel-wired-lan] [PATCH net-next v2 09/13] iavf: convert to
  ndo_set_rx_mode_async
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
@@ -128,137 +128,64 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Convert bnxt from ndo_set_rx_mode to ndo_set_rx_mode_async.
-bnxt_set_rx_mode, bnxt_mc_list_updated and bnxt_uc_list_updated
-now take explicit uc/mc list parameters and iterate with
-netdev_hw_addr_list_for_each instead of netdev_for_each_{uc,mc}_addr.
+Convert iavf from ndo_set_rx_mode to ndo_set_rx_mode_async.
+iavf_set_rx_mode now takes explicit uc/mc list parameters and
+uses __hw_addr_sync_dev on the snapshots instead of __dev_uc_sync
+and __dev_mc_sync.
 
-The bnxt_cfg_rx_mode internal caller passes the real lists under
-netif_addr_lock_bh.
+The iavf_configure internal caller passes the real lists directly.
 
-BNXT_RX_MASK_SP_EVENT is still used here, next patch converts to
-the direct call.
-
-Cc: Michael Chan <michael.chan@broadcom.com>
-Cc: Pavan Chebbi <pavan.chebbi@broadcom.com>
+Cc: Tony Nguyen <anthony.l.nguyen@intel.com>
+Cc: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Signed-off-by: Stanislav Fomichev <sdf@fomichev.me>
 ---
- drivers/net/ethernet/broadcom/bnxt/bnxt.c | 31 +++++++++++++----------
- 1 file changed, 17 insertions(+), 14 deletions(-)
+ drivers/net/ethernet/intel/iavf/iavf_main.c | 14 +++++++++-----
+ 1 file changed, 9 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/broadcom/bnxt/bnxt.c b/drivers/net/ethernet/broadcom/bnxt/bnxt.c
-index c982aac714d1..225217b32e4b 100644
---- a/drivers/net/ethernet/broadcom/bnxt/bnxt.c
-+++ b/drivers/net/ethernet/broadcom/bnxt/bnxt.c
-@@ -11040,7 +11040,8 @@ static int bnxt_setup_nitroa0_vnic(struct bnxt *bp)
- }
- 
- static int bnxt_cfg_rx_mode(struct bnxt *);
--static bool bnxt_mc_list_updated(struct bnxt *, u32 *);
-+static bool bnxt_mc_list_updated(struct bnxt *, u32 *,
-+				 const struct netdev_hw_addr_list *);
- 
- static int bnxt_init_chip(struct bnxt *bp, bool irq_re_init)
- {
-@@ -11130,7 +11131,7 @@ static int bnxt_init_chip(struct bnxt *bp, bool irq_re_init)
- 	} else if (bp->dev->flags & IFF_MULTICAST) {
- 		u32 mask = 0;
- 
--		bnxt_mc_list_updated(bp, &mask);
-+		bnxt_mc_list_updated(bp, &mask, &bp->dev->mc);
- 		vnic->rx_mask |= mask;
- 	}
- 
-@@ -13519,17 +13520,17 @@ void bnxt_get_ring_drv_stats(struct bnxt *bp,
- 		bnxt_get_one_ring_drv_stats(bp, stats, &bp->bnapi[i]->cp_ring);
- }
- 
--static bool bnxt_mc_list_updated(struct bnxt *bp, u32 *rx_mask)
-+static bool bnxt_mc_list_updated(struct bnxt *bp, u32 *rx_mask,
-+				 const struct netdev_hw_addr_list *mc)
- {
- 	struct bnxt_vnic_info *vnic = &bp->vnic_info[BNXT_VNIC_DEFAULT];
--	struct net_device *dev = bp->dev;
- 	struct netdev_hw_addr *ha;
- 	u8 *haddr;
- 	int mc_count = 0;
- 	bool update = false;
- 	int off = 0;
- 
--	netdev_for_each_mc_addr(ha, dev) {
-+	netdev_hw_addr_list_for_each(ha, mc) {
- 		if (mc_count >= BNXT_MAX_MC_ADDRS) {
- 			*rx_mask |= CFA_L2_SET_RX_MASK_REQ_MASK_ALL_MCAST;
- 			vnic->mc_list_count = 0;
-@@ -13553,17 +13554,17 @@ static bool bnxt_mc_list_updated(struct bnxt *bp, u32 *rx_mask)
- 	return update;
- }
- 
--static bool bnxt_uc_list_updated(struct bnxt *bp)
-+static bool bnxt_uc_list_updated(struct bnxt *bp,
-+				 const struct netdev_hw_addr_list *uc)
- {
--	struct net_device *dev = bp->dev;
- 	struct bnxt_vnic_info *vnic = &bp->vnic_info[BNXT_VNIC_DEFAULT];
- 	struct netdev_hw_addr *ha;
- 	int off = 0;
- 
--	if (netdev_uc_count(dev) != (vnic->uc_filter_count - 1))
-+	if (netdev_hw_addr_list_count(uc) != (vnic->uc_filter_count - 1))
- 		return true;
- 
--	netdev_for_each_uc_addr(ha, dev) {
-+	netdev_hw_addr_list_for_each(ha, uc) {
- 		if (!ether_addr_equal(ha->addr, vnic->uc_list + off))
- 			return true;
- 
-@@ -13572,7 +13573,9 @@ static bool bnxt_uc_list_updated(struct bnxt *bp)
- 	return false;
- }
- 
--static void bnxt_set_rx_mode(struct net_device *dev)
-+static void bnxt_set_rx_mode(struct net_device *dev,
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
+index 7925ee152c76..6632d35ad0fe 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_main.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
+@@ -1147,14 +1147,18 @@ bool iavf_promiscuous_mode_changed(struct iavf_adapter *adapter)
+ /**
+  * iavf_set_rx_mode - NDO callback to set the netdev filters
+  * @netdev: network interface device structure
++ * @uc: snapshot of uc address list
++ * @mc: snapshot of mc address list
+  **/
+-static void iavf_set_rx_mode(struct net_device *netdev)
++static void iavf_set_rx_mode(struct net_device *netdev,
 +			     struct netdev_hw_addr_list *uc,
 +			     struct netdev_hw_addr_list *mc)
  {
- 	struct bnxt *bp = netdev_priv(dev);
- 	struct bnxt_vnic_info *vnic;
-@@ -13593,7 +13596,7 @@ static void bnxt_set_rx_mode(struct net_device *dev)
- 	if (dev->flags & IFF_PROMISC)
- 		mask |= CFA_L2_SET_RX_MASK_REQ_MASK_PROMISCUOUS;
+ 	struct iavf_adapter *adapter = netdev_priv(netdev);
  
--	uc_update = bnxt_uc_list_updated(bp);
-+	uc_update = bnxt_uc_list_updated(bp, uc);
+ 	spin_lock_bh(&adapter->mac_vlan_list_lock);
+-	__dev_uc_sync(netdev, iavf_addr_sync, iavf_addr_unsync);
+-	__dev_mc_sync(netdev, iavf_addr_sync, iavf_addr_unsync);
++	__hw_addr_sync_dev(uc, netdev, iavf_addr_sync, iavf_addr_unsync);
++	__hw_addr_sync_dev(mc, netdev, iavf_addr_sync, iavf_addr_unsync);
+ 	spin_unlock_bh(&adapter->mac_vlan_list_lock);
  
- 	if (dev->flags & IFF_BROADCAST)
- 		mask |= CFA_L2_SET_RX_MASK_REQ_MASK_BCAST;
-@@ -13601,7 +13604,7 @@ static void bnxt_set_rx_mode(struct net_device *dev)
- 		mask |= CFA_L2_SET_RX_MASK_REQ_MASK_ALL_MCAST;
- 		vnic->mc_list_count = 0;
- 	} else if (dev->flags & IFF_MULTICAST) {
--		mc_update = bnxt_mc_list_updated(bp, &mask);
-+		mc_update = bnxt_mc_list_updated(bp, &mask, mc);
- 	}
+ 	spin_lock_bh(&adapter->current_netdev_promisc_flags_lock);
+@@ -1207,7 +1211,7 @@ static void iavf_configure(struct iavf_adapter *adapter)
+ 	struct net_device *netdev = adapter->netdev;
+ 	int i;
  
- 	if (mask != vnic->rx_mask || uc_update || mc_update) {
-@@ -13620,7 +13623,7 @@ static int bnxt_cfg_rx_mode(struct bnxt *bp)
- 	bool uc_update;
+-	iavf_set_rx_mode(netdev);
++	iavf_set_rx_mode(netdev, &netdev->uc, &netdev->mc);
  
- 	netif_addr_lock_bh(dev);
--	uc_update = bnxt_uc_list_updated(bp);
-+	uc_update = bnxt_uc_list_updated(bp, &dev->uc);
- 	netif_addr_unlock_bh(dev);
- 
- 	if (!uc_update)
-@@ -15871,7 +15874,7 @@ static const struct net_device_ops bnxt_netdev_ops = {
- 	.ndo_start_xmit		= bnxt_start_xmit,
- 	.ndo_stop		= bnxt_close,
- 	.ndo_get_stats64	= bnxt_get_stats64,
--	.ndo_set_rx_mode	= bnxt_set_rx_mode,
-+	.ndo_set_rx_mode_async	= bnxt_set_rx_mode,
- 	.ndo_eth_ioctl		= bnxt_ioctl,
+ 	iavf_configure_tx(adapter);
+ 	iavf_configure_rx(adapter);
+@@ -5150,7 +5154,7 @@ static const struct net_device_ops iavf_netdev_ops = {
+ 	.ndo_open		= iavf_open,
+ 	.ndo_stop		= iavf_close,
+ 	.ndo_start_xmit		= iavf_xmit_frame,
+-	.ndo_set_rx_mode	= iavf_set_rx_mode,
++	.ndo_set_rx_mode_async	= iavf_set_rx_mode,
  	.ndo_validate_addr	= eth_validate_addr,
- 	.ndo_set_mac_address	= bnxt_change_mac_addr,
+ 	.ndo_set_mac_address	= iavf_set_mac,
+ 	.ndo_change_mtu		= iavf_change_mtu,
 -- 
 2.53.0
 
