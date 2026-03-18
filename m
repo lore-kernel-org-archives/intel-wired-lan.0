@@ -1,99 +1,97 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DF63AFCD0CD
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 18 Mar 2026 08:07:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1429FFCD0CE
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 18 Mar 2026 08:07:46 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id A9E6140BE1;
+	by smtp1.osuosl.org (Postfix) with ESMTP id D2277838DE;
 	Wed, 18 Mar 2026 08:07:45 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id GXh5SAdLz9mR; Wed, 18 Mar 2026 08:07:44 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id NnbxrciNBLZP; Wed, 18 Mar 2026 08:07:44 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org CAF9D40C13
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 3BFBE837C4
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
 	s=default; t=1773821264;
-	bh=qVzcCHRYpyCUWvVuB0C4zUhDiWmlZNq31w6A3WUew/E=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=YBmRZ8VMy9fnio5c5xmylir5idqfgS/CZabOxpv7pjzp6dxJ50YQdazozGCDVcoir
-	 VNs5ow4iU3T2gbwhixqkKUgtxy6i68rscqKbjbVEgEPWuKPFIUKoeB0HNOJL3GyyOm
-	 P6KAr8TNhBJyE9NGaJhSUMDRzE16ARujtyxcZXyfMZqxLnkoutvHENDodtxiTM1UyH
-	 CHVoP8LgQfjO29dcVGd+wCJevJl2xkvTJLoFjlYWJNOfvNMHub5BwNW1+cSfXStL2M
-	 HzNG8Lglf4NSFhkdYFyn/up3ZJG3OjQZmIsZkFL6jxQobrsziPzogl40BmSCOT3dzE
-	 21QN/HGQ+2czA==
+	bh=mPPsXU2UPBWsf4isM0DBUHJ/i240RMOmr07qKmgECt8=;
+	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=oWu3elJgzJoRfdIbdKk/SAIbfCkEhh17XENhk8F99cved2SasJUdoj1Hj+ti4LfWF
+	 Zk+PtykqlumTN+AXaN+7EqlyOl8ctKA3++Zh15vT7jiF/3BINyTorLRU9AcKNWEPJG
+	 Dm3/YM93qeqg6BxuYJLx1qS1KLbdEQqnU75jjQiHC4OSQnGxpgVgLhHl80DlNOKb0m
+	 kHPI9H9W2RTVJvRsRSDI40vUJP6xYJPLGz3AAzUnm5w/mPlbzGqirOY1MIFEAd5tVA
+	 xw6U9kI7w7/m9E10TQozIXim4VTvEN5VIRIoSwgp15N0FLgJds/c5szokFnJKtHeWL
+	 N79zmHWxCR2ZA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id CAF9D40C13;
+	by smtp1.osuosl.org (Postfix) with ESMTP id 3BFBE837C4;
 	Wed, 18 Mar 2026 08:07:44 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id 77CBB1B6
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 1623CD3
  for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Mar 2026 08:07:43 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id CDF7D40C1A
+ by smtp2.osuosl.org (Postfix) with ESMTP id F0B604037C
  for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Mar 2026 08:07:42 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id f5oD90L3Ewy1 for <intel-wired-lan@lists.osuosl.org>;
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id umLpVnofH9z4 for <intel-wired-lan@lists.osuosl.org>;
  Wed, 18 Mar 2026 08:07:42 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.19;
  helo=mgamail.intel.com; envelope-from=aleksandr.loktionov@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 397DB40B82
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 397DB40B82
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 5D61D40379
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 5D61D40379
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.19])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 397DB40B82
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Mar 2026 08:07:42 +0000 (UTC)
-X-CSE-ConnectionGUID: U0H58nwJSuCvqOjnW4clwA==
-X-CSE-MsgGUID: zIV3XvueTNuKvTNX5jydrg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11732"; a="74755247"
-X-IronPort-AV: E=Sophos;i="6.23,127,1770624000"; d="scan'208";a="74755247"
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 5D61D40379
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Mar 2026 08:07:39 +0000 (UTC)
+X-CSE-ConnectionGUID: +rkj94ftSOeKarTupCgisA==
+X-CSE-MsgGUID: WmeOAdMoTpWOQtTbqk4chw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11732"; a="74755241"
+X-IronPort-AV: E=Sophos;i="6.23,127,1770624000"; d="scan'208";a="74755241"
 Received: from orviesa006.jf.intel.com ([10.64.159.146])
  by orvoesa111.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 18 Mar 2026 01:07:42 -0700
-X-CSE-ConnectionGUID: bUW14SIoRxmGzN/ouR8bHA==
-X-CSE-MsgGUID: VfEwE6ANTIO4KeolD91YDw==
+ 18 Mar 2026 01:07:39 -0700
+X-CSE-ConnectionGUID: 2Op16dLKS82lmlB/t7murQ==
+X-CSE-MsgGUID: IcmXUWE4SkyEN7qw+RC/Mw==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,127,1770624000"; d="scan'208";a="221628552"
+X-IronPort-AV: E=Sophos;i="6.23,127,1770624000"; d="scan'208";a="221628539"
 Received: from amlin-019-225.igk.intel.com ([10.102.19.225])
- by orviesa006.jf.intel.com with ESMTP; 18 Mar 2026 01:07:40 -0700
+ by orviesa006.jf.intel.com with ESMTP; 18 Mar 2026 01:07:38 -0700
 From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 To: intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com,
  aleksandr.loktionov@intel.com
 Cc: netdev@vger.kernel.org
-Date: Wed, 18 Mar 2026 09:07:36 +0100
-Message-ID: <20260318080737.3012293-3-aleksandr.loktionov@intel.com>
+Date: Wed, 18 Mar 2026 09:07:34 +0100
+Message-ID: <20260318080737.3012293-1-aleksandr.loktionov@intel.com>
 X-Mailer: git-send-email 2.52.0
-In-Reply-To: <20260318080737.3012293-1-aleksandr.loktionov@intel.com>
-References: <20260318080737.3012293-1-aleksandr.loktionov@intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1773821262; x=1805357262;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=eeZWTl75BvHWnhfVyBuJjwwR4iwIkFpT5X5IlIOY/jM=;
- b=asCFNjjn8LZDdKqKeXIP76SQb+T0fd15zyIwLV+VUrq+fPwKQQ6FBSO+
- cHppQG3p3rfHgCvh29gVmYexzXtwqFQbg2ZREYXQaleQBtj2G7nPzReKY
- Qi9e2MP4Dtr/doPT2Nf9sDMZQ/PuZP2RQRVOedS4GH/zt9E0ijJv2Gy4d
- 2cGT7yqtEFY6a4RKXfkNqTklD1jvhal+jsoPnM8pHlQJN/fHbXTcFFYI6
- 46YO3pm1dL0UPIz1c8sqQqhxHdoPA9gEBfoIq94m1DZ1A+E2BbJemitAl
- PXt1S4Ro7OVoEyCCGyNRNriy9Ru0aTOUw08YdpBwjtOveRd4BlsCcrq59
- Q==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ t=1773821261; x=1805357261;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=fdLI0Ko6mtrlnwt0ohoaLVU0GX5WeN1MsPSScgcpLXY=;
+ b=NClK6VIcBg9d72aXQArimSfuhEwmgqUInUXxX8jeMrQBDYFvbeKdlYPu
+ MRFgokW347NIOGB2rd1Vf0yjw/E+4cVYEpkcDDAjbEino6rBw/VNFvqz9
+ Ocx5s2kVfYax/miXpPfYcsoo7SeTx/cX0dG5vI9hOAZxAO9jFd+hdVAAn
+ g11Cn3YZESUlmy+A7bZ2nuruyWdPbwsfg69snZi2YR0zu/JxMAlAgpPe6
+ U3MVp0jo7+8JDzz4kPm8tA9MZXVIjkYi3U9SeEgc2QlWPvuOUzyYh2xaY
+ lRUNeVSOVwovTx6o0TPJhEyRTPXvRH3o7uO/3RGIST4Jgka8wP7ZgtSJR
+ A==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=asCFNjjn
-Subject: [Intel-wired-lan] [PATCH net-next v1 2/2] ice: add 0x88E7 handling
- to SW validation paths
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=NClK6VIc
+Subject: [Intel-wired-lan] [PATCH net-next v1 0/2] virtchnl/ice: add IEEE
+ 802.1ah (0x88E7) VLAN ethertype support
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -109,86 +107,53 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The virtchnl v2 VLAN capability handshake now includes the new
-VIRTCHNL_VLAN_ETHERTYPE_88E7 flag for IEEE 802.1ah B-TAG support.
-Wire up the corresponding software-path handling in ice so the PF
-correctly accepts and translates 0x88E7 (ETH_P_8021AH) VLAN filters
-requested by VFs.
+IEEE 802.1ah (Provider Backbone Bridging) defines the Backbone Service
+Tag (B-TAG) with ethertype 0x88E7. In environments that combine Provider
+Backbone Bridging with virtualisation, VFs may receive or transmit frames
+carrying a B-TAG and need to install matching VLAN filters on the PF.
 
-Three software-only changes, no hardware offload path affected:
+The existing virtchnl VLAN v2 capability handshake (via
+VIRTCHNL_OP_GET_OFFLOAD_VLAN_V2_CAPS) has dedicated bitmask entries for
+each supported ethertype (0x8100, 0x88A8, 0x9100) but lacked one for
+0x88E7, making it impossible for a VF driver to advertise or negotiate
+B-TAG support.
 
- - ice_check_supported_vlan_tpid() (ice_tc_lib.c): accept ETH_P_8021AH
-   in the TC VLAN TPID validation switch so 0x88E7-tagged flower filters
-   are not rejected early.
+This series adds the missing capability flag and wires up the three
+software-path checks in the ice PF driver that guard VLAN filter
+installation:
 
- - validate_vlan() (ice_vsi_vlan_lib.c): allow ETH_P_8021AH as a valid
-   TPID when adding VLAN filters to a VSI, consistent with the other
-   accepted dot1q/dot1ad/QinQ1 TPIDs.
+  Patch 1 adds VIRTCHNL_VLAN_ETHERTYPE_88E7 = BIT(3) to the shared
+  virtchnl_vlan_support enum in include/linux/avf/virtchnl.h.
 
- - ice_vc_validate_vlan_tpid() / ice_vc_get_tpid() (virt/virtchnl.c):
-   bidirectional translation between ETH_P_8021AH and
-   VIRTCHNL_VLAN_ETHERTYPE_88E7 in the virtchnl VLAN v2 filter path.
+  Patch 2 updates ice's TC TPID validation, VSI VLAN filter validation,
+  and the bidirectional virtchnl VLAN v2 translation functions to
+  accept/translate ETH_P_8021AH (0x88E7).
 
-This does not add 0x88E7 hardware offload capability, does not change
-outer-tag programming, and does not alter any datapath.
+No hardware offload changes, no datapath modifications.
 
-Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
----
+Tested on E810 with an iavf VF requesting 0x88E7-tagged VLAN filters:
+  Verified that a TC flower rule matching on VLAN TPID 0x88E7 is now
+  accepted and offloaded by the driver without returning -EINVAL:
+
+    tc qdisc add dev $VF clsact
+    tc filter add dev $VF ingress protocol 802.1Q flower \
+        vlan_ethtype 0x88e7 action pass
+    # (previously: Error: Failed to offload TC filter - vlan_type was 0)
+
+  Also verified VF transparent passthrough of triple-tagged frames with
+  0x88E7 as middle and innermost tag using scapy on a back-to-back E810
+  pair (kernel 6.19.0-rc8+, FW 4.91, ICE Triple VLAN Comms DDP 1.3.88.88).
+
+Aleksandr Loktionov (2):
+  virtchnl: add VIRTCHNL_VLAN_ETHERTYPE_88E7 support
+  ice: add 0x88E7 handling to SW validation paths
+
  drivers/net/ethernet/intel/ice/ice_tc_lib.c       | 1 +
  drivers/net/ethernet/intel/ice/ice_vsi_vlan_lib.c | 3 ++-
  drivers/net/ethernet/intel/ice/virt/virtchnl.c    | 6 ++++++
- 3 files changed, 9 insertions(+), 1 deletion(-)
+ include/linux/avf/virtchnl.h                      | 1 +
+ 4 files changed, 10 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_tc_lib.c b/drivers/net/ethernet/intel/ice/ice_tc_lib.c
-index d20357c..4560e55 100644
---- a/drivers/net/ethernet/intel/ice/ice_tc_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_tc_lib.c
-@@ -174,6 +174,7 @@ static u16 ice_check_supported_vlan_tpid(u16 vlan_tpid)
- 	case ETH_P_8021Q:
- 	case ETH_P_8021AD:
- 	case ETH_P_QINQ1:
-+	case ETH_P_8021AH:
- 		return vlan_tpid;
- 	default:
- 		return 0;
-diff --git a/drivers/net/ethernet/intel/ice/ice_vsi_vlan_lib.c b/drivers/net/ethernet/intel/ice/ice_vsi_vlan_lib.c
-index 5498496..b67272e 100644
---- a/drivers/net/ethernet/intel/ice/ice_vsi_vlan_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_vsi_vlan_lib.c
-@@ -24,7 +24,8 @@ static void print_invalid_tpid(struct ice_vsi *vsi, u16 tpid)
- static bool validate_vlan(struct ice_vsi *vsi, struct ice_vlan *vlan)
- {
- 	if (vlan->tpid != ETH_P_8021Q && vlan->tpid != ETH_P_8021AD &&
--	    vlan->tpid != ETH_P_QINQ1 && (vlan->tpid || vlan->vid)) {
-+	    vlan->tpid != ETH_P_QINQ1 && vlan->tpid != ETH_P_8021AH &&
-+	    (vlan->tpid || vlan->vid)) {
- 		print_invalid_tpid(vsi, vlan->tpid);
- 		return false;
- 	}
-diff --git a/drivers/net/ethernet/intel/ice/virt/virtchnl.c b/drivers/net/ethernet/intel/ice/virt/virtchnl.c
-index ca8018e..06d2f9b 100644
---- a/drivers/net/ethernet/intel/ice/virt/virtchnl.c
-+++ b/drivers/net/ethernet/intel/ice/virt/virtchnl.c
-@@ -1702,6 +1702,9 @@ static bool ice_vc_validate_vlan_tpid(u16 filtering_caps, u16 tpid)
- 	case ETH_P_QINQ1:
- 		vlan_ethertype = VIRTCHNL_VLAN_ETHERTYPE_9100;
- 		break;
-+	case ETH_P_8021AH:
-+		vlan_ethertype = VIRTCHNL_VLAN_ETHERTYPE_88E7;
-+		break;
- 	}
- 
- 	if (!(filtering_caps & vlan_ethertype))
-@@ -2136,6 +2139,9 @@ static int ice_vc_get_tpid(u32 ethertype_setting, u16 *tpid)
- 	case VIRTCHNL_VLAN_ETHERTYPE_9100:
- 		*tpid = ETH_P_QINQ1;
- 		break;
-+	case VIRTCHNL_VLAN_ETHERTYPE_88E7:
-+		*tpid = ETH_P_8021AH;
-+		break;
- 	default:
- 		*tpid = 0;
- 		return -EINVAL;
 -- 
 2.52.0
 
