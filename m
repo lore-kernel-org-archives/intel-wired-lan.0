@@ -1,138 +1,99 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 014C3FF6E9F
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 18 Mar 2026 00:13:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 11970FEDA09
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 18 Mar 2026 01:15:43 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id D0FBA815AB;
-	Wed, 18 Mar 2026 00:13:59 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id B4AB76145C;
+	Wed, 18 Mar 2026 01:15:43 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 1qby6myAk922; Wed, 18 Mar 2026 00:13:57 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 7qRI7oxNzCEL; Wed, 18 Mar 2026 01:15:42 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B7FF6814B8
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org EF93E613E3
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1773792837;
-	bh=NH3lKMbPGzMjHktQ2S0JYx2HKd1BHzthwHWo0yjIxC8=;
-	h=References:In-Reply-To:Date:To:Cc:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From:Reply-To:From;
-	b=nPE1Vi71j1sbO1CU3ceTVE53N+OpKymDLKEh+utb6mx5uX+b3cnJ4HUWirMPw7QXB
-	 K/0ir+n0uOo2drwho/bK+BvcN89mFs5cmvvN95LprF/s/kuXjyHB+YwQzVEJLsySdW
-	 s7C5m6wzxRXRXkZFBZs12OFSWRVrzlyDUhhMThiM/9kJzcwg+IDfhlFzWriR72mOyY
-	 K/Oo6qLaKllJkhJLV/WpbIgAzVxgfW/PES6uXrQlV2MNqKcBSm4mOYdsgxCGi8hgqR
-	 vr2t8XhHnrW+mRJtMorETYDljh1rJe5QrgR5EK2PeD0/uCsJCZcwaxwwfRSGHo95dg
-	 JjL7s9M6w6Utg==
+	s=default; t=1773796542;
+	bh=RBoeIRNRQ6bnqCg7pUfQwAkqxcJt+FaPOuVdQN1lDEM=;
+	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=zh5kksf0xUjpMtxSdS5/y6+ddHYq5M5FG9sumH4J41AnlWemTLnvWHt0Uh6U/Y8W5
+	 gzNnpj6AZWehYB/UGfVW+Uk4YmuLizhYEnXNE5XDVQJSd/0LUEunpFcSJFK1smLglQ
+	 8wyoYGRY9QLLgPg+UofbcArdRDdvKGWq9idF+0ymxBIAR0/fLmsqgSr46hqBScWmb8
+	 sR/KoFUdKiyiG5uPP9CZGQ07w47xuH0leUk/aHelMWW6RhFrgkpYPrCe5btJchCMJf
+	 YBn6Rw0K3hPedydPkhHsG3B/P6VfyME2AhGMfG0TN8wL3A8uF9/DaXw5wvm2zt+GFD
+	 iUGCFSmYZoF7g==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id B7FF6814B8;
-	Wed, 18 Mar 2026 00:13:57 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id AAB70D3
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Mar 2026 00:13:56 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id EF93E613E3;
+	Wed, 18 Mar 2026 01:15:41 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 2CF85D3
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Mar 2026 01:15:41 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 8E611409F0
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Mar 2026 00:13:56 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 1E631613E3
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Mar 2026 01:15:41 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id lnVpL3VIPJEa for <intel-wired-lan@lists.osuosl.org>;
- Wed, 18 Mar 2026 00:13:56 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2607:f8b0:4864:20::b136; helo=mail-yx1-xb136.google.com;
- envelope-from=boolli@google.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org C972D409EC
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C972D409EC
-Received: from mail-yx1-xb136.google.com (mail-yx1-xb136.google.com
- [IPv6:2607:f8b0:4864:20::b136])
- by smtp4.osuosl.org (Postfix) with ESMTPS id C972D409EC
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Mar 2026 00:13:55 +0000 (UTC)
-Received: by mail-yx1-xb136.google.com with SMTP id
- 956f58d0204a3-64c97997b0fso4837295d50.3
- for <intel-wired-lan@lists.osuosl.org>; Tue, 17 Mar 2026 17:13:55 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1773792834; cv=none;
- d=google.com; s=arc-20240605;
- b=f6e2h4succc53quEARF3x7RA4hztoTsNZIVxfW7l+MW5ktPFqiBQBv7tJex1M3RrQj
- LH9v9Vaaii+0pwGO3A0gnJwEVldjXKHv/jXoFeXFBXRf6BsZx1YG6vTTXBu54g63X3sl
- 713JhvHCcEAubdJW1zEskF0tEQ9KhlQNDDb+twrOBZ9zArm+ANXMlCWnz5QEsLk8VhLJ
- UhJCv3y5lPDuT89v5uGNQ0Op2bJdWgdvdWF/kfCtfQtZ/8KZIvum0PvNRf6LC2c6Dod/
- 2otq2UDTkjh2SREhBPj044zaHqmMH9lWSaK8XqzIeBNdW3DQt8U+mBrjUQccN42pggm1
- 5y9w==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com;
- s=arc-20240605; 
- h=content-transfer-encoding:cc:to:subject:message-id:date:from
- :in-reply-to:references:mime-version:dkim-signature;
- bh=NH3lKMbPGzMjHktQ2S0JYx2HKd1BHzthwHWo0yjIxC8=;
- fh=FlEgfaKPftyqF+v3LZ29weqZV0PuS9EMvsXLuWxZXUE=;
- b=kxpYuV72ZQkQ8X6MsxgykjvRw8oKRRnUf8NkXhaVjqq538G9pZSy+TPLpiAfIr1N6A
- Ejt4UIR3SGO56Us7J7EVCAN1t1lD7/vc1vThdx6GmURMZptaj/yaerIiRH0SrkebfS6F
- 4bQqbvSC97say5V45r/12IoMqiOfPzTbIOD8FY8y8rAmDRIEumrcHpyEIcB8wCE7FLlE
- /emHUqqgQPybetnK94MwIYp/2AzFXUGb+kXnRc8bVmLmVaqjd6CVAy+eSpDLRJFOcfRO
- OC0V5rEnjNgKzEpFqX9ZnQYLnNbDjYj1g/QgbszgCx8/3hTKYTgw5wbxFY/AURVyebI4
- uxjA==; darn=lists.osuosl.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20251104; t=1773792834; x=1774397634;
- h=content-transfer-encoding:cc:to:subject:message-id:date:from
- :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
- :to:cc:subject:date:message-id:reply-to;
- bh=NH3lKMbPGzMjHktQ2S0JYx2HKd1BHzthwHWo0yjIxC8=;
- b=tOPGIqc/2dhxLPrrbf+hXjdOctjkdpnuMGNDnQj1E9o/CSXWqNZVH28viTVD1rtx8H
- ygpuRWbQdUCDUpp8Xh8H5pDIlUHYSxUBRqHP8dwfzgZ2tce2YYMDG6K0bLwJW0B8dljA
- d+cfIYaR8ayug0yCpVvkM3+nVZa1LDLgYDwtUzaBuGVrMaVeExNVOHzpSFF6s9EkJFux
- uXgr1ppZjWEOroyph1amsOEyE4vNqaoJ4EaZNsjoUSvOSSTCmws85RYjcaX0VuZ1kTBI
- PmZsNTLDCzFCna06e0ykFsPlqBYaZay9rhq6owycHgugaa1/XbZa/UfiuIbeb4Zohknq
- CBAQ==
-X-Gm-Message-State: AOJu0YxJ6txk6yAMD3grAatBccJji9HsVPKR63lJWoso0VM2vMEg1HLg
- WwcGGay0jqvwYW2axdmMcj7B0gqfb8PRa9l5vpaZpr62z0uNw+zZLVL2vcCSOsYetANjNi0dsih
- D62CqORGNJya/ASzzm4zmbHq/wFOkfbcoa2VxTOZD
-X-Gm-Gg: ATEYQzzyXfquHOgYElY9Rv+l5VIpikPb4b0UqcHKftKsu8E8BtMQzi4rbIh4DQ6valn
- 3JZM9ZVhPK35QJbvqK2OjwO1lcIJ1lOqtkHwwO9aiyuFm5SoNi6cXf3FQNsSQYc5bt/dL8XsGhF
- uLXmFtWx9dojbQ52/78nfAmeCrOWoiu6tqFGNa0LaWoukBWCKvcn7msS7WoGuJeNIY26zz7d9qm
- PU9cqW73FEZgx/57IvNxAX0dKTysRfAqp6+yE9AqEo3XBnJg8DYjqIdjBgPj/7rAJHsJHAfyVIn
- NATgzmnVl40OHLirTJGFcLA4INXZzATSBVM=
-X-Received: by 2002:a53:acdb:0:20b0:64c:9ee9:7784 with SMTP id
- 956f58d0204a3-64e912ea4edmr1596743d50.11.1773792834005; Tue, 17 Mar 2026
- 17:13:54 -0700 (PDT)
-MIME-Version: 1.0
-References: <20260316232819.6872-1-emil.s.tantilov@intel.com>
- <20260316232819.6872-4-emil.s.tantilov@intel.com>
-In-Reply-To: <20260316232819.6872-4-emil.s.tantilov@intel.com>
-Date: Tue, 17 Mar 2026 17:13:41 -0700
-X-Gm-Features: AaiRm52502HuPWZDlNe1pVsboDjRd5-YbjXG_qFrypIUllH3EkzzS3xrhNFe7OA
-Message-ID: <CAODvEq6ZDoAxzZ4scKtE7tnfe94wBwgTsckEfLzwxFo=BcLNSA@mail.gmail.com>
-To: Emil Tantilov <emil.s.tantilov@intel.com>
-Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org, 
- anthony.l.nguyen@intel.com, aleksandr.loktionov@intel.com, 
- przemyslaw.kitszel@intel.com, andrew+netdev@lunn.ch, davem@davemloft.net, 
- edumazet@google.com, kuba@kernel.org, pabeni@redhat.com, 
- bigeasy@linutronix.de, clrkwllms@kernel.org, rostedt@goodmis.org, 
- linux-rt-devel@lists.linux.dev, sgzhang@google.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=google.com; s=20251104; t=1773792834; x=1774397634; darn=lists.osuosl.org;
- h=content-transfer-encoding:cc:to:subject:message-id:date:from
- :in-reply-to:references:mime-version:from:to:cc:subject:date
- :message-id:reply-to;
- bh=NH3lKMbPGzMjHktQ2S0JYx2HKd1BHzthwHWo0yjIxC8=;
- b=OaivqW5GKGFCPh6D8K7hfoI9RRVkU7ykhfupu8vzeNnPQWo7HB28AyioUw5wdiUPZV
- PfsyRzrmGc9D6Sv4U8gKDQeVfEtY9kNGyneWcTaa1AUOUiXbajfVYNnc2D/idCCWHYBL
- jQ/iLhAhtxoy5ip9gyTh+dk721NLXXgAttnXyB/6QrHGJDnHkKkMvO6ccGfj/3vyb0Nr
- /rPBZshDIhm2+nEOHrf2rwmYGwQmXIrKLR89PPxC0cu5+xUWZ6jgQ1anbWV2lDgeseYW
- T0V/pAbLJT1DJsfr5DHBUXzRjCqAOi4MqCJl9PO6gwq94KQ4BAqGOC/jzFmEi0SBaI1a
- BoXQ==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dmarc=pass (p=reject dis=none)
- header.from=google.com
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=google.com header.i=@google.com
- header.a=rsa-sha256 header.s=20251104 header.b=OaivqW5G
-Subject: Re: [Intel-wired-lan] [PATCH iwl-net 3/3] idpf: fix PREEMPT_RT
- raw/bh spinlock nesting for async VC handling
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id k3wQcJ3A5mqR for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 18 Mar 2026 01:15:40 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.13;
+ helo=mgamail.intel.com; envelope-from=emil.s.tantilov@intel.com;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 541E56134E
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 541E56134E
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.13])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 541E56134E
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Mar 2026 01:15:39 +0000 (UTC)
+X-CSE-ConnectionGUID: voPmftNPSc2qL0cQ1RwoTA==
+X-CSE-MsgGUID: Z/sv9CJZTQ+xXsMBqtRkCQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11732"; a="77454304"
+X-IronPort-AV: E=Sophos;i="6.23,126,1770624000"; d="scan'208";a="77454304"
+Received: from orviesa005.jf.intel.com ([10.64.159.145])
+ by fmvoesa107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 17 Mar 2026 18:15:38 -0700
+X-CSE-ConnectionGUID: R0w3j8ZNTka8JCKtuJP+ow==
+X-CSE-MsgGUID: DPDHn4CoT3i6kMZ+2jRzFg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,126,1770624000"; d="scan'208";a="227399796"
+Received: from estantil-desk.jf.intel.com ([10.166.241.24])
+ by orviesa005.jf.intel.com with ESMTP; 17 Mar 2026 18:15:36 -0700
+From: Emil Tantilov <emil.s.tantilov@intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Cc: netdev@vger.kernel.org, anthony.l.nguyen@intel.com,
+ aleksandr.loktionov@intel.com, przemyslaw.kitszel@intel.com,
+ andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
+ kuba@kernel.org, pabeni@redhat.com, ast@kernel.org, daniel@iogearbox.net,
+ hawk@kernel.org, john.fastabend@gmail.com, sdf@fomichev.me,
+ bpf@vger.kernel.org, aleksander.lobakin@intel.com, decot@google.com,
+ willemb@google.com
+Date: Tue, 17 Mar 2026 18:15:45 -0700
+Message-Id: <20260318011545.12874-1-emil.s.tantilov@intel.com>
+X-Mailer: git-send-email 2.17.2
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1773796540; x=1805332540;
+ h=from:to:cc:subject:date:message-id;
+ bh=em6SO/ENzXNvRZ3dWi95voyC+ziv/4ohmr3+F+lO8SI=;
+ b=g1erzp2zSjULYSuaJO+Cg7RJzU3i0BbXeN8ZP/BCXHgyhtuL+41AXoFe
+ CMIOLTyyHE0yE+/npOS/j9ZURNjv/QLL46aDvkZUbLvtyiLVEUVrkNsoq
+ +inJmKpLsHi5UEsr/jxUp/8gWDZTkmdHzaFSue6/yQy/NaDjzAugMXvFm
+ XAW6DQwV9lhkevxyXYX8+uNCjAU/3Gblw8S2eVhFs/YlqoUGWRejLotfZ
+ Xp0+L3DWiWI8vDPUjo3KqSK+rOF9RBysNT2AhmqBkmHhnXPO79HoZz01p
+ fCTzWy/Wk7X2MI7A2RbglsgPesUzwm0OaLk7iKMuaGK/9MTUxPPRsebVw
+ Q==;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=intel.com
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=g1erzp2z
+Subject: [Intel-wired-lan] [PATCH iwl-net] idpf: fix xdp crash in soft reset
+ error path
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -145,132 +106,104 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-From: Li Li via Intel-wired-lan <intel-wired-lan@osuosl.org>
-Reply-To: Li Li <boolli@google.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Thank you!
+NULL pointer dereference is reported in cases where idpf_vport_open()
+fails during soft reset:
 
-Reviewed-by: Li Li <boolli@google.com>
+./xdpsock -i <inf> -q -r -N
 
-On Mon, Mar 16, 2026 at 4:28=E2=80=AFPM Emil Tantilov <emil.s.tantilov@inte=
-l.com> wrote:
->
-> Restructure the ASYNC case to allow calling idpf_vc_xn_forward_reply()
-> outside of idpf_vc_xn_lock(). This avoids invalid wait context reported b=
-y
-> the kernel due to the async handler taking BH spinlock:
->
-> [  805.726977] =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> [  805.726991] [ BUG: Invalid wait context ]
-> [  805.727006] 7.0.0-rc2-net-devq-031026+ #28 Tainted: G S         OE
-> [  805.727026] -----------------------------
-> [  805.727038] kworker/u261:0/572 is trying to lock:
-> [  805.727051] ff190da6a8dbb6a0 (&vport_config->mac_filter_list_lock){+..=
-.}-{3:3}, at: idpf_mac_filter_async_handler+0xe9/0x260 [idpf]
-> [  805.727099] other info that might help us debug this:
-> [  805.727111] context-{5:5}
-> [  805.727119] 3 locks held by kworker/u261:0/572:
-> [  805.727132]  #0: ff190da6db3e6148 ((wq_completion)idpf-0000:83:00.0-mb=
-x){+.+.}-{0:0}, at: process_one_work+0x4b5/0x730
-> [  805.727163]  #1: ff3c6f0a6131fe50 ((work_completion)(&(&adapter->mbx_t=
-ask)->work)){+.+.}-{0:0}, at: process_one_work+0x1e5/0x730
-> [  805.727191]  #2: ff190da765190020 (&x->wait#34){+.+.}-{2:2}, at: idpf_=
-recv_mb_msg+0xc8/0x710 [idpf]
-> [  805.727218] stack backtrace:
-> ...
-> [  805.727238] Workqueue: idpf-0000:83:00.0-mbx idpf_mbx_task [idpf]
-> [  805.727247] Call Trace:
-> [  805.727249]  <TASK>
-> [  805.727251]  dump_stack_lvl+0x77/0xb0
-> [  805.727259]  __lock_acquire+0xb3b/0x2290
-> [  805.727268]  ? __irq_work_queue_local+0x59/0x130
-> [  805.727275]  lock_acquire+0xc6/0x2f0
-> [  805.727277]  ? idpf_mac_filter_async_handler+0xe9/0x260 [idpf]
-> [  805.727284]  ? _printk+0x5b/0x80
-> [  805.727290]  _raw_spin_lock_bh+0x38/0x50
-> [  805.727298]  ? idpf_mac_filter_async_handler+0xe9/0x260 [idpf]
-> [  805.727303]  idpf_mac_filter_async_handler+0xe9/0x260 [idpf]
-> [  805.727310]  idpf_recv_mb_msg+0x1c8/0x710 [idpf]
-> [  805.727317]  process_one_work+0x226/0x730
-> [  805.727322]  worker_thread+0x19e/0x340
-> [  805.727325]  ? __pfx_worker_thread+0x10/0x10
-> [  805.727328]  kthread+0xf4/0x130
-> [  805.727333]  ? __pfx_kthread+0x10/0x10
-> [  805.727336]  ret_from_fork+0x32c/0x410
-> [  805.727345]  ? __pfx_kthread+0x10/0x10
-> [  805.727347]  ret_from_fork_asm+0x1a/0x30
-> [  805.727354]  </TASK>
->
-> Fixes: 34c21fa894a1 ("idpf: implement virtchnl transaction manager")
-> Reported-by: Ray Zhang <sgzhang@google.com>
-> Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
-> Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-> ---
->  .../net/ethernet/intel/idpf/idpf_virtchnl.c   | 21 +++++++------------
->  1 file changed, 8 insertions(+), 13 deletions(-)
->
-> diff --git a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c b/drivers/ne=
-t/ethernet/intel/idpf/idpf_virtchnl.c
-> index 6b9692b30040..8ceabd86e172 100644
-> --- a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
-> +++ b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
-> @@ -546,32 +546,24 @@ static int
->  idpf_vc_xn_forward_async(struct idpf_adapter *adapter, struct idpf_vc_xn=
- *xn,
->                          const struct idpf_ctlq_msg *ctlq_msg)
->  {
-> -       int err =3D 0;
-> -
->         if (ctlq_msg->cookie.mbx.chnl_opcode !=3D xn->vc_op) {
->                 dev_err_ratelimited(&adapter->pdev->dev, "Async message o=
-pcode does not match transaction opcode (msg: %d) (xn: %d)\n",
->                                     ctlq_msg->cookie.mbx.chnl_opcode, xn-=
->vc_op);
->                 xn->reply_sz =3D 0;
-> -               err =3D -EINVAL;
-> -               goto release_bufs;
-> +               return -EINVAL;
->         }
->
-> -       if (xn->async_handler) {
-> -               err =3D xn->async_handler(adapter, xn, ctlq_msg);
-> -               goto release_bufs;
-> -       }
-> +       if (xn->async_handler)
-> +               return xn->async_handler(adapter, xn, ctlq_msg);
->
->         if (ctlq_msg->cookie.mbx.chnl_retval) {
->                 xn->reply_sz =3D 0;
->                 dev_err_ratelimited(&adapter->pdev->dev, "Async message f=
-ailure (op %d)\n",
->                                     ctlq_msg->cookie.mbx.chnl_opcode);
-> -               err =3D -EINVAL;
-> +               return -EINVAL;
->         }
->
-> -release_bufs:
-> -       idpf_vc_xn_release_bufs(xn);
-> -
-> -       return err;
-> +       return 0;
->  }
->
->  /**
-> @@ -631,7 +623,10 @@ idpf_vc_xn_forward_reply(struct idpf_adapter *adapte=
-r,
->                  * can evaluate the response.
->                  */
->                 xn->reply_sz =3D ctlq_msg->data_len;
-> +               idpf_vc_xn_unlock(xn);
->                 err =3D idpf_vc_xn_forward_async(adapter, xn, ctlq_msg);
-> +               idpf_vc_xn_lock(xn);
-> +               idpf_vc_xn_release_bufs(xn);
->                 idpf_vc_xn_unlock(xn);
->                 idpf_vc_xn_push_free(adapter->vcxn_mngr, xn);
->                 return err;
-> --
-> 2.37.3
->
+[ 3179.186687] idpf 0000:83:00.0: Failed to initialize queue ids for vport 0: -12
+[ 3179.276739] BUG: kernel NULL pointer dereference, address: 0000000000000010
+[ 3179.277636] #PF: supervisor read access in kernel mode
+[ 3179.278470] #PF: error_code(0x0000) - not-present page
+[ 3179.279285] PGD 0
+[ 3179.280083] Oops: Oops: 0000 [#1] SMP NOPTI
+...
+[ 3179.283997] Workqueue: events xp_release_deferred
+[ 3179.284770] RIP: 0010:idpf_find_rxq_vec+0x17/0x30 [idpf]
+...
+[ 3179.291937] Call Trace:
+[ 3179.292392]  <TASK>
+[ 3179.292843]  idpf_qp_switch+0x25/0x820 [idpf]
+[ 3179.293325]  idpf_xsk_pool_setup+0x7c/0x520 [idpf]
+[ 3179.293803]  idpf_xdp+0x59/0x240 [idpf]
+[ 3179.294275]  xp_disable_drv_zc+0x62/0xb0
+[ 3179.294743]  xp_clear_dev+0x40/0xb0
+[ 3179.295198]  xp_release_deferred+0x1f/0xa0
+[ 3179.295648]  process_one_work+0x226/0x730
+[ 3179.296106]  worker_thread+0x19e/0x340
+[ 3179.296557]  ? __pfx_worker_thread+0x10/0x10
+[ 3179.297009]  kthread+0xf4/0x130
+[ 3179.297459]  ? __pfx_kthread+0x10/0x10
+[ 3179.297910]  ret_from_fork+0x32c/0x410
+[ 3179.298361]  ? __pfx_kthread+0x10/0x10
+[ 3179.298702]  ret_from_fork_asm+0x1a/0x30
+
+Fix the error handling of the soft reset in idpf_xdp_setup_prog() by
+restoring the vport->xdp_prog to the old value. This avoids referencing
+the orphaned prog that was copied to vport->xdp_prog in the soft reset
+and prevents subsequent false positive by idpf_xdp_enabled().
+
+Update the restart check in idpf_xsk_pool_setup() to use IDPF_VPORT_UP bit
+instead of netif_running(). The idpf_vport_stop/start() calls will not
+update the __LINK_STATE_START bit, making this test a false positive
+should the soft reset fail.
+
+Fixes: 3d57b2c00f09 ("idpf: add XSk pool initialization")
+Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
+Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+---
+ drivers/net/ethernet/intel/idpf/xdp.c | 7 ++++++-
+ drivers/net/ethernet/intel/idpf/xsk.c | 4 +++-
+ 2 files changed, 9 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/idpf/xdp.c b/drivers/net/ethernet/intel/idpf/xdp.c
+index cbccd4546768..b670f0ea20b3 100644
+--- a/drivers/net/ethernet/intel/idpf/xdp.c
++++ b/drivers/net/ethernet/intel/idpf/xdp.c
+@@ -488,12 +488,17 @@ static int idpf_xdp_setup_prog(struct idpf_vport *vport,
+ 				   "Could not reopen the vport after XDP setup");
+ 
+ 		cfg->user_config.xdp_prog = old;
+-		old = prog;
++		vport->xdp_prog = old;
++		if (prog)
++			bpf_prog_put(prog);
++
++		goto out;
+ 	}
+ 
+ 	if (old)
+ 		bpf_prog_put(old);
+ 
++out:
+ 	libeth_xdp_set_redirect(vport->netdev, vport->xdp_prog);
+ 
+ 	return ret;
+diff --git a/drivers/net/ethernet/intel/idpf/xsk.c b/drivers/net/ethernet/intel/idpf/xsk.c
+index d95d3efdfd36..b601b6c298c7 100644
+--- a/drivers/net/ethernet/intel/idpf/xsk.c
++++ b/drivers/net/ethernet/intel/idpf/xsk.c
+@@ -553,6 +553,7 @@ int idpf_xskrq_poll(struct idpf_rx_queue *rxq, u32 budget)
+ 
+ int idpf_xsk_pool_setup(struct idpf_vport *vport, struct netdev_bpf *bpf)
+ {
++	const struct idpf_netdev_priv *np = netdev_priv(vport->netdev);
+ 	struct xsk_buff_pool *pool = bpf->xsk.pool;
+ 	u32 qid = bpf->xsk.queue_id;
+ 	bool restart;
+@@ -568,7 +569,8 @@ int idpf_xsk_pool_setup(struct idpf_vport *vport, struct netdev_bpf *bpf)
+ 		return -EINVAL;
+ 	}
+ 
+-	restart = idpf_xdp_enabled(vport) && netif_running(vport->netdev);
++	restart = idpf_xdp_enabled(vport) &&
++	       test_bit(IDPF_VPORT_UP, np->state);
+ 	if (!restart)
+ 		goto pool;
+ 
+-- 
+2.37.3
+
