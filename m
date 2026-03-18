@@ -1,94 +1,97 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 35B5B1077609
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 18 Mar 2026 19:32:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 75E1B107760E
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 18 Mar 2026 21:03:46 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id E080C408D0;
-	Wed, 18 Mar 2026 19:32:41 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 2A0BE60DE8;
+	Wed, 18 Mar 2026 21:03:46 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 1UOWmL7bednP; Wed, 18 Mar 2026 19:32:41 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 9vfNmCv8qgkH; Wed, 18 Mar 2026 21:03:45 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org EBC6D408E1
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 56E8F60DD5
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1773862361;
-	bh=rKHvRsr7J3uvlH5SXeDvUkUE8OhKuEC4gUct4RR8Vl4=;
-	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
+	s=default; t=1773867825;
+	bh=vz8nEVx12vxjqyucT09gFOK5LpmQKcJZtc0FIhR6HvM=;
+	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:From;
-	b=RjJC+YN4lQVaVG3W9XUyLvs8/8qZaM61pQFawFJgeNVPiTAP1d7sF252Fb58e+1A3
-	 1I5a3w3VCNIDB/xjLr+eIIP9bm0LVNVXp7UiMDrwPQBfIxbL6UMK96jctOx0nRADbj
-	 451p99bbajjAshFJOYDdGAXiOuZR7ySJXBNtQDDQ5gWVfxB4X0N09LhWIno3BVUQIc
-	 0pF+PWtOzQeY7ETOLXqFImRUuO35zYcDhRgtiuAb4soiaHuPFhZdUMSznCPncDBCNx
-	 WMLKlOrwdM//xpdZ0cpIbojzrNqav7w8RVPkJKxXvwJ2T6ssvRbiXah8mDKjloXtKW
-	 X5hGLJzM96eDg==
+	b=Ut2ccjYZLD0x+iQ1D985IylVWiLp42ozTZJidUk8goTsLWxU3ELq9usqfYz7gOaVi
+	 ru/AOIiRFEltHJaZd5c/+JgF0eGOsOV8KzLTtps5DpU9WReZMM0T+EK1A4x1EghYvn
+	 r7i/qmTMMs9t+M8NCwuT/762Q6jFyiIojQghcM3R8QwnG9ySAmMKm750W7L0er63ZM
+	 CrSez5Zn3Vwilg6MBJQV1GgDP4vgrh+TfnGpUYGFn18cyeiK7qZFxn7l5E2mCN5eU9
+	 DoxZxwfxrItmE3oLn+0HKH4aZkBS2daHb+Zf6F9N1jeUwSsifkKVjLB+HElOJhZHnN
+	 SxCknyQzgoHVg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id EBC6D408E1;
-	Wed, 18 Mar 2026 19:32:40 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id E08731B6
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Mar 2026 19:32:39 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 56E8F60DD5;
+	Wed, 18 Mar 2026 21:03:45 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 3B2301B6
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Mar 2026 21:03:44 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id C41D7408E1
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Mar 2026 19:32:39 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 2C91340575
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Mar 2026 21:03:44 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id MeUoS2KJ8gUZ for <intel-wired-lan@lists.osuosl.org>;
- Wed, 18 Mar 2026 19:32:38 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.13;
- helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org E504B408D0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E504B408D0
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.13])
- by smtp4.osuosl.org (Postfix) with ESMTPS id E504B408D0
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Mar 2026 19:32:37 +0000 (UTC)
-X-CSE-ConnectionGUID: C3PXKT60TmqweEWK7YxrCQ==
-X-CSE-MsgGUID: XBELsj6/SteVQ6i6KLmGFA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11733"; a="77536237"
-X-IronPort-AV: E=Sophos;i="6.23,127,1770624000"; d="scan'208";a="77536237"
-Received: from orviesa009.jf.intel.com ([10.64.159.149])
- by fmvoesa107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 18 Mar 2026 12:32:36 -0700
-X-CSE-ConnectionGUID: gzzEBS/zR9KPvoDK15AiNA==
-X-CSE-MsgGUID: XOOnhgOvSCObR/edJhmiIw==
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id NTXKPhoR4lZO for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 18 Mar 2026 21:03:43 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.11;
+ helo=mgamail.intel.com; envelope-from=paul.greenwalt@intel.com;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 3538740573
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 3538740573
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.11])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 3538740573
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Mar 2026 21:03:42 +0000 (UTC)
+X-CSE-ConnectionGUID: TKuDGSk0TnSAR3gbjICj1w==
+X-CSE-MsgGUID: i/GlNy5LQtOE2o3ElZJuWQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11733"; a="85568016"
+X-IronPort-AV: E=Sophos;i="6.23,128,1770624000"; d="scan'208";a="85568016"
+Received: from orviesa002.jf.intel.com ([10.64.159.142])
+ by fmvoesa105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 18 Mar 2026 14:03:42 -0700
+X-CSE-ConnectionGUID: GKscBPu6SZmuDiJ0XX5lNg==
+X-CSE-MsgGUID: J3va7b9SQ/u5pXor2QZOow==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,127,1770624000"; d="scan'208";a="222698223"
-Received: from lkp-server01.sh.intel.com (HELO 63737dd503cb) ([10.239.97.150])
- by orviesa009.jf.intel.com with ESMTP; 18 Mar 2026 12:32:34 -0700
-Received: from kbuild by 63737dd503cb with local (Exim 4.98.2)
- (envelope-from <lkp@intel.com>) id 1w2wd6-000000003J1-1wgC;
- Wed, 18 Mar 2026 19:32:32 +0000
-Date: Thu, 19 Mar 2026 03:32:04 +0800
-From: kernel test robot <lkp@intel.com>
-To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Message-ID: <202603190358.ZXK1XbwQ-lkp@intel.com>
-User-Agent: s-nail v14.9.25
+X-IronPort-AV: E=Sophos;i="6.23,128,1770624000"; d="scan'208";a="253242975"
+Received: from unknown (HELO fedora.jf.intel.com) ([10.166.5.147])
+ by orviesa002.jf.intel.com with ESMTP; 18 Mar 2026 14:03:42 -0700
+From: Paul Greenwalt <paul.greenwalt@intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Cc: Paul Greenwalt <paul.greenwalt@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Date: Wed, 18 Mar 2026 09:23:51 -0400
+Message-ID: <20260318132351.428749-1-paul.greenwalt@intel.com>
+X-Mailer: git-send-email 2.52.0
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1773862358; x=1805398358;
- h=date:from:to:subject:message-id;
- bh=L7sL2gREGnddJ9OM86q8tg1RF2jEZExjJa/84khT02M=;
- b=KD4GPEAOmrxNU72OTxs9qFDTc3Ecj3V5Ou7unU7OWZPZ4fz5O4bD7toe
- PIDKKXxjfCENCAKnxHiqFI6p45SZpYUwcv5Jy0WoxnPCcD6gTzwzFIare
- 1l1mt4rlRQ01m2NnW6w+QAsZULB8lEN9mjKzCyi3quXwNm37uxHWgNAI6
- 9fCOi/OQNksJ8xV2oLTPqYemD67bx05Zcb1meEnhcqoxH6rmRXO7jwjaX
- nvkvBE3lSilL6jxmyEnDdWDNzOkJ6xPvmhNuaKI2bQidLwBnUweuaolyn
- ecbHxepOIs5GOS8UVgFFW9llMr58iSBTRfY77SJmWdKuurMHkvAyNXCzA
+ t=1773867823; x=1805403823;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=djPEqXEX45keQbn/CZLMon+YslmkUef0cNi3LSj4yjk=;
+ b=eXeYR64/wLovSvhGfW6+/6I+b+Wn3r2n5U9XDuRWj6tLUR2RUTo0o90R
+ hMgPO7wXj7ijFF8CzmsevXz/0M9SsxC52EXVqQaoVLq47Y7yBQZN/s/W5
+ 3WE357NN/FGV8ZjvpxPs6Nlcadv0mn8kzkED5oSqyKm2rfhb6i6PAWjrc
+ OztbbCzAEnpNpmKOO+KBhWFkgoZ1SWjBH5TufOJR4HDU1rBA6bWeO3CwB
+ l933Tk59L+BllqARbL6MegrLxXfc+6qUz7wmF1gIM39xBI+kgsNCwUqLr
+ fVLrSy2hF1NtpR+fzHRL0htg2OY/E1VzwIegKiDOPFE1vTWpnE/MysCJx
  Q==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=KD4GPEAO
-Subject: [Intel-wired-lan] [tnguy-next-queue:200GbE] BUILD SUCCESS
- 6757bd9aa0d6ad5afb6768f44e73276c46b50f5c
+ header.s=Intel header.b=eXeYR64/
+Subject: [Intel-wired-lan] [PATCH iwl-net v1] ice: fix PHY config on media
+ change with link-down-on-close
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -104,242 +107,225 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git 200GbE
-branch HEAD: 6757bd9aa0d6ad5afb6768f44e73276c46b50f5c  ixd: add devlink support
+Commit 1a3571b5938c ("ice: restore PHY settings on media insertion")
+introduced separate flows for setting PHY configuration on media
+present: ice_configure_phy() when link-down-on-close is disabled, and
+ice_force_phys_link_state() when enabled. The latter incorrectly uses
+the previous configuration even after module change, causing link
+issues such as wrong speed or no link.
 
-elapsed time: 1250m
+Unify PHY configuration into a single ice_phy_cfg() function with a
+link_en parameter, ensuring PHY capabilities are always fetched fresh
+from hardware.
 
-configs tested: 223
-configs skipped: 5
+Fixes: 1a3571b5938c ("ice: restore PHY settings on media insertion")
+Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_main.c | 121 +++++-----------------
+ 1 file changed, 27 insertions(+), 94 deletions(-)
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index ebf48feffb30..512e55e974e2 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -1922,82 +1922,6 @@ static void ice_handle_mdd_event(struct ice_pf *pf)
+ 	ice_print_vfs_mdd_events(pf);
+ }
+ 
+-/**
+- * ice_force_phys_link_state - Force the physical link state
+- * @vsi: VSI to force the physical link state to up/down
+- * @link_up: true/false indicates to set the physical link to up/down
+- *
+- * Force the physical link state by getting the current PHY capabilities from
+- * hardware and setting the PHY config based on the determined capabilities. If
+- * link changes a link event will be triggered because both the Enable Automatic
+- * Link Update and LESM Enable bits are set when setting the PHY capabilities.
+- *
+- * Returns 0 on success, negative on failure
+- */
+-static int ice_force_phys_link_state(struct ice_vsi *vsi, bool link_up)
+-{
+-	struct ice_aqc_get_phy_caps_data *pcaps;
+-	struct ice_aqc_set_phy_cfg_data *cfg;
+-	struct ice_port_info *pi;
+-	struct device *dev;
+-	int retcode;
+-
+-	if (!vsi || !vsi->port_info || !vsi->back)
+-		return -EINVAL;
+-	if (vsi->type != ICE_VSI_PF)
+-		return 0;
+-
+-	dev = ice_pf_to_dev(vsi->back);
+-
+-	pi = vsi->port_info;
+-
+-	pcaps = kzalloc_obj(*pcaps);
+-	if (!pcaps)
+-		return -ENOMEM;
+-
+-	retcode = ice_aq_get_phy_caps(pi, false, ICE_AQC_REPORT_ACTIVE_CFG, pcaps,
+-				      NULL);
+-	if (retcode) {
+-		dev_err(dev, "Failed to get phy capabilities, VSI %d error %d\n",
+-			vsi->vsi_num, retcode);
+-		retcode = -EIO;
+-		goto out;
+-	}
+-
+-	/* No change in link */
+-	if (link_up == !!(pcaps->caps & ICE_AQC_PHY_EN_LINK) &&
+-	    link_up == !!(pi->phy.link_info.link_info & ICE_AQ_LINK_UP))
+-		goto out;
+-
+-	/* Use the current user PHY configuration. The current user PHY
+-	 * configuration is initialized during probe from PHY capabilities
+-	 * software mode, and updated on set PHY configuration.
+-	 */
+-	cfg = kmemdup(&pi->phy.curr_user_phy_cfg, sizeof(*cfg), GFP_KERNEL);
+-	if (!cfg) {
+-		retcode = -ENOMEM;
+-		goto out;
+-	}
+-
+-	cfg->caps |= ICE_AQ_PHY_ENA_AUTO_LINK_UPDT;
+-	if (link_up)
+-		cfg->caps |= ICE_AQ_PHY_ENA_LINK;
+-	else
+-		cfg->caps &= ~ICE_AQ_PHY_ENA_LINK;
+-
+-	retcode = ice_aq_set_phy_cfg(&vsi->back->hw, pi, cfg, NULL);
+-	if (retcode) {
+-		dev_err(dev, "Failed to set phy config, VSI %d error %d\n",
+-			vsi->vsi_num, retcode);
+-		retcode = -EIO;
+-	}
+-
+-	kfree(cfg);
+-out:
+-	kfree(pcaps);
+-	return retcode;
+-}
+-
+ /**
+  * ice_init_nvm_phy_type - Initialize the NVM PHY type
+  * @pi: port info structure
+@@ -2066,7 +1990,7 @@ static void ice_init_link_dflt_override(struct ice_port_info *pi)
+  * first time media is available. The ICE_LINK_DEFAULT_OVERRIDE_PENDING state
+  * is used to indicate that the user PHY cfg default override is initialized
+  * and the PHY has not been configured with the default override settings. The
+- * state is set here, and cleared in ice_configure_phy the first time the PHY is
++ * state is set here, and cleared in ice_phy_cfg the first time the PHY is
+  * configured.
+  *
+  * This function should be called only if the FW doesn't support default
+@@ -2172,14 +2096,18 @@ static int ice_init_phy_user_cfg(struct ice_port_info *pi)
+ }
+ 
+ /**
+- * ice_configure_phy - configure PHY
++ * ice_phy_cfg - configure PHY
+  * @vsi: VSI of PHY
++ * @link_en: true/false indicates to set link to enable/disable
+  *
+  * Set the PHY configuration. If the current PHY configuration is the same as
+- * the curr_user_phy_cfg, then do nothing to avoid link flap. Otherwise
+- * configure the based get PHY capabilities for topology with media.
++ * the curr_user_phy_cfg and link_en hasn't changed, then do nothing to avoid
++ * link flap. Otherwise configure the PHY based get PHY capabilities for
++ * topology with media and link_en.
++ *
++ * Return: 0 on success, negative on failure
+  */
+-static int ice_configure_phy(struct ice_vsi *vsi)
++static int ice_phy_cfg(struct ice_vsi *vsi, bool link_en)
+ {
+ 	struct device *dev = ice_pf_to_dev(vsi->back);
+ 	struct ice_port_info *pi = vsi->port_info;
+@@ -2199,9 +2127,6 @@ static int ice_configure_phy(struct ice_vsi *vsi)
+ 	    phy->link_info.topo_media_conflict == ICE_AQ_LINK_TOPO_UNSUPP_MEDIA)
+ 		return -EPERM;
+ 
+-	if (test_bit(ICE_FLAG_LINK_DOWN_ON_CLOSE_ENA, pf->flags))
+-		return ice_force_phys_link_state(vsi, true);
+-
+ 	pcaps = kzalloc_obj(*pcaps);
+ 	if (!pcaps)
+ 		return -ENOMEM;
+@@ -2215,10 +2140,8 @@ static int ice_configure_phy(struct ice_vsi *vsi)
+ 		goto done;
+ 	}
+ 
+-	/* If PHY enable link is configured and configuration has not changed,
+-	 * there's nothing to do
+-	 */
+-	if (pcaps->caps & ICE_AQC_PHY_EN_LINK &&
++	/* Configuration has not changed. There's nothing to do. */
++	if (link_en == !!(pcaps->caps & ICE_AQC_PHY_EN_LINK) &&
+ 	    ice_phy_caps_equals_cfg(pcaps, &phy->curr_user_phy_cfg))
+ 		goto done;
+ 
+@@ -2282,8 +2205,12 @@ static int ice_configure_phy(struct ice_vsi *vsi)
+ 	 */
+ 	ice_cfg_phy_fc(pi, cfg, phy->curr_user_fc_req);
+ 
+-	/* Enable link and link update */
+-	cfg->caps |= ICE_AQ_PHY_ENA_AUTO_LINK_UPDT | ICE_AQ_PHY_ENA_LINK;
++	/* Enable/Disable link and link update */
++	cfg->caps |= ICE_AQ_PHY_ENA_AUTO_LINK_UPDT;
++	if (link_en)
++		cfg->caps |= ICE_AQ_PHY_ENA_LINK;
++	else
++		cfg->caps &= ~ICE_AQ_PHY_ENA_LINK;
+ 
+ 	err = ice_aq_set_phy_cfg(&pf->hw, pi, cfg, NULL);
+ 	if (err)
+@@ -2336,7 +2263,7 @@ static void ice_check_media_subtask(struct ice_pf *pf)
+ 		    test_bit(ICE_FLAG_LINK_DOWN_ON_CLOSE_ENA, vsi->back->flags))
+ 			return;
+ 
+-		err = ice_configure_phy(vsi);
++		err = ice_phy_cfg(vsi, true);
+ 		if (!err)
+ 			clear_bit(ICE_FLAG_NO_MEDIA, pf->flags);
+ 
+@@ -4892,9 +4819,15 @@ static int ice_init_link(struct ice_pf *pf)
+ 
+ 		if (!test_bit(ICE_FLAG_LINK_DOWN_ON_CLOSE_ENA, pf->flags)) {
+ 			struct ice_vsi *vsi = ice_get_main_vsi(pf);
++			struct ice_link_default_override_tlv *ldo;
++			bool link_en;
++
++			ldo = &pf->link_dflt_override;
++			link_en = !(ldo->options &
++				    ICE_LINK_OVERRIDE_AUTO_LINK_DIS);
+ 
+ 			if (vsi)
+-				ice_configure_phy(vsi);
++				ice_phy_cfg(vsi, link_en);
+ 		}
+ 	} else {
+ 		set_bit(ICE_FLAG_NO_MEDIA, pf->flags);
+@@ -9702,7 +9635,7 @@ int ice_open_internal(struct net_device *netdev)
+ 			}
+ 		}
+ 
+-		err = ice_configure_phy(vsi);
++		err = ice_phy_cfg(vsi, true);
+ 		if (err) {
+ 			netdev_err(netdev, "Failed to set physical link up, error %d\n",
+ 				   err);
+@@ -9743,7 +9676,7 @@ int ice_stop(struct net_device *netdev)
+ 	}
+ 
+ 	if (test_bit(ICE_FLAG_LINK_DOWN_ON_CLOSE_ENA, vsi->back->flags)) {
+-		int link_err = ice_force_phys_link_state(vsi, false);
++		int link_err = ice_phy_cfg(vsi, false);
+ 
+ 		if (link_err) {
+ 			if (link_err == -ENOMEDIUM)
+-- 
+2.52.0
 
-tested configs:
-alpha                             allnoconfig    gcc-15.2.0
-alpha                            allyesconfig    gcc-15.2.0
-arc                              allmodconfig    clang-16
-arc                              allmodconfig    gcc-15.2.0
-arc                               allnoconfig    gcc-15.2.0
-arc                              allyesconfig    clang-23
-arc                              allyesconfig    gcc-15.2.0
-arc                   randconfig-001-20260318    gcc-14.3.0
-arc                   randconfig-001-20260318    gcc-8.5.0
-arc                   randconfig-002-20260318    gcc-14.3.0
-arc                   randconfig-002-20260318    gcc-8.5.0
-arm                               allnoconfig    clang-23
-arm                               allnoconfig    gcc-15.2.0
-arm                              allyesconfig    clang-16
-arm                              allyesconfig    gcc-15.2.0
-arm                   randconfig-001-20260318    clang-23
-arm                   randconfig-001-20260318    gcc-8.5.0
-arm                   randconfig-002-20260318    clang-23
-arm                   randconfig-002-20260318    gcc-8.5.0
-arm                   randconfig-003-20260318    clang-23
-arm                   randconfig-003-20260318    gcc-8.5.0
-arm                   randconfig-004-20260318    gcc-8.5.0
-arm64                            allmodconfig    clang-23
-arm64                             allnoconfig    gcc-15.2.0
-arm64                 randconfig-001-20260318    clang-23
-arm64                 randconfig-001-20260318    gcc-8.5.0
-arm64                 randconfig-002-20260318    clang-23
-arm64                 randconfig-002-20260318    gcc-15.2.0
-arm64                 randconfig-003-20260318    clang-23
-arm64                 randconfig-004-20260318    clang-23
-arm64                 randconfig-004-20260318    gcc-12.5.0
-csky                             allmodconfig    gcc-15.2.0
-csky                              allnoconfig    gcc-15.2.0
-csky                  randconfig-001-20260318    clang-23
-csky                  randconfig-001-20260318    gcc-13.4.0
-csky                  randconfig-002-20260318    clang-23
-csky                  randconfig-002-20260318    gcc-14.3.0
-hexagon                          allmodconfig    clang-17
-hexagon                          allmodconfig    gcc-15.2.0
-hexagon                           allnoconfig    clang-23
-hexagon                           allnoconfig    gcc-15.2.0
-hexagon               randconfig-001-20260318    gcc-8.5.0
-hexagon               randconfig-002-20260318    gcc-8.5.0
-i386                             allmodconfig    clang-20
-i386                             allmodconfig    gcc-14
-i386                              allnoconfig    gcc-14
-i386                              allnoconfig    gcc-15.2.0
-i386                             allyesconfig    clang-20
-i386                             allyesconfig    gcc-14
-i386        buildonly-randconfig-001-20260318    clang-20
-i386        buildonly-randconfig-001-20260318    gcc-14
-i386        buildonly-randconfig-002-20260318    gcc-14
-i386        buildonly-randconfig-003-20260318    clang-20
-i386        buildonly-randconfig-003-20260318    gcc-14
-i386        buildonly-randconfig-004-20260318    gcc-14
-i386        buildonly-randconfig-005-20260318    gcc-14
-i386        buildonly-randconfig-006-20260318    gcc-14
-i386                  randconfig-001-20260318    gcc-14
-i386                  randconfig-002-20260318    gcc-14
-i386                  randconfig-003-20260318    clang-20
-i386                  randconfig-003-20260318    gcc-14
-i386                  randconfig-004-20260318    gcc-14
-i386                  randconfig-005-20260318    clang-20
-i386                  randconfig-005-20260318    gcc-14
-i386                  randconfig-006-20260318    gcc-14
-i386                  randconfig-007-20260318    gcc-14
-i386                  randconfig-011-20260318    clang-20
-i386                  randconfig-011-20260318    gcc-14
-i386                  randconfig-012-20260318    clang-20
-i386                  randconfig-012-20260318    gcc-13
-i386                  randconfig-013-20260318    clang-20
-i386                  randconfig-014-20260318    clang-20
-i386                  randconfig-015-20260318    clang-20
-i386                  randconfig-016-20260318    clang-20
-i386                  randconfig-017-20260318    clang-20
-i386                  randconfig-017-20260318    gcc-14
-loongarch                        allmodconfig    clang-19
-loongarch                        allmodconfig    clang-23
-loongarch                         allnoconfig    clang-23
-loongarch                         allnoconfig    gcc-15.2.0
-loongarch                           defconfig    clang-19
-loongarch             randconfig-001-20260318    gcc-8.5.0
-loongarch             randconfig-002-20260318    gcc-8.5.0
-m68k                             allmodconfig    gcc-15.2.0
-m68k                              allnoconfig    gcc-15.2.0
-m68k                             allyesconfig    clang-16
-m68k                             allyesconfig    gcc-15.2.0
-m68k                                defconfig    clang-19
-m68k                                defconfig    gcc-15.2.0
-microblaze                        allnoconfig    gcc-15.2.0
-microblaze                       allyesconfig    gcc-15.2.0
-microblaze                          defconfig    clang-19
-microblaze                          defconfig    gcc-15.2.0
-mips                             allmodconfig    gcc-15.2.0
-mips                              allnoconfig    gcc-15.2.0
-mips                             allyesconfig    gcc-15.2.0
-nios2                            allmodconfig    clang-23
-nios2                            allmodconfig    gcc-11.5.0
-nios2                             allnoconfig    clang-23
-nios2                             allnoconfig    gcc-11.5.0
-nios2                               defconfig    clang-19
-nios2                               defconfig    gcc-11.5.0
-nios2                 randconfig-001-20260318    gcc-8.5.0
-nios2                 randconfig-002-20260318    gcc-8.5.0
-openrisc                         allmodconfig    clang-23
-openrisc                          allnoconfig    clang-23
-openrisc                          allnoconfig    gcc-15.2.0
-openrisc                            defconfig    gcc-15.2.0
-parisc                           allmodconfig    gcc-15.2.0
-parisc                            allnoconfig    clang-23
-parisc                            allnoconfig    gcc-15.2.0
-parisc                           allyesconfig    clang-19
-parisc                              defconfig    gcc-15.2.0
-parisc                randconfig-001-20260318    gcc-15.2.0
-parisc                randconfig-002-20260318    gcc-8.5.0
-parisc64                            defconfig    clang-19
-parisc64                            defconfig    gcc-15.2.0
-powerpc                          allmodconfig    gcc-15.2.0
-powerpc                           allnoconfig    clang-23
-powerpc                           allnoconfig    gcc-15.2.0
-powerpc                      ppc44x_defconfig    clang-23
-powerpc               randconfig-001-20260318    clang-23
-powerpc               randconfig-002-20260318    gcc-12.5.0
-powerpc                     tqm8548_defconfig    clang-23
-powerpc64             randconfig-001-20260318    gcc-11.5.0
-powerpc64             randconfig-002-20260318    clang-23
-riscv                            allmodconfig    clang-23
-riscv                             allnoconfig    clang-23
-riscv                             allnoconfig    gcc-15.2.0
-riscv                            allyesconfig    clang-16
-riscv                               defconfig    gcc-15.2.0
-riscv                 randconfig-001-20260318    gcc-13.4.0
-riscv                 randconfig-001-20260318    gcc-15.2.0
-riscv                 randconfig-002-20260318    gcc-12.5.0
-riscv                 randconfig-002-20260318    gcc-15.2.0
-s390                             allmodconfig    clang-19
-s390                              allnoconfig    clang-23
-s390                             allyesconfig    gcc-15.2.0
-s390                                defconfig    gcc-15.2.0
-s390                  randconfig-001-20260318    gcc-11.5.0
-s390                  randconfig-001-20260318    gcc-15.2.0
-s390                  randconfig-002-20260318    gcc-15.2.0
-s390                  randconfig-002-20260318    gcc-8.5.0
-sh                               allmodconfig    gcc-15.2.0
-sh                                allnoconfig    clang-23
-sh                                allnoconfig    gcc-15.2.0
-sh                               allyesconfig    clang-19
-sh                                  defconfig    gcc-14
-sh                    randconfig-001-20260318    gcc-15.2.0
-sh                    randconfig-001-20260318    gcc-9.5.0
-sh                    randconfig-002-20260318    gcc-15.2.0
-sparc                             allnoconfig    clang-23
-sparc                             allnoconfig    gcc-15.2.0
-sparc                               defconfig    gcc-15.2.0
-sparc                 randconfig-001-20260318    gcc-13.4.0
-sparc                 randconfig-001-20260318    gcc-8.5.0
-sparc                 randconfig-002-20260318    gcc-13.4.0
-sparc64                          allmodconfig    clang-23
-sparc64                             defconfig    gcc-14
-sparc64               randconfig-001-20260318    gcc-13.4.0
-sparc64               randconfig-001-20260318    gcc-8.5.0
-sparc64               randconfig-002-20260318    gcc-13.4.0
-sparc64               randconfig-002-20260318    gcc-8.5.0
-um                               allmodconfig    clang-19
-um                                allnoconfig    clang-23
-um                               allyesconfig    gcc-14
-um                               allyesconfig    gcc-15.2.0
-um                                  defconfig    gcc-14
-um                             i386_defconfig    gcc-14
-um                    randconfig-001-20260318    gcc-13.4.0
-um                    randconfig-001-20260318    gcc-14
-um                    randconfig-002-20260318    clang-23
-um                    randconfig-002-20260318    gcc-13.4.0
-um                           x86_64_defconfig    gcc-14
-x86_64                           allmodconfig    clang-20
-x86_64                            allnoconfig    clang-20
-x86_64                            allnoconfig    clang-23
-x86_64                           allyesconfig    clang-20
-x86_64      buildonly-randconfig-001-20260318    gcc-14
-x86_64      buildonly-randconfig-002-20260318    gcc-14
-x86_64      buildonly-randconfig-003-20260318    gcc-14
-x86_64      buildonly-randconfig-004-20260318    clang-20
-x86_64      buildonly-randconfig-004-20260318    gcc-14
-x86_64      buildonly-randconfig-005-20260318    clang-20
-x86_64      buildonly-randconfig-005-20260318    gcc-14
-x86_64      buildonly-randconfig-006-20260318    gcc-14
-x86_64                              defconfig    gcc-14
-x86_64                randconfig-001-20260318    clang-20
-x86_64                randconfig-001-20260318    gcc-14
-x86_64                randconfig-002-20260318    gcc-14
-x86_64                randconfig-003-20260318    gcc-14
-x86_64                randconfig-004-20260318    gcc-14
-x86_64                randconfig-005-20260318    gcc-14
-x86_64                randconfig-006-20260318    clang-20
-x86_64                randconfig-006-20260318    gcc-14
-x86_64                randconfig-011-20260318    clang-20
-x86_64                randconfig-011-20260318    gcc-14
-x86_64                randconfig-012-20260318    clang-20
-x86_64                randconfig-012-20260318    gcc-14
-x86_64                randconfig-013-20260318    clang-20
-x86_64                randconfig-013-20260318    gcc-14
-x86_64                randconfig-014-20260318    clang-20
-x86_64                randconfig-015-20260318    clang-20
-x86_64                randconfig-015-20260318    gcc-14
-x86_64                randconfig-016-20260318    clang-20
-x86_64                randconfig-071-20260318    gcc-14
-x86_64                randconfig-072-20260318    gcc-14
-x86_64                randconfig-073-20260318    clang-20
-x86_64                randconfig-073-20260318    gcc-14
-x86_64                randconfig-074-20260318    gcc-14
-x86_64                randconfig-075-20260318    gcc-14
-x86_64                randconfig-076-20260318    gcc-14
-x86_64                           rhel-9.4-bpf    gcc-14
-x86_64                         rhel-9.4-kunit    gcc-14
-x86_64                           rhel-9.4-ltp    gcc-14
-x86_64                          rhel-9.4-rust    clang-20
-xtensa                            allnoconfig    clang-23
-xtensa                            allnoconfig    gcc-15.2.0
-xtensa                           allyesconfig    clang-23
-xtensa                randconfig-001-20260318    gcc-13.4.0
-xtensa                randconfig-001-20260318    gcc-8.5.0
-xtensa                randconfig-002-20260318    gcc-13.4.0
-xtensa                randconfig-002-20260318    gcc-8.5.0
-
---
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
