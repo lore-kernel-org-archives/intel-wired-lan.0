@@ -4,84 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 754C01088E60
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 19 Mar 2026 17:37:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B70DE1091901
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 19 Mar 2026 17:45:14 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 2A64240A61;
-	Thu, 19 Mar 2026 17:37:59 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 75FCF41932;
+	Thu, 19 Mar 2026 17:45:14 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 79EX3IuiROzv; Thu, 19 Mar 2026 17:37:58 +0000 (UTC)
+ id iYVcg5Yvu418; Thu, 19 Mar 2026 17:45:14 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4371240A0D
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E565041933
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1773941878;
-	bh=sIA0VxEHalwtbwebz3Ub5SoOTN0LXVwz+kEtQHlQMXQ=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1773942313;
+	bh=jcyjoy7P/IC49C66iLPkXEnlXcTxq1RgRmHR52vk+TQ=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=n5P3PGsgp1URomA21cqnoifIQyqXKEMzTEPASfm2UsK1ipym6eStLL/K5VvtPkdoE
-	 ULRs8CzIJSmcEUpIdsAfvFLOldFCqPdR6b5MegFofoeoNcHbCiVL69InLR71LFgm6m
-	 yKxtqTYR69Sa/6zOKWFdPabq2q70t91vk7KL26pSmob9GJGHh6YDyGyIK7fBCqlTXT
-	 A1nQ98AlVRT5+NpiSvZhkM5se3xmIRy+0X0b1azurJfUiUgK0GCqRgZmh8eaZ97f9E
-	 EOoZXBoxE3nDSvGdaooHu7HDcu6xiCkZLqR2nb3TFn4VijWW40bP6QQgK4L5K+ohs1
-	 LoYOkXJj+0qLA==
+	b=PEH1rjyHzWUSZVBoO/xgcBA7DOie/c/gMxot+j5E+/gb+vwVrLOvEvLzRKzwsapuV
+	 P+RR1DPU6DbmaInwS3mR26PESRzGgnzYfmP3b4nrgk0/NytxEe/cHpUmCEyZMKcbgT
+	 Z7s2B5VyxwNy/64bKFyYfJPKVand8duzLSYxqCTwd8+mcyiHHqUXmuSbxfQ2NUZtBl
+	 dFaYnpJM6Te3dPRuEa7sQZqVnyXsoeH8jI6mRrHW4MdedJz3WWH9bybF+OB6zPfbRQ
+	 LBbo+5nGpxplyg08mS6Ir66B93lXaPy6ued+Hxe2w7xgZd8izEE5Ismt4Zn7R6NM7P
+	 boQVOmWiT9MBA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 4371240A0D;
-	Thu, 19 Mar 2026 17:37:58 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id 1A34D265
- for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Mar 2026 17:37:57 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id E565041933;
+	Thu, 19 Mar 2026 17:45:13 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id D8A2C265
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Mar 2026 17:45:12 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 0B7BB60DB8
- for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Mar 2026 17:37:57 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id C7CCC41932
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Mar 2026 17:45:11 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 2moHofJ8jW3P for <intel-wired-lan@lists.osuosl.org>;
- Thu, 19 Mar 2026 17:37:56 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 2dwJTRoyZGcs for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 19 Mar 2026 17:45:11 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org;
+ client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org;
  envelope-from=horms@kernel.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 3560860D6C
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3560860D6C
-Received: from sea.source.kernel.org (sea.source.kernel.org
- [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 3560860D6C
- for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Mar 2026 17:37:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 02FD541933
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 02FD541933
+Received: from tor.source.kernel.org (tor.source.kernel.org
+ [IPv6:2600:3c04:e001:324:0:1991:8:25])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 02FD541933
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Mar 2026 17:45:10 +0000 (UTC)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by sea.source.kernel.org (Postfix) with ESMTP id 853A340B2D;
- Thu, 19 Mar 2026 17:37:55 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A63A6C19424;
- Thu, 19 Mar 2026 17:37:51 +0000 (UTC)
+ by tor.source.kernel.org (Postfix) with ESMTP id F14F260097;
+ Thu, 19 Mar 2026 17:45:09 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2A374C19424;
+ Thu, 19 Mar 2026 17:45:06 +0000 (UTC)
+Date: Thu, 19 Mar 2026 17:45:03 +0000
 From: Simon Horman <horms@kernel.org>
-To: grzegorz.nitka@intel.com
-Date: Thu, 19 Mar 2026 17:37:34 +0000
-Message-ID: <20260319173734.2004456-1-horms@kernel.org>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260318090654.611349-6-grzegorz.nitka@intel.com>
-References: <20260318090654.611349-6-grzegorz.nitka@intel.com>
+To: Grzegorz Nitka <grzegorz.nitka@intel.com>
+Message-ID: <20260319174503.GO1753385@horms.kernel.org>
+References: <20260318090654.611349-1-grzegorz.nitka@intel.com>
+ <20260318090654.611349-2-grzegorz.nitka@intel.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260318090654.611349-2-grzegorz.nitka@intel.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1773941875;
- bh=UpJlN5QiJI2YcSqqnnHxI8WchZ3Wjht+c7y2Lbl/boA=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=lg3TL/Dy1/XvD51t7OUfcJXnlrxtgNapvFF4OwpNH4QAHK5u5EGkL3dY4QyGxpBxB
- gG5YQiXM3DLI0XiTciPWS5T7IiXNDj3HoIA9R3mNxU3ynUa+We/PSl7P6/D1wsI4AN
- rsYbEEUTJ2FZHCwUYOkc+tqu56x5FPzj9hIe8j0Q1LwCo5PtsUSXzLN7cTQIvCS1LT
- v3j4ZXkSzUsGdUfv735t8stkHzX4dYMlmxURIpxxmYfJC2d+OiFRCxHrIRGJVTk0Tm
- nQbRN7UJP4RMW65BTnbG0DjvGi/IAEpu7AIuH158FkvpJyX/O1bV3TagEBbtEi+gL5
- opn0c3/TWXd/g==
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ d=kernel.org; s=k20201202; t=1773942309;
+ bh=6CGzvuEPGSvPA+dPivezYFQso4zqZF1AmoyPvpSIKUo=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=aLzsGnyWnfIxc0yii4POgMlCmyEmqsjjz5FNpgiHFKrD5PottLn2hCw7gRilC/wAg
+ J3nA5q4HyKWtYIdGsSronhYen6j8GdjtcFIN4Sh6bsNqQ4UGiRFJba0KwsYK/ybB/R
+ laluDYr7Y97QGZecW8uNAzneNoHcUGxOeWstN/5SHi9CrBnxz0QNXV3wr6EDGGNTbm
+ WV23wAu1L5jKlqDm7JFl30wOWFqD15cJSL7DyqHWuJmIH72UwsxH6yRwnIlZvlJaI8
+ IHb4g4Jp9l4C+4GsUPAkkZx3bBeiTEly3M5eNbgjNdZIE73zMWAohND94+GNYQrsOA
+ jhCoM5mcYibNA==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=lg3TL/Dy
-Subject: Re: [Intel-wired-lan] [PATCH net-next 5/8] ice: add TX clock (TXC)
- DPLL interface for E825 devices
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=aLzsGnyW
+Subject: Re: [Intel-wired-lan] [PATCH net-next 1/8] dpll: add new DPLL type
+ for transmit clock (TXC) usage
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -95,128 +97,99 @@ List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Cc: ivecera@redhat.com, vadim.fedorenko@linux.dev, jiri@resnulli.us,
- netdev@vger.kernel.org, richardcochran@gmail.com, donald.hunter@gmail.com,
+ Aleksandr Loktionov <aleksandr.loktionov@intel.com>, netdev@vger.kernel.org,
+ richardcochran@gmail.com, donald.hunter@gmail.com,
  linux-kernel@vger.kernel.org, arkadiusz.kubalewski@intel.com,
- aleksandr.loktionov@intel.com, andrew+netdev@lunn.ch,
- anthony.l.nguyen@intel.com, Simon Horman <horms@kernel.org>, kuba@kernel.org,
- przemyslaw.kitszel@intel.com, Prathosh.Satish@microchip.com, pabeni@redhat.com,
- davem@davemloft.net, intel-wired-lan@lists.osuosl.org
+ Prathosh.Satish@microchip.com, andrew+netdev@lunn.ch,
+ intel-wired-lan@lists.osuosl.org, kuba@kernel.org,
+ przemyslaw.kitszel@intel.com, anthony.l.nguyen@intel.com, pabeni@redhat.com,
+ davem@davemloft.net
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-This is an AI-generated review of your patch. The human sending this
-email has considered the AI review valid, or at least plausible.
+On Wed, Mar 18, 2026 at 10:06:47AM +0100, Grzegorz Nitka wrote:
+> Extend the DPLL subsystem with a new DPLL type, DPLL_TYPE_TXC,
+> representing devices that drive a transmit reference clock. Certain
+> PHYs, MACs and SerDes blocks use a dedicated TX reference clock for
+> link operation, and this clock domain is distinct from PPS- and
+> EEC-driven synchronization sources. Defining a dedicated type allows
+> user space and drivers to correctly classify and configure DPLLs
+> intended for TX clock generation.
+> 
+> The corresponding netlink specification is updated to expose "txc"
+> 
+> Reviewed-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
+> Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+> Signed-off-by: Grzegorz Nitka <grzegorz.nitka@intel.com>
+> ---
+>  Documentation/netlink/specs/dpll.yaml | 3 +++
+>  include/uapi/linux/dpll.h             | 2 ++
+>  2 files changed, 5 insertions(+)
+> 
+> diff --git a/Documentation/netlink/specs/dpll.yaml b/Documentation/netlink/specs/dpll.yaml
+> index 3dd48a32f783..2a2ee37a1fc0 100644
+> --- a/Documentation/netlink/specs/dpll.yaml
+> +++ b/Documentation/netlink/specs/dpll.yaml
+> @@ -138,6 +138,9 @@ definitions:
+>        -
+>          name: eec
+>          doc: dpll drives the Ethernet Equipment Clock
+> +      -
+> +        name: txc
+> +        doc: dpll drives Tx reference clock
+>      render-max: true
+>    -
+>      type: enum
+> diff --git a/include/uapi/linux/dpll.h b/include/uapi/linux/dpll.h
+> index de0005f28e5c..a277d08ac264 100644
+> --- a/include/uapi/linux/dpll.h
+> +++ b/include/uapi/linux/dpll.h
+> @@ -109,10 +109,12 @@ enum dpll_clock_quality_level {
+>   * enum dpll_type - type of dpll, valid values for DPLL_A_TYPE attribute
+>   * @DPLL_TYPE_PPS: dpll produces Pulse-Per-Second signal
+>   * @DPLL_TYPE_EEC: dpll drives the Ethernet Equipment Clock
+> + * @DPLL_TYPE_TXC: dpll drives Tx reference clock signal
+>   */
+>  enum dpll_type {
+>  	DPLL_TYPE_PPS = 1,
+>  	DPLL_TYPE_EEC,
+> +	DPLL_TYPE_TXC,
+>  
+>  	/* private: */
+>  	__DPLL_TYPE_MAX,
 
-For local reproduction steps see https://netdev-ai.bots.linux.dev/ai-local.html
----
-ice: add TX clock (TXC) DPLL interface for E825 devices
+I think that the spec and source code changes are inconsistent in this
+patch.
 
-This commit introduces a TX clock DPLL instance and pins for E825-based
-devices. The TXC domain exposes two reference pins: EXT_EREF0 (board
-external electrical reference) and SYNCE (port-derived reference,
-described via fwnode). A new pin type and pin ops are added to support
-TX clock references.
+With it applied I see:
 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_dpll.c b/drivers/net/ethernet/intel/ice/ice_dpll.c
-> index 62f75701d652..a1258f2e03a9 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_dpll.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_dpll.c
+./tools/net/ynl/ynl-regen.sh -f && git diff
+diff --git a/drivers/dpll/dpll_nl.c b/drivers/dpll/dpll_nl.c
+index a2b22d492114..4182bdbb6dbb 100644
+--- a/drivers/dpll/dpll_nl.c
++++ b/drivers/dpll/dpll_nl.c
+@@ -34,7 +34,7 @@ const struct nla_policy dpll_reference_sync_nl_policy[DPLL_A_PIN_STATE + 1] = {
+ static const struct nla_policy dpll_device_id_get_nl_policy[DPLL_A_TYPE + 1] = {
+        [DPLL_A_MODULE_NAME] = { .type = NLA_NUL_STRING, },
+        [DPLL_A_CLOCK_ID] = { .type = NLA_U64, },
+-       [DPLL_A_TYPE] = NLA_POLICY_RANGE(NLA_U32, 1, 2),
++       [DPLL_A_TYPE] = NLA_POLICY_RANGE(NLA_U32, 1, 3),
+ };
 
-[ ... ]
+ /* DPLL_CMD_DEVICE_GET - do */
+diff --git a/include/uapi/linux/dpll.h b/include/uapi/linux/dpll.h
+index a277d08ac264..8f6db5d5bf0c 100644
+--- a/include/uapi/linux/dpll.h
++++ b/include/uapi/linux/dpll.h
+@@ -109,7 +109,7 @@ enum dpll_clock_quality_level {
+  * enum dpll_type - type of dpll, valid values for DPLL_A_TYPE attribute
+  * @DPLL_TYPE_PPS: dpll produces Pulse-Per-Second signal
+  * @DPLL_TYPE_EEC: dpll drives the Ethernet Equipment Clock
+- * @DPLL_TYPE_TXC: dpll drives Tx reference clock signal
++ * @DPLL_TYPE_TXC: dpll drives Tx reference clock
+  */
+ enum dpll_type {
+        DPLL_TYPE_PPS = 1,
 
-> @@ -3552,6 +3686,39 @@ ice_dpll_init_fwnode_pins(struct ice_pf *pf, struct ice_dpll_pin *pins,
->  	return ret;
->  }
->
-> +static int ice_dpll_init_txclk_pins(struct ice_pf *pf, int start_idx)
-> +{
-> +	struct ice_dpll_pin *ref_pin = pf->dplls.txclks;
-> +	struct ice_dpll *txc = &pf->dplls.txc;
-> +	int ret = 0;
-> +
-> +	/* configure EXT_EREF0 pin */
-> +	ret = ice_dpll_get_pins(pf, ref_pin, start_idx, 1, pf->dplls.clock_id);
-> +	if (ret)
-> +		return ret;
-> +	ret = dpll_pin_register(txc->dpll, ref_pin->pin, &ice_dpll_txclk_ops,
-> +				ref_pin);
-> +	if (ret)
-> +		return ret;
-> +
-> +	/* configure EXT_SYNCE pin which is based on fwnode pin */
-> +	ref_pin++;
-> +	ret = ice_dpll_init_fwnode_pin(ref_pin, ice_dpll_fwnode_ext_synce);
-> +	if (ret)
-> +		return ret;
-> +
-> +	ret = dpll_pin_register(txc->dpll, ref_pin->pin, &ice_dpll_txclk_ops,
-> +				ref_pin);
-> +	if (ret)
-> +		return ret;
-
-Does ice_dpll_init_txclk_pins leak the EXT_EREF0 pin on error?
-
-If dpll_pin_register for the EXT_SYNCE pin fails, the function returns
-the error without cleaning up the EXT_EREF0 pin that was already
-successfully registered. Looking at the call chain:
-
-ice_dpll_init_pins_e825() calls:
-    ice_dpll_init_txclk_pins()
-        ice_dpll_get_pins() -> acquires pin reference for EXT_EREF0
-        dpll_pin_register() -> registers EXT_EREF0 with TXC DPLL
-        ice_dpll_init_fwnode_pin() -> may fail here
-        dpll_pin_register() -> or may fail here for EXT_SYNCE
-
-If either of the last two steps fail, the function returns the error
-directly without calling dpll_pin_unregister or ice_dpll_release_pins
-for the EXT_EREF0 pin.
-
-The caller ice_dpll_init_pins_e825() also doesn't compensate - on
-txclk init failure it only calls ice_dpll_deinit_rclk_pin() and
-ice_dpll_deinit_fwnode_pins(), neither of which clean up txclk
-resources.
-
-Compare with ice_dpll_init_fwnode_pins() and ice_dpll_get_pins() which
-both have proper error-path rollback using goto labels.
-
-> +
-> +	if (IS_ERR_OR_NULL(ref_pin->pin))
-> +		dev_dbg(ice_pf_to_dev(pf),
-> +			"Tx-clk mux pin not registered yet\n");
-
-Can this cause a NULL pointer dereference?
-
-The IS_ERR_OR_NULL check appears after calling dpll_pin_register with
-ref_pin->pin. Looking at the code flow:
-
-ice_dpll_init_fwnode_pin() returns 0 (success) even when
-fwnode_dpll_pin_find() returns NULL and sets ref_pin->pin = NULL. This
-is the expected case - the commit message states "The SYNCE pin is
-registered when its fwnode becomes available" and the code prints "DPLL
-pin for %pfwp not registered yet".
-
-However, the code unconditionally calls:
-
-    dpll_pin_register(txc->dpll, ref_pin->pin, ...)
-
-where ref_pin->pin is NULL. Looking at dpll_pin_register in
-dpll_core.c:
-
-    int dpll_pin_register(struct dpll_device *dpll, struct dpll_pin *pin, ...)
-    {
-        ...
-        ret = dpll_pin_fwnode_register(dpll, pin, &ice_dpll_txclk_ops, pin_priv);
-        ...
-    }
-
-which then calls code that dereferences pin->fwnode without a NULL
-check, causing a kernel oops.
-
-The IS_ERR_OR_NULL guard at line 3716 was clearly intended to protect
-the dpll_pin_register call but was placed after it instead of before it.
-
-> +
-> +	return 0;
-> +}
-
-[ ... ]
+-- 
+pw-bot: changes-requested
