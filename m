@@ -4,174 +4,189 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5455D1090240
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 19 Mar 2026 15:21:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7D5EB1090247
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 19 Mar 2026 15:54:34 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id F151380D02;
-	Thu, 19 Mar 2026 15:21:39 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 2319484330;
+	Thu, 19 Mar 2026 15:54:34 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ISQDXvuoVSBj; Thu, 19 Mar 2026 15:21:38 +0000 (UTC)
+ id SpI3d53aG74K; Thu, 19 Mar 2026 15:54:33 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 1147483F85
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4F87E8432A
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1773933698;
-	bh=4fUFXPph0d+U/6GDmGbgLZ/FXBjYuxpYsgD69WTKZEc=;
+	s=default; t=1773935673;
+	bh=flkM1UPgnzZIIWUPlhpYdE/CMruOMnml9ArMjCoVGE8=;
 	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=QM520q1+LOPAugUcBhy+X1Qnf6DsLDhsKL5ZXvb1ZNiI+iSZ2KNh2lG0L+U6IFgWS
-	 kfJ81i5uA9a9D7B0aw7y8Mq2HoS/xU+swgdZ3L7K/ZZD7YVOcx8Z/sw9CmP3GgfT+9
-	 L+MasDVdU5cezMIp0tzdKPg9eU5rXwIBO7Jw9B9gt7cqZTOW9l/pEBK6dxGVYuNNsO
-	 YMjSviQc6aqkClLEFL1SpFa+0nKLQorrlkaLs0ZgPPJniMIIafe6CYjjh5KUS1YMQt
-	 uVzxyNMwYDrs4oB30pSnyWsDuOaiX2vRHkM0psNrwoL3npiYSAy9D7gQrqswjBk5sF
-	 O8B0B6nG/vf5A==
+	b=NJ9sMEzSJUVyRHJMVb8t2P8TNOTE7hm/C01GGtrfhTRiMtcLGhIVwoEDo2i2UROsL
+	 WCYFHdwVDiimNcTM34lay8bTDWN4TBS9mel1WokXOFFMLMbVPrJj4M7WABl4hz6rN/
+	 J3GxmBUdqa0WTH4k6IJM57OY7DL1b4FFDq1MN7smRu6NcAXf5SiZ8JEOF6O7Xq0LSk
+	 IWIk/K1PRwKX2upEDtXOc+iT0OcPWJQP3h6jR7BOYlIn5YMmMG3/XxgwJfjYFa/o/d
+	 SZdLWBbU9wXecQCYVBkyGyPKSD4NSiWEEwlN1FuugbzSi8b4Vua4ZftUgSGitSs2/I
+	 896yEus7KGDiQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 1147483F85;
-	Thu, 19 Mar 2026 15:21:38 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 4F87E8432A;
+	Thu, 19 Mar 2026 15:54:33 +0000 (UTC)
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id A322F1BD
- for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Mar 2026 14:13:56 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id 96C2F1B6
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Mar 2026 15:54:31 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id EBE3A401D2
- for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Mar 2026 14:13:55 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 7C8B3403BE
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Mar 2026 15:54:31 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id IudHm0kgIW4w for <intel-wired-lan@lists.osuosl.org>;
- Thu, 19 Mar 2026 14:13:55 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=195.135.223.131;
- helo=smtp-out2.suse.de; envelope-from=jack@suse.cz; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 0E58E40063
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 0E58E40063
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 0E58E40063
- for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Mar 2026 14:13:54 +0000 (UTC)
-Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
- (No client certificate requested)
- by smtp-out2.suse.de (Postfix) with ESMTPS id 233AB5BD4B;
- Thu, 19 Mar 2026 14:13:51 +0000 (UTC)
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
- (No client certificate requested)
- by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 14B714273B;
- Thu, 19 Mar 2026 14:13:51 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
- by imap1.dmz-prg2.suse.org with ESMTPSA id TmUEBZ8EvGlPZwAAD6G6ig
- (envelope-from <jack@suse.cz>); Thu, 19 Mar 2026 14:13:51 +0000
-Received: by quack3.suse.cz (Postfix, from userid 1000)
- id C850FA0B32; Thu, 19 Mar 2026 15:13:46 +0100 (CET)
-Date: Thu, 19 Mar 2026 15:13:46 +0100
-From: Jan Kara <jack@suse.cz>
-To: Philipp Hahn <phahn-oss@avm.de>
-Cc: amd-gfx@lists.freedesktop.org, apparmor@lists.ubuntu.com, 
- bpf@vger.kernel.org, ceph-devel@vger.kernel.org, cocci@inria.fr, 
- dm-devel@lists.linux.dev, dri-devel@lists.freedesktop.org, gfs2@lists.linux.dev,
- intel-gfx@lists.freedesktop.org, intel-wired-lan@lists.osuosl.org,
- iommu@lists.linux.dev, 
- kvm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- linux-block@vger.kernel.org, linux-bluetooth@vger.kernel.org,
- linux-btrfs@vger.kernel.org, 
- linux-cifs@vger.kernel.org, linux-clk@vger.kernel.org,
- linux-erofs@lists.ozlabs.org, 
- linux-ext4@vger.kernel.org, linux-fsdevel@vger.kernel.org,
- linux-gpio@vger.kernel.org, 
- linux-hyperv@vger.kernel.org, linux-input@vger.kernel.org,
- linux-kernel@vger.kernel.org, 
- linux-leds@vger.kernel.org, linux-media@vger.kernel.org,
- linux-mips@vger.kernel.org, 
- linux-mm@kvack.org, linux-modules@vger.kernel.org,
- linux-mtd@lists.infradead.org, 
- linux-nfs@vger.kernel.org, linux-omap@vger.kernel.org,
- linux-phy@lists.infradead.org, 
- linux-pm@vger.kernel.org, linux-rockchip@lists.infradead.org,
- linux-s390@vger.kernel.org, 
- linux-scsi@vger.kernel.org, linux-sctp@vger.kernel.org, 
- linux-security-module@vger.kernel.org, linux-sh@vger.kernel.org,
- linux-sound@vger.kernel.org, 
- linux-stm32@st-md-mailman.stormreply.com, linux-trace-kernel@vger.kernel.org,
- linux-usb@vger.kernel.org, 
- linux-wireless@vger.kernel.org, netdev@vger.kernel.org, ntfs3@lists.linux.dev, 
- samba-technical@lists.samba.org, sched-ext@lists.linux.dev,
- target-devel@vger.kernel.org, 
- tipc-discussion@lists.sourceforge.net, v9fs@lists.linux.dev,
- Jan Kara <jack@suse.com>
-Message-ID: <ol2d7c5z7yfyuwo5tyfxurgqedruhr6bzmuv37bx5phhrmmoyh@4zjspbtexid3>
-References: <20260310-b4-is_err_or_null-v1-0-bd63b656022d@avm.de>
- <20260310-b4-is_err_or_null-v1-12-bd63b656022d@avm.de>
+ id qsj_RNbtXL_n for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 19 Mar 2026 15:54:30 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2607:f8b0:4864:20::42c; helo=mail-pf1-x42c.google.com;
+ envelope-from=stfomichev@gmail.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 8D065401FD
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 8D065401FD
+Received: from mail-pf1-x42c.google.com (mail-pf1-x42c.google.com
+ [IPv6:2607:f8b0:4864:20::42c])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 8D065401FD
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Mar 2026 15:54:30 +0000 (UTC)
+Received: by mail-pf1-x42c.google.com with SMTP id
+ d2e1a72fcca58-82987437624so671067b3a.1
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Mar 2026 08:54:30 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20251104; t=1773935670; x=1774540470;
+ h=in-reply-to:content-disposition:mime-version:references
+ :mail-followup-to:message-id:subject:cc:to:from:date:x-gm-gg
+ :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+ bh=flkM1UPgnzZIIWUPlhpYdE/CMruOMnml9ArMjCoVGE8=;
+ b=AXCZLkR4Ka4ITZl0BSgQOnCYrJrlP+7sCM5u+fqasRrEkaoGTsMRysQUMXNwwr1wfv
+ 7aoCiv7VOom/XMaMON2sgo/wHerDeGrUsQPeCLZX661YazFOYogTfM2XEsWlOMXOuAud
+ 5Q7GL2SmlgDKo+IVwca/etD7H+yderf5W9fNTcJVP6RYWU6ErQej2U9CD3ypu+MFSEXK
+ yK7Gqk5gnn/RUB0KpwM9CjuQhfzToA46w1cp1O+cV1hRXmv6d2xUoxx2FK76nN+QQjh5
+ 2o3TKtbRZbBgnQ3/gwyoe0gHK1XVLLEVqsVjZMAty4tDJ/J/6AOkrbF+Z1kX1jqPifMa
+ rcYg==
+X-Forwarded-Encrypted: i=1;
+ AJvYcCVg/xD38qIxOFwmmSctT90XLg1n6m8j3XtqCL2IOPI/xUwquhaObMfDRQtJeOsTmE8T2E2Jztet1Ywflw6rv1Q=@lists.osuosl.org
+X-Gm-Message-State: AOJu0YyG2KPWj9bzpyuCZry9q6/e72CJgC8N+p7dQgz6tD7aClrSRu4e
+ 9JH1MUmA2Q1vxzXzcY/taDEIVLHN1EyN/ChOGAmvWcAgUu+G/mMOWA4=
+X-Gm-Gg: ATEYQzwHLe1oXt1k5I5bSamkUX1LZe7u11REqIBKudU+VUVr7oeY+rkjrv6FlLw/Is8
+ vm9YWmdOkCVSF2LmaUvueFz1WMFrpdtsN5cnbtpDOi6Ch2yD3JKrGPzM+kjYT2n/xRQAZBAzDID
+ lIzrNeghX9dkdoH9TAF6ip/09KcFlY5EEaDIi7vzjB1qQiWUe4qL/OMI7nPcXNvcdFL/GzdIxtt
+ 4AxnyefBdnbIu3NbVelRXt60jofUKfzp4Oti6vi8cHCeWsNKt0qwnNGfDlZRLXGygPvBqqaBqLr
+ pVzXOVjDq/ZUcmi5PQUY7zH/c44nYfRavT1cLfM/aMYvfW4kPS/jC/k296EXFZ4lPq1eXlIWmVR
+ Nvq5USc91b113aPH41upNpWhSkKT42UEEEP0bBUl0YXnbDiZVIK7zlwPqlB+SxU1oSa3pKhRAHK
+ goio6GnUG1QlLVIN+lLWiALkcOthg9E8r1B78PKTU+CIR3yJq7qhYWbzPkMWVSumTGh3FuHN9Nx
+ KWwXBudgUf59yF/iA==
+X-Received: by 2002:a05:6a00:a8c:b0:829:f777:dad4 with SMTP id
+ d2e1a72fcca58-82a7a97b202mr3053986b3a.29.1773935669410; 
+ Thu, 19 Mar 2026 08:54:29 -0700 (PDT)
+Received: from localhost (c-76-102-12-149.hsd1.ca.comcast.net. [76.102.12.149])
+ by smtp.gmail.com with ESMTPSA id
+ d2e1a72fcca58-82a6bbb51d1sm7913205b3a.28.2026.03.19.08.54.28
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 19 Mar 2026 08:54:29 -0700 (PDT)
+Date: Thu, 19 Mar 2026 08:54:28 -0700
+From: Stanislav Fomichev <stfomichev@gmail.com>
+To: "Loktionov, Aleksandr" <aleksandr.loktionov@intel.com>
+Cc: Stanislav Fomichev <sdf@fomichev.me>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "davem@davemloft.net" <davem@davemloft.net>,
+ "edumazet@google.com" <edumazet@google.com>,
+ "kuba@kernel.org" <kuba@kernel.org>,
+ "pabeni@redhat.com" <pabeni@redhat.com>,
+ "horms@kernel.org" <horms@kernel.org>, "corbet@lwn.net" <corbet@lwn.net>,
+ "skhan@linuxfoundation.org" <skhan@linuxfoundation.org>,
+ "andrew+netdev@lunn.ch" <andrew+netdev@lunn.ch>,
+ "michael.chan@broadcom.com" <michael.chan@broadcom.com>,
+ "pavan.chebbi@broadcom.com" <pavan.chebbi@broadcom.com>,
+ "Nguyen, Anthony L" <anthony.l.nguyen@intel.com>,
+ "Kitszel, Przemyslaw" <przemyslaw.kitszel@intel.com>,
+ "saeedm@nvidia.com" <saeedm@nvidia.com>,
+ "tariqt@nvidia.com" <tariqt@nvidia.com>,
+ "mbloch@nvidia.com" <mbloch@nvidia.com>,
+ "alexanderduyck@fb.com" <alexanderduyck@fb.com>,
+ "kernel-team@meta.com" <kernel-team@meta.com>,
+ "johannes@sipsolutions.net" <johannes@sipsolutions.net>,
+ "sd@queasysnail.net" <sd@queasysnail.net>,
+ "jianbol@nvidia.com" <jianbol@nvidia.com>,
+ "dtatulea@nvidia.com" <dtatulea@nvidia.com>,
+ "mohsin.bashr@gmail.com" <mohsin.bashr@gmail.com>,
+ "Keller, Jacob E" <jacob.e.keller@intel.com>,
+ "willemb@google.com" <willemb@google.com>,
+ "skhawaja@google.com" <skhawaja@google.com>,
+ "bestswngs@gmail.com" <bestswngs@gmail.com>,
+ "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
+ "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
+ "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+ "linux-kselftest@vger.kernel.org" <linux-kselftest@vger.kernel.org>,
+ "leon@kernel.org" <leon@kernel.org>
+Message-ID: <abwcNMcZHW0ThCkW@mini-arch>
+Mail-Followup-To: Stanislav Fomichev <stfomichev@gmail.com>,
+ "Loktionov, Aleksandr" <aleksandr.loktionov@intel.com>,
+ Stanislav Fomichev <sdf@fomichev.me>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "davem@davemloft.net" <davem@davemloft.net>,
+ "edumazet@google.com" <edumazet@google.com>,
+ "kuba@kernel.org" <kuba@kernel.org>,
+ "pabeni@redhat.com" <pabeni@redhat.com>,
+ "horms@kernel.org" <horms@kernel.org>,
+ "corbet@lwn.net" <corbet@lwn.net>,
+ "skhan@linuxfoundation.org" <skhan@linuxfoundation.org>,
+ "andrew+netdev@lunn.ch" <andrew+netdev@lunn.ch>,
+ "michael.chan@broadcom.com" <michael.chan@broadcom.com>,
+ "pavan.chebbi@broadcom.com" <pavan.chebbi@broadcom.com>,
+ "Nguyen, Anthony L" <anthony.l.nguyen@intel.com>,
+ "Kitszel, Przemyslaw" <przemyslaw.kitszel@intel.com>,
+ "saeedm@nvidia.com" <saeedm@nvidia.com>,
+ "tariqt@nvidia.com" <tariqt@nvidia.com>,
+ "mbloch@nvidia.com" <mbloch@nvidia.com>,
+ "alexanderduyck@fb.com" <alexanderduyck@fb.com>,
+ "kernel-team@meta.com" <kernel-team@meta.com>,
+ "johannes@sipsolutions.net" <johannes@sipsolutions.net>,
+ "sd@queasysnail.net" <sd@queasysnail.net>,
+ "jianbol@nvidia.com" <jianbol@nvidia.com>,
+ "dtatulea@nvidia.com" <dtatulea@nvidia.com>,
+ "mohsin.bashr@gmail.com" <mohsin.bashr@gmail.com>,
+ "Keller, Jacob E" <jacob.e.keller@intel.com>,
+ "willemb@google.com" <willemb@google.com>,
+ "skhawaja@google.com" <skhawaja@google.com>,
+ "bestswngs@gmail.com" <bestswngs@gmail.com>,
+ "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
+ "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
+ "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+ "linux-kselftest@vger.kernel.org" <linux-kselftest@vger.kernel.org>,
+ "leon@kernel.org" <leon@kernel.org>
+References: <20260318150305.123900-1-sdf@fomichev.me>
+ <20260318150305.123900-9-sdf@fomichev.me>
+ <IA3PR11MB89866985981DB64EFEBDF0ACE54FA@IA3PR11MB8986.namprd11.prod.outlook.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20260310-b4-is_err_or_null-v1-12-bd63b656022d@avm.de>
-X-Spamd-Result: default: False [-2.30 / 50.00]; BAYES_HAM(-3.00)[99.99%];
- SUSPICIOUS_RECIPS(1.50)[]; NEURAL_HAM_LONG(-1.00)[-1.000];
- MID_RHS_NOT_FQDN(0.50)[]; NEURAL_HAM_SHORT(-0.20)[-0.999];
- MIME_GOOD(-0.10)[text/plain]; RCVD_VIA_SMTP_AUTH(0.00)[];
- TO_DN_SOME(0.00)[]; ARC_NA(0.00)[];
- FUZZY_RATELIMITED(0.00)[rspamd.com]; MISSING_XM_UA(0.00)[];
- MIME_TRACE(0.00)[0:+]; FROM_HAS_DN(0.00)[];
- RCVD_COUNT_THREE(0.00)[3]; TO_MATCH_ENVRCPT_SOME(0.00)[];
- FROM_EQ_ENVFROM(0.00)[];
- R_RATELIMIT(0.00)[to_ip_from(RLck44p98ib5bmd95s13xxw3gp)];
- RCVD_TLS_LAST(0.00)[];
- DKIM_SIGNED(0.00)[suse.cz:s=susede2_rsa,suse.cz:s=susede2_ed25519];
- RCPT_COUNT_GT_50(0.00)[55];
- DBL_BLOCKED_OPENRESOLVER(0.00)[suse.com:email]
-X-Mailman-Approved-At: Thu, 19 Mar 2026 15:21:37 +0000
+In-Reply-To: <IA3PR11MB89866985981DB64EFEBDF0ACE54FA@IA3PR11MB8986.namprd11.prod.outlook.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=suse.cz; s=susede2_rsa; 
- t=1773929632; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
- mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=4fUFXPph0d+U/6GDmGbgLZ/FXBjYuxpYsgD69WTKZEc=;
- b=qJFdgiFwZof840urwELAyJUPmqr5R5KSb1T4rwYuc7bb8XNbCm/kv+M5FkrKSBEOM1bZiu
- /MGyuwm/OFnFKmJm/t/Uz/+GbEcAEAQCMtEWioCbgwKOh4DWZ0qNVZOg9g66xDY+m4U+fD
- w9Xqoe30eNI+goFz62hSwZMzWorThdA=
-X-Mailman-Original-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
- d=suse.cz; s=susede2_ed25519; t=1773929632;
- h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
- mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=4fUFXPph0d+U/6GDmGbgLZ/FXBjYuxpYsgD69WTKZEc=;
- b=4jpB79ycXSQsxOkgtV3HKUa6Dm/vQ/wRir8pmFsiYnB6qgK3LbPe12RtulXb4tol7/E3ij
- faYPra8B4GTfZjDQ==
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=suse.cz; s=susede2_rsa; 
- t=1773929631; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
- mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=4fUFXPph0d+U/6GDmGbgLZ/FXBjYuxpYsgD69WTKZEc=;
- b=OrcSAEzL/6c4UDB40dZmtUkHL2UKN/t418W/3/WLfRE3VUYtttdOTA1LBRs2LexriSZBXr
- IUCLAcO9QxQoLCNXA0PSitgNb7BC5cuH9t+EXroQLbXGhfbC1mTChSWj64vc6V41FfYy8R
- mio6pb/J12e+5TPnOnmBoDRex83ce1A=
-X-Mailman-Original-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
- d=suse.cz; s=susede2_ed25519; t=1773929631;
- h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
- mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=4fUFXPph0d+U/6GDmGbgLZ/FXBjYuxpYsgD69WTKZEc=;
- b=HXVk5/yPJtxIjyky0dtujMNvVHE9KONXRU8D1O6wb4LBxoqwDaKPYOnkGEkCrYDJmYyVOA
- klxEA++oJw6AsaAw==
+ d=gmail.com; s=20230601; t=1773935670; x=1774540470; darn=lists.osuosl.org;
+ h=in-reply-to:content-disposition:mime-version:references
+ :mail-followup-to:message-id:subject:cc:to:from:date:from:to:cc
+ :subject:date:message-id:reply-to;
+ bh=flkM1UPgnzZIIWUPlhpYdE/CMruOMnml9ArMjCoVGE8=;
+ b=EpbIA2WQJpz1GAbl/MkAn50F8aIhUUne9XQ+5FEGmYJ5qhXId7DFAko8mUa0qwM2K2
+ FIbBnrx3wJqKTt15yQg5/aa6z1kc/cuibE95r13xalx5fz5ND6g8ocOmDS+0TVMWgcjS
+ UzMYfHOvuuuPSncBrL2IoQylX1Xn3lPS9FxzbLvh0Cn4aQbRrU36SK5LZB2UFfIjkbFM
+ trJKtRy2+y+D1/xl+0qZM2S2Xfu2HaThixo9Jb3RpPyWineaOQu/FfQoAyTVYzww1X3r
+ asW9ZiGKEcQsMVBzHkzY0eJzyHZ0ABnhwdgzSoJXEbMioOA259BfA0bP+SL90HIbfP5l
+ EKcA==
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dmarc=none (p=none dis=none)
- header.from=suse.cz
+ dmarc=pass (p=none dis=none)
+ header.from=gmail.com
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (1024-bit key, unprotected) header.d=suse.cz header.i=@suse.cz
- header.a=rsa-sha256 header.s=susede2_rsa header.b=qJFdgiFw; 
- dkim=pass header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256
- header.s=susede2_ed25519 header.b=4jpB79yc; 
- dkim=pass (1024-bit key) header.d=suse.cz header.i=@suse.cz
- header.a=rsa-sha256 header.s=susede2_rsa header.b=OrcSAEzL; 
- dkim=neutral header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256
- header.s=susede2_ed25519 header.b=HXVk5/yP
-X-Mailman-Original-Authentication-Results: smtp-out2.suse.de;
-	none
-Subject: Re: [Intel-wired-lan] [PATCH 12/61] quota: Prefer IS_ERR_OR_NULL
- over manual NULL check
+ dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
+ header.a=rsa-sha256 header.s=20230601 header.b=EpbIA2WQ
+Subject: Re: [Intel-wired-lan] [PATCH net-next v2 08/13] bnxt: use snapshot
+ in bnxt_cfg_rx_mode
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -187,42 +202,73 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Tue 10-03-26 12:48:38, Philipp Hahn wrote:
-> Prefer using IS_ERR_OR_NULL() over using IS_ERR() and a manual NULL
-> check.
+On 03/19, Loktionov, Aleksandr wrote:
 > 
-> Change generated with coccinelle.
 > 
-> To: Jan Kara <jack@suse.com>
-> Cc: linux-kernel@vger.kernel.org
-> Signed-off-by: Philipp Hahn <phahn-oss@avm.de>
+> > -----Original Message-----
+> > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf
+> > Of Stanislav Fomichev
+> > Sent: Wednesday, March 18, 2026 4:03 PM
+> > To: netdev@vger.kernel.org
+> > Cc: davem@davemloft.net; edumazet@google.com; kuba@kernel.org;
+> > pabeni@redhat.com; horms@kernel.org; corbet@lwn.net;
+> > skhan@linuxfoundation.org; andrew+netdev@lunn.ch;
+> > michael.chan@broadcom.com; pavan.chebbi@broadcom.com; Nguyen, Anthony
+> > L <anthony.l.nguyen@intel.com>; Kitszel, Przemyslaw
+> > <przemyslaw.kitszel@intel.com>; saeedm@nvidia.com; tariqt@nvidia.com;
+> > mbloch@nvidia.com; alexanderduyck@fb.com; kernel-team@meta.com;
+> > johannes@sipsolutions.net; sd@queasysnail.net; jianbol@nvidia.com;
+> > dtatulea@nvidia.com; sdf@fomichev.me; mohsin.bashr@gmail.com; Keller,
+> > Jacob E <jacob.e.keller@intel.com>; willemb@google.com;
+> > skhawaja@google.com; bestswngs@gmail.com; linux-doc@vger.kernel.org;
+> > linux-kernel@vger.kernel.org; intel-wired-lan@lists.osuosl.org; linux-
+> > rdma@vger.kernel.org; linux-wireless@vger.kernel.org; linux-
+> > kselftest@vger.kernel.org; leon@kernel.org
+> > Subject: [Intel-wired-lan] [PATCH net-next v2 08/13] bnxt: use
+> > snapshot in bnxt_cfg_rx_mode
+> > 
+> > With the introduction of ndo_set_rx_mode_async (as discussed in [0])
+> > we can call bnxt_cfg_rx_mode directly. Convert bnxt_cfg_rx_mode to use
+> > uc/mc snapshots and move its call in bnxt_sp_task to the section that
+> > resets BNXT_STATE_IN_SP_TASK. Switch to direct call in
+> > bnxt_set_rx_mode.
+> > 
+> > 0:
+> > https://lore.kernel.org/netdev/CACKFLi=5vj8hPqEUKDd8RTw3au5G+zRgQEqjF+
+> > 6NZnyoNm90KA@mail.gmail.com/
+> > 
+> > Cc: Michael Chan <michael.chan@broadcom.com>
+> > Cc: Pavan Chebbi <pavan.chebbi@broadcom.com>
+> > Signed-off-by: Stanislav Fomichev <sdf@fomichev.me>
+> > ---
+> >  drivers/net/ethernet/broadcom/bnxt/bnxt.c | 24 ++++++++++++++--------
+> > -
+> >  1 file changed, 15 insertions(+), 9 deletions(-)
+> 
+> ...
+> 
+> > -static int bnxt_cfg_rx_mode(struct bnxt *bp)
+> > +static int bnxt_cfg_rx_mode(struct bnxt *bp, struct
+> > netdev_hw_addr_list *uc,
+> > +			    struct netdev_hw_addr_list *mc)
+> >  {
+> >  	struct net_device *dev = bp->dev;
+> >  	struct bnxt_vnic_info *vnic = &bp-
+> > >vnic_info[BNXT_VNIC_DEFAULT];
+> > @@ -13623,7 +13625,7 @@ static int bnxt_cfg_rx_mode(struct bnxt *bp)
+> >  	bool uc_update;
+> > 
+> >  	netif_addr_lock_bh(dev);
+> > -	uc_update = bnxt_uc_list_updated(bp, &dev->uc);
+> > +	uc_update = bnxt_uc_list_updated(bp, uc);
+> >  	netif_addr_unlock_bh(dev);
+> > 
+> >  	if (!uc_update)
+> > @@ -13642,7 +13644,7 @@ static int bnxt_cfg_rx_mode(struct bnxt *bp)
+> >  	if (netdev_uc_count(dev) > (BNXT_MAX_UC_ADDRS - 1)) {
+> >  		vnic->rx_mask |=
+> > CFA_L2_SET_RX_MASK_REQ_MASK_PROMISCUOUS;
+> This limit check uses the live device list, dev->uc.
+> In the new async model, the live list can differ from the snapshot.
 
-Thanks for the patch but frankly I find the original variant clearer wrt
-what is going on. So I prefer to keep the code as is.
-
-								Honza
-
-> ---
->  fs/quota/quota.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/fs/quota/quota.c b/fs/quota/quota.c
-> index 33bacd70758007129e0375bab44d7431195ec441..2e09fc247d0cf45b9e83a4f8a0be7ea694c8c2a1 100644
-> --- a/fs/quota/quota.c
-> +++ b/fs/quota/quota.c
-> @@ -965,7 +965,7 @@ SYSCALL_DEFINE4(quotactl, unsigned int, cmd, const char __user *, special,
->  	else
->  		drop_super_exclusive(sb);
->  out:
-> -	if (pathp && !IS_ERR(pathp))
-> +	if (!IS_ERR_OR_NULL(pathp))
->  		path_put(pathp);
->  	return ret;
->  }
-> 
-> -- 
-> 2.43.0
-> 
--- 
-Jan Kara <jack@suse.com>
-SUSE Labs, CR
+Oh, yes, good catch! Will do s/netdev_uc_count/netdev_hw_addr_list_count(uc).
