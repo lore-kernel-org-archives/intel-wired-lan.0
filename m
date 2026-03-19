@@ -1,97 +1,100 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 75E1B107760E
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 18 Mar 2026 21:03:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E57E11088E46
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 19 Mar 2026 04:35:40 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 2A0BE60DE8;
-	Wed, 18 Mar 2026 21:03:46 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 9DCB284055;
+	Thu, 19 Mar 2026 04:35:40 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 9vfNmCv8qgkH; Wed, 18 Mar 2026 21:03:45 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id TBUQ9w_qAvyB; Thu, 19 Mar 2026 04:35:39 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 56E8F60DD5
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8C51484057
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1773867825;
-	bh=vz8nEVx12vxjqyucT09gFOK5LpmQKcJZtc0FIhR6HvM=;
-	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	s=default; t=1773894939;
+	bh=k1+Oxnsvv66qpdlUU28H1Nhr38/ljX5q8VnsdwVG4DA=;
+	h=Date:From:To:Cc:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:From;
-	b=Ut2ccjYZLD0x+iQ1D985IylVWiLp42ozTZJidUk8goTsLWxU3ELq9usqfYz7gOaVi
-	 ru/AOIiRFEltHJaZd5c/+JgF0eGOsOV8KzLTtps5DpU9WReZMM0T+EK1A4x1EghYvn
-	 r7i/qmTMMs9t+M8NCwuT/762Q6jFyiIojQghcM3R8QwnG9ySAmMKm750W7L0er63ZM
-	 CrSez5Zn3Vwilg6MBJQV1GgDP4vgrh+TfnGpUYGFn18cyeiK7qZFxn7l5E2mCN5eU9
-	 DoxZxwfxrItmE3oLn+0HKH4aZkBS2daHb+Zf6F9N1jeUwSsifkKVjLB+HElOJhZHnN
-	 SxCknyQzgoHVg==
+	b=S00fnykiqEGQv9yl8VdJvAi+dHnhDIoSEpsHSZzW3G1Uwyzt569l8EHdhQZp2thr3
+	 0dcLVmkp89pDJX3CGdVaTrrtYmSbfvaYg3CMPW/5NZBN/6sOCRsQQud+U4Q8LvPnB4
+	 UMSPv8VkCvmJGnySoJLW0lyU2R7uqj4q3lFwxFUuGZqVJAe2nByNkufAcz1WzYpTCy
+	 5OJ7g1xxUPJ+V1RuYETkocwNSdj0/Pn62yciBiWwQpA6BErkx2wmMqg4zAzR8X/Sl3
+	 OcxVwiJOcQN0w6aU/2iPsDqpOw++cUa4TACNHlSBpIx3ohksgLUylmE6hNtck1a4sb
+	 wdNSeM91LjLxg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 56E8F60DD5;
-	Wed, 18 Mar 2026 21:03:45 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 3B2301B6
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Mar 2026 21:03:44 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 8C51484057;
+	Thu, 19 Mar 2026 04:35:39 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 339F11B6
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Mar 2026 04:35:38 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 2C91340575
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Mar 2026 21:03:44 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 2556C417ED
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Mar 2026 04:35:38 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id NTXKPhoR4lZO for <intel-wired-lan@lists.osuosl.org>;
- Wed, 18 Mar 2026 21:03:43 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.11;
- helo=mgamail.intel.com; envelope-from=paul.greenwalt@intel.com;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 3538740573
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 3538740573
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.11])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 3538740573
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Mar 2026 21:03:42 +0000 (UTC)
-X-CSE-ConnectionGUID: TKuDGSk0TnSAR3gbjICj1w==
-X-CSE-MsgGUID: i/GlNy5LQtOE2o3ElZJuWQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11733"; a="85568016"
-X-IronPort-AV: E=Sophos;i="6.23,128,1770624000"; d="scan'208";a="85568016"
-Received: from orviesa002.jf.intel.com ([10.64.159.142])
- by fmvoesa105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 18 Mar 2026 14:03:42 -0700
-X-CSE-ConnectionGUID: GKscBPu6SZmuDiJ0XX5lNg==
-X-CSE-MsgGUID: J3va7b9SQ/u5pXor2QZOow==
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 618nlyl0bvvY for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 19 Mar 2026 04:35:37 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.9;
+ helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org CA497417EB
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org CA497417EB
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.9])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id CA497417EB
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Mar 2026 04:35:36 +0000 (UTC)
+X-CSE-ConnectionGUID: qf0WKNnxTPyXEg+0Romhwg==
+X-CSE-MsgGUID: amP6qLPjQ3aqsE1INIoXlg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11733"; a="97573189"
+X-IronPort-AV: E=Sophos;i="6.23,128,1770624000"; d="scan'208";a="97573189"
+Received: from orviesa001.jf.intel.com ([10.64.159.141])
+ by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 18 Mar 2026 21:35:36 -0700
+X-CSE-ConnectionGUID: 2Dmso7VCTMGbxiSdHMLvlg==
+X-CSE-MsgGUID: hCQus919Tu+ZdnyZ5o/PTg==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,128,1770624000"; d="scan'208";a="253242975"
-Received: from unknown (HELO fedora.jf.intel.com) ([10.166.5.147])
- by orviesa002.jf.intel.com with ESMTP; 18 Mar 2026 14:03:42 -0700
-From: Paul Greenwalt <paul.greenwalt@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Cc: Paul Greenwalt <paul.greenwalt@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Date: Wed, 18 Mar 2026 09:23:51 -0400
-Message-ID: <20260318132351.428749-1-paul.greenwalt@intel.com>
-X-Mailer: git-send-email 2.52.0
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+X-IronPort-AV: E=Sophos;i="6.23,128,1770624000"; d="scan'208";a="260743839"
+Received: from lkp-server02.sh.intel.com (HELO a51c2a36b9df) ([10.239.97.151])
+ by orviesa001.jf.intel.com with ESMTP; 18 Mar 2026 21:35:33 -0700
+Received: from kbuild by a51c2a36b9df with local (Exim 4.98.2)
+ (envelope-from <lkp@intel.com>) id 1w356Y-000000000JZ-1Qr3;
+ Thu, 19 Mar 2026 04:35:30 +0000
+Date: Thu, 19 Mar 2026 12:34:55 +0800
+From: kernel test robot <lkp@intel.com>
+To: Larysa Zaremba <larysa.zaremba@intel.com>
+Cc: oe-kbuild-all@lists.linux.dev,
+ Intel Wired LAN <intel-wired-lan@lists.osuosl.org>,
+ Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Alexander Lobakin <aleksander.lobakin@intel.com>,
+ Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Message-ID: <202603191235.t3CNQjw3-lkp@intel.com>
+User-Agent: s-nail v14.9.25
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1773867823; x=1805403823;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=djPEqXEX45keQbn/CZLMon+YslmkUef0cNi3LSj4yjk=;
- b=eXeYR64/wLovSvhGfW6+/6I+b+Wn3r2n5U9XDuRWj6tLUR2RUTo0o90R
- hMgPO7wXj7ijFF8CzmsevXz/0M9SsxC52EXVqQaoVLq47Y7yBQZN/s/W5
- 3WE357NN/FGV8ZjvpxPs6Nlcadv0mn8kzkED5oSqyKm2rfhb6i6PAWjrc
- OztbbCzAEnpNpmKOO+KBhWFkgoZ1SWjBH5TufOJR4HDU1rBA6bWeO3CwB
- l933Tk59L+BllqARbL6MegrLxXfc+6qUz7wmF1gIM39xBI+kgsNCwUqLr
- fVLrSy2hF1NtpR+fzHRL0htg2OY/E1VzwIegKiDOPFE1vTWpnE/MysCJx
- Q==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ t=1773894937; x=1805430937;
+ h=date:from:to:cc:subject:message-id;
+ bh=XOQJX6DutUN0w2RnNl3UE44VuIbNxrz8DJPJAJHq8/w=;
+ b=WBVfIUV13S0tNoPmmLSimjtVem5oUCdSgNQ7c0nePWn+GYp9/mQAaa+b
+ 18kOf9KKq1maDfAtDP10h2toFR+HjhzhlRJNsWdCycAWmCWMcHyj3Ib2o
+ 88eCAD35K3mxXQfpIZiCyDvxi1NnJke/1LpZjDBBAH6wJz/rTSzQB8Xue
+ Ih8wPu+AAvqSq1yNHgBoEgmpTsIr4DDk6w82Ea+ctlhCCM13Ha577wFum
+ eYwhmzE5h8AlxiD6JooYg3Km31u2/qawObHX9yFNcLnSHT29oL5nrWIII
+ GK2lV2UgVwe+UEbu1DEexOupI6DQYphExoiZQkA4FmoGovxMbWpNZT7VM
+ w==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=eXeYR64/
-Subject: [Intel-wired-lan] [PATCH iwl-net v1] ice: fix PHY config on media
- change with link-down-on-close
+ header.s=Intel header.b=WBVfIUV1
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue 83/97]
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c:3178:27: sparse: sparse:
+ incorrect type in assignment (different address spaces)
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -107,225 +110,104 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Commit 1a3571b5938c ("ice: restore PHY settings on media insertion")
-introduced separate flows for setting PHY configuration on media
-present: ice_configure_phy() when link-down-on-close is disabled, and
-ice_force_phys_link_state() when enabled. The latter incorrectly uses
-the previous configuration even after module change, causing link
-issues such as wrong speed or no link.
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+head:   8cf0b18c0700c55deb424e284912d0161885434b
+commit: 556b0d5d0b19690e7951bf5f6bc584037c4017cf [83/97] ixgbevf: use libeth in Rx processing
+config: alpha-randconfig-r123-20260319 (https://download.01.org/0day-ci/archive/20260319/202603191235.t3CNQjw3-lkp@intel.com/config)
+compiler: alpha-linux-gcc (GCC) 8.5.0
+sparse: v0.6.5-rc1
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260319/202603191235.t3CNQjw3-lkp@intel.com/reproduce)
 
-Unify PHY configuration into a single ice_phy_cfg() function with a
-link_en parameter, ensuring PHY capabilities are always fetched fresh
-from hardware.
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202603191235.t3CNQjw3-lkp@intel.com/
 
-Fixes: 1a3571b5938c ("ice: restore PHY settings on media insertion")
-Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
----
- drivers/net/ethernet/intel/ice/ice_main.c | 121 +++++-----------------
- 1 file changed, 27 insertions(+), 94 deletions(-)
+sparse warnings: (new ones prefixed by >>)
+   drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c:768:18: sparse: sparse: incorrect type in assignment (different address spaces) @@     expected struct bpf_prog *xdp_prog @@     got struct bpf_prog [noderef] __rcu * @@
+   drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c:768:18: sparse:     expected struct bpf_prog *xdp_prog
+   drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c:768:18: sparse:     got struct bpf_prog [noderef] __rcu *
+>> drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c:3178:27: sparse: sparse: incorrect type in assignment (different address spaces) @@     expected struct bpf_prog [noderef] __rcu *xdp_prog @@     got struct bpf_prog *xdp_prog @@
+   drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c:3178:27: sparse:     expected struct bpf_prog [noderef] __rcu *xdp_prog
+   drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c:3178:27: sparse:     got struct bpf_prog *xdp_prog
+>> drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c:4136:25: sparse: sparse: incorrect type in initializer (different address spaces) @@     expected struct bpf_prog [noderef] __rcu *_x_ @@     got struct bpf_prog *xdp_prog @@
+   drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c:4136:25: sparse:     expected struct bpf_prog [noderef] __rcu *_x_
+   drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c:4136:25: sparse:     got struct bpf_prog *xdp_prog
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index ebf48feffb30..512e55e974e2 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -1922,82 +1922,6 @@ static void ice_handle_mdd_event(struct ice_pf *pf)
- 	ice_print_vfs_mdd_events(pf);
- }
- 
--/**
-- * ice_force_phys_link_state - Force the physical link state
-- * @vsi: VSI to force the physical link state to up/down
-- * @link_up: true/false indicates to set the physical link to up/down
-- *
-- * Force the physical link state by getting the current PHY capabilities from
-- * hardware and setting the PHY config based on the determined capabilities. If
-- * link changes a link event will be triggered because both the Enable Automatic
-- * Link Update and LESM Enable bits are set when setting the PHY capabilities.
-- *
-- * Returns 0 on success, negative on failure
-- */
--static int ice_force_phys_link_state(struct ice_vsi *vsi, bool link_up)
--{
--	struct ice_aqc_get_phy_caps_data *pcaps;
--	struct ice_aqc_set_phy_cfg_data *cfg;
--	struct ice_port_info *pi;
--	struct device *dev;
--	int retcode;
--
--	if (!vsi || !vsi->port_info || !vsi->back)
--		return -EINVAL;
--	if (vsi->type != ICE_VSI_PF)
--		return 0;
--
--	dev = ice_pf_to_dev(vsi->back);
--
--	pi = vsi->port_info;
--
--	pcaps = kzalloc_obj(*pcaps);
--	if (!pcaps)
--		return -ENOMEM;
--
--	retcode = ice_aq_get_phy_caps(pi, false, ICE_AQC_REPORT_ACTIVE_CFG, pcaps,
--				      NULL);
--	if (retcode) {
--		dev_err(dev, "Failed to get phy capabilities, VSI %d error %d\n",
--			vsi->vsi_num, retcode);
--		retcode = -EIO;
--		goto out;
--	}
--
--	/* No change in link */
--	if (link_up == !!(pcaps->caps & ICE_AQC_PHY_EN_LINK) &&
--	    link_up == !!(pi->phy.link_info.link_info & ICE_AQ_LINK_UP))
--		goto out;
--
--	/* Use the current user PHY configuration. The current user PHY
--	 * configuration is initialized during probe from PHY capabilities
--	 * software mode, and updated on set PHY configuration.
--	 */
--	cfg = kmemdup(&pi->phy.curr_user_phy_cfg, sizeof(*cfg), GFP_KERNEL);
--	if (!cfg) {
--		retcode = -ENOMEM;
--		goto out;
--	}
--
--	cfg->caps |= ICE_AQ_PHY_ENA_AUTO_LINK_UPDT;
--	if (link_up)
--		cfg->caps |= ICE_AQ_PHY_ENA_LINK;
--	else
--		cfg->caps &= ~ICE_AQ_PHY_ENA_LINK;
--
--	retcode = ice_aq_set_phy_cfg(&vsi->back->hw, pi, cfg, NULL);
--	if (retcode) {
--		dev_err(dev, "Failed to set phy config, VSI %d error %d\n",
--			vsi->vsi_num, retcode);
--		retcode = -EIO;
--	}
--
--	kfree(cfg);
--out:
--	kfree(pcaps);
--	return retcode;
--}
--
- /**
-  * ice_init_nvm_phy_type - Initialize the NVM PHY type
-  * @pi: port info structure
-@@ -2066,7 +1990,7 @@ static void ice_init_link_dflt_override(struct ice_port_info *pi)
-  * first time media is available. The ICE_LINK_DEFAULT_OVERRIDE_PENDING state
-  * is used to indicate that the user PHY cfg default override is initialized
-  * and the PHY has not been configured with the default override settings. The
-- * state is set here, and cleared in ice_configure_phy the first time the PHY is
-+ * state is set here, and cleared in ice_phy_cfg the first time the PHY is
-  * configured.
-  *
-  * This function should be called only if the FW doesn't support default
-@@ -2172,14 +2096,18 @@ static int ice_init_phy_user_cfg(struct ice_port_info *pi)
- }
- 
- /**
-- * ice_configure_phy - configure PHY
-+ * ice_phy_cfg - configure PHY
-  * @vsi: VSI of PHY
-+ * @link_en: true/false indicates to set link to enable/disable
-  *
-  * Set the PHY configuration. If the current PHY configuration is the same as
-- * the curr_user_phy_cfg, then do nothing to avoid link flap. Otherwise
-- * configure the based get PHY capabilities for topology with media.
-+ * the curr_user_phy_cfg and link_en hasn't changed, then do nothing to avoid
-+ * link flap. Otherwise configure the PHY based get PHY capabilities for
-+ * topology with media and link_en.
-+ *
-+ * Return: 0 on success, negative on failure
-  */
--static int ice_configure_phy(struct ice_vsi *vsi)
-+static int ice_phy_cfg(struct ice_vsi *vsi, bool link_en)
- {
- 	struct device *dev = ice_pf_to_dev(vsi->back);
- 	struct ice_port_info *pi = vsi->port_info;
-@@ -2199,9 +2127,6 @@ static int ice_configure_phy(struct ice_vsi *vsi)
- 	    phy->link_info.topo_media_conflict == ICE_AQ_LINK_TOPO_UNSUPP_MEDIA)
- 		return -EPERM;
- 
--	if (test_bit(ICE_FLAG_LINK_DOWN_ON_CLOSE_ENA, pf->flags))
--		return ice_force_phys_link_state(vsi, true);
--
- 	pcaps = kzalloc_obj(*pcaps);
- 	if (!pcaps)
- 		return -ENOMEM;
-@@ -2215,10 +2140,8 @@ static int ice_configure_phy(struct ice_vsi *vsi)
- 		goto done;
- 	}
- 
--	/* If PHY enable link is configured and configuration has not changed,
--	 * there's nothing to do
--	 */
--	if (pcaps->caps & ICE_AQC_PHY_EN_LINK &&
-+	/* Configuration has not changed. There's nothing to do. */
-+	if (link_en == !!(pcaps->caps & ICE_AQC_PHY_EN_LINK) &&
- 	    ice_phy_caps_equals_cfg(pcaps, &phy->curr_user_phy_cfg))
- 		goto done;
- 
-@@ -2282,8 +2205,12 @@ static int ice_configure_phy(struct ice_vsi *vsi)
- 	 */
- 	ice_cfg_phy_fc(pi, cfg, phy->curr_user_fc_req);
- 
--	/* Enable link and link update */
--	cfg->caps |= ICE_AQ_PHY_ENA_AUTO_LINK_UPDT | ICE_AQ_PHY_ENA_LINK;
-+	/* Enable/Disable link and link update */
-+	cfg->caps |= ICE_AQ_PHY_ENA_AUTO_LINK_UPDT;
-+	if (link_en)
-+		cfg->caps |= ICE_AQ_PHY_ENA_LINK;
-+	else
-+		cfg->caps &= ~ICE_AQ_PHY_ENA_LINK;
- 
- 	err = ice_aq_set_phy_cfg(&pf->hw, pi, cfg, NULL);
- 	if (err)
-@@ -2336,7 +2263,7 @@ static void ice_check_media_subtask(struct ice_pf *pf)
- 		    test_bit(ICE_FLAG_LINK_DOWN_ON_CLOSE_ENA, vsi->back->flags))
- 			return;
- 
--		err = ice_configure_phy(vsi);
-+		err = ice_phy_cfg(vsi, true);
- 		if (!err)
- 			clear_bit(ICE_FLAG_NO_MEDIA, pf->flags);
- 
-@@ -4892,9 +4819,15 @@ static int ice_init_link(struct ice_pf *pf)
- 
- 		if (!test_bit(ICE_FLAG_LINK_DOWN_ON_CLOSE_ENA, pf->flags)) {
- 			struct ice_vsi *vsi = ice_get_main_vsi(pf);
-+			struct ice_link_default_override_tlv *ldo;
-+			bool link_en;
-+
-+			ldo = &pf->link_dflt_override;
-+			link_en = !(ldo->options &
-+				    ICE_LINK_OVERRIDE_AUTO_LINK_DIS);
- 
- 			if (vsi)
--				ice_configure_phy(vsi);
-+				ice_phy_cfg(vsi, link_en);
- 		}
- 	} else {
- 		set_bit(ICE_FLAG_NO_MEDIA, pf->flags);
-@@ -9702,7 +9635,7 @@ int ice_open_internal(struct net_device *netdev)
- 			}
- 		}
- 
--		err = ice_configure_phy(vsi);
-+		err = ice_phy_cfg(vsi, true);
- 		if (err) {
- 			netdev_err(netdev, "Failed to set physical link up, error %d\n",
- 				   err);
-@@ -9743,7 +9676,7 @@ int ice_stop(struct net_device *netdev)
- 	}
- 
- 	if (test_bit(ICE_FLAG_LINK_DOWN_ON_CLOSE_ENA, vsi->back->flags)) {
--		int link_err = ice_force_phys_link_state(vsi, false);
-+		int link_err = ice_phy_cfg(vsi, false);
- 
- 		if (link_err) {
- 			if (link_err == -ENOMEDIUM)
+vim +3178 drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+
+92915f71201b43 drivers/net/ixgbevf/ixgbevf_main.c                Greg Rose        2010-01-09  3124  
+92915f71201b43 drivers/net/ixgbevf/ixgbevf_main.c                Greg Rose        2010-01-09  3125  /**
+92915f71201b43 drivers/net/ixgbevf/ixgbevf_main.c                Greg Rose        2010-01-09  3126   * ixgbevf_setup_rx_resources - allocate Rx resources (Descriptors)
+c7aec59657b60f drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c Tony Nguyen      2018-03-16  3127   * @adapter: board private structure
+dec0d8e462322a drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c Jeff Kirsher     2015-02-10  3128   * @rx_ring: Rx descriptor ring (for a specific queue) to setup
+92915f71201b43 drivers/net/ixgbevf/ixgbevf_main.c                Greg Rose        2010-01-09  3129   *
+92915f71201b43 drivers/net/ixgbevf/ixgbevf_main.c                Greg Rose        2010-01-09  3130   * Returns 0 on success, negative on failure
+92915f71201b43 drivers/net/ixgbevf/ixgbevf_main.c                Greg Rose        2010-01-09  3131   **/
+c7aec59657b60f drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c Tony Nguyen      2018-03-16  3132  int ixgbevf_setup_rx_resources(struct ixgbevf_adapter *adapter,
+c7aec59657b60f drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c Tony Nguyen      2018-03-16  3133  			       struct ixgbevf_ring *rx_ring)
+92915f71201b43 drivers/net/ixgbevf/ixgbevf_main.c                Greg Rose        2010-01-09  3134  {
+556b0d5d0b1969 drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c Larysa Zaremba   2026-03-04  3135  	struct libeth_fq fq = {
+556b0d5d0b1969 drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c Larysa Zaremba   2026-03-04  3136  		.count		= rx_ring->count,
+556b0d5d0b1969 drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c Larysa Zaremba   2026-03-04  3137  		.nid		= NUMA_NO_NODE,
+556b0d5d0b1969 drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c Larysa Zaremba   2026-03-04  3138  		.type		= LIBETH_FQE_MTU,
+556b0d5d0b1969 drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c Larysa Zaremba   2026-03-04  3139  		.xdp		= !!rx_ring->xdp_prog,
+556b0d5d0b1969 drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c Larysa Zaremba   2026-03-04  3140  		.idx		= rx_ring->queue_index,
+556b0d5d0b1969 drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c Larysa Zaremba   2026-03-04  3141  		.buf_len	= IXGBEVF_RX_PAGE_LEN(rx_ring->xdp_prog ?
+556b0d5d0b1969 drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c Larysa Zaremba   2026-03-04  3142  						      LIBETH_XDP_HEADROOM :
+556b0d5d0b1969 drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c Larysa Zaremba   2026-03-04  3143  						      LIBETH_SKB_HEADROOM),
+556b0d5d0b1969 drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c Larysa Zaremba   2026-03-04  3144  	};
+556b0d5d0b1969 drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c Larysa Zaremba   2026-03-04  3145  	int ret;
+92915f71201b43 drivers/net/ixgbevf/ixgbevf_main.c                Greg Rose        2010-01-09  3146  
+556b0d5d0b1969 drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c Larysa Zaremba   2026-03-04  3147  	ret = libeth_rx_fq_create(&fq, &rx_ring->q_vector->napi);
+556b0d5d0b1969 drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c Larysa Zaremba   2026-03-04  3148  	if (ret)
+556b0d5d0b1969 drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c Larysa Zaremba   2026-03-04  3149  		return ret;
+556b0d5d0b1969 drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c Larysa Zaremba   2026-03-04  3150  
+556b0d5d0b1969 drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c Larysa Zaremba   2026-03-04  3151  	rx_ring->pp = fq.pp;
+556b0d5d0b1969 drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c Larysa Zaremba   2026-03-04  3152  	rx_ring->rx_fqes = fq.fqes;
+556b0d5d0b1969 drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c Larysa Zaremba   2026-03-04  3153  	rx_ring->truesize = fq.truesize;
+556b0d5d0b1969 drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c Larysa Zaremba   2026-03-04  3154  	rx_ring->rx_buf_len = fq.buf_len;
+92915f71201b43 drivers/net/ixgbevf/ixgbevf_main.c                Greg Rose        2010-01-09  3155  
+7c3a4626eb65e7 drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c Florian Fainelli 2017-08-01  3156  	u64_stats_init(&rx_ring->syncp);
+7c3a4626eb65e7 drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c Florian Fainelli 2017-08-01  3157  
+92915f71201b43 drivers/net/ixgbevf/ixgbevf_main.c                Greg Rose        2010-01-09  3158  	/* Round up to nearest 4K */
+92915f71201b43 drivers/net/ixgbevf/ixgbevf_main.c                Greg Rose        2010-01-09  3159  	rx_ring->size = rx_ring->count * sizeof(union ixgbe_adv_rx_desc);
+92915f71201b43 drivers/net/ixgbevf/ixgbevf_main.c                Greg Rose        2010-01-09  3160  	rx_ring->size = ALIGN(rx_ring->size, 4096);
+92915f71201b43 drivers/net/ixgbevf/ixgbevf_main.c                Greg Rose        2010-01-09  3161  
+556b0d5d0b1969 drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c Larysa Zaremba   2026-03-04  3162  	rx_ring->desc = dma_alloc_coherent(fq.pp->p.dev, rx_ring->size,
+2a1f8794161d9d drivers/net/ixgbevf/ixgbevf_main.c                Nick Nunley      2010-04-27  3163  					   &rx_ring->dma, GFP_KERNEL);
+92915f71201b43 drivers/net/ixgbevf/ixgbevf_main.c                Greg Rose        2010-01-09  3164  
+556b0d5d0b1969 drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c Larysa Zaremba   2026-03-04  3165  	if (!rx_ring->desc) {
+556b0d5d0b1969 drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c Larysa Zaremba   2026-03-04  3166  		ret = -ENOMEM;
+05d063aa867b7a drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c Emil Tantilov    2014-01-17  3167  		goto err;
+556b0d5d0b1969 drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c Larysa Zaremba   2026-03-04  3168  	}
+92915f71201b43 drivers/net/ixgbevf/ixgbevf_main.c                Greg Rose        2010-01-09  3169  
+c7aec59657b60f drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c Tony Nguyen      2018-03-16  3170  	/* XDP RX-queue info */
+556b0d5d0b1969 drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c Larysa Zaremba   2026-03-04  3171  	ret = __xdp_rxq_info_reg(&rx_ring->xdp_rxq, adapter->netdev,
+556b0d5d0b1969 drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c Larysa Zaremba   2026-03-04  3172  				 rx_ring->queue_index, 0, rx_ring->truesize);
+556b0d5d0b1969 drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c Larysa Zaremba   2026-03-04  3173  	if (ret)
+c7aec59657b60f drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c Tony Nguyen      2018-03-16  3174  		goto err;
+c7aec59657b60f drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c Tony Nguyen      2018-03-16  3175  
+556b0d5d0b1969 drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c Larysa Zaremba   2026-03-04  3176  	xdp_rxq_info_attach_page_pool(&rx_ring->xdp_rxq, fq.pp);
+556b0d5d0b1969 drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c Larysa Zaremba   2026-03-04  3177  
+c7aec59657b60f drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c Tony Nguyen      2018-03-16 @3178  	rx_ring->xdp_prog = adapter->xdp_prog;
+c7aec59657b60f drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c Tony Nguyen      2018-03-16  3179  
+92915f71201b43 drivers/net/ixgbevf/ixgbevf_main.c                Greg Rose        2010-01-09  3180  	return 0;
+05d063aa867b7a drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c Emil Tantilov    2014-01-17  3181  err:
+556b0d5d0b1969 drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c Larysa Zaremba   2026-03-04  3182  	libeth_rx_fq_destroy(&fq);
+556b0d5d0b1969 drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c Larysa Zaremba   2026-03-04  3183  	rx_ring->rx_fqes = NULL;
+556b0d5d0b1969 drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c Larysa Zaremba   2026-03-04  3184  	rx_ring->pp = NULL;
+05d063aa867b7a drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c Emil Tantilov    2014-01-17  3185  	dev_err(rx_ring->dev, "Unable to allocate memory for the Rx descriptor ring\n");
+556b0d5d0b1969 drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c Larysa Zaremba   2026-03-04  3186  	return ret;
+92915f71201b43 drivers/net/ixgbevf/ixgbevf_main.c                Greg Rose        2010-01-09  3187  }
+92915f71201b43 drivers/net/ixgbevf/ixgbevf_main.c                Greg Rose        2010-01-09  3188  
+
+:::::: The code at line 3178 was first introduced by commit
+:::::: c7aec59657b60f3a29fc7d3274ebefd698879301 ixgbevf: Add XDP support for pass and drop actions
+
+:::::: TO: Tony Nguyen <anthony.l.nguyen@intel.com>
+:::::: CC: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+
 -- 
-2.52.0
-
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
