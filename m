@@ -4,96 +4,100 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2396E1091917
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 19 Mar 2026 20:53:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 725521091924
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 19 Mar 2026 21:14:08 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id CFA2B615D7;
-	Thu, 19 Mar 2026 20:53:16 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 3175760A72;
+	Thu, 19 Mar 2026 21:14:08 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 6qHS0t8kaeGG; Thu, 19 Mar 2026 20:53:16 +0000 (UTC)
+ id ulCh4dBe10UZ; Thu, 19 Mar 2026 21:14:06 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org EB09B61627
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A6E95613D8
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1773953596;
-	bh=pDuNk1maIwkM81h0xNfMndhfHmB77PaC4WV88nssjB0=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=8++BtRdeKc3LhHbBuwU8+wt7rTCpA0RRlg78ay+PzZeM1pLkq71+zDKm4RQgCHOCj
-	 UWUsBzyr+ntj80MsISvzWnksFpAKrjtJ1fpgtsSrcT2wRe0cqWoQuh7v6448RlJ3uF
-	 pZHyYoInSbYAptjTe9t6Y5nkP7A6ldW+UrjypJoOIB/Q+Uu49DZyDIBfg9ElpAJfo2
-	 F+hcEoPlXu5Ukvhg3T8SyV6IvJIr+k4PdvWfKIrRYOPEn/JHYijI37CPV28nyR7JO/
-	 zGOLv64i8iHJ438z297vXvSXGfW0y+SlXfT691aKSPSf1372YCRlhTAbTowsfO4EVi
-	 4qzHCuUnVjVjA==
+	s=default; t=1773954846;
+	bh=A3rr7R6rV2HWrNv0dG0iXcmXY6dWNF0FyqtWDQ0CEuY=;
+	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=Fa7xOlWzey+3FCqFH1eCy9kUeCr9Ikzn3hxxpsmHvLWmBKoe0cX7eZqsz6Pe6S/2A
+	 dgMwCCkN2ka31FdlwK+jdpIlD3N89QYvYmf30efBPfOAz+CytiTdZSKhhbs6AlE7bb
+	 f1gJxIuw1jxesRdmCjkqq4M9Kbo8LV3jMPAlRTWV7kFq01DWu1gHAPamt3E73sBNOG
+	 V3dgdfb6pf4FJWqXK88/is6mOlRIauM4a14Qq6OPplWKyzjiIXADkjTf/4bpJ/9SCK
+	 E9LEXyRawrOSn045mg/EkdwHN7MxPdpstWggd+jiKCKdjaLf50S0tfu8clM6Pouw3L
+	 4PCTEz5Kh1MKA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id EB09B61627;
-	Thu, 19 Mar 2026 20:53:15 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id 539E2265
- for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Mar 2026 20:53:14 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id A6E95613D8;
+	Thu, 19 Mar 2026 21:14:06 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id D6BFD265
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Mar 2026 21:14:05 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 38F57411F2
- for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Mar 2026 20:53:14 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id BC6A440103
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Mar 2026 21:14:05 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id qwQCthPnmlEH for <intel-wired-lan@lists.osuosl.org>;
- Thu, 19 Mar 2026 20:53:13 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.129.124;
- helo=us-smtp-delivery-124.mimecast.com; envelope-from=poros@redhat.com;
+ id njYAp0dFwxDJ for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 19 Mar 2026 21:14:05 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.13;
+ helo=mgamail.intel.com; envelope-from=emil.s.tantilov@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 2AB1340DD6
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 2AB1340DD6
-Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.129.124])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 2AB1340DD6
- for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Mar 2026 20:53:12 +0000 (UTC)
-Received: from mx-prod-mc-08.mail-002.prod.us-west-2.aws.redhat.com
- (ec2-35-165-154-97.us-west-2.compute.amazonaws.com [35.165.154.97]) by
- relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-493-pHpjlvk4OxSbyGwG68z_pg-1; Thu,
- 19 Mar 2026 16:53:05 -0400
-X-MC-Unique: pHpjlvk4OxSbyGwG68z_pg-1
-X-Mimecast-MFC-AGG-ID: pHpjlvk4OxSbyGwG68z_pg_1773953583
-Received: from mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com
- (mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.12])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by mx-prod-mc-08.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
- id 591CD18002C8; Thu, 19 Mar 2026 20:53:03 +0000 (UTC)
-Received: from ShadowPeak.redhat.com (unknown [10.45.224.50])
- by mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP
- id 627931955F21; Thu, 19 Mar 2026 20:52:59 +0000 (UTC)
-From: Petr Oros <poros@redhat.com>
-To: netdev@vger.kernel.org
-Date: Thu, 19 Mar 2026 21:52:56 +0100
-Message-ID: <20260319205256.998876-1-poros@redhat.com>
-MIME-Version: 1.0
-X-Scanned-By: MIMEDefang 3.0 on 10.30.177.12
-X-Mimecast-MFC-PROC-ID: wDvrKEHo9fGRhOskXgxiWYactdY45BqlF0Kcezpj3Os_1773953583
-X-Mimecast-Originator: redhat.com
-Content-Transfer-Encoding: 8bit
-content-type: text/plain; charset="US-ASCII"; x-default=true
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=redhat.com; 
- s=mimecast20190719; t=1773953591;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding;
- bh=pDuNk1maIwkM81h0xNfMndhfHmB77PaC4WV88nssjB0=;
- b=DOASXJJ9cJ9omM/nK13X1VpIsSp+mB0UMxHOwu0uREqwEduuaoIvRAn9xF+pEZl6PnLeFO
- 1cjeKFEToZ4cuJBa+rb5qT0dcWrtzfoqb1zyyiEgc2Ax3kygwEQObsVTabYEN3JsYfH9m4
- OWQcZU6+SS4b9oh8mAb0KyVzkrNtvvw=
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 1E313404A8
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 1E313404A8
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.13])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 1E313404A8
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Mar 2026 21:14:04 +0000 (UTC)
+X-CSE-ConnectionGUID: gKiF9iDTQcqvVsz8I8Xq9A==
+X-CSE-MsgGUID: Iw4tkwGzTEyi+hiJT0TrYg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11734"; a="86116380"
+X-IronPort-AV: E=Sophos;i="6.23,130,1770624000"; d="scan'208";a="86116380"
+Received: from orviesa003.jf.intel.com ([10.64.159.143])
+ by orvoesa105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 19 Mar 2026 14:14:03 -0700
+X-CSE-ConnectionGUID: REe93wI8QfGVVyM1f/5zkA==
+X-CSE-MsgGUID: JCzPACKwTgKixmtbe025Jw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,130,1770624000"; d="scan'208";a="227221175"
+Received: from estantil-desk.jf.intel.com ([10.166.241.24])
+ by orviesa003.jf.intel.com with ESMTP; 19 Mar 2026 14:14:02 -0700
+From: Emil Tantilov <emil.s.tantilov@intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Cc: netdev@vger.kernel.org, anthony.l.nguyen@intel.com,
+ aleksandr.loktionov@intel.com, przemyslaw.kitszel@intel.com,
+ andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
+ kuba@kernel.org, pabeni@redhat.com, bigeasy@linutronix.de,
+ clrkwllms@kernel.org, rostedt@goodmis.org, linux-rt-devel@lists.linux.dev,
+ sgzhang@google.com, boolli@google.com,
+ Emil Tantilov <emil.s.tantilov@intel.com>, stable@vger.kernel.org
+Date: Thu, 19 Mar 2026 14:13:34 -0700
+Message-Id: <20260319211335.23236-3-emil.s.tantilov@intel.com>
+X-Mailer: git-send-email 2.17.2
+In-Reply-To: <20260319211335.23236-1-emil.s.tantilov@intel.com>
+References: <20260319211335.23236-1-emil.s.tantilov@intel.com>
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1773954845; x=1805490845;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references;
+ bh=oRpzbw8xGxDnBQtkUrD1pw82znTvjifsBtJ+zx1wwAI=;
+ b=PcK3CuBgm2ZzKEowVlC6eGHyaXyji1jeLnrnTz9nWKfsXngoDIwlKRkk
+ QW7m6LhMPYaqf52MpZrjJEjWn1FsYrkeLtKUIXGROH0VAHX7fRRE6aciQ
+ 0Echlf3YdQXtTQTQ39TC8Z+iCCKDi1QBQ2rqatQKgzBeX9LuhZCO0Iqna
+ z4hlo3ogkSJ1/qmK1o4yLcjN2zGAVnbiB7Z/sgDJrvSBDpGVNn70PtuQI
+ 7BKuwmVNn0QKTYETPjzDcKGfhBM26xIrbLlOUb/Ow+ReFu7plyBrIrdSo
+ 4pOwz80Xv3e92w6f8uQarDy48N2bDICCE/V0y61eOiVDDB0HDxokfdhpM
+ g==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dmarc=pass (p=quarantine dis=none)
- header.from=redhat.com
+ dmarc=pass (p=none dis=none)
+ header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=DOASXJJ9
-Subject: [Intel-wired-lan] [PATCH iwl-net v4] ice: fix missing dpll
- notifications for SW pins
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=PcK3CuBg
+Subject: [Intel-wired-lan] [PATCH iwl-net v2 2/3] idpf: improve locking
+ around idpf_vc_xn_push_free()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -106,187 +110,35 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: ivecera@redhat.com, Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Eric Dumazet <edumazet@google.com>,
- Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>,
- Andrew Lunn <andrew+netdev@lunn.ch>, Tony Nguyen <anthony.l.nguyen@intel.com>,
- Simon Horman <horms@kernel.org>, intel-wired-lan@lists.osuosl.org,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The SMA/U.FL pin redesign (commit 2dd5d03c77e2 ("ice: redesign dpll
-sma/u.fl pins control")) introduced software-controlled pins that wrap
-backing CGU input/output pins, but never updated the notification and
-data paths to propagate pin events to these SW wrappers.
+Protect the set_bit() operation for the free_xn bitmask in
+idpf_vc_xn_push_free(), to make the locking consistent with rest of the
+code and avoid potential races in that logic.
 
-There are three problems:
-
-1) ice_dpll_notify_changes() sends dpll_pin_change_ntf() only for the
-   direct CGU input pin stored in d->active_input.  When the active
-   input changes, SW pins (SMA/U.FL) that wrap the old or new active
-   input never receive a change notification.  As a result, userspace
-   consumers such as synce4l that monitor SMA pins via dpll netlink
-   never learn when the pin state transitions (e.g. from SELECTABLE to
-   CONNECTED).
-
-2) ice_dpll_phase_offset_get() returns p->phase_offset for non-active
-   SW pins, but this field is never updated for SW pins.  The PPS phase
-   offset monitor updates the backing CGU input's phase_offset
-   (p->input->phase_offset), not the SW pin's own field.  As a result
-   non-active SW pins always report zero phase offset even when the
-   backing CGU input has valid PPS measurements.
-
-3) ice_dpll_pins_notify_mask() does not propagate phase offset change
-   notifications to SW pins either.  When a HW CGU pin gets a phase
-   offset change notification, the SMA/U.FL pin wrapping it is never
-   notified, so userspace consumers (ts2phc, synce4l) monitoring SW
-   pins via dpll netlink never receive phase offset updates.
-
-Fix all three by:
-
- - In ice_dpll_phase_offset_get(), return the backing CGU input's
-   phase_offset for input-direction SW pins instead of the SW pin's own
-   (always zero) field.
-
- - Introduce ice_dpll_pin_ntf(), a thin wrapper around
-   dpll_pin_change_ntf() that also sends notifications to any
-   registered SMA/U.FL pin whose backing CGU input matches.  Replace
-   all direct dpll_pin_change_ntf() calls in the periodic notification
-   paths with ice_dpll_pin_ntf(), so SW pins are automatically notified
-   whenever their backing HW pin is.
-
-Fixes: 2dd5d03c77e2 ("ice: redesign dpll sma/u.fl pins control")
-Signed-off-by: Petr Oros <poros@redhat.com>
+Fixes: 34c21fa894a1 ("idpf: implement virtchnl transaction manager")
+Cc: stable@vger.kernel.org
+Reported-by: Ray Zhang <sgzhang@google.com>
+Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
 ---
-v4:
- - expanded scope to also fix phase offset reporting and phase offset
-   notifications for SW pins (problems 2 and 3 above)
- - replaced ice_dpll_sw_pin_needs_notify() with ice_dpll_pin_ntf(),
-   a unified wrapper that covers all notification paths
- - squashed into a single patch
-v3: https://lore.kernel.org/all/20260220140700.2910174-1-poros@redhat.com/
- - added kdoc for ice_dpll_sw_pin_needs_notify() helper
-v2: https://lore.kernel.org/all/20260219131500.2271897-1-poros@redhat.com/
- - extracted ice_dpll_sw_pin_needs_notify() helper for readability
- - moved loop variable into for() scope
-v1: https://lore.kernel.org/all/20260218211414.1411163-1-poros@redhat.com/
----
- drivers/net/ethernet/intel/ice/ice_dpll.c | 47 +++++++++++++++++------
- 1 file changed, 36 insertions(+), 11 deletions(-)
+ drivers/net/ethernet/intel/idpf/idpf_virtchnl.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_dpll.c b/drivers/net/ethernet/intel/ice/ice_dpll.c
-index 62f75701d65205..5cfa19da099bfc 100644
---- a/drivers/net/ethernet/intel/ice/ice_dpll.c
-+++ b/drivers/net/ethernet/intel/ice/ice_dpll.c
-@@ -1915,7 +1915,10 @@ ice_dpll_phase_offset_get(const struct dpll_pin *pin, void *pin_priv,
- 				       d->active_input == p->input->pin))
- 		*phase_offset = d->phase_offset * ICE_DPLL_PHASE_OFFSET_FACTOR;
- 	else if (d->phase_offset_monitor_period)
--		*phase_offset = p->phase_offset * ICE_DPLL_PHASE_OFFSET_FACTOR;
-+		*phase_offset = (p->input &&
-+				 p->direction == DPLL_PIN_DIRECTION_INPUT ?
-+				 p->input->phase_offset :
-+				 p->phase_offset) * ICE_DPLL_PHASE_OFFSET_FACTOR;
- 	else
- 		*phase_offset = 0;
- 	mutex_unlock(&pf->dplls.lock);
-@@ -2609,6 +2612,27 @@ static u64 ice_generate_clock_id(struct ice_pf *pf)
- 	return pci_get_dsn(pf->pdev);
- }
- 
-+/**
-+ * ice_dpll_pin_ntf - notify pin change including any SW pin wrappers
-+ * @dplls: pointer to dplls struct
-+ * @pin: the dpll_pin that changed
-+ *
-+ * Send a change notification for @pin and for any registered SMA/U.FL pin
-+ * whose backing CGU input matches @pin.
-+ */
-+static void ice_dpll_pin_ntf(struct ice_dplls *dplls, struct dpll_pin *pin)
-+{
-+	dpll_pin_change_ntf(pin);
-+	for (int i = 0; i < ICE_DPLL_PIN_SW_NUM; i++) {
-+		if (dplls->sma[i].pin && dplls->sma[i].input &&
-+		    dplls->sma[i].input->pin == pin)
-+			dpll_pin_change_ntf(dplls->sma[i].pin);
-+		if (dplls->ufl[i].pin && dplls->ufl[i].input &&
-+		    dplls->ufl[i].input->pin == pin)
-+			dpll_pin_change_ntf(dplls->ufl[i].pin);
-+	}
-+}
-+
- /**
-  * ice_dpll_notify_changes - notify dpll subsystem about changes
-  * @d: pointer do dpll
-@@ -2617,6 +2641,7 @@ static u64 ice_generate_clock_id(struct ice_pf *pf)
-  */
- static void ice_dpll_notify_changes(struct ice_dpll *d)
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
+index 582e0c8e9dc0..fbd5a15b015c 100644
+--- a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
++++ b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
+@@ -402,7 +402,9 @@ static void idpf_vc_xn_push_free(struct idpf_vc_xn_manager *vcxn_mngr,
+ 				 struct idpf_vc_xn *xn)
  {
-+	struct ice_dplls *dplls = &d->pf->dplls;
- 	bool pin_notified = false;
- 
- 	if (d->prev_dpll_state != d->dpll_state) {
-@@ -2625,17 +2650,17 @@ static void ice_dpll_notify_changes(struct ice_dpll *d)
- 	}
- 	if (d->prev_input != d->active_input) {
- 		if (d->prev_input)
--			dpll_pin_change_ntf(d->prev_input);
-+			ice_dpll_pin_ntf(dplls, d->prev_input);
- 		d->prev_input = d->active_input;
- 		if (d->active_input) {
--			dpll_pin_change_ntf(d->active_input);
-+			ice_dpll_pin_ntf(dplls, d->active_input);
- 			pin_notified = true;
- 		}
- 	}
- 	if (d->prev_phase_offset != d->phase_offset) {
- 		d->prev_phase_offset = d->phase_offset;
- 		if (!pin_notified && d->active_input)
--			dpll_pin_change_ntf(d->active_input);
-+			ice_dpll_pin_ntf(dplls, d->active_input);
- 	}
- }
- 
-@@ -2664,6 +2689,7 @@ static bool ice_dpll_is_pps_phase_monitor(struct ice_pf *pf)
- 
- /**
-  * ice_dpll_pins_notify_mask - notify dpll subsystem about bulk pin changes
-+ * @dplls: pointer to dplls struct
-  * @pins: array of ice_dpll_pin pointers registered within dpll subsystem
-  * @pin_num: number of pins
-  * @phase_offset_ntf_mask: bitmask of pin indexes to notify
-@@ -2673,15 +2699,14 @@ static bool ice_dpll_is_pps_phase_monitor(struct ice_pf *pf)
-  *
-  * Context: Must be called while pf->dplls.lock is released.
-  */
--static void ice_dpll_pins_notify_mask(struct ice_dpll_pin *pins,
-+static void ice_dpll_pins_notify_mask(struct ice_dplls *dplls,
-+				      struct ice_dpll_pin *pins,
- 				      u8 pin_num,
- 				      u32 phase_offset_ntf_mask)
- {
--	int i = 0;
--
--	for (i = 0; i < pin_num; i++)
--		if (phase_offset_ntf_mask & (1 << i))
--			dpll_pin_change_ntf(pins[i].pin);
-+	for (int i = 0; i < pin_num; i++)
-+		if (phase_offset_ntf_mask & BIT(i))
-+			ice_dpll_pin_ntf(dplls, pins[i].pin);
+ 	idpf_vc_xn_release_bufs(xn);
++	spin_lock_bh(&vcxn_mngr->xn_bm_lock);
+ 	set_bit(xn->idx, vcxn_mngr->free_xn_bm);
++	spin_unlock_bh(&vcxn_mngr->xn_bm_lock);
  }
  
  /**
-@@ -2857,7 +2882,7 @@ static void ice_dpll_periodic_work(struct kthread_work *work)
- 	ice_dpll_notify_changes(de);
- 	ice_dpll_notify_changes(dp);
- 	if (phase_offset_ntf)
--		ice_dpll_pins_notify_mask(d->inputs, d->num_inputs,
-+		ice_dpll_pins_notify_mask(d, d->inputs, d->num_inputs,
- 					  phase_offset_ntf);
- 
- resched:
 -- 
-2.52.0
+2.37.3
 
