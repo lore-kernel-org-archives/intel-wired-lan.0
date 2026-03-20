@@ -4,86 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3ADCC1093168
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 20 Mar 2026 01:25:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A5E111093170
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 20 Mar 2026 01:25:18 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 1080B41BC1;
-	Fri, 20 Mar 2026 01:25:17 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 7A55641BB0;
+	Fri, 20 Mar 2026 01:25:18 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id mgw6GLOXkYm8; Fri, 20 Mar 2026 01:25:15 +0000 (UTC)
+ id wO89ayTqE4iw; Fri, 20 Mar 2026 01:25:17 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 46AF441BBC
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org A9C3F41BBC
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1773969915;
-	bh=H5KBsIH2Vd7dbMr7n3P1e0mpKkNWfQsccxIqA1RpvZc=;
+	s=default; t=1773969917;
+	bh=ZI1/cLnyDnVOs4qvF1/y00bhWF98dmH7Q3P7jVrTCz8=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=dgORC9k+HjFNmDZ7x1KvuJGyVSM2ZZKKgMBnjUyzCWl5+9Z7yBB03CJjy97VoWsNB
-	 gXAtfcBSINmyKci80DEJJ3e1lMQ2JhjnvXucjzGjE+JwbO6wIaLU3vZEAAWk6cBIjJ
-	 cnCD07VI/WKeIQKPHm2I/plcXIlsTJ7H2xAykV2mt0/BprTZKfqCTmrDgGup0S0Ekn
-	 t03kTFQoqWRz1zxPnfPxoPkJl/3qE5y8BxXJ/d+buYCEn1RhVz52CxKbkmpVeOn/BE
-	 mNMah9VZQc3i5uTNY+15o1w+wMYWaE+3ewjPTPqYMiQ+6Q5tm5BbrMz+O0E+yWNWbK
-	 Zu1uPPNtx8ejg==
+	b=aFfKqvhE9ZrWrQpEektqapwzV5Oz4dsu3dnNQo2owH3O/NXV1JjIpnKwXA7MuZYG5
+	 9ORw4RF+MnJKuNliiLj5KGEr/wuDeL87J6+LA1hdtfpyS94bJLMAJUzpzKnUe2fSkR
+	 mjOYOZgEnQYHkz61IeZwFZpVHS2f2sYIHsA+O2+b0E/uZDC9PI35O7zBjMzNIVD2T4
+	 4S2/2ZKcZ2qR5G8kgze120ARb2LyiOrubKU3/RbBvesforeDd+I9FrrWRF5mlJ0m7b
+	 27mfYI6yi5cajLyGp7dShMl7LlrqejUg8mRkLh848STM+zQwZzJOvEnBw2Mbrsvgot
+	 0CXMcqhkZ+SQw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 46AF441BBC;
-	Fri, 20 Mar 2026 01:25:15 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 19C83265
- for <intel-wired-lan@lists.osuosl.org>; Fri, 20 Mar 2026 01:25:13 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id A9C3F41BBC;
+	Fri, 20 Mar 2026 01:25:17 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 5FBE91B6
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 20 Mar 2026 01:25:16 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 9281740381
- for <intel-wired-lan@lists.osuosl.org>; Fri, 20 Mar 2026 01:25:12 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 45D2784536
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 20 Mar 2026 01:25:16 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id zpz73C4u69nC for <intel-wired-lan@lists.osuosl.org>;
- Fri, 20 Mar 2026 01:25:12 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=74.125.82.43;
- helo=mail-dl1-f43.google.com; envelope-from=stfomichev@gmail.com;
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id wRITko9dBOVI for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 20 Mar 2026 01:25:15 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=74.125.82.54;
+ helo=mail-dl1-f54.google.com; envelope-from=stfomichev@gmail.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org C11B941328
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org C11B941328
-Received: from mail-dl1-f43.google.com (mail-dl1-f43.google.com [74.125.82.43])
- by smtp2.osuosl.org (Postfix) with ESMTPS id C11B941328
- for <intel-wired-lan@lists.osuosl.org>; Fri, 20 Mar 2026 01:25:11 +0000 (UTC)
-Received: by mail-dl1-f43.google.com with SMTP id
- a92af1059eb24-12732e6a123so2874846c88.1
- for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Mar 2026 18:25:11 -0700 (PDT)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 9361D8452D
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9361D8452D
+Received: from mail-dl1-f54.google.com (mail-dl1-f54.google.com [74.125.82.54])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 9361D8452D
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 20 Mar 2026 01:25:15 +0000 (UTC)
+Received: by mail-dl1-f54.google.com with SMTP id
+ a92af1059eb24-127380532eeso4102449c88.1
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Mar 2026 18:25:15 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20251104; t=1773969911; x=1774574711;
+ d=1e100.net; s=20251104; t=1773969914; x=1774574714;
  h=content-transfer-encoding:mime-version:references:in-reply-to
  :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
  :to:cc:subject:date:message-id:reply-to;
- bh=H5KBsIH2Vd7dbMr7n3P1e0mpKkNWfQsccxIqA1RpvZc=;
- b=CYx3y5zgZIT/8kix/m09QqWG1jApfcgGW8ic5IOhw2DK2/PxZG7U3T+D9F42JcJjJb
- 5FmBXmgMMj0H+a7hrHLhfu/ca/7CphDlJpapsqRbHFkNXFd8y0V1pdUmCKyQXPHmefJh
- XtvutXWVSNfl98q+q9iqUpR4EJMmUjjw7zgf9zg7ElB8eQt/ltV45CAAq7QbOOEueTDm
- 4uYmJpw8PFoIPpsig1ZDxqfsio3lNNmelxEIapwDpaxDDl6C3zFs5cDBGTe3GefMrVlW
- FBoyJy4Q2WCuoJSiRk/PYfUoiGIAX2xNCDLxpslfG0OKtORcsbdyx/mLXQrMsINMqApK
- ++vw==
+ bh=ZI1/cLnyDnVOs4qvF1/y00bhWF98dmH7Q3P7jVrTCz8=;
+ b=phDNgaajzgubKy90tEuAJJTo+5I+Xc4RibC8mf5n1wKGtCcWL6TmBOTbSNh3lxAd2T
+ 9hDnygLurgCBGnCD+wGTEdxV98RB5bQbYfr9guCnX9tLx06Xv1yeJP4rI1clDS6wX2de
+ swDdeZnNZemdtkK2wWE48kNVQmdcoSXM7qRejfhz6ze74DDyARn4LryJyvvn28glxShA
+ 9010EfYglRXQXkI9avft7BKky7x4rwLeMjB7agUqIe/ONCQiqImVbeV0Wo6iF3thwCwh
+ LnQSOdaU901FTWZMsGCbUCslQSHNIsU9AzT57JqUeWsCAqjvC6yCo1TyMYZL8/0L26so
+ NATQ==
 X-Forwarded-Encrypted: i=1;
- AJvYcCUf3w88m8Ett6DOSpcKISA98IPQXgjOoP5tnact02UwY6FHqKhZMv0HCY9pu3yvZAdam53jgSHxSBp0+dVC6cE=@lists.osuosl.org
-X-Gm-Message-State: AOJu0YzNPF7D1SxJvxXR2ZrCKcg1M9ZknDYNIKPAJK8hDyR43JdMr37a
- IFPE11kFmjivpalW9FNntUTvdxFxudlYuWqYmk2wuiB8mrCT6l66C9U=
-X-Gm-Gg: ATEYQzwACcd7Acl+be+47VnkGjNKYGO5u68j9P9F7cRTXZT9tGJSy3iEf8nEJG2Agkf
- qJd2ySZNJUY+F1XRBPvPrC48iZclOysDA2xlPoqVLxVzzZM7sDRGbJa98vv/7tY13PgCgeEiSxK
- 7UMNGf2j7crlCAz/xR/iv9uIfoxwyQB+LkMU+ZNIDwTqDG2jx2ljWAExNfoW3+981YFjtSm+dhG
- oSn3ZsHc8uIsN3j4G6nDe6NRKkydOkLkXpEr5mdfb476F08LRzuNvvcSxyDTpHlnTGba63KMXuh
- q/5Q8PdZtAaVXXBa2CKFxvnu2MKv42k978Zr12yOXzRvciHOP5UPeXX1hcAQgVLQK7ANmOmePNV
- F1kGC7jQ158zzOntEFN3Kgv4IsCWMFkEePlBy4orzokq17f/7CoT6h81biBGouzlyZtPQQHA0IF
- sf9NbVPPjfhFKvwNrTzfLKU0BmlQwPWbNvZ2d7BdhRNIgPZBhpdiDWxjHme+34FRaLf4Y5DHk49
- 3BWmSnzIsHfaacCLQ==
-X-Received: by 2002:a05:7022:4197:b0:123:2c98:f6af with SMTP id
- a92af1059eb24-12a7268250bmr769536c88.14.1773969910584; 
- Thu, 19 Mar 2026 18:25:10 -0700 (PDT)
+ AJvYcCU3GuclBAF7Ag3BehBz80bNLR/40nz89shaXSbYbFuVODpaj1TmX3zDuPbopOM1/botrHParbyxjDn/9iwbpFM=@lists.osuosl.org
+X-Gm-Message-State: AOJu0YzcREblTAngpdLZfh7B3eK+/Gw2y5VA5Cs5c3XvApJJI2YL3zp6
+ 5F9bgyRMWf3MXw+dD4LkV5v15RVZA7e34k3U24OSw/LrBg14Bpw4VDg=
+X-Gm-Gg: ATEYQzwlr0Ippade5JDLvJVpp8khx5FPbXK/zwxwVXCVuDVnm5Dyk+ZBpIZVmogfK0e
+ PbvFffFiqqR/aWsQ46axFCXU1OibdBZyoF8rmxP1805cjIyEvfxEg2ZqFpKk00WjnWFEyICvBEq
+ LIRpBiRzJ3MXFzfrrC/lvVr+fvK/2XlpPTbsuMD1SaXOBJeaZa5AkIeWWARAcsFOll0HOImIcLT
+ 884py7JYJcs569yejA7rNLM5jVmpeYhGqabL9T4qfdANlttzkeYptIqVLpkZIAVDpQ59DkWJD9J
+ oh/P3phVbzDkM3n6Kz48jd1kM6cx3095/fe3ZKxhfJEKu0iv6rFGtJM5b6MuoBiAFztI99EvlS3
+ Jq9PirsvC99grTagjWTLlmTp4VzO11s+oNwqEi2LWpXltMmb7BEAqMbxoiK/40e1L8C9LVhn1U+
+ pDRNdPOIKFlGy0aDTP/WopMlSXxX6iEPh4DE7hDrYm3v/Zh23R7bnkmzc9f/NebKeaKRNYVIgMH
+ P28s7PHNyb7IAmpk5E6aYha1pYq
+X-Received: by 2002:a05:7022:2227:b0:128:ce44:be8f with SMTP id
+ a92af1059eb24-12a726572c7mr659849c88.2.1773969914275; 
+ Thu, 19 Mar 2026 18:25:14 -0700 (PDT)
 Received: from localhost (c-76-102-12-149.hsd1.ca.comcast.net. [76.102.12.149])
  by smtp.gmail.com with ESMTPSA id
- a92af1059eb24-12a733b4a99sm802180c88.1.2026.03.19.18.25.09
+ a92af1059eb24-12a733dd8c0sm761096c88.5.2026.03.19.18.25.13
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 19 Mar 2026 18:25:10 -0700 (PDT)
+ Thu, 19 Mar 2026 18:25:13 -0700 (PDT)
 From: Stanislav Fomichev <sdf@fomichev.me>
 To: netdev@vger.kernel.org
 Cc: davem@davemloft.net, edumazet@google.com, kuba@kernel.org,
@@ -99,19 +99,18 @@ Cc: davem@davemloft.net, edumazet@google.com, kuba@kernel.org,
  aleksandr.loktionov@intel.com, kees@kernel.org, linux-doc@vger.kernel.org,
  linux-kernel@vger.kernel.org, intel-wired-lan@lists.osuosl.org,
  linux-rdma@vger.kernel.org, linux-wireless@vger.kernel.org,
- linux-kselftest@vger.kernel.org, leon@kernel.org,
- Cosmin Ratiu <cratiu@nvidia.com>
-Date: Thu, 19 Mar 2026 18:24:54 -0700
-Message-ID: <20260320012501.2033548-7-sdf@fomichev.me>
+ linux-kselftest@vger.kernel.org, leon@kernel.org
+Date: Thu, 19 Mar 2026 18:24:57 -0700
+Message-ID: <20260320012501.2033548-10-sdf@fomichev.me>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260320012501.2033548-1-sdf@fomichev.me>
 References: <20260320012501.2033548-1-sdf@fomichev.me>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=none (p=none dis=none)
  header.from=fomichev.me
-Subject: [Intel-wired-lan] [PATCH net-next v3 06/13] mlx5: convert to
+Subject: [Intel-wired-lan] [PATCH net-next v3 09/13] iavf: convert to
  ndo_set_rx_mode_async
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
@@ -128,165 +127,64 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Convert mlx5 from ndo_set_rx_mode to ndo_set_rx_mode_async. The
-driver's mlx5e_set_rx_mode now receives uc/mc snapshots and calls
-mlx5e_fs_set_rx_mode_work directly instead of queueing work.
+Convert iavf from ndo_set_rx_mode to ndo_set_rx_mode_async.
+iavf_set_rx_mode now takes explicit uc/mc list parameters and
+uses __hw_addr_sync_dev on the snapshots instead of __dev_uc_sync
+and __dev_mc_sync.
 
-mlx5e_sync_netdev_addr and mlx5e_handle_netdev_addr now take
-explicit uc/mc list parameters and iterate with
-netdev_hw_addr_list_for_each instead of netdev_for_each_{uc,mc}_addr.
+The iavf_configure internal caller passes the real lists directly.
 
-Fallback to netdev's uc/mc in a few places and grab addr lock.
-
-Cc: Saeed Mahameed <saeedm@nvidia.com>
-Cc: Tariq Toukan <tariqt@nvidia.com>
-Cc: Cosmin Ratiu <cratiu@nvidia.com>
-Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Cc: Tony Nguyen <anthony.l.nguyen@intel.com>
+Cc: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Signed-off-by: Stanislav Fomichev <sdf@fomichev.me>
 ---
- .../net/ethernet/mellanox/mlx5/core/en/fs.h   |  5 +++-
- .../net/ethernet/mellanox/mlx5/core/en_fs.c   | 30 ++++++++++++-------
- .../net/ethernet/mellanox/mlx5/core/en_main.c | 16 +++++++---
- 3 files changed, 36 insertions(+), 15 deletions(-)
+ drivers/net/ethernet/intel/iavf/iavf_main.c | 14 +++++++++-----
+ 1 file changed, 9 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en/fs.h b/drivers/net/ethernet/mellanox/mlx5/core/en/fs.h
-index c3408b3f7010..091b80a67189 100644
---- a/drivers/net/ethernet/mellanox/mlx5/core/en/fs.h
-+++ b/drivers/net/ethernet/mellanox/mlx5/core/en/fs.h
-@@ -201,7 +201,10 @@ int mlx5e_add_vlan_trap(struct mlx5e_flow_steering *fs, int  trap_id, int tir_nu
- void mlx5e_remove_vlan_trap(struct mlx5e_flow_steering *fs);
- int mlx5e_add_mac_trap(struct mlx5e_flow_steering *fs, int  trap_id, int tir_num);
- void mlx5e_remove_mac_trap(struct mlx5e_flow_steering *fs);
--void mlx5e_fs_set_rx_mode_work(struct mlx5e_flow_steering *fs, struct net_device *netdev);
-+void mlx5e_fs_set_rx_mode_work(struct mlx5e_flow_steering *fs,
-+			       struct net_device *netdev,
-+			       struct netdev_hw_addr_list *uc,
-+			       struct netdev_hw_addr_list *mc);
- int mlx5e_fs_vlan_rx_add_vid(struct mlx5e_flow_steering *fs,
- 			     struct net_device *netdev,
- 			     __be16 proto, u16 vid);
-diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en_fs.c b/drivers/net/ethernet/mellanox/mlx5/core/en_fs.c
-index 55255fe6e415..a9daefbd8f8f 100644
---- a/drivers/net/ethernet/mellanox/mlx5/core/en_fs.c
-+++ b/drivers/net/ethernet/mellanox/mlx5/core/en_fs.c
-@@ -609,20 +609,26 @@ static void mlx5e_execute_l2_action(struct mlx5e_flow_steering *fs,
- }
- 
- static void mlx5e_sync_netdev_addr(struct mlx5e_flow_steering *fs,
--				   struct net_device *netdev)
-+				   struct net_device *netdev,
-+				   struct netdev_hw_addr_list *uc,
-+				   struct netdev_hw_addr_list *mc)
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
+index 7925ee152c76..6632d35ad0fe 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_main.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
+@@ -1147,14 +1147,18 @@ bool iavf_promiscuous_mode_changed(struct iavf_adapter *adapter)
+ /**
+  * iavf_set_rx_mode - NDO callback to set the netdev filters
+  * @netdev: network interface device structure
++ * @uc: snapshot of uc address list
++ * @mc: snapshot of mc address list
+  **/
+-static void iavf_set_rx_mode(struct net_device *netdev)
++static void iavf_set_rx_mode(struct net_device *netdev,
++			     struct netdev_hw_addr_list *uc,
++			     struct netdev_hw_addr_list *mc)
  {
- 	struct netdev_hw_addr *ha;
+ 	struct iavf_adapter *adapter = netdev_priv(netdev);
  
--	netif_addr_lock_bh(netdev);
-+	if (!uc || !mc) {
-+		netif_addr_lock_bh(netdev);
-+		mlx5e_sync_netdev_addr(fs, netdev, &netdev->uc, &netdev->mc);
-+		netif_addr_unlock_bh(netdev);
-+		return;
-+	}
+ 	spin_lock_bh(&adapter->mac_vlan_list_lock);
+-	__dev_uc_sync(netdev, iavf_addr_sync, iavf_addr_unsync);
+-	__dev_mc_sync(netdev, iavf_addr_sync, iavf_addr_unsync);
++	__hw_addr_sync_dev(uc, netdev, iavf_addr_sync, iavf_addr_unsync);
++	__hw_addr_sync_dev(mc, netdev, iavf_addr_sync, iavf_addr_unsync);
+ 	spin_unlock_bh(&adapter->mac_vlan_list_lock);
  
- 	mlx5e_add_l2_to_hash(fs->l2.netdev_uc, netdev->dev_addr);
--	netdev_for_each_uc_addr(ha, netdev)
-+
-+	netdev_hw_addr_list_for_each(ha, uc)
- 		mlx5e_add_l2_to_hash(fs->l2.netdev_uc, ha->addr);
+ 	spin_lock_bh(&adapter->current_netdev_promisc_flags_lock);
+@@ -1207,7 +1211,7 @@ static void iavf_configure(struct iavf_adapter *adapter)
+ 	struct net_device *netdev = adapter->netdev;
+ 	int i;
  
--	netdev_for_each_mc_addr(ha, netdev)
-+	netdev_hw_addr_list_for_each(ha, mc)
- 		mlx5e_add_l2_to_hash(fs->l2.netdev_mc, ha->addr);
--
--	netif_addr_unlock_bh(netdev);
- }
+-	iavf_set_rx_mode(netdev);
++	iavf_set_rx_mode(netdev, &netdev->uc, &netdev->mc);
  
- static void mlx5e_fill_addr_array(struct mlx5e_flow_steering *fs, int list_type,
-@@ -724,7 +730,9 @@ static void mlx5e_apply_netdev_addr(struct mlx5e_flow_steering *fs)
- }
- 
- static void mlx5e_handle_netdev_addr(struct mlx5e_flow_steering *fs,
--				     struct net_device *netdev)
-+				     struct net_device *netdev,
-+				     struct netdev_hw_addr_list *uc,
-+				     struct netdev_hw_addr_list *mc)
- {
- 	struct mlx5e_l2_hash_node *hn;
- 	struct hlist_node *tmp;
-@@ -736,7 +744,7 @@ static void mlx5e_handle_netdev_addr(struct mlx5e_flow_steering *fs,
- 		hn->action = MLX5E_ACTION_DEL;
- 
- 	if (fs->state_destroy)
--		mlx5e_sync_netdev_addr(fs, netdev);
-+		mlx5e_sync_netdev_addr(fs, netdev, uc, mc);
- 
- 	mlx5e_apply_netdev_addr(fs);
- }
-@@ -820,7 +828,9 @@ static void mlx5e_destroy_promisc_table(struct mlx5e_flow_steering *fs)
- }
- 
- void mlx5e_fs_set_rx_mode_work(struct mlx5e_flow_steering *fs,
--			       struct net_device *netdev)
-+			       struct net_device *netdev,
-+			       struct netdev_hw_addr_list *uc,
-+			       struct netdev_hw_addr_list *mc)
- {
- 	struct mlx5e_l2_table *ea = &fs->l2;
- 
-@@ -850,7 +860,7 @@ void mlx5e_fs_set_rx_mode_work(struct mlx5e_flow_steering *fs,
- 	if (enable_broadcast)
- 		mlx5e_add_l2_flow_rule(fs, &ea->broadcast, MLX5E_FULLMATCH);
- 
--	mlx5e_handle_netdev_addr(fs, netdev);
-+	mlx5e_handle_netdev_addr(fs, netdev, uc, mc);
- 
- 	if (disable_broadcast)
- 		mlx5e_del_l2_flow_rule(fs, &ea->broadcast);
-diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en_main.c b/drivers/net/ethernet/mellanox/mlx5/core/en_main.c
-index f7009da94f0b..e86cf1ee108d 100644
---- a/drivers/net/ethernet/mellanox/mlx5/core/en_main.c
-+++ b/drivers/net/ethernet/mellanox/mlx5/core/en_main.c
-@@ -4108,11 +4108,16 @@ static void mlx5e_nic_set_rx_mode(struct mlx5e_priv *priv)
- 	queue_work(priv->wq, &priv->set_rx_mode_work);
- }
- 
--static void mlx5e_set_rx_mode(struct net_device *dev)
-+static void mlx5e_set_rx_mode(struct net_device *dev,
-+			      struct netdev_hw_addr_list *uc,
-+			      struct netdev_hw_addr_list *mc)
- {
- 	struct mlx5e_priv *priv = netdev_priv(dev);
- 
--	mlx5e_nic_set_rx_mode(priv);
-+	if (mlx5e_is_uplink_rep(priv))
-+		return; /* no rx mode for uplink rep */
-+
-+	mlx5e_fs_set_rx_mode_work(priv->fs, dev, uc, mc);
- }
- 
- static int mlx5e_set_mac(struct net_device *netdev, void *addr)
-@@ -5287,7 +5292,7 @@ const struct net_device_ops mlx5e_netdev_ops = {
- 	.ndo_setup_tc            = mlx5e_setup_tc,
- 	.ndo_select_queue        = mlx5e_select_queue,
- 	.ndo_get_stats64         = mlx5e_get_stats,
--	.ndo_set_rx_mode         = mlx5e_set_rx_mode,
-+	.ndo_set_rx_mode_async   = mlx5e_set_rx_mode,
- 	.ndo_set_mac_address     = mlx5e_set_mac,
- 	.ndo_vlan_rx_add_vid     = mlx5e_vlan_rx_add_vid,
- 	.ndo_vlan_rx_kill_vid    = mlx5e_vlan_rx_kill_vid,
-@@ -6272,8 +6277,11 @@ void mlx5e_set_rx_mode_work(struct work_struct *work)
- {
- 	struct mlx5e_priv *priv = container_of(work, struct mlx5e_priv,
- 					       set_rx_mode_work);
-+	struct net_device *dev = priv->netdev;
- 
--	return mlx5e_fs_set_rx_mode_work(priv->fs, priv->netdev);
-+	netdev_lock_ops(dev);
-+	mlx5e_fs_set_rx_mode_work(priv->fs, dev, NULL, NULL);
-+	netdev_unlock_ops(dev);
- }
- 
- /* mlx5e generic netdev management API (move to en_common.c) */
+ 	iavf_configure_tx(adapter);
+ 	iavf_configure_rx(adapter);
+@@ -5150,7 +5154,7 @@ static const struct net_device_ops iavf_netdev_ops = {
+ 	.ndo_open		= iavf_open,
+ 	.ndo_stop		= iavf_close,
+ 	.ndo_start_xmit		= iavf_xmit_frame,
+-	.ndo_set_rx_mode	= iavf_set_rx_mode,
++	.ndo_set_rx_mode_async	= iavf_set_rx_mode,
+ 	.ndo_validate_addr	= eth_validate_addr,
+ 	.ndo_set_mac_address	= iavf_set_mac,
+ 	.ndo_change_mtu		= iavf_change_mtu,
 -- 
 2.53.0
 
