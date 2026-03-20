@@ -1,88 +1,89 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4CDB01099B25
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 20 Mar 2026 17:19:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F19221099B29
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 20 Mar 2026 17:19:56 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 02CD484945;
-	Fri, 20 Mar 2026 17:19:57 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id A96E261BB1;
+	Fri, 20 Mar 2026 17:19:56 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id fo80MWAr30RE; Fri, 20 Mar 2026 17:19:55 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org CE72F61BB4
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1774027195;
+	bh=aLTuTnfwehV2L1dYdqxcXAxrjOVio+7F/VaVFTc7JYo=;
+	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=SQJTcST2PvD8m5o2TBIf0/fHU8QbViPSU+WVVvSQ1s0royTVafP2PcvffSV2j/Osb
+	 lUwis/BlnpkxXuOyQrWXpXXQXB7jMjM3hCp2XFBkmRR1NqkRbjvqZ8mRxWstfwWV/T
+	 wsV5qBIQ0a8b8PFNTUco3MoxRDWlFqKJyU6pRGmK8brtPyQmxzLwNyYpHP1UfRlKLH
+	 9QRCs19yb6Nos5q8KnkesNKZBYuo9K31P5zsuclQ6eNULUCctqot3CxUwukPy92D/k
+	 JpKb6za/X4EmNQ0czaH9Afy6886b1sJ3+hj33gWJpH2OXg+mqTA8uB3g+wBb0Nn+Gx
+	 9T1+BfR0QD9cQ==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp3.osuosl.org (Postfix) with ESMTP id CE72F61BB4;
+	Fri, 20 Mar 2026 17:19:55 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id E30CD1B6
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 20 Mar 2026 13:24:31 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp1.osuosl.org (Postfix) with ESMTP id C8FCE847CE
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 20 Mar 2026 13:24:31 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 60dDqE1XiknM; Fri, 20 Mar 2026 17:19:54 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org CCDDA8493D
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1774027194;
-	bh=tFhDSJQ4+P/KK+sAv0QkEo3dxSGCedmuq7aAynQlV4w=;
-	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=1cMapGXyjeU/ZB9idSPMnf5hhfD6GOL2DX8pQD3AAwX2Dk0Jr4oW+kkKg54K1vQFj
-	 wYimhC+Dz020JAWadZF+k3/wC2muRZ3qr83cHBXv6+m0FVfH7qAzT8DSjLUQuzXL9b
-	 Rr4RM8lzM2rJPZxK2nvfUbuwu84aBIjgcz5LQHXbb5zaDncI6AAMqUJcbGVdAZydio
-	 l7Mk7WJloVl9FMW3TuSSVJ7LLDh41tsRX2XypELUazqzk0WBXLJlwlJTHzdf13b9R1
-	 AKzHbbGYiSwArawQpJB7cWuWlm90KApsPxS8SAyF0XNQkrus9mwhUWedh+nq1UxQgo
-	 mFWkMiChTjUxg==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id CCDDA8493D;
-	Fri, 20 Mar 2026 17:19:54 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id D9D101B6
- for <intel-wired-lan@lists.osuosl.org>; Fri, 20 Mar 2026 13:24:02 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id CB648413D1
- for <intel-wired-lan@lists.osuosl.org>; Fri, 20 Mar 2026 13:24:02 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id BqBEkTw-jfAo for <intel-wired-lan@lists.osuosl.org>;
- Fri, 20 Mar 2026 13:24:02 +0000 (UTC)
+ id nRdEejiuyCNu for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 20 Mar 2026 13:24:31 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2a00:1450:4864:20::336; helo=mail-wm1-x336.google.com;
+ client-ip=2a00:1450:4864:20::331; helo=mail-wm1-x331.google.com;
  envelope-from=technoboy85@gmail.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org E0AA44014E
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org E0AA44014E
-Received: from mail-wm1-x336.google.com (mail-wm1-x336.google.com
- [IPv6:2a00:1450:4864:20::336])
- by smtp2.osuosl.org (Postfix) with ESMTPS id E0AA44014E
- for <intel-wired-lan@lists.osuosl.org>; Fri, 20 Mar 2026 13:24:01 +0000 (UTC)
-Received: by mail-wm1-x336.google.com with SMTP id
- 5b1f17b1804b1-48334ee0aeaso16950565e9.1
- for <intel-wired-lan@lists.osuosl.org>; Fri, 20 Mar 2026 06:24:01 -0700 (PDT)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org B9859847CA
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B9859847CA
+Received: from mail-wm1-x331.google.com (mail-wm1-x331.google.com
+ [IPv6:2a00:1450:4864:20::331])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id B9859847CA
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 20 Mar 2026 13:24:30 +0000 (UTC)
+Received: by mail-wm1-x331.google.com with SMTP id
+ 5b1f17b1804b1-4852f8ac7e9so19195065e9.1
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 20 Mar 2026 06:24:30 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20251104; t=1774013040; x=1774617840;
- h=content-transfer-encoding:mime-version:message-id:date:subject:cc
- :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
- :message-id:reply-to;
- bh=tFhDSJQ4+P/KK+sAv0QkEo3dxSGCedmuq7aAynQlV4w=;
- b=K1Zw7P04Gh0IYTnDeUzHVTwfeQaVjA5zKZH9RzBrT6Ech41qX344jsFm6G72f6BRHp
- UI+GGXe5h95zSu9J0JApqp9FCnoq/rbAPjVYOhSX9xag1+5ZDVBU4AqhudqfVAcDZfyF
- 8i/KPbckSjFOnAxeGAG1fF/CiySsP+NV30JexpjPHPFUn6UDzVhTPHuLZvUCw7py7bnB
- TQEiqwbj347b2Z0fl/Ydzlb/asbd9VrOnIG94JkEJ9z6NSWUYNYPrOtiImYw76RFV9b1
- 8w8k/rGT5eZ3qCAkT7ij6LhCcm0VytKuB3fUD7kXXz07+oJbyMXY9o1WnG8uCeOsMgNV
- AuVQ==
+ d=1e100.net; s=20251104; t=1774013068; x=1774617868;
+ h=content-transfer-encoding:mime-version:references:in-reply-to
+ :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+ :to:cc:subject:date:message-id:reply-to;
+ bh=aLTuTnfwehV2L1dYdqxcXAxrjOVio+7F/VaVFTc7JYo=;
+ b=HTjzZMuyi1pXYx3w6SMfgai9UX3g+U4agSXXK/4M/FrCSosS7mumEep/qnHgY4eQyv
+ LrZd182/pJdTT+V+CJ45UWKSWt+zKWxJ6IUA6GU+QDC75kuAdU9HHrJoTjWzsIka4SRn
+ yRiqp/sxdOcbyxTUup4uJtXbWLTYyEz3Bws+Oyc37WnHLRr+q/9GhYFf+F8GBw+t2CB5
+ 93FQJOE2W7NmWYUOg7YrXI9exZQnD/jI8rEU+2DC/obzTfTH1YtuQTwv0a5bhXM+h14h
+ RaK+Z0j4tnEGX7NsgZ5ogihR7UfUef0iTMDQtNk2YK3az6ZKP1TUiAOySos3an82I7kO
+ LnjQ==
 X-Forwarded-Encrypted: i=1;
- AJvYcCVS1XD+W/A2CsnRZmJ7CspU3K9TzxkrFR2NRSP+CQ8U4Gimy+SQNw8NZHYSHvDxaDunVvdte2/qfiB6AIHx1KM=@lists.osuosl.org
-X-Gm-Message-State: AOJu0YzTcQCunoE/fYgqzQTSbZ6AyITDaGJqrsV3bM4QMNJeZIRs5e9I
- bOpAZH2jAYf7uWyZmVI0liInxvkJDPAz/iHECVwn1YqUKTfxsCEIkHK6
-X-Gm-Gg: ATEYQzzOBwvDwmA2tRVoMYLGUHV9+Ja+osbGsavA2mGJYVjde4TkBffgrZ79BjbAPhF
- yaypa+Pi3OcB0PiCAse31ryhrr8pq/JaURrHQsYXwhHOE3ZvaEmkBKmbS+ihEmavHg7I6Bcy84D
- W9KLJ4v7Zy+my2kcZkWQxfo8WlUsZ+4x0Nv7Z3bPpOSJfaJmmurLYRwAaDhs8j33wcwuUPZMlYU
- XQDCKPESYKZ6oWU70eMlN/wQAIi/pe3mQPaR54nn7tns8dxRwerDrSkc2TOSDxF9RuNoLDXyVNf
- UchzTA/+g7FnsZvs/1RLYhufMP7Ts4+rCrhvNbtmuz5EqMW6djD8sfEbuvftxHimjRQET0zcNNG
- wbiZfKepUF3gq9VENO2GDnG1fPAVc0trpmYQpLQiUOZj9UsW4rwaYnV+j7krAUghOI0UjtzjLJg
- XfAZLQJw4OjJQJwE3bxAQxEnio4cdNgsTv0suL77TbxOvXoIFilyYkPs7oLru9KyeBPkufxHVG
-X-Received: by 2002:a05:600c:8119:b0:485:345b:ccb1 with SMTP id
- 5b1f17b1804b1-486ff031f5dmr39443345e9.27.1774013039582; 
- Fri, 20 Mar 2026 06:23:59 -0700 (PDT)
+ AJvYcCXVc6q7/EozgShzL8GqrhN2ip+LcQWyFzIq3X9j4Bb6ulalFRHzuHHEEsRr6RITVQlfNCLZwE892rbDMERqGwM=@lists.osuosl.org
+X-Gm-Message-State: AOJu0YwFlR3mRl1vq8CLzxrzMOzTqzFtjx2AcIiT8r/qIpEehHNW8HFJ
+ E1vwbyHlSnbNTW6M4n9A001vqhtMHUpjzh+mw4m60ULqHzoG/rlwZf8h
+X-Gm-Gg: ATEYQzxC0nRe6XM31RW4wSB/gPsZjtx3yL74u3aMxov735gwD6U0IrBPjrppE0KuKCF
+ gdInuadP51Jlro8kjTZL6SXLdATHvRM7w+WKPp2JKjAl3eN0fNR/bLBn5axpg/APFtPPVdhZqpw
+ 3HHijTVSn6VEVOncHvdzMFeZb8fcKgOuY4h/bBeuQtg/N41JCeiPauclKEhOx/kdi5DD2dc4ZMK
+ lcwi64J8U8aWnU+nb13VJ4YBoKXUEUh1AqI9fn+d/HUCp69WzCnlgOMESXzPrHg8PGbJhJh8eNi
+ Iin9E5cJtpNw3nK1gl31+vPWS/7sZ8OHE7Ie/82BdZsr8afxdkD/6Zcr2GuCMkixZr1e9vWrEtr
+ 0d55IkZ7gXLflo/2vAvmNdYWzt1dRGP86PZJBqFVu3jMNZTO8BcYAmrcp5BAwpTq+TrfDqPnsYS
+ 21yq8Dx6F7A3l46aVGHipAptNYA3a0z6GMD9htxbt+Jgf3XmDth0bWCojR8KFViyWit1fACr70
+X-Received: by 2002:a05:600c:1d1b:b0:485:3cf3:1010 with SMTP id
+ 5b1f17b1804b1-486febb5fefmr49625065e9.2.1774013068226; 
+ Fri, 20 Mar 2026 06:24:28 -0700 (PDT)
 Received: from turbo.teknoraver.net (net-5-95-156-124.cust.vodafonedsl.it.
  [5.95.156.124]) by smtp.gmail.com with ESMTPSA id
- 5b1f17b1804b1-487004e7bc4sm16427095e9.2.2026.03.20.06.23.58
+ 5b1f17b1804b1-487004e7bc4sm16427095e9.2.2026.03.20.06.24.27
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 20 Mar 2026 06:23:58 -0700 (PDT)
+ Fri, 20 Mar 2026 06:24:27 -0700 (PDT)
 From: Matteo Croce <technoboy85@gmail.com>
 X-Google-Original-From: Matteo Croce <teknoraver@meta.com>
 To: Tony Nguyen <anthony.l.nguyen@intel.com>,
@@ -96,30 +97,34 @@ To: Tony Nguyen <anthony.l.nguyen@intel.com>,
  John Fastabend <john.fastabend@gmail.com>
 Cc: netdev@vger.kernel.org, bpf@vger.kernel.org,
  intel-wired-lan@lists.osuosl.org, linux-kernel@vger.kernel.org
-Date: Fri, 20 Mar 2026 14:23:54 +0100
-Message-ID: <20260320132356.63194-1-teknoraver@meta.com>
+Date: Fri, 20 Mar 2026 14:23:56 +0100
+Message-ID: <20260320132356.63194-3-teknoraver@meta.com>
 X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20260320132356.63194-1-teknoraver@meta.com>
+References: <20260320132356.63194-1-teknoraver@meta.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Approved-At: Fri, 20 Mar 2026 17:19:53 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20230601; t=1774013040; x=1774617840; darn=lists.osuosl.org;
- h=content-transfer-encoding:mime-version:message-id:date:subject:cc
- :to:from:from:to:cc:subject:date:message-id:reply-to;
- bh=tFhDSJQ4+P/KK+sAv0QkEo3dxSGCedmuq7aAynQlV4w=;
- b=NJLAlMNDtxSebypneUo0M1/JPKPV+Jp0gD5ouye4hLtuwT50jR1XQ9/ojb2WaGSHrd
- rvDPE/Az4cgFUd6MPOZB67iTIq+Q01unHHTenD2TRGjVyVkOPOy098nmN3naP9aHCD4Q
- hEuF2LCGQ7GC9AaLzA+92PpcQBG8mX7x7TLHqKcwm4BXi8NWxh6gjQiQi6je6pXj0eMc
- ApLawjzIPTp8O6BsdExp2t9eWlepoME5r4ssGPiQbNM9P4x7QY3QV2FzkS0xaBMIvrR6
- 2wl8XgEGx+JMBApRyppvE6Hwri7tVk59oCUeFNwpX1/VmtQwXyAVMc9FUZfX799hjSNb
- VTvg==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ d=gmail.com; s=20230601; t=1774013068; x=1774617868; darn=lists.osuosl.org;
+ h=content-transfer-encoding:mime-version:references:in-reply-to
+ :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+ :message-id:reply-to;
+ bh=aLTuTnfwehV2L1dYdqxcXAxrjOVio+7F/VaVFTc7JYo=;
+ b=Jii/HQGMkisMwS8DOT7S0AJ2pt4Zu4yzprDGds8KK8IZtKKdtf685ZkKfJnXXuJw0b
+ rze42wOQCw0LWNhayi+08ZZwVvLjuwm10vA/mizI9zRdK03qfmYzJTEWC/BmVTI3Ec4c
+ s09HkSXtnDAMuTzSV4VM3CmqF64pjQaAhRBDFBifYkUCHe2EmZYLkIDCAUD77mXsqxBL
+ TttA7168WCkEGtgW13RlWztaWQPPmV/xTJJ0cImjs9IiVc+IcCCurfvJpLQnNkCYhH6C
+ +pdXdsH7+1lzoV+OdzPOJQLYfON0603W3q11+RLtXuoFqG5QbocQhcQBSWoxK2N1O7R5
+ dJ4A==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=gmail.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
- header.a=rsa-sha256 header.s=20230601 header.b=NJLAlMND
-Subject: [Intel-wired-lan] [PATCH net-next v3 0/2] e1000e: add XDP support
+ header.a=rsa-sha256 header.s=20230601 header.b=Jii/HQGM
+Subject: [Intel-wired-lan] [PATCH net-next v3 2/2] e1000e: add XDP_REDIRECT
+ support
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -135,23 +140,184 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Add XDP support to e1000e driver. First patch adds basic XDP support,
-while the second one adds support for AF_XDP.
-Tested on an Intel 82574L Gigabit card with xdp-bench and xdp-trafficgen
+Add the ability to redirect packets to other devices via XDP_REDIRECT
+and to receive redirected frames from other devices via ndo_xdp_xmit.
 
-v2: added a missing 'select PAGE_POOL' which triggered a build failure
-with some configurations.
-v3: removed a leftover file.
+New functionality:
+- XDP_REDIRECT case in e1000_run_xdp() using xdp_do_redirect()
+- e1000_xdp_xmit() as the ndo_xdp_xmit callback for receiving
+  redirected frames from other devices
+- xdp_do_flush() in e1000_finalize_xdp() for REDIR completions
+- xdp_features_set/clear_redirect_target() in e1000_xdp_setup()
+- NETDEV_XDP_ACT_REDIRECT and NETDEV_XDP_ACT_NDO_XMIT advertised
 
-Matteo Croce (2):
-  e1000e: add basic XDP support
-  e1000e: add XDP_REDIRECT support
+Assisted-by: claude-opus-4-6
+Signed-off-by: Matteo Croce <teknoraver@meta.com>
+---
+ drivers/net/ethernet/intel/e1000e/netdev.c | 85 +++++++++++++++++++++-
+ 1 file changed, 81 insertions(+), 4 deletions(-)
 
- drivers/net/ethernet/intel/Kconfig         |   1 +
- drivers/net/ethernet/intel/e1000e/e1000.h  |  18 +-
- drivers/net/ethernet/intel/e1000e/netdev.c | 600 ++++++++++++++++++++-
- 3 files changed, 607 insertions(+), 12 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index 3ee5246f0b84..83f188f9b510 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -41,6 +41,7 @@ char e1000e_driver_name[] = "e1000e";
+ #define E1000_XDP_PASS		0
+ #define E1000_XDP_CONSUMED	BIT(0)
+ #define E1000_XDP_TX		BIT(1)
++#define E1000_XDP_REDIR		BIT(2)
+ 
+ static int debug = -1;
+ module_param(debug, int, 0);
+@@ -805,6 +806,9 @@ static void e1000_finalize_xdp(struct e1000_adapter *adapter,
+ {
+ 	struct e1000_ring *tx_ring = adapter->tx_ring;
+ 
++	if (xdp_xmit & E1000_XDP_REDIR)
++		xdp_do_flush();
++
+ 	if (xdp_xmit & E1000_XDP_TX) {
+ 		/* Force memory writes to complete before letting h/w
+ 		 * know there are new descriptors to fetch.
+@@ -823,13 +827,14 @@ static void e1000_finalize_xdp(struct e1000_adapter *adapter,
+  * @adapter: board private structure
+  * @xdp: XDP buffer containing packet data
+  *
+- * Returns E1000_XDP_PASS, E1000_XDP_TX, or E1000_XDP_CONSUMED
++ * Returns E1000_XDP_PASS, E1000_XDP_TX, E1000_XDP_REDIR, or E1000_XDP_CONSUMED
+  **/
+ static int e1000_run_xdp(struct e1000_adapter *adapter, struct xdp_buff *xdp)
+ {
+ 	struct bpf_prog *xdp_prog = READ_ONCE(adapter->xdp_prog);
+ 	struct net_device *netdev = adapter->netdev;
+ 	int result = E1000_XDP_PASS;
++	int err;
+ 	u32 act;
+ 
+ 	if (!xdp_prog)
+@@ -846,6 +851,12 @@ static int e1000_run_xdp(struct e1000_adapter *adapter, struct xdp_buff *xdp)
+ 		if (result == E1000_XDP_CONSUMED)
+ 			goto out_failure;
+ 		break;
++	case XDP_REDIRECT:
++		err = xdp_do_redirect(netdev, xdp, xdp_prog);
++		if (err)
++			goto out_failure;
++		result = E1000_XDP_REDIR;
++		break;
+ 	default:
+ 		bpf_warn_invalid_xdp_action(netdev, xdp_prog, act);
+ 		fallthrough;
+@@ -1040,11 +1051,11 @@ static bool e1000_clean_rx_irq_xdp(struct e1000_ring *rx_ring, int *work_done,
+ 
+ 			/* page consumed by skb */
+ 			buffer_info->page = NULL;
+-		} else if (xdp_res & E1000_XDP_TX) {
++		} else if (xdp_res & (E1000_XDP_TX | E1000_XDP_REDIR)) {
+ 			xdp_xmit |= xdp_res;
+ 			total_rx_bytes += length;
+ 			total_rx_packets++;
+-			/* page consumed by XDP TX */
++			/* page consumed by XDP TX/redirect */
+ 			buffer_info->page = NULL;
+ 		} else {
+ 			/* XDP_DROP / XDP_ABORTED - recycle page */
+@@ -7811,6 +7822,11 @@ static int e1000_xdp_setup(struct net_device *netdev, struct netdev_bpf *bpf)
+ 	if (!need_reset)
+ 		return 0;
+ 
++	if (prog)
++		xdp_features_set_redirect_target(netdev, true);
++	else
++		xdp_features_clear_redirect_target(netdev);
++
+ 	if (running)
+ 		e1000e_open(netdev);
+ 
+@@ -7827,6 +7843,64 @@ static int e1000_xdp(struct net_device *netdev, struct netdev_bpf *xdp)
+ 	}
+ }
+ 
++/**
++ * e1000_xdp_xmit - transmit XDP frames from another device
++ * @netdev: network interface device structure
++ * @n: number of frames to transmit
++ * @frames: array of XDP frame pointers
++ * @flags: XDP transmit flags
++ *
++ * This is the ndo_xdp_xmit callback, called when other devices redirect
++ * frames to this device.
++ **/
++static int e1000_xdp_xmit(struct net_device *netdev, int n,
++			  struct xdp_frame **frames, u32 flags)
++{
++	struct e1000_adapter *adapter = netdev_priv(netdev);
++	struct e1000_ring *tx_ring = adapter->tx_ring;
++	struct netdev_queue *nq = netdev_get_tx_queue(netdev, 0);
++	int cpu = smp_processor_id();
++	int nxmit = 0;
++	int i;
++
++	if (unlikely(test_bit(__E1000_DOWN, &adapter->state)))
++		return -ENETDOWN;
++
++	if (unlikely(flags & ~XDP_XMIT_FLAGS_MASK))
++		return -EINVAL;
++
++	if (!adapter->xdp_prog)
++		return -ENXIO;
++
++	__netif_tx_lock(nq, cpu);
++	txq_trans_cond_update(nq);
++
++	for (i = 0; i < n; i++) {
++		int err;
++
++		err = e1000_xdp_xmit_ring(adapter, tx_ring, frames[i]);
++		if (err != E1000_XDP_TX)
++			break;
++		nxmit++;
++	}
++
++	if (unlikely(flags & XDP_XMIT_FLUSH)) {
++		/* Force memory writes to complete before letting h/w
++		 * know there are new descriptors to fetch.
++		 */
++		wmb();
++		if (adapter->flags2 & FLAG2_PCIM2PCI_ARBITER_WA)
++			e1000e_update_tdt_wa(tx_ring,
++					     tx_ring->next_to_use);
++		else
++			writel(tx_ring->next_to_use, tx_ring->tail);
++	}
++
++	__netif_tx_unlock(nq);
++
++	return nxmit;
++}
++
+ static const struct net_device_ops e1000e_netdev_ops = {
+ 	.ndo_open		= e1000e_open,
+ 	.ndo_stop		= e1000e_close,
+@@ -7850,6 +7924,7 @@ static const struct net_device_ops e1000e_netdev_ops = {
+ 	.ndo_hwtstamp_get	= e1000e_hwtstamp_get,
+ 	.ndo_hwtstamp_set	= e1000e_hwtstamp_set,
+ 	.ndo_bpf		= e1000_xdp,
++	.ndo_xdp_xmit		= e1000_xdp_xmit,
+ };
+ 
+ /**
+@@ -8060,7 +8135,9 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	netdev->max_mtu = adapter->max_hw_frame_size -
+ 			  (VLAN_ETH_HLEN + ETH_FCS_LEN);
+ 
+-	netdev->xdp_features = NETDEV_XDP_ACT_BASIC;
++	netdev->xdp_features = NETDEV_XDP_ACT_BASIC |
++			       NETDEV_XDP_ACT_REDIRECT |
++			       NETDEV_XDP_ACT_NDO_XMIT;
+ 
+ 	if (e1000e_enable_mng_pass_thru(&adapter->hw))
+ 		adapter->flags |= FLAG_MNG_PT_ENABLED;
 -- 
 2.53.0
 
