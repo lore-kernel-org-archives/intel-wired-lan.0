@@ -1,97 +1,91 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7174C1094462
-	for <intel-wired-lan@archiver.kernel.org>; Sat, 21 Mar 2026 09:18:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E01E01094461
+	for <intel-wired-lan@archiver.kernel.org>; Sat, 21 Mar 2026 09:19:05 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 32C50612EC;
-	Sat, 21 Mar 2026 09:18:06 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id B0FBA41E59;
+	Sat, 21 Mar 2026 09:19:05 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id sXmkZZsxnmTf; Sat, 21 Mar 2026 09:18:04 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id zEDadWHvG2ao; Sat, 21 Mar 2026 09:19:05 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 508E7612E9
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E566841E52
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1774084684;
-	bh=nBC8V2iTU1XkJSJcD9DqT6FEejB6eDAI0LxnistceK8=;
+	s=default; t=1774084744;
+	bh=B5fqRTE3+6Q5vPw/H8P3cKvWg0vP2lU4Sc7A2SSL70I=;
 	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=GUOsp9iv2abAD3s4BqDiMgjl0MRrhQlNazN22V2B1e5az3LD8dfRffdWq/L3tCBv4
-	 s+TLzcGnunyqPHPb8c3J6Ca1cF/DP0f22M44uA26x+0k4wPUhrP7GjutErSy+TgPW+
-	 TYGrd8iNg4JBG2qYj8IkNunKVEaJGgMXq6m+VCOeLAibF6dnejmkV6pQPdK0Jg9xJL
-	 18m82tRUSIORp4/yDFnBQWKhZLoqWUezk7puh3p9Jsu/PY2oc85cg2UsK+CTLWY9VH
-	 hxP2iIQYcI6G9bql6OoQvRc5IDqg8noW7xI4y/NnFpZsR8c0dZki1KuebzZxCNlZBp
-	 Ih3zSmSuhvvlQ==
+	b=2k4ioBT4Ae5ngCxxZLFnZ4wMFu9j3ogZNEOxnNb0r608tL4Hpk8b18m+DIizf6Bq7
+	 oPTa4dpfyC2gqhcMnHpf3bYiIRETygqRq5jYGgBhzLnXbsMZjNegcTLNxHkqLSIm7+
+	 LOO4fT4oNfeyzJCJKLkH2gVRsGpQClDVC0t6oRLnfKkAmIYbKD2LtAEDeqb8v/88Qg
+	 BEF2keKL7jv4ejExxFTtUVHbGgHBjG///AwcxtV7reim4g7fj/gUE9HK8Tvbku6TGp
+	 hCkrxj9G9D+uBqL2IYHZs9MVRyrF3CaQFX4vcg1OhvQimZGUyrsPgTEzrI5ahe+leJ
+	 Gt5PW0YnDzyww==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 508E7612E9;
-	Sat, 21 Mar 2026 09:18:04 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id 86F7534C
- for <intel-wired-lan@lists.osuosl.org>; Sat, 21 Mar 2026 09:18:03 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id E566841E52;
+	Sat, 21 Mar 2026 09:19:04 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 8AC3934C
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 21 Mar 2026 09:19:03 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 6C27A8258D
- for <intel-wired-lan@lists.osuosl.org>; Sat, 21 Mar 2026 09:18:03 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 70CAB84112
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 21 Mar 2026 09:19:03 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id AdT2VUUA_qCF for <intel-wired-lan@lists.osuosl.org>;
- Sat, 21 Mar 2026 09:18:02 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
- helo=tor.source.kernel.org; envelope-from=horms@kernel.org;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 720DF82572
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 720DF82572
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 720DF82572
- for <intel-wired-lan@lists.osuosl.org>; Sat, 21 Mar 2026 09:18:02 +0000 (UTC)
+ id qG5s84UNyx-J for <intel-wired-lan@lists.osuosl.org>;
+ Sat, 21 Mar 2026 09:19:02 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org;
+ envelope-from=horms@kernel.org; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 99345840F5
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 99345840F5
+Received: from tor.source.kernel.org (tor.source.kernel.org
+ [IPv6:2600:3c04:e001:324:0:1991:8:25])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 99345840F5
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 21 Mar 2026 09:19:02 +0000 (UTC)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by tor.source.kernel.org (Postfix) with ESMTP id BEE5860054;
- Sat, 21 Mar 2026 09:18:00 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 81CFDC19421;
- Sat, 21 Mar 2026 09:17:56 +0000 (UTC)
-Date: Sat, 21 Mar 2026 09:17:53 +0000
+ by tor.source.kernel.org (Postfix) with ESMTP id 6646360054;
+ Sat, 21 Mar 2026 09:19:01 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 22E2DC19421;
+ Sat, 21 Mar 2026 09:18:59 +0000 (UTC)
+Date: Sat, 21 Mar 2026 09:18:57 +0000
 From: Simon Horman <horms@kernel.org>
-To: "Tantilov, Emil S" <emil.s.tantilov@intel.com>
-Cc: daniel@iogearbox.net, ast@kernel.org, willemb@google.com,
- stable@vger.kernel.org, decot@google.com, bpf@vger.kernel.org,
- anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
- intel-wired-lan@lists.osuosl.org, edumazet@google.com,
- netdev@vger.kernel.org, pabeni@redhat.com, andrew+netdev@lunn.ch,
- kuba@kernel.org, davem@davemloft.net, sdf@fomichev.me,
- aleksandr.loktionov@intel.com, aleksander.lobakin@intel.com,
- john.fastabend@gmail.com, hawk@kernel.org
-Message-ID: <20260321091753.GT74886@horms.kernel.org>
-References: <20260319224159.23885-1-emil.s.tantilov@intel.com>
- <20260320174843.137651-1-horms@kernel.org>
- <0275cffc-7a61-46fb-9d1e-c309ac680b80@intel.com>
+To: Tony Nguyen <anthony.l.nguyen@intel.com>
+Cc: aleksandr.loktionov@intel.com, netdev@vger.kernel.org,
+ intel-wired-lan@lists.osuosl.org
+Message-ID: <20260321091857.GU74886@horms.kernel.org>
+References: <20260320050525.422403-1-aleksandr.loktionov@intel.com>
+ <20260320193314.171338-1-horms@kernel.org>
+ <c1731a39-bcb1-408a-9630-f8878c270d05@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <0275cffc-7a61-46fb-9d1e-c309ac680b80@intel.com>
+In-Reply-To: <c1731a39-bcb1-408a-9630-f8878c270d05@intel.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1774084680;
- bh=oa4pCeGObUtEmfpti4pdZQ10bKk+YYr47M7vQbAVYYM=;
+ d=kernel.org; s=k20201202; t=1774084741;
+ bh=+PT2Ef3M/EjliKhKgDJD4Sx3IT5CPfpBTznnG/+7vHk=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=ck5quWWHUFYlP4Evri1ddtI3Hvyf3AKxDDkWR6oOf/vzlL40QEX/GODXybpTmPHN+
- zcBgNvuS/Q1b28wywTWhz5gKRLcKnATDnYif0RlLD6HD9sc8rm3ypfQP5bQM3ZYZXQ
- 4Wphk8whbbg3E6vpPI8bQYCk5jVyRlIYCYIfMKZ4RUIeB8phnDfydVpe+G0xQ+UF13
- iuC3mBBFCZTCqY81qOaQqPAhsswpIAXMJlUYzevmnLcmWzofwLmRfK2Pm2OaZEBCCt
- xGl+23YrSMocPQjJdoxpKPDxdO5trFINJU2Cj9T8mc1GLJWs4opNpReHEzTGJdOpj3
- MJejaBfjs3cJA==
+ b=olTX/WolFzZ4TWAxYX/Rb+2iYgz/gE4jTXBWYe6j7SgwGPgFLNax5HcBUSGZpomzT
+ U6VVJtcA7GqvwZ3sg8HUhsBy802+46Rs15UqsMbtnOv+hg013HiFtydbFbqQg+l4xD
+ pt1ILCGuFxkNdyGlGl8RL4Qq5lTMYasJECGq4OqCEYzWy9mVP0Exax9T49zR+xJ4VE
+ p8lYCFnBzzLJM5xvnJ8pDeVpeyW55qmmIDCXXGWgAbylPm5y+nFZFbzxV8JFpoVjYQ
+ W+zFc6xqVvPxTqZ3u6gvJDKmbEHNzRhcTv4+z8NqnCqk5dS98IKB0e9SOezNsjI5cg
+ HVjb6B5K+zp1g==
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=ck5quWWH
-Subject: Re: [Intel-wired-lan] [PATCH iwl-net v2] idpf: fix xdp crash in
- soft reset error path
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20201202 header.b=olTX/Wol
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next] ice: do not carry link
+ status over to link event data
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -107,62 +101,38 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Fri, Mar 20, 2026 at 02:35:42PM -0700, Tantilov, Emil S wrote:
+On Fri, Mar 20, 2026 at 03:05:24PM -0700, Tony Nguyen wrote:
 > 
 > 
-> On 3/20/2026 10:48 AM, Simon Horman wrote:
+> On 3/20/2026 12:33 PM, Simon Horman wrote:
 > > This is an AI-generated review of your patch. The human sending this
 > > email has considered the AI review valid, or at least plausible.
 > > 
 > > For local reproduction steps see https://netdev-ai.bots.linux.dev/ai-local.html
 > > ---
-> > idpf: fix xdp crash in soft reset error path
+> > ice: do not carry link status over to link event data
 > > 
-> > This commit fixes a NULL pointer dereference that occurs when
-> > idpf_vport_open() fails during soft reset. The fix restores
-> > vport->xdp_prog in the error path and updates the restart check in
-> > idpf_xsk_pool_setup() to use IDPF_VPORT_UP instead of netif_running().
+> > This patch removes code that updated the link_up parameter with the
+> > current firmware state after calling ice_update_link_info().
 > > 
-> > > Fixes: 3d57b2c00f09 ("idpf: add XSk pool initialization")
+> > > diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+> > > index e7308e381e2f..348c86b7328d 100644
+> > > --- a/drivers/net/ethernet/intel/ice/ice_main.c
+> > > +++ b/drivers/net/ethernet/intel/ice/ice_main.c
+> > > @@ -1127,12 +1127,6 @@ ice_link_event(struct ice_pf *pf, struct ice_port_info *pi, bool link_up,
+> > > 
+> > >   	ice_check_link_cfg_err(pf, pi->phy.link_info.link_cfg_err);
+> > > 
+> > > -	/* Check if the link state is up after updating link info, and treat
+> > > -	 * this event as an UP event since the link is actually UP now.
+> > > -	 */
+> > > -	if (phy_info->link_info.link_info & ICE_AQ_LINK_UP)
+> > > -		link_up = true;
+> > > -
 > > 
-> > The Fixes: tag may not be targeting the correct commit. The primary bug
-> > being fixed is the NULL pointer dereference crash in idpf_xdp_setup_prog()
-> > that occurs when soft reset fails and vport->xdp_prog is not restored.
+> > Could removing this check create a race condition with stale link events?
 > 
-> This is not exactly true, this is just one of the instances that would
-> cause idpf_qp_switch() to be called. [1]
-> 
-> > 
-> > Looking at the git history, this missing restoration was introduced in
-> > commit 705457e7211f ("idpf: implement XDP_SETUP_PROG in ndo_bpf for
-> > splitq"), where idpf_xdp_setup_prog() was first implemented. While commit
-> > 3d57b2c00f09 introduced the secondary issue with the netif_running()
-> > check, the main crash fix addresses code from commit 705457e7211f.
-> > 
-> > Should the Fixes: tag point to commit 705457e7211f instead?
-> 
-> The reason I chose commit 3d57b2c00f09 is because it is the commit
-> introducing the function where the crash is occurring:
-> [ 3179.284770] RIP: 0010:idpf_find_rxq_vec+0x17/0x30 [idpf]
-> ...
-> [ 3179.291937] Call Trace:
-> [ 3179.292392]  <TASK>
-> [ 3179.292843]  idpf_qp_switch+0x25/0x820 [idpf]
-> 
-> The setting of the restart variable is where the above commits "meet",
-> in that both conditions - netif_ruinning() and idpf_xdp_enabled() [1]
-> can be wrong:
-> https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git/tree/drivers/net/ethernet/intel/idpf/xsk.c#n571
-> 
-> which would end up calling idpf_qp_switch() instead of taking the
-> alternate path:
-> 	restart = idpf_xdp_enabled(vport) && netif_running(vport->netdev);
-> 	if (!restart)
-> 		goto pool;
-> 
-> Which was introduced by 3d57b2c00f09.
+> This was a part of other changes that allows this to happen. By itself, as
+> evidenced here, it does not.
 
-Thanks for the clarification.
-I agree that using 3d57b2c00f09 makes sense.
-
-...
+Thanks for the clarification, much appreciated.
