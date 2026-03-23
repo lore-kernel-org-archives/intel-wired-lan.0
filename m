@@ -4,67 +4,67 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A807BF483DF
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 23 Mar 2026 17:41:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 15A59F483D7
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 23 Mar 2026 17:41:21 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 8421F40C35;
-	Mon, 23 Mar 2026 17:41:17 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id E19F740C46;
+	Mon, 23 Mar 2026 17:41:20 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id NlRA3wOEgwmf; Mon, 23 Mar 2026 17:41:16 +0000 (UTC)
+ id hnIJ_clzJYh4; Mon, 23 Mar 2026 17:41:19 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 35BC940C2C
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org A9D2940C2C
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1774287676;
-	bh=EaksqJ2n2H/Eqv4puwVEMV347dsJGUZZm9BmspBAYW8=;
+	s=default; t=1774287679;
+	bh=nlstaBa/3a7zX1OdBvwrxETx3Ois1nvcsiJg79+uDhk=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=znUAIOGax8pdMNg+JM+rs8wUsAI1wcHgJ95Q+6GR4z0lQ1P1RVexItaFbww6AUJGb
-	 LN6KRJzaGL1ofPuSr/WBEwmtc02gRtPYGYFllW53vDIX4QJCTX8j5vJS015yML+FfC
-	 /vB4o4D2XC4uuOsemd6Tr6KR25CF+LDy95ux6GUn7sEU07qqY6/XYp9AcmVxO5InCG
-	 wDNa2K5W6iVVC0sh6HtZrmm+8dDveFAhDqk1aGxz9RigPOWdsHB3EAEx4oKaQZmuux
-	 vgV3uqCSBUbinbDRPNc+RJH+++XaBv4ybv6VIsiw91GeCryBgxHt3R8GsfKjJlUMkt
-	 XnVM6K8Db5umw==
+	b=tkGk28MLX8g+oKs3w9wOlA1xIkDxuMkAem0lauPFLnm0k0x1WIlUdZDuN1uaUBjz7
+	 YfffJUuWdQ2HstZEmkbr8Iq10eMgDIOaoPrOnYr0hjDmYGW2VBSTkVikyaDleO4nj1
+	 pIP5nGc0ZWyx0G3ml06WGUfR3OZ/go7EZHmPUS7d/QXronN4s1JSZofqSLybQFbgpu
+	 JL4wZ4ilLR6tRyQmpDYVloVdMh8yv0tybITq5xB6TbUX8rkPRG17RtAV0Up0vUEdEY
+	 xX5uajS4Lpy5IvayfdazzKSYNgNx6q6ToWz6imuR4Kj5tQ013zsekrSGoqOQMtdxpZ
+	 ZC4QJ98xWqx+A==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 35BC940C2C;
-	Mon, 23 Mar 2026 17:41:16 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id 0248B353
- for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Mar 2026 17:41:13 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id A9D2940C2C;
+	Mon, 23 Mar 2026 17:41:19 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 91E0D353
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Mar 2026 17:41:17 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 7C29B81CE1
- for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Mar 2026 17:41:12 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 841E981DE1
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Mar 2026 17:41:17 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id DNeeRdspxNQh for <intel-wired-lan@lists.osuosl.org>;
- Mon, 23 Mar 2026 17:41:11 +0000 (UTC)
+ id DGsPTZBy4BYN for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 23 Mar 2026 17:41:16 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.16;
  helo=mgamail.intel.com; envelope-from=larysa.zaremba@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 48ECB81DEC
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 48ECB81DEC
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 8005881DEF
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8005881DEF
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.16])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 48ECB81DEC
- for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Mar 2026 17:41:11 +0000 (UTC)
-X-CSE-ConnectionGUID: XN6lGsVTTUW32MVUNbkEHg==
-X-CSE-MsgGUID: 8mP0y9aTQzygfuJtbI+qcA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11738"; a="75484684"
-X-IronPort-AV: E=Sophos;i="6.23,137,1770624000"; d="scan'208";a="75484684"
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 8005881DEF
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Mar 2026 17:41:16 +0000 (UTC)
+X-CSE-ConnectionGUID: 4GPKes5GQCydgrbKv5ulQQ==
+X-CSE-MsgGUID: q5CLrekaTueGUK/E6DQflQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11738"; a="75484709"
+X-IronPort-AV: E=Sophos;i="6.23,137,1770624000"; d="scan'208";a="75484709"
 Received: from orviesa004.jf.intel.com ([10.64.159.144])
  by orvoesa108.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 23 Mar 2026 10:41:11 -0700
-X-CSE-ConnectionGUID: W9R+BMcEQFGrD9hMIdyu0Q==
-X-CSE-MsgGUID: CXxZ9ZF4QpKu9wUiyDcD8g==
+ 23 Mar 2026 10:41:16 -0700
+X-CSE-ConnectionGUID: CIJkTjB5QFeNcoWr70USNw==
+X-CSE-MsgGUID: QLxopq2VRKehz9nZzKlulQ==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,137,1770624000"; d="scan'208";a="228576679"
+X-IronPort-AV: E=Sophos;i="6.23,137,1770624000"; d="scan'208";a="228576818"
 Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by orviesa004.jf.intel.com with ESMTP; 23 Mar 2026 10:41:05 -0700
+ by orviesa004.jf.intel.com with ESMTP; 23 Mar 2026 10:41:10 -0700
 Received: from mglak.igk.intel.com (mglak.igk.intel.com [10.237.112.146])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id 09B0E32C86;
- Mon, 23 Mar 2026 17:41:02 +0000 (GMT)
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id C439232C8B;
+ Mon, 23 Mar 2026 17:41:08 +0000 (GMT)
 From: Larysa Zaremba <larysa.zaremba@intel.com>
 To: intel-wired-lan@lists.osuosl.org, Tony Nguyen <anthony.l.nguyen@intel.com>
 Cc: aleksander.lobakin@intel.com, sridhar.samudrala@intel.com,
@@ -84,8 +84,8 @@ Cc: aleksander.lobakin@intel.com, sridhar.samudrala@intel.com,
  Przemek Kitszel <przemyslaw.kitszel@intel.com>,
  Andrew Lunn <andrew+netdev@lunn.ch>, netdev@vger.kernel.org,
  linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
-Date: Mon, 23 Mar 2026 18:40:37 +0100
-Message-ID: <20260323174052.5355-7-larysa.zaremba@intel.com>
+Date: Mon, 23 Mar 2026 18:40:40 +0100
+Message-ID: <20260323174052.5355-10-larysa.zaremba@intel.com>
 X-Mailer: git-send-email 2.47.0
 In-Reply-To: <20260323174052.5355-1-larysa.zaremba@intel.com>
 References: <20260323174052.5355-1-larysa.zaremba@intel.com>
@@ -93,25 +93,25 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1774287671; x=1805823671;
+ t=1774287676; x=1805823676;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=TrZ3hswvgfQOE0DkGI4vXqV0V72Ukrv+nXsdh9FZD9E=;
- b=biZum7GNeLY/gtR6R5O1pcezJI5SySFqNwNx0RatUSA78kQkX04JSRcx
- dSvMZ0KG6eF32tX4ilPHhhuwvPVOWUrJuuSfxes+Qvluqn2fjw66yGIMA
- sxVFwxVbOwVfXvjdr4NXqOAz3kj1Knl8leAcN5j1oGQi8Yh1pa7xSF8QM
- za1RYp7aEj8pOWWy2Wi0cFvOeVKpZcw1+DzNR/05yxCVzAnLyfaXJ7Gg+
- XXiaoEdRLd7RKLA6E7mhufnVLJ5EPG8gvdyE6V5eVWvJ0E4503gHsdakm
- oi9qMLdylv2+RCSucazK+s6qZHBs6ab0aLXeBiiJz8eXTSdsSZOxB2AGn
- Q==;
+ bh=wKJFUxzIqQHiF1RVJnXfLddqbbGn9rxtMzrYNBq2ihc=;
+ b=QPqZ+74gvIfQGscAyYkGIB0M47W6kYFtlQUJZkBlzvf+WthkQUmVsYFJ
+ DEJhel4BgOl3PKXVIB59LmJz5t4XByqvZDDb7ilMduRyYEbLyl90AqawS
+ J5rZgMxZD7V36ZI/BX7/+/s3KseY1MCHrFwb0KM+rZAuu05fcs/i0MGtq
+ wrwVe3ofJEMG4LYk2chYcFfmaw8iQlO19pGp8LVlQ0jaDeyl9rvvNI2HV
+ +YD4jLYf85g2gjYogf5QMJdxoMm8R/DyyiSfd7/eXd5vNVOJG8s60CPyJ
+ HZkdJR51j5I71RDIa+JYXL++URjTTyRj/Q7QBsBSkwVVR6bTvKjsQi/T9
+ A==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=biZum7GN
-Subject: [Intel-wired-lan] [PATCH iwl-next v6 06/14] idpf: remove
- 'vport_params_reqd' field
+ header.a=rsa-sha256 header.s=Intel header.b=QPqZ+74g
+Subject: [Intel-wired-lan] [PATCH iwl-next v6 09/14] idpf: make mbx_task
+ queueing and cancelling more consistent
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -127,143 +127,106 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Pavan Kumar Linga <pavan.kumar.linga@intel.com>
+As a consequence of refactoring idpf code to use libeth APIs,
+idpf_vc_xn_shutdown was merged with and replaced by idpf_deinit_dflt_mbx.
+This does not affect the Tx path, as it checked for a presence of an xn
+manager anyway. Rx processing is handled by the mbx_task that is not always
+cancelled before calling the new consolidated mailbox deinit function.
+Moreover, in the reset path idpf_intr_rel() reschedules it after the deinit
+is done. This leads to mbx_task referencing the freed mailbox and causing
+KASAN warnings.
 
-While sending a create vport message to the device control plane, a create
-vport virtchnl message is prepared with all the required info to initialize
-the vport. This info is stored in the adapter struct but never used
-thereafter. So, remove the said field.
+To remedy this, in the init path, do the first queueing of mbx_task in
+idpf_init_dflt_mbx(), in deinit and reset, always cancel the task in
+idpf_deinit_dflt_mbx() and in every flow first call idpf_mb_intr_rel_irq().
 
-Signed-off-by: Pavan Kumar Linga <pavan.kumar.linga@intel.com>
-Reviewed-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-Reviewed-by: Madhu Chittim <madhu.chittim@intel.com>
+Reviewed-by: Emil Tantilov <emil.s.tantilov@intel.com>
+Reviewed-by: Michal Kubiak <michal.kubiak@intel.com>
 Signed-off-by: Larysa Zaremba <larysa.zaremba@intel.com>
 Tested-by: Samuel Salin <Samuel.salin@intel.com>
 Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- drivers/net/ethernet/intel/idpf/idpf.h        |  2 --
- drivers/net/ethernet/intel/idpf/idpf_lib.c    |  2 --
- .../net/ethernet/intel/idpf/idpf_virtchnl.c   | 30 +++++++------------
- 3 files changed, 10 insertions(+), 24 deletions(-)
+ drivers/net/ethernet/intel/idpf/idpf.h          | 1 +
+ drivers/net/ethernet/intel/idpf/idpf_lib.c      | 9 ++++-----
+ drivers/net/ethernet/intel/idpf/idpf_virtchnl.c | 6 +++++-
+ 3 files changed, 10 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/idpf/idpf.h b/drivers/net/ethernet/intel/idpf/idpf.h
-index fe6ca5fcc5e3..e717f8097d23 100644
+index b06640925fb9..9606c0de018f 100644
 --- a/drivers/net/ethernet/intel/idpf/idpf.h
 +++ b/drivers/net/ethernet/intel/idpf/idpf.h
-@@ -638,7 +638,6 @@ struct idpf_vc_xn_manager;
-  * @avail_queues: Device given queue limits
-  * @vports: Array to store vports created by the driver
-  * @netdevs: Associated Vport netdevs
-- * @vport_params_reqd: Vport params requested
-  * @vport_params_recvd: Vport params received
-  * @vport_ids: Array of device given vport identifiers
-  * @singleq_pt_lkup: Lookup table for singleq RX ptypes
-@@ -697,7 +696,6 @@ struct idpf_adapter {
- 	struct idpf_avail_queue_info avail_queues;
- 	struct idpf_vport **vports;
- 	struct net_device **netdevs;
--	struct virtchnl2_create_vport **vport_params_reqd;
- 	struct virtchnl2_create_vport **vport_params_recvd;
- 	u32 *vport_ids;
- 
+@@ -984,6 +984,7 @@ void idpf_vc_event_task(struct work_struct *work);
+ void idpf_dev_ops_init(struct idpf_adapter *adapter);
+ void idpf_vf_dev_ops_init(struct idpf_adapter *adapter);
+ int idpf_intr_req(struct idpf_adapter *adapter);
++void idpf_mb_intr_rel_irq(struct idpf_adapter *adapter);
+ void idpf_intr_rel(struct idpf_adapter *adapter);
+ u16 idpf_get_max_tx_hdr_size(struct idpf_adapter *adapter);
+ int idpf_initiate_soft_reset(struct idpf_vport *vport,
 diff --git a/drivers/net/ethernet/intel/idpf/idpf_lib.c b/drivers/net/ethernet/intel/idpf/idpf_lib.c
-index cf966fe6c759..d88ca59edf97 100644
+index 0d131bf0993e..7988836fbae0 100644
 --- a/drivers/net/ethernet/intel/idpf/idpf_lib.c
 +++ b/drivers/net/ethernet/intel/idpf/idpf_lib.c
-@@ -1109,8 +1109,6 @@ static void idpf_vport_rel(struct idpf_vport *vport)
+@@ -68,9 +68,11 @@ static void idpf_deinit_vector_stack(struct idpf_adapter *adapter)
+  * This will also disable interrupt mode and queue up mailbox task. Mailbox
+  * task will reschedule itself if not in interrupt mode.
+  */
+-static void idpf_mb_intr_rel_irq(struct idpf_adapter *adapter)
++void idpf_mb_intr_rel_irq(struct idpf_adapter *adapter)
+ {
+-	clear_bit(IDPF_MB_INTR_MODE, adapter->flags);
++	if (!test_and_clear_bit(IDPF_MB_INTR_MODE, adapter->flags))
++		return;
++
+ 	kfree(free_irq(adapter->msix_entries[0].vector, adapter));
+ 	queue_delayed_work(adapter->mbx_wq, &adapter->mbx_task, 0);
+ }
+@@ -1938,14 +1940,11 @@ static void idpf_init_hard_reset(struct idpf_adapter *adapter)
+ 		goto unlock_mutex;
+ 	}
  
- 	kfree(adapter->vport_params_recvd[idx]);
- 	adapter->vport_params_recvd[idx] = NULL;
--	kfree(adapter->vport_params_reqd[idx]);
--	adapter->vport_params_reqd[idx] = NULL;
- 
- 	kfree(vport);
- 	adapter->num_alloc_vports--;
+-	queue_delayed_work(adapter->mbx_wq, &adapter->mbx_task, 0);
+-
+ 	/* Initialize the state machine, also allocate memory and request
+ 	 * resources
+ 	 */
+ 	err = idpf_vc_core_init(adapter);
+ 	if (err) {
+-		cancel_delayed_work_sync(&adapter->mbx_task);
+ 		idpf_deinit_dflt_mbx(adapter);
+ 		goto unlock_mutex;
+ 	}
 diff --git a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
-index d5a877e1fef8..6e6aa38654f6 100644
+index 6d847aea00e4..38d119147ab6 100644
 --- a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
 +++ b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
-@@ -1555,14 +1555,10 @@ int idpf_send_create_vport_msg(struct idpf_adapter *adapter,
- 	ssize_t reply_sz;
+@@ -2974,6 +2974,8 @@ int idpf_init_dflt_mbx(struct idpf_adapter *adapter)
+ 	adapter->xnm = params.xnm;
+ 	adapter->state = __IDPF_VER_CHECK;
  
- 	buf_size = sizeof(struct virtchnl2_create_vport);
--	if (!adapter->vport_params_reqd[idx]) {
--		adapter->vport_params_reqd[idx] = kzalloc(buf_size,
--							  GFP_KERNEL);
--		if (!adapter->vport_params_reqd[idx])
--			return -ENOMEM;
--	}
-+	vport_msg = kzalloc(buf_size, GFP_KERNEL);
-+	if (!vport_msg)
-+		return -ENOMEM;
- 
--	vport_msg = adapter->vport_params_reqd[idx];
- 	vport_msg->vport_type = cpu_to_le16(VIRTCHNL2_VPORT_TYPE_DEFAULT);
- 	vport_msg->vport_index = cpu_to_le16(idx);
- 
-@@ -1579,8 +1575,7 @@ int idpf_send_create_vport_msg(struct idpf_adapter *adapter,
- 	err = idpf_vport_calc_total_qs(adapter, idx, vport_msg, max_q);
- 	if (err) {
- 		dev_err(&adapter->pdev->dev, "Enough queues are not available");
--
--		return err;
-+		goto rel_buf;
- 	}
- 
- 	if (!adapter->vport_params_recvd[idx]) {
-@@ -1588,7 +1583,7 @@ int idpf_send_create_vport_msg(struct idpf_adapter *adapter,
- 							   GFP_KERNEL);
- 		if (!adapter->vport_params_recvd[idx]) {
- 			err = -ENOMEM;
--			goto free_vport_params;
-+			goto rel_buf;
- 		}
- 	}
- 
-@@ -1604,13 +1599,15 @@ int idpf_send_create_vport_msg(struct idpf_adapter *adapter,
- 		goto free_vport_params;
- 	}
- 
-+	kfree(vport_msg);
++	queue_delayed_work(adapter->mbx_wq, &adapter->mbx_task, 0);
 +
  	return 0;
- 
- free_vport_params:
- 	kfree(adapter->vport_params_recvd[idx]);
- 	adapter->vport_params_recvd[idx] = NULL;
--	kfree(adapter->vport_params_reqd[idx]);
--	adapter->vport_params_reqd[idx] = NULL;
-+rel_buf:
-+	kfree(vport_msg);
- 
- 	return err;
  }
-@@ -3416,8 +3413,6 @@ static void idpf_vport_params_buf_rel(struct idpf_adapter *adapter)
- {
- 	kfree(adapter->vport_params_recvd);
- 	adapter->vport_params_recvd = NULL;
--	kfree(adapter->vport_params_reqd);
--	adapter->vport_params_reqd = NULL;
- 	kfree(adapter->vport_ids);
- 	adapter->vport_ids = NULL;
- }
-@@ -3432,15 +3427,10 @@ static int idpf_vport_params_buf_alloc(struct idpf_adapter *adapter)
- {
- 	u16 num_max_vports = idpf_get_max_vports(adapter);
  
--	adapter->vport_params_reqd = kzalloc_objs(*adapter->vport_params_reqd,
--						  num_max_vports);
--	if (!adapter->vport_params_reqd)
--		return -ENOMEM;
--
- 	adapter->vport_params_recvd = kzalloc_objs(*adapter->vport_params_recvd,
- 						   num_max_vports);
- 	if (!adapter->vport_params_recvd)
--		goto err_mem;
-+		return -ENOMEM;
+@@ -2983,6 +2985,9 @@ int idpf_init_dflt_mbx(struct idpf_adapter *adapter)
+  */
+ void idpf_deinit_dflt_mbx(struct idpf_adapter *adapter)
+ {
++	idpf_mb_intr_rel_irq(adapter);
++	cancel_delayed_work_sync(&adapter->mbx_task);
++
+ 	if (adapter->arq && adapter->asq) {
+ 		idpf_mb_clean(adapter, adapter->asq, true);
+ 		libie_ctlq_xn_deinit(adapter->xnm, &adapter->ctlq_ctx);
+@@ -3237,7 +3242,6 @@ void idpf_vc_core_deinit(struct idpf_adapter *adapter)
+ 		idpf_deinit_dflt_mbx(adapter);
  
- 	adapter->vport_ids = kcalloc(num_max_vports, sizeof(u32), GFP_KERNEL);
- 	if (!adapter->vport_ids)
+ 	cancel_delayed_work_sync(&adapter->serv_task);
+-	cancel_delayed_work_sync(&adapter->mbx_task);
+ 
+ 	idpf_vport_params_buf_rel(adapter);
+ 
 -- 
 2.47.0
 
