@@ -1,70 +1,70 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EB2CEF483DF
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 23 Mar 2026 17:41:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 61F56F483DD
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 23 Mar 2026 17:41:14 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id B137B81CD0;
-	Mon, 23 Mar 2026 17:41:10 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 3607540C22;
+	Mon, 23 Mar 2026 17:41:14 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id aNULGQfmD_6F; Mon, 23 Mar 2026 17:41:08 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id QfJ6Nx7Co84H; Mon, 23 Mar 2026 17:41:12 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D8F0A81DEC
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B555C40C30
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1774287668;
-	bh=NdSiD/jaDZV2H2FtbnKXrI+P+5nyI7fEdzIvDWq01h4=;
+	s=default; t=1774287672;
+	bh=Zhno4s+5qRhli0FjfFrSAp4nZUbuXcjA4FV3C4MivKw=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=yyzq0MNdu2M7SomY+A8wBBJRzPnF5X68T9K0s5pgCVAGkQKjcQkl/iHP/BB2zbKmZ
-	 87FYMAG6HR4GSc6G6i7aSMAIruFaCPbS/dWJlA+/G/MG5E0wIr/jpdNXcXwXiM8arc
-	 ljF0tOm5jmaivoits+BlPaxA5zibkh2GgmhkbcZVzrNpi04Gkso3XwtkTCJYTJoGjx
-	 X0nizZAmRNPxRd47gtd8vbU2eKqXj43BfPKsgOdoSlksm8K/vgcN/7jAvbJhRbgsue
-	 d6xw6uN90lCv79iux5+77/OtH1prZsIMEAn/jd5My0vnYmSutMw4JLHb2XyYwr52Xu
-	 gNqKhtDtwSYiw==
+	b=3t7MV0FCneXgOwSuwO+LNbFPGvnutlTIK7wJGYyFFMpsRgdikv4BBP8oZbRk7Xa4g
+	 VzMFKAbN744t63S5I0W659uNxUuApTUd0x3cWZ+L5Owg+mEx6XoFdloojTEuJIBmsm
+	 CeFie2Dy28oUw2ITnztdSU/aJ0/cM6gAMAuGY5WnmHzyxyO2BcPglN0Sh98MZaRHD9
+	 MiDLtxVVjC104sxeoVdL9B1b4j3pPl+KDiQaBMBfD81x8z7NP+033rP3apoHS+c2ag
+	 Hh0iTB45ain4Q740Yy3cka8yjQRxdTYiUD6G3ERyXf5yqNwtp50ZYYBDTnjCXVTLA3
+	 NqEK5WrJjIixw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id D8F0A81DEC;
-	Mon, 23 Mar 2026 17:41:08 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id B555C40C30;
+	Mon, 23 Mar 2026 17:41:12 +0000 (UTC)
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id 5EEB6353
- for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Mar 2026 17:41:07 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id F333CF4
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Mar 2026 17:41:10 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 80A0881CD0
- for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Mar 2026 17:41:06 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id D7BE481DEC
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Mar 2026 17:41:10 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id w16-tJ8vWOjY for <intel-wired-lan@lists.osuosl.org>;
- Mon, 23 Mar 2026 17:41:04 +0000 (UTC)
+ id AveDfL6AZq5x for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 23 Mar 2026 17:41:09 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.16;
  helo=mgamail.intel.com; envelope-from=larysa.zaremba@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org F002F81C58
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org F002F81C58
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 0395B81E22
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 0395B81E22
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.16])
- by smtp1.osuosl.org (Postfix) with ESMTPS id F002F81C58
- for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Mar 2026 17:41:03 +0000 (UTC)
-X-CSE-ConnectionGUID: m/rqxOHoTK++yzqM0rmoSA==
-X-CSE-MsgGUID: tHKqAsfJS+GLAdjjWf1R5Q==
-X-IronPort-AV: E=McAfee;i="6800,10657,11738"; a="75484628"
-X-IronPort-AV: E=Sophos;i="6.23,137,1770624000"; d="scan'208";a="75484628"
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 0395B81E22
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Mar 2026 17:41:08 +0000 (UTC)
+X-CSE-ConnectionGUID: 9msn5Q5RSHqjC8Bs4LFosw==
+X-CSE-MsgGUID: 80DYGsZhSyOQfeStLi/jBw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11738"; a="75484661"
+X-IronPort-AV: E=Sophos;i="6.23,137,1770624000"; d="scan'208";a="75484661"
 Received: from orviesa004.jf.intel.com ([10.64.159.144])
  by orvoesa108.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 23 Mar 2026 10:41:03 -0700
-X-CSE-ConnectionGUID: p46hkNv2RLqW+JT7oJD8Ew==
-X-CSE-MsgGUID: OuwHNLYoQLuFarWdGJdTFg==
+ 23 Mar 2026 10:41:08 -0700
+X-CSE-ConnectionGUID: /kHo1k0ESd+hHDjkvsHyXg==
+X-CSE-MsgGUID: QVo6V/ewSZyWC/b1qsnIiw==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,137,1770624000"; d="scan'208";a="228576625"
+X-IronPort-AV: E=Sophos;i="6.23,137,1770624000"; d="scan'208";a="228576656"
 Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by orviesa004.jf.intel.com with ESMTP; 23 Mar 2026 10:40:57 -0700
+ by orviesa004.jf.intel.com with ESMTP; 23 Mar 2026 10:41:02 -0700
 Received: from mglak.igk.intel.com (mglak.igk.intel.com [10.237.112.146])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id 7CA3F312F7;
- Mon, 23 Mar 2026 17:40:54 +0000 (GMT)
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id 859AB312FC;
+ Mon, 23 Mar 2026 17:40:59 +0000 (GMT)
 From: Larysa Zaremba <larysa.zaremba@intel.com>
 To: intel-wired-lan@lists.osuosl.org, Tony Nguyen <anthony.l.nguyen@intel.com>
 Cc: aleksander.lobakin@intel.com, sridhar.samudrala@intel.com,
@@ -84,8 +84,8 @@ Cc: aleksander.lobakin@intel.com, sridhar.samudrala@intel.com,
  Przemek Kitszel <przemyslaw.kitszel@intel.com>,
  Andrew Lunn <andrew+netdev@lunn.ch>, netdev@vger.kernel.org,
  linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
-Date: Mon, 23 Mar 2026 18:40:32 +0100
-Message-ID: <20260323174052.5355-2-larysa.zaremba@intel.com>
+Date: Mon, 23 Mar 2026 18:40:35 +0100
+Message-ID: <20260323174052.5355-5-larysa.zaremba@intel.com>
 X-Mailer: git-send-email 2.47.0
 In-Reply-To: <20260323174052.5355-1-larysa.zaremba@intel.com>
 References: <20260323174052.5355-1-larysa.zaremba@intel.com>
@@ -93,26 +93,25 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1774287664; x=1805823664;
+ t=1774287669; x=1805823669;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=mf6qe/REY8LHokSO7Jw1rbpt7BXYZUjEuNOq23Zdlnc=;
- b=DurCjYYeu5mc9wBjcVlIcas7Nmjjl30kRe6i0FCnAGwiMpMO6i/FMNaU
- bIOe7w+JLAgZ7ywr873OamuUrQk4z71tNQVGfrys8lDCBn1Qi1ELlsGRf
- UvLkFtfkRvJ26KIk2HGZtdcdTmCtiIqeF8PJu+Lp6cZj9xvKmUmyDCiHx
- YUCoa25SdFcx0hh8GB6nvbhnxnGKUeQJb4Vy+glzgZRb7vERVFktqqJXb
- GnRHl0i4ZX8UAM7Y9XXrckZvUEymGPHbU4g1XrN1ktnyT+0gdhLQILujj
- mqJAUVCBE77JFADf36hY0mZAe/WpScruV4mGotc3mVi0Z30OUjH+dP+YA
- w==;
+ bh=zzT//hm6MirwS7lb+Dkj6wbD9ypRj7GQ3TAdB35KpRo=;
+ b=WjiK3icATVkEaJNbsIA6jQGh2qTsrH6QPpZAD7sCRRSdwB6b++1g+bX+
+ ZyBqkeeTEW87ClwmVt6bE2Rdvf/5l1MsSf37xR8RPCRID9VTYP/uKPW00
+ LwEDtt8RalxPaiwZvWCOQsFYqXv8nTve1K9oANeO8hobbKlrWCIQ7ka7Q
+ N+WQ1hU5KSaEG7WJAQ2dlUoQsSEWlqXXV/FS/sNipJFOLJO/G+hCdTloJ
+ VegTnjRt6143voqo6+gF3c5ndruI+jvxq6ZpxD+GSLIsyNVErFC0dO17w
+ 6k9ia4jPtwERlCayZlN8NeOZ0xoIQ/kWaEJmIUA14B3nbGvs77qmquh5s
+ A==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=DurCjYYe
-Subject: [Intel-wired-lan] [PATCH iwl-next v6 01/14] virtchnl: create
- 'include/linux/intel' and move necessary header files
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=WjiK3icA
+Subject: [Intel-wired-lan] [PATCH iwl-next v6 04/14] libie: add control
+ queue support
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -128,751 +127,934 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Victor Raj <victor.raj@intel.com>
+From: Phani R Burra <phani.r.burra@intel.com>
 
-include/linux/net houses a single folder "intel", meanwhile
-include/linux/intel is vacant. On top of that, it would be useful to place
-all iavf headers together with other intel networking headers,
-same goes for virtchnl2 headers which will be used by both idpf and ixd
-drivers.
+Libie will now support control queue setup and configuration APIs. These
+are mainly used for mailbox communication between drivers and control
+plane.
 
-Move abovementioned intel header files into new folder include/linux/intel.
-Also, assign new folder to both intel and general networking maintainers.
+Make use of the libeth_rx page pool support for managing controlq buffers.
 
-Suggested-by: Alexander Lobakin <aleksander.lobakin@intel.com>
-Reviewed-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
+Reviewed-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+Signed-off-by: Phani R Burra <phani.r.burra@intel.com>
+Co-developed-by: Victor Raj <victor.raj@intel.com>
 Signed-off-by: Victor Raj <victor.raj@intel.com>
+Co-developed-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
+Signed-off-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
+Co-developed-by: Pavan Kumar Linga <pavan.kumar.linga@intel.com>
+Signed-off-by: Pavan Kumar Linga <pavan.kumar.linga@intel.com>
+Co-developed-by: Larysa Zaremba <larysa.zaremba@intel.com>
 Signed-off-by: Larysa Zaremba <larysa.zaremba@intel.com>
+Tested-by: Bharath R <bharath.r@intel.com>
 Tested-by: Samuel Salin <Samuel.salin@intel.com>
 Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- MAINTAINERS                                                 | 6 +++---
- drivers/infiniband/hw/irdma/i40iw_if.c                      | 2 +-
- drivers/infiniband/hw/irdma/icrdma_if.c                     | 2 +-
- drivers/infiniband/hw/irdma/ig3rdma_if.c                    | 2 +-
- drivers/infiniband/hw/irdma/main.c                          | 2 +-
- drivers/infiniband/hw/irdma/main.h                          | 2 +-
- drivers/net/ethernet/intel/i40e/i40e.h                      | 4 ++--
- drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h           | 2 +-
- drivers/net/ethernet/intel/i40e/i40e_client.c               | 2 +-
- drivers/net/ethernet/intel/i40e/i40e_common.c               | 2 +-
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c              | 2 +-
- drivers/net/ethernet/intel/i40e/i40e_main.c                 | 2 +-
- drivers/net/ethernet/intel/i40e/i40e_prototype.h            | 2 +-
- drivers/net/ethernet/intel/i40e/i40e_txrx.c                 | 4 ++--
- drivers/net/ethernet/intel/i40e/i40e_txrx.h                 | 2 +-
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h          | 2 +-
- drivers/net/ethernet/intel/iavf/iavf.h                      | 2 +-
- drivers/net/ethernet/intel/iavf/iavf_adminq_cmd.h           | 2 +-
- drivers/net/ethernet/intel/iavf/iavf_common.c               | 2 +-
- drivers/net/ethernet/intel/iavf/iavf_main.c                 | 2 +-
- drivers/net/ethernet/intel/iavf/iavf_prototype.h            | 2 +-
- drivers/net/ethernet/intel/iavf/iavf_txrx.c                 | 2 +-
- drivers/net/ethernet/intel/iavf/iavf_txrx.h                 | 2 +-
- drivers/net/ethernet/intel/iavf/iavf_types.h                | 4 +---
- drivers/net/ethernet/intel/iavf/iavf_virtchnl.c             | 2 +-
- drivers/net/ethernet/intel/ice/ice.h                        | 2 +-
- drivers/net/ethernet/intel/ice/ice_adminq_cmd.h             | 2 +-
- drivers/net/ethernet/intel/ice/ice_base.c                   | 2 +-
- drivers/net/ethernet/intel/ice/ice_common.h                 | 2 +-
- drivers/net/ethernet/intel/ice/ice_flow.h                   | 2 +-
- drivers/net/ethernet/intel/ice/ice_idc_int.h                | 4 ++--
- drivers/net/ethernet/intel/ice/ice_txrx.c                   | 2 +-
- drivers/net/ethernet/intel/ice/ice_txrx_lib.c               | 2 +-
- drivers/net/ethernet/intel/ice/ice_type.h                   | 2 +-
- drivers/net/ethernet/intel/ice/ice_vf_lib.h                 | 2 +-
- drivers/net/ethernet/intel/ice/virt/virtchnl.h              | 2 +-
- drivers/net/ethernet/intel/idpf/idpf.h                      | 6 +++---
- drivers/net/ethernet/intel/idpf/idpf_txrx.h                 | 2 +-
- drivers/net/ethernet/intel/idpf/idpf_virtchnl.h             | 2 +-
- drivers/net/ethernet/intel/ixgbe/ixgbe_type.h               | 2 +-
- drivers/net/ethernet/intel/ixgbe/ixgbe_type_e610.h          | 2 +-
- drivers/net/ethernet/intel/libie/adminq.c                   | 2 +-
- drivers/net/ethernet/intel/libie/fwlog.c                    | 2 +-
- drivers/net/ethernet/intel/libie/rx.c                       | 2 +-
- include/linux/{net => }/intel/i40e_client.h                 | 0
- include/linux/{net => }/intel/iidc_rdma.h                   | 0
- include/linux/{net => }/intel/iidc_rdma_ice.h               | 0
- include/linux/{net => }/intel/iidc_rdma_idpf.h              | 0
- include/linux/{net => }/intel/libie/adminq.h                | 0
- include/linux/{net => }/intel/libie/fwlog.h                 | 2 +-
- include/linux/{net => }/intel/libie/pctype.h                | 0
- include/linux/{net => }/intel/libie/rx.h                    | 0
- include/linux/{avf => intel}/virtchnl.h                     | 0
- .../ethernet/intel/idpf => include/linux/intel}/virtchnl2.h | 0
- .../intel/idpf => include/linux/intel}/virtchnl2_lan_desc.h | 0
- 55 files changed, 52 insertions(+), 54 deletions(-)
- rename include/linux/{net => }/intel/i40e_client.h (100%)
- rename include/linux/{net => }/intel/iidc_rdma.h (100%)
- rename include/linux/{net => }/intel/iidc_rdma_ice.h (100%)
- rename include/linux/{net => }/intel/iidc_rdma_idpf.h (100%)
- rename include/linux/{net => }/intel/libie/adminq.h (100%)
- rename include/linux/{net => }/intel/libie/fwlog.h (98%)
- rename include/linux/{net => }/intel/libie/pctype.h (100%)
- rename include/linux/{net => }/intel/libie/rx.h (100%)
- rename include/linux/{avf => intel}/virtchnl.h (100%)
- rename {drivers/net/ethernet/intel/idpf => include/linux/intel}/virtchnl2.h (100%)
- rename {drivers/net/ethernet/intel/idpf => include/linux/intel}/virtchnl2_lan_desc.h (100%)
+ drivers/net/ethernet/intel/libie/Kconfig    |   8 +
+ drivers/net/ethernet/intel/libie/Makefile   |   4 +
+ drivers/net/ethernet/intel/libie/controlq.c | 603 ++++++++++++++++++++
+ include/linux/intel/libie/controlq.h        | 249 ++++++++
+ 4 files changed, 864 insertions(+)
+ create mode 100644 drivers/net/ethernet/intel/libie/controlq.c
+ create mode 100644 include/linux/intel/libie/controlq.h
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index ff6f17458f19..42fb616f8627 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -12819,8 +12819,7 @@ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git
- F:	Documentation/networking/device_drivers/ethernet/intel/
- F:	drivers/net/ethernet/intel/
- F:	drivers/net/ethernet/intel/*/
--F:	include/linux/avf/virtchnl.h
--F:	include/linux/net/intel/*/
-+F:	include/linux/intel/
+diff --git a/drivers/net/ethernet/intel/libie/Kconfig b/drivers/net/ethernet/intel/libie/Kconfig
+index 500a95c944a8..9c5fdebb6766 100644
+--- a/drivers/net/ethernet/intel/libie/Kconfig
++++ b/drivers/net/ethernet/intel/libie/Kconfig
+@@ -15,6 +15,14 @@ config LIBIE_ADMINQ
+ 	  Helper functions used by Intel Ethernet drivers for administration
+ 	  queue command interface (aka adminq).
  
- INTEL ETHERNET PROTOCOL DRIVER FOR RDMA
- M:	Krzysztof Czurylo <krzysztof.czurylo@intel.com>
-@@ -14559,7 +14558,7 @@ L:	netdev@vger.kernel.org
- S:	Maintained
- T:	git https://github.com/alobakin/linux.git
- F:	drivers/net/ethernet/intel/libie/
--F:	include/linux/net/intel/libie/
-+F:	include/linux/intel/libie/
- K:	libie
++config LIBIE_CP
++	tristate
++	select LIBETH
++	select LIBIE_PCI
++	help
++	  Common helper routines to communicate with the device Control Plane
++	  using virtchnl2 or related mailbox protocols.
++
+ config LIBIE_FWLOG
+ 	tristate
+ 	select LIBIE_ADMINQ
+diff --git a/drivers/net/ethernet/intel/libie/Makefile b/drivers/net/ethernet/intel/libie/Makefile
+index a28509cb9086..3065aa057798 100644
+--- a/drivers/net/ethernet/intel/libie/Makefile
++++ b/drivers/net/ethernet/intel/libie/Makefile
+@@ -9,6 +9,10 @@ obj-$(CONFIG_LIBIE_ADMINQ) 	+= libie_adminq.o
  
- LIBNVDIMM BTT: BLOCK TRANSLATION TABLE
-@@ -18319,6 +18318,7 @@ F:	include/linux/fcdevice.h
- F:	include/linux/fddidevice.h
- F:	include/linux/if_*
- F:	include/linux/inetdevice.h
-+F:	include/linux/intel/
- F:	include/linux/netdev*
- F:	include/linux/platform_data/wiznet.h
- F:	include/uapi/linux/cn_proc.h
-diff --git a/drivers/infiniband/hw/irdma/i40iw_if.c b/drivers/infiniband/hw/irdma/i40iw_if.c
-index 4ff3ad7856aa..b084c01714ee 100644
---- a/drivers/infiniband/hw/irdma/i40iw_if.c
-+++ b/drivers/infiniband/hw/irdma/i40iw_if.c
-@@ -2,7 +2,7 @@
- /* Copyright (c) 2015 - 2021 Intel Corporation */
- #include "main.h"
- #include "i40iw_hw.h"
--#include <linux/net/intel/i40e_client.h>
-+#include <linux/intel/i40e_client.h>
+ libie_adminq-y			:= adminq.o
  
- static struct i40e_client i40iw_client;
++obj-$(CONFIG_LIBIE_CP)		+= libie_cp.o
++
++libie_cp-y			:= controlq.o
++
+ obj-$(CONFIG_LIBIE_FWLOG) 	+= libie_fwlog.o
  
-diff --git a/drivers/infiniband/hw/irdma/icrdma_if.c b/drivers/infiniband/hw/irdma/icrdma_if.c
-index 2172a2092e3f..3f37029acdd3 100644
---- a/drivers/infiniband/hw/irdma/icrdma_if.c
-+++ b/drivers/infiniband/hw/irdma/icrdma_if.c
-@@ -2,7 +2,7 @@
- /* Copyright (c) 2015 - 2024 Intel Corporation */
- 
- #include "main.h"
--#include <linux/net/intel/iidc_rdma_ice.h>
-+#include <linux/intel/iidc_rdma_ice.h>
- 
- static void icrdma_prep_tc_change(struct irdma_device *iwdev)
- {
-diff --git a/drivers/infiniband/hw/irdma/ig3rdma_if.c b/drivers/infiniband/hw/irdma/ig3rdma_if.c
-index b3e49e5bef10..035b421f0934 100644
---- a/drivers/infiniband/hw/irdma/ig3rdma_if.c
-+++ b/drivers/infiniband/hw/irdma/ig3rdma_if.c
-@@ -2,7 +2,7 @@
- /* Copyright (c) 2023 - 2024 Intel Corporation */
- 
- #include "main.h"
--#include <linux/net/intel/iidc_rdma_idpf.h>
-+#include <linux/intel/iidc_rdma_idpf.h>
- #include "ig3rdma_hw.h"
- 
- static void ig3rdma_idc_core_event_handler(struct iidc_rdma_core_dev_info *cdev_info,
-diff --git a/drivers/infiniband/hw/irdma/main.c b/drivers/infiniband/hw/irdma/main.c
-index 95957d52883d..9781699ad57c 100644
---- a/drivers/infiniband/hw/irdma/main.c
-+++ b/drivers/infiniband/hw/irdma/main.c
-@@ -1,7 +1,7 @@
- // SPDX-License-Identifier: GPL-2.0 OR Linux-OpenIB
- /* Copyright (c) 2015 - 2021 Intel Corporation */
- #include "main.h"
--#include <linux/net/intel/iidc_rdma_idpf.h>
-+#include <linux/intel/iidc_rdma_idpf.h>
- 
- MODULE_ALIAS("i40iw");
- MODULE_DESCRIPTION("Intel(R) Ethernet Protocol Driver for RDMA");
-diff --git a/drivers/infiniband/hw/irdma/main.h b/drivers/infiniband/hw/irdma/main.h
-index d320d1a228b3..22ccd7d22c42 100644
---- a/drivers/infiniband/hw/irdma/main.h
-+++ b/drivers/infiniband/hw/irdma/main.h
-@@ -30,7 +30,7 @@
- #include <linux/io-64-nonatomic-lo-hi.h>
- #endif
- #include <linux/auxiliary_bus.h>
--#include <linux/net/intel/iidc_rdma.h>
-+#include <linux/intel/iidc_rdma.h>
- #include <rdma/ib_smi.h>
- #include <rdma/ib_verbs.h>
- #include <rdma/ib_pack.h>
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index dcb50c2e1aa2..94336498b95c 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -8,8 +8,8 @@
- #include <linux/pci.h>
- #include <linux/ptp_clock_kernel.h>
- #include <linux/types.h>
--#include <linux/avf/virtchnl.h>
--#include <linux/net/intel/i40e_client.h>
-+#include <linux/intel/virtchnl.h>
-+#include <linux/intel/i40e_client.h>
- #include <net/devlink.h>
- #include <net/pkt_cls.h>
- #include <net/udp_tunnel.h>
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-index cc02a85ad42b..e70f0aa728b1 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-@@ -4,7 +4,7 @@
- #ifndef _I40E_ADMINQ_CMD_H_
- #define _I40E_ADMINQ_CMD_H_
- 
--#include <linux/net/intel/libie/adminq.h>
-+#include <linux/intel/libie/adminq.h>
- 
- #include <linux/bits.h>
- #include <linux/types.h>
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_client.c b/drivers/net/ethernet/intel/i40e/i40e_client.c
-index 84a97ca8a6d8..b6cf1f666c89 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_client.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_client.c
-@@ -3,7 +3,7 @@
- 
- #include <linux/list.h>
- #include <linux/errno.h>
--#include <linux/net/intel/i40e_client.h>
-+#include <linux/intel/i40e_client.h>
- 
- #include "i40e.h"
- 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
-index 59f5c1e810eb..dab9dfcf7bda 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_common.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
-@@ -1,7 +1,7 @@
- // SPDX-License-Identifier: GPL-2.0
- /* Copyright(c) 2013 - 2021 Intel Corporation. */
- 
--#include <linux/avf/virtchnl.h>
-+#include <linux/intel/virtchnl.h>
- #include <linux/bitfield.h>
- #include <linux/delay.h>
- #include <linux/etherdevice.h>
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index 3da9ec49cc74..94e6d411e6b8 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -3,7 +3,7 @@
- 
- /* ethtool support for i40e */
- 
--#include <linux/net/intel/libie/pctype.h>
-+#include <linux/intel/libie/pctype.h>
- #include "i40e_devids.h"
- #include "i40e_diag.h"
- #include "i40e_txrx_common.h"
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 926d001b2150..aba57ef7e058 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -3,7 +3,7 @@
- 
- #include <generated/utsrelease.h>
- #include <linux/crash_dump.h>
--#include <linux/net/intel/libie/pctype.h>
-+#include <linux/intel/libie/pctype.h>
- #include <linux/if_bridge.h>
- #include <linux/if_macvlan.h>
- #include <linux/module.h>
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_prototype.h b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
-index 26bb7bffe361..9d0cd6aabdcb 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_prototype.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
-@@ -5,7 +5,7 @@
- #define _I40E_PROTOTYPE_H_
- 
- #include <linux/ethtool.h>
--#include <linux/avf/virtchnl.h>
-+#include <linux/intel/virtchnl.h>
- #include "i40e_debug.h"
- #include "i40e_type.h"
- 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index 894f2d06d39d..4ffdb007c41a 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -2,8 +2,8 @@
- /* Copyright(c) 2013 - 2018 Intel Corporation. */
- 
- #include <linux/bpf_trace.h>
--#include <linux/net/intel/libie/pctype.h>
--#include <linux/net/intel/libie/rx.h>
-+#include <linux/intel/libie/pctype.h>
-+#include <linux/intel/libie/rx.h>
- #include <linux/prefetch.h>
- #include <linux/sctp.h>
- #include <net/mpls.h>
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.h b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-index 1e5fd63d47f4..e630493e9139 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-@@ -4,7 +4,7 @@
- #ifndef _I40E_TXRX_H_
- #define _I40E_TXRX_H_
- 
--#include <linux/net/intel/libie/pctype.h>
-+#include <linux/intel/libie/pctype.h>
- #include <net/xdp.h>
- #include "i40e_type.h"
- 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
-index f558b45725c8..a03ecddfb956 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
-@@ -4,7 +4,7 @@
- #ifndef _I40E_VIRTCHNL_PF_H_
- #define _I40E_VIRTCHNL_PF_H_
- 
--#include <linux/avf/virtchnl.h>
-+#include <linux/intel/virtchnl.h>
- #include <linux/netdevice.h>
- #include "i40e_type.h"
- 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf.h b/drivers/net/ethernet/intel/iavf/iavf.h
-index e9fb0a0919e3..92c160c98067 100644
---- a/drivers/net/ethernet/intel/iavf/iavf.h
-+++ b/drivers/net/ethernet/intel/iavf/iavf.h
-@@ -37,7 +37,7 @@
- #include <net/net_shaper.h>
- 
- #include "iavf_type.h"
--#include <linux/avf/virtchnl.h>
-+#include <linux/intel/virtchnl.h>
- #include "iavf_txrx.h"
- #include "iavf_fdir.h"
- #include "iavf_adv_rss.h"
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_adminq_cmd.h b/drivers/net/ethernet/intel/iavf/iavf_adminq_cmd.h
-index 0482c9ce9b9c..12e84e1e971b 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/iavf/iavf_adminq_cmd.h
-@@ -4,7 +4,7 @@
- #ifndef _IAVF_ADMINQ_CMD_H_
- #define _IAVF_ADMINQ_CMD_H_
- 
--#include <linux/net/intel/libie/adminq.h>
-+#include <linux/intel/libie/adminq.h>
- 
- /* This header file defines the iavf Admin Queue commands and is shared between
-  * iavf Firmware and Software.
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_common.c b/drivers/net/ethernet/intel/iavf/iavf_common.c
-index 614a886bca99..9bc8bdc339c7 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_common.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_common.c
-@@ -1,7 +1,7 @@
- // SPDX-License-Identifier: GPL-2.0
- /* Copyright(c) 2013 - 2018 Intel Corporation. */
- 
--#include <linux/avf/virtchnl.h>
-+#include <linux/intel/virtchnl.h>
- #include <linux/bitfield.h>
- #include "iavf_type.h"
- #include "iavf_adminq.h"
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index 7925ee152c76..85e9ab142bf0 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -1,7 +1,7 @@
- // SPDX-License-Identifier: GPL-2.0
- /* Copyright(c) 2013 - 2018 Intel Corporation. */
- 
--#include <linux/net/intel/libie/rx.h>
-+#include <linux/intel/libie/rx.h>
- #include <net/netdev_lock.h>
- 
- #include "iavf.h"
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_prototype.h b/drivers/net/ethernet/intel/iavf/iavf_prototype.h
-index 7f9f9dbf959a..a3348b063723 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_prototype.h
-+++ b/drivers/net/ethernet/intel/iavf/iavf_prototype.h
-@@ -6,7 +6,7 @@
- 
- #include "iavf_type.h"
- #include "iavf_alloc.h"
--#include <linux/avf/virtchnl.h>
-+#include <linux/intel/virtchnl.h>
- 
- /* Prototypes for shared code functions that are not in
-  * the standard function pointer structures.  These are
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_txrx.c b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
-index 363c42bf3dcf..275b11dd0c60 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_txrx.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
-@@ -2,7 +2,7 @@
- /* Copyright(c) 2013 - 2018 Intel Corporation. */
- 
- #include <linux/bitfield.h>
--#include <linux/net/intel/libie/rx.h>
-+#include <linux/intel/libie/rx.h>
- #include <linux/prefetch.h>
- 
- #include "iavf.h"
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_txrx.h b/drivers/net/ethernet/intel/iavf/iavf_txrx.h
-index df49b0b1d54a..bc8a6068461d 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_txrx.h
-+++ b/drivers/net/ethernet/intel/iavf/iavf_txrx.h
-@@ -4,7 +4,7 @@
- #ifndef _IAVF_TXRX_H_
- #define _IAVF_TXRX_H_
- 
--#include <linux/net/intel/libie/pctype.h>
-+#include <linux/intel/libie/pctype.h>
- 
- /* Interrupt Throttling and Rate Limiting Goodies */
- #define IAVF_DEFAULT_IRQ_WORK      256
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_types.h b/drivers/net/ethernet/intel/iavf/iavf_types.h
-index a095855122bf..270bc35f933d 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_types.h
-+++ b/drivers/net/ethernet/intel/iavf/iavf_types.h
-@@ -4,9 +4,7 @@
- #ifndef _IAVF_TYPES_H_
- #define _IAVF_TYPES_H_
- 
--#include "iavf_types.h"
--
--#include <linux/avf/virtchnl.h>
-+#include <linux/intel/virtchnl.h>
- #include <linux/ptp_clock_kernel.h>
- 
- /* structure used to queue PTP commands for processing */
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-index a52c100dcbc5..dc77850de73b 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-@@ -1,7 +1,7 @@
- // SPDX-License-Identifier: GPL-2.0
- /* Copyright(c) 2013 - 2018 Intel Corporation. */
- 
--#include <linux/net/intel/libie/rx.h>
-+#include <linux/intel/libie/rx.h>
- 
- #include "iavf.h"
- #include "iavf_ptp.h"
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index 2b2b22af42be..03f304c8a287 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -36,7 +36,7 @@
- #include <linux/bpf.h>
- #include <linux/btf.h>
- #include <linux/auxiliary_bus.h>
--#include <linux/avf/virtchnl.h>
-+#include <linux/intel/virtchnl.h>
- #include <linux/cpu_rmap.h>
- #include <linux/dim.h>
- #include <linux/gnss.h>
-diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-index 859e9c66f3e7..b2685ebd37d6 100644
---- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-@@ -4,7 +4,7 @@
- #ifndef _ICE_ADMINQ_CMD_H_
- #define _ICE_ADMINQ_CMD_H_
- 
--#include <linux/net/intel/libie/adminq.h>
-+#include <linux/intel/libie/adminq.h>
- 
- /* This header file defines the Admin Queue commands, error codes and
-  * descriptor format. It is shared between Firmware and Software.
-diff --git a/drivers/net/ethernet/intel/ice/ice_base.c b/drivers/net/ethernet/intel/ice/ice_base.c
-index 1667f686ff75..957280613e02 100644
---- a/drivers/net/ethernet/intel/ice/ice_base.c
-+++ b/drivers/net/ethernet/intel/ice/ice_base.c
-@@ -2,7 +2,7 @@
- /* Copyright (c) 2019, Intel Corporation. */
- 
- #include <net/xdp_sock_drv.h>
--#include <linux/net/intel/libie/rx.h>
-+#include <linux/intel/libie/rx.h>
- #include "ice_base.h"
- #include "ice_lib.h"
- #include "ice_dcb_lib.h"
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
-index e700ac0dc347..ff6393e9be0c 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.h
-+++ b/drivers/net/ethernet/intel/ice/ice_common.h
-@@ -11,7 +11,7 @@
- #include "ice_nvm.h"
- #include "ice_flex_pipe.h"
- #include "ice_parser.h"
--#include <linux/avf/virtchnl.h>
-+#include <linux/intel/virtchnl.h>
- #include "ice_switch.h"
- #include "ice_fdir.h"
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_flow.h b/drivers/net/ethernet/intel/ice/ice_flow.h
-index 6c6cdc8addb1..7323e26afc0b 100644
---- a/drivers/net/ethernet/intel/ice/ice_flow.h
-+++ b/drivers/net/ethernet/intel/ice/ice_flow.h
-@@ -4,7 +4,7 @@
- #ifndef _ICE_FLOW_H_
- #define _ICE_FLOW_H_
- 
--#include <linux/net/intel/libie/pctype.h>
-+#include <linux/intel/libie/pctype.h>
- 
- #include "ice_flex_type.h"
- #include "ice_parser.h"
-diff --git a/drivers/net/ethernet/intel/ice/ice_idc_int.h b/drivers/net/ethernet/intel/ice/ice_idc_int.h
-index 17dbfcfb6a2a..abe91f313441 100644
---- a/drivers/net/ethernet/intel/ice/ice_idc_int.h
-+++ b/drivers/net/ethernet/intel/ice/ice_idc_int.h
-@@ -4,8 +4,8 @@
- #ifndef _ICE_IDC_INT_H_
- #define _ICE_IDC_INT_H_
- 
--#include <linux/net/intel/iidc_rdma.h>
--#include <linux/net/intel/iidc_rdma_ice.h>
-+#include <linux/intel/iidc_rdma.h>
-+#include <linux/intel/iidc_rdma_ice.h>
- 
- struct ice_pf;
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
-index a2cd4cf37734..8e6f348ac236 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.c
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
-@@ -7,7 +7,7 @@
- #include <linux/netdevice.h>
- #include <linux/prefetch.h>
- #include <linux/bpf_trace.h>
--#include <linux/net/intel/libie/rx.h>
-+#include <linux/intel/libie/rx.h>
- #include <net/libeth/xdp.h>
- #include <net/dsfield.h>
- #include <net/mpls.h>
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx_lib.c b/drivers/net/ethernet/intel/ice/ice_txrx_lib.c
-index e695a664e53d..66d211aa0833 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx_lib.c
-@@ -2,7 +2,7 @@
- /* Copyright (c) 2019, Intel Corporation. */
- 
- #include <linux/filter.h>
--#include <linux/net/intel/libie/rx.h>
-+#include <linux/intel/libie/rx.h>
- #include <net/libeth/xdp.h>
- 
- #include "ice_txrx_lib.h"
-diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-index 1e82f4c40b32..6e6dd0aa515e 100644
---- a/drivers/net/ethernet/intel/ice/ice_type.h
-+++ b/drivers/net/ethernet/intel/ice/ice_type.h
-@@ -17,7 +17,7 @@
- #include "ice_protocol_type.h"
- #include "ice_sbq_cmd.h"
- #include "ice_vlan_mode.h"
--#include <linux/net/intel/libie/fwlog.h>
-+#include <linux/intel/libie/fwlog.h>
- #include <linux/wait.h>
- #include <net/dscp.h>
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_vf_lib.h b/drivers/net/ethernet/intel/ice/ice_vf_lib.h
-index 7a9c75d1d07c..c520e22e3d0a 100644
---- a/drivers/net/ethernet/intel/ice/ice_vf_lib.h
-+++ b/drivers/net/ethernet/intel/ice/ice_vf_lib.h
-@@ -10,7 +10,7 @@
- #include <linux/mutex.h>
- #include <linux/pci.h>
- #include <net/devlink.h>
--#include <linux/avf/virtchnl.h>
-+#include <linux/intel/virtchnl.h>
- #include "ice_type.h"
- #include "ice_flow.h"
- #include "virt/fdir.h"
-diff --git a/drivers/net/ethernet/intel/ice/virt/virtchnl.h b/drivers/net/ethernet/intel/ice/virt/virtchnl.h
-index 71bb456e2d71..f7f909424098 100644
---- a/drivers/net/ethernet/intel/ice/virt/virtchnl.h
-+++ b/drivers/net/ethernet/intel/ice/virt/virtchnl.h
-@@ -7,7 +7,7 @@
- #include <linux/types.h>
- #include <linux/bitops.h>
- #include <linux/if_ether.h>
--#include <linux/avf/virtchnl.h>
-+#include <linux/intel/virtchnl.h>
- #include "ice_vf_lib.h"
- 
- /* Restrict number of MAC Addr and VLAN that non-trusted VF can programmed */
-diff --git a/drivers/net/ethernet/intel/idpf/idpf.h b/drivers/net/ethernet/intel/idpf/idpf.h
-index b206fba092c8..fe6ca5fcc5e3 100644
---- a/drivers/net/ethernet/intel/idpf/idpf.h
-+++ b/drivers/net/ethernet/intel/idpf/idpf.h
-@@ -21,10 +21,10 @@ struct idpf_rss_data;
- #include <linux/ethtool_netlink.h>
- #include <net/gro.h>
- 
--#include <linux/net/intel/iidc_rdma.h>
--#include <linux/net/intel/iidc_rdma_idpf.h>
-+#include <linux/intel/iidc_rdma.h>
-+#include <linux/intel/iidc_rdma_idpf.h>
+ libie_fwlog-y			:= fwlog.o
+diff --git a/drivers/net/ethernet/intel/libie/controlq.c b/drivers/net/ethernet/intel/libie/controlq.c
+new file mode 100644
+index 000000000000..a02ce58cd8b8
+--- /dev/null
++++ b/drivers/net/ethernet/intel/libie/controlq.c
+@@ -0,0 +1,603 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/* Copyright (C) 2025 Intel Corporation */
++
++#include <linux/bitfield.h>
++#include <net/libeth/rx.h>
++
++#include <linux/intel/libie/controlq.h>
++
++#define LIBIE_CTLQ_DESC_QWORD0(sz)			\
++	(LIBIE_CTLQ_DESC_FLAG_BUF |			\
++	 LIBIE_CTLQ_DESC_FLAG_RD |			\
++	 FIELD_PREP(LIBIE_CTLQ_DESC_DATA_LEN, sz))
++
++/**
++ * libie_ctlq_free_fq - free fill queue resources, including buffers
++ * @ctlq: Rx control queue whose resources need to be freed
++ */
++static void libie_ctlq_free_fq(struct libie_ctlq_info *ctlq)
++{
++	struct libeth_fq fq = {
++		.fqes		= ctlq->rx_fqes,
++		.pp		= ctlq->pp,
++	};
++
++	for (u32 ntc = ctlq->next_to_clean; ntc != ctlq->next_to_post; ) {
++		page_pool_put_full_netmem(fq.pp, fq.fqes[ntc].netmem, false);
++
++		if (++ntc >= ctlq->ring_len)
++			ntc = 0;
++	}
++
++	libeth_rx_fq_destroy(&fq);
++}
++
++/**
++ * libie_ctlq_init_fq - initialize fill queue for an Rx controlq
++ * @ctlq: control queue that needs a Rx buffer allocation
++ *
++ * Return: %0 on success, -%errno on failure
++ */
++static int libie_ctlq_init_fq(struct libie_ctlq_info *ctlq)
++{
++	struct libeth_fq fq = {
++		.count		= ctlq->ring_len,
++		.truesize	= LIBIE_CTLQ_MAX_BUF_LEN,
++		.nid		= NUMA_NO_NODE,
++		.type		= LIBETH_FQE_SHORT,
++		.hsplit		= true,
++		.no_napi	= true,
++	};
++	int err;
++
++	err = libeth_rx_fq_create(&fq, ctlq->dev);
++	if (err)
++		return err;
++
++	ctlq->pp = fq.pp;
++	ctlq->rx_fqes = fq.fqes;
++	ctlq->truesize = fq.truesize;
++
++	return 0;
++}
++
++/**
++ * libie_ctlq_reset_rx_desc - reset the descriptor with a new address
++ * @desc: descriptor to (re)initialize
++ * @addr: physical address to put into descriptor
++ * @mem_truesize: size of the accessible memory
++ */
++static void libie_ctlq_reset_rx_desc(struct libie_ctlq_desc *desc,
++				     dma_addr_t addr, u32 mem_truesize)
++{
++	u64 qword;
++
++	*desc = (struct libie_ctlq_desc) {};
++	qword = LIBIE_CTLQ_DESC_QWORD0(mem_truesize);
++	desc->qword0 = cpu_to_le64(qword);
++
++	qword = FIELD_PREP(LIBIE_CTLQ_DESC_DATA_ADDR_HIGH,
++			   upper_32_bits(addr)) |
++		FIELD_PREP(LIBIE_CTLQ_DESC_DATA_ADDR_LOW,
++			   lower_32_bits(addr));
++	desc->qword3 = cpu_to_le64(qword);
++}
++
++/**
++ * libie_ctlq_post_rx_buffs - post buffers to descriptor ring
++ * @ctlq: control queue that requires Rx descriptor ring to be initialized with
++ *	  new Rx buffers
++ *
++ * The caller must make sure that calls to libie_ctlq_post_rx_buffs()
++ * and libie_ctlq_recv() for each queue are either serialized
++ * or used under ctlq->lock.
++ *
++ * Return: %0 on success, -%ENOMEM if any buffer could not be allocated
++ */
++int libie_ctlq_post_rx_buffs(struct libie_ctlq_info *ctlq)
++{
++	u32 ntp = ctlq->next_to_post, ntc = ctlq->next_to_clean, num_to_post;
++	const struct libeth_fq_fp fq = {
++		.pp		= ctlq->pp,
++		.fqes		= ctlq->rx_fqes,
++		.truesize	= ctlq->truesize,
++		.count		= ctlq->ring_len,
++	};
++	int ret = 0;
++
++	num_to_post = (ntc > ntp ? 0 : ctlq->ring_len) + ntc - ntp - 1;
++
++	while (num_to_post--) {
++		dma_addr_t addr;
++
++		addr = libeth_rx_alloc(&fq, ntp);
++		if (unlikely(addr == DMA_MAPPING_ERROR)) {
++			ret = -ENOMEM;
++			goto post_bufs;
++		}
++
++		libie_ctlq_reset_rx_desc(&ctlq->descs[ntp], addr, fq.truesize);
++
++		if (unlikely(++ntp == ctlq->ring_len))
++			ntp = 0;
++	}
++
++post_bufs:
++	if (likely(ctlq->next_to_post != ntp)) {
++		ctlq->next_to_post = ntp;
++
++		writel(ntp, ctlq->reg.tail);
++	}
++
++	return ret;
++}
++EXPORT_SYMBOL_NS_GPL(libie_ctlq_post_rx_buffs, "LIBIE_CP");
++
++/**
++ * libie_ctlq_free_tx_msgs - Free Tx control queue messages
++ * @ctlq: Tx control queue being destroyed
++ * @num_msgs: number of messages allocated so far
++ */
++static void libie_ctlq_free_tx_msgs(struct libie_ctlq_info *ctlq,
++				    u32 num_msgs)
++{
++	for (u32 i = 0; i < num_msgs; i++)
++		kfree(ctlq->tx_msg[i]);
++
++	kvfree(ctlq->tx_msg);
++}
++
++/**
++ * libie_ctlq_alloc_tx_msgs - Allocate Tx control queue messages
++ * @ctlq: Tx control queue being created
++ *
++ * Return: %0 on success, -%ENOMEM on allocation error
++ */
++static int libie_ctlq_alloc_tx_msgs(struct libie_ctlq_info *ctlq)
++{
++	ctlq->tx_msg = kvzalloc_objs(*ctlq->tx_msg, ctlq->ring_len,
++				     GFP_KERNEL);
++	if (!ctlq->tx_msg)
++		return -ENOMEM;
++
++	for (u32 i = 0; i < ctlq->ring_len; i++) {
++		ctlq->tx_msg[i] = kzalloc_obj(*ctlq->tx_msg[i]);
++		if (!ctlq->tx_msg[i]) {
++			libie_ctlq_free_tx_msgs(ctlq, i);
++			return -ENOMEM;
++		}
++	}
++
++	return 0;
++}
++
++/**
++ * libie_cp_free_dma_mem - Free the previously allocated DMA memory
++ * @dev: device information
++ * @mem: DMA memory information
++ */
++static void libie_cp_free_dma_mem(struct device *dev,
++				  struct libie_cp_dma_mem *mem)
++{
++	dma_free_coherent(dev, mem->size, mem->va, mem->pa);
++	mem->va = NULL;
++}
++
++/**
++ * libie_ctlq_dealloc_ring_res - Free memory allocated for control queue
++ * @ctlq: control queue that requires its ring memory to be freed
++ *
++ * Free the memory used by the ring, buffers and other related structures.
++ */
++static void libie_ctlq_dealloc_ring_res(struct libie_ctlq_info *ctlq)
++{
++	struct libie_cp_dma_mem *dma = &ctlq->ring_mem;
++
++	if (ctlq->type == LIBIE_CTLQ_TYPE_TX)
++		libie_ctlq_free_tx_msgs(ctlq, ctlq->ring_len);
++	else
++		libie_ctlq_free_fq(ctlq);
++
++	libie_cp_free_dma_mem(ctlq->dev, dma);
++}
++
++/**
++ * libie_cp_alloc_dma_mem - Allocate a DMA memory
++ * @dev: device information
++ * @mem: memory for DMA information to be stored
++ * @size: size of the memory to allocate
++ *
++ * Return: virtual address of DMA memory or NULL.
++ */
++static void *libie_cp_alloc_dma_mem(struct device *dev,
++				    struct libie_cp_dma_mem *mem, u32 size)
++{
++	size = ALIGN(size, SZ_4K);
++
++	mem->va = dma_alloc_coherent(dev, size, &mem->pa, GFP_KERNEL);
++	mem->size = size;
++
++	return mem->va;
++}
++
++/**
++ * libie_ctlq_alloc_queue_res - allocate memory for descriptor ring and bufs
++ * @ctlq: control queue that requires its ring resources to be allocated
++ *
++ * Return: %0 on success, -%errno on failure
++ */
++static int libie_ctlq_alloc_queue_res(struct libie_ctlq_info *ctlq)
++{
++	size_t size = array_size(ctlq->ring_len, sizeof(*ctlq->descs));
++	struct libie_cp_dma_mem *dma = &ctlq->ring_mem;
++	int err = -ENOMEM;
++
++	if (!libie_cp_alloc_dma_mem(ctlq->dev, dma, size))
++		return -ENOMEM;
++
++	ctlq->descs = dma->va;
++
++	if (ctlq->type == LIBIE_CTLQ_TYPE_TX) {
++		if (libie_ctlq_alloc_tx_msgs(ctlq))
++			goto free_dma_mem;
++	} else {
++		err = libie_ctlq_init_fq(ctlq);
++		if (err)
++			goto free_dma_mem;
++
++		err = libie_ctlq_post_rx_buffs(ctlq);
++		if (err) {
++			libie_ctlq_free_fq(ctlq);
++			goto free_dma_mem;
++		}
++	}
++
++	return 0;
++
++free_dma_mem:
++	libie_cp_free_dma_mem(ctlq->dev, dma);
++
++	return err;
++}
++
++/**
++ * libie_ctlq_init_regs - Initialize control queue registers
++ * @ctlq: control queue that needs to be initialized
++ *
++ * Initialize registers. The caller is expected to have already initialized the
++ * descriptor ring memory and buffer memory.
++ */
++static void libie_ctlq_init_regs(struct libie_ctlq_info *ctlq)
++{
++	u32 dword;
++
++	if (ctlq->type == LIBIE_CTLQ_TYPE_RX)
++		writel(ctlq->ring_len - 1, ctlq->reg.tail);
++
++	writel(0, ctlq->reg.head);
++	writel(lower_32_bits(ctlq->ring_mem.pa), ctlq->reg.addr_low);
++	writel(upper_32_bits(ctlq->ring_mem.pa), ctlq->reg.addr_high);
++
++	dword = FIELD_PREP(LIBIE_CTLQ_MBX_ATQ_LEN, ctlq->ring_len) |
++		ctlq->reg.len_ena_mask;
++	writel(dword, ctlq->reg.len);
++}
++
++/**
++ * libie_find_ctlq - find the controlq for the given id and type
++ * @ctx: controlq context structure
++ * @type: type of controlq to find
++ * @id: controlq id to find
++ *
++ * Return: control queue info pointer on success, NULL on failure
++ */
++struct libie_ctlq_info *libie_find_ctlq(struct libie_ctlq_ctx *ctx,
++					enum virtchnl2_queue_type type,
++					  int id)
++{
++	struct libie_ctlq_info *cq;
++
++	guard(spinlock)(&ctx->ctlqs_lock);
++
++	list_for_each_entry(cq, &ctx->ctlqs, list)
++		if (cq->qid == id && cq->type == type)
++			return cq;
++
++	return NULL;
++}
++EXPORT_SYMBOL_NS_GPL(libie_find_ctlq, "LIBIE_CP");
++
++/**
++ * libie_ctlq_add - add one control queue
++ * @ctx: controlq context information
++ * @qinfo: information that requires for queue creation
++ *
++ * Allocate and initialize a control queue and add it to the control queue list.
++ * The ctlq parameter will be allocated/initialized and passed back to the
++ * caller if no errors occur.
++ *
++ * Note: libie_ctlq_init must be called prior to any calls to libie_ctlq_add.
++ *
++ * Return: added control queue info pointer on success, error pointer on failure
++ */
++static struct libie_ctlq_info *
++libie_ctlq_add(struct libie_ctlq_ctx *ctx,
++	       const struct libie_ctlq_create_info *qinfo)
++{
++	struct libie_ctlq_info *ctlq;
++
++	if (qinfo->id != LIBIE_CTLQ_MBX_ID)
++		return ERR_PTR(-EOPNOTSUPP);
++
++	/* libie_ctlq_init was not called */
++	scoped_guard(spinlock, &ctx->ctlqs_lock)
++		if (!ctx->ctlqs.next)
++			return ERR_PTR(-EINVAL);
++
++	ctlq = kvzalloc_obj(*ctlq);
++	if (!ctlq)
++		return ERR_PTR(-ENOMEM);
++
++	ctlq->type = qinfo->type;
++	ctlq->qid = qinfo->id;
++	ctlq->ring_len = qinfo->len;
++	ctlq->dev = &ctx->mmio_info.pdev->dev;
++	ctlq->reg = qinfo->reg;
++
++	if (libie_ctlq_alloc_queue_res(ctlq)) {
++		kvfree(ctlq);
++		return ERR_PTR(-ENOMEM);
++	}
++
++	libie_ctlq_init_regs(ctlq);
++
++	spin_lock_init(&ctlq->lock);
++
++	scoped_guard(spinlock, &ctx->ctlqs_lock)
++		list_add(&ctlq->list, &ctx->ctlqs);
++
++	return ctlq;
++}
++
++/**
++ * libie_ctlq_remove - deallocate and remove specified control queue
++ * @ctx: libie context information
++ * @ctlq: specific control queue that needs to be removed
++ */
++static void libie_ctlq_remove(struct libie_ctlq_ctx *ctx,
++			      struct libie_ctlq_info *ctlq)
++{
++	scoped_guard(spinlock, &ctx->ctlqs_lock)
++		list_del(&ctlq->list);
++
++	libie_ctlq_dealloc_ring_res(ctlq);
++	kvfree(ctlq);
++}
++
++/**
++ * libie_ctlq_init - main initialization routine for all control queues
++ * @ctx: libie context information
++ * @qinfo: array of structs containing info for each queue to be initialized
++ * @numq: number of queues to initialize
++ *
++ * This initializes queue list and adds any number and any type of control
++ * queues. This is an all or nothing routine; if one fails, all previously
++ * allocated queues will be destroyed. This must be called prior to using
++ * the individual add/remove APIs.
++ *
++ * Return: %0 on success, -%errno on failure
++ */
++int libie_ctlq_init(struct libie_ctlq_ctx *ctx,
++		    const struct libie_ctlq_create_info *qinfo,
++		     u32 numq)
++{
++	INIT_LIST_HEAD(&ctx->ctlqs);
++	spin_lock_init(&ctx->ctlqs_lock);
++
++	for (u32 i = 0; i < numq; i++) {
++		struct libie_ctlq_info *ctlq;
++
++		ctlq = libie_ctlq_add(ctx, &qinfo[i]);
++		if (IS_ERR(ctlq)) {
++			libie_ctlq_deinit(ctx);
++			return PTR_ERR(ctlq);
++		}
++	}
++
++	return 0;
++}
++EXPORT_SYMBOL_NS_GPL(libie_ctlq_init, "LIBIE_CP");
++
++/**
++ * libie_ctlq_deinit - destroy all control queues
++ * @ctx: libie CP context information
++ */
++void libie_ctlq_deinit(struct libie_ctlq_ctx *ctx)
++{
++	struct libie_ctlq_info *ctlq, *tmp;
++
++	list_for_each_entry_safe(ctlq, tmp, &ctx->ctlqs, list)
++		libie_ctlq_remove(ctx, ctlq);
++}
++EXPORT_SYMBOL_NS_GPL(libie_ctlq_deinit, "LIBIE_CP");
++
++/**
++ * libie_ctlq_tx_desc_from_msg - initialize a Tx descriptor from a message
++ * @desc: descriptor to be initialized
++ * @msg: filled control queue message
++ */
++static void libie_ctlq_tx_desc_from_msg(struct libie_ctlq_desc *desc,
++					const struct libie_ctlq_msg *msg)
++{
++	const struct libie_cp_dma_mem *dma = &msg->send_mem;
++	u64 qword;
++
++	qword = FIELD_PREP(LIBIE_CTLQ_DESC_FLAGS, msg->flags) |
++		FIELD_PREP(LIBIE_CTLQ_DESC_INFRA_OPCODE, msg->opcode) |
++		FIELD_PREP(LIBIE_CTLQ_DESC_PFID_VFID, msg->func_id);
++	desc->qword0 = cpu_to_le64(qword);
++
++	qword = FIELD_PREP(LIBIE_CTLQ_DESC_VIRTCHNL_OPCODE,
++			   msg->chnl_opcode) |
++		FIELD_PREP(LIBIE_CTLQ_DESC_VIRTCHNL_MSG_RET_VAL,
++			   msg->chnl_retval);
++	desc->qword1 = cpu_to_le64(qword);
++
++	qword = FIELD_PREP(LIBIE_CTLQ_DESC_MSG_PARAM0, msg->param0) |
++		FIELD_PREP(LIBIE_CTLQ_DESC_SW_COOKIE,
++			   msg->sw_cookie) |
++		FIELD_PREP(LIBIE_CTLQ_DESC_VIRTCHNL_FLAGS,
++			   msg->virt_flags);
++	desc->qword2 = cpu_to_le64(qword);
++
++	if (likely(msg->data_len)) {
++		desc->qword0 |=
++			cpu_to_le64(LIBIE_CTLQ_DESC_QWORD0(msg->data_len));
++		qword = FIELD_PREP(LIBIE_CTLQ_DESC_DATA_ADDR_HIGH,
++				   upper_32_bits(dma->pa)) |
++			FIELD_PREP(LIBIE_CTLQ_DESC_DATA_ADDR_LOW,
++				   lower_32_bits(dma->pa));
++	} else {
++		qword = msg->addr_param;
++	}
++
++	desc->qword3 = cpu_to_le64(qword);
++}
++
++/**
++ * libie_ctlq_send - send a message to Control Plane or Peer
++ * @ctlq: specific control queue which is used for sending a message
++ * @q_msg: array of queue messages to be sent
++ * @num_q_msg: number of messages to send on control queue
++ *
++ * The control queue will hold a reference to each send message until
++ * the completion for that message has been cleaned.
++ *
++ * The caller must hold ctlq->lock.
++ *
++ * Return: %0 on success, -%errno on failure.
++ */
++int libie_ctlq_send(struct libie_ctlq_info *ctlq,
++		    struct libie_ctlq_msg *q_msg, u32 num_q_msg)
++{
++	u32 num_desc_avail, ntu;
++
++	ntu = ctlq->next_to_use;
++
++	num_desc_avail = (ctlq->next_to_clean > ntu ? 0 : ctlq->ring_len) +
++			  ctlq->next_to_clean - ntu - 1;
++
++	if (num_desc_avail < num_q_msg)
++		return -EBUSY;
++
++	for (int i = 0; i < num_q_msg; i++) {
++		struct libie_ctlq_msg *msg = &q_msg[i];
++		struct libie_ctlq_desc *desc;
++
++		desc = &ctlq->descs[ntu];
++		libie_ctlq_tx_desc_from_msg(desc, msg);
++
++		if (unlikely(++ntu == ctlq->ring_len))
++			ntu = 0;
++	}
++	writel(ntu, ctlq->reg.tail);
++	ctlq->next_to_use = ntu;
++
++	return 0;
++}
++EXPORT_SYMBOL_NS_GPL(libie_ctlq_send, "LIBIE_CP");
++
++/**
++ * libie_ctlq_fill_rx_msg - fill in a message from Rx descriptor and buffer
++ * @msg: message to be filled in
++ * @desc: received descriptor
++ * @rx_buf: fill queue buffer associated with the descriptor
++ */
++static void libie_ctlq_fill_rx_msg(struct libie_ctlq_msg *msg,
++				   const struct libie_ctlq_desc *desc,
++				    struct libeth_fqe *rx_buf)
++{
++	u64 qword = le64_to_cpu(desc->qword0);
++
++	msg->flags = FIELD_GET(LIBIE_CTLQ_DESC_FLAGS, qword);
++	msg->opcode = FIELD_GET(LIBIE_CTLQ_DESC_INFRA_OPCODE, qword);
++	msg->data_len = FIELD_GET(LIBIE_CTLQ_DESC_DATA_LEN, qword);
++	msg->hw_retval = FIELD_GET(LIBIE_CTLQ_DESC_HW_RETVAL, qword);
++
++	qword = le64_to_cpu(desc->qword1);
++	msg->chnl_opcode =
++		FIELD_GET(LIBIE_CTLQ_DESC_VIRTCHNL_OPCODE, qword);
++	msg->chnl_retval =
++		FIELD_GET(LIBIE_CTLQ_DESC_VIRTCHNL_MSG_RET_VAL, qword);
++
++	qword = le64_to_cpu(desc->qword2);
++	msg->param0 =
++		FIELD_GET(LIBIE_CTLQ_DESC_MSG_PARAM0, qword);
++	msg->sw_cookie =
++		FIELD_GET(LIBIE_CTLQ_DESC_SW_COOKIE, qword);
++	msg->virt_flags =
++		FIELD_GET(LIBIE_CTLQ_DESC_VIRTCHNL_FLAGS, qword);
++
++	if (likely(msg->data_len)) {
++		msg->recv_mem = (struct kvec) {
++			.iov_base = netmem_address(rx_buf->netmem),
++			.iov_len = msg->data_len,
++		};
++		libeth_rx_sync_for_cpu(rx_buf, msg->data_len);
++	} else {
++		msg->recv_mem = (struct kvec) {};
++		msg->addr_param = le64_to_cpu(desc->qword3);
++		page_pool_put_full_netmem(netmem_get_pp(rx_buf->netmem),
++					  rx_buf->netmem, false);
++	}
++}
++
++/**
++ * libie_ctlq_recv - receive control queue message call back
++ * @ctlq: control queue that needs to processed for receive
++ * @msg: array of received control queue messages on this q;
++ * needs to be pre-allocated by caller for as many messages as requested
++ * @num_q_msg: number of messages that can be stored in msg buffer
++ *
++ * Called by interrupt handler or polling mechanism. Caller is expected
++ * to free buffers.
++ *
++ * The caller must make sure that calls to libie_ctlq_post_rx_buffs()
++ * and libie_ctlq_recv() for each queue are either serialized
++ * or used under ctlq->lock.
++ *
++ * Return: number of messages received
++ */
++u32 libie_ctlq_recv(struct libie_ctlq_info *ctlq, struct libie_ctlq_msg *msg,
++		    u32 num_q_msg)
++{
++	u32 ntc, i;
++
++	ntc = ctlq->next_to_clean;
++
++	for (i = 0; i < num_q_msg; i++) {
++		const struct libie_ctlq_desc *desc = &ctlq->descs[ntc];
++		struct libeth_fqe *rx_buf = &ctlq->rx_fqes[ntc];
++		u64 qword;
++
++		qword = le64_to_cpu(desc->qword0);
++		if (!FIELD_GET(LIBIE_CTLQ_DESC_FLAG_DD, qword))
++			break;
++
++		dma_rmb();
++
++		libie_ctlq_fill_rx_msg(&msg[i], desc, rx_buf);
++
++		if (unlikely(++ntc == ctlq->ring_len))
++			ntc = 0;
++	}
++
++	ctlq->next_to_clean = ntc;
++
++	return i;
++}
++EXPORT_SYMBOL_NS_GPL(libie_ctlq_recv, "LIBIE_CP");
++
++MODULE_DESCRIPTION("Control Plane communication API");
++MODULE_IMPORT_NS("LIBETH");
++MODULE_LICENSE("GPL");
+diff --git a/include/linux/intel/libie/controlq.h b/include/linux/intel/libie/controlq.h
+new file mode 100644
+index 000000000000..a7e92744c814
+--- /dev/null
++++ b/include/linux/intel/libie/controlq.h
+@@ -0,0 +1,249 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/* Copyright (C) 2025 Intel Corporation */
++
++#ifndef __LIBIE_CONTROLQ_H
++#define __LIBIE_CONTROLQ_H
++
++#include <net/libeth/rx.h>
++
++#include <linux/intel/libie/pci.h>
 +#include <linux/intel/virtchnl2.h>
- 
--#include "virtchnl2.h"
- #include "idpf_txrx.h"
- #include "idpf_controlq.h"
- 
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.h b/drivers/net/ethernet/intel/idpf/idpf_txrx.h
-index 4be5b3b6d3ed..e101ffb20ae0 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_txrx.h
-+++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.h
-@@ -13,7 +13,7 @@
- #include <net/xdp.h>
- 
- #include "idpf_lan_txrx.h"
--#include "virtchnl2_lan_desc.h"
-+#include <linux/intel/virtchnl2_lan_desc.h>
- 
- #define IDPF_LARGE_MAX_Q			256
- #define IDPF_MAX_Q				16
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.h b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.h
-index fe065911ad5a..762b477e019c 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.h
-+++ b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.h
-@@ -4,7 +4,7 @@
- #ifndef _IDPF_VIRTCHNL_H_
- #define _IDPF_VIRTCHNL_H_
- 
--#include "virtchnl2.h"
-+#include <linux/intel/virtchnl2.h>
- 
- #define IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC	(60 * 1000)
- #define IDPF_VC_XN_IDX_M		GENMASK(7, 0)
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-index 61f2ef67defd..94e00ab96692 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-@@ -7,7 +7,7 @@
- #include <linux/types.h>
- #include <linux/mdio.h>
- #include <linux/netdevice.h>
--#include <linux/net/intel/libie/fwlog.h>
-+#include <linux/intel/libie/fwlog.h>
- #include "ixgbe_type_e610.h"
- 
- /* Device IDs */
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type_e610.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type_e610.h
-index ff8d640a50b1..4bcdebc37eb1 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type_e610.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type_e610.h
-@@ -4,7 +4,7 @@
- #ifndef _IXGBE_TYPE_E610_H_
- #define _IXGBE_TYPE_E610_H_
- 
--#include <linux/net/intel/libie/adminq.h>
-+#include <linux/intel/libie/adminq.h>
- 
- #define BYTES_PER_DWORD	4
- 
-diff --git a/drivers/net/ethernet/intel/libie/adminq.c b/drivers/net/ethernet/intel/libie/adminq.c
-index 7b4ff479e7e5..5a3ea8eb45c2 100644
---- a/drivers/net/ethernet/intel/libie/adminq.c
-+++ b/drivers/net/ethernet/intel/libie/adminq.c
-@@ -2,7 +2,7 @@
- /* Copyright (C) 2025 Intel Corporation */
- 
- #include <linux/module.h>
--#include <linux/net/intel/libie/adminq.h>
-+#include <linux/intel/libie/adminq.h>
- 
- static const char * const libie_aq_str_arr[] = {
- #define LIBIE_AQ_STR(x)					\
-diff --git a/drivers/net/ethernet/intel/libie/fwlog.c b/drivers/net/ethernet/intel/libie/fwlog.c
-index 4d0c8370386b..96698bf2d040 100644
---- a/drivers/net/ethernet/intel/libie/fwlog.c
-+++ b/drivers/net/ethernet/intel/libie/fwlog.c
-@@ -4,7 +4,7 @@
- #include <linux/debugfs.h>
- #include <linux/export.h>
- #include <linux/fs.h>
--#include <linux/net/intel/libie/fwlog.h>
-+#include <linux/intel/libie/fwlog.h>
- #include <linux/pci.h>
- #include <linux/random.h>
- #include <linux/vmalloc.h>
-diff --git a/drivers/net/ethernet/intel/libie/rx.c b/drivers/net/ethernet/intel/libie/rx.c
-index 6fda656afa9c..e163b8a66aea 100644
---- a/drivers/net/ethernet/intel/libie/rx.c
-+++ b/drivers/net/ethernet/intel/libie/rx.c
-@@ -4,7 +4,7 @@
- #define DEFAULT_SYMBOL_NAMESPACE	"LIBIE"
- 
- #include <linux/export.h>
--#include <linux/net/intel/libie/rx.h>
-+#include <linux/intel/libie/rx.h>
- 
- /* O(1) converting i40e/ice/iavf's 8/10-bit hardware packet type to a parsed
-  * bitfield struct.
-diff --git a/include/linux/net/intel/i40e_client.h b/include/linux/intel/i40e_client.h
-similarity index 100%
-rename from include/linux/net/intel/i40e_client.h
-rename to include/linux/intel/i40e_client.h
-diff --git a/include/linux/net/intel/iidc_rdma.h b/include/linux/intel/iidc_rdma.h
-similarity index 100%
-rename from include/linux/net/intel/iidc_rdma.h
-rename to include/linux/intel/iidc_rdma.h
-diff --git a/include/linux/net/intel/iidc_rdma_ice.h b/include/linux/intel/iidc_rdma_ice.h
-similarity index 100%
-rename from include/linux/net/intel/iidc_rdma_ice.h
-rename to include/linux/intel/iidc_rdma_ice.h
-diff --git a/include/linux/net/intel/iidc_rdma_idpf.h b/include/linux/intel/iidc_rdma_idpf.h
-similarity index 100%
-rename from include/linux/net/intel/iidc_rdma_idpf.h
-rename to include/linux/intel/iidc_rdma_idpf.h
-diff --git a/include/linux/net/intel/libie/adminq.h b/include/linux/intel/libie/adminq.h
-similarity index 100%
-rename from include/linux/net/intel/libie/adminq.h
-rename to include/linux/intel/libie/adminq.h
-diff --git a/include/linux/net/intel/libie/fwlog.h b/include/linux/intel/libie/fwlog.h
-similarity index 98%
-rename from include/linux/net/intel/libie/fwlog.h
-rename to include/linux/intel/libie/fwlog.h
-index 7273c78c826b..de3d7e89b768 100644
---- a/include/linux/net/intel/libie/fwlog.h
-+++ b/include/linux/intel/libie/fwlog.h
-@@ -4,7 +4,7 @@
- #ifndef _LIBIE_FWLOG_H_
- #define _LIBIE_FWLOG_H_
- 
--#include <linux/net/intel/libie/adminq.h>
-+#include <linux/intel/libie/adminq.h>
- 
- /* Only a single log level should be set and all log levels under the set value
-  * are enabled, e.g. if log level is set to LIBIE_FW_LOG_LEVEL_VERBOSE, then all
-diff --git a/include/linux/net/intel/libie/pctype.h b/include/linux/intel/libie/pctype.h
-similarity index 100%
-rename from include/linux/net/intel/libie/pctype.h
-rename to include/linux/intel/libie/pctype.h
-diff --git a/include/linux/net/intel/libie/rx.h b/include/linux/intel/libie/rx.h
-similarity index 100%
-rename from include/linux/net/intel/libie/rx.h
-rename to include/linux/intel/libie/rx.h
-diff --git a/include/linux/avf/virtchnl.h b/include/linux/intel/virtchnl.h
-similarity index 100%
-rename from include/linux/avf/virtchnl.h
-rename to include/linux/intel/virtchnl.h
-diff --git a/drivers/net/ethernet/intel/idpf/virtchnl2.h b/include/linux/intel/virtchnl2.h
-similarity index 100%
-rename from drivers/net/ethernet/intel/idpf/virtchnl2.h
-rename to include/linux/intel/virtchnl2.h
-diff --git a/drivers/net/ethernet/intel/idpf/virtchnl2_lan_desc.h b/include/linux/intel/virtchnl2_lan_desc.h
-similarity index 100%
-rename from drivers/net/ethernet/intel/idpf/virtchnl2_lan_desc.h
-rename to include/linux/intel/virtchnl2_lan_desc.h
++
++/* Default mailbox control queue */
++#define LIBIE_CTLQ_MBX_ID			-1
++#define LIBIE_CTLQ_MAX_BUF_LEN			SZ_4K
++
++#define LIBIE_CTLQ_TYPE_TX			0
++#define LIBIE_CTLQ_TYPE_RX			1
++
++/* Opcode used to send controlq message to the control plane */
++#define LIBIE_CTLQ_SEND_MSG_TO_CP		0x801
++#define LIBIE_CTLQ_SEND_MSG_TO_PEER		0x804
++
++/**
++ * struct libie_ctlq_ctx - contains controlq info and MMIO region info
++ * @mmio_info: MMIO region info structure
++ * @ctlqs: list that stores all the control queues
++ * @ctlqs_lock: lock for control queue list
++ */
++struct libie_ctlq_ctx {
++	struct libie_mmio_info	mmio_info;
++	struct list_head	ctlqs;
++	spinlock_t		ctlqs_lock;	/* protects the ctlqs list */
++};
++
++/**
++ * struct libie_ctlq_reg - structure representing virtual addresses of the
++ *			    controlq registers and masks
++ * @head: controlq head register address
++ * @tail: controlq tail register address
++ * @len: register address to write controlq length and enable bit
++ * @addr_high: register address to write the upper 32b of ring physical address
++ * @addr_low: register address to write the lower 32b of ring physical address
++ * @len_mask: mask to read the controlq length
++ * @len_ena_mask: mask to write the controlq enable bit
++ * @head_mask: mask to read the head value
++ */
++struct libie_ctlq_reg {
++	void __iomem	*head;
++	void __iomem	*tail;
++	void __iomem	*len;
++	void __iomem	*addr_high;
++	void __iomem	*addr_low;
++	u32		len_mask;
++	u32		len_ena_mask;
++	u32		head_mask;
++};
++
++/**
++ * struct libie_cp_dma_mem - structure for DMA memory
++ * @va: virtual address
++ * @pa: physical address
++ * @size: memory size
++ */
++struct libie_cp_dma_mem {
++	void		*va;
++	dma_addr_t	pa;
++	size_t		size;
++};
++
++/**
++ * struct libie_ctlq_msg - control queue message data
++ * @flags: refer to 'Flags sub-structure' definitions
++ * @opcode: infrastructure message opcode
++ * @data_len: size of the payload
++ * @func_id: queue id for the secondary mailbox queue, 0 for default mailbox
++ * @hw_retval: execution status from the HW
++ * @chnl_opcode: virtchnl message opcode
++ * @chnl_retval: virtchnl return value
++ * @param0: indirect message raw parameter0
++ * @sw_cookie: used to verify the response of the sent virtchnl message
++ * @virt_flags: virtchnl capability flags
++ * @addr_param: additional parameters in place of the address, given no buffer
++ * @recv_mem: virtual address and size of the buffer that contains
++ *	      the indirect response
++ * @send_mem: physical and virtual address of the DMA buffer,
++ *	      used for sending
++ */
++struct libie_ctlq_msg {
++	u16			flags;
++	u16			opcode;
++	u16			data_len;
++	union {
++		u16		func_id;
++		u16		hw_retval;
++	};
++	u32			chnl_opcode;
++	u32			chnl_retval;
++	u32			param0;
++	u16			sw_cookie;
++	u16			virt_flags;
++	u64			addr_param;
++	union {
++		struct kvec	recv_mem;
++		struct	libie_cp_dma_mem send_mem;
++	};
++};
++
++/**
++ * struct libie_ctlq_create_info - control queue create information
++ * @type: control queue type (Rx or Tx)
++ * @id: queue offset passed as input, -1 for default mailbox
++ * @reg: registers accessed by control queue
++ * @len: controlq length
++ */
++struct libie_ctlq_create_info {
++	enum virtchnl2_queue_type	type;
++	int				id;
++	struct libie_ctlq_reg		reg;
++	u16				len;
++};
++
++/**
++ * struct libie_ctlq_info - control queue information
++ * @list: used to add a controlq to the list of queues in libie_ctlq_ctx
++ * @type: control queue type
++ * @qid: queue identifier
++ * @lock: control queue lock
++ * @ring_mem: descriptor ring DMA memory
++ * @descs: array of descriptors
++ * @rx_fqes: array of controlq Rx buffers
++ * @tx_msg: Tx messages sent to hardware
++ * @reg: registers used by control queue
++ * @dev: device that owns this control queue
++ * @pp: page pool for controlq Rx buffers
++ * @truesize: size to allocate per buffer
++ * @next_to_use: next available slot to send buffer
++ * @next_to_clean: next descriptor to be cleaned
++ * @next_to_post: next available slot to post buffers to after receive
++ * @ring_len: length of the descriptor ring
++ */
++struct libie_ctlq_info {
++	struct list_head		list;
++	enum virtchnl2_queue_type	type;
++	int				qid;
++	spinlock_t			lock;	/* for concurrent processing */
++	struct libie_cp_dma_mem	ring_mem;
++	struct libie_ctlq_desc		*descs;
++	union {
++		struct libeth_fqe		*rx_fqes;
++		struct libie_ctlq_msg		**tx_msg;
++	};
++	struct libie_ctlq_reg		reg;
++	struct device			*dev;
++	struct page_pool		*pp;
++	u32				truesize;
++	u32				next_to_clean;
++	union {
++		u32			next_to_use;
++		u32			next_to_post;
++	};
++	u32				ring_len;
++};
++
++#define LIBIE_CTLQ_MBX_ATQ_LEN			GENMASK(9, 0)
++
++/* Flags sub-structure
++ * |0  |1  |2  |3  |4  |5  |6  |7  |8  |9  |10 |11 |12 |13 |14 |15 |
++ * |DD |CMP|ERR|  * RSV *  |FTYPE  | *RSV* |RD |VFC|BUF|  HOST_ID  |
++ */
++ /* libie controlq descriptor qword0 details */
++#define LIBIE_CTLQ_DESC_FLAG_DD		BIT(0)
++#define LIBIE_CTLQ_DESC_FLAG_CMP		BIT(1)
++#define LIBIE_CTLQ_DESC_FLAG_ERR		BIT(2)
++#define LIBIE_CTLQ_DESC_FLAG_FTYPE_VM		BIT(6)
++#define LIBIE_CTLQ_DESC_FLAG_FTYPE_PF		BIT(7)
++#define LIBIE_CTLQ_DESC_FLAG_FTYPE		GENMASK(7, 6)
++#define LIBIE_CTLQ_DESC_FLAG_RD		BIT(10)
++#define LIBIE_CTLQ_DESC_FLAG_VFC		BIT(11)
++#define LIBIE_CTLQ_DESC_FLAG_BUF		BIT(12)
++#define LIBIE_CTLQ_DESC_FLAG_HOST_ID		GENMASK(15, 13)
++
++#define LIBIE_CTLQ_DESC_FLAGS			GENMASK(15, 0)
++#define LIBIE_CTLQ_DESC_INFRA_OPCODE		GENMASK_ULL(31, 16)
++#define LIBIE_CTLQ_DESC_DATA_LEN		GENMASK_ULL(47, 32)
++#define LIBIE_CTLQ_DESC_HW_RETVAL		GENMASK_ULL(63, 48)
++
++#define LIBIE_CTLQ_DESC_PFID_VFID		GENMASK_ULL(63, 48)
++
++/* libie controlq descriptor qword1 details */
++#define LIBIE_CTLQ_DESC_VIRTCHNL_OPCODE	GENMASK(27, 0)
++#define LIBIE_CTLQ_DESC_VIRTCHNL_DESC_TYPE	GENMASK_ULL(31, 28)
++#define LIBIE_CTLQ_DESC_VIRTCHNL_MSG_RET_VAL	GENMASK_ULL(63, 32)
++
++/* libie controlq descriptor qword2 details */
++#define LIBIE_CTLQ_DESC_MSG_PARAM0		GENMASK_ULL(31, 0)
++#define LIBIE_CTLQ_DESC_SW_COOKIE		GENMASK_ULL(47, 32)
++#define LIBIE_CTLQ_DESC_VIRTCHNL_FLAGS		GENMASK_ULL(63, 48)
++
++/* libie controlq descriptor qword3 details */
++#define LIBIE_CTLQ_DESC_DATA_ADDR_HIGH		GENMASK_ULL(31, 0)
++#define LIBIE_CTLQ_DESC_DATA_ADDR_LOW		GENMASK_ULL(63, 32)
++
++/**
++ * struct libie_ctlq_desc - control queue descriptor format
++ * @qword0: flags, message opcode, data length etc
++ * @qword1: virtchnl opcode, descriptor type and return value
++ * @qword2: indirect message parameters
++ * @qword3: indirect message buffer address
++ */
++struct libie_ctlq_desc {
++	__le64			qword0;
++	__le64			qword1;
++	__le64			qword2;
++	__le64			qword3;
++};
++
++/**
++ * libie_ctlq_release_rx_buf - Release Rx buffer for a specific control queue
++ * @rx_buf: Rx buffer to be freed
++ *
++ * Driver uses this function to post back the Rx buffer after the usage.
++ */
++static inline void libie_ctlq_release_rx_buf(struct kvec *rx_buf)
++{
++	netmem_ref netmem;
++
++	if (!rx_buf->iov_base)
++		return;
++
++	netmem = virt_to_netmem(rx_buf->iov_base);
++	page_pool_put_full_netmem(netmem_get_pp(netmem), netmem, false);
++}
++
++int libie_ctlq_init(struct libie_ctlq_ctx *ctx,
++		    const struct libie_ctlq_create_info *qinfo,  u32 numq);
++void libie_ctlq_deinit(struct libie_ctlq_ctx *ctx);
++
++struct libie_ctlq_info *libie_find_ctlq(struct libie_ctlq_ctx *ctx,
++					enum virtchnl2_queue_type type,
++					  int id);
++
++int libie_ctlq_send(struct libie_ctlq_info *ctlq,
++		    struct libie_ctlq_msg *q_msg, u32 num_q_msg);
++u32 libie_ctlq_recv(struct libie_ctlq_info *ctlq, struct libie_ctlq_msg *msg,
++		    u32 num_q_msg);
++
++int libie_ctlq_post_rx_buffs(struct libie_ctlq_info *ctlq);
++
++#endif /* __LIBIE_CONTROLQ_H */
 -- 
 2.47.0
 
