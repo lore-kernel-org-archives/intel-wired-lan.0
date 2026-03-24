@@ -1,153 +1,90 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3A5E3FEC0EB
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 24 Mar 2026 18:13:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C2194FEC0EC
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 24 Mar 2026 18:14:08 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id E95AA4107C;
-	Tue, 24 Mar 2026 18:13:33 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 9564B83BA2;
+	Tue, 24 Mar 2026 18:14:08 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 0BcRVs-qVQkA; Tue, 24 Mar 2026 18:13:32 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id IGYrd3w5hOfy; Tue, 24 Mar 2026 18:14:07 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 382B54106A
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E496783BA0
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1774376012;
-	bh=j4KIbqvhidbLdE2zkNvP4L5iPrMq8r7qV66qKB0JP/0=;
-	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
+	s=default; t=1774376046;
+	bh=D3WK8jYVsm8QIKoJTzYPTfmcdOTDoZh5gTDCIXNig4A=;
+	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=owiNH6NEiGjTAxKt8/7MistpXD0YT3tvY0qWsy1ikzMzwwIrZJllTvJcRKOSJlb+y
-	 UoapfTT7XAggHm8sYAtBkOCSVTU1rzpIW+5hYpkDkryPMVoxrvdhD6QlyJIjMNRnk8
-	 MBvhk1Y+wMR1ddXpLL4eiA+dcEjPPP0/xq5FkZc/m3nzA3cY8Oyb07KL4R0lVdh4dG
-	 OYIi+P1HHeTxgRLP9a6ycjjlq4evgwA8FRpsXkBCMLq1yyaWH0iRjatzY9UlKyOC+8
-	 SBSvFxUigBQRmbUiDhpzy0m7SbEoz9OWIGYpoWRXxljaQLn/0O2bQugvEvkrDIIUTq
-	 UmaVYTUFPFtgQ==
+	b=jPVLTuzKEgwAglbkRgMGaxucEI4vIRh8RXrYqVs6gWMKTYWuE4UAvKuQMHSYZrKpH
+	 UyImjaD60uwkJo+JLdtF7p5Qm9b45qFbvbH6aCqqebLIly5985Xmuk77yF8Rz88LPw
+	 +uSZYKJaGd4A8NEk22GKR1QA/dIokqkcTRlqJ1ozbWvAKq2hGk97qnFCAh0L0iEt7X
+	 Zxuu2bujuvYUFr1zeWtjbvZOtn7gj/wxaESokZJjHKwng/nq+w0Q39KFRnIuffFul8
+	 zbfLrbLnqYUQ1yE6Ao/XDapgnTkW94zWlsTHiE76+GGre37KnFTQkjbKG8eoI8JyCG
+	 JtrqKYcnM5CeA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 382B54106A;
-	Tue, 24 Mar 2026 18:13:32 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id E496783BA0;
+	Tue, 24 Mar 2026 18:14:06 +0000 (UTC)
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id 8A6801D3
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Mar 2026 18:13:30 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id DDC84353
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Mar 2026 18:14:04 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 7014060B9D
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Mar 2026 18:13:30 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id CF44560B9D
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Mar 2026 18:14:04 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ecnbCNxw62w9 for <intel-wired-lan@lists.osuosl.org>;
- Tue, 24 Mar 2026 18:13:29 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2607:f8b0:4864:20::1234; helo=mail-dl1-x1234.google.com;
- envelope-from=stfomichev@gmail.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org BEC4260B4E
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org BEC4260B4E
-Received: from mail-dl1-x1234.google.com (mail-dl1-x1234.google.com
- [IPv6:2607:f8b0:4864:20::1234])
- by smtp3.osuosl.org (Postfix) with ESMTPS id BEC4260B4E
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Mar 2026 18:13:29 +0000 (UTC)
-Received: by mail-dl1-x1234.google.com with SMTP id
- a92af1059eb24-12732e6a123so9406127c88.1
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Mar 2026 11:13:29 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20251104; t=1774376009; x=1774980809;
- h=in-reply-to:content-disposition:mime-version:references
- :mail-followup-to:message-id:subject:cc:to:from:date:x-gm-gg
- :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
- bh=j4KIbqvhidbLdE2zkNvP4L5iPrMq8r7qV66qKB0JP/0=;
- b=MYlmiTQpBphAPIybrwtCjpPm247+CCHF+my589k/+XGv7wwnltkx6ru2no7Qx1/ssE
- m5oNPJhBeujUCK4NWF5xX6hJyRrGd2MrDViqmsa+rubbM3ddhxH4H6oH7xq3KuE6PJdX
- 626FiivUdfVqFkcURvsI4Gq8VLZWaISDleacOTds/oY0JRYw36JTP+ejpNaXs8yBDRUo
- FbihoLBeIPMZ6vyesew/dSt9CqD6NxibvBuqYLKajCJIqWCy618YP6QoYzch5BxPCXAg
- qZTYbk/VseVt+snGHoLs5MqmLmGJV3w0vJ5ddsar2O6Yf+rinSA/5lMHbW4UIOYRDaNw
- NAeA==
-X-Forwarded-Encrypted: i=1;
- AJvYcCVZH4M2qTXM7Zf2Aqqc/NeRfZiCx6+1Lrg/0Er0ss8i30aYD0Ket+QPhYIKPJplu6O990R71wgePXTG9DWSnfw=@lists.osuosl.org
-X-Gm-Message-State: AOJu0Yx23h3ut4AqCnZAP+ggELrN5FTle5ZKOI5/95wBUqy7DPwGY1IC
- XUb3CxDTlVzf5LrdYBJpXNmNW9UPOknp4NrkWN43Go17ckXZPHpbewo=
-X-Gm-Gg: ATEYQzxtN9H6WtxRldJLR381y6oSXP/nFUG2toF4C2zdzx3UvCvT7oRniNIfmDxXbGm
- PJKAuDTTr69NO6k9UfqxCAYFwBSoYtQSGTy/TJeZz+PSUIFsm5aeBR4e0R34rENruAkVscyeRGq
- rdg7xs3/UQaldCFwwP9Lh8Uz0oDIusYRCX6S7O/vfkoVwXQQ704p3S/W4BPVn7AgMiULU+n5tMI
- gf00BYQWPgrE2OR8wnv+9fl5YlTFEorVFs8xihc0CEdwkBNtP6PdEml8+7hl9sSTTh4JVhwiYMw
- TuKtRPPA0QtNVcbFKw0h9tsZfA6KfFYYXTb3oyybutoKmdO/919MxqfO9fAQIZhe5KhupTHy/bQ
- sz6hX0stwMhPUPqhpAKDNyD+eRSCOb4+tsbltE1BuijWmu8i4HP9WJsY65AakKGN2z9SNVoMOee
- awQHhvCszc6NbN35Ukb1PonYlIrA8Wi2V2C/pDljZrPv69O3crG7oPKbGE71tOYMLsxSdl9lsxm
- sne9owUEjDbKpe+uA==
-X-Received: by 2002:a05:7022:526:b0:125:be41:db5b with SMTP id
- a92af1059eb24-12a96f200f8mr243112c88.42.1774376008513; 
- Tue, 24 Mar 2026 11:13:28 -0700 (PDT)
-Received: from localhost (c-76-102-12-149.hsd1.ca.comcast.net. [76.102.12.149])
- by smtp.gmail.com with ESMTPSA id
- 5a478bee46e88-2c10b35116bsm18984900eec.30.2026.03.24.11.13.27
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Tue, 24 Mar 2026 11:13:27 -0700 (PDT)
-Date: Tue, 24 Mar 2026 11:13:26 -0700
-From: Stanislav Fomichev <stfomichev@gmail.com>
-To: Jakub Kicinski <kuba@kernel.org>
-Cc: Stanislav Fomichev <sdf@fomichev.me>, netdev@vger.kernel.org,
- davem@davemloft.net, edumazet@google.com, pabeni@redhat.com,
- horms@kernel.org, corbet@lwn.net, skhan@linuxfoundation.org,
- andrew+netdev@lunn.ch, michael.chan@broadcom.com,
- pavan.chebbi@broadcom.com, anthony.l.nguyen@intel.com,
- przemyslaw.kitszel@intel.com, saeedm@nvidia.com, tariqt@nvidia.com,
- mbloch@nvidia.com, alexanderduyck@fb.com, kernel-team@meta.com,
- johannes@sipsolutions.net, sd@queasysnail.net, jianbol@nvidia.com,
- dtatulea@nvidia.com, mohsin.bashr@gmail.com,
- jacob.e.keller@intel.com, willemb@google.com, skhawaja@google.com,
- bestswngs@gmail.com, aleksandr.loktionov@intel.com, kees@kernel.org,
- linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
- intel-wired-lan@lists.osuosl.org, linux-rdma@vger.kernel.org,
- linux-wireless@vger.kernel.org, linux-kselftest@vger.kernel.org,
- leon@kernel.org
-Message-ID: <acLURpj2nttA6De3@mini-arch>
-Mail-Followup-To: Stanislav Fomichev <stfomichev@gmail.com>,
- Jakub Kicinski <kuba@kernel.org>,
- Stanislav Fomichev <sdf@fomichev.me>, netdev@vger.kernel.org,
- davem@davemloft.net, edumazet@google.com, pabeni@redhat.com,
- horms@kernel.org, corbet@lwn.net, skhan@linuxfoundation.org,
- andrew+netdev@lunn.ch, michael.chan@broadcom.com,
- pavan.chebbi@broadcom.com, anthony.l.nguyen@intel.com,
- przemyslaw.kitszel@intel.com, saeedm@nvidia.com, tariqt@nvidia.com,
- mbloch@nvidia.com, alexanderduyck@fb.com, kernel-team@meta.com,
- johannes@sipsolutions.net, sd@queasysnail.net, jianbol@nvidia.com,
- dtatulea@nvidia.com, mohsin.bashr@gmail.com,
- jacob.e.keller@intel.com, willemb@google.com, skhawaja@google.com,
- bestswngs@gmail.com, aleksandr.loktionov@intel.com, kees@kernel.org,
- linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
- intel-wired-lan@lists.osuosl.org, linux-rdma@vger.kernel.org,
- linux-wireless@vger.kernel.org, linux-kselftest@vger.kernel.org,
- leon@kernel.org
-References: <20260320012501.2033548-1-sdf@fomichev.me>
- <20260320012501.2033548-2-sdf@fomichev.me>
- <20260323162053.62a148c2@kernel.org>
+ id 784Pv5O_6fgm for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 24 Mar 2026 18:14:04 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.234.252.31;
+ helo=sea.source.kernel.org; envelope-from=horms@kernel.org;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org E209260B4E
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E209260B4E
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id E209260B4E
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Mar 2026 18:14:03 +0000 (UTC)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+ by sea.source.kernel.org (Postfix) with ESMTP id 326244179B;
+ Tue, 24 Mar 2026 18:14:03 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B672EC19424;
+ Tue, 24 Mar 2026 18:14:01 +0000 (UTC)
+From: Simon Horman <horms@kernel.org>
+To: aleksandr.loktionov@intel.com
+Cc: Simon Horman <horms@kernel.org>, anthony.l.nguyen@intel.com,
+ intel-wired-lan@lists.osuosl.org, paul.greenwalt@intel.com,
+ netdev@vger.kernel.org
+Date: Tue, 24 Mar 2026 18:13:37 +0000
+Message-ID: <20260324181337.264904-2-horms@kernel.org>
+X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20260323085840.3272274-1-aleksandr.loktionov@intel.com>
+References: <20260323085840.3272274-1-aleksandr.loktionov@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20260323162053.62a148c2@kernel.org>
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20251104; t=1774376009; x=1774980809; darn=lists.osuosl.org;
- h=in-reply-to:content-disposition:mime-version:references
- :mail-followup-to:message-id:subject:cc:to:from:date:from:to:cc
- :subject:date:message-id:reply-to;
- bh=j4KIbqvhidbLdE2zkNvP4L5iPrMq8r7qV66qKB0JP/0=;
- b=V7W7NuwWT2rUdexlPhoid0JOABf6VYHXO1evkkhNWrLJzYnlP+2X8xtwQHlBuWkNqb
- wu1C1ipmBYBpusCG1HMxBnU5wFm8d8oWSpE9RIuqY39snvgj3i7J4pTa9SM6qFiCixbz
- GdILo6cDK4CV4mC7z3/wgy5S4EZA5VsF76w+zwNmejCv7ZpDZJAf5ny62wzMvTp+l6PB
- W5xX/rK2e8GEzjhUR+ucJuzf9R1ybgK30J7p1fPyFZrv/HHR2BhW0ZtvDWOMTy2OfujO
- oho84FOmsgoNyBm5JIhCtEkUvaDHeayjLpgkGNm4TOMc4ldR+A4PI8jyc57slQmm5vLc
- +IRQ==
+Content-Transfer-Encoding: 8bit
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=kernel.org; s=k20201202; t=1774376043;
+ bh=IK2MYu+66ej+vDgIMcdiT/wi63TmFYueZ62knQD/j4A=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=ZeutO9EihSRBje8rAj9PU/NE0i0v3N/RXPzXM1zWSU1jY3irq9s0PTpZVdEgLVuoD
+ m8q7XP45UdWh1oOZf8Z/3LVzyFJ4LCuaYE1n4uuISQmwCYO/MWLDFCVOVqrDCXRHGV
+ LMKNkYgjuPTYCpUH5x8McVmmYZGzJIdGBYKLOELX4AMgckSkxfE/bLiNjk13pOlifJ
+ NQww8F0PiWMiUe5RoKYxfitxfgMYEcs7042/1DqKbkHXd2joCv6bbE27CaZYXKnKA/
+ dR2WKHIKQq4rBSuPT3k/yOEwFUjG4lR8tNCputAK4lYvi4xmCrpD0ENarqtbpsv2PN
+ cH1g58uYCXNdA==
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=gmail.com
+ dmarc=pass (p=quarantine dis=none)
+ header.from=kernel.org
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
- header.a=rsa-sha256 header.s=20251104 header.b=V7W7NuwW
-Subject: Re: [Intel-wired-lan] [PATCH net-next v3 01/13] net: add address
- list snapshot and reconciliation infrastructure
+ dkim=pass (2048-bit key,
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=ZeutO9Ei
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next v2] ice: update
+ ice_link_mode_str_high() with 200G
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -163,11 +100,84 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On 03/23, Jakub Kicinski wrote:
-> On Thu, 19 Mar 2026 18:24:49 -0700 Stanislav Fomichev wrote:
-> > +EXPORT_SYMBOL(__hw_addr_list_snapshot);
-> > +EXPORT_SYMBOL(__hw_addr_list_reconcile);
-> 
-> Why?  For the kunit tests?
+This is an AI-generated review of your patch. The human sending this
+email has considered the AI review valid, or at least plausible.
 
-Yeah, no good reason, will remove!
+For local reproduction steps see https://netdev-ai.bots.linux.dev/ai-local.html
+---
+ice: update ice_link_mode_str_high() with 200G
+
+This patch updates ice_link_mode_str_high() to add strings for 200G PHY
+types supported by E825C hardware. It also adds three new PHY type bit
+definitions for indices 13-15 and increases ICE_PHY_TYPE_HIGH_MAX_INDEX
+from 12 to 15.
+
+> diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+> index 859e9c66f3e7..f64d2efdc478 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+> +++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+> @@ -1044,7 +1044,10 @@ struct ice_aqc_get_phy_caps {
+>  #define ICE_PHY_TYPE_HIGH_200G_KR4_PAM4		BIT_ULL(10)
+>  #define ICE_PHY_TYPE_HIGH_200G_AUI4_AOC_ACC	BIT_ULL(11)
+>  #define ICE_PHY_TYPE_HIGH_200G_AUI4		BIT_ULL(12)
+> -#define ICE_PHY_TYPE_HIGH_MAX_INDEX		12
+> +#define ICE_PHY_TYPE_HIGH_200G_AUI8_AOC_ACC	BIT_ULL(13)
+> +#define ICE_PHY_TYPE_HIGH_200G_AUI8		BIT_ULL(14)
+> +#define ICE_PHY_TYPE_HIGH_400GBASE_FR8		BIT_ULL(15)
+> +#define ICE_PHY_TYPE_HIGH_MAX_INDEX		15
+
+The new PHY types added here (bits 13-15) will now be iterated by
+ice_update_phy_type() when it loops from 0 to ICE_PHY_TYPE_HIGH_MAX_INDEX,
+calling ice_get_link_speed_based_on_phy_type() for each index. However,
+does ice_get_link_speed_based_on_phy_type() have cases for these three new
+PHY types?
+
+Looking at ice_get_link_speed_based_on_phy_type() in ice_common.c, the
+switch statement has cases for 200G PHY types like ICE_PHY_TYPE_HIGH_200G_CR4_PAM4
+through ICE_PHY_TYPE_HIGH_200G_AUI4 (indices 5-12) that return ICE_AQ_LINK_SPEED_200GB.
+
+But the three newly added PHY types aren't present:
+- ICE_PHY_TYPE_HIGH_200G_AUI8_AOC_ACC (bit 13)
+- ICE_PHY_TYPE_HIGH_200G_AUI8 (bit 14)
+- ICE_PHY_TYPE_HIGH_400GBASE_FR8 (bit 15)
+
+Without these cases, won't they fall through to the default case and return
+ICE_AQ_LINK_SPEED_UNKNOWN? The first two appear to be 200G types based on
+their naming, so shouldn't they be added to the switch statement to return
+ICE_AQ_LINK_SPEED_200GB?
+
+For ICE_PHY_TYPE_HIGH_400GBASE_FR8, is there an ICE_AQ_LINK_SPEED_400GB
+constant defined? Looking at ice_adminq_cmd.h, the link speed constants go
+from ICE_AQ_LINK_SPEED_200GB (BIT(11)) directly to ICE_AQ_LINK_SPEED_UNKNOWN
+(BIT(15)). Without an ICE_AQ_LINK_SPEED_400GB constant, how should the 400G
+PHY type be mapped?
+
+This appears to leave the new PHY types non-functional for speed
+determination, even though the commit message states they are needed for
+E825C hardware support.
+
+>
+>  struct ice_aqc_get_phy_caps_data {
+>  	__le64 phy_type_low; /* Use values from ICE_PHY_TYPE_LOW_* */
+> diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+> index ce11fea122d0..7cdd6a043d86 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_common.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_common.c
+> @@ -84,6 +84,17 @@ static const char * const ice_link_mode_str_high[] = {
+>  	[2] = "100G_CAUI2",
+>  	[3] = "100G_AUI2_AOC_ACC",
+>  	[4] = "100G_AUI2",
+> +	[5] = "200G_CR4_PAM4",
+> +	[6] = "200G_SR4",
+> +	[7] = "200G_FR4",
+> +	[8] = "200G_LR4",
+> +	[9] = "200G_DR4",
+> +	[10] = "200G_KR4_PAM4",
+> +	[11] = "200G_AUI4_AOC_ACC",
+> +	[12] = "200G_AUI4",
+> +	[13] = "200G_AUI8_AOC_ACC",
+> +	[14] = "200G_AUI8",
+> +	[15] = "400GBASE_FR8",
+>  };
+>
+>  /**
