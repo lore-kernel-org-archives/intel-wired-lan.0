@@ -1,105 +1,155 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A5C4B109C029
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 25 Mar 2026 14:58:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 20BBA109C02F
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 25 Mar 2026 15:06:35 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 560AA8223D;
-	Wed, 25 Mar 2026 14:58:49 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id C66336100F;
+	Wed, 25 Mar 2026 15:06:35 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id UpvxlQxVVg7Y; Wed, 25 Mar 2026 14:58:47 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id mjECy7or1yt2; Wed, 25 Mar 2026 15:06:34 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 38544821E5
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7ED3A60ECB
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1774450727;
-	bh=Nl+Hvi8kTUcVJwNVqmC91MI1nwpttvGtKQsNhkFrI7c=;
-	h=From:To:CC:Date:References:In-Reply-To:Subject:List-Id:
+	s=default; t=1774451194;
+	bh=/d4Gn1kS5MGurytQaHUUdFFZv/IQSTbByU+x/UA/BgI=;
+	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=ScVy1NLe1eKrxOLXtAkuj//SIziEcE97KRlSxxbq9dfBhuR30SoxIrPadmCfpgpZF
-	 c0pLyBXodvVycaGFCE7oQa2an5g1kQ33vgGPX+aj7ptyLnd6ESW9yMOhreoGklZIuE
-	 Vh+Iiax3D8kZHO4p35eVtW0AKSijHCkJ32FXSG2fgTeX8oP/y4zZIkvfWGSpIcU7Vz
-	 y0Texyue9ZwCrrcK/YQV2NavG5dFK2K85GTBsfEkg02Q5F+0f5LObil2S/CSeP+iqe
-	 Cz/ueKUaZPeZmsG4z2Z1AnkB9o3It6U/Y02lvGab2mNAza19Q42WbHC3yOFRZo+YtS
-	 aMvYV/w+7bwrw==
+	b=n8uE9wBqMw93fZHIMHBB1mTG7qfcOrvcEgZUvAKQc79zjY2rQ4UC8EOPcKcI/1mnV
+	 thg/wJ86uIPZ5h+ZqwUGzaPExZVsvg7UyByBVtjxb9G0BxafnIp+taJjhhYgHaMplX
+	 pucH/3GyR6B1jILlSkR3PFr4xtlhOtNcjUHCx8TMsOVZHXE0fVb1ZBAg8V9oZIYeV5
+	 OCtOl16kOrOXkqMQEh1QbVoduenUgqyoeWViRp12nbbYGv7oqpnOtVzgsY8fC6nWnL
+	 QrCJFS0Pm9u43uNmLHpb70ZuXjNY+mGadTyKFSjsBiMkN6iH2fFqAuKnXgnrklK46D
+	 BfCMJ0e4KVcvg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 38544821E5;
-	Wed, 25 Mar 2026 14:58:47 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 7ED3A60ECB;
+	Wed, 25 Mar 2026 15:06:34 +0000 (UTC)
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id 18737353
- for <intel-wired-lan@lists.osuosl.org>; Wed, 25 Mar 2026 14:58:45 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id 696BE353
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 25 Mar 2026 15:06:32 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id F2978821E5
- for <intel-wired-lan@lists.osuosl.org>; Wed, 25 Mar 2026 14:58:44 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 6698581F44
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 25 Mar 2026 15:06:32 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id i08Dd9jLzjM5 for <intel-wired-lan@lists.osuosl.org>;
- Wed, 25 Mar 2026 14:58:43 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=77.108.111.100;
- helo=mail.amicon.ru; envelope-from=ade@amicon.ru; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org E531C821DF
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E531C821DF
-Received: from mail.amicon.ru (mail.amicon.ru [77.108.111.100])
- by smtp1.osuosl.org (Postfix) with ESMTPS id E531C821DF
- for <intel-wired-lan@lists.osuosl.org>; Wed, 25 Mar 2026 14:58:41 +0000 (UTC)
-Content-Language: en-US
-Content-Type: multipart/alternative;
- boundary="_000_526feb2ed47f4d42b1f4662c67e52ef9amiconru_"
-Received: from mail.amicon.lan (192.168.0.59) by mail.amicon.lan
- (192.168.0.59) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.27; Wed, 25 Mar
- 2026 17:58:35 +0300
-Received: from mail.amicon.lan ([::1]) by mail.amicon.lan ([::1]) with mapi id
- 15.02.1544.027; Wed, 25 Mar 2026 17:58:35 +0300
-From: =?koi8-r?B?4cfBzMHLz9cg5MHOycnM?= <ade@amicon.ru>
-To: Tony Nguyen <anthony.l.nguyen@intel.com>
-CC: Przemek Kitszel <przemyslaw.kitszel@intel.com>, Andrew Lunn
- <andrew+netdev@lunn.ch>, "David S. Miller" <davem@davemloft.net>, "Eric
- Dumazet" <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni
- <pabeni@redhat.com>, "intel-wired-lan@lists.osuosl.org"
- <intel-wired-lan@lists.osuosl.org>, "netdev@vger.kernel.org"
- <netdev@vger.kernel.org>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>, "lvc-project@linuxtesting.org"
- <lvc-project@linuxtesting.org>, =?koi8-r?B?6dPIwcvP1yDkwc7Jycw=?=
- <dish@amicon.ru>, =?koi8-r?B?8sHaz9cg8s/Nwc4=?= <rrv@amicon.ru>
-Thread-Topic: [PATCH net 3/3] e1000e: fix endianness conversion of
- uninitialized words
-Thread-Index: AQHcts+FllH1Jmrt6UiknmZfAnBjl7W+K5EAgAEz3G0=
-Date: Wed, 25 Mar 2026 14:58:35 +0000
-Message-ID: <526feb2ed47f4d42b1f4662c67e52ef9@amicon.ru>
-References: <20260318120512.687149-1-ade@amicon.ru>
- <20260318120512.687149-4-ade@amicon.ru>,
- <a70a49a0-43f8-4908-993a-50999bf0dfa8@intel.com>
-In-Reply-To: <a70a49a0-43f8-4908-993a-50999bf0dfa8@intel.com>
-Accept-Language: en-US, ru-RU
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-originating-ip: [172.16.2.46]
+ id X66mWFrWA3fA for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 25 Mar 2026 15:06:31 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2607:f8b0:4864:20::1330; helo=mail-dy1-x1330.google.com;
+ envelope-from=stfomichev@gmail.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org B177881F1F
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B177881F1F
+Received: from mail-dy1-x1330.google.com (mail-dy1-x1330.google.com
+ [IPv6:2607:f8b0:4864:20::1330])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id B177881F1F
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 25 Mar 2026 15:06:31 +0000 (UTC)
+Received: by mail-dy1-x1330.google.com with SMTP id
+ 5a478bee46e88-2c160308a54so932725eec.0
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 25 Mar 2026 08:06:31 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20251104; t=1774451190; x=1775055990;
+ h=in-reply-to:content-disposition:mime-version:references
+ :mail-followup-to:message-id:subject:cc:to:from:date:x-gm-gg
+ :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+ bh=/d4Gn1kS5MGurytQaHUUdFFZv/IQSTbByU+x/UA/BgI=;
+ b=T5ehCVy2uvoJ7RR2TEGiUt5g6QDvZtkUFcoZ3tyUlqHN9LyMGf6pF7KOBD4nsW16af
+ DbSnggHl2G9KniN1w/PmplP9aZJ9u9kEXlU8Cg2RAepJ2eFelloJZ3EjL8MnXtw2hAQA
+ iOs11HfBtKUCRmMpTbo3ucO+j/Q2Tty1RgZr02LWVKdUo3wfFavPzCV40J0BPgdxKvoB
+ VTLxUB8avaF2C/wr7GfMR8/puqMdk7h3LtP9XbyZJ4wIPAXff004zhJVL7YYvsYDMPSN
+ QalttkxjFcHcpSqEIM100yY84KwxrcEZxpR4Wjvk0d8w5DjGr22/l5YdUap7zKC1HNT4
+ Zuow==
+X-Forwarded-Encrypted: i=1;
+ AJvYcCUjiyPhZEpaIy5K3Ars6Tcsgw2n5GLAlF6wWVakAC7qsvCEn+1jjWanwJjS/2DZrx173UrthH/14UNfP+RrRPA=@lists.osuosl.org
+X-Gm-Message-State: AOJu0YxvLFarxfGV/EYAypKDwAsNFKqe5pWQ98yhJT8srxV6Z9L6LZ2B
+ O8PouAMINmX06scewSppjKyQS2NMwCwbmV/cMMXpBsP1pb3YDBSB8Rk=
+X-Gm-Gg: ATEYQzyEfACHii6MUsmulJZuhUuiDt50DmULzMt2OcedPqRRyugHhu32f8f0tzTuSoR
+ 2Y9uNDENRb3Nj7AWlXBZ8rtIdEphAb9lkrF6DSVVmVuLVv4kuTy6h+Pk6T43l3qRaNz9khVbepU
+ xPA8bZaFrwkk8szM7i0ZFav6K/9L8Ix9BF1qE+nBIxFQOe/YHDmqoxtZRrTfwXpcJNGiMdyGxCB
+ snpQefbFnCYTevxhcCyx4YitygF0t7smQNC24gNpY3oyEnNKytANCJkoaNvxzSlVliLdg5JiINO
+ CwF4hFckF6DOhjD69/rI4z2wXFbqSdQv2B3sOZEy8ENZD72hDSVCOpNmtvzT+FrfepBRyASSHZX
+ 1XbPX6yXpTEt/bpGAJ/hISEOp82EZUgpAnSkusj9c2W9Z3b8nnHEZPXlug88tN1ZoeoRQdIUaAs
+ d+0UMe5cj+neNE1MN75Kstlhq110lkG/9JNHQAcEwV+0MiLbaMDlXBr07jOBh3ujfroBgJW2oza
+ OtC1U29ZhQMzRbr0A==
+X-Received: by 2002:a05:7022:6984:b0:128:ca6f:adf0 with SMTP id
+ a92af1059eb24-12a96e69cffmr1941893c88.17.1774451190214; 
+ Wed, 25 Mar 2026 08:06:30 -0700 (PDT)
+Received: from localhost (c-76-102-12-149.hsd1.ca.comcast.net. [76.102.12.149])
+ by smtp.gmail.com with ESMTPSA id
+ a92af1059eb24-12aa7248731sm29001c88.4.2026.03.25.08.06.29
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Wed, 25 Mar 2026 08:06:29 -0700 (PDT)
+Date: Wed, 25 Mar 2026 08:06:28 -0700
+From: Stanislav Fomichev <stfomichev@gmail.com>
+To: Jakub Kicinski <kuba@kernel.org>
+Cc: Stanislav Fomichev <sdf@fomichev.me>, netdev@vger.kernel.org,
+ davem@davemloft.net, edumazet@google.com, pabeni@redhat.com,
+ horms@kernel.org, corbet@lwn.net, skhan@linuxfoundation.org,
+ andrew+netdev@lunn.ch, michael.chan@broadcom.com,
+ pavan.chebbi@broadcom.com, anthony.l.nguyen@intel.com,
+ przemyslaw.kitszel@intel.com, saeedm@nvidia.com, tariqt@nvidia.com,
+ mbloch@nvidia.com, alexanderduyck@fb.com, kernel-team@meta.com,
+ johannes@sipsolutions.net, sd@queasysnail.net, jianbol@nvidia.com,
+ dtatulea@nvidia.com, mohsin.bashr@gmail.com,
+ jacob.e.keller@intel.com, willemb@google.com, skhawaja@google.com,
+ bestswngs@gmail.com, aleksandr.loktionov@intel.com, kees@kernel.org,
+ linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+ intel-wired-lan@lists.osuosl.org, linux-rdma@vger.kernel.org,
+ linux-wireless@vger.kernel.org, linux-kselftest@vger.kernel.org,
+ leon@kernel.org
+Message-ID: <acP59NM6HZhV9oAe@mini-arch>
+Mail-Followup-To: Stanislav Fomichev <stfomichev@gmail.com>,
+ Jakub Kicinski <kuba@kernel.org>,
+ Stanislav Fomichev <sdf@fomichev.me>, netdev@vger.kernel.org,
+ davem@davemloft.net, edumazet@google.com, pabeni@redhat.com,
+ horms@kernel.org, corbet@lwn.net, skhan@linuxfoundation.org,
+ andrew+netdev@lunn.ch, michael.chan@broadcom.com,
+ pavan.chebbi@broadcom.com, anthony.l.nguyen@intel.com,
+ przemyslaw.kitszel@intel.com, saeedm@nvidia.com, tariqt@nvidia.com,
+ mbloch@nvidia.com, alexanderduyck@fb.com, kernel-team@meta.com,
+ johannes@sipsolutions.net, sd@queasysnail.net, jianbol@nvidia.com,
+ dtatulea@nvidia.com, mohsin.bashr@gmail.com,
+ jacob.e.keller@intel.com, willemb@google.com, skhawaja@google.com,
+ bestswngs@gmail.com, aleksandr.loktionov@intel.com, kees@kernel.org,
+ linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+ intel-wired-lan@lists.osuosl.org, linux-rdma@vger.kernel.org,
+ linux-wireless@vger.kernel.org, linux-kselftest@vger.kernel.org,
+ leon@kernel.org
+References: <20260320012501.2033548-1-sdf@fomichev.me>
+ <20260320012501.2033548-4-sdf@fomichev.me>
+ <20260323162003.0d155055@kernel.org> <acLUMN1BYkIVyOk8@mini-arch>
+ <20260324142114.216fcb01@kernel.org> <acMU93XN02PHmAGi@mini-arch>
+ <20260324204440.1752423d@kernel.org>
 MIME-Version: 1.0
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; d=amicon.ru; s=mail;
- c=simple/simple; 
- t=1774450716; h=from:subject:to:date:message-id;
- bh=/HgZcZFAwdoDbwVyQ1CjUQwWGag2+/u6831CiZfiDDc=;
- b=BJy4KogURxjp9ogVntZDvwZgIci1zGRAhh2TttqSX3DTwRoS+KBoNcF61mPGEYPruYddZoYxR71
- r6hrgCpnigdXLwdwg8Mj4hl7MACZPq4oua3kfGzKQvpSOamxsW09Na7ERuv2bNebCEB2LZQOys/iI
- TniOLLhPg0l+lSG1q9iG39yTSAqvgIjve9aafn7lHGJjNGhHWVxvwWGGHPwBBgo2CNvPJX+V3a1Rc
- o8eow4BLc3blXajFzAx+3fcEvhk/G5qzlw+1/WecXNdYCCuqGwo1wwy8sYwWI6m/j260/CS2OxBPk
- isViViStgtrtr2v30Kc2X7g2hSEjq1yYSfUA==
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20260324204440.1752423d@kernel.org>
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=gmail.com; s=20251104; t=1774451190; x=1775055990; darn=lists.osuosl.org;
+ h=in-reply-to:content-disposition:mime-version:references
+ :mail-followup-to:message-id:subject:cc:to:from:date:from:to:cc
+ :subject:date:message-id:reply-to;
+ bh=/d4Gn1kS5MGurytQaHUUdFFZv/IQSTbByU+x/UA/BgI=;
+ b=Jl42G3AKHdntIpVPcrrTYEWeMd7cLr9RoWYBH9W50P1aOq0VkjHrCOjlaS3kVw7YOk
+ manR1uVnmmrtBAfC8+ptQX3prIE662eBz458ppmAtwxTJiUZGAURSW6utleryfDueQX4
+ E5qUwV2EeHudC0s/m++e8lKWouD2+ge+DKAKf7CO0Cl90KilBU0SvG36ocaV8nU68jOR
+ NoEQJY7/1yj1wQBWDZa71fj45ZRNPV1o9PX7ZpW+d/RWM1/ZSqmDz4EUuLl66B6QoMeR
+ 5kLT8sUgmAJW6UmJzCPvdfQZ/rLRCrey2f084e3t6SuSpry9roL5O9iefIWNvghc6oyd
+ RrPw==
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dmarc=pass (p=quarantine dis=none)
- header.from=amicon.ru
+ dmarc=pass (p=none dis=none)
+ header.from=gmail.com
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=amicon.ru header.i=@amicon.ru header.a=rsa-sha256
- header.s=mail header.b=BJy4KogU
-Subject: Re: [Intel-wired-lan] [PATCH net 3/3] e1000e: fix endianness
- conversion of uninitialized words
+ dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
+ header.a=rsa-sha256 header.s=20251104 header.b=Jl42G3AK
+Subject: Re: [Intel-wired-lan] [PATCH net-next v3 03/13] net: introduce
+ ndo_set_rx_mode_async and dev_rx_mode_work
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -115,330 +165,47 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
---_000_526feb2ed47f4d42b1f4662c67e52ef9amiconru_
-Content-Type: text/plain; charset="koi8-r"
-Content-Transfer-Encoding: quoted-printable
-
-Hi Tony,
-
-Thanks for the review!
-
-Regarding e1000e: the return value of e1000_read_eeprom() is already proper=
-ly checked.
-Therefore, for e1000e, I am only submitting the endianness conversion clean=
-up as part
-of a separate 'net-next' series. The functional fix for e1000 (missing retu=
-rn value check)
-will be sent as a standalone patch for the 'net' tree.
-
-I'm also removing the Fixes: tags from the endianness cleanup patches since=
-, as you noted,
-the uninitialized data is eventually overwritten by memcpy() and doesn't ca=
-use a functional
-failure.
-
-Best regards,
-Daniil
-________________________________
-From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Sent: Wednesday, March 25, 2026 2:27:12 AM
-To: =E1=C7=C1=CC=C1=CB=CF=D7 =E4=C1=CE=C9=C9=CC
-Cc: Przemek Kitszel; Andrew Lunn; David S. Miller; Eric Dumazet; Jakub Kici=
-nski; Paolo Abeni; intel-wired-lan@lists.osuosl.org; netdev@vger.kernel.org=
-; linux-kernel@vger.kernel.org; lvc-project@linuxtesting.org; =E9=D3=C8=C1=
-=CB=CF=D7 =E4=C1=CE=C9=C9=CC; =F2=C1=DA=CF=D7 =F2=CF=CD=C1=CE
-Subject: Re: [PATCH net 3/3] e1000e: fix endianness conversion of uninitial=
-ized words
-
-
-
-On 3/18/2026 5:05 AM, Agalakov Daniil wrote:
-> [Why]
-> In e1000_set_eeprom(), the eeprom_buff is allocated to hold a range of
-> words. However, only the boundary words (the first and the last) are
-> populated from the EEPROM if the write request is not word-aligned.
-> The words in the middle of the buffer remain uninitialized because they
-> are intended to be completely overwritten by the new data via memcpy().
+On 03/24, Jakub Kicinski wrote:
+> On Tue, 24 Mar 2026 15:49:27 -0700 Stanislav Fomichev wrote:
+> > > > Not sure why cancel+release, maybe you're thinking about the unregister
+> > > > path? This is rtnl_unlock -> netdev_run_todo -> __rtnl_unlock + some
+> > > > extras.
+> > > > 
+> > > > And the flush is here to plumb the addresses to the real devices
+> > > > before we return to the callers. Mostly because of the following
+> > > > things we have in the tests:
+> > > > 
+> > > > # TEST: team cleanup mode lacp                                        [FAIL]
+> > > > #       macvlan unicast address not found on a slave
+> > > > 
+> > > > Can you explain a bit more on the suggestion?  
+> > > 
+> > > Oh, I thought it's here for unregister! Feels like it'd be cleaner to
+> > > add the flush in dev_*c_add() and friends? How hard would it be to
+> > > identify the callers in atomic context?  
+> > 
+> > Not sure we can do it in dev_xc_add because it runs under rtnl :-(
+> > I currently do flush in netdev_run_todo because that's the place that
+> > doesn't hold rtnl. Otherwise flush will get stuck because the work
+> > handler grabs it...
+> 
+> I was thinking of something a'la linkwatch. We can "steal" / "flush"
+> the pending work inline. I guess linkwatch is a major source of races
+> over the years...
 >
-> The previous implementation had a loop that performed le16_to_cpus()
-> on the entire buffer. This resulted in endianness conversion being
-> performed on uninitialized memory for all interior words.
->
-> Fix this by converting the endianness only for the boundary words
-> immediately after they are successfully read from the EEPROM.
->
-> Found by Linux Verification Center (linuxtesting.org) with SVACE.
->
-> Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
+> Does the macvlan + team problem still happens with the current
+> implementation minus the flush? We are only flushing once so only
+> pushing the addresses thru one layer of async callbacks.
 
-AI Review reports:
+Yes, it does happen consistently when I remove the flush. It also
+happens with my internal v4, so I need to look again at what's going on.
+Not sure whether it's my internal regression or I was just sloppy/lucky
+(since you're correct in pointing out that we flush only once).
 
-The commit message cites the initial git repository commit 1da177e4c3f4
-("Linux-2.6.12-rc2") from 2005 as the source of the bug. However, the
-e1000e driver wasn't introduced until 2007 in commit bc7f75fa9788
-("[E1000E]: New pci-express e1000 driver (currently for ICH9 devices
-only)"). While the e1000 driver did have this bug pattern in the initial
-commit, this patch fixes the e1000e driver, which is a separate driver.
-
-Should the Fixes: tag reference bc7f75fa9788 instead, since that's when
-the buggy pattern was first introduced in e1000e?
-
-Also, the same comment from the e1000 patch applies here. I think this
-patch should be split like the e1000 ones with the return value going to
-*-net and the endian to *-next.
-
-Thanks,
-Tony
-
-
-> Co-developed-by: Iskhakov Daniil <dish@amicon.ru>
-> Signed-off-by: Iskhakov Daniil <dish@amicon.ru>
-> Signed-off-by: Agalakov Daniil <ade@amicon.ru>
-> ---
->   drivers/net/ethernet/intel/e1000e/ethtool.c | 19 ++++++++++++-------
->   1 file changed, 12 insertions(+), 7 deletions(-)
->
-> diff --git a/drivers/net/ethernet/intel/e1000e/ethtool.c b/drivers/net/et=
-hernet/intel/e1000e/ethtool.c
-> index dbed30943ef4..a8b35ae41141 100644
-> --- a/drivers/net/ethernet/intel/e1000e/ethtool.c
-> +++ b/drivers/net/ethernet/intel/e1000e/ethtool.c
-> @@ -583,20 +583,25 @@ static int e1000_set_eeprom(struct net_device *netd=
-ev,
->                /* need read/modify/write of first changed EEPROM word */
->                /* only the second byte of the word is being modified */
->                ret_val =3D e1000_read_nvm(hw, first_word, 1, &eeprom_buff=
-[0]);
-> +             if (ret_val)
-> +                     goto out;
-> +
-> +             /* Device's eeprom is always little-endian, word addressabl=
-e */
-> +             le16_to_cpus(&eeprom_buff[0]);
-> +
->                ptr++;
->        }
-> -     if (((eeprom->offset + eeprom->len) & 1) && (!ret_val))
-> +     if ((eeprom->offset + eeprom->len) & 1) {
->                /* need read/modify/write of last changed EEPROM word */
->                /* only the first byte of the word is being modified */
->                ret_val =3D e1000_read_nvm(hw, last_word, 1,
->                                         &eeprom_buff[last_word - first_wo=
-rd]);
-> +             if (ret_val)
-> +                     goto out;
->
-> -     if (ret_val)
-> -             goto out;
-> -
-> -     /* Device's eeprom is always little-endian, word addressable */
-> -     for (i =3D 0; i < last_word - first_word + 1; i++)
-> -             le16_to_cpus(&eeprom_buff[i]);
-> +             /* Device's eeprom is always little-endian, word addressabl=
-e */
-> +             le16_to_cpus(&eeprom_buff[last_word - first_word]);
-> +     }
->
->        memcpy(ptr, bytes, eeprom->len);
->
-
-
---_000_526feb2ed47f4d42b1f4662c67e52ef9amiconru_
-Content-Type: text/html; charset="koi8-r"
-Content-Transfer-Encoding: quoted-printable
-
-<html>
-<head>
-<meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Dkoi8-r">
-<meta name=3D"Generator" content=3D"Microsoft Exchange Server">
-<!-- converted from text --><style><!-- .EmailQuote { margin-left: 1pt; pad=
-ding-left: 4pt; border-left: #800000 2px solid; } --></style>
-</head>
-<body>
-<meta content=3D"text/html; charset=3DUTF-8">
-<style type=3D"text/css" style=3D"">
-<!--
-p
-	{margin-top:0;
-	margin-bottom:0}
--->
-</style>
-<div dir=3D"ltr">
-<div id=3D"x_divtagdefaultwrapper" dir=3D"ltr" style=3D"font-size:12pt; col=
-or:#000000; font-family:Calibri,Helvetica,sans-serif">
-<div>Hi Tony,</div>
-<div><br>
-</div>
-<div>Thanks for the review!</div>
-<div><br>
-</div>
-<div>Regarding e1000e: the return value of e1000_read_eeprom() is already p=
-roperly checked.</div>
-<div>Therefore, for e1000e, I am only submitting the endianness conversion =
-cleanup&nbsp;as part</div>
-<div>of a separate 'net-next' series. The functional fix for e1000 (missing=
- return value check)</div>
-<div>will be sent as a standalone patch for the 'net' tree.</div>
-<div><br>
-</div>
-<div>I'm also removing the Fixes: tags from the endianness cleanup patches =
-since, as you noted,</div>
-<div>the uninitialized data is eventually overwritten by memcpy() and doesn=
-'t cause a functional</div>
-<div>failure.</div>
-<div><br>
-</div>
-<div>Best regards,</div>
-<div>Daniil</div>
-</div>
-<hr tabindex=3D"-1" style=3D"display:inline-block; width:98%">
-<div id=3D"x_divRplyFwdMsg" dir=3D"ltr"><font face=3D"Calibri, sans-serif" =
-color=3D"#000000" style=3D"font-size:11pt"><b>From:</b> Tony Nguyen &lt;ant=
-hony.l.nguyen@intel.com&gt;<br>
-<b>Sent:</b> Wednesday, March 25, 2026 2:27:12 AM<br>
-<b>To:</b> =E1=C7=C1=CC=C1=CB=CF=D7 =E4=C1=CE=C9=C9=CC<br>
-<b>Cc:</b> Przemek Kitszel; Andrew Lunn; David S. Miller; Eric Dumazet; Jak=
-ub Kicinski; Paolo Abeni; intel-wired-lan@lists.osuosl.org; netdev@vger.ker=
-nel.org; linux-kernel@vger.kernel.org; lvc-project@linuxtesting.org; =E9=D3=
-=C8=C1=CB=CF=D7 =E4=C1=CE=C9=C9=CC; =F2=C1=DA=CF=D7 =F2=CF=CD=C1=CE<br>
-<b>Subject:</b> Re: [PATCH net 3/3] e1000e: fix endianness conversion of un=
-initialized words</font>
-<div>&nbsp;</div>
-</div>
-</div>
-<font size=3D"2"><span style=3D"font-size:10pt;">
-<div class=3D"PlainText"><br>
-<br>
-On 3/18/2026 5:05 AM, Agalakov Daniil wrote:<br>
-&gt; [Why]<br>
-&gt; In e1000_set_eeprom(), the eeprom_buff is allocated to hold a range of=
-<br>
-&gt; words. However, only the boundary words (the first and the last) are<b=
-r>
-&gt; populated from the EEPROM if the write request is not word-aligned.<br=
->
-&gt; The words in the middle of the buffer remain uninitialized because the=
-y<br>
-&gt; are intended to be completely overwritten by the new data via memcpy()=
-.<br>
-&gt; <br>
-&gt; The previous implementation had a loop that performed le16_to_cpus()<b=
-r>
-&gt; on the entire buffer. This resulted in endianness conversion being<br>
-&gt; performed on uninitialized memory for all interior words.<br>
-&gt; <br>
-&gt; Fix this by converting the endianness only for the boundary words<br>
-&gt; immediately after they are successfully read from the EEPROM.<br>
-&gt; <br>
-&gt; Found by Linux Verification Center (linuxtesting.org) with SVACE.<br>
-&gt; <br>
-&gt; Fixes: 1da177e4c3f4 (&quot;Linux-2.6.12-rc2&quot;)<br>
-<br>
-AI Review reports:<br>
-<br>
-The commit message cites the initial git repository commit 1da177e4c3f4<br>
-(&quot;Linux-2.6.12-rc2&quot;) from 2005 as the source of the bug. However,=
- the<br>
-e1000e driver wasn't introduced until 2007 in commit bc7f75fa9788<br>
-(&quot;[E1000E]: New pci-express e1000 driver (currently for ICH9 devices<b=
-r>
-only)&quot;). While the e1000 driver did have this bug pattern in the initi=
-al<br>
-commit, this patch fixes the e1000e driver, which is a separate driver.<br>
-<br>
-Should the Fixes: tag reference bc7f75fa9788 instead, since that's when<br>
-the buggy pattern was first introduced in e1000e?<br>
-<br>
-Also, the same comment from the e1000 patch applies here. I think this <br>
-patch should be split like the e1000 ones with the return value going to <b=
-r>
-*-net and the endian to *-next.<br>
-<br>
-Thanks,<br>
-Tony<br>
-<br>
-<br>
-&gt; Co-developed-by: Iskhakov Daniil &lt;dish@amicon.ru&gt;<br>
-&gt; Signed-off-by: Iskhakov Daniil &lt;dish@amicon.ru&gt;<br>
-&gt; Signed-off-by: Agalakov Daniil &lt;ade@amicon.ru&gt;<br>
-&gt; ---<br>
-&gt;&nbsp;&nbsp; drivers/net/ethernet/intel/e1000e/ethtool.c | 19 &#43;&#43=
-;&#43;&#43;&#43;&#43;&#43;&#43;&#43;&#43;&#43;&#43;-------<br>
-&gt;&nbsp;&nbsp; 1 file changed, 12 insertions(&#43;), 7 deletions(-)<br>
-&gt; <br>
-&gt; diff --git a/drivers/net/ethernet/intel/e1000e/ethtool.c b/drivers/net=
-/ethernet/intel/e1000e/ethtool.c<br>
-&gt; index dbed30943ef4..a8b35ae41141 100644<br>
-&gt; --- a/drivers/net/ethernet/intel/e1000e/ethtool.c<br>
-&gt; &#43;&#43;&#43; b/drivers/net/ethernet/intel/e1000e/ethtool.c<br>
-&gt; @@ -583,20 &#43;583,25 @@ static int e1000_set_eeprom(struct net_devic=
-e *netdev,<br>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp; /* need read/modify/write of first changed EEPROM word =
-*/<br>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp; /* only the second byte of the word is being modified *=
-/<br>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp; ret_val =3D e1000_read_nvm(hw, first_word, 1, &amp;eepr=
-om_buff[0]);<br>
-&gt; &#43;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp; if (ret_val)<br>
-&gt; &#43;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; goto out;<br>
-&gt; &#43;<br>
-&gt; &#43;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp; /* Device's eeprom is always little-endian, word addressable */<br>
-&gt; &#43;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp; le16_to_cpus(&amp;eeprom_buff[0]);<br>
-&gt; &#43;<br>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp; ptr&#43;&#43;;<br>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br>
-&gt; -&nbsp;&nbsp;&nbsp;&nbsp; if (((eeprom-&gt;offset &#43; eeprom-&gt;len=
-) &amp; 1) &amp;&amp; (!ret_val))<br>
-&gt; &#43;&nbsp;&nbsp;&nbsp;&nbsp; if ((eeprom-&gt;offset &#43; eeprom-&gt;=
-len) &amp; 1) {<br>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp; /* need read/modify/write of last changed EEPROM word *=
-/<br>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp; /* only the first byte of the word is being modified */=
-<br>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp; ret_val =3D e1000_read_nvm(hw, last_word, 1,<br>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp; &amp;eeprom_buff[last_word - first_word]);<br>
-&gt; &#43;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp; if (ret_val)<br>
-&gt; &#43;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; goto out;<br>
-&gt;&nbsp;&nbsp; <br>
-&gt; -&nbsp;&nbsp;&nbsp;&nbsp; if (ret_val)<br>
-&gt; -&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp; goto out;<br>
-&gt; -<br>
-&gt; -&nbsp;&nbsp;&nbsp;&nbsp; /* Device's eeprom is always little-endian, =
-word addressable */<br>
-&gt; -&nbsp;&nbsp;&nbsp;&nbsp; for (i =3D 0; i &lt; last_word - first_word =
-&#43; 1; i&#43;&#43;)<br>
-&gt; -&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp; le16_to_cpus(&amp;eeprom_buff[i]);<br>
-&gt; &#43;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp; /* Device's eeprom is always little-endian, word addressable */<br>
-&gt; &#43;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp; le16_to_cpus(&amp;eeprom_buff[last_word - first_word]);<br>
-&gt; &#43;&nbsp;&nbsp;&nbsp;&nbsp; }<br>
-&gt;&nbsp;&nbsp; <br>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; memcpy(ptr, bytes, eeprom-&g=
-t;len);<br>
-&gt;&nbsp;&nbsp; <br>
-<br>
-</div>
-</span></font>
-</body>
-</html>
-
---_000_526feb2ed47f4d42b1f4662c67e52ef9amiconru_--
+Before I went down the workqueue route, I had a simple
+net_todo_list-like approach: `list_add_tail` on enqueue and
+`while(!list_empty) run_work()` on rtnl_unlock. This had a nice properly of
+tracking re-submissions (by checking whether the device's list_head is
+linked into the list or not) and it was relatively easy to do the
+recursive flush. Let me try get back to this approach and see whether
+it solves the flush? Not sure what wq buys us at this point.
