@@ -4,84 +4,88 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F357410BA431
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 27 Mar 2026 07:23:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9A9DB10BA432
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 27 Mar 2026 07:23:41 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id CB38183C23;
-	Fri, 27 Mar 2026 07:23:38 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 6AC2983C30;
+	Fri, 27 Mar 2026 07:23:41 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id GOu-Ui3NZEnu; Fri, 27 Mar 2026 07:23:38 +0000 (UTC)
+ id 9QYUW0jElpgK; Fri, 27 Mar 2026 07:23:40 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 054AF827A0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 953D983C29
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1774596218;
-	bh=7P8hGlecmQr20nAtPit5lbQW4/g9MdVvcqPsoku4ZYI=;
-	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=95whfT1F7pVZMHTz1gkXQdzANWa2l8rRIDJbO7wCPNq9lWoqHbmbA4Pi6M4upzRjc
-	 /VuqhrJhxU8b0xi3o3ecQC2M+7O4iCV0gN8tN36u7DOXPlnjjevVOhwQ1DvZZeLbTN
-	 lIH9681BQSKRI3eDuxUKEDWJjMoW97H0HOGiWAbuU2WCNjyWBxtuXLSYBxGufuxv8s
-	 hGtZ+EQF1KTZJyfrHYAgvkyZHtAVP9U5E3eUu1LXBzt3ab4mgimPfhk9fsoql50Lx1
-	 DQeMDf8p8g9G8w/OrxoLTROhkj7QGrmVTe3faIhs5VyIrpcHK33xaT3ppHHAY1RRzT
-	 wgfVmIv27xCpw==
+	s=default; t=1774596220;
+	bh=dIDOqpXEPqmJGLQ19N/DQYPNtM7J8tYYvNPr/uNDIew=;
+	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=95CtsAcdqnwaxl1U23ra6map/dVErsH1cIGQZOHM6YsEhPoOXpNsq6S7j8q5PqePR
+	 K1JJccUlVyp+h9Vzx6PGXsYSiqvYutG2GBdVW/3Rl/o47y+xbTeaKRfptelJ09H2lD
+	 OjoKf2B6qwAv2jMFteiy3VzwjW6KtoGR0ND1Z1d1J7J5NGJUj4MQc0aFQV2aIsKjjp
+	 NtGUqPo9ZA+ONNcvryAK6lv+7XfP9jYONMvT3lYlzzdE2Q4sVUn9iAlJcOKPNCL8lK
+	 iaHDZ1Gnb4YA8SsNLJPseQQI4rjFkeis4E8YEFvu811wtBI8PY37U14lBpUWgvHqoc
+	 ZgnQX6meuOn+w==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 054AF827A0;
-	Fri, 27 Mar 2026 07:23:38 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 953D983C29;
+	Fri, 27 Mar 2026 07:23:40 +0000 (UTC)
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id 925EA249
- for <intel-wired-lan@lists.osuosl.org>; Fri, 27 Mar 2026 07:23:36 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id C2D31249
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 27 Mar 2026 07:23:38 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 842FD415FA
- for <intel-wired-lan@lists.osuosl.org>; Fri, 27 Mar 2026 07:23:36 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id A94D7415FA
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 27 Mar 2026 07:23:38 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id yXxG757MI_CG for <intel-wired-lan@lists.osuosl.org>;
- Fri, 27 Mar 2026 07:23:36 +0000 (UTC)
+ id u6-YSZ6-2hIm for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 27 Mar 2026 07:23:37 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.14;
  helo=mgamail.intel.com; envelope-from=aleksandr.loktionov@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org E540B41574
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E540B41574
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 3DDF741574
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3DDF741574
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.14])
- by smtp4.osuosl.org (Postfix) with ESMTPS id E540B41574
- for <intel-wired-lan@lists.osuosl.org>; Fri, 27 Mar 2026 07:23:35 +0000 (UTC)
-X-CSE-ConnectionGUID: b9osulzsRG6od6ceqqzUjA==
-X-CSE-MsgGUID: WFfKnDeqSZyhjnXGRoDTkQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11741"; a="75733963"
-X-IronPort-AV: E=Sophos;i="6.23,143,1770624000"; d="scan'208";a="75733963"
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 3DDF741574
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 27 Mar 2026 07:23:37 +0000 (UTC)
+X-CSE-ConnectionGUID: NPTirQ/hTFqLmfhejqCT1w==
+X-CSE-MsgGUID: KL4axRYsRi+kRQ1KYGPrYw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11741"; a="75733965"
+X-IronPort-AV: E=Sophos;i="6.23,143,1770624000"; d="scan'208";a="75733965"
 Received: from orviesa002.jf.intel.com ([10.64.159.142])
  by fmvoesa108.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 27 Mar 2026 00:23:35 -0700
-X-CSE-ConnectionGUID: XY/SgQUmTIyPDG7gpUf/Xw==
-X-CSE-MsgGUID: Ll3cd2eDSzuEUk/PQinWSg==
+ 27 Mar 2026 00:23:37 -0700
+X-CSE-ConnectionGUID: cjU8uxqrTNeqQpG2ePj2qw==
+X-CSE-MsgGUID: GGk17MhwRLCO9K21fSn5aA==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,143,1770624000"; d="scan'208";a="255739078"
+X-IronPort-AV: E=Sophos;i="6.23,143,1770624000"; d="scan'208";a="255739086"
 Received: from amlin-019-225.igk.intel.com ([10.102.19.225])
- by orviesa002.jf.intel.com with ESMTP; 27 Mar 2026 00:23:34 -0700
+ by orviesa002.jf.intel.com with ESMTP; 27 Mar 2026 00:23:35 -0700
 From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 To: intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com,
  aleksandr.loktionov@intel.com
-Cc: netdev@vger.kernel.org
-Date: Fri, 27 Mar 2026 08:23:24 +0100
-Message-ID: <20260327072332.130320-1-aleksandr.loktionov@intel.com>
+Cc: netdev@vger.kernel.org, Jacob Keller <jacob.e.keller@intel.com>,
+ Jakub Kicinski <kuba@kernel.org>
+Date: Fri, 27 Mar 2026 08:23:25 +0100
+Message-ID: <20260327072332.130320-2-aleksandr.loktionov@intel.com>
 X-Mailer: git-send-email 2.52.0
+In-Reply-To: <20260327072332.130320-1-aleksandr.loktionov@intel.com>
+References: <20260327072332.130320-1-aleksandr.loktionov@intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1774596216; x=1806132216;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=r+G9qCQlC2UPALPlilVAYlqAgt+L21Z8ORPZYuoYQ5Y=;
- b=d2HzcHjB3vw74nH48CpfsD4PVAtlY0OzC3DO86o237gdbbs/QiETsxf7
- v4bPP0Yxv15ncWI1pXIl7EGsLqzfpPDP55+kSHTEJhJQ3GmepgBebOvtE
- FA5SvHJWra+wuI6DjXwwNgOc4gJYnoP7PmlyojK1yc5iyqvPiR4GBIWoO
- NrEjNbs8QXScfMEwAttFqHK6vF4SWdj/EcoZ5QIzIexSYJjYNXDZCXKSJ
- qT0nwed8UegIWt1H9a7leF7evTc5a9w4gGjuI/3jjzjaqbWlFxu8qv+BY
- 5oACE/B7D5ptSr2L1MHMpTUkHHbQsXO8ycCoYFZlcoohGhH/57GINTvrF
+ t=1774596217; x=1806132217;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=+FmYWfOtYLDqvPwMlsKA5+9rkYFC7p/MdLIOyUR/QUs=;
+ b=ACVp49yAy6Lyg5Aa556Oen6NoakcU0hVSTgHztvdesebc8138E/eOkGM
+ awiLZqkcCvbJ45BFjgZUAoF69mmR10BGF91bRYBsWKpq1ocB8x79zS++O
+ 8y6qOcoCWALjpcdy7UtI863E1+3a5nLeHXkkT5UlVP1NtbGqVbieUfoZH
+ wej0YcXBmx40qbsEidBYCFNcGHKKnFjWB9jvgLMmihQ7amAONB85oplFo
+ cCRDLRuuXoG/2+iJz7FABHkWlYHabgmvZk8TBrn0jQ/yxKlNzsCyB+21b
+ INmfFnYsufWIxmFXCfOvdTMsqEJhPgJs+1c2olTmZlAKVci5A6M7NwxPX
  g==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
@@ -89,9 +93,9 @@ X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=d2HzcHjB
-Subject: [Intel-wired-lan] [PATCH net] ice: fix null-ptr dereference on
- false-positive tx timeout
+ header.s=Intel header.b=ACVp49yA
+Subject: [Intel-wired-lan] [PATCH net] ice: fix locking around
+ wait_event_interruptible_locked_irq
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -107,42 +111,78 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Michal Kubiak <michal.kubiak@intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
 
-Due to some kernel bugs the Tx timeout event may be false-positive.
-For example, the kernel commit 95ecba62e2fd ("net: fix races in
-netdev_tx_sent_queue()/dev_watchdog()") fixes race conditions that can
-also occur during the ice driver initialization.
+Commit 50327223a8bb ("ice: add lock to protect low latency interface")
+introduced a wait queue used to protect the low latency timer interface.
+The queue is used with the wait_event_interruptible_locked_irq macro, which
+unlocks the wait queue lock while sleeping. The irq variant uses
+spin_lock_irq and spin_unlock_irq to manage this. The wait queue lock was
+previously locked using spin_lock_irqsave. This difference in lock variants
+could lead to issues, since wait_event would unlock the wait queue and
+restore interrupts while sleeping.
 
-In case of such false-positive Tx timeouts there can be no real Tx
-transaction started, so the SKB pointer can be NULL. Therefore, the call
-devlink_fmsg_dump_skb() can crash because of NULL-ptr dereference.
+The ice_read_phy_tstamp_ll_e810() function is ultimately called through
+ice_read_phy_tstamp, which is called from ice_ptp_process_tx_tstamp or
+ice_ptp_clear_unexpected_tx_ready. The former is called through the
+miscellaneous IRQ thread function, while the latter is called from the
+service task work queue thread. Neither of these functions has interrupts
+disabled, so use spin_lock_irq instead of spin_lock_irqsave.
 
-Fix that by checking the SKB pointer before dereferencing it.
-
-Fixes: 2a82874a3b7b ("ice: add Tx hang devlink health reporter")
+Fixes: 50327223a8bb ("ice: add lock to protect low latency interface")
 Cc: stable@vger.kernel.org
-Signed-off-by: Michal Kubiak <michal.kubiak@intel.com>
+Reported-by: Jakub Kicinski <kuba@kernel.org>
+Closes: https://lore.kernel.org/netdev/20250109181823.77f44c69@kernel.org/
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 ---
 
- drivers/net/ethernet/intel/ice/devlink/health.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.c | 9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/devlink/health.c b/drivers/net/ethernet/intel/ice/devlink/health.c
-index 8e9a8a8..4275329 100644
---- a/drivers/net/ethernet/intel/ice/devlink/health.c
-+++ b/drivers/net/ethernet/intel/ice/devlink/health.c
-@@ -409,7 +409,8 @@ static int ice_tx_hang_reporter_dump(struct devlink_health_reporter *reporter,
- 	ice_fmsg_put_ptr(fmsg, "skb-ptr", skb);
- 	devlink_fmsg_binary_pair_put(fmsg, "desc", event->tx_ring->desc,
- 				     event->tx_ring->count * sizeof(struct ice_tx_desc));
--	devlink_fmsg_dump_skb(fmsg, skb);
-+	if (skb)
-+		devlink_fmsg_dump_skb(fmsg, skb);
- 	devlink_fmsg_obj_nest_end(fmsg);
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
+index 61c0a0d..1f73d72 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
++++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
+@@ -4323,18 +4323,17 @@ static int
+ ice_read_phy_tstamp_ll_e810(struct ice_hw *hw, u8 idx, u8 *hi, u32 *lo)
+ {
+ 	struct ice_e810_params *params = &hw->ptp.phy.e810;
+-	unsigned long flags;
+ 	u32 val;
+ 	int err;
+ 
+-	spin_lock_irqsave(&params->atqbal_wq.lock, flags);
++	spin_lock_irq(&params->atqbal_wq.lock);
+ 
+ 	/* Wait for any pending in-progress low latency interrupt */
+ 	err = wait_event_interruptible_locked_irq(params->atqbal_wq,
+ 						  !(params->atqbal_flags &
+ 						    ATQBAL_FLAGS_INTR_IN_PROGRESS));
+ 	if (err) {
+-		spin_unlock_irqrestore(&params->atqbal_wq.lock, flags);
++		spin_unlock_irq(&params->atqbal_wq.lock);
+ 		return err;
+ 	}
+ 
+@@ -4349,7 +4348,7 @@ ice_read_phy_tstamp_ll_e810(struct ice_hw *hw, u8 idx, u8 *hi, u32 *lo)
+ 				       REG_LL_PROXY_H);
+ 	if (err) {
+ 		ice_debug(hw, ICE_DBG_PTP, "Failed to read PTP timestamp using low latency read\n");
+-		spin_unlock_irqrestore(&params->atqbal_wq.lock, flags);
++		spin_unlock_irq(&params->atqbal_wq.lock);
+ 		return err;
+ 	}
+ 
+@@ -4359,7 +4358,7 @@ ice_read_phy_tstamp_ll_e810(struct ice_hw *hw, u8 idx, u8 *hi, u32 *lo)
+ 	/* Read the low 32 bit value and set the TS valid bit */
+ 	*lo = rd32(hw, REG_LL_PROXY_L) | TS_VALID;
+ 
+-	spin_unlock_irqrestore(&params->atqbal_wq.lock, flags);
++	spin_unlock_irq(&params->atqbal_wq.lock);
  
  	return 0;
+ }
 -- 
 2.52.0
 
