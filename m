@@ -1,74 +1,73 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4BF6610BA435
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1889710BA431
 	for <intel-wired-lan@archiver.kernel.org>; Fri, 27 Mar 2026 07:31:04 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 1F08C83B46;
-	Fri, 27 Mar 2026 07:31:04 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id E41656124B;
+	Fri, 27 Mar 2026 07:31:03 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id DwTZKGfsa485; Fri, 27 Mar 2026 07:31:02 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 4Tlz8B3FzCJu; Fri, 27 Mar 2026 07:31:03 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B794583A88
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4D39A6127C
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1774596662;
-	bh=kVIaHAa4uaRA0Itr5dFO3XCQ/gulNkxlSsAb0NK53Dg=;
+	s=default; t=1774596663;
+	bh=ctopaYH3ZHtzD/idUHSO5I3IRTMErrFp1cMGbN0Ls98=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=0iAaDiuBFM5jTKqGtZVY+5bjFekH2SOzp/mQ97/EVzY/YlUhSCVxiYYv2GMakxRtP
-	 hjWppsF05eJjdz7OdOTbHgb7eE1Erzm8KXgYWtnft1D/G8Zzy7nn42TQVQBB5Ifva3
-	 UPSd8vMhXINHsBnHueR8OYs9AwX8d+tK2jGTqxxesbXX5TAUjqGVs3cQJrQztrdZrH
-	 MrSQTk1FVWGn8wGVCjLjg0shKeyCpFFBy+okYvppQvEYjp2tGCWg5WmnswX55yVx0k
-	 F2iBaZFYR8EFBWROFnY8yj/bdN/tvgm/MTkKjViWYV/Ny9LqCuV79ZRZIRBLAudCcI
-	 BfkqGBUn8tZtw==
+	b=fPaOqkdw9HPtaIArOjRelAA2BtYbUldmr4ed/utXJs/HSs0oAHanqsTkYPacu9mO+
+	 BfFGMbXZKpOCEbh4Pq+MB1ZzSdasulFcNc/rDHO6Vfo10YdxQClMmx9/hP3Tq/XIzd
+	 bB0z427QY/hqsdnu6V1hVWshNQO85ezTfkn0np8QWiPjyKZPrB3YWY7MnQNxwhLc1x
+	 eE074/za2bgNr44b70FfcIt95XTf0XCfjTn7oNZgRfJNgCTBG/FK10Bf9mKpR6qXZg
+	 yEUMVv094LfRbTLDVMwzRMLa99lFm1jumMk3iynTcnjzmpZEGxC0dBxDzPzug8AN7u
+	 sIPsr78JGUgpg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id B794583A88;
-	Fri, 27 Mar 2026 07:31:02 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 4D39A6127C;
+	Fri, 27 Mar 2026 07:31:03 +0000 (UTC)
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id E6242249
- for <intel-wired-lan@lists.osuosl.org>; Fri, 27 Mar 2026 07:31:00 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id AB1942D5
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 27 Mar 2026 07:31:01 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id D8A58415C8
- for <intel-wired-lan@lists.osuosl.org>; Fri, 27 Mar 2026 07:31:00 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id A94D441598
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 27 Mar 2026 07:31:01 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id KXPrgyHDDg6B for <intel-wired-lan@lists.osuosl.org>;
+ id 0h9f2f71zTdQ for <intel-wired-lan@lists.osuosl.org>;
  Fri, 27 Mar 2026 07:31:00 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.14;
  helo=mgamail.intel.com; envelope-from=aleksandr.loktionov@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 12BEE41598
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 12BEE41598
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org B4ACB415BB
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B4ACB415BB
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.14])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 12BEE41598
- for <intel-wired-lan@lists.osuosl.org>; Fri, 27 Mar 2026 07:30:59 +0000 (UTC)
-X-CSE-ConnectionGUID: q9sEOLgUQlqDgrgR+akypA==
-X-CSE-MsgGUID: TDCxDuhdR1+xu3DsnKkivg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11741"; a="75734326"
-X-IronPort-AV: E=Sophos;i="6.23,143,1770624000"; d="scan'208";a="75734326"
+ by smtp4.osuosl.org (Postfix) with ESMTPS id B4ACB415BB
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 27 Mar 2026 07:31:00 +0000 (UTC)
+X-CSE-ConnectionGUID: Ua/El1t5ReGTdp9vcqamoA==
+X-CSE-MsgGUID: M5WXe1kbR929Vi6eGOBvag==
+X-IronPort-AV: E=McAfee;i="6800,10657,11741"; a="75734329"
+X-IronPort-AV: E=Sophos;i="6.23,143,1770624000"; d="scan'208";a="75734329"
 Received: from orviesa002.jf.intel.com ([10.64.159.142])
  by fmvoesa108.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 27 Mar 2026 00:30:59 -0700
-X-CSE-ConnectionGUID: HlMc/K/cRtG7tuq41lPEKQ==
-X-CSE-MsgGUID: ANQZfXGWT+CTad4XqS9ztQ==
+ 27 Mar 2026 00:31:00 -0700
+X-CSE-ConnectionGUID: LN1ynwVCQrSlFleup1Cjgg==
+X-CSE-MsgGUID: slsuElGSTNygE3LNi3aO6Q==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,143,1770624000"; d="scan'208";a="255740394"
+X-IronPort-AV: E=Sophos;i="6.23,143,1770624000"; d="scan'208";a="255740404"
 Received: from amlin-019-225.igk.intel.com ([10.102.19.225])
- by orviesa002.jf.intel.com with ESMTP; 27 Mar 2026 00:30:57 -0700
+ by orviesa002.jf.intel.com with ESMTP; 27 Mar 2026 00:30:59 -0700
 From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 To: intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com,
  aleksandr.loktionov@intel.com
-Cc: netdev@vger.kernel.org,
-	Marcin Szycik <marcin.szycik@linux.intel.com>
-Date: Fri, 27 Mar 2026 08:30:42 +0100
-Message-ID: <20260327073046.134085-8-aleksandr.loktionov@intel.com>
+Cc: netdev@vger.kernel.org
+Date: Fri, 27 Mar 2026 08:30:43 +0100
+Message-ID: <20260327073046.134085-9-aleksandr.loktionov@intel.com>
 X-Mailer: git-send-email 2.52.0
 In-Reply-To: <20260327073046.134085-1-aleksandr.loktionov@intel.com>
 References: <20260327073046.134085-1-aleksandr.loktionov@intel.com>
@@ -76,25 +75,25 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1774596660; x=1806132660;
+ t=1774596661; x=1806132661;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=w3FMcVYaCrwrpfwoeEHl6nNRYb9VqqgyYnHsaVgefjc=;
- b=ClVvjAFyYFT0NBjkSkQORYpvl0+mgQglgOyA0dYBkmCkGpnI4gdghYUK
- B1BM78j7Blz5xyWK8/ynC7WFrPrv+lXoHNhuYEO9D6ufAXtWCxvewxhGX
- 5Ifw96LsbyinqNGBurbU/HVm2JbaVkQekvB5w5opl3A2UnF+0JhkDL87j
- BKc/H6XYlpLxQF2YLJykeLB2TV7miGrww+N29R6pojJswYjO5iMukw/tN
- WUsJg9tWQsJ5sDi+fIQ95Xvb1qFr6gwqHwgM6lJaRXBdZ0MrTeCgSRjJ9
- HOvV9aBoDypi1D8GEtvLQbVt26KjHId8UQJGWk4zAJrNiULouMQ9LN09y
- A==;
+ bh=8p/HtnBUPvGrSHRur7c8OxjrxPjk33dmg37K91oRb6I=;
+ b=i2bwLShG9r64cbD0km6e9T++CzThJbLxkCNuP6s7Je8+po+G3qFvtyuO
+ e6dQXi7kQgQ+m+NUtqPhL5jJoU8M+krPREVjqInlq+EELjZLdmycufmB7
+ 7Ur6vPIpG4QklykLeuPCMdbWq37veOWclB7sugabuE+BxmHxGskys0Wlp
+ TAoDc9zkG1B3ZRdi5vrd12oO+J/U5pK3GtubaRdodsc9RBwcovNPqShjW
+ xBrgfOYUh9bDwRMbtXUxq2w/kWUNICc8rxV5rK7QYlRKkL1FWzxK2fifv
+ gy4kG3mDFEP33gxCHb9gIxRQp6MywFsXUXVsxp96U0+pPPpJaVrnjeu3J
+ g==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=ClVvjAFy
-Subject: [Intel-wired-lan] [PATCH iwl-next] ixgbe: fix cls_u32 nexthdr path
- returning success when no entry installed
+ header.a=rsa-sha256 header.s=Intel header.b=i2bwLShG
+Subject: [Intel-wired-lan] [PATCH iwl-next] ixgbe: use int instead of u32
+ for error code variables
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -110,36 +109,127 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-ixgbe_configure_clsu32() returns 0 (success) after the nexthdr loop
-even when ixgbe_clsu32_build_input() fails for every candidate entry
-and no jump-table slot is actually programmed.  Callers that test the
-return value would then falsely believe the filter was installed.
+The variables used to store return values of kernel and driver functions
+throughout the ixgbe driver are declared as u32 in several places.  Such
+functions return negative errno values on error (e.g. -EIO, -EFAULT),
+which are sign-extended negative integers.  Storing them in an unsigned
+u32 silently wraps the value: -EIO (0xFFFFFFF7) stored in u32 becomes a
+large positive number, so any "if (status)" truthiness check still works
+by accident, but comparisons against specific negative error codes or
+propagation up the call stack would produce wrong results.
 
-The variable 'err' already tracks the last ixgbe_clsu32_build_input()
-return value; if the loop completes with a successful break, err is 0.
-If all attempts failed, err holds the last failure code.  Change the
-unconditional 'return 0' to 'return err' so errors are propagated
-correctly.
+In the Linux kernel, u32 is reserved for fixed-width quantities used in
+hardware interfaces or protocol structures.  Using it for generic error
+codes misleads reviewers into thinking the value is hardware-constrained.
+
+Change all such local variables from u32 to int driver-wide: one in
+ixgbe_main.c (ixgbe_resume), three in ixgbe_phy.c
+(ixgbe_identify_phy_generic, ixgbe_tn_check_overtemp,
+ixgbe_set_copper_phy_power), and six in ixgbe_x550.c
+(ixgbe_check_link_t_X550em, ixgbe_get_lasi_ext_t_x550em,
+ixgbe_enable_lasi_ext_t_x550em, ixgbe_handle_lasi_ext_t_x550em,
+ixgbe_ext_phy_t_x550em_get_link, ixgbe_setup_internal_phy_t_x550em).
+
+No functional change.
 
 Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Reviewed-by: Marcin Szycik <marcin.szycik@linux.intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |  2 +-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c  |  6 +++---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c | 12 ++++++------
+ 3 files changed, 10 insertions(+), 10 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index db954e9..8ac80ff 100644
+index 210c7b9..703451d 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -10311,7 +10311,7 @@ static int ixgbe_configure_clsu32(struct ixgbe_adapter *adapter,
- 				kfree(jump);
- 			}
- 		}
--		return 0;
-+		return err;
- 	}
+@@ -7518,6 +7518,6 @@ static int ixgbe_resume(struct device *dev_d)
+ 	struct pci_dev *pdev = to_pci_dev(dev_d);
+ 	struct ixgbe_adapter *adapter = pci_get_drvdata(pdev);
+ 	struct net_device *netdev = adapter->netdev;
+-	u32 err;
++	int err;
  
- 	input = kzalloc_obj(*input);
+ 	adapter->hw.hw_addr = adapter->io_addr;
+ 
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
+index a1b2c3d..b4c5d6e 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
+@@ -264,5 +264,5 @@ int ixgbe_identify_phy_generic(struct ixgbe_hw *hw)
+ {
+-	u32 status = -EFAULT;
++	int status = -EFAULT;
+ 	u32 phy_addr;
+ 
+ 	if (!hw->phy.phy_semaphore_mask) {
+@@ -2812,6 +2812,6 @@ bool ixgbe_tn_check_overtemp(struct ixgbe_hw *hw)
+ {
+ 	u16 phy_data = 0;
+-	u32 status;
++	int status;
+ 
+ 	if (hw->device_id != IXGBE_DEV_ID_82599_T3_LOM)
+ 		return false;
+@@ -2833,5 +2833,5 @@ int ixgbe_set_copper_phy_power(struct ixgbe_hw *hw, bool on)
+ {
+-	u32 status;
++	int status;
+ 	u16 reg;
+ 
+ 	/* Bail if we don't have copper phy */
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+index c1d2e3f..d4e5f6a 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+@@ -1912,6 +1912,6 @@ static int ixgbe_check_link_t_X550em(struct ixgbe_hw *hw,
+ 				     bool link_up_wait_to_complete)
+ {
+-	u32 status;
++	int status;
+ 	u16 i, autoneg_status;
+ 
+ 	if (hw->mac.ops.get_media_type(hw) != ixgbe_media_type_copper)
+@@ -2331,6 +2331,6 @@ static int ixgbe_get_lasi_ext_t_x550em(struct ixgbe_hw *hw, bool *lsc,
+ 				       bool *is_overtemp)
+ {
+-	u32 status;
++	int status;
+ 	u16 reg;
+ 
+ 	*is_overtemp = false;
+@@ -2419,6 +2419,6 @@ static int ixgbe_enable_lasi_ext_t_x550em(struct ixgbe_hw *hw)
+ {
+ 	bool lsc, overtemp;
+-	u32 status;
++	int status;
+ 	u16 reg;
+ 
+ 	/* Clear interrupt flags */
+@@ -2512,7 +2512,7 @@ static int ixgbe_handle_lasi_ext_t_x550em(struct ixgbe_hw *hw,
+ {
+ 	struct ixgbe_phy_info *phy = &hw->phy;
+ 	bool lsc;
+-	u32 status;
++	int status;
+ 
+ 	status = ixgbe_get_lasi_ext_t_x550em(hw, &lsc, is_overtemp);
+ 	if (status)
+@@ -2608,5 +2608,5 @@ static int ixgbe_ext_phy_t_x550em_get_link(struct ixgbe_hw *hw, bool *link_up)
+ {
+-	u32 ret;
++	int ret;
+ 	u16 autoneg_status;
+ 
+ 	*link_up = false;
+@@ -2642,7 +2642,7 @@ static int ixgbe_setup_internal_phy_t_x550em(struct ixgbe_hw *hw)
+ {
+ 	ixgbe_link_speed force_speed;
+ 	bool link_up;
+-	u32 status;
++	int status;
+ 	u16 speed;
+ 
+ 	if (hw->mac.ops.get_media_type(hw) != ixgbe_media_type_copper)
 -- 
 2.52.0
-
