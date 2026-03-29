@@ -4,115 +4,117 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3B0281061B0A
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 30 Mar 2026 15:31:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 85E3F1061B0F
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 30 Mar 2026 15:31:24 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id EC96060BF8;
+	by smtp3.osuosl.org (Postfix) with ESMTP id 34A5C60BF2;
 	Mon, 30 Mar 2026 15:31:24 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id UxSXG5brk1uw; Mon, 30 Mar 2026 15:31:24 +0000 (UTC)
+ id HSfzBoejrpfW; Mon, 30 Mar 2026 15:31:22 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7183760C06
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C8A1A60BF3
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1774884683;
-	bh=39nWh5Sbwqb3QyZ67qx+99ZIlQgRVmnOj8xt3uyYktk=;
-	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	s=default; t=1774884682;
+	bh=Q3zHZR2nqCQ4BfQwwL3YtsGWqRQDle8jBml0c4WJz+U=;
+	h=From:Date:Cc:To:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:From;
-	b=OfDOzwKuVZlQQAYEGusiLk5uZ4SD8EW3ZRZq0/mTD+OVEy08XzP02EGVX4AIMaFxJ
-	 EW3OxADk51XBKn+nD1jyl2QDMShlfj9EQrxohbMib0Hs9yCfPEsXWLwy3I3umPmXeC
-	 O5r20MYQR8aewHXHNx6rUVuOgVZcBlqaqWyplciKwXj4xK7LKmSWwfbG8lqXAzb09N
-	 H9+1OwICySg5Xi6NIQvZJZ4AWQmtdnA2JhdHyrQbtt78cjCC4z20gJ529AEARxQi4o
-	 UtBpFDTru/2EZQQFl3rr8+pO9hBsuPeayvJpN8iDJHYADNPCS+u2EfWZq9wGxr0Xsl
-	 oGacdPMOM+lfQ==
+	b=RT2+CUCKz+lvvD1NEboQVMVYmU3Bjh+uhNdtO4OvG1ljdkGIeCsXSmDT6cgN93+zv
+	 Z7IJDbdk6K3iLZrbNI+MjP6KmCL9Egksb76TKgkbzQJoQ7BQzxtQYBG/xmhV5Aj+4G
+	 qlt6STlQwWrnFfaIo62yxilukiFrHYDlsCOQmc/hdLuFkTifu8OU+ATH3U/IfKryJr
+	 VuupmarAoA2SR2+krtlHBlsKrWqNvEfb7l1SmV71UZf8zPsQS3938PNJ4Exs0Zoywv
+	 35uvgPbVc3JtdKrsDiTBAmeEEr19KcoVTzDYwaJ4OzJ3vglwvV/G77JHcmcAS1GurJ
+	 x+G6M2wShnf+w==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 7183760C06;
-	Mon, 30 Mar 2026 15:31:23 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id 2690B2EB
- for <intel-wired-lan@lists.osuosl.org>; Sun, 29 Mar 2026 16:22:27 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id C8A1A60BF3;
+	Mon, 30 Mar 2026 15:31:22 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 1677310F
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 29 Mar 2026 03:25:59 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 0FEDB60770
- for <intel-wired-lan@lists.osuosl.org>; Sun, 29 Mar 2026 16:22:27 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 143AA408E1
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 29 Mar 2026 03:25:59 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id YYg7-5zD-MZw for <intel-wired-lan@lists.osuosl.org>;
- Sun, 29 Mar 2026 16:22:26 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2a00:1450:4864:20::32a; helo=mail-wm1-x32a.google.com;
- envelope-from=aaron1esau@gmail.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 2A5B460768
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2A5B460768
-Received: from mail-wm1-x32a.google.com (mail-wm1-x32a.google.com
- [IPv6:2a00:1450:4864:20::32a])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 2A5B460768
- for <intel-wired-lan@lists.osuosl.org>; Sun, 29 Mar 2026 16:22:26 +0000 (UTC)
-Received: by mail-wm1-x32a.google.com with SMTP id
- 5b1f17b1804b1-4853a485721so5375225e9.3
- for <intel-wired-lan@lists.osuosl.org>; Sun, 29 Mar 2026 09:22:25 -0700 (PDT)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id lVPVJZ3y9F_8 for <intel-wired-lan@lists.osuosl.org>;
+ Sun, 29 Mar 2026 03:25:57 +0000 (UTC)
+Received-SPF: None (mailfrom) identity=mailfrom;
+ client-ip=2607:f8b0:4864:20::231; helo=mail-oi1-x231.google.com;
+ envelope-from=bob@vanvalzah.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 95977408DB
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 95977408DB
+Received: from mail-oi1-x231.google.com (mail-oi1-x231.google.com
+ [IPv6:2607:f8b0:4864:20::231])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 95977408DB
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 29 Mar 2026 03:25:56 +0000 (UTC)
+Received: by mail-oi1-x231.google.com with SMTP id
+ 5614622812f47-467fd082ffeso2160099b6e.1
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 28 Mar 2026 20:25:56 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20251104; t=1774801344; x=1775406144;
- h=content-transfer-encoding:mime-version:message-id:date:subject:cc
- :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
- :message-id:reply-to;
- bh=39nWh5Sbwqb3QyZ67qx+99ZIlQgRVmnOj8xt3uyYktk=;
- b=Ury6lS5n7Md/lwDB8EpcrpuwMmX+WbF2npmaKIiTZb4dL8EWxhzlnp17K/yzIg/1F5
- t0FabxwOgQKnsHBo77MpWsTs8CRejNePOTHSZSpDBEH6rWEYXcSz/PJkwd5mGnADUl0/
- aK4NASgAfsAItHz1KFIfTlT5ffsh5XBRvNkgEaPGRgFbclHLru276Mzc+/CWwiGQw16q
- YTjFF3Qo9CgJnSa68DB7MUEc3DZsENe6zs+0gFMJN4g+w6O6IDUy6o52BF7gCLfW75pP
- d+WEjwEUYhnbkK++RuP9dm7PhFdxBD/BVc6iERdvYDxkYCbt3hzk5yo2jsgpdiBPZ3mi
- nSPA==
-X-Gm-Message-State: AOJu0YxyPMZrAlzBmAgJmsShCH77F3gu94GLaP6hiDID6ftW4cE98hN2
- eva13WsacaaVjoXfhAbcjxyNe3m/WsCMCSVvJeAqjUbOIqii522JUTwibYPytA70xeM=
-X-Gm-Gg: ATEYQzx7ILLqjqbPNpxCIr12LfDeHZAf1anHhtH3lQXBk/asEYlgLzlaGUwkVZbVQ0H
- n+rILeRAPNxNynFJtDM73z34zIkjev0WVO61sZn/QsXI61f9nHjmJ5w6dwKIpwLgmXcxJ8JmHcZ
- lZVx+3L5NxVeddN6ATyPln/R8UJX6u3yjXOaluzijaSYtb6veQ1/KxEpbvQqxSUxtLrNBb9DXrl
- CwfPE0yxFU3uGOFNEPnkKVLcwGe2PwCFjwADQ5jzCpeQQmTG7rnBZ6HU7yldCszWOog9TjXmFVs
- +S4JEbPXGrUlztJpEItJ1nOWTgYdLOhrltzkQPnUhw0gzPuFNDcPXx9rRTobGgOKDwdH0RI/zQD
- JcOrOVLbqySFSHn9jcPK8tpVxvWMXIEm9zli+05tqo/9b4Fr0k6H+8jPAdWR9Sy07fMTNrFgdkm
- R93WXaDwQ3xtR/OoqFwsIqXS9F472eGA+QoIkr47cTlabx37mo7uXityxsLN+VcrC2iZLkNHcic
- 8jzTauN7DDQj39ddSsrrkctBcXI
-X-Received: by 2002:a05:600c:b99:b0:485:39a1:bcb3 with SMTP id
- 5b1f17b1804b1-48727f5f8d8mr76636175e9.6.1774801343387; 
- Sun, 29 Mar 2026 09:22:23 -0700 (PDT)
-Received: from localhost ([2a01:cb1d:4ec:6700:174f:90cc:2ec3:a84b])
- by smtp.gmail.com with ESMTPSA id
- ffacd0b85a97d-43cf24707f2sm12760803f8f.26.2026.03.29.09.22.22
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Sun, 29 Mar 2026 09:22:22 -0700 (PDT)
-From: Aaron Esau <aaron1esau@gmail.com>
+ d=1e100.net; s=20251104; t=1774754755; x=1775359555;
+ h=to:cc:date:message-id:subject:mime-version:from:x-gm-gg
+ :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+ bh=Q3zHZR2nqCQ4BfQwwL3YtsGWqRQDle8jBml0c4WJz+U=;
+ b=jf8LRpZf41wuUXS25wbOg/XLKTEh3a0/5lWG01b5k1UHuYak3J+ZvZYF3b8sQzICqi
+ qGBKBUAG7R5/w2SmOsveIebdr12VqEwlsfExca+N0T/R9Skx4fPL4cMqNznLY9KgssZ1
+ zfE8cmp5CVZbIM25OJs5fxtyelTQpSNB7gun0H4J17rF2i7IUNWrt6zUIEc1uQuh8PMY
+ Plb3hb+xj05fNdp8698kLh6nrng4iwsH94lobAvUJMQVCLOy60RiFVSLVK4vKMTZjSdA
+ Hc9OLbTvEtsBwgpWA5In1EBveqhLO1tLwzhzcMMZTTbcV6cAM79qELNq2Zqp4/l2ZdQ+
+ 2xZA==
+X-Gm-Message-State: AOJu0YzrXA0Yu0b6G2ia517u6sQW36QUkR7fkLjbzb8M77aKBZdwaJQO
+ gtFdP3WfA5GuRoJQwldGzNkB3BZfVPckHIieGFxQHVBrsFz94xfoAlmYEyWIRefjIOnqUb0as3O
+ nh6SZfk4=
+X-Gm-Gg: ATEYQzyvR8n4SQKSuk2UQ1J2cUtFEpoG5geR7kHRKx4JPiaJlLwrtQ43YT1eTbLU5p3
+ sGkwU62aZrBXVjhX187cTc+kn4Ul/slIy9RUtpHnwT7P8odg0DFWmqyNm7TJU/OtE9yl9yVDm6/
+ sQCdF+he+qjVoAs9M2YEkpG2VP9tAG9XaIeCE6Ysb1qI9eLu7tuEU6OtZX7N0+xuu8bTJwqHNya
+ k2Hp3lZLbOyqTJMLXKGANDRyfV6FgZcNx0xfg7s/QDdEMXz+hrnxwN1ruviKy34ZzGeezVnb/P8
+ Ua14UW7pDbhk64+A7UzStDYVvgm8EYl5UNML5u96v4m6gp1MYMubA88qhQBqPfomE95ruMGEMRO
+ L4ERYXo9c1ImW+BfZ6xvQkviXtnX/S9dPkWbkUsi83OszRsztjUMReZ4FVAKZIkV37YfVF5E99O
+ H1uMQBwt9XBk/27H7yz1bP2xpzj1cul/7fq9EY/dkBXWoOK745aKxPXt7/rIInWXZdVCl/5R4Zg
+ Q==
+X-Received: by 2002:a05:6808:1928:b0:467:5571:7f3c with SMTP id
+ 5614622812f47-46a8a38f139mr3576274b6e.6.1774754754796; 
+ Sat, 28 Mar 2026 20:25:54 -0700 (PDT)
+Received: from smtpclient.apple (c-76-16-6-204.hsd1.il.comcast.net.
+ [76.16.6.204]) by smtp.gmail.com with ESMTPSA id
+ 5614622812f47-46aa0efdb75sm2191961b6e.13.2026.03.28.20.25.52
+ (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+ Sat, 28 Mar 2026 20:25:53 -0700 (PDT)
+From: Bob Van Valzah <bob@vanvalzah.com>
+Content-Type: multipart/mixed;
+ boundary="Apple-Mail=_DAE5922D-DCB8-444B-BD9A-99F8AE183AD2"
+Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3864.400.21\))
+Message-Id: <D1C3B3DF-960F-40C7-BBD7-994359F0C8AD@vanvalzah.com>
+Date: Sat, 28 Mar 2026 22:25:41 -0500
+Cc: anthony.l.nguyen@intel.com, netdev@vger.kernel.org, julianstj@fb.com,
+ jeff@jeffgeerling.com
 To: intel-wired-lan@lists.osuosl.org
-Cc: netdev@vger.kernel.org, anthony.l.nguyen@intel.com,
- przemyslaw.kitszel@intel.com, arkadiusz.kubalewski@intel.com,
- stable@vger.kernel.org, Aaron Esau <aaron1esau@gmail.com>
-Date: Sun, 29 Mar 2026 18:21:51 +0200
-Message-ID: <20260329162151.2043655-1-aaron1esau@gmail.com>
-X-Mailer: git-send-email 2.52.0
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+X-Mailer: Apple Mail (2.3864.400.21)
 X-Mailman-Approved-At: Mon, 30 Mar 2026 15:31:21 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20251104; t=1774801344; x=1775406144; darn=lists.osuosl.org;
- h=content-transfer-encoding:mime-version:message-id:date:subject:cc
- :to:from:from:to:cc:subject:date:message-id:reply-to;
- bh=39nWh5Sbwqb3QyZ67qx+99ZIlQgRVmnOj8xt3uyYktk=;
- b=K5zjnkLBRQmLZOrcXL/uMMjQxsLvySkNce2POEbRwn/ZmjPTgePJBnpvv4CquZjcfu
- wCg3Pjdz3+bskS8YHD25aXnOgOF5EaAyroWiZoj+oM3HYi4xC9QX1NbrQR3JA7TzTXPx
- bgKmlAgWny2oyjYoDSOEHlhQrYu0vY92EQEdOqGY8lnociyrdXV9g7co+Ua9fXyeB+cI
- jUuM/biV+KXkTGO/K01ASrSGN4K424rQ9ZSIgZYVI6Ioint9g005bm12/R/isyRmvUMB
- YkRAD2nmqFJzytPZIECalMrq3ytaXFq2AxoI8EyoS12Vt0w4rfttmB9RCo9HyOY2Q2zL
- +GKQ==
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=gmail.com
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ d=vanvalzah-com.20230601.gappssmtp.com; s=20230601; t=1774754755; x=1775359555;
+ darn=lists.osuosl.org; 
+ h=to:cc:date:message-id:subject:mime-version:from:from:to:cc:subject
+ :date:message-id:reply-to;
+ bh=Q3zHZR2nqCQ4BfQwwL3YtsGWqRQDle8jBml0c4WJz+U=;
+ b=QyLzBgoVhdGc+Lu+13otaBD7woDCizviGr5zHHMV+y/88xPKKlUyqjESYe/NmgCcRN
+ 06d6cIkF2NhUiNKRmlmAgoCrm/9IiEBNGee9SNtb0OQE6vd2N6ItIuvYNo6pxOu43cbe
+ md0Wf+uCZ9dAmnlBFt+Tc15oCubU1N7cThsgtdGkNoC2fIpfXf/AM9zAZwsnIYwvnOV7
+ 4juHNnr1ydQkDRwIaRJqYm5AbgsDfsThch/qIoU2vtQTW+KzHw57UPW9L4+Tlndq4jOG
+ PEUJvhrrHKUyXF9N8Qz5NPHHcv+DCRbh3V85BlxA1U9jz+9qDMnZ6W4anvSgsRz/PNiI
+ P1pw==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dmarc=none (p=none dis=none)
+ header.from=vanvalzah.com
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key,
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20251104 header.b=K5zjnkLB
-Subject: [Intel-wired-lan] [PATCH net] i40e: fix memcmp of pointer in
- i40e_hw_set_dcb_config()
+ unprotected) header.d=vanvalzah-com.20230601.gappssmtp.com
+ header.i=@vanvalzah-com.20230601.gappssmtp.com header.a=rsa-sha256
+ header.s=20230601 header.b=QyLzBgoV
+Subject: [Intel-wired-lan] [PATCH] igc: fix Tx timestamp timeout caused by
+ unlocked TIMINCA write in adj fine
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -128,43 +130,340 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-In i40e_hw_set_dcb_config(), both new_cfg and old_cfg are pointers to
-struct i40e_dcbx_config, so sizeof(new_cfg) evaluates to the size of a
-pointer (8 bytes on 64-bit) rather than the size of the struct. Likewise,
-&new_cfg and &old_cfg are the addresses of the pointer variables on the
-stack, not the addresses of the actual config structs.
 
-As a result, the memcmp never compares the actual configuration data,
-meaning the "no change needed" early return never fires. Every call to
-this function performs a full DCB reconfiguration (quiescing all VSIs,
-reprogramming via "Set LLDP MIB" AQC, and reconfiguring VEB/VSIs) even
-when the configuration has not changed.
+--Apple-Mail=_DAE5922D-DCB8-444B-BD9A-99F8AE183AD2
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain;
+	charset=us-ascii
 
-Fix this by comparing the structs themselves rather than the pointers.
+Hi,
 
-Fixes: 4b208eaa8078 ("i40e: Add init and default config of software based DCB")
-Cc: stable@vger.kernel.org
-Signed-off-by: Aaron Esau <aaron1esau@gmail.com>
+We found a race in igc_ptp_adjfine_i225() that causes "Tx timestamp
+timeout" errors and eventually wedges EXTTS when a PTP grandmaster
+(ptp4l with hardware timestamping) runs concurrently with PHC
+frequency discipline (any GPSDO calling clock_adjtime ADJ_FREQUENCY).
+
+Root cause: igc_ptp_adjfine_i225() writes IGC_TIMINCA without holding
+any lock.  Every other PTP clock operation in igc_ptp.c (adjtime,
+gettime, settime) holds tmreg_lock, but adjfine does not.  When the
+increment rate changes while the hardware is capturing a TX timestamp,
+the captured value is corrupt.  The driver retries for
+IGC_PTP_TX_TIMEOUT (15s), then logs the timeout and frees the skb.
+Repeated occurrences eventually prevent EXTTS from delivering events.
+
+The attached reproducer (triggers in ~17 seconds on i226):
+
+  One thread calling clock_adjtime(ADJ_FREQUENCY) at ~200k/s on the
+  PHC, another sending UDP packets with SO_TIMESTAMPING requesting
+  hardware TX timestamps at ~100k/s.  A Python reproducer is at:
+  =
+https://github.com/bobvan/PePPAR-Fix/blob/main/tools/igc_tx_timeout_repro.=
+py
+
+  At realistic rates (1 Hz adjfine from a GPSDO + ptp4l at 128 Hz
+  sync), the race triggers in ~30 minutes.
+
+The attached patch holds ptp_tx_lock around the TIMINCA write and
+skips the write if any TX timestamps are pending (tx_tstamp[i].skb
+!=3D NULL), returning -EBUSY.  This doesn't fully close the hardware
+race (a new TX capture can start between the check and the write),
+but at realistic rates the residual probability gives ~25 year MTBF
+vs ~30 minutes without the patch.
+
+A complete fix would likely require either disabling TX timestamping
+around TIMINCA writes (via TSYNCTXCTL), or making the timeout recovery
+path more robust so a single corrupt timestamp doesn't wedge the
+subsystem.  We'd welcome guidance from the igc maintainers on the
+preferred approach.
+
+Tested on:
+  - Intel i226 (TimeHAT v5 board on Raspberry Pi 5)
+  - Kernel 6.12.62+rpt-rpi-2712 (Raspberry Pi OS)
+  - Intel out-of-tree igc driver 5.4.0-7642.46
+  - Stock upstream igc_ptp.c (same code, same bug)
+
+	Bob
+
 ---
 
-Found using Coccinelle/spatch with a semantic patch that matches
-sizeof(ptr) and &ptr used together where ptr is a pointer type.
+ drivers/net/ethernet/intel/igc/igc_ptp.c | 18 +++++++++++++++++-
+ 1 file changed, 17 insertions(+), 1 deletion(-)
 
- drivers/net/ethernet/intel/i40e/i40e_main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+diff --git a/drivers/net/ethernet/intel/igc/igc_ptp.c =
+b/drivers/net/ethernet/intel/igc/igc_ptp.c
 index XXXXXXX..XXXXXXX 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -6904,7 +6904,7 @@ static int i40e_hw_set_dcb_config(struct i40e_pf *pf,
- 	int ret;
+--- a/drivers/net/ethernet/intel/igc/igc_ptp.c
++++ b/drivers/net/ethernet/intel/igc/igc_ptp.c
+@@ -47,8 +47,10 @@ static int igc_ptp_adjfine_i225(struct ptp_clock_info =
+*ptp, long scaled_ppm)
+ {
+        struct igc_adapter *igc =3D container_of(ptp, struct =
+igc_adapter,
+                                               ptp_caps);
+        struct igc_hw *hw =3D &igc->hw;
++       unsigned long flags;
+        int neg_adj =3D 0;
+        u64 rate;
+        u32 inca;
++       int i;
 
- 	/* Check if need reconfiguration */
--	if (!memcmp(&new_cfg, &old_cfg, sizeof(new_cfg))) {
-+	if (!memcmp(new_cfg, old_cfg, sizeof(*new_cfg))) {
- 		dev_dbg(&pf->pdev->dev, "No Change in DCB Config required.\n");
- 		return 0;
- 	}
+        if (scaled_ppm < 0) {
+                neg_adj =3D 1;
+@@ -63,7 +65,21 @@ static int igc_ptp_adjfine_i225(struct ptp_clock_info =
+*ptp, long scaled_ppm)
+        if (neg_adj)
+                inca |=3D ISGN;
+
+-       wr32(IGC_TIMINCA, inca);
++       /* Changing the clock increment rate while a TX timestamp is =
+being
++        * captured by the hardware can corrupt the timestamp, causing =
+the
++        * driver to report "Tx timestamp timeout" and eventually =
+wedging
++        * the EXTTS subsystem.  Serialize with pending TX timestamps:
++        * skip the rate change if any are in flight.
++        */
++       spin_lock_irqsave(&igc->ptp_tx_lock, flags);
++       for (i =3D 0; i < IGC_MAX_TX_TSTAMP_REGS; i++) {
++               if (igc->tx_tstamp[i].skb) {
++                       spin_unlock_irqrestore(&igc->ptp_tx_lock, =
+flags);
++                       return -EBUSY;
++               }
++       }
++       wr32(IGC_TIMINCA, inca);
++       spin_unlock_irqrestore(&igc->ptp_tx_lock, flags);
+
+        return 0;
+ }
 --
-2.49.0
+2.39.2
+
+--Apple-Mail=_DAE5922D-DCB8-444B-BD9A-99F8AE183AD2
+Content-Disposition: attachment;
+	filename=igc_tx_timeout_repro.py
+Content-Type: text/x-python-script;
+	x-unix-mode=0644;
+	name="igc_tx_timeout_repro.py"
+Content-Transfer-Encoding: quoted-printable
+
+#!/usr/bin/env python3
+"""Reproducer for igc driver Tx timestamp timeout bug.
+
+The igc driver (Intel i225/i226) has a race between clock_adjtime
+(ADJ_FREQUENCY) and hardware TX timestamping.  When adjfine() is
+called while a TX timestamp is pending, the timestamp register can
+wedge, producing "Tx timestamp timeout" errors in dmesg and eventually
+breaking EXTTS (PPS capture).
+
+This reproducer runs two threads:
+  1. Hammers clock_adjtime(ADJ_FREQUENCY) on the PHC
+  2. Sends UDP packets with SO_TIMESTAMPING (hardware TX timestamps)
+
+On a vulnerable igc driver, "Tx timestamp timeout" appears in dmesg
+within seconds.
+
+Usage:
+    sudo python3 tools/igc_tx_timeout_repro.py eth1 /dev/ptp0
+    # Watch with: dmesg -w | grep "Tx timestamp"
+
+Requires root for SO_TIMESTAMPING and clock_adjtime on PHC.
+"""
+
+import ctypes
+import ctypes.util
+import os
+import socket
+import struct
+import sys
+import threading
+import time
+
+
+def get_phc_clockid(fd):
+    return (~fd << 3) | 3
+
+
+def adjfine_loop(phc_fd, stop_event, stats):
+    """Hammer adjfine() on the PHC."""
+    librt =3D ctypes.CDLL(ctypes.util.find_library("rt"), =
+use_errno=3DTrue)
+
+    class Timeval(ctypes.Structure):
+        _fields_ =3D [("tv_sec", ctypes.c_long), ("tv_usec", =
+ctypes.c_long)]
+
+    class Timex(ctypes.Structure):
+        _fields_ =3D [
+            ("modes", ctypes.c_uint),
+            ("offset", ctypes.c_long),
+            ("freq", ctypes.c_long),
+            ("maxerror", ctypes.c_long),
+            ("esterror", ctypes.c_long),
+            ("status", ctypes.c_int),
+            ("constant", ctypes.c_long),
+            ("precision", ctypes.c_long),
+            ("tolerance", ctypes.c_long),
+            ("time", Timeval),
+            ("tick", ctypes.c_long),
+            ("ppsfreq", ctypes.c_long),
+            ("jitter", ctypes.c_long),
+            ("shift", ctypes.c_int),
+            ("stabil", ctypes.c_long),
+            ("jitcnt", ctypes.c_long),
+            ("calcnt", ctypes.c_long),
+            ("errcnt", ctypes.c_long),
+            ("stbcnt", ctypes.c_long),
+            ("tai", ctypes.c_int),
+        ]
+
+    ADJ_FREQUENCY =3D 0x0002
+    clockid =3D get_phc_clockid(phc_fd)
+    n =3D 0
+    toggle =3D False
+
+    while not stop_event.is_set():
+        tx =3D Timex()
+        tx.modes =3D ADJ_FREQUENCY
+        # Alternate between two tiny frequency offsets
+        tx.freq =3D 100 if toggle else -100  # ~0.0015 ppb
+        toggle =3D not toggle
+        ret =3D librt.clock_adjtime(ctypes.c_int32(clockid), =
+ctypes.byref(tx))
+        if ret < 0:
+            print(f"adjfine error: {ctypes.get_errno()}")
+            break
+        n +=3D 1
+
+    stats["adjfine_count"] =3D n
+
+
+def tx_timestamp_loop(iface, stop_event, stats):
+    """Send UDP packets requesting hardware TX timestamps."""
+    # SOL_SOCKET options for timestamping
+    SO_TIMESTAMPING =3D 37
+    SOF_TIMESTAMPING_TX_HARDWARE =3D (1 << 0)
+    SOF_TIMESTAMPING_RAW_HARDWARE =3D (1 << 6)
+    SOF_TIMESTAMPING_OPT_TSONLY =3D (1 << 11)
+
+    flags =3D (SOF_TIMESTAMPING_TX_HARDWARE |
+             SOF_TIMESTAMPING_RAW_HARDWARE |
+             SOF_TIMESTAMPING_OPT_TSONLY)
+
+    sock =3D socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.setsockopt(socket.SOL_SOCKET, SO_TIMESTAMPING, flags)
+    # Bind to the specific interface
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_BINDTODEVICE,
+                    iface.encode() + b'\0')
+    sock.settimeout(0.01)
+
+    # Send to a harmless destination (localhost or broadcast)
+    dest =3D ("224.0.0.1", 9999)  # multicast, won't route
+    payload =3D b"igc_repro" + b"\x00" * 32
+    n =3D 0
+    errors =3D 0
+
+    while not stop_event.is_set():
+        try:
+            sock.sendto(payload, dest)
+            n +=3D 1
+        except OSError:
+            errors +=3D 1
+        # Don't sleep =E2=80=94 maximize collision probability
+        # But yield to avoid starving the adjfine thread
+        if n % 100 =3D=3D 0:
+            time.sleep(0.0001)
+
+    sock.close()
+    stats["tx_count"] =3D n
+    stats["tx_errors"] =3D errors
+
+
+def check_dmesg_for_timeout():
+    """Check if Tx timestamp timeout appeared in dmesg."""
+    try:
+        import subprocess
+        result =3D subprocess.run(
+            ["dmesg", "--since", "60 seconds ago"],
+            capture_output=3DTrue, text=3DTrue, timeout=3D2
+        )
+        return "Tx timestamp timeout" in result.stdout
+    except Exception:
+        return False
+
+
+def main():
+    if len(sys.argv) < 3:
+        print(f"Usage: sudo {sys.argv[0]} <interface> <ptp_device>")
+        print(f"Example: sudo {sys.argv[0]} eth1 /dev/ptp0")
+        sys.exit(1)
+
+    iface =3D sys.argv[1]
+    ptp_dev =3D sys.argv[2]
+    duration =3D float(sys.argv[3]) if len(sys.argv) > 3 else 30.0
+
+    if os.geteuid() !=3D 0:
+        print("ERROR: must run as root (sudo)")
+        sys.exit(1)
+
+    phc_fd =3D os.open(ptp_dev, os.O_RDWR)
+    print(f"Opened {ptp_dev} (fd=3D{phc_fd})")
+    print(f"Interface: {iface}")
+    print(f"Duration: {duration}s")
+    print(f"Watch for: dmesg -w | grep 'Tx timestamp timeout'")
+    print()
+
+    stop =3D threading.Event()
+    stats =3D {}
+
+    t_adj =3D threading.Thread(target=3Dadjfine_loop, args=3D(phc_fd, =
+stop, stats))
+    t_tx =3D threading.Thread(target=3Dtx_timestamp_loop, args=3D(iface, =
+stop, stats))
+
+    t_adj.start()
+    t_tx.start()
+
+    start =3D time.monotonic()
+    triggered =3D False
+    while time.monotonic() - start < duration:
+        time.sleep(1)
+        elapsed =3D time.monotonic() - start
+        if check_dmesg_for_timeout():
+            print(f"\n*** Tx timestamp timeout detected after =
+{elapsed:.1f}s ***")
+            triggered =3D True
+            break
+        print(f"  {elapsed:.0f}s: running...", end=3D"\r")
+
+    stop.set()
+    t_adj.join(timeout=3D2)
+    t_tx.join(timeout=3D2)
+    os.close(phc_fd)
+
+    adj_n =3D stats.get("adjfine_count", 0)
+    tx_n =3D stats.get("tx_count", 0)
+    tx_err =3D stats.get("tx_errors", 0)
+    elapsed =3D time.monotonic() - start
+
+    print(f"\nResults ({elapsed:.1f}s):")
+    print(f"  adjfine calls: {adj_n} ({adj_n/elapsed:.0f}/s)")
+    print(f"  TX packets:    {tx_n} ({tx_n/elapsed:.0f}/s), {tx_err} =
+errors")
+
+    if triggered:
+        print(f"\n  BUG TRIGGERED: igc Tx timestamp timeout")
+        print(f"  The igc driver's PTP timestamp register wedged due =
+to")
+        print(f"  concurrent adjfine() and hardware TX timestamping.")
+        sys.exit(1)
+    else:
+        print(f"\n  No timeout detected in {duration}s")
+        sys.exit(0)
+
+
+if __name__ =3D=3D "__main__":
+    main()
+
+--Apple-Mail=_DAE5922D-DCB8-444B-BD9A-99F8AE183AD2--
