@@ -1,172 +1,123 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 608CC10D1487
-	for <intel-wired-lan@archiver.kernel.org>; Sat, 28 Mar 2026 21:58:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EF4D0F3D5FE
+	for <intel-wired-lan@archiver.kernel.org>; Sun, 29 Mar 2026 11:17:35 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id F40364109B;
-	Sat, 28 Mar 2026 21:58:12 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id phq6NgLgOZWX; Sat, 28 Mar 2026 21:58:10 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D629E41087
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1774735090;
-	bh=xtydYvEK59MlGb51P2ltZkQeWMYcEahga4IJbBb0RA8=;
-	h=Date:To:Cc:References:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From:Reply-To:From;
-	b=bbXp6ZbZfUzVqnXqduK6GL7s99B/nHniyaehDjN6zSob63iut1lqJ5hBe4X/nP4kz
-	 SW6lXv81IgYk5vXqhLF2K79pgXNXzlZpmZq6K8WxkKdyIKi7ZG+s8afqtkGte+TS0R
-	 Q2st9QBnwEBtqoe2T0BI+r3PosAvXoN6SVhqe2y/KYgUs91ol+07FryGfpqdY3KlNR
-	 2K1gGW4Blf3dBrNvx4qlsVTLP4jD9lkPSqfRBCWHnjwCaK6A4J1mh8sMoY6WNgMIqt
-	 ehhgd3mObuuDOGvwd6JHLYo+F8nZZPVJlKs0YhsxoHbZDdNorpNYHZmqPA58i1uilc
-	 BEjPAipsoOlJw==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id D629E41087;
-	Sat, 28 Mar 2026 21:58:10 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 97C901D3
- for <intel-wired-lan@lists.osuosl.org>; Sat, 28 Mar 2026 21:58:08 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 7D43260847
- for <intel-wired-lan@lists.osuosl.org>; Sat, 28 Mar 2026 21:58:08 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 8DA7560A37;
+	Sun, 29 Mar 2026 11:17:35 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id zvIGlbORgpst for <intel-wired-lan@lists.osuosl.org>;
- Sat, 28 Mar 2026 21:58:07 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=52.101.48.12;
- helo=mw6pr02cu001.outbound.protection.outlook.com;
- envelope-from=ynorov@nvidia.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 8418360846
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8418360846
-Received: from MW6PR02CU001.outbound.protection.outlook.com
- (mail-westus2azon11012012.outbound.protection.outlook.com [52.101.48.12])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 8418360846
- for <intel-wired-lan@lists.osuosl.org>; Sat, 28 Mar 2026 21:58:07 +0000 (UTC)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=oos0+bCaKLCu32KfSn1t4GiP+X8KB0ZXBYfEHcu3nQnWRpsBY3Gugi4YAjfTJy4yQyl6vpIvMzk8N6vzFg//YPOsuaNvvBG9/sk4qWj80lAB2KexSCsIoBpnY40vtjnu7uZXmBtRzc4UawqhZDizAksbHYBscAS1a3F+W6Gzf5O04C07WzE8kkjWuDMliGL6EpBdfV5q+0T+cQvNiFxU99wWwue5LHnvDl4yj1ApKTCTlnAxxMejjqFYq+r+vBGi6Vkg6xQmGRlBctTpm2pzexSMhPDlkqS/lUlk+qlw6uoKoarrIShLrNEOhAfNAHPK/hlbyLH+ARmFn8q4JHnIRQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=xtydYvEK59MlGb51P2ltZkQeWMYcEahga4IJbBb0RA8=;
- b=SQybveQCBOT2hZ98MO25zyILujVPCm0Dio0MMXat1vvCwuj2CutUO4rGIyXh8/q2W7xHeF83b642xdNQL+Z8T8BerQ3L8CZ+5OmQLyutCg+NZA3L4OZnyxHosAp6E3rK5d8tHSu4rebptaox4EYYftNNyX6tEjlBIf7FhFz53ecPJflIslo+HXCygsfV2C2c0XmSQfDoP7FCIoEsQjTVHyFXg4G6MzwodvJheoAulzjrrbnH+WnmfP1tmeJDXbfw8t7XBV3A8m87cRMbNLQc8cE7cRue3DklSGH7s9guMA0hq1uk5mO6x8dK8P366PU1fbPSlMtx6Id5JQLYG4vJjA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-Received: from CY8PR12MB7171.namprd12.prod.outlook.com (2603:10b6:930:5c::20)
- by MW4PR12MB6922.namprd12.prod.outlook.com (2603:10b6:303:207::16)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9769.12; Sat, 28 Mar
- 2026 21:57:57 +0000
-Received: from CY8PR12MB7171.namprd12.prod.outlook.com
- ([fe80::4487:395f:3abf:ad9]) by CY8PR12MB7171.namprd12.prod.outlook.com
- ([fe80::4487:395f:3abf:ad9%4]) with mapi id 15.20.9769.011; Sat, 28 Mar 2026
- 21:57:57 +0000
-Date: Sat, 28 Mar 2026 17:57:55 -0400
-To: Tony Nguyen <anthony.l.nguyen@intel.com>
-Cc: Simon Horman <horms@kernel.org>, "David S. Miller" <davem@davemloft.net>,
- Thomas =?iso-8859-1?Q?Hellstr=F6m?= <thomas.hellstrom@linux.intel.com>,
- Andrew Lunn <andrew+netdev@lunn.ch>,
- Andrew Morton <akpm@linux-foundation.org>,
- David Airlie <airlied@gmail.com>, Eric Dumazet <edumazet@google.com>,
- Jakub Kicinski <kuba@kernel.org>, Matthew Brost <matthew.brost@intel.com>,
- Paolo Abeni <pabeni@redhat.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Rodrigo Vivi <rodrigo.vivi@intel.com>,
- Simona Vetter <simona@ffwll.ch>, Yury Norov <yury.norov@gmail.com>,
- Rasmus Villemoes <linux@rasmusvillemoes.dk>,
- dri-devel@lists.freedesktop.org, intel-xe@lists.freedesktop.org,
- linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
- intel-wired-lan@lists.osuosl.org,
- David Laight <david.laight.linux@gmail.com>
-Message-ID: <achO43f7IA22uD19@yury>
-References: <20260302011159.61778-1-ynorov@nvidia.com>
- <20260302011159.61778-5-ynorov@nvidia.com>
- <20260304114319.GI71509@kernel.org>
- <51b0f779-4070-44f1-b136-77737da6dbaf@intel.com>
+ id YRY1xoI3vuis; Sun, 29 Mar 2026 11:17:33 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 91CB26090A
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1774783053;
+	bh=ZZZEbvtH/bKZ6jbXxyKNF2VJCYpTcm4/gV6VLpLYICA=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=1wg9Xa3xuzOU237TVWBa2R24jnxJ7e0abeFTBe27QrtgAAiPOuBhcuwQRf6SmIyUh
+	 JHQ7HmwwxanAdbbZalnKyxWb1ubeQD2pGBKGguLuYfxsQ5wDViLgxh43SM8e7rONNW
+	 6neWLHD59zu4O1ygQrZ+a4hPyR5DIubQI6owpI3YjNuJuom5rr2sF/X0A7MGU8uFf/
+	 EAcQ1+2q3qw7ycDgcNS9bD8QCs4pnu2RAk+lwV87WAibJiMFnjzDPuwaJ6kmdMQuvZ
+	 eWdBhWbMnOit9qYEiHVhoeyOgh7a7dpQM7Jt5tN6vQvNtu9EqQddzdGjsxcHtvWFuT
+	 ekHnZBuF4DkXw==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp3.osuosl.org (Postfix) with ESMTP id 91CB26090A;
+	Sun, 29 Mar 2026 11:17:33 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 204C82EB
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 29 Mar 2026 11:17:33 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp3.osuosl.org (Postfix) with ESMTP id 06425608DB
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 29 Mar 2026 11:17:33 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id BqoxBPgoeU0k for <intel-wired-lan@lists.osuosl.org>;
+ Sun, 29 Mar 2026 11:17:31 +0000 (UTC)
+Received-SPF: None (mailfrom) identity=mailfrom;
+ client-ip=2a00:1450:4864:20::333; helo=mail-wm1-x333.google.com;
+ envelope-from=jiri@resnulli.us; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org BC1BA6090A
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org BC1BA6090A
+Received: from mail-wm1-x333.google.com (mail-wm1-x333.google.com
+ [IPv6:2a00:1450:4864:20::333])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id BC1BA6090A
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 29 Mar 2026 11:17:26 +0000 (UTC)
+Received: by mail-wm1-x333.google.com with SMTP id
+ 5b1f17b1804b1-486fba7ce4cso35151885e9.3
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 29 Mar 2026 04:17:26 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20251104; t=1774783045; x=1775387845;
+ h=in-reply-to:content-disposition:mime-version:references:message-id
+ :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+ :subject:date:message-id:reply-to;
+ bh=ZZZEbvtH/bKZ6jbXxyKNF2VJCYpTcm4/gV6VLpLYICA=;
+ b=iS/+54nbvCnxmbtD5RWijcW1IoehH8bax7UzZ3sTXkVZl4dwTxq1vr8oJA5FXMdIHj
+ dVW/f6XlpiEcuB86eZIJJggXTVDNGkSx/dJOkzb/BYLYh8wQi7dmZI1BMPvewS5euN7a
+ loYnEKhyzkBrz46oPikdhdZ3cgYDaAbFls6B3GS1+FAozFB1jHa9ebvcIAliaN6K8fUZ
+ LhfR/7BQqgIywBCFdPft58n1/AgL3OPBECZlQ+ePOQt68/S6NNGIAYjOa/YnpT1tIgfr
+ iv7XtdsorGgZMvMYNnF+CNEBhVL4ZoYCS05nlf9o2o7PZzmZbtEB/+3EnXSw4ILhqi9E
+ BSkw==
+X-Forwarded-Encrypted: i=1;
+ AJvYcCXTlJoJJWWv8Jl/TJdmDM1I74WnmgTyzrBI7E7D5CIMNyll7tNCAl/xN4ASwcNRpcqNjBDI6KMDBxvXfGcAuYg=@lists.osuosl.org
+X-Gm-Message-State: AOJu0Yyiw+zBQsPr51qoLuj8k4tiv8daog1Bx2sdpdGmjuT0i7uGpMLN
+ 7dzC+Lcoe+McDOBL9vqACVotz68vQjfr2SyDMVEWhkFm1xy6jJjejaePVK5NT/Xr7pI=
+X-Gm-Gg: ATEYQzwTgyA3KrQV7Ih/M7mgwcQCPqjz2b0jcRqGuOP0kCltAYjEdHpnmMhUT42NemQ
+ H1B06lHDiypbVKE67uwTDj8ryyJvWda5D9vDoE3KiBae7VFfvdR1Nznj9U7fb4OLKvvG2PhhlXt
+ ceL2+8ado0QFDZv/ZTg5yFvoQDPjoKOz+eLFB+K0LYbiIpzCECLXXDjuPfl0E2nOtxtJ6VogoIr
+ pXDCgw9o+t2aO/D1Gw7QOGCYsOfrxlSRKcnmfWJK6/XOmoU70XOVxeRGFvfqi+2c5RpHbPEQLtU
+ jAPKG6zrN/qA5ayGxTLYAL32pJAuCFjc23a/GVEA/4w62f+tibQxzLzJk0eO+UVvTE8My0+ooxJ
+ VACgljWbMoTStyVjspACYMeQSZPdP/3vE9wVXVwufYVHn456L1wvUrYQBHiWopBCtfd83k9EBfa
+ rrFFJ2nEbvlYUDxvuPtxlrJZyb1gzGtE4XTcng8n8eUzE=
+X-Received: by 2002:a05:600c:41d1:b0:485:364e:934e with SMTP id
+ 5b1f17b1804b1-48727eda4a4mr87253735e9.21.1774783044663; 
+ Sun, 29 Mar 2026 04:17:24 -0700 (PDT)
+Received: from FV6GYCPJ69 ([2001:1ae9:6084:ab00:4c27:3a72:8516:e661])
+ by smtp.gmail.com with ESMTPSA id
+ ffacd0b85a97d-43cf21eba4dsm11810601f8f.11.2026.03.29.04.17.23
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Sun, 29 Mar 2026 04:17:24 -0700 (PDT)
+Date: Sun, 29 Mar 2026 13:17:21 +0200
+From: Jiri Pirko <jiri@resnulli.us>
+To: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Message-ID: <wpjltue5gnv4e42a7cpewbgqeza7sl226qbgbbqjl7b2cjgtfc@kjqjqluv3vcb>
+References: <20260325063143.261806-1-przemyslaw.kitszel@intel.com>
+ <20260325063143.261806-3-przemyslaw.kitszel@intel.com>
+ <aa7hsleso6z6zaubb6phx4lexqnthgdvkns5cpg75gk6w3pi3o@7skrmgryitsj>
+ <b78d4c11-e20b-4a84-b8da-2638df46c46c@intel.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <51b0f779-4070-44f1-b136-77737da6dbaf@intel.com>
-X-ClientProxiedBy: BN1PR12CA0019.namprd12.prod.outlook.com
- (2603:10b6:408:e1::24) To CY8PR12MB7171.namprd12.prod.outlook.com
- (2603:10b6:930:5c::20)
-MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: CY8PR12MB7171:EE_|MW4PR12MB6922:EE_
-X-MS-Office365-Filtering-Correlation-Id: a17c37cc-8ee7-4ffb-da35-08de8d151255
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
- ARA:13230040|7416014|376014|10070799003|366016|1800799024|56012099003|22082099003|18002099003;
-X-Microsoft-Antispam-Message-Info: fw4MpfooHwVuwj+3QQ0eAsgJ9EvPAW77raT4ilchDf9sc95VVFLQhTpq4JB3d0wf6scZCUt3QlYNyfMpY6OX2yMSN1Gmfa0KTnJmSROvSbv9UsF4o48eSyhcInf7j3Xuv/47BGNb+1lGfGA6gNg4b676g0f+JWK55LWZqGpcBgYn1wBHiYr0osv9VMM2pIkB7dYAByUKqLQ4niqk8wncp80S5eL24wFD0iJ8fKQnORgpEOH2Z8iC7DL33GsihagSVFegtElrSOViA8ctXgIBAgG69YVyxlralmhHg4wgLK8hsTa5hvGlK+8BKInu18tnzjT4QDXemb615DEHbI7echh7GVZVWoXYAMHK9mjqXIOC4Syzg0SslVdqzaqiGtIWdlIrh0d6fo53V5qnfKLHzBbD79b43wo42jJe5eySryFv3hkhe/J9SMImwhxu9QpY+i3PlCaEZ6sNkU81UolmLlTEhSf/iDgNpf4YS0jvkfdV/1272A5BlxvYlw4PNrjTpvphLVaczvkD94RfxQs2MPEoI0FYmbg2V6xqvwvA+kLn0Ut0BTRPtZQAKk9tyM3HcZDINmQSvi9UIPpc4ICJpoKWKL4qV7BBvE6MD2RzQJK7lv19Pb/JrBiDDw0CmSwRbDvJ0lkE0mqQWDheZvyr9qPhwq3q8Nk83tldAttwR3v9XIfQQP8DljxyPaRmlFQ5h7FjQujsgcFUqN5qPYA7qJcpzqgSejqyYq15wfjg938=
-X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:CY8PR12MB7171.namprd12.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230040)(7416014)(376014)(10070799003)(366016)(1800799024)(56012099003)(22082099003)(18002099003);
- DIR:OUT; SFP:1101; 
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?sIKJda4tGlvwb6Ug9RdyMGjyk3wchQoYJbj6u4td8+feeVCatSxfekgXNYKf?=
- =?us-ascii?Q?FvXbmVC+TgO3xiClR879ktdJhoGRLVmaktJuhup8d4fvOzGhq2Uq9FOPdncF?=
- =?us-ascii?Q?iYolEskbCXuBN5Um9qZZ53N/kr4l37p8OPiI8+AjI6MxTVXkMqxtVO/msuqN?=
- =?us-ascii?Q?aRNbgnAOcmARKU8W8nTBdLkjnaP58coQgsxO92AeichlwccAqFK7w5FQfgVA?=
- =?us-ascii?Q?MkIHMUKV5CTOV+bpeLr2vLZ3ShGZGhTOoXeywBJQOltHn0N22Qm8YdE86S0N?=
- =?us-ascii?Q?Yk9dmMDiIjw0HRS6w4ApmE8FOGzNT6tZCqkX0XdHjOVZyEkis7m0x41hLrse?=
- =?us-ascii?Q?kYCwurulsY7fNpWSdwOVLhZHAVD/ICoJnNyzUuGUpp7FYFL7U0fkf83ZZFG2?=
- =?us-ascii?Q?3hhNxHeN8AH1knTPRfePTePe/KtXv1gWDqs/wkphE3YQBlgRlSYn7NozKAgA?=
- =?us-ascii?Q?qL+6O8xRsmWQtCqLEWD8mzYWdRVLka8SgwNV6hjkAHq2Vh51DNroe1sbTCbk?=
- =?us-ascii?Q?O8R25NM77oC7No8A7Z1aPT7f9rWcy9C8KIsS3LWPJAMD3QyGfrFq+ZhQpLrO?=
- =?us-ascii?Q?rHyJ57DDH7SggFaRFDSApKSv/sTInDYMOViBvOGIYJWPti7RvHmxvjOnKJlD?=
- =?us-ascii?Q?kAWY2w8/afgLcdm+ASWOXPdgoKabLzpQKXVHg1ySdvx36AQ56y6+MKuiABgL?=
- =?us-ascii?Q?9Duc7r+ibvpOzy4+A/DzKqNpCWI5AzANLwp/ldc3QFDZUYNjFoZQt/aOwps9?=
- =?us-ascii?Q?mVIhnX8ygeoJCwL4VVjtjrXVSML6QuzRz2BqJwkpft8M0ThPKY798OySrc1T?=
- =?us-ascii?Q?zzTrzFSN7tXJX0QlBWY5A4BFlXEWKPKHDmKsg/RjbQhCG8l9s3UV0cQCaS4s?=
- =?us-ascii?Q?kqWBBfUVqqO1l1NgBj0IfyDkU77eWEph9+kXV7f5BR85KLRce8KOXM+cJ/O+?=
- =?us-ascii?Q?k32J60ViXjACTsl3FAAELh6N2tmEZ9+ZcjdC4FRIhBo4jQQEeZuSBcLBHSES?=
- =?us-ascii?Q?hNzqdisvfUqj/OKUmHx7ZE7IYeiPGw+XEE7Sf2A0IFFC6tzaWpcqhpImcJc/?=
- =?us-ascii?Q?7y0tmidMuPtKmaBMcEqWdJevZZmRPa9KyF3+tNrVrDIFWTokUY0wVKNhT3gq?=
- =?us-ascii?Q?lK4w8Ccnh/5m8CUh+G3k+3RBLflqYJyQbxaZm3kXNpiW9ZqvkW3pHE/ochH8?=
- =?us-ascii?Q?8TidP4qq5uoFnLk/lSBGJWHArPIzl0gYCW0xT+xYM4PszSxv0RhZMQ6RaNzc?=
- =?us-ascii?Q?MyhqD93SmnF3TihNqpgSYLuErPcVd2XQvAUZLb3HC6ZVD+gZRdASoS6IWUVF?=
- =?us-ascii?Q?kRC8qE/3qOy/crPRaNB3lpNfHScCPmhnkEN/FqCMdQYxa7xUFlHqeW5sfAhC?=
- =?us-ascii?Q?Bt2aYFRfAdUXxONPUARZGPcXG9wLQeNpp3ilJKn1DOQKqSTfoAI0GRwDWQ8b?=
- =?us-ascii?Q?tk/ASPxQtW6OaSLX3+vXob/bwyHaqMjykZFtEr+8w3Sj8dCGMZgwF8OZGFql?=
- =?us-ascii?Q?wNcKegX8ahdGsXdvjc3U3Xsnq/a7SDlL9sNoV6XsdJ0WqlHfAsWlyEf/T8RK?=
- =?us-ascii?Q?dqKmwgzjL1bmoLaP8iR/DOOgHGp75ePLnJ5UXnRAenNphZUvL7u9NoomnbI5?=
- =?us-ascii?Q?kfvWr70ybg+1RsbnI4pwUHMtnnYuX4WAKRJcic2IjdXqagwvxsM811tkcTqR?=
- =?us-ascii?Q?ilUaYkxKnZbp9iOpBqIYVI8Afm38wAL7s+ThPbrPAMQLcikzPuj9fliaFZzu?=
- =?us-ascii?Q?1tk/OWl83IsadadzDrgTEahj6eKAbBjMczGw7w171CVwj1vEx7l6?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: a17c37cc-8ee7-4ffb-da35-08de8d151255
-X-MS-Exchange-CrossTenant-AuthSource: CY8PR12MB7171.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 28 Mar 2026 21:57:57.6229 (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: OLeoLEvCHMErQtouq823TaAhoAN3xQ9etib8vH3aOP++qPXcsr9XMr7z9RechfmNjL10g5n6ZS209E30ljiGAA==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: MW4PR12MB6922
+In-Reply-To: <b78d4c11-e20b-4a84-b8da-2638df46c46c@intel.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=Nvidia.com; s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=xtydYvEK59MlGb51P2ltZkQeWMYcEahga4IJbBb0RA8=;
- b=igUCcHe7GWPqD1wvessNGGLk2em9FknKqlhWz104dbquuHDAGvGKiPsxD3qGQITd8lCNbqj6C86XX3bMDNFZ5hXgGqoephaRWCtH9qgY8U9mA38P1ZPaRGUZwNTxjNIkZtUEESHMqJAyBj/Gm9BKta1aVZUn5eDYA7v+pHYmhzwSKZDTnB+rMUd3U88XAJYduovTOROfPDVUJgpLVDMQUGbXxDULq1k0UQwW21DaAChLv0CNHsV0le+vSMpBFqpjdNZdB18502fKayfk6T9uECCSqD+aUqWqkAWywXrOGONaZvFwQzXi+2BKBL9S3gmSmPvE3bZgwZZ5ZmchNhykHw==
+ d=resnulli-us.20230601.gappssmtp.com; s=20230601; t=1774783045; x=1775387845;
+ darn=lists.osuosl.org; 
+ h=in-reply-to:content-disposition:mime-version:references:message-id
+ :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+ bh=ZZZEbvtH/bKZ6jbXxyKNF2VJCYpTcm4/gV6VLpLYICA=;
+ b=dZcC8srVkM0ttTR+dG9xwjL9EmqSL76GZXs8awXbr+Buu585WhDDjb72zViutX6cqW
+ bS1Tvk7LuVkxmrx/Ol0q/3j8VZkiy+xcUGpRsIETZNRScXy4Fj0SbfNAncoTmAMIpqS8
+ z0xDh9Ze7WPBqZCgfzc+9r31YqesNvy93WqySB9Cr93APusxR9tYj4bvVSlO0D3tJzUp
+ NQEnHbE2wzg0nJV7MtdpbeKVezTrsz4wrkocXyvMnSzPiO6Gu1Ks1lwhNBwTrxccjUWb
+ s0ug36Na62vBEl49qTO5wnghwem66u7mx/TosAMvzPhOmFaZ0WBKCFMsE5dU6AvXekx1
+ TV6A==
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dmarc=pass (p=reject dis=none)
- header.from=nvidia.com
+ dmarc=none (p=none dis=none)
+ header.from=resnulli.us
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key,
- unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256
- header.s=selector2 header.b=igUCcHe7
-X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Subject: Re: [Intel-wired-lan] [PATCH v2 4/4] drm/xe: switch
- xe_pagefault_queue_init() to using bitmap_weighted_or()
+ unprotected) header.d=resnulli-us.20230601.gappssmtp.com
+ header.i=@resnulli-us.20230601.gappssmtp.com header.a=rsa-sha256
+ header.s=20230601 header.b=dZcC8srV
+Subject: Re: [Intel-wired-lan] [PATCH net-next 2/2] devlink: unregister
+ shared devlink resources on destroy
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -179,42 +130,72 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-From: Yury Norov via Intel-wired-lan <intel-wired-lan@osuosl.org>
-Reply-To: Yury Norov <ynorov@nvidia.com>
+Cc: netdev@vger.kernel.org, Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
+ edumazet@google.com, intel-wired-lan@lists.osuosl.org, horms@kernel.org,
+ Jakub Kicinski <kuba@kernel.org>, Tony Nguyen <anthony.l.nguyen@intel.com>,
+ pabeni@redhat.com, davem@davemloft.net
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Thu, Mar 05, 2026 at 02:40:53PM -0800, Tony Nguyen wrote:
-> 
-> 
-> On 3/4/2026 3:43 AM, Simon Horman wrote:
-> > On Sun, Mar 01, 2026 at 08:11:58PM -0500, Yury Norov wrote:
-> > > The function calls bitmap_or() immediately followed by bitmap_weight().
-> > > Switch to using the dedicated bitmap_weighted_or() and save one bitmap
-> > > traverse.
-> > > 
-> > > Signed-off-by: Yury Norov <ynorov@nvidia.com>
-> > 
-> > It's not entirely clear to me why this patch is included in a patchset
-> > for the ice driver.
-> > 
-> > And it's also not clear to me why, but allmodconfigs - fo4 at least x86_32
-> > and x86_64 - fail with this patch applied to net-next [1].
-> > 
-> > ERROR: modpost: "__bitmap_weighted_or" [drivers/gpu/drm/xe/xe.ko] undefined!
-> > 
-> > [1] 2b12ffb66955 ("net: mana: Trigger VF reset/recovery on health check failure due to HWC timeout")
-> 
-> I'm also seeing the same error and no apparent reason. Since this doesn't
-> seem dependent on the others, I'll take the other 3 and this can get
-> sent/resolved separately.
+Thu, Mar 26, 2026 at 06:44:49AM +0100, przemyslaw.kitszel@intel.com wrote:
+>On 3/26/26 06:20, Jiri Pirko wrote:
+>> Wed, Mar 25, 2026 at 07:26:53AM +0100, przemyslaw.kitszel@intel.com wrote:
+>> > Since shared devlink acts as a normal devlink instance, capable of all
+>> > usual devlink operations, it must unregister its resources.
+>> > 
+>> > I plan to make use of devlink resources on a shared instance for ice
+>> > driver by separate series, coming soon.
+>> > 
+>> > Signed-off-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+>> > ---
+>> > net/devlink/sh_dev.c | 1 +
+>> > 1 file changed, 1 insertion(+)
+>> > 
+>> > diff --git a/net/devlink/sh_dev.c b/net/devlink/sh_dev.c
+>> > index b85e5cb1edbe..5de138bf3630 100644
+>> > --- a/net/devlink/sh_dev.c
+>> > +++ b/net/devlink/sh_dev.c
+>> > @@ -71,6 +71,7 @@ static void devlink_shd_destroy(struct devlink_shd *shd)
+>> > 
+>> > 	list_del(&shd->list);
+>> > 	devl_lock(devlink);
+>> > +	devl_resources_unregister(devlink);
+>> 
+>> Hmm. It is driver's responsibility to call this on appropriate place,
+>> symmetric to resource register. Why to have this in code for sh?
+>> 
+>> The idea I had was to have callbacks to driver to do things like this
+>> and more eventually. Would it work for you?
+>
+>for driver stuff that could be useful (say, someone wants to have
+>an additional data structure to iterate and free), OTOH, each
+>entity that is sharing should "unplug" from shared devlink, so
+>those structures should be emptied anyway
+>for my stuff in ice I managed to do without destructor
+>
+>coming back to devlink stuff - all things (resources, health)
+>would need same cleaning in all drives, so putting that in
+>devlink_shd_destroy() will simply take the burden off devs
+>(at the expense of less symmetric code for normal/shared
+>devlinks)
 
-That's because the symbol is not exported, and the driver is build as
-module.
+I think that devs can handle the burden for the sake of symmetricity.
 
-It's already fixed in -next: 95d324fb1b484 ("bitmap: add test_zero_nbits()").
-Let me know if you want me to send the fix as a separate patch in your
-tree. Or I can take this patch in my branch, if you give me your tags.
-
-Thanks,
-Yury
+>
+>in short: I'm ok with any of
+>a. callback for all cleanup
+>b. callback for driver-specific cleanup
+>c. no callback and no driver-specific cleanup (until someone needs
+>   that very much)
+>
+>thanks!
+>
+>> 
+>> 
+>> > 	devl_unregister(devlink);
+>> > 	devl_unlock(devlink);
+>> > 	kfree(shd->id);
+>> > -- 
+>> > 2.51.1
+>> > 
+>
