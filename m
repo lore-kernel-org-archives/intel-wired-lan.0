@@ -1,121 +1,92 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 01024F3D5FE
-	for <intel-wired-lan@archiver.kernel.org>; Sun, 29 Mar 2026 11:24:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F30D4F3D5FB
+	for <intel-wired-lan@archiver.kernel.org>; Sun, 29 Mar 2026 14:51:58 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 9E7D560A41;
-	Sun, 29 Mar 2026 11:24:42 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 9EB2A40C08;
+	Sun, 29 Mar 2026 14:51:58 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id XTXS97z4GEks; Sun, 29 Mar 2026 11:24:40 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id RXHeCJ_zCS8w; Sun, 29 Mar 2026 14:51:58 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 90A0F60A37
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org DE3F540BEE
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1774783480;
-	bh=PThdoORy2iuaX5Hlbv5/ayxBCCRV0jzN1bLjarnMAh0=;
-	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=WBk6b0HhO+N8GKw9hQ3sOYYb/qfdaIHn4avxuRctm3HKOozRXJWESy1FvE2fYsVxQ
-	 8mkUDvJz1IaID4lgIGKVSqLLdJL28m4wUULkEa6HRKvpFutZq4GieZ0ddOx3/l+NcS
-	 GPCQzpHaqx3SvgZJ6vk0jTm0eB94b8wQOqtxFWgK3q04w+O23vp78oXbtGvjlvU9KH
-	 0TZ1J8TfunObq4Lh02+8dhnwK+mUgDlYXrjDWgsBgyDTw8jDn3GTs1GNAClzVHxpz4
-	 HmGFbRs3y/RO75xSadFcJaS0UBayQdUY8W1CI+UiAuKLivFVAbJusAM8bUMpcF7nnk
-	 NHTgnYsMSxecQ==
+	s=default; t=1774795917;
+	bh=gjOV5C00kY76/U1S/KKA1vjIbODY8S7kc+xpGzqxKak=;
+	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=fSzghTQms628rAsHXdYwaoAefJmMwDh1vMNxBJfnb/Ndk6Ygf3h3dNM7j/0+CJuWu
+	 8c4X4YfWUdF4sUAf7IAcU1towoxFI2FutaPGM/QXmNpf913qLQKkpJ77Imiz0G34Rf
+	 rLA7Mx6o2c5qRyH3cuRKS3BsEdsix08rKemRl9HQK5Bv1b7znwYHOVeS3NlU08nKzn
+	 u3gd80kgBl02GtwzWdYh1R0mLFd3129H3BoVOB5oKSLNo3G9SiqPo36gbQ182IlcYF
+	 prxS5zfayr5Pt7w7vlJKZrIo1lx6tmOk8wJKdRmGV3ewNlokwnWcbWyU4z6DkhkSZP
+	 jHjCjyuwb/45Q==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 90A0F60A37;
-	Sun, 29 Mar 2026 11:24:40 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id 7B7A52EB
- for <intel-wired-lan@lists.osuosl.org>; Sun, 29 Mar 2026 11:24:39 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id DE3F540BEE;
+	Sun, 29 Mar 2026 14:51:57 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 506F010F
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 29 Mar 2026 14:51:57 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 6D239400C8
- for <intel-wired-lan@lists.osuosl.org>; Sun, 29 Mar 2026 11:24:39 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 429B540BEE
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 29 Mar 2026 14:51:57 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id DPrEgeW6VrJx for <intel-wired-lan@lists.osuosl.org>;
- Sun, 29 Mar 2026 11:24:38 +0000 (UTC)
-Received-SPF: None (mailfrom) identity=mailfrom;
- client-ip=2a00:1450:4864:20::32a; helo=mail-wm1-x32a.google.com;
- envelope-from=jiri@resnulli.us; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 67DB140015
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 67DB140015
-Received: from mail-wm1-x32a.google.com (mail-wm1-x32a.google.com
- [IPv6:2a00:1450:4864:20::32a])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 67DB140015
- for <intel-wired-lan@lists.osuosl.org>; Sun, 29 Mar 2026 11:24:37 +0000 (UTC)
-Received: by mail-wm1-x32a.google.com with SMTP id
- 5b1f17b1804b1-482f454be5bso42451785e9.0
- for <intel-wired-lan@lists.osuosl.org>; Sun, 29 Mar 2026 04:24:37 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20251104; t=1774783476; x=1775388276;
- h=in-reply-to:content-disposition:mime-version:references:message-id
- :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
- :subject:date:message-id:reply-to;
- bh=PThdoORy2iuaX5Hlbv5/ayxBCCRV0jzN1bLjarnMAh0=;
- b=tPkd4+AScYb0JZHvRAJz+XrZDq8/u9ODK+WksZVD+HKqadOfhRB51a5MeFSNGz79pT
- 7LI9IH5WXvWeg/SLTyh1+FiqG528Cv9r2To9bLky+c8BMO6p4q72eqFa7HpHa1h3bDrj
- xfa6fmtABXgB0EL2ZJnOGIcMOWOS4jnOt1xiG0RrwLBmXi/j8sGOugOikguqvE3aX1K3
- ioofwmTCx4sTCnD5AggxepkOp7JV7s6Gnq8AYUDCoy0zxHuVWhVWcT3amMh2muFtbXNZ
- kTnVddAylYKdmaYG1pKh1mLfDe+bqI0CMr80+C/48fogk1EyVL+fAciLxWHMB5ZfQJ0H
- HXpw==
-X-Forwarded-Encrypted: i=1;
- AJvYcCVdCi0DkK5/qldKIoYltjdzdFQreq1/y4SKTQjomqV2kjUyZe34lKAJGL3g3KFDBwhF5eWmMVWugFp/q8ugFG4=@lists.osuosl.org
-X-Gm-Message-State: AOJu0Yziz7n5cOh/bO2kIQ/wvGEOKt6fxRzQ1s8ljNEqQzT0VnvFR2A9
- TUROlquoNJSjdTwgf8Bs/l/quvUidLNPnpbTuB0M44w0FVMjK+MjwylGYsDCOfQ/rvI=
-X-Gm-Gg: ATEYQzxstpowPrxva609vViMGDwpYslsgUTLD/3naXxj2nBNZ0BftknuCFmloAtkCZs
- /midpN62sqY1o5uWt8TvWEGaqT/0gzTc1ilk8FMjUXGBSnDPETWWG5MF487AeWKk3XXcqKdKPnE
- tmajodMbLDBEZwP+bt1u3rwqD5P5GrlxdLnR5hgoi7RYbR1zA//f4I0EqpO47WQMiJdQvQc2hpR
- Z0iddBLnkvJ4g4IhQ5ylDh7gj+9cn3nn5WW8NCeaHh5DycNoNRF/rcH+srvrFr9HY/kLkbNw6eJ
- lqWMFLa0wFjC5ntxGgPgXbhwfh3M6YVhOgphkVoUbOGi7WULbQZ9Z3cVW06Lzfi6/ZiKtuujGiK
- mXflZ306BqCPmnMuvW5T80oM+X5/rXrsT6ZjymEr2+/r/iQPaXPLLoWTF9Qmfxsob1KI22J++FS
- dNyUX7yymjDZNvYjHTZWLfvsLKtrqiNqFGPM5mqjUQqEQYRfmvYZmFtg==
-X-Received: by 2002:a05:600d:8402:b0:485:3428:774c with SMTP id
- 5b1f17b1804b1-487290b36b5mr91083805e9.4.1774783475709; 
- Sun, 29 Mar 2026 04:24:35 -0700 (PDT)
-Received: from FV6GYCPJ69 ([2001:1ae9:6084:ab00:4c27:3a72:8516:e661])
- by smtp.gmail.com with ESMTPSA id
- 5b1f17b1804b1-4873bbcac33sm3844315e9.15.2026.03.29.04.24.34
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Sun, 29 Mar 2026 04:24:35 -0700 (PDT)
-Date: Sun, 29 Mar 2026 13:24:33 +0200
-From: Jiri Pirko <jiri@resnulli.us>
-To: Grzegorz Nitka <grzegorz.nitka@intel.com>
-Message-ID: <y5rjyaqyvmnyfaj7o2fari2t6i2klegklpnwi7xw7ld6rmajqb@uovrzb76cjs5>
-References: <20260326162832.3135857-1-grzegorz.nitka@intel.com>
- <20260326162832.3135857-4-grzegorz.nitka@intel.com>
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id gmfp1NmDmYRS for <intel-wired-lan@lists.osuosl.org>;
+ Sun, 29 Mar 2026 14:51:56 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=49.212.198.91;
+ helo=www2881.sakura.ne.jp; envelope-from=kohei@enjuk.jp; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 449AE40BCC
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 449AE40BCC
+Received: from www2881.sakura.ne.jp (www2881.sakura.ne.jp [49.212.198.91])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 449AE40BCC
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 29 Mar 2026 14:51:55 +0000 (UTC)
+Received: from ms-a2 (69.51.30.125.dy.iij4u.or.jp [125.30.51.69])
+ (authenticated bits=0)
+ by www2881.sakura.ne.jp (8.16.1/8.16.1) with ESMTPSA id 62TEpO7F031324
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NO);
+ Sun, 29 Mar 2026 23:51:24 +0900 (JST) (envelope-from kohei@enjuk.jp)
+From: Kohei Enju <kohei@enjuk.jp>
+To: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org
+Cc: Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Andrew Lunn <andrew+netdev@lunn.ch>,
+ "David S. Miller" <davem@davemloft.net>,
+ Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>,
+ Faizal Rahim <faizal.abdul.rahim@linux.intel.com>,
+ Kohei Enju <kohei@enjuk.jp>
+Date: Sun, 29 Mar 2026 14:50:49 +0000
+Message-ID: <20260329145122.126040-1-kohei@enjuk.jp>
+X-Mailer: git-send-email 2.51.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260326162832.3135857-4-grzegorz.nitka@intel.com>
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=resnulli-us.20230601.gappssmtp.com; s=20230601; t=1774783476; x=1775388276;
- darn=lists.osuosl.org; 
- h=in-reply-to:content-disposition:mime-version:references:message-id
- :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
- bh=PThdoORy2iuaX5Hlbv5/ayxBCCRV0jzN1bLjarnMAh0=;
- b=EJWlLGcoNdCzWyFkoXzphdR8FKpsa8E4topmKDCiZKWOq8DERUwIewMM0Q+4IzTBKn
- 3IVa7lhdlyv559TKWqSccF9vTQvFYwccwGleNy2AkKBetieRpJb+ez9bDMsq5BC57TGR
- /im/tqfqMQPEP6NzNO0NX8izdO+8preYdjY07alxdQSk9y5y3FETQNVuKuv6UE5ebP4l
- 6b85OHBWJTGWp6dUMeZoDfxgd2lsZ+lHRtlldx3tKja2ILrzXTrjounoVmHJpsUWc5bA
- FHsANvOKP5pUnZSKuhhNtMNPb8kcqFwHpekupqkLZbWxyI0TdAVWiYsQx9fQs+yYRt0H
- 2Ndw==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dmarc=none (p=none dis=none)
- header.from=resnulli.us
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+Content-Transfer-Encoding: 8bit
+X-Mailman-Original-DKIM-Signature: a=rsa-sha256;
+ bh=gjOV5C00kY76/U1S/KKA1vjIbODY8S7kc+xpGzqxKak=; 
+ c=relaxed/relaxed; d=enjuk.jp;
+ h=From:Message-ID:To:Subject:Date;
+ s=rs20251215; t=1774795884; v=1;
+ b=peKiOgFjTsQzG/E0esMgKXrrC0Q7IK5/gZjL48SrxeGbuVZJ072Mg1SOZKb1+XoF
+ gJCaB1IBifsQIsYBPYhiRHemSDzi6idHYDSo36YpQ9qd8aa7/MS4hGDvL5c53l2E
+ Hq4n1e1Dt9S+IGyLagaTTSAr6hw2JZBimeZRLcwXlkLo4IYEWBRyxr0wdtAEs93K
+ CLJXlC5i7I/UQE2DjNZtVTpqmp3KCcnM4AyfMoJgIJAvFDrVWdcumu7km5jHuRGc
+ CyITnQfBOYwK/LGRRYHMHu8sbpEc+m5SN32fLFAuu4qCcQWiyZxeOCXPAYZ5yVoB
+ rQpWVa8X0JX0y/btsz9Z+Q==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=enjuk.jp
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key,
- unprotected) header.d=resnulli-us.20230601.gappssmtp.com
- header.i=@resnulli-us.20230601.gappssmtp.com header.a=rsa-sha256
- header.s=20230601 header.b=EJWlLGco
-Subject: Re: [Intel-wired-lan] [PATCH v4 net-next 3/8] dpll: extend pin
- notifier and netlink events with notification source ID
+ unprotected) header.d=enjuk.jp header.i=@enjuk.jp header.a=rsa-sha256
+ header.s=rs20251215 header.b=peKiOgFj
+Subject: [Intel-wired-lan] [PATCH iwl-net v1] igc: fix potential skb leak in
+ igc_fpe_xmit_smd_frame()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -128,72 +99,52 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: ivecera@redhat.com, Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
- kuba@kernel.org, vadim.fedorenko@linux.dev, edumazet@google.com,
- netdev@vger.kernel.org, richardcochran@gmail.com, donald.hunter@gmail.com,
- linux-kernel@vger.kernel.org, arkadiusz.kubalewski@intel.com,
- Prathosh.Satish@microchip.com, andrew+netdev@lunn.ch,
- intel-wired-lan@lists.osuosl.org, horms@kernel.org,
- przemyslaw.kitszel@intel.com, anthony.l.nguyen@intel.com, pabeni@redhat.com,
- davem@davemloft.net
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Thu, Mar 26, 2026 at 05:28:27PM +0100, grzegorz.nitka@intel.com wrote:
->Extend the DPLL pin notification API to include a source identifier
->indicating where the notification originates. This allows notifier
->consumers and netlink listeners to distinguish between notifications
->coming from an associated DPLL instance, a parent pin, or the pin
->itself.
->
->A new field, src_id, is added to struct dpll_pin_notifier_info and is
->passed through all pin-related notification paths. Callers of
->dpll_pin_notify() are updated to provide a meaningful source identifier
->based on their context:
->  - pin registration/unregistration uses the DPLL's clock_id,
->  - pin-on-pin operations use the parent pin's clock_id,
->  - pin changes use the pin's own clock_id.
->
->As introduced in the commit ("dpll: allow registering FW-identified pin
->with a different DPLL"), it is possible to share the same physical pin
->via firmware description (fwnode) with DPLL objects from different
->kernel modules. This means that a given pin can be registered multiple
->times.
->
->Driver such as ICE (E825 devices) rely on this mechanism when listening
->for the event where a shared-fwnode pin appears, while avoiding reacting
->to events triggered by their own registration logic.
->
->This change only extends the notification metadata and does not alter
->existing semantics for drivers that do not use the new field.
->
->Reviewed-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
->Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
->Signed-off-by: Grzegorz Nitka <grzegorz.nitka@intel.com>
->---
-> drivers/dpll/dpll_core.c    | 14 ++++++++------
-> drivers/dpll/dpll_core.h    |  2 +-
-> drivers/dpll/dpll_netlink.c | 10 +++++-----
-> drivers/dpll/dpll_netlink.h |  4 ++--
-> include/linux/dpll.h        |  1 +
-> 5 files changed, 17 insertions(+), 14 deletions(-)
->
->diff --git a/drivers/dpll/dpll_core.c b/drivers/dpll/dpll_core.c
->index 55ad03977d6d..c7fcae76c3f5 100644
->--- a/drivers/dpll/dpll_core.c
->+++ b/drivers/dpll/dpll_core.c
->@@ -71,7 +71,8 @@ void dpll_device_notify(struct dpll_device *dpll, unsigned long action)
-> 	call_dpll_notifiers(action, &info);
-> }
-> 
->-void dpll_pin_notify(struct dpll_pin *pin, unsigned long action)
->+void dpll_pin_notify(struct dpll_pin *pin, u64 ntfy_src,
+When igc_fpe_init_tx_descriptor() fails, no one takes care of an
+allocated skb, leaking it. [1]
 
-I don't see the reason for "ntfy_" prefix here. Also. It's src_clock_id.
+Use dev_kfree_skb_any() on failure.
+Also call igc_flush_tx_descriptors() only on success.
 
-Could you perhaps consistently name this "src_clock_id" here and in the
-info struct as well?
+[1]
+unreferenced object 0xffff88813aee1b40 (size 224):
+  comm "softirq", pid 0, jiffies 4294709256
+[...]
+  backtrace (crc dee31384):
+    kmem_cache_alloc_node_noprof+0x54f/0x640
+    __alloc_skb+0xd9/0x5b0
+    igc_fpe_xmit_smd_frame.isra.0+0xad/0x510
+    igc_fpe_send_mpacket+0x32/0x80
+[...]
 
-Thanks!
+Fixes: 5422570c0010 ("igc: add support for frame preemption verification")
+Signed-off-by: Kohei Enju <kohei@enjuk.jp>
+---
+ drivers/net/ethernet/intel/igc/igc_tsn.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-[..]
+diff --git a/drivers/net/ethernet/intel/igc/igc_tsn.c b/drivers/net/ethernet/intel/igc/igc_tsn.c
+index 8a110145bfee..eaa274248d54 100644
+--- a/drivers/net/ethernet/intel/igc/igc_tsn.c
++++ b/drivers/net/ethernet/intel/igc/igc_tsn.c
+@@ -109,10 +109,14 @@ static int igc_fpe_xmit_smd_frame(struct igc_adapter *adapter,
+ 	__netif_tx_lock(nq, cpu);
+ 
+ 	err = igc_fpe_init_tx_descriptor(ring, skb, type);
+-	igc_flush_tx_descriptors(ring);
++	if (!err)
++		igc_flush_tx_descriptors(ring);
+ 
+ 	__netif_tx_unlock(nq);
+ 
++	if (err)
++		dev_kfree_skb_any(skb);
++
+ 	return err;
+ }
+ 
+-- 
+2.51.0
+
