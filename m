@@ -4,91 +4,124 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2B46510F930B
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  1 Apr 2026 00:36:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EE17210F92EC
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  1 Apr 2026 01:15:13 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id CE85F812D9;
-	Wed,  1 Apr 2026 00:36:02 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 90DCF80D01;
+	Wed,  1 Apr 2026 01:15:13 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id W3f_63hkMpkv; Wed,  1 Apr 2026 00:36:01 +0000 (UTC)
+ id SHj7aXWMBUtu; Wed,  1 Apr 2026 01:15:12 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D1B5881311
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9131580CEB
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1775003761;
-	bh=jV9IW6NloFL39dywNWCVtHyYF5xMurk9Oo8iLb2N6uc=;
-	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=eLhAOCd+VsascQsQsn6yS5kMFfKxuc5n3FL/w1AQYVs17vQmsxaT3HbU0HaOcGT+y
-	 oQUWUaz73dMWVKHUMPGYUULqZm1j1l9iXyMfYm9Pkv7QhYSpSUm+3WWe1K6hn87b+W
-	 XlYjlZsEiyfKW+nOcopjbYzECS37mhbZkFX8MNhG4DyQxlRH3SfkWs0LvVQ2X1s/X2
-	 krCWuuhQxim9XKwehlQldCIyCBOeZ4tYrJKGJXRWi1nWSlfL0/+/Je+tnaDpJSbKhW
-	 zFVqNZ6vRH5imTa72T5FBTbeqrjIU/qd/0chbNHeKxOmUV4mAuGTmhiw+rE5e3y/OT
-	 +CemIOkNtV0lw==
+	s=default; t=1775006112;
+	bh=aIG+o0e1lfuEhl1N7MrCiLFaDTM++cyzhQ07Sz+94dM=;
+	h=From:In-Reply-To:Date:Cc:References:To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=5eiIlm47u7HG+RsW7hnKrSM1bklTI5ILlu7f3G+XldIcc2B8Z/fDdxenbVpJeV4CD
+	 CE5U6lUt3haIenhfD0MpqvNLl3aP6IZtzYd0qYl1WF2CDL0984yI+J++UWTzPEibLQ
+	 55EnO4022/pmZrAknErSG2M/tMNxMk0P6mcf8zRRGIDlM6w33Y6+f7/rK0QyQ7JYC7
+	 YrgOUaR7pzeDad+R/lFdLYN+F65yWe4LVXsU1Ms0224VKsYZLyN9bASPTISIz7F8tp
+	 lI+AwJGH/PdvFs8aeViZqy5S6uwiFQhwtw5miBgOV+57qAzX1v6gwO5k4QhoTPUMCp
+	 G+3I0/ECOe6Fw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id D1B5881311;
-	Wed,  1 Apr 2026 00:36:01 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 535A130E
- for <intel-wired-lan@lists.osuosl.org>; Wed,  1 Apr 2026 00:36:00 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 9131580CEB;
+	Wed,  1 Apr 2026 01:15:12 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 8B35230E
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  1 Apr 2026 01:15:11 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 392C8406FC
- for <intel-wired-lan@lists.osuosl.org>; Wed,  1 Apr 2026 00:36:00 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 73E5540284
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  1 Apr 2026 01:15:11 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 3Y6u4zVj_5lV for <intel-wired-lan@lists.osuosl.org>;
- Wed,  1 Apr 2026 00:35:59 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.16;
- helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org C8BDB401AD
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org C8BDB401AD
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.16])
- by smtp2.osuosl.org (Postfix) with ESMTPS id C8BDB401AD
- for <intel-wired-lan@lists.osuosl.org>; Wed,  1 Apr 2026 00:35:58 +0000 (UTC)
-X-CSE-ConnectionGUID: 7HDWiSqeTvOwSrob25UVcw==
-X-CSE-MsgGUID: f0JNYGwgQ2mpcRskK6tCjQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11745"; a="76222832"
-X-IronPort-AV: E=Sophos;i="6.23,152,1770624000"; d="scan'208";a="76222832"
-Received: from fmviesa004.fm.intel.com ([10.60.135.144])
- by orvoesa108.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 31 Mar 2026 17:35:57 -0700
-X-CSE-ConnectionGUID: kmiHV02gTGO6SfI4H3q1Dg==
-X-CSE-MsgGUID: Ln55BeVeR2q62hCK6T0K6A==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,152,1770624000"; d="scan'208";a="228125327"
-Received: from lkp-server01.sh.intel.com (HELO 283bf2e1b94a) ([10.239.97.150])
- by fmviesa004.fm.intel.com with ESMTP; 31 Mar 2026 17:35:56 -0700
-Received: from kbuild by 283bf2e1b94a with local (Exim 4.98.2)
- (envelope-from <lkp@intel.com>) id 1w7jYo-000000004UZ-19UT;
- Wed, 01 Apr 2026 00:35:54 +0000
-Date: Wed, 01 Apr 2026 08:35:12 +0800
-From: kernel test robot <lkp@intel.com>
-To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Message-ID: <202604010804.CDJejCF8-lkp@intel.com>
-User-Agent: s-nail v14.9.25
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1775003759; x=1806539759;
- h=date:from:to:subject:message-id;
- bh=bX5DXZstpoWjdP1O6EcJ+IYY1gZArB6h6WD4oblFeh4=;
- b=UriOnq7H7mCB9QYbf7D4N1TK+1XY4/HJQSSOL9pd3Z8cH0VrG7TlO3eV
- ltg05nDOM/V6S4j/LZh2ELJaldlVGkC2AkLvhCQoKMuvSjzhd2+hE40fo
- AfqykAcuv8RCjjaeSNWeCEv2B6+MoM7nQTW9MGg7mgxf2fIrSW9+3MKCM
- aH80pYcNMpocmTBculmxcW2ViE8HbboFa9nvNiqTval0hTQ7fyi0ozf6/
- JsLRCvv/Lshk7s9Xzp35ldhik+Swdo/xTuXSfr+pd+M9T+iEn7j5F84fq
- W+bbvuH7LkFawNU4XmEzka7wDEMT4a8fl+T91Quy8m+IP4bm6aLgNWq8V
- w==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id x9iVO_Rq7MZI for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  1 Apr 2026 01:15:10 +0000 (UTC)
+Received-SPF: None (mailfrom) identity=mailfrom;
+ client-ip=2607:f8b0:4864:20::1331; helo=mail-dy1-x1331.google.com;
+ envelope-from=bob@vanvalzah.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org DB2F1401C9
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org DB2F1401C9
+Received: from mail-dy1-x1331.google.com (mail-dy1-x1331.google.com
+ [IPv6:2607:f8b0:4864:20::1331])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id DB2F1401C9
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  1 Apr 2026 01:15:09 +0000 (UTC)
+Received: by mail-dy1-x1331.google.com with SMTP id
+ 5a478bee46e88-2ba9c484e5eso5653926eec.1
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 31 Mar 2026 18:15:09 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20251104; t=1775006109; x=1775610909;
+ h=to:references:message-id:content-transfer-encoding:cc:date
+ :in-reply-to:from:subject:mime-version:x-gm-gg:x-gm-message-state
+ :from:to:cc:subject:date:message-id:reply-to;
+ bh=aIG+o0e1lfuEhl1N7MrCiLFaDTM++cyzhQ07Sz+94dM=;
+ b=bReDjtNhjSvSv+JJTaJ03UfBWXYDq/3oyasnHyGOL/ihi6OQ92ORhRMznh0abABEYK
+ hZSE9D1SSfPWDSPJqkyIWSRdwlrkO9NFAI/QQryih7NMlabQPhmLUAMaIPUgzwp0RSVa
+ 9+CxgpT18XFpnJD/CpTUweadPss+Pbb84kyugTOtM1ZaDU5t+JGdL36LfB+gXn7HIqSw
+ 359FSQ79Id5yIYZ5frTutkLiir3nB4GyxEGfNfNbY02yxzzntEcscCl8LSuGPqup+qp+
+ jSCYNs3H0OhhV0aNsAzlyiOU4amMpwhRX5zERJCfnC4UBkynblIU0kBoJQ0vJNZyWsVs
+ Jefg==
+X-Gm-Message-State: AOJu0YxERKSB+A184x5jh2bjIqqwEMeVTQCAaen4hwnVU9ixm+auC2Tn
+ YFq7U/xgrz+4fImByd/rJlR1Wi88TLNdCPy51b6SnX65lBJd4N9328U4wpBtGofE6dw=
+X-Gm-Gg: ATEYQzzz6lRbRcKSltfDC3lAGcq8mbif1xdG44b2raL3tcZXIKUkUlhSLRzhhaSNqmn
+ aeiYK5d8Cdfb4ZWGJDVHwQ45QqZYS6Fps/IVjWYoTAsKhd8YR/PBkni8iVOxzHAviqAgdGY4LHK
+ HjghPe0WchdOx69ra5Guw1LtqU8rfRZ2AGEC1GVo7Xw8pIabllNywKP44NxFp1XLX/6USeVO+oA
+ UhRQUi+6M5loBHjxRn1i9Ruqx0EONGFW5y223M1Xbu2TUaf0hwzMPJidzhpGFl3Muw6X1tF5n07
+ 60ZXGBbRsOAkGL5msT5GuhKiLuK4TyPMhiUSzfTBehmOBVXLCjwnCTOtVcpfnXnXclX2paee64N
+ Vi8b8H5p1jtGMBaCyoe/kTkvIimxhYa0leW6EExylaBEgCrtRzLUq13WoCKkIjdvfUHoOi7j5/8
+ h2Bov7xID2uKIopcFhAoir7owfofthuqxIvcTLp1dva4kmYrS9p90CytK6vVmPO2iXn/gDD9mAn
+ 35l+lQe
+X-Received: by 2002:a05:7301:6895:b0:2ba:6b3a:7696 with SMTP id
+ 5a478bee46e88-2c930e6bd20mr867370eec.8.1775006108584; 
+ Tue, 31 Mar 2026 18:15:08 -0700 (PDT)
+Received: from smtpclient.apple (syn-108-178-167-002.biz.spectrum.com.
+ [108.178.167.2]) by smtp.gmail.com with ESMTPSA id
+ 5a478bee46e88-2c3c4cbbc1fsm11057586eec.13.2026.03.31.18.15.07
+ (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+ Tue, 31 Mar 2026 18:15:08 -0700 (PDT)
+Content-Type: text/plain;
+	charset=utf-8
+Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3864.400.21\))
+From: Bob Van Valzah <bob@vanvalzah.com>
+In-Reply-To: <B22CCB1A-15FE-4233-9F47-7FE522C8D6FF@VanValzah.Com>
+Date: Tue, 31 Mar 2026 18:14:57 -0700
+Cc: intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com,
+ netdev@vger.kernel.org, julianstj@fb.com, jeff@jeffgeerling.com,
+ Lasse Johnsen <lasse@timebeat.app>
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <CAD61B95-35BF-4BAC-AC26-6AC043DE6FC1@vanvalzah.com>
+References: <D1C3B3DF-960F-40C7-BBD7-994359F0C8AD@vanvalzah.com>
+ <65977d5b-16eb-418c-995e-6a918f67707a@linux.dev>
+ <B22CCB1A-15FE-4233-9F47-7FE522C8D6FF@VanValzah.Com>
+To: Vadim Fedorenko <vadim.fedorenko@linux.dev>
+X-Mailer: Apple Mail (2.3864.400.21)
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=vanvalzah-com.20230601.gappssmtp.com; s=20230601; t=1775006109; x=1775610909;
+ darn=lists.osuosl.org; 
+ h=to:references:message-id:content-transfer-encoding:cc:date
+ :in-reply-to:from:subject:mime-version:from:to:cc:subject:date
+ :message-id:reply-to;
+ bh=aIG+o0e1lfuEhl1N7MrCiLFaDTM++cyzhQ07Sz+94dM=;
+ b=BP71ncXRvFxOTYGZis59EAxLlGKCnFWOtbbonIW8oT88hAvQqY9r6N70l9vU5del+X
+ OXq8wPFlhBiMbSerNwDsJYtcTk2dn0TXRj3KOUfmgmgE33lHBHGW2yFi/sKlDmB4yxYL
+ lj0WhLK50I0+O2jQUHaJ2pW/RODbvsV8VGAkeXiBP9Q2iMVdO/HubsR2awx7XHBhTWqz
+ 69sitTl24DdtbpEutBMYsXhoThGJX/D1TWuvAXYd79wXxLZ5sW89SzJjthyNHXAKRatm
+ rrHrlKSvcxy1tB+bGXMS0yZTgPimlP1+6wmKOmdoDrcvODvUuUzQnIpJd0a66E9Lbapy
+ 8Syw==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dmarc=none (p=none dis=none)
+ header.from=vanvalzah.com
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=UriOnq7H
-Subject: [Intel-wired-lan] [tnguy-next-queue:1GbE] BUILD SUCCESS
- 6c31a9de99fc91a2ea6408083e9bd252df9aeb96
+ unprotected) header.d=vanvalzah-com.20230601.gappssmtp.com
+ header.i=@vanvalzah-com.20230601.gappssmtp.com header.a=rsa-sha256
+ header.s=20230601 header.b=BP71ncXR
+Subject: Re: [Intel-wired-lan] [PATCH] igc: fix Tx timestamp timeout caused
+ by unlocked TIMINCA write in adj fine
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -104,198 +137,176 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git 1GbE
-branch HEAD: 6c31a9de99fc91a2ea6408083e9bd252df9aeb96  ice: dpll: Fix compilation warning
+There is one other symptom of this bug that we neglected to report =
+previously: PEROUT stops. That=E2=80=99s PPS OUT for us, so it=E2=80=99s =
+how we first noticed the problem. Recovery was to unload and reload the =
+igc driver.
 
-elapsed time: 1447m
+I take this as further evidence for my hunch that the hardware just =
+reaches some internal =E2=80=9Cthis should never happen=E2=80=9D state =
+and the PHC just stops ticking.
 
-configs tested: 179
-configs skipped: 5
+Hoping this additional symptom report might help with diagnosis.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+	Bob
 
-tested configs:
-alpha                             allnoconfig    gcc-15.2.0
-alpha                            allyesconfig    gcc-15.2.0
-alpha                               defconfig    gcc-15.2.0
-arc                              allmodconfig    gcc-15.2.0
-arc                               allnoconfig    gcc-15.2.0
-arc                              allyesconfig    gcc-15.2.0
-arc                                 defconfig    gcc-15.2.0
-arc                   randconfig-001-20260401    clang-23
-arc                   randconfig-001-20260401    gcc-8.5.0
-arc                   randconfig-002-20260401    clang-23
-arc                   randconfig-002-20260401    gcc-11.5.0
-arm                               allnoconfig    clang-23
-arm                               allnoconfig    gcc-15.2.0
-arm                              allyesconfig    gcc-15.2.0
-arm                                 defconfig    clang-23
-arm                            mmp2_defconfig    gcc-15.2.0
-arm                   randconfig-001-20260401    clang-23
-arm                   randconfig-002-20260401    clang-23
-arm                   randconfig-003-20260401    clang-23
-arm                   randconfig-004-20260401    clang-23
-arm                   randconfig-004-20260401    gcc-12.5.0
-arm64                            allmodconfig    clang-19
-arm64                             allnoconfig    gcc-15.2.0
-arm64                               defconfig    gcc-15.2.0
-arm64                 randconfig-001-20260401    clang-18
-arm64                 randconfig-001-20260401    gcc-15.2.0
-arm64                 randconfig-002-20260401    gcc-15.2.0
-arm64                 randconfig-002-20260401    gcc-8.5.0
-arm64                 randconfig-003-20260401    gcc-15.2.0
-arm64                 randconfig-003-20260401    gcc-8.5.0
-arm64                 randconfig-004-20260401    gcc-11.5.0
-arm64                 randconfig-004-20260401    gcc-15.2.0
-csky                             allmodconfig    gcc-15.2.0
-csky                              allnoconfig    gcc-15.2.0
-csky                                defconfig    gcc-15.2.0
-csky                  randconfig-001-20260401    gcc-13.4.0
-csky                  randconfig-001-20260401    gcc-15.2.0
-csky                  randconfig-002-20260401    gcc-15.2.0
-hexagon                          allmodconfig    clang-17
-hexagon                           allnoconfig    clang-23
-hexagon                           allnoconfig    gcc-15.2.0
-hexagon                             defconfig    clang-23
-hexagon               randconfig-001-20260401    clang-23
-hexagon               randconfig-001-20260401    gcc-15.2.0
-hexagon               randconfig-002-20260401    clang-17
-hexagon               randconfig-002-20260401    gcc-15.2.0
-i386                             allmodconfig    gcc-14
-i386                              allnoconfig    gcc-14
-i386                              allnoconfig    gcc-15.2.0
-i386        buildonly-randconfig-001-20260401    gcc-14
-i386        buildonly-randconfig-002-20260401    clang-20
-i386        buildonly-randconfig-002-20260401    gcc-14
-i386        buildonly-randconfig-003-20260401    gcc-14
-i386        buildonly-randconfig-004-20260401    gcc-14
-i386        buildonly-randconfig-005-20260401    gcc-14
-i386        buildonly-randconfig-006-20260401    clang-20
-i386        buildonly-randconfig-006-20260401    gcc-14
-i386                                defconfig    clang-20
-i386                  randconfig-001-20260401    gcc-14
-i386                  randconfig-002-20260401    clang-20
-i386                  randconfig-003-20260401    clang-20
-i386                  randconfig-004-20260401    gcc-12
-i386                  randconfig-011-20260401    clang-20
-i386                  randconfig-012-20260401    clang-20
-i386                  randconfig-013-20260401    clang-20
-i386                  randconfig-014-20260401    clang-20
-i386                  randconfig-015-20260401    clang-20
-i386                  randconfig-016-20260401    gcc-14
-i386                  randconfig-017-20260401    gcc-14
-loongarch                        allmodconfig    clang-19
-loongarch                         allnoconfig    clang-23
-loongarch                         allnoconfig    gcc-15.2.0
-loongarch                           defconfig    clang-19
-loongarch             randconfig-001-20260401    gcc-15.2.0
-loongarch             randconfig-002-20260401    clang-23
-loongarch             randconfig-002-20260401    gcc-15.2.0
-m68k                             allmodconfig    gcc-15.2.0
-m68k                              allnoconfig    gcc-15.2.0
-m68k                             allyesconfig    gcc-15.2.0
-m68k                                defconfig    gcc-15.2.0
-microblaze                        allnoconfig    gcc-15.2.0
-microblaze                       allyesconfig    gcc-15.2.0
-microblaze                          defconfig    gcc-15.2.0
-mips                             allmodconfig    gcc-15.2.0
-mips                              allnoconfig    gcc-15.2.0
-mips                             allyesconfig    gcc-15.2.0
-nios2                            allmodconfig    gcc-11.5.0
-nios2                             allnoconfig    clang-23
-nios2                             allnoconfig    gcc-11.5.0
-nios2                               defconfig    gcc-11.5.0
-nios2                 randconfig-001-20260401    gcc-15.2.0
-nios2                 randconfig-001-20260401    gcc-8.5.0
-nios2                 randconfig-002-20260401    gcc-15.2.0
-nios2                 randconfig-002-20260401    gcc-9.5.0
-openrisc                         allmodconfig    gcc-15.2.0
-openrisc                          allnoconfig    clang-23
-openrisc                          allnoconfig    gcc-15.2.0
-openrisc                            defconfig    gcc-15.2.0
-parisc                           allmodconfig    gcc-15.2.0
-parisc                            allnoconfig    clang-23
-parisc                            allnoconfig    gcc-15.2.0
-parisc                           allyesconfig    gcc-15.2.0
-parisc                              defconfig    gcc-15.2.0
-parisc                randconfig-001-20260401    gcc-8.5.0
-parisc                randconfig-002-20260401    gcc-8.5.0
-parisc64                            defconfig    gcc-15.2.0
-powerpc                          allmodconfig    gcc-15.2.0
-powerpc                           allnoconfig    clang-23
-powerpc                           allnoconfig    gcc-15.2.0
-powerpc               randconfig-001-20260401    gcc-8.5.0
-powerpc               randconfig-002-20260401    gcc-8.5.0
-powerpc64             randconfig-001-20260401    gcc-8.5.0
-powerpc64             randconfig-002-20260401    gcc-8.5.0
-riscv                            allmodconfig    clang-23
-riscv                             allnoconfig    clang-23
-riscv                             allnoconfig    gcc-15.2.0
-riscv                            allyesconfig    clang-16
-riscv                               defconfig    clang-23
-riscv                 randconfig-001-20260401    gcc-8.5.0
-riscv                 randconfig-001-20260401    gcc-9.5.0
-riscv                 randconfig-002-20260401    gcc-11.5.0
-riscv                 randconfig-002-20260401    gcc-9.5.0
-s390                             allmodconfig    clang-18
-s390                              allnoconfig    clang-23
-s390                             allyesconfig    gcc-15.2.0
-s390                                defconfig    clang-23
-s390                  randconfig-001-20260401    gcc-9.5.0
-s390                  randconfig-002-20260401    gcc-8.5.0
-s390                  randconfig-002-20260401    gcc-9.5.0
-sh                               allmodconfig    gcc-15.2.0
-sh                                allnoconfig    clang-23
-sh                                allnoconfig    gcc-15.2.0
-sh                               allyesconfig    gcc-15.2.0
-sh                                  defconfig    gcc-14
-sh                                  defconfig    gcc-15.2.0
-sh                    randconfig-001-20260401    gcc-10.5.0
-sh                    randconfig-001-20260401    gcc-9.5.0
-sh                    randconfig-002-20260401    gcc-15.2.0
-sh                    randconfig-002-20260401    gcc-9.5.0
-sparc                             allnoconfig    clang-23
-sparc                             allnoconfig    gcc-15.2.0
-sparc                               defconfig    gcc-15.2.0
-sparc64                          allmodconfig    clang-23
-sparc64                             defconfig    clang-20
-sparc64                             defconfig    gcc-14
-um                               allmodconfig    clang-19
-um                                allnoconfig    clang-23
-um                               allyesconfig    gcc-14
-um                                  defconfig    clang-23
-um                                  defconfig    gcc-14
-um                             i386_defconfig    gcc-14
-um                           x86_64_defconfig    clang-23
-um                           x86_64_defconfig    gcc-14
-x86_64                            allnoconfig    clang-20
-x86_64                            allnoconfig    clang-23
-x86_64      buildonly-randconfig-001-20260401    gcc-12
-x86_64      buildonly-randconfig-001-20260401    gcc-14
-x86_64      buildonly-randconfig-002-20260401    gcc-12
-x86_64      buildonly-randconfig-002-20260401    gcc-14
-x86_64      buildonly-randconfig-003-20260401    gcc-12
-x86_64      buildonly-randconfig-004-20260401    gcc-12
-x86_64      buildonly-randconfig-005-20260401    clang-20
-x86_64      buildonly-randconfig-005-20260401    gcc-12
-x86_64      buildonly-randconfig-006-20260401    gcc-12
-x86_64      buildonly-randconfig-006-20260401    gcc-14
-x86_64                              defconfig    gcc-14
-x86_64                                  kexec    clang-20
-x86_64                randconfig-001-20260401    clang-20
-x86_64                randconfig-002-20260401    clang-20
-x86_64                randconfig-003-20260401    clang-20
-x86_64                randconfig-004-20260401    clang-20
-x86_64                randconfig-005-20260401    clang-20
-x86_64                randconfig-006-20260401    clang-20
-x86_64                               rhel-9.4    clang-20
-x86_64                          rhel-9.4-func    clang-20
-x86_64                    rhel-9.4-kselftests    clang-20
-x86_64                          rhel-9.4-rust    clang-20
-xtensa                            allnoconfig    clang-23
-xtensa                            allnoconfig    gcc-15.2.0
+> On Mar 30, 2026, at 12:42=E2=80=AFPM, Bob Van Valzah =
+<Bob@VanValzah.Com> wrote:
+>=20
+> Thanks for following up Vadim. To be clear, we do not see our patch as =
+a solution to the problem, since it does not eliminate the underlying =
+contention, it just reduces the likelihood.
+>=20
+> We now have a bit more hands-on time running the patch and can see its =
+limitations. The driver just throws the timeout error less often now. =
+Moreover, our code calling adjfine() has to be ready for an EBUSY. The =
+patch is certainly not an elegant solution. It may well have worked =
+better, or perhaps been a complete fix, if we had taken tmreg_lock. =
+Sorry if we sent our patch prematurely.
+>=20
+> We think the contention happens when a system call made by a clock =
+disciplining daemon like ts2phc changes a PHC's frequency, while a =
+timestamping daemon like ptp4l has requested a timestamp against that =
+same PHC. A plausible explanation is that the hardware fails to produce =
+a timestamp for a packet when it collides with a PHC frequency =
+adjustment, leading to the timestamp timeout. We see this contention =
+128x more often than the average user because we cranked our PTP sync =
+rate up to 128 Hz. We care about every ns here. The likelihood probably =
+also scales with the number of PTP clients.
+>=20
+> Sorry, in retrospect, we may have overstated our case in declaring the =
+root cause as the lack of locking, since our locking only reduces the =
+likelihood of the timestamp timeout. Intel may provide insight to the =
+underlying cause of the timeout, but my hunch is that the collision of a =
+timestamp request against a PHC and a frequency change of the same PHC =
+causes the timestamp request to fail, leading to the timeout. Our repro =
+code makes this happen so reliably that it should be easy for the =
+hardware guys to explain exactly what=E2=80=99s going on. Hopefully, =
+they can advise on a more elegant avoidance strategy than our ham-handed =
+lock.
+>=20
+> We have not tried recovering a timestamp following the error. We may =
+have used the term =E2=80=9Ccorrupted=E2=80=9D poorly here. Since the =
+error message says =E2=80=9Ctimeout," that could mean the hardware =
+produced no timestamp at all, rather than a corrupted one.
+>=20
+> This isn=E2=80=99t a show-stopper for us, but we note that timekeeping =
+daemons with imperfect error handling could react to this situation =
+poorly and perhaps fail silently.
+>=20
+> Bob
+>=20
+>> On Mar 30, 2026, at 11:39=E2=80=AFAM, Vadim Fedorenko =
+<vadim.fedorenko@linux.dev> wrote:
+>>=20
+>> On 29/03/2026 04:25, Bob Van Valzah wrote:
+>>> Hi,
+>>> We found a race in igc_ptp_adjfine_i225() that causes "Tx timestamp
+>>> timeout" errors and eventually wedges EXTTS when a PTP grandmaster
+>>> (ptp4l with hardware timestamping) runs concurrently with PHC
+>>> frequency discipline (any GPSDO calling clock_adjtime =
+ADJ_FREQUENCY).
+>>> Root cause: igc_ptp_adjfine_i225() writes IGC_TIMINCA without =
+holding
+>>> any lock.  Every other PTP clock operation in igc_ptp.c (adjtime,
+>>> gettime, settime) holds tmreg_lock, but adjfine does not.  When the
+>>> increment rate changes while the hardware is capturing a TX =
+timestamp,
+>>> the captured value is corrupt.  The driver retries for
+>>> IGC_PTP_TX_TIMEOUT (15s), then logs the timeout and frees the skb.
+>>> Repeated occurrences eventually prevent EXTTS from delivering =
+events.
+>>> The attached reproducer (triggers in ~17 seconds on i226):
+>>>  One thread calling clock_adjtime(ADJ_FREQUENCY) at ~200k/s on the
+>>>  PHC, another sending UDP packets with SO_TIMESTAMPING requesting
+>>>  hardware TX timestamps at ~100k/s.  A Python reproducer is at:
+>>>  =
+https://github.com/bobvan/PePPAR-Fix/blob/main/tools/igc_tx_timeout_repro.=
+py
+>>>  At realistic rates (1 Hz adjfine from a GPSDO + ptp4l at 128 Hz
+>>>  sync), the race triggers in ~30 minutes.
+>>> The attached patch holds ptp_tx_lock around the TIMINCA write and
+>>> skips the write if any TX timestamps are pending (tx_tstamp[i].skb
+>>> !=3D NULL), returning -EBUSY.  This doesn't fully close the hardware
+>>> race (a new TX capture can start between the check and the write),
+>>> but at realistic rates the residual probability gives ~25 year MTBF
+>>> vs ~30 minutes without the patch.
+>>> A complete fix would likely require either disabling TX timestamping
+>>> around TIMINCA writes (via TSYNCTXCTL), or making the timeout =
+recovery
+>>> path more robust so a single corrupt timestamp doesn't wedge the
+>>> subsystem.  We'd welcome guidance from the igc maintainers on the
+>>> preferred approach.
+>>> Tested on:
+>>>  - Intel i226 (TimeHAT v5 board on Raspberry Pi 5)
+>>>  - Kernel 6.12.62+rpt-rpi-2712 (Raspberry Pi OS)
+>>>  - Intel out-of-tree igc driver 5.4.0-7642.46
+>>>  - Stock upstream igc_ptp.c (same code, same bug)
+>>> Bob
+>>> ---
+>>> drivers/net/ethernet/intel/igc/igc_ptp.c | 18 +++++++++++++++++-
+>>> 1 file changed, 17 insertions(+), 1 deletion(-)
+>>> diff --git a/drivers/net/ethernet/intel/igc/igc_ptp.c =
+b/drivers/net/ethernet/intel/igc/igc_ptp.c
+>>> index XXXXXXX..XXXXXXX 100644
+>>> --- a/drivers/net/ethernet/intel/igc/igc_ptp.c
+>>> +++ b/drivers/net/ethernet/intel/igc/igc_ptp.c
+>>> @@ -47,8 +47,10 @@ static int igc_ptp_adjfine_i225(struct =
+ptp_clock_info *ptp, long scaled_ppm)
+>>> {
+>>>        struct igc_adapter *igc =3D container_of(ptp, struct =
+igc_adapter,
+>>>                                               ptp_caps);
+>>>        struct igc_hw *hw =3D &igc->hw;
+>>> +       unsigned long flags;
+>>>        int neg_adj =3D 0;
+>>>        u64 rate;
+>>>        u32 inca;
+>>> +       int i;
+>>>        if (scaled_ppm < 0) {
+>>>                neg_adj =3D 1;
+>>> @@ -63,7 +65,21 @@ static int igc_ptp_adjfine_i225(struct =
+ptp_clock_info *ptp, long scaled_ppm)
+>>>        if (neg_adj)
+>>>                inca |=3D ISGN;
+>>> -       wr32(IGC_TIMINCA, inca);
+>>> +       /* Changing the clock increment rate while a TX timestamp is =
+being
+>>> +        * captured by the hardware can corrupt the timestamp, =
+causing the
+>>> +        * driver to report "Tx timestamp timeout" and eventually =
+wedging
+>>> +        * the EXTTS subsystem.  Serialize with pending TX =
+timestamps:
+>>> +        * skip the rate change if any are in flight.
+>>> +        */
+>>> +       spin_lock_irqsave(&igc->ptp_tx_lock, flags);
+>>> +       for (i =3D 0; i < IGC_MAX_TX_TSTAMP_REGS; i++) {
+>>> +               if (igc->tx_tstamp[i].skb) {
+>>> +                       spin_unlock_irqrestore(&igc->ptp_tx_lock, =
+flags);
+>>> +                       return -EBUSY;
+>>> +               }
+>>> +       }
+>>> +       wr32(IGC_TIMINCA, inca);
+>>> +       spin_unlock_irqrestore(&igc->ptp_tx_lock, flags);
+>>=20
+>> It's a bit weird solution, because in this case we may end up having =
+no
+>> successful calls to adjfine with high amount of TX timestamp packets =
+in flight. Another problem here is that access to timing registers is
+>> guarded by tmreg_lock, but here you use ptp_tx_lock, which protects
+>> queue.
+>>=20
+>> Were you able to recover "corrupted" time stamps to figure out why =
+they
+>> are discarded?
+>>=20
+>>=20
+>>>        return 0;
+>>> }
+>>> --
+>>> 2.39.2
+>=20
+>=20
 
---
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
