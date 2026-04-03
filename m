@@ -1,90 +1,90 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 884E6E85367
-	for <intel-wired-lan@archiver.kernel.org>; Fri,  3 Apr 2026 13:36:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3F756E85367
+	for <intel-wired-lan@archiver.kernel.org>; Fri,  3 Apr 2026 13:38:31 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 4260581D35;
-	Fri,  3 Apr 2026 13:36:39 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 057DF60A3E;
+	Fri,  3 Apr 2026 13:38:31 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id gaKQuQbVG1Ur; Fri,  3 Apr 2026 13:36:37 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id TwXou5qxsDF1; Fri,  3 Apr 2026 13:38:29 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4D31F8148B
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 10CFC60A38
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1775223397;
-	bh=FAWTKl7eTjel3XvREjio+ebl/i6gz//Xb16K7dilKXs=;
+	s=default; t=1775223509;
+	bh=k/+LSme+79ctNKimbMMFnmmAovxDGBizgyq+djaSN7Q=;
 	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=EKHJj24oXOogbG1+q9x8ig4IgELpHH96sFajl2Ib0zuIcmWsUP2b2ZB1LHYNqjEYo
-	 B6sGlJjzqI8Kvh5RH5vOGnrGWuy5gbbZfA6cUYTRp9lI19m9x4uAdxunj3H5kOnXN3
-	 H8VAxgdLwBtSgjA7C5faANBWdSqpSAM7z0kGIxE1lEiz5rsfuluck/pXix9sWNvzko
-	 zPL84eswwoZWahC0o2mRSxiugNeu8lFOoieDXOKpUmh7/JeswG0uSCk4Th1LyeJ9dH
-	 GFAV+m6/B7CKWH5Wz96I6wt6fx2BZT1QcBClIBj86BoQWX9X3UZmZ+q9+cvfk724Jk
-	 pdFxwWiIvDTDQ==
+	b=cvBbeCoGkyrZ9KLyyHygk8ID9Pa9GrOOPlX51mswUlbr70T7AnWFNk5pO0rulWVpL
+	 IYiZp0+K3pxwCKifUohXoUVnWT+x9Ghrkvnae5fwkfUxR2aJgCgRxxJaZMOD7BTXnf
+	 KQjOk0xy6jr3+AxY8N7qxgQ0q2U9TKOvv+snHXsd/dTGiidj5o6NKAL86dOiVplyCj
+	 qXNExKsF1VPRFdP0pdu34rs2YEDlXjVj9vhVNiX9E0EoAFQMe+1ehlgesGfrze4v3N
+	 4AdR37qIDfrFAhQfK2jb4Ryger5MtTBZdmB23oO1Lik5GR2aw7Atx9MFbg7q5H80Or
+	 EdIPEh2U6iEZA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 4D31F8148B;
-	Fri,  3 Apr 2026 13:36:37 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id E04501A9
- for <intel-wired-lan@lists.osuosl.org>; Fri,  3 Apr 2026 13:36:35 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 10CFC60A38;
+	Fri,  3 Apr 2026 13:38:29 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 771E51A9
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  3 Apr 2026 13:38:27 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id D7AF040094
- for <intel-wired-lan@lists.osuosl.org>; Fri,  3 Apr 2026 13:36:35 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 601FA40F52
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  3 Apr 2026 13:38:27 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id GSnTxJojAM1E for <intel-wired-lan@lists.osuosl.org>;
- Fri,  3 Apr 2026 13:36:35 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org;
- envelope-from=horms@kernel.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 47D004003D
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 47D004003D
-Received: from sea.source.kernel.org (sea.source.kernel.org
- [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 47D004003D
- for <intel-wired-lan@lists.osuosl.org>; Fri,  3 Apr 2026 13:36:35 +0000 (UTC)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by sea.source.kernel.org (Postfix) with ESMTP id 9C66B404C3;
- Fri,  3 Apr 2026 13:36:34 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5C7CBC4CEF7;
- Fri,  3 Apr 2026 13:36:33 +0000 (UTC)
-Date: Fri, 3 Apr 2026 14:36:31 +0100
-From: Simon Horman <horms@kernel.org>
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id p7EgWhI-sD6i for <intel-wired-lan@lists.osuosl.org>;
+ Fri,  3 Apr 2026 13:38:26 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=49.212.198.91;
+ helo=www2881.sakura.ne.jp; envelope-from=kohei@enjuk.jp; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 2CE4C40F30
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2CE4C40F30
+Received: from www2881.sakura.ne.jp (www2881.sakura.ne.jp [49.212.198.91])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 2CE4C40F30
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  3 Apr 2026 13:38:25 +0000 (UTC)
+Received: from x1 (202.223.13.160.dy.iij4u.or.jp [160.13.223.202])
+ (authenticated bits=0)
+ by www2881.sakura.ne.jp (8.16.1/8.16.1) with ESMTPSA id 633DcFdq062611
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NO);
+ Fri, 3 Apr 2026 22:38:17 +0900 (JST) (envelope-from kohei@enjuk.jp)
+Date: Fri, 3 Apr 2026 22:38:15 +0900
+From: Kohei Enju <kohei@enjuk.jp>
 To: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 Cc: intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com,
- netdev@vger.kernel.org, Paul Greenwalt <paul.greenwalt@intel.com>
-Message-ID: <20260403133630.GD113102@horms.kernel.org>
+ netdev@vger.kernel.org
+Message-ID: <ac_Bo2Ra7UuvXe6e@x1>
 References: <20260327073046.134085-1-aleksandr.loktionov@intel.com>
- <20260327073046.134085-2-aleksandr.loktionov@intel.com>
+ <20260327073046.134085-7-aleksandr.loktionov@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20260327073046.134085-2-aleksandr.loktionov@intel.com>
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1775223394;
- bh=ZwehJ0cfzWa1ZDciwDC6ku8OtW6tyhu80bL6r2pUeBU=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=XtP4DPq+DJ5BpMoipIhL3ue/oxwnt/P8be9NMrmbuMBtAEEYoBZ0WXrIvCM+uGT+7
- wTmuVpCKuEoiHMbdYcmUxYzqN+AAKcCxmIDxHl4BaarYzYcvWdlX1bWU0cC1sH0ycQ
- AO7vPHBTqILV5bZ6cVDn1F9yUk5+pFKoZwkQ4aYZBVjWTsrStyATIlJHGTKnhCxw9Q
- uZj0q+XYTKQ3gDISIG5CoCsMTZ/L9xf51SZFIEnfVd+TVFA0IBEpSVoNh14zF0+G1q
- RNL695RPDxSK/YImMYRFFe7Huo72y4F8n5I2RjS/Gw5v72t+fAq+Yi35rBeEvBEPmL
- XdUK18A/Yhf+w==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dmarc=pass (p=quarantine dis=none)
- header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=XtP4DPq+
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next] ixgbe: add bounds check for
- debugfs register access
+In-Reply-To: <20260327073046.134085-7-aleksandr.loktionov@intel.com>
+X-Mailman-Original-DKIM-Signature: a=rsa-sha256;
+ bh=k/+LSme+79ctNKimbMMFnmmAovxDGBizgyq+djaSN7Q=; 
+ c=relaxed/relaxed; d=enjuk.jp;
+ h=From:Message-ID:To:Subject:Date;
+ s=rs20251215; t=1775223498; v=1;
+ b=FDE/G9D7JJl4VSsAOhvGAFpJVw7bHO1056Z0d+k4elD1mhAja/S7Oy4EWssR13Vp
+ P9OOn7VJSnrvVgeVBn6iEOfXI2NtdQY8CDaKY/LJPBWsveg1bfhqB7X+eaNjH0sf
+ z5x8LHzvgR3sZu/ca1Cnr61Yqxb2Dfgk/IP/pVzJZIdhzye8EWa7HSGgLXyNC/zV
+ 2TpNPPKuxwXmlHx4TTCQqhuhWDKzspYaaqDFre4fvsObGaqhZUGRoe6cCKfZfIUk
+ ile1nYSeDBMRaSjzF3aMoZ7k8PjYk+WDUlshcXXRopx1+5rQRVxvqh8Q280Jsba7
+ tIQAhrhnQLPGiz11mGK5TQ==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=enjuk.jp
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=enjuk.jp header.i=@enjuk.jp header.a=rsa-sha256
+ header.s=rs20251215 header.b=FDE/G9D7
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next] ixgbe: replace GFP_ATOMIC
+ with GFP_KERNEL in ixgbe_fcoe_ddp_setup()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -100,40 +100,39 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Fri, Mar 27, 2026 at 08:30:36AM +0100, Aleksandr Loktionov wrote:
-> From: Paul Greenwalt <paul.greenwalt@intel.com>
+On 03/27 08:30, Aleksandr Loktionov wrote:
+> From: Sebastian Basierski <sebastianx.basierski@intel.com>
 > 
-> Prevent out-of-bounds MMIO accesses triggered through user-controlled
-> register offsets.  IXGBE_HFDR (0x15FE8) is the highest valid MMIO
-> register in the ixgbe register map; any offset beyond it would address
-> unmapped memory.
+> ixgbe_fcoe_ddp_setup() is always called from process context (FCoE
+> offload setup paths) and never from an atomic context.  Using
+> GFP_ATOMIC is therefore unnecessarily restrictive and wastes memory
+> allocator headroom that is reserved for genuine atomic callers.
+> Replace the dma_pool_alloc() flag with GFP_KERNEL.
 > 
-> Add a defense-in-depth check at two levels:
-> 
-> 1. ixgbe_read_reg() -- the noinline register read accessor.  A
->    WARN_ON_ONCE() guard here catches any future code path (including
->    ioctl extensions) that might inadvertently pass an out-of-range
->    offset without relying on higher layers to catch it first.
->    ixgbe_write_reg() is a static inline called from the TX/RX hot path;
->    adding WARN_ON_ONCE there would inline the check at every call site,
->    so only the read path gets this guard.
-> 
-> 2. ixgbe_dbg_reg_ops_write() -- the debugfs 'reg_ops' interface is the
->    only current path where a raw, user-supplied offset enters the driver.
->    Gating it before invoking the register accessors provides a clean,
->    user-visible failure (silent ignore with no kernel splat) for
->    deliberately malformed debugfs writes.
-> 
-> Add a reg <= IXGBE_HFDR guard to both the read and write paths in
-> ixgbe_dbg_reg_ops_write(), and a WARN_ON_ONCE + early-return guard to
-> ixgbe_read_reg().
-> 
-> Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
+> Signed-off-by: Sebastian Basierski <sebastianx.basierski@intel.com>
 > Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c
+> index 011fda9..7fa0971 100644
+> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c
+> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c
+> @@ -193,7 +193,7 @@ static int ixgbe_fcoe_ddp_setup(struct net_device *netdev, u16 xid,
+>  	}
+>  
+>  	/* alloc the udl from per cpu ddp pool */
+> -	ddp->udl = dma_pool_alloc(ddp_pool->pool, GFP_ATOMIC, &ddp->udp);
+> +	ddp->udl = dma_pool_alloc(ddp_pool->pool, GFP_KERNEL, &ddp->udp);
 
-This feels like a bug fix to me, assuming users can
-cause out of range access using the debugfs 'reg_ops' interface,
+Commit fa39ab5184d6 ("scsi: fcoe: Fix I/O path allocation") had introduced
+this GFP_ATOMIC flag, since some IO paths called this function with a
+spin_lock held. Now, is it safe to roll back this change?
 
-If so I think it should have a Fixes tag and go via iwl-net.
-
-...
+>  	if (!ddp->udl) {
+>  		e_err(drv, "failed allocated ddp context\n");
+>  		goto out_noddp_unmap;
+> -- 
+> 2.52.0
+> 
