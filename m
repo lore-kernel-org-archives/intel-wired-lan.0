@@ -4,96 +4,94 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DA9D0D730A2
-	for <intel-wired-lan@archiver.kernel.org>; Fri,  3 Apr 2026 05:40:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 25970D730A3
+	for <intel-wired-lan@archiver.kernel.org>; Fri,  3 Apr 2026 05:43:28 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id B0ABA40F33;
-	Fri,  3 Apr 2026 05:40:50 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id EFE4F40EC6;
+	Fri,  3 Apr 2026 05:43:27 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id E5qG_s-Dto28; Fri,  3 Apr 2026 05:40:50 +0000 (UTC)
+ id xC_iLUtPZAIG; Fri,  3 Apr 2026 05:43:25 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E2FC040E83
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C194940E8F
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1775194849;
-	bh=HYfOhaScBI57s8uF+aOnVVxrGbvnYvmxP+1j5VoWcbM=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=QxUZc9aLoiAmKC5bFsSKF5DQbpXicQuSreFIRotDjSqa47VNVtwN2Nui/Ebk8xaVU
-	 PZpf1ilifSuSGaQiJhAmf0/D7NKQUYoAYqCzjehqzbO2ArO9uy2R5t8dghlXfoasFE
-	 5P60g0UssqQrD6NVwslwfXhSALdkwoNly3m1zvd8X/DTzvpjTP08y1f4mzX79Yvo2y
-	 xpJihbfWT9cUHr+V7s844tAx8+bXajZgaCeofP2i/PMGbikVNf9P4DNp52U1AFZnz9
-	 TZEvNWRSiFhkp5Hzf/a0uqPZvtu9hnvZuPyAGs/OCnmUT/MViNZpUIqDJC38UMlcwU
-	 iC34U/WaYweRA==
+	s=default; t=1775195005;
+	bh=HnVr2f0QmI6pfCrN2SXzFyJYYh/JjFhz6Byi9MDeDEI=;
+	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=9CSXR0tdw3Hx3zvx4NrlUUZmXUvBAYaPVPIG6GNJMXx+MBUbBUttuMhFfshEynXXB
+	 THQGiUw85pR8Ph7b0p3zoNEaiTRrdDy+2Ywkok+q+fSlhU2QwGS9XImwyIfdACcFF2
+	 LS+2gVQzlSp1s3SsnlFG9sULwMqrvnVsUYdj5UB3LlGYn9808jFCEfTET/v6ixpBSQ
+	 83nzGh4uPE4RfRu70HL6E9MJ5nh4o7CCuKJBdBx1ZCEAP7EL/ihO1jHzbm9/pCle/Z
+	 WOVq+qUtUC+GWAXKtku+VxUzeMKneK5BDIAI2h3nG/3lJdtJlfjLVZzGO+dcY4pIgr
+	 Du0fT/r2jOLBQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id E2FC040E83;
-	Fri,  3 Apr 2026 05:40:49 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id C194940E8F;
+	Fri,  3 Apr 2026 05:43:25 +0000 (UTC)
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id 463791F3
- for <intel-wired-lan@lists.osuosl.org>; Fri,  3 Apr 2026 05:40:46 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id A445D1F3
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  3 Apr 2026 05:43:24 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 387324008E
- for <intel-wired-lan@lists.osuosl.org>; Fri,  3 Apr 2026 05:40:46 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 90D424008E
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  3 Apr 2026 05:43:24 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id AYJv-1VLT_bx for <intel-wired-lan@lists.osuosl.org>;
- Fri,  3 Apr 2026 05:40:45 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.20;
+ id RnO17vl3fs4n for <intel-wired-lan@lists.osuosl.org>;
+ Fri,  3 Apr 2026 05:43:24 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.12;
  helo=mgamail.intel.com; envelope-from=aleksandr.loktionov@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 63A1640071
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 63A1640071
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.20])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 63A1640071
- for <intel-wired-lan@lists.osuosl.org>; Fri,  3 Apr 2026 05:40:45 +0000 (UTC)
-X-CSE-ConnectionGUID: iedwA6z0R/SgnXFyfYeBXw==
-X-CSE-MsgGUID: 9yGXEjqwSNaODKNab8PvsQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11747"; a="75981760"
-X-IronPort-AV: E=Sophos;i="6.23,157,1770624000"; d="scan'208";a="75981760"
-Received: from fmviesa007.fm.intel.com ([10.60.135.147])
- by orvoesa112.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 02 Apr 2026 22:40:45 -0700
-X-CSE-ConnectionGUID: DHKv9Q/bSWOapH5+nk6vsw==
-X-CSE-MsgGUID: F7TH3JMjRbyWiRLV0GQgwg==
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org E96A840071
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org E96A840071
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.12])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id E96A840071
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  3 Apr 2026 05:43:23 +0000 (UTC)
+X-CSE-ConnectionGUID: c8+wBJ4LQ1uxsi572wtpYA==
+X-CSE-MsgGUID: 45BKSvWaT464DC6BkXjhew==
+X-IronPort-AV: E=McAfee;i="6800,10657,11747"; a="87713712"
+X-IronPort-AV: E=Sophos;i="6.23,157,1770624000"; d="scan'208";a="87713712"
+Received: from fmviesa009.fm.intel.com ([10.60.135.149])
+ by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 02 Apr 2026 22:43:23 -0700
+X-CSE-ConnectionGUID: wX1So50NRyCynhQQao17iw==
+X-CSE-MsgGUID: dCf2kjxcQXel/bXyIweq5w==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,157,1770624000"; d="scan'208";a="223904951"
+X-IronPort-AV: E=Sophos;i="6.23,157,1770624000"; d="scan'208";a="220534463"
 Received: from amlin-019-225.igk.intel.com ([10.102.19.225])
- by fmviesa007.fm.intel.com with ESMTP; 02 Apr 2026 22:40:44 -0700
+ by fmviesa009.fm.intel.com with ESMTP; 02 Apr 2026 22:43:21 -0700
 From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 To: intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com,
  aleksandr.loktionov@intel.com
-Cc: netdev@vger.kernel.org
-Date: Fri,  3 Apr 2026 07:40:28 +0200
-Message-ID: <20260403054029.3789616-11-aleksandr.loktionov@intel.com>
+Cc: netdev@vger.kernel.org,
+	Leszek Pepiak <leszek.pepiak@intel.com>
+Date: Fri,  3 Apr 2026 07:43:21 +0200
+Message-ID: <20260403054321.3791392-1-aleksandr.loktionov@intel.com>
 X-Mailer: git-send-email 2.52.0
-In-Reply-To: <20260403054029.3789616-1-aleksandr.loktionov@intel.com>
-References: <20260403054029.3789616-1-aleksandr.loktionov@intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1775194846; x=1806730846;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=nFD8pkeZbVN+oILrj3B+/KCNeAfTezohFmcf1myKIyA=;
- b=IXvB8TokZmpmzlZoE6usHYl1XajSpfttSpplSDPltYEEDQz23+sTXxPt
- Ecgs4VJxY6jYruIpsdohPuVxmujLiS2nDdMn1xjMEFpVgWSoTbFvFyPMw
- OuaaQhFI+jUkk5rWoTjIqSV5p2ldNGPXEaBtsBR2eEbOzS9tW7meb+KtH
- hrufGo5s14S+lHFiaz0+WiX59wl8vFI53Fon1EpAOSKPgpDWvB9v3sChM
- BnTH+BXKlFBbubqrfq6WJ/3JmyBxWZaVlRlDbT54ZYf8BhUMuG4yS9XSK
- CaYrPPWYfjbnTfosRknEOVxtoFrqyecG9iNpBID/Fdsx5e3Kk3gp4JnSV
- w==;
+ t=1775195004; x=1806731004;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=F7mmVxPGICqRnePglmcXewjWAjCpBMiS2f/TuIVGVQc=;
+ b=XPvnVMkRITxknbJvYsjWDllarad+DzOPUK1F6UdUERtVNER2HGr11b6B
+ Ky2Htt34oMXCuB7o2aCgK00tx8HijNxcENMRWZqtqtcTqH1R0DodkdLa9
+ Qtuw+PoQ66Esggkefs+3hlF8wx1LO0yAyrZJr/tFMEm6sGjlnom61FEuU
+ h6l9vxlbKCFSTqfDJ9FJvWOSDHQLypaTL81PMsmUdvscCwBEJRDJJS+5k
+ /JS8yI+vkMWbQ68Ba5C41Eq6F6pUSop7RZJmMfzdiSFOb0cOT5vBUgfGt
+ I3wFNNerTErjsjUEZ77749gXhfW3deD3hHrG7yIYGXm1QUr2T3aPp+/8L
+ g==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=IXvB8Tok
-Subject: [Intel-wired-lan] [PATCH iwl-net 10/10] ice: allow setting
- min_tx_rate to 0 to resolve VF bandwidth oversubscription
+ header.a=rsa-sha256 header.s=Intel header.b=XPvnVMkR
+Subject: [Intel-wired-lan] [PATCH net-next] iavf: fix kernel-doc comment
+ style in ethtool ops
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -109,50 +107,60 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-ice_set_vf_bw() refuses to accept any min_tx_rate value when the
-total guaranteed bandwidth is already oversubscribed, even when the
-requested value is 0. This makes it impossible to recover from an
-oversubscribed state via "ip link set <pf> vf <id> min_tx_rate 0".
+From: Leszek Pepiak <leszek.pepiak@intel.com>
 
-Allow a zero min_tx_rate to bypass the oversubscription check so
-users can always clear the guaranteed rate. Additionally print an
-informational message when the oversubscription guard fires to help
-diagnose why a non-zero request was rejected.
+iavf_get_channels() and iavf_set_channels() use the legacy `**/`
+comment terminator and embed the return description in the body text.
+Convert to proper kernel-doc style: single `*/` terminator and an
+explicit `Return:` section.
 
-Fixes: 4ecc8633056b ("ice: Add support for VF rate limiting")
-Cc: stable@vger.kernel.org
-Signed-off-by: Sudheer Mogilappagari <sudheer.mogilappagari@intel.com>
+Signed-off-by: Leszek Pepiak <leszek.pepiak@intel.com>
 Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
----
- drivers/net/ethernet/intel/ice/ice_sriov.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_sriov.c b/drivers/net/ethernet/intel/ice/ice_sriov.c
-index 7e00e09..6e3bec7 100644
---- a/drivers/net/ethernet/intel/ice/ice_sriov.c
-+++ b/drivers/net/ethernet/intel/ice/ice_sriov.c
-@@ -1507,6 +1507,12 @@ ice_min_tx_rate_oversubscribed(struct ice_vf *vf, int min_tx_rate)
- 	all_vfs_min_tx_rate -= vf->min_tx_rate;
+---
+ drivers/net/ethernet/intel/iavf/iavf_ethtool.c | 13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
+index 8188dd4..425acbb 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
+@@ -1846,13 +1846,13 @@ static int iavf_get_rxnfc(struct net_device *netdev, struct ethtool_rxnfc *cmd,
+ 	return ret;
+ }
+ /**
+- * iavf_get_channels: get the number of channels supported by the device
++ * iavf_get_channels - get the number of channels supported by the device
+  * @netdev: network interface device structure
+  * @ch: channel information structure
+  *
+  * For the purposes of our device, we only use combined channels, i.e. a tx/rx
+  * queue pair. Report one extra channel to match our "other" MSI-X vector.
+- **/
++ */
+ static void iavf_get_channels(struct net_device *netdev,
+ 			      struct ethtool_channels *ch)
+ {
+@@ -1873,14 +1873,15 @@ static void iavf_get_channels(struct net_device *netdev,
+ }
  
- 	if (all_vfs_min_tx_rate + min_tx_rate > link_speed_mbps) {
-+		if (ice_calc_all_vfs_min_tx_rate(vf->pf) > link_speed_mbps) {
-+			dev_info(ice_pf_to_dev(vf->pf),
-+				 "The sum of min_tx_rate for all VFs is greater than the link speed\n");
-+			dev_info(ice_pf_to_dev(vf->pf),
-+				 "Set min_tx_rate to 0 on VFs to resolve oversubscription\n");
-+		}
- 		dev_err(ice_pf_to_dev(vf->pf), "min_tx_rate of %d Mbps on VF %u would cause oversubscription of %d Mbps based on the current link speed %d Mbps\n",
- 			min_tx_rate, vf->vf_id,
- 			all_vfs_min_tx_rate + min_tx_rate - link_speed_mbps,
-@@ -1556,7 +1562,7 @@ ice_set_vf_bw(struct net_device *netdev, int vf_id, int min_tx_rate,
- 		goto out_put_vf;
- 	}
- 
--	if (ice_min_tx_rate_oversubscribed(vf, min_tx_rate)) {
-+	if (min_tx_rate && ice_min_tx_rate_oversubscribed(vf, min_tx_rate)) {
- 		ret = -EINVAL;
- 		goto out_put_vf;
- 	}
+ /**
+- * iavf_set_channels: set the new channel count
++ * iavf_set_channels - set the new channel count
+  * @netdev: network interface device structure
+  * @ch: channel information structure
+  *
+  * Negotiate a new number of channels with the PF then do a reset.  During
+- * reset we'll realloc queues and fix the RSS table.  Returns 0 on success,
+- * negative on failure.
+- **/
++ * reset we'll realloc queues and fix the RSS table.
++ *
++ * Return: 0 on success, negative on failure.
++ */
+ static int iavf_set_channels(struct net_device *netdev,
+ 			     struct ethtool_channels *ch)
+ {
 -- 
 2.52.0
 
