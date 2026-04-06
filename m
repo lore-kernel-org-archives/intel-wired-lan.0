@@ -1,108 +1,111 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4BAFEF46C54
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  6 Apr 2026 15:16:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4EF91F46C55
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  6 Apr 2026 15:16:40 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 1EF8880B53;
+	by smtp4.osuosl.org (Postfix) with ESMTP id C53C24094A;
 	Mon,  6 Apr 2026 15:16:39 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id o4-7peP02p83; Mon,  6 Apr 2026 15:16:38 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id q3TSM-Caxqxx; Mon,  6 Apr 2026 15:16:39 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 845ED80B4C
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 343E24092A
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1775488598;
-	bh=cP5EVArCawQIz7cxWEYg9C3osdTcwWJT1kUDvk6U14I=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=iPROE4UOAaDSYm9ozZd69qhKCkdWK8hmrWnRu2JxMPzie3QUs2CDF4KJmOFc8b28d
-	 pd0F7T0ooN3ibPA1erx9tnnqEKPEAe6cYAiqLSbMrtQjVsj+Zc+YeqIoh9YSqqGDLh
-	 SKI/DlHH0xf7EaPM3GqEZDfBbu5JsgiT3/gi7UjBFXaiuodIqpIizkYAVtTERY/cJv
-	 F23flAFM+4/wmsQ4HpA4eGErsc63B+CzCwOHFwo5n5ajfuFmQn0CTHfyqyqPuWCyHi
-	 Wxn06P2vRA3BUny2r7KEVrTmGEZbzlZnx8jLD/GK7SNvSIU/DogG3ndmfeWMHvidj9
-	 ec2PWT3ZiPigA==
+	s=default; t=1775488599;
+	bh=0UsJTdLotzHUfNK/rfhKfTZZocm2SY/j7tRKh0ACf/A=;
+	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=HH/MwLc4gTEvOdoLN8r3/aw1vJVdJ0G/bGfkPbv8YCaRzjLU+JUBDj8MJ9IBebXEe
+	 QWdlMotdvdONJZYonYocVdyCxeUL8djFTkK/kxPVWXk5lZA60BM8tl512ykvZG4uzo
+	 WtH/uKtdcoE5FjLGST55CsLK8ofbnHsGuPQy5ePOo4z2jBz/Rm/Ljrq5EP2rmRP/od
+	 bnTp9vh2uJMUGunCaIeh0ZgJ1lAkHJI9PkmXC3yJlOQM0yicEEbN4KQ4i+DPDxeBaH
+	 cpGta4+EpoKG9/8Jcw1o7tMOtDTWhawlvTeCC+ZjR8XEV/99NhrmdLfiE6jBtqV6u4
+	 DYki8xoP0p87g==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 845ED80B4C;
-	Mon,  6 Apr 2026 15:16:38 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id A56141EB
- for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Apr 2026 11:21:51 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 343E24092A;
+	Mon,  6 Apr 2026 15:16:39 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 65FDA2EF
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Apr 2026 14:57:07 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 8B8AA80EC8
- for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Apr 2026 11:21:51 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 4B7D040087
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Apr 2026 14:57:07 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id J3PFCwwLnorZ for <intel-wired-lan@lists.osuosl.org>;
- Mon,  6 Apr 2026 11:21:48 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.129.124;
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id XXmoDHhkv-jp for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  6 Apr 2026 14:57:06 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.133.124;
  helo=us-smtp-delivery-124.mimecast.com; envelope-from=jtornosm@redhat.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 7841880D36
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7841880D36
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 3AAD240084
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 3AAD240084
 Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.129.124])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 7841880D36
- for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Apr 2026 11:21:48 +0000 (UTC)
-Received: from mx-prod-mc-01.mail-002.prod.us-west-2.aws.redhat.com
- (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
+ (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 3AAD240084
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Apr 2026 14:57:05 +0000 (UTC)
+Received: from mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com
+ (ec2-35-165-154-97.us-west-2.compute.amazonaws.com [35.165.154.97]) by
  relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-387-ACMuyeuWO_SqXKnXjyWWrA-1; Mon,
- 06 Apr 2026 07:21:44 -0400
-X-MC-Unique: ACMuyeuWO_SqXKnXjyWWrA-1
-X-Mimecast-MFC-AGG-ID: ACMuyeuWO_SqXKnXjyWWrA_1775474502
-Received: from mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com
- (mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.4])
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-136-Ud8GiP5gOFOsWtcJA2JLkw-1; Mon,
+ 06 Apr 2026 10:56:57 -0400
+X-MC-Unique: Ud8GiP5gOFOsWtcJA2JLkw-1
+X-Mimecast-MFC-AGG-ID: Ud8GiP5gOFOsWtcJA2JLkw_1775487415
+Received: from mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com
+ (mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.17])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by mx-prod-mc-01.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
- id B65A619560A7; Mon,  6 Apr 2026 11:21:42 +0000 (UTC)
+ by mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
+ id C169A1800283; Mon,  6 Apr 2026 14:56:54 +0000 (UTC)
 Received: from fedora.redhat.com (unknown [10.44.48.51])
- by mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP
- id 9718A300019F; Mon,  6 Apr 2026 11:21:38 +0000 (UTC)
+ by mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP
+ id C419019540C4; Mon,  6 Apr 2026 14:56:48 +0000 (UTC)
 From: Jose Ignacio Tornos Martinez <jtornosm@redhat.com>
-To: netdev@vger.kernel.org
-Cc: intel-wired-lan@lists.osuosl.org, jesse.brandeburg@intel.com,
- anthony.l.nguyen@intel.com, davem@davemloft.net, edumazet@google.com,
- kuba@kernel.org, pabeni@redhat.com,
+To: intel-wired-lan@lists.osuosl.org
+Cc: netdev@vger.kernel.org, Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Andrew Lunn <andrew+netdev@lunn.ch>,
+ "David S . Miller" <davem@davemloft.net>,
+ Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>, Jacob Keller <jacob.e.keller@intel.com>,
+ Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
+ Michal Swiatkowski <michal.swiatkowski@linux.intel.com>,
+ Dave Ertman <david.m.ertman@intel.com>,
+ Michal Kubiak <michal.kubiak@intel.com>,
  Jose Ignacio Tornos Martinez <jtornosm@redhat.com>, stable@vger.kernel.org
-Date: Mon,  6 Apr 2026 13:20:57 +0200
-Message-ID: <20260406112057.906685-4-jtornosm@redhat.com>
-In-Reply-To: <20260406112057.906685-1-jtornosm@redhat.com>
-References: <20260406112057.906685-1-jtornosm@redhat.com>
+Date: Mon,  6 Apr 2026 16:56:41 +0200
+Message-ID: <20260406145641.1020623-1-jtornosm@redhat.com>
 MIME-Version: 1.0
-X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.4
-X-Mimecast-MFC-PROC-ID: vMf2nFuXvQ9Nb837DlrePCfIBJbkmepl3gd0dxluKqE_1775474502
+X-Scanned-By: MIMEDefang 3.0 on 10.30.177.17
+X-Mimecast-MFC-PROC-ID: Jpx22kVv-WkDefamkL8qve4HeB_YUQFqjk6gHGibVaw_1775487415
 X-Mimecast-Originator: redhat.com
 Content-Transfer-Encoding: 8bit
 content-type: text/plain; charset="US-ASCII"; x-default=true
 X-Mailman-Approved-At: Mon, 06 Apr 2026 15:16:35 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=redhat.com; 
- s=mimecast20190719; t=1775474507;
+ s=mimecast20190719; t=1775487423;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=cP5EVArCawQIz7cxWEYg9C3osdTcwWJT1kUDvk6U14I=;
- b=DUh7jsWiZMJjWEExs2auBwt5iuSpPk0JivlCffpQ6brZWbbL9b7FnIPsxWBPKk5GEQEVAi
- 7T2yGFVC6Sg02MpWBKvdtSk39HtcDROvPon6VgrAjURMc5IIIPDIvM5DggDA4cM4tZ3yGu
- EKsXTYXXgwCzqI1uGrJsQ7DW+0A3Hgg=
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ content-transfer-encoding:content-transfer-encoding;
+ bh=0UsJTdLotzHUfNK/rfhKfTZZocm2SY/j7tRKh0ACf/A=;
+ b=i9ShW3GXk4QVX9keUNoIQR7/rWGw1/LsXucYNF0s5rcBT7tdCmeNIjgJ7+Z/PsSILpeh0g
+ i7B7oE3kvxHL93Dacciz1VQBtkrxNZAm5CKv2o5iXpIsi6cExiLqjfcrQj4oFYhd7LP4wL
+ MTrKl8OwibS/WVZyP6bbGgggR0bhzT4=
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=redhat.com
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=DUh7jsWi
-Subject: [Intel-wired-lan] [PATCH net 3/3] iavf: drop netdev lock while
- waiting for MAC change completion
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=i9ShW3GX
+Subject: [Intel-wired-lan] [PATCH net] ice: fix VF queue configuration with
+ low MTU values
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -118,62 +121,49 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-After commit ad7c7b2172c3 ("net: hold netdev instance lock during sysfs
-operations"), iavf_set_mac() is called with the netdev instance lock
-already held.
+The ice driver's VF queue configuration validation rejects
+databuffer_size values below 1024 bytes, which prevents VFs from
+using MTU values below 871 bytes.
 
-The function queues a MAC address change request and then waits for
-completion while holding this lock. However, the watchdog task that
-processes admin queue commands (including MAC changes) also needs to
-acquire the netdev lock to run.
+The iavf driver calculates databuffer_size based on the MTU using:
+  databuffer_size = ALIGN(MTU + LIBETH_RX_LL_LEN, 128)
 
-This creates a lock contention scenario:
-1. iavf_set_mac() holds netdev lock and waits for MAC change
-2. Watchdog needs netdev lock to process the MAC change request
-3. Watchdog blocks waiting for lock
-4. MAC change times out after 2.5 seconds
-5. iavf_set_mac() returns -EAGAIN
+where LIBETH_RX_LL_LEN = 26 (ETH_HLEN + 2*VLAN_HLEN + ETH_FCS_LEN).
 
-This particularly affects VFs during initialization when enslaved to a
-bond. The first VF typically succeeds as it's already fully initialized,
-but subsequent VFs fail as they're still progressing through their state
-machine and need the watchdog to advance.
+For MTU values below 871:
+  MTU 870: 870 + 26 = 896, aligned to 128 = 896 (< 1024, rejected)
+  MTU 871: 871 + 26 = 897, aligned to 128 = 1024 (>= 1024, accepted)
 
-Fix by temporarily dropping the netdev lock before waiting for MAC change
-completion, allowing the watchdog to run and process the request, then
-re-acquiring the lock before returning.
+The 1024-byte minimum seems unnecessarily restrictive, because the hardware
+supports databuffer_size as low as 128 bytes (the alignment boundary),
+which should allow MTU values down to the standard minimum of 68 bytes.
 
-This is safe because:
-- The MAC change request is already queued before we drop the lock
-- iavf_is_mac_set_handled() just checks filter state, doesn't modify it
-- We re-acquire the lock before checking results and returning
+I haven't found the reason why the limit was configured in the commit
+9c7dd7566d18 ("ice: add validation in OP_CONFIG_VSI_QUEUES VF message"), so
+with no more information and since it is working, change the minimum
+databuffer_size validation from 1024 to 128 bytes to allow standard low
+MTU values while still preventing invalid configurations.
 
-Fixes: ad7c7b2172c3 ("net: hold netdev instance lock during sysfs operations")
+Fixes: 9c7dd7566d18 ("ice: add validation in OP_CONFIG_VSI_QUEUES VF message")
 cc: stable@vger.kernel.org
 Signed-off-by: Jose Ignacio Tornos Martinez <jtornosm@redhat.com>
 ---
- drivers/net/ethernet/intel/iavf/iavf_main.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/net/ethernet/intel/ice/virt/queues.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index dad001abc908..6281858e6f3c 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -1068,10 +1068,14 @@ static int iavf_set_mac(struct net_device *netdev, void *p)
- 	if (ret)
- 		return ret;
+diff --git a/drivers/net/ethernet/intel/ice/virt/queues.c b/drivers/net/ethernet/intel/ice/virt/queues.c
+index f73d5a3e83d4..31be2f76181c 100644
+--- a/drivers/net/ethernet/intel/ice/virt/queues.c
++++ b/drivers/net/ethernet/intel/ice/virt/queues.c
+@@ -840,7 +840,7 @@ int ice_vc_cfg_qs_msg(struct ice_vf *vf, u8 *msg)
  
-+	netdev_unlock(netdev);
-+
- 	ret = wait_event_interruptible_timeout(adapter->vc_waitqueue,
- 					       iavf_is_mac_set_handled(netdev, addr->sa_data),
- 					       msecs_to_jiffies(2500));
+ 			if (qpi->rxq.databuffer_size != 0 &&
+ 			    (qpi->rxq.databuffer_size > ((16 * 1024) - 128) ||
+-			     qpi->rxq.databuffer_size < 1024))
++			     qpi->rxq.databuffer_size < 128))
+ 				goto error_param;
  
-+	netdev_lock(netdev);
-+
- 	/* If ret < 0 then it means wait was interrupted.
- 	 * If ret == 0 then it means we got a timeout.
- 	 * else it means we got response for set MAC from PF,
+ 			ring->rx_buf_len = qpi->rxq.databuffer_size;
 -- 
 2.53.0
 
