@@ -1,96 +1,108 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9A18AF46C40
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  6 Apr 2026 14:07:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 39F12F46C51
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  6 Apr 2026 15:16:38 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 5E9CD80D2C;
-	Mon,  6 Apr 2026 14:07:10 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id edqKD6JzNO4b; Mon,  6 Apr 2026 14:07:09 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8A74C80CF8
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1775484429;
-	bh=h7aV3wVg5KiYOEp55cdtRPZAA1IoSE5I5+rm6ZqH5wk=;
-	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=XKUIgc3rHM1zfJh78eTrey20KKgXjpvXa+uMcknKQ+DAc3gAtePGq43TAnYqXl+wS
-	 2kf0R2N0+ELr7keZFiVrLs++he6+O000N+75DpLhFA8Mxe/RY6jxHlkhBztQZ0jBTn
-	 gSgs/Lx5e3VSCBKv/BIJf8R5sSVwT5oQsBUjG3ym7PoP6+6NzKGI2LvB+R8S2xfvmW
-	 QHi5u/PwkQnibf3ptSLaxrMuB4ZAhND2ne/aT9GBsq55km0c+NXMp1b84TOwd0Bzrw
-	 DShWBuAO8XthGchjR+pzWg6LyMhNuRaCZutoJ+gjPseO874b3KXA2RXcioHpl/6UwB
-	 b3CaXlpGMIhHw==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 8A74C80CF8;
-	Mon,  6 Apr 2026 14:07:09 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id E53171EB
- for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Apr 2026 14:07:08 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id E363A40762
- for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Apr 2026 14:07:08 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id CE08A4072B;
+	Mon,  6 Apr 2026 15:16:37 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id FJEUYa_Mqi6K for <intel-wired-lan@lists.osuosl.org>;
- Mon,  6 Apr 2026 14:07:08 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org;
- envelope-from=horms@kernel.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 02A014072F
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 02A014072F
-Received: from tor.source.kernel.org (tor.source.kernel.org
- [IPv6:2600:3c04:e001:324:0:1991:8:25])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 02A014072F
- for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Apr 2026 14:07:07 +0000 (UTC)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by tor.source.kernel.org (Postfix) with ESMTP id 31B4E60123;
- Mon,  6 Apr 2026 14:07:07 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 92EE4C4CEF7;
- Mon,  6 Apr 2026 14:07:05 +0000 (UTC)
-Date: Mon, 6 Apr 2026 15:07:03 +0100
-From: Simon Horman <horms@kernel.org>
-To: "Keller, Jacob E" <jacob.e.keller@intel.com>
-Cc: "Loktionov, Aleksandr" <aleksandr.loktionov@intel.com>,
- "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
- "Nguyen, Anthony L" <anthony.l.nguyen@intel.com>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- Marcin Szycik <marcin.szycik@linux.intel.com>
-Message-ID: <20260406140703.GD395680@kernel.org>
-References: <20260327073046.134085-1-aleksandr.loktionov@intel.com>
- <20260327073046.134085-5-aleksandr.loktionov@intel.com>
- <20260403131035.GA113102@horms.kernel.org>
- <20260403131159.GA114708@horms.kernel.org>
- <DS0PR11MB7579E948B1DAEF3E8D28C1EBD65EA@DS0PR11MB7579.namprd11.prod.outlook.com>
+ id RGCijyCfnhwq; Mon,  6 Apr 2026 15:16:37 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 5C51A40752
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1775488597;
+	bh=u5Wd/lsEYSYOEWcDhPq25pfRSzrdTb6REoIlPg9g2v4=;
+	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=m6WqsuLQU6UZbCS3MMxzJKkJX4ULXrNNxscQsGZjbyZpHYooPcEyG2Cdcctcw8u+F
+	 GUp4VdulxlBIAOCN7J5b7Px9gjCmjcrJpaD3V18u1EX9LL0jJJ56rH6qnDKVNzCnUM
+	 MMSK6WFkFlkK/v2+dkb8JitbB7ma0zNa5k6tDgPYVU2wF7uccIQY2eW1UxbvkeXVYI
+	 SRztP4p86U8LkGCFjPyibl2ZIvLWW+ya0j6gnWer0ORabDP0kvd6F1uMbSmT/n/Pjp
+	 MMmvPcaLe90hJVHXhkWaBzue27rZteByLOVYuXjMTW+WhngTRpMGusOke9aIPsPxiC
+	 nhaKMNyw76w5g==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp4.osuosl.org (Postfix) with ESMTP id 5C51A40752;
+	Mon,  6 Apr 2026 15:16:37 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 76099219
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Apr 2026 11:21:25 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp4.osuosl.org (Postfix) with ESMTP id B4CBF4087D
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Apr 2026 11:21:24 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id n0H4e9K5NtG3 for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  6 Apr 2026 11:21:23 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.129.124;
+ helo=us-smtp-delivery-124.mimecast.com; envelope-from=jtornosm@redhat.com;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org A37A64081D
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org A37A64081D
+Received: from us-smtp-delivery-124.mimecast.com
+ (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id A37A64081D
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Apr 2026 11:21:23 +0000 (UTC)
+Received: from mx-prod-mc-01.mail-002.prod.us-west-2.aws.redhat.com
+ (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
+ relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-43-BJz-17XSMfybIuNkWKOc8A-1; Mon,
+ 06 Apr 2026 07:21:19 -0400
+X-MC-Unique: BJz-17XSMfybIuNkWKOc8A-1
+X-Mimecast-MFC-AGG-ID: BJz-17XSMfybIuNkWKOc8A_1775474478
+Received: from mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com
+ (mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.4])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by mx-prod-mc-01.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
+ id ECE38195608C; Mon,  6 Apr 2026 11:21:17 +0000 (UTC)
+Received: from fedora.redhat.com (unknown [10.44.48.51])
+ by mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP
+ id D7993300019F; Mon,  6 Apr 2026 11:21:13 +0000 (UTC)
+From: Jose Ignacio Tornos Martinez <jtornosm@redhat.com>
+To: netdev@vger.kernel.org
+Cc: intel-wired-lan@lists.osuosl.org, jesse.brandeburg@intel.com,
+ anthony.l.nguyen@intel.com, davem@davemloft.net, edumazet@google.com,
+ kuba@kernel.org, pabeni@redhat.com,
+ Jose Ignacio Tornos Martinez <jtornosm@redhat.com>
+Date: Mon,  6 Apr 2026 13:20:55 +0200
+Message-ID: <20260406112057.906685-2-jtornosm@redhat.com>
+In-Reply-To: <20260406112057.906685-1-jtornosm@redhat.com>
+References: <20260406112057.906685-1-jtornosm@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <DS0PR11MB7579E948B1DAEF3E8D28C1EBD65EA@DS0PR11MB7579.namprd11.prod.outlook.com>
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1775484426;
- bh=MAH6RptzeDcpL5V+g/KSRmtMJlqdvpcbYjcxWTTBuNE=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=CMjTvXiFqY1RT8PIZv436z/iQGl8Ay6NcjanNYH15fxJmVRsksQBoblZLQvKslbhA
- rITkdThslYEyw/3zQXVQDFTbSrp/8vivYgHuar5g+NzKgvU4rSRznWmFq6KC6HbGCL
- 5Lh+y/YJV/H8AV+B6MF3A+RPODuYrVd7axqEXyCHO2dOeqPdA4oDcP5uWIpYUxlKZm
- 1QnFxzuC+mIhlzBiaKClEAbhgxGUq+Jl1+u4tqecdPHP0Gg1FVFR2mRZ9yJ96WPGbS
- v+DnTfwNADqx483FGIvNWDb5XNdF7xGPVy5yPU0tw25owTMX7WrBPXSSEZAdxyt0e3
- MvNrspYXMturg==
+X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.4
+X-Mimecast-MFC-PROC-ID: giOqumroprNMZ3tt2VntVnGxaLEi3lvm055rvu9h3Ww_1775474478
+X-Mimecast-Originator: redhat.com
+Content-Transfer-Encoding: 8bit
+content-type: text/plain; charset="US-ASCII"; x-default=true
+X-Mailman-Approved-At: Mon, 06 Apr 2026 15:16:35 +0000
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=redhat.com; 
+ s=mimecast20190719; t=1775474482;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=u5Wd/lsEYSYOEWcDhPq25pfRSzrdTb6REoIlPg9g2v4=;
+ b=Hb8rSLWIfjYUB0YBfDgWWd8UPIbvpIZx/kxjeyiY1LFGHgD6Huwi3aIkOK364gwtcJSbUK
+ zKA90atufwESMNqp7LCj4c7vbmzNraH48ghJwvrFexV1+XvW85dKd0RCg87e2/PREdS/az
+ 8PnKrnEDdwWn3lgchapn/O0sS3P16jo=
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
- header.from=kernel.org
+ header.from=redhat.com
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=CMjTvXiF
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next] ixgbe: use
- ktime_get_real_ns() in ixgbe_ptp_reset()
+ dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=Hb8rSLWI
+Subject: [Intel-wired-lan] [PATCH net 1/3] iavf: return EBUSY if reset in
+ progress during MAC change
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -106,40 +118,30 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Fri, Apr 03, 2026 at 08:26:20PM +0000, Keller, Jacob E wrote:
-> 
-> 
-> > -----Original Message-----
-> > From: Simon Horman <horms@kernel.org>
-> > Sent: Friday, April 3, 2026 6:12 AM
-> > To: Loktionov, Aleksandr <aleksandr.loktionov@intel.com>
-> > Cc: intel-wired-lan@lists.osuosl.org; Nguyen, Anthony L
-> > <anthony.l.nguyen@intel.com>; netdev@vger.kernel.org; Keller, Jacob E
-> > <jacob.e.keller@intel.com>; Marcin Szycik <marcin.szycik@linux.intel.com>
-> > Subject: Re: [PATCH iwl-next] ixgbe: use ktime_get_real_ns() in
-> > ixgbe_ptp_reset()
-> > 
-> > On Fri, Apr 03, 2026 at 02:10:38PM +0100, Simon Horman wrote:
-> > > On Fri, Mar 27, 2026 at 08:30:39AM +0100, Aleksandr Loktionov wrote:
-> > > > From: Jacob Keller <jacob.e.keller@intel.com>
-> > > >
-> > > > Replace ktime_to_ns(ktime_get_real()) with the direct equivalent
-> > > > ktime_get_real_ns() in ixgbe_ptp_reset().  Using the combined helper
-> > > > avoids the unnecessary intermediate ktime_t variable and makes the
-> > > > intent clearer.
-> > > >
-> > > > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> > > > Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-> > > > Reviewed-by: Marcin Szycik <marcin.szycik@linux.intel.com>
-> > >
-> > > Reviewed-by: Simon Horman <horms@kernel.org>
-> > >
-> > > FWIIW, this pattern also seems to exist in e1000e, ixgbe and igb (twice).
-> > 
-> > Of course, with this patch applied it's not present in ixgbe anymore :^)
-> 
-> Right. Given that e1000e and igb are basically on life support only, I
-> would limit touching them unless we have relevant work to do in that area
-> in the future.
+When bonding enslaves a VF shortly after creation/reset, the VF may still
+be initializing. Instead of waiting (which holds locks), immediately return
+-EBUSY if reset is in progress. This allows the caller to retry or handle
+the busy state appropriately without blocking other operations.
 
-Sure, that is fine by me.
+Signed-off-by: Jose Ignacio Tornos Martinez <jtornosm@redhat.com>
+---
+ drivers/net/ethernet/intel/iavf/iavf_main.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
+index dad001abc908..0ca4f9696a41 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_main.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
+@@ -1060,6 +1060,9 @@ static int iavf_set_mac(struct net_device *netdev, void *p)
+ 	struct sockaddr *addr = p;
+ 	int ret;
+ 
++	if (iavf_is_reset_in_progress(adapter))
++		return -EBUSY;
++
+ 	if (!is_valid_ether_addr(addr->sa_data))
+ 		return -EADDRNOTAVAIL;
+ 
+-- 
+2.53.0
+
