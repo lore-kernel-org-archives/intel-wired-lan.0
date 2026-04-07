@@ -1,108 +1,104 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B95C7FB5192
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  7 Apr 2026 05:21:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4F45DEDB7D4
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  7 Apr 2026 09:42:07 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 60D9240A70;
-	Tue,  7 Apr 2026 05:21:48 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id DDB6C60B23;
+	Tue,  7 Apr 2026 09:42:06 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id v77gOcGtuSDH; Tue,  7 Apr 2026 05:21:46 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 65zXcMqINciM; Tue,  7 Apr 2026 09:42:06 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9BCBD407AD
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 177C96090A
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1775539306;
-	bh=J0khTmXx+mH8KMAAu7/0Jhz0WYYqPaYIpbG+MFI9hGs=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1775554926;
+	bh=BoDm839H/Q58bGECHehVlrshxSnz5Cz0VPkDCVLAodk=;
+	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=TcsJLeyYngOENksfsunrFCoPG2SklV5qoeXTLaVk55gyhtdtk6qAeiDhJOOOfbsZ8
-	 5mSRWqeS7qNpT+BbgPUAJmuFhKKQgVqUCSOuGC5uuu5udQqxcwa2WeoxFCh6NFaG0f
-	 Ywp7JG7cSufvKoFY2aeKObKgSyyxisDaVMoDKLH6g2DAqZwS/ldRHgJCq32aG/iyrx
-	 51I6MynyN8sd+t/jjrkvlOGUuP4jJS4EbcKJojr5reRlvYtsNrZ2c+WTierqg0F9tu
-	 THpVk7jiw9FOP+WlxK6FFQBTLnJ5Y98thvUfjedJI4p0jhmZvrD6EL4KKEGyiTd4YS
-	 EPTD8bZKWAA3w==
+	b=6Wq7RTP4dztlx7IAlYzsiTPQfy/Jp4+pLJPILvjW2PXt4m3bF0ATBOAQrwu10AY9L
+	 FMdSFPjbqKIw0BUIdHjKtLhRZW5all4pSRVwho6S5GgIVL/AZ7+JAG1Oo7gkZ+0BKn
+	 lxxcPy3K+mGwSACuTV0qcn0JPTYwoL3iB7FSMlkMu6AcZK/4sFzoYf3ugTobH8o1MP
+	 aJIkF+TYPmltsBOuNvHy5S9XAE+DbJBRSXeRRaHo5b9x1lfsQYwtWVjw7Aj6IYyORC
+	 YjAEFIvy+to3KFl0RRFb3CvnrIdk7HuGZ66RYC+BkZq5iWhNcIx633U8E92CgSPS43
+	 ZlOwOjyBlWDwQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 9BCBD407AD;
-	Tue,  7 Apr 2026 05:21:46 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id 085651F6
- for <intel-wired-lan@lists.osuosl.org>; Tue,  7 Apr 2026 05:21:45 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 177C96090A;
+	Tue,  7 Apr 2026 09:42:06 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 4C87A1F6
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  7 Apr 2026 09:42:05 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id EDEC380C67
- for <intel-wired-lan@lists.osuosl.org>; Tue,  7 Apr 2026 05:21:44 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 3E4B140092
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  7 Apr 2026 09:42:05 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id DMmuVjVpUrv0 for <intel-wired-lan@lists.osuosl.org>;
- Tue,  7 Apr 2026 05:21:44 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.129.124;
- helo=us-smtp-delivery-124.mimecast.com; envelope-from=jtornosm@redhat.com;
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 7F7U4R_E5qRR for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  7 Apr 2026 09:42:04 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.8;
+ helo=mgamail.intel.com; envelope-from=dawid.osuchowski@linux.intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org C9FD680C23
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C9FD680C23
-Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.129.124])
- by smtp1.osuosl.org (Postfix) with ESMTPS id C9FD680C23
- for <intel-wired-lan@lists.osuosl.org>; Tue,  7 Apr 2026 05:21:42 +0000 (UTC)
-Received: from mx-prod-mc-08.mail-002.prod.us-west-2.aws.redhat.com
- (ec2-35-165-154-97.us-west-2.compute.amazonaws.com [35.165.154.97]) by
- relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-205-8nzXMfqUMq6feDKfT0MdUQ-1; Tue,
- 07 Apr 2026 01:21:36 -0400
-X-MC-Unique: 8nzXMfqUMq6feDKfT0MdUQ-1
-X-Mimecast-MFC-AGG-ID: 8nzXMfqUMq6feDKfT0MdUQ_1775539294
-Received: from mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com
- (mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.4])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by mx-prod-mc-08.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
- id 3729218002CB; Tue,  7 Apr 2026 05:21:34 +0000 (UTC)
-Received: from fedora.redhat.com (unknown [10.44.48.48])
- by mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP
- id E8500300019F; Tue,  7 Apr 2026 05:21:29 +0000 (UTC)
-From: Jose Ignacio Tornos Martinez <jtornosm@redhat.com>
-To: kohei@enjuk.jp
-Cc: anthony.l.nguyen@intel.com, davem@davemloft.net, edumazet@google.com,
- intel-wired-lan@lists.osuosl.org, jesse.brandeburg@intel.com,
- jtornosm@redhat.com, kuba@kernel.org, netdev@vger.kernel.org,
- pabeni@redhat.com, stable@vger.kernel.org
-Date: Tue,  7 Apr 2026 07:21:28 +0200
-Message-ID: <20260407052128.207856-1-jtornosm@redhat.com>
-In-Reply-To: <adOjGCms-5PBuNte@x1>
-References: <adOjGCms-5PBuNte@x1>
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 0323C4005F
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 0323C4005F
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.8])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 0323C4005F
+ for <intel-wired-lan@osuosl.org>; Tue,  7 Apr 2026 09:42:03 +0000 (UTC)
+X-CSE-ConnectionGUID: SpkS3gHUSQSS17oiENZxEg==
+X-CSE-MsgGUID: 41WMgouWRuyobQOr6Dry1Q==
+X-IronPort-AV: E=McAfee;i="6800,10657,11751"; a="94094799"
+X-IronPort-AV: E=Sophos;i="6.23,165,1770624000"; d="scan'208";a="94094799"
+Received: from fmviesa005.fm.intel.com ([10.60.135.145])
+ by fmvoesa102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 07 Apr 2026 02:42:03 -0700
+X-CSE-ConnectionGUID: qVVE2tutQCCHR2WOpTIRKw==
+X-CSE-MsgGUID: oDQvn7OsQfedl2wz/5etgQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,165,1770624000"; d="scan'208";a="232997366"
+Received: from soc-5cg4396xfb.clients.intel.com (HELO [172.28.180.189])
+ ([172.28.180.189])
+ by fmviesa005-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 07 Apr 2026 02:42:02 -0700
+Message-ID: <eb1f3edf-5a61-4b29-a51f-17a5f9c35d2e@linux.intel.com>
+Date: Tue, 7 Apr 2026 11:42:00 +0200
 MIME-Version: 1.0
-X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.4
-X-Mimecast-MFC-PROC-ID: C6fk3_TA8gN5HET2gbWQW7kaFcdyNrDeHmg4fmfSIe0_1775539294
-X-Mimecast-Originator: redhat.com
-Content-Transfer-Encoding: 8bit
-content-type: text/plain; charset="US-ASCII"; x-default=true
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=redhat.com; 
- s=mimecast20190719; t=1775539301;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=J0khTmXx+mH8KMAAu7/0Jhz0WYYqPaYIpbG+MFI9hGs=;
- b=Rj9VR1Li8CxSth1DK8dezDfoNJiVSlgl4JhX7VlKZZqm3m4AZc3zYs+G7aCLDzVouP2bbV
- oJfr4Kc1oWwbQJUGd19b/SdK7v6Fe/iuiQgrMw9tOvR4F18RCQTFOs30vuz9QYS6OYvYIU
- pADp51Ixf6xzMjrFt2g0rEOlQNKS6Y8=
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dmarc=pass (p=quarantine dis=none)
- header.from=redhat.com
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (1024-bit key,
- unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=Rj9VR1Li
-Subject: Re: [Intel-wired-lan] [PATCH net 3/3] iavf: drop netdev lock while
- waiting for MAC change completion
+User-Agent: Mozilla Thunderbird
+To: Matt Vollrath <tactii@gmail.com>, intel-wired-lan@osuosl.org
+References: <20260406005830.2250373-2-tactii@gmail.com>
+Content-Language: pl, en-US
+From: Dawid Osuchowski <dawid.osuchowski@linux.intel.com>
+Organization: Intel Technology Poland sp. z o.o. - ul. Slowackiego 173, 80-298
+ Gdansk - KRS 101882 - NIP 957-07-52-316
+In-Reply-To: <20260406005830.2250373-2-tactii@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1775554924; x=1807090924;
+ h=message-id:date:mime-version:subject:to:references:from:
+ in-reply-to:content-transfer-encoding;
+ bh=f1ta2mGZqayfd3iUogVxp13Rn3KjkuNaoZO9FhCk+Mk=;
+ b=cusKeDRnMI+JtCoAHwttvBfnq+MQGf7EENT0mk2JfZ2yBdgi5rDC6klG
+ GObp2stH4DHl+yGSjVYsiT5v70Uqo/72anLke8iKXhT42cI66DZ9buPAS
+ jijy58f3zsCbH77YQ2lyVXeqhQgYXry9aYuKR0HxHVPF44ZrI6b888iir
+ VGP+0PmcFB3SRtwCBpgNtD70SHPJunPPxQRNAWaNeCPOQWof0y6hff+/V
+ om8pq9ivcERLiNBLYkAu2AysgCi6BHwQwdR2LF1EI5TYjfy5cXKUa4FUU
+ BtdgPDs/QOwgEmChSUSTihJ+l4ymcmQmqDWnhDy5yhE5/5zPWeT53IGc7
+ A==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dmarc=none (p=none dis=none)
+ header.from=linux.intel.com
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=cusKeDRn
+Subject: Re: [Intel-wired-lan] [PATCH net v2] i40e: Cleanup PTP registration
+ on probe failure
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -118,11 +114,81 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Hi Kohei,
+On 2026-04-06 2:58 AM, Matt Vollrath wrote:
 
-Thank you for your help and reference.
-I will try to do it synchronously with the netdev lock held as you say.
+Hey Matt,
 
-Best regards
-Jose Ignacio
+Thanks for the patch!
+
+> Fix two conditions which would leak PTP registration on probe failure:
+> 
+> 1. i40e_setup_pf_switch can encounter an error in
+>     i40e_setup_pf_filter_control, call i40e_ptp_init, then return
+>     non-zero, sending i40e_probe to err_vsis.
+> 
+> 2. i40e_setup_misc_vector can return non-zero, sending i40e_probe to
+>     err_vsis.
+> 
+> Both of these conditions have been present since PTP was introduced in
+> this driver.
+> 
+> Found with coccinelle.
+> 
+> Fixes: beb0dff1251db ("i40e: enable PTP")
+> Signed-off-by: Matt Vollrath <tactii@gmail.com>
+> ---
+
+In the future when sending to Intel-wired-lan (IWL) you should use 
+either the iwl-net or iwl-next as the target tree, example based on this 
+patch:
+	[PATCH iwl-net v2] i40e: Cleanup PTP registration on probe failure
+
+iwl-net is for fixes (such as this patch), iwl-next for new features / 
+refactors that don't need to be backported to stable kernels.
+
+Given this is a fix you could also add in the commit msg:
+	Cc: stable@vger.kernel.org
+
+that way it will be automatically picked up for backporting to currently 
+maintained stable kernel versions by the -stable maintainers [1].
+
+For future submissions, if you send a v2/v3/vX... you should put a 
+changelog here of what has changed w.r.t. the previous revision. An 
+example in this case:
+
+v2:
+* add Fixes tag
+* change name of patch:
+	i40e: Cleanup PTP upon probe failure -> i40e: Cleanup PTP registration 
+on probe failure
+
+The important bit is to do include the changelog below the '---', that 
+way it will be disregarded by e.g. 'git am' and won't pollute the commit 
+msg. Changelog is for reviewers only to quickly assess what to look for 
+/ what has changed :)
+
+>   drivers/net/ethernet/intel/i40e/i40e_main.c | 1 +
+>   1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> index 926d001b2150..f3de147aaddf 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> @@ -16109,6 +16109,7 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+>   	/* Unwind what we've done if something failed in the setup */
+>   err_vsis:
+>   	set_bit(__I40E_DOWN, pf->state);
+> +	i40e_ptp_stop(pf);
+
+As for the change itself I'm not a PTP expert but will try to ping 
+someone internally to review your patch.
+
+Thanks
+~Dawid
+
+[1] https://docs.kernel.org/process/stable-kernel-rules.html#option-1
+
+>   	i40e_clear_interrupt_scheme(pf);
+>   	kfree(pf->vsi);
+>   err_switch_setup:
 
