@@ -4,77 +4,101 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 73A0CFF5125
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  7 Apr 2026 16:39:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6C882FF512E
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  7 Apr 2026 16:52:31 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 22A2360DA0;
-	Tue,  7 Apr 2026 16:39:29 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 1CD9360DA9;
+	Tue,  7 Apr 2026 16:52:31 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ySJn25ARIZqu; Tue,  7 Apr 2026 16:39:27 +0000 (UTC)
+ id zEbQWuOIkJer; Tue,  7 Apr 2026 16:52:30 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org EF25160D9B
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2885C60DA0
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1775579967;
-	bh=NbTBixRqYDlQeL95GG9hAoNz+4WwubnNaEGA+7z76QI=;
-	h=Date:To:Cc:References:From:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=ZIntxKn4DB6jMDNVZ9A0Mm/fAz91IMfJaTOmz1Ee1WTT/pBsXpCOhBGXsfwWFym8Z
-	 WAiko9wONpqtkKMEgSzyxoeRbms3urJU8tUmxd+2RUDMVGwkrq8XN5XELsy+Nl6lIX
-	 PezXNM47IJhf26u9d1SBUYwciaJ6C1s2xLwT75V9mRciziAdHn5dbsEjvAOQpjRsWD
-	 dYtL3yf2UdGwf1ruDS1XrFzyIWd2F6eyEGT8KsdtPQ4vUoZJ1WIziztPEbFH42hxTo
-	 WcPE/P3l2hCmwexm8J2ssjDFPvYjaKeIVcjQKngV+z0V/MYcuqSncRE0LGpsUjXEhw
-	 GL1rm4XgQFRvg==
+	s=default; t=1775580750;
+	bh=VeT8l2i6TVJAMB6JutKbZp1m2QbJomW0DqBNO06ssKM=;
+	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=bgTKcVy+BaRklzfSQ9BaPl94c1cmzBW2VxK2fT80NyCv+wKYPdIAE/O9ytYGMKe9L
+	 9UYgoJrkC97WMwV/YlASIcB00zZbHaAEBevqTAFUP9xUCS0k/OYlYGL1Ltl/MWJciN
+	 p1ZQ7l5S4SJSj63KGwJb0BuWc2iarW6lietae6O8aFtAH7JR7xYKVxZQ0lNNiKaTYr
+	 md/y1yxLy/Zx95Wvy0oZAyBVp0kjGUJUiF97TQpmhu/0bBIt4+smSHMbrxUFrtvEk6
+	 +xYviVW5vn0e6EFNCU8vtFjak49rpGQhD1SJLpBGPn5dvR5eDdPd3GrDnGjwxR045L
+	 BWcTbEG2Aeg9Q==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id EF25160D9B;
-	Tue,  7 Apr 2026 16:39:26 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id E95EB1F6
- for <intel-wired-lan@lists.osuosl.org>; Tue,  7 Apr 2026 16:39:25 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 2885C60DA0;
+	Tue,  7 Apr 2026 16:52:30 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 824562EF
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  7 Apr 2026 16:52:28 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id DAC5F40550
- for <intel-wired-lan@lists.osuosl.org>; Tue,  7 Apr 2026 16:39:25 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 6876040B5E
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  7 Apr 2026 16:52:28 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id FdWsQdvW7hIm for <intel-wired-lan@lists.osuosl.org>;
- Tue,  7 Apr 2026 16:39:24 +0000 (UTC)
-X-Greylist: delayed 473 seconds by postgrey-1.37 at util1.osuosl.org;
- Tue, 07 Apr 2026 16:39:23 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org E4DC240195
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org E4DC240195
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=141.14.17.11;
- helo=mx3.molgen.mpg.de; envelope-from=pmenzel@molgen.mpg.de;
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 4eN6vVxPg9VG for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  7 Apr 2026 16:52:27 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.129.124;
+ helo=us-smtp-delivery-124.mimecast.com; envelope-from=jtornosm@redhat.com;
  receiver=<UNKNOWN> 
-Received: from mx3.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
- by smtp2.osuosl.org (Postfix) with ESMTPS id E4DC240195
- for <intel-wired-lan@osuosl.org>; Tue,  7 Apr 2026 16:39:23 +0000 (UTC)
-Received: from [192.168.2.229] (p5dc55707.dip0.t-ipconnect.de [93.197.87.7])
- (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 597A840B5D
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 597A840B5D
+Received: from us-smtp-delivery-124.mimecast.com
+ (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 597A840B5D
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  7 Apr 2026 16:52:26 +0000 (UTC)
+Received: from mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com
+ (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
+ relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-263-GUFDX4iwOiivGX4MLt0HAA-1; Tue,
+ 07 Apr 2026 12:52:21 -0400
+X-MC-Unique: GUFDX4iwOiivGX4MLt0HAA-1
+X-Mimecast-MFC-AGG-ID: GUFDX4iwOiivGX4MLt0HAA_1775580740
+Received: from mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com
+ (mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.4])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested) (Authenticated sender: pmenzel)
- by mx.molgen.mpg.de (Postfix) with ESMTPSA id 15C5C4C2C37D56;
- Tue, 07 Apr 2026 18:31:17 +0200 (CEST)
-Message-ID: <c6763568-7773-43af-a43f-dcf6fc4ab0eb@molgen.mpg.de>
-Date: Tue, 7 Apr 2026 18:31:15 +0200
+ (No client certificate requested)
+ by mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
+ id 104111956094; Tue,  7 Apr 2026 16:52:20 +0000 (UTC)
+Received: from fedora.redhat.com (unknown [10.44.48.48])
+ by mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP
+ id 9242A300019F; Tue,  7 Apr 2026 16:52:16 +0000 (UTC)
+From: Jose Ignacio Tornos Martinez <jtornosm@redhat.com>
+To: netdev@vger.kernel.org
+Cc: intel-wired-lan@lists.osuosl.org, jesse.brandeburg@intel.com,
+ anthony.l.nguyen@intel.com, davem@davemloft.net, edumazet@google.com,
+ kuba@kernel.org, pabeni@redhat.com,
+ Jose Ignacio Tornos Martinez <jtornosm@redhat.com>
+Date: Tue,  7 Apr 2026 18:52:02 +0200
+Message-ID: <20260407165206.1121317-1-jtornosm@redhat.com>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-To: Matt Vollrath <tactii@gmail.com>
-Cc: Kohei Enju <kohei@enjuk.jp>, intel-wired-lan@osuosl.org,
- stable@vger.kernel.org
-References: <20260407161447.43645-1-tactii@gmail.com>
-Content-Language: en-US
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-In-Reply-To: <20260407161447.43645-1-tactii@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.4
+X-Mimecast-MFC-PROC-ID: rQfDFHA10p4YLS12ofyd4bXh71iigvAy5AxlzjNZM_A_1775580740
+X-Mimecast-Originator: redhat.com
 Content-Transfer-Encoding: 8bit
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dmarc=none (p=none dis=none)
- header.from=molgen.mpg.de
-Subject: Re: [Intel-wired-lan] [PATCH iwl-net v2] i40e: Cleanup PTP pins on
- probe failure
+content-type: text/plain; charset="US-ASCII"; x-default=true
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=redhat.com; 
+ s=mimecast20190719; t=1775580745;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding;
+ bh=VeT8l2i6TVJAMB6JutKbZp1m2QbJomW0DqBNO06ssKM=;
+ b=cBlHke9FxAzX35JVdzL1fMi//QcknGMTX/25+qoKqguADbRhv0hEr/iNk1cm+YKPgHRM4N
+ o10EOD7kJ3G9+eClOa9wKBmIx/K0NPUfWXPH3WuNbeXfnm0zEw2/LyG2fLSpc8OzIeH1zz
+ kSfORCSeihAAcafXi+r7IFH3MQh3Zqk=
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dmarc=pass (p=quarantine dis=none)
+ header.from=redhat.com
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (1024-bit key,
+ unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
+ header.s=mimecast20190719 header.b=cBlHke9F
+Subject: [Intel-wired-lan] [PATCH net v2 0/4] Fix i40e/ice/iavf VF bonding
+ after netdev lock changes
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -90,86 +114,85 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Dear Matt,
+This series fixes VF bonding failures introduced by commit ad7c7b2172c3
+("net: hold netdev instance lock during sysfs operations").
 
+When adding VFs to a bond immediately after setting trust mode, MAC
+address changes fail with -EAGAIN, preventing bonding setup. This
+affects both i40e (700-series) and ice (800-series) Intel NICs.
 
-Thank you for the patch. Should you resend you could spell the verb 
-*clean up* with a space:
+The core issue is lock contention: iavf_set_mac() is now called with the
+netdev lock held and waits for MAC change completion while holding it.
+However, both the watchdog task that sends the request and the adminq_task
+that processes PF responses also need this lock, creating a deadlock where
+neither can run, causing timeouts.
 
- > i40e: Clean PTP pins up on probe failure
+Additionally, setting VF trust triggers an unnecessary ~10 second VF reset
+in i40e driver that delays bonding setup, even though filter
+synchronization happens naturally during normal VF operation. For ice
+driver, the delay is not so big, but in the same way the operation is not
+necessary.
 
-or
+This series:
+1. Adds safety guard to prevent MAC changes during reset or early
+   initialization (before VF is ready)
+2. Eliminates unnecessary VF reset when setting trust in i40e
+3. Fixes lock contention by polling admin queue synchronously
+4. Eliminates unnecessary VF reset when setting trust in ice
 
- > i40e: Clean up PTP pins on probe failure
+The key fix (patch 3/4) implements a synchronous MAC change operation
+similar to the approach used for ndo_change_mtu deadlock fix:
+https://lore.kernel.org/intel-wired-lan/20260211191855.1532226-1-poros@redhat.com/ 
+Instead of scheduling work and waiting, it:
 
-But it’s not important.
+- Sends the virtchnl message directly (not via watchdog)
+- Polls the admin queue hardware directly for responses
+- Processes all messages inline (including non-MAC messages)
+- Returns when complete or times out
 
-Am 07.04.26 um 18:14 schrieb Matt Vollrath:
-> PTP pin structs are allocated early in probe, but never cleaned up.
-> 
-> Fix this by calling i40e_ptp_free_pins in the error path.
-> 
-> To support this, i40e_ptp_free_pins is added to the header and
-> pin_config is correctly nullified after being freed.
-> 
-> This has been an issue since i40e_ptp_alloc_pins was introduced.
-> 
-> Fixes: 1050713026a08 ("i40e: add support for PTP external synchronization clock")
-> Reported-by: Kohei Enju <kohei@enjuk.jp>
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Matt Vollrath <tactii@gmail.com>
-> ---
->   drivers/net/ethernet/intel/i40e/i40e.h      | 1 +
->   drivers/net/ethernet/intel/i40e/i40e_main.c | 1 +
->   drivers/net/ethernet/intel/i40e/i40e_ptp.c  | 3 ++-
->   3 files changed, 4 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-> index dcb50c2e1aa2..83e780919ac9 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e.h
-> +++ b/drivers/net/ethernet/intel/i40e/i40e.h
-> @@ -1318,6 +1318,7 @@ void i40e_ptp_restore_hw_time(struct i40e_pf *pf);
->   void i40e_ptp_init(struct i40e_pf *pf);
->   void i40e_ptp_stop(struct i40e_pf *pf);
->   int i40e_ptp_alloc_pins(struct i40e_pf *pf);
-> +void i40e_ptp_free_pins(struct i40e_pf *pf);
->   int i40e_update_adq_vsi_queues(struct i40e_vsi *vsi, int vsi_offset);
->   int i40e_is_vsi_uplink_mode_veb(struct i40e_vsi *vsi);
->   int i40e_get_partition_bw_setting(struct i40e_pf *pf);
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> index 926d001b2150..c7062aa476dd 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> @@ -16112,6 +16112,7 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
->   	i40e_clear_interrupt_scheme(pf);
->   	kfree(pf->vsi);
->   err_switch_setup:
-> +	i40e_ptp_free_pins(pf);
->   	i40e_reset_interrupt_capability(pf);
->   	timer_shutdown_sync(&pf->service_timer);
->   err_mac_addr:
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_ptp.c b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
-> index 404a716db8da..7d07c389bb23 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_ptp.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
-> @@ -940,12 +940,13 @@ int i40e_ptp_hwtstamp_get(struct net_device *netdev,
->    *
->    * Release memory allocated for PTP pins.
->    **/
-> -static void i40e_ptp_free_pins(struct i40e_pf *pf)
-> +void i40e_ptp_free_pins(struct i40e_pf *pf)
->   {
->   	if (i40e_is_ptp_pin_dev(&pf->hw)) {
->   		kfree(pf->ptp_pins);
->   		kfree(pf->ptp_caps.pin_config);
->   		pf->ptp_pins = NULL;
-> +		pf->ptp_caps.pin_config = NULL;
->   	}
->   }
+This allows the operation to complete synchronously while holding
+netdev_lock, without relying on watchdog or adminq_task. A new generic
+iavf_poll_virtchnl_response() function is introduced that can be reused
+for future synchronous virtchnl operations.
 
-Reviewed-by: Paul Menzel <pmenzel@molgen.mpg.de>
+The function can sleep for up to 2.5 seconds polling hardware, but this
+is acceptable since netdev_lock is per-device and only serializes
+operations on the same interface.
 
+Testing shows VF bonding now works reliably in ~5 seconds vs 15+ seconds
+before (i40e), without timeouts or errors (i40e and ice).
 
-Kind regards,
+Tested on Intel 700-series (i40e) and 800-series (ice) dual-port NICs
+with iavf driver.
 
-Paul
+Thanks to Jan Tluka <jtluka@redhat.com> and Yuying Ma <yuma@redhat.com> for
+reporting the issues.
+
+Jose Ignacio Tornos Martinez (4):
+  iavf: return EBUSY if reset in progress during MAC change
+  i40e: skip unnecessary VF reset when setting trust
+  iavf: send MAC change request synchronously
+  ice: skip unnecessary VF reset when setting trust
+
+---
+v2:
+  - Patch 1: Add state check to prevent MAC changes during early
+    initialization (before __IAVF_DOWN state)
+  - Patch 3: Use synchronous polling approach instead of dropping lock,
+    following the pattern from ndo_change_mtu deadlock fix
+  - Introduce generic iavf_poll_virtchnl_response() for code reuse
+  - Add patch 4/4 to fix the same trust reset issue in ice driver
+  - Add testing confirmation for both i40e and ice hardware
+  - No changes to patch 2 from v1
+v1: https://lore.kernel.org/netdev/20260406112057.906685-1-jtornosm@redhat.com/
+
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 17 ++-
+ drivers/net/ethernet/intel/iavf/iavf.h             |  2 +-
+ drivers/net/ethernet/intel/iavf/iavf_main.c        | 98 +++++++++++++++++-
+ drivers/net/ethernet/intel/iavf/iavf_virtchnl.c    | 15 +--
+ drivers/net/ethernet/intel/ice/ice_sriov.c         | 15 ++-
+ 5 files changed, 123 insertions(+), 24 deletions(-)
+
+--
+2.43.0
+
