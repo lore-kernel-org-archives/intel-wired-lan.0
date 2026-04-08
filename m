@@ -1,99 +1,97 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2B9D41073CB8
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  8 Apr 2026 13:12:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 15C271073CB4
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  8 Apr 2026 13:12:23 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id EE828608DA;
-	Wed,  8 Apr 2026 13:12:09 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id E1CC540EE7;
+	Wed,  8 Apr 2026 13:12:22 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 8UjoRkjAXBif; Wed,  8 Apr 2026 13:12:08 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 2XVs-uLvg9qC; Wed,  8 Apr 2026 13:12:22 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 78435608A8
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2F60340EC1
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1775653928;
-	bh=W+pWATUNZk4D+OO26ouISPU5lJBGjrPH0dGQjX2U0rQ=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=RjSZiuF/23lQ2LesfxReI/OF0D2tA1aXDrfcoXvRWRrfxKMwZcGRx2GvwmRRmxzR3
-	 TEBaJyXJB24XWIeyBw/QRPGtggDmLR1qWWrsA3s5iBqPvHSelGlgINBjdOT5XwX5VL
-	 1TP7S2DOfdiNoZ3rJjL5mj7KuOdkVpNZlh1JHTXWck+NUvfsx98DZNcWBEoJngRR3O
-	 jsfPVkabQV9lN8AKLHbxLFPku4/v8ykkvvoc6InK7ATY+5GX8UiZTxCaZ9+VRHNr+H
-	 mLJ2aHAIK2MV/4Ir7FZNu++uwYhvMuuwyjVVgcLWfl18amLZDTWgj9PbdLSZbmjlH1
-	 vTLjxuKdSvg1Q==
+	s=default; t=1775653942;
+	bh=965ivX3ruq3mNfDwovhEX4tCZQ9C8OdGvYMdrkq3s9w=;
+	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=COUxdM7uTOQEtNmHoIV9fo621koxy6pPB0SHNSR0H1fZYuuhB+VIdLyxWJaDc0wfF
+	 ELG9r7jEl3tHyR6JZB/ZUWvWd+T57xypd7r9cYt+NBcwiSdt6ujKAH5NEMQx8R68/u
+	 PaapApcsgixsXo/E5DHMMrk8yqmx5u+kkkQFLen04BHD6FYllDCiiZTcQgf/1Knj/B
+	 bz6KVYk2sF0LmNTYwgmdi1gOdbCCZ8004aBsHl+SoOA/cKX7V5u90sfkoKWBQmbOyC
+	 Tv9qt8c1yOc8C6VZ+hihHP9R3b7eXR6o0I6uaQhywQpFbBhAE70GJ9C0OEuOaWL0e5
+	 WqqTyzt2oDTXQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 78435608A8;
-	Wed,  8 Apr 2026 13:12:08 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 08D2D1F6
- for <intel-wired-lan@lists.osuosl.org>; Wed,  8 Apr 2026 13:12:07 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 2F60340EC1;
+	Wed,  8 Apr 2026 13:12:22 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id BAF0E1F6
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  8 Apr 2026 13:12:20 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id E2FD860856
- for <intel-wired-lan@lists.osuosl.org>; Wed,  8 Apr 2026 13:12:06 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id AD2D240EC1
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  8 Apr 2026 13:12:20 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id u-ahTul5ZtNJ for <intel-wired-lan@lists.osuosl.org>;
- Wed,  8 Apr 2026 13:12:06 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id eu_5C5rsm5ii for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  8 Apr 2026 13:12:19 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.7;
  helo=mgamail.intel.com; envelope-from=aleksandr.loktionov@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 01A10608DC
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 01A10608DC
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 9A1B840E98
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9A1B840E98
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.7])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 01A10608DC
- for <intel-wired-lan@lists.osuosl.org>; Wed,  8 Apr 2026 13:12:05 +0000 (UTC)
-X-CSE-ConnectionGUID: 8oh+R3nrSoqgRwbkvBMxZw==
-X-CSE-MsgGUID: DlKJ42DdT7OzT3Jwr3zlNQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11752"; a="102087241"
-X-IronPort-AV: E=Sophos;i="6.23,167,1770624000"; d="scan'208";a="102087241"
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 9A1B840E98
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  8 Apr 2026 13:12:19 +0000 (UTC)
+X-CSE-ConnectionGUID: tFHHvAFnS9+a6CH6fOE1VQ==
+X-CSE-MsgGUID: WOsbIXf0R6mkkP4gspvgwQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11752"; a="102087254"
+X-IronPort-AV: E=Sophos;i="6.23,167,1770624000"; d="scan'208";a="102087254"
 Received: from orviesa007.jf.intel.com ([10.64.159.147])
  by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 08 Apr 2026 06:12:06 -0700
-X-CSE-ConnectionGUID: UoruqNZeSIK/gIMoqZhRJw==
-X-CSE-MsgGUID: Ajq+f5wrTI+FO0oDjwlMYQ==
+ 08 Apr 2026 06:12:19 -0700
+X-CSE-ConnectionGUID: x2+7OnqDQAqqhJSJD2OAIQ==
+X-CSE-MsgGUID: OzxT01VaRrql0uo/QazW1A==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,167,1770624000"; d="scan'208";a="228714985"
+X-IronPort-AV: E=Sophos;i="6.23,167,1770624000"; d="scan'208";a="228715050"
 Received: from amlin-019-225.igk.intel.com ([10.102.19.225])
- by orviesa007.jf.intel.com with ESMTP; 08 Apr 2026 06:12:04 -0700
+ by orviesa007.jf.intel.com with ESMTP; 08 Apr 2026 06:12:18 -0700
 From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 To: intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com,
  aleksandr.loktionov@intel.com
 Cc: netdev@vger.kernel.org
-Date: Wed,  8 Apr 2026 15:11:54 +0200
-Message-ID: <20260408131154.2661818-7-aleksandr.loktionov@intel.com>
+Date: Wed,  8 Apr 2026 15:12:08 +0200
+Message-ID: <20260408131216.2662245-1-aleksandr.loktionov@intel.com>
 X-Mailer: git-send-email 2.52.0
-In-Reply-To: <20260408131154.2661818-1-aleksandr.loktionov@intel.com>
-References: <20260408131154.2661818-1-aleksandr.loktionov@intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1775653926; x=1807189926;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=LU06K51Gotx2bmJxCVz4VDn41OARIsR6jwdtt19pDGM=;
- b=NiK70kGWmOI8RFJImbFKvRsbV+BNGhzxMGF9td/k/2ZxokXh5KhYszom
- u4YnGjFoVgrhtPIz9Mf97DnKWeWfXEwvKP1gLeUOdFwgi3eq4EZhphfXO
- EVYbNFX1bbramneOiE9kDAcXF3Av6jykxuw2IkcV7yrcCCg5/BEKiPjwL
- FSYDJRVAEtwOKDzhjUucY9DgyLRj3BTCfA8/YzxHe45dGcbG30Kg+hnTQ
- iag9xiCHUv5aCz+Ap/BfNwXOzKASUpG/GEIh8od+2iweb61OzQnmzbfxN
- pRBmSUv54Readd7iv4SmCE3C2nnLrxbcWPmIxxz8yB+hKoSK96QHQSD8S
- A==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ t=1775653940; x=1807189940;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=ntpjB1EZtCslNyS93hZX36BdvkZc2KDqWWKQnlUrZQk=;
+ b=Tl1htdcaGJBqoQnVOC0fynfZjakxZ0xzPub+UpAtEbgNLP+FvtML5/4y
+ 4crNs4tvZrki2+8I4OYICGYjZSUjHxVEdL84UaBR/prdPuAOO/PrPTIPy
+ P8Tx2SWlbBUbX6YcSeZsSZOszy7W5Hims01noxAya6ChqbdpUXpBuDqT6
+ iM00snCAaOmZUmFfGVOnW0W1zUnPNr6QezyJhDKeEsfM5Dgwt/ZLWJ2hd
+ 9zwI85nOuOP6pYxcBl+54ITmaswUkCtAn2XZ6kWHFqEhQJXc1C6a8KanM
+ 3qgSi0ORNbRRBG5ZmXfh7jd5kSOBZRwBiX69qpcAXB0/VF6aaAUpwnFfR
+ w==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=NiK70kGW
-Subject: [Intel-wired-lan] [PATCH iwl-net v2 6/6] ixgbe: fix integer
- overflow and wrong bit position in ixgbe_validate_rtr()
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=Tl1htdca
+Subject: [Intel-wired-lan] [PATCH iwl-next v2 0/8] ixgbe: nits and
+ improvements
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -109,57 +107,71 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Two bugs in the same loop in ixgbe_validate_rtr():
+Eight cleanups and improvements for the ixgbe driver.
 
-1. The 3-bit traffic-class field was extracted by shifting a u32 and
-   assigning the result directly to a u8.  For user priority 0 this is
-   harmless; for UP[5..7] the shift leaves bits [15..21] in the u32
-   which are then silently truncated when stored in u8.  Mask with
-   IXGBE_RTRUP2TC_UP_MASK before the assignment so only the intended
-   3 bits are kept.
+Patches 1-4 split the adaptive-ITR algorithm improvements into
+independently reviewable pieces as requested by Simon Horman.  Each
+patch is self-contained and can be reviewed and reverted independently:
+  1. Lower IXGBE_ITR_ADAPTIVE_MAX_USECS from 126 to 84 to prevent RX
+     starvation at minimum bulk-mode rates.
+  2. Add ixgbe_container_is_rx() helper and refine the RX-specific
+     latency algorithm (thresholds, no-packet handling, mode tracking).
+  3. Limit ITR decrease in latency mode to at most 2 us per update so
+     ACK workloads do not overdrive moderation.
+  4. Add IXGBE_ITR_ADAPTIVE_MASK_USECS constant to replace the
+     open-coded ~IXGBE_ITR_ADAPTIVE_LATENCY complement in ixgbe_set_itr.
 
-2. When clearing an out-of-bounds entry the mask was always shifted by
-   the fixed constant IXGBE_RTRUP2TC_UP_SHIFT (== 3), regardless of
-   which loop iteration was being processed.  This means only UP1 (bit
-   position 3) was ever cleared; UP0,2..7 (positions 0, 6, 9, ..., 21)
-   were left unreset, so invalid TC mappings persisted in hardware and
-   could mis-steer received packets to the wrong traffic class.
-   Use i * IXGBE_RTRUP2TC_UP_SHIFT to target the correct 3-bit field
-   for each iteration.
+Patch 5 removes ixgbe_ping_all_vfs() from both ixgbe_watchdog_link_is_up()
+and ixgbe_watchdog_link_is_down().  The original submission only removed
+the call from the link-up path; this version also removes it from the
+link-down path, which carries the same race window against VF mailbox
+initialization.
 
-Swap the operand order in the mask expression to place the constant
-on the right per kernel coding style (noted by David Laight).
+Patch 6 replaces ktime_to_ns(ktime_get_real()) with ktime_get_real_ns().
 
-Fixes: e7589eab9291 ("ixgbe: consolidate, setup for multiple traffic classes")
-Cc: stable@vger.kernel.org
-Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Patch 7 restructures ixgbe_fcoe_ddp_setup() so that dma_pool_alloc()
+is called outside the get_cpu()/put_cpu() preemption-disabled section,
+enabling GFP_KERNEL instead of GFP_ATOMIC.  The prior submission left
+the allocation inside the preempt-off block (GFP_KERNEL can sleep under
+direct reclaim, which triggers a BUG() with preemption disabled).
+
+Patch 8 fixes six local variables declared as u32 that are used to
+store signed kernel error codes.  Reviewed by Simon Horman.
+
+Changes in v2:
+ - 1-4/8: Split monolithic ITR cleanup into four independent patches
+          as requested by Simon Horman.
+ - 5/8:   Extend fix to also remove ixgbe_ping_all_vfs() from
+          ixgbe_watchdog_link_is_down() to cover the identical race.
+ - 6/8:   No code change; add [N/M] numbering.
+ - 7/8:   Move dma_pool_alloc() outside get_cpu()/put_cpu() so
+          GFP_KERNEL is used safely without sleeping under preempt-off.
+ - 8/8:   Add Reviewed-by: Simon Horman; no code change.
+
 ---
-v1 -> v2:
- - Add Fixes: tag; reroute to iwl-net (wrong bit positions cause packet
-   mis-steering); swap to (reg >> ...) & MASK operand order per David
-   Laight.
 
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+Alexander Duyck (4):
+  ixgbe: lower IXGBE_ITR_ADAPTIVE_MAX_USECS to prevent RX starvation
+  ixgbe: add ixgbe_container_is_rx() helper and refine RX adaptive ITR
+  ixgbe: limit ITR decrease in latency mode to prevent ACK overdrive
+  ixgbe: add IXGBE_ITR_ADAPTIVE_MASK_USECS constant
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 210c7b9..c9e4f12 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -9772,11 +9772,12 @@ static void ixgbe_validate_rtr(struct ixgbe_adapter *adapter, u8 tc)
- 	rsave = reg;
- 
- 	for (i = 0; i < MAX_TRAFFIC_CLASS; i++) {
--		u8 up2tc = reg >> (i * IXGBE_RTRUP2TC_UP_SHIFT);
-+		u8 up2tc = (reg >> (i * IXGBE_RTRUP2TC_UP_SHIFT)) &
-+			   IXGBE_RTRUP2TC_UP_MASK;
- 
- 		/* If up2tc is out of bounds default to zero */
- 		if (up2tc > tc)
--			reg &= ~(0x7 << IXGBE_RTRUP2TC_UP_SHIFT);
-+			reg &= ~(IXGBE_RTRUP2TC_UP_MASK << (i * IXGBE_RTRUP2TC_UP_SHIFT));
- 	}
- 
- 	if (reg != rsave)
+Aleksandr Loktionov (2):
+  ixgbe: remove ixgbe_ping_all_vfs() from link state change handlers
+  ixgbe: use GFP_KERNEL in ixgbe_fcoe_ddp_setup()
+
+Jacob Keller (1):
+  ixgbe: use ktime_get_real_ns() in ixgbe_ptp_reset()
+
+Aleksandr Loktionov (1):
+  ixgbe: use int instead of u32 for error code variables
+
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h      |  5 +-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c | 50 +++++++----
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 97 ++++++++++++------
+ drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c  |  6 +-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c  |  2 +-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c | 12 +--
+ 6 files changed, 113 insertions(+), 59 deletions(-)
 -- 
 2.52.0
