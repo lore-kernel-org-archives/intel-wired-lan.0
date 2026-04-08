@@ -4,142 +4,104 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1C77CFD5F99
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  8 Apr 2026 08:54:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 579F41073C85
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  8 Apr 2026 09:45:10 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id D5FD68232C;
-	Wed,  8 Apr 2026 08:54:23 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 0A8A680BE8;
+	Wed,  8 Apr 2026 09:45:10 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ARt0qh7LGjpP; Wed,  8 Apr 2026 08:54:22 +0000 (UTC)
+ id XrFmFgOj4gCT; Wed,  8 Apr 2026 09:45:08 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 04C2182328
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 1374280B1E
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1775638462;
-	bh=Gq9JVzqu3RbrK+ulSwPbxKbAFCkTQzPJ7QGif9weboM=;
-	h=Date:To:Cc:References:From:In-Reply-To:Subject:List-Id:
+	s=default; t=1775641508;
+	bh=fVByUgcVRV9cDGwBxu0qdLtCN/YmZ0vWbRv6xHT9zUI=;
+	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=5Rpj/ORJkx2rjXHYrYzNi16LBZKa3fBCIQCxWH//ffZi46lktY2K1RctqOQQXNwSV
-	 Lw2fN5ZLD21e079j4ek283zgaBQdVNQgrvJVs7A6gQMBHhu6AIBakx4trSDbucHzvw
-	 EdhOVSOz6FTTVYmJz3D+riRXCS2o3zgLB5KgnMgeh92bFD/AstIjaa4wbxO55hkTy1
-	 xoVsEhHARuyvltXPYsgCZN30iN89EFFYGbVy3GzD8GsDv7HD+pajwNAXeZ08NbGz2z
-	 Qq2vx9QwB30jrWodL249Pfw1wRQe711WzRwxz+q+z788Z8z2vtxH3z2BtCtQH3/S+i
-	 atOHTm84Ocm4A==
+	 Cc:From;
+	b=DMadxhf0Go9SY3BMRIHdPDXRDsJdCd98u5qOoAfG2nqwcvy9xvdZRoVCpCpzSgTUh
+	 17IgY/HAAcc+NeVPjvfdjKCu8Hahyul256h82+Dd30kfBsY+YBLZwYaEio53k+EW1u
+	 uLRpXO31wcejWg6zNyg9Jbxx+ZMHnHMQThnqAh/H8uBsmDd/TYnd+/aqQsGt9S481l
+	 R6gt428syEOTGGiH5ifC5657IP/DjtPHH6nR1HWw9AbXj8oQBUmXJTw/jahxaJNkdz
+	 XkznGexVkQKrQP+5lwUHzxZ/iRMOGs4T97MCO15ligJuRJYNsNMEPfiuXJVjPzGdrH
+	 uw6sKvbaqq7Gg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 04C2182328;
-	Wed,  8 Apr 2026 08:54:22 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id 56354237
- for <intel-wired-lan@lists.osuosl.org>; Wed,  8 Apr 2026 08:54:21 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 1374280B1E;
+	Wed,  8 Apr 2026 09:45:08 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id DB72C1F6
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  8 Apr 2026 09:45:06 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 47E5F40EF6
- for <intel-wired-lan@lists.osuosl.org>; Wed,  8 Apr 2026 08:54:21 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id CAEC080B1E
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  8 Apr 2026 09:45:06 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id JLOBbFI2FJae for <intel-wired-lan@lists.osuosl.org>;
- Wed,  8 Apr 2026 08:54:20 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.129.124;
- helo=us-smtp-delivery-124.mimecast.com; envelope-from=poros@redhat.com;
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id gIt50QrJd4wx for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  8 Apr 2026 09:45:06 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.133.124;
+ helo=us-smtp-delivery-124.mimecast.com; envelope-from=ivecera@redhat.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 391F640CDF
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 391F640CDF
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org B1CBA80B00
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B1CBA80B00
 Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.129.124])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 391F640CDF
- for <intel-wired-lan@lists.osuosl.org>; Wed,  8 Apr 2026 08:54:19 +0000 (UTC)
-Received: from mail-wm1-f72.google.com (mail-wm1-f72.google.com
- [209.85.128.72]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-319-oPoVRgj_PF6m8nzc_U0eOg-1; Wed, 08 Apr 2026 04:54:16 -0400
-X-MC-Unique: oPoVRgj_PF6m8nzc_U0eOg-1
-X-Mimecast-MFC-AGG-ID: oPoVRgj_PF6m8nzc_U0eOg_1775638456
-Received: by mail-wm1-f72.google.com with SMTP id
- 5b1f17b1804b1-488b966e9dbso15447105e9.3
- for <intel-wired-lan@lists.osuosl.org>; Wed, 08 Apr 2026 01:54:16 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20251104; t=1775638455; x=1776243255;
- h=content-transfer-encoding:in-reply-to:from:content-language
- :references:cc:to:subject:user-agent:mime-version:date:message-id
- :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
- :reply-to;
- bh=Gq9JVzqu3RbrK+ulSwPbxKbAFCkTQzPJ7QGif9weboM=;
- b=Wc+FzpabNPdjEDHPXHY7XoExbzWOAtt6vt+GKyOSEWYuEKrFmCKFMYWpirqMjawJHY
- xCOgCKdYGMMGrO4B0g71l/kOnq2aFreNIPH7X/5TDHpxjpfuoX6MfLM+QnMO9VBlQ3j0
- aQ2WbvDB8PsOMTSmTmn2ZiEn085AjUjxOh+lIoo6eB5iaCpzw9xkR7Bo0ODM386AFSFO
- FKOUrqkaNyQf7wEPSSiiT+JaIm5FI50FxC4s8yruzIz5/RJEM+s/hgoLabrDWxp3rj1A
- g5munARxlmN1Wo9CPgmz0sjTxTgZPk3K9Y/2qFQB1aYJRriLxWMj0rMxLgkI/oKppkZN
- 3huA==
-X-Forwarded-Encrypted: i=1;
- AJvYcCUeh5lL85odlWhx6M6Ruz7Bpw+N1yNyZOZmhRzRLA+DDPmLs/Oc5bpG0z9jWbXJJ4r7AkQeat9l+DShgUYaOO8=@lists.osuosl.org
-X-Gm-Message-State: AOJu0YzHjLOQ+5/7gwGeieJmPZHHXS0oG53LVodBWk4mUBl3TMaqv+Ye
- s4dIudNgT5maHInqEcBLOyLUtXiVYNN0qxxQq9SCXSkA0EAHBLSHv9h3Ul/AruSIXQ1bZiJxGAb
- Xj8zZ/+XEdzjiPluoAlpmdpYYU9ZLxO9RSQZ0W1jtyzRouiFWbkngjgi9ZShJaqW+Z3H8r3E=
-X-Gm-Gg: AeBDievmVDltvh0xoEq1Vei7ESQ/XHZRetgmXm31NQBotutQyuvb8uxrFs7ybshfmaG
- uthoXwJnHZhiPS9Hw/HdKsQBBUr/CsM+81VhGlQAmsv+4gT4ehSMexppwVu0cqF6kLFfZpSdU45
- EqqkHqEt9S7JIGo5dY8/K8CKMlYMqEhNq0WIQ7OtIurCHmgZZALDEksUA0tGnYMVmLd6HG0thkr
- 4D/upEP8qkRdVZfeJZS5sh7fwSl28oGKag2dDWKlotHS13K2QR/+p1TFFL2jzwqthy8kiB+He8A
- 6tit1ZWCGuMP2y2B4RT3uZ51BBxaXKbv3l/NyQsFbfyIEC3brDhb5shxBdrIkOS5xB143M/1gWB
- 8OiySBuRP9JS7tsJj1cRk
-X-Received: by 2002:a05:600c:5292:b0:485:2ce2:4c87 with SMTP id
- 5b1f17b1804b1-488996cd77cmr300561175e9.4.1775638455358; 
- Wed, 08 Apr 2026 01:54:15 -0700 (PDT)
-X-Received: by 2002:a05:600c:5292:b0:485:2ce2:4c87 with SMTP id
- 5b1f17b1804b1-488996cd77cmr300560825e9.4.1775638454876; 
- Wed, 08 Apr 2026 01:54:14 -0700 (PDT)
-Received: from [192.168.2.83] ([46.175.183.46])
- by smtp.gmail.com with ESMTPSA id
- 5b1f17b1804b1-488c76c6205sm15808305e9.1.2026.04.08.01.54.12
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Wed, 08 Apr 2026 01:54:13 -0700 (PDT)
-Message-ID: <d74a9071-336d-4fec-a061-bf9a3a444678@redhat.com>
-Date: Wed, 8 Apr 2026 10:54:10 +0200
+ (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id B1CBA80B00
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  8 Apr 2026 09:45:04 +0000 (UTC)
+Received: from mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com
+ (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
+ relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-664-QqfLZcIANHqLSnK_0ttR4A-1; Wed,
+ 08 Apr 2026 05:44:59 -0400
+X-MC-Unique: QqfLZcIANHqLSnK_0ttR4A-1
+X-Mimecast-MFC-AGG-ID: QqfLZcIANHqLSnK_0ttR4A_1775641496
+Received: from mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com
+ (mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.4])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
+ id DD409195608D; Wed,  8 Apr 2026 09:44:55 +0000 (UTC)
+Received: from [10.44.48.188] (unknown [10.44.48.188])
+ by mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP
+ id A85A3300019F; Wed,  8 Apr 2026 09:44:49 +0000 (UTC)
+Message-ID: <dce8bcba-5806-4d8a-a678-c816b292fb87@redhat.com>
+Date: Wed, 8 Apr 2026 11:44:48 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-To: "Rinitha, SX" <sx.rinitha@intel.com>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>
-Cc: "Vecera, Ivan" <ivecera@redhat.com>,
- "Kitszel, Przemyslaw" <przemyslaw.kitszel@intel.com>,
- Eric Dumazet <edumazet@google.com>,
- "Kubalewski, Arkadiusz" <arkadiusz.kubalewski@intel.com>,
- Andrew Lunn <andrew+netdev@lunn.ch>,
- "Nguyen, Anthony L" <anthony.l.nguyen@intel.com>,
- Simon Horman <horms@kernel.org>,
- "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- "David S. Miller" <davem@davemloft.net>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <20260213141651.2231124-1-poros@redhat.com>
- <IA1PR11MB6241B58FF425A8684CFAE7A28B50A@IA1PR11MB6241.namprd11.prod.outlook.com>
-From: Petr Oros <poros@redhat.com>
-In-Reply-To: <IA1PR11MB6241B58FF425A8684CFAE7A28B50A@IA1PR11MB6241.namprd11.prod.outlook.com>
-X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: ii9TzzrW1Jzsbv7IP_93dS8pugoeyVYyVWMXUhR1hWQ_1775638456
+To: Grzegorz Nitka <grzegorz.nitka@intel.com>, netdev@vger.kernel.org
+References: <20260402230626.3826719-1-grzegorz.nitka@intel.com>
+ <20260402230626.3826719-5-grzegorz.nitka@intel.com>
+From: Ivan Vecera <ivecera@redhat.com>
+In-Reply-To: <20260402230626.3826719-5-grzegorz.nitka@intel.com>
+X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.4
+X-Mimecast-MFC-PROC-ID: qy48aukMVew2cl4ikAb7gUNsbg3Yr8fSLDsxq8N93RY_1775641496
 X-Mimecast-Originator: redhat.com
 Content-Language: en-US
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=redhat.com; 
- s=mimecast20190719; t=1775638458;
+ s=mimecast20190719; t=1775641503;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=Gq9JVzqu3RbrK+ulSwPbxKbAFCkTQzPJ7QGif9weboM=;
- b=EZZF8wAJ3T9n8gCrcfJMsX8fuLQ3KMQ9/wEHZ7oilfRiJlJkcVGn3d06TMSYKlg+UWY2xS
- yxEcgAqss6OUSVRznpaYACxyRC2AVohWLDORFDMHCQb2b4YlndUp0hJXHnDgYTKN3+4xO6
- V+gcYr56s7TDSAXx9aQKK+qgZmK9hcc=
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ bh=fVByUgcVRV9cDGwBxu0qdLtCN/YmZ0vWbRv6xHT9zUI=;
+ b=NB5wq1qaRbRqY8HA4Y+CJtQwDrA5CClK7RaKavM3IbaBN3RcBRuwA2NE5H9UI+cnKqQE3j
+ B/MHblWSO+VGaULR5X4WxqBqEfypCnVCCFM07Y7CXuYw4MH0Qhxr37sFqa2mD+a0YC/ExC
+ L3H1ODKU+oO8He9ZiHs3nW/J8vNdMcg=
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=redhat.com
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=EZZF8wAJ
-Subject: Re: [Intel-wired-lan] [PATCH net] ice: fix missing SMA pin
- initialization in DPLL subsystem
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (1024-bit key,
+ unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
+ header.s=mimecast20190719 header.b=NB5wq1qa
+Subject: Re: [Intel-wired-lan] [PATCH v5 net-next 4/8] dpll: zl3073x: allow
+ SyncE_Ref pin state change
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -152,55 +114,50 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
+Cc: vadim.fedorenko@linux.dev, kuba@kernel.org, jiri@resnulli.us,
+ edumazet@google.com, przemyslaw.kitszel@intel.com, richardcochran@gmail.com,
+ donald.hunter@gmail.com, linux-kernel@vger.kernel.org,
+ arkadiusz.kubalewski@intel.com,
+ Aleksandr Loktionov <aleksandr.loktionov@intel.com>, andrew+netdev@lunn.ch,
+ intel-wired-lan@lists.osuosl.org, horms@kernel.org,
+ Prathosh.Satish@microchip.com, anthony.l.nguyen@intel.com, pabeni@redhat.com,
+ davem@davemloft.net
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-
-On 4/1/26 18:29, Rinitha, SX wrote:
->> -----Original Message-----
->> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Petr Oros
->> Sent: 13 February 2026 19:47
->> To: netdev@vger.kernel.org
->> Cc: Vecera, Ivan <ivecera@redhat.com>; Kitszel, Przemyslaw <przemyslaw.kitszel@intel.com>; Eric Dumazet <edumazet@google.com>; Kubalewski, Arkadiusz <arkadiusz.kubalewski@intel.com>; Andrew Lunn <andrew+netdev@lunn.ch>; Nguyen, Anthony L <anthony.l.nguyen@intel.com>; Simon Horman <horms@kernel.org>; intel-wired-lan@lists.osuosl.org; Jakub Kicinski <kuba@kernel.org>; Paolo Abeni <pabeni@redhat.com>; David S. Miller <davem@davemloft.net>; linux-kernel@vger.kernel.org
->> Subject: [Intel-wired-lan] [PATCH net] ice: fix missing SMA pin initialization in DPLL subsystem
->>
->> The DPLL SMA/U.FL pin redesign introduced ice_dpll_sw_pin_frequency_get() which gates frequency reporting on the pin's active flag. This flag is determined by ice_dpll_sw_pins_update() from the PCA9575 GPIO expander state. Before the redesign, SMA pins were exposed as direct HW input/output pins and ice_dpll_frequency_get() returned the CGU frequency unconditionally — the PCA9575 state was never consulted.
->>
->> The PCA9575 powers on with all outputs high, setting ICE_SMA1_DIR_EN, ICE_SMA1_TX_EN, ICE_SMA2_DIR_EN and ICE_SMA2_TX_EN. Nothing in the driver writes the register during initialization, so
->> ice_dpll_sw_pins_update() sees all pins as inactive and
->> ice_dpll_sw_pin_frequency_get() permanently returns 0 Hz for every SW pin.
->>
->> Fix this by writing a default SMA configuration in
->> ice_dpll_init_info_sw_pins(): clear all SMA bits, then set SMA1 and
->> SMA2 as active inputs (DIR_EN=0) with U.FL1 output and U.FL2 input disabled. Each SMA/U.FL pair shares a physical signal path so only one pin per pair can be active at a time. U.FL pins still report frequency 0 after this fix: U.FL1 (output-only) is disabled by ICE_SMA1_TX_EN which keeps the TX output buffer off, and U.FL2
->> (input-only) is disabled by ICE_SMA2_UFL2_RX_DIS. They can be activated by changing the corresponding SMA pin direction via dpll netlink.
->>
->> Fixes: 2dd5d03c77e2 ("ice: redesign dpll sma/u.fl pins control")
->> Signed-off-by: Petr Oros <poros@redhat.com>
->> ---
->> drivers/net/ethernet/intel/ice/ice_dpll.c | 17 +++++++++++++++++
->> 1 file changed, 17 insertions(+)
->>
-> When SMA1 is changed from output to input , U.FL1 (input) is expected to get connected but is still disconnected
-> Similary, when SMA2 is changed from input to output , U.FL2 (output) is still disconnected
-
-Hi Rinitha,
-
-Thanks for testing this.
-The initialization patch itself is correct. After boot, the PCA9575
-register is written to a known-good default state and SMA1/SMA2
-properly report as active inputs with the expected frequency.
-
-The behavior you describe (U.FL1/U.FL2 staying disconnected after
-SMA direction change) is a pre-existing issue in
-ice_dpll_sma_direction_set(), not in the initialization path.
-
-I am addressing this in v2 of "[PATCH iwl-net] ice: fix U.FL pin
-state set affecting paired SMA pin" with an expanded scope that
-covers both directions of the SMA/U.FL pairing.
-
-Is it OK like this?
-
-Regards,
-Petr
+On 4/3/26 1:06 AM, Grzegorz Nitka wrote:
+> The SyncE_Ref pin may operate as either an active or inactive reference
+> depending on board design and system configuration. Some platforms need
+> to disable the SyncE reference dynamically (e.g., when selecting a
+> different recovered clock input). The hardware supports toggling this
+> pin, therefore advertise the STATE_CAN_CHANGE capability.
+> 
+> Reviewed-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
+> Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+> Signed-off-by: Grzegorz Nitka <grzegorz.nitka@intel.com>
+> ---
+>   drivers/dpll/zl3073x/prop.c | 9 +++++++++
+>   1 file changed, 9 insertions(+)
+> 
+> diff --git a/drivers/dpll/zl3073x/prop.c b/drivers/dpll/zl3073x/prop.c
+> index ac9d41d0f978..acd7061a741a 100644
+> --- a/drivers/dpll/zl3073x/prop.c
+> +++ b/drivers/dpll/zl3073x/prop.c
+> @@ -215,6 +215,15 @@ struct zl3073x_pin_props *zl3073x_pin_props_get(struct zl3073x_dev *zldev,
+>   
+>   		props->dpll_props.type = DPLL_PIN_TYPE_GNSS;
+>   
+> +	       /*
+> +		* The SyncE_Ref pin supports enabling/disabling dynamically.
+> +		* Some platforms may choose to expose this through firmware
+> +		* configuration later. For now, advertise this capability
+> +		* universally since the hardware allows state toggling.
+> +		*/
+> +		props->dpll_props.capabilities |=
+> +			DPLL_PIN_CAPABILITIES_STATE_CAN_CHANGE;
+> +
+>   		/* The output pin phase adjustment granularity equals half of
+>   		 * the synth frequency count.
+>   		 */
+Reviewed-by: Ivan Vecera <ivecera@redhat.com>
 
