@@ -1,96 +1,99 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 77FC91073CB4
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  8 Apr 2026 13:12:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 62C351073CB6
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  8 Apr 2026 13:12:02 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 4D69040EBE;
-	Wed,  8 Apr 2026 13:12:01 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 1F51260856;
+	Wed,  8 Apr 2026 13:12:02 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Yz-rBeJIeO9T; Wed,  8 Apr 2026 13:11:59 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 7dw3Op6BPTiR; Wed,  8 Apr 2026 13:12:01 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D06DA40EB4
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 60FBD608B9
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1775653919;
-	bh=CD5qVWFevM9JR+zvZfHN09AJOIckfXCJgVIsVxsDYFk=;
-	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=0wDv5+Ch2S381HyOB2JsLaC8Gk+0KlMwdg2e6kUqkVB5fpVyvwqtV/LRXNNsfFlCI
-	 Dnfx6e/Thc08fKyUz9GMeB7IUZJckq3OrMyxR97TtO0fSUwKQRFJIoRrN+yhUtwGuS
-	 F8Cgx14+gRcmymVWAjKcPGTjfzItKdbC6w8ibjF2/4veLYoMrSyxd5uPuXdhcew6DP
-	 LlTmeogbEPJ/2tro8jVeoOQhnjCnRMNTMS1WLrieaQfdMhTDTHK48ZSXZM5qbvAMFk
-	 lDypBT5620CoCSke/WvyQcxq+/L/AMCjTzm9OGVqF6VB1R5DzSBV44ud35Y4uJ9wz2
-	 bCKWb1bbH+02w==
+	s=default; t=1775653921;
+	bh=qvuGwcCg0+d/p9CbAV+bQc43TGHJtD/eAWBX7DKslBE=;
+	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=CrFV3gzryXLhqp2jI98TOtOK1S4izpTqtgXUBfB5cZqdvFGV4TQJYaeinlsJXFms1
+	 cuz26ZTd3eW65dVWNlt8XKDgi/dJB0DwS2BgmRUuQ6kkDobcVbZMxvFUjctJCkSB4n
+	 ONixMPpWhjEtXxkpdmn7pbFiR/O73xq+j8+fV73CZG8TR+6zE/gS7Kii/3dgciGrqd
+	 mcoHfcwZQ+3+Fp2an99XqqTpPAymcr24X/EwzVlbL94xxBUXlCDP2/aW/RbUK1gE8I
+	 k15apL0kkMUMTJmAaya+ykGIlx5tWJPfWBjIJvyvHQRVSEadQO2KGFOMXXAb2K8WoV
+	 7Te2L53IXlfHg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id D06DA40EB4;
-	Wed,  8 Apr 2026 13:11:59 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 76F6F2C7
- for <intel-wired-lan@lists.osuosl.org>; Wed,  8 Apr 2026 13:11:58 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 60FBD608B9;
+	Wed,  8 Apr 2026 13:12:01 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id BBF941F6
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  8 Apr 2026 13:11:59 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 5D1DA608B9
+ by smtp3.osuosl.org (Postfix) with ESMTP id B870E60856
  for <intel-wired-lan@lists.osuosl.org>; Wed,  8 Apr 2026 13:11:58 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id bqwY-mTnX1l1 for <intel-wired-lan@lists.osuosl.org>;
- Wed,  8 Apr 2026 13:11:57 +0000 (UTC)
+ id OfqVbBPQ7WO9 for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  8 Apr 2026 13:11:58 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.7;
  helo=mgamail.intel.com; envelope-from=aleksandr.loktionov@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 8F35260856
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8F35260856
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 13F0D608A8
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 13F0D608A8
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.7])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 8F35260856
- for <intel-wired-lan@lists.osuosl.org>; Wed,  8 Apr 2026 13:11:57 +0000 (UTC)
-X-CSE-ConnectionGUID: 1BTlEtFxRdi2ka8fv3TW/Q==
-X-CSE-MsgGUID: 2MNcWf4AQb6VCsJdhiU4xw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11752"; a="102087223"
-X-IronPort-AV: E=Sophos;i="6.23,167,1770624000"; d="scan'208";a="102087223"
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 13F0D608A8
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  8 Apr 2026 13:11:58 +0000 (UTC)
+X-CSE-ConnectionGUID: ZwEN60XeQ+OLyGYENARkKg==
+X-CSE-MsgGUID: uChYM58dRzCTHoRSlqXIWw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11752"; a="102087227"
+X-IronPort-AV: E=Sophos;i="6.23,167,1770624000"; d="scan'208";a="102087227"
 Received: from orviesa007.jf.intel.com ([10.64.159.147])
  by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 08 Apr 2026 06:11:57 -0700
-X-CSE-ConnectionGUID: 8xNg/nTORjGkvOQPG9kPaA==
-X-CSE-MsgGUID: RYZ4mSObT7myxSFQlZguuw==
+ 08 Apr 2026 06:11:58 -0700
+X-CSE-ConnectionGUID: UYU4/WfkRCy55u/s3o2AYw==
+X-CSE-MsgGUID: pcGEyYDkTQuuRSYQcN+Hdg==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,167,1770624000"; d="scan'208";a="228714940"
+X-IronPort-AV: E=Sophos;i="6.23,167,1770624000"; d="scan'208";a="228714944"
 Received: from amlin-019-225.igk.intel.com ([10.102.19.225])
- by orviesa007.jf.intel.com with ESMTP; 08 Apr 2026 06:11:56 -0700
+ by orviesa007.jf.intel.com with ESMTP; 08 Apr 2026 06:11:57 -0700
 From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 To: intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com,
  aleksandr.loktionov@intel.com
 Cc: netdev@vger.kernel.org
-Date: Wed,  8 Apr 2026 15:11:48 +0200
-Message-ID: <20260408131154.2661818-1-aleksandr.loktionov@intel.com>
+Date: Wed,  8 Apr 2026 15:11:49 +0200
+Message-ID: <20260408131154.2661818-2-aleksandr.loktionov@intel.com>
 X-Mailer: git-send-email 2.52.0
+In-Reply-To: <20260408131154.2661818-1-aleksandr.loktionov@intel.com>
+References: <20260408131154.2661818-1-aleksandr.loktionov@intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
  t=1775653918; x=1807189918;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=xHT//3FdP0pzi+J3JCTY+FWqu5wZN0PFM98U8ARD2xs=;
- b=EOdgitGcy9eWV40I4OW1O1E7VGJHysThShucfzhUIx5DbR/8Js2uHkeu
- Hf/DEnKvW0sXBDdw2iwO4jYBk/n1nxJ0dM1K++B3J6J0ayAvcZk6dNW1p
- hF/0ZGEpOj6YDEzA7ji21mNbz69SDXlQP96ziWcsarg5K3ERWlRMZQ5d1
- +S51PDfH1eQ7jtweRkvEs3R1MUG7aZQmygiONPNiAxiMMXIBBq9Rq29/8
- 5XvPW5OmENhS7fJM15kPM1e8dGEktfvcRKg5Gw9WrVYqfTbV96UEWBrgQ
- MWWkGQYEeXopcrsp/LWPt8vrYIz/UhYR3d01ZGl4gdwEMeTgHER2gMlbq
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=jqWWnbeGaAloNgo2/0T0yqS/cY0f70+KgebTL+VZ8HI=;
+ b=WogBYzQVLLLRsLbLfWYRcPYJijap9mk3Z9KRQIyTOKlwihwBtEHOvLrx
+ dIQsPe+dI29htdQnNT0CPfLHNlxnvf9hkCyFGsdNmMQxHkOy//UC4tCVZ
+ zGNjidVv0i6XWtkxjZpZ9L98tAEXvkcXAJ+wm5yaFp+9X1CKSNxAyDYUS
+ w7mgMFJ4aP5dRGr6IQvRRVie3iREdPzN0Osvq3KyGmtXSEiu83kqnPEVT
+ XtrPfgJw1RNF+xnrcdcpoTE3/gr4QTdOsxNLK+uq1mAGOOGxjkf2/eXqk
+ QE9TkZk+bpQEdh3y9YB+MD6gxt98IpdK/xalGE8RDpC8e7fxznF/nvnsn
  g==;
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=EOdgitGc
-Subject: [Intel-wired-lan] [PATCH iwl-net v2 0/6] ixgbe: six bug fixes
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=WogBYzQV
+Subject: [Intel-wired-lan] [PATCH iwl-net v2 1/6] ixgbe: fix SWFW semaphore
+ timeout for X550 family
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -106,58 +109,56 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Six fixes for the ixgbe driver, covering a SWFW semaphore timeout
-miscalculation, a security-relevant debugfs out-of-bounds, a broken
-flow-control NVM-reset path, a false-success return in the cls_u32
-nexthdr path, an adaptive-ITR u8 overflow, and wrong bit positions in
-the UP-to-TC register normalisation.
+According to FW documentation, the most time-consuming FW operation is
+Shadow RAM (SR) dump which takes up to 3.2 seconds.  For X550 family
+devices the module-update FW command can take over 4.5 s.  The default
+semaphore loop runs 200 iterations with a 5 ms sleep each, giving a
+maximum wait of 1 s -- not "200 ms" as previously stated in error.
+This is insufficient for X550 family FW update operations and causes
+spurious EBUSY failures.
 
-Patches 1-3 fix issues that could result in functional regressions
-(FW update failures, OOB MMIO, traffic stall after NVM update).
-Patches 4-6 fix correctness bugs with user-visible effects.
+Extend the SW/FW semaphore timeout from 1 s to 5 s (1000 iterations x
+5 ms) for all three X550 variants: ixgbe_mac_X550, ixgbe_mac_X550EM_x,
+and ixgbe_mac_x550em_a.  All three share the same FW and exhibit the
+same worst-case latency.  Use three explicit mac.type comparisons rather
+than a range check so future MAC additions are not inadvertently
+captured.
 
-Patch 1 is a squash of two previously independent submissions:
-  - "ixgbe: increase SWFW semaphore timeout for X550 FW updates"
-    (Soumen Karmakar)
-  - "ixgbe: extend 5 s SWFW semaphore timeout to all X550EM variants"
-    (Marta Plantykow)
+The timeout variable is set immediately before the loop so the intent
+is clear, with an inline comment stating the resulting maximum delay.
 
-The commit message for patch 1 also fixes an error noted in review:
-the previous description stated "200 ms" but the actual default is
-1 s (200 iterations x 5 ms per poll).  Patch 1 also replaces the
-">= X550 && <= x550em_a" range check with three explicit mac.type
-comparisons per Tony Nguyen's request.
-
-Patch 3 additionally handles the setup_fc() failure path that was
-left unaddressed in the prior posting: fc_enable() is now skipped
-when setup_fc() fails so the MDD-triggering stale state is not
-committed to hardware.
-
-Changes in v2:
- - 1/6: Squash two patches; fix commit msg ("200ms" -> "1s"); three
-        explicit mac.type == comparisons instead of range check.
- - 2/6: Add Fixes: tag; reroute from iwl-next to iwl-net.
- - 3/6: Add Fixes: tag; reroute to iwl-net; skip fc_enable() when
-        setup_fc() fails to avoid committing stale FC state.
- - 4/6: Add Fixes: tag; reroute from iwl-next to iwl-net.
- - 5/6: Add proper [N/M] patch numbering.
- - 6/6: Reroute to iwl-net; swap to (expr >> ..) & MASK operand order.
-
+Suggested-by: Soumen Karmakar <soumen.karmakar@intel.com>
+Cc: stable@vger.kernel.org
+Suggested-by: Marta Plantykow <marta.a.plantykow@intel.com>
+Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 ---
+v1 -> v2:
+ - Squash with 0015 (X550EM extension); fix commit message ("200ms" was
+   wrong, actual default is 1 s); replace >= / <= range check with three
+   explicit mac.type == comparisons per Tony Nguyen.
 
-Aleksandr Loktionov (5):
-  ixgbe: fix SWFW semaphore timeout for X550 family
-  ixgbe: call ixgbe_setup_fc() before fc_enable() after NVM update
-  ixgbe: fix cls_u32 nexthdr path returning success when no entry installed
-  ixgbe: fix ITR value overflow in adaptive interrupt throttling
-  ixgbe: fix integer overflow and wrong bit position in ixgbe_validate_rtr()
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-Paul Greenwalt (1):
-  ixgbe: add bounds check for debugfs register access
-
- drivers/net/ethernet/intel/ixgbe/ixgbe_debugfs.c |  4 ++--
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    | 18 ++++++++++++------
- drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c    |  8 ++++++++
- 3 files changed, 22 insertions(+), 8 deletions(-)
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
+index e67e2fe..a3c8f51 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
+@@ -577,6 +577,15 @@ int ixgbe_acquire_swfw_sync_X540(struct ixgbe_hw *hw, u32 mask)
+ 
+ 	swmask |= swi2c_mask;
+ 	fwmask |= swi2c_mask << 2;
++	/* Extend to 5 s (1000 x 5 ms) for X550 family; default is 1 s
++	 * (200 x 5 ms).  FW SR-dump takes up to 3.2 s; module-update up
++	 * to 4.5 s.
++	 */
++	if (hw->mac.type == ixgbe_mac_X550 ||
++	    hw->mac.type == ixgbe_mac_X550EM_x ||
++	    hw->mac.type == ixgbe_mac_x550em_a)
++		timeout = 1000;
++
+ 	for (i = 0; i < timeout; i++) {
+ 		/* SW NVM semaphore bit is used for access to all
+ 		 * SW_FW_SYNC bits (not just NVM)
 -- 
 2.52.0
