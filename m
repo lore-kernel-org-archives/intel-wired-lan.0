@@ -1,87 +1,87 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 385B710F996C
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  8 Apr 2026 18:47:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C8F5F10F996F
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  8 Apr 2026 18:47:34 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 0E3D560FB7;
-	Wed,  8 Apr 2026 18:47:33 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 8F2064101F;
+	Wed,  8 Apr 2026 18:47:34 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 4KR8Wc0oNnSO; Wed,  8 Apr 2026 18:47:32 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id cP1C1GPvKMPu; Wed,  8 Apr 2026 18:47:33 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 59B6F60FA5
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9DFC441018
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1775674052;
-	bh=K7frfaknjS6lAF43aIgEBdXmyYoW2hqxfzwc9d50Yz0=;
+	s=default; t=1775674053;
+	bh=X+XGzrntJYl6nvxJ6YU5LqAs90cVayLLAB5eeKFxCv0=;
 	h=From:Date:References:In-Reply-To:To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=nT7eG/FQmat19XjbxzJDl9sUalJfyanXDWXT3VB7YNLOz3buFRgB250k3z1WNzvki
-	 POEmB6cy3CtrEWwwtWjXHOYiuKJLzQjEeyeONcTg3+pL91o06+Tap32glG9dW3apMo
-	 QKdFXS1A2cgXFtYYUt8Odca2FhtGw9PbzVCYehajVppS7Q5LIzHb1EiIyetdQzr3+W
-	 hJY4koOk5B1p3jJcla88CXku4Fq/7X/BvjsLt7azkrFzBHbpJbUtSDipA2BJ/oPmIL
-	 VuqVykZDVNfjY6zUl/okqg/ohEwBFCQO5/mQQcQ3WCUNDNcBXpLrkrFBz9ERjfG3V2
-	 6K9No+07DvNDw==
+	b=VQfTw4r4lkiZSAkU6icyPLPSOOPvxxqYiYDrqoG2Hbb2DZauVVzn25ftoyc8YIFcW
+	 MCoJoDo0MAxTa2nUU1tReGOL/fJ6WfQ+3pEoJy78Hw5i6QB/OKn9agaz0+blwaq2qv
+	 QnX9ikumB42SE98eIYM6A6H7cxbxHQ+/cO9cF+94RjH51+IKZOkB1eAvV7m8JhWX6b
+	 qk/SDCdFwHjfLz7tNbDZ7jBxww+3GNwUwzH6Z7sF6w7DdDFs5N9YjsRdTwEEDu7zkX
+	 ljcHZRAGFkdRqLOR6SvQtHMxaZKsJi+1WEpdZm9Pft+E5oGjFOEYtPn4BKMK+3N92x
+	 UDbYyIxpAmEew==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 59B6F60FA5;
-	Wed,  8 Apr 2026 18:47:32 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 9DFC441018;
+	Wed,  8 Apr 2026 18:47:33 +0000 (UTC)
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 40C652EF
- for <intel-wired-lan@lists.osuosl.org>; Wed,  8 Apr 2026 18:47:30 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id 159111F6
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  8 Apr 2026 18:47:32 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id E64CE60756
- for <intel-wired-lan@lists.osuosl.org>; Wed,  8 Apr 2026 18:47:29 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id E0B7260756
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  8 Apr 2026 18:47:30 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id WQIsNIB26hgd for <intel-wired-lan@lists.osuosl.org>;
+ id 8KkhKcgk0l18 for <intel-wired-lan@lists.osuosl.org>;
  Wed,  8 Apr 2026 18:47:29 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.18;
  helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 2A7C860F9D
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2A7C860F9D
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org DA26C6076C
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org DA26C6076C
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.18])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 2A7C860F9D
- for <intel-wired-lan@lists.osuosl.org>; Wed,  8 Apr 2026 18:47:29 +0000 (UTC)
-X-CSE-ConnectionGUID: HzsMPCpRSoq9Frj7nHS9tw==
-X-CSE-MsgGUID: ynzdxousT+S3Uz1kVHZK7A==
-X-IronPort-AV: E=McAfee;i="6800,10657,11753"; a="75841386"
-X-IronPort-AV: E=Sophos;i="6.23,168,1770624000"; d="scan'208";a="75841386"
+ by smtp3.osuosl.org (Postfix) with ESMTPS id DA26C6076C
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  8 Apr 2026 18:47:28 +0000 (UTC)
+X-CSE-ConnectionGUID: xZ+AvVhVRYigLrK9u2DYJQ==
+X-CSE-MsgGUID: 6tcufk++Ra24/X88BBr+AA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11753"; a="75841384"
+X-IronPort-AV: E=Sophos;i="6.23,168,1770624000"; d="scan'208";a="75841384"
 Received: from fmviesa004.fm.intel.com ([10.60.135.144])
  by fmvoesa112.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  08 Apr 2026 11:47:28 -0700
-X-CSE-ConnectionGUID: QBP765/BQXmy6Y3irzVc5w==
-X-CSE-MsgGUID: 8BBOg8TlRqK92yagsDYzpA==
+X-CSE-ConnectionGUID: DyEUa8soQ0+0iM4pM1JWRA==
+X-CSE-MsgGUID: B3JqnITyReC2GILJSHbryA==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,168,1770624000"; d="scan'208";a="230217560"
+X-IronPort-AV: E=Sophos;i="6.23,168,1770624000"; d="scan'208";a="230217566"
 Received: from orcnseosdtjek.jf.intel.com (HELO [10.166.28.109])
  ([10.166.28.109])
  by fmviesa004-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 08 Apr 2026 11:47:26 -0700
+ 08 Apr 2026 11:47:27 -0700
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed, 08 Apr 2026 11:46:31 -0700
+Date: Wed, 08 Apr 2026 11:46:33 -0700
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260408-jk-even-more-e825c-fixes-v1-1-b959da91a81f@intel.com>
+Message-Id: <20260408-jk-even-more-e825c-fixes-v1-3-b959da91a81f@intel.com>
 References: <20260408-jk-even-more-e825c-fixes-v1-0-b959da91a81f@intel.com>
 In-Reply-To: <20260408-jk-even-more-e825c-fixes-v1-0-b959da91a81f@intel.com>
 To: Anthony Nguyen <anthony.l.nguyen@intel.com>, 
  Intel Wired LAN <intel-wired-lan@lists.osuosl.org>, netdev@vger.kernel.org
 X-Mailer: b4 0.16-dev-306a9
-X-Developer-Signature: v=1; a=openpgp-sha256; l=5492;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=12152;
  i=jacob.e.keller@intel.com; h=from:subject:message-id;
- bh=RfOBce6ZBKcXPiiqDoqjeTQe/2/0bz7nXMgcDDG6AGY=;
- b=owGbwMvMwCWWNS3WLp9f4wXjabUkhsxri/bwJU5UC2bVt2Y99Vgl1PBVnsPk86mCnybF/k6c2
- +ZQJHa7o5SFQYyLQVZMkUXBIWTldeMJYVpvnOVg5rAygQxh4OIUgImw/Gb4p1/9vEdJ8wrDvR2m
- 28OvxCo6bzr5aY/De+eHoveNp2msvsjwVzRWRuuFz9tFe/mK9N1ef1r0um0PZz9rzesC14RvB3Z
- E8QIA
+ bh=bDCHo9Qd8tPyja99fRKRg8JbbMO0vb09ovr28Mx4LQ8=;
+ b=owGbwMvMwCWWNS3WLp9f4wXjabUkhsxri/a+NPTzr/vwVbahPO6p/ab/K+64pBTOmvEt8mbWl
+ 9W3lp092VHKwiDGxSArpsii4BCy8rrxhDCtN85yMHNYmUCGMHBxCsBEzq5iZLgTzcJy6Y4z+8uJ
+ 64Tm3juV/Mit4xhLVXOQtGF74E9NxVJGhns+rJIWYS+vHHaf++OYuSPD/RzjY5GT/ae3b9dNav/
+ fzg8A
 X-Developer-Key: i=jacob.e.keller@intel.com; a=openpgp;
  fpr=204054A9D73390562AEC431E6A965D3E6F0F28E8
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
@@ -89,22 +89,22 @@ X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  t=1775674049; x=1807210049;
  h=from:date:subject:mime-version:content-transfer-encoding:
  message-id:references:in-reply-to:to:cc;
- bh=K3UN4pf9JPW3ZpduY02DTj0XVgO7vI4d+ii+qU3c24E=;
- b=gzGduOo6wKFssaTp6DqqrqkSprUiBwCmWuGceed/ZR81NMt6Y82sbUmT
- UvAnmlkOCc3JVMHuIsd/1sLhxeRftLBck+cJlGYxedluxmlf6nLBBnFuw
- Ct36TYBgqCoNFcq9S9uUWnSp+iEweWldHQ0PhiZqxQvNxJT18hjdTHaP2
- XkGGZlKLv5XGIL/hkzNZshoXv9CV1xNcG3jR0Jz9zdHG/DTE/7J4QJM+Y
- MC7eqoWm0g6C1/diVECdNkCvrMZXZHfeLrU3/6IdM6/6vkQ6Ot5iAKmux
- q1t7cuqJFuCYUDADYLaYqgFpFvSWEAZw4wJfu7nnpQM7kBQPL1mhTzNJl
+ bh=bDCHo9Qd8tPyja99fRKRg8JbbMO0vb09ovr28Mx4LQ8=;
+ b=JTeTQOr86X89gp4nGkSzk8+Mk4FbijWJ+Oviv+ArKM+U53TIQzxn3Vik
+ 1g+Mdjup4t1WqBkRID20gpeMttg5MK9dM3Ykw+VbQDRDbif/MxY8Fr1t3
+ KgP4fRS2mR4Trl3t+FhSuZ3lCBkZ6z0saFCJtffcrgrV4b+HE36zkF9Sg
+ Aje7PPHysyK1pkadW2cuY9GC41kZ3hevOBO9UlVQUtnZE3QLhXXF/dwfn
+ ewYasi8iNrDnXybuLT4IcQCb0zFonDQQGdVl59zfV5DgmCm5lzo7it0Fr
+ F38oWbgtT99fBjBAcr2V8SK27ibuZR/4h/3vUx8G+PxXw7NJ69Atj1fme
  w==;
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=gzGduOo6
-Subject: [Intel-wired-lan] [PATCH iwl-net 1/4] ice: fix timestamp interrupt
- configuration for E825C
+ header.a=rsa-sha256 header.s=Intel header.b=JTeTQOr8
+Subject: [Intel-wired-lan] [PATCH iwl-net 3/4] ice: fix ready bitmap check
+ for non-E822 devices
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -123,134 +123,327 @@ Cc: Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Grzegorz Nitka <grzegorz.nitka@intel.com>
+The E800 hardware (apart from E810) has a ready bitmap for the PHY
+indicating which timestamp slots currently have an outstanding timestamp
+waiting to be read by software.
 
-The E825C ice_phy_cfg_intr_eth56g() function is responsible for programming
-the PHY interrupt for a given port. This function writes to the
-PHY_REG_TS_INT_CONFIG register of the port. The register is responsible for
-configuring whether the port interrupt logic is enabled, as well as
-programming the threshold of waiting timestamps that will trigger an
-interrupt from this port.
+This bitmap is checked in multiple places using the
+ice_get_phy_tx_tstamp_ready():
 
-This threshold value must not be programmed to zero while the interrupt is
-enabled. Doing so puts the port in a misconfigured state where the PHY
-timestamp interrupt for the quad of connected ports will become stuck.
+ * ice_ptp_process_tx_tstamp() calls it to determine which timestamps to
+   attempt reading from the PHY
+ * ice_ptp_tx_tstamps_pending() calls it in a loop at the end of the
+   miscellaneous IRQ to check if new timestamps came in while the interrupt
+   handler was executing.
+ * ice_ptp_maybe_trigger_tx_interrupt() calls it in the auxiliary work task
+   to trigger a software interrupt in the event that the hardware logic
+   gets stuck.
 
-This occurs, because a threshold of zero results in the timestamp interrupt
-status for the port becoming stuck high. The four ports in the connected
-quad have their timestamp status indicators muxed together. A new interrupt
-cannot be generated until the timestamp status indicators return low for
-all four ports.
+For E82X devices, multiple PHYs share the same block, and the parameter
+passed to the ready bitmap is a block number associated with the given
+port. For E825-C devices, the PHYs have their own independent blocks and do
+not share, so the parameter passed needs to be the port number. For E810
+devices, the ice_get_phy_tx_tstamp_ready() always returns all 1s regardless
+of what port, since this hardware does not have a ready bitmap. Finally,
+for E830 devices, each PF has its own ready bitmap accessible via register,
+and the block parameter is unused.
 
-Normally, the timestamp status for a port will clear once there are fewer
-timestamps in that ports timestamp memory bank than the threshold. A
-threshold of zero makes this impossible, so the timestamp status for the
-port does not clear.
+The first call correctly uses the Tx timestamp tracker block parameter to
+check the appropriate timestamp block. This works because the tracker is
+setup correctly for each timestamp device type.
 
-The ice driver never intentionally programs the threshold to zero, indeed
-the driver always programs it to a value of 1, intending to get an
-interrupt immediately as soon as even a single packet is waiting for a
-timestamp.
+The second two callers behave incorrectly for all device types other than
+the older E822 devices. They both iterate in a loop using
+ICE_GET_QUAD_NUM() which is a macro only used by E822 devices. This logic
+is incorrect for devices other than the E822 devices.
 
-However, there is a subtle flaw in the programming logic in the
-ice_phy_cfg_intr_eth56g() function. Due to the way that the hardware
-handles enabling the PHY interrupt. If the threshold value is modified at
-the same time as the interrupt is enabled, the HW PHY state machine might
-enable the interrupt before the new threshold value is actually updated.
-This leaves a potential race condition caused by the hardware logic where
-a PHY timestamp interrupt might be triggered before the non-zero threshold
-is written, resulting in the PHY timestamp logic becoming stuck.
+For E810 the calls would always return true, causing E810 devices to always
+attempt to trigger a software interrupt even when they have no reason to.
+For E830, this results in duplicate work as the ready bitmap is checked
+once per number of quads. Finally, for E825-C, this results in the pending
+checks failing to detect timestamps on ports other than the first two.
 
-Once the PHY timestamp status is stuck high, it will remain stuck even
-after attempting to reprogram the PHY block by changing its threshold or
-disabling the interrupt. Even a typical PF or CORE reset will not reset the
-particular block of the PHY that becomes stuck. Even a warm power cycle is
-not guaranteed to cause the PHY block to reset, and a cold power cycle is
-required.
+Fix this by introducing a new hardware API function to ice_ptp_hw.c,
+ice_check_phy_tx_tstamp_ready(). This function will check if any timestamps
+are available and returns a positive value if any timestamps are pending.
+For E810, the function always returns false, so that the re-trigger checks
+never happen. For E830, check the ready bitmap just once. For E82x
+hardware, check each quad. Finally, for E825-C, check every port.
 
-Prevent this by always writing the PHY_REG_TS_INT_CONFIG in two stages.
-First write the threshold value with the interrupt disabled, and only write
-the enable bit after the threshold has been programmed. When disabling the
-interrupt, leave the threshold unchanged. Additionally, re-read the
-register after writing it to guarantee that the write to the PHY has been
-flushed upon exit of the function.
+The interface function returns an integer to enable reporting of error code
+if the driver is unable read the ready bitmap. This enables callers to
+handle this case properly. The previous implementation assumed that
+timestamps are available if they failed to read the bitmap. This is
+problematic as it could lead to continuous software IRQ triggering if the
+PHY timestamp registers somehow become inaccessible.
 
-While we're modifying this function implementation, explicitly reject
-programming a threshold of 0 when enabling the interrupt. No caller does
-this today, but the consequences of doing so are significant. An explicit
-rejection in the code makes this clear.
+This change is especially important for E825-C devices, as the missing
+checks could leave a window open where a new timestamp could arrive while
+the existing timestamps aren't completed. As a result, the hardware
+threshold logic would not trigger a new interrupt. Without the check, the
+timestamp is left unhandled, and new timestamps will not cause an interrupt
+again until the timestamp is handled. Since both the interrupt check and
+the backup check in the auxiliary task do not function properly, the device
+may have Tx timestamps permanently stuck failing on a given port.
+
+The faulty checks originate from commit d938a8cca88a ("ice: Auxbus devices
+& driver for E822 TS") and commit 712e876371f8 ("ice: periodically kick Tx
+timestamp interrupt"), however at the time of the original coding, both
+functions only operated on E822 hardware. This is no longer the case, and
+hasn't been since the introduction of the ETH56G PHY model in commit
+7cab44f1c35f ("ice: Introduce ETH56G PHY model for E825C products")
 
 Fixes: 7cab44f1c35f ("ice: Introduce ETH56G PHY model for E825C products")
-Signed-off-by: Grzegorz Nitka <grzegorz.nitka@intel.com>
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_ptp_hw.c | 36 +++++++++++++++++++++++++----
- 1 file changed, 32 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.h |   1 +
+ drivers/net/ethernet/intel/ice/ice_ptp.c    |  40 ++++------
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.c | 117 ++++++++++++++++++++++++++++
+ 3 files changed, 132 insertions(+), 26 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-index e3db252c3918..67775beb9449 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-@@ -1847,6 +1847,8 @@ static int ice_phy_cfg_mac_eth56g(struct ice_hw *hw, u8 port)
-  * @ena: enable or disable interrupt
-  * @threshold: interrupt threshold
-  *
-+ * The threshold cannot be 0 while the interrupt is enabled.
-+ *
-  * Configure TX timestamp interrupt for the specified port
-  *
-  * Return:
-@@ -1858,19 +1860,45 @@ int ice_phy_cfg_intr_eth56g(struct ice_hw *hw, u8 port, bool ena, u8 threshold)
- 	int err;
- 	u32 val;
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
+index 9d7acc7eb2ce..1b58b054f4a5 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
++++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
+@@ -300,6 +300,7 @@ void ice_ptp_reset_ts_memory(struct ice_hw *hw);
+ int ice_ptp_init_phc(struct ice_hw *hw);
+ void ice_ptp_init_hw(struct ice_hw *hw);
+ int ice_get_phy_tx_tstamp_ready(struct ice_hw *hw, u8 block, u64 *tstamp_ready);
++int ice_check_phy_tx_tstamp_ready(struct ice_hw *hw);
+ int ice_ptp_one_port_cmd(struct ice_hw *hw, u8 configured_port,
+ 			 enum ice_ptp_tmr_cmd configured_cmd);
  
-+	if (ena && !threshold)
-+		return -EINVAL;
-+
- 	err = ice_read_ptp_reg_eth56g(hw, port, PHY_REG_TS_INT_CONFIG, &val);
- 	if (err)
- 		return err;
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
+index ada42bcc4d0b..34906f972d17 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp.c
++++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
+@@ -2718,7 +2718,7 @@ static bool ice_any_port_has_timestamps(struct ice_pf *pf)
+ bool ice_ptp_tx_tstamps_pending(struct ice_pf *pf)
+ {
+ 	struct ice_hw *hw = &pf->hw;
+-	unsigned int i;
++	int ret;
  
-+	val &= ~PHY_TS_INT_CONFIG_ENA_M;
- 	if (ena) {
--		val |= PHY_TS_INT_CONFIG_ENA_M;
- 		val &= ~PHY_TS_INT_CONFIG_THRESHOLD_M;
- 		val |= FIELD_PREP(PHY_TS_INT_CONFIG_THRESHOLD_M, threshold);
--	} else {
--		val &= ~PHY_TS_INT_CONFIG_ENA_M;
-+		err = ice_write_ptp_reg_eth56g(hw, port, PHY_REG_TS_INT_CONFIG,
-+					       val);
-+		if (err) {
-+			ice_debug(hw, ICE_DBG_PTP,
-+				  "Failed to update 'threshold' PHY_REG_TS_INT_CONFIG port=%u ena=%u threshold=%u\n",
-+				  port, !!ena, threshold);
-+			return err;
-+		}
-+		val |= PHY_TS_INT_CONFIG_ENA_M;
+ 	/* Check software indicator */
+ 	switch (pf->ptp.tx_interrupt_mode) {
+@@ -2739,16 +2739,15 @@ bool ice_ptp_tx_tstamps_pending(struct ice_pf *pf)
  	}
  
--	return ice_write_ptp_reg_eth56g(hw, port, PHY_REG_TS_INT_CONFIG, val);
-+	err = ice_write_ptp_reg_eth56g(hw, port, PHY_REG_TS_INT_CONFIG, val);
-+	if (err) {
-+		ice_debug(hw, ICE_DBG_PTP,
-+			  "Failed to update 'ena' PHY_REG_TS_INT_CONFIG port=%u ena=%u threshold=%u\n",
-+			  port, !!ena, threshold);
-+		return err;
-+	}
-+
-+	err = ice_read_ptp_reg_eth56g(hw, port, PHY_REG_TS_INT_CONFIG, &val);
-+	if (err) {
-+		ice_debug(hw, ICE_DBG_PTP,
-+			  "Failed to read PHY_REG_TS_INT_CONFIG port=%u ena=%u threshold=%u\n",
-+			  port, !!ena, threshold);
-+		return err;
-+	}
-+
-+	return 0;
+ 	/* Check hardware indicator */
+-	for (i = 0; i < ICE_GET_QUAD_NUM(hw->ptp.num_lports); i++) {
+-		u64 tstamp_ready = 0;
+-		int err;
+-
+-		err = ice_get_phy_tx_tstamp_ready(&pf->hw, i, &tstamp_ready);
+-		if (err || tstamp_ready)
+-			return true;
++	ret = ice_check_phy_tx_tstamp_ready(hw);
++	if (ret < 0) {
++		dev_dbg(ice_pf_to_dev(pf), "Unable to read PHY Tx timestamp ready bitmap, err %d\n",
++			ret);
++		/* Stop triggering IRQs if we're unable to read PHY */
++		return false;
+ 	}
+ 
+-	return false;
++	return ret;
  }
  
  /**
+@@ -2832,8 +2831,7 @@ static void ice_ptp_maybe_trigger_tx_interrupt(struct ice_pf *pf)
+ {
+ 	struct device *dev = ice_pf_to_dev(pf);
+ 	struct ice_hw *hw = &pf->hw;
+-	bool trigger_oicr = false;
+-	unsigned int i;
++	int ret;
+ 
+ 	if (!pf->ptp.port.tx.has_ready_bitmap)
+ 		return;
+@@ -2841,21 +2839,11 @@ static void ice_ptp_maybe_trigger_tx_interrupt(struct ice_pf *pf)
+ 	if (!ice_pf_src_tmr_owned(pf))
+ 		return;
+ 
+-	for (i = 0; i < ICE_GET_QUAD_NUM(hw->ptp.num_lports); i++) {
+-		u64 tstamp_ready;
+-		int err;
+-
+-		err = ice_get_phy_tx_tstamp_ready(&pf->hw, i, &tstamp_ready);
+-		if (!err && tstamp_ready) {
+-			trigger_oicr = true;
+-			break;
+-		}
+-	}
+-
+-	if (trigger_oicr) {
+-		/* Trigger a software interrupt, to ensure this data
+-		 * gets processed.
+-		 */
++	ret = ice_check_phy_tx_tstamp_ready(hw);
++	if (ret < 0) {
++		dev_dbg(dev, "PTP periodic task unable to read PHY timestamp ready bitmap, err %d\n",
++			ret);
++	} else if (ret) {
+ 		dev_dbg(dev, "PTP periodic task detected waiting timestamps. Triggering Tx timestamp interrupt now.\n");
+ 
+ 		wr32(hw, PFINT_OICR, PFINT_OICR_TSYN_TX_M);
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
+index 441b5f10e4bb..64ad5ed5c688 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
++++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
+@@ -2168,6 +2168,35 @@ int ice_start_phy_timer_eth56g(struct ice_hw *hw, u8 port)
+ 	return 0;
+ }
+ 
++/**
++ * ice_check_phy_tx_tstamp_ready_eth56g - Check Tx memory status for all ports
++ * @hw: pointer to the HW struct
++ *
++ * Check the PHY_REG_TX_MEMORY_STATUS for all ports. A set bit indicates
++ * a waiting timestamp.
++ *
++ * Return: 1 if any port has at least one timestamp ready bit set,
++ * 0 otherwise, and a negative error code if unable to read the bitmap.
++ */
++static int ice_check_phy_tx_tstamp_ready_eth56g(struct ice_hw *hw)
++{
++	int port;
++
++	for (port = 0; port < hw->ptp.num_lports; port++) {
++		u64 tstamp_ready;
++		int err;
++
++		err = ice_get_phy_tx_tstamp_ready(hw, port, &tstamp_ready);
++		if (err)
++			return err;
++
++		if (tstamp_ready)
++			return 1;
++	}
++
++	return 0;
++}
++
+ /**
+  * ice_ptp_read_tx_hwtstamp_status_eth56g - Get TX timestamp status
+  * @hw: pointer to the HW struct
+@@ -4318,6 +4347,35 @@ ice_get_phy_tx_tstamp_ready_e82x(struct ice_hw *hw, u8 quad, u64 *tstamp_ready)
+ 	return 0;
+ }
+ 
++/**
++ * ice_check_phy_tx_tstamp_ready_e82x - Check Tx memory status for all quads
++ * @hw: pointer to the HW struct
++ *
++ * Check the Q_REG_TX_MEMORY_STATUS for all quads. A set bit indicates
++ * a waiting timestamp.
++ *
++ * Return: 1 if any quad has at least one timestamp ready bit set,
++ * 0 otherwise, and a negative error value if unable to read the bitmap.
++ */
++static int ice_check_phy_tx_tstamp_ready_e82x(struct ice_hw *hw)
++{
++	int quad;
++
++	for (quad = 0; quad < ICE_GET_QUAD_NUM(hw->ptp.num_lports); quad++) {
++		u64 tstamp_ready;
++		int err;
++
++		err = ice_get_phy_tx_tstamp_ready(hw, quad, &tstamp_ready);
++		if (err)
++			return err;
++
++		if (tstamp_ready)
++			return 1;
++	}
++
++	return 0;
++}
++
+ /**
+  * ice_phy_cfg_intr_e82x - Configure TX timestamp interrupt
+  * @hw: pointer to the HW struct
+@@ -4870,6 +4928,23 @@ ice_get_phy_tx_tstamp_ready_e810(struct ice_hw *hw, u8 port, u64 *tstamp_ready)
+ 	return 0;
+ }
+ 
++/**
++ * ice_check_phy_tx_tstamp_ready_e810 - Check Tx memory status register
++ * @hw: pointer to the HW struct
++ *
++ * The E810 devices do not have a Tx memory status register. Note this is
++ * intentionally different behavior from ice_get_phy_tx_tstamp_ready_e810
++ * which always says that all bits are ready. This function is called in cases
++ * where code will trigger interrupts if timestamps are waiting, and should
++ * not be called for E810 hardware.
++ *
++ * Return: 0.
++ */
++static int ice_check_phy_tx_tstamp_ready_e810(struct ice_hw *hw)
++{
++	return 0;
++}
++
+ /* E810 SMA functions
+  *
+  * The following functions operate specifically on E810 hardware and are used
+@@ -5124,6 +5199,21 @@ static void ice_get_phy_tx_tstamp_ready_e830(const struct ice_hw *hw, u8 port,
+ 	*tstamp_ready |= rd32(hw, E830_PRTMAC_TS_TX_MEM_VALID_L);
+ }
+ 
++/**
++ * ice_check_phy_tx_tstamp_ready_e830 - Check Tx memory status register
++ * @hw: pointer to the HW struct
++ *
++ * Return: 1 if the device has waiting timestamps, 0 otherwise.
++ */
++static int ice_check_phy_tx_tstamp_ready_e830(struct ice_hw *hw)
++{
++	u64 tstamp_ready;
++
++	ice_get_phy_tx_tstamp_ready_e830(hw, 0, &tstamp_ready);
++
++	return !!tstamp_ready;
++}
++
+ /**
+  * ice_ptp_init_phy_e830 - initialize PHY parameters
+  * @ptp: pointer to the PTP HW struct
+@@ -5716,6 +5806,33 @@ int ice_get_phy_tx_tstamp_ready(struct ice_hw *hw, u8 block, u64 *tstamp_ready)
+ 	}
+ }
+ 
++/**
++ * ice_check_phy_tx_tstamp_ready - Check PHY Tx timestamp memory status
++ * @hw: pointer to the HW struct
++ *
++ * Check the PHY for Tx timestamp memory status on all ports. If you need to
++ * see individual timestamp status for each index, use
++ * ice_get_phy_tx_tstamp_ready() instead.
++ *
++ * Return: 1 if any port has timestamps available, 0 if there are no timestamps
++ * available, and a negative error code on failure.
++ */
++int ice_check_phy_tx_tstamp_ready(struct ice_hw *hw)
++{
++	switch (hw->mac_type) {
++	case ICE_MAC_E810:
++		return ice_check_phy_tx_tstamp_ready_e810(hw);
++	case ICE_MAC_E830:
++		return ice_check_phy_tx_tstamp_ready_e830(hw);
++	case ICE_MAC_GENERIC:
++		return ice_check_phy_tx_tstamp_ready_e82x(hw);
++	case ICE_MAC_GENERIC_3K_E825:
++		return ice_check_phy_tx_tstamp_ready_eth56g(hw);
++	default:
++		return -EOPNOTSUPP;
++	}
++}
++
+ /**
+  * ice_cgu_get_pin_desc_e823 - get pin description array
+  * @hw: pointer to the hw struct
 
 -- 
 2.53.0.1066.g1eceb487f285
