@@ -4,200 +4,96 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3B6AFEA3C55
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  9 Apr 2026 12:43:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C83BAEA3C55
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  9 Apr 2026 13:00:29 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id C6C7D4106A;
-	Thu,  9 Apr 2026 12:43:14 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 9881A409B3;
+	Thu,  9 Apr 2026 13:00:29 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id vU7d5xwvo72n; Thu,  9 Apr 2026 12:43:13 +0000 (UTC)
+ id 73mDqVE-cOin; Thu,  9 Apr 2026 13:00:28 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org CCC8840B89
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C27EE40A98
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1775738593;
-	bh=lL+Wx4pBq0LjAtsJxOGBqKis4fgHe12vFEml8hNZp8E=;
-	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=hFrXKaCv5ptuyeRpJIPl6Ds3ty4y12yC9+ITLBBRN6f5b8N0NAnWacI9rVE5fDH/y
-	 HsJuIDM6FCJ502Fe20K5ZxRhp9KuWIuS9u5L/yZGnZJAu8cdq/rT/MqkVrntHaVrMG
-	 sbvs61a5+scvxr3Fq2dJUZaJvDqsuJKmND8GbhUe8xaOMe1U70zUex0pxTcW8D2Y5b
-	 JdIGAJb/DqFi6nyb2evmTdPuMjFjPpfNHaUz4qtAeAO6gKayCMh7lHLqRf30rfda7z
-	 W6/qfe5L1kHs21+4JRPTArtbDqQtwANmlrIERoOIiZvlv6fx3ckWBXijNMgmAhB+Z5
-	 nEuxjhJ3Vy93w==
+	s=default; t=1775739628;
+	bh=RhesB1e78Ey4J4x9bt/a4Kb7RRvowWPoYQ3N1B32E00=;
+	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=zdoa0McftgaP7TNOnyHKrXMLkSLZIxa+D7X459Jj+d1kLYvQnSvi77jRtarzQ8Rhv
+	 WcBaZP9AFa+gnbws+Dm98AWU72K3PmeiUVjhx6+DPNgb0YEjOVvG5bG1MXgGCcfG3z
+	 +loNrPxJLpn09SQU+bf9FDG6Bim9aMOmU/jn1LkAj+Zbgs/uCyrrk0CWLoBoLBD3zl
+	 J9VXvSY1C39F3NjUaX9wJ2fLn8SUsxGFh2Tc8HnQLtY7YQWB7OOnD12XUS688IohZk
+	 jWKaSye8po5d9vbPrhQGZFYA8ETq7rM7GBbsIN0FyufymUiCj9QI59+X71UyJkWAP+
+	 oVbrHVzL45d+A==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id CCC8840B89;
-	Thu,  9 Apr 2026 12:43:13 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 6F63C1F6
- for <intel-wired-lan@lists.osuosl.org>; Thu,  9 Apr 2026 12:43:12 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id C27EE40A98;
+	Thu,  9 Apr 2026 13:00:28 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id CDFF91F6
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  9 Apr 2026 13:00:27 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 4C1586087E
- for <intel-wired-lan@lists.osuosl.org>; Thu,  9 Apr 2026 12:43:12 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id C017040340
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  9 Apr 2026 13:00:27 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id WPJQ5RUTpq97 for <intel-wired-lan@lists.osuosl.org>;
- Thu,  9 Apr 2026 12:43:11 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.13;
- helo=mgamail.intel.com; envelope-from=przemyslaw.kitszel@intel.com;
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id xqXtDbYgTUvs for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  9 Apr 2026 13:00:26 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.19;
+ helo=mgamail.intel.com; envelope-from=marcin.szycik@linux.intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 2EE686077D
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2EE686077D
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.13])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 2EE686077D
- for <intel-wired-lan@lists.osuosl.org>; Thu,  9 Apr 2026 12:43:10 +0000 (UTC)
-X-CSE-ConnectionGUID: zbjKbwBLR9WLzmR/MTsMpA==
-X-CSE-MsgGUID: ymkB6KotTuCgBKwiOjkqDg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11753"; a="87815762"
-X-IronPort-AV: E=Sophos;i="6.23,169,1770624000"; d="scan'208";a="87815762"
-Received: from fmviesa008.fm.intel.com ([10.60.135.148])
- by orvoesa105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 09 Apr 2026 05:43:10 -0700
-X-CSE-ConnectionGUID: zCrGoGGxQXat/tuqPZxCqw==
-X-CSE-MsgGUID: d0GkJdP+TUSfAEpvV10uhg==
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 96093400F6
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 96093400F6
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.19])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 96093400F6
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  9 Apr 2026 13:00:26 +0000 (UTC)
+X-CSE-ConnectionGUID: ibk98RnHRAeJITWmAXFlRQ==
+X-CSE-MsgGUID: 4SodwL13R1yYpj4BwExJlQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11753"; a="75777510"
+X-IronPort-AV: E=Sophos;i="6.23,169,1770624000"; d="scan'208";a="75777510"
+Received: from orviesa002.jf.intel.com ([10.64.159.142])
+ by fmvoesa113.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 09 Apr 2026 06:00:14 -0700
+X-CSE-ConnectionGUID: 8wv93W6YRNaPv+b/8xQJPQ==
+X-CSE-MsgGUID: hj2hNAosRf6DGP2BuA3UgA==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,169,1770624000"; d="scan'208";a="226003967"
-Received: from fmsmsx903.amr.corp.intel.com ([10.18.126.92])
- by fmviesa008.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 09 Apr 2026 05:43:10 -0700
-Received: from FMSMSX901.amr.corp.intel.com (10.18.126.90) by
- fmsmsx903.amr.corp.intel.com (10.18.126.92) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.37; Thu, 9 Apr 2026 05:43:09 -0700
-Received: from fmsedg901.ED.cps.intel.com (10.1.192.143) by
- FMSMSX901.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.37 via Frontend Transport; Thu, 9 Apr 2026 05:43:09 -0700
-Received: from BL0PR03CU003.outbound.protection.outlook.com (52.101.53.6) by
- edgegateway.intel.com (192.55.55.81) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.37; Thu, 9 Apr 2026 05:43:08 -0700
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=XZF/IDWiPRQZ+PotR502Zoo4tiMtMl+7qOrUi5f7XzihU9G/0pkDLFkgulkAwy72b+TqoT7lxo6ggZTi2HMM4harJdejTvPq1f6dIkQs2TNgTdAlwnJXAmQWA9lezY4dTIRBQEdU2AsuyX67gwSSoMJfzM1npF0YRA0yJ5CKxmdlP7630n8ZyJUpnFaeDI20dinNTgtkZYnjXyhK0PRNERo5qD37tgtESFQpikOa4WmlY6/3JP7n3YI3ZX57Te/gwlvGq+VEUwVqin6h8inHJlTcU9eYmjrJrqby0BwKktFpIlF7rYq1uecERF2iQ7DwQyLsWo9t/7x55DBjJGHEOg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=lL+Wx4pBq0LjAtsJxOGBqKis4fgHe12vFEml8hNZp8E=;
- b=H4wEp/U78t6JFmj0vV9L8mEoK7fr4ZTB8p8bkzX4Bf/g14aHvHs2AuCzTtHSAmE/gMVFeq/9ERKy8wEwQujvpS+zaDKJ1N40GEjUFTBNOdzkZqG6ezt52FCmV3ubuXLr2Of+rLpkS0uwiaw+P8KvrxYevzCJdTG51FndqHHf2VxmjGp1UiEUHYl3YOA4Qcv1VaJEpMt+yonvPUrxnisOq8srM74W+qFEN++n69nV4Qc8KtmvqiIN1lq49rI9vJ+zK3me5tsY2ad6VQTZPZY7eNQFgyYC10YjArR6U4V4mBJqznTLjB86u4NuqLdnHiU9C2HKqTuUiIKc/XusNHFDRA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
- dkim=pass header.d=intel.com; arc=none
-Received: from CH0PR11MB8086.namprd11.prod.outlook.com (2603:10b6:610:190::8)
- by PH3PPF310D5CFFC.namprd11.prod.outlook.com (2603:10b6:518:1::d14)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9745.15; Thu, 9 Apr
- 2026 12:43:04 +0000
-Received: from CH0PR11MB8086.namprd11.prod.outlook.com
- ([fe80::2769:b184:69c6:6eb0]) by CH0PR11MB8086.namprd11.prod.outlook.com
- ([fe80::2769:b184:69c6:6eb0%6]) with mapi id 15.20.9769.018; Thu, 9 Apr 2026
- 12:42:58 +0000
-Message-ID: <89bfd605-1877-4d40-95e1-bfeae6624168@intel.com>
-Date: Thu, 9 Apr 2026 14:47:57 +0200
-User-Agent: Mozilla Thunderbird
-To: Jose Ignacio Tornos Martinez <jtornosm@redhat.com>
-References: <20260407165206.1121317-1-jtornosm@redhat.com>
- <20260407165206.1121317-4-jtornosm@redhat.com>
-From: Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Content-Language: en-US
-In-Reply-To: <20260407165206.1121317-4-jtornosm@redhat.com>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: VI1PR09CA0129.eurprd09.prod.outlook.com
- (2603:10a6:803:12c::13) To CH0PR11MB8086.namprd11.prod.outlook.com
- (2603:10b6:610:190::8)
+X-IronPort-AV: E=Sophos;i="6.23,169,1770624000"; d="scan'208";a="259208076"
+Received: from irvmail002.ir.intel.com ([10.43.11.120])
+ by orviesa002.jf.intel.com with ESMTP; 09 Apr 2026 06:00:12 -0700
+Received: from gond.igk.intel.com (gond.igk.intel.com [10.123.220.52])
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id E0D982FC63;
+ Thu,  9 Apr 2026 14:00:10 +0100 (IST)
+From: Marcin Szycik <marcin.szycik@linux.intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Cc: netdev@vger.kernel.org, sandeep.penigalapati@intel.com, ananth.s@intel.com,
+ alexander.duyck@gmail.com, Marcin Szycik <marcin.szycik@linux.intel.com>
+Date: Thu,  9 Apr 2026 13:59:53 +0200
+Message-ID: <20260409120003.2719-1-marcin.szycik@linux.intel.com>
+X-Mailer: git-send-email 2.49.0
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: CH0PR11MB8086:EE_|PH3PPF310D5CFFC:EE_
-X-MS-Office365-Filtering-Correlation-Id: 87a2c18e-f082-4748-9cb4-08de96358737
-X-LD-Processed: 46c98d88-e344-4ed4-8496-4ed7712e255d,ExtAddr
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
- ARA:13230040|376014|7416014|366016|1800799024|22082099003|18002099003|56012099003;
-X-Microsoft-Antispam-Message-Info: hU4INtTdaJSM4Vpt0Pb2zhTu+pkYApG/1h1NFcaatHKH72DpJl8UEo6XyWWumnc4guwZIFZx6IY/0WClXYlnn5PJAPj7Ntgrabe0rxUpcGQhvITZ1/0NTdIZdyWOiCAmJaGUDcLPdsFauqaHmkQaya4wO1F099nQTHYBYlSUvalVh8V/ra30Hkl6cEP/MVYnzvUriazIVGM2Nx85pCMutwWotRt3kCOSPmCeX08y17d5XddIlSwhTBQ28GysN1EZpSJSb46RGEgKIKEnJ82ltQ3yGxLVDSOGxgiVKbgVuc1+dSkLwem0s+0pQpl/7Kv/3lCvyhFKXVk49suPoMiJ4MIIzhERlXCCHteVRjPl+kDumN0qxnFJIZMVxKO1WySkiwEsDUu+t8OlP/iips5iDIyC5TYWQHtgU3xdwhxNmaiqdILlhNeV9Kr15sJ9rwBWV5YlX0c7waxQZ1rhdtXkQI3+ROQud5cgx1AbpWGjr96Z+qEDh1QJ3Vu8tt/OvXDkyj2k9W32FcLCW7+Io+mE8jUP45TB05kHVktw43ST3JDzuOZRCZM89/A8uyZx+bhvvNoQ7aFD0l8t2hWOUMtmwud2Q7oI2F5ZV4JYJ/NFJZeotfuoDDc/6SFnDV6dtOTdzTEwN2NKsESrl89oh2f1iLNZSdqfE8ka8jMdC6o0Bl6512XBUN9Sr0o9PZc07+GVBwjvA4eNpN1ju9jDKjc89RDUTCx5h1P3daPnINvAtjk=
-X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:CH0PR11MB8086.namprd11.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230040)(376014)(7416014)(366016)(1800799024)(22082099003)(18002099003)(56012099003);
- DIR:OUT; SFP:1101; 
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?ZXBraUo3VGdpVzl4dDFJL2ZCQTRsdmllei9Xbk9LbDQvSEU4UmZra01FL003?=
- =?utf-8?B?OFJVREx4NmZIa1pqNW1seGd0KzNLbU03UUFZUE1RSDJMQWpaUkZUMXRwN09C?=
- =?utf-8?B?MWRScGVBZjhNa3pBczNrRSt6RzlEQzA5dXhOSGRweFFvZFBBLy9KRE9yNERi?=
- =?utf-8?B?N2k1dmVrN2swWENmQ2cvOHBQQll0MEhEWDFmYU9yREFsd0Q2ODh5QzhNV1Rs?=
- =?utf-8?B?aGVXMDB2cVdSREFrR1pCRmpNOUFDaEpoUVlIQ3IvUTdmZlo0cG5zSEhZYXIr?=
- =?utf-8?B?Lzd2WTg1ZUtVenp0NlB0ZXlGYzZOMTNaTkNBYnRCZWNya2h5SFUxRXZMbnM3?=
- =?utf-8?B?MVhUQzI5ZVJjRGIyMUhwOXd3WkpTYnN4VnoybCsvTFl1SE14YXhKSDJCVDVP?=
- =?utf-8?B?WGRIMksvU1RRQWxJZnpMYlpRaXdobDRnb2tZTFZYamo5L0M1S2lucDY1b1Bn?=
- =?utf-8?B?cWNpbVRpeWJ1MmFlU1pJRHhPS1QrQmsybHJoMUFrZ3grS3RHYUwvNkxGR2Jh?=
- =?utf-8?B?all6TU5zUGNDcTlLaWJ5QlArYjJjVUFCN0w5amROWityRTluTCtuTUlRQ0Uv?=
- =?utf-8?B?akxudjh6clo1Z1k0aGsxRWJXVFR4TDNnWVhMK1BBS211VVA5SU1TaXFsdTU2?=
- =?utf-8?B?SmlhWk9TN2c3bkdBbHVhWDgxMGYzNjlMaFZnTTB0UU1nVDNYL0tQa2ZuM0RK?=
- =?utf-8?B?VDJFQ09MVGIwWTdad0Y0VkRRWEdjMC9nV2ZwbExLNGgydGM4L2J1NjhTRHIx?=
- =?utf-8?B?QWxaUDdhcGhqNmpQUXlYNllDRVBGOWdYeWF5Vy95WmFrN1N1bDhGMWZTeTJG?=
- =?utf-8?B?MHMvbk9WTmJSY2NXN0hJSWJxL3RXaGRxU0l5K1ZZNFJEYUkvS0RVT2kyaU1h?=
- =?utf-8?B?TnZaai9tZXlsNHpscUJrQ20vUU1WRjMya3V6SFl1K3R3bXp1V25WWjdtY1Zm?=
- =?utf-8?B?OGNURHp0dlE4eU1GQk9oOVIrNTJFaGdUZmlLcjlxMW9vKzVWU2ZZWEVkd3NX?=
- =?utf-8?B?Y0VSTUVCMkFxZjRJQnFNOXRvbGxUTFpPbmpyWHhYOTRNbGFodk9MNlJMQXB0?=
- =?utf-8?B?RC9naEp3c1FSTERSZlhlUTBPTFZvOEg5Sm9GbFJYTnBmWUJyb0ZTTUNSeVlz?=
- =?utf-8?B?ckh1eEo2N08zaE5CK0FmYUlHZTV1TmgvT0RiUEVER3NYRHNyYXhiSkRBQXVN?=
- =?utf-8?B?NWZ6UE1DdDN2WnNSclBESHNTdWRLcU1wMkVMWGM0L241TmFnelBrbFJQN0dt?=
- =?utf-8?B?UUV3cnFyQTlBbmNBVUJoa0pGRTF2S1JxeFljLzMwZ0JQUERYdVg4dHpwWlpi?=
- =?utf-8?B?SHFyU2tqVUxEdnNTQ3ZSQ0FDUGhFeTg5Z1V0amNaTTlVQU12NGZtSHF2bm9a?=
- =?utf-8?B?WXlkOEhNWGJURmZGTXpkMXg3OVJtbmxpNTZ5UHFDeGFBMjdVTUs5NitZMG9Z?=
- =?utf-8?B?SUNjMlJCR2c5c2thVnZrRGxESUF0T1NsMkN1ZklQSTBBRVBjOU1YWEtBZ21F?=
- =?utf-8?B?b21TazQ2Ym5RbmVSWWcxQk5aUGZvQ1Nqb3ZNVFVHUHlRK2JBUmRiWXJXZG9m?=
- =?utf-8?B?N3hLaFhRTmRNcmpFYms1YVllOVBMWWtydm1peTRGdU9ObGhLVXM1MVFnVVZq?=
- =?utf-8?B?azkvRS9kQVNsQkxpMHRLcTZVZXJxMlhkdktFcll2dXFCZ25KSkdET2VGRUdE?=
- =?utf-8?B?RTM1cUtPVkxRSlNqSmJhSEJiZ1B1Y0pVdlUzbVpCQ05hc3NIQ2tIejhUMmYr?=
- =?utf-8?B?dmZWZ0tIbFRnc1NxbU9JZnIyVWNGeW92YkFscHkyRTNQYjV0T3d6MmN5WjBH?=
- =?utf-8?B?M3plelFCUy8xT2RlTXJSSVpkN093WFdFa3ZJV0dTaDI4Qk9YZ3JXdThSMk1o?=
- =?utf-8?B?TmEwcTcwcG51aDJpdEZGT1BvbHZNbi9SeWRTUXRuTGVPa2toSjltMTE2N2FV?=
- =?utf-8?B?eDFJWkxQZTU2emRETE9UWHViSlF4cWovYlU4TGkraDNrS1pSOHowb3RMblZz?=
- =?utf-8?B?R1pIRlFRWjlpVDh3MGQrd3VDazlmekI5WE5lK3JiYzQzU003SDhzNjB2blhy?=
- =?utf-8?B?ZzNQRXlNZzhMN0VmK3NvUEgxanpnNGJjbmlyd1FHUG5FNVdDZHNiVTZ5eUFM?=
- =?utf-8?B?V2lMUzFGcSttbWZDMkttOGIxZEt6ZU9BTVlReTBzdmRnOE83ZkFxa3FmWkpX?=
- =?utf-8?B?eXB0R21HWkx0Nm5EY1lqMXZhS2ovczc3OVFFSlRHUk9jOEFRVnBxMERSYjFP?=
- =?utf-8?B?dERBb1dZZ0tXcEJEYkY3eGhta3BqeFB6T3pGU012anJpVGcxTkhxdGJxTkJH?=
- =?utf-8?B?b2xKYUNhRFRLbXpOOG81YXNxekF5Yk9yR2RsN25JSDB2SWQ3TGpDL1MyZWF1?=
- =?utf-8?Q?I1A1Wrsg/wgnrU78=3D?=
-X-Exchange-RoutingPolicyChecked: b+Wisb7Wj0fKAGF7q+yR+eJBKc5Ni8eakyZ+J2670I7Lagq2l+o+qXeDXopRcNojuKITLCUd/u5xuj9Ca9HAnU2rBgsRO749gXiNfGgw8270eNBv50I1zpkP4LcR7tVQi4nAOuFWMBPDcsBTHSiMAjxi0p3QbpkoRqr80ksPnNyuoaTNgYod8uQnnVLpDlSblphqW2GyitGvybt5ngWwIVND+w1mMNh/l4FTifbYY1TM26M2Gi05V4GnAh9W5nBFXUd/HkrwvpzluzsJRLyYW9nlLBC7THLUIZKKpwxEPTKccxImcEfQuCvoxHek950o6UMf3Fp6Y+0K/LWhz4cMQw==
-X-MS-Exchange-CrossTenant-Network-Message-Id: 87a2c18e-f082-4748-9cb4-08de96358737
-X-MS-Exchange-CrossTenant-AuthSource: CH0PR11MB8086.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 09 Apr 2026 12:42:58.0939 (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: CVE5XmtkHvqC5wZ/YKznj5DCgYTe3V9ZdEihDnYO6N/Y50pJRmind73ga2gDlHn6jq2jDaa6EWeJcfeb1aymdtzWaAca73LC+tzWPxz+bCk=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH3PPF310D5CFFC
-X-OriginatorOrg: intel.com
+Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1775738591; x=1807274591;
- h=message-id:date:subject:to:cc:references:from:
- in-reply-to:content-transfer-encoding:mime-version;
- bh=nGwmdtWdL3JZE4jDRpc3UGjGQBLRt7i7IwjdWUtM430=;
- b=LApb9+yiFua+gDWzJRILgrOGC6EeFN54le7Cd0aoFMUkNgYgXLiL9BI0
- ZwvUd0ybz9r2tT2ntI+XH3VwrU4nMu022aAAqZg7Oy4FnNCMMfAMChWiO
- ECaiuUXrM34heZ+U7/S7yXnTB26VpieBVTrCr4BZzh4q9stRZlY1Oqvzr
- RcFHvrl2a8lDb/GtxK9MXmCD6hf9vXNt2eV+ERoRWPq51Ja5+VqLU2oSr
- UiujtDSvqlcBhoMH6hlgbarfd8TfyfqLVqke4gbC6Szw3H35EPu/xui/6
- Sjw6AaRrHZk3CkfU6Xy4VYYg946RafhqLkv48G49+ozo+aHTYfl0LU0wW
- A==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ t=1775739627; x=1807275627;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=VI0ZDfzHgiwnpIuAdeBY0OblRdeN+BOSmlc2ltdCi0o=;
+ b=ltI9arQ5ZFHRWNSl32xt9evExU9B9qTcmCheMT/G35HiU1dryshUOZVq
+ t3tC5MS3FkHZfT15ROP2GqUu3QskRkcEvBo83mEE5KWn6u3EQs+lFHTf8
+ aeBsGfcROkLP9hWMhgYMK12ELczideCsidAIWtUfEwO5BGG1Q5YQoC/p8
+ xpKhwCjp+IyRLx1RCE1Y5prrEbfe1b0BIO1oi9HQZxIesPU+jF95VBuKE
+ GZZKU9SABkNNgyL5cAO/9riicfSlYQRlaN7NLL4YhyA8uOrtU08ntrJy2
+ PRCo467M2XldoH+t7QtLZ4Ixi+0uCWu3/lA7XG68KokLLtFrkagAhK+6b
+ g==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dmarc=none (p=none dis=none)
+ header.from=linux.intel.com
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=LApb9+yi
-X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=intel.com;
-Subject: Re: [Intel-wired-lan] [PATCH net v2 3/4] iavf: send MAC change
- request synchronously
+ header.s=Intel header.b=ltI9arQ5
+Subject: [Intel-wired-lan] [PATCH iwl-next v2 00/10] Add ACL support
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -210,216 +106,116 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, stable@vger.kernel.org, edumazet@google.com,
- anthony.l.nguyen@intel.com, kuba@kernel.org,
- Jacob Keller <jacob.e.keller@intel.com>, intel-wired-lan@lists.osuosl.org,
- pabeni@redhat.com, davem@davemloft.net,
- "kohei.enju@gmail.com" <kohei.enju@gmail.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On 4/7/26 18:52, Jose Ignacio Tornos Martinez wrote:
-> After commit ad7c7b2172c3 ("net: hold netdev instance lock during sysfs
-> operations"), iavf_set_mac() is called with the netdev instance lock
-> already held.
-> 
-> The function queues a MAC address change request via
-> iavf_replace_primary_mac() and then waits for completion. However, in
-> the current flow, the actual virtchnl message is sent by the watchdog
-> task, which also needs to acquire the netdev lock to run. Additionally,
-> the adminq_task which processes virtchnl responses also needs the netdev
-> lock.
-> 
-> This creates a deadlock scenario:
-> 1. iavf_set_mac() holds netdev lock and waits for MAC change
-> 2. Watchdog needs netdev lock to send the request -> blocked
-> 3. Even if request is sent, adminq_task needs netdev lock to process
->     PF response -> blocked
-> 4. MAC change times out after 2.5 seconds
-> 5. iavf_set_mac() returns -EAGAIN
-> 
-> This particularly affects VFs during bonding setup when multiple VFs are
-> enslaved in quick succession.
-> 
-> Fix by implementing a synchronous MAC change operation similar to the
-> approach used in commit fdadbf6e84c4 ("iavf: fix incorrect reset handling
-> in callbacks").
-> 
-> The solution:
-> 1. Send the virtchnl ADD_ETH_ADDR message directly (not via watchdog)
-> 2. Poll the admin queue hardware directly for responses
-> 3. Process all received messages (including non-MAC messages)
-> 4. Return when MAC change completes or times out
-> 
-> A new generic function iavf_poll_virtchnl_response() is introduced that
-> can be reused for any future synchronous virtchnl operations. It takes a
-> callback to check completion, allowing flexible condition checking.
-> 
-> This allows the operation to complete synchronously while holding
-> netdev_lock, without relying on watchdog or adminq_task. The function
-> can sleep for up to 2.5 seconds polling hardware, but this is acceptable
-> since netdev_lock is per-device and only serializes operations on the
-> same interface.
-> 
-> To support this, change iavf_add_ether_addrs() to return an error code
-> instead of void, allowing callers to detect failures.
-> 
-> Fixes: ad7c7b2172c3 ("net: hold netdev instance lock during sysfs operations")
-> cc: stable@vger.kernel.org
-> Signed-off-by: Jose Ignacio Tornos Martinez <jtornosm@redhat.com>
-> ---
-> v2: Complete rewrite using synchronous polling approach instead of dropping
->      the netdev lock. New approach:
->      - Polls admin queue hardware directly (similar to iavf_reset_step)
->      - Processes all virtchnl messages inline while holding netdev_lock
->      - Introduced generic iavf_poll_virtchnl_response() for code reuse
->      - No lock dropping, following accepted pattern from ndo_change_mtu fix
-> v1: https://lore.kernel.org/netdev/20260406112057.906685-4-jtornosm@redhat.com/
-> 
->   drivers/net/ethernet/intel/iavf/iavf.h        |   2 +-
->   drivers/net/ethernet/intel/iavf/iavf_main.c   | 118 +++++++++++++++---
->   .../net/ethernet/intel/iavf/iavf_virtchnl.c   |  11 +-
->   3 files changed, 110 insertions(+), 21 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/iavf/iavf.h b/drivers/net/ethernet/intel/iavf/iavf.h
-> index e9fb0a0919e3..5bc23519fe9c 100644
-> --- a/drivers/net/ethernet/intel/iavf/iavf.h
-> +++ b/drivers/net/ethernet/intel/iavf/iavf.h
-> @@ -589,7 +589,7 @@ void iavf_configure_queues(struct iavf_adapter *adapter);
->   void iavf_enable_queues(struct iavf_adapter *adapter);
->   void iavf_disable_queues(struct iavf_adapter *adapter);
->   void iavf_map_queues(struct iavf_adapter *adapter);
-> -void iavf_add_ether_addrs(struct iavf_adapter *adapter);
-> +int iavf_add_ether_addrs(struct iavf_adapter *adapter);
->   void iavf_del_ether_addrs(struct iavf_adapter *adapter);
->   void iavf_add_vlans(struct iavf_adapter *adapter);
->   void iavf_del_vlans(struct iavf_adapter *adapter);
-> diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-> index 67aa14350b1b..2ef30b1ef35c 100644
-> --- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-> +++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-> @@ -1047,6 +1047,105 @@ static bool iavf_is_mac_set_handled(struct net_device *netdev,
->   	return ret;
->   }
->   
-> +/**
-> + * iavf_poll_virtchnl_response - Poll admin queue for virtchnl response
-> + * @adapter: board private structure
-> + * @condition: callback to check if desired response received
-> + * @cond_data: context data passed to condition callback
-> + * @timeout_ms: maximum time to wait in milliseconds
-> + *
-> + * Polls admin queue and processes all messages until condition returns true
-> + * or timeout expires. Caller must hold netdev_lock. This can sleep for up to
-> + * timeout_ms while polling hardware.
-> + *
-> + * Returns 0 on success (condition met), -EAGAIN on timeout or error
-> + */
-> +static int iavf_poll_virtchnl_response(struct iavf_adapter *adapter,
-> +				       bool (*condition)(struct iavf_adapter *, void *),
-> +				       void *cond_data,
+E8xx hardware provides a Ternary Classifier block for implementing
+functions such as ACL (Access Control List). In this series it's simply
+referred to as "ACL".
 
-this could be const, then no cast on the callsite
+Implement ACL filtering. This expands support of network flow classification
+rules for the ethtool ntuple command. ACL filtering allows for an ip or port
+field's optional mask to be specified.
 
-> +				       unsigned int timeout_ms)
-> +{
-> +	struct iavf_hw *hw = &adapter->hw;
-> +	struct iavf_arq_event_info event;
-> +	enum virtchnl_ops v_op;
-> +	enum iavf_status v_ret;
-> +	unsigned long timeout;
-> +	int ret;
-> +
-> +	netdev_assert_locked(adapter->netdev);
-> +
-> +	event.buf_len = IAVF_MAX_AQ_BUF_SIZE;
-> +	event.msg_buf = kzalloc(event.buf_len, GFP_KERNEL);
-> +	if (!event.msg_buf)
-> +		return -ENOMEM;
-> +
-> +	timeout = jiffies + msecs_to_jiffies(timeout_ms);
-> +	while (time_before(jiffies, timeout)) {
-> +		if (condition(adapter, cond_data)) {
+Example filters:
+  ethtool -N eth0 flow-type tcp4 dst-port 8880 m 0x00ff action 10
+  ethtool -N eth0 flow-type tcp4 src-ip 192.168.0.55 m 0.0.0.255 action -1
 
-if condition is met, but timed out, there should be no error
+This is a resurrection of an old series from 2020 [1] with several
+improvements, but the fundamental logic unchanged. v1 was almost pulled
+in, but ultimately it was decided to drop it [2] because of unresolved
+issues. One issue was too many defensive NULL checks. Second issue is
+about inconsistency when using multiple input sets. Both are addressed
+in this patchset.
 
-> +			ret = 0;
-> +			goto out;
-> +		}
-> +
-> +		ret = iavf_clean_arq_element(hw, &event, NULL);
-> +		if (!ret) {
-> +			v_op = (enum virtchnl_ops)le32_to_cpu(event.desc.cookie_high);
-> +			v_ret = (enum iavf_status)le32_to_cpu(event.desc.cookie_low);
-> +
-> +			iavf_virtchnl_completion(adapter, v_op, v_ret,
-> +						 event.msg_buf, event.msg_len);
-> +
-> +			memset(event.msg_buf, 0, IAVF_MAX_AQ_BUF_SIZE);
-> +		}
-> +
-> +		usleep_range(1000, 2000);
+More about the second issue:
 
-no sleep after message received (ok to do on empty queue)
+From [3]:
+>I would argue that you need to have some sort of logic that basically
+>checks to see if you are going to hit the input set issue and falls
+>back and applies the ACL rules. Otherwise you are significantly
+>hampering the usefulness of this filter type. It doesn't make sense
+>that dropping a field will cause a rule to fail to be added, but
+>masking a single bit in some field will make it valid. It would make
+>it a nightmare to use from the user point of view as the rules come
+>across as arbitrary.
 
-> +	}
-> +
-> +	ret = -EAGAIN;
-> +out:
-> +	kfree(event.msg_buf);
-> +	return ret;
-> +}
-> +
-> +/**
-> + * iavf_mac_change_done - Check if MAC change completed
-> + * @adapter: board private structure
-> + * @data: MAC address being checked (as void *)
-> + *
-> + * Callback for iavf_poll_virtchnl_response() to check if MAC change completed.
-> + *
-> + * Returns true if MAC change completed, false otherwise
-> + */
-> +static bool iavf_mac_change_done(struct iavf_adapter *adapter, void *data)
-> +{
-> +	const u8 *addr = data;
-> +
-> +	return iavf_is_mac_set_handled(adapter->netdev, addr);
-> +}
-> +
-> +/**
-> + * iavf_set_mac_sync - Synchronously change MAC address
-> + * @adapter: board private structure
-> + * @addr: MAC address to set
-> + *
-> + * Sends MAC change request to PF and polls admin queue for response.
-> + * Caller must hold netdev_lock. This can sleep for up to 2.5 seconds.
-> + *
-> + * Returns 0 on success or error
-> + */
-> +static int iavf_set_mac_sync(struct iavf_adapter *adapter, const u8 *addr)
-> +{
-> +	int ret;
-> +
-> +	netdev_assert_locked(adapter->netdev);
-> +
-> +	ret = iavf_add_ether_addrs(adapter);
-> +	if (ret)
-> +		return ret;
-> +
-> +	return iavf_poll_virtchnl_response(adapter, iavf_mac_change_done,
-> +					   (void *)addr, 2500);
+Flow Director (FD) has a hardware limitation where all filters for the same
+packet type must use identical input sets. Previously, attempting to add the
+second filter would fail.
 
-this function looks elegant, thank you
+Patch 10 adds automatic fallback to ACL block when FD cannot accommodate a
+filter due to input set conflicts, which resolves this inconsistency.
 
-I'm a little affraid that this model (if applied to other things than
-setting MAC) will skip some of our "much needed" logic in the watchdog.
+v2:
+* Rebase. Notable conflicts were the removal of ice_status and the addition of
+  libie (which affected AdminQ communication)
+* Reduce the number of defensive NULL checks
+* Use = {} instead of memset for definitions
+* Use kzalloc_obj() instead of plain kzalloc()
+* Move from devm_ to plain allocation for objects that don't require it
+* Move iterator declaration to loop start
+* Move some defines out of structs
+* Fix kdoc (except untouched ice_ethtool_fdir.c functions)
+* Adjust style (err for return variable, spacing, rewrite some comments,
+* commit messages)
+* Remove overly verbose comments
+* Add patches 5, 6, 9 and 10
+* More changes listed in patches (if applicable)
 
-I have not thinked about much yet.
+[1] https://lore.kernel.org/intel-wired-lan/20200914153720.48498-1-anthony.l.nguyen@intel.com
+[2] https://lore.kernel.org/netdev/7192efe4d27c93148b3205e65f37203c89170316.camel@intel.com/#t
+[3] https://lore.kernel.org/netdev/CAKgT0Ucxd5-gvEwWAdbL04ER2o++RX_oekUV3E0rYquEgFKj1w@mail.gmail.com
 
-unrelated: callback looks elegant, but for virtchnl, it is almost always
-the case that we wait for some VC OPCODE to come back, and this is just
-a number. It could be easily coded as a callback too, passing wanted
-value masked in pointer, but I would say that just passing a normal u32
-param will be most clean
+Lukasz Czapnik (1):
+  ice: use ACL for ntuple rules that conflict with FDir
 
+Marcin Szycik (3):
+  Revert "ice: remove unused ice_flow_entry fields"
+  ice: use plain alloc/dealloc for ice_ntuple_fltr
+  ice: re-introduce ice_dealloc_flow_entry() helper
+
+Real Valiquette (5):
+  ice: initialize ACL table
+  ice: initialize ACL scenario
+  ice: create flow profile
+  ice: create ACL entry
+  ice: program ACL entry
+
+Tony Nguyen (1):
+  ice: rename shared Flow Director functions and structs
+
+ drivers/net/ethernet/intel/ice/Makefile       |    5 +-
+ drivers/net/ethernet/intel/ice/ice.h          |   21 +-
+ drivers/net/ethernet/intel/ice/ice_acl.h      |  170 +++
+ drivers/net/ethernet/intel/ice/ice_acl_main.h |    9 +
+ .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  391 +++++-
+ drivers/net/ethernet/intel/ice/ice_arfs.h     |    2 +-
+ drivers/net/ethernet/intel/ice/ice_fdir.h     |   18 +-
+ .../net/ethernet/intel/ice/ice_flex_pipe.h    |    2 +
+ drivers/net/ethernet/intel/ice/ice_flow.h     |   39 +-
+ .../net/ethernet/intel/ice/ice_lan_tx_rx.h    |    3 +
+ drivers/net/ethernet/intel/ice/ice_type.h     |    5 +
+ drivers/net/ethernet/intel/ice/ice_acl.c      |  486 +++++++
+ drivers/net/ethernet/intel/ice/ice_acl_ctrl.c | 1111 +++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_acl_main.c |  293 ++++
+ drivers/net/ethernet/intel/ice/ice_arfs.c     |    8 +-
+ drivers/net/ethernet/intel/ice/ice_ethtool.c  |    8 +-
+ ...ce_ethtool_fdir.c => ice_ethtool_ntuple.c} |  641 ++++++---
+ drivers/net/ethernet/intel/ice/ice_fdir.c     |   30 +-
+ .../net/ethernet/intel/ice/ice_flex_pipe.c    |   11 +-
+ drivers/net/ethernet/intel/ice/ice_flow.c     | 1208 ++++++++++++++++-
+ drivers/net/ethernet/intel/ice/ice_lib.c      |   10 +-
+ drivers/net/ethernet/intel/ice/ice_main.c     |   91 +-
+ drivers/net/ethernet/intel/ice/virt/fdir.c    |   32 +-
+ 23 files changed, 4344 insertions(+), 250 deletions(-)
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_acl.h
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_acl_main.h
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_acl.c
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_acl_ctrl.c
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_acl_main.c
+ rename drivers/net/ethernet/intel/ice/{ice_ethtool_fdir.c => ice_ethtool_ntuple.c} (79%)
+
+-- 
+2.49.0
 
