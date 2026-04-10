@@ -4,60 +4,60 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 476DDF459EE
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 10 Apr 2026 15:13:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 537F9F459F4
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 10 Apr 2026 15:19:40 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id ED33483495;
-	Fri, 10 Apr 2026 15:13:04 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 062F2834B9;
+	Fri, 10 Apr 2026 15:19:40 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ynKBFwkes5s0; Fri, 10 Apr 2026 15:13:04 +0000 (UTC)
+ id 5rTY1yL-sPhP; Fri, 10 Apr 2026 15:19:39 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 0387C83455
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7E3DE834BA
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1775833984;
-	bh=BoGW7oywgvm57yYmgFIJhKPYzBfyhEW/uN+KSu6heaU=;
-	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
+	s=default; t=1775834379;
+	bh=eTlXD+fEi5OyNbu4TxRTwpDmEzFd2ThBwniicSqJG9M=;
+	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=eXuzI0WJMrAPxvC8WJ8HfjiptonjVgYJ8x4DUe3qOJPUwA7NrwRuyferdgdUAieGB
-	 1kr7YQ4nvUwmhhGmt1q4fiuC31M4P4AB+GJdwtjeEhEKTVLvArQ7z5yf30uy486ggA
-	 mxX2DBmbyKjLOW+fghbaufR9p6CqhiH4q0MRSGbl7uM73HNG0CaHvqJVYJn2aJ25eE
-	 5/Te50P6+WeFGqzm+scI9j7dYCDRXG1BnrKQ98zyqqyoXdS/Zb+9KZ4Xx2DtAKeL7O
-	 LEJz9hxNJ7qxTYdUg7SpSdL/nr+vfLhc4GVMHpf9dWUz4/1DYmZP55N4S76/9Q5Vc7
-	 slwH37ZDb8Azw==
+	b=gFBImi2AGVqs0r4S7S/ieQi/9vjng0hvYPcrwYZmyQXvhnWNiLLre6MoA/LlqriVv
+	 PdHMv8PKw52ELNYPvny2XcpVLsvTCRIOCUCpkdy5LjUU7MYS9OMAfyDrIfSRBJVGY6
+	 CJgPHomNinFX6j+zVFnmoNTidsOcodsNVEjWNuVrplOVw+yACt0X2gxPQpI7bTvcvY
+	 xgbKDs9xYhTKfmgeHdpe6eUvpzIAKl+5Uh9MIE3QiQl1afNAYWrBLTP9TzaU45iNP8
+	 812yvGMVE17WSBYT5Y+mgY60cnOti7sVGhzkP0p1FOe2Seg/YxKH3jdeAF1vLnr98p
+	 FwpouWW9zSWWA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 0387C83455;
-	Fri, 10 Apr 2026 15:13:04 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 7E3DE834BA;
+	Fri, 10 Apr 2026 15:19:39 +0000 (UTC)
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id E1C0E1F6
- for <intel-wired-lan@lists.osuosl.org>; Thu,  9 Apr 2026 18:39:35 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id 3F30A237
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 10 Apr 2026 15:19:37 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id C7B91817A9
- for <intel-wired-lan@lists.osuosl.org>; Thu,  9 Apr 2026 18:39:35 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 1CF28834BA
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 10 Apr 2026 15:19:37 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 7KBQVMu35VLv for <intel-wired-lan@lists.osuosl.org>;
- Thu,  9 Apr 2026 18:39:35 +0000 (UTC)
-X-Greylist: delayed 1596 seconds by postgrey-1.37 at util1.osuosl.org;
- Thu, 09 Apr 2026 18:39:34 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org B8638817A4
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B8638817A4
-Received-SPF: None (mailfrom) identity=mailfrom;
- client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk;
- envelope-from=viro@ftp.linux.org.uk; receiver=<UNKNOWN> 
-Received: from zeniv.linux.org.uk (zeniv.linux.org.uk
- [IPv6:2a03:a000:7:0:5054:ff:fe1c:15ff])
- by smtp1.osuosl.org (Postfix) with ESMTPS id B8638817A4
- for <intel-wired-lan@lists.osuosl.org>; Thu,  9 Apr 2026 18:39:34 +0000 (UTC)
-Received: from viro by zeniv.linux.org.uk with local (Exim 4.99.1 #2 (Red Hat
- Linux)) id 1wAtvH-00000003xj6-26He; Thu, 09 Apr 2026 18:16:11 +0000
-Date: Thu, 9 Apr 2026 19:16:11 +0100
-From: Al Viro <viro@zeniv.linux.org.uk>
-To: Philipp Hahn <phahn-oss@avm.de>
-Cc: amd-gfx@lists.freedesktop.org, apparmor@lists.ubuntu.com,
+ id XJK-n2tCUNmD for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 10 Apr 2026 15:19:36 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=18.9.28.11;
+ helo=outgoing.mit.edu; envelope-from=tytso@mit.edu; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org CDD36834B9
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org CDD36834B9
+Received: from outgoing.mit.edu (outgoing-auth-1.mit.edu [18.9.28.11])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id CDD36834B9
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 10 Apr 2026 15:19:34 +0000 (UTC)
+Received: from trampoline.thunk.org
+ (pool-173-48-116-90.bstnma.fios.verizon.net [173.48.116.90])
+ (authenticated bits=0) (User authenticated as tytso@ATHENA.MIT.EDU)
+ by outgoing.mit.edu (8.14.7/8.12.4) with ESMTP id 63AFIonm015842
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 10 Apr 2026 11:18:51 -0400
+Received: by trampoline.thunk.org (Postfix, from userid 15806)
+ id 0D7462E00E1; Fri, 10 Apr 2026 11:18:48 -0400 (EDT)
+From: "Theodore Ts'o" <tytso@mit.edu>
+To: amd-gfx@lists.freedesktop.org, apparmor@lists.ubuntu.com,
  bpf@vger.kernel.org, ceph-devel@vger.kernel.org, cocci@inria.fr,
  dm-devel@lists.linux.dev, dri-devel@lists.freedesktop.org,
  gfs2@lists.linux.dev, intel-gfx@lists.freedesktop.org,
@@ -83,174 +83,35 @@ Cc: amd-gfx@lists.freedesktop.org, apparmor@lists.ubuntu.com,
  ntfs3@lists.linux.dev, samba-technical@lists.samba.org,
  sched-ext@lists.linux.dev, target-devel@vger.kernel.org,
  tipc-discussion@lists.sourceforge.net, v9fs@lists.linux.dev,
- Julia Lawall <Julia.Lawall@inria.fr>,
- Nicolas Palix <nicolas.palix@imag.fr>, Chris Mason <clm@fb.com>,
- David Sterba <dsterba@suse.com>, Ilya Dryomov <idryomov@gmail.com>,
- Alex Markuze <amarkuze@redhat.com>, Viacheslav Dubeyko <slava@dubeyko.com>,
- Theodore Ts'o <tytso@mit.edu>, Andreas Dilger <adilger.kernel@dilger.ca>,
- Steve French <sfrench@samba.org>, Paulo Alcantara <pc@manguebit.org>,
- Ronnie Sahlberg <ronniesahlberg@gmail.com>,
- Shyam Prasad N <sprasad@microsoft.com>, Tom Talpey <tom@talpey.com>,
- Bharath SM <bharathsm@microsoft.com>,
- Eric Van Hensbergen <ericvh@kernel.org>,
- Latchesar Ionkov <lucho@ionkov.net>,
- Dominique Martinet <asmadeus@codewreck.org>,
- Christian Schoenebeck <linux_oss@crudebyte.com>,
- Gao Xiang <xiang@kernel.org>, Chao Yu <chao@kernel.org>,
- Yue Hu <zbestahu@gmail.com>, Jeffle Xu <jefflexu@linux.alibaba.com>,
- Sandeep Dhavale <dhavale@google.com>, Hongbo Li <lihongbo22@huawei.com>,
- Chunhai Guo <guochunhai@vivo.com>, Miklos Szeredi <miklos@szeredi.hu>,
- Konstantin Komarov <almaz.alexandrovich@paragon-software.com>,
- Andreas Gruenbacher <agruenba@redhat.com>,
- Kees Cook <kees@kernel.org>, Tony Luck <tony.luck@intel.com>,
- "Guilherme G. Piccoli" <gpiccoli@igalia.com>,
- Jan Kara <jack@suse.com>, Phillip Lougher <phillip@squashfs.org.uk>,
- Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>,
- Steven Rostedt <rostedt@goodmis.org>,
- Masami Hiramatsu <mhiramat@kernel.org>,
- Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
- Tejun Heo <tj@kernel.org>, David Vernet <void@manifault.com>,
- Andrea Righi <arighi@nvidia.com>,
- Changwoo Min <changwoo@igalia.com>, Ingo Molnar <mingo@redhat.com>,
- Peter Zijlstra <peterz@infradead.org>, Juri Lelli <juri.lelli@redhat.com>,
- Vincent Guittot <vincent.guittot@linaro.org>,
- Dietmar Eggemann <dietmar.eggemann@arm.com>,
- Ben Segall <bsegall@google.com>, Mel Gorman <mgorman@suse.de>,
- Valentin Schneider <vschneid@redhat.com>,
- Luis Chamberlain <mcgrof@kernel.org>, Petr Pavlu <petr.pavlu@suse.com>,
- Daniel Gomez <da.gomez@kernel.org>,
- Sami Tolvanen <samitolvanen@google.com>,
- Aaron Tomlin <atomlin@atomlin.com>,
- Sylwester Nawrocki <s.nawrocki@samsung.com>,
- Liam Girdwood <lgirdwood@gmail.com>,
- Mark Brown <broonie@kernel.org>, Jaroslav Kysela <perex@perex.cz>,
- Takashi Iwai <tiwai@suse.com>, Max Filippov <jcmvbkbc@gmail.com>,
- Paolo Bonzini <pbonzini@redhat.com>,
- John Johansen <john.johansen@canonical.com>,
- Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>,
- "Serge E. Hallyn" <serge@hallyn.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Alasdair Kergon <agk@redhat.com>, Mike Snitzer <snitzer@kernel.org>,
- Mikulas Patocka <mpatocka@redhat.com>,
- Benjamin Marzinski <bmarzins@redhat.com>,
- "David S. Miller" <davem@davemloft.net>, David Ahern <dsahern@kernel.org>,
- Eric Dumazet <edumazet@google.com>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- Simon Horman <horms@kernel.org>, Marcel Holtmann <marcel@holtmann.org>,
- Johan Hedberg <johan.hedberg@gmail.com>,
- Luiz Augusto von Dentz <luiz.dentz@gmail.com>,
- Alexei Starovoitov <ast@kernel.org>,
- Daniel Borkmann <daniel@iogearbox.net>,
- Jesper Dangaard Brouer <hawk@kernel.org>,
- John Fastabend <john.fastabend@gmail.com>,
- Stanislav Fomichev <sdf@fomichev.me>,
- Jamal Hadi Salim <jhs@mojatatu.com>, Jiri Pirko <jiri@resnulli.us>,
- Marcelo Ricardo Leitner <marcelo.leitner@gmail.com>,
- Xin Long <lucien.xin@gmail.com>, Trond Myklebust <trondmy@kernel.org>,
- Anna Schumaker <anna@kernel.org>, Chuck Lever <chuck.lever@oracle.com>,
- Jeff Layton <jlayton@kernel.org>, NeilBrown <neil@brown.name>,
- Olga Kornievskaia <okorniev@redhat.com>,
- Dai Ngo <Dai.Ngo@oracle.com>, Jon Maloy <jmaloy@redhat.com>,
- Johannes Berg <johannes@sipsolutions.net>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Russell King <linux@armlinux.org.uk>, John Crispin <john@phrozen.org>,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
- John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
- Andrzej Hajda <andrzej.hajda@intel.com>,
- Neil Armstrong <neil.armstrong@linaro.org>, Robert Foss <rfoss@kernel.org>,
- Laurent Pinchart <Laurent.pinchart@ideasonboard.com>,
- Jonas Karlman <jonas@kwiboo.se>, Jernej Skrabec <jernej.skrabec@gmail.com>,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Maxime Ripard <mripard@kernel.org>,
- Thomas Zimmermann <tzimmermann@suse.de>,
- David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
- Zhenyu Wang <zhenyuw.linux@gmail.com>, Zhi Wang <zhi.wang.linux@gmail.com>,
- Jani Nikula <jani.nikula@linux.intel.com>,
- Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
- Rodrigo Vivi <rodrigo.vivi@intel.com>,
- Tvrtko Ursulin <tursulin@ursulin.net>,
- Alex Deucher <alexander.deucher@amd.com>,
- Christian =?iso-8859-1?Q?K=F6nig?= <christian.koenig@amd.com>,
- Sandy Huang <hjc@rock-chips.com>,
- Heiko =?iso-8859-1?Q?St=FCbner?= <heiko@sntech.de>,
- Andy Yan <andy.yan@rock-chips.com>, Igor Russkikh <irusskikh@marvell.com>,
- Andrew Lunn <andrew+netdev@lunn.ch>,
- Pavan Chebbi <pavan.chebbi@broadcom.com>,
- Michael Chan <mchan@broadcom.com>,
- Potnuri Bharat Teja <bharat@chelsio.com>,
- Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Taras Chornyi <taras.chornyi@plvision.eu>,
- Maxime Coquelin <mcoquelin.stm32@gmail.com>,
- Alexandre Torgue <alexandre.torgue@foss.st.com>,
- Iyappan Subramanian <iyappan@os.amperecomputing.com>,
- Keyur Chudgar <keyur@os.amperecomputing.com>,
- Quan Nguyen <quan@os.amperecomputing.com>,
- Heiner Kallweit <hkallweit1@gmail.com>,
- Marc Zyngier <maz@kernel.org>, Thomas Gleixner <tglx@kernel.org>,
- Andrew Lunn <andrew@lunn.ch>,
- Gregory Clement <gregory.clement@bootlin.com>,
- Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
- Vinod Koul <vkoul@kernel.org>, Linus Walleij <linusw@kernel.org>,
- Ulf Hansson <ulf.hansson@linaro.org>, Heiko Carstens <hca@linux.ibm.com>,
- Vasily Gorbik <gor@linux.ibm.com>,
- Alexander Gordeev <agordeev@linux.ibm.com>,
- Christian Borntraeger <borntraeger@linux.ibm.com>,
- Sven Schnelle <svens@linux.ibm.com>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- Eduardo Valentin <edubezval@gmail.com>, Keerthy <j-keerthy@ti.com>,
- "Rafael J. Wysocki" <rafael@kernel.org>,
- Daniel Lezcano <daniel.lezcano@kernel.org>,
- Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
- Alex Williamson <alex@shazbot.org>, Mark Greer <mgreer@animalcreek.com>,
- Miquel Raynal <miquel.raynal@bootlin.com>,
- Richard Weinberger <richard@nod.at>, Vignesh Raghavendra <vigneshr@ti.com>,
- Shuah Khan <skhan@linuxfoundation.org>,
- Kieran Bingham <kieran.bingham@ideasonboard.com>,
- Mauro Carvalho Chehab <mchehab@kernel.org>,
- Joerg Roedel <joro@8bytes.org>, Will Deacon <will@kernel.org>,
- Robin Murphy <robin.murphy@arm.com>, Lee Jones <lee@kernel.org>,
- Pavel Machek <pavel@kernel.org>, Dave Penkler <dpenkler@gmail.com>,
- "K. Y. Srinivasan" <kys@microsoft.com>,
- Haiyang Zhang <haiyangz@microsoft.com>,
- Wei Liu <wei.liu@kernel.org>, Dexuan Cui <decui@microsoft.com>,
- Long Li <longli@microsoft.com>, Justin Sanders <justin@coraid.com>,
- Jens Axboe <axboe@kernel.dk>, Georgi Djakov <djakov@kernel.org>,
- Michael Turquette <mturquette@baylibre.com>,
- Stephen Boyd <sboyd@kernel.org>, Philipp Zabel <p.zabel@pengutronix.de>,
- Borislav Petkov <bp@alien8.de>,
- Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
- "H. Peter Anvin" <hpa@zytor.com>,
- Pali =?iso-8859-1?Q?Roh=E1r?= <pali@kernel.org>,
- Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Message-ID: <20260409181611.GP3836593@ZenIV>
-References: <20260310-b4-is_err_or_null-v1-0-bd63b656022d@avm.de>
+ Philipp Hahn <phahn-oss@avm.de>
+Cc: "Theodore Ts'o" <tytso@mit.edu>, Andreas Dilger <adilger.kernel@dilger.ca>
+Date: Fri, 10 Apr 2026 11:18:40 -0400
+Message-ID: <177583430870.2758959.6171961359325912353.b4-ty@b4>
+X-Mailer: git-send-email 2.51.0
+In-Reply-To: <20260310-b4-is_err_or_null-v1-4-bd63b656022d@avm.de>
+References: <20260310-b4-is_err_or_null-v1-4-bd63b656022d@avm.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260310-b4-is_err_or_null-v1-0-bd63b656022d@avm.de>
-X-Mailman-Approved-At: Fri, 10 Apr 2026 15:13:03 +0000
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt;
- c=relaxed/relaxed; 
- d=linux.org.uk; s=zeniv-20220401; h=Sender:In-Reply-To:Content-Type:
- MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description;
- bh=BoGW7oywgvm57yYmgFIJhKPYzBfyhEW/uN+KSu6heaU=; b=JJcsCEcaKqyNrvJOUZ8XOnA1AS
- yC//2gnLRa8FcBRiXofOYljopOoyt9r8CbkWaLEFmbUVfW5qK5utkUh3D77jxlkhKoZiYVbvdTEnm
- X8jEr88bUddVEJ+24e8elVa7rPEDm9C+KeO3Yi+QSp+riwZi9Be8u3P2jnyNq7RhzU24dEi9YT5JB
- 9o5OjQL5vQk2h32ksN+l6XHB7LZbu7YtKRAMPXU1ZH+Yata0JOXemtl88QWI3UJ7mBXR7GCgddkg5
- qrhpzNPrKwHYiMCapxKfC0E4ZwUatWZBULD1y88efyo7haqTewJrOOn317SRlKBwAg9TXV76h3bsC
- A/eZOWQA==;
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=mit.edu; s=outgoing; 
+ t=1775834338; bh=eTlXD+fEi5OyNbu4TxRTwpDmEzFd2ThBwniicSqJG9M=;
+ h=From:Subject:Date:Message-ID:MIME-Version:Content-Type;
+ b=VM9pR3FUqiyu4dGQLYjxtn5fwtIzfU7ySZMp0abbH18xV6/gDABRi9uB743lXz8hh
+ DLg+D58JGiw6cmfTe96qrNZsfI1LrX8CH4Z4SZsryjUI4LnJNSYnME68kmTAWN0bac
+ +APmObxjmRctPfSGmHJbriSXfrkN55pWYIbiVRfu2y0ECqpOPHSJun6K+BHM+LkVI2
+ DM7T+QYmlRWbU/sqPlO03FdXluf2F9iRmmuiDmCsbPLwL4U9izV2zs90P/AyWnNi7/
+ WJE2W3FtW9KojAgen2wKI5w3YJJGh4CS8IuF5T47bMgUta6WPQzUW9F7QaunmIRgXz
+ enYXQQPwNnobw==
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
- header.from=zeniv.linux.org.uk
+ header.from=mit.edu
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key,
- unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256
- header.s=zeniv-20220401 header.b=JJcsCEca
-Subject: Re: [Intel-wired-lan] [PATCH 00/61] treewide: Use IS_ERR_OR_NULL
- over manual NULL check - refactor
+ unprotected) header.d=mit.edu header.i=@mit.edu header.a=rsa-sha256
+ header.s=outgoing header.b=VM9pR3FU
+Subject: Re: [Intel-wired-lan] [PATCH 04/61] ext4: Prefer IS_ERR_OR_NULL
+ over manual NULL check
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -266,13 +127,18 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Tue, Mar 10, 2026 at 12:48:26PM +0100, Philipp Hahn wrote:
-> While doing some static code analysis I stumbled over a common pattern,
-> where IS_ERR() is combined with a NULL check. For that there is
-> IS_ERR_OR_NULL().
 
-... and valid uses of IS_ERR_OR_NULL are rare as hen teeth.
-Most of those are "I'm not sure how this function returns an
-error, let's use that just in case".
+On Tue, 10 Mar 2026 12:48:30 +0100, Philipp Hahn wrote:
+> Prefer using IS_ERR_OR_NULL() over using IS_ERR() and a manual NULL
+> check.
+> 
+> Change generated with coccinelle.
 
-Please, do not introduce more of that crap.
+Applied, thanks!
+
+[04/61] ext4: Prefer IS_ERR_OR_NULL over manual NULL check
+        commit: 1d749e110277ce4103f27bd60d6181e52c0cc1e3
+
+Best regards,
+-- 
+Theodore Ts'o <tytso@mit.edu>
