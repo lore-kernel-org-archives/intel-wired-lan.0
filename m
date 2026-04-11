@@ -1,102 +1,90 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C577DF45A12
-	for <intel-wired-lan@archiver.kernel.org>; Sat, 11 Apr 2026 00:39:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 38906F45A1F
+	for <intel-wired-lan@archiver.kernel.org>; Sat, 11 Apr 2026 05:52:11 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 93BD1405A2;
-	Sat, 11 Apr 2026 00:39:57 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id C995683F39;
+	Sat, 11 Apr 2026 05:52:10 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id J1RFxb0WsEBi; Sat, 11 Apr 2026 00:39:55 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id lRaySZSAYa5X; Sat, 11 Apr 2026 05:52:09 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D28344025C
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 0441283F31
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1775867995;
-	bh=ompqMLO0FpOnjSJ67voGfooRZTz61clLZLJwY7an6Gs=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1775886729;
+	bh=TnEXP8JZ/JCzbQ9/sjjIrVECp362nD7uC8TlwCo2XcM=;
+	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=Pq+sRtpC9k85Q6w96mTOVBMQTfWBbhzO0VvtwJsBzgMjKzvEZRI+Bx3VLBuTHmYPs
-	 8cY3CpJktOli4H5bY/yuaz/aLWNoPTJj/iCk+bt48JXCeBARcPvNWSoHNh4GHnUdLi
-	 Pw0D4DnAraYY1UzSUE6e+49iD41YMbKzVgdjug4+zMurQ9PUsUcpYhKVhgYYjAzg1K
-	 hurFvQuu6ojxxXqHCRYUczuysJpi/BGHOabDAI14/pVoRgHE8OgtemSVEaE+WUpwXG
-	 pthL9tDbMT3WIsCNxGf9LA94dQoxLcaUqc08nru60VscIC4zA4hbEUh9Yt7oVFLkdp
-	 eTZ947bwt+bww==
+	b=u38YikfzmyMmmpCdAqKPXxCoBsvN3MGpD64eCZPxrjjVbM/rlCm85BhatV8QBx8BX
+	 d77LNyE5snrfIgj752FrdcDczlD+DKBxGwsQ5DOtmqYqVsucs1rUTaxL+Dn0n42Wv2
+	 HxuydnSfqDAvU2RcW26IaaXxNr2advU2otX3/7yNNF760uW1xeFWAPlq5L9nCldePo
+	 yq3ggUEcPf+OlSc2WzoIAW59QVUZAwvTYgSiwBq46zAy8Njz49LH4xCRDBQszj1mZ5
+	 pILnfbx8xve5eNH+risbTaqUxHOgESHxGg+cb9JHOZ9KRTGJstPr/4vdVviKAlbfab
+	 mlpEc3IljRldw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id D28344025C;
-	Sat, 11 Apr 2026 00:39:55 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id 66EEE194
- for <intel-wired-lan@lists.osuosl.org>; Sat, 11 Apr 2026 00:39:54 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 0441283F31;
+	Sat, 11 Apr 2026 05:52:09 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 35D31EC
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 11 Apr 2026 05:52:07 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 44D81414BE
- for <intel-wired-lan@lists.osuosl.org>; Sat, 11 Apr 2026 00:39:53 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 27EE640277
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 11 Apr 2026 05:52:07 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id bWqgO8luptE9 for <intel-wired-lan@lists.osuosl.org>;
- Sat, 11 Apr 2026 00:39:52 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.16;
- helo=mgamail.intel.com; envelope-from=emil.s.tantilov@intel.com;
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 2X6MzRVEiKXK for <intel-wired-lan@lists.osuosl.org>;
+ Sat, 11 Apr 2026 05:52:06 +0000 (UTC)
+X-Greylist: delayed 521 seconds by postgrey-1.37 at util1.osuosl.org;
+ Sat, 11 Apr 2026 05:52:05 UTC
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 706EC4008E
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 706EC4008E
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=83.223.95.204;
+ helo=mailout1.hostsharing.net; envelope-from=lukas@wunner.de;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 939DA41753
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 939DA41753
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.16])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 939DA41753
- for <intel-wired-lan@lists.osuosl.org>; Sat, 11 Apr 2026 00:39:52 +0000 (UTC)
-X-CSE-ConnectionGUID: nXm5T178R1WAa2ZAXZ8iyg==
-X-CSE-MsgGUID: SW+fjpEcRsq0oYsgeUnzAA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11755"; a="64423725"
-X-IronPort-AV: E=Sophos;i="6.23,172,1770624000"; d="scan'208";a="64423725"
-Received: from orviesa010.jf.intel.com ([10.64.159.150])
- by fmvoesa110.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 10 Apr 2026 17:39:51 -0700
-X-CSE-ConnectionGUID: PiUauI7oSXq01LAz3hPfzA==
-X-CSE-MsgGUID: Iot3WUGkQ42RCe3vJhrIdg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,172,1770624000"; d="scan'208";a="228392490"
-Received: from estantil-desk.jf.intel.com ([10.166.241.24])
- by orviesa010.jf.intel.com with ESMTP; 10 Apr 2026 17:39:51 -0700
-From: Emil Tantilov <emil.s.tantilov@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Cc: netdev@vger.kernel.org, przemyslaw.kitszel@intel.com, jay.bhat@intel.com,
+Received: from mailout1.hostsharing.net (mailout1.hostsharing.net
+ [83.223.95.204])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 706EC4008E
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 11 Apr 2026 05:52:05 +0000 (UTC)
+Received: from h08.hostsharing.net (h08.hostsharing.net [83.223.95.28])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange x25519 server-signature ECDSA (secp384r1) server-digest SHA384
+ client-signature ECDSA (secp384r1) client-digest SHA384)
+ (Client CN "*.hostsharing.net",
+ Issuer "GlobalSign GCC R6 AlphaSSL CA 2025" (verified OK))
+ by mailout1.hostsharing.net (Postfix) with ESMTPS id F40371686;
+ Sat, 11 Apr 2026 07:43:20 +0200 (CEST)
+Received: by h08.hostsharing.net (Postfix, from userid 100393)
+ id D84EF6010601; Sat, 11 Apr 2026 07:43:20 +0200 (CEST)
+Date: Sat, 11 Apr 2026 07:43:20 +0200
+From: Lukas Wunner <lukas@wunner.de>
+To: Emil Tantilov <emil.s.tantilov@intel.com>
+Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
+ przemyslaw.kitszel@intel.com, jay.bhat@intel.com,
  ivan.d.barrera@intel.com, aleksandr.loktionov@intel.com,
  larysa.zaremba@intel.com, anthony.l.nguyen@intel.com,
  andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
  kuba@kernel.org, pabeni@redhat.com, aleksander.lobakin@intel.com,
- linux-pci@vger.kernel.org, madhu.chittim@intel.com, decot@google.com,
- willemb@google.com, sheenamo@google.com
-Date: Fri, 10 Apr 2026 17:39:58 -0700
-Message-Id: <20260411003959.30959-2-emil.s.tantilov@intel.com>
-X-Mailer: git-send-email 2.17.2
-In-Reply-To: <20260411003959.30959-1-emil.s.tantilov@intel.com>
+ linux-pci@vger.kernel.org, madhu.chittim@intel.com,
+ decot@google.com, willemb@google.com, sheenamo@google.com
+Message-ID: <adnfeAJHoFoaGYH7@wunner.de>
 References: <20260411003959.30959-1-emil.s.tantilov@intel.com>
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1775867992; x=1807403992;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references;
- bh=fJ+x0FuS4kfTxKVTAiQAsAjahv+Ub5YWK+sKz1QUweY=;
- b=RVqJbQ9247ijNadt2FgiEdROBGGqofwFenttURyCIFwTRbQkUwwnRIvg
- vXsbHts7IYQahtXnhmfyikgiHiRA/6dxme2P8YlJB/GM7rRYP1gkhChzy
- FnFC38fneWTCV/QFnEcn3GKFCCVxY05EOdA374CTNb0ufqDA06uRYQT8z
- UE9JnwmN/JdnRG95/6qMCOiYk9FiNC8A8RrjGT+f39CA4ll3yey1RM2zM
- tR4tDQB477575lSsceSITFVJ9mFcZIlzTU9V0KcFxqh3MTbFL9F8at6a8
- vJ8Uru1ts/fds0bmuHybP83gOFZkXh7crhdAsqirKxOivcJEvR0WHYsKj
- A==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=RVqJbQ92
-Subject: [Intel-wired-lan] [PATCH iwl-next 1/2] idpf: remove conditonal MBX
- deinit from idpf_vc_core_deinit()
+ <20260411003959.30959-3-emil.s.tantilov@intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260411003959.30959-3-emil.s.tantilov@intel.com>
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dmarc=none (p=none dis=none)
+ header.from=wunner.de
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next 2/2] idpf: implement pci
+ error handlers
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -112,51 +100,23 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Previously it was assumed that idpf_vc_core_deinit() is always being
-called during reset handling, with remove being an exception. Ideally
-the driver needs to communicate the changes to FW in all instances where
-the MBX is not already disabled. Remove the remove_in_prog check from
-idpf_vc_core_deinit() as the MBX was already disabled while handling the
-reset via libie_ctlq_xn_shutdown() by the service task. This is also
-needed by the following patch, introducing PCI callbacks support.
+On Fri, Apr 10, 2026 at 05:39:59PM -0700, Emil Tantilov wrote:
+> +static pci_ers_result_t
+> +idpf_pci_err_slot_reset(struct pci_dev *pdev)
+> +{
+> +	struct idpf_adapter *adapter = pci_get_drvdata(pdev);
+> +
+> +	pci_restore_state(pdev);
+> +	pci_set_master(pdev);
+> +	pci_wake_from_d3(pdev, false);
+> +	if (readl(adapter->reset_reg.rstat) != 0xFFFFFFFF) {
+> +		pci_save_state(pdev);
+> +		return PCI_ERS_RESULT_RECOVERED;
+> +	}
 
-Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
-Reviewed-by: Jay Bhat <jay.bhat@intel.com>
-Reviewed-by: Madhu Chittim <madhu.chittim@intel.com>
----
- drivers/net/ethernet/intel/idpf/idpf_virtchnl.c | 11 +----------
- 1 file changed, 1 insertion(+), 10 deletions(-)
+The pci_save_state() is no longer necessary here, please drop it.
+See commits a2f1e22390ac and 383d89699c50 for details.
 
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
-index 129c8f6b0faa..fceaf3ec1cd4 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
-@@ -3229,24 +3229,15 @@ int idpf_vc_core_init(struct idpf_adapter *adapter)
-  */
- void idpf_vc_core_deinit(struct idpf_adapter *adapter)
- {
--	bool remove_in_prog;
--
- 	if (!test_bit(IDPF_VC_CORE_INIT, adapter->flags))
- 		return;
- 
--	/* Avoid transaction timeouts when called during reset */
--	remove_in_prog = test_bit(IDPF_REMOVE_IN_PROG, adapter->flags);
--	if (!remove_in_prog)
--		idpf_deinit_dflt_mbx(adapter);
--
- 	idpf_ptp_release(adapter);
- 	idpf_deinit_task(adapter);
- 	idpf_idc_deinit_core_aux_device(adapter);
- 	idpf_rel_rx_pt_lkup(adapter);
- 	idpf_intr_rel(adapter);
--
--	if (remove_in_prog)
--		idpf_deinit_dflt_mbx(adapter);
-+	idpf_deinit_dflt_mbx(adapter);
- 
- 	cancel_delayed_work_sync(&adapter->serv_task);
- 
--- 
-2.37.3
+Thanks,
 
+Lukas
