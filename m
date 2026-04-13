@@ -4,91 +4,97 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 64916F34C6B
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 13 Apr 2026 17:41:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2352AF531C9
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 13 Apr 2026 19:14:43 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 0DF9F60EAE;
-	Mon, 13 Apr 2026 17:41:01 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id C064960EF1;
+	Mon, 13 Apr 2026 19:14:42 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id iPcjgZQnAkZz; Mon, 13 Apr 2026 17:41:00 +0000 (UTC)
+ id 0gS-31pKYhna; Mon, 13 Apr 2026 19:14:42 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 09B2360E49
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org EF41C60EE6
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1776102060;
-	bh=8NVZHjJJ8Ti3/rzf64rVwbWLd/Gp+JvomI+ZyLe9mdU=;
-	h=Date:From:To:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=mL/ofod06qcIwyJB+AiaokCDV6ekNk15jV0MWryqzbCGMwuJ0w/Jz/ye+fb8qzqzy
-	 WBKZLEOS3UUsIqWfLhIBHqNswqxLZBuGAw+GsgtjZFwZhHPuyjvLReYnKwYyb5nLy3
-	 4oqXMSdCxvxotoPfvWpOZgQwARlAeuu9VLeZvOUUCr5hpN3UlhMb0K/mbaT2j1UMEz
-	 U4XnsJtOicr7TWE84SL6ZhhWZCq8r5QC1JaconvGnzi2cj7Ep4u1/esdYRgzrgThnO
-	 HTjjQiP6IAH0w6rUG4Vi1/ZLR9mU5AqUalg2i6+1MzGNJ8BwvbZaQQMRjrFhysfpyO
-	 Cf8PH6PyZWVnQ==
+	s=default; t=1776107682;
+	bh=pYt1tOgdZFbK6/EN+WXYPhu9UbbK6FxljyO9OAvK7X4=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=l4V+C+/gj78vGVg5KqR03w3BP3+Otgvr+gEP11pzY9L8zt4IsmNqX3WniZFkCZUBr
+	 sXs63wUf5f05dQq9qgWJ0UjqkieoMk2JHR9fz1nPGa3U2XyYazt6qIt0p0qFFAEsu6
+	 l9BmLF/qVRWHdjwEbsHOmZfdeBb3OdSzEG+2yPFj6ALxL8BkmfkDJ9EiMvCCVby9m6
+	 M5ave5gBa8bKHm6YJggh4CLNhUN23mlUUkIEcnF66R1Yi8paRF3ZaJ3bRoYsDqjFP3
+	 OeZ2dsaVKgZ/L53TDQBqZkP6VVVrcQMGPtHjg2TcE12SD/M5GpTIN74+9C5H6d0HMt
+	 TP7T76aP8UEkg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 09B2360E49;
-	Mon, 13 Apr 2026 17:41:00 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 4C4A6196
- for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Apr 2026 17:40:59 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id EF41C60EE6;
+	Mon, 13 Apr 2026 19:14:41 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 8038A237
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Apr 2026 19:14:40 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 3DBD94016B
- for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Apr 2026 17:40:59 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 6571B8333F
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Apr 2026 19:14:40 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 5SvAls9m9Mer for <intel-wired-lan@lists.osuosl.org>;
- Mon, 13 Apr 2026 17:40:58 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org;
- envelope-from=kuba@kernel.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 08D94400B7
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 08D94400B7
-Received: from tor.source.kernel.org (tor.source.kernel.org
- [IPv6:2600:3c04:e001:324:0:1991:8:25])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 08D94400B7
- for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Apr 2026 17:40:57 +0000 (UTC)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by tor.source.kernel.org (Postfix) with ESMTP id C6AAE6183C;
- Mon, 13 Apr 2026 17:40:55 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9D7FDC2BCAF;
- Mon, 13 Apr 2026 17:40:54 +0000 (UTC)
-Date: Mon, 13 Apr 2026 10:40:48 -0700
-From: Jakub Kicinski <kuba@kernel.org>
-To: "Kubalewski, Arkadiusz" <arkadiusz.kubalewski@intel.com>
-Message-ID: <20260413104048.4ebd7170@kernel.org>
-In-Reply-To: <IA0PR11MB737882B384AE7279EBCD05C79B242@IA0PR11MB7378.namprd11.prod.outlook.com>
-References: <20260402230626.3826719-1-grzegorz.nitka@intel.com>
- <20260406192312.0f7a2760@kernel.org>
- <IA1PR11MB621925C1718B838147404DC492582@IA1PR11MB6219.namprd11.prod.outlook.com>
- <20260409181041.395a0c37@kernel.org>
- <IA1PR11MB62194BF52262FCEB7FD5E76D92592@IA1PR11MB6219.namprd11.prod.outlook.com>
- <20260410133812.4cf9b090@kernel.org>
- <IA0PR11MB737882B384AE7279EBCD05C79B242@IA0PR11MB7378.namprd11.prod.outlook.com>
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id jnPyvX3bPsYu for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 13 Apr 2026 19:14:39 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.133.124;
+ helo=us-smtp-delivery-124.mimecast.com; envelope-from=poros@redhat.com;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 4E9FE82EE1
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4E9FE82EE1
+Received: from us-smtp-delivery-124.mimecast.com
+ (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 4E9FE82EE1
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Apr 2026 19:14:38 +0000 (UTC)
+Received: from mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com
+ (ec2-35-165-154-97.us-west-2.compute.amazonaws.com [35.165.154.97]) by
+ relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-606-pfaZ9RXNNJmSVKi3RakdHg-1; Mon,
+ 13 Apr 2026 15:14:34 -0400
+X-MC-Unique: pfaZ9RXNNJmSVKi3RakdHg-1
+X-Mimecast-MFC-AGG-ID: pfaZ9RXNNJmSVKi3RakdHg_1776107668
+Received: from mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com
+ (mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.12])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
+ id 445621800245; Mon, 13 Apr 2026 19:14:28 +0000 (UTC)
+Received: from ShadowPeak.redhat.com (unknown [10.44.32.25])
+ by mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP
+ id 4384E19560AB; Mon, 13 Apr 2026 19:14:23 +0000 (UTC)
+From: Petr Oros <poros@redhat.com>
+To: netdev@vger.kernel.org
+Date: Mon, 13 Apr 2026 21:14:20 +0200
+Message-ID: <20260413191420.3524013-1-poros@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1776102055;
- bh=0N4BCYvO1+Hekbec44W1YKBqMvRW8D/6DQUbra7OWXM=;
- h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=X5kp8GuU2+Zb0pS0yNLjVoEp8rBKG3Q21yTnrDjIY7ZM2U+9a+hi4HgHm/lMr8UNI
- vpjDIGFcNffSiLj01LAL6dAQrdQuu9D/ho7gPuGDN9CypsV7Mnp38ZILUsegyf3hzZ
- D0ItKRXD8uJieku1w25W3QWiuPcur5ly+IqpAgOszAt2q8rubZHwDu+YgOXE63XbRQ
- Nbx0wDj6GIzmz+69rPLCt3/uXfDKW8v0wtyl8fW81+KEKRGvOQQvwJU0RfJK7qnac9
- Qfio15bMQbzyGgSERwSEB1LloUuayrwOIagCS3S7sQBrc373RREfluQCgEFDlpimNh
- 0rMQ3+hCW8EMQ==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+X-Scanned-By: MIMEDefang 3.0 on 10.30.177.12
+X-Mimecast-MFC-PROC-ID: q0C8J84Y_NYtoeyRYcEc4uFgsST5p62oluXZHf_ZzYo_1776107668
+X-Mimecast-Originator: redhat.com
+Content-Transfer-Encoding: 8bit
+content-type: text/plain; charset="US-ASCII"; x-default=true
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=redhat.com; 
+ s=mimecast20190719; t=1776107677;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding;
+ bh=pYt1tOgdZFbK6/EN+WXYPhu9UbbK6FxljyO9OAvK7X4=;
+ b=bbC/J+41x1PoeRoAgs2maQ0pz8/Xr2E4U/CLx3WLFfBFoOz8pGqdcltfiJRoGCVM5Vc1Tl
+ m02vtFOtn+ujLQB4vdkDjidF/lkq047ya74TwfUWlD+Wp4xpH+cB/upYYdoV8vSnWzEyfb
+ YNfRXo4JTs3DoExnltbuz74Vrs/Ving=
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
- header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=X5kp8GuU
-Subject: Re: [Intel-wired-lan] [PATCH v5 net-next 0/8] dpll/ice: Add TXC
- DPLL type and full TX reference clock control for E825
+ header.from=redhat.com
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (1024-bit key,
+ unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
+ header.s=mimecast20190719 header.b=bbC/J+41
+Subject: [Intel-wired-lan] [PATCH iwl-net] ice: fix infinite recursion in
+ ice_cfg_tx_topo via ice_init_dev_hw
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -101,61 +107,104 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: "Vecera, Ivan" <ivecera@redhat.com>,
- "vadim.fedorenko@linux.dev" <vadim.fedorenko@linux.dev>,
- "edumazet@google.com" <edumazet@google.com>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "richardcochran@gmail.com" <richardcochran@gmail.com>,
- "donald.hunter@gmail.com" <donald.hunter@gmail.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "davem@davemloft.net" <davem@davemloft.net>,
- "Prathosh.Satish@microchip.com" <Prathosh.Satish@microchip.com>,
- "andrew+netdev@lunn.ch" <andrew+netdev@lunn.ch>,
- "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
- "horms@kernel.org" <horms@kernel.org>, "Kitszel,
- Przemyslaw" <przemyslaw.kitszel@intel.com>, "Nguyen,
- Anthony L" <anthony.l.nguyen@intel.com>,
- "pabeni@redhat.com" <pabeni@redhat.com>, "jiri@resnulli.us" <jiri@resnulli.us>
+Cc: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>,
+ Paul Greenwalt <paul.greenwalt@intel.com>,
+ Daniel Zahka <daniel.zahka@gmail.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Nikolay Aleksandrov <razor@blackwall.org>, Eric Dumazet <edumazet@google.com>,
+ linux-kernel@vger.kernel.org,
+ Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
+ Andrew Lunn <andrew+netdev@lunn.ch>, Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Dave Ertman <david.m.ertman@intel.com>, jacob.e.keller@intel.com,
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+ "David S. Miller" <davem@davemloft.net>, intel-wired-lan@lists.osuosl.org
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Mon, 13 Apr 2026 08:19:30 +0000 Kubalewski, Arkadiusz wrote:
-> >My concern is that I think this is a pretty run of the mill SyncE
-> >design. If we need to pretend we have two DPLLs here if we really
-> >only have one and a mux - then our APIs are mis-designed :(  
-> 
-> Well, the true is that we did not anticipated per-port control of the
-> TX clock source, as a single DPLL device could drive multiple of such.
-> 
-> This is not true, that we pretend there is a second PLL - there is a
-> PLL on each TX clock, maybe not a full DPLL, but still the loop with
-> a control over it's sources is there and it has the same 2 external
-> sources + default XO.
+On certain E810 configurations where firmware supports Tx scheduler
+topology switching (tx_sched_topo_comp_mode_en), ice_cfg_tx_topo()
+may need to apply a new 5-layer or 9-layer topology from the DDP
+package. If the AQ command to set the topology fails (e.g. due to
+invalid DDP data or firmware limitations), the global configuration
+lock must still be cleared via a CORER reset.
 
-Let me dig around and see if I can find any docs for PLL IPs
-that get integrated into ASICs. The DPLL subsystem has implicitly
-focused on standalone, timing related PLLs. Every ASIC out there 
-has a bunch of PLLs to generate the clock signals. It's not clear
-to me that DPLL subsystem is the right fit for this. Ping me if
-I don't get back to this by the end of the week please. I'll need
-to wrap up net-next and send the PR first..
+Commit 86aae43f21cf ("ice: don't leave device non-functional if Tx
+scheduler config fails") correctly fixed this by refactoring
+ice_cfg_tx_topo() to always trigger CORER after acquiring the global
+lock and re-initialize hardware via ice_init_hw() afterwards.
 
-> A mentioned try of adding per port MUX-type pin, just to give some control
-> to the user, is where we wanted to simplify things, but in the end the API
-> would have to be modified in significant way, various paths related to pin
-> registration and keeping correct references, just to make working case
-> for the pin_on_pin_register and it's internals. We decided that the burden
-> and impact for existing design was to high.
-> 
-> And that is why the TXC approach emerged, the change of DPLL is minimal,
-> The model is still correct from user perspective, SyncE SW controller shall
-> anticipate possibility that per-port TXC dpll is there 
-> 
-> This particular device and driver doesn't implement any EEC-type DPLL
-> device, the one could think that we can just change the type here and use
-> EEC type instead of new one TXC - since we share pins from external dpll
-> driver, which is EEC type, and our DPLL device would have different clock_id
-> and module. But, further designs, where a single NIC is having control over
-> both a EEC DPLL and ability to control each source per-port this would be
-> problematic. At least one NIC Port driver would have to have 2 EEC-type DPLLs
-> leaving user with extra confusion.
+However, commit 8a37f9e2ff40 ("ice: move ice_deinit_dev() to the end
+of deinit paths") later moved ice_init_dev_hw() into ice_init_hw(),
+breaking the reinit path introduced by 86aae43f21cf. This creates an
+infinite recursive call chain:
+
+  ice_init_hw()
+    ice_init_dev_hw()
+      ice_cfg_tx_topo()         # topology change needed
+        ice_deinit_hw()
+        ice_init_hw()           # reinit after CORER
+          ice_init_dev_hw()     # recurse
+            ice_cfg_tx_topo()
+              ...               # stack overflow
+
+Fix by moving ice_init_dev_hw() back out of ice_init_hw() and calling
+it explicitly from ice_probe() and ice_devlink_reinit_up(). The third
+caller, ice_cfg_tx_topo(), intentionally does not need ice_init_dev_hw()
+during its reinit, it only needs the core HW reinitialization. This
+breaks the recursion cleanly without adding flags or guards.
+
+The deinit ordering changes from commit 8a37f9e2ff40 ("ice: move
+ice_deinit_dev() to the end of deinit paths") which fixed slow rmmod
+are preserved, only the init-side placement of ice_init_dev_hw() is
+reverted.
+
+Fixes: 8a37f9e2ff40 ("ice: move ice_deinit_dev() to the end of deinit paths")
+Signed-off-by: Petr Oros <poros@redhat.com>
+---
+ drivers/net/ethernet/intel/ice/devlink/devlink.c | 2 ++
+ drivers/net/ethernet/intel/ice/ice_common.c      | 2 --
+ drivers/net/ethernet/intel/ice/ice_main.c        | 2 ++
+ 3 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ice/devlink/devlink.c b/drivers/net/ethernet/intel/ice/devlink/devlink.c
+index 6144cee8034d77..641d6e289d5ce6 100644
+--- a/drivers/net/ethernet/intel/ice/devlink/devlink.c
++++ b/drivers/net/ethernet/intel/ice/devlink/devlink.c
+@@ -1245,6 +1245,8 @@ static int ice_devlink_reinit_up(struct ice_pf *pf)
+ 		return err;
+ 	}
+ 
++	ice_init_dev_hw(pf);
++
+ 	/* load MSI-X values */
+ 	ice_set_min_max_msix(pf);
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index ce11fea122d03e..b617a6bff89134 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -1126,8 +1126,6 @@ int ice_init_hw(struct ice_hw *hw)
+ 	if (status)
+ 		goto err_unroll_fltr_mgmt_struct;
+ 
+-	ice_init_dev_hw(hw->back);
+-
+ 	mutex_init(&hw->tnl_lock);
+ 	ice_init_chk_recipe_reuse_support(hw);
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index e2a5534819d194..a27be29f9bbbfc 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -5314,6 +5314,8 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
+ 		return err;
+ 	}
+ 
++	ice_init_dev_hw(pf);
++
+ 	adapter = ice_adapter_get(pdev);
+ 	if (IS_ERR(adapter)) {
+ 		err = PTR_ERR(adapter);
+-- 
+2.52.0
+
