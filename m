@@ -1,95 +1,93 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 27A65F34C56
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 13 Apr 2026 14:11:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 29E04F34C60
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 13 Apr 2026 14:59:56 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id CDEA784797;
-	Mon, 13 Apr 2026 14:11:36 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 8s8Fk3QLZLNY; Mon, 13 Apr 2026 14:11:34 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9B5558478F
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1776089494;
-	bh=DS+S0BRyZHRR76xF3fsEAk6msLD+shY5kdGfLkw+59M=;
-	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=5IrH54aTBDhuladj5r410PFwdQDg0R7uSXxEAeBWNN2I8RRCxLbAzM3aFramTELSz
-	 wZUphAE6rNkpYlVzToxorXuP3gNoRKVhw5UPga4NwhAMAgeckY1Vfot+4ZFm6Qp4X1
-	 iZjwuAUlT+fsdLGk165GDp7yUaiWcpYYsDtCQooYSRCnD9aYusuRhuRGgdrTHc7szu
-	 FyqKSLnufTYuddgvpZ5zRaFLnAQVyiFxho0r3kVGhY50UQeLgKVTDIZ3tk1/amPodX
-	 cQAyzj2YOJM5E3AkeUdpUGb6+F45cnULA2IrAba0kJXbN5zxTTG5svzPMKPotuhoDk
-	 pW+/C4kfGsvxw==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 9B5558478F;
-	Mon, 13 Apr 2026 14:11:34 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id 4130F237
- for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Apr 2026 14:11:33 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 3245D422AE
- for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Apr 2026 14:11:33 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 168854007D;
+	Mon, 13 Apr 2026 14:59:55 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id iOIBPHzOVTR4 for <intel-wired-lan@lists.osuosl.org>;
- Mon, 13 Apr 2026 14:11:32 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
- helo=tor.source.kernel.org; envelope-from=horms@kernel.org;
+ id PMWuVSxjitAI; Mon, 13 Apr 2026 14:59:54 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 488E141FBE
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1776092394;
+	bh=+iiK69jUuj22K0hx6tkOrdhZnABEaD8kzPX09CT2qeA=;
+	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=1UGzMzp7Un+8v37G/FQLzKfd0kUNPVkbM9Y7lpoAvrU7OwbEEtgzOdkvq5APRi1t+
+	 h4i6XVgumfdM8PE1R0aw2NdsbRdu+9KEBKejJbdA0oj4HLMUCHn+9pcdS0CzzZtHOD
+	 ExStExiG4/xd0sKgObMvHGnLvnT6ZxiAeRYKYwHh+wBIIlkc2OleZ/8bB1ZKL/G3/m
+	 m8lAYczUKeHIK2Rpzb8Cj9jpREOI5P41ZTf3fPEjgM5Ou+QfNW2DqQN2cnNVI8Bohk
+	 zTjgCoBN8YjoSisag4+Vpef2zEUb/5WKHbg8I4zbFGm6aYSPKPyLNBuLxVYth8ISvh
+	 7Awjfb4AEY8tA==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp4.osuosl.org (Postfix) with ESMTP id 488E141FBE;
+	Mon, 13 Apr 2026 14:59:54 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 32E17237
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Apr 2026 14:59:53 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp4.osuosl.org (Postfix) with ESMTP id 248AB41FBE
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Apr 2026 14:59:53 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id XVDTt2XlwRps for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 13 Apr 2026 14:59:52 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.234.252.31;
+ helo=sea.source.kernel.org; envelope-from=horms@kernel.org;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 7242E41F54
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 7242E41F54
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 7242E41F54
- for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Apr 2026 14:11:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 391F241F90
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 391F241F90
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 391F241F90
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Apr 2026 14:59:52 +0000 (UTC)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by tor.source.kernel.org (Postfix) with ESMTP id 7BC0260172;
- Mon, 13 Apr 2026 14:11:31 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AD6D9C2BCAF;
- Mon, 13 Apr 2026 14:11:28 +0000 (UTC)
-Date: Mon, 13 Apr 2026 15:11:26 +0100
+ by sea.source.kernel.org (Postfix) with ESMTP id A605042E3D;
+ Mon, 13 Apr 2026 14:59:51 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4EAB6C2BCAF;
+ Mon, 13 Apr 2026 14:59:48 +0000 (UTC)
 From: Simon Horman <horms@kernel.org>
-To: Matt Fleming <matt@readmodwrite.com>
-Cc: Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Andrew Lunn <andrew+netdev@lunn.ch>,
- "David S . Miller" <davem@davemloft.net>,
- Eric Dumazet <edumazet@google.com>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+To: khai.wen.tan@linux.intel.com
+Cc: 'Simon Horman' <horms@kernel.org>, anthony.l.nguyen@intel.com,
+ przemyslaw.kitszel@intel.com, andrew+netdev@lunn.ch, davem@davemloft.net,
+ edumazet@google.com, kuba@kernel.org, pabeni@redhat.com,
  intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, kernel-team@cloudflare.com,
- Matt Fleming <mfleming@cloudflare.com>
-Message-ID: <20260413141126.GR469338@kernel.org>
-References: <20260408190214.1287708-1-matt@readmodwrite.com>
+ linux-kernel@vger.kernel.org, faizal.abdul.rahim@intel.com,
+ hector.blanco.alcaine@intel.com, hong.aun.looi@intel.com,
+ khai.wen.tan@intel.com, faizal.abdul.rahim@linux.intel.com
+Date: Mon, 13 Apr 2026 15:52:15 +0100
+Message-ID: <20260413145215.718532-1-horms@kernel.org>
+X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20260409072747.217836-1-khai.wen.tan@linux.intel.com>
+References: <20260409072747.217836-1-khai.wen.tan@linux.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260408190214.1287708-1-matt@readmodwrite.com>
+Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1776089491;
- bh=gFRvrKXlOfg+aEGi39wpVj9CoHvkfV4SW9XjwhO71Bg=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=Vuz8JIgyGFQs79J7jNYhLXjVTEJKcIy7q5fIMQvp69Rs6UAmh9zywB6sRRJyuSPZ2
- g+pdHQ203cM48BifuF+R1XKrQAour1unMgz1Hs9HNTMCQzb2M3F4CRrv4S2bN2AAfT
- 29qhXHvawfyEttE99sA2TD0YgSFFuxY+c2+oUt2NwsZH5HNRQi85n8aohpaOvSd32v
- fM9Vygo51KBRkcEEhB8B9OMaZ7kqOmtJ3ZeRTprb2EqP88EMVtZe1TDG9WyHnoQiru
- RKdLCkyaoXwYB6kV24hu8LH8p1H1q0ApAoO5ee8ZbPe7R36iMv9CJbvNo5XyKF14mn
- aGz59T8PyA/0w==
+ d=kernel.org; s=k20201202; t=1776092391;
+ bh=ToPQhf+AU4et7lLAuA4KTwzfff0wXqHPucAzwkwJ6sY=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=TtW2TBS94vcUa9a4Ed7PcWrPV/FRaksQw2+2uT/VDXjTU7nqgp+KFWLTPRee+0gc5
+ yvB4DOLk5RSddrYhq5YKFaGo4kGO4evnX4vGCfhrv6oe1ANV9EgFE6AQWFbm3ltNqT
+ DabilfO/qj7VbMqv+W8TUF5tErjALJQHK4YRAuOvnhA84nSKkuo/fcBVMSI1srjBz1
+ aGIV2+tIoq0GbZHnAALd64Wvj5n+Vat6IsDlxWFiYEmr2INVAkwbTYvN+PtBOLP2Gu
+ f3nC/Ipd3gjo2civxcJrK0lYbr/IZLJJc4ipzTpiEJnbLf2IMo6q/ppcI27eKjL6aD
+ keL1vs1jXFWOw==
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=Vuz8JIgy
-Subject: Re: [Intel-wired-lan] [PATCH net] ice: Fix missing 1's complement
- negation in GCS raw checksum
+ header.a=rsa-sha256 header.s=k20201202 header.b=TtW2TBS9
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next 1/1] igc: add support for
+ forcing link speed without autonegotiation
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -105,28 +103,81 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Wed, Apr 08, 2026 at 08:02:14PM +0100, Matt Fleming wrote:
-> From: Matt Fleming <mfleming@cloudflare.com>
-> 
-> Commit 905d1a220e8d ("ice: Add E830 checksum offload support") added
-> Generic Checksum (GCS) support for E830 NICs but omitted the 1's
-> complement negation (~) when converting the hardware raw_csum to
-> skb->csum for CHECKSUM_COMPLETE.
-> 
-> Without the negation, every CHECKSUM_COMPLETE packet fails the
-> fast-path validation in nf_ip_checksum() and falls through to software
-> checksumming via __skb_checksum_complete(), which triggers the
-> rate-limited "hw csum failure" warning. Packets are still accepted
-> (the software recheck passes) but hardware checksum offload is
-> effectively disabled and the warning floods dmesg on systems running
-> nf_conntrack on VLAN sub-interfaces.
-> 
-> Multiple other drivers (idpf, ehea, iwlwifi, cassini, sunhme, enetc)
-> also apply ~ for CHECKSUM_COMPLETE. The ice driver was the only in-tree
-> user of csum_unfold() for CHECKSUM_COMPLETE that omitted it.
-> 
-> Fixes: 905d1a220e8d ("ice: Add E830 checksum offload support")
-> Signed-off-by: Matt Fleming <mfleming@cloudflare.com>
+From: 'Simon Horman' <horms@kernel.org>
 
-Reviewed-by: Simon Horman <horms@kernel.org>
+This is an AI-generated review of your patch. The human sending this
+email has considered the AI review valid, or at least plausible.
+Full review at: https://sashiko.dev
+---
+igc: add support for forcing link speed without autonegotiation
 
+This commit allows forcing 10/100 Mb/s link speed and duplex settings via
+ethtool when autonegotiation is disabled. It configures the MAC CTRL and
+PHY registers to bypass autonegotiation and apply the requested settings.
+
+> diff --git a/drivers/net/ethernet/intel/igc/igc_ethtool.c b/drivers/net/ethernet/intel/igc/igc_ethtool.c
+> index 0122009bedd03..e14771532dad8 100644
+> --- a/drivers/net/ethernet/intel/igc/igc_ethtool.c
+> +++ b/drivers/net/ethernet/intel/igc/igc_ethtool.c
+[ ... ]
+> +static int igc_handle_autoneg_disabled(struct net_device *netdev, u32 speed,
+> +				       u8 duplex)
+> +{
+> +	struct igc_adapter *adapter = netdev_priv(netdev);
+> +	struct igc_mac_info *mac = &adapter->hw.mac;
+> +	enum igc_forced_speed_duplex forced_speed_duplex;
+>  
+> +	switch (speed) {
+> +	case SPEED_10:
+> +		forced_speed_duplex = (duplex == DUPLEX_FULL) ? IGC_FORCED_10F : IGC_FORCED_10H;
+> +		break;
+> +	case SPEED_100:
+> +		forced_speed_duplex = (duplex == DUPLEX_FULL) ? IGC_FORCED_100F : IGC_FORCED_100H;
+> +		break;
+
+Does forcing a half-duplex configuration here also require setting flow
+control to none (e.g., hw->fc.requested_mode = igc_fc_none)?
+
+> diff --git a/drivers/net/ethernet/intel/igc/igc_mac.c b/drivers/net/ethernet/intel/igc/igc_mac.c
+> index 7ac6637f8db73..16b0f2db06896 100644
+> --- a/drivers/net/ethernet/intel/igc/igc_mac.c
+> +++ b/drivers/net/ethernet/intel/igc/igc_mac.c
+> @@ -452,7 +452,7 @@ s32 igc_config_fc_after_link_up(struct igc_hw *hw)
+>  	 * so we had to force link.  In this case, we need to force the
+>  	 * configuration of the MAC to match the "fc" parameter.
+>  	 */
+> -	if (mac->autoneg_failed)
+> +	if (mac->autoneg_failed || !mac->autoneg_enabled)
+>  		ret_val = igc_force_mac_fc(hw);
+
+If mac->autoneg_enabled is false, igc_force_mac_fc() will configure the MAC
+using the existing hw->fc.current_mode. If current_mode defaults to full flow
+control, this will enable PAUSE frames.
+
+Since autonegotiation is disabled, the MII status check further down in this
+same function will fail and return early:
+
+drivers/net/ethernet/intel/igc/igc_mac.c:igc_config_fc_after_link_up() {
+    ...
+    if (!(mii_status_reg & MII_SR_AUTONEG_COMPLETE)) {
+        hw_dbg("Copper PHY and Auto Neg has not completed.\n");
+        goto out;
+    }
+    ...
+}
+
+This early return skips the half-duplex safety check at the end of
+igc_config_fc_after_link_up() which would normally clear the flow control
+settings:
+
+drivers/net/ethernet/intel/igc/igc_mac.c:igc_config_fc_after_link_up() {
+    ...
+    if (duplex == HALF_DUPLEX)
+        hw->fc.current_mode = igc_fc_none;
+
+    ret_val = igc_force_mac_fc(hw);
+    ...
+}
+
+Does this leave the MAC incorrectly configured to send and receive PAUSE
+frames on a half-duplex link, violating the IEEE 802.3 specification?
