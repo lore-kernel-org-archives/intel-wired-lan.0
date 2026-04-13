@@ -4,71 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 47125EBFD08
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 13 Apr 2026 07:30:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1D9AFEBFD0D
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 13 Apr 2026 07:30:51 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id A4B1F61AE5;
-	Mon, 13 Apr 2026 07:30:47 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id D264F61AD8;
+	Mon, 13 Apr 2026 07:30:50 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id EJLeIEOX7u8u; Mon, 13 Apr 2026 07:30:47 +0000 (UTC)
+ id 0HJMtvChFI2K; Mon, 13 Apr 2026 07:30:48 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2114861AE1
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A3E1561ACA
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1776065447;
-	bh=kmlvHh9z0jL2QCd07HvAfq4ZaB/LlfQ/CCNMZ1e2v1Q=;
+	s=default; t=1776065448;
+	bh=FLmSgxuni4Lur4DRGz9rNAe1ZUU4M45aKWhKSGtW8Fo=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=SPp5Q4twHdS1yfVECD0TEci4fmfYqGscinSwkbE3nBF9VZVntXyA+2ZY0C7l7jg+/
-	 Kl2sWiDGQD6dzQUM9bKA1dJXk+ec+4d3FwzRgp0z2M3oErjfqN2o4o+0/GOFzKop/z
-	 2eBse5VSwcDdKDkrjqcq89FOJ38VdeG67x5DUwpoRVT5L+FEQIBoj+slJlzXyEhl0D
-	 7bkXklh7D48bSDyZDrill+id/rJg1VZ+bdMvIBJPCj45ifdZnuvHmmqEk89bCw0pGF
-	 A327O+PNBdFn3N7RQ9NUSCvIwjwoeSFEkepOJciT860i2xyuyoQbeW30ArrOKBBTxA
-	 6AruWhmZXC1gA==
+	b=erXy9nqQaaTi4NizgA5thWSo7J7y0v0DUYkoY0gCK/Paoa2sU4Ut56vZJgarDUm/W
+	 AnisR5htUiA7LGRgghhedE8EthTw6PMwUXqEYUWrvBJ2UzYS0nfCA0HN6ErW0y7cC1
+	 zdVSk8hFexgk4UR3aFwtk3XGka+/sGcSEPTVOqFAtuptPvZBLrXIBvwRpbb8cIVkmN
+	 rfkzs2qTjfmzRXJEsuN9zyl3gKptOekMeoWm/A4Xw/Wf3yFwEr5PX9SrD87OB+d7F/
+	 U+qrP8G2OUHjmJJJUlzVQ5J8yomZHqgI3WfSz4lTAQTRW6rMjw4yH30A9geZPL/x/n
+	 G1GyoJmXW52kw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 2114861AE1;
-	Mon, 13 Apr 2026 07:30:47 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id 14EBE194
- for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Apr 2026 07:30:45 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id A3E1561ACA;
+	Mon, 13 Apr 2026 07:30:48 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id D80D1237
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Apr 2026 07:30:46 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id EF176840F9
- for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Apr 2026 07:30:44 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id BE271840F9
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Apr 2026 07:30:46 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id I9cE4aXE01_Z for <intel-wired-lan@lists.osuosl.org>;
- Mon, 13 Apr 2026 07:30:44 +0000 (UTC)
+ id jFtjlZzLYGsn for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 13 Apr 2026 07:30:45 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.12;
  helo=mgamail.intel.com; envelope-from=aleksandr.loktionov@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 02B398238D
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 02B398238D
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 99EED8238D
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 99EED8238D
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.12])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 02B398238D
- for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Apr 2026 07:30:43 +0000 (UTC)
-X-CSE-ConnectionGUID: iWpSkUVRTU+GgXfqxTxjAg==
-X-CSE-MsgGUID: UUPI+bpRSpK6pM5ei4YoFQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11757"; a="80876639"
-X-IronPort-AV: E=Sophos;i="6.23,176,1770624000"; d="scan'208";a="80876639"
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 99EED8238D
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Apr 2026 07:30:45 +0000 (UTC)
+X-CSE-ConnectionGUID: O+GGcE+PRpmZTAL/hko6DA==
+X-CSE-MsgGUID: ES+ra6GYRO25MbzQLgburQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11757"; a="80876645"
+X-IronPort-AV: E=Sophos;i="6.23,176,1770624000"; d="scan'208";a="80876645"
 Received: from orviesa001.jf.intel.com ([10.64.159.141])
  by fmvoesa106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 13 Apr 2026 00:30:44 -0700
-X-CSE-ConnectionGUID: +D87Ji+sQViJfGZAY1t3nA==
-X-CSE-MsgGUID: NL72vD+0QKiiUNUOzRy8+g==
+ 13 Apr 2026 00:30:45 -0700
+X-CSE-ConnectionGUID: NTVZjr6ZQHONvniZ2cX5dg==
+X-CSE-MsgGUID: BBmfq9oATGyMdBhr/cHfCA==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,176,1770624000"; d="scan'208";a="267700558"
+X-IronPort-AV: E=Sophos;i="6.23,176,1770624000"; d="scan'208";a="267700568"
 Received: from amlin-019-225.igk.intel.com ([10.102.19.225])
- by orviesa001.jf.intel.com with ESMTP; 13 Apr 2026 00:30:43 -0700
+ by orviesa001.jf.intel.com with ESMTP; 13 Apr 2026 00:30:44 -0700
 From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 To: intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com,
  aleksandr.loktionov@intel.com
 Cc: netdev@vger.kernel.org,
-	Avinash Dayanand <avinash.dayanand@intel.com>
-Date: Mon, 13 Apr 2026 09:30:34 +0200
-Message-ID: <20260413073035.4082204-5-aleksandr.loktionov@intel.com>
+	Kiran Patil <kiran.patil@intel.com>
+Date: Mon, 13 Apr 2026 09:30:35 +0200
+Message-ID: <20260413073035.4082204-6-aleksandr.loktionov@intel.com>
 X-Mailer: git-send-email 2.52.0
 In-Reply-To: <20260413073035.4082204-1-aleksandr.loktionov@intel.com>
 References: <20260413073035.4082204-1-aleksandr.loktionov@intel.com>
@@ -76,25 +76,25 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1776065444; x=1807601444;
+ t=1776065446; x=1807601446;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=L00BtSpnf5+O+MupvLoKyYTpfp5AyA445wZpnSJZRNE=;
- b=ErdtsyzBusgwI1X8wMN6ONqjROx4rhwIvBG8IYWXXOaAB9iNWR2jW4f4
- 6plQrfZwGnxszvsDSS9bfzDpTiyjivPy3/ElsXMDyB0bY/zNKOzYTl7xo
- HUMLQ0CLt8JdjSBWuHgfJRfoiFuxm8AYWpCCACG+C8o6Y0QaQ86Q8hMlR
- hMCRVTbQ9BL/6QpauD7U0IheltG9eW4dEAuloZHLcKiUHOGTQfyoEh7+d
- IAyq7qS+M4GvcQ5EyxEsM5SOyqlIvE2aiLz9Zu2kly2jKvoBiyipRqEvy
- YRo6ekHaAEJFWgsynIVfcvyQGk9YRqT7vUQHWkNaNETfdDRIt+8cUbXja
- g==;
+ bh=W9ya2vXRkq7Xpvvhcfs8QUpkp0MBFOwlS2aQ4IaNQn4=;
+ b=TQ6x9nAX4SHvStM/9eH6/a7HiLnlSTrFcCXkfgMcPrrBsYnm0qUfJcqh
+ dnjgymIiJLWpHWKnDiM+WV23d73eqwyZ+WnN0LlNizfgpZBvu9EIjohZF
+ 3aQqvJDtZi40hd3i6Rxm+xCtAkXVSoZSmhdEMM6OYnCuCMTdASFuu97As
+ dcIEASsDMEOhXJfhhZkCNmc0u1D3Y8agmsTxDtNnaD0DdW9qazxJ9Xs1o
+ oZYiYmQyBvluN0FXdfrTMb3oZUolaDpCB2RLfg9/CzduJwpaVE7QXt2sT
+ zR3K+CDBtM/fN/bkqEbFnne8nvrtZTm1nLSAGKgJCdHKYkCIEVG5199aE
+ Q==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=ErdtsyzB
-Subject: [Intel-wired-lan] [PATCH iwl-net 4/5] iavf: fix TC boundary check
- in iavf_handle_tclass
+ header.a=rsa-sha256 header.s=Intel header.b=TQ6x9nAX
+Subject: [Intel-wired-lan] [PATCH iwl-net 5/5] iavf: return 0 when TC flower
+ filter not found after qdisc teardown
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -110,34 +110,47 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Avinash Dayanand <avinash.dayanand@intel.com>
+From: Kiran Patil <kiran.patil@intel.com>
 
-The condition `tc < adapter->num_tc` admits any tc value equal to or
-greater than num_tc, bypassing the destination-port validation and
-allowing traffic to be steered to a non-existent traffic class. Change
-the comparison to `tc > adapter->num_tc` to correctly reject
-out-of-range TC values.
+When an egress qdisc is destroyed, the driver proactively deletes all
+associated cloud filters to prevent stale hardware state, decrementing
+num_cloud_filters to zero in the process.
+
+The kernel netdev layer is unaware of this implicit cleanup and may
+still try to delete the same filters individually. If the filter is
+not found in the driver's list and num_cloud_filters is already zero,
+return 0 instead of -EINVAL to avoid confusing upper layers that
+believe the filter is still offloaded in hardware.
 
 Fixes: 0075fa0fadd0 ("i40evf: Add support to apply cloud filters")
-Signed-off-by: Avinash Dayanand <avinash.dayanand@intel.com>
+Signed-off-by: Kiran Patil <kiran.patil@intel.com>
 Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 ---
- drivers/net/ethernet/intel/iavf/iavf_main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/intel/iavf/iavf_main.c | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index ab5f5adc..5e4035b 100644
+index 5e4035b..05aaae9 100644
 --- a/drivers/net/ethernet/intel/iavf/iavf_main.c
 +++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -4062,7 +4062,7 @@ static int iavf_handle_tclass(struct iavf_adapter *adapter, u32 tc,
- {
- 	if (tc == 0)
- 		return 0;
--	if (tc < adapter->num_tc) {
-+	if (tc > adapter->num_tc) {
- 		if (!filter->f.data.tcp_spec.dst_port) {
- 			dev_err(&adapter->pdev->dev,
- 				"Specify destination port to redirect to traffic class other than TC0\n");
+@@ -4175,7 +4175,16 @@ static int iavf_delete_clsflower(struct iavf_adapter *adapter,
+ 	if (filter) {
+ 		filter->del = true;
+ 		adapter->aq_required |= IAVF_FLAG_AQ_DEL_CLOUD_FILTER;
+-	} else {
++	} else if (adapter->num_cloud_filters) {
++		/* When the egress qdisc is detached the driver implicitly
++		 * deletes all associated cloud filters to prevent stale
++		 * hardware entries, reducing num_cloud_filters to zero.
++		 * The netdev layer is unaware of this implicit cleanup and
++		 * may still request deletion of individual filters.  Only
++		 * return -EINVAL when a filter lookup fails and
++		 * num_cloud_filters is non-zero, indicating a genuine
++		 * lookup failure rather than a post-teardown stale delete.
++		 */
+ 		err = -EINVAL;
+ 	}
+ 	spin_unlock_bh(&adapter->cloud_filter_list_lock);
 -- 
 2.52.0
 
