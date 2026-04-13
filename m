@@ -4,84 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4DD31F34C52
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 13 Apr 2026 13:43:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9B290F34C49
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 13 Apr 2026 14:02:33 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 24FAC8475C;
-	Mon, 13 Apr 2026 13:43:42 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 461898475C;
+	Mon, 13 Apr 2026 14:02:33 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id CvvCvyz2fCs4; Mon, 13 Apr 2026 13:43:41 +0000 (UTC)
+ id wUj5kmMvgcW1; Mon, 13 Apr 2026 14:02:32 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 5488D846E6
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7CD41841BC
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1776087821;
-	bh=JZRbzp28INPhxUNdsYLMyoaBffxpzsTwUo9FanaDUQk=;
+	s=default; t=1776088952;
+	bh=yDI/S1cf2z4jAKp7tXIb7f2qhf89hxakF7BSm1HpTAw=;
 	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=P/oEFost/ciFp+dJLW8I21S5zt5hMKFrbf7ygGPvAx6i5gEXMOGL5hyd3rMa3rp1S
-	 IeIBFAEloNx4R2nDEzh746bORT0uC3Hl/mZ2Erc1DXbjk4r/hJNauUYzwqEdpREcWo
-	 Aua0E9nUrY3iYczn/8w2p3c8tB/Z2L0zYZ758Vwndg0NZQyRpo8x87ORJ6DcPXeBh6
-	 tHmb2gRSCfDlBMtpJllY5dghAty+t8RN+W3aQxHVhoIcbAOc8toGV6Y5I0dDZECIIg
-	 qFdvKRp3tHaGUVlYL/Vwnq72aeZmTI6nHSt+kSrvmmJrxcO1atS3ItTuc3tYLNJuij
-	 JpZC7hf1VycpQ==
+	b=TYg6kHRr0a6liTQJ7GnW/q4J6stw+KRnYcHawO6sjLixZuuFzio8PBq3yUtrHqGtF
+	 qPTUvX4fXAKDy+Y2vIe6PViI/9TGyAYVih4UdncStGiA3DvHxNlfSPQMy8WHiMukJ+
+	 SSGmTSOUhewrmy9iPbxkUhXx9mWUSCnJgcMs7bTVVTIzRWZSUej58kXePIufBEj4XE
+	 eILiwc71KV2xcHfXg+wq4vSUkTHcaSrIJ/YJ2fjuML9dkM0ho24ZUDKrobLvFfd1ju
+	 DOXxySCYbHZDXYyChW0Kn2TamvEuQbvb6hADDZiYlFLVVL+IE5oavnhEenvBy8/xYw
+	 N39M9kY9v+WyA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 5488D846E6;
-	Mon, 13 Apr 2026 13:43:41 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id 04C87237
- for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Apr 2026 13:43:40 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 7CD41841BC;
+	Mon, 13 Apr 2026 14:02:32 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id AF663237
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Apr 2026 14:02:31 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id EA7C042325
- for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Apr 2026 13:43:39 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 9BCB6608B1
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Apr 2026 14:02:31 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id QT49qVs4Iuvc for <intel-wired-lan@lists.osuosl.org>;
- Mon, 13 Apr 2026 13:43:39 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
- helo=tor.source.kernel.org; envelope-from=horms@kernel.org;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 4DC934229C
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4DC934229C
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 4DC934229C
- for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Apr 2026 13:43:39 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id n1R0ZpksbLMV for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 13 Apr 2026 14:02:31 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org;
+ envelope-from=horms@kernel.org; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org F155360ED7
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org F155360ED7
+Received: from sea.source.kernel.org (sea.source.kernel.org
+ [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id F155360ED7
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Apr 2026 14:02:30 +0000 (UTC)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by tor.source.kernel.org (Postfix) with ESMTP id 17A1D6091C;
- Mon, 13 Apr 2026 13:43:38 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C7A04C2BCB4;
- Mon, 13 Apr 2026 13:43:36 +0000 (UTC)
-Date: Mon, 13 Apr 2026 14:43:34 +0100
+ by sea.source.kernel.org (Postfix) with ESMTP id 394B3441C0;
+ Mon, 13 Apr 2026 14:02:30 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1F623C2BCAF;
+ Mon, 13 Apr 2026 14:02:28 +0000 (UTC)
+Date: Mon, 13 Apr 2026 15:02:26 +0100
 From: Simon Horman <horms@kernel.org>
 To: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 Cc: intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com,
  netdev@vger.kernel.org
-Message-ID: <20260413134334.GP469338@kernel.org>
+Message-ID: <20260413140226.GQ469338@kernel.org>
 References: <20260408131154.2661818-1-aleksandr.loktionov@intel.com>
  <20260408131154.2661818-7-aleksandr.loktionov@intel.com>
+ <20260413134334.GP469338@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260408131154.2661818-7-aleksandr.loktionov@intel.com>
+In-Reply-To: <20260413134334.GP469338@kernel.org>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1776087817;
- bh=ZFAMrSY8jw7Ij+knpPaJsB0Cm3Po6aQaaQ3IiLfQUog=;
+ d=kernel.org; s=k20201202; t=1776088950;
+ bh=lsCmK8bgfymrGWmfnrdu1HhqbYmux52O5R+oq3QNKiw=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=oUoG8juz+ZV1bFSwY92yONhOy4d/ti0+M/1zb31HvLm6g16/O1wIDHFZiCIG2VG0Y
- /us+KqUkPoMCCHTTPVYI7Xxay43OefA5cRgFJLG/PEHil7xCbvu6fM3z1trgq2I3pe
- LEXfALQd5ZOqRMYrdZmuGsaNqGl2XMGuYJKLapES5rLxWmCkAk3egTZam5mSCilxcA
- 8uexhE7jAF0Z/46Y22oiKXROxwL8OF2CBtELixs11prlorUcgZcZuqeQ6sDg0Ol1Ac
- ZB0srmiOvhhpxkFFV0YlpajtzdjW3A2bXRzu2T5ad392Kp0chl4c7VNI8zjuOfnBmi
- lK3BHjwEuDYhg==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ b=TrHvvPzrpaItVhm08JmAQ2LYc1MyMWm5ZlJgajH2XrONzWtxui2XUkOlSEA6SjRrn
+ JWxyBP38OFwqjqr4nN+52tbPPgBT28Q0TpaeRFlc6NSfWPA9Faox1scws8YQTJrpKD
+ asmbtxTCSwiskLxl2sGMpV0Ntr1eGYa0XHELW5SHmbc+2eo2BSMye23okJaRP2Id2J
+ mSRh2QM0HsGvP0o/z04EGtlud04GcO+gktRQr/oAu2PArDfb+8nSjdszoFUEvoPPRr
+ tlwLJ/3DwadsQ1VblrpnvCoS6Kc7bNJRtDlcztSEFvm7TmHq6aN6qL7Be+3PhyMldb
+ pkLEY4qsNClCg==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=oUoG8juz
+ header.a=rsa-sha256 header.s=k20201202 header.b=TrHvvPzr
 Subject: Re: [Intel-wired-lan] [PATCH iwl-net v2 6/6] ixgbe: fix integer
  overflow and wrong bit position in ixgbe_validate_rtr()
 X-BeenThere: intel-wired-lan@osuosl.org
@@ -99,36 +101,47 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Wed, Apr 08, 2026 at 03:11:54PM +0200, Aleksandr Loktionov wrote:
-> Two bugs in the same loop in ixgbe_validate_rtr():
+On Mon, Apr 13, 2026 at 02:43:34PM +0100, Simon Horman wrote:
+> On Wed, Apr 08, 2026 at 03:11:54PM +0200, Aleksandr Loktionov wrote:
+> > Two bugs in the same loop in ixgbe_validate_rtr():
+> > 
+> > 1. The 3-bit traffic-class field was extracted by shifting a u32 and
+> >    assigning the result directly to a u8.  For user priority 0 this is
+> >    harmless; for UP[5..7] the shift leaves bits [15..21] in the u32
+> >    which are then silently truncated when stored in u8.  Mask with
+> >    IXGBE_RTRUP2TC_UP_MASK before the assignment so only the intended
+> >    3 bits are kept.
+> > 
+> > 2. When clearing an out-of-bounds entry the mask was always shifted by
+> >    the fixed constant IXGBE_RTRUP2TC_UP_SHIFT (== 3), regardless of
+> >    which loop iteration was being processed.  This means only UP1 (bit
+> >    position 3) was ever cleared; UP0,2..7 (positions 0, 6, 9, ..., 21)
+> >    were left unreset, so invalid TC mappings persisted in hardware and
+> >    could mis-steer received packets to the wrong traffic class.
+> >    Use i * IXGBE_RTRUP2TC_UP_SHIFT to target the correct 3-bit field
+> >    for each iteration.
+> > 
+> > Swap the operand order in the mask expression to place the constant
+> > on the right per kernel coding style (noted by David Laight).
+> > 
+> > Fixes: e7589eab9291 ("ixgbe: consolidate, setup for multiple traffic classes")
+> > Cc: stable@vger.kernel.org
+> > Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+> > ---
+> > v1 -> v2:
+> >  - Add Fixes: tag; reroute to iwl-net (wrong bit positions cause packet
+> >    mis-steering); swap to (reg >> ...) & MASK operand order per David
+> >    Laight.
 > 
-> 1. The 3-bit traffic-class field was extracted by shifting a u32 and
->    assigning the result directly to a u8.  For user priority 0 this is
->    harmless; for UP[5..7] the shift leaves bits [15..21] in the u32
->    which are then silently truncated when stored in u8.  Mask with
->    IXGBE_RTRUP2TC_UP_MASK before the assignment so only the intended
->    3 bits are kept.
-> 
-> 2. When clearing an out-of-bounds entry the mask was always shifted by
->    the fixed constant IXGBE_RTRUP2TC_UP_SHIFT (== 3), regardless of
->    which loop iteration was being processed.  This means only UP1 (bit
->    position 3) was ever cleared; UP0,2..7 (positions 0, 6, 9, ..., 21)
->    were left unreset, so invalid TC mappings persisted in hardware and
->    could mis-steer received packets to the wrong traffic class.
->    Use i * IXGBE_RTRUP2TC_UP_SHIFT to target the correct 3-bit field
->    for each iteration.
-> 
-> Swap the operand order in the mask expression to place the constant
-> on the right per kernel coding style (noted by David Laight).
-> 
-> Fixes: e7589eab9291 ("ixgbe: consolidate, setup for multiple traffic classes")
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-> ---
-> v1 -> v2:
->  - Add Fixes: tag; reroute to iwl-net (wrong bit positions cause packet
->    mis-steering); swap to (reg >> ...) & MASK operand order per David
->    Laight.
+> Reviewed-by: Simon Horman <horms@kernel.org>
 
-Reviewed-by: Simon Horman <horms@kernel.org>
+Sorry, I was a little too hasty there.
 
+AI generated code review points out that the cited commit
+doesn't seem to have introduced the code being fixed,
+and that perhaps this Fixes tag would be more appropriate.
+
+Fixes: 8b1c0b24d9af ("ixgbe: configure minimal packet buffers to support TC")
+
+I will also forward on a review from Sashiko, although it
+is for an existing bug and thus is strictly FYI.
