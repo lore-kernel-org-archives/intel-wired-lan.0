@@ -4,85 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0B870F9D0CA
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 14 Apr 2026 13:23:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 44AC6F9D0CA
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 14 Apr 2026 13:29:48 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id C8A0442A35;
-	Tue, 14 Apr 2026 13:23:31 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id D8D8D405EE;
+	Tue, 14 Apr 2026 13:29:47 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 2putHzQrlPf3; Tue, 14 Apr 2026 13:23:31 +0000 (UTC)
+ id UiH7FiVw1m1l; Tue, 14 Apr 2026 13:29:46 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1645842A31
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 43EC1405A9
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1776173011;
-	bh=UHYbtxeZb8qWTq5FhDtjzGXR8mk+3VBFPV2mka5+pv4=;
+	s=default; t=1776173386;
+	bh=IMdzPJFMXglBWd40hzmhdBu4JAXvsiYnp/Ra9sSWsA0=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=a96K2WfBU0JiFYyQog0CbzcOXbj/Fp197SxCNpsTfIRk1NEmsWjTIwNEsUr7ZyJYU
-	 eWR1fEhf/SIE/hXNffLUSAN81q+6cGoMgsVKipYK8AzBWzbIcPZy++m/GNMGvLJ1+f
-	 I6X0CoQ5SU/62vZQrKyn6ubBOIviwZPmAZQlC1vf+l3nvM0n+tQYmTNMhuRJcrLF/X
-	 cbwGV0M8GlBNyAAydbt//E1UfF7PqJ6bIyt0V3KsIFTdV14oI6t97c3rMk5BZYSlvr
-	 5C5LGBip09t3b3+2R2UE5hTewXkAJU/3UydUtJ6BTmEzsbAkeOZSnUaMI/8PEgtqoR
-	 kv3Pc33vYUg9A==
+	b=qx4unpy3VsbCrM16jt5pPBcS4yg64ZLllHr1I2ntviVqNZHPqIyH//JduxvPdm1Z0
+	 eoLErEY1OD7vxl7PMhowQp12MRK4qWjdJKwLR/0Y8igNgIIzNBKC+Vjhyw0TRHSk+g
+	 z6AiRMXHbvMfM1s10m4QeDlAh60zBcwOnhGUnijZTSdHDNeJeI6Tf7dT4uy/JOKsEh
+	 a06IswDMh1URplJOmPcTHEvRcCIpRk5zh2Cz+FJyGSb1wKYihsH9jl7Vn/bUoI7VB5
+	 9OcF9f3IEUMM2yN80f5WvOusyuXjgFgSu+RhU0TRlwmUFUjMYRC0ufqs0um68zS+Gj
+	 W867ZWj6hgzLw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 1645842A31;
-	Tue, 14 Apr 2026 13:23:31 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id 0B8D9283
- for <intel-wired-lan@lists.osuosl.org>; Tue, 14 Apr 2026 13:23:30 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 43EC1405A9;
+	Tue, 14 Apr 2026 13:29:46 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 76784237
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 14 Apr 2026 13:29:45 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id E5CA042A31
- for <intel-wired-lan@lists.osuosl.org>; Tue, 14 Apr 2026 13:23:29 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 705CD403CC
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 14 Apr 2026 13:29:45 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id XDGWuJq7uvCq for <intel-wired-lan@lists.osuosl.org>;
- Tue, 14 Apr 2026 13:23:29 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.234.252.31;
- helo=sea.source.kernel.org; envelope-from=horms@kernel.org;
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id MR-k2-e1X4Dn for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 14 Apr 2026 13:29:44 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
+ helo=tor.source.kernel.org; envelope-from=horms@kernel.org;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 275C94291B
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 275C94291B
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 275C94291B
- for <intel-wired-lan@lists.osuosl.org>; Tue, 14 Apr 2026 13:23:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 8A4E2403B8
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 8A4E2403B8
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 8A4E2403B8
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 14 Apr 2026 13:29:44 +0000 (UTC)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by sea.source.kernel.org (Postfix) with ESMTP id 8DC44438E4;
- Tue, 14 Apr 2026 13:23:28 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 461F5C19425;
- Tue, 14 Apr 2026 13:23:27 +0000 (UTC)
+ by tor.source.kernel.org (Postfix) with ESMTP id BAD18600AD;
+ Tue, 14 Apr 2026 13:29:42 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id F12FAC19425;
+ Tue, 14 Apr 2026 13:29:40 +0000 (UTC)
 From: Simon Horman <horms@kernel.org>
 To: aleksandr.loktionov@intel.com
-Cc: 'Simon Horman' <horms@kernel.org>, intel-wired-lan@lists.osuosl.org,
- anthony.l.nguyen@intel.com, netdev@vger.kernel.org
-Date: Tue, 14 Apr 2026 14:23:00 +0100
-Message-ID: <20260414132301.756968-1-horms@kernel.org>
+Cc: Simon Horman <horms@kernel.org>, anthony.l.nguyen@intel.com,
+ marcin.szycik@linux.intel.com, intel-wired-lan@lists.osuosl.org,
+ jacob.e.keller@intel.com, netdev@vger.kernel.org
+Date: Tue, 14 Apr 2026 14:29:35 +0100
+Message-ID: <20260414132935.757593-1-horms@kernel.org>
 X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260408131216.2662245-6-aleksandr.loktionov@intel.com>
-References: <20260408131216.2662245-6-aleksandr.loktionov@intel.com>
+In-Reply-To: <20260408131216.2662245-8-aleksandr.loktionov@intel.com>
+References: <20260408131216.2662245-8-aleksandr.loktionov@intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1776173008;
- bh=i28YYCrUHHMDpraT0Z5aLv8IuBAQodP0RU10t8qP06M=;
+ d=kernel.org; s=k20201202; t=1776173382;
+ bh=zsM9dsmbiVIJiMJTT1sM6WsEpvpqK7LiJCBq22uxOaI=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=nziiY2cHF9SaKIleFtCmSzONxdI75XT7GwROAvqbs3etvAtGuC7zRg/p2mFMsMKID
- UKe0EpUVm/KmVEbZZjPNMUNYvh8XnzEmKQZSU+HX2ztEeQyt5xW4UuNQHqHVhk4bwZ
- Rm11fEs0gfl3m4BjdvxG2/sBJrwSE2dmu52Fx2MD5l0lec9TmmDE7hHeKCYVmXvWrH
- xz2ZHSXJsOg8Jbom2t+kdj/PVsfOs7tUG7U/4qlLmy9ac/dPl4dieg/xuiKxk2fBML
- USfeDJzFTmwVPqttkH4nKaF7Xb5H/FNrZlwEsIXgX4ZpPHLBX4kBwTgbzOHzxAXIYT
- a7DRHJZgXMwHQ==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ b=NalWhCbatjG5CCe9zEOfzvQ6CwSNVjaRgaJsc9Tm711uhDIGZcyTZn4II5KkvFpS3
+ 2H+1X/8DetWwTUR3wC9hoyAdqqaXOdDFbEYGom73iFMgbOlHgx8OirRDvqpa0Ss0S2
+ gqnteCD1SICL7mKDIBfXBJ5lZ1twHnbJ8NB1PmNsIHHtbdOL5GXCa+8I6RcInEez27
+ +Er8RcY1CXmxYEIZRXWBrYR/Mtgfn8DMXQb2SRuTuoBUq7Uz1JaApKgQ3Oln6ZDO+y
+ MjAapKJHTh7BFE2/6K558x7kZRDW81nOSeMn4T0bhke9oXpuI0KnHZduvV0p4e3c5Y
+ XSSlReAnvMArw==
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=nziiY2cH
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next v2 5/8] ixgbe: remove
- ixgbe_ping_all_vfs() from link state change handlers
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=k20201202 header.b=NalWhCba
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next v2 7/8] ixgbe: use GFP_KERNEL
+ in ixgbe_fcoe_ddp_setup()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -98,75 +100,81 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: 'Simon Horman' <horms@kernel.org>
-
 This is an AI-generated review of your patch. The human sending this
 email has considered the AI review valid, or at least plausible.
-Full review at: https://sashiko.dev
+
+For local reproduction steps see https://netdev-ai.bots.linux.dev/ai-local.html
 ---
-ixgbe: remove ixgbe_ping_all_vfs() from link state change handlers
+ixgbe: use GFP_KERNEL in ixgbe_fcoe_ddp_setup()
 
-This commit removes ixgbe_ping_all_vfs() from the link watchdog handlers
-to prevent a race condition during VF initialization where a gratuitous
-ping collides with the VF mailbox state machine.
+This commit restructures ixgbe_fcoe_ddp_setup() to use GFP_KERNEL
+instead of GFP_ATOMIC by splitting get_cpu()/put_cpu() usage into two
+narrow critical sections, moving DMA mapping and pool allocation between
+them where preemption is enabled.
 
-> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> index 8110bcf006a30..3071302901499 100644
-> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> @@ -8164,9 +8164,6 @@ static void ixgbe_watchdog_link_is_up(struct ixgbe_adapter *adapter)
->  
->  	/* update the default user priority for VFs */
->  	ixgbe_update_default_up(adapter);
-> -
-> -	/* ping all the active vfs to let them know link has changed */
-> -	ixgbe_ping_all_vfs(adapter);
->  }
-
-How will legacy VFs (such as 82599, X540, and X550) receive link state
-changes without these pings?
-
-The commit message states that link-state changes are already communicated
-to VFs through the normal mailbox protocol. However, older VFs appear to
-rely on receiving an IXGBE_VT_MSGTYPE_CTS message from the PF to clear
-mac->get_link_status and complete the link up sequence in
-ixgbevf_check_mac_link_vf().
-
-Without the ping, will these legacy VFs fail to read the mailbox and stay
-stuck reporting the link as down?
-
-Is the mailbox corruption race still triggerable from other paths?
-
-If ixgbe_ping_vf() is called locklessly from process-context NDO callbacks
-like ixgbe_ndo_set_vf_link_state() or ixgbe_ndo_set_vf_trust(), could it be
-preempted by a hardirq triggering ixgbe_msg_task() (which correctly acquires
-vfs_lock before writing to the mailbox)?
-
-Since ixgbe_write_mbx_pf() only arbitrates between the PF and VF via the
-IXGBE_PFMAILBOX_PFU hardware lock, it provides no mutual exclusion between
-concurrent host threads. Could concurrent writes corrupt the IXGBE_PFMBMEM
-buffer and cause the exact same VF initialization failure this patch intended
-to fix?
-
-Would wrapping the pings in spin_lock_irqsave(&adapter->vfs_lock, flags)
-prevent the mailbox corruption instead of removing the pings entirely?
+> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c
+> index 011fda9c6193..e338ff0e6522 100644
+> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c
+> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c
 
 [ ... ]
 
-> @@ -8197,9 +8194,6 @@ static void ixgbe_watchdog_link_is_down(struct ixgbe_adapter *adapter)
->  
->  	e_info(drv, "NIC Link is Down\n");
->  	netif_carrier_off(netdev);
-> -
-> -	/* ping all the active vfs to let them know link has changed */
-> -	ixgbe_ping_all_vfs(adapter);
->  }
+> @@ -179,29 +180,43 @@ static int ixgbe_fcoe_ddp_setup(struct net_device *netdev, u16 xid,
+>  		return 0;
+>  	}
+>
+> +	/* Pin to current CPU only to read the per-CPU pool pointer; drop
+> +	 * the pin before any allocations that may sleep under direct reclaim.
+> +	 */
+>  	ddp_pool = per_cpu_ptr(fcoe->ddp_pool, get_cpu());
+>  	if (!ddp_pool->pool) {
+>  		e_warn(drv, "xid=0x%x no ddp pool for fcoe\n", xid);
+> -		goto out_noddp;
+> +		put_cpu();
+> +		return 0;
+>  	}
+> +	pool = ddp_pool->pool;
+> +	put_cpu();
+>
+>  	/* setup dma from scsi command sgl */
+>  	dmacount = dma_map_sg(&adapter->pdev->dev, sgl, sgc, DMA_FROM_DEVICE);
+>  	if (dmacount == 0) {
+>  		e_err(drv, "xid 0x%x DMA map error\n", xid);
+> -		goto out_noddp;
+> +		return 0;
+>  	}
+>
+> -	/* alloc the udl from per cpu ddp pool */
+> -	ddp->udl = dma_pool_alloc(ddp_pool->pool, GFP_ATOMIC, &ddp->udp);
+> +	/* Allocate from per-CPU pool; GFP_KERNEL is safe: preemption is
+> +	 * re-enabled after the put_cpu() above.  Per-CPU DMA pools are only
+> +	 * destroyed under RTNL during interface teardown, so the saved pool
+> +	 * pointer remains valid.
+> +	 */
+> +	ddp->udl = dma_pool_alloc(pool, GFP_KERNEL, &ddp->udp);
 
-Without this ping, will older VFs miss the mailbox interrupt needed to set
-mac->get_link_status = 1, causing them to remain stuck reporting the link as
-up indefinitely and silently drop traffic when the cable is unplugged?
+Is this safe given the calling context?
 
-This isn't a bug, but removing the calls from the link handlers appears to
-leave ixgbe_ping_all_vfs() as dead code without any remaining callers in
-the kernel. Should the function definition in ixgbe_sriov.c and its
-declaration in ixgbe_sriov.h be removed as well?
+Looking at the call path from the FCoE stack:
+
+fc_exch_seq_send()
+  fc_exch_alloc()
+    fc_exch_em_alloc()
+      spin_lock_bh(&pool->lock)
+      # allocate exchange
+      # set ep->ex_lock = held
+      return with ep->ex_lock still held
+  fc_fcp_ddp_setup()
+    lport->tt.ddp_setup()
+      .ndo_fcoe_ddp_setup() == ixgbe_fcoe_ddp_get()
+        ixgbe_fcoe_ddp_setup()  # <-- we are here
+  # ... continues with ep->ex_lock held
+  spin_unlock_bh(&ep->ex_lock)
+
+fc_exch_em_alloc() acquires ep->ex_lock (a spinlock) and returns with
+it held. The lock remains held through fc_fcp_ddp_setup() and into
+ixgbe_fcoe_ddp_setup(). Additionally, spin_lock_bh() disables bottom
+halves.
+
+Can GFP_KERNEL be used while holding ep->ex_lock with BH disabled, or
+does this require GFP_ATOMIC?
