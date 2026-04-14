@@ -4,87 +4,102 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4FAC3ED7B8B
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 14 Apr 2026 08:44:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E13DCED7B8D
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 14 Apr 2026 08:55:44 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 0AEE561CC8;
-	Tue, 14 Apr 2026 08:44:26 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 9301161CD9;
+	Tue, 14 Apr 2026 08:55:44 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id BQesj-O-H4TS; Tue, 14 Apr 2026 08:44:24 +0000 (UTC)
+ id y04yLUP4xfe6; Tue, 14 Apr 2026 08:55:42 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 9AE8861CB3
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B4167608C7
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1776156264;
-	bh=ET3wte8K+UK2w7PAn9uF87YFkYStoAXBNwNcEqaM2oI=;
-	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
+	s=default; t=1776156942;
+	bh=rzFrTzoq0HnCZHcVlEeNBgHotPSPhdkKZmBWoRPrbOg=;
+	h=Date:To:Cc:References:From:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=shgbUgW0+nAUZXOuMshktGgXFyslmq7I5itam8O53qceNxlsWLQp4xWrXz11UME65
-	 NusyzDZbuFuYRSFd9Mx5FuAMtZi0SFGrx0L5l8iYV81tjxSS6koAk23uL+hZP+IzUT
-	 RvxLQw/cal9DxmOVqAb3lQGKVliuMfz4mkP4x5XHvo3NG7FMi6ElwM/erA44MPyz5D
-	 ZCYbbjkXgIiAntD9yQNcWOn+todj0VvYJdeK7HeFUMFxkkW2cBJq7UVqkUMWjlNc7M
-	 iANYQd217v4G+LeNCVjU6Dp9W4z9ACokbnd7PXYgDS8M/kz0gAYZkGDeGwCHiqe3hY
-	 K7d3GwSQsR4Hw==
+	b=eJMJYacP4ByzmhjB6CcML5F2+m+iUCjf9yNJnAUsLcKpakVY1510DPUp2cf36sxB2
+	 Rqpg0rRU98/ZY90GoSc8fCLO/enYt+cnNn+wy8+RbJAAAy8IcG7eRoP9TvEze4shEt
+	 N2OUwDooCuK979DyXMGIW/sfLKvLfqb18OPSuOef+A+zBERl+D8VjiZC3wpCUa7ONG
+	 n2Yy3M5H7hrh+xd5fj5cEIBF1mxtQ8TjUcgnJrlKE9ej6nZD55fgb+zitxQ1QjAyom
+	 2tgC93tlUDcpfoP5ylAPmTB79HFGiyCbaW4XRS0Muo/3WLeaiJcbcBKlmf+AWrOJqC
+	 mkb3J+75S63yQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 9AE8861CB3;
-	Tue, 14 Apr 2026 08:44:24 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id 246BB283
- for <intel-wired-lan@lists.osuosl.org>; Tue, 14 Apr 2026 08:44:23 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id B4167608C7;
+	Tue, 14 Apr 2026 08:55:42 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 7063E283
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 14 Apr 2026 08:55:41 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 16B0A4076A
- for <intel-wired-lan@lists.osuosl.org>; Tue, 14 Apr 2026 08:44:23 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 6149A403B9
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 14 Apr 2026 08:55:41 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id ORhHJSDIDhhD for <intel-wired-lan@lists.osuosl.org>;
- Tue, 14 Apr 2026 08:44:22 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
- helo=tor.source.kernel.org; envelope-from=horms@kernel.org;
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id ew8xyKjSTj3a for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 14 Apr 2026 08:55:40 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.13;
+ helo=mgamail.intel.com; envelope-from=dawid.osuchowski@linux.intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 63A13406F6
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 63A13406F6
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 63A13406F6
- for <intel-wired-lan@lists.osuosl.org>; Tue, 14 Apr 2026 08:44:22 +0000 (UTC)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by tor.source.kernel.org (Postfix) with ESMTP id 6837A60018;
- Tue, 14 Apr 2026 08:44:20 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 048D9C19425;
- Tue, 14 Apr 2026 08:44:18 +0000 (UTC)
-Date: Tue, 14 Apr 2026 09:44:16 +0100
-From: Simon Horman <horms@kernel.org>
-To: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Cc: intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com,
- netdev@vger.kernel.org, Dave Ertman <david.m.ertman@intel.com>
-Message-ID: <20260414084416.GW469338@kernel.org>
-References: <20260410074921.1254213-1-aleksandr.loktionov@intel.com>
- <20260410074921.1254213-2-aleksandr.loktionov@intel.com>
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 66F9240191
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 66F9240191
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.13])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 66F9240191
+ for <intel-wired-lan@osuosl.org>; Tue, 14 Apr 2026 08:55:39 +0000 (UTC)
+X-CSE-ConnectionGUID: d+9770hPRLuuXx7to+YLZw==
+X-CSE-MsgGUID: PZ+rTnQJTFO2NzzXwVA5AA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11758"; a="88186418"
+X-IronPort-AV: E=Sophos;i="6.23,179,1770624000"; d="scan'208";a="88186418"
+Received: from fmviesa009.fm.intel.com ([10.60.135.149])
+ by orvoesa105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 14 Apr 2026 01:55:40 -0700
+X-CSE-ConnectionGUID: rfAdmeYfT7OQFopcDKEkiA==
+X-CSE-MsgGUID: Aoc23v+fREy3t9eodGYHEQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,179,1770624000"; d="scan'208";a="223535662"
+Received: from avbakuno-mobl.ccr.corp.intel.com (HELO [10.246.16.61])
+ ([10.246.16.61])
+ by fmviesa009-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 14 Apr 2026 01:55:37 -0700
+Message-ID: <01cee873-23d7-43f5-96eb-29826d1c157c@linux.intel.com>
+Date: Tue, 14 Apr 2026 10:55:35 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260410074921.1254213-2-aleksandr.loktionov@intel.com>
+User-Agent: Mozilla Thunderbird
+To: Matt Vollrath <tactii@gmail.com>, intel-wired-lan@osuosl.org
+Cc: stable@vger.kernel.org, Avigail Dahan <avigailx.dahan@intel.com>
+References: <20260413000325.33379-1-tactii@gmail.com>
+Content-Language: pl, en-US
+From: Dawid Osuchowski <dawid.osuchowski@linux.intel.com>
+Organization: Intel Technology Poland sp. z o.o. - ul. Slowackiego 173, 80-298
+ Gdansk - KRS 101882 - NIP 957-07-52-316
+In-Reply-To: <20260413000325.33379-1-tactii@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1776156260;
- bh=s/RPIBdbqtGV3I+qgmGFUomO2XQA39NxOhQnddEQNNk=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=ma97uWBCalFaX0n7G7DL1RiXBCVKhs+9NXOThx7gK7GXW/QQPYAApBlVF+7Dw+k/z
- wjvZhox7JSgHEknoB/PQW2vf2a5lyyZWV6M/HNgOgtIq/8Uoavd4B47aPcWFSD/sGd
- iCSc3RwNkfetixCuE7YMiu7yCyYCVK8fuBtZxnIfprvlAniYbYwtIgQtGrkhfWWb7g
- roqigTciyc3SWshbHYlewOgCjgGWSfzr2K2clXXtsOg/iyXGWYoLVNO5QL7GFyLRFU
- 9FBhaGrK4taWLBhP5vBFDqY2U3u1A7CmUeDcevGnQpOaVrQyKSeY3ecs6R2sTpVYYG
- e4pxX+j4BkC6Q==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dmarc=pass (p=quarantine dis=none)
- header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1776156941; x=1807692941;
+ h=message-id:date:mime-version:subject:to:cc:references:
+ from:in-reply-to:content-transfer-encoding;
+ bh=kudLCTIITmlAZjTqgthhq39P8xFZprhHZarcmmvo6PU=;
+ b=cWkG0Mt7cdFFEvQcCH004TenPRNAgqdAm3aPHelXIa6YTlN0O7cXaH8p
+ +e9eeuIybEhuIkekaXSfKrJuDWe3iND6MAyA5ueTHLjo2XLI6trwe2XRh
+ 6QWaFQLFM3hOBDOdKsWWHzwZeE0KZcZtMmlS68aDPOtSu8181EiETRbt3
+ bcG7TPsc0MpgBKd4zKi2M6FrtCZ6nBoL3n32wJENYYV0fsaPE5KuWfBlC
+ QtmV5JubuHJqA0xrKZPT3t5McgCKbMJKDGhs4V/DpsyaXYMJNCgI+K/Ll
+ u1gFQu08ikVXpmhY7ewdTkFRWcLqmX78+uGwmpBDQt6x0GjEYrHbZlRI0
+ w==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dmarc=none (p=none dis=none)
+ header.from=linux.intel.com
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=ma97uWBC
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next 1/10] ice: translate FW to SW
- for max num TCs encoding
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=cWkG0Mt7
+Subject: Re: [Intel-wired-lan] [PATCH iwl-net v2] e1000e: Unroll PTP in
+ probe error handling
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -100,24 +115,60 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Fri, Apr 10, 2026 at 09:49:12AM +0200, Aleksandr Loktionov wrote:
-> From: Dave Ertman <david.m.ertman@intel.com>
-> 
-> The FW uses a 3-bit field in a TLV to represent the maximum number of
-> Traffic Classes supported per interface. Since the maximum value is 8,
-> and at least one TC must be supported, the encoding uses bit values of
-> 000 to represent 8 TCs.
-> 
-> The driver currently does not translate this value and reports 0 max TCs
-> to the DCBNL interface instead of 8.
-> 
-> Add a translation when interfacing with the FW to use 0x0 as the value
-> for 8 max TCs.
-> 
-> Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
-> Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+On 2026-04-13 2:03 AM, Matt Vollrath wrote:
 
-I'm not sure if you want to reconsider this as a bug fix.
-But the code changes look good to me.
+Hey Matt,
 
-Reviewed-by: Simon Horman <horms@kernel.org>
+Thanks for the patch!
+
+Apologies but it seems I didn't explain fully where the changelog should 
+go, same goes for the Cc: stable as it should be inserted into the 
+commit msg as a tag, see example below.
+
+> If probe fails after registering the PTP clock and its delayed work,
+> these resources must be released.
+> 
+> This was not an issue until a 2016 fix moved the e1000e_ptp_init() call
+> before the jump to err_register.
+> 
+> Fixes: aa524b66c5ef ("e1000e: don't modify SYSTIM registers during SIOCSHWTSTAMP ioctl")
+> Signed-off-by: Matt Vollrath <tactii@gmail.com>
+> Tested-by: Avigail Dahan <avigailx.dahan@intel.com>
+> ---
+
+Changelog should go _here_, not below the:
+
+-- 
+2.43.0
+
+and should also have the --- afterwards. So using this patch submission 
+as an example your commit msg + changelog should look like the following:
+
+If probe fails after registering the PTP clock and its delayed work,
+these resources must be released.
+
+This was not an issue until a 2016 fix moved the e1000e_ptp_init() call
+before the jump to err_register.
+
+Fixes: aa524b66c5ef ("e1000e: don't modify SYSTIM registers during 
+SIOCSHWTSTAMP ioctl")
+Cc: stable@vger.kernel.org
+Signed-off-by: Matt Vollrath <tactii@gmail.com>
+Tested-by: Avigail Dahan <avigailx.dahan@intel.com>
+---
+Changes:
+v2:
+* Apply the correct Fixes tag
+* Target iwl-net
+* Cc stable
+---
+
+  drivers/net/ethernet/intel/e1000e/netdev.c | 1 +
+  1 file changed, 1 insertion(+)
+
+<snip of the rest of the diff/>
+
+Once again sorry for not saying it more clearly before.
+
+Best regards
+~Dawid
