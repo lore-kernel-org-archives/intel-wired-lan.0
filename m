@@ -1,136 +1,207 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A75B4F531DF
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 13 Apr 2026 23:48:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 470C7F531DC
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 14 Apr 2026 00:47:05 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 6D79961B43;
-	Mon, 13 Apr 2026 23:48:21 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id op3eoBZ6Az03; Mon, 13 Apr 2026 23:48:20 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 0481161B44
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1776124100;
-	bh=q/9ULgUjNY9+Rf83w/yyfx6eMJh9uEvJP55t7um3W8I=;
-	h=From:Date:To:Cc:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=gmb+iRyFYLbDSFBIiXHt7XaCXcEzqXZ9cffuJnO/Ia8/I6Y/BDGGRSgUSxnMv+5pe
-	 /izBNX7U3ReeUkmk87tCM4nCtuzk/g+Qhj0FR0yThlgVTrbSupEkb6IiL5wNuI6NbH
-	 ISfTkcVqoQfXyADTgulbn4ioYo9Iq+TCoHcawiM04F9W0MKWf7v0drbFMKxQfkC8Q8
-	 JfPuqiF2T7sstWGLAUQvFbX3ov3irzSC+iWnFBuS0tUj6x+gQ8NBWP1q8QgB37wfvg
-	 Nj3YvvQC72huJHaWTYhIfaV5HemCSlXSQkxIdZLO+maN43g8jl8K6svR3wpQh6O0PV
-	 2fW/Itvn8sGTQ==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 0481161B44;
-	Mon, 13 Apr 2026 23:48:20 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id E1070194
- for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Apr 2026 14:01:48 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id C6E0940F69
- for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Apr 2026 14:01:48 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id DACCC427DF;
+	Tue, 14 Apr 2026 00:47:04 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id U0s_tN1Tcrt0 for <intel-wired-lan@lists.osuosl.org>;
- Mon, 13 Apr 2026 14:01:47 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2a00:1450:4864:20::132; helo=mail-lf1-x132.google.com;
- envelope-from=tim.w.connors@gmail.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 17D5340E64
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 17D5340E64
-Received: from mail-lf1-x132.google.com (mail-lf1-x132.google.com
- [IPv6:2a00:1450:4864:20::132])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 17D5340E64
- for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Apr 2026 14:01:46 +0000 (UTC)
-Received: by mail-lf1-x132.google.com with SMTP id
- 2adb3069b0e04-5a3e66f849dso4167847e87.1
- for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Apr 2026 07:01:46 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1776088905; cv=none;
- d=google.com; s=arc-20240605;
- b=X7qAdiBTXlBOytA1OyznZCtxToEFqzq/YSB6HNrtga0g4pOkg1V/5kl26sbI6akEvY
- DPD7n65UimDk80yQ5hg6WCzBk22S6gZnQu2wAUwH17URqdw+cyl/tN4vfDoAzWI0K4lG
- 1zRr3TAsc937Ctdb4t40VJcP8Q0rj7mHRvvcGykj4R5WPhBR1qDruZ2k9w7fEdu/0nS8
- EvjtaYkkibzk76ZGmEs6atAW6WhCIEXCHKUFfSkOMDM409Djj/gh03NnPpKFxi6Nctc4
- ZqEwpWrJ59BgRrJsf6/lNoUwgoiSS1d2n8YrF2yOo/vqiadfcWoexGfh76rmsBcil8wq
- B8xw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com;
- s=arc-20240605; 
- h=cc:to:subject:message-id:date:from:mime-version:dkim-signature;
- bh=q/9ULgUjNY9+Rf83w/yyfx6eMJh9uEvJP55t7um3W8I=;
- fh=TQ8q1SCc0fJSNpJmF5YGC+apxG9zT36xA/J5uWZFvqI=;
- b=DDi0V6CHIoM3X0z6hMsZReOBRB5BBQ+3rGD1Mq+EMmVsTEgf4Q53laTg9DynuWhFRS
- geLMvFUDcz+GL8jUJ1wdxTEey7efmqIebgPzBXXw4y4XpPz27cJedDPmzMO3u68/IBK4
- giHUV+2ywBjoRFJFmd84yLJNSa+Jz5hQmvNSP8vo0cJHwFImiobM5su2M9dQe/Hv+IBL
- Q/9l8Yg4sulc1FtkSRKiYVejDdeL6utYiRQYRctCckfQXTWfy+QXH0x7pSYMcQY5Lf87
- 4dNHFCtxhhZDsnSpFnsnzET/U8Xa61FarR+gg7WrY0Ic3qG1VLgvzyxwSjLE8Lae3T9/
- 1yVA==; darn=lists.osuosl.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20251104; t=1776088905; x=1776693705;
- h=cc:to:subject:message-id:date:from:mime-version:x-gm-gg
- :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
- bh=q/9ULgUjNY9+Rf83w/yyfx6eMJh9uEvJP55t7um3W8I=;
- b=XEflD3x64CgHyE1sFbaEIRvlJd8Xoff1fIRsPUcNtkBZ1bDxYadUs1hXBJDsV0q/oM
- TdZSiOsJ2yEZeKvf2OBgd6TJv8xYJtgxUs0FwLC47mbYQFhiJpDdFHeiOE2QHCUV+TbZ
- 1Jv6uQ5ujxdlm5+Wg5WHsw8ICy33Aa45wpnMlVW7q5A07jdpQFs+uo06D5H6kaDBJspP
- HpKjLlcj+K+VPGuwQIVKiwynD7yvcBZlePLSbBUNkrjcFtVFZTWSrOUQfdfnZA+DnZ6T
- esXShD7x+q/SofQEXB/UTjglnxaj2fNLe1kHW+kF+DlhOGRhnVQCjgxU9kwiSmbWhsRR
- d1iA==
-X-Forwarded-Encrypted: i=1;
- AFNElJ+yPJNqdak4CVpYYnFLeeVRtLXevNVbXOk+F213/1juU4uVU63EFtZlMXKyh7t/wamuIpOYc6jyXtLRvpaoL1k=@lists.osuosl.org
-X-Gm-Message-State: AOJu0YyGreAB3q5nQLLcDMJKb/rIa+5pFE5fY2VSWskIJk/v/aX/NdZJ
- pjq4QXUplN0JeAXuL3WM3tUBkfrtUie7GgOS9mRLlmkXozEl2ITqXUO4Mt4y4uwuoxKXawI5s2R
- 8yv96wlBR4TJV/hL6Xt9tc8huW7Zqf0M=
-X-Gm-Gg: AeBDiesQUhNdnpUsRZ1W5IXeYMin3ePFhVdTV6YBc7t+ucXFmSrd8oCpldzq0mzUuRK
- QsPyNeh5aRvDm10P2R/UkKQTNQrt/QL7p2pkfnGL/jwjSgi8MYIrkpB4FDlm4E0fXP2ZZhtQv2Z
- C4Twl2GAKGZTqv5dSN4hKHwvjIAUmN+n25ipg3y7bwQh+p0E7yLoTIbOs4XoikaBaIW16C7I7A2
- RM0bwWhZplltlvtsF3xeGA/BcQ30zjd3rr2LItiFWg7VLkK/4S2wQFn0qS7YrB4jyncDrqnbnZr
- xZPyvz3O
-X-Received: by 2002:a05:6512:318e:b0:5a2:b370:f796 with SMTP id
- 2adb3069b0e04-5a3e7ca7c3emr5606816e87.10.1776088903611; Mon, 13 Apr 2026
- 07:01:43 -0700 (PDT)
+ id pg4cJitNba4R; Tue, 14 Apr 2026 00:47:03 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 48F81427DD
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1776127623;
+	bh=dByCiFUKFC0gnLHfCvFxk7BLtQXcJtwrXIIh8ViFps8=;
+	h=Date:To:CC:References:From:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=7XJ/3HDwY+N1gBPT45UzDUgByJe1gafr1LcMaxxxCB6acAWcnEr5wyhC9cwKuX2rj
+	 vlOkl0jAIHrD9iDvrbG2rEifhC50fezZ49WU7S08VhOMf1NwOdXojbKFzuKJOACmMu
+	 SpRRjZUAG6fPMc2vSdohPzSm7fpvQrRXYDy0HNveQl/YUrOmTckl3a/4U1aNZFUxbP
+	 yI48tUg2kEBWNLs6KcO6OiAXbbqVZqTGJTi5509rXDnev/3w9OokGyFkX2i3sfeAhl
+	 j6z+flg+GvbhzRNufkooxu+Dh/cF5Uw3Indap7n1xBpO2jsN41x3gIWvSofdO6FRom
+	 ctwOSEASqZMLQ==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp4.osuosl.org (Postfix) with ESMTP id 48F81427DD;
+	Tue, 14 Apr 2026 00:47:03 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 91217283
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 14 Apr 2026 00:47:02 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp2.osuosl.org (Postfix) with ESMTP id 8EF7D42332
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 14 Apr 2026 00:47:02 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id Gv7_B103bBlJ for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 14 Apr 2026 00:47:01 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.18;
+ helo=mgamail.intel.com; envelope-from=jacob.e.keller@intel.com;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org AC9B8402A4
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org AC9B8402A4
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.18])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id AC9B8402A4
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 14 Apr 2026 00:47:01 +0000 (UTC)
+X-CSE-ConnectionGUID: M4HcGgEJTtCNkoJ1q/KNwA==
+X-CSE-MsgGUID: sTl779jMR9abQyg7ccNpag==
+X-IronPort-AV: E=McAfee;i="6800,10657,11758"; a="76238581"
+X-IronPort-AV: E=Sophos;i="6.23,178,1770624000"; d="scan'208";a="76238581"
+Received: from orviesa003.jf.intel.com ([10.64.159.143])
+ by fmvoesa112.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 13 Apr 2026 17:47:00 -0700
+X-CSE-ConnectionGUID: 0J9HbI62Sxisd6pSvNfXIA==
+X-CSE-MsgGUID: /RICMNQBRe6kxlsZT/FDQQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,178,1770624000"; d="scan'208";a="233965560"
+Received: from orsmsx902.amr.corp.intel.com ([10.22.229.24])
+ by orviesa003.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 13 Apr 2026 17:47:01 -0700
+Received: from ORSMSX901.amr.corp.intel.com (10.22.229.23) by
+ ORSMSX902.amr.corp.intel.com (10.22.229.24) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.37; Mon, 13 Apr 2026 17:46:59 -0700
+Received: from ORSEDG901.ED.cps.intel.com (10.7.248.11) by
+ ORSMSX901.amr.corp.intel.com (10.22.229.23) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.37 via Frontend Transport; Mon, 13 Apr 2026 17:46:59 -0700
+Received: from SN4PR2101CU001.outbound.protection.outlook.com (40.93.195.69)
+ by edgegateway.intel.com (134.134.137.111) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.37; Mon, 13 Apr 2026 17:46:59 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=Nrkq3KICbRK8IFu1uR17aCDwUUVWOzPafyilJaq3HyKiZNEBsLoDWpuMrYK5rUqp6YszzVTgD2P7L/RJ4DpO2P4Ut/eDgneVGw7kLujwFmfyEunD2nN0yGXe6A5P3z3Y2eV0fFPHyTa3KTKLs5PNiDwV/l5sBpkokGIGw+cb3xHodnFbDXobDV8mVnC6PQyU6m7SHKogQq4gKehzA+FD3yk3l7BiSoc66OCOwvXuaNVMTUsBi3XyFawPd7ECNICDj6laXM9gi+w+3f02U3ZMB5f0apGEIuHVF7HTDy91D35xxHRj5kCZ+BKT8dd42B/vCZ+OH6U0LcMvZPdd9wsirQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=dByCiFUKFC0gnLHfCvFxk7BLtQXcJtwrXIIh8ViFps8=;
+ b=lYx98lCdEkL4X0xek9xgJYULCXFQaBS6MuLQSodEyrvDaz2wS6Ftb4eV6dHpy8/2uCismpImWMgb2fiY/uWHqHNLciYDrWvFyr6JkyFcrpup1WRxuIQD/Adep/g55NMwWvSh1Xw1PNGnGJJ82zKeJnxddSUOxtT+/CA9fFi1hGBgRBrSYIaPCD313JJsyFuzg6tx4DajBcw1Sia4CbF7mLCUyHUJtPwMhuDQyaFD/Dtna+gcoO0SSGApTFB6/Hw9Ls0L0J+QdA3Yjrfbft6LRXvKIa8DeEwiF803jz5L0WAmc+/ayTzLAeHN816lVV4PL15w9IQXniAfegKtmnrX7g==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Received: from DS0PR11MB7579.namprd11.prod.outlook.com (2603:10b6:8:14d::5) by
+ DS0PR11MB7785.namprd11.prod.outlook.com (2603:10b6:8:f1::8) with
+ Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.9769.48; Tue, 14 Apr 2026 00:46:57 +0000
+Received: from DS0PR11MB7579.namprd11.prod.outlook.com
+ ([fe80::4199:4cb5:cf88:e79e]) by DS0PR11MB7579.namprd11.prod.outlook.com
+ ([fe80::4199:4cb5:cf88:e79e%5]) with mapi id 15.20.9818.014; Tue, 14 Apr 2026
+ 00:46:57 +0000
+Message-ID: <193fdf9e-db5f-4ae0-9a8e-d7049fa74ee6@intel.com>
+Date: Mon, 13 Apr 2026 17:46:54 -0700
+User-Agent: Mozilla Thunderbird
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ <intel-wired-lan@lists.osuosl.org>, "netdev@vger.kernel.org"
+ <netdev@vger.kernel.org>, Jakub Kicinski <kuba@kernel.org>
+CC: <netdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>, Tony Nguyen
+ <anthony.l.nguyen@intel.com>, Przemek Kitszel <przemyslaw.kitszel@intel.com>, 
+ Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller" <davem@davemloft.net>, 
+ Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, "Paolo
+ Abeni" <pabeni@redhat.com>, stable <stable@kernel.org>
+References: <2026041116-retail-bagginess-250f@gregkh>
+Content-Language: en-US
+From: Jacob Keller <jacob.e.keller@intel.com>
+In-Reply-To: <2026041116-retail-bagginess-250f@gregkh>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: MW4PR02CA0028.namprd02.prod.outlook.com
+ (2603:10b6:303:16d::7) To DS0PR11MB7579.namprd11.prod.outlook.com
+ (2603:10b6:8:14d::5)
 MIME-Version: 1.0
-From: Tim Connors <tim.w.connors@gmail.com>
-Date: Tue, 14 Apr 2026 00:01:29 +1000
-X-Gm-Features: AQROBzBL-sC4QJEL5N_x9JPPCKzfkQqSR_1ZCzcxqyZTPfFMABTRtxoy1CSG7Y8
-Message-ID: <CAOrPOqzDHuZBRdpnJ34u-FQ27p55QYrPA-6Jz0dJey7JRDSs0g@mail.gmail.com>
-To: 1104670@bugs.debian.org
-Cc: "Loktionov, Aleksandr" <aleksandr.loktionov@intel.com>, "Hutchings,
- Ben" <ben@decadent.org.uk>, 
- "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
- linux-pci <linux-pci@vger.kernel.org>, 
- Pavan Chebbi <pavan.chebbi@broadcom.com>, Michael Chan <mchan@broadcom.com>, 
- Laurent Bonnaud <L.Bonnaud@laposte.net>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>
-Content-Type: multipart/alternative; boundary="000000000000307a0f064f57ecf3"
-X-Mailman-Approved-At: Mon, 13 Apr 2026 23:48:19 +0000
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20251104; t=1776088905; x=1776693705; darn=lists.osuosl.org;
- h=cc:to:subject:message-id:date:from:mime-version:from:to:cc:subject
- :date:message-id:reply-to;
- bh=q/9ULgUjNY9+Rf83w/yyfx6eMJh9uEvJP55t7um3W8I=;
- b=I1RLuSuIx9Gz2cR81oiy39MiOviFZ1V803H2sc1lP9ja3O7ptfeOidIA6qoXksKzKQ
- jycK4tYWv7jHoVHuM0a/JCK/+MDBnnVcYcIwaFeysuA9ZDclw3B1/aFPtgR0AUkIyjh4
- HmazHUUVHRB+y5qFvb3XT4zICw4/uwRQaRaWAKQ0awg0xMqWwt1DAh0e6e9pLEg1cxrh
- eUMrcAPaw3jLsOYHyi5uFFEAPm5vpDsT1IxwzzSM6FrGcgqg81vuMmre/wV71mD9S3Uc
- 81DsIwYXsrJavm5tfyph0yKtVvKZ8G0ROMQC0RmEjKAcsMhA72KMQRgwgwtVjy20Jxh2
- 75Sg==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DS0PR11MB7579:EE_|DS0PR11MB7785:EE_
+X-MS-Office365-Filtering-Correlation-Id: e169e9db-4d55-42f8-93c0-08de99bf54a1
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+ ARA:13230040|1800799024|366016|376014|7416014|18002099003|56012099003|22082099003;
+X-Microsoft-Antispam-Message-Info: PP+qiXr7VRc/I4WP+9FhsQPEtbZ2Kx29OI7qQfGzszGRxVcHrt3WlodUbrAg/PtZS25aCquG4bcheC4ZNaw4vxThN6uU0GwBBq9/SvWYBIHvhwMyPZM1czZUpmwSqD83u8LpJuU6E9OXA1ymq0zftaDKAOr4zjN1TnaF3yZNPmgrvRO4JOcGdfCkXN5GXWPMsLeIq3XpffOHiHylIlZIBNeOMABlzn7O6f+weBfA6Ac/6LZwC0VvR1p5mb06N8oiD6QTXkJIj40oV6t0ueFhXlVsCWQVVgVGMPNRJj58d+CDcTf5816shs8wNHt0+ax3attyP6CxPlN8XX3CtB8vCGDlMK+emDtVwS0rrJdBuglJFOiGcgmIHMM3iBdXMXYzUQUs9EkhKO8ufJfyo2v80R53DmWNrqf5ApB5D8ngEJwl44G+q1ktfaem1ui+JgbRtEIGPdoiJ6NeJVPqwFZEnrVn+wwATFm7zV/MD/waRmFU3KPs00qF6AhP78Hnb9kdXmXnamZQoufxhYSjI1QEu+ZhKAPlPuiWs3S4eGpGhBCl9K4CFfQP/rGtttnEiP+pkWDfORhjXWEw3zBGTmuq0x3540kCgWD+SWc19YWasSXOuUnto1h4UiH2x0Go1v9tsietXeggH3QkefEOBYDoJ2BRnIUzwaCXGZjpQNaKVIwpCQqtAQeVIpeqk99ttCzLeRjB5L8aARIHoHQj2YkREmZNjljeIhvrRS9rdJMtujw=
+X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:DS0PR11MB7579.namprd11.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(13230040)(1800799024)(366016)(376014)(7416014)(18002099003)(56012099003)(22082099003);
+ DIR:OUT; SFP:1101; 
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?MFQwVWxQVUR4enhQb1dBdUs1ZE9neE1kNUtxMUxzeTNoYUlQWVhuYmhSYUVn?=
+ =?utf-8?B?S3d0alptbGRkbmlVbG1JZndnZS9ML3dmZUZSZ1VuSDZ2ZlR4Z2w0QUsrNjlS?=
+ =?utf-8?B?VnZ0OER0S0hVYUtRdnBHdU9iNHpPQmFLd0hieWhYaDYvaTRCclBnVjNXdjJT?=
+ =?utf-8?B?bEwvSjl3ZWdLbWJzbjVQVHY4MlNsSjJIT2JBNjZmc0hRa085N0JvM0E4d08v?=
+ =?utf-8?B?L05Kbm4xbldHN0R3N0NZdk5wcm1JUjl5L2VNU3c5WktQUjZhNi9UR2VmY2Fn?=
+ =?utf-8?B?S01UVnp1dFRIZmt1K1AveEU4MzZ0L2wvSUJ0Z0pyeTZRYWxaaG9WdWU1ZzJ4?=
+ =?utf-8?B?aFBaOHdUblVYTjE0RjBESFdEWWMxejRhWVYzWlYwdzRNZFU1MEhSRTcyOGhQ?=
+ =?utf-8?B?bVA5VWxrcE0xb2RRSVdRMENBWVliOHYvRnROK3h0M0dsbXYrRERqeUhpTW9R?=
+ =?utf-8?B?dWZtMWorclM3RWhoQWZqQXFPT2ZYZzJINDMxcUtNNk9idWljN3RDcWxsem54?=
+ =?utf-8?B?R1dPbmpPdzNQalMxUFovNnI0U09NaEdtVXlzUnMzTHJhZElPOUpnSlZaZy9w?=
+ =?utf-8?B?dUhyOGtMck5vQUR3aXVCb2EwaFU0dkt5UXdBVzRWRWdGRW9Eakd0NmhndW1B?=
+ =?utf-8?B?bGEwUnhacjdCekRaanBQb2F6SmFPd1pYUG9vek5WYTFuUnIyaXZqcmZkS1V6?=
+ =?utf-8?B?cEw2OHl1VExDRkJlNEFWY0p3NlphRHhlaEtyb1FGOXZEY2paZ2NFS2Z3eldy?=
+ =?utf-8?B?MmkzTTNKTTBlNHpwMEtQc2orZGhhNktGeFFTOG85cnh5eklHSThuV3hqb2NC?=
+ =?utf-8?B?L3lZQjJtNUh6SFVVS2Q0UmVWQXU1eENOVVdsRGNySzZzZ0JVTlBBL2dZais3?=
+ =?utf-8?B?VFBYTkFOYjJMRjY2VUg2Y0pqOE9nYUZiV24wTVltZXJZT0Vkcy9SREh0ZGIy?=
+ =?utf-8?B?UXJDZTVSdmd2dGVXM3Q5MnJXdGtrRGlLaGZadU9UTmdBdi9nb3hJeDlUZ1B2?=
+ =?utf-8?B?ZVJvN1RmYmVaS0RDb0JjUVhHSWMrYUt5TmcxQ0xTUC95S3Q3aHRwU2RCakRl?=
+ =?utf-8?B?c1R6eWk4bGVUM1JQR29LOXJDcXYwL0d0eUcyaGNDNDdsTHVuY2JaRTRVRGNt?=
+ =?utf-8?B?UGptdUFYSlJVODkrTFdKVjBlZjZyajYvN3lmR01rR2c2NE84TVRLeTVaZVl6?=
+ =?utf-8?B?ckMwbS8vakE4aE0rQVFwWWFuYTMwN1VkcDUwZVNvZ2lsZ1dqakloTjJ3cEw0?=
+ =?utf-8?B?bnU2clF1b0hrSXNiSGZlNXk0NTRneWtkakVMaXR1OERjMUNoSmQvS3k5R0la?=
+ =?utf-8?B?YVJUOHZRYjNDN1QxQ3JsYlVlS3lwWTZsM0VuR1RMdm9Ta0RRdExQdHFpd2FQ?=
+ =?utf-8?B?SDREaGh4TjdNSVBkeU9aT203NHdtZEFIQWpSanhSaDhIYlNOQ1c3d3lVSkk5?=
+ =?utf-8?B?ZFcwdm1jd3RIQ1cxY1VIenRtZWVMLy9wS0NjTWNaazVYbFlUMU9XUm9iU3Z6?=
+ =?utf-8?B?b2NnemhtRGdQRlJMT3QvUFEvQnpjb29ZMDZJU2t4VEpLWmZPYmtaeHNHOFk0?=
+ =?utf-8?B?enY3eGxtOGlmTWpoOERnVzBiaVppT29FTzFneWc3aHJDcnVDTlpKYlp0QUU0?=
+ =?utf-8?B?enQwVk9aaTgrTVB1NUJiTTk0c3FiUUt5dzF6cFlEUEx6THVrVk52Y05WZTFk?=
+ =?utf-8?B?YmZYV09ST2RYR242dXRScnFySGJnaW9DaEVYOEFpQTlaSkhhYkVRci9kcjFE?=
+ =?utf-8?B?VXY1N1dZRGFWVXFiaGdTRWdxQUZKSjVxK1ZxOVlWMm1IcXFKUVovcFVXSXlv?=
+ =?utf-8?B?RmRyYXU0dzJ0YVJXSGF0b0dsNUY3dVBoSU4vOE4wT3hwRUVEcFkrbm5jRnNE?=
+ =?utf-8?B?L043T2U4WmJ5b3VyMEVJV1VOTkNRWE56dGdPS0QvdWVTa0V3ME9MOXBiNEJk?=
+ =?utf-8?B?QThYbmhCKzFJTGNzOUhYbkpOS3NMZXd0bU1kQzJzNVRzTnllSWxxcDJxZ1Fr?=
+ =?utf-8?B?WFdFMXJQd2MyVVorSlBGU3RvZ2lsNGI1TGpyQldTKzB4T21LbUNVcmtXREI3?=
+ =?utf-8?B?ZVdrakc2WTdlR01kOW9JWVNyeHZiZEdTczlRT3ViSVlPZm1CT0dHMmhnM0RI?=
+ =?utf-8?B?UHUzRzBINUl0ZWwyMS9DM1pPemRvUzEwWTlweUpMWW80K1pHTStSTXdHblph?=
+ =?utf-8?B?NlRydTBJUzFGVTYzd0hmT1ZuSXBCTXorTG4zcGlmNzk0Vlp2T0JJYS8zNmth?=
+ =?utf-8?B?Wi9TMUo3STVPSlZ6ZmZ1T1JybTRHZWIxdTFhV1ludVlYN0Z0WFNGUDZRNzRM?=
+ =?utf-8?B?RzgrT0VlZXV6enNkUEFRNmQ3c0tQd1dOUVRUMkRraVBuOTI1MEZmUT09?=
+X-Exchange-RoutingPolicyChecked: gZaF8nh7R4okZ1opvEO3cKdmLI5SL/IEw38tznyHjEQqRc8UPAYLAGlWxTp35S8k2HZOtfBDdv0Hrm8cWFW2eEORcoVpvCuruXrZbKAml+Y1DI/Q7rQ1iqCriX1cCFx5nAvQraJmHEHvcU82dwyCazaTSXDEunx90uiENHsqWGsjsd2TgXVLIZTQrJ/6HpjXbz1lW9Gz+YFlFqFS5VCuLg3pVWg/ai7DmItIK/nnXVZuFLZPqW63dNVrx0u75+HdHxEsfiSaD96V5iAscBrlFR/aBAYQqlo7+atu9hUTombcmyEOetL2bgmeK3yrgWK0519vyrjtzLV/EPUmmr05Rw==
+X-MS-Exchange-CrossTenant-Network-Message-Id: e169e9db-4d55-42f8-93c0-08de99bf54a1
+X-MS-Exchange-CrossTenant-AuthSource: DS0PR11MB7579.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 14 Apr 2026 00:46:57.2707 (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: esgpJdqrnfV5p1kGo20Fiwk/7LLXPRBa9xfbRKQ8xwgRPT+DLRlCJvlMyHJ9oiTqaz/cWUOpkqbyQ/dXtYvWxGAIcLivQ5M92jWTkiM5rds=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS0PR11MB7785
+X-OriginatorOrg: intel.com
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1776127622; x=1807663622;
+ h=message-id:date:subject:to:cc:references:from:
+ in-reply-to:content-transfer-encoding:mime-version;
+ bh=VPDLZmNy8uRtrzRATp4EDfzDAw6oGSkuJt0YKYyMQ9s=;
+ b=FzEQmmezp3dHm+uT+N1MWeb1cI5vZ1WUOcbx4D0BCwg9IaSfKfSdpWR2
+ 8UmygW9vDDXbO3XNalyih3vexcV4DPlgLeddDirOTrgO3DmDa7j323E8z
+ kzT8/SMcjVC61/D6Oa2rl4SBZRcKJUgUMeUhQz4o7bR7FPMxHdY25Wad3
+ 2Cg79ES1btBQ6Im8Ql+NhWk+ZBeUIwhNk0E9wAulzlfsQG/eiTQjCRtRH
+ gtSW8kFnGTxChvIhYK6l6QB42krIuTKU+auZZqWNoSd1iQiM1q2GvKfIt
+ R7DPa1ebn1a9m+pV4ckAQuRq9BvgNZ34V0eKSdxLS6pOkT3t87RXfRVzl
+ w==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none)
- header.from=gmail.com
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ header.from=intel.com
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key,
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20251104 header.b=I1RLuSuI
-Subject: Re: [Intel-wired-lan] Bug#1104670: linux-image-6.12.25-amd64:
- system does not shut down - GHES: Fatal hardware error
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=FzEQmmez
+X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Subject: Re: [Intel-wired-lan] [PATCH net] idpf: fix double free and
+ use-after-free in aux device error paths
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -146,349 +217,49 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
---000000000000307a0f064f57ecf3
-Content-Type: text/plain; charset="UTF-8"
+On 4/11/2026 3:12 AM, Greg Kroah-Hartman wrote:
+> When auxiliary_device_add() fails in idpf_plug_vport_aux_dev() or
+> idpf_plug_core_aux_dev(), the err_aux_dev_add label calls
+> auxiliary_device_uninit() and falls through to err_aux_dev_init.  The
+> uninit call will trigger put_device(), which invokes the release
+> callback (idpf_vport_adev_release / idpf_core_adev_release) that frees
+> iadev.  The fall-through then reads adev->id from the freed iadev for
+> ida_free() and double-frees iadev with kfree().
+> 
+> Free the IDA slot and clear the back-pointer before uninit, while adev
+> is still valid, then return immediately.
+> 
+> Commit 65637c3a1811 65637c3a1811 ("idpf: fix UAF in RDMA core aux dev
+> deinitialization") fixed the same use-after-free in the matching unplug
+> path in this file but missed both probe error paths.
+> 
+> Cc: Tony Nguyen <anthony.l.nguyen@intel.com>
+> Cc: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+> Cc: Andrew Lunn <andrew+netdev@lunn.ch>
+> Cc: "David S. Miller" <davem@davemloft.net>
+> Cc: Eric Dumazet <edumazet@google.com>
+> Cc: Jakub Kicinski <kuba@kernel.org>
+> Cc: Paolo Abeni <pabeni@redhat.com>
+> Cc: stable <stable@kernel.org>
+> Fixes: be91128c579c ("idpf: implement RDMA vport auxiliary dev create, init, and destroy")
+> Fixes: f4312e6bfa2a ("idpf: implement core RDMA auxiliary dev create, init, and destroy")
+> Assisted-by: gregkh_clanker_t1000
+> Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> ---
 
-On Mon, 14 Jul 2025 09:21:25 +0000 "Loktionov, Aleksandr" <
-aleksandr.loktionov@intel.com> wrote:
-> > On Sun, 2025-05-04 at 13:45 +0200, Laurent Bonnaud wrote:
-> > [...]
-> > >   - Previously the kernel would output an error in
-> > /var/lib/systemd/pstore/ but would shutdown anyway.
-> > >
-> > >   - Now, with kernel 6.1.135-1, the shutdown is blocked as with
-> > 6.12.x kernels (see below).
-> > > <30>[  961.098671] systemd-shutdown[1]: Rebooting.
-> > > <6>[  961.098743] kvm: exiting hardware virtualization <6>[
-> > > 961.361878] megaraid_sas 0000:17:00.0: megasas_disable_intr_fusion
-> > is
-> > > called outbound_intr_mask:0x40000009 <6>[  961.414526] ACPI: PM:
-> > > Preparing to enter system sleep state S5 <0>[  963.828210]
-> > > {1}[Hardware Error]: Hardware error from APEI Generic Hardware Error
-> > > Source: 5 <0>[  963.828213] {1}[Hardware Error]: event severity:
-> > fatal <0>[  963.828214] {1}[Hardware Error]:  Error 0, type: fatal
-> > > <0>[  963.828216] {1}[Hardware Error]:   section_type: PCIe error
-> > > <0>[  963.828216] {1}[Hardware Error]:   port_type: 0, PCIe end
-> > point
-> > > <0>[  963.828217] {1}[Hardware Error]:   version: 3.0
-> > > <0>[  963.828218] {1}[Hardware Error]:   command: 0x0002, status:
-> > 0x0010
-> > > <0>[  963.828220] {1}[Hardware Error]:   device_id: 0000:01:00.1
-> > > <0>[  963.828221] {1}[Hardware Error]:   slot: 6
->>> <0>[  963.828222] {1}[Hardware Error]:   secondary_bus: 0x00
->>> <0>[  963.828223] {1}[Hardware Error]:   vendor_id: 0x8086,
->> device_id: 0x1563
->>> <0>[  963.828224] {1}[Hardware Error]:   class_code: 020000
->>> <0>[  963.828225] {1}[Hardware Error]:   aer_uncor_status:
->> 0x00100000, aer_uncor_mask: 0x00018000
->>> <0>[  963.828226] {1}[Hardware Error]:   aer_uncor_severity:
->> 0x000ef010
->>> <0>[  963.828227] {1}[Hardware Error]:   TLP Header: 40000001
->> 0000000f 90028090 00000000
->> [...]
->>
->> It seems that this is a known bug in the BIOS of several Dell
->> PowerEdge models including (in this case) the R540.
+This is targeted at [net]. The fix seems straight forward enough.
+@Jakub, I have no objections if you want to pull this directly. I am not
+sure our validation team will find anything when testing since this is
+an error path that is historically been difficult for us to test.
 
-Yup, R730XD here.
+I'm also fine with taking it through iwl-net if you prefer, but just
+want to avoid duplicate work if you're already considering it.
 
->> A workaround was added to the tg3 driver
->> <https://git.kernel.org/linus/e0efe83ed325277bb70f9435d4d9fc70bebdcca8
->>
->> and a similar change was proposed (but not accepted) in the i40e
->> driver <https://lore.kernel.org/all/20241227035459.90602-1-
->> yue.zhao@shopee.com/>.
->> On tihis system the erorr log points to a deivce handled by the ixgbe
->> driver, and no workaround has been implemented for that.
->>
->> Since this issue seems to affect multiple different NIC vendors and
->> drivers, would it make more sense to implement this workaround as a
->> PCI quirk?
+> Note, these cleanup paths are messy, but I couldn't see a simpler way
+> without a lot more rework, so I choose the simple way :)
+> 
 
-It's not just network devices either.
+Yea, I didn't see a better way either.
 
-<5>[965917.449277] sd 4:0:0:0: [sda] Synchronizing SCSI cache
-<6>[965917.614364] [drm] PCIE GART of 256M enabled (table at
-0x000000F47FF80000).
-<6>[965917.820364] [drm] UVD and UVD ENC initialized successfully.
-<6>[965917.921559] [drm] VCE initialized successfully.
-<6>[965917.926574] amdgpu 0000:04:00.0: [drm] Cannot find any crtc or sizes
-<6>[965917.934684] amdgpu 0000:04:00.0: [drm] Cannot find any crtc or sizes
-<0>[965919.725575] {1}[Hardware Error]: Hardware error from APEI Generic
-Hardware Error Source: 3
-<0>[965919.725582] {1}[Hardware Error]: event severity: fatal
-<0>[965919.725587] {1}[Hardware Error]:  Error 0, type: fatal
-<0>[965919.725591] {1}[Hardware Error]:   section_type: PCIe error
-<0>[965919.725595] {1}[Hardware Error]:   port_type: 1, legacy PCI end point
-<0>[965919.725598] {1}[Hardware Error]:   version: 1.16
-<0>[965919.725602] {1}[Hardware Error]:   command: 0x0407, status: 0x0010
-<0>[965919.725607] {1}[Hardware Error]:   device_id: 0000:04:00.1
-<0>[965919.725611] {1}[Hardware Error]:   slot: 0
-<0>[965919.725614] {1}[Hardware Error]:   secondary_bus: 0x00
-<0>[965919.725617] {1}[Hardware Error]:   vendor_id: 0x1002, device_id:
-0xaae0
-<0>[965919.725622] {1}[Hardware Error]:   class_code: 040300
-<0>[965919.725625] {1}[Hardware Error]:   aer_cor_status: 0x00002000,
-aer_cor_mask: 0x000031c0
-<0>[965919.725630] {1}[Hardware Error]:   aer_uncor_status: 0x00100000,
-aer_uncor_mask: 0x00010000
-<0>[965919.725635] {1}[Hardware Error]:   aer_uncor_severity: 0x004e7030
-<0>[965919.725638] {1}[Hardware Error]:   TLP Header: 40008001 00000a0f
-96a121a0 00000000
-<0>[965919.725646] GHES: Fatal hardware error but panic disabled
-<0>[965919.725650] Kernel panic - not syncing: GHES: Fatal hardware error
-<4>[965919.725662] CPU: 0 UID: 0 PID: 0 Comm: swapper/0 Tainted: P
-  O       6.14.11-5-bpo12-pve #1
-<4>[965919.725676] Tainted: [P]=PROPRIETARY_MODULE, [O]=OOT_MODULE
-<4>[965919.725689] Hardware name: Dell Inc. PowerEdge R730xd/072T6D, BIOS
-2.19.0 12/12/2023
-<4>[965919.725694] Call Trace:
-<4>[965919.725700]  <NMI>
-<4>[965919.725706]  dump_stack_lvl+0x27/0xa0
-<4>[965919.725722]  dump_stack+0x10/0x20
-<4>[965919.725729]  panic+0x358/0x3b0
-<4>[965919.725742]  __ghes_panic+0x60/0x80
-<4>[965919.725756]  ghes_notify_nmi+0x1d5/0x380
-<4>[965919.725768]  nmi_handle.part.0+0x58/0x160
-<4>[965919.725781]  default_do_nmi+0x131/0x170
-<4>[965919.725792]  exc_nmi+0x1c4/0x290
-<4>[965919.725799]  end_repeat_nmi+0xf/0x53
-<4>[965919.725816] RIP: 0010:intel_idle+0x51/0x90
-<4>[965919.725824] Code: 2d 80 ca 2b 00 eb 52 cc cc cc 48 89 f0 0f 1f 00 31
-d2 48 89 d1 0f 01 c8 48 8b 06 a8 08 75 0b b9 01 00 00 00 4c 89 c0 0f 01 c9
-<f0> 80 66 02 df f0 83 44 24 fc 00 48 8b 06 a8 08 74 0b 65 81 25 ea
-<4>[965919.725830] RSP: 0018:ffffffff8ec03db0 EFLAGS: 00000046
-<4>[965919.725837] RAX: 0000000000000020 RBX: ffff8aa2ffa44680 RCX:
-0000000000000001
-<4>[965919.725841] RDX: 0000000000000000 RSI: ffffffff8ec107c0 RDI:
-0000000000000004
-<4>[965919.725849] RBP: ffffffff8ec03df0 R08: 0000000000000020 R09:
-0000000000000000
-<4>[965919.725854] R10: 0000000000000000 R11: 0000000000000000 R12:
-0000000000000004
-<4>[965919.725857] R13: ffffffff8ee86960 R14: ffffffff8ee86b18 R15:
-0000000000000004
-<4>[965919.725866]  ? intel_idle+0x51/0x90
-<4>[965919.725873]  ? intel_idle+0x51/0x90
-<4>[965919.725879]  </NMI>
-<4>[965919.725882]  <TASK>
-<4>[965919.725884]  ? cpuidle_enter_state+0x85/0x450
-<4>[965919.725895]  cpuidle_enter+0x2e/0x50
-<4>[965919.725908]  call_cpuidle+0x22/0x60
-<4>[965919.725918]  do_idle+0x1de/0x240
-<4>[965919.725925]  cpu_startup_entry+0x29/0x30
-<4>[965919.725930]  rest_init+0xd0/0xd0
-<4>[965919.725934]  start_kernel+0x779/0xb60
-<4>[965919.725941]  ? load_ucode_intel_bsp+0x43/0xa0
-<4>[965919.725952]  x86_64_start_reservations+0x18/0x30
-<4>[965919.725961]  x86_64_start_kernel+0xbf/0x110
-<4>[965919.725968]  common_startup_64+0x13e/0x141
-<4>[965919.725980]  </TASK>
-<0>[965919.726136] Kernel Offset: 0xb600000 from 0xffffffff81000000
-(relocation range: 0xffffffff80000000-0xffffffffbfffffff)
-
-
-04:00.0 VGA compatible controller: Advanced Micro Devices, Inc. [AMD/ATI]
-Lexa PRO [Radeon 540/540X/550/550X / RX 540X/550/550X] (rev c7) (prog-if 00
-[VGA controller])
-        Subsystem: Advanced Micro Devices, Inc. [AMD/ATI] Lexa PRO [Radeon
-540/540X/550/550X / RX 540X/550/550X]
-        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-Stepping- SERR- FastB2B- DisINTx+
-        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort-
-<TAbort- <MAbort- >SERR- <PERR- INTx-
-        Latency: 0
-        Interrupt: pin A routed to IRQ 174
-        NUMA node: 0
-        IOMMU group: 29
-        Region 0: Memory at 38000000000 (64-bit, prefetchable) [size=2G]
-        Region 2: Memory at 38080000000 (64-bit, prefetchable) [size=2M]
-        Region 4: I/O ports at 2000 [size=256]
-        Region 5: Memory at 96a00000 (32-bit, non-prefetchable) [size=256K]
-        Expansion ROM at 96a60000 [disabled] [size=128K]
-        Capabilities: <access denied>
-        Kernel driver in use: amdgpu
-        Kernel modules: amdgpu
-
-04:00.1 Audio device: Advanced Micro Devices, Inc. [AMD/ATI] Baffin HDMI/DP
-Audio [Radeon RX 550 640SP / RX 560/560X]
-        Subsystem: Advanced Micro Devices, Inc. [AMD/ATI] Baffin HDMI/DP
-Audio [Radeon RX 550 640SP / RX 560/560X]
-        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-Stepping- SERR- FastB2B- DisINTx+
-        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort-
-<TAbort- <MAbort- >SERR- <PERR- INTx-
-        Latency: 0
-        Interrupt: pin B routed to IRQ 172
-        NUMA node: 0
-        IOMMU group: 30
-        Region 0: Memory at 96a40000 (64-bit, non-prefetchable) [size=16K]
-        Capabilities: <access denied>
-        Kernel driver in use: snd_hda_intel
-        Kernel modules: snd_hda_intel
-
-Was completely idle and unused all boot session, and reboot was routine
-after patching. kernel 6.14.11-5-bpo12 from proxmox backports (so ubuntu
-backports, essentially).
-
-> I support the idea of PCI workaround, but who will implement it ?
-
---000000000000307a0f064f57ecf3
-Content-Type: text/html; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-<div dir=3D"ltr">On Mon, 14 Jul 2025 09:21:25 +0000 &quot;Loktionov, Aleksa=
-ndr&quot; &lt;<a href=3D"mailto:aleksandr.loktionov@intel.com">aleksandr.lo=
-ktionov@intel.com</a>&gt; wrote:<br>&gt; &gt; On Sun, 2025-05-04 at 13:45 +=
-0200, Laurent Bonnaud wrote:<br>&gt; &gt; [...]<br>&gt; &gt; &gt; =C2=A0 - =
-Previously the kernel would output an error in<br>&gt; &gt; /var/lib/system=
-d/pstore/ but would shutdown anyway.<br>&gt; &gt; &gt;<br>&gt; &gt; &gt; =
-=C2=A0 - Now, with kernel 6.1.135-1, the shutdown is blocked as with<br>&gt=
-; &gt; 6.12.x kernels (see below).<br>&gt; &gt; &gt; &lt;30&gt;[ =C2=A0961.=
-098671] systemd-shutdown[1]: Rebooting.<br>&gt; &gt; &gt; &lt;6&gt;[ =C2=A0=
-961.098743] kvm: exiting hardware virtualization &lt;6&gt;[<br>&gt; &gt; &g=
-t; 961.361878] megaraid_sas 0000:17:00.0: megasas_disable_intr_fusion<br>&g=
-t; &gt; is<br>&gt; &gt; &gt; called outbound_intr_mask:0x40000009 &lt;6&gt;=
-[ =C2=A0961.414526] ACPI: PM:<br>&gt; &gt; &gt; Preparing to enter system s=
-leep state S5 &lt;0&gt;[ =C2=A0963.828210]<br>&gt; &gt; &gt; {1}[Hardware E=
-rror]: Hardware error from APEI Generic Hardware Error<br>&gt; &gt; &gt; So=
-urce: 5 &lt;0&gt;[ =C2=A0963.828213] {1}[Hardware Error]: event severity:<b=
-r>&gt; &gt; fatal &lt;0&gt;[ =C2=A0963.828214] {1}[Hardware Error]: =C2=A0E=
-rror 0, type: fatal<br>&gt; &gt; &gt; &lt;0&gt;[ =C2=A0963.828216] {1}[Hard=
-ware Error]: =C2=A0 section_type: PCIe error<br>&gt; &gt; &gt; &lt;0&gt;[ =
-=C2=A0963.828216] {1}[Hardware Error]: =C2=A0 port_type: 0, PCIe end<br>&gt=
-; &gt; point<br>&gt; &gt; &gt; &lt;0&gt;[ =C2=A0963.828217] {1}[Hardware Er=
-ror]: =C2=A0 version: 3.0<br>&gt; &gt; &gt; &lt;0&gt;[ =C2=A0963.828218] {1=
-}[Hardware Error]: =C2=A0 command: 0x0002, status:<br>&gt; &gt; 0x0010<br>&=
-gt; &gt; &gt; &lt;0&gt;[ =C2=A0963.828220] {1}[Hardware Error]: =C2=A0 devi=
-ce_id: 0000:01:00.1<br>&gt; &gt; &gt; &lt;0&gt;[ =C2=A0963.828221] {1}[Hard=
-ware Error]: =C2=A0 slot: 6<br>&gt;&gt;&gt; &lt;0&gt;[ =C2=A0963.828222] {1=
-}[Hardware Error]: =C2=A0 secondary_bus: 0x00<br>&gt;&gt;&gt; &lt;0&gt;[ =
-=C2=A0963.828223] {1}[Hardware Error]: =C2=A0 vendor_id: 0x8086,<br>&gt;&gt=
-; device_id: 0x1563<br>&gt;&gt;&gt; &lt;0&gt;[ =C2=A0963.828224] {1}[Hardwa=
-re Error]: =C2=A0 class_code: 020000<br>&gt;&gt;&gt; &lt;0&gt;[ =C2=A0963.8=
-28225] {1}[Hardware Error]: =C2=A0 aer_uncor_status:<br>&gt;&gt; 0x00100000=
-, aer_uncor_mask: 0x00018000<br>&gt;&gt;&gt; &lt;0&gt;[ =C2=A0963.828226] {=
-1}[Hardware Error]: =C2=A0 aer_uncor_severity:<br>&gt;&gt; 0x000ef010<br>&g=
-t;&gt;&gt; &lt;0&gt;[ =C2=A0963.828227] {1}[Hardware Error]: =C2=A0 TLP Hea=
-der: 40000001<br>&gt;&gt; 0000000f 90028090 00000000<br>&gt;&gt; [...]<br>&=
-gt;&gt; <br>&gt;&gt; It seems that this is a known bug in the BIOS of sever=
-al Dell<br>&gt;&gt; PowerEdge models including (in this case) the R540.<br>=
-<div><br></div><div>Yup, R730XD here.</div><br>&gt;&gt; A workaround was ad=
-ded to the tg3 driver<br>&gt;&gt; &lt;<a href=3D"https://git.kernel.org/lin=
-us/e0efe83ed325277bb70f9435d4d9fc70bebdcca8">https://git.kernel.org/linus/e=
-0efe83ed325277bb70f9435d4d9fc70bebdcca8</a><br>&gt;&gt;<br>&gt;&gt; and a s=
-imilar change was proposed (but not accepted) in the i40e<br>&gt;&gt; drive=
-r &lt;<a href=3D"https://lore.kernel.org/all/20241227035459.90602-1-">https=
-://lore.kernel.org/all/20241227035459.90602-1-</a><br>&gt;&gt; <a href=3D"h=
-ttp://yue.zhao@shopee.com/">yue.zhao@shopee.com/</a>&gt;.<br>&gt;&gt; On ti=
-his system the erorr log points to a deivce handled by the ixgbe<br>&gt;&gt=
-; driver, and no workaround has been implemented for that.<br>&gt;&gt; <br>=
-&gt;&gt; Since this issue seems to affect multiple different NIC vendors an=
-d<br>&gt;&gt; drivers, would it make more sense to implement this workaroun=
-d as a<br>&gt;&gt; PCI quirk?<br><div><br></div><div>It&#39;s not just netw=
-ork devices either.</div><div><br></div><div>&lt;5&gt;[965917.449277] sd 4:=
-0:0:0: [sda] Synchronizing SCSI cache<br>&lt;6&gt;[965917.614364] [drm] PCI=
-E GART of 256M enabled (table at 0x000000F47FF80000).<br>&lt;6&gt;[965917.8=
-20364] [drm] UVD and UVD ENC initialized successfully.<br>&lt;6&gt;[965917.=
-921559] [drm] VCE initialized successfully.<br>&lt;6&gt;[965917.926574] amd=
-gpu 0000:04:00.0: [drm] Cannot find any crtc or sizes<br>&lt;6&gt;[965917.9=
-34684] amdgpu 0000:04:00.0: [drm] Cannot find any crtc or sizes<br>&lt;0&gt=
-;[965919.725575] {1}[Hardware Error]: Hardware error from APEI Generic Hard=
-ware Error Source: 3<br>&lt;0&gt;[965919.725582] {1}[Hardware Error]: event=
- severity: fatal<br>&lt;0&gt;[965919.725587] {1}[Hardware Error]: =C2=A0Err=
-or 0, type: fatal<br>&lt;0&gt;[965919.725591] {1}[Hardware Error]: =C2=A0 s=
-ection_type: PCIe error<br>&lt;0&gt;[965919.725595] {1}[Hardware Error]: =
-=C2=A0 port_type: 1, legacy PCI end point<br>&lt;0&gt;[965919.725598] {1}[H=
-ardware Error]: =C2=A0 version: 1.16<br>&lt;0&gt;[965919.725602] {1}[Hardwa=
-re Error]: =C2=A0 command: 0x0407, status: 0x0010<br>&lt;0&gt;[965919.72560=
-7] {1}[Hardware Error]: =C2=A0 device_id: 0000:04:00.1<br>&lt;0&gt;[965919.=
-725611] {1}[Hardware Error]: =C2=A0 slot: 0<br>&lt;0&gt;[965919.725614] {1}=
-[Hardware Error]: =C2=A0 secondary_bus: 0x00<br>&lt;0&gt;[965919.725617] {1=
-}[Hardware Error]: =C2=A0 vendor_id: 0x1002, device_id: 0xaae0<br>&lt;0&gt;=
-[965919.725622] {1}[Hardware Error]: =C2=A0 class_code: 040300<br>&lt;0&gt;=
-[965919.725625] {1}[Hardware Error]: =C2=A0 aer_cor_status: 0x00002000, aer=
-_cor_mask: 0x000031c0<br>&lt;0&gt;[965919.725630] {1}[Hardware Error]: =C2=
-=A0 aer_uncor_status: 0x00100000, aer_uncor_mask: 0x00010000<br>&lt;0&gt;[9=
-65919.725635] {1}[Hardware Error]: =C2=A0 aer_uncor_severity: 0x004e7030<br=
->&lt;0&gt;[965919.725638] {1}[Hardware Error]: =C2=A0 TLP Header: 40008001 =
-00000a0f 96a121a0 00000000<br>&lt;0&gt;[965919.725646] GHES: Fatal hardware=
- error but panic disabled<br>&lt;0&gt;[965919.725650] Kernel panic - not sy=
-ncing: GHES: Fatal hardware error<br>&lt;4&gt;[965919.725662] CPU: 0 UID: 0=
- PID: 0 Comm: swapper/0 Tainted: P =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 O =C2=
-=A0 =C2=A0 =C2=A0 6.14.11-5-bpo12-pve #1<br>&lt;4&gt;[965919.725676] Tainte=
-d: [P]=3DPROPRIETARY_MODULE, [O]=3DOOT_MODULE<br>&lt;4&gt;[965919.725689] H=
-ardware name: Dell Inc. PowerEdge R730xd/072T6D, BIOS 2.19.0 12/12/2023<br>=
-&lt;4&gt;[965919.725694] Call Trace:<br>&lt;4&gt;[965919.725700] =C2=A0&lt;=
-NMI&gt;<br>&lt;4&gt;[965919.725706] =C2=A0dump_stack_lvl+0x27/0xa0<br>&lt;4=
-&gt;[965919.725722] =C2=A0dump_stack+0x10/0x20<br>&lt;4&gt;[965919.725729] =
-=C2=A0panic+0x358/0x3b0<br>&lt;4&gt;[965919.725742] =C2=A0__ghes_panic+0x60=
-/0x80<br>&lt;4&gt;[965919.725756] =C2=A0ghes_notify_nmi+0x1d5/0x380<br>&lt;=
-4&gt;[965919.725768] =C2=A0nmi_handle.part.0+0x58/0x160<br>&lt;4&gt;[965919=
-.725781] =C2=A0default_do_nmi+0x131/0x170<br>&lt;4&gt;[965919.725792] =C2=
-=A0exc_nmi+0x1c4/0x290<br>&lt;4&gt;[965919.725799] =C2=A0end_repeat_nmi+0xf=
-/0x53<br>&lt;4&gt;[965919.725816] RIP: 0010:intel_idle+0x51/0x90<br>&lt;4&g=
-t;[965919.725824] Code: 2d 80 ca 2b 00 eb 52 cc cc cc 48 89 f0 0f 1f 00 31 =
-d2 48 89 d1 0f 01 c8 48 8b 06 a8 08 75 0b b9 01 00 00 00 4c 89 c0 0f 01 c9 =
-&lt;f0&gt; 80 66 02 df f0 83 44 24 fc 00 48 8b 06 a8 08 74 0b 65 81 25 ea<b=
-r>&lt;4&gt;[965919.725830] RSP: 0018:ffffffff8ec03db0 EFLAGS: 00000046<br>&=
-lt;4&gt;[965919.725837] RAX: 0000000000000020 RBX: ffff8aa2ffa44680 RCX: 00=
-00000000000001<br>&lt;4&gt;[965919.725841] RDX: 0000000000000000 RSI: fffff=
-fff8ec107c0 RDI: 0000000000000004<br>&lt;4&gt;[965919.725849] RBP: ffffffff=
-8ec03df0 R08: 0000000000000020 R09: 0000000000000000<br>&lt;4&gt;[965919.72=
-5854] R10: 0000000000000000 R11: 0000000000000000 R12: 0000000000000004<br>=
-&lt;4&gt;[965919.725857] R13: ffffffff8ee86960 R14: ffffffff8ee86b18 R15: 0=
-000000000000004<br>&lt;4&gt;[965919.725866] =C2=A0? intel_idle+0x51/0x90<br=
->&lt;4&gt;[965919.725873] =C2=A0? intel_idle+0x51/0x90<br>&lt;4&gt;[965919.=
-725879] =C2=A0&lt;/NMI&gt;<br>&lt;4&gt;[965919.725882] =C2=A0&lt;TASK&gt;<b=
-r>&lt;4&gt;[965919.725884] =C2=A0? cpuidle_enter_state+0x85/0x450<br>&lt;4&=
-gt;[965919.725895] =C2=A0cpuidle_enter+0x2e/0x50<br>&lt;4&gt;[965919.725908=
-] =C2=A0call_cpuidle+0x22/0x60<br>&lt;4&gt;[965919.725918] =C2=A0do_idle+0x=
-1de/0x240<br>&lt;4&gt;[965919.725925] =C2=A0cpu_startup_entry+0x29/0x30<br>=
-&lt;4&gt;[965919.725930] =C2=A0rest_init+0xd0/0xd0<br>&lt;4&gt;[965919.7259=
-34] =C2=A0start_kernel+0x779/0xb60<br>&lt;4&gt;[965919.725941] =C2=A0? load=
-_ucode_intel_bsp+0x43/0xa0<br>&lt;4&gt;[965919.725952] =C2=A0x86_64_start_r=
-eservations+0x18/0x30<br>&lt;4&gt;[965919.725961] =C2=A0x86_64_start_kernel=
-+0xbf/0x110<br>&lt;4&gt;[965919.725968] =C2=A0common_startup_64+0x13e/0x141=
-<br>&lt;4&gt;[965919.725980] =C2=A0&lt;/TASK&gt;<br>&lt;0&gt;[965919.726136=
-] Kernel Offset: 0xb600000 from 0xffffffff81000000 (relocation range: 0xfff=
-fffff80000000-0xffffffffbfffffff)<br></div><div><br></div><div><br>04:00.0 =
-VGA compatible controller: Advanced Micro Devices, Inc. [AMD/ATI] Lexa PRO =
-[Radeon 540/540X/550/550X / RX 540X/550/550X] (rev c7) (prog-if 00 [VGA con=
-troller])<br>=C2=A0 =C2=A0 =C2=A0 =C2=A0 Subsystem: Advanced Micro Devices,=
- Inc. [AMD/ATI] Lexa PRO [Radeon 540/540X/550/550X / RX 540X/550/550X]<br>=
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWIN=
-V- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx+<br>=C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=3Dfast &gt;TAbo=
-rt- &lt;TAbort- &lt;MAbort- &gt;SERR- &lt;PERR- INTx-<br>=C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 Latency: 0<br>=C2=A0 =C2=A0 =C2=A0 =C2=A0 Interrupt: pin A route=
-d to IRQ 174<br>=C2=A0 =C2=A0 =C2=A0 =C2=A0 NUMA node: 0<br>=C2=A0 =C2=A0 =
-=C2=A0 =C2=A0 IOMMU group: 29<br>=C2=A0 =C2=A0 =C2=A0 =C2=A0 Region 0: Memo=
-ry at 38000000000 (64-bit, prefetchable) [size=3D2G]<br>=C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 Region 2: Memory at 38080000000 (64-bit, prefetchable) [size=3D2=
-M]<br>=C2=A0 =C2=A0 =C2=A0 =C2=A0 Region 4: I/O ports at 2000 [size=3D256]<=
-br>=C2=A0 =C2=A0 =C2=A0 =C2=A0 Region 5: Memory at 96a00000 (32-bit, non-pr=
-efetchable) [size=3D256K]<br>=C2=A0 =C2=A0 =C2=A0 =C2=A0 Expansion ROM at 9=
-6a60000 [disabled] [size=3D128K]<br>=C2=A0 =C2=A0 =C2=A0 =C2=A0 Capabilitie=
-s: &lt;access denied&gt;<br>=C2=A0 =C2=A0 =C2=A0 =C2=A0 Kernel driver in us=
-e: amdgpu<br>=C2=A0 =C2=A0 =C2=A0 =C2=A0 Kernel modules: amdgpu<br><br>04:0=
-0.1 Audio device: Advanced Micro Devices, Inc. [AMD/ATI] Baffin HDMI/DP Aud=
-io [Radeon RX 550 640SP / RX 560/560X]<br>=C2=A0 =C2=A0 =C2=A0 =C2=A0 Subsy=
-stem: Advanced Micro Devices, Inc. [AMD/ATI] Baffin HDMI/DP Audio [Radeon R=
-X 550 640SP / RX 560/560X]<br>=C2=A0 =C2=A0 =C2=A0 =C2=A0 Control: I/O+ Mem=
-+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-=
- DisINTx+<br>=C2=A0 =C2=A0 =C2=A0 =C2=A0 Status: Cap+ 66MHz- UDF- FastB2B- =
-ParErr- DEVSEL=3Dfast &gt;TAbort- &lt;TAbort- &lt;MAbort- &gt;SERR- &lt;PER=
-R- INTx-<br>=C2=A0 =C2=A0 =C2=A0 =C2=A0 Latency: 0<br>=C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 Interrupt: pin B routed to IRQ 172<br>=C2=A0 =C2=A0 =C2=A0 =C2=A0 NU=
-MA node: 0<br>=C2=A0 =C2=A0 =C2=A0 =C2=A0 IOMMU group: 30<br>=C2=A0 =C2=A0 =
-=C2=A0 =C2=A0 Region 0: Memory at 96a40000 (64-bit, non-prefetchable) [size=
-=3D16K]<br>=C2=A0 =C2=A0 =C2=A0 =C2=A0 Capabilities: &lt;access denied&gt;<=
-br>=C2=A0 =C2=A0 =C2=A0 =C2=A0 Kernel driver in use: snd_hda_intel<br>=C2=
-=A0 =C2=A0 =C2=A0 =C2=A0 Kernel modules: snd_hda_intel<br></div><div><br></=
-div><div>Was completely idle and unused all boot session, and reboot was ro=
-utine after patching. kernel 6.14.11-5-bpo12 from proxmox backports (so ubu=
-ntu backports, essentially).</div><div><br></div>&gt; I support the idea of=
- PCI workaround, but who will implement it ?<br><br></div>
-
---000000000000307a0f064f57ecf3--
+Thanks,
+Jake
