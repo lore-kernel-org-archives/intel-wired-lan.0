@@ -4,95 +4,81 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 406E5F531F4
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 14 Apr 2026 06:51:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1B68FF531F1
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 14 Apr 2026 06:55:32 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id E7C16429B6;
-	Tue, 14 Apr 2026 06:51:52 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id DB79342989;
+	Tue, 14 Apr 2026 06:55:31 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id db-QqPSKGL2A; Tue, 14 Apr 2026 06:51:52 +0000 (UTC)
+ id V9hnQjh-hU-L; Tue, 14 Apr 2026 06:55:30 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2301342989
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4962842943
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1776149512;
-	bh=UARQj8SxdTxUrsYo7FJoyB6wUKernTP+wSB5F8i2tA8=;
-	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=1k2i6/Af0c6i1Imbd0WCLXawMgrz62EQie+XAyzCuhGANzMACMOpkaBNsAKWPUSMa
-	 btuH5+Mz3lw86FLEaSVjIQfyo9q6DHPQai/qA0bIo2fXXi1Twfcr1AIT50ASW+lM78
-	 s0J7xtwKJWn3lu33xL1ExUdl7j0Ryr3Ol3AfYmLACnQ56BNwUAzHJ9CCcJPYiEpGgO
-	 nwlrIqRqsMFTUfspndfpOZ0FjU9PnKyYnJkWp8rkL2YhDCLPNQ1e/AYQibnff785LA
-	 sRnfbPQdDnwLB68xBUd3zmJhjZ/qsgwqMZODNYTZPPyxhNl8/KCftjkkjx4QCA21kw
-	 YibIDQ3mlpFnQ==
+	s=default; t=1776149730;
+	bh=NPOxW66OC5+qt/FYwtAj6gqnS+FknS6WgNOVN+0ojIU=;
+	h=Date:To:Cc:References:From:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=mSiWkQKuY5ftAFHazN+FezdHeY5qr0XYEv7NpcpOs2pWqdS1ThU3KdvjPesrMVHCT
+	 UXp9wTYRgkMbUQroDtfatJLyV/gXdkGf/HcDezCgV7Xkail/na99sC/RAd7DCk3Ipn
+	 3w67Hr/v7kz6AwCBhxw8P55BcsDNCNNoxicDvoVJavo3I5HX2ic28l4b4nJ3//6mfq
+	 6h/5drsBtahJEiIR+y4XaOeWjpNX6kt/gzE9dtgTE4xJVpUavE44q1drDDXvp/JB92
+	 NOakVhEM88ZdpYcdrxkcBdXQ1ZM0HD9f0rU48k8+Rc4ZHDutmCK9e9TVHLq2l8rMdV
+	 k9+HuWn73z0OA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 2301342989;
-	Tue, 14 Apr 2026 06:51:52 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 4962842943;
+	Tue, 14 Apr 2026 06:55:30 +0000 (UTC)
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id 66914237
- for <intel-wired-lan@lists.osuosl.org>; Tue, 14 Apr 2026 06:51:51 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id 6D8E2283
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 14 Apr 2026 06:55:28 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 5808861CA0
- for <intel-wired-lan@lists.osuosl.org>; Tue, 14 Apr 2026 06:51:51 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 5C2A761CA0
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 14 Apr 2026 06:55:28 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 69GxuGEc4K3T for <intel-wired-lan@lists.osuosl.org>;
- Tue, 14 Apr 2026 06:51:50 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.7;
- helo=mgamail.intel.com; envelope-from=dima.ruinskiy@intel.com;
+ id M8EUYLZA4hYM for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 14 Apr 2026 06:55:27 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=141.14.17.11;
+ helo=mx3.molgen.mpg.de; envelope-from=pmenzel@molgen.mpg.de;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 3436E61C9F
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3436E61C9F
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.7])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 3436E61C9F
- for <intel-wired-lan@lists.osuosl.org>; Tue, 14 Apr 2026 06:51:49 +0000 (UTC)
-X-CSE-ConnectionGUID: EMjknfRWRC+4oB0DGVjJjg==
-X-CSE-MsgGUID: 6jJ44k1KT1q9uStr7jHNhw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11758"; a="102553953"
-X-IronPort-AV: E=Sophos;i="6.23,179,1770624000"; d="scan'208";a="102553953"
-Received: from orviesa003.jf.intel.com ([10.64.159.143])
- by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 13 Apr 2026 23:51:49 -0700
-X-CSE-ConnectionGUID: IjgjwI+0RxmZ8P0dlKVgQg==
-X-CSE-MsgGUID: MaVvLnj5QJamLfvUc6s3LQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,179,1770624000"; d="scan'208";a="234040803"
-Received: from ccdlinuxdev11.iil.intel.com ([143.185.162.70])
- by orviesa003.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 13 Apr 2026 23:51:47 -0700
-From: Dima Ruinskiy <dima.ruinskiy@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Cc: dima.ruinskiy@intel.com, jacob.e.keller@intel.com,
- anthony.l.nguyen@intel.com
-Date: Tue, 14 Apr 2026 09:51:44 +0300
-Message-Id: <20260414065144.2990497-1-dima.ruinskiy@intel.com>
-X-Mailer: git-send-email 2.34.1
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 4855661C9F
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4855661C9F
+Received: from mx3.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 4855661C9F
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 14 Apr 2026 06:55:25 +0000 (UTC)
+Received: from [192.168.0.192] (ip5f5af0da.dynamic.kabel-deutschland.de
+ [95.90.240.218])
+ (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested) (Authenticated sender: pmenzel)
+ by mx.molgen.mpg.de (Postfix) with ESMTPSA id EA7B24C2C37D56;
+ Tue, 14 Apr 2026 08:54:55 +0200 (CEST)
+Message-ID: <afefe8b5-5bd9-4019-9d12-5ee2a7f577a2@molgen.mpg.de>
+Date: Tue, 14 Apr 2026 08:54:55 +0200
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1776149510; x=1807685510;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=TnEDCLRxVWsnakpIIu7X5NOzqPaFmGhI5HZx2OB7W0c=;
- b=iNbWbp59mZ7Cvqt3KXDNtPkHjZCKdkvgHzs2OftiTijwZ1L6LWR/0ZRf
- kqWuTUhdVSElLcx6HtaKf9ynLpzNeBg2OCAjvIGtgnGqVhY6AZlNyrRgp
- jaLjNRTnLiXGX0P0F5VwgrWnrngdXUJDo4SNb7mjnA0N6jaP61wqJUejc
- vozrdOJQceQzHbDzWdez/5nJwMLQMbDaMpIQ/VYtChV71EGHG5yH6cpt9
- bWSap4lhANHzKXhWTb/+27uVetdXIRUvJmVdyP5iYpXna+YLO4PolRvLf
- dvwRIo+raBl4714TZ3chBCwd7caRzW7mbOJwrqHfH5G5puGxDNGKPFj3a
- Q==;
+User-Agent: Mozilla Thunderbird
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller"
+ <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+ stable <stable@kernel.org>
+References: <2026041116-retail-bagginess-250f@gregkh>
+Content-Language: en-US
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+In-Reply-To: <2026041116-retail-bagginess-250f@gregkh>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=iNbWbp59
-Subject: [Intel-wired-lan] [PATCH iwl-net v3] e1000e: correct TIMINCA on
- ADP/TGP systems with wrong XTAL frequency
+ dmarc=none (p=none dis=none)
+ header.from=molgen.mpg.de
+Subject: Re: [Intel-wired-lan] [PATCH net] idpf: fix double free and
+ use-after-free in aux device error paths
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -108,136 +94,86 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Vitaly Lifshits <vitaly.lifshits@intel.com>
+Dear Greg,
 
-On some Tiger Lake (TGP) and Alder Lake (ADP) platforms, the hardware
-XTAL clock is incorrectly interpreted as 24 MHz instead of the actual
-38.4 MHz. This causes the PHC to run significantly faster than system
-time, breaking PTP synchronization.
 
-To mitigate this at runtime, measure PHC vs system time over ~1 ms using
-cross-timestamps. If the PHC increment differs from system time beyond
-the expected tolerance (currently >100 uSecs), reprogram TIMINCA for the
-38.4 MHz profile and reinitialize the timecounter.
+Thank you for the patch.
 
-Tested on an affected system using phc_ctl:
-Without fix:
-sudo phc_ctl enp0s31f6 set 0.0 wait 10 get
-clock time: 16.000541250 (expected ~10s)
+Am 11.04.26 um 12:12 schrieb Greg Kroah-Hartman:
+> When auxiliary_device_add() fails in idpf_plug_vport_aux_dev() or
+> idpf_plug_core_aux_dev(), the err_aux_dev_add label calls
+> auxiliary_device_uninit() and falls through to err_aux_dev_init.  The
+> uninit call will trigger put_device(), which invokes the release
+> callback (idpf_vport_adev_release / idpf_core_adev_release) that frees
+> iadev.  The fall-through then reads adev->id from the freed iadev for
+> ida_free() and double-frees iadev with kfree().
+> 
+> Free the IDA slot and clear the back-pointer before uninit, while adev
+> is still valid, then return immediately.
+> 
+> Commit 65637c3a1811 65637c3a1811 ("idpf: fix UAF in RDMA core aux dev
 
-With fix:
-sudo phc_ctl enp0s31f6 set 0.0 wait 10 get
-clock time: 9.984407212 (expected ~10s)
+The commit hash is pasted twice.
 
-Fixes: fb776f5d57ee ("e1000e: Add support for Tiger Lake")
-Signed-off-by: Vitaly Lifshits <vitaly.lifshits@intel.com>
-Co-developed-by: Dima Ruinskiy <dima.ruinskiy@intel.com>
-Signed-off-by: Dima Ruinskiy <dima.ruinskiy@intel.com>
----
-v4: replace ktime_to_ns(ktime_get_real()) with ktime_get_real_ns()
-v3: fix cc.shift and wrap TIMINCA write in systim_lock
-v2: avoid resetting the systim and rephrase commit message
-v1: initial version
----
- drivers/net/ethernet/intel/e1000e/netdev.c | 78 ++++++++++++++++++++++
- 1 file changed, 78 insertions(+)
+> deinitialization") fixed the same use-after-free in the matching unplug
+> path in this file but missed both probe error paths.
+> 
+> Cc: Tony Nguyen <anthony.l.nguyen@intel.com>
+> Cc: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+> Cc: Andrew Lunn <andrew+netdev@lunn.ch>
+> Cc: "David S. Miller" <davem@davemloft.net>
+> Cc: Eric Dumazet <edumazet@google.com>
+> Cc: Jakub Kicinski <kuba@kernel.org>
+> Cc: Paolo Abeni <pabeni@redhat.com>
+> Cc: stable <stable@kernel.org>
+> Fixes: be91128c579c ("idpf: implement RDMA vport auxiliary dev create, init, and destroy")
+> Fixes: f4312e6bfa2a ("idpf: implement core RDMA auxiliary dev create, init, and destroy")
+> Assisted-by: gregkh_clanker_t1000
+> Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> ---
+> Note, these cleanup paths are messy, but I couldn't see a simpler way
+> without a lot more rework, so I choose the simple way :)
+> 
+>   drivers/net/ethernet/intel/idpf/idpf_idc.c | 6 ++++++
+>   1 file changed, 6 insertions(+)
+> 
+> diff --git a/drivers/net/ethernet/intel/idpf/idpf_idc.c b/drivers/net/ethernet/intel/idpf/idpf_idc.c
+> index 7e4f4ac92653..b7d6b08fc89e 100644
+> --- a/drivers/net/ethernet/intel/idpf/idpf_idc.c
+> +++ b/drivers/net/ethernet/intel/idpf/idpf_idc.c
+> @@ -90,7 +90,10 @@ static int idpf_plug_vport_aux_dev(struct iidc_rdma_core_dev_info *cdev_info,
+>   	return 0;
+>   
+>   err_aux_dev_add:
+> +	ida_free(&idpf_idc_ida, adev->id);
+> +	vdev_info->adev = NULL;
+>   	auxiliary_device_uninit(adev);
+> +	return ret;
+>   err_aux_dev_init:
+>   	ida_free(&idpf_idc_ida, adev->id);
+>   err_ida_alloc:
+> @@ -228,7 +231,10 @@ static int idpf_plug_core_aux_dev(struct iidc_rdma_core_dev_info *cdev_info)
+>   	return 0;
+>   
+>   err_aux_dev_add:
+> +	ida_free(&idpf_idc_ida, adev->id);
+> +	cdev_info->adev = NULL;
+>   	auxiliary_device_uninit(adev);
+> +	return ret;
+>   err_aux_dev_init:
+>   	ida_free(&idpf_idc_ida, adev->id);
+>   err_ida_alloc:
 
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index 9befdacd6730..26fdef6075c8 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -3902,6 +3902,81 @@ static void e1000_flush_desc_rings(struct e1000_adapter *adapter)
- 		e1000_flush_rx_ring(adapter);
- }
- 
-+/**
-+ * e1000e_xtal_tgp_workaround - Adjust XTAL clock based on PHC and system
-+ * clock delta.
-+ * @adapter: Pointer to the private adapter structure
-+ *
-+ * Measures the time difference between the PHC (Precision Hardware Clock)
-+ * and the system clock over a 1 millisecond interval. If the delta
-+ * exceeds 100 microseconds, reconfigure the XTAL clock to 38.4 MHz.
-+ */
-+static void e1000e_xtal_tgp_workaround(struct e1000_adapter *adapter)
-+{
-+	s64 phc_delta, sys_delta, sys_start_ns, sys_end_ns, delta_ns;
-+	struct ptp_system_timestamp sys_start = {}, sys_end = {};
-+	struct ptp_clock_info *info = &adapter->ptp_clock_info;
-+	struct timespec64 phc_start, phc_end;
-+	struct e1000_hw *hw = &adapter->hw;
-+	struct netlink_ext_ack extack = {};
-+	unsigned long flags;
-+	u32 timinca;
-+	s32 ret_val;
-+
-+	/* Capture start */
-+	if (info->gettimex64(info, &phc_start, &sys_start)) {
-+		e_dbg("PHC gettimex(start) failed\n");
-+		return;
-+	}
-+
-+	/* Small interval to measure increment */
-+	usleep_range(1000, 1100);
-+
-+	/* Capture end */
-+	if (info->gettimex64(info, &phc_end, &sys_end)) {
-+		e_dbg("PHC gettimex(end) failed\n");
-+		return;
-+	}
-+
-+	/* Compute deltas */
-+	phc_delta = timespec64_to_ns(&phc_end) -
-+		    timespec64_to_ns(&phc_start);
-+
-+	sys_start_ns = (timespec64_to_ns(&sys_start.pre_ts) +
-+			timespec64_to_ns(&sys_start.post_ts)) >> 1;
-+
-+	sys_end_ns = (timespec64_to_ns(&sys_end.pre_ts) +
-+		      timespec64_to_ns(&sys_end.post_ts)) >> 1;
-+
-+	sys_delta = sys_end_ns - sys_start_ns;
-+
-+	delta_ns = phc_delta - sys_delta;
-+	if (delta_ns > 100000) {
-+		e_dbg("Corrected PHC frequency: TIMINCA set for 38.4 MHz\n");
-+		/* Program TIMINCA for 38.4 MHz */
-+		spin_lock_irqsave(&adapter->systim_lock, flags);
-+		adapter->cc.shift = INCVALUE_SHIFT_38400KHZ;
-+		timinca = (INCPERIOD_38400KHZ <<
-+			   E1000_TIMINCA_INCPERIOD_SHIFT) |
-+			  (((INCVALUE_38400KHZ <<
-+			     adapter->cc.shift) &
-+			   E1000_TIMINCA_INCVALUE_MASK));
-+		ew32(TIMINCA, timinca);
-+
-+		/* reset the systim ns time counter */
-+		timecounter_init(&adapter->tc, &adapter->cc,
-+				 ktime_get_real_ns());
-+		spin_unlock_irqrestore(&adapter->systim_lock, flags);
-+
-+		/* restore the previous hwtstamp configuration settings */
-+		ret_val = e1000e_config_hwtstamp(adapter,
-+						 &adapter->hwtstamp_config,
-+						 &extack);
-+		if (ret_val && extack._msg)
-+			e_err("%s\n", extack._msg);
-+	}
-+}
-+
- /**
-  * e1000e_systim_reset - reset the timesync registers after a hardware reset
-  * @adapter: board private structure
-@@ -3953,6 +4028,9 @@ static void e1000e_systim_reset(struct e1000_adapter *adapter)
- 		if (extack._msg)
- 			e_err("%s\n", extack._msg);
- 	}
-+
-+	if (hw->mac.type == e1000_pch_adp || hw->mac.type == e1000_pch_tgp)
-+		e1000e_xtal_tgp_workaround(adapter);
- }
- 
- /**
--- 
-2.34.1
+Reviewed-by: Paul Menzel <pmenzel@molgen.mpg.de>
 
+gemini/gemini-3.1-pro-preview has two comments [1]. Maybe the driver 
+developers could judge their relevance.
+
+
+Kind regards,
+
+Paul
+
+
+[1]: 
+https://sashiko.dev/#/patchset/2026041116-retail-bagginess-250f%40gregkh
