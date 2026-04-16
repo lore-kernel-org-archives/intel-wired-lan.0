@@ -1,141 +1,101 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0B80AF433C9
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 15 Apr 2026 21:30:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 32DB3F433D8
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 16 Apr 2026 02:18:39 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id CF4D4605DE;
-	Wed, 15 Apr 2026 21:30:10 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id AyrCHQReRvKU; Wed, 15 Apr 2026 21:30:09 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 9D751605DC
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1776288609;
-	bh=VBirzWvSR4/3IaGGAFPOCNOFJSU2QwGIXQOrszvzBn8=;
-	h=References:In-Reply-To:From:Date:To:Cc:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=FyO1UEjkl+lUMbV062Oce5uNLQeJ4fkqX1fE3J2pQtwPnZVc9h4P6pklsjuld+k0g
-	 Ay2ru8zLaASyK0IfnK7RKcgYumnaMg8c4iehp5AuG49azDfBVLWSSaD9B4gK9ev7G8
-	 qPbmF85/GHaS2RDq9/9jio9e5LuU2GF41Yd8exZr0iTx+b2Kt9z9VIsB1JOlgS56rE
-	 3f3OlKwQjFb6kmjNUJgJkXLdsIKMSp7tx2rSIow2MbOdYJBQQaeIdsSwfQ4og8x5eU
-	 FzqpYkbCugosGh57W0Td23oKz4jgq2QQ2CLP0KomEquGxja8fwfFbn8tU24qGe4FnY
-	 Z8zI2gD9PGVVg==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 9D751605DC;
-	Wed, 15 Apr 2026 21:30:09 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id 2AB97375
- for <intel-wired-lan@lists.osuosl.org>; Wed, 15 Apr 2026 16:30:59 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 1C63485097
- for <intel-wired-lan@lists.osuosl.org>; Wed, 15 Apr 2026 16:30:59 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id BE5CB80B3A;
+	Thu, 16 Apr 2026 02:18:38 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Wl3yIqcSG9AN for <intel-wired-lan@lists.osuosl.org>;
- Wed, 15 Apr 2026 16:30:58 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2607:f8b0:4864:20::b12d; helo=mail-yx1-xb12d.google.com;
- envelope-from=michael.bommarito@gmail.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 670CE85095
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 670CE85095
-Received: from mail-yx1-xb12d.google.com (mail-yx1-xb12d.google.com
- [IPv6:2607:f8b0:4864:20::b12d])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 670CE85095
- for <intel-wired-lan@lists.osuosl.org>; Wed, 15 Apr 2026 16:30:58 +0000 (UTC)
-Received: by mail-yx1-xb12d.google.com with SMTP id
- 956f58d0204a3-6501418152cso6737192d50.0
- for <intel-wired-lan@lists.osuosl.org>; Wed, 15 Apr 2026 09:30:58 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1776270657; cv=none;
- d=google.com; s=arc-20240605;
- b=EUDmWkiLmZCf+wXIy0av/m5a2qUMZGK5wviwUiuqKaRdk7/VjvGJPRTJFOT+qHznnc
- cXR/5RppANyqy72VrrbZ6PGvJU6kukhJ00oryQuoc6HQDjAabESU83H5M9KXZt4DSFta
- hGzivVkKOUebwKpq61cNMN2tTuLT5lxfO48GkjdxlzAMeq9hOzlDF7NPVPDXQ83rrdk2
- DiItREHB3q7AabWQz/OSnhF/nu29rZEoLj3Z3mQzCz1MtVpwqpysBsspzZM++MiEu05D
- yFJjTuZMTLaugR87jm8r/QITh2Yb4+IqgkE075lxJl6zLYo4XrF/3EODu1GtqmoWA0ml
- 3Pqw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com;
- s=arc-20240605; 
- h=content-transfer-encoding:cc:to:subject:message-id:date:from
- :in-reply-to:references:mime-version:dkim-signature;
- bh=VBirzWvSR4/3IaGGAFPOCNOFJSU2QwGIXQOrszvzBn8=;
- fh=lsPaxwfGYhxG0yZfOfUdtc/3yVweqIJcNW7pBuqD1R4=;
- b=GAkSZKFM+IrxxL5K398/j5hkd7DJ2rCqPKJCZw6p2lX7Drt/rI1XC+OUfq0Kycyz/E
- 8NBDrw3rfO8vjTIhM+M0OcFKWn8B9filyrgxgChHvLYvByn6C++7QX5L3D8ZFe0/0cE8
- 6G31Jg8GG5B57GCkazUa2I1UMpMDVhiB9u7AGFkvjbM6RxhG8Iy+sM6jkh18atOY6yq3
- dMs19agq8dxsAMwqdQAxqit4N1DZ3pvwtEIeWhi2RJ0CcnJWFX204gj94FQzlOUwoGtJ
- cBHgoFL7jG8sUXjGepYUve2H0bwcGzx5/XHPsAEm//x/GKJOWk4U6daouzJkUrMwflwl
- qFvQ==; darn=lists.osuosl.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20251104; t=1776270657; x=1776875457;
- h=content-transfer-encoding:cc:to:subject:message-id:date:from
- :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
- :to:cc:subject:date:message-id:reply-to;
- bh=VBirzWvSR4/3IaGGAFPOCNOFJSU2QwGIXQOrszvzBn8=;
- b=qc7+/A8u9bFi7iSydm4/4gty54g3w6SsMdsZ03JJnZ6UcLYjf3BIWcu7ZJGP/+L5HM
- YfkbnE0GCcb4k296EIVzG2pXXs6iobnVRgaPV5Hv5Bs86Ihz2ueaW7DKnv8u7alcKUaT
- GJoyhjYuLNh728yzDxQJohF7smrMPRTS6k3TokAb4cFfYrq876cTPPa4TWZUIOYFaXaT
- lgWB/bQtUcuQb2hXeXA7TIiCan7LvRWPGHcZP02DexCEQ+fQLBwWHDUSs6jnYVRWPWES
- rykVjfx1XXvfS/8pBofOS3EPXdScWN4OKtlFIX0K84hzb196kycAjWd9VD0FR64SNqrS
- Nvnw==
-X-Gm-Message-State: AOJu0YxFwRROA7bclkNwHChcC/79hPC/u1xV4zOfCfO28QyJnjDaSFaL
- fDHfaT/T8l6Cg+UENoCvQzQlXwYVEx4xuMz593bc8/Pujk1NJKC6OK4SV3kVvQ8Sh8kUYOqr3jY
- texW0NR/gHfVxJaOgcbX5Tb4tDTY37D0=
-X-Gm-Gg: AeBDieskjmeZalP9XSyWCM/owOZj7mJJdhWsXLODId+CEE4mGliHB9KukdgAVUkeVHh
- 6rIIRO0eEnXmw0isM22oaPx1nV2LoOjEXWSNoib9nOFfTcJyLLF2iGoZLPlk0Fxa2wuiJSyCXt0
- Lpjcbq9reCAfi6sC/JFlWvtNZ5N746J2jze1Kil6BSMo56HhtJkMrDNrftF/pce2wSrgrxUstKa
- b4zXKVSFwOBQNKe4RHsn1QEcgDj0aKFjQ6QbLyF0pz0a6nmXMyDkDfdkCvTsV8QmJKL9Yj+QnCI
- V/dKHgurourgOJKp9lRV0L533EcmzaYjkNq/++CU8vl5ORg=
-X-Received: by 2002:a05:690e:1699:b0:651:bb90:714d with SMTP id
- 956f58d0204a3-651bb9071f9mr15120885d50.32.1776270657069; Wed, 15 Apr 2026
- 09:30:57 -0700 (PDT)
+ id I87vMpD_dMXa; Thu, 16 Apr 2026 02:18:36 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8BDF380B36
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1776305916;
+	bh=ukYzGgxVpFjONpMipLHXCqFZic4ufSq7baYN3NeoLDA=;
+	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=jiK+0I/ah/b+bhFMYg83XZOxAwFPjMeHtvulOSfziNcDcdKqEmymFdLkj3lqu7QRD
+	 EE8loSE3fzxzkmithmsNGmcpc47kF+mnXy1w54Gcu2SZfyE530F4sHq/fPX0tKBnke
+	 3KDAD8fIKv05vOo4lxt32OZAQzn7pEgzNJ5qWWoGi3NGpZ65nuDcwUQOvfnuyARuOa
+	 OhZDowj5rujO9BcX8MH5IOU/1Anb3920VR703gILs1J6GcMDyWW8qANJX2TMx2JeW8
+	 tWzF6DObl6GqcoBKnUkt/POLpEVLGpe7oyvedCwMZmfnx0bDKOuEnrvgw9FO9cVI2X
+	 trnV2QW7B9B7g==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp1.osuosl.org (Postfix) with ESMTP id 8BDF380B36;
+	Thu, 16 Apr 2026 02:18:36 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 6AEC9127
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 16 Apr 2026 02:18:34 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp1.osuosl.org (Postfix) with ESMTP id 507DA80B30
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 16 Apr 2026 02:18:34 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 7fNcoQEf-9KW for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 16 Apr 2026 02:18:33 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.14;
+ helo=mgamail.intel.com; envelope-from=khai.wen.tan@linux.intel.com;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org D4B8980B23
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D4B8980B23
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.14])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id D4B8980B23
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 16 Apr 2026 02:18:32 +0000 (UTC)
+X-CSE-ConnectionGUID: vzoMmYVGSRuWwbGJlCCWtw==
+X-CSE-MsgGUID: FdoCTATSRT6Zhm+m+1XSng==
+X-IronPort-AV: E=McAfee;i="6800,10657,11760"; a="81168774"
+X-IronPort-AV: E=Sophos;i="6.23,181,1770624000"; d="scan'208";a="81168774"
+Received: from fmviesa007.fm.intel.com ([10.60.135.147])
+ by orvoesa106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 15 Apr 2026 19:18:31 -0700
+X-CSE-ConnectionGUID: 3CyJPPd4TjKHQSu86COnsA==
+X-CSE-MsgGUID: MDa1h4/FT0ShD6TrkLAXIg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,181,1770624000"; d="scan'208";a="227442166"
+Received: from unknown (HELO localhost.png.intel.com) ([10.107.255.61])
+ by fmviesa007.fm.intel.com with ESMTP; 15 Apr 2026 19:18:05 -0700
+From: KhaiWenTan <khai.wen.tan@linux.intel.com>
+To: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
+ andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
+ kuba@kernel.org, pabeni@redhat.com
+Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, faizal.abdul.rahim@intel.com,
+ hong.aun.looi@intel.com, khai.wen.tan@intel.com,
+ Faizal Rahim <faizal.abdul.rahim@linux.intel.com>
+Date: Thu, 16 Apr 2026 09:55:17 +0800
+Message-ID: <20260416015520.6090-1-khai.wen.tan@linux.intel.com>
+X-Mailer: git-send-email 2.43.0
 MIME-Version: 1.0
-References: <20260413182427.298513-1-michael.bommarito@gmail.com>
- <20260415161720.GN772670@horms.kernel.org>
-In-Reply-To: <20260415161720.GN772670@horms.kernel.org>
-From: Michael Bommarito <michael.bommarito@gmail.com>
-Date: Wed, 15 Apr 2026 12:30:45 -0400
-X-Gm-Features: AQROBzBJ7VPEuVDr74gDATAW33m2tupUjmRHD1ATtbA3VSrDaDdMAX-O608I1JE
-Message-ID: <CAJJ9bXwQyd-cZ0h_FCNj29GZYpXyCBu444VhLGLZkf1bWYqoKQ@mail.gmail.com>
-To: Simon Horman <horms@kernel.org>
-Cc: intel-wired-lan@lists.osuosl.org, Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Andrew Lunn <andrew+netdev@lunn.ch>, 
- "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- netdev@vger.kernel.org, 
- stable@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Mailman-Approved-At: Wed, 15 Apr 2026 21:30:08 +0000
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20251104; t=1776270657; x=1776875457; darn=lists.osuosl.org;
- h=content-transfer-encoding:cc:to:subject:message-id:date:from
- :in-reply-to:references:mime-version:from:to:cc:subject:date
- :message-id:reply-to;
- bh=VBirzWvSR4/3IaGGAFPOCNOFJSU2QwGIXQOrszvzBn8=;
- b=dwtQD1rGHdtmFLXdTQQuVwu4nsNBNlRK7VtXJNjUqw/YzC/ytN/88q48XM+gWA5Pj+
- pSMeQkVHPOso7K0elgutjKZnfFU6q4iWZ9nO5r0tLpU9F7F0XQO6iQJ3sQuXfRIlVwVC
- z4UsZDoxHt8FXTDLfGi5vYzrSMFEi0MwNNHB+mPM0zQHv1qydUlZzCvUMavY5trwGJ/q
- 9VxBxi4lKHD4qcB8fj8UKvUciIBt/BRMaFCAFPl8yPmJjBGVaMzldOsLWIeppmkFuu4w
- HWNcXr/fDOIhnuMGTtm1zp7S4tUgPPI8NcYmJp0VbXP5zOOnVZI8690NIoddH1e9RQo5
- LTzA==
+Content-Transfer-Encoding: 8bit
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1776305912; x=1807841912;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=Hd+1dN5IevHoWoTVdLczDqxYv7KnWEcwalHmW5qnm94=;
+ b=Osu8rI3aZZX2Z8wdgdVaphn66pCUxOlzqlilA9mjTadnd4LOttDy8Dbx
+ ca2p4GMuXDPhB/n2ArY7hV5HpopWID49hI8hbgwFRtdHfNaKH1Y7bFAq8
+ 53TrBNaBfgpF0o6vcZn092GHMjq0lzhOBJJqZO6jZU6rrtTGJ73AgUBaR
+ wK+nj9FiRSTeNVM/k7PeSNJSsU0zawjNKiolmqmvz4bEwtQSx/0WfK3UR
+ jfXfPgdKmm4ykxhfy0/N6jGxe5vgqmlgmnfUYD3CdN3J/kuoTGhd/+7SR
+ 9N2D03tS4+CBKF5qnt0cuMPDtDnhBsjFHFnvzRL0aAuhMDuqLay1pJ2f5
+ w==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=gmail.com
+ dmarc=none (p=none dis=none)
+ header.from=linux.intel.com
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
- header.a=rsa-sha256 header.s=20251104 header.b=dwtQD1rG
-Subject: Re: [Intel-wired-lan] [PATCH net] ixgbevf: fix use-after-free in
- VEPA multicast source pruning
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=Osu8rI3a
+Subject: [Intel-wired-lan] [PATCH iwl-next v2 0/3] igc: add support for
+ forcing link speed without autonegotiation
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -151,79 +111,37 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Wed, Apr 15, 2026 at 12:17=E2=80=AFPM Simon Horman <horms@kernel.org> wr=
-ote:
-> Sashiko flags a number of issues in the same function that
-> do not seem related to your patch.
->
-> I'd suggest looking over them if you are interested in
-> follow-up work in this area.
+From: Faizal Rahim <faizal.abdul.rahim@linux.intel.com>
 
-Sure, I'd be happy to keep going here if you're open to more hardening
-patches.
+This series adds support for forcing 10/100 Mb/s link speed via ethtool
+when autonegotiation is disabled on the igc driver.
 
-Two Qs for you:
+Changes in v2:
+- Simon Horman's review comment: when forcing half-duplex, set
+  hw->fc.requested_mode = igc_fc_none, since half-duplex cannot support
+  flow control per IEEE 802.3.
+- Split the original single patch into three patches for clarity:
+  patches 1 and 2 are preparatory cleanups; patch 3 carries the
+  functional change.
 
-1. Do you want smaller patches for each or bigger method-level patches?
+v1 at:
+https://patchwork.ozlabs.org/project/intel-wired-lan/patch/20260409072747.217836-1-khai.wen.tan@linux.intel.com/
 
-2. Anything on my list below that you would *not* want me touching?
-I'll combine with anything I can find from your Sashiko items
+Faizal Rahim (3):
+  igc: remove unused autoneg_failed field
+  igc: move autoneg-enabled settings into igc_handle_autoneg_enabled()
+  igc: add support for forcing link speed without autonegotiation
 
-    1. line 104
-       rule:   semgrep bug-on-in-net-code (CWE-617)
-       match:  BUG_ON(!test_bit(__IXGBEVF_SERVICE_SCHED,
-&adapter->state))
-       where:  ixgbevf_service_event_schedule()
-       status: untriaged
+ drivers/net/ethernet/intel/igc/igc_base.c    |  35 +++-
+ drivers/net/ethernet/intel/igc/igc_defines.h |   9 +-
+ drivers/net/ethernet/intel/igc/igc_ethtool.c | 203 +++++++++++++------
+ drivers/net/ethernet/intel/igc/igc_hw.h      |  10 +-
+ drivers/net/ethernet/intel/igc/igc_mac.c     |  16 +-
+ drivers/net/ethernet/intel/igc/igc_main.c    |   2 +-
+ drivers/net/ethernet/intel/igc/igc_phy.c     |  65 +++++-
+ drivers/net/ethernet/intel/igc/igc_phy.h     |   1 +
+ 8 files changed, 251 insertions(+), 90 deletions(-)
 
-    2. lines 1219-1225
-       rule:   net-drop-continue-in-loop + scan_drop_continue_loops.py
-       match:  VEPA multicast pruning kfree_skb + continue (UAF)
-       where:  ixgbevf_clean_rx_irq()
-       status: SHIPPED as commit ca62ac02b30d (this patch)
+--
+2.43.0
 
-    3. line 2769
-       rule:   semgrep signed-int-as-size-param-kmalloc
-       match:  q_vector =3D kzalloc(size, GFP_KERNEL)  (signed size)
-       status: untriaged
-
-    4. line 3452
-       rule:   semgrep signed-int-as-size-param-kmalloc
-       match:  tx_ring->tx_buffer_info =3D vmalloc(size)  (signed size)
-       status: untriaged
-
-    5. line 3530
-       rule:   semgrep signed-int-as-size-param-kmalloc
-       match:  rx_ring->rx_buffer_info =3D vmalloc(size)  (signed size)
-       status: untriaged
-
-    6. line 4114
-       rule:   semgrep narrow-accumulator-overflow
-       match:  i +=3D tx_ring->count;
-       status: untriaged
-
-    7. line 4189
-       rule:   semgrep narrow-accumulator-overflow
-       match:  count +=3D TXD_USE_COUNT(skb_frag_size(frag));
-       status: untriaged
-
-    8. line 4192
-       rule:   semgrep narrow-accumulator-overflow
-       match:  count +=3D skb_shinfo(skb)->nr_frags;
-       status: untriaged
-
-    9. line 4695
-       rule:   coccinelle cancel_work.cocci
-       match:  INIT_WORK(&adapter->service_task, ixgbevf_service_task)
-               with no matching cancel_work_sync on teardown path
-       status: untriaged
-
-   10. line 4752
-       rule:   coccinelle null_after_free.cocci
-       where:  ixgbevf_probe() err_dma path
-       status: untriaged
-
-   11. line 4795
-       rule:   coccinelle null_after_free.cocci
-       where:  ixgbevf_remove()
-       status: untriaged
