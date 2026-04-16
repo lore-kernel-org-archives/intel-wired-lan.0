@@ -1,67 +1,67 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D52DAF433D8
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 16 Apr 2026 02:18:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 480DDF433D7
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 16 Apr 2026 02:18:56 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 969E580B4B;
-	Thu, 16 Apr 2026 02:18:42 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 1AADA6069F;
+	Thu, 16 Apr 2026 02:18:56 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id DoV90t6ZASul; Thu, 16 Apr 2026 02:18:41 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id ANBY7Hg0jDBj; Thu, 16 Apr 2026 02:18:55 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D61D180B49
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2A903606A2
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1776305921;
-	bh=PcMVa54i0dkFXQygNG8g3dRKgOhOk68GamMPEm2mRkw=;
+	s=default; t=1776305935;
+	bh=zZDilNji46hum6upm0ZQGgB6/zuKoZTeHapBnWxdJX4=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=xx5WT3PC2/Vw9ya5FS6gvFYCsFkaL0lqbl0rX0VTbCXTuh6TzkbyyBGoONFZfIsDY
-	 Xh1tqlC82yIehqL55T3n+HEDbuZjI5gnPlqD6yEphBCcatgdMysOkqGB3zFk3znORm
-	 RmcL9mrovk4AhXDMQ2wDdz1i2Viyp8lDhIKqos2Pojk5F6eSKJ5zTcOSv91+jqJHi2
-	 FBHW8LN65fGZj8UIVJno5kccCPm6MtyuoViv77WdL8AcxN01PZ0GEFa/Q3fUGK3mkm
-	 iyfkg879FmpH9alFSsOSVldsLPT0XSp6p4ibxp80ABQdIXQove6HqS0Z8NOpl7HxWg
-	 XVFhx9KBN04BA==
+	b=J6rKsVOs1tBnbz+IME1cJ2/gNwTcpPNCVudR7OlsV3frcnfd7EQlr4IpLeQKlx9Hf
+	 86Wd5Yj6TP2UOIxyQ00i7L753vAzSQlxjN7t33R+EDN6hwM31/YpoqYFA+7DhDoPpO
+	 3XDp0eMOlY37N8KkPQNUEyEtobTvK/VKuIdWsvWzVB/WRLuBhaGX5HcqDQubbJpEaP
+	 efzgm75SzHt7fD65SekieG3sPD1R5j70Xd3kxaxlEd+Hz9zXOprguq5WWYM9ma48MW
+	 WiBeqaBMIUPIuOS0WK9Uf95tWVSIVMfi35boFtZUyppHkxWO1zMnbdnLb+g0idmkDK
+	 Wu3esoniA2YHQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id D61D180B49;
-	Thu, 16 Apr 2026 02:18:41 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 2A903606A2;
+	Thu, 16 Apr 2026 02:18:55 +0000 (UTC)
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id 0FE23127
- for <intel-wired-lan@lists.osuosl.org>; Thu, 16 Apr 2026 02:18:40 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id DB8F577E
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 16 Apr 2026 02:18:53 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 6747980B19
- for <intel-wired-lan@lists.osuosl.org>; Thu, 16 Apr 2026 02:18:38 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 66D7180B33
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 16 Apr 2026 02:18:44 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id Pr6IAV-6bu6N for <intel-wired-lan@lists.osuosl.org>;
- Thu, 16 Apr 2026 02:18:37 +0000 (UTC)
+ id H8laWRRD5mbp for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 16 Apr 2026 02:18:43 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.14;
  helo=mgamail.intel.com; envelope-from=khai.wen.tan@linux.intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 3F58E80B39
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 3F58E80B39
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 4C68480B31
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4C68480B31
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.14])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 3F58E80B39
- for <intel-wired-lan@lists.osuosl.org>; Thu, 16 Apr 2026 02:18:37 +0000 (UTC)
-X-CSE-ConnectionGUID: oEZU6Qb8R7+ClctAw3RVUQ==
-X-CSE-MsgGUID: ecTx5+RVTza3eENik1RA8A==
-X-IronPort-AV: E=McAfee;i="6800,10657,11760"; a="81168802"
-X-IronPort-AV: E=Sophos;i="6.23,181,1770624000"; d="scan'208";a="81168802"
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 4C68480B31
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 16 Apr 2026 02:18:43 +0000 (UTC)
+X-CSE-ConnectionGUID: +gIO7J1uSPuiXfo+tpegrg==
+X-CSE-MsgGUID: H+2VpuHjQriT9o0MnV8kxQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11760"; a="81168821"
+X-IronPort-AV: E=Sophos;i="6.23,181,1770624000"; d="scan'208";a="81168821"
 Received: from fmviesa007.fm.intel.com ([10.60.135.147])
  by orvoesa106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 15 Apr 2026 19:18:36 -0700
-X-CSE-ConnectionGUID: CvtgE75lStGQS2UNjJ1dAQ==
-X-CSE-MsgGUID: xjIpfms5R4ulvO2oqIEPQw==
+ 15 Apr 2026 19:18:42 -0700
+X-CSE-ConnectionGUID: ZxDNM8zsT2uetWaJ4+Y3Xg==
+X-CSE-MsgGUID: m35bUk02SLijlNesmhVboA==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,181,1770624000"; d="scan'208";a="227442200"
+X-IronPort-AV: E=Sophos;i="6.23,181,1770624000"; d="scan'208";a="227442212"
 Received: from unknown (HELO localhost.png.intel.com) ([10.107.255.61])
- by fmviesa007.fm.intel.com with ESMTP; 15 Apr 2026 19:18:33 -0700
+ by fmviesa007.fm.intel.com with ESMTP; 15 Apr 2026 19:18:38 -0700
 From: KhaiWenTan <khai.wen.tan@linux.intel.com>
 To: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
  andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
@@ -71,8 +71,8 @@ Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
  hong.aun.looi@intel.com, khai.wen.tan@intel.com,
  Faizal Rahim <faizal.abdul.rahim@linux.intel.com>, Looi,
  KhaiWenTan <khai.wen.tan@linux.intel.com>
-Date: Thu, 16 Apr 2026 09:55:19 +0800
-Message-ID: <20260416015520.6090-3-khai.wen.tan@linux.intel.com>
+Date: Thu, 16 Apr 2026 09:55:20 +0800
+Message-ID: <20260416015520.6090-4-khai.wen.tan@linux.intel.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260416015520.6090-1-khai.wen.tan@linux.intel.com>
 References: <20260416015520.6090-1-khai.wen.tan@linux.intel.com>
@@ -80,25 +80,25 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1776305916; x=1807841916;
+ t=1776305922; x=1807841922;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=gLZdUWehz2CnGY9z/fhytGrTHfZiwQXVAh5sMsRRzkE=;
- b=YUQGTePEIxqZU9CienjUdPgVIgGKr2JD/eSEvcn9ehDhSeSQ/2qSIQOm
- K1jlsIztgW1OLdssFyz9+RZxoe7oHAmel+GV2UgLq/wQ5Pkqh+wDoFmy3
- fmlgxGm7phO5OQ/wzY4N8woB0vwF92RPPxlYI77QqJPBS2kP7fSqfz2pv
- Zo+m3a5srDt/OL2nsdljzUeFVANgMkwt7d4RHhznMoafO2AR3UN0KgIUV
- dcu9pi/khY5TQvEkRnGInEGSciwKDL7tuNxtxp1Y9acK+jXN/ea+a3g/c
- tqHr7UHRfcDOo9ZpVLoRSG11bC14Qva/h6cJmdRdlQ2rhgkuXcubEpALm
- A==;
+ bh=PkQbF9vBCNjOV+o+TToXri+Rgc8i9KGytnmeSXd+4Fw=;
+ b=UWpfWUZxexPXZ+dGMS/x1eWlh6guVgKq2N2zm40RUi1yz4Eo75cbl5KU
+ yeeojbfKlh9/sa67lKfwbzc/1IqsLsxiI96SiIanPmx0pXyxI/a0/dO9k
+ MmEtuCnyw8KXsR5JIUm3z6NPHYyxPTs3LernRBmKHcBlu0GhstgRMmziv
+ B2TQc2d2YbP22TXijcU6wz+QLzLehhB9U7xWVtR+rU1iLfovOoI3SPe2B
+ f/ra1xGDp6ZwyMjot2Ohqpw/R/96A39NkjtIZXGgt14gU1T4hg6bCuHb/
+ f9ktYSNfYgVTdgdjI+hyhGB8PyaWF+c0ruElEt9XPKkQXJxyIg/3Mp3Lz
+ w==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=none (p=none dis=none)
  header.from=linux.intel.com
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=YUQGTePE
-Subject: [Intel-wired-lan] [PATCH iwl-next v2 2/3] igc: move autoneg-enabled
- settings into igc_handle_autoneg_enabled()
+ header.a=rsa-sha256 header.s=Intel header.b=UWpfWUZx
+Subject: [Intel-wired-lan] [PATCH iwl-next v2 3/3] igc: add support for
+ forcing link speed without autonegotiation
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -116,116 +116,440 @@ Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 From: Faizal Rahim <faizal.abdul.rahim@linux.intel.com>
 
-Move the advertised link modes and flow control configuration from
-igc_ethtool_set_link_ksettings() into igc_handle_autoneg_enabled().
+Allow users to force 10/100 Mb/s link speed and duplex via ethtool
+when autonegotiation is disabled. Previously, the driver rejected
+these requests with "Force mode currently not supported.".
 
-No functional change.
+Forcing at 1000 Mb/s and 2500 Mb/s is not supported.
 
 Reviewed-by: Looi, Hong Aun <hong.aun.looi@intel.com>
 Signed-off-by: Faizal Rahim <faizal.abdul.rahim@linux.intel.com>
 Signed-off-by: KhaiWenTan <khai.wen.tan@linux.intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc_ethtool.c | 72 ++++++++++++--------
- 1 file changed, 44 insertions(+), 28 deletions(-)
+ drivers/net/ethernet/intel/igc/igc_base.c    |  35 ++++-
+ drivers/net/ethernet/intel/igc/igc_defines.h |   9 +-
+ drivers/net/ethernet/intel/igc/igc_ethtool.c | 131 +++++++++++++------
+ drivers/net/ethernet/intel/igc/igc_hw.h      |   9 ++
+ drivers/net/ethernet/intel/igc/igc_mac.c     |  10 ++
+ drivers/net/ethernet/intel/igc/igc_main.c    |   2 +-
+ drivers/net/ethernet/intel/igc/igc_phy.c     |  65 ++++++++-
+ drivers/net/ethernet/intel/igc/igc_phy.h     |   1 +
+ 8 files changed, 211 insertions(+), 51 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/igc/igc_base.c b/drivers/net/ethernet/intel/igc/igc_base.c
+index 1613b562d17c..ab9120a3127f 100644
+--- a/drivers/net/ethernet/intel/igc/igc_base.c
++++ b/drivers/net/ethernet/intel/igc/igc_base.c
+@@ -114,11 +114,35 @@ static s32 igc_setup_copper_link_base(struct igc_hw *hw)
+ 	u32 ctrl;
+
+ 	ctrl = rd32(IGC_CTRL);
+-	ctrl |= IGC_CTRL_SLU;
+-	ctrl &= ~(IGC_CTRL_FRCSPD | IGC_CTRL_FRCDPX);
+-	wr32(IGC_CTRL, ctrl);
+-
+-	ret_val = igc_setup_copper_link(hw);
++	ctrl &= ~(IGC_CTRL_FRCSPD | IGC_CTRL_FRCDPX |
++		  IGC_CTRL_SPEED_MASK | IGC_CTRL_FD);
++
++	if (hw->mac.autoneg_enabled) {
++		ctrl |= IGC_CTRL_SLU;
++		wr32(IGC_CTRL, ctrl);
++		ret_val = igc_setup_copper_link(hw);
++	} else {
++		ctrl |= IGC_CTRL_SLU | IGC_CTRL_FRCSPD | IGC_CTRL_FRCDPX;
++
++		switch (hw->mac.forced_speed_duplex) {
++		case IGC_FORCED_10H:
++			ctrl |= IGC_CTRL_SPEED_10;
++			break;
++		case IGC_FORCED_10F:
++			ctrl |= IGC_CTRL_SPEED_10 | IGC_CTRL_FD;
++			break;
++		case IGC_FORCED_100H:
++			ctrl |= IGC_CTRL_SPEED_100;
++			break;
++		case IGC_FORCED_100F:
++			ctrl |= IGC_CTRL_SPEED_100 | IGC_CTRL_FD;
++			break;
++		default:
++			return -IGC_ERR_CONFIG;
++		}
++		wr32(IGC_CTRL, ctrl);
++		ret_val = igc_setup_copper_link(hw);
++	}
+
+ 	return ret_val;
+ }
+@@ -443,6 +467,7 @@ static const struct igc_phy_operations igc_phy_ops_base = {
+ 	.reset			= igc_phy_hw_reset,
+ 	.read_reg		= igc_read_phy_reg_gpy,
+ 	.write_reg		= igc_write_phy_reg_gpy,
++	.force_speed_duplex	= igc_force_speed_duplex,
+ };
+
+ const struct igc_info igc_base_info = {
+diff --git a/drivers/net/ethernet/intel/igc/igc_defines.h b/drivers/net/ethernet/intel/igc/igc_defines.h
+index 9482ab11f050..3f504751c2d9 100644
+--- a/drivers/net/ethernet/intel/igc/igc_defines.h
++++ b/drivers/net/ethernet/intel/igc/igc_defines.h
+@@ -129,10 +129,13 @@
+ #define IGC_ERR_SWFW_SYNC		13
+
+ /* Device Control */
++#define IGC_CTRL_FD		BIT(0)  /* Full Duplex */
+ #define IGC_CTRL_RST		0x04000000  /* Global reset */
+-
+ #define IGC_CTRL_PHY_RST	0x80000000  /* PHY Reset */
+ #define IGC_CTRL_SLU		0x00000040  /* Set link up (Force Link) */
++#define IGC_CTRL_SPEED_MASK	GENMASK(10, 8)
++#define IGC_CTRL_SPEED_10	FIELD_PREP(IGC_CTRL_SPEED_MASK, 0)
++#define IGC_CTRL_SPEED_100	FIELD_PREP(IGC_CTRL_SPEED_MASK, 1)
+ #define IGC_CTRL_FRCSPD		0x00000800  /* Force Speed */
+ #define IGC_CTRL_FRCDPX		0x00001000  /* Force Duplex */
+ #define IGC_CTRL_VME		0x40000000  /* IEEE VLAN mode enable */
+@@ -673,6 +676,10 @@
+ #define IGC_GEN_POLL_TIMEOUT	1920
+
+ /* PHY Control Register */
++#define MII_CR_SPEED_MASK	(BIT(6) | BIT(13))
++#define MII_CR_SPEED_10		0x0000	/* SSM=0, SSL=0: 10 Mb/s */
++#define MII_CR_SPEED_100	BIT(13)	/* SSM=0, SSL=1: 100 Mb/s */
++#define MII_CR_DUPLEX_EN	BIT(8)	/* 0 = Half Duplex, 1 = Full Duplex */
+ #define MII_CR_RESTART_AUTO_NEG	0x0200  /* Restart auto negotiation */
+ #define MII_CR_POWER_DOWN	0x0800  /* Power down */
+ #define MII_CR_AUTO_NEG_EN	0x1000  /* Auto Neg Enable */
 diff --git a/drivers/net/ethernet/intel/igc/igc_ethtool.c b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-index 0122009bedd0..cfcbf2fdad6e 100644
+index cfcbf2fdad6e..5bd37d1be168 100644
 --- a/drivers/net/ethernet/intel/igc/igc_ethtool.c
 +++ b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-@@ -2000,6 +2000,49 @@ static int igc_ethtool_get_link_ksettings(struct net_device *netdev,
+@@ -1914,44 +1914,58 @@ static int igc_ethtool_get_link_ksettings(struct net_device *netdev,
+ 	ethtool_link_ksettings_add_link_mode(cmd, supported, TP);
+ 	ethtool_link_ksettings_add_link_mode(cmd, advertising, TP);
+
+-	/* advertising link modes */
+-	if (hw->phy.autoneg_advertised & ADVERTISE_10_HALF)
+-		ethtool_link_ksettings_add_link_mode(cmd, advertising, 10baseT_Half);
+-	if (hw->phy.autoneg_advertised & ADVERTISE_10_FULL)
+-		ethtool_link_ksettings_add_link_mode(cmd, advertising, 10baseT_Full);
+-	if (hw->phy.autoneg_advertised & ADVERTISE_100_HALF)
+-		ethtool_link_ksettings_add_link_mode(cmd, advertising, 100baseT_Half);
+-	if (hw->phy.autoneg_advertised & ADVERTISE_100_FULL)
+-		ethtool_link_ksettings_add_link_mode(cmd, advertising, 100baseT_Full);
+-	if (hw->phy.autoneg_advertised & ADVERTISE_1000_FULL)
+-		ethtool_link_ksettings_add_link_mode(cmd, advertising, 1000baseT_Full);
+-	if (hw->phy.autoneg_advertised & ADVERTISE_2500_FULL)
+-		ethtool_link_ksettings_add_link_mode(cmd, advertising, 2500baseT_Full);
+-
+ 	/* set autoneg settings */
+ 	ethtool_link_ksettings_add_link_mode(cmd, supported, Autoneg);
+-	ethtool_link_ksettings_add_link_mode(cmd, advertising, Autoneg);
++	if (hw->mac.autoneg_enabled) {
++		ethtool_link_ksettings_add_link_mode(cmd, advertising, Autoneg);
++		cmd->base.autoneg = AUTONEG_ENABLE;
++
++		/* advertising link modes only apply when autoneg is on */
++		if (hw->phy.autoneg_advertised & ADVERTISE_10_HALF)
++			ethtool_link_ksettings_add_link_mode(cmd, advertising,
++							     10baseT_Half);
++		if (hw->phy.autoneg_advertised & ADVERTISE_10_FULL)
++			ethtool_link_ksettings_add_link_mode(cmd, advertising,
++							     10baseT_Full);
++		if (hw->phy.autoneg_advertised & ADVERTISE_100_HALF)
++			ethtool_link_ksettings_add_link_mode(cmd, advertising,
++							     100baseT_Half);
++		if (hw->phy.autoneg_advertised & ADVERTISE_100_FULL)
++			ethtool_link_ksettings_add_link_mode(cmd, advertising,
++							     100baseT_Full);
++		if (hw->phy.autoneg_advertised & ADVERTISE_1000_FULL)
++			ethtool_link_ksettings_add_link_mode(cmd, advertising,
++							     1000baseT_Full);
++		if (hw->phy.autoneg_advertised & ADVERTISE_2500_FULL)
++			ethtool_link_ksettings_add_link_mode(cmd, advertising,
++							     2500baseT_Full);
++
++		/* Set pause flow control advertising */
++		switch (hw->fc.requested_mode) {
++		case igc_fc_full:
++			ethtool_link_ksettings_add_link_mode(cmd, advertising,
++							     Pause);
++			break;
++		case igc_fc_rx_pause:
++			ethtool_link_ksettings_add_link_mode(cmd, advertising,
++							     Pause);
++			ethtool_link_ksettings_add_link_mode(cmd, advertising,
++							     Asym_Pause);
++			break;
++		case igc_fc_tx_pause:
++			ethtool_link_ksettings_add_link_mode(cmd, advertising,
++							     Asym_Pause);
++			break;
++		default:
++			break;
++		}
++	} else {
++		cmd->base.autoneg = AUTONEG_DISABLE;
++	}
+
+-	/* Set pause flow control settings */
++	/* Pause is always supported */
+ 	ethtool_link_ksettings_add_link_mode(cmd, supported, Pause);
+
+-	switch (hw->fc.requested_mode) {
+-	case igc_fc_full:
+-		ethtool_link_ksettings_add_link_mode(cmd, advertising, Pause);
+-		break;
+-	case igc_fc_rx_pause:
+-		ethtool_link_ksettings_add_link_mode(cmd, advertising, Pause);
+-		ethtool_link_ksettings_add_link_mode(cmd, advertising,
+-						     Asym_Pause);
+-		break;
+-	case igc_fc_tx_pause:
+-		ethtool_link_ksettings_add_link_mode(cmd, advertising,
+-						     Asym_Pause);
+-		break;
+-	default:
+-		break;
+-	}
+-
+ 	status = pm_runtime_suspended(&adapter->pdev->dev) ?
+ 		 0 : rd32(IGC_STATUS);
+
+@@ -1983,7 +1997,6 @@ static int igc_ethtool_get_link_ksettings(struct net_device *netdev,
+ 		cmd->base.duplex = DUPLEX_UNKNOWN;
+ 	}
+ 	cmd->base.speed = speed;
+-	cmd->base.autoneg = AUTONEG_ENABLE;
+
+ 	/* MDI-X => 2; MDI =>1; Invalid =>0 */
+ 	if (hw->phy.media_type == igc_media_type_copper)
+@@ -2000,6 +2013,41 @@ static int igc_ethtool_get_link_ksettings(struct net_device *netdev,
  	return 0;
  }
 
 +/**
-+ * igc_handle_autoneg_enabled - Configure autonegotiation advertisement
++ * igc_handle_autoneg_disabled - Configure forced speed/duplex settings
 + * @adapter: private driver structure
-+ * @cmd: ethtool link ksettings from user
++ * @speed: requested speed (must be SPEED_10 or SPEED_100)
++ * @duplex: requested duplex
 + *
-+ * Records advertised speeds and flow control settings when autoneg
-+ * is enabled.
++ * Records forced speed/duplex when autoneg is disabled.
++ * Caller must validate speed before calling this function.
 + */
-+static void igc_handle_autoneg_enabled(struct igc_adapter *adapter,
-+				       const struct ethtool_link_ksettings *cmd)
++static void igc_handle_autoneg_disabled(struct igc_adapter *adapter, u32 speed,
++					u8 duplex)
 +{
-+	struct igc_hw *hw = &adapter->hw;
-+	u16 advertised = 0;
++	struct igc_mac_info *mac = &adapter->hw.mac;
 +
-+	if (ethtool_link_ksettings_test_link_mode(cmd, advertising,
-+						  2500baseT_Full))
-+		advertised |= ADVERTISE_2500_FULL;
++	switch (speed) {
++	case SPEED_10:
++		mac->forced_speed_duplex = (duplex == DUPLEX_FULL) ?
++			IGC_FORCED_10F : IGC_FORCED_10H;
++		break;
++	case SPEED_100:
++		mac->forced_speed_duplex = (duplex == DUPLEX_FULL) ?
++			IGC_FORCED_100F : IGC_FORCED_100H;
++		break;
++	default:
++		WARN_ONCE(1, "Unsupported speed %u\n", speed);
++		return;
++	}
 +
-+	if (ethtool_link_ksettings_test_link_mode(cmd, advertising,
-+						  1000baseT_Full))
-+		advertised |= ADVERTISE_1000_FULL;
++	mac->autoneg_enabled = false;
 +
-+	if (ethtool_link_ksettings_test_link_mode(cmd, advertising,
-+						  100baseT_Full))
-+		advertised |= ADVERTISE_100_FULL;
-+
-+	if (ethtool_link_ksettings_test_link_mode(cmd, advertising,
-+						  100baseT_Half))
-+		advertised |= ADVERTISE_100_HALF;
-+
-+	if (ethtool_link_ksettings_test_link_mode(cmd, advertising,
-+						  10baseT_Full))
-+		advertised |= ADVERTISE_10_FULL;
-+
-+	if (ethtool_link_ksettings_test_link_mode(cmd, advertising,
-+						  10baseT_Half))
-+		advertised |= ADVERTISE_10_HALF;
-+
-+	hw->phy.autoneg_advertised = advertised;
-+	if (adapter->fc_autoneg)
-+		hw->fc.requested_mode = igc_fc_default;
++	/* Half-duplex cannot support flow control per IEEE 802.3 */
++	if (duplex == DUPLEX_HALF)
++		adapter->hw.fc.requested_mode = igc_fc_none;
 +}
 +
- static int
- igc_ethtool_set_link_ksettings(struct net_device *netdev,
- 			       const struct ethtool_link_ksettings *cmd)
-@@ -2007,7 +2050,6 @@ igc_ethtool_set_link_ksettings(struct net_device *netdev,
- 	struct igc_adapter *adapter = netdev_priv(netdev);
- 	struct net_device *dev = adapter->netdev;
- 	struct igc_hw *hw = &adapter->hw;
--	u16 advertised = 0;
+ /**
+  * igc_handle_autoneg_enabled - Configure autonegotiation advertisement
+  * @adapter: private driver structure
+@@ -2038,6 +2086,7 @@ static void igc_handle_autoneg_enabled(struct igc_adapter *adapter,
+ 						  10baseT_Half))
+ 		advertised |= ADVERTISE_10_HALF;
 
- 	/* When adapter in resetting mode, autoneg/speed/duplex
- 	 * cannot be changed
-@@ -2032,34 +2074,8 @@ igc_ethtool_set_link_ksettings(struct net_device *netdev,
++	hw->mac.autoneg_enabled = true;
+ 	hw->phy.autoneg_advertised = advertised;
+ 	if (adapter->fc_autoneg)
+ 		hw->fc.requested_mode = igc_fc_default;
+@@ -2071,14 +2120,20 @@ igc_ethtool_set_link_ksettings(struct net_device *netdev,
+ 		}
+ 	}
+
++	if (cmd->base.autoneg == AUTONEG_DISABLE &&
++	    cmd->base.speed != SPEED_10 && cmd->base.speed != SPEED_100) {
++		netdev_info(dev, "Unsupported speed for forced link\n");
++		return -EINVAL;
++	}
++
  	while (test_and_set_bit(__IGC_RESETTING, &adapter->state))
  		usleep_range(1000, 2000);
 
--	if (ethtool_link_ksettings_test_link_mode(cmd, advertising,
--						  2500baseT_Full))
--		advertised |= ADVERTISE_2500_FULL;
+-	if (cmd->base.autoneg == AUTONEG_ENABLE) {
++	if (cmd->base.autoneg == AUTONEG_ENABLE)
+ 		igc_handle_autoneg_enabled(adapter, cmd);
+-	} else {
+-		netdev_info(dev, "Force mode currently not supported\n");
+-	}
++	else
++		igc_handle_autoneg_disabled(adapter, cmd->base.speed,
++					    cmd->base.duplex);
+
+ 	/* MDI-X => 2; MDI => 1; Auto => 3 */
+ 	if (cmd->base.eth_tp_mdix_ctrl) {
+diff --git a/drivers/net/ethernet/intel/igc/igc_hw.h b/drivers/net/ethernet/intel/igc/igc_hw.h
+index 86ab8f566f44..62aaee55668a 100644
+--- a/drivers/net/ethernet/intel/igc/igc_hw.h
++++ b/drivers/net/ethernet/intel/igc/igc_hw.h
+@@ -73,6 +73,13 @@ struct igc_info {
+
+ extern const struct igc_info igc_base_info;
+
++enum igc_forced_speed_duplex {
++	IGC_FORCED_10H,
++	IGC_FORCED_10F,
++	IGC_FORCED_100H,
++	IGC_FORCED_100F,
++};
++
+ struct igc_mac_info {
+ 	struct igc_mac_operations ops;
+
+@@ -93,6 +100,8 @@ struct igc_mac_info {
+ 	bool arc_subsystem_valid;
+
+ 	bool get_link_status;
++	bool autoneg_enabled;
++	enum igc_forced_speed_duplex forced_speed_duplex;
+ };
+
+ struct igc_nvm_operations {
+diff --git a/drivers/net/ethernet/intel/igc/igc_mac.c b/drivers/net/ethernet/intel/igc/igc_mac.c
+index 142beb9ae557..8bbb6d5581c7 100644
+--- a/drivers/net/ethernet/intel/igc/igc_mac.c
++++ b/drivers/net/ethernet/intel/igc/igc_mac.c
+@@ -446,6 +446,16 @@ s32 igc_config_fc_after_link_up(struct igc_hw *hw)
+ 	u16 speed, duplex;
+ 	s32 ret_val = 0;
+
++	/* When autoneg is disabled, force the MAC flow control settings
++	 * to match the "fc" parameter.
++	 */
++	if (!hw->mac.autoneg_enabled) {
++		ret_val = igc_force_mac_fc(hw);
++		if (ret_val)
++			hw_dbg("Error forcing flow control settings\n");
++		goto out;
++	}
++
+ 	/* In auto-neg, we need to check and see if Auto-Neg has completed,
+ 	 * and if so, how the PHY and link partner has flow control
+ 	 * configured.
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index 72bc5128d8b8..437e1d1ef1e4 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -7298,7 +7298,7 @@ static int igc_probe(struct pci_dev *pdev,
+ 	/* Initialize link properties that are user-changeable */
+ 	adapter->fc_autoneg = true;
+ 	hw->phy.autoneg_advertised = 0xaf;
 -
--	if (ethtool_link_ksettings_test_link_mode(cmd, advertising,
--						  1000baseT_Full))
--		advertised |= ADVERTISE_1000_FULL;
--
--	if (ethtool_link_ksettings_test_link_mode(cmd, advertising,
--						  100baseT_Full))
--		advertised |= ADVERTISE_100_FULL;
--
--	if (ethtool_link_ksettings_test_link_mode(cmd, advertising,
--						  100baseT_Half))
--		advertised |= ADVERTISE_100_HALF;
--
--	if (ethtool_link_ksettings_test_link_mode(cmd, advertising,
--						  10baseT_Full))
--		advertised |= ADVERTISE_10_FULL;
--
--	if (ethtool_link_ksettings_test_link_mode(cmd, advertising,
--						  10baseT_Half))
--		advertised |= ADVERTISE_10_HALF;
--
- 	if (cmd->base.autoneg == AUTONEG_ENABLE) {
--		hw->phy.autoneg_advertised = advertised;
--		if (adapter->fc_autoneg)
--			hw->fc.requested_mode = igc_fc_default;
-+		igc_handle_autoneg_enabled(adapter, cmd);
- 	} else {
- 		netdev_info(dev, "Force mode currently not supported\n");
- 	}
++	hw->mac.autoneg_enabled = true;
+ 	hw->fc.requested_mode = igc_fc_default;
+ 	hw->fc.current_mode = igc_fc_default;
+
+diff --git a/drivers/net/ethernet/intel/igc/igc_phy.c b/drivers/net/ethernet/intel/igc/igc_phy.c
+index 6c4d204aecfa..4cf737fb3b21 100644
+--- a/drivers/net/ethernet/intel/igc/igc_phy.c
++++ b/drivers/net/ethernet/intel/igc/igc_phy.c
+@@ -494,12 +494,20 @@ s32 igc_setup_copper_link(struct igc_hw *hw)
+ 	s32 ret_val = 0;
+ 	bool link;
+
+-	/* Setup autoneg and flow control advertisement and perform
+-	 * autonegotiation.
+-	 */
+-	ret_val = igc_copper_link_autoneg(hw);
+-	if (ret_val)
+-		goto out;
++	if (hw->mac.autoneg_enabled) {
++		/* Setup autoneg and flow control advertisement and perform
++		 * autonegotiation.
++		 */
++		ret_val = igc_copper_link_autoneg(hw);
++		if (ret_val)
++			goto out;
++	} else {
++		ret_val = hw->phy.ops.force_speed_duplex(hw);
++		if (ret_val) {
++			hw_dbg("Error Forcing Speed/Duplex\n");
++			goto out;
++		}
++	}
+
+ 	/* Check link status. Wait up to 100 microseconds for link to become
+ 	 * valid.
+@@ -778,3 +786,48 @@ u16 igc_read_phy_fw_version(struct igc_hw *hw)
+
+ 	return gphy_version;
+ }
++
++/**
++ * igc_force_speed_duplex - Force PHY speed and duplex settings
++ * @hw: pointer to the HW structure
++ *
++ * Programs the GPY PHY control register to disable autonegotiation
++ * and force the speed/duplex indicated by hw->mac.forced_speed_duplex.
++ */
++s32 igc_force_speed_duplex(struct igc_hw *hw)
++{
++	struct igc_phy_info *phy = &hw->phy;
++	u16 phy_ctrl;
++	s32 ret_val;
++
++	ret_val = phy->ops.read_reg(hw, PHY_CONTROL, &phy_ctrl);
++	if (ret_val)
++		return ret_val;
++
++	phy_ctrl &= ~(MII_CR_SPEED_MASK | MII_CR_DUPLEX_EN |
++		      MII_CR_AUTO_NEG_EN | MII_CR_RESTART_AUTO_NEG);
++
++	switch (hw->mac.forced_speed_duplex) {
++	case IGC_FORCED_10H:
++		phy_ctrl |= MII_CR_SPEED_10;
++		break;
++	case IGC_FORCED_10F:
++		phy_ctrl |= MII_CR_SPEED_10 | MII_CR_DUPLEX_EN;
++		break;
++	case IGC_FORCED_100H:
++		phy_ctrl |= MII_CR_SPEED_100;
++		break;
++	case IGC_FORCED_100F:
++		phy_ctrl |= MII_CR_SPEED_100 | MII_CR_DUPLEX_EN;
++		break;
++	default:
++		return -IGC_ERR_CONFIG;
++	}
++
++	ret_val = phy->ops.write_reg(hw, PHY_CONTROL, phy_ctrl);
++	if (ret_val)
++		return ret_val;
++
++	hw->mac.get_link_status = true;
++	return 0;
++}
+diff --git a/drivers/net/ethernet/intel/igc/igc_phy.h b/drivers/net/ethernet/intel/igc/igc_phy.h
+index 832a7e359f18..d37a89174826 100644
+--- a/drivers/net/ethernet/intel/igc/igc_phy.h
++++ b/drivers/net/ethernet/intel/igc/igc_phy.h
+@@ -18,5 +18,6 @@ void igc_power_down_phy_copper(struct igc_hw *hw);
+ s32 igc_write_phy_reg_gpy(struct igc_hw *hw, u32 offset, u16 data);
+ s32 igc_read_phy_reg_gpy(struct igc_hw *hw, u32 offset, u16 *data);
+ u16 igc_read_phy_fw_version(struct igc_hw *hw);
++s32 igc_force_speed_duplex(struct igc_hw *hw);
+
+ #endif
 --
 2.43.0
 
