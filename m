@@ -4,101 +4,100 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 59F5BF436AD
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 17 Apr 2026 14:30:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 53527F436AF
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 17 Apr 2026 14:30:20 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 27BBA80B20;
-	Fri, 17 Apr 2026 14:30:18 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 0E03580A46;
+	Fri, 17 Apr 2026 14:30:20 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 3r2AIvTvFwkl; Fri, 17 Apr 2026 14:30:17 +0000 (UTC)
+ id GxNuEuYv_vd3; Fri, 17 Apr 2026 14:30:19 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 57F4180C47
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 492EF813B6
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1776436217;
-	bh=9yVRVn/zRQuQzeFy5xr25n7quPTdCY6cNbOdP3O2WBA=;
+	s=default; t=1776436219;
+	bh=So3UL4GLmFGEb2cMh3LixTfYDLK8oXuy3PKPaHp8JM4=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=85jtZS1Q0jmWq//KLJwlZXo5b7EDc3kWq34C6elromRAlaA16UhkFbCOdo7r3Zk5b
-	 By0pxEzULrCBKIkLMC32Sv+jWYfZAc+d1yGnixCdTqmfaEeJigYxjPZmGl74X9m3ep
-	 upTvfi73z4JLW3YwTpm0RB9p9n6UnJsUfdsG2AdHE6FUWQDf+GsRxRhye7fThI4GuL
-	 mx7a0QaDwzP9f4/cdNpfvt6D3mopxZjIqWlCW6M9jsUF+fUEq+/+LSLMrNRG+AEFZm
-	 p5DMZ9iOaiZbozwBqF65EJKPFSh01MNs772Nw4DdV4rR9bLixui2lD8gxcQkpvEpPe
-	 l7GQm5uDGf5YQ==
+	b=Ytvr/f0hwWqsZoyxzia7CyIndULkeSjdhlTsRhrIwU6VIwjAWblIBt8JxL2q1CmXi
+	 mcydokB41qfba3BanhnqaOhpeHAAbQO809kgcwliERInaBZoyskv2nszjyw0z796A4
+	 N12IaaIein+fsop7cQps9Sv4+NGAm7Mgpc8ETQcASB0FOrxildopEX2oHMfg7S6Zsk
+	 ZrY0bnnj0NlWbbFAGvGA1NSuYXNa8gQN2vDMnctm4iugrm6DzlLevfLpyHSs7AJ+4d
+	 skDiLNJPgu32g40HvqU/7lwWv4Ny3UyHwrX7Q0SP+IYqPBUllTVqaKPnlgf0XEwLld
+	 RWFYLn+J5oIoA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 57F4180C47;
-	Fri, 17 Apr 2026 14:30:17 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 492EF813B6;
+	Fri, 17 Apr 2026 14:30:19 +0000 (UTC)
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id BFF0C270
- for <intel-wired-lan@lists.osuosl.org>; Fri, 17 Apr 2026 14:30:15 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id 47DF8270
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 17 Apr 2026 14:30:18 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id B1CC280A85
- for <intel-wired-lan@lists.osuosl.org>; Fri, 17 Apr 2026 14:30:15 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 3A05480C47
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 17 Apr 2026 14:30:18 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id b7Y6vkrveonu for <intel-wired-lan@lists.osuosl.org>;
- Fri, 17 Apr 2026 14:30:14 +0000 (UTC)
+ id ZADmTKWbGW7I for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 17 Apr 2026 14:30:17 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.129.124;
  helo=us-smtp-delivery-124.mimecast.com; envelope-from=poros@redhat.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 91B7580898
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 91B7580898
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 1D75F80A85
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 1D75F80A85
 Received: from us-smtp-delivery-124.mimecast.com
  (us-smtp-delivery-124.mimecast.com [170.10.129.124])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 91B7580898
- for <intel-wired-lan@lists.osuosl.org>; Fri, 17 Apr 2026 14:30:14 +0000 (UTC)
-Received: from mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 1D75F80A85
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 17 Apr 2026 14:30:16 +0000 (UTC)
+Received: from mx-prod-mc-01.mail-002.prod.us-west-2.aws.redhat.com
  (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
  relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-117-1qz2CUZyOTmXw6lVQ5aiAA-1; Fri,
- 17 Apr 2026 10:30:05 -0400
-X-MC-Unique: 1qz2CUZyOTmXw6lVQ5aiAA-1
-X-Mimecast-MFC-AGG-ID: 1qz2CUZyOTmXw6lVQ5aiAA_1776436202
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-609-qN3pg3HzOBS6RW1OI8S-DA-1; Fri,
+ 17 Apr 2026 10:30:12 -0400
+X-MC-Unique: qN3pg3HzOBS6RW1OI8S-DA-1
+X-Mimecast-MFC-AGG-ID: qN3pg3HzOBS6RW1OI8S-DA_1776436207
 Received: from mx-prod-int-06.mail-002.prod.us-west-2.aws.redhat.com
  (mx-prod-int-06.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.93])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
- id 106A91956094; Fri, 17 Apr 2026 14:30:02 +0000 (UTC)
+ by mx-prod-mc-01.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
+ id 1ADA1195609D; Fri, 17 Apr 2026 14:30:07 +0000 (UTC)
 Received: from ShadowPeak.redhat.com (unknown [10.44.32.76])
  by mx-prod-int-06.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP
- id 70271180047F; Fri, 17 Apr 2026 14:29:57 +0000 (UTC)
+ id 73678180047F; Fri, 17 Apr 2026 14:30:02 +0000 (UTC)
 From: Petr Oros <poros@redhat.com>
 To: netdev@vger.kernel.org
-Date: Fri, 17 Apr 2026 16:29:43 +0200
-Message-ID: <7e03c6b17b67453f7c0c3eefce034a8fb9c40b63.1776426683.git.poros@redhat.com>
+Date: Fri, 17 Apr 2026 16:29:44 +0200
+Message-ID: <dc7fb6f6bc737049a9ab8c42bd2f4b34b477907a.1776426683.git.poros@redhat.com>
 In-Reply-To: <cover.1776426683.git.poros@redhat.com>
 References: <cover.1776426683.git.poros@redhat.com>
 MIME-Version: 1.0
 X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.93
-X-Mimecast-MFC-PROC-ID: vbcg1KMnSF5rfG4ibatIC1kZ6HUXP_gplgduOlpLBVE_1776436202
+X-Mimecast-MFC-PROC-ID: 3KRT8FsTIiGIDr6mUpcYJEYH8u9w9U3VeDIcy1iMxek_1776436207
 X-Mimecast-Originator: redhat.com
 Content-Transfer-Encoding: 8bit
 content-type: text/plain; charset="US-ASCII"; x-default=true
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=redhat.com; 
- s=mimecast20190719; t=1776436213;
+ s=mimecast20190719; t=1776436215;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=9yVRVn/zRQuQzeFy5xr25n7quPTdCY6cNbOdP3O2WBA=;
- b=e12G0E2IWkO8uR5Xw2qhZ3e7eSyjx/aTG327jz02Gyg6PLHOh9+/WcuIQyNQSVeIbOQWxu
- yjRc0DP9y4Q5TFfWG7PdT2SGSb7hseo71DSU212qcFmTxJg2NtSKJ5FyfkS1ugMbDf9ZIs
- beVf5rfloIkOvxWITggnvklv5YVR7rs=
+ bh=So3UL4GLmFGEb2cMh3LixTfYDLK8oXuy3PKPaHp8JM4=;
+ b=NSnnsffYFG+qI1rEd6gm3AJjbYt0MPYFw7XY5iQOGzTV2rSKkf2/I/8eTWarx3yvxrvUVz
+ he45X2pnWmywpBvBLdAf97u9Go6jJ9w28DL6X6nkdSQj/v6JSWqU8e89EKjo5/UVeWfIMU
+ JS9v4NbDjuiEU3l8faIGjrR4gFzJIZ4=
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=redhat.com
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (1024-bit key,
- unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=e12G0E2I
-Subject: [Intel-wired-lan] [PATCH iwl-net v2 2/4] iavf: stop removing VLAN
- filters from PF on interface down
+ dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=NSnnsffY
+Subject: [Intel-wired-lan] [PATCH iwl-net v2 3/4] iavf: wait for PF
+ confirmation before removing VLAN filters
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -126,221 +125,178 @@ Cc: Przemyslaw Patynowski <przemyslawx.patynowski@intel.com>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-When a VF goes down, the driver currently sends DEL_VLAN to the PF for
-every VLAN filter (ACTIVE -> DISABLE -> send DEL -> INACTIVE), then
-re-adds them all on UP (INACTIVE -> ADD -> send ADD -> ADDING ->
-ACTIVE). This round-trip is unnecessary because:
+The VLAN filter DELETE path was asymmetric with the ADD path: ADD
+waits for PF confirmation (ADD -> ADDING -> ACTIVE), but DELETE
+immediately frees the filter struct after sending the DEL message
+without waiting for the PF response.
 
- 1. The PF disables the VF's queues via VIRTCHNL_OP_DISABLE_QUEUES,
-    which already prevents all RX/TX traffic regardless of VLAN filter
-    state.
+This is problematic because:
+ - If the PF rejects the DEL, the filter remains in HW but the driver
+   has already freed the tracking structure, losing sync.
+ - Race conditions between DEL pending and other operations
+   (add, reset) cannot be properly resolved if the filter struct
+   is already gone.
 
- 2. The VLAN filters remaining in PF HW while the VF is down is
-    harmless - packets matching those filters have nowhere to go with
-    queues disabled.
+Add IAVF_VLAN_REMOVING state to make the DELETE path symmetric:
 
- 3. The DEL+ADD cycle during down/up creates race windows where the
-    VLAN filter list is incomplete. With spoofcheck enabled, the PF
-    enables TX VLAN filtering on the first non-zero VLAN add, blocking
-    traffic for any VLANs not yet re-added.
+  REMOVE -> REMOVING (send DEL) -> PF confirms -> kfree
+                                -> PF rejects  -> ACTIVE
 
-Remove the entire DISABLE/INACTIVE state machinery:
- - Remove IAVF_VLAN_DISABLE and IAVF_VLAN_INACTIVE enum values
- - Remove iavf_restore_filters() and its call from iavf_open()
- - Remove VLAN filter handling from iavf_clear_mac_vlan_filters(),
-   rename it to iavf_clear_mac_filters()
- - Remove DEL_VLAN_FILTER scheduling from iavf_down()
- - Remove all DISABLE/INACTIVE handling from iavf_del_vlans()
+In iavf_del_vlans(), transition filters from REMOVE to REMOVING
+instead of immediately freeing them. The new DEL completion handler
+in iavf_virtchnl_completion() frees filters on success or reverts
+them to ACTIVE on error.
 
-VLAN filters now stay ACTIVE across down/up cycles. Only explicit
-user removal (ndo_vlan_rx_kill_vid) or PF/VF reset triggers VLAN
-filter deletion/re-addition.
+Update iavf_add_vlan() to handle the REMOVING state: if a DEL is
+pending and the user re-adds the same VLAN, queue it for ADD so
+it gets re-programmed after the PF processes the DEL.
 
-Fixes: ed1f5b58ea01 ("i40evf: remove VLAN filters on close")
+The !VLAN_FILTERING_ALLOWED early-exit path still frees filters
+directly since no PF message is sent in that case.
+
+Also update iavf_del_vlan() to skip filters already in REMOVING
+state: DEL has been sent to PF and the completion handler will
+free the filter when PF confirms. Without this guard, the sequence
+DEL(pending) -> user-del -> second DEL could cause the PF to return
+an error for the second DEL (filter already gone), causing the
+completion handler to incorrectly revert a deleted filter back to
+ACTIVE.
+
+Fixes: 968996c070ef ("iavf: Fix VLAN_V2 addition/rejection")
 Signed-off-by: Petr Oros <poros@redhat.com>
 Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 Tested-by: Rafal Romanowski <rafal.romanowski@intel.com>
 ---
- drivers/net/ethernet/intel/iavf/iavf.h        |  6 +--
- drivers/net/ethernet/intel/iavf/iavf_main.c   | 39 ++-----------------
- .../net/ethernet/intel/iavf/iavf_virtchnl.c   | 33 +++-------------
- 3 files changed, 12 insertions(+), 66 deletions(-)
+ drivers/net/ethernet/intel/iavf/iavf.h        |  1 +
+ drivers/net/ethernet/intel/iavf/iavf_main.c   | 13 ++++---
+ .../net/ethernet/intel/iavf/iavf_virtchnl.c   | 37 +++++++++++++------
+ 3 files changed, 34 insertions(+), 17 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/iavf/iavf.h b/drivers/net/ethernet/intel/iavf/iavf.h
-index 47a862ca5e2c3f..5765715914d6b2 100644
+index 5765715914d6b2..050f8241ef5e6b 100644
 --- a/drivers/net/ethernet/intel/iavf/iavf.h
 +++ b/drivers/net/ethernet/intel/iavf/iavf.h
-@@ -159,10 +159,8 @@ enum iavf_vlan_state_t {
- 	IAVF_VLAN_INVALID,
- 	IAVF_VLAN_ADD,		/* filter needs to be added */
+@@ -161,6 +161,7 @@ enum iavf_vlan_state_t {
  	IAVF_VLAN_ADDING,	/* ADD sent to PF, waiting for response */
--	IAVF_VLAN_ACTIVE,	/* filter is accepted by PF */
--	IAVF_VLAN_DISABLE,	/* filter needs to be deleted by PF, then marked INACTIVE */
--	IAVF_VLAN_INACTIVE,	/* filter is inactive, we are in IFF_DOWN */
--	IAVF_VLAN_REMOVE,	/* filter needs to be removed from list */
-+	IAVF_VLAN_ACTIVE,	/* PF confirmed, filter is in HW */
-+	IAVF_VLAN_REMOVE,	/* filter queued for DEL from PF */
+ 	IAVF_VLAN_ACTIVE,	/* PF confirmed, filter is in HW */
+ 	IAVF_VLAN_REMOVE,	/* filter queued for DEL from PF */
++	IAVF_VLAN_REMOVING,	/* DEL sent to PF, waiting for response */
  };
  
  struct iavf_vlan_filter {
 diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index dad001abc9086b..12e102506011a6 100644
+index 12e102506011a6..d373feee4c7e9c 100644
 --- a/drivers/net/ethernet/intel/iavf/iavf_main.c
 +++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -801,27 +801,6 @@ static void iavf_del_vlan(struct iavf_adapter *adapter, struct iavf_vlan vlan)
- 	spin_unlock_bh(&adapter->mac_vlan_list_lock);
- }
- 
--/**
-- * iavf_restore_filters
-- * @adapter: board private structure
-- *
-- * Restore existing non MAC filters when VF netdev comes back up
-- **/
--static void iavf_restore_filters(struct iavf_adapter *adapter)
--{
--	struct iavf_vlan_filter *f;
--
--	/* re-add all VLAN filters */
--	spin_lock_bh(&adapter->mac_vlan_list_lock);
--
--	list_for_each_entry(f, &adapter->vlan_filter_list, list) {
--		if (f->state == IAVF_VLAN_INACTIVE)
--			f->state = IAVF_VLAN_ADD;
--	}
--
--	spin_unlock_bh(&adapter->mac_vlan_list_lock);
--	adapter->aq_required |= IAVF_FLAG_AQ_ADD_VLAN_FILTER;
--}
- 
- /**
-  * iavf_get_num_vlans_added - get number of VLANs added
-@@ -1240,13 +1219,12 @@ static void iavf_up_complete(struct iavf_adapter *adapter)
- }
- 
- /**
-- * iavf_clear_mac_vlan_filters - Remove mac and vlan filters not sent to PF
-- * yet and mark other to be removed.
-+ * iavf_clear_mac_filters - Remove MAC filters not sent to PF yet and mark
-+ * others to be removed.
-  * @adapter: board private structure
-  **/
--static void iavf_clear_mac_vlan_filters(struct iavf_adapter *adapter)
-+static void iavf_clear_mac_filters(struct iavf_adapter *adapter)
- {
--	struct iavf_vlan_filter *vlf, *vlftmp;
- 	struct iavf_mac_filter *f, *ftmp;
- 
- 	spin_lock_bh(&adapter->mac_vlan_list_lock);
-@@ -1265,11 +1243,6 @@ static void iavf_clear_mac_vlan_filters(struct iavf_adapter *adapter)
- 		}
- 	}
- 
--	/* disable all VLAN filters */
--	list_for_each_entry_safe(vlf, vlftmp, &adapter->vlan_filter_list,
--				 list)
--		vlf->state = IAVF_VLAN_DISABLE;
--
- 	spin_unlock_bh(&adapter->mac_vlan_list_lock);
- }
- 
-@@ -1365,7 +1338,7 @@ void iavf_down(struct iavf_adapter *adapter)
- 	iavf_napi_disable_all(adapter);
- 	iavf_irq_disable(adapter);
- 
--	iavf_clear_mac_vlan_filters(adapter);
-+	iavf_clear_mac_filters(adapter);
- 	iavf_clear_cloud_filters(adapter);
- 	iavf_clear_fdir_filters(adapter);
- 	iavf_clear_adv_rss_conf(adapter);
-@@ -1382,8 +1355,6 @@ void iavf_down(struct iavf_adapter *adapter)
- 		 */
- 		if (!list_empty(&adapter->mac_filter_list))
- 			adapter->aq_required |= IAVF_FLAG_AQ_DEL_MAC_FILTER;
--		if (!list_empty(&adapter->vlan_filter_list))
--			adapter->aq_required |= IAVF_FLAG_AQ_DEL_VLAN_FILTER;
- 		if (!list_empty(&adapter->cloud_filter_list))
- 			adapter->aq_required |= IAVF_FLAG_AQ_DEL_CLOUD_FILTER;
- 		if (!list_empty(&adapter->fdir_list_head))
-@@ -4488,8 +4459,6 @@ static int iavf_open(struct net_device *netdev)
- 	iavf_add_filter(adapter, adapter->hw.mac.addr);
- 	spin_unlock_bh(&adapter->mac_vlan_list_lock);
- 
--	/* Restore filters that were removed with IFF_DOWN */
--	iavf_restore_filters(adapter);
- 	iavf_restore_fdir_filters(adapter);
- 
- 	iavf_configure(adapter);
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-index 6b06ae872a0cdf..4f197d908124e6 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-@@ -911,22 +911,12 @@ void iavf_del_vlans(struct iavf_adapter *adapter)
- 	spin_lock_bh(&adapter->mac_vlan_list_lock);
- 
- 	list_for_each_entry_safe(f, ftmp, &adapter->vlan_filter_list, list) {
--		/* since VLAN capabilities are not allowed, we dont want to send
--		 * a VLAN delete request because it will most likely fail and
--		 * create unnecessary errors/noise, so just free the VLAN
--		 * filters marked for removal to enable bailing out before
--		 * sending a virtchnl message
+@@ -757,10 +757,10 @@ iavf_vlan_filter *iavf_add_vlan(struct iavf_adapter *adapter,
+ 		adapter->num_vlan_filters++;
+ 		iavf_schedule_aq_request(adapter, IAVF_FLAG_AQ_ADD_VLAN_FILTER);
+ 	} else if (f->state == IAVF_VLAN_REMOVE) {
+-		/* Re-add the filter since we cannot tell whether the
+-		 * pending delete has already been processed by the PF.
+-		 * A duplicate add is harmless.
 -		 */
- 		if (f->state == IAVF_VLAN_REMOVE &&
- 		    !VLAN_FILTERING_ALLOWED(adapter)) {
++		/* DEL not yet sent to PF, cancel it */
++		f->state = IAVF_VLAN_ACTIVE;
++	} else if (f->state == IAVF_VLAN_REMOVING) {
++		/* DEL already sent to PF, re-add after completion */
+ 		f->state = IAVF_VLAN_ADD;
+ 		iavf_schedule_aq_request(adapter,
+ 					 IAVF_FLAG_AQ_ADD_VLAN_FILTER);
+@@ -791,11 +791,14 @@ static void iavf_del_vlan(struct iavf_adapter *adapter, struct iavf_vlan vlan)
  			list_del(&f->list);
  			kfree(f);
  			adapter->num_vlan_filters--;
--		} else if (f->state == IAVF_VLAN_DISABLE &&
--		    !VLAN_FILTERING_ALLOWED(adapter)) {
--			f->state = IAVF_VLAN_INACTIVE;
--		} else if (f->state == IAVF_VLAN_REMOVE ||
--			   f->state == IAVF_VLAN_DISABLE) {
-+		} else if (f->state == IAVF_VLAN_REMOVE) {
- 			count++;
+-		} else {
++		} else if (f->state != IAVF_VLAN_REMOVING) {
+ 			f->state = IAVF_VLAN_REMOVE;
+ 			iavf_schedule_aq_request(adapter,
+ 						 IAVF_FLAG_AQ_DEL_VLAN_FILTER);
  		}
++		/* If REMOVING, DEL is already sent to PF; completion
++		 * handler will free the filter when PF confirms.
++		 */
  	}
-@@ -959,13 +949,7 @@ void iavf_del_vlans(struct iavf_adapter *adapter)
+ 
+ 	spin_unlock_bh(&adapter->mac_vlan_list_lock);
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+index 4f197d908124e6..93ca79c3e3b535 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+@@ -948,12 +948,10 @@ void iavf_del_vlans(struct iavf_adapter *adapter)
+ 
  		vvfl->vsi_id = adapter->vsi_res->vsi_id;
  		vvfl->num_elements = count;
- 		list_for_each_entry_safe(f, ftmp, &adapter->vlan_filter_list, list) {
--			if (f->state == IAVF_VLAN_DISABLE) {
--				vvfl->vlan_id[i] = f->vlan.vid;
--				f->state = IAVF_VLAN_INACTIVE;
--				i++;
--				if (i == count)
--					break;
--			} else if (f->state == IAVF_VLAN_REMOVE) {
-+			if (f->state == IAVF_VLAN_REMOVE) {
+-		list_for_each_entry_safe(f, ftmp, &adapter->vlan_filter_list, list) {
++		list_for_each_entry(f, &adapter->vlan_filter_list, list) {
+ 			if (f->state == IAVF_VLAN_REMOVE) {
  				vvfl->vlan_id[i] = f->vlan.vid;
- 				list_del(&f->list);
- 				kfree(f);
-@@ -1007,8 +991,7 @@ void iavf_del_vlans(struct iavf_adapter *adapter)
- 		vvfl_v2->vport_id = adapter->vsi_res->vsi_id;
- 		vvfl_v2->num_elements = count;
- 		list_for_each_entry_safe(f, ftmp, &adapter->vlan_filter_list, list) {
--			if (f->state == IAVF_VLAN_DISABLE ||
--			    f->state == IAVF_VLAN_REMOVE) {
-+			if (f->state == IAVF_VLAN_REMOVE) {
- 				struct virtchnl_vlan_supported_caps *filtering_support =
- 					&adapter->vlan_v2_caps.filtering.filtering_support;
- 				struct virtchnl_vlan *vlan;
-@@ -1022,13 +1005,9 @@ void iavf_del_vlans(struct iavf_adapter *adapter)
- 				vlan->tci = f->vlan.vid;
- 				vlan->tpid = f->vlan.tpid;
- 
--				if (f->state == IAVF_VLAN_DISABLE) {
--					f->state = IAVF_VLAN_INACTIVE;
--				} else {
--					list_del(&f->list);
--					kfree(f);
--					adapter->num_vlan_filters--;
--				}
-+				list_del(&f->list);
-+				kfree(f);
-+				adapter->num_vlan_filters--;
+-				list_del(&f->list);
+-				kfree(f);
+-				adapter->num_vlan_filters--;
++				f->state = IAVF_VLAN_REMOVING;
  				i++;
  				if (i == count)
  					break;
+@@ -990,7 +988,7 @@ void iavf_del_vlans(struct iavf_adapter *adapter)
+ 
+ 		vvfl_v2->vport_id = adapter->vsi_res->vsi_id;
+ 		vvfl_v2->num_elements = count;
+-		list_for_each_entry_safe(f, ftmp, &adapter->vlan_filter_list, list) {
++		list_for_each_entry(f, &adapter->vlan_filter_list, list) {
+ 			if (f->state == IAVF_VLAN_REMOVE) {
+ 				struct virtchnl_vlan_supported_caps *filtering_support =
+ 					&adapter->vlan_v2_caps.filtering.filtering_support;
+@@ -1005,9 +1003,7 @@ void iavf_del_vlans(struct iavf_adapter *adapter)
+ 				vlan->tci = f->vlan.vid;
+ 				vlan->tpid = f->vlan.tpid;
+ 
+-				list_del(&f->list);
+-				kfree(f);
+-				adapter->num_vlan_filters--;
++				f->state = IAVF_VLAN_REMOVING;
+ 				i++;
+ 				if (i == count)
+ 					break;
+@@ -2370,10 +2366,6 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
+ 			ether_addr_copy(adapter->hw.mac.addr, netdev->dev_addr);
+ 			wake_up(&adapter->vc_waitqueue);
+ 			break;
+-		case VIRTCHNL_OP_DEL_VLAN:
+-			dev_err(&adapter->pdev->dev, "Failed to delete VLAN filter, error %s\n",
+-				iavf_stat_str(&adapter->hw, v_retval));
+-			break;
+ 		case VIRTCHNL_OP_DEL_ETH_ADDR:
+ 			dev_err(&adapter->pdev->dev, "Failed to delete MAC filter, error %s\n",
+ 				iavf_stat_str(&adapter->hw, v_retval));
+@@ -2895,6 +2887,27 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
+ 		spin_unlock_bh(&adapter->mac_vlan_list_lock);
+ 		}
+ 		break;
++	case VIRTCHNL_OP_DEL_VLAN:
++	case VIRTCHNL_OP_DEL_VLAN_V2: {
++		struct iavf_vlan_filter *f, *ftmp;
++
++		spin_lock_bh(&adapter->mac_vlan_list_lock);
++		list_for_each_entry_safe(f, ftmp, &adapter->vlan_filter_list,
++					 list) {
++			if (f->state == IAVF_VLAN_REMOVING) {
++				if (v_retval) {
++					/* PF rejected DEL, keep filter */
++					f->state = IAVF_VLAN_ACTIVE;
++				} else {
++					list_del(&f->list);
++					kfree(f);
++					adapter->num_vlan_filters--;
++				}
++			}
++		}
++		spin_unlock_bh(&adapter->mac_vlan_list_lock);
++		}
++		break;
+ 	case VIRTCHNL_OP_ENABLE_VLAN_STRIPPING:
+ 		/* PF enabled vlan strip on this VF.
+ 		 * Update netdev->features if needed to be in sync with ethtool.
 -- 
 2.52.0
 
