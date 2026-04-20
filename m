@@ -4,69 +4,68 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 98B2AF588C3
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 20 Apr 2026 13:16:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 70375F588C2
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 20 Apr 2026 13:16:24 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 4BA6A61110;
-	Mon, 20 Apr 2026 13:16:19 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 1735E61114;
+	Mon, 20 Apr 2026 13:16:24 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id e_SnlddnbQcM; Mon, 20 Apr 2026 13:16:17 +0000 (UTC)
+ id qUUBwG8TnDjL; Mon, 20 Apr 2026 13:16:22 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7FFDB6110C
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 297E161111
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1776690977;
-	bh=UKfMAYP+YaEBWmLalYQmWxaecTT/vnItuoJhnjdPeuY=;
+	s=default; t=1776690982;
+	bh=vyYjCbh4hfy8ck7jhn4MmvniDqQsTjyG82RU6rIKd5E=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=AGV8p6jVcMeugzibyFlOf3Tfi9Tlg7d5n7IFg/ac0SlPaUhXXwObc+Ut+e/zKKrgE
-	 IeghgC/AeiDDHD+v1Gaxi8dgdczzOClLXxfeXM4qeyMCvNrE/8eq+RL8k4xKtgOn0B
-	 sWtfsf5U8oC1v3wXG4+J5LQFBRLNh6g6obci86Rp/EULhMN4/Y+Oph3qfnc3SXWiqr
-	 8NhtLpu2Cfu7+h5GARnFBWGkX7qNReHWH9MkJLD4X/6hMMN4MWkEyFiyPhLlDX2cyT
-	 XAeRiwtNSEXFaTHIyQ290/MfSF1BD8qnALEOe9Ze5hwNJ0LGhGBrv/i4siwJj1o5vo
-	 LB/DPWoaqYzzw==
+	b=dFowRJJSMD1lNnu2gmI7xT5LP0ODSa7crULLEHYadD6K+iQcaMJEQ/9MPZHBdn4Vk
+	 sMEUlDWA29qgQs5noUKy0H0PK7V3MH6sh3jyT3EdacZSBgci/LUgSZtY0OcICGjc3H
+	 uh5Y3PJeP4TI9uslIIVAdKnEyY0kKvLVwEs7ft8O/hLc85018q1U9+l6T9/Za8iSfE
+	 STKr+b/hisTv5BoAq+Gos4UxXngdvGMhrMpEukLyWKphde/K7EtamujSAKvxd1nD53
+	 BoWIk4w9zVoRQdV3bZ4whRdVCVlxqe2S7La1vHbpApPtnQF5Vuqyso+oWw5TCw3pQV
+	 7dllYbstG13Zg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 7FFDB6110C;
-	Mon, 20 Apr 2026 13:16:17 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 297E161111;
+	Mon, 20 Apr 2026 13:16:22 +0000 (UTC)
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id 39AE124D
- for <intel-wired-lan@lists.osuosl.org>; Mon, 20 Apr 2026 13:16:17 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id 049D1259
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 20 Apr 2026 13:16:21 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 2AFB640514
- for <intel-wired-lan@lists.osuosl.org>; Mon, 20 Apr 2026 13:16:17 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id BA1DD40514
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 20 Apr 2026 13:16:19 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id qe0pIwidaALM for <intel-wired-lan@lists.osuosl.org>;
- Mon, 20 Apr 2026 13:16:16 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.234.252.31;
- helo=sea.source.kernel.org; envelope-from=sashal@kernel.org;
- receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 8871E40261
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 8871E40261
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 8871E40261
- for <intel-wired-lan@lists.osuosl.org>; Mon, 20 Apr 2026 13:16:16 +0000 (UTC)
+ id kEkDpT9rARts for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 20 Apr 2026 13:16:19 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org;
+ envelope-from=sashal@kernel.org; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 27DD340261
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 27DD340261
+Received: from sea.source.kernel.org (sea.source.kernel.org
+ [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 27DD340261
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 20 Apr 2026 13:16:18 +0000 (UTC)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by sea.source.kernel.org (Postfix) with ESMTP id E32F940473;
- Mon, 20 Apr 2026 13:16:15 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E15A4C2BCC9;
- Mon, 20 Apr 2026 13:16:13 +0000 (UTC)
+ by sea.source.kernel.org (Postfix) with ESMTP id AB6D7418AD;
+ Mon, 20 Apr 2026 13:16:18 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 15B71C2BCF6;
+ Mon, 20 Apr 2026 13:16:16 +0000 (UTC)
 From: Sasha Levin <sashal@kernel.org>
 To: patches@lists.linux.dev,
 	stable@vger.kernel.org
-Cc: Kohei Enju <kohei@enjuk.jp>,
+Cc: Agalakov Daniil <ade@amicon.ru>, Iskhakov Daniil <dish@amicon.ru>,
  Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
  Tony Nguyen <anthony.l.nguyen@intel.com>, Sasha Levin <sashal@kernel.org>,
  jesse.brandeburg@intel.com, davem@davemloft.net, edumazet@google.com,
- kuba@kernel.org, pabeni@redhat.com, horms@kernel.org,
- przemyslaw.kitszel@intel.com, sergey.temerkhanov@intel.com,
- intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Date: Mon, 20 Apr 2026 09:08:07 -0400
-Message-ID: <20260420131539.986432-21-sashal@kernel.org>
+ kuba@kernel.org, pabeni@redhat.com, intel-wired-lan@lists.osuosl.org,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Date: Mon, 20 Apr 2026 09:08:08 -0400
+Message-ID: <20260420131539.986432-22-sashal@kernel.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260420131539.986432-1-sashal@kernel.org>
 References: <20260420131539.986432-1-sashal@kernel.org>
@@ -76,24 +75,23 @@ X-Patchwork-Hint: Ignore
 X-stable-base: Linux 6.18.23
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1776690975;
- bh=3gnS4H5dN42k38IxAUh5e5CfDoKP9ZQMGb82ft8Sop0=;
+ d=kernel.org; s=k20201202; t=1776690978;
+ bh=49HN6o4yrsP/WG3TNcVwqMVx1kYceSAQjTh2AygBxfk=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=R8Z7jEi4Oq87usBdbuxfM8PhvjI1jIp/duOSrVCYZdkqKHsTcwl6er8tjNZYyaCEh
- fMc7qG0NoiTr32m7JmOZngV60NdG/BnEhUxSQhmwBrtbG2NDEyv/91QS442jdkertZ
- yzcj67jwuTAuR7Re6wFcHSl82KzcH8VHU835Um7VzI4GoCk3+609vVslFlOqH6Pnn6
- 3qNxe5DO8L4uPLFpx01AFgz8sn2tPg0Kh3VyiAeZLpwqIwa3yrYv5FVWMOB6pp3+H1
- FwD0v4CekRi8iPpbdYzDApSOCt98pKvEc+FBnctbKpcSIDZUtmCYJJ8HtMzI8O9id2
- xkjWUhwjIOK9w==
+ b=cqdZgMY8OvAgJFp3z9cW5IWD8UEHaBY8Uvnn8ROOOnxVIBbjrD1bvMK1tFpts+ue7
+ qh3G+7Nn0YBabBCA8jAFznzZ1sJ6RFoLJNo8t4Vuu3SHagFJoPvqEuRKMzWkM9Ph0U
+ jZ+70Gy6z3ve+EMLQmFCqhx5KApX0GxxYNP3lBnqm2MKEhulpfN6zmIRHHhVsBVo3I
+ IKFrQM1bpYsOuX8FOp51K7Il/sU5ws9z6ROWUXJaY2Eg3eWJsLa3fTTbQswmVLGlEz
+ ruJNbK8KR+YrF8CHd0G4y5Qx9Bzj/kMtwCepJRyeMNrW+7syvBCs3enWkJMBXEOZjX
+ I3iLElrGcsaWw==
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=R8Z7jEi4
-Subject: [Intel-wired-lan] [PATCH AUTOSEL 6.18] ice: ptp: don't WARN when
- controlling PF is unavailable
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20201202 header.b=cqdZgMY8
+Subject: [Intel-wired-lan] [PATCH AUTOSEL 6.18] e1000: check return value of
+ e1000_read_eeprom
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -109,20 +107,28 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Kohei Enju <kohei@enjuk.jp>
+From: Agalakov Daniil <ade@amicon.ru>
 
-[ Upstream commit bb3f21edc7056cdf44a7f7bd7ba65af40741838c ]
+[ Upstream commit d3baa34a470771399c1495bc04b1e26ac15d598e ]
 
-In VFIO passthrough setups, it is possible to pass through only a PF
-which doesn't own the source timer. In that case the PTP controlling PF
-(adapter->ctrl_pf) is never initialized in the VM, so ice_get_ctrl_ptp()
-returns NULL and triggers WARN_ON() in ice_ptp_setup_pf().
+[Why]
+e1000_set_eeprom() performs a read-modify-write operation when the write
+range is not word-aligned. This requires reading the first and last words
+of the range from the EEPROM to preserve the unmodified bytes.
 
-Since this is an expected behavior in that configuration, replace
-WARN_ON() with an informational message and return -EOPNOTSUPP.
+However, the code does not check the return value of e1000_read_eeprom().
+If the read fails, the operation continues using uninitialized data from
+eeprom_buff. This results in corrupted data being written back to the
+EEPROM for the boundary words.
 
-Fixes: e800654e85b5 ("ice: Use ice_adapter for PTP shared data instead of auxdev")
-Signed-off-by: Kohei Enju <kohei@enjuk.jp>
+Add the missing error checks and abort the operation if reading fails.
+
+Found by Linux Verification Center (linuxtesting.org) with SVACE.
+
+Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
+Co-developed-by: Iskhakov Daniil <dish@amicon.ru>
+Signed-off-by: Iskhakov Daniil <dish@amicon.ru>
+Signed-off-by: Agalakov Daniil <ade@amicon.ru>
 Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
@@ -132,28 +138,42 @@ LLM Generated explanations, may be completely bogus:
 
 Error: Failed to generate final synthesis
 
- drivers/net/ethernet/intel/ice/ice_ptp.c | 8 +++++++-
+ drivers/net/ethernet/intel/e1000/e1000_ethtool.c | 8 +++++++-
  1 file changed, 7 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
-index df38345b12d72..02517772fb5f4 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-@@ -3041,7 +3041,13 @@ static int ice_ptp_setup_pf(struct ice_pf *pf)
- 	struct ice_ptp *ctrl_ptp = ice_get_ctrl_ptp(pf);
- 	struct ice_ptp *ptp = &pf->ptp;
- 
--	if (WARN_ON(!ctrl_ptp) || pf->hw.mac_type == ICE_MAC_UNKNOWN)
-+	if (!ctrl_ptp) {
-+		dev_info(ice_pf_to_dev(pf),
-+			 "PTP unavailable: no controlling PF\n");
-+		return -EOPNOTSUPP;
-+	}
+diff --git a/drivers/net/ethernet/intel/e1000/e1000_ethtool.c b/drivers/net/ethernet/intel/e1000/e1000_ethtool.c
+index 726365c567ef3..75d0bfa7530b4 100644
+--- a/drivers/net/ethernet/intel/e1000/e1000_ethtool.c
++++ b/drivers/net/ethernet/intel/e1000/e1000_ethtool.c
+@@ -496,14 +496,19 @@ static int e1000_set_eeprom(struct net_device *netdev,
+ 		 */
+ 		ret_val = e1000_read_eeprom(hw, first_word, 1,
+ 					    &eeprom_buff[0]);
++		if (ret_val)
++			goto out;
 +
-+	if (pf->hw.mac_type == ICE_MAC_UNKNOWN)
- 		return -ENODEV;
+ 		ptr++;
+ 	}
+-	if (((eeprom->offset + eeprom->len) & 1) && (ret_val == 0)) {
++	if ((eeprom->offset + eeprom->len) & 1) {
+ 		/* need read/modify/write of last changed EEPROM word
+ 		 * only the first byte of the word is being modified
+ 		 */
+ 		ret_val = e1000_read_eeprom(hw, last_word, 1,
+ 					    &eeprom_buff[last_word - first_word]);
++		if (ret_val)
++			goto out;
+ 	}
  
- 	INIT_LIST_HEAD(&ptp->port.list_node);
+ 	/* Device's eeprom is always little-endian, word addressable */
+@@ -522,6 +527,7 @@ static int e1000_set_eeprom(struct net_device *netdev,
+ 	if ((ret_val == 0) && (first_word <= EEPROM_CHECKSUM_REG))
+ 		e1000_update_eeprom_checksum(hw);
+ 
++out:
+ 	kfree(eeprom_buff);
+ 	return ret_val;
+ }
 -- 
 2.53.0
 
