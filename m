@@ -1,88 +1,89 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 860EDF588EC
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 20 Apr 2026 15:56:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2FE8CF588EC
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 20 Apr 2026 15:57:38 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 2A72D8291C;
-	Mon, 20 Apr 2026 15:56:27 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id F187D4110C;
+	Mon, 20 Apr 2026 15:57:37 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 3tNF1yFfu8B0; Mon, 20 Apr 2026 15:56:26 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id HNLpnLaAeLiO; Mon, 20 Apr 2026 15:57:37 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 713708291D
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3D93941108
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1776700586;
-	bh=QtC6e8MpcAXtuF9Y3/YJXdsJokgg6hm3QJ4Wa2lKWIc=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1776700657;
+	bh=P/79gT7dj6HzvOUAAPSktmmF+ojncQq5DL4C3Q6KGLY=;
+	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=eNY7gZ6kwPQTxzdUJOB4Yvr+ZlnEEaw3H6SzfD+g89GM4wbdy/9jg3UNhtfdeL2aa
-	 Y3C6arHPqDgAtoi8O9KBEvE6MlPqv97LQkYwdwpi4wg7Zn93QEdPLGFJvstk/lgREf
-	 0UWSOLcNzA7p6ns/Ua6mzAFsqA+Qd/3zi/uhjAlibD+pleuw6hR0SgAcYvzWBybyd6
-	 MWNquSqgf6QHGr9XW287s3TIyaadIvCT5S0RKmecA74I43pgjcsviUndxjTKdI94tP
-	 vOhn8t21zN4UudJKCfB8ASbN9t2DstjlmY7oQdsfLH8CzIRsn+wKrO3t3Kb6t2EVIW
-	 VZEc6zKe5042w==
+	b=eVd/xmaq0jnf92eRxRAI7pCzaePUcJPaNcFcKk6srLAemLwCagCOVLFxZpAl1WrOK
+	 Ay2wTZFhhgzR+Fv8+ueHo7toUxhUUsRY+G0pmligAWaTtouqKlDC503Wc9JKEwtg7k
+	 u9QznXJ08UeGe/RNB+h6viqhYf7rSPt/LIYCbMH0yBff+ulFTVZdkdYGWjFEJqPXsO
+	 S/mHnyLCDlYWxuJtIPbg4Fz8w/iMz+VF+mhNqByH8qx9QiisGmJY6roUCl6U+Ub08m
+	 GXMKxz1Vex+5xfc8NuVUdA27LW2PBxoW0Q2UEjiG8NMN8lrwH6D3MoAvU1tKLHMkS5
+	 b7BzYEGh2V9Rg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 713708291D;
-	Mon, 20 Apr 2026 15:56:26 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id 74421355
- for <intel-wired-lan@lists.osuosl.org>; Mon, 20 Apr 2026 15:56:25 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 3D93941108;
+	Mon, 20 Apr 2026 15:57:37 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 1DBC5259
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 20 Apr 2026 15:57:36 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 661C96105F
- for <intel-wired-lan@lists.osuosl.org>; Mon, 20 Apr 2026 15:56:25 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 0FC2041108
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 20 Apr 2026 15:57:36 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 1dxKefuiJRzB for <intel-wired-lan@lists.osuosl.org>;
- Mon, 20 Apr 2026 15:56:24 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 4AoHE4Qa9wvV for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 20 Apr 2026 15:57:35 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
  helo=tor.source.kernel.org; envelope-from=horms@kernel.org;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 9887E60ABB
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 9887E60ABB
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 1330641106
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1330641106
 Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 9887E60ABB
- for <intel-wired-lan@lists.osuosl.org>; Mon, 20 Apr 2026 15:56:24 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 1330641106
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 20 Apr 2026 15:57:34 +0000 (UTC)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by tor.source.kernel.org (Postfix) with ESMTP id 952E260018;
- Mon, 20 Apr 2026 15:56:23 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E37D6C19425;
- Mon, 20 Apr 2026 15:56:21 +0000 (UTC)
+ by tor.source.kernel.org (Postfix) with ESMTP id 27A9060018;
+ Mon, 20 Apr 2026 15:57:34 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9779FC19425;
+ Mon, 20 Apr 2026 15:57:32 +0000 (UTC)
+Date: Mon, 20 Apr 2026 16:57:30 +0100
 From: Simon Horman <horms@kernel.org>
-To: aleksandr.loktionov@intel.com
-Cc: 'Simon Horman' <horms@kernel.org>, intel-wired-lan@lists.osuosl.org,
- anthony.l.nguyen@intel.com, netdev@vger.kernel.org, jan.glaza@intel.com
-Date: Mon, 20 Apr 2026 16:56:04 +0100
-Message-ID: <20260420155604.576318-1-horms@kernel.org>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260417062954.1241900-4-aleksandr.loktionov@intel.com>
-References: <20260417062954.1241900-4-aleksandr.loktionov@intel.com>
+To: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Cc: intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com,
+ netdev@vger.kernel.org, Jan Glaza <jan.glaza@intel.com>
+Message-ID: <20260420155730.GU280379@horms.kernel.org>
+References: <20260417062954.1241900-1-aleksandr.loktionov@intel.com>
+ <20260417062954.1241900-5-aleksandr.loktionov@intel.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260417062954.1241900-5-aleksandr.loktionov@intel.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1776700583;
- bh=9Qgqeri4ieAdo6+5MWuNmYIp4MCTl3DLSaPutxRqWfM=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=ksmEw8KYLFBEBK2tCdF7SXGEKmpxM7ZICe3lhvRKln9sXBeFa2xWxzLFjbC5vrc13
- /WbPEX4nslhLuPVukFOPgxQiWh5raYTvk3f+21U1GLBrIyhe+B05EMYDrgo1N3hrlQ
- JkYk+tUCAhA29Y6fn8UCJiw6xLCidkOv6vXTr3p9XGs1J6vmnh2AjGXW8LEiyFjZaT
- uHuqXIP4CqZtieutBJ7lO/MyogE32IXEa7NFgXQ+L4jZmJp5bqONbZdibB471R6oGv
- k1fOEYGPzteio9nK9ycuEf7mAZiYKqr5YhQWPlrUY7n+YBqvp6ELPuvez97WFtyOfI
- j8qUoiy9mbmMA==
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ d=kernel.org; s=k20201202; t=1776700653;
+ bh=9kaDUMXd2oMfRaP3QQwYLw5F7z3HDregtskDo9ehssk=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=XP/7zmZw7AEY7/PBkP7ZebSPGwPPDqOQIula7+yGLD2O1a0vVRn/SbytenZ13ZDxC
+ S00nXp7JkJWV+QyirYsELy0jOhSt+ri5etoanqLR+PAMu6/pvrojaslkfRsJbNm3Va
+ xrnntP1tfQB+imr5ubaPOYAiIyzYg8890R2Ye1w7qj4sIlAie/ONQTEbz8VV9PRiZt
+ TVFkM999d74HEsJFpJBNuc/PSoPrabeg1855Q6MJ9tdTVpoC5kj/xAE6Gqy8dVoCQP
+ RuATEOzqwhG3ED6aydqRQXG35Kzqqk3Qc6NEwRvdOBcHYcRtC43kN4GSiBSkdPbKNA
+ dF8d4eEW1qqxw==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
  header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=ksmEw8KY
-Subject: Re: [Intel-wired-lan] [PATCH iwl-net 3/4] ice: support RDMA on
- 4+-port E830 devices
+ header.a=rsa-sha256 header.s=k20201202 header.b=XP/7zmZw
+Subject: Re: [Intel-wired-lan] [PATCH iwl-net 4/4] ice: report EIPE checksum
+ errors to the OS on E830
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -98,53 +99,28 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: 'Simon Horman' <horms@kernel.org>
+On Fri, Apr 17, 2026 at 08:29:54AM +0200, Aleksandr Loktionov wrote:
+> From: Jan Glaza <jan.glaza@intel.com>
+> 
+> For E830 adapters the hardware-reported EIPE (Ethernet Inline IPsec
+> Engine) error is a reliable indication that a received packet failed
+> decryption and has a bad checksum. Route EIPE errors through the
+> generic checksum error path on E830 so the error is visible via
+> standard ethtool statistics (rx_csum_bad).
+> 
+> On previous devices (E810, E82X) the EIPE flag can be spuriously set
+> on encapsulated packets with inner L2 padding, so those adapters only
+> increment the driver-private hw_rx_eipe_error counter without routing
+> through the checksum error path.
+> 
+> Fixes: 0ca6755f3cc2 ("ice: Add a new counter for Rx EIPE errors")
+> Signed-off-by: Jan Glaza <jan.glaza@intel.com>
+> Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 
-This is an AI-generated review of your patch. The human sending this
-email has considered the AI review valid, or at least plausible.
-Full review at: https://sashiko.dev
----
-ice: support RDMA on 4+-port E830 devices
+Reviewed-by: Simon Horman <horms@kernel.org>
 
-This patch narrows the RDMA capability check to keep RDMA enabled for E830
-devices configured with more than 4 ports, as they do not share the
-limitations of E810 and E82X devices.
 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-> --- a/drivers/net/ethernet/intel/ice/ice_common.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_common.c
-> @@ -2509,7 +2509,7 @@ ice_recalc_port_limited_caps(struct ice_hw *hw, struct ice_hw_common_caps *caps)
->  		caps->maxtc = 4;
->  		ice_debug(hw, ICE_DBG_INIT, "reducing maxtc to %d (based on #ports)\n",
->  			  caps->maxtc);
-> -		if (caps->rdma) {
-> +		if (caps->rdma && hw->mac_type != ICE_MAC_E830) {
->  			ice_debug(hw, ICE_DBG_INIT, "forcing RDMA off\n");
->  			caps->rdma = 0;
->  		}
+Sashiko has provided review of this patch. However, I don't believe any of
+the issues flagged there should block progress of this patch.
 
-Does this leave the diagnostic message further down out of sync with the
-new condition?
-
-If the device is an E830 with more than 4 ports, RDMA remains enabled, but
-because the dev_info() call just below this block is evaluated for all
-devices with more than 4 ports:
-
-ice_recalc_port_limited_caps() {
-	if (hw->dev_caps.num_funcs > 4) {
-		...
-		if (caps->rdma && hw->mac_type != ICE_MAC_E830) {
-			ice_debug(hw, ICE_DBG_INIT, "forcing RDMA off\n");
-			caps->rdma = 0;
-		}
-
-		/* print message only when processing device capabilities
-		 * during initialization.
-		 */
-		if (caps == &hw->dev_caps.common_cap)
-			dev_info(ice_hw_to_dev(hw), "RDMA functionality is not available with the current device configuration.\n");
-	}
-}
-
-Could this cause confusion by logging a warning about RDMA being disabled
-when it is actually active?
+You may wish to look over that review for possible follow-up activity.
