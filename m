@@ -4,98 +4,217 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2E098F588C3
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 20 Apr 2026 13:25:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 81E09F588DF
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 20 Apr 2026 14:52:10 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id E89D541051;
-	Mon, 20 Apr 2026 13:25:48 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 3B4CC410C7;
+	Mon, 20 Apr 2026 14:52:10 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id BMtBQMvlhsuX; Mon, 20 Apr 2026 13:25:47 +0000 (UTC)
+ id TP0GDLyqvLdq; Mon, 20 Apr 2026 14:52:08 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 705C740EC2
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 756434102F
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1776691547;
-	bh=tzaEMvNCW5DwA9q3fvsoQ7MDcZLB2ng2Tf370Rvip5Q=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1776696728;
+	bh=6juJb//tlYegVjc5qRPVi++5li4PHb38QoJ1VFdjp5k=;
+	h=From:To:CC:Date:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=VYLueZ+O6q4TcWH68cAqtdO094SoDgoeTL2R5S/KdMlasbN/zuudwLosxcQ1NmJnW
-	 fUspaEAlQoR4px6346grN3cPntsPoAbT+DMzQ/od6cxb44bU2B/9M2FprH9iFqSNH2
-	 CAd2LtxBraPSmj7WENudtDGYuLn8/JBbkzNuwojWmVE9yLA5qGkOGIdt3NZKnV7+WC
-	 NrSNoHR2tf4aEaCg70SK3BflDnxl3czQnM8dBbF1hKX6CMiCe0QYl9K0TVCXWR0k6I
-	 4S48uDXX+KRRSVCfOq0fljj0hBYZevZRd++iC3asqqwq/Xwfkf65WAZ2s8j62dn76n
-	 pNt6ggnKkhc8A==
+	b=muTOrmp2Dq4QOc2oba0inY4+p97rcO1FM6KVtu6JFCcBUH0DuKuP/BvmDTubXPcYD
+	 Q/JH/w+msWPCcjO7b7UAOGnMw7zl/shd48a4auFr+1Iz92IjucZMO9/Hu9Z79il8bd
+	 AiUy0eEnnOqrjrsjgmY3YkGqzUPxHxEftzYl7EAAGyt1xiRcytz+gdsQUFvtyBmEnR
+	 daY3ZpNNGv4Wt1axOlHRIy8FfdKMuCnn9TymoOZ/mrH7gIIJyiqgTbhMNuODu+6Rb9
+	 NrNYpQfrGJAprpg6peAjTcjJvP4W9v3tNPugTl4qn7MvrqJVqX7IxuDSe3MNMrpP0U
+	 77AI1FS/euLdQ==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 705C740EC2;
-	Mon, 20 Apr 2026 13:25:47 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id 66E12259
- for <intel-wired-lan@lists.osuosl.org>; Mon, 20 Apr 2026 13:25:45 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 756434102F;
+	Mon, 20 Apr 2026 14:52:08 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 4CC02259
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 20 Apr 2026 14:52:07 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 4CCB981E0F
- for <intel-wired-lan@lists.osuosl.org>; Mon, 20 Apr 2026 13:25:45 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 3E73B4102F
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 20 Apr 2026 14:52:07 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id UUwXIvyxw269 for <intel-wired-lan@lists.osuosl.org>;
- Mon, 20 Apr 2026 13:25:44 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
- helo=tor.source.kernel.org; envelope-from=sashal@kernel.org;
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id QxDxku8iIFbI for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 20 Apr 2026 14:52:06 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.18;
+ helo=mgamail.intel.com; envelope-from=arkadiusz.kubalewski@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 0992581E08
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 0992581E08
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 0992581E08
- for <intel-wired-lan@lists.osuosl.org>; Mon, 20 Apr 2026 13:25:43 +0000 (UTC)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by tor.source.kernel.org (Postfix) with ESMTP id 4506B6014B;
- Mon, 20 Apr 2026 13:25:42 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E3470C19425;
- Mon, 20 Apr 2026 13:25:39 +0000 (UTC)
-From: Sasha Levin <sashal@kernel.org>
-To: patches@lists.linux.dev,
-	stable@vger.kernel.org
-Cc: Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
- Jedrzej Jagielski <jedrzej.jagielski@intel.com>,
- Simon Horman <horms@kernel.org>, Rinitha S <sx.rinitha@intel.com>,
- Tony Nguyen <anthony.l.nguyen@intel.com>, Sasha Levin <sashal@kernel.org>,
- przemyslaw.kitszel@intel.com, andrew+netdev@lunn.ch, davem@davemloft.net,
- edumazet@google.com, kuba@kernel.org, pabeni@redhat.com,
- mateusz.polchlopek@intel.com, slawomirx.mrozowicz@intel.com,
- stefan.wegrzyn@intel.com, piotr.kwapulinski@intel.com,
- intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Date: Mon, 20 Apr 2026 09:18:04 -0400
-Message-ID: <20260420132314.1023554-90-sashal@kernel.org>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260420132314.1023554-1-sashal@kernel.org>
-References: <20260420132314.1023554-1-sashal@kernel.org>
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 50C3340FFE
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 50C3340FFE
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.18])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 50C3340FFE
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 20 Apr 2026 14:52:05 +0000 (UTC)
+X-CSE-ConnectionGUID: uxOoADfJQtKRj+pu3QLgvQ==
+X-CSE-MsgGUID: V5jFbS9kRcaxF9SlYoejYQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11762"; a="77627087"
+X-IronPort-AV: E=Sophos;i="6.23,190,1770624000"; d="scan'208";a="77627087"
+Received: from orviesa003.jf.intel.com ([10.64.159.143])
+ by orvoesa110.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 20 Apr 2026 07:52:05 -0700
+X-CSE-ConnectionGUID: xNOtLvjET/S2PN4/E6wKRA==
+X-CSE-MsgGUID: rTD/UrNpSMSdQi1yshhFew==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,190,1770624000"; d="scan'208";a="235741286"
+Received: from orsmsx901.amr.corp.intel.com ([10.22.229.23])
+ by orviesa003.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 20 Apr 2026 07:52:04 -0700
+Received: from ORSMSX903.amr.corp.intel.com (10.22.229.25) by
+ ORSMSX901.amr.corp.intel.com (10.22.229.23) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.37; Mon, 20 Apr 2026 07:52:04 -0700
+Received: from ORSEDG901.ED.cps.intel.com (10.7.248.11) by
+ ORSMSX903.amr.corp.intel.com (10.22.229.25) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.37 via Frontend Transport; Mon, 20 Apr 2026 07:52:04 -0700
+Received: from BN1PR04CU002.outbound.protection.outlook.com (52.101.56.14) by
+ edgegateway.intel.com (134.134.137.111) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.37; Mon, 20 Apr 2026 07:52:04 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=iJsdxKERjuybmHc4q+qERBwgDNLQTp0CetWuIEvcNK0bfHqL5AUeLfrBKI2OZNw41/sMMefD0dTsguIWe/grn9s1AAQ+fP9krhnne5n+T+xWodtrUwuq78gzMAwBO2gQlZf6QJr1wLCNI+euUOelDTF6wXKVTv/6kWml1GHiCxn0IC0anclV5IoYhHNdkPNI7SDNQW/QdrpynPSyqteLMwHrk5FBOJeotlRnwy5WFtalfXLJFmYJWbse/YjxTlDXDa+40eTghM71V5kLW55xQgqJiCo4m1R+zM3Ji1VgWltwonJvt3k0iZPBWo5KSs6+PBg9VCyCsfcQf5CLjpMVZw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=6juJb//tlYegVjc5qRPVi++5li4PHb38QoJ1VFdjp5k=;
+ b=dE5czfHsFaauxutPZoas2Dypi/RDkIvF4EFIHoy1qYLCunBsEuCS0JkNo72YQ+x8i4oHwbhrB6jcOcTo2oIBiM/lMZTnJYhLzy+/rBnYdrhj/OIHhpim9otHxn9q7ERVoYpazQDHJimlIu9M4a+ymoVnL+VC0hWb+6GQUmH0ZiXjdFRqhG9RZtjmGsVEze71wAp+OdfZXYfPnwLWS6opsckABTCHKySQvAOsoxKELbLVvxG9z4HSTNlp6ASvQVmrsqSBHEPm1sZuOaGwpMrlKGMNJUYvgGbx1k/GsJPswzYhjozQuoGqUZJJ5140VvlNkfhIT0cNqTaEVGFlcmgtlw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Received: from IA0PR11MB7378.namprd11.prod.outlook.com (2603:10b6:208:432::8)
+ by CH3PR11MB8314.namprd11.prod.outlook.com (2603:10b6:610:170::9)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9846.15; Mon, 20 Apr
+ 2026 14:52:00 +0000
+Received: from IA0PR11MB7378.namprd11.prod.outlook.com
+ ([fe80::7b0c:7df:21b8:dbbf]) by IA0PR11MB7378.namprd11.prod.outlook.com
+ ([fe80::7b0c:7df:21b8:dbbf%3]) with mapi id 15.20.9846.014; Mon, 20 Apr 2026
+ 14:52:00 +0000
+From: "Kubalewski, Arkadiusz" <arkadiusz.kubalewski@intel.com>
+To: Jakub Kicinski <kuba@kernel.org>
+CC: "Vecera, Ivan" <ivecera@redhat.com>, "vadim.fedorenko@linux.dev"
+ <vadim.fedorenko@linux.dev>, "edumazet@google.com" <edumazet@google.com>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>, "richardcochran@gmail.com"
+ <richardcochran@gmail.com>, "donald.hunter@gmail.com"
+ <donald.hunter@gmail.com>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "davem@davemloft.net" <davem@davemloft.net>,
+ "Prathosh.Satish@microchip.com" <Prathosh.Satish@microchip.com>,
+ "andrew+netdev@lunn.ch" <andrew+netdev@lunn.ch>,
+ "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
+ "horms@kernel.org" <horms@kernel.org>, "Kitszel, Przemyslaw"
+ <przemyslaw.kitszel@intel.com>, "Nguyen, Anthony L"
+ <anthony.l.nguyen@intel.com>, "pabeni@redhat.com" <pabeni@redhat.com>,
+ "jiri@resnulli.us" <jiri@resnulli.us>
+Thread-Topic: [Intel-wired-lan] [PATCH v5 net-next 0/8] dpll/ice: Add TXC DPLL
+ type and full TX reference clock control for E825
+Thread-Index: AQHcwvXix3hjxSFB2EyUhfJETBJtn7XS5QsAgAO7FYCAAOemgIAA3aQAgABojwCAA9gqAIACh5+AgADpDdCAAc5xgIAACEIQgACY8ICAAJvRkIACKjWAgALVaDA=
+Date: Mon, 20 Apr 2026 14:52:00 +0000
+Message-ID: <IA0PR11MB7378CD18633287980620A9869B2F2@IA0PR11MB7378.namprd11.prod.outlook.com>
+References: <20260402230626.3826719-1-grzegorz.nitka@intel.com>
+ <20260406192312.0f7a2760@kernel.org>
+ <IA1PR11MB621925C1718B838147404DC492582@IA1PR11MB6219.namprd11.prod.outlook.com>
+ <20260409181041.395a0c37@kernel.org>
+ <IA1PR11MB62194BF52262FCEB7FD5E76D92592@IA1PR11MB6219.namprd11.prod.outlook.com>
+ <20260410133812.4cf9b090@kernel.org>
+ <IA0PR11MB737882B384AE7279EBCD05C79B242@IA0PR11MB7378.namprd11.prod.outlook.com>
+ <20260414145835.07fbe355@kernel.org>
+ <IA0PR11MB737842E2098D0952A8BA1FE29B222@IA0PR11MB7378.namprd11.prod.outlook.com>
+ <20260416082751.04782987@kernel.org>
+ <IA0PR11MB7378FF7BF4EA32C1F89372C19B232@IA0PR11MB7378.namprd11.prod.outlook.com>
+ <20260416180447.1a3c5c87@kernel.org>
+ <IA0PR11MB7378CF62D86454916AE8F9D79B202@IA0PR11MB7378.namprd11.prod.outlook.com>
+ <20260418122603.06d12715@kernel.org>
+In-Reply-To: <20260418122603.06d12715@kernel.org>
+Accept-Language: en-US, pl-PL
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: IA0PR11MB7378:EE_|CH3PR11MB8314:EE_
+x-ms-office365-filtering-correlation-id: b97261f7-29f3-41a4-cd46-08de9eec60c6
+x-ld-processed: 46c98d88-e344-4ed4-8496-4ed7712e255d,ExtAddr
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+ ARA:13230040|7416014|376014|366016|1800799024|38070700021|56012099003|22082099003|18002099003;
+x-microsoft-antispam-message-info: 4eIz0TuK3mqPYDsnODLPE98bDakLvI0ZUcpiX53h84P74z4hRk1Osoa46QZUkJI6NpSH04I6ILz5Cz8/4M8/qjzAFApk6OUBkY6dtpH2JTs3QeNmoStE568XHdX0nvCMczOfaRyDcNkP4jiJ63tj1ztIDdXsJebR24ox0PI192pfQgJ/t1rla1gRItx6Rn8XEm52J5sbBG76vdkEh+/W6tzEHxrU4b31+ksDmcv7w5cxUNe8gSImlT6gbrZkxrXLsxVj4tuAePxlHgz1Ug4P8/IYcA9I2gOdle22xJhZGF5HL8pCesi6yiggrFYPy5Y3RQCiFGgPR6nyjPhEPEZ6XqUhrVdPjRP4WBOJfaugPrhM0RWDmGqIwELrZjc1wDkI+Vimj7UqtBcuvCEg+8c7GBmfUDwsqMJVerycpNsWn808HXtpEjfuHCC2wtx4WNKGh+VrgcYmtAKEPvUDbZmBpbNFqYiWhNvCnR2VWXotGR6GJTf0TqT7ZDjeCENW50j6HTOdSrMtFZCGvdpRI6B7gUuQ6pIBLyO3qNqDaDNLQrkI9PnvVOUWzIDtqZ952fs55ZU6K20VDgdyITBKCudrdKXToxr8jfr7FPkA+f8INYNk9F9/ubrI8uHla85fhbutlqzhC0XDdVp74CVDuZ8cm/5uoWnVqkcTDXNx8nTw7aiLRJ1c75MctMpNZa0803GUVpOMWVnSawkwkS4Aqc0cVq661LWVn/aUSVL+zOPZGNwlE7NBGLwo+5P+flc65u/nKfR9DnkBTrwhGZcmfTUr61cjD8mfQyWTeq2IXisweGM=
+x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:IA0PR11MB7378.namprd11.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(13230040)(7416014)(376014)(366016)(1800799024)(38070700021)(56012099003)(22082099003)(18002099003);
+ DIR:OUT; SFP:1101; 
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0: =?us-ascii?Q?jH6j6dgP81zTh/VlMjeTwpJt03p6E+22XVoK3eQakjluFJdBjVfLp8MbY8+Z?=
+ =?us-ascii?Q?RQQW7HugL5yZwXP4fKL2E/eiTjiHoQAFhBGeI9NA/Fcg4878bMWWG0cfJrp8?=
+ =?us-ascii?Q?1B12+cQmOJrrQ1zdcM/j8JzNJL3Ed73kaI07KL6dXASpsDkwGFi5lVo7wn+Y?=
+ =?us-ascii?Q?cXE+lZINr9HMZToSv/Gh0zE6msH/C4+fRlYhTgz0QO//nU4b2Q36RJ29FmjH?=
+ =?us-ascii?Q?/jc0CWXIy0hqczQ4XBT/ZtNepg/QKCJeWrB2rWNbyP4/cjxgvS1y1uZvclgn?=
+ =?us-ascii?Q?PuY80gOnUCg/o/a6GKcUT+lkWLaC3O6KSpE8IIB9gfoT5q6Oo/gfRg9NkvQI?=
+ =?us-ascii?Q?p8nD8dkJwNZpt+DxY5YLAfr/gBhg1YmRHtuTx07FVUPuw6h+tPxKvrStDnFV?=
+ =?us-ascii?Q?NdgMwgpJb53jtRA7xQGr62mLUFBURd10w8OdtaHTFeTbGjEv4Nxmd4hrFlGl?=
+ =?us-ascii?Q?DBrk44pG1ChfHD3SMiEGL19Kovn0nuvdXaWYYYnkd+IEvezNoDp4KWFaLlJI?=
+ =?us-ascii?Q?tuq9tTTfftoyZKKeYFQSedXOAX/2FuECk+/T2SXHAsF8VBCo4L36DhCCxvIB?=
+ =?us-ascii?Q?dP81Zlxw4nMHSlhTrS/h9BXTRUQ5CIRmRlBo/RsSF3WnFmEyXkRlyjlxDPdw?=
+ =?us-ascii?Q?w0MSZMOvJXOxy4KA9teWwzLwp7YfR73XA0DeRVMdll6idFVLoldfXkvod1o/?=
+ =?us-ascii?Q?0JZh7XnI1LIibJmhjMgTdo+KHTA1ozKtMIMwy7Tkkmjjvzi/YysgiSvZWpB5?=
+ =?us-ascii?Q?NlDwhMJR8vOmOYVobaVhYU/Re8FKnfOAwizFuEppFJFvGZRvILAo4y7f288T?=
+ =?us-ascii?Q?1zv+ShnsoVNjtiPVxmA3QU2L2ta+ykdRheRC4pdeJknjiOfYgFaRV/WHbdly?=
+ =?us-ascii?Q?LGIVsuheyvkI2ynsTe92ayAy+srjE0x0VPT8T1h/Ros0Ip6MfuRE6AKOswsc?=
+ =?us-ascii?Q?csKRQKq3xXUK/TkAPtyJzFy8/uJUBEM78OdcDjkLM9lzF6cJH7CS0/yARRrH?=
+ =?us-ascii?Q?cSFg7TETZ2jSu+PHp6XvipOH3lZaZLSYWR646L+URbe0OpFefCN5KqqY0D4e?=
+ =?us-ascii?Q?SaJ3xVVmrQFFzy2Qac5QfBqdkQCK8x7aWqKTCedVtC6YQjOHdmLCxjGa/0j4?=
+ =?us-ascii?Q?MKYhgQEDxNYlNn4mJz3tDU3ebAd1J1/TztvX+ag3YAbr6ClYJ/DSLtNon6tO?=
+ =?us-ascii?Q?vCmTAjAeqZWv+yZpHbgxIbDTMwCI8O0vl87D4nPkZfkCJnnjDtRMhux6RxOO?=
+ =?us-ascii?Q?dAxJWfHnHuBoklNFDMTm4rqtjTLsvHiOHdZyHBR9gzWK6P6Z6/hG0voksNY1?=
+ =?us-ascii?Q?UdSUCzshI7vQ5A2gam/HP+4L4kQ8Go6LBHyjMxkY7oZ6ts8P74Rtwv4RvVKA?=
+ =?us-ascii?Q?CrdfO98clmuXUofUkCBJFGqvyRmsdrp2vuF6my3p1OhUrkwoNJsRmSMc1fSl?=
+ =?us-ascii?Q?fPcACcuZDpFnYzrTmUnbHQJ775PLXXufctDxqLfdzlAluOAH4ZfXnVkRI6L/?=
+ =?us-ascii?Q?b1Rb5ilEAYtqiTrfPi8oqByqLH3VgnQ40EhjbrgWAXQBVY7NPK4Qs6v19WIp?=
+ =?us-ascii?Q?Wos08HQbDEUHjMUU3p0TUV5KP0hnXSWFkBrLKkAxQ6R7oQiBRUBON7q59fqI?=
+ =?us-ascii?Q?56yVzBAWtx3kw3T1fC47X6ouIAC3pIc26/PMcsItDMBcvj0mFKjqlHGO3HyK?=
+ =?us-ascii?Q?SBIHFjb6i28ml0V43+okcPMEI71lRRLkh9A2fqr7klE1REtm6b1+h2gTNKpr?=
+ =?us-ascii?Q?CwBZ7aA2b0qAUtxAd0dYc+l+wDIlnMI=3D?=
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-X-stable-base: Linux 6.18.23
-Content-Transfer-Encoding: 8bit
+X-Exchange-RoutingPolicyChecked: iltLFXyYyqBm/aXJwuDUCM+rxqJkcvsfT6aUq2zbcqiiSqnBG4cPW3HLxZc2DkESr/nkusJZfvAcZhjNlmTit5kjy+m4GB5Fq7DF535BT0IAEmGpGNWLHWmelMh0GrOSKfRlhDDRgXlbd8493c2K2OiKQHpvK9U9FxCX/BU8S24zDg8h+uxP9llEy7l4vj0bH7M8m5KGmk1rhuYGxmuUn4c/4FkSgsU9l6ePk5cf877JbgVEVpvPfQ2+zCprfPqFQWGxebI7L1hk1ACl4/BVJDdImQyQojkH+PoHZgjPHhN62tzuiDDwrbewAUcen4VbJOpPFARM30nkttfamC+/aQ==
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: IA0PR11MB7378.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: b97261f7-29f3-41a4-cd46-08de9eec60c6
+X-MS-Exchange-CrossTenant-originalarrivaltime: 20 Apr 2026 14:52:00.5790 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: Kl50i/MR8WyehaC1qdoh8wk6O5NB7d1+6rglX1SvGaF7TuUGz0LssRTZ30JIB6nxiHbbGTgS5wl7lYhRpQ7cNksnj9TXRBCntgFj6Zzxcgo=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: CH3PR11MB8314
+X-OriginatorOrg: intel.com
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1776691542;
- bh=d5z/ux0RoWsVHSFKIjpXceLH38gp5GTJw6vk/1sYnEA=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=kDH/FQp8nwZKpk9f444vo8J8uAwpYDrbi62yJHoFLFtf9DBFtQQjPzDYMGQLVWBdH
- PvoIJpJJcosP8UD0pCi3i5FRRZputXVGTaFkgf9cwewIX4zyAs3C2IGTb4sN3zzgBx
- EEUNaYj216GXkLS6FpzBcUHbFx0XsTFrpewlankJ9VvCpPoMv1mKyJd/mZrzyUBi31
- cIb1VLm6qcNyIue8E9SYJss6OokgFNIoIEQBprhYFUsSrTmYCrvwLrabB8jcjz8ikD
- jvuvjvj371Qm0VRGN9v3q0e3T421GayVHYw3eIqR+baUIwPT9XdPjf0yp5lIv1jZGD
- /RSYD9T9ouOkg==
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dmarc=pass (p=quarantine dis=none)
- header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1776696727; x=1808232727;
+ h=from:to:cc:subject:date:message-id:references:
+ in-reply-to:content-transfer-encoding:mime-version;
+ bh=6juJb//tlYegVjc5qRPVi++5li4PHb38QoJ1VFdjp5k=;
+ b=iUchQn1oguWyNOLNGlF8lAX7YQnEtrTQ8b3M0NaVXl4cqgUOlPcHcpYp
+ 86dNQElXWSUTCXZroBOGei6rw1ACw/Dqa1g9OFTif7Mm4/d53qgdnwThC
+ na09blcsQW1w4Ww1W/fmS3R4LDQb8/SOz/vWic5f8cy9ZvB2xV/NYDo4v
+ E2T0PUbxPWvy79Biu6oH7TI7Z8nB4S44I0Eolo0gkFD+OZbakve8+x08D
+ CmY4iCO8OQFXcshF73UCW0choDw+4h8qZ04MKSMX+BtCiWdDpUaUqLYTr
+ A0U/lK54yWQj8X/vWUJtQyXlRypuFxd6vNXxQ0gzfpIPw+wkkXmMmYfI3
+ A==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=intel.com
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=kDH/FQp8
-Subject: [Intel-wired-lan] [PATCH AUTOSEL 6.18] ixgbe: stop re-reading flash
- on every get_drvinfo for e610
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=iUchQn1o
+X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Subject: Re: [Intel-wired-lan] [PATCH v5 net-next 0/8] dpll/ice: Add TXC
+ DPLL type and full TX reference clock control for E825
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -111,142 +230,94 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+>From: Jakub Kicinski <kuba@kernel.org>
+>Sent: Saturday, April 18, 2026 9:26 PM
+>
+>On Fri, 17 Apr 2026 12:22:05 +0000 Kubalewski, Arkadiusz wrote:
+>> >> I was thinking that this is more like a purpose specific DPLL device,
+>> >> if
+>> >> someone would want something similar we would have to review it,
+>> >> right?
+>> >
+>> >We would if it was a Ethernet MAC PLL, but if someone wanted to expose
+>> >whether some random PLL in their ASIC locks - are we adding a new type
+>> >for each one of those?
+>>
+>> Yes, that was the implicit intention within those patches, if other
+>> purpose
+>> specific PLL would have to be present for whatever HW design and user
+>> control over it would be required, then that would be the easiest to
+>> maintain in the long term? Multiple types and each have own
+>> function/purpose.
+>>
+>> It would be good as long as there is one PLL for a function per board,
+>> once
+>> there could be multiple ones for single function, we would have to add
+>> some
+>> enumeration (labels, etc.)
+>
+>Defer on adding identifiers. User knows which driver and bus device
+>spawned the pll and more importantly what the pin topology is.
+>Naming in the kernel is rarely a good idea.
 
-[ Upstream commit d8ae40dc20cbd7bb6e6b36a928e2db2296060ad2 ]
+Sure.
 
-ixgbe_get_drvinfo() calls ixgbe_refresh_fw_version() on every ethtool
-query for e610 adapters.  That ends up in ixgbe_discover_flash_size(),
-which bisects the full 16 MB NVM space issuing one ACI command per
-step (~20 ms each, ~24 steps total = ~500 ms).
+>
+>> >> It depends, TX clock has one of external pins connected to external
+>> >> DPLL,
+>> >> but second is a board-level pin with ability to provide some external
+>> >> clock signal, the user would have to determine that purpose just
+>> >> based
+>> >> on the topology of one of the pins, which seems a bit problematic?
+>> >> I.e. if at some point there would be HW with only external non-DPLL
+>> >> connected pins?
+>> >
+>> >Not sure I follow, TBH. To me the function of the "MAC PLL" is fairly
+>> >obvious from the fact that it has a pin exposed via rtnetlink. So it's
+>> >obviously a DPLL which can drive the Tx clock?
+>>
+>> I am lost a bit now too. You mean clock recovery pin? And EEC type dpll?
+>> In this solution the 'MAC'/EEC is external and it doesn't drive TX
+>> clocks
+>> directly.
+>
+>MAC =3D=3D "tspll" =3D=3D TXC in this series. On Grzegorz's diagram the ne=
+w PLL
+>was in the MAC, which makes sense since it's a pll in the same ASIC as
+>the MAC.
+>
 
-Profiling on an idle E610-XAT2 system with telegraf scraping ethtool
-stats every 10 seconds:
+We wanted the TSPLL from the picture to be PPS type as it drives the PHC
+timer within the MAC.
 
-  kretprobe:ixgbe_get_drvinfo took 527603 us
-  kretprobe:ixgbe_get_drvinfo took 523978 us
-  kretprobe:ixgbe_get_drvinfo took 552975 us
-  kretprobe:ice_get_drvinfo   took       3 us
-  kretprobe:igb_get_drvinfo   took       2 us
-  kretprobe:i40e_get_drvinfo  took       5 us
+>I'm saying that the function of that pll is obvious since its pin will
+>plug into the netdev / rtnetlink.
+>
 
-The half-second stall happens under the RTNL lock, causing visible
-latency on ip-link and friends.
+Yeah I got it, just saying it will work for now :)
 
-The FW version can only change after an EMPR reset.  All flash data is
-already populated at probe time and the cached adapter->eeprom_id is
-what get_drvinfo should be returning.  The only place that needs to
-trigger a re-read is ixgbe_devlink_reload_empr_finish(), right after
-the EMPR completes and new firmware is running.  Additionally, refresh
-the FW version in ixgbe_reinit_locked() so that any PF that undergoes a
-reinit after an EMPR (e.g. triggered by another PF's devlink reload)
-also picks up the new version in adapter->eeprom_id.
+>> >It's the function / relation / linking to the EEC DPLL that may not
+>> >be obvious. But user can see how the pins connect they can get some
+>> >LLM to draw a diagram of a live system.. et voila :)
+>>
+>> Yes, correct it would work for this particular HW, but adding a variant
+>> without a external EEC-connected pin in the picture would be problematic
+>> to understand 'generic' dpll purpose, pointing to the labels later.
+>
+>The function of the "MAC/tspll" is still obvious. The clarity of the
+>external PLL is not helped by naming the "MAC/tspll".
+>
+>> Just to make it clear. I believe that generic type dpll could be used in
+>> any HW and for any purpose, so after all each such usage could possibly
+>> introduce entropy and confusion on the user side.
+>>
+>> But if you are fine with that, then sure, we can live with generic
+>> purpose dpll.
+>
+>Considering all the imperfect options - generic / unnamed type would be
+>my preference.
 
-ixgbe_devlink_info_get() keeps its refresh call for explicit
-"devlink dev info" queries, which is fine given those are user-initiated.
+Ok, sounds good.
 
-Fixes: c9e563cae19e ("ixgbe: add support for devlink reload")
-Co-developed-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
-Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
-Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Reviewed-by: Simon Horman <horms@kernel.org>
-Tested-by: Rinitha S <sx.rinitha@intel.com> (A Contingent worker at Intel)
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
-
-LLM Generated explanations, may be completely bogus:
-
-Error: Failed to generate final synthesis
-
- drivers/net/ethernet/intel/ixgbe/devlink/devlink.c |  2 +-
- drivers/net/ethernet/intel/ixgbe/ixgbe.h           |  2 +-
- drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c   | 13 +++++++------
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c      | 10 ++++++++++
- 4 files changed, 19 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ixgbe/devlink/devlink.c b/drivers/net/ethernet/intel/ixgbe/devlink/devlink.c
-index d227f4d2a2d17..f32e640ef4ac0 100644
---- a/drivers/net/ethernet/intel/ixgbe/devlink/devlink.c
-+++ b/drivers/net/ethernet/intel/ixgbe/devlink/devlink.c
-@@ -474,7 +474,7 @@ static int ixgbe_devlink_reload_empr_finish(struct devlink *devlink,
- 	adapter->flags2 &= ~(IXGBE_FLAG2_API_MISMATCH |
- 			     IXGBE_FLAG2_FW_ROLLBACK);
- 
--	return 0;
-+	return ixgbe_refresh_fw_version(adapter);
- }
- 
- static const struct devlink_ops ixgbe_devlink_ops = {
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-index dce4936708eb4..047f04045585a 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-@@ -973,7 +973,7 @@ int ixgbe_init_interrupt_scheme(struct ixgbe_adapter *adapter);
- bool ixgbe_wol_supported(struct ixgbe_adapter *adapter, u16 device_id,
- 			 u16 subdevice_id);
- void ixgbe_set_fw_version_e610(struct ixgbe_adapter *adapter);
--void ixgbe_refresh_fw_version(struct ixgbe_adapter *adapter);
-+int ixgbe_refresh_fw_version(struct ixgbe_adapter *adapter);
- #ifdef CONFIG_PCI_IOV
- void ixgbe_full_sync_mac_table(struct ixgbe_adapter *adapter);
- #endif
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-index 2d660e9edb80a..0c8f310689776 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-@@ -1153,12 +1153,17 @@ static int ixgbe_set_eeprom(struct net_device *netdev,
- 	return ret_val;
- }
- 
--void ixgbe_refresh_fw_version(struct ixgbe_adapter *adapter)
-+int ixgbe_refresh_fw_version(struct ixgbe_adapter *adapter)
- {
- 	struct ixgbe_hw *hw = &adapter->hw;
-+	int err;
-+
-+	err = ixgbe_get_flash_data(hw);
-+	if (err)
-+		return err;
- 
--	ixgbe_get_flash_data(hw);
- 	ixgbe_set_fw_version_e610(adapter);
-+	return 0;
- }
- 
- static void ixgbe_get_drvinfo(struct net_device *netdev,
-@@ -1166,10 +1171,6 @@ static void ixgbe_get_drvinfo(struct net_device *netdev,
- {
- 	struct ixgbe_adapter *adapter = ixgbe_from_netdev(netdev);
- 
--	/* need to refresh info for e610 in case fw reloads in runtime */
--	if (adapter->hw.mac.type == ixgbe_mac_e610)
--		ixgbe_refresh_fw_version(adapter);
--
- 	strscpy(drvinfo->driver, ixgbe_driver_name, sizeof(drvinfo->driver));
- 
- 	strscpy(drvinfo->fw_version, adapter->eeprom_id,
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 501216970e611..240f7cc3f213f 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -6289,6 +6289,16 @@ void ixgbe_reinit_locked(struct ixgbe_adapter *adapter)
- 	if (adapter->flags & IXGBE_FLAG_SRIOV_ENABLED)
- 		msleep(2000);
- 	ixgbe_up(adapter);
-+
-+	/* E610 has no FW event to notify all PFs of an EMPR reset, so
-+	 * refresh the FW version here to pick up any new FW version after
-+	 * a hardware reset (e.g. EMPR triggered by another PF's devlink
-+	 * reload).  ixgbe_refresh_fw_version() updates both hw->flash and
-+	 * adapter->eeprom_id so ethtool -i reports the correct string.
-+	 */
-+	if (adapter->hw.mac.type == ixgbe_mac_e610)
-+		(void)ixgbe_refresh_fw_version(adapter);
-+
- 	clear_bit(__IXGBE_RESETTING, &adapter->state);
- }
- 
--- 
-2.53.0
-
+Thank you!
+Arkadiusz
