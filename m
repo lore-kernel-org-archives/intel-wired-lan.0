@@ -1,99 +1,83 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 99DC8FA1FD5
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 22 Apr 2026 16:47:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DF428FA1FD6
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 22 Apr 2026 17:02:22 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 63BEF42822;
-	Wed, 22 Apr 2026 16:47:10 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id B137760C2B;
+	Wed, 22 Apr 2026 17:02:22 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id XkpoSSM6XiS7; Wed, 22 Apr 2026 16:47:08 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id EHk_BZMnysvs; Wed, 22 Apr 2026 17:02:18 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4B80542821
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3850960E0F
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1776876428;
-	bh=iBcNeFy4bwZg4GDcMVrL3GGrQh0CpdmkUzKSHKENMeA=;
-	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=fscBjqC/fvKJP2csbEODSjkN8r1lmGLf3LhAYSNanOvPqXj7Q5MYGNNvCd+JGxtM0
-	 1Zh/1L84UZ3jO2EZdUVWm3n53r3g0GaR3VjedB6FUOp9GOo2JX4rK/flCIsQSPu/xH
-	 SvgraWTCdnnqFlD2p+nreGva42bDysL2fe5jLhtdAODsLSAf1PgoZzCUCocnxua3iG
-	 iljc8UvT559tCaMYRnRKfos4EN+bkAdNSk/JI9q81455FGChQzuA5uu3sqHTEmFsgQ
-	 KpkB7h4vPRsp/lcvzt+PVZ+KNK4f7IMPgScjx4A2/cZki2Ygabv0hkfWHT4nE038jP
-	 I97tE+FovklQg==
+	s=default; t=1776877338;
+	bh=K8y1nJ5X+p53Tw+hj93PYyBGC4V7zERYLDg+mn/JilQ=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=KPw5bZf2em8JxGd8YhqD8dAoTflNfBE9VmM6ImxOLrJipO1I3vg4jstwmy0D9cRYJ
+	 dxwuXD0LsqFnfu1NIqyvPxe6sxd0SQZK+eHoE8AkjqqJ27PpGDGubV+PefxQdPBd9a
+	 7wqFFDOEr/AMIUCq5uCdeI0zcRPx60NcseV8F4yLbq/hxGOlji5o40nQJx35UERUWs
+	 bRJiHjMlZyW3EVPTkqKPCIF0jNXjMh4IOOkmD2YSLtH2S1sAQmp9kGuWmUBdnEwPwK
+	 OUUWrLP5FL0zVj4hIWk+l/r1t8GT0iDLNp01CuFBzUeeMWnBzUmeSzgpPYl9k3NJfv
+	 TbHJi3PO2ZTKg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 4B80542821;
-	Wed, 22 Apr 2026 16:47:08 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id 246EF257
- for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Apr 2026 16:47:07 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 3850960E0F;
+	Wed, 22 Apr 2026 17:02:18 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 4564C257
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 21 Apr 2026 07:26:09 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 14C2384A6B
- for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Apr 2026 16:47:07 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 376D383CEF
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 21 Apr 2026 07:26:09 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id FsoPImzD7XEo for <intel-wired-lan@lists.osuosl.org>;
- Wed, 22 Apr 2026 16:47:06 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org;
- envelope-from=horms@kernel.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 44B9184A67
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 44B9184A67
-Received: from sea.source.kernel.org (sea.source.kernel.org
- [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 44B9184A67
- for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Apr 2026 16:47:06 +0000 (UTC)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by sea.source.kernel.org (Postfix) with ESMTP id 658534026E;
- Wed, 22 Apr 2026 16:47:05 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 90FDBC19425;
- Wed, 22 Apr 2026 16:47:02 +0000 (UTC)
-Date: Wed, 22 Apr 2026 17:46:59 +0100
-From: Simon Horman <horms@kernel.org>
-To: Kohei Enju <kohei@enjuk.jp>
-Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Andrew Lunn <andrew+netdev@lunn.ch>,
- "David S. Miller" <davem@davemloft.net>,
- Eric Dumazet <edumazet@google.com>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- Choong Yong Liang <yong.liang.choong@linux.intel.com>,
- Vladimir Oltean <vladimir.oltean@nxp.com>,
- Vinicius Costa Gomes <vinicius.gomes@intel.com>,
- Chwee-Lin Choong <chwee.lin.choong@intel.com>
-Message-ID: <20260422164659.GP651125@horms.kernel.org>
-References: <20260417193223.291093-1-kohei@enjuk.jp>
+ id YdJaIEWlyFth for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 21 Apr 2026 07:26:08 +0000 (UTC)
+X-Greylist: delayed 438 seconds by postgrey-1.37 at util1.osuosl.org;
+ Tue, 21 Apr 2026 07:26:02 UTC
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 875D683CEC
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 875D683CEC
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=125.88.204.37;
+ helo=mail.189.cn; envelope-from=charles_xu@189.cn; receiver=<UNKNOWN> 
+Received: from mail.189.cn (189sx01-ptr.21cn.com [125.88.204.37])
+ by smtp1.osuosl.org (Postfix) with ESMTP id 875D683CEC
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 21 Apr 2026 07:26:02 +0000 (UTC)
+HMM_SOURCE_IP: 10.158.242.145:0.1498820815
+HMM_ATTACHE_NUM: 0000
+HMM_SOURCE_TYPE: SMTP
+Received: from clientip-223.104.44.125 (unknown [10.158.242.145])
+ by mail.189.cn (HERMES) with SMTP id 1AEB1400083;
+ Tue, 21 Apr 2026 15:18:39 +0800 (CST)
+Received: from  ([223.104.44.125])
+ by gateway-153622-dep-76cc7bc9cd-r45x9 with ESMTP id
+ 460328a3dd2645d881ad4c010de65c55 for tglx@kernel.org; 
+ Tue, 21 Apr 2026 15:18:42 CST
+X-Transaction-ID: 460328a3dd2645d881ad4c010de65c55
+X-Real-From: charles_xu@189.cn
+X-Receive-IP: 223.104.44.125
+X-MEDUSA-Status: 0
+From: charles_xu@189.cn
+To: tglx@kernel.org, anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
+ intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org, joe@dama.to,
+ aleksandr.loktionov@intel.com, stable@vger.kernel.org
+Date: Tue, 21 Apr 2026 15:18:38 +0800
+Message-Id: <20260421071838.3878-1-charles_xu@189.cn>
+X-Mailer: git-send-email 2.35.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260417193223.291093-1-kohei@enjuk.jp>
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1776876425;
- bh=I8t8RTkMnBk+PgfRd8qWXKGoXCX45BEPArwzNaPdUEA=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=GSL703Ul2+Tt5SG3MlOUok3KwhVze8aPcd3RcX44dFVCbrvu26z6JNRLHD5EBcAxX
- kPMoIyOh85Cb4fRr2/21W4lMSVr2M+1Wsf9GAZpmfSA/asx6V7/XlO007Ov2lwUPOi
- penS2jrrKVKxLoXhuQYoAlwH5lmYZKYRiSiAp1l+4o9SKf8bLF1vCvl/iY3hU7JCdu
- DmWImt1Ndaf87G6jJJ2GXWvHXvdNTZa2CPi1LtHVIgy8YKI9RgYHM06D19nrhxQzGa
- 8UPbT8bC96AKuIIXZ9QAS757e4QdivycUe3c8H1P080Id6o1ESsMz3j9kWC/S3IUMX
- 7TQcHzYJB50dw==
+Content-Transfer-Encoding: 8bit
+X-Mailman-Approved-At: Wed, 22 Apr 2026 17:02:16 +0000
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dmarc=pass (p=quarantine dis=none)
- header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=GSL703Ul
-Subject: Re: [Intel-wired-lan] [PATCH iwl-net v1] igc: set tx buffer type
- for SMD frames
+ dmarc=none (p=none dis=none)
+ header.from=189.cn
+Subject: [Intel-wired-lan] [PATCH 6.6.y] i40e: Fix preempt count leak in
+ napi poll tracepoint
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -109,18 +93,46 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Sat, Apr 18, 2026 at 04:31:47AM +0900, Kohei Enju wrote:
-> Sashiko pointed out that igc_fpe_init_smd_frame() initializes
-> igc_tx_buffer fields for an SMD skb, but does not set the buffer type:
-> https://sashiko.dev/#/patchset/20260415025226.114115-1-kohei%40enjuk.jp
-> 
-> Since igc_tx_buffer entries are reused, a stale XDP or XSK type can
-> remain and make TX completion use the wrong cleanup path.
-> 
-> Set the buffer type to IGC_TX_BUFFER_TYPE_SKB.
-> 
-> Fixes: 5422570c0010 ("igc: add support for frame preemption verification")
-> Signed-off-by: Kohei Enju <kohei@enjuk.jp>
+From: Thomas Gleixner <tglx@kernel.org>
 
-Reviewed-by: Simon Horman <horms@kernel.org>
+[ Upstream commit 4b3d54a85bd37ebf2d9836f0d0de775c0ff21af9 ]
+
+Using get_cpu() in the tracepoint assignment causes an obvious preempt
+count leak because nothing invokes put_cpu() to undo it:
+
+  softirq: huh, entered softirq 3 NET_RX with preempt_count 00000100, exited with 00000101?
+
+This clearly has seen a lot of testing in the last 3+ years...
+
+Use smp_processor_id() instead.
+
+Fixes: 6d4d584a7ea8 ("i40e: Add i40e_napi_poll tracepoint")
+Signed-off-by: Thomas Gleixner <tglx@kernel.org>
+Cc: Tony Nguyen <anthony.l.nguyen@intel.com>
+Cc: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Cc: intel-wired-lan@lists.osuosl.org
+Cc: netdev@vger.kernel.org
+Reviewed-by: Joe Damato <joe@dama.to>
+Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+Signed-off-by: Charles Xu <charles_xu@189.cn>
+---
+ drivers/net/ethernet/intel/i40e/i40e_trace.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_trace.h b/drivers/net/ethernet/intel/i40e/i40e_trace.h
+index 33b4e30f5e00..9b735a9e2114 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_trace.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_trace.h
+@@ -88,7 +88,7 @@ TRACE_EVENT(i40e_napi_poll,
+ 		__entry->rx_clean_complete = rx_clean_complete;
+ 		__entry->tx_clean_complete = tx_clean_complete;
+ 		__entry->irq_num = q->irq_num;
+-		__entry->curr_cpu = get_cpu();
++		__entry->curr_cpu = smp_processor_id();
+ 		__assign_str(qname, q->name);
+ 		__assign_str(dev_name, napi->dev ? napi->dev->name : NO_DEV);
+ 		__assign_bitmask(irq_affinity, cpumask_bits(&q->affinity_mask),
+-- 
+2.35.3
 
