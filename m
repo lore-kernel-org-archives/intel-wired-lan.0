@@ -1,97 +1,146 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D1FAEFA1FDC
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 22 Apr 2026 18:00:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0890BFA1FE8
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 22 Apr 2026 19:17:29 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 8B235848A8;
-	Wed, 22 Apr 2026 18:00:35 +0000 (UTC)
-X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id VTHIAuFq9EPD; Wed, 22 Apr 2026 18:00:31 +0000 (UTC)
-X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org F2207848D1
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1776880831;
-	bh=mh6y5yh9QyquHEkZ51r/J1pTGJ3FWOuH+S5IWnZMJpE=;
-	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=7CInItM2PmAd+NpqvI8JNsiSs/PEw67KCBiD0UnVkwqHpZ6y3rdlR9NBRNtVjK8Z8
-	 KVgSQmNMTTSlcqdX0nZ7mZ1BvAFZ4v/9dHQKaQAv8WXr9HjVGjO7SV9J8iJP7lVYOZ
-	 IyLXuNmoqpd5YeSMtgFvCbtwpgUL3o1lQG17o0bXSYOravHplHuMxZoAX7oCRal9KT
-	 cUYhMhANBOG5BnSOoLuifpvwlgJQyjy1yqp8EsB+jq9//6p4EEtGzOZ2DHtODA7Aj2
-	 MAPQT0ztGHzKpNpq8qTMu80+k3N2um//pOdyUrWWysxsXSeTdGw5NbfghD+0Yz3daL
-	 3lswr79e7W5LA==
-Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id F2207848D1;
-	Wed, 22 Apr 2026 18:00:30 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id 494F3183
- for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Apr 2026 18:00:30 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 383B240C81
- for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Apr 2026 18:00:30 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id A80CB4023F;
+	Wed, 22 Apr 2026 19:17:29 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 2OEostrLKUpy for <intel-wired-lan@lists.osuosl.org>;
- Wed, 22 Apr 2026 18:00:27 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.234.252.31;
- helo=sea.source.kernel.org; envelope-from=horms@kernel.org;
+ id BHV_9QAgR9kv; Wed, 22 Apr 2026 19:17:28 +0000 (UTC)
+X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0B4CD40235
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
+	s=default; t=1776885448;
+	bh=c58WyJAsGl6Zxg673v15wl6Ol9ueBA67C9y/ZIOdNaQ=;
+	h=Date:To:Cc:References:From:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=GT2xei8yJLu3wxRmKPbvxEVsOm0tZgquDKqPmlMsNdRurjqyTCZ+Its/+NrSKLMew
+	 8ptKqwrgYy1kx9EFcWFYzn4afFLXdIlDKI0glxvM7j2HwtjMWxd2Mry3dcqnAPXuQ7
+	 y6yc4cQDFIODKyUMI1Y6aTZtYEnyJNi+R331JCS0qd0ijWzn2UyLz31icyFE5JHSJK
+	 PjCKHjBYwGwomkP4sEu8qErvuSRE9oSagavo6/V1HvXbsHQWgCzupDg9hkkyNxSiWO
+	 aMOoHwB+8YrJIo7BHxUi2F3sNIPTq1PWVus7/EstH8160hUzUZ+zqgxTDARFRdxoPJ
+	 DSH66CImiiCdw==
+Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
+	by smtp4.osuosl.org (Postfix) with ESMTP id 0B4CD40235;
+	Wed, 22 Apr 2026 19:17:28 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by lists1.osuosl.org (Postfix) with ESMTP id 713CC24D
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Apr 2026 19:17:26 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp1.osuosl.org (Postfix) with ESMTP id 5738D805DB
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Apr 2026 19:17:26 +0000 (UTC)
+X-Virus-Scanned: amavis at osuosl.org
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id t87Ge_E2y0EV for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 22 Apr 2026 19:17:25 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.129.124;
+ helo=us-smtp-delivery-124.mimecast.com; envelope-from=poros@redhat.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org EAF6A40D0D
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org EAF6A40D0D
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
- by smtp4.osuosl.org (Postfix) with ESMTPS id EAF6A40D0D
- for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Apr 2026 18:00:26 +0000 (UTC)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by sea.source.kernel.org (Postfix) with ESMTP id 511FC442A4;
- Wed, 22 Apr 2026 18:00:26 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 38913C19425;
- Wed, 22 Apr 2026 18:00:23 +0000 (UTC)
-Date: Wed, 22 Apr 2026 19:00:20 +0100
-From: Simon Horman <horms@kernel.org>
-To: Kohei Enju <kohei@enjuk.jp>
-Cc: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Andrew Lunn <andrew+netdev@lunn.ch>,
- "David S. Miller" <davem@davemloft.net>,
- Eric Dumazet <edumazet@google.com>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- Wojciech Drewek <wojciech.drewek@intel.com>,
- Jacob Keller <jacob.e.keller@intel.com>,
- Larysa Zaremba <larysa.zaremba@intel.com>,
- Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-Message-ID: <20260422180020.GQ651125@horms.kernel.org>
-References: <20260418090137.411506-1-kohei@enjuk.jp>
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 33840805D8
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 33840805D8
+Received: from us-smtp-delivery-124.mimecast.com
+ (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 33840805D8
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Apr 2026 19:17:24 +0000 (UTC)
+Received: from mail-wr1-f70.google.com (mail-wr1-f70.google.com
+ [209.85.221.70]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-47-te_PElKjOUqx2uzYLk70UQ-1; Wed, 22 Apr 2026 15:17:21 -0400
+X-MC-Unique: te_PElKjOUqx2uzYLk70UQ-1
+X-Mimecast-MFC-AGG-ID: te_PElKjOUqx2uzYLk70UQ_1776885440
+Received: by mail-wr1-f70.google.com with SMTP id
+ ffacd0b85a97d-4411a572dc5so3035707f8f.1
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Apr 2026 12:17:21 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20251104; t=1776885440; x=1777490240;
+ h=content-transfer-encoding:in-reply-to:from:content-language
+ :references:cc:to:subject:user-agent:mime-version:date:message-id
+ :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+ :reply-to;
+ bh=c58WyJAsGl6Zxg673v15wl6Ol9ueBA67C9y/ZIOdNaQ=;
+ b=iNfm+JoeCS+43C1EI1tpN1T3ahl1wg9CpeOYnSZQzk2Z/BC7Nt3L6E1sgXP8S28Dgq
+ hKxSgo2+kq2HnuQjngTh90OW3IzaPzPea4ANi+YAfwLXdi09/RqmG3AXb0kwRo1dQGwc
+ FJbmvu7o8pzB5dOxKVJHg4PhUDtdbHT3+qkmkkp9a5OYalGMaBevfXAlGEicT4mAhHGq
+ qoXcZyb/zveZHuSg4eVDrtY8zX7mxqGOiQED8zf0ryhYTuxxKiP7I3zq9j5pbUIViEgc
+ hK3buG+3tVO/uvwRxOWKtVGeW0u/oH75PhISpM8wNaazFqm1GLDvbNMzkfPWLcdeoPm9
+ BVRw==
+X-Forwarded-Encrypted: i=1;
+ AFNElJ/tK9EiEKkP+9OXf5EGtkA06WsNzSa81N5MXGVh5w0Jz2gWLQ/q8vcKGPGLjbGRGmHcyjDMkAMEDzlciIJfxLY=@lists.osuosl.org
+X-Gm-Message-State: AOJu0YwZDFTmPq2h60Qlu4g4QICLwSbsTI+J9JKeGkL4TCYQs6bvF7jR
+ 3F9dFpMQkhvwXFHHdUSKLPQTsDVPMQpYZSANAH687MP3b7MEcI0A+AmWMB84S99hirhP/UD+cGw
+ QNQA5BzS+Bv9QhZpO37hRe0nJs1/DKus0xTygfaKHPudIMfrpNW1d/q9sWZxobpZQrgh2y20=
+X-Gm-Gg: AeBDietDI/qEVFXz6wRBgV6bWDBBMgV8uLmBu1U2EyNcb6CqOOlZEE6aZg9j8iIZGJZ
+ ObbqEb9E/W3KP/PTpmm9Ql8eBdylumkZPj7dBM1qzTcxB36zbfPkuicSsqrgDf1QnOhhta0uBhI
+ yedeA6aWPQuECFbknU1y1K7OPc+VK2WWhwpo0tNnd0bsCdxGuHN8UZgYfhjKBt+Lj6lLsDsmGP4
+ w1rhhjbzuMyJlkFP2yFRiO32fcY4HLV5mOX/zNJLcQF3l6Xt7y0mcaMm3mQh2OKX9+WMlXfBjOP
+ F+f8vDQjqKNzKBkIQZQD83P2gOJ21ZVFg1CExOCol8Y62CuWr716tbAztAleLpDV14F67Rx7DEZ
+ 9Ltp5hFlp4sqMbAUckFC/0I2JYpjRlTA=
+X-Received: by 2002:a05:600c:2e42:b0:489:1fa4:50c6 with SMTP id
+ 5b1f17b1804b1-4891fa451bamr103358825e9.20.1776885440432; 
+ Wed, 22 Apr 2026 12:17:20 -0700 (PDT)
+X-Received: by 2002:a05:600c:2e42:b0:489:1fa4:50c6 with SMTP id
+ 5b1f17b1804b1-4891fa451bamr103358605e9.20.1776885439968; 
+ Wed, 22 Apr 2026 12:17:19 -0700 (PDT)
+Received: from [192.168.2.83] ([46.175.183.46])
+ by smtp.gmail.com with ESMTPSA id
+ ffacd0b85a97d-43fe4e44f69sm49650997f8f.25.2026.04.22.12.17.18
+ (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+ Wed, 22 Apr 2026 12:17:19 -0700 (PDT)
+Message-ID: <a3243a70-4163-41f6-8337-83da1972f871@redhat.com>
+Date: Wed, 22 Apr 2026 21:17:16 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260418090137.411506-1-kohei@enjuk.jp>
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1776880826;
- bh=vRGM5fdnwN3r2o7+o8B0zJJEj14G3ujdB0md67BxS6M=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=cxwr75AxlCyeiQ/LwDiYJ6l6jyirk+bWY/wjemxm4nLyAhfeSFsmFZQoPm7m0R9GL
- vej3+9Nj2Jd5LStc2cSPmc+kenIkHE9nBndhc3a0qFRm6uiVEy9SOJfqvqM13+LdwR
- mZIBjarJwqbv69bCv3XggOay062kWmunTFUuzl9Ghq9tUmNz3QL2Q/aST6YuYSVxJq
- Omgw3s0SktvAZDcbYodie12zJcwkkTDwL5eeAyvwSn1xuRVJiAlSGsVlMi2k9L1Xsw
- yEcMLMAdl8Owo0+xYUKThD83rIOoXDZKv9vPgTcZI/ThPZOK6qfv4y3dbtUBQ+FtCJ
- /JNFVVan13Xuw==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+User-Agent: Mozilla Thunderbird
+To: Simon Horman <horms@kernel.org>
+Cc: netdev@vger.kernel.org, Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller"
+ <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+ Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
+ Nikolay Aleksandrov <razor@blackwall.org>,
+ Daniel Zahka <daniel.zahka@gmail.com>,
+ Paul Greenwalt <paul.greenwalt@intel.com>,
+ Dave Ertman <david.m.ertman@intel.com>,
+ Michal Swiatkowski <michal.swiatkowski@linux.intel.com>,
+ jacob.e.keller@intel.com, intel-wired-lan@lists.osuosl.org,
+ linux-kernel@vger.kernel.org
+References: <20260413191420.3524013-1-poros@redhat.com>
+ <20260415163003.GP772670@horms.kernel.org>
+From: Petr Oros <poros@redhat.com>
+In-Reply-To: <20260415163003.GP772670@horms.kernel.org>
+X-Mimecast-Spam-Score: 0
+X-Mimecast-MFC-PROC-ID: 2kM5cJUloSGe1Uiudk9QNIcrfyS68DBLHVBQKbcZ5Vw_1776885440
+X-Mimecast-Originator: redhat.com
+Content-Language: en-US
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=redhat.com; 
+ s=mimecast20190719; t=1776885443;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=c58WyJAsGl6Zxg673v15wl6Ol9ueBA67C9y/ZIOdNaQ=;
+ b=Ytr94msmHisYHuCoYauxPZlVBrZu21ptqAzPFzzQBU4nGZGPFjZvZz44kez0frB75aCPft
+ eZe7IqqW3NK/3DeCh2Pq6uR5BddVPTJWdvy1N77MQpxy1GOoT1N0/fjmZA6c4UDlZOUjLR
+ WH4vnw5hXv8CM8Sc52j8a7rRXi6SbS8=
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=pass (p=quarantine dis=none)
- header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=cxwr75Ax
-Subject: Re: [Intel-wired-lan] [PATCH iwl-net v1] ice: fix UAF/NULL deref
- when VSI rebuild and XDP attach race
+ header.from=redhat.com
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=Ytr94msm
+Subject: Re: [Intel-wired-lan] [PATCH iwl-net] ice: fix infinite recursion
+ in ice_cfg_tx_topo via ice_init_dev_hw
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -107,58 +156,63 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Sat, Apr 18, 2026 at 09:01:15AM +0000, Kohei Enju wrote:
-> ice_xdp_setup_prog() unconditionally hot-swaps xdp_prog when
-> ICE_VSI_REBUILD_PENDING is set. In the attach path, this can publish a
-> new rx_ring->xdp_prog before rx_ring->xdp_ring becomes valid while the
-> rebuild is pending. As a result, ice_clean_rx_irq() may dereference
-> rx_ring->xdp_ring too early.
-> 
-> With high-volume RX packets, running these commands in parallel
-> triggered a KASAN splat [1].
->  # ethtool --reset $DEV irq dma filter offload
->  # ip link set dev $DEV xdp {obj $OBJ sec xdp,off}
-> 
-> Fix this by rejecting XDP attach while rebuild is pending.
-> Keep XDP detach allowed in this window. Detach clears rx_ring->xdp_prog,
-> so the RX path will not attempt to access rx_ring->xdp_ring.
-> 
-> [1]
-> BUG: KASAN: slab-use-after-free in ice_napi_poll+0x3921/0x41a0
-> Read of size 2 at addr ffff88812475b880 by task ksoftirqd/1/23
-> [...]
-> Call Trace:
->  <TASK>
->  ice_napi_poll+0x3921/0x41a0
->  __napi_poll+0x98/0x520
->  net_rx_action+0x8f2/0xfa0
->  handle_softirqs+0x1cb/0x7f0
-> [...]
->  </TASK>
-> 
-> Allocated by task 7246:
->  ice_prepare_xdp_rings+0x3de/0x12d0
->  ice_xdp+0x61c/0xef0
->  dev_xdp_install+0x3c4/0x840
->  dev_xdp_attach+0x50a/0x10a0
->  dev_change_xdp_fd+0x175/0x210
-> [...]
-> 
-> Freed by task 7251:
->  __rcu_free_sheaf_prepare+0x5f/0x230
->  rcu_free_sheaf+0x1a/0xf0
->  rcu_core+0x567/0x1d80
->  handle_softirqs+0x1cb/0x7f0
-> 
-> Fixes: 2504b8405768 ("ice: protect XDP configuration with a mutex")
-> Signed-off-by: Kohei Enju <kohei@enjuk.jp>
 
-Reviewed-by: Simon Horman <horms@kernel.org>
+On 4/15/26 18:30, Simon Horman wrote:
+> On Mon, Apr 13, 2026 at 09:14:20PM +0200, Petr Oros wrote:
+>> On certain E810 configurations where firmware supports Tx scheduler
+>> topology switching (tx_sched_topo_comp_mode_en), ice_cfg_tx_topo()
+>> may need to apply a new 5-layer or 9-layer topology from the DDP
+>> package. If the AQ command to set the topology fails (e.g. due to
+>> invalid DDP data or firmware limitations), the global configuration
+>> lock must still be cleared via a CORER reset.
+>>
+>> Commit 86aae43f21cf ("ice: don't leave device non-functional if Tx
+>> scheduler config fails") correctly fixed this by refactoring
+>> ice_cfg_tx_topo() to always trigger CORER after acquiring the global
+>> lock and re-initialize hardware via ice_init_hw() afterwards.
+>>
+>> However, commit 8a37f9e2ff40 ("ice: move ice_deinit_dev() to the end
+>> of deinit paths") later moved ice_init_dev_hw() into ice_init_hw(),
+>> breaking the reinit path introduced by 86aae43f21cf. This creates an
+>> infinite recursive call chain:
+>>
+>>    ice_init_hw()
+>>      ice_init_dev_hw()
+>>        ice_cfg_tx_topo()         # topology change needed
+>>          ice_deinit_hw()
+>>          ice_init_hw()           # reinit after CORER
+>>            ice_init_dev_hw()     # recurse
+>>              ice_cfg_tx_topo()
+>>                ...               # stack overflow
+>>
+>> Fix by moving ice_init_dev_hw() back out of ice_init_hw() and calling
+>> it explicitly from ice_probe() and ice_devlink_reinit_up(). The third
+>> caller, ice_cfg_tx_topo(), intentionally does not need ice_init_dev_hw()
+>> during its reinit, it only needs the core HW reinitialization. This
+>> breaks the recursion cleanly without adding flags or guards.
+>>
+>> The deinit ordering changes from commit 8a37f9e2ff40 ("ice: move
+>> ice_deinit_dev() to the end of deinit paths") which fixed slow rmmod
+>> are preserved, only the init-side placement of ice_init_dev_hw() is
+>> reverted.
+>>
+>> Fixes: 8a37f9e2ff40 ("ice: move ice_deinit_dev() to the end of deinit paths")
+>> Signed-off-by: Petr Oros <poros@redhat.com>
+> Hi Petr,
+>
+> I don't intended to delay this patch.
+> But could you follow-up by looking over the AI generated
+> review of this patch on sashiko.dev?
+>
+> Thanks!
+>
+Hi Simon,
 
-Sashiko has provided some feedback on this patch.
-However, I believe the issues it raises are not introduced
-by this patch and should not block progress of it.
-I'd like to ask if you could take a look over that feedback
-and see if any follow-up is appropriate.
+Thanks, the sashiko.dev concern is valid. ice_init_dev_hw() swallowing
+-ENODEV from the torn-down hw is a latent UAF independent of the
+recursion fix here. I will send a follow-up patch that propagates
+-ENODEV to abort probe cleanly.
 
-Thanks!
+Regards,
+Petr
+
