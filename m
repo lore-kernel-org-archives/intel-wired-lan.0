@@ -4,94 +4,91 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 65EDDFED3C9
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 24 Apr 2026 13:39:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 665EFFED3CE
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 24 Apr 2026 14:00:09 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 309A7847A6;
-	Fri, 24 Apr 2026 13:39:12 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 115CC80C68;
+	Fri, 24 Apr 2026 14:00:09 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id vqT98X3VEucC; Fri, 24 Apr 2026 13:39:11 +0000 (UTC)
+ id C8U48l3w7xqT; Fri, 24 Apr 2026 14:00:08 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 6FBE684724
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 42A1880BFB
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1777037951;
-	bh=xQu1flxKZHa1z36UwhsghZX7X5mEdIY34ZYpvIyPVtA=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1777039208;
+	bh=/pOafHCgUief4FUDwHPdX1l9bczmYGq6ntuMlrpurhk=;
+	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=raDy4ox3K+1C3+7uv0kRgAr5mDtwOFTgG8/k5PMTzvUAUO6gNSa5JC0cihZCr/tRB
-	 kGWJlD+6JAIz22MxP5iekMUJzAjqedvXp3WAQsVzbz9yeaUA+iEAFBvIpphd4vZZLP
-	 LpEiGqDPOGHJOkbcQlfdJ457xnbXXhgtNo3aFM4EGB1I8sXgcsQCcY0ygrdybPDRC2
-	 WL7jUXn55r7258lunnGS4ZF7fAYQkbI2M3f/rhWZvzn9iQE/lg6tlcyjbM4QNUTpUV
-	 +TwcQOmH4rJ1gigUXxOMX0DCRR9Zn2pnBA5WlixKtnFOeL1YC3Rx5CBLCxxSnKPr7/
-	 JMjGO8r+lNG+g==
+	b=hqnBwXUcoaVcznWUERiWpFy8p1UlxSkan2IbeSjVWgtD+JJM/AAax9pR/Yy3t03jK
+	 aPbeKgEzrpY+/k6/dn8mehXWveRatwx76iCufOHea+KLHsvWUwIUZW9/KWUNVVRuas
+	 vhUAxjglz0Z5JyTRhywYsEC/M7F31mTJse6kIvM9A9C0XI8Wzb6NMuvDV5AC1xBIpd
+	 gWHnJC1zmuJ27I1HzjL2ysFvBt4aBo69mDHCqZnukT3D1yU1ooIw1KothZ8aKPFYnq
+	 JMHyK32qj9awxfbbqtfWbDYIzVb0aJALNHGiNQ72Nr0XbJUgr+c4s8UdXJxMslD+PO
+	 9IIQ7L2BckfCg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 6FBE684724;
-	Fri, 24 Apr 2026 13:39:11 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id 3AFA4206
- for <intel-wired-lan@lists.osuosl.org>; Fri, 24 Apr 2026 13:39:10 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 42A1880BFB;
+	Fri, 24 Apr 2026 14:00:08 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id DDCAB24D
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 24 Apr 2026 14:00:06 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 2B6A584724
- for <intel-wired-lan@lists.osuosl.org>; Fri, 24 Apr 2026 13:39:10 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id CF78A6153A
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 24 Apr 2026 14:00:06 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 47P3ddclLjpO for <intel-wired-lan@lists.osuosl.org>;
- Fri, 24 Apr 2026 13:39:09 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org;
- envelope-from=gregkh@linuxfoundation.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org ECC91846AA
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org ECC91846AA
-Received: from tor.source.kernel.org (tor.source.kernel.org
- [IPv6:2600:3c04:e001:324:0:1991:8:25])
- by smtp1.osuosl.org (Postfix) with ESMTPS id ECC91846AA
- for <intel-wired-lan@lists.osuosl.org>; Fri, 24 Apr 2026 13:39:08 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id wqXXepUcTlYQ for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 24 Apr 2026 14:00:06 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
+ helo=tor.source.kernel.org; envelope-from=horms@kernel.org;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 1D97061293
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 1D97061293
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 1D97061293
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 24 Apr 2026 14:00:05 +0000 (UTC)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by tor.source.kernel.org (Postfix) with ESMTP id B21F560120;
- Fri, 24 Apr 2026 13:39:07 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 19104C2BCB2;
- Fri, 24 Apr 2026 13:39:06 +0000 (UTC)
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: stable@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, patches@lists.linux.dev,
- Thomas Gleixner <tglx@kernel.org>,
- Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ by tor.source.kernel.org (Postfix) with ESMTP id C6706600AE;
+ Fri, 24 Apr 2026 14:00:04 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 79FE5C19425;
+ Fri, 24 Apr 2026 14:00:01 +0000 (UTC)
+Date: Fri, 24 Apr 2026 14:59:58 +0100
+From: Simon Horman <horms@kernel.org>
+To: KhaiWenTan <khai.wen.tan@linux.intel.com>
+Cc: anthony.l.nguyen@intel.com, przemyslaw.kitszel@intel.com,
+ andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
+ kuba@kernel.org, pabeni@redhat.com,
  intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- Joe Damato <joe@dama.to>,
- Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
- Charles Xu <charles_xu@189.cn>, Sasha Levin <sashal@kernel.org>
-Date: Fri, 24 Apr 2026 15:30:46 +0200
-Message-ID: <20260424132600.532894958@linuxfoundation.org>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260424132532.812258529@linuxfoundation.org>
-References: <20260424132532.812258529@linuxfoundation.org>
-User-Agent: quilt/0.69
-X-stable: review
-X-Patchwork-Hint: ignore
+ linux-kernel@vger.kernel.org, faizal.abdul.rahim@intel.com,
+ hong.aun.looi@intel.com, khai.wen.tan@intel.com,
+ Faizal Rahim <faizal.abdul.rahim@linux.intel.com>, Looi
+Message-ID: <20260424135958.GL900403@horms.kernel.org>
+References: <20260422155701.7420-1-khai.wen.tan@linux.intel.com>
+ <20260422155701.7420-4-khai.wen.tan@linux.intel.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260422155701.7420-4-khai.wen.tan@linux.intel.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=linuxfoundation.org; 
- s=korg; t=1777037947;
- bh=xrZplwLbjp7afcyNpDD7g/vbLyWCaDs2S6yjbQdjRKQ=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=XqRnp5vewbueWqH6DFyYBpvIw78+LzJUSW2FUes8/W7W9600TIgIPcrXkHG+DsY7R
- Zo5UjzR2U5vOUjIx8Y0qG0C9mDSh660otc2bqw2GOigcBusHvmIlMy65XXzPPZwNtv
- VjnYE8R/5lxCRVq1uW+hBwUgp8tpXhpL2J7Ir9wo=
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dmarc=pass (p=none dis=none)
- header.from=linuxfoundation.org
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (1024-bit key,
- unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org
- header.a=rsa-sha256 header.s=korg header.b=XqRnp5ve
-Subject: [Intel-wired-lan] [PATCH 6.6 132/166] i40e: Fix preempt count leak
- in napi poll tracepoint
+ d=kernel.org; s=k20201202; t=1777039204;
+ bh=RjPXRwAeTtKHltjAE51ItOPdDhf9jKLVKaPyYVF/kmU=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=Nsfc9I4AdaKxHCRy2KFb+Y9+EwjnpX/Y3Yee7SewGiwoqUS87ru385v9QS+AC9Tlu
+ Ev3ri/Dr7iQBhFV+L87rM+SimKLIGXXiM6UYXxJXYsmB/Vp/QaHyqvL4mZkRFAkFxQ
+ 9rCN98ZbQK56Q+a87wdUSZ1mrSU1olCyLjOmPqGFQt+KtgeG0fLKk/zyMepzkf/02g
+ QZnfzl65gmd34GvAzunuH8Yuc/JYGIcQSKSaAfFPrFgkUImH1kZjq0LkSeyj9r6J4P
+ P1CnBYb9FuNWtgSbosp6yrG30e0rB5gR6m5tPWIVQdMiLJ9kvAERwJuo140yk0GKsK
+ DMleeFOSEzqGw==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dmarc=pass (p=quarantine dis=none)
+ header.from=kernel.org
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20201202 header.b=Nsfc9I4A
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next v3 3/3] igc: add support for
+ forcing link speed without autonegotiation
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -107,53 +104,113 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-6.6-stable review patch.  If anyone has any objections, please let me know.
+On Wed, Apr 22, 2026 at 11:57:01PM +0800, KhaiWenTan wrote:
+> From: Faizal Rahim <faizal.abdul.rahim@linux.intel.com>
+> 
+> Allow users to force 10/100 Mb/s link speed and duplex via ethtool
+> when autonegotiation is disabled. Previously, the driver rejected
+> these requests with "Force mode currently not supported.".
+> 
+> Forcing at 1000 Mb/s and 2500 Mb/s is not supported.
+> 
+> Reviewed-by: Looi, Hong Aun <hong.aun.looi@intel.com>
+> Signed-off-by: Faizal Rahim <faizal.abdul.rahim@linux.intel.com>
+> Signed-off-by: KhaiWenTan <khai.wen.tan@linux.intel.com>
 
-------------------
+...
 
-From: Thomas Gleixner <tglx@kernel.org>
+> diff --git a/drivers/net/ethernet/intel/igc/igc_ethtool.c b/drivers/net/ethernet/intel/igc/igc_ethtool.c
 
-[ Upstream commit 4b3d54a85bd37ebf2d9836f0d0de775c0ff21af9 ]
+...
 
-Using get_cpu() in the tracepoint assignment causes an obvious preempt
-count leak because nothing invokes put_cpu() to undo it:
+> @@ -2000,6 +2013,41 @@ static int igc_ethtool_get_link_ksettings(struct net_device *netdev,
+>  	return 0;
+>  }
+>  
+> +/**
+> + * igc_handle_autoneg_disabled - Configure forced speed/duplex settings
+> + * @adapter: private driver structure
+> + * @speed: requested speed (must be SPEED_10 or SPEED_100)
+> + * @duplex: requested duplex
+> + *
+> + * Records forced speed/duplex when autoneg is disabled.
+> + * Caller must validate speed before calling this function.
+> + */
+> +static void igc_handle_autoneg_disabled(struct igc_adapter *adapter, u32 speed,
+> +					u8 duplex)
+> +{
+> +	struct igc_mac_info *mac = &adapter->hw.mac;
+> +
+> +	switch (speed) {
+> +	case SPEED_10:
+> +		mac->forced_speed_duplex = (duplex == DUPLEX_FULL) ?
+> +			IGC_FORCED_10F : IGC_FORCED_10H;
+> +		break;
+> +	case SPEED_100:
+> +		mac->forced_speed_duplex = (duplex == DUPLEX_FULL) ?
+> +			IGC_FORCED_100F : IGC_FORCED_100H;
+> +		break;
+> +	default:
+> +		WARN_ONCE(1, "Unsupported speed %u\n", speed);
+> +		return;
+> +	}
+> +
+> +	mac->autoneg_enabled = false;
+> +
+> +	/* Half-duplex cannot support flow control per IEEE 802.3 */
+> +	if (duplex != DUPLEX_FULL)
+> +		adapter->hw.fc.requested_mode = igc_fc_none;
+> +}
+> +
+>  /**
+>   * igc_handle_autoneg_enabled - Configure autonegotiation advertisement
+>   * @adapter: private driver structure
+> @@ -2038,6 +2086,7 @@ static void igc_handle_autoneg_enabled(struct igc_adapter *adapter,
+>  						  10baseT_Half))
+>  		advertised |= ADVERTISE_10_HALF;
+>  
+> +	hw->mac.autoneg_enabled = true;
+>  	hw->phy.autoneg_advertised = advertised;
+>  	if (adapter->fc_autoneg)
+>  		hw->fc.requested_mode = igc_fc_default;
+> @@ -2071,14 +2120,20 @@ igc_ethtool_set_link_ksettings(struct net_device *netdev,
+>  		}
+>  	}
+>  
+> +	if (cmd->base.autoneg == AUTONEG_DISABLE &&
+> +	    cmd->base.speed != SPEED_10 && cmd->base.speed != SPEED_100) {
+> +		netdev_info(dev, "Unsupported speed for forced link\n");
+> +		return -EINVAL;
+> +	}
 
-  softirq: huh, entered softirq 3 NET_RX with preempt_count 00000100, exited with 00000101?
+The condition above verifies speed only if autoneg is AUTONEG_DISABLE.
 
-This clearly has seen a lot of testing in the last 3+ years...
+> +
+>  	while (test_and_set_bit(__IGC_RESETTING, &adapter->state))
+>  		usleep_range(1000, 2000);
+>  
+> -	if (cmd->base.autoneg == AUTONEG_ENABLE) {
+> +	if (cmd->base.autoneg == AUTONEG_ENABLE)
+>  		igc_handle_autoneg_enabled(adapter, cmd);
+> -	} else {
+> -		netdev_info(dev, "Force mode currently not supported\n");
+> -	}
+> +	else
+> +		igc_handle_autoneg_disabled(adapter, cmd->base.speed,
+> +					    cmd->base.duplex);
 
-Use smp_processor_id() instead.
+But here igc_handle_autoneg_disabled, which relies on speed having been
+verified, is called if autoneg is not AUTONEG_ENABLE.
 
-Fixes: 6d4d584a7ea8 ("i40e: Add i40e_napi_poll tracepoint")
-Signed-off-by: Thomas Gleixner <tglx@kernel.org>
-Cc: Tony Nguyen <anthony.l.nguyen@intel.com>
-Cc: Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Cc: intel-wired-lan@lists.osuosl.org
-Cc: netdev@vger.kernel.org
-Reviewed-by: Joe Damato <joe@dama.to>
-Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
-Signed-off-by: Charles Xu <charles_xu@189.cn>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/net/ethernet/intel/i40e/i40e_trace.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+If autoneg is AUTONEG_DISABLE here, then all is good.
+But if it is neither AUTONEG_DISABLE nor AUTONEG_ENABLE then we
+are in trouble.
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_trace.h b/drivers/net/ethernet/intel/i40e/i40e_trace.h
-index 33b4e30f5e004..9b735a9e21140 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_trace.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_trace.h
-@@ -88,7 +88,7 @@ TRACE_EVENT(i40e_napi_poll,
- 		__entry->rx_clean_complete = rx_clean_complete;
- 		__entry->tx_clean_complete = tx_clean_complete;
- 		__entry->irq_num = q->irq_num;
--		__entry->curr_cpu = get_cpu();
-+		__entry->curr_cpu = smp_processor_id();
- 		__assign_str(qname, q->name);
- 		__assign_str(dev_name, napi->dev ? napi->dev->name : NO_DEV);
- 		__assign_bitmask(irq_affinity, cpumask_bits(&q->affinity_mask),
--- 
-2.53.0
+I suggest verifying autoneg is either AUTONEG_ENABLE or AUTONEG_DISABLE
+earlier in this function.
 
+The above is based on my analysis of review AI generated review from Sashiko.
+I believe that addressing autoneg verification address the review by
+Sashiko that is relevant to the progress of this patch.
 
-
+...
