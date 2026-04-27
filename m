@@ -1,84 +1,109 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 48DA3FF8861
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 27 Apr 2026 10:40:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 709E6FF8860
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 27 Apr 2026 11:35:14 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id EE1EC851A2;
-	Mon, 27 Apr 2026 10:40:50 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 15495404F5;
+	Mon, 27 Apr 2026 11:35:14 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id DqllQK9aWqKo; Mon, 27 Apr 2026 10:40:49 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id zymlFQnUuhLD; Mon, 27 Apr 2026 11:35:12 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org AAB3D8519C
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 419D0404E8
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1777286449;
-	bh=1awmovS6Yf6Mv/ja8hVRXRLENoAVc+c5LE5Mx5uIPpE=;
-	h=Date:To:Cc:References:From:In-Reply-To:Subject:List-Id:
+	s=default; t=1777289712;
+	bh=zTmOBQOfI2cC6OKRMtTqpwmhqCYyPD1tqmAV3nNBJko=;
+	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=yHdWcHqre8xqzcl1Vnzbb0O62ssKf4RTWl+hzLdGH9fKMsjrBHIsu7UTmZN7yY5n5
-	 b25QH8BhPsEbMIUJ0vooXolWJ08TmWMDcGorvTuyw5DrwpoMtwsr+geNELPBbcuyXI
-	 /sfPerWdCRCOQgsccKIiEtwcxwS00hBMqdPLzxUZn1Va0s7aJxsNyzQ4Gl6HdJFF/m
-	 t+UJOagZ8mAmK9KXq/dcBrHvtVuVtNw/ZqXFoZbyJtdum1Aw88zor8GPnVIAmEcNI0
-	 o11nGlxNoTev1RDkc9exRfj5MTOMxlIgQ1Oq2TDUnVCx6mFYaFunlGLl/ubEdZ35Oq
-	 iA8kG7+JDdZ5g==
+	b=CsAORq+olnMv4MLkm6vICtKjAq+FogjEyUla7k+bT8p1qWFRdp+ZwttL3S2j9mEJC
+	 gOSGmWt8ahDiZSkNh7B7TY9cOqGu4JVL1HECfrYNTrjxgSCViiNS4ZAQ801sQj9Mjx
+	 egm0GtiuKN1dF0FGdGcavE/NfRvTDQwY4sdNz+gy0XQVeshWCctK4pwbTyJJ3+8Bcs
+	 Vb/j5+DDbcBEzA1KzbWfUbIaC7WmBIQStra1UzFhYrpZnQaP9hUze1V6DWHSZ3XQEh
+	 h4G2VrswerwJTcRXFhEzkqtHYam87TGzt4Xjw2/wI41ZwoIJGZ+WWi4L+1yOCucjw+
+	 1jOdO/K4Zrm6A==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id AAB3D8519C;
-	Mon, 27 Apr 2026 10:40:49 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id 680B52DF
- for <intel-wired-lan@lists.osuosl.org>; Mon, 27 Apr 2026 10:40:48 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 419D0404E8;
+	Mon, 27 Apr 2026 11:35:12 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by lists1.osuosl.org (Postfix) with ESMTP id C07901B8
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 27 Apr 2026 11:35:10 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 58A566F66B
- for <intel-wired-lan@lists.osuosl.org>; Mon, 27 Apr 2026 10:40:48 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 9E8FD404E8
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 27 Apr 2026 11:35:10 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id hXzqhNxA6XPq for <intel-wired-lan@lists.osuosl.org>;
- Mon, 27 Apr 2026 10:40:46 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=141.14.17.11;
- helo=mx3.molgen.mpg.de; envelope-from=pmenzel@molgen.mpg.de;
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id xOlvF-S7Ij9i for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 27 Apr 2026 11:35:09 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=170.10.129.124;
+ helo=us-smtp-delivery-124.mimecast.com; envelope-from=jtornosm@redhat.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org D173861725
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org D173861725
-Received: from mx3.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
- by smtp3.osuosl.org (Postfix) with ESMTPS id D173861725
- for <intel-wired-lan@lists.osuosl.org>; Mon, 27 Apr 2026 10:40:45 +0000 (UTC)
-Received: from [141.14.220.42] (g42.guest.molgen.mpg.de [141.14.220.42])
- (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 88AD84047B
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 88AD84047B
+Received: from us-smtp-delivery-124.mimecast.com
+ (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 88AD84047B
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 27 Apr 2026 11:35:08 +0000 (UTC)
+Received: from mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com
+ (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
+ relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-217-5jr6GjTLMJ-8MlD7OXhyrQ-1; Mon,
+ 27 Apr 2026 07:35:05 -0400
+X-MC-Unique: 5jr6GjTLMJ-8MlD7OXhyrQ-1
+X-Mimecast-MFC-AGG-ID: 5jr6GjTLMJ-8MlD7OXhyrQ_1777289703
+Received: from mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com
+ (mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.12])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested) (Authenticated sender: pmenzel)
- by mx.molgen.mpg.de (Postfix) with ESMTPSA id EB4764C2C37D45;
- Mon, 27 Apr 2026 12:40:17 +0200 (CEST)
-Message-ID: <2d8bd703-f368-4405-9266-d0d8824455aa@molgen.mpg.de>
-Date: Mon, 27 Apr 2026 12:40:17 +0200
+ (No client certificate requested)
+ by mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS
+ id 20CDF19560BF; Mon, 27 Apr 2026 11:35:03 +0000 (UTC)
+Received: from fedora.redhat.com (unknown [10.44.32.96])
+ by mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP
+ id A457D19560B7; Mon, 27 Apr 2026 11:34:58 +0000 (UTC)
+From: Jose Ignacio Tornos Martinez <jtornosm@redhat.com>
+To: przemyslaw.kitszel@intel.com
+Cc: aleksandr.loktionov@intel.com, anthony.l.nguyen@intel.com,
+ davem@davemloft.net, edumazet@google.com, horms@kernel.org,
+ intel-wired-lan@lists.osuosl.org, jacob.e.keller@intel.com,
+ jtornosm@redhat.com, kuba@kernel.org, netdev@vger.kernel.org,
+ pabeni@redhat.com
+Date: Mon, 27 Apr 2026 13:34:56 +0200
+Message-ID: <20260427113456.1267171-1-jtornosm@redhat.com>
+In-Reply-To: <d055ed86-89d9-42fd-a881-0384ebfd24f7@intel.com>
+References: <d055ed86-89d9-42fd-a881-0384ebfd24f7@intel.com>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-To: Li Li <boolli@google.com>
-Cc: Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- "David S. Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>,
- Eric Dumazet <edumazet@google.com>, intel-wired-lan@lists.osuosl.org,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- David Decotigny <decot@google.com>, Anjali Singhai
- <anjali.singhai@intel.com>, Sridhar Samudrala <sridhar.samudrala@intel.com>,
- Brian Vazquez <brianvv@google.com>, emil.s.tantilov@intel.com
-References: <20260424031545.3777023-1-boolli@google.com>
-Content-Language: en-US
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-In-Reply-To: <20260424031545.3777023-1-boolli@google.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dmarc=none (p=none dis=none)
- header.from=molgen.mpg.de
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next] libie: log more info when
- virtchnl fails
+X-Scanned-By: MIMEDefang 3.0 on 10.30.177.12
+X-Mimecast-MFC-PROC-ID: aNGeH6cF174TYpIFpiA9m-EtOwEInvMG3MX-y9kGlSE_1777289703
+X-Mimecast-Originator: redhat.com
+Content-Transfer-Encoding: 8bit
+content-type: text/plain; charset="US-ASCII"; x-default=true
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=redhat.com; 
+ s=mimecast20190719; t=1777289707;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=zTmOBQOfI2cC6OKRMtTqpwmhqCYyPD1tqmAV3nNBJko=;
+ b=PBRNbPxTo+c0U4LkjEZeAx5nKLbGer9c9pFuzaGk7LLKcZESa39iokPQxXF7IEKfnp129o
+ S/7xp4OfhIlet0GpVM5YZGj2/IfqSP9ni8FvBBYz/Lt9KI04WO+/QqsnmJap/tFK5DBhx2
+ /g7dM28mxQ8dMTf0quRYg+jAOIEHGgQ=
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dmarc=pass (p=quarantine dis=none)
+ header.from=redhat.com
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (1024-bit key,
+ unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
+ header.s=mimecast20190719 header.b=PBRNbPxT
+Subject: Re: [Intel-wired-lan] [PATCH net v4 3/4] iavf: send MAC change
+ request synchronously
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -94,64 +119,15 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Dear Li,
+Hello Przemek,
 
+Thank you again for your comments.
+I will try to include the new ones too in the next version.
+Indeed kdoc "Return:" was already commented by you, I will try to address
+all the occurences now.
 
-Thank you for your patch.
+Thanks
 
-Am 24.04.26 um 05:15 schrieb Li Li via Intel-wired-lan:
-> Virtchnl failures can be hard to debug without logs. Logging the details
-> of virtchnl transactions can be useful for debugging virtchnl-related
-> issues.
+Best regards
+Jose Ignacio
 
-Why is the first added one added as error, and the second as info?
-
-Do you have a reproducer to get each of the new log messages?
-
-> Tested: Built and booted on a test machine.
-
-Please paste the new messages.
-
-> Signed-off-by: Li Li <boolli@google.com>
-> ---
->   drivers/net/ethernet/intel/libie/controlq.c | 15 +++++++++++++++
->   1 file changed, 15 insertions(+)
-> 
-> diff --git a/drivers/net/ethernet/intel/libie/controlq.c b/drivers/net/ethernet/intel/libie/controlq.c
-> index ebc05355e39d..7eaa77413621 100644
-> --- a/drivers/net/ethernet/intel/libie/controlq.c
-> +++ b/drivers/net/ethernet/intel/libie/controlq.c
-> @@ -762,6 +762,16 @@ libie_ctlq_xn_process_recv(struct libie_ctlq_xn_recv_params *params,
->   	status = ctlq_msg->chnl_retval ? -EFAULT : 0;
->   
->   	xn = &xnm->ring[xn_index];
-> +
-> +	if (ctlq_msg->chnl_retval) {
-> +		dev_err_ratelimited(
-> +			params->ctlq->dev,
-> +			"Non-zero virtchnl ret val (msg op: %u, ret val: %u, msg_cookie: %u, data_len: %u); xn op: %u, id: %u, cookie: %u\n",
-> +			ctlq_msg->chnl_opcode, ctlq_msg->chnl_retval,
-> +			msg_cookie, ctlq_msg->data_len, xn->virtchnl_opcode,
-> +			xn->index, xn->cookie);
-> +	}
-> +
->   	if (ctlq_msg->chnl_opcode != xn->virtchnl_opcode ||
->   	    msg_cookie != xn->cookie)
->   		return false;
-> @@ -1011,6 +1021,11 @@ int libie_ctlq_xn_send(struct libie_ctlq_xn_send_params *params)
->   		params->recv_mem = xn->recv_mem;
->   		break;
->   	default:
-> +		dev_notice_ratelimited(
-> +			params->ctlq->dev,
-> +			"Transaction failed (op %u, xn state: %d, id: %u, cookie: %u, size: %zu)\n",
-> +			params->chnl_opcode, xn->state, xn->index, xn->cookie,
-> +			xn->recv_mem.iov_len);
->   		ret = -EBADMSG;
->   		break;
->   	}
-
-
-Kind regards,
-
-Paul
