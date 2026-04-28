@@ -4,84 +4,107 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B36DFFF8868
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 28 Apr 2026 09:18:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6C366FF8868
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 28 Apr 2026 09:26:41 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 727A1411B9;
-	Tue, 28 Apr 2026 09:18:49 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 2E8BA411D6;
+	Tue, 28 Apr 2026 09:26:41 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id XJtWuWMMDv9I; Tue, 28 Apr 2026 09:18:47 +0000 (UTC)
+ id 1rb6aoRnezWR; Tue, 28 Apr 2026 09:26:39 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 7297141198
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 667AC411D4
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1777367927;
-	bh=CfB5tuzgswNgcsSHADF2fIdUxCeUXfohJsD6S60ChhI=;
-	h=Date:To:Cc:References:From:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=sieBn4rcJoQz2yoHC26aUWNhbMCFwC6K0TWho17/ogxOeNDCJrntO9m22gNCFX93s
-	 BfQJMvcysXG5eBtEk7tpRLfNjga6/tYJMB1iu9Lq5Lgbgj0b/2dBUAkdk2KL4tjx66
-	 K8G5qPD7q/n7XWwnASfdDozq0Rf4sz3z2FD8b3rT4KjtwfeBxawtPMypjP6gHFsnKI
-	 VQeyaVlcdssCQ5PGT2rDxMmAAeHam/KIsuRIFug4UuGaj0KweuTQBj/XJuI1EO2vKS
-	 sqoIOFbM1BIr2GTxLgAyQ+GpTapKW+vK0C5eA1Eh+mcZuH+VTVcA3af1zq3kPMHLOV
-	 Pq2RT1ZUR4WHA==
+	s=default; t=1777368399;
+	bh=hjK2G7LPiw+kvxLQtLAeEl7+956uNxj39I/8SWahJxw=;
+	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=O84vdL72pODdZg+KC3Fvx5iCmgjczyTPC/UdfW+Q6THK4mn+zehuQEOExj3q38pIw
+	 mmUeiDnzPOfAp+++urcDoNuUo3Xfv5xB0Slt9aUA/UsCfpC7W1JlADDVOQ3qiDVjWn
+	 MlvlxNwAeWxjso/C9dF9QHIZFdoJERTA7Q9YGxUJ/emMoTP/kJ3LC5VGOKUcK0mpZW
+	 V7/e47hry32O05CxhHQV36iD34oZaLgrXzJLc1gSag5ht4vtOnp1SI+glsJLkvnjdJ
+	 vjNVHfBqFFZGie1QAVSDqlCq0lmgcjwV/VgLBHgVVT0mT40chtA+20F5y5xi5STsoL
+	 5JJHtJvCVMT4Q==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 7297141198;
-	Tue, 28 Apr 2026 09:18:47 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id 2474A1B8
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Apr 2026 09:18:46 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 667AC411D4;
+	Tue, 28 Apr 2026 09:26:39 +0000 (UTC)
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
+ by lists1.osuosl.org (Postfix) with ESMTP id A26AF23D
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Apr 2026 09:26:37 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 0A9C841194
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Apr 2026 09:18:46 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 939EE838B2
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Apr 2026 09:26:37 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id nnNJOIiK4EfW for <intel-wired-lan@lists.osuosl.org>;
- Tue, 28 Apr 2026 09:18:45 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=141.14.17.11;
- helo=mx3.molgen.mpg.de; envelope-from=pmenzel@molgen.mpg.de;
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id fui_0KMLq4bB for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 28 Apr 2026 09:26:37 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.7;
+ helo=mgamail.intel.com; envelope-from=przemyslaw.kitszel@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 80A8041198
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 80A8041198
-Received: from mx3.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 80A8041198
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Apr 2026 09:18:41 +0000 (UTC)
-Received: from [141.14.220.42] (g42.guest.molgen.mpg.de [141.14.220.42])
- (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested) (Authenticated sender: pmenzel)
- by mx.molgen.mpg.de (Postfix) with ESMTPSA id 899634C4431022;
- Tue, 28 Apr 2026 11:18:00 +0200 (CEST)
-Message-ID: <091fa6fa-0f1d-40b3-9c32-8401306f0e66@molgen.mpg.de>
-Date: Tue, 28 Apr 2026 11:17:59 +0200
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org A7A87838AB
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org A7A87838AB
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.7])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id A7A87838AB
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Apr 2026 09:26:35 +0000 (UTC)
+X-CSE-ConnectionGUID: wY/IDiPSQnOdmdGHZUS0qQ==
+X-CSE-MsgGUID: l7Bggz5WQ7GNv16S4HGKfQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11769"; a="103731749"
+X-IronPort-AV: E=Sophos;i="6.23,203,1770624000"; d="scan'208";a="103731749"
+Received: from orviesa003.jf.intel.com ([10.64.159.143])
+ by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 28 Apr 2026 02:26:35 -0700
+X-CSE-ConnectionGUID: Wzke/4szQrev/j5M+PO4pg==
+X-CSE-MsgGUID: mK2Ni828QX2LTMAvEA+HGg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,203,1770624000"; d="scan'208";a="237861386"
+Received: from irvmail002.ir.intel.com ([10.43.11.120])
+ by orviesa003.jf.intel.com with ESMTP; 28 Apr 2026 02:26:32 -0700
+Received: from vecna.igk.intel.com (vecna.igk.intel.com [10.123.220.17])
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id B5BEE2816F;
+ Tue, 28 Apr 2026 10:26:29 +0100 (IST)
+From: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+To: netdev@vger.kernel.org, Jakub Kicinski <kuba@kernel.org>,
+ Jiri Pirko <jiri@resnulli.us>
+Cc: intel-wired-lan@lists.osuosl.org, Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Jacob Keller <jacob.e.keller@intel.com>,
+ Lukasz Czapnik <lukasz.czapnik@intel.com>,
+ Jedrzej Jagielski <jedrzej.jagielski@intel.com>,
+ Andrew Lunn <andrew+netdev@lunn.ch>,
+ "David S. Miller" <davem@davemloft.net>,
+ Eric Dumazet <edumazet@google.com>, Paolo Abeni <pabeni@redhat.com>,
+ Saeed Mahameed <saeedm@nvidia.com>, Leon Romanovsky <leon@kernel.org>,
+ Tariq Toukan <tariqt@nvidia.com>, Mark Bloch <mbloch@nvidia.com>,
+ Simon Horman <horms@kernel.org>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Date: Tue, 28 Apr 2026 11:09:10 +0200
+Message-Id: <20260428090912.3461-1-przemyslaw.kitszel@intel.com>
+X-Mailer: git-send-email 2.39.3
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-To: Aaron Ma <aaron.ma@canonical.com>
-Cc: Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller"
- <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- Akeem G Abodunrin <akeem.g.abodunrin@intel.com>,
- Jesse Brandeburg <jesse.brandeburg@intel.com>,
- intel-wired-lan@lists.osuosl.org, Kohei Enju <kohei@enjuk.jp>
-References: <20260424030345.1140665-1-aaron.ma@canonical.com>
- <0d1ef57c-7ab6-4ed1-bc11-323aeeb12eac@molgen.mpg.de>
- <CAJ6xRxUEcbadApMg0i7ngcqYMUacrGNvCrUZ96sqkW22TsC7iA@mail.gmail.com>
-Content-Language: en-US
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-In-Reply-To: <CAJ6xRxUEcbadApMg0i7ngcqYMUacrGNvCrUZ96sqkW22TsC7iA@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dmarc=none (p=none dis=none)
- header.from=molgen.mpg.de
-Subject: Re: [Intel-wired-lan] [PATCH v2] ice: wait for reset completion in
- ice_resume()
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1777368397; x=1808904397;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=NPBLQJqucg7/CxKX3h1LojM1m977hcBM54QKuG8/OJ0=;
+ b=cxoyRqxmreq9QbxtI4wZftjPuxQVhGcDsf9wlZUQWsawb2EKiAUb2aSS
+ 9YDOiNa/Vu77KRxeoO64qkUsWnahHV0JMLpC5xaworR0MG+2N46CJLt4Y
+ 3iuRWKMEM49ZSO+djxwD4nHZP7II7yEIfw6ul58QAumkmHK7IyB5MVEjz
+ 6tKX22tpSN6bEIo/42m9c/jCUgHGpseDrEw2arSZgbC7gRXIDKWyK1O6v
+ IAML0+sfibUu+CK7WVKw1dlq+KKQUL8M1AbnNawp5pVS5gL9K3xI1F8Lc
+ xTE7DQzbjNlMO/L5dVb2Uq0v/sDUKx26YVsefv85+NKTkBUIUFic7gntE
+ A==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=intel.com
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=cxoyRqxm
+Subject: [Intel-wired-lan] [PATCH net-next 0/2] devlink, ice,
+ mlx5: add init/fini ops for shared devlink for ice to use
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -97,94 +120,28 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Dear Aaron,
+Extend devlink by two callbacks used by shared devlink.
+Callbacks provide option for the driver to have constructor/destructor
+for the priv data attached to the shared devlink instance.
 
+Use the callbacks from ice.
+mlx5 is just touched to have additional param passed.
 
-Thank you for your reply.
+Non-null additional param for the constructor will be used by separate series.
 
-Am 28.04.26 um 09:53 schrieb Aaron Ma:
-> On Mon, Apr 27, 2026 at 6:13 PM Paul Menzel wrote:
+Przemek Kitszel (2):
+  devlink, mlx5: add init/fini ops for shared devlink
+  ice: use shared devlink to store ice_adapters instead of custom xarray
 
->> Am 24.04.26 um 05:03 schrieb Aaron Ma via Intel-wired-lan:
->>> ice_resume() schedules an asynchronous PF reset and returns
->>> immediately. The reset runs later in ice_service_task(). If
->>> userspace tries to bring up the net device before the reset
->>> finishes, ice_open() fails with -EBUSY:
->>>
->>>     ice_resume()
->>>       ice_schedule_reset()          # sets ICE_PFR_REQ, returns
->>>     ...
->>>     ice_open()
->>>       ice_is_reset_in_progress()    # ICE_PFR_REQ still set, -EBUSY
->>>     ...
->>>     ice_service_task()
->>>       ice_do_reset()
->>>         ice_rebuild()               # clears ICE_PFR_REQ, too late
->>>
->>> Reproduced on E800 series NICs during suspend/resume with irdma
->>> enabled, where the aux device probe widens the race window.
->>
->> Please document, how you reproduced it, and also paste possible messages
->> by Linux or NetworkManager, so that people can easily search for the commit.
-> 
-> The error message is "can't open net device while reset is in progress"
-> I can add it in v3 if you like.
+ drivers/net/ethernet/intel/ice/ice_adapter.h  | 13 +--
+ include/net/devlink.h                         | 26 +++++
+ .../net/ethernet/intel/ice/devlink/devlink.c  |  3 +
+ drivers/net/ethernet/intel/ice/ice_adapter.c  | 95 ++++++-------------
+ drivers/net/ethernet/intel/ice/ice_main.c     |  4 +-
+ .../ethernet/mellanox/mlx5/core/sh_devlink.c  |  2 +-
+ net/devlink/sh_dev.c                          | 39 +++++++-
+ 7 files changed, 106 insertions(+), 76 deletions(-)
 
-Yes, that’d be great.
+-- 
+2.39.3
 
->   > > Wait for the reset to complete before returning from ice_resume().
->>
->> Please mention the delay length in the commit message.
-> 
-> The timeout is 10 * HZ (10 seconds), matching the existing usage in
-> ice_devlink_info_get() for the same ice_wait_for_reset() call. In
-> practice the wait completes in ~300ms.
-
-I often wonder, where the delay values come from. Maybe mention, that 
-you copied it.
-
->>> Fixes: 769c500dcc1e ("ice: Add advanced power mgmt for WoL")
->>> Cc: stable@vger.kernel.org
->>> Signed-off-by: Aaron Ma <aaron.ma@canonical.com>
->>> ---
->>> v2: reword comment to clarify best-effort semantics (Kohei Enju)
->>>
->>>    drivers/net/ethernet/intel/ice/ice_main.c | 9 +++++++++
->>>    1 file changed, 9 insertions(+)
->>>
->>> diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
->>> index 5f92377d4dfc2..a81eb21ea87c1 100644
->>> --- a/drivers/net/ethernet/intel/ice/ice_main.c
->>> +++ b/drivers/net/ethernet/intel/ice/ice_main.c
->>> @@ -5635,6 +5635,15 @@ static int ice_resume(struct device *dev)
->>>        /* Restart the service task */
->>>        mod_timer(&pf->serv_tmr, round_jiffies(jiffies + pf->serv_tmr_period));
->>>
->>> +     /* Best-effort wait for the scheduled reset to finish so that the
->>> +      * device is operational before returning. Without this, userspace
->>> +      * (e.g. NetworkManager) may try to open the net device while the
->>> +      * asynchronous reset is still in progress, hitting -EBUSY.
->>> +      */
->>> +     ret = ice_wait_for_reset(pf, 10 * HZ);
->>
->> Why not pass a delay in micro/milliseconds?
-> 
-> ice_wait_for_reset() takes jiffies — that's the existing API.
-
-It’s recommended to use `msecs_to_jiffies()` to make it HZ invariant.
-
->>> +     if (ret)
->>> +             dev_err(dev, "Wait for reset failed during resume: %d\n", ret);
->>
->> Mention the delay?
-> 
-> Good point. I'll include the timeout in the error message in v3.
-
-Awesome.
-
-[…]
-
-
-Thanks,
-
-Paul
