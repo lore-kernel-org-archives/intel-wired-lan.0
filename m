@@ -1,95 +1,99 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DD8B6FF886D
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F2F8CFF8870
 	for <intel-wired-lan@archiver.kernel.org>; Tue, 28 Apr 2026 07:48:46 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id A747841121;
+	by smtp3.osuosl.org (Postfix) with ESMTP id B34F660ED3;
 	Tue, 28 Apr 2026 07:48:46 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id GHL8ar7UWixp; Tue, 28 Apr 2026 07:48:45 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id vWpKP2SS0Adz; Tue, 28 Apr 2026 07:48:45 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 440564111E
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org D916560EDC
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
 	s=default; t=1777362525;
-	bh=72kvUDy67XvkuOCjTdd6EaMNEGi97jXi33FAtt2eb9o=;
-	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=SZGbPj3mSIlsGuVPOcc9sCplaW5bkf9Tt9mx2sJvQyAcxKT+/zb3FhFyy4sZBSrQh
-	 KG7zYP3baSSuKNSWZxs1Lo2kGooV21soAZSmhmwUE1KlbU36DxZ656jgZw6Im06Uyj
-	 /qtmtoz4MFIxXBb60Ppus8HZu5OQnpVwk2AhcHP0zcWsqqHnYbyXFDBuE+xxtYnZH9
-	 p3mUnCuQkgaHllBA5qsBVRnIMguDLLqRLPRGA8KkrVlQm+KLYYjUADSZYZ4S614vAC
-	 RnTItSMoEQkyqzBS/Vv4ND3BcqGtbjCl5lztsvjtHofALTlDV8SWoBSdxyQMdOUS4V
-	 WKFPzF1PUAXNQ==
+	bh=5KLkgtc/ClwA1IW4x25/+pMIcPRvAbZOkKaAblLfepE=;
+	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=O0id5QIAOo0z/3eHdsE7CQyr/i4prbjwq3Jl7rCn5s4RkoOTv8qAU2AqIX162J7Ls
+	 efkXZJKRVXHNbe9WlAtFduINDGBRVeSHiMMjHKjhqacnyEB5PBy9p9DtUHE9VjH8R9
+	 gKu6HaxWjVHrC7ZJdcSTDaymaxXQHR/aG1INV1C3sj7hhc8sFqLBOMZPq7ntGCtvkv
+	 LD6RDINsLeisoVllI+rDmfDIBZrAIcoj8DlTnSQ+2uEkWtR43Ojb0an8SE1gvyR3RX
+	 XPHKNyuErhApP/TAFeTpDJ2EUu4LI90TsYE72O9SN7WGGnXVVatl++lIhwvfGvmywR
+	 TuMQbK0kp/IjA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 440564111E;
+	by smtp3.osuosl.org (Postfix) with ESMTP id D916560EDC;
 	Tue, 28 Apr 2026 07:48:45 +0000 (UTC)
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id 890E5231
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Apr 2026 07:48:43 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id 509371B8
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Apr 2026 07:48:44 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 6F14683595
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Apr 2026 07:48:43 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTP id 368ED81DF6
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Apr 2026 07:48:44 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id uH3cvvdZ_lTQ for <intel-wired-lan@lists.osuosl.org>;
- Tue, 28 Apr 2026 07:48:42 +0000 (UTC)
+ id 0Y8ajV3lGc_6 for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 28 Apr 2026 07:48:43 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.12;
  helo=mgamail.intel.com; envelope-from=michal.swiatkowski@linux.intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 4C31181DF6
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4C31181DF6
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 2F73080984
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2F73080984
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.12])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 4C31181DF6
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Apr 2026 07:48:42 +0000 (UTC)
-X-CSE-ConnectionGUID: o4T6po1jT1eqRfLqYvEj6g==
-X-CSE-MsgGUID: WGJCjy5URF25aBW4mn7k/w==
-X-IronPort-AV: E=McAfee;i="6800,10657,11769"; a="82114974"
-X-IronPort-AV: E=Sophos;i="6.23,203,1770624000"; d="scan'208";a="82114974"
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 2F73080984
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Apr 2026 07:48:43 +0000 (UTC)
+X-CSE-ConnectionGUID: SynQMH3cS0mFhnfCxUjMBA==
+X-CSE-MsgGUID: 5Hq8utxFRAWOiSTtggpRpw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11769"; a="82114988"
+X-IronPort-AV: E=Sophos;i="6.23,203,1770624000"; d="scan'208";a="82114988"
 Received: from fmviesa003.fm.intel.com ([10.60.135.143])
  by fmvoesa106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 28 Apr 2026 00:48:41 -0700
-X-CSE-ConnectionGUID: 6zDqpDuoQdS5dOu/lJqulA==
-X-CSE-MsgGUID: 81SKb8KxQ/S+MTVdb8qPmQ==
+ 28 Apr 2026 00:48:43 -0700
+X-CSE-ConnectionGUID: Wk4hzHRfT0iqPGSytiMW/A==
+X-CSE-MsgGUID: srlJlaO7Tty0WggEyj2/eA==
 X-ExtLoop1: 1
 Received: from os-delivery.igk.intel.com ([10.102.21.165])
- by fmviesa003.fm.intel.com with ESMTP; 28 Apr 2026 00:48:37 -0700
+ by fmviesa003.fm.intel.com with ESMTP; 28 Apr 2026 00:48:41 -0700
 From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 To: intel-wired-lan@lists.osuosl.org
 Cc: netdev@vger.kernel.org, jramaseu@redhat.com, anthony.l.nguyen@intel.com,
  przemyslaw.kitszel@intel.com, aleksandr.loktionov@intel.com,
  Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
-Date: Tue, 28 Apr 2026 09:06:45 +0200
-Message-ID: <20260428070647.777141-1-michal.swiatkowski@linux.intel.com>
+Date: Tue, 28 Apr 2026 09:06:47 +0200
+Message-ID: <20260428070647.777141-3-michal.swiatkowski@linux.intel.com>
 X-Mailer: git-send-email 2.49.0
+In-Reply-To: <20260428070647.777141-1-michal.swiatkowski@linux.intel.com>
+References: <20260428070647.777141-1-michal.swiatkowski@linux.intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1777362522; x=1808898522;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=1J1mF9VLA4ad+WVCKHtPLi8k9wXENH/phrj6cZ2eDTM=;
- b=Cvq62SrIWnlYY39cdJyaNEVpNBj7wLq6QnjDENCNkcpjgK4hjJzPKHiC
- PPx9gBG83we9Py2dDyAyCT9S1zz+SXbFkn+naWuxcsHco7/vdXaVVHsDt
- RI2SdHERh5w1RBOqrcpIpcRlj92Vgpp/9NiAClBw0aupTruMbuBScQL+m
- YtWZ3nN1p2P9FgWd+oRb9cVa7s7MjMaebndGHyWfe8NwNpU5FvxXlqDyl
- 3AX8wzgOuv6rwFD5lP0yiNmrssK2xp2hwwLrIIrFZRQVtyCXR10xRJZht
- 64W2aB5drJOPYNVtjwImArVsUsTMSS0wCKsTd20oN29tZ8JHhq8bo4apb
- A==;
+ t=1777362523; x=1808898523;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=v7FR8f9Bf7hDGtGHvqy69oIKLKN59GzoNuO6jFdL1vk=;
+ b=JcDMAm2tcklVcaEKqyF7daMU+Z/dxDCxIFp/x185+7iq49xsBlbMEol7
+ lljNWCopkpNqprA30TI4recK2r+kiDdRVO9HlWQX666esmLedl7YxF1+f
+ qYggrULNQeEr49nBhS/utjcNpXspFTsQw6UJn62qHKIu2MpYspi68YUJK
+ OPgZ/nSbaV4NzFn4HNy7Txl2jhSIS9eT9dkLmjKzp53SsLAiK51Tb9OrZ
+ YyzM7dBgRKhsSED3BqDo/nvywHJqIQEqntC+hQqro7+4zZUIV+lBkm0q6
+ xC+SGC2SniUQTkuDH2viiFck5Lw7qUwYRKqj4LuYs03q6vvOoHlqbYG/7
+ g==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dmarc=none (p=none dis=none)
  header.from=linux.intel.com
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=Cvq62SrI
-Subject: [Intel-wired-lan] [PATCH iwl-net v1 0/2] Rework ice Tx checksum
+ header.a=rsa-sha256 header.s=Intel header.b=JcDMAm2t
+Subject: [Intel-wired-lan] [PATCH iwl-net v1 2/2] ice: use NETIF_F_HW_CSUM
+ instead of IP/IPV6
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -105,45 +109,77 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Hi,
+The hardware is capable of calculating checksum for IPV6 packets with
+extension header. To not drop such packets switch from IP/IPV6 checksum
+to HW_CSUM.
 
-Jakub find the problem with how ice handles Tx checksum offload [1].
+HW_CSUM is also used in previous generation (i40e).
 
-The issue is that IP_CSUM/IPV6_CSUM should support only basic packet
-types. Kernel assumes that if there are extensions headers and there is
-no HW_CSUM software fallback should be applied. Here is a patch that
-introduced that [2].
+Previously HW_CSUM was used to indicate that hardware supports general
+checksum. Drop it assuming that if the hardware supports it, it is used.
 
-However, software fallback can't be applied when TSO offload happens.
-That is the situation that this patchset is fixing.
+Disabling offload for E830 in case of TSO isn't needed anymore as the
+check for TSO is done in Tx path just before preparation of the special
+GCS descriptor.
 
-When TSO is enabled and IP_CSUM/IPV6_CSUM is on, kernel is assuming
-hardware will be able to calculate the checksum, but later on the
-extension headers are checked and if there is no HW_CSUM the
-skb_bad_offload() is called.
+The commit from Fixes didn't introduce a bug, it just shown that the
+driver is doing sth wrong with the checksum features.
 
-Following the documentation ice driver is capable of HW_CSUM support, so
-switch from IP_CSUM/IPV6_CSUM to HW_CSUM. Other Intel drivers (even
-previous like i40e, ixgbe) also supports HW_CSUM.
-
-The HW_CSUM was used to indicate that GCS (Intel name for checksumming
-offload using additional descriptor) is support, which is variation of
-HW_CSUM. Even without GCS th HW_CSUM is supported. First patch is
-switching to use custom Tx ring flags to allow HW_CSUM usage.
-
-[1] https://lore.kernel.org/netdev/20260310150557.1138437-1-jramaseu@redhat.com/
-[2] https://lore.kernel.org/all/5fbeecfc311ea182aa1d1c771725ab8b4cac515e.1729778144.git.benoit.monin@gmx.fr/
-
-Michal Swiatkowski (2):
-  ice: always do GCS if hardware supports it
-  ice: use NETIF_F_HW_CSUM instead of IP/IPV6
-
- drivers/net/ethernet/intel/ice/ice_lib.c  |  4 ++++
+Suggested-by: Jakub Ramaseuski <jramaseu@redhat.com>
+Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Fixes: 04c20a9356f2 ("net: skip offload for NETIF_F_IPV6_CSUM if ipv6 header contains extension")
+Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+---
  drivers/net/ethernet/intel/ice/ice_main.c | 21 +--------------------
- drivers/net/ethernet/intel/ice/ice_txrx.c |  2 +-
- drivers/net/ethernet/intel/ice/ice_txrx.h |  1 +
- 4 files changed, 7 insertions(+), 21 deletions(-)
+ 1 file changed, 1 insertion(+), 20 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 15550216fbf0..0f2f949af536 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -3500,9 +3500,8 @@ void ice_set_netdev_features(struct net_device *netdev)
+ 			NETIF_F_RXHASH;
+ 
+ 	csumo_features = NETIF_F_RXCSUM	  |
+-			 NETIF_F_IP_CSUM  |
+ 			 NETIF_F_SCTP_CRC |
+-			 NETIF_F_IPV6_CSUM;
++			 NETIF_F_HW_CSUM;
+ 
+ 	vlano_features = NETIF_F_HW_VLAN_CTAG_FILTER |
+ 			 NETIF_F_HW_VLAN_CTAG_TX     |
+@@ -3564,12 +3563,6 @@ void ice_set_netdev_features(struct net_device *netdev)
+ 	/* Allow core to manage IRQs affinity */
+ 	netif_set_affinity_auto(netdev);
+ 
+-	/* Mutual exclusivity for TSO and GCS is enforced by the set features
+-	 * ndo callback.
+-	 */
+-	if (ice_is_feature_supported(pf, ICE_F_GCS))
+-		netdev->hw_features |= NETIF_F_HW_CSUM;
+-
+ 	netif_set_tso_max_size(netdev, ICE_MAX_TSO_SIZE);
+ }
+ 
+@@ -6489,18 +6482,6 @@ ice_set_features(struct net_device *netdev, netdev_features_t features)
+ 	if (changed & NETIF_F_LOOPBACK)
+ 		ret = ice_set_loopback(vsi, !!(features & NETIF_F_LOOPBACK));
+ 
+-	/* Due to E830 hardware limitations, TSO (NETIF_F_ALL_TSO) with GCS
+-	 * (NETIF_F_HW_CSUM) is not supported.
+-	 */
+-	if (ice_is_feature_supported(pf, ICE_F_GCS) &&
+-	    ((features & NETIF_F_HW_CSUM) && (features & NETIF_F_ALL_TSO))) {
+-		if (netdev->features & NETIF_F_HW_CSUM)
+-			dev_err(ice_pf_to_dev(pf), "To enable TSO, you must first disable HW checksum.\n");
+-		else
+-			dev_err(ice_pf_to_dev(pf), "To enable HW checksum, you must first disable TSO.\n");
+-		return -EIO;
+-	}
+-
+ 	return ret;
+ }
+ 
 -- 
 2.49.0
 
