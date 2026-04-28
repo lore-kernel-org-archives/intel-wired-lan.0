@@ -4,67 +4,67 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2F87DFF885D
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 28 Apr 2026 08:27:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E9988FF8875
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 28 Apr 2026 08:27:32 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 051EA4119A;
-	Tue, 28 Apr 2026 08:27:33 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id C19F3411BF;
+	Tue, 28 Apr 2026 08:27:32 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id DNKwO5rkg3k0; Tue, 28 Apr 2026 08:27:32 +0000 (UTC)
+ id VYV74W7d96I3; Tue, 28 Apr 2026 08:27:29 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E11C0411B8
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org CAE40411A5
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1777364851;
-	bh=ayJUeXiS1YsKqClGaoaO64vEjuxSHTuCKA3ebpRwOhU=;
+	s=default; t=1777364849;
+	bh=xog7ERfYY2MMt9FXP5XwDdOCY9NOClW/6mge82a5l14=;
 	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=cZJQ8SWrjjbBlLPh3ehcZW0w3SzLfMbYR+o/FZXVhZ+ubbH5VSoU70sEqFlOJh+/W
-	 gR5PTsdFydV6e3OAx3WK6c1YPtiW7mVhqCSTE5k9MD79KEGo5PvzIkTmpRQgif3o7D
-	 nPMnn0edorWBtNXpUbQ3XE4kYj5CEB7t6dYnfVDcgGhGj0/r4YiX9jv4dZfH3fn2Si
-	 PwRWyL1UerT5B8UCr6iV7k8zGbs3I4FSxV0giWJm2RzIUiFI877irBp8qV+9JdAg0v
-	 Tg699a+mJu/RHgWRAngCs1zL3DN2sNb1tfs0JPrz6Z/e8psoXhHYD/OjxbbG63ES00
-	 YzOEvGUGThW1w==
+	b=HcTeO6OIyXY1DMaVcw/3f9udswyUIW/AIotc+c/zPpePbcT+5mRxOkrz+NuCcBLcs
+	 XDewh+xjy8JQ+IyD92uxsCIClFCqZKAWd4yrO0wv1amS+pEmxdcO3Xah6BpWi4aXKf
+	 y1u6Kopv7TnxGGKyBU5YpD6VDbu9gPDUqa4/uCCDuPsAnYob/8T796nbfGoCtZlzFb
+	 YRaW+F9qzznIDtVCg3czJbIk6eQMjXvk/fO3P/rEA/4pEz4oZ57NlALQydHD/oZnC+
+	 b27aVH5IEYvyegL6nPrZfDScYaVj7APat/tEoHZVSPMNUNSDKjfPgH5CQ/q7Kae7pD
+	 8nh1oA/zjNL1A==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id E11C0411B8;
-	Tue, 28 Apr 2026 08:27:31 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
- by lists1.osuosl.org (Postfix) with ESMTP id 18F091B8
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Apr 2026 08:27:29 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 1175640655
+	by smtp4.osuosl.org (Postfix) with ESMTP id CAE40411A5;
+	Tue, 28 Apr 2026 08:27:29 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by lists1.osuosl.org (Postfix) with ESMTP id 04E6B23D
  for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Apr 2026 08:27:28 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp3.osuosl.org (Postfix) with ESMTP id EAA3A60F01
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Apr 2026 08:27:27 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id LYbGAjBCFs1b for <intel-wired-lan@lists.osuosl.org>;
- Tue, 28 Apr 2026 08:27:26 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id vtWgBY-Oqfrf for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 28 Apr 2026 08:27:27 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.15;
  helo=mgamail.intel.com; envelope-from=larysa.zaremba@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 3885F40654
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 3885F40654
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org DF29F60DD7
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org DF29F60DD7
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.15])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 3885F40654
+ by smtp3.osuosl.org (Postfix) with ESMTPS id DF29F60DD7
  for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Apr 2026 08:27:26 +0000 (UTC)
-X-CSE-ConnectionGUID: OiaY9oaxQyaBWTofkp8cgw==
-X-CSE-MsgGUID: vsjcrdGcRB6jhYlXMCGnUg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11769"; a="78376952"
-X-IronPort-AV: E=Sophos;i="6.23,203,1770624000"; d="scan'208";a="78376952"
+X-CSE-ConnectionGUID: AEE+3R4ITmi0mnbVNmLYWA==
+X-CSE-MsgGUID: 1TtHY99PTdm88SR+OHj5Ng==
+X-IronPort-AV: E=McAfee;i="6800,10657,11769"; a="78376976"
+X-IronPort-AV: E=Sophos;i="6.23,203,1770624000"; d="scan'208";a="78376976"
 Received: from orviesa006.jf.intel.com ([10.64.159.146])
  by fmvoesa109.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 28 Apr 2026 01:27:19 -0700
-X-CSE-ConnectionGUID: TEQEgYFbSx2TAHngdxYPmA==
-X-CSE-MsgGUID: uO74OwSJSDmXWpDP6uKUXA==
+ 28 Apr 2026 01:27:23 -0700
+X-CSE-ConnectionGUID: rTpXDvGmRkSAyhF/KRqeHg==
+X-CSE-MsgGUID: 5plcLv73S5K2SiWwDuf2wg==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,203,1770624000"; d="scan'208";a="232881574"
+X-IronPort-AV: E=Sophos;i="6.23,203,1770624000"; d="scan'208";a="232881583"
 Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by orviesa006.jf.intel.com with ESMTP; 28 Apr 2026 01:27:14 -0700
+ by orviesa006.jf.intel.com with ESMTP; 28 Apr 2026 01:27:18 -0700
 Received: from mglak.igk.intel.com (mglak.igk.intel.com [10.237.112.146])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id 2BF7727BA3;
- Tue, 28 Apr 2026 09:27:12 +0100 (IST)
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id 92B2927BA4;
+ Tue, 28 Apr 2026 09:27:15 +0100 (IST)
 From: Larysa Zaremba <larysa.zaremba@intel.com>
 To: intel-wired-lan@lists.osuosl.org, Tony Nguyen <anthony.l.nguyen@intel.com>
 Cc: aleksander.lobakin@intel.com, sridhar.samudrala@intel.com,
@@ -83,9 +83,9 @@ Cc: aleksander.lobakin@intel.com, sridhar.samudrala@intel.com,
  Przemek Kitszel <przemyslaw.kitszel@intel.com>,
  Andrew Lunn <andrew+netdev@lunn.ch>, netdev@vger.kernel.org,
  linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
- Samuel Salin <Samuel.salin@intel.com>
-Date: Tue, 28 Apr 2026 10:26:43 +0200
-Message-ID: <20260428082654.44364-10-larysa.zaremba@intel.com>
+ Bharath R <Bharath.r@intel.com>
+Date: Tue, 28 Apr 2026 10:26:45 +0200
+Message-ID: <20260428082654.44364-12-larysa.zaremba@intel.com>
 X-Mailer: git-send-email 2.47.0
 In-Reply-To: <20260428082654.44364-1-larysa.zaremba@intel.com>
 References: <20260428082654.44364-1-larysa.zaremba@intel.com>
@@ -93,25 +93,26 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1777364846; x=1808900846;
+ t=1777364847; x=1808900847;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=gs+XU4lEDRKpGO6/iLX0M4XyhCj8kQfrgtJ6/CvYqXI=;
- b=U8Aa8Kae4HwMLqn8U3nP4fNSa79HeMkMSUPlpHrvMfxFGnXsUTlRigS/
- OpasBk01ZK8rtqY+wSmcNBbhnB0lyQHJKpYfWoZwCZdzaSzyaRZAuY1cu
- 5M57hLn35b+RjuZurpaWsLU9AmLgBGlh5QbilslwmeW1OsTn1OA1dkrXs
- kJay9VdHsEHsGdh1nnk/rpD0/oL4Jkoz6setKAYFcFu9jXIdVPJ1xWeec
- K6Xz3w8LQ6S+DxECPzRIOm3/071XuaCOKZ6VoNw4u2u56U6/6JIN+9Z57
- 4zGJ21ShUkg6HvimIteyb+snIt7xX0higE0KErraJjevxEM5CXySqzH5E
- Q==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ bh=4jKecIqM4LmL7jbhRajYoS+OrTo2r0ZYQJa/fTeck7w=;
+ b=LJ9MmTnCRUFAVdN5evAO/9J/zpI3+xZ/eMxJtze4PSpnIKrTPs9ncetH
+ 7ghWwL5nOc70ByB1xaDXerSAOFgQFs8GMDxqMGmqLwXLUKK9etlOK2g5C
+ sPwuPUS5gEsYWFozNsZpOAuSYQqEm+OQu/ZH5GJw3CyAQZZbKT31XkF33
+ Sh/dj1pCf7up0lmvrMAbYKrKDB9ViEfwAA0Rsff12CUOWg1xe8ZgV2kuU
+ 5YkJFHzOiUNlR2Y08E5/zXN8Pfa1xERpPxxqVqfGEpweMWfSnvnT/8pPj
+ +hcHbwu64OHZH0e8SYwrbTmqGQJkooU6TKStNKnAYX56YOfE2Lp8eWJyi
+ w==;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=U8Aa8Kae
-Subject: [Intel-wired-lan] [PATCH iwl-next v7 09/14] idpf: make mbx_task
- queueing and cancelling more consistent
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=LJ9MmTnC
+Subject: [Intel-wired-lan] [PATCH iwl-next v7 11/14] ixd: add basic driver
+ framework for Intel(R) Control Plane Function
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -127,106 +128,335 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-As a consequence of refactoring idpf code to use libeth APIs,
-idpf_vc_xn_shutdown was merged with and replaced by idpf_deinit_dflt_mbx.
-This does not affect the Tx path, as it checked for a presence of an xn
-manager anyway. Rx processing is handled by the mbx_task that is not always
-cancelled before calling the new consolidated mailbox deinit function.
-Moreover, in the reset path idpf_intr_rel() reschedules it after the deinit
-is done. This leads to mbx_task referencing the freed mailbox and causing
-KASAN warnings.
+Add module register and probe functionality. Add the required support to
+register IXD PCI driver, as well as probe and remove call backs. Enable the
+PCI device and request the kernel to reserve the memory resources that will
+be used by the driver. Finally map the BAR0 address space.
 
-To remedy this, in the init path, do the first queueing of mbx_task in
-idpf_init_dflt_mbx(), in deinit and reset, always cancel the task in
-idpf_deinit_dflt_mbx() and in every flow first call idpf_mb_intr_rel_irq().
+For now, use devm_alloc() to allocate adapter, as it requires the least
+amount of code. In a later commit, it will be replaced with a devlink
+alternative.
 
-Reviewed-by: Emil Tantilov <emil.s.tantilov@intel.com>
-Reviewed-by: Michal Kubiak <michal.kubiak@intel.com>
+Co-developed-by: Amritha Nambiar <amritha.nambiar@intel.com>
+Signed-off-by: Amritha Nambiar <amritha.nambiar@intel.com>
+Reviewed-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 Signed-off-by: Larysa Zaremba <larysa.zaremba@intel.com>
-Tested-by: Samuel Salin <Samuel.salin@intel.com>
+Tested-by: Bharath R <Bharath.r@intel.com>
 Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- drivers/net/ethernet/intel/idpf/idpf.h          | 1 +
- drivers/net/ethernet/intel/idpf/idpf_lib.c      | 9 ++++-----
- drivers/net/ethernet/intel/idpf/idpf_virtchnl.c | 6 +++++-
- 3 files changed, 10 insertions(+), 6 deletions(-)
+ .../device_drivers/ethernet/index.rst         |   1 +
+ .../device_drivers/ethernet/intel/ixd.rst     |  39 ++++++
+ drivers/net/ethernet/intel/Kconfig            |   2 +
+ drivers/net/ethernet/intel/Makefile           |   1 +
+ drivers/net/ethernet/intel/ixd/Kconfig        |  13 ++
+ drivers/net/ethernet/intel/ixd/Makefile       |   8 ++
+ drivers/net/ethernet/intel/ixd/ixd.h          |  28 +++++
+ drivers/net/ethernet/intel/ixd/ixd_lan_regs.h |  28 +++++
+ drivers/net/ethernet/intel/ixd/ixd_main.c     | 112 ++++++++++++++++++
+ 9 files changed, 232 insertions(+)
+ create mode 100644 Documentation/networking/device_drivers/ethernet/intel/ixd.rst
+ create mode 100644 drivers/net/ethernet/intel/ixd/Kconfig
+ create mode 100644 drivers/net/ethernet/intel/ixd/Makefile
+ create mode 100644 drivers/net/ethernet/intel/ixd/ixd.h
+ create mode 100644 drivers/net/ethernet/intel/ixd/ixd_lan_regs.h
+ create mode 100644 drivers/net/ethernet/intel/ixd/ixd_main.c
 
-diff --git a/drivers/net/ethernet/intel/idpf/idpf.h b/drivers/net/ethernet/intel/idpf/idpf.h
-index 679539a1b947..1d0e32e47e87 100644
---- a/drivers/net/ethernet/intel/idpf/idpf.h
-+++ b/drivers/net/ethernet/intel/idpf/idpf.h
-@@ -984,6 +984,7 @@ void idpf_vc_event_task(struct work_struct *work);
- void idpf_dev_ops_init(struct idpf_adapter *adapter);
- void idpf_vf_dev_ops_init(struct idpf_adapter *adapter);
- int idpf_intr_req(struct idpf_adapter *adapter);
-+void idpf_mb_intr_rel_irq(struct idpf_adapter *adapter);
- void idpf_intr_rel(struct idpf_adapter *adapter);
- u16 idpf_get_max_tx_hdr_size(struct idpf_adapter *adapter);
- int idpf_initiate_soft_reset(struct idpf_vport *vport,
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_lib.c b/drivers/net/ethernet/intel/idpf/idpf_lib.c
-index 0d131bf0993e..7988836fbae0 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_lib.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_lib.c
-@@ -68,9 +68,11 @@ static void idpf_deinit_vector_stack(struct idpf_adapter *adapter)
-  * This will also disable interrupt mode and queue up mailbox task. Mailbox
-  * task will reschedule itself if not in interrupt mode.
-  */
--static void idpf_mb_intr_rel_irq(struct idpf_adapter *adapter)
-+void idpf_mb_intr_rel_irq(struct idpf_adapter *adapter)
- {
--	clear_bit(IDPF_MB_INTR_MODE, adapter->flags);
-+	if (!test_and_clear_bit(IDPF_MB_INTR_MODE, adapter->flags))
-+		return;
+diff --git a/Documentation/networking/device_drivers/ethernet/index.rst b/Documentation/networking/device_drivers/ethernet/index.rst
+index 5f3f06111911..5b6846f387f8 100644
+--- a/Documentation/networking/device_drivers/ethernet/index.rst
++++ b/Documentation/networking/device_drivers/ethernet/index.rst
+@@ -38,6 +38,7 @@ Contents:
+    intel/igbvf
+    intel/ixgbe
+    intel/ixgbevf
++   intel/ixd
+    intel/i40e
+    intel/iavf
+    intel/ice
+diff --git a/Documentation/networking/device_drivers/ethernet/intel/ixd.rst b/Documentation/networking/device_drivers/ethernet/intel/ixd.rst
+new file mode 100644
+index 000000000000..1387626e5d20
+--- /dev/null
++++ b/Documentation/networking/device_drivers/ethernet/intel/ixd.rst
+@@ -0,0 +1,39 @@
++.. SPDX-License-Identifier: GPL-2.0+
 +
- 	kfree(free_irq(adapter->msix_entries[0].vector, adapter));
- 	queue_delayed_work(adapter->mbx_wq, &adapter->mbx_task, 0);
- }
-@@ -1938,14 +1940,11 @@ static void idpf_init_hard_reset(struct idpf_adapter *adapter)
- 		goto unlock_mutex;
- 	}
- 
--	queue_delayed_work(adapter->mbx_wq, &adapter->mbx_task, 0);
--
- 	/* Initialize the state machine, also allocate memory and request
- 	 * resources
- 	 */
- 	err = idpf_vc_core_init(adapter);
- 	if (err) {
--		cancel_delayed_work_sync(&adapter->mbx_task);
- 		idpf_deinit_dflt_mbx(adapter);
- 		goto unlock_mutex;
- 	}
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
-index 13c8505d126f..8936c2a67ce0 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
-@@ -2982,6 +2982,8 @@ int idpf_init_dflt_mbx(struct idpf_adapter *adapter)
- 	adapter->xnm = params.xnm;
- 	adapter->state = __IDPF_VER_CHECK;
- 
-+	queue_delayed_work(adapter->mbx_wq, &adapter->mbx_task, 0);
++==========================================================================
++iXD Linux* Base Driver for the Intel(R) Control Plane Function
++==========================================================================
 +
- 	return 0;
- }
- 
-@@ -2991,6 +2993,9 @@ int idpf_init_dflt_mbx(struct idpf_adapter *adapter)
-  */
- void idpf_deinit_dflt_mbx(struct idpf_adapter *adapter)
- {
-+	idpf_mb_intr_rel_irq(adapter);
-+	cancel_delayed_work_sync(&adapter->mbx_task);
++Intel iXD Linux driver.
++Copyright(C) 2025 Intel Corporation.
 +
- 	if (adapter->arq && adapter->asq) {
- 		idpf_mb_clean(adapter, adapter->asq, true);
- 		libie_ctlq_xn_deinit(adapter->xnm, &adapter->ctlq_ctx);
-@@ -3249,7 +3254,6 @@ void idpf_vc_core_deinit(struct idpf_adapter *adapter)
- 		idpf_deinit_dflt_mbx(adapter);
++.. contents::
++
++For questions related to hardware requirements, refer to the documentation
++supplied with your Intel adapter. All hardware requirements listed apply to use
++with Linux.
++
++
++Identifying Your Adapter
++========================
++For information on how to identify your adapter, and for the latest Intel
++network drivers, refer to the Intel Support website:
++http://www.intel.com/support
++
++
++Support
++=======
++For general information, go to the Intel support website at:
++http://www.intel.com/support/
++
++If an issue is identified with the released source code on a supported kernel
++with a supported adapter, email the specific information related to the issue
++to intel-wired-lan@lists.osuosl.org.
++
++
++Trademarks
++==========
++Intel is a trademark or registered trademark of Intel Corporation or its
++subsidiaries in the United States and/or other countries.
++
++* Other names and brands may be claimed as the property of others.
+diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
+index 288fa8ce53af..780f113986ea 100644
+--- a/drivers/net/ethernet/intel/Kconfig
++++ b/drivers/net/ethernet/intel/Kconfig
+@@ -398,4 +398,6 @@ config IGC_LEDS
  
- 	cancel_delayed_work_sync(&adapter->serv_task);
--	cancel_delayed_work_sync(&adapter->mbx_task);
+ source "drivers/net/ethernet/intel/idpf/Kconfig"
  
- 	idpf_vport_params_buf_rel(adapter);
- 
++source "drivers/net/ethernet/intel/ixd/Kconfig"
++
+ endif # NET_VENDOR_INTEL
+diff --git a/drivers/net/ethernet/intel/Makefile b/drivers/net/ethernet/intel/Makefile
+index 9a37dc76aef0..08b29f3b6801 100644
+--- a/drivers/net/ethernet/intel/Makefile
++++ b/drivers/net/ethernet/intel/Makefile
+@@ -19,3 +19,4 @@ obj-$(CONFIG_IAVF) += iavf/
+ obj-$(CONFIG_FM10K) += fm10k/
+ obj-$(CONFIG_ICE) += ice/
+ obj-$(CONFIG_IDPF) += idpf/
++obj-$(CONFIG_IXD) += ixd/
+diff --git a/drivers/net/ethernet/intel/ixd/Kconfig b/drivers/net/ethernet/intel/ixd/Kconfig
+new file mode 100644
+index 000000000000..f5594efe292c
+--- /dev/null
++++ b/drivers/net/ethernet/intel/ixd/Kconfig
+@@ -0,0 +1,13 @@
++# SPDX-License-Identifier: GPL-2.0-only
++# Copyright (C) 2025 Intel Corporation
++
++config IXD
++	tristate "Intel(R) Control Plane Function Support"
++	depends on PCI_MSI
++	select LIBETH
++	select LIBIE_PCI
++	help
++	  This driver supports Intel(R) Control Plane PCI Function
++	  of Intel E2100 and later IPUs and FNICs.
++	  It facilitates a centralized control over multiple IDPF PFs/VFs/SFs
++	  exposed by the same card.
+diff --git a/drivers/net/ethernet/intel/ixd/Makefile b/drivers/net/ethernet/intel/ixd/Makefile
+new file mode 100644
+index 000000000000..3849bc240600
+--- /dev/null
++++ b/drivers/net/ethernet/intel/ixd/Makefile
+@@ -0,0 +1,8 @@
++# SPDX-License-Identifier: GPL-2.0-only
++# Copyright (C) 2025 Intel Corporation
++
++# Intel(R) Control Plane Function Linux Driver
++
++obj-$(CONFIG_IXD) += ixd.o
++
++ixd-y := ixd_main.o
+diff --git a/drivers/net/ethernet/intel/ixd/ixd.h b/drivers/net/ethernet/intel/ixd/ixd.h
+new file mode 100644
+index 000000000000..d813c27941a5
+--- /dev/null
++++ b/drivers/net/ethernet/intel/ixd/ixd.h
+@@ -0,0 +1,28 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/* Copyright (C) 2025 Intel Corporation */
++
++#ifndef _IXD_H_
++#define _IXD_H_
++
++#include <linux/intel/libie/pci.h>
++
++/**
++ * struct ixd_adapter - Data structure representing a CPF
++ * @hw: Device access data
++ */
++struct ixd_adapter {
++	struct libie_mmio_info hw;
++};
++
++/**
++ * ixd_to_dev - Get the corresponding device struct from an adapter
++ * @adapter: PCI device driver-specific private data
++ *
++ * Return: struct device corresponding to the given adapter
++ */
++static inline struct device *ixd_to_dev(struct ixd_adapter *adapter)
++{
++	return &adapter->hw.pdev->dev;
++}
++
++#endif /* _IXD_H_ */
+diff --git a/drivers/net/ethernet/intel/ixd/ixd_lan_regs.h b/drivers/net/ethernet/intel/ixd/ixd_lan_regs.h
+new file mode 100644
+index 000000000000..fbb88929d0de
+--- /dev/null
++++ b/drivers/net/ethernet/intel/ixd/ixd_lan_regs.h
+@@ -0,0 +1,28 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/* Copyright (C) 2025 Intel Corporation */
++
++#ifndef _IXD_LAN_REGS_H_
++#define _IXD_LAN_REGS_H_
++
++/* Control Plane Function PCI ID */
++#define IXD_DEV_ID_CPF			0x1efe
++
++/* Control Queue (Mailbox) */
++#define PF_FW_MBX_REG_LEN		4096
++#define PF_FW_MBX			0x08400000
++
++/* Reset registers */
++#define PFGEN_RTRIG_REG_LEN		2048
++#define PFGEN_RTRIG			0x08407000	/* Device resets */
++
++/**
++ * struct ixd_bar_region - BAR region description
++ * @offset: BAR region offset
++ * @size: BAR region size
++ */
++struct ixd_bar_region {
++	resource_size_t offset;
++	resource_size_t size;
++};
++
++#endif /* _IXD_LAN_REGS_H_ */
+diff --git a/drivers/net/ethernet/intel/ixd/ixd_main.c b/drivers/net/ethernet/intel/ixd/ixd_main.c
+new file mode 100644
+index 000000000000..75ee53152e61
+--- /dev/null
++++ b/drivers/net/ethernet/intel/ixd/ixd_main.c
+@@ -0,0 +1,112 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/* Copyright (C) 2025 Intel Corporation */
++
++#include "ixd.h"
++#include "ixd_lan_regs.h"
++
++MODULE_DESCRIPTION("Intel(R) Control Plane Function Device Driver");
++MODULE_IMPORT_NS("LIBIE_PCI");
++MODULE_LICENSE("GPL");
++
++/**
++ * ixd_remove - remove a CPF PCI device
++ * @pdev: PCI device being removed
++ */
++static void ixd_remove(struct pci_dev *pdev)
++{
++	struct ixd_adapter *adapter = pci_get_drvdata(pdev);
++
++	libie_pci_unmap_all_mmio_regions(&adapter->hw);
++}
++
++/**
++ * ixd_shutdown - shut down a CPF PCI device
++ * @pdev: PCI device being shut down
++ */
++static void ixd_shutdown(struct pci_dev *pdev)
++{
++	ixd_remove(pdev);
++
++	if (system_state == SYSTEM_POWER_OFF)
++		pci_set_power_state(pdev, PCI_D3hot);
++}
++
++/**
++ * ixd_iomap_regions - iomap PCI BARs
++ * @adapter: adapter to map memory regions for
++ *
++ * Returns: %0 on success, negative on failure
++ */
++static int ixd_iomap_regions(struct ixd_adapter *adapter)
++{
++	const struct ixd_bar_region regions[] = {
++		{
++			.offset = PFGEN_RTRIG,
++			.size = PFGEN_RTRIG_REG_LEN,
++		},
++		{
++			.offset = PF_FW_MBX,
++			.size = PF_FW_MBX_REG_LEN,
++		},
++	};
++
++	for (int i = 0; i < ARRAY_SIZE(regions); i++) {
++		struct libie_mmio_info *mmio_info = &adapter->hw;
++		bool map_ok;
++
++		map_ok = libie_pci_map_mmio_region(mmio_info,
++						   regions[i].offset,
++						   regions[i].size);
++		if (!map_ok) {
++			dev_err(ixd_to_dev(adapter),
++				"Failed to map PCI device MMIO region\n");
++
++			libie_pci_unmap_all_mmio_regions(mmio_info);
++			return -EIO;
++		}
++	}
++
++	return 0;
++}
++
++/**
++ * ixd_probe - probe a CPF PCI device
++ * @pdev: corresponding PCI device
++ * @ent: entry in ixd_pci_tbl
++ *
++ * Returns: %0 on success, negative errno code on failure
++ */
++static int ixd_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
++{
++	struct ixd_adapter *adapter;
++	int err;
++
++	adapter = devm_kzalloc(&pdev->dev, sizeof(*adapter), GFP_KERNEL);
++	if (!adapter)
++		return -ENOMEM;
++	adapter->hw.pdev = pdev;
++	INIT_LIST_HEAD(&adapter->hw.mmio_list);
++
++	err = libie_pci_init_dev(pdev);
++	if (err)
++		return err;
++
++	pci_set_drvdata(pdev, adapter);
++
++	return ixd_iomap_regions(adapter);
++}
++
++static const struct pci_device_id ixd_pci_tbl[] = {
++	{ PCI_VDEVICE(INTEL, IXD_DEV_ID_CPF) },
++	{ }
++};
++MODULE_DEVICE_TABLE(pci, ixd_pci_tbl);
++
++static struct pci_driver ixd_driver = {
++	.name			= KBUILD_MODNAME,
++	.id_table		= ixd_pci_tbl,
++	.probe			= ixd_probe,
++	.remove			= ixd_remove,
++	.shutdown		= ixd_shutdown,
++};
++module_pci_driver(ixd_driver);
 -- 
 2.47.0
 
