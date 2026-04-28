@@ -1,141 +1,119 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3B1BAFF8879
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 28 Apr 2026 22:55:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 45C09FF8878
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 28 Apr 2026 22:55:00 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 04FDF80C50;
-	Tue, 28 Apr 2026 22:55:02 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id EAF7B61068;
+	Tue, 28 Apr 2026 22:54:59 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id IMVj6wAuvIu9; Tue, 28 Apr 2026 22:54:58 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id dcD8UdWMElfm; Tue, 28 Apr 2026 22:54:56 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B64CD80D34
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4623160B17
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1777416898;
-	bh=bXS4hZH4GuMjDgj0JYnpAEoYDoFOckWhSiXG9OYKrmo=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=BsmHi+XSCyulSjXX8ItQ7Evyc4udGkpHC48dIY+QuZiIFxdg8Y5FwMThyKD/bMZ4O
-	 fqn920BGeiSfVIM6xYXAN/6BHfpeOgaNvPLFeQNhA4toaO8enCtKVSfGK7p3bpAyLu
-	 wFcHnQDL/baZZzF5OZgWfFtGR8TOZFzBpTOXjrL9lzDnXTyeZ2FUJcwg1msaqpz/0T
-	 esFmiZDxdv+QyekLCI1672BLlxj8QN9snrHKP0XhaZumTE4S0ae8/zGReJmKyOzzlB
-	 uMUNzGEhY2hQg/pD/M4LH7tW/iQMScHjvuL2DsYonpAECeYB5qO2VcGqR4VqKvw8rY
-	 k6rYBGzLF3Chw==
+	s=default; t=1777416896;
+	bh=t98LSTaOLSJv9jeiPwDAmcdZmX18yxZoKkt1Y2XJ9Fg=;
+	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=EWZm8+pzw7KM/guWEcC4ENBxnHHFEWE/XfHB1VpP17gVX96Rd3sSLPH23I+yp9bqC
+	 /LiHIbJmoCPwaqFxfF6v4u7D61CE2Y2pAmB/M9RHVQzFJZ+uT+JUv4ToT6UiHG73Mt
+	 Unnc5/Zf8khmc9gtc3XCxSeyn3epER4Kaci0vRdClHDudGKOblAEJld0EAQzNXdIzu
+	 Z1vSrW9ejO+fIeiUZ6rtWSOjhvkIovvebAbZ0yQG0/JyQ6vdT3KE/T1n2jCNCS0h+N
+	 9/VMeVVPxKM+oo5SvjZnq4xZc1dAY8wViZNdc32jGF+OoNM0N7MNITZZ/EOdpWweg4
+	 +FlKH3eCYOhBA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id B64CD80D34;
-	Tue, 28 Apr 2026 22:54:58 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by lists1.osuosl.org (Postfix) with ESMTP id E4E17231
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Apr 2026 17:19:25 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 4623160B17;
+	Tue, 28 Apr 2026 22:54:56 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 8584F1B8
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Apr 2026 08:27:32 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id D606A83BF6
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Apr 2026 17:19:25 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 818154048C
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Apr 2026 08:27:31 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id u2jAHD2HfIZr for <intel-wired-lan@lists.osuosl.org>;
- Tue, 28 Apr 2026 17:19:22 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2a00:1450:4864:20::42d; helo=mail-wr1-x42d.google.com;
- envelope-from=ukleinek@baylibre.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org 9A06183B6B
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9A06183B6B
-Received: from mail-wr1-x42d.google.com (mail-wr1-x42d.google.com
- [IPv6:2a00:1450:4864:20::42d])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 9A06183B6B
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Apr 2026 17:19:20 +0000 (UTC)
-Received: by mail-wr1-x42d.google.com with SMTP id
- ffacd0b85a97d-43d7e23defbso6847027f8f.0
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Apr 2026 10:19:19 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20251104; t=1777396758; x=1778001558;
- h=content-transfer-encoding:mime-version:message-id:date:subject:cc
- :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
- :message-id:reply-to;
- bh=bXS4hZH4GuMjDgj0JYnpAEoYDoFOckWhSiXG9OYKrmo=;
- b=BIIj9wJWbSnssPVRBx7XhgNkg4Mge7AK05HtcMmmDaKR3BwTKipQ8xkhcEMSWzW4g+
- HCckY62Tl3dFFJfc++PKsGcU8ydEfCBrOATThRW81qbJyIeFy1Oj8e/qRf5FNpMCciJ2
- 4SDxK/Cjt5l0gRFRmH069HY4H1l7glaAqxObdy1qD4OG0+RJaR+jKgunBPMDe+EkmbF8
- j+fgwxFApN0HF5F0QO9weoqOHUol8gJbbJkAUcbrY+MtbGv04IMgq+a3V8QuWdxOjMv2
- Ag2BGZ6obvHppmPckWF/ogZyU0Djpqb2WQ5E60IPvvszU2xrSpycK/AcdIvUtLeoAK7X
- Q6gA==
-X-Forwarded-Encrypted: i=1;
- AFNElJ9gAIjzgXwA900JVzE/RNGTCN/5JqnoEXiPf0G+b6XERfq/y+JcyI3CS9IVVSrHUndat34ymdnc2PQr3lH6m18=@lists.osuosl.org
-X-Gm-Message-State: AOJu0YxFrbcCjJ2+e+Jiv2VzOmWdp5EU048Wg1cIB819yXPZ0AdwwNJn
- gcHCX2bJp9YFpTgI8+qxk1ZRJf37JunqaLw1sDLvS5gLNK7nxt1GYmYLMm+bOQ8TD38=
-X-Gm-Gg: AeBDiescW5bTIwULtFiTm2q0hE3AjhNsg19uzWVQViJluUiiPElhWzwImSowFaPb1Zv
- X87xDvW07XlCRJ1vDXH+Z9Cea/lsy+W25UCbM6+S3h7xMcITaBTnqQAS21Jb32Ox1ogiHx1V9cA
- BTJhSCR5l7BzxwhtzWX2etv6T5ne+14U5fsd8MU2dzAr0zbXUpUZLtiTW41p/tM7CkuVQgisoUI
- Me8coVWGHAEFXN5fYlNbex6tMxe0ZlCmkErVE52Lsqrah61UUdfJChz717/rJzz6ybUDYyzKdsA
- PPDyjJ/NXHUSTd0aToldttLJIw5AxMcmOiRmPaBCLlPhpX/6NgteK8068T3yk7YP9qYizqhaHFP
- 2ut5VDZdqFGeoHPGeanHydpHPSRVOG5l+UT9NckeYISqah+QDylAy67TFJD6IrTsXqGIIQLBWz7
- AdlHy6staarqrAQ9uTI1bm9p02W4C8pRLhpST6bNpDy7Ur3V1sU24jRpRbXMKgrRZYIwQMvzi7o
- yY66FzaNvDzvv0UCtuMYFRrsw==
-X-Received: by 2002:a5d:5f85:0:b0:439:c299:4d8f with SMTP id
- ffacd0b85a97d-44648b510c7mr7381212f8f.17.1777396756902; 
- Tue, 28 Apr 2026 10:19:16 -0700 (PDT)
-Received: from localhost
- (p200300f65f114e083adbfb3674088b9a.dip0.t-ipconnect.de.
- [2003:f6:5f11:4e08:3adb:fb36:7408:8b9a])
- by smtp.gmail.com with UTF8SMTPSA id
- ffacd0b85a97d-4463ff5a1acsm7715391f8f.33.2026.04.28.10.19.15
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Tue, 28 Apr 2026 10:19:16 -0700 (PDT)
-From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig=20=28The=20Capable=20Hub=29?=
- <u.kleine-koenig@baylibre.com>
-To: Michael Grzeschik <m.grzeschik@pengutronix.de>,
- Andrew Lunn <andrew+netdev@lunn.ch>,
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id PM-yWNlxvQuA for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 28 Apr 2026 08:27:29 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=192.198.163.15;
+ helo=mgamail.intel.com; envelope-from=larysa.zaremba@intel.com;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 067C040654
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 067C040654
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.15])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 067C040654
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Apr 2026 08:27:28 +0000 (UTC)
+X-CSE-ConnectionGUID: 5DbGOuz0RNemaLQ95B/PpQ==
+X-CSE-MsgGUID: FdLc/Y3QT/yR7tm0ffQ4hg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11769"; a="78377000"
+X-IronPort-AV: E=Sophos;i="6.23,203,1770624000"; d="scan'208";a="78377000"
+Received: from orviesa006.jf.intel.com ([10.64.159.146])
+ by fmvoesa109.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 28 Apr 2026 01:27:25 -0700
+X-CSE-ConnectionGUID: /yN2nZvGR5yj90F3UVAzXw==
+X-CSE-MsgGUID: CZtsnIK5TLSBicqx5isJWw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,203,1770624000"; d="scan'208";a="232881589"
+Received: from irvmail002.ir.intel.com ([10.43.11.120])
+ by orviesa006.jf.intel.com with ESMTP; 28 Apr 2026 01:27:12 -0700
+Received: from mglak.igk.intel.com (mglak.igk.intel.com [10.237.112.146])
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id C08B727BA7;
+ Tue, 28 Apr 2026 09:27:09 +0100 (IST)
+From: Larysa Zaremba <larysa.zaremba@intel.com>
+To: intel-wired-lan@lists.osuosl.org, Tony Nguyen <anthony.l.nguyen@intel.com>
+Cc: aleksander.lobakin@intel.com, sridhar.samudrala@intel.com,
+ Michal Swiatkowski <michal.swiatkowski@linux.intel.com>,
+ Larysa Zaremba <larysa.zaremba@intel.com>,
+ "Fijalkowski, Maciej" <maciej.fijalkowski@intel.com>,
+ Emil Tantilov <emil.s.tantilov@intel.com>,
+ Madhu Chittim <madhu.chittim@intel.com>, Josh Hay <joshua.a.hay@intel.com>,
+ "Keller, Jacob E" <jacob.e.keller@intel.com>,
+ jayaprakash.shanmugam@intel.com, Jiri Pirko <jiri@resnulli.us>,
  "David S. Miller" <davem@davemloft.net>,
  Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, Marc Kleine-Budde <mkl@pengutronix.de>,
- Vincent Mailhol <mailhol@kernel.org>, Krzysztof Halasa <khc@pm.waw.pl>,
- Johannes Berg <johannes@sipsolutions.net>
-Date: Tue, 28 Apr 2026 19:18:44 +0200
-Message-ID: <20260428171845.2288395-2-u.kleine-koenig@baylibre.com>
-X-Mailer: git-send-email 2.47.3
+ Paolo Abeni <pabeni@redhat.com>, Simon Horman <horms@kernel.org>,
+ Jonathan Corbet <corbet@lwn.net>,
+ Richard Cochran <richardcochran@gmail.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Andrew Lunn <andrew+netdev@lunn.ch>, netdev@vger.kernel.org,
+ linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
+ Samuel Salin <Samuel.salin@intel.com>
+Date: Tue, 28 Apr 2026 10:26:42 +0200
+Message-ID: <20260428082654.44364-9-larysa.zaremba@intel.com>
+X-Mailer: git-send-email 2.47.0
+In-Reply-To: <20260428082654.44364-1-larysa.zaremba@intel.com>
+References: <20260428082654.44364-1-larysa.zaremba@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=149272;
- i=u.kleine-koenig@baylibre.com; h=from:subject;
- bh=EwbblkFcDnVN3IVzEa/sMefmS+VdG8zqxs2PCD7CqHo=;
- b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBp8Ov130Ix57yIfvYmfS47qUtsfqdX6GvPTFsVB
- z55gLLoyRyJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCafDr9QAKCRCPgPtYfRL+
- TsL0CACZbnvXyA4/jfL60lb1YcLR/ChpNwHBK4KCBfHdb0y93H07zFKyiU51DJZGDv+X45m3TsV
- jNDxqarDV4iFjMGQ6HDhAqNBO+AD+B5/pyVWJwzktwNBzv2ZXn9a1aT7YUbFp6GkENzAPbeSJSq
- ewrArcjYJ1bNVvDUEHhIYbv5Rn7/pxkNNp6ByD8zQmRgjRMKRIu/l6qd5wI2xKtRepK7vYP5SaL
- gKuD9CGVmiuUHA0phVvg5XlHqNBgcewG/tfprD6yQhn8y15ONxg/raCHjH1Fk878ymOdBAAv9wg
- PjctHm/yf0V1g8gKNCg6ENFejSxq7qt2yM555VBHchLroUGC
-X-Developer-Key: i=u.kleine-koenig@baylibre.com; a=openpgp;
- fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
 Content-Transfer-Encoding: 8bit
 X-Mailman-Approved-At: Tue, 28 Apr 2026 22:54:54 +0000
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=baylibre-com.20251104.gappssmtp.com; s=20251104; t=1777396758; x=1778001558;
- darn=lists.osuosl.org; 
- h=content-transfer-encoding:mime-version:message-id:date:subject:cc
- :to:from:from:to:cc:subject:date:message-id:reply-to;
- bh=bXS4hZH4GuMjDgj0JYnpAEoYDoFOckWhSiXG9OYKrmo=;
- b=M9kcbSO/ScP0kVFVVyWk2vG5GA8d/RCW2tlG9Ap7Yi2ddew+nvd+Et3IxlxoR1Aee4
- IkU59aaEpeFgWykASDtZkBYAyB3ARglCWIwDotPg6CMtILdP6WdRrcBHPbrDXJ1wDNFj
- 6ahEAGhhdicNfBjKZWZT740atldWb3ElITFsVSRxVtVUNzRDyCEiiGejcLMsr3vlzV5Q
- M/0GxSQvhFoY+38XyrjcPiFw3NCqILfu89s2sbL22bBw73C1OoOszJuinQLyY0FFITi4
- +IkO1hl3d6WCwbIeG29XTPj9aUv5LGcK2XV1hKhCYhLgQ8utkAomBP/HgNg7F0y35AeL
- JOuQ==
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dmarc=none (p=none dis=none)
- header.from=baylibre.com
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=baylibre-com.20251104.gappssmtp.com
- header.i=@baylibre-com.20251104.gappssmtp.com header.a=rsa-sha256
- header.s=20251104 header.b=M9kcbSO/
-Subject: [Intel-wired-lan] [PATCH net-next] net: Consistently define
- pci_device_ids using named initializers
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1777364849; x=1808900849;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=vXEmY6LJSEDimG1xT9UqNFnKRanTsSHbDjMLk4rvrog=;
+ b=ciKyXEtVON3nk9gCCNoLf4qB4+WyxOl/Piqclho5gbh7NS/nZGvoNxQG
+ 4jSLf9JUP1XJtu3QOqfrC4gy8MqaCuKj4917IA6t6d2JRnI99gBzr3KUD
+ spBBYYO+nXi3g0S4zX9RrIhkkpEtxW3LyEVWw1JhceN3S3Kbctl6rStKd
+ ueaQisIdyssUMOhd3iwzdEYrkd1Cf3s7Lk7n48r4mpsVOdWrw4xWuB/4Z
+ dzEQxBLkViQVYJ7VDDTbVYn3AKUVKTdOBuXMoDngCB85F874PSiq2RIjE
+ 9e+EFhwcZsa+dvPiP1jzwrwF9X1L+3UlKaa4Ra5bdZ7fLdvoogJsPtV2C
+ g==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dmarc=pass (p=none dis=none)
+ header.from=intel.com
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=ciKyXEtV
+Subject: [Intel-wired-lan] [PATCH iwl-next v7 08/14] idpf: refactor idpf to
+ use libie control queues
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -148,3512 +126,4623 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Richard Cochran <richardcochran@gmail.com>,
- Yonglong Liu <liuyonglong@huawei.com>, Kees Cook <kees@kernel.org>,
- linux-wireless@vger.kernel.org, Larysa Zaremba <larysa.zaremba@intel.com>,
- brcm80211@lists.linux.dev, Daniele Venzano <venza@brownhat.org>,
- oss-drivers@corigine.com, Tony Nguyen <anthony.l.nguyen@intel.com>,
- MD Danish Anwar <danishanwar@ti.com>, Samuel Chessman <chessman@tux.org>,
- Fan Gong <gongfan1@huawei.com>, Marco Crivellari <marco.crivellari@suse.com>,
- Kevin Curtis <kevin.curtis@farsite.co.uk>, Ingo Molnar <mingo@kernel.org>,
- Ion Badulescu <ionut@badula.org>,
- Andy Shevchenko <andriy.shevchenko@intel.com>,
- Leon Romanovsky <leon@kernel.org>, Colin Ian King <colin.i.king@gmail.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Peiyang Wang <wangpeiyang1@huawei.com>,
- Thomas Fourier <fourier.thomas@gmail.com>,
- Sai Krishna <saikrishnag@marvell.com>, Denis Kirjanov <kirjanov@gmail.com>,
- intel-wired-lan@lists.osuosl.org, linux-parisc@vger.kernel.org,
- Jacob Keller <jacob.e.keller@intel.com>,
- Mengyuan Lou <mengyuanlou@net-swift.com>,
- Steffen Klassert <klassert@kernel.org>,
- Stanislav Yakovlev <stas.yakovlev@gmail.com>, linux-rdma@vger.kernel.org,
- Arend van Spriel <arend.vanspriel@broadcom.com>, nic_swsd@realtek.com,
- Jiri Pirko <jiri@resnulli.us>, Philipp Stanner <phasta@kernel.org>,
- Chi-hsien Lin <chi-hsien.lin@cypress.com>, Ido Schimmel <idosch@nvidia.com>,
- Potnuri Bharat Teja <bharat@chelsio.com>, Double Lo <double.lo@cypress.com>,
- Markus Schneider-Pargmann <msp@baylibre.com>,
- Nathan Chancellor <nathan@kernel.org>, Jiawen Wu <jiawenwu@trustnetic.com>,
- Cai Huoqing <cai.huoqing@linux.dev>, Bjorn Helgaas <bhelgaas@google.com>,
- Zilin Guan <zilin@seu.edu.cn>, linux-can@vger.kernel.org,
- Yibo Dong <dong100@mucse.com>, Joe Damato <joe@dama.to>,
- Petr Machata <petrm@nvidia.com>, Kory Maincent <kory.maincent@bootlin.com>,
- brcm80211-dev-list.pdl@broadcom.com, GR-Linux-NIC-Dev@marvell.com,
- Vadim Fedorenko <vadim.fedorenko@linux.dev>,
- Manish Chopra <manishc@marvell.com>, Denis Benato <benato.denis96@gmail.com>,
- Rasesh Mody <rmody@marvell.com>, netdev@vger.kernel.org,
- Randy Dunlap <rdunlap@infradead.org>, Mark Bloch <mbloch@nvidia.com>,
- linux-kernel@vger.kernel.org, Tariq Toukan <tariqt@nvidia.com>,
- Jian Shen <shenjian15@huawei.com>, Jijie Shao <shaojijie@huawei.com>,
- Yeounsu Moon <yyyynoom@gmail.com>, Thomas Gleixner <tglx@kernel.org>,
- Simon Horman <horms@kernel.org>, Yicong Hui <yiconghui@gmail.com>,
- Mark Einon <mark.einon@gmail.com>, Ethan Nelson-Moore <enelsonmoore@gmail.com>,
- Saeed Mahameed <saeedm@nvidia.com>, Sudarsana Kalluru <skalluru@marvell.com>,
- Heiner Kallweit <hkallweit1@gmail.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-... and PCI device helpers.
+From: Pavan Kumar Linga <pavan.kumar.linga@intel.com>
 
-The various struct pci_device_id arrays were initialized mostly by one
-the PCI_DEVICE macros and then list expressions. The latter isn't easily
-readable if you're not into PCI. Using named initializers is more
-explicit and thus easier to parse.
+Support to initialize and configure controlqs, and manage their
+transactions was introduced in libie. As part of it, most of the existing
+controlq structures are renamed and modified. Use those APIs in idpf and
+make all the necessary changes.
 
-Also use PCI_DEVICE* helper macros to assign .vendor, .device,
-.subvendor and .subdevice where appropriate and skip explicit
-assignments of 0 (which the compiler takes care of).
+Previously for the send and receive virtchnl messages, there used to be a
+memcpy involved in controlq code to copy the buffer info passed by the send
+function into the controlq specific buffers. There was no restriction to
+use automatic memory in that case. The new implementation in libie removed
+copying of the send buffer info and introduced DMA mapping of the send
+buffer itself. To accommodate it, use dynamic memory for the larger send
+buffers. For smaller ones (<= 128 bytes) libie still can copy them into the
+pre-allocated message memory.
 
-The secret plan is to make struct pci_device_id::driver_data an
-anonymous union (similar to
-https://lore.kernel.org/all/cover.1776579304.git.u.kleine-koenig@baylibre.com/)
-and that requires named initializers. But it's also a nice cleanup on
-its own.
+In case of receive, idpf receives a page pool buffer allocated by the libie
+and care should be taken to release it after use in the idpf.
 
-This change doesn't introduce changes to the compiled pci_device_id
-arrays. Tested on x86 and arm64.
+The changes are fairly trivial and localized, with a notable exception
+being the consolidation of idpf_vc_xn_shutdown and idpf_deinit_dflt_mbx
+under the latter name. This has some additional consequences that are
+addressed in the following patches.
 
-Signed-off-by: Uwe Kleine-König (The Capable Hub) <u.kleine-koenig@baylibre.com>
+This refactoring introduces roughly additional 40KB of module storage used
+for systems that only run idpf, so idpf + libie_cp + libie_pci takes about
+7% more storage than just idpf before refactoring.
+
+We now pre-allocate small TX buffers, so that does increase the memory
+usage, but reduces the need to allocate. This results in additional 256 *
+128B of memory permanently used, increasing the worst-case memory usage by
+32KB but our ctlq RX buffers need to be of size 4096B anyway (not changed
+by the patchset), so this is hardly noticeable.
+
+As for the timings, the fact that we are mostly limited by the HW response
+time which is far from instant, is not changed by this refactor.
+
+Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Signed-off-by: Pavan Kumar Linga <pavan.kumar.linga@intel.com>
+Co-developed-by: Larysa Zaremba <larysa.zaremba@intel.com>
+Signed-off-by: Larysa Zaremba <larysa.zaremba@intel.com>
+Tested-by: Samuel Salin <Samuel.salin@intel.com>
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
-Hello,
+ drivers/net/ethernet/intel/idpf/Makefile      |    2 -
+ drivers/net/ethernet/intel/idpf/idpf.h        |   28 +-
+ .../net/ethernet/intel/idpf/idpf_controlq.c   |  631 -------
+ .../net/ethernet/intel/idpf/idpf_controlq.h   |  142 --
+ .../ethernet/intel/idpf/idpf_controlq_api.h   |  177 --
+ .../ethernet/intel/idpf/idpf_controlq_setup.c |  169 --
+ drivers/net/ethernet/intel/idpf/idpf_dev.c    |   60 +-
+ .../net/ethernet/intel/idpf/idpf_ethtool.c    |   28 +-
+ drivers/net/ethernet/intel/idpf/idpf_lib.c    |   51 +-
+ drivers/net/ethernet/intel/idpf/idpf_main.c   |    5 -
+ drivers/net/ethernet/intel/idpf/idpf_mem.h    |   20 -
+ drivers/net/ethernet/intel/idpf/idpf_txrx.h   |    2 +-
+ drivers/net/ethernet/intel/idpf/idpf_vf_dev.c |   64 +-
+ .../net/ethernet/intel/idpf/idpf_virtchnl.c   | 1632 +++++++----------
+ .../net/ethernet/intel/idpf/idpf_virtchnl.h   |   94 +-
+ .../ethernet/intel/idpf/idpf_virtchnl_ptp.c   |  248 ++-
+ 16 files changed, 832 insertions(+), 2521 deletions(-)
+ delete mode 100644 drivers/net/ethernet/intel/idpf/idpf_controlq.c
+ delete mode 100644 drivers/net/ethernet/intel/idpf/idpf_controlq.h
+ delete mode 100644 drivers/net/ethernet/intel/idpf/idpf_controlq_api.h
+ delete mode 100644 drivers/net/ethernet/intel/idpf/idpf_controlq_setup.c
+ delete mode 100644 drivers/net/ethernet/intel/idpf/idpf_mem.h
 
-the mentioned follow-up quest allows to do
-
-			PCI_DEVICE(0x1571, 0xa203),
-	+		.driver_data = (kernel_ulong_t)&card_info_10mbit,
-	-		.driver_data_ptr = &card_info_10mbit,
-
-which gets rid of a bunch of casts and so brings a little bit more type
-safety. This patch is a preparation for that.
-
-I handled all of drivers/net/ in a single patch, please tell me if I
-should split by subsystem.
-
-Best regards
-Uwe
----
- drivers/net/arcnet/com20020-pci.c             | 242 +++------
- drivers/net/can/m_can/m_can_pci.c             |   6 +-
- drivers/net/can/sja1000/plx_pci.c             | 167 +++----
- drivers/net/ethernet/3com/3c59x.c             |  80 +--
- drivers/net/ethernet/3com/typhoon.c           |  75 ++-
- drivers/net/ethernet/8390/ne2k-pci.c          |  24 +-
- drivers/net/ethernet/adaptec/starfire.c       |   4 +-
- drivers/net/ethernet/agere/et131x.c           |   6 +-
- drivers/net/ethernet/broadcom/bnx2.c          |  62 ++-
- .../net/ethernet/broadcom/bnx2x/bnx2x_main.c  |  50 +-
- .../net/ethernet/cavium/liquidio/lio_main.c   |  10 +-
- .../ethernet/cavium/liquidio/lio_vf_main.c    |   7 +-
- drivers/net/ethernet/chelsio/cxgb/common.h    |   2 +-
- drivers/net/ethernet/chelsio/cxgb/subr.c      |   2 +-
- .../net/ethernet/chelsio/cxgb3/cxgb3_main.c   |   4 +-
- .../net/ethernet/chelsio/cxgb4/cxgb4_main.c   |   4 +-
- .../ethernet/chelsio/cxgb4vf/cxgb4vf_main.c   |   4 +-
- drivers/net/ethernet/dec/tulip/de2104x.c      |   6 +-
- drivers/net/ethernet/dec/tulip/dmfe.c         |  12 +-
- drivers/net/ethernet/dec/tulip/tulip_core.c   |  78 +--
- drivers/net/ethernet/dec/tulip/uli526x.c      |   6 +-
- drivers/net/ethernet/dec/tulip/winbond-840.c  |  13 +-
- drivers/net/ethernet/dlink/dl2k.h             |  12 +-
- drivers/net/ethernet/dlink/sundance.c         |  14 +-
- drivers/net/ethernet/fealnx.c                 |   8 +-
- .../net/ethernet/hisilicon/hibmcge/hbg_main.c |   2 +-
- .../net/ethernet/hisilicon/hns3/hns3_enet.c   |  50 +-
- .../hisilicon/hns3/hns3pf/hclge_main.c        |  18 +-
- .../hisilicon/hns3/hns3vf/hclgevf_main.c      |  12 +-
- .../net/ethernet/huawei/hinic/hinic_main.c    |  12 +-
- .../net/ethernet/huawei/hinic3/hinic3_lld.c   |   7 +-
- drivers/net/ethernet/intel/e100.c             |   4 +-
- drivers/net/ethernet/intel/e1000e/netdev.c    | 471 +++++++++++++-----
- drivers/net/ethernet/intel/fm10k/fm10k_pci.c  |  10 +-
- drivers/net/ethernet/intel/i40e/i40e_main.c   |  59 +--
- drivers/net/ethernet/intel/iavf/iavf_main.c   |  10 +-
- drivers/net/ethernet/intel/igb/igb_main.c     |  66 +--
- drivers/net/ethernet/intel/igbvf/netdev.c     |   4 +-
- drivers/net/ethernet/intel/igc/igc_main.c     |  34 +-
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 106 ++--
- .../net/ethernet/intel/ixgbevf/ixgbevf_main.c |  49 +-
- drivers/net/ethernet/mellanox/mlx4/main.c     |   6 +-
- .../net/ethernet/mellanox/mlx5/core/main.c    |  26 +-
- .../net/ethernet/mellanox/mlxsw/spectrum.c    |  16 +-
- drivers/net/ethernet/micrel/ksz884x.c         |   8 +-
- .../net/ethernet/mucse/rnpgbe/rnpgbe_main.c   |  10 +-
- drivers/net/ethernet/natsemi/natsemi.c        |   4 +-
- drivers/net/ethernet/netronome/nfp/nfp_main.c |  81 +--
- .../ethernet/netronome/nfp/nfp_netvf_main.c   |  41 +-
- drivers/net/ethernet/qlogic/qede/qede_main.c  |  20 +-
- drivers/net/ethernet/realtek/8139too.c        |  52 +-
- drivers/net/ethernet/realtek/r8169_main.c     |   8 +-
- drivers/net/ethernet/rocker/rocker_main.c     |   4 +-
- drivers/net/ethernet/sis/sis190.c             |   6 +-
- drivers/net/ethernet/sis/sis900.c             |  10 +-
- drivers/net/ethernet/smsc/epic100.c           |  18 +-
- drivers/net/ethernet/sun/cassini.c            |   8 +-
- drivers/net/ethernet/sun/sungem.c             |  26 +-
- drivers/net/ethernet/ti/tlan.c                |  41 +-
- drivers/net/ethernet/wangxun/ngbe/ngbe_main.c |  26 +-
- .../net/ethernet/wangxun/ngbevf/ngbevf_main.c |  26 +-
- .../net/ethernet/wangxun/txgbe/txgbe_main.c   |  18 +-
- .../ethernet/wangxun/txgbevf/txgbevf_main.c   |  18 +-
- drivers/net/wan/farsync.c                     |  24 +-
- drivers/net/wan/pc300too.c                    |  14 +-
- drivers/net/wan/pci200syn.c                   |   6 +-
- drivers/net/wan/wanxl.c                       |  11 +-
- .../broadcom/brcm80211/brcmfmac/pcie.c        |  17 +-
- drivers/net/wireless/intel/ipw2x00/ipw2200.c  |  52 +-
- 69 files changed, 1308 insertions(+), 1101 deletions(-)
-
-diff --git a/drivers/net/arcnet/com20020-pci.c b/drivers/net/arcnet/com20020-pci.c
-index dbadda08dce2..6474c7be2992 100644
---- a/drivers/net/arcnet/com20020-pci.c
-+++ b/drivers/net/arcnet/com20020-pci.c
-@@ -459,168 +459,88 @@ static struct com20020_pci_card_info card_info_eae_fb2 = {
+diff --git a/drivers/net/ethernet/intel/idpf/Makefile b/drivers/net/ethernet/intel/idpf/Makefile
+index 651ddee942bd..4aaafa175ec3 100644
+--- a/drivers/net/ethernet/intel/idpf/Makefile
++++ b/drivers/net/ethernet/intel/idpf/Makefile
+@@ -6,8 +6,6 @@
+ obj-$(CONFIG_IDPF) += idpf.o
  
- static const struct pci_device_id com20020pci_id_table[] = {
- 	{
--		0x1571, 0xa001,
--		PCI_ANY_ID, PCI_ANY_ID,
--		0, 0,
--		0,
-+		PCI_DEVICE(0x1571, 0xa001),
-+		.driver_data = 0,
-+	}, {
-+		PCI_DEVICE(0x1571, 0xa002),
-+		.driver_data = 0,
-+	}, {
-+		PCI_DEVICE(0x1571, 0xa003),
-+		.driver_data = 0,
-+	}, {
-+		PCI_DEVICE(0x1571, 0xa004),
-+		.driver_data = 0,
-+	}, {
-+		PCI_DEVICE(0x1571, 0xa005),
-+		.driver_data = 0,
-+	}, {
-+		PCI_DEVICE(0x1571, 0xa006),
-+		.driver_data = 0,
-+	}, {
-+		PCI_DEVICE(0x1571, 0xa007),
-+		.driver_data = 0,
-+	}, {
-+		PCI_DEVICE(0x1571, 0xa008),
-+		.driver_data = 0,
-+	}, {
-+		PCI_DEVICE(0x1571, 0xa009),
-+		.driver_data = (kernel_ulong_t)&card_info_5mbit,
-+	}, {
-+		PCI_DEVICE(0x1571, 0xa00a),
-+		.driver_data = (kernel_ulong_t)&card_info_5mbit,
-+	}, {
-+		PCI_DEVICE(0x1571, 0xa00b),
-+		.driver_data = (kernel_ulong_t)&card_info_5mbit,
-+	}, {
-+		PCI_DEVICE(0x1571, 0xa00c),
-+		.driver_data = (kernel_ulong_t)&card_info_5mbit,
-+	}, {
-+		PCI_DEVICE(0x1571, 0xa00d),
-+		.driver_data = (kernel_ulong_t)&card_info_5mbit,
-+	}, {
-+		PCI_DEVICE(0x1571, 0xa00e),
-+		.driver_data = (kernel_ulong_t)&card_info_5mbit,
-+	}, {
-+		PCI_DEVICE(0x1571, 0xa201),
-+		.driver_data = (kernel_ulong_t)&card_info_10mbit,
-+	}, {
-+		PCI_DEVICE(0x1571, 0xa202),
-+		.driver_data = (kernel_ulong_t)&card_info_10mbit,
-+	}, {
-+		PCI_DEVICE(0x1571, 0xa203),
-+		.driver_data = (kernel_ulong_t)&card_info_10mbit,
-+	}, {
-+		PCI_DEVICE(0x1571, 0xa204),
-+		.driver_data = (kernel_ulong_t)&card_info_10mbit,
-+	}, {
-+		PCI_DEVICE(0x1571, 0xa205),
-+		.driver_data = (kernel_ulong_t)&card_info_10mbit,
-+	}, {
-+		PCI_DEVICE(0x1571, 0xa206),
-+		.driver_data = (kernel_ulong_t)&card_info_10mbit,
-+	}, {
-+		PCI_DEVICE_SUB(0x10B5, 0x9030, 0x10B5, 0x2978),
-+		.driver_data = (kernel_ulong_t)&card_info_sohard,
-+	}, {
-+		PCI_DEVICE_SUB(0x10B5, 0x9050, 0x10B5, 0x2273),
-+		.driver_data = (kernel_ulong_t)&card_info_sohard,
-+	}, {
-+		PCI_DEVICE_SUB(0x10B5, 0x9050, 0x10B5, 0x3263),
-+		.driver_data = (kernel_ulong_t)&card_info_eae_arc1,
-+	}, {
-+		PCI_DEVICE_SUB(0x10B5, 0x9050, 0x10B5, 0x3292),
-+		.driver_data = (kernel_ulong_t)&card_info_eae_ma1,
-+	}, {
-+		PCI_DEVICE_SUB(0x10B5, 0x9050, 0x10B5, 0x3294),
-+		.driver_data = (kernel_ulong_t)&card_info_eae_fb2,
-+	}, {
-+		PCI_DEVICE(0x14BA, 0x6000),
-+		.driver_data = (kernel_ulong_t)&card_info_10mbit,
-+	}, {
-+		PCI_DEVICE(0x10B5, 0x2200),
-+		.driver_data = (kernel_ulong_t)&card_info_10mbit,
- 	},
--	{
--		0x1571, 0xa002,
--		PCI_ANY_ID, PCI_ANY_ID,
--		0, 0,
--		0,
--	},
--	{
--		0x1571, 0xa003,
--		PCI_ANY_ID, PCI_ANY_ID,
--		0, 0,
--		0
--	},
--	{
--		0x1571, 0xa004,
--		PCI_ANY_ID, PCI_ANY_ID,
--		0, 0,
--		0,
--	},
--	{
--		0x1571, 0xa005,
--		PCI_ANY_ID, PCI_ANY_ID,
--		0, 0,
--		0
--	},
--	{
--		0x1571, 0xa006,
--		PCI_ANY_ID, PCI_ANY_ID,
--		0, 0,
--		0
--	},
--	{
--		0x1571, 0xa007,
--		PCI_ANY_ID, PCI_ANY_ID,
--		0, 0,
--		0
--	},
--	{
--		0x1571, 0xa008,
--		PCI_ANY_ID, PCI_ANY_ID,
--		0, 0,
--		0
--	},
--	{
--		0x1571, 0xa009,
--		PCI_ANY_ID, PCI_ANY_ID,
--		0, 0,
--		(kernel_ulong_t)&card_info_5mbit
--	},
--	{
--		0x1571, 0xa00a,
--		PCI_ANY_ID, PCI_ANY_ID,
--		0, 0,
--		(kernel_ulong_t)&card_info_5mbit
--	},
--	{
--		0x1571, 0xa00b,
--		PCI_ANY_ID, PCI_ANY_ID,
--		0, 0,
--		(kernel_ulong_t)&card_info_5mbit
--	},
--	{
--		0x1571, 0xa00c,
--		PCI_ANY_ID, PCI_ANY_ID,
--		0, 0,
--		(kernel_ulong_t)&card_info_5mbit
--	},
--	{
--		0x1571, 0xa00d,
--		PCI_ANY_ID, PCI_ANY_ID,
--		0, 0,
--		(kernel_ulong_t)&card_info_5mbit
--	},
--	{
--		0x1571, 0xa00e,
--		PCI_ANY_ID, PCI_ANY_ID,
--		0, 0,
--		(kernel_ulong_t)&card_info_5mbit
--	},
--	{
--		0x1571, 0xa201,
--		PCI_ANY_ID, PCI_ANY_ID,
--		0, 0,
--		(kernel_ulong_t)&card_info_10mbit
--	},
--	{
--		0x1571, 0xa202,
--		PCI_ANY_ID, PCI_ANY_ID,
--		0, 0,
--		(kernel_ulong_t)&card_info_10mbit
--	},
--	{
--		0x1571, 0xa203,
--		PCI_ANY_ID, PCI_ANY_ID,
--		0, 0,
--		(kernel_ulong_t)&card_info_10mbit
--	},
--	{
--		0x1571, 0xa204,
--		PCI_ANY_ID, PCI_ANY_ID,
--		0, 0,
--		(kernel_ulong_t)&card_info_10mbit
--	},
--	{
--		0x1571, 0xa205,
--		PCI_ANY_ID, PCI_ANY_ID,
--		0, 0,
--		(kernel_ulong_t)&card_info_10mbit
--	},
--	{
--		0x1571, 0xa206,
--		PCI_ANY_ID, PCI_ANY_ID,
--		0, 0,
--		(kernel_ulong_t)&card_info_10mbit
--	},
--	{
--		0x10B5, 0x9030,
--		0x10B5, 0x2978,
--		0, 0,
--		(kernel_ulong_t)&card_info_sohard
--	},
--	{
--		0x10B5, 0x9050,
--		0x10B5, 0x2273,
--		0, 0,
--		(kernel_ulong_t)&card_info_sohard
--	},
--	{
--		0x10B5, 0x9050,
--		0x10B5, 0x3263,
--		0, 0,
--		(kernel_ulong_t)&card_info_eae_arc1
--	},
--	{
--		0x10B5, 0x9050,
--		0x10B5, 0x3292,
--		0, 0,
--		(kernel_ulong_t)&card_info_eae_ma1
--	},
--	{
--		0x10B5, 0x9050,
--		0x10B5, 0x3294,
--		0, 0,
--		(kernel_ulong_t)&card_info_eae_fb2
--	},
--	{
--		0x14BA, 0x6000,
--		PCI_ANY_ID, PCI_ANY_ID,
--		0, 0,
--		(kernel_ulong_t)&card_info_10mbit
--	},
--	{
--		0x10B5, 0x2200,
--		PCI_ANY_ID, PCI_ANY_ID,
--		0, 0,
--		(kernel_ulong_t)&card_info_10mbit
--	},
--	{ 0, }
-+	{ }
- };
+ idpf-y := \
+-	idpf_controlq.o		\
+-	idpf_controlq_setup.o	\
+ 	idpf_dev.o		\
+ 	idpf_ethtool.o		\
+ 	idpf_idc.o		\
+diff --git a/drivers/net/ethernet/intel/idpf/idpf.h b/drivers/net/ethernet/intel/idpf/idpf.h
+index efdb58990a8b..679539a1b947 100644
+--- a/drivers/net/ethernet/intel/idpf/idpf.h
++++ b/drivers/net/ethernet/intel/idpf/idpf.h
+@@ -27,7 +27,6 @@ struct idpf_rss_data;
+ #include <linux/intel/virtchnl2.h>
  
- MODULE_DEVICE_TABLE(pci, com20020pci_id_table);
-diff --git a/drivers/net/can/m_can/m_can_pci.c b/drivers/net/can/m_can/m_can_pci.c
-index eb31ed1f9644..cb9335c1d3ea 100644
---- a/drivers/net/can/m_can/m_can_pci.c
-+++ b/drivers/net/can/m_can/m_can_pci.c
-@@ -183,9 +183,9 @@ static SIMPLE_DEV_PM_OPS(m_can_pci_pm_ops,
- 			 m_can_pci_suspend, m_can_pci_resume);
+ #include "idpf_txrx.h"
+-#include "idpf_controlq.h"
  
- static const struct pci_device_id m_can_pci_id_table[] = {
--	{ PCI_VDEVICE(INTEL, 0x4bc1), M_CAN_CLOCK_FREQ_EHL, },
--	{ PCI_VDEVICE(INTEL, 0x4bc2), M_CAN_CLOCK_FREQ_EHL, },
--	{  }	/* Terminating Entry */
-+	{ PCI_VDEVICE(INTEL, 0x4bc1), .driver_data = M_CAN_CLOCK_FREQ_EHL, },
-+	{ PCI_VDEVICE(INTEL, 0x4bc2), .driver_data = M_CAN_CLOCK_FREQ_EHL, },
-+	{ }	/* terminating entry */
- };
- MODULE_DEVICE_TABLE(pci, m_can_pci_id_table);
+ #define GETMAXVAL(num_bits)		GENMASK((num_bits) - 1, 0)
  
-diff --git a/drivers/net/can/sja1000/plx_pci.c b/drivers/net/can/sja1000/plx_pci.c
-index 08183833c9bc..a03553b80a5d 100644
---- a/drivers/net/can/sja1000/plx_pci.c
-+++ b/drivers/net/can/sja1000/plx_pci.c
-@@ -272,124 +272,89 @@ static struct plx_pci_card_info plx_pci_card_info_asem_dual_can = {
- static const struct pci_device_id plx_pci_tbl[] = {
- 	{
- 		/* Adlink PCI-7841/cPCI-7841 */
--		ADLINK_PCI_VENDOR_ID, ADLINK_PCI_DEVICE_ID,
--		PCI_ANY_ID, PCI_ANY_ID,
--		PCI_CLASS_NETWORK_OTHER << 8, ~0,
--		(kernel_ulong_t)&plx_pci_card_info_adlink
--	},
--	{
-+		PCI_DEVICE(ADLINK_PCI_VENDOR_ID, ADLINK_PCI_DEVICE_ID),
-+		.class = PCI_CLASS_NETWORK_OTHER << 8,
-+		.class_mask = ~0,
-+		.driver_data = (kernel_ulong_t)&plx_pci_card_info_adlink,
-+	}, {
- 		/* Adlink PCI-7841/cPCI-7841 SE */
--		ADLINK_PCI_VENDOR_ID, ADLINK_PCI_DEVICE_ID,
--		PCI_ANY_ID, PCI_ANY_ID,
--		PCI_CLASS_COMMUNICATION_OTHER << 8, ~0,
--		(kernel_ulong_t)&plx_pci_card_info_adlink_se
--	},
--	{
-+		PCI_DEVICE(ADLINK_PCI_VENDOR_ID, ADLINK_PCI_DEVICE_ID),
-+		.class = PCI_CLASS_COMMUNICATION_OTHER << 8,
-+		.class_mask = ~0,
-+		.driver_data = (kernel_ulong_t)&plx_pci_card_info_adlink_se,
-+	}, {
- 		/* esd CAN-PCI/200 */
--		PCI_VENDOR_ID_PLX, PCI_DEVICE_ID_PLX_9050,
--		PCI_VENDOR_ID_ESDGMBH, ESD_PCI_SUB_SYS_ID_PCI200,
--		0, 0,
--		(kernel_ulong_t)&plx_pci_card_info_esd200
--	},
--	{
-+		PCI_VDEVICE_SUB(PLX, PCI_DEVICE_ID_PLX_9050,
-+				PCI_VENDOR_ID_ESDGMBH, ESD_PCI_SUB_SYS_ID_PCI200),
-+		.driver_data = (kernel_ulong_t)&plx_pci_card_info_esd200,
-+	}, {
- 		/* esd CAN-CPCI/200 */
--		PCI_VENDOR_ID_PLX, PCI_DEVICE_ID_PLX_9030,
--		PCI_VENDOR_ID_ESDGMBH, ESD_PCI_SUB_SYS_ID_CPCI200,
--		0, 0,
--		(kernel_ulong_t)&plx_pci_card_info_esd200
--	},
--	{
-+		PCI_VDEVICE_SUB(PLX, PCI_DEVICE_ID_PLX_9030,
-+				PCI_VENDOR_ID_ESDGMBH, ESD_PCI_SUB_SYS_ID_CPCI200),
-+		.driver_data = (kernel_ulong_t)&plx_pci_card_info_esd200,
-+	}, {
- 		/* esd CAN-PCI104/200 */
--		PCI_VENDOR_ID_PLX, PCI_DEVICE_ID_PLX_9030,
--		PCI_VENDOR_ID_ESDGMBH, ESD_PCI_SUB_SYS_ID_PCI104200,
--		0, 0,
--		(kernel_ulong_t)&plx_pci_card_info_esd200
--	},
--	{
-+		PCI_VDEVICE_SUB(PLX, PCI_DEVICE_ID_PLX_9030,
-+				PCI_VENDOR_ID_ESDGMBH, ESD_PCI_SUB_SYS_ID_PCI104200),
-+		.driver_data = (kernel_ulong_t)&plx_pci_card_info_esd200,
-+	}, {
- 		/* esd CAN-PCI/266 */
--		PCI_VENDOR_ID_PLX, PCI_DEVICE_ID_PLX_9056,
--		PCI_VENDOR_ID_ESDGMBH, ESD_PCI_SUB_SYS_ID_PCI266,
--		0, 0,
--		(kernel_ulong_t)&plx_pci_card_info_esd266
--	},
--	{
-+		PCI_VDEVICE_SUB(PLX, PCI_DEVICE_ID_PLX_9056,
-+				PCI_VENDOR_ID_ESDGMBH, ESD_PCI_SUB_SYS_ID_PCI266),
-+		.driver_data = (kernel_ulong_t)&plx_pci_card_info_esd266,
-+	}, {
- 		/* esd CAN-PMC/266 */
--		PCI_VENDOR_ID_PLX, PCI_DEVICE_ID_PLX_9056,
--		PCI_VENDOR_ID_ESDGMBH, ESD_PCI_SUB_SYS_ID_PMC266,
--		0, 0,
--		(kernel_ulong_t)&plx_pci_card_info_esd266
--	},
--	{
-+		PCI_VDEVICE_SUB(PLX, PCI_DEVICE_ID_PLX_9056,
-+				PCI_VENDOR_ID_ESDGMBH, ESD_PCI_SUB_SYS_ID_PMC266),
-+		.driver_data = (kernel_ulong_t)&plx_pci_card_info_esd266,
-+	}, {
- 		/* esd CAN-PCIE/2000 */
--		PCI_VENDOR_ID_PLX, PCI_DEVICE_ID_PLX_9056,
--		PCI_VENDOR_ID_ESDGMBH, ESD_PCI_SUB_SYS_ID_PCIE2000,
--		0, 0,
--		(kernel_ulong_t)&plx_pci_card_info_esd2000
--	},
--	{
-+		PCI_VDEVICE_SUB(PLX, PCI_DEVICE_ID_PLX_9056,
-+				PCI_VENDOR_ID_ESDGMBH, ESD_PCI_SUB_SYS_ID_PCIE2000),
-+		.driver_data = (kernel_ulong_t)&plx_pci_card_info_esd2000,
-+	}, {
- 		/* IXXAT PC-I 04/PCI card */
--		IXXAT_PCI_VENDOR_ID, IXXAT_PCI_DEVICE_ID,
--		PCI_ANY_ID, IXXAT_PCI_SUB_SYS_ID,
--		0, 0,
--		(kernel_ulong_t)&plx_pci_card_info_ixxat
--	},
--	{
-+		PCI_DEVICE_SUB(IXXAT_PCI_VENDOR_ID, IXXAT_PCI_DEVICE_ID,
-+			       PCI_ANY_ID, IXXAT_PCI_SUB_SYS_ID),
-+		.driver_data = (kernel_ulong_t)&plx_pci_card_info_ixxat,
-+	}, {
- 		/* Marathon CAN-bus-PCI card */
--		PCI_VENDOR_ID_PLX, MARATHON_PCI_DEVICE_ID,
--		PCI_ANY_ID, PCI_ANY_ID,
--		0, 0,
--		(kernel_ulong_t)&plx_pci_card_info_marathon_pci
--	},
--	{
-+		PCI_VDEVICE(PLX, MARATHON_PCI_DEVICE_ID),
-+		.driver_data = (kernel_ulong_t)&plx_pci_card_info_marathon_pci,
-+	}, {
- 		/* Marathon CAN-bus-PCIe card */
--		PCI_VENDOR_ID_PLX, MARATHON_PCIE_DEVICE_ID,
--		PCI_ANY_ID, PCI_ANY_ID,
--		0, 0,
--		(kernel_ulong_t)&plx_pci_card_info_marathon_pcie
--	},
--	{
-+		PCI_VDEVICE(PLX, MARATHON_PCIE_DEVICE_ID),
-+		.driver_data = (kernel_ulong_t)&plx_pci_card_info_marathon_pcie,
-+	}, {
- 		/* TEWS TECHNOLOGIES TPMC810 card */
--		TEWS_PCI_VENDOR_ID, TEWS_PCI_DEVICE_ID_TMPC810,
--		PCI_ANY_ID, PCI_ANY_ID,
--		0, 0,
--		(kernel_ulong_t)&plx_pci_card_info_tews
--	},
--	{
-+		PCI_DEVICE(TEWS_PCI_VENDOR_ID, TEWS_PCI_DEVICE_ID_TMPC810),
-+		.driver_data = (kernel_ulong_t)&plx_pci_card_info_tews,
-+	}, {
- 		/* Connect Tech Inc. CANpro/104-Plus Opto (CRG001) card */
--		PCI_VENDOR_ID_PLX, PCI_DEVICE_ID_PLX_9030,
--		PCI_SUBVENDOR_ID_CONNECT_TECH, CTI_PCI_DEVICE_ID_CRG001,
--		0, 0,
--		(kernel_ulong_t)&plx_pci_card_info_cti
--	},
--	{
-+		PCI_VDEVICE_SUB(PLX, PCI_DEVICE_ID_PLX_9030,
-+				PCI_SUBVENDOR_ID_CONNECT_TECH, CTI_PCI_DEVICE_ID_CRG001),
-+		.driver_data = (kernel_ulong_t)&plx_pci_card_info_cti,
-+	}, {
- 		/* Elcus CAN-200-PCI */
--		CAN200PCI_VENDOR_ID, CAN200PCI_DEVICE_ID,
--		CAN200PCI_SUB_VENDOR_ID, CAN200PCI_SUB_DEVICE_ID,
--		0, 0,
--		(kernel_ulong_t)&plx_pci_card_info_elcus
--	},
--	{
-+		PCI_DEVICE_SUB(CAN200PCI_VENDOR_ID, CAN200PCI_DEVICE_ID,
-+			       CAN200PCI_SUB_VENDOR_ID, CAN200PCI_SUB_DEVICE_ID),
-+		.driver_data = (kernel_ulong_t)&plx_pci_card_info_elcus,
-+	}, {
- 		/* moxa */
--		MOXA_PCI_VENDOR_ID, MOXA_PCI_DEVICE_ID,
--		PCI_ANY_ID, PCI_ANY_ID,
--		0, 0,
--		(kernel_ulong_t)&plx_pci_card_info_moxa
--	},
--	{
-+		PCI_DEVICE(MOXA_PCI_VENDOR_ID, MOXA_PCI_DEVICE_ID),
-+		.driver_data = (kernel_ulong_t)&plx_pci_card_info_moxa,
-+	}, {
- 		/* ASEM Dual CAN raw */
--		ASEM_RAW_CAN_VENDOR_ID, ASEM_RAW_CAN_DEVICE_ID,
--		ASEM_RAW_CAN_SUB_VENDOR_ID, ASEM_RAW_CAN_SUB_DEVICE_ID,
--		0, 0,
--		(kernel_ulong_t)&plx_pci_card_info_asem_dual_can
--	},
--	{
-+		PCI_DEVICE_SUB(ASEM_RAW_CAN_VENDOR_ID, ASEM_RAW_CAN_DEVICE_ID,
-+			       ASEM_RAW_CAN_SUB_VENDOR_ID, ASEM_RAW_CAN_SUB_DEVICE_ID),
-+		.driver_data = (kernel_ulong_t)&plx_pci_card_info_asem_dual_can,
-+	}, {
- 		/* ASEM Dual CAN raw -new model */
--		ASEM_RAW_CAN_VENDOR_ID, ASEM_RAW_CAN_DEVICE_ID,
--		ASEM_RAW_CAN_SUB_VENDOR_ID, ASEM_RAW_CAN_SUB_DEVICE_ID_BIS,
--		0, 0,
--		(kernel_ulong_t)&plx_pci_card_info_asem_dual_can
-+		PCI_DEVICE_SUB(ASEM_RAW_CAN_VENDOR_ID, ASEM_RAW_CAN_DEVICE_ID,
-+			       ASEM_RAW_CAN_SUB_VENDOR_ID, ASEM_RAW_CAN_SUB_DEVICE_ID_BIS),
-+		.driver_data = (kernel_ulong_t)&plx_pci_card_info_asem_dual_can,
- 	},
--	{ 0,}
-+	{ }
- };
- MODULE_DEVICE_TABLE(pci, plx_pci_tbl);
+@@ -37,11 +36,10 @@ struct idpf_rss_data;
+ #define IDPF_NUM_FILTERS_PER_MSG	20
+ #define IDPF_NUM_DFLT_MBX_Q		2	/* includes both TX and RX */
+ #define IDPF_DFLT_MBX_Q_LEN		64
+-#define IDPF_DFLT_MBX_ID		-1
+ /* maximum number of times to try before resetting mailbox */
+ #define IDPF_MB_MAX_ERR			20
+ #define IDPF_NUM_CHUNKS_PER_MSG(struct_sz, chunk_sz)	\
+-	((IDPF_CTLQ_MAX_BUF_LEN - (struct_sz)) / (chunk_sz))
++	((LIBIE_CTLQ_MAX_BUF_LEN - (struct_sz)) / (chunk_sz))
  
-diff --git a/drivers/net/ethernet/3com/3c59x.c b/drivers/net/ethernet/3com/3c59x.c
-index 4fe4efdb3737..79beb86437df 100644
---- a/drivers/net/ethernet/3com/3c59x.c
-+++ b/drivers/net/ethernet/3com/3c59x.c
-@@ -376,54 +376,54 @@ static struct vortex_chip_info {
- 
- 
- static const struct pci_device_id vortex_pci_tbl[] = {
--	{ 0x10B7, 0x5900, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C590 },
--	{ 0x10B7, 0x5920, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C592 },
--	{ 0x10B7, 0x5970, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C597 },
--	{ 0x10B7, 0x5950, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C595_1 },
--	{ 0x10B7, 0x5951, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C595_2 },
-+	{ PCI_DEVICE(0x10B7, 0x5900), .driver_data = CH_3C590 },
-+	{ PCI_DEVICE(0x10B7, 0x5920), .driver_data = CH_3C592 },
-+	{ PCI_DEVICE(0x10B7, 0x5970), .driver_data = CH_3C597 },
-+	{ PCI_DEVICE(0x10B7, 0x5950), .driver_data = CH_3C595_1 },
-+	{ PCI_DEVICE(0x10B7, 0x5951), .driver_data = CH_3C595_2 },
- 
--	{ 0x10B7, 0x5952, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C595_3 },
--	{ 0x10B7, 0x9000, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C900_1 },
--	{ 0x10B7, 0x9001, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C900_2 },
--	{ 0x10B7, 0x9004, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C900_3 },
--	{ 0x10B7, 0x9005, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C900_4 },
-+	{ PCI_DEVICE(0x10B7, 0x5952), .driver_data = CH_3C595_3 },
-+	{ PCI_DEVICE(0x10B7, 0x9000), .driver_data = CH_3C900_1 },
-+	{ PCI_DEVICE(0x10B7, 0x9001), .driver_data = CH_3C900_2 },
-+	{ PCI_DEVICE(0x10B7, 0x9004), .driver_data = CH_3C900_3 },
-+	{ PCI_DEVICE(0x10B7, 0x9005), .driver_data = CH_3C900_4 },
- 
--	{ 0x10B7, 0x9006, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C900_5 },
--	{ 0x10B7, 0x900A, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C900B_FL },
--	{ 0x10B7, 0x9050, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C905_1 },
--	{ 0x10B7, 0x9051, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C905_2 },
--	{ 0x10B7, 0x9054, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C905B_TX },
--	{ 0x10B7, 0x9055, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C905B_1 },
-+	{ PCI_DEVICE(0x10B7, 0x9006), .driver_data = CH_3C900_5 },
-+	{ PCI_DEVICE(0x10B7, 0x900A), .driver_data = CH_3C900B_FL },
-+	{ PCI_DEVICE(0x10B7, 0x9050), .driver_data = CH_3C905_1 },
-+	{ PCI_DEVICE(0x10B7, 0x9051), .driver_data = CH_3C905_2 },
-+	{ PCI_DEVICE(0x10B7, 0x9054), .driver_data = CH_3C905B_TX },
-+	{ PCI_DEVICE(0x10B7, 0x9055), .driver_data = CH_3C905B_1 },
- 
--	{ 0x10B7, 0x9058, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C905B_2 },
--	{ 0x10B7, 0x905A, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C905B_FX },
--	{ 0x10B7, 0x9200, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C905C },
--	{ 0x10B7, 0x9202, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C9202 },
--	{ 0x10B7, 0x9800, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C980 },
--	{ 0x10B7, 0x9805, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C9805 },
-+	{ PCI_DEVICE(0x10B7, 0x9058), .driver_data = CH_3C905B_2 },
-+	{ PCI_DEVICE(0x10B7, 0x905A), .driver_data = CH_3C905B_FX },
-+	{ PCI_DEVICE(0x10B7, 0x9200), .driver_data = CH_3C905C },
-+	{ PCI_DEVICE(0x10B7, 0x9202), .driver_data = CH_3C9202 },
-+	{ PCI_DEVICE(0x10B7, 0x9800), .driver_data = CH_3C980 },
-+	{ PCI_DEVICE(0x10B7, 0x9805), .driver_data = CH_3C9805 },
- 
--	{ 0x10B7, 0x7646, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3CSOHO100_TX },
--	{ 0x10B7, 0x5055, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C555 },
--	{ 0x10B7, 0x6055, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C556 },
--	{ 0x10B7, 0x6056, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C556B },
--	{ 0x10B7, 0x5b57, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C575 },
-+	{ PCI_DEVICE(0x10B7, 0x7646), .driver_data = CH_3CSOHO100_TX },
-+	{ PCI_DEVICE(0x10B7, 0x5055), .driver_data = CH_3C555 },
-+	{ PCI_DEVICE(0x10B7, 0x6055), .driver_data = CH_3C556 },
-+	{ PCI_DEVICE(0x10B7, 0x6056), .driver_data = CH_3C556B },
-+	{ PCI_DEVICE(0x10B7, 0x5b57), .driver_data = CH_3C575 },
- 
--	{ 0x10B7, 0x5057, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C575_1 },
--	{ 0x10B7, 0x5157, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3CCFE575 },
--	{ 0x10B7, 0x5257, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3CCFE575CT },
--	{ 0x10B7, 0x6560, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3CCFE656 },
--	{ 0x10B7, 0x6562, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3CCFEM656 },
-+	{ PCI_DEVICE(0x10B7, 0x5057), .driver_data = CH_3C575_1 },
-+	{ PCI_DEVICE(0x10B7, 0x5157), .driver_data = CH_3CCFE575 },
-+	{ PCI_DEVICE(0x10B7, 0x5257), .driver_data = CH_3CCFE575CT },
-+	{ PCI_DEVICE(0x10B7, 0x6560), .driver_data = CH_3CCFE656 },
-+	{ PCI_DEVICE(0x10B7, 0x6562), .driver_data = CH_3CCFEM656 },
- 
--	{ 0x10B7, 0x6564, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3CCFEM656_1 },
--	{ 0x10B7, 0x4500, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C450 },
--	{ 0x10B7, 0x9201, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C920 },
--	{ 0x10B7, 0x1201, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C982A },
--	{ 0x10B7, 0x1202, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C982B },
-+	{ PCI_DEVICE(0x10B7, 0x6564), .driver_data = CH_3CCFEM656_1 },
-+	{ PCI_DEVICE(0x10B7, 0x4500), .driver_data = CH_3C450 },
-+	{ PCI_DEVICE(0x10B7, 0x9201), .driver_data = CH_3C920 },
-+	{ PCI_DEVICE(0x10B7, 0x1201), .driver_data = CH_3C982A },
-+	{ PCI_DEVICE(0x10B7, 0x1202), .driver_data = CH_3C982B },
- 
--	{ 0x10B7, 0x9056, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_905BT4 },
--	{ 0x10B7, 0x9210, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_920B_EMB_WNM },
-+	{ PCI_DEVICE(0x10B7, 0x9056), .driver_data = CH_905BT4 },
-+	{ PCI_DEVICE(0x10B7, 0x9210), .driver_data = CH_920B_EMB_WNM },
- 
--	{0,}						/* 0 terminated list. */
-+	{ }						/* 0 terminated list. */
- };
- MODULE_DEVICE_TABLE(pci, vortex_pci_tbl);
- 
-diff --git a/drivers/net/ethernet/3com/typhoon.c b/drivers/net/ethernet/3com/typhoon.c
-index aaaff3ba43ef..fadc86907ec2 100644
---- a/drivers/net/ethernet/3com/typhoon.c
-+++ b/drivers/net/ethernet/3com/typhoon.c
-@@ -198,33 +198,54 @@ static struct typhoon_card_info typhoon_card_info[] = {
-  * bits 12-16 indicate card type: (0) client and (1) server
+ #define IDPF_WAIT_FOR_MARKER_TIMEO	500
+ #define IDPF_MAX_WAIT			500
+@@ -202,8 +200,8 @@ struct idpf_vport_max_q {
+  * @ptp_reg_init: PTP register initialization
   */
- static const struct pci_device_id typhoon_pci_tbl[] = {
--	{ PCI_VENDOR_ID_3COM, PCI_DEVICE_ID_3COM_3CR990,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0,TYPHOON_TX },
--	{ PCI_VENDOR_ID_3COM, PCI_DEVICE_ID_3COM_3CR990_TX_95,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, TYPHOON_TX95 },
--	{ PCI_VENDOR_ID_3COM, PCI_DEVICE_ID_3COM_3CR990_TX_97,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, TYPHOON_TX97 },
--	{ PCI_VENDOR_ID_3COM, PCI_DEVICE_ID_3COM_3CR990B,
--	  PCI_ANY_ID, 0x1000, 0, 0, TYPHOON_TXM },
--	{ PCI_VENDOR_ID_3COM, PCI_DEVICE_ID_3COM_3CR990B,
--	  PCI_ANY_ID, 0x1102, 0, 0, TYPHOON_FXM },
--	{ PCI_VENDOR_ID_3COM, PCI_DEVICE_ID_3COM_3CR990B,
--	  PCI_ANY_ID, 0x2000, 0, 0, TYPHOON_BSVR },
--	{ PCI_VENDOR_ID_3COM, PCI_DEVICE_ID_3COM_3CR990_FX,
--	  PCI_ANY_ID, 0x1101, 0, 0, TYPHOON_FX95 },
--	{ PCI_VENDOR_ID_3COM, PCI_DEVICE_ID_3COM_3CR990_FX,
--	  PCI_ANY_ID, 0x1102, 0, 0, TYPHOON_FX97 },
--	{ PCI_VENDOR_ID_3COM, PCI_DEVICE_ID_3COM_3CR990_FX,
--	  PCI_ANY_ID, 0x2101, 0, 0, TYPHOON_FX95SVR },
--	{ PCI_VENDOR_ID_3COM, PCI_DEVICE_ID_3COM_3CR990_FX,
--	  PCI_ANY_ID, 0x2102, 0, 0, TYPHOON_FX97SVR },
--	{ PCI_VENDOR_ID_3COM, PCI_DEVICE_ID_3COM_3CR990SVR95,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, TYPHOON_SVR95 },
--	{ PCI_VENDOR_ID_3COM, PCI_DEVICE_ID_3COM_3CR990SVR97,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, TYPHOON_SVR97 },
--	{ PCI_VENDOR_ID_3COM, PCI_DEVICE_ID_3COM_3CR990SVR,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, TYPHOON_SVR },
--	{ 0, }
-+	{
-+		PCI_VDEVICE(3COM, PCI_DEVICE_ID_3COM_3CR990),
-+		.driver_data = TYPHOON_TX,
-+	}, {
-+		PCI_VDEVICE(3COM, PCI_DEVICE_ID_3COM_3CR990_TX_95),
-+		.driver_data = TYPHOON_TX95,
-+	}, {
-+		PCI_VDEVICE(3COM, PCI_DEVICE_ID_3COM_3CR990_TX_97),
-+		.driver_data = TYPHOON_TX97,
-+	}, {
-+		PCI_VDEVICE_SUB(3COM, PCI_DEVICE_ID_3COM_3CR990B,
-+				PCI_ANY_ID, 0x1000),
-+		.driver_data = TYPHOON_TXM,
-+	}, {
-+		PCI_VDEVICE_SUB(3COM, PCI_DEVICE_ID_3COM_3CR990B,
-+				PCI_ANY_ID, 0x1102),
-+		.driver_data = TYPHOON_FXM,
-+	}, {
-+		PCI_VDEVICE_SUB(3COM, PCI_DEVICE_ID_3COM_3CR990B,
-+				PCI_ANY_ID, 0x2000),
-+		.driver_data = TYPHOON_BSVR,
-+	}, {
-+		PCI_VDEVICE_SUB(3COM, PCI_DEVICE_ID_3COM_3CR990_FX,
-+				PCI_ANY_ID, 0x1101),
-+		.driver_data = TYPHOON_FX95,
-+	}, {
-+		PCI_VDEVICE_SUB(3COM, PCI_DEVICE_ID_3COM_3CR990_FX,
-+				PCI_ANY_ID, 0x1102),
-+		.driver_data = TYPHOON_FX97,
-+	}, {
-+		PCI_VDEVICE_SUB(3COM, PCI_DEVICE_ID_3COM_3CR990_FX,
-+				PCI_ANY_ID, 0x2101),
-+		.driver_data = TYPHOON_FX95SVR,
-+	}, {
-+		PCI_VDEVICE_SUB(3COM, PCI_DEVICE_ID_3COM_3CR990_FX,
-+				PCI_ANY_ID, 0x2102),
-+		.driver_data = TYPHOON_FX97SVR,
-+	}, {
-+		PCI_VDEVICE(3COM, PCI_DEVICE_ID_3COM_3CR990SVR95),
-+		.driver_data = TYPHOON_SVR95,
-+	}, {
-+		PCI_VDEVICE(3COM, PCI_DEVICE_ID_3COM_3CR990SVR97),
-+		.driver_data = TYPHOON_SVR97,
-+	}, {
-+		PCI_VDEVICE(3COM, PCI_DEVICE_ID_3COM_3CR990SVR),
-+		.driver_data = TYPHOON_SVR,
-+	},
-+	{ }
- };
- MODULE_DEVICE_TABLE(pci, typhoon_pci_tbl);
- 
-diff --git a/drivers/net/ethernet/8390/ne2k-pci.c b/drivers/net/ethernet/8390/ne2k-pci.c
-index 1a34da07c0db..b1a94c97c0b9 100644
---- a/drivers/net/ethernet/8390/ne2k-pci.c
-+++ b/drivers/net/ethernet/8390/ne2k-pci.c
-@@ -143,18 +143,18 @@ static struct {
- 
- 
- static const struct pci_device_id ne2k_pci_tbl[] = {
--	{ 0x10ec, 0x8029, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_RealTek_RTL_8029 },
--	{ 0x1050, 0x0940, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_Winbond_89C940 },
--	{ 0x11f6, 0x1401, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_Compex_RL2000 },
--	{ 0x8e2e, 0x3000, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_KTI_ET32P2 },
--	{ 0x4a14, 0x5000, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_NetVin_NV5000SC },
--	{ 0x1106, 0x0926, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_Via_86C926 },
--	{ 0x10bd, 0x0e34, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_SureCom_NE34 },
--	{ 0x1050, 0x5a5a, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_Winbond_W89C940F },
--	{ 0x12c3, 0x0058, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_Holtek_HT80232 },
--	{ 0x12c3, 0x5598, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_Holtek_HT80229 },
--	{ 0x8c4a, 0x1980, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_Winbond_89C940_8c4a },
--	{ 0, }
-+	{ PCI_DEVICE(0x10ec, 0x8029), .driver_data = CH_RealTek_RTL_8029 },
-+	{ PCI_DEVICE(0x1050, 0x0940), .driver_data = CH_Winbond_89C940 },
-+	{ PCI_DEVICE(0x11f6, 0x1401), .driver_data = CH_Compex_RL2000 },
-+	{ PCI_DEVICE(0x8e2e, 0x3000), .driver_data = CH_KTI_ET32P2 },
-+	{ PCI_DEVICE(0x4a14, 0x5000), .driver_data = CH_NetVin_NV5000SC },
-+	{ PCI_DEVICE(0x1106, 0x0926), .driver_data = CH_Via_86C926 },
-+	{ PCI_DEVICE(0x10bd, 0x0e34), .driver_data = CH_SureCom_NE34 },
-+	{ PCI_DEVICE(0x1050, 0x5a5a), .driver_data = CH_Winbond_W89C940F },
-+	{ PCI_DEVICE(0x12c3, 0x0058), .driver_data = CH_Holtek_HT80232 },
-+	{ PCI_DEVICE(0x12c3, 0x5598), .driver_data = CH_Holtek_HT80229 },
-+	{ PCI_DEVICE(0x8c4a, 0x1980), .driver_data = CH_Winbond_89C940_8c4a },
-+	{ }
+ struct idpf_reg_ops {
+-	void (*ctlq_reg_init)(struct idpf_adapter *adapter,
+-			      struct idpf_ctlq_create_info *cq);
++	void (*ctlq_reg_init)(struct libie_mmio_info *mmio,
++			      struct libie_ctlq_create_info *cctlq_info);
+ 	int (*intr_reg_init)(struct idpf_vport *vport,
+ 			     struct idpf_q_vec_rsrc *rsrc);
+ 	void (*mb_intr_reg_init)(struct idpf_adapter *adapter);
+@@ -606,8 +604,6 @@ struct idpf_vport_config {
+ 	DECLARE_BITMAP(flags, IDPF_VPORT_CONFIG_FLAGS_NBITS);
  };
  
- MODULE_DEVICE_TABLE(pci, ne2k_pci_tbl);
-diff --git a/drivers/net/ethernet/adaptec/starfire.c b/drivers/net/ethernet/adaptec/starfire.c
-index e1b8794b14c9..f1109d90e1fc 100644
---- a/drivers/net/ethernet/adaptec/starfire.c
-+++ b/drivers/net/ethernet/adaptec/starfire.c
-@@ -278,8 +278,8 @@ enum chipset {
- };
- 
- static const struct pci_device_id starfire_pci_tbl[] = {
--	{ PCI_VDEVICE(ADAPTEC, 0x6915), CH_6915 },
--	{ 0, }
-+	{ PCI_VDEVICE(ADAPTEC, 0x6915), .driver_data = CH_6915 },
-+	{ }
- };
- MODULE_DEVICE_TABLE(pci, starfire_pci_tbl);
- 
-diff --git a/drivers/net/ethernet/agere/et131x.c b/drivers/net/ethernet/agere/et131x.c
-index 0f6e5373029a..1b465a167672 100644
---- a/drivers/net/ethernet/agere/et131x.c
-+++ b/drivers/net/ethernet/agere/et131x.c
-@@ -4084,9 +4084,9 @@ static int et131x_pci_setup(struct pci_dev *pdev,
- }
- 
- static const struct pci_device_id et131x_pci_table[] = {
--	{ PCI_VDEVICE(ATT, ET131X_PCI_DEVICE_ID_GIG), 0UL},
--	{ PCI_VDEVICE(ATT, ET131X_PCI_DEVICE_ID_FAST), 0UL},
--	{ 0,}
-+	{ PCI_VDEVICE(ATT, ET131X_PCI_DEVICE_ID_GIG) },
-+	{ PCI_VDEVICE(ATT, ET131X_PCI_DEVICE_ID_FAST) },
-+	{ }
- };
- MODULE_DEVICE_TABLE(pci, et131x_pci_table);
- 
-diff --git a/drivers/net/ethernet/broadcom/bnx2.c b/drivers/net/ethernet/broadcom/bnx2.c
-index f5722e929833..3e2fd2939e87 100644
---- a/drivers/net/ethernet/broadcom/bnx2.c
-+++ b/drivers/net/ethernet/broadcom/bnx2.c
-@@ -115,29 +115,45 @@ static struct {
- 	};
- 
- static const struct pci_device_id bnx2_pci_tbl[] = {
--	{ PCI_VENDOR_ID_BROADCOM, PCI_DEVICE_ID_NX2_5706,
--	  PCI_VENDOR_ID_HP, 0x3101, 0, 0, NC370T },
--	{ PCI_VENDOR_ID_BROADCOM, PCI_DEVICE_ID_NX2_5706,
--	  PCI_VENDOR_ID_HP, 0x3106, 0, 0, NC370I },
--	{ PCI_VENDOR_ID_BROADCOM, PCI_DEVICE_ID_NX2_5706,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, BCM5706 },
--	{ PCI_VENDOR_ID_BROADCOM, PCI_DEVICE_ID_NX2_5708,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, BCM5708 },
--	{ PCI_VENDOR_ID_BROADCOM, PCI_DEVICE_ID_NX2_5706S,
--	  PCI_VENDOR_ID_HP, 0x3102, 0, 0, NC370F },
--	{ PCI_VENDOR_ID_BROADCOM, PCI_DEVICE_ID_NX2_5706S,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, BCM5706S },
--	{ PCI_VENDOR_ID_BROADCOM, PCI_DEVICE_ID_NX2_5708S,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, BCM5708S },
--	{ PCI_VENDOR_ID_BROADCOM, PCI_DEVICE_ID_NX2_5709,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, BCM5709 },
--	{ PCI_VENDOR_ID_BROADCOM, PCI_DEVICE_ID_NX2_5709S,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, BCM5709S },
--	{ PCI_VENDOR_ID_BROADCOM, 0x163b,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, BCM5716 },
--	{ PCI_VENDOR_ID_BROADCOM, 0x163c,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, BCM5716S },
--	{ 0, }
-+	{
-+		PCI_VDEVICE_SUB(BROADCOM, PCI_DEVICE_ID_NX2_5706,
-+				PCI_VENDOR_ID_HP, 0x3101),
-+		.driver_data = NC370T,
-+	}, {
-+		PCI_VDEVICE_SUB(BROADCOM, PCI_DEVICE_ID_NX2_5706,
-+				PCI_VENDOR_ID_HP, 0x3106),
-+		.driver_data = NC370I,
-+	}, {
-+		PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_5706),
-+		.driver_data = BCM5706,
-+	}, {
-+		PCI_VDEVICE_SUB(BROADCOM, PCI_DEVICE_ID_NX2_5708,
-+				PCI_ANY_ID, PCI_ANY_ID),
-+		.driver_data = BCM5708,
-+	}, {
-+		PCI_VDEVICE_SUB(BROADCOM, PCI_DEVICE_ID_NX2_5706S,
-+				PCI_VENDOR_ID_HP, 0x3102),
-+		.driver_data = NC370F,
-+	}, {
-+		PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_5706S),
-+		.driver_data = BCM5706S,
-+	}, {
-+		PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_5708S),
-+		.driver_data = BCM5708S,
-+	}, {
-+		PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_5709),
-+		.driver_data = BCM5709,
-+	}, {
-+		PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_5709S),
-+		.driver_data = BCM5709S,
-+	}, {
-+		PCI_VDEVICE(BROADCOM, 0x163b),
-+		.driver_data = BCM5716,
-+	}, {
-+		PCI_VDEVICE(BROADCOM, 0x163c),
-+		.driver_data = BCM5716S,
-+	},
-+	{ }
- };
- 
- static const struct flash_spec flash_table[] =
-diff --git a/drivers/net/ethernet/broadcom/bnx2x/bnx2x_main.c b/drivers/net/ethernet/broadcom/bnx2x/bnx2x_main.c
-index da0f8c353e6a..6f96645ff23f 100644
---- a/drivers/net/ethernet/broadcom/bnx2x/bnx2x_main.c
-+++ b/drivers/net/ethernet/broadcom/bnx2x/bnx2x_main.c
-@@ -259,31 +259,31 @@ static struct {
- #endif
- 
- static const struct pci_device_id bnx2x_pci_tbl[] = {
--	{ PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_57710), BCM57710 },
--	{ PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_57711), BCM57711 },
--	{ PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_57711E), BCM57711E },
--	{ PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_57712), BCM57712 },
--	{ PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_57712_MF), BCM57712_MF },
--	{ PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_57712_VF), BCM57712_VF },
--	{ PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_57800), BCM57800 },
--	{ PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_57800_MF), BCM57800_MF },
--	{ PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_57800_VF), BCM57800_VF },
--	{ PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_57810), BCM57810 },
--	{ PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_57810_MF), BCM57810_MF },
--	{ PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_57840_O), BCM57840_O },
--	{ PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_57840_4_10), BCM57840_4_10 },
--	{ PCI_VDEVICE(QLOGIC,	PCI_DEVICE_ID_NX2_57840_4_10), BCM57840_4_10 },
--	{ PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_57840_2_20), BCM57840_2_20 },
--	{ PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_57810_VF), BCM57810_VF },
--	{ PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_57840_MFO), BCM57840_MFO },
--	{ PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_57840_MF), BCM57840_MF },
--	{ PCI_VDEVICE(QLOGIC,	PCI_DEVICE_ID_NX2_57840_MF), BCM57840_MF },
--	{ PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_57840_VF), BCM57840_VF },
--	{ PCI_VDEVICE(QLOGIC,	PCI_DEVICE_ID_NX2_57840_VF), BCM57840_VF },
--	{ PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_57811), BCM57811 },
--	{ PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_57811_MF), BCM57811_MF },
--	{ PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_57811_VF), BCM57811_VF },
--	{ 0 }
-+	{ PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_57710), .driver_data = BCM57710 },
-+	{ PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_57711), .driver_data = BCM57711 },
-+	{ PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_57711E), .driver_data = BCM57711E },
-+	{ PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_57712), .driver_data = BCM57712 },
-+	{ PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_57712_MF), .driver_data = BCM57712_MF },
-+	{ PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_57712_VF), .driver_data = BCM57712_VF },
-+	{ PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_57800), .driver_data = BCM57800 },
-+	{ PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_57800_MF), .driver_data = BCM57800_MF },
-+	{ PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_57800_VF), .driver_data = BCM57800_VF },
-+	{ PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_57810), .driver_data = BCM57810 },
-+	{ PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_57810_MF), .driver_data = BCM57810_MF },
-+	{ PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_57840_O), .driver_data = BCM57840_O },
-+	{ PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_57840_4_10), .driver_data = BCM57840_4_10 },
-+	{ PCI_VDEVICE(QLOGIC,	PCI_DEVICE_ID_NX2_57840_4_10), .driver_data = BCM57840_4_10 },
-+	{ PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_57840_2_20), .driver_data = BCM57840_2_20 },
-+	{ PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_57810_VF), .driver_data = BCM57810_VF },
-+	{ PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_57840_MFO), .driver_data = BCM57840_MFO },
-+	{ PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_57840_MF), .driver_data = BCM57840_MF },
-+	{ PCI_VDEVICE(QLOGIC,	PCI_DEVICE_ID_NX2_57840_MF), .driver_data = BCM57840_MF },
-+	{ PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_57840_VF), .driver_data = BCM57840_VF },
-+	{ PCI_VDEVICE(QLOGIC,	PCI_DEVICE_ID_NX2_57840_VF), .driver_data = BCM57840_VF },
-+	{ PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_57811), .driver_data = BCM57811 },
-+	{ PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_57811_MF), .driver_data = BCM57811_MF },
-+	{ PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_57811_VF), .driver_data = BCM57811_VF },
-+	{ }
- };
- 
- MODULE_DEVICE_TABLE(pci, bnx2x_pci_tbl);
-diff --git a/drivers/net/ethernet/cavium/liquidio/lio_main.c b/drivers/net/ethernet/cavium/liquidio/lio_main.c
-index c1a3df225254..353b2d23396e 100644
---- a/drivers/net/ethernet/cavium/liquidio/lio_main.c
-+++ b/drivers/net/ethernet/cavium/liquidio/lio_main.c
-@@ -404,17 +404,15 @@ static const struct pci_error_handlers liquidio_err_handler = {
- 
- static const struct pci_device_id liquidio_pci_tbl[] = {
- 	{       /* 68xx */
--		PCI_VENDOR_ID_CAVIUM, 0x91, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0
-+		PCI_VDEVICE(CAVIUM, 0x91)
- 	},
- 	{       /* 66xx */
--		PCI_VENDOR_ID_CAVIUM, 0x92, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0
-+		PCI_VDEVICE(CAVIUM, 0x92)
- 	},
- 	{       /* 23xx pf */
--		PCI_VENDOR_ID_CAVIUM, 0x9702, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0
-+		PCI_VDEVICE(CAVIUM, 0x9702)
- 	},
--	{
--		0, 0, 0, 0, 0, 0, 0
--	}
-+	{ }
- };
- MODULE_DEVICE_TABLE(pci, liquidio_pci_tbl);
- 
-diff --git a/drivers/net/ethernet/cavium/liquidio/lio_vf_main.c b/drivers/net/ethernet/cavium/liquidio/lio_vf_main.c
-index 43c595f3b84e..36255352e7ea 100644
---- a/drivers/net/ethernet/cavium/liquidio/lio_vf_main.c
-+++ b/drivers/net/ethernet/cavium/liquidio/lio_vf_main.c
-@@ -237,12 +237,9 @@ static const struct pci_error_handlers liquidio_vf_err_handler = {
- 
- static const struct pci_device_id liquidio_vf_pci_tbl[] = {
- 	{
--		PCI_VENDOR_ID_CAVIUM, OCTEON_CN23XX_VF_VID,
--		PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0
-+		PCI_VDEVICE(CAVIUM, OCTEON_CN23XX_VF_VID),
- 	},
--	{
--		0, 0, 0, 0, 0, 0, 0
--	}
-+	{ }
- };
- MODULE_DEVICE_TABLE(pci, liquidio_vf_pci_tbl);
- 
-diff --git a/drivers/net/ethernet/chelsio/cxgb/common.h b/drivers/net/ethernet/chelsio/cxgb/common.h
-index 304bb282ab03..292f8ec248e2 100644
---- a/drivers/net/ethernet/chelsio/cxgb/common.h
-+++ b/drivers/net/ethernet/chelsio/cxgb/common.h
-@@ -48,7 +48,7 @@
- #define DRV_NAME "cxgb"
- 
- #define CH_DEVICE(devid, ssid, idx) \
--	{ PCI_VENDOR_ID_CHELSIO, devid, PCI_ANY_ID, ssid, 0, 0, idx }
-+	{ PCI_VDEVICE_SUB(CHELSIO, devid, PCI_ANY_ID, ssid), .driver_data = idx }
- 
- #define SUPPORTED_PAUSE       (1 << 13)
- #define SUPPORTED_LOOPBACK    (1 << 15)
-diff --git a/drivers/net/ethernet/chelsio/cxgb/subr.c b/drivers/net/ethernet/chelsio/cxgb/subr.c
-index 367a9e4581d5..d4488e400bc6 100644
---- a/drivers/net/ethernet/chelsio/cxgb/subr.c
-+++ b/drivers/net/ethernet/chelsio/cxgb/subr.c
-@@ -533,7 +533,7 @@ const struct pci_device_id t1_pci_tbl[] = {
- 	CH_DEVICE(11, 1, CH_BRD_T210_1F),
- 	CH_DEVICE(14, 1, CH_BRD_T210_1CU),
- 	CH_DEVICE(16, 1, CH_BRD_N204_4CU),
--	{ 0 }
-+	{ }
- };
- 
- MODULE_DEVICE_TABLE(pci, t1_pci_tbl);
-diff --git a/drivers/net/ethernet/chelsio/cxgb3/cxgb3_main.c b/drivers/net/ethernet/chelsio/cxgb3/cxgb3_main.c
-index 88b6d76817e9..3bee82bc0680 100644
---- a/drivers/net/ethernet/chelsio/cxgb3/cxgb3_main.c
-+++ b/drivers/net/ethernet/chelsio/cxgb3/cxgb3_main.c
-@@ -83,7 +83,7 @@ enum {
- #define EEPROM_MAGIC 0x38E2F10C
- 
- #define CH_DEVICE(devid, idx) \
--	{ PCI_VENDOR_ID_CHELSIO, devid, PCI_ANY_ID, PCI_ANY_ID, 0, 0, idx }
-+	{ PCI_VDEVICE(CHELSIO, devid), .driver_data = idx }
- 
- static const struct pci_device_id cxgb3_pci_tbl[] = {
- 	CH_DEVICE(0x20, 0),	/* PE9000 */
-@@ -99,7 +99,7 @@ static const struct pci_device_id cxgb3_pci_tbl[] = {
- 	CH_DEVICE(0x35, 6),	/* T3C20-derived T3C10 */
- 	CH_DEVICE(0x36, 3),	/* S320E-CR */
- 	CH_DEVICE(0x37, 7),	/* N320E-G2 */
--	{0,}
-+	{ }
- };
- 
- MODULE_DESCRIPTION(DRV_DESC);
-diff --git a/drivers/net/ethernet/chelsio/cxgb4/cxgb4_main.c b/drivers/net/ethernet/chelsio/cxgb4/cxgb4_main.c
-index 10694d5924ee..6df98fca932f 100644
---- a/drivers/net/ethernet/chelsio/cxgb4/cxgb4_main.c
-+++ b/drivers/net/ethernet/chelsio/cxgb4/cxgb4_main.c
-@@ -112,10 +112,10 @@ char cxgb4_driver_name[] = KBUILD_MODNAME;
- #define CH_PCI_DEVICE_ID_FUNCTION2 0x0
- 
- #define CH_PCI_ID_TABLE_ENTRY(devid) \
--		{PCI_VDEVICE(CHELSIO, (devid)), CXGB4_UNIFIED_PF}
-+		{ PCI_VDEVICE(CHELSIO, (devid)), .driver_data = CXGB4_UNIFIED_PF }
- 
- #define CH_PCI_DEVICE_ID_TABLE_DEFINE_END \
--		{ 0, } \
-+		{ } \
- 	}
- 
- #include "t4_pci_id_tbl.h"
-diff --git a/drivers/net/ethernet/chelsio/cxgb4vf/cxgb4vf_main.c b/drivers/net/ethernet/chelsio/cxgb4vf/cxgb4vf_main.c
-index 9eaa9aadee33..b35a54982b6d 100644
---- a/drivers/net/ethernet/chelsio/cxgb4vf/cxgb4vf_main.c
-+++ b/drivers/net/ethernet/chelsio/cxgb4vf/cxgb4vf_main.c
-@@ -3388,9 +3388,9 @@ static void cxgb4vf_pci_shutdown(struct pci_dev *pdev)
- #define CH_PCI_DEVICE_ID_FUNCTION	0x8
- 
- #define CH_PCI_ID_TABLE_ENTRY(devid) \
--		{ PCI_VDEVICE(CHELSIO, (devid)), 0 }
-+		{ PCI_VDEVICE(CHELSIO, (devid)), .driver_data = 0 }
- 
--#define CH_PCI_DEVICE_ID_TABLE_DEFINE_END { 0, } }
-+#define CH_PCI_DEVICE_ID_TABLE_DEFINE_END { } }
- 
- #include "../cxgb4/t4_pci_id_tbl.h"
- 
-diff --git a/drivers/net/ethernet/dec/tulip/de2104x.c b/drivers/net/ethernet/dec/tulip/de2104x.c
-index f9504f340c4a..f38a10c79907 100644
---- a/drivers/net/ethernet/dec/tulip/de2104x.c
-+++ b/drivers/net/ethernet/dec/tulip/de2104x.c
-@@ -333,10 +333,8 @@ static unsigned int de_ok_to_advertise (struct de_private *de, u32 new_media);
- 
- 
- static const struct pci_device_id de_pci_tbl[] = {
--	{ PCI_VENDOR_ID_DEC, PCI_DEVICE_ID_DEC_TULIP,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0 },
--	{ PCI_VENDOR_ID_DEC, PCI_DEVICE_ID_DEC_TULIP_PLUS,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 1 },
-+	{ PCI_VDEVICE(DEC, PCI_DEVICE_ID_DEC_TULIP), .driver_data = 0 },
-+	{ PCI_VDEVICE(DEC, PCI_DEVICE_ID_DEC_TULIP_PLUS), .driver_data = 1 },
- 	{ },
- };
- MODULE_DEVICE_TABLE(pci, de_pci_tbl);
-diff --git a/drivers/net/ethernet/dec/tulip/dmfe.c b/drivers/net/ethernet/dec/tulip/dmfe.c
-index 2d3bd343b6e6..dabc091a0c66 100644
---- a/drivers/net/ethernet/dec/tulip/dmfe.c
-+++ b/drivers/net/ethernet/dec/tulip/dmfe.c
-@@ -2076,11 +2076,11 @@ static void dmfe_HPNA_remote_cmd_chk(struct dmfe_board_info * db)
- 
- 
- static const struct pci_device_id dmfe_pci_tbl[] = {
--	{ 0x1282, 0x9132, PCI_ANY_ID, PCI_ANY_ID, 0, 0, PCI_DM9132_ID },
--	{ 0x1282, 0x9102, PCI_ANY_ID, PCI_ANY_ID, 0, 0, PCI_DM9102_ID },
--	{ 0x1282, 0x9100, PCI_ANY_ID, PCI_ANY_ID, 0, 0, PCI_DM9100_ID },
--	{ 0x1282, 0x9009, PCI_ANY_ID, PCI_ANY_ID, 0, 0, PCI_DM9009_ID },
--	{ 0, }
-+	{ PCI_DEVICE(0x1282, 0x9132), .driver_data = PCI_DM9132_ID },
-+	{ PCI_DEVICE(0x1282, 0x9102), .driver_data = PCI_DM9102_ID },
-+	{ PCI_DEVICE(0x1282, 0x9100), .driver_data = PCI_DM9100_ID },
-+	{ PCI_DEVICE(0x1282, 0x9009), .driver_data = PCI_DM9009_ID },
-+	{ }
- };
- MODULE_DEVICE_TABLE(pci, dmfe_pci_tbl);
- 
-@@ -2101,7 +2101,7 @@ static int __maybe_unused dmfe_suspend(struct device *dev_d)
- 	dw32(DCR7, 0);
- 	dw32(DCR5, dr32(DCR5));
- 
--	/* Fre RX buffers */
-+	/* Free RX buffers */
- 	dmfe_free_rxbuffer(db);
- 
- 	/* Enable WOL */
-diff --git a/drivers/net/ethernet/dec/tulip/tulip_core.c b/drivers/net/ethernet/dec/tulip/tulip_core.c
-index b608585f1954..a7200eb66594 100644
---- a/drivers/net/ethernet/dec/tulip/tulip_core.c
-+++ b/drivers/net/ethernet/dec/tulip/tulip_core.c
-@@ -196,45 +196,45 @@ const struct tulip_chip_table tulip_tbl[] = {
- 
- 
- static const struct pci_device_id tulip_pci_tbl[] = {
--	{ 0x1011, 0x0009, PCI_ANY_ID, PCI_ANY_ID, 0, 0, DC21140 },
--	{ 0x1011, 0x0019, PCI_ANY_ID, PCI_ANY_ID, 0, 0, DC21143 },
--	{ 0x11AD, 0x0002, PCI_ANY_ID, PCI_ANY_ID, 0, 0, LC82C168 },
--	{ 0x10d9, 0x0512, PCI_ANY_ID, PCI_ANY_ID, 0, 0, MX98713 },
--	{ 0x10d9, 0x0531, PCI_ANY_ID, PCI_ANY_ID, 0, 0, MX98715 },
--/*	{ 0x10d9, 0x0531, PCI_ANY_ID, PCI_ANY_ID, 0, 0, MX98725 },*/
--	{ 0x125B, 0x1400, PCI_ANY_ID, PCI_ANY_ID, 0, 0, AX88140 },
--	{ 0x11AD, 0xc115, PCI_ANY_ID, PCI_ANY_ID, 0, 0, PNIC2 },
--	{ 0x1317, 0x0981, PCI_ANY_ID, PCI_ANY_ID, 0, 0, COMET },
--	{ 0x1317, 0x0985, PCI_ANY_ID, PCI_ANY_ID, 0, 0, COMET },
--	{ 0x1317, 0x1985, PCI_ANY_ID, PCI_ANY_ID, 0, 0, COMET },
--	{ 0x1317, 0x9511, PCI_ANY_ID, PCI_ANY_ID, 0, 0, COMET },
--	{ 0x13D1, 0xAB02, PCI_ANY_ID, PCI_ANY_ID, 0, 0, COMET },
--	{ 0x13D1, 0xAB03, PCI_ANY_ID, PCI_ANY_ID, 0, 0, COMET },
--	{ 0x13D1, 0xAB08, PCI_ANY_ID, PCI_ANY_ID, 0, 0, COMET },
--	{ 0x104A, 0x0981, PCI_ANY_ID, PCI_ANY_ID, 0, 0, COMET },
--	{ 0x104A, 0x2774, PCI_ANY_ID, PCI_ANY_ID, 0, 0, COMET },
--	{ 0x1259, 0xa120, PCI_ANY_ID, PCI_ANY_ID, 0, 0, COMET },
--	{ 0x11F6, 0x9881, PCI_ANY_ID, PCI_ANY_ID, 0, 0, COMPEX9881 },
--	{ 0x8086, 0x0039, PCI_ANY_ID, PCI_ANY_ID, 0, 0, I21145 },
-+	{ PCI_DEVICE(0x1011, 0x0009), .driver_data = DC21140 },
-+	{ PCI_DEVICE(0x1011, 0x0019), .driver_data = DC21143 },
-+	{ PCI_DEVICE(0x11AD, 0x0002), .driver_data = LC82C168 },
-+	{ PCI_DEVICE(0x10d9, 0x0512), .driver_data = MX98713 },
-+	{ PCI_DEVICE(0x10d9, 0x0531), .driver_data = MX98715 },
-+/*	{ PCI_DEVICE(0x10d9, 0x0531), .driver_data = MX98725 },*/
-+	{ PCI_DEVICE(0x125B, 0x1400), .driver_data = AX88140 },
-+	{ PCI_DEVICE(0x11AD, 0xc115), .driver_data = PNIC2 },
-+	{ PCI_DEVICE(0x1317, 0x0981), .driver_data = COMET },
-+	{ PCI_DEVICE(0x1317, 0x0985), .driver_data = COMET },
-+	{ PCI_DEVICE(0x1317, 0x1985), .driver_data = COMET },
-+	{ PCI_DEVICE(0x1317, 0x9511), .driver_data = COMET },
-+	{ PCI_DEVICE(0x13D1, 0xAB02), .driver_data = COMET },
-+	{ PCI_DEVICE(0x13D1, 0xAB03), .driver_data = COMET },
-+	{ PCI_DEVICE(0x13D1, 0xAB08), .driver_data = COMET },
-+	{ PCI_DEVICE(0x104A, 0x0981), .driver_data = COMET },
-+	{ PCI_DEVICE(0x104A, 0x2774), .driver_data = COMET },
-+	{ PCI_DEVICE(0x1259, 0xa120), .driver_data = COMET },
-+	{ PCI_DEVICE(0x11F6, 0x9881), .driver_data = COMPEX9881 },
-+	{ PCI_DEVICE(0x8086, 0x0039), .driver_data = I21145 },
- #ifdef CONFIG_TULIP_DM910X
--	{ 0x1282, 0x9100, PCI_ANY_ID, PCI_ANY_ID, 0, 0, DM910X },
--	{ 0x1282, 0x9102, PCI_ANY_ID, PCI_ANY_ID, 0, 0, DM910X },
-+	{ PCI_DEVICE(0x1282, 0x9100), .driver_data = DM910X },
-+	{ PCI_DEVICE(0x1282, 0x9102), .driver_data = DM910X },
- #endif
--	{ 0x1113, 0x1216, PCI_ANY_ID, PCI_ANY_ID, 0, 0, COMET },
--	{ 0x1113, 0x1217, PCI_ANY_ID, PCI_ANY_ID, 0, 0, MX98715 },
--	{ 0x1113, 0x9511, PCI_ANY_ID, PCI_ANY_ID, 0, 0, COMET },
--	{ 0x1186, 0x1541, PCI_ANY_ID, PCI_ANY_ID, 0, 0, COMET },
--	{ 0x1186, 0x1561, PCI_ANY_ID, PCI_ANY_ID, 0, 0, COMET },
--	{ 0x1186, 0x1591, PCI_ANY_ID, PCI_ANY_ID, 0, 0, COMET },
--	{ 0x14f1, 0x1803, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CONEXANT },
--	{ 0x1626, 0x8410, PCI_ANY_ID, PCI_ANY_ID, 0, 0, COMET },
--	{ 0x1737, 0xAB09, PCI_ANY_ID, PCI_ANY_ID, 0, 0, COMET },
--	{ 0x1737, 0xAB08, PCI_ANY_ID, PCI_ANY_ID, 0, 0, COMET },
--	{ 0x17B3, 0xAB08, PCI_ANY_ID, PCI_ANY_ID, 0, 0, COMET },
--	{ 0x10b7, 0x9300, PCI_ANY_ID, PCI_ANY_ID, 0, 0, COMET }, /* 3Com 3CSOHO100B-TX */
--	{ 0x14ea, 0xab08, PCI_ANY_ID, PCI_ANY_ID, 0, 0, COMET }, /* Planex FNW-3602-TX */
--	{ 0x1414, 0x0001, PCI_ANY_ID, PCI_ANY_ID, 0, 0, COMET }, /* Microsoft MN-120 */
--	{ 0x1414, 0x0002, PCI_ANY_ID, PCI_ANY_ID, 0, 0, COMET },
-+	{ PCI_DEVICE(0x1113, 0x1216), .driver_data = COMET },
-+	{ PCI_DEVICE(0x1113, 0x1217), .driver_data = MX98715 },
-+	{ PCI_DEVICE(0x1113, 0x9511), .driver_data = COMET },
-+	{ PCI_DEVICE(0x1186, 0x1541), .driver_data = COMET },
-+	{ PCI_DEVICE(0x1186, 0x1561), .driver_data = COMET },
-+	{ PCI_DEVICE(0x1186, 0x1591), .driver_data = COMET },
-+	{ PCI_DEVICE(0x14f1, 0x1803), .driver_data = CONEXANT },
-+	{ PCI_DEVICE(0x1626, 0x8410), .driver_data = COMET },
-+	{ PCI_DEVICE(0x1737, 0xAB09), .driver_data = COMET },
-+	{ PCI_DEVICE(0x1737, 0xAB08), .driver_data = COMET },
-+	{ PCI_DEVICE(0x17B3, 0xAB08), .driver_data = COMET },
-+	{ PCI_DEVICE(0x10b7, 0x9300), .driver_data = COMET }, /* 3Com 3CSOHO100B-TX */
-+	{ PCI_DEVICE(0x14ea, 0xab08), .driver_data = COMET }, /* Planex FNW-3602-TX */
-+	{ PCI_DEVICE(0x1414, 0x0001), .driver_data = COMET }, /* Microsoft MN-120 */
-+	{ PCI_DEVICE(0x1414, 0x0002), .driver_data = COMET },
- 	{ } /* terminate list */
- };
- MODULE_DEVICE_TABLE(pci, tulip_pci_tbl);
-@@ -1279,8 +1279,8 @@ static const struct net_device_ops tulip_netdev_ops = {
- };
- 
- static const struct pci_device_id early_486_chipsets[] = {
--	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82424) },
--	{ PCI_DEVICE(PCI_VENDOR_ID_SI, PCI_DEVICE_ID_SI_496) },
-+	{ PCI_VDEVICE(INTEL, PCI_DEVICE_ID_INTEL_82424) },
-+	{ PCI_VDEVICE(SI, PCI_DEVICE_ID_SI_496) },
- 	{ },
- };
- 
-diff --git a/drivers/net/ethernet/dec/tulip/uli526x.c b/drivers/net/ethernet/dec/tulip/uli526x.c
-index 6e4d8d31aba9..34b234b6b159 100644
---- a/drivers/net/ethernet/dec/tulip/uli526x.c
-+++ b/drivers/net/ethernet/dec/tulip/uli526x.c
-@@ -1728,9 +1728,9 @@ static u16 phy_read_1bit(struct uli526x_board_info *db)
- 
- 
- static const struct pci_device_id uli526x_pci_tbl[] = {
--	{ 0x10B9, 0x5261, PCI_ANY_ID, PCI_ANY_ID, 0, 0, PCI_ULI5261_ID },
--	{ 0x10B9, 0x5263, PCI_ANY_ID, PCI_ANY_ID, 0, 0, PCI_ULI5263_ID },
--	{ 0, }
-+	{ PCI_DEVICE(0x10B9, 0x5261), .driver_data = PCI_ULI5261_ID },
-+	{ PCI_DEVICE(0x10B9, 0x5263), .driver_data = PCI_ULI5263_ID },
-+	{ }
- };
- MODULE_DEVICE_TABLE(pci, uli526x_pci_tbl);
- 
-diff --git a/drivers/net/ethernet/dec/tulip/winbond-840.c b/drivers/net/ethernet/dec/tulip/winbond-840.c
-index a24a25a5f73d..a5581f1d0141 100644
---- a/drivers/net/ethernet/dec/tulip/winbond-840.c
-+++ b/drivers/net/ethernet/dec/tulip/winbond-840.c
-@@ -210,9 +210,16 @@ enum chip_capability_flags {
- };
- 
- static const struct pci_device_id w840_pci_tbl[] = {
--	{ 0x1050, 0x0840, PCI_ANY_ID, 0x8153,     0, 0, 0 },
--	{ 0x1050, 0x0840, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 1 },
--	{ 0x11f6, 0x2011, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 2 },
-+	{
-+		PCI_DEVICE_SUB(0x1050, 0x0840, PCI_ANY_ID, 0x8153),
-+		.driver_data = 0,
-+	}, {
-+		PCI_DEVICE(0x1050, 0x0840),
-+		.driver_data = 1,
-+	}, {
-+		PCI_DEVICE(0x11f6, 0x2011),
-+		.driver_data = 2,
-+	},
- 	{ }
- };
- MODULE_DEVICE_TABLE(pci, w840_pci_tbl);
-diff --git a/drivers/net/ethernet/dlink/dl2k.h b/drivers/net/ethernet/dlink/dl2k.h
-index 9ebf7a6db93e..00ef7d03b4d6 100644
---- a/drivers/net/ethernet/dlink/dl2k.h
-+++ b/drivers/net/ethernet/dlink/dl2k.h
-@@ -418,12 +418,12 @@ struct netdev_private {
- #define CHIP_IP1000A	1
- 
- static const struct pci_device_id rio_pci_tbl[] = {
--	{0x1186, 0x4000, PCI_ANY_ID, PCI_ANY_ID, },
--	{0x13f0, 0x1021, PCI_ANY_ID, PCI_ANY_ID, },
--	{ PCI_VDEVICE(SUNDANCE,	0x1023), CHIP_IP1000A },
--	{ PCI_VDEVICE(SUNDANCE,	0x2021), CHIP_IP1000A },
--	{ PCI_VDEVICE(DLINK,	0x9021), CHIP_IP1000A },
--	{ PCI_VDEVICE(DLINK,	0x4020), CHIP_IP1000A },
-+	{ PCI_DEVICE(0x1186, 0x4000) },
-+	{ PCI_DEVICE(0x13f0, 0x1021) },
-+	{ PCI_VDEVICE(SUNDANCE,	0x1023), .driver_data = CHIP_IP1000A },
-+	{ PCI_VDEVICE(SUNDANCE,	0x2021), .driver_data = CHIP_IP1000A },
-+	{ PCI_VDEVICE(DLINK,	0x9021), .driver_data = CHIP_IP1000A },
-+	{ PCI_VDEVICE(DLINK,	0x4020), .driver_data = CHIP_IP1000A },
- 	{ }
- };
- MODULE_DEVICE_TABLE (pci, rio_pci_tbl);
-diff --git a/drivers/net/ethernet/dlink/sundance.c b/drivers/net/ethernet/dlink/sundance.c
-index 277c50ef773f..58873fcd3eaf 100644
---- a/drivers/net/ethernet/dlink/sundance.c
-+++ b/drivers/net/ethernet/dlink/sundance.c
-@@ -192,13 +192,13 @@ IVc. Errata
- #endif
- 
- static const struct pci_device_id sundance_pci_tbl[] = {
--	{ 0x1186, 0x1002, 0x1186, 0x1002, 0, 0, 0 },
--	{ 0x1186, 0x1002, 0x1186, 0x1003, 0, 0, 1 },
--	{ 0x1186, 0x1002, 0x1186, 0x1012, 0, 0, 2 },
--	{ 0x1186, 0x1002, 0x1186, 0x1040, 0, 0, 3 },
--	{ 0x1186, 0x1002, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 4 },
--	{ 0x13F0, 0x0201, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 5 },
--	{ 0x13F0, 0x0200, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 6 },
-+	{ PCI_DEVICE_SUB(0x1186, 0x1002, 0x1186, 0x1002), .driver_data = 0 },
-+	{ PCI_DEVICE_SUB(0x1186, 0x1002, 0x1186, 0x1003), .driver_data = 1 },
-+	{ PCI_DEVICE_SUB(0x1186, 0x1002, 0x1186, 0x1012), .driver_data = 2 },
-+	{ PCI_DEVICE_SUB(0x1186, 0x1002, 0x1186, 0x1040), .driver_data = 3 },
-+	{ PCI_DEVICE(0x1186, 0x1002), .driver_data = 4 },
-+	{ PCI_DEVICE(0x13F0, 0x0201), .driver_data = 5 },
-+	{ PCI_DEVICE(0x13F0, 0x0200), .driver_data = 6 },
- 	{ }
- };
- MODULE_DEVICE_TABLE(pci, sundance_pci_tbl);
-diff --git a/drivers/net/ethernet/fealnx.c b/drivers/net/ethernet/fealnx.c
-index 3c9961806f75..bdc38aac5850 100644
---- a/drivers/net/ethernet/fealnx.c
-+++ b/drivers/net/ethernet/fealnx.c
-@@ -1935,10 +1935,10 @@ static int netdev_close(struct net_device *dev)
- }
- 
- static const struct pci_device_id fealnx_pci_tbl[] = {
--	{0x1516, 0x0800, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{0x1516, 0x0803, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 1},
--	{0x1516, 0x0891, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 2},
--	{} /* terminate list */
-+	{ PCI_DEVICE(0x1516, 0x0800), .driver_data = 0 },
-+	{ PCI_DEVICE(0x1516, 0x0803), .driver_data = 1 },
-+	{ PCI_DEVICE(0x1516, 0x0891), .driver_data = 2 },
-+	{ } /* terminate list */
- };
- MODULE_DEVICE_TABLE(pci, fealnx_pci_tbl);
- 
-diff --git a/drivers/net/ethernet/hisilicon/hibmcge/hbg_main.c b/drivers/net/ethernet/hisilicon/hibmcge/hbg_main.c
-index 068da2fd1fea..b3e01b2f8319 100644
---- a/drivers/net/ethernet/hisilicon/hibmcge/hbg_main.c
-+++ b/drivers/net/ethernet/hisilicon/hibmcge/hbg_main.c
-@@ -489,7 +489,7 @@ static void hbg_shutdown(struct pci_dev *pdev)
- }
- 
- static const struct pci_device_id hbg_pci_tbl[] = {
--	{PCI_VDEVICE(HUAWEI, 0x3730), 0},
-+	{ PCI_VDEVICE(HUAWEI, 0x3730) },
- 	{ }
- };
- MODULE_DEVICE_TABLE(pci, hbg_pci_tbl);
-diff --git a/drivers/net/ethernet/hisilicon/hns3/hns3_enet.c b/drivers/net/ethernet/hisilicon/hns3/hns3_enet.c
-index a3206c97923e..4c34a144d21c 100644
---- a/drivers/net/ethernet/hisilicon/hns3/hns3_enet.c
-+++ b/drivers/net/ethernet/hisilicon/hns3/hns3_enet.c
-@@ -86,25 +86,39 @@ module_param(page_pool_enabled, bool, 0400);
-  *   Class, Class Mask, private data (not used) }
-  */
- static const struct pci_device_id hns3_pci_tbl[] = {
--	{PCI_VDEVICE(HUAWEI, HNAE3_DEV_ID_GE), 0},
--	{PCI_VDEVICE(HUAWEI, HNAE3_DEV_ID_25GE), 0},
--	{PCI_VDEVICE(HUAWEI, HNAE3_DEV_ID_25GE_RDMA),
--	 HNAE3_DEV_SUPPORT_ROCE_DCB_BITS},
--	{PCI_VDEVICE(HUAWEI, HNAE3_DEV_ID_25GE_RDMA_MACSEC),
--	 HNAE3_DEV_SUPPORT_ROCE_DCB_BITS},
--	{PCI_VDEVICE(HUAWEI, HNAE3_DEV_ID_50GE_RDMA),
--	 HNAE3_DEV_SUPPORT_ROCE_DCB_BITS},
--	{PCI_VDEVICE(HUAWEI, HNAE3_DEV_ID_50GE_RDMA_MACSEC),
--	 HNAE3_DEV_SUPPORT_ROCE_DCB_BITS},
--	{PCI_VDEVICE(HUAWEI, HNAE3_DEV_ID_100G_RDMA_MACSEC),
--	 HNAE3_DEV_SUPPORT_ROCE_DCB_BITS},
--	{PCI_VDEVICE(HUAWEI, HNAE3_DEV_ID_200G_RDMA),
--	 HNAE3_DEV_SUPPORT_ROCE_DCB_BITS},
--	{PCI_VDEVICE(HUAWEI, HNAE3_DEV_ID_VF), 0},
--	{PCI_VDEVICE(HUAWEI, HNAE3_DEV_ID_RDMA_DCB_PFC_VF),
--	 HNAE3_DEV_SUPPORT_ROCE_DCB_BITS},
-+	{
-+		PCI_VDEVICE(HUAWEI, HNAE3_DEV_ID_GE),
-+		.driver_data = 0,
-+	}, {
-+		PCI_VDEVICE(HUAWEI, HNAE3_DEV_ID_25GE),
-+		.driver_data = 0,
-+	}, {
-+		PCI_VDEVICE(HUAWEI, HNAE3_DEV_ID_25GE_RDMA),
-+		.driver_data = HNAE3_DEV_SUPPORT_ROCE_DCB_BITS,
-+	}, {
-+		PCI_VDEVICE(HUAWEI, HNAE3_DEV_ID_25GE_RDMA_MACSEC),
-+		.driver_data = HNAE3_DEV_SUPPORT_ROCE_DCB_BITS,
-+	}, {
-+		PCI_VDEVICE(HUAWEI, HNAE3_DEV_ID_50GE_RDMA),
-+		.driver_data = HNAE3_DEV_SUPPORT_ROCE_DCB_BITS,
-+	}, {
-+		PCI_VDEVICE(HUAWEI, HNAE3_DEV_ID_50GE_RDMA_MACSEC),
-+		.driver_data = HNAE3_DEV_SUPPORT_ROCE_DCB_BITS,
-+	}, {
-+		PCI_VDEVICE(HUAWEI, HNAE3_DEV_ID_100G_RDMA_MACSEC),
-+		.driver_data = HNAE3_DEV_SUPPORT_ROCE_DCB_BITS,
-+	}, {
-+		PCI_VDEVICE(HUAWEI, HNAE3_DEV_ID_200G_RDMA),
-+		.driver_data = HNAE3_DEV_SUPPORT_ROCE_DCB_BITS,
-+	}, {
-+		PCI_VDEVICE(HUAWEI, HNAE3_DEV_ID_VF),
-+		.driver_data = 0,
-+	}, {
-+		PCI_VDEVICE(HUAWEI, HNAE3_DEV_ID_RDMA_DCB_PFC_VF),
-+		.driver_data = HNAE3_DEV_SUPPORT_ROCE_DCB_BITS,
-+	},
- 	/* required last entry */
--	{0,}
-+	{ }
- };
- MODULE_DEVICE_TABLE(pci, hns3_pci_tbl);
- 
-diff --git a/drivers/net/ethernet/hisilicon/hns3/hns3pf/hclge_main.c b/drivers/net/ethernet/hisilicon/hns3/hns3pf/hclge_main.c
-index dd4045c773d4..e17b92a411a2 100644
---- a/drivers/net/ethernet/hisilicon/hns3/hns3pf/hclge_main.c
-+++ b/drivers/net/ethernet/hisilicon/hns3/hns3pf/hclge_main.c
-@@ -72,16 +72,16 @@ static struct hnae3_ae_algo ae_algo;
- static struct workqueue_struct *hclge_wq;
- 
- static const struct pci_device_id ae_algo_pci_tbl[] = {
--	{PCI_VDEVICE(HUAWEI, HNAE3_DEV_ID_GE), 0},
--	{PCI_VDEVICE(HUAWEI, HNAE3_DEV_ID_25GE), 0},
--	{PCI_VDEVICE(HUAWEI, HNAE3_DEV_ID_25GE_RDMA), 0},
--	{PCI_VDEVICE(HUAWEI, HNAE3_DEV_ID_25GE_RDMA_MACSEC), 0},
--	{PCI_VDEVICE(HUAWEI, HNAE3_DEV_ID_50GE_RDMA), 0},
--	{PCI_VDEVICE(HUAWEI, HNAE3_DEV_ID_50GE_RDMA_MACSEC), 0},
--	{PCI_VDEVICE(HUAWEI, HNAE3_DEV_ID_100G_RDMA_MACSEC), 0},
--	{PCI_VDEVICE(HUAWEI, HNAE3_DEV_ID_200G_RDMA), 0},
-+	{ PCI_VDEVICE(HUAWEI, HNAE3_DEV_ID_GE) },
-+	{ PCI_VDEVICE(HUAWEI, HNAE3_DEV_ID_25GE) },
-+	{ PCI_VDEVICE(HUAWEI, HNAE3_DEV_ID_25GE_RDMA) },
-+	{ PCI_VDEVICE(HUAWEI, HNAE3_DEV_ID_25GE_RDMA_MACSEC) },
-+	{ PCI_VDEVICE(HUAWEI, HNAE3_DEV_ID_50GE_RDMA) },
-+	{ PCI_VDEVICE(HUAWEI, HNAE3_DEV_ID_50GE_RDMA_MACSEC) },
-+	{ PCI_VDEVICE(HUAWEI, HNAE3_DEV_ID_100G_RDMA_MACSEC) },
-+	{ PCI_VDEVICE(HUAWEI, HNAE3_DEV_ID_200G_RDMA) },
- 	/* required last entry */
--	{0, }
-+	{ }
- };
- 
- MODULE_DEVICE_TABLE(pci, ae_algo_pci_tbl);
-diff --git a/drivers/net/ethernet/hisilicon/hns3/hns3vf/hclgevf_main.c b/drivers/net/ethernet/hisilicon/hns3/hns3vf/hclgevf_main.c
-index 0cc911e6c732..063a692c2b41 100644
---- a/drivers/net/ethernet/hisilicon/hns3/hns3vf/hclgevf_main.c
-+++ b/drivers/net/ethernet/hisilicon/hns3/hns3vf/hclgevf_main.c
-@@ -26,11 +26,15 @@ static struct hnae3_ae_algo ae_algovf;
- static struct workqueue_struct *hclgevf_wq;
- 
- static const struct pci_device_id ae_algovf_pci_tbl[] = {
--	{PCI_VDEVICE(HUAWEI, HNAE3_DEV_ID_VF), 0},
--	{PCI_VDEVICE(HUAWEI, HNAE3_DEV_ID_RDMA_DCB_PFC_VF),
--	 HNAE3_DEV_SUPPORT_ROCE_DCB_BITS},
-+	{
-+		PCI_VDEVICE(HUAWEI, HNAE3_DEV_ID_VF),
-+		.driver_data = 0,
-+	}, {
-+		PCI_VDEVICE(HUAWEI, HNAE3_DEV_ID_RDMA_DCB_PFC_VF),
-+		.driver_data = HNAE3_DEV_SUPPORT_ROCE_DCB_BITS,
-+	},
- 	/* required last entry */
--	{0, }
-+	{ }
- };
- 
- MODULE_DEVICE_TABLE(pci, ae_algovf_pci_tbl);
-diff --git a/drivers/net/ethernet/huawei/hinic/hinic_main.c b/drivers/net/ethernet/huawei/hinic/hinic_main.c
-index ae1f523d6841..42f4792d255b 100644
---- a/drivers/net/ethernet/huawei/hinic/hinic_main.c
-+++ b/drivers/net/ethernet/huawei/hinic/hinic_main.c
-@@ -1467,12 +1467,12 @@ static void hinic_shutdown(struct pci_dev *pdev)
- }
- 
- static const struct pci_device_id hinic_pci_table[] = {
--	{ PCI_VDEVICE(HUAWEI, HINIC_DEV_ID_QUAD_PORT_25GE), 0},
--	{ PCI_VDEVICE(HUAWEI, HINIC_DEV_ID_DUAL_PORT_100GE), 0},
--	{ PCI_VDEVICE(HUAWEI, HINIC_DEV_ID_DUAL_PORT_100GE_MEZZ), 0},
--	{ PCI_VDEVICE(HUAWEI, HINIC_DEV_ID_QUAD_PORT_25GE_MEZZ), 0},
--	{ PCI_VDEVICE(HUAWEI, HINIC_DEV_ID_VF), 0},
--	{ 0, 0}
-+	{ PCI_VDEVICE(HUAWEI, HINIC_DEV_ID_QUAD_PORT_25GE) },
-+	{ PCI_VDEVICE(HUAWEI, HINIC_DEV_ID_DUAL_PORT_100GE) },
-+	{ PCI_VDEVICE(HUAWEI, HINIC_DEV_ID_DUAL_PORT_100GE_MEZZ) },
-+	{ PCI_VDEVICE(HUAWEI, HINIC_DEV_ID_QUAD_PORT_25GE_MEZZ) },
-+	{ PCI_VDEVICE(HUAWEI, HINIC_DEV_ID_VF) },
-+	{ }
- };
- MODULE_DEVICE_TABLE(pci, hinic_pci_table);
- 
-diff --git a/drivers/net/ethernet/huawei/hinic3/hinic3_lld.c b/drivers/net/ethernet/huawei/hinic3/hinic3_lld.c
-index f83d5bd1041e..36df807cbe09 100644
---- a/drivers/net/ethernet/huawei/hinic3/hinic3_lld.c
-+++ b/drivers/net/ethernet/huawei/hinic3/hinic3_lld.c
-@@ -426,10 +426,9 @@ static void hinic3_remove(struct pci_dev *pdev)
- }
- 
- static const struct pci_device_id hinic3_pci_table[] = {
--	{PCI_VDEVICE(HUAWEI, PCI_DEV_ID_HINIC3_PF), 0},
--	{PCI_VDEVICE(HUAWEI, PCI_DEV_ID_HINIC3_VF), 0},
--	{0, 0}
+-struct idpf_vc_xn_manager;
 -
-+	{ PCI_VDEVICE(HUAWEI, PCI_DEV_ID_HINIC3_PF) },
-+	{ PCI_VDEVICE(HUAWEI, PCI_DEV_ID_HINIC3_VF) },
-+	{ }
- };
+ #define idpf_for_each_vport(adapter, iter) \
+ 	for (struct idpf_vport **__##iter = &(adapter)->vports[0], \
+ 	     *iter = (adapter)->max_vports ? *__##iter : NULL; \
+@@ -625,8 +621,10 @@ struct idpf_vc_xn_manager;
+  * @state: Init state machine
+  * @flags: See enum idpf_flags
+  * @reset_reg: See struct idpf_reset_reg
+- * @hw: Device access data
+  * @ctlq_ctx: controlq context
++ * @asq: Send control queue info
++ * @arq: Receive control queue info
++ * @xnm: Xn transaction manager
+  * @num_avail_msix: Available number of MSIX vectors
+  * @num_msix_entries: Number of entries in MSIX table
+  * @msix_entries: MSIX table
+@@ -659,7 +657,6 @@ struct idpf_vc_xn_manager;
+  * @stats_task: Periodic statistics retrieval task
+  * @stats_wq: Workqueue for statistics task
+  * @caps: Negotiated capabilities with device
+- * @vcxn_mngr: Virtchnl transaction manager
+  * @dev_ops: See idpf_dev_ops
+  * @cdev_info: IDC core device info pointer
+  * @num_vfs: Number of allocated VFs through sysfs. PF does not directly talk
+@@ -683,8 +680,10 @@ struct idpf_adapter {
+ 	enum idpf_state state;
+ 	DECLARE_BITMAP(flags, IDPF_FLAGS_NBITS);
+ 	struct idpf_reset_reg reset_reg;
+-	struct idpf_hw hw;
+ 	struct libie_ctlq_ctx ctlq_ctx;
++	struct libie_ctlq_info *asq;
++	struct libie_ctlq_info *arq;
++	struct libie_ctlq_xn_manager *xnm;
+ 	u16 num_avail_msix;
+ 	u16 num_msix_entries;
+ 	struct msix_entry *msix_entries;
+@@ -721,7 +720,6 @@ struct idpf_adapter {
+ 	struct delayed_work stats_task;
+ 	struct workqueue_struct *stats_wq;
+ 	struct virtchnl2_get_capabilities caps;
+-	struct idpf_vc_xn_manager *vcxn_mngr;
  
- MODULE_DEVICE_TABLE(pci, hinic3_pci_table);
-diff --git a/drivers/net/ethernet/intel/e100.c b/drivers/net/ethernet/intel/e100.c
-index 9074b558de35..5ef82a4e6184 100644
---- a/drivers/net/ethernet/intel/e100.c
-+++ b/drivers/net/ethernet/intel/e100.c
-@@ -177,8 +177,8 @@ MODULE_PARM_DESC(eeprom_bad_csum_allow, "Allow bad eeprom checksums");
- MODULE_PARM_DESC(use_io, "Force use of i/o access mode");
- 
- #define INTEL_8255X_ETHERNET_DEVICE(device_id, ich) {\
--	PCI_VENDOR_ID_INTEL, device_id, PCI_ANY_ID, PCI_ANY_ID, \
--	PCI_CLASS_NETWORK_ETHERNET << 8, 0xFFFF00, ich }
-+	PCI_VDEVICE(INTEL, device_id), \
-+	.class = PCI_CLASS_NETWORK_ETHERNET << 8, .class_mask = 0xFFFF00, .driver_data = ich }
- static const struct pci_device_id e100_id_table[] = {
- 	INTEL_8255X_ETHERNET_DEVICE(0x1029, 0),
- 	INTEL_8255X_ETHERNET_DEVICE(0x1030, 0),
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index 7ce0cc8ab8f4..5b7ba1594f0d 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -7799,137 +7799,370 @@ static const struct pci_error_handlers e1000_err_handler = {
- };
- 
- static const struct pci_device_id e1000_pci_tbl[] = {
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82571EB_COPPER), board_82571 },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82571EB_FIBER), board_82571 },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82571EB_QUAD_COPPER), board_82571 },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82571EB_QUAD_COPPER_LP),
--	  board_82571 },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82571EB_QUAD_FIBER), board_82571 },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82571EB_SERDES), board_82571 },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82571EB_SERDES_DUAL), board_82571 },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82571EB_SERDES_QUAD), board_82571 },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82571PT_QUAD_COPPER), board_82571 },
-+	{
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_82571EB_COPPER),
-+		.driver_data = board_82571,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_82571EB_FIBER),
-+		.driver_data = board_82571,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_82571EB_QUAD_COPPER),
-+		.driver_data = board_82571,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_82571EB_QUAD_COPPER_LP),
-+		.driver_data = board_82571,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_82571EB_QUAD_FIBER),
-+		.driver_data = board_82571,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_82571EB_SERDES),
-+		.driver_data = board_82571,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_82571EB_SERDES_DUAL),
-+		.driver_data = board_82571,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_82571EB_SERDES_QUAD),
-+		.driver_data = board_82571,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_82571PT_QUAD_COPPER),
-+		.driver_data = board_82571,
-+	},
- 
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82572EI), board_82572 },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82572EI_COPPER), board_82572 },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82572EI_FIBER), board_82572 },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82572EI_SERDES), board_82572 },
-+	{
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_82572EI),
-+		.driver_data = board_82572,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_82572EI_COPPER),
-+		.driver_data = board_82572,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_82572EI_FIBER),
-+		.driver_data = board_82572,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_82572EI_SERDES),
-+		.driver_data = board_82572,
-+	},
- 
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82573E), board_82573 },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82573E_IAMT), board_82573 },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82573L), board_82573 },
-+	{
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_82573E),
-+		.driver_data = board_82573,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_82573E_IAMT),
-+		.driver_data = board_82573,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_82573L),
-+		.driver_data = board_82573,
-+	},
- 
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82574L), board_82574 },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82574LA), board_82574 },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82583V), board_82583 },
-+	{
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_82574L),
-+		.driver_data = board_82574,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_82574LA),
-+		.driver_data = board_82574,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_82583V),
-+		.driver_data = board_82583,
-+	},
- 
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_80003ES2LAN_COPPER_DPT),
--	  board_80003es2lan },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_80003ES2LAN_COPPER_SPT),
--	  board_80003es2lan },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_80003ES2LAN_SERDES_DPT),
--	  board_80003es2lan },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_80003ES2LAN_SERDES_SPT),
--	  board_80003es2lan },
-+	{
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_80003ES2LAN_COPPER_DPT),
-+		.driver_data = board_80003es2lan,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_80003ES2LAN_COPPER_SPT),
-+		.driver_data = board_80003es2lan,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_80003ES2LAN_SERDES_DPT),
-+		.driver_data = board_80003es2lan,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_80003ES2LAN_SERDES_SPT),
-+		.driver_data = board_80003es2lan,
-+	},
- 
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_ICH8_IFE), board_ich8lan },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_ICH8_IFE_G), board_ich8lan },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_ICH8_IFE_GT), board_ich8lan },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_ICH8_IGP_AMT), board_ich8lan },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_ICH8_IGP_C), board_ich8lan },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_ICH8_IGP_M), board_ich8lan },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_ICH8_IGP_M_AMT), board_ich8lan },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_ICH8_82567V_3), board_ich8lan },
-+	{
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_ICH8_IFE),
-+		.driver_data = board_ich8lan,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_ICH8_IFE_G),
-+		.driver_data = board_ich8lan,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_ICH8_IFE_GT),
-+		.driver_data = board_ich8lan,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_ICH8_IGP_AMT),
-+		.driver_data = board_ich8lan,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_ICH8_IGP_C),
-+		.driver_data = board_ich8lan,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_ICH8_IGP_M),
-+		.driver_data = board_ich8lan,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_ICH8_IGP_M_AMT),
-+		.driver_data = board_ich8lan,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_ICH8_82567V_3),
-+		.driver_data = board_ich8lan,
-+	},
- 
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_ICH9_IFE), board_ich9lan },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_ICH9_IFE_G), board_ich9lan },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_ICH9_IFE_GT), board_ich9lan },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_ICH9_IGP_AMT), board_ich9lan },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_ICH9_IGP_C), board_ich9lan },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_ICH9_BM), board_ich9lan },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_ICH9_IGP_M), board_ich9lan },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_ICH9_IGP_M_AMT), board_ich9lan },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_ICH9_IGP_M_V), board_ich9lan },
-+	{
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_ICH9_IFE),
-+		.driver_data = board_ich9lan,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_ICH9_IFE_G),
-+		.driver_data = board_ich9lan,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_ICH9_IFE_GT),
-+		.driver_data = board_ich9lan,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_ICH9_IGP_AMT),
-+		.driver_data = board_ich9lan,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_ICH9_IGP_C),
-+		.driver_data = board_ich9lan,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_ICH9_BM),
-+		.driver_data = board_ich9lan,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_ICH9_IGP_M),
-+		.driver_data = board_ich9lan,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_ICH9_IGP_M_AMT),
-+		.driver_data = board_ich9lan,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_ICH9_IGP_M_V),
-+		.driver_data = board_ich9lan
-+	},
- 
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_ICH10_R_BM_LM), board_ich9lan },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_ICH10_R_BM_LF), board_ich9lan },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_ICH10_R_BM_V), board_ich9lan },
-+	{
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_ICH10_R_BM_LM),
-+		.driver_data = board_ich9lan,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_ICH10_R_BM_LF),
-+		.driver_data = board_ich9lan,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_ICH10_R_BM_V),
-+		.driver_data = board_ich9lan,
-+	},
- 
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_ICH10_D_BM_LM), board_ich10lan },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_ICH10_D_BM_LF), board_ich10lan },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_ICH10_D_BM_V), board_ich10lan },
-+	{
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_ICH10_D_BM_LM),
-+		.driver_data = board_ich10lan,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_ICH10_D_BM_LF),
-+		.driver_data = board_ich10lan,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_ICH10_D_BM_V),
-+		.driver_data = board_ich10lan,
-+	},
- 
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_M_HV_LM), board_pchlan },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_M_HV_LC), board_pchlan },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_D_HV_DM), board_pchlan },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_D_HV_DC), board_pchlan },
-+	{
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_M_HV_LM),
-+		.driver_data = board_pchlan,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_M_HV_LC),
-+		.driver_data = board_pchlan,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_D_HV_DM),
-+		.driver_data = board_pchlan,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_D_HV_DC),
-+		.driver_data = board_pchlan
-+	},
- 
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH2_LV_LM), board_pch2lan },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH2_LV_V), board_pch2lan },
-+	{
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH2_LV_LM),
-+		.driver_data = board_pch2lan,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH2_LV_V),
-+		.driver_data = board_pch2lan
-+	},
- 
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_LPT_I217_LM), board_pch_lpt },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_LPT_I217_V), board_pch_lpt },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_LPTLP_I218_LM), board_pch_lpt },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_LPTLP_I218_V), board_pch_lpt },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_I218_LM2), board_pch_lpt },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_I218_V2), board_pch_lpt },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_I218_LM3), board_pch_lpt },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_I218_V3), board_pch_lpt },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_SPT_I219_LM), board_pch_spt },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_SPT_I219_V), board_pch_spt },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_SPT_I219_LM2), board_pch_spt },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_SPT_I219_V2), board_pch_spt },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_LBG_I219_LM3), board_pch_spt },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_SPT_I219_LM4), board_pch_spt },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_SPT_I219_V4), board_pch_spt },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_SPT_I219_LM5), board_pch_spt },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_SPT_I219_V5), board_pch_spt },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CNP_I219_LM6), board_pch_cnp },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CNP_I219_V6), board_pch_cnp },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CNP_I219_LM7), board_pch_cnp },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CNP_I219_V7), board_pch_cnp },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ICP_I219_LM8), board_pch_cnp },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ICP_I219_V8), board_pch_cnp },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ICP_I219_LM9), board_pch_cnp },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ICP_I219_V9), board_pch_cnp },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CMP_I219_LM10), board_pch_cnp },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CMP_I219_V10), board_pch_cnp },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CMP_I219_LM11), board_pch_cnp },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CMP_I219_V11), board_pch_cnp },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CMP_I219_LM12), board_pch_spt },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CMP_I219_V12), board_pch_spt },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_LM13), board_pch_tgp },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_V13), board_pch_tgp },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_LM14), board_pch_tgp },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_V14), board_pch_tgp },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_LM15), board_pch_tgp },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_V15), board_pch_tgp },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_RPL_I219_LM23), board_pch_adp },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_RPL_I219_V23), board_pch_adp },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_I219_LM16), board_pch_adp },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_I219_V16), board_pch_adp },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_I219_LM17), board_pch_adp },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_I219_V17), board_pch_adp },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_RPL_I219_LM22), board_pch_adp },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_RPL_I219_V22), board_pch_adp },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_I219_LM19), board_pch_adp },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_I219_V19), board_pch_adp },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_MTP_I219_LM18), board_pch_mtp },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_MTP_I219_V18), board_pch_mtp },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_LNP_I219_LM20), board_pch_mtp },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_LNP_I219_V20), board_pch_mtp },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_LNP_I219_LM21), board_pch_mtp },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_LNP_I219_V21), board_pch_mtp },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ARL_I219_LM24), board_pch_mtp },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ARL_I219_V24), board_pch_mtp },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_PTP_I219_LM25), board_pch_ptp },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_PTP_I219_V25), board_pch_ptp },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_PTP_I219_LM27), board_pch_ptp },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_PTP_I219_V27), board_pch_ptp },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_NVL_I219_LM29), board_pch_ptp },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_NVL_I219_V29), board_pch_ptp },
-+	{
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_LPT_I217_LM),
-+		.driver_data = board_pch_lpt,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_LPT_I217_V),
-+		.driver_data = board_pch_lpt,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_LPTLP_I218_LM),
-+		.driver_data = board_pch_lpt,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_LPTLP_I218_V),
-+		.driver_data = board_pch_lpt,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_I218_LM2),
-+		.driver_data = board_pch_lpt,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_I218_V2),
-+		.driver_data = board_pch_lpt,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_I218_LM3),
-+		.driver_data = board_pch_lpt,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_I218_V3),
-+		.driver_data = board_pch_lpt,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_SPT_I219_LM),
-+		.driver_data = board_pch_spt,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_SPT_I219_V),
-+		.driver_data = board_pch_spt,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_SPT_I219_LM2),
-+		.driver_data = board_pch_spt,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_SPT_I219_V2),
-+		.driver_data = board_pch_spt,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_LBG_I219_LM3),
-+		.driver_data = board_pch_spt,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_SPT_I219_LM4),
-+		.driver_data = board_pch_spt,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_SPT_I219_V4),
-+		.driver_data = board_pch_spt,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_SPT_I219_LM5),
-+		.driver_data = board_pch_spt,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_SPT_I219_V5),
-+		.driver_data = board_pch_spt,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CNP_I219_LM6),
-+		.driver_data = board_pch_cnp,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CNP_I219_V6),
-+		.driver_data = board_pch_cnp,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CNP_I219_LM7),
-+		.driver_data = board_pch_cnp,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CNP_I219_V7),
-+		.driver_data = board_pch_cnp,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ICP_I219_LM8),
-+		.driver_data = board_pch_cnp,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ICP_I219_V8),
-+		.driver_data = board_pch_cnp,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ICP_I219_LM9),
-+		.driver_data = board_pch_cnp,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ICP_I219_V9),
-+		.driver_data = board_pch_cnp,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CMP_I219_LM10),
-+		.driver_data = board_pch_cnp,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CMP_I219_V10),
-+		.driver_data = board_pch_cnp,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CMP_I219_LM11),
-+		.driver_data = board_pch_cnp,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CMP_I219_V11),
-+		.driver_data = board_pch_cnp,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CMP_I219_LM12),
-+		.driver_data = board_pch_spt,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CMP_I219_V12),
-+		.driver_data = board_pch_spt,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_LM13),
-+		.driver_data = board_pch_tgp,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_V13),
-+		.driver_data = board_pch_tgp,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_LM14),
-+		.driver_data = board_pch_tgp,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_V14),
-+		.driver_data = board_pch_tgp,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_LM15),
-+		.driver_data = board_pch_tgp,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_V15),
-+		.driver_data = board_pch_tgp,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_RPL_I219_LM23),
-+		.driver_data = board_pch_adp,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_RPL_I219_V23),
-+		.driver_data = board_pch_adp,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_I219_LM16),
-+		.driver_data = board_pch_adp,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_I219_V16),
-+		.driver_data = board_pch_adp,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_I219_LM17),
-+		.driver_data = board_pch_adp,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_I219_V17),
-+		.driver_data = board_pch_adp,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_RPL_I219_LM22),
-+		.driver_data = board_pch_adp,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_RPL_I219_V22),
-+		.driver_data = board_pch_adp,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_I219_LM19),
-+		.driver_data = board_pch_adp,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_I219_V19),
-+		.driver_data = board_pch_adp,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_MTP_I219_LM18),
-+		.driver_data = board_pch_mtp,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_MTP_I219_V18),
-+		.driver_data = board_pch_mtp,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_LNP_I219_LM20),
-+		.driver_data = board_pch_mtp,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_LNP_I219_V20),
-+		.driver_data = board_pch_mtp,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_LNP_I219_LM21),
-+		.driver_data = board_pch_mtp,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_LNP_I219_V21),
-+		.driver_data = board_pch_mtp,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ARL_I219_LM24),
-+		.driver_data = board_pch_mtp,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ARL_I219_V24),
-+		.driver_data = board_pch_mtp,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_PTP_I219_LM25),
-+		.driver_data = board_pch_ptp,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_PTP_I219_V25),
-+		.driver_data = board_pch_ptp,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_PTP_I219_LM27),
-+		.driver_data = board_pch_ptp,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_PTP_I219_V27),
-+		.driver_data = board_pch_ptp,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_NVL_I219_LM29),
-+		.driver_data = board_pch_ptp,
-+	}, {
-+		PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_NVL_I219_V29),
-+		.driver_data = board_pch_ptp
-+	},
- 
--	{ 0, 0, 0, 0, 0, 0, 0 }	/* terminate list */
-+	{ }	/* terminate list */
- };
- MODULE_DEVICE_TABLE(pci, e1000_pci_tbl);
- 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-index d75b8a50413d..f5b4d062709a 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-@@ -21,12 +21,12 @@ static const struct fm10k_info *fm10k_info_tbl[] = {
-  *   Class, Class Mask, private data (not used) }
+ 	struct idpf_dev_ops dev_ops;
+ 	struct iidc_rdma_core_dev_info *cdev_info;
+@@ -881,12 +879,12 @@ static inline u8 idpf_get_min_tx_pkt_len(struct idpf_adapter *adapter)
   */
- static const struct pci_device_id fm10k_pci_tbl[] = {
--	{ PCI_VDEVICE(INTEL, FM10K_DEV_ID_PF), fm10k_device_pf },
--	{ PCI_VDEVICE(INTEL, FM10K_DEV_ID_SDI_FM10420_QDA2), fm10k_device_pf },
--	{ PCI_VDEVICE(INTEL, FM10K_DEV_ID_SDI_FM10420_DA2), fm10k_device_pf },
--	{ PCI_VDEVICE(INTEL, FM10K_DEV_ID_VF), fm10k_device_vf },
-+	{ PCI_VDEVICE(INTEL, FM10K_DEV_ID_PF), .driver_data = fm10k_device_pf },
-+	{ PCI_VDEVICE(INTEL, FM10K_DEV_ID_SDI_FM10420_QDA2), .driver_data = fm10k_device_pf },
-+	{ PCI_VDEVICE(INTEL, FM10K_DEV_ID_SDI_FM10420_DA2), .driver_data = fm10k_device_pf },
-+	{ PCI_VDEVICE(INTEL, FM10K_DEV_ID_VF), .driver_data = fm10k_device_vf },
- 	/* required last entry */
--	{ 0, }
-+	{ }
- };
- MODULE_DEVICE_TABLE(pci, fm10k_pci_tbl);
+ static inline bool idpf_is_reset_detected(struct idpf_adapter *adapter)
+ {
+-	if (!adapter->hw.arq)
++	struct libie_ctlq_info *arq = adapter->arq;
++
++	if (!arq)
+ 		return true;
  
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 028bd500603a..93faada2d328 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -63,40 +63,43 @@ static bool i40e_is_total_port_shutdown_enabled(struct i40e_pf *pf);
-  *   Class, Class Mask, private data (not used) }
-  */
- static const struct pci_device_id i40e_pci_tbl[] = {
--	{PCI_VDEVICE(INTEL, I40E_DEV_ID_SFP_XL710), 0},
--	{PCI_VDEVICE(INTEL, I40E_DEV_ID_QEMU), 0},
--	{PCI_VDEVICE(INTEL, I40E_DEV_ID_KX_B), 0},
--	{PCI_VDEVICE(INTEL, I40E_DEV_ID_KX_C), 0},
--	{PCI_VDEVICE(INTEL, I40E_DEV_ID_QSFP_A), 0},
--	{PCI_VDEVICE(INTEL, I40E_DEV_ID_QSFP_B), 0},
--	{PCI_VDEVICE(INTEL, I40E_DEV_ID_QSFP_C), 0},
--	{PCI_VDEVICE(INTEL, I40E_DEV_ID_1G_BASE_T_BC), 0},
--	{PCI_VDEVICE(INTEL, I40E_DEV_ID_10G_BASE_T), 0},
--	{PCI_VDEVICE(INTEL, I40E_DEV_ID_10G_BASE_T4), 0},
--	{PCI_VDEVICE(INTEL, I40E_DEV_ID_10G_BASE_T_BC), 0},
--	{PCI_VDEVICE(INTEL, I40E_DEV_ID_10G_SFP), 0},
-+	{ PCI_VDEVICE(INTEL, I40E_DEV_ID_SFP_XL710) },
-+	{ PCI_VDEVICE(INTEL, I40E_DEV_ID_QEMU) },
-+	{ PCI_VDEVICE(INTEL, I40E_DEV_ID_KX_B) },
-+	{ PCI_VDEVICE(INTEL, I40E_DEV_ID_KX_C) },
-+	{ PCI_VDEVICE(INTEL, I40E_DEV_ID_QSFP_A) },
-+	{ PCI_VDEVICE(INTEL, I40E_DEV_ID_QSFP_B) },
-+	{ PCI_VDEVICE(INTEL, I40E_DEV_ID_QSFP_C) },
-+	{ PCI_VDEVICE(INTEL, I40E_DEV_ID_1G_BASE_T_BC) },
-+	{ PCI_VDEVICE(INTEL, I40E_DEV_ID_10G_BASE_T) },
-+	{ PCI_VDEVICE(INTEL, I40E_DEV_ID_10G_BASE_T4) },
-+	{ PCI_VDEVICE(INTEL, I40E_DEV_ID_10G_BASE_T_BC) },
-+	{ PCI_VDEVICE(INTEL, I40E_DEV_ID_10G_SFP) },
- 	/*
- 	 * This ID conflicts with ipw2200, but the devices can be differentiated
- 	 * because i40e devices use PCI_CLASS_NETWORK_ETHERNET and ipw2200
- 	 * devices use PCI_CLASS_NETWORK_OTHER.
- 	 */
--	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, I40E_DEV_ID_10G_B),
--		PCI_CLASS_NETWORK_ETHERNET << 8, 0xffff00, 0},
--	{PCI_VDEVICE(INTEL, I40E_DEV_ID_KX_X722), 0},
--	{PCI_VDEVICE(INTEL, I40E_DEV_ID_QSFP_X722), 0},
--	{PCI_VDEVICE(INTEL, I40E_DEV_ID_SFP_X722), 0},
--	{PCI_VDEVICE(INTEL, I40E_DEV_ID_1G_BASE_T_X722), 0},
--	{PCI_VDEVICE(INTEL, I40E_DEV_ID_10G_BASE_T_X722), 0},
--	{PCI_VDEVICE(INTEL, I40E_DEV_ID_SFP_I_X722), 0},
--	{PCI_VDEVICE(INTEL, I40E_DEV_ID_SFP_X722_A), 0},
--	{PCI_VDEVICE(INTEL, I40E_DEV_ID_20G_KR2), 0},
--	{PCI_VDEVICE(INTEL, I40E_DEV_ID_20G_KR2_A), 0},
--	{PCI_VDEVICE(INTEL, I40E_DEV_ID_X710_N3000), 0},
--	{PCI_VDEVICE(INTEL, I40E_DEV_ID_XXV710_N3000), 0},
--	{PCI_VDEVICE(INTEL, I40E_DEV_ID_25G_B), 0},
--	{PCI_VDEVICE(INTEL, I40E_DEV_ID_25G_SFP28), 0},
-+	{
-+		PCI_DEVICE(PCI_VENDOR_ID_INTEL, I40E_DEV_ID_10G_B),
-+		.class = PCI_CLASS_NETWORK_ETHERNET << 8,
-+		.class_mask = 0xffff00,
-+	},
-+	{ PCI_VDEVICE(INTEL, I40E_DEV_ID_KX_X722) },
-+	{ PCI_VDEVICE(INTEL, I40E_DEV_ID_QSFP_X722) },
-+	{ PCI_VDEVICE(INTEL, I40E_DEV_ID_SFP_X722) },
-+	{ PCI_VDEVICE(INTEL, I40E_DEV_ID_1G_BASE_T_X722) },
-+	{ PCI_VDEVICE(INTEL, I40E_DEV_ID_10G_BASE_T_X722) },
-+	{ PCI_VDEVICE(INTEL, I40E_DEV_ID_SFP_I_X722) },
-+	{ PCI_VDEVICE(INTEL, I40E_DEV_ID_SFP_X722_A) },
-+	{ PCI_VDEVICE(INTEL, I40E_DEV_ID_20G_KR2) },
-+	{ PCI_VDEVICE(INTEL, I40E_DEV_ID_20G_KR2_A) },
-+	{ PCI_VDEVICE(INTEL, I40E_DEV_ID_X710_N3000) },
-+	{ PCI_VDEVICE(INTEL, I40E_DEV_ID_XXV710_N3000) },
-+	{ PCI_VDEVICE(INTEL, I40E_DEV_ID_25G_B) },
-+	{ PCI_VDEVICE(INTEL, I40E_DEV_ID_25G_SFP28) },
- 	/* required last entry */
--	{0, }
-+	{ }
- };
- MODULE_DEVICE_TABLE(pci, i40e_pci_tbl);
- 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index 3c1465cf0515..f00692f1e459 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -36,12 +36,12 @@ static const char iavf_copyright[] =
-  *   Class, Class Mask, private data (not used) }
-  */
- static const struct pci_device_id iavf_pci_tbl[] = {
--	{PCI_VDEVICE(INTEL, IAVF_DEV_ID_VF), 0},
--	{PCI_VDEVICE(INTEL, IAVF_DEV_ID_VF_HV), 0},
--	{PCI_VDEVICE(INTEL, IAVF_DEV_ID_X722_VF), 0},
--	{PCI_VDEVICE(INTEL, IAVF_DEV_ID_ADAPTIVE_VF), 0},
-+	{ PCI_VDEVICE(INTEL, IAVF_DEV_ID_VF) },
-+	{ PCI_VDEVICE(INTEL, IAVF_DEV_ID_VF_HV) },
-+	{ PCI_VDEVICE(INTEL, IAVF_DEV_ID_X722_VF) },
-+	{ PCI_VDEVICE(INTEL, IAVF_DEV_ID_ADAPTIVE_VF) },
- 	/* required last entry */
--	{0, }
-+	{ }
- };
- 
- MODULE_DEVICE_TABLE(pci, iavf_pci_tbl);
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index ce91dda00ec0..49d46670695f 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -63,40 +63,40 @@ static const struct pci_device_id igb_pci_tbl[] = {
- 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_I354_BACKPLANE_1GBPS) },
- 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_I354_SGMII) },
- 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_I354_BACKPLANE_2_5GBPS) },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_I211_COPPER), board_82575 },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_I210_COPPER), board_82575 },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_I210_FIBER), board_82575 },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_I210_SERDES), board_82575 },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_I210_SGMII), board_82575 },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_I210_COPPER_FLASHLESS), board_82575 },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_I210_SERDES_FLASHLESS), board_82575 },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_I350_COPPER), board_82575 },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_I350_FIBER), board_82575 },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_I350_SERDES), board_82575 },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_I350_SGMII), board_82575 },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82580_COPPER), board_82575 },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82580_FIBER), board_82575 },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82580_QUAD_FIBER), board_82575 },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82580_SERDES), board_82575 },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82580_SGMII), board_82575 },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82580_COPPER_DUAL), board_82575 },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_DH89XXCC_SGMII), board_82575 },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_DH89XXCC_SERDES), board_82575 },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_DH89XXCC_BACKPLANE), board_82575 },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_DH89XXCC_SFP), board_82575 },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82576), board_82575 },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82576_NS), board_82575 },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82576_NS_SERDES), board_82575 },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82576_FIBER), board_82575 },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82576_SERDES), board_82575 },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82576_SERDES_QUAD), board_82575 },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82576_QUAD_COPPER_ET2), board_82575 },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82576_QUAD_COPPER), board_82575 },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82575EB_COPPER), board_82575 },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82575EB_FIBER_SERDES), board_82575 },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82575GB_QUAD_COPPER), board_82575 },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_I211_COPPER), .driver_data = board_82575 },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_I210_COPPER), .driver_data = board_82575 },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_I210_FIBER), .driver_data = board_82575 },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_I210_SERDES), .driver_data = board_82575 },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_I210_SGMII), .driver_data = board_82575 },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_I210_COPPER_FLASHLESS), .driver_data = board_82575 },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_I210_SERDES_FLASHLESS), .driver_data = board_82575 },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_I350_COPPER), .driver_data = board_82575 },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_I350_FIBER), .driver_data = board_82575 },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_I350_SERDES), .driver_data = board_82575 },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_I350_SGMII), .driver_data = board_82575 },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82580_COPPER), .driver_data = board_82575 },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82580_FIBER), .driver_data = board_82575 },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82580_QUAD_FIBER), .driver_data = board_82575 },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82580_SERDES), .driver_data = board_82575 },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82580_SGMII), .driver_data = board_82575 },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82580_COPPER_DUAL), .driver_data = board_82575 },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_DH89XXCC_SGMII), .driver_data = board_82575 },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_DH89XXCC_SERDES), .driver_data = board_82575 },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_DH89XXCC_BACKPLANE), .driver_data = board_82575 },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_DH89XXCC_SFP), .driver_data = board_82575 },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82576), .driver_data = board_82575 },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82576_NS), .driver_data = board_82575 },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82576_NS_SERDES), .driver_data = board_82575 },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82576_FIBER), .driver_data = board_82575 },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82576_SERDES), .driver_data = board_82575 },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82576_SERDES_QUAD), .driver_data = board_82575 },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82576_QUAD_COPPER_ET2), .driver_data = board_82575 },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82576_QUAD_COPPER), .driver_data = board_82575 },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82575EB_COPPER), .driver_data = board_82575 },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82575EB_FIBER_SERDES), .driver_data = board_82575 },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82575GB_QUAD_COPPER), .driver_data = board_82575 },
- 	/* required last entry */
--	{0, }
-+	{ }
- };
- 
- MODULE_DEVICE_TABLE(pci, igb_pci_tbl);
-diff --git a/drivers/net/ethernet/intel/igbvf/netdev.c b/drivers/net/ethernet/intel/igbvf/netdev.c
-index 5d04541072b3..0a3d0a1cba43 100644
---- a/drivers/net/ethernet/intel/igbvf/netdev.c
-+++ b/drivers/net/ethernet/intel/igbvf/netdev.c
-@@ -2937,8 +2937,8 @@ static const struct pci_error_handlers igbvf_err_handler = {
- };
- 
- static const struct pci_device_id igbvf_pci_tbl[] = {
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82576_VF), board_vf },
--	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_I350_VF), board_i350_vf },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82576_VF), .driver_data = board_vf },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_I350_VF), .driver_data = board_i350_vf },
- 	{ } /* terminate list */
- };
- MODULE_DEVICE_TABLE(pci, igbvf_pci_tbl);
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 8ac16808023c..89b9e1d00fc7 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -47,24 +47,24 @@ static const struct igc_info *igc_info_tbl[] = {
- };
- 
- static const struct pci_device_id igc_pci_tbl[] = {
--	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I225_LM), board_base },
--	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I225_V), board_base },
--	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I225_I), board_base },
--	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I220_V), board_base },
--	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I225_K), board_base },
--	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I225_K2), board_base },
--	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I226_K), board_base },
--	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I225_LMVP), board_base },
--	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I226_LMVP), board_base },
--	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I225_IT), board_base },
--	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I226_LM), board_base },
--	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I226_V), board_base },
--	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I226_IT), board_base },
--	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I221_V), board_base },
--	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I226_BLANK_NVM), board_base },
--	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I225_BLANK_NVM), board_base },
-+	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I225_LM), .driver_data = board_base },
-+	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I225_V), .driver_data = board_base },
-+	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I225_I), .driver_data = board_base },
-+	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I220_V), .driver_data = board_base },
-+	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I225_K), .driver_data = board_base },
-+	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I225_K2), .driver_data = board_base },
-+	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I226_K), .driver_data = board_base },
-+	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I225_LMVP), .driver_data = board_base },
-+	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I226_LMVP), .driver_data = board_base },
-+	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I225_IT), .driver_data = board_base },
-+	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I226_LM), .driver_data = board_base },
-+	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I226_V), .driver_data = board_base },
-+	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I226_IT), .driver_data = board_base },
-+	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I221_V), .driver_data = board_base },
-+	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I226_BLANK_NVM), .driver_data = board_base },
-+	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I225_BLANK_NVM), .driver_data = board_base },
- 	/* required last entry */
--	{0, }
-+	{ }
- };
- 
- MODULE_DEVICE_TABLE(pci, igc_pci_tbl);
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 2646ee6f295f..730a35658c76 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -88,60 +88,60 @@ static const struct ixgbe_info *ixgbe_info_tbl[] = {
-  *   Class, Class Mask, private data (not used) }
-  */
- static const struct pci_device_id ixgbe_pci_tbl[] = {
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82598), board_82598 },
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82598AF_DUAL_PORT), board_82598 },
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82598AF_SINGLE_PORT), board_82598 },
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82598AT), board_82598 },
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82598AT2), board_82598 },
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82598EB_CX4), board_82598 },
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82598_CX4_DUAL_PORT), board_82598 },
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82598_DA_DUAL_PORT), board_82598 },
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82598_SR_DUAL_PORT_EM), board_82598 },
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82598EB_XF_LR), board_82598 },
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82598EB_SFP_LOM), board_82598 },
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82598_BX), board_82598 },
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82599_KX4), board_82599 },
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82599_XAUI_LOM), board_82599 },
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82599_KR), board_82599 },
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82599_SFP), board_82599 },
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82599_SFP_EM), board_82599 },
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82599_KX4_MEZZ), board_82599 },
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82599_CX4), board_82599 },
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82599_BACKPLANE_FCOE), board_82599 },
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82599_SFP_FCOE), board_82599 },
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82599_T3_LOM), board_82599 },
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82599_COMBO_BACKPLANE), board_82599 },
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X540T), board_X540 },
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82599_SFP_SF2), board_82599 },
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82599_LS), board_82599 },
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82599_QSFP_SF_QP), board_82599 },
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82599EN_SFP), board_82599 },
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82599_SFP_SF_QP), board_82599 },
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X540T1), board_X540 },
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550T), board_X550},
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550T1), board_X550},
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_X_KX4), board_X550EM_x},
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_X_XFI), board_X550EM_x},
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_X_KR), board_X550EM_x},
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_X_10G_T), board_X550EM_x},
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_X_SFP), board_X550EM_x},
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_X_1G_T), board_x550em_x_fw},
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_A_KR), board_x550em_a },
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_A_KR_L), board_x550em_a },
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_A_SFP_N), board_x550em_a },
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_A_SGMII), board_x550em_a },
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_A_SGMII_L), board_x550em_a },
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_A_10G_T), board_x550em_a},
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_A_SFP), board_x550em_a },
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_A_1G_T), board_x550em_a_fw },
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_A_1G_T_L), board_x550em_a_fw },
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_E610_BACKPLANE), board_e610},
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_E610_SFP), board_e610},
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_E610_10G_T), board_e610},
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_E610_2_5G_T), board_e610},
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_E610_SGMII), board_e610},
-+	{ PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82598), .driver_data = board_82598 },
-+	{ PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82598AF_DUAL_PORT), .driver_data = board_82598 },
-+	{ PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82598AF_SINGLE_PORT), .driver_data = board_82598 },
-+	{ PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82598AT), .driver_data = board_82598 },
-+	{ PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82598AT2), .driver_data = board_82598 },
-+	{ PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82598EB_CX4), .driver_data = board_82598 },
-+	{ PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82598_CX4_DUAL_PORT), .driver_data = board_82598 },
-+	{ PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82598_DA_DUAL_PORT), .driver_data = board_82598 },
-+	{ PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82598_SR_DUAL_PORT_EM), .driver_data = board_82598 },
-+	{ PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82598EB_XF_LR), .driver_data = board_82598 },
-+	{ PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82598EB_SFP_LOM), .driver_data = board_82598 },
-+	{ PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82598_BX), .driver_data = board_82598 },
-+	{ PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82599_KX4), .driver_data = board_82599 },
-+	{ PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82599_XAUI_LOM), .driver_data = board_82599 },
-+	{ PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82599_KR), .driver_data = board_82599 },
-+	{ PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82599_SFP), .driver_data = board_82599 },
-+	{ PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82599_SFP_EM), .driver_data = board_82599 },
-+	{ PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82599_KX4_MEZZ), .driver_data = board_82599 },
-+	{ PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82599_CX4), .driver_data = board_82599 },
-+	{ PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82599_BACKPLANE_FCOE), .driver_data = board_82599 },
-+	{ PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82599_SFP_FCOE), .driver_data = board_82599 },
-+	{ PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82599_T3_LOM), .driver_data = board_82599 },
-+	{ PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82599_COMBO_BACKPLANE), .driver_data = board_82599 },
-+	{ PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X540T), .driver_data = board_X540 },
-+	{ PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82599_SFP_SF2), .driver_data = board_82599 },
-+	{ PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82599_LS), .driver_data = board_82599 },
-+	{ PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82599_QSFP_SF_QP), .driver_data = board_82599 },
-+	{ PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82599EN_SFP), .driver_data = board_82599 },
-+	{ PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82599_SFP_SF_QP), .driver_data = board_82599 },
-+	{ PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X540T1), .driver_data = board_X540 },
-+	{ PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550T), .driver_data = board_X550 },
-+	{ PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550T1), .driver_data = board_X550 },
-+	{ PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_X_KX4), .driver_data = board_X550EM_x },
-+	{ PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_X_XFI), .driver_data = board_X550EM_x },
-+	{ PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_X_KR), .driver_data = board_X550EM_x },
-+	{ PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_X_10G_T), .driver_data = board_X550EM_x },
-+	{ PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_X_SFP), .driver_data = board_X550EM_x },
-+	{ PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_X_1G_T), .driver_data = board_x550em_x_fw },
-+	{ PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_A_KR), .driver_data = board_x550em_a },
-+	{ PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_A_KR_L), .driver_data = board_x550em_a },
-+	{ PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_A_SFP_N), .driver_data = board_x550em_a },
-+	{ PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_A_SGMII), .driver_data = board_x550em_a },
-+	{ PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_A_SGMII_L), .driver_data = board_x550em_a },
-+	{ PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_A_10G_T), .driver_data = board_x550em_a },
-+	{ PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_A_SFP), .driver_data = board_x550em_a },
-+	{ PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_A_1G_T), .driver_data = board_x550em_a_fw },
-+	{ PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_A_1G_T_L), .driver_data = board_x550em_a_fw },
-+	{ PCI_VDEVICE(INTEL, IXGBE_DEV_ID_E610_BACKPLANE), .driver_data = board_e610 },
-+	{ PCI_VDEVICE(INTEL, IXGBE_DEV_ID_E610_SFP), .driver_data = board_e610 },
-+	{ PCI_VDEVICE(INTEL, IXGBE_DEV_ID_E610_10G_T), .driver_data = board_e610 },
-+	{ PCI_VDEVICE(INTEL, IXGBE_DEV_ID_E610_2_5G_T), .driver_data = board_e610 },
-+	{ PCI_VDEVICE(INTEL, IXGBE_DEV_ID_E610_SGMII), .driver_data = board_e610 },
- 	/* required last entry */
--	{0, }
-+	{ }
- };
- MODULE_DEVICE_TABLE(pci, ixgbe_pci_tbl);
- 
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-index 42f89a179a3f..b5d15c1f0d4f 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-@@ -64,20 +64,43 @@ static const struct ixgbevf_info *ixgbevf_info_tbl[] = {
-  *   Class, Class Mask, private data (not used) }
-  */
- static const struct pci_device_id ixgbevf_pci_tbl[] = {
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82599_VF), board_82599_vf },
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82599_VF_HV), board_82599_vf_hv },
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X540_VF), board_X540_vf },
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X540_VF_HV), board_X540_vf_hv },
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550_VF), board_X550_vf },
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550_VF_HV), board_X550_vf_hv },
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_X_VF), board_X550EM_x_vf },
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_X_VF_HV), board_X550EM_x_vf_hv},
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_A_VF), board_x550em_a_vf },
--	{PCI_VDEVICE_SUB(INTEL, IXGBE_DEV_ID_E610_VF, PCI_ANY_ID,
--			 IXGBE_SUBDEV_ID_E610_VF_HV), board_e610_vf_hv},
--	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_E610_VF), board_e610_vf},
-+	{
-+		PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82599_VF),
-+		.driver_data = board_82599_vf,
-+	}, {
-+		PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82599_VF_HV),
-+		.driver_data = board_82599_vf_hv,
-+	}, {
-+		PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X540_VF),
-+		.driver_data = board_X540_vf,
-+	}, {
-+		PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X540_VF_HV),
-+		.driver_data = board_X540_vf_hv,
-+	}, {
-+		PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550_VF),
-+		.driver_data = board_X550_vf,
-+	}, {
-+		PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550_VF_HV),
-+		.driver_data = board_X550_vf_hv,
-+	}, {
-+		PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_X_VF),
-+		.driver_data = board_X550EM_x_vf,
-+	}, {
-+		PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_X_VF_HV),
-+		.driver_data = board_X550EM_x_vf_hv
-+	}, {
-+		PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_A_VF),
-+		.driver_data = board_x550em_a_vf,
-+	}, {
-+		PCI_VDEVICE_SUB(INTEL, IXGBE_DEV_ID_E610_VF,
-+				PCI_ANY_ID, IXGBE_SUBDEV_ID_E610_VF_HV),
-+		.driver_data = board_e610_vf_hv,
-+	}, {
-+		PCI_VDEVICE(INTEL, IXGBE_DEV_ID_E610_VF),
-+		.driver_data = board_e610_vf,
-+	},
- 	/* required last entry */
--	{0, }
-+	{ }
- };
- MODULE_DEVICE_TABLE(pci, ixgbevf_pci_tbl);
- 
-diff --git a/drivers/net/ethernet/mellanox/mlx4/main.c b/drivers/net/ethernet/mellanox/mlx4/main.c
-index e6b7e75894ff..4fe6dbf0942f 100644
---- a/drivers/net/ethernet/mellanox/mlx4/main.c
-+++ b/drivers/net/ethernet/mellanox/mlx4/main.c
-@@ -4274,9 +4274,9 @@ int mlx4_restart_one(struct pci_dev *pdev)
- 	return mlx4_restart_one_up(pdev, false, NULL);
+-	return !(readl(libie_pci_get_mmio_addr(&adapter->ctlq_ctx.mmio_info,
+-					       adapter->hw.arq->reg.len)) &
+-		 adapter->hw.arq->reg.len_mask);
++	return !(readl(arq->reg.len) & arq->reg.len_mask);
  }
- 
--#define MLX_SP(id) { PCI_VDEVICE(MELLANOX, id), MLX4_PCI_DEV_FORCE_SENSE_PORT }
--#define MLX_VF(id) { PCI_VDEVICE(MELLANOX, id), MLX4_PCI_DEV_IS_VF }
--#define MLX_GN(id) { PCI_VDEVICE(MELLANOX, id), 0 }
-+#define MLX_SP(id) { PCI_VDEVICE(MELLANOX, id), .driver_data = MLX4_PCI_DEV_FORCE_SENSE_PORT }
-+#define MLX_VF(id) { PCI_VDEVICE(MELLANOX, id), .driver_data = MLX4_PCI_DEV_IS_VF }
-+#define MLX_GN(id) { PCI_VDEVICE(MELLANOX, id), .driver_data = 0 }
- 
- static const struct pci_device_id mlx4_pci_table[] = {
- #ifdef CONFIG_MLX4_CORE_GEN2
-diff --git a/drivers/net/ethernet/mellanox/mlx5/core/main.c b/drivers/net/ethernet/mellanox/mlx5/core/main.c
-index 74827e8ca125..ff450269ce37 100644
---- a/drivers/net/ethernet/mellanox/mlx5/core/main.c
-+++ b/drivers/net/ethernet/mellanox/mlx5/core/main.c
-@@ -2203,19 +2203,26 @@ static int mlx5_resume(struct pci_dev *pdev)
- 
- static const struct pci_device_id mlx5_core_pci_table[] = {
- 	{ PCI_VDEVICE(MELLANOX, PCI_DEVICE_ID_MELLANOX_CONNECTIB) },
--	{ PCI_VDEVICE(MELLANOX, 0x1012), MLX5_PCI_DEV_IS_VF},	/* Connect-IB VF */
-+	{ PCI_VDEVICE(MELLANOX, 0x1012),
-+	  .driver_data = MLX5_PCI_DEV_IS_VF },			/* Connect-IB VF */
- 	{ PCI_VDEVICE(MELLANOX, PCI_DEVICE_ID_MELLANOX_CONNECTX4) },
--	{ PCI_VDEVICE(MELLANOX, 0x1014), MLX5_PCI_DEV_IS_VF},	/* ConnectX-4 VF */
-+	{ PCI_VDEVICE(MELLANOX, 0x1014),
-+	  .driver_data = MLX5_PCI_DEV_IS_VF },			/* ConnectX-4 VF */
- 	{ PCI_VDEVICE(MELLANOX, PCI_DEVICE_ID_MELLANOX_CONNECTX4_LX) },
--	{ PCI_VDEVICE(MELLANOX, 0x1016), MLX5_PCI_DEV_IS_VF},	/* ConnectX-4LX VF */
-+	{ PCI_VDEVICE(MELLANOX, 0x1016),
-+	  .driver_data = MLX5_PCI_DEV_IS_VF },			/* ConnectX-4LX VF */
- 	{ PCI_VDEVICE(MELLANOX, 0x1017) },			/* ConnectX-5, PCIe 3.0 */
--	{ PCI_VDEVICE(MELLANOX, 0x1018), MLX5_PCI_DEV_IS_VF},	/* ConnectX-5 VF */
-+	{ PCI_VDEVICE(MELLANOX, 0x1018),
-+	  .driver_data = MLX5_PCI_DEV_IS_VF },			/* ConnectX-5 VF */
- 	{ PCI_VDEVICE(MELLANOX, 0x1019) },			/* ConnectX-5 Ex */
--	{ PCI_VDEVICE(MELLANOX, 0x101a), MLX5_PCI_DEV_IS_VF},	/* ConnectX-5 Ex VF */
-+	{ PCI_VDEVICE(MELLANOX, 0x101a),
-+	  .driver_data = MLX5_PCI_DEV_IS_VF },			/* ConnectX-5 Ex VF */
- 	{ PCI_VDEVICE(MELLANOX, 0x101b) },			/* ConnectX-6 */
--	{ PCI_VDEVICE(MELLANOX, 0x101c), MLX5_PCI_DEV_IS_VF},	/* ConnectX-6 VF */
-+	{ PCI_VDEVICE(MELLANOX, 0x101c),
-+	  .driver_data = MLX5_PCI_DEV_IS_VF },			/* ConnectX-6 VF */
- 	{ PCI_VDEVICE(MELLANOX, 0x101d) },			/* ConnectX-6 Dx */
--	{ PCI_VDEVICE(MELLANOX, 0x101e), MLX5_PCI_DEV_IS_VF},	/* ConnectX Family mlx5Gen Virtual Function */
-+	{ PCI_VDEVICE(MELLANOX, 0x101e),
-+	  .driver_data = MLX5_PCI_DEV_IS_VF },			/* ConnectX Family mlx5Gen Virtual Function */
- 	{ PCI_VDEVICE(MELLANOX, 0x101f) },			/* ConnectX-6 LX */
- 	{ PCI_VDEVICE(MELLANOX, 0x1021) },			/* ConnectX-7 */
- 	{ PCI_VDEVICE(MELLANOX, 0x1023) },			/* ConnectX-8 */
-@@ -2223,11 +2230,12 @@ static const struct pci_device_id mlx5_core_pci_table[] = {
- 	{ PCI_VDEVICE(MELLANOX, 0x1027) },			/* ConnectX-10 */
- 	{ PCI_VDEVICE(MELLANOX, 0x2101) },			/* ConnectX-10 NVLink-C2C */
- 	{ PCI_VDEVICE(MELLANOX, 0xa2d2) },			/* BlueField integrated ConnectX-5 network controller */
--	{ PCI_VDEVICE(MELLANOX, 0xa2d3), MLX5_PCI_DEV_IS_VF},	/* BlueField integrated ConnectX-5 network controller VF */
-+	{ PCI_VDEVICE(MELLANOX, 0xa2d3),
-+	  .driver_data = MLX5_PCI_DEV_IS_VF },			/* BlueField integrated ConnectX-5 network controller VF */
- 	{ PCI_VDEVICE(MELLANOX, 0xa2d6) },			/* BlueField-2 integrated ConnectX-6 Dx network controller */
- 	{ PCI_VDEVICE(MELLANOX, 0xa2dc) },			/* BlueField-3 integrated ConnectX-7 network controller */
- 	{ PCI_VDEVICE(MELLANOX, 0xa2df) },			/* BlueField-4 integrated ConnectX-8 network controller */
--	{ 0, }
-+	{ }
- };
- 
- MODULE_DEVICE_TABLE(pci, mlx5_core_pci_table);
-diff --git a/drivers/net/ethernet/mellanox/mlxsw/spectrum.c b/drivers/net/ethernet/mellanox/mlxsw/spectrum.c
-index 3a65420fa1ad..1aaa75b47fe3 100644
---- a/drivers/net/ethernet/mellanox/mlxsw/spectrum.c
-+++ b/drivers/net/ethernet/mellanox/mlxsw/spectrum.c
-@@ -5277,8 +5277,8 @@ static int mlxsw_sp_netdevice_event(struct notifier_block *nb,
- }
- 
- static const struct pci_device_id mlxsw_sp1_pci_id_table[] = {
--	{PCI_VDEVICE(MELLANOX, PCI_DEVICE_ID_MELLANOX_SPECTRUM), 0},
--	{0, },
-+	{PCI_VDEVICE(MELLANOX, PCI_DEVICE_ID_MELLANOX_SPECTRUM) },
-+	{ },
- };
- 
- static struct pci_driver mlxsw_sp1_pci_driver = {
-@@ -5287,8 +5287,8 @@ static struct pci_driver mlxsw_sp1_pci_driver = {
- };
- 
- static const struct pci_device_id mlxsw_sp2_pci_id_table[] = {
--	{PCI_VDEVICE(MELLANOX, PCI_DEVICE_ID_MELLANOX_SPECTRUM2), 0},
--	{0, },
-+	{PCI_VDEVICE(MELLANOX, PCI_DEVICE_ID_MELLANOX_SPECTRUM2) },
-+	{ },
- };
- 
- static struct pci_driver mlxsw_sp2_pci_driver = {
-@@ -5297,8 +5297,8 @@ static struct pci_driver mlxsw_sp2_pci_driver = {
- };
- 
- static const struct pci_device_id mlxsw_sp3_pci_id_table[] = {
--	{PCI_VDEVICE(MELLANOX, PCI_DEVICE_ID_MELLANOX_SPECTRUM3), 0},
--	{0, },
-+	{PCI_VDEVICE(MELLANOX, PCI_DEVICE_ID_MELLANOX_SPECTRUM3) },
-+	{ },
- };
- 
- static struct pci_driver mlxsw_sp3_pci_driver = {
-@@ -5307,8 +5307,8 @@ static struct pci_driver mlxsw_sp3_pci_driver = {
- };
- 
- static const struct pci_device_id mlxsw_sp4_pci_id_table[] = {
--	{PCI_VDEVICE(MELLANOX, PCI_DEVICE_ID_MELLANOX_SPECTRUM4), 0},
--	{0, },
-+	{PCI_VDEVICE(MELLANOX, PCI_DEVICE_ID_MELLANOX_SPECTRUM4) },
-+	{ },
- };
- 
- static struct pci_driver mlxsw_sp4_pci_driver = {
-diff --git a/drivers/net/ethernet/micrel/ksz884x.c b/drivers/net/ethernet/micrel/ksz884x.c
-index 26557cd32008..773fdd215a15 100644
---- a/drivers/net/ethernet/micrel/ksz884x.c
-+++ b/drivers/net/ethernet/micrel/ksz884x.c
-@@ -6839,11 +6839,9 @@ static int __maybe_unused pcidev_suspend(struct device *dev_d)
- static char pcidev_name[] = "ksz884xp";
- 
- static const struct pci_device_id pcidev_table[] = {
--	{ PCI_VENDOR_ID_MICREL_KS, 0x8841,
--		PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0 },
--	{ PCI_VENDOR_ID_MICREL_KS, 0x8842,
--		PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0 },
--	{ 0 }
-+	{ PCI_VDEVICE(MICREL_KS, 0x8841) },
-+	{ PCI_VDEVICE(MICREL_KS, 0x8842) },
-+	{ }
- };
- 
- MODULE_DEVICE_TABLE(pci, pcidev_table);
-diff --git a/drivers/net/ethernet/mucse/rnpgbe/rnpgbe_main.c b/drivers/net/ethernet/mucse/rnpgbe/rnpgbe_main.c
-index 316f941629d4..70a2b0082ba8 100644
---- a/drivers/net/ethernet/mucse/rnpgbe/rnpgbe_main.c
-+++ b/drivers/net/ethernet/mucse/rnpgbe/rnpgbe_main.c
-@@ -17,12 +17,12 @@ static const char rnpgbe_driver_name[] = "rnpgbe";
-  *   private_data (used for different hw chip) }
-  */
- static struct pci_device_id rnpgbe_pci_tbl[] = {
--	{ PCI_VDEVICE(MUCSE, RNPGBE_DEVICE_ID_N210), board_n210 },
--	{ PCI_VDEVICE(MUCSE, RNPGBE_DEVICE_ID_N210L), board_n210 },
--	{ PCI_VDEVICE(MUCSE, RNPGBE_DEVICE_ID_N500_DUAL_PORT), board_n500 },
--	{ PCI_VDEVICE(MUCSE, RNPGBE_DEVICE_ID_N500_QUAD_PORT), board_n500 },
-+	{ PCI_VDEVICE(MUCSE, RNPGBE_DEVICE_ID_N210), .driver_data = board_n210 },
-+	{ PCI_VDEVICE(MUCSE, RNPGBE_DEVICE_ID_N210L), .driver_data = board_n210 },
-+	{ PCI_VDEVICE(MUCSE, RNPGBE_DEVICE_ID_N500_DUAL_PORT), .driver_data = board_n500 },
-+	{ PCI_VDEVICE(MUCSE, RNPGBE_DEVICE_ID_N500_QUAD_PORT), .driver_data = board_n500 },
- 	/* required last entry */
--	{0, },
-+	{ },
- };
  
  /**
-diff --git a/drivers/net/ethernet/natsemi/natsemi.c b/drivers/net/ethernet/natsemi/natsemi.c
-index b253734dbc80..35a63b78880b 100644
---- a/drivers/net/ethernet/natsemi/natsemi.c
-+++ b/drivers/net/ethernet/natsemi/natsemi.c
-@@ -248,8 +248,8 @@ static struct {
- };
- 
- static const struct pci_device_id natsemi_pci_tbl[] = {
--	{ PCI_VENDOR_ID_NS, 0x0020, 0x12d9,     0x000c,     0, 0, 0 },
--	{ PCI_VENDOR_ID_NS, 0x0020, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 1 },
-+	{ PCI_VDEVICE_SUB(NS, 0x0020, 0x12d9, 0x000c), .driver_data = 0 },
-+	{ PCI_VDEVICE(NS, 0x0020), .driver_data = 1 },
- 	{ }	/* terminate list */
- };
- MODULE_DEVICE_TABLE(pci, natsemi_pci_tbl);
-diff --git a/drivers/net/ethernet/netronome/nfp/nfp_main.c b/drivers/net/ethernet/netronome/nfp/nfp_main.c
-index 48390b2fd44d..e8e4b84d505a 100644
---- a/drivers/net/ethernet/netronome/nfp/nfp_main.c
-+++ b/drivers/net/ethernet/netronome/nfp/nfp_main.c
-@@ -33,39 +33,56 @@
- static const char nfp_driver_name[] = "nfp";
- 
- static const struct pci_device_id nfp_pci_device_ids[] = {
--	{ PCI_VENDOR_ID_NETRONOME, PCI_DEVICE_ID_NFP3800,
--	  PCI_VENDOR_ID_NETRONOME, PCI_ANY_ID,
--	  PCI_ANY_ID, 0, NFP_DEV_NFP3800,
-+	{
-+		PCI_VDEVICE_SUB(NETRONOME, PCI_DEVICE_ID_NFP3800,
-+				PCI_VENDOR_ID_NETRONOME, PCI_ANY_ID),
-+		.class = PCI_ANY_ID,
-+		.class_mask = 0,
-+		.driver_data = NFP_DEV_NFP3800,
-+	}, {
-+		PCI_VDEVICE_SUB(NETRONOME, PCI_DEVICE_ID_NFP4000,
-+				PCI_VENDOR_ID_NETRONOME, PCI_ANY_ID),
-+		.class = PCI_ANY_ID,
-+		.class_mask = 0,
-+		.driver_data = NFP_DEV_NFP6000,
-+	}, {
-+		PCI_VDEVICE_SUB(NETRONOME, PCI_DEVICE_ID_NFP5000,
-+				PCI_VENDOR_ID_NETRONOME, PCI_ANY_ID),
-+		.class = PCI_ANY_ID,
-+		.class_mask = 0,
-+		.driver_data = NFP_DEV_NFP6000,
-+	}, {
-+		PCI_VDEVICE_SUB(NETRONOME, PCI_DEVICE_ID_NFP6000,
-+				PCI_VENDOR_ID_NETRONOME, PCI_ANY_ID),
-+		.class = PCI_ANY_ID,
-+		.class_mask = 0,
-+		.driver_data = NFP_DEV_NFP6000,
-+	}, {
-+		PCI_VDEVICE_SUB(CORIGINE, PCI_DEVICE_ID_NFP3800,
-+				PCI_VENDOR_ID_CORIGINE, PCI_ANY_ID),
-+		.class = PCI_ANY_ID,
-+		.class_mask = 0,
-+		.driver_data = NFP_DEV_NFP3800,
-+	}, {
-+		PCI_VDEVICE_SUB(CORIGINE, PCI_DEVICE_ID_NFP4000,
-+				PCI_VENDOR_ID_CORIGINE, PCI_ANY_ID),
-+		.class = PCI_ANY_ID,
-+		.class_mask = 0,
-+		.driver_data = NFP_DEV_NFP6000,
-+	}, {
-+		PCI_VDEVICE_SUB(CORIGINE, PCI_DEVICE_ID_NFP5000,
-+				PCI_VENDOR_ID_CORIGINE, PCI_ANY_ID),
-+		.class = PCI_ANY_ID,
-+		.class_mask = 0,
-+		.driver_data = NFP_DEV_NFP6000,
-+	}, {
-+		PCI_VDEVICE_SUB(CORIGINE, PCI_DEVICE_ID_NFP6000,
-+				PCI_VENDOR_ID_CORIGINE, PCI_ANY_ID),
-+		.class = PCI_ANY_ID,
-+		.class_mask = 0,
-+		.driver_data = NFP_DEV_NFP6000,
- 	},
--	{ PCI_VENDOR_ID_NETRONOME, PCI_DEVICE_ID_NFP4000,
--	  PCI_VENDOR_ID_NETRONOME, PCI_ANY_ID,
--	  PCI_ANY_ID, 0, NFP_DEV_NFP6000,
--	},
--	{ PCI_VENDOR_ID_NETRONOME, PCI_DEVICE_ID_NFP5000,
--	  PCI_VENDOR_ID_NETRONOME, PCI_ANY_ID,
--	  PCI_ANY_ID, 0, NFP_DEV_NFP6000,
--	},
--	{ PCI_VENDOR_ID_NETRONOME, PCI_DEVICE_ID_NFP6000,
--	  PCI_VENDOR_ID_NETRONOME, PCI_ANY_ID,
--	  PCI_ANY_ID, 0, NFP_DEV_NFP6000,
--	},
--	{ PCI_VENDOR_ID_CORIGINE, PCI_DEVICE_ID_NFP3800,
--	  PCI_VENDOR_ID_CORIGINE, PCI_ANY_ID,
--	  PCI_ANY_ID, 0, NFP_DEV_NFP3800,
--	},
--	{ PCI_VENDOR_ID_CORIGINE, PCI_DEVICE_ID_NFP4000,
--	  PCI_VENDOR_ID_CORIGINE, PCI_ANY_ID,
--	  PCI_ANY_ID, 0, NFP_DEV_NFP6000,
--	},
--	{ PCI_VENDOR_ID_CORIGINE, PCI_DEVICE_ID_NFP5000,
--	  PCI_VENDOR_ID_CORIGINE, PCI_ANY_ID,
--	  PCI_ANY_ID, 0, NFP_DEV_NFP6000,
--	},
--	{ PCI_VENDOR_ID_CORIGINE, PCI_DEVICE_ID_NFP6000,
--	  PCI_VENDOR_ID_CORIGINE, PCI_ANY_ID,
--	  PCI_ANY_ID, 0, NFP_DEV_NFP6000,
--	},
--	{ 0, } /* Required last entry. */
-+	{ } /* Required last entry. */
- };
- MODULE_DEVICE_TABLE(pci, nfp_pci_device_ids);
- 
-diff --git a/drivers/net/ethernet/netronome/nfp/nfp_netvf_main.c b/drivers/net/ethernet/netronome/nfp/nfp_netvf_main.c
-index b5646c884371..cf557e0ce011 100644
---- a/drivers/net/ethernet/netronome/nfp/nfp_netvf_main.c
-+++ b/drivers/net/ethernet/netronome/nfp/nfp_netvf_main.c
-@@ -38,23 +38,32 @@ struct nfp_net_vf {
- static const char nfp_net_driver_name[] = "nfp_netvf";
- 
- static const struct pci_device_id nfp_netvf_pci_device_ids[] = {
--	{ PCI_VENDOR_ID_NETRONOME, PCI_DEVICE_ID_NFP3800_VF,
--	  PCI_VENDOR_ID_NETRONOME, PCI_ANY_ID,
--	  PCI_ANY_ID, 0, NFP_DEV_NFP3800_VF,
-+	{
-+		PCI_VDEVICE_SUB(NETRONOME, PCI_DEVICE_ID_NFP3800_VF,
-+				PCI_VENDOR_ID_NETRONOME, PCI_ANY_ID),
-+		.class = PCI_ANY_ID,
-+		.class_mask = 0,
-+		.driver_data = NFP_DEV_NFP3800_VF,
-+	}, {
-+		PCI_VDEVICE_SUB(NETRONOME, PCI_DEVICE_ID_NFP6000_VF,
-+				PCI_VENDOR_ID_NETRONOME, PCI_ANY_ID),
-+		.class = PCI_ANY_ID,
-+		.class_mask = 0,
-+		.driver_data = NFP_DEV_NFP6000_VF,
-+	}, {
-+		PCI_VDEVICE_SUB(CORIGINE, PCI_DEVICE_ID_NFP3800_VF,
-+				PCI_VENDOR_ID_CORIGINE, PCI_ANY_ID),
-+		.class = PCI_ANY_ID,
-+		.class_mask = 0,
-+		.driver_data = NFP_DEV_NFP3800_VF,
-+	}, {
-+		PCI_VDEVICE_SUB(CORIGINE, PCI_DEVICE_ID_NFP6000_VF,
-+				PCI_VENDOR_ID_CORIGINE, PCI_ANY_ID),
-+		.class = PCI_ANY_ID,
-+		.class_mask = 0,
-+		.driver_data = NFP_DEV_NFP6000_VF,
- 	},
--	{ PCI_VENDOR_ID_NETRONOME, PCI_DEVICE_ID_NFP6000_VF,
--	  PCI_VENDOR_ID_NETRONOME, PCI_ANY_ID,
--	  PCI_ANY_ID, 0, NFP_DEV_NFP6000_VF,
--	},
--	{ PCI_VENDOR_ID_CORIGINE, PCI_DEVICE_ID_NFP3800_VF,
--	  PCI_VENDOR_ID_CORIGINE, PCI_ANY_ID,
--	  PCI_ANY_ID, 0, NFP_DEV_NFP3800_VF,
--	},
--	{ PCI_VENDOR_ID_CORIGINE, PCI_DEVICE_ID_NFP6000_VF,
--	  PCI_VENDOR_ID_CORIGINE, PCI_ANY_ID,
--	  PCI_ANY_ID, 0, NFP_DEV_NFP6000_VF,
--	},
--	{ 0, } /* Required last entry. */
-+	{ } /* Required last entry. */
- };
- MODULE_DEVICE_TABLE(pci, nfp_netvf_pci_device_ids);
- 
-diff --git a/drivers/net/ethernet/qlogic/qede/qede_main.c b/drivers/net/ethernet/qlogic/qede/qede_main.c
-index 39842eb73bc3..cb0ae0650905 100644
---- a/drivers/net/ethernet/qlogic/qede/qede_main.c
-+++ b/drivers/net/ethernet/qlogic/qede/qede_main.c
-@@ -76,20 +76,20 @@ enum qede_pci_private {
- };
- 
- static const struct pci_device_id qede_pci_tbl[] = {
--	{PCI_VDEVICE(QLOGIC, PCI_DEVICE_ID_57980S_40), QEDE_PRIVATE_PF},
--	{PCI_VDEVICE(QLOGIC, PCI_DEVICE_ID_57980S_10), QEDE_PRIVATE_PF},
--	{PCI_VDEVICE(QLOGIC, PCI_DEVICE_ID_57980S_MF), QEDE_PRIVATE_PF},
--	{PCI_VDEVICE(QLOGIC, PCI_DEVICE_ID_57980S_100), QEDE_PRIVATE_PF},
--	{PCI_VDEVICE(QLOGIC, PCI_DEVICE_ID_57980S_50), QEDE_PRIVATE_PF},
--	{PCI_VDEVICE(QLOGIC, PCI_DEVICE_ID_57980S_25), QEDE_PRIVATE_PF},
-+	{ PCI_VDEVICE(QLOGIC, PCI_DEVICE_ID_57980S_40), .driver_data = QEDE_PRIVATE_PF },
-+	{ PCI_VDEVICE(QLOGIC, PCI_DEVICE_ID_57980S_10), .driver_data = QEDE_PRIVATE_PF },
-+	{ PCI_VDEVICE(QLOGIC, PCI_DEVICE_ID_57980S_MF), .driver_data = QEDE_PRIVATE_PF },
-+	{ PCI_VDEVICE(QLOGIC, PCI_DEVICE_ID_57980S_100), .driver_data = QEDE_PRIVATE_PF },
-+	{ PCI_VDEVICE(QLOGIC, PCI_DEVICE_ID_57980S_50), .driver_data = QEDE_PRIVATE_PF },
-+	{ PCI_VDEVICE(QLOGIC, PCI_DEVICE_ID_57980S_25), .driver_data = QEDE_PRIVATE_PF },
- #ifdef CONFIG_QED_SRIOV
--	{PCI_VDEVICE(QLOGIC, PCI_DEVICE_ID_57980S_IOV), QEDE_PRIVATE_VF},
-+	{ PCI_VDEVICE(QLOGIC, PCI_DEVICE_ID_57980S_IOV), .driver_data = QEDE_PRIVATE_VF },
- #endif
--	{PCI_VDEVICE(QLOGIC, PCI_DEVICE_ID_AH), QEDE_PRIVATE_PF},
-+	{ PCI_VDEVICE(QLOGIC, PCI_DEVICE_ID_AH), .driver_data = QEDE_PRIVATE_PF },
- #ifdef CONFIG_QED_SRIOV
--	{PCI_VDEVICE(QLOGIC, PCI_DEVICE_ID_AH_IOV), QEDE_PRIVATE_VF},
-+	{ PCI_VDEVICE(QLOGIC, PCI_DEVICE_ID_AH_IOV), .driver_data = QEDE_PRIVATE_VF },
- #endif
--	{ 0 }
-+	{ }
- };
- 
- MODULE_DEVICE_TABLE(pci, qede_pci_tbl);
-diff --git a/drivers/net/ethernet/realtek/8139too.c b/drivers/net/ethernet/realtek/8139too.c
-index a8532ebd42ec..8241bcf76664 100644
---- a/drivers/net/ethernet/realtek/8139too.c
-+++ b/drivers/net/ethernet/realtek/8139too.c
-@@ -235,44 +235,44 @@ static const struct {
- 
- 
- static const struct pci_device_id rtl8139_pci_tbl[] = {
--	{0x10ec, 0x8139, PCI_ANY_ID, PCI_ANY_ID, 0, 0, RTL8139 },
--	{0x10ec, 0x8138, PCI_ANY_ID, PCI_ANY_ID, 0, 0, RTL8139 },
--	{0x1113, 0x1211, PCI_ANY_ID, PCI_ANY_ID, 0, 0, RTL8139 },
--	{0x1500, 0x1360, PCI_ANY_ID, PCI_ANY_ID, 0, 0, RTL8139 },
--	{0x4033, 0x1360, PCI_ANY_ID, PCI_ANY_ID, 0, 0, RTL8139 },
--	{0x1186, 0x1300, PCI_ANY_ID, PCI_ANY_ID, 0, 0, RTL8139 },
--	{0x1186, 0x1340, PCI_ANY_ID, PCI_ANY_ID, 0, 0, RTL8139 },
--	{0x13d1, 0xab06, PCI_ANY_ID, PCI_ANY_ID, 0, 0, RTL8139 },
--	{0x1259, 0xa117, PCI_ANY_ID, PCI_ANY_ID, 0, 0, RTL8139 },
--	{0x1259, 0xa11e, PCI_ANY_ID, PCI_ANY_ID, 0, 0, RTL8139 },
--	{0x14ea, 0xab06, PCI_ANY_ID, PCI_ANY_ID, 0, 0, RTL8139 },
--	{0x14ea, 0xab07, PCI_ANY_ID, PCI_ANY_ID, 0, 0, RTL8139 },
--	{0x11db, 0x1234, PCI_ANY_ID, PCI_ANY_ID, 0, 0, RTL8139 },
--	{0x1432, 0x9130, PCI_ANY_ID, PCI_ANY_ID, 0, 0, RTL8139 },
--	{0x02ac, 0x1012, PCI_ANY_ID, PCI_ANY_ID, 0, 0, RTL8139 },
--	{0x018a, 0x0106, PCI_ANY_ID, PCI_ANY_ID, 0, 0, RTL8139 },
--	{0x126c, 0x1211, PCI_ANY_ID, PCI_ANY_ID, 0, 0, RTL8139 },
--	{0x1743, 0x8139, PCI_ANY_ID, PCI_ANY_ID, 0, 0, RTL8139 },
--	{0x021b, 0x8139, PCI_ANY_ID, PCI_ANY_ID, 0, 0, RTL8139 },
--	{0x16ec, 0xab06, PCI_ANY_ID, PCI_ANY_ID, 0, 0, RTL8139 },
-+	{ PCI_DEVICE(0x10ec, 0x8139), .driver_data = RTL8139 },
-+	{ PCI_DEVICE(0x10ec, 0x8138), .driver_data = RTL8139 },
-+	{ PCI_DEVICE(0x1113, 0x1211), .driver_data = RTL8139 },
-+	{ PCI_DEVICE(0x1500, 0x1360), .driver_data = RTL8139 },
-+	{ PCI_DEVICE(0x4033, 0x1360), .driver_data = RTL8139 },
-+	{ PCI_DEVICE(0x1186, 0x1300), .driver_data = RTL8139 },
-+	{ PCI_DEVICE(0x1186, 0x1340), .driver_data = RTL8139 },
-+	{ PCI_DEVICE(0x13d1, 0xab06), .driver_data = RTL8139 },
-+	{ PCI_DEVICE(0x1259, 0xa117), .driver_data = RTL8139 },
-+	{ PCI_DEVICE(0x1259, 0xa11e), .driver_data = RTL8139 },
-+	{ PCI_DEVICE(0x14ea, 0xab06), .driver_data = RTL8139 },
-+	{ PCI_DEVICE(0x14ea, 0xab07), .driver_data = RTL8139 },
-+	{ PCI_DEVICE(0x11db, 0x1234), .driver_data = RTL8139 },
-+	{ PCI_DEVICE(0x1432, 0x9130), .driver_data = RTL8139 },
-+	{ PCI_DEVICE(0x02ac, 0x1012), .driver_data = RTL8139 },
-+	{ PCI_DEVICE(0x018a, 0x0106), .driver_data = RTL8139 },
-+	{ PCI_DEVICE(0x126c, 0x1211), .driver_data = RTL8139 },
-+	{ PCI_DEVICE(0x1743, 0x8139), .driver_data = RTL8139 },
-+	{ PCI_DEVICE(0x021b, 0x8139), .driver_data = RTL8139 },
-+	{ PCI_DEVICE(0x16ec, 0xab06), .driver_data = RTL8139 },
- 
- #ifdef CONFIG_SH_SECUREEDGE5410
- 	/* Bogus 8139 silicon reports 8129 without external PROM :-( */
--	{0x10ec, 0x8129, PCI_ANY_ID, PCI_ANY_ID, 0, 0, RTL8139 },
-+	{ PCI_DEVICE(0x10ec, 0x8129), .driver_data = RTL8139 },
- #endif
- #ifdef CONFIG_8139TOO_8129
--	{0x10ec, 0x8129, PCI_ANY_ID, PCI_ANY_ID, 0, 0, RTL8129 },
-+	{ PCI_DEVICE(0x10ec, 0x8129), .driver_data = RTL8129 },
- #endif
- 
- 	/* some crazy cards report invalid vendor ids like
- 	 * 0x0001 here.  The other ids are valid and constant,
- 	 * so we simply don't match on the main vendor id.
- 	 */
--	{PCI_ANY_ID, 0x8139, 0x10ec, 0x8139, 0, 0, RTL8139 },
--	{PCI_ANY_ID, 0x8139, 0x1186, 0x1300, 0, 0, RTL8139 },
--	{PCI_ANY_ID, 0x8139, 0x13d1, 0xab06, 0, 0, RTL8139 },
-+	{ PCI_DEVICE_SUB(PCI_ANY_ID, 0x8139, 0x10ec, 0x8139), .driver_data = RTL8139 },
-+	{ PCI_DEVICE_SUB(PCI_ANY_ID, 0x8139, 0x1186, 0x1300), .driver_data = RTL8139 },
-+	{ PCI_DEVICE_SUB(PCI_ANY_ID, 0x8139, 0x13d1, 0xab06), .driver_data = RTL8139 },
- 
--	{0,}
-+	{ }
- };
- MODULE_DEVICE_TABLE (pci, rtl8139_pci_tbl);
- 
-diff --git a/drivers/net/ethernet/realtek/r8169_main.c b/drivers/net/ethernet/realtek/r8169_main.c
-index 791277e750ba..ec4fc21fa21f 100644
---- a/drivers/net/ethernet/realtek/r8169_main.c
-+++ b/drivers/net/ethernet/realtek/r8169_main.c
-@@ -229,7 +229,7 @@ static const struct pci_device_id rtl8169_pci_tbl[] = {
- 	{ PCI_VDEVICE(REALTEK,	0x2502) },
- 	{ PCI_VDEVICE(REALTEK,	0x2600) },
- 	{ PCI_VDEVICE(REALTEK,	0x8129) },
--	{ PCI_VDEVICE(REALTEK,	0x8136), RTL_CFG_NO_GBIT },
-+	{ PCI_VDEVICE(REALTEK,	0x8136), .driver_data = RTL_CFG_NO_GBIT },
- 	{ PCI_VDEVICE(REALTEK,	0x8161) },
- 	{ PCI_VDEVICE(REALTEK,	0x8162) },
- 	{ PCI_VDEVICE(REALTEK,	0x8167) },
-@@ -240,15 +240,15 @@ static const struct pci_device_id rtl8169_pci_tbl[] = {
- 	{ PCI_VDEVICE(DLINK,	0x4302) },
- 	{ PCI_VDEVICE(AT,	0xc107) },
- 	{ PCI_VDEVICE(USR,	0x0116) },
--	{ PCI_VENDOR_ID_LINKSYS, 0x1032, PCI_ANY_ID, 0x0024 },
--	{ 0x0001, 0x8168, PCI_ANY_ID, 0x2410 },
-+	{ PCI_VDEVICE_SUB(LINKSYS, 0x1032, PCI_ANY_ID, 0x0024) },
-+	{ PCI_DEVICE_SUB(0x0001, 0x8168, PCI_ANY_ID, 0x2410) },
- 	{ PCI_VDEVICE(REALTEK,	0x8125) },
- 	{ PCI_VDEVICE(REALTEK,	0x8126) },
- 	{ PCI_VDEVICE(REALTEK,	0x8127) },
- 	{ PCI_VDEVICE(REALTEK,	0x3000) },
- 	{ PCI_VDEVICE(REALTEK,	0x5000) },
- 	{ PCI_VDEVICE(REALTEK,	0x0e10) },
--	{}
-+	{ }
- };
- 
- MODULE_DEVICE_TABLE(pci, rtl8169_pci_tbl);
-diff --git a/drivers/net/ethernet/rocker/rocker_main.c b/drivers/net/ethernet/rocker/rocker_main.c
-index ff6ca7b2cd4f..84a55f2b48ff 100644
---- a/drivers/net/ethernet/rocker/rocker_main.c
-+++ b/drivers/net/ethernet/rocker/rocker_main.c
-@@ -40,8 +40,8 @@
- static const char rocker_driver_name[] = "rocker";
- 
- static const struct pci_device_id rocker_pci_id_table[] = {
--	{PCI_VDEVICE(REDHAT, PCI_DEVICE_ID_REDHAT_ROCKER), 0},
--	{0, }
-+	{ PCI_VDEVICE(REDHAT, PCI_DEVICE_ID_REDHAT_ROCKER) },
-+	{ }
- };
- 
- struct rocker_wait {
-diff --git a/drivers/net/ethernet/sis/sis190.c b/drivers/net/ethernet/sis/sis190.c
-index 12ddea514910..ed5276d492b9 100644
---- a/drivers/net/ethernet/sis/sis190.c
-+++ b/drivers/net/ethernet/sis/sis190.c
-@@ -331,9 +331,9 @@ static const struct {
- };
- 
- static const struct pci_device_id sis190_pci_tbl[] = {
--	{ PCI_DEVICE(PCI_VENDOR_ID_SI, 0x0190), 0, 0, 0 },
--	{ PCI_DEVICE(PCI_VENDOR_ID_SI, 0x0191), 0, 0, 1 },
--	{ 0, },
-+	{ PCI_VDEVICE(SI, 0x0190), .driver_data = 0 },
-+	{ PCI_VDEVICE(SI, 0x0191), .driver_data = 1 },
-+	{ },
- };
- 
- MODULE_DEVICE_TABLE(pci, sis190_pci_tbl);
-diff --git a/drivers/net/ethernet/sis/sis900.c b/drivers/net/ethernet/sis/sis900.c
-index 1349ef50cd26..6e9afd9042f7 100644
---- a/drivers/net/ethernet/sis/sis900.c
-+++ b/drivers/net/ethernet/sis/sis900.c
-@@ -104,11 +104,11 @@ static const char * card_names[] = {
- };
- 
- static const struct pci_device_id sis900_pci_tbl[] = {
--	{PCI_VENDOR_ID_SI, PCI_DEVICE_ID_SI_900,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, SIS_900},
--	{PCI_VENDOR_ID_SI, PCI_DEVICE_ID_SI_7016,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, SIS_7016},
--	{0,}
-+	{ PCI_VDEVICE(SI, PCI_DEVICE_ID_SI_900),
-+	  .driver_data = SIS_900 },
-+	{ PCI_VDEVICE(SI, PCI_DEVICE_ID_SI_7016),
-+	  .driver_data = SIS_7016 },
-+	{ }
- };
- MODULE_DEVICE_TABLE (pci, sis900_pci_tbl);
- 
-diff --git a/drivers/net/ethernet/smsc/epic100.c b/drivers/net/ethernet/smsc/epic100.c
-index 389659db06a8..60538b7fe684 100644
---- a/drivers/net/ethernet/smsc/epic100.c
-+++ b/drivers/net/ethernet/smsc/epic100.c
-@@ -166,11 +166,19 @@ static const struct epic_chip_info pci_id_tbl[] = {
- 
- 
- static const struct pci_device_id epic_pci_tbl[] = {
--	{ 0x10B8, 0x0005, 0x1092, 0x0AB4, 0, 0, SMSC_83C170_0 },
--	{ 0x10B8, 0x0005, PCI_ANY_ID, PCI_ANY_ID, 0, 0, SMSC_83C170 },
--	{ 0x10B8, 0x0006, PCI_ANY_ID, PCI_ANY_ID,
--	  PCI_CLASS_NETWORK_ETHERNET << 8, 0xffff00, SMSC_83C175 },
--	{ 0,}
-+	{
-+		PCI_DEVICE_SUB(0x10B8, 0x0005, 0x1092, 0x0AB4),
-+		.driver_data = SMSC_83C170_0,
-+	}, {
-+		PCI_DEVICE(0x10B8, 0x0005),
-+		.driver_data = SMSC_83C170,
-+	}, {
-+		PCI_DEVICE(0x10B8, 0x0006),
-+		.class = PCI_CLASS_NETWORK_ETHERNET << 8,
-+		.class_mask = 0xffff00,
-+		.driver_data = SMSC_83C175,
-+	},
-+	{ }
- };
- MODULE_DEVICE_TABLE (pci, epic_pci_tbl);
- 
-diff --git a/drivers/net/ethernet/sun/cassini.c b/drivers/net/ethernet/sun/cassini.c
-index fe00e7dd3fe4..823870c999bf 100644
---- a/drivers/net/ethernet/sun/cassini.c
-+++ b/drivers/net/ethernet/sun/cassini.c
-@@ -218,11 +218,9 @@ static u16 link_modes[] = {
- };
- 
- static const struct pci_device_id cas_pci_tbl[] = {
--	{ PCI_VENDOR_ID_SUN, PCI_DEVICE_ID_SUN_CASSINI,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0UL },
--	{ PCI_VENDOR_ID_NS, PCI_DEVICE_ID_NS_SATURN,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0UL },
--	{ 0, }
-+	{ PCI_VDEVICE(SUN, PCI_DEVICE_ID_SUN_CASSINI) },
-+	{ PCI_VDEVICE(NS, PCI_DEVICE_ID_NS_SATURN) },
-+	{ }
- };
- 
- MODULE_DEVICE_TABLE(pci, cas_pci_tbl);
-diff --git a/drivers/net/ethernet/sun/sungem.c b/drivers/net/ethernet/sun/sungem.c
-index 8e69d917d827..234ffc3c6a61 100644
---- a/drivers/net/ethernet/sun/sungem.c
-+++ b/drivers/net/ethernet/sun/sungem.c
-@@ -85,8 +85,7 @@ MODULE_LICENSE("GPL");
- #define GEM_MODULE_NAME	"gem"
- 
- static const struct pci_device_id gem_pci_tbl[] = {
--	{ PCI_VENDOR_ID_SUN, PCI_DEVICE_ID_SUN_GEM,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0UL },
-+	{ PCI_VDEVICE(SUN, PCI_DEVICE_ID_SUN_GEM) },
- 
- 	/* These models only differ from the original GEM in
- 	 * that their tx/rx fifos are of a different size and
-@@ -95,21 +94,14 @@ static const struct pci_device_id gem_pci_tbl[] = {
- 	 * Apple's GMAC does support gigabit on machines with
- 	 * the BCM54xx PHYs. -BenH
- 	 */
--	{ PCI_VENDOR_ID_SUN, PCI_DEVICE_ID_SUN_RIO_GEM,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0UL },
--	{ PCI_VENDOR_ID_APPLE, PCI_DEVICE_ID_APPLE_UNI_N_GMAC,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0UL },
--	{ PCI_VENDOR_ID_APPLE, PCI_DEVICE_ID_APPLE_UNI_N_GMACP,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0UL },
--	{ PCI_VENDOR_ID_APPLE, PCI_DEVICE_ID_APPLE_UNI_N_GMAC2,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0UL },
--	{ PCI_VENDOR_ID_APPLE, PCI_DEVICE_ID_APPLE_K2_GMAC,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0UL },
--	{ PCI_VENDOR_ID_APPLE, PCI_DEVICE_ID_APPLE_SH_SUNGEM,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0UL },
--	{ PCI_VENDOR_ID_APPLE, PCI_DEVICE_ID_APPLE_IPID2_GMAC,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0UL },
--	{0, }
-+	{ PCI_VDEVICE(SUN, PCI_DEVICE_ID_SUN_RIO_GEM) },
-+	{ PCI_VDEVICE(APPLE, PCI_DEVICE_ID_APPLE_UNI_N_GMAC) },
-+	{ PCI_VDEVICE(APPLE, PCI_DEVICE_ID_APPLE_UNI_N_GMACP) },
-+	{ PCI_VDEVICE(APPLE, PCI_DEVICE_ID_APPLE_UNI_N_GMAC2) },
-+	{ PCI_VDEVICE(APPLE, PCI_DEVICE_ID_APPLE_K2_GMAC) },
-+	{ PCI_VDEVICE(APPLE, PCI_DEVICE_ID_APPLE_SH_SUNGEM) },
-+	{ PCI_VDEVICE(APPLE, PCI_DEVICE_ID_APPLE_IPID2_GMAC) },
-+	{ }
- };
- 
- MODULE_DEVICE_TABLE(pci, gem_pci_tbl);
-diff --git a/drivers/net/ethernet/ti/tlan.c b/drivers/net/ethernet/ti/tlan.c
-index a55b0f951181..274a1837025c 100644
---- a/drivers/net/ethernet/ti/tlan.c
-+++ b/drivers/net/ethernet/ti/tlan.c
-@@ -119,33 +119,20 @@ static struct board {
- };
- 
- static const struct pci_device_id tlan_pci_tbl[] = {
--	{ PCI_VENDOR_ID_COMPAQ, PCI_DEVICE_ID_COMPAQ_NETEL10,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0 },
--	{ PCI_VENDOR_ID_COMPAQ, PCI_DEVICE_ID_COMPAQ_NETEL100,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 1 },
--	{ PCI_VENDOR_ID_COMPAQ, PCI_DEVICE_ID_COMPAQ_NETFLEX3I,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 2 },
--	{ PCI_VENDOR_ID_COMPAQ, PCI_DEVICE_ID_COMPAQ_THUNDER,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 3 },
--	{ PCI_VENDOR_ID_COMPAQ, PCI_DEVICE_ID_COMPAQ_NETFLEX3B,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 4 },
--	{ PCI_VENDOR_ID_COMPAQ, PCI_DEVICE_ID_COMPAQ_NETEL100PI,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 5 },
--	{ PCI_VENDOR_ID_COMPAQ, PCI_DEVICE_ID_COMPAQ_NETEL100D,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 6 },
--	{ PCI_VENDOR_ID_COMPAQ, PCI_DEVICE_ID_COMPAQ_NETEL100I,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 7 },
--	{ PCI_VENDOR_ID_OLICOM, PCI_DEVICE_ID_OLICOM_OC2183,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 8 },
--	{ PCI_VENDOR_ID_OLICOM, PCI_DEVICE_ID_OLICOM_OC2325,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 9 },
--	{ PCI_VENDOR_ID_OLICOM, PCI_DEVICE_ID_OLICOM_OC2326,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 10 },
--	{ PCI_VENDOR_ID_COMPAQ, PCI_DEVICE_ID_NETELLIGENT_10_100_WS_5100,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 11 },
--	{ PCI_VENDOR_ID_COMPAQ, PCI_DEVICE_ID_NETELLIGENT_10_T2,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 12 },
--	{ 0,}
-+	{ PCI_VDEVICE(COMPAQ, PCI_DEVICE_ID_COMPAQ_NETEL10), .driver_data = 0 },
-+	{ PCI_VDEVICE(COMPAQ, PCI_DEVICE_ID_COMPAQ_NETEL100), .driver_data = 1 },
-+	{ PCI_VDEVICE(COMPAQ, PCI_DEVICE_ID_COMPAQ_NETFLEX3I), .driver_data = 2 },
-+	{ PCI_VDEVICE(COMPAQ, PCI_DEVICE_ID_COMPAQ_THUNDER), .driver_data = 3 },
-+	{ PCI_VDEVICE(COMPAQ, PCI_DEVICE_ID_COMPAQ_NETFLEX3B), .driver_data = 4 },
-+	{ PCI_VDEVICE(COMPAQ, PCI_DEVICE_ID_COMPAQ_NETEL100PI), .driver_data = 5 },
-+	{ PCI_VDEVICE(COMPAQ, PCI_DEVICE_ID_COMPAQ_NETEL100D), .driver_data = 6 },
-+	{ PCI_VDEVICE(COMPAQ, PCI_DEVICE_ID_COMPAQ_NETEL100I), .driver_data = 7 },
-+	{ PCI_VDEVICE(OLICOM, PCI_DEVICE_ID_OLICOM_OC2183), .driver_data = 8 },
-+	{ PCI_VDEVICE(OLICOM, PCI_DEVICE_ID_OLICOM_OC2325), .driver_data = 9 },
-+	{ PCI_VDEVICE(OLICOM, PCI_DEVICE_ID_OLICOM_OC2326), .driver_data = 10 },
-+	{ PCI_VDEVICE(COMPAQ, PCI_DEVICE_ID_NETELLIGENT_10_100_WS_5100), .driver_data = 11 },
-+	{ PCI_VDEVICE(COMPAQ, PCI_DEVICE_ID_NETELLIGENT_10_T2), .driver_data = 12 },
-+	{ }
- };
- MODULE_DEVICE_TABLE(pci, tlan_pci_tbl);
- 
-diff --git a/drivers/net/ethernet/wangxun/ngbe/ngbe_main.c b/drivers/net/ethernet/wangxun/ngbe/ngbe_main.c
-index d8e3827a8b1f..d51d8db95a76 100644
---- a/drivers/net/ethernet/wangxun/ngbe/ngbe_main.c
-+++ b/drivers/net/ethernet/wangxun/ngbe/ngbe_main.c
-@@ -30,20 +30,20 @@ char ngbe_driver_name[] = "ngbe";
-  *   Class, Class Mask, private data (not used) }
-  */
- static const struct pci_device_id ngbe_pci_tbl[] = {
--	{ PCI_VDEVICE(WANGXUN, NGBE_DEV_ID_EM_WX1860AL_W), 0},
--	{ PCI_VDEVICE(WANGXUN, NGBE_DEV_ID_EM_WX1860A2), 0},
--	{ PCI_VDEVICE(WANGXUN, NGBE_DEV_ID_EM_WX1860A2S), 0},
--	{ PCI_VDEVICE(WANGXUN, NGBE_DEV_ID_EM_WX1860A4), 0},
--	{ PCI_VDEVICE(WANGXUN, NGBE_DEV_ID_EM_WX1860A4S), 0},
--	{ PCI_VDEVICE(WANGXUN, NGBE_DEV_ID_EM_WX1860AL2), 0},
--	{ PCI_VDEVICE(WANGXUN, NGBE_DEV_ID_EM_WX1860AL2S), 0},
--	{ PCI_VDEVICE(WANGXUN, NGBE_DEV_ID_EM_WX1860AL4), 0},
--	{ PCI_VDEVICE(WANGXUN, NGBE_DEV_ID_EM_WX1860AL4S), 0},
--	{ PCI_VDEVICE(WANGXUN, NGBE_DEV_ID_EM_WX1860LC), 0},
--	{ PCI_VDEVICE(WANGXUN, NGBE_DEV_ID_EM_WX1860A1), 0},
--	{ PCI_VDEVICE(WANGXUN, NGBE_DEV_ID_EM_WX1860A1L), 0},
-+	{ PCI_VDEVICE(WANGXUN, NGBE_DEV_ID_EM_WX1860AL_W) },
-+	{ PCI_VDEVICE(WANGXUN, NGBE_DEV_ID_EM_WX1860A2) },
-+	{ PCI_VDEVICE(WANGXUN, NGBE_DEV_ID_EM_WX1860A2S) },
-+	{ PCI_VDEVICE(WANGXUN, NGBE_DEV_ID_EM_WX1860A4) },
-+	{ PCI_VDEVICE(WANGXUN, NGBE_DEV_ID_EM_WX1860A4S) },
-+	{ PCI_VDEVICE(WANGXUN, NGBE_DEV_ID_EM_WX1860AL2) },
-+	{ PCI_VDEVICE(WANGXUN, NGBE_DEV_ID_EM_WX1860AL2S) },
-+	{ PCI_VDEVICE(WANGXUN, NGBE_DEV_ID_EM_WX1860AL4) },
-+	{ PCI_VDEVICE(WANGXUN, NGBE_DEV_ID_EM_WX1860AL4S) },
-+	{ PCI_VDEVICE(WANGXUN, NGBE_DEV_ID_EM_WX1860LC) },
-+	{ PCI_VDEVICE(WANGXUN, NGBE_DEV_ID_EM_WX1860A1) },
-+	{ PCI_VDEVICE(WANGXUN, NGBE_DEV_ID_EM_WX1860A1L) },
- 	/* required last entry */
--	{ .device = 0 }
-+	{ }
- };
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_controlq.c b/drivers/net/ethernet/intel/idpf/idpf_controlq.c
+deleted file mode 100644
+index 020b08367e18..000000000000
+--- a/drivers/net/ethernet/intel/idpf/idpf_controlq.c
++++ /dev/null
+@@ -1,631 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0-only
+-/* Copyright (C) 2023 Intel Corporation */
+-
+-#include "idpf.h"
+-
+-/**
+- * idpf_ctlq_setup_regs - initialize control queue registers
+- * @cq: pointer to the specific control queue
+- * @q_create_info: structs containing info for each queue to be initialized
+- */
+-static void idpf_ctlq_setup_regs(struct idpf_ctlq_info *cq,
+-				 struct idpf_ctlq_create_info *q_create_info)
+-{
+-	/* set control queue registers in our local struct */
+-	cq->reg.head = q_create_info->reg.head;
+-	cq->reg.tail = q_create_info->reg.tail;
+-	cq->reg.len = q_create_info->reg.len;
+-	cq->reg.bah = q_create_info->reg.bah;
+-	cq->reg.bal = q_create_info->reg.bal;
+-	cq->reg.len_mask = q_create_info->reg.len_mask;
+-	cq->reg.len_ena_mask = q_create_info->reg.len_ena_mask;
+-	cq->reg.head_mask = q_create_info->reg.head_mask;
+-}
+-
+-/**
+- * idpf_ctlq_init_regs - Initialize control queue registers
+- * @hw: pointer to hw struct
+- * @cq: pointer to the specific Control queue
+- * @is_rxq: true if receive control queue, false otherwise
+- *
+- * Initialize registers. The caller is expected to have already initialized the
+- * descriptor ring memory and buffer memory
+- */
+-static void idpf_ctlq_init_regs(struct idpf_hw *hw, struct idpf_ctlq_info *cq,
+-				bool is_rxq)
+-{
+-	struct libie_mmio_info *mmio = &hw->back->ctlq_ctx.mmio_info;
+-
+-	/* Update tail to post pre-allocated buffers for rx queues */
+-	if (is_rxq)
+-		writel((u32)(cq->ring_size - 1),
+-		       libie_pci_get_mmio_addr(mmio, cq->reg.tail));
+-
+-	/* For non-Mailbox control queues only TAIL need to be set */
+-	if (cq->q_id != -1)
+-		return;
+-
+-	/* Clear Head for both send or receive */
+-	writel(0, libie_pci_get_mmio_addr(mmio, cq->reg.head));
+-
+-	/* set starting point */
+-	writel(lower_32_bits(cq->desc_ring.pa),
+-	       libie_pci_get_mmio_addr(mmio, cq->reg.bal));
+-	writel(upper_32_bits(cq->desc_ring.pa),
+-	       libie_pci_get_mmio_addr(mmio, cq->reg.bah));
+-	writel((cq->ring_size | cq->reg.len_ena_mask),
+-	       libie_pci_get_mmio_addr(mmio, cq->reg.len));
+-}
+-
+-/**
+- * idpf_ctlq_init_rxq_bufs - populate receive queue descriptors with buf
+- * @cq: pointer to the specific Control queue
+- *
+- * Record the address of the receive queue DMA buffers in the descriptors.
+- * The buffers must have been previously allocated.
+- */
+-static void idpf_ctlq_init_rxq_bufs(struct idpf_ctlq_info *cq)
+-{
+-	int i;
+-
+-	for (i = 0; i < cq->ring_size; i++) {
+-		struct idpf_ctlq_desc *desc = IDPF_CTLQ_DESC(cq, i);
+-		struct idpf_dma_mem *bi = cq->bi.rx_buff[i];
+-
+-		/* No buffer to post to descriptor, continue */
+-		if (!bi)
+-			continue;
+-
+-		desc->flags =
+-			cpu_to_le16(IDPF_CTLQ_FLAG_BUF | IDPF_CTLQ_FLAG_RD);
+-		desc->opcode = 0;
+-		desc->datalen = cpu_to_le16(bi->size);
+-		desc->ret_val = 0;
+-		desc->v_opcode_dtype = 0;
+-		desc->v_retval = 0;
+-		desc->params.indirect.addr_high =
+-			cpu_to_le32(upper_32_bits(bi->pa));
+-		desc->params.indirect.addr_low =
+-			cpu_to_le32(lower_32_bits(bi->pa));
+-		desc->params.indirect.param0 = 0;
+-		desc->params.indirect.sw_cookie = 0;
+-		desc->params.indirect.v_flags = 0;
+-	}
+-}
+-
+-/**
+- * idpf_ctlq_shutdown - shutdown the CQ
+- * @hw: pointer to hw struct
+- * @cq: pointer to the specific Control queue
+- *
+- * The main shutdown routine for any controq queue
+- */
+-static void idpf_ctlq_shutdown(struct idpf_hw *hw, struct idpf_ctlq_info *cq)
+-{
+-	spin_lock(&cq->cq_lock);
+-
+-	/* free ring buffers and the ring itself */
+-	idpf_ctlq_dealloc_ring_res(hw, cq);
+-
+-	/* Set ring_size to 0 to indicate uninitialized queue */
+-	cq->ring_size = 0;
+-
+-	spin_unlock(&cq->cq_lock);
+-}
+-
+-/**
+- * idpf_ctlq_add - add one control queue
+- * @hw: pointer to hardware struct
+- * @qinfo: info for queue to be created
+- * @cq_out: (output) double pointer to control queue to be created
+- *
+- * Allocate and initialize a control queue and add it to the control queue list.
+- * The cq parameter will be allocated/initialized and passed back to the caller
+- * if no errors occur.
+- *
+- * Note: idpf_ctlq_init must be called prior to any calls to idpf_ctlq_add
+- */
+-int idpf_ctlq_add(struct idpf_hw *hw,
+-		  struct idpf_ctlq_create_info *qinfo,
+-		  struct idpf_ctlq_info **cq_out)
+-{
+-	struct idpf_ctlq_info *cq;
+-	bool is_rxq = false;
+-	int err;
+-
+-	cq = kzalloc_obj(*cq);
+-	if (!cq)
+-		return -ENOMEM;
+-
+-	cq->cq_type = qinfo->type;
+-	cq->q_id = qinfo->id;
+-	cq->buf_size = qinfo->buf_size;
+-	cq->ring_size = qinfo->len;
+-
+-	cq->next_to_use = 0;
+-	cq->next_to_clean = 0;
+-	cq->next_to_post = cq->ring_size - 1;
+-
+-	switch (qinfo->type) {
+-	case IDPF_CTLQ_TYPE_MAILBOX_RX:
+-		is_rxq = true;
+-		fallthrough;
+-	case IDPF_CTLQ_TYPE_MAILBOX_TX:
+-		err = idpf_ctlq_alloc_ring_res(hw, cq);
+-		break;
+-	default:
+-		err = -EBADR;
+-		break;
+-	}
+-
+-	if (err)
+-		goto init_free_q;
+-
+-	if (is_rxq) {
+-		idpf_ctlq_init_rxq_bufs(cq);
+-	} else {
+-		/* Allocate the array of msg pointers for TX queues */
+-		cq->bi.tx_msg = kzalloc_objs(struct idpf_ctlq_msg *, qinfo->len);
+-		if (!cq->bi.tx_msg) {
+-			err = -ENOMEM;
+-			goto init_dealloc_q_mem;
+-		}
+-	}
+-
+-	idpf_ctlq_setup_regs(cq, qinfo);
+-
+-	idpf_ctlq_init_regs(hw, cq, is_rxq);
+-
+-	spin_lock_init(&cq->cq_lock);
+-
+-	list_add(&cq->cq_list, &hw->cq_list_head);
+-
+-	*cq_out = cq;
+-
+-	return 0;
+-
+-init_dealloc_q_mem:
+-	/* free ring buffers and the ring itself */
+-	idpf_ctlq_dealloc_ring_res(hw, cq);
+-init_free_q:
+-	kfree(cq);
+-
+-	return err;
+-}
+-
+-/**
+- * idpf_ctlq_remove - deallocate and remove specified control queue
+- * @hw: pointer to hardware struct
+- * @cq: pointer to control queue to be removed
+- */
+-void idpf_ctlq_remove(struct idpf_hw *hw,
+-		      struct idpf_ctlq_info *cq)
+-{
+-	list_del(&cq->cq_list);
+-	idpf_ctlq_shutdown(hw, cq);
+-	kfree(cq);
+-}
+-
+-/**
+- * idpf_ctlq_init - main initialization routine for all control queues
+- * @hw: pointer to hardware struct
+- * @num_q: number of queues to initialize
+- * @q_info: array of structs containing info for each queue to be initialized
+- *
+- * This initializes any number and any type of control queues. This is an all
+- * or nothing routine; if one fails, all previously allocated queues will be
+- * destroyed. This must be called prior to using the individual add/remove
+- * APIs.
+- */
+-int idpf_ctlq_init(struct idpf_hw *hw, u8 num_q,
+-		   struct idpf_ctlq_create_info *q_info)
+-{
+-	struct idpf_ctlq_info *cq, *tmp;
+-	int err;
+-	int i;
+-
+-	INIT_LIST_HEAD(&hw->cq_list_head);
+-
+-	for (i = 0; i < num_q; i++) {
+-		struct idpf_ctlq_create_info *qinfo = q_info + i;
+-
+-		err = idpf_ctlq_add(hw, qinfo, &cq);
+-		if (err)
+-			goto init_destroy_qs;
+-	}
+-
+-	return 0;
+-
+-init_destroy_qs:
+-	list_for_each_entry_safe(cq, tmp, &hw->cq_list_head, cq_list)
+-		idpf_ctlq_remove(hw, cq);
+-
+-	return err;
+-}
+-
+-/**
+- * idpf_ctlq_deinit - destroy all control queues
+- * @hw: pointer to hw struct
+- */
+-void idpf_ctlq_deinit(struct idpf_hw *hw)
+-{
+-	struct idpf_ctlq_info *cq, *tmp;
+-
+-	list_for_each_entry_safe(cq, tmp, &hw->cq_list_head, cq_list)
+-		idpf_ctlq_remove(hw, cq);
+-}
+-
+-/**
+- * idpf_ctlq_send - send command to Control Queue (CTQ)
+- * @hw: pointer to hw struct
+- * @cq: handle to control queue struct to send on
+- * @num_q_msg: number of messages to send on control queue
+- * @q_msg: pointer to array of queue messages to be sent
+- *
+- * The caller is expected to allocate DMAable buffers and pass them to the
+- * send routine via the q_msg struct / control queue specific data struct.
+- * The control queue will hold a reference to each send message until
+- * the completion for that message has been cleaned.
+- */
+-int idpf_ctlq_send(struct idpf_hw *hw, struct idpf_ctlq_info *cq,
+-		   u16 num_q_msg, struct idpf_ctlq_msg q_msg[])
+-{
+-	struct idpf_ctlq_desc *desc;
+-	int num_desc_avail;
+-	int err = 0;
+-	int i;
+-
+-	spin_lock(&cq->cq_lock);
+-
+-	/* Ensure there are enough descriptors to send all messages */
+-	num_desc_avail = IDPF_CTLQ_DESC_UNUSED(cq);
+-	if (num_desc_avail == 0 || num_desc_avail < num_q_msg) {
+-		err = -ENOSPC;
+-		goto err_unlock;
+-	}
+-
+-	for (i = 0; i < num_q_msg; i++) {
+-		struct idpf_ctlq_msg *msg = &q_msg[i];
+-
+-		desc = IDPF_CTLQ_DESC(cq, cq->next_to_use);
+-
+-		desc->opcode = cpu_to_le16(msg->opcode);
+-		desc->pfid_vfid = cpu_to_le16(msg->func_id);
+-
+-		desc->v_opcode_dtype = cpu_to_le32(msg->cookie.mbx.chnl_opcode);
+-		desc->v_retval = cpu_to_le32(msg->cookie.mbx.chnl_retval);
+-
+-		desc->flags = cpu_to_le16((msg->host_id & IDPF_HOST_ID_MASK) <<
+-					  IDPF_CTLQ_FLAG_HOST_ID_S);
+-		if (msg->data_len) {
+-			struct idpf_dma_mem *buff = msg->ctx.indirect.payload;
+-
+-			desc->datalen |= cpu_to_le16(msg->data_len);
+-			desc->flags |= cpu_to_le16(IDPF_CTLQ_FLAG_BUF);
+-			desc->flags |= cpu_to_le16(IDPF_CTLQ_FLAG_RD);
+-
+-			/* Update the address values in the desc with the pa
+-			 * value for respective buffer
+-			 */
+-			desc->params.indirect.addr_high =
+-				cpu_to_le32(upper_32_bits(buff->pa));
+-			desc->params.indirect.addr_low =
+-				cpu_to_le32(lower_32_bits(buff->pa));
+-
+-			memcpy(&desc->params, msg->ctx.indirect.context,
+-			       IDPF_INDIRECT_CTX_SIZE);
+-		} else {
+-			memcpy(&desc->params, msg->ctx.direct,
+-			       IDPF_DIRECT_CTX_SIZE);
+-		}
+-
+-		/* Store buffer info */
+-		cq->bi.tx_msg[cq->next_to_use] = msg;
+-
+-		(cq->next_to_use)++;
+-		if (cq->next_to_use == cq->ring_size)
+-			cq->next_to_use = 0;
+-	}
+-
+-	/* Force memory write to complete before letting hardware
+-	 * know that there are new descriptors to fetch.
+-	 */
+-	dma_wmb();
+-
+-	writel(cq->next_to_use,
+-	       libie_pci_get_mmio_addr(&hw->back->ctlq_ctx.mmio_info,
+-				       cq->reg.tail));
+-
+-err_unlock:
+-	spin_unlock(&cq->cq_lock);
+-
+-	return err;
+-}
+-
+-/**
+- * idpf_ctlq_clean_sq - reclaim send descriptors on HW write back for the
+- * requested queue
+- * @cq: pointer to the specific Control queue
+- * @clean_count: (input|output) number of descriptors to clean as input, and
+- * number of descriptors actually cleaned as output
+- * @msg_status: (output) pointer to msg pointer array to be populated; needs
+- * to be allocated by caller
+- *
+- * Returns an array of message pointers associated with the cleaned
+- * descriptors. The pointers are to the original ctlq_msgs sent on the cleaned
+- * descriptors.  The status will be returned for each; any messages that failed
+- * to send will have a non-zero status. The caller is expected to free original
+- * ctlq_msgs and free or reuse the DMA buffers.
+- */
+-int idpf_ctlq_clean_sq(struct idpf_ctlq_info *cq, u16 *clean_count,
+-		       struct idpf_ctlq_msg *msg_status[])
+-{
+-	struct idpf_ctlq_desc *desc;
+-	u16 i, num_to_clean;
+-	u16 ntc, desc_err;
+-
+-	if (*clean_count == 0)
+-		return 0;
+-	if (*clean_count > cq->ring_size)
+-		return -EBADR;
+-
+-	spin_lock(&cq->cq_lock);
+-
+-	ntc = cq->next_to_clean;
+-
+-	num_to_clean = *clean_count;
+-
+-	for (i = 0; i < num_to_clean; i++) {
+-		/* Fetch next descriptor and check if marked as done */
+-		desc = IDPF_CTLQ_DESC(cq, ntc);
+-		if (!(le16_to_cpu(desc->flags) & IDPF_CTLQ_FLAG_DD))
+-			break;
+-
+-		/* Ensure no other fields are read until DD flag is checked */
+-		dma_rmb();
+-
+-		/* strip off FW internal code */
+-		desc_err = le16_to_cpu(desc->ret_val) & 0xff;
+-
+-		msg_status[i] = cq->bi.tx_msg[ntc];
+-		msg_status[i]->status = desc_err;
+-
+-		cq->bi.tx_msg[ntc] = NULL;
+-
+-		/* Zero out any stale data */
+-		memset(desc, 0, sizeof(*desc));
+-
+-		ntc++;
+-		if (ntc == cq->ring_size)
+-			ntc = 0;
+-	}
+-
+-	cq->next_to_clean = ntc;
+-
+-	spin_unlock(&cq->cq_lock);
+-
+-	/* Return number of descriptors actually cleaned */
+-	*clean_count = i;
+-
+-	return 0;
+-}
+-
+-/**
+- * idpf_ctlq_post_rx_buffs - post buffers to descriptor ring
+- * @hw: pointer to hw struct
+- * @cq: pointer to control queue handle
+- * @buff_count: (input|output) input is number of buffers caller is trying to
+- * return; output is number of buffers that were not posted
+- * @buffs: array of pointers to dma mem structs to be given to hardware
+- *
+- * Caller uses this function to return DMA buffers to the descriptor ring after
+- * consuming them; buff_count will be the number of buffers.
+- *
+- * Note: this function needs to be called after a receive call even
+- * if there are no DMA buffers to be returned, i.e. buff_count = 0,
+- * buffs = NULL to support direct commands
+- */
+-int idpf_ctlq_post_rx_buffs(struct idpf_hw *hw, struct idpf_ctlq_info *cq,
+-			    u16 *buff_count, struct idpf_dma_mem **buffs)
+-{
+-	struct idpf_ctlq_desc *desc;
+-	u16 ntp = cq->next_to_post;
+-	bool buffs_avail = false;
+-	u16 tbp = ntp + 1;
+-	int i = 0;
+-
+-	if (*buff_count > cq->ring_size)
+-		return -EBADR;
+-
+-	if (*buff_count > 0)
+-		buffs_avail = true;
+-
+-	spin_lock(&cq->cq_lock);
+-
+-	if (tbp >= cq->ring_size)
+-		tbp = 0;
+-
+-	if (tbp == cq->next_to_clean)
+-		/* Nothing to do */
+-		goto post_buffs_out;
+-
+-	/* Post buffers for as many as provided or up until the last one used */
+-	while (ntp != cq->next_to_clean) {
+-		desc = IDPF_CTLQ_DESC(cq, ntp);
+-
+-		if (cq->bi.rx_buff[ntp])
+-			goto fill_desc;
+-		if (!buffs_avail) {
+-			/* If the caller hasn't given us any buffers or
+-			 * there are none left, search the ring itself
+-			 * for an available buffer to move to this
+-			 * entry starting at the next entry in the ring
+-			 */
+-			tbp = ntp + 1;
+-
+-			/* Wrap ring if necessary */
+-			if (tbp >= cq->ring_size)
+-				tbp = 0;
+-
+-			while (tbp != cq->next_to_clean) {
+-				if (cq->bi.rx_buff[tbp]) {
+-					cq->bi.rx_buff[ntp] =
+-						cq->bi.rx_buff[tbp];
+-					cq->bi.rx_buff[tbp] = NULL;
+-
+-					/* Found a buffer, no need to
+-					 * search anymore
+-					 */
+-					break;
+-				}
+-
+-				/* Wrap ring if necessary */
+-				tbp++;
+-				if (tbp >= cq->ring_size)
+-					tbp = 0;
+-			}
+-
+-			if (tbp == cq->next_to_clean)
+-				goto post_buffs_out;
+-		} else {
+-			/* Give back pointer to DMA buffer */
+-			cq->bi.rx_buff[ntp] = buffs[i];
+-			i++;
+-
+-			if (i >= *buff_count)
+-				buffs_avail = false;
+-		}
+-
+-fill_desc:
+-		desc->flags =
+-			cpu_to_le16(IDPF_CTLQ_FLAG_BUF | IDPF_CTLQ_FLAG_RD);
+-
+-		/* Post buffers to descriptor */
+-		desc->datalen = cpu_to_le16(cq->bi.rx_buff[ntp]->size);
+-		desc->params.indirect.addr_high =
+-			cpu_to_le32(upper_32_bits(cq->bi.rx_buff[ntp]->pa));
+-		desc->params.indirect.addr_low =
+-			cpu_to_le32(lower_32_bits(cq->bi.rx_buff[ntp]->pa));
+-
+-		ntp++;
+-		if (ntp == cq->ring_size)
+-			ntp = 0;
+-	}
+-
+-post_buffs_out:
+-	/* Only update tail if buffers were actually posted */
+-	if (cq->next_to_post != ntp) {
+-		if (ntp)
+-			/* Update next_to_post to ntp - 1 since current ntp
+-			 * will not have a buffer
+-			 */
+-			cq->next_to_post = ntp - 1;
+-		else
+-			/* Wrap to end of end ring since current ntp is 0 */
+-			cq->next_to_post = cq->ring_size - 1;
+-
+-		dma_wmb();
+-
+-		writel(cq->next_to_post,
+-		       libie_pci_get_mmio_addr(&hw->back->ctlq_ctx.mmio_info,
+-					       cq->reg.tail));
+-	}
+-
+-	spin_unlock(&cq->cq_lock);
+-
+-	/* return the number of buffers that were not posted */
+-	*buff_count = *buff_count - i;
+-
+-	return 0;
+-}
+-
+-/**
+- * idpf_ctlq_recv - receive control queue message call back
+- * @cq: pointer to control queue handle to receive on
+- * @num_q_msg: (input|output) input number of messages that should be received;
+- * output number of messages actually received
+- * @q_msg: (output) array of received control queue messages on this q;
+- * needs to be pre-allocated by caller for as many messages as requested
+- *
+- * Called by interrupt handler or polling mechanism. Caller is expected
+- * to free buffers
+- */
+-int idpf_ctlq_recv(struct idpf_ctlq_info *cq, u16 *num_q_msg,
+-		   struct idpf_ctlq_msg *q_msg)
+-{
+-	u16 num_to_clean, ntc, flags;
+-	struct idpf_ctlq_desc *desc;
+-	int err = 0;
+-	u16 i;
+-
+-	/* take the lock before we start messing with the ring */
+-	spin_lock(&cq->cq_lock);
+-
+-	ntc = cq->next_to_clean;
+-
+-	num_to_clean = *num_q_msg;
+-
+-	for (i = 0; i < num_to_clean; i++) {
+-		/* Fetch next descriptor and check if marked as done */
+-		desc = IDPF_CTLQ_DESC(cq, ntc);
+-		flags = le16_to_cpu(desc->flags);
+-
+-		if (!(flags & IDPF_CTLQ_FLAG_DD))
+-			break;
+-
+-		/* Ensure no other fields are read until DD flag is checked */
+-		dma_rmb();
+-
+-		q_msg[i].vmvf_type = (flags &
+-				      (IDPF_CTLQ_FLAG_FTYPE_VM |
+-				       IDPF_CTLQ_FLAG_FTYPE_PF)) >>
+-				       IDPF_CTLQ_FLAG_FTYPE_S;
+-
+-		if (flags & IDPF_CTLQ_FLAG_ERR)
+-			err  = -EBADMSG;
+-
+-		q_msg[i].cookie.mbx.chnl_opcode =
+-				le32_to_cpu(desc->v_opcode_dtype);
+-		q_msg[i].cookie.mbx.chnl_retval =
+-				le32_to_cpu(desc->v_retval);
+-
+-		q_msg[i].opcode = le16_to_cpu(desc->opcode);
+-		q_msg[i].data_len = le16_to_cpu(desc->datalen);
+-		q_msg[i].status = le16_to_cpu(desc->ret_val);
+-
+-		if (desc->datalen) {
+-			memcpy(q_msg[i].ctx.indirect.context,
+-			       &desc->params.indirect, IDPF_INDIRECT_CTX_SIZE);
+-
+-			/* Assign pointer to dma buffer to ctlq_msg array
+-			 * to be given to upper layer
+-			 */
+-			q_msg[i].ctx.indirect.payload = cq->bi.rx_buff[ntc];
+-
+-			/* Zero out pointer to DMA buffer info;
+-			 * will be repopulated by post buffers API
+-			 */
+-			cq->bi.rx_buff[ntc] = NULL;
+-		} else {
+-			memcpy(q_msg[i].ctx.direct, desc->params.raw,
+-			       IDPF_DIRECT_CTX_SIZE);
+-		}
+-
+-		/* Zero out stale data in descriptor */
+-		memset(desc, 0, sizeof(struct idpf_ctlq_desc));
+-
+-		ntc++;
+-		if (ntc == cq->ring_size)
+-			ntc = 0;
+-	}
+-
+-	cq->next_to_clean = ntc;
+-
+-	spin_unlock(&cq->cq_lock);
+-
+-	*num_q_msg = i;
+-	if (*num_q_msg == 0)
+-		err = -ENOMSG;
+-
+-	return err;
+-}
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_controlq.h b/drivers/net/ethernet/intel/idpf/idpf_controlq.h
+deleted file mode 100644
+index acf595e9265f..000000000000
+--- a/drivers/net/ethernet/intel/idpf/idpf_controlq.h
++++ /dev/null
+@@ -1,142 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0-only */
+-/* Copyright (C) 2023 Intel Corporation */
+-
+-#ifndef _IDPF_CONTROLQ_H_
+-#define _IDPF_CONTROLQ_H_
+-
+-#include <linux/slab.h>
+-
+-#include "idpf_controlq_api.h"
+-
+-/* Maximum buffer length for all control queue types */
+-#define IDPF_CTLQ_MAX_BUF_LEN	4096
+-
+-#define IDPF_CTLQ_DESC(R, i) \
+-	(&(((struct idpf_ctlq_desc *)((R)->desc_ring.va))[i]))
+-
+-#define IDPF_CTLQ_DESC_UNUSED(R) \
+-	((u16)((((R)->next_to_clean > (R)->next_to_use) ? 0 : (R)->ring_size) + \
+-	       (R)->next_to_clean - (R)->next_to_use - 1))
+-
+-/* Control Queue default settings */
+-#define IDPF_CTRL_SQ_CMD_TIMEOUT	250  /* msecs */
+-
+-struct idpf_ctlq_desc {
+-	/* Control queue descriptor flags */
+-	__le16 flags;
+-	/* Control queue message opcode */
+-	__le16 opcode;
+-	__le16 datalen;		/* 0 for direct commands */
+-	union {
+-		__le16 ret_val;
+-		__le16 pfid_vfid;
+-#define IDPF_CTLQ_DESC_VF_ID_S	0
+-#define IDPF_CTLQ_DESC_VF_ID_M	(0x7FF << IDPF_CTLQ_DESC_VF_ID_S)
+-#define IDPF_CTLQ_DESC_PF_ID_S	11
+-#define IDPF_CTLQ_DESC_PF_ID_M	(0x1F << IDPF_CTLQ_DESC_PF_ID_S)
+-	};
+-
+-	/* Virtchnl message opcode and virtchnl descriptor type
+-	 * v_opcode=[27:0], v_dtype=[31:28]
+-	 */
+-	__le32 v_opcode_dtype;
+-	/* Virtchnl return value */
+-	__le32 v_retval;
+-	union {
+-		struct {
+-			__le32 param0;
+-			__le32 param1;
+-			__le32 param2;
+-			__le32 param3;
+-		} direct;
+-		struct {
+-			__le32 param0;
+-			__le16 sw_cookie;
+-			/* Virtchnl flags */
+-			__le16 v_flags;
+-			__le32 addr_high;
+-			__le32 addr_low;
+-		} indirect;
+-		u8 raw[16];
+-	} params;
+-};
+-
+-/* Flags sub-structure
+- * |0  |1  |2  |3  |4  |5  |6  |7  |8  |9  |10 |11 |12 |13 |14 |15 |
+- * |DD |CMP|ERR|  * RSV *  |FTYPE  | *RSV* |RD |VFC|BUF|  HOST_ID  |
+- */
+-/* command flags and offsets */
+-#define IDPF_CTLQ_FLAG_DD_S		0
+-#define IDPF_CTLQ_FLAG_CMP_S		1
+-#define IDPF_CTLQ_FLAG_ERR_S		2
+-#define IDPF_CTLQ_FLAG_FTYPE_S		6
+-#define IDPF_CTLQ_FLAG_RD_S		10
+-#define IDPF_CTLQ_FLAG_VFC_S		11
+-#define IDPF_CTLQ_FLAG_BUF_S		12
+-#define IDPF_CTLQ_FLAG_HOST_ID_S	13
+-
+-#define IDPF_CTLQ_FLAG_DD	BIT(IDPF_CTLQ_FLAG_DD_S)	/* 0x1	  */
+-#define IDPF_CTLQ_FLAG_CMP	BIT(IDPF_CTLQ_FLAG_CMP_S)	/* 0x2	  */
+-#define IDPF_CTLQ_FLAG_ERR	BIT(IDPF_CTLQ_FLAG_ERR_S)	/* 0x4	  */
+-#define IDPF_CTLQ_FLAG_FTYPE_VM	BIT(IDPF_CTLQ_FLAG_FTYPE_S)	/* 0x40	  */
+-#define IDPF_CTLQ_FLAG_FTYPE_PF	BIT(IDPF_CTLQ_FLAG_FTYPE_S + 1)	/* 0x80   */
+-#define IDPF_CTLQ_FLAG_RD	BIT(IDPF_CTLQ_FLAG_RD_S)	/* 0x400  */
+-#define IDPF_CTLQ_FLAG_VFC	BIT(IDPF_CTLQ_FLAG_VFC_S)	/* 0x800  */
+-#define IDPF_CTLQ_FLAG_BUF	BIT(IDPF_CTLQ_FLAG_BUF_S)	/* 0x1000 */
+-
+-/* Host ID is a special field that has 3b and not a 1b flag */
+-#define IDPF_CTLQ_FLAG_HOST_ID_M MAKE_MASK(0x7000UL, IDPF_CTLQ_FLAG_HOST_ID_S)
+-
+-struct idpf_mbxq_desc {
+-	u8 pad[8];		/* CTLQ flags/opcode/len/retval fields */
+-	u32 chnl_opcode;	/* avoid confusion with desc->opcode */
+-	u32 chnl_retval;	/* ditto for desc->retval */
+-	u32 pf_vf_id;		/* used by CP when sending to PF */
+-};
+-
+-/* Max number of MMIO regions not including the mailbox and rstat regions in
+- * the fallback case when the whole bar is mapped.
+- */
+-#define IDPF_MMIO_MAP_FALLBACK_MAX_REMAINING		3
+-
+-struct idpf_mmio_reg {
+-	void __iomem *vaddr;
+-	resource_size_t addr_start;
+-	resource_size_t addr_len;
+-};
+-
+-/* Define the driver hardware struct to replace other control structs as needed
+- * Align to ctlq_hw_info
+- */
+-struct idpf_hw {
+-	/* Array of remaining LAN BAR regions */
+-	int num_lan_regs;
+-	struct idpf_mmio_reg *lan_regs;
+-
+-	struct idpf_adapter *back;
+-
+-	/* control queue - send and receive */
+-	struct idpf_ctlq_info *asq;
+-	struct idpf_ctlq_info *arq;
+-
+-	/* pci info */
+-	u16 device_id;
+-	u16 vendor_id;
+-	u16 subsystem_device_id;
+-	u16 subsystem_vendor_id;
+-	u8 revision_id;
+-	bool adapter_stopped;
+-
+-	struct list_head cq_list_head;
+-};
+-
+-int idpf_ctlq_alloc_ring_res(struct idpf_hw *hw,
+-			     struct idpf_ctlq_info *cq);
+-
+-void idpf_ctlq_dealloc_ring_res(struct idpf_hw *hw, struct idpf_ctlq_info *cq);
+-
+-/* prototype for functions used for dynamic memory allocation */
+-void *idpf_alloc_dma_mem(struct idpf_hw *hw, struct idpf_dma_mem *mem,
+-			 u64 size);
+-void idpf_free_dma_mem(struct idpf_hw *hw, struct idpf_dma_mem *mem);
+-#endif /* _IDPF_CONTROLQ_H_ */
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_controlq_api.h b/drivers/net/ethernet/intel/idpf/idpf_controlq_api.h
+deleted file mode 100644
+index 3414c5f9a831..000000000000
+--- a/drivers/net/ethernet/intel/idpf/idpf_controlq_api.h
++++ /dev/null
+@@ -1,177 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0-only */
+-/* Copyright (C) 2023 Intel Corporation */
+-
+-#ifndef _IDPF_CONTROLQ_API_H_
+-#define _IDPF_CONTROLQ_API_H_
+-
+-#include "idpf_mem.h"
+-
+-struct idpf_hw;
+-
+-/* Used for queue init, response and events */
+-enum idpf_ctlq_type {
+-	IDPF_CTLQ_TYPE_MAILBOX_TX	= 0,
+-	IDPF_CTLQ_TYPE_MAILBOX_RX	= 1,
+-	IDPF_CTLQ_TYPE_CONFIG_TX	= 2,
+-	IDPF_CTLQ_TYPE_CONFIG_RX	= 3,
+-	IDPF_CTLQ_TYPE_EVENT_RX		= 4,
+-	IDPF_CTLQ_TYPE_RDMA_TX		= 5,
+-	IDPF_CTLQ_TYPE_RDMA_RX		= 6,
+-	IDPF_CTLQ_TYPE_RDMA_COMPL	= 7
+-};
+-
+-/* Generic Control Queue Structures */
+-struct idpf_ctlq_reg {
+-	/* used for queue tracking */
+-	u32 head;
+-	u32 tail;
+-	/* Below applies only to default mb (if present) */
+-	u32 len;
+-	u32 bah;
+-	u32 bal;
+-	u32 len_mask;
+-	u32 len_ena_mask;
+-	u32 head_mask;
+-};
+-
+-/* Generic queue msg structure */
+-struct idpf_ctlq_msg {
+-	u8 vmvf_type; /* represents the source of the message on recv */
+-#define IDPF_VMVF_TYPE_VF 0
+-#define IDPF_VMVF_TYPE_VM 1
+-#define IDPF_VMVF_TYPE_PF 2
+-	u8 host_id;
+-	/* 3b field used only when sending a message to CP - to be used in
+-	 * combination with target func_id to route the message
+-	 */
+-#define IDPF_HOST_ID_MASK 0x7
+-
+-	u16 opcode;
+-	u16 data_len;	/* data_len = 0 when no payload is attached */
+-	union {
+-		u16 func_id;	/* when sending a message */
+-		u16 status;	/* when receiving a message */
+-	};
+-	union {
+-		struct {
+-			u32 chnl_opcode;
+-			u32 chnl_retval;
+-		} mbx;
+-	} cookie;
+-	union {
+-#define IDPF_DIRECT_CTX_SIZE	16
+-#define IDPF_INDIRECT_CTX_SIZE	8
+-		/* 16 bytes of context can be provided or 8 bytes of context
+-		 * plus the address of a DMA buffer
+-		 */
+-		u8 direct[IDPF_DIRECT_CTX_SIZE];
+-		struct {
+-			u8 context[IDPF_INDIRECT_CTX_SIZE];
+-			struct idpf_dma_mem *payload;
+-		} indirect;
+-		struct {
+-			u32 rsvd;
+-			u16 data;
+-			u16 flags;
+-		} sw_cookie;
+-	} ctx;
+-};
+-
+-/* Generic queue info structures */
+-/* MB, CONFIG and EVENT q do not have extended info */
+-struct idpf_ctlq_create_info {
+-	enum idpf_ctlq_type type;
+-	int id; /* absolute queue offset passed as input
+-		 * -1 for default mailbox if present
+-		 */
+-	u16 len; /* Queue length passed as input */
+-	u16 buf_size; /* buffer size passed as input */
+-	u64 base_address; /* output, HPA of the Queue start  */
+-	struct idpf_ctlq_reg reg; /* registers accessed by ctlqs */
+-
+-	int ext_info_size;
+-	void *ext_info; /* Specific to q type */
+-};
+-
+-/* Control Queue information */
+-struct idpf_ctlq_info {
+-	struct list_head cq_list;
+-
+-	enum idpf_ctlq_type cq_type;
+-	int q_id;
+-	spinlock_t cq_lock;		/* control queue lock */
+-	/* used for interrupt processing */
+-	u16 next_to_use;
+-	u16 next_to_clean;
+-	u16 next_to_post;		/* starting descriptor to post buffers
+-					 * to after recev
+-					 */
+-
+-	struct idpf_dma_mem desc_ring;	/* descriptor ring memory
+-					 * idpf_dma_mem is defined in OSdep.h
+-					 */
+-	union {
+-		struct idpf_dma_mem **rx_buff;
+-		struct idpf_ctlq_msg **tx_msg;
+-	} bi;
+-
+-	u16 buf_size;			/* queue buffer size */
+-	u16 ring_size;			/* Number of descriptors */
+-	struct idpf_ctlq_reg reg;	/* registers accessed by ctlqs */
+-};
+-
+-/**
+- * enum idpf_mbx_opc - PF/VF mailbox commands
+- * @idpf_mbq_opc_send_msg_to_cp: used by PF or VF to send a message to its CP
+- * @idpf_mbq_opc_send_msg_to_peer_drv: used by PF or VF to send a message to
+- *				       any peer driver
+- */
+-enum idpf_mbx_opc {
+-	idpf_mbq_opc_send_msg_to_cp		= 0x0801,
+-	idpf_mbq_opc_send_msg_to_peer_drv	= 0x0804,
+-};
+-
+-/* API supported for control queue management */
+-/* Will init all required q including default mb.  "q_info" is an array of
+- * create_info structs equal to the number of control queues to be created.
+- */
+-int idpf_ctlq_init(struct idpf_hw *hw, u8 num_q,
+-		   struct idpf_ctlq_create_info *q_info);
+-
+-/* Allocate and initialize a single control queue, which will be added to the
+- * control queue list; returns a handle to the created control queue
+- */
+-int idpf_ctlq_add(struct idpf_hw *hw,
+-		  struct idpf_ctlq_create_info *qinfo,
+-		  struct idpf_ctlq_info **cq);
+-
+-/* Deinitialize and deallocate a single control queue */
+-void idpf_ctlq_remove(struct idpf_hw *hw,
+-		      struct idpf_ctlq_info *cq);
+-
+-/* Sends messages to HW and will also free the buffer*/
+-int idpf_ctlq_send(struct idpf_hw *hw,
+-		   struct idpf_ctlq_info *cq,
+-		   u16 num_q_msg,
+-		   struct idpf_ctlq_msg q_msg[]);
+-
+-/* Receives messages and called by interrupt handler/polling
+- * initiated by app/process. Also caller is supposed to free the buffers
+- */
+-int idpf_ctlq_recv(struct idpf_ctlq_info *cq, u16 *num_q_msg,
+-		   struct idpf_ctlq_msg *q_msg);
+-
+-/* Reclaims send descriptors on HW write back */
+-int idpf_ctlq_clean_sq(struct idpf_ctlq_info *cq, u16 *clean_count,
+-		       struct idpf_ctlq_msg *msg_status[]);
+-
+-/* Indicate RX buffers are done being processed */
+-int idpf_ctlq_post_rx_buffs(struct idpf_hw *hw,
+-			    struct idpf_ctlq_info *cq,
+-			    u16 *buff_count,
+-			    struct idpf_dma_mem **buffs);
+-
+-/* Will destroy all q including the default mb */
+-void idpf_ctlq_deinit(struct idpf_hw *hw);
+-
+-#endif /* _IDPF_CONTROLQ_API_H_ */
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_controlq_setup.c b/drivers/net/ethernet/intel/idpf/idpf_controlq_setup.c
+deleted file mode 100644
+index d4d488c7cfd6..000000000000
+--- a/drivers/net/ethernet/intel/idpf/idpf_controlq_setup.c
++++ /dev/null
+@@ -1,169 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0-only
+-/* Copyright (C) 2023 Intel Corporation */
+-
+-#include "idpf_controlq.h"
+-
+-/**
+- * idpf_ctlq_alloc_desc_ring - Allocate Control Queue (CQ) rings
+- * @hw: pointer to hw struct
+- * @cq: pointer to the specific Control queue
+- */
+-static int idpf_ctlq_alloc_desc_ring(struct idpf_hw *hw,
+-				     struct idpf_ctlq_info *cq)
+-{
+-	size_t size = cq->ring_size * sizeof(struct idpf_ctlq_desc);
+-
+-	cq->desc_ring.va = idpf_alloc_dma_mem(hw, &cq->desc_ring, size);
+-	if (!cq->desc_ring.va)
+-		return -ENOMEM;
+-
+-	return 0;
+-}
+-
+-/**
+- * idpf_ctlq_alloc_bufs - Allocate Control Queue (CQ) buffers
+- * @hw: pointer to hw struct
+- * @cq: pointer to the specific Control queue
+- *
+- * Allocate the buffer head for all control queues, and if it's a receive
+- * queue, allocate DMA buffers
+- */
+-static int idpf_ctlq_alloc_bufs(struct idpf_hw *hw,
+-				struct idpf_ctlq_info *cq)
+-{
+-	int i;
+-
+-	/* Do not allocate DMA buffers for transmit queues */
+-	if (cq->cq_type == IDPF_CTLQ_TYPE_MAILBOX_TX)
+-		return 0;
+-
+-	/* We'll be allocating the buffer info memory first, then we can
+-	 * allocate the mapped buffers for the event processing
+-	 */
+-	cq->bi.rx_buff = kzalloc_objs(struct idpf_dma_mem *, cq->ring_size);
+-	if (!cq->bi.rx_buff)
+-		return -ENOMEM;
+-
+-	/* allocate the mapped buffers (except for the last one) */
+-	for (i = 0; i < cq->ring_size - 1; i++) {
+-		struct idpf_dma_mem *bi;
+-		int num = 1; /* number of idpf_dma_mem to be allocated */
+-
+-		cq->bi.rx_buff[i] = kzalloc_objs(struct idpf_dma_mem, num);
+-		if (!cq->bi.rx_buff[i])
+-			goto unwind_alloc_cq_bufs;
+-
+-		bi = cq->bi.rx_buff[i];
+-
+-		bi->va = idpf_alloc_dma_mem(hw, bi, cq->buf_size);
+-		if (!bi->va) {
+-			/* unwind will not free the failed entry */
+-			kfree(cq->bi.rx_buff[i]);
+-			goto unwind_alloc_cq_bufs;
+-		}
+-	}
+-
+-	return 0;
+-
+-unwind_alloc_cq_bufs:
+-	/* don't try to free the one that failed... */
+-	i--;
+-	for (; i >= 0; i--) {
+-		idpf_free_dma_mem(hw, cq->bi.rx_buff[i]);
+-		kfree(cq->bi.rx_buff[i]);
+-	}
+-	kfree(cq->bi.rx_buff);
+-
+-	return -ENOMEM;
+-}
+-
+-/**
+- * idpf_ctlq_free_desc_ring - Free Control Queue (CQ) rings
+- * @hw: pointer to hw struct
+- * @cq: pointer to the specific Control queue
+- *
+- * This assumes the posted send buffers have already been cleaned
+- * and de-allocated
+- */
+-static void idpf_ctlq_free_desc_ring(struct idpf_hw *hw,
+-				     struct idpf_ctlq_info *cq)
+-{
+-	idpf_free_dma_mem(hw, &cq->desc_ring);
+-}
+-
+-/**
+- * idpf_ctlq_free_bufs - Free CQ buffer info elements
+- * @hw: pointer to hw struct
+- * @cq: pointer to the specific Control queue
+- *
+- * Free the DMA buffers for RX queues, and DMA buffer header for both RX and TX
+- * queues.  The upper layers are expected to manage freeing of TX DMA buffers
+- */
+-static void idpf_ctlq_free_bufs(struct idpf_hw *hw, struct idpf_ctlq_info *cq)
+-{
+-	void *bi;
+-
+-	if (cq->cq_type == IDPF_CTLQ_TYPE_MAILBOX_RX) {
+-		int i;
+-
+-		/* free DMA buffers for rx queues*/
+-		for (i = 0; i < cq->ring_size; i++) {
+-			if (cq->bi.rx_buff[i]) {
+-				idpf_free_dma_mem(hw, cq->bi.rx_buff[i]);
+-				kfree(cq->bi.rx_buff[i]);
+-			}
+-		}
+-
+-		bi = (void *)cq->bi.rx_buff;
+-	} else {
+-		bi = (void *)cq->bi.tx_msg;
+-	}
+-
+-	/* free the buffer header */
+-	kfree(bi);
+-}
+-
+-/**
+- * idpf_ctlq_dealloc_ring_res - Free memory allocated for control queue
+- * @hw: pointer to hw struct
+- * @cq: pointer to the specific Control queue
+- *
+- * Free the memory used by the ring, buffers and other related structures
+- */
+-void idpf_ctlq_dealloc_ring_res(struct idpf_hw *hw, struct idpf_ctlq_info *cq)
+-{
+-	/* free ring buffers and the ring itself */
+-	idpf_ctlq_free_bufs(hw, cq);
+-	idpf_ctlq_free_desc_ring(hw, cq);
+-}
+-
+-/**
+- * idpf_ctlq_alloc_ring_res - allocate memory for descriptor ring and bufs
+- * @hw: pointer to hw struct
+- * @cq: pointer to control queue struct
+- *
+- * Do *NOT* hold cq_lock when calling this as the memory allocation routines
+- * called are not going to be atomic context safe
+- */
+-int idpf_ctlq_alloc_ring_res(struct idpf_hw *hw, struct idpf_ctlq_info *cq)
+-{
+-	int err;
+-
+-	/* allocate the ring memory */
+-	err = idpf_ctlq_alloc_desc_ring(hw, cq);
+-	if (err)
+-		return err;
+-
+-	/* allocate buffers in the rings */
+-	err = idpf_ctlq_alloc_bufs(hw, cq);
+-	if (err)
+-		goto idpf_init_cq_free_ring;
+-
+-	/* success! */
+-	return 0;
+-
+-idpf_init_cq_free_ring:
+-	idpf_free_dma_mem(hw, &cq->desc_ring);
+-
+-	return err;
+-}
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_dev.c b/drivers/net/ethernet/intel/idpf/idpf_dev.c
+index a9e170eb24b7..92e707ff2b9c 100644
+--- a/drivers/net/ethernet/intel/idpf/idpf_dev.c
++++ b/drivers/net/ethernet/intel/idpf/idpf_dev.c
+@@ -10,44 +10,32 @@
  
  /**
-diff --git a/drivers/net/ethernet/wangxun/ngbevf/ngbevf_main.c b/drivers/net/ethernet/wangxun/ngbevf/ngbevf_main.c
-index 6ef43adcc425..d79cf8d8484f 100644
---- a/drivers/net/ethernet/wangxun/ngbevf/ngbevf_main.c
-+++ b/drivers/net/ethernet/wangxun/ngbevf/ngbevf_main.c
-@@ -26,20 +26,20 @@
-  *   Class, Class Mask, private data (not used) }
+  * idpf_ctlq_reg_init - initialize default mailbox registers
+- * @adapter: adapter structure
+- * @cq: pointer to the array of create control queues
++ * @mmio: struct that contains MMIO region info
++ * @cci: struct where the register offset pointer to be copied to
   */
- static const struct pci_device_id ngbevf_pci_tbl[] = {
--	{ PCI_VDEVICE(WANGXUN, NGBEVF_DEV_ID_EM_WX1860AL_W), 0},
--	{ PCI_VDEVICE(WANGXUN, NGBEVF_DEV_ID_EM_WX1860A2), 0},
--	{ PCI_VDEVICE(WANGXUN, NGBEVF_DEV_ID_EM_WX1860A2S), 0},
--	{ PCI_VDEVICE(WANGXUN, NGBEVF_DEV_ID_EM_WX1860A4), 0},
--	{ PCI_VDEVICE(WANGXUN, NGBEVF_DEV_ID_EM_WX1860A4S), 0},
--	{ PCI_VDEVICE(WANGXUN, NGBEVF_DEV_ID_EM_WX1860AL2), 0},
--	{ PCI_VDEVICE(WANGXUN, NGBEVF_DEV_ID_EM_WX1860AL2S), 0},
--	{ PCI_VDEVICE(WANGXUN, NGBEVF_DEV_ID_EM_WX1860AL4), 0},
--	{ PCI_VDEVICE(WANGXUN, NGBEVF_DEV_ID_EM_WX1860AL4S), 0},
--	{ PCI_VDEVICE(WANGXUN, NGBEVF_DEV_ID_EM_WX1860NCSI), 0},
--	{ PCI_VDEVICE(WANGXUN, NGBEVF_DEV_ID_EM_WX1860A1), 0},
--	{ PCI_VDEVICE(WANGXUN, NGBEVF_DEV_ID_EM_WX1860AL1), 0},
-+	{ PCI_VDEVICE(WANGXUN, NGBEVF_DEV_ID_EM_WX1860AL_W) },
-+	{ PCI_VDEVICE(WANGXUN, NGBEVF_DEV_ID_EM_WX1860A2) },
-+	{ PCI_VDEVICE(WANGXUN, NGBEVF_DEV_ID_EM_WX1860A2S) },
-+	{ PCI_VDEVICE(WANGXUN, NGBEVF_DEV_ID_EM_WX1860A4) },
-+	{ PCI_VDEVICE(WANGXUN, NGBEVF_DEV_ID_EM_WX1860A4S) },
-+	{ PCI_VDEVICE(WANGXUN, NGBEVF_DEV_ID_EM_WX1860AL2) },
-+	{ PCI_VDEVICE(WANGXUN, NGBEVF_DEV_ID_EM_WX1860AL2S) },
-+	{ PCI_VDEVICE(WANGXUN, NGBEVF_DEV_ID_EM_WX1860AL4) },
-+	{ PCI_VDEVICE(WANGXUN, NGBEVF_DEV_ID_EM_WX1860AL4S) },
-+	{ PCI_VDEVICE(WANGXUN, NGBEVF_DEV_ID_EM_WX1860NCSI) },
-+	{ PCI_VDEVICE(WANGXUN, NGBEVF_DEV_ID_EM_WX1860A1) },
-+	{ PCI_VDEVICE(WANGXUN, NGBEVF_DEV_ID_EM_WX1860AL1) },
- 	/* required last entry */
--	{ .device = 0 }
-+	{ }
- };
- 
- static const struct net_device_ops ngbevf_netdev_ops = {
-diff --git a/drivers/net/ethernet/wangxun/txgbe/txgbe_main.c b/drivers/net/ethernet/wangxun/txgbe/txgbe_main.c
-index 8b7c3753bb6a..4c549c2644ab 100644
---- a/drivers/net/ethernet/wangxun/txgbe/txgbe_main.c
-+++ b/drivers/net/ethernet/wangxun/txgbe/txgbe_main.c
-@@ -37,16 +37,16 @@ char txgbe_driver_name[] = "txgbe";
-  *   Class, Class Mask, private data (not used) }
-  */
- static const struct pci_device_id txgbe_pci_tbl[] = {
--	{ PCI_VDEVICE(WANGXUN, TXGBE_DEV_ID_SP1000), 0},
--	{ PCI_VDEVICE(WANGXUN, TXGBE_DEV_ID_WX1820), 0},
--	{ PCI_VDEVICE(WANGXUN, TXGBE_DEV_ID_AML5010), 0},
--	{ PCI_VDEVICE(WANGXUN, TXGBE_DEV_ID_AML5110), 0},
--	{ PCI_VDEVICE(WANGXUN, TXGBE_DEV_ID_AML5025), 0},
--	{ PCI_VDEVICE(WANGXUN, TXGBE_DEV_ID_AML5125), 0},
--	{ PCI_VDEVICE(WANGXUN, TXGBE_DEV_ID_AML5040), 0},
--	{ PCI_VDEVICE(WANGXUN, TXGBE_DEV_ID_AML5140), 0},
-+	{ PCI_VDEVICE(WANGXUN, TXGBE_DEV_ID_SP1000) },
-+	{ PCI_VDEVICE(WANGXUN, TXGBE_DEV_ID_WX1820) },
-+	{ PCI_VDEVICE(WANGXUN, TXGBE_DEV_ID_AML5010) },
-+	{ PCI_VDEVICE(WANGXUN, TXGBE_DEV_ID_AML5110) },
-+	{ PCI_VDEVICE(WANGXUN, TXGBE_DEV_ID_AML5025) },
-+	{ PCI_VDEVICE(WANGXUN, TXGBE_DEV_ID_AML5125) },
-+	{ PCI_VDEVICE(WANGXUN, TXGBE_DEV_ID_AML5040) },
-+	{ PCI_VDEVICE(WANGXUN, TXGBE_DEV_ID_AML5140) },
- 	/* required last entry */
--	{ .device = 0 }
-+	{ }
- };
- 
- #define DEFAULT_DEBUG_LEVEL_SHIFT 3
-diff --git a/drivers/net/ethernet/wangxun/txgbevf/txgbevf_main.c b/drivers/net/ethernet/wangxun/txgbevf/txgbevf_main.c
-index 37e4ec487afd..8b16b900820a 100644
---- a/drivers/net/ethernet/wangxun/txgbevf/txgbevf_main.c
-+++ b/drivers/net/ethernet/wangxun/txgbevf/txgbevf_main.c
-@@ -26,16 +26,16 @@
-  *   Class, Class Mask, private data (not used) }
-  */
- static const struct pci_device_id txgbevf_pci_tbl[] = {
--	{ PCI_VDEVICE(WANGXUN, TXGBEVF_DEV_ID_SP1000), 0},
--	{ PCI_VDEVICE(WANGXUN, TXGBEVF_DEV_ID_WX1820), 0},
--	{ PCI_VDEVICE(WANGXUN, TXGBEVF_DEV_ID_AML500F), 0},
--	{ PCI_VDEVICE(WANGXUN, TXGBEVF_DEV_ID_AML510F), 0},
--	{ PCI_VDEVICE(WANGXUN, TXGBEVF_DEV_ID_AML5024), 0},
--	{ PCI_VDEVICE(WANGXUN, TXGBEVF_DEV_ID_AML5124), 0},
--	{ PCI_VDEVICE(WANGXUN, TXGBEVF_DEV_ID_AML503F), 0},
--	{ PCI_VDEVICE(WANGXUN, TXGBEVF_DEV_ID_AML513F), 0},
-+	{ PCI_VDEVICE(WANGXUN, TXGBEVF_DEV_ID_SP1000) },
-+	{ PCI_VDEVICE(WANGXUN, TXGBEVF_DEV_ID_WX1820) },
-+	{ PCI_VDEVICE(WANGXUN, TXGBEVF_DEV_ID_AML500F) },
-+	{ PCI_VDEVICE(WANGXUN, TXGBEVF_DEV_ID_AML510F) },
-+	{ PCI_VDEVICE(WANGXUN, TXGBEVF_DEV_ID_AML5024) },
-+	{ PCI_VDEVICE(WANGXUN, TXGBEVF_DEV_ID_AML5124) },
-+	{ PCI_VDEVICE(WANGXUN, TXGBEVF_DEV_ID_AML503F) },
-+	{ PCI_VDEVICE(WANGXUN, TXGBEVF_DEV_ID_AML513F) },
- 	/* required last entry */
--	{ .device = 0 }
-+	{ }
- };
- 
- static const struct net_device_ops txgbevf_netdev_ops = {
-diff --git a/drivers/net/wan/farsync.c b/drivers/net/wan/farsync.c
-index 73f393900710..6508c53bdc24 100644
---- a/drivers/net/wan/farsync.c
-+++ b/drivers/net/wan/farsync.c
-@@ -524,27 +524,21 @@ do {								\
- /*      PCI ID lookup table
-  */
- static const struct pci_device_id fst_pci_dev_id[] = {
--	{PCI_VENDOR_ID_FARSITE, PCI_DEVICE_ID_FARSITE_T2P, PCI_ANY_ID,
--	 PCI_ANY_ID, 0, 0, FST_TYPE_T2P},
-+	{ PCI_VDEVICE(FARSITE, PCI_DEVICE_ID_FARSITE_T2P), .driver_data = FST_TYPE_T2P },
- 
--	{PCI_VENDOR_ID_FARSITE, PCI_DEVICE_ID_FARSITE_T4P, PCI_ANY_ID,
--	 PCI_ANY_ID, 0, 0, FST_TYPE_T4P},
-+	{ PCI_VDEVICE(FARSITE, PCI_DEVICE_ID_FARSITE_T4P), .driver_data = FST_TYPE_T4P },
- 
--	{PCI_VENDOR_ID_FARSITE, PCI_DEVICE_ID_FARSITE_T1U, PCI_ANY_ID,
--	 PCI_ANY_ID, 0, 0, FST_TYPE_T1U},
-+	{ PCI_VDEVICE(FARSITE, PCI_DEVICE_ID_FARSITE_T1U), .driver_data = FST_TYPE_T1U },
- 
--	{PCI_VENDOR_ID_FARSITE, PCI_DEVICE_ID_FARSITE_T2U, PCI_ANY_ID,
--	 PCI_ANY_ID, 0, 0, FST_TYPE_T2U},
-+	{ PCI_VDEVICE(FARSITE, PCI_DEVICE_ID_FARSITE_T2U), .driver_data = FST_TYPE_T2U },
- 
--	{PCI_VENDOR_ID_FARSITE, PCI_DEVICE_ID_FARSITE_T4U, PCI_ANY_ID,
--	 PCI_ANY_ID, 0, 0, FST_TYPE_T4U},
-+	{ PCI_VDEVICE(FARSITE, PCI_DEVICE_ID_FARSITE_T4U), .driver_data = FST_TYPE_T4U },
- 
--	{PCI_VENDOR_ID_FARSITE, PCI_DEVICE_ID_FARSITE_TE1, PCI_ANY_ID,
--	 PCI_ANY_ID, 0, 0, FST_TYPE_TE1},
-+	{ PCI_VDEVICE(FARSITE, PCI_DEVICE_ID_FARSITE_TE1), .driver_data = FST_TYPE_TE1 },
- 
--	{PCI_VENDOR_ID_FARSITE, PCI_DEVICE_ID_FARSITE_TE1C, PCI_ANY_ID,
--	 PCI_ANY_ID, 0, 0, FST_TYPE_TE1},
--	{0,}			/* End */
-+	{ PCI_VDEVICE(FARSITE, PCI_DEVICE_ID_FARSITE_TE1C), .driver_data = FST_TYPE_TE1 },
+-static void idpf_ctlq_reg_init(struct idpf_adapter *adapter,
+-			       struct idpf_ctlq_create_info *cq)
++static void idpf_ctlq_reg_init(struct libie_mmio_info *mmio,
++			       struct libie_ctlq_create_info *cci)
+ {
+-	int i;
+-
+-	for (i = 0; i < IDPF_NUM_DFLT_MBX_Q; i++) {
+-		struct idpf_ctlq_create_info *ccq = cq + i;
+-
+-		switch (ccq->type) {
+-		case IDPF_CTLQ_TYPE_MAILBOX_TX:
+-			/* set head and tail registers in our local struct */
+-			ccq->reg.head = PF_FW_ATQH;
+-			ccq->reg.tail = PF_FW_ATQT;
+-			ccq->reg.len = PF_FW_ATQLEN;
+-			ccq->reg.bah = PF_FW_ATQBAH;
+-			ccq->reg.bal = PF_FW_ATQBAL;
+-			ccq->reg.len_mask = PF_FW_ATQLEN_ATQLEN_M;
+-			ccq->reg.len_ena_mask = PF_FW_ATQLEN_ATQENABLE_M;
+-			ccq->reg.head_mask = PF_FW_ATQH_ATQH_M;
+-			break;
+-		case IDPF_CTLQ_TYPE_MAILBOX_RX:
+-			/* set head and tail registers in our local struct */
+-			ccq->reg.head = PF_FW_ARQH;
+-			ccq->reg.tail = PF_FW_ARQT;
+-			ccq->reg.len = PF_FW_ARQLEN;
+-			ccq->reg.bah = PF_FW_ARQBAH;
+-			ccq->reg.bal = PF_FW_ARQBAL;
+-			ccq->reg.len_mask = PF_FW_ARQLEN_ARQLEN_M;
+-			ccq->reg.len_ena_mask = PF_FW_ARQLEN_ARQENABLE_M;
+-			ccq->reg.head_mask = PF_FW_ARQH_ARQH_M;
+-			break;
+-		default:
+-			break;
+-		}
+-	}
++	struct libie_ctlq_reg *tx_reg = &cci[LIBIE_CTLQ_TYPE_TX].reg;
++	struct libie_ctlq_reg *rx_reg = &cci[LIBIE_CTLQ_TYPE_RX].reg;
 +
-+	{ }			/* End */
- };
- 
- MODULE_DEVICE_TABLE(pci, fst_pci_dev_id);
-diff --git a/drivers/net/wan/pc300too.c b/drivers/net/wan/pc300too.c
-index 7e57d289b62c..a91564e53caa 100644
---- a/drivers/net/wan/pc300too.c
-+++ b/drivers/net/wan/pc300too.c
-@@ -461,15 +461,11 @@ static int pc300_pci_init_one(struct pci_dev *pdev,
++	tx_reg->head		= libie_pci_get_mmio_addr(mmio, PF_FW_ATQH);
++	tx_reg->tail		= libie_pci_get_mmio_addr(mmio, PF_FW_ATQT);
++	tx_reg->len		= libie_pci_get_mmio_addr(mmio, PF_FW_ATQLEN);
++	tx_reg->addr_high	= libie_pci_get_mmio_addr(mmio, PF_FW_ATQBAH);
++	tx_reg->addr_low	= libie_pci_get_mmio_addr(mmio, PF_FW_ATQBAL);
++	tx_reg->len_mask	= PF_FW_ATQLEN_ATQLEN_M;
++	tx_reg->len_ena_mask	= PF_FW_ATQLEN_ATQENABLE_M;
++	tx_reg->head_mask	= PF_FW_ATQH_ATQH_M;
++
++	rx_reg->head		= libie_pci_get_mmio_addr(mmio, PF_FW_ARQH);
++	rx_reg->tail		= libie_pci_get_mmio_addr(mmio, PF_FW_ARQT);
++	rx_reg->len		= libie_pci_get_mmio_addr(mmio, PF_FW_ARQLEN);
++	rx_reg->addr_high	= libie_pci_get_mmio_addr(mmio, PF_FW_ARQBAH);
++	rx_reg->addr_low	= libie_pci_get_mmio_addr(mmio, PF_FW_ARQBAL);
++	rx_reg->len_mask	= PF_FW_ARQLEN_ARQLEN_M;
++	rx_reg->len_ena_mask	= PF_FW_ARQLEN_ARQENABLE_M;
++	rx_reg->head_mask	= PF_FW_ARQH_ARQH_M;
  }
  
- static const struct pci_device_id pc300_pci_tbl[] = {
--	{ PCI_VENDOR_ID_CYCLADES, PCI_DEVICE_ID_PC300_RX_1, PCI_ANY_ID,
--	  PCI_ANY_ID, 0, 0, 0 },
--	{ PCI_VENDOR_ID_CYCLADES, PCI_DEVICE_ID_PC300_RX_2, PCI_ANY_ID,
--	  PCI_ANY_ID, 0, 0, 0 },
--	{ PCI_VENDOR_ID_CYCLADES, PCI_DEVICE_ID_PC300_TE_1, PCI_ANY_ID,
--	  PCI_ANY_ID, 0, 0, 0 },
--	{ PCI_VENDOR_ID_CYCLADES, PCI_DEVICE_ID_PC300_TE_2, PCI_ANY_ID,
--	  PCI_ANY_ID, 0, 0, 0 },
--	{ 0, }
-+	{ PCI_VDEVICE(CYCLADES, PCI_DEVICE_ID_PC300_RX_1) },
-+	{ PCI_VDEVICE(CYCLADES, PCI_DEVICE_ID_PC300_RX_2) },
-+	{ PCI_VDEVICE(CYCLADES, PCI_DEVICE_ID_PC300_TE_1) },
-+	{ PCI_VDEVICE(CYCLADES, PCI_DEVICE_ID_PC300_TE_2) },
-+	{ }
- };
+ /**
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_ethtool.c b/drivers/net/ethernet/intel/idpf/idpf_ethtool.c
+index bb99d9e7c65d..95c45f12b0f9 100644
+--- a/drivers/net/ethernet/intel/idpf/idpf_ethtool.c
++++ b/drivers/net/ethernet/intel/idpf/idpf_ethtool.c
+@@ -225,7 +225,7 @@ static int idpf_add_flow_steer(struct net_device *netdev,
+ 	spin_unlock_bh(&vport_config->flow_steer_list_lock);
  
- static struct pci_driver pc300_pci_driver = {
-diff --git a/drivers/net/wan/pci200syn.c b/drivers/net/wan/pci200syn.c
-index 89f4b4584a33..9503130fd9a8 100644
---- a/drivers/net/wan/pci200syn.c
-+++ b/drivers/net/wan/pci200syn.c
-@@ -397,9 +397,9 @@ static int pci200_pci_init_one(struct pci_dev *pdev,
- }
+ 	if (err)
+-		goto out;
++		goto out_free_fltr;
  
- static const struct pci_device_id pci200_pci_tbl[] = {
--	{ PCI_VENDOR_ID_PLX, PCI_DEVICE_ID_PLX_9050, PCI_VENDOR_ID_PLX,
--	  PCI_DEVICE_ID_PLX_PCI200SYN, 0, 0, 0 },
--	{ 0, }
-+	{ PCI_VDEVICE_SUB(PLX, PCI_DEVICE_ID_PLX_9050,
-+			  PCI_VENDOR_ID_PLX, PCI_DEVICE_ID_PLX_PCI200SYN) },
-+	{ }
- };
- 
- static struct pci_driver pci200_pci_driver = {
-diff --git a/drivers/net/wan/wanxl.c b/drivers/net/wan/wanxl.c
-index 3f7707118450..d4da88c77112 100644
---- a/drivers/net/wan/wanxl.c
-+++ b/drivers/net/wan/wanxl.c
-@@ -806,13 +806,10 @@ static int wanxl_pci_init_one(struct pci_dev *pdev,
- }
- 
- static const struct pci_device_id wanxl_pci_tbl[] = {
--	{ PCI_VENDOR_ID_SBE, PCI_DEVICE_ID_SBE_WANXL100, PCI_ANY_ID,
--	  PCI_ANY_ID, 0, 0, 0 },
--	{ PCI_VENDOR_ID_SBE, PCI_DEVICE_ID_SBE_WANXL200, PCI_ANY_ID,
--	  PCI_ANY_ID, 0, 0, 0 },
--	{ PCI_VENDOR_ID_SBE, PCI_DEVICE_ID_SBE_WANXL400, PCI_ANY_ID,
--	  PCI_ANY_ID, 0, 0, 0 },
--	{ 0, }
-+	{ PCI_VDEVICE(SBE, PCI_DEVICE_ID_SBE_WANXL100) },
-+	{ PCI_VDEVICE(SBE, PCI_DEVICE_ID_SBE_WANXL200) },
-+	{ PCI_VDEVICE(SBE, PCI_DEVICE_ID_SBE_WANXL400) },
-+	{ }
- };
- 
- static struct pci_driver wanxl_pci_driver = {
-diff --git a/drivers/net/wireless/broadcom/brcm80211/brcmfmac/pcie.c b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/pcie.c
-index 45b342ea0637..13662aa4b4ea 100644
---- a/drivers/net/wireless/broadcom/brcm80211/brcmfmac/pcie.c
-+++ b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/pcie.c
-@@ -2708,17 +2708,18 @@ static const struct dev_pm_ops brcmf_pciedrvr_pm = {
- 
- #define BRCMF_PCIE_DEVICE(dev_id, fw_vend) \
- 	{ \
--		BRCM_PCIE_VENDOR_ID_BROADCOM, (dev_id), \
--		PCI_ANY_ID, PCI_ANY_ID, \
--		PCI_CLASS_NETWORK_OTHER << 8, 0xffff00, \
--		BRCMF_DRVDATA_ ## fw_vend \
-+		PCI_DEVICE(BRCM_PCIE_VENDOR_ID_BROADCOM, (dev_id)), \
-+		.class = PCI_CLASS_NETWORK_OTHER << 8, \
-+		.class_mask = 0xffff00, \
-+		.driver_data = BRCMF_DRVDATA_ ## fw_vend, \
- 	}
- #define BRCMF_PCIE_DEVICE_SUB(dev_id, subvend, subdev, fw_vend) \
- 	{ \
--		BRCM_PCIE_VENDOR_ID_BROADCOM, (dev_id), \
--		(subvend), (subdev), \
--		PCI_CLASS_NETWORK_OTHER << 8, 0xffff00, \
--		BRCMF_DRVDATA_ ## fw_vend \
-+		PCI_DEVICE_SUB(BRCM_PCIE_VENDOR_ID_BROADCOM, (dev_id), \
-+			       (subvend), (subdev)), \
-+		.class = PCI_CLASS_NETWORK_OTHER << 8, \
-+		.class_mask = 0xffff00, \
-+		.driver_data = BRCMF_DRVDATA_ ## fw_vend, \
+ 	rule->vport_id = cpu_to_le32(vport->vport_id);
+ 	rule->count = cpu_to_le32(1);
+@@ -252,17 +252,15 @@ static int idpf_add_flow_steer(struct net_device *netdev,
+ 		break;
+ 	default:
+ 		err = -EINVAL;
+-		goto out;
++		goto out_free_fltr;
  	}
  
- static const struct pci_device_id brcmf_pcie_devid_table[] = {
-diff --git a/drivers/net/wireless/intel/ipw2x00/ipw2200.c b/drivers/net/wireless/intel/ipw2x00/ipw2200.c
-index dd64d21174e3..4bc9bb406e8e 100644
---- a/drivers/net/wireless/intel/ipw2x00/ipw2200.c
-+++ b/drivers/net/wireless/intel/ipw2x00/ipw2200.c
-@@ -11366,37 +11366,41 @@ static int ipw_wdev_init(struct net_device *dev)
+ 	err = idpf_add_del_fsteer_filters(vport->adapter, rule,
+ 					  VIRTCHNL2_OP_ADD_FLOW_RULE);
+-	if (err)
+-		goto out;
+-
+-	if (info->status != cpu_to_le32(VIRTCHNL2_FLOW_RULE_SUCCESS)) {
+-		err = -EIO;
+-		goto out;
++	if (err) {
++		/* virtchnl2 rule is already consumed */
++		kfree(fltr);
++		return err;
+ 	}
  
- /* PCI driver stuff */
- static const struct pci_device_id card_ids[] = {
--	{PCI_VENDOR_ID_INTEL, 0x1043, 0x8086, 0x2701, 0, 0, 0},
--	{PCI_VENDOR_ID_INTEL, 0x1043, 0x8086, 0x2702, 0, 0, 0},
--	{PCI_VENDOR_ID_INTEL, 0x1043, 0x8086, 0x2711, 0, 0, 0},
--	{PCI_VENDOR_ID_INTEL, 0x1043, 0x8086, 0x2712, 0, 0, 0},
--	{PCI_VENDOR_ID_INTEL, 0x1043, 0x8086, 0x2721, 0, 0, 0},
--	{PCI_VENDOR_ID_INTEL, 0x1043, 0x8086, 0x2722, 0, 0, 0},
--	{PCI_VENDOR_ID_INTEL, 0x1043, 0x8086, 0x2731, 0, 0, 0},
--	{PCI_VENDOR_ID_INTEL, 0x1043, 0x8086, 0x2732, 0, 0, 0},
--	{PCI_VENDOR_ID_INTEL, 0x1043, 0x8086, 0x2741, 0, 0, 0},
--	{PCI_VENDOR_ID_INTEL, 0x1043, 0x103c, 0x2741, 0, 0, 0},
--	{PCI_VENDOR_ID_INTEL, 0x1043, 0x8086, 0x2742, 0, 0, 0},
--	{PCI_VENDOR_ID_INTEL, 0x1043, 0x8086, 0x2751, 0, 0, 0},
--	{PCI_VENDOR_ID_INTEL, 0x1043, 0x8086, 0x2752, 0, 0, 0},
--	{PCI_VENDOR_ID_INTEL, 0x1043, 0x8086, 0x2753, 0, 0, 0},
--	{PCI_VENDOR_ID_INTEL, 0x1043, 0x8086, 0x2754, 0, 0, 0},
--	{PCI_VENDOR_ID_INTEL, 0x1043, 0x8086, 0x2761, 0, 0, 0},
--	{PCI_VENDOR_ID_INTEL, 0x1043, 0x8086, 0x2762, 0, 0, 0},
-+	{ PCI_VDEVICE_SUB(INTEL, 0x1043, 0x8086, 0x2701) },
-+	{ PCI_VDEVICE_SUB(INTEL, 0x1043, 0x8086, 0x2702) },
-+	{ PCI_VDEVICE_SUB(INTEL, 0x1043, 0x8086, 0x2711) },
-+	{ PCI_VDEVICE_SUB(INTEL, 0x1043, 0x8086, 0x2712) },
-+	{ PCI_VDEVICE_SUB(INTEL, 0x1043, 0x8086, 0x2721) },
-+	{ PCI_VDEVICE_SUB(INTEL, 0x1043, 0x8086, 0x2722) },
-+	{ PCI_VDEVICE_SUB(INTEL, 0x1043, 0x8086, 0x2731) },
-+	{ PCI_VDEVICE_SUB(INTEL, 0x1043, 0x8086, 0x2732) },
-+	{ PCI_VDEVICE_SUB(INTEL, 0x1043, 0x8086, 0x2741) },
-+	{ PCI_VDEVICE_SUB(INTEL, 0x1043, 0x103c, 0x2741) },
-+	{ PCI_VDEVICE_SUB(INTEL, 0x1043, 0x8086, 0x2742) },
-+	{ PCI_VDEVICE_SUB(INTEL, 0x1043, 0x8086, 0x2751) },
-+	{ PCI_VDEVICE_SUB(INTEL, 0x1043, 0x8086, 0x2752) },
-+	{ PCI_VDEVICE_SUB(INTEL, 0x1043, 0x8086, 0x2753) },
-+	{ PCI_VDEVICE_SUB(INTEL, 0x1043, 0x8086, 0x2754) },
-+	{ PCI_VDEVICE_SUB(INTEL, 0x1043, 0x8086, 0x2761) },
-+	{ PCI_VDEVICE_SUB(INTEL, 0x1043, 0x8086, 0x2762) },
+ 	/* Save a copy of the user's flow spec so ethtool can later retrieve it */
+@@ -274,9 +272,10 @@ static int idpf_add_flow_steer(struct net_device *netdev,
+ 
+ 	user_config->num_fsteer_fltrs++;
+ 	spin_unlock_bh(&vport_config->flow_steer_list_lock);
+-	goto out_free_rule;
+ 
+-out:
++	return 0;
 +
- 	/*
- 	 * This ID conflicts with i40e, but the devices can be differentiated
- 	 * because i40e devices use PCI_CLASS_NETWORK_ETHERNET and ipw2200
- 	 * devices use PCI_CLASS_NETWORK_OTHER.
++out_free_fltr:
+ 	kfree(fltr);
+ out_free_rule:
+ 	kfree(rule);
+@@ -319,12 +318,7 @@ static int idpf_del_flow_steer(struct net_device *netdev,
+ 	err = idpf_add_del_fsteer_filters(vport->adapter, rule,
+ 					  VIRTCHNL2_OP_DEL_FLOW_RULE);
+ 	if (err)
+-		goto out;
+-
+-	if (info->status != cpu_to_le32(VIRTCHNL2_FLOW_RULE_SUCCESS)) {
+-		err = -EIO;
+-		goto out;
+-	}
++		return err;
+ 
+ 	spin_lock_bh(&vport_config->flow_steer_list_lock);
+ 	list_for_each_entry_safe(f, iter,
+@@ -340,8 +334,6 @@ static int idpf_del_flow_steer(struct net_device *netdev,
+ 
+ out_unlock:
+ 	spin_unlock_bh(&vport_config->flow_steer_list_lock);
+-out:
+-	kfree(rule);
+ 	return err;
+ }
+ 
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_lib.c b/drivers/net/ethernet/intel/idpf/idpf_lib.c
+index 875472ae77fd..0d131bf0993e 100644
+--- a/drivers/net/ethernet/intel/idpf/idpf_lib.c
++++ b/drivers/net/ethernet/intel/idpf/idpf_lib.c
+@@ -1371,6 +1371,7 @@ void idpf_statistics_task(struct work_struct *work)
+  */
+ void idpf_mbx_task(struct work_struct *work)
+ {
++	struct libie_ctlq_xn_recv_params xn_params;
+ 	struct idpf_adapter *adapter;
+ 
+ 	adapter = container_of(work, struct idpf_adapter, mbx_task.work);
+@@ -1381,7 +1382,14 @@ void idpf_mbx_task(struct work_struct *work)
+ 		queue_delayed_work(adapter->mbx_wq, &adapter->mbx_task,
+ 				   usecs_to_jiffies(300));
+ 
+-	idpf_recv_mb_msg(adapter, adapter->hw.arq);
++	xn_params = (struct libie_ctlq_xn_recv_params) {
++		.xnm = adapter->xnm,
++		.ctlq = adapter->arq,
++		.ctlq_msg_handler = idpf_recv_event_msg,
++		.budget = LIBIE_CTLQ_MAX_XN_ENTRIES,
++	};
++
++	libie_ctlq_xn_recv(&xn_params);
+ }
+ 
+ /**
+@@ -1909,7 +1917,6 @@ static void idpf_init_hard_reset(struct idpf_adapter *adapter)
+ 		idpf_vc_core_deinit(adapter);
+ 		if (!is_reset)
+ 			reg_ops->trigger_reset(adapter, IDPF_HR_FUNC_RESET);
+-		idpf_deinit_dflt_mbx(adapter);
+ 	} else {
+ 		dev_err(dev, "Unhandled hard reset cause\n");
+ 		err = -EBADRQC;
+@@ -1984,7 +1991,7 @@ void idpf_vc_event_task(struct work_struct *work)
+ 	return;
+ 
+ func_reset:
+-	idpf_vc_xn_shutdown(adapter->vcxn_mngr);
++	libie_ctlq_xn_shutdown(adapter->xnm);
+ drv_load:
+ 	set_bit(IDPF_HR_RESET_IN_PROG, adapter->flags);
+ 	idpf_init_hard_reset(adapter);
+@@ -2567,44 +2574,6 @@ static int idpf_set_mac(struct net_device *netdev, void *p)
+ 	return err;
+ }
+ 
+-/**
+- * idpf_alloc_dma_mem - Allocate dma memory
+- * @hw: pointer to hw struct
+- * @mem: pointer to dma_mem struct
+- * @size: size of the memory to allocate
+- */
+-void *idpf_alloc_dma_mem(struct idpf_hw *hw, struct idpf_dma_mem *mem, u64 size)
+-{
+-	struct idpf_adapter *adapter = hw->back;
+-	size_t sz = ALIGN(size, 4096);
+-
+-	/* The control queue resources are freed under a spinlock, contiguous
+-	 * pages will avoid IOMMU remapping and the use vmap (and vunmap in
+-	 * dma_free_*() path.
+-	 */
+-	mem->va = dma_alloc_attrs(&adapter->pdev->dev, sz, &mem->pa,
+-				  GFP_KERNEL, DMA_ATTR_FORCE_CONTIGUOUS);
+-	mem->size = sz;
+-
+-	return mem->va;
+-}
+-
+-/**
+- * idpf_free_dma_mem - Free the allocated dma memory
+- * @hw: pointer to hw struct
+- * @mem: pointer to dma_mem struct
+- */
+-void idpf_free_dma_mem(struct idpf_hw *hw, struct idpf_dma_mem *mem)
+-{
+-	struct idpf_adapter *adapter = hw->back;
+-
+-	dma_free_attrs(&adapter->pdev->dev, mem->size,
+-		       mem->va, mem->pa, DMA_ATTR_FORCE_CONTIGUOUS);
+-	mem->size = 0;
+-	mem->va = NULL;
+-	mem->pa = 0;
+-}
+-
+ static int idpf_hwtstamp_set(struct net_device *netdev,
+ 			     struct kernel_hwtstamp_config *config,
+ 			     struct netlink_ext_ack *extack)
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_main.c b/drivers/net/ethernet/intel/idpf/idpf_main.c
+index d8e19d5f1647..d99f759c55e1 100644
+--- a/drivers/net/ethernet/intel/idpf/idpf_main.c
++++ b/drivers/net/ethernet/intel/idpf/idpf_main.c
+@@ -133,7 +133,6 @@ static void idpf_remove(struct pci_dev *pdev)
+ 
+ 	/* Be a good citizen and leave the device clean on exit */
+ 	adapter->dev_ops.reg_ops.trigger_reset(adapter, IDPF_HR_FUNC_RESET);
+-	idpf_deinit_dflt_mbx(adapter);
+ 
+ 	if (!adapter->netdevs)
+ 		goto destroy_wqs;
+@@ -170,8 +169,6 @@ static void idpf_remove(struct pci_dev *pdev)
+ 	adapter->vport_config = NULL;
+ 	kfree(adapter->netdevs);
+ 	adapter->netdevs = NULL;
+-	kfree(adapter->vcxn_mngr);
+-	adapter->vcxn_mngr = NULL;
+ 
+ 	mutex_destroy(&adapter->vport_ctrl_lock);
+ 	mutex_destroy(&adapter->vector_lock);
+@@ -194,7 +191,6 @@ static void idpf_shutdown(struct pci_dev *pdev)
+ 	cancel_delayed_work_sync(&adapter->serv_task);
+ 	cancel_delayed_work_sync(&adapter->vc_event_task);
+ 	idpf_vc_core_deinit(adapter);
+-	idpf_deinit_dflt_mbx(adapter);
+ 
+ 	if (system_state == SYSTEM_POWER_OFF)
+ 		pci_set_power_state(pdev, PCI_D3hot);
+@@ -239,7 +235,6 @@ static int idpf_cfg_device(struct idpf_adapter *adapter)
+ 		pci_dbg(pdev, "PCIe PTM is not supported by PCIe bus/controller\n");
+ 
+ 	pci_set_drvdata(pdev, adapter);
+-	adapter->hw.back = adapter;
+ 
+ 	return 0;
+ }
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_mem.h b/drivers/net/ethernet/intel/idpf/idpf_mem.h
+deleted file mode 100644
+index 2aaabdc02dd2..000000000000
+--- a/drivers/net/ethernet/intel/idpf/idpf_mem.h
++++ /dev/null
+@@ -1,20 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0-only */
+-/* Copyright (C) 2023 Intel Corporation */
+-
+-#ifndef _IDPF_MEM_H_
+-#define _IDPF_MEM_H_
+-
+-#include <linux/io.h>
+-
+-struct idpf_dma_mem {
+-	void *va;
+-	dma_addr_t pa;
+-	size_t size;
+-};
+-
+-#define idpf_mbx_wr32(a, reg, value)	writel((value), ((a)->mbx.vaddr + (reg)))
+-#define idpf_mbx_rd32(a, reg)		readl((a)->mbx.vaddr + (reg))
+-#define idpf_mbx_wr64(a, reg, value)	writeq((value), ((a)->mbx.vaddr + (reg)))
+-#define idpf_mbx_rd64(a, reg)		readq((a)->mbx.vaddr + (reg))
+-
+-#endif /* _IDPF_MEM_H_ */
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.h b/drivers/net/ethernet/intel/idpf/idpf_txrx.h
+index e101ffb20ae0..a82794c8db3b 100644
+--- a/drivers/net/ethernet/intel/idpf/idpf_txrx.h
++++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.h
+@@ -236,7 +236,7 @@ enum idpf_tx_ctx_desc_eipt_offload {
+ 				 (sizeof(u16) * IDPF_RX_MAX_PTYPE_PROTO_IDS))
+ #define IDPF_RX_PTYPE_HDR_SZ	sizeof(struct virtchnl2_get_ptype_info)
+ #define IDPF_RX_MAX_PTYPES_PER_BUF	\
+-	DIV_ROUND_DOWN_ULL((IDPF_CTLQ_MAX_BUF_LEN - IDPF_RX_PTYPE_HDR_SZ), \
++	DIV_ROUND_DOWN_ULL(LIBIE_CTLQ_MAX_BUF_LEN - IDPF_RX_PTYPE_HDR_SZ, \
+ 			   IDPF_RX_MAX_PTYPE_SZ)
+ 
+ #define IDPF_GET_PTYPE_SIZE(p) struct_size((p), proto_id, (p)->proto_id_count)
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_vf_dev.c b/drivers/net/ethernet/intel/idpf/idpf_vf_dev.c
+index bf3f6a8bac2d..54535cd8dfaa 100644
+--- a/drivers/net/ethernet/intel/idpf/idpf_vf_dev.c
++++ b/drivers/net/ethernet/intel/idpf/idpf_vf_dev.c
+@@ -9,42 +9,32 @@
+ 
+ /**
+  * idpf_vf_ctlq_reg_init - initialize default mailbox registers
+- * @adapter: adapter structure
+- * @cq: pointer to the array of create control queues
++ * @mmio: struct that contains MMIO region info
++ * @cci: struct where the register offset pointer to be copied to
+  */
+-static void idpf_vf_ctlq_reg_init(struct idpf_adapter *adapter,
+-				  struct idpf_ctlq_create_info *cq)
++static void idpf_vf_ctlq_reg_init(struct libie_mmio_info *mmio,
++				  struct libie_ctlq_create_info *cci)
+ {
+-	for (int i = 0; i < IDPF_NUM_DFLT_MBX_Q; i++) {
+-		struct idpf_ctlq_create_info *ccq = cq + i;
+-
+-		switch (ccq->type) {
+-		case IDPF_CTLQ_TYPE_MAILBOX_TX:
+-			/* set head and tail registers in our local struct */
+-			ccq->reg.head = VF_ATQH;
+-			ccq->reg.tail = VF_ATQT;
+-			ccq->reg.len = VF_ATQLEN;
+-			ccq->reg.bah = VF_ATQBAH;
+-			ccq->reg.bal = VF_ATQBAL;
+-			ccq->reg.len_mask = VF_ATQLEN_ATQLEN_M;
+-			ccq->reg.len_ena_mask = VF_ATQLEN_ATQENABLE_M;
+-			ccq->reg.head_mask = VF_ATQH_ATQH_M;
+-			break;
+-		case IDPF_CTLQ_TYPE_MAILBOX_RX:
+-			/* set head and tail registers in our local struct */
+-			ccq->reg.head = VF_ARQH;
+-			ccq->reg.tail = VF_ARQT;
+-			ccq->reg.len = VF_ARQLEN;
+-			ccq->reg.bah = VF_ARQBAH;
+-			ccq->reg.bal = VF_ARQBAL;
+-			ccq->reg.len_mask = VF_ARQLEN_ARQLEN_M;
+-			ccq->reg.len_ena_mask = VF_ARQLEN_ARQENABLE_M;
+-			ccq->reg.head_mask = VF_ARQH_ARQH_M;
+-			break;
+-		default:
+-			break;
+-		}
+-	}
++	struct libie_ctlq_reg *tx_reg = &cci[LIBIE_CTLQ_TYPE_TX].reg;
++	struct libie_ctlq_reg *rx_reg = &cci[LIBIE_CTLQ_TYPE_RX].reg;
++
++	tx_reg->head		= libie_pci_get_mmio_addr(mmio, VF_ATQH);
++	tx_reg->tail		= libie_pci_get_mmio_addr(mmio, VF_ATQT);
++	tx_reg->len		= libie_pci_get_mmio_addr(mmio, VF_ATQLEN);
++	tx_reg->addr_high	= libie_pci_get_mmio_addr(mmio, VF_ATQBAH);
++	tx_reg->addr_low	= libie_pci_get_mmio_addr(mmio, VF_ATQBAL);
++	tx_reg->len_mask	= VF_ATQLEN_ATQLEN_M;
++	tx_reg->len_ena_mask	= VF_ATQLEN_ATQENABLE_M;
++	tx_reg->head_mask	= VF_ATQH_ATQH_M;
++
++	rx_reg->head		= libie_pci_get_mmio_addr(mmio, VF_ARQH);
++	rx_reg->tail		= libie_pci_get_mmio_addr(mmio, VF_ARQT);
++	rx_reg->len		= libie_pci_get_mmio_addr(mmio, VF_ARQLEN);
++	rx_reg->addr_high	= libie_pci_get_mmio_addr(mmio, VF_ARQBAH);
++	rx_reg->addr_low	= libie_pci_get_mmio_addr(mmio, VF_ARQBAL);
++	rx_reg->len_mask	= VF_ARQLEN_ARQLEN_M;
++	rx_reg->len_ena_mask	= VF_ARQLEN_ARQENABLE_M;
++	rx_reg->head_mask	= VF_ARQH_ARQH_M;
+ }
+ 
+ /**
+@@ -157,11 +147,13 @@ static void idpf_vf_reset_reg_init(struct idpf_adapter *adapter)
+ static void idpf_vf_trigger_reset(struct idpf_adapter *adapter,
+ 				  enum idpf_flags trig_cause)
+ {
++	struct libie_ctlq_xn_send_params xn_params = {
++		.chnl_opcode	= VIRTCHNL2_OP_RESET_VF,
++	};
+ 	/* Do not send VIRTCHNL2_OP_RESET_VF message on driver unload */
+ 	if (trig_cause == IDPF_HR_FUNC_RESET &&
+ 	    !test_bit(IDPF_REMOVE_IN_PROG, adapter->flags))
+-		idpf_send_mb_msg(adapter, adapter->hw.asq,
+-				 VIRTCHNL2_OP_RESET_VF, 0, NULL, 0);
++		idpf_send_mb_msg(adapter, &xn_params, NULL, 0);
+ }
+ 
+ /**
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
+index 3e6411a07e4d..13c8505d126f 100644
+--- a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
++++ b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
+@@ -9,20 +9,6 @@
+ #include "idpf_virtchnl.h"
+ #include "idpf_ptp.h"
+ 
+-/**
+- * struct idpf_vc_xn_manager - Manager for tracking transactions
+- * @ring: backing and lookup for transactions
+- * @free_xn_bm: bitmap for free transactions
+- * @xn_bm_lock: make bitmap access synchronous where necessary
+- * @salt: used to make cookie unique every message
+- */
+-struct idpf_vc_xn_manager {
+-	struct idpf_vc_xn ring[IDPF_VC_XN_RING_LEN];
+-	DECLARE_BITMAP(free_xn_bm, IDPF_VC_XN_RING_LEN);
+-	spinlock_t xn_bm_lock;
+-	u8 salt;
+-};
+-
+ /**
+  * idpf_vid_to_vport - Translate vport id to vport pointer
+  * @adapter: private data struct
+@@ -83,79 +69,65 @@ static void idpf_handle_event_link(struct idpf_adapter *adapter,
+ 
+ /**
+  * idpf_recv_event_msg - Receive virtchnl event message
+- * @adapter: Driver specific private structure
++ * @ctx: control queue context
+  * @ctlq_msg: message to copy from
+  *
+  * Receive virtchnl event message
+  */
+-static void idpf_recv_event_msg(struct idpf_adapter *adapter,
+-				struct idpf_ctlq_msg *ctlq_msg)
++void idpf_recv_event_msg(struct libie_ctlq_ctx *ctx,
++			 struct libie_ctlq_msg *ctlq_msg)
+ {
+-	int payload_size = ctlq_msg->ctx.indirect.payload->size;
++	struct kvec *buff = &ctlq_msg->recv_mem;
++	int payload_size = buff->iov_len;
++	struct idpf_adapter *adapter;
+ 	struct virtchnl2_event *v2e;
+ 	u32 event;
+ 
++	adapter = container_of(ctx, struct idpf_adapter, ctlq_ctx);
+ 	if (payload_size < sizeof(*v2e)) {
+ 		dev_err_ratelimited(&adapter->pdev->dev, "Failed to receive valid payload for event msg (op %d len %d)\n",
+-				    ctlq_msg->cookie.mbx.chnl_opcode,
++				    ctlq_msg->chnl_opcode,
+ 				    payload_size);
+-		return;
++		goto free_rx_buf;
+ 	}
+ 
+-	v2e = (struct virtchnl2_event *)ctlq_msg->ctx.indirect.payload->va;
++	v2e = (struct virtchnl2_event *)buff->iov_base;
+ 	event = le32_to_cpu(v2e->event);
+ 
+ 	switch (event) {
+ 	case VIRTCHNL2_EVENT_LINK_CHANGE:
+ 		idpf_handle_event_link(adapter, v2e);
+-		return;
++		break;
+ 	default:
+ 		dev_err(&adapter->pdev->dev,
+ 			"Unknown event %d from PF\n", event);
+ 		break;
+ 	}
++
++free_rx_buf:
++	libie_ctlq_release_rx_buf(buff);
+ }
+ 
+ /**
+  * idpf_mb_clean - Reclaim the send mailbox queue entries
+  * @adapter: driver specific private structure
+  * @asq: send control queue info
++ * @deinit: release all buffers before destroying the queue
+  *
+- * Reclaim the send mailbox queue entries to be used to send further messages
+- *
+- * Return: 0 on success, negative on failure
++ * This is a helper function to clean the send mailbox queue entries.
+  */
+-static int idpf_mb_clean(struct idpf_adapter *adapter,
+-			 struct idpf_ctlq_info *asq)
++static void idpf_mb_clean(struct idpf_adapter *adapter,
++			  struct libie_ctlq_info *asq, bool deinit)
+ {
+-	u16 i, num_q_msg = IDPF_DFLT_MBX_Q_LEN;
+-	struct idpf_ctlq_msg **q_msg;
+-	struct idpf_dma_mem *dma_mem;
+-	int err;
+-
+-	q_msg = kzalloc_objs(struct idpf_ctlq_msg *, num_q_msg, GFP_ATOMIC);
+-	if (!q_msg)
+-		return -ENOMEM;
+-
+-	err = idpf_ctlq_clean_sq(asq, &num_q_msg, q_msg);
+-	if (err)
+-		goto err_kfree;
+-
+-	for (i = 0; i < num_q_msg; i++) {
+-		if (!q_msg[i])
+-			continue;
+-		dma_mem = q_msg[i]->ctx.indirect.payload;
+-		if (dma_mem)
+-			dma_free_coherent(&adapter->pdev->dev, dma_mem->size,
+-					  dma_mem->va, dma_mem->pa);
+-		kfree(q_msg[i]);
+-		kfree(dma_mem);
+-	}
+-
+-err_kfree:
+-	kfree(q_msg);
++	struct libie_ctlq_xn_clean_params clean_params = {
++		.ctx		= &adapter->ctlq_ctx,
++		.ctlq		= asq,
++		.rel_tx_buf	= kfree,
++		.num_msgs	= IDPF_DFLT_MBX_Q_LEN,
++		.force		= deinit,
++	};
+ 
+-	return err;
++	libie_ctlq_xn_send_clean(&clean_params);
+ }
+ 
+ #if IS_ENABLED(CONFIG_PTP_1588_CLOCK)
+@@ -189,7 +161,7 @@ static bool idpf_ptp_is_mb_msg(u32 op)
+  * @ctlq_msg: Corresponding control queue message
+  */
+ static void idpf_prepare_ptp_mb_msg(struct idpf_adapter *adapter, u32 op,
+-				    struct idpf_ctlq_msg *ctlq_msg)
++				    struct libie_ctlq_msg *ctlq_msg)
+ {
+ 	/* If the message is PTP-related and the secondary mailbox is available,
+ 	 * send the message through the secondary mailbox.
+@@ -197,528 +169,83 @@ static void idpf_prepare_ptp_mb_msg(struct idpf_adapter *adapter, u32 op,
+ 	if (!idpf_ptp_is_mb_msg(op) || !adapter->ptp->secondary_mbx.valid)
+ 		return;
+ 
+-	ctlq_msg->opcode = idpf_mbq_opc_send_msg_to_peer_drv;
++	ctlq_msg->opcode = LIBIE_CTLQ_SEND_MSG_TO_PEER;
+ 	ctlq_msg->func_id = adapter->ptp->secondary_mbx.peer_mbx_q_id;
+-	ctlq_msg->host_id = adapter->ptp->secondary_mbx.peer_id;
++	ctlq_msg->flags = FIELD_PREP(LIBIE_CTLQ_DESC_FLAG_HOST_ID,
++				     adapter->ptp->secondary_mbx.peer_id);
+ }
+ #else /* !CONFIG_PTP_1588_CLOCK */
+ static void idpf_prepare_ptp_mb_msg(struct idpf_adapter *adapter, u32 op,
+-				    struct idpf_ctlq_msg *ctlq_msg)
++				    struct libie_ctlq_msg *ctlq_msg)
+ { }
+ #endif /* CONFIG_PTP_1588_CLOCK */
+ 
+ /**
+- * idpf_send_mb_msg - Send message over mailbox
++ * idpf_send_mb_msg - send mailbox message to the device control plane
+  * @adapter: driver specific private structure
+- * @asq: control queue to send message to
+- * @op: virtchnl opcode
+- * @msg_size: size of the payload
+- * @msg: pointer to buffer holding the payload
+- * @cookie: unique SW generated cookie per message
+- *
+- * Will prepare the control queue message and initiates the send api
+- *
+- * Return: 0 on success, negative on failure
+- */
+-int idpf_send_mb_msg(struct idpf_adapter *adapter, struct idpf_ctlq_info *asq,
+-		     u32 op, u16 msg_size, u8 *msg, u16 cookie)
+-{
+-	struct idpf_ctlq_msg *ctlq_msg;
+-	struct idpf_dma_mem *dma_mem;
+-	int err;
+-
+-	/* If we are here and a reset is detected nothing much can be
+-	 * done. This thread should silently abort and expected to
+-	 * be corrected with a new run either by user or driver
+-	 * flows after reset
+-	 */
+-	if (idpf_is_reset_detected(adapter))
+-		return 0;
+-
+-	err = idpf_mb_clean(adapter, asq);
+-	if (err)
+-		return err;
+-
+-	ctlq_msg = kzalloc_obj(*ctlq_msg, GFP_ATOMIC);
+-	if (!ctlq_msg)
+-		return -ENOMEM;
+-
+-	dma_mem = kzalloc_obj(*dma_mem, GFP_ATOMIC);
+-	if (!dma_mem) {
+-		err = -ENOMEM;
+-		goto dma_mem_error;
+-	}
+-
+-	ctlq_msg->opcode = idpf_mbq_opc_send_msg_to_cp;
+-	ctlq_msg->func_id = 0;
+-
+-	idpf_prepare_ptp_mb_msg(adapter, op, ctlq_msg);
+-
+-	ctlq_msg->data_len = msg_size;
+-	ctlq_msg->cookie.mbx.chnl_opcode = op;
+-	ctlq_msg->cookie.mbx.chnl_retval = 0;
+-	dma_mem->size = IDPF_CTLQ_MAX_BUF_LEN;
+-	dma_mem->va = dma_alloc_coherent(&adapter->pdev->dev, dma_mem->size,
+-					 &dma_mem->pa, GFP_ATOMIC);
+-	if (!dma_mem->va) {
+-		err = -ENOMEM;
+-		goto dma_alloc_error;
+-	}
+-
+-	/* It's possible we're just sending an opcode but no buffer */
+-	if (msg && msg_size)
+-		memcpy(dma_mem->va, msg, msg_size);
+-	ctlq_msg->ctx.indirect.payload = dma_mem;
+-	ctlq_msg->ctx.sw_cookie.data = cookie;
+-
+-	err = idpf_ctlq_send(&adapter->hw, asq, 1, ctlq_msg);
+-	if (err)
+-		goto send_error;
+-
+-	return 0;
+-
+-send_error:
+-	dma_free_coherent(&adapter->pdev->dev, dma_mem->size, dma_mem->va,
+-			  dma_mem->pa);
+-dma_alloc_error:
+-	kfree(dma_mem);
+-dma_mem_error:
+-	kfree(ctlq_msg);
+-
+-	return err;
+-}
+-
+-/* API for virtchnl "transaction" support ("xn" for short). */
+-
+-/**
+- * idpf_vc_xn_lock - Request exclusive access to vc transaction
+- * @xn: struct idpf_vc_xn* to access
+- */
+-#define idpf_vc_xn_lock(xn)			\
+-	spin_lock(&(xn)->lock)
+-
+-/**
+- * idpf_vc_xn_unlock - Release exclusive access to vc transaction
+- * @xn: struct idpf_vc_xn* to access
+- */
+-#define idpf_vc_xn_unlock(xn)		\
+-	spin_unlock(&(xn)->lock)
+-
+-/**
+- * idpf_vc_xn_release_bufs - Release reference to reply buffer(s) and
+- * reset the transaction state.
+- * @xn: struct idpf_vc_xn to update
+- */
+-static void idpf_vc_xn_release_bufs(struct idpf_vc_xn *xn)
+-{
+-	xn->reply.iov_base = NULL;
+-	xn->reply.iov_len = 0;
+-
+-	if (xn->state != IDPF_VC_XN_SHUTDOWN)
+-		xn->state = IDPF_VC_XN_IDLE;
+-}
+-
+-/**
+- * idpf_vc_xn_init - Initialize virtchnl transaction object
+- * @vcxn_mngr: pointer to vc transaction manager struct
+- */
+-static void idpf_vc_xn_init(struct idpf_vc_xn_manager *vcxn_mngr)
+-{
+-	int i;
+-
+-	spin_lock_init(&vcxn_mngr->xn_bm_lock);
+-
+-	for (i = 0; i < ARRAY_SIZE(vcxn_mngr->ring); i++) {
+-		struct idpf_vc_xn *xn = &vcxn_mngr->ring[i];
+-
+-		xn->state = IDPF_VC_XN_IDLE;
+-		xn->idx = i;
+-		idpf_vc_xn_release_bufs(xn);
+-		spin_lock_init(&xn->lock);
+-		init_completion(&xn->completed);
+-	}
+-
+-	bitmap_fill(vcxn_mngr->free_xn_bm, IDPF_VC_XN_RING_LEN);
+-}
+-
+-/**
+- * idpf_vc_xn_shutdown - Uninitialize virtchnl transaction object
+- * @vcxn_mngr: pointer to vc transaction manager struct
++ * @xn_params: Xn send parameters to fill
++ * @send_buf: buffer to send
++ * @send_buf_size: size of the send buffer
+  *
+- * All waiting threads will be woken-up and their transaction aborted. Further
+- * operations on that object will fail.
+- */
+-void idpf_vc_xn_shutdown(struct idpf_vc_xn_manager *vcxn_mngr)
+-{
+-	int i;
+-
+-	spin_lock_bh(&vcxn_mngr->xn_bm_lock);
+-	bitmap_zero(vcxn_mngr->free_xn_bm, IDPF_VC_XN_RING_LEN);
+-	spin_unlock_bh(&vcxn_mngr->xn_bm_lock);
+-
+-	for (i = 0; i < ARRAY_SIZE(vcxn_mngr->ring); i++) {
+-		struct idpf_vc_xn *xn = &vcxn_mngr->ring[i];
+-
+-		idpf_vc_xn_lock(xn);
+-		xn->state = IDPF_VC_XN_SHUTDOWN;
+-		idpf_vc_xn_release_bufs(xn);
+-		idpf_vc_xn_unlock(xn);
+-		complete_all(&xn->completed);
+-	}
+-}
+-
+-/**
+- * idpf_vc_xn_pop_free - Pop a free transaction from free list
+- * @vcxn_mngr: transaction manager to pop from
++ * Fill the Xn parameters with the required info to send a virtchnl message.
++ * The send buffer is DMA mapped in the libie to avoid memcpy.
+  *
+- * Returns NULL if no free transactions
+- */
+-static
+-struct idpf_vc_xn *idpf_vc_xn_pop_free(struct idpf_vc_xn_manager *vcxn_mngr)
+-{
+-	struct idpf_vc_xn *xn = NULL;
+-	unsigned long free_idx;
+-
+-	spin_lock_bh(&vcxn_mngr->xn_bm_lock);
+-	free_idx = find_first_bit(vcxn_mngr->free_xn_bm, IDPF_VC_XN_RING_LEN);
+-	if (free_idx == IDPF_VC_XN_RING_LEN)
+-		goto do_unlock;
+-
+-	clear_bit(free_idx, vcxn_mngr->free_xn_bm);
+-	xn = &vcxn_mngr->ring[free_idx];
+-	xn->salt = vcxn_mngr->salt++;
+-
+-do_unlock:
+-	spin_unlock_bh(&vcxn_mngr->xn_bm_lock);
+-
+-	return xn;
+-}
+-
+-/**
+- * idpf_vc_xn_push_free - Push a free transaction to free list
+- * @vcxn_mngr: transaction manager to push to
+- * @xn: transaction to push
+- */
+-static void idpf_vc_xn_push_free(struct idpf_vc_xn_manager *vcxn_mngr,
+-				 struct idpf_vc_xn *xn)
+-{
+-	idpf_vc_xn_release_bufs(xn);
+-	spin_lock_bh(&vcxn_mngr->xn_bm_lock);
+-	set_bit(xn->idx, vcxn_mngr->free_xn_bm);
+-	spin_unlock_bh(&vcxn_mngr->xn_bm_lock);
+-}
+-
+-/**
+- * idpf_vc_xn_exec - Perform a send/recv virtchnl transaction
+- * @adapter: driver specific private structure with vcxn_mngr
+- * @params: parameters for this particular transaction including
+- *   -vc_op: virtchannel operation to send
+- *   -send_buf: kvec iov for send buf and len
+- *   -recv_buf: kvec iov for recv buf and len (ignored if NULL)
+- *   -timeout_ms: timeout waiting for a reply (milliseconds)
+- *   -async: don't wait for message reply, will lose caller context
+- *   -async_handler: callback to handle async replies
+- *
+- * @returns >= 0 for success, the size of the initial reply (may or may not be
+- * >= @recv_buf.iov_len, but we never overflow @@recv_buf_iov_base). < 0 for
+- * error.
+- */
+-ssize_t idpf_vc_xn_exec(struct idpf_adapter *adapter,
+-			const struct idpf_vc_xn_params *params)
+-{
+-	const struct kvec *send_buf = &params->send_buf;
+-	struct idpf_vc_xn *xn;
+-	ssize_t retval;
+-	u16 cookie;
+-
+-	xn = idpf_vc_xn_pop_free(adapter->vcxn_mngr);
+-	/* no free transactions available */
+-	if (!xn)
+-		return -ENOSPC;
+-
+-	idpf_vc_xn_lock(xn);
+-	if (xn->state == IDPF_VC_XN_SHUTDOWN) {
+-		retval = -ENXIO;
+-		goto only_unlock;
+-	} else if (xn->state != IDPF_VC_XN_IDLE) {
+-		/* We're just going to clobber this transaction even though
+-		 * it's not IDLE. If we don't reuse it we could theoretically
+-		 * eventually leak all the free transactions and not be able to
+-		 * send any messages. At least this way we make an attempt to
+-		 * remain functional even though something really bad is
+-		 * happening that's corrupting what was supposed to be free
+-		 * transactions.
+-		 */
+-		WARN_ONCE(1, "There should only be idle transactions in free list (idx %d op %d)\n",
+-			  xn->idx, xn->vc_op);
+-	}
+-
+-	xn->reply = params->recv_buf;
+-	xn->reply_sz = 0;
+-	xn->state = params->async ? IDPF_VC_XN_ASYNC : IDPF_VC_XN_WAITING;
+-	xn->vc_op = params->vc_op;
+-	xn->async_handler = params->async_handler;
+-	idpf_vc_xn_unlock(xn);
+-
+-	if (!params->async)
+-		reinit_completion(&xn->completed);
+-	cookie = FIELD_PREP(IDPF_VC_XN_SALT_M, xn->salt) |
+-		 FIELD_PREP(IDPF_VC_XN_IDX_M, xn->idx);
+-
+-	retval = idpf_send_mb_msg(adapter, adapter->hw.asq, params->vc_op,
+-				  send_buf->iov_len, send_buf->iov_base,
+-				  cookie);
+-	if (retval) {
+-		idpf_vc_xn_lock(xn);
+-		goto release_and_unlock;
+-	}
+-
+-	if (params->async)
+-		return 0;
+-
+-	wait_for_completion_timeout(&xn->completed,
+-				    msecs_to_jiffies(params->timeout_ms));
+-
+-	/* No need to check the return value; we check the final state of the
+-	 * transaction below. It's possible the transaction actually gets more
+-	 * timeout than specified if we get preempted here but after
+-	 * wait_for_completion_timeout returns. This should be non-issue
+-	 * however.
+-	 */
+-	idpf_vc_xn_lock(xn);
+-	switch (xn->state) {
+-	case IDPF_VC_XN_SHUTDOWN:
+-		retval = -ENXIO;
+-		goto only_unlock;
+-	case IDPF_VC_XN_WAITING:
+-		dev_notice_ratelimited(&adapter->pdev->dev,
+-				       "Transaction timed-out (op:%d cookie:%04x vc_op:%d salt:%02x timeout:%dms)\n",
+-				       params->vc_op, cookie, xn->vc_op,
+-				       xn->salt, params->timeout_ms);
+-		retval = -ETIME;
+-		break;
+-	case IDPF_VC_XN_COMPLETED_SUCCESS:
+-		retval = xn->reply_sz;
+-		break;
+-	case IDPF_VC_XN_COMPLETED_FAILED:
+-		dev_notice_ratelimited(&adapter->pdev->dev, "Transaction failed (op %d)\n",
+-				       params->vc_op);
+-		retval = -EIO;
+-		break;
+-	default:
+-		/* Invalid state. */
+-		WARN_ON_ONCE(1);
+-		retval = -EIO;
+-		break;
+-	}
+-
+-release_and_unlock:
+-	idpf_vc_xn_push_free(adapter->vcxn_mngr, xn);
+-	/* If we receive a VC reply after here, it will be dropped. */
+-only_unlock:
+-	idpf_vc_xn_unlock(xn);
+-
+-	return retval;
+-}
+-
+-/**
+- * idpf_vc_xn_forward_async - Handle async reply receives
+- * @adapter: private data struct
+- * @xn: transaction to handle
+- * @ctlq_msg: corresponding ctlq_msg
++ * Cleanup the mailbox queue entries of the previously sent message to
++ * unmap and release the buffer.
+  *
+- * For async sends we're going to lose the caller's context so, if an
+- * async_handler was provided, it can deal with the reply, otherwise we'll just
+- * check and report if there is an error.
++ * Return: 0 if the request was successful, -%EBUSY if reset is detected
++ *	   or Tx control queue is full, other negative error code on failure.
+  */
+-static int
+-idpf_vc_xn_forward_async(struct idpf_adapter *adapter, struct idpf_vc_xn *xn,
+-			 const struct idpf_ctlq_msg *ctlq_msg)
++int idpf_send_mb_msg(struct idpf_adapter *adapter,
++		     struct libie_ctlq_xn_send_params *xn_params,
++		     void *send_buf, size_t send_buf_size)
+ {
+-	int err = 0;
+-
+-	if (ctlq_msg->cookie.mbx.chnl_opcode != xn->vc_op) {
+-		dev_err_ratelimited(&adapter->pdev->dev, "Async message opcode does not match transaction opcode (msg: %d) (xn: %d)\n",
+-				    ctlq_msg->cookie.mbx.chnl_opcode, xn->vc_op);
+-		xn->reply_sz = 0;
+-		err = -EINVAL;
+-		goto release_bufs;
+-	}
+-
+-	if (xn->async_handler) {
+-		err = xn->async_handler(adapter, xn, ctlq_msg);
+-		goto release_bufs;
+-	}
+-
+-	if (ctlq_msg->cookie.mbx.chnl_retval) {
+-		xn->reply_sz = 0;
+-		dev_err_ratelimited(&adapter->pdev->dev, "Async message failure (op %d)\n",
+-				    ctlq_msg->cookie.mbx.chnl_opcode);
+-		err = -EINVAL;
+-	}
+-
+-release_bufs:
+-	idpf_vc_xn_push_free(adapter->vcxn_mngr, xn);
+-
+-	return err;
+-}
+-
+-/**
+- * idpf_vc_xn_forward_reply - copy a reply back to receiving thread
+- * @adapter: driver specific private structure with vcxn_mngr
+- * @ctlq_msg: controlq message to send back to receiving thread
+- */
+-static int
+-idpf_vc_xn_forward_reply(struct idpf_adapter *adapter,
+-			 const struct idpf_ctlq_msg *ctlq_msg)
+-{
+-	const void *payload = NULL;
+-	size_t payload_size = 0;
+-	struct idpf_vc_xn *xn;
+-	u16 msg_info;
+-	int err = 0;
+-	u16 xn_idx;
+-	u16 salt;
+-
+-	msg_info = ctlq_msg->ctx.sw_cookie.data;
+-	xn_idx = FIELD_GET(IDPF_VC_XN_IDX_M, msg_info);
+-	if (xn_idx >= ARRAY_SIZE(adapter->vcxn_mngr->ring)) {
+-		dev_err_ratelimited(&adapter->pdev->dev, "Out of bounds cookie received: %02x\n",
+-				    xn_idx);
+-		return -EINVAL;
+-	}
+-	xn = &adapter->vcxn_mngr->ring[xn_idx];
+-	idpf_vc_xn_lock(xn);
+-	salt = FIELD_GET(IDPF_VC_XN_SALT_M, msg_info);
+-	if (xn->salt != salt) {
+-		dev_err_ratelimited(&adapter->pdev->dev, "Transaction salt does not match (exp:%d@%02x(%d) != got:%d@%02x)\n",
+-				    xn->vc_op, xn->salt, xn->state,
+-				    ctlq_msg->cookie.mbx.chnl_opcode, salt);
+-		idpf_vc_xn_unlock(xn);
+-		return -EINVAL;
+-	}
+-
+-	switch (xn->state) {
+-	case IDPF_VC_XN_WAITING:
+-		/* success */
+-		break;
+-	case IDPF_VC_XN_IDLE:
+-		dev_err_ratelimited(&adapter->pdev->dev, "Unexpected or belated VC reply (op %d)\n",
+-				    ctlq_msg->cookie.mbx.chnl_opcode);
+-		err = -EINVAL;
+-		goto out_unlock;
+-	case IDPF_VC_XN_SHUTDOWN:
+-		/* ENXIO is a bit special here as the recv msg loop uses that
+-		 * know if it should stop trying to clean the ring if we lost
+-		 * the virtchnl. We need to stop playing with registers and
+-		 * yield.
+-		 */
+-		err = -ENXIO;
+-		goto out_unlock;
+-	case IDPF_VC_XN_ASYNC:
+-		/* Set reply_sz from the actual payload so that async_handler
+-		 * can evaluate the response.
+-		 */
+-		xn->reply_sz = ctlq_msg->data_len;
+-		err = idpf_vc_xn_forward_async(adapter, xn, ctlq_msg);
+-		idpf_vc_xn_unlock(xn);
+-		return err;
+-	default:
+-		dev_err_ratelimited(&adapter->pdev->dev, "Overwriting VC reply (op %d)\n",
+-				    ctlq_msg->cookie.mbx.chnl_opcode);
+-		err = -EBUSY;
+-		goto out_unlock;
+-	}
+-
+-	if (ctlq_msg->cookie.mbx.chnl_opcode != xn->vc_op) {
+-		dev_err_ratelimited(&adapter->pdev->dev, "Message opcode does not match transaction opcode (msg: %d) (xn: %d)\n",
+-				    ctlq_msg->cookie.mbx.chnl_opcode, xn->vc_op);
+-		xn->reply_sz = 0;
+-		xn->state = IDPF_VC_XN_COMPLETED_FAILED;
+-		err = -EINVAL;
+-		goto out_unlock;
+-	}
++	struct libie_ctlq_msg ctlq_msg = {};
+ 
+-	if (ctlq_msg->cookie.mbx.chnl_retval) {
+-		xn->reply_sz = 0;
+-		xn->state = IDPF_VC_XN_COMPLETED_FAILED;
+-		err = -EINVAL;
+-		goto out_unlock;
+-	}
++	if (idpf_is_reset_detected(adapter)) {
++		if (!libie_cp_can_send_onstack(send_buf_size))
++			kfree(send_buf);
+ 
+-	if (ctlq_msg->data_len) {
+-		payload = ctlq_msg->ctx.indirect.payload->va;
+-		payload_size = ctlq_msg->data_len;
++		return -EBUSY;
+ 	}
+ 
+-	xn->reply_sz = payload_size;
+-	xn->state = IDPF_VC_XN_COMPLETED_SUCCESS;
++	idpf_prepare_ptp_mb_msg(adapter, xn_params->chnl_opcode, &ctlq_msg);
++	xn_params->ctlq_msg = ctlq_msg.opcode ? &ctlq_msg : NULL;
+ 
+-	if (xn->reply.iov_base && xn->reply.iov_len && payload_size)
+-		memcpy(xn->reply.iov_base, payload,
+-		       min_t(size_t, xn->reply.iov_len, payload_size));
++	xn_params->send_buf.iov_base = send_buf;
++	xn_params->send_buf.iov_len = send_buf_size;
++	xn_params->xnm = adapter->xnm;
++	xn_params->ctlq = xn_params->ctlq ? xn_params->ctlq : adapter->asq;
++	xn_params->rel_tx_buf = kfree;
+ 
+-out_unlock:
+-	idpf_vc_xn_unlock(xn);
+-	/* we _cannot_ hold lock while calling complete */
+-	complete(&xn->completed);
++	idpf_mb_clean(adapter, xn_params->ctlq, false);
+ 
+-	return err;
++	return libie_ctlq_xn_send(xn_params);
+ }
+ 
+ /**
+- * idpf_recv_mb_msg - Receive message over mailbox
++ * idpf_send_mb_msg_kfree - send mailbox message and free the send buffer
+  * @adapter: driver specific private structure
+- * @arq: control queue to receive message from
++ * @xn_params: Xn send parameters to fill
++ * @send_buf: buffer to send, can be released with kfree()
++ * @send_buf_size: size of the send buffer
+  *
+- * Will receive control queue message and posts the receive buffer.
++ * libie_cp functions consume only buffers above certain size,
++ * smaller buffers are assumed to be on the stack. However, for some
++ * commands with variable message size it makes sense to always use kzalloc(),
++ * which means we have to free smaller buffers ourselves.
+  *
+- * Return: 0 on success and negative on failure.
++ * Return: 0 if no unexpected errors were encountered,
++ *	   negative error code otherwise.
+  */
+-int idpf_recv_mb_msg(struct idpf_adapter *adapter, struct idpf_ctlq_info *arq)
++int idpf_send_mb_msg_kfree(struct idpf_adapter *adapter,
++			   struct libie_ctlq_xn_send_params *xn_params,
++			   void *send_buf, size_t send_buf_size)
+ {
+-	struct idpf_ctlq_msg ctlq_msg;
+-	struct idpf_dma_mem *dma_mem;
+-	int post_err, err;
+-	u16 num_recv;
+-
+-	while (1) {
+-		/* This will get <= num_recv messages and output how many
+-		 * actually received on num_recv.
+-		 */
+-		num_recv = 1;
+-		err = idpf_ctlq_recv(arq, &num_recv, &ctlq_msg);
+-		if (err || !num_recv)
+-			break;
+-
+-		if (ctlq_msg.data_len) {
+-			dma_mem = ctlq_msg.ctx.indirect.payload;
+-		} else {
+-			dma_mem = NULL;
+-			num_recv = 0;
+-		}
++	int err = idpf_send_mb_msg(adapter, xn_params, send_buf, send_buf_size);
+ 
+-		if (ctlq_msg.cookie.mbx.chnl_opcode == VIRTCHNL2_OP_EVENT)
+-			idpf_recv_event_msg(adapter, &ctlq_msg);
+-		else
+-			err = idpf_vc_xn_forward_reply(adapter, &ctlq_msg);
+-
+-		post_err = idpf_ctlq_post_rx_buffs(&adapter->hw, arq,
+-						   &num_recv, &dma_mem);
+-
+-		/* If post failed clear the only buffer we supplied */
+-		if (post_err) {
+-			if (dma_mem)
+-				dma_free_coherent(&adapter->pdev->dev,
+-						  dma_mem->size, dma_mem->va,
+-						  dma_mem->pa);
+-			break;
+-		}
+-
+-		/* virtchnl trying to shutdown, stop cleaning */
+-		if (err == -ENXIO)
+-			break;
+-	}
++	if (libie_cp_can_send_onstack(send_buf_size))
++		kfree(send_buf);
+ 
+ 	return err;
+ }
+@@ -768,45 +295,43 @@ struct idpf_queue_set *idpf_alloc_queue_set(struct idpf_adapter *adapter,
+ static int idpf_send_chunked_msg(struct idpf_adapter *adapter,
+ 				 const struct idpf_chunked_msg_params *params)
+ {
+-	struct idpf_vc_xn_params xn_params = {
+-		.vc_op		= params->vc_op,
++	struct libie_ctlq_xn_send_params xn_params = {
+ 		.timeout_ms	= IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC,
++		.chnl_opcode	= params->vc_op,
+ 	};
+ 	const void *pos = params->chunks;
+-	u32 num_chunks, num_msgs, buf_sz;
+-	void *buf __free(kfree) = NULL;
+ 	u32 totqs = params->num_chunks;
+ 	u32 vid = params->vport_id;
++	u32 num_chunks, num_msgs;
+ 
+-	num_chunks = min(IDPF_NUM_CHUNKS_PER_MSG(params->config_sz,
+-						 params->chunk_sz), totqs);
++	num_chunks = IDPF_NUM_CHUNKS_PER_MSG(params->config_sz,
++					     params->chunk_sz);
+ 	num_msgs = DIV_ROUND_UP(totqs, num_chunks);
+ 
+-	buf_sz = params->config_sz + num_chunks * params->chunk_sz;
+-	buf = kzalloc(buf_sz, GFP_KERNEL);
+-	if (!buf)
+-		return -ENOMEM;
+-
+-	xn_params.send_buf.iov_base = buf;
+-
+ 	for (u32 i = 0; i < num_msgs; i++) {
+-		ssize_t reply_sz;
++		u32 buf_sz;
++		void *buf;
++		int err;
+ 
+-		memset(buf, 0, buf_sz);
+-		xn_params.send_buf.iov_len = buf_sz;
++		num_chunks = min(num_chunks, totqs);
++		buf_sz = params->config_sz + num_chunks * params->chunk_sz;
++		buf = kzalloc(buf_sz, GFP_KERNEL);
++		if (!buf)
++			return -ENOMEM;
+ 
+-		if (params->prepare_msg(vid, buf, pos, num_chunks) != buf_sz)
++		if (params->prepare_msg(vid, buf, pos, num_chunks) != buf_sz) {
++			kfree(buf);
+ 			return -EINVAL;
++		}
+ 
+-		reply_sz = idpf_vc_xn_exec(adapter, &xn_params);
+-		if (reply_sz < 0)
+-			return reply_sz;
++		err = idpf_send_mb_msg_kfree(adapter, &xn_params, buf, buf_sz);
++		if (err)
++			return err;
+ 
++		libie_ctlq_release_rx_buf(&xn_params.recv_mem);
++		xn_params.recv_mem = (struct kvec) {};
+ 		pos += num_chunks * params->chunk_sz;
+ 		totqs -= num_chunks;
+-
+-		num_chunks = min(num_chunks, totqs);
+-		buf_sz = params->config_sz + num_chunks * params->chunk_sz;
+ 	}
+ 
+ 	return 0;
+@@ -881,11 +406,14 @@ static int idpf_wait_for_marker_event(struct idpf_vport *vport)
+  */
+ static int idpf_send_ver_msg(struct idpf_adapter *adapter)
+ {
+-	struct idpf_vc_xn_params xn_params = {};
++	struct libie_ctlq_xn_send_params xn_params = {
++		.timeout_ms	= IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC,
++		.chnl_opcode	= VIRTCHNL2_OP_VERSION,
++	};
++	struct virtchnl2_version_info *vvi_recv;
+ 	struct virtchnl2_version_info vvi;
+-	ssize_t reply_sz;
+ 	u32 major, minor;
+-	int err = 0;
++	int err;
+ 
+ 	if (adapter->virt_ver_maj) {
+ 		vvi.major = cpu_to_le32(adapter->virt_ver_maj);
+@@ -895,24 +423,23 @@ static int idpf_send_ver_msg(struct idpf_adapter *adapter)
+ 		vvi.minor = cpu_to_le32(IDPF_VIRTCHNL_VERSION_MINOR);
+ 	}
+ 
+-	xn_params.vc_op = VIRTCHNL2_OP_VERSION;
+-	xn_params.send_buf.iov_base = &vvi;
+-	xn_params.send_buf.iov_len = sizeof(vvi);
+-	xn_params.recv_buf = xn_params.send_buf;
+-	xn_params.timeout_ms = IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC;
++	err = idpf_send_mb_msg(adapter, &xn_params, &vvi, sizeof(vvi));
++	if (err)
++		return err;
+ 
+-	reply_sz = idpf_vc_xn_exec(adapter, &xn_params);
+-	if (reply_sz < 0)
+-		return reply_sz;
+-	if (reply_sz < sizeof(vvi))
+-		return -EIO;
++	if (xn_params.recv_mem.iov_len < sizeof(*vvi_recv)) {
++		err = -EIO;
++		goto free_rx_buf;
++	}
+ 
+-	major = le32_to_cpu(vvi.major);
+-	minor = le32_to_cpu(vvi.minor);
++	vvi_recv = xn_params.recv_mem.iov_base;
++	major = le32_to_cpu(vvi_recv->major);
++	minor = le32_to_cpu(vvi_recv->minor);
+ 
+ 	if (major > IDPF_VIRTCHNL_VERSION_MAJOR) {
+ 		dev_warn(&adapter->pdev->dev, "Virtchnl major version greater than supported\n");
+-		return -EINVAL;
++		err = -EINVAL;
++		goto free_rx_buf;
+ 	}
+ 
+ 	if (major == IDPF_VIRTCHNL_VERSION_MAJOR &&
+@@ -930,6 +457,9 @@ static int idpf_send_ver_msg(struct idpf_adapter *adapter)
+ 	adapter->virt_ver_maj = major;
+ 	adapter->virt_ver_min = minor;
+ 
++free_rx_buf:
++	libie_ctlq_release_rx_buf(&xn_params.recv_mem);
++
+ 	return err;
+ }
+ 
+@@ -942,9 +472,12 @@ static int idpf_send_ver_msg(struct idpf_adapter *adapter)
+  */
+ static int idpf_send_get_caps_msg(struct idpf_adapter *adapter)
+ {
++	struct libie_ctlq_xn_send_params xn_params = {
++		.timeout_ms	= IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC,
++		.chnl_opcode	= VIRTCHNL2_OP_GET_CAPS,
++	};
+ 	struct virtchnl2_get_capabilities caps = {};
+-	struct idpf_vc_xn_params xn_params = {};
+-	ssize_t reply_sz;
++	int err;
+ 
+ 	caps.csum_caps =
+ 		cpu_to_le32(VIRTCHNL2_CAP_TX_CSUM_L3_IPV4	|
+@@ -1004,20 +537,22 @@ static int idpf_send_get_caps_msg(struct idpf_adapter *adapter)
+ 			    VIRTCHNL2_CAP_LOOPBACK		|
+ 			    VIRTCHNL2_CAP_PTP);
+ 
+-	xn_params.vc_op = VIRTCHNL2_OP_GET_CAPS;
+-	xn_params.send_buf.iov_base = &caps;
+-	xn_params.send_buf.iov_len = sizeof(caps);
+-	xn_params.recv_buf.iov_base = &adapter->caps;
+-	xn_params.recv_buf.iov_len = sizeof(adapter->caps);
+-	xn_params.timeout_ms = IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC;
++	err = idpf_send_mb_msg(adapter, &xn_params, &caps, sizeof(caps));
++	if (err)
++		return err;
+ 
+-	reply_sz = idpf_vc_xn_exec(adapter, &xn_params);
+-	if (reply_sz < 0)
+-		return reply_sz;
+-	if (reply_sz < sizeof(adapter->caps))
+-		return -EIO;
++	if (xn_params.recv_mem.iov_len < sizeof(adapter->caps)) {
++		err = -EIO;
++		goto free_rx_buf;
++	}
+ 
+-	return 0;
++	memcpy(&adapter->caps, xn_params.recv_mem.iov_base,
++	       sizeof(adapter->caps));
++
++free_rx_buf:
++	libie_ctlq_release_rx_buf(&xn_params.recv_mem);
++
++	return err;
+ }
+ 
+ /**
+@@ -1062,37 +597,39 @@ static void idpf_decfg_lan_memory_regions(struct idpf_adapter *adapter)
+  */
+ static int idpf_cfg_lan_memory_regions(struct idpf_adapter *adapter)
+ {
+-	struct virtchnl2_get_lan_memory_regions *rcvd_regions __free(kfree);
+-	struct idpf_vc_xn_params xn_params = {
+-		.vc_op = VIRTCHNL2_OP_GET_LAN_MEMORY_REGIONS,
+-		.recv_buf.iov_len = IDPF_CTLQ_MAX_BUF_LEN,
+-		.send_buf.iov_len =
+-			sizeof(struct virtchnl2_get_lan_memory_regions) +
+-			sizeof(struct virtchnl2_mem_region),
++	struct virtchnl2_get_lan_memory_regions *send_regions, *rcvd_regions;
++	struct libie_ctlq_xn_send_params xn_params = {
++		.chnl_opcode = VIRTCHNL2_OP_GET_LAN_MEMORY_REGIONS,
+ 		.timeout_ms = IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC,
+ 	};
+-	int num_regions, size;
+-	ssize_t reply_sz;
++	size_t send_sz, reply_sz, size;
++	int num_regions;
+ 	int err = 0;
+ 
+-	rcvd_regions = kzalloc(IDPF_CTLQ_MAX_BUF_LEN, GFP_KERNEL);
+-	if (!rcvd_regions)
++	send_sz = sizeof(struct virtchnl2_get_lan_memory_regions) +
++		  sizeof(struct virtchnl2_mem_region);
++	send_regions = kzalloc(send_sz, GFP_KERNEL);
++	if (!send_regions)
+ 		return -ENOMEM;
+ 
+-	xn_params.recv_buf.iov_base = rcvd_regions;
+-	rcvd_regions->num_memory_regions = cpu_to_le16(1);
+-	xn_params.send_buf.iov_base = rcvd_regions;
+-	reply_sz = idpf_vc_xn_exec(adapter, &xn_params);
+-	if (reply_sz < 0)
+-		return reply_sz;
++	send_regions->num_memory_regions = cpu_to_le16(1);
++	err = idpf_send_mb_msg_kfree(adapter, &xn_params, send_regions,
++				     send_sz);
++	if (err)
++		return err;
+ 
++	rcvd_regions = xn_params.recv_mem.iov_base;
++	reply_sz = xn_params.recv_mem.iov_len;
++	if (reply_sz < sizeof(*rcvd_regions)) {
++		err = -EIO;
++		goto rel_rx_buf;
++	}
+ 	num_regions = le16_to_cpu(rcvd_regions->num_memory_regions);
+ 	size = struct_size(rcvd_regions, mem_reg, num_regions);
+-	if (reply_sz < size)
+-		return -EIO;
+-
+-	if (size > IDPF_CTLQ_MAX_BUF_LEN)
+-		return -EINVAL;
++	if (reply_sz < size) {
++		err = -EIO;
++		goto rel_rx_buf;
++	}
+ 
+ 	for (int i = 0; i < num_regions; i++) {
+ 		struct libie_mmio_info *mmio = &adapter->ctlq_ctx.mmio_info;
+@@ -1102,10 +639,14 @@ static int idpf_cfg_lan_memory_regions(struct idpf_adapter *adapter)
+ 		len = le64_to_cpu(rcvd_regions->mem_reg[i].size);
+ 		if (len && !libie_pci_map_mmio_region(mmio, offset, len)) {
+ 			idpf_decfg_lan_memory_regions(adapter);
+-			return -EIO;
++			err = -EIO;
++			goto rel_rx_buf;
+ 		}
+ 	}
+ 
++rel_rx_buf:
++	libie_ctlq_release_rx_buf(&xn_params.recv_mem);
++
+ 	return err;
+ }
+ 
+@@ -1164,24 +705,43 @@ int idpf_add_del_fsteer_filters(struct idpf_adapter *adapter,
+ 				struct virtchnl2_flow_rule_add_del *rule,
+ 				enum virtchnl2_op opcode)
+ {
++	struct libie_ctlq_xn_send_params xn_params = {
++		.chnl_opcode = opcode,
++		.timeout_ms = IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC,
++	};
++	struct virtchnl2_flow_rule_add_del *rx_rule;
+ 	int rule_count = le32_to_cpu(rule->count);
+-	struct idpf_vc_xn_params xn_params = {};
+-	ssize_t reply_sz;
++	size_t send_sz;
++	int err;
+ 
+ 	if (opcode != VIRTCHNL2_OP_ADD_FLOW_RULE &&
+-	    opcode != VIRTCHNL2_OP_DEL_FLOW_RULE)
++	    opcode != VIRTCHNL2_OP_DEL_FLOW_RULE) {
++		kfree(rule);
+ 		return -EINVAL;
++	}
++
++	send_sz = struct_size(rule, rule_info, rule_count);
++	err = idpf_send_mb_msg_kfree(adapter, &xn_params, rule, send_sz);
++	if (err)
++		return err;
++
++	if (xn_params.recv_mem.iov_len < send_sz) {
++		err = -EIO;
++		goto rel_rx;
++	}
+ 
+-	xn_params.vc_op = opcode;
+-	xn_params.timeout_ms = IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC;
+-	xn_params.async = false;
+-	xn_params.send_buf.iov_base = rule;
+-	xn_params.send_buf.iov_len = struct_size(rule, rule_info, rule_count);
+-	xn_params.recv_buf.iov_base = rule;
+-	xn_params.recv_buf.iov_len = struct_size(rule, rule_info, rule_count);
++	rx_rule = xn_params.recv_mem.iov_base;
++	for (int i = 0; i < rule_count; i++) {
++		if (rx_rule->rule_info[i].status !=
++		    cpu_to_le32(VIRTCHNL2_FLOW_RULE_SUCCESS)) {
++			err = -EIO;
++			goto rel_rx;
++		}
++	}
+ 
+-	reply_sz = idpf_vc_xn_exec(adapter, &xn_params);
+-	return reply_sz < 0 ? reply_sz : 0;
++rel_rx:
++	libie_ctlq_release_rx_buf(&xn_params.recv_mem);
++	return err;
+ }
+ 
+ /**
+@@ -1555,11 +1115,13 @@ int idpf_queue_reg_init(struct idpf_vport *vport,
+ int idpf_send_create_vport_msg(struct idpf_adapter *adapter,
+ 			       struct idpf_vport_max_q *max_q)
+ {
++	struct libie_ctlq_xn_send_params xn_params = {
++		.timeout_ms	= IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC,
++		.chnl_opcode	= VIRTCHNL2_OP_CREATE_VPORT,
++	};
+ 	struct virtchnl2_create_vport *vport_msg;
+-	struct idpf_vc_xn_params xn_params = {};
+ 	u16 idx = adapter->next_vport;
+ 	int err, buf_size;
+-	ssize_t reply_sz;
+ 
+ 	buf_size = sizeof(struct virtchnl2_create_vport);
+ 	vport_msg = kzalloc(buf_size, GFP_KERNEL);
+@@ -1586,33 +1148,29 @@ int idpf_send_create_vport_msg(struct idpf_adapter *adapter,
+ 	}
+ 
+ 	if (!adapter->vport_params_recvd[idx]) {
+-		adapter->vport_params_recvd[idx] = kzalloc(IDPF_CTLQ_MAX_BUF_LEN,
+-							   GFP_KERNEL);
++		adapter->vport_params_recvd[idx] =
++			kzalloc(LIBIE_CTLQ_MAX_BUF_LEN, GFP_KERNEL);
+ 		if (!adapter->vport_params_recvd[idx]) {
+ 			err = -ENOMEM;
+ 			goto rel_buf;
+ 		}
+ 	}
+ 
+-	xn_params.vc_op = VIRTCHNL2_OP_CREATE_VPORT;
+-	xn_params.send_buf.iov_base = vport_msg;
+-	xn_params.send_buf.iov_len = buf_size;
+-	xn_params.recv_buf.iov_base = adapter->vport_params_recvd[idx];
+-	xn_params.recv_buf.iov_len = IDPF_CTLQ_MAX_BUF_LEN;
+-	xn_params.timeout_ms = IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC;
+-	reply_sz = idpf_vc_xn_exec(adapter, &xn_params);
+-	if (reply_sz < 0) {
+-		err = reply_sz;
+-		goto free_vport_params;
++	err = idpf_send_mb_msg_kfree(adapter, &xn_params, vport_msg,
++				     sizeof(*vport_msg));
++	if (err) {
++		kfree(adapter->vport_params_recvd[idx]);
++		adapter->vport_params_recvd[idx] = NULL;
++		return err;
+ 	}
+ 
+-	kfree(vport_msg);
++	memcpy(adapter->vport_params_recvd[idx], xn_params.recv_mem.iov_base,
++	       xn_params.recv_mem.iov_len);
++
++	libie_ctlq_release_rx_buf(&xn_params.recv_mem);
+ 
+ 	return 0;
+ 
+-free_vport_params:
+-	kfree(adapter->vport_params_recvd[idx]);
+-	adapter->vport_params_recvd[idx] = NULL;
+ rel_buf:
+ 	kfree(vport_msg);
+ 
+@@ -1674,19 +1232,22 @@ int idpf_check_supported_desc_ids(struct idpf_vport *vport)
+  */
+ int idpf_send_destroy_vport_msg(struct idpf_adapter *adapter, u32 vport_id)
+ {
+-	struct idpf_vc_xn_params xn_params = {};
++	struct libie_ctlq_xn_send_params xn_params = {
++		.timeout_ms	= IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC,
++		.chnl_opcode	= VIRTCHNL2_OP_DESTROY_VPORT,
++	};
+ 	struct virtchnl2_vport v_id;
+-	ssize_t reply_sz;
++	int err;
+ 
+ 	v_id.vport_id = cpu_to_le32(vport_id);
+ 
+-	xn_params.vc_op = VIRTCHNL2_OP_DESTROY_VPORT;
+-	xn_params.send_buf.iov_base = &v_id;
+-	xn_params.send_buf.iov_len = sizeof(v_id);
+-	xn_params.timeout_ms = IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC;
+-	reply_sz = idpf_vc_xn_exec(adapter, &xn_params);
++	err = idpf_send_mb_msg(adapter, &xn_params, &v_id, sizeof(v_id));
++	if (err)
++		return err;
++
++	libie_ctlq_release_rx_buf(&xn_params.recv_mem);
+ 
+-	return reply_sz < 0 ? reply_sz : 0;
++	return 0;
+ }
+ 
+ /**
+@@ -1698,19 +1259,22 @@ int idpf_send_destroy_vport_msg(struct idpf_adapter *adapter, u32 vport_id)
+  */
+ int idpf_send_enable_vport_msg(struct idpf_adapter *adapter, u32 vport_id)
+ {
+-	struct idpf_vc_xn_params xn_params = {};
++	struct libie_ctlq_xn_send_params xn_params = {
++		.timeout_ms	= IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC,
++		.chnl_opcode	= VIRTCHNL2_OP_ENABLE_VPORT,
++	};
+ 	struct virtchnl2_vport v_id;
+-	ssize_t reply_sz;
++	int err;
+ 
+ 	v_id.vport_id = cpu_to_le32(vport_id);
+ 
+-	xn_params.vc_op = VIRTCHNL2_OP_ENABLE_VPORT;
+-	xn_params.send_buf.iov_base = &v_id;
+-	xn_params.send_buf.iov_len = sizeof(v_id);
+-	xn_params.timeout_ms = IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC;
+-	reply_sz = idpf_vc_xn_exec(adapter, &xn_params);
++	err = idpf_send_mb_msg(adapter, &xn_params, &v_id, sizeof(v_id));
++	if (err)
++		return err;
+ 
+-	return reply_sz < 0 ? reply_sz : 0;
++	libie_ctlq_release_rx_buf(&xn_params.recv_mem);
++
++	return 0;
+ }
+ 
+ /**
+@@ -1722,19 +1286,22 @@ int idpf_send_enable_vport_msg(struct idpf_adapter *adapter, u32 vport_id)
+  */
+ int idpf_send_disable_vport_msg(struct idpf_adapter *adapter, u32 vport_id)
+ {
+-	struct idpf_vc_xn_params xn_params = {};
++	struct libie_ctlq_xn_send_params xn_params = {
++		.timeout_ms	= IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC,
++		.chnl_opcode	= VIRTCHNL2_OP_DISABLE_VPORT,
++	};
+ 	struct virtchnl2_vport v_id;
+-	ssize_t reply_sz;
++	int err;
+ 
+ 	v_id.vport_id = cpu_to_le32(vport_id);
+ 
+-	xn_params.vc_op = VIRTCHNL2_OP_DISABLE_VPORT;
+-	xn_params.send_buf.iov_base = &v_id;
+-	xn_params.send_buf.iov_len = sizeof(v_id);
+-	xn_params.timeout_ms = IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC;
+-	reply_sz = idpf_vc_xn_exec(adapter, &xn_params);
++	err = idpf_send_mb_msg(adapter, &xn_params, &v_id, sizeof(v_id));
++	if (err)
++		return err;
++
++	libie_ctlq_release_rx_buf(&xn_params.recv_mem);
+ 
+-	return reply_sz < 0 ? reply_sz : 0;
++	return 0;
+ }
+ 
+ /**
+@@ -2573,11 +2140,14 @@ int idpf_send_delete_queues_msg(struct idpf_adapter *adapter,
+ 				struct idpf_queue_id_reg_info *chunks,
+ 				u32 vport_id)
+ {
+-	struct virtchnl2_del_ena_dis_queues *eq __free(kfree) = NULL;
+-	struct idpf_vc_xn_params xn_params = {};
+-	ssize_t reply_sz;
++	struct libie_ctlq_xn_send_params xn_params = {
++		.timeout_ms	= IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC,
++		.chnl_opcode	= VIRTCHNL2_OP_DEL_QUEUES,
++	};
++	struct virtchnl2_del_ena_dis_queues *eq;
++	ssize_t buf_size;
+ 	u16 num_chunks;
+-	int buf_size;
++	int err;
+ 
+ 	num_chunks = chunks->num_chunks;
+ 	buf_size = struct_size(eq, chunks.chunks, num_chunks);
+@@ -2592,13 +2162,13 @@ int idpf_send_delete_queues_msg(struct idpf_adapter *adapter,
+ 	idpf_convert_reg_to_queue_chunks(eq->chunks.chunks, chunks->queue_chunks,
+ 					 num_chunks);
+ 
+-	xn_params.vc_op = VIRTCHNL2_OP_DEL_QUEUES;
+-	xn_params.timeout_ms = IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC;
+-	xn_params.send_buf.iov_base = eq;
+-	xn_params.send_buf.iov_len = buf_size;
+-	reply_sz = idpf_vc_xn_exec(adapter, &xn_params);
++	err = idpf_send_mb_msg_kfree(adapter, &xn_params, eq, buf_size);
++	if (err)
++		return err;
+ 
+-	return reply_sz < 0 ? reply_sz : 0;
++	libie_ctlq_release_rx_buf(&xn_params.recv_mem);
++
++	return 0;
+ }
+ 
+ /**
+@@ -2636,15 +2206,14 @@ int idpf_send_add_queues_msg(struct idpf_adapter *adapter,
+ 			     struct idpf_q_vec_rsrc *rsrc,
+ 			     u32 vport_id)
+ {
+-	struct virtchnl2_add_queues *vc_msg __free(kfree) = NULL;
+-	struct idpf_vc_xn_params xn_params = {};
++	struct libie_ctlq_xn_send_params xn_params = {
++		.timeout_ms	= IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC,
++		.chnl_opcode	= VIRTCHNL2_OP_ADD_QUEUES,
++	};
++	struct virtchnl2_add_queues *vc_msg;
+ 	struct virtchnl2_add_queues aq = {};
+-	ssize_t reply_sz;
+-	int size;
+-
+-	vc_msg = kzalloc(IDPF_CTLQ_MAX_BUF_LEN, GFP_KERNEL);
+-	if (!vc_msg)
+-		return -ENOMEM;
++	size_t size;
++	int err;
+ 
+ 	aq.vport_id = cpu_to_le32(vport_id);
+ 	aq.num_tx_q = cpu_to_le16(rsrc->num_txq);
+@@ -2652,29 +2221,38 @@ int idpf_send_add_queues_msg(struct idpf_adapter *adapter,
+ 	aq.num_rx_q = cpu_to_le16(rsrc->num_rxq);
+ 	aq.num_rx_bufq = cpu_to_le16(rsrc->num_bufq);
+ 
+-	xn_params.vc_op = VIRTCHNL2_OP_ADD_QUEUES;
+-	xn_params.timeout_ms = IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC;
+-	xn_params.send_buf.iov_base = &aq;
+-	xn_params.send_buf.iov_len = sizeof(aq);
+-	xn_params.recv_buf.iov_base = vc_msg;
+-	xn_params.recv_buf.iov_len = IDPF_CTLQ_MAX_BUF_LEN;
+-	reply_sz = idpf_vc_xn_exec(adapter, &xn_params);
+-	if (reply_sz < 0)
+-		return reply_sz;
++	err = idpf_send_mb_msg(adapter, &xn_params, &aq, sizeof(aq));
++	if (err)
++		return err;
++
++	vc_msg = xn_params.recv_mem.iov_base;
++	if (xn_params.recv_mem.iov_len < sizeof(*vc_msg)) {
++		err = -EIO;
++		goto free_rx_buf;
++	}
+ 
+ 	/* compare vc_msg num queues with vport num queues */
+ 	if (le16_to_cpu(vc_msg->num_tx_q) != rsrc->num_txq ||
+ 	    le16_to_cpu(vc_msg->num_rx_q) != rsrc->num_rxq ||
+ 	    le16_to_cpu(vc_msg->num_tx_complq) != rsrc->num_complq ||
+-	    le16_to_cpu(vc_msg->num_rx_bufq) != rsrc->num_bufq)
+-		return -EINVAL;
++	    le16_to_cpu(vc_msg->num_rx_bufq) != rsrc->num_bufq) {
++		err = -EINVAL;
++		goto free_rx_buf;
++	}
+ 
+ 	size = struct_size(vc_msg, chunks.chunks,
+ 			   le16_to_cpu(vc_msg->chunks.num_chunks));
+-	if (reply_sz < size)
+-		return -EIO;
++	if (xn_params.recv_mem.iov_len < size) {
++		err = -EIO;
++		goto free_rx_buf;
++	}
++
++	err = idpf_vport_init_queue_reg_chunks(vport_config, &vc_msg->chunks);
++
++free_rx_buf:
++	libie_ctlq_release_rx_buf(&xn_params.recv_mem);
+ 
+-	return idpf_vport_init_queue_reg_chunks(vport_config, &vc_msg->chunks);
++	return err;
+ }
+ 
+ /**
+@@ -2686,49 +2264,51 @@ int idpf_send_add_queues_msg(struct idpf_adapter *adapter,
+  */
+ int idpf_send_alloc_vectors_msg(struct idpf_adapter *adapter, u16 num_vectors)
+ {
+-	struct virtchnl2_alloc_vectors *rcvd_vec __free(kfree) = NULL;
+-	struct idpf_vc_xn_params xn_params = {};
++	struct libie_ctlq_xn_send_params xn_params = {
++		.timeout_ms	= IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC,
++		.chnl_opcode	= VIRTCHNL2_OP_ALLOC_VECTORS,
++	};
++	struct virtchnl2_alloc_vectors *rcvd_vec;
+ 	struct virtchnl2_alloc_vectors ac = {};
+-	ssize_t reply_sz;
+ 	u16 num_vchunks;
+-	int size;
++	int size, err;
+ 
+ 	ac.num_vectors = cpu_to_le16(num_vectors);
+ 
+-	rcvd_vec = kzalloc(IDPF_CTLQ_MAX_BUF_LEN, GFP_KERNEL);
+-	if (!rcvd_vec)
+-		return -ENOMEM;
++	err = idpf_send_mb_msg(adapter, &xn_params, &ac, sizeof(ac));
++	if (err)
++		return err;
+ 
+-	xn_params.vc_op = VIRTCHNL2_OP_ALLOC_VECTORS;
+-	xn_params.send_buf.iov_base = &ac;
+-	xn_params.send_buf.iov_len = sizeof(ac);
+-	xn_params.recv_buf.iov_base = rcvd_vec;
+-	xn_params.recv_buf.iov_len = IDPF_CTLQ_MAX_BUF_LEN;
+-	xn_params.timeout_ms = IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC;
+-	reply_sz = idpf_vc_xn_exec(adapter, &xn_params);
+-	if (reply_sz < 0)
+-		return reply_sz;
++	rcvd_vec = xn_params.recv_mem.iov_base;
++	if (xn_params.recv_mem.iov_len < sizeof(*rcvd_vec)) {
++		err = -EIO;
++		goto free_rx_buf;
++	}
+ 
+ 	num_vchunks = le16_to_cpu(rcvd_vec->vchunks.num_vchunks);
+ 	size = struct_size(rcvd_vec, vchunks.vchunks, num_vchunks);
+-	if (reply_sz < size)
+-		return -EIO;
+-
+-	if (size > IDPF_CTLQ_MAX_BUF_LEN)
+-		return -EINVAL;
++	if (xn_params.recv_mem.iov_len < size) {
++		err = -EIO;
++		goto free_rx_buf;
++	}
+ 
+ 	kfree(adapter->req_vec_chunks);
+ 	adapter->req_vec_chunks = kmemdup(rcvd_vec, size, GFP_KERNEL);
+-	if (!adapter->req_vec_chunks)
+-		return -ENOMEM;
++	if (!adapter->req_vec_chunks) {
++		err = -ENOMEM;
++		goto free_rx_buf;
++	}
+ 
+ 	if (le16_to_cpu(adapter->req_vec_chunks->num_vectors) < num_vectors) {
+ 		kfree(adapter->req_vec_chunks);
+ 		adapter->req_vec_chunks = NULL;
+-		return -EINVAL;
++		err = -EINVAL;
+ 	}
+ 
+-	return 0;
++free_rx_buf:
++	libie_ctlq_release_rx_buf(&xn_params.recv_mem);
++
++	return err;
+ }
+ 
+ /**
+@@ -2740,24 +2320,28 @@ int idpf_send_alloc_vectors_msg(struct idpf_adapter *adapter, u16 num_vectors)
+ int idpf_send_dealloc_vectors_msg(struct idpf_adapter *adapter)
+ {
+ 	struct virtchnl2_alloc_vectors *ac = adapter->req_vec_chunks;
+-	struct virtchnl2_vector_chunks *vcs = &ac->vchunks;
+-	struct idpf_vc_xn_params xn_params = {};
+-	ssize_t reply_sz;
+-	int buf_size;
++	struct libie_ctlq_xn_send_params xn_params = {
++		.timeout_ms	= IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC,
++		.chnl_opcode	= VIRTCHNL2_OP_DEALLOC_VECTORS,
++	};
++	struct virtchnl2_vector_chunks *vcs;
++	int buf_size, err;
+ 
+-	buf_size = struct_size(vcs, vchunks, le16_to_cpu(vcs->num_vchunks));
++	buf_size = struct_size(&ac->vchunks, vchunks,
++			       le16_to_cpu(ac->vchunks.num_vchunks));
++	vcs = kmemdup(&ac->vchunks, buf_size, GFP_KERNEL);
++	if (!vcs)
++		return -ENOMEM;
+ 
+-	xn_params.vc_op = VIRTCHNL2_OP_DEALLOC_VECTORS;
+-	xn_params.send_buf.iov_base = vcs;
+-	xn_params.send_buf.iov_len = buf_size;
+-	xn_params.timeout_ms = IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC;
+-	reply_sz = idpf_vc_xn_exec(adapter, &xn_params);
+-	if (reply_sz < 0)
+-		return reply_sz;
++	err = idpf_send_mb_msg_kfree(adapter, &xn_params, vcs, buf_size);
++	if (err)
++		return err;
+ 
+ 	kfree(adapter->req_vec_chunks);
+ 	adapter->req_vec_chunks = NULL;
+ 
++	libie_ctlq_release_rx_buf(&xn_params.recv_mem);
++
+ 	return 0;
+ }
+ 
+@@ -2781,18 +2365,22 @@ static int idpf_get_max_vfs(struct idpf_adapter *adapter)
+  */
+ int idpf_send_set_sriov_vfs_msg(struct idpf_adapter *adapter, u16 num_vfs)
+ {
++	struct libie_ctlq_xn_send_params xn_params = {
++		.timeout_ms	= IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC,
++		.chnl_opcode	= VIRTCHNL2_OP_SET_SRIOV_VFS,
++	};
+ 	struct virtchnl2_sriov_vfs_info svi = {};
+-	struct idpf_vc_xn_params xn_params = {};
+-	ssize_t reply_sz;
++	int err;
+ 
+ 	svi.num_vfs = cpu_to_le16(num_vfs);
+-	xn_params.vc_op = VIRTCHNL2_OP_SET_SRIOV_VFS;
+-	xn_params.timeout_ms = IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC;
+-	xn_params.send_buf.iov_base = &svi;
+-	xn_params.send_buf.iov_len = sizeof(svi);
+-	reply_sz = idpf_vc_xn_exec(adapter, &xn_params);
+ 
+-	return reply_sz < 0 ? reply_sz : 0;
++	err = idpf_send_mb_msg(adapter, &xn_params, &svi, sizeof(svi));
++	if (err)
++		return err;
++
++	libie_ctlq_release_rx_buf(&xn_params.recv_mem);
++
++	return 0;
+ }
+ 
+ /**
+@@ -2805,10 +2393,14 @@ int idpf_send_set_sriov_vfs_msg(struct idpf_adapter *adapter, u16 num_vfs)
+ int idpf_send_get_stats_msg(struct idpf_netdev_priv *np,
+ 			    struct idpf_port_stats *port_stats)
+ {
++	struct libie_ctlq_xn_send_params xn_params = {
++		.timeout_ms	= IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC,
++		.chnl_opcode	= VIRTCHNL2_OP_GET_STATS,
++	};
+ 	struct rtnl_link_stats64 *netstats = &np->netstats;
++	struct virtchnl2_vport_stats *stats_recv;
+ 	struct virtchnl2_vport_stats stats_msg = {};
+-	struct idpf_vc_xn_params xn_params = {};
+-	ssize_t reply_sz;
++	int err;
+ 
+ 
+ 	/* Don't send get_stats message if the link is down */
+@@ -2817,38 +2409,41 @@ int idpf_send_get_stats_msg(struct idpf_netdev_priv *np,
+ 
+ 	stats_msg.vport_id = cpu_to_le32(np->vport_id);
+ 
+-	xn_params.vc_op = VIRTCHNL2_OP_GET_STATS;
+-	xn_params.send_buf.iov_base = &stats_msg;
+-	xn_params.send_buf.iov_len = sizeof(stats_msg);
+-	xn_params.recv_buf = xn_params.send_buf;
+-	xn_params.timeout_ms = IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC;
++	err = idpf_send_mb_msg(np->adapter, &xn_params, &stats_msg,
++			       sizeof(stats_msg));
++	if (err)
++		return err;
+ 
+-	reply_sz = idpf_vc_xn_exec(np->adapter, &xn_params);
+-	if (reply_sz < 0)
+-		return reply_sz;
+-	if (reply_sz < sizeof(stats_msg))
+-		return -EIO;
++	if (xn_params.recv_mem.iov_len < sizeof(*stats_recv)) {
++		err = -EIO;
++		goto free_rx_buf;
++	}
++
++	stats_recv = xn_params.recv_mem.iov_base;
+ 
+ 	spin_lock_bh(&np->stats_lock);
+ 
+-	netstats->rx_packets = le64_to_cpu(stats_msg.rx_unicast) +
+-			       le64_to_cpu(stats_msg.rx_multicast) +
+-			       le64_to_cpu(stats_msg.rx_broadcast);
+-	netstats->tx_packets = le64_to_cpu(stats_msg.tx_unicast) +
+-			       le64_to_cpu(stats_msg.tx_multicast) +
+-			       le64_to_cpu(stats_msg.tx_broadcast);
+-	netstats->rx_bytes = le64_to_cpu(stats_msg.rx_bytes);
+-	netstats->tx_bytes = le64_to_cpu(stats_msg.tx_bytes);
+-	netstats->rx_errors = le64_to_cpu(stats_msg.rx_errors);
+-	netstats->tx_errors = le64_to_cpu(stats_msg.tx_errors);
+-	netstats->rx_dropped = le64_to_cpu(stats_msg.rx_discards);
+-	netstats->tx_dropped = le64_to_cpu(stats_msg.tx_discards);
+-
+-	port_stats->vport_stats = stats_msg;
++	netstats->rx_packets = le64_to_cpu(stats_recv->rx_unicast) +
++			       le64_to_cpu(stats_recv->rx_multicast) +
++			       le64_to_cpu(stats_recv->rx_broadcast);
++	netstats->tx_packets = le64_to_cpu(stats_recv->tx_unicast) +
++			       le64_to_cpu(stats_recv->tx_multicast) +
++			       le64_to_cpu(stats_recv->tx_broadcast);
++	netstats->rx_bytes = le64_to_cpu(stats_recv->rx_bytes);
++	netstats->tx_bytes = le64_to_cpu(stats_recv->tx_bytes);
++	netstats->rx_errors = le64_to_cpu(stats_recv->rx_errors);
++	netstats->tx_errors = le64_to_cpu(stats_recv->tx_errors);
++	netstats->rx_dropped = le64_to_cpu(stats_recv->rx_discards);
++	netstats->tx_dropped = le64_to_cpu(stats_recv->tx_discards);
++
++	port_stats->vport_stats = *stats_recv;
+ 
+ 	spin_unlock_bh(&np->stats_lock);
+ 
+-	return 0;
++free_rx_buf:
++	libie_ctlq_release_rx_buf(&xn_params.recv_mem);
++
++	return err;
+ }
+ 
+ /**
+@@ -2868,14 +2463,16 @@ int idpf_send_get_set_rss_lut_msg(struct idpf_adapter *adapter,
+ 				  struct idpf_rss_data *rss_data,
+ 				  u32 vport_id, bool get)
+ {
+-	struct virtchnl2_rss_lut *recv_rl __free(kfree) = NULL;
+-	struct virtchnl2_rss_lut *rl __free(kfree) = NULL;
+-	struct idpf_vc_xn_params xn_params = {};
++	struct libie_ctlq_xn_send_params xn_params = {
++		.timeout_ms	= IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC,
++		.chnl_opcode	= get ? VIRTCHNL2_OP_GET_RSS_LUT :
++					VIRTCHNL2_OP_SET_RSS_LUT,
++	};
++	struct virtchnl2_rss_lut *rl, *recv_rl;
+ 	int buf_size, lut_buf_size;
+ 	struct idpf_vport *vport;
+-	ssize_t reply_sz;
+ 	bool rxhash_ena;
+-	int i;
++	int i, err;
+ 
+ 	vport = idpf_vid_to_vport(adapter, vport_id);
+ 	if (!vport)
+@@ -2889,37 +2486,31 @@ int idpf_send_get_set_rss_lut_msg(struct idpf_adapter *adapter,
+ 		return -ENOMEM;
+ 
+ 	rl->vport_id = cpu_to_le32(vport_id);
+-
+-	xn_params.timeout_ms = IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC;
+-	xn_params.send_buf.iov_base = rl;
+-	xn_params.send_buf.iov_len = buf_size;
+-
+-	if (get) {
+-		recv_rl = kzalloc(IDPF_CTLQ_MAX_BUF_LEN, GFP_KERNEL);
+-		if (!recv_rl)
+-			return -ENOMEM;
+-		xn_params.vc_op = VIRTCHNL2_OP_GET_RSS_LUT;
+-		xn_params.recv_buf.iov_base = recv_rl;
+-		xn_params.recv_buf.iov_len = IDPF_CTLQ_MAX_BUF_LEN;
+-	} else {
++	if (!get) {
+ 		rl->lut_entries = cpu_to_le16(rss_data->rss_lut_size);
+ 		for (i = 0; i < rss_data->rss_lut_size; i++)
+ 			rl->lut[i] = rxhash_ena ?
+ 				cpu_to_le32(rss_data->rss_lut[i]) : 0;
+-
+-		xn_params.vc_op = VIRTCHNL2_OP_SET_RSS_LUT;
+ 	}
+-	reply_sz = idpf_vc_xn_exec(adapter, &xn_params);
+-	if (reply_sz < 0)
+-		return reply_sz;
++
++	err = idpf_send_mb_msg_kfree(adapter, &xn_params, rl, buf_size);
++	if (err)
++		return err;
++
+ 	if (!get)
+-		return 0;
+-	if (reply_sz < sizeof(struct virtchnl2_rss_lut))
+-		return -EIO;
++		goto free_rx_buf;
++	if (xn_params.recv_mem.iov_len < sizeof(*recv_rl)) {
++		err = -EIO;
++		goto free_rx_buf;
++	}
++
++	recv_rl = xn_params.recv_mem.iov_base;
+ 
+ 	lut_buf_size = le16_to_cpu(recv_rl->lut_entries) * sizeof(u32);
+-	if (reply_sz < lut_buf_size)
+-		return -EIO;
++	if (xn_params.recv_mem.iov_len < lut_buf_size + sizeof(*recv_rl)) {
++		err = -EIO;
++		goto free_rx_buf;
++	}
+ 
+ 	/* size didn't change, we can reuse existing lut buf */
+ 	if (rss_data->rss_lut_size == le16_to_cpu(recv_rl->lut_entries))
+@@ -2931,13 +2522,16 @@ int idpf_send_get_set_rss_lut_msg(struct idpf_adapter *adapter,
+ 	rss_data->rss_lut = kzalloc(lut_buf_size, GFP_KERNEL);
+ 	if (!rss_data->rss_lut) {
+ 		rss_data->rss_lut_size = 0;
+-		return -ENOMEM;
++		err = -ENOMEM;
++		goto free_rx_buf;
+ 	}
+ 
+ do_memcpy:
+-	memcpy(rss_data->rss_lut, recv_rl->lut, rss_data->rss_lut_size);
++	memcpy(rss_data->rss_lut, recv_rl->lut, lut_buf_size);
++free_rx_buf:
++	libie_ctlq_release_rx_buf(&xn_params.recv_mem);
+ 
+-	return 0;
++	return err;
+ }
+ 
+ /**
+@@ -2953,12 +2547,14 @@ int idpf_send_get_set_rss_key_msg(struct idpf_adapter *adapter,
+ 				  struct idpf_rss_data *rss_data,
+ 				  u32 vport_id, bool get)
+ {
+-	struct virtchnl2_rss_key *recv_rk __free(kfree) = NULL;
+-	struct virtchnl2_rss_key *rk __free(kfree) = NULL;
+-	struct idpf_vc_xn_params xn_params = {};
+-	ssize_t reply_sz;
+-	int i, buf_size;
+-	u16 key_size;
++	struct libie_ctlq_xn_send_params xn_params = {
++		.timeout_ms	= IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC,
++		.chnl_opcode	= get ? VIRTCHNL2_OP_GET_RSS_KEY :
++					VIRTCHNL2_OP_SET_RSS_KEY,
++	};
++	struct virtchnl2_rss_key *rk, *recv_rk;
++	u16 key_size, recv_len;
++	int i, buf_size, err;
+ 
+ 	buf_size = struct_size(rk, key_flex, rss_data->rss_key_size);
+ 	rk = kzalloc(buf_size, GFP_KERNEL);
+@@ -2966,37 +2562,32 @@ int idpf_send_get_set_rss_key_msg(struct idpf_adapter *adapter,
+ 		return -ENOMEM;
+ 
+ 	rk->vport_id = cpu_to_le32(vport_id);
+-	xn_params.send_buf.iov_base = rk;
+-	xn_params.send_buf.iov_len = buf_size;
+-	xn_params.timeout_ms = IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC;
+-	if (get) {
+-		recv_rk = kzalloc(IDPF_CTLQ_MAX_BUF_LEN, GFP_KERNEL);
+-		if (!recv_rk)
+-			return -ENOMEM;
+-
+-		xn_params.vc_op = VIRTCHNL2_OP_GET_RSS_KEY;
+-		xn_params.recv_buf.iov_base = recv_rk;
+-		xn_params.recv_buf.iov_len = IDPF_CTLQ_MAX_BUF_LEN;
+-	} else {
++	if (!get) {
+ 		rk->key_len = cpu_to_le16(rss_data->rss_key_size);
+ 		for (i = 0; i < rss_data->rss_key_size; i++)
+ 			rk->key_flex[i] = rss_data->rss_key[i];
+-
+-		xn_params.vc_op = VIRTCHNL2_OP_SET_RSS_KEY;
+ 	}
+ 
+-	reply_sz = idpf_vc_xn_exec(adapter, &xn_params);
+-	if (reply_sz < 0)
+-		return reply_sz;
++	err = idpf_send_mb_msg_kfree(adapter, &xn_params, rk, buf_size);
++	if (err)
++		return err;
++
+ 	if (!get)
+-		return 0;
+-	if (reply_sz < sizeof(struct virtchnl2_rss_key))
+-		return -EIO;
++		goto free_rx_buf;
+ 
++	recv_len = xn_params.recv_mem.iov_len;
++	if (recv_len < sizeof(struct virtchnl2_rss_key)) {
++		err = -EIO;
++		goto free_rx_buf;
++	}
++
++	recv_rk = xn_params.recv_mem.iov_base;
+ 	key_size = min_t(u16, NETDEV_RSS_KEY_LEN,
+ 			 le16_to_cpu(recv_rk->key_len));
+-	if (reply_sz < key_size)
+-		return -EIO;
++	if (recv_len < key_size) {
++		err = -EIO;
++		goto free_rx_buf;
++	}
+ 
+ 	/* key len didn't change, reuse existing buf */
+ 	if (rss_data->rss_key_size == key_size)
+@@ -3007,13 +2598,16 @@ int idpf_send_get_set_rss_key_msg(struct idpf_adapter *adapter,
+ 	rss_data->rss_key = kzalloc(key_size, GFP_KERNEL);
+ 	if (!rss_data->rss_key) {
+ 		rss_data->rss_key_size = 0;
+-		return -ENOMEM;
++		err = -ENOMEM;
++		goto free_rx_buf;
+ 	}
+ 
+ do_memcpy:
+ 	memcpy(rss_data->rss_key, recv_rk->key_flex, rss_data->rss_key_size);
++free_rx_buf:
++	libie_ctlq_release_rx_buf(&xn_params.recv_mem);
+ 
+-	return 0;
++	return err;
+ }
+ 
+ /**
+@@ -3190,15 +2784,18 @@ static void idpf_parse_protocol_ids(struct virtchnl2_ptype *ptype,
+  */
+ static int idpf_send_get_rx_ptype_msg(struct idpf_adapter *adapter)
+ {
+-	struct virtchnl2_get_ptype_info *get_ptype_info __free(kfree) = NULL;
+-	struct virtchnl2_get_ptype_info *ptype_info __free(kfree) = NULL;
+ 	struct libeth_rx_pt *singleq_pt_lkup __free(kfree) = NULL;
+ 	struct libeth_rx_pt *splitq_pt_lkup __free(kfree) = NULL;
+-	struct idpf_vc_xn_params xn_params = {};
++	struct libie_ctlq_xn_send_params xn_params = {
++		.timeout_ms	= IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC,
++		.chnl_opcode	= VIRTCHNL2_OP_GET_PTYPE_INFO,
++	};
++	struct virtchnl2_get_ptype_info *get_ptype_info;
++	struct virtchnl2_get_ptype_info *ptype_info;
++	int err = 0, max_ptype = IDPF_RX_MAX_PTYPE;
++	int buf_size = sizeof(*get_ptype_info);
+ 	int ptypes_recvd = 0, ptype_offset;
+-	u32 max_ptype = IDPF_RX_MAX_PTYPE;
+ 	u16 next_ptype_id = 0;
+-	ssize_t reply_sz;
+ 
+ 	singleq_pt_lkup = kzalloc_objs(*singleq_pt_lkup, IDPF_RX_MAX_BASE_PTYPE);
+ 	if (!singleq_pt_lkup)
+@@ -3208,42 +2805,38 @@ static int idpf_send_get_rx_ptype_msg(struct idpf_adapter *adapter)
+ 	if (!splitq_pt_lkup)
+ 		return -ENOMEM;
+ 
+-	get_ptype_info = kzalloc_obj(*get_ptype_info);
+-	if (!get_ptype_info)
+-		return -ENOMEM;
+-
+-	ptype_info = kzalloc(IDPF_CTLQ_MAX_BUF_LEN, GFP_KERNEL);
+-	if (!ptype_info)
+-		return -ENOMEM;
++	while (next_ptype_id < max_ptype) {
++		u16 num_ptypes;
+ 
+-	xn_params.vc_op = VIRTCHNL2_OP_GET_PTYPE_INFO;
+-	xn_params.send_buf.iov_base = get_ptype_info;
+-	xn_params.send_buf.iov_len = sizeof(*get_ptype_info);
+-	xn_params.recv_buf.iov_base = ptype_info;
+-	xn_params.recv_buf.iov_len = IDPF_CTLQ_MAX_BUF_LEN;
+-	xn_params.timeout_ms = IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC;
++		get_ptype_info = kzalloc(buf_size, GFP_KERNEL);
++		if (!get_ptype_info)
++			return -ENOMEM;
+ 
+-	while (next_ptype_id < max_ptype) {
+ 		get_ptype_info->start_ptype_id = cpu_to_le16(next_ptype_id);
+ 
+ 		if ((next_ptype_id + IDPF_RX_MAX_PTYPES_PER_BUF) > max_ptype)
+-			get_ptype_info->num_ptypes =
+-				cpu_to_le16(max_ptype - next_ptype_id);
++			num_ptypes = max_ptype - next_ptype_id;
+ 		else
+-			get_ptype_info->num_ptypes =
+-				cpu_to_le16(IDPF_RX_MAX_PTYPES_PER_BUF);
++			num_ptypes = IDPF_RX_MAX_PTYPES_PER_BUF;
+ 
+-		reply_sz = idpf_vc_xn_exec(adapter, &xn_params);
+-		if (reply_sz < 0)
+-			return reply_sz;
++		get_ptype_info->num_ptypes = cpu_to_le16(num_ptypes);
++		err = idpf_send_mb_msg_kfree(adapter, &xn_params,
++					     get_ptype_info, buf_size);
++		if (err)
++			return err;
+ 
++		ptype_info = xn_params.recv_mem.iov_base;
++		if (xn_params.recv_mem.iov_len < sizeof(*ptype_info)) {
++			err = -EIO;
++			goto free_rx_buf;
++		}
+ 		ptypes_recvd += le16_to_cpu(ptype_info->num_ptypes);
+-		if (ptypes_recvd > max_ptype)
+-			return -EINVAL;
+-
+-		next_ptype_id = le16_to_cpu(get_ptype_info->start_ptype_id) +
+-				le16_to_cpu(get_ptype_info->num_ptypes);
++		if (ptypes_recvd > max_ptype) {
++			err = -EINVAL;
++			goto free_rx_buf;
++		}
+ 
++		next_ptype_id = next_ptype_id + num_ptypes;
+ 		ptype_offset = IDPF_RX_PTYPE_HDR_SZ;
+ 
+ 		for (u16 i = 0; i < le16_to_cpu(ptype_info->num_ptypes); i++) {
+@@ -3258,14 +2851,18 @@ static int idpf_send_get_rx_ptype_msg(struct idpf_adapter *adapter)
+ 			pt_8 = ptype->ptype_id_8;
+ 
+ 			ptype_offset += IDPF_GET_PTYPE_SIZE(ptype);
+-			if (ptype_offset > IDPF_CTLQ_MAX_BUF_LEN)
+-				return -EINVAL;
++			if (ptype_offset > LIBIE_CTLQ_MAX_BUF_LEN) {
++				err = -EINVAL;
++				goto free_rx_buf;
++			}
+ 
+ 			/* 0xFFFF indicates end of ptypes */
+ 			if (pt_10 == IDPF_INVALID_PTYPE_ID)
+ 				goto out;
+-			if (pt_10 >= max_ptype)
+-				return -EINVAL;
++			if (pt_10 >= max_ptype) {
++				err = -EINVAL;
++				goto free_rx_buf;
++			}
+ 
+ 			idpf_parse_protocol_ids(ptype, &rx_pt);
+ 			idpf_finalize_ptype_lookup(&rx_pt);
+@@ -3279,13 +2876,18 @@ static int idpf_send_get_rx_ptype_msg(struct idpf_adapter *adapter)
+ 			if (!singleq_pt_lkup[pt_8].outer_ip)
+ 				singleq_pt_lkup[pt_8] = rx_pt;
+ 		}
++
++		libie_ctlq_release_rx_buf(&xn_params.recv_mem);
++		xn_params.recv_mem = (struct kvec) {};
+ 	}
+ 
+ out:
+ 	adapter->splitq_pt_lkup = no_free_ptr(splitq_pt_lkup);
+ 	adapter->singleq_pt_lkup = no_free_ptr(singleq_pt_lkup);
++free_rx_buf:
++	libie_ctlq_release_rx_buf(&xn_params.recv_mem);
+ 
+-	return 0;
++	return err;
+ }
+ 
+ /**
+@@ -3313,40 +2915,24 @@ static void idpf_rel_rx_pt_lkup(struct idpf_adapter *adapter)
+ int idpf_send_ena_dis_loopback_msg(struct idpf_adapter *adapter, u32 vport_id,
+ 				   bool loopback_ena)
+ {
+-	struct idpf_vc_xn_params xn_params = {};
++	struct libie_ctlq_xn_send_params xn_params = {
++		.timeout_ms	= IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC,
++		.chnl_opcode	= VIRTCHNL2_OP_LOOPBACK,
++	};
+ 	struct virtchnl2_loopback loopback;
+-	ssize_t reply_sz;
++	int err;
+ 
+ 	loopback.vport_id = cpu_to_le32(vport_id);
+ 	loopback.enable = loopback_ena;
+ 
+-	xn_params.vc_op = VIRTCHNL2_OP_LOOPBACK;
+-	xn_params.timeout_ms = IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC;
+-	xn_params.send_buf.iov_base = &loopback;
+-	xn_params.send_buf.iov_len = sizeof(loopback);
+-	reply_sz = idpf_vc_xn_exec(adapter, &xn_params);
+-
+-	return reply_sz < 0 ? reply_sz : 0;
+-}
+-
+-/**
+- * idpf_find_ctlq - Given a type and id, find ctlq info
+- * @hw: hardware struct
+- * @type: type of ctrlq to find
+- * @id: ctlq id to find
+- *
+- * Returns pointer to found ctlq info struct, NULL otherwise.
+- */
+-static struct idpf_ctlq_info *idpf_find_ctlq(struct idpf_hw *hw,
+-					     enum idpf_ctlq_type type, int id)
+-{
+-	struct idpf_ctlq_info *cq, *tmp;
++	err = idpf_send_mb_msg(adapter, &xn_params, &loopback,
++			       sizeof(loopback));
++	if (err)
++		return err;
+ 
+-	list_for_each_entry_safe(cq, tmp, &hw->cq_list_head, cq_list)
+-		if (cq->q_id == id && cq->cq_type == type)
+-			return cq;
++	libie_ctlq_release_rx_buf(&xn_params.recv_mem);
+ 
+-	return NULL;
++	return 0;
+ }
+ 
+ /**
+@@ -3357,40 +2943,43 @@ static struct idpf_ctlq_info *idpf_find_ctlq(struct idpf_hw *hw,
+  */
+ int idpf_init_dflt_mbx(struct idpf_adapter *adapter)
+ {
+-	struct idpf_ctlq_create_info ctlq_info[] = {
++	struct libie_ctlq_ctx *ctx = &adapter->ctlq_ctx;
++	struct libie_ctlq_create_info ctlq_info[] = {
+ 		{
+-			.type = IDPF_CTLQ_TYPE_MAILBOX_TX,
+-			.id = IDPF_DFLT_MBX_ID,
++			.type = LIBIE_CTLQ_TYPE_TX,
++			.id = LIBIE_CTLQ_MBX_ID,
+ 			.len = IDPF_DFLT_MBX_Q_LEN,
+-			.buf_size = IDPF_CTLQ_MAX_BUF_LEN
+ 		},
+ 		{
+-			.type = IDPF_CTLQ_TYPE_MAILBOX_RX,
+-			.id = IDPF_DFLT_MBX_ID,
++			.type = LIBIE_CTLQ_TYPE_RX,
++			.id = LIBIE_CTLQ_MBX_ID,
+ 			.len = IDPF_DFLT_MBX_Q_LEN,
+-			.buf_size = IDPF_CTLQ_MAX_BUF_LEN
+ 		}
+ 	};
+-	struct idpf_hw *hw = &adapter->hw;
++	struct libie_ctlq_xn_init_params params = {
++		.num_qs = IDPF_NUM_DFLT_MBX_Q,
++		.cctlq_info = ctlq_info,
++		.ctx = ctx,
++	};
+ 	int err;
+ 
+-	adapter->dev_ops.reg_ops.ctlq_reg_init(adapter, ctlq_info);
++	adapter->dev_ops.reg_ops.ctlq_reg_init(&ctx->mmio_info,
++					       params.cctlq_info);
+ 
+-	err = idpf_ctlq_init(hw, IDPF_NUM_DFLT_MBX_Q, ctlq_info);
++	err = libie_ctlq_xn_init(&params);
+ 	if (err)
+ 		return err;
+ 
+-	hw->asq = idpf_find_ctlq(hw, IDPF_CTLQ_TYPE_MAILBOX_TX,
+-				 IDPF_DFLT_MBX_ID);
+-	hw->arq = idpf_find_ctlq(hw, IDPF_CTLQ_TYPE_MAILBOX_RX,
+-				 IDPF_DFLT_MBX_ID);
+-
+-	if (!hw->asq || !hw->arq) {
+-		idpf_ctlq_deinit(hw);
+-
++	adapter->asq = libie_find_ctlq(ctx, LIBIE_CTLQ_TYPE_TX,
++				       LIBIE_CTLQ_MBX_ID);
++	adapter->arq = libie_find_ctlq(ctx, LIBIE_CTLQ_TYPE_RX,
++				       LIBIE_CTLQ_MBX_ID);
++	if (!adapter->asq || !adapter->arq) {
++		libie_ctlq_xn_deinit(params.xnm, ctx);
+ 		return -ENOENT;
+ 	}
+ 
++	adapter->xnm = params.xnm;
+ 	adapter->state = __IDPF_VER_CHECK;
+ 
+ 	return 0;
+@@ -3402,12 +2991,13 @@ int idpf_init_dflt_mbx(struct idpf_adapter *adapter)
+  */
+ void idpf_deinit_dflt_mbx(struct idpf_adapter *adapter)
+ {
+-	if (adapter->hw.arq && adapter->hw.asq) {
+-		idpf_mb_clean(adapter, adapter->hw.asq);
+-		idpf_ctlq_deinit(&adapter->hw);
++	if (adapter->arq && adapter->asq) {
++		idpf_mb_clean(adapter, adapter->asq, true);
++		libie_ctlq_xn_deinit(adapter->xnm, &adapter->ctlq_ctx);
+ 	}
+-	adapter->hw.arq = NULL;
+-	adapter->hw.asq = NULL;
++
++	adapter->arq = NULL;
++	adapter->asq = NULL;
+ }
+ 
+ /**
+@@ -3478,15 +3068,6 @@ int idpf_vc_core_init(struct idpf_adapter *adapter)
+ 	u16 num_max_vports;
+ 	int err = 0;
+ 
+-	if (!adapter->vcxn_mngr) {
+-		adapter->vcxn_mngr = kzalloc_obj(*adapter->vcxn_mngr);
+-		if (!adapter->vcxn_mngr) {
+-			err = -ENOMEM;
+-			goto init_failed;
+-		}
+-	}
+-	idpf_vc_xn_init(adapter->vcxn_mngr);
+-
+ 	while (adapter->state != __IDPF_INIT_SW) {
+ 		switch (adapter->state) {
+ 		case __IDPF_VER_CHECK:
+@@ -3633,8 +3214,7 @@ int idpf_vc_core_init(struct idpf_adapter *adapter)
+ 	 * the mailbox again
  	 */
--	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x104f),
--		PCI_CLASS_NETWORK_OTHER << 8, 0xffff00, 0},
--	{PCI_VDEVICE(INTEL, 0x4220), 0},	/* BG */
--	{PCI_VDEVICE(INTEL, 0x4221), 0},	/* BG */
--	{PCI_VDEVICE(INTEL, 0x4223), 0},	/* ABG */
--	{PCI_VDEVICE(INTEL, 0x4224), 0},	/* ABG */
-+	{
-+		PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x104f),
-+		.class = PCI_CLASS_NETWORK_OTHER << 8,
-+		.class_mask = 0xffff00,
-+	},
-+	{ PCI_VDEVICE(INTEL, 0x4220) },	/* BG */
-+	{ PCI_VDEVICE(INTEL, 0x4221) },	/* BG */
-+	{ PCI_VDEVICE(INTEL, 0x4223) },	/* ABG */
-+	{ PCI_VDEVICE(INTEL, 0x4224) },	/* ABG */
+ 	adapter->state = __IDPF_VER_CHECK;
+-	if (adapter->vcxn_mngr)
+-		idpf_vc_xn_shutdown(adapter->vcxn_mngr);
++	idpf_deinit_dflt_mbx(adapter);
+ 	set_bit(IDPF_HR_DRV_LOAD, adapter->flags);
+ 	queue_delayed_work(adapter->vc_event_wq, &adapter->vc_event_task,
+ 			   msecs_to_jiffies(task_delay));
+@@ -3657,7 +3237,7 @@ void idpf_vc_core_deinit(struct idpf_adapter *adapter)
+ 	/* Avoid transaction timeouts when called during reset */
+ 	remove_in_prog = test_bit(IDPF_REMOVE_IN_PROG, adapter->flags);
+ 	if (!remove_in_prog)
+-		idpf_vc_xn_shutdown(adapter->vcxn_mngr);
++		idpf_deinit_dflt_mbx(adapter);
  
- 	/* required last entry */
--	{0,}
-+	{ }
- };
+ 	idpf_ptp_release(adapter);
+ 	idpf_deinit_task(adapter);
+@@ -3666,7 +3246,7 @@ void idpf_vc_core_deinit(struct idpf_adapter *adapter)
+ 	idpf_intr_rel(adapter);
  
- MODULE_DEVICE_TABLE(pci, card_ids);
-
-base-commit: 254f49634ee16a731174d2ae34bc50bd5f45e731
+ 	if (remove_in_prog)
+-		idpf_vc_xn_shutdown(adapter->vcxn_mngr);
++		idpf_deinit_dflt_mbx(adapter);
+ 
+ 	cancel_delayed_work_sync(&adapter->serv_task);
+ 	cancel_delayed_work_sync(&adapter->mbx_task);
+@@ -4203,9 +3783,9 @@ static void idpf_set_mac_type(const u8 *default_mac_addr,
+ 
+ /**
+  * idpf_mac_filter_async_handler - Async callback for mac filters
+- * @adapter: private data struct
+- * @xn: transaction for message
+- * @ctlq_msg: received message
++ * @ctx: controlq context structure
++ * @buff: response buffer pointer and size
++ * @status: async call return value
+  *
+  * In some scenarios driver can't sleep and wait for a reply (e.g.: stack is
+  * holding rtnl_lock) when adding a new mac filter. It puts us in a difficult
+@@ -4213,13 +3793,14 @@ static void idpf_set_mac_type(const u8 *default_mac_addr,
+  * ultimately do is remove it from our list of mac filters and report the
+  * error.
+  */
+-static int idpf_mac_filter_async_handler(struct idpf_adapter *adapter,
+-					 struct idpf_vc_xn *xn,
+-					 const struct idpf_ctlq_msg *ctlq_msg)
++static void idpf_mac_filter_async_handler(void *ctx,
++					  struct kvec *buff,
++					  int status)
+ {
+ 	struct virtchnl2_mac_addr_list *ma_list;
+ 	struct idpf_vport_config *vport_config;
+ 	struct virtchnl2_mac_addr *mac_addr;
++	struct idpf_adapter *adapter = ctx;
+ 	struct idpf_mac_filter *f, *tmp;
+ 	struct list_head *ma_list_head;
+ 	struct idpf_vport *vport;
+@@ -4227,18 +3808,18 @@ static int idpf_mac_filter_async_handler(struct idpf_adapter *adapter,
+ 	int i;
+ 
+ 	/* if success we're done, we're only here if something bad happened */
+-	if (!ctlq_msg->cookie.mbx.chnl_retval)
+-		return 0;
++	if (!status || status == -ETIMEDOUT)
++		return;
+ 
++	ma_list = buff->iov_base;
+ 	/* make sure at least struct is there */
+-	if (xn->reply_sz < sizeof(*ma_list))
++	if (buff->iov_len < sizeof(*ma_list))
+ 		goto invalid_payload;
+ 
+-	ma_list = ctlq_msg->ctx.indirect.payload->va;
+ 	mac_addr = ma_list->mac_addr_list;
+ 	num_entries = le16_to_cpu(ma_list->num_mac_addr);
+ 	/* we should have received a buffer at least this big */
+-	if (xn->reply_sz < struct_size(ma_list, mac_addr_list, num_entries))
++	if (buff->iov_len < struct_size(ma_list, mac_addr_list, num_entries))
+ 		goto invalid_payload;
+ 
+ 	vport = idpf_vid_to_vport(adapter, le32_to_cpu(ma_list->vport_id));
+@@ -4258,16 +3839,13 @@ static int idpf_mac_filter_async_handler(struct idpf_adapter *adapter,
+ 			if (ether_addr_equal(mac_addr[i].addr, f->macaddr))
+ 				list_del(&f->list);
+ 	spin_unlock_bh(&vport_config->mac_filter_list_lock);
+-	dev_err_ratelimited(&adapter->pdev->dev, "Received error sending MAC filter request (op %d)\n",
+-			    xn->vc_op);
+-
+-	return 0;
++	dev_err_ratelimited(&adapter->pdev->dev, "Received error %d on sending MAC filter request\n",
++			    status);
++	return;
+ 
+ invalid_payload:
+-	dev_err_ratelimited(&adapter->pdev->dev, "Received invalid MAC filter payload (op %d) (len %zd)\n",
+-			    xn->vc_op, xn->reply_sz);
+-
+-	return -EINVAL;
++	dev_err_ratelimited(&adapter->pdev->dev, "Received invalid MAC filter payload (len %zd)\n",
++			    buff->iov_len);
+ }
+ 
+ /**
+@@ -4286,19 +3864,21 @@ int idpf_add_del_mac_filters(struct idpf_adapter *adapter,
+ 			     const u8 *default_mac_addr, u32 vport_id,
+ 			     bool add, bool async)
+ {
+-	struct virtchnl2_mac_addr_list *ma_list __free(kfree) = NULL;
+ 	struct virtchnl2_mac_addr *mac_addr __free(kfree) = NULL;
+-	struct idpf_vc_xn_params xn_params = {};
++	struct libie_ctlq_xn_send_params xn_params = {
++		.timeout_ms	= IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC,
++		.chnl_opcode	= add ? VIRTCHNL2_OP_ADD_MAC_ADDR :
++					VIRTCHNL2_OP_DEL_MAC_ADDR,
++	};
++	struct virtchnl2_mac_addr_list *ma_list;
+ 	u32 num_msgs, total_filters = 0;
+ 	struct idpf_mac_filter *f;
+-	ssize_t reply_sz;
+-	int i = 0, k;
++	int i = 0;
+ 
+-	xn_params.vc_op = add ? VIRTCHNL2_OP_ADD_MAC_ADDR :
+-				VIRTCHNL2_OP_DEL_MAC_ADDR;
+-	xn_params.timeout_ms = IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC;
+-	xn_params.async = async;
+-	xn_params.async_handler = idpf_mac_filter_async_handler;
++	if (async) {
++		xn_params.resp_cb = idpf_mac_filter_async_handler;
++		xn_params.send_ctx = adapter;
++	}
+ 
+ 	spin_lock_bh(&vport_config->mac_filter_list_lock);
+ 
+@@ -4353,32 +3933,31 @@ int idpf_add_del_mac_filters(struct idpf_adapter *adapter,
+ 	 */
+ 	num_msgs = DIV_ROUND_UP(total_filters, IDPF_NUM_FILTERS_PER_MSG);
+ 
+-	for (i = 0, k = 0; i < num_msgs; i++) {
+-		u32 entries_size, buf_size, num_entries;
++	for (u32 i = 0, k = 0; i < num_msgs; i++) {
++		u32 entries_size, num_entries;
++		size_t buf_size;
++		int err;
+ 
+ 		num_entries = min_t(u32, total_filters,
+ 				    IDPF_NUM_FILTERS_PER_MSG);
+ 		entries_size = sizeof(struct virtchnl2_mac_addr) * num_entries;
+ 		buf_size = struct_size(ma_list, mac_addr_list, num_entries);
+ 
+-		if (!ma_list || num_entries != IDPF_NUM_FILTERS_PER_MSG) {
+-			kfree(ma_list);
+-			ma_list = kzalloc(buf_size, GFP_ATOMIC);
+-			if (!ma_list)
+-				return -ENOMEM;
+-		} else {
+-			memset(ma_list, 0, buf_size);
+-		}
++		ma_list = kzalloc(buf_size, GFP_ATOMIC);
++		if (!ma_list)
++			return -ENOMEM;
+ 
+ 		ma_list->vport_id = cpu_to_le32(vport_id);
+ 		ma_list->num_mac_addr = cpu_to_le16(num_entries);
+ 		memcpy(ma_list->mac_addr_list, &mac_addr[k], entries_size);
+ 
+-		xn_params.send_buf.iov_base = ma_list;
+-		xn_params.send_buf.iov_len = buf_size;
+-		reply_sz = idpf_vc_xn_exec(adapter, &xn_params);
+-		if (reply_sz < 0)
+-			return reply_sz;
++		err = idpf_send_mb_msg_kfree(adapter, &xn_params, ma_list,
++					     buf_size);
++		if (err)
++			return err;
++
++		if (!async)
++			libie_ctlq_release_rx_buf(&xn_params.recv_mem);
+ 
+ 		k += num_entries;
+ 		total_filters -= num_entries;
+@@ -4387,6 +3966,26 @@ int idpf_add_del_mac_filters(struct idpf_adapter *adapter,
+ 	return 0;
+ }
+ 
++/**
++ * idpf_promiscuous_async_handler - async callback for promiscuous mode
++ * @ctx: controlq context structure
++ * @buff: response buffer pointer and size
++ * @status: async call return value
++ *
++ * Nobody is waiting for the promiscuous virtchnl message response. Print
++ * an error message if something went wrong and return.
++ */
++static void idpf_promiscuous_async_handler(void *ctx,
++					   struct kvec *buff,
++					   int status)
++{
++	struct idpf_adapter *adapter = ctx;
++
++	if (status)
++		dev_err_ratelimited(&adapter->pdev->dev, "Failed to set promiscuous mode: %d\n",
++				    status);
++}
++
+ /**
+  * idpf_set_promiscuous - set promiscuous and send message to mailbox
+  * @adapter: Driver specific private structure
+@@ -4401,9 +4000,13 @@ int idpf_set_promiscuous(struct idpf_adapter *adapter,
+ 			 struct idpf_vport_user_config_data *config_data,
+ 			 u32 vport_id)
+ {
+-	struct idpf_vc_xn_params xn_params = {};
++	struct libie_ctlq_xn_send_params xn_params = {
++		.timeout_ms	= IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC,
++		.chnl_opcode	= VIRTCHNL2_OP_CONFIG_PROMISCUOUS_MODE,
++		.resp_cb	= idpf_promiscuous_async_handler,
++		.send_ctx	= adapter,
++	};
+ 	struct virtchnl2_promisc_info vpi;
+-	ssize_t reply_sz;
+ 	u16 flags = 0;
+ 
+ 	if (test_bit(__IDPF_PROMISC_UC, config_data->user_flags))
+@@ -4414,15 +4017,7 @@ int idpf_set_promiscuous(struct idpf_adapter *adapter,
+ 	vpi.vport_id = cpu_to_le32(vport_id);
+ 	vpi.flags = cpu_to_le16(flags);
+ 
+-	xn_params.vc_op = VIRTCHNL2_OP_CONFIG_PROMISCUOUS_MODE;
+-	xn_params.timeout_ms = IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC;
+-	xn_params.send_buf.iov_base = &vpi;
+-	xn_params.send_buf.iov_len = sizeof(vpi);
+-	/* setting promiscuous is only ever done asynchronously */
+-	xn_params.async = true;
+-	reply_sz = idpf_vc_xn_exec(adapter, &xn_params);
+-
+-	return reply_sz < 0 ? reply_sz : 0;
++	return idpf_send_mb_msg(adapter, &xn_params, &vpi, sizeof(vpi));
+ }
+ 
+ /**
+@@ -4440,26 +4035,39 @@ int idpf_idc_rdma_vc_send_sync(struct iidc_rdma_core_dev_info *cdev_info,
+ 			       u8 *recv_msg, u16 *recv_len)
+ {
+ 	struct idpf_adapter *adapter = pci_get_drvdata(cdev_info->pdev);
+-	struct idpf_vc_xn_params xn_params = { };
+-	ssize_t reply_sz;
+-	u16 recv_size;
++	struct libie_ctlq_xn_send_params xn_params = {
++		.chnl_opcode = VIRTCHNL2_OP_RDMA,
++		.timeout_ms = IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC,
++	};
++	u8 on_stack_buf[LIBIE_CP_TX_COPYBREAK];
++	void *send_buf;
++	int err;
+ 
+-	if (!recv_msg || !recv_len || msg_size > IDPF_CTLQ_MAX_BUF_LEN)
++	if (!recv_msg || !recv_len || msg_size > LIBIE_CTLQ_MAX_BUF_LEN)
+ 		return -EINVAL;
+ 
+-	recv_size = min_t(u16, *recv_len, IDPF_CTLQ_MAX_BUF_LEN);
+-	*recv_len = 0;
+-	xn_params.vc_op = VIRTCHNL2_OP_RDMA;
+-	xn_params.timeout_ms = IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC;
+-	xn_params.send_buf.iov_base = send_msg;
+-	xn_params.send_buf.iov_len = msg_size;
+-	xn_params.recv_buf.iov_base = recv_msg;
+-	xn_params.recv_buf.iov_len = recv_size;
+-	reply_sz = idpf_vc_xn_exec(adapter, &xn_params);
+-	if (reply_sz < 0)
+-		return reply_sz;
+-	*recv_len = reply_sz;
++	if (!libie_cp_can_send_onstack(msg_size)) {
++		send_buf = kzalloc(msg_size, GFP_KERNEL);
++		if (!send_buf)
++			return -ENOMEM;
++	} else {
++		send_buf = on_stack_buf;
++	}
+ 
+-	return 0;
++	memcpy(send_buf, send_msg, msg_size);
++	err = idpf_send_mb_msg(adapter, &xn_params, send_buf, msg_size);
++	if (err)
++		return err;
++
++	if (xn_params.recv_mem.iov_len > *recv_len) {
++		err = -EINVAL;
++		goto rel_buf;
++	}
++
++	*recv_len = xn_params.recv_mem.iov_len;
++	memcpy(recv_msg, xn_params.recv_mem.iov_base, *recv_len);
++rel_buf:
++	libie_ctlq_release_rx_buf(&xn_params.recv_mem);
++	return err;
+ }
+ EXPORT_SYMBOL_GPL(idpf_idc_rdma_vc_send_sync);
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.h b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.h
+index 6992b768cef4..86a44b6e1488 100644
+--- a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.h
++++ b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.h
+@@ -7,86 +7,6 @@
+ #include <linux/intel/virtchnl2.h>
+ 
+ #define IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC	(60 * 1000)
+-#define IDPF_VC_XN_IDX_M		GENMASK(7, 0)
+-#define IDPF_VC_XN_SALT_M		GENMASK(15, 8)
+-#define IDPF_VC_XN_RING_LEN		U8_MAX
+-
+-/**
+- * enum idpf_vc_xn_state - Virtchnl transaction status
+- * @IDPF_VC_XN_IDLE: not expecting a reply, ready to be used
+- * @IDPF_VC_XN_WAITING: expecting a reply, not yet received
+- * @IDPF_VC_XN_COMPLETED_SUCCESS: a reply was expected and received, buffer
+- *				  updated
+- * @IDPF_VC_XN_COMPLETED_FAILED: a reply was expected and received, but there
+- *				 was an error, buffer not updated
+- * @IDPF_VC_XN_SHUTDOWN: transaction object cannot be used, VC torn down
+- * @IDPF_VC_XN_ASYNC: transaction sent asynchronously and doesn't have the
+- *		      return context; a callback may be provided to handle
+- *		      return
+- */
+-enum idpf_vc_xn_state {
+-	IDPF_VC_XN_IDLE = 1,
+-	IDPF_VC_XN_WAITING,
+-	IDPF_VC_XN_COMPLETED_SUCCESS,
+-	IDPF_VC_XN_COMPLETED_FAILED,
+-	IDPF_VC_XN_SHUTDOWN,
+-	IDPF_VC_XN_ASYNC,
+-};
+-
+-struct idpf_vc_xn;
+-/* Callback for asynchronous messages */
+-typedef int (*async_vc_cb) (struct idpf_adapter *, struct idpf_vc_xn *,
+-			    const struct idpf_ctlq_msg *);
+-
+-/**
+- * struct idpf_vc_xn - Data structure representing virtchnl transactions
+- * @completed: virtchnl event loop uses that to signal when a reply is
+- *	       available, uses kernel completion API
+- * @lock: protects the transaction state fields below
+- * @state: virtchnl event loop stores the data below, protected by @lock
+- * @reply_sz: Original size of reply, may be > reply_buf.iov_len; it will be
+- *	      truncated on its way to the receiver thread according to
+- *	      reply_buf.iov_len.
+- * @reply: Reference to the buffer(s) where the reply data should be written
+- *	   to. May be 0-length (then NULL address permitted) if the reply data
+- *	   should be ignored.
+- * @async_handler: if sent asynchronously, a callback can be provided to handle
+- *		   the reply when it's received
+- * @vc_op: corresponding opcode sent with this transaction
+- * @idx: index used as retrieval on reply receive, used for cookie
+- * @salt: changed every message to make unique, used for cookie
+- */
+-struct idpf_vc_xn {
+-	struct completion completed;
+-	spinlock_t lock;
+-	enum idpf_vc_xn_state state;
+-	size_t reply_sz;
+-	struct kvec reply;
+-	async_vc_cb async_handler;
+-	u32 vc_op;
+-	u8 idx;
+-	u8 salt;
+-};
+-
+-/**
+- * struct idpf_vc_xn_params - Parameters for executing transaction
+- * @send_buf: kvec for send buffer
+- * @recv_buf: kvec for recv buffer, may be NULL, must then have zero length
+- * @timeout_ms: timeout to wait for reply
+- * @async: send message asynchronously, will not wait on completion
+- * @async_handler: If sent asynchronously, optional callback handler. The user
+- *		   must be careful when using async handlers as the memory for
+- *		   the recv_buf _cannot_ be on stack if this is async.
+- * @vc_op: virtchnl op to send
+- */
+-struct idpf_vc_xn_params {
+-	struct kvec send_buf;
+-	struct kvec recv_buf;
+-	int timeout_ms;
+-	bool async;
+-	async_vc_cb async_handler;
+-	u32 vc_op;
+-};
+ 
+ struct idpf_adapter;
+ struct idpf_netdev_priv;
+@@ -96,8 +16,6 @@ struct idpf_vport_max_q;
+ struct idpf_vport_config;
+ struct idpf_vport_user_config_data;
+ 
+-ssize_t idpf_vc_xn_exec(struct idpf_adapter *adapter,
+-			const struct idpf_vc_xn_params *params);
+ int idpf_init_dflt_mbx(struct idpf_adapter *adapter);
+ void idpf_deinit_dflt_mbx(struct idpf_adapter *adapter);
+ int idpf_vc_core_init(struct idpf_adapter *adapter);
+@@ -124,9 +42,14 @@ bool idpf_sideband_action_ena(struct idpf_vport *vport,
+ 			      struct ethtool_rx_flow_spec *fsp);
+ unsigned int idpf_fsteer_max_rules(struct idpf_vport *vport);
+ 
+-int idpf_recv_mb_msg(struct idpf_adapter *adapter, struct idpf_ctlq_info *arq);
+-int idpf_send_mb_msg(struct idpf_adapter *adapter, struct idpf_ctlq_info *asq,
+-		     u32 op, u16 msg_size, u8 *msg, u16 cookie);
++void idpf_recv_event_msg(struct libie_ctlq_ctx *ctx,
++			 struct libie_ctlq_msg *ctlq_msg);
++int idpf_send_mb_msg(struct idpf_adapter *adapter,
++		     struct libie_ctlq_xn_send_params *xn_params,
++		     void *send_buf, size_t send_buf_size);
++int idpf_send_mb_msg_kfree(struct idpf_adapter *adapter,
++			   struct libie_ctlq_xn_send_params *xn_params,
++			   void *send_buf, size_t send_buf_size);
+ 
+ struct idpf_queue_ptr {
+ 	enum virtchnl2_queue_type	type;
+@@ -214,7 +137,6 @@ int idpf_send_get_set_rss_key_msg(struct idpf_adapter *adapter,
+ int idpf_send_get_set_rss_lut_msg(struct idpf_adapter *adapter,
+ 				  struct idpf_rss_data *rss_data,
+ 				  u32 vport_id, bool get);
+-void idpf_vc_xn_shutdown(struct idpf_vc_xn_manager *vcxn_mngr);
+ int idpf_idc_rdma_vc_send_sync(struct iidc_rdma_core_dev_info *cdev_info,
+ 			       u8 *send_msg, u16 msg_size,
+ 			       u8 *recv_msg, u16 *recv_len);
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_virtchnl_ptp.c b/drivers/net/ethernet/intel/idpf/idpf_virtchnl_ptp.c
+index 8d8fb498e092..6d44021c222b 100644
+--- a/drivers/net/ethernet/intel/idpf/idpf_virtchnl_ptp.c
++++ b/drivers/net/ethernet/intel/idpf/idpf_virtchnl_ptp.c
+@@ -15,7 +15,6 @@
+  */
+ int idpf_ptp_get_caps(struct idpf_adapter *adapter)
+ {
+-	struct virtchnl2_ptp_get_caps *recv_ptp_caps_msg __free(kfree) = NULL;
+ 	struct virtchnl2_ptp_get_caps send_ptp_caps_msg = {
+ 		.caps = cpu_to_le32(VIRTCHNL2_CAP_PTP_GET_DEVICE_CLK_TIME |
+ 				    VIRTCHNL2_CAP_PTP_GET_DEVICE_CLK_TIME_MB |
+@@ -24,34 +23,34 @@ int idpf_ptp_get_caps(struct idpf_adapter *adapter)
+ 				    VIRTCHNL2_CAP_PTP_ADJ_DEVICE_CLK_MB |
+ 				    VIRTCHNL2_CAP_PTP_TX_TSTAMPS_MB)
+ 	};
+-	struct idpf_vc_xn_params xn_params = {
+-		.vc_op = VIRTCHNL2_OP_PTP_GET_CAPS,
+-		.send_buf.iov_base = &send_ptp_caps_msg,
+-		.send_buf.iov_len = sizeof(send_ptp_caps_msg),
++	struct libie_ctlq_xn_send_params xn_params = {
++		.chnl_opcode = VIRTCHNL2_OP_PTP_GET_CAPS,
+ 		.timeout_ms = IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC,
+ 	};
+ 	struct virtchnl2_ptp_cross_time_reg_offsets cross_tstamp_offsets;
+ 	struct libie_mmio_info *mmio = &adapter->ctlq_ctx.mmio_info;
+ 	struct virtchnl2_ptp_clk_adj_reg_offsets clk_adj_offsets;
+ 	struct virtchnl2_ptp_clk_reg_offsets clock_offsets;
++	struct virtchnl2_ptp_get_caps *recv_ptp_caps_msg;
+ 	struct idpf_ptp_secondary_mbx *scnd_mbx;
+ 	struct idpf_ptp *ptp = adapter->ptp;
+ 	enum idpf_ptp_access access_type;
+ 	u32 temp_offset;
+-	int reply_sz;
++	size_t reply_sz;
++	int err;
+ 
+-	recv_ptp_caps_msg = kzalloc_obj(struct virtchnl2_ptp_get_caps);
+-	if (!recv_ptp_caps_msg)
+-		return -ENOMEM;
++	err = idpf_send_mb_msg(adapter, &xn_params, &send_ptp_caps_msg,
++			       sizeof(send_ptp_caps_msg));
++	if (err)
++		return err;
+ 
+-	xn_params.recv_buf.iov_base = recv_ptp_caps_msg;
+-	xn_params.recv_buf.iov_len = sizeof(*recv_ptp_caps_msg);
++	reply_sz = xn_params.recv_mem.iov_len;
++	if (reply_sz != sizeof(*recv_ptp_caps_msg)) {
++		err = -EIO;
++		goto free_resp;
++	}
+ 
+-	reply_sz = idpf_vc_xn_exec(adapter, &xn_params);
+-	if (reply_sz < 0)
+-		return reply_sz;
+-	else if (reply_sz != sizeof(*recv_ptp_caps_msg))
+-		return -EIO;
++	recv_ptp_caps_msg = xn_params.recv_mem.iov_base;
+ 
+ 	ptp->caps = le32_to_cpu(recv_ptp_caps_msg->caps);
+ 	ptp->base_incval = le64_to_cpu(recv_ptp_caps_msg->base_incval);
+@@ -112,7 +111,7 @@ int idpf_ptp_get_caps(struct idpf_adapter *adapter)
+ discipline_clock:
+ 	access_type = ptp->adj_dev_clk_time_access;
+ 	if (access_type != IDPF_PTP_DIRECT)
+-		return 0;
++		goto free_resp;
+ 
+ 	clk_adj_offsets = recv_ptp_caps_msg->clk_adj_offsets;
+ 
+@@ -145,7 +144,9 @@ int idpf_ptp_get_caps(struct idpf_adapter *adapter)
+ 	ptp->dev_clk_regs.phy_shadj_h =
+ 		libie_pci_get_mmio_addr(mmio, temp_offset);
+ 
+-	return 0;
++free_resp:
++	libie_ctlq_release_rx_buf(&xn_params.recv_mem);
++	return err;
+ }
+ 
+ /**
+@@ -160,28 +161,34 @@ int idpf_ptp_get_caps(struct idpf_adapter *adapter)
+ int idpf_ptp_get_dev_clk_time(struct idpf_adapter *adapter,
+ 			      struct idpf_ptp_dev_timers *dev_clk_time)
+ {
++	struct virtchnl2_ptp_get_dev_clk_time *get_dev_clk_time_resp;
+ 	struct virtchnl2_ptp_get_dev_clk_time get_dev_clk_time_msg;
+-	struct idpf_vc_xn_params xn_params = {
+-		.vc_op = VIRTCHNL2_OP_PTP_GET_DEV_CLK_TIME,
+-		.send_buf.iov_base = &get_dev_clk_time_msg,
+-		.send_buf.iov_len = sizeof(get_dev_clk_time_msg),
+-		.recv_buf.iov_base = &get_dev_clk_time_msg,
+-		.recv_buf.iov_len = sizeof(get_dev_clk_time_msg),
++	struct libie_ctlq_xn_send_params xn_params = {
++		.chnl_opcode = VIRTCHNL2_OP_PTP_GET_DEV_CLK_TIME,
+ 		.timeout_ms = IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC,
+ 	};
+-	int reply_sz;
++	size_t reply_sz;
+ 	u64 dev_time;
++	int err;
+ 
+-	reply_sz = idpf_vc_xn_exec(adapter, &xn_params);
+-	if (reply_sz < 0)
+-		return reply_sz;
+-	if (reply_sz != sizeof(get_dev_clk_time_msg))
+-		return -EIO;
++	err = idpf_send_mb_msg(adapter, &xn_params, &get_dev_clk_time_msg,
++			       sizeof(get_dev_clk_time_msg));
++	if (err)
++		return err;
+ 
+-	dev_time = le64_to_cpu(get_dev_clk_time_msg.dev_time_ns);
++	reply_sz = xn_params.recv_mem.iov_len;
++	if (reply_sz != sizeof(*get_dev_clk_time_resp)) {
++		err = -EIO;
++		goto free_resp;
++	}
++
++	get_dev_clk_time_resp = xn_params.recv_mem.iov_base;
++	dev_time = le64_to_cpu(get_dev_clk_time_resp->dev_time_ns);
+ 	dev_clk_time->dev_clk_time_ns = dev_time;
+ 
+-	return 0;
++free_resp:
++	libie_ctlq_release_rx_buf(&xn_params.recv_mem);
++	return err;
+ }
+ 
+ /**
+@@ -197,27 +204,30 @@ int idpf_ptp_get_dev_clk_time(struct idpf_adapter *adapter,
+ int idpf_ptp_get_cross_time(struct idpf_adapter *adapter,
+ 			    struct idpf_ptp_dev_timers *cross_time)
+ {
+-	struct virtchnl2_ptp_get_cross_time cross_time_msg;
+-	struct idpf_vc_xn_params xn_params = {
+-		.vc_op = VIRTCHNL2_OP_PTP_GET_CROSS_TIME,
+-		.send_buf.iov_base = &cross_time_msg,
+-		.send_buf.iov_len = sizeof(cross_time_msg),
+-		.recv_buf.iov_base = &cross_time_msg,
+-		.recv_buf.iov_len = sizeof(cross_time_msg),
++	struct virtchnl2_ptp_get_cross_time cross_time_send, *cross_time_recv;
++	struct libie_ctlq_xn_send_params xn_params = {
++		.chnl_opcode = VIRTCHNL2_OP_PTP_GET_CROSS_TIME,
+ 		.timeout_ms = IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC,
+ 	};
+-	int reply_sz;
++	int err = 0;
+ 
+-	reply_sz = idpf_vc_xn_exec(adapter, &xn_params);
+-	if (reply_sz < 0)
+-		return reply_sz;
+-	if (reply_sz != sizeof(cross_time_msg))
+-		return -EIO;
++	err = idpf_send_mb_msg(adapter, &xn_params, &cross_time_send,
++			       sizeof(cross_time_send));
++	if (err)
++		return err;
+ 
+-	cross_time->dev_clk_time_ns = le64_to_cpu(cross_time_msg.dev_time_ns);
+-	cross_time->sys_time_ns = le64_to_cpu(cross_time_msg.sys_time_ns);
++	if (xn_params.recv_mem.iov_len != sizeof(*cross_time_recv)) {
++		err = -EIO;
++		goto free_resp;
++	}
+ 
+-	return 0;
++	cross_time_recv = xn_params.recv_mem.iov_base;
++	cross_time->dev_clk_time_ns = le64_to_cpu(cross_time_recv->dev_time_ns);
++	cross_time->sys_time_ns = le64_to_cpu(cross_time_recv->sys_time_ns);
++
++free_resp:
++	libie_ctlq_release_rx_buf(&xn_params.recv_mem);
++	return err;
+ }
+ 
+ /**
+@@ -234,23 +244,18 @@ int idpf_ptp_set_dev_clk_time(struct idpf_adapter *adapter, u64 time)
+ 	struct virtchnl2_ptp_set_dev_clk_time set_dev_clk_time_msg = {
+ 		.dev_time_ns = cpu_to_le64(time),
+ 	};
+-	struct idpf_vc_xn_params xn_params = {
+-		.vc_op = VIRTCHNL2_OP_PTP_SET_DEV_CLK_TIME,
+-		.send_buf.iov_base = &set_dev_clk_time_msg,
+-		.send_buf.iov_len = sizeof(set_dev_clk_time_msg),
+-		.recv_buf.iov_base = &set_dev_clk_time_msg,
+-		.recv_buf.iov_len = sizeof(set_dev_clk_time_msg),
++	struct libie_ctlq_xn_send_params xn_params = {
++		.chnl_opcode = VIRTCHNL2_OP_PTP_SET_DEV_CLK_TIME,
+ 		.timeout_ms = IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC,
+ 	};
+-	int reply_sz;
++	int err;
+ 
+-	reply_sz = idpf_vc_xn_exec(adapter, &xn_params);
+-	if (reply_sz < 0)
+-		return reply_sz;
+-	if (reply_sz != sizeof(set_dev_clk_time_msg))
+-		return -EIO;
++	err = idpf_send_mb_msg(adapter, &xn_params, &set_dev_clk_time_msg,
++			       sizeof(set_dev_clk_time_msg));
++	if (!err)
++		libie_ctlq_release_rx_buf(&xn_params.recv_mem);
+ 
+-	return 0;
++	return err;
+ }
+ 
+ /**
+@@ -267,23 +272,18 @@ int idpf_ptp_adj_dev_clk_time(struct idpf_adapter *adapter, s64 delta)
+ 	struct virtchnl2_ptp_adj_dev_clk_time adj_dev_clk_time_msg = {
+ 		.delta = cpu_to_le64(delta),
+ 	};
+-	struct idpf_vc_xn_params xn_params = {
+-		.vc_op = VIRTCHNL2_OP_PTP_ADJ_DEV_CLK_TIME,
+-		.send_buf.iov_base = &adj_dev_clk_time_msg,
+-		.send_buf.iov_len = sizeof(adj_dev_clk_time_msg),
+-		.recv_buf.iov_base = &adj_dev_clk_time_msg,
+-		.recv_buf.iov_len = sizeof(adj_dev_clk_time_msg),
++	struct libie_ctlq_xn_send_params xn_params = {
++		.chnl_opcode = VIRTCHNL2_OP_PTP_ADJ_DEV_CLK_TIME,
+ 		.timeout_ms = IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC,
+ 	};
+-	int reply_sz;
++	int err;
+ 
+-	reply_sz = idpf_vc_xn_exec(adapter, &xn_params);
+-	if (reply_sz < 0)
+-		return reply_sz;
+-	if (reply_sz != sizeof(adj_dev_clk_time_msg))
+-		return -EIO;
++	err = idpf_send_mb_msg(adapter, &xn_params, &adj_dev_clk_time_msg,
++			       sizeof(adj_dev_clk_time_msg));
++	if (!err)
++		libie_ctlq_release_rx_buf(&xn_params.recv_mem);
+ 
+-	return 0;
++	return err;
+ }
+ 
+ /**
+@@ -301,23 +301,18 @@ int idpf_ptp_adj_dev_clk_fine(struct idpf_adapter *adapter, u64 incval)
+ 	struct virtchnl2_ptp_adj_dev_clk_fine adj_dev_clk_fine_msg = {
+ 		.incval = cpu_to_le64(incval),
+ 	};
+-	struct idpf_vc_xn_params xn_params = {
+-		.vc_op = VIRTCHNL2_OP_PTP_ADJ_DEV_CLK_FINE,
+-		.send_buf.iov_base = &adj_dev_clk_fine_msg,
+-		.send_buf.iov_len = sizeof(adj_dev_clk_fine_msg),
+-		.recv_buf.iov_base = &adj_dev_clk_fine_msg,
+-		.recv_buf.iov_len = sizeof(adj_dev_clk_fine_msg),
++	struct libie_ctlq_xn_send_params xn_params = {
++		.chnl_opcode = VIRTCHNL2_OP_PTP_ADJ_DEV_CLK_FINE,
+ 		.timeout_ms = IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC,
+ 	};
+-	int reply_sz;
++	int err;
+ 
+-	reply_sz = idpf_vc_xn_exec(adapter, &xn_params);
+-	if (reply_sz < 0)
+-		return reply_sz;
+-	if (reply_sz != sizeof(adj_dev_clk_fine_msg))
+-		return -EIO;
++	err = idpf_send_mb_msg(adapter, &xn_params, &adj_dev_clk_fine_msg,
++			       sizeof(adj_dev_clk_fine_msg));
++	if (!err)
++		libie_ctlq_release_rx_buf(&xn_params.recv_mem);
+ 
+-	return 0;
++	return err;
+ }
+ 
+ /**
+@@ -336,18 +331,16 @@ int idpf_ptp_get_vport_tstamps_caps(struct idpf_vport *vport)
+ 	struct virtchnl2_ptp_tx_tstamp_latch_caps tx_tstamp_latch_caps;
+ 	struct idpf_ptp_vport_tx_tstamp_caps *tstamp_caps;
+ 	struct idpf_ptp_tx_tstamp *ptp_tx_tstamp, *tmp;
+-	struct idpf_vc_xn_params xn_params = {
+-		.vc_op = VIRTCHNL2_OP_PTP_GET_VPORT_TX_TSTAMP_CAPS,
+-		.send_buf.iov_base = &send_tx_tstamp_caps,
+-		.send_buf.iov_len = sizeof(send_tx_tstamp_caps),
+-		.recv_buf.iov_len = IDPF_CTLQ_MAX_BUF_LEN,
++	struct libie_ctlq_xn_send_params xn_params = {
++		.chnl_opcode = VIRTCHNL2_OP_PTP_GET_VPORT_TX_TSTAMP_CAPS,
+ 		.timeout_ms = IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC,
+ 	};
+ 	enum idpf_ptp_access tstamp_access, get_dev_clk_access;
+ 	struct idpf_ptp *ptp = vport->adapter->ptp;
+ 	struct list_head *head;
+-	int err = 0, reply_sz;
++	size_t reply_sz;
+ 	u16 num_latches;
++	int err = 0;
+ 	u32 size;
+ 
+ 	if (!ptp)
+@@ -359,19 +352,19 @@ int idpf_ptp_get_vport_tstamps_caps(struct idpf_vport *vport)
+ 	    get_dev_clk_access == IDPF_PTP_NONE)
+ 		return -EOPNOTSUPP;
+ 
+-	rcv_tx_tstamp_caps = kzalloc(IDPF_CTLQ_MAX_BUF_LEN, GFP_KERNEL);
+-	if (!rcv_tx_tstamp_caps)
+-		return -ENOMEM;
+-
+ 	send_tx_tstamp_caps.vport_id = cpu_to_le32(vport->vport_id);
+-	xn_params.recv_buf.iov_base = rcv_tx_tstamp_caps;
+ 
+-	reply_sz = idpf_vc_xn_exec(vport->adapter, &xn_params);
+-	if (reply_sz < 0) {
+-		err = reply_sz;
++	err = idpf_send_mb_msg(vport->adapter, &xn_params, &send_tx_tstamp_caps,
++			       sizeof(send_tx_tstamp_caps));
++	if (err)
++		return err;
++
++	rcv_tx_tstamp_caps = xn_params.recv_mem.iov_base;
++	reply_sz = xn_params.recv_mem.iov_len;
++	if (reply_sz < sizeof(*rcv_tx_tstamp_caps)) {
++		err = -EIO;
+ 		goto get_tstamp_caps_out;
+ 	}
+-
+ 	num_latches = le16_to_cpu(rcv_tx_tstamp_caps->num_latches);
+ 	size = struct_size(rcv_tx_tstamp_caps, tstamp_latches, num_latches);
+ 	if (reply_sz != size) {
+@@ -426,7 +419,7 @@ int idpf_ptp_get_vport_tstamps_caps(struct idpf_vport *vport)
+ 	}
+ 
+ 	vport->tx_tstamp_caps = tstamp_caps;
+-	kfree(rcv_tx_tstamp_caps);
++	libie_ctlq_release_rx_buf(&xn_params.recv_mem);
+ 
+ 	return 0;
+ 
+@@ -439,7 +432,7 @@ int idpf_ptp_get_vport_tstamps_caps(struct idpf_vport *vport)
+ 
+ 	kfree(tstamp_caps);
+ get_tstamp_caps_out:
+-	kfree(rcv_tx_tstamp_caps);
++	libie_ctlq_release_rx_buf(&xn_params.recv_mem);
+ 
+ 	return err;
+ }
+@@ -536,9 +529,9 @@ idpf_ptp_get_tstamp_value(struct idpf_vport *vport,
+ 
+ /**
+  * idpf_ptp_get_tx_tstamp_async_handler - Async callback for getting Tx tstamps
+- * @adapter: Driver specific private structure
+- * @xn: transaction for message
+- * @ctlq_msg: received message
++ * @ctx: adapter pointer
++ * @mem: address and size of the response
++ * @status: return value of the request
+  *
+  * Read the tstamps Tx tstamp values from a received message and put them
+  * directly to the skb. The number of timestamps to read is specified by
+@@ -546,22 +539,23 @@ idpf_ptp_get_tstamp_value(struct idpf_vport *vport,
+  *
+  * Return: 0 on success, -errno otherwise.
+  */
+-static int
+-idpf_ptp_get_tx_tstamp_async_handler(struct idpf_adapter *adapter,
+-				     struct idpf_vc_xn *xn,
+-				     const struct idpf_ctlq_msg *ctlq_msg)
++static void
++idpf_ptp_get_tx_tstamp_async_handler(void *ctx, struct kvec *mem, int status)
+ {
+ 	struct virtchnl2_ptp_get_vport_tx_tstamp_latches *recv_tx_tstamp_msg;
+ 	struct idpf_ptp_vport_tx_tstamp_caps *tx_tstamp_caps;
+ 	struct virtchnl2_ptp_tx_tstamp_latch tstamp_latch;
+ 	struct idpf_ptp_tx_tstamp *tx_tstamp, *tmp;
+ 	struct idpf_vport *tstamp_vport = NULL;
++	struct idpf_adapter *adapter = ctx;
+ 	struct list_head *head;
+ 	u16 num_latches;
+ 	u32 vport_id;
+-	int err = 0;
+ 
+-	recv_tx_tstamp_msg = ctlq_msg->ctx.indirect.payload->va;
++	if (status)
++		return;
++
++	recv_tx_tstamp_msg = mem->iov_base;
+ 	vport_id = le32_to_cpu(recv_tx_tstamp_msg->vport_id);
+ 
+ 	idpf_for_each_vport(adapter, vport) {
+@@ -575,7 +569,7 @@ idpf_ptp_get_tx_tstamp_async_handler(struct idpf_adapter *adapter,
+ 	}
+ 
+ 	if (!tstamp_vport || !tstamp_vport->tx_tstamp_caps)
+-		return -EINVAL;
++		return;
+ 
+ 	tx_tstamp_caps = tstamp_vport->tx_tstamp_caps;
+ 	num_latches = le16_to_cpu(recv_tx_tstamp_msg->num_latches);
+@@ -589,13 +583,13 @@ idpf_ptp_get_tx_tstamp_async_handler(struct idpf_adapter *adapter,
+ 		if (!tstamp_latch.valid)
+ 			continue;
+ 
+-		if (list_empty(head)) {
+-			err = -ENOBUFS;
++		if (list_empty(head))
+ 			goto unlock;
+-		}
+ 
+ 		list_for_each_entry_safe(tx_tstamp, tmp, head, list_member) {
+ 			if (tstamp_latch.index == tx_tstamp->idx) {
++				int err;
++
+ 				list_del(&tx_tstamp->list_member);
+ 				err = idpf_ptp_get_tstamp_value(tstamp_vport,
+ 								&tstamp_latch,
+@@ -610,8 +604,6 @@ idpf_ptp_get_tx_tstamp_async_handler(struct idpf_adapter *adapter,
+ 
+ unlock:
+ 	spin_unlock_bh(&tx_tstamp_caps->latches_lock);
+-
+-	return err;
+ }
+ 
+ /**
+@@ -627,15 +619,15 @@ int idpf_ptp_get_tx_tstamp(struct idpf_vport *vport)
+ {
+ 	struct virtchnl2_ptp_get_vport_tx_tstamp_latches *send_tx_tstamp_msg;
+ 	struct idpf_ptp_vport_tx_tstamp_caps *tx_tstamp_caps;
+-	struct idpf_vc_xn_params xn_params = {
+-		.vc_op = VIRTCHNL2_OP_PTP_GET_VPORT_TX_TSTAMP,
++	struct libie_ctlq_xn_send_params xn_params = {
++		.chnl_opcode = VIRTCHNL2_OP_PTP_GET_VPORT_TX_TSTAMP,
+ 		.timeout_ms = IDPF_VC_XN_DEFAULT_TIMEOUT_MSEC,
+-		.async = true,
+-		.async_handler = idpf_ptp_get_tx_tstamp_async_handler,
++		.resp_cb = idpf_ptp_get_tx_tstamp_async_handler,
++		.send_ctx = vport->adapter,
+ 	};
+ 	struct idpf_ptp_tx_tstamp *ptp_tx_tstamp;
+-	int reply_sz, size, msg_size;
+ 	struct list_head *head;
++	int size, msg_size;
+ 	bool state_upd;
+ 	u16 id = 0;
+ 
+@@ -668,11 +660,7 @@ int idpf_ptp_get_tx_tstamp(struct idpf_vport *vport)
+ 	msg_size = struct_size(send_tx_tstamp_msg, tstamp_latches, id);
+ 	send_tx_tstamp_msg->vport_id = cpu_to_le32(vport->vport_id);
+ 	send_tx_tstamp_msg->num_latches = cpu_to_le16(id);
+-	xn_params.send_buf.iov_base = send_tx_tstamp_msg;
+-	xn_params.send_buf.iov_len = msg_size;
+-
+-	reply_sz = idpf_vc_xn_exec(vport->adapter, &xn_params);
+-	kfree(send_tx_tstamp_msg);
+ 
+-	return min(reply_sz, 0);
++	return idpf_send_mb_msg_kfree(vport->adapter, &xn_params,
++				      send_tx_tstamp_msg, msg_size);
+ }
 -- 
-2.47.3
+2.47.0
 
