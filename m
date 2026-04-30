@@ -1,96 +1,130 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8A42BCD13D3
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 30 Apr 2026 16:53:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6B6BDCD13DE
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 30 Apr 2026 16:53:31 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 513F06E3B4;
-	Thu, 30 Apr 2026 16:53:28 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 3B53984EB4;
+	Thu, 30 Apr 2026 16:53:31 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id aq7NWsFm5v4t; Thu, 30 Apr 2026 16:53:27 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id GblBPsnK2-8Y; Thu, 30 Apr 2026 16:53:29 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E0EF06E278
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D70E584EBA
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1777568006;
-	bh=L7Rr9mTkE3RA3Jx039p22gY3aWES/N/FW2UQ9KGdOR8=;
+	s=default; t=1777568009;
+	bh=oTklDTNdxgMiOr8HV0Z6gDUQcK4MMB7dBQkYfU4NXYc=;
 	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=LYwMq+3uy7S3Xw3kDCZy0SissrrBI0fx26Pjjz57v52Ly/xNuZONxXCXoRvdzKUA/
-	 gPBjL7sih9QLZ/O5/ZyXCv4fygk4UnCvp4ObfssUigxuJhaUJ9gYbo29ngZ6VYCYsM
-	 m2Y5KRdji8n8nX9W5j+rb1dZIIM0Dwdv4G5G09cE+xafhSC4KNweR8kZuMZ/L0w7aF
-	 3YSYDdo1uapJ5OqIwip5VktJ/+kwhnSvoF4n8cTQ5Do6HbkiVkbRG14rzh8x7GHMkV
-	 VLGMaQRxr9QuxsK5yHS4lPLQjWLxFwEo26BlNKeJmKgyXcIHgFL+erxJkcMpqV6t5M
-	 VlP9goWyuHEzg==
+	b=C0ivV8y038hp6JnNj9cusiLk5XHV5IOMO9kAbU02fnFqNOW18HAb4nFi0v/Vi7tYc
+	 3tXdZMM0EmWYrOc8q5zkPlHmFsmSKqOPF4lZKnpCGGUCCwxKBl4o72VRVSyTnTcVun
+	 IgnKW0/geOgxyS8/yoOfJ3SDdtpSiQ83RmqaZdE4fzmwiMBl9PMHbFlNudNGidplXI
+	 h5m9Pn43V1UIPODy72Wfc5tz/i9/sjPXuH40xR5V677bOYb6gCe/157KKYGbpj6r6+
+	 W24ZghVG6BYkPM894HsmQ+1ICSANoFcRFzEDioQE5DTuL1ZEEwZW/I0Pzf7nazfYsA
+	 EItXEF0+XFBWw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id E0EF06E278;
-	Thu, 30 Apr 2026 16:53:26 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id D70E584EBA;
+	Thu, 30 Apr 2026 16:53:29 +0000 (UTC)
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by lists1.osuosl.org (Postfix) with ESMTP id 9DFB4231
- for <intel-wired-lan@lists.osuosl.org>; Wed, 29 Apr 2026 09:28:06 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id C8567192
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 30 Apr 2026 08:55:27 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 83A974217C
- for <intel-wired-lan@lists.osuosl.org>; Wed, 29 Apr 2026 09:28:06 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id C65AA42311
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 30 Apr 2026 08:55:27 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id O7m68345KcqV for <intel-wired-lan@lists.osuosl.org>;
- Wed, 29 Apr 2026 09:28:05 +0000 (UTC)
-X-Greylist: delayed 1042 seconds by postgrey-1.37 at util1.osuosl.org;
- Wed, 29 Apr 2026 09:28:04 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 9A55442176
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9A55442176
+ id FPMDplc_iiES for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 30 Apr 2026 08:55:26 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2a0a:edc0:2:b01:1d::104; helo=metis.whiteo.stw.pengutronix.de;
- envelope-from=mkl@pengutronix.de; receiver=<UNKNOWN> 
-Received: from metis.whiteo.stw.pengutronix.de
- (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 9A55442176
- for <intel-wired-lan@lists.osuosl.org>; Wed, 29 Apr 2026 09:28:04 +0000 (UTC)
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
- by metis.whiteo.stw.pengutronix.de with esmtps
- (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.92)
- (envelope-from <mkl@pengutronix.de>)
- id 1wI0wA-0006pG-NU; Wed, 29 Apr 2026 11:10:30 +0200
-Received: from moin.white.stw.pengutronix.de ([2a0a:edc0:0:b01:1d::7b]
- helo=bjornoya.blackshift.org)
- by drehscheibe.grey.stw.pengutronix.de with esmtps (TLS1.3) tls
- TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 (Exim 4.96)
- (envelope-from <mkl@pengutronix.de>) id 1wI0w3-007oJR-0R;
- Wed, 29 Apr 2026 11:10:23 +0200
-Received: from pengutronix.de (p4ffb2dc6.dip0.t-ipconnect.de [79.251.45.198])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange x25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
- (Client did not present a certificate)
- (Authenticated sender: mkl-all@blackshift.org)
- by smtp.blackshift.org (Postfix) with ESMTPSA id 668E3526F68;
- Wed, 29 Apr 2026 09:10:22 +0000 (UTC)
-Date: Wed, 29 Apr 2026 11:10:21 +0200
-From: Marc Kleine-Budde <mkl@pengutronix.de>
-To: Uwe =?utf-8?Q?Kleine-K=C3=B6nig_=28The_Capable_Hub=29?=
- <u.kleine-koenig@baylibre.com>
-Message-ID: <20260429-responsible-clever-coyote-6b79f1-mkl@pengutronix.de>
-X-AI: stop_reason: "refusal"
+ client-ip=2a00:1450:4864:20::433; helo=mail-wr1-x433.google.com;
+ envelope-from=msp@baylibre.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 560A940871
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 560A940871
+Received: from mail-wr1-x433.google.com (mail-wr1-x433.google.com
+ [IPv6:2a00:1450:4864:20::433])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 560A940871
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 30 Apr 2026 08:55:24 +0000 (UTC)
+Received: by mail-wr1-x433.google.com with SMTP id
+ ffacd0b85a97d-449e96a8a80so3117f8f.3
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 30 Apr 2026 01:55:24 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20251104; t=1777539323; x=1778144123;
+ h=in-reply-to:references:content-transfer-encoding:to:from:subject:cc
+ :message-id:date:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+ :subject:date:message-id:reply-to;
+ bh=oTklDTNdxgMiOr8HV0Z6gDUQcK4MMB7dBQkYfU4NXYc=;
+ b=M2kkoF3EyFFc2ZrjDgQRXENYZSjAc5JS51FOmvh31TKegPKiBXRwcQ52MfGaNqXcm+
+ Gj8pnmOrKyHiIc9qu+9xP2NBiogelX8WsBQ+UpCGzGnHuShFjYdo2YNUZU/GNG0550qs
+ N98+TXCksk3xGVkM5ic1iZuOfllaGmPJK8muCDA8hoo847iMN5znBXC2pEAXLdrWSvKb
+ 4kIkjdXxHMH3DmcXBToEx07V4A0GlSEjhJBZdykhdt4DgidUvMgaWFtfY51NeSducRSb
+ DQrUEmPHeH0zDWTuj2U2m3oo8ZOw2gc8SZYNItN3cDNfB3nIrW9Q4arj6kdFzOy1UbCY
+ qtpg==
+X-Forwarded-Encrypted: i=1;
+ AFNElJ+Ej/UjEYS+yTEcTAqLvIj3BDtgWBQ07mj+YLZ2iTjjBOpfPR4zJQWic04RvqSWBLPTufP3smiEvqI8jGIVggQ=@lists.osuosl.org
+X-Gm-Message-State: AOJu0YyFEj73Kk+8pOdz6U623fp80BV7SUkijK8ZAwukI2kaFeaqX+VK
+ 8/TC77dH0oI3E89ZJ1D3VK3TLb4d0dEEPk8pxGSm1Xuid4D0ADJxitqzEHk0n8x2gr0=
+X-Gm-Gg: AeBDiesg2HfgrdPdkEl16sXdrrvAfwg5DjfGfPncAaKiujAsMcQ6cp4JpPbCjMI+l1O
+ CIqpWsizVXvADpRKiNIkqUyv+M3cZfYx+NklVw9FZNe4zDdAfzpF5EPvqsnpG8SE441NOKEYnC5
+ o4TFJH4/e9qksDBDc8IhmzXBFh97GQaJt7K8SrbHN9A2idFT9sX+5eqiObMWp66FHH66krCTzoC
+ R70ntqWlaPOu0fxL8BcsNkRfP8xY3oMeUdtrmlQvqhkXaSBgqX3NhIxfQtwehWt0Arr6vwfJaQ1
+ CL71YvdNSISqj2T1yrq4Cinto9QDrqVIhq5e3gtp/Iftk+KzYcrULmxOEZB20x9lBcf7E9hzBgY
+ OPE3uaNv7BzCJsNm5zkYAhHUNmgTW/Q9Kqa1RQQaWayvSQNHg166T4JaVjT+h1hIfrfweQWDD/R
+ EmDAxLw9qggF2A68Yz+cDUKxjypGM=
+X-Received: by 2002:a05:6000:26d1:b0:43e:a703:3665 with SMTP id
+ ffacd0b85a97d-4493f42ced4mr3244142f8f.25.1777539322750; 
+ Thu, 30 Apr 2026 01:55:22 -0700 (PDT)
+Received: from localhost ([2001:4090:a246:83ca:298c:ceb1:1a:f428])
+ by smtp.gmail.com with ESMTPSA id
+ ffacd0b85a97d-447b7ca5fe6sm11988989f8f.32.2026.04.30.01.55.21
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 30 Apr 2026 01:55:21 -0700 (PDT)
+Mime-Version: 1.0
+Content-Type: multipart/signed;
+ boundary=49f7733329a22fff4b83a1680bdebfd7a9830dc80234132c7fb08fa112fd;
+ micalg=pgp-sha512; protocol="application/pgp-signature"
+Date: Thu, 30 Apr 2026 10:55:14 +0200
+Message-Id: <DI6D3JVJ6JG6.8V4XUVGJA2D4@baylibre.com>
+From: "Markus Schneider-Pargmann" <msp@baylibre.com>
+To: =?utf-8?b?VXdlIEtsZWluZS1Lw7ZuaWcgKFRoZSBDYXBhYmxlIEh1Yik=?=
+ <u.kleine-koenig@baylibre.com>, "Michael Grzeschik"
+ <m.grzeschik@pengutronix.de>, "Andrew Lunn" <andrew+netdev@lunn.ch>, "David
+ S. Miller" <davem@davemloft.net>, "Eric Dumazet" <edumazet@google.com>,
+ "Jakub Kicinski" <kuba@kernel.org>, "Paolo Abeni" <pabeni@redhat.com>,
+ "Marc Kleine-Budde" <mkl@pengutronix.de>, "Vincent Mailhol"
+ <mailhol@kernel.org>, "Krzysztof Halasa" <khc@pm.waw.pl>, "Johannes Berg"
+ <johannes@sipsolutions.net>
+Content-Transfer-Encoding: quoted-printable
+X-Mailer: aerc 0.21.0-126-g9e77103592fe
 References: <20260428171845.2288395-2-u.kleine-koenig@baylibre.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
- protocol="application/pgp-signature"; boundary="v5gtri26mw6juc6y"
-Content-Disposition: inline
 In-Reply-To: <20260428171845.2288395-2-u.kleine-koenig@baylibre.com>
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: mkl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de);
- SAEximRunCond expanded to false
-X-PTX-Original-Recipient: intel-wired-lan@lists.osuosl.org
 X-Mailman-Approved-At: Thu, 30 Apr 2026 16:53:24 +0000
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=baylibre-com.20251104.gappssmtp.com; s=20251104; t=1777539323; x=1778144123;
+ darn=lists.osuosl.org; 
+ h=in-reply-to:references:content-transfer-encoding:to:from:subject:cc
+ :message-id:date:mime-version:from:to:cc:subject:date:message-id
+ :reply-to;
+ bh=oTklDTNdxgMiOr8HV0Z6gDUQcK4MMB7dBQkYfU4NXYc=;
+ b=ho2Ws5inyN+AQXbfCDPyDuD+s6WNVmETqzhUHrgj9oRwVTyvRzsUe45FC8ucvumVXY
+ B742+7jGpeoewfbOQzzJIY2BLOAGWXSwFO2fUNZi6kEodrtth5DcfjYdXCu+RgUR8MIg
+ fznRJR7dtBaY0wwjaiyP0+Y7S4N8MNFuQzx8y0ME/44PLQqOl+uNTGj1tu5IycFniKvX
+ uCqjBI9UdGpWu+Er7Em1ehNPATaNIoIg5p1dtleq6sgGYC2Swxq4mnAAJMJgwe1hJ/iA
+ 81sDQaYSz7tGnsarfbwinic/r2S/BnEL53DCt/I5oNc9plZdyFOVrlV8V8PVDDdFVLao
+ 5X6A==
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=none (p=none dis=none)
- header.from=pengutronix.de
+ header.from=baylibre.com
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=baylibre-com.20251104.gappssmtp.com
+ header.i=@baylibre-com.20251104.gappssmtp.com header.a=rsa-sha256
+ header.s=20251104 header.b=ho2Ws5in
 Subject: Re: [Intel-wired-lan] [PATCH net-next] net: Consistently define
  pci_device_ids using named initializers
 X-BeenThere: intel-wired-lan@osuosl.org
@@ -106,306 +140,139 @@ List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Cc: Richard Cochran <richardcochran@gmail.com>,
- Marco Crivellari <marco.crivellari@suse.com>,
- Randy Dunlap <rdunlap@infradead.org>, Yonglong Liu <liuyonglong@huawei.com>,
- Kees Cook <kees@kernel.org>, linux-wireless@vger.kernel.org,
- Larysa Zaremba <larysa.zaremba@intel.com>, Joe Damato <joe@dama.to>,
- brcm80211@lists.linux.dev, Daniele Venzano <venza@brownhat.org>,
- Eric Dumazet <edumazet@google.com>, Tony Nguyen <anthony.l.nguyen@intel.com>,
- MD Danish Anwar <danishanwar@ti.com>, Samuel Chessman <chessman@tux.org>,
- Fan Gong <gongfan1@huawei.com>, Mengyuan Lou <mengyuanlou@net-swift.com>,
- Kevin Curtis <kevin.curtis@farsite.co.uk>, Ingo Molnar <mingo@kernel.org>,
- Ion Badulescu <ionut@badula.org>,
- Michael Grzeschik <m.grzeschik@pengutronix.de>,
- Yeounsu Moon <yyyynoom@gmail.com>, Manish Chopra <manishc@marvell.com>,
- "David S. Miller" <davem@davemloft.net>,
- Colin Ian King <colin.i.king@gmail.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Peiyang Wang <wangpeiyang1@huawei.com>,
- Thomas Fourier <fourier.thomas@gmail.com>,
- Sai Krishna <saikrishnag@marvell.com>, Denis Kirjanov <kirjanov@gmail.com>,
+ Yonglong Liu <liuyonglong@huawei.com>, Kees Cook <kees@kernel.org>,
+ linux-wireless@vger.kernel.org, Larysa Zaremba <larysa.zaremba@intel.com>,
+ brcm80211@lists.linux.dev, Daniele
+ Venzano <venza@brownhat.org>, oss-drivers@corigine.com,
+ Tony Nguyen <anthony.l.nguyen@intel.com>, MD Danish
+ Anwar <danishanwar@ti.com>, Samuel Chessman <chessman@tux.org>,
+ Fan Gong <gongfan1@huawei.com>, Marco Crivellari <marco.crivellari@suse.com>,
+ Kevin Curtis <kevin.curtis@farsite.co.uk>, Ingo Molnar <mingo@kernel.org>, Ion
+ Badulescu <ionut@badula.org>, Andy
+ Shevchenko <andriy.shevchenko@intel.com>, Leon
+ Romanovsky <leon@kernel.org>, Colin Ian King <colin.i.king@gmail.com>, Przemek
+ Kitszel <przemyslaw.kitszel@intel.com>, Peiyang Wang <wangpeiyang1@huawei.com>,
+ Thomas Fourier <fourier.thomas@gmail.com>, Sai
+ Krishna <saikrishnag@marvell.com>, Denis Kirjanov <kirjanov@gmail.com>,
  intel-wired-lan@lists.osuosl.org, linux-parisc@vger.kernel.org,
- Jacob Keller <jacob.e.keller@intel.com>, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, Steffen Klassert <klassert@kernel.org>,
+ Jacob Keller <jacob.e.keller@intel.com>,
+ Mengyuan Lou <mengyuanlou@net-swift.com>,
+ Steffen Klassert <klassert@kernel.org>,
  Stanislav Yakovlev <stas.yakovlev@gmail.com>, linux-rdma@vger.kernel.org,
  Arend van Spriel <arend.vanspriel@broadcom.com>, nic_swsd@realtek.com,
- Jiri Pirko <jiri@resnulli.us>, Ethan Nelson-Moore <enelsonmoore@gmail.com>,
- Philipp Stanner <phasta@kernel.org>, Chi-hsien Lin <chi-hsien.lin@cypress.com>,
- Ido Schimmel <idosch@nvidia.com>, Potnuri Bharat Teja <bharat@chelsio.com>,
+ Jiri Pirko <jiri@resnulli.us>, Philipp Stanner <phasta@kernel.org>,
+ Chi-hsien Lin <chi-hsien.lin@cypress.com>, Ido
+ Schimmel <idosch@nvidia.com>, Potnuri Bharat Teja <bharat@chelsio.com>,
  Double Lo <double.lo@cypress.com>,
  Markus Schneider-Pargmann <msp@baylibre.com>,
  Nathan Chancellor <nathan@kernel.org>, Jiawen Wu <jiawenwu@trustnetic.com>,
- Cai Huoqing <cai.huoqing@linux.dev>, Bjorn Helgaas <bhelgaas@google.com>,
- Zilin Guan <zilin@seu.edu.cn>, linux-can@vger.kernel.org,
- Yibo Dong <dong100@mucse.com>, Andy Shevchenko <andriy.shevchenko@intel.com>,
- Petr Machata <petrm@nvidia.com>, Kory Maincent <kory.maincent@bootlin.com>,
- brcm80211-dev-list.pdl@broadcom.com, GR-Linux-NIC-Dev@marvell.com,
- Vadim Fedorenko <vadim.fedorenko@linux.dev>, Leon Romanovsky <leon@kernel.org>,
- Denis Benato <benato.denis96@gmail.com>, Rasesh Mody <rmody@marvell.com>,
- netdev@vger.kernel.org, oss-drivers@corigine.com,
- Vincent Mailhol <mailhol@kernel.org>, Mark Bloch <mbloch@nvidia.com>,
+ Cai Huoqing <cai.huoqing@linux.dev>, Bjorn
+ Helgaas <bhelgaas@google.com>, Zilin Guan <zilin@seu.edu.cn>,
+ linux-can@vger.kernel.org, Yibo Dong <dong100@mucse.com>, Joe
+ Damato <joe@dama.to>, Petr Machata <petrm@nvidia.com>,
+ Kory Maincent <kory.maincent@bootlin.com>, brcm80211-dev-list.pdl@broadcom.com,
+ GR-Linux-NIC-Dev@marvell.com, Vadim
+ Fedorenko <vadim.fedorenko@linux.dev>, Manish Chopra <manishc@marvell.com>,
+ Denis Benato <benato.denis96@gmail.com>, Rasesh
+ Mody <rmody@marvell.com>, netdev@vger.kernel.org,
+ Randy Dunlap <rdunlap@infradead.org>, Mark Bloch <mbloch@nvidia.com>,
  linux-kernel@vger.kernel.org, Tariq Toukan <tariqt@nvidia.com>,
  Jian Shen <shenjian15@huawei.com>, Jijie Shao <shaojijie@huawei.com>,
- Andrew Lunn <andrew+netdev@lunn.ch>, Thomas Gleixner <tglx@kernel.org>,
+ Yeounsu Moon <yyyynoom@gmail.com>, Thomas Gleixner <tglx@kernel.org>,
  Simon Horman <horms@kernel.org>, Yicong Hui <yiconghui@gmail.com>,
- Mark Einon <mark.einon@gmail.com>, Johannes Berg <johannes@sipsolutions.net>,
- Heiner Kallweit <hkallweit1@gmail.com>, Saeed Mahameed <saeedm@nvidia.com>,
- Sudarsana Kalluru <skalluru@marvell.com>, Krzysztof Halasa <khc@pm.waw.pl>
+ Mark Einon <mark.einon@gmail.com>, Ethan Nelson-Moore <enelsonmoore@gmail.com>,
+ Saeed Mahameed <saeedm@nvidia.com>, Sudarsana
+ Kalluru <skalluru@marvell.com>, Heiner Kallweit <hkallweit1@gmail.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-
---v5gtri26mw6juc6y
-Content-Type: text/plain; protected-headers=v1; charset=utf-8
-Content-Disposition: inline
+--49f7733329a22fff4b83a1680bdebfd7a9830dc80234132c7fb08fa112fd
 Content-Transfer-Encoding: quoted-printable
-Subject: Re: [PATCH net-next] net: Consistently define pci_device_ids using
- named initializers
-MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 
-On 28.04.2026 19:18:44, Uwe Kleine-K=C3=B6nig (The Capable Hub) wrote:
->  drivers/net/can/m_can/m_can_pci.c             |   6 +-
->  drivers/net/can/sja1000/plx_pci.c             | 167 +++----
-[...]
-> diff --git a/drivers/net/can/sja1000/plx_pci.c b/drivers/net/can/sja1000/=
-plx_pci.c
-> index 08183833c9bc..a03553b80a5d 100644
-> --- a/drivers/net/can/sja1000/plx_pci.c
-> +++ b/drivers/net/can/sja1000/plx_pci.c
-> @@ -272,124 +272,89 @@ static struct plx_pci_card_info plx_pci_card_info_=
-asem_dual_can =3D {
->  static const struct pci_device_id plx_pci_tbl[] =3D {
->  	{
->  		/* Adlink PCI-7841/cPCI-7841 */
-> -		ADLINK_PCI_VENDOR_ID, ADLINK_PCI_DEVICE_ID,
-> -		PCI_ANY_ID, PCI_ANY_ID,
-> -		PCI_CLASS_NETWORK_OTHER << 8, ~0,
-> -		(kernel_ulong_t)&plx_pci_card_info_adlink
-> -	},
-> -	{
-> +		PCI_DEVICE(ADLINK_PCI_VENDOR_ID, ADLINK_PCI_DEVICE_ID),
-> +		.class =3D PCI_CLASS_NETWORK_OTHER << 8,
-> +		.class_mask =3D ~0,
-> +		.driver_data =3D (kernel_ulong_t)&plx_pci_card_info_adlink,
-> +	}, {
->  		/* Adlink PCI-7841/cPCI-7841 SE */
-> -		ADLINK_PCI_VENDOR_ID, ADLINK_PCI_DEVICE_ID,
-> -		PCI_ANY_ID, PCI_ANY_ID,
-> -		PCI_CLASS_COMMUNICATION_OTHER << 8, ~0,
-> -		(kernel_ulong_t)&plx_pci_card_info_adlink_se
-> -	},
-> -	{
-> +		PCI_DEVICE(ADLINK_PCI_VENDOR_ID, ADLINK_PCI_DEVICE_ID),
-> +		.class =3D PCI_CLASS_COMMUNICATION_OTHER << 8,
-> +		.class_mask =3D ~0,
-> +		.driver_data =3D (kernel_ulong_t)&plx_pci_card_info_adlink_se,
-> +	}, {
->  		/* esd CAN-PCI/200 */
-> -		PCI_VENDOR_ID_PLX, PCI_DEVICE_ID_PLX_9050,
-> -		PCI_VENDOR_ID_ESDGMBH, ESD_PCI_SUB_SYS_ID_PCI200,
-> -		0, 0,
-> -		(kernel_ulong_t)&plx_pci_card_info_esd200
-> -	},
-> -	{
-> +		PCI_VDEVICE_SUB(PLX, PCI_DEVICE_ID_PLX_9050,
-> +				PCI_VENDOR_ID_ESDGMBH, ESD_PCI_SUB_SYS_ID_PCI200),
-> +		.driver_data =3D (kernel_ulong_t)&plx_pci_card_info_esd200,
-> +	}, {
->  		/* esd CAN-CPCI/200 */
-> -		PCI_VENDOR_ID_PLX, PCI_DEVICE_ID_PLX_9030,
-> -		PCI_VENDOR_ID_ESDGMBH, ESD_PCI_SUB_SYS_ID_CPCI200,
-> -		0, 0,
-> -		(kernel_ulong_t)&plx_pci_card_info_esd200
-> -	},
-> -	{
-> +		PCI_VDEVICE_SUB(PLX, PCI_DEVICE_ID_PLX_9030,
-> +				PCI_VENDOR_ID_ESDGMBH, ESD_PCI_SUB_SYS_ID_CPCI200),
-> +		.driver_data =3D (kernel_ulong_t)&plx_pci_card_info_esd200,
-> +	}, {
->  		/* esd CAN-PCI104/200 */
-> -		PCI_VENDOR_ID_PLX, PCI_DEVICE_ID_PLX_9030,
-> -		PCI_VENDOR_ID_ESDGMBH, ESD_PCI_SUB_SYS_ID_PCI104200,
-> -		0, 0,
-> -		(kernel_ulong_t)&plx_pci_card_info_esd200
-> -	},
-> -	{
-> +		PCI_VDEVICE_SUB(PLX, PCI_DEVICE_ID_PLX_9030,
-> +				PCI_VENDOR_ID_ESDGMBH, ESD_PCI_SUB_SYS_ID_PCI104200),
-> +		.driver_data =3D (kernel_ulong_t)&plx_pci_card_info_esd200,
-> +	}, {
->  		/* esd CAN-PCI/266 */
-> -		PCI_VENDOR_ID_PLX, PCI_DEVICE_ID_PLX_9056,
-> -		PCI_VENDOR_ID_ESDGMBH, ESD_PCI_SUB_SYS_ID_PCI266,
-> -		0, 0,
-> -		(kernel_ulong_t)&plx_pci_card_info_esd266
-> -	},
-> -	{
-> +		PCI_VDEVICE_SUB(PLX, PCI_DEVICE_ID_PLX_9056,
-> +				PCI_VENDOR_ID_ESDGMBH, ESD_PCI_SUB_SYS_ID_PCI266),
-> +		.driver_data =3D (kernel_ulong_t)&plx_pci_card_info_esd266,
-> +	}, {
->  		/* esd CAN-PMC/266 */
-> -		PCI_VENDOR_ID_PLX, PCI_DEVICE_ID_PLX_9056,
-> -		PCI_VENDOR_ID_ESDGMBH, ESD_PCI_SUB_SYS_ID_PMC266,
-> -		0, 0,
-> -		(kernel_ulong_t)&plx_pci_card_info_esd266
-> -	},
-> -	{
-> +		PCI_VDEVICE_SUB(PLX, PCI_DEVICE_ID_PLX_9056,
-> +				PCI_VENDOR_ID_ESDGMBH, ESD_PCI_SUB_SYS_ID_PMC266),
-> +		.driver_data =3D (kernel_ulong_t)&plx_pci_card_info_esd266,
-> +	}, {
->  		/* esd CAN-PCIE/2000 */
-> -		PCI_VENDOR_ID_PLX, PCI_DEVICE_ID_PLX_9056,
-> -		PCI_VENDOR_ID_ESDGMBH, ESD_PCI_SUB_SYS_ID_PCIE2000,
-> -		0, 0,
-> -		(kernel_ulong_t)&plx_pci_card_info_esd2000
-> -	},
-> -	{
-> +		PCI_VDEVICE_SUB(PLX, PCI_DEVICE_ID_PLX_9056,
-> +				PCI_VENDOR_ID_ESDGMBH, ESD_PCI_SUB_SYS_ID_PCIE2000),
-> +		.driver_data =3D (kernel_ulong_t)&plx_pci_card_info_esd2000,
-> +	}, {
->  		/* IXXAT PC-I 04/PCI card */
-> -		IXXAT_PCI_VENDOR_ID, IXXAT_PCI_DEVICE_ID,
-> -		PCI_ANY_ID, IXXAT_PCI_SUB_SYS_ID,
-> -		0, 0,
-> -		(kernel_ulong_t)&plx_pci_card_info_ixxat
-> -	},
-> -	{
-> +		PCI_DEVICE_SUB(IXXAT_PCI_VENDOR_ID, IXXAT_PCI_DEVICE_ID,
-> +			       PCI_ANY_ID, IXXAT_PCI_SUB_SYS_ID),
-> +		.driver_data =3D (kernel_ulong_t)&plx_pci_card_info_ixxat,
-> +	}, {
->  		/* Marathon CAN-bus-PCI card */
-> -		PCI_VENDOR_ID_PLX, MARATHON_PCI_DEVICE_ID,
-> -		PCI_ANY_ID, PCI_ANY_ID,
-> -		0, 0,
-> -		(kernel_ulong_t)&plx_pci_card_info_marathon_pci
-> -	},
-> -	{
-> +		PCI_VDEVICE(PLX, MARATHON_PCI_DEVICE_ID),
-> +		.driver_data =3D (kernel_ulong_t)&plx_pci_card_info_marathon_pci,
-> +	}, {
->  		/* Marathon CAN-bus-PCIe card */
-> -		PCI_VENDOR_ID_PLX, MARATHON_PCIE_DEVICE_ID,
-> -		PCI_ANY_ID, PCI_ANY_ID,
-> -		0, 0,
-> -		(kernel_ulong_t)&plx_pci_card_info_marathon_pcie
-> -	},
-> -	{
-> +		PCI_VDEVICE(PLX, MARATHON_PCIE_DEVICE_ID),
-> +		.driver_data =3D (kernel_ulong_t)&plx_pci_card_info_marathon_pcie,
-> +	}, {
->  		/* TEWS TECHNOLOGIES TPMC810 card */
-> -		TEWS_PCI_VENDOR_ID, TEWS_PCI_DEVICE_ID_TMPC810,
-> -		PCI_ANY_ID, PCI_ANY_ID,
-> -		0, 0,
-> -		(kernel_ulong_t)&plx_pci_card_info_tews
-> -	},
-> -	{
-> +		PCI_DEVICE(TEWS_PCI_VENDOR_ID, TEWS_PCI_DEVICE_ID_TMPC810),
-> +		.driver_data =3D (kernel_ulong_t)&plx_pci_card_info_tews,
-> +	}, {
->  		/* Connect Tech Inc. CANpro/104-Plus Opto (CRG001) card */
-> -		PCI_VENDOR_ID_PLX, PCI_DEVICE_ID_PLX_9030,
-> -		PCI_SUBVENDOR_ID_CONNECT_TECH, CTI_PCI_DEVICE_ID_CRG001,
-> -		0, 0,
-> -		(kernel_ulong_t)&plx_pci_card_info_cti
-> -	},
-> -	{
-> +		PCI_VDEVICE_SUB(PLX, PCI_DEVICE_ID_PLX_9030,
-> +				PCI_SUBVENDOR_ID_CONNECT_TECH, CTI_PCI_DEVICE_ID_CRG001),
-> +		.driver_data =3D (kernel_ulong_t)&plx_pci_card_info_cti,
-> +	}, {
->  		/* Elcus CAN-200-PCI */
-> -		CAN200PCI_VENDOR_ID, CAN200PCI_DEVICE_ID,
-> -		CAN200PCI_SUB_VENDOR_ID, CAN200PCI_SUB_DEVICE_ID,
-> -		0, 0,
-> -		(kernel_ulong_t)&plx_pci_card_info_elcus
-> -	},
-> -	{
-> +		PCI_DEVICE_SUB(CAN200PCI_VENDOR_ID, CAN200PCI_DEVICE_ID,
-> +			       CAN200PCI_SUB_VENDOR_ID, CAN200PCI_SUB_DEVICE_ID),
-> +		.driver_data =3D (kernel_ulong_t)&plx_pci_card_info_elcus,
-> +	}, {
->  		/* moxa */
-> -		MOXA_PCI_VENDOR_ID, MOXA_PCI_DEVICE_ID,
-> -		PCI_ANY_ID, PCI_ANY_ID,
-> -		0, 0,
-> -		(kernel_ulong_t)&plx_pci_card_info_moxa
-> -	},
-> -	{
-> +		PCI_DEVICE(MOXA_PCI_VENDOR_ID, MOXA_PCI_DEVICE_ID),
-> +		.driver_data =3D (kernel_ulong_t)&plx_pci_card_info_moxa,
-> +	}, {
->  		/* ASEM Dual CAN raw */
-> -		ASEM_RAW_CAN_VENDOR_ID, ASEM_RAW_CAN_DEVICE_ID,
-> -		ASEM_RAW_CAN_SUB_VENDOR_ID, ASEM_RAW_CAN_SUB_DEVICE_ID,
-> -		0, 0,
-> -		(kernel_ulong_t)&plx_pci_card_info_asem_dual_can
-> -	},
-> -	{
-> +		PCI_DEVICE_SUB(ASEM_RAW_CAN_VENDOR_ID, ASEM_RAW_CAN_DEVICE_ID,
-> +			       ASEM_RAW_CAN_SUB_VENDOR_ID, ASEM_RAW_CAN_SUB_DEVICE_ID),
-> +		.driver_data =3D (kernel_ulong_t)&plx_pci_card_info_asem_dual_can,
-> +	}, {
->  		/* ASEM Dual CAN raw -new model */
-> -		ASEM_RAW_CAN_VENDOR_ID, ASEM_RAW_CAN_DEVICE_ID,
-> -		ASEM_RAW_CAN_SUB_VENDOR_ID, ASEM_RAW_CAN_SUB_DEVICE_ID_BIS,
-> -		0, 0,
-> -		(kernel_ulong_t)&plx_pci_card_info_asem_dual_can
-> +		PCI_DEVICE_SUB(ASEM_RAW_CAN_VENDOR_ID, ASEM_RAW_CAN_DEVICE_ID,
-> +			       ASEM_RAW_CAN_SUB_VENDOR_ID, ASEM_RAW_CAN_SUB_DEVICE_ID_BIS),
-> +		.driver_data =3D (kernel_ulong_t)&plx_pci_card_info_asem_dual_can,
->  	},
-> -	{ 0,}
-> +	{ }
+Hi Uwe,
 
-Nitpick: can you convert the terminating entry to follow the same style
-as the rest of the driver:
-
-diff --git a/drivers/net/can/sja1000/plx_pci.c b/drivers/net/can/sja1000/pl=
-x_pci.c
-index a03553b80a5d..d69ff0ccfd94 100644
---- a/drivers/net/can/sja1000/plx_pci.c
-+++ b/drivers/net/can/sja1000/plx_pci.c
-@@ -353,8 +353,8 @@ static const struct pci_device_id plx_pci_tbl[] =3D {
-                 PCI_DEVICE_SUB(ASEM_RAW_CAN_VENDOR_ID, ASEM_RAW_CAN_DEVICE=
-_ID,
-                                ASEM_RAW_CAN_SUB_VENDOR_ID, ASEM_RAW_CAN_SU=
-B_DEVICE_ID_BIS),
-                 .driver_data =3D (kernel_ulong_t)&plx_pci_card_info_asem_d=
-ual_can,
--        },
--        { }
-+        }, {
-+        }
- };
- MODULE_DEVICE_TABLE(pci, plx_pci_tbl);
-
->  };
->  MODULE_DEVICE_TABLE(pci, plx_pci_tbl);
+On Tue Apr 28, 2026 at 7:18 PM CEST, Uwe Kleine-K=C3=B6nig (The Capable Hub=
+) wrote:
+> ... and PCI device helpers.
 >
+> The various struct pci_device_id arrays were initialized mostly by one
+> the PCI_DEVICE macros and then list expressions. The latter isn't easily
+> readable if you're not into PCI. Using named initializers is more
+> explicit and thus easier to parse.
+>
+> Also use PCI_DEVICE* helper macros to assign .vendor, .device,
+> .subvendor and .subdevice where appropriate and skip explicit
+> assignments of 0 (which the compiler takes care of).
+>
+> The secret plan is to make struct pci_device_id::driver_data an
+> anonymous union (similar to
+> https://lore.kernel.org/all/cover.1776579304.git.u.kleine-koenig@baylibre=
+.com/)
+> and that requires named initializers. But it's also a nice cleanup on
+> its own.
+>
+> This change doesn't introduce changes to the compiled pci_device_id
+> arrays. Tested on x86 and arm64.
+>
+> Signed-off-by: Uwe Kleine-K=C3=B6nig (The Capable Hub) <u.kleine-koenig@b=
+aylibre.com>
+> ---
+> Hello,
+>
+> the mentioned follow-up quest allows to do
+>
+> 			PCI_DEVICE(0x1571, 0xa203),
+> 	+		.driver_data =3D (kernel_ulong_t)&card_info_10mbit,
+> 	-		.driver_data_ptr =3D &card_info_10mbit,
+>
+> which gets rid of a bunch of casts and so brings a little bit more type
+> safety. This patch is a preparation for that.
+>
+> I handled all of drivers/net/ in a single patch, please tell me if I
+> should split by subsystem.
+>
+> Best regards
+> Uwe
+> ---
 
-regards,
-Marc
+[...]
 
---=20
-Pengutronix e.K.                 | Marc Kleine-Budde          |
-Embedded Linux                   | https://www.pengutronix.de |
-Vertretung N=C3=BCrnberg              | Phone: +49-5121-206917-129 |
-Amtsgericht Hildesheim, HRA 2686 | Fax:   +49-5121-206917-9   |
+> diff --git a/drivers/net/can/m_can/m_can_pci.c b/drivers/net/can/m_can/m_=
+can_pci.c
+> index eb31ed1f9644..cb9335c1d3ea 100644
+> --- a/drivers/net/can/m_can/m_can_pci.c
+> +++ b/drivers/net/can/m_can/m_can_pci.c
+> @@ -183,9 +183,9 @@ static SIMPLE_DEV_PM_OPS(m_can_pci_pm_ops,
+>  			 m_can_pci_suspend, m_can_pci_resume);
+> =20
+>  static const struct pci_device_id m_can_pci_id_table[] =3D {
+> -	{ PCI_VDEVICE(INTEL, 0x4bc1), M_CAN_CLOCK_FREQ_EHL, },
+> -	{ PCI_VDEVICE(INTEL, 0x4bc2), M_CAN_CLOCK_FREQ_EHL, },
+> -	{  }	/* Terminating Entry */
+> +	{ PCI_VDEVICE(INTEL, 0x4bc1), .driver_data =3D M_CAN_CLOCK_FREQ_EHL, },
+> +	{ PCI_VDEVICE(INTEL, 0x4bc2), .driver_data =3D M_CAN_CLOCK_FREQ_EHL, },
+> +	{ }	/* terminating entry */
 
---v5gtri26mw6juc6y
+M_CAN_CLOCK_FREQ_EHL is basically hardcoded for all PCI devices since
+2020. I don't think we need this driver data at all and can just drop it
+and use M_CAN_CLOCK_FREQ_EHL directly in the code for the frequency.
+Once a real new PCI device gets added we can see if and what driver_data
+is needed.
+
+Best
+Markus
+
+--49f7733329a22fff4b83a1680bdebfd7a9830dc80234132c7fb08fa112fd
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iHUEABYKAB0WIQSl+MghEFFAdY3pYJLMOmT6rpmt0gUCafHK+wAKCRDMOmT6rpmt
-0kuPAP4rY0fDutYzl1X17t0y+XEGDgmxOmjPiXuxZCBfayCaXgD7BrMtvC4i+l07
-M4r5isb3cwO71VZn6lO9ZL8xNJtpyAo=
-=hO9H
+iKMEABYKAEsWIQSJYVVm/x+5xmOiprOFwVZpkBVKUwUCafMY8hsUgAAAAAAEAA5t
+YW51MiwyLjUrMS4xMiwyLDIRHG1zcEBiYXlsaWJyZS5jb20ACgkQhcFWaZAVSlPG
+LAD/fzJVNBHtKblmZr7CitXNgE0iUthbQCQShJJb37V4mMgA/2HCptgFXjEqdTdF
+h7pcmno1RbnSKnZ/TDh+JQ7CnAwN
+=RRmw
 -----END PGP SIGNATURE-----
 
---v5gtri26mw6juc6y--
+--49f7733329a22fff4b83a1680bdebfd7a9830dc80234132c7fb08fa112fd--
