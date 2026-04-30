@@ -1,96 +1,99 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6A143CCFA13
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 30 Apr 2026 12:26:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 536DAFF8873
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 30 Apr 2026 12:26:12 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 226B784C6E;
-	Thu, 30 Apr 2026 12:26:10 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 1BD946178F;
+	Thu, 30 Apr 2026 12:26:12 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id eCeOlyDpV1IK; Thu, 30 Apr 2026 12:26:08 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id 4Gfkq9NEC6kl; Thu, 30 Apr 2026 12:26:10 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 27BF184C64
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4C3A26179F
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1777551968;
-	bh=HWL80eJag4ou2jmAGhfcXSaCfpY7Oq0RGwjJDU+Z6cM=;
-	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=S4SNu1Pi+UfKBV7KQ81fqtFjPt1LgzQcYSB7/Yge5vV4SsKJzoS8MmyLmKE7YUQc4
-	 DTv1ZQChTHSnEEYS+EPvCr6ufYmc2YpW/U+rGmrB/qvISv8NAAWC77+eLsJm7+JqSS
-	 M0QnGW8131D8jiRQOtqGqihxO2bpLieY9DDU2tAWNl8lc74SrGxUmH/owCpXlnpTuM
-	 +PcbVFzODdtWI8DBvhmG37vk8Jz9h4ajJ94Cz4Osfod48EMiLue8v0kqwSWuKvP0YF
-	 re73bDbL38Mqkx6faSLpzzo9wU7kfhkeT5+e+8O7QNeFrwn6qfKRMlRPwo/cfRuIGY
-	 viAV2pffECovw==
+	s=default; t=1777551970;
+	bh=TKDljZ5Zu2iCNLZber9hYnJTEZa7j4BMIymWcM6yW9Y=;
+	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=7UQ4hLl8FQJ7PsNiD9zeGG8K20UixYbdOKg3dnM0MOeOu14EsNc5fkVL3uVvlGiAu
+	 lNBpwaybyGEEnF+Kidmc3NNTNw1OsBK24qaeQp8Wikadr9XQ2FjfYLNfPN76YyjsWu
+	 aYIG8zyxFWvvzqsLQcIxR0lxqX2BF9HpOFXKQg5dPRKNQBSLikYphpr3z5LaF4IVtB
+	 iZjjNOsdZse5wiULVZf+t/NgAiJIDIunStOpMsjvWV8GsXgTx4+PoMz93T2IjCKP1U
+	 VlrfBQXqCbKP6d9/URa+cxNT3cs1GVFtyxsJTJCMQIt9YavWej1r6YLqYPYS+qCrtN
+	 vWgkrr+lw2aaw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 27BF184C64;
-	Thu, 30 Apr 2026 12:26:08 +0000 (UTC)
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id ED81018F
- for <intel-wired-lan@lists.osuosl.org>; Thu, 30 Apr 2026 12:26:06 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 4C3A26179F;
+	Thu, 30 Apr 2026 12:26:10 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [IPv6:2605:bc80:3010::133])
+ by lists1.osuosl.org (Postfix) with ESMTP id D8D5B18F
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 30 Apr 2026 12:26:08 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id DF7234245C
- for <intel-wired-lan@lists.osuosl.org>; Thu, 30 Apr 2026 12:26:06 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id BF3AC4073C
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 30 Apr 2026 12:26:08 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id XiTFrqov63YD for <intel-wired-lan@lists.osuosl.org>;
- Thu, 30 Apr 2026 12:26:06 +0000 (UTC)
+ id mlwUHGMoiqGf for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 30 Apr 2026 12:26:07 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.16;
  helo=mgamail.intel.com; envelope-from=aleksandr.loktionov@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org DAD50403D6
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org DAD50403D6
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org C957E403D6
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org C957E403D6
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.16])
- by smtp2.osuosl.org (Postfix) with ESMTPS id DAD50403D6
- for <intel-wired-lan@lists.osuosl.org>; Thu, 30 Apr 2026 12:26:05 +0000 (UTC)
-X-CSE-ConnectionGUID: BMfUBgJvQRCkvxxL50tFhQ==
-X-CSE-MsgGUID: 262j+rXjQZywLQPUJXhYdg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11771"; a="78689180"
-X-IronPort-AV: E=Sophos;i="6.23,208,1770624000"; d="scan'208";a="78689180"
+ by smtp2.osuosl.org (Postfix) with ESMTPS id C957E403D6
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 30 Apr 2026 12:26:07 +0000 (UTC)
+X-CSE-ConnectionGUID: 2CvoTBj2SK20e8XQhm+YdQ==
+X-CSE-MsgGUID: uFBgeATMT8CZxxjC/maqpg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11771"; a="78689186"
+X-IronPort-AV: E=Sophos;i="6.23,208,1770624000"; d="scan'208";a="78689186"
 Received: from orviesa006.jf.intel.com ([10.64.159.146])
  by orvoesa108.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 30 Apr 2026 05:26:05 -0700
-X-CSE-ConnectionGUID: cSnv3J4PTpO/KHFmOGTMGw==
-X-CSE-MsgGUID: duS/1KRASjuFWY8mlw9i9A==
+ 30 Apr 2026 05:26:07 -0700
+X-CSE-ConnectionGUID: MAPtY//6SAC9yo/g4nHqNA==
+X-CSE-MsgGUID: KMYtALv/QB+btlJa445l+Q==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,208,1770624000"; d="scan'208";a="233538420"
+X-IronPort-AV: E=Sophos;i="6.23,208,1770624000"; d="scan'208";a="233538429"
 Received: from amlin-019-225.igk.intel.com ([10.102.19.225])
- by orviesa006.jf.intel.com with ESMTP; 30 Apr 2026 05:26:04 -0700
+ by orviesa006.jf.intel.com with ESMTP; 30 Apr 2026 05:26:06 -0700
 From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 To: intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com,
  aleksandr.loktionov@intel.com
 Cc: netdev@vger.kernel.org
-Date: Thu, 30 Apr 2026 14:25:57 +0200
-Message-ID: <20260430122602.126722-1-aleksandr.loktionov@intel.com>
+Date: Thu, 30 Apr 2026 14:25:59 +0200
+Message-ID: <20260430122602.126722-3-aleksandr.loktionov@intel.com>
 X-Mailer: git-send-email 2.52.0
+In-Reply-To: <20260430122602.126722-1-aleksandr.loktionov@intel.com>
+References: <20260430122602.126722-1-aleksandr.loktionov@intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1777551966; x=1809087966;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=WoSZTJZgD5sk1nHAskzI2NqSbzu34TMeqUl/m7B6ltc=;
- b=kfkkdlyUvYZ9eDx0fsNirBFNL8VB7m+jBjE/9qvzuSO1rRId90zFwjm2
- oEAJNFbSpG3GxKRhL7sssK2KmB7QNRCc0OFtc2gc3QJ/v0iWEsTUjVUHJ
- 6NSrgISbjqT23AN5+B7VXXVC5YJ7uxUWfxYFSFbBGjmOk0wiBSYT7whPF
- Y69+DLciCdyrzduPBNSzp1Nq3rEzsdCYYt9HVfY7Cxaj5tKYCQesbBk8I
- 1NGV/1eZvF+3Vxz/m02Opp8ID8R6dms/to68GkPdtBFl3U6j7GXEk2GrG
- VqQHL4HZemESWEPwjAQR0WSSbVF3bTZWhPrbWkX5k2cb8cT7ZwCISr1K2
- g==;
+ t=1777551968; x=1809087968;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=WmUk/hzZFJcKObTRWjUXnGHFK9+dUHG3QByEE5jydN8=;
+ b=PCe9/GJJpZWaa9+ShBlk3xpBCGXvj73i6/pnu3bdNbawmxyaGU+XK+fz
+ BzTHT2RvaJjFM6iplWaUalaVJmy3iJdeOwM41QiWSuZMCXp7EqimPJiGI
+ xcfp9IxapYV/ft7Py20ivHgYxwKJz4mLyXAq3ZSQozRJVEzSbCdrh7jpd
+ qaEaTMwpHJ7jWc3o/qHN0cUXjPXILaW2uMx31ZX49P5n1JasyHWtsSWZn
+ KOVZrY/a988Lt4Z+Qj0SCaLz80HpSkd1ZYr52fFKw3rdkbWv/MpjQENTY
+ rsSEnODJdv+99P+AxKPz2dItphaR+BeLIEqnG3ly6zw9dqClDQFHRUsqU
+ A==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=kfkkdlyU
-Subject: [Intel-wired-lan] [PATCH 0/5] ice: five small fixes and cleanups
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=PCe9/GJJ
+Subject: [Intel-wired-lan] [PATCH 2/5] ice: remove unnecessary
+ PF_SB_REM_DEV_CTL write for E82X
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -106,51 +109,52 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Three correctness fixes and two cleanups for the ice driver.
+From: Karol Kolacinski <karol.kolacinski@intel.com>
 
-Patch 1 corrects a kernel-doc comment in ice_ptp_hw.h that described the
-ETH56G MAC Rx offset field as unsigned when it is signed (trivial doc fix,
-no functional change).
+Remove the PF_SB_REM_DEV_CTL register write from ice_ptp_init_phc_e82x().
+PHY access is enabled by default on E82X devices and the driver does not
+need to configure switch device access. The register write was a
+remnant of an earlier SWITCH_MODE workaround for a FIFO issue and is
+no longer needed.
 
-Patch 2 removes the PF_SB_REM_DEV_CTL sideband register write from
-ice_ptp_init_phc_e82x().  PHY access is enabled by default on E82X and
-the register write was a leftover from an earlier SWITCH_MODE workaround
-that is no longer needed.
+Also update the kernel-doc comment to refer to the E82X family rather than
+E822.
 
-Patch 3 renames ICE_SMA2_UFL2_RX_DIS to ICE_SMA2_UFL2_RX_EN to match
-the actual active-high hardware semantics and inverts the three use sites
-in ice_dpll.c so that the logic remains correct.
+Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
+Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.c | 13 ++-----------
+ 1 file changed, 2 insertions(+), 11 deletions(-)
 
-Patch 4 replaces the static per-type frequency tables for CGU pins with a
-single DPLL_PIN_FREQUENCY_RANGE(1, 25 MHz) entry.  The firmware defines
-an any_freq capability for configurable CGU inputs, but the old tables
-restricted users to 1 PPS or 10 MHz.  GNSS pins retain a 1 PPS-only
-entry since they are physically constrained.
-
-Patch 5 exports ice_dcb_need_recfg() and calls it in the four SW LLDP
-netlink setters instead of memcmp() on a non-packed struct, which is
-undefined behaviour due to uninitialised padding bytes.  The redundant
-memcmp in ice_pf_dcb_cfg() is removed since callers now guard it.
-
-Aleksandr Loktionov (2):
-  ice: add correct handling of SMA/u.FL states
-  ice: use element-by-element comparison for DCB config changes
-
-Arkadiusz Kubalewski (1):
-  ice: fix DPLL pin frequency range in CGU pin descriptors
-
-Karol Kolacinski (2):
-  ice: fix ETH56G Rx offset type description in kernel-doc comment
-  ice: remove unnecessary PF_SB_REM_DEV_CTL write for E82X
-
- drivers/net/ethernet/intel/ice/ice_dcb_lib.c |  13 +-
- drivers/net/ethernet/intel/ice/ice_dcb_lib.h |   2 +
- drivers/net/ethernet/intel/ice/ice_dcb_nl.c  |  30 +++-
- drivers/net/ethernet/intel/ice/ice_dpll.c    |   6 +-
- drivers/net/ethernet/intel/ice/ice_ptp_hw.c  | 141 ++++++++++---------
- drivers/net/ethernet/intel/ice/ice_ptp_hw.h  |   8 +-
- 6 files changed, 113 insertions(+), 87 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
+index 61c0a0d..7b1b402 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
++++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
+@@ -2767,22 +2767,13 @@ static int ice_ptp_set_vernier_wl(struct ice_hw *hw)
+ }
+ 
+ /**
+- * ice_ptp_init_phc_e82x - Perform E822 specific PHC initialization
++ * ice_ptp_init_phc_e82x - Perform E82X specific PHC initialization
+  * @hw: pointer to HW struct
+  *
+- * Perform PHC initialization steps specific to E822 devices.
++ * Perform PHC initialization steps specific to E82X devices.
+  */
+ static int ice_ptp_init_phc_e82x(struct ice_hw *hw)
+ {
+-	u32 val;
+-
+-	/* Enable reading switch and PHY registers over the sideband queue */
+-#define PF_SB_REM_DEV_CTL_SWITCH_READ BIT(1)
+-#define PF_SB_REM_DEV_CTL_PHY0 BIT(2)
+-	val = rd32(hw, PF_SB_REM_DEV_CTL);
+-	val |= (PF_SB_REM_DEV_CTL_SWITCH_READ | PF_SB_REM_DEV_CTL_PHY0);
+-	wr32(hw, PF_SB_REM_DEV_CTL, val);
+-
+ 	/* Set window length for all the ports */
+ 	return ice_ptp_set_vernier_wl(hw);
+ }
 -- 
 2.52.0
 
