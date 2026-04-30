@@ -4,84 +4,147 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E398AFF8873
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 30 Apr 2026 14:48:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A57DDFF8873
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 30 Apr 2026 15:21:59 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 9F2E842A54;
-	Thu, 30 Apr 2026 14:48:56 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 5517F42998;
+	Thu, 30 Apr 2026 15:21:59 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id JYIKsyOFIzff; Thu, 30 Apr 2026 14:48:55 +0000 (UTC)
+ id ruTY1Iz32i4x; Thu, 30 Apr 2026 15:21:57 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org EAFA642A4D
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 781D54297E
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1777560535;
-	bh=GPG74hKtodlgGgVqf59yV+kFwEXRytQRtPzNS2dUQpc=;
-	h=Date:From:To:Cc:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	s=default; t=1777562517;
+	bh=j6W7N3TF0u0m9VhuQZcYonFJHVZpaP1eZOWODDM2/uM=;
+	h=Date:To:References:In-Reply-To:Subject:List-Id:List-Unsubscribe:
+	 List-Archive:List-Post:List-Help:List-Subscribe:From:Reply-To:Cc:
 	 From;
-	b=MYARI1cb2QqP0XakR15b3BgVeqpnpK0BXR8quivnEgZsE45fXPqqgRRTYMQfosATc
-	 45jcTvidQ9KjSYRhgXm2ukMs6VJCqK1TjCsQrKu5vPC6mBBe4n3DlCGnd1/VwEM8t4
-	 d9EI3RtEbDv1UfBbDc6PkXWanEGpTOawokG3VQgziGtY6AsB4hHHR+imqYOCJLxocA
-	 pPBA8qUYmatI+6e9EcdIePFcPAt+z7Mkr285y5ytYtDte+034zvHN05hH+iEgdO6z5
-	 SKGwbjPkddbfD5+agujBH2n/gqeiqEVyhAwOZ0lybFHn7VzDA5m2WHO73+x3f4dCzo
-	 ZJM6A3mGCTWtg==
+	b=mBD9nvc4DzXi8O0Ri8Fp7S889AcNwlsAtxRqi/5fpPt684apuVITXedGUEsbqnd0r
+	 VKbwAEjTg/25jk5h/e+/+PwerZ2z1Y8VaLKd9ozgmVWqUlI1u8haeutM8O1rRf03nW
+	 RCdlJIjk2lXuI7ghw5qxC8aE2Vg8LsuT41RWGVrsY4q1/HceX3c+tbrHg8AMaDDjLg
+	 P+QJO4I66Fnfpz6SyB2htIvG31yrL8BHz89byNEu3LRiyb4E13kIXlWEWaIDiTTpm5
+	 J8bX056mUndtLEJDaPLkKgD4pNP3f4AAN1prA38tbAML7LPC9lwrwvDq/MVZC8vWx6
+	 JtfOGVzumEFsw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp4.osuosl.org (Postfix) with ESMTP id EAFA642A4D;
-	Thu, 30 Apr 2026 14:48:54 +0000 (UTC)
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [IPv6:2605:bc80:3010::138])
- by lists1.osuosl.org (Postfix) with ESMTP id 75DC7192
- for <intel-wired-lan@lists.osuosl.org>; Thu, 30 Apr 2026 14:48:54 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 781D54297E;
+	Thu, 30 Apr 2026 15:21:57 +0000 (UTC)
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by lists1.osuosl.org (Postfix) with ESMTP id 5FEEF18F
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 30 Apr 2026 15:21:55 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 5BCB584D37
- for <intel-wired-lan@lists.osuosl.org>; Thu, 30 Apr 2026 14:48:54 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id 5197042489
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 30 Apr 2026 15:21:55 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 8jkbT-AN3N6S for <intel-wired-lan@lists.osuosl.org>;
- Thu, 30 Apr 2026 14:48:53 +0000 (UTC)
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=172.105.4.254;
- helo=tor.source.kernel.org; envelope-from=kuba@kernel.org; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp1.osuosl.org B1DB384D34
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B1DB384D34
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
- by smtp1.osuosl.org (Postfix) with ESMTPS id B1DB384D34
- for <intel-wired-lan@lists.osuosl.org>; Thu, 30 Apr 2026 14:48:53 +0000 (UTC)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by tor.source.kernel.org (Postfix) with ESMTP id 5A88660142;
- Thu, 30 Apr 2026 14:48:52 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BED97C2BCB3;
- Thu, 30 Apr 2026 14:48:51 +0000 (UTC)
-Date: Thu, 30 Apr 2026 07:48:50 -0700
-From: Jakub Kicinski <kuba@kernel.org>
-To: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Cc: intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com,
- netdev@vger.kernel.org
-Message-ID: <20260430074850.78ed5bdf@kernel.org>
-In-Reply-To: <20260430122602.126722-1-aleksandr.loktionov@intel.com>
-References: <20260430122602.126722-1-aleksandr.loktionov@intel.com>
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id MVBf7SuzI0lv for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 30 Apr 2026 15:21:54 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom;
+ client-ip=2607:f8b0:4864:20::1161; helo=mail-yw1-x1161.google.com;
+ envelope-from=arend.vanspriel@broadcom.com; receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 1DDA3424A4
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 1DDA3424A4
+Received: from mail-yw1-x1161.google.com (mail-yw1-x1161.google.com
+ [IPv6:2607:f8b0:4864:20::1161])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 1DDA3424A4
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 30 Apr 2026 15:21:53 +0000 (UTC)
+Received: by mail-yw1-x1161.google.com with SMTP id
+ 00721157ae682-7bd5c582c47so4655797b3.2
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 30 Apr 2026 08:21:53 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20251104; t=1777562512; x=1778167312;
+ h=content-transfer-encoding:in-reply-to:from:content-language
+ :references:cc:to:subject:user-agent:mime-version:date:message-id
+ :dkim-signature:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+ :message-id:reply-to;
+ bh=j6W7N3TF0u0m9VhuQZcYonFJHVZpaP1eZOWODDM2/uM=;
+ b=oNRa3rJAubZMzfxxkZ3cwxVkSEDzZgQ7x0AZo0X1onGoRxYiwXrepY7XTURDh6E/tu
+ dDbltTMgiN5DgxlXBG+26YzhOOq2YST950qTwYOO8BDUFsrRtg/7N09OR3QM7+Gspt5B
+ u2HSfLGJ3WxZ+w5Sg/kai2KjJ4qXUAm4a78q/OxLS0OY2at5ovxenEHKQm5KWi9E2YBl
+ gW8W6ZrR0IdA/rSdi6ZQQhrMZXG682iM2OpBfgHaNFdZ78cNYlyaHJhO2hUNWWsK+cEL
+ dVrk6gaAILcmnVxvFS2Mpm67YKJGmOT+ZVc/XSrr9OAL+u3+mJSNH75a0lBA76YWCfaN
+ aMdg==
+X-Forwarded-Encrypted: i=1;
+ AFNElJ9sxjmKItf/YAzUiEm6iuwvNtqfCiiaClNCH8K6dXhnAEpQvkeTjs5ExI0LkA+QxLrLeaEWbxzt5OQFvqyr0Y4=@lists.osuosl.org
+X-Gm-Message-State: AOJu0Yw4MYOiaHtKF4JkOhCdOM43TdJkjF7KUcilnW/LHbXqHop14ZtP
+ wi76+ZCqPyckoertwUul+fe77k6o+xwzc5EGywa1sQ6CBbgSKrm5WOLoAPW8WTPeC0GZ4HSPzAK
+ tpcdFy6eedCHDjESoKue8Hb4e8bLAVshSUJZ71WENqXBjg18TPdKvyhK8Ua7YgnIrz+04TSh/YP
+ ouBIgUcMSHge7aF4JtQqii+UmlDrtJGmN2kACB54e1ZkeZ4bRM9mLFvAKSZfG9NJ8kpACv9x1OX
+ 1XWGDPdXPs4YcDH6lKtmYEEC2/KDSw=
+X-Gm-Gg: AeBDieuKpbh1VzKKmOItr2qPPOETjN2sZAZVVWdBpbxOxXnaS/z2p6EWG1kwCiDshyd
+ wyuSCx6DnkKJVtLxTIOPaSCmToM+YyiEbtpg5rw4PAAFG5EZdCxq0GmAcRUdfq1hQqgimr/pHfI
+ wmAG1WecdOXaQmAXuJXvPnU7r7jN6Psh1F0RJOdc4725glmaECeTEWj8p/OAKAsRRvgSmgo09ga
+ xy4j48Uj6u3DyqC/gWudzWf65GUEb1HQ/Mg5r5MwO7NlkqtNi8pcNIInfUpBjEOKWJFvBs2qrHJ
+ 9jP/5kE9TxTOuX3c3we8nI3R/4T6NuPBpXD3F5CLOPsdReUA5zju4Om74duL59ZAjAnxQYpqj6v
+ tmL4C1IUi1gSWZSXSiNqjKMO3a4TmdX9HrODY6bX4LOzDjdDC+EJItADeOABY2peu65D6cyqZ+y
+ SdP53ak80adhfGV7PcpfDryo5xYashNSo8ZEuH40sIjffpJg4HzJizggj2+xRoCwG0aLop+Hw=
+X-Received: by 2002:a05:690c:c190:b0:7b1:b27d:2d4b with SMTP id
+ 00721157ae682-7bd5284ab47mr32691577b3.12.1777562512101; 
+ Thu, 30 Apr 2026 08:21:52 -0700 (PDT)
+Received: from smtp-us-east1-p01-i01-si01.dlp.protect.broadcom.com
+ (address-144-49-247-16.dlp.protect.broadcom.com. [144.49.247.16])
+ by smtp-relay.gmail.com with ESMTPS id
+ 00721157ae682-7bd54b151e9sm1270827b3.7.2026.04.30.08.21.51
+ for <intel-wired-lan@lists.osuosl.org>
+ (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+ Thu, 30 Apr 2026 08:21:52 -0700 (PDT)
+X-Relaying-Domain: broadcom.com
+X-CFilter-Loop: Reflected
+Received: by mail-oi1-f198.google.com with SMTP id
+ 5614622812f47-479d74f0d95so1435088b6e.0
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 30 Apr 2026 08:21:51 -0700 (PDT)
+X-Forwarded-Encrypted: i=1;
+ AFNElJ/8ICv4P6tCVHPYh1+u+eEU4i4Dc990V6stp+U/MXrVWodzDsB1Z6IQKeqP1gsGwCnoVP+Xe1aIuTu7fAPXSyg=@lists.osuosl.org
+X-Received: by 2002:a05:7300:fd03:b0:2d9:7bc4:9578 with SMTP id
+ 5a478bee46e88-2ed3e386a41mr1602838eec.28.1777562094284; 
+ Thu, 30 Apr 2026 08:14:54 -0700 (PDT)
+X-Received: by 2002:a05:7300:fd03:b0:2d9:7bc4:9578 with SMTP id
+ 5a478bee46e88-2ed3e386a41mr1602745eec.28.1777562093564; 
+ Thu, 30 Apr 2026 08:14:53 -0700 (PDT)
+Received: from [192.168.178.26] (f215227.upc-f.chello.nl. [80.56.215.227])
+ by smtp.gmail.com with ESMTPSA id
+ 5a478bee46e88-2ee38e71ccesm286774eec.10.2026.04.30.08.14.39
+ (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+ Thu, 30 Apr 2026 08:14:52 -0700 (PDT)
+Message-ID: <f817f781-43d5-40d0-9352-20769d9a6601@broadcom.com>
+Date: Thu, 30 Apr 2026 17:14:36 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1777560532;
- bh=y8zJk9caf7v4JlJgjE0gjutEn8ottL/lwMgaKWlC90M=;
- h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=JX/WfblH6PuwC/gGATZ14PS7j4Py7vglrSpWgh2wP6/Y7DQ44WO+hdIcB1A2TBf8z
- DHR+atbgR7pWusLzL6DqEnmXEDS7Lond3ywE1C7nZl+4N5kMNQFnNC8ScRisgkstkC
- DiYKyY5buUrQ7/w2EPbaDOaHM0SkKGrGkUBqkHbHBusoXnJ4sSzdlU/NrcGXLPhfOD
- NEpA78Qx6jh0JyJNzKUxs2uvCkwiPlJiCY5SUPsDZ90ZY3/ov+gQkjyn6zXxs5Z4hU
- OX9dyyMGPjsyOP1ffE/TPfZbJzAnvWDNVyzz/t/a+PiEAwzJFN+uVOCBCnfwFyefO1
- xvYG3xnKkkfjw==
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dmarc=pass (p=quarantine dis=none)
- header.from=kernel.org
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=k20201202 header.b=JX/WfblH
-Subject: Re: [Intel-wired-lan] [PATCH 0/5] ice: five small fixes and cleanups
+User-Agent: Mozilla Thunderbird
+To: =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig_=28The_Capable_Hub=29?=
+ <u.kleine-koenig@baylibre.com>,
+ Michael Grzeschik <m.grzeschik@pengutronix.de>,
+ Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller"
+ <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+ Marc Kleine-Budde <mkl@pengutronix.de>, Vincent Mailhol
+ <mailhol@kernel.org>, Krzysztof Halasa <khc@pm.waw.pl>,
+ Johannes Berg <johannes@sipsolutions.net>
+References: <20260428171845.2288395-2-u.kleine-koenig@baylibre.com>
+Content-Language: en-US
+In-Reply-To: <20260428171845.2288395-2-u.kleine-koenig@baylibre.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-DetectorID-Processed: b00c1d49-9d2e-4205-b15f-d015386d3d5e
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=broadcom.com; s=google; t=1777562511; x=1778167311; darn=lists.osuosl.org;
+ h=content-transfer-encoding:in-reply-to:from:content-language
+ :references:cc:to:subject:user-agent:mime-version:date:message-id
+ :from:to:cc:subject:date:message-id:reply-to;
+ bh=j6W7N3TF0u0m9VhuQZcYonFJHVZpaP1eZOWODDM2/uM=;
+ b=S6GtEXQ1uol03mj3jir1hjiaopC8tSJeuyo/RWI2l90EaEMMedtJg1VnHeEjpqrJcG
+ 7umDVGdsm6KJn8dFX2QjR/ESCWZE0g2hPF+AYNXADydf9p2MdBaFnxeY4r9GACbXNGpQ
+ rT1EeWNJce1/YhIobhO4OGGIU/Kd3hEVqVOhs=
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dmarc=pass (p=reject dis=none)
+ header.from=broadcom.com
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (1024-bit key,
+ unprotected) header.d=broadcom.com header.i=@broadcom.com header.a=rsa-sha256
+ header.s=google header.b=S6GtEXQ1
+Subject: Re: [Intel-wired-lan] [PATCH net-next] net: Consistently define
+ pci_device_ids using named initializers
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -94,12 +157,82 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
+From: Arend van Spriel via Intel-wired-lan <intel-wired-lan@osuosl.org>
+Reply-To: Arend van Spriel <arend.vanspriel@broadcom.com>
+Cc: Richard Cochran <richardcochran@gmail.com>,
+ Yonglong Liu <liuyonglong@huawei.com>, Kees Cook <kees@kernel.org>,
+ linux-wireless@vger.kernel.org, Larysa Zaremba <larysa.zaremba@intel.com>,
+ brcm80211@lists.linux.dev, Daniele Venzano <venza@brownhat.org>,
+ oss-drivers@corigine.com, Tony Nguyen <anthony.l.nguyen@intel.com>,
+ MD Danish Anwar <danishanwar@ti.com>, Samuel Chessman <chessman@tux.org>,
+ Fan Gong <gongfan1@huawei.com>, Marco Crivellari <marco.crivellari@suse.com>,
+ Kevin Curtis <kevin.curtis@farsite.co.uk>, Ingo Molnar <mingo@kernel.org>,
+ Ion Badulescu <ionut@badula.org>,
+ Andy Shevchenko <andriy.shevchenko@intel.com>,
+ Leon Romanovsky <leon@kernel.org>, Colin Ian King <colin.i.king@gmail.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Peiyang Wang <wangpeiyang1@huawei.com>,
+ Thomas Fourier <fourier.thomas@gmail.com>,
+ Sai Krishna <saikrishnag@marvell.com>, Denis Kirjanov <kirjanov@gmail.com>,
+ intel-wired-lan@lists.osuosl.org, linux-parisc@vger.kernel.org,
+ Jacob Keller <jacob.e.keller@intel.com>,
+ Mengyuan Lou <mengyuanlou@net-swift.com>,
+ Steffen Klassert <klassert@kernel.org>,
+ Stanislav Yakovlev <stas.yakovlev@gmail.com>, linux-rdma@vger.kernel.org,
+ Chi-hsien Lin <chi-hsien.lin@cypress.com>, nic_swsd@realtek.com,
+ Jiri Pirko <jiri@resnulli.us>, Philipp Stanner <phasta@kernel.org>,
+ Ido Schimmel <idosch@nvidia.com>, Potnuri Bharat Teja <bharat@chelsio.com>,
+ Double Lo <double.lo@cypress.com>,
+ Markus Schneider-Pargmann <msp@baylibre.com>,
+ Nathan Chancellor <nathan@kernel.org>, Jiawen Wu <jiawenwu@trustnetic.com>,
+ Cai Huoqing <cai.huoqing@linux.dev>, Bjorn Helgaas <bhelgaas@google.com>,
+ Zilin Guan <zilin@seu.edu.cn>, linux-can@vger.kernel.org,
+ Yibo Dong <dong100@mucse.com>, Joe Damato <joe@dama.to>,
+ Petr Machata <petrm@nvidia.com>, Kory Maincent <kory.maincent@bootlin.com>,
+ brcm80211-dev-list.pdl@broadcom.com, GR-Linux-NIC-Dev@marvell.com,
+ Vadim Fedorenko <vadim.fedorenko@linux.dev>,
+ Manish Chopra <manishc@marvell.com>, Denis Benato <benato.denis96@gmail.com>,
+ Rasesh Mody <rmody@marvell.com>, netdev@vger.kernel.org,
+ Randy Dunlap <rdunlap@infradead.org>, Mark Bloch <mbloch@nvidia.com>,
+ linux-kernel@vger.kernel.org, Tariq Toukan <tariqt@nvidia.com>,
+ Jian Shen <shenjian15@huawei.com>, Jijie Shao <shaojijie@huawei.com>,
+ Yeounsu Moon <yyyynoom@gmail.com>, Thomas Gleixner <tglx@kernel.org>,
+ Simon Horman <horms@kernel.org>, Yicong Hui <yiconghui@gmail.com>,
+ Mark Einon <mark.einon@gmail.com>, Ethan Nelson-Moore <enelsonmoore@gmail.com>,
+ Saeed Mahameed <saeedm@nvidia.com>, Sudarsana Kalluru <skalluru@marvell.com>,
+ Heiner Kallweit <hkallweit1@gmail.com>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Thu, 30 Apr 2026 14:25:57 +0200 Aleksandr Loktionov wrote:
-> Subject: [PATCH 0/5] ice: five small fixes and cleanups
+On 28/04/2026 19:18, Uwe Kleine-König (The Capable Hub) wrote:
+> ... and PCI device helpers.
+> 
+> The various struct pci_device_id arrays were initialized mostly by one
+> the PCI_DEVICE macros and then list expressions. The latter isn't easily
+> readable if you're not into PCI. Using named initializers is more
+> explicit and thus easier to parse.
+> 
+> Also use PCI_DEVICE* helper macros to assign .vendor, .device,
+> .subvendor and .subdevice where appropriate and skip explicit
+> assignments of 0 (which the compiler takes care of).
+> 
+> The secret plan is to make struct pci_device_id::driver_data an
+> anonymous union (similar to
+> https://lore.kernel.org/all/cover.1776579304.git.u.kleine-koenig@baylibre.com/)
+> and that requires named initializers. But it's also a nice cleanup on
+> its own.
+> 
+> This change doesn't introduce changes to the compiled pci_device_id
+> arrays. Tested on x86 and arm64.
 
-Please tag your submissions with iwl-* if you are cross posting.
--- 
-pw-bot: au
+for brcmfmac change...
+
+Acked-by: Arend van Spriel <arend.vanspriel@broadcom.com>
+
+> Signed-off-by: Uwe Kleine-König (The Capable Hub) <u.kleine-koenig@baylibre.com>
+> ---
+[...]
+
+>   .../broadcom/brcm80211/brcmfmac/pcie.c        |  17 +-
+>   drivers/net/wireless/intel/ipw2x00/ipw2200.c  |  52 +-
+>   69 files changed, 1308 insertions(+), 1101 deletions(-)
