@@ -1,99 +1,96 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7D437FF8875
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 30 Apr 2026 12:26:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6A143CCFA13
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 30 Apr 2026 12:26:10 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 32078617A0;
-	Thu, 30 Apr 2026 12:26:09 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 226B784C6E;
+	Thu, 30 Apr 2026 12:26:10 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id fN8s2OY5EE0x; Thu, 30 Apr 2026 12:26:08 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id eCeOlyDpV1IK; Thu, 30 Apr 2026 12:26:08 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A687B6152C
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 27BF184C64
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
 	s=default; t=1777551968;
-	bh=cG2dGev00flescZ6y5TU3H+rWJSgP4T65oPPI9TVdvg=;
-	h=From:To:Cc:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=7oNCcAdQn0aZJDRVyNDbiwKeMOAL/IvWoak3DtvMElTfsQFfRFIyVGAp9ysH8GKBX
-	 FKhJXKjOONfQACoBDEbB3zEDTL2S7ojZyq8+F7UWHMj5G1YsHP1K7Rk+2ZAyhHIrPJ
-	 BKLvd8YPykcz4MlscffCmLb88gZbs+vRvKpwmAmgB67rQ9v4DkQNL+k3lrWqppSM0G
-	 +AQApz/8YVsKpLpVQDLYWEio16aOhB1C43VF3MXUVeWD9F/h/r5cic7gZXoAkYZo82
-	 LK7GaKBDMmNQGcul9xKvhpy2pK7N8Mj8mJe+wyopOlnT58EDYLqbiUtyx1x/DNVc6M
-	 RPR/VGc5h6tsA==
+	bh=HWL80eJag4ou2jmAGhfcXSaCfpY7Oq0RGwjJDU+Z6cM=;
+	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=S4SNu1Pi+UfKBV7KQ81fqtFjPt1LgzQcYSB7/Yge5vV4SsKJzoS8MmyLmKE7YUQc4
+	 DTv1ZQChTHSnEEYS+EPvCr6ufYmc2YpW/U+rGmrB/qvISv8NAAWC77+eLsJm7+JqSS
+	 M0QnGW8131D8jiRQOtqGqihxO2bpLieY9DDU2tAWNl8lc74SrGxUmH/owCpXlnpTuM
+	 +PcbVFzODdtWI8DBvhmG37vk8Jz9h4ajJ94Cz4Osfod48EMiLue8v0kqwSWuKvP0YF
+	 re73bDbL38Mqkx6faSLpzzo9wU7kfhkeT5+e+8O7QNeFrwn6qfKRMlRPwo/cfRuIGY
+	 viAV2pffECovw==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id A687B6152C;
+	by smtp1.osuosl.org (Postfix) with ESMTP id 27BF184C64;
 	Thu, 30 Apr 2026 12:26:08 +0000 (UTC)
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by lists1.osuosl.org (Postfix) with ESMTP id 2031218F
- for <intel-wired-lan@lists.osuosl.org>; Thu, 30 Apr 2026 12:26:07 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id ED81018F
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 30 Apr 2026 12:26:06 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 1E683403D6
- for <intel-wired-lan@lists.osuosl.org>; Thu, 30 Apr 2026 12:26:07 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTP id DF7234245C
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 30 Apr 2026 12:26:06 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id a-z9Q_nAm-sQ for <intel-wired-lan@lists.osuosl.org>;
+ id XiTFrqov63YD for <intel-wired-lan@lists.osuosl.org>;
  Thu, 30 Apr 2026 12:26:06 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.16;
  helo=mgamail.intel.com; envelope-from=aleksandr.loktionov@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org 7899E4073C
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 7899E4073C
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp2.osuosl.org DAD50403D6
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org DAD50403D6
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.16])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 7899E4073C
- for <intel-wired-lan@lists.osuosl.org>; Thu, 30 Apr 2026 12:26:06 +0000 (UTC)
-X-CSE-ConnectionGUID: kGXpTR/xSvy4p0xwmZql6A==
-X-CSE-MsgGUID: fUyURqiDQHqhYFt33DiczQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11771"; a="78689182"
-X-IronPort-AV: E=Sophos;i="6.23,208,1770624000"; d="scan'208";a="78689182"
+ by smtp2.osuosl.org (Postfix) with ESMTPS id DAD50403D6
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 30 Apr 2026 12:26:05 +0000 (UTC)
+X-CSE-ConnectionGUID: BMfUBgJvQRCkvxxL50tFhQ==
+X-CSE-MsgGUID: 262j+rXjQZywLQPUJXhYdg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11771"; a="78689180"
+X-IronPort-AV: E=Sophos;i="6.23,208,1770624000"; d="scan'208";a="78689180"
 Received: from orviesa006.jf.intel.com ([10.64.159.146])
  by orvoesa108.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 30 Apr 2026 05:26:06 -0700
-X-CSE-ConnectionGUID: iGpTe9cgTJqrJcYaeqGlxw==
-X-CSE-MsgGUID: Mfr2tqbKTTGcHSYViPM7Jg==
+ 30 Apr 2026 05:26:05 -0700
+X-CSE-ConnectionGUID: cSnv3J4PTpO/KHFmOGTMGw==
+X-CSE-MsgGUID: duS/1KRASjuFWY8mlw9i9A==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,208,1770624000"; d="scan'208";a="233538423"
+X-IronPort-AV: E=Sophos;i="6.23,208,1770624000"; d="scan'208";a="233538420"
 Received: from amlin-019-225.igk.intel.com ([10.102.19.225])
- by orviesa006.jf.intel.com with ESMTP; 30 Apr 2026 05:26:05 -0700
+ by orviesa006.jf.intel.com with ESMTP; 30 Apr 2026 05:26:04 -0700
 From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 To: intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com,
  aleksandr.loktionov@intel.com
 Cc: netdev@vger.kernel.org
-Date: Thu, 30 Apr 2026 14:25:58 +0200
-Message-ID: <20260430122602.126722-2-aleksandr.loktionov@intel.com>
+Date: Thu, 30 Apr 2026 14:25:57 +0200
+Message-ID: <20260430122602.126722-1-aleksandr.loktionov@intel.com>
 X-Mailer: git-send-email 2.52.0
-In-Reply-To: <20260430122602.126722-1-aleksandr.loktionov@intel.com>
-References: <20260430122602.126722-1-aleksandr.loktionov@intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
  t=1777551966; x=1809087966;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=Y1C501JONhNNAVfQFgCHZpYKC+oUFWqSXemVKft+MIg=;
- b=nayGQg+B7Gc3uO0EQzfKR2gd4XkSwxZtx96EgQCioFfJp16MBZv+LZOo
- r+m/PQbFpz/MSPForFF6Ns7tVckUDn/zRFkoBQPGG8GEhXr52zzM+lS/N
- z1Vj6d6vaYjBDJI2kVsvA7cTPYsDk7ELMOgjUmxcjvBkvit8OrrBx0Xgn
- Nsdo4ul5eWsyKabbr5lsrhk/pMpbqZH+McdC/UkbARZqWDuU4pVaINW6J
- uuQkHPab9CSY8oxp4mHtd+F5wl//0s2/bDFvdmcL4zTp/iBICKqCZvCMz
- iKtjyKcmN2Z2TzV3CBZuI/06R0a6/JkKRuL6k1HM/kTOkX5luyvE1Ze2X
- A==;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=WoSZTJZgD5sk1nHAskzI2NqSbzu34TMeqUl/m7B6ltc=;
+ b=kfkkdlyUvYZ9eDx0fsNirBFNL8VB7m+jBjE/9qvzuSO1rRId90zFwjm2
+ oEAJNFbSpG3GxKRhL7sssK2KmB7QNRCc0OFtc2gc3QJ/v0iWEsTUjVUHJ
+ 6NSrgISbjqT23AN5+B7VXXVC5YJ7uxUWfxYFSFbBGjmOk0wiBSYT7whPF
+ Y69+DLciCdyrzduPBNSzp1Nq3rEzsdCYYt9HVfY7Cxaj5tKYCQesbBk8I
+ 1NGV/1eZvF+3Vxz/m02Opp8ID8R6dms/to68GkPdtBFl3U6j7GXEk2GrG
+ VqQHL4HZemESWEPwjAQR0WSSbVF3bTZWhPrbWkX5k2cb8cT7ZwCISr1K2
+ g==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=nayGQg+B
-Subject: [Intel-wired-lan] [PATCH 1/5] ice: fix ETH56G Rx offset type
- description in kernel-doc comment
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=kfkkdlyU
+Subject: [Intel-wired-lan] [PATCH 0/5] ice: five small fixes and cleanups
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -109,35 +106,51 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Karol Kolacinski <karol.kolacinski@intel.com>
+Three correctness fixes and two cleanups for the ice driver.
 
-The ETH56G MAC register configuration Rx offset field stores a signed
-integer, not an unsigned one. Correct the struct comment that incorrectly
-described it as '11 bit unsigned int'. Also update 'unsigned ints' to
-'unsigned integers' for consistency.
+Patch 1 corrects a kernel-doc comment in ice_ptp_hw.h that described the
+ETH56G MAC Rx offset field as unsigned when it is signed (trivial doc fix,
+no functional change).
 
-Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
-Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
----
- drivers/net/ethernet/intel/ice/ice_ptp_hw.h | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Patch 2 removes the PF_SB_REM_DEV_CTL sideband register write from
+ice_ptp_init_phc_e82x().  PHY access is enabled by default on E82X and
+the register write was a leftover from an earlier SWITCH_MODE workaround
+that is no longer needed.
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
-index 9bfd3e7..c1aa408 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
-@@ -144,9 +144,9 @@ struct ice_vernier_info_e82x {
-  * @tx_offset: total Tx offset, fixed point
-  * @rx_offset: total Rx offset, contains value for bitslip/deskew, fixed point
-  *
-- * All fixed point registers except Rx offset are 23 bit unsigned ints with
-+ * All fixed point registers except Rx offset are 23 bit unsigned integers with
-  * a 9 bit fractional.
-- * Rx offset is 11 bit unsigned int with a 9 bit fractional.
-+ * Rx offset is 11 bit signed integer with a 9 bit fractional.
-  */
- struct ice_eth56g_mac_reg_cfg {
- 	struct {
+Patch 3 renames ICE_SMA2_UFL2_RX_DIS to ICE_SMA2_UFL2_RX_EN to match
+the actual active-high hardware semantics and inverts the three use sites
+in ice_dpll.c so that the logic remains correct.
+
+Patch 4 replaces the static per-type frequency tables for CGU pins with a
+single DPLL_PIN_FREQUENCY_RANGE(1, 25 MHz) entry.  The firmware defines
+an any_freq capability for configurable CGU inputs, but the old tables
+restricted users to 1 PPS or 10 MHz.  GNSS pins retain a 1 PPS-only
+entry since they are physically constrained.
+
+Patch 5 exports ice_dcb_need_recfg() and calls it in the four SW LLDP
+netlink setters instead of memcmp() on a non-packed struct, which is
+undefined behaviour due to uninitialised padding bytes.  The redundant
+memcmp in ice_pf_dcb_cfg() is removed since callers now guard it.
+
+Aleksandr Loktionov (2):
+  ice: add correct handling of SMA/u.FL states
+  ice: use element-by-element comparison for DCB config changes
+
+Arkadiusz Kubalewski (1):
+  ice: fix DPLL pin frequency range in CGU pin descriptors
+
+Karol Kolacinski (2):
+  ice: fix ETH56G Rx offset type description in kernel-doc comment
+  ice: remove unnecessary PF_SB_REM_DEV_CTL write for E82X
+
+ drivers/net/ethernet/intel/ice/ice_dcb_lib.c |  13 +-
+ drivers/net/ethernet/intel/ice/ice_dcb_lib.h |   2 +
+ drivers/net/ethernet/intel/ice/ice_dcb_nl.c  |  30 +++-
+ drivers/net/ethernet/intel/ice/ice_dpll.c    |   6 +-
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.c  | 141 ++++++++++---------
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.h  |   8 +-
+ 6 files changed, 113 insertions(+), 87 deletions(-)
+
 -- 
 2.52.0
 
