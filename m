@@ -1,117 +1,117 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 389AEFF8873
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5FB67CD13DF
 	for <intel-wired-lan@archiver.kernel.org>; Thu, 30 Apr 2026 16:53:32 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 440CD84EB8;
-	Thu, 30 Apr 2026 16:53:31 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 39B4642BBE;
+	Thu, 30 Apr 2026 16:53:32 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id gvlCHGgLjfbk; Thu, 30 Apr 2026 16:53:28 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id TkzdU_KV1wn7; Thu, 30 Apr 2026 16:53:31 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 1831F84EB3
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2DD8D42BD3
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1777568008;
-	bh=mfvKfJJPf0ASmalSXv+63KXtxyjY0rmQCt/O1qy7v1U=;
+	s=default; t=1777568011;
+	bh=FAU+laBnEtUtqsKtQVHrzB08mfX6f6gr6ykNiU5Tq5Q=;
 	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=f4W4BBt0OajkhdlBI5TkjfsO3qIcmZnShDYurtDtLmAFRK5+7PpyeW4ckZuoE8hYH
-	 I1p3pg5C/0O3i4zwzOAGRtBaJqxK/x1fjFFSUh2s6CQS91i6Qr0POKPcwjc0dVtKRq
-	 gQgl0HaB/vD941EATpsBJLhbICV6irU3AcYjXO/tIRXg6tWHu4oPW39JJrS1R2iGnK
-	 0ilvmE5g6dAFl+sNfHNG1wzCyP4gmq/4q9I6AWW4eSigs94Tai6nxBccBboXD6aJDw
-	 CQCWhZY0wSjEXYMrbvQFW2+wvRalGXmQ6QnsA+Kx13kmz5qZnj5E5mGD3UEZIuu/fI
-	 sSx5oKshys0ig==
+	b=J0a3JFLWnTUIFDiXCJ4ItsBMX8UISLotIZOoxQ0Oz/PPyOgkyedhOD2oFYZDqWAZw
+	 tnvS6d04AzhOBeTd4K78vDEi9QAPD/tMn0wInVMmwLD1ULK8JskxaPifTf/bYDQPrG
+	 0szzCMCt+r5FTBPqE8RXhHzguuFTVdn4NmqPomxbEFWwYYS9NTqUhufHVwKacdZFQ8
+	 GFbpLF26/hT16QvxZcOm7WjzqqT2b/yNGl3VYkFG4Ya53cwgCGFzzQAC59qNfh+OO4
+	 WpFRknWtoWuxBjxRsrSlONk2AlB2QGjYD3qTuNFxUb7h1+1kiJlEW1G0Lfb/13wy+2
+	 dhHjBsWrBYWqA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 1831F84EB3;
-	Thu, 30 Apr 2026 16:53:28 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 2DD8D42BD3;
+	Thu, 30 Apr 2026 16:53:31 +0000 (UTC)
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by lists1.osuosl.org (Postfix) with ESMTP id E3160231
- for <intel-wired-lan@lists.osuosl.org>; Wed, 29 Apr 2026 10:26:41 +0000 (UTC)
+ by lists1.osuosl.org (Postfix) with ESMTP id DEB72192
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 30 Apr 2026 13:13:21 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id C7E9A6119E
- for <intel-wired-lan@lists.osuosl.org>; Wed, 29 Apr 2026 10:26:41 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id C3EA160F4B
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 30 Apr 2026 13:13:21 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id YN__tOByw6k6 for <intel-wired-lan@lists.osuosl.org>;
- Wed, 29 Apr 2026 10:26:39 +0000 (UTC)
+ id C1dc8Lotay6k for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 30 Apr 2026 13:13:19 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom;
- client-ip=2a00:1450:4864:20::32c; helo=mail-wm1-x32c.google.com;
+ client-ip=2a00:1450:4864:20::336; helo=mail-wm1-x336.google.com;
  envelope-from=ukleinek@baylibre.com; receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 459E960ECF
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 459E960ECF
-Received: from mail-wm1-x32c.google.com (mail-wm1-x32c.google.com
- [IPv6:2a00:1450:4864:20::32c])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 459E960ECF
- for <intel-wired-lan@lists.osuosl.org>; Wed, 29 Apr 2026 10:26:37 +0000 (UTC)
-Received: by mail-wm1-x32c.google.com with SMTP id
- 5b1f17b1804b1-488a9033b2cso129676205e9.2
- for <intel-wired-lan@lists.osuosl.org>; Wed, 29 Apr 2026 03:26:37 -0700 (PDT)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 48A3660F47
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 48A3660F47
+Received: from mail-wm1-x336.google.com (mail-wm1-x336.google.com
+ [IPv6:2a00:1450:4864:20::336])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 48A3660F47
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 30 Apr 2026 13:13:17 +0000 (UTC)
+Received: by mail-wm1-x336.google.com with SMTP id
+ 5b1f17b1804b1-4891c00e7aeso8197325e9.2
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 30 Apr 2026 06:13:17 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20251104; t=1777458395; x=1778063195;
+ d=1e100.net; s=20251104; t=1777554796; x=1778159596;
  h=in-reply-to:content-disposition:mime-version:references:message-id
  :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
  :subject:date:message-id:reply-to;
- bh=mfvKfJJPf0ASmalSXv+63KXtxyjY0rmQCt/O1qy7v1U=;
- b=c2JfQeK5kTe1Y+xJTWSd41EU3n+UlxUxyxqW4oWgTAeixFnrviVT8GINKUrvWcig5E
- k4mLZgtCcpqfPlJLSw+j2XxWBVaReVD+CL8Dhuk6unz6KvFFAJ39f76Pg3fYy/V7c76G
- V07NPXWgfWgrcHNJnjY1TjYUFOPdrmOX9yABvavIpD0dTFMd2u1ksJREiHQdCslU3grD
- 1vjoRGbOqpTAkZKWUXtEuUPB3pCMLyIfyNxQhDgv+4ZVrLk2BGW8EWz/a8TmxwKwYCNE
- 59RJAo4Jc7e16SDqix8+oQtEaLb6Gfzxu1nkP8rjjLk3Qkzn8vNHABDg7vxIkFWdswQl
- 2Slw==
+ bh=FAU+laBnEtUtqsKtQVHrzB08mfX6f6gr6ykNiU5Tq5Q=;
+ b=TYzE2jtroITgm0gcbHspIMGOe6IV5aCBBQSwi+49NNeFmth5ncDFgCI/NLiMBQhVkE
+ uQCjB3TPhw+V+/KVRdYEF1ayDy0AhOPFIG4YfAvkRChEm5DRcTbcjf381faDReebmVzy
+ +YOZFpN7ZJjihSxUUURlyIN3GwoMGpvHa9tQP3sIz3nozPj3e+8YG9gFYmA/Ow2SHPc/
+ HSdu1Ry0L6/eSXACXKXvOC6JJJDsnvO9bwYwquLN4Rne/vqb2P9f6TOPgsnsAQuL8yht
+ bpNuP8K0FJlAZTBEH3b6pSUqbwA3X4qNptcKlJMDDtSp825gq3UEjjfcC0p8BZON4E2q
+ +Axg==
 X-Forwarded-Encrypted: i=1;
- AFNElJ+1Vw/JG6TUhdM5oSB/iA0yWxFFTQCJOn6z2+IuvumpbjyhSXKuHd5umBxB/MBOcwgmY+JNjnEHwop4hpNa7H4=@lists.osuosl.org
-X-Gm-Message-State: AOJu0Yy2hAdwB+ggVVH9pjozIfySBQZgiOG/15Q5KbduCfQbZLL4cn3a
- VST+IRMAE2+rTbrvaGg/UTwIlonjrxhHzylsFZNlm6z9LZNooeJBVzmlxzf1rp/Jpeo=
-X-Gm-Gg: AeBDievi+BOewP/lmnFcl88lqjGAkMLYpTfFKuppXoeRrDMko1CGOR5k+sfkRYUVylF
- IFPnR/rAHQ9EQeA4tgWsccYGVxcKHiBrqCjO6hIsMRn/UqI9ucmv9p57W3vBLAAl1I/z3UTOxoj
- 2tK3aTuFhuBVmeiborLYQMesvC9dGZsTqhh3ZPyB5QJ0yOXDMWou/ynYfHQxeZ4Dc9A5vj+cZJp
- WlwWH0EJ0JMPhpnRFahfr4XBhdIy7RJd1QnZBSi9mMLNKNOGna+nseCtOqaiEe0WlfD4j59+6hH
- tkcq5tL3dL49eJY/BJKojJrA8eCQcf2jBpkqcEWGC9CLA4XP9qgQuaeevIXxQXA4QyNF0zijr+L
- UO95YBJYi1lOOJHolxns/EIrlyVEwtSnRWxN2DvcMf+iYpxbB+AMLnKg5C087SZxrqcAuc+jLg5
- GkvtuLbQ85tMdVY2TE+cRHAHprXInws0Br1p1P3wD5E/TkZZRpLOrOzp4OMzb9w8dbeJkERlpbj
- 0U3ncUmcXruEen7GOEvywghcw==
-X-Received: by 2002:a05:600d:8402:b0:489:149a:f9e7 with SMTP id
- 5b1f17b1804b1-48a77b25340mr88922285e9.27.1777458393898; 
- Wed, 29 Apr 2026 03:26:33 -0700 (PDT)
+ AFNElJ+3goFROs64wJcy7Aex4r8SIoNxWMFvTCy/MD3P8u4LdF3IEB/iONGj6FkQlilTJxuaktIJrYa89J2XfZqWZwA=@lists.osuosl.org
+X-Gm-Message-State: AOJu0Yzsn/wOza/7i23ywJMrJgS656t4a6v2JT9dtvKzRRzpwjCtFB6f
+ 9+SY+ki1lXkMt+xcDUu8GWNTohi3X9sLUrr70G7w16CdZVE278wwZndrWvAneZ+OA7k=
+X-Gm-Gg: AeBDievRdsFYnEwelwdiFZ3JaQ+dYxUFUZQ7TGIMRBw6CetHsdBQCdJApD2SOtlLfBu
+ KRvdhPKSAzC+WgBDipel5gvDhAjoHmG97ryUqHrWy0duuxrcSbI6+FJajHhWwS/IA+Ds6I/Qpvy
+ AKtqJUiCI0YGr+kMefY6Zz/aZ5991Mbhxdd6vdi6Tmd3rOQmEVpfI5PlAHAF0jr4Ac31QCLvhP9
+ t0xup3IQrHXEb9e33iqg2enTuODfb9n//GCI/p0FTvj70+6TbfehWuOcHlwQVIq9yOL8M+yTGR0
+ LsZPviuQUJkBGNfAMIIOI8idJYoS257PbtcJy3DViJNSq3iniagsE8+1VzjRPWV/L2+BH0h/xY4
+ G9y207i71aUT8QRRyMd5voDqABX+GFILgRAPievSZ0VL3atFIlC8WGFB0CZ+cdC4P/A8lzh+xIi
+ 6e5p6mPTIB/O/dnShru+l7OkhLktqiVIlDz00PjAKV20X5/7YLf74W7grSn+gJr7iwm9Pq/pD7I
+ kZ84ayAsU/x/nNJl/8NnyAZLA==
+X-Received: by 2002:a05:600c:1382:b0:488:a977:8d6 with SMTP id
+ 5b1f17b1804b1-48a84458db6mr47509015e9.19.1777554795369; 
+ Thu, 30 Apr 2026 06:13:15 -0700 (PDT)
 Received: from localhost
- (p200300f65f114e08936c55da887fa426.dip0.t-ipconnect.de.
- [2003:f6:5f11:4e08:936c:55da:887f:a426])
+ (p200300f65f114e0859f76ff87a50eb14.dip0.t-ipconnect.de.
+ [2003:f6:5f11:4e08:59f7:6ff8:7a50:eb14])
  by smtp.gmail.com with UTF8SMTPSA id
- 5b1f17b1804b1-48a7b912ee3sm28053445e9.2.2026.04.29.03.26.32
+ 5b1f17b1804b1-48a7b912ee3sm74461355e9.2.2026.04.30.06.13.14
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 29 Apr 2026 03:26:33 -0700 (PDT)
-Date: Wed, 29 Apr 2026 12:26:32 +0200
+ Thu, 30 Apr 2026 06:13:14 -0700 (PDT)
+Date: Thu, 30 Apr 2026 15:13:13 +0200
 From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig_=28The_Capable_Hub=29?=
  <u.kleine-koenig@baylibre.com>
-To: Andy Shevchenko <andriy.shevchenko@intel.com>
-Message-ID: <afHbcwzVucHRYmDW@monoceros>
+To: Jijie Shao <shaojijie@huawei.com>
+Message-ID: <afNUNeIsN4MrjWN7@monoceros>
 References: <20260428171845.2288395-2-u.kleine-koenig@baylibre.com>
- <afGrPvUeZ-DjWbC8@ashevche-desk.local>
+ <814632c8-070b-4b21-adbb-5a01a62d52f2@huawei.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
- protocol="application/pgp-signature"; boundary="k4r3nmtfjdpszuus"
+ protocol="application/pgp-signature"; boundary="eswuwmcxtpmq7cnr"
 Content-Disposition: inline
-In-Reply-To: <afGrPvUeZ-DjWbC8@ashevche-desk.local>
+In-Reply-To: <814632c8-070b-4b21-adbb-5a01a62d52f2@huawei.com>
 X-Mailman-Approved-At: Thu, 30 Apr 2026 16:53:24 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=baylibre-com.20251104.gappssmtp.com; s=20251104; t=1777458395; x=1778063195;
+ d=baylibre-com.20251104.gappssmtp.com; s=20251104; t=1777554796; x=1778159596;
  darn=lists.osuosl.org; 
  h=in-reply-to:content-disposition:mime-version:references:message-id
  :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
- bh=mfvKfJJPf0ASmalSXv+63KXtxyjY0rmQCt/O1qy7v1U=;
- b=B1HjytEFUrAHzKDx4QFG1YmOF0HexxWJsZKxUKd2RhnRITKY3P54T45kYpoGfUQTdq
- l8q0PMXW2o+84C1T8DHA57stMYsewz2Te+dmd2P6Ek9N2ggRrHJbXsw1g4SfggZpCoZP
- oOchcUJvsMQQu0gKpDglJz4+MZA1cTJofY+s2X7zxYcdooP+6spWhMBH288VeVxQqcZ9
- osbIePGtbzHnxMgobiIfyEufrGBsXhzUSAN69pmKmnjfYXQWSAgEcnjql1kSjLFt4bLm
- 4+sWnCXhcKqebi64AZEMa82i+fipa2j2gcpp+ME9RCizfpy8aSXEMbvZY46s9lZWMT+O
- 0RNg==
+ bh=FAU+laBnEtUtqsKtQVHrzB08mfX6f6gr6ykNiU5Tq5Q=;
+ b=cevolYYt5SeJzXbiOyTDQdt6BuxzIR2wQ6rpvc9uX4QKwm2I+FOzE7EOz+B2H/dhNY
+ vJf61V7eQ4u97IyO1pVq8akxdNnchArvBOXXZdmyfnxTV5jBTBBwvwjvDF+jcsbOI8a4
+ +kOnnwssR9cBThtoietMCTRvQuai9suGrTK99hkuUgF5leJFByKcniwKrsE/rL9BLUZr
+ MHm9yZ9HapN7uNhPx7ZGYVaD0KB1qtgfFn7pP6lq5nsWIqEJ5O/xJoQkVdRT58/7FKnl
+ 9g8DPVnhhL+nWMi2xQ/6dDfVtkS7b6xOXlQkzBBbUjG+AfGCAiTxWqt3DZXg7GrfjqnO
+ Jeuw==
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=none (p=none dis=none)
  header.from=baylibre.com
@@ -119,7 +119,7 @@ X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=baylibre-com.20251104.gappssmtp.com
  header.i=@baylibre-com.20251104.gappssmtp.com header.a=rsa-sha256
- header.s=20251104 header.b=B1HjytEF
+ header.s=20251104 header.b=cevolYYt
 Subject: Re: [Intel-wired-lan] [PATCH net-next] net: Consistently define
  pci_device_ids using named initializers
 X-BeenThere: intel-wired-lan@osuosl.org
@@ -134,18 +134,16 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Cai Huoqing <cai.huoqing@linux.dev>,
+Cc: Richard Cochran <richardcochran@gmail.com>,
  Marco Crivellari <marco.crivellari@suse.com>,
  Randy Dunlap <rdunlap@infradead.org>, Yonglong Liu <liuyonglong@huawei.com>,
  Kees Cook <kees@kernel.org>, linux-wireless@vger.kernel.org,
  Larysa Zaremba <larysa.zaremba@intel.com>, Joe Damato <joe@dama.to>,
  brcm80211@lists.linux.dev, Daniele Venzano <venza@brownhat.org>,
  Eric Dumazet <edumazet@google.com>, Tony Nguyen <anthony.l.nguyen@intel.com>,
- MD Danish Anwar <danishanwar@ti.com>,
- Richard Cochran <richardcochran@gmail.com>, Samuel Chessman <chessman@tux.org>,
+ MD Danish Anwar <danishanwar@ti.com>, Samuel Chessman <chessman@tux.org>,
  Fan Gong <gongfan1@huawei.com>, Mengyuan Lou <mengyuanlou@net-swift.com>,
  Kevin Curtis <kevin.curtis@farsite.co.uk>, Ingo Molnar <mingo@kernel.org>,
- Ion Badulescu <ionut@badula.org>,
  Michael Grzeschik <m.grzeschik@pengutronix.de>,
  Yeounsu Moon <yyyynoom@gmail.com>, Manish Chopra <manishc@marvell.com>,
  Colin Ian King <colin.i.king@gmail.com>,
@@ -157,32 +155,33 @@ Cc: Cai Huoqing <cai.huoqing@linux.dev>,
  Paolo Abeni <pabeni@redhat.com>, Steffen Klassert <klassert@kernel.org>,
  Stanislav Yakovlev <stas.yakovlev@gmail.com>, linux-rdma@vger.kernel.org,
  Arend van Spriel <arend.vanspriel@broadcom.com>, nic_swsd@realtek.com,
- Jiri Pirko <jiri@resnulli.us>, Philipp Stanner <phasta@kernel.org>,
- Ido Schimmel <idosch@nvidia.com>, Potnuri Bharat Teja <bharat@chelsio.com>,
- Double Lo <double.lo@cypress.com>,
+ Jiri Pirko <jiri@resnulli.us>, Ethan Nelson-Moore <enelsonmoore@gmail.com>,
+ Philipp Stanner <phasta@kernel.org>, Ido Schimmel <idosch@nvidia.com>,
+ Potnuri Bharat Teja <bharat@chelsio.com>, Double Lo <double.lo@cypress.com>,
  Markus Schneider-Pargmann <msp@baylibre.com>,
  Nathan Chancellor <nathan@kernel.org>, Jiawen Wu <jiawenwu@trustnetic.com>,
- Marc Kleine-Budde <mkl@pengutronix.de>, Bjorn Helgaas <bhelgaas@google.com>,
- Zilin Guan <zilin@seu.edu.cn>, linux-can@vger.kernel.org,
- Yibo Dong <dong100@mucse.com>, Ethan Nelson-Moore <enelsonmoore@gmail.com>,
- Petr Machata <petrm@nvidia.com>, Kory Maincent <kory.maincent@bootlin.com>,
- brcm80211-dev-list.pdl@broadcom.com, GR-Linux-NIC-Dev@marvell.com,
- Vadim Fedorenko <vadim.fedorenko@linux.dev>, Leon Romanovsky <leon@kernel.org>,
- Denis Benato <benato.denis96@gmail.com>, Rasesh Mody <rmody@marvell.com>,
- netdev@vger.kernel.org, oss-drivers@corigine.com,
- Vincent Mailhol <mailhol@kernel.org>, Mark Bloch <mbloch@nvidia.com>,
- linux-kernel@vger.kernel.org, Tariq Toukan <tariqt@nvidia.com>,
- Jian Shen <shenjian15@huawei.com>, Jijie Shao <shaojijie@huawei.com>,
- Andrew Lunn <andrew+netdev@lunn.ch>, Thomas Gleixner <tglx@kernel.org>,
- Simon Horman <horms@kernel.org>, Yicong Hui <yiconghui@gmail.com>,
- Mark Einon <mark.einon@gmail.com>, Johannes Berg <johannes@sipsolutions.net>,
+ Cai Huoqing <cai.huoqing@linux.dev>, Mark Einon <mark.einon@gmail.com>,
+ Bjorn Helgaas <bhelgaas@google.com>, Zilin Guan <zilin@seu.edu.cn>,
+ linux-can@vger.kernel.org, Yibo Dong <dong100@mucse.com>,
+ Andy Shevchenko <andriy.shevchenko@intel.com>, Petr Machata <petrm@nvidia.com>,
+ Kory Maincent <kory.maincent@bootlin.com>, brcm80211-dev-list.pdl@broadcom.com,
+ GR-Linux-NIC-Dev@marvell.com, Vadim Fedorenko <vadim.fedorenko@linux.dev>,
+ Leon Romanovsky <leon@kernel.org>, Denis Benato <benato.denis96@gmail.com>,
+ Rasesh Mody <rmody@marvell.com>, netdev@vger.kernel.org,
+ oss-drivers@corigine.com, Vincent Mailhol <mailhol@kernel.org>,
+ Mark Bloch <mbloch@nvidia.com>, linux-kernel@vger.kernel.org,
+ Tariq Toukan <tariqt@nvidia.com>, Jian Shen <shenjian15@huawei.com>,
+ Ion Badulescu <ionut@badula.org>, Andrew Lunn <andrew+netdev@lunn.ch>,
+ Thomas Gleixner <tglx@kernel.org>, Simon Horman <horms@kernel.org>,
+ Yicong Hui <yiconghui@gmail.com>, Marc Kleine-Budde <mkl@pengutronix.de>,
+ Johannes Berg <johannes@sipsolutions.net>,
  Heiner Kallweit <hkallweit1@gmail.com>, Saeed Mahameed <saeedm@nvidia.com>,
  "David S. Miller" <davem@davemloft.net>, Krzysztof Halasa <khc@pm.waw.pl>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 
---k4r3nmtfjdpszuus
+--eswuwmcxtpmq7cnr
 Content-Type: text/plain; protected-headers=v1; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
@@ -190,13 +189,10 @@ Subject: Re: [PATCH net-next] net: Consistently define pci_device_ids using
  named initializers
 MIME-Version: 1.0
 
-[I dropped a few addresses from Cc: that bounced for me before.]
+Hello,
 
-Hello Andy,
-
-On Wed, Apr 29, 2026 at 09:54:54AM +0300, Andy Shevchenko wrote:
-> On Tue, Apr 28, 2026 at 07:18:44PM +0200, Uwe Kleine-K=F6nig (The Capable=
- Hub) wrote:
+On Thu, Apr 30, 2026 at 02:53:29PM +0800, Jijie Shao wrote:
+> on 2026/4/29 1:18, Uwe Kleine-K=F6nig (The Capable Hub) wrote:
 > > ... and PCI device helpers.
 > >=20
 > > The various struct pci_device_id arrays were initialized mostly by one
@@ -217,96 +213,71 @@ re.com/)
 > >=20
 > > This change doesn't introduce changes to the compiled pci_device_id
 > > arrays. Tested on x86 and arm64.
+> >=20
+> > Signed-off-by: Uwe Kleine-K=F6nig (The Capable Hub) <u.kleine-koenig@ba=
+ylibre.com>
 >=20
 > ...
 >=20
-> > -	{0,}						/* 0 terminated list. */
-> > +	{ }						/* 0 terminated list. */
+> > diff --git a/drivers/net/ethernet/hisilicon/hibmcge/hbg_main.c b/driver=
+s/net/ethernet/hisilicon/hibmcge/hbg_main.c
+> > index 068da2fd1fea..b3e01b2f8319 100644
+> > --- a/drivers/net/ethernet/hisilicon/hibmcge/hbg_main.c
+> > +++ b/drivers/net/ethernet/hisilicon/hibmcge/hbg_main.c
+> > @@ -489,7 +489,7 @@ static void hbg_shutdown(struct pci_dev *pdev)
+> >   }
+> >   static const struct pci_device_id hbg_pci_tbl[] =3D {
+> > -	{PCI_VDEVICE(HUAWEI, 0x3730), 0},
+> > +	{ PCI_VDEVICE(HUAWEI, 0x3730) },
+> >   	{ }
+> >   };
 >=20
-> The comments like these are just noises.
+> Reviewed-by: Jijie Shao <shaojijie@huawei.com>
 
-Agreed, but I'd consider it out of scope for this patch to drop these
-comments. That might also be subjective.
+Thanks.
 
-> The rule of thumb is to play with a
-> trailing comma:
-> - always drop it in the terminator entry
-> - always keep it in the normal initialisers when semantically it's not a
-> terminator
-
-That was my intention. Will rework.
-
-> >  static const struct pci_device_id liquidio_pci_tbl[] =3D {
-> >  	{       /* 68xx */
-> > -		PCI_VENDOR_ID_CAVIUM, 0x91, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0
-> > +		PCI_VDEVICE(CAVIUM, 0x91)
+> > +	{
+> > +		PCI_VDEVICE(HUAWEI, HNAE3_DEV_ID_GE),
+> > +		.driver_data =3D 0,
+> > +	}, {
+> > +		PCI_VDEVICE(HUAWEI, HNAE3_DEV_ID_25GE),
+> > +		.driver_data =3D 0,
 >=20
-> Use full fixed-width device id value(s). 0x0091 here and so on...
-
-Sounds fair.
-
-> >  	},
+> Thanks for your work.
 >=20
-> Also seems that you may decrease number of LoC here putting it as
+> If .driver_data =3D 0, is it possible to delete it to be consistent with =
+other parts, for example:
 >=20
-> 	{ PCI_VDEVICE(CAVIUM, 0x0091) }, /* 68xx */
+> { PCI_VDEVICE(HUAWEI, HNAE3_DEV_ID_GE) }
 >=20
-> and so on...
+> > +	}, {
+> > +		PCI_VDEVICE(HUAWEI, HNAE3_DEV_ID_25GE_RDMA),
+> > +		.driver_data =3D HNAE3_DEV_SUPPORT_ROCE_DCB_BITS,
 
-Agreed if all lines of an array can be compressed like that.
+However keeping the explicit .driver_data =3D 0 to have a contrast to
+other `pci_device_id`s having a non-zero .driver_data in the same driver
+is also a good reason to keep the (technically redundant) assignment.
+For other drivers I dropped these assignments if this is possible for
+all array members.
 
-> >  	{       /* 66xx */
-> > -		PCI_VENDOR_ID_CAVIUM, 0x92, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0
-> > +		PCI_VDEVICE(CAVIUM, 0x92)
-> >  	},
-> >  	{       /* 23xx pf */
-> > -		PCI_VENDOR_ID_CAVIUM, 0x9702, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0
-> > +		PCI_VDEVICE(CAVIUM, 0x9702)
-> >  	},
-> > -	{
-> > -		0, 0, 0, 0, 0, 0, 0
-> > -	}
-> > +	{ }
-> >  };
->=20
-> ...
->=20
-> >  #define CH_PCI_DEVICE_ID_TABLE_DEFINE_END \
-> > -		{ 0, } \
-> > +		{ } \
-> >  	}
->=20
-> Why do we have this macro at all?
-
-Over engineering? Reworking that also seems to be out of scope for this
-patch to me.
-
-> Also I somehow managed to remove, but I remember you had an inner comma i=
-n some
-> cases after the .driver_data, when the full ID entry is located on a sing=
-le
-> line. I.o.w. do
->=20
-> 	{ PCI_...(), .driver_data =3D ... // no trailing comma here! },
-
-That was also my intention. Will rework.
+Having said that I don't intend to rework the patch for this suggestion.
 
 Best regards
 Uwe
 
---k4r3nmtfjdpszuus
+--eswuwmcxtpmq7cnr
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmnx3NUACgkQj4D7WH0S
-/k7M1wf/QelV4pupjiZbLcg8qPVRzGgZ0AKqDUMY0oLZjH5ck6W8VSMONm3Ln4fu
-Tbzeul8HVUK14PBHvYKQiDU7OCUzVwfgAgM2qs9BuyfAmX3mBr2SaZI1M1DtYNUv
-3FRPKSiDWXcbe5sguySJb0BKepJc6DdUYzpRBrF5m90mvuM2dZALWRiO3lFvMYlS
-Kls/wTkony/O5uB/oAAHI7y91nhHIw++GuY0fge4rmRUISKTZ+G1/Lz8VrcUzt+p
-8iTGVh5MpStGQuFRrjho2JzPcrXxcOYiI6Z3rRBMCu5qZbVlrzaKcVvwCMd7n4gc
-gbcV922oXzCW/OtCAcZtPNggcidTXA==
-=we79
+iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmnzVWYACgkQj4D7WH0S
+/k6Htwf7BvJ3rYQezsd5ccz+2MAtba8pHTB3I6pUsnO2mYagJg6HKmfMspgye4AX
+BO1wngPAitkKYC0Y1QVjeL8mZpJnkiTKh5ZpywnJ5LC1/Y46vbJl1a7z45/l4MF2
+zOsQls/uPpw8h/Dif+kH4laLc33EYUiN6uoPtEBvyJuZUfEXWMc6KHtzmIZnagla
+mZcae0icKZUF5MyFeux8zVGWeLTcdBYGrtWUJ2x68bnP62MozIOSPUXTFkPxWruD
+HFTrL81mQYbLfZ88SKlMyogAeA7UjBd5/MpVdnfzLm1viy3XHq/Y9eIDkr/WypiX
+51YxF/Ol5KsTDi2naPCCB1uZE9k0xQ==
+=gn92
 -----END PGP SIGNATURE-----
 
---k4r3nmtfjdpszuus--
+--eswuwmcxtpmq7cnr--
