@@ -1,95 +1,98 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4F0EACD342C
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 80A8DCD3430
 	for <intel-wired-lan@archiver.kernel.org>; Mon,  4 May 2026 11:01:05 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id A2031613A0;
-	Mon,  4 May 2026 11:01:04 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 49EB78451C;
+	Mon,  4 May 2026 11:01:05 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id DHf9BSf3Wnw1; Mon,  4 May 2026 11:01:03 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id ZR1-oFEqDnDQ; Mon,  4 May 2026 11:01:04 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 536276139E
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 961768451D
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1777892463;
-	bh=GFlSzFuCsYRsKnBoTwugtJIWDem31V1ps+/wdSqR5sk=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=G3MsBO1tVx6E3SIbvF09lhPojbAc9+Iew9xyrC4uqeE5wVzo76e9fBnRhj4+pJMf3
-	 NvGVCBhBOzBN5AAigsFJxRKHXLp7gNz8XRLLtKmCkCL5VirZ4cJOR2uM9aCxyrxpbQ
-	 ALLwEgDIYJNdSbOX8DVr0jVWzDGtI7VawARirgiB2mLsn4n5IAQeJ5SN2/1UGeIaaq
-	 GzeYvl/p7a6N4U1jSjBEPJR5eTfmilvMYqKhg3kg6olQhWIimE19OibU9pF7uf1zRf
-	 ttuEs11w2g2F5DaxZksOjDnMBH9rVRIkuV+WoUA1Id69EEhu5nHfyyDTSzPegQwRGJ
-	 unpEMoem4zaHg==
+	s=default; t=1777892464;
+	bh=INriOp2xI/MeFcW23xGddT0du5qeLVJlXRDIucelsrk=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=4bUYzyBtz+w8w+OIcnnv2haWyn4bmLi0C5TN8/hzahWRwfmk5NZMuhmMCaYeheJv+
+	 zaehgyzis3V5/e37HGtTPZS3bfWoE4ZZVoF9DAoxVSKdKa3FPUHgvhcyHUr36lmx7c
+	 GrLx2oVzgljBg4IGZnj57IaRmnyQbdWwsYYhG/S/gHbzUQ6sJspumiSAboLHib8ZEU
+	 GxRykgFWw7Tj7v85AxnaJGVwiI4aRigkHNZMieX9//frICsJWJ/+5SojMvnWAGSnVb
+	 09xcg7xkjNXmYQ5+VXKiuaHGsQ349A2iST3xNMIbjsC1axu+o4VNsEVBhxZpiyUhyv
+	 a7ZvbHQae5CKA==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 536276139E;
-	Mon,  4 May 2026 11:01:03 +0000 (UTC)
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
- by lists1.osuosl.org (Postfix) with ESMTP id 5202D190
- for <intel-wired-lan@lists.osuosl.org>; Mon,  4 May 2026 11:01:02 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 961768451D;
+	Mon,  4 May 2026 11:01:04 +0000 (UTC)
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
+ by lists1.osuosl.org (Postfix) with ESMTP id 565F225D
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  4 May 2026 11:01:03 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 4396F6139E
- for <intel-wired-lan@lists.osuosl.org>; Mon,  4 May 2026 11:01:02 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 38F8C41A4A
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  4 May 2026 11:01:03 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id XLi7HZUP6jcJ for <intel-wired-lan@lists.osuosl.org>;
- Mon,  4 May 2026 11:01:01 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id PjnzYJ6mqZhk for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  4 May 2026 11:01:02 +0000 (UTC)
 Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.16;
  helo=mgamail.intel.com; envelope-from=sergey.temerkhanov@intel.com;
  receiver=<UNKNOWN> 
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 74CB16139A
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 74CB16139A
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 21DA741A48
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 21DA741A48
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.16])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 74CB16139A
- for <intel-wired-lan@lists.osuosl.org>; Mon,  4 May 2026 11:01:00 +0000 (UTC)
-X-CSE-ConnectionGUID: 7pamZCgpQJqpfKHqzznOcA==
-X-CSE-MsgGUID: eOsnkSE/QAuk8zQRaEts6Q==
-X-IronPort-AV: E=McAfee;i="6800,10657,11775"; a="78939686"
-X-IronPort-AV: E=Sophos;i="6.23,215,1770624000"; d="scan'208";a="78939686"
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 21DA741A48
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  4 May 2026 11:01:01 +0000 (UTC)
+X-CSE-ConnectionGUID: ELUsJV77TYaUmuIIjVl5Cw==
+X-CSE-MsgGUID: Qb5L/ZihQ0mpwTj06UDh0A==
+X-IronPort-AV: E=McAfee;i="6800,10657,11775"; a="78939689"
+X-IronPort-AV: E=Sophos;i="6.23,215,1770624000"; d="scan'208";a="78939689"
 Received: from orviesa004.jf.intel.com ([10.64.159.144])
  by orvoesa108.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 04 May 2026 04:01:00 -0700
-X-CSE-ConnectionGUID: 3pS4IbugQ+e4O71EbqH7Ag==
-X-CSE-MsgGUID: r54MIRs3TBu19S/8Gw5f+Q==
+ 04 May 2026 04:01:02 -0700
+X-CSE-ConnectionGUID: v2JZYHBpQj60zBsH0LCR6g==
+X-CSE-MsgGUID: F8ybxhVbSwmJjkTR2ZoW4w==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,215,1770624000"; d="scan'208";a="239792118"
+X-IronPort-AV: E=Sophos;i="6.23,215,1770624000"; d="scan'208";a="239792123"
 Received: from gnrd8.igk.intel.com (HELO GNRD8) ([10.123.232.137])
- by orviesa004.jf.intel.com with ESMTP; 04 May 2026 04:00:59 -0700
+ by orviesa004.jf.intel.com with ESMTP; 04 May 2026 04:01:01 -0700
 From: Sergey Temerkhanov <sergey.temerkhanov@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Mon,  4 May 2026 11:00:55 +0000
-Message-ID: <20260504110058.2373236-1-sergey.temerkhanov@intel.com>
+Date: Mon,  4 May 2026 11:00:57 +0000
+Message-ID: <20260504110058.2373236-3-sergey.temerkhanov@intel.com>
 X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20260504110058.2373236-1-sergey.temerkhanov@intel.com>
+References: <20260504110058.2373236-1-sergey.temerkhanov@intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1777892462; x=1809428462;
- h=from:to:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=/rK8g29xd9hKv2k9bB829r08DZ0dHtRyNZ8rSSYcMvQ=;
- b=cwrJ2Bdgynmlf7EVlsnjV8x///3/qOFFiHKX1o76Q7S7vKOVNnFfly0A
- tKXAmsAsPbopc1Xzukuvcdx+YnuPV/NKHWz6w7KyjZ5/G/2aLpxQJP1MU
- 9iWBjl08yL5f3NJ0ZwPStWpT5qV8jE0FOhOFc+42ejRmVA5JLRcgP69oF
- bu6QUSbGRaepK8wDBFAVnDt8UQEUWrkqLf19J5nM742Lat7uGtY4UUDFi
- HqHdMDF9Na8GFrwyLZ0dRkqgVf01ejCYPM7FYBF+j0C6y778bR5H9rtMd
- BihysWUTRmjyS3pHu0ffy3eFlHr0/ujSrmhSuY+DlTZnJwWjN518wdj2q
+ t=1777892463; x=1809428463;
+ h=from:to:subject:date:message-id:in-reply-to:references:
+ mime-version:content-transfer-encoding;
+ bh=sxjykjgBCLVR0+8qf0+QS7+ogMK1l6RLYYcd7zzzzpk=;
+ b=nQernlpLsD69s3D25WTreIre9bQzWmHfeTSFKufoyM+1MnCkB8A02DBO
+ iKV3Dbq5Ke3lh36tLSA+L4cfS4oZSD/D6qkWC1fyyJqLyUY0GlC+1x/+f
+ oR0ed4QEXvhiH80L6G0b+yPD78quig+yMak9uM+gFJktvVSTIGH57f0e0
+ XKnUeiL1PskR03Pc/HeWChUmZwxt3qlLKo8zg3MXNzXIisVzOLR463A9w
+ iJeyeLfQ5gO1xRP3FR2uBw55l4mZaGMw98Vr/hUuP8VRzddgILx9bB95b
+ MEdR0vOMdGAbPnsXxEpP8tL/OVYP8c0zWQ2CaqQym437fTw8RwtGg9PqC
  Q==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dmarc=pass (p=none dis=none)
  header.from=intel.com
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key,
  unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
- header.s=Intel header.b=cwrJ2Bdg
-Subject: [Intel-wired-lan] [PATCH iwl-net v1 0/3] Rework ctrl_pf pointer
- usage in struct ice_adapter
+ header.s=Intel header.b=nQernlpL
+Subject: [Intel-wired-lan] [PATCH iwl-net v1 2/3] ice: Zero out the PTP
+ control PF pointer at ice_adapter cleanup
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -105,22 +108,70 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Rework usage of the control PF pointer in struct ice_adapter, so that
-it is always has a consistent state, since it is global for an adapter.
-Utilize RCU for reading the pointer value and atomic operations for
-changing it. Zero out the ctrl_pf pointer when the control PF is removed.
+Zero out the ctrl_pf pointer in ice_adapter when the control PF is removed.
+This prevents potential dangling pointer dereference when accessing
+PTP-related structures from other PFs of the same adapter.
 
-Sergey Temerkhanov (3):
-  ice: Convert ctrl_pf pointer in struct ice_adapter to RCU
-  ice: Zero out the PTP control PF pointer at ice_adapter cleanup
-  ice: Cache struct ice_hw pointer for split register reads
+Fixes: e800654e85b5b ("ice: Use ice_adapter for PTP shared data instead of auxdev")
 
- drivers/net/ethernet/intel/ice/ice.h         | 10 ++-
- drivers/net/ethernet/intel/ice/ice_adapter.h |  2 +-
- drivers/net/ethernet/intel/ice/ice_ptp.c     | 66 +++++++++++++++++---
- drivers/net/ethernet/intel/ice/ice_ptp_hw.c  | 26 ++++++--
- 4 files changed, 89 insertions(+), 15 deletions(-)
+Signed-off-by: Sergey Temerkhanov <sergey.temerkhanov@intel.com>
+Reported-by: Frederick Lawler <fred@cloudflare.com>
+Closes: https://lkml.indiana.edu/2507.3/01388.html
+Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Reviewed-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_ptp.c | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
 
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
+index 1114a862c27b..68e87e267825 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp.c
++++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
+@@ -3104,6 +3104,18 @@ static void ice_ptp_setup_adapter(struct ice_pf *pf)
+ 	rcu_assign_pointer(pf->adapter->ctrl_pf, pf);
+ }
+ 
++static void ice_ptp_cleanup_adapter(struct ice_pf *pf)
++{
++	/* Zero out adapter->ctrl_pf pointer when the ctrl_pf itself
++	 * is being removed to prevent any secondary PFs from accessing
++	 * it after it is deleted.
++	 */
++	if (cmpxchg(&pf->adapter->ctrl_pf,
++		    (struct ice_pf __rcu *)pf, NULL) ==
++			(struct ice_pf __rcu *)pf)
++		synchronize_rcu();
++}
++
+ static int ice_ptp_setup_pf(struct ice_pf *pf)
+ {
+ 	struct ice_ptp *ptp = &pf->ptp;
+@@ -3384,6 +3396,8 @@ void ice_ptp_init(struct ice_pf *pf)
+ err_clean_pf:
+ 	mutex_destroy(&ptp->port.ps_lock);
+ 	ice_ptp_cleanup_pf(pf);
++
++	ice_ptp_cleanup_adapter(pf);
+ err_exit:
+ 	/* If we registered a PTP clock, release it */
+ 	if (pf->ptp.clock) {
+@@ -3412,6 +3426,7 @@ void ice_ptp_release(struct ice_pf *pf)
+ 	if (pf->ptp.state != ICE_PTP_READY) {
+ 		mutex_destroy(&pf->ptp.port.ps_lock);
+ 		ice_ptp_cleanup_pf(pf);
++		ice_ptp_cleanup_adapter(pf);
+ 		if (pf->ptp.clock) {
+ 			ptp_clock_unregister(pf->ptp.clock);
+ 			pf->ptp.clock = NULL;
+@@ -3426,6 +3441,8 @@ void ice_ptp_release(struct ice_pf *pf)
+ 
+ 	ice_ptp_cleanup_pf(pf);
+ 
++	ice_ptp_cleanup_adapter(pf);
++
+ 	ice_ptp_release_tx_tracker(pf, &pf->ptp.port.tx);
+ 
+ 	ice_ptp_disable_all_extts(pf);
 -- 
 2.53.0
 
