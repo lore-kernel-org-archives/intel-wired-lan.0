@@ -4,93 +4,94 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5AA26CD3430
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  4 May 2026 13:27:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B203CCD3430
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  4 May 2026 14:25:00 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 1C1F984508;
-	Mon,  4 May 2026 13:27:24 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 647CE81A6D;
+	Mon,  4 May 2026 14:25:00 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id zNt8VYZd_Cb6; Mon,  4 May 2026 13:27:23 +0000 (UTC)
+ id 3K8KNomXZx7R; Mon,  4 May 2026 14:24:58 +0000 (UTC)
 X-Comment: SPF check N/A for local connections - client-ip=140.211.166.142; helo=lists1.osuosl.org; envelope-from=intel-wired-lan-bounces@osuosl.org; receiver=<UNKNOWN> 
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 50863843F6
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 6A30A819B4
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1777901243;
-	bh=sf8GrloyhDcDE0JIcXxVsYAPHoYQg8R8OEPXBypIWtk=;
-	h=Date:From:To:Cc:References:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=nFqJtOezVjn1Ea535WatLJhTI0ruQsdt6F96PXtjNu5Vgrt9U1d4n2vrE8f4+T0tr
-	 s5JDGXZUQa+zXeWGObsOyZrGSeHLBUVJbc7nTpzgY1QLQCkeRbVFb/eHHA4AyIKSk4
-	 kQVDmEiUXJ6pXAh6FynqomkbVxxAMHQgnmIgzPosJPPeK1yT717jYYcSYdgdCQIrSV
-	 1ad6aJyhqB3U+LNzzMQCXjRvNj4JIi8q3bIGo0TqOQ8/ZYl8m+OYb+8g9jl5qSkh61
-	 kVtOneyPurk2kDaZ8WWYkNemCsXHziWQcOJD/Q53fe55ACDhDSEaS6pi9DpLq7DRKX
-	 1H5UoVppjRiBw==
+	s=default; t=1777904698;
+	bh=kX/yuDTyrNy6Q8McQvBtc5XfaDNdxAqktutasJnhuPA=;
+	h=From:To:Cc:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=tZdOcDHHrhI35JUtkMYt51NyyFkGAEVVVMsNRaO7vA97efY1SXkq62Gz2OZoGuor0
+	 JsCcMOhiW0Wj+3AuPdgke/SGV8PfIL9FupjbCTKzn/JIsw7sBBm2vqj9F5EaP//MYl
+	 3ft4faj99g6Y8TTRpmccf+AbEiTzo6rZgyBpllvLJXVDfVs5lKI6TDftNtZ4fGm6Gs
+	 Sbin/0/ZuW7EXp8a2psor9/dM8BimQjk/MHWnudFD7HFTD84D21A3yqLUJbJCfVxnp
+	 2kNvV9chTfv5vAOyo+nvNkeRn4KlP+BHjMTVcer9mAZB4pnW3sg4yByGKLIWNwQr41
+	 NF4f2mgpOsdqg==
 Received: from lists1.osuosl.org (lists1.osuosl.org [140.211.166.142])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 50863843F6;
-	Mon,  4 May 2026 13:27:23 +0000 (UTC)
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [IPv6:2605:bc80:3010::137])
- by lists1.osuosl.org (Postfix) with ESMTP id A1492190
- for <intel-wired-lan@lists.osuosl.org>; Mon,  4 May 2026 13:27:22 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 6A30A819B4;
+	Mon,  4 May 2026 14:24:58 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [IPv6:2605:bc80:3010::136])
+ by lists1.osuosl.org (Postfix) with ESMTP id ACF27204
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  4 May 2026 14:24:56 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 91E6D41A3F
- for <intel-wired-lan@lists.osuosl.org>; Mon,  4 May 2026 13:27:22 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTP id 929C661171
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  4 May 2026 14:24:56 +0000 (UTC)
 X-Virus-Scanned: amavis at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id n4H3itK9fQUy for <intel-wired-lan@lists.osuosl.org>;
- Mon,  4 May 2026 13:27:21 +0000 (UTC)
-X-Greylist: delayed 1818 seconds by postgrey-1.37 at util1.osuosl.org;
- Mon, 04 May 2026 13:27:21 UTC
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp4.osuosl.org 68042419EB
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 68042419EB
-Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=156.67.10.101;
- helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=<UNKNOWN> 
-Received: from vps0.lunn.ch (vps0.lunn.ch [156.67.10.101])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 68042419EB
- for <intel-wired-lan@lists.osuosl.org>; Mon,  4 May 2026 13:27:21 +0000 (UTC)
-Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
- (envelope-from <andrew@lunn.ch>)
- id 1wJsqy-001GIp-Kw; Mon, 04 May 2026 14:56:52 +0200
-Date: Mon, 4 May 2026 14:56:52 +0200
-From: Andrew Lunn <andrew@lunn.ch>
-To: David Carlier <devnexen@gmail.com>
-Cc: Tony Nguyen <anthony.l.nguyen@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Andrew Lunn <andrew+netdev@lunn.ch>,
- "David S. Miller" <davem@davemloft.net>,
- Eric Dumazet <edumazet@google.com>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- Jedrzej Jagielski <jedrzej.jagielski@intel.com>,
- Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
- Jacob Keller <jacob.e.keller@intel.com>,
- intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Message-ID: <2e4cc698-70da-4305-ad0c-b5258f029daf@lunn.ch>
-References: <20260504062257.77460-1-devnexen@gmail.com>
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavis, port 10024) with ESMTP
+ id GWvk2lu1WENB for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  4 May 2026 14:24:56 +0000 (UTC)
+Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.175.65.19;
+ helo=mgamail.intel.com; envelope-from=aleksandr.loktionov@intel.com;
+ receiver=<UNKNOWN> 
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp3.osuosl.org 8320C60EBD
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8320C60EBD
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.19])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 8320C60EBD
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  4 May 2026 14:24:54 +0000 (UTC)
+X-CSE-ConnectionGUID: k3Ip9rciTGOOvBS/qN0n5g==
+X-CSE-MsgGUID: MB2vvhkERGyrdb5jQHITqg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11776"; a="78691603"
+X-IronPort-AV: E=Sophos;i="6.23,215,1770624000"; d="scan'208";a="78691603"
+Received: from fmviesa006.fm.intel.com ([10.60.135.146])
+ by orvoesa111.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 04 May 2026 07:24:55 -0700
+X-CSE-ConnectionGUID: oNwi77ReRvqctkNN1Sebzg==
+X-CSE-MsgGUID: b0dDRgZsRYmfnpDjojkztQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,215,1770624000"; d="scan'208";a="230935394"
+Received: from amlin-019-225.igk.intel.com ([10.102.19.225])
+ by fmviesa006.fm.intel.com with ESMTP; 04 May 2026 07:24:53 -0700
+From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+To: intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com,
+ aleksandr.loktionov@intel.com
+Cc: netdev@vger.kernel.org
+Date: Mon,  4 May 2026 16:24:46 +0200
+Message-ID: <20260504142451.4161845-1-aleksandr.loktionov@intel.com>
+X-Mailer: git-send-email 2.52.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260504062257.77460-1-devnexen@gmail.com>
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt;
- c=relaxed/relaxed; d=lunn.ch; 
- s=20171124; h=In-Reply-To:Content-Disposition:Content-Type:MIME-Version:
- References:Message-ID:Subject:Cc:To:From:Date:From:Sender:Reply-To:Subject:
- Date:Message-ID:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:
- Content-ID:Content-Description:Content-Disposition:In-Reply-To:References;
- bh=sf8GrloyhDcDE0JIcXxVsYAPHoYQg8R8OEPXBypIWtk=; b=w7pAD9IdOiU9ws7Vk7/0w0jJDK
- gNWkzXN+gg7jRKD+2XD79IoezU1UTa7QePCmPJyOWTJfhWO2Fk0IxFYmi3WMdwtVGRIN+ECvnxv6f
- yisuELJ2BO8yfV1hWy2U7IgWl0Qw2Ltd0OS98JKa3Eh2C4tmpVX4JQgFL4bLgUlyQlOk=;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+Content-Transfer-Encoding: 8bit
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1777904696; x=1809440696;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=u9QAqbxxkv4Jyk8sMgNMipr0e8IzMMKRqQwmVEF/39c=;
+ b=YrR3C9nbn3Utnx5aF+p4MkuqJ66BM/6idbEmUQ4GlQFBrjV54qbkyhym
+ CO3C1IU0JvMieZg77WwRZudrbKHBMcim7S+hoTdaUNl15eEeKwIbcsJ3g
+ GAvYT3g1sqxgQaeybnvgZk4Z1kiYe4Z7VXBAiv+BYOK3nECiTU4xtapj+
+ n2NvKuxzX2qV8H+9JpJilrJnkthMX7+QGl4imUx1jdhMUUy6dTKSTdbuO
+ PFfj2816ZGIu/yYqhcN5SUL98nbaxgXTNZik5nvyy7bkOUthf4GCr0PZM
+ dh7+qj0xUwZqdN4TCnNMkCCIE0ENVh582N1XJUeJ3zmK18aN+Vwmil0e2
+ A==;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dmarc=pass (p=none dis=none)
- header.from=lunn.ch
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (1024-bit key,
- unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256
- header.s=20171124 header.b=w7pAD9Id
-Subject: Re: [Intel-wired-lan] [PATCH] ixgbe: E610: do not fill EEE
- lp_advertised from local PHY caps
+ header.from=intel.com
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=YrR3C9nb
+Subject: [Intel-wired-lan] [PATCH iwl-next v2 0/5] ice: five small fixes and
+ cleanups
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.30
 Precedence: list
@@ -106,21 +107,54 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Mon, May 04, 2026 at 07:22:57AM +0100, David Carlier wrote:
-> ixgbe_get_eee_e610() fills kedata->lp_advertised from pcaps.eee_cap
-> returned by ixgbe_aci_get_phy_caps() with IXGBE_ACI_REPORT_ACTIVE_CFG.
-> That report mode (and the other IXGBE_ACI_REPORT_* modes) describe the
-> local PHY only, not the link partner. The X550 path uses a separate
-> FW_PHY_ACT_UD_2 activity for partner data; the E610 ACI has no
-> equivalent.
-> 
-> Leave lp_advertised zeroed via the existing linkmode_zero() and drop
-> the now-unused ixgbe_eee_cap_map[]. eee_active/eee_enabled are
-> unaffected (sourced from link.eee_status).
+Three correctness fixes and two cleanups for the ice driver.
 
-Hi David
+Patch 1 corrects a kernel-doc comment in ice_ptp_hw.h that described the
+ETH56G MAC Rx offset field as unsigned when it is signed (trivial doc fix,
+no functional change).
 
-Did you test the EEE autoneg capabilities? Is just lp_advertise wrong,
-or is the negotiation itself also broken?
+Patch 2 removes the PF_SB_REM_DEV_CTL sideband register write from
+ice_ptp_init_phc_e82x().  PHY access is enabled by default on E82X and
+the register write was a leftover from an earlier SWITCH_MODE workaround
+that is no longer needed.
 
-	Andrew
+Patch 3 renames ICE_SMA2_UFL2_RX_DIS to ICE_SMA2_UFL2_RX_EN to match
+the actual active-high hardware semantics and inverts the three use sites
+in ice_dpll.c so that the logic remains correct.
+
+Patch 4 replaces the static per-type frequency tables for CGU pins with a
+single DPLL_PIN_FREQUENCY_RANGE(1, 25 MHz) entry.  The firmware defines
+an any_freq capability for configurable CGU inputs, but the old tables
+restricted users to 1 PPS or 10 MHz.  GNSS pins retain a 1 PPS-only
+entry since they are physically constrained.
+
+Patch 5 exports ice_dcb_need_recfg() and calls it in the four SW LLDP
+netlink setters instead of memcmp() on a non-packed struct, which is
+undefined behaviour due to uninitialised padding bytes.  The redundant
+memcmp in ice_pf_dcb_cfg() is removed since callers now guard it.
+
+Aleksandr Loktionov (2):
+  ice: add correct handling of SMA/u.FL states
+  ice: use element-by-element comparison for DCB config changes
+
+Arkadiusz Kubalewski (1):
+  ice: fix DPLL pin frequency range in CGU pin descriptors
+
+Karol Kolacinski (2):
+  ice: fix ETH56G Rx offset type description in kernel-doc comment
+  ice: remove unnecessary PF_SB_REM_DEV_CTL write for E82X
+
+v1 -> v2 updated mail subject with PATCH iwl-next
+
+
+ drivers/net/ethernet/intel/ice/ice_dcb_lib.c |  13 +-
+ drivers/net/ethernet/intel/ice/ice_dcb_lib.h |   2 +
+ drivers/net/ethernet/intel/ice/ice_dcb_nl.c  |  30 +++-
+ drivers/net/ethernet/intel/ice/ice_dpll.c    |   6 +-
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.c  | 141 ++++++++++---------
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.h  |   8 +-
+ 6 files changed, 113 insertions(+), 87 deletions(-)
+
+-- 
+2.52.0
+
